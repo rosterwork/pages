@@ -1,0 +1,124 @@
+/* ============================================================
+   HISTÓRICO — página de auditoria (admin)
+   Os eventos aparecem dentro da árvore de unidades
+   (geral-arvore-unidades), agrupados por unidade. Cada evento é um
+   cartão: cabeçalho (autor · ação · data-hora) + as mudanças pelo
+   componente geral-resumo. Filtros (tipo/autor/período) no
+   sub-cabeçalho. Lógica em js/historico.js.
+   ============================================================ */
+
+/* filtros do sub-cabeçalho (largura própria + separação) */
+#historico-tipo,
+#historico-autor,
+#historico-periodo {
+  margin-left: 8px;
+}
+#historico-tipo-seletor { width: 150px; }
+#historico-autor-seletor { width: 190px; }
+#historico-periodo-seletor { width: 160px; }
+
+/* pilha de eventos dentro da unidade (na .arvore-conteudo) */
+.historico-eventos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* cartão de um evento */
+.historico-evento {
+  background-color: var(--fundo-superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  padding: 12px 16px;
+}
+
+/* cabeçalho clicável (recolhe/expande): o resumo à esquerda, o chevron à direita */
+.historico-evento-cabecalho {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.historico-evento-resumo {
+  min-width: 0;
+  flex: 1;
+}
+
+.historico-evento-seta {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--texto-fraco);
+}
+
+/* recolhido: o chevron aponta para a direita */
+.historico-evento-cabecalho[aria-expanded="false"] .historico-evento-seta {
+  transform: rotate(-90deg);
+}
+
+/* corpo (as mudanças de→para): separado do resumo quando aberto */
+.historico-evento-corpo {
+  margin-top: 8px;
+}
+
+/* título do cartão = ícone + nome da página (aba) */
+.historico-evento-titulo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.historico-evento-icone {
+  flex-shrink: 0;
+}
+
+/* subtítulo = o assunto (o que foi alterado) */
+.historico-evento-assunto {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--texto);
+}
+
+/* subtítulo: autor · verbo · data-hora */
+.historico-evento-sub {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 0;
+  margin: 2px 0 8px;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.historico-evento-sub > span + span::before {
+  content: "·";
+  margin: 0 4px;
+  color: var(--texto-debil);
+}
+
+.historico-evento-autor {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.historico-evento-quando {
+  color: var(--texto-fraco);
+}
+
+/* unidade marcada sem eventos no período/filtros */
+.historico-vazio {
+  padding: 8px 0;
+  color: var(--texto-fraco);
+  font-size: 12px;
+}

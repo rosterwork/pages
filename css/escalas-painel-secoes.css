@@ -1,0 +1,87 @@
+/* ============================================================
+   ESCALA — seções Contínuos e Pontuais do painel do dia.
+   Linha de militar (grad + nome + extra + ação) dentro das
+   caixas do painel (grupo-caixa). Reaproveita os tokens do tema.
+   ============================================================ */
+
+/* busca no topo das seções Contínuos/Pontuais (a pílula .busca vem de geral-busca.css) */
+.escala-secao-busca {
+  margin-bottom: 8px;
+}
+
+.escala-secao-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+}
+
+.escala-secao-grad {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+.escala-secao-nome {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--texto-forte);
+}
+
+/* de folga neste dia: aparece, mas riscado e apagado (mesma convenção da escala) */
+.escala-secao-item--folga .escala-secao-grad,
+.escala-secao-item--folga .escala-secao-nome {
+  text-decoration: line-through;
+  color: var(--texto-fraco);
+}
+
+/* área do meio (selo "Sai em" nos Contínuos, horários nos Pontuais) */
+.escala-secao-extra {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* coluna de ação à direita (botão ou ✕) */
+.escala-secao-acao {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* quando não há extra, a ação encosta à direita sozinha */
+.escala-secao-item > .escala-secao-extra:empty {
+  margin-left: auto;
+}
+.escala-secao-item > .escala-secao-extra:empty + .escala-secao-acao {
+  margin-left: 0;
+}
+
+.escala-secao-selo {
+  font-size: 11px;
+}
+
+/* botão de ação de uma linha (Tirar / Adicionar / Cancelar saída) */
+.escala-secao-botao {
+  min-height: 24px;
+}
+
+/* variante de perigo do botão Tirar (borda/rótulo em tom de erro) */
+.escala-secao-botao--perigo {
+  color: var(--erro);
+  border-color: var(--erro);
+}
+
+/* estado vazio de uma caixa de seção */
+.escala-secao-vazio {
+  padding: 4px 0;
+  font-size: 12px;
+  color: var(--texto-fraco);
+  font-style: italic;
+}

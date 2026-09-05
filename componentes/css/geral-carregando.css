@@ -1,0 +1,59 @@
+/* ---------- BLOQUEIO DE CLIQUE ---------- */
+/* camada transparente sobre a tela enquanto uma ação está no ar: impede clique
+   por engano em qualquer outra coisa. Mesma faixa do véu (30) */
+.carregando-bloqueio {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  cursor: default;
+}
+
+/* ---------- CARREGANDO PONTOS ---------- */
+
+/* enquanto os pontinhos rodam, o botão mantém o tamanho que tinha com o rótulo
+   (as medidas vêm do JS em custom property — ver geral-carregando.js) */
+.carregando-travado {
+  min-width: var(--carregando-largura, auto);
+  min-height: var(--carregando-altura, auto);
+}
+
+.carregando-pontos {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.carregando-pontos span {
+  display: inline-block;
+  animation: salto-ponto 1.2s infinite ease-in-out;
+}
+
+.carregando-pontos span:nth-child(2) { animation-delay: 0.15s; }
+.carregando-pontos span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes salto-ponto {
+  0%, 60%, 100% { transform: translateY(0); }
+  30%           { transform: translateY(-3px); }
+}
+
+/* ---------- VÉU DE CARREGAMENTO ---------- */
+/* elemento fixo dentro do container (que precisa ser position: relative); cobre tudo
+   com o .giratorio centralizado. Entra na hora (transição none no estado visível) e
+   sai com fade — exceção de transição registrada no MANUAL §8 */
+.carregando-veu {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--fundo-superficie);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, visibility 0.15s ease;
+}
+
+.carregando-veu--visivel {
+  opacity: 1;
+  visibility: visible;
+  transition: none;
+}

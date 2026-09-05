@@ -1,0 +1,115 @@
+/* ============================================================
+   FOLGAS — conteúdo da gaveta (painel lateral): extrato do militar
+   e os formulários (solicitar / dar folga / ajuste de saldo).
+   Só variáveis do tema; medidas das escalas do MANUAL.
+   ============================================================ */
+
+.folga-extrato {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* bloco do saldo em destaque */
+.folga-saldo-bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 16px;
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-suave);
+}
+.folga-saldo-bloco-rotulo {
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+.folga-saldo-bloco-valor {
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--texto-forte);
+}
+.folga-saldo-bloco-valor--positivo {
+  color: var(--sucesso);
+}
+.folga-saldo-bloco-valor--negativo {
+  color: var(--erro);
+}
+
+/* extrato (entradas + saídas) */
+.folga-extrato-linhas {
+  display: flex;
+  flex-direction: column;
+}
+.folga-extrato-linha {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--borda);
+}
+.folga-extrato-linha:last-child {
+  border-bottom: none;
+}
+.folga-extrato-textos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.folga-extrato-data {
+  font-size: 13px;
+  color: var(--texto);
+}
+.folga-extrato-motivo {
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+.folga-extrato-valor {
+  font-size: 13px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+.folga-extrato-valor--positivo {
+  color: var(--sucesso);
+}
+.folga-extrato-valor--negativo {
+  color: var(--erro);
+}
+.folga-extrato-linha .folga-cancelar {
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+/* formulários (solicitar / dar / ajuste) */
+.folga-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.folga-form-consumo {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+.folga-form-consumo--alerta {
+  color: var(--alerta);
+}
+
+/* aba Ações do painel (gestor) */
+.folga-acoes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.folga-acoes-btn {
+  width: 100%;
+}
+
+/* seletor de direção do ajuste (Adicionar / Descontar), ocupa a largura */
+.folga-ajuste-tipo {
+  display: flex;
+  width: 100%;
+}
+.folga-ajuste-tipo .aba {
+  flex: 1;
+  justify-content: center;
+}

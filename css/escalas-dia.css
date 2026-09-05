@@ -1,0 +1,23 @@
+/* ============================================================
+   ESCALAS — modo Dia (árvore de unidades com a distribuição)
+   A árvore vem do geral-arvore-unidades; as caixas por posto e as
+   linhas de militar reusam grupo-caixa (geral-painel.css) e
+   escala-distribuicao-* (escalas-painel.css). Aqui só o bloco
+   clicável da unidade (abre o painel do dia).
+   Montagem: js/escalas-dia.js
+   ============================================================ */
+.escala-dia-unidade {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 640px;
+  padding: 8px;
+  border-radius: var(--raio-medio);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.escala-dia-unidade:hover { background-color: var(--fundo-suave); }
+
+/* realce do painel aberto (o escalas-painel marca com a mesma classe das células) */
+.escala-dia-unidade.escala-mes-celula--selecionada { background-color: var(--fundo-medio); }

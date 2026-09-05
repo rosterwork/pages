@@ -1,0 +1,28 @@
+/* ============================================================
+   COMPONENTE geral-periodo — navegação de período ‹ rótulo ›
+   Setas nas pontas + rótulo clicável no meio (abre o componente
+   geral-calendario). O comportamento (navegar, abrir o calendário)
+   é ligado por cada página; aqui fica só o visual.
+   Componente compartilhado (Escala e Extrajornada).
+   ============================================================ */
+
+.geral-periodo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* rótulo clicável que abre o calendário; sem hover, por opção — só o cursor
+   pointer (do reset de button) indica que é clicável */
+.geral-periodo-nome {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 110px;
+  min-height: 26px;
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--texto-forte);
+  user-select: none;
+}

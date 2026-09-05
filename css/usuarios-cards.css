@@ -1,0 +1,141 @@
+/* ============================================================
+   USUÁRIOS — card de pessoa dentro de cada unidade marcada
+   Passado ao componente da árvore (geral-arvore-unidades) via
+   renderConteudo (js/usuarios.js); molde #tpl-usuario-item.
+   Duas linhas: nome (graduação + nome de guerra) e o CPF.
+   ============================================================ */
+
+.usuario-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 2px 8px;
+}
+
+/* coluna do nome + CPF à esquerda; o selo de situação fica à direita */
+.usuario-item-textos {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  line-height: 1.3;
+}
+
+/* linha do nome: graduação + nome de guerra (peso 500, como no exemplo) */
+.usuario-item-pessoa {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.usuario-item-grad {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--texto-forte);
+  white-space: nowrap;
+}
+
+.usuario-item-nome {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--texto-forte);
+}
+
+/* linha do CPF (onde o exemplo tinha a função) */
+.usuario-item-cpf {
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+/* realce do "marcar" da busca: inverte o card (modo escuro <-> claro) */
+.usuario-item--marcado {
+  background-color: var(--fundo-contraste);
+  border-radius: var(--raio-medio);
+}
+
+.usuario-item--marcado .usuario-item-grad,
+.usuario-item--marcado .usuario-item-nome,
+.usuario-item--marcado .usuario-item-cpf {
+  color: var(--texto-invertido);
+}
+
+/* aviso quando os filtros não deixam nenhum militar na unidade marcada */
+.usuario-vazio {
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+/* card clicável: abre a ficha do militar no painel (cursor + realce no hover).
+   Espelha .usuario-linha do /exemplo e .posto-cartao--clicavel dos postos. */
+.usuario-item--clicavel {
+  cursor: pointer;
+  border-radius: var(--raio-medio);
+}
+
+.usuario-item--clicavel:hover {
+  background-color: var(--fundo-suave);
+}
+
+/* selecionado: o card cuja ficha está aberta no painel */
+.usuario-item--selecionada,
+.usuario-item--selecionada:hover {
+  background-color: var(--fundo-medio);
+}
+
+/* nome de guerra realçado dentro do nome completo (modo "Completo + guerra" do Exibir) */
+.usuario-item-nome-guerra {
+  font-weight: 700;
+  color: var(--texto-forte);
+}
+
+/* observação "Sem acesso ao sistema" no topo da ficha (militar sem conta de login) */
+.ficha-observacao {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-suave);
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.ficha-observacao .icone {
+  flex-shrink: 0;
+  color: var(--texto-fraco);
+}
+
+/* ---------- aba Aprovações: duas seções (Cadastros e Correções) ---------- */
+.usuarios-aprovacoes {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.usuarios-secao {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* um pedido de cadastro: a linha inteira abre a revisão no painel */
+.cadastro-item {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  transition: background-color 0.15s ease;
+}
+
+.cadastro-item:hover {
+  background-color: var(--fundo-suave);
+}
+
+.cadastro-seta {
+  flex-shrink: 0;
+  color: var(--texto-fraco);
+}

@@ -1,0 +1,377 @@
+<div class="pagina">
+  <div class="pagina-cabecalho">
+    <div class="pagina-titulos">
+      <h1>Extrajornada</h1>
+      <span class="pagina-subtitulo"></span>
+    </div>
+  </div>
+
+  <div class="pagina-subcabecalho">
+    <div class="abas" id="extrajornada-abas">
+      <button type="button" class="aba aba--ativa" data-aba="escala">Escala</button>
+      <button type="button" class="aba" data-aba="disponibilidade">Disponibilidade</button>
+    </div>
+
+    <!-- seletor de mês ÚNICO, compartilhado pelas duas abas (o orquestrador é o dono) -->
+    <div class="geral-periodo" id="extra-periodo">
+      <button type="button" class="botao botao--icone botao--pequeno" id="extra-periodo-anterior" aria-label="Mês anterior">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-esquerda.svg#icone-seta-esquerda"/></svg>
+      </button>
+      <span class="geral-periodo-nome" id="extra-periodo-nome"></span>
+      <button type="button" class="botao botao--icone botao--pequeno" id="extra-periodo-proximo" aria-label="Próximo mês">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
+      </button>
+    </div>
+
+    <!-- escopo dos interessados (Total / a CIA / cada PEL): só na aba Disponibilidade, para voluntário -->
+    <div class="extra-interessados oculto" id="extra-interessados">
+      <span class="extra-interessados-rotulo">Interessados</span>
+      <div class="abas abas--pequenas" id="extra-procura-abas"></div>
+    </div>
+
+    <!-- modo da grade (Agenda = dias × unidades · Calendário = mês): só na aba Escala -->
+    <div class="abas abas--pequenas oculto" id="extra-escala-modos">
+      <button type="button" class="aba aba--ativa" data-modo="agenda">Agenda</button>
+      <button type="button" class="aba" data-modo="calendario">Calendário</button>
+    </div>
+
+    <span class="espacador-flex"></span>
+
+    <!-- busca de militar (nome, CPF ou RG) — só na aba Escala; marca ou filtra candidatos + acende as células -->
+    <div class="busca oculto" id="extra-busca">
+      <button type="button" class="busca-modo" aria-label="Alternar entre marcar e filtrar" data-dica="Marcar">
+        <svg class="icone busca-modo-marcar" width="16" height="16" aria-hidden="true"><use href="icones/icone-pesquisar.svg#icone-pesquisar"/></svg>
+        <svg class="icone busca-modo-filtrar oculto" width="16" height="16" aria-hidden="true"><use href="icones/icone-filtrar.svg#icone-filtrar"/></svg>
+      </button>
+      <input type="text" name="busca-militar" class="busca-entrada" maxlength="100" placeholder="Pesquisar militar" aria-label="Pesquisar militar" />
+      <button type="button" class="busca-limpar" aria-label="Limpar pesquisa">
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="pagina-corpo pagina-corpo--colado">
+    <!-- Escala (admin): painel fixo de Cotas (esquerda) + grade de mês (área principal) -->
+    <div class="geral-layout-lateral" data-aba-painel="escala">
+
+      <!-- painel esquerdo: gestão de cotas do mês (admin reparte; comum vê só leitura) -->
+      <aside class="geral-painel-esquerdo">
+        <div class="geral-painel-esquerdo-cabecalho extra-cota-cabecalho">
+          <div class="extra-cota-cab-linha">
+            <span class="rotulo-secao">Cotas</span>
+            <span class="extra-cota-contexto" id="extra-cota-contexto"></span>
+          </div>
+          <div class="extra-cota-escopo-barra">
+            <span class="campo-rotulo extra-cota-escopo-rotulo">Repartir por</span>
+            <div class="extra-cota-escopo" id="extra-cota-escopo">
+              <label class="geral-opcao"><input type="radio" name="extra-cota-escopo" data-modo="grupo" /><span>Grupo</span></label>
+              <label class="geral-opcao"><input type="radio" name="extra-cota-escopo" data-modo="por_unidade" /><span>Por unidade</span></label>
+            </div>
+          </div>
+        </div>
+        <div class="geral-painel-esquerdo-lista extra-cota-lista">
+          <div class="extra-cota-grupos" id="extra-cota-grupos"></div>
+          <p class="extra-cota-estado oculto" id="extra-cota-estado"></p>
+        </div>
+        <!-- ações: só admin (comum não tem o que salvar); ativo só quando há edição pendente -->
+        <div class="geral-painel-esquerdo-rodape oculto" id="extra-cota-rodape">
+          <div class="rodape-acoes">
+            <button type="button" class="botao extra-cota-cancelar">Cancelar</button>
+            <button type="button" class="botao botao--primario extra-cota-salvar" disabled>Salvar</button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- área principal: grade de mês (dias × unidades); clicar na célula coloca o extra ali mesmo -->
+      <section class="geral-corpo-lateral">
+        <div class="extra-escala-cal" id="extra-escala-cal"></div>
+        <!-- rodapé: aplica os extras colocados/editados na escala; ativo só quando há alterações; só admin -->
+        <div class="rodape rodape-pilha oculto" id="extra-escala-rodape">
+          <div class="rodape-linha">
+            <span class="espacador-flex"></span>
+            <div class="rodape-acoes">
+              <button type="button" class="botao botao--primario" id="extra-escala-inserir">Inserir/Atualizar escala</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Disponibilidade: painel esquerdo (declaração) + calendário na área principal -->
+    <div class="geral-layout-lateral oculto" data-aba-painel="disponibilidade">
+      <aside class="geral-painel-esquerdo">
+        <div class="geral-painel-esquerdo-cabecalho">
+          <span class="rotulo-secao">Minha declaração</span>
+        </div>
+        <div class="geral-painel-esquerdo-lista extra-decl">
+          <div class="extra-disp-aviso" id="extra-disp-aviso"></div>
+          <div class="campo">
+            <span class="campo-rotulo">Sou voluntário em <span id="extra-mes-inline"></span></span>
+            <div class="abas abas--pequenas" id="extra-voluntario">
+              <button type="button" class="aba" data-valor="sim">Sim</button>
+              <button type="button" class="aba" data-valor="nao">Não</button>
+            </div>
+          </div>
+
+          <div class="campo extra-so-voluntario">
+            <span class="campo-rotulo">Fechar blocos de 24 h <span class="extra-nota">(4/8)</span></span>
+            <div class="abas abas--pequenas" id="extra-fecha24h">
+              <button type="button" class="aba" data-valor="sim">Sim</button>
+              <button type="button" class="aba" data-valor="nao">Não</button>
+            </div>
+          </div>
+
+          <div class="campo extra-so-voluntario">
+            <span class="campo-rotulo">Quantas cotas quero</span>
+            <div class="dropdown" id="extra-cotas-dd">
+              <button type="button" class="campo-entrada campo-selecao" id="extra-cotas-gatilho">
+                <span class="campo-selecao-texto" id="extra-cotas-texto"></span>
+                <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+              </button>
+              <div class="dropdown-menu" id="extra-cotas-menu"></div>
+            </div>
+            <span class="extra-ajuda">1 cota = 6 h · máximo 8 (48 h).</span>
+          </div>
+
+          <div class="extra-listas extra-so-voluntario">
+            <div class="extra-lista" id="extra-col-quero">
+              <div class="extra-lista-topo">
+                <span class="extra-lista-rotulo extra-lista-rotulo--quero">Datas que quero</span>
+                <span class="extra-lista-conta" id="extra-conta-quero">0/10</span>
+              </div>
+              <div class="extra-barra"><div class="extra-barra-fill" id="extra-barra-quero"></div></div>
+              <div class="extra-lista-datas" id="extra-lista-quero"></div>
+              <span class="extra-aviso-col oculto" id="extra-aviso-quero">faltam <span id="extra-falta-quero">5</span></span>
+            </div>
+            <div class="extra-lista" id="extra-col-nao">
+              <div class="extra-lista-topo">
+                <span class="extra-lista-rotulo extra-lista-rotulo--nao">Datas que não quero</span>
+                <span class="extra-lista-conta" id="extra-conta-nao">0/10</span>
+              </div>
+              <div class="extra-barra"><div class="extra-barra-fill" id="extra-barra-nao"></div></div>
+              <div class="extra-lista-datas" id="extra-lista-nao"></div>
+              <span class="extra-aviso-col oculto" id="extra-aviso-nao">faltam <span id="extra-falta-nao">5</span></span>
+            </div>
+          </div>
+
+          <!-- resumo do que recebeu (só em mês passado, se foi voluntário) -->
+          <div class="extra-disp-resumo oculto" id="extra-disp-resumo">
+            <span class="extra-disp-resumo-titulo" id="extra-disp-resumo-titulo"></span>
+            <div class="extra-disp-resumo-dias" id="extra-disp-resumo-dias"></div>
+          </div>
+        </div>
+      </aside>
+
+      <section class="geral-corpo-lateral">
+        <div class="extra-cal-area" id="extra-disp-cal"></div>
+        <div class="rodape rodape-pilha">
+          <div class="rodape-linha">
+            <span class="espacador-flex"></span>
+            <div class="rodape-acoes">
+              <button type="button" class="botao" id="extra-disp-cancelar">Cancelar</button>
+              <button type="button" class="botao botao--primario" id="extra-disp-salvar">Salvar</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<template id="tpl-extra-cal-texto">
+  <span class="extra-cal-texto"></span>
+</template>
+
+<!-- número de voluntários do escopo, no canto inferior direito da célula -->
+<template id="tpl-extra-cal-procura">
+  <span class="extra-cal-procura"></span>
+</template>
+
+<!-- uma aba do seletor de interessados (Total / a CIA / cada PEL) -->
+<template id="tpl-extra-procura-aba">
+  <button type="button" class="aba"></button>
+</template>
+
+<template id="tpl-extra-data-item">
+  <span class="extra-data-item"></span>
+</template>
+
+<template id="tpl-extra-estado">
+  <p class="extra-estado"></p>
+</template>
+
+<!-- Disponibilidade (mês passado): um dia do resumo — data + 4 bolinhas (blocos recebidos) -->
+<template id="tpl-extra-disp-resumo-dia">
+  <div class="extra-resumo-dia">
+    <span class="extra-resumo-data"></span>
+    <span class="extra-resumo-blocos">
+      <span class="extra-resumo-bola" data-bloco="1"></span>
+      <span class="extra-resumo-bola" data-bloco="2"></span>
+      <span class="extra-resumo-bola" data-bloco="3"></span>
+      <span class="extra-resumo-bola" data-bloco="4"></span>
+    </span>
+  </div>
+</template>
+
+<!-- Cotas (painel): uma seção por unidade/grupo — banda-título FIXA (nome + Cotas) + resumo + lista -->
+<template id="tpl-extra-cota-grupo">
+  <div class="extra-cota-grupo">
+    <div class="faixa extra-cota-grupo-cabecalho">
+      <button type="button" class="extra-cota-grupo-titulo" aria-expanded="true">
+        <svg class="icone extra-cota-grupo-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+        <span class="extra-cota-grupo-id">
+          <span class="rotulo-secao extra-cota-grupo-nome"></span>
+          <span class="extra-cota-grupo-cidade oculto"></span>
+        </span>
+      </button>
+      <label class="campo extra-cota-grupo-bolo-campo">
+        <span class="campo-rotulo">Cotas</span>
+        <input type="text" name="cota-bolo" inputmode="numeric" maxlength="3" class="campo-entrada extra-cota-grupo-bolo" />
+      </label>
+    </div>
+    <div class="extra-cota-grupo-corpo">
+      <div class="extra-cota-grupo-resumo">
+        <span class="extra-cota-grupo-resumo-linha">distribuídas: <b class="extra-cota-r-dist">0</b> · restam: <b class="extra-cota-r-restam1">0</b></span>
+        <span class="extra-cota-grupo-resumo-linha">escaladas: <b class="extra-cota-r-esc">0</b> · restam: <b class="extra-cota-r-restam2">0</b></span>
+      </div>
+      <div class="extra-cota-grupo-lista"></div>
+    </div>
+  </div>
+</template>
+
+<!-- Cotas (painel): um militar (grad/nome + Concedido; taxa/pediu/sugerido/feito) -->
+<template id="tpl-extra-cota-item">
+  <div class="lista-item lista-item--clicavel extra-cota-item">
+    <div class="extra-cota-item-topo">
+      <span class="extra-cota-id"><span class="extra-cota-grad"></span> <span class="extra-cota-nome"></span></span>
+      <span class="selo extra-cota-selo-novo oculto">Novo</span>
+      <span class="espacador-flex"></span>
+      <div class="dropdown extra-cota-conc">
+        <button type="button" class="campo-entrada campo-selecao campo-entrada--pequeno extra-cota-conc-gatilho">
+          <span class="campo-selecao-texto extra-cota-conc-texto"></span>
+          <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+        </button>
+        <div class="dropdown-menu extra-cota-conc-menu"></div>
+      </div>
+    </div>
+    <div class="extra-cota-item-baixo">
+      <span class="extra-cota-meta">taxa <b class="extra-cota-taxa-num"></b> · pediu <b class="extra-cota-pediu"></b> · <span class="extra-cota-sug-seg">sugerido <b class="extra-cota-sug"></b> · </span>feito <b class="extra-cota-preench"></b></span>
+    </div>
+  </div>
+</template>
+
+<!-- Cotas (painel): unidade sem voluntários -->
+<template id="tpl-extra-cota-vazio">
+  <p class="extra-cota-grupo-vazio">Nenhum voluntário nesta unidade.</p>
+</template>
+
+<!-- Escala (grade): micro-rótulo das duas barras de cobertura (antes / depois dos extras) -->
+<template id="tpl-extra-cel-rotulo">
+  <span class="extra-cel-rotulo"></span>
+</template>
+
+<!-- Escala (grade): caixa das barras em grade (rótulo à esquerda | barra) — linhas "antes" e "depois" -->
+<template id="tpl-extra-cel-barras">
+  <div class="extra-cel-barras"></div>
+</template>
+
+<!-- Escala (grade): texto na coluna da barra "depois" quando não há extra no dia -->
+<template id="tpl-extra-cel-sem-extra">
+  <span class="extra-cel-sem-extra">sem extra</span>
+</template>
+
+<!-- Painel do dia (gaveta): uma linha de aviso — resolvido pelo extra (✓) / restou (▲) -->
+<template id="tpl-extra-painel-aviso">
+  <div class="extra-painel-aviso">
+    <svg class="icone extra-painel-aviso-icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+    <span class="extra-painel-aviso-texto"></span>
+    <span class="extra-painel-aviso-marca oculto">resolvido pelo extra</span>
+  </div>
+</template>
+
+<!-- (o aviso da célula saiu para o painel do dia — Fase 3 do redesenho) -->
+
+<!-- Escala (grade): um extra COLOCADO na célula — nome em cima, pelotão + bolinhas embaixo, X (remover) -->
+<template id="tpl-extra-vaga">
+  <div class="extra-vaga">
+    <span class="extra-dia-ponto extra-vaga-origem"></span>
+    <span class="extra-vaga-corpo">
+      <span class="extra-vaga-linha-nome">
+        <span class="extra-vaga-id"><span class="extra-vaga-grad"></span> <span class="extra-vaga-nome"></span></span>
+        <button type="button" class="botao botao--icone botao--pequeno extra-vaga-x" aria-label="Remover extra">
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+        </button>
+      </span>
+      <span class="extra-vaga-linha-controles">
+        <span class="extra-vaga-pelotao oculto"></span>
+        <span class="espacador-flex"></span>
+        <span class="extra-vaga-24h oculto">24h</span>
+        <span class="extra-vaga-blocos">
+          <button type="button" class="extra-bolinha" data-bloco="1" aria-label="Bloco 08h às 14h"></button>
+          <button type="button" class="extra-bolinha" data-bloco="2" aria-label="Bloco 14h às 20h"></button>
+          <button type="button" class="extra-bolinha" data-bloco="3" aria-label="Bloco 20h às 02h"></button>
+          <button type="button" class="extra-bolinha" data-bloco="4" aria-label="Bloco 02h às 08h"></button>
+        </span>
+      </span>
+    </span>
+  </div>
+</template>
+
+<!-- Escala (grade): dropdown em árvore do "+ Adicionar" (flutuante; grupos sanfona → militares) -->
+<!-- ===== seções de candidatos DENTRO da célula (Interessados / Outros / Não querem) ===== -->
+<template id="tpl-extra-dia-secoes">
+  <div class="extra-dia-secoes"></div>
+</template>
+
+<template id="tpl-extra-dia-secao">
+  <div class="extra-dia-secao">
+    <button type="button" class="extra-dia-secao-topo" aria-expanded="true">
+      <span class="extra-dia-ponto"></span>
+      <span class="extra-dia-secao-nome"></span>
+      <span class="extra-dia-secao-conta"></span>
+      <svg class="icone extra-dia-secao-seta" width="16" height="16" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+    </button>
+    <div class="extra-dia-secao-corpo"></div>
+  </div>
+</template>
+
+<template id="tpl-extra-dia-unidade">
+  <div class="extra-dia-unidade">
+    <span class="extra-dia-unidade-rotulo"></span>
+    <div class="extra-dia-unidade-lista"></div>
+  </div>
+</template>
+
+<template id="tpl-extra-dia-cand">
+  <button type="button" class="extra-dia-cand">
+    <span class="extra-dia-ponto"></span>
+    <span class="extra-dia-cand-id"><span class="extra-dia-cand-grad"></span> <span class="extra-dia-cand-nome"></span></span>
+    <span class="extra-dia-cand-nota oculto"></span>
+  </button>
+</template>
+
+<!-- Escala (grade): resumo dos candidatos na célula (bolinhas + contagem) + o "+" que abre o dropdown -->
+<template id="tpl-extra-cel-resumo">
+  <div class="extra-cel-resumo">
+    <div class="extra-cel-resumo-contas"></div>
+    <span class="dropdown extra-cel-add">
+      <button type="button" class="extra-cel-add-gatilho" aria-label="Adicionar extra">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-mais.svg#icone-mais"/></svg>
+      </button>
+      <div class="dropdown-menu extra-cel-add-menu"></div>
+    </span>
+  </div>
+</template>
+
+<!-- uma contagem do resumo: bolinha (cor da preferência) + número -->
+<template id="tpl-extra-cel-resumo-conta">
+  <span class="extra-cel-resumo-conta"><span class="extra-dia-ponto"></span><span class="extra-cel-resumo-num"></span></span>
+</template>
+
+<!-- Escala (modo Calendário): um bloco por unidade dentro do dia — nome + a mesma célula do modo Agenda -->
+<template id="tpl-extra-calendario-unidade">
+  <div class="extra-calendario-unidade">
+    <span class="extra-calendario-unidade-nome"></span>
+    <div class="escala-mes-celula"></div>
+  </div>
+</template>

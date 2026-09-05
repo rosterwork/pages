@@ -1,0 +1,719 @@
+/* ============================================================
+   EXTRAJORNADA — estilos da página
+   Aba Disponibilidade: layout de painel esquerdo (geral-layout-lateral)
+   com a declaração à esquerda e o calendário (geral-calendario-mes, no
+   TAMANHO ORIGINAL, colado) ocupando a área principal; rodapé com a
+   legenda + ações (padrão da Distribuição). Só variáveis e escalas do tema.
+   ============================================================ */
+
+/* estado "em construção" centralizado */
+.extra-estado {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--texto-fraco);
+  font-size: 13px;
+}
+
+/* ---------- aba Disponibilidade ---------- */
+
+/* declaração (a lista do painel esquerdo): campos empilhados com respiro */
+.extra-decl {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+}
+
+.extra-nota {
+  font-weight: 400;
+  color: var(--texto-fraco);
+}
+
+.extra-ajuda {
+  font-size: 11px;
+  color: var(--texto-fraco);
+}
+
+/* aviso da janela de edição (topo da declaração): texto simples, sem caixa */
+.extra-disp-aviso {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+/* controle travado (fora da janela / mês de leitura): mostra o valor, não recebe clique */
+.extra-trava {
+  pointer-events: none;
+}
+
+/* resumo do que o militar RECEBEU no mês passado (abaixo das listas) */
+.extra-disp-resumo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--borda);
+}
+.extra-disp-resumo-titulo {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+.extra-disp-resumo-dias {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.extra-resumo-dia {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 24px;
+}
+.extra-resumo-data {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+.extra-resumo-blocos {
+  display: flex;
+  gap: 4px;
+}
+.extra-resumo-bola {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid var(--borda-forte);
+  background-color: var(--fundo-medio);
+}
+.extra-resumo-bola--cheia {
+  background-color: var(--fundo-contraste);
+  border-color: var(--fundo-contraste);
+}
+
+/* os segmentados Sim/Não têm só a largura dos botões (não esticam no campo) */
+.extra-decl .abas {
+  align-self: flex-start;
+}
+
+/* listas de datas marcadas (duas colunas), no formato DD/MM/AA */
+.extra-listas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.extra-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.extra-lista-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+.extra-lista-rotulo {
+  font-size: 11px;
+  font-weight: 600;
+}
+.extra-lista-rotulo--quero { color: var(--sucesso); }
+.extra-lista-rotulo--nao { color: var(--erro); }
+.extra-lista-conta {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--texto-suave);
+}
+.extra-lista--incompleta .extra-lista-conta { color: var(--erro); }
+.extra-lista--cheia .extra-lista-conta { color: var(--sucesso); }
+
+/* barrinha 0→10 com a marca do mínimo (5) no meio */
+.extra-barra {
+  position: relative;
+  height: 4px;
+  background: var(--fundo-medio);
+  border-radius: var(--raio-pequeno);
+}
+.extra-barra::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -1px;
+  bottom: -1px;
+  border-left: 1px solid var(--texto-fraco);
+}
+.extra-barra-fill {
+  height: 100%;
+  width: var(--fill, 0%);
+  background: var(--fundo-contraste);
+  border-radius: var(--raio-pequeno);
+}
+.extra-lista--incompleta .extra-barra-fill { background: var(--erro); }
+.extra-lista--cheia .extra-barra-fill { background: var(--sucesso); }
+
+.extra-lista-datas {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.extra-data-item {
+  font-size: 12px;
+  color: var(--texto);
+}
+.extra-aviso-col {
+  font-size: 11px;
+  color: var(--erro);
+}
+
+/* área do calendário: ocupa a área principal; o geral-calendario-mes
+   (colado, tamanho original) preenche e cuida da própria rolagem */
+.extra-cal-area {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* dia clicável (só dias do mês exibido); relative ancora a procura (absoluta) na célula */
+.extra-cal-dia {
+  position: relative;
+  cursor: pointer;
+}
+
+/* ciclo de clique: neutro = branco (sem classe) → quero = verde → não = vermelho */
+.extra-cal-dia--quero {
+  background-color: var(--sucesso-fundo);
+}
+
+.extra-cal-dia--quero .geral-calendario-mes-numero {
+  color: var(--sucesso);
+}
+
+.extra-cal-dia--nao {
+  background-color: var(--erro-fundo);
+}
+
+.extra-cal-dia--nao .geral-calendario-mes-numero {
+  color: var(--erro);
+}
+
+/* dia indisponível: o militar já está de serviço/folga/férias/atestado — apagado e sem clique */
+.extra-cal-dia--indisponivel {
+  cursor: default;
+  background-color: var(--fundo-suave);
+}
+
+.extra-cal-dia--indisponivel .geral-calendario-mes-numero {
+  color: var(--texto-debil);
+}
+
+/* texto no centro da célula: motivo do bloqueio, ou "Quero" / "Não quero" */
+.extra-cal-texto {
+  display: block;
+  text-align: center;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+.extra-cal-dia--quero .extra-cal-texto { color: var(--sucesso); }
+.extra-cal-dia--nao .extra-cal-texto { color: var(--erro); }
+.extra-cal-dia--indisponivel .extra-cal-texto { color: var(--texto-debil); }
+
+/* número de voluntários do escopo: canto inferior direito da célula */
+.extra-cal-procura {
+  position: absolute;
+  right: 6px;
+  bottom: 5px;
+  font-size: 11px;
+  color: var(--texto-debil);
+}
+
+/* grupo "Interessados" no subcabeçalho (rótulo + abas de escopo) */
+.extra-interessados {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.extra-interessados-rotulo {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+/* calendário da Disponibilidade menor (escopado a esta tela): células mais estreitas e baixas */
+#extra-disp-cal .geral-calendario-mes-cabecalho,
+#extra-disp-cal .geral-calendario-mes-semana {
+  grid-template-columns: repeat(7, minmax(90px, 1fr));
+}
+#extra-disp-cal .geral-calendario-mes-dia {
+  min-height: 64px;
+}
+
+/* ---------- Cotas no painel fixo à esquerda (geral-layout-lateral; admin: repartição justa) ---------- */
+
+/* cabeçalho em coluna: título + contexto numa linha, seletor de escopo embaixo */
+.extra-cota-cabecalho {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  padding: 8px 12px;
+}
+.extra-cota-cab-linha {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+/* unidade mãe (companhia/CIBM) ao lado do título, em tom suave */
+.extra-cota-contexto {
+  font-size: 12px;
+  color: var(--texto-fraco);
+}
+/* lista rolável do painel: SEM padding, para a banda-título de cada grupo grudar rente às bordas
+   (o respiro do conteúdo vem do .extra-cota-grupo-corpo) */
+.extra-cota-lista {
+  padding: 0;
+}
+
+/* seletor de escopo no cabeçalho do painel esquerdo: "Repartir por" + as bolinhas, tudo numa linha só */
+.extra-cota-escopo-barra {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.extra-cota-escopo-rotulo {
+  flex-shrink: 0;
+}
+/* as duas bolinhas lado a lado; sem respiro lateral (padding 0) para caber tudo na mesma linha no painel de 300px */
+.extra-cota-escopo {
+  display: flex;
+  gap: 12px;
+}
+.extra-cota-escopo .geral-opcao {
+  padding: 0;
+}
+/* no cabeçalho o hover fica só na bolinha (o realce do rótulo inteiro pesava aqui) */
+.extra-cota-escopo .geral-opcao:hover {
+  background: transparent;
+}
+.extra-cota-escopo .geral-opcao:hover input[type="radio"] {
+  border-color: var(--texto-forte);
+}
+/* comum vê o modo marcado mas não troca (só leitura) */
+.extra-cota-escopo--travado {
+  pointer-events: none;
+}
+
+/* grupos empilhados (sem gap): a banda-título fixa de cada um faz a separação */
+.extra-cota-grupos {
+  display: flex;
+  flex-direction: column;
+}
+/* uma seção por grupo/unidade: banda-título fixa + corpo (resumo + cartões dos militares) */
+.extra-cota-grupo {
+  display: flex;
+  flex-direction: column;
+}
+/* estourou o bolo (distribuiu mais que o total): título do grupo em vermelho + divisória vermelha */
+.extra-cota-grupo--estourado .extra-cota-grupo-nome {
+  color: var(--erro);
+}
+.extra-cota-grupo--estourado .extra-cota-grupo-cabecalho {
+  border-bottom-color: var(--erro);
+}
+/* título dentro da banda = nome/cidade + chevron (sanfona no Por unidade) */
+.extra-cota-grupo-titulo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 0;
+  background-color: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+}
+/* grupo = uma seção só → não recolhe (sem chevron, título sem clique) */
+.extra-cota-grupo--sem-recolher .extra-cota-grupo-titulo {
+  cursor: default;
+}
+.extra-cota-grupo-seta {
+  flex-shrink: 0;
+  color: var(--texto-fraco);
+}
+.extra-cota-grupo-titulo:hover .extra-cota-grupo-seta {
+  color: var(--texto-forte);
+}
+.extra-cota-grupo--fechado .extra-cota-grupo-seta {
+  transform: rotate(-90deg);
+}
+.extra-cota-grupo-id {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.extra-cota-grupo-nome {
+  color: var(--texto-forte);
+}
+.extra-cota-grupo-cidade {
+  font-size: 11px;
+  color: var(--texto-fraco);
+}
+/* corpo colapsável: resumo + lista (o respiro lateral, 12px, mora no resumo e no item) */
+.extra-cota-grupo-corpo {
+  display: flex;
+  flex-direction: column;
+}
+.extra-cota-grupo--fechado .extra-cota-grupo-corpo {
+  display: none;
+}
+/* caixa Cotas na banda: rótulo "Cotas" ao lado do campo (inline, para a banda ficar enxuta) */
+.extra-cota-grupo-bolo-campo {
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.extra-cota-grupo-bolo {
+  width: 56px;
+  text-align: center;
+}
+.extra-cota-grupo-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.extra-cota-grupo-vazio {
+  padding: 12px 0;
+  font-size: 12px;
+  color: var(--texto-fraco);
+}
+/* cada militar é um cartão de borda completa (branco, para saltar no painel suave) */
+/* linha do militar (casca visual em geral-lista): sem linha; a barra de acento
+   à esquerda marca o militar selecionado (pinta a grade na fase futura) */
+.extra-cota-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 12px;
+}
+.extra-cota-item-topo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.extra-cota-grad {
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+.extra-cota-nome {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+/* linha de baixo: só o resumo (taxa colorida · pedido · sugerido · feito) */
+.extra-cota-meta {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+.extra-cota-meta b {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+.extra-cota-taxa-num { min-width: 36px; }
+
+/* taxa colorida em relação à média do cartão (verde >= média · amarelo acima da metade · vermelho na metade ou menos) */
+.extra-cota-taxa-num.extra-cota-taxa--verde { color: var(--sucesso); }
+.extra-cota-taxa-num.extra-cota-taxa--amarelo { color: var(--alerta); }
+.extra-cota-taxa-num.extra-cota-taxa--vermelho { color: var(--erro); }
+
+/* sugerido: verde quando recebeu a cota extra */
+.extra-cota-sug--extra {
+  padding: 0 8px;
+  border-radius: var(--raio-pequeno);
+  background-color: var(--sucesso-fundo);
+  color: var(--sucesso);
+}
+
+/* concedido: dropdown de números; marca quando difere do sugerido */
+.extra-cota-conc {
+  width: 60px;
+}
+.extra-cota-conc--alterado .extra-cota-conc-gatilho {
+  border-color: var(--texto-forte);
+}
+
+/* comum: o concedido é só leitura, mantém a borda do campo (desabilitado), só sem a seta ▾
+   (o hover já não acende porque o campo fica :disabled, ver geral-campo.css) */
+.extra-cota-conc--leitura .seletor-seta {
+  display: none;
+}
+
+/* estado vazio / restrito no lugar da lista */
+.extra-cota-estado {
+  padding: 24px 8px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--texto-fraco);
+}
+
+/* banda-título FIXA do grupo (padrão do cabeçalho de unidade da Distribuição + fundo Militares):
+   título (nome/cidade) à esquerda, caixa Cotas à direita; gruda no topo ao rolar os militares */
+/* casca (grude, fundo, altura, divisória, arranjo) em geral-faixa */
+.extra-cota-grupo-cabecalho {
+  justify-content: space-between;
+  gap: 12px;
+}
+/* resumo por grupo (2 linhas: distribuídas/restam · escaladas/restam), abaixo da banda */
+.extra-cota-grupo-resumo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+.extra-cota-grupo-resumo b {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+.extra-cota-r--ok { color: var(--sucesso); }
+.extra-cota-r--erro { color: var(--erro); }
+
+/* ============================================================
+   Aba Escala (organização da extra do mês)
+   ============================================================ */
+/* hospeda a grade compartilhada (.escala-mes é flex:1 + overflow:auto), dentro da área principal
+   do layout lateral (.geral-corpo-lateral) — preenche e rola */
+.extra-escala-cal { display: flex; flex-direction: column; flex: 1 1 0; min-height: 0; }
+
+/* caixa das 2 barras de cobertura (antes/depois) em GRADE: rótulo à esquerda | barra (célula enxuta) */
+.extra-cel-barras {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 2px 6px;
+  padding: 2px 4px 0;
+}
+.extra-cel-barras .escala-mes-grafico { min-width: 0; }   /* a barra encolhe na grade, sem esticar por cima do rótulo */
+
+/* micro-rótulo à esquerda da barra — caixa alta */
+.extra-cel-rotulo {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--texto-fraco);
+}
+/* texto na coluna da barra "depois" quando não há extra (espaço reservado, apagado);
+   o padding-left casa com o da barra (.escala-mes-grafico tem padding 2px 4px 0), p/ alinhar */
+.extra-cel-sem-extra {
+  padding-left: 4px;
+  font-size: 11px;
+  color: var(--texto-fraco);
+}
+
+/* resumo dos candidatos na célula: bolinhas + contagem à esquerda, "+" à direita */
+.extra-cel-resumo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 4px 0;   /* mesmo recuo lateral das vagas (4px) */
+}
+.extra-cel-resumo-contas {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+.extra-cel-resumo-conta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+/* botão "+" que abre o dropdown de candidatos (só admin) */
+.extra-cel-add-gatilho {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  min-height: 22px;
+  padding: 0;
+  background-color: transparent;
+  border: 1px solid var(--borda-forte);
+  border-radius: var(--raio-pequeno);
+  color: var(--texto-suave);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.extra-cel-add-gatilho:hover { background-color: var(--fundo-medio); color: var(--texto-forte); }
+/* menu do "+": largura confortável p/ as seções de candidatos */
+.extra-cel-add-menu {
+  min-width: 220px;
+  max-width: 280px;
+  padding: 4px;
+}
+
+/* militar selecionado no painel de Cotas: nas células, fundo só nos dias em que ele é candidato, pela
+   preferência (verde = quer · vermelho = não quer); elegível sem preferência fica sem cor. O dia inteiro
+   sem candidatura (indisponível pra ele) é marcado na COLUNA DE DATA, não na célula, pra não encher a
+   grade de fundo cinza. Só na Extrajornada (este CSS só carrega aqui). */
+.extra-escala-cal .escala-mes-celula:hover {   /* a grade da extra não usa o realce de hover do Mês (a cor da célula é a preferência) */
+  --celula-fundo-fora: var(--fundo-suave);
+  background-color: transparent;
+}
+.extra-escala-cal .escala-mes-celula--pref-quer,
+.extra-escala-cal .escala-mes-celula--pref-quer:hover { background-color: var(--sucesso-fundo); }
+.extra-escala-cal .escala-mes-celula--pref-nao,
+.extra-escala-cal .escala-mes-celula--pref-nao:hover { background-color: var(--erro-fundo); }
+/* dia inteiro indisponível pro militar selecionado: coluna de data esmaecida (fundo + texto). O
+   .escala-mes-linha na cadeia sobe a especificidade acima do realce de fim de semana (mesmo peso, e este
+   CSS carrega ANTES do escalas-mes.css). O círculo de "hoje" fica no número, então sobrevive. */
+.extra-escala-cal .escala-mes-linha .escala-mes-data--indisponivel { background-color: var(--fundo-medio); }
+.extra-escala-cal .escala-mes-data--indisponivel .escala-mes-data-semana,
+.extra-escala-cal .escala-mes-data--indisponivel .escala-mes-data-numero { color: var(--texto-debil); }
+/* (o aviso da célula .extra-cel-aviso saiu na Fase 3: agora no painel do dia, .extra-painel-aviso) */
+
+/* painel do dia (gaveta): seção de avisos — resolvido pelo extra (✓ verde, texto riscado) / restou (âmbar ou vermelho) */
+.extra-painel-aviso {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 20px;
+  padding: 2px 0;
+  font-size: 12px;
+}
+.extra-painel-aviso-icone { flex-shrink: 0; }
+.extra-painel-aviso-texto { color: var(--texto); }
+.extra-painel-aviso-marca { font-size: 11px; color: var(--sucesso); }
+.extra-painel-aviso--ok { color: var(--sucesso); }
+.extra-painel-aviso--ok .extra-painel-aviso-texto { color: var(--texto-fraco); text-decoration: line-through; }
+.extra-painel-aviso--alerta { color: var(--alerta); }
+.extra-painel-aviso--alerta .extra-painel-aviso-texto { color: var(--alerta); }
+.extra-painel-aviso--erro { color: var(--erro); }
+.extra-painel-aviso--erro .extra-painel-aviso-texto { color: var(--erro); }
+
+/* vaga da célula em DUAS linhas (a coluna da grade é estreita, ~168px): nome sozinho em cima
+   com a largura toda + X; embaixo o pelotão (só em deslocamento) e as bolinhas menores */
+.extra-vaga {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  min-height: 24px;
+  margin: 4px 4px 0;   /* recuo lateral de 4px, alinhado ao gráfico (não colar nas bordas) */
+  padding: 2px 4px;
+  border-radius: var(--raio-pequeno);
+  border-left: 2px solid var(--foco);
+  background-color: var(--fundo-medio);
+  font-size: 11px;
+}
+.extra-vaga-origem { margin-top: 4px; }   /* centraliza o ponto na linha do nome */
+.extra-vaga-corpo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.extra-vaga-linha-nome { display: flex; align-items: center; gap: 4px; }
+.extra-vaga-linha-controles { display: flex; align-items: center; gap: 4px; }
+.extra-vaga-id { flex: 1; min-width: 0; }
+.extra-vaga-grad { color: var(--texto-suave); }
+.extra-vaga-nome { font-weight: 600; color: var(--texto-forte); }
+.extra-vaga-pelotao { color: var(--texto-suave); }   /* aparece só quando é de outra unidade (deslocamento) */
+.extra-vaga-blocos { display: flex; gap: 2px; }
+.extra-vaga-x { min-height: 18px; min-width: 18px; }
+
+/* as 4 bolinhas de bloco (6 h cada) */
+.extra-bolinha {
+  min-width: 16px;
+  min-height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--borda);
+  background-color: transparent;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.extra-bolinha:not(:disabled):hover { border-color: var(--foco); }
+.extra-bolinha--ativa {
+  background-color: var(--fundo-contraste);
+  border-color: var(--fundo-contraste);
+}
+/* prévia do hover cumulativo (depois de --ativa p/ sobrepor): vai ligar = preto (como ficará após o clique); vai desligar = vazio */
+.extra-bolinha--previa-on { background-color: var(--fundo-contraste); border-color: var(--fundo-contraste); }
+.extra-bolinha--previa-off { background-color: transparent; border-color: var(--borda); }
+/* fecha 24 h: bolinhas travadas (somente leitura) — preenchidas em cinza, sem cara de clicável */
+.extra-vaga--fecha24 .extra-bolinha--ativa { background-color: var(--fundo-medio); border-color: var(--borda); }
+.extra-bolinha:disabled { cursor: default; }
+
+/* ---------- seções de candidatos DENTRO da célula (compacto, alinhado à densidade da grade) ---------- */
+.extra-dia-ponto { width: 6px; height: 6px; border-radius: 50%; flex: none; background: var(--texto-debil); }
+.extra-dia-ponto--quer { background: var(--sucesso); }
+.extra-dia-ponto--neutro { background: var(--texto-debil); }
+.extra-dia-ponto--nao { background: var(--erro); }
+
+/* as três seções (Interessados/Outros/Não querem), separadas dos Selecionados por uma margem */
+.extra-dia-secoes { display: flex; flex-direction: column; gap: 2px; margin-top: 8px; }
+.extra-dia-secao-topo { display: flex; align-items: center; gap: 4px; width: 100%; min-height: 22px; padding: 2px 4px; background: var(--fundo-suave); border: none; border-radius: var(--raio-pequeno); cursor: pointer; text-align: left; font-size: 11px; transition: background-color 0.15s ease; }
+.extra-dia-secao-topo:hover { background: var(--fundo-medio); }
+.extra-dia-secao-nome { flex: 1; color: var(--texto-forte); }
+.extra-dia-secao-conta { font-size: 11px; color: var(--texto-fraco); }
+.extra-dia-secao-seta { color: var(--texto-suave); }
+.extra-dia-secao--fechado .extra-dia-secao-seta { transform: rotate(-90deg); }
+.extra-dia-secao--fechado .extra-dia-secao-corpo { display: none; }
+.extra-dia-secao-corpo { padding: 2px 0 2px 4px; }
+
+.extra-dia-unidade + .extra-dia-unidade { margin-top: 4px; }
+.extra-dia-unidade-rotulo { display: block; font-size: 11px; color: var(--texto-fraco); padding-left: 4px; margin-bottom: 2px; }
+
+.extra-dia-cand { display: flex; align-items: center; gap: 4px; width: 100%; min-height: 22px; padding: 2px 4px; background: none; border: none; border-radius: var(--raio-pequeno); cursor: pointer; text-align: left; font-size: 11px; transition: background-color 0.15s ease; }
+.extra-dia-cand:hover { background: var(--fundo-suave); }
+.extra-dia-cand-id { color: var(--texto-forte); }
+.extra-dia-cand-grad { color: var(--texto-suave); }
+.extra-dia-cand-nota { margin-left: auto; font-size: 11px; color: var(--texto-fraco); }
+/* sem cota: linha apagada e não clicável (botão disabled no JS) — grad+nome esmaecidos, ponto atenuado; o selo "sem cota" segue legível */
+.extra-dia-cand--bloqueado { cursor: default; }
+.extra-dia-cand--bloqueado:hover { background: none; }
+.extra-dia-cand--bloqueado .extra-dia-cand-id,
+.extra-dia-cand--bloqueado .extra-dia-cand-grad { color: var(--texto-debil); }
+.extra-dia-cand--bloqueado .extra-dia-ponto { opacity: 0.4; }
+/* busca "marcar": realça o candidato que casa (invertido, padrão do site) */
+.extra-dia-cand--busca { background: var(--fundo-contraste); }
+.extra-dia-cand--busca .extra-dia-cand-id,
+.extra-dia-cand--busca .extra-dia-cand-grad { color: var(--texto-invertido); }
+/* busca: acende a célula onde o militar casado já está colocado de extra */
+.extra-escala-cal .escala-mes-celula--busca { outline: 2px solid var(--foco); outline-offset: -2px; }
+
+/* respiro no rodapé + mãozinha na célula da extra (clicar abre o painel do dia; a mãozinha vale
+   inclusive sobre o mini-gráfico, que na Escala esconde o cursor). Só aqui; a célula é compartilhada */
+.extra-escala-cal .escala-mes-celula { padding-bottom: 4px; cursor: pointer; }
+.extra-escala-cal .escala-mes-grafico { cursor: pointer; }
+
+/* ---------- modo Calendário (grade de mês; reusa o componente geral-calendario-mes) ---------- */
+/* um bloco por unidade dentro do dia: a divisória no topo separa do número e as unidades entre si (espelha a Escala) */
+.extra-calendario-unidade {
+  margin-top: 8px;
+  padding-top: 4px;
+  border-top: 1px solid var(--borda);
+}
+/* nome da unidade: rótulo apagado em caixa alta, não compete com o número do dia */
+.extra-calendario-unidade-nome {
+  display: block;
+  padding: 0 2px 2px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--texto-fraco);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* a célula, dentro do calendário: sem as bordas da grade do Mês (o dia do calendário já tem as suas) */
+.extra-calendario-unidade .escala-mes-celula { border-right: none; border-bottom: none; }
+/* dia inteiro indisponível pro militar selecionado: cinza no NÚMERO da data (equivale ao esmaecido da coluna de data na Agenda) */
+.extra-escala-cal .geral-calendario-mes-dia--indisponivel .geral-calendario-mes-numero {
+  background-color: var(--fundo-medio);
+  color: var(--texto-debil);
+}
+
+/* etiqueta "24h" do fecha 24 h: contornada e com texto forte, p/ marcar o turno fixo (visível, não só na dica) */
+.extra-vaga-24h { font-size: 11px; color: var(--texto-forte); border: 1px solid var(--borda-forte); border-radius: var(--raio-pequeno); padding: 0 4px; }

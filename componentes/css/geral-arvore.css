@@ -1,0 +1,195 @@
+/* ============================================================
+   SELETOR E ÁRVORE DE UNIDADES — componente compartilhado
+   Comportamento: componentes/js/geral-seletor-unidades.js
+   ============================================================ */
+
+/* gatilho de dropdown com aparência de seletor */
+/* largura fixa: o caminho (só as 2 últimas árvores) não faz o cabeçalho "pular" ao mudar */
+.seletor {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: 218px;
+  min-height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--borda-forte);
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-superficie);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--texto);
+  user-select: none;
+}
+
+.seletor:hover {
+  background-color: var(--fundo-medio);
+}
+
+/* texto do caminho: ocupa o espaço e empurra a seta para o canto; uma linha só */
+.seletor-texto {
+  flex: 1 1 auto;
+  white-space: nowrap;
+  text-align: left;
+}
+
+/* ícone de localização (mapa-pin) à esquerda do caminho; herda a cor do texto do seletor */
+.seletor-icone {
+  flex-shrink: 0;
+}
+
+.seletor-seta {
+  color: var(--texto-fraco);
+  flex-shrink: 0;
+}
+
+/* "x" de limpar dentro do gatilho do filtro: só aparece quando há filtro ativo */
+.seletor-limpar {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--texto-fraco);
+  cursor: pointer;
+}
+
+.seletor-limpar:hover {
+  color: var(--texto-forte);
+}
+
+.seletor--com-filtro .seletor-limpar {
+  display: inline-flex;
+}
+
+/* ---------- CAIXA DE SELEÇÃO (listas e árvores) ---------- */
+/* é um <button role="checkbox">: navegável por Tab, marca com Espaço/Enter */
+.caixa-selecao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 1px solid var(--borda-forte);
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-superficie);
+  color: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* marcada (cinza forte): o usuário marcou — os dados desta unidade serão exibidos */
+.caixa-selecao--marcada {
+  background-color: var(--fundo-contraste);
+  border-color: var(--fundo-contraste);
+  color: var(--texto-invertido);
+}
+
+/* caminho (cinza claro): pai de uma unidade marcada — exibido como título/contexto;
+   o sistema aplica sozinho, o usuário não marca diretamente */
+.caixa-selecao--parcial {
+  border-color: var(--fundo-contraste);
+  color: var(--texto-forte);
+}
+
+/* ---------- ÁRVORE (hierarquias) ---------- */
+.arvore {
+  display: flex;
+  flex-direction: column;
+}
+
+.arvore-grupo {
+  display: flex;
+  flex-direction: column;
+}
+
+/* filhos recuados com linha-guia vertical */
+.arvore-filhos {
+  display: none;
+  flex-direction: column;
+  margin-left: 16px;
+  padding-left: 8px;
+  border-left: 1px solid var(--borda);
+}
+
+.arvore-grupo--aberto > .arvore-filhos {
+  display: flex;
+}
+
+.arvore-linha {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  padding: 0 8px;
+  border-radius: var(--raio-medio);
+  cursor: pointer;
+  user-select: none;
+}
+
+.arvore-linha:hover {
+  background-color: var(--fundo-medio);
+}
+
+/* é um <button> (reset em geral-base.css): navegável por Tab; foco usa o anel global */
+.arvore-seta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--texto-fraco);
+  flex-shrink: 0;
+}
+
+/* folha (sem filhos): seta some, mas mantém o espaço para alinhar com os pais */
+.arvore-seta--oculta {
+  visibility: hidden;
+}
+
+/* seta aponta para baixo quando o grupo está aberto */
+.arvore-grupo--aberto > .arvore-linha .arvore-seta svg {
+  transform: rotate(90deg);
+}
+
+.arvore-nome {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-forte);
+  white-space: nowrap;
+}
+
+.arvore-detalhe {
+  font-size: 12px;
+  color: var(--texto-suave);
+  white-space: nowrap;
+}
+
+/* texto de ajuda — contagem e dicas em rodapés de seletor */
+.campo-ajuda {
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+/* ---------- RESUMO DO BOTÃO (caminho da seleção, dropdown fechado) ---------- */
+/* cada trecho é um nível do caminho; separados por " / " via ::before */
+.seletor-trecho:not(:first-child)::before {
+  content: " / ";
+  font-weight: 400;
+  color: var(--texto-fraco);
+}
+
+/* trecho de unidade marcada pelo usuário (caixa cinza forte): negrito */
+.seletor-trecho--forte {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+/* cidade da unidade escolhida, ao fim do caminho (modo único — ex.: Lotação),
+   precedida de um traço na cor do texto */
+.seletor-cidade {
+  margin-left: 4px;
+  color: var(--texto-suave);
+}
+
+.seletor-cidade::before {
+  content: "- ";
+  color: var(--texto);
+}

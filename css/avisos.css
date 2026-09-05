@@ -1,0 +1,252 @@
+/* ============================================================
+   AVISOS — a página das três abas
+     · Para mim    — "Precisa de você" (pendências suas) + histórico
+     · Administração — o que espera decisão do admin (só ele vê)
+     · Comunicados — cartões do mural (+ a lixeira do admin)
+   Reusa os tokens do tema; sem cor escrita à mão.
+   ============================================================ */
+
+.avisos-aba {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* uma seção dentro da aba: o rótulo e a lista dele */
+.avisos-secao {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.avisos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 720px;
+}
+
+.aviso-cartao {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-suave);
+}
+
+.aviso-cartao-conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.aviso-cartao-titulo {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.aviso-cartao-msg {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.aviso-cartao-meta {
+  font-size: 11px;
+  color: var(--texto-fraco);
+}
+
+/* lixeira (✕) — só admin; some/aparece por .oculto */
+.aviso-cartao-remover {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  color: var(--texto-fraco);
+  cursor: pointer;
+}
+
+.aviso-cartao-remover:hover {
+  color: var(--erro);
+}
+
+/* área sem nada: bloco com respiro e centrado, como no resto do site —
+   nunca uma frase solta encostada no canto */
+.avisos-vazio {
+  padding: 32px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--texto-suave);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+}
+
+/* ---------- aba "Para mim": notificações ---------- */
+/* o dia que separa os blocos (Hoje · Ontem · 6 jul 2026) */
+.avisos-dia {
+  margin-top: 8px;
+}
+
+.avisos-dia:first-child {
+  margin-top: 0;
+}
+
+.avisos-notificacao {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 12px;
+  text-align: left;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-superficie);
+  transition: background-color 0.15s ease;
+}
+
+.avisos-notificacao:hover {
+  background-color: var(--fundo-suave);
+}
+
+/* o ponto só aparece na não lida; nas demais o espaço fica reservado */
+.avisos-notificacao-ponto {
+  width: 6px;
+  height: 6px;
+  margin-top: 6px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background-color: transparent;
+}
+
+/* o assunto em ícone: dá para saber do que se trata sem ler */
+.avisos-notificacao-icone {
+  display: inline-flex;
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--texto-fraco);
+}
+
+.avisos-notificacao--nao-lida .avisos-notificacao-icone {
+  color: var(--texto-forte);
+}
+
+.avisos-notificacao--nao-lida .avisos-notificacao-ponto {
+  background-color: var(--texto-forte);
+}
+
+.avisos-notificacao--nao-lida .avisos-notificacao-titulo {
+  font-weight: 600;
+}
+
+.avisos-notificacao-textos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.avisos-notificacao-titulo {
+  font-size: 13px;
+  color: var(--texto-forte);
+}
+
+.avisos-notificacao-texto {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.avisos-notificacao-hora {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--texto-fraco);
+}
+
+/* ---------- aba "Pendências": o que espera decisão ---------- */
+.avisos-pendencia {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 12px;
+  text-align: left;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-superficie);
+  transition: background-color 0.15s ease;
+}
+
+.avisos-pendencia:hover {
+  background-color: var(--fundo-suave);
+}
+
+.avisos-pendencia-contagem {
+  flex-shrink: 0;
+}
+
+.avisos-pendencia-texto {
+  font-size: 13px;
+  color: var(--texto-forte);
+}
+
+.avisos-pendencia-seta {
+  flex-shrink: 0;
+  color: var(--texto-fraco);
+}
+
+/* pendências "fora da escala" e "viaturas em manutenção": empilham cabeçalho + lista (não navegam) */
+.avisos-pendencia--fora,
+.avisos-pendencia--manut {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  cursor: default;
+}
+.avisos-pendencia-cab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.avisos-fora-lista,
+.avisos-manut-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.avisos-fora-item,
+.avisos-manut-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-height: 24px;
+}
+.avisos-fora-grad {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+.avisos-fora-nome,
+.avisos-manut-viatura {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--texto-forte);
+}
+.avisos-manut-desde {
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+.avisos-fora-unidade,
+.avisos-manut-unidade {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--texto-suave);
+}

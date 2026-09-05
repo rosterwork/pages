@@ -1,0 +1,54 @@
+/* ============================================================
+   AVISO DE SESSÃO — contagem antes de expirar por inatividade
+   Reusa a casca do modal (geral-modal). O anel é pintado num
+   <canvas> pelo JS (gráfico de dados; cores lidas do tema), com a
+   contagem regressiva no centro. Comportamento: js/index-sessao-vigia.js
+   ============================================================ */
+
+/* caixa pequena, como o aviso */
+.modal--sessao {
+  width: 380px;
+}
+
+/* corpo em linha: anel à esquerda, mensagem à direita */
+.sessao-corpo {
+  flex-direction: row;
+  align-items: center;
+  text-align: left;
+}
+
+/* o aviso é curto e não rola: rodapé contínuo com o corpo (sem a linha) */
+.modal--sessao .modal-rodape {
+  border-top: none;
+}
+
+/* anel: moldura quadrada que segura o canvas + a contagem centralizada */
+.sessao-anel {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.sessao-anel-canvas {
+  width: 48px;
+  height: 48px;
+}
+
+/* contagem regressiva no centro do anel (valor posto pelo JS) */
+.sessao-anel-tempo {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.sessao-mensagem {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--texto);
+}

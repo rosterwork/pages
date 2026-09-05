@@ -1,0 +1,99 @@
+/* ============================================================
+   COMPONENTE geral-calendario-mes — grade de mês (calendário)
+   7 dias da semana nas colunas, semanas nas linhas. Cabeçalho
+   dos dias fixo no topo. Célula = um dia, com o número no topo
+   esquerdo; o conteúdo dentro de cada dia é de quem usa.
+   Componente compartilhado (Escala e Extrajornada).
+   O z-index 2 é o empilhamento interno do sticky (exceção à
+   escala 10/20/30/40; ver MANUAL §8). Montagem:
+   componentes/js/geral-calendario-mes.js
+   ============================================================ */
+
+/* container que rola nas duas direções (as colunas têm largura mínima) */
+.geral-calendario-mes {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: auto;
+  position: relative;
+}
+
+/* ---------- cabeçalho dos dias da semana (7 colunas, fixo no topo) ---------- */
+.geral-calendario-mes-cabecalho {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(200px, 1fr));
+  position: sticky;
+  top: 0;
+  min-height: 32px;
+  z-index: 2;
+}
+
+/* sigla do dia da semana: caixa alta em 11px. O fundo branco e a borda
+   inferior ficam na célula (não no container) para cobrirem toda a
+   largura ao rolar na horizontal */
+.geral-calendario-mes-cabecalho-dia {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--fundo-superficie);
+  border-bottom: 1px solid var(--borda);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--texto-fraco);
+}
+
+/* ---------- grade de semanas ---------- */
+.geral-calendario-mes-grade {
+  display: flex;
+  flex-direction: column;
+}
+
+/* cada semana: 7 colunas de no mínimo 200px que crescem para preencher;
+   quando não cabem, a grade rola na horizontal */
+.geral-calendario-mes-semana {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(200px, 1fr));
+}
+
+/* ---------- célula de um dia ---------- */
+.geral-calendario-mes-dia {
+  display: flex;
+  flex-direction: column;
+  min-height: 120px;
+  padding: 4px;
+  border-right: 1px solid var(--borda);
+  border-bottom: 1px solid var(--borda);
+  background-color: var(--fundo-superficie);
+}
+
+/* dia de outro mês: célula e número apagados */
+.geral-calendario-mes-dia--fora {
+  background-color: var(--fundo-suave);
+}
+
+.geral-calendario-mes-dia--fora .geral-calendario-mes-numero {
+  color: var(--texto-debil);
+}
+
+/* número do dia, no canto superior esquerdo, SEMPRE no mesmo slot (24px, redondo):
+   assim ele não se move ao virar o círculo de "hoje" — só o fundo muda */
+.geral-calendario-mes-numero {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 24px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--texto-forte);
+}
+
+/* hoje: o mesmo slot, agora preenchido (o número fica no lugar) */
+.geral-calendario-mes-dia--hoje .geral-calendario-mes-numero {
+  background-color: var(--fundo-contraste);
+  color: var(--texto-invertido);
+}

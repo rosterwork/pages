@@ -1,0 +1,45 @@
+/* ============================================================
+   OPÇÃO — bolinha de escolha exclusiva (um de vários)
+   Rótulo com a bolinha própria: o rádio do navegador tinha pouco
+   contraste no tema escuro, então o anel é sempre visível e o
+   marcado ganha o ponto cheio, claro nos dois temas.
+   Compartilhado (Distribuição, Extrajornada).
+   ============================================================ */
+
+.geral-opcao {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  padding: 0 8px;
+  font-size: 13px;
+  color: var(--texto);
+  cursor: pointer;
+  border-radius: var(--raio-pequeno);
+}
+.geral-opcao:hover {
+  background: var(--fundo-medio);
+}
+.geral-opcao input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  flex-shrink: 0;
+  border: 2px solid var(--borda-forte);
+  border-radius: 50%;
+  background: transparent;
+  position: relative;
+  cursor: pointer;
+}
+.geral-opcao input[type="radio"]:checked {
+  border-color: var(--texto-forte);
+}
+.geral-opcao input[type="radio"]:checked::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: var(--texto-forte);
+}

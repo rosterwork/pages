@@ -1,0 +1,343 @@
+/* ============================================================
+   ESCALAS — modo Militares
+   Grade: militares nas linhas, dias da quinzena nas colunas.
+   Cada UNIDADE selecionada vira uma linha-título (sticky) que
+   recolhe/expande seus militares. Coluna do militar fixa à
+   esquerda e cabeçalho dos dias fixo no topo.
+   Os z-index 1–6 são o empilhamento interno do sticky desta
+   grade (exceção à escala 10/20/30/40; ver MANUAL §8).
+   Dados: js/escalas-dados.js · montagem: js/escalas-militares.js
+   ============================================================ */
+
+/* container que rola nas duas direções */
+.escala-mil {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: auto;
+  position: relative;
+}
+
+/* larguras: coluna do militar (fixa) + os 14 dias da quinzena, que crescem para preencher.
+   Todas as linhas usam a mesma grade (via --mil-colunas), por isso as colunas alinham. */
+.escala-mil-grade {
+  --col-militar: 216px;
+  --mil-colunas: var(--col-militar) repeat(14, minmax(60px, 1fr));
+}
+
+.escala-mil-linha {
+  display: grid;
+  grid-template-columns: var(--mil-colunas, var(--col-militar) 1fr);
+}
+
+/* ---------- cabeçalho dos dias, fixo no topo ---------- */
+.escala-mil-cabecalho {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  min-height: 32px;
+  background-color: var(--fundo-suave);
+  border-bottom: 1px solid var(--borda);
+}
+
+/* canto (cruzamento militar × dias) acima de tudo */
+.escala-mil-canto {
+  position: sticky;
+  left: 0;
+  z-index: 6;
+  background-color: var(--fundo-suave);
+  border-right: 1px solid var(--borda);
+}
+
+.escala-mil-dia {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 32px;
+  padding: 4px 2px;
+  border-left: 1px solid var(--borda);
+}
+
+.escala-mil-dia-semana {
+  font-size: 9px;   /* microetiqueta: rótulo não-textual em caixa alta (MANUAL §5) */
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--texto-fraco);
+}
+
+.escala-mil-dia-numero {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  min-height: 20px;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--texto-forte);
+}
+
+/* hoje: número em círculo escuro */
+.escala-mil-dia--hoje .escala-mil-dia-numero {
+  background-color: var(--fundo-contraste);
+  color: var(--texto-invertido);
+}
+
+/* fim de semana: leve sombreado no cabeçalho e nas células da coluna */
+.escala-mil-dia--fds { background-color: var(--fundo-suave); }
+.escala-mil-celula--fds { background-color: var(--fundo-suave); }
+
+/* ---------- linha-título da unidade (recolhe/expande) ---------- */
+/* é uma linha da grade (estica e alinha com as colunas); o clicável é o botão da 1ª coluna */
+.escala-mil-unidade-titulo {
+  position: sticky;
+  top: 32px;   /* logo abaixo do cabeçalho dos dias */
+  z-index: 3;
+  min-height: 28px;
+  background-color: var(--fundo-medio);
+  border-bottom: 1px solid var(--borda);
+}
+
+/* botão do título na 1ª coluna, fixo à esquerda na rolagem horizontal */
+.escala-mil-unidade-cab {
+  grid-column: 1;
+  position: sticky;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  padding: 0 8px;
+  border: none;
+  background-color: var(--fundo-medio);
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+  overflow: visible;
+}
+
+.escala-mil-unidade-nome {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--texto-forte);
+}
+
+/* cidade ao lado do nome da unidade (tom mais leve) */
+.escala-mil-unidade-cidade {
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+.escala-mil-unidade-seta { color: var(--texto-suave); }
+
+/* recolhido: some o corpo e a seta aponta para a direita */
+.escala-mil-unidade--recolhido .escala-mil-unidade-corpo { display: none; }
+.escala-mil-unidade--recolhido .escala-mil-unidade-seta { transform: rotate(-90deg); }
+
+/* durante a busca: revela as unidades recolhidas (para mostrar quem casa) e esconde os totais */
+.escala-mil-grade--filtrando .escala-mil-unidade-corpo { display: block; }
+.escala-mil-grade--filtrando .escala-mil-total { display: none; }
+
+/* lupa da busca (ícone estático à esquerda da pílula) */
+.escala-busca-lupa {
+  flex-shrink: 0;
+  color: var(--texto-suave);
+}
+
+/* ---------- coluna do militar (fixa à esquerda): avatar + grad/nome + cpf ---------- */
+.escala-mil-pessoa {
+  grid-column: 1;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 4px 8px;
+  background-color: var(--fundo-superficie);
+  border-right: 1px solid var(--borda);
+  border-bottom: 1px solid var(--borda);
+  overflow: hidden;
+}
+
+/* círculo com as iniciais do militar (mesmas cores do avatar do cabeçalho) */
+.escala-mil-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: var(--fundo-medio);
+  color: var(--texto-suave);
+  font-size: 11px;
+  font-weight: 700;
+  user-select: none;
+}
+
+.escala-mil-pessoa-textos {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.escala-mil-pessoa-topo {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+}
+
+.escala-mil-pessoa-grad {
+  font-size: 11px;
+  color: var(--texto-suave);
+  flex-shrink: 0;
+}
+
+.escala-mil-pessoa-nome {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--texto);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* CPF é só exibição (identificador numérico não-textual) — entra na exceção de 9px (MANUAL §5) */
+.escala-mil-pessoa-cpf {
+  font-size: 9px;
+  color: var(--texto-suave);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- célula (militar × dia): só chips (serviço/afastado), com clique ---------- */
+.escala-mil-celula {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-height: 26px;
+  padding: 2px;
+  border-left: 1px solid var(--borda);
+  border-bottom: 1px solid var(--borda);
+  cursor: pointer;
+}
+
+.escala-mil-celula:hover {
+  background-color: var(--fundo-suave);
+}
+
+/* célula selecionada (painel aberto): fundo um tom acima do hover */
+.escala-mil-celula--selecionada,
+.escala-mil-celula--selecionada:hover {
+  background-color: var(--fundo-medio);
+}
+
+/* horário(s) na linha do painel: espaço entre períodos (disponibilidade quebrada) */
+.escala-mil-painel-horas {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* chip de serviço: "08 →(ícone) 08" com destaque (fundo de contraste + texto invertido) */
+.escala-mil-servico {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 18px;
+  padding: 0 8px;
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-contraste);
+  color: var(--texto-invertido);
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* dentro do chip, as horas hugam a seta (sem a largura fixa que o Mês usa) */
+.escala-mil-servico .linha-escalado-hora-ini,
+.escala-mil-servico .linha-escalado-hora-fim {
+  width: auto;
+}
+
+/* marca de extrajornada no chip: ícone próprio antes das horas (revelado quando o serviço é extra) */
+.escala-mil-servico-extra {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+}
+
+/* chip de serviço trocado (o militar saiu numa troca): apagado + riscado */
+.escala-mil-servico--trocado {
+  background-color: var(--fundo-medio);
+  color: var(--texto-fraco);
+  text-decoration: line-through;
+}
+
+/* chip de afastamento (férias): faixas diagonais */
+.escala-mil-afast {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 16px;
+  padding: 0 4px;
+  border-radius: var(--raio-pequeno);
+  background-image: repeating-linear-gradient(-45deg,
+    var(--fundo-suave) 0 4px, var(--fundo-medio) 4px 8px);
+  font-size: 9px;   /* microetiqueta em caixa alta */
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--texto-suave);
+}
+
+/* ---------- linha de totais (efetivo de serviço por dia) ---------- */
+.escala-mil-total { background-color: var(--fundo-suave); }
+
+.escala-mil-total-rotulo {
+  grid-column: 1;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 8px;
+  background-color: var(--fundo-suave);
+  border-right: 1px solid var(--borda);
+  border-bottom: 1px solid var(--borda);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--texto-suave);
+}
+
+.escala-mil-total-valor {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  border-left: 1px solid var(--borda);
+  border-bottom: 1px solid var(--borda);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-suave);
+}
+
+/* unidade sem militares: aviso curto, fixo à esquerda para ficar visível */
+.escala-mil-vazio {
+  position: sticky;
+  left: 0;
+  padding: 12px;
+  color: var(--texto-fraco);
+  font-size: 12px;
+}

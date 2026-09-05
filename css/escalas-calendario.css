@@ -1,0 +1,38 @@
+/* ============================================================
+   ESCALAS — modo Mês / Calendário (conteúdo dos dias)
+   Preenche cada dia do componente geral-calendario-mes com, por
+   unidade, o nome + a célula do Mês (`.escala-mes-celula`, miolo
+   pelo escalas-celula.js). Aqui só entram o bloco por unidade e o
+   ajuste da célula reusada dentro do calendário.
+   Montagem: js/escalas-calendario.js
+   ============================================================ */
+
+/* um bloco por unidade dentro do dia: a divisória no topo separa do número (1º bloco)
+   e separa as unidades entre si — número, título e conteúdo ficam em camadas claras */
+.escala-calendario-unidade {
+  margin-top: 8px;
+  padding-top: 4px;
+  border-top: 1px solid var(--borda);
+}
+
+/* nome da unidade = rótulo de seção apagado, em caixa alta (não compete com o número,
+   que é o elemento forte do dia) */
+.escala-calendario-unidade-nome {
+  display: block;
+  padding: 0 2px 2px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--texto-fraco);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* a célula do Mês, dentro do calendário: sem as bordas da grade do Mês
+   (o próprio dia do calendário já tem as suas); o clique e o realce seguem */
+.escala-calendario-unidade .escala-mes-celula {
+  border-right: none;
+  border-bottom: none;
+}

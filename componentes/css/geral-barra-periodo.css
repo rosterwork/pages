@@ -1,0 +1,99 @@
+/* ============================================================
+   BARRA DE PERÍODO — componente compartilhado
+   Régua de um turno 08h→08h (24h): dois puxadores livres com snap
+   de hora cheia. A faixa disponível (dentro do serviço) fica em
+   destaque; o resto do dia aparece apagado. Posições são dados
+   calculados → custom properties (--pos/--ini/--larg), o CSS pinta.
+   Comportamento: componentes/js/geral-barra-periodo.js
+   Molde: #tpl-barra-periodo no index.html
+   ============================================================ */
+.barra-periodo {
+  user-select: none;
+  padding: 4px 8px 0;
+}
+
+.barra-periodo-topo {
+  min-height: 16px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--texto-forte);
+}
+
+/* a parte do horário no rótulo fica mais suave que o título */
+.barra-periodo-horas {
+  font-weight: 400;
+  color: var(--texto-suave);
+}
+
+.barra-periodo-trilho {
+  position: relative;
+  height: 6px;
+  background-color: var(--fundo-medio);
+  border-radius: var(--raio-total);
+  cursor: pointer;
+}
+
+/* faixa do dia que pode ser usada (dentro do serviço) */
+.barra-periodo-limite {
+  position: absolute;
+  top: 0;
+  height: 6px;
+  left: var(--lim-ini, 0%);
+  width: var(--lim-larg, 100%);
+  background-color: var(--fundo-suave);
+  border-radius: var(--raio-total);
+}
+
+/* trecho escolhido, entre os puxadores */
+.barra-periodo-fill {
+  position: absolute;
+  top: 0;
+  height: 6px;
+  left: var(--ini, 0%);
+  width: var(--larg, 100%);
+  background-color: var(--fundo-contraste);
+  border-radius: var(--raio-total);
+}
+
+.barra-periodo-handle {
+  position: absolute;
+  top: 50%;
+  left: var(--pos, 0%);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: var(--fundo-contraste);
+  border: 2px solid var(--fundo-superficie);
+  box-shadow: var(--sombra-flutuante);
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  z-index: 2;
+}
+
+.barra-periodo-escala {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.barra-periodo-escala span {
+  font-size: 11px;
+  color: var(--texto-fraco);
+}
+
+/* travada: aparece, mas não recebe ajuste (ex.: antes de escolher a data) */
+.barra-periodo--desativada .barra-periodo-trilho,
+.barra-periodo--desativada .barra-periodo-handle {
+  cursor: default;
+}
+
+.barra-periodo--desativada .barra-periodo-fill {
+  background-color: var(--fundo-medio);
+}
+
+.barra-periodo--desativada .barra-periodo-handle {
+  background-color: var(--fundo-medio);
+  border-color: var(--borda);
+  box-shadow: none;
+}

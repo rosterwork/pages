@@ -1,0 +1,78 @@
+/* ============================================================
+   MODAL — componente compartilhado entre páginas
+   Casca padronizada: véu + caixa + cabeçalho + corpo + rodapé.
+   Só para aviso e confirmação — edição/criação de dados vai no
+   painel direito (REGRAS §4). Tamanho único (480px).
+   Comportamento: componentes/js/geral-modal.js
+   ============================================================ */
+
+/* véu: cobre a tela e centraliza o modal. Aparece/some com fade
+   (opacity/visibility — exceção de transição para sobreposições, MANUAL §8) */
+.modal-veu {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--veu-modal);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, visibility 0.15s ease;
+}
+
+.modal-veu--aberto {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* caixa do modal — tamanho único 480px; a altura cresce com o conteúdo até o limite */
+.modal {
+  display: flex;
+  flex-direction: column;
+  width: 480px;
+  max-width: calc(100% - 48px);
+  max-height: calc(100vh - 96px);
+  background-color: var(--fundo-superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  box-shadow: var(--sombra-modal);
+  overflow: hidden;            /* recorta cabeçalho/rodapé na curva da borda */
+}
+
+/* cabeçalho fixo: título + botão de fechar */
+.modal-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--borda);
+}
+
+.modal-titulo {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+/* corpo rolável — cresce e rola quando o conteúdo passa do limite de altura */
+.modal-corpo {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+/* rodapé fixo: ações alinhadas à direita */
+.modal-rodape {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 12px 16px;
+  border-top: 1px solid var(--borda);
+}

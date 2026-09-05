@@ -1,0 +1,40 @@
+/* ============================================================
+   AVISO — modal de aviso e confirmação (compartilhado)
+   Usa a casca do modal (geral-modal). Três tipos, pela cor do ícone:
+   sucesso (verde, ícone curtida), aviso (amarelo) e erro (vermelho)
+   — aviso/erro usam o triângulo. Um botão (OK) ou dois (confirmar/
+   cancelar). Só fecha pelos botões. Comportamento: geral-aviso.js
+   ============================================================ */
+
+/* o aviso é um modal pequeno */
+.modal--aviso {
+  width: 380px;
+}
+
+/* corpo em linha: ícone à esquerda, mensagem à direita */
+.aviso-corpo {
+  flex-direction: row;
+  align-items: center;
+  text-align: left;
+}
+
+/* o ícone não encolhe ao lado do texto */
+.aviso-icone {
+  flex-shrink: 0;
+}
+
+.aviso-mensagem {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--texto);
+}
+
+/* o aviso é curto e não rola: o rodapé é contínuo com o corpo (sem a linha) */
+.modal--aviso .modal-rodape {
+  border-top: none;
+}
+
+/* a cor do ícone vem do tipo */
+.aviso--sucesso .aviso-icone { color: var(--sucesso); }
+.aviso--aviso .aviso-icone { color: var(--alerta); }
+.aviso--erro .aviso-icone { color: var(--erro); }

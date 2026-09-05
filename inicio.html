@@ -1,0 +1,74 @@
+<div class="pagina">
+  <div class="pagina-cabecalho">
+    <div class="pagina-titulos">
+      <h1>Início</h1>
+      <span class="pagina-subtitulo" id="inicio-saudacao"></span>
+    </div>
+  </div>
+
+  <div class="pagina-corpo">
+    <div class="inicio-cards" id="inicio-cards"></div>
+
+    <section class="inicio-bloco">
+      <div class="inicio-bloco-cabecalho">
+        <span class="rotulo-secao">Avisos</span>
+        <button type="button" class="botao botao--pequeno oculto" id="btn-novo-aviso">Novo comunicado</button>
+      </div>
+      <div class="inicio-avisos" id="inicio-avisos"></div>
+    </section>
+  </div>
+
+  <!-- card de indicador (KPI): rótulo + valor + detalhe -->
+  <template id="tpl-inicio-kpi">
+    <div class="inicio-kpi">
+      <span class="inicio-kpi-rotulo"></span>
+      <span class="inicio-kpi-valor"></span>
+      <span class="inicio-kpi-detalhe"></span>
+    </div>
+  </template>
+
+  <!-- card de pendências de administração (admin): rótulo + linhas clicáveis -->
+  <template id="tpl-inicio-pend">
+    <div class="inicio-kpi inicio-kpi--largo">
+      <span class="inicio-kpi-rotulo">Pendências de administração</span>
+      <div class="inicio-pend-linhas"></div>
+    </div>
+  </template>
+
+  <!-- uma linha de pendência (contagem) que navega para a página -->
+  <template id="tpl-inicio-pend-linha">
+    <button type="button" class="inicio-pend-linha">
+      <span class="inicio-pend-texto"></span>
+      <span class="espacador-flex"></span>
+      <span class="selo inicio-pend-conta"></span>
+      <svg class="icone inicio-pend-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
+    </button>
+  </template>
+
+  <!-- barra de horas da semana (trabalhadas × a trabalhar) -->
+  <template id="tpl-inicio-horas">
+    <div class="inicio-kpi inicio-kpi--largo">
+      <span class="inicio-kpi-rotulo">Horas na semana</span>
+      <div class="inicio-horas-barra">
+        <span class="inicio-horas-feito"></span>
+      </div>
+      <span class="inicio-kpi-detalhe inicio-horas-legenda"></span>
+    </div>
+  </template>
+
+  <template id="tpl-inicio-aviso">
+    <div class="inicio-aviso">
+      <div class="inicio-aviso-conteudo">
+        <span class="inicio-aviso-titulo"></span>
+        <span class="inicio-aviso-msg"></span>
+      </div>
+      <button type="button" class="inicio-aviso-remover oculto" aria-label="Remover aviso">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+      </button>
+    </div>
+  </template>
+
+  <template id="tpl-inicio-vazio">
+    <span class="inicio-vazio"></span>
+  </template>
+</div>

@@ -1,0 +1,674 @@
+/* ============================================================
+   ESCALAS — conteúdo do painel lateral (seção Distribuição)
+   Dentro de cada .grupo-caixa (um posto), cada grupo é uma linha
+   de duas colunas: a função à esquerda e, à direita, os militares
+   daquela função (ícone de origem + nome + graduação + horário) —
+   assim uma função reúne vários nomes.
+   A casca da caixa vem de geral-painel.css; aqui só o conteúdo.
+   ============================================================ */
+
+/* estado vazio da seção (texto centralizado) */
+.escala-distribuicao-estado {
+  padding: 16px 8px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+/* carregando: o giratório centralizado vertical e horizontalmente na seção */
+.escala-distribuicao-carregando {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* um grupo = função (coluna esquerda) + militares (coluna direita) */
+.escala-distribuicao-grupo {
+  display: flex;
+  gap: 8px;
+}
+
+/* rótulo da função: coluna fixa à esquerda, centrada na altura dos militares.
+   Empilha os rótulos (um por linha) quando o mesmo militar acumula (Chefe / Condutor). */
+.escala-distribuicao-funcao {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  flex: 0 0 80px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--texto-suave);
+}
+.escala-distribuicao-funcao-rotulo {
+  line-height: 1.2;
+}
+
+/* ✕ à esquerda do nome da função (só funções manuais): exclui a função inteira */
+.escala-funcao-remover {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--texto-fraco);
+  transition: color 0.15s ease;
+}
+
+.escala-funcao-remover:hover {
+  color: var(--erro);
+}
+
+/* coluna direita: os militares daquela função, empilhados e centrados na vertical
+   (alinha o nome com os rótulos empilhados da função quando Chefe/Condutor mesclam) */
+.escala-distribuicao-militares {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* botão "+ Adicionar função" (Editar): visual do rótulo de função, porém mais largo e sem quebra */
+.escala-distribuicao-adicionar {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 4px;
+  margin-top: 4px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--texto-suave);
+  transition: color 0.15s ease;
+}
+
+.escala-distribuicao-adicionar:not(:disabled):hover {
+  color: var(--texto-forte);
+}
+
+/* inativo enquanto o posto tem uma vaga vazia (uma de cada vez) */
+.escala-distribuicao-adicionar:disabled {
+  color: var(--texto-fraco);
+  cursor: default;
+}
+
+.escala-distribuicao-adicionar .icone {
+  width: 14px;
+  height: 14px;
+}
+
+/* linha de um militar: ícone + nome + graduação + horário */
+.escala-distribuicao-escalado {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 14px;
+}
+
+/* vaga ainda sem militar: o "Selecione um militar" fica apagado e em itálico */
+.escala-distribuicao-escalado--vaga .escala-distribuicao-nome {
+  color: var(--texto-fraco);
+  font-style: italic;
+}
+
+/* realce do "marcar" da busca do sub-cabeçalho (modo Dia): inverte a linha do militar casado */
+.escala-distribuicao-escalado--busca {
+  background-color: var(--fundo-contraste);
+  border-radius: var(--raio-pequeno);
+}
+
+.escala-distribuicao-escalado--busca .escala-distribuicao-grad,
+.escala-distribuicao-escalado--busca .escala-distribuicao-nome,
+.escala-distribuicao-escalado--busca .escala-distribuicao-hora,
+.escala-distribuicao-escalado--busca .escala-distribuicao-icones {
+  color: var(--texto-invertido);
+}
+
+/* ícones de origem (+ cadeado), em 12x12 */
+.escala-distribuicao-icones {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  color: var(--texto-suave);
+}
+
+.escala-distribuicao-icones .icone {
+  width: 12px;
+  height: 12px;
+}
+
+.escala-distribuicao-nome {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--texto-forte);
+}
+
+.escala-distribuicao-grad {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+/* coluna de horários à direita: um ou mais períodos empilhados (o nome fica centrado) */
+.escala-distribuicao-horas {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* um horário: início, ícone de seta, fim */
+.escala-distribuicao-hora {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+/* a seta entre as horas: só a largura é estreitada (altura acompanha a linha) */
+.escala-distribuicao-hora-seta {
+  width: 8px;
+  height: 12px;
+}
+
+.escala-distribuicao-hora-ini {
+  width: 23px;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.escala-distribuicao-hora-fim {
+  width: 23px;
+  flex-shrink: 0;
+  text-align: left;
+}
+
+/* caixa "sem função definida": os ícones de origem dos militares ficam vermelhos */
+.grupo-caixa--erro .escala-distribuicao-icones {
+  color: var(--erro);
+}
+
+/* modo Editar — distribuição automática trocada/removida: aparece riscada e apagada */
+.escala-distribuicao-escalado--automatico {
+  color: var(--texto-fraco);
+  text-decoration: line-through;
+}
+
+.escala-distribuicao-escalado--automatico .escala-distribuicao-nome,
+.escala-distribuicao-escalado--automatico .escala-distribuicao-grad {
+  color: var(--texto-fraco);
+}
+
+/* linha no modo Editar: canaleta reservada à esquerda; o conteúdo não se desloca */
+.escala-distribuicao-escalado--edicao {
+  padding-left: 8px;
+}
+
+/* barra cinza quando a linha foi alterada à mão (fica na canaleta, sem empurrar nada) */
+.escala-distribuicao-escalado--alterada {
+  box-shadow: inset 2px 0 0 var(--borda-forte);
+}
+
+/* coluna de ação à direita (✕), largura reservada para o conteúdo não dançar */
+.escala-edicao-acao {
+  flex-shrink: 0;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+}
+
+/* cada ✕ da coluna de ação alinha com a altura de um par de horário (multi-período) */
+.escala-edicao-acao .escala-edicao-remover {
+  min-height: 16px;
+}
+
+.escala-edicao-remover {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--texto-fraco);
+}
+
+.escala-edicao-remover:hover {
+  color: var(--erro);
+}
+
+/* linha editável clicável (abre o picker de militar) */
+.escala-distribuicao-escalado--clicavel {
+  cursor: pointer;
+}
+
+.escala-distribuicao-escalado--clicavel:hover {
+  background-color: var(--fundo-medio);
+}
+
+/* ---------- picker de militar (painel flutuante posicionado por geral-flutuante) ---------- */
+.escala-picker {
+  min-width: 200px;
+  max-height: var(--flutuante-max-h, 280px);
+  overflow-y: auto;
+  padding: 4px;
+  background-color: var(--fundo-superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  box-shadow: var(--sombra-flutuante);
+}
+
+.escala-picker-unidade-cab {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  min-height: 26px;
+  padding: 0 4px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+
+.escala-picker-seta {
+  flex-shrink: 0;
+}
+
+.escala-picker-unidade-cab[aria-expanded="false"] .escala-picker-seta {
+  transform: rotate(-90deg);
+}
+
+.escala-picker-unidade-cab[aria-expanded="false"] + .escala-picker-militares {
+  display: none;
+}
+
+.escala-picker-militar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  min-height: 30px;
+  padding: 0 8px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: var(--raio-pequeno);
+  font-size: 13px;
+  color: var(--texto-forte);
+}
+
+.escala-picker-militar:hover {
+  background-color: var(--fundo-medio);
+}
+
+.escala-picker-militar--ocupado,
+.escala-picker-militar--ocupado .escala-picker-militar-grad {
+  color: var(--texto-fraco);
+}
+
+/* opção "Deixar vazio" no topo do picker */
+.escala-picker-vazio {
+  color: var(--texto-fraco);
+  font-style: italic;
+}
+
+.escala-picker-militar-grad {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+/* linha dos valores originais (automático) abaixo de uma alteração: itálico, apagada e riscada */
+.escala-distribuicao-original {
+  padding-left: 8px;
+  font-style: italic;
+  color: var(--texto-fraco);
+  text-decoration: line-through;
+}
+
+.escala-distribuicao-original .escala-distribuicao-grad,
+.escala-distribuicao-original .escala-distribuicao-nome,
+.escala-distribuicao-original .escala-distribuicao-hora {
+  color: var(--texto-fraco);
+}
+
+/* ação restaurar (↺) */
+.escala-edicao-restaurar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--texto-suave);
+}
+
+.escala-edicao-restaurar:hover {
+  color: var(--texto-forte);
+}
+
+/* ---------- seletor de hora redonda (Editar): wrapper inline ---------- */
+/* os gatilhos e o menu vêm do componente geral-dropdown-numeros */
+.escala-hora-editar {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 16px;
+}
+
+/* ---------- conflito: parte fora da disponibilidade do militar ---------- */
+/* aplicada só nos pedaços incompatíveis (ícones e/ou a hora errada; tudo se sem serviço) */
+.escala-incompativel {
+  color: var(--erro);
+}
+
+/* aviso no topo da Distribuição: lista de erros do dia, um por linha */
+.escala-distribuicao-aviso {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--erro);
+}
+
+/* lista de erros: uma linha por erro presente no dia */
+.escala-distribuicao-aviso-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* uma linha do aviso: ícone + mensagem do erro */
+.escala-distribuicao-aviso-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* item de nível "alerta" (amarelo): o motor distribuiu mas com ressalva (grau rebaixado, rodízio repetido);
+   o item de "erro" continua vermelho (cor padrão da caixa) */
+.escala-distribuicao-aviso-item--alerta {
+  color: var(--alerta);
+}
+
+.escala-distribuicao-aviso-icone {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* aviso amarelo expansível: cabeçalho clicável (ícone + título + chevron) e a lista recuada */
+.escala-distribuicao-aviso-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--alerta);
+}
+
+.escala-distribuicao-aviso-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.escala-distribuicao-aviso-titulo {
+  flex: 1 1 auto;
+}
+
+/* chevron: aponta para cima fechado, gira para baixo aberto (instantâneo, como na legenda) */
+.escala-distribuicao-aviso-seta {
+  flex-shrink: 0;
+  transform: rotate(180deg);
+}
+
+.escala-distribuicao-aviso-cabecalho[aria-expanded="true"] .escala-distribuicao-aviso-seta {
+  transform: rotate(0);
+}
+
+/* lista de militares afetados, recuada (escala de espaçamento) para ficar aninhada sob o cabeçalho */
+.escala-distribuicao-aviso-detalhes {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 24px;
+}
+
+.escala-distribuicao-aviso-detalhe {
+  font-weight: 500;
+}
+
+/* marca amarela discreta no militar dentro da vaga (complemento ao expansível) */
+.escala-distribuicao-marca-aviso {
+  color: var(--alerta);
+}
+
+/* ícone de regra (exclusivo/proibido) na tira de ícones — o span recebe a dica (data-dica) */
+.escala-distribuicao-regra {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* título do posto e da função pintados pelo nível: amarelo = ressalva, vermelho = erro sério */
+.grupo-caixa--posto-alerta .rotulo-secao,
+.escala-distribuicao-funcao--alerta {
+  color: var(--alerta);
+}
+.grupo-caixa--posto-erro .rotulo-secao,
+.escala-distribuicao-funcao--erro {
+  color: var(--erro);
+}
+
+/* o que fica vermelho na lista também fica mais forte (+100 no peso) */
+.escala-distribuicao-grad.escala-incompativel {
+  font-weight: 500;
+}
+
+.escala-distribuicao-nome.escala-incompativel {
+  font-weight: 600;
+}
+
+.escala-distribuicao-hora-ini.escala-incompativel,
+.escala-distribuicao-hora-fim.escala-incompativel,
+.dropdown-numeros-btn.escala-incompativel {
+  font-weight: 500;
+}
+
+/* viatura em manutenção: bloco de aviso amarelo + a nota (só leitura no Ver; input no Editar) */
+.escala-manutencao {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.escala-manutencao-cab {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--alerta);
+  font-size: 12px;
+  font-weight: 600;
+}
+.escala-manutencao-nota-ver {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+/* o efetivo da viatura em manutenção também fica amarelo — mas o vermelho (fora da disponibilidade) vence */
+.grupo-caixa--manutencao .escala-distribuicao-grad,
+.grupo-caixa--manutencao .escala-distribuicao-nome {
+  color: var(--alerta);
+}
+.grupo-caixa--manutencao .escala-distribuicao-grad.escala-incompativel,
+.grupo-caixa--manutencao .escala-distribuicao-nome.escala-incompativel {
+  color: var(--erro);
+}
+
+/* cadeira vazia (sem ninguém): linha vermelha no lugar do militar, dentro da função */
+.escala-vaga-vazia {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 14px;
+  color: var(--erro);
+  font-size: 12px;
+}
+
+/* ---------- Observações do dia (trocas + folgas + notas do admin) ---------- */
+.escala-observacao {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--texto-suave);
+  padding: 4px 0;
+}
+.escala-observacao + .escala-observacao {
+  border-top: 1px solid var(--borda);
+}
+.escala-observacao-icone {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--texto-fraco);
+}
+.escala-observacao-texto {
+  flex: 1;
+  min-width: 0;
+}
+.escala-observacao-remover {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--texto-fraco);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.escala-observacao-remover:hover {
+  color: var(--erro);
+}
+.escala-observacao-remover .icone {
+  width: 14px;
+  height: 14px;
+}
+/* adicionar observação (só no Editar do admin) */
+.escala-observacao-add {
+  padding-top: 4px;
+}
+.escala-observacao-add-botao {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+.escala-observacao-add-botao .icone {
+  width: 14px;
+  height: 14px;
+}
+.escala-observacao-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 4px;
+}
+.escala-observacao-campo-rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.escala-observacao-contador {
+  font-size: 11px;
+  color: var(--texto-fraco);
+}
+.escala-observacao-campo-acoes {
+  display: flex;
+  gap: 8px;
+}
+
+/* ---------- legenda dos ícones de origem (rodapé do painel, retrátil) ---------- */
+.escala-legenda {
+  width: 100%;
+  display: flex;
+  flex-direction: column;   /* título acima, lista de opções abaixo */
+  gap: 8px;
+}
+
+.escala-legenda-cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.escala-legenda-titulo {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+/* chevron: aponta para cima quando fechada e gira para baixo quando aberta
+   (giro instantâneo, como na árvore) */
+.escala-legenda-seta {
+  transform: rotate(180deg);
+}
+
+.escala-legenda-toggle[aria-expanded="true"] .escala-legenda-seta {
+  transform: rotate(0);
+}
+
+/* duas colunas de mesma largura, preenchidas de cima para baixo (3 itens na 1ª, 2 na 2ª) */
+.escala-legenda-itens {
+  display: grid;
+  grid-template-rows: repeat(3, auto);
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 4px 8px;
+}
+
+.escala-legenda-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+.escala-legenda-item .icone {
+  flex-shrink: 0;
+}

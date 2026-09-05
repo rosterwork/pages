@@ -1,0 +1,61 @@
+/* ============================================================
+   AJUSTES — configurações das unidades
+   Índice interno à esquerda (geral-painel-esquerdo) + árvore de
+   unidades com o card do ritmo. Só o específico da página; layout
+   de duas colunas vem do geral-layout-lateral e a árvore do
+   geral-arvore. Cores/medidas só por token.
+   Montagem: js/ajustes.js
+   ============================================================ */
+
+/* ---------- índice interno (esquerda) ---------- */
+/* grupo do índice: a faixa e os itens vão rente às bordas (respiro no item/faixa) */
+.ajustes-indice-grupo {
+  display: flex;
+  flex-direction: column;
+}
+
+/* casca (fundo, hover, selecionado, barra de acento) em geral-lista */
+.ajustes-indice-item {
+  display: block;
+  width: 100%;
+  min-height: 32px;
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+/* ---------- card do ritmo (dentro da árvore) ---------- */
+.ajuste-cartao {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 560px;
+  min-height: 48px;
+  padding: 8px 16px;
+  background-color: var(--fundo-superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+}
+
+.ajuste-cartao--clicavel { cursor: pointer; transition: background-color 0.15s ease; }
+.ajuste-cartao--clicavel:hover { background-color: var(--fundo-suave); }
+
+.ajuste-cartao-textos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.ajuste-cartao-titulo {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.ajuste-cartao-ajuda {
+  font-size: 11px;
+  color: var(--texto-fraco);
+}

@@ -1,0 +1,63 @@
+/* ============================================================
+   BUSCA — pílula de pesquisa (input + ícone à esquerda + limpar)
+   No usuários, o ícone à esquerda é um botão que alterna o modo
+   (marcar / filtrar). O limpar só aparece quando há texto.
+   ============================================================ */
+
+.busca {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: 240px;
+  min-height: 32px;
+  padding: 0 4px;
+  border: 1px solid var(--borda-forte);
+  border-radius: var(--raio-total);
+  background-color: var(--fundo-superficie);
+  transition: border-color 0.15s ease;
+}
+
+.busca:hover {
+  border-color: var(--foco);
+}
+
+.busca:focus-within {
+  border-color: var(--texto-forte);
+}
+
+.busca-entrada {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  background: none;
+  font-size: 13px;
+  color: var(--texto);
+  outline: none;
+}
+
+.busca-modo,
+.busca-limpar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-height: 26px;
+  min-width: 26px;
+  border-radius: var(--raio-total);
+  color: var(--texto-suave);
+}
+
+.busca-modo:hover,
+.busca-limpar:hover {
+  background-color: var(--fundo-medio);
+  color: var(--texto);
+}
+
+/* o limpar só aparece quando há texto na busca */
+.busca-limpar {
+  visibility: hidden;
+}
+
+.busca--com-texto .busca-limpar {
+  visibility: visible;
+}

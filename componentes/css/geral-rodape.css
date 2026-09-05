@@ -1,0 +1,36 @@
+/* ============================================================
+   RODAPÉ — barra inferior compartilhada
+   Fica na base de um corpo/seção (borda no topo + fundo suave),
+   sem rolar com o conteúdo. O conteúdo é de cada tela: ações à
+   direita (.rodape-acoes), status, desfazer/refazer, etc.
+   Em uso: Distribuição (rodapé de status/edição) e Trocas (aba
+   Solicitar — Cancelar/Solicitar).
+   ============================================================ */
+.rodape {
+  flex-shrink: 0;
+  border-top: 1px solid var(--borda);
+  background-color: var(--fundo-suave);
+  padding: 8px 16px;
+}
+
+/* ações alinhadas à direita (Cancelar + ação principal) */
+.rodape-acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* rodapé em linha: conteúdo à esquerda (que cresce) + ações à direita (.rodape-acoes).
+   Usado onde o rodapé mostra status/legenda ao lado das ações (Distribuição, Extrajornada). */
+.rodape-linha {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* rodapé que empilha o conteúdo em coluna (status em várias linhas, ou uma .rodape-linha) */
+.rodape-pilha {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}

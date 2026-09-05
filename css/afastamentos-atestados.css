@@ -1,0 +1,104 @@
+/* ============================================================
+   AFASTAMENTOS / ATESTADOS — lista (na árvore) e indicador de fluxo
+   ============================================================ */
+
+/* lista de atestados dentro de uma unidade marcada */
+.atestados-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.atestado-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+  padding: 8px 12px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-superficie);
+}
+
+.atestado-textos {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.atestado-pessoa {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.atestado-grad {
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+.atestado-nome {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.atestado-detalhe {
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+/* indicador de fluxo no painel Novo atestado: ≤15 dias segue / ≥16 sai */
+.atestado-fluxo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-suave);
+}
+
+.atestado-fluxo--fora {
+  border-color: var(--erro);
+  background-color: var(--erro-fundo);
+}
+
+.atestado-fluxo--dentro {
+  border-color: var(--sucesso);
+  background-color: var(--sucesso-fundo);
+}
+
+.atestado-fluxo-titulo {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.atestado-fluxo--fora .atestado-fluxo-titulo {
+  color: var(--erro);
+}
+
+.atestado-fluxo--dentro .atestado-fluxo-titulo {
+  color: var(--sucesso);
+}
+
+.atestado-fluxo-texto {
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+/* linha da decisão do admin: rótulo + toggle Sim/Não (abas--pequenas) */
+.atestado-fluxo-decisao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.atestado-fluxo-rotulo {
+  font-size: 12px;
+  color: var(--texto-suave);
+}

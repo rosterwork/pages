@@ -1,0 +1,610 @@
+/* ============================================================
+   DISTRIBUIÇÃO — aba Modelos
+   Layout: painel de modelos (esquerda) + edição do modelo (corpo + rodapé).
+   Cores/medidas só do tema (geral-tema) e das escalas do MANUAL.
+   ============================================================ */
+
+/* o layout de painel esquerdo + área principal foi promovido ao componente
+   compartilhado geral-layout-lateral (componentes/css/geral-layout-lateral.css);
+   aqui fica só o específico da Distribuição */
+
+/* cabeçalho do painel: alinha as colunas (unidades) com os modelos da lista
+   (sobrescreve o padrão de título do geral-painel-esquerdo-cabecalho) */
+/* cabeçalho de colunas = faixa (geral-faixa); reserva a barra de acento das linhas
+   (2px) e mantém o arranjo das colunas, para as colunas casarem com as células */
+.distribuicao-painel-cabecalho {
+  align-items: stretch;
+  gap: 0;
+  padding: 0 4px;
+  border-left: 2px solid transparent;
+}
+
+.distribuicao-novo-modelo {
+  width: 100%;
+  justify-content: center;
+}
+
+/* célula de coluna no cabeçalho do painel (nome curto da unidade) */
+.distribuicao-col {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--texto-fraco);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* primeira coluna (alinha com o status da linha do modelo) */
+.distribuicao-col--marca {
+  flex: 0 0 22px;
+}
+/* última coluna: reserva o espaço do botão "⋯" de cada linha (alinhamento) */
+.distribuicao-col--menu {
+  flex: 0 0 var(--botao-altura-pequeno);
+}
+
+/* linha de um modelo (casca visual em geral-lista; sem linha, a faixa agrupa) */
+.distribuicao-modelo {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 34px;
+  padding: 0 4px;   /* casa as células com as colunas do cabeçalho (que reserva a mesma barra de 2px) */
+}
+.distribuicao-modelo-area {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding: 4px 0;
+  background: transparent;
+  cursor: pointer;
+}
+.distribuicao-modelo-menu { flex-shrink: 0; }
+.distribuicao-modelo-menu-gatilho {
+  opacity: 0;
+  transition: background-color 0.15s ease;
+}
+.distribuicao-modelo:hover .distribuicao-modelo-menu-gatilho,
+.lista-item--ativo .distribuicao-modelo-menu-gatilho { opacity: 1; }
+
+.distribuicao-modelo-status {
+  flex: 0 0 22px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 4px;
+  color: var(--sucesso);
+}
+.distribuicao-modelo-status--erro { color: var(--erro); }
+.distribuicao-modelo-status--alerta { color: var(--alerta); }
+
+.distribuicao-modelo-celulas {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.distribuicao-modelo-celula {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--texto);
+}
+/* ícone de acúmulo entre unidades, à esquerda dos números (item 13) */
+.distribuicao-modelo-celula-acumulo { flex-shrink: 0; color: var(--texto-suave); }
+/* texto da célula da lista fica vermelho/amarelo quando AQUELA unidade tem erro/alerta */
+.distribuicao-modelo-celula--erro .distribuicao-modelo-celula-texto { color: var(--erro); }
+.distribuicao-modelo-celula--alerta .distribuicao-modelo-celula-texto { color: var(--alerta); }
+
+/* carregando (giratório centralizado) — no painel ou no corpo */
+.distribuicao-carregando {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 24px;
+}
+
+/* estado (aviso/vazio) — no painel ou no corpo */
+.distribuicao-estado {
+  padding: 24px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--texto-fraco);
+}
+
+/* a coluna direita (edição) e a área de rolagem foram promovidas ao componente
+   geral-layout-lateral (.geral-corpo-lateral / .geral-corpo-lateral-rolagem) */
+
+/* ---- seção colapsável de uma unidade ---- */
+.distribuicao-unidade {
+  margin-bottom: 16px;
+}
+
+/* cabeçalho da unidade = faixa branca opaca de ponta a ponta (cobre o conteúdo que rola por baixo) */
+.distribuicao-unidade-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 16px;
+  background: var(--fundo-superficie);
+  border-bottom: 1px solid var(--borda);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-forte);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.distribuicao-unidade-seta {
+  color: var(--texto-fraco);
+}
+.distribuicao-unidade-cabecalho[aria-expanded="false"] .distribuicao-unidade-seta {
+  transform: rotate(-90deg);
+}
+.distribuicao-unidade-cabecalho[aria-expanded="false"] + .distribuicao-unidade-corpo {
+  display: none;
+}
+
+.distribuicao-unidade-corpo {
+  padding: 8px 16px 0;           /* espaçamento interno (o corpo de rolagem não tem padding) */
+}
+
+/* ---- posto: rótulo à esquerda + vagas à direita ---- */
+.distribuicao-posto {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--borda);
+}
+.distribuicao-posto:last-child {
+  border-bottom: none;
+}
+
+.distribuicao-posto-rotulo {
+  flex: 0 0 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: sticky;
+  top: 40px;                     /* gruda logo abaixo da faixa da unidade (40px) */
+  align-self: flex-start;
+  background: var(--fundo-superficie);
+  z-index: 1;
+}
+
+.distribuicao-posto-numero {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-suave);
+  background: var(--fundo-medio);
+  border-radius: var(--raio-pequeno);
+  padding: 2px 8px;
+  align-self: flex-start;
+}
+
+/* ---- marcação de erro (status tingido): faixa do pelotão + rótulo do posto ---- */
+/* cabeçalho do pelotão: faixa na cor do status (vermelho = faltam vagas/papel; amarelo = posto vazio) */
+.distribuicao-unidade-cabecalho--erro { background: var(--erro-fundo); color: var(--erro); }
+.distribuicao-unidade-cabecalho--erro .distribuicao-unidade-seta { color: var(--erro); }
+.distribuicao-unidade-cabecalho--alerta { background: var(--alerta-fundo); color: var(--alerta); }
+.distribuicao-unidade-cabecalho--alerta .distribuicao-unidade-seta { color: var(--alerta); }
+
+/* contador "distribuídos/a alocar" no cabeçalho (ícone + números); acompanha o tom do erro */
+.distribuicao-unidade-contagem {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--texto-fraco);
+}
+.distribuicao-unidade-cabecalho--erro .distribuicao-unidade-contagem { color: var(--erro); }
+.distribuicao-unidade-cabecalho--alerta .distribuicao-unidade-contagem { color: var(--alerta); }
+
+/* posto: número tingido + rótulo (ícone + nome) na cor, como uma pílula suave */
+.distribuicao-posto--erro .distribuicao-posto-numero { background: var(--erro-fundo); color: var(--erro); }
+.distribuicao-posto--alerta .distribuicao-posto-numero { background: var(--alerta-fundo); color: var(--alerta); }
+.distribuicao-posto--erro .distribuicao-posto-nome,
+.distribuicao-posto--alerta .distribuicao-posto-nome {
+  padding: 2px 8px;
+  margin: -2px -8px;
+  max-width: none;      /* a pílula acompanha o texto inteiro (também no Ver, como na Edição) */
+  flex-shrink: 0;
+  border-radius: var(--raio-pequeno);
+}
+.distribuicao-posto--erro .distribuicao-posto-nome { background: var(--erro-fundo); }
+.distribuicao-posto--alerta .distribuicao-posto-nome { background: var(--alerta-fundo); }
+.distribuicao-posto--erro .distribuicao-posto-nome-texto,
+.distribuicao-posto--erro .distribuicao-posto-icone { color: var(--erro); }
+.distribuicao-posto--alerta .distribuicao-posto-nome-texto,
+.distribuicao-posto--alerta .distribuicao-posto-icone { color: var(--alerta); }
+/* mantém o tom no hover da edição (o nome é gatilho do menu de papel especial) */
+.distribuicao-posto--erro .dropdown.distribuicao-posto-nome-wrap .distribuicao-posto-nome:hover { background: var(--erro-fundo); }
+.distribuicao-posto--alerta .dropdown.distribuicao-posto-nome-wrap .distribuicao-posto-nome:hover { background: var(--alerta-fundo); }
+
+.distribuicao-posto-nome-wrap {
+  position: relative;
+  align-self: flex-start;
+  max-width: 100%;
+}
+.distribuicao-posto-nome {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-forte);
+  text-align: left;
+  border-radius: var(--raio-pequeno);
+  cursor: default;
+}
+.distribuicao-posto-icone { color: var(--texto-suave); }
+.distribuicao-posto-nome-texto {
+  white-space: nowrap;
+}
+/* na edição, o nome do posto vira gatilho do menu de papel especial;
+   o botão se dimensiona pelo conteúdo (não encolhe) para o fundo do hover acompanhar o texto inteiro */
+.dropdown.distribuicao-posto-nome-wrap .distribuicao-posto-nome {
+  cursor: pointer;
+  padding: 2px 4px;
+  margin: -2px -4px;
+  max-width: none;
+  flex-shrink: 0;
+  transition: background-color 0.15s ease;
+}
+.dropdown.distribuicao-posto-nome-wrap .distribuicao-posto-nome:hover { background: var(--fundo-medio); }
+
+.distribuicao-posto-cnh {
+  font-size: 11px;
+  color: var(--texto-fraco);
+}
+
+/* ---- tabela de vagas ---- */
+.distribuicao-posto-vagas {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  overflow: hidden;
+  background: var(--fundo-superficie);
+}
+
+/* posto sem vagas (modo Ver): ocupa o lugar da tabela de vagas */
+.distribuicao-posto-vazio {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  font-size: 12px;
+  color: var(--texto-fraco);
+}
+
+.distribuicao-vagas-cabecalho,
+.distribuicao-vaga {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 68px 136px 100px 46px 34px;
+  align-items: center;
+}
+
+.distribuicao-vagas-cabecalho {
+  min-height: 28px;
+  background: var(--fundo-suave);
+  border-bottom: 1px solid var(--borda);
+}
+
+.distribuicao-vc {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--texto-fraco);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.distribuicao-vc--num,
+.distribuicao-vc--rod { justify-content: center; }
+
+.distribuicao-vaga {
+  min-height: 36px;
+  border-bottom: 1px solid var(--borda);
+}
+.distribuicao-vaga:last-child { border-bottom: none; }
+
+.distribuicao-vaga > span {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  font-size: 12px;
+  color: var(--texto-suave);
+  min-width: 0;
+}
+.distribuicao-vaga-num {
+  justify-content: center;
+  font-weight: 600;
+  color: var(--texto-fraco);
+}
+.distribuicao-vaga-func {
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.distribuicao-vaga-rod { justify-content: center; }
+.distribuicao-vaga-acao { justify-content: center; padding: 2px; }
+.distribuicao-vaga-remover { min-height: 22px; min-width: 22px; padding: 0; }
+.distribuicao-vaga-grau,
+.distribuicao-vaga-antig { color: var(--texto-debil); }
+.distribuicao-vaga-antig--def,
+.distribuicao-vaga-grau--def { color: var(--texto-suave); }
+
+/* ---- chip de função ---- */
+.distribuicao-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--fundo-medio);
+  color: var(--texto-suave);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: var(--raio-total);
+  white-space: nowrap;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+/* acúmulo NÃO é erro — sem o amarelo (que se confundia com o aviso de posto vazio);
+   a marca do acúmulo é só o ícone (e o X, quando a função vem de outro posto) */
+.distribuicao-chip--acumulo { color: var(--texto-suave); }
+/* hover num chip acende TODOS do mesmo grupo, em qualquer linha (itens 14/17) */
+.distribuicao-chip--realce { background-color: var(--fundo-contraste); color: var(--texto-invertido); }
+.distribuicao-chip-origem { font-weight: 700; }
+.distribuicao-chip-icone { flex-shrink: 0; }
+/* arrastar chip para reordenar o acúmulo ao vivo (1º = principal) */
+.distribuicao-chip[draggable="true"] { cursor: pointer; }
+.distribuicao-chip--arrastando { opacity: 0.4; }
+
+/* o esqueleto do rodapé (empilha status/linha) foi promovido ao geral-rodape
+   (.rodape-pilha); aqui fica só o específico da Distribuição */
+
+.distribuicao-status-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+.distribuicao-status-item--ok .distribuicao-status-icone { color: var(--sucesso); }
+.distribuicao-status-item--alerta .distribuicao-status-icone { color: var(--alerta); }
+.distribuicao-status-item--erro .distribuicao-status-icone { color: var(--erro); }
+
+/* ============================================================
+   Edição (Rodada 2A)
+   ============================================================ */
+
+/* células editáveis (perfil, antiguidade, grau) — o gatilho mostra o valor */
+.distribuicao-vaga--editar .distribuicao-cel { padding: 2px 4px; }
+.distribuicao-cel-gatilho {
+  width: 100%;
+  min-height: 26px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  border-radius: var(--raio-pequeno);
+  font-size: 12px;
+  color: var(--texto-suave);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background-color 0.15s ease;
+}
+.distribuicao-cel-gatilho:hover { background: var(--fundo-medio); }
+.distribuicao-cel--vazio .distribuicao-cel-gatilho { color: var(--texto-debil); }
+
+/* toggle de rodízio (quadradinho; preenchido = ligado) */
+.distribuicao-rod-toggle {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--raio-pequeno);
+  border: 1px solid var(--borda-forte);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--texto-forte);
+  transition: border-color 0.15s ease;
+}
+.distribuicao-rod-toggle--on { border-color: var(--texto-forte); }
+/* desativado (papel especial, acúmulo ou antiguidade): sem mãozinha e com aparência apagada */
+.distribuicao-rod-toggle:disabled { cursor: default; opacity: 0.4; }
+
+/* vaga sem antiguidade nem grau: linha em cor de erro até o admin preencher um critério */
+/* vaga sem critério: só os campos de antiguidade e grau ficam vermelhos (é o que falta preencher),
+   não a linha inteira */
+.distribuicao-vaga--erro .distribuicao-vaga-antig,
+.distribuicao-vaga--erro .distribuicao-vaga-grau { background: var(--erro-fundo); }
+
+/* "Nova função": a linha-pai é como um slot (divisória no topo, fundo branco, NÃO clicável);
+   só o botão dentro é clicável — campo discreto, dimensionado pelo conteúdo (herda .botao-discreto) */
+.distribuicao-nova-funcao-linha {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 36px;
+  padding: 0 8px;
+  border-top: 1px solid var(--borda);
+}
+.distribuicao-nova-funcao {
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+/* ---- bloco "Vem de" (reforço que entra: militar de outra unidade concorre aqui) ---- */
+.distribuicao-reforco-rotulo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-suave);
+}
+.distribuicao-reforco-rotulo .icone { color: var(--texto-fraco); }
+.distribuicao-reforco-ajuda {
+  font-size: 11px;
+  color: var(--texto-fraco);
+}
+/* célula de origem: ícone + nome da unidade de onde vem o militar */
+.distribuicao-reforco-origem .distribuicao-cel-gatilho { gap: 4px; }
+.distribuicao-reforco-origem .icone { color: var(--texto-fraco); }
+/* botão "+ Vem de" solto (unidade ainda sem reforço): sem borda no topo — o posto acima já divide */
+.distribuicao-nova-funcao-linha--solta { border-top: none; }
+
+/* desfazer/refazer da edição do modelo: no subcabeçalho, empurrado para a direita (só durante o Editar) */
+.distribuicao-historico { display: flex; gap: 4px; margin-left: auto; }
+
+/* rodapé de edição: resumo de status · Cancelar/Salvar
+   (a linha em si usa .rodape-linha, promovido ao geral-rodape) */
+.distribuicao-status-resumo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--texto-suave);
+  text-align: left;
+}
+.distribuicao-status-chevron {
+  color: var(--texto-fraco);
+  flex-shrink: 0;
+  transform: rotate(180deg);   /* fechado = ^ (a lista de erros abre para cima) */
+}
+.distribuicao-status-resumo[aria-expanded="true"] .distribuicao-status-chevron { transform: none; }   /* aberto = v */
+.distribuicao-status-resumo--unico { cursor: default; }
+.distribuicao-status-resumo--unico .distribuicao-status-chevron { display: none; }
+.distribuicao-status-resumo--ok { color: var(--sucesso); }
+.distribuicao-status-resumo--alerta { color: var(--alerta); }
+.distribuicao-status-resumo--erro { color: var(--erro); }
+.distribuicao-status-resumo--ok .distribuicao-status-chevron,
+.distribuicao-status-resumo--alerta .distribuicao-status-chevron,
+.distribuicao-status-resumo--erro .distribuicao-status-chevron { color: inherit; }
+/* as ações Cancelar/Salvar usam .rodape-acoes (geral-rodape) */
+
+/* acúmulo editável */
+/* (rodapé-extra removido: Duplicar/Excluir saíram para o menu ⋯ do modelo) */
+.distribuicao-chip-remover {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0 0 4px;
+  background: transparent;
+  color: var(--alerta);
+  cursor: pointer;
+}
+.distribuicao-acumulo-add { display: inline-flex; }
+/* escada de acúmulo (Unidade → Posto → Função, item 3) — reusa as classes .arvore-* do seletor de
+   unidades; aqui fica só o específico: largura, folhas (funções) e o realce do par no hover */
+.dropdown-menu.distribuicao-escada { min-width: 240px; }
+.distribuicao-escada-folha .arvore-nome { font-weight: 400; color: var(--texto); }
+.distribuicao-escada-icone { flex-shrink: 0; color: var(--texto-fraco); }
+.distribuicao-escada-linha--par { background-color: var(--fundo-medio); }
+.distribuicao-add-gatilho {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 8px;
+  font-size: 11px;
+  color: var(--texto-fraco);
+  background: transparent;
+  border: 1px dashed var(--borda-forte);
+  border-radius: var(--raio-total);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.distribuicao-add-gatilho:hover { color: var(--texto-suave); border-color: var(--foco); }
+.distribuicao-cel--bloqueada .distribuicao-cel-gatilho { cursor: default; color: var(--texto-debil); }
+.distribuicao-cel--bloqueada .distribuicao-cel-gatilho:hover { background: transparent; }
+
+/* controles de antiguidade e grau (dentro do menu da célula): a bolinha de escolha vem
+   do componente compartilhado geral-opcao; aqui ficam só o número / lista */
+.distribuicao-antig-campo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+}
+.distribuicao-antig-sinal { color: var(--texto-suave); font-weight: 700; }
+.distribuicao-antig-input { width: 52px; min-height: 28px; text-align: center; }
+.distribuicao-grau-lista { display: flex; flex-direction: column; }
+/* dica enquanto não há sentido escolhido (a lista de graus só habilita depois) */
+.distribuicao-grau-dica { padding: 6px 8px; font-size: 12px; color: var(--texto-fraco); }
+
+/* modal Novo modelo — composição por unidade */
+.distribuicao-nm-ajuda { font-size: 12px; color: var(--texto-fraco); margin-bottom: 12px; }
+/* cabeçalho de colunas (Unidades · Oficiais · Praças) — alinha com as linhas abaixo */
+.distribuicao-nm-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 4px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--borda);
+}
+.distribuicao-nm-col-unidade,
+.distribuicao-nm-col {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--texto-fraco);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.distribuicao-nm-col-unidade { flex: 1; }
+.distribuicao-nm-col { width: 76px; text-align: center; }
+.distribuicao-nm-linhas { display: flex; flex-direction: column; gap: 8px; }
+.distribuicao-nm-linha { display: flex; align-items: center; gap: 12px; }
+.distribuicao-nm-unidade { flex: 1; font-size: 13px; font-weight: 500; color: var(--texto); }
+.distribuicao-nm-contador { width: 76px; display: flex; align-items: center; justify-content: center; gap: 4px; }
+.distribuicao-nm-btn {
+  width: 24px;
+  min-height: 24px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pequeno);
+  background: var(--fundo-superficie);
+  color: var(--texto-suave);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.distribuicao-nm-btn:hover { background: var(--fundo-medio); border-color: var(--borda-forte); }
+.distribuicao-nm-valor { min-width: 16px; text-align: center; font-size: 13px; color: var(--texto-forte); }
+

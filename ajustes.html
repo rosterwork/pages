@@ -1,0 +1,65 @@
+<div class="pagina">
+  <div class="pagina-cabecalho">
+    <div class="pagina-titulos">
+      <h1>Ajustes</h1>
+      <span class="pagina-subtitulo">Configurações das unidades.</span>
+    </div>
+  </div>
+
+  <div class="pagina-corpo pagina-corpo--colado">
+    <div class="geral-layout-lateral">
+
+      <!-- índice interno (não abas): as seções de ajuste; por ora só o ritmo -->
+      <aside class="geral-painel-esquerdo" id="ajustes-indice">
+        <div class="geral-painel-esquerdo-lista">
+          <div class="ajustes-indice-grupo">
+            <div class="faixa"><span class="rotulo-secao">Escala</span></div>
+            <button type="button" class="lista-item lista-item--clicavel ajustes-indice-item lista-item--ativo" data-ajuste="ritmo">Ritmo das unidades</button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- registro: a árvore de unidades com o card do ritmo em cada unidade marcada -->
+      <section class="geral-corpo-lateral">
+        <div class="geral-corpo-lateral-rolagem">
+          <div class="arvore arvore-unidades" id="arvore-ajustes"></div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<!-- molde: card do ritmo de uma unidade (admin clica para editar no painel direito) -->
+<template id="tpl-ajuste-ritmo-cartao">
+  <div class="ajuste-cartao" role="button" tabindex="0">
+    <span class="ajuste-cartao-textos">
+      <span class="ajuste-cartao-titulo">Ritmo da escala</span>
+      <span class="ajuste-cartao-ajuda"></span>
+    </span>
+    <span class="selo ajuste-cartao-valor"></span>
+  </div>
+</template>
+
+<!-- molde: edição do ritmo (painel direito) -->
+<template id="tpl-ajuste-ritmo-editar">
+  <div class="linha-info linha-info--editavel">
+    <span class="linha-info-rotulo">Ritmo</span>
+    <div class="dropdown">
+      <button type="button" class="campo-entrada campo-selecao campo-entrada--pequeno" id="ajuste-ritmo-gatilho" aria-label="Ritmo">
+        <span class="campo-selecao-texto" id="ajuste-ritmo-texto"></span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu" id="ajuste-ritmo-menu"></div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-ajuste-ritmo-opcao">
+  <button type="button" class="dropdown-item"></button>
+</template>
+
+<template id="tpl-ajuste-painel-acoes">
+  <button type="button" class="botao" id="ajuste-cancelar">Cancelar</button>
+  <button type="button" class="botao botao--primario" id="ajuste-salvar" disabled>Salvar</button>
+</template>

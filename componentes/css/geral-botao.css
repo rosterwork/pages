@@ -1,0 +1,144 @@
+/* ---------- BOTÃO ---------- */
+
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--botao-gap);
+  min-height: var(--botao-altura);
+  padding: 0 var(--botao-padding);
+  border: 1px solid var(--borda-forte);
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-superficie);
+  color: var(--texto);
+  font-size: var(--botao-fonte);
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.botao:focus-visible {
+  border-color: var(--texto-forte);
+}
+
+/* desabilitado: ação indisponível (ex.: Aplicar sem nenhuma unidade selecionada) */
+.botao:disabled {
+  background-color: var(--fundo-medio);
+  border-color: var(--borda);
+  color: var(--texto-fraco);
+  cursor: default;
+}
+
+.botao--primario {
+  background-color: var(--fundo-contraste);
+  border-color: var(--fundo-contraste);
+  color: var(--texto-invertido);
+}
+
+.botao--primario:not(:disabled):hover {
+  background-color: var(--fundo-contraste-hover);
+  border-color: var(--fundo-contraste-hover);
+}
+
+.botao--primario:focus-visible {
+  background-color: var(--fundo-contraste-hover);
+  border-color: var(--texto-invertido);
+}
+
+.botao--pequeno {
+  min-height: var(--botao-altura-pequeno);
+  padding: 0 var(--botao-padding-pequeno);
+  font-size: var(--botao-fonte-pequeno);
+}
+
+/* destrutivo sólido (ex.: "Excluir do sistema"): vermelho cheio, alto contraste */
+.botao--perigo {
+  background-color: var(--erro);
+  border-color: var(--erro);
+  color: var(--texto-invertido);
+}
+
+.botao--perigo:not(:disabled):hover {
+  background-color: var(--erro-hover);
+  border-color: var(--erro-hover);
+}
+
+.botao--perigo:focus-visible {
+  background-color: var(--erro-hover);
+  border-color: var(--texto-invertido);
+}
+
+/* botão só de ícone: quadrado, sem moldura — fundo aparece só no hover (como o cabeçalho) */
+.botao--icone {
+  min-width: var(--botao-altura);
+  padding: 0;
+  gap: 0;
+  border-color: transparent;
+  background-color: transparent;
+  color: var(--texto-suave);
+}
+
+.botao--icone:not(:disabled):hover {
+  background-color: var(--fundo-medio);
+  color: var(--texto-forte);
+}
+
+.botao--pequeno.botao--icone {
+  min-width: var(--botao-altura-pequeno);
+  padding: 0;
+}
+
+.botao--texto {
+  min-height: auto;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--texto-suave);
+  font-size: var(--botao-fonte-pequeno);
+  font-weight: 400;
+}
+
+.botao--texto:hover {
+  color: var(--texto);
+}
+
+.botao--texto:focus-visible {
+  color: var(--texto-forte);
+}
+
+.botao--texto:disabled {
+  background-color: transparent;   /* o botão-texto não tem moldura: desabilitado só apaga a fonte */
+  border-color: transparent;
+  color: var(--texto-fraco);
+  cursor: default;
+}
+
+/* ---------- BOTÃO EXTRA DISCRETO ---------- */
+/* sem moldura; o fundo só aparece no hover; coloração apagada (o ícone herda via currentColor).
+   repouso usa --texto-fraco; inativo usa --texto-debil (ainda mais apagado, nos dois temas) */
+.botao-discreto {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: none;
+  border-radius: var(--raio-medio);
+  background: none;
+  color: var(--texto-fraco);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.botao-discreto:hover {
+  background-color: var(--fundo-medio);
+  color: var(--texto-suave);
+}
+
+.botao-discreto:disabled {
+  color: var(--texto-debil);
+  cursor: default;
+}
+
+.botao-discreto:disabled:hover {
+  background-color: transparent;
+}

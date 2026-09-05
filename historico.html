@@ -1,0 +1,91 @@
+<div class="pagina">
+  <div class="pagina-cabecalho">
+    <div class="pagina-titulos">
+      <h1>Histórico</h1>
+      <span class="pagina-subtitulo"></span>
+    </div>
+  </div>
+
+  <div class="pagina-subcabecalho">
+    <span class="espacador-flex"></span>
+
+    <div class="dropdown" id="historico-tipo">
+      <button type="button" class="seletor" id="historico-tipo-seletor">
+        <span class="seletor-texto" id="historico-tipo-texto">Todos os tipos</span>
+        <span class="seletor-limpar" id="historico-tipo-limpar" data-dica="Limpar">
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+        </span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu" id="historico-tipo-menu"></div>
+    </div>
+
+    <div class="dropdown" id="historico-autor">
+      <button type="button" class="seletor" id="historico-autor-seletor">
+        <span class="seletor-texto" id="historico-autor-texto">Todos os autores</span>
+        <span class="seletor-limpar" id="historico-autor-limpar" data-dica="Limpar">
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+        </span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu" id="historico-autor-menu"></div>
+    </div>
+
+    <div class="dropdown" id="historico-periodo">
+      <button type="button" class="seletor" id="historico-periodo-seletor">
+        <span class="seletor-texto" id="historico-periodo-texto">Últimos 30 dias</span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu">
+        <div class="dropdown-titulo">Período</div>
+        <button type="button" class="dropdown-item" data-periodo="hoje">Hoje</button>
+        <button type="button" class="dropdown-item" data-periodo="7">Últimos 7 dias</button>
+        <button type="button" class="dropdown-item" data-periodo="30">Últimos 30 dias</button>
+        <button type="button" class="dropdown-item" data-periodo="tudo">Tudo</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="pagina-corpo pagina-corpo--camada">
+    <div class="pagina-corpo-rolagem">
+      <div class="arvore arvore-unidades" id="arvore-historico"></div>
+    </div>
+  </div>
+</div>
+
+<!-- molde: pilha de eventos dentro de uma unidade (na árvore) -->
+<template id="tpl-historico-eventos">
+  <div class="historico-eventos"></div>
+</template>
+
+<!-- molde: cartão de um evento (cabeçalho + as mudanças via geral-resumo) -->
+<template id="tpl-historico-evento">
+  <div class="historico-evento">
+    <button type="button" class="historico-evento-cabecalho" aria-expanded="false">
+      <div class="historico-evento-resumo">
+        <div class="historico-evento-titulo">
+          <svg class="icone historico-evento-icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-postos.svg#icone-postos"/></svg>
+          <span class="historico-evento-aba"></span>
+        </div>
+        <span class="historico-evento-assunto"></span>
+        <div class="historico-evento-sub">
+          <span class="historico-evento-autor"></span>
+          <span class="historico-evento-acao"></span>
+          <span class="historico-evento-quando"></span>
+        </div>
+      </div>
+      <svg class="icone historico-evento-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+    </button>
+    <div class="historico-evento-corpo oculto"></div>
+  </div>
+</template>
+
+<!-- molde: item dos dropdowns de filtro (tipo / autor), montado pelo JS -->
+<template id="tpl-historico-opcao">
+  <button type="button" class="dropdown-item"></button>
+</template>
+
+<!-- molde: unidade marcada sem eventos no período/filtros -->
+<template id="tpl-historico-vazio">
+  <div class="historico-vazio">Nenhum registro no período.</div>
+</template>

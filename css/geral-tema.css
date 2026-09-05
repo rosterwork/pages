@@ -1,0 +1,182 @@
+/* ============================================================
+   ARQUIVO DE TEMA — ROSTER WORK
+   Único arquivo onde se escreve rgb(), sombra e raio.
+   Componentes usam SOMENTE os papéis (--fundo-*, --texto-*, etc.).
+   Nunca usar os primitivos (--cinza-*) fora deste arquivo.
+   ============================================================ */
+
+/* Fonte Montserrat — LOCAL primeiro (privacidade + funciona offline); GOOGLE de
+   reserva se a local falhar (ex.: teste em file://); e a fonte do SISTEMA como
+   última rede de segurança (na pilha font-family). Arquivo variável: cobre 400 a 800. */
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('../fontes/montserrat-latin.woff2') format('woff2'),
+       url('https://fonts.gstatic.com/s/montserrat/v31/JTUSjIg1_i6t8kCHKm459Wlhyw.woff2') format('woff2');
+}
+
+:root {
+
+  /* -------------------------------------------------------
+     Primitivos de cinza — referência interna, não usar fora
+     ------------------------------------------------------- */
+  --cinza-0:   rgb(255, 255, 255);
+  --cinza-50:  rgb(250, 250, 250);
+  --cinza-100: rgb(248, 248, 248);
+  --cinza-150: rgb(243, 243, 243);
+  --cinza-200: rgb(235, 235, 235);
+  --cinza-250: rgb(226, 226, 226);
+  --cinza-300: rgb(214, 214, 214);
+  --cinza-400: rgb(178, 178, 178);
+  --cinza-450: rgb(172, 172, 172);
+  --cinza-500: rgb(170, 170, 170);
+  --cinza-550: rgb(126, 126, 126);
+  --cinza-600: rgb(122, 122, 122);
+  --cinza-650: rgb(96,  96,  96);
+  --cinza-700: rgb(92,  92,  92);
+  --cinza-750: rgb(72,  72,  72);
+  --cinza-800: rgb(58,  58,  58);
+  --cinza-820: rgb(55,  55,  55);
+  --cinza-850: rgb(48,  48,  48);
+  --cinza-900: rgb(38,  38,  38);
+  --cinza-920: rgb(33,  33,  33);
+  --cinza-940: rgb(26,  26,  26);
+  --cinza-950: rgb(14,  14,  14);
+
+  /* -------------------------------------------------------
+     Papéis de fundo
+     ------------------------------------------------------- */
+  --fundo-pagina:          var(--cinza-150);
+  --fundo-superficie:      var(--cinza-0);
+  --fundo-suave:           var(--cinza-50);
+  --fundo-medio:           var(--cinza-200);
+  --fundo-contraste:       var(--cinza-900);
+  --fundo-contraste-hover: var(--cinza-820);
+
+  /* -------------------------------------------------------
+     Papéis de texto
+     ------------------------------------------------------- */
+  --texto-forte:     var(--cinza-950);
+  --texto:           var(--cinza-900);
+  --texto-suave:     var(--cinza-750);
+  --texto-fraco:     var(--cinza-600);
+  --texto-debil:     var(--cinza-450);
+  --texto-invertido: var(--cinza-0);
+
+  /* -------------------------------------------------------
+     Bordas e foco
+     ------------------------------------------------------- */
+  --borda:       var(--cinza-300);
+  --borda-forte: var(--cinza-400);
+  --foco:        var(--cinza-650);
+
+  /* -------------------------------------------------------
+     Cores de significado — únicas que usam rgb() direto
+     ------------------------------------------------------- */
+  --erro:                rgb(176, 36,  36);
+  --erro-hover:          rgb(150, 28,  28);
+  --erro-fundo:          rgb(251, 236, 236);
+  --erro-fundo-forte:    rgb(244, 199, 199);
+  --sucesso:             rgb(38,  110, 60);
+  --sucesso-fundo:       rgb(234, 245, 237);
+  --sucesso-fundo-forte: rgb(202, 232, 212);
+  --alerta:              rgb(158, 102, 12);
+  --alerta-fundo:        rgb(250, 242, 226);
+  --alerta-fundo-forte:  rgb(246, 222, 168);
+
+  /* -------------------------------------------------------
+     Véu do modal
+     ------------------------------------------------------- */
+  --veu-modal: rgb(0 0 0 / 0.40);
+
+  /* -------------------------------------------------------
+     Raios
+     ------------------------------------------------------- */
+  --raio-pequeno: 4px;
+  --raio-medio:   8px;
+  --raio-total:   9999px;
+
+  /* -------------------------------------------------------
+     Sombras
+     ------------------------------------------------------- */
+  --sombra-bloco:     0 1px 3px rgb(0 0 0 / 0.06), 0 1px 2px rgb(0 0 0 / 0.04);
+  --sombra-flutuante: 0 4px 6px -1px rgb(0 0 0 / 0.10), 0 2px 4px -1px rgb(0 0 0 / 0.06);
+  --sombra-modal:     0 20px 32px -8px rgb(0 0 0 / 0.16), 0 8px 16px -4px rgb(0 0 0 / 0.10);
+
+  /* -------------------------------------------------------
+     Espaçamentos de formulário
+     ------------------------------------------------------- */
+  --gap-campos:      8px;   /* gap de linha entre campos na grade do formulário */
+  --gap-formulario: 12px;   /* gap de coluna na grade; gap entre seções */
+
+  /* -------------------------------------------------------
+     Tokens do componente campo
+     ------------------------------------------------------- */
+  --campo-gap:                4px;   /* gap interno: rótulo → entrada → erro */
+  --campo-rotulo-fonte:      12px;
+  --campo-altura:            32px;
+  --campo-altura-pequeno:    22px;
+  --campo-altura-multi:      64px;
+  --campo-padding:            8px;
+  --campo-erro-fonte:        11px;
+
+  /* -------------------------------------------------------
+     Tokens do rótulo de seção
+     ------------------------------------------------------- */
+  --rotulo-secao-fonte:        11px;
+  --rotulo-secao-espacamento:   1px;
+
+  /* -------------------------------------------------------
+     Tokens do componente botão
+     ------------------------------------------------------- */
+  --botao-altura:          32px;
+  --botao-altura-pequeno:  26px;
+  --botao-fonte:           13px;
+  --botao-fonte-pequeno:   12px;
+  --botao-gap:              8px;
+  --botao-padding:         16px;
+  --botao-padding-pequeno: 12px;
+
+  /* -------------------------------------------------------
+     Tokens do componente ícone
+     ------------------------------------------------------- */
+  --icone-traco: 1.5;   /* espessura do traço de todos os ícones — menos o logo */
+  --grafico-traco: 1;   /* espessura do traço dos gráficos canvas (independente dos ícones) */
+}
+
+/* -------------------------------------------------------
+   Modo escuro — redefine apenas os papéis semânticos
+   ------------------------------------------------------- */
+html[data-tema="escuro"] {
+
+  --fundo-pagina:          var(--cinza-950);
+  --fundo-superficie:      var(--cinza-940);
+  --fundo-suave:           var(--cinza-920);
+  --fundo-medio:           var(--cinza-850);
+  --fundo-contraste:       var(--cinza-200);
+  --fundo-contraste-hover: var(--cinza-400);
+
+  --texto-forte:     var(--cinza-100);
+  --texto:           var(--cinza-250);
+  --texto-suave:     var(--cinza-450);
+  --texto-fraco:     var(--cinza-550);
+  --texto-debil:     var(--cinza-700);
+  --texto-invertido: var(--cinza-950);
+
+  --borda:       var(--cinza-800);
+  --borda-forte: var(--cinza-700);
+  --foco:        var(--cinza-500);
+
+  --erro:                rgb(238, 136, 136);
+  --erro-hover:          rgb(220, 112, 112);
+  --erro-fundo:          rgb(62,  32,  32);
+  --erro-fundo-forte:    rgb(92,  44,  44);
+  --sucesso:             rgb(132, 202, 154);
+  --sucesso-fundo:       rgb(28,  50,  36);
+  --sucesso-fundo-forte: rgb(42,  74,  52);
+  --alerta:              rgb(230, 178, 98);
+  --alerta-fundo:        rgb(58,  47,  26);
+  --alerta-fundo-forte:  rgb(84,  64,  30);
+}

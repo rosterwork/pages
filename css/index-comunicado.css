@@ -1,0 +1,45 @@
+/* ============================================================
+   NOVO COMUNICADO — o painel de criação (só administrador)
+   Mora no shell porque o módulo js/inicio-aviso.js é compartilhado
+   por Início e Avisos: o molde #tpl-inicio-aviso-form está no
+   index.html, e o estilo dele precisa estar carregado nas duas
+   telas. Só o que é exclusivo do painel; o resto vem dos
+   componentes (campo, abas, caixa-selecao, busca).
+   ============================================================ */
+
+/* lista de militares quando o alcance é "Militares" (rola por dentro) */
+.aviso-militares {
+  display: flex;
+  flex-direction: column;
+  max-height: 240px;
+  overflow-y: auto;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+}
+
+/* a linha inteira é a caixa de seleção (role="checkbox") */
+.aviso-militar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 32px;
+  padding: 4px 8px;
+  text-align: left;
+  transition: background-color 0.15s ease;
+}
+
+.aviso-militar:hover {
+  background-color: var(--fundo-suave);
+}
+
+.aviso-militar-nome {
+  font-size: 12px;
+  color: var(--texto-forte);
+}
+
+.aviso-militar-unidade {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--texto-suave);
+}

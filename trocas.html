@@ -1,0 +1,204 @@
+<div class="pagina">
+  <div class="pagina-cabecalho">
+    <div class="pagina-titulos">
+      <h1>Trocas</h1>
+      <span class="pagina-subtitulo"></span>
+    </div>
+    <span class="espacador-flex"></span>
+    <button type="button" class="botao botao--primario" id="btn-solicitar-troca">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-trocas.svg#icone-trocas"/></svg>
+      <span>Solicitar troca</span>
+    </button>
+  </div>
+
+  <div class="pagina-subcabecalho">
+    <div class="abas" id="trocas-abas">
+      <button type="button" class="aba aba--ativa" data-aba="todas">Todas</button>
+      <button type="button" class="aba" data-aba="minhas">Minhas</button>
+      <button type="button" class="aba" data-aba="pendentes">Pendentes</button>
+    </div>
+  </div>
+
+  <!-- Todas: árvore de unidades (as trocas ficam na unidade de quem solicitou) -->
+  <div class="pagina-corpo pagina-corpo--camada" data-aba-painel="todas">
+    <div class="pagina-corpo-rolagem">
+      <div class="arvore arvore-unidades" id="trocas-arvore"></div>
+    </div>
+  </div>
+
+  <!-- Minhas: lista das trocas em que eu entro (solicitante ou solicitado) -->
+  <div class="pagina-corpo oculto" data-aba-painel="minhas">
+    <div class="trocas-lista" id="trocas-minhas-lista"></div>
+  </div>
+
+  <!-- Pendentes: dívidas de devolução (trocas sem devolução) -->
+  <div class="pagina-corpo oculto" data-aba-painel="pendentes">
+    <p class="trocas-pendentes-descricao">Aqui aparecem as pendências de trocas que não tiveram devolução.</p>
+    <div class="trocas-pendentes" id="trocas-pendentes-lista"></div>
+  </div>
+
+  <!-- Solicitar: formulário inline, aberto pelo botão do cabeçalho -->
+  <div class="pagina-corpo trocas-solicitar oculto" data-painel="solicitar">
+    <div class="trocas-solicitar-corpo">
+      <div class="trocas-cartoes">
+        <div class="grupo-caixa trocas-cartao">
+          <span class="rotulo-secao">Solicitante</span>
+          <div class="campo">
+            <span class="campo-rotulo">Unidade</span>
+            <div class="campo-entrada campo-entrada--leitura" id="ts-minha-unidade"></div>
+          </div>
+          <div class="campo">
+            <span class="campo-rotulo">Militar</span>
+            <div class="campo-entrada campo-entrada--leitura" id="ts-meu-nome"></div>
+          </div>
+          <label class="campo">
+            <span class="campo-rotulo">Dia do serviço</span>
+            <input type="text" class="campo-entrada" id="ts-data" readonly placeholder="Escolher dia" />
+            <span class="campo-erro-texto"></span>
+          </label>
+          <div class="campo trocas-periodo" id="ts-periodo-servico">
+            <span class="campo-rotulo">Período</span>
+            <div class="trocas-barra" id="ts-barra-servico"></div>
+          </div>
+        </div>
+
+        <div class="grupo-caixa trocas-cartao">
+          <span class="rotulo-secao">Solicitado</span>
+          <div class="campo">
+            <span class="campo-rotulo">Unidade</span>
+            <div class="dropdown" id="ts-unidade-dropdown">
+              <button type="button" class="campo-entrada campo-selecao" id="ts-unidade" aria-label="Unidade">
+                <span class="campo-selecao-texto campo-selecao-texto--vazio" id="ts-unidade-texto">Selecione</span>
+                <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+              </button>
+              <div class="dropdown-menu" id="ts-unidade-menu"></div>
+            </div>
+          </div>
+          <div class="campo">
+            <span class="campo-rotulo">Militar</span>
+            <div class="dropdown" id="ts-parceiro-dropdown">
+              <input class="campo-entrada" id="ts-parceiro" type="text" maxlength="100" placeholder="Escolha o dia antes" autocomplete="off" aria-label="Militar" disabled />
+              <div class="dropdown-menu" id="ts-parceiro-menu"></div>
+            </div>
+            <span class="campo-erro-texto"></span>
+          </div>
+          <div class="campo">
+            <span class="campo-rotulo">Devolução</span>
+            <div class="abas abas--pequenas trocas-dev-toggle" id="ts-dev-toggle">
+              <button type="button" class="aba aba--ativa" data-dev="pendente">Deixar pendente</button>
+              <button type="button" class="aba" data-dev="dia">Escolher dia</button>
+            </div>
+            <input type="text" class="campo-entrada trocas-dev-data oculto" id="ts-dev-data" readonly placeholder="Dia do parceiro" />
+          </div>
+          <div class="campo trocas-periodo oculto" id="ts-periodo-devolucao">
+            <span class="campo-rotulo">Período da devolução</span>
+            <div class="trocas-barra" id="ts-barra-devolucao"></div>
+          </div>
+          <div class="impacto-aviso impacto-aviso--alerta trocas-saldo oculto" id="ts-saldo">
+            <svg class="icone impacto-aviso-icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+            <span class="impacto-aviso-textos"><span class="impacto-aviso-titulo" id="ts-saldo-texto"></span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="rodape rodape-acoes">
+      <button type="button" class="botao" id="ts-cancelar">Cancelar</button>
+      <button type="button" class="botao botao--primario" id="ts-solicitar">Solicitar troca</button>
+    </div>
+  </div>
+</div>
+
+<!-- molde: linha de uma troca na lista -->
+<template id="tpl-troca-item">
+  <div class="troca-item">
+    <span class="troca-item-dados">
+      <span class="troca-item-militares">
+        <span class="troca-item-a"></span>
+        <svg class="icone troca-item-seta" width="16" height="16" aria-hidden="true"><use href="icones/icone-trocas.svg#icone-trocas"/></svg>
+        <span class="troca-item-b"></span>
+      </span>
+      <span class="troca-item-meta"></span>
+    </span>
+    <span class="espacador-flex"></span>
+    <span class="selo troca-item-situacao"></span>
+  </div>
+</template>
+
+<!-- molde: lista vazia (texto preenchido pelo JS conforme a aba) -->
+<template id="tpl-troca-vazio">
+  <div class="troca-vazio"></div>
+</template>
+
+<!-- molde: card de pendência de devolução (quem deve horas para quem) -->
+<template id="tpl-troca-pendente">
+  <div class="troca-pendente">
+    <div class="troca-pendente-cab">
+      <span class="troca-pendente-devedor"></span>
+      <span class="troca-pendente-conector">deve</span>
+      <span class="selo selo--alerta troca-pendente-horas"></span>
+      <span class="troca-pendente-conector">a</span>
+      <span class="troca-pendente-credor"></span>
+    </div>
+    <div class="troca-pendente-dias">
+      <span class="troca-pendente-dias-rotulo">Trocas sem devolução:</span>
+      <span class="troca-pendente-dias-lista"></span>
+    </div>
+  </div>
+</template>
+
+<!-- molde: corpo do painel de detalhe da troca -->
+<template id="tpl-troca-detalhe">
+  <div class="troca-detalhe">
+    <div class="troca-secao">
+      <span class="rotulo-secao">Quem troca</span>
+      <div class="troca-pares">
+        <div class="troca-pessoa">
+          <span class="troca-pessoa-nome" data-sol-nome></span>
+          <span class="troca-pessoa-info">Solicitante</span>
+        </div>
+        <svg class="icone troca-pares-seta" width="18" height="18" aria-hidden="true"><use href="icones/icone-trocas.svg#icone-trocas"/></svg>
+        <div class="troca-pessoa">
+          <span class="troca-pessoa-nome" data-par-nome></span>
+          <span class="troca-pessoa-info">Solicitado</span>
+        </div>
+      </div>
+    </div>
+    <div class="troca-secao">
+      <span class="rotulo-secao">Serviço</span>
+      <div class="troca-linhas" data-servico></div>
+    </div>
+    <div class="troca-secao oculto" data-secao-analise>
+      <span class="rotulo-secao">Análise de impacto</span>
+      <div class="impacto-analise" data-analise></div>
+    </div>
+  </div>
+</template>
+
+
+<!-- molde: rodapé de ações do painel (o JS mostra só as do papel/estado) -->
+<template id="tpl-troca-acoes">
+  <button type="button" class="botao" data-acao="cancelar">Cancelar troca</button>
+  <button type="button" class="botao botao--perigo" data-acao="recusar">Recusar</button>
+  <button type="button" class="botao botao--primario" data-acao="aceitar">Aceitar</button>
+  <button type="button" class="botao" data-acao="aprovar-forcar">Aprovar sem confirmação</button>
+  <button type="button" class="botao botao--perigo" data-acao="rejeitar">Rejeitar</button>
+  <button type="button" class="botao botao--primario" data-acao="aprovar">Aprovar</button>
+</template>
+
+<!-- molde: item de dropdown (unidade / parceiro) montado pelo JS -->
+<template id="tpl-troca-opcao">
+  <button type="button" class="dropdown-item"></button>
+</template>
+
+<!-- molde: aviso "nenhum militar encontrado" quando o filtro do campo Militar não casa com ninguém -->
+<template id="tpl-troca-parceiro-vazio">
+  <div class="dropdown-item dropdown-item--inativo troca-parceiro-vazio"></div>
+</template>
+
+<!-- molde: item de parceiro indisponível (ocupado no dia) -->
+<template id="tpl-troca-parceiro-ocupado">
+  <button type="button" class="dropdown-item dropdown-item--inativo troca-parceiro-ocupado">
+    <span class="troca-parceiro-nome"></span>
+    <span class="troca-parceiro-motivo"></span>
+  </button>
+</template>

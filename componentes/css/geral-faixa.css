@@ -1,0 +1,25 @@
+/* ============================================================
+   GERAL-FAIXA — faixa de seção dos painéis esquerdos
+   Faixa grudenta (sticky) que agrupa itens numa lista OU serve de
+   cabeçalho de colunas (Distribuição › Modelos). Padrão único de
+   Ajustes, Distribuição e Extrajornada. Aqui só a casca (grude,
+   fundo, altura, divisória) e o arranjo comum (linha, 12px); o
+   conteúdo (nome via .rotulo-secao, seta, campo, rótulos de coluna)
+   e qualquer ajuste de arranjo ficam com cada tela. Cores/medidas
+   só por token. Sobre o painel suave, o fundo médio faz a faixa
+   "pousar", e o grude mantém o grupo visível ao rolar a lista.
+   ============================================================ */
+.faixa {
+  position: sticky;
+  top: 0;
+  z-index: 1;   /* empilhamento interno do sticky (MANUAL §8, faixa 1-9) */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 32px;
+  padding: 4px 12px;
+  background-color: var(--fundo-medio);
+  border: none;
+  border-bottom: 1px solid var(--borda);
+}

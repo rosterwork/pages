@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="icone-viatura" viewBox="0 0 24 24">
+    <path d="M7 17a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/>
+    <path d="M17 17a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/>
+    <path d="M5 17H3V6a1 1 0 0 1 1 -1h9v12"/>
+    <path d="M11 17H17M21 17H23V11H13M13 6H18L21 11"/>
+  </symbol>
+</svg>

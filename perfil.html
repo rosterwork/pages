@@ -1,0 +1,293 @@
+<div class="pagina">
+  <div class="pagina-cabecalho">
+    <div class="pagina-titulos">
+      <h1>Meu perfil</h1>
+      <span class="pagina-subtitulo" id="perfil-subtitulo"></span>
+    </div>
+  </div>
+
+  <div class="pagina-subcabecalho">
+    <div class="abas" id="perfil-abas">
+      <button type="button" class="aba aba--ativa" data-aba="perfil">Perfil</button>
+      <button type="button" class="aba" data-aba="dados">Meus dados</button>
+      <button type="button" class="aba" data-aba="seguranca">Segurança</button>
+    </div>
+  </div>
+
+  <div class="pagina-corpo">
+
+    <!-- ================= ABA PERFIL (leitura) ================= -->
+    <div class="perfil-aba" data-aba-painel="perfil">
+
+      <div class="perfil-cartao">
+        <div class="perfil-cartao-pessoa">
+          <span class="perfil-cartao-grad" id="perfil-cartao-grad"></span>
+          <span class="perfil-cartao-nome" id="perfil-cartao-nome"></span>
+        </div>
+        <span class="perfil-cartao-lotacao" id="perfil-cartao-lotacao"></span>
+        <span class="espacador-flex"></span>
+        <span class="selo selo--escuro" id="perfil-cartao-papel"></span>
+      </div>
+
+      <!-- aparece só quando há pedido esperando decisão (o JS escreve a contagem) -->
+      <p class="perfil-nota perfil-nota--pendente oculto" data-perfil-aguardando>
+        <svg class="icone perfil-nota-icone" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+        <span data-perfil-aguardando-texto></span>
+      </p>
+
+      <div class="perfil-secao">
+        <span class="rotulo-secao">Identificação</span>
+        <div class="perfil-grade">
+          <div class="perfil-dado">
+            <span class="perfil-dado-rotulo">Nome completo</span>
+            <span class="perfil-dado-valor" id="perfil-ver-nome-completo"></span>
+          </div>
+          <div class="perfil-dado">
+            <span class="perfil-dado-rotulo">CPF</span>
+            <span class="perfil-dado-valor" id="perfil-ver-cpf"></span>
+          </div>
+          <div class="perfil-dado">
+            <span class="perfil-dado-rotulo">RG</span>
+            <span class="perfil-dado-valor" id="perfil-ver-rg"></span>
+          </div>
+          <div class="perfil-dado">
+            <span class="perfil-dado-rotulo">Nascimento</span>
+            <span class="perfil-dado-valor" id="perfil-ver-nascimento"></span>
+          </div>
+          <div class="perfil-dado">
+            <span class="perfil-dado-rotulo">Celular</span>
+            <span class="perfil-dado-valor" id="perfil-ver-celular"></span>
+          </div>
+          <div class="perfil-dado">
+            <span class="perfil-dado-rotulo">E-mail</span>
+            <span class="perfil-dado-valor" id="perfil-ver-email"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="perfil-secao">
+        <span class="rotulo-secao">Carreira</span>
+        <div class="perfil-grade">
+          <div class="perfil-dado">
+            <span class="perfil-dado-rotulo">Nome de guerra</span>
+            <span class="perfil-dado-valor" id="perfil-ver-nome-guerra"></span>
+          </div>
+          <div class="perfil-dado">
+            <span class="perfil-dado-rotulo">Quadro</span>
+            <span class="perfil-dado-valor" id="perfil-ver-quadro"></span>
+          </div>
+          <div class="perfil-dado">
+            <span class="perfil-dado-rotulo">Setor</span>
+            <span class="perfil-dado-valor" id="perfil-ver-setor"></span>
+          </div>
+          <div class="perfil-dado">
+            <span class="perfil-dado-rotulo">Inclusão</span>
+            <span class="perfil-dado-valor" id="perfil-ver-inclusao"></span>
+          </div>
+          <div class="perfil-dado">
+            <span class="perfil-dado-rotulo">Colocação</span>
+            <span class="perfil-dado-valor" id="perfil-ver-colocacao"></span>
+          </div>
+          <div class="perfil-dado">
+            <span class="perfil-dado-rotulo">Habilitação</span>
+            <span class="perfil-dado-valor" id="perfil-ver-cnh"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="perfil-secao">
+        <span class="rotulo-secao">Preferências</span>
+        <div class="campo">
+          <span class="campo-rotulo">Tema</span>
+          <div class="abas abas--pequenas perfil-tema" id="perfil-tema">
+            <button type="button" class="aba" data-valor="claro">Claro</button>
+            <button type="button" class="aba" data-valor="escuro">Escuro</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ================= ABA MEUS DADOS (pedido de correção) ================= -->
+    <div class="perfil-aba oculto" data-aba-painel="dados">
+
+      <p class="perfil-nota">
+        <svg class="icone perfil-nota-icone" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+        <span>Toda alteração passa pela aprovação do administrador.</span>
+      </p>
+
+      <!-- a mesma faixa da aba Perfil: o militar vê o que está esperando de qualquer lado -->
+      <p class="perfil-nota perfil-nota--pendente oculto" data-perfil-aguardando>
+        <svg class="icone perfil-nota-icone" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+        <span data-perfil-aguardando-texto></span>
+      </p>
+
+      <div class="perfil-secao">
+        <span class="rotulo-secao">Identificação</span>
+        <div class="perfil-formulario">
+          <label class="campo">
+            <span class="campo-rotulo">Nome completo</span>
+            <input class="campo-entrada" id="perfil-f-nome-completo" data-campo="nome_completo" data-formato="nome" type="text" maxlength="100" autocomplete="off" />
+            <span class="campo-erro-texto"></span>
+          </label>
+          <label class="campo">
+            <span class="campo-rotulo">RG</span>
+            <input class="campo-entrada" id="perfil-f-rg" data-campo="rg" data-formato="rg" type="text" inputmode="numeric" maxlength="13" autocomplete="off" />
+            <span class="campo-erro-texto"></span>
+          </label>
+          <label class="campo">
+            <span class="campo-rotulo">Data de nascimento</span>
+            <input class="campo-entrada" id="perfil-f-nascimento" data-campo="data_de_nascimento" data-formato="data" type="text" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" autocomplete="off" />
+            <span class="campo-erro-texto"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="perfil-secao">
+        <span class="rotulo-secao">Contato</span>
+        <div class="perfil-formulario">
+          <label class="campo">
+            <span class="campo-rotulo">Celular</span>
+            <input class="campo-entrada" id="perfil-f-celular" data-campo="celular" data-formato="celular" type="text" inputmode="numeric" maxlength="15" placeholder="(00) 00000-0000" autocomplete="off" />
+            <span class="campo-erro-texto"></span>
+          </label>
+          <label class="campo">
+            <span class="campo-rotulo">E-mail</span>
+            <input class="campo-entrada" id="perfil-f-email" data-campo="email" type="text" inputmode="email" maxlength="120" autocomplete="off" />
+            <span class="campo-erro-texto"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="perfil-secao">
+        <span class="rotulo-secao">Carreira</span>
+        <div class="perfil-formulario">
+          <label class="campo">
+            <span class="campo-rotulo">Nome de guerra</span>
+            <input class="campo-entrada" id="perfil-f-nome-guerra" data-campo="nome_de_guerra" data-formato="guerra" type="text" maxlength="40" autocomplete="off" />
+            <span class="campo-erro-texto"></span>
+          </label>
+          <div class="campo">
+            <span class="campo-rotulo">Setor</span>
+            <div class="dropdown">
+              <button type="button" class="campo-entrada campo-selecao" id="perfil-f-setor" data-campo="tipo" data-valor="">
+                <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+                <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+              </button>
+              <div class="dropdown-menu">
+                <button type="button" class="dropdown-item" data-valor="Operacional">Operacional</button>
+                <button type="button" class="dropdown-item" data-valor="Administrativo">Administrativo</button>
+              </div>
+            </div>
+            <span class="campo-erro-texto"></span>
+          </div>
+          <label class="campo">
+            <span class="campo-rotulo">Data de inclusão</span>
+            <input class="campo-entrada" id="perfil-f-inclusao" data-campo="data_de_inclusao" data-formato="data" type="text" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" autocomplete="off" />
+            <span class="campo-erro-texto"></span>
+          </label>
+          <label class="campo">
+            <span class="campo-rotulo">Colocação</span>
+            <input class="campo-entrada" id="perfil-f-colocacao" data-campo="classificacao_cfo_cfp" data-formato="numero" type="text" inputmode="numeric" maxlength="4" placeholder="0000" autocomplete="off" />
+            <span class="campo-erro-texto"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="perfil-secao">
+        <span class="rotulo-secao">Habilitação</span>
+        <div class="perfil-formulario">
+          <div class="campo">
+            <span class="campo-rotulo">CNH</span>
+            <div class="dropdown">
+              <button type="button" class="campo-entrada campo-selecao" id="perfil-f-cnh" data-campo="cnh" data-valor="">
+                <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+                <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+              </button>
+              <div class="dropdown-menu">
+                <button type="button" class="dropdown-item" data-valor="Nenhuma">Nenhuma</button>
+                <button type="button" class="dropdown-item" data-valor="A">A</button>
+                <button type="button" class="dropdown-item" data-valor="B">B</button>
+                <button type="button" class="dropdown-item" data-valor="C">C</button>
+                <button type="button" class="dropdown-item" data-valor="D">D</button>
+                <button type="button" class="dropdown-item" data-valor="E">E</button>
+                <button type="button" class="dropdown-item" data-valor="AB">AB</button>
+                <button type="button" class="dropdown-item" data-valor="AC">AC</button>
+                <button type="button" class="dropdown-item" data-valor="AD">AD</button>
+                <button type="button" class="dropdown-item" data-valor="AE">AE</button>
+              </div>
+            </div>
+            <span class="campo-erro-texto"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="perfil-acoes">
+        <span class="campo-ajuda" id="perfil-contagem"></span>
+        <span class="espacador-flex"></span>
+        <button type="button" class="botao" id="perfil-desfazer" disabled>Desfazer</button>
+        <button type="button" class="botao botao--primario" id="perfil-enviar" disabled>Solicitar correção</button>
+      </div>
+
+      <div class="perfil-secao">
+        <span class="rotulo-secao">Minhas solicitações</span>
+        <div class="pedido-lista" id="perfil-minhas"></div>
+      </div>
+
+    </div>
+
+    <!-- ================= ABA SEGURANÇA ================= -->
+    <div class="perfil-aba oculto" data-aba-painel="seguranca">
+      <div class="perfil-secao">
+        <span class="rotulo-secao">Trocar senha</span>
+        <div class="perfil-formulario">
+          <label class="campo">
+            <span class="campo-rotulo">Senha atual</span>
+            <input class="campo-entrada" id="senha-atual" type="password" autocomplete="current-password" maxlength="72" />
+          </label>
+          <label class="campo">
+            <span class="campo-rotulo">Nova senha</span>
+            <input class="campo-entrada" id="senha-nova" type="password" autocomplete="new-password" maxlength="72" />
+          </label>
+          <label class="campo">
+            <span class="campo-rotulo">Confirmar nova senha</span>
+            <input class="campo-entrada" id="senha-confirma" type="password" autocomplete="new-password" maxlength="72" />
+            <span class="campo-erro-texto" id="senha-erro"></span>
+          </label>
+        </div>
+      </div>
+      <div class="perfil-acoes">
+        <span class="espacador-flex"></span>
+        <button type="button" class="botao botao--primario" id="senha-salvar" disabled>Trocar senha</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- molde: um pedido meu (com o status de cada alteração) -->
+<template id="tpl-perfil-meu-pedido">
+  <div class="pedido">
+    <div class="pedido-cabecalho">
+      <span class="pedido-textos">
+        <span class="pedido-quem"></span>
+        <span class="pedido-meta"></span>
+      </span>
+    </div>
+    <div class="pedido-itens"></div>
+  </div>
+</template>
+
+<!-- molde: uma alteração minha, com o selo de situação -->
+<template id="tpl-perfil-meu-item">
+  <div class="pedido-item pedido-item--leitura">
+    <span class="pedido-item-rotulo"></span>
+    <span class="pedido-item-valores">
+      <span class="pedido-item-de"></span>
+      <svg class="icone pedido-item-seta" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+      <span class="pedido-item-para"></span>
+    </span>
+    <span class="espacador-flex"></span>
+    <span class="selo pedido-item-status"></span>
+  </div>
+</template>

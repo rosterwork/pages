@@ -1,0 +1,248 @@
+<div class="pagina">
+  <div class="pagina-cabecalho">
+    <div class="pagina-titulos">
+      <h1>Folgas</h1>
+      <span class="pagina-subtitulo"></span>
+    </div>
+    <span class="espacador-flex"></span>
+    <button type="button" class="botao botao--primario" id="btn-solicitar-folga">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-mais.svg#icone-mais"/></svg>
+      <span>Solicitar folga</span>
+    </button>
+  </div>
+
+  <div class="pagina-subcabecalho">
+    <div class="abas" id="folgas-abas">
+      <button type="button" class="aba aba--ativa" data-aba="minhas">Minhas folgas</button>
+      <button type="button" class="aba" data-aba="equipe">Equipe</button>
+      <button type="button" class="aba oculto" data-aba="aprovacoes" id="folgas-aba-aprovacoes">Aprovações</button>
+    </div>
+    <span class="espacador-flex"></span>
+
+    <!-- controles da aba Equipe: alternância Saldos/Histórico + busca + período -->
+    <div class="folgas-controles oculto" data-controles="equipe">
+      <div class="abas abas--pequenas" id="folgas-equipe-modo">
+        <button type="button" class="aba aba--ativa" data-modo="saldos">Saldos</button>
+        <button type="button" class="aba" data-modo="historico">Histórico</button>
+      </div>
+      <div class="busca" id="busca-folgas">
+        <span class="busca-modo" aria-hidden="true">
+          <svg class="icone" width="16" height="16"><use href="icones/icone-pesquisar.svg#icone-pesquisar"/></svg>
+        </span>
+        <input type="text" class="busca-entrada" id="busca-folgas-entrada" maxlength="60" placeholder="Pesquisar militar" aria-label="Pesquisar militar" />
+        <button type="button" class="busca-limpar" id="busca-folgas-limpar" aria-label="Limpar pesquisa">
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+        </button>
+      </div>
+      <div class="dropdown oculto" id="folgas-periodo">
+        <button type="button" class="seletor" id="folgas-periodo-seletor">
+          <span class="seletor-texto" id="folgas-periodo-texto">Últimos 30 dias</span>
+          <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+        </button>
+        <div class="dropdown-menu">
+          <div class="dropdown-titulo">Período</div>
+          <button type="button" class="dropdown-item" data-periodo="30">Últimos 30 dias</button>
+          <button type="button" class="dropdown-item" data-periodo="90">Últimos 90 dias</button>
+          <button type="button" class="dropdown-item" data-periodo="ano">Últimos 12 meses</button>
+          <button type="button" class="dropdown-item" data-periodo="tudo">Tudo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pagina-corpo pagina-corpo--camada folgas-corpo">
+    <!-- Minhas folgas (autosserviço) -->
+    <div class="pagina-corpo-rolagem" data-aba-painel="minhas" id="folgas-minhas"></div>
+    <!-- Equipe · Saldos (placar por unidade) -->
+    <div class="pagina-corpo-rolagem oculto" data-aba-painel="equipe-saldos">
+      <div class="arvore arvore-unidades" id="arvore-folgas"></div>
+    </div>
+    <!-- Equipe · Histórico (todas as folgas) -->
+    <div class="pagina-corpo-rolagem oculto folgas-lista" data-aba-painel="equipe-historico" id="folgas-historico"></div>
+    <!-- Aprovações (fila de pedidos) -->
+    <div class="pagina-corpo-rolagem oculto folgas-lista" data-aba-painel="aprovacoes" id="folgas-aprovacoes"></div>
+  </div>
+</div>
+
+<!-- molde: aba Minhas folgas (autosserviço) -->
+<template id="tpl-folga-minhas">
+  <div class="folga-minhas">
+    <div class="folga-minhas-topo">
+      <div class="folga-saldo-bloco folga-minhas-saldo">
+        <span class="folga-saldo-bloco-rotulo">Seu saldo</span>
+        <span class="folga-saldo-bloco-valor"></span>
+      </div>
+    </div>
+    <div class="folga-minhas-secao oculto" data-secao="pedidos">
+      <span class="rotulo-secao">Meus pedidos</span>
+      <div class="folga-minhas-lista" data-lista="pedidos"></div>
+    </div>
+    <div class="folga-minhas-secao">
+      <span class="rotulo-secao">Extrato</span>
+      <div class="folga-minhas-lista" data-lista="extrato"></div>
+    </div>
+  </div>
+</template>
+
+<!-- molde: linha do militar no placar (Equipe · Saldos) -->
+<template id="tpl-folga-saldo-item">
+  <div class="folga-saldo-item folga-saldo-item--clicavel" role="button" tabindex="0">
+    <span class="folga-saldo-textos">
+      <span class="folga-saldo-grad"></span>
+      <span class="folga-saldo-nome"></span>
+    </span>
+    <span class="espacador-flex"></span>
+    <span class="selo folga-saldo-selo"></span>
+  </div>
+</template>
+
+<!-- molde: linha de lista (Aprovações e Histórico) -->
+<template id="tpl-folga-linha">
+  <div class="folga-linha" role="button" tabindex="0">
+    <span class="folga-linha-textos">
+      <span class="folga-linha-titulo"></span>
+      <span class="folga-linha-meta"></span>
+    </span>
+    <span class="espacador-flex"></span>
+    <span class="folga-linha-fim"></span>
+  </div>
+</template>
+
+<!-- molde: botões de decisão do admin numa solicitação (Recusar / Aprovar) -->
+<!-- molde: detalhe da folga no painel de aprovação (militar + linhas + análise de impacto) -->
+<template id="tpl-folga-detalhe">
+  <div class="folga-aprov-detalhe">
+    <div class="folga-aprov-secao">
+      <span class="rotulo-secao">Folga solicitada</span>
+      <span class="folga-aprov-nome" data-nome></span>
+      <div class="folga-aprov-linhas" data-linhas></div>
+    </div>
+    <div class="folga-aprov-secao oculto" data-secao-analise>
+      <span class="rotulo-secao">Análise de impacto</span>
+      <div class="impacto-analise" data-analise></div>
+    </div>
+  </div>
+</template>
+
+<!-- molde: ações do painel de aprovação (rodapé) -->
+<template id="tpl-folga-aprovacao-acoes">
+  <button type="button" class="botao botao--perigo" data-acao="recusar">Recusar</button>
+  <button type="button" class="botao botao--primario" data-acao="aprovar">Aprovar</button>
+</template>
+
+<!-- molde: lista vazia (texto preenchido pelo JS) -->
+<template id="tpl-folga-lista-vazio">
+  <div class="folga-vazio"></div>
+</template>
+
+<!-- molde: selo avulso (situação) -->
+<template id="tpl-folga-selo">
+  <span class="selo"></span>
+</template>
+
+<!-- molde: "de (seta) para" — a seta é o ícone, nunca o caractere -->
+<template id="tpl-folga-de-para">
+  <span class="folga-de-para">
+    <span class="folga-de-para-de"></span>
+    <svg class="icone folga-de-para-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+    <span class="folga-de-para-para"></span>
+  </span>
+</template>
+
+<!-- molde: uma linha do extrato (Minhas folgas e painel) -->
+<template id="tpl-folga-extrato-linha">
+  <div class="folga-extrato-linha">
+    <span class="folga-extrato-textos">
+      <span class="folga-extrato-data"></span>
+      <span class="folga-extrato-motivo"></span>
+    </span>
+    <span class="espacador-flex"></span>
+    <span class="folga-extrato-valor"></span>
+  </div>
+</template>
+
+<!-- molde: sub-abas do painel do militar (Extrato / Ações) -->
+<template id="tpl-folga-painel-subabas">
+  <div class="abas abas--pequenas" id="folga-painel-subabas">
+    <button type="button" class="aba aba--ativa" data-sub="extrato">Extrato</button>
+    <button type="button" class="aba" data-sub="acoes">Ações</button>
+  </div>
+</template>
+
+<!-- molde: corpo do painel — aba Extrato (saldo + lançamentos) -->
+<template id="tpl-folga-extrato">
+  <div class="folga-extrato">
+    <div class="folga-saldo-bloco">
+      <span class="folga-saldo-bloco-rotulo">Saldo</span>
+      <span class="folga-saldo-bloco-valor"></span>
+    </div>
+    <span class="rotulo-secao">Lançamentos</span>
+    <div class="folga-extrato-linhas"></div>
+  </div>
+</template>
+
+<!-- molde: corpo do painel — aba Ações (gestor) -->
+<template id="tpl-folga-painel-acoes">
+  <div class="folga-acoes">
+    <button type="button" class="botao folga-acoes-btn" data-acao="conceder">Conceder folga</button>
+    <button type="button" class="botao folga-acoes-btn" data-acao="ajustar">Ajustar saldo</button>
+  </div>
+</template>
+
+<!-- molde: formulário de folga (solicitar / conceder) -->
+<template id="tpl-folga-form">
+  <div class="folga-form">
+    <label class="campo">
+      <span class="campo-rotulo">Dia da folga</span>
+      <input type="text" class="campo-entrada" id="ff-data" readonly placeholder="Escolher dia" />
+      <span class="campo-erro-texto"></span>
+    </label>
+    <div class="campo">
+      <span class="campo-rotulo">Período</span>
+      <div id="ff-barra"></div>
+    </div>
+    <div class="folga-form-consumo" id="ff-consumo"></div>
+    <label class="campo">
+      <span class="campo-rotulo">Motivo</span>
+      <input type="text" class="campo-entrada" id="ff-motivo" maxlength="120" placeholder="Ex.: assunto particular" />
+      <span class="campo-erro-texto"></span>
+    </label>
+  </div>
+</template>
+
+<!-- molde: formulário de ajuste de saldo (adicionar / descontar, com motivo) -->
+<template id="tpl-folga-form-ajuste">
+  <div class="folga-form">
+    <div class="campo">
+      <span class="campo-rotulo">Tipo de ajuste</span>
+      <div class="abas abas--pequenas folga-ajuste-tipo" id="fa-tipo">
+        <button type="button" class="aba aba--ativa" data-tipo="adicionar">Adicionar (+)</button>
+        <button type="button" class="aba" data-tipo="descontar">Descontar (−)</button>
+      </div>
+    </div>
+    <label class="campo">
+      <span class="campo-rotulo">Horas</span>
+      <input type="text" class="campo-entrada" id="fa-horas" inputmode="decimal" maxlength="6" placeholder="Ex.: 12" />
+      <span class="campo-erro-texto"></span>
+    </label>
+    <div class="folga-form-consumo" id="fa-previa"></div>
+    <label class="campo">
+      <span class="campo-rotulo">Motivo</span>
+      <input type="text" class="campo-entrada" id="fa-motivo" maxlength="120" placeholder="Ex.: limpou o quartel dia 26/05" />
+      <span class="campo-erro-texto"></span>
+    </label>
+  </div>
+</template>
+
+<!-- molde: ações do rodapé de um formulário (Cancelar / Confirmar) -->
+<template id="tpl-folga-form-acoes">
+  <button type="button" class="botao" data-acao="cancelar">Cancelar</button>
+  <button type="button" class="botao botao--primario" data-acao="confirmar">Confirmar</button>
+</template>
+
+<!-- molde: botão de cancelar uma folga (no extrato; só admin) -->
+<template id="tpl-folga-cancelar">
+  <button type="button" class="botao botao--icone botao--pequeno folga-cancelar" aria-label="Cancelar folga">
+    <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+  </button>
+</template>

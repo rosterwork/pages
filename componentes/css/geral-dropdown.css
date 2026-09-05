@@ -1,0 +1,124 @@
+/* ============================================================
+   DROPDOWN — componente compartilhado entre páginas
+   O menu é posicionado pelo helper geral-flutuante (classe .flutuante:
+   position: fixed + variáveis) — não é recortado por áreas roláveis
+   (modais, painéis) nem cria barra de rolagem. Aqui fica só o visual
+   do menu e dos itens. Comportamento: componentes/js/geral-dropdown.js
+   ============================================================ */
+
+.dropdown {
+  position: relative;
+  display: inline-flex;
+}
+
+/* painel — oculto por padrão; posição e altura máxima vêm do .flutuante */
+.dropdown-menu {
+  display: none;
+  z-index: 10;
+  min-width: 180px;
+  overflow-y: auto;
+  padding: 4px;
+  background-color: var(--fundo-superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  box-shadow: var(--sombra-flutuante);
+  white-space: nowrap;
+}
+
+.dropdown--aberto .dropdown-menu {
+  display: block;
+}
+
+/* variante larga — árvores e seleções complexas; a rolagem fica na
+   área interna .dropdown-menu-rolagem (o menu em si não rola) */
+.dropdown-menu--largo {
+  min-width: 320px;
+  display: none;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+.dropdown--aberto .dropdown-menu--largo {
+  display: flex;
+}
+
+/* área rolável dentro do menu largo */
+.dropdown-menu-rolagem {
+  overflow-y: auto;
+  padding: 4px;
+  flex: 1 1 0%;
+  min-height: 0;
+}
+
+/* rodapé fixo do menu largo */
+.dropdown-menu-rodape {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-top: 1px solid var(--borda);
+  background-color: var(--fundo-suave);
+}
+
+/* ---------- elementos internos ---------- */
+
+.dropdown-titulo {
+  padding: 8px 8px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+
+.dropdown-divisor {
+  height: 0;
+  margin: 4px 0;
+  border-top: 1px solid var(--borda);
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 30px;
+  padding: 0 8px;
+  border: none;
+  border-radius: var(--raio-pequeno);
+  background: none;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--texto);
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.dropdown-item:hover {
+  background-color: var(--fundo-medio);
+}
+
+/* item com seleção ativa */
+.dropdown-item--ativo {
+  font-weight: 600;
+  color: var(--texto-forte);
+  background-color: var(--fundo-medio);
+}
+
+/* item visível mas não clicável */
+.dropdown-item--inativo {
+  color: var(--texto-fraco);
+  cursor: default;
+  pointer-events: none;
+}
+
+/* item destrutivo */
+.dropdown-item--perigo {
+  color: var(--erro);
+}
+
+.dropdown-item--perigo:hover {
+  background-color: var(--erro-fundo);
+}

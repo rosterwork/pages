@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Entrar no Roster Work — sistema de escala de serviço." />
+  <link rel="icon" href="icones/icone-logo.svg" type="image/svg+xml" />
+  <title>Login — Roster Work</title>
+  <script src="js/login-sessao.js"></script>
+  <link rel="stylesheet" href="css/geral-tema.css" />
+  <link rel="stylesheet" href="css/geral-base.css" />
+  <link rel="stylesheet" href="componentes/css/geral-botao.css" />
+  <link rel="stylesheet" href="componentes/css/geral-campo.css" />
+  <link rel="stylesheet" href="componentes/css/geral-carregando.css" />
+  <link rel="stylesheet" href="css/login-pagina.css" />
+</head>
+<body>
+
+  <noscript>
+    <p>O Roster Work precisa de JavaScript ativado para funcionar. Ative o JavaScript no navegador e recarregue a página.</p>
+  </noscript>
+
+  <div class="login-fundo">
+    <div class="login-card">
+
+      <div class="login-logo">
+        <svg viewBox="0 0 186.44 96.312" fill="currentColor" preserveAspectRatio="xMidYMid meet">
+          <use href="icones/icone-logo.svg#icone-logo"></use>
+        </svg>
+      </div>
+
+      <div class="login-formulario">
+        <div class="login-campos">
+
+          <div class="campo">
+            <label class="campo-rotulo" for="entrada-identificador">CPF ou RG</label>
+            <input class="campo-entrada" type="text" id="entrada-identificador" name="identificador" autocomplete="username" />
+            <span class="campo-erro-texto" role="alert"></span>
+          </div>
+
+          <div class="campo">
+            <label class="campo-rotulo" for="entrada-senha">Senha</label>
+            <input class="campo-entrada" type="password" id="entrada-senha" name="senha" autocomplete="current-password" />
+            <span class="campo-erro-texto" role="alert"></span>
+          </div>
+
+        </div>
+
+        <button class="botao botao--primario" id="btn-entrar" type="button">Entrar</button>
+
+        <div class="login-links">
+          <button class="botao botao--texto" type="button" id="btn-criar-conta">Criar conta</button>
+          <button class="botao botao--texto" type="button">Esqueci minha senha</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <template id="carregando-pontos">
+    <span class="carregando-pontos" aria-label="Carregando">
+      <span>.</span><span>.</span><span>.</span>
+    </span>
+  </template>
+
+  <script src="componentes/js/geral-carregando.js"></script>
+  <script src="componentes/js/geral-mensagens.js"></script>
+  <script src="js/login-auth.js"></script>
+  <script src="js/login-main.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,22 @@
+/* ============================================================
+   FLUTUANTE — posicionamento de painéis flutuantes (compartilhado)
+   Aplicado pelo componentes/js/geral-flutuante.js a qualquer painel
+   que abre ancorado num gatilho (menu de dropdown, calendário, e
+   futuros popovers). Aqui fica SÓ a posição; o visual (fundo, borda,
+   rolagem) é de cada componente. A posição vem por variáveis CSS:
+   --flutuante-x / --flutuante-top (ou --flutuante-bottom no modo
+   "acima") / --flutuante-max-h / --flutuante-w (largura do gatilho).
+   ============================================================ */
+
+.flutuante {
+  position: fixed;
+  left: var(--flutuante-x, 0);
+  top: var(--flutuante-top, 0);
+  max-height: var(--flutuante-max-h, none);
+}
+
+/* abre para cima: ancorado pela borda de baixo (cresce para cima) */
+.flutuante--acima {
+  top: auto;
+  bottom: var(--flutuante-bottom, 0);
+}

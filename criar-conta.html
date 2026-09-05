@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Criar conta no Roster Work — sistema de escala de serviço." />
+  <link rel="icon" href="icones/icone-logo.svg" type="image/svg+xml" />
+  <title>Criar conta — Roster Work</title>
+  <script src="js/criar-conta-sessao.js"></script>
+  <link rel="stylesheet" href="css/geral-tema.css" />
+  <link rel="stylesheet" href="css/geral-base.css" />
+  <link rel="stylesheet" href="componentes/css/geral-botao.css" />
+  <link rel="stylesheet" href="componentes/css/geral-campo.css" />
+  <link rel="stylesheet" href="componentes/css/geral-carregando.css" />
+  <link rel="stylesheet" href="componentes/css/geral-flutuante.css" />
+  <link rel="stylesheet" href="componentes/css/geral-dropdown.css" />
+  <link rel="stylesheet" href="componentes/css/geral-modal.css" />
+  <link rel="stylesheet" href="componentes/css/geral-aviso.css" />
+  <link rel="stylesheet" href="componentes/css/geral-arvore.css" />
+  <link rel="stylesheet" href="componentes/css/geral-calendario.css" />
+  <link rel="stylesheet" href="css/criar-conta.css" />
+</head>
+<body>
+
+  <noscript>
+    <p>O Roster Work precisa de JavaScript ativado para funcionar. Ative o JavaScript no navegador e recarregue a página.</p>
+  </noscript>
+
+  <div class="criar-conta-fundo">
+    <div class="criar-conta-card">
+
+      <div class="criar-conta-logo">
+        <svg viewBox="0 0 186.44 96.312" fill="currentColor" preserveAspectRatio="xMidYMid meet">
+          <use href="icones/icone-logo.svg#icone-logo"></use>
+        </svg>
+      </div>
+      <h1 class="criar-conta-titulo">Criar conta</h1>
+
+      <div class="criar-conta-corpo" id="cc-corpo">
+        <p class="criar-conta-nota">
+          <svg class="icone criar-conta-nota-icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+          <span>O cadastro passa pela aprovação de um administrador antes de liberar o acesso.</span>
+        </p>
+
+        <div class="criar-conta-secao">
+          <span class="rotulo-secao">Dados pessoais</span>
+          <label class="campo">
+            <span class="campo-rotulo">Nome completo</span>
+            <input class="campo-entrada" id="cc-nome-completo" type="text" maxlength="100" placeholder="Ex.: João Carlos Andrade" data-formato="nome" />
+            <span class="campo-erro-texto"></span>
+          </label>
+          <label class="campo">
+            <span class="campo-rotulo">CPF</span>
+            <input class="campo-entrada" id="cc-cpf" type="text" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" />
+            <span class="campo-erro-texto"></span>
+          </label>
+          <label class="campo">
+            <span class="campo-rotulo">RG</span>
+            <input class="campo-entrada" id="cc-rg" type="text" inputmode="numeric" maxlength="13" placeholder="00.000.000-0" />
+            <span class="campo-erro-texto"></span>
+          </label>
+          <label class="campo">
+            <span class="campo-rotulo">Data de nascimento</span>
+            <input class="campo-entrada" id="cc-nascimento" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" />
+            <span class="campo-erro-texto"></span>
+          </label>
+          <div class="campo">
+            <span class="campo-rotulo">CNH</span>
+            <div class="dropdown">
+              <button type="button" class="campo-entrada campo-selecao" id="cc-cnh">
+                <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+                <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+              </button>
+              <div class="dropdown-menu">
+                <button type="button" class="dropdown-item" data-valor="Nenhuma">Nenhuma</button>
+                <button type="button" class="dropdown-item" data-valor="A">A</button>
+                <button type="button" class="dropdown-item" data-valor="B">B</button>
+                <button type="button" class="dropdown-item" data-valor="C">C</button>
+                <button type="button" class="dropdown-item" data-valor="D">D</button>
+                <button type="button" class="dropdown-item" data-valor="E">E</button>
+                <button type="button" class="dropdown-item" data-valor="AB">AB</button>
+                <button type="button" class="dropdown-item" data-valor="AC">AC</button>
+                <button type="button" class="dropdown-item" data-valor="AD">AD</button>
+                <button type="button" class="dropdown-item" data-valor="AE">AE</button>
+              </div>
+            </div>
+            <span class="campo-erro-texto"></span>
+          </div>
+          <label class="campo">
+            <span class="campo-rotulo">Celular</span>
+            <input class="campo-entrada" id="cc-celular" type="text" inputmode="numeric" maxlength="15" placeholder="(00) 00000-0000" />
+            <span class="campo-erro-texto"></span>
+          </label>
+          <label class="campo">
+            <span class="campo-rotulo">E-mail</span>
+            <input class="campo-entrada" id="cc-email" type="text" maxlength="80" placeholder="nome@exemplo.com" autocomplete="email" />
+            <span class="campo-erro-texto"></span>
+          </label>
+        </div>
+
+        <div class="criar-conta-secao">
+          <span class="rotulo-secao">Dados institucionais</span>
+          <div class="campo">
+            <span class="campo-rotulo">Tipo</span>
+            <div class="dropdown">
+              <button type="button" class="campo-entrada campo-selecao" id="cc-tipo">
+                <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+                <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+              </button>
+              <div class="dropdown-menu" id="cc-tipo-menu"></div>
+            </div>
+            <span class="campo-erro-texto"></span>
+          </div>
+          <div class="campo">
+            <span class="campo-rotulo">Posto / Patente</span>
+            <div class="dropdown">
+              <button type="button" class="campo-entrada campo-selecao" id="cc-posto" disabled>
+                <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione o tipo antes</span>
+                <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+              </button>
+              <div class="dropdown-menu" id="cc-posto-menu"></div>
+            </div>
+            <span class="campo-erro-texto"></span>
+          </div>
+          <label class="campo">
+            <span class="campo-rotulo">Nome de guerra</span>
+            <input class="campo-entrada" id="cc-nome-guerra" type="text" maxlength="40" placeholder="Ex.: Andrade" />
+            <span class="campo-erro-texto"></span>
+          </label>
+          <label class="campo">
+            <span class="campo-rotulo">Data de inclusão</span>
+            <input class="campo-entrada" id="cc-inclusao" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" />
+            <span class="campo-erro-texto"></span>
+          </label>
+          <label class="campo">
+            <span class="campo-rotulo" id="cc-colocacao-rotulo">Colocação</span>
+            <input class="campo-entrada" id="cc-colocacao" type="text" inputmode="numeric" maxlength="4" placeholder="Selecione o tipo antes" disabled />
+            <span class="campo-erro-texto"></span>
+          </label>
+          <div class="campo">
+            <span class="campo-rotulo">Setor atual</span>
+            <div class="dropdown">
+              <button type="button" class="campo-entrada campo-selecao" id="cc-setor">
+                <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+                <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+              </button>
+              <div class="dropdown-menu">
+                <button type="button" class="dropdown-item" data-valor="Operacional">Operacional</button>
+                <button type="button" class="dropdown-item" data-valor="Administrativo">Administrativo</button>
+              </div>
+            </div>
+            <span class="campo-erro-texto"></span>
+          </div>
+          <div class="campo">
+            <span class="campo-rotulo">Lotação atual</span>
+            <div class="dropdown" id="cc-lotacao-dropdown">
+              <button type="button" class="campo-entrada campo-selecao" id="cc-lotacao">
+                <span class="campo-selecao-texto campo-selecao-texto--vazio" id="cc-lotacao-texto">Selecione uma unidade</span>
+                <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+              </button>
+              <div class="dropdown-menu dropdown-menu--largo">
+                <div class="dropdown-menu-rolagem">
+                  <div class="arvore" id="cc-lotacao-arvore"></div>
+                </div>
+              </div>
+            </div>
+            <span class="campo-erro-texto"></span>
+          </div>
+        </div>
+
+        <div class="criar-conta-secao oculto" id="cc-promocoes-secao">
+          <span class="rotulo-secao">Datas de promoções</span>
+          <div class="criar-conta-promocoes" id="cc-promocoes"></div>
+        </div>
+
+        <!-- senha: sem título — só a divisória separa dos dados; o login é por CPF -->
+        <div class="criar-conta-secao">
+          <label class="campo">
+            <span class="campo-rotulo">Senha</span>
+            <input class="campo-entrada" id="cc-senha" type="password" maxlength="72" autocomplete="new-password" />
+            <span class="campo-erro-texto"></span>
+          </label>
+          <label class="campo">
+            <span class="campo-rotulo">Confirmar senha</span>
+            <input class="campo-entrada" id="cc-senha-confirma" type="password" maxlength="72" autocomplete="new-password" />
+            <span class="campo-erro-texto"></span>
+          </label>
+        </div>
+
+        <button class="botao botao--primario" id="cc-enviar" type="button">Enviar cadastro</button>
+
+        <div class="criar-conta-links">
+          <button class="botao botao--texto" type="button" id="cc-voltar-login">Voltar ao login</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- molde: campo de data de promoção (clonado por posto já percorrido) -->
+  <template id="tpl-cc-promocao">
+    <label class="campo">
+      <span class="campo-rotulo"></span>
+      <input class="campo-entrada" type="text" name="promocao-data" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" />
+      <span class="campo-erro-texto"></span>
+    </label>
+  </template>
+
+  <!-- molde: item de campo de seleção montado pelo JS (Tipo, Posto, Lotação) -->
+  <template id="tpl-cc-opcao">
+    <button type="button" class="dropdown-item"></button>
+  </template>
+
+  <!-- moldes da árvore de unidades (componente geral-seletor-unidades) -->
+  <template id="tpl-seletor-no">
+    <div class="arvore-grupo">
+      <div class="arvore-linha">
+        <button type="button" class="arvore-seta" aria-label="Expandir ou recolher" aria-expanded="false">
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
+        </button>
+        <button type="button" class="caixa-selecao" role="checkbox" aria-checked="false">
+          <svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg>
+        </button>
+        <span class="arvore-nome"></span>
+        <span class="arvore-detalhe"></span>
+      </div>
+      <div class="arvore-filhos"></div>
+    </div>
+  </template>
+
+  <template id="tpl-seletor-trecho">
+    <span class="seletor-trecho"></span>
+  </template>
+
+  <template id="tpl-seletor-cidade">
+    <span class="seletor-cidade"></span>
+  </template>
+
+  <!-- camada que impede clique por engano enquanto uma ação está no ar -->
+  <div class="carregando-bloqueio oculto" id="carregando-bloqueio"></div>
+
+  <template id="carregando-pontos">
+    <span class="carregando-pontos" aria-label="Carregando">
+      <span>.</span><span>.</span><span>.</span>
+    </span>
+  </template>
+
+  <!-- moldes do calendário (componente geral-calendario) -->
+  <template id="tpl-calendario">
+    <div class="calendario">
+      <div class="calendario-cabecalho">
+        <button type="button" class="botao botao--icone botao--pequeno calendario-nav" data-nav="-1" aria-label="Anterior">
+          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-esquerda.svg#icone-seta-esquerda"/></svg>
+        </button>
+        <div class="calendario-seletores">
+          <div class="dropdown calendario-seletor" data-tipo="mes">
+            <button type="button" class="calendario-seletor-gatilho">
+              <span class="calendario-seletor-texto"></span>
+              <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+            </button>
+            <div class="dropdown-menu calendario-menu"></div>
+          </div>
+          <div class="dropdown calendario-seletor" data-tipo="ano">
+            <button type="button" class="calendario-seletor-gatilho">
+              <span class="calendario-seletor-texto"></span>
+              <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+            </button>
+            <div class="dropdown-menu calendario-menu"></div>
+          </div>
+        </div>
+        <button type="button" class="botao botao--icone botao--pequeno calendario-nav" data-nav="1" aria-label="Próximo">
+          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
+        </button>
+      </div>
+      <div class="calendario-corpo-dias">
+        <div class="calendario-semana">
+          <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
+        </div>
+        <div class="calendario-dias"></div>
+      </div>
+      <div class="calendario-meses"></div>
+    </div>
+  </template>
+
+  <template id="tpl-calendario-opcao">
+    <button type="button" class="dropdown-item"></button>
+  </template>
+
+  <template id="tpl-calendario-dia">
+    <button type="button" class="calendario-dia"></button>
+  </template>
+
+  <template id="tpl-calendario-mes">
+    <button type="button" class="calendario-mes"></button>
+  </template>
+
+  <!-- modal de aviso (componente geral-aviso; a mesma marcação do shell) -->
+  <div class="modal-veu" id="veu-aviso">
+    <div class="modal modal--aviso" role="alertdialog" aria-modal="true" aria-labelledby="aviso-veu-mensagem">
+      <div class="modal-corpo aviso-corpo">
+        <svg class="icone aviso-icone aviso-icone--sucesso oculto" width="32" height="32" aria-hidden="true"><use href="icones/icone-sucesso.svg#icone-sucesso"/></svg>
+        <svg class="icone aviso-icone aviso-icone--alerta oculto" width="32" height="32" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+        <span class="aviso-mensagem" id="aviso-veu-mensagem"></span>
+      </div>
+      <div class="modal-rodape">
+        <button type="button" class="botao aviso-cancelar oculto"></button>
+        <button type="button" class="botao botao--primario aviso-confirmar">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="componentes/js/geral-limpar-comentarios.js"></script>
+  <script src="componentes/js/geral-carregando.js"></script>
+  <script src="componentes/js/geral-mensagens.js"></script>
+  <script src="componentes/js/geral-data.js"></script>
+  <script src="componentes/js/geral-dropdown.js"></script>
+  <script src="componentes/js/geral-flutuante.js"></script>
+  <script src="componentes/js/geral-modal.js"></script>
+  <script src="componentes/js/geral-aviso.js"></script>
+  <script src="componentes/js/geral-calendario.js"></script>
+  <script src="componentes/js/geral-campos.js"></script>
+  <script src="componentes/js/geral-api.js"></script>
+  <script src="componentes/js/geral-guarda-saida.js"></script>
+  <script src="componentes/js/geral-seletor-unidades.js"></script>
+  <script src="js/criar-conta-envio.js"></script>
+  <script src="js/criar-conta.js"></script>
+
+</body>
+</html>

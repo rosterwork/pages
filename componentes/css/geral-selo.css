@@ -1,0 +1,45 @@
+/* ============================================================
+   SELO — etiqueta pequena de estado/situação
+   Base neutra + variantes de significado (só texto/borda, nunca
+   área grande). Situação temporária sempre com data-limite.
+   ============================================================ */
+
+.selo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 20px;
+  padding: 0 8px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-total);
+  background-color: var(--fundo-suave);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--texto-suave);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.selo--escuro {
+  background-color: var(--fundo-contraste);
+  border-color: var(--fundo-contraste);
+  color: var(--texto-invertido);
+}
+
+.selo--sucesso {
+  background-color: var(--sucesso-fundo);
+  border-color: var(--sucesso);
+  color: var(--sucesso);
+}
+
+.selo--alerta {
+  background-color: var(--alerta-fundo);
+  border-color: var(--alerta);
+  color: var(--alerta);
+}
+
+.selo--erro {
+  background-color: var(--erro-fundo);
+  border-color: var(--erro);
+  color: var(--erro);
+}

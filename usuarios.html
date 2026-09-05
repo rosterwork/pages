@@ -1,0 +1,492 @@
+<div class="pagina">
+  <div class="pagina-cabecalho">
+    <div class="pagina-titulos">
+      <h1>Usuários</h1>
+      <span class="pagina-subtitulo"></span>
+    </div>
+    <span class="espacador-flex"></span>
+    <div class="dropdown" id="dropdown-ordem">
+      <button type="button" class="botao botao--icone" id="ordem-seletor" aria-label="Ordenar" data-dica="Ordenar">
+        <svg class="icone" width="14" height="14" aria-hidden="true" data-ordem-icone="antiguidade"><use href="icones/icone-ordem-antiguidade.svg#icone-ordem-antiguidade"/></svg>
+        <svg class="icone oculto" width="14" height="14" aria-hidden="true" data-ordem-icone="antiguidade-inversa"><use href="icones/icone-ordem-antiguidade-inversa.svg#icone-ordem-antiguidade-inversa"/></svg>
+        <svg class="icone oculto" width="14" height="14" aria-hidden="true" data-ordem-icone="az"><use href="icones/icone-ordem-az.svg#icone-ordem-az"/></svg>
+        <svg class="icone oculto" width="14" height="14" aria-hidden="true" data-ordem-icone="za"><use href="icones/icone-ordem-za.svg#icone-ordem-za"/></svg>
+      </button>
+      <div class="dropdown-menu" id="ordem-menu">
+        <div class="dropdown-titulo">Ordem</div>
+        <button type="button" class="dropdown-item" data-ordem="antiguidade">
+          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-ordem-antiguidade.svg#icone-ordem-antiguidade"/></svg>
+          <span>Antiguidade · mais antigo primeiro</span>
+        </button>
+        <button type="button" class="dropdown-item" data-ordem="antiguidade-inversa">
+          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-ordem-antiguidade-inversa.svg#icone-ordem-antiguidade-inversa"/></svg>
+          <span>Antiguidade · mais moderno primeiro</span>
+        </button>
+        <div class="dropdown-divisor"></div>
+        <button type="button" class="dropdown-item" data-ordem="az">
+          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-ordem-az.svg#icone-ordem-az"/></svg>
+          <span>Alfabética · de A a Z</span>
+        </button>
+        <button type="button" class="dropdown-item" data-ordem="za">
+          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-ordem-za.svg#icone-ordem-za"/></svg>
+          <span>Alfabética · de Z a A</span>
+        </button>
+      </div>
+    </div>
+    <div class="dropdown" id="dropdown-exibir">
+      <button type="button" class="botao botao--icone" id="exibir-seletor" aria-label="Exibir" data-dica="Exibir">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-exibir.svg#icone-exibir"/></svg>
+      </button>
+      <div class="dropdown-menu" id="exibir-menu">
+        <div class="dropdown-titulo">Identificador</div>
+        <button type="button" class="exibir-opcao" data-exibir-id="cpf">
+          <svg class="icone exibir-check" width="12" height="12" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg>
+          <span>CPF</span>
+        </button>
+        <button type="button" class="exibir-opcao" data-exibir-id="rg">
+          <svg class="icone exibir-check" width="12" height="12" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg>
+          <span>RG</span>
+        </button>
+        <button type="button" class="exibir-opcao" data-exibir-id="telefone">
+          <svg class="icone exibir-check" width="12" height="12" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg>
+          <span>Telefone</span>
+        </button>
+        <button type="button" class="exibir-opcao" data-exibir-id="email">
+          <svg class="icone exibir-check" width="12" height="12" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg>
+          <span>E-mail</span>
+        </button>
+        <div class="dropdown-divisor"></div>
+        <div class="dropdown-titulo">Nome</div>
+        <button type="button" class="exibir-opcao" data-exibir-nome="guerra">
+          <svg class="icone exibir-check" width="12" height="12" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg>
+          <span>Nome de guerra</span>
+        </button>
+        <button type="button" class="exibir-opcao" data-exibir-nome="completo">
+          <svg class="icone exibir-check" width="12" height="12" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg>
+          <span>Completo + guerra</span>
+        </button>
+        <div class="dropdown-divisor"></div>
+        <button type="button" class="exibir-opcao" data-exibir-toggle="hierarquia">
+          <svg class="icone exibir-check" width="12" height="12" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg>
+          <span>Mostrar hierarquia</span>
+        </button>
+      </div>
+    </div>
+    <button type="button" class="botao botao--primario oculto" id="btn-novo-usuario">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-novo-usuario.svg#icone-novo-usuario"/></svg>
+      <span>Novo usuário</span>
+    </button>
+  </div>
+  <div class="pagina-subcabecalho">
+    <div class="abas" id="usuarios-abas">
+      <button type="button" class="aba aba--ativa" data-aba="efetivo">Efetivo</button>
+      <button type="button" class="aba oculto" data-aba="aprovacoes" id="usuarios-aba-aprovacoes">
+        <span>Aprovações</span>
+        <span class="selo aba-contagem oculto" id="usuarios-aprovacoes-contagem"></span>
+      </button>
+    </div>
+    <span class="espacador-flex"></span>
+
+    <div class="usuarios-filtros" id="usuarios-filtros">
+    <svg class="icone filtro-funil" id="filtro-funil" width="16" height="16" aria-hidden="true"><use href="icones/icone-filtrar.svg#icone-filtrar"/></svg>
+
+    <div class="dropdown" id="dropdown-graus">
+      <button type="button" class="seletor" id="graus-seletor">
+        <span class="seletor-texto" id="graus-texto">Todos os graus</span>
+        <span class="seletor-limpar" id="graus-limpar" data-dica="Limpar">
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+        </span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu">
+        <div class="dropdown-titulo">Graus</div>
+        <div id="graus-conteudo">
+          <div class="arvore-linha" id="graus-todos">
+            <span class="arvore-seta arvore-seta--oculta" aria-hidden="true"><svg class="icone" width="12" height="12"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg></span>
+            <button type="button" class="caixa-selecao" role="checkbox" aria-checked="true">
+              <svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg>
+            </button>
+            <span class="arvore-nome">Todos</span>
+          </div>
+          <div class="dropdown-divisor"></div>
+          <div class="arvore" id="graus-arvore"></div>
+        </div>
+        <span class="campo-ajuda oculto" id="graus-vazio">Selecione unidades para ver os graus.</span>
+      </div>
+    </div>
+
+    <div class="dropdown" id="dropdown-situacao">
+      <button type="button" class="seletor" id="situacao-seletor">
+        <span class="seletor-texto" id="situacao-texto">Todas as situações</span>
+        <span class="seletor-limpar" id="situacao-limpar" data-dica="Limpar">
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+        </span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu">
+        <div class="dropdown-titulo">Situação</div>
+        <div class="arvore-linha" id="situacao-todos">
+          <span class="arvore-seta arvore-seta--oculta" aria-hidden="true"><svg class="icone" width="12" height="12"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg></span>
+          <button type="button" class="caixa-selecao" role="checkbox" aria-checked="true">
+            <svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg>
+          </button>
+          <span class="arvore-nome">Todos</span>
+        </div>
+        <div class="dropdown-divisor"></div>
+        <div class="arvore" id="situacao-arvore"></div>
+      </div>
+    </div>
+
+    <div class="busca" id="busca-usuarios">
+      <button type="button" class="busca-modo" id="busca-modo" aria-label="Alternar entre marcar e filtrar" data-dica="Marcar">
+        <svg class="icone busca-modo-marcar" width="16" height="16" aria-hidden="true"><use href="icones/icone-pesquisar.svg#icone-pesquisar"/></svg>
+        <svg class="icone busca-modo-filtrar oculto" width="16" height="16" aria-hidden="true"><use href="icones/icone-filtrar.svg#icone-filtrar"/></svg>
+      </button>
+      <input type="text" class="busca-entrada" id="busca-entrada" maxlength="100" placeholder="Pesquisar militar" aria-label="Pesquisar militar" />
+      <button type="button" class="busca-limpar" id="busca-limpar" aria-label="Limpar pesquisa">
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+      </button>
+    </div>
+    </div>
+  </div>
+  <div class="pagina-corpo pagina-corpo--camada" data-aba-painel="efetivo">
+    <div class="pagina-corpo-rolagem">
+      <div class="arvore arvore-unidades" id="arvore-usuarios"></div>
+    </div>
+  </div>
+
+  <!-- o que espera decisão sobre pessoas (só administrador) -->
+  <div class="pagina-corpo oculto" data-aba-painel="aprovacoes">
+    <div class="usuarios-aprovacoes">
+      <div class="usuarios-secao">
+        <span class="rotulo-secao">Cadastros</span>
+        <div class="pedido-lista" id="usuarios-cadastros"></div>
+      </div>
+      <div class="usuarios-secao">
+        <span class="rotulo-secao">Correções</span>
+        <div class="pedido-lista" id="usuarios-correcoes"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- molde: formulário Novo usuário — abre no painel direito (lógica em usuarios-novo-usuario.js) -->
+<template id="tpl-novo-usuario">
+  <div class="painel-secao">
+    <button type="button" class="painel-secao-cabecalho" aria-expanded="true">
+      <span class="rotulo-secao">Dados pessoais</span>
+      <svg class="icone painel-secao-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+    </button>
+    <div class="painel-secao-corpo">
+      <label class="campo">
+        <span class="campo-rotulo">Nome completo</span>
+        <input class="campo-entrada" id="nu-nome-completo" type="text" maxlength="100" placeholder="Ex.: João Carlos Andrade" />
+        <span class="campo-erro-texto"></span>
+      </label>
+      <label class="campo">
+        <span class="campo-rotulo">CPF</span>
+        <input class="campo-entrada" id="nu-cpf" type="text" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" />
+        <span class="campo-erro-texto"></span>
+      </label>
+      <label class="campo">
+        <span class="campo-rotulo">RG</span>
+        <input class="campo-entrada" id="nu-rg" type="text" inputmode="numeric" maxlength="13" placeholder="00.000.000-0" />
+        <span class="campo-erro-texto"></span>
+      </label>
+      <label class="campo">
+        <span class="campo-rotulo">Data de nascimento</span>
+        <input class="campo-entrada" id="nu-nascimento" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" />
+        <span class="campo-erro-texto"></span>
+      </label>
+      <div class="campo">
+        <span class="campo-rotulo">CNH</span>
+        <div class="dropdown">
+          <button type="button" class="campo-entrada campo-selecao" id="nu-cnh">
+            <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+          </button>
+          <div class="dropdown-menu">
+            <button type="button" class="dropdown-item" data-valor="Nenhuma">Nenhuma</button>
+            <button type="button" class="dropdown-item" data-valor="A">A</button>
+            <button type="button" class="dropdown-item" data-valor="B">B</button>
+            <button type="button" class="dropdown-item" data-valor="C">C</button>
+            <button type="button" class="dropdown-item" data-valor="D">D</button>
+            <button type="button" class="dropdown-item" data-valor="E">E</button>
+            <button type="button" class="dropdown-item" data-valor="AB">AB</button>
+            <button type="button" class="dropdown-item" data-valor="AC">AC</button>
+            <button type="button" class="dropdown-item" data-valor="AD">AD</button>
+            <button type="button" class="dropdown-item" data-valor="AE">AE</button>
+          </div>
+        </div>
+        <span class="campo-erro-texto"></span>
+      </div>
+      <label class="campo">
+        <span class="campo-rotulo">Celular</span>
+        <input class="campo-entrada" id="nu-celular" type="text" inputmode="numeric" maxlength="15" placeholder="(00) 00000-0000" />
+        <span class="campo-erro-texto"></span>
+      </label>
+      <label class="campo">
+        <span class="campo-rotulo">E-mail</span>
+        <input class="campo-entrada" id="nu-email" type="text" maxlength="80" placeholder="nome@exemplo.com" />
+        <span class="campo-erro-texto"></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="painel-secao">
+    <button type="button" class="painel-secao-cabecalho" aria-expanded="true">
+      <span class="rotulo-secao">Dados institucionais</span>
+      <svg class="icone painel-secao-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+    </button>
+    <div class="painel-secao-corpo">
+      <div class="campo">
+        <span class="campo-rotulo">Tipo</span>
+        <div class="dropdown">
+          <button type="button" class="campo-entrada campo-selecao" id="nu-tipo">
+            <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+          </button>
+          <div class="dropdown-menu" id="nu-tipo-menu"></div>
+        </div>
+        <span class="campo-erro-texto"></span>
+      </div>
+      <div class="campo">
+        <span class="campo-rotulo">Posto / Patente</span>
+        <div class="dropdown">
+          <button type="button" class="campo-entrada campo-selecao" id="nu-posto" disabled>
+            <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione o tipo antes</span>
+            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+          </button>
+          <div class="dropdown-menu" id="nu-posto-menu"></div>
+        </div>
+        <span class="campo-erro-texto"></span>
+      </div>
+      <label class="campo">
+        <span class="campo-rotulo">Nome de guerra</span>
+        <input class="campo-entrada" id="nu-nome-guerra" type="text" maxlength="40" placeholder="Ex.: Andrade" />
+        <span class="campo-erro-texto"></span>
+      </label>
+      <label class="campo">
+        <span class="campo-rotulo">Data de inclusão</span>
+        <input class="campo-entrada" id="nu-inclusao" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" />
+        <span class="campo-erro-texto"></span>
+      </label>
+      <label class="campo">
+        <span class="campo-rotulo" id="nu-colocacao-rotulo">Colocação</span>
+        <input class="campo-entrada" id="nu-colocacao" type="text" inputmode="numeric" maxlength="4" placeholder="Selecione o tipo antes" disabled />
+        <span class="campo-erro-texto"></span>
+      </label>
+      <div class="campo">
+        <span class="campo-rotulo">Setor atual</span>
+        <div class="dropdown">
+          <button type="button" class="campo-entrada campo-selecao" id="nu-setor">
+            <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+          </button>
+          <div class="dropdown-menu">
+            <button type="button" class="dropdown-item" data-valor="Operacional">Operacional</button>
+            <button type="button" class="dropdown-item" data-valor="Administrativo">Administrativo</button>
+          </div>
+        </div>
+        <span class="campo-erro-texto"></span>
+      </div>
+      <div class="campo">
+        <span class="campo-rotulo">Lotação atual</span>
+        <div class="dropdown" id="nu-lotacao-dropdown">
+          <button type="button" class="campo-entrada campo-selecao" id="nu-lotacao">
+            <span class="campo-selecao-texto campo-selecao-texto--vazio" id="nu-lotacao-texto">Selecione uma unidade</span>
+            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+          </button>
+          <div class="dropdown-menu dropdown-menu--largo">
+            <div class="dropdown-menu-rolagem">
+              <div class="arvore" id="nu-lotacao-arvore"></div>
+            </div>
+          </div>
+        </div>
+        <span class="campo-erro-texto"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="painel-secao oculto" id="nu-promocoes-secao">
+    <button type="button" class="painel-secao-cabecalho" aria-expanded="true">
+      <span class="rotulo-secao">Datas de promoções</span>
+      <svg class="icone painel-secao-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+    </button>
+    <div class="painel-secao-corpo" id="nu-promocoes"></div>
+  </div>
+</template>
+
+<!-- molde: ações do rodapé do painel Novo usuário -->
+<template id="tpl-novo-usuario-acoes">
+  <button type="button" class="botao" id="nu-cancelar">Cancelar</button>
+  <button type="button" class="botao botao--primario" id="nu-salvar">Salvar</button>
+</template>
+
+<!-- molde: item de campo de seleção montado pelo JS (Tipo, Posto) -->
+<template id="tpl-nu-opcao">
+  <button type="button" class="dropdown-item"></button>
+</template>
+
+<!-- molde: campo de data de promoção (clonado por posto na carreira) -->
+<template id="tpl-nu-promocao">
+  <label class="campo">
+    <span class="campo-rotulo"></span>
+    <input class="campo-entrada" type="text" name="promocao-data" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" />
+    <span class="campo-erro-texto"></span>
+  </label>
+</template>
+
+<template id="tpl-usuario-item">
+  <div class="usuario-item" role="button" tabindex="0">
+    <span class="usuario-item-textos">
+      <span class="usuario-item-pessoa">
+        <span class="usuario-item-grad"></span>
+        <span class="usuario-item-nome"></span>
+      </span>
+      <span class="usuario-item-cpf"></span>
+    </span>
+    <span class="espacador-flex"></span>
+    <span class="selo selo--alerta usuario-item-correcao oculto">Correção pendente</span>
+    <span class="selo usuario-item-selo"></span>
+  </div>
+</template>
+
+<!-- molde: o nome de guerra realçado dentro do nome completo (modo "Completo + guerra" do Exibir) -->
+<template id="tpl-usuario-nome-guerra">
+  <span class="usuario-item-nome-guerra"></span>
+</template>
+
+<!-- molde: um pedido de cadastro na fila (clicar abre a revisão no painel) -->
+<template id="tpl-cadastro-item">
+  <button type="button" class="pedido cadastro-item">
+    <span class="pedido-textos">
+      <span class="pedido-quem cadastro-quem"></span>
+      <span class="pedido-meta cadastro-meta"></span>
+    </span>
+    <span class="espacador-flex"></span>
+    <span class="selo selo--alerta cadastro-alerta oculto"></span>
+    <svg class="icone cadastro-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
+  </button>
+</template>
+
+<template id="tpl-usuario-vazio">
+  <div class="usuario-vazio">Nenhum militar com os filtros atuais.</div>
+</template>
+
+<!-- molde: abas de seção do painel da ficha (Dados / Carreira) -->
+<template id="tpl-usuarios-painel-secoes">
+  <div class="abas abas--pequenas">
+    <button type="button" class="aba aba--ativa" data-secao="dados">Dados</button>
+    <button type="button" class="aba" data-secao="carreira">Carreira</button>
+  </div>
+</template>
+
+<!-- molde: botão de baixa (aba Carreira, modo Editar do admin) -->
+<!-- molde: campo de data "A partir de" (baixa e readmissão) -->
+<template id="tpl-usuarios-data-vigencia">
+  <label class="campo">
+    <span class="campo-rotulo">A partir de</span>
+    <input class="campo-entrada" type="text" name="vigencia-data" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" data-vigencia-data autocomplete="off" />
+    <span class="campo-erro-texto"></span>
+  </label>
+</template>
+
+<!-- molde: observação "Sem acesso ao sistema" (militar cadastrado sem conta de login) -->
+<template id="tpl-usuarios-sem-conta">
+  <div class="ficha-observacao">
+    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-cadeado.svg#icone-cadeado"/></svg>
+    <span>Sem acesso ao sistema. Cadastrado sem conta de login, não participa de trocas, folgas nem extrajornada até criar a própria conta.</span>
+  </div>
+</template>
+
+<template id="tpl-usuarios-baixa-botao">
+  <button type="button" class="botao botao--perigo">Excluir do sistema</button>
+</template>
+
+<!-- molde: botão de readmissão (aba Carreira, modo Editar do admin, militar inativo) -->
+<template id="tpl-usuarios-readmitir-botao">
+  <button type="button" class="botao botao--primario">Readmitir ao efetivo</button>
+</template>
+
+<!-- molde: seção Transferir (aba Carreira, modo Editar do admin) — origem + seletor de unidade + botão -->
+<template id="tpl-usuarios-transferir">
+  <div class="linha-info">
+    <span class="linha-info-rotulo">De</span>
+    <span class="linha-info-valor" data-origem></span>
+  </div>
+  <div class="campo">
+    <span class="campo-rotulo">Para</span>
+    <div class="dropdown" data-transferir-dropdown>
+      <button type="button" class="campo-entrada campo-selecao">
+        <span class="campo-selecao-texto campo-selecao-texto--vazio" data-transferir-texto>Selecione a unidade</span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu dropdown-menu--largo">
+        <div class="dropdown-menu-rolagem">
+          <div class="arvore" data-transferir-arvore></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <label class="campo">
+    <span class="campo-rotulo">A partir de</span>
+    <input class="campo-entrada" type="text" name="transferir-data" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" data-transferir-data />
+    <span class="campo-erro-texto"></span>
+  </label>
+  <button type="button" class="botao botao--primario" data-transferir-botao disabled>Transferir</button>
+</template>
+
+<!-- molde: seção Promover (aba Carreira, modo Editar do admin) — Tipo + hierarquia automática + data -->
+<template id="tpl-usuarios-promover">
+  <div class="campo">
+    <span class="campo-rotulo">Tipo</span>
+    <div class="dropdown">
+      <button type="button" class="campo-entrada campo-selecao" data-promover-tipo>
+        <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu"></div>
+    </div>
+  </div>
+  <div class="linha-info">
+    <span class="linha-info-rotulo">Promovido a</span>
+    <span class="linha-info-valor" data-promover-hierarquia>-</span>
+  </div>
+  <label class="campo">
+    <span class="campo-rotulo">Data da promoção</span>
+    <input class="campo-entrada" type="text" name="promover-data" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" data-promover-data />
+    <span class="campo-erro-texto"></span>
+  </label>
+  <button type="button" class="botao botao--primario" data-promover-botao disabled>Promover</button>
+</template>
+
+<!-- molde: campo editável de texto (aba Dados, modo Editar) -->
+<template id="tpl-ficha-campo">
+  <label class="campo">
+    <span class="campo-rotulo"></span>
+    <input class="campo-entrada" type="text" name="ficha-campo" />
+    <span class="campo-erro-texto"></span>
+  </label>
+</template>
+
+<!-- molde: campo editável de seleção (CNH, Setor) -->
+<template id="tpl-ficha-campo-selecao">
+  <div class="campo">
+    <span class="campo-rotulo"></span>
+    <div class="dropdown">
+      <button type="button" class="campo-entrada campo-selecao">
+        <span class="campo-selecao-texto"></span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu"></div>
+    </div>
+    <span class="campo-erro-texto"></span>
+  </div>
+</template>
+
+<!-- molde: rodapé de ações do Editar (Cancelar / Salvar) -->
+<template id="tpl-ficha-editar-acoes">
+  <button type="button" class="botao ficha-editar-cancelar">Cancelar</button>
+  <button type="button" class="botao botao--primario ficha-editar-salvar">Salvar</button>
+</template>

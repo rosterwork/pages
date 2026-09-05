@@ -1,0 +1,150 @@
+/* ============================================================
+   DISTRIBUIÇÃO — aba Regras (por militar)
+   Reusa o geral-layout-lateral (painel esquerdo + corpo). Aqui só
+   entram a lista de militares (esquerda) e os grupos de regras
+   (centro). Cores/medidas só por token (MANUAL).
+   Montagem: js/distribuicao-regras.js
+   ============================================================ */
+
+/* ---------- painel esquerdo: busca + unidades (abre/fecha) + militares ---------- */
+/* a busca ocupa o cabeçalho do painel (sobrescreve o padding de título do geral-painel-esquerdo) */
+.regras-busca-topo { padding: 8px; }
+.regras-busca-topo .busca { width: 100%; }
+
+/* título da unidade: recolhe/expande os militares abaixo */
+/* casca (grude, fundo, altura, divisória, arranjo) em geral-faixa */
+.regras-unidade-titulo {
+  cursor: pointer;
+  text-align: left;
+  color: var(--texto-suave);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.regras-unidade-seta { flex-shrink: 0; }
+.regras-unidade--recolhido .regras-unidade-corpo { display: none; }
+.regras-unidade--recolhido .regras-unidade-seta { transform: rotate(-90deg); }
+
+/* casca (fundo, hover, selecionado, barra de acento) em geral-lista; sem linha */
+.regras-militar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.regras-militar-nome {
+  flex: 1 1 0;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--texto-forte);
+}
+
+.regras-militar-contagem {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  min-height: 18px;
+  padding: 0 4px;
+  border-radius: var(--raio-total);
+  background-color: var(--fundo-contraste);
+  color: var(--texto-invertido);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ---------- centro: regras do militar ---------- */
+.regras-detalhe {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+.regras-detalhe-cabecalho {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--borda);
+}
+
+.regras-detalhe-nome {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--texto-forte);
+}
+
+.regras-detalhe-unidade {
+  font-size: 11px;
+  color: var(--texto-fraco);
+}
+
+.regras-detalhe-grupos {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.regras-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.regras-grupo-titulo {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--texto-forte);
+}
+
+.regras-grupo-itens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.regras-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 24px;
+  padding: 4px 8px;
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-suave);
+  border: 1px solid var(--borda);
+  font-size: 12px;
+  color: var(--texto-forte);
+}
+
+.regras-item--vazio {
+  background-color: transparent;
+  border-color: transparent;
+  color: var(--texto-fraco);
+}
+
+.regras-item-remover {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  min-height: 16px;
+  padding: 0;
+  background-color: transparent;
+  border: none;
+  color: var(--texto-fraco);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.regras-item-remover:hover { color: var(--texto-forte); }
+
+.regras-grupo-add { margin-top: 2px; }
+
+/* rodapé Salvar/Cancelar (aparece só com alterações não salvas) */
+.regras-rodape-info { flex: 1; min-width: 0; font-size: 12px; color: var(--texto-fraco); }

@@ -1,0 +1,319 @@
+<div class="pagina">
+  <div class="pagina-cabecalho">
+    <div class="pagina-titulos">
+      <h1>Postos</h1>
+      <span class="pagina-subtitulo"></span>
+    </div>
+  </div>
+
+  <div class="pagina-subcabecalho">
+    <div class="abas" id="postos-abas">
+      <button type="button" class="aba aba--ativa" data-aba="instalacoes">Instalações</button>
+      <button type="button" class="aba" data-aba="viaturas">Viaturas</button>
+    </div>
+  </div>
+
+  <div class="pagina-corpo pagina-corpo--camada">
+    <div class="pagina-corpo-rolagem">
+      <!-- aba Instalações: árvore de unidades com os cards das instalações -->
+      <div class="postos-painel" data-aba-painel="instalacoes">
+        <div class="arvore arvore-unidades" id="arvore-postos"></div>
+      </div>
+      <!-- aba Viaturas: árvore de unidades com os cards das viaturas -->
+      <div class="postos-painel oculto" data-aba-painel="viaturas">
+        <div class="arvore arvore-unidades" id="arvore-viaturas"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- molde: fileira (flex-wrap) que recebe os cards e o botão "+" -->
+<template id="tpl-postos-cards">
+  <div class="postos-cards"></div>
+</template>
+
+<!-- molde: card de uma instalação dentro da unidade marcada -->
+<template id="tpl-posto-cartao">
+  <div class="posto-cartao" role="button" tabindex="0">
+    <div class="posto-cabecalho">
+      <svg class="icone posto-icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-instalacao.svg#icone-instalacao"/></svg>
+      <span class="posto-nome"></span>
+    </div>
+    <div class="posto-corpo">
+      <div class="posto-status">
+        <span class="selo"></span>
+        <span class="posto-periodo"></span>
+      </div>
+      <div class="posto-dados"></div>
+    </div>
+  </div>
+</template>
+
+<!-- molde: linha de dado (rótulo + valor) dentro de .posto-dados -->
+<template id="tpl-posto-dado">
+  <div class="posto-dado">
+    <span class="posto-dado-rotulo"></span>
+    <span class="posto-dado-valor"></span>
+  </div>
+</template>
+
+<!-- molde: unidade marcada que não tem instalações (não é CIA/PEL) -->
+<template id="tpl-postos-vazio">
+  <div class="postos-vazio">Esta unidade não possui instalações.</div>
+</template>
+
+<!-- molde: botão "+" ao lado dos cards (só admin) — card-botão com a mesma aparência -->
+<template id="tpl-posto-adicionar">
+  <button type="button" class="posto-adicionar" data-dica="Adicionar instalação" aria-label="Adicionar instalação">
+    <svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-mais.svg#icone-mais"/></svg>
+  </button>
+</template>
+
+<!-- molde: item do seletor de instalação (montado pelo JS com os nomes sugeridos) -->
+<template id="tpl-ai-opcao">
+  <button type="button" class="dropdown-item"></button>
+</template>
+
+<!-- MOLDES: painel lateral de edição de instalação (lógica em postos-painel.js) -->
+
+<!-- molde: nome da instalação no subcabeçalho do painel (o JS preenche) -->
+<template id="tpl-posto-painel-titulo">
+  <span class="rotulo-secao"></span>
+</template>
+
+<!-- molde: linha editável do Estado (Ativo/Inativo) -->
+<template id="tpl-posto-editar-estado">
+  <div class="campo">
+    <span class="campo-rotulo">Estado</span>
+    <div class="dropdown">
+      <button type="button" class="campo-entrada campo-selecao">
+        <span class="campo-selecao-texto"></span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu">
+        <button type="button" class="dropdown-item" data-valor="Ativo">Ativo</button>
+        <button type="button" class="dropdown-item" data-valor="Inativo">Inativo</button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- molde: linha editável de um efetivo (rótulo via JS; opções 1–10 via dropdown de números) -->
+<template id="tpl-posto-editar-linha">
+  <div class="campo">
+    <span class="campo-rotulo"></span>
+    <div class="dropdown">
+      <button type="button" class="campo-entrada campo-selecao">
+        <span class="campo-selecao-texto"></span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu"></div>
+    </div>
+  </div>
+</template>
+
+<!-- molde: rodapé do painel (Cancelar / Salvar) — mesmo padrão do Editar de escalas -->
+<template id="tpl-posto-painel-acoes">
+  <button type="button" class="botao posto-painel-cancelar">Cancelar</button>
+  <button type="button" class="botao botao--primario posto-painel-salvar" disabled>Salvar</button>
+</template>
+
+<!-- molde: linha editável "Instalação" (modo criação do painel; o menu é preenchido pelo
+     JS com os nomes sugeridos de proximos_numeros_instalacao, via #tpl-ai-opcao) -->
+<template id="tpl-posto-novo-instalacao">
+  <div class="campo">
+    <span class="campo-rotulo">Instalação</span>
+    <div class="dropdown">
+      <button type="button" class="campo-entrada campo-selecao">
+        <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu"></div>
+    </div>
+  </div>
+</template>
+
+<!-- ==========================================================================
+     MOLDES: aba Viaturas — cards (postos-viaturas.js) e painel de editar/criar,
+     transferir e excluir (postos-viaturas-painel.js / postos-viaturas-transferir.js)
+     ========================================================================== -->
+
+<!-- molde: card de uma viatura dentro da unidade marcada (prefixo + selo de status + CNH + guarnição) -->
+<template id="tpl-viatura-cartao">
+  <div class="posto-cartao" role="button" tabindex="0">
+    <div class="posto-cabecalho">
+      <svg class="icone posto-icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-viatura.svg#icone-viatura"/></svg>
+      <span class="posto-nome"></span>
+    </div>
+    <div class="posto-corpo">
+      <div class="posto-status">
+        <span class="selo"></span>
+      </div>
+      <div class="posto-dados"></div>
+    </div>
+  </div>
+</template>
+
+<!-- molde: unidade marcada que não tem viaturas -->
+<template id="tpl-viatura-vazio">
+  <div class="postos-vazio">Esta unidade não possui viaturas.</div>
+</template>
+
+<!-- molde: botão "+" ao lado dos cards de viatura (só admin) -->
+<template id="tpl-viatura-adicionar">
+  <button type="button" class="posto-adicionar" data-dica="Adicionar viatura" aria-label="Adicionar viatura">
+    <svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-mais.svg#icone-mais"/></svg>
+  </button>
+</template>
+
+<!-- molde: linha editável "Prefixo" (modo criação; texto livre LETRAS-NÚMERO) -->
+<template id="tpl-viatura-editar-prefixo">
+  <label class="campo">
+    <span class="campo-rotulo">Prefixo</span>
+    <input type="text" name="viatura-prefixo" class="campo-entrada viatura-prefixo" placeholder="Ex.: ABT-01" maxlength="12" autocomplete="off" />
+  </label>
+</template>
+
+<!-- molde: linha editável do Estado (Ativo/Reserva/Inativo — Manutenção é derivada de uma janela) -->
+<template id="tpl-viatura-editar-status">
+  <div class="campo">
+    <span class="campo-rotulo">Estado</span>
+    <div class="dropdown">
+      <button type="button" class="campo-entrada campo-selecao">
+        <span class="campo-selecao-texto"></span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu">
+        <button type="button" class="dropdown-item" data-valor="Ativo">Ativo</button>
+        <button type="button" class="dropdown-item" data-valor="Reserva">Reserva</button>
+        <button type="button" class="dropdown-item" data-valor="Inativo">Inativo</button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- molde: linha editável da CNH exigida (A a E) -->
+<template id="tpl-viatura-editar-cnh">
+  <div class="campo">
+    <span class="campo-rotulo">CNH exigida</span>
+    <div class="dropdown">
+      <button type="button" class="campo-entrada campo-selecao">
+        <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu">
+        <button type="button" class="dropdown-item" data-valor="A">A</button>
+        <button type="button" class="dropdown-item" data-valor="B">B</button>
+        <button type="button" class="dropdown-item" data-valor="C">C</button>
+        <button type="button" class="dropdown-item" data-valor="D">D</button>
+        <button type="button" class="dropdown-item" data-valor="E">E</button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- molde: linha editável de um efetivo da guarnição (rótulo via JS; 1–10 via dropdown de números).
+     Reusa o mesmo #tpl-posto-editar-linha das instalações. -->
+
+<!-- molde: seção "Transferir" (edição; origem + seletor de unidade de destino + botão) -->
+<template id="tpl-viatura-transferir">
+  <div class="linha-info">
+    <span class="linha-info-rotulo">De</span>
+    <span class="linha-info-valor" data-origem></span>
+  </div>
+  <div class="campo">
+    <span class="campo-rotulo">Para</span>
+    <div class="dropdown" data-transferir-dropdown>
+      <button type="button" class="campo-entrada campo-selecao">
+        <span class="campo-selecao-texto campo-selecao-texto--vazio" data-transferir-texto>Selecione a unidade</span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu dropdown-menu--largo">
+        <div class="dropdown-menu-rolagem">
+          <div class="arvore" data-transferir-arvore></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <button type="button" class="botao botao--primario" data-transferir-botao disabled>Transferir</button>
+</template>
+
+<!-- molde: sub-abas do painel da viatura (mesmo padrão da ficha do militar) -->
+<template id="tpl-viatura-painel-secoes">
+  <div class="abas abas--pequenas">
+    <button type="button" class="aba aba--ativa" data-secao="dados">Dados</button>
+    <button type="button" class="aba" data-secao="manutencoes">Manutenções</button>
+  </div>
+</template>
+
+<!-- molde: botão Excluir viatura (ação crítica; dentro da seção do rodapé do painel) -->
+<template id="tpl-viatura-excluir-botao">
+  <button type="button" class="botao botao--perigo">Excluir viatura</button>
+</template>
+
+<!-- molde: botão Excluir instalação (mesma ação crítica, sem data) -->
+<template id="tpl-instalacao-excluir-botao">
+  <button type="button" class="botao botao--perigo">Excluir instalação</button>
+</template>
+
+<!-- molde: rodapé do painel de viatura (Cancelar / Salvar) -->
+<template id="tpl-viatura-painel-acoes">
+  <button type="button" class="botao viatura-painel-cancelar">Cancelar</button>
+  <button type="button" class="botao botao--primario viatura-painel-salvar" disabled>Salvar</button>
+</template>
+
+<!-- MOLDES: seção Manutenção do painel (lógica em postos-viaturas-manutencao.js) -->
+
+<!-- molde: casca da seção Manutenção (form de agendamento em cima + lista de janelas embaixo) -->
+<template id="tpl-viatura-manutencao">
+  <div class="viatura-manutencao">
+    <div class="viatura-manut-form-slot"></div>
+    <div class="viatura-manut-lista"></div>
+  </div>
+</template>
+
+<!-- molde: form "Agendar manutenção" (início + fim pelo calendário + observação + botão) -->
+<template id="tpl-viatura-manut-form">
+  <div class="viatura-manut-form">
+    <div class="campo">
+      <span class="campo-rotulo">Início</span>
+      <button type="button" class="campo-entrada campo-selecao viatura-manut-inicio">
+        <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      </button>
+    </div>
+    <div class="campo">
+      <span class="campo-rotulo">Fim (opcional)</span>
+      <button type="button" class="campo-entrada campo-selecao viatura-manut-fim">
+        <span class="campo-selecao-texto campo-selecao-texto--vazio">Em aberto</span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      </button>
+      <button type="button" class="botao botao--texto viatura-manut-fim-limpar oculto">Deixar em aberto</button>
+    </div>
+    <label class="campo">
+      <span class="campo-rotulo">Observação (opcional)</span>
+      <input type="text" name="viatura-manutencao-obs" class="campo-entrada viatura-manut-obs" placeholder="Ex.: troca de bomba" maxlength="200" autocomplete="off" />
+    </label>
+    <button type="button" class="botao botao--primario botao--pequeno viatura-manut-agendar" disabled>Agendar manutenção</button>
+  </div>
+</template>
+
+<!-- molde: uma janela de manutenção na lista -->
+<template id="tpl-viatura-manut-item">
+  <div class="viatura-manut-item">
+    <div class="viatura-manut-item-topo">
+      <span class="viatura-manut-item-periodo"></span>
+      <span class="selo viatura-manut-item-selo"></span>
+    </div>
+    <div class="viatura-manut-item-obs"></div>
+    <div class="viatura-manut-item-acoes">
+      <button type="button" class="botao botao--texto viatura-manut-encerrar oculto">Encerrar agora</button>
+      <button type="button" class="botao botao--texto viatura-manut-remover">Remover</button>
+    </div>
+  </div>
+</template>
+
+<!-- molde: lista de manutenção vazia -->
+<template id="tpl-viatura-manut-vazio">
+  <div class="viatura-manut-vazio">Nenhuma manutenção agendada.</div>
+</template>

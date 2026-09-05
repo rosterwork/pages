@@ -1,0 +1,252 @@
+/* ============================================================
+   TROCAS — lista por abas, painel de detalhe e análise de impacto
+   Lista: linha clicável (militares + meta + selo) que abre o painel.
+   Painel: quem troca, dados do serviço e a análise (veredito +
+   avisos + antes/depois). Cores e medidas só do tema (geral-tema).
+   ============================================================ */
+
+/* ---------- lista ---------- */
+.trocas-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.troca-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 36px;
+  padding: 8px 12px;
+  border-radius: var(--raio-medio);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.troca-item:hover {
+  background-color: var(--fundo-suave);
+}
+
+/* selecionada: a troca cujo detalhe está aberto no painel */
+.troca-item--selecionada,
+.troca-item--selecionada:hover {
+  background-color: var(--fundo-medio);
+}
+
+.troca-item-dados {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+/* "Cb SILVA  ⇄  Sd COSTA" */
+.troca-item-militares {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--texto-forte);
+}
+
+.troca-item-seta {
+  color: var(--texto-fraco);
+  flex-shrink: 0;
+}
+
+/* "Serviço 12/07 · 24h · 1º Pelotão" */
+.troca-item-meta {
+  font-size: 11px;
+  color: var(--texto-suave);
+  margin-top: 2px;
+}
+
+.troca-item-situacao {
+  flex-shrink: 0;
+}
+
+.troca-vazio {
+  padding: 24px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--texto-suave);
+}
+
+/* ---------- painel: detalhe ---------- */
+.troca-detalhe {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.troca-secao {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.troca-pares {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.troca-pessoa {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.troca-pessoa-nome {
+  font-size: 14px;
+  color: var(--texto-forte);
+}
+
+.troca-pessoa-info {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.troca-pares-seta {
+  color: var(--texto-fraco);
+  flex-shrink: 0;
+}
+
+.troca-linhas {
+  display: flex;
+  flex-direction: column;
+}
+
+/* O visual da análise de impacto (veredito, avisos, antes/depois) fica no componente
+   compartilhado geral-impacto.css (classes .impacto-*), usado por Trocas e Folgas. */
+
+/* ---------- Pendentes (dívidas de devolução) ---------- */
+.trocas-pendentes-descricao {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--texto-suave);
+  margin-bottom: 16px;
+}
+
+.trocas-pendentes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.troca-pendente {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+}
+
+.troca-pendente-cab {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--texto-forte);
+}
+
+.troca-pendente-devedor,
+.troca-pendente-credor {
+  font-weight: 500;
+}
+
+.troca-pendente-conector {
+  font-size: 13px;
+  color: var(--texto-suave);
+}
+
+.troca-pendente-dias {
+  display: flex;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.troca-pendente-dias-rotulo {
+  color: var(--texto-fraco);
+}
+
+/* ---------- Solicitar (formulário inline, aberto pelo botão do cabeçalho) ---------- */
+/* como .pagina-corpo, mas o corpo rola por dentro e o rodapé fica fixo na base */
+.trocas-solicitar {
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.trocas-solicitar-corpo {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+/* dois cartões lado a lado (Solicitante · Solicitado) */
+.trocas-cartoes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.trocas-cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* campo de leitura (unidade e militar do solicitante): mostra o valor, inclicável */
+.campo-entrada--leitura {
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+  background-color: var(--fundo-medio);
+  color: var(--texto-suave);
+  cursor: default;
+}
+
+/* container onde o JS injeta a barra de período */
+.trocas-barra {
+  padding-top: 2px;
+}
+
+/* toggle Escolher dia / Deixar pendente (reusa .abas--pequenas) */
+.trocas-dev-toggle {
+  width: max-content;
+}
+
+.trocas-dev-data {
+  margin-top: 8px;
+}
+
+/* aviso de saldo (durações diferentes) — reusa o visual do .impacto-aviso */
+.trocas-saldo {
+  margin-top: 4px;
+}
+
+/* item de parceiro indisponível: nome + motivo à direita */
+.troca-parceiro-ocupado {
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.troca-parceiro-motivo {
+  font-size: 11px;
+  color: var(--alerta);
+  white-space: nowrap;
+}
+
+/* campo Militar: um input de digitação comum (.campo-entrada, igual aos de Novo usuário) que também
+   abre a lista do dropdown. O usuário digita para filtrar OU escolhe no menu. Ocupa a largura do campo. */
+.campo .dropdown > .campo-entrada {
+  width: 100%;
+}

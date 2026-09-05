@@ -1,0 +1,314 @@
+/* ============================================================
+   ESCALAS — modo Mês / Agenda
+   Grade: dias nas linhas, unidades (CIA/CIBM/PEL) nas colunas.
+   Cabeçalho das unidades fixo no topo e coluna de data fixa à
+   esquerda; sem moldura nas células — só as linhas da grade.
+   Os z-index 1/2/3 são o empilhamento interno do sticky desta
+   grade (exceção à escala 10/20/30/40; ver MANUAL §8).
+   Dados: js/escalas-dados.js · montagem: js/escalas-mes.js
+   ============================================================ */
+
+/* container que rola nas duas direções */
+.escala-mes {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: auto;
+  position: relative;
+}
+
+/* larguras das colunas: data (fixa) + unidades (mínimo, crescem para preencher) */
+.escala-mes-grade {
+  --col-data: 72px;
+  --col-unidade: 240px;
+}
+
+/* cada linha é uma grade própria com as MESMAS colunas — por isso alinham */
+.escala-mes-linha {
+  display: grid;
+  grid-template-columns: var(--escala-colunas, var(--col-data) var(--col-unidade) 1fr);
+}
+
+/* uma classe por quantidade de colunas de unidade (1 a 8) */
+.escala-mes-grade--1 { --escala-colunas: var(--col-data) repeat(1, var(--col-unidade)) 1fr; }
+.escala-mes-grade--2 { --escala-colunas: var(--col-data) repeat(2, var(--col-unidade)) 1fr; }
+.escala-mes-grade--3 { --escala-colunas: var(--col-data) repeat(3, var(--col-unidade)) 1fr; }
+.escala-mes-grade--4 { --escala-colunas: var(--col-data) repeat(4, var(--col-unidade)) 1fr; }
+.escala-mes-grade--5 { --escala-colunas: var(--col-data) repeat(5, var(--col-unidade)) 1fr; }
+.escala-mes-grade--6 { --escala-colunas: var(--col-data) repeat(6, var(--col-unidade)) 1fr; }
+.escala-mes-grade--7 { --escala-colunas: var(--col-data) repeat(7, var(--col-unidade)) 1fr; }
+.escala-mes-grade--8 { --escala-colunas: var(--col-data) repeat(8, var(--col-unidade)) 1fr; }
+
+/* ---------- altura e sticky comuns aos cabeçalhos das visões do mês (Agenda e Calendário) ---------- */
+.escala-grade-cabecalho {
+  position: sticky;
+  top: 0;
+  min-height: 32px;
+}
+
+/* ---------- cabeçalho da Agenda fixo no topo (nomes das unidades) ---------- */
+.escala-mes-cabecalho {
+  z-index: 2;
+  background-color: var(--fundo-suave);
+  border-bottom: 1px solid var(--borda);
+}
+
+.escala-mes-titulo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 32px;
+  padding: 0 8px;
+  border-right: 1px solid var(--borda);
+  background-color: var(--fundo-suave);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-forte);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- coluna de data fixa à esquerda ---------- */
+.escala-mes-data,
+.escala-mes-canto {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background-color: var(--fundo-superficie);
+  border-right: 1px solid var(--borda);
+}
+
+/* o canto (cruzamento data × cabeçalho) fica acima de tudo */
+.escala-mes-canto {
+  z-index: 3;
+  background-color: var(--fundo-suave);
+}
+
+.escala-mes-data {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 2px;
+  padding: 8px;
+  border-bottom: 1px solid var(--borda);
+}
+
+.escala-mes-data-semana {
+  font-size: 9px;   /* microetiqueta: rótulo não-textual em caixa alta (MANUAL §5) */
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--texto-fraco);
+}
+
+.escala-mes-data-numero {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--texto-forte);
+}
+
+/* hoje: número em círculo escuro (a caixa de 28px fica só aqui, p/ não afastar a sigla) */
+.escala-mes-linha--hoje .escala-mes-data-numero {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  min-height: 28px;
+  border-radius: 50%;
+  background-color: var(--fundo-contraste);
+  color: var(--texto-invertido);
+}
+
+/* fim de semana: realce só na coluna de data, num cinza claro */
+.escala-mes-linha--fds .escala-mes-data {
+  background-color: var(--fundo-suave);
+}
+
+/* ---------- célula (unidade × dia): lista corrida de nomes ---------- */
+.escala-mes-celula {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-right: 1px solid var(--borda);
+  border-bottom: 1px solid var(--borda);
+  cursor: pointer;
+}
+
+/* hover e seleção da célula (abrem a gaveta de detalhes). --celula-fundo-fora controla
+   a cor do "fora do turno" nas barras, separado do fundo da célula, para que as barras
+   continuem visíveis (mais escuras no hover, mais claras na seleção) */
+.escala-mes-celula:hover {
+  --celula-fundo-fora: var(--fundo-medio);
+  background-color: var(--fundo-suave);
+}
+
+.escala-mes-celula--selecionada,
+.escala-mes-celula--selecionada:hover {
+  --celula-fundo-fora: var(--fundo-medio);
+  background-color: var(--fundo-pagina);
+}
+
+/* mini-gráfico de cobertura no topo da célula (perfil de militares por hora) */
+.escala-mes-grafico {
+  flex-shrink: 0;
+  height: 18px;
+  padding: 2px 4px 0;
+  cursor: none;   /* ponteiro oculto sobre o gráfico — a linha-cursor desenhada marca a hora (MANUAL §8) */
+}
+
+/* a silhueta, o preenchimento de status por hora (verde/vermelho) e a linha-cursor do hover são
+   pintados no <canvas> pelo escalas-mes.js; o canvas não herda var(), então o JS lê do tema a cor
+   --texto-debil, a espessura --grafico-traco e os fundos --erro-fundo-forte/--sucesso-fundo-forte,
+   alinhando o traço ao pixel físico. Ver MANUAL §11 */
+.escala-mes-grafico-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* dica do gráfico: segue o cursor (padrão "relativo ao ponteiro"); posição via custom property */
+.escala-mes-dica {
+  position: fixed;
+  left: var(--dica-x, 0);
+  top: var(--dica-y, 0);
+  transform: translate(-50%, calc(-100% - 8px));
+  z-index: 40;
+  padding: 2px 8px;
+  background-color: var(--fundo-contraste);
+  color: var(--texto-invertido);
+  border-radius: var(--raio-pequeno);
+  font-size: 11px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* uma linha de militar escalado: ícone(s) de origem + grad + nome + horário */
+.linha-escalado {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 16px;
+  min-width: 0;
+  padding: 1px 4px;
+  background: var(--turno-fundo, transparent);
+}
+
+.linha-escalado-icones {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--texto-fraco);
+  flex-shrink: 0;
+}
+
+.linha-escalado-icones .icone {
+  width: 13px;
+  height: 13px;
+}
+
+.linha-escalado-grad {
+  font-size: 11px;
+  color: var(--texto-suave);
+  flex-shrink: 0;
+}
+
+.linha-escalado-nome {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--texto);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.linha-escalado-hora {
+  margin-left: auto;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  font-size: 11px;
+  color: var(--texto-suave);
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* um par início→fim; vários ficam empilhados (disponibilidade quebrada) e o nome fica centrado ao lado */
+.linha-escalado-hora-par {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* a seta entre as horas: só a largura é estreitada (altura acompanha a linha) */
+.linha-escalado-hora-seta {
+  width: 8px;
+  height: 12px;
+}
+
+.linha-escalado-hora-ini {
+  width: 23px;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.linha-escalado-hora-fim {
+  width: 23px;
+  flex-shrink: 0;
+  text-align: left;
+}
+
+/* linha de erro de distribuição na célula do mês: ícone de alerta + mensagem, tudo vermelho */
+.linha-escalado--erro,
+.linha-escalado--erro .linha-escalado-icones,
+.linha-escalado--erro .linha-escalado-nome {
+  color: var(--erro);
+}
+
+/* folga e troca: o militar aparece, mas riscado (graduação, nome e HORÁRIO) e apagado. O horário
+   entra no risco porque é justamente o trecho que ele deixou de fazer. Quando é parcial, a linha
+   riscada traz só o trecho trocado/de folga, e o trecho que ele cumpre aparece noutra linha, sem risco. */
+.linha-escalado--folga .linha-escalado-grad,
+.linha-escalado--folga .linha-escalado-nome,
+.linha-escalado--folga .linha-escalado-hora,
+.linha-escalado--trocado .linha-escalado-grad,
+.linha-escalado--trocado .linha-escalado-nome,
+.linha-escalado--trocado .linha-escalado-hora {
+  text-decoration: line-through;
+  color: var(--texto-fraco);
+}
+
+/* realce do "marcar" da busca do sub-cabeçalho: inverte a linha do militar casado (igual ao card de Usuários) */
+.linha-escalado--busca {
+  background-color: var(--fundo-contraste);
+  border-radius: var(--raio-pequeno);
+}
+
+.linha-escalado--busca .linha-escalado-grad,
+.linha-escalado--busca .linha-escalado-nome,
+.linha-escalado--busca .linha-escalado-hora,
+.linha-escalado--busca .linha-escalado-icones {
+  color: var(--texto-invertido);
+}
+
+/* célula que contém um militar casado pela busca: anel para localizá-lo na grade */
+.escala-mes-celula--busca {
+  outline: 2px solid var(--foco);
+  outline-offset: -2px;
+}
+
+/* estado da tela: carregando, vazio ou em construção */
+.escala-mes-estado {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  color: var(--texto-fraco);
+  font-size: 13px;
+  text-align: center;
+}

@@ -1,193 +1,1161 @@
-<!doctype html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>RosterWork</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=block" rel="stylesheet">
-    <link rel="stylesheet" href="css/main.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
-    <script src="js/supabase-config.js"></script>
-    <script src="js/utils.js"></script>
-    <script>
-    (function(){
-      // Detecção de contexto: Local vs GitHub Pages
-      function isLocalFile() {
-        return window.location.protocol === 'file:' || 
-               window.location.hostname === 'localhost' || 
-               window.location.hostname === '127.0.0.1';
-      }
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=1920" />
+  <meta name="description" content="Roster Work — sistema de escala de serviço da corporação." />
+  <link rel="icon" href="icones/icone-logo.svg" type="image/svg+xml" />
+  <title>Roster Work</title>
+  <script src="js/index-sessao.js"></script>
+  <link rel="stylesheet" href="css/geral-tema.css" />
+  <link rel="stylesheet" href="css/geral-base.css" />
+  <link rel="stylesheet" href="componentes/css/geral-botao.css" />
+  <link rel="stylesheet" href="componentes/css/geral-campo.css" />
+  <link rel="stylesheet" href="componentes/css/geral-carregando.css" />
+  <link rel="stylesheet" href="componentes/css/geral-dica.css" />
+  <link rel="stylesheet" href="componentes/css/geral-flutuante.css" />
+  <link rel="stylesheet" href="componentes/css/geral-dropdown.css" />
+  <link rel="stylesheet" href="componentes/css/geral-dropdown-numeros.css" />
+  <link rel="stylesheet" href="componentes/css/geral-modal.css" />
+  <link rel="stylesheet" href="componentes/css/geral-aviso.css" />
+  <link rel="stylesheet" href="componentes/css/geral-data-modal.css" />
+  <link rel="stylesheet" href="componentes/css/geral-resumo.css" />
+  <link rel="stylesheet" href="componentes/css/geral-arvore.css" />
+  <link rel="stylesheet" href="componentes/css/geral-arvore-unidades.css" />
+  <link rel="stylesheet" href="componentes/css/geral-selo.css" />
+  <link rel="stylesheet" href="componentes/css/geral-busca.css" />
+  <link rel="stylesheet" href="componentes/css/geral-pagina-cabecalho.css" />
+  <link rel="stylesheet" href="componentes/css/geral-abas.css" />
+  <link rel="stylesheet" href="componentes/css/geral-opcao.css" />
+  <link rel="stylesheet" href="componentes/css/geral-lista.css" />
+  <link rel="stylesheet" href="componentes/css/geral-faixa.css" />
+  <link rel="stylesheet" href="componentes/css/geral-calendario.css" />
+  <link rel="stylesheet" href="componentes/css/geral-calendario-mes.css" />
+  <link rel="stylesheet" href="componentes/css/geral-periodo.css" />
+  <link rel="stylesheet" href="componentes/css/geral-layout-lateral.css" />
+  <link rel="stylesheet" href="componentes/css/geral-barra-periodo.css" />
+  <link rel="stylesheet" href="componentes/css/geral-rodape.css" />
+  <link rel="stylesheet" href="componentes/css/geral-painel.css" />
+  <link rel="stylesheet" href="componentes/css/geral-pedido.css" />
+  <link rel="stylesheet" href="componentes/css/geral-impacto.css" />
+  <link rel="stylesheet" href="css/index-cabecalho.css" />
+  <link rel="stylesheet" href="css/index-perfil.css" />
+  <link rel="stylesheet" href="css/index-comunicado.css" />
+  <link rel="stylesheet" href="css/index-sidebar.css" />
+  <link rel="stylesheet" href="css/index-sessao-vigia.css" />
+</head>
+<body>
 
-      // Se estiver rodando localmente, redireciona para main.html com hash
-      if (isLocalFile()) {
-        var currentHash = window.location.hash;
-        var targetRoute = currentHash || '#pagina-inicial';
-        window.location.href = 'main.html' + targetRoute;
-        return;
-      }
+  <noscript>
+    <p>O Roster Work precisa de JavaScript ativado para funcionar. Ative o JavaScript no navegador e recarregue a página.</p>
+  </noscript>
 
-      // Se chegou aqui, está no GitHub Pages - continua como SPA
-      var paginaAtual = window.location.pathname.split('/').pop();
-      if (paginaAtual === '' || paginaAtual === 'index.html') {
-        // Página inicial - não precisa de autenticação
-        return;
-      }
-      
-      // Para outras páginas, verifica autenticação
-      var usuario = localStorage.getItem('usuarioRosterWork');
-      var expiracao = localStorage.getItem('expiracaoToken');
-      if (!usuario || !expiracao || new Date() >= new Date(expiracao)) {
-        window.location.href = '/';
-        return;
-      }
-    })();
-    </script>
-  </head>
-  <body>
-    <div class="cabecalho-novo">
-      <div class="box-titulo">
-        <div class="circulo">
-          <svg width="62" height="32" viewBox="0 0 186.44 96.312" xmlns="http://www.w3.org/2000/svg">
-            <g transform="translate(-70.124 -93.261)">
-              <path style="fill:currentColor;stroke:none" d="m 56.265625,149.13477 -0.07813,0.87695 c -0.182529,-0.006 -0.351639,-0.0742 -0.535156,-0.0742 -8.824736,0 -16,7.17526 -16,16 0,8.82474 7.175264,16 16,16 1.42133,0 2.835736,-0.18873 4.207031,-0.5625 l 0.964844,-0.26367 -0.207032,-0.75977 c 6.484919,-2.04327 11.230469,-8.03897 11.230469,-15.1914 0,-8.27932 -6.338699,-15.20579 -14.585937,-15.9375 z m -0.613281,2.80273 c 5.190691,0 9.951287,2.86815 12.376953,7.45703 l 0.466797,0.88477 0.392578,-0.20899 c 0.616442,1.58108 0.958984,3.29726 0.958984,5.08985 0,7.74386 -6.256136,14 -14,14 -2.229767,0 -4.427814,-0.53194 -6.410156,-1.55274 l -0.888672,-0.45898 -0.320312,0.62304 c -3.940683,-2.47439 -6.576172,-6.82794 -6.576172,-11.83398 0,-7.74386 6.256136,-14 14,-14 z" transform="translate(41.38 -3.6201)" />
-              <path transform="translate(41.38 -3.6201)" d="m54.578 174.78c-2.1353 0.12561-3.9811 0.86784-5.3291 1.6784-1.309 0.78704-2.0007 1.5181-2.0007 1.5181s0.91427-0.42068 2.305-0.83269c1.4894-0.44124 3.1536-0.75204 5.1126-0.86635 0.27709-0.0162 0.55512-0.0244 0.83378-0.0244s0.55669 8e-3 0.83378 0.0244c1.959 0.11431 3.6232 0.42511 5.1126 0.86635 1.3907 0.41201 2.305 0.83269 2.305 0.83269s-0.69176-0.73107-2.0007-1.5181c-1.348-0.81052-3.1939-1.5528-5.3291-1.6784-0.30626-0.018-0.61356-0.027-0.92153-0.027s-0.61528 9e-3 -0.92153 0.027z" style="fill:currentColor;stroke:none" />
-              <path transform="translate(41.38 -3.6201)" d="m55.5 173.25c3.2731-0.036 5.5355-2.3354 6.4385-4.319 0.91433-2.0086 0.56136-3.431 0.56136-3.431s-0.07144 1.4433-1.209 3.0647c-1.1386 1.623-3.3002 3.2203-5.7909 3.1853h-1.04e-4c-3.4607 0-6.25-2.7893-6.25-6.25s2.7893-6.25 6.25-6.25 6.25 2.7893 6.25 6.25h1.5c-1e-6 -4.2797-3.4703-7.75-7.75-7.75s-7.75 3.4703-7.75 7.75 3.4703 7.75 7.75 7.75h1.28e-4z" style="fill:currentColor;stroke:none" />
-              <path transform="matrix(-1 0 0 1.011 196.85 -.18659)" d="m81.716 140.03c0-7.9133-1.25-39.566-1.25-39.566s-1.25 31.653-1.25 39.566 1.25 39.566 1.25 39.566 1.25-31.653 1.25-39.566z" style="fill:currentColor;stroke:none" />
-              <path transform="matrix(0 -1 -1.011 0 257.95 221.85)" d="m81.716 140.03c0-7.9133-1.25-39.566-1.25-39.566s-1.25 31.653-1.25 39.566 1.25 39.566 1.25 39.566 1.25-31.653 1.25-39.566z" style="fill:currentColor;stroke:none" />
-              <path transform="matrix(3.0334 0 0 3.0334 -203.37 -209.13)" d="m106.72 99.685-0.0801 0.89846c-0.33654-0.022-0.65204-0.13662-0.99232-0.13662-3.5921 0-6.9002 1.2249-9.5292 3.2795h1.6966c2.2586-1.4504 4.9465-2.2913 7.8326-2.2913 4.343 0 8.3972 1.9395 11.12 5.1902 0.20573-0.12576 0.4306-0.23749 0.67324-0.33543 0.28015-0.11551 0.58229-0.20613 0.9063-0.27308-2.5536-3.4864-6.5369-5.8789-11.135-6.2868zm-11.5 4.8c-0.11152 0.10158-0.22164 0.20477-0.33015 0.30953v1.4111c0.5665-0.62571 1.1868-1.2016 1.8538-1.7206zm-1.0884 1.0945c-2.4725 2.7458-3.978 6.3791-3.978 10.361 0 8.5515 6.9425 15.494 15.494 15.494 1.3764 0 2.7463-0.183 4.0742-0.54497l0.47666-0.13083-0.20119-0.73832c2.3857-0.66817 4.5433-1.8849 6.3204-3.5071l-0.3029-1.0041c-2.6171 2.5733-6.2076 4.1598-10.172 4.1598-2.3102 0-4.5867-0.55184-6.6406-1.6095l-0.43952-0.22657-0.32419 0.62708c-4.3427-2.505-7.2969-7.1414-7.2969-12.52 0-3.3222 1.1142-6.382 2.9897-8.8263zm24.691 1.1238c-0.41292 0.0604-0.77725 0.15738-1.0935 0.2879a0.37915 0.37915 0 0 1-3e-3 8.5e-4c-0.17642 0.0711-0.33702 0.1487-0.48279 0.2322 0.45584 0.6066 0.86743 1.2534 1.229 1.9373l0.23049 0.43764 0.14139-0.0753c-0.0755-0.038-0.14702-0.0872-0.21141-0.15536-0.10025-0.10615-0.16729-0.26854-0.16729-0.41805 0-0.28956 0.21768-0.49356 0.42555-0.60443a0.37915 0.37915 0 0 1 9e-3 -4e-3c0.22056-0.11027 0.46431-0.14622 0.77768-0.15655-0.25813-0.51055-0.54374-1.0051-0.85502-1.4818zm1.1318 2.2366c-0.1221 0-0.12003 0.0157-0.21498 0.0239 0.0315 4e-3 0.0419 0.0112 0.0755 0.0148 0.0809 9e-3 0.16379 0.0183 0.24855 0.0286-0.01-0.0222-0.0194-0.0443-0.0291-0.0664-0.0269-5.7e-4 -0.0534-8.6e-4 -0.0799-8.6e-4zm-0.78431 0.69744c0.22992 0.54732 0.4332 1.1076 0.6034 1.6807 0.19486 0.0297 0.36564 0.0691 0.5189 0.12215 0.12216 0.0366 0.24276 0.0898 0.34651 0.19352 0.10557 0.10558 0.17478 0.27212 0.17478 0.42163 0 0.27659-0.21684 0.52027-0.44088 0.62623-0.08 0.0394-0.16157 0.068-0.24787 0.0888 0.0946 0.50699 0.16153 1.0233 0.19642 1.549 0.36524-0.0443 0.69216-0.11378 0.98091-0.20665-0.10085-1.4984-0.41574-2.942-0.91549-4.2986-0.23186-0.0327-0.44946-0.0598-0.65264-0.0816-0.21109-0.0226-0.39759-0.0529-0.56404-0.0952zm2.1652 5.2574c-0.30497 0.0846-0.63362 0.146-0.98619 0.18552 1.8e-4 0.0277 1.7e-4 0.0555 1.7e-4 0.0833 0 0.34925-0.0122 0.69562-0.0365 1.0387a0.37915 0.37915 0 0 1 0.31601-0.17002h0.68449c0.016-0.28744 0.0242-0.57703 0.0242-0.86864 0-0.0898-6.9e-4 -0.17936-2e-3 -0.26882zm-0.42981 1.8961-1.8133 5.6701 0.13987 0.46166c1.0782-1.8338 1.7862-3.9102 2.0202-6.1318zm-2.711 5.9887c-0.46221 0.74852-0.9906 1.4517-1.577 2.1015l0.31414 1.0414c0.17089-0.17402 0.33762-0.35203 0.50016-0.53389a0.37915 0.37915 0 0 1 1e-3 -0.22777zm0.49096 0.95349-0.0317 0.099c0.0143-0.0208 0.0285-0.0418 0.0428-0.0627z" style="fill:currentColor;stroke:none" />
-              <path transform="matrix(.47482 0 0 .47482 -152.83 33.904)" d="m497.4 220.33v-67.079h31.336q15.428 0 23.478 6.8038 8.0495 6.8038 8.0495 18.495 0 7.762-3.7373 13.416-3.7373 5.558-10.637 8.5286-6.8038 2.9707-16.195 2.9707h-19.74l10.062-9.2953v26.161zm40.152 0-16.482-24.436h23.957l16.674 24.436zm-17.536-23.669-10.062-10.254h18.303q4.6956 0 6.8996-2.1082 2.2999-2.1082 2.2999-5.7497 0-3.6414-2.2999-5.7496-2.204-2.1082-6.8996-2.1082h-18.303l10.062-10.254zm76.914 24.628q-8.912 0-15.812-3.4498-6.8038-3.5456-10.733-9.6786-3.9289-6.133-3.9289-14.087 0-7.9537 3.9289-14.087 3.9289-6.133 10.733-9.5828 6.8996-3.4498 15.812-3.4498 8.912 0 15.812 3.4498 6.8996 3.4498 10.733 9.5828 3.9289 6.133 3.9289 14.087 0 7.9537-3.9289 14.087-3.8331 6.133-10.733 9.6786-6.8996 3.4498-15.812 3.4498zm0-16.866q2.3957 0 4.3122-1.1499 1.9166-1.1499 3.0665-3.4498 1.1499-2.3957 1.1499-5.7496 0-3.4498-1.1499-5.6538-1.1499-2.2999-3.0665-3.4498t-4.3122-1.1499-4.3122 1.1499q-1.9166 1.1499-3.0665 3.4498-1.1499 2.204-1.1499 5.6538 0 3.354 1.1499 5.7496 1.1499 2.2999 3.0665 3.4498t4.3122 1.1499zm58.898 16.866q-6.7079 0-13.224-1.4374-6.5163-1.4374-10.541-3.7373l5.9413-14.278q3.7373 2.204 8.6245 3.4498 4.983 1.2458 9.6786 1.2458q3.9289 0 5.2705-0.67079 1.4374-0.67079 1.4374-1.8207 0-1.1499-1.6291-1.6291-1.6291-0.57497-4.3122-0.86245-2.6832-0.28748-5.9413-0.6708-3.1623-0.47913-6.4204-1.3416-3.2581-0.86245-5.9413-2.5874-2.6832-1.7249-4.3122-4.5997-1.6291-2.9707-1.6291-7.4746 0-4.983 2.9707-9.0078 3.0665-4.0248 9.0078-6.4204 6.0371-2.4915 14.853-2.4915 5.7497 0 11.499 1.0541 5.7497 1.0541 9.8702 3.2581l-5.9413 14.278q-4.0248-2.204-7.9537-2.9707-3.8331-0.86244-7.1871-0.86244-4.1206 0-5.6538 0.76662-1.4374 0.76662-1.4374 1.7249 0 1.1499 1.6291 1.7249t4.3122 0.86245 5.8455 0.76662q3.2581 0.38331 6.4204 1.3416 3.2581 0.86245 5.9413 2.5874 2.6832 1.7249 4.3122 4.6956 1.6291 2.8748 1.6291 7.3787 0 4.6956-2.9707 8.8161-2.9706 4.0248-9.0078 6.5163-6.0371 2.3957-15.141 2.3957zm60.048 0q-10.829 0-16.866-5.1747-6.0371-5.2705-6.0371-16.099v-43.889h21.657v43.697q0 2.3957 1.2458 3.7373 1.3416 1.3416 3.2581 1.3416 2.779 0 4.8872-1.4374l5.1747 15.045q-2.4915 1.4374-6.0371 2.1082-3.4498 0.67079-7.2829 0.67079zm-30.09-37.564v-15.812h39.577v15.812zm77.489 37.564q-9.5828 0-16.77-3.5456-7.0912-3.5456-11.02-9.6786-3.9289-6.2288-3.9289-13.991 0-7.9537 3.8331-14.087 3.9289-6.133 10.637-9.5828 6.8038-3.4498 15.237-3.4498 7.762 0 14.278 3.0665 6.6121 3.0665 10.541 9.1036 4.0248 6.0371 4.0248 14.949 0 1.1499-0.0958 2.5873-0.0958 1.3416-0.19165 2.4915h-40.343v-10.445h28.844l-8.1454 2.779q0-3.0665-1.1499-5.1747-1.0541-2.204-2.9707-3.354-1.9166-1.2458-4.5997-1.2458t-4.6956 1.2458q-1.9166 1.1499-2.9707 3.354-1.0541 2.1082-1.0541 5.1747v3.2581q0 3.354 1.3416 5.7496 1.3416 2.3957 3.8331 3.6414 2.4915 1.1499 6.0371 1.1499 3.6414 0 5.9413-0.95827 2.3957-0.95828 4.983-2.8748l11.308 11.403q-3.8331 4.1206-9.4869 6.3246-5.558 2.1082-13.416 2.1082zm34.75-0.95827v-52.418h20.603v15.812l-3.354-4.5039q2.3957-6.133 7.6662-9.1994 5.2705-3.0665 12.649-3.0665v19.166q-1.4374-0.19165-2.5874-0.28748-1.0541-0.0958-2.204-0.0958-4.8872 0-8.0495 2.5874-3.0665 2.4915-3.0665 8.7203v23.286z" style="fill:currentColor;stroke:none" />
-              <path transform="matrix(.47482 0 0 .47482 -115.24 71.233)" d="m514.36 220.33-21.465-67.079h23.286l17.345 56.634h-11.691l18.399-56.634h20.795l17.153 56.634h-11.212l18.111-56.634h21.465l-21.465 67.079h-24.244l-13.991-46.381h6.5163l-14.757 46.381zm121.47 0.95827q-8.912 0-15.812-3.4498-6.8038-3.5456-10.733-9.6786-3.9289-6.133-3.9289-14.087 0-7.9537 3.9289-14.087 3.9289-6.133 10.733-9.5828 6.8996-3.4498 15.812-3.4498 8.912 0 15.812 3.4498 6.8996 3.4498 10.733 9.5828 3.9289 6.133 3.9289 14.087 0 7.9537-3.9289 14.087-3.8331 6.133-10.733 9.6786-6.8996 3.4498-15.812 3.4498zm0-16.866q2.3957 0 4.3122-1.1499 1.9166-1.1499 3.0665-3.4498 1.1499-2.3957 1.1499-5.7496 0-3.4498-1.1499-5.6538-1.1499-2.2999-3.0665-3.4498t-4.3122-1.1499-4.3122 1.1499-3.0665 3.4498q-1.1499 2.204-1.1499 5.6538 0 3.354 1.1499 5.7496 1.1499 2.2999 3.0665 3.4498t4.3122 1.1499zm38.391 15.907v-52.418h20.603v15.812l-3.354-4.5039q2.3957-6.133 7.6662-9.1994 5.2705-3.0665 12.649-3.0665v19.166q-1.4374-0.19165-2.5873-0.28748-1.0541-0.0958-2.204-0.0958-4.8872 0-8.0495 2.5874-3.0665 2.4915-3.0665 8.7203v23.286zm62.923-8.6245 0.47914-25.49 18.111-18.303h25.586l-23.957 25.107-10.829 8.7203zm-18.111 8.6245v-71.104h21.657v71.104zm37.852 0-14.374-18.207 13.32-16.387 27.215 34.594z" style="fill:currentColor;stroke:none" />
-            </g>
-          </svg>
-        </div>
-        <span class="separador">/</span>
-        <span class="texto-titulo">Corpo de Bombeiros Militar do Paraná</span>
-        <span class="separador" id="sep-1">/</span>
-        <span class="texto-titulo" id="unidade-1"></span>
-        <span class="separador" id="sep-2">/</span>
-        <span class="texto-titulo" id="unidade-2"></span>
-        <span class="separador" id="sep-3">/</span>
-        <span class="texto-titulo" id="pelotao"></span>
+  <div class="casca">
+
+    <header class="cabecalho">
+      <div class="cabecalho-logo">
+        <svg aria-label="Roster Work" viewBox="0 0 186.44 96.312">
+          <use href="icones/icone-logo.svg#icone-logo" />
+        </svg>
       </div>
-      
-      <div class="box-usuario">
-        <span class="texto-usuario tooltip" id="usuario-texto">
-          <span class="tooltiptext" id="tooltip-usuario"></span>
+
+      <div class="dropdown" id="dropdown-unidades">
+        <button type="button" class="seletor">
+          <svg class="icone seletor-icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-mapa-pin.svg#icone-mapa-pin"/></svg>
+          <span class="seletor-texto" id="seletor-unidades-texto">Carregando</span>
+          <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+        </button>
+        <div class="dropdown-menu dropdown-menu--largo">
+          <div class="dropdown-menu-rolagem">
+            <div class="arvore" id="arvore-seletor"></div>
+          </div>
+          <div class="dropdown-menu-rodape">
+            <span class="campo-ajuda" id="seletor-contagem">0 unidades selecionadas</span>
+            <span class="espacador-flex"></span>
+            <button type="button" class="botao botao--primario botao--pequeno" id="btn-aplicar-unidades" disabled>Aplicar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="espacador-flex"></div>
+
+      <button type="button" class="cabecalho-btn" id="cabecalho-btn-tema" aria-label="Alternar tema claro ou escuro" data-dica="Tema escuro">
+        <svg class="icone" width="16" height="16" id="cabecalho-icone-lua" aria-hidden="true"><use href="icones/icone-lua.svg#icone-lua" /></svg>
+        <svg width="16" height="16" id="cabecalho-icone-sol" class="icone oculto" aria-hidden="true"><use href="icones/icone-sol.svg#icone-sol" /></svg>
+      </button>
+
+      <div class="dropdown" id="dropdown-avisos">
+        <button type="button" class="cabecalho-btn cabecalho-btn--avisos" aria-label="Avisos" data-dica="Avisos">
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-sino.svg#icone-sino" /></svg>
+          <span class="cabecalho-badge oculto" aria-hidden="true"></span>
+        </button>
+        <div class="dropdown-menu">
+          <div class="dropdown-titulo">Avisos</div>
+          <div class="dropdown-lista-avisos"></div>
+          <div class="dropdown-divisor"></div>
+          <button type="button" class="dropdown-item oculto" id="avisos-marcar-todas">Marcar todas como lidas</button>
+          <button type="button" class="dropdown-item" id="avisos-ver-todos">Ver todos</button>
+        </div>
+      </div>
+
+      <div class="dropdown" id="dropdown-usuario">
+        <button type="button" class="cabecalho-usuario">
+          <span class="cabecalho-usuario-avatar"></span>
+          <span class="cabecalho-usuario-textos">
+            <span class="cabecalho-usuario-nome"></span>
+            <span class="cabecalho-usuario-lotacao"></span>
+          </span>
+          <svg class="icone cabecalho-usuario-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo" /></svg>
+        </button>
+        <div class="dropdown-menu">
+          <button class="dropdown-item" id="btn-meu-perfil">
+            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-perfil.svg#icone-perfil" /></svg>
+            <span>Meu perfil</span>
+          </button>
+          <div class="dropdown-divisor"></div>
+          <button id="btn-sair" class="dropdown-item dropdown-item--perigo">
+            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-sair.svg#icone-sair" /></svg>
+            <span>Sair</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="casca-corpo">
+
+      <nav class="sidebar">
+        <div class="sidebar-itens">
+
+          <button type="button" class="menu-item menu-item--selecionado" data-pagina="inicio" aria-label="Início">
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-inicio.svg#icone-inicio" /></svg>
+            <span class="menu-item-label">Início</span>
+          </button>
+
+          <div class="sidebar-divisor"></div>
+
+          <button type="button" class="menu-item" data-pagina="escalas" aria-label="Escala">
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-escalas.svg#icone-escalas" /></svg>
+            <span class="menu-item-label">Escala</span>
+            <span class="menu-item-selo oculto" aria-hidden="true"></span>
+          </button>
+
+          <button type="button" class="menu-item" data-pagina="trocas" aria-label="Trocas">
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-trocas.svg#icone-trocas" /></svg>
+            <span class="menu-item-label">Trocas</span>
+          </button>
+
+          <button type="button" class="menu-item" data-pagina="folgas" aria-label="Folgas">
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-folgas.svg#icone-folgas" /></svg>
+            <span class="menu-item-label">Folgas</span>
+          </button>
+
+          <button type="button" class="menu-item" data-pagina="extrajornada" aria-label="Extrajornada">
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-extrajornada.svg#icone-extrajornada" /></svg>
+            <span class="menu-item-label">Extrajornada</span>
+          </button>
+
+          <button type="button" class="menu-item" data-pagina="afastamentos" aria-label="Afastamentos">
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-afastamentos.svg#icone-afastamentos" /></svg>
+            <span class="menu-item-label">Afastamentos</span>
+          </button>
+
+          <div class="sidebar-divisor"></div>
+
+          <button type="button" class="menu-item" data-pagina="postos" aria-label="Postos">
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-postos.svg#icone-postos" /></svg>
+            <span class="menu-item-label">Postos</span>
+          </button>
+
+          <button type="button" class="menu-item" data-pagina="distribuicao" aria-label="Distribuição">
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-distribuicao.svg#icone-distribuicao" /></svg>
+            <span class="menu-item-label">Distribuição</span>
+          </button>
+
+          <div class="sidebar-divisor"></div>
+
+          <button type="button" class="menu-item" data-pagina="usuarios" aria-label="Usuários">
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-usuarios.svg#icone-usuarios" /></svg>
+            <span class="menu-item-label">Usuários</span>
+          </button>
+
+          <button type="button" class="menu-item" data-pagina="historico" data-admin aria-label="Histórico">
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-historico.svg#icone-historico" /></svg>
+            <span class="menu-item-label">Histórico</span>
+          </button>
+
+          <button type="button" class="menu-item" data-pagina="ajustes" aria-label="Ajustes">
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-ajustes.svg#icone-ajustes" /></svg>
+            <span class="menu-item-label">Ajustes</span>
+          </button>
+
+        </div>
+
+        <button type="button" class="sidebar-toggle" aria-label="Recolher menu">
+          <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-menu-toggle.svg#icone-menu-toggle" /></svg>
+          <span class="sidebar-toggle-texto">Recolher menu</span>
+        </button>
+      </nav>
+
+      <main class="conteudo">
+        <div class="carregando-veu carregando-veu--visivel" role="status" aria-label="Carregando">
+          <div class="giratorio" aria-hidden="true"></div>
+        </div>
+
+        <!-- PAINEL LATERAL (gaveta de detalhes) — único no shell; empurra a página ao abrir.
+             Casca em componentes/css|js/geral-painel.*; cada página o abre e o preenche. -->
+        <aside class="painel-lateral" id="painel" aria-label="Detalhes">
+          <div class="painel-cabecalho">
+            <div class="painel-titulos">
+              <span class="painel-titulo">
+                <span class="painel-titulo-nome" id="painel-titulo"></span>
+                <span class="painel-titulo-extra oculto" id="painel-titulo-extra"></span>
+              </span>
+              <span class="painel-subtitulo" id="painel-subtitulo"></span>
+            </div>
+            <span class="espacador-flex"></span>
+            <div class="abas abas--pequenas painel-abas oculto" id="painel-abas">
+              <button type="button" class="aba aba--ativa" data-painel-modo="ver">Ver</button>
+              <button type="button" class="aba" data-painel-modo="editar">Editar</button>
+            </div>
+            <button type="button" class="botao botao--icone botao--pequeno" id="painel-fechar" aria-label="Fechar painel">
+              <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+            </button>
+          </div>
+          <div class="painel-subcabecalho oculto" id="painel-subcabecalho"></div>
+          <div class="painel-corpo" id="painel-corpo"></div>
+          <div class="painel-rodape oculto" id="painel-rodape"></div>
+        </aside>
+      </main>
+
+    </div>
+
+  </div>
+
+  <!-- RESUMO: modal de confirmação com o histórico gravado ao salvar (componente geral-resumo); no shell, abaixo do aviso (que tem precedência sobre qualquer modal) -->
+  <div class="modal-veu" id="veu-resumo">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Resumo das alterações">
+      <div class="modal-corpo">
+        <div id="resumo-conteudo"></div>
+      </div>
+      <div class="modal-rodape">
+        <button type="button" class="botao botao--texto resumo-desfazer oculto">Desfazer</button>
+        <button type="button" class="botao botao--primario resumo-ok">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AVISO: modal de aviso/confirmação (componente geral-aviso); fica fora da casca para ficar acima de qualquer modal -->
+  <div class="modal-veu" id="veu-aviso">
+    <div class="modal modal--aviso" role="alertdialog" aria-modal="true" aria-labelledby="aviso-veu-mensagem">
+      <div class="modal-corpo aviso-corpo">
+        <svg class="icone aviso-icone aviso-icone--sucesso oculto" width="32" height="32" aria-hidden="true"><use href="icones/icone-sucesso.svg#icone-sucesso"/></svg>
+        <svg class="icone aviso-icone aviso-icone--alerta oculto" width="32" height="32" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+        <span class="aviso-mensagem" id="aviso-veu-mensagem"></span>
+      </div>
+      <div class="modal-rodape">
+        <button type="button" class="botao aviso-cancelar oculto"></button>
+        <button type="button" class="botao botao--primario aviso-confirmar">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE DATA: "a partir de qual data recalcular a escala" (recálculo direcionado ao alterar modelo/regra/viatura/instalação/ritmo) -->
+  <div class="modal-veu" id="veu-data">
+    <div class="modal modal--data" role="dialog" aria-modal="true" aria-labelledby="data-modal-titulo">
+      <div class="modal-cabecalho">
+        <span class="modal-titulo" id="data-modal-titulo">Recalcular a escala</span>
+      </div>
+      <div class="modal-corpo">
+        <span class="data-modal-mensagem"></span>
+        <label class="campo">
+          <span class="campo-rotulo">A partir de</span>
+          <input class="campo-entrada" type="text" name="recalculo-data" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" data-recalculo-data autocomplete="off" />
+          <span class="campo-erro-texto"></span>
+        </label>
+      </div>
+      <div class="modal-rodape">
+        <button type="button" class="botao data-modal-cancelar">Cancelar</button>
+        <button type="button" class="botao botao--primario data-modal-confirmar">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AVISO DE SESSÃO: contagem antes de expirar por inatividade (anel em canvas); fora da casca para ficar acima de qualquer modal -->
+  <div class="modal-veu" id="veu-sessao">
+    <div class="modal modal--sessao" role="alertdialog" aria-modal="true" aria-labelledby="sessao-mensagem">
+      <div class="modal-corpo sessao-corpo">
+        <span class="sessao-anel">
+          <canvas class="sessao-anel-canvas" aria-hidden="true"></canvas>
+          <span class="sessao-anel-tempo" aria-hidden="true"></span>
         </span>
-        <div class="circulo circulo-icon tooltip">
-          <svg width="20" height="20" viewBox="880 360 240 260" xmlns="http://www.w3.org/2000/svg">
-            <circle style="fill:none;stroke:currentColor;stroke-width:11.7;stroke-linejoin:round;stroke-miterlimit:30" cx="999.60913" cy="493.36594" r="41.324657" />
-            <path style="fill:none;stroke:currentColor;stroke-width:11.7;stroke-linejoin:round;stroke-miterlimit:30" d="m 1019.6444,600.49369 h -39.9159 l -3.6089,-25.79506 c -6.0205,-0.79455 -11.9644,-3.26748 -16.88726,-6.90629 l -20.57337,15.43003 -28.22478,-28.22479 15.68798,-20.79173 c -3.69531,-4.81897 -6.14965,-10.77057 -7.05762,-16.82458 l -25.45824,-3.63689 V 473.8285 l 25.79506,-3.6089 c 0.79455,-6.0205 3.26748,-11.9644 6.90629,-16.88726 l -15.43003,-20.57337 28.22479,-28.22478 20.79173,15.68798 c 4.81897,-3.69531 10.77057,-6.14965 16.82458,-7.05762 l 3.63689,-25.45824 h 39.91588 l 3.6089,25.79506 c 6.0205,0.79455 11.9644,3.26748 16.8873,6.90629 l 20.5733,-15.43003 28.2248,28.22479 -15.688,20.79173 c 3.6953,4.81897 6.1497,10.77057 7.0576,16.82458 l 25.4583,3.63689 v 39.91588 l -25.7951,3.6089 c -0.7945,6.0205 -3.2674,11.9644 -6.9063,16.88726 l 15.4301,20.57337 -28.2248,28.22478 -20.7918,-15.68798 c -4.8189,3.69531 -10.7705,6.14965 -16.8245,7.05762 z" />
-          </svg>
-          <span class="tooltiptext">Configurações</span>
+        <span class="sessao-mensagem" id="sessao-mensagem">Sua sessão vai expirar por inatividade.</span>
+      </div>
+      <div class="modal-rodape">
+        <button type="button" class="botao sessao-sair">Sair agora</button>
+        <button type="button" class="botao botao--primario sessao-continuar">Continuar conectado</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="componentes/js/geral-limpar-comentarios.js"></script>
+  <script src="componentes/js/geral-carregando.js"></script>
+  <script src="componentes/js/geral-teclado.js"></script>
+  <script src="componentes/js/geral-grade-teclado.js"></script>
+  <script src="componentes/js/geral-sessao.js"></script>
+  <script src="componentes/js/geral-tpl.js"></script>
+  <script src="componentes/js/geral-tempo.js"></script>
+  <script src="componentes/js/geral-mensagens.js"></script>
+  <script src="componentes/js/geral-data.js"></script>
+  <script src="componentes/js/geral-campos.js"></script>
+  <script src="componentes/js/geral-dica.js"></script>
+  <script src="componentes/js/geral-flutuante.js"></script>
+  <script src="componentes/js/geral-dropdown.js"></script>
+  <script src="componentes/js/geral-dropdown-numeros.js"></script>
+  <script src="componentes/js/geral-modal.js"></script>
+  <script src="componentes/js/geral-aviso.js"></script>
+  <script src="componentes/js/geral-data-modal.js"></script>
+  <script src="componentes/js/geral-resumo.js"></script>
+  <script src="componentes/js/geral-guarda-saida.js"></script>
+  <script src="componentes/js/geral-api.js"></script>
+  <script src="componentes/js/geral-recalculo.js"></script>
+  <script src="js/index-sidebar.js"></script>
+  <script src="js/index-cabecalho.js"></script>
+  <script src="js/index-avisos.js"></script>
+  <script src="js/index-perfil.js"></script>
+  <script src="js/index-sessao-vigia.js"></script>
+  <script src="componentes/js/geral-seletor-unidades.js"></script>
+  <script src="componentes/js/geral-arvore-unidades.js"></script>
+  <script src="componentes/js/geral-filtro-arvore.js"></script>
+  <script src="componentes/js/geral-busca.js"></script>
+  <script src="componentes/js/geral-calendario.js"></script>
+  <script src="componentes/js/geral-calendario-mes.js"></script>
+  <script src="componentes/js/geral-barra-periodo.js"></script>
+  <script src="componentes/js/geral-abas.js"></script>
+  <script src="componentes/js/geral-painel.js"></script>
+  <script src="componentes/js/geral-impacto.js"></script>
+  <script src="js/index-navegacao.js"></script>
+
+  <!-- MOLDES: análise de impacto na escala (componente geral-impacto — Trocas e Folgas) -->
+  <template id="tpl-geral-impacto-veredito">
+    <div class="impacto-veredito">
+      <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+      <span class="impacto-veredito-texto"></span>
+    </div>
+  </template>
+  <template id="tpl-geral-impacto-aviso">
+    <div class="impacto-aviso">
+      <svg class="icone impacto-aviso-icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+      <span class="impacto-aviso-textos">
+        <span class="impacto-aviso-titulo"></span>
+        <span class="impacto-aviso-desc"></span>
+      </span>
+    </div>
+  </template>
+  <template id="tpl-geral-impacto-antesdepois">
+    <div class="impacto-antesdepois">
+      <span class="impacto-ad-rotulo"></span>
+      <span class="impacto-ad-valores">
+        <span class="impacto-ad-de"></span>
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+        <span class="impacto-ad-para"></span>
+      </span>
+    </div>
+  </template>
+
+  <!-- sino: uma notificação (a linha inteira leva à tela do assunto) -->
+  <template id="dropdown-item-aviso">
+    <button type="button" class="aviso-item">
+      <span class="aviso-item-ponto" aria-hidden="true"></span>
+      <span class="aviso-item-textos">
+        <span class="aviso-item-titulo"></span>
+        <span class="aviso-item-mensagem"></span>
+        <span class="aviso-item-meta"></span>
+      </span>
+    </button>
+  </template>
+
+  <!-- separador dos dois blocos do sino: "Para você" e "Administração" -->
+  <template id="dropdown-grupo-aviso">
+    <div class="dropdown-titulo aviso-grupo"></div>
+  </template>
+
+  <template id="tpl-barra-periodo">
+    <div class="barra-periodo">
+      <div class="barra-periodo-topo"><span class="barra-periodo-rotulo"></span><span class="barra-periodo-horas"></span></div>
+      <div class="barra-periodo-trilho">
+        <div class="barra-periodo-limite"></div>
+        <div class="barra-periodo-fill"></div>
+        <button type="button" class="barra-periodo-handle" data-tipo="inicio" role="slider" aria-label="Início do período"></button>
+        <button type="button" class="barra-periodo-handle" data-tipo="fim" role="slider" aria-label="Fim do período"></button>
+      </div>
+      <div class="barra-periodo-escala"><span>08h</span><span>14h</span><span>20h</span><span>02h</span><span>08h</span></div>
+    </div>
+  </template>
+
+  <template id="tpl-seletor-no">
+    <div class="arvore-grupo">
+      <div class="arvore-linha">
+        <button type="button" class="arvore-seta" aria-label="Expandir ou recolher" aria-expanded="false">
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
+        </button>
+        <button type="button" class="caixa-selecao" role="checkbox" aria-checked="false">
+          <svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg>
+        </button>
+        <span class="arvore-nome"></span>
+        <span class="arvore-detalhe"></span>
+      </div>
+      <div class="arvore-filhos"></div>
+    </div>
+  </template>
+
+  <template id="tpl-seletor-trecho">
+    <span class="seletor-trecho"></span>
+  </template>
+
+  <template id="tpl-seletor-cidade">
+    <span class="seletor-cidade"></span>
+  </template>
+
+  <!-- BLOQUEIO: camada transparente que impede clique por engano enquanto uma ação está no ar -->
+  <div class="carregando-bloqueio oculto" id="carregando-bloqueio" aria-hidden="true"></div>
+
+  <!-- MOLDE: divisória dentro de um filtro em árvore (separa opções "separadas", ex.: Inativos) -->
+  <template id="tpl-filtro-divisor">
+    <div class="dropdown-divisor"></div>
+  </template>
+
+  <!-- MOLDE: botões de recolher/expandir os títulos da árvore (o geral-arvore-unidades injeta em toda página com árvore) -->
+  <template id="tpl-titulos-niveis">
+    <div class="titulos-niveis">
+      <button type="button" class="botao-discreto titulos-niveis-mais" aria-label="Expandir a estrutura de títulos" data-dica="Mais títulos" disabled>
+        <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-estrutura-mais.svg#icone-estrutura-mais"/></svg>
+      </button>
+      <button type="button" class="botao-discreto titulos-niveis-menos" aria-label="Recolher a estrutura de títulos" data-dica="Menos títulos" disabled>
+        <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-estrutura-menos.svg#icone-estrutura-menos"/></svg>
+      </button>
+    </div>
+  </template>
+
+  <template id="carregando-pontos">
+    <span class="carregando-pontos" aria-label="Carregando">
+      <span>.</span><span>.</span><span>.</span>
+    </span>
+  </template>
+
+  <!-- MOLDES: árvore de unidades (componente compartilhado — usuários, folgas, férias) -->
+  <template id="tpl-arvore-unidade">
+    <div class="arvore-grupo">
+      <div class="arvore-linha">
+        <svg class="icone arvore-unidade-icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-unidade.svg#icone-unidade"/></svg>
+        <span class="arvore-nome"></span>
+        <span class="arvore-detalhe"></span>
+        <span class="espacador-flex"></span>
+        <span class="arvore-contagem"></span>
+      </div>
+      <div class="arvore-conteudo"></div>
+      <div class="arvore-filhos"></div>
+    </div>
+  </template>
+
+  <!-- a árvore é um container: carrega com o círculo, não com os pontinhos (MANUAL §8) -->
+  <template id="tpl-arvore-carregando">
+    <div class="arvore-estado arvore-estado--carregando">
+      <div class="giratorio" aria-label="Carregando" role="status"></div>
+    </div>
+  </template>
+
+  <template id="tpl-arvore-vazio">
+    <div class="arvore-estado">Selecione uma unidade no seletor acima para ver as unidades.</div>
+  </template>
+
+  <template id="tpl-arvore-erro">
+    <div class="arvore-estado">Não foi possível carregar. Atualize a página e tente de novo.</div>
+  </template>
+
+  <!-- MOLDES: dropdown de números (componente geral-dropdown-numeros — escalas e postos) -->
+  <template id="tpl-dropdown-numeros">
+    <span class="dropdown dropdown-numeros">
+      <button type="button" class="dropdown-numeros-btn"></button>
+      <div class="dropdown-menu dropdown-numeros-menu"></div>
+    </span>
+  </template>
+
+  <template id="tpl-dropdown-numeros-opcao">
+    <button type="button" class="dropdown-item"></button>
+  </template>
+
+  <!-- MOLDES: resumo de alterações (componente geral-resumo — modal de confirmação ao salvar e, depois, página de Histórico) -->
+  <template id="tpl-resumo">
+    <div class="resumo">
+      <div class="resumo-cabecalho">
+        <span class="resumo-titulo"></span>
+        <span class="resumo-quando"></span>
+      </div>
+      <span class="resumo-assunto"></span>
+      <div class="resumo-corpo"></div>
+    </div>
+  </template>
+
+  <template id="tpl-resumo-alvo">
+    <div class="resumo-alvo">
+      <span class="rotulo-secao"></span>
+      <div class="resumo-mudancas"></div>
+    </div>
+  </template>
+
+  <template id="tpl-resumo-mudanca">
+    <div class="resumo-mudanca">
+      <span class="resumo-mudanca-rotulo"></span>
+      <span class="resumo-conector resumo-conector--de">de</span>
+      <span class="resumo-de"></span>
+      <span class="resumo-conector resumo-conector--para">para</span>
+      <span class="resumo-para"></span>
+    </div>
+  </template>
+
+  <!-- MOLDE: nó de filtro em árvore (componente geral-filtro-arvore — graus, situação) -->
+  <template id="tpl-filtro-no">
+    <div class="arvore-grupo">
+      <div class="arvore-linha">
+        <button type="button" class="arvore-seta" aria-label="Expandir ou recolher" aria-expanded="false">
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
+        </button>
+        <button type="button" class="caixa-selecao" role="checkbox" aria-checked="false">
+          <svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg>
+        </button>
+        <span class="arvore-nome"></span>
+      </div>
+      <div class="arvore-filhos"></div>
+    </div>
+  </template>
+
+  <!-- MOLDES: calendário (componente compartilhado — escalas e, futuramente, folgas/férias) -->
+  <template id="tpl-calendario">
+    <div class="calendario">
+      <div class="calendario-cabecalho">
+        <button type="button" class="botao botao--icone botao--pequeno calendario-nav" data-nav="-1" aria-label="Anterior">
+          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-esquerda.svg#icone-seta-esquerda"/></svg>
+        </button>
+        <div class="calendario-seletores">
+          <div class="dropdown calendario-seletor" data-tipo="mes">
+            <button type="button" class="calendario-seletor-gatilho">
+              <span class="calendario-seletor-texto"></span>
+              <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+            </button>
+            <div class="dropdown-menu calendario-menu"></div>
+          </div>
+          <div class="dropdown calendario-seletor" data-tipo="ano">
+            <button type="button" class="calendario-seletor-gatilho">
+              <span class="calendario-seletor-texto"></span>
+              <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+            </button>
+            <div class="dropdown-menu calendario-menu"></div>
+          </div>
         </div>
-        <div class="circulo circulo-icon logout tooltip" onclick="fazerLogout()">
-          <svg width="20" height="20" viewBox="880 360 240 260" xmlns="http://www.w3.org/2000/svg">
-            <path style="fill:none;stroke:currentColor;stroke-width:11.7;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:30;stroke-dasharray:none;stroke-opacity:1" d="m 956.55707,429.97385 v -34.59743 c 0,-3.90545 3.1441,-7.04955 7.04955,-7.04955 v 0 h 140.56648 c 3.9055,0 7.0496,3.1441 7.0496,7.04955 v 197.38789 c 0,3.90545 -3.1441,7.04955 -7.0496,7.04955 H 963.60662 c -3.90545,0 -7.04955,-3.1441 -7.04955,-7.04955 v -20.97409" />
-            <path style="fill:none;stroke:currentColor;stroke-width:11.7;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:30;stroke-dasharray:none;stroke-opacity:1" d="M 985.20785,499.0296 H 900.68014" />
-            <path style="fill:none;stroke:currentColor;stroke-width:11.7;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:30;stroke-dasharray:none;stroke-opacity:1;paint-order:markers fill stroke" d="m 933.56181,458.55868 -41.02108,40.99261 41.55945,41.47888" />
-            <path style="fill:currentColor;fill-opacity:1;stroke:currentColor;stroke-width:11.7;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:30;stroke-dasharray:none;stroke-opacity:1;paint-order:markers fill stroke" d="m 1028.1814,377.30923 -0.1615,178.0437 80.1638,33.67353 -0.069,-187.90526 z" />
-          </svg>
-          <span class="tooltiptext">Sair</span>
+        <button type="button" class="botao botao--icone botao--pequeno calendario-nav" data-nav="1" aria-label="Próximo">
+          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
+        </button>
+      </div>
+      <div class="calendario-corpo-dias">
+        <div class="calendario-semana">
+          <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
+        </div>
+        <div class="calendario-dias"></div>
+      </div>
+      <div class="calendario-meses"></div>
+    </div>
+  </template>
+
+  <template id="tpl-calendario-opcao">
+    <button type="button" class="dropdown-item"></button>
+  </template>
+
+  <template id="tpl-calendario-dia">
+    <button type="button" class="calendario-dia"></button>
+  </template>
+
+  <template id="tpl-calendario-mes">
+    <button type="button" class="calendario-mes"></button>
+  </template>
+
+  <!-- MOLDES: calendário de mês (componente geral-calendario-mes — Escala e Extrajornada) -->
+  <template id="tpl-geral-calendario-mes">
+    <div class="geral-calendario-mes">
+      <div class="geral-calendario-mes-cabecalho">
+        <span class="geral-calendario-mes-cabecalho-dia">dom</span>
+        <span class="geral-calendario-mes-cabecalho-dia">seg</span>
+        <span class="geral-calendario-mes-cabecalho-dia">ter</span>
+        <span class="geral-calendario-mes-cabecalho-dia">qua</span>
+        <span class="geral-calendario-mes-cabecalho-dia">qui</span>
+        <span class="geral-calendario-mes-cabecalho-dia">sex</span>
+        <span class="geral-calendario-mes-cabecalho-dia">sáb</span>
+      </div>
+      <div class="geral-calendario-mes-grade"></div>
+    </div>
+  </template>
+
+  <template id="tpl-geral-calendario-mes-semana">
+    <div class="geral-calendario-mes-semana"></div>
+  </template>
+
+  <template id="tpl-geral-calendario-mes-dia">
+    <div class="geral-calendario-mes-dia">
+      <span class="geral-calendario-mes-numero"></span>
+    </div>
+  </template>
+
+  <!-- MOLDES: peças do painel lateral (componente geral-painel) — título .rotulo-secao + itens -->
+  <template id="tpl-painel-secao">
+    <div class="painel-secao">
+      <span class="rotulo-secao"></span>
+    </div>
+  </template>
+
+  <template id="tpl-grupo-caixa">
+    <div class="grupo-caixa">
+      <span class="rotulo-secao"></span>
+    </div>
+  </template>
+
+  <template id="tpl-linha-info">
+    <div class="linha-info">
+      <span class="linha-info-rotulo"></span>
+      <span class="linha-info-valor"></span>
+    </div>
+  </template>
+
+  <!-- Cartão de pedido (componentes/css/geral-pedido.css). Compartilhado por
+       "Meu perfil › Minhas solicitações" e "Usuários › Correções", por isso
+       mora no shell. Aqui a versão do admin: cada linha é selecionável -->
+  <template id="tpl-pedido">
+    <div class="pedido">
+      <div class="pedido-cabecalho">
+        <span class="pedido-textos">
+          <span class="pedido-quem"></span>
+          <span class="pedido-meta"></span>
+        </span>
+        <span class="espacador-flex"></span>
+        <button type="button" class="botao botao--pequeno pedido-recusar">Recusar</button>
+        <button type="button" class="botao botao--primario botao--pequeno pedido-aprovar">Aprovar</button>
+      </div>
+      <button type="button" class="pedido-item pedido-item--todos" role="checkbox" aria-checked="true">
+        <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true">
+          <svg class="icone" width="10" height="10"><use href="icones/icone-check.svg#icone-check"/></svg>
+        </span>
+        <span class="pedido-item-rotulo">Selecionar tudo</span>
+      </button>
+      <div class="pedido-itens"></div>
+    </div>
+  </template>
+
+  <!-- uma alteração selecionável dentro do pedido (a seta de/para é ícone) -->
+  <template id="tpl-pedido-item">
+    <button type="button" class="pedido-item" role="checkbox" aria-checked="true">
+      <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true">
+        <svg class="icone" width="10" height="10"><use href="icones/icone-check.svg#icone-check"/></svg>
+      </span>
+      <span class="pedido-item-rotulo"></span>
+      <span class="pedido-item-valores">
+        <span class="pedido-item-de"></span>
+        <svg class="icone pedido-item-seta" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+        <span class="pedido-item-para"></span>
+      </span>
+    </button>
+  </template>
+
+  <!-- lista de pedidos sem nada (o texto é preenchido pelo JS) -->
+  <template id="tpl-pedido-vazio">
+    <div class="pedido-vazio"></div>
+  </template>
+
+  <!-- Novo aviso (painel direito, só admin): título + mensagem. Compartilhado por
+       Início e Avisos (módulo inicio-aviso.js), por isso mora no shell -->
+  <template id="tpl-inicio-aviso-form">
+    <div class="campo">
+      <span class="campo-rotulo">Para quem</span>
+      <div class="abas abas--pequenas" id="aviso-alcance">
+        <button type="button" class="aba aba--ativa" data-valor="unidades">Unidades</button>
+        <button type="button" class="aba" data-valor="militares">Militares</button>
+        <button type="button" class="aba" data-valor="todos">Todos</button>
+      </div>
+    </div>
+
+    <div class="campo" data-destino="unidades">
+      <span class="campo-rotulo">Unidades que recebem</span>
+      <div class="dropdown" id="aviso-unidades-dropdown">
+        <button type="button" class="campo-entrada campo-selecao" id="aviso-unidades-gatilho">
+          <span class="campo-selecao-texto campo-selecao-texto--vazio" id="aviso-unidades-texto">Selecione</span>
+          <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+        </button>
+        <div class="dropdown-menu dropdown-menu--largo">
+          <div class="dropdown-menu-rolagem">
+            <div class="arvore" id="aviso-unidades-arvore"></div>
+          </div>
+          <div class="dropdown-menu-rodape">
+            <span class="campo-ajuda" id="aviso-unidades-contagem">0 unidades selecionadas</span>
+            <span class="espacador-flex"></span>
+            <button type="button" class="botao botao--primario botao--pequeno" id="aviso-unidades-aplicar">Aplicar</button>
+          </div>
+        </div>
+      </div>
+      <span class="campo-ajuda">Quem está numa unidade abaixo da escolhida também recebe.</span>
+    </div>
+
+    <div class="campo oculto" data-destino="militares">
+      <span class="campo-rotulo">Militares que recebem</span>
+      <div class="busca">
+        <svg class="icone busca-modo-marcar" width="16" height="16" aria-hidden="true"><use href="icones/icone-pesquisar.svg#icone-pesquisar"/></svg>
+        <input type="text" class="busca-entrada" id="aviso-militares-busca" maxlength="60" placeholder="Pesquisar militar" aria-label="Pesquisar militar" />
+      </div>
+      <div class="aviso-militares" id="aviso-militares-lista"></div>
+      <span class="campo-ajuda" id="aviso-militares-contagem">Nenhum militar escolhido</span>
+    </div>
+
+    <span class="campo-ajuda oculto" data-destino="todos">O comunicado vai para todo o efetivo.</span>
+
+    <label class="campo">
+      <span class="campo-rotulo">Título</span>
+      <input class="campo-entrada" id="aviso-titulo" type="text" maxlength="80" placeholder="Ex.: Instrução de combate a incêndio" />
+    </label>
+    <label class="campo">
+      <span class="campo-rotulo">Mensagem</span>
+      <textarea class="campo-entrada" id="aviso-mensagem" maxlength="400" placeholder="Escreva o comunicado"></textarea>
+    </label>
+  </template>
+
+  <!-- Novo comunicado: um militar na lista de escolha (a linha inteira é a caixa) -->
+  <template id="tpl-aviso-militar">
+    <button type="button" class="aviso-militar" role="checkbox" aria-checked="false">
+      <span class="caixa-selecao" aria-hidden="true">
+        <svg class="icone" width="10" height="10"><use href="icones/icone-check.svg#icone-check"/></svg>
+      </span>
+      <span class="aviso-militar-nome"></span>
+      <span class="espacador-flex"></span>
+      <span class="aviso-militar-unidade"></span>
+    </button>
+  </template>
+
+  <template id="tpl-inicio-aviso-acoes">
+    <button type="button" class="botao" id="aviso-cancelar">Cancelar</button>
+    <button type="button" class="botao botao--primario" id="aviso-salvar" disabled>Salvar</button>
+  </template>
+
+  <!-- seção colapsável: título-botão com chevron que mostra/oculta o corpo -->
+  <template id="tpl-painel-secao-colapsavel">
+    <div class="painel-secao">
+      <button type="button" class="painel-secao-cabecalho" aria-expanded="true">
+        <span class="rotulo-secao"></span>
+        <svg class="icone painel-secao-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="painel-secao-corpo"></div>
+    </div>
+  </template>
+
+  <template id="tpl-painel-estado">
+    <div class="painel-estado"></div>
+  </template>
+
+  <!-- carregando de container (painel/página): o círculo, nunca os pontinhos -->
+  <template id="tpl-painel-carregando">
+    <div class="painel-estado painel-estado--carregando">
+      <div class="giratorio" aria-label="Carregando" role="status"></div>
+    </div>
+  </template>
+
+  <!-- MOLDES: célula compartilhada da grade (Escala Mês/Semana/Colunas + Extrajornada) — o gráfico de cobertura
+       (canvas), a linha do militar e as peças que o escalas-celula.js clona; a dica do gráfico segue junto -->
+  <div class="escala-mes-dica oculto" id="escala-mes-dica"></div>
+
+  <template id="tpl-escala-mes-celula">
+    <div class="escala-mes-celula"></div>
+  </template>
+
+  <template id="tpl-escala-mes-pessoa">
+    <span class="linha-escalado">
+      <span class="linha-escalado-icones"></span>
+      <span class="linha-escalado-grad"></span>
+      <span class="linha-escalado-nome"></span>
+      <span class="linha-escalado-hora"></span>
+    </span>
+  </template>
+
+  <!-- um par início→fim do militar na grade; o JS clona um por período (disponibilidade quebrada = vários empilhados) -->
+  <template id="tpl-escala-mes-hora-par">
+    <span class="linha-escalado-hora-par">
+      <span class="linha-escalado-hora-ini"></span>
+      <svg class="icone linha-escalado-hora-seta" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+      <span class="linha-escalado-hora-fim"></span>
+    </span>
+  </template>
+
+  <!-- linha de erro na célula: ícone + mensagem (vermelho); o texto vem de RosterWork.mensagens.escala.funcoesForaDisponibilidade -->
+  <template id="tpl-escala-mes-erro">
+    <span class="linha-escalado linha-escalado--erro">
+      <span class="linha-escalado-icones"><svg class="icone" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg></span>
+      <span class="linha-escalado-nome"></span>
+    </span>
+  </template>
+
+  <template id="tpl-escala-mes-grafico">
+    <div class="escala-mes-grafico">
+      <canvas class="escala-mes-grafico-canvas" aria-hidden="true"></canvas>
+    </div>
+  </template>
+
+  <template id="tpl-escala-mes-origem">
+    <svg class="icone" width="13" height="13" aria-hidden="true"><use href="icones/icone-origem-base.svg#icone-origem-base"/></svg>
+  </template>
+
+  <!-- MOLDES: wrapper da grade Mês/Agenda (dias × unidades) — promovido de escalas.html (2026-08-12);
+       o renderizador escalas-mes.js o clona, e a Extrajornada reusa a mesma grade -->
+  <template id="tpl-escala-mes">
+    <div class="escala-mes">
+      <div class="escala-mes-grade"></div>
+    </div>
+  </template>
+
+  <template id="tpl-escala-mes-cabecalho">
+    <div class="escala-mes-linha escala-grade-cabecalho escala-mes-cabecalho">
+      <div class="escala-mes-canto"></div>
+    </div>
+  </template>
+
+  <template id="tpl-escala-mes-titulo">
+    <span class="escala-mes-titulo"></span>
+  </template>
+
+  <!-- ===== moldes do PAINEL DO DIA no modo EDITAR + seções (compartilhados Escala + Extrajornada); movidos de escalas.html na Fase 2b ===== -->
+  <!-- abas de seção do painel de detalhes (clonadas para o sub-cabeçalho da gaveta) -->
+  <template id="tpl-escala-painel-secoes">
+    <div class="abas abas--pequenas">
+      <button type="button" class="aba aba--ativa" data-secao="distribuicao">Distribuição</button>
+      <button type="button" class="aba" data-secao="continuos">Contínuos</button>
+      <button type="button" class="aba" data-secao="pontuais">Pontuais</button>
+    </div>
+  </template>
+
+  <!-- rodapé do painel no modo Editar: Cancelar + Salvar -->
+  <template id="tpl-escala-painel-acoes">
+    <button type="button" class="botao escala-painel-cancelar">Cancelar</button>
+    <button type="button" class="botao botao--primario escala-painel-salvar" disabled>Salvar</button>
+  </template>
+
+  <!-- Contínuos / Pontuais: linha de militar (grad + nome + extra + ação) -->
+  <template id="tpl-escala-secao-item">
+    <div class="escala-secao-item">
+      <span class="escala-secao-grad"></span>
+      <span class="escala-secao-nome"></span>
+      <span class="escala-secao-extra"></span>
+      <span class="escala-secao-acao"></span>
+    </div>
+  </template>
+
+  <template id="tpl-escala-secao-busca">
+    <div class="busca escala-secao-busca">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-pesquisar.svg#icone-pesquisar"/></svg>
+      <input type="text" name="busca-militar" class="busca-entrada" maxlength="100" placeholder="Pesquisar militar" aria-label="Pesquisar militar" />
+      <button type="button" class="busca-limpar" aria-label="Limpar pesquisa">
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+      </button>
+    </div>
+  </template>
+
+  <!-- Contínuos / Pontuais: botão de ação de uma linha (Tirar / Adicionar / Cancelar saída) -->
+  <template id="tpl-escala-secao-botao">
+    <button type="button" class="botao botao--pequeno escala-secao-botao"></button>
+  </template>
+
+  <!-- Pontuais: ✕ que remove um pontual da lista -->
+  <template id="tpl-escala-secao-remover">
+    <button type="button" class="escala-edicao-remover" aria-label="Remover pontual">
+      <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+    </button>
+  </template>
+
+  <!-- Contínuos / Pontuais: estado vazio de uma caixa de seção (texto) -->
+  <template id="tpl-escala-secao-vazio">
+    <div class="escala-secao-vazio"></div>
+  </template>
+
+  <!-- Contínuos: selo "Sai em DD/MM" de um militar com saída marcada -->
+  <template id="tpl-escala-secao-selo">
+    <span class="selo selo--alerta escala-secao-selo"></span>
+  </template>
+
+  <!-- coluna de ação de uma linha no modo Editar: ✕ remover desta função -->
+  <template id="tpl-escala-edicao-acao">
+    <span class="escala-edicao-acao">
+      <button type="button" class="escala-edicao-remover" aria-label="Remover desta função">
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+      </button>
+    </span>
+  </template>
+
+  <!-- ✕ de UM período (multi-período): mesmo botão, rótulo próprio -->
+  <template id="tpl-escala-edicao-remover-periodo">
+    <button type="button" class="escala-edicao-remover" aria-label="Remover este período">
+      <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+    </button>
+  </template>
+
+  <!-- ação restaurar (↺): desfaz o ajuste manual, voltando ao automático -->
+  <template id="tpl-escala-edicao-restaurar">
+    <span class="escala-edicao-acao">
+      <button type="button" class="escala-edicao-restaurar" aria-label="Restaurar o automático">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-restaurar.svg#icone-restaurar"/></svg>
+      </button>
+    </span>
+  </template>
+
+  <!-- ✕ à esquerda da função: exclui uma função inserida à mão (só funções manuais) -->
+  <template id="tpl-escala-funcao-remover">
+    <button type="button" class="escala-funcao-remover" aria-label="Excluir função">
+      <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+    </button>
+  </template>
+
+  <!-- linha dos valores originais (automático) abaixo de uma linha alterada: itálico + riscado -->
+  <template id="tpl-escala-edicao-original">
+    <div class="escala-distribuicao-escalado escala-distribuicao-original">
+      <span class="escala-distribuicao-grad"></span>
+      <span class="escala-distribuicao-nome"></span>
+      <div class="escala-distribuicao-horas"></div>
+    </div>
+  </template>
+
+  <!-- seletor de hora redonda do modo Editar: wrapper com a seta; os dois dropdowns
+       (início → fim) são criados pelo componente geral-dropdown-numeros e inseridos pelo JS -->
+  <template id="tpl-escala-hora-editar">
+    <span class="escala-distribuicao-hora escala-hora-editar">
+      <svg class="icone escala-distribuicao-hora-seta" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+    </span>
+  </template>
+
+  <!-- picker do modo Editar: militares do grupo, por unidade (recolhível), sem checkbox -->
+  <template id="tpl-escala-picker">
+    <div class="escala-picker" role="dialog" aria-label="Selecionar militar"></div>
+  </template>
+
+  <template id="tpl-escala-picker-unidade">
+    <div class="escala-picker-unidade">
+      <button type="button" class="escala-picker-unidade-cab" aria-expanded="true">
+        <svg class="icone escala-picker-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+        <span class="escala-picker-unidade-nome"></span>
+      </button>
+      <div class="escala-picker-militares"></div>
+    </div>
+  </template>
+
+  <template id="tpl-escala-picker-militar">
+    <button type="button" class="escala-picker-militar">
+      <span class="escala-picker-militar-grad"></span>
+      <span class="escala-picker-militar-nome"></span>
+    </button>
+  </template>
+
+  <!-- opção no topo do picker: limpa o militar e a vaga volta a "Selecione um militar" -->
+  <template id="tpl-escala-picker-vazio">
+    <button type="button" class="escala-picker-militar escala-picker-vazio"></button>
+  </template>
+
+  <!-- ===== moldes do PAINEL DO DIA (compartilhados Escala + Extrajornada); movidos de escalas.html na Fase 2 do redesenho ===== -->
+  <!-- painel Distribuição: estado vazio (texto), carregando (giratório), grupo de função e linha de militar -->
+  <template id="tpl-escala-distribuicao-estado">
+    <div class="escala-distribuicao-estado"></div>
+  </template>
+
+  <!-- aviso de conflito no topo da Distribuição: lista os erros do dia (um por linha, com ícone) a partir de RosterWork.mensagens.escala.erros -->
+  <template id="tpl-escala-distribuicao-aviso">
+    <div class="escala-distribuicao-aviso">
+      <div class="escala-distribuicao-aviso-lista"></div>
+      <span class="escala-distribuicao-aviso-acao oculto">CORRIJA PARA SALVAR</span>
+    </div>
+  </template>
+
+  <!-- uma linha do aviso: ícone + texto de um erro (o JS preenche a partir de RosterWork.mensagens.escala.erros) -->
+  <template id="tpl-escala-distribuicao-aviso-item">
+    <div class="escala-distribuicao-aviso-item">
+      <svg class="icone escala-distribuicao-aviso-icone" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+      <span></span>
+    </div>
+  </template>
+
+  <!-- aviso amarelo expansível: cabeçalho (ícone + título + chevron) que abre a lista de militares afetados -->
+  <template id="tpl-escala-distribuicao-aviso-grupo">
+    <div class="escala-distribuicao-aviso-grupo">
+      <button type="button" class="escala-distribuicao-aviso-cabecalho" aria-expanded="false">
+        <svg class="icone escala-distribuicao-aviso-icone" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+        <span class="escala-distribuicao-aviso-titulo"></span>
+        <svg class="icone escala-distribuicao-aviso-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="escala-distribuicao-aviso-detalhes oculto"></div>
+    </div>
+  </template>
+
+  <!-- uma linha do detalhe: "Cb. Campos está de Rádio Operador, faltou soldado ou mais moderno" -->
+  <template id="tpl-escala-distribuicao-aviso-detalhe">
+    <div class="escala-distribuicao-aviso-detalhe"><span></span></div>
+  </template>
+
+  <template id="tpl-escala-distribuicao-carregando">
+    <div class="escala-distribuicao-carregando" role="status" aria-label="Carregando">
+      <div class="giratorio" aria-hidden="true"></div>
+    </div>
+  </template>
+
+  <template id="tpl-escala-distribuicao-grupo">
+    <div class="escala-distribuicao-grupo">
+      <span class="escala-distribuicao-funcao"></span>
+      <div class="escala-distribuicao-militares"></div>
+    </div>
+  </template>
+
+  <!-- um rótulo de função (empilha quando o mesmo militar acumula, ex.: Chefe de Socorro / Condutor) -->
+  <template id="tpl-escala-distribuicao-funcao-rotulo">
+    <span class="escala-distribuicao-funcao-rotulo"></span>
+  </template>
+
+  <template id="tpl-escala-distribuicao-adicionar">
+    <button type="button" class="escala-distribuicao-adicionar">
+      <svg class="icone" aria-hidden="true"><use href="icones/icone-mais.svg#icone-mais"></use></svg>
+      <span>Adicionar função</span>
+    </button>
+  </template>
+
+  <!-- viatura em manutenção: aviso amarelo + nota (só leitura no Ver; editável no Editar) -->
+  <template id="tpl-escala-manutencao">
+    <div class="escala-manutencao">
+      <div class="escala-manutencao-cab">
+        <svg class="icone escala-manutencao-icone" width="16" height="16"><use href="icones/icone-alerta.svg#icone-alerta"></use></svg>
+        <span class="escala-manutencao-titulo">Em manutenção</span>
+      </div>
+      <input type="text" class="campo-entrada escala-manutencao-nota" maxlength="120"
+             placeholder="Detalhe (ex.: substituída por ABT-41)" />
+      <span class="escala-manutencao-nota-ver"></span>
+    </div>
+  </template>
+
+  <template id="tpl-escala-vaga-vazia">
+    <div class="escala-vaga-vazia">
+      <svg class="icone escala-vaga-vazia-icone" width="16" height="16"><use href="icones/icone-alerta.svg#icone-alerta"></use></svg>
+      <span class="escala-vaga-vazia-texto"></span>
+    </div>
+  </template>
+
+
+  <template id="tpl-escala-distribuicao-escalado">
+    <div class="escala-distribuicao-escalado">
+      <span class="escala-distribuicao-icones"></span>
+      <span class="escala-distribuicao-grad"></span>
+      <span class="escala-distribuicao-nome"></span>
+      <div class="escala-distribuicao-horas"></div>
+    </div>
+  </template>
+
+  <template id="tpl-escala-distribuicao-hora">
+    <span class="escala-distribuicao-hora">
+      <span class="escala-distribuicao-hora-ini"></span>
+      <svg class="icone escala-distribuicao-hora-seta" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+      <span class="escala-distribuicao-hora-fim"></span>
+    </span>
+  </template>
+
+  <!-- legenda dos ícones de origem (rodapé do painel, retrátil pelo chevron) -->
+  <template id="tpl-escala-legenda">
+    <div class="escala-legenda">
+      <div class="escala-legenda-cabecalho">
+        <span class="escala-legenda-titulo">Legendas</span>
+        <button type="button" class="botao-discreto escala-legenda-toggle" aria-label="Mostrar ou ocultar legendas" aria-expanded="false">
+          <svg class="icone escala-legenda-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+        </button>
+      </div>
+      <div class="escala-legenda-itens oculto">
+        <span class="escala-legenda-item">
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-origem-sistema.svg#icone-origem-sistema"/></svg>
+          <span>Gerado pelo sistema</span>
+        </span>
+        <span class="escala-legenda-item">
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-origem-troca.svg#icone-origem-troca"/></svg>
+          <span>Troca de serviço</span>
+        </span>
+        <span class="escala-legenda-item">
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-origem-pontual.svg#icone-origem-pontual"/></svg>
+          <span>Inserção pontual</span>
+        </span>
+        <span class="escala-legenda-item">
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-origem-base.svg#icone-origem-base"/></svg>
+          <span>Escala base</span>
+        </span>
+        <span class="escala-legenda-item">
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-folgas.svg#icone-folgas"/></svg>
+          <span>Folga</span>
+        </span>
+        <span class="escala-legenda-item">
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-extrajornada.svg#icone-extrajornada"/></svg>
+          <span>Extrajornada (hora extra paga)</span>
+        </span>
+        <span class="escala-legenda-item">
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-cadeado.svg#icone-cadeado"/></svg>
+          <span>Função fixada</span>
+        </span>
+        <span class="escala-legenda-item">
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-regra.svg#icone-regra"/></svg>
+          <span>Tem regra (exclusivo/proibido)</span>
+        </span>
+      </div>
+    </div>
+  </template>
+
+  <!-- linha de Observação do dia (troca/folga/admin): ícone + texto + ✕ (o ✕ só nas do admin, no Editar) -->
+  <template id="tpl-escala-observacao">
+    <div class="escala-observacao">
+      <svg class="icone escala-observacao-icone"><use href="icones/icone-nota.svg#icone-nota" /></svg>
+      <span class="escala-observacao-texto"></span>
+      <button type="button" class="escala-observacao-remover" aria-label="Excluir observação">
+        <svg class="icone"><use href="icones/icone-fechar.svg#icone-fechar" /></svg>
+      </button>
+    </div>
+  </template>
+
+  <!-- adicionar observação (Editar do admin): botão que abre o campo com limite de caracteres -->
+  <template id="tpl-escala-observacao-adicionar">
+    <div class="escala-observacao-add">
+      <button type="button" class="botao-discreto escala-observacao-add-botao">
+        <svg class="icone" aria-hidden="true"><use href="icones/icone-mais.svg#icone-mais" /></svg>
+        <span>Adicionar observação</span>
+      </button>
+      <div class="escala-observacao-campo oculto">
+        <input type="text" name="escala-observacao" class="campo-entrada escala-observacao-input" maxlength="200" placeholder="Ex.: viatura reservada para o desfile" />
+        <div class="escala-observacao-campo-rodape">
+          <span class="escala-observacao-contador"></span>
+          <div class="escala-observacao-campo-acoes">
+            <button type="button" class="botao botao--pequeno escala-observacao-cancelar">Cancelar</button>
+            <button type="button" class="botao botao--pequeno botao--primario escala-observacao-salvar">Salvar</button>
+          </div>
         </div>
       </div>
     </div>
+  </template>
 
-    <div class="sidebar" id="sidebar">
-      <div class="sidebar-content">
-        <button class="sidebar-button" data-menu="Página inicial">
-          <svg width="20" height="20" viewBox="880 360 240 260" xmlns="http://www.w3.org/2000/svg">
-            <path d="M 995.45508,383.76562 887.30984,492.32435 a 4.7477452,4.7477452 67.445337 0 0 3.36356,8.0985 l 29.82855,0 0.33008,90.63184 h 50.73047 v -77.82227 h 23.89258 23.86722 v 77.82227 h 50.7304 l 0.3301,-90.63184 h 27.6328 a 5.6702886,5.6702886 112.55466 0 0 4.0171,-9.67213 z" style="fill:none;stroke:currentColor;stroke-width:11.7;stroke-linejoin:round;stroke-miterlimit:30.6" />
-            <path d="m 1032.3755,420.76628 v -22.57982 h 37.5223 v 59.43806" style="fill:none;stroke:currentColor;stroke-width:11.7;stroke-linejoin:round;stroke-miterlimit:30" />
-          </svg>
-          <span class="sidebar-text">Página inicial</span>
-        </button>
-        <button class="sidebar-button" data-menu="Escalas ordinárias">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-          </svg>
-          <span class="sidebar-text">Escalas ordinárias</span>
-        </button>
-        <button class="sidebar-button" data-menu="Escalas extrajornadas">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12,6 12,12 16,14"></polyline>
-          </svg>
-          <span class="sidebar-text">Escalas extrajornadas</span>
-        </button>
-        <button class="sidebar-button" data-menu="Escalas sobreaviso">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
-            <path d="M3 6h18"></path>
-            <path d="M16 10a4 4 0 0 1-8 0"></path>
-          </svg>
-          <span class="sidebar-text">Escalas sobreaviso</span>
-        </button>
-        <button class="sidebar-button" data-menu="Guarnições">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-            <circle cx="9" cy="7" r="4"></circle>
-            <path d="m22 21-3-3m0 0L16 15m3 3 3-3"></path>
-          </svg>
-          <span class="sidebar-text">Guarnições</span>
-        </button>
-        <button class="sidebar-button" data-menu="Viaturas">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 16H9m10 0h3v-3.15a1 1 0 0 0-.84-.99L16 11l-2.7-3.14a1 1 0 0 0-.76-.35H8.82a1 1 0 0 0-.74.33L5.34 11H2v4.43a1 1 0 0 0 .34.75l1.31 1.13a2 2 0 0 0 2.7 0l1.33-1.13a1 1 0 0 0 .32-.75V15"></path>
-            <circle cx="6.5" cy="16" r="2.5"></circle>
-            <circle cx="16.5" cy="16" r="2.5"></circle>
-          </svg>
-          <span class="sidebar-text">Viaturas</span>
-        </button>
-        <button class="sidebar-button" data-menu="Efetivo">
-          <svg width="20" height="20" viewBox="880 360 240 260" xmlns="http://www.w3.org/2000/svg">
-            <path style="fill:none;stroke:currentColor;stroke-width:11.7;stroke-linecap:round;stroke-miterlimit:30.6" d="m 1078.0027,538.09844 a 24.419115,24.419115 0 0 1 -24.4191,24.41911 24.419115,24.419115 0 0 1 -24.4191,-24.41911 24.419115,24.419115 0 0 1 24.4191,-24.41912 24.419115,24.419115 0 0 1 24.4191,24.41912 z" />
-            <path style="fill:none;stroke:currentColor;stroke-width:11.7;stroke-linecap:round;stroke-miterlimit:30.6" d="m 1101.4826,604.78139 -49.3078,0.23479 -46.0207,0.2348 c -3.3537,-1.50109 4.6158,-41.72554 46.4903,-42.02905 44.7794,-0.32456 50.3664,41.64936 48.8382,41.55946 z" />
-          </svg>
-          <span class="sidebar-text">Efetivo</span>
-        </button>
-        <button class="sidebar-button" data-menu="Cadastro">
-          <svg width="20" height="20" viewBox="880 360 240 260" xmlns="http://www.w3.org/2000/svg">
-            <path style="fill:none;stroke:currentColor;stroke-width:11.7;stroke-linecap:round;stroke-miterlimit:30.6" d="m 1078.0027,538.09844 a 24.419115,24.419115 0 0 1 -24.4191,24.41911 24.419115,24.419115 0 0 1 -24.4191,-24.41911 24.419115,24.419115 0 0 1 24.4191,-24.41912 24.419115,24.419115 0 0 1 24.4191,24.41912 z" />
-            <path style="fill:none;stroke:currentColor;stroke-width:11.7;stroke-linecap:round;stroke-miterlimit:30.6" d="m 1101.4826,604.78139 -49.3078,0.23479 -46.0207,0.2348 c -3.3537,-1.50109 4.6158,-41.72554 46.4903,-42.02905 44.7794,-0.32456 50.3664,41.64936 48.8382,41.55946 z" />
-            <path style="fill:none;stroke:currentColor;stroke-width:7.8;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:30.6" d="m 1038.6428,526.39844 h 30.4902 m -15.245,-15.24519 v 30.49038" />
-          </svg>
-          <span class="sidebar-text">Cadastro</span>
-        </button>
+  <template id="tpl-escala-mes-linha">
+    <div class="escala-mes-linha">
+      <div class="escala-mes-data">
+        <span class="escala-mes-data-semana"></span>
+        <span class="escala-mes-data-numero"></span>
       </div>
     </div>
+  </template>
 
-    <div class="main-container">
-      <div class="main-content" id="main-content">
-        <!-- Conteúdo será carregado dinamicamente -->
-      </div>
+  <!-- estado vazio / carregando do corpo da grade (reaproveita .escala-mes-estado) -->
+  <template id="tpl-escala-estado">
+    <div class="escala-mes-estado"></div>
+  </template>
+
+  <template id="tpl-escala-carregando">
+    <div class="escala-mes-estado" role="status" aria-label="Carregando">
+      <div class="giratorio" aria-hidden="true"></div>
     </div>
+  </template>
 
-    <!-- Scripts -->
-    <script src="js/router.js"></script>
-    <script src="js/main.js"></script>
-    <script>
-      // Inicialização após scripts carregarem - apenas para GitHub Pages
-      document.addEventListener('DOMContentLoaded', function() {
-        // Detecta o contexto e inicializa adequadamente
-        function isLocalFile() {
-          return window.location.protocol === 'file:' || 
-                 window.location.hostname === 'localhost' || 
-                 window.location.hostname === '127.0.0.1';
-        }
-
-        if (!isLocalFile()) {
-          // Está no GitHub Pages - funciona como SPA principal
-          var path = window.location.pathname;
-          var route = getRouteFromPath(path);
-          navigateTo(route, false); // false = não atualizar URL
-        }
-      });
-    </script>
-  </body>
+</body>
 </html>

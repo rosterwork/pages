@@ -1,0 +1,123 @@
+/* ---------- ANÁLISE DE IMPACTO NA ESCALA (componente compartilhado) ----------
+   Usado no painel de detalhe das Trocas e das Folgas: a faixa de veredito
+   (verde/amarelo/vermelho), a lista de avisos e as linhas "antes → depois". */
+
+.impacto-analise {
+  display: flex;
+  flex-direction: column;
+}
+
+/* faixa de veredito */
+.impacto-veredito {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 8px 12px;
+  border-radius: var(--raio-medio);
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.impacto-veredito--ok {
+  background-color: var(--sucesso-fundo);
+  color: var(--sucesso);
+}
+
+.impacto-veredito--alerta {
+  background-color: var(--alerta-fundo);
+  color: var(--alerta);
+}
+
+.impacto-veredito--problema {
+  background-color: var(--erro-fundo);
+  color: var(--erro);
+}
+
+/* um aviso (problema ou alerta) */
+.impacto-aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.impacto-aviso + .impacto-aviso {
+  border-top: 1px solid var(--borda);
+}
+
+.impacto-aviso-icone {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.impacto-aviso--problema .impacto-aviso-icone {
+  color: var(--erro);
+}
+
+.impacto-aviso--alerta .impacto-aviso-icone {
+  color: var(--alerta);
+}
+
+.impacto-aviso-textos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.impacto-aviso-titulo {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--texto-forte);
+}
+
+.impacto-aviso-desc {
+  font-size: 12px;
+  color: var(--texto-suave);
+  line-height: 1.4;
+}
+
+/* antes/depois de um posto afetado */
+.impacto-antesdepois {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 32px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+}
+
+.impacto-ad-rotulo {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.impacto-ad-valores {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.impacto-ad-valores .icone {
+  color: var(--texto-fraco);
+}
+
+.impacto-ad-de {
+  color: var(--texto-suave);
+  text-decoration: line-through;
+}
+
+.impacto-ad-para {
+  font-weight: 500;
+  color: var(--texto-forte);
+}
+
+.impacto-ad-para--vago {
+  color: var(--erro);
+}

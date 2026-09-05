@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="icone-regra" viewBox="0 0 24 24">
+    <path d="M14 3H7.5A1.5 1.5 0 0 0 6 4.5v15A1.5 1.5 0 0 0 7.5 21h9a1.5 1.5 0 0 0 1.5-1.5V7L14 3Z"/>
+    <path d="M14 3v4h4"/>
+    <path d="M9 12h6"/>
+    <path d="M9 15h6"/>
+    <path d="M9 18h4"/>
+  </symbol>
+</svg>

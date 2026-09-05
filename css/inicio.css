@@ -1,0 +1,161 @@
+/* ============================================================
+   INÍCIO — dashboard por perfil: grid de cards de indicador
+   (KPI) + a barra de horas + o card de pendências (admin) e,
+   abaixo, o bloco de avisos. Cores/medidas do tema.
+   ============================================================ */
+
+.inicio-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+/* um card de indicador */
+.inicio-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 88px;
+  padding: 16px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-suave);
+}
+
+/* cards que ocupam duas colunas (horas, pendências) */
+.inicio-kpi--largo {
+  grid-column: span 2;
+}
+
+.inicio-kpi-rotulo {
+  font-size: 11px;
+  color: var(--texto-fraco);
+}
+
+.inicio-kpi-valor {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.inicio-kpi-detalhe {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+/* barra de horas da semana */
+.inicio-horas-barra {
+  height: 8px;
+  border-radius: var(--raio-total);
+  background-color: var(--fundo-medio);
+  overflow: hidden;
+  margin: 4px 0;
+}
+
+.inicio-horas-feito {
+  display: block;
+  height: 100%;
+  width: var(--pct, 0%);
+  background-color: var(--fundo-contraste);
+  border-radius: var(--raio-total);
+}
+
+/* card de pendências (admin) */
+.inicio-pend-linhas {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.inicio-pend-linha {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 4px;
+  border-radius: var(--raio-pequeno);
+  cursor: pointer;
+}
+
+.inicio-pend-linha:hover {
+  background-color: var(--fundo-medio);
+}
+
+.inicio-pend-texto {
+  font-size: 13px;
+  color: var(--texto-forte);
+}
+
+.inicio-pend-seta {
+  color: var(--texto-fraco);
+  flex-shrink: 0;
+}
+
+/* ---------- bloco de avisos ---------- */
+.inicio-bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.inicio-bloco-cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.inicio-avisos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inicio-aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-suave);
+}
+
+.inicio-aviso-conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.inicio-aviso-remover {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  color: var(--texto-fraco);
+  cursor: pointer;
+}
+
+.inicio-aviso-remover:hover {
+  color: var(--erro);
+}
+
+.inicio-aviso-titulo {
+  font-size: 12px;
+  color: var(--texto-forte);
+}
+
+.inicio-aviso-msg {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.inicio-vazio {
+  font-size: 13px;
+  color: var(--texto-suave);
+}

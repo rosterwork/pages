@@ -1,0 +1,56 @@
+/* ============================================================
+   ABAS — alternador de visões (pílulas num trilho)
+   Componente compartilhado. O estado ativo (.aba--ativa) é
+   ligado pelo JS de cada página; aqui fica só o visual.
+   ============================================================ */
+
+/* trilho que agrupa as abas */
+.abas {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  background-color: var(--fundo-medio);
+  border-radius: var(--raio-medio);
+}
+
+/* uma aba (botão; reset e transição vêm de geral-base.css) */
+.aba {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 26px;
+  padding: 0 12px;
+  border-radius: var(--raio-pequeno);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--texto-suave);
+  white-space: nowrap;
+}
+
+.aba:hover {
+  color: var(--texto-forte);
+}
+
+/* aba selecionada: ganha a pílula clara e o texto forte */
+.aba--ativa,
+.aba--ativa:hover {
+  background-color: var(--fundo-superficie);
+  color: var(--texto-forte);
+  font-weight: 600;
+}
+
+/* variante compacta (usada nos subgrupos) */
+.abas--pequenas .aba {
+  min-height: 22px;
+  padding: 0 8px;
+  font-size: 11px;
+}
+
+/* contagem dentro da aba (ex.: quantos pedidos esperam decisão) —
+   um .selo encolhido, colado no rótulo; some quando não há nada */
+.aba-contagem {
+  margin-left: 4px;
+  padding: 0 4px;
+  min-width: 16px;
+  justify-content: center;
+}

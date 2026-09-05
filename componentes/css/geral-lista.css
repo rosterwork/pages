@@ -1,0 +1,31 @@
+/* ============================================================
+   GERAL-LISTA — casca do item de lista dos painéis esquerdos
+   Padrão único de Ajustes, Distribuição e Extrajornada: fundo,
+   hover e estado selecionado com barra de acento à esquerda. O
+   layout interno (linha ou coluna, padding, altura) e o separador
+   ficam com cada tela; aqui só a casca visual comum. Cores e
+   medidas só por token.
+   A base reserva a barra de acento transparente para o conteúdo
+   não deslocar 2px ao selecionar; e limpa a borda do <button>.
+   ============================================================ */
+.lista-item {
+  background-color: transparent;
+  border: none;
+  border-left: 2px solid transparent;
+  transition: background-color 0.15s ease, border-left-color 0.15s ease, color 0.15s ease;
+}
+
+/* item clicável (seleção): ponteiro e realce no hover.
+   O hover é --fundo-medio (não --fundo-suave): o painel já é --fundo-suave,
+   então um hover suave sumiria. Fica igual ao selecionado; a barra de acento
+   à esquerda é que diferencia o selecionado do apenas sobrevoado. */
+.lista-item--clicavel { cursor: pointer; }
+.lista-item--clicavel:hover { background-color: var(--fundo-medio); }
+
+/* selecionado: barra de acento à esquerda + fundo tênue */
+.lista-item--ativo {
+  background-color: var(--fundo-medio);
+  border-left-color: var(--texto-forte);
+  color: var(--texto-forte);
+}
+.lista-item--ativo:hover { background-color: var(--fundo-medio); }

@@ -1,0 +1,111 @@
+/* ---------- CAMPO ---------- */
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--campo-gap);
+  min-width: 0;
+}
+
+.campo-rotulo {
+  font-size: var(--campo-rotulo-fonte);
+  font-weight: 600;
+  color: var(--texto-suave);
+}
+
+.campo-entrada {
+  min-height: var(--campo-altura);
+  padding: 0 var(--campo-padding);
+  border: 1px solid var(--borda-forte);
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-superficie);
+  color: var(--texto);
+  width: 100%;
+}
+
+/* variante baixa: campos compactos (ex.: seletores do painel lateral) */
+.campo-entrada--pequeno {
+  min-height: var(--campo-altura-pequeno);
+  font-size: 12px;
+}
+
+textarea.campo-entrada {
+  min-height: var(--campo-altura-multi);
+  padding: var(--campo-padding);
+  resize: vertical;
+}
+
+.campo-entrada:not(:disabled):hover {
+  border-color: var(--foco);
+}
+
+.campo-entrada:focus,
+.campo-entrada:focus-visible {
+  border-color: var(--texto-forte);
+  outline: none;
+}
+
+.campo-entrada:disabled {
+  background-color: var(--fundo-suave);
+  color: var(--texto-fraco);
+  cursor: default;
+}
+
+.campo-erro-texto {
+  display: none;
+  font-size: var(--campo-erro-fonte);
+  color: var(--erro);
+}
+
+.campo--erro .campo-entrada {
+  border-color: var(--erro);
+}
+
+.campo--erro .campo-erro-texto {
+  display: block;
+}
+
+/* campo com valor diferente do que está gravado: a borda ganha o cinza
+   forte do texto — mesmo destaque das Cotas da Extrajornada.
+   O erro tem prioridade e por isso vem depois no arquivo. */
+.campo--alterado .campo-entrada {
+  border-color: var(--texto-forte);
+}
+
+.campo--erro.campo--alterado .campo-entrada {
+  border-color: var(--erro);
+}
+
+/* ---------- CAMPO DE SELEÇÃO (dropdown com aparência de campo) ---------- */
+/* o dropdown ocupa a largura do campo; o menu acompanha a mesma largura */
+.campo .dropdown {
+  display: flex;
+  width: 100%;
+}
+
+.campo .dropdown-menu {
+  width: var(--flutuante-w);
+  min-width: 0;
+}
+
+/* gatilho: reusa .campo-entrada (borda/altura/fundo) + alinhamento de "select" */
+.campo-selecao {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* valor escolhido (ou placeholder): ocupa o espaço e corta com reticências */
+.campo-selecao-texto {
+  flex: 1 1 auto;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* placeholder — nenhum valor escolhido ainda */
+.campo-selecao-texto--vazio {
+  color: var(--texto-fraco);
+}

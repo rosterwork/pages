@@ -1,0 +1,93 @@
+/* ============================================================
+   ÁRVORE DE UNIDADES — títulos das unidades selecionadas
+   Componente compartilhado (usuários e, futuramente, folgas/férias).
+   Molde: #tpl-arvore-unidade (index.html) · lógica:
+   componentes/js/geral-arvore-unidades.js
+   Estrutura e recuo reaproveitam geral-arvore.css.
+   ============================================================ */
+
+/* títulos fixos: cada nível gruda no topo ao rolar, empilhado pela profundidade
+   (--nivel-titulo, gravada pelo JS). Fundo = o branco da área: parado não muda nada;
+   ao rolar, cobre o conteúdo que passa por baixo. z-index interno (ver MANUAL §8). */
+.arvore-unidades {
+  --arvore-titulo-altura: 30px;   /* = min-height da .arvore-linha; passo do empilhamento */
+  /* a árvore encolhe até o conteúdo (a linha mais larga) e só cresce até a borda da
+     tela quando precisa — assim os selos/contagens à direita alinham numa coluna
+     colada ao conteúdo, ignorando os indents (Fase 4.01) */
+  width: fit-content;
+  max-width: 100%;
+}
+
+.arvore-unidades .arvore-linha {
+  position: sticky;
+  top: calc(var(--nivel-titulo, 0) * var(--arvore-titulo-altura));
+  /* z-index decresce com a profundidade: o pai fica na frente, então um nível
+     empurrado pra cima some por baixo do pai. Faixa interna, abaixo do dropdown (MANUAL §8). */
+  z-index: max(1, calc(8 - var(--nivel-titulo, 0)));
+  background-color: var(--fundo-superficie);
+  cursor: default;   /* não é clicável: quem controla a visibilidade é o seletor */
+}
+
+/* hover não dá feedback (não é clicável) e mantém a cobertura opaca */
+.arvore-unidades .arvore-linha:hover {
+  background-color: var(--fundo-superficie);
+}
+
+/* ícone da unidade (à esquerda do nome): mesma cor da linha-guia vertical; traço fino */
+.arvore-unidade-icone {
+  color: var(--borda);
+  stroke-width: var(--grafico-traco);
+  fill: currentColor;
+}
+
+/* selo "N militares": visível na unidade marcada; reservado (invisível) na ancestral */
+.arvore-contagem {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--texto-suave);
+  background-color: var(--fundo-medio);
+  border-radius: var(--raio-total);
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.arvore-contagem--oculta {
+  visibility: hidden;
+}
+
+/* área das pessoas dentro de uma unidade marcada; a border-left mantém a linha-guia
+   contínua (alinhada com .arvore-filhos) e o padding-left indenta um pouco os nomes */
+.arvore-conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-left: 16px;
+  padding-left: 16px;
+  border-left: 1px solid var(--borda);
+}
+
+/* estados de carregando e vazio, centralizados na área da árvore */
+.arvore-estado {
+  padding: 24px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--texto-suave);
+}
+
+/* carregando: o círculo centralizado (container = círculo; pontinhos só em linha/botão) */
+.arvore-estado--carregando {
+  display: flex;
+  justify-content: center;
+}
+
+/* ---------- CONTROLE DE NÍVEIS DE TÍTULO (recolher/expandir) ---------- */
+/* camada fixa no canto superior direito do corpo (a 16px da borda, fora do recuo);
+   os botões usam .botao-discreto (estilo fantasma, em geral-botao.css) */
+.titulos-niveis {
+  position: absolute;
+  top: calc(var(--respiro-topo, 16px) + 8px);   /* 8px abaixo do respiro fixo do .pagina-corpo--camada */
+  right: 16px;
+  display: inline-flex;
+  gap: 2px;
+  z-index: 9;   /* acima de todos os títulos fixos (máx. 8) — ver MANUAL §8 */
+}

@@ -1,0 +1,77 @@
+/* ============================================================
+   USUÁRIOS — filtros do sub-cabeçalho: larguras fixas dos
+   pré-filtros, separação para a busca e o funil indicador.
+   (o "x" de limpar dentro do gatilho fica em geral-arvore.css)
+   ============================================================ */
+
+/* os filtros andam juntos: são um bloco só, que some na aba Correções */
+.usuarios-filtros {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* larguras fixas dos pré-filtros (medidas com o usuário) */
+#dropdown-graus .seletor {
+  width: 135px;
+}
+
+#dropdown-situacao .seletor {
+  width: 160px;
+}
+
+/* 16px entre os filtros e a busca: 8px do gap do sub-cabeçalho + 8px aqui */
+#busca-usuarios {
+  margin-left: 8px;
+}
+
+/* funil indicador (um só, à esquerda dos filtros): claro sem filtro, escuro com filtro ativo */
+.filtro-funil {
+  flex-shrink: 0;
+  color: var(--texto-fraco);
+  transition: color 0.15s ease;
+}
+
+.filtro-funil--ativo {
+  color: var(--texto-forte);
+}
+
+/* ---------- menu "Exibir" (cabeçalho): opções que mantêm o menu aberto ---------- */
+/* mesma linha do .dropdown-item, mas classe própria para o geral-dropdown NÃO fechar
+   o menu ao escolher (o usuário troca várias opções de uma vez) */
+.exibir-opcao {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 30px;
+  padding: 0 8px;
+  border: none;
+  border-radius: var(--raio-pequeno);
+  background: none;
+  font-size: 13px;
+  color: var(--texto);
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.exibir-opcao:hover {
+  background-color: var(--fundo-medio);
+}
+
+/* a check só aparece na opção ativa (reserva o espaço nas demais para alinhar) */
+.exibir-check {
+  flex-shrink: 0;
+  color: var(--texto-forte);
+  visibility: hidden;
+}
+
+.exibir-opcao--ativo {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.exibir-opcao--ativo .exibir-check {
+  visibility: visible;
+}

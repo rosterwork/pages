@@ -1,0 +1,28 @@
+/* ============================================================
+   DROPDOWN DE NÚMEROS — gatilho-texto + menu de opções numéricas
+   Estilo ÚNICO compartilhado: o mesmo gatilho enxuto é usado no
+   painel de horas (escalas) e em qualquer outro número (efetivo
+   dos postos, etc.). Reusa o geral-dropdown (abre/fecha/posiciona);
+   o menu é o .dropdown-menu padrão.
+   ============================================================ */
+
+.dropdown-numeros-btn {
+  padding: 0 2px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: var(--raio-pequeno);
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+.dropdown-numeros-btn:hover {
+  background-color: var(--fundo-medio);
+  color: var(--texto-forte);
+}
+
+/* menu mais estreito; ~7 itens visíveis e o resto rola */
+.dropdown-menu.dropdown-numeros-menu {
+  min-width: 64px;
+  max-height: 220px;
+}

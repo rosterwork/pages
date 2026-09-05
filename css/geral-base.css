@@ -1,0 +1,157 @@
+/* ============================================================
+   GERAL-BASE — reset, fonte, rolagem, utilitários
+   ============================================================ */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: 'Montserrat', 'Segoe UI', sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--texto);
+  background-color: var(--fundo-pagina);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+  color: var(--texto-forte);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+h1 { font-size: 22px; }
+h2 { font-size: 18px; }
+h3 { font-size: 16px; }
+
+/* rótulo de seção — único uso de CAIXA ALTA no sistema */
+.rotulo-secao {
+  font-size: var(--rotulo-secao-fonte);
+  font-weight: 700;
+  letter-spacing: var(--rotulo-secao-espacamento);
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  accent-color: var(--texto-forte);   /* rádios/checkboxes na cor do tema (sem azul do navegador) */
+}
+
+svg {
+  flex-shrink: 0;
+}
+
+/* ícone padrão — fonte única do traço e da cor de todos os ícones de linha.
+   O logo NÃO usa .icone: tem regras próprias e nunca é afetado daqui.
+   Para mudar a espessura de todos de uma vez: trocar --icone-traco em geral-tema.css */
+.icone {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: var(--icone-traco);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* anel de foco só na navegação por teclado (`:focus-visible`, nativo do navegador): 1px de anel
+   + 1px de margem entre a borda e o anel; no mouse não aparece. Os campos de formulário suprimem
+   o anel (`outline: none` em geral-campo.css) e indicam foco só pela borda. Mudar var(--foco) em
+   geral-tema.css afeta todo o site */
+:focus-visible {
+  outline: 1px solid var(--foco);
+  outline-offset: 1px;
+}
+
+::placeholder {
+  color: var(--texto-fraco);
+}
+
+::selection {
+  background-color: var(--fundo-contraste);
+  color: var(--texto-invertido);
+}
+
+/* barra de rolagem */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--borda-forte) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--borda-forte);
+  border-radius: var(--raio-total);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+/* transição padrão */
+button,
+input,
+select,
+textarea {
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+/* acessibilidade: respeita quem pede menos movimento no sistema operacional */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* utilitários */
+.oculto {
+  display: none !important;
+}
+
+.espacador-flex {
+  flex: 1 1 0;
+}
+
+/* giratório: spinner circular para containers; height fixa e border 2px são exceções documentadas */
+.giratorio {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--borda);
+  border-top-color: var(--texto-suave);
+  border-radius: 50%;
+  animation: giro 0.8s linear infinite;
+}
+
+@keyframes giro {
+  to { transform: rotate(360deg); }
+}

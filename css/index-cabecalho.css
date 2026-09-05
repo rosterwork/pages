@@ -1,0 +1,218 @@
+/* ============================================================
+   INDEX — CASCA E CABEÇALHO
+   Layout geral da casca (wrapper, corpo) e barra superior (52px).
+   ============================================================ */
+
+/* Casca — wrapper que ocupa 100vh e define fundo da página */
+.casca {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-width: 1280px;
+  max-width: 1920px;
+  margin: 0 auto;
+  background: var(--fundo-pagina);
+  color: var(--texto);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+/* Linha abaixo do cabeçalho: sidebar + área de conteúdo */
+.casca-corpo {
+  display: flex;
+  flex: 1 1 0%;
+  min-height: 0;
+}
+
+/* Cabeçalho — barra superior de 52px */
+.cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 0 8px;
+}
+
+/* Logo */
+.cabecalho-logo {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+}
+
+.cabecalho-logo svg {
+  height: 32px;
+}
+
+/* alinha o logo com a sidebar quando expandida (180px = 8px pad + 164px + 8px pad) */
+.casca:not(.casca--recolhida) .cabecalho-logo {
+  min-width: 164px;
+}
+
+/* Botão do usuário logado */
+.cabecalho-usuario {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: var(--raio-medio);
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.cabecalho-usuario:hover {
+  background-color: var(--fundo-medio);
+}
+
+.cabecalho-usuario-textos {
+  display: flex;
+  flex-direction: column;
+}
+
+.cabecalho-usuario-nome {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.cabecalho-usuario-lotacao {
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+/* Botões de ícone do cabeçalho */
+.cabecalho-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: var(--raio-medio);
+  background-color: transparent;
+  color: var(--texto-suave);
+  cursor: pointer;
+}
+
+.cabecalho-btn:hover {
+  background-color: var(--fundo-medio);
+  color: var(--texto-forte);
+}
+
+/* Sino de avisos: badge de contagem + itens do dropdown */
+.cabecalho-btn--avisos {
+  position: relative;
+}
+
+.cabecalho-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: var(--raio-total);
+  background-color: var(--fundo-contraste);
+  color: var(--texto-invertido);
+  font-size: 11px;
+  line-height: 16px;
+  text-align: center;
+}
+
+.dropdown-lista-avisos {
+  display: flex;
+  flex-direction: column;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+/* separador dos dois blocos do sino ("Para você" / "Administração"):
+   só aparece quando há os dois — com um bloco só, o título seria ruído */
+.aviso-grupo {
+  position: sticky;
+  top: 0;
+  background-color: var(--fundo-superficie);
+}
+
+/* uma notificação no sino: ponto de não lida à esquerda + os três textos */
+.aviso-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  text-align: left;
+  border-radius: var(--raio-pequeno);
+  transition: background-color 0.15s ease;
+}
+
+button.aviso-item:hover {
+  background-color: var(--fundo-medio);
+}
+
+.aviso-item-textos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+/* o ponto só aparece na não lida (reserva o espaço nas demais) */
+.aviso-item-ponto {
+  width: 6px;
+  height: 6px;
+  margin-top: 6px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background-color: transparent;
+}
+
+.aviso-item--nao-lida .aviso-item-ponto {
+  background-color: var(--texto-forte);
+}
+
+.aviso-item--nao-lida .aviso-item-titulo {
+  font-weight: 600;
+}
+
+.aviso-item-titulo {
+  font-size: 12px;
+  color: var(--texto-forte);
+}
+
+.aviso-item-mensagem {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.aviso-item-meta {
+  font-size: 11px;
+  color: var(--texto-fraco);
+}
+
+.aviso-item--vazio .aviso-item-titulo {
+  color: var(--texto-fraco);
+}
+
+/* Avatar e seta do botão do usuário */
+.cabecalho-usuario-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: var(--fundo-medio);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-suave);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.cabecalho-usuario-seta {
+  color: var(--texto-fraco);
+}

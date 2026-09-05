@@ -1,0 +1,281 @@
+<div class="pagina">
+  <div class="pagina-cabecalho">
+    <div class="pagina-titulos">
+      <h1>Escala</h1>
+      <span class="pagina-subtitulo"></span>
+    </div>
+  </div>
+
+  <div class="pagina-subcabecalho">
+    <div class="abas" id="escala-modos">
+      <button type="button" class="aba aba--ativa" data-modo="mes">Mês</button>
+      <button type="button" class="aba" data-modo="semana">Semana</button>
+      <button type="button" class="aba" data-modo="colunas">Colunas</button>
+      <button type="button" class="aba" data-modo="dia">Dia</button>
+      <button type="button" class="aba" data-modo="militares">Militares</button>
+    </div>
+
+    <div class="geral-periodo">
+      <button type="button" class="botao botao--icone botao--pequeno" id="escala-periodo-anterior" aria-label="Período anterior">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-esquerda.svg#icone-seta-esquerda"/></svg>
+      </button>
+      <button type="button" class="geral-periodo-nome" id="escala-periodo-nome"></button>
+      <button type="button" class="botao botao--icone botao--pequeno" id="escala-periodo-proximo" aria-label="Próximo período">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
+      </button>
+    </div>
+
+    <div class="abas abas--pequenas oculto" id="escala-sub-mes">
+      <button type="button" class="aba aba--ativa" data-mes="agenda">Agenda</button>
+      <button type="button" class="aba" data-mes="calendario">Calendário</button>
+    </div>
+
+    <div class="escala-sub-colunas oculto" id="escala-sub-colunas">
+      <div class="abas abas--pequenas" id="escala-colunas-tipo">
+        <button type="button" class="aba aba--ativa" data-colunas-tipo="dias">Dias</button>
+        <button type="button" class="aba" data-colunas-tipo="unidades">Unidades</button>
+      </div>
+      <div class="abas abas--pequenas" id="escala-colunas-qtd">
+        <button type="button" class="aba" data-colunas="2">2</button>
+        <button type="button" class="aba aba--ativa" data-colunas="3">3</button>
+        <button type="button" class="aba" data-colunas="4">4</button>
+        <button type="button" class="aba" data-colunas="5">5</button>
+      </div>
+    </div>
+
+    <div class="escala-sub-unidades oculto" id="escala-sub-unidades">
+      <div class="abas abas--pequenas" id="escala-unidades-abas" data-abas-multi></div>
+    </div>
+
+    <span class="espacador-flex"></span>
+
+    <!-- busca de militar (nome/CPF/RG) nos modos de grade (Mês/Semana/Colunas/Dia); o modo Militares tem a sua própria -->
+    <div class="busca oculto" id="escala-busca-geral">
+      <button type="button" class="busca-modo" aria-label="Alternar entre marcar e filtrar" data-dica="Marcar">
+        <svg class="icone busca-modo-marcar" width="16" height="16" aria-hidden="true"><use href="icones/icone-pesquisar.svg#icone-pesquisar"/></svg>
+        <svg class="icone busca-modo-filtrar oculto" width="16" height="16" aria-hidden="true"><use href="icones/icone-filtrar.svg#icone-filtrar"/></svg>
+      </button>
+      <input type="text" name="busca-militar" class="busca-entrada" maxlength="100" placeholder="Pesquisar militar" aria-label="Pesquisar militar" />
+      <button type="button" class="busca-limpar" aria-label="Limpar pesquisa">
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+      </button>
+    </div>
+
+    <div class="escala-sub-militares oculto" id="escala-sub-militares">
+      <div class="busca" id="escala-busca-militares">
+        <svg class="icone escala-busca-lupa" width="16" height="16" aria-hidden="true"><use href="icones/icone-pesquisar.svg#icone-pesquisar"/></svg>
+        <input type="text" class="busca-entrada" id="escala-busca-entrada" maxlength="100" placeholder="Pesquisar militar" aria-label="Pesquisar militar" />
+        <button type="button" class="busca-limpar" id="escala-busca-limpar" aria-label="Limpar pesquisa">
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="pagina-corpo pagina-corpo--colado"></div>
+</div>
+
+<!-- a dica do gráfico (#escala-mes-dica) e os moldes da célula foram promovidos ao shell (index.html) — compartilhados com a Extrajornada -->
+
+<template id="tpl-escala-aba-unidade">
+  <button type="button" class="aba"></button>
+</template>
+
+<!-- modo Mês / Agenda (grade dias × unidades): wrapper promovido ao shell (index.html) — reusado pela Extrajornada -->
+
+<!-- tpl-escala-mes-celula promovido ao shell (index.html) — usado por Mês/Semana/Colunas + Extrajornada -->
+
+<!-- modo Dia: árvore de unidades com a distribuição do dia (postos → funções) -->
+<template id="tpl-escala-dia">
+  <div class="pagina-corpo-rolagem">
+    <div class="arvore arvore-unidades" id="arvore-escala-dia"></div>
+  </div>
+</template>
+<!-- bloco clicável de uma unidade no Dia (abre o painel do dia; o escalas-painel casa por [data-abre-dia]) -->
+<template id="tpl-escala-dia-unidade">
+  <div class="escala-dia-unidade" data-abre-dia></div>
+</template>
+
+<!-- ===== modo Colunas: grade flexível (dias × unidades ou unidades × dias) ===== -->
+<template id="tpl-escala-colunas">
+  <div class="escala-colunas">
+    <div class="escala-colunas-grade"></div>
+  </div>
+</template>
+
+<!-- cabeçalho (fixo no topo): canto + uma coluna (dia ou unidade) por coluna -->
+<template id="tpl-escala-colunas-cabecalho">
+  <div class="escala-colunas-linha escala-colunas-cabecalho">
+    <div class="escala-colunas-canto"></div>
+  </div>
+</template>
+
+<!-- cabeçalho de coluna = dia (Colunas → Dias) -->
+<template id="tpl-escala-colunas-cab-dia">
+  <div class="escala-colunas-cab-dia">
+    <span class="escala-colunas-cab-dia-semana"></span>
+    <span class="escala-colunas-cab-dia-numero"></span>
+  </div>
+</template>
+
+<!-- cabeçalho de coluna = unidade (Colunas → Unidades) -->
+<template id="tpl-escala-colunas-cab-unidade">
+  <div class="escala-colunas-cab-unidade"></div>
+</template>
+
+<!-- uma linha: rótulo fixo (unidade ou dia) + as células (o JS anexa, reusa tpl-escala-mes-celula) -->
+<template id="tpl-escala-colunas-linha">
+  <div class="escala-colunas-linha"></div>
+</template>
+
+<!-- rótulo de linha = unidade (Colunas → Dias) -->
+<template id="tpl-escala-colunas-rotulo-unidade">
+  <div class="escala-colunas-rotulo-unidade">
+    <span class="escala-colunas-rotulo-nome"></span>
+    <span class="escala-colunas-rotulo-cidade"></span>
+  </div>
+</template>
+
+<!-- rótulo de linha = dia (Colunas → Unidades) -->
+<template id="tpl-escala-colunas-rotulo-dia">
+  <div class="escala-colunas-rotulo-dia">
+    <span class="escala-colunas-rotulo-semana"></span>
+    <span class="escala-colunas-rotulo-numero"></span>
+  </div>
+</template>
+
+<!-- tpl-escala-mes-pessoa/-hora-par/-erro/-grafico/-origem promovidos ao shell (index.html) — clonados pelo escalas-celula.js compartilhado -->
+
+<!-- ícone de regra (exclusivo/proibido) na tira de ícones do militar; o span recebe a dica (data-dica) -->
+<template id="tpl-escala-regra-icone">
+  <span class="escala-distribuicao-regra">
+    <svg class="icone" width="13" height="13" aria-hidden="true"><use href="icones/icone-regra.svg#icone-regra"/></svg>
+  </span>
+</template>
+
+<!-- tpl-escala-estado + tpl-escala-carregando promovidos ao shell (index.html) — usados pela grade compartilhada -->
+
+<!-- calendário de mês promovido ao componente geral-calendario-mes (moldes no index.html) -->
+
+
+
+<!-- modo Mês → Calendário: um bloco por unidade dentro do dia (nome + a célula do Mês) -->
+<template id="tpl-escala-calendario-unidade">
+  <div class="escala-calendario-unidade">
+    <span class="escala-calendario-unidade-nome"></span>
+    <div class="escala-mes-celula"></div>
+  </div>
+</template>
+
+<!-- ===== modo Semana: grade unidades (linhas) × 7 dias (colunas) ===== -->
+<template id="tpl-escala-semana">
+  <div class="escala-semana">
+    <div class="escala-semana-grade"></div>
+  </div>
+</template>
+
+<!-- cabeçalho dos dias (fixo no topo): canto + um dia por coluna -->
+<template id="tpl-escala-semana-cabecalho">
+  <div class="escala-semana-linha escala-semana-cabecalho">
+    <div class="escala-semana-canto"></div>
+  </div>
+</template>
+
+<template id="tpl-escala-semana-dia">
+  <div class="escala-semana-dia">
+    <span class="escala-semana-dia-semana"></span>
+    <span class="escala-semana-dia-numero"></span>
+  </div>
+</template>
+
+<!-- uma unidade: coluna fixa (nome + cidade) + as células dos dias (o JS anexa, reusa tpl-escala-mes-celula) -->
+<template id="tpl-escala-semana-linha">
+  <div class="escala-semana-linha">
+    <div class="escala-semana-unidade">
+      <span class="escala-semana-unidade-nome"></span>
+      <span class="escala-semana-unidade-cidade"></span>
+    </div>
+  </div>
+</template>
+
+<!-- ===== modo Militares: grade militares (linhas) × dias do mês (colunas) ===== -->
+<template id="tpl-escala-mil">
+  <div class="escala-mil">
+    <div class="escala-mil-grade"></div>
+  </div>
+</template>
+
+<!-- cabeçalho dos dias (fixo no topo): canto + um dia por coluna -->
+<template id="tpl-escala-mil-cabecalho">
+  <div class="escala-mil-linha escala-mil-cabecalho">
+    <div class="escala-mil-canto"></div>
+  </div>
+</template>
+
+<template id="tpl-escala-mil-dia">
+  <div class="escala-mil-dia">
+    <span class="escala-mil-dia-semana"></span>
+    <span class="escala-mil-dia-numero"></span>
+  </div>
+</template>
+
+<!-- uma unidade selecionada: linha-título (recolhe/expande) + corpo com os militares -->
+<template id="tpl-escala-mil-unidade">
+  <div class="escala-mil-unidade">
+    <div class="escala-mil-linha escala-mil-unidade-titulo">
+      <button type="button" class="escala-mil-unidade-cab" aria-expanded="true">
+        <svg class="icone escala-mil-unidade-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+        <span class="escala-mil-unidade-nome"></span>
+        <span class="escala-mil-unidade-cidade"></span>
+      </button>
+    </div>
+    <div class="escala-mil-unidade-corpo"></div>
+  </div>
+</template>
+
+<!-- um militar: coluna fixa (avatar + grad/nome + cpf) + as células dos dias (o JS anexa) -->
+<template id="tpl-escala-mil-pessoa">
+  <div class="escala-mil-linha escala-mil-pessoa-linha">
+    <div class="escala-mil-pessoa">
+      <span class="escala-mil-avatar"></span>
+      <div class="escala-mil-pessoa-textos">
+        <div class="escala-mil-pessoa-topo">
+          <span class="escala-mil-pessoa-grad"></span>
+          <span class="escala-mil-pessoa-nome"></span>
+        </div>
+        <span class="escala-mil-pessoa-cpf"></span>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-escala-mil-celula">
+  <div class="escala-mil-celula"></div>
+</template>
+
+<!-- chip de serviço numa célula: "08 →(ícone) 08" (fundo escuro, texto invertido) -->
+<template id="tpl-escala-mil-servico">
+  <span class="escala-mil-servico">
+    <svg class="icone escala-mil-servico-extra oculto" aria-hidden="true"><use href="icones/icone-extrajornada.svg#icone-extrajornada"/></svg>
+    <span class="linha-escalado-hora-ini"></span>
+    <svg class="icone linha-escalado-hora-seta" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+    <span class="linha-escalado-hora-fim"></span>
+  </span>
+</template>
+
+<!-- chip de afastamento (férias) numa célula -->
+<template id="tpl-escala-mil-afast">
+  <span class="escala-mil-afast"></span>
+</template>
+
+
+<!-- linha de totais: rótulo fixo + um valor por dia (o JS anexa) -->
+<template id="tpl-escala-mil-total">
+  <div class="escala-mil-linha escala-mil-total">
+    <div class="escala-mil-total-rotulo">Efetivo de serviço</div>
+  </div>
+</template>
+
+<template id="tpl-escala-mil-total-valor">
+  <div class="escala-mil-total-valor"></div>
+</template>

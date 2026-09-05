@@ -1,0 +1,108 @@
+/* ============================================================
+   CRIAR CONTA — a tela pública de cadastro.
+   Casca PRÓPRIA, não a do login: lá o cartão é uma linha (logo à
+   esquerda, dois campos à direita) — com 17 campos isso espremia
+   o formulário numa coluna estreita.
+   Aqui é COLUNA ÚNICA, de cima para baixo: é o que a literatura de
+   formulário recomenda (o olho não precisa saltar de lado), com os
+   campos agrupados em seções para o formulário longo não assustar.
+   Larguras e espaçamentos são os mesmos do resto do site.
+   ============================================================ */
+
+/* o formulário é comprido: a página rola, o cartão não fica preso no meio */
+.criar-conta-fundo {
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 32px 16px;
+  background-color: var(--fundo-pagina);
+}
+
+.criar-conta-card {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: stretch;
+  width: 400px;                 /* a mesma largura de formulário do resto do site */
+  height: fit-content;
+  padding: 32px;
+  background-color: var(--fundo-superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  box-shadow: var(--sombra-bloco);
+}
+
+/* logo em cima e centrada — no login ela fica ao lado porque lá só há dois campos */
+.criar-conta-logo {
+  display: flex;
+  justify-content: center;
+  color: var(--texto-forte);
+}
+
+.criar-conta-logo svg {
+  height: 72px;
+  width: auto;
+}
+
+.criar-conta-titulo {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--texto-forte);
+  text-align: center;
+}
+
+.criar-conta-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;                    /* entre seções: o dobro do espaço entre campos */
+}
+
+/* uma seção: o rótulo e os campos dela, separados por uma divisória leve */
+.criar-conta-secao {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;                    /* entre campos */
+  padding-top: 24px;
+  border-top: 1px solid var(--borda);
+}
+
+.criar-conta-secao:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+/* o aviso do topo */
+.criar-conta-nota {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-suave);
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.criar-conta-nota-icone {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--texto-fraco);
+}
+
+.criar-conta-corpo .botao {
+  width: 100%;
+}
+
+/* o link de volta, centrado sob o botão */
+.criar-conta-links {
+  display: flex;
+  justify-content: center;
+}
+
+/* as datas de promoção seguem o mesmo ritmo dos demais campos */
+.criar-conta-promocoes {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}

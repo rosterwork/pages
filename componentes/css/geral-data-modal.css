@@ -1,0 +1,15 @@
+/* ============================================================
+   MODAL DE DATA — pergunta "a partir de qual data recalcular"
+   Usa a casca do modal (geral-modal) + o campo padrão (.campo).
+   Pequeno (380px). Comportamento: geral-data-modal.js
+   ============================================================ */
+
+.modal--data {
+  width: 380px;
+}
+
+.data-modal-mensagem {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--texto);
+}

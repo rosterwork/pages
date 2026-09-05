@@ -1,0 +1,56 @@
+/* ============================================================
+   LOGIN-PAGINA — layout exclusivo da página de login
+   ============================================================ */
+
+.login-fundo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: var(--fundo-pagina);
+}
+
+.login-card {
+  display: flex;
+  background-color: var(--fundo-superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  box-shadow: var(--sombra-bloco);
+}
+
+.login-logo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 32px;
+}
+
+.login-logo svg {
+  height: 112px;
+}
+
+.login-formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-formulario);
+  padding: 32px;
+  width: 320px;
+  border-left: 1px solid var(--borda);
+}
+
+.login-campos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-campos);
+}
+
+.login-formulario .botao {
+  width: 100%;
+}
+
+.login-links {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}

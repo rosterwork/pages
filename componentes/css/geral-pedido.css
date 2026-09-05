@@ -1,0 +1,127 @@
+/* ============================================================
+   CARTÃO DE PEDIDO — uma solicitação com várias alterações dentro
+   Usado em duas telas: "Meu perfil › Minhas solicitações" (só
+   leitura, com o selo da situação) e "Usuários › Correções"
+   (a fila do admin, cada linha selecionável + "Selecionar tudo").
+   Por ser compartilhado, mora em componentes/ e os moldes ficam
+   no shell (index.html). MANUAL-VISUAL §11.
+   ============================================================ */
+
+.pedido-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* um pedido = as alterações que o militar enviou juntas */
+.pedido {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-superficie);
+}
+
+.pedido-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+}
+
+.pedido-textos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pedido-quem {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--texto-forte);
+}
+
+.pedido-meta {
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+.pedido-itens {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- uma alteração do pedido ----------
+   Na fila do admin a linha inteira é a caixa de seleção (role="checkbox");
+   em "Minhas solicitações" é só leitura, com o selo da situação. */
+.pedido-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 32px;
+  padding: 4px;
+  border-top: 1px solid var(--borda);
+  border-radius: var(--raio-pequeno);
+  text-align: left;
+  transition: background-color 0.15s ease;
+}
+
+button.pedido-item:hover {
+  background-color: var(--fundo-suave);
+}
+
+.pedido-item--todos .pedido-item-rotulo {
+  color: var(--texto-suave);
+  font-weight: 400;
+}
+
+.pedido-item-rotulo {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--texto-forte);
+  flex-shrink: 0;
+}
+
+/* "de (seta) para" — a seta é o ícone, nunca o caractere → */
+.pedido-item-valores {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.pedido-item-de,
+.pedido-item-para {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pedido-item-para {
+  color: var(--texto-forte);
+}
+
+.pedido-item-seta {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: var(--texto-fraco);
+}
+
+.pedido-item-status {
+  flex-shrink: 0;
+}
+
+/* ---------- lista sem nada ---------- */
+.pedido-vazio {
+  padding: 32px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--texto-suave);
+}

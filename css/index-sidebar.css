@@ -1,0 +1,171 @@
+/* ============================================================
+   INDEX — SIDEBAR E ÁREA DE CONTEÚDO
+   Menu lateral (180px/52px) e bloco de conteúdo principal.
+   ============================================================ */
+
+/* Sidebar */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  width: 180px;
+  min-width: 180px;
+  padding: 4px 8px 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+/* Lista de itens — rola se necessário */
+.sidebar-itens {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+  flex: 1 1 0%;
+  min-height: 0;
+}
+
+/* Item de menu */
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 8px;
+  border-radius: var(--raio-medio);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--texto-suave);
+  background: none;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  flex-shrink: 0;
+  width: 100%;
+  position: relative;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+/* selo de alertas da escala no item de menu — canto superior direito, funciona expandido
+   e recolhido; some com .oculto quando a contagem é zero. Amarelo (aviso: viatura em
+   manutenção) por padrão; vermelho (erro: militar fora da escala) com --erro. */
+.menu-item-selo {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: var(--raio-total);
+  background-color: var(--alerta);
+  color: var(--texto-invertido);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.menu-item-selo--erro {
+  background-color: var(--erro);
+}
+
+.menu-item:hover {
+  background: var(--fundo-medio);
+  color: var(--texto);
+}
+
+.menu-item--selecionado {
+  background: var(--fundo-medio);
+  color: var(--texto-forte);
+  font-weight: 600;
+}
+
+.menu-item svg {
+  flex-shrink: 0;
+}
+
+/* Divisória entre grupos de itens — mesmo método do .dropdown-divisor (linha fina + respiro) */
+.sidebar-divisor {
+  height: 0;
+  margin: 8px 0;
+  border-top: 1px solid var(--borda);
+  flex-shrink: 0;
+}
+
+/* Botão de recolher/expandir — fica no fundo do sidebar */
+.sidebar-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+  min-height: 32px;
+  width: 100%;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: var(--raio-medio);
+  flex-shrink: 0;
+  margin-top: auto;
+  color: var(--texto-suave);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.sidebar-toggle:hover {
+  background: var(--fundo-medio);
+  color: var(--texto);
+}
+
+/* Estado recolhido — sidebar com 52px, só ícones visíveis */
+.casca--recolhida .sidebar {
+  width: 52px;
+  min-width: 52px;
+  overflow: visible;
+}
+
+.casca--recolhida .sidebar-itens {
+  overflow: visible;
+}
+
+.casca--recolhida .menu-item {
+  overflow: visible;
+}
+
+.casca--recolhida .menu-item-label {
+  display: none;
+}
+
+.casca--recolhida .sidebar-toggle {
+  width: 32px;
+  padding: 0;
+  justify-content: center;
+}
+
+.casca--recolhida .sidebar-toggle-texto {
+  display: none;
+}
+
+/* Expandido: --seta-toggle -1 inverte > para <; recolhido: > padrão */
+.casca:not(.casca--recolhida) .sidebar-toggle svg {
+  --seta-toggle: -1;
+}
+
+/* Área de conteúdo — bloco branco elevado */
+.conteudo {
+  display: flex;
+  flex: 1 1 0%;
+  flex-direction: row;   /* página + painel lateral lado a lado; o painel empurra a página */
+  min-height: 0;
+  position: relative;
+  margin: 0 16px 16px 0;
+  border-radius: var(--raio-medio);
+  border: 1px solid var(--borda);
+  background: var(--fundo-superficie);
+  box-shadow: var(--sombra-bloco);
+  overflow: hidden;
+}

@@ -1,0 +1,235 @@
+/* ============================================================
+   CALENDÁRIO — componente compartilhado (escalas e, futuramente,
+   folgas/férias). Três modos: dia, mês e semana. O desenho segue
+   o antigo flatpickr, mas todas as cores vêm do tema (cinza, modo
+   escuro automático). O seletor de mês/ano usa o dropdown geral;
+   as setas usam os ícones de seta do site.
+   Comportamento: js/geral-calendario.js
+   ============================================================ */
+
+/* painel — oculto por padrão; a posição vem do helper geral-flutuante (.flutuante) */
+.calendario {
+  display: none;
+  width: 254px;   /* largura fixa = grade (236) + padding (16) + borda (2); a posição vem do geral-flutuante. Nunca usar transform aqui: os dropdowns de mês/ano são fixed e um transform no painel os jogaria para longe */
+  z-index: 10;
+  padding: 8px;
+  background-color: var(--fundo-superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  box-shadow: var(--sombra-flutuante);
+}
+
+.calendario--aberto {
+  display: block;
+}
+
+/* ---------- cabeçalho: ‹ [mês ▾] [ano ▾] › ---------- */
+
+.calendario-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+/* mês e ano ficam centralizados; as setas são empurradas para as pontas */
+.calendario-seletores {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 auto;
+}
+
+/* gatilho de cada dropdown (mês, ano) */
+.calendario-seletor-gatilho {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 26px;
+  padding: 0 8px;
+  border-radius: var(--raio-pequeno);
+  color: var(--texto-forte);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.calendario-seletor-gatilho:hover {
+  background-color: var(--fundo-medio);
+}
+
+/* o chevron do gatilho fica apagado, como nos demais seletores */
+.calendario-seletor-gatilho .icone {
+  color: var(--texto-fraco);
+}
+
+/* menu de mês/ano: ajustado ao conteúdo e com rolagem quando a lista é longa */
+.calendario-menu {
+  min-width: 0;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.calendario-menu .dropdown-item {
+  justify-content: center;
+}
+
+/* no modo mês o topo só tem o ano (não há mês a escolher no cabeçalho) */
+.calendario--mes .calendario-seletor[data-tipo="mes"] {
+  display: none;
+}
+
+/* ---------- dias da semana (Dom … Sáb) ---------- */
+
+.calendario-semana {
+  display: grid;
+  grid-template-columns: repeat(7, 32px);
+  gap: 2px;
+  margin-bottom: 2px;
+}
+
+.calendario-semana span {
+  padding: 4px 0;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--texto-suave);
+}
+
+/* ---------- grade dos dias (modos dia e semana) ---------- */
+
+.calendario-dias {
+  display: grid;
+  grid-template-columns: repeat(7, 32px);
+  gap: 2px;
+}
+
+/* cada dia: 32px (dimensão de componente, ajustada ao padrão compacto do site) — vira círculo no realce */
+.calendario-dia {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  border: 1px solid transparent;
+  border-radius: var(--raio-total);
+  color: var(--texto);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.calendario-dia:hover {
+  background-color: var(--fundo-medio);
+  border-color: var(--fundo-medio);
+}
+
+/* dias do mês anterior/seguinte: apagados */
+.calendario-dia--fora {
+  color: var(--texto-debil);
+}
+
+/* dia sem serviço (permiteDia = false): apagado e não clicável */
+.calendario-dia--inativo,
+.calendario-dia--inativo:hover {
+  color: var(--texto-debil);
+  background-color: transparent;
+  border-color: transparent;
+  cursor: default;
+}
+
+/* hoje: só o contorno do círculo */
+.calendario-dia--hoje {
+  border-color: var(--borda-forte);
+}
+
+/* dia escolhido (modo dia): círculo cheio escuro com texto claro */
+.calendario-dia--selecionado,
+.calendario-dia--selecionado:hover {
+  background-color: var(--fundo-contraste);
+  border-color: var(--fundo-contraste);
+  color: var(--texto-invertido);
+}
+
+/* ---------- modo semana: a semana inteira vira uma faixa ---------- */
+
+/* dias colados na horizontal para a faixa ficar contínua */
+.calendario--semana .calendario-semana,
+.calendario--semana .calendario-dias {
+  column-gap: 0;
+  justify-content: center;
+}
+
+/* semana sob o mouse (realce ameno) */
+.calendario--semana .calendario-dia--semana-hover {
+  background-color: var(--fundo-medio);
+  border-color: var(--fundo-medio);
+  border-radius: 0;
+}
+
+/* semana escolhida (faixa escura) — vence o hover quando coincidem */
+.calendario--semana .calendario-dia--semana-sel,
+.calendario--semana .calendario-dia--semana-sel:hover {
+  background-color: var(--fundo-contraste);
+  border-color: var(--fundo-contraste);
+  color: var(--texto-invertido);
+  border-radius: 0;
+}
+
+/* pontas arredondadas da faixa: domingo (coluna 1) e sábado (coluna 7) */
+.calendario--semana .calendario-dia--semana-hover:nth-child(7n+1),
+.calendario--semana .calendario-dia--semana-sel:nth-child(7n+1) {
+  border-top-left-radius: var(--raio-total);
+  border-bottom-left-radius: var(--raio-total);
+}
+
+.calendario--semana .calendario-dia--semana-hover:nth-child(7n),
+.calendario--semana .calendario-dia--semana-sel:nth-child(7n) {
+  border-top-right-radius: var(--raio-total);
+  border-bottom-right-radius: var(--raio-total);
+}
+
+/* ---------- grade de meses (modo mês) ---------- */
+
+.calendario-meses {
+  display: none;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  width: 236px;   /* mesma largura da grade de dias (7×32 + 6×2) */
+}
+
+.calendario--mes .calendario-meses {
+  display: grid;
+}
+
+.calendario--mes .calendario-corpo-dias {
+  display: none;
+}
+
+/* cada mês: pílula no mesmo estilo dos dias */
+.calendario-mes {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  border: 1px solid transparent;
+  border-radius: var(--raio-total);
+  color: var(--texto);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.calendario-mes:hover {
+  background-color: var(--fundo-medio);
+  border-color: var(--fundo-medio);
+}
+
+/* mês de hoje: só o contorno */
+.calendario-mes--hoje {
+  border-color: var(--borda-forte);
+}
+
+/* mês escolhido: pílula cheia escura com texto claro */
+.calendario-mes--selecionado,
+.calendario-mes--selecionado:hover {
+  background-color: var(--fundo-contraste);
+  border-color: var(--fundo-contraste);
+  color: var(--texto-invertido);
+}

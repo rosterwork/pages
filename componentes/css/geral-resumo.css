@@ -1,0 +1,105 @@
+/* ============================================================
+   RESUMO — bloco de alterações (histórico/auditoria)
+   Desenha o formato padrão que o banco grava e devolve
+   ({ alvos:[{ onde, mudancas:[{tipo,rotulo,de,para}] }] }):
+   título + data/hora (uma vez) + um bloco por
+   alvo, uma linha por mudança conforme o tipo. Miolo reutilizável:
+   o modal de confirmação ao salvar (Postos) e, depois, a página
+   de Histórico. Comportamento: componentes/js/geral-resumo.js
+   ============================================================ */
+
+.resumo {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* cabeçalho: título + data/hora uma única vez */
+.resumo-cabecalho {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.resumo-titulo {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.resumo-quando {
+  font-size: 12px;
+  color: var(--texto-fraco);
+}
+
+/* assunto: o que foi alterado (resumo.titulo) — ex.: nome da instalação, "Distribuição de DD/MM" */
+.resumo-assunto {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+/* corpo: um bloco por alvo (entidade afetada) */
+.resumo-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.resumo-alvo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* lista de mudanças do alvo */
+.resumo-mudancas {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* uma mudança, escrita como frase: "rótulo: de X para Y" */
+.resumo-mudanca {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--texto-suave);
+}
+
+/* dois-pontos após o rótulo (some junto quando a mudança não tem rótulo) */
+.resumo-mudanca-rotulo::after {
+  content: ':';
+}
+
+/* "de" / "para" — conectores da frase, mais apagados */
+.resumo-conector {
+  color: var(--texto-fraco);
+}
+
+/* valor antigo: discreto */
+.resumo-de {
+  color: var(--texto-fraco);
+}
+
+/* valor novo: em destaque */
+.resumo-para {
+  color: var(--texto-forte);
+  font-weight: 600;
+}
+
+/* adição: só o valor novo, em verde */
+.resumo-mudanca--adicao .resumo-para {
+  color: var(--sucesso);
+}
+
+/* remoção: só o valor antigo, riscado (deixou de existir) */
+.resumo-mudanca--remocao .resumo-de {
+  text-decoration: line-through;
+}
+
+/* "Desfazer" — reusa o texto clicável .botao--texto (última chance de reverter a ação
+   recém-aplicada). Fica ao LADO do OK (o rodapé já alinha à direita com gap de 8px);
+   aqui só o tom de "reverter" no hover */
+.resumo-desfazer:hover {
+  color: var(--erro);
+}

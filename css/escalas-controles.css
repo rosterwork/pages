@@ -1,0 +1,16 @@
+/* ============================================================
+   ESCALAS — controles do sub-cabeçalho (régua de modos)
+   As abas de modo usam o componente geral .abas; aqui ficam
+   a navegação de período e os contêineres dos subgrupos.
+   ============================================================ */
+
+/* a régua de período ‹ rótulo › virou o componente compartilhado geral-periodo
+   (componentes/css/geral-periodo.css) */
+
+/* subgrupos lado a lado: Colunas (tipo + quantidade) e unidades */
+.escala-sub-colunas,
+.escala-sub-unidades {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}

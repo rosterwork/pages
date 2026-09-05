@@ -1,0 +1,271 @@
+/* ============================================================
+   GERAL-PAINEL — painel lateral de detalhes (a "gaveta" direita)
+   Vive DENTRO do bloco de conteúdo, ao lado da página: não cobre
+   o cabeçalho nem o menu — EMPURRA a página, que encolhe ao abrir
+   (o `.conteudo` é uma linha; ver index-sidebar.css). Sem animação
+   de posição (aparece/some por classe — MANUAL §8). Largura 400px (larga: 560px).
+   Casca compartilhada (igual em todas as páginas); o conteúdo é
+   montado por cada página com as peças do fim deste arquivo.
+   Comportamento: componentes/js/geral-painel.js
+   ============================================================ */
+
+/* ---------- a casca (gaveta) ---------- */
+.painel-lateral {
+  display: none;
+  flex-direction: column;
+  width: 400px;
+  flex-shrink: 0;
+  min-height: 0;
+  /* z-index 1 (faixa 1–9, MANUAL §8): o painel precisa COBRIR conteúdo posicionado da
+     página que vaze por baixo dele — ex.: um botão com data-dica ganha position:relative
+     (geral-dica) e, sendo posicionado, pintaria ACIMA do painel estático. Isto NÃO muda o
+     "empurra, não sobrepõe" (o painel segue no fluxo, flex); só garante a cobertura.
+     Dropdown/modal/véu/dica (10/20/30/40) continuam acima do painel. */
+  position: relative;
+  z-index: 1;
+  border-left: 1px solid var(--borda);
+  background-color: var(--fundo-superficie);
+}
+
+.painel-lateral--aberto {
+  display: flex;
+}
+
+/* tamanho largo — conteúdo que precisa de mais espaço (ligado por config.largo) */
+.painel-lateral--largo {
+  width: 560px;
+}
+
+/* cabeçalho: títulos + abas Ver/Editar + fechar */
+.painel-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  min-height: 55px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--borda);
+}
+
+.painel-titulos {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.painel-titulo {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+}
+
+.painel-titulo-nome {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-forte);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* complemento ao lado do título, em fonte menor (ex.: " - cidade" da unidade) */
+.painel-titulo-extra {
+  font-size: 11px;
+  color: var(--texto-forte);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.painel-subtitulo {
+  font-size: 11px;
+  color: var(--texto-suave);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* abas Ver/Editar travadas num modo (modoFixo): visíveis, mas não clicáveis */
+.painel-abas--fixo {
+  pointer-events: none;
+}
+
+/* sub-cabeçalho: barra de abas de seção (a página preenche) */
+.painel-subcabecalho {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  min-height: 38px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--borda);
+  background-color: var(--fundo-suave);
+}
+
+/* corpo rolável: recebe as peças (seção / caixa / linha) */
+.painel-corpo {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* rodapé: ações da página (botões), alinhadas à direita */
+.painel-rodape {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 8px 12px;
+  border-top: 1px solid var(--borda);
+}
+
+/* ---------- as peças reutilizáveis do corpo ----------
+   Ambas agrupam "título (.rotulo-secao) + itens"; a página escolhe uma.
+   O item de dado é a linha rótulo/valor (.linha-info), que cabe nas duas. */
+
+/* peça 1 — seção: divisória leve, SEM moldura */
+.painel-secao {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* peça 2 — caixa: o mesmo, mas dentro de uma caixa cinza com borda */
+.grupo-caixa {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  background-color: var(--fundo-suave);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+}
+
+/* variante de problema: reúne pendências / conflitos do item */
+.grupo-caixa--erro {
+  background-color: var(--erro-fundo);
+  border-color: var(--erro);
+}
+
+.grupo-caixa--erro .rotulo-secao {
+  color: var(--erro);
+}
+
+/* item — linha "rótulo: valor" (rótulo à esquerda, valor à direita) */
+.linha-info {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 24px;
+  padding: 2px 0;
+  border-bottom: 1px solid var(--borda);
+}
+
+.linha-info-rotulo {
+  font-size: 12px;
+  color: var(--texto-suave);
+  flex-shrink: 0;
+}
+
+.linha-info-valor {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--texto-forte);
+  text-align: right;
+}
+
+/* ---------- linha editável (painel de edição) ----------
+   Variante da .linha-info em que o valor à direita é um seletor (.dropdown),
+   não texto: o seletor ocupa ~1/3 da largura à direita e o rótulo fica à esquerda.
+   Em uso no painel de edição de instalação (postos). */
+.linha-info--editavel {
+  align-items: center;
+}
+
+.linha-info--editavel .dropdown {
+  display: flex;
+  width: 33%;
+}
+
+/* ---------- peça 3 — seção colapsável (recolhe pelo chevron) ----------
+   Como a .painel-secao, mas o título é um botão com chevron que mostra/oculta
+   o corpo. Mesmo mecanismo da legenda retrátil das escalas (giro instantâneo). */
+/* cabeçalho da seção colapsável: sticky no topo do corpo rolável do painel.
+   O fundo sólido "sangra" até as bordas do corpo (margem negativa de 12px = o padding
+   do corpo, recomposta no padding) para cobrir a faixa lateral e esconder o conteúdo
+   que passa por baixo — o recuo do texto fica igual. z-index na faixa 1–9 (MANUAL §8). */
+.painel-secao-cabecalho {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 -12px;
+  padding: 4px 12px;
+  border: none;
+  overflow: visible;
+  background-color: var(--fundo-superficie);
+  cursor: pointer;
+}
+
+/* tampa o padding-top do corpo (12px) logo acima do cabeçalho sticky: sem isso o
+   conteúdo vaza por cima ao rolar, pois o sticky gruda na borda do padding, não abaixo
+   dele. Fora do fluxo (não altera o espaçamento); fundo igual ao do corpo. */
+.painel-secao-cabecalho::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: 12px;
+  background-color: var(--fundo-superficie);
+}
+
+.painel-secao-seta {
+  flex-shrink: 0;
+  color: var(--texto-fraco);
+}
+
+/* fechada: o chevron aponta para a direita e o corpo some */
+.painel-secao-cabecalho[aria-expanded="false"] .painel-secao-seta {
+  transform: rotate(-90deg);
+}
+
+.painel-secao-cabecalho[aria-expanded="false"] + .painel-secao-corpo {
+  display: none;
+}
+
+.painel-secao-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ---------- estado do corpo (carregando / vazio / erro): texto centralizado ---------- */
+.painel-estado {
+  padding: 24px 12px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+/* carregando: o círculo centralizado (container = círculo; pontinhos só em linha/botão) */
+.painel-estado--carregando {
+  display: flex;
+  justify-content: center;
+}
+
+/* seção empurrada para o fim do corpo (ex.: "Dar baixa do sistema" na ficha):
+   gruda no rodapé quando sobra espaço; com rolagem, fica no fim e rola junto */
+.painel-secao--rodape {
+  margin-top: auto;
+}

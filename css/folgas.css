@@ -1,0 +1,141 @@
+/* ============================================================
+   FOLGAS — placar (aba Saldos) e listas (Solicitações · Lançamentos)
+   O extrato e os formulários da gaveta ficam em folgas-painel.css.
+   Só variáveis do tema; medidas das escalas do MANUAL.
+   ============================================================ */
+
+/* controles do sub-cabeçalho que mudam por aba */
+.folgas-controles {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---------- placar (aba Saldos): linha do militar na árvore ---------- */
+.folga-saldo-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--borda);
+}
+.folga-saldo-item--clicavel {
+  cursor: pointer;
+}
+.folga-saldo-item--clicavel:hover {
+  background-color: var(--fundo-suave);
+}
+.folga-saldo-item--selecionada {
+  background-color: var(--fundo-medio);
+}
+.folga-saldo-textos {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+.folga-saldo-grad {
+  font-size: 11px;
+  color: var(--texto-fraco);
+}
+.folga-saldo-nome {
+  font-size: 13px;
+  color: var(--texto);
+}
+
+/* ---------- listas (Solicitações · Lançamentos) ---------- */
+.folga-linha {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 8px;
+  border-bottom: 1px solid var(--borda);
+}
+
+/* linha de Aprovações: clicável (abre o painel de aprovação) */
+.folga-linha--clicavel {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.folga-linha--clicavel:hover {
+  background-color: var(--fundo-suave);
+}
+
+/* painel de aprovação: detalhe da folga (nome + seções) */
+.folga-aprov-secao {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.folga-aprov-secao + .folga-aprov-secao {
+  margin-top: 16px;
+}
+
+.folga-aprov-nome {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+.folga-linha-textos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.folga-linha-titulo {
+  font-size: 13px;
+  color: var(--texto);
+}
+.folga-linha-meta {
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+.folga-linha-fim {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ---------- estado vazio ---------- */
+.folga-vazio {
+  padding: 32px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--texto-suave);
+}
+
+/* ---------- aba Minhas folgas (autosserviço) ---------- */
+.folga-minhas {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.folga-minhas-topo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.folga-minhas-saldo {
+  flex: 1;
+}
+.folga-minhas-secao {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.folga-minhas-lista {
+  display: flex;
+  flex-direction: column;
+}
+
+/* "de (seta) para" — a seta é o ícone, nunca o caractere → */
+.folga-de-para {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
