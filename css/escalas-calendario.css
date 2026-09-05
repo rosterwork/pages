@@ -15,6 +15,14 @@
   border-top: 1px solid var(--borda);
 }
 
+/* o primeiro bloco encosta na faixa do número: a divisória dele agora mora na faixa (border-bottom, sticky),
+   então aqui tiramos a linha e a margem do topo (o padding-top fica como respiro abaixo da linha).
+   Não é :first-child (a faixa do número é o 1º filho do dia), então pega-se pelo irmão adjacente. */
+.geral-calendario-mes-dia-topo + .escala-calendario-unidade {
+  margin-top: 0;
+  border-top: none;
+}
+
 /* nome da unidade = rótulo de seção apagado, em caixa alta (não compete com o número,
    que é o elemento forte do dia) */
 .escala-calendario-unidade-nome {

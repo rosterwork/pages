@@ -1,12 +1,13 @@
 /* ============================================================
-   TROCAS — aba "Solicitar" (formulário inline, sem modal)
-   Dois cartões: Solicitante (unidade/militar em leitura, dia via
-   calendário, período na barra) e Solicitado (unidade + parceiro
-   do grupo, devolução opcional com toggle pendente/dia + barra).
-   Durações diferentes geram saldo (aviso). Ações no rodapé.
-   Expõe RosterWork.trocasSolicitar.{ ligar, ativar }.
-     ligar(conteudo, { aoSolicitar, aoCancelar }) — a cada exibição
-     ativar() — ao entrar na aba Solicitar (reseta e carrega)
+   TROCAS — "Solicitar" (formulário no painel lateral geral-painel)
+   Dois cartões empilhados: Solicitante (unidade/militar em leitura,
+   dia via calendário, período na barra) e Solicitado (unidade +
+   parceiro do grupo, devolução opcional com toggle pendente/dia +
+   barra). Durações diferentes geram saldo (aviso). Ações no rodapé
+   do painel; o X/Esc confirmam o descarte quando há dados.
+   Expõe RosterWork.trocasSolicitar.{ ligar, abrir }.
+     ligar({ aoSolicitar, aoMudar }) — guarda os callbacks (1x)
+     abrir() — abre o painel, monta e carrega o formulário
    ============================================================ */
 (function () {
   'use strict';
@@ -15,6 +16,8 @@
 
   var guardaLigado = false;
   var ctx = null;
+  var cbs = {};           // callbacks da página (aoSolicitar, aoMudar), guardados no ligar
+  var aberto = false;     // painel de solicitar aberto? (zera o temDados depois de fechar)
   var timerParceiros = null;
   var reqParceiros = 0;   // token: ignora resposta antiga ao trocar de dia/unidade rápido
 
@@ -162,7 +165,8 @@
   }
 
   function preencherParceiros(lista) {
-    var menu = q('#ts-parceiro-menu'), meu = RosterWork.sessao.cpf();
+    var menu = q('#ts-parceiro-menu'); if (!menu) return;   // painel fechado durante o fetch
+    var meu = RosterWork.sessao.cpf();
     menu.textContent = '';
     ligarComboParceiro();
     var tplOk = document.getElementById('tpl-troca-opcao');
@@ -337,7 +341,7 @@
       if (btn && RW.pararCarregando) RW.pararCarregando(btn);
       if (r && r.ok) {
         var trocaId = r.troca_id, meu = RosterWork.sessao.cpf();
-        resetCampos();
+        if (RW.painel) RW.painel.fechar();
         if (ctx.aoSolicitar) ctx.aoSolicitar();
         if (r.log && RW.resumo) {
           RW.resumo.abrirModal(r.log, {
@@ -359,19 +363,28 @@
   }
 
   /* estado, cancelar, reset */
-  function temDados() { return !!(ctx && (ctx.servicoDia || ctx.parceiroSel)); }
+  function temDados() { return aberto && !!(ctx && (ctx.servicoDia || ctx.parceiroSel)); }
+  /* fecha o painel; com dados digitados, confirma o descarte antes (mesmo aviso do X/Esc) */
   function cancelar() {
-    if (temDados() && RW.confirmar) {
-      RW.confirmar({
-        tipo: 'aviso', mensagem: RW.mensagens.edicao.sairSemSalvar,
-        textoConfirmar: RW.mensagens.botoes.descartar, textoCancelar: RW.mensagens.botoes.continuarEditando,
-        aoConfirmar: function () { resetCampos(); if (ctx.aoCancelar) ctx.aoCancelar(); }
-      });
-      return;
-    }
-    resetCampos();
-    if (ctx.aoCancelar) ctx.aoCancelar();
+    if (!temDados() || !RW.confirmar) { if (RW.painel) RW.painel.fechar(); return; }
+    RW.confirmar({
+      tipo: 'aviso', mensagem: RW.mensagens.edicao.sairSemSalvar,
+      textoConfirmar: RW.mensagens.botoes.descartar, textoCancelar: RW.mensagens.botoes.continuarEditando,
+      aoConfirmar: function () { if (RW.painel) RW.painel.fechar(); }
+    });
   }
+  /* o X e o Esc do painel passam por aqui: segura o fechamento se houver dados a descartar */
+  function guardaFechar() {
+    if (!temDados() || !RW.confirmar) return false;
+    RW.confirmar({
+      tipo: 'aviso', mensagem: RW.mensagens.edicao.sairSemSalvar,
+      textoConfirmar: RW.mensagens.botoes.descartar, textoCancelar: RW.mensagens.botoes.continuarEditando,
+      aoConfirmar: function () { if (RW.painel) RW.painel.fechar(); }
+    });
+    return true;
+  }
+  /* o painel avisa ao fechar (X/Esc/Cancelar/sucesso): o formulário some, então marca fechado */
+  function aoFecharReset() { aberto = false; }
   function resetCampos() {
     ctx.servicoDia = null; ctx.servicoCtx = null; ctx.servicoSel = null; ctx.barraServico = null;
     ctx.unidadeSel = null; ctx.parceiroSel = null;
@@ -394,16 +407,48 @@
     if (q('#ts-saldo')) q('#ts-saldo').classList.add('oculto');
 
     if (!ctx.raiz) return;
-    var erros = ctx.raiz.querySelectorAll('.trocas-solicitar .campo--erro');
+    var erros = ctx.raiz.querySelectorAll('.campo--erro');
     for (var j = 0; j < erros.length; j++) {
       erros[j].classList.remove('campo--erro');
       var a = erros[j].querySelector('.campo-erro-texto'); if (a) a.textContent = '';
     }
   }
 
-  /* entrar na aba Solicitar */
-  function ativar() {
-    if (!ctx) return;
+  /* abre o painel lateral, monta o formulário (molde) e carrega os dados */
+  function abrir() {
+    if (!RW.painel) return;
+    RW.painel.abrir({ titulo: txt('tituloPainel'), aoFechar: aoFecharReset, aoTentarFechar: guardaFechar });
+
+    var corpo = RW.painel.corpo(); corpo.textContent = '';
+    var molde = document.getElementById('tpl-troca-solicitar');
+    if (molde) corpo.appendChild(molde.content.cloneNode(true));
+
+    ctx = {
+      raiz: corpo, aoSolicitar: cbs.aoSolicitar, aoMudar: cbs.aoMudar,
+      unidades: [], meusServicos: [], parceiroServicos: [],
+      servicoDia: null, servicoSel: null, barraServico: null, unidadeSel: null, parceiroSel: null,
+      devDia: null, devSel: null, barraDevolucao: null
+    };
+    aberto = true;
+
+    montarAcoes();
+
+    if (RW.calendario) {
+      RW.calendario.ligar(q('#ts-data'), {
+        obterData: function () { return ctx.servicoDia ? dataDeIso(ctx.servicoDia) : (ctx.meusServicos[0] ? dataDeIso(ctx.meusServicos[0].data) : new Date()); },
+        permiteDia: function (d) { return !!servicoDoDia(ctx.meusServicos, isoDe(d)); },
+        aoEscolher: escolherDiaServico
+      });
+      RW.calendario.ligar(q('#ts-dev-data'), {
+        obterData: function () { return ctx.devDia ? dataDeIso(ctx.devDia) : (ctx.parceiroServicos[0] ? dataDeIso(ctx.parceiroServicos[0].data) : new Date()); },
+        permiteDia: function (d) { return !!servicoDoDia(ctx.parceiroServicos, isoDe(d)); },
+        aoEscolher: escolherDiaDevolucao
+      });
+    }
+
+    ligarDevToggle();
+    ligarLimpezaErros(corpo);
+
     var u = RosterWork.sessao.perfil();
     definirLeitura('#ts-minha-unidade', (u && u.lotacao_path) || '');
     definirLeitura('#ts-meu-nome', u ? nomeDe(u) : '');
@@ -412,10 +457,22 @@
     carregarUnidades();
   }
 
+  /* rodapé do painel: Cancelar / Solicitar troca */
+  function montarAcoes() {
+    var rodape = RW.painel.rodape(); if (!rodape) return;
+    rodape.textContent = ''; rodape.classList.remove('oculto');
+    var tpl = document.getElementById('tpl-troca-solicitar-acoes'); if (!tpl) return;
+    var frag = tpl.content.cloneNode(true);
+    var bCancelar = frag.querySelector('[data-acao="cancelar"]');
+    var bSolicitar = frag.querySelector('[data-acao="solicitar"]');
+    if (bCancelar) bCancelar.addEventListener('click', cancelar);
+    if (bSolicitar) bSolicitar.addEventListener('click', function () { enviar(bSolicitar); });
+    rodape.appendChild(frag);
+  }
+
   function ligarLimpezaErros(raiz) {
-    var corpo = raiz.querySelector('.trocas-solicitar-corpo');
-    if (!corpo) return;
-    corpo.addEventListener('click', function (ev) {
+    var form = raiz.querySelector('.troca-solicitar-form') || raiz;
+    form.addEventListener('click', function (ev) {
       var campo = ev.target.closest('.campo');
       if (!campo || !campo.classList.contains('campo--erro')) return;
       campo.classList.remove('campo--erro');
@@ -424,41 +481,14 @@
     });
   }
 
-  /* liga tudo a cada exibição da página (elementos sempre novos) */
-  function ligar(conteudo, cbs) {
-    ctx = {
-      raiz: conteudo, aoSolicitar: cbs && cbs.aoSolicitar, aoCancelar: cbs && cbs.aoCancelar,
-      aoMudar: cbs && cbs.aoMudar,
-      unidades: [], meusServicos: [], parceiroServicos: [],
-      servicoDia: null, servicoSel: null, barraServico: null, unidadeSel: null, parceiroSel: null,
-      devDia: null, devSel: null, barraDevolucao: null
-    };
-
-    var c = conteudo.querySelector('#ts-cancelar'), s = conteudo.querySelector('#ts-solicitar');
-    if (c) c.addEventListener('click', cancelar);
-    if (s) s.addEventListener('click', function () { enviar(s); });
-
-    if (RW.calendario) {
-      RW.calendario.ligar(conteudo.querySelector('#ts-data'), {
-        obterData: function () { return ctx.servicoDia ? dataDeIso(ctx.servicoDia) : (ctx.meusServicos[0] ? dataDeIso(ctx.meusServicos[0].data) : new Date()); },
-        permiteDia: function (d) { return !!servicoDoDia(ctx.meusServicos, isoDe(d)); },
-        aoEscolher: escolherDiaServico
-      });
-      RW.calendario.ligar(conteudo.querySelector('#ts-dev-data'), {
-        obterData: function () { return ctx.devDia ? dataDeIso(ctx.devDia) : (ctx.parceiroServicos[0] ? dataDeIso(ctx.parceiroServicos[0].data) : new Date()); },
-        permiteDia: function (d) { return !!servicoDoDia(ctx.parceiroServicos, isoDe(d)); },
-        aoEscolher: escolherDiaDevolucao
-      });
-    }
-
-    ligarDevToggle();
-    ligarLimpezaErros(conteudo);
-
+  /* guarda os callbacks da página e registra o guarda de saída (uma vez) */
+  function ligar(callbacks) {
+    cbs = callbacks || {};
     if (!guardaLigado && RW.guardaSaida && RW.guardaSaida.registrar) {
       RW.guardaSaida.registrar(temDados);
       guardaLigado = true;
     }
   }
 
-  RW.trocasSolicitar = { ligar: ligar, ativar: ativar, temDados: temDados, descartar: function () { if (ctx) resetCampos(); } };
+  RW.trocasSolicitar = { ligar: ligar, abrir: abrir };
 })();

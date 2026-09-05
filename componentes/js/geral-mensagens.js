@@ -344,6 +344,8 @@
       confirmarRejeitar: 'Rejeitar esta troca?',
       confirmarCancelar: 'Cancelar esta troca?',
       falhaAcao: 'Não foi possível concluir. Tente de novo.',
+      /* título do painel lateral de solicitar */
+      tituloPainel: 'Solicitar troca',
       /* modal Nova troca — validações */
       novaParceiro: 'Selecione o parceiro.',
       novaData: 'Selecione o dia do seu serviço.',

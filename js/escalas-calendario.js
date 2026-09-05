@@ -81,7 +81,7 @@
 
     var req = ++reqSeq;
     window.RosterWork.escalasDados.carregar(ids, inicio, fim).then(function (resultado) {
-      if (!document.contains(corpo) || req !== reqSeq) return;   // saiu da página, ou outra render começou
+      if (!document.contains(corpo) || req !== reqSeq || (opcoes.vigente && !opcoes.vigente())) return;   // saiu da página, outra render começou, ou trocou de modo
       var dados = resultado.militares;
       var cobertura = resultado.cobertura || {};
       var erro = resultado.erro || {};
@@ -102,7 +102,7 @@
       var wrap = corpo.querySelector('.geral-calendario-mes');
       if (wrap && RosterWork.escalasCelula) RosterWork.escalasCelula.ativarGraficos(wrap);
     }, function () {
-      if (document.contains(corpo) && req === reqSeq) mostrarEstado(corpo, window.RosterWork.mensagens.escala.falhaCarregarMes);
+      if (document.contains(corpo) && req === reqSeq && (!opcoes.vigente || opcoes.vigente())) mostrarEstado(corpo, window.RosterWork.mensagens.escala.falhaCarregarMes);
     });
   }
 

@@ -24,6 +24,12 @@
   var buscaObserver = null;     // reaplica a busca quando o corpo muda (render assíncrono, célula atualizada)
   var buscaAgendada = false;
 
+  /* senha compartilhada dos modos de grade (latest-wins): cada render (trocar de
+     aba, navegar período, aplicar unidades) incrementa; a resposta atrasada de um
+     modo confere se ainda é a vigente antes de pintar. Sem isto, a busca do Mês
+     que volta tarde sobrescreve a tela da Semana (todos escrevem no mesmo corpo). */
+  var renderToken = 0;
+
   function obterToken() {
     try {
       var sessao = JSON.parse(sessionStorage.getItem('rosterwork_session'));
@@ -197,6 +203,9 @@
     if (!conteudo) return;
     var corpo = conteudo.querySelector('.pagina-corpo');
     if (!corpo) return;
+    /* esta renderização assume a senha; o modo confere vigente() antes de pintar (latest-wins) */
+    var token = ++renderToken;
+    function vigente() { return token === renderToken; }
     /* o Dia usa a árvore de unidades (corpo em camada, como Postos); os demais, o corpo colado */
     var ehDia = modoAtual() === 'dia';
     corpo.classList.toggle('pagina-corpo--camada', ehDia);
@@ -205,21 +214,21 @@
     if (modoAtual() === 'mes' && subMesAtual() === 'calendario') {
       if (!window.RosterWork.escalasCalendario) { mostrarEstado(corpo, 'Em construção.'); return; }
       if (!unidades && idsAplicados().length) { mostrarCarregando(corpo); return; }
-      window.RosterWork.escalasCalendario.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData });
+      window.RosterWork.escalasCalendario.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData, vigente: vigente });
       return;
     }
     /* modo Militares: grade militares × dias da quinzena (navegação por semana, ±7) */
     if (modoAtual() === 'militares') {
       if (!window.RosterWork.escalasMilitares) { mostrarEstado(corpo, 'Em construção.'); return; }
       if (!unidades && idsAplicados().length) { mostrarCarregando(corpo); return; }
-      window.RosterWork.escalasMilitares.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData });
+      window.RosterWork.escalasMilitares.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData, vigente: vigente });
       return;
     }
     /* modo Semana: grade unidades × 7 dias (visão por unidade) */
     if (modoAtual() === 'semana') {
       if (!window.RosterWork.escalasSemana) { mostrarEstado(corpo, 'Em construção.'); return; }
       if (!unidades && idsAplicados().length) { mostrarCarregando(corpo); return; }
-      window.RosterWork.escalasSemana.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData });
+      window.RosterWork.escalasSemana.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData, vigente: vigente });
       return;
     }
     /* modo Dia: árvore de unidades com a distribuição por posto/função */
@@ -233,9 +242,9 @@
       if (!window.RosterWork.escalasColunas) { mostrarEstado(corpo, 'Em construção.'); return; }
       if (!unidades && idsAplicados().length) { mostrarCarregando(corpo); return; }
       if (tipoColunasAtual() === 'unidades') {
-        window.RosterWork.escalasColunas.renderizar(corpo, { tipo: 'unidades', colunas: colunasUnidadesLigadas(), dataRef: refData });
+        window.RosterWork.escalasColunas.renderizar(corpo, { tipo: 'unidades', colunas: colunasUnidadesLigadas(), dataRef: refData, vigente: vigente });
       } else {
-        window.RosterWork.escalasColunas.renderizar(corpo, { tipo: 'dias', colunas: unidadesColuna(), dataRef: refData, quantidade: quantidadeColunas() });
+        window.RosterWork.escalasColunas.renderizar(corpo, { tipo: 'dias', colunas: unidadesColuna(), dataRef: refData, quantidade: quantidadeColunas(), vigente: vigente });
       }
       return;
     }
@@ -248,7 +257,7 @@
       mostrarCarregando(corpo);
       return;
     }
-    window.RosterWork.escalasMes.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData });
+    window.RosterWork.escalasMes.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData, vigente: vigente });
   }
 
   /* ---------- navegação de período (datas reais; semana de domingo a sábado) ---------- */

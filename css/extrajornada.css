@@ -694,6 +694,12 @@
   padding-top: 4px;
   border-top: 1px solid var(--borda);
 }
+/* primeiro bloco encosta na faixa do número: a divisória vive na faixa (sticky), então tira-se a linha e a
+   margem do topo daqui (padding-top fica como respiro abaixo da linha); pega-se pelo irmão adjacente. */
+.geral-calendario-mes-dia-topo + .extra-calendario-unidade {
+  margin-top: 0;
+  border-top: none;
+}
 /* nome da unidade: rótulo apagado em caixa alta, não compete com o número do dia */
 .extra-calendario-unidade-nome {
   display: block;

@@ -11,6 +11,7 @@
   var grupo = null;      /* { cia, unidades:[{unidade_id, nome, tipo, ...}] } */
   var modelos = [];      /* retorno de dist_listar_modelos */
   var selId = null;      /* id_grupo_completo selecionado */
+  var seqCarregar = 0;   /* token da lista: ignora resposta antiga ao trocar de unidade rápido */
 
 
   /* RASCUNHO: um modelo recém-criado que ainda NÃO foi confirmado com Salvar. Fica marcado na sessão
@@ -592,7 +593,9 @@
       }
     }
     carregandoEm(document.getElementById('distribuicao-lista-modelos'));
+    var req = ++seqCarregar;
     return RosterWork.distribuicaoDados.listarModelos(g.cia.unidade_id).then(function (lista) {
+      if (req !== seqCarregar) return;   /* outra carga (troca de unidade/aba) assumiu */
       if (lista == null) { modelos = []; erroLista(); return; }   /* RPC falhou: mostra erro, não mascara como "sem modelos" */
       modelos = Array.isArray(lista) ? lista : [];
       renderPainel();

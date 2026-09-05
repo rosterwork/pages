@@ -10,7 +10,8 @@
 
   var ctx = null;
   var periodo = '30';
-  var seqHist = 0;   // token do Histórico: ignora resposta antiga ao trocar de período rápido
+  var seqHist = 0;    // token do Histórico: ignora resposta antiga ao trocar de período rápido
+  var seqAprov = 0;   // token das Aprovações: ignora resposta antiga ao trocar de unidade/aba rápido
 
   function fmt() { return RW.folgasFormato; }
   function msg() { return RW.mensagens.folgas; }
@@ -64,11 +65,12 @@
     var el = document.getElementById('folgas-aprovacoes');
     if (!el || !document.contains(el)) return;
     carregandoEm(el);
+    var req = ++seqAprov;
     RW.folgasDados.solicitacoes(ctx.cpf).then(function (lista) {
-      if (!document.contains(el)) return;
+      if (!document.contains(el) || req !== seqAprov) return;
       if (lista == null) { vazioEm(el, msg().falhaCarregar); return; }   // null = falha (Postgres devolve [] p/ vazio)
       renderAprovacoes(el, Array.isArray(lista) ? lista : []);
-    }).catch(function () { if (document.contains(el)) vazioEm(el, msg().falhaCarregar); });
+    }).catch(function () { if (document.contains(el) && req === seqAprov) vazioEm(el, msg().falhaCarregar); });
   }
 
   /* ---------- Histórico (todas as folgas) ---------- */

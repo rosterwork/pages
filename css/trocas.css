@@ -176,25 +176,11 @@
   color: var(--texto-fraco);
 }
 
-/* ---------- Solicitar (formulário inline, aberto pelo botão do cabeçalho) ---------- */
-/* como .pagina-corpo, mas o corpo rola por dentro e o rodapé fica fixo na base */
-.trocas-solicitar {
-  padding: 0;
-  overflow: hidden;
+/* ---------- Solicitar (formulário no painel lateral, aberto pelo botão do cabeçalho) ---------- */
+/* os dois cartões (Solicitante · Solicitado) empilham na largura do painel */
+.troca-solicitar-form {
   display: flex;
   flex-direction: column;
-}
-
-.trocas-solicitar-corpo {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
-}
-
-/* dois cartões lado a lado (Solicitante · Solicitado) */
-.trocas-cartoes {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
 

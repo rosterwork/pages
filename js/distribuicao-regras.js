@@ -17,6 +17,7 @@
   var selecionado = null;     // usuario_id do militar aberto no centro
   var termoFiltro = '';       // termo da busca (normalizado)
   var removidos = [];         // ids das regras salvas removidas localmente (só aplicam no Salvar)
+  var seqCarregar = 0;        // token da carga: ignora resposta antiga ao trocar de unidade rápido
 
   // grau + nome (não depende do módulo de Trocas, que só carrega naquela página)
   function nomeMilitar(grau, nome) { return ((grau || '') + ' ' + (nome || '')).trim(); }
@@ -346,11 +347,13 @@
     carregando(lista);
     if (corpo) corpo.textContent = '';
     var ids = grupo.unidades.map(function (u) { return u.unidade_id; });
+    var req = ++seqCarregar;
     return Promise.all([
       RW.distribuicaoRegrasDados.militares(ids),
       RW.distribuicaoRegrasDados.funcoes(ids),
       RW.distribuicaoRegrasDados.listar(ids)
     ]).then(function (res) {
+      if (req !== seqCarregar) return;   /* outra carga (troca de unidade/aba) assumiu */
       /* res[0] === null → a carga falhou (rede/servidor): mostra o erro em vez de "Carregando…" preso */
       if (res[0] === null) { estado(lista, RW.mensagens.distribuicao.falhaCarregarRegras); if (corpo) corpo.textContent = ''; return; }
       militares = res[0] || [];

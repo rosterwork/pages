@@ -86,7 +86,7 @@
       var cobertura = resultado.cobertura || {};
       var erro = resultado.erro || {};
       var conflito = resultado.conflito || {};
-      if (!document.contains(corpo) || req !== reqSeq) return;   // saiu da página, ou outra render começou
+      if (!document.contains(corpo) || req !== reqSeq || (opcoes.vigente && !opcoes.vigente())) return;   // saiu da página, outra render começou, ou trocou de modo
       corpo.textContent = '';
 
       var wrap = RosterWork.tpl('tpl-escala-semana');
@@ -134,7 +134,7 @@
       if (RosterWork.escalasCelula) RosterWork.escalasCelula.ativarGraficos(wrap);
       if (RosterWork.gradeTeclado) RosterWork.gradeTeclado.ativar(grade, { celula: '.escala-mes-celula', linha: '.escala-semana-linha' });
     }, function () {
-      if (document.contains(corpo) && req === reqSeq) mostrarEstado(corpo, window.RosterWork.mensagens.escala.falhaCarregarMes);
+      if (document.contains(corpo) && req === reqSeq && (!opcoes.vigente || opcoes.vigente())) mostrarEstado(corpo, window.RosterWork.mensagens.escala.falhaCarregarMes);
     });
   }
 

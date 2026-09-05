@@ -29,6 +29,14 @@
   var jsCarregados = {};
   var cssCarregados = {};
 
+  /* senha de navegação (latest-wins): cada clique/rota incrementa; depois de cada
+     espera (baixar o fragmento, carregar os scripts) a navegação confere se ainda é
+     a mais recente e, se outra assumiu, aborta em silêncio. Sem isto, dois cliques
+     rápidos deixam duas navegações escrevendo na mesma tela (menu numa página,
+     conteúdo em outra). O AbortController ainda cancela o download abandonado. */
+  var navToken = 0;
+  var navAbort = null;
+
   function marcarAtivo(pagina) {
     for (var i = 0; i < itens.length; i++) {
       itens[i].classList.toggle('menu-item--selecionado', itens[i].getAttribute('data-pagina') === pagina);
@@ -88,6 +96,11 @@
     var def = manifesto[pagina];
     if (!def) return;
 
+    var meu = ++navToken;   /* esta navegação assume; qualquer anterior fica obsoleta */
+    /* cancela o download da navegação anterior que ainda esteja no ar */
+    if (navAbort) navAbort.abort();
+    navAbort = ('AbortController' in window) ? new AbortController() : null;
+
     function esconderVeu() { if (window.RosterWork.esconderVeu) window.RosterWork.esconderVeu(conteudo); }
 
     marcarAtivo(pagina);
@@ -95,19 +108,34 @@
     if (window.RosterWork.painel) window.RosterWork.painel.fechar();   /* a gaveta é da página que sai */
     if (window.RosterWork.mostrarVeu) window.RosterWork.mostrarVeu(conteudo);
 
-    var resposta = await fetch(def.html);
+    var resposta;
+    try {
+      resposta = await fetch(def.html, navAbort ? { signal: navAbort.signal } : undefined);
+    } catch (e) {
+      /* download cancelado por uma navegação mais nova: sai quieto (a nova cuida do véu) */
+      return;
+    }
+    if (meu !== navToken) return;                 /* outra navegação assumiu enquanto baixava */
     if (!resposta.ok) { esconderVeu(); return; }
-    inserirFragmento(await resposta.text());
+    var html = await resposta.text();
+    if (meu !== navToken) return;
+    inserirFragmento(html);
 
     var i;
     for (i = 0; i < (def.css || []).length; i++) carregarCss(def.css[i]);
-    for (i = 0; i < (def.js || []).length; i++) await carregarJs(def.js[i]);
+    for (i = 0; i < (def.js || []).length; i++) {
+      await carregarJs(def.js[i]);
+      if (meu !== navToken) return;               /* abandonou no meio do carregamento dos scripts */
+    }
 
     /* o véu some quando a página termina de carregar (iniciar pode ser assíncrono),
        respeitando o tempo mínimo; páginas síncronas escondem logo (pelo mínimo) */
     var registro = window.RosterWork.paginas[pagina];
     var pronto = (registro && registro.iniciar) ? registro.iniciar(conteudo) : null;
-    Promise.resolve(pronto).then(function () { abrirAbaPedida(pagina); esconderVeu(); }, esconderVeu);
+    Promise.resolve(pronto).then(function () {
+      if (meu !== navToken) return;               /* só a navegação vigente conclui e revela a tela */
+      abrirAbaPedida(pagina); esconderVeu();
+    }, function () { if (meu === navToken) esconderVeu(); });
 
     if (empurrar) history.pushState({ pagina: pagina }, '', '?pagina=' + pagina);
   }

@@ -86,6 +86,15 @@
   padding: 0 16px 16px;   /* sem padding-top: o respiro do topo é fixo no .pagina-corpo--camada (acima da rolagem) */
 }
 
+/* estado único (ex.: o giratório de carregando das árvores) centralizado na área
+   toda: o wrapper vira flex e centraliza o único filho nos dois eixos. Ligado/
+   desligado pelo componente de conteúdo (geral-arvore-unidades); fora disso, fluxo normal */
+.pagina-corpo-rolagem--centrado {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* variante: corpo "colado" (sem respiro) para grades que cuidam da própria
    rolagem nas duas direções (ex.: a grade de escalas) */
 .pagina-corpo--colado {

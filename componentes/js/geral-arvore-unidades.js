@@ -110,10 +110,14 @@
     return elemento;
   }
 
-  /* clona um molde de estado (carregando/vazio) no container */
+  /* clona um molde de estado (carregando/vazio/erro) no container; o carregando
+     centraliza o giratório na área toda (o wrapper rolável vira flex centrado) */
   function mostrarEstado(idTemplate) {
     var tpl = document.getElementById(idTemplate);
-    if (tpl) containerAtual.appendChild(tpl.content.cloneNode(true));
+    if (!tpl) return;
+    containerAtual.appendChild(tpl.content.cloneNode(true));
+    var rolagem = containerAtual.closest('.pagina-corpo-rolagem');
+    if (rolagem) rolagem.classList.toggle('pagina-corpo-rolagem--centrado', idTemplate === 'tpl-arvore-carregando');
   }
 
   /* avisa a página (se ela quiser) quais itens estão nas unidades marcadas — base de filtros próprios */
@@ -154,6 +158,9 @@
   function renderizar() {
     if (!containerAtual || !document.contains(containerAtual)) return;
     containerAtual.textContent = '';
+    /* volta o wrapper ao fluxo normal; só o estado de carregando o centraliza (mostrarEstado) */
+    var rolagem = containerAtual.closest('.pagina-corpo-rolagem');
+    if (rolagem) rolagem.classList.remove('pagina-corpo-rolagem--centrado');
 
     if (carregando) { mostrarEstado('tpl-arvore-carregando'); notificarPagina([]); notificarTitulos(false, false); return; }
     if (houveFalha) { mostrarEstado('tpl-arvore-erro'); notificarPagina([]); notificarTitulos(false, false); return; }

@@ -97,3 +97,20 @@
   background-color: var(--fundo-contraste);
   color: var(--texto-invertido);
 }
+
+/* faixa do topo do dia (número): GRUDA logo abaixo do cabeçalho dos dias (32px) e, com fundo opaco,
+   cobre o conteúdo que rola por baixo — o número da data fica visível enquanto a semana está na tela e as
+   unidades passam por trás, sem os textos se sobreporem. Confinada ao dia (grade iguala a altura das 7
+   células), então solta na virada da semana. z-index 1 = faixa interna do sticky, abaixo do cabeçalho (z 2; MANUAL §8) */
+.geral-calendario-mes-dia-topo {
+  position: sticky;
+  top: 32px;
+  z-index: 1;
+  padding-bottom: 4px;
+  background-color: var(--fundo-superficie);
+  border-bottom: 1px solid var(--borda);   /* a divisória do número mora aqui: acompanha o sticky */
+}
+.geral-calendario-mes-dia--fora .geral-calendario-mes-dia-topo {
+  background-color: var(--fundo-suave);
+  border-bottom: none;   /* dia de outro mês não tem conteúdo abaixo, então sem linha solta */
+}

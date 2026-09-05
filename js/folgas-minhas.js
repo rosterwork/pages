@@ -13,6 +13,7 @@
   var raizConteudo = null;
   var ctx = null;
   var ultimoSaldo = 0;   // último saldo carregado, p/ o botão "Solicitar folga" do cabeçalho
+  var seqExtrato = 0;    // token do extrato: ignora resposta antiga ao recarregar rápido (troca de aba, saldo mudou)
 
   function fmt() { return RW.folgasFormato; }
   function msg() { return RW.mensagens.folgas; }
@@ -72,12 +73,13 @@
     var u = RosterWork.sessao.perfil();
     if (!u || !u.cpf) return;
     carregando(el);
+    var req = ++seqExtrato;
     RW.folgasDados.extrato(u.cpf).then(function (r) {
-      if (!document.contains(el)) return;
+      if (!document.contains(el) || req !== seqExtrato) return;
       if (r == null) { falharExtrato(el); return; }   // null = falha (não confundir com saldo 0 real)
       renderizar(el, r);
     }).catch(function () {
-      if (!document.contains(el)) return;
+      if (!document.contains(el) || req !== seqExtrato) return;
       falharExtrato(el);
     });
   }

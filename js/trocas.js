@@ -144,8 +144,6 @@
     for (var i = 0; i < paineis.length; i++) {
       paineis[i].classList.toggle('oculto', nome !== paineis[i].getAttribute('data-aba-painel'));
     }
-    var solic = conteudo.querySelector('[data-painel="solicitar"]');
-    if (solic) solic.classList.toggle('oculto', nome !== 'solicitar');
   }
 
   function carregarAba(nome) {
@@ -175,15 +173,12 @@
 
   /* recarrega a vista atual (após uma ação no painel ou troca de unidades) */
   function recarregar() {
-    if (estado.aba === 'solicitar') return;
     carregarAba(estado.aba);
   }
 
-  /* Solicitar: o botão do cabeçalho abre o formulário no corpo */
+  /* Solicitar: o botão do cabeçalho abre o formulário no painel lateral */
   function abrirSolicitar() {
-    estado.aba = 'solicitar';
-    mostrarVista('solicitar');
-    if (RW.trocasSolicitar) RW.trocasSolicitar.ativar();
+    if (RW.trocasSolicitar) RW.trocasSolicitar.abrir();
   }
 
   function iniciar(conteudoEl) {
@@ -194,31 +189,13 @@
     contexto = { cpf: RosterWork.sessao.cpf(), ehAdmin: RosterWork.sessao.ehAdmin(), aoMudar: recarregar, aoFechar: limparSelecao };
 
     var abas = conteudo.querySelector('#trocas-abas');
-    if (RW.abas && abas) {
-      /* sair do Solicitar com dados não salvos: confirma o descarte antes de trocar de aba
-         (mesmo aviso do botão Cancelar). Captura: roda antes de o geral-abas trocar. */
-      abas.addEventListener('click', function (e) {
-        if (estado.aba !== 'solicitar') return;
-        var aba = e.target.closest('.aba');
-        if (!aba || !(RW.trocasSolicitar && RW.trocasSolicitar.temDados && RW.trocasSolicitar.temDados())) return;
-        e.preventDefault();
-        e.stopPropagation();
-        if (!RW.confirmar) { RW.trocasSolicitar.descartar(); aba.click(); return; }
-        RW.confirmar({
-          tipo: 'aviso', mensagem: RW.mensagens.edicao.sairSemSalvar,
-          textoConfirmar: RW.mensagens.botoes.descartar, textoCancelar: RW.mensagens.botoes.continuarEditando,
-          aoConfirmar: function () { RW.trocasSolicitar.descartar(); aba.click(); }
-        });
-      }, true);
-      RW.abas.ligar(abas, aoTrocarAba);
-    }
+    if (RW.abas && abas) RW.abas.ligar(abas, aoTrocarAba);
 
     var btn = conteudo.querySelector('#btn-solicitar-troca');
     if (btn) btn.addEventListener('click', abrirSolicitar);
 
-    if (RW.trocasSolicitar) RW.trocasSolicitar.ligar(conteudo, {
+    if (RW.trocasSolicitar) RW.trocasSolicitar.ligar({
       aoSolicitar: function () { irParaAba('minhas'); },
-      aoCancelar: function () { irParaAba('todas'); },
       aoMudar: recarregar
     });
 

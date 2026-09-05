@@ -269,7 +269,7 @@
 
     var req = ++reqSeq;
     window.RosterWork.escalasDados.carregarMilitares(ids, inicio, fim).then(function (dados) {
-      if (!document.contains(corpo) || req !== reqSeq) return;   // saiu da página, ou outra render começou
+      if (!document.contains(corpo) || req !== reqSeq || (opcoes.vigente && !opcoes.vigente())) return;   // saiu da página, outra render começou, ou trocou de modo
       corpo.textContent = '';
       celulaSelecionada = null;   // a grade foi refeita; a seleção antiga não existe mais
 
@@ -298,7 +298,7 @@
       aplicarFiltro(grade);   // reaplica a busca atual (persiste entre navegação/re-render)
       if (RosterWork.gradeTeclado) RosterWork.gradeTeclado.ativar(grade, { celula: '.escala-mil-celula', linha: '.escala-mil-pessoa-linha' });
     }, function () {
-      if (document.contains(corpo) && req === reqSeq) mostrarEstado(corpo, window.RosterWork.mensagens.escala.falhaCarregarMes);
+      if (document.contains(corpo) && req === reqSeq && (!opcoes.vigente || opcoes.vigente())) mostrarEstado(corpo, window.RosterWork.mensagens.escala.falhaCarregarMes);
     });
   }
 
