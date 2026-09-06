@@ -73,6 +73,7 @@
     atestado: { aba: 'Afastamentos', icone: 'icone-afastamentos' },
     ferias: { aba: 'Afastamentos', icone: 'icone-afastamentos' },
     licenca: { aba: 'Afastamentos', icone: 'icone-afastamentos' },
+    dispensa: { aba: 'Afastamentos', icone: 'icone-afastamentos' },
     unidade: { aba: 'Ajustes', icone: 'icone-ajustes' }
   };
 

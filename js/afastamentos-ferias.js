@@ -1,9 +1,9 @@
 /* ============================================================
    FÉRIAS — painel "Nova férias" (modo criação, só admin)
-   Espelha o painel de Atestados, sem CID/médico/motivo/fluxo:
-   Unidade (seletor em árvore, modo único) → Militar (efetivo da
-   unidade) e Período (início/fim com máscara + calendário). Salva
-   por RosterWork.feriasDados.inserirFerias e abre o resumo.
+   Só militar + período (sem tipo/fluxo): Unidade (seletor em árvore,
+   modo único) → Militar (efetivo da unidade) e Período (início/fim
+   com máscara + calendário). Salva por
+   RosterWork.afastamentosDados.inserirFerias e abre o resumo.
    ============================================================ */
 (function () {
   'use strict';
@@ -67,14 +67,14 @@
   function popularMilitares(raiz, unidadeId) {
     var gatilho = raiz.querySelector('#fer-militar');
     var menu = raiz.querySelector('#fer-militar-menu');
-    if (!gatilho || !menu || !RosterWork.atestadosDados) return;
+    if (!gatilho || !menu || !RosterWork.afastamentosDados) return;
     militarEscolhido = null;
     gatilho.disabled = true;
     definirTexto(gatilho, 'Carregando…', true);
     menu.textContent = '';
     atualizarSalvar(raiz);
     var req = ++reqMil;
-    RosterWork.atestadosDados.buscarEfetivo().then(function (efetivo) {
+    RosterWork.afastamentosDados.buscarEfetivo().then(function (efetivo) {
       if (req !== reqMil) return;   // outra unidade foi escolhida enquanto carregava
       menu.textContent = '';
       if (efetivo == null) {        // falha na leitura (não confundir com unidade vazia)
@@ -127,7 +127,7 @@
       p_data_fim: RosterWork.data.paraISO(raiz.querySelector('#fer-fim').value),
       p_created_by: RosterWork.sessao.cpf()
     };
-    RosterWork.feriasDados.inserirFerias(corpo).then(function (r) {
+    RosterWork.afastamentosDados.inserirFerias(corpo).then(function (r) {
       if (RosterWork.esconderVeuGlobal) RosterWork.esconderVeuGlobal();
       atualizarSalvar(raiz);   // reabilita o Salvar (no sucesso o painel fecha e o botão some)
       if (r && r._falha === 'servidor') {
@@ -152,9 +152,10 @@
     if (!RosterWork.painel) return;
     sujo = false;
     militarEscolhido = null;
+    RosterWork.afastamentoSujo = function () { return sujo; };
     RosterWork.painel.abrir({
       titulo: 'Novas férias',
-      aoFechar: function () { sujo = false; },
+      aoFechar: function () { sujo = false; RosterWork.afastamentoSujo = null; },
       aoTentarFechar: function () { if (!sujo) return false; tentarFechar(); return true; }   // X/Esc confirmam o descarte
     });
 

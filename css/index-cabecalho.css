@@ -178,6 +178,15 @@ button.aviso-item:hover {
   font-weight: 600;
 }
 
+/* pendência no sino: bolinha colorida por gravidade (vermelho = fora da escala,
+   amarelo = viatura em manutenção) e título em destaque; fica até ser resolvida */
+.aviso-item--erro .aviso-item-ponto { background-color: var(--erro); }
+.aviso-item--alerta .aviso-item-ponto { background-color: var(--alerta); }
+.aviso-item--erro .aviso-item-titulo,
+.aviso-item--alerta .aviso-item-titulo {
+  font-weight: 600;
+}
+
 .aviso-item-titulo {
   font-size: 12px;
   color: var(--texto-forte);

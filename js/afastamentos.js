@@ -1,16 +1,24 @@
 /* ============================================================
-   AFASTAMENTOS — página (abas Férias · Licenças · Atestados)
+   AFASTAMENTOS — página (abas Férias · Licenças · Dispensas)
    Alterna as abas e monta a árvore de unidades da aba ativa
-   (Atestados = listar_atestados · Férias = listar_ferias;
-   Licenças = casca). Como geral-arvore-unidades é único por página,
-   a árvore da aba ativa é (re)montada na troca de aba. Os botões
-   "Novo atestado"/"Nova férias" (só admin) abrem o painel de criação.
+   (listar_ferias · listar_licencas · listar_dispensas). Como a
+   geral-arvore-unidades é única por página, a árvore da aba ativa é
+   (re)montada na troca de aba. Os botões "Novas férias / Nova licença
+   / Nova dispensa" (só admin) abrem o painel de criação. Ao trocar de
+   aba com o painel aberto, ele é fechado (com aviso se houver dados).
    ============================================================ */
 (function () {
   'use strict';
 
   window.RosterWork = window.RosterWork || {};
   window.RosterWork.paginas = window.RosterWork.paginas || {};
+
+  /* rótulos dos tipos por categoria (fonte única de exibição na lista) */
+  var TIPO_LICENCA = {
+    propria_saude: 'Tratamento da própria saúde', saude_familiar: 'Saúde de familiar',
+    interesses: 'Interesses particulares', especial: 'Licença especial', capacitacao: 'Licença capacitação'
+  };
+  var TIPO_DISPENSA = { gala: 'Gala (casamento)', nojo: 'Nojo (falecimento)', comum: 'Comum' };
 
   /* ISO (AAAA-MM-DD) -> DD/MM */
   function formatarDataCurta(iso) {
@@ -19,37 +27,12 @@
     return p.length === 3 ? p[2] + '/' + p[1] : iso;
   }
 
-  /* ---------- Atestados: lista + contagem ---------- */
-  function renderAtestados(container, unidade, atestados) {
-    if (!atestados || atestados.length === 0) {
-      var tplVazio = document.getElementById('tpl-atestados-vazio');
-      if (tplVazio) container.appendChild(tplVazio.content.cloneNode(true));
-      return;
-    }
-    var tplLista = document.getElementById('tpl-atestados-lista');
-    var tplItem = document.getElementById('tpl-atestado-item');
-    if (!tplLista || !tplItem) return;
-    var lista = tplLista.content.cloneNode(true).firstElementChild;
-    atestados.forEach(function (a) {
-      var item = tplItem.content.cloneNode(true).firstElementChild;
-      item.querySelector('.atestado-grad').textContent = a.grau_abreviacao || '';
-      item.querySelector('.atestado-nome').textContent = a.nome_de_guerra || '';
-      var detalhe = formatarDataCurta(a.data_inicio) + ' a ' + formatarDataCurta(a.data_fim);
-      if (a.cid) detalhe += ' · CID ' + a.cid;
-      item.querySelector('.atestado-detalhe').textContent = detalhe;
-      item.querySelector('.atestado-dias').textContent = a.dias + (a.dias === 1 ? ' dia' : ' dias');
-      var selo = item.querySelector('.atestado-fluxo-selo');
-      if (a.fora_do_fluxo) { selo.textContent = 'Fora do fluxo'; selo.classList.add('selo--erro'); }
-      else { selo.textContent = 'Segue no fluxo'; selo.classList.add('selo--sucesso'); }
-      lista.appendChild(item);
-    });
-    container.appendChild(lista);
-  }
-  function contagemAtestados(itens) {
-    return itens.length === 1 ? '1 atestado' : itens.length + ' atestados';
+  function preencheSeloFluxo(selo, fora) {
+    if (fora) { selo.textContent = 'Fora do fluxo'; selo.classList.add('selo--erro'); }
+    else { selo.textContent = 'Segue no fluxo'; selo.classList.add('selo--sucesso'); }
   }
 
-  /* ---------- Férias: lista + contagem (reusa o CSS dos atestados) ---------- */
+  /* ---------- Férias: lista + contagem ---------- */
   function renderFerias(container, unidade, ferias) {
     if (!ferias || ferias.length === 0) {
       var tplVazio = document.getElementById('tpl-ferias-vazio');
@@ -70,11 +53,9 @@
     });
     container.appendChild(lista);
   }
-  function contagemFerias(itens) {
-    return itens.length === 1 ? '1 em férias' : itens.length + ' em férias';
-  }
+  function contagemFerias(itens) { return itens.length === 1 ? '1 em férias' : itens.length + ' em férias'; }
 
-  /* ---------- Licenças: lista + contagem (reusa o CSS dos atestados) ---------- */
+  /* ---------- Licenças: lista + contagem (Tipo + fora do fluxo) ---------- */
   function renderLicencas(container, unidade, licencas) {
     if (!licencas || licencas.length === 0) {
       var tplVazio = document.getElementById('tpl-licencas-vazio');
@@ -89,21 +70,46 @@
       var item = tplItem.content.cloneNode(true).firstElementChild;
       item.querySelector('.atestado-grad').textContent = l.grau_abreviacao || '';
       item.querySelector('.atestado-nome').textContent = l.nome_de_guerra || '';
-      item.querySelector('.atestado-detalhe').textContent = formatarDataCurta(l.data_inicio) + ' a ' + formatarDataCurta(l.data_fim);
+      var tipo = TIPO_LICENCA[l.tipo] || 'Licença';
+      item.querySelector('.atestado-detalhe').textContent = tipo + ' · ' + formatarDataCurta(l.data_inicio) + ' a ' + formatarDataCurta(l.data_fim);
       item.querySelector('.atestado-dias').textContent = l.dias + (l.dias === 1 ? ' dia' : ' dias');
+      preencheSeloFluxo(item.querySelector('.atestado-fluxo-selo'), l.fora_do_fluxo);
       lista.appendChild(item);
     });
     container.appendChild(lista);
   }
-  function contagemLicencas(itens) {
-    return itens.length === 1 ? '1 em licença' : itens.length + ' em licença';
+  function contagemLicencas(itens) { return itens.length === 1 ? '1 em licença' : itens.length + ' em licença'; }
+
+  /* ---------- Dispensas: lista + contagem (Tipo + fora do fluxo) ---------- */
+  function renderDispensas(container, unidade, dispensas) {
+    if (!dispensas || dispensas.length === 0) {
+      var tplVazio = document.getElementById('tpl-dispensas-vazio');
+      if (tplVazio) container.appendChild(tplVazio.content.cloneNode(true));
+      return;
+    }
+    var tplLista = document.getElementById('tpl-dispensas-lista');
+    var tplItem = document.getElementById('tpl-dispensa-item');
+    if (!tplLista || !tplItem) return;
+    var lista = tplLista.content.cloneNode(true).firstElementChild;
+    dispensas.forEach(function (d) {
+      var item = tplItem.content.cloneNode(true).firstElementChild;
+      item.querySelector('.atestado-grad').textContent = d.grau_abreviacao || '';
+      item.querySelector('.atestado-nome').textContent = d.nome_de_guerra || '';
+      var tipo = TIPO_DISPENSA[d.tipo] || 'Dispensa';
+      item.querySelector('.atestado-detalhe').textContent = tipo + ' · ' + formatarDataCurta(d.data_inicio) + ' a ' + formatarDataCurta(d.data_fim);
+      item.querySelector('.atestado-dias').textContent = d.dias + (d.dias === 1 ? ' dia' : ' dias');
+      preencheSeloFluxo(item.querySelector('.atestado-fluxo-selo'), d.fora_do_fluxo);
+      lista.appendChild(item);
+    });
+    container.appendChild(lista);
   }
+  function contagemDispensas(itens) { return itens.length === 1 ? '1 em dispensa' : itens.length + ' em dispensa'; }
 
   /* abas com árvore de unidades */
   var ABAS = {
-    atestados: { container: '#arvore-atestados', rpc: 'listar_atestados', render: renderAtestados, contagem: contagemAtestados, botao: '#btn-novo-atestado', modulo: 'atestados' },
     ferias:    { container: '#arvore-ferias',    rpc: 'listar_ferias',    render: renderFerias,    contagem: contagemFerias,    botao: '#btn-nova-ferias',   modulo: 'ferias' },
-    licencas:  { container: '#arvore-licencas',  rpc: 'listar_licencas',  render: renderLicencas,  contagem: contagemLicencas,  botao: '#btn-nova-licenca',  modulo: 'licencas' }
+    licencas:  { container: '#arvore-licencas',  rpc: 'listar_licencas',  render: renderLicencas,  contagem: contagemLicencas,  botao: '#btn-nova-licenca',  modulo: 'licencas' },
+    dispensas: { container: '#arvore-dispensas', rpc: 'listar_dispensas', render: renderDispensas, contagem: contagemDispensas, botao: '#btn-nova-dispensa', modulo: 'dispensas' }
   };
 
   /* (re)monta a árvore da aba (o componente é único por página) */
@@ -120,7 +126,7 @@
     });
   }
 
-  /* mostra só o botão "Novo ..." da aba ativa, e só para admin */
+  /* mostra só o botão "Novo/Nova ..." da aba ativa, e só para admin */
   function ajustarBotoes(conteudo, aba) {
     Object.keys(ABAS).forEach(function (nome) {
       var btn = conteudo.querySelector(ABAS[nome].botao);
@@ -128,23 +134,50 @@
     });
   }
 
+  function aplicarAba(conteudo, alvo) {
+    var paineis = conteudo.querySelectorAll('[data-aba-painel]');
+    for (var i = 0; i < paineis.length; i++) {
+      paineis[i].classList.toggle('oculto', paineis[i].getAttribute('data-aba-painel') !== alvo);
+    }
+    ajustarBotoes(conteudo, alvo);
+    if (ABAS[alvo]) montarArvore(conteudo, alvo);
+  }
+
   function ligarAbas(conteudo) {
     var trilho = conteudo.querySelector('#afastamentos-abas');
-    var paineis = conteudo.querySelectorAll('[data-aba-painel]');
     if (!trilho || !window.RosterWork.abas) return;
-    window.RosterWork.abas.ligar(trilho, function (aba) {
-      var alvo = aba.getAttribute('data-aba');
-      for (var i = 0; i < paineis.length; i++) {
-        paineis[i].classList.toggle('oculto', paineis[i].getAttribute('data-aba-painel') !== alvo);
+
+    /* guarda: com o painel de criação aberto, trocar de aba fecha o painel
+       (confirma o descarte se houver dados). Captura: roda antes do geral-abas. */
+    trilho.addEventListener('click', function (e) {
+      if (!RosterWork.painel || !RosterWork.painel.estaAberto()) return;
+      var aba = e.target.closest('.aba');
+      if (!aba) return;
+      e.preventDefault();
+      e.stopPropagation();
+      var sujo = !!(RosterWork.afastamentoSujo && RosterWork.afastamentoSujo());
+      if (!sujo || !RosterWork.confirmar) {
+        RosterWork.painel.fechar();
+        aba.click();   // painel fechado: agora o geral-abas troca normalmente
+        return;
       }
-      ajustarBotoes(conteudo, alvo);
-      if (ABAS[alvo]) montarArvore(conteudo, alvo);
+      RosterWork.confirmar({
+        tipo: 'aviso',
+        mensagem: RosterWork.mensagens.edicao.sairSemSalvar,
+        textoConfirmar: RosterWork.mensagens.botoes.sairSemSalvar,
+        textoCancelar: RosterWork.mensagens.botoes.continuarEditando,
+        aoConfirmar: function () { RosterWork.painel.fechar(); aba.click(); }
+      });
+    }, true);
+
+    window.RosterWork.abas.ligar(trilho, function (aba) {
+      aplicarAba(conteudo, aba.getAttribute('data-aba'));
     });
   }
 
   function iniciar(conteudo) {
     ligarAbas(conteudo);
-    /* liga cada botão "Novo ..." ao abrirNovo do seu módulo */
+    /* liga cada botão "Novo/Nova ..." ao abrirNovo do seu módulo */
     Object.keys(ABAS).forEach(function (nome) {
       var btn = conteudo.querySelector(ABAS[nome].botao);
       var modulo = ABAS[nome].modulo;
@@ -153,9 +186,9 @@
         if (mod && mod.abrirNovo) mod.abrirNovo();
       });
     });
-    /* a aba Atestados começa ativa (ver afastamentos.html) */
-    ajustarBotoes(conteudo, 'atestados');
-    return montarArvore(conteudo, 'atestados');
+    /* a aba Licenças começa ativa (ver afastamentos.html) */
+    ajustarBotoes(conteudo, 'licencas');
+    return montarArvore(conteudo, 'licencas');
   }
 
   window.RosterWork.paginas.afastamentos = { iniciar: iniciar };

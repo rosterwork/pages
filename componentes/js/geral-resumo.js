@@ -153,7 +153,6 @@
     /* uma ação acabou de ser gravada: o que estava esperando decisão pode ter
        acabado, então o sino relê na hora (o resumo abre em toda escrita) */
     if (RosterWork.avisosSino) RosterWork.avisosSino.recarregar();
-    if (RosterWork.escalaBadge) RosterWork.escalaBadge.recarregar();
     alvoConteudo.textContent = '';
     /* o título segue a ação do log: exclusão não é "alterações salvas" */
     var G = (RosterWork.mensagens && RosterWork.mensagens.geral) || {};

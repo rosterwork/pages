@@ -1,9 +1,9 @@
 /* ============================================================
    LICENÇAS — painel "Nova licença" (modo criação, só admin)
-   Espelha o painel de Férias (militar + período): Unidade (seletor
-   em árvore, modo único) → Militar (efetivo da unidade) e Período
-   (início/fim com máscara + calendário). Salva por
-   RosterWork.licencasDados.inserirLicenca e abre o resumo.
+   Unidade (seletor em árvore) -> Militar, Tipo (5 tipos; saúde própria
+   mostra CID/médico), Período (máscara + calendário) e Motivo. Um
+   indicador sugere fora/segue o fluxo pela regra dos 16 dias (o admin
+   decide no toggle). Salva por RosterWork.afastamentosDados.inserirLicenca.
    ============================================================ */
 (function () {
   'use strict';
@@ -13,7 +13,10 @@
   var sujo = false;
   var guardaLigado = false;
   var militarEscolhido = null;
-  var reqMil = 0;   // token do seletor de militar: ignora resposta antiga ao trocar de unidade rápido
+  var tipoEscolhido = null;
+  var foraDoFluxo = false;
+  var overridePeloAdmin = false;
+  var reqMil = 0;
 
   function definirTexto(gatilho, texto, vazio) {
     var alvo = gatilho && gatilho.querySelector('.campo-selecao-texto');
@@ -22,20 +25,6 @@
     alvo.classList.toggle('campo-selecao-texto--vazio', !!vazio);
   }
 
-  /* dias entre início e fim (inclusivo); null se inválido/incompleto */
-  function calcularDias(raiz) {
-    var di = RosterWork.data.paraData(raiz.querySelector('#lic-inicio').value);
-    var df = RosterWork.data.paraData(raiz.querySelector('#lic-fim').value);
-    if (!di || !df || df < di) return null;
-    return Math.round((df - di) / 86400000) + 1;
-  }
-
-  function atualizarSalvar(raiz) {
-    var btn = raiz.querySelector('#lic-salvar');
-    if (btn) btn.disabled = !(militarEscolhido && calcularDias(raiz) != null);
-  }
-
-  /* máscara de data preservando a posição do cursor (igual aos Atestados/Férias) */
   function ligarMascaraData(input) {
     if (!input) return;
     input.addEventListener('input', function () {
@@ -63,21 +52,84 @@
     });
   }
 
-  /* popula o militar com o efetivo da unidade escolhida */
+  function calcularDias(raiz) {
+    var di = RosterWork.data.paraData(raiz.querySelector('#lic-inicio').value);
+    var df = RosterWork.data.paraData(raiz.querySelector('#lic-fim').value);
+    if (!di || !df || df < di) return null;
+    return Math.round((df - di) / 86400000) + 1;
+  }
+
+  function atualizarSalvar(raiz) {
+    var btn = raiz.querySelector('#lic-salvar');
+    if (btn) btn.disabled = !(militarEscolhido && tipoEscolhido && calcularDias(raiz) != null);
+  }
+
+  /* aplica a decisão (foraDoFluxo) ao indicador: cor, texto e o toggle Sim/Não */
+  function aplicarDecisao(raiz) {
+    var box = raiz.querySelector('#lic-fluxo');
+    if (!box) return;
+    box.classList.toggle('atestado-fluxo--fora', foraDoFluxo);
+    box.classList.toggle('atestado-fluxo--dentro', !foraDoFluxo);
+    var texto = raiz.querySelector('#lic-fluxo-texto');
+    if (texto) texto.textContent = foraDoFluxo
+      ? RosterWork.mensagens.afastamentos.foraDoFluxo
+      : RosterWork.mensagens.afastamentos.segueNoFluxo;
+    var botoes = raiz.querySelectorAll('#lic-fora-toggle .aba');
+    for (var i = 0; i < botoes.length; i++) {
+      botoes[i].classList.toggle('aba--ativa', (botoes[i].getAttribute('data-fora') === 'sim') === foraDoFluxo);
+    }
+  }
+
+  /* indicador ao vivo: mostra os dias e sugere fora/segue pela regra dos 16 dias */
+  function atualizarFluxo(raiz) {
+    var dias = calcularDias(raiz);
+    var box = raiz.querySelector('#lic-fluxo');
+    if (box) {
+      if (dias == null) {
+        box.classList.add('oculto');
+      } else {
+        box.classList.remove('oculto');
+        if (!overridePeloAdmin) foraDoFluxo = dias >= 16;
+        var titulo = raiz.querySelector('#lic-fluxo-titulo');
+        if (titulo) titulo.textContent = dias + (dias === 1 ? ' dia' : ' dias');
+        aplicarDecisao(raiz);
+      }
+    }
+    atualizarSalvar(raiz);
+  }
+
+  /* Tipo: dropdown estático (5 tipos); saúde própria revela CID/médico */
+  function ligarTipo(raiz) {
+    var gatilho = raiz.querySelector('#lic-tipo');
+    var saude = raiz.querySelector('#lic-saude');
+    var drop = gatilho ? gatilho.closest('.dropdown') : null;
+    var itens = drop ? drop.querySelectorAll('.dropdown-item') : [];
+    for (var i = 0; i < itens.length; i++) {
+      itens[i].addEventListener('click', function (ev) {
+        var btn = ev.currentTarget;
+        tipoEscolhido = btn.getAttribute('data-tipo');
+        definirTexto(gatilho, btn.textContent.trim());
+        if (saude) saude.classList.toggle('oculto', tipoEscolhido !== 'propria_saude');
+        sujo = true;
+        atualizarSalvar(raiz);
+      });
+    }
+  }
+
   function popularMilitares(raiz, unidadeId) {
     var gatilho = raiz.querySelector('#lic-militar');
     var menu = raiz.querySelector('#lic-militar-menu');
-    if (!gatilho || !menu || !RosterWork.atestadosDados) return;
+    if (!gatilho || !menu || !RosterWork.afastamentosDados) return;
     militarEscolhido = null;
     gatilho.disabled = true;
     definirTexto(gatilho, 'Carregando…', true);
     menu.textContent = '';
     atualizarSalvar(raiz);
     var req = ++reqMil;
-    RosterWork.atestadosDados.buscarEfetivo().then(function (efetivo) {
-      if (req !== reqMil) return;   // outra unidade foi escolhida enquanto carregava
+    RosterWork.afastamentosDados.buscarEfetivo().then(function (efetivo) {
+      if (req !== reqMil) return;
       menu.textContent = '';
-      if (efetivo == null) {        // falha na leitura (não confundir com unidade vazia)
+      if (efetivo == null) {
         gatilho.disabled = true;
         definirTexto(gatilho, 'Erro ao carregar', true);
         if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.falhaServidor });
@@ -118,18 +170,24 @@
   }
 
   function salvar(raiz) {
-    if (!militarEscolhido || calcularDias(raiz) == null) return;
-    var btnSalvar = raiz.querySelector('#lic-salvar'); if (btnSalvar) btnSalvar.disabled = true;   // evita duplo-envio (o véu já cobre; defesa a mais)
-    if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal();   // recalcula a escala: círculo + tela travada
+    if (!militarEscolhido || !tipoEscolhido || calcularDias(raiz) == null) return;
+    var ehSaude = tipoEscolhido === 'propria_saude';
+    var btnSalvar = raiz.querySelector('#lic-salvar'); if (btnSalvar) btnSalvar.disabled = true;
+    if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal();
     var corpo = {
       p_usuario_id: militarEscolhido,
       p_data_inicio: RosterWork.data.paraISO(raiz.querySelector('#lic-inicio').value),
       p_data_fim: RosterWork.data.paraISO(raiz.querySelector('#lic-fim').value),
+      p_tipo: tipoEscolhido,
+      p_fora_do_fluxo: foraDoFluxo,
+      p_cid: ehSaude ? raiz.querySelector('#lic-cid').value.trim() : null,
+      p_medico: ehSaude ? raiz.querySelector('#lic-medico').value.trim() : null,
+      p_motivo: raiz.querySelector('#lic-motivo').value.trim(),
       p_created_by: RosterWork.sessao.cpf()
     };
-    RosterWork.licencasDados.inserirLicenca(corpo).then(function (r) {
+    RosterWork.afastamentosDados.inserirLicenca(corpo).then(function (r) {
       if (RosterWork.esconderVeuGlobal) RosterWork.esconderVeuGlobal();
-      atualizarSalvar(raiz);   // reabilita o Salvar (no sucesso o painel fecha e o botão some)
+      atualizarSalvar(raiz);
       if (r && r._falha === 'servidor') {
         if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.falhaServidor });
       } else if (r && r.success) {
@@ -138,7 +196,7 @@
         if (RosterWork.arvoreUnidades) RosterWork.arvoreUnidades.recarregar();
         if (r.log && RosterWork.resumo) RosterWork.resumo.abrirModal(r.log, { pagina: 'Afastamentos' });
       } else if (RosterWork.avisar) {
-        RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || RosterWork.mensagens.geral.falhaServidor });
+        RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || RosterWork.mensagens.afastamentos.falhaSalvarLicenca });
       }
     }).catch(function () {
       if (RosterWork.esconderVeuGlobal) RosterWork.esconderVeuGlobal();
@@ -147,15 +205,15 @@
     });
   }
 
-  /* abre o painel Nova licença (modo criação): clona o formulário e liga tudo */
   function abrirNovo() {
     if (!RosterWork.painel) return;
-    sujo = false;
-    militarEscolhido = null;
+    sujo = false; militarEscolhido = null; tipoEscolhido = null;
+    foraDoFluxo = false; overridePeloAdmin = false;
+    RosterWork.afastamentoSujo = function () { return sujo; };
     RosterWork.painel.abrir({
       titulo: 'Nova licença',
-      aoFechar: function () { sujo = false; },
-      aoTentarFechar: function () { if (!sujo) return false; tentarFechar(); return true; }   // X/Esc confirmam o descarte
+      aoFechar: function () { sujo = false; RosterWork.afastamentoSujo = null; },
+      aoTentarFechar: function () { if (!sujo) return false; tentarFechar(); return true; }
     });
 
     var corpo = RosterWork.painel.corpo();
@@ -182,10 +240,23 @@
     ligarMascaraData(fim);
     ligarCalendarioData(inicio);
     ligarCalendarioData(fim);
-    if (inicio) inicio.addEventListener('input', function () { atualizarSalvar(raiz); });
-    if (fim) fim.addEventListener('input', function () { atualizarSalvar(raiz); });
+    if (inicio) inicio.addEventListener('input', function () { atualizarFluxo(raiz); });
+    if (fim) fim.addEventListener('input', function () { atualizarFluxo(raiz); });
 
-    /* unidade (seletor em árvore, modo único) → popula os militares da unidade */
+    ligarTipo(raiz);
+
+    var toggle = raiz.querySelector('#lic-fora-toggle');
+    if (toggle) {
+      toggle.addEventListener('click', function (evento) {
+        var btn = evento.target.closest('.aba');
+        if (!btn) return;
+        foraDoFluxo = btn.getAttribute('data-fora') === 'sim';
+        overridePeloAdmin = true;
+        sujo = true;
+        aplicarDecisao(raiz);
+      });
+    }
+
     if (RosterWork.seletorUnidades) {
       var seletor = RosterWork.seletorUnidades.criar({
         modo: 'unico',

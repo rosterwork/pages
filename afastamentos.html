@@ -5,10 +5,6 @@
       <span class="pagina-subtitulo"></span>
     </div>
     <span class="espacador-flex"></span>
-    <button type="button" class="botao botao--primario oculto" id="btn-novo-atestado">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-mais.svg#icone-mais"/></svg>
-      <span>Novo atestado</span>
-    </button>
     <button type="button" class="botao botao--primario oculto" id="btn-nova-ferias">
       <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-mais.svg#icone-mais"/></svg>
       <span>Novas férias</span>
@@ -17,13 +13,17 @@
       <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-mais.svg#icone-mais"/></svg>
       <span>Nova licença</span>
     </button>
+    <button type="button" class="botao botao--primario oculto" id="btn-nova-dispensa">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-mais.svg#icone-mais"/></svg>
+      <span>Nova dispensa</span>
+    </button>
   </div>
 
   <div class="pagina-subcabecalho">
     <div class="abas" id="afastamentos-abas">
       <button type="button" class="aba" data-aba="ferias">Férias</button>
-      <button type="button" class="aba" data-aba="licencas">Licenças</button>
-      <button type="button" class="aba aba--ativa" data-aba="atestados">Atestados</button>
+      <button type="button" class="aba aba--ativa" data-aba="licencas">Licenças</button>
+      <button type="button" class="aba" data-aba="dispensas">Dispensas</button>
     </div>
   </div>
 
@@ -34,138 +34,18 @@
         <div class="arvore arvore-unidades" id="arvore-ferias"></div>
       </div>
       <!-- aba Licenças: árvore de unidades com as licenças de cada militar -->
-      <div class="afastamentos-painel oculto" data-aba-painel="licencas">
+      <div class="afastamentos-painel" data-aba-painel="licencas">
         <div class="arvore arvore-unidades" id="arvore-licencas"></div>
       </div>
-      <!-- aba Atestados: árvore de unidades com os atestados de cada militar -->
-      <div class="afastamentos-painel" data-aba-painel="atestados">
-        <div class="arvore arvore-unidades" id="arvore-atestados"></div>
+      <!-- aba Dispensas: árvore de unidades com as dispensas de cada militar -->
+      <div class="afastamentos-painel oculto" data-aba-painel="dispensas">
+        <div class="arvore arvore-unidades" id="arvore-dispensas"></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- molde: lista de atestados dentro de uma unidade marcada -->
-<template id="tpl-atestados-lista">
-  <div class="atestados-lista"></div>
-</template>
-
-<!-- molde: um atestado na lista (militar + período/CID + dias + selo de fluxo) -->
-<template id="tpl-atestado-item">
-  <div class="atestado-item">
-    <span class="atestado-textos">
-      <span class="atestado-pessoa">
-        <span class="atestado-grad"></span>
-        <span class="atestado-nome"></span>
-      </span>
-      <span class="atestado-detalhe"></span>
-    </span>
-    <span class="espacador-flex"></span>
-    <span class="selo atestado-dias"></span>
-    <span class="selo atestado-fluxo-selo"></span>
-  </div>
-</template>
-
-<!-- molde: unidade marcada sem atestados -->
-<template id="tpl-atestados-vazio">
-  <div class="postos-vazio">Nenhum atestado nesta unidade.</div>
-</template>
-
-<!-- molde: item do seletor de militar (montado pelo JS com o efetivo da unidade) -->
-<template id="tpl-atestado-militar-opcao">
-  <button type="button" class="dropdown-item"></button>
-</template>
-
-<!-- molde: formulário Novo atestado — abre no painel direito (lógica em afastamentos-atestados.js) -->
-<template id="tpl-atestado-novo">
-  <div class="painel-secao">
-    <button type="button" class="painel-secao-cabecalho" aria-expanded="true">
-      <span class="rotulo-secao">Militar e período</span>
-      <svg class="icone painel-secao-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
-    </button>
-    <div class="painel-secao-corpo">
-      <div class="campo">
-        <span class="campo-rotulo">Unidade</span>
-        <div class="dropdown" id="at-unidade-dropdown">
-          <button type="button" class="campo-entrada campo-selecao" id="at-unidade">
-            <span class="campo-selecao-texto campo-selecao-texto--vazio" id="at-unidade-texto">Selecione uma unidade</span>
-            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
-          </button>
-          <div class="dropdown-menu dropdown-menu--largo">
-            <div class="dropdown-menu-rolagem">
-              <div class="arvore" id="at-unidade-arvore"></div>
-            </div>
-          </div>
-        </div>
-        <span class="campo-erro-texto"></span>
-      </div>
-      <div class="campo">
-        <span class="campo-rotulo">Militar</span>
-        <div class="dropdown">
-          <button type="button" class="campo-entrada campo-selecao" id="at-militar" disabled>
-            <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione a unidade antes</span>
-            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
-          </button>
-          <div class="dropdown-menu" id="at-militar-menu"></div>
-        </div>
-        <span class="campo-erro-texto"></span>
-      </div>
-      <label class="campo">
-        <span class="campo-rotulo">Data de início</span>
-        <input class="campo-entrada" id="at-inicio" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" />
-        <span class="campo-erro-texto"></span>
-      </label>
-      <label class="campo">
-        <span class="campo-rotulo">Data de fim</span>
-        <input class="campo-entrada" id="at-fim" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" />
-        <span class="campo-erro-texto"></span>
-      </label>
-      <div class="atestado-fluxo oculto" id="at-fluxo">
-        <div class="atestado-fluxo-titulo" id="at-fluxo-titulo"></div>
-        <div class="atestado-fluxo-texto" id="at-fluxo-texto"></div>
-        <div class="atestado-fluxo-decisao">
-          <span class="atestado-fluxo-rotulo">Tirar do fluxo da escala?</span>
-          <div class="abas abas--pequenas" id="at-fora-toggle">
-            <button type="button" class="aba" data-fora="sim">Sim</button>
-            <button type="button" class="aba" data-fora="nao">Não</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="painel-secao">
-    <button type="button" class="painel-secao-cabecalho" aria-expanded="true">
-      <span class="rotulo-secao">Dados do atestado</span>
-      <svg class="icone painel-secao-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
-    </button>
-    <div class="painel-secao-corpo">
-      <label class="campo">
-        <span class="campo-rotulo">CID</span>
-        <input class="campo-entrada" id="at-cid" type="text" maxlength="10" placeholder="Ex.: J11" />
-        <span class="campo-erro-texto"></span>
-      </label>
-      <label class="campo">
-        <span class="campo-rotulo">Médico / entidade</span>
-        <input class="campo-entrada" id="at-medico" type="text" maxlength="80" placeholder="Ex.: Dr. Lima · HUC" />
-        <span class="campo-erro-texto"></span>
-      </label>
-      <label class="campo">
-        <span class="campo-rotulo">Motivo</span>
-        <textarea class="campo-entrada" id="at-motivo" maxlength="200" placeholder="Descreva o motivo"></textarea>
-        <span class="campo-erro-texto"></span>
-      </label>
-    </div>
-  </div>
-</template>
-
-<!-- molde: ações do rodapé do painel Novo atestado -->
-<template id="tpl-atestado-novo-acoes">
-  <button type="button" class="botao" id="at-cancelar">Cancelar</button>
-  <button type="button" class="botao botao--primario" id="at-salvar" disabled>Salvar</button>
-</template>
-
-<!-- ===================== MOLDES — Férias (reusam o CSS dos atestados) ===================== -->
+<!-- ===================== MOLDES — Férias ===================== -->
 <template id="tpl-ferias-lista">
   <div class="atestados-lista"></div>
 </template>
@@ -239,7 +119,7 @@
   <button type="button" class="botao botao--primario" id="fer-salvar" disabled>Salvar</button>
 </template>
 
-<!-- ===================== MOLDES — Licenças (reusam o CSS dos atestados) ===================== -->
+<!-- ===================== MOLDES — Licenças ===================== -->
 <template id="tpl-licencas-lista">
   <div class="atestados-lista"></div>
 </template>
@@ -254,6 +134,7 @@
     </span>
     <span class="espacador-flex"></span>
     <span class="selo atestado-dias"></span>
+    <span class="selo atestado-fluxo-selo"></span>
   </div>
 </template>
 <template id="tpl-licencas-vazio">
@@ -265,7 +146,7 @@
 <template id="tpl-licenca-novo">
   <div class="painel-secao">
     <button type="button" class="painel-secao-cabecalho" aria-expanded="true">
-      <span class="rotulo-secao">Militar e período</span>
+      <span class="rotulo-secao">Militar e licença</span>
       <svg class="icone painel-secao-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
     </button>
     <div class="painel-secao-corpo">
@@ -295,6 +176,23 @@
         </div>
         <span class="campo-erro-texto"></span>
       </div>
+      <div class="campo">
+        <span class="campo-rotulo">Tipo de licença</span>
+        <div class="dropdown">
+          <button type="button" class="campo-entrada campo-selecao" id="lic-tipo">
+            <span class="campo-selecao-texto campo-selecao-texto--vazio" id="lic-tipo-texto">Selecione o tipo</span>
+            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+          </button>
+          <div class="dropdown-menu">
+            <button type="button" class="dropdown-item" data-tipo="propria_saude">Tratamento da própria saúde</button>
+            <button type="button" class="dropdown-item" data-tipo="saude_familiar">Tratamento de saúde de familiar</button>
+            <button type="button" class="dropdown-item" data-tipo="interesses">Interesses particulares</button>
+            <button type="button" class="dropdown-item" data-tipo="especial">Licença especial</button>
+            <button type="button" class="dropdown-item" data-tipo="capacitacao">Licença capacitação</button>
+          </div>
+        </div>
+        <span class="campo-erro-texto"></span>
+      </div>
       <label class="campo">
         <span class="campo-rotulo">Data de início</span>
         <input class="campo-entrada" id="lic-inicio" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" />
@@ -305,10 +203,144 @@
         <input class="campo-entrada" id="lic-fim" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" />
         <span class="campo-erro-texto"></span>
       </label>
+      <div class="atestado-fluxo oculto" id="lic-fluxo">
+        <div class="atestado-fluxo-titulo" id="lic-fluxo-titulo"></div>
+        <div class="atestado-fluxo-texto" id="lic-fluxo-texto"></div>
+        <div class="atestado-fluxo-decisao">
+          <span class="atestado-fluxo-rotulo">Tirar do fluxo da escala?</span>
+          <div class="abas abas--pequenas" id="lic-fora-toggle">
+            <button type="button" class="aba" data-fora="sim">Sim</button>
+            <button type="button" class="aba" data-fora="nao">Não</button>
+          </div>
+        </div>
+      </div>
+      <div class="afastamento-saude oculto" id="lic-saude">
+        <label class="campo">
+          <span class="campo-rotulo">CID</span>
+          <input class="campo-entrada" id="lic-cid" type="text" maxlength="10" placeholder="Ex.: J11" />
+          <span class="campo-erro-texto"></span>
+        </label>
+        <label class="campo">
+          <span class="campo-rotulo">Médico / entidade</span>
+          <input class="campo-entrada" id="lic-medico" type="text" maxlength="80" placeholder="Ex.: Dr. Lima · HUC" />
+          <span class="campo-erro-texto"></span>
+        </label>
+      </div>
+      <label class="campo">
+        <span class="campo-rotulo">Motivo</span>
+        <textarea class="campo-entrada" id="lic-motivo" maxlength="200" placeholder="Descreva o motivo (opcional)"></textarea>
+        <span class="campo-erro-texto"></span>
+      </label>
     </div>
   </div>
 </template>
 <template id="tpl-licenca-novo-acoes">
   <button type="button" class="botao" id="lic-cancelar">Cancelar</button>
   <button type="button" class="botao botao--primario" id="lic-salvar" disabled>Salvar</button>
+</template>
+
+<!-- ===================== MOLDES — Dispensas ===================== -->
+<template id="tpl-dispensas-lista">
+  <div class="atestados-lista"></div>
+</template>
+<template id="tpl-dispensa-item">
+  <div class="atestado-item">
+    <span class="atestado-textos">
+      <span class="atestado-pessoa">
+        <span class="atestado-grad"></span>
+        <span class="atestado-nome"></span>
+      </span>
+      <span class="atestado-detalhe"></span>
+    </span>
+    <span class="espacador-flex"></span>
+    <span class="selo atestado-dias"></span>
+    <span class="selo atestado-fluxo-selo"></span>
+  </div>
+</template>
+<template id="tpl-dispensas-vazio">
+  <div class="postos-vazio">Nenhuma dispensa nesta unidade.</div>
+</template>
+<template id="tpl-dispensa-militar-opcao">
+  <button type="button" class="dropdown-item"></button>
+</template>
+<template id="tpl-dispensa-novo">
+  <div class="painel-secao">
+    <button type="button" class="painel-secao-cabecalho" aria-expanded="true">
+      <span class="rotulo-secao">Militar e dispensa</span>
+      <svg class="icone painel-secao-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+    </button>
+    <div class="painel-secao-corpo">
+      <div class="campo">
+        <span class="campo-rotulo">Unidade</span>
+        <div class="dropdown" id="dis-unidade-dropdown">
+          <button type="button" class="campo-entrada campo-selecao" id="dis-unidade">
+            <span class="campo-selecao-texto campo-selecao-texto--vazio" id="dis-unidade-texto">Selecione uma unidade</span>
+            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+          </button>
+          <div class="dropdown-menu dropdown-menu--largo">
+            <div class="dropdown-menu-rolagem">
+              <div class="arvore" id="dis-unidade-arvore"></div>
+            </div>
+          </div>
+        </div>
+        <span class="campo-erro-texto"></span>
+      </div>
+      <div class="campo">
+        <span class="campo-rotulo">Militar</span>
+        <div class="dropdown">
+          <button type="button" class="campo-entrada campo-selecao" id="dis-militar" disabled>
+            <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione a unidade antes</span>
+            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+          </button>
+          <div class="dropdown-menu" id="dis-militar-menu"></div>
+        </div>
+        <span class="campo-erro-texto"></span>
+      </div>
+      <div class="campo">
+        <span class="campo-rotulo">Tipo de dispensa</span>
+        <div class="dropdown">
+          <button type="button" class="campo-entrada campo-selecao" id="dis-tipo">
+            <span class="campo-selecao-texto campo-selecao-texto--vazio" id="dis-tipo-texto">Selecione o tipo</span>
+            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+          </button>
+          <div class="dropdown-menu">
+            <button type="button" class="dropdown-item" data-tipo="gala">Gala (casamento)</button>
+            <button type="button" class="dropdown-item" data-tipo="nojo">Nojo (falecimento)</button>
+            <button type="button" class="dropdown-item" data-tipo="comum">Comum</button>
+          </div>
+        </div>
+        <span class="campo-erro-texto"></span>
+      </div>
+      <label class="campo">
+        <span class="campo-rotulo">Data de início</span>
+        <input class="campo-entrada" id="dis-inicio" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" />
+        <span class="campo-erro-texto"></span>
+      </label>
+      <label class="campo">
+        <span class="campo-rotulo">Data de fim</span>
+        <input class="campo-entrada" id="dis-fim" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" />
+        <span class="campo-erro-texto"></span>
+      </label>
+      <div class="atestado-fluxo oculto" id="dis-fluxo">
+        <div class="atestado-fluxo-titulo" id="dis-fluxo-titulo"></div>
+        <div class="atestado-fluxo-texto" id="dis-fluxo-texto"></div>
+        <div class="atestado-fluxo-decisao">
+          <span class="atestado-fluxo-rotulo">Tirar do fluxo da escala?</span>
+          <div class="abas abas--pequenas" id="dis-fora-toggle">
+            <button type="button" class="aba" data-fora="sim">Sim</button>
+            <button type="button" class="aba" data-fora="nao">Não</button>
+          </div>
+        </div>
+      </div>
+      <label class="campo">
+        <span class="campo-rotulo">Motivo</span>
+        <textarea class="campo-entrada" id="dis-motivo" maxlength="200" placeholder="Descreva o motivo (opcional)"></textarea>
+        <span class="campo-erro-texto"></span>
+      </label>
+    </div>
+  </div>
+</template>
+<template id="tpl-dispensa-novo-acoes">
+  <button type="button" class="botao" id="dis-cancelar">Cancelar</button>
+  <button type="button" class="botao botao--primario" id="dis-salvar" disabled>Salvar</button>
 </template>

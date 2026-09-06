@@ -130,7 +130,7 @@
     if (pessoa.situacao === 'Inativo') {
       selo.textContent = pessoa.situacao_ate ? 'Inativo desde ' + formatarDataCurta(pessoa.situacao_ate) : 'Inativo';
       selo.classList.add('selo--escuro');
-    } else if (pessoa.situacao === 'Férias' || pessoa.situacao === 'Atestado' || pessoa.situacao === 'Licença') {
+    } else if (pessoa.situacao === 'Férias' || pessoa.situacao === 'Licença' || pessoa.situacao === 'Dispensa') {
       /* afastamentos temporários: mostram até quando (âmbar), como as férias */
       selo.textContent = pessoa.situacao + ' até ' + formatarDataCurta(pessoa.situacao_ate);
       selo.classList.add('selo--alerta');
@@ -414,13 +414,13 @@
       colapsarTudo: true,   /* marcar todas as situações = "Todos" (as individuais desmarcam) */
       onChange: reagir
     });
-    /* Ativos/Férias/Atestado/Licença para todos; Inativos só para administradores
+    /* Ativos/Férias/Licença/Dispensa para todos; Inativos só para administradores
        (é um filtro à parte, vem de fonte separada e não se mistura com o efetivo ativo) */
     var opcoesSituacao = [
       { rotulo: 'Ativos', valor: 'Ativo' },
       { rotulo: 'Férias', valor: 'Férias' },
-      { rotulo: 'Atestado', valor: 'Atestado' },
-      { rotulo: 'Licença', valor: 'Licença' }
+      { rotulo: 'Licença', valor: 'Licença' },
+      { rotulo: 'Dispensa', valor: 'Dispensa' }
     ];
     if (RosterWork.sessao.ehAdmin()) {
       opcoesSituacao.push({ rotulo: 'Correção pendente', valor: 'Correção pendente', separado: true });

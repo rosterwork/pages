@@ -147,11 +147,12 @@
       impactoDistribuicao: 'Este é um ponto crítico do sistema: as viaturas e instalações alimentam a distribuição da escala. Vá até a Distribuição para conferir os modelos e corrigir o que for necessário.'
     },
 
-    /* afastamentos — aba Atestados (painel Novo atestado) */
-    atestados: {
+    /* afastamentos — painéis Nova licença / Nova dispensa (decisão fora do fluxo) */
+    afastamentos: {
       foraDoFluxo: 'Sai da escala (inativo por tempo indeterminado); a volta é manual pelo administrador.',
-      segueNoFluxo: 'Continua no fluxo, só bloqueia os dias do atestado.',
-      falhaSalvar: 'Não foi possível salvar o atestado. Tente de novo.'
+      segueNoFluxo: 'Continua no fluxo, só bloqueia os dias do afastamento.',
+      falhaSalvarLicenca: 'Não foi possível salvar a licença. Tente de novo.',
+      falhaSalvarDispensa: 'Não foi possível salvar a dispensa. Tente de novo.'
     },
 
     /* escalas (painel da distribuição e grade do mês) */
@@ -517,6 +518,7 @@
         atestado: 'Atestado',
         ferias: 'Férias',
         licenca: 'Licença',
+        dispensa: 'Dispensa',
         unidade: 'Ajustes da unidade'
       }
     },
