@@ -317,6 +317,73 @@
       });
   }
 
+  /* seção "Redefinir senha" (aba Dados, modo Editar do admin) — só p/ militar
+     ativo com conta de login; gera uma senha temporária que o admin repassa */
+  function podeRedefinirSenha() {
+    return !ehInativo() && fichaAtual && fichaAtual.tem_conta !== false;
+  }
+
+  function montarRedefinirSenha(corpo) {
+    var secao = RosterWork.painel.criarSecaoColapsavel('Redefinir senha', { aberta: false });
+    if (!secao) return;
+    secao.classList.add('painel-secao--rodape');
+    var alvo = secao.querySelector('.painel-secao-corpo');
+    var btn = RosterWork.tpl('tpl-usuarios-redefinir-senha-botao');
+    if (btn) {
+      btn.addEventListener('click', confirmarRedefinirSenha);
+      alvo.appendChild(btn);
+    }
+    corpo.appendChild(secao);
+  }
+
+  /* modal de confirmação (vermelho, como o Dar baixa) */
+  function confirmarRedefinirSenha() {
+    if (!fichaAtual || !pessoaAtual || !RosterWork.confirmar) return;
+    var ins = fichaAtual.institucionais || {};
+    var p = fichaAtual.pessoais || {};
+    var pessoa = ((ins.grau_nome || pessoaAtual.grau_nome || '') + ' ' +
+                  (p.nome_completo || pessoaAtual.nome_completo || '')).trim();
+    var msg = RosterWork.mensagens.usuarios.confirmarRedefinirSenha.replace('{pessoa}', pessoa);
+    RosterWork.confirmar({
+      tipo: 'erro',
+      mensagem: msg,
+      textoConfirmar: RosterWork.mensagens.botoes.redefinirSenha,
+      textoCancelar: RosterWork.mensagens.botoes.cancelar,
+      confirmarPerigo: true,
+      aoConfirmar: redefinirSenha
+    });
+  }
+
+  /* chama a RPC; no sucesso mostra a senha temporária num aviso (nunca vai ao log) */
+  function redefinirSenha() {
+    if (!pessoaAtual) return;
+    RosterWork.apiFetch('/rest/v1/rpc/admin_redefinir_senha', {
+      metodo: 'POST',
+      corpo: { p_cpf: pessoaAtual.usuario_id }
+    })
+      .then(function (resp) { return resp.ok ? resp.json() : { _falha: 'servidor' }; })
+      .then(function (r) {
+        if (r && r._falha === 'servidor') {
+          if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.falhaServidor });
+        } else if (r && r.success) {
+          var ins = (fichaAtual && fichaAtual.institucionais) || {};
+          var p = (fichaAtual && fichaAtual.pessoais) || {};
+          var pessoa = ((ins.grau_nome || pessoaAtual.grau_nome || '') + ' ' +
+                        (p.nome_completo || pessoaAtual.nome_completo || '')).trim();
+          if (RosterWork.avisar) RosterWork.avisar({
+            tipo: 'sucesso',
+            mensagem: RosterWork.mensagens.usuarios.senhaRedefinida
+              .replace('{pessoa}', pessoa).replace('{senha}', r.senha_temporaria || '')
+          });
+        } else if (RosterWork.avisar) {
+          RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || RosterWork.mensagens.usuarios.falhaRedefinirSenha });
+        }
+      })
+      .catch(function () {
+        if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.semConexao });
+      });
+  }
+
   /* ---------- estados do corpo ---------- */
 
   function mostrarErro(corpo) {
@@ -386,6 +453,7 @@
     } else {
       if (admin && RosterWork.usuariosPainelEditar) {
         RosterWork.usuariosPainelEditar.montar(corpo, fichaAtual, pessoaAtual, { aoSalvar: aoSalvarDados, aoVoltar: voltarParaVer }, 'pessoais');
+        if (podeRedefinirSenha()) montarRedefinirSenha(corpo);
       } else {
         montarDados(corpo);
       }

@@ -3,16 +3,17 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Entrar no Roster Work — sistema de escala de serviço." />
+  <meta name="description" content="Recuperar a senha do Roster Work." />
   <link rel="icon" href="icones/icone-logo.svg" type="image/svg+xml" />
-  <title>Login — Roster Work</title>
-  <script src="js/login-sessao.js"></script>
+  <title>Recuperar senha — Roster Work</title>
   <link rel="stylesheet" href="css/geral-tema.css" />
   <link rel="stylesheet" href="css/geral-base.css" />
   <link rel="stylesheet" href="componentes/css/geral-botao.css" />
   <link rel="stylesheet" href="componentes/css/geral-campo.css" />
   <link rel="stylesheet" href="componentes/css/geral-carregando.css" />
+  <!-- reusa o cartão da tela de login (mesma moldura) -->
   <link rel="stylesheet" href="css/login-pagina.css" />
+  <link rel="stylesheet" href="css/recuperar-senha-pagina.css" />
 </head>
 <body>
 
@@ -30,32 +31,35 @@
       </div>
 
       <div class="login-formulario">
-        <div class="login-campos">
 
-          <div class="campo">
-            <label class="campo-rotulo" for="entrada-identificador">CPF ou RG</label>
-            <input class="campo-entrada" type="text" id="entrada-identificador" name="identificador" autocomplete="username" />
-            <span class="campo-erro-texto" role="alert"></span>
+        <div id="recuperar-pedido">
+          <h1 class="recuperar-senha-titulo">Recuperar senha</h1>
+          <p class="recuperar-senha-intro">Digite seu CPF ou RG. Enviaremos um link para redefinir a senha no email cadastrado.</p>
+
+          <div class="login-campos">
+            <div class="campo">
+              <label class="campo-rotulo" for="entrada-identificador">CPF ou RG</label>
+              <input class="campo-entrada" type="text" id="entrada-identificador" name="identificador" autocomplete="username" />
+              <span class="campo-erro-texto" role="alert"></span>
+            </div>
           </div>
 
-          <div class="campo">
-            <label class="campo-rotulo" for="entrada-senha">Senha</label>
-            <input class="campo-entrada" type="password" id="entrada-senha" name="senha" autocomplete="current-password" />
-            <span class="campo-erro-texto" role="alert"></span>
-          </div>
-
+          <button class="botao botao--primario" id="btn-enviar-link" type="button">Enviar link</button>
         </div>
 
-        <button class="botao botao--primario" id="btn-entrar" type="button">Entrar</button>
+        <p class="recuperar-senha-sucesso oculto" id="recuperar-sucesso" role="status"></p>
 
         <div class="login-links">
-          <button class="botao botao--texto" type="button" id="btn-criar-conta">Criar conta</button>
-          <button class="botao botao--texto" type="button" id="btn-esqueci-senha">Esqueci minha senha</button>
+          <button class="botao botao--texto" type="button" id="btn-voltar-login">Voltar ao login</button>
         </div>
+
       </div>
 
     </div>
   </div>
+
+  <!-- camada que impede clique por engano enquanto o envio está no ar -->
+  <div class="carregando-bloqueio oculto" id="carregando-bloqueio"></div>
 
   <template id="carregando-pontos">
     <span class="carregando-pontos" aria-label="Carregando">
@@ -65,8 +69,9 @@
 
   <script src="componentes/js/geral-carregando.js"></script>
   <script src="componentes/js/geral-mensagens.js"></script>
+  <!-- reusa mascaraCpfRg + mostrarErroCampo/esconderErroCampo do login -->
   <script src="js/login-auth.js"></script>
-  <script src="js/login-main.js"></script>
+  <script src="js/recuperar-senha.js"></script>
 
 </body>
 </html>

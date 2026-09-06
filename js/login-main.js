@@ -48,3 +48,10 @@
   var botao = document.getElementById('btn-criar-conta');
   if (botao) botao.addEventListener('click', function () { window.location.href = 'criar-conta.html'; });
 })();
+
+/* "Esqueci minha senha" leva à tela pública de recuperação (fora do sistema) */
+(function () {
+  'use strict';
+  var botao = document.getElementById('btn-esqueci-senha');
+  if (botao) botao.addEventListener('click', function () { window.location.href = 'recuperar-senha.html'; });
+})();

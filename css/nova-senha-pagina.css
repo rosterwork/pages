@@ -1,0 +1,31 @@
+/* ============================================================
+   NOVA-SENHA-PAGINA — bits próprios da tela de nova senha
+   (a moldura do cartão vem de login-pagina.css)
+   ============================================================ */
+
+/* agrupa título + campos + botão com o mesmo respiro do formulário */
+#nova-senha-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-formulario);
+}
+
+.nova-senha-titulo {
+  margin: 0;
+  font-size: 18px;
+  color: var(--texto-forte);
+}
+
+/* senha redefinida com sucesso */
+.nova-senha-sucesso {
+  margin: 0;
+  font-size: 13px;
+  color: var(--sucesso);
+}
+
+/* link do email inválido ou expirado */
+.nova-senha-invalido {
+  margin: 0;
+  font-size: 13px;
+  color: var(--erro);
+}

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Definir uma nova senha no Roster Work." />
+  <link rel="icon" href="icones/icone-logo.svg" type="image/svg+xml" />
+  <title>Nova senha — Roster Work</title>
+  <link rel="stylesheet" href="css/geral-tema.css" />
+  <link rel="stylesheet" href="css/geral-base.css" />
+  <link rel="stylesheet" href="componentes/css/geral-botao.css" />
+  <link rel="stylesheet" href="componentes/css/geral-campo.css" />
+  <link rel="stylesheet" href="componentes/css/geral-carregando.css" />
+  <!-- reusa o cartão da tela de login (mesma moldura) -->
+  <link rel="stylesheet" href="css/login-pagina.css" />
+  <link rel="stylesheet" href="css/nova-senha-pagina.css" />
+</head>
+<body>
+
+  <noscript>
+    <p>O Roster Work precisa de JavaScript ativado para funcionar. Ative o JavaScript no navegador e recarregue a página.</p>
+  </noscript>
+
+  <div class="login-fundo">
+    <div class="login-card">
+
+      <div class="login-logo">
+        <svg viewBox="0 0 186.44 96.312" fill="currentColor" preserveAspectRatio="xMidYMid meet">
+          <use href="icones/icone-logo.svg#icone-logo"></use>
+        </svg>
+      </div>
+
+      <div class="login-formulario">
+
+        <div id="nova-senha-form">
+          <h1 class="nova-senha-titulo">Nova senha</h1>
+
+          <div class="login-campos">
+            <div class="campo">
+              <label class="campo-rotulo" for="senha-nova">Nova senha</label>
+              <input class="campo-entrada" type="password" id="senha-nova" autocomplete="new-password" />
+              <span class="campo-erro-texto" role="alert"></span>
+            </div>
+            <div class="campo">
+              <label class="campo-rotulo" for="senha-confirma">Confirmar senha</label>
+              <input class="campo-entrada" type="password" id="senha-confirma" autocomplete="new-password" />
+              <span class="campo-erro-texto" role="alert"></span>
+            </div>
+          </div>
+
+          <button class="botao botao--primario" id="btn-salvar-senha" type="button" disabled>Salvar nova senha</button>
+        </div>
+
+        <p class="nova-senha-sucesso oculto" id="nova-senha-ok" role="status"></p>
+        <p class="nova-senha-invalido oculto" id="nova-senha-invalido" role="alert"></p>
+
+        <div class="login-links">
+          <button class="botao botao--texto" type="button" id="btn-ir-login">Ir para o login</button>
+          <button class="botao botao--texto oculto" type="button" id="btn-pedir-novo">Pedir novo link</button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- camada que impede clique por engano enquanto o envio está no ar -->
+  <div class="carregando-bloqueio oculto" id="carregando-bloqueio"></div>
+
+  <template id="carregando-pontos">
+    <span class="carregando-pontos" aria-label="Carregando">
+      <span>.</span><span>.</span><span>.</span>
+    </span>
+  </template>
+
+  <script src="componentes/js/geral-carregando.js"></script>
+  <script src="componentes/js/geral-mensagens.js"></script>
+  <!-- reusa mostrarErroCampo/esconderErroCampo do login -->
+  <script src="js/login-auth.js"></script>
+  <script src="js/nova-senha.js"></script>
+
+</body>
+</html>

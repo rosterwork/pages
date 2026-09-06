@@ -1,0 +1,30 @@
+/* ============================================================
+   RECUPERAR-SENHA-PAGINA — bits próprios da tela de recuperação
+   (a moldura do cartão vem de login-pagina.css)
+   ============================================================ */
+
+/* agrupa título + intro + campo + botão com o mesmo respiro do formulário */
+#recuperar-pedido {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-formulario);
+}
+
+.recuperar-senha-titulo {
+  margin: 0;
+  font-size: 18px;
+  color: var(--texto-forte);
+}
+
+.recuperar-senha-intro {
+  margin: 0;
+  font-size: 13px;
+  color: var(--texto-fraco);
+}
+
+/* confirmação do envio (mostra o email mascarado) */
+.recuperar-senha-sucesso {
+  margin: 0;
+  font-size: 13px;
+  color: var(--sucesso);
+}

@@ -93,6 +93,23 @@
       senhaIncorreta: 'Senha incorreta'
     },
 
+    /* recuperação de senha (páginas standalone recuperar-senha e nova-senha) */
+    recuperacao: {
+      identificadorVazio: 'Digite seu CPF ou RG',
+      identificadorInvalido: 'CPF ou RG inválido',
+      enviado: function (email) { return 'Enviamos um link de redefinição para ' + email + '. Verifique sua caixa de entrada e o spam.'; },
+      naoEncontrado: 'CPF ou RG não encontrado',
+      semConta: 'Este cadastro ainda não tem acesso liberado. Fale com um administrador.',
+      limite: 'Muitos pedidos em pouco tempo. Aguarde alguns minutos e tente de novo.',
+      falha: 'Não foi possível enviar o link. Tente de novo.',
+      erroConexao: 'Erro de conexão. Tente novamente.',
+      senhaCurta: 'A senha precisa de ao menos 6 caracteres.',
+      senhaNaoConfere: 'A confirmação não bate com a nova senha.',
+      linkInvalido: 'Este link é inválido ou expirou. Peça um novo.',
+      redefinida: 'Senha redefinida com sucesso. Você já pode entrar.',
+      falhaRedefinir: 'Não foi possível redefinir a senha. Tente de novo.'
+    },
+
     /* cadastro de usuário (modal Novo usuário) */
     cadastro: {
       nomeVazio: 'Preencha o nome completo',
@@ -282,7 +299,10 @@
       postoAtualDesconhecido: 'Não foi possível identificar o posto atual deste militar.',
       falhaPromocao: 'Não foi possível promover. Tente de novo.',
       confirmarReadmissao: 'Readmitir {pessoa} ao efetivo? Ele volta como ativo, fora da escala automática (você o recoloca pela seção Contínuos da Escala).',
-      falhaReadmissao: 'Não foi possível readmitir. Tente de novo.'
+      falhaReadmissao: 'Não foi possível readmitir. Tente de novo.',
+      confirmarRedefinirSenha: 'Redefinir a senha de {pessoa}? Ele vai entrar com uma senha temporária e deverá trocá-la no primeiro acesso. As sessões abertas dele serão encerradas.',
+      senhaRedefinida: 'Senha de {pessoa} redefinida. Senha temporária: {senha}. Passe para ele, que deve trocá-la em Meu perfil, na aba Segurança.',
+      falhaRedefinirSenha: 'Não foi possível redefinir a senha. Tente de novo.'
     },
 
     /* análise de impacto na escala — componente compartilhado (geral-impacto), usado por Trocas e Folgas */
@@ -554,6 +574,7 @@
       remover: 'Remover',
       promover: 'Promover',
       readmitir: 'Readmitir',
+      redefinirSenha: 'Redefinir senha',
       salvar: 'Salvar',
       /* modal de resumo — reverter a ação recém-aplicada (última chance) */
       desfazer: 'Desfazer',
