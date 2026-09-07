@@ -21,7 +21,8 @@
     afastamentos: { html: 'afastamentos.html', css: ['css/afastamentos-atestados.css'], js: ['js/afastamentos-dados.js', 'js/afastamentos-ferias.js', 'js/afastamentos-licencas.js', 'js/afastamentos-dispensas.js', 'js/afastamentos.js'] },
     distribuicao: { html: 'distribuicao.html', css: ['css/distribuicao.css', 'css/distribuicao-regras.css'], js: ['js/distribuicao-modelos-dados.js', 'js/distribuicao-modelos.js', 'js/distribuicao-modelos-editar.js', 'js/distribuicao-modelos-salvar.js', 'js/distribuicao-modelos-criar.js', 'js/distribuicao-regras-dados.js', 'js/distribuicao-regras.js', 'js/distribuicao.js'] },
     historico: { html: 'historico.html', css: ['css/historico.css'], js: ['js/historico.js'] },
-    ajustes: { html: 'ajustes.html', css: ['css/ajustes.css'], js: ['js/ajustes.js'] }
+    ajustes: { html: 'ajustes.html', css: ['css/ajustes.css'], js: ['js/ajustes.js'] },
+    programador: { html: 'programador.html', css: ['css/programador.css'], js: ['js/programador.js'] }
   };
 
   var conteudo;

@@ -131,6 +131,35 @@
   --seta-toggle: -1;
 }
 
+/* Selo numérico do menu (recados não resolvidos) — à direita do rótulo;
+   pointer-events:none para nunca roubar o clique do item */
+.menu-item-selo {
+  margin-left: auto;
+  min-width: 18px;
+  min-height: 18px;
+  padding: 0 4px;
+  border-radius: var(--raio-total);
+  background-color: var(--erro);
+  color: var(--texto-invertido);
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+/* recolhido: vira uma bolinha no canto superior do ícone */
+.casca--recolhida .menu-item-selo {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  margin: 0;
+  min-width: 16px;
+  min-height: 16px;
+  padding: 0 4px;
+  line-height: 16px;
+}
+
 /* Área de conteúdo — bloco branco elevado */
 .conteudo {
   display: flex;

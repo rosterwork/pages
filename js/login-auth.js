@@ -137,6 +137,19 @@
         if (respPerfil.ok) {
           perfil = await respPerfil.json();
           if (perfil.ok) {
+            /* marca se é programador (vê a seção Programador › Mensagens) */
+            try {
+              var respProg = await fetch(SUPABASE_URL + '/rest/v1/rpc/fn_sou_programador', {
+                method: 'POST',
+                headers: {
+                  'apikey': SUPABASE_KEY,
+                  'Authorization': 'Bearer ' + authData.access_token,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+              });
+              if (respProg.ok) perfil.is_programador = (await respProg.json()) === true;
+            } catch (e) {}
             sessionStorage.setItem('rosterwork_user', JSON.stringify(perfil));
           }
         }

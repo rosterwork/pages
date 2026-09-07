@@ -21,7 +21,7 @@
     confirmar: function (trocaId, aceitar) { return RosterWork.rpc('fn_trocas_confirmar', { p_troca_id: trocaId, p_aceitar: aceitar }); },
     /* forcar (só admin): aprova direto de "aguardando confirmação", sem o solicitado confirmar */
     aprovar: function (trocaId, aceitar, aprovadoPor, forcar) { return RosterWork.rpc('fn_trocas_aprovar', { p_troca_id: trocaId, p_aceitar: aceitar, p_aprovado_por: aprovadoPor, p_forcar: !!forcar }); },
-    cancelar: function (trocaId, canceladoPor) { return RosterWork.rpc('fn_trocas_cancelar', { p_troca_id: trocaId, p_cancelado_por: canceladoPor }); }
+    cancelar: function (trocaId, canceladoPor, desfazer) { return RosterWork.rpc('fn_trocas_cancelar', { p_troca_id: trocaId, p_cancelado_por: canceladoPor, p_desfazer: !!desfazer }); }
   };
 
   /* ---------- formatadores ---------- */

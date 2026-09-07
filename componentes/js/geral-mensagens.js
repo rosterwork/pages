@@ -97,7 +97,7 @@
     recuperacao: {
       identificadorVazio: 'Digite seu CPF ou RG',
       identificadorInvalido: 'CPF ou RG inválido',
-      enviado: function (email) { return 'Enviamos um link de redefinição para ' + email + '. Verifique sua caixa de entrada e o spam.'; },
+      enviado: function (email) { return 'Enviamos um link de redefinição para ' + email + '. O email chega em nome de Supabase Auth (remetente diferente do nome do site), então confira também o spam.'; },
       naoEncontrado: 'CPF ou RG não encontrado',
       semConta: 'Este cadastro ainda não tem acesso liberado. Fale com um administrador.',
       limite: 'Muitos pedidos em pouco tempo. Aguarde alguns minutos e tente de novo.',
@@ -108,6 +108,27 @@
       linkInvalido: 'Este link é inválido ou expirou. Peça um novo.',
       redefinida: 'Senha redefinida com sucesso. Você já pode entrar.',
       falhaRedefinir: 'Não foi possível redefinir a senha. Tente de novo.'
+    },
+
+    /* fale conosco (modal de recado) */
+    faleConosco: {
+      assuntoVazio: 'Informe o assunto.',
+      selecioneTipo: 'Selecione o tipo.',
+      mensagemVazia: 'Escreva sua mensagem.',
+      enviado: 'Recado enviado. Obrigado!',
+      falha: 'Não foi possível enviar. Tente de novo.'
+    },
+
+    /* programador (mensagens: leitura/gestão dos recados) */
+    programador: {
+      vazioLista: 'Nenhuma mensagem por aqui.',
+      vazioDetalhe: 'Selecione uma mensagem à esquerda para ver os detalhes.',
+      assuntoVazio: 'Informe o assunto.',
+      mensagemVazia: 'Escreva a mensagem.',
+      falhaSalvar: 'Não foi possível salvar. Tente de novo.',
+      tipos: { sugestao: 'Sugestão', problema: 'Problema', outro: 'Outro', lembrete: 'Lembrete' },
+      status: { nao_lido: 'Não lido', lido: 'Lido', resolvido: 'Resolvido' },
+      contexto: { pagina: 'Página', aba: 'Aba', unidades: 'Unidades', navegador: 'Navegador', tela: 'Tela', tema: 'Tema', url: 'Endereço' }
     },
 
     /* cadastro de usuário (modal Novo usuário) */
@@ -225,6 +246,10 @@
       continuosVazioFora: 'Todos os militares já estão no ciclo.',
       continuosSaiEm: 'Sai em {data}',
       continuosDeFolga: 'De folga neste dia',
+      continuosVaiEntrar: 'Vai entrar',
+      continuosVaiSair: 'Vai sair',
+      continuosVaiCancelar: 'Vai cancelar a saída',
+      continuosDesfazer: 'Desfazer',
       btnTirar: 'Tirar',
       btnAdicionar: 'Adicionar',
       btnCancelarSaida: 'Cancelar saída',

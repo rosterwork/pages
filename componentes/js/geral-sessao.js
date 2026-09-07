@@ -15,6 +15,7 @@
   }
   function cpf() { var u = perfil(); return u && u.cpf ? u.cpf : null; }
   function ehAdmin() { var u = perfil(); return !!(u && u.is_administrador); }
+  function ehProgramador() { var u = perfil(); return !!(u && u.is_programador); }
 
-  window.RosterWork.sessao = { perfil: perfil, cpf: cpf, ehAdmin: ehAdmin };
+  window.RosterWork.sessao = { perfil: perfil, cpf: cpf, ehAdmin: ehAdmin, ehProgramador: ehProgramador };
 })();

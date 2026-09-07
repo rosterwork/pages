@@ -346,9 +346,9 @@
         if (r.log && RW.resumo) {
           RW.resumo.abrirModal(r.log, {
             pagina: 'Trocas',
-            /* Desfazer = cancelar a troca recém-criada (última chance) */
+            /* Desfazer = apaga a troca recém-criada por completo (última chance), como se nunca tivesse existido */
             desfazer: (trocaId && RW.trocasDados) ? function () {
-              return RW.trocasDados.cancelar(trocaId, meu).then(function (res) {
+              return RW.trocasDados.cancelar(trocaId, meu, true).then(function (res) {
                 if (res && res.ok && ctx && ctx.aoMudar) ctx.aoMudar();
                 return res;
               });

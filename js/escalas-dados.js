@@ -97,6 +97,12 @@
   /* só leitura: o que quebra (trocas/folgas) se o militar sair na data — para o aviso do modal */
   function cicloRetirarAnalisar(unidadeId, cpf, iso, autorCpf) { return cicloAcao('escala_ciclo_retirar_analisar', unidadeId, cpf, iso, autorCpf); }
   function cicloCancelarSaida(unidadeId, cpf, iso, autorCpf) { return cicloAcao('escala_ciclo_cancelar_saida', unidadeId, cpf, iso, autorCpf); }
+  /* Salvar em lote das mudanças do ciclo acumuladas na tela (recalcula uma vez) */
+  function cicloSalvarLote(unidadeId, iso, mudancas, autorCpf) {
+    return RosterWork.apiFetch('/rest/v1/rpc/escala_ciclo_salvar_lote', { metodo: 'POST', corpo: { p_admin_cpf: autorCpf || null, p_unidade_id: Number(unidadeId), p_data: iso, p_mudancas: mudancas || [] } })
+      .then(function (r) { return r.ok ? r.json() : { _falha: 'servidor' }; })
+      .catch(function () { return { _falha: 'conexao' }; });
+  }
 
   /* ---- Pontuais (militar avulso no dia) ---- */
   function pontuaisListar(unidadeId, iso) {
@@ -134,7 +140,8 @@
     lerDistribuicaoDia: lerDistribuicaoDia, salvarAjustesDia: salvarAjustesDia,
     continuosListar: continuosListar, cicloAdicionar: cicloAdicionar, cicloRetirar: cicloRetirar,
     cicloRetirarAnalisar: cicloRetirarAnalisar,
-    cicloCancelarSaida: cicloCancelarSaida, pontuaisListar: pontuaisListar, pontuaisSalvar: pontuaisSalvar,
+    cicloCancelarSaida: cicloCancelarSaida, cicloSalvarLote: cicloSalvarLote,
+    pontuaisListar: pontuaisListar, pontuaisSalvar: pontuaisSalvar,
     atualizarManutencaoObs: atualizarManutencaoObs,
     observacaoAdicionar: observacaoAdicionar, observacaoRemover: observacaoRemover
   };

@@ -112,6 +112,10 @@
             <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-perfil.svg#icone-perfil" /></svg>
             <span>Meu perfil</span>
           </button>
+          <button class="dropdown-item" id="btn-fale-conosco">
+            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-mensagem.svg#icone-mensagem" /></svg>
+            <span>Fale conosco</span>
+          </button>
           <div class="dropdown-divisor"></div>
           <button id="btn-sair" class="dropdown-item dropdown-item--perigo">
             <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-sair.svg#icone-sair" /></svg>
@@ -185,6 +189,14 @@
           <button type="button" class="menu-item" data-pagina="ajustes" aria-label="Ajustes">
             <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-ajustes.svg#icone-ajustes" /></svg>
             <span class="menu-item-label">Ajustes</span>
+          </button>
+
+          <div class="sidebar-divisor" data-programador></div>
+
+          <button type="button" class="menu-item" data-pagina="programador" data-programador aria-label="Programador">
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-codigo.svg#icone-codigo" /></svg>
+            <span class="menu-item-label">Programador</span>
+            <span class="menu-item-selo oculto" aria-hidden="true"></span>
           </button>
 
         </div>
@@ -279,6 +291,40 @@
     </div>
   </div>
 
+  <!-- FALE CONOSCO: envio de recado (exceção à regra § modal: formulário em modal, para bloquear a tela ao fundo; ver REGRAS §4) -->
+  <div class="modal-veu" id="veu-fale-conosco">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="fc-titulo">
+      <div class="modal-cabecalho">
+        <span class="modal-titulo" id="fc-titulo">Fale conosco</span>
+      </div>
+      <div class="modal-corpo">
+        <label class="campo">
+          <span class="campo-rotulo">Assunto</span>
+          <input class="campo-entrada" id="fc-assunto" type="text" maxlength="50" placeholder="Resumo em poucas palavras" />
+          <span class="campo-erro-texto" role="alert"></span>
+        </label>
+        <div class="campo">
+          <span class="campo-rotulo">Tipo</span>
+          <div class="abas abas--pequenas" id="fc-tipo">
+            <button type="button" class="aba" data-valor="sugestao">Sugestão</button>
+            <button type="button" class="aba" data-valor="problema">Problema</button>
+            <button type="button" class="aba" data-valor="outro">Outro</button>
+          </div>
+          <span class="campo-erro-texto" role="alert"></span>
+        </div>
+        <label class="campo">
+          <span class="campo-rotulo">Mensagem</span>
+          <textarea class="campo-entrada" id="fc-mensagem" rows="5" maxlength="2000" placeholder="Escreva aqui"></textarea>
+          <span class="campo-erro-texto" role="alert"></span>
+        </label>
+      </div>
+      <div class="modal-rodape">
+        <button type="button" class="botao" id="fc-cancelar">Cancelar</button>
+        <button type="button" class="botao botao--primario" id="fc-enviar">Enviar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- AVISO DE SESSÃO: contagem antes de expirar por inatividade (anel em canvas); fora da casca para ficar acima de qualquer modal -->
   <div class="modal-veu" id="veu-sessao">
     <div class="modal modal--sessao" role="alertdialog" aria-modal="true" aria-labelledby="sessao-mensagem">
@@ -333,6 +379,7 @@
   <script src="componentes/js/geral-painel.js"></script>
   <script src="componentes/js/geral-impacto.js"></script>
   <script src="js/index-navegacao.js"></script>
+  <script src="js/index-fale-conosco.js"></script>
 
   <!-- MOLDES: análise de impacto na escala (componente geral-impacto — Trocas e Folgas) -->
   <template id="tpl-geral-impacto-veredito">

@@ -1,0 +1,133 @@
+<div class="pagina">
+  <div class="pagina-cabecalho">
+    <div class="pagina-titulos">
+      <h1>Programador</h1>
+      <span class="pagina-subtitulo"></span>
+    </div>
+  </div>
+
+  <div class="pagina-subcabecalho">
+    <div class="abas" id="programador-abas">
+      <button type="button" class="aba aba--ativa" data-aba="mensagens">Mensagens</button>
+    </div>
+  </div>
+
+  <div class="pagina-corpo pagina-corpo--colado">
+    <div class="geral-layout-lateral" data-aba-painel="mensagens">
+
+      <aside class="geral-painel-esquerdo programador-esquerdo">
+        <div class="geral-painel-esquerdo-cabecalho programador-filtro-barra">
+          <div class="abas abas--pequenas" id="programador-filtro">
+            <button type="button" class="aba aba--ativa" data-filtro="todos">Todos</button>
+            <button type="button" class="aba" data-filtro="nao_lido">Não lidos</button>
+            <button type="button" class="aba" data-filtro="lido">Lidos</button>
+            <button type="button" class="aba" data-filtro="resolvido">Resolvidos</button>
+          </div>
+        </div>
+        <div class="geral-painel-esquerdo-lista" id="programador-lista"></div>
+        <div class="geral-painel-esquerdo-rodape">
+          <button type="button" class="botao programador-novo-botao" id="programador-novo">
+            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-mais.svg#icone-mais"/></svg>
+            Novo lembrete
+          </button>
+        </div>
+      </aside>
+
+      <div class="geral-corpo-lateral">
+        <div class="geral-corpo-lateral-rolagem" id="programador-detalhe"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- molde: item da lista (assunto + selo de status; tipo + autor) -->
+  <template id="tpl-programador-item">
+    <button type="button" class="lista-item lista-item--clicavel programador-item">
+      <span class="programador-item-linha1">
+        <span class="programador-item-assunto"></span>
+        <span class="selo programador-item-selo"></span>
+      </span>
+      <span class="programador-item-linha2">
+        <span class="programador-item-tipo"></span>
+        <span class="programador-item-autor"></span>
+      </span>
+    </button>
+  </template>
+
+  <!-- molde: lista vazia -->
+  <template id="tpl-programador-vazio">
+    <div class="programador-vazio"><span></span></div>
+  </template>
+
+  <!-- molde: detalhe da mensagem (à direita) -->
+  <template id="tpl-programador-detalhe">
+    <div class="programador-detalhe">
+      <div class="programador-detalhe-topo">
+        <span class="selo programador-detalhe-tipo"></span>
+        <span class="programador-detalhe-quando"></span>
+      </div>
+      <div class="programador-detalhe-autor"></div>
+
+      <label class="campo">
+        <span class="campo-rotulo">Assunto</span>
+        <input class="campo-entrada" id="programador-det-assunto" type="text" maxlength="50" />
+      </label>
+      <label class="campo">
+        <span class="campo-rotulo">Mensagem</span>
+        <textarea class="campo-entrada" id="programador-det-mensagem" rows="6"></textarea>
+      </label>
+
+      <div class="campo">
+        <span class="campo-rotulo">Situação</span>
+        <div class="abas abas--pequenas" id="programador-det-status">
+          <button type="button" class="aba" data-status="nao_lido">Não lido</button>
+          <button type="button" class="aba" data-status="lido">Lido</button>
+          <button type="button" class="aba" data-status="resolvido">Resolvido</button>
+        </div>
+      </div>
+
+      <div class="programador-detalhe-contexto">
+        <span class="rotulo-secao">Contexto (a tela do usuário)</span>
+        <div id="programador-det-contexto"></div>
+      </div>
+
+      <div class="programador-detalhe-acoes">
+        <button type="button" class="botao botao--primario" id="programador-det-salvar" disabled>Salvar</button>
+      </div>
+    </div>
+  </template>
+
+  <!-- molde: uma linha do contexto -->
+  <template id="tpl-programador-contexto-linha">
+    <div class="linha-info">
+      <span class="linha-info-rotulo"></span>
+      <span class="linha-info-valor"></span>
+    </div>
+  </template>
+
+  <!-- molde: novo lembrete (à direita) -->
+  <template id="tpl-programador-novo">
+    <div class="programador-detalhe">
+      <span class="rotulo-secao">Novo lembrete</span>
+      <label class="campo">
+        <span class="campo-rotulo">Assunto</span>
+        <input class="campo-entrada" id="programador-novo-assunto" type="text" maxlength="50" placeholder="Resumo em poucas palavras" />
+        <span class="campo-erro-texto" role="alert"></span>
+      </label>
+      <label class="campo">
+        <span class="campo-rotulo">Mensagem</span>
+        <textarea class="campo-entrada" id="programador-novo-mensagem" rows="6" placeholder="Escreva o lembrete"></textarea>
+        <span class="campo-erro-texto" role="alert"></span>
+      </label>
+      <div class="programador-detalhe-acoes">
+        <button type="button" class="botao" id="programador-novo-cancelar">Cancelar</button>
+        <button type="button" class="botao botao--primario" id="programador-novo-salvar">Criar lembrete</button>
+      </div>
+    </div>
+  </template>
+
+  <!-- molde: detalhe vazio (nada selecionado) -->
+  <template id="tpl-programador-detalhe-vazio">
+    <div class="programador-vazio"><span></span></div>
+  </template>
+</div>

@@ -370,14 +370,16 @@
   }
 
   /* ---------- guarda de descarte: avisa antes de perder rascunho não salvo ---------- */
-  /* seções com rascunho não salvo (Contínuos não tem rascunho: cada ação salva na hora) */
+  /* seções com rascunho não salvo (Editar, Pontuais e Contínuos, todas com Salvar em lote) */
   function secaoSuja() {
     return !!((RosterWork.escalasPainelEditar && RosterWork.escalasPainelEditar.estaSujo && RosterWork.escalasPainelEditar.estaSujo())
-      || (RosterWork.escalasPainelPontuais && RosterWork.escalasPainelPontuais.estaSujo && RosterWork.escalasPainelPontuais.estaSujo()));
+      || (RosterWork.escalasPainelPontuais && RosterWork.escalasPainelPontuais.estaSujo && RosterWork.escalasPainelPontuais.estaSujo())
+      || (RosterWork.escalasPainelContinuos && RosterWork.escalasPainelContinuos.estaSujo && RosterWork.escalasPainelContinuos.estaSujo()));
   }
   function limparSecoesSujas() {
     if (RosterWork.escalasPainelEditar) RosterWork.escalasPainelEditar.reset();
     if (RosterWork.escalasPainelPontuais) RosterWork.escalasPainelPontuais.reset();
+    if (RosterWork.escalasPainelContinuos) RosterWork.escalasPainelContinuos.reset();
   }
   /* mesmo aviso do botão Cancelar (Descartar / Continuar editando) */
   function confirmarDescarte(aoConfirmar) {

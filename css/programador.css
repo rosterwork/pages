@@ -1,0 +1,115 @@
+/* ============================================================
+   PROGRADOR — MENSAGENS (recados dos usuários + lembretes)
+   Lista à esquerda (reusa geral-layout-lateral + geral-lista) +
+   detalhe à direita. Só o que é próprio desta tela.
+   ============================================================ */
+
+/* menu esquerdo um pouco mais largo (por causa dos assuntos) */
+.programador-esquerdo {
+  width: 340px;
+}
+
+/* a barra de filtro ocupa a altura toda do cabeçalho do painel */
+.programador-filtro-barra {
+  min-height: 40px;
+}
+.programador-filtro-barra .abas {
+  width: 100%;
+}
+
+/* item da lista (empilha assunto/selo e tipo/autor) */
+.programador-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 8px 12px;
+}
+
+.programador-item-linha1,
+.programador-item-linha2 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+.programador-item-assunto {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-forte);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.programador-item-selo {
+  flex-shrink: 0;
+}
+
+.programador-item-linha2 {
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+.programador-item-tipo {
+  flex-shrink: 0;
+}
+
+.programador-item-autor {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  text-align: right;
+}
+
+/* detalhe à direita */
+.programador-detalhe {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  max-width: 640px;
+}
+
+.programador-detalhe-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.programador-detalhe-quando {
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+.programador-detalhe-autor {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--texto-forte);
+}
+
+.programador-detalhe-contexto {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.programador-detalhe-acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* estado vazio (lista sem itens / nada selecionado) */
+.programador-vazio {
+  padding: 32px 16px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--texto-suave);
+}

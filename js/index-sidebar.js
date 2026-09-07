@@ -2,11 +2,17 @@
   'use strict';
 
 
-  /* itens de menu marcados com data-admin só aparecem para administradores */
+  /* itens marcados só aparecem para o papel certo: data-admin (admin),
+     data-programador (programador — item + divisória da seção) */
   function aplicarPermissoesMenu() {
-    if (RosterWork.sessao.ehAdmin()) return;
-    var itens = document.querySelectorAll('.menu-item[data-admin]');
-    for (var i = 0; i < itens.length; i++) itens[i].classList.add('oculto');
+    if (!RosterWork.sessao.ehAdmin()) {
+      var admins = document.querySelectorAll('.menu-item[data-admin]');
+      for (var i = 0; i < admins.length; i++) admins[i].classList.add('oculto');
+    }
+    if (!(RosterWork.sessao.ehProgramador && RosterWork.sessao.ehProgramador())) {
+      var progs = document.querySelectorAll('[data-programador]');
+      for (var j = 0; j < progs.length; j++) progs[j].classList.add('oculto');
+    }
   }
 
   function salvarPreferenciaSidebar(recolhido) {
