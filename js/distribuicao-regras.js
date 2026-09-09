@@ -253,7 +253,7 @@
   function atualizarRodape() {
     var rod = document.getElementById('regras-rodape');
     if (!rod) return;
-    rod.classList.remove('oculto');
+    rod.classList.toggle('oculto', !RosterWork.sessao.ehAdmin());   // rodapé de edição só para o admin (comum é só leitura)
     var n = contarAlteracoes();
     var bSalvar = rod.querySelector('.regras-salvar');
     var bCancelar = rod.querySelector('.regras-cancelar');

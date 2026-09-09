@@ -585,11 +585,14 @@
       if (est) { est.textContent = RosterWork.mensagens.distribuicao.selecioneModelo; corpo.appendChild(est); }
     }
     var btnNovo = document.getElementById('distribuicao-novo-modelo');
-    if (btnNovo && RosterWork.sessao.ehAdmin()) {
-      btnNovo.disabled = false;
-      if (!btnNovo._ligado) {
-        btnNovo._ligado = true;
-        btnNovo.addEventListener('click', function () { if (RosterWork.distribuicaoCriar) RosterWork.distribuicaoCriar.novo(grupo); });
+    if (btnNovo) {
+      btnNovo.classList.toggle('oculto', !RosterWork.sessao.ehAdmin());   // só admin cria modelo
+      if (RosterWork.sessao.ehAdmin()) {
+        btnNovo.disabled = false;
+        if (!btnNovo._ligado) {
+          btnNovo._ligado = true;
+          btnNovo.addEventListener('click', function () { if (RosterWork.distribuicaoCriar) RosterWork.distribuicaoCriar.novo(grupo); });
+        }
       }
     }
     carregandoEm(document.getElementById('distribuicao-lista-modelos'));

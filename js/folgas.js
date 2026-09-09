@@ -72,6 +72,8 @@
 
     var abaAprov = conteudo.querySelector('#folgas-aba-aprovacoes');
     if (abaAprov) abaAprov.classList.toggle('oculto', !ctx.admin);
+    var abaEquipe = conteudo.querySelector('#folgas-abas [data-aba="equipe"]');   // Equipe é só do admin
+    if (abaEquipe) abaEquipe.classList.toggle('oculto', !ctx.admin);
 
     var btnSolicitar = conteudo.querySelector('#btn-solicitar-folga');
     if (btnSolicitar) btnSolicitar.addEventListener('click', function () { if (RW.folgasMinhas) RW.folgasMinhas.solicitar(); });
