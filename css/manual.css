@@ -1,53 +1,49 @@
 /* ============================================================
    MANUAL — folha de estilo do documento.
-   Usa o TEMA do site (css/geral-tema.css) para a fonte e as cores;
-   aqui só o layout do documento. Página independente, imprimível em A4.
+   Página do app (fragmento .pagina) com o layout lateral compartilhado
+   (geral-layout-lateral): ÍNDICE fixo à esquerda (geral-painel-esquerdo,
+   itens no padrão lista-item) + DOCUMENTO rolável à direita
+   (geral-corpo-lateral-rolagem). Usa o TEMA do site (fonte + cores por
+   var); aqui só o específico do manual. Imprimível em A4 (esconde a
+   moldura do app e o índice). Tudo escopado em .manual / .manual-*.
    ============================================================ */
 
-html, body { margin: 0; }
+/* ---- ÍNDICE (painel esquerdo) ---- */
+.manual-indice-titulo {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--texto-fraco);
+}
+.manual-indice-lista,
+.manual-indice-lista ul { list-style: none; margin: 0; padding: 0; }
+.manual-indice-lista { counter-reset: idx-parte; }
+.manual-indice-lista > li { counter-reset: idx-sub; }
 
-body {
-  font-family: 'Montserrat', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
-  background: var(--fundo-pagina);
+/* item do índice: a casca visual vem de .lista-item (barra de acento no ativo) */
+.manual-item {
+  display: block;
+  padding: 6px 12px;
   color: var(--texto);
+  text-decoration: none;
+  font-size: 13px;
+}
+.manual-item--parte { font-weight: 600; color: var(--texto-forte); }
+.manual-item--sub { padding-left: 24px; font-size: 12px; color: var(--texto-suave); }
+.manual-item--parte::before { counter-increment: idx-parte; content: counter(idx-parte) ". "; color: var(--texto-fraco); }
+.manual-item--sub::before { counter-increment: idx-sub; content: counter(idx-parte) "." counter(idx-sub) " "; color: var(--texto-fraco); }
+
+/* ---- DOCUMENTO (folha à direita, largura de leitura, alinhada à esquerda
+   junto do índice, como nas documentações) ---- */
+.manual-folha {
+  max-width: 820px;
+  margin: 0;
+  padding: 32px 40px;
   font-size: 14px;
   line-height: 1.55;
-  -webkit-font-smoothing: antialiased;
+  counter-reset: manual-parte;
 }
-
-/* coluna central do documento (largura de leitura) */
-.manual {
-  max-width: 820px;
-  margin: 0 auto;
-  padding: 32px 24px;
-  background: var(--fundo-superficie);
-  min-height: 100vh;
-  box-shadow: var(--sombra-bloco);
-}
-
-/* cabeçalho */
-.manual-cabecalho {
-  border-bottom: 1px solid var(--borda);
-  padding-bottom: 24px;
-  margin-bottom: 24px;
-}
-.manual-cabecalho h1 { font-size: 22px; font-weight: 800; color: var(--texto-forte); margin: 0 0 4px; }
-.manual-subtitulo { font-size: 14px; color: var(--texto-fraco); margin: 0; }
-
-/* índice (sumário) */
-.manual-indice {
-  background: var(--fundo-suave);
-  border: 1px solid var(--borda);
-  border-radius: var(--raio-medio);
-  padding: 16px 24px;
-  margin-bottom: 32px;
-}
-.manual-indice h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--texto-fraco); margin: 0 0 12px; }
-.manual-indice ol { margin: 0; padding-left: 24px; }
-.manual-indice ol ol { margin: 4px 0 8px; padding-left: 24px; list-style: lower-alpha; }
-.manual-indice li { margin: 4px 0; }
-.manual-indice a { color: var(--texto); text-decoration: none; transition: color 0.15s ease; }
-.manual-indice a:hover { color: var(--texto-forte); text-decoration: underline; }
 
 /* selo de papel: Apenas administradores */
 .manual-selo-admin {
@@ -62,13 +58,17 @@ body {
   vertical-align: middle;
 }
 
-/* seções */
-.manual-secao { margin-bottom: 32px; scroll-margin-top: 16px; }
+/* seções — numeração automática (contador CSS) das partes e subseções */
+.manual-secao { margin-bottom: 32px; scroll-margin-top: 16px; counter-reset: manual-sub; }
 .manual-secao > h2 {
   font-size: 20px; font-weight: 700; color: var(--texto-forte);
   border-bottom: 1px solid var(--borda); padding-bottom: 8px; margin: 0 0 16px;
 }
+.manual-secao > h2::before { counter-increment: manual-parte; content: counter(manual-parte) ". "; }
 .manual-secao h3 { font-size: 16px; font-weight: 700; color: var(--texto-forte); margin: 24px 0 8px; }
+.manual-secao h3:not(.manual-topico)::before { counter-increment: manual-sub; content: counter(manual-parte) "." counter(manual-sub) ". "; }
+/* subtítulo interno de uma seção (não numerado, fora do índice) — ex.: dentro da Visão geral */
+.manual-secao h3.manual-topico { border-bottom: 1px solid var(--borda); padding-bottom: 4px; }
 .manual-secao p { margin: 0 0 12px; }
 
 /* aviso de pré-requisito (admin) */
@@ -84,15 +84,79 @@ body {
 /* placeholder de conteúdo ainda não escrito */
 .manual-em-construcao { color: var(--texto-debil); font-style: italic; }
 
-/* rodapé */
+/* figuras (recortes anotados) — pequenas, alinhadas à esquerda */
+.manual-figura { margin: 16px 0; max-width: 560px; }
+.manual-figura img { display: block; max-width: 100%; height: auto; border: 1px solid var(--borda); border-radius: var(--raio-medio); }
+.manual-figura figcaption { margin-top: 8px; font-size: 12px; color: var(--texto-fraco); }
+
+/* passo a passo (lista numerada) */
+.manual-passos { margin: 16px 0; padding-left: 24px; }
+.manual-passos li { margin-bottom: 8px; }
+
+/* lista simples (marcadores) */
+.manual-lista { margin: 16px 0; padding-left: 24px; }
+.manual-lista li { margin-bottom: 8px; }
+
+/* observação (selo/nota do manual) */
+.manual-nota {
+  background: var(--fundo-suave);
+  border: 1px solid var(--borda);
+  border-left: 3px solid var(--texto-suave);
+  border-radius: var(--raio-pequeno);
+  padding: 12px 16px;
+  margin: 16px 0;
+}
+
+/* rodapé do documento */
 .manual-rodape { border-top: 1px solid var(--borda); padding-top: 16px; margin-top: 32px; font-size: 12px; color: var(--texto-debil); }
 
-/* impressão em A4 */
+/* ------------------------------------------------------------
+   Dois modelos: comum × administrador.
+   As partes de admin (índice e corpo) ficam escondidas por padrão
+   (modelo comum, e padrão seguro sem sessão). Só aparecem quando o
+   index-manual.js marca data-perfil="admin" no .manual.
+   ------------------------------------------------------------ */
+.manual .manual-admin { display: none; }
+.manual[data-perfil="admin"] .manual-admin { display: revert; }
+
+/* conteúdo só do usuário comum (par do .manual-admin): some para o admin.
+   Ex.: a imagem do menu tem uma versão para cada papel. */
+.manual[data-perfil="admin"] .manual-comum { display: none; }
+
+/* bloco de conteúdo só de administrador: fundo de destaque + selo.
+   A ocultação para o comum vem da classe .manual-admin junto. */
+.manual-bloco-admin {
+  background: var(--alerta-fundo);
+  border: 1px solid var(--alerta);
+  border-radius: var(--raio-pequeno);
+  padding: 12px 16px;
+  margin: 16px 0;
+}
+.manual-bloco-admin .manual-selo-admin { margin-left: 0; margin-bottom: 8px; }
+.manual-bloco-admin p { margin: 0; }
+
+/* ------------------------------------------------------------
+   Impressão em A4 — imprime só o documento: esconde a moldura do app
+   (cabeçalho, menu, painel) e o índice; a área de leitura ocupa a folha.
+   ------------------------------------------------------------ */
 @media print {
   @page { size: A4; margin: 16mm; }
-  body { background: var(--fundo-superficie); }
-  .manual { box-shadow: none; max-width: none; margin: 0; padding: 0; min-height: 0; }
-  .manual-indice { break-inside: avoid; }
+  body:has(.manual) .cabecalho,
+  body:has(.manual) .sidebar,
+  body:has(.manual) .painel-lateral,
+  body:has(.manual) .geral-painel-esquerdo { display: none; }
+  body:has(.manual) .casca,
+  body:has(.manual) .casca-corpo,
+  body:has(.manual) .conteudo,
+  body:has(.manual) .pagina,
+  body:has(.manual) .pagina-corpo,
+  body:has(.manual) .geral-layout-lateral,
+  body:has(.manual) .geral-corpo-lateral,
+  body:has(.manual) .geral-corpo-lateral-rolagem {
+    display: block; height: auto; min-height: 0; overflow: visible;
+    margin: 0; border: none; box-shadow: none; border-radius: 0;
+  }
+  .manual-folha { max-width: none; margin: 0; padding: 0; }
   .manual-secao { break-inside: avoid-page; }
   .manual-secao > h2, .manual-secao h3 { break-after: avoid; }
 }

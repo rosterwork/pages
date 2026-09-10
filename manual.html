@@ -1,147 +1,255 @@
-<!DOCTYPE html>
-<html lang="pt-br" data-tema="claro">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Manual de uso do Roster Work — sistema de escala de serviço." />
-  <link rel="icon" href="icones/icone-logo.svg" type="image/svg+xml" />
-  <title>Manual — Roster Work</title>
-  <link rel="stylesheet" href="css/geral-tema.css" />
-  <link rel="stylesheet" href="css/manual.css" />
-</head>
-<body>
+<!-- MANUAL — fragmento de página (carregado no .conteudo pela navegação SPA).
+     Página padrão do app (.pagina) com o layout lateral compartilhado
+     (geral-layout-lateral): ÍNDICE fixo à esquerda (geral-painel-esquerdo,
+     itens no padrão lista-item) + DOCUMENTO rolável à direita. Imprimível em
+     A4 (css/manual.css esconde a moldura do app e o índice, saindo só o doc).
+     Dois modelos: o index-manual.js marca data-perfil="admin" no .manual e o
+     CSS revela as partes .manual-admin (índice e corpo). -->
+<div class="manual pagina">
 
-  <div class="manual">
-
-    <header class="manual-cabecalho">
+  <div class="pagina-cabecalho">
+    <div class="pagina-titulos">
       <h1>Manual do Roster Work</h1>
-      <p class="manual-subtitulo">Guia de uso do sistema de escala de serviço</p>
-    </header>
-
-    <!-- ÍNDICE -->
-    <nav class="manual-indice" aria-label="Índice do manual">
-      <h2>Índice</h2>
-      <ol>
-        <li><a href="#introducao">Introdução</a></li>
-        <li><a href="#primeiros-passos">Primeiros passos</a>
-          <ol>
-            <li><a href="#entrar">Entrar no sistema</a></li>
-            <li><a href="#moldura">A moldura: menu, unidades, tema e avisos</a></li>
-            <li><a href="#meu-perfil">Meu perfil</a></li>
-          </ol>
-        </li>
-        <li><a href="#militar">O dia a dia do militar</a>
-          <ol>
-            <li><a href="#ver-servico">Ver o meu serviço</a></li>
-            <li><a href="#solicitar-troca">Solicitar uma troca</a></li>
-            <li><a href="#solicitar-folga">Solicitar uma folga</a></li>
-            <li><a href="#declarar-extra">Declarar disponibilidade de extrajornada</a></li>
-            <li><a href="#meus-avisos">Os meus avisos</a></li>
-          </ol>
-        </li>
-        <li><a href="#montando">Montando o sistema <span class="manual-selo-admin">Apenas administradores</span></a>
-          <ol>
-            <li><a href="#usuarios">Cadastrar o efetivo</a></li>
-            <li><a href="#postos">Postos de serviço (instalações e viaturas)</a></li>
-            <li><a href="#distribuicao">Distribuição: modelos e regras</a></li>
-            <li><a href="#escala">A Escala: montar o ciclo</a></li>
-          </ol>
-        </li>
-        <li><a href="#gerindo">Gerindo o dia a dia <span class="manual-selo-admin">Apenas administradores</span></a>
-          <ol>
-            <li><a href="#aprovacoes">Aprovar trocas, folgas e correções</a></li>
-            <li><a href="#afastamentos">Afastamentos (férias, licenças, dispensas)</a></li>
-            <li><a href="#extra-admin">Extrajornada: cotas e montar a escala</a></li>
-            <li><a href="#carreira">Atos de carreira e o efeito na escala</a></li>
-            <li><a href="#ajustes">Ajustes de ritmo das unidades</a></li>
-          </ol>
-        </li>
-        <li><a href="#acompanhamento">Acompanhamento</a>
-          <ol>
-            <li><a href="#comunicados">Avisos e comunicados</a></li>
-            <li><a href="#historico">Histórico <span class="manual-selo-admin">Apenas administradores</span></a></li>
-          </ol>
-        </li>
-        <li><a href="#logica">Apêndice: a lógica por trás</a></li>
-      </ol>
-    </nav>
-
-    <!-- SEÇÕES (conteúdo em construção) -->
-    <section class="manual-secao" id="introducao">
-      <h2>1. Introdução</h2>
-      <p class="manual-em-construcao">Em construção. O que o Roster Work resolve e os conceitos-chave (escala, ciclo 24/48, distribuição, administrador × usuário comum).</p>
-    </section>
-
-    <section class="manual-secao" id="primeiros-passos">
-      <h2>2. Primeiros passos</h2>
-      <h3 id="entrar">2.1. Entrar no sistema</h3>
-      <p class="manual-em-construcao">Em construção.</p>
-      <h3 id="moldura">2.2. A moldura: menu, unidades, tema e avisos</h3>
-      <p class="manual-em-construcao">Em construção.</p>
-      <h3 id="meu-perfil">2.3. Meu perfil</h3>
-      <p class="manual-em-construcao">Em construção.</p>
-    </section>
-
-    <section class="manual-secao" id="militar">
-      <h2>3. O dia a dia do militar</h2>
-      <h3 id="ver-servico">3.1. Ver o meu serviço</h3>
-      <p class="manual-em-construcao">Em construção.</p>
-      <h3 id="solicitar-troca">3.2. Solicitar uma troca</h3>
-      <p class="manual-em-construcao">Em construção.</p>
-      <h3 id="solicitar-folga">3.3. Solicitar uma folga</h3>
-      <p class="manual-em-construcao">Em construção.</p>
-      <h3 id="declarar-extra">3.4. Declarar disponibilidade de extrajornada</h3>
-      <p class="manual-em-construcao">Em construção.</p>
-      <h3 id="meus-avisos">3.5. Os meus avisos</h3>
-      <p class="manual-em-construcao">Em construção.</p>
-    </section>
-
-    <section class="manual-secao" id="montando">
-      <h2>4. Montando o sistema <span class="manual-selo-admin">Apenas administradores</span></h2>
-      <p class="manual-prereq">Você precisa ser administrador para as ações desta parte.</p>
-      <h3 id="usuarios">4.1. Cadastrar o efetivo</h3>
-      <p class="manual-em-construcao">Em construção.</p>
-      <h3 id="postos">4.2. Postos de serviço (instalações e viaturas)</h3>
-      <p class="manual-em-construcao">Em construção.</p>
-      <h3 id="distribuicao">4.3. Distribuição: modelos e regras</h3>
-      <p class="manual-em-construcao">Em construção.</p>
-      <h3 id="escala">4.4. A Escala: montar o ciclo</h3>
-      <p class="manual-em-construcao">Em construção.</p>
-    </section>
-
-    <section class="manual-secao" id="gerindo">
-      <h2>5. Gerindo o dia a dia <span class="manual-selo-admin">Apenas administradores</span></h2>
-      <p class="manual-prereq">Você precisa ser administrador para as ações desta parte.</p>
-      <h3 id="aprovacoes">5.1. Aprovar trocas, folgas e correções</h3>
-      <p class="manual-em-construcao">Em construção.</p>
-      <h3 id="afastamentos">5.2. Afastamentos (férias, licenças, dispensas)</h3>
-      <p class="manual-em-construcao">Em construção.</p>
-      <h3 id="extra-admin">5.3. Extrajornada: cotas e montar a escala</h3>
-      <p class="manual-em-construcao">Em construção.</p>
-      <h3 id="carreira">5.4. Atos de carreira e o efeito na escala</h3>
-      <p class="manual-em-construcao">Em construção.</p>
-      <h3 id="ajustes">5.5. Ajustes de ritmo das unidades</h3>
-      <p class="manual-em-construcao">Em construção.</p>
-    </section>
-
-    <section class="manual-secao" id="acompanhamento">
-      <h2>6. Acompanhamento</h2>
-      <h3 id="comunicados">6.1. Avisos e comunicados</h3>
-      <p class="manual-em-construcao">Em construção.</p>
-      <h3 id="historico">6.2. Histórico <span class="manual-selo-admin">Apenas administradores</span></h3>
-      <p class="manual-em-construcao">Em construção.</p>
-    </section>
-
-    <section class="manual-secao" id="logica">
-      <h2>7. Apêndice: a lógica por trás</h2>
-      <p class="manual-em-construcao">Em construção. As regras que o sistema aplica sozinho: Chefe de Socorro e Oficial de Área (mais antigos), CNH do condutor, acúmulos e antiguidade.</p>
-    </section>
-
-    <footer class="manual-rodape">
-      <p>Roster Work, manual de uso. Documento em construção.</p>
-    </footer>
-
+      <span class="pagina-subtitulo">Guia de uso do sistema de escala de serviço</span>
+    </div>
   </div>
 
-</body>
-</html>
+  <div class="pagina-corpo pagina-corpo--colado">
+    <div class="geral-layout-lateral">
+
+      <!-- ÍNDICE (painel esquerdo fixo) -->
+      <aside class="geral-painel-esquerdo">
+        <div class="geral-painel-esquerdo-cabecalho">
+          <span class="manual-indice-titulo">Índice</span>
+        </div>
+        <nav class="geral-painel-esquerdo-lista manual-indice" aria-label="Índice do manual">
+          <ul class="manual-indice-lista">
+            <li><a class="lista-item lista-item--clicavel manual-item manual-item--parte" href="#introducao">Visão geral</a></li>
+            <li>
+              <a class="lista-item lista-item--clicavel manual-item manual-item--parte" href="#primeiros-passos">Primeiros passos</a>
+              <ul>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#entrar">Entrar no sistema</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#moldura">A moldura: menu, unidades, tema e avisos</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#meu-perfil">Meu perfil</a></li>
+              </ul>
+            </li>
+            <li>
+              <a class="lista-item lista-item--clicavel manual-item manual-item--parte" href="#militar">O dia a dia do militar</a>
+              <ul>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#ver-servico">Ver o meu serviço</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#solicitar-troca">Solicitar uma troca</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#solicitar-folga">Solicitar uma folga</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#declarar-extra">Declarar disponibilidade de extrajornada</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#meus-avisos">Os meus avisos</a></li>
+              </ul>
+            </li>
+            <li class="manual-admin">
+              <a class="lista-item lista-item--clicavel manual-item manual-item--parte" href="#montando">Montando o sistema</a>
+              <ul>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#usuarios">Cadastrar o efetivo</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#postos">Postos de serviço (instalações e viaturas)</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#distribuicao">Distribuição: modelos e regras</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#escala">A Escala: montar o ciclo</a></li>
+              </ul>
+            </li>
+            <li class="manual-admin">
+              <a class="lista-item lista-item--clicavel manual-item manual-item--parte" href="#gerindo">Gerindo o dia a dia</a>
+              <ul>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#aprovacoes">Aprovar trocas, folgas e correções</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#afastamentos">Afastamentos (férias, licenças, dispensas)</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#extra-admin">Extrajornada: cotas e montar a escala</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#carreira">Atos de carreira e o efeito na escala</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#ajustes">Ajustes de ritmo das unidades</a></li>
+              </ul>
+            </li>
+            <li>
+              <a class="lista-item lista-item--clicavel manual-item manual-item--parte" href="#acompanhamento">Acompanhamento</a>
+              <ul>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#comunicados">Avisos e comunicados</a></li>
+                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#historico">Histórico</a></li>
+              </ul>
+            </li>
+            <li><a class="lista-item lista-item--clicavel manual-item manual-item--parte" href="#logica">Apêndice: a lógica por trás</a></li>
+          </ul>
+        </nav>
+      </aside>
+
+      <!-- DOCUMENTO (área direita, rolável) -->
+      <div class="geral-corpo-lateral">
+        <div class="geral-corpo-lateral-rolagem">
+          <div class="manual-folha">
+
+            <section class="manual-secao" id="introducao">
+              <h2>Visão geral</h2>
+              <p>O Roster Work é o sistema de <strong>escala de serviço</strong> da corporação. Esta visão geral mostra, de cima, como as peças se encaixam; o detalhe de cada uma fica na sua seção.</p>
+
+              <h3 class="manual-topico">A escala (o coração)</h3>
+              <p>Para cada dia, a escala responde a quatro coisas: <strong>quem</strong> trabalha, <strong>quando</strong> (o horário), <strong>onde</strong> (o posto) e <strong>em que função</strong>. O sistema separa isso em duas perguntas:</p>
+              <p><strong>1) Quem está de serviço (o ciclo).</strong> Cada unidade tem um <strong>ritmo</strong>, por exemplo 24/48 (trabalha 24 horas e folga 48). Os militares rodam nesse ritmo, então a cada dia o sistema já sabe quem está de serviço. O ritmo é da unidade (fica em Ajustes), não é escolhido dia a dia.</p>
+              <p><strong>2) Onde cada um fica (a distribuição).</strong> Sabendo quem está de serviço, o sistema coloca cada militar no seu lugar: em qual <strong>posto ou viatura</strong> e em qual <strong>função</strong>.</p>
+              <p>Primeiro o sistema sabe <strong>quem está de serviço</strong>, depois <strong>coloca cada um no seu lugar</strong>.</p>
+
+              <h3 class="manual-topico">O que muda a escala</h3>
+              <p>Depois da escala automática pronta, quatro coisas mexem nela por cima:</p>
+              <ul class="manual-lista">
+                <li><strong>Troca.</strong> Um militar passa o serviço (ou parte dele) para outro. Na escala, quem saiu fica <strong>riscado</strong> e quem entrou toma o lugar. Passa por aprovação.</li>
+                <li><strong>Folga.</strong> O militar tira um dia (ou um trecho) de serviço, então <strong>sai da escala</strong> naquele período. É um banco de horas: o saldo sobe quando trabalha a mais e desce quando folga. Passa por aprovação.</li>
+                <li><strong>Extrajornada.</strong> O estado paga o militar para trabalhar horas a mais; esse serviço <strong>entra na escala</strong> como extra. É um sistema separado da folga.</li>
+                <li><strong>Afastamento.</strong> Férias, licenças e dispensas <strong>tiram</strong> o militar da escala pelos dias do afastamento.</li>
+              </ul>
+
+              <h3 class="manual-topico">O que a escala precisa por baixo</h3>
+              <p>Para o sistema montar a escala sozinho, três coisas precisam estar prontas antes:</p>
+              <ul class="manual-lista">
+                <li><strong>O efetivo (as pessoas).</strong> Os militares cadastrados, cada um com seus dados (grau, lotação, CNH, antiguidade). Sem efetivo, não há quem escalar. Fica em <strong>Usuários</strong>.</li>
+                <li><strong>Os postos e viaturas (onde servem).</strong> Os lugares de serviço: <strong>instalações</strong> (locais fixos, como a Central de Operações) e <strong>viaturas</strong> (que exigem CNH e podem entrar em manutenção). Cada posto tem uma <strong>guarnição</strong> (quantos militares). Fica em <strong>Postos</strong>.</li>
+                <li><strong>Os modelos e regras (o gabarito).</strong> O administrador monta, por unidade, um <strong>modelo</strong> que diz quais funções e vagas existem no dia; a distribuição segue esse gabarito. As <strong>regras</strong> ajustam quem pode ou não ir para certas funções. Fica em <strong>Distribuição</strong>.</li>
+              </ul>
+
+              <h3 class="manual-topico">Quem faz o quê</h3>
+              <ul class="manual-lista">
+                <li><strong>O militar (usuário comum).</strong> Consulta a sua escala, pede <strong>trocas</strong> e <strong>folgas</strong>, declara disponibilidade de <strong>extrajornada</strong> e vê os seus <strong>avisos</strong>. Ele participa e solicita, não monta nem edita a escala.</li>
+                <li><strong>O administrador.</strong> Cadastra o efetivo e os postos, monta os <strong>modelos</strong> e a <strong>escala</strong>, <strong>aprova</strong> os pedidos (trocas, folgas, correções), lança extrajornada, registra afastamentos e atos de carreira. Ele monta e mantém o sistema.</li>
+              </ul>
+              <p>O administrador também é um militar: faz as próprias solicitações como usuário e aprova como administrador, sem trocar de modo. Só não aprova o próprio pedido.</p>
+            </section>
+
+            <section class="manual-secao" id="primeiros-passos">
+              <h2>Primeiros passos</h2>
+              <h3 id="entrar">Entrar no sistema</h3>
+              <p>Para usar o Roster Work, cada militar entra com o seu documento e a sua senha.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/login-entrar.png" alt="Tela de login: campo CPF ou RG (1), campo Senha (2), botão Entrar (3) e os atalhos Criar conta e Esqueci minha senha (4)." />
+              </figure>
+              <ol class="manual-passos">
+                <li><strong>CPF ou RG.</strong> Digite o seu documento. Pode ser o CPF (11 números) ou o RG (8 ou 9 números). O campo coloca os pontos e o traço sozinho.</li>
+                <li><strong>Senha.</strong> Digite a sua senha.</li>
+                <li><strong>Entrar.</strong> Clique no botão Entrar, ou aperte a tecla Enter.</li>
+                <li><strong>Atalhos.</strong> "Criar conta" abre o cadastro para quem ainda não tem acesso. "Esqueci minha senha" ajuda a definir uma senha nova.</li>
+              </ol>
+              <p class="manual-nota"><strong>Se algo estiver errado</strong>, o aviso aparece abaixo do campo: "Usuário não encontrado" quando o documento não está no sistema, ou "Senha incorreta" quando a senha não confere.</p>
+              <p class="manual-nota"><strong>Já entrou antes?</strong> Enquanto a sua sessão estiver ativa, o sistema abre direto na tela inicial, sem pedir o login de novo.</p>
+              <h3 id="moldura">A moldura: menu, unidades, tema e avisos</h3>
+              <p>Depois de entrar, o sistema mostra sempre a mesma moldura em volta: o <strong>menu</strong> à esquerda, o <strong>cabeçalho</strong> no topo e a <strong>área de conteúdo</strong> no meio, que muda conforme a tela que você abre.</p>
+
+              <p><strong>Menu (à esquerda).</strong> Lista as áreas do sistema. Clique numa para abri-la, e a área aberta fica destacada.</p>
+              <figure class="manual-figura manual-comum">
+                <img src="manual/imagens/mold-menu-comum.png" alt="Menu lateral: Início, Escala, Trocas, Folgas, Extrajornada, Afastamentos, Postos, Distribuição, Usuários e Ajustes." />
+              </figure>
+              <figure class="manual-figura manual-admin">
+                <img src="manual/imagens/mold-menu-admin.png" alt="Menu lateral do administrador: as áreas comuns mais o Histórico." />
+              </figure>
+              <p>No pé do menu, o botão "Recolher menu" encolhe a barra para sobrar espaço. Recolhida, aparece só o ícone, e o nome surge ao passar o mouse. Essa escolha fica salva para os próximos logins.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/mold-recolher.png" alt="Botão Recolher menu, no pé do menu lateral." />
+              </figure>
+              <div class="manual-bloco-admin manual-admin">
+                <span class="manual-selo-admin">Apenas administradores</span>
+                <p>Além das áreas comuns, o administrador tem o <strong>Histórico</strong> (auditoria). As áreas de gestão (Postos, Distribuição, Usuários e Ajustes) o usuário comum também abre, mas só para consulta; as ações de administrador ficam escondidas para ele. O item <strong>Programador</strong> aparece só para a equipe de programação.</p>
+              </div>
+
+              <p><strong>Seletor de unidades (ao lado do logo).</strong> É ele que decide quais unidades aparecem nas telas (Escala, Usuários e outras). Clique para abrir a árvore, marque as unidades que quer ver (1) e clique em Aplicar (2).</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/mold-seletor.png" alt="Seletor de unidades aberto: a árvore das unidades com caixas de marcação (1) e o botão Aplicar (2)." />
+              </figure>
+              <p class="manual-nota"><strong>Começa na sua lotação.</strong> Quem é do comando vê a companhia e os pelotões; quem é de um pelotão vê a companhia e o próprio pelotão. A escolha vale só naquela sessão: no próximo login, volta ao padrão.</p>
+
+              <p><strong>O canto direito do cabeçalho.</strong> Reúne três atalhos:</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/mold-cabecalho.png" alt="Canto direito do cabeçalho: o botão de tema (1), o sino de avisos (2) e o menu do canto com o seu nome (3)." />
+              </figure>
+              <ol class="manual-passos">
+                <li><strong>Tema.</strong> O botão de sol e lua alterna entre o tema claro e o escuro. A sua escolha fica salva.</li>
+                <li><strong>Sino de avisos.</strong> Mostra as suas notificações (o que aconteceu com você: uma troca para confirmar, uma folga decidida, uma correção aprovada). As não lidas ficam em negrito, e o número conta só as não lidas. Dá para "Marcar todas como lidas" ou abrir "Ver todos". Clicar numa notificação leva direto à tela do assunto.</li>
+                <li><strong>Menu do canto (seu nome).</strong> Abre Meu perfil, Fale conosco, Manual e Sair.</li>
+              </ol>
+              <h3 id="meu-perfil">Meu perfil</h3>
+              <p>É a sua página pessoal. Abre pelo menu do canto (seu nome) em "Meu perfil", e tem três abas: Perfil, Meus dados e Segurança.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/perfil-abas.png" alt="Meu perfil: as três abas (1 Perfil, 2 Meus dados, 3 Segurança), o cartão de identificação e os dados em leitura, com o Tema no fim." />
+              </figure>
+
+              <p><strong>Perfil (1).</strong> Mostra o seu cartão de identificação (grau, nome de guerra, lotação e o papel, Usuário ou Administrador) e os seus dados em leitura, separados em Identificação e Carreira. No fim, em Preferências, você troca o Tema, claro ou escuro, que muda na hora.</p>
+
+              <p><strong>Meus dados (2).</strong> É onde você pede uma correção nos seus dados. Um aviso no topo lembra a regra: toda alteração passa pela aprovação do administrador.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/perfil-dados.png" alt="Aba Meus dados: o aviso de aprovação e os campos editáveis." />
+              </figure>
+              <p>Altere os campos que precisar. O campo mexido fica <strong>destacado</strong> e aparece um contador ("1 alteração a enviar"). Depois, clique em <strong>Solicitar correção</strong> para enviar tudo num pedido só, ou em <strong>Desfazer</strong> para voltar ao que estava.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/perfil-acao.png" alt="Um campo alterado e destacado (1) e o botão Solicitar correção (2)." />
+              </figure>
+              <p class="manual-nota"><strong>Como funciona a aprovação:</strong> você só <strong>solicita</strong>; o pedido fica <strong>pendente</strong> até um administrador aprovar. Vale para todos os dados, inclusive celular, email e CNH. Abaixo do formulário, em "Minhas solicitações", você acompanha cada pedido pelo status: Pendente, Aprovada ou Recusada. O CPF não entra (é o seu login), e grau e lotação também não (mudam só por promoção ou transferência).</p>
+
+              <p><strong>Segurança (3).</strong> Aqui você troca a sua senha: digite a senha atual, a nova (ao menos 6 caracteres e diferente da atual) e confirme. A senha muda na hora, sem precisar de aprovação.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/perfil-senha.png" alt="Aba Segurança: Senha atual, Nova senha e Confirmar nova senha, com o botão Trocar senha." />
+              </figure>
+            </section>
+
+            <section class="manual-secao" id="militar">
+              <h2>O dia a dia do militar</h2>
+              <h3 id="ver-servico">Ver o meu serviço</h3>
+              <p class="manual-em-construcao">Em construção.</p>
+              <h3 id="solicitar-troca">Solicitar uma troca</h3>
+              <p class="manual-em-construcao">Em construção.</p>
+              <h3 id="solicitar-folga">Solicitar uma folga</h3>
+              <p class="manual-em-construcao">Em construção.</p>
+              <h3 id="declarar-extra">Declarar disponibilidade de extrajornada</h3>
+              <p class="manual-em-construcao">Em construção.</p>
+              <h3 id="meus-avisos">Os meus avisos</h3>
+              <p class="manual-em-construcao">Em construção.</p>
+            </section>
+
+            <section class="manual-secao manual-admin" id="montando">
+              <h2>Montando o sistema <span class="manual-selo-admin">Apenas administradores</span></h2>
+              <p class="manual-prereq">Você precisa ser administrador para as ações desta parte.</p>
+              <h3 id="usuarios">Cadastrar o efetivo</h3>
+              <p class="manual-em-construcao">Em construção.</p>
+              <h3 id="postos">Postos de serviço (instalações e viaturas)</h3>
+              <p class="manual-em-construcao">Em construção.</p>
+              <h3 id="distribuicao">Distribuição: modelos e regras</h3>
+              <p class="manual-em-construcao">Em construção.</p>
+              <h3 id="escala">A Escala: montar o ciclo</h3>
+              <p class="manual-em-construcao">Em construção.</p>
+            </section>
+
+            <section class="manual-secao manual-admin" id="gerindo">
+              <h2>Gerindo o dia a dia <span class="manual-selo-admin">Apenas administradores</span></h2>
+              <p class="manual-prereq">Você precisa ser administrador para as ações desta parte.</p>
+              <h3 id="aprovacoes">Aprovar trocas, folgas e correções</h3>
+              <p class="manual-em-construcao">Em construção.</p>
+              <h3 id="afastamentos">Afastamentos (férias, licenças, dispensas)</h3>
+              <p class="manual-em-construcao">Em construção.</p>
+              <h3 id="extra-admin">Extrajornada: cotas e montar a escala</h3>
+              <p class="manual-em-construcao">Em construção.</p>
+              <h3 id="carreira">Atos de carreira e o efeito na escala</h3>
+              <p class="manual-em-construcao">Em construção.</p>
+              <h3 id="ajustes">Ajustes de ritmo das unidades</h3>
+              <p class="manual-em-construcao">Em construção.</p>
+            </section>
+
+            <section class="manual-secao" id="acompanhamento">
+              <h2>Acompanhamento</h2>
+              <h3 id="comunicados">Avisos e comunicados</h3>
+              <p class="manual-em-construcao">Em construção.</p>
+              <h3 id="historico" class="manual-admin">Histórico <span class="manual-selo-admin">Apenas administradores</span></h3>
+              <p class="manual-em-construcao manual-admin">Em construção.</p>
+            </section>
+
+            <section class="manual-secao" id="logica">
+              <h2>Apêndice: a lógica por trás</h2>
+              <p class="manual-em-construcao">Em construção. As regras que o sistema aplica sozinho: Chefe de Socorro e Oficial de Área (mais antigos), CNH do condutor, acúmulos e antiguidade.</p>
+            </section>
+
+            <footer class="manual-rodape">
+              <p>Roster Work, manual de uso. Documento em construção.</p>
+            </footer>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
