@@ -31,6 +31,7 @@
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#entrar">Entrar no sistema</a></li>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#moldura">A moldura: menu, unidades, tema e avisos</a></li>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#meu-perfil">Meu perfil</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#a-arvore">A árvore de unidades</a></li>
               </ul>
             </li>
             <li>
@@ -69,6 +70,7 @@
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#historico">Histórico</a></li>
               </ul>
             </li>
+            <li><a class="lista-item lista-item--clicavel manual-item manual-item--parte" href="#legenda">Legenda de ícones e selos</a></li>
             <li><a class="lista-item lista-item--clicavel manual-item manual-item--parte" href="#logica">Apêndice: a lógica por trás</a></li>
           </ul>
         </nav>
@@ -185,6 +187,14 @@
               <figure class="manual-figura">
                 <img src="manual/imagens/perfil-senha.png" alt="Aba Segurança: Senha atual, Nova senha e Confirmar nova senha, com o botão Trocar senha." />
               </figure>
+
+              <h3 id="a-arvore">A árvore de unidades</h3>
+              <p>Algumas telas organizam a informação numa <strong>árvore de unidades</strong>: a sua corporação em hierarquia (companhia, pelotão, e assim por diante). Você a encontra, por exemplo, em <strong>Trocas</strong> (aba Todas), <strong>Usuários</strong> e <strong>Postos</strong>.</p>
+              <p><strong>Como ela se monta.</strong> A árvore mostra só as unidades que você marcou no <strong>seletor de unidades</strong> (no topo da tela). As unidades <strong>acima</strong> delas aparecem como <strong>títulos</strong>, que situam a lista, e o conteúdo daquela tela (os militares, as trocas, as instalações…) aparece <strong>dentro da unidade marcada</strong>, com uma <strong>contagem</strong> ao lado. Os títulos <strong>grudam no topo</strong> enquanto você rola, então você sempre sabe em qual unidade está.</p>
+              <p><strong>Mostrar mais ou menos níveis.</strong> No canto superior direito da lista há dois botões, <strong>Mais títulos</strong> e <strong>Menos títulos</strong> (o nome aparece ao passar o mouse). Eles mostram mais ou menos níveis do topo da hierarquia: <strong>Menos títulos</strong> encolhe (esconde os níveis mais altos e deixa a lista mais curta e direta) e <strong>Mais títulos</strong> os traz de volta. Há um limite: a árvore nunca esconde a unidade que você marcou nem o nível logo acima dela, e ao chegar nesse limite o botão fica desativado.</p>
+              <figure class="manual-figura manual-figura--larga">
+                <img src="manual/imagens/mold-arvore.png" alt="A árvore de unidades: os títulos das unidades em hierarquia, a contagem na unidade marcada, e os botões Mais títulos e Menos títulos no canto superior direito." />
+              </figure>
             </section>
 
             <section class="manual-secao" id="militar">
@@ -197,23 +207,99 @@
                 <img src="manual/imagens/card-proximo.png" alt="Card Próximo serviço no Início: Amanhã, das 08h às 08h, Efetivo 3, ABT-02." />
               </figure>
 
-              <p><strong>A Escala (visão completa).</strong> A página Escala mostra a escala da unidade, dia a dia. Para achar rápido o seu serviço, use a busca <strong>"Pesquisar militar"</strong> e digite o seu nome.</p>
+              <p><strong>A Escala (visão completa).</strong> A página Escala mostra a escala da unidade, dia a dia. Para achar alguém rápido, use a busca <strong>"Pesquisar militar"</strong> e digite um nome (também vale CPF ou RG). A busca tem dois modos, no botão ao lado do campo: <strong>Marcar</strong> (o padrão), que realça o militar na grade mantendo os demais visíveis, e <strong>Filtrar</strong>, que mostra só quem você procurou.</p>
               <figure class="manual-figura">
                 <img src="manual/imagens/escala-busca.png" alt="A busca da Escala com o nome do militar digitado." />
               </figure>
-              <p>Os seus dias de serviço ficam <strong>destacados</strong> na grade, com o horário e o posto. No exemplo, o Sd. Sampaio trabalha a cada três dias (o ritmo 24/48 da unidade).</p>
+              <p>Os dias de serviço do militar ficam <strong>destacados</strong> na grade, com o horário e o posto. O espaçamento entre eles segue o ritmo configurado para a unidade, como o 24/48, e pode variar de uma unidade para outra.</p>
               <figure class="manual-figura">
                 <img src="manual/imagens/escala-grade.png" alt="A grade da Escala com os dias do militar destacados." />
               </figure>
               <p class="manual-nota">A Escala tem outros <strong>modos de ver</strong> além do Mês (Semana, Colunas, Dia e Militares). Todos mostram a mesma escala, de jeitos diferentes; use o que for melhor para você.</p>
               <h3 id="solicitar-troca">Solicitar uma troca</h3>
-              <p class="manual-em-construcao">Em construção.</p>
+              <p>Uma troca é quando você pede que outro militar cubra um serviço seu. Pode ser o <strong>turno inteiro</strong> ou apenas um <strong>período de horas</strong> dele, e você pode marcar uma <strong>devolução</strong> (um dia do colega que você cobre em retorno) ou deixar essa devolução para depois.</p>
+              <p><strong>Como pedir.</strong> Na página <strong>Trocas</strong>, clique em <strong>"Solicitar troca"</strong>. Abre um painel com dois blocos:</p>
+              <ul class="manual-lista">
+                <li><strong>Solicitante</strong> (você): escolha o <strong>dia do serviço</strong> que quer passar e, no <strong>período</strong>, mantenha o turno inteiro ou marque só as horas que quer trocar.</li>
+                <li><strong>Solicitado</strong>: escolha a <strong>unidade</strong> e o <strong>militar</strong> que vai cobrir. A lista traz apenas quem está livre naquele dia. Em <strong>Devolução</strong>, deixe em <strong>Pendência</strong> (você fica devendo o serviço, para acertar mais tarde) ou escolha <strong>Marcar dia</strong> (aponte um dia do colega e o período que você cobre em troca).</li>
+              </ul>
+              <figure class="manual-figura">
+                <img src="manual/imagens/troca-solicitar.png" alt="Painel Solicitar troca, com os blocos Solicitante e Solicitado e a opção de Devolução." />
+              </figure>
+              <p>Ao confirmar, a troca nasce como <strong>"Aguardando confirmação"</strong> e segue para o militar que você escolheu.</p>
+
+              <p><strong>Quando pedem uma troca a você.</strong> O pedido aparece na aba <strong>Minhas</strong> e nos seus avisos. Ao abrir a troca, um painel mostra quem troca, o dia, o horário e a devolução, junto de uma análise do impacto na escala. No rodapé, você <strong>Aceita</strong> ou <strong>Recusa</strong>: aceitando, a troca segue para a aprovação de um administrador; recusando, ela se encerra.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/troca-aceitar.png" alt="Painel de uma troca recebida, mostrando quem troca e o serviço, com os botões Aceitar e Recusar." />
+              </figure>
+
+              <p><strong>Acompanhar as suas trocas.</strong> A página Trocas tem três abas: <strong>Todas</strong> (as trocas da sua unidade), <strong>Minhas</strong> (as que você participa, como solicitante ou solicitado) e <strong>Pendentes</strong> (as devoluções em aberto). Cada troca traz um <strong>selo</strong> com a situação: Aguardando confirmação, Aguardando aprovação, Aprovada, Recusada, Rejeitada ou Cancelada.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/troca-abas.png" alt="As abas Todas, Minhas e Pendentes e a lista de trocas, cada uma com o seu selo de situação." />
+              </figure>
+
+              <p><strong>Cancelar a sua solicitação.</strong> Enquanto a troca está aguardando (confirmação ou aprovação), você pode abri-la e usar <strong>Cancelar troca</strong>. Depois de aprovada, apenas um administrador pode desfazê-la.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/troca-cancelar.png" alt="Rodapé do painel de uma troca, com o botão Cancelar troca em destaque." />
+              </figure>
+
+              <p><strong>A troca aprovada na escala.</strong> Depois da aprovação do administrador, a troca passa a valer na escala. No dia trocado, o militar que passou o serviço aparece <strong>riscado</strong> e quem assumiu entra no lugar, os dois com o ícone de troca. Havendo devolução, o mesmo acontece no dia dela, com os papéis invertidos.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/escala-troca-riscado.png" alt="Dia 13 na grade da escala: 3ºSgt. Meireles aparece riscado e Sd. Sampaio entra no lugar dele." />
+              </figure>
+
+              <p><strong>Devolução e pendências.</strong> Quando você marca a devolução, com o dia e o período do colega, as duas datas ficam casadas e ninguém fica devendo. Se a devolução tiver duração diferente do serviço, ou se você a deixar em <strong>Pendência</strong>, a diferença vira uma <strong>dívida de horas</strong>: quem passou o serviço fica devendo a quem cobriu. A aba <strong>Pendentes</strong> reúne essas dívidas, você vê as que envolvem você e o administrador vê todas.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/troca-pendente.png" alt="Card da aba Pendentes: 3ºSgt. Meireles deve 24h a Sd. Sampaio, com a seta que abre o histórico." />
+              </figure>
+              <p><strong>Ver o histórico e cobrar.</strong> Clique num card para abrir, à direita, o <strong>histórico</strong> entre vocês dois: cada troca vira uma linha com a data, <strong>quem folgou</strong> e <strong>quem trabalhou</strong> e as horas, para você ver de onde o saldo veio. Um <strong>Ver mais</strong> traz as trocas mais antigas. Nesse painel, quem tem horas a receber usa o botão <strong>Cobrar</strong>: ele abre o <strong>Solicitar troca</strong> já apontado para quem deve, com as horas da dívida prontas na barra do serviço. Você só escolhe qual dia seu o colega vai cobrir e confirma, e quando a troca é aprovada, a dívida é acertada.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/troca-extrato.png" alt="Painel da pendência: o saldo no topo, o histórico das trocas (quem folgou, quem trabalhou e as horas) e o botão Cobrar." />
+              </figure>
+
               <h3 id="solicitar-folga">Solicitar uma folga</h3>
-              <p class="manual-em-construcao">Em construção.</p>
+              <p>Tirar uma folga é deixar de fazer um serviço que já está escalado para você, descontando as horas desse serviço do seu <strong>banco de horas de folga</strong>. É um sistema separado da Extrajornada (que é hora paga pelo estado); as horas daqui não são hora extra.</p>
+              <p><strong>O seu saldo.</strong> O saldo é o seu banco de horas: ele <strong>sobe</strong> quando você trabalha a mais (um serviço além do seu ciclo, ou um ajuste do gestor) e <strong>desce</strong> quando você tira folga. Pode ficar <strong>negativo</strong> (você fica devendo horas), e o sistema avisa na hora de pedir. Um pedido em aberto não mexe no saldo até ser aprovado.</p>
+              <p><strong>Como pedir.</strong> Na página <strong>Folgas</strong>, aba <strong>Minhas folgas</strong>, o botão <strong>"Solicitar folga"</strong> abre um painel. Escolha <strong>um dia em que você está de serviço</strong> e o <strong>período</strong> (o turno inteiro ou um trecho), e pode escrever um <strong>motivo</strong>. As horas do serviço saem do seu saldo, e o pedido nasce como <strong>"Solicitada"</strong>.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/folga-solicitar.png" alt="Painel Solicitar folga, com o dia do serviço, o período e o motivo." />
+              </figure>
+              <p><strong>Aprovação e escala.</strong> Um administrador <strong>Aprova</strong> ou <strong>Recusa</strong>. Aprovada, a folga passa a valer: na escala, no dia da folga, <strong>você aparece riscado</strong> e as horas são descontadas do saldo. Recusada, encerra.</p>
+              <p><strong>Acompanhar e cancelar.</strong> A aba <strong>Minhas folgas</strong> reúne o seu <strong>saldo</strong> em destaque, os <strong>pedidos em aberto</strong> e o seu <strong>extrato</strong> (os lançamentos que sobem e descem o saldo), cada um com a sua situação. Enquanto o pedido está <strong>Solicitada</strong>, você pode cancelá-lo no botão <strong>✕</strong> ao lado dele; depois de aprovado, o cancelamento fica com o administrador.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/folga-minhas.png" alt="Aba Minhas folgas: o saldo em destaque, um pedido Solicitada com o botão de cancelar, e o extrato." />
+              </figure>
               <h3 id="declarar-extra">Declarar disponibilidade de extrajornada</h3>
-              <p class="manual-em-construcao">Em construção.</p>
+              <p>A extrajornada é a <strong>hora extra paga</strong>: o estado paga em dinheiro para o militar trabalhar horas a mais. Ela é organizada em <strong>cotas</strong> (cada cota vale <strong>6 horas</strong>) e é um sistema separado das Folgas. Na página <strong>Extrajornada</strong>, aba <strong>Disponibilidade</strong>, você preenche a sua <strong>declaração</strong>, mês a mês: se quer participar, quantas cotas quer e em quais dias.</p>
+              <p><strong>Sou voluntário.</strong> Só o voluntário recebe extrajornada, então o primeiro passo é responder <strong>"Sou voluntário"</strong>. Em <strong>Não</strong>, a declaração termina aí. Em <strong>Sim</strong>, aparecem as cotas e as datas para você preencher.</p>
+              <p><strong>Quantas cotas você quer.</strong> Escolha <strong>quantas cotas</strong> deseja no mês, de <strong>1 a 8</strong> (de 6 a 48 horas). O botão <strong>"Fechar blocos de 24 h"</strong> é para quem só aceita <strong>turnos inteiros</strong>: ligando ele, as cotas ficam em <strong>4</strong> (um turno de 24 horas) ou <strong>8</strong> (dois turnos).</p>
+              <p><strong>Marcar os dias.</strong> No calendário, cada clique num dia alterna entre <strong>Quero</strong> (verde), <strong>Não quero</strong> (vermelho) e neutro (branco). Eles se organizam em duas listas, <strong>Datas que quero</strong> e <strong>Datas que não quero</strong>, e você marca <strong>de 5 a 10 datas em cada uma</strong> (o mínimo de 5 diminui se você tiver poucos dias livres no mês). Cada lista mostra um contador, e um aviso indica quantas datas ainda faltam.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/extra-disp-declarar.png" alt="Painel Minha declaração: Sou voluntário em Sim, Fechar blocos de 24 h, Quantas cotas quero e as listas Datas que quero e Datas que não quero." />
+              </figure>
+              <p><strong>Dias em que você já está ocupado.</strong> Um dia em que você já tem <strong>serviço, troca, folga, férias, licença ou atestado</strong> fica <strong>apagado e não pode ser marcado</strong>, com o motivo escrito na própria data.</p>
+              <p><strong>Quantos querem cada dia.</strong> No canto de cada dia aparece <strong>quantos voluntários querem aquele dia</strong>, para você enxergar os mais e os menos procurados. No alto da tela, um seletor escolhe de qual grupo é essa contagem: a <strong>sua unidade</strong>, a <strong>companhia</strong> inteira ou outro <strong>pelotão</strong>.</p>
+              <figure class="manual-figura manual-figura--larga">
+                <img src="manual/imagens/extra-disp-calendario.png" alt="Alguns dias do calendário da disponibilidade: em verde os que você quer, em vermelho os que não quer, em cinza um dia com serviço (bloqueado), e o número de interessados no canto de cada dia." />
+              </figure>
+              <p><strong>O prazo.</strong> Você declara sempre a disponibilidade do <strong>mês seguinte</strong>, e só <strong>até o dia 25</strong> do mês atual. Um aviso no topo da declaração mostra o estado: as datas em que as alterações são permitidas, ou, quando o prazo fecha, quando a próxima declaração abre. Fora do prazo, você ainda vê a sua declaração, mas não pode mudá-la.</p>
+              <p><strong>Meses anteriores.</strong> Você pode voltar aos meses passados, só para ver. Num mês em que foi voluntário, aparece um resumo do que você <strong>recebeu</strong>: o total de cotas e cada data com quatro bolinhas, uma para cada bloco de 6 horas. Num mês em que não foi voluntário, o sistema apenas informa isso.</p>
               <h3 id="meus-avisos">Os meus avisos</h3>
-              <p class="manual-em-construcao">Em construção.</p>
+              <p>O sistema te mantém informado pelo <strong>sino</strong>, no alto da tela, à direita. O <strong>número</strong> sobre o sino conta os avisos <strong>em aberto</strong> (não é a quantidade de não lidos). Clicando nele, abre uma lista com os seus avisos.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/aviso-sino.png" alt="O sino do cabeçalho aberto, com o número de avisos em aberto e a lista de avisos." />
+              </figure>
+              <p><strong>Ler e resolver.</strong> Um aviso que <strong>só informa</strong> (por exemplo, "Troca aprovada") sai da lista <strong>quando você o lê</strong>. Um aviso que <strong>pede uma ação sua</strong> (como uma troca esperando a sua confirmação) fica na lista <strong>até o assunto ser resolvido</strong>, mesmo que você já o tenha visto. Clicar num aviso leva direto para a tela do assunto. Há também o <strong>"Marcar todas como lidas"</strong>, que limpa de uma vez os avisos que só informam, e o <strong>"Ver todos"</strong>, que abre a página Avisos.</p>
+              <p><strong>O que chega para você.</strong> Os avisos acompanham o que acontece com as suas trocas, folgas e dados:</p>
+              <ul class="manual-lista">
+                <li><strong>Trocas:</strong> "Troca de serviço para confirmar" (quando um colega pede que você cubra o serviço dele), "Troca aprovada", "Troca recusada", "Troca negada pela administração" e "Troca cancelada".</li>
+                <li><strong>Folgas:</strong> "Folga aprovada", "Folga recusada", "Folga cancelada", "Folga concedida" (quando o gestor concede uma folga direto para você) e "Saldo de folgas ajustado".</li>
+                <li><strong>Dados:</strong> quando o gestor decide uma correção de dados que você pediu.</li>
+              </ul>
+              <p><strong>A página Avisos.</strong> O <strong>"Ver todos"</strong> abre a página Avisos, com duas abas. Em <strong>Para mim</strong>, no topo aparece o <strong>"Precisa de você"</strong> (o que espera uma ação sua, como uma troca a confirmar) e, abaixo, o <strong>histórico</strong> de tudo que já aconteceu com você. Em <strong>Comunicados</strong> ficam os <strong>avisos gerais</strong> que a administração publica para toda a unidade, e que você lê.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/aviso-pagina.png" alt="A página Avisos, aba Para mim, com o Precisa de você e o histórico dos avisos." />
+              </figure>
             </section>
 
             <section class="manual-secao manual-admin" id="montando">
@@ -250,6 +336,67 @@
               <p class="manual-em-construcao">Em construção.</p>
               <h3 id="historico" class="manual-admin">Histórico <span class="manual-selo-admin">Apenas administradores</span></h3>
               <p class="manual-em-construcao manual-admin">Em construção.</p>
+            </section>
+
+            <section class="manual-secao" id="legenda">
+              <h2>Legenda de ícones e selos</h2>
+              <p>Aqui ficam reunidos os ícones e as cores que aparecem pelo sistema, para você consultar quando bater a dúvida.</p>
+
+              <h3 id="legenda-escala" class="manual-topico">Os ícones da Escala</h3>
+              <p>Na Escala, à esquerda de cada nome, um ícone mostra <strong>de onde o militar veio</strong> naquele dia:</p>
+              <ul class="manual-legenda">
+                <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-origem-base.svg#icone-origem-base"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>Escala base.</strong> Marca onde o militar entrou no ciclo: o ponto em que um administrador o inseriu para começar na escala base.</span>
+                </li>
+                <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-origem-sistema.svg#icone-origem-sistema"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>Gerado pelo sistema.</strong> Os dias que o sistema projetou sozinho a partir daquela entrada, seguindo o ciclo da unidade.</span>
+                </li>
+                <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-origem-pontual.svg#icone-origem-pontual"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>Inserção pontual.</strong> O militar foi colocado só naquele dia, fora do ciclo normal.</span>
+                </li>
+                <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-origem-troca.svg#icone-origem-troca"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>Troca.</strong> O militar está ali por uma troca, cobrindo um colega.</span>
+                </li>
+                <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-folgas.svg#icone-folgas"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>Folga.</strong> O militar está de folga naquele dia.</span>
+                </li>
+                <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-extrajornada.svg#icone-extrajornada"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>Extrajornada.</strong> O militar está numa hora extra paga.</span>
+                </li>
+                <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-cadeado.svg#icone-cadeado"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>Cadeado.</strong> O único que não fala do dia: indica que a <strong>função</strong> daquele militar foi definida à mão pelo administrador e, por isso, não muda quando o sistema recalcula. Aparece junto de outro ícone de origem.</span>
+                </li>
+              </ul>
+              <p><strong>Nome riscado.</strong> Quando o nome aparece riscado, como em <s>3ºSgt. Meireles</s>, é porque o militar <strong>saiu</strong> daquele serviço, por folga ou por troca. Nesse caso aparecem dois ícones: o da origem dele no dia e o marcador de folga ou de troca.</p>
+
+              <h3 id="legenda-cores" class="manual-topico">Cores e selos de situação</h3>
+              <p>As cores seguem sempre a mesma ideia no sistema todo:</p>
+              <ul class="manual-legenda">
+                <li>
+                  <span class="manual-legenda-marca"><span class="selo selo--sucesso">Aprovada</span></span>
+                  <span class="manual-legenda-texto"><strong>Verde.</strong> Tudo certo: aprovado, ativo, sem problema.</span>
+                </li>
+                <li>
+                  <span class="manual-legenda-marca"><span class="selo selo--alerta">Pendente</span></span>
+                  <span class="manual-legenda-texto"><strong>Amarelo.</strong> Atenção: algo pendente ou uma ressalva a conferir.</span>
+                </li>
+                <li>
+                  <span class="manual-legenda-marca"><span class="selo selo--erro">Recusada</span></span>
+                  <span class="manual-legenda-texto"><strong>Vermelho.</strong> Problema: um erro, um conflito ou algo recusado.</span>
+                </li>
+                <li>
+                  <span class="manual-legenda-marca"><span class="selo selo--escuro">Cancelada</span></span>
+                  <span class="manual-legenda-texto"><strong>Cinza.</strong> Encerrado sem efeito, como algo cancelado.</span>
+                </li>
+              </ul>
+              <p>Os <strong>selos</strong> são essas etiquetas coloridas que resumem a situação de um item. Os mais comuns são <strong>Ativo</strong>, <strong>Pendente</strong>, <strong>Aprovada</strong>, <strong>Recusada</strong> (ou Rejeitada) e <strong>Cancelada</strong>.</p>
             </section>
 
             <section class="manual-secao" id="logica">

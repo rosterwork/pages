@@ -27,14 +27,14 @@
   function fmt() { return RW.trocasFormato; }
 
   function limparSelecao() {
-    if (itemSelecionado) { itemSelecionado.classList.remove('troca-item--selecionada'); itemSelecionado = null; }
+    if (itemSelecionado) { itemSelecionado.classList.remove('troca-item--selecionada', 'troca-pendente--selecionada'); itemSelecionado = null; }
   }
 
   function abrirTroca(item, troca) {
     /* abre primeiro: reabrir por cima dispara o aoFechar (limparSelecao) da troca anterior,
        que apagaria o destaque novo se marcássemos antes */
     if (RW.trocasPainel) RW.trocasPainel.abrir(troca, contexto);
-    if (itemSelecionado) itemSelecionado.classList.remove('troca-item--selecionada');
+    if (itemSelecionado) itemSelecionado.classList.remove('troca-item--selecionada', 'troca-pendente--selecionada');
     itemSelecionado = item;
     item.classList.add('troca-item--selecionada');
   }
@@ -120,9 +120,17 @@
     el.querySelector('.troca-pendente-devedor').textContent = fmt().nomeMilitar(p.devedor_grau, p.devedor_nome);
     el.querySelector('.troca-pendente-credor').textContent = fmt().nomeMilitar(p.credor_grau, p.credor_nome);
     el.querySelector('.troca-pendente-horas').textContent = RW.mensagens.trocas.pendHoras(Math.round((p.minutos || 0) / 60));
-    var dias = (p.dias || []).map(function (d) { return fmt().dataCurta(d); }).join(', ');
-    el.querySelector('.troca-pendente-dias-lista').textContent = dias;
+    el.querySelector('.troca-pendente-resumo').textContent = RW.mensagens.trocas.pendResumo(p.total_trocas || 0);
+    el.addEventListener('click', function () { abrirPendencia(el, p); });
     return el;
+  }
+
+  /* abre o extrato da pendência no painel (destaca o card, como na lista de trocas) */
+  function abrirPendencia(item, p) {
+    if (RW.trocasPendenciaPainel) RW.trocasPendenciaPainel.abrir(p, contexto);
+    if (itemSelecionado) itemSelecionado.classList.remove('troca-item--selecionada', 'troca-pendente--selecionada');
+    itemSelecionado = item;
+    item.classList.add('troca-pendente--selecionada');
   }
   function carregarPendentes() {
     var lista = conteudo.querySelector('#trocas-pendentes-lista');

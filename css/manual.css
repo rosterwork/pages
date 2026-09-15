@@ -88,6 +88,8 @@
 .manual-figura { margin: 16px 0; max-width: 560px; }
 .manual-figura img { display: block; max-width: 100%; height: auto; border: 1px solid var(--borda); border-radius: var(--raio-medio); }
 .manual-figura figcaption { margin-top: 8px; font-size: 12px; color: var(--texto-fraco); }
+/* figura um pouco mais larga que o padrão, mas dentro da coluna de texto (ex.: close do calendário) */
+.manual-figura--larga { max-width: 700px; }
 
 /* passo a passo (lista numerada) */
 .manual-passos { margin: 16px 0; padding-left: 24px; }
@@ -96,6 +98,12 @@
 /* lista simples (marcadores) */
 .manual-lista { margin: 16px 0; padding-left: 24px; }
 .manual-lista li { margin-bottom: 8px; }
+
+/* legenda (ícone ou selo real à esquerda + explicação) */
+.manual-legenda { list-style: none; margin: 16px 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.manual-legenda > li { display: flex; align-items: flex-start; gap: 12px; }
+.manual-legenda-marca { flex: 0 0 84px; display: flex; align-items: center; gap: 4px; color: var(--texto-forte); padding-top: 2px; }
+.manual-legenda-texto { min-width: 0; }
 
 /* observação (selo/nota do manual) */
 .manual-nota {

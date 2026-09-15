@@ -56,7 +56,7 @@
     if (l.situacao === 'pendente') return msg().pendenteNaoConta;
     return l.motivo || '';
   }
-  function linhaExtrato(l) {
+  function linhaExtrato(l, donoCpf) {
     var linha = RosterWork.tpl('tpl-folga-extrato-linha');
     if (!linha) return null;
     linha.querySelector('.folga-extrato-data').textContent = tituloLinha(l);
@@ -71,18 +71,22 @@
       vEl.textContent = fmt().valorTexto(l.sinal, l.minutos);
       vEl.classList.add(l.sinal === '-' ? 'folga-extrato-valor--negativo' : 'folga-extrato-valor--positivo');
     }
-    /* admin pode cancelar uma folga já efetivada (some da escala, devolve as horas) */
-    if (l.origem === 'folga' && (l.situacao === 'concedida' || l.situacao === 'aprovada') && ctx && ctx.admin && l.id) {
+    /* cancelar: o próprio militar cancela a SUA folga pendente; o admin cancela pendente e também já efetivada (some da escala, devolve as horas) */
+    var ehMinha = donoCpf && ctx && donoCpf === ctx.cpf;
+    var podeCancelar = l.origem === 'folga' && l.id && ctx && (
+      (l.situacao === 'pendente' && (ehMinha || ctx.admin)) ||
+      ((l.situacao === 'concedida' || l.situacao === 'aprovada') && ctx.admin));
+    if (podeCancelar) {
       var bc = RosterWork.tpl('tpl-folga-cancelar');
-      if (bc) { bc.addEventListener('click', function () { cancelarFolga(l.id); }); linha.appendChild(bc); }
+      if (bc) { bc.addEventListener('click', function () { cancelarFolga(l.id, l.situacao); }); linha.appendChild(bc); }
     }
     return linha;
   }
 
-  function cancelarFolga(lancamentoId) {
+  function cancelarFolga(lancamentoId, situacao) {
     if (!RW.confirmar) return;
     RW.confirmar({
-      tipo: 'aviso', mensagem: msg().confirmarCancelar, confirmarPerigo: true,
+      tipo: 'aviso', mensagem: situacao === 'pendente' ? msg().confirmarCancelarPendente : msg().confirmarCancelar, confirmarPerigo: true,
       aoConfirmar: function () {
         if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal();   // reverte a folga na escala: círculo + tela travada
         RW.folgasDados.cancelar(lancamentoId, ctx.cpf).then(function (r) {
@@ -150,7 +154,7 @@
     if (!lista.length) {
       var vazio = RW.painel.criarEstado(msg().extratoVazio); if (vazio) linhas.appendChild(vazio);
     } else {
-      lista.forEach(function (l) { var el = linhaExtrato(l); if (el) linhas.appendChild(el); });
+      lista.forEach(function (l) { var el = linhaExtrato(l, detalhe.militar && detalhe.militar.usuario_id); if (el) linhas.appendChild(el); });
     }
     corpo.appendChild(raiz);
   }

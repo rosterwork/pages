@@ -184,13 +184,22 @@
 
     function resetar() { ini = limIni; fim = limFim; pintar(); avisar(); }
 
+    /* crava um trecho dentro da faixa (preso ao limite) — usado por pré-preenchimentos */
+    function definirValor(inicioMin, fimMin) {
+      var a = Math.max(limIni, Math.min(inicioMin, limFim));
+      var b = Math.max(a, Math.min(fimMin, limFim));
+      ini = a; fim = b;
+      pintar();
+      avisar();
+    }
+
     /* liga/desliga o ajuste: desativada, a barra fica visível mas travada e sem rótulo */
     function ativar() { ativo = true; el.classList.remove('barra-periodo--desativada'); hIni.disabled = false; hFim.disabled = false; pintar(); }
     function desativar() { ativo = false; el.classList.add('barra-periodo--desativada'); hIni.disabled = true; hFim.disabled = true; pintar(); }
 
     if (!ativo) { el.classList.add('barra-periodo--desativada'); hIni.disabled = true; hFim.disabled = true; }
     pintar();
-    return { valor: valor, definirLimite: definirLimite, resetar: resetar, ativar: ativar, desativar: desativar, elemento: el };
+    return { valor: valor, definirLimite: definirLimite, definirValor: definirValor, resetar: resetar, ativar: ativar, desativar: desativar, elemento: el };
   }
 
   RW.barraPeriodo = { criar: criar };

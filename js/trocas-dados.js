@@ -21,7 +21,11 @@
     confirmar: function (trocaId, aceitar) { return RosterWork.rpc('fn_trocas_confirmar', { p_troca_id: trocaId, p_aceitar: aceitar }); },
     /* forcar (só admin): aprova direto de "aguardando confirmação", sem o solicitado confirmar */
     aprovar: function (trocaId, aceitar, aprovadoPor, forcar) { return RosterWork.rpc('fn_trocas_aprovar', { p_troca_id: trocaId, p_aceitar: aceitar, p_aprovado_por: aprovadoPor, p_forcar: !!forcar }); },
-    cancelar: function (trocaId, canceladoPor, desfazer) { return RosterWork.rpc('fn_trocas_cancelar', { p_troca_id: trocaId, p_cancelado_por: canceladoPor, p_desfazer: !!desfazer }); }
+    cancelar: function (trocaId, canceladoPor, desfazer) { return RosterWork.rpc('fn_trocas_cancelar', { p_troca_id: trocaId, p_cancelado_por: canceladoPor, p_desfazer: !!desfazer }); },
+    /* saldo líquido de horas entre o logado e outroCpf (> 0 = o outro me deve; < 0 = eu devo) */
+    saldoEntre: function (outroCpf) { return RosterWork.rpc('fn_trocas_saldo_entre', { p_outro_cpf: outroCpf }); },
+    /* extrato paginado dos lançamentos (serviço/devolução) entre dois militares */
+    historicoPar: function (aCpf, bCpf, limite, deslocamento) { return RosterWork.rpc('fn_trocas_historico_par', { p_a_cpf: aCpf, p_b_cpf: bCpf, p_limite: limite, p_deslocamento: deslocamento }); }
   };
 
   /* ---------- formatadores ---------- */

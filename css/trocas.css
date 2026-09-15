@@ -137,13 +137,36 @@
   gap: 8px;
 }
 
+/* card clicável: abre o extrato da pendência no painel lateral */
 .troca-pendente {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
   padding: 12px;
   border: 1px solid var(--borda);
   border-radius: var(--raio-medio);
+  background-color: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.troca-pendente:hover {
+  background-color: var(--fundo-suave);
+}
+
+.troca-pendente--selecionada,
+.troca-pendente--selecionada:hover {
+  background-color: var(--fundo-medio);
+}
+
+.troca-pendente-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
 }
 
 .troca-pendente-cab {
@@ -165,15 +188,85 @@
   color: var(--texto-suave);
 }
 
-.troca-pendente-dias {
-  display: flex;
-  gap: 4px;
+.troca-pendente-resumo {
   font-size: 12px;
   color: var(--texto-suave);
 }
 
-.troca-pendente-dias-rotulo {
+.troca-pendente-seta {
   color: var(--texto-fraco);
+  flex-shrink: 0;
+}
+
+/* ---------- painel: extrato da pendência (lançamentos entre os dois) ---------- */
+.troca-extrato {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.troca-extrato-legenda {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--texto-fraco);
+}
+
+.troca-extrato-legenda-seta {
+  color: var(--texto-fraco);
+}
+
+.troca-extrato-lista {
+  display: flex;
+  flex-direction: column;
+}
+
+.troca-extrato-linha {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 0;
+  border-top: 1px solid var(--borda);
+}
+
+.troca-extrato-topo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.troca-extrato-data {
+  font-size: 13px;
+  color: var(--texto-suave);
+}
+
+.troca-extrato-horas {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.troca-extrato-quem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--texto-forte);
+}
+
+.troca-extrato-folgou,
+.troca-extrato-trabalhou {
+  font-weight: 500;
+}
+
+.troca-extrato-seta {
+  color: var(--texto-fraco);
+  flex-shrink: 0;
+}
+
+.troca-extrato-mais {
+  align-self: flex-start;
 }
 
 /* ---------- Solicitar (formulário no painel lateral, aberto pelo botão do cabeçalho) ---------- */

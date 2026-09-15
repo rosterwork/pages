@@ -48,7 +48,7 @@
     var listaPedidos = raiz.querySelector('[data-lista="pedidos"]');
     if (pedidos.length && secPedidos && listaPedidos) {
       secPedidos.classList.remove('oculto');
-      pedidos.forEach(function (l) { var e = RW.folgasPainel && RW.folgasPainel.linhaExtrato(l); if (e) listaPedidos.appendChild(e); });
+      pedidos.forEach(function (l) { var e = RW.folgasPainel && RW.folgasPainel.linhaExtrato(l, RosterWork.sessao.cpf()); if (e) listaPedidos.appendChild(e); });
     }
 
     var listaExtrato = raiz.querySelector('[data-lista="extrato"]');
@@ -56,7 +56,7 @@
       if (!extrato.length) {
         var vazio = RosterWork.tpl('tpl-folga-lista-vazio'); if (vazio) { vazio.textContent = msg().extratoVazio; listaExtrato.appendChild(vazio); }
       } else {
-        extrato.forEach(function (l) { var e = RW.folgasPainel && RW.folgasPainel.linhaExtrato(l); if (e) listaExtrato.appendChild(e); });
+        extrato.forEach(function (l) { var e = RW.folgasPainel && RW.folgasPainel.linhaExtrato(l, RosterWork.sessao.cpf()); if (e) listaExtrato.appendChild(e); });
       }
     }
     el.appendChild(raiz);

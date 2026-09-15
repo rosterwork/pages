@@ -415,9 +415,17 @@
       modalDevPendente: 'Deixar pendente',
       modalDevAjuda: 'Escolha um dia do parceiro, ou deixe pendente.',
       /* aviso de saldo (quando as durações diferem) */
-      saldoParceiroDeve: function (h) { return 'Devolução menor: o parceiro fica devendo ' + h + 'h.'; },
-      saldoVoceDeve: function (h) { return 'Devolução maior: você fica devendo ' + h + 'h.'; },
-      saldoPendente: function (h) { return 'Sem devolução: o parceiro fica devendo ' + h + 'h.'; }
+      saldoParceiroDeve: function (h) { return 'O parceiro fica devendo ' + h + 'h a você.'; },
+      saldoVoceDeve: function (h) { return 'Você fica devendo ' + h + 'h ao parceiro.'; },
+      saldoPendente: function (h) { return 'Sem devolução: você fica devendo ' + h + 'h.'; },
+      saldoQuite: 'Com esta troca, vocês ficam sem dívida de horas.',
+      /* aba Pendentes: dica do card + painel de extrato */
+      pendResumo: function (n) { return n === 1 ? '1 troca entre vocês' : n + ' trocas entre vocês'; },
+      pendenciaTitulo: 'Dívida de horas',
+      pendenciaSubtitulo: function (devedor, horas, credor) { return devedor + ' deve ' + horas + ' a ' + credor; },
+      extratoMais: 'Ver mais',
+      extratoVazio: 'Sem trocas aprovadas entre vocês.',
+      extratoFalha: 'Não foi possível carregar o histórico.'
     },
 
     /* folgas (banco de horas: placar, solicitações, lançamentos e gaveta) */
@@ -456,6 +464,7 @@
       confirmarAprovarComProblema: 'A análise apontou problemas que podem quebrar a escala. Aprovar mesmo assim?',
       confirmarRecusar: 'Recusar esta solicitação de folga?',
       confirmarCancelar: 'Cancelar esta folga? O militar volta ao serviço na escala e as horas voltam ao saldo.',
+      confirmarCancelarPendente: 'Cancelar esta solicitação de folga?',
       falhaAcao: 'Não foi possível concluir. Tente de novo.',
       /* painel de aprovação (detalhe + análise de impacto) */
       painelFolga: 'Folga',

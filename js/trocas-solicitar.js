@@ -203,6 +203,11 @@
     if (disponiveis === 0) { habilitarParceiro(false); definirParceiro(txt('modalParceiroVazio'), true); }
     else {
       habilitarParceiro(true);
+      /* cobrança: escolhe o devedor sozinho assim que ele aparece disponível na unidade selecionada */
+      if (ctx.cobrar && !ctx.parceiroSel) {
+        var alvo = lista.filter(function (mm) { return mm && mm.cpf === ctx.cobrar.cpf && !mm.ocupado; })[0];
+        if (alvo) { ctx.parceiroSel = alvo; limparErro(parceiroInput()); aoTrocarParceiro(); }
+      }
       if (ctx.parceiroSel) definirParceiro(nomeMil(ctx.parceiroSel), false);
       else definirParceiro(txt('modalSelecione'), true);
     }
@@ -231,6 +236,11 @@
     if (!ctx.barraServico) montarBarraServico();
     ctx.barraServico.definirLimite(lim.inicioMin, lim.fimMin);
     ctx.barraServico.ativar();
+    /* cobrança: a barra já vem com as horas da dívida, do início do turno, presa ao turno */
+    if (ctx.cobrar && ctx.cobrar.minutos > 0) {
+      var fimAlvo = lim.inicioMin + ctx.cobrar.minutos;
+      ctx.barraServico.definirValor(lim.inicioMin, fimAlvo > lim.fimMin ? lim.fimMin : fimAlvo);
+    }
     ctx.servicoSel = ctx.barraServico.valor();
     carregarParceiros();
     atualizarSaldo();
@@ -245,6 +255,19 @@
     var emDia = q('#ts-dev-data') && !q('#ts-dev-data').classList.contains('oculto');
     if (emDia) { montarBarraDevolucao(); q('#ts-periodo-devolucao').classList.remove('oculto'); }
     else { var barra = q('#ts-barra-devolucao'); if (barra) barra.textContent = ''; q('#ts-periodo-devolucao').classList.add('oculto'); }
+    /* saldo já existente com o parceiro (para o aviso líquido); enquanto carrega, mostra os pontinhos */
+    ctx.saldoEntre = null; ctx.saldoCarregando = false;
+    if (ctx.parceiroSel) {
+      var cpfAlvo = ctx.parceiroSel.cpf;
+      ctx.saldoCarregando = true;
+      RW.trocasDados.saldoEntre(cpfAlvo).then(function (n) {
+        if (!ctx.parceiroSel || ctx.parceiroSel.cpf !== cpfAlvo) return;   // trocou de parceiro no meio
+        ctx.saldoEntre = Number(n) || 0; ctx.saldoCarregando = false; atualizarSaldo();
+      }).catch(function () {
+        if (!ctx.parceiroSel || ctx.parceiroSel.cpf !== cpfAlvo) return;
+        ctx.saldoEntre = 0; ctx.saldoCarregando = false; atualizarSaldo();
+      });
+    }
     atualizarSaldo();
     if (!ctx.parceiroSel) return;
     RW.trocasDados.meusServicos(ctx.parceiroSel.cpf, null).then(function (lista) {
@@ -301,15 +324,27 @@
     var elSaldo = q('#ts-saldo'), elTexto = q('#ts-saldo-texto');
     if (!elSaldo || !elTexto) return;
     var m = RW.mensagens.trocas;
-    if (!ctx.servicoSel) { elSaldo.classList.add('oculto'); return; }
+    /* o aviso mostra o saldo LÍQUIDO com o parceiro, então depende dos dois: serviço e parceiro */
+    if (!ctx.servicoSel || !ctx.parceiroSel) { elSaldo.classList.add('oculto'); return; }
+    /* ainda buscando o saldo já existente entre os dois: três pontinhos */
+    if (ctx.saldoCarregando || ctx.saldoEntre === null || ctx.saldoEntre === undefined) {
+      elTexto.textContent = '';
+      var pts = document.getElementById('carregando-pontos');
+      if (pts) elTexto.appendChild(pts.content.cloneNode(true));
+      elSaldo.classList.remove('oculto');
+      return;
+    }
     var x = ctx.servicoSel.minutos;
     var y = (ctx.devDia && ctx.devSel) ? ctx.devSel.minutos : 0;
-    var texto = null;
-    if (!ctx.devDia) texto = m.saldoPendente(Math.round(x / 60));
-    else if (x > y) texto = m.saldoParceiroDeve(Math.round((x - y) / 60));
-    else if (y > x) texto = m.saldoVoceDeve(Math.round((y - x) / 60));
-    if (texto) { elTexto.textContent = texto; elSaldo.classList.remove('oculto'); }
-    else elSaldo.classList.add('oculto');
+    /* quanto EU fico devendo ao parceiro no fim: (serviço − devolução) menos o que ele já me devia */
+    var net = (x - y) - ctx.saldoEntre;
+    var texto;
+    if (net > 0) texto = m.saldoVoceDeve(Math.round(net / 60));
+    else if (net < 0) texto = m.saldoParceiroDeve(Math.round(-net / 60));
+    else if (ctx.saldoEntre !== 0) texto = m.saldoQuite;   // esta troca zera uma dívida que existia
+    else { elSaldo.classList.add('oculto'); return; }       // troca equilibrada, sem dívida prévia: nada a avisar
+    elTexto.textContent = texto;
+    elSaldo.classList.remove('oculto');
   }
 
   /* validação e envio */
@@ -389,6 +424,7 @@
     ctx.servicoDia = null; ctx.servicoCtx = null; ctx.servicoSel = null; ctx.barraServico = null;
     ctx.unidadeSel = null; ctx.parceiroSel = null;
     ctx.devDia = null; ctx.devSel = null; ctx.barraDevolucao = null; ctx.parceiroServicos = [];
+    ctx.saldoEntre = null; ctx.saldoCarregando = false;
 
     if (q('#ts-data')) q('#ts-data').value = '';
     montarBarraServico();   /* barra do serviço volta visível e travada */
@@ -414,8 +450,10 @@
     }
   }
 
-  /* abre o painel lateral, monta o formulário (molde) e carrega os dados */
-  function abrir() {
+  /* abre o painel lateral, monta o formulário (molde) e carrega os dados.
+     opcoes.cobrar = { cpf, nome, grau, minutos } liga o modo cobrança:
+     o devedor entra como parceiro e a barra do serviço já nasce com as horas da dívida */
+  function abrir(opcoes) {
     if (!RW.painel) return;
     RW.painel.abrir({ titulo: txt('tituloPainel'), aoFechar: aoFecharReset, aoTentarFechar: guardaFechar });
 
@@ -427,7 +465,9 @@
       raiz: corpo, aoSolicitar: cbs.aoSolicitar, aoMudar: cbs.aoMudar,
       unidades: [], meusServicos: [], parceiroServicos: [],
       servicoDia: null, servicoSel: null, barraServico: null, unidadeSel: null, parceiroSel: null,
-      devDia: null, devSel: null, barraDevolucao: null
+      devDia: null, devSel: null, barraDevolucao: null,
+      saldoEntre: null, saldoCarregando: false,
+      cobrar: (opcoes && opcoes.cobrar) || null
     };
     aberto = true;
 

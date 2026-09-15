@@ -33,7 +33,7 @@
 
   <!-- Pendentes: dívidas de devolução (trocas sem devolução) -->
   <div class="pagina-corpo oculto" data-aba-painel="pendentes">
-    <p class="trocas-pendentes-descricao">Aqui aparecem as pendências de trocas que não tiveram devolução.</p>
+    <p class="trocas-pendentes-descricao">As dívidas de horas entre militares. Clique numa para ver o histórico.</p>
     <div class="trocas-pendentes" id="trocas-pendentes-lista"></div>
   </div>
 </div>
@@ -85,8 +85,8 @@
       <div class="campo">
         <span class="campo-rotulo">Devolução</span>
         <div class="abas abas--pequenas trocas-dev-toggle" id="ts-dev-toggle">
-          <button type="button" class="aba aba--ativa" data-dev="pendente">Deixar pendente</button>
-          <button type="button" class="aba" data-dev="dia">Escolher dia</button>
+          <button type="button" class="aba aba--ativa" data-dev="pendente">Pendência</button>
+          <button type="button" class="aba" data-dev="dia">Marcar dia</button>
         </div>
         <input type="text" class="campo-entrada trocas-dev-data oculto" id="ts-dev-data" readonly placeholder="Dia do parceiro" />
       </div>
@@ -129,21 +129,55 @@
   <div class="troca-vazio"></div>
 </template>
 
-<!-- molde: card de pendência de devolução (quem deve horas para quem) -->
+<!-- molde: card de pendência (clicável: abre o extrato no painel lateral) -->
 <template id="tpl-troca-pendente">
-  <div class="troca-pendente">
-    <div class="troca-pendente-cab">
-      <span class="troca-pendente-devedor"></span>
-      <span class="troca-pendente-conector">deve</span>
-      <span class="selo selo--alerta troca-pendente-horas"></span>
-      <span class="troca-pendente-conector">a</span>
-      <span class="troca-pendente-credor"></span>
+  <button type="button" class="troca-pendente">
+    <span class="troca-pendente-info">
+      <span class="troca-pendente-cab">
+        <span class="troca-pendente-devedor"></span>
+        <span class="troca-pendente-conector">deve</span>
+        <span class="selo selo--alerta troca-pendente-horas"></span>
+        <span class="troca-pendente-conector">a</span>
+        <span class="troca-pendente-credor"></span>
+      </span>
+      <span class="troca-pendente-resumo"></span>
+    </span>
+    <svg class="icone troca-pendente-seta" width="18" height="18" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
+  </button>
+</template>
+
+<!-- molde: extrato da pendência (corpo do painel) -->
+<template id="tpl-troca-extrato">
+  <div class="troca-extrato">
+    <div class="troca-extrato-legenda">
+      <span class="troca-extrato-legenda-folgou">Folgou</span>
+      <svg class="icone troca-extrato-legenda-seta" width="16" height="16" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+      <span class="troca-extrato-legenda-trabalhou">Trabalhou</span>
     </div>
-    <div class="troca-pendente-dias">
-      <span class="troca-pendente-dias-rotulo">Trocas sem devolução:</span>
-      <span class="troca-pendente-dias-lista"></span>
+    <div class="troca-extrato-lista"></div>
+    <button type="button" class="botao troca-extrato-mais oculto"></button>
+  </div>
+</template>
+
+<!-- molde: uma linha do extrato (data + horas em cima; folgou -> trabalhou embaixo) -->
+<template id="tpl-troca-extrato-linha">
+  <div class="troca-extrato-linha">
+    <div class="troca-extrato-topo">
+      <span class="troca-extrato-data"></span>
+      <span class="espacador-flex"></span>
+      <span class="troca-extrato-horas"></span>
+    </div>
+    <div class="troca-extrato-quem">
+      <span class="troca-extrato-folgou"></span>
+      <svg class="icone troca-extrato-seta" width="16" height="16" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+      <span class="troca-extrato-trabalhou"></span>
     </div>
   </div>
+</template>
+
+<!-- molde: rodapé do painel de pendência (Cobrar, só para o credor) -->
+<template id="tpl-troca-pendente-acoes">
+  <button type="button" class="botao botao--primario troca-pendente-cobrar">Cobrar</button>
 </template>
 
 <!-- molde: corpo do painel de detalhe da troca -->
