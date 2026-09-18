@@ -384,6 +384,75 @@
       });
   }
 
+  /* seção "Acesso ao sistema" (Ver, admin) — militar sem conta: gera e entrega o token */
+  function podeGerarToken() {
+    return RosterWork.sessao.ehAdmin() && !ehInativo() && fichaAtual && fichaAtual.tem_conta === false;
+  }
+
+  /* ISO "AAAA-MM-DDTHH:MM:SS" -> "DD/MM HH:MM" */
+  function formatarDataHora(iso) {
+    if (!iso) return '';
+    var partes = String(iso).slice(0, 16).split('T');
+    if (partes.length < 2) return formatarData(iso);
+    var d = partes[0].split('-');
+    return d.length === 3 ? d[2] + '/' + d[1] + ' ' + partes[1] : iso;
+  }
+
+  function atualizarEstadoToken(estadoEl, botao) {
+    if (!pessoaAtual || !estadoEl || !botao) return;
+    RosterWork.apiFetch('/rest/v1/rpc/convite_estado', { metodo: 'POST', corpo: { p_cpf: pessoaAtual.usuario_id } })
+      .then(function (resp) { return resp.ok ? resp.json() : null; })
+      .then(function (e) {
+        if (!e || !e.ok) return;
+        var T = RosterWork.mensagens.usuarios, B = RosterWork.mensagens.botoes;
+        if (e.estado === 'ativo') {
+          estadoEl.textContent = T.tokenAtivo.replace('{ate}', formatarDataHora(e.ate));
+          botao.textContent = B.gerarNovoToken;
+        } else if (e.estado === 'em_uso') {
+          estadoEl.textContent = T.tokenEmUso.replace('{ate}', formatarDataHora(e.ate));
+          botao.textContent = B.gerarNovoToken;
+        } else {
+          estadoEl.textContent = T.tokenNenhum;
+          botao.textContent = B.gerarToken;
+        }
+      })
+      .catch(function () {});
+  }
+
+  function gerarToken(estadoEl, botao) {
+    if (!pessoaAtual) return;
+    RosterWork.apiFetch('/rest/v1/rpc/convite_gerar', { metodo: 'POST', corpo: { p_cpf: pessoaAtual.usuario_id } })
+      .then(function (resp) { return resp.ok ? resp.json() : { _falha: 'servidor' }; })
+      .then(function (r) {
+        if (r && r._falha === 'servidor') {
+          if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.falhaServidor });
+        } else if (r && r.success) {
+          if (RosterWork.avisar) RosterWork.avisar({ tipo: 'sucesso', mensagem: RosterWork.mensagens.usuarios.tokenGerado.replace('{token}', r.token || '') });
+          atualizarEstadoToken(estadoEl, botao);
+        } else if (RosterWork.avisar) {
+          RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || RosterWork.mensagens.usuarios.falhaToken });
+        }
+      })
+      .catch(function () {
+        if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.semConexao });
+      });
+  }
+
+  function montarAcessoToken(corpo) {
+    var secao = RosterWork.painel.criarSecaoColapsavel('Acesso ao sistema', { aberta: true });
+    if (!secao) return;
+    var alvo = secao.querySelector('.painel-secao-corpo');
+    var estadoBox = RosterWork.tpl('tpl-usuarios-token-estado');
+    var botao = RosterWork.tpl('tpl-usuarios-token-botao');
+    if (!estadoBox || !botao) return;
+    var estadoEl = estadoBox.querySelector('[data-token-estado]');
+    alvo.appendChild(estadoBox);
+    botao.addEventListener('click', function () { gerarToken(estadoEl, botao); });
+    alvo.appendChild(botao);
+    corpo.appendChild(secao);
+    atualizarEstadoToken(estadoEl, botao);
+  }
+
   /* ---------- estados do corpo ---------- */
 
   function mostrarErro(corpo) {
@@ -456,6 +525,7 @@
         if (podeRedefinirSenha()) montarRedefinirSenha(corpo);
       } else {
         montarDados(corpo);
+        if (podeGerarToken()) montarAcessoToken(corpo);
       }
     }
   }

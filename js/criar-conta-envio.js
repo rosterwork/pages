@@ -114,8 +114,9 @@
     if (campo && campo.scrollIntoView) campo.scrollIntoView({ block: 'center', behavior: 'smooth' });
   }
 
-  /* ---------- o envio: cobra tudo de novo ---------- */
-  function montarPedido() {
+  /* ---------- o envio: cobra tudo de novo ----------
+     valida os campos comuns aos dois caminhos e devolve se está tudo certo */
+  function validarCampos() {
     C.limparErros(el('cc-corpo'));
     var ok = true;
     function erro(elemento, msg) { C.marcarErro(elemento, msg); ok = false; }
@@ -134,22 +135,85 @@
       if (!selecao(id)) erro(el(id), ESCOLHAS[id]());
     });
 
-    /* as promoções: uma data por posto já percorrido, em ordem */
-    var promocoes = [];
+    return ok;
+  }
+
+  /* as promoções: uma data por posto já percorrido, em ordem (só o cadastro novo as envia) */
+  function coletarPromocoes() {
+    var promocoes = [], ok = true;
     var campos = el('cc-promocoes').querySelectorAll('.campo-entrada');
     var anterior = null;
     for (var i = 0; i < campos.length; i++) {
       var d = V.parseData(campos[i].value);
-      if (!campos[i].value.trim()) { erro(campos[i], T().promocaoVazia); continue; }
-      if (!d) { erro(campos[i], T().dataInvalida); continue; }
-      if (anterior && d <= anterior) { erro(campos[i], T().promocaoOrdem); continue; }
+      if (!campos[i].value.trim()) { C.marcarErro(campos[i], T().promocaoVazia); ok = false; continue; }
+      if (!d) { C.marcarErro(campos[i], T().dataInvalida); ok = false; continue; }
+      if (anterior && d <= anterior) { C.marcarErro(campos[i], T().promocaoOrdem); ok = false; continue; }
       anterior = d;
       promocoes.push(V.paraISO(campos[i].value));
     }
+    return { ok: ok, promocoes: promocoes };
+  }
 
-    if (!ok) return null;
+  /* deixa a colocação no mesmo formato guardado (4 dígitos, zeros à esquerda),
+     senão o banco lê como alteração e pede aprovação à toa */
+  function colocacaoNormalizada() {
+    var v = valor('cc-colocacao');
+    if (!v) return '';
+    return v.length >= 4 ? v : ('0000' + v).slice(-4);
+  }
 
-    return {
+  /* resgate por token: os campos que a pessoa pode ter conferido/alterado.
+     O banco compara com o valor atual e só manda para aprovação o que mudou;
+     e-mail, celular e senha vão fora daqui, valem na hora. */
+  function montarCorrecoes() {
+    return [
+      { campo: 'nome_completo', valor: valor('cc-nome-completo') },
+      { campo: 'rg', valor: V.soDigitos(valor('cc-rg')) },
+      { campo: 'data_de_nascimento', valor: V.paraISO(valor('cc-nascimento')) },
+      { campo: 'cnh', valor: selecao('cc-cnh') },
+      { campo: 'nome_de_guerra', valor: valor('cc-nome-guerra') },
+      { campo: 'tipo', valor: selecao('cc-setor') },
+      { campo: 'data_de_inclusao', valor: V.paraISO(valor('cc-inclusao')) },
+      { campo: 'classificacao_cfo_cfp', valor: colocacaoNormalizada() }
+    ];
+  }
+
+  function irParaLogin() { window.location.href = 'login.html'; }
+
+  /* resgate por token: cria a conta na hora (convite_resgatar_criar) */
+  function enviarToken(botao) {
+    var ctx = RW.criarConta.contextoToken();
+    RW.iniciarCarregando(botao);
+    rpc('convite_resgatar_criar', {
+      p_cpf: ctx.cpf,
+      p_token: ctx.token,
+      p_email: valor('cc-email').toLowerCase(),
+      p_celular: V.soDigitos(valor('cc-celular')),
+      p_senha: el('cc-senha').value,
+      p_correcoes: montarCorrecoes()
+    })
+      .then(function (r) {
+        RW.pararCarregando(botao);
+        if (r && r.success) {
+          if (RW.criarConta && RW.criarConta.marcarEnviado) RW.criarConta.marcarEnviado();
+          var msg = (r.correcoes_pendentes > 0)
+            ? RW.mensagens.criarConta.contaCriadaComCorrecoes
+            : RW.mensagens.criarConta.contaCriada;
+          RW.avisar({ tipo: 'sucesso', mensagem: msg, aoConfirmar: irParaLogin });
+          return;
+        }
+        RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.criarConta.resgateFalha });
+      })
+      .catch(function () {
+        RW.pararCarregando(botao);
+        RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao });
+      });
+  }
+
+  /* cadastro novo: vira um pedido para o admin aprovar (cadastro_solicitar) */
+  function enviarNovo(botao, promocoes) {
+    RW.iniciarCarregando(botao);
+    rpc('cadastro_solicitar', {
       p_cpf: V.soDigitos(valor('cc-cpf')),
       p_nome_completo: valor('cc-nome-completo'),
       p_rg: V.soDigitos(valor('cc-rg')),
@@ -165,30 +229,14 @@
       p_tipo: selecao('cc-setor'),
       p_promocoes: promocoes,
       p_senha: el('cc-senha').value
-    };
-  }
-
-  function enviar() {
-    var botao = el('cc-enviar');
-    var pedido = montarPedido();
-    if (!pedido) {
-      mostrarPrimeiroErro();
-      RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.camposCorrigir });
-      return;
-    }
-    RW.iniciarCarregando(botao);
-    rpc('cadastro_solicitar', pedido)
+    })
       .then(function (r) {
         RW.pararCarregando(botao);
         if (r && r.success) {
           /* o pedido foi: o formulário deixa de ter alterações a proteger,
              senão o guarda de saída barra a ida ao login */
           if (RW.criarConta && RW.criarConta.marcarEnviado) RW.criarConta.marcarEnviado();
-          RW.avisar({
-            tipo: 'sucesso',
-            mensagem: RW.mensagens.criarConta.enviado,
-            aoConfirmar: function () { window.location.href = 'login.html'; }
-          });
+          RW.avisar({ tipo: 'sucesso', mensagem: RW.mensagens.criarConta.enviado, aoConfirmar: irParaLogin });
           return;
         }
         RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.criarConta.falha });
@@ -197,6 +245,23 @@
         RW.pararCarregando(botao);
         RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao });
       });
+  }
+
+  function enviar() {
+    var botao = el('cc-enviar');
+    var modo = (RW.criarConta && RW.criarConta.modo) ? RW.criarConta.modo() : 'novo';
+
+    var camposOk = validarCampos();
+    /* só o cadastro novo digita as promoções; no token elas ficam travadas na conferência */
+    var promo = (modo === 'novo') ? coletarPromocoes() : { ok: true, promocoes: [] };
+    if (!camposOk || !promo.ok) {
+      mostrarPrimeiroErro();
+      RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.camposCorrigir });
+      return;
+    }
+
+    if (modo === 'token') enviarToken(botao);
+    else enviarNovo(botao, promo.promocoes);
   }
 
   function ligar(fnRpc) {

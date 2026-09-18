@@ -226,7 +226,7 @@
         <span class="campo-erro-texto"></span>
       </label>
       <label class="campo">
-        <span class="campo-rotulo">E-mail</span>
+        <span class="campo-rotulo">E-mail (opcional)</span>
         <input class="campo-entrada" id="nu-email" type="text" maxlength="80" placeholder="nome@exemplo.com" />
         <span class="campo-erro-texto"></span>
       </label>
@@ -398,6 +398,16 @@
     <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-cadeado.svg#icone-cadeado"/></svg>
     <span>Sem acesso ao sistema. Cadastrado sem conta de login, não participa de trocas, folgas nem extrajornada até criar a própria conta.</span>
   </div>
+</template>
+
+<!-- molde: estado do token de acesso (seção Acesso ao sistema) -->
+<template id="tpl-usuarios-token-estado">
+  <div class="ficha-observacao"><span data-token-estado></span></div>
+</template>
+
+<!-- molde: botão de gerar token de acesso -->
+<template id="tpl-usuarios-token-botao">
+  <button type="button" class="botao botao--primario">Gerar token de acesso</button>
 </template>
 
 <template id="tpl-usuarios-baixa-botao">

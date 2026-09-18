@@ -20,7 +20,14 @@
   var C = RW.campos;
 
   var graus = [];
-  var lotacao = null;   /* instância do seletor de unidades (modo único) */
+  var lotacao = null;                           /* instância do seletor de unidades (modo único) */
+  var opcoesProntas = Promise.resolve(false);   /* resolve quando postos + árvore terminam de carregar */
+
+  /* dois caminhos de cadastro:
+       'novo'  — CPF inédito: ficha em branco, vira pedido para o admin aprovar
+       'token' — CPF já pré-cadastrado: dados carregados por token para conferir e criar a senha */
+  var modo = 'novo';
+  var contextoToken = { cpf: '', token: '' };   /* guarda o par que o envio por token precisa reenviar */
 
   /* as duas funções do cadastro são públicas (anon); o apiFetch manda a
      chave publicável quando não há sessão, então serve aqui também */
@@ -157,6 +164,154 @@
     return false;
   }
 
+  /* ---------- preencher / alternar passos (fluxo "assumir conta") ---------- */
+
+  /* "2018-02-15" -> "15/02/2018" (sem passar por Date, evita fuso) */
+  function isoParaBR(iso) {
+    if (!iso) return '';
+    var p = String(iso).split('-');
+    return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : '';
+  }
+
+  /* escreve num campo de seleção o valor E o rótulo (o posto tem valor = id e
+     texto = nome, então definirSelecao sozinho não serve) */
+  function selecaoComRotulo(gatilho, valor, rotulo) {
+    if (!gatilho) return;
+    gatilho.setAttribute('data-valor', valor);
+    var texto = gatilho.querySelector('.campo-selecao-texto');
+    if (!texto) return;
+    texto.textContent = rotulo;
+    texto.classList.toggle('campo-selecao-texto--vazio', !valor);
+  }
+
+  function grauPorId(grauId) {
+    for (var i = 0; i < graus.length; i++) {
+      if (String(graus[i].grau_id) === String(grauId)) return graus[i];
+    }
+    return null;
+  }
+
+  /* joga os dados da ficha nos campos do passo 2, deixando tudo editável */
+  function preencher(dados) {
+    if (!dados) return;
+    document.getElementById('cc-nome-completo').value = dados.nome_completo || '';
+    document.getElementById('cc-cpf').value = C.mascararCpf(C.soDigitos(dados.cpf || ''));
+    document.getElementById('cc-rg').value = C.mascararRg(C.soDigitos(dados.rg || ''));
+    document.getElementById('cc-nascimento').value = isoParaBR(dados.data_nascimento);
+    document.getElementById('cc-celular').value = C.mascararCelular(C.soDigitos(dados.celular || ''));
+    document.getElementById('cc-email').value = dados.email || '';
+    document.getElementById('cc-nome-guerra').value = dados.nome_de_guerra || '';
+    document.getElementById('cc-inclusao').value = isoParaBR(dados.data_de_inclusao);
+
+    C.definirSelecao(document.getElementById('cc-cnh'), dados.cnh);
+    C.definirSelecao(document.getElementById('cc-setor'), dados.tipo);
+
+    /* Tipo -> Posto -> Colocação -> promoções (a mesma cascata do preenchimento manual) */
+    var grau = grauPorId(dados.grau_hierarquico);
+    if (grau) {
+      C.definirSelecao(document.getElementById('cc-tipo'), grau.tipo);
+      aoEscolherTipo(grau.tipo);
+      selecaoComRotulo(document.getElementById('cc-posto'), String(grau.grau_id), grau.nome);
+      atualizarPromocoes(grau.grau_id);
+    }
+    document.getElementById('cc-colocacao').value =
+      dados.classificacao ? String(parseInt(dados.classificacao, 10)) : '';
+
+    /* as datas de promoção, na mesma ordem em que a tela as coleta */
+    var proms = dados.promocoes || [];
+    var camposProm = document.getElementById('cc-promocoes').querySelectorAll('.campo-entrada');
+    for (var i = 0; i < camposProm.length && i < proms.length; i++) {
+      camposProm[i].value = isoParaBR(proms[i]);
+    }
+
+    /* lotação: a mesma árvore; marca a unidade e reflete no gatilho */
+    if (lotacao && dados.lotacao_atual) {
+      lotacao.aplicarSelecaoPorIds([dados.lotacao_atual]);
+      document.getElementById('cc-lotacao').setAttribute('data-valor', dados.lotacao_atual);
+      document.getElementById('cc-lotacao-texto').classList.remove('campo-selecao-texto--vazio');
+    }
+  }
+
+  /* zera o passo 2 (cadastro do zero, quando não há ficha) */
+  function limparFormulario() {
+    var entradas = document.querySelectorAll('#cc-corpo .campo-entrada');
+    for (var i = 0; i < entradas.length; i++) {
+      if (entradas[i].tagName === 'INPUT') entradas[i].value = '';
+    }
+    C.definirSelecao(document.getElementById('cc-cnh'), '');
+    C.definirSelecao(document.getElementById('cc-setor'), '');
+    C.definirSelecao(document.getElementById('cc-tipo'), '');
+    var posto = document.getElementById('cc-posto');
+    selecaoComRotulo(posto, '', 'Selecione o tipo antes');
+    posto.disabled = true;
+    var coloc = document.getElementById('cc-colocacao');
+    coloc.value = ''; coloc.disabled = true; coloc.placeholder = 'Selecione o tipo antes';
+    document.getElementById('cc-colocacao-rotulo').textContent = 'Colocação';
+    limparPromocoes();
+    if (C.limparErros) C.limparErros(document.getElementById('cc-corpo'));
+  }
+
+  /* ---------- alternar entre os passos ---------- */
+  function mostrarPasso2() {
+    document.getElementById('cc-passo1').classList.add('oculto');
+    document.getElementById('cc-corpo').classList.remove('oculto');
+  }
+  function voltarPasso1() {
+    document.getElementById('cc-corpo').classList.add('oculto');
+    document.getElementById('cc-passo1').classList.remove('oculto');
+  }
+
+  /* ---------- resgate por token: o que a pessoa confere, não edita ----------
+     CPF é a identidade que casou com o token; posto, lotação e promoções mudam
+     por evento (Promover/Transferir), então aqui ficam só para conferência */
+  function travarConferencia() {
+    ['cc-cpf', 'cc-tipo', 'cc-posto', 'cc-lotacao'].forEach(function (id) {
+      var e = document.getElementById(id);
+      if (e) e.disabled = true;
+    });
+    var proms = document.getElementById('cc-promocoes').querySelectorAll('.campo-entrada');
+    for (var i = 0; i < proms.length; i++) proms[i].disabled = true;
+  }
+  /* volta a liberar o que o token havia travado (posto segue a cargo da cascata do Tipo) */
+  function destravarConferencia() {
+    ['cc-cpf', 'cc-tipo', 'cc-lotacao'].forEach(function (id) {
+      var e = document.getElementById(id);
+      if (e) e.disabled = false;
+    });
+  }
+
+  function trocarNota(mostrarToken) {
+    document.getElementById('cc-nota-novo').classList.toggle('oculto', mostrarToken);
+    document.getElementById('cc-nota-token').classList.toggle('oculto', !mostrarToken);
+  }
+  function rotularEnvio(chave) {
+    var b = document.getElementById('cc-enviar');
+    if (b) b.textContent = RW.mensagens.botoes[chave];
+  }
+
+  /* entra no passo 2 no caminho do token: ficha carregada, conferência travada */
+  function iniciarModoToken(cpf, token, dados) {
+    modo = 'token';
+    contextoToken = { cpf: cpf, token: token };
+    preencher(dados);
+    travarConferencia();
+    trocarNota(true);
+    rotularEnvio('criarConta');
+    mostrarPasso2();
+  }
+
+  /* entra no passo 2 no caminho do cadastro novo: tudo em branco */
+  function iniciarModoNovo(cpf) {
+    modo = 'novo';
+    contextoToken = { cpf: '', token: '' };
+    limparFormulario();
+    destravarConferencia();
+    document.getElementById('cc-cpf').value = C.mascararCpf(C.soDigitos(cpf || ''));
+    trocarNota(false);
+    rotularEnvio('enviarCadastro');
+    mostrarPasso2();
+  }
+
   /* ---------- entrada ----------
      quem já está logado nem chega aqui: o criar-conta-sessao.js (head)
      desviou para o sistema antes do corpo pintar */
@@ -166,24 +321,24 @@
     });
     ligarCampos();
     lotacao = prepararLotacao();
-    if (lotacao) lotacao.montarArvore();
+    var arvoreP = lotacao ? Promise.resolve(lotacao.montarArvore()) : Promise.resolve();
 
     /* fechar ou recarregar com o formulário preenchido avisa antes */
     if (RW.guardaSaida) RW.guardaSaida.registrar(temAlgoDigitado);
 
-    var botao = document.getElementById('cc-enviar');
-    if (RW.iniciarCarregando) RW.iniciarCarregando(botao);
-    rpc('cadastro_opcoes')
+    var voltar2 = document.getElementById('cc-p2-voltar');
+    if (voltar2) voltar2.addEventListener('click', voltarPasso1);
+
+    /* postos e árvore carregam em segundo plano; o passo 1 não fica preso esperando */
+    var opcoesP = rpc('cadastro_opcoes')
       .then(function (dados) {
-        if (RW.pararCarregando) RW.pararCarregando(botao);
-        if (!dados || !dados.graus) { falharOpcoes(); return; }
+        if (!dados || !dados.graus) { falharOpcoes(); return false; }
         graus = dados.graus;
         montarTipos();
+        return true;
       })
-      .catch(function () {
-        if (RW.pararCarregando) RW.pararCarregando(botao);
-        falharOpcoes();
-      });
+      .catch(function () { falharOpcoes(); return false; });
+    opcoesProntas = Promise.all([opcoesP, arvoreP]).then(function () { return true; });
 
     if (RW.criarContaEnvio) RW.criarContaEnvio.ligar(rpc);
   }
@@ -197,7 +352,15 @@
     });
   }
 
-  RW.criarConta = { marcarEnviado: function () { enviado = true; } };
+  RW.criarConta = {
+    marcarEnviado: function () { enviado = true; },
+    iniciarModoToken: iniciarModoToken,
+    iniciarModoNovo: iniciarModoNovo,
+    voltarPasso1: voltarPasso1,
+    aguardarOpcoes: function () { return opcoesProntas; },
+    modo: function () { return modo; },
+    contextoToken: function () { return contextoToken; }
+  };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar);
   else iniciar();

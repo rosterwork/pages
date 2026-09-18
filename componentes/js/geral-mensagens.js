@@ -80,7 +80,11 @@
     criarConta: {
       enviado: 'Cadastro enviado. Um administrador vai analisar.',
       falha: 'Não foi possível enviar o cadastro. Tente de novo.',
-      falhaOpcoes: 'Não foi possível carregar os postos e as unidades. Verifique a sua internet. A página vai recarregar.'
+      falhaOpcoes: 'Não foi possível carregar os postos e as unidades. Verifique a sua internet. A página vai recarregar.',
+      jaTemAcesso: 'Esse CPF já tem acesso ao sistema. Vamos abrir a recuperação de senha.',
+      contaCriada: 'Conta criada. Você já pode entrar com o seu CPF e a sua senha.',
+      contaCriadaComCorrecoes: 'Conta criada. Você já pode entrar. As alterações que você fez vão passar pela aprovação de um administrador.',
+      resgateFalha: 'Não foi possível criar a conta. Tente de novo.'
     },
 
     /* login (página standalone, antes da sessão) */
@@ -157,6 +161,8 @@
       setorVazio: 'Selecione o setor',
       promocaoVazia: 'Preencha a data',
       promocaoOrdem: 'Deve ser após a data anterior',
+      tokenVazio: 'Digite o token de acesso',
+      tokenInvalido: 'Token inválido ou expirado',
       sucesso: 'Usuário cadastrado com sucesso.',
       falha: 'Não foi possível cadastrar o usuário.'
     },
@@ -327,7 +333,12 @@
       falhaReadmissao: 'Não foi possível readmitir. Tente de novo.',
       confirmarRedefinirSenha: 'Redefinir a senha de {pessoa}? Ele vai entrar com uma senha temporária e deverá trocá-la no primeiro acesso. As sessões abertas dele serão encerradas.',
       senhaRedefinida: 'Senha de {pessoa} redefinida. Senha temporária: {senha}. Passe para ele, que deve trocá-la em Meu perfil, na aba Segurança.',
-      falhaRedefinirSenha: 'Não foi possível redefinir a senha. Tente de novo.'
+      falhaRedefinirSenha: 'Não foi possível redefinir a senha. Tente de novo.',
+      tokenNenhum: 'Este militar ainda não tem conta. Gere um token e entregue a ele para criar o acesso.',
+      tokenAtivo: 'Token ativo, expira em {ate}. Entregue ao militar; se ele perder, gere um novo.',
+      tokenEmUso: 'Token em uso. O militar tem até {ate} para concluir o cadastro.',
+      tokenGerado: 'Entregue este código ao militar para ele criar a conta: {token}. Vale uma vez e expira em 72 horas.',
+      falhaToken: 'Não foi possível gerar o token. Tente de novo.'
     },
 
     /* análise de impacto na escala — componente compartilhado (geral-impacto), usado por Trocas e Folgas */
@@ -600,6 +611,8 @@
       descartar: 'Descartar',
       sairSemSalvar: 'Sair sem salvar',
       irParaLogin: 'Ir para o login',
+      enviarCadastro: 'Enviar cadastro',
+      criarConta: 'Criar conta',
       excluir: 'Excluir do sistema',
       excluirViatura: 'Excluir viatura',
       excluirInstalacao: 'Excluir instalação',
@@ -609,6 +622,8 @@
       promover: 'Promover',
       readmitir: 'Readmitir',
       redefinirSenha: 'Redefinir senha',
+      gerarToken: 'Gerar token de acesso',
+      gerarNovoToken: 'Gerar novo token',
       salvar: 'Salvar',
       /* modal de resumo — reverter a ação recém-aplicada (última chance) */
       desfazer: 'Desfazer',

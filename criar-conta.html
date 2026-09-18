@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Criar conta no Roster Work — sistema de escala de serviço." />
-  <link rel="icon" href="icones/icone-logo.svg" type="image/svg+xml" />
+  <link rel="icon" href="icones/logo-aba.svg" type="image/svg+xml" />
   <title>Criar conta — Roster Work</title>
   <script src="js/criar-conta-sessao.js"></script>
   <link rel="stylesheet" href="css/geral-tema.css" />
@@ -36,10 +36,45 @@
       </div>
       <h1 class="criar-conta-titulo">Criar conta</h1>
 
-      <div class="criar-conta-corpo" id="cc-corpo">
+      <!-- PASSO 1: identificação pelo CPF (revela o token quando o admin já pré-cadastrou) -->
+      <div class="criar-conta-corpo" id="cc-passo1">
         <p class="criar-conta-nota">
           <svg class="icone criar-conta-nota-icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+          <span>Informe seu CPF para começar.</span>
+        </p>
+        <div class="criar-conta-secao">
+          <label class="campo">
+            <span class="campo-rotulo">CPF</span>
+            <input class="campo-entrada" id="cc-p1-cpf" type="text" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" />
+            <span class="campo-erro-texto"></span>
+          </label>
+          <label class="campo oculto" id="cc-p1-token-campo">
+            <span class="campo-rotulo">Token de acesso</span>
+            <input class="campo-entrada" id="cc-p1-token" type="text" maxlength="9" placeholder="XXXX-XXXX" autocomplete="off" spellcheck="false" />
+            <span class="campo-erro-texto"></span>
+          </label>
+        </div>
+        <p class="criar-conta-nota oculto" id="cc-p1-token-nota">
+          <svg class="icone criar-conta-nota-icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+          <span>Seu cadastro já foi iniciado por um administrador. Peça a ele o token de acesso e digite acima para continuar.</span>
+        </p>
+        <button class="botao botao--primario" id="cc-p1-continuar" type="button">Continuar</button>
+        <div class="criar-conta-links">
+          <button class="botao botao--texto" type="button" id="cc-voltar-login">Voltar ao login</button>
+        </div>
+      </div>
+
+      <!-- PASSO 2: ficha completa (conferir/alterar ou preencher) -->
+      <div class="criar-conta-corpo oculto" id="cc-corpo">
+        <!-- cadastro novo: tudo em branco, vira pedido para o admin aprovar -->
+        <p class="criar-conta-nota" id="cc-nota-novo">
+          <svg class="icone criar-conta-nota-icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
           <span>O cadastro passa pela aprovação de um administrador antes de liberar o acesso.</span>
+        </p>
+        <!-- resgate por token: dados já preenchidos para conferir e criar a senha -->
+        <p class="criar-conta-nota oculto" id="cc-nota-token">
+          <svg class="icone criar-conta-nota-icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+          <span>Confira seus dados e crie sua senha. E-mail, celular e senha valem na hora. Se você alterar qualquer outro dado, a mudança vai para a aprovação de um administrador. Posto, lotação e promoções são atualizados pelo administrador.</span>
         </p>
 
         <div class="criar-conta-secao">
@@ -190,7 +225,7 @@
         <button class="botao botao--primario" id="cc-enviar" type="button">Enviar cadastro</button>
 
         <div class="criar-conta-links">
-          <button class="botao botao--texto" type="button" id="cc-voltar-login">Voltar ao login</button>
+          <button class="botao botao--texto" type="button" id="cc-p2-voltar">Voltar</button>
         </div>
       </div>
 
@@ -324,6 +359,7 @@
   <script src="componentes/js/geral-seletor-unidades.js"></script>
   <script src="js/criar-conta-envio.js"></script>
   <script src="js/criar-conta.js"></script>
+  <script src="js/criar-conta-assumir.js"></script>
 
 </body>
 </html>

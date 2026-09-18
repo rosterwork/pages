@@ -49,10 +49,11 @@
     if (!cel.value.trim()) erro(cel, textos.celularVazio);
     else if (soDigitos(cel.value).length !== 11) erro(cel, textos.celularInvalido);
 
-    /* o e-mail é a identidade da conta (e o que liga ao Google depois): obrigatório */
+    /* e-mail é OPCIONAL no cadastro do admin: a ficha pode existir só para a
+       escala funcionar, e quem assume a conta informa o próprio e-mail depois.
+       Se vier preenchido, confere o formato. */
     var email = campo('nu-email');
-    if (!email.value.trim()) erro(email, textos.emailVazio);
-    else if (!validarEmail(email.value)) erro(email, textos.emailInvalido);
+    if (email.value.trim() && !validarEmail(email.value)) erro(email, textos.emailInvalido);
 
     if (!selecao('nu-tipo')) erro(campo('nu-tipo'), textos.tipoVazio);
     if (!selecao('nu-posto')) erro(campo('nu-posto'), textos.postoVazio);
