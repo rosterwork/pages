@@ -31,7 +31,7 @@
     },
 
     /* Cotas (admin): repartição justa por escopo. p_config = null carrega o salvo;
-       { modo:'grupo', bolo } ou { modo:'por_unidade', bolos:{unidadeId:n} } simula sem gravar */
+       { modo:'grupo', total } ou { modo:'por_unidade', totais:{unidadeId:n} } simula sem gravar */
     carregarCotas: function (competenciaISO, config) {
       return RosterWork.rpc('extra_cotas_carregar', {
         p_competencia: competenciaISO,

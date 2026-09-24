@@ -164,7 +164,7 @@
     if (RosterWork.painel) RosterWork.painel.fechar();
   }
 
-  function salvar(raiz) {
+  function salvar(raiz, confirmarTrocas) {
     if (!militarEscolhido || !tipoEscolhido || calcularDias(raiz) == null) return;
     var btnSalvar = raiz.querySelector('#dis-salvar'); if (btnSalvar) btnSalvar.disabled = true;
     if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal();
@@ -175,13 +175,21 @@
       p_tipo: tipoEscolhido,
       p_fora_do_fluxo: foraDoFluxo,
       p_motivo: raiz.querySelector('#dis-motivo').value.trim(),
-      p_created_by: RosterWork.sessao.cpf()
+      p_created_by: RosterWork.sessao.cpf(),
+      p_confirmar_trocas: !!confirmarTrocas
     };
     RosterWork.afastamentosDados.inserirDispensa(corpo).then(function (r) {
       if (RosterWork.esconderVeuGlobal) RosterWork.esconderVeuGlobal();
       atualizarSalvar(raiz);
       if (r && r._falha === 'servidor') {
         if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.falhaServidor });
+      } else if (r && r.precisa_confirmar_trocas) {   // cobre serviço por troca no período: o admin decide
+        var datas = (r.trocas || []).map(function (t) { return t.data + (t.com_quem ? ' (com ' + t.com_quem + ')' : ''); }).join(', ');
+        if (RosterWork.confirmar) RosterWork.confirmar({
+          tipo: 'aviso', mensagem: RosterWork.mensagens.afastamentos.confirmarTroca(datas),
+          textoConfirmar: RosterWork.mensagens.botoes.continuar, textoCancelar: RosterWork.mensagens.botoes.cancelar,
+          aoConfirmar: function () { salvar(raiz, true); }
+        });
       } else if (r && r.success) {
         sujo = false;
         if (RosterWork.painel) RosterWork.painel.fechar();

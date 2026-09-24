@@ -2,7 +2,7 @@
    EXTRAJORNADA — cotas no painel fixo à esquerda (aba Escala, admin)
    O painel fica sempre aberto à esquerda da grade (geral-layout-lateral,
    como a Disponibilidade e a Distribuição): o admin escolhe o escopo (grupo
-   inteiro ou por unidade), informa o bolo de cada escopo e o sistema reparte
+   inteiro ou por unidade), informa o total de cada escopo e o sistema reparte
    por taxa de atendimento (no banco). Cada "Concedido" é editável (respeita o
    pedido e o "fecha 24h"); a lista mostra a cota sugerida e o "feito" (blocos
    já colocados) e a taxa do mês colorida (verde/amarelo/vermelho pela média
@@ -21,8 +21,8 @@
   var naAba = false;                    // a aba Escala está ativa? (o painel só vale/carrega nela)
   var el = {};                          // elementos fixos do painel esquerdo (consultados no montar)
   var comp = null;                      // Date do 1º dia da competência (mês)
-  var estado = { modo: 'grupo', grupos: [] };   // grupos: {unidadeId,nome,bolo,vols:[...]}
-  var domGrupos = {};                   // key(unidadeId||'g') -> {boloEl, listaEl}
+  var estado = { modo: 'grupo', grupos: [] };   // grupos: {unidadeId,nome,total,vols:[...]}
+  var domGrupos = {};                   // key(unidadeId||'g') -> {totalEl, listaEl}
   var limpo = null;                     // snapshot p/ detectar edição não salva
   var guardaLigada = false;
   var timerSim = null;
@@ -48,16 +48,16 @@
   /* no modo grupo o título é a unidade mãe (2ªCIBM/CIA); no por_unidade, o nome da unidade */
   function rotuloGrupo(g) { return g.unidadeId == null ? (unidadeMae() || 'Grupo') : (g.nome || 'Unidade'); }
 
-  function boloTotal() {
+  function totalGeral() {
     var s = 0;
-    estado.grupos.forEach(function (g) { s += (g.bolo || 0); });
+    estado.grupos.forEach(function (g) { s += (g.total || 0); });
     return s;
   }
   function snapshot() {
     return JSON.stringify({
       m: estado.modo,
       g: estado.grupos.map(function (g) {
-        return { u: g.unidadeId, b: g.bolo, v: g.vols.map(function (v) { return v.cpf + ':' + v.concedido; }) };
+        return { u: g.unidadeId, b: g.total, v: g.vols.map(function (v) { return v.cpf + ':' + v.concedido; }) };
       })
     });
   }
@@ -77,11 +77,11 @@
   /* config para o banco: null carrega o salvo; senão simula sem gravar */
   function montarConfig() {
     if (estado.modo === 'grupo') {
-      return { modo: 'grupo', bolo: (estado.grupos[0] ? estado.grupos[0].bolo : 0) };
+      return { modo: 'grupo', total: (estado.grupos[0] ? estado.grupos[0].total : 0) };
     }
-    var bolos = {};
-    estado.grupos.forEach(function (g) { if (g.unidadeId != null) bolos[String(g.unidadeId)] = g.bolo; });
-    return { modo: 'por_unidade', bolos: bolos };
+    var totais = {};
+    estado.grupos.forEach(function (g) { if (g.unidadeId != null) totais[String(g.unidadeId)] = g.total; });
+    return { modo: 'por_unidade', totais: totais };
   }
 
   /* ---------- render ---------- */
@@ -201,20 +201,20 @@
           titulo.setAttribute('aria-expanded', String(!fechado));
         });
       }
-      var boloEl = sec.querySelector('.extra-cota-grupo-bolo');
-      boloEl.value = String(g.bolo);
+      var totalEl = sec.querySelector('.extra-cota-grupo-total');
+      totalEl.value = String(g.total);
       var chave = keyGrupo(g);   // o listener busca pela chave (resimular troca os objetos)
       if (RosterWork.sessao.ehAdmin()) {
-        boloEl.addEventListener('input', function () { aoBolo(chave, boloEl); });
+        totalEl.addEventListener('input', function () { aoTotal(chave, totalEl); });
       } else {
-        boloEl.disabled = true;   // comum só vê o modo; o resumo de gestão fica oculto
+        totalEl.disabled = true;   // comum só vê o modo; o resumo de gestão fica oculto
         var resumoEl = sec.querySelector('.extra-cota-grupo-resumo');
         if (resumoEl) resumoEl.classList.add('oculto');
       }
       var listaEl = sec.querySelector('.extra-cota-grupo-lista');
       domGrupos[keyGrupo(g)] = {
         card: sec,
-        boloEl: boloEl,
+        totalEl: totalEl,
         listaEl: listaEl,
         resumo: {
           dist: sec.querySelector('.extra-cota-r-dist'),
@@ -243,18 +243,18 @@
   }
 
   /* resumo de UM grupo: distribuídas/restam (do total daquele grupo) + escaladas/restam.
-     O total sai da própria caixa "Cotas" do grupo (g.bolo), nunca de uma soma global. */
+     O total sai da própria caixa "Cotas" do grupo (g.total), nunca de uma soma global. */
   function atualizarResumoGrupo(g) {
     var dom = domGrupos[keyGrupo(g)];
     if (!dom || !dom.resumo) return;
-    var total = g.bolo || 0;
+    var total = g.total || 0;
     var dist = 0, esc = 0;
     g.vols.forEach(function (v) { dist += (v.concedido || 0); esc += (v.preenchido || 0); });
     dom.resumo.dist.textContent = String(dist);
     dom.resumo.esc.textContent = String(esc);
     pintarRestam(dom.resumo.restam1, total - dist);   // sobra do total (cotas ainda por distribuir)
     pintarRestam(dom.resumo.restam2, dist - esc);      // distribuídas ainda não escaladas
-    /* estourou o bolo (distribuiu mais que o total): título do grupo fica vermelho (não há mais caixa externa) */
+    /* estourou (distribuiu mais cotas do que o total do grupo): título do grupo fica vermelho (não há mais caixa externa) */
     if (dom.card) dom.card.classList.toggle('extra-cota-grupo--estourado', (total - dist) < 0);
     atualizarTaxas(g);   // a taxa colorida acompanha o concedido ao vivo (a média do cartão muda a cada edição)
     atualizarSalvar();   // toda edição/render passa por aqui → mantém o Salvar habilitado só quando há mudança
@@ -283,11 +283,11 @@
     });
   }
 
-  /* estourou = distribuiu mais cotas do que o bolo do grupo (restam < 0) */
+  /* estourou = distribuiu mais cotas do que o total do grupo (restam < 0) */
   function grupoEstourado(g) {
     var dist = 0;
     g.vols.forEach(function (v) { dist += (v.concedido || 0); });
-    return dist > (g.bolo || 0);
+    return dist > (g.total || 0);
   }
   function algumEstourado() {
     for (var i = 0; i < estado.grupos.length; i++) if (grupoEstourado(estado.grupos[i])) return true;
@@ -316,7 +316,7 @@
         unidadeId: (gr.unidade_id == null ? null : gr.unidade_id),
         nome: gr.nome,
         cidade: gr.cidade || '',
-        bolo: gr.bolo || 0,
+        total: gr.total || 0,
         vols: (gr.voluntarios || []).map(function (v) {
           var sug = v.sugerido || 0;
           var conc = (usarSalvo && v.concedido_salvo != null) ? v.concedido_salvo : sug;
@@ -365,7 +365,7 @@
     });
   }
 
-  /* re-simula a divisão com os bolos digitados (sem gravar); só atualiza as listas */
+  /* re-simula a divisão com os totais digitados (sem gravar); só atualiza as listas */
   function resimular() {
     if (!RW.extrajornadaDados) return;
     RW.extrajornadaDados.carregarCotas(competenciaISO(), montarConfig()).then(function (r) {
@@ -374,20 +374,20 @@
       estado.grupos.forEach(function (g) {
         var dom = domGrupos[keyGrupo(g)];
         if (!dom) return;
-        if (dom.boloEl && document.activeElement !== dom.boloEl) dom.boloEl.value = String(g.bolo);
+        if (dom.totalEl && document.activeElement !== dom.totalEl) dom.totalEl.value = String(g.total);
         renderLista(g, dom.listaEl);
       });
       atualizarResumos();
     });
   }
 
-  function aoBolo(chave, boloEl) {
+  function aoTotal(chave, totalEl) {
     var g = null;
     estado.grupos.forEach(function (gg) { if (keyGrupo(gg) === chave) g = gg; });
     if (!g) return;
-    var v = boloEl.value.replace(/\D/g, '');
-    if (v !== boloEl.value) boloEl.value = v;
-    g.bolo = v === '' ? 0 : parseInt(v, 10);
+    var v = totalEl.value.replace(/\D/g, '');
+    if (v !== totalEl.value) totalEl.value = v;
+    g.total = v === '' ? 0 : parseInt(v, 10);
     atualizarResumoGrupo(g);
     if (timerSim) clearTimeout(timerSim);
     timerSim = setTimeout(resimular, 400);
@@ -403,8 +403,8 @@
     }
     function aplicar() {
       var config = (modo === 'grupo')
-        ? { modo: 'grupo', bolo: boloTotal() }
-        : { modo: 'por_unidade', bolos: {} };
+        ? { modo: 'grupo', total: totalGeral() }
+        : { modo: 'por_unidade', totais: {} };
       estado.modo = modo;
       atualizarEscopoBotoes();
       RW.extrajornadaDados.carregarCotas(competenciaISO(), config).then(function (r) {
@@ -449,7 +449,7 @@
       } else if (r && r.cota_estourada) {
         RW.avisar({ tipo: 'aviso', mensagem: RW.mensagens.extrajornada.cotaEstourada });   // rede de segurança (o front já trava)
       } else if (r && r.cota_menor) {
-        RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.extrajornada.cotaMenor });   // bolo abaixo do já colocado (C4)
+        RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.extrajornada.cotaMenor });   // total abaixo do já colocado (C4)
       } else {
         RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.extrajornada.falhaSalvar });
       }

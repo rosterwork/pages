@@ -91,6 +91,86 @@
 /* figura um pouco mais larga que o padrão, mas dentro da coluna de texto (ex.: close do calendário) */
 .manual-figura--larga { max-width: 700px; }
 
+/* ---- DIAGRAMA da Visão geral ----
+   Fluxo desenhado em HTML/CSS (não é print): base + ciclo -> motor -> escala,
+   e a faixa de eventos que altera a escala pronta. Feito com tokens do tema para
+   acompanhar o modo escuro e imprimir nítido. */
+.manual-diagrama {
+  margin: 24px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+/* rótulo curto acima de um andar (ex.: "O que fica pronto antes") */
+.manual-diagrama-rotulo {
+  margin: 8px 0 0;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--texto-fraco);
+  text-align: center;
+}
+/* uma fileira de blocos */
+.manual-diagrama-andar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+/* faixa dos eventos: uma camada destacada que altera a escala pronta */
+.manual-diagrama-andar--eventos {
+  background: var(--fundo-suave);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  padding: 12px;
+}
+/* bloco (uma peça do fluxo) */
+.manual-diagrama-bloco {
+  flex: 1 1 150px;
+  max-width: 200px;
+  min-height: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  text-align: center;
+  padding: 12px;
+  background: var(--fundo-superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+}
+/* motor: bloco de destaque (mesma ênfase forte do site: fundo de contraste) */
+.manual-diagrama-bloco--motor {
+  flex-basis: 320px;
+  background: var(--fundo-contraste);
+  border-color: var(--fundo-contraste);
+}
+/* escala: o resultado do fluxo */
+.manual-diagrama-bloco--escala {
+  flex-basis: 320px;
+  border-color: var(--borda-forte);
+}
+.manual-diagrama-icone { color: var(--texto-fraco); }
+.manual-diagrama-titulo { font-weight: 600; color: var(--texto-forte); }
+.manual-diagrama-desc { font-size: 12px; color: var(--texto-fraco); }
+.manual-diagrama-bloco--motor .manual-diagrama-titulo,
+.manual-diagrama-bloco--motor .manual-diagrama-desc { color: var(--texto-invertido); }
+/* seta entre andares */
+.manual-diagrama-seta { color: var(--texto-debil); }
+/* legenda do diagrama (mesma pegada da figcaption das figuras) */
+.manual-diagrama-legenda {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--texto-fraco);
+  text-align: center;
+  max-width: 620px;
+}
+
 /* passo a passo (lista numerada) */
 .manual-passos { margin: 16px 0; padding-left: 24px; }
 .manual-passos li { margin-bottom: 8px; }
@@ -167,4 +247,11 @@
   .manual-folha { max-width: none; margin: 0; padding: 0; }
   .manual-secao { break-inside: avoid-page; }
   .manual-secao > h2, .manual-secao h3 { break-after: avoid; }
+  /* diagrama: não quebrar entre páginas; garantir leitura sem fundo (impressora costuma
+     não imprimir fundos), então o motor e a faixa de eventos ganham borda e texto normal */
+  .manual-diagrama { break-inside: avoid; }
+  .manual-diagrama-bloco--motor { background: none; border: 2px solid var(--texto-forte); }
+  .manual-diagrama-bloco--motor .manual-diagrama-titulo,
+  .manual-diagrama-bloco--motor .manual-diagrama-desc { color: var(--texto-forte); }
+  .manual-diagrama-andar--eventos { background: none; }
 }

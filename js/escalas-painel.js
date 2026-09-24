@@ -34,7 +34,8 @@
     rodizio_quebrado: 'rodizioRepetido',
     resolva_escala:   'resolvaEscala',
     exclusivo_condutor: 'exclusivoCondutor',
-    chefe_condutor:   'chefeCondutor'
+    chefe_condutor:   'chefeCondutor',
+    afastado:         'afastadoTroca'
   };
 
 
@@ -242,7 +243,7 @@
   /* avisos amarelos por tipo, cada um com o militar + a vaga (para a lista expansível).
      m.aviso pode ter mais de um motivo (vírgula) — cada motivo entra no seu tipo. */
   function detalharAvisosMotor(postos) {
-    var det = { grauRebaixado: [], grauExclusivo: [], rodizioRepetido: [], exclusivoCondutor: [] };
+    var det = { grauRebaixado: [], grauExclusivo: [], rodizioRepetido: [], exclusivoCondutor: [], afastadoTroca: [] };
     (postos || []).forEach(function (po) {
       (po.funcoes || []).forEach(function (f) {
         (f.militares || []).forEach(function (m) {
@@ -282,6 +283,8 @@
       motivo = d.motivoRodizio || '';
     } else if (tipo === 'exclusivoCondutor') {
       motivo = d.motivoExclusivo || '';
+    } else if (tipo === 'afastadoTroca') {
+      motivo = d.motivoAfastado || '';
     }
     return preencher(d.linha, { pessoa: pessoa, funcao: f.nome || '', motivo: motivo });
   }
@@ -324,7 +327,7 @@
     if (mot.resolvaEscala) chaves.push('resolvaEscala');   // 🔴 sem solução automática — resolver na Escala
     errosPresentes(postos).forEach(function (k) { chaves.push(k); });  // 🔴 conflitos de edição + viatura sem condutor
     if (mot.chefeCondutor) chaves.push('chefeCondutor');   // 🟡 chefe assumiu a direção por falta de condutor
-    var temAmarelo = det.grauRebaixado.length || det.grauExclusivo.length || det.rodizioRepetido.length || det.exclusivoCondutor.length;
+    var temAmarelo = det.grauRebaixado.length || det.grauExclusivo.length || det.rodizioRepetido.length || det.exclusivoCondutor.length || det.afastadoTroca.length;
     var qSemFuncao = (semFuncao || []).length;
     if (!chaves.length && !faltam.length && !temAmarelo && !qSemFuncao) return null;
     var aviso = RosterWork.tpl('tpl-escala-distribuicao-aviso');
@@ -343,6 +346,7 @@
     montarAvisoGrupo(lista, 'grauExclusivo', det.grauExclusivo, cat.grauExclusivo);         // 🟡 grau ≠ ideal por regra exclusiva
     montarAvisoGrupo(lista, 'rodizioRepetido', det.rodizioRepetido, cat.rodizioRepetido);   // 🟡
     montarAvisoGrupo(lista, 'exclusivoCondutor', det.exclusivoCondutor, cat.exclusivoCondutor);   // 🟡
+    montarAvisoGrupo(lista, 'afastadoTroca', det.afastadoTroca, cat.afastadoTroca);   // 🟡 coberto por troca mas afastado
     if (mostrarAcao) {
       var ac = aviso.querySelector('.escala-distribuicao-aviso-acao');
       if (ac) ac.classList.remove('oculto');

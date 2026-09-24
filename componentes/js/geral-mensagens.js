@@ -196,7 +196,9 @@
       foraDoFluxo: 'Sai da escala (inativo por tempo indeterminado); a volta é manual pelo administrador.',
       segueNoFluxo: 'Continua no fluxo, só bloqueia os dias do afastamento.',
       falhaSalvarLicenca: 'Não foi possível salvar a licença. Tente de novo.',
-      falhaSalvarDispensa: 'Não foi possível salvar a dispensa. Tente de novo.'
+      falhaSalvarDispensa: 'Não foi possível salvar a dispensa. Tente de novo.',
+      /* aviso ao lançar afastamento sobre um dia coberto por troca aprovada; datas = lista já formatada */
+      confirmarTroca: function (datas) { return 'Este militar cobre serviço por troca em ' + datas + '. Se você lançar o afastamento, ele deixa de assumir esse serviço, e a escala vai marcá-lo em amarelo. Continuar?'; }
     },
 
     /* escalas (painel da distribuição e grade do mês) */
@@ -224,6 +226,7 @@
         resolvaEscala:       { texto: 'Sem solução automática, precisa de ação do administrador', icone: 'icone-alerta', nivel: 'erro' },
         exclusivoCondutor:   { texto: 'Condutor exclusivo indisponível, motorista substituído', icone: 'icone-alerta', nivel: 'alerta' },
         chefeCondutor:       { texto: 'Chefe assumiu a direção por falta de condutor', icone: 'icone-alerta', nivel: 'alerta' },
+        afastadoTroca:       { texto: 'Militar afastado, não vai assumir o serviço', icone: 'icone-alerta', nivel: 'alerta' },
         semCondutor:         { texto: 'Viatura sem condutor', icone: 'icone-alerta', nivel: 'erro' },
         /* militar de serviço sem função ({n} = quantidade; o painel escolhe singular ou plural) */
         semFuncao:           { texto: 'Militar sem função definida', textoPlural: '{n} militares sem função definida', icone: 'icone-alerta', nivel: 'erro' }
@@ -237,7 +240,8 @@
         grauMaisModerno: '{grau} ou mais moderno',
         motivoExclusivoGrau: 'é o exclusivo dessa função (ideal {grau})',
         motivoRodizio:   'repetiu a função do último serviço',
-        motivoExclusivo: 'assumiu no lugar do condutor exclusivo'
+        motivoExclusivo: 'assumiu no lugar do condutor exclusivo',
+        motivoAfastado:  'mas está afastado (férias, licença ou dispensa) e não vai assumir'
       },
       /* dica do ícone de regra na linha do militar (uma regra por linha, via \n) */
       regra: {
@@ -517,8 +521,8 @@
       fecha24Dica: 'Fecha 24 h, turno fixo (não editável).',
       removerAbreFuro: 'Remover este extra pode deixar um furo na escala.',
       removerMesmoAssim: 'Remover mesmo assim',
-      cotaMenor: 'O número de cotas ficou menor do que o que já foi colocado no calendário. Tire alguns extras antes de reduzir o bolo.',
-      cotaEstourada: 'Você distribuiu mais cotas do que o bolo permite. Reduza o Concedido do grupo em vermelho antes de salvar.',
+      cotaMenor: 'O número de cotas ficou menor do que o que já foi colocado no calendário. Tire alguns extras antes de reduzir o total.',
+      cotaEstourada: 'Você distribuiu mais cotas do que o total permite. Reduza o Concedido do grupo em vermelho antes de salvar.',
       escopoDeslocamento: 'Você tem extras colocados fora da unidade de origem. Tire esses extras antes de mudar para "por unidade".',
       escopoTrocar: 'Mudar a forma de repartir altera a distribuição das cotas quando você salvar.',
       /* "Inserir na escala" (efetiva os extras) */

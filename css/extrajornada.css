@@ -314,7 +314,7 @@
   display: flex;
   flex-direction: column;
 }
-/* estourou o bolo (distribuiu mais que o total): título do grupo em vermelho + divisória vermelha */
+/* estourou (distribuiu mais cotas que o total): título do grupo em vermelho + divisória vermelha */
 .extra-cota-grupo--estourado .extra-cota-grupo-nome {
   color: var(--erro);
 }
@@ -369,13 +369,13 @@
   display: none;
 }
 /* caixa Cotas na banda: rótulo "Cotas" ao lado do campo (inline, para a banda ficar enxuta) */
-.extra-cota-grupo-bolo-campo {
+.extra-cota-grupo-total-campo {
   flex-direction: row;
   align-items: center;
   gap: 4px;
   flex-shrink: 0;
 }
-.extra-cota-grupo-bolo {
+.extra-cota-grupo-total {
   width: 56px;
   text-align: center;
 }

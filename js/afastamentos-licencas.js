@@ -169,7 +169,7 @@
     if (RosterWork.painel) RosterWork.painel.fechar();
   }
 
-  function salvar(raiz) {
+  function salvar(raiz, confirmarTrocas) {
     if (!militarEscolhido || !tipoEscolhido || calcularDias(raiz) == null) return;
     var ehSaude = tipoEscolhido === 'propria_saude';
     var btnSalvar = raiz.querySelector('#lic-salvar'); if (btnSalvar) btnSalvar.disabled = true;
@@ -183,13 +183,21 @@
       p_cid: ehSaude ? raiz.querySelector('#lic-cid').value.trim() : null,
       p_medico: ehSaude ? raiz.querySelector('#lic-medico').value.trim() : null,
       p_motivo: raiz.querySelector('#lic-motivo').value.trim(),
-      p_created_by: RosterWork.sessao.cpf()
+      p_created_by: RosterWork.sessao.cpf(),
+      p_confirmar_trocas: !!confirmarTrocas
     };
     RosterWork.afastamentosDados.inserirLicenca(corpo).then(function (r) {
       if (RosterWork.esconderVeuGlobal) RosterWork.esconderVeuGlobal();
       atualizarSalvar(raiz);
       if (r && r._falha === 'servidor') {
         if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.falhaServidor });
+      } else if (r && r.precisa_confirmar_trocas) {   // cobre serviço por troca no período: o admin decide
+        var datas = (r.trocas || []).map(function (t) { return t.data + (t.com_quem ? ' (com ' + t.com_quem + ')' : ''); }).join(', ');
+        if (RosterWork.confirmar) RosterWork.confirmar({
+          tipo: 'aviso', mensagem: RosterWork.mensagens.afastamentos.confirmarTroca(datas),
+          textoConfirmar: RosterWork.mensagens.botoes.continuar, textoCancelar: RosterWork.mensagens.botoes.cancelar,
+          aoConfirmar: function () { salvar(raiz, true); }
+        });
       } else if (r && r.success) {
         sujo = false;
         if (RosterWork.painel) RosterWork.painel.fechar();
