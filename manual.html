@@ -116,10 +116,139 @@
 
             <section class="manual-secao" id="introducao">
               <h2>Visão geral</h2>
-              <p>O Roster Work é o sistema de <strong>escala de serviço</strong> da corporação. Esta visão geral mostra, de cima, como as peças se encaixam; o detalhe de cada uma fica na sua seção.</p>
+              <p>O Roster Work é um sistema de <strong>escala de serviço</strong>. Esta visão geral mostra, de cima, como as peças se encaixam; o detalhe de cada uma fica na sua seção.</p>
 
+              <h3 class="manual-topico">A escala (o coração)</h3>
+              <p>Para cada dia, a escala responde a quatro coisas: <strong>quem</strong> trabalha, <strong>quando</strong> (o horário), <strong>onde</strong> (o posto) e <strong>em que função</strong>. O sistema separa isso em duas perguntas:</p>
+              <p><strong>1) Quem está de serviço (o ciclo).</strong> Cada unidade tem um <strong>ritmo</strong>, por exemplo 24/48 (trabalha 24 horas e folga 48). Os militares rodam nesse ritmo, então a cada dia o sistema já sabe quem está de serviço.</p>
+              <p>Quem está de serviço num dia entra na escala de duas formas. São dois termos do sistema, novos no dia a dia da corporação, e a escala marca cada um com um ícone à esquerda do nome:</p>
+              <ul class="manual-legenda">
+                <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-origem-base.svg#icone-origem-base"/></svg><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-origem-sistema.svg#icone-origem-sistema"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>Contínuos.</strong> A maior parte do efetivo, que entra pelo ciclo e roda no ritmo. O sistema projeta os próximos serviços sozinho: o dia em que o militar entrou leva o ícone de <strong>escala base</strong>, e os dias projetados, o de <strong>gerado pelo sistema</strong>.</span>
+                </li>
+                <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-origem-pontual.svg#icone-origem-pontual"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>Pontuais.</strong> Militar escalado só para um dia, fora do ciclo, como reforço. Vale só naquela data e não se repete.</span>
+                </li>
+              </ul>
+              <p><strong>2) Onde cada um fica (a distribuição).</strong> Sabendo quem está de serviço, o sistema coloca cada militar no seu lugar: em qual <strong>posto ou viatura</strong> e em qual <strong>função</strong>.</p>
+              <p>Primeiro o sistema sabe <strong>quem está de serviço</strong>, depois <strong>coloca cada um no seu lugar</strong>.</p>
+
+              <h3 class="manual-topico">O dia de serviço vai de 08h a 08h</h3>
+              <p>Um detalhe importante, diferente do calendário comum: no Roster Work o <strong>dia de serviço</strong> vai das <strong>08h de um dia até as 08h do dia seguinte</strong>, e não da meia-noite à meia-noite. Cada serviço leva o nome do <strong>dia em que começa</strong>, então ele avança pela madrugada do dia seguinte. A madrugada do dia 02, por exemplo, ainda faz parte do serviço do dia 01.</p>
+              <p>Por isso as <strong>08h são a virada</strong> entre um dia de serviço e o outro. No mesmo instante, às 08h do dia 02, o serviço do dia 01 <strong>sai</strong> e o serviço do dia 02 <strong>entra</strong>: é o mesmo horário no relógio, servindo de saída para um dia e de entrada para o outro.</p>
+              <figure class="manual-diagrama manual-turno">
+                <div class="manual-turno-linha-rotulada">
+                  <span class="manual-turno-cabeca">No calendário</span>
+                  <div class="manual-turno-linha">
+                    <div class="manual-turno-seg manual-turno-seg--cal manual-turno-seg--3">Dia 01</div>
+                    <div class="manual-turno-seg manual-turno-seg--cal manual-turno-seg--3">Dia 02</div>
+                    <div class="manual-turno-seg manual-turno-seg--cal manual-turno-seg--3">Dia 03</div>
+                  </div>
+                </div>
+                <div class="manual-turno-linha-rotulada">
+                  <span class="manual-turno-cabeca">Dia de serviço (de 08h a 08h)</span>
+                  <div class="manual-turno-linha">
+                    <div class="manual-turno-seg manual-turno-seg--1"></div>
+                    <div class="manual-turno-seg manual-turno-seg--serv manual-turno-seg--3">Serviço do dia 01<small>das 08h do dia 01 às 08h do dia 02</small></div>
+                    <div class="manual-turno-seg manual-turno-seg--serv2 manual-turno-seg--3">Serviço do dia 02<small>das 08h do dia 02 às 08h do dia 03</small></div>
+                    <div class="manual-turno-seg manual-turno-seg--2"></div>
+                  </div>
+                </div>
+                <figcaption class="manual-diagrama-legenda">O dia de serviço não coincide com o dia do calendário: começa às 08h e vai até as 08h do dia seguinte, cruzando a meia-noite. Repare que o serviço do dia 01 avança pela madrugada do dia 02, e que os dois serviços se encontram às 08h do dia 02, quando um sai e o outro entra.</figcaption>
+              </figure>
+
+              <h3 class="manual-topico">O que muda a escala</h3>
+              <p>Depois da escala automática pronta, cinco coisas mexem nela por cima:</p>
+              <ul class="manual-legenda manual-legenda--compacta">
+                <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-trocas.svg#icone-trocas"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>Troca.</strong> Um militar passa o serviço (ou parte dele) para outro. Na escala, quem saiu fica <strong>riscado</strong> e quem entrou toma o lugar. Passa por aprovação.</span>
+                </li>
+                <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-folgas.svg#icone-folgas"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>Folga.</strong> O militar tira um dia (ou um trecho) de serviço, então <strong>sai da escala</strong> naquele período. É um banco de horas: o saldo sobe quando trabalha a mais e desce quando folga. Passa por aprovação.</span>
+                </li>
+                <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-extrajornada.svg#icone-extrajornada"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>Extrajornada.</strong> O estado paga o militar para trabalhar horas a mais; esse serviço <strong>entra na escala</strong> como extra. É um sistema separado da folga.</span>
+                </li>
+                <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-afastamentos.svg#icone-afastamentos"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>Afastamento.</strong> Férias, licenças e dispensas <strong>tiram</strong> o militar da escala pelos dias do afastamento.</span>
+                </li>
+                <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-cadeado.svg#icone-cadeado"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>Ajuste do administrador.</strong> O administrador pode mudar a escala <strong>manualmente</strong>: trocar quem está numa função, mudar o horário ou inserir alguém num dia. O que ele fixa manualmente ganha um <strong>cadeado</strong> e é mantido mesmo quando o sistema recalcula.</span>
+                </li>
+              </ul>
+
+              <h3 class="manual-topico">O que a escala precisa por baixo</h3>
+              <p>Para o sistema montar a escala sozinho, três coisas precisam estar prontas antes:</p>
+              <ul class="manual-lista">
+                <li><strong>O efetivo (as pessoas).</strong> Os militares cadastrados, cada um com seus dados (grau, lotação, CNH, antiguidade). Sem efetivo, não há quem escalar. Fica em <strong>Usuários</strong>.</li>
+                <li><strong>Os postos e viaturas (onde servem).</strong> Os lugares de serviço: <strong>instalações</strong> (locais fixos, como a Central de Operações) e <strong>viaturas</strong> (que exigem CNH e podem entrar em manutenção). Cada posto tem uma <strong>guarnição</strong> (quantos militares). Fica em <strong>Postos</strong>.</li>
+                <li><strong>Os modelos e regras (o gabarito).</strong> O administrador monta, por unidade, um <strong>modelo</strong> que diz quais funções e vagas existem no dia; a distribuição segue esse gabarito. As <strong>regras</strong> ajustam quem pode ou não ir para certas funções. Fica em <strong>Distribuição</strong>.</li>
+              </ul>
+
+              <h3 class="manual-topico">Quem faz o quê</h3>
+              <ul class="manual-lista">
+                <li><strong>O militar (usuário comum).</strong> Consulta a sua escala, pede <strong>trocas</strong> e <strong>folgas</strong>, declara disponibilidade de <strong>extrajornada</strong> e vê os seus <strong>avisos</strong>. Ele participa e solicita, não monta nem edita a escala.</li>
+                <li><strong>O administrador.</strong> Cadastra o efetivo e os postos, monta os <strong>modelos</strong> e a <strong>escala</strong>, <strong>aprova</strong> os pedidos (trocas, folgas, correções), lança extrajornada, registra afastamentos e atos de carreira. Ele monta e mantém o sistema.</li>
+              </ul>
+              <p>O administrador também é um militar: faz as próprias solicitações como usuário e aprova como administrador, sem trocar de modo. Só não aprova o próprio pedido.</p>
+
+              <h3 class="manual-topico">As telas do sistema</h3>
+              <p>O menu à esquerda dá acesso a todas as áreas. Você <strong>abre e consulta</strong> todas elas; em algumas você também <strong>age</strong> (pede, aceita, declara). As telas de gestão você vê só para consultar: quem monta e edita é o administrador. Este é o mapa rápido; o passo a passo de cada uma vem nas próximas partes.</p>
+              <ul class="manual-legenda manual-legenda--compacta">
+                <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-inicio.svg#icone-inicio"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>Início.</strong> O resumo do seu dia: o próximo serviço, as horas da semana, o saldo de folgas, a próxima extra e as próximas férias. É por onde o sistema abre.</span>
+                </li>
+                <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-escalas.svg#icone-escalas"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>Escala.</strong> A escala da unidade, em várias visões (Mês, Semana, Colunas, Dia e Militares). Aqui você <strong>consulta</strong> quando e onde trabalha; quem monta a escala é o administrador.</span>
+                </li>
+                <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-trocas.svg#icone-trocas"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>Trocas.</strong> As trocas de serviço. Você <strong>age</strong>: solicita uma troca, aceita ou recusa as que chegam, acompanha as dívidas de horas e cobra quem lhe deve.</span>
+                </li>
+                <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-folgas.svg#icone-folgas"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>Folgas.</strong> O seu banco de horas de descanso. Você <strong>age</strong>: pede folga e acompanha o seu saldo e o seu histórico.</span>
+                </li>
+                <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-extrajornada.svg#icone-extrajornada"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>Extrajornada.</strong> As horas pagas pelo estado. Se você é voluntário, <strong>age</strong> declarando os dias em que quer ou não trabalhar; e consulta a escala de extra.</span>
+                </li>
+                <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-afastamentos.svg#icone-afastamentos"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>Afastamentos.</strong> As férias, licenças e dispensas da unidade. Você <strong>consulta</strong>; quem registra um afastamento é o administrador.</span>
+                </li>
+                <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-postos.svg#icone-postos"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>Postos.</strong> Os lugares de serviço: as instalações e as viaturas. Você <strong>consulta</strong> o quadro físico da unidade.</span>
+                </li>
+                <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-distribuicao.svg#icone-distribuicao"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>Distribuição.</strong> O gabarito da escala: os modelos (as funções e vagas de cada dia) e as regras. Você <strong>consulta</strong> como a escala é montada por baixo.</span>
+                </li>
+                <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-usuarios.svg#icone-usuarios"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>Usuários.</strong> O efetivo da unidade, com a ficha de cada militar. Você <strong>consulta</strong>; cadastrar e editar é do administrador.</span>
+                </li>
+                <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-ajustes.svg#icone-ajustes"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>Ajustes.</strong> As configurações da unidade, como o ritmo do ciclo. Você <strong>consulta</strong>; alterar é do administrador.</span>
+                </li>
+              </ul>
+              <p>No canto do cabeçalho ainda ficam o <strong>sino de avisos</strong> (as suas notificações) e o <strong>Meu perfil</strong> (os seus dados e a sua senha), que não estão no menu. Os avisos têm a sua seção mais adiante.</p>
+
+              <h3 class="manual-topico">Juntando tudo</h3>
+              <p>As peças se encaixam assim: a base e o ciclo alimentam a distribuição, que monta a escala do dia; depois, as trocas, as folgas, a extrajornada e os afastamentos mexem na escala pronta.</p>
               <figure class="manual-diagrama">
-                <p class="manual-diagrama-rotulo">O que fica pronto antes</p>
+                <p class="manual-diagrama-rotulo">O que a escala precisa por baixo</p>
                 <div class="manual-diagrama-andar">
                   <div class="manual-diagrama-bloco">
                     <svg class="icone manual-diagrama-icone" width="22" height="22" aria-hidden="true"><use href="icones/icone-usuarios.svg#icone-usuarios"/></svg>
@@ -145,7 +274,7 @@
                 <svg class="icone manual-diagrama-seta" width="24" height="24" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
                 <div class="manual-diagrama-andar">
                   <div class="manual-diagrama-bloco manual-diagrama-bloco--motor">
-                    <span class="manual-diagrama-titulo">Motor da distribuição</span>
+                    <span class="manual-diagrama-titulo">A distribuição</span>
                     <span class="manual-diagrama-desc">Coloca cada militar no seu posto e função</span>
                   </div>
                 </div>
@@ -157,7 +286,7 @@
                     <span class="manual-diagrama-desc">Quem, quando, onde e em que função</span>
                   </div>
                 </div>
-                <p class="manual-diagrama-rotulo">Depois de pronta, estas coisas mexem na escala</p>
+                <p class="manual-diagrama-rotulo">O que muda a escala</p>
                 <div class="manual-diagrama-andar manual-diagrama-andar--eventos">
                   <div class="manual-diagrama-bloco">
                     <svg class="icone manual-diagrama-icone" width="22" height="22" aria-hidden="true"><use href="icones/icone-trocas.svg#icone-trocas"/></svg>
@@ -176,54 +305,8 @@
                     <span class="manual-diagrama-titulo">Afastamento</span>
                   </div>
                 </div>
-                <figcaption class="manual-diagrama-legenda">Como a escala do dia nasce: a base e o ciclo alimentam o motor da distribuição, que monta a escala. Depois de pronta, trocas, folgas, extrajornada e afastamentos alteram a escala.</figcaption>
+                <figcaption class="manual-diagrama-legenda">Como a escala do dia nasce: a base e o ciclo alimentam a distribuição, que monta a escala. Depois de pronta, trocas, folgas, extrajornada e afastamentos alteram a escala.</figcaption>
               </figure>
-
-              <h3 class="manual-topico">A escala (o coração)</h3>
-              <p>Para cada dia, a escala responde a quatro coisas: <strong>quem</strong> trabalha, <strong>quando</strong> (o horário), <strong>onde</strong> (o posto) e <strong>em que função</strong>. O sistema separa isso em duas perguntas:</p>
-              <p><strong>1) Quem está de serviço (o ciclo).</strong> Cada unidade tem um <strong>ritmo</strong>, por exemplo 24/48 (trabalha 24 horas e folga 48). Os militares rodam nesse ritmo, então a cada dia o sistema já sabe quem está de serviço. O ritmo é da unidade (fica em Ajustes), não é escolhido dia a dia.</p>
-              <p><strong>2) Onde cada um fica (a distribuição).</strong> Sabendo quem está de serviço, o sistema coloca cada militar no seu lugar: em qual <strong>posto ou viatura</strong> e em qual <strong>função</strong>.</p>
-              <p>Primeiro o sistema sabe <strong>quem está de serviço</strong>, depois <strong>coloca cada um no seu lugar</strong>.</p>
-
-              <h3 class="manual-topico">O que muda a escala</h3>
-              <p>Depois da escala automática pronta, quatro coisas mexem nela por cima:</p>
-              <ul class="manual-lista">
-                <li><strong>Troca.</strong> Um militar passa o serviço (ou parte dele) para outro. Na escala, quem saiu fica <strong>riscado</strong> e quem entrou toma o lugar. Passa por aprovação.</li>
-                <li><strong>Folga.</strong> O militar tira um dia (ou um trecho) de serviço, então <strong>sai da escala</strong> naquele período. É um banco de horas: o saldo sobe quando trabalha a mais e desce quando folga. Passa por aprovação.</li>
-                <li><strong>Extrajornada.</strong> O estado paga o militar para trabalhar horas a mais; esse serviço <strong>entra na escala</strong> como extra. É um sistema separado da folga.</li>
-                <li><strong>Afastamento.</strong> Férias, licenças e dispensas <strong>tiram</strong> o militar da escala pelos dias do afastamento.</li>
-              </ul>
-
-              <h3 class="manual-topico">O que a escala precisa por baixo</h3>
-              <p>Para o sistema montar a escala sozinho, três coisas precisam estar prontas antes:</p>
-              <ul class="manual-lista">
-                <li><strong>O efetivo (as pessoas).</strong> Os militares cadastrados, cada um com seus dados (grau, lotação, CNH, antiguidade). Sem efetivo, não há quem escalar. Fica em <strong>Usuários</strong>.</li>
-                <li><strong>Os postos e viaturas (onde servem).</strong> Os lugares de serviço: <strong>instalações</strong> (locais fixos, como a Central de Operações) e <strong>viaturas</strong> (que exigem CNH e podem entrar em manutenção). Cada posto tem uma <strong>guarnição</strong> (quantos militares). Fica em <strong>Postos</strong>.</li>
-                <li><strong>Os modelos e regras (o gabarito).</strong> O administrador monta, por unidade, um <strong>modelo</strong> que diz quais funções e vagas existem no dia; a distribuição segue esse gabarito. As <strong>regras</strong> ajustam quem pode ou não ir para certas funções. Fica em <strong>Distribuição</strong>.</li>
-              </ul>
-
-              <h3 class="manual-topico">Quem faz o quê</h3>
-              <ul class="manual-lista">
-                <li><strong>O militar (usuário comum).</strong> Consulta a sua escala, pede <strong>trocas</strong> e <strong>folgas</strong>, declara disponibilidade de <strong>extrajornada</strong> e vê os seus <strong>avisos</strong>. Ele participa e solicita, não monta nem edita a escala.</li>
-                <li><strong>O administrador.</strong> Cadastra o efetivo e os postos, monta os <strong>modelos</strong> e a <strong>escala</strong>, <strong>aprova</strong> os pedidos (trocas, folgas, correções), lança extrajornada, registra afastamentos e atos de carreira. Ele monta e mantém o sistema.</li>
-              </ul>
-              <p>O administrador também é um militar: faz as próprias solicitações como usuário e aprova como administrador, sem trocar de modo. Só não aprova o próprio pedido.</p>
-
-              <h3 class="manual-topico">As telas do sistema</h3>
-              <p>O menu à esquerda dá acesso a todas as áreas. Você <strong>abre e consulta</strong> todas elas; em algumas você também <strong>age</strong> (pede, aceita, declara). As telas de gestão você vê só para consultar: quem monta e edita é o administrador. Este é o mapa rápido; o passo a passo de cada uma vem nas próximas partes.</p>
-              <ul class="manual-lista">
-                <li><strong>Início.</strong> O resumo do seu dia: o próximo serviço, as horas da semana, o saldo de folgas, a próxima extra e as próximas férias. É por onde o sistema abre.</li>
-                <li><strong>Escala.</strong> A escala da unidade, em várias visões (Mês, Semana, Colunas, Dia e Militares). Aqui você <strong>consulta</strong> quando e onde trabalha; quem monta a escala é o administrador.</li>
-                <li><strong>Trocas.</strong> As trocas de serviço. Você <strong>age</strong>: solicita uma troca, aceita ou recusa as que chegam, acompanha as dívidas de horas e cobra quem lhe deve.</li>
-                <li><strong>Folgas.</strong> O seu banco de horas de descanso. Você <strong>age</strong>: pede folga e acompanha o seu saldo e o seu histórico.</li>
-                <li><strong>Extrajornada.</strong> As horas pagas pelo estado. Se você é voluntário, <strong>age</strong> declarando os dias em que quer ou não trabalhar; e consulta a escala de extra.</li>
-                <li><strong>Afastamentos.</strong> As férias, licenças e dispensas da unidade. Você <strong>consulta</strong>; quem registra um afastamento é o administrador.</li>
-                <li><strong>Postos.</strong> Os lugares de serviço: as instalações e as viaturas. Você <strong>consulta</strong> o quadro físico da unidade.</li>
-                <li><strong>Distribuição.</strong> O gabarito da escala: os modelos (as funções e vagas de cada dia) e as regras. Você <strong>consulta</strong> como a escala é montada por baixo.</li>
-                <li><strong>Usuários.</strong> O efetivo da unidade, com a ficha de cada militar. Você <strong>consulta</strong>; cadastrar e editar é do administrador.</li>
-                <li><strong>Ajustes.</strong> As configurações da unidade, como o ritmo do ciclo. Você <strong>consulta</strong>; alterar é do administrador.</li>
-              </ul>
-              <p>No canto do cabeçalho ainda ficam o <strong>sino de avisos</strong> (as suas notificações) e o <strong>Meu perfil</strong> (os seus dados e a sua senha), que não estão no menu. Os avisos têm a sua seção mais adiante.</p>
             </section>
 
             <section class="manual-secao" id="primeiros-passos">
@@ -256,7 +339,7 @@
                 <img src="manual/imagens/criar-conta.png" alt="Passo 2 do resgate por token: o aviso de que os dados vieram preenchidos (1) e um campo de conferência que fica travado, como o CPF (2)." />
               </figure>
               <p>Ao confirmar, a sua conta é criada e você já entra com o seu CPF e a senha. <strong>E-mail, celular e senha valem na hora.</strong> Se você corrigir qualquer outro dado (nome, RG, nascimento e afins), a mudança passa pela aprovação de um administrador antes de valer, como uma correção comum. <strong>Posto, lotação e promoções</strong> aparecem só para conferência: eles mudam por promoção e transferência, feitas pelo administrador.</p>
-              <p><strong>Cadastro novo (CPF fora do sistema).</strong> Quando o seu CPF ainda não existe no sistema, você preenche a ficha inteira: os <strong>dados pessoais</strong> (nome, CPF, RG, nascimento, CNH, celular e email), os <strong>dados institucionais</strong> (tipo, posto ou graduação, nome de guerra, data de inclusão, colocação por antiguidade, setor e a lotação, na mesma árvore usada no resto do sistema) e a <strong>senha</strong>. Ao enviar, o sistema confirma com "Cadastro enviado. Um administrador vai analisar." e volta para a tela de entrada. Esse cadastro vira um pedido, e o acesso só é liberado quando um administrador aprova.</p>
+              <p><strong>Cadastro novo (CPF fora do sistema).</strong> Quando o seu CPF ainda não existe no sistema, você preenche a ficha inteira: os <strong>dados pessoais</strong> (nome, CPF, RG, nascimento, CNH, celular e e-mail), os <strong>dados institucionais</strong> (tipo, posto ou graduação, nome de guerra, data de inclusão, colocação por antiguidade, setor e a lotação, na mesma árvore usada no resto do sistema) e a <strong>senha</strong>. Ao enviar, o sistema confirma com "Cadastro enviado. Um administrador vai analisar." e volta para a tela de entrada. Esse cadastro vira um pedido, e o acesso só é liberado quando um administrador aprova.</p>
               <p>Até a aprovação, ao tentar entrar você vê "Seu cadastro está aguardando a aprovação de um administrador.", o sinal de que o pedido chegou e está na fila. Assim que for aprovado, você entra com o seu documento e a senha que escolheu.</p>
               <figure class="manual-figura">
                 <img src="manual/imagens/login-aguardando.png" alt="No login, um cadastro ainda não aprovado mostra a mensagem 'Seu cadastro está aguardando a aprovação de um administrador.' em vermelho, abaixo do campo (1)." />
@@ -299,7 +382,7 @@
               </ol>
               <h3 id="meu-perfil">Meu perfil</h3>
               <p>É a sua página pessoal. Abre pelo menu do canto (seu nome) em "Meu perfil", e tem três abas: Perfil, Meus dados e Segurança.</p>
-              <figure class="manual-figura">
+              <figure class="manual-figura manual-figura--larga">
                 <img src="manual/imagens/perfil-abas.png" alt="Meu perfil: as três abas (1 Perfil, 2 Meus dados, 3 Segurança), o cartão de identificação e os dados em leitura, com o Tema no fim." />
               </figure>
 
@@ -313,7 +396,7 @@
               <figure class="manual-figura">
                 <img src="manual/imagens/perfil-acao.png" alt="Um campo alterado e destacado (1) e o botão Solicitar correção (2)." />
               </figure>
-              <p class="manual-nota"><strong>Como funciona a aprovação:</strong> você só <strong>solicita</strong>; o pedido fica <strong>pendente</strong> até um administrador aprovar. Vale para todos os dados, inclusive celular, email e CNH. Abaixo do formulário, em "Minhas solicitações", você acompanha cada pedido pelo status: Pendente, Aprovada ou Recusada. O CPF não entra (é o seu login), e grau e lotação também não (mudam só por promoção ou transferência).</p>
+              <p class="manual-nota"><strong>Como funciona a aprovação:</strong> você só <strong>solicita</strong>; o pedido fica <strong>pendente</strong> até um administrador aprovar. Vale para todos os dados, inclusive celular, e-mail e CNH. Abaixo do formulário, em "Minhas solicitações", você acompanha cada pedido pelo status: Pendente, Aprovada ou Recusada. O CPF não entra (é o seu login), e grau e lotação também não (mudam só por promoção ou transferência).</p>
 
               <p><strong>Segurança (3).</strong> Aqui você troca a sua senha: digite a senha atual, a nova (ao menos 6 caracteres e diferente da atual) e confirme. A senha muda na hora, sem precisar de aprovação.</p>
               <figure class="manual-figura">
@@ -351,6 +434,18 @@
               <h3 id="continuos-pontuais">Contínuos, pontuais e a distribuição do dia</h3>
               <p>A escala nasce de um <strong>ciclo</strong>, com alguns reforços pontuais, e a cada dia as pessoas de serviço são distribuídas nos postos. Entender essas ideias ajuda a ler a escala e os ícones dela.</p>
               <p><strong>Contínuos.</strong> A maior parte do efetivo entra na escala por um <strong>ciclo</strong>: a unidade tem um ritmo, por exemplo 24/48 (24 horas de serviço e 48 de folga), e cada militar roda nesse ritmo. Definido o dia em que começa, o sistema projeta sozinho os próximos serviços dele, por meses à frente. Os <strong>contínuos</strong> são os militares que estão na escala de forma regular, por esse ciclo.</p>
+              <figure class="manual-diagrama manual-ciclo">
+                <div class="manual-ciclo-faixa">
+                  <div class="manual-ciclo-dia manual-ciclo-dia--servico"><strong>Serviço</strong><small>24h</small></div>
+                  <div class="manual-ciclo-dia"><strong>Folga</strong></div>
+                  <div class="manual-ciclo-dia"><strong>Folga</strong></div>
+                  <div class="manual-ciclo-dia manual-ciclo-dia--servico"><strong>Serviço</strong><small>24h</small></div>
+                  <div class="manual-ciclo-dia"><strong>Folga</strong></div>
+                  <div class="manual-ciclo-dia"><strong>Folga</strong></div>
+                  <span class="manual-ciclo-mais" aria-hidden="true">…</span>
+                </div>
+                <figcaption class="manual-diagrama-legenda">O ritmo 24/48: cada militar faz um dia de serviço (24 horas) e folga os dois dias seguintes (48 horas). O sistema repete esse padrão sozinho, por meses à frente. Outros ritmos, como o 24/72 e o 12/36, seguem a mesma ideia.</figcaption>
+              </figure>
               <p><strong>Pontuais.</strong> Às vezes um militar entra <strong>só num dia</strong>, fora do ciclo, como um reforço para aquela data. Ele trabalha naquele dia e segue fora do ciclo nos demais.</p>
               <p><strong>A distribuição do dia.</strong> Ao <strong>clicar num dia</strong> na grade, abre um painel à direita com aquele dia montado. O painel tem três abas: <strong>Distribuição</strong> (os postos, as funções e quem está em cada uma), <strong>Contínuos</strong> (quem o ciclo escala naquele dia) e <strong>Pontuais</strong> (quem foi inserido só naquele dia). No alto ficam os <strong>avisos</strong> do dia, em vermelho o que trava e em amarelo as ressalvas, e quem está de serviço sem função aparece numa caixa vermelha. Qualquer pessoa abre o painel para ver; o administrador também edita.</p>
               <figure class="manual-figura">
@@ -395,7 +490,7 @@
                 <img src="manual/imagens/escala-afastado.png" alt="No painel do dia, o aviso amarelo Militar afastado não vai assumir o serviço (1) e, no posto, o militar marcado em amarelo (2)." />
               </figure>
 
-              <div class="manual-admin">
+              <div class="manual-admin manual-zona-admin">
                 <h3 id="montar-ciclo">Montar o ciclo: Contínuos e Pontuais <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>No painel do dia, o administrador monta quem está de serviço nas abas <strong>Contínuos</strong> e <strong>Pontuais</strong>. Nas duas, o botão <strong>Editar</strong> abre a edição, cada mudança fica marcada na tela e o <strong>Salvar</strong> aplica todas de uma vez.</p>
                 <p><strong>Contínuos (o ciclo).</strong> A aba mostra, em "Contínuos do dia", quem o ciclo escala naquele dia (quem está de folga aparece riscado) e, em "Fora da escala", quem não está no ciclo. No <strong>Editar</strong>, em "Fora da escala" o <strong>Adicionar</strong> marca um militar para entrar no ciclo a partir daquele dia; é assim que se coloca alguém na escala, inclusive o retorno de quem saiu por atestado longo ou baixa. Em "Contínuos do dia", o <strong>Tirar</strong> marca a saída daquele dia em diante, e, quando já há saída marcada, aparecem "Sai em DD/MM" e <strong>Cancelar saída</strong>. Cada mudança recebe um selo (<strong>Vai entrar</strong> ou <strong>Vai sair</strong>) e o <strong>Salvar</strong> aplica todas de uma vez, recalculando a escala uma única vez.</p>
@@ -441,7 +536,17 @@
               </figure>
 
               <p><strong>Acompanhar as suas trocas.</strong> A página Trocas tem três abas: <strong>Todas</strong> (as trocas da sua unidade), <strong>Minhas</strong> (as que você participa, como solicitante ou solicitado) e <strong>Pendentes</strong> (as devoluções em aberto). Cada troca traz um <strong>selo</strong> com a situação: Aguardando confirmação, Aguardando aprovação, Aprovada, Recusada, Rejeitada ou Cancelada.</p>
-              <figure class="manual-figura">
+              <figure class="manual-diagrama manual-fluxo">
+                <div class="manual-fluxo-linha">
+                  <span class="selo selo--alerta">Aguardando confirmação</span>
+                  <svg class="icone manual-fluxo-seta" width="22" height="22" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+                  <span class="selo selo--alerta">Aguardando aprovação</span>
+                  <svg class="icone manual-fluxo-seta" width="22" height="22" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+                  <span class="selo selo--sucesso">Aprovada</span>
+                </div>
+                <figcaption class="manual-diagrama-legenda">O caminho de uma troca: nasce Aguardando confirmação; quando o colega aceita, vai a Aguardando aprovação; quando o administrador aprova, fica Aprovada e passa a valer na escala. Ela pode encerrar antes: Recusada (o colega recusa), Rejeitada (o administrador nega) ou Cancelada (quem pediu, ou o administrador, desfaz).</figcaption>
+              </figure>
+              <figure class="manual-figura manual-figura--larga">
                 <img src="manual/imagens/troca-abas.png" alt="As abas Todas, Minhas e Pendentes e a lista de trocas, cada uma com o seu selo de situação." />
               </figure>
 
@@ -463,7 +568,7 @@
               <figure class="manual-figura">
                 <img src="manual/imagens/troca-extrato.png" alt="Painel da pendência: o saldo no topo, o histórico das trocas (quem folgou, quem trabalhou e as horas) e o botão Cobrar." />
               </figure>
-              <div class="manual-admin">
+              <div class="manual-admin manual-zona-admin">
                 <h3 id="aprovar-trocas">Aprovar trocas <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>Depois que o colega aceita, a troca fica <strong>"Aguardando aprovação"</strong> e espera um administrador. Na aba <strong>Todas</strong>, o administrador abre a troca que quer decidir.</p>
                 <p><strong>A análise de impacto.</strong> Ao abrir a troca, o painel mostra um <strong>veredito em cores</strong> sobre o efeito dela na escala, com a lista do que foi encontrado:</p>
@@ -501,7 +606,7 @@
               <figure class="manual-figura">
                 <img src="manual/imagens/folga-minhas.png" alt="Aba Minhas folgas: o saldo em destaque, um pedido Solicitada com o botão de cancelar, e o extrato." />
               </figure>
-              <div class="manual-admin">
+              <div class="manual-admin manual-zona-admin">
                 <h3 id="aprovar-folgas">Aprovar e conceder folgas <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>Na página <strong>Folgas</strong>, o administrador tem duas abas a mais: <strong>Aprovações</strong>, com os pedidos à espera, e <strong>Equipe</strong>, com o efetivo.</p>
                 <p><strong>Decidir um pedido.</strong> A aba <strong>Aprovações</strong> reúne as folgas <strong>"Solicitada"</strong>. Ao abrir uma, o painel mostra o militar, o dia, o trecho e o motivo, e uma <strong>análise de impacto</strong> com um <strong>veredito em cores</strong>. Como a folga tira o militar do serviço daquele dia, o veredito olha a <strong>cobertura</strong>: o que acontece com a escala quando ele sai.</p>
@@ -540,7 +645,7 @@
               </figure>
               <p><strong>O prazo.</strong> Você declara sempre a disponibilidade do <strong>mês seguinte</strong>, e só <strong>até o dia 25</strong> do mês atual. Um aviso no topo da declaração mostra o estado: as datas em que as alterações são permitidas, ou, quando o prazo fecha, quando a próxima declaração abre. Fora do prazo, você ainda vê a sua declaração, mas não pode mudá-la.</p>
               <p><strong>Meses anteriores.</strong> Você pode voltar aos meses passados, só para ver. Num mês em que foi voluntário, aparece um resumo do que você <strong>recebeu</strong>: o total de cotas e cada data com quatro bolinhas, uma para cada bloco de 6 horas. Num mês em que não foi voluntário, o sistema apenas informa isso.</p>
-              <div class="manual-admin">
+              <div class="manual-admin manual-zona-admin">
                 <h3 id="extra-admin">Cotas e montar a escala de extra <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>O administrador organiza a extra na aba <strong>Escala</strong>. À esquerda fica o painel <strong>Cotas</strong>, para repartir o mês; ao lado, a <strong>grade do mês</strong>, para colocar os extras dia a dia.</p>
                 <p><strong>Repartir as cotas.</strong> No painel <strong>Cotas</strong>, você define quantas cotas o mês tem e o sistema reparte entre os voluntários. Primeiro o <strong>escopo</strong>: o <strong>grupo inteiro</strong> (a companhia e seus pelotões, num total só) ou <strong>por unidade</strong> (cada unidade com o seu total). Você digita o <strong>total de cotas</strong> e o sistema sugere quanto cada um recebe, com <strong>prioridade para quem foi menos atendido nos últimos 12 meses</strong>, ou seja, quem recebeu a <strong>menor porcentagem das cotas que pediu</strong>; havendo empate, o <strong>mais antigo</strong> primeiro.</p>
@@ -578,7 +683,7 @@
                 <img src="manual/imagens/postos-card-viatura.png" alt="Card de uma viatura: o estado (1), a CNH exigida (2) e o efetivo mínimo, ideal e máximo (3)." />
               </figure>
               <p><strong>Estado e período.</strong> O <strong>estado</strong> diz se o posto está em uso. <strong>Ativo</strong> coloca o posto na escala, e a distribuição o preenche. <strong>Inativo</strong> guarda o posto fora da escala, para você ligá-lo de novo quando quiser. A viatura tem ainda o estado <strong>Reserva</strong>, que a mantém guardada como reserva, também fora da distribuição. O <strong>período</strong> mostra a vigência do posto: <strong>Permanente</strong>, <strong>desde</strong> uma data, um intervalo de datas ou <strong>até</strong> uma data.</p>
-              <div class="manual-admin">
+              <div class="manual-admin manual-zona-admin">
                 <h3 id="config-postos">Cadastrar e configurar postos <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>Ao lado dos cards, o botão <strong>+</strong> inclui um posto, e o clique num card abre o painel de edição, à direita.</p>
                 <p><strong>Instalação.</strong> Ao incluir, você escolhe o tipo (Central de Operações, Rancho ou Almoxarifado), e o sistema dá o nome, numerando quando a unidade já tem uma daquele tipo. No painel ficam o <strong>estado</strong> (Ativo ou Inativo) e o <strong>efetivo</strong> mínimo, ideal e máximo (de 1 a 10, sempre em ordem crescente do mínimo ao máximo). O rodapé traz o botão vermelho <strong>Excluir instalação</strong>, uma ação crítica com confirmação: a instalação sai das telas e da distribuição, e o histórico permanece.</p>
@@ -609,7 +714,7 @@
                 <img src="manual/imagens/distribuicao-modelo-lista.png" alt="Uma linha da lista de modelos: o sinal de completo (1) e, por unidade, os números de oficiais e praças que o modelo atende (2)." />
               </figure>
               <p><strong>As vagas do modelo.</strong> Ao clicar num modelo, à direita aparecem as suas <strong>vagas</strong>, agrupadas por posto. Cada vaga é uma linha com a <strong>função</strong> (Condutor, Rádio Operador, Efetivo, e assim por diante), o <strong>Tipo</strong> (oficial ou praça), a <strong>Antiguidade</strong> (se o sistema prefere o mais antigo ou o mais moderno para aquela vaga), o <strong>Grau</strong> (a graduação ideal) e o <strong>Rodízio</strong> (se a vaga entra no rodízio). O rodapé confirma quando está tudo certo, em verde, ou lista o que falta, em amarelo.</p>
-              <figure class="manual-figura">
+              <figure class="manual-figura manual-figura--cheia">
                 <img src="manual/imagens/distribuicao-vagas.png" alt="As vagas de um posto: a função de cada vaga (1) e o tipo, a antiguidade, o grau e o rodízio (2)." />
               </figure>
               <p><strong>Como o sistema preenche.</strong> Escolhido o modelo do dia, o sistema preenche as vagas de cada posto seguindo o que a vaga pede. Algumas escolhas são automáticas e fixas: o <strong>Chefe de Socorro</strong> e o <strong>Oficial de Área</strong> são sempre os mais antigos de serviço, e o <strong>Condutor</strong> de uma viatura precisa de uma CNH que cubra o veículo. Se faltar gente ou surgir um conflito, o sistema <strong>sinaliza</strong> o problema e mantém a escala na tela. O resultado de cada dia, com quem senta em cada posto, você acompanha na <strong>Escala</strong>. A lógica completa está no apêndice <strong>A lógica por trás</strong>.</p>
@@ -623,7 +728,7 @@
               <figure class="manual-figura">
                 <img src="manual/imagens/distribuicao-regras.png" alt="Aba Regras de um militar: os grupos de funções proibidas e exclusivas, com uma regra exclusiva já cadastrada (1)." />
               </figure>
-              <div class="manual-admin">
+              <div class="manual-admin manual-zona-admin">
                 <h3 id="editar-modelos">Editar os modelos <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p><strong>Editar um modelo.</strong> No menu de opções de um modelo, <strong>Editar</strong> abre o modo de edição. Ali você clica nas células de <strong>Tipo</strong>, <strong>Antiguidade</strong> e <strong>Grau</strong> para escolher o valor, marca o <strong>Rodízio</strong>, usa <strong>+ Nova função</strong> para incluir uma vaga e o botão de remover para tirar, e <strong>+ Acúmulo</strong> para a mesma pessoa cobrir mais de uma função. <strong>Desfazer</strong> e <strong>Refazer</strong> ficam no canto do subcabeçalho, e também respondem a Ctrl+Z e Ctrl+Y. Ao <strong>Salvar</strong>, o sistema avisa que as escalas já montadas serão recalculadas e mostra um resumo do que mudou.</p>
                 <p><strong>Novo modelo.</strong> O botão <strong>Novo modelo</strong>, no rodapé da lista, cria um do zero: você define quantos oficiais e praças, por unidade, aquele modelo atende. Ele aparece na hora, e fica de vez quando você clica em Salvar; ao cancelar ou sair sem salvar, ele é descartado.</p>
@@ -647,7 +752,7 @@
               <p><strong>O card de cada militar.</strong> Traz a abreviação do <strong>grau</strong>, o <strong>nome</strong>, um <strong>identificador</strong> e um <strong>selo de situação</strong>: <strong>Ativo</strong> em verde, ou <strong>Férias</strong>, <strong>Licença</strong> e <strong>Dispensa</strong> em âmbar, com a data até quando valem.</p>
               <p><strong>Ajustar o que aparece.</strong> Dois botões no alto mudam a exibição. O <strong>Exibir</strong> (o olho) escolhe o identificador visível (CPF, RG, telefone ou e-mail), o formato do nome (só o de guerra ou o nome completo com o de guerra em destaque) e liga ou desliga a hierarquia, que é a abreviação do grau. O <strong>Ordem</strong> organiza a lista por <strong>antiguidade</strong> (do mais antigo, o padrão, ou do mais moderno) ou em ordem <strong>alfabética</strong> (de A a Z ou de Z a A). Essas escolhas valem só para você.</p>
               <p><strong>Filtrar e procurar.</strong> Os filtros de <strong>Graus</strong> e <strong>Situação</strong> encolhem a lista ao que interessa, e o funil fica destacado quando algum está ativo. A <strong>busca</strong> tem dois modos, trocados no botão ao lado: <strong>Marcar</strong> realça quem combina com o texto sem esconder os demais, e <strong>Filtrar</strong> deixa à vista só quem combina. Ela procura por nome de guerra, nome completo, CPF ou RG.</p>
-              <figure class="manual-figura">
+              <figure class="manual-figura manual-figura--cheia">
                 <img src="manual/imagens/usuarios-efetivo.png" alt="Um card do efetivo com o grau, o nome e o identificador (1) e o selo de situação (2); no alto da página, os botões Exibir e Ordem e a busca (3)." />
               </figure>
               <p><strong>A ficha do militar.</strong> Um clique no card abre a ficha no painel à direita, com o grau e o nome de guerra no topo e o nome completo logo abaixo. Ela tem duas abas: <strong>Dados</strong>, com os dados pessoais (nome completo, CPF, RG, idade, nascimento, CNH, celular e e-mail), e <strong>Carreira</strong>, com os dados institucionais (posto, setor, inclusão, colocação, antiguidade, lotação e situação) e o histórico de <strong>Promoções</strong> e <strong>Transferências</strong>, que abrem ao clicar. Qualquer pessoa consulta a ficha; editar é tarefa do administrador.</p>
@@ -655,10 +760,10 @@
                 <img src="manual/imagens/usuarios-ficha.png" alt="A ficha de um militar no painel: as abas Dados e Carreira (1) e os dados pessoais logo abaixo (2)." />
               </figure>
               <p class="manual-nota">Quando o militar foi cadastrado <strong>sem conta de login</strong>, a ficha avisa no topo, com <strong>"Sem acesso ao sistema"</strong>. Ele existe para a escala funcionar, mas não entra em trocas, folgas nem extrajornada enquanto não criar a própria conta.</p>
-              <div class="manual-admin">
+              <div class="manual-admin manual-zona-admin">
                 <h3 id="cadastrar-efetivo">Cadastrar o efetivo e liberar acesso <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>Para incluir um militar, abra <strong>Usuários</strong> e clique em <strong>Novo usuário</strong>, no topo da lista. O cadastro abre no painel à direita.</p>
-                <p>Você preenche os <strong>dados pessoais</strong> (nome, CPF, RG, nascimento, CNH e celular) e os <strong>dados institucionais</strong> (tipo, posto ou graduação, nome de guerra, data de inclusão, colocação, setor e lotação). Ao escolher o posto, o sistema pede também as <strong>datas de promoção</strong> de cada graduação. O <strong>email é opcional</strong>: a ficha pode existir só para a escala funcionar, e o militar informa o próprio email quando for criar o acesso.</p>
+                <p>Você preenche os <strong>dados pessoais</strong> (nome, CPF, RG, nascimento, CNH e celular) e os <strong>dados institucionais</strong> (tipo, posto ou graduação, nome de guerra, data de inclusão, colocação, setor e lotação). Ao escolher o posto, o sistema pede também as <strong>datas de promoção</strong> de cada graduação. O <strong>e-mail é opcional</strong>: a ficha pode existir só para a escala funcionar, e o militar informa o próprio e-mail quando for criar o acesso.</p>
                 <figure class="manual-figura">
                   <img src="manual/imagens/usuarios-novo.png" alt="Painel Novo usuário: a seção Dados pessoais (1), o campo E-mail marcado como opcional (2) e o início da seção Dados institucionais (3). O botão Salvar fica no rodapé do painel." />
                 </figure>
@@ -668,7 +773,7 @@
                 <figure class="manual-figura">
                   <img src="manual/imagens/usuarios-token.png" alt="Ficha de um militar sem conta: a seção Acesso ao sistema com a situação do token (1) e o botão Gerar token de acesso (2)." />
                 </figure>
-                <p>Ao gerar, o código aparece <strong>uma vez</strong> num aviso. Anote e <strong>entregue ao militar por fora</strong>, em mãos ou por mensagem; ele usa esse código na tela "Criar conta" para conferir os dados e definir a senha. Depois de gerado, o botão passa a mostrar a situação do token e vira <strong>Gerar novo token</strong>, para o caso de o militar perder o código ou não concluir a tempo.</p>
+                <p>Ao gerar, o código aparece <strong>uma vez</strong> num aviso. Anote e <strong>entregue ao militar</strong>, em mãos ou por mensagem; ele usa esse código na tela "Criar conta" para conferir os dados e definir a senha. Depois de gerado, o botão passa a mostrar a situação do token e vira <strong>Gerar novo token</strong>, para o caso de o militar perder o código ou não concluir a tempo.</p>
                 <p class="manual-nota">O sistema guarda apenas uma versão protegida do token, nunca o código em si, então ele não pode ser consultado depois. Se o militar precisar, gere um novo: o anterior deixa de valer.</p>
                 <h3 id="carreira">Promover, transferir e dar baixa <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>As mudanças de carreira ficam na ficha, quando você troca de <strong>Ver</strong> para <strong>Editar</strong> (o alternador no alto do painel) e abre a aba <strong>Carreira</strong>. Ali, três blocos abrem ao clicar: <strong>Promover</strong>, <strong>Transferir</strong> e <strong>Dar baixa do sistema</strong>. Cada ação registra no histórico e mostra um resumo ao final.</p>
@@ -685,7 +790,7 @@
                 <p class="manual-nota"><strong>Redefinir senha.</strong> Para um militar que <strong>já tem conta</strong>, a aba Dados no Editar traz o botão <strong>Redefinir senha</strong>, que cria uma senha temporária mostrada uma vez, para você repassar a ele. É diferente do <strong>token</strong>, que serve ao primeiro acesso de quem ainda não criou a conta.</p>
                 <h3 id="aprovacoes">Aprovar cadastros e correções <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>Em <strong>Usuários</strong>, a aba <strong>Aprovações</strong> reúne o que espera a sua decisão sobre pessoas. O número na aba conta os pendentes, e a tela traz duas filas: <strong>Cadastros</strong> e <strong>Correções</strong>.</p>
-                <figure class="manual-figura">
+                <figure class="manual-figura manual-figura--cheia">
                   <img src="manual/imagens/usuarios-aprovacoes.png" alt="A aba Aprovações com as duas filas: um card em Cadastros com o selo de alerta (1) e um card em Correções com as linhas de valor atual e valor novo e os botões Aprovar e Recusar (2)." />
                 </figure>
                 <p><strong>Cadastros (liberar um novo acesso).</strong> Aqui ficam os militares que se <strong>cadastraram sozinhos</strong> pela tela "Criar conta". Cada card mostra o militar, a lotação e a data do pedido; um <strong>selo de alerta</strong> avisa quando há algo a conferir, como um CPF que <strong>já tem conta</strong>, um cadastro que <strong>já existe</strong> ou um <strong>e-mail em uso</strong>. Clicando no card, o pedido abre no painel: em <strong>Ver</strong>, do jeito que o militar enviou; em <strong>Editar</strong>, o mesmo formulário do Novo usuário já preenchido, para você <strong>corrigir</strong> o que precisar. Os botões são <strong>Aprovar</strong> e <strong>Recusar</strong>, e a conta de acesso só nasce quando você aprova.</p>
@@ -697,11 +802,9 @@
               </div>
             </section>
 
-            <section class="manual-secao manual-admin" id="afastamentos">
-              <h2>Afastamentos <span class="manual-selo-admin">Apenas administradores</span></h2>
-              <p class="manual-prereq">Você precisa ser administrador para esta parte.</p>
-              <p>A página <strong>Afastamentos</strong> reúne quem está fora por <strong>férias</strong>, <strong>licença</strong> ou <strong>dispensa</strong>, cada uma em sua aba. A aba mostra a árvore de unidades com os afastados e a contagem por unidade. Cada item traz o militar, o tipo e o período, os dias, e, nas licenças e dispensas, um selo <strong>"Fora do fluxo"</strong> ou <strong>"Segue no fluxo"</strong>.</p>
-              <figure class="manual-figura">
+            <section class="manual-secao manual-admin manual-zona-admin" id="afastamentos">
+              <h2>Afastamentos <span class="manual-selo-admin">Apenas administradores</span></h2>              <p>A página <strong>Afastamentos</strong> reúne quem está fora por <strong>férias</strong>, <strong>licença</strong> ou <strong>dispensa</strong>, cada uma em sua aba. A aba mostra a árvore de unidades com os afastados e a contagem por unidade. Cada item traz o militar, o tipo e o período, os dias, e, nas licenças e dispensas, um selo <strong>"Fora do fluxo"</strong> ou <strong>"Segue no fluxo"</strong>.</p>
+              <figure class="manual-figura manual-figura--larga">
                 <img src="manual/imagens/afastamentos-lista.png" alt="A aba Licenças: a árvore de uma unidade com dois militares afastados, cada um com os dias (1) e o selo Fora do fluxo ou Segue no fluxo (2)." />
               </figure>
               <p><strong>Registrar um afastamento.</strong> O botão no topo (<strong>Novas férias</strong>, <strong>Nova licença</strong> ou <strong>Nova dispensa</strong>, conforme a aba) abre o painel. Em todos você escolhe a <strong>unidade</strong>, o <strong>militar</strong> e o <strong>período</strong>. As férias param por aí. A <strong>licença</strong> pede ainda o <strong>tipo</strong> (própria saúde, saúde de familiar, interesses particulares, especial ou capacitação) e, quando é da própria saúde, o <strong>CID</strong> e o <strong>médico</strong>. A <strong>dispensa</strong> pede o <strong>tipo</strong> (gala, nojo ou comum). Licença e dispensa aceitam também um <strong>motivo</strong>.</p>
@@ -712,12 +815,10 @@
               <p><strong>Ao salvar.</strong> O sistema recalcula a escala. Se o militar tiver um serviço assumido por <strong>troca</strong> dentro do período, ele avisa e pede confirmação antes de prosseguir. Depois grava, registra no histórico e abre o resumo. O afastamento passa a aparecer como selo de situação, como <strong>"Licença até 30/09"</strong>, no Efetivo e na escala.</p>
             </section>
 
-            <section class="manual-secao manual-admin" id="ajustes">
-              <h2>Ajustes de ritmo das unidades <span class="manual-selo-admin">Apenas administradores</span></h2>
-              <p class="manual-prereq">Você precisa ser administrador para esta parte.</p>
-              <p>A página <strong>Ajustes</strong> guarda as configurações das unidades. À esquerda fica o índice das seções (por ora uma, <strong>Escala › Ritmo das unidades</strong>) e, no corpo, a árvore de unidades com um <strong>card de ritmo</strong> em cada uma.</p>
+            <section class="manual-secao manual-admin manual-zona-admin" id="ajustes">
+              <h2>Ajustes de ritmo das unidades <span class="manual-selo-admin">Apenas administradores</span></h2>              <p>A página <strong>Ajustes</strong> guarda as configurações das unidades. À esquerda fica o índice das seções (por ora uma, <strong>Escala › Ritmo das unidades</strong>) e, no corpo, a árvore de unidades com um <strong>card de ritmo</strong> em cada uma.</p>
               <p><strong>O ritmo</strong> é a cadência de serviço e folga da escala automática da unidade. O card mostra o valor e a explicação por extenso, e as opções são três: <strong>24/48</strong> (24 h de serviço e 48 de folga), <strong>24/72</strong> e <strong>12/36</strong>.</p>
-              <figure class="manual-figura">
+              <figure class="manual-figura manual-figura--cheia">
                 <img src="manual/imagens/ajustes-ritmo.png" alt="A página Ajustes: o índice com Ritmo das unidades (1) e o card de ritmo de uma unidade, com o valor 24/48 e a explicação (2)." />
               </figure>
               <p><strong>Mudar o ritmo.</strong> Clique no card e o painel à direita abre em edição: escolha o novo ritmo no seletor e veja a nota do <strong>Efeito</strong>, que avisa que a escala automática da unidade será regerada. O <strong>Salvar</strong> só habilita quando você troca o valor. O usuário comum vê o card, mas não edita.</p>
@@ -730,7 +831,7 @@
             <section class="manual-secao" id="avisos">
               <h2>Avisos</h2>
               <h3 id="meus-avisos">Os meus avisos</h3>
-              <p>O sistema te mantém informado pelo <strong>sino</strong>, no alto da tela, à direita. O <strong>número</strong> sobre o sino conta os avisos <strong>em aberto</strong> (não é a quantidade de não lidos). Clicando nele, abre uma lista com os seus avisos.</p>
+              <p>O sistema mantém você informado pelo <strong>sino</strong>, no alto da tela, à direita. O <strong>número</strong> sobre o sino conta os avisos <strong>em aberto</strong> (não é a quantidade de não lidos). Clicando nele, abre uma lista com os seus avisos.</p>
               <figure class="manual-figura">
                 <img src="manual/imagens/aviso-sino.png" alt="O sino do cabeçalho aberto, com o número de avisos em aberto e a lista de avisos." />
               </figure>
@@ -745,10 +846,10 @@
               <figure class="manual-figura">
                 <img src="manual/imagens/aviso-pagina.png" alt="A página Avisos, aba Para mim, com o Precisa de você e o histórico dos avisos." />
               </figure>
-              <div class="manual-admin">
+              <div class="manual-admin manual-zona-admin">
                 <h3 id="comunicados">Criar comunicados e resolver pendências <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p><strong>A aba Administração.</strong> Além de Para mim e Comunicados, o administrador tem a aba <strong>Administração</strong>, com um número no selo. Ela lista as <strong>pendências</strong> que esperam a sua decisão. Uma pendência não é um aviso que você lê: é um <strong>estado</strong> que some sozinho quando alguém resolve o assunto. Cada uma mostra uma <strong>contagem</strong> e um texto, e clicar leva direto à tela onde se resolve, como as trocas ou as folgas a aprovar.</p>
-                <figure class="manual-figura">
+                <figure class="manual-figura manual-figura--larga">
                   <img src="manual/imagens/avisos-administracao.png" alt="A aba Administração dos avisos: uma pendência comum com a contagem e a seta (1) e a Operacional fora da escala listando os militares (2)." />
                 </figure>
                 <p>Duas pendências <strong>não levam a outra tela</strong>, e sim <strong>listam os itens</strong> ali mesmo, para você consertar como quiser: <strong>Operacional fora da escala</strong> mostra os militares lotados sem ciclo, para acertar pelo Contínuos, e <strong>Viaturas em manutenção</strong> mostra as viaturas paradas, para resolver na Escala ou na Distribuição. É a mesma lista que abastece o <strong>"Precisa de você"</strong> da aba Para mim, com o que é seu.</p>
@@ -760,12 +861,10 @@
               </div>
             </section>
 
-            <section class="manual-secao manual-admin" id="historico">
-              <h2>Histórico <span class="manual-selo-admin">Apenas administradores</span></h2>
-              <p class="manual-prereq">Você precisa ser administrador para esta parte.</p>
-              <p>O <strong>Histórico</strong> é o registro de auditoria do sistema: cada ação que grava algo (cadastrar, promover, afastar, mudar o ritmo, aprovar uma troca ou folga, publicar um comunicado) deixa um evento aqui. A página usa a mesma árvore de unidades, com os eventos <strong>agrupados por unidade</strong> e a contagem <strong>"N registros"</strong> em cada uma.</p>
+            <section class="manual-secao manual-admin manual-zona-admin" id="historico">
+              <h2>Histórico <span class="manual-selo-admin">Apenas administradores</span></h2>              <p>O <strong>Histórico</strong> é o registro de auditoria do sistema: cada ação que grava algo (cadastrar, promover, afastar, mudar o ritmo, aprovar uma troca ou folga, publicar um comunicado) deixa um evento aqui. A página usa a mesma árvore de unidades, com os eventos <strong>agrupados por unidade</strong> e a contagem <strong>"N registros"</strong> em cada uma.</p>
               <p><strong>Cada evento é um cartão que abre.</strong> Recolhido, ele mostra a <strong>parte do sistema</strong> a que pertence (Usuários, Escala, Afastamentos e assim por diante), o <strong>assunto</strong> e a linha com <strong>quem fez, o que fez e quando</strong>. Clicando, o cartão revela os <strong>detalhes</strong> das mudanças, no mesmo formato do resumo que aparece ao salvar.</p>
-              <figure class="manual-figura">
+              <figure class="manual-figura manual-figura--cheia">
                 <img src="manual/imagens/historico-lista.png" alt="A página Histórico: os filtros Período, Tipo e Autor (1) e a árvore com eventos recolhidos, cada um com a parte, o assunto e quem fez, o que fez e quando (2)." />
               </figure>
               <p><strong>Filtrar.</strong> No topo, o <strong>Período</strong> (Hoje, Últimos 7 dias, Últimos 30 dias ou Tudo, começando nos 30 dias) refaz a busca ao mudar; o <strong>Tipo</strong> restringe pela parte do sistema e o <strong>Autor</strong>, por quem fez a alteração. Um <strong>"x"</strong> em cada um volta para "Todos".</p>
@@ -812,9 +911,20 @@
             <section class="manual-secao" id="logica">
               <h2>Apêndice: a lógica por trás</h2>
               <p>Esta parte explica, por dentro, as regras que o sistema segue para montar a escala sozinho. Você não precisa mexer em nada disso, mas entender ajuda a ler o resultado.</p>
+              <figure class="manual-diagrama manual-ordem">
+                <ol class="manual-ordem-lista">
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">1</span><span class="manual-ordem-texto"><strong>Antiguidade</strong><span>O mais antigo tem preferência, e é o desempate em tudo.</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">2</span><span class="manual-ordem-texto"><strong>Tipo: praça ou oficial</strong><span>Cada vaga pede um dos dois, e só entra quem é do tipo certo.</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">3</span><span class="manual-ordem-texto"><strong>Chefe de Socorro e Oficial de Área</strong><span>Os mais antigos de serviço, sempre. Nenhuma regra os tira.</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">4</span><span class="manual-ordem-texto"><strong>Condutor</strong><span>Só quem tem CNH compatível com a viatura.</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">5</span><span class="manual-ordem-texto"><strong>Grau ideal</strong><span>A graduação mais indicada; faltando, o sistema aproxima e avisa.</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">6</span><span class="manual-ordem-texto"><strong>Rodízio</strong><span>Varia quem assume cada função, para não recair sempre nas mesmas pessoas.</span></span></li>
+                </ol>
+                <figcaption class="manual-diagrama-legenda">A ordem que o sistema segue para preencher as vagas de cada dia. Quando falta gente, entram os acúmulos (a mesma pessoa em duas funções) e o reforço de outra unidade.</figcaption>
+              </figure>
               <p><strong>Antiguidade em primeiro lugar.</strong> Em quase toda escolha, o <strong>mais antigo</strong> tem prioridade, e a antiguidade é o <strong>desempate</strong> em tudo. Cada vaga do modelo pede <strong>praça</strong> ou <strong>oficial</strong>, e o sistema só encaixa quem é do tipo certo.</p>
               <p><strong>Chefe de Socorro e Oficial de Área são sempre os mais antigos.</strong> O <strong>Chefe de Socorro</strong> é o <strong>praça mais antigo</strong> do pelotão; o <strong>Oficial de Área</strong>, o <strong>oficial mais antigo</strong>. Isso é absoluto: nenhuma regra (proibida ou exclusiva) tira o mais antigo desses papéis.</p>
-              <p><strong>Condutor só com CNH.</strong> A função <strong>Condutor</strong> de uma viatura só cai em quem tem <strong>CNH compatível</strong> com a categoria que a viatura exige (por exemplo, uma viatura que pede C aceita quem tem C, D ou E). Quem não tem a carteira nunca é posto como condutor.</p>
+              <p><strong>Condutor só com CNH.</strong> A função <strong>Condutor</strong> de uma viatura só fica com quem tem <strong>CNH compatível</strong> com a categoria que a viatura exige (por exemplo, uma viatura que pede C aceita quem tem C, D ou E). Quem não tem a carteira nunca é posto como condutor.</p>
               <figure class="manual-figura">
                 <img src="manual/imagens/apendice-guarnicao.png" alt="A guarnição de uma viatura no painel do dia: o Chefe de Socorro, o praça mais antigo (1), e o Condutor, com a CNH exigida (2), além do Efetivo." />
               </figure>
@@ -822,7 +932,7 @@
               <figure class="manual-figura">
                 <img src="manual/imagens/apendice-acumulo.png" alt="Um acúmulo: o mesmo militar aparece com dois rótulos empilhados, Chefe de Socorro e Condutor (1), e um nome só (2)." />
               </figure>
-              <p><strong>Ajustes finos: grau ideal e rodízio.</strong> Cada função pode ter um <strong>grau ideal</strong> (a graduação mais indicada, exata ou "daquela para cima ou para baixo"); faltando o ideal, o sistema aproxima e avisa. E o <strong>rodízio</strong> faz o sistema variar quem pega certas funções, para não cair sempre no mesmo.</p>
+              <p><strong>Ajustes finos: grau ideal e rodízio.</strong> Cada função pode ter um <strong>grau ideal</strong> (a graduação mais indicada, exata ou "daquela para cima ou para baixo"); faltando o ideal, o sistema aproxima e avisa. E o <strong>rodízio</strong> faz o sistema variar quem assume certas funções, para não recair sempre nas mesmas pessoas.</p>
             </section>
 
             <footer class="manual-rodape">

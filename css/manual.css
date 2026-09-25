@@ -84,12 +84,15 @@
 /* placeholder de conteúdo ainda não escrito */
 .manual-em-construcao { color: var(--texto-debil); font-style: italic; }
 
-/* figuras (recortes anotados) — pequenas, alinhadas à esquerda */
-.manual-figura { margin: 16px 0; max-width: 560px; }
+/* figuras (recortes anotados) — pequenas, centralizadas na coluna de texto
+   (width fit-content encolhe a caixa até a imagem, e margin auto a centraliza) */
+.manual-figura { margin: 16px auto; max-width: 560px; width: fit-content; }
 .manual-figura img { display: block; max-width: 100%; height: auto; border: 1px solid var(--borda); border-radius: var(--raio-medio); }
 .manual-figura figcaption { margin-top: 8px; font-size: 12px; color: var(--texto-fraco); }
 /* figura um pouco mais larga que o padrão, mas dentro da coluna de texto (ex.: close do calendário) */
 .manual-figura--larga { max-width: 700px; }
+/* figura na largura cheia da coluna de texto (para telas largas: tabelas, árvore com controles) */
+.manual-figura--cheia { max-width: 100%; }
 
 /* ---- DIAGRAMA da Visão geral ----
    Fluxo desenhado em HTML/CSS (não é print): base + ciclo -> motor -> escala,
@@ -171,6 +174,120 @@
   max-width: 620px;
 }
 
+/* ---- Linha do tempo do CICLO (ex.: 24/48): dias de serviço x folga se repetindo.
+   Reusa a casca .manual-diagrama (figura centralizada + legenda). ---- */
+.manual-ciclo-faixa {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: stretch;
+  gap: 4px;
+  width: 100%;
+}
+.manual-ciclo-dia {
+  flex: 1 1 88px;
+  min-width: 0;
+  max-width: 120px;
+  min-height: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px 4px;
+  text-align: center;
+  font-size: 12px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pequeno);
+  background: var(--fundo-suave);
+  color: var(--texto-fraco);
+}
+.manual-ciclo-dia strong { font-weight: 600; color: var(--texto); }
+.manual-ciclo-dia small { font-size: 11px; }
+/* dia de serviço: mesma ênfase forte do site (fundo de contraste) */
+.manual-ciclo-dia--servico {
+  background: var(--fundo-contraste);
+  border-color: var(--fundo-contraste);
+  color: var(--texto-invertido);
+}
+.manual-ciclo-dia--servico strong { color: var(--texto-invertido); }
+.manual-ciclo-mais { align-self: center; padding: 0 4px; font-weight: 700; color: var(--texto-fraco); }
+
+/* ---- Escada de ORDEM (ex.: a ordem de decisão da distribuição): lista numerada,
+   de cima (mais importante) para baixo. Reusa a casca .manual-diagrama. ---- */
+.manual-ordem-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 560px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  overflow: hidden;
+}
+.manual-ordem-passo {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--borda);
+  background: var(--fundo-superficie);
+}
+.manual-ordem-passo:first-child { border-top: none; }
+.manual-ordem-num {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--fundo-contraste);
+  color: var(--texto-invertido);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.manual-ordem-texto { min-width: 0; }
+.manual-ordem-texto strong { display: block; color: var(--texto-forte); font-weight: 600; }
+.manual-ordem-texto span { font-size: 12px; color: var(--texto-fraco); }
+
+/* ---- Fluxo de ESTADOS (ex.: o ciclo de vida de uma troca): selos reais do
+   sistema ligados por setas. Reusa a casca .manual-diagrama e o componente .selo. ---- */
+.manual-fluxo-linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+.manual-fluxo-seta { flex: 0 0 auto; color: var(--texto-debil); }
+
+/* ---- Dia de serviço "de 08h a 08h": duas faixas alinhadas (calendário x dia de
+   serviço). O serviço leva o nome do dia em que começa e cruza a meia-noite; os dois
+   serviços se encontram às 08h. Larguras proporcionais (8h = 1 unidade). Reusa a
+   casca .manual-diagrama. ---- */
+.manual-turno-linha-rotulada { width: 100%; }
+.manual-turno-cabeca {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--texto-fraco);
+}
+.manual-turno-linha { display: flex; gap: 0; width: 100%; }
+.manual-turno-seg { min-width: 0; padding: 10px 6px; text-align: center; font-size: 12px; }
+.manual-turno-seg--1 { flex: 1 1 0; }
+.manual-turno-seg--2 { flex: 2 1 0; }
+.manual-turno-seg--3 { flex: 3 1 0; }
+.manual-turno-seg--cal { border: 1px solid var(--borda); background: var(--fundo-suave); color: var(--texto); font-weight: 600; }
+.manual-turno-seg--cal + .manual-turno-seg--cal { border-left: none; }
+.manual-turno-seg--serv { border: 1px solid var(--fundo-contraste); border-radius: var(--raio-pequeno); background: var(--fundo-contraste); color: var(--texto-invertido); font-weight: 600; }
+.manual-turno-seg--serv2 { border: 1px solid var(--borda-forte); border-radius: var(--raio-pequeno); background: var(--fundo-medio); color: var(--texto); font-weight: 600; }
+.manual-turno-seg small { display: block; margin-top: 2px; font-weight: 400; font-size: 11px; }
+
 /* passo a passo (lista numerada) */
 .manual-passos { margin: 16px 0; padding-left: 24px; }
 .manual-passos li { margin-bottom: 8px; }
@@ -184,6 +301,9 @@
 .manual-legenda > li { display: flex; align-items: flex-start; gap: 12px; }
 .manual-legenda-marca { flex: 0 0 84px; display: flex; align-items: center; gap: 4px; color: var(--texto-forte); padding-top: 2px; }
 .manual-legenda-texto { min-width: 0; }
+/* legenda compacta: ícone junto do nome (listas de áreas do sistema) */
+.manual-legenda--compacta > li { gap: 8px; }
+.manual-legenda--compacta .manual-legenda-marca { flex: 0 0 24px; }
 
 /* observação (selo/nota do manual) */
 .manual-nota {
@@ -222,6 +342,21 @@
 }
 .manual-bloco-admin .manual-selo-admin { margin-left: 0; margin-bottom: 8px; }
 .manual-bloco-admin p { margin: 0; }
+
+/* zona de administrador: um bloco inteiro (seção ou subseção) destacado como
+   "área do admin" — fundo âmbar claro + trilho âmbar na lateral, correndo do
+   início ao fim. O selo no título nomeia; a zona dá o destaque grande. Âmbar
+   claro (não saturado) para o texto e as imagens seguirem legíveis nos 2 temas. */
+.manual-zona-admin {
+  background: var(--alerta-fundo);
+  border-left: 4px solid var(--alerta);
+  border-radius: var(--raio-medio);
+  padding: 16px 24px;
+  margin: 24px 0;
+}
+/* o primeiro título da zona não empurra o topo (a folga vem do padding da zona) */
+.manual-zona-admin > h2:first-child,
+.manual-zona-admin > h3:first-child { margin-top: 0; }
 
 /* ------------------------------------------------------------
    Impressão em A4 — imprime só o documento: esconde a moldura do app
