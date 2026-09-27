@@ -19,6 +19,7 @@
   /* origem -> nome do arquivo de ícone (o cadeado é à parte, quando fixado) */
   var ICONE_ORIGEM = {
     base: 'icone-origem-base',
+    saida: 'icone-origem-saida',
     troca: 'icone-origem-troca',
     troca_saida: 'icone-origem-troca',
     pontual: 'icone-origem-pontual',

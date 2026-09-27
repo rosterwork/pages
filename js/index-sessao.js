@@ -20,7 +20,14 @@
   if (sessao && sessao.access_token) {
     try {
       var payload = JSON.parse(atob(sessao.access_token.split('.')[1]));
-      if (payload.exp && payload.exp * 1000 > Date.now()) { aplicarTemaInicial(); return; }
+      if (payload.exp && payload.exp * 1000 > Date.now()) {
+        /* senha provisória ainda não trocada: não entra no sistema, volta para a troca */
+        var usuario = null;
+        try { usuario = JSON.parse(sessionStorage.getItem('rosterwork_user')); } catch (e2) {}
+        if (usuario && usuario.senha_provisoria) { window.location.replace('nova-senha.html?provisoria'); return; }
+        aplicarTemaInicial();
+        return;
+      }
     } catch (e) {}
   }
 

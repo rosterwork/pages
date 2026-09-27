@@ -652,13 +652,28 @@
   transform: rotate(0);
 }
 
-/* duas colunas de mesma largura, preenchidas de cima para baixo (3 itens na 1ª, 2 na 2ª) */
+/* grupos empilhados (origem, nome riscado, função, militar, observações), cada um com o seu título */
 .escala-legenda-itens {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.escala-legenda-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* itens do grupo em três colunas de mesma largura; item sozinho no grupo ocupa a linha toda */
+.escala-legenda-grade {
   display: grid;
-  grid-template-rows: repeat(3, auto);
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 4px 8px;
+}
+
+.escala-legenda-item:only-child {
+  grid-column: 1 / -1;
 }
 
 .escala-legenda-item {

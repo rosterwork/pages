@@ -98,7 +98,7 @@
     RosterWork.pedirData({
       confirmarPerigo: true,
       mensagem: RosterWork.mensagens.distribuicao.excluirModelo,
-      textoConfirmar: RosterWork.mensagens.botoes.excluir,
+      textoConfirmar: RosterWork.mensagens.botoes.excluirModelo,
       aoConfirmar: function (iso) {
         if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal();   // recalcula a escala: círculo + tela travada
         RosterWork.distribuicaoDados.excluirModelo(modeloId, RosterWork.sessao.cpf(), iso).then(function (r) {

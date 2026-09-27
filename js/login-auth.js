@@ -194,7 +194,8 @@
         }
       } catch (e) {}
 
-      window.location.href = 'index.html';
+      /* senha provisória (criada pelo administrador): troca a senha antes de entrar */
+      window.location.href = (perfil && perfil.senha_provisoria) ? 'nova-senha.html?provisoria' : 'index.html';
 
     } catch (e) {
       desbloquear();

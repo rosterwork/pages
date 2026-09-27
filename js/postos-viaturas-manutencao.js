@@ -179,7 +179,7 @@
       });
   }
 
-  /* encerra a janela em aberto (fecha hoje; a viatura volta para a distribuição) */
+  /* encerra a janela em aberto (fecha hoje; a viatura só perde a marca "Em manutenção": ela nunca sai da distribuição) */
   function confirmarEncerrar(m) {
     if (!RosterWork.confirmar) { encerrar(m.id_manutencao); return; }
     RosterWork.confirmar({

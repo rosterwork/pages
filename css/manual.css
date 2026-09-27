@@ -89,6 +89,23 @@
 .manual-figura { margin: 16px auto; max-width: 560px; width: fit-content; }
 .manual-figura img { display: block; max-width: 100%; height: auto; border: 1px solid var(--borda); border-radius: var(--raio-medio); }
 .manual-figura figcaption { margin-top: 8px; font-size: 12px; color: var(--texto-fraco); }
+/* chamadas: a legenda visível de uma imagem numerada. Cada item repete o número
+   no mesmo círculo azul da imagem, na ordem 1, 2, 3... */
+.manual-chamadas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; counter-reset: chamada; }
+.manual-chamadas > li { counter-increment: chamada; display: flex; align-items: center; gap: 8px; }
+.manual-chamadas > li::before {
+  content: counter(chamada);
+  flex: 0 0 18px;
+  min-height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--anotacao);
+  color: var(--anotacao-texto);
+  font-size: 11px;
+  font-weight: 700;
+}
 /* figura um pouco mais larga que o padrão, mas dentro da coluna de texto (ex.: close do calendário) */
 .manual-figura--larga { max-width: 700px; }
 /* figura na largura cheia da coluna de texto (para telas largas: tabelas, árvore com controles) */
@@ -131,6 +148,8 @@
   border-radius: var(--raio-medio);
   padding: 12px;
 }
+/* os eventos só têm ícone e título: cabem os cinco numa fileira */
+.manual-diagrama-andar--eventos .manual-diagrama-bloco { flex-basis: 110px; }
 /* bloco (uma peça do fluxo) */
 .manual-diagrama-bloco {
   flex: 1 1 150px;
@@ -304,6 +323,8 @@
 /* legenda compacta: ícone junto do nome (listas de áreas do sistema) */
 .manual-legenda--compacta > li { gap: 8px; }
 .manual-legenda--compacta .manual-legenda-marca { flex: 0 0 24px; }
+/* ícone de aviso em amarelo, igual à marca de aviso do painel da escala */
+.manual-icone-aviso { color: var(--alerta); }
 
 /* observação (selo/nota do manual) */
 .manual-nota {

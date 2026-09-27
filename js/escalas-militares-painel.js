@@ -13,7 +13,7 @@
 
   var DIAS = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
   var MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
-  var ORIGEM = { base: 'Escala base', troca: 'Troca de serviço', pontual: 'Inserção pontual', sistema: 'Gerado pelo sistema', extra: 'Extrajornada' };
+  var ORIGEM = { base: 'Entrada', sistema: 'Contínuo', saida: 'Saída', pontual: 'Pontual', troca: 'Troca', extra: 'Extrajornada' };
 
   function soHora(t) { return t ? t.split(':')[0] : ''; }
 

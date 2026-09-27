@@ -178,7 +178,9 @@
       if (mil.ocupado) {
         var oc = tplOc.content.cloneNode(true).firstElementChild;
         oc.querySelector('.troca-parceiro-nome').textContent = nome;
-        oc.querySelector('.troca-parceiro-motivo').textContent = txt('parceiroOcupado');
+        /* afastado (férias/licença/dispensa) diz o motivo; senão, já está de serviço no horário */
+        oc.querySelector('.troca-parceiro-motivo').textContent =
+          (mil.afastamento && txt('parceiroAfastado')[mil.afastamento]) || txt('parceiroOcupado');
         oc.setAttribute('data-busca', RosterWork.busca.normalizar(nome));
         menu.appendChild(oc);
       } else {

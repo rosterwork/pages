@@ -109,6 +109,7 @@
       erroConexao: 'Erro de conexão. Tente novamente.',
       senhaCurta: 'A senha precisa de ao menos 6 caracteres.',
       senhaNaoConfere: 'A confirmação não bate com a nova senha.',
+      senhaIgual: 'A nova senha precisa ser diferente da senha atual.',
       linkInvalido: 'Este link é inválido ou expirou. Peça um novo.',
       redefinida: 'Senha redefinida com sucesso. Você já pode entrar.',
       falhaRedefinir: 'Não foi possível redefinir a senha. Tente de novo.'
@@ -184,7 +185,7 @@
       falhaEncerrarManutencao: 'Não foi possível encerrar a manutenção. Tente de novo.',
       falhaRemoverManutencao: 'Não foi possível remover. Tente de novo.',
       confirmarRemoverManutencao: 'Remover esta janela de manutenção?',
-      confirmarEncerrarManutencao: 'Encerrar a manutenção de {prefixo} agora? A viatura volta para a distribuição.',
+      confirmarEncerrarManutencao: 'Encerrar a manutenção de {prefixo} agora? A viatura deixa de ser marcada como "Em manutenção" na escala.',
       /* a viatura é única no sistema: se já existe em outra unidade, oferece a transferência */
       viaturaEmOutraUnidade: 'A viatura {prefixo} já está cadastrada em {unidade}. Deseja transferi-la para {destino}? Os dados que você digitou serão aplicados a ela.',
       /* ponto crítico: postos alimentam a distribuição da escala */
@@ -193,12 +194,17 @@
 
     /* afastamentos — painéis Nova licença / Nova dispensa (decisão fora do fluxo) */
     afastamentos: {
-      foraDoFluxo: 'Sai da escala (inativo por tempo indeterminado); a volta é manual pelo administrador.',
+      foraDoFluxo: 'Sai do ciclo por tempo indeterminado; volta quando o administrador o incluir de novo pelos Contínuos.',
       segueNoFluxo: 'Continua no fluxo, só bloqueia os dias do afastamento.',
       falhaSalvarLicenca: 'Não foi possível salvar a licença. Tente de novo.',
       falhaSalvarDispensa: 'Não foi possível salvar a dispensa. Tente de novo.',
       /* aviso ao lançar afastamento sobre um dia coberto por troca aprovada; datas = lista já formatada */
       confirmarTroca: function (datas) { return 'Este militar cobre serviço por troca em ' + datas + '. Se você lançar o afastamento, ele deixa de assumir esse serviço, e a escala vai marcá-lo em amarelo. Continuar?'; }
+    },
+
+    /* ajustes — painel do ritmo da unidade (o Salvar pergunta a data a partir da qual o ritmo vale) */
+    ajustes: {
+      efeitoRitmo: 'A escala automática dos militares da unidade é regerada a partir da data que você escolher ao salvar.'
     },
 
     /* escalas (painel da distribuição e grade do mês) */
@@ -321,8 +327,8 @@
     /* usuários (ficha do militar no painel lateral) */
     usuarios: {
       falhaFicha: 'Não foi possível carregar a ficha.',
-      confirmarBaixa: 'Tem certeza que deseja excluir {pessoa} (CPF {cpf}) do sistema? Ele será eliminado a partir de agora.',
-      falhaBaixa: 'Não foi possível excluir. Tente de novo.',
+      confirmarBaixa: 'Dar baixa em {pessoa} (CPF {cpf})? Ele fica inativo a partir da data escolhida, sai da escala e pode ser readmitido depois.',
+      falhaBaixa: 'Não foi possível dar baixa. Tente de novo.',
       falhaSalvar: 'Não foi possível salvar. Tente de novo.',
       confirmarTransferencia: 'Transferir {pessoa} de {origem} para {destino}? Ele sai da escala da unidade atual e fica disponível para ser escalado na nova.',
       falhaTransferencia: 'Não foi possível transferir. Tente de novo.',
@@ -335,8 +341,8 @@
       falhaPromocao: 'Não foi possível promover. Tente de novo.',
       confirmarReadmissao: 'Readmitir {pessoa} ao efetivo? Ele volta como ativo, fora da escala automática (você o recoloca pela seção Contínuos da Escala).',
       falhaReadmissao: 'Não foi possível readmitir. Tente de novo.',
-      confirmarRedefinirSenha: 'Redefinir a senha de {pessoa}? Ele vai entrar com uma senha temporária e deverá trocá-la no primeiro acesso. As sessões abertas dele serão encerradas.',
-      senhaRedefinida: 'Senha de {pessoa} redefinida. Senha temporária: {senha}. Passe para ele, que deve trocá-la em Meu perfil, na aba Segurança.',
+      confirmarRedefinirSenha: 'Redefinir a senha de {pessoa}? Ele vai entrar com uma senha provisória e terá de trocá-la no primeiro acesso. As sessões abertas dele serão encerradas.',
+      senhaRedefinida: 'Senha de {pessoa} redefinida. Senha provisória: {senha}. Passe para ele: no primeiro acesso, o sistema pede que ele troque a senha.',
       falhaRedefinirSenha: 'Não foi possível redefinir a senha. Tente de novo.',
       tokenNenhum: 'Este militar ainda não tem conta. Gere um token e entregue a ele para criar o acesso.',
       tokenAtivo: 'Token ativo, expira em {ate}. Entregue ao militar; se ele perder, gere um novo.',
@@ -417,6 +423,8 @@
       barraTrecho: 'Trecho',
       /* estados dos campos do modal */
       parceiroOcupado: 'já de serviço nesse horário',
+      /* afastado no dia (a chave é o afastamento que o banco devolve) */
+      parceiroAfastado: { 'Férias': 'de férias nesse dia', 'Licença': 'de licença nesse dia', 'Dispensa': 'de dispensa nesse dia' },
       modalUnidadeAntes: 'Selecione a unidade antes',
       modalDiaAntes: 'Escolha o dia antes',
       modalParceiroAntes: 'Selecione o parceiro antes',
@@ -496,7 +504,7 @@
       disponibilidadeSalva: 'Disponibilidade salva.',
       falhaSalvar: 'Não foi possível salvar. Tente de novo.',
       /* dica do dia bloqueado no calendário (o militar já está ocupado, não pode marcar) */
-      bloqueadoMotivo: { servico: 'Serviço', troca: 'Troca', folga: 'Folga', ferias: 'Férias', licenca: 'Licença', atestado: 'Atestado' },
+      bloqueadoMotivo: { servico: 'Serviço', troca: 'Troca', folga: 'Folga', ferias: 'Férias', licenca: 'Licença', dispensa: 'Dispensa' },
       quero: 'Quero',
       naoQuero: 'Não quero',
       procuraTotal: 'Total',
@@ -617,7 +625,7 @@
       irParaLogin: 'Ir para o login',
       enviarCadastro: 'Enviar cadastro',
       criarConta: 'Criar conta',
-      excluir: 'Excluir do sistema',
+      excluirModelo: 'Excluir modelo',
       excluirViatura: 'Excluir viatura',
       excluirInstalacao: 'Excluir instalação',
       cancelar: 'Cancelar',
@@ -625,6 +633,7 @@
       remover: 'Remover',
       promover: 'Promover',
       readmitir: 'Readmitir',
+      darBaixa: 'Dar baixa',
       redefinirSenha: 'Redefinir senha',
       gerarToken: 'Gerar token de acesso',
       gerarNovoToken: 'Gerar novo token',

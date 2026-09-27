@@ -75,7 +75,7 @@
     var linha = RosterWork.tpl('tpl-ajuste-ritmo-editar');
     if (secao && linha) {
       secao.appendChild(linha);
-      secao.appendChild(RosterWork.painel.criarLinha('Efeito', 'A escala automática dos militares da unidade é regerada de hoje em diante.'));
+      secao.appendChild(RosterWork.painel.criarLinha('Efeito', RosterWork.mensagens.ajustes.efeitoRitmo));
       corpo.appendChild(secao);
     }
 

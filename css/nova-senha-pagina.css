@@ -16,6 +16,13 @@
   color: var(--texto-forte);
 }
 
+/* explicação do modo senha provisória (igual à introdução da tela de recuperar senha) */
+.nova-senha-intro {
+  margin: 0;
+  font-size: 13px;
+  color: var(--texto-fraco);
+}
+
 /* senha redefinida com sucesso */
 .nova-senha-sucesso {
   margin: 0;

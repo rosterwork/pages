@@ -21,9 +21,11 @@
   /* origem -> arquivo do ícone (o cadeado entra à parte, quando o militar é fixado) */
   var ICONE_ORIGEM = {
     base: 'icone-origem-base',
+    saida: 'icone-origem-saida',
     troca: 'icone-origem-troca',
     pontual: 'icone-origem-pontual',
-    sistema: 'icone-origem-sistema'
+    sistema: 'icone-origem-sistema',
+    extra: 'icone-extrajornada'
   };
 
   /* aviso do motor (escalas_onde.aviso) -> chave no catálogo RosterWork.mensagens.escala.erros */

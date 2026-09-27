@@ -85,6 +85,10 @@
   --alerta:              rgb(158, 102, 12);
   --alerta-fundo:        rgb(250, 242, 226);
   --alerta-fundo-forte:  rgb(246, 222, 168);
+  /* azul das anotações do manual: o mesmo dos círculos numerados das imagens
+     (igual nos dois temas, porque as imagens não mudam com o tema) */
+  --anotacao:            rgb(40,  96,  232);
+  --anotacao-texto:      var(--cinza-0);
 
   /* -------------------------------------------------------
      Véu do modal

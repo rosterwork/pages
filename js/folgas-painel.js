@@ -116,7 +116,8 @@
       subcab.textContent = '';
       var abas = RosterWork.tpl('tpl-folga-painel-subabas');
       if (abas) {
-        if (!ctx.admin) { var b = abas.querySelector('[data-sub="acoes"]'); if (b) b.remove(); }
+        /* Ações só para o admin, e nunca sobre si mesmo (o banco também trava conceder/ajustar o próprio) */
+        if (!ctx.admin || militar.usuario_id === ctx.cpf) { var b = abas.querySelector('[data-sub="acoes"]'); if (b) b.remove(); }
         subcab.classList.remove('oculto');
         subcab.appendChild(abas);
         if (RW.abas) RW.abas.ligar(abas, function (aba) {

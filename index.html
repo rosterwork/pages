@@ -1123,38 +1123,84 @@
         </button>
       </div>
       <div class="escala-legenda-itens oculto">
-        <span class="escala-legenda-item">
-          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-origem-sistema.svg#icone-origem-sistema"/></svg>
-          <span>Gerado pelo sistema</span>
-        </span>
-        <span class="escala-legenda-item">
-          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-origem-troca.svg#icone-origem-troca"/></svg>
-          <span>Troca de serviço</span>
-        </span>
-        <span class="escala-legenda-item">
-          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-origem-pontual.svg#icone-origem-pontual"/></svg>
-          <span>Inserção pontual</span>
-        </span>
-        <span class="escala-legenda-item">
-          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-origem-base.svg#icone-origem-base"/></svg>
-          <span>Escala base</span>
-        </span>
-        <span class="escala-legenda-item">
-          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-folgas.svg#icone-folgas"/></svg>
-          <span>Folga</span>
-        </span>
-        <span class="escala-legenda-item">
-          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-extrajornada.svg#icone-extrajornada"/></svg>
-          <span>Extrajornada (hora extra paga)</span>
-        </span>
-        <span class="escala-legenda-item">
-          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-cadeado.svg#icone-cadeado"/></svg>
-          <span>Função fixada</span>
-        </span>
-        <span class="escala-legenda-item">
-          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-regra.svg#icone-regra"/></svg>
-          <span>Tem regra (exclusivo/proibido)</span>
-        </span>
+        <!-- por que o militar está trabalhando no dia (um por linha de serviço) -->
+        <div class="escala-legenda-grupo">
+          <span class="rotulo-secao">Origem do serviço</span>
+          <div class="escala-legenda-grade">
+            <span class="escala-legenda-item">
+              <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-origem-base.svg#icone-origem-base"/></svg>
+              <span>Entrada</span>
+            </span>
+            <span class="escala-legenda-item">
+              <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-origem-sistema.svg#icone-origem-sistema"/></svg>
+              <span>Contínuo</span>
+            </span>
+            <span class="escala-legenda-item">
+              <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-origem-saida.svg#icone-origem-saida"/></svg>
+              <span>Saída</span>
+            </span>
+            <span class="escala-legenda-item">
+              <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-origem-pontual.svg#icone-origem-pontual"/></svg>
+              <span>Pontual</span>
+            </span>
+            <span class="escala-legenda-item">
+              <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-origem-troca.svg#icone-origem-troca"/></svg>
+              <span>Troca</span>
+            </span>
+            <span class="escala-legenda-item">
+              <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-extrajornada.svg#icone-extrajornada"/></svg>
+              <span>Extrajornada</span>
+            </span>
+          </div>
+        </div>
+        <!-- quem deixou o serviço (linha riscada na grade; no painel vai para as Observações) -->
+        <div class="escala-legenda-grupo">
+          <span class="rotulo-secao">Nome riscado</span>
+          <div class="escala-legenda-grade">
+            <span class="escala-legenda-item">
+              <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-folgas.svg#icone-folgas"/></svg>
+              <span>Folga</span>
+            </span>
+            <span class="escala-legenda-item">
+              <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-origem-troca.svg#icone-origem-troca"/></svg>
+              <span>Troca</span>
+            </span>
+          </div>
+        </div>
+        <!-- sobre a função que o militar ocupa -->
+        <div class="escala-legenda-grupo">
+          <span class="rotulo-secao">Função</span>
+          <div class="escala-legenda-grade">
+            <span class="escala-legenda-item">
+              <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-cadeado.svg#icone-cadeado"/></svg>
+              <span>Função fixada</span>
+            </span>
+            <span class="escala-legenda-item">
+              <svg class="icone escala-distribuicao-marca-aviso" width="12" height="12" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+              <span>Aviso</span>
+            </span>
+          </div>
+        </div>
+        <!-- sobre o militar (vale sempre, não só no dia) -->
+        <div class="escala-legenda-grupo">
+          <span class="rotulo-secao">Militar</span>
+          <div class="escala-legenda-grade">
+            <span class="escala-legenda-item">
+              <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-regra.svg#icone-regra"/></svg>
+              <span>Tem regra</span>
+            </span>
+          </div>
+        </div>
+        <!-- caixa Observações do painel -->
+        <div class="escala-legenda-grupo">
+          <span class="rotulo-secao">Observações</span>
+          <div class="escala-legenda-grade">
+            <span class="escala-legenda-item">
+              <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-nota.svg#icone-nota"/></svg>
+              <span>Nota do administrador</span>
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   </template>

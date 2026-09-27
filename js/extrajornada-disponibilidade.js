@@ -335,7 +335,7 @@
       estado.mesEntrada = r.mes_entrada || null;
       estado.quer = [];
       estado.nao_quer = [];
-      /* um dia que virou bloqueado (serviço/folga/férias/atestado) não conta mais como marcado */
+      /* um dia que virou bloqueado (serviço/troca/folga/férias/licença/dispensa) não conta mais como marcado */
       (r.datas || []).forEach(function (x) {
         if (estado.bloqueados[x.data]) return;
         (x.tipo === 'quer' ? estado.quer : estado.nao_quer).push(x.data);

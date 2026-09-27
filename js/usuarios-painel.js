@@ -66,13 +66,15 @@
   /* militar veio da lista de inativos (o card carrega situacao='Inativo') */
   function ehInativo() { return !!(pessoaAtual && pessoaAtual.situacao === 'Inativo'); }
 
-  /* "Ativo" | "Inativo desde DD/MM/AAAA" | "Férias até DD/MM/AAAA" */
+  /* "Ativo" | "Inativo desde DD/MM/AAAA" | "Férias/Licença/Dispensa até DD/MM/AAAA" */
   function textoSituacao(ins) {
     if (ehInativo()) {
       return pessoaAtual && pessoaAtual.situacao_ate
         ? 'Inativo desde ' + formatarData(pessoaAtual.situacao_ate) : 'Inativo';
     }
-    if (ins && ins.situacao === 'Férias') return 'Férias até ' + formatarData(ins.situacao_ate);
+    if (ins && (ins.situacao === 'Férias' || ins.situacao === 'Licença' || ins.situacao === 'Dispensa')) {
+      return ins.situacao + ' até ' + formatarData(ins.situacao_ate);
+    }
     return 'Ativo';
   }
 
@@ -281,7 +283,7 @@
         RosterWork.confirmar({
           tipo: 'erro',
           mensagem: msg,
-          textoConfirmar: RosterWork.mensagens.botoes.excluir,
+          textoConfirmar: RosterWork.mensagens.botoes.darBaixa,
           textoCancelar: RosterWork.mensagens.botoes.cancelar,
           confirmarPerigo: true,
           aoConfirmar: function () { darBaixa(dataIso); }
