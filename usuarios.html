@@ -424,8 +424,16 @@
   <button type="button" class="botao botao--primario">Readmitir ao efetivo</button>
 </template>
 
-<!-- molde: seção Transferir (aba Carreira, modo Editar do admin) — origem + seletor de unidade + botão -->
+<!-- molde: seção Transferir (aba Carreira, modo Editar do admin) — transferência marcada (com Cancelar,
+     só quando há uma) + origem + seletor de unidade + data + botão -->
 <template id="tpl-usuarios-transferir">
+  <div class="grupo-caixa oculto" data-transferir-marcada>
+    <span class="rotulo-secao">Mudanças marcadas</span>
+    <div class="linha-info">
+      <span class="linha-info-rotulo" data-transferir-marcada-texto></span>
+      <button type="button" class="botao botao--texto" data-transferir-cancelar>Cancelar</button>
+    </div>
+  </div>
   <div class="linha-info">
     <span class="linha-info-rotulo">De</span>
     <span class="linha-info-valor" data-origem></span>

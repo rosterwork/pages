@@ -44,6 +44,7 @@
         <span class="selo"></span>
         <span class="posto-periodo"></span>
       </div>
+      <span class="posto-mudanca oculto"></span>
       <div class="posto-dados"></div>
     </div>
   </div>
@@ -112,6 +113,22 @@
   </div>
 </template>
 
+<!-- molde: caixa "Mudanças marcadas" do painel (estado ou exclusão com data futura; itens via
+     #tpl-posto-mudanca-item, lógica em postos-mudancas.js — instalação e viatura) -->
+<template id="tpl-posto-mudancas">
+  <div class="grupo-caixa">
+    <span class="rotulo-secao">Mudanças marcadas</span>
+  </div>
+</template>
+
+<!-- molde: uma mudança marcada (texto + Cancelar) -->
+<template id="tpl-posto-mudanca-item">
+  <div class="linha-info">
+    <span class="linha-info-rotulo"></span>
+    <button type="button" class="botao botao--texto posto-mudanca-cancelar">Cancelar</button>
+  </div>
+</template>
+
 <!-- molde: rodapé do painel (Cancelar / Salvar) — mesmo padrão do Editar de escalas -->
 <template id="tpl-posto-painel-acoes">
   <button type="button" class="botao posto-painel-cancelar">Cancelar</button>
@@ -138,7 +155,7 @@
      transferir e excluir (postos-viaturas-painel.js / postos-viaturas-transferir.js)
      ========================================================================== -->
 
-<!-- molde: card de uma viatura dentro da unidade marcada (prefixo + selo de status + CNH + guarnição) -->
+<!-- molde: card de uma viatura dentro da unidade marcada (prefixo + selo de status + período + CNH + guarnição) -->
 <template id="tpl-viatura-cartao">
   <div class="posto-cartao" role="button" tabindex="0">
     <div class="posto-cabecalho">
@@ -148,7 +165,9 @@
     <div class="posto-corpo">
       <div class="posto-status">
         <span class="selo"></span>
+        <span class="posto-periodo"></span>
       </div>
+      <span class="posto-mudanca oculto"></span>
       <div class="posto-dados"></div>
     </div>
   </div>
@@ -174,7 +193,7 @@
   </label>
 </template>
 
-<!-- molde: linha editável do Estado (Ativo/Reserva/Inativo — Manutenção é derivada de uma janela) -->
+<!-- molde: linha editável do Estado (Ativo/Inativo; a viatura reserva é Ativa com mínimo 0 — Manutenção é derivada de uma janela) -->
 <template id="tpl-viatura-editar-status">
   <div class="campo">
     <span class="campo-rotulo">Estado</span>
@@ -185,7 +204,6 @@
       </button>
       <div class="dropdown-menu">
         <button type="button" class="dropdown-item" data-valor="Ativo">Ativo</button>
-        <button type="button" class="dropdown-item" data-valor="Reserva">Reserva</button>
         <button type="button" class="dropdown-item" data-valor="Inativo">Inativo</button>
       </div>
     </div>
@@ -251,7 +269,7 @@
   <button type="button" class="botao botao--perigo">Excluir viatura</button>
 </template>
 
-<!-- molde: botão Excluir instalação (mesma ação crítica, sem data) -->
+<!-- molde: botão Excluir instalação (mesma ação crítica; vale a partir da data do modal) -->
 <template id="tpl-instalacao-excluir-botao">
   <button type="button" class="botao botao--perigo">Excluir instalação</button>
 </template>

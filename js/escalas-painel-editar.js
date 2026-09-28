@@ -525,12 +525,16 @@
     return linha;
   }
 
-  /* botão "Adicionar função": cria uma vaga vazia no posto; inativo enquanto já houver uma */
+  /* botão "Adicionar função": cria uma vaga vazia no posto; inativo enquanto já houver uma, e também
+     com o posto no efetivo máximo (não cabe mais ninguém; a dica diz o máximo) */
   function montarBotaoAdicionar(posto) {
     if (!(posto.adicionar && posto.adicionar.nome_funcao)) return null;
     var botao = RosterWork.tpl('tpl-escala-distribuicao-adicionar');
     if (!botao) return null;
-    if (postoTemVaga(posto)) botao.disabled = true;
+    if (posto.cheio) {
+      botao.disabled = true;
+      botao.setAttribute('data-dica', RosterWork.mensagens.geral.efetivoMaximo.replace('{n}', posto.efetivo_maximo));
+    } else if (postoTemVaga(posto)) botao.disabled = true;
     else botao.addEventListener('click', function () { adicionarVaga(posto); });
     return botao;
   }

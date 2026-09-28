@@ -57,6 +57,7 @@
       var postos = (u.postos || []).map(function (p) {
         return {
           tipo: p.tipo, posto_id: p.posto_id, nome: p.nome, cnh: p.cnh,
+          efetivo_minimo: p.efetivo_minimo, efetivo_maximo: p.efetivo_maximo,
           vagas: (p.vagas || []).map(function (vg) {
             return {
               tempId: 't' + (seq++), idSlot: vg.id_slot, chave: vg.chave || null,
@@ -831,7 +832,14 @@
       linhas.appendChild(renderVaga(posto, vg));
     });
     var linhaNova = RosterWork.tpl('tpl-distribuicao-nova-funcao');
-    linhaNova.querySelector('.distribuicao-nova-funcao').addEventListener('click', function () { novaVaga(posto); });
+    var botaoNova = linhaNova.querySelector('.distribuicao-nova-funcao');
+    /* efetivo máximo: com o posto cheio, não cabe mais ninguém (a dica fica na linha, o botão desativado) */
+    if (posto.efetivo_maximo != null && RosterWork.distribuicaoModelos.pessoasDoPosto(posto) >= posto.efetivo_maximo) {
+      botaoNova.disabled = true;
+      linhaNova.setAttribute('data-dica', RosterWork.mensagens.geral.efetivoMaximo.replace('{n}', posto.efetivo_maximo));
+    } else {
+      botaoNova.addEventListener('click', function () { novaVaga(posto); });
+    }
     el.querySelector('.distribuicao-posto-vagas').appendChild(linhaNova);
     return el;
   }

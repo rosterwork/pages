@@ -2,17 +2,19 @@
    USUÁRIOS — transferência de unidade (aba Carreira, modo Editar)
    Só admin. Seção "Transferir": lotação atual (origem), seletor de
    unidade de destino (reusa geral-seletor-unidades, modo único) e
-   a data "A partir de" (apenas hoje ou anterior — o admin pode
-   registrar fora do dia, mas não no futuro). Confirma por modal
-   (altera a escala) e grava por transferir_militar. Recarrega a
-   ficha. Orquestração no usuarios-painel.js.
+   a data "A partir de" (até uma semana para trás ou no futuro; a
+   transferência vale a partir dela). A transferência futura fica
+   marcada no topo da seção, com Cancelar (cancelar_transferencia_militar);
+   uma nova toma o lugar da marcada. Confirma por modal (altera a
+   escala) e grava por transferir_militar. Recarrega a ficha.
+   Orquestração no usuarios-painel.js.
    ============================================================ */
 (function () {
   'use strict';
 
   window.RosterWork = window.RosterWork || {};
 
-  var ctx = null;   // { ficha, pessoa, aoConcluir, destino, botao, dataEl }
+  var ctx = null;   // { ficha, pessoa, aoConcluir, destino, botao, dataEl, marcada }
 
   function nomePessoa() {
     var ins = (ctx.ficha && ctx.ficha.institucionais) || {};
@@ -44,14 +46,18 @@
     erroData('');
     var dt = ctx.dataEl ? V.parseData(ctx.dataEl.value) : null;
     if (!dt) { erroData(RosterWork.mensagens.cadastro.dataInvalida); return; }
-    var hoje = new Date(); hoje.setHours(0, 0, 0, 0);
-    if (dt > hoje) { erroData(RosterWork.mensagens.usuarios.dataFutura); return; }
+    var limite = new Date(); limite.setHours(0, 0, 0, 0); limite.setDate(limite.getDate() - 7);
+    if (dt < limite) { erroData(RosterWork.mensagens.geral.dataMuitoAntiga); return; }
 
     var ins = (ctx.ficha && ctx.ficha.institucionais) || {};
     var msgBase = RosterWork.mensagens.usuarios.confirmarTransferencia
       .replace('{pessoa}', nomePessoa())
       .replace('{origem}', ins.lotacao_nome || '-')
-      .replace('{destino}', ctx.destino.nome || '-');
+      .replace('{destino}', ctx.destino.nome || '-')
+      .replace('{data}', ctx.dataEl.value);
+    if (ctx.marcada) {
+      msgBase += RosterWork.mensagens.usuarios.transferenciaSubstitui.replace('{data}', RosterWork.data.isoParaBR(ctx.marcada.data));
+    }
     var dataIso = V.paraISO(ctx.dataEl.value);
     /* avisa também das trocas/folgas da origem que a transferência vai cancelar (best-effort) */
     RosterWork.apiFetch('/rest/v1/rpc/escala_ciclo_retirar_analisar', {
@@ -73,16 +79,42 @@
 
   function transferir(dataIso) {
     if (!ctx || !ctx.destino) return;
-    if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal();   // recalcula a escala: círculo + tela travada
-    RosterWork.apiFetch('/rest/v1/rpc/transferir_militar', {
-      metodo: 'POST',
-      corpo: {
-        p_admin_cpf: RosterWork.sessao.cpf(),
-        p_cpf: ctx.pessoa.usuario_id,
-        p_unidade_destino: ctx.destino.unidade_id,
-        p_data_vigencia: dataIso
+    gravar('transferir_militar', {
+      p_admin_cpf: RosterWork.sessao.cpf(),
+      p_cpf: ctx.pessoa.usuario_id,
+      p_unidade_destino: ctx.destino.unidade_id,
+      p_data_vigencia: dataIso
+    }, RosterWork.mensagens.usuarios.falhaTransferencia);
+  }
+
+  /* "Transferência para 2ºPEL a partir de 07/10/2026" */
+  function textoMarcada(t) {
+    return RosterWork.mensagens.postos.transferenciaAPartir
+      .replace('{unidade}', t.destino || '')
+      .replace('{data}', RosterWork.data.isoParaBR(t.data));
+  }
+
+  /* Cancelar da transferência marcada (confirma por modal: refaz a escala) */
+  function confirmarCancelar() {
+    if (!ctx || !ctx.marcada || !RosterWork.confirmar) return;
+    var marcada = ctx.marcada;
+    RosterWork.confirmar({
+      tipo: 'aviso',
+      mensagem: RosterWork.mensagens.postos.confirmarCancelarMudanca.replace('{mudanca}', textoMarcada(marcada)),
+      textoConfirmar: RosterWork.mensagens.botoes.cancelarMudanca,
+      textoCancelar: RosterWork.mensagens.botoes.manter,
+      aoConfirmar: function () {
+        gravar('cancelar_transferencia_militar', { p_transferencia_id: marcada.id },
+          RosterWork.mensagens.postos.falhaCancelarMudanca);
       }
-    })
+    });
+  }
+
+  /* grava (transferir ou cancelar a marcada): véu enquanto a escala é refeita, depois
+     recarrega a ficha e abre o resumo */
+  function gravar(rpc, corpo, falha) {
+    if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal();   // recalcula a escala: círculo + tela travada
+    RosterWork.apiFetch('/rest/v1/rpc/' + rpc, { metodo: 'POST', corpo: corpo })
       .then(function (resp) {
         if (!resp.ok) return { _falha: 'servidor' };   // servidor/sessão (o 401 já é tratado no apiFetch)
         return resp.json();
@@ -95,7 +127,7 @@
           if (ctx && ctx.aoConcluir) ctx.aoConcluir();
           if (r.log && RosterWork.resumo) RosterWork.resumo.abrirModal(r.log, { pagina: 'Usuários' });
         } else if (RosterWork.avisar) {
-          RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || RosterWork.mensagens.usuarios.falhaTransferencia });
+          RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || falha });
         }
       })
       .catch(function () {
@@ -107,15 +139,24 @@
   /* monta a seção "Transferir" no corpo. opcoes = { aoConcluir } */
   function montar(corpo, ficha, pessoa, opcoes) {
     if (!corpo || !ficha || !RosterWork.seletorUnidades || !RosterWork.painel) return;
-    ctx = { ficha: ficha, pessoa: pessoa, aoConcluir: opcoes && opcoes.aoConcluir, destino: null, botao: null, dataEl: null };
+    /* a transferência marcada (data depois de hoje), se houver; com ela, a seção já abre */
+    var marcada = (ficha.transferencias || []).filter(function (t) { return t.marcada; })[0] || null;
+    ctx = { ficha: ficha, pessoa: pessoa, aoConcluir: opcoes && opcoes.aoConcluir, destino: null, botao: null, dataEl: null, marcada: marcada };
 
-    var secao = RosterWork.painel.criarSecaoColapsavel('Transferir', { aberta: false });
+    var secao = RosterWork.painel.criarSecaoColapsavel('Transferir', { aberta: !!marcada });
     if (!secao) return;
     var alvo = secao.querySelector('.painel-secao-corpo');
     var tpl = document.getElementById('tpl-usuarios-transferir');
     if (!alvo || !tpl) return;
     alvo.appendChild(tpl.content.cloneNode(true));
     corpo.appendChild(secao);
+
+    if (marcada) {
+      var caixa = alvo.querySelector('[data-transferir-marcada]');
+      caixa.querySelector('[data-transferir-marcada-texto]').textContent = textoMarcada(marcada);
+      caixa.querySelector('[data-transferir-cancelar]').addEventListener('click', confirmarCancelar);
+      caixa.classList.remove('oculto');
+    }
 
     var ins = ficha.institucionais || {};
     var origemEl = alvo.querySelector('[data-origem]');

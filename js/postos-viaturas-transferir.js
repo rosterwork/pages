@@ -3,7 +3,8 @@
    edição, modo Editar; só admin). Seção "Transferir": unidade de
    origem (a atual, leitura), seletor de unidade de destino (reusa
    geral-seletor-unidades, modo único) e o botão Transferir. A
-   transferência é imediata (a tabela não tem data de vigência) e
+   transferência vale a partir da data do modal (até a véspera a
+   viatura fica na unidade antiga; os dias anteriores não mudam) e
    altera a escala → passa por modal de confirmação. Grava pelo RPC
    transferir_viatura e devolve o log (modal de resumo). A
    orquestração (fechar/recarregar) fica em postos-viaturas-painel.
@@ -18,10 +19,11 @@
   /* confirmação (altera a escala -> sempre passa por modal) */
   function confirmar() {
     if (!ctx || !ctx.destino || !RosterWork.confirmar) return;
+    /* {origem} e {destino} aparecem duas vezes no texto: troca todas */
     var msg = RosterWork.mensagens.postos.confirmarTransferirViatura
       .replace('{prefixo}', ctx.viatura.nome || '')
-      .replace('{origem}', ctx.unidade.nome || ctx.unidade.nome_completo || '-')
-      .replace('{destino}', ctx.destino.nome || '-')
+      .split('{origem}').join(ctx.unidade.nome || ctx.unidade.nome_completo || '-')
+      .split('{destino}').join(ctx.destino.nome || '-')
       + ' ' + RosterWork.mensagens.postos.impactoDistribuicao;
     RosterWork.pedirData({
       mensagem: msg,

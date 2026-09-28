@@ -2,7 +2,8 @@
    POSTOS — aba Viaturas: árvore de unidades com os cards das
    viaturas de cada unidade marcada. Reusa o componente
    geral-arvore-unidades (fonte: RPC listar_viaturas). Card =
-   prefixo + selo de status (Ativo/Manutenção/Reserva/Inativo) +
+   prefixo + selo de status (Ativo/Manutenção/Inativo) +
+   período + próxima mudança de estado (postos-mudancas.js) +
    CNH exigida + guarnição (efetivo mín/ideal/máx). Só admin vê o botão "+" e pode
    clicar num card para editar (painel em postos-viaturas-painel.js).
    A árvore é singleton: postos.js remonta esta ao abrir a aba.
@@ -27,10 +28,10 @@
   /* selo do card: janela de manutenção ativa vira "Manutenção até DD/MM" (âmbar,
      derivado — como "Férias até DD/MM"); a janela em aberto (sem data de fim)
      vira só "Em manutenção"; senão, o Estado manual:
-     Ativo (verde) / Reserva (escuro) / Inativo (neutro, sem modificador) */
+     Ativo (verde) / Inativo (neutro, sem modificador) */
   function preencherSeloViatura(selo, v) {
     if (!selo) return;
-    selo.classList.remove('selo--sucesso', 'selo--alerta', 'selo--escuro');
+    selo.classList.remove('selo--sucesso', 'selo--alerta');
     if (v.em_manutencao) {
       selo.textContent = v.manutencao_ate
         ? 'Manutenção até ' + formatarDataCurta(v.manutencao_ate)
@@ -40,7 +41,6 @@
     }
     selo.textContent = v.status || '';
     if (v.status === 'Ativo') selo.classList.add('selo--sucesso');
-    else if (v.status === 'Reserva') selo.classList.add('selo--escuro');
   }
 
   /* abre o painel da viatura e realça o card clicado (mesmo padrão da ficha do militar) */
@@ -92,6 +92,7 @@
       card.setAttribute('data-viatura-id', v.id_viatura);
       card.querySelector('.posto-nome').textContent = v.nome || '';
       preencherSeloViatura(card.querySelector('.selo'), v);
+      if (RosterWork.postosMudancas) RosterWork.postosMudancas.preencherCard(card, v);
       var dados = card.querySelector('.posto-dados');
       adicionarDado(dados, 'CNH exigida', v.cnh || '');
       adicionarDado(dados, 'Efetivo mínimo', v.efetivo_minimo);
@@ -118,12 +119,14 @@
   }
 
   /* atualização cirúrgica de um card após salvar (sem recarregar a árvore = sem flash):
-     recebe o objeto da viatura já fresco e repinta o selo (status/manutenção), a CNH e a guarnição */
+     recebe o objeto da viatura já fresco e repinta o selo (status/manutenção), a mudança
+     marcada, a CNH e a guarnição */
   function atualizarCard(id, v) {
     if (id == null || !v) return;
     var card = document.querySelector('.posto-cartao[data-viatura-id="' + id + '"]');
     if (!card) return;
     preencherSeloViatura(card.querySelector('.selo'), v);
+    if (RosterWork.postosMudancas) RosterWork.postosMudancas.preencherCard(card, v);
     var valores = card.querySelectorAll('.posto-dado-valor');
     if (v.cnh !== undefined && valores[0]) valores[0].textContent = v.cnh || '';
     if (v.efetivo_minimo !== undefined && valores[1]) valores[1].textContent = v.efetivo_minimo;

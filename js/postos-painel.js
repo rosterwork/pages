@@ -9,7 +9,9 @@
    ideal ≤ máximo. Grava pelo RPC atualizar_instalacao (editar) ou
    inserir_instalacao (criar); no editar atualiza o card de forma
    cirúrgica (sem flash), no criar recarrega a árvore; confirma no
-   modal geral-resumo com o log do banco.
+   modal geral-resumo com o log do banco. A data do modal é a data
+   em que o novo estado (ou a exclusão, ou o começo) vale; embaixo do
+   Estado ficam as mudanças marcadas, com Cancelar (postos-mudancas.js).
    Moldes em postos.html; casca da gaveta em geral-painel.
    ============================================================ */
 (function () {
@@ -86,7 +88,8 @@
     return linha;
   }
 
-  /* linha de um efetivo: opções 1 a 10 pelo dropdown de números */
+  /* linha de um efetivo: opções 1 a 10 pelo dropdown de números; o mínimo começa em 0 (posto reserva,
+     sem erro de efetivo) */
   function montarLinhaEfetivo(rotulo, chave) {
     var linha = RosterWork.tpl('tpl-posto-editar-linha');
     if (!linha) return null;
@@ -97,7 +100,7 @@
     var menu = linha.querySelector('.dropdown-menu');
     if (menu && RosterWork.dropdownNumeros) {
       RosterWork.dropdownNumeros.preencher(menu, {
-        opcoes: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        opcoes: chave === 'min' ? [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
         valor: valores[chave],
         aoEscolher: function (v) {
           valores[chave] = v;
@@ -169,6 +172,8 @@
     var linhas = [];
     if (modo === 'novo') linhas.push(montarLinhaInstalacao());
     linhas.push(montarLinhaEstado());
+    /* embaixo do Estado: as mudanças marcadas (estado ou exclusão com data futura), com Cancelar */
+    if (modo === 'editar' && RosterWork.postosMudancas) linhas.push(RosterWork.postosMudancas.criarLista(ctx.inst, aoCancelarMudanca));
     linhas.push(montarLinhaEfetivo('Ef. mínimo', 'min'));
     linhas.push(montarLinhaEfetivo('Ef. ideal', 'ideal'));
     linhas.push(montarLinhaEfetivo('Ef. máximo', 'max'));
@@ -177,7 +182,7 @@
     if (modo === 'editar') montarExcluir(corpo);
   }
 
-  /* ---------- excluir instalação (ação crítica, no rodapé do painel; sem data) ---------- */
+  /* ---------- excluir instalação (ação crítica, no rodapé do painel; vale a partir da data do modal) ---------- */
 
   function montarExcluir(corpo) {
     var secao = RosterWork.painel.criarSecaoColapsavel('Excluir instalação', { aberta: false });
@@ -195,8 +200,7 @@
     if (!ctx || !ctx.inst || !RosterWork.confirmar) return;
     var t = RosterWork.mensagens.postos;
     RosterWork.pedirData({
-      mensagem: t.confirmarExcluirInstalacao.replace('{nome}', ctx.inst.nome || '')
-        + ' ' + t.impactoDistribuicao,
+      mensagem: t.confirmarExcluirInstalacao.replace('{nome}', ctx.inst.nome || ''),
       textoConfirmar: RosterWork.mensagens.botoes.excluirInstalacao,
       confirmarPerigo: true,
       aoConfirmar: function (iso) { excluir(iso); }
@@ -291,8 +295,9 @@
     if (!ctx || !ordemValida()) return;
     if (modo === 'novo') {
       if (!valores.tipo) return;
+      /* a data do modal é o primeiro dia da instalação */
       RosterWork.pedirData({
-        mensagem: RosterWork.mensagens.postos.impactoDistribuicao,
+        mensagem: RosterWork.mensagens.postos.postoComeca + ' ' + RosterWork.mensagens.postos.impactoDistribuicao,
         textoConfirmar: 'Adicionar',
         aoConfirmar: function (iso) {
           enviar('/rest/v1/rpc/inserir_instalacao', {
@@ -311,8 +316,10 @@
     }
     if (!sujo) return;
     var inst = ctx.inst;   // referência compartilhada com o card (mutável p/ reabrir o painel já fresco)
+    /* mudou o estado: a data do modal é a data em que o novo estado vale */
+    var t = RosterWork.mensagens.postos;
     RosterWork.pedirData({
-      mensagem: RosterWork.mensagens.postos.impactoDistribuicao,
+      mensagem: valores.estado !== originais.estado ? t.novoEstadoVale : t.impactoDistribuicao,
       textoConfirmar: RosterWork.mensagens.botoes.salvar,
       aoConfirmar: function (iso) {
         enviar('/rest/v1/rpc/atualizar_instalacao', {
@@ -334,21 +341,38 @@
     var dados = r.instalacao;
     if (dados) {
       /* mantém o objeto do card fresco: reabrir o painel mostra os novos valores */
-      inst.status = dados.status;
+      if (RosterWork.postosMudancas) RosterWork.postosMudancas.aplicarResumo(inst, dados);
       inst.efetivo_minimo = dados.efetivo_minimo;
       inst.efetivo_ideal = dados.efetivo_ideal;
       inst.efetivo_maximo = dados.efetivo_maximo;
-      if (RosterWork.paginas && RosterWork.paginas.postos && RosterWork.paginas.postos.atualizarCard) {
-        RosterWork.paginas.postos.atualizarCard(inst.id_instalacao, {
-          status: dados.status,
-          min: dados.efetivo_minimo,
-          ideal: dados.efetivo_ideal,
-          max: dados.efetivo_maximo
-        });
-      }
+      repintarCard(inst);
     }
     RosterWork.painel.fechar();
     if (r.log && RosterWork.resumo) RosterWork.resumo.abrirModal(r.log, { pagina: 'Postos' });
+  }
+
+  /* repinta o card da instalação com o objeto já fresco (selo, mudança marcada e efetivos) */
+  function repintarCard(inst) {
+    if (RosterWork.paginas && RosterWork.paginas.postos && RosterWork.paginas.postos.atualizarCard) {
+      RosterWork.paginas.postos.atualizarCard(inst.id_instalacao, {
+        status: inst.status,
+        min: inst.efetivo_minimo,
+        ideal: inst.efetivo_ideal,
+        max: inst.efetivo_maximo,
+        posto: inst
+      });
+    }
+  }
+
+  /* cancelou uma mudança marcada: atualiza o card, fecha o painel e mostra o resumo (como o Salvar) */
+  function aoCancelarMudanca(resumoEstado, log) {
+    if (!ctx || !ctx.inst) return;
+    var inst = ctx.inst;
+    if (RosterWork.postosMudancas) RosterWork.postosMudancas.aplicarResumo(inst, resumoEstado);
+    repintarCard(inst);
+    sujo = false;
+    RosterWork.painel.fechar();
+    if (log && RosterWork.resumo) RosterWork.resumo.abrirModal(log, { pagina: 'Postos' });
   }
 
   /* sucesso da criação: fecha o painel, recarrega a árvore (o novo card aparece) e
@@ -389,7 +413,8 @@
     modo = 'editar';
     aoFecharDono = (typeof limparSelecao === 'function') ? limparSelecao : null;
     ctx = { inst: inst, btnSalvar: null };
-    valores = { estado: inst.status, min: inst.efetivo_minimo, ideal: inst.efetivo_ideal, max: inst.efetivo_maximo };
+    /* o Estado mostra como a instalação fica depois das mudanças marcadas (dá para marcar a volta) */
+    valores = { estado: inst.estado_final || inst.status, min: inst.efetivo_minimo, ideal: inst.efetivo_ideal, max: inst.efetivo_maximo };
     originais = { estado: valores.estado, min: valores.min, ideal: valores.ideal, max: valores.max };
     sujo = false;
 

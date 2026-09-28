@@ -77,9 +77,9 @@
       }
     }
 
-    /* uma caixa por posto com distribuição: função à esquerda + militares/horários */
+    /* uma caixa por posto com alguém: função à esquerda + militares/horários (posto sem ninguém não aparece) */
     postos.forEach(function (posto) {
-      if (!(posto.funcoes && posto.funcoes.length) || !pecas || !RosterWork.painel) return;
+      if (!pecas || !RosterWork.painel || !(pecas.temAlguem && pecas.temAlguem(posto))) return;
       var caixa = RosterWork.painel.criarCaixa(posto.nome);
       if (!caixa) return;
       var np = pecas.nivelPosto ? pecas.nivelPosto(posto) : '';

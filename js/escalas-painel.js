@@ -168,9 +168,10 @@
     return nivel;
   }
 
-  /* nível do posto: o pior das suas funções; viatura sem condutor é erro (não opera sem motorista) */
+  /* nível do posto: o pior das suas funções; viatura sem condutor é erro (não opera sem motorista);
+     efetivo abaixo do mínimo ou acima do máximo também é erro */
   function nivelDoPosto(posto) {
-    var nivel = (posto && posto.sem_condutor) ? 'erro' : '';
+    var nivel = (posto && (posto.sem_condutor || posto.abaixo_minimo || posto.acima_maximo)) ? 'erro' : '';
     ((posto && posto.funcoes) || []).forEach(function (f) { nivel = piorNivel(nivel, nivelDaFuncao(f)); });
     return nivel;
   }
@@ -179,6 +180,7 @@
      na função. soManual=true conta só o que envolve ajuste manual (é o que trava o Salvar) */
   function temConflito(postos, soManual) {
     return (postos || []).some(function (po) {
+      if (po.acima_maximo) return true;   // acima do efetivo máximo sempre trava (nunca passa do máximo)
       return (po.funcoes || []).some(function (f) {
         var mils = f.militares || [];
         var inc = mils.some(function (mil) { return mil.incompativel && (!soManual || mil.fixado); });
@@ -224,6 +226,31 @@
     var sp = item.querySelector('span');
     if (sp) sp.textContent = texto;
     lista.appendChild(item);
+  }
+
+  /* o posto tem alguém em alguma função? (no Ver, o posto sem ninguém não aparece) */
+  function temAlguem(posto) {
+    return ((posto && posto.funcoes) || []).some(function (f) { return (f.militares || []).length > 0; });
+  }
+
+  /* linhas do efetivo fora dos limites, uma por posto (inclusive os que não aparecem no Ver, sem ninguém) */
+  function linhasEfetivo(postos, cat) {
+    var linhas = [];
+    (postos || []).forEach(function (po) {
+      var ab = po.abaixo_minimo;
+      if (ab && cat.abaixoMinimo) {
+        var faixas = ab.faixas || [];
+        var diaTodo = faixas.length === 1 && faixas[0].hi === '08:00' && faixas[0].hf === '08:00';
+        var textoFaixas = diaTodo ? '' : ', ' + faixas.map(function (f) { return preencher(cat.abaixoMinimo.faixa, f); }).join(' e ');
+        linhas.push({ def: cat.abaixoMinimo, texto: preencher(cat.abaixoMinimo.texto,
+          { posto: po.nome, pessoas: ab.pessoas, minimo: ab.minimo, faixas: textoFaixas }) });
+      }
+      var ac = po.acima_maximo;
+      if (ac && cat.acimaMaximo) {
+        linhas.push({ def: cat.acimaMaximo, texto: preencher(cat.acimaMaximo.texto, { posto: po.nome, pessoas: ac.pessoas, maximo: ac.maximo }) });
+      }
+    });
+    return linhas;
   }
 
   /* quais avisos do motor estão presentes hoje (para a lista do topo) */
@@ -331,11 +358,13 @@
     if (mot.chefeCondutor) chaves.push('chefeCondutor');   // 🟡 chefe assumiu a direção por falta de condutor
     var temAmarelo = det.grauRebaixado.length || det.grauExclusivo.length || det.rodizioRepetido.length || det.exclusivoCondutor.length || det.afastadoTroca.length;
     var qSemFuncao = (semFuncao || []).length;
-    if (!chaves.length && !faltam.length && !temAmarelo && !qSemFuncao) return null;
+    var efetivo = linhasEfetivo(postos, cat);   // 🔴 efetivo abaixo do mínimo / acima do máximo, por posto
+    if (!chaves.length && !faltam.length && !temAmarelo && !qSemFuncao && !efetivo.length) return null;
     var aviso = RosterWork.tpl('tpl-escala-distribuicao-aviso');
     if (!aviso) return null;
     var lista = aviso.querySelector('.escala-distribuicao-aviso-lista');
     chaves.forEach(function (k) { var def = cat[k]; if (def) avisoItem(lista, def.icone, def.texto, def.nivel); });
+    efetivo.forEach(function (l) { avisoItem(lista, l.def.icone, l.texto, l.def.nivel); });
     if (qSemFuncao && cat.semFuncao) {   // 🔴 militar de serviço sem função (singular/plural pela quantidade)
       var txtSF = qSemFuncao === 1 ? cat.semFuncao.texto : preencher(cat.semFuncao.textoPlural, { n: qSemFuncao });
       avisoItem(lista, cat.semFuncao.icone, txtSF, cat.semFuncao.nivel);
@@ -610,8 +639,8 @@
       }
 
       postos.forEach(function (posto) {
-        /* no modo Ver, mostra os postos com distribuição (e sempre os em manutenção); no Editar, todos os ativos */
-        if (!editar && !(posto.funcoes && posto.funcoes.length) && !posto.em_manutencao) return;
+        /* no modo Ver, mostra só os postos com alguém (e sempre os em manutenção); no Editar, todos os ativos */
+        if (!editar && !temAlguem(posto) && !posto.em_manutencao) return;
         var caixa = RosterWork.painel.criarCaixa(posto.nome);
         if (!caixa) return;
         if (posto.em_manutencao) {
@@ -916,6 +945,7 @@
       mesclarFuncoes: mesclarFuncoesViatura,
       marcarConflito: marcarConflito,
       temConflito: temConflito,
+      temAlguem: temAlguem,
       nivelFuncao: nivelDaFuncao,
       nivelPosto: nivelDoPosto,
       montarAviso: montarAviso,

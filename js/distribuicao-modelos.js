@@ -45,7 +45,9 @@
     excesso_envio:     { dominio: 'distribuicao', nivel: 'erro' },
     falta_papel:       { dominio: 'distribuicao', nivel: 'erro' },
     vaga_sem_criterio: { dominio: 'distribuicao', nivel: 'erro' },
-    posto_vazio:       { dominio: 'distribuicao', nivel: 'alerta' }
+    /* posto com menos pessoas que o efetivo mínimo: vermelho aqui (igual aos outros), mas o banco não o
+       põe na trava — a escala automática continua sendo distribuída */
+    abaixo_minimo:     { dominio: 'distribuicao', nivel: 'erro' }
   };
 
   /* problemas de UMA unidade → [{codigo, nivel, texto}]. É o ÚNICO lugar do FRONTEND que checa as
@@ -66,9 +68,8 @@
     if ((u.pracas || 0) < 0 || (u.oficiais || 0) < 0) add('excesso_envio', M.excessoEnvio(nome));   /* reforço demais */
     if ((tipo === 'CIA' || tipo === 'CIBM') && (u.oficiais || 0) > 0 && !u.tem_oficial_area) add('falta_papel', M.semPapel(nome, 'Oficial de Área'));
     if (tipo === 'PEL' && (u.pracas || 0) > 0 && !u.tem_chefe_socorro) add('falta_papel', M.semPapel(nome, 'Chefe de Socorro'));
-    /* posto sem efetivo (amarelo): detalhado quando há os nomes (Ver/Editar), genérico no painel */
-    if (u.postosVazios && u.postosVazios.length) u.postosVazios.forEach(function (pv) { add('posto_vazio', M.postoVazio(nome, pv)); });
-    else if (u.tem_posto_vazio) add('posto_vazio', M.postoVazioUnidade(nome));
+    /* posto abaixo do efetivo mínimo (mínimo 0 nunca entra) */
+    (u.abaixoMinimo || []).forEach(function (a) { add('abaixo_minimo', M.abaixoMinimo(nome, a.posto, a.pessoas, a.minimo)); });
     (u.semCriterio || []).forEach(function (posto) { add('vaga_sem_criterio', M.vagaSemCriterio(nome, posto)); });
     if ((u.pracas || 0) >= 0 && (u.vagas_pracas || 0) > (u.pracas || 0)) add('vaga_a_mais', M.excessoVagas(nome, u.vagas_pracas || 0, u.pracas || 0, 'praças'));
     if ((u.oficiais || 0) >= 0 && (u.vagas_oficiais || 0) > (u.oficiais || 0)) add('vaga_a_mais', M.excessoVagas(nome, u.vagas_oficiais || 0, u.oficiais || 0, 'oficiais'));
@@ -94,7 +95,7 @@
     (contagem || []).forEach(function (c) {
       res.unidades[c.unidade_id] = unidadeNivel(c);
       var mp = {};
-      (c.postosVazios || []).forEach(function (nome) { mp[nome] = 'alerta'; });
+      (c.abaixoMinimo || []).forEach(function (a) { mp[a.posto] = 'erro'; });
       res.postos[c.unidade_id] = mp;
     });
     return res;
@@ -474,8 +475,8 @@
          : (itens.some(function (i) { return i.nivel === 'alerta'; }) ? 'alerta' : 'ok');
   }
   /* contagem por unidade a partir dos POSTOS/VAGAS (mesma lógica no Ver e no Editar → erros sincronizados):
-     conta as vagas principais por tipo, detecta os papéis especiais e os postos sem efetivo (só nas unidades
-     que entram no modelo, isto é, com composição > 0). `comp` = { unidade_id: { oficiais, pracas } }. */
+     conta as vagas principais por tipo, detecta os papéis especiais e os postos abaixo do efetivo mínimo (só nas
+     unidades que entram no modelo, isto é, com composição > 0). `comp` = { unidade_id: { oficiais, pracas } }. */
   function contarUnidades(unidades, comp) {
     comp = comp || {};
     /* reforço: quanto cada unidade ENVIA (é origem) e RECEBE (é destino), por tipo */
@@ -499,10 +500,14 @@
       var alocarOf = (c.oficiais || 0) - env.of + rec.of;   /* a alocar = disponível − enviados + recebidos */
       var alocarPc = (c.pracas || 0) - env.pc + rec.pc;
       var temComposicao = (c.oficiais || 0) > 0 || (c.pracas || 0) > 0;
-      var vof = 0, vpc = 0, oa = false, cs = false, vazios = [], semCriterio = [];
+      var vof = 0, vpc = 0, oa = false, cs = false, abaixo = [], semCriterio = [];
       (u.postos || []).forEach(function (p) {
         var vagas = p.vagas || [];
         var faltaCriterio = false;
+        /* pessoas no posto (a mesma conta do banco): quem acumula duas funções no posto conta uma vez */
+        var pessoas = pessoasDoPosto(p);
+        var minimo = p.efetivo_minimo || 0;
+        if (temComposicao && minimo >= 1 && pessoas < minimo) abaixo.push({ posto: p.nome || '', pessoas: pessoas, minimo: minimo });
         vagas.forEach(function (v) {
           if (v.acumulo_slot_id || v.acumuloTempId) return;   /* só principais */
           if (v.tipo_contador === 'Oficiais') vof++; else vpc++;
@@ -512,14 +517,20 @@
           if (!v.papel_especial && !v.ordem && !v.ideal) faltaCriterio = true;
         });
         if (faltaCriterio) semCriterio.push(p.nome || '');
-        if (temComposicao && !vagas.length) vazios.push(p.nome || '');
       });
       return {
         unidade_id: u.unidade_id, oficiais: alocarOf, pracas: alocarPc,
         vagas_oficiais: vof, vagas_pracas: vpc, tem_oficial_area: oa, tem_chefe_socorro: cs,
-        postosVazios: vazios, semCriterio: semCriterio
+        abaixoMinimo: abaixo, semCriterio: semCriterio
       };
     });
+  }
+  /* pessoas de um posto no modelo: cada vaga acumulada conta junto com a sua principal (Ver: ids do banco;
+     Editar: ids temporários). Quem acumula uma função num outro posto conta nos dois. */
+  function pessoasDoPosto(p) {
+    var grupos = {};
+    (p.vagas || []).forEach(function (v) { grupos[v.acumuloTempId || v.acumulo_slot_id || v.tempId || v.id_slot] = true; });
+    return Object.keys(grupos).length;
   }
   /* preenche o contador "distribuídos/a alocar" no cabeçalho da unidade (esconde se a unidade não entra no modelo) */
   function preencherContagem(cabEl, c) {
@@ -620,6 +631,7 @@
     statusVisual: statusVisual,
     atualizarStatusModelo: atualizarStatusModelo,
     marcar: marcar,
+    pessoasDoPosto: pessoasDoPosto,
     preencherContagem: preencherContagem,
     rascunhoId: rascunhoId,
     marcarRascunho: marcarRascunho,

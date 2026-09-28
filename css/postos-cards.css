@@ -54,14 +54,18 @@
   padding: 16px;
 }
 
-/* linha de status: selo de estado + período como texto (sem divisória) */
+/* linha de status: selo de estado + período como texto (sem divisória). Quando os dois não cabem
+   (ex.: "Manutenção até 15/10" + "01/09/2026 a 06/10/2026"), o período desce inteiro para a linha de baixo */
 .posto-status {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }
 
-.posto-periodo {
+/* período e mudança marcada ("Reserva a partir de 07/10", "Começa em 07/10"): texto pequeno e suave */
+.posto-periodo,
+.posto-mudanca {
   font-size: 11px;
   color: var(--texto-suave);
 }

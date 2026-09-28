@@ -3,7 +3,7 @@
    admin). Mesmo padrão da ficha do militar: **título = o prefixo**,
    subtítulo = a unidade, e o sub-cabeçalho traz as abas
    **Dados** e **Manutenções**.
-   - Dados: Estado (Ativo/Reserva/Inativo) · CNH · guarnição
+   - Dados: Estado (Ativo/Inativo) · CNH · guarnição
      (mín/ideal/máx) + as seções **Transferir**
      (postos-viaturas-transferir.js) e **Excluir viatura**.
    - Manutenções: o histórico de janelas (postos-viaturas-manutencao.js).
@@ -14,7 +14,10 @@
    quando a janela está em aberto). Grava por inserir_viatura /
    atualizar_viatura / excluir_viatura; no editar atualiza o card
    cirurgicamente, no criar/excluir recarrega a árvore; confirma no
-   geral-resumo. A viatura é **única no sistema**: se o prefixo já
+   geral-resumo. A data do modal é a data em que o novo estado (ou a
+   exclusão, ou o começo) vale; embaixo do Estado ficam as mudanças
+   marcadas, com Cancelar (postos-mudancas.js).
+   A viatura é **única no sistema**: se o prefixo já
    existe em outra unidade, o cadastro oferece a transferência. Na
    criação não há abas, Transferir nem Excluir (só Prefixo + Estado +
    CNH + guarnição).
@@ -93,7 +96,7 @@
     return linha;
   }
 
-  /* Estado: três itens fixos (Ativo/Reserva/Inativo) — Manutenção é derivada */
+  /* Estado: dois itens fixos (Ativo/Inativo; a reserva é Ativa com mínimo 0) — Manutenção é derivada */
   function montarLinhaStatus() {
     var linha = RosterWork.tpl('tpl-viatura-editar-status');
     if (!linha) return null;
@@ -132,7 +135,8 @@
     return linha;
   }
 
-  /* um efetivo da guarnição: 1 a 10 pelo dropdown de números (reusa o molde das instalações) */
+  /* um efetivo da guarnição: 1 a 10 pelo dropdown de números (reusa o molde das instalações); o mínimo
+     começa em 0 (viatura reserva, sem erro de efetivo) */
   function montarLinhaEfetivo(rotulo, chave) {
     var linha = RosterWork.tpl('tpl-posto-editar-linha');
     if (!linha) return null;
@@ -143,7 +147,7 @@
     var menu = linha.querySelector('.dropdown-menu');
     if (menu && RosterWork.dropdownNumeros) {
       RosterWork.dropdownNumeros.preencher(menu, {
-        opcoes: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        opcoes: chave === 'min' ? [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
         valor: valores[chave],
         aoEscolher: function (v) { valores[chave] = v; definirTexto(gatilho, String(v)); aoMudar(); }
       });
@@ -212,6 +216,8 @@
       var linhas = [];
       if (modo === 'novo') linhas.push(montarLinhaPrefixo());
       linhas.push(montarLinhaStatus());
+      /* embaixo do Estado: as mudanças marcadas (estado ou exclusão com data futura), com Cancelar */
+      if (modo === 'editar' && RosterWork.postosMudancas) linhas.push(RosterWork.postosMudancas.criarLista(ctx.viatura, aoCancelarMudanca));
       linhas.push(montarLinhaCnh());
       linhas.push(montarLinhaEfetivo('Ef. mínimo', 'min'));
       linhas.push(montarLinhaEfetivo('Ef. ideal', 'ideal'));
@@ -304,15 +310,18 @@
     }, RosterWork.mensagens.postos.falhaAdicionar, aplicarSucessoNovo, tratarJaExiste);
   }
 
-  /* a viatura é única no sistema: se já está em outra unidade, oferece a transferência */
+  /* a viatura é única no sistema: se já está em outra unidade, oferece a transferência
+     (a data escolhida no Adicionar é o dia em que ela chega) */
   function tratarJaExiste(r) {
     if (!r.requer_transferencia) return false;
     var t = RosterWork.mensagens.postos;
+    var dataChegada = recalcDesde ? String(recalcDesde).slice(0, 10).split('-').reverse().join('/') : '';
     RosterWork.confirmar({
       mensagem: t.viaturaEmOutraUnidade
         .replace('{prefixo}', r.prefixo)
         .replace('{unidade}', r.unidade_atual)
-        .replace('{destino}', unidadeNova.nome) + ' ' + t.impactoDistribuicao,
+        .replace('{destino}', unidadeNova.nome)
+        .replace('{data}', dataChegada) + ' ' + t.impactoDistribuicao,
       textoConfirmar: 'Transferir',
       aoConfirmar: function () { enviarNovo(true); }
     });
@@ -321,10 +330,11 @@
 
   function salvar() {
     if (!ctx || !dadosValidos()) return;
+    var t = RosterWork.mensagens.postos;
     if (modo === 'novo') {
-      /* postos alimentam a distribuição: pede a data de recálculo antes de gravar */
+      /* a data do modal é o primeiro dia da viatura (e refaz a escala a partir dela) */
       RosterWork.pedirData({
-        mensagem: RosterWork.mensagens.postos.impactoDistribuicao,
+        mensagem: t.postoComeca + ' ' + t.impactoDistribuicao,
         textoConfirmar: 'Adicionar',
         aoConfirmar: function (iso) { recalcDesde = iso; enviarNovo(false); }
       });
@@ -332,8 +342,9 @@
     }
     if (!sujo) return;
     var v = ctx.viatura;   // referência compartilhada com o card (mutável p/ reabrir o painel já fresco)
+    /* mudou o estado: a data do modal é a data em que o novo estado vale */
     RosterWork.pedirData({
-      mensagem: RosterWork.mensagens.postos.impactoDistribuicao,
+      mensagem: valores.status !== originais.status ? t.novoEstadoVale : t.impactoDistribuicao,
       textoConfirmar: RosterWork.mensagens.botoes.salvar,
       aoConfirmar: function (iso) {
         enviar('/rest/v1/rpc/atualizar_viatura', {
@@ -349,7 +360,8 @@
   function aplicarSucesso(v, r) {
     var dados = r.viatura;
     if (dados) {
-      v.status = dados.status; v.cnh = dados.cnh;
+      if (RosterWork.postosMudancas) RosterWork.postosMudancas.aplicarResumo(v, dados);
+      v.cnh = dados.cnh;
       v.efetivo_minimo = dados.efetivo_minimo; v.efetivo_ideal = dados.efetivo_ideal; v.efetivo_maximo = dados.efetivo_maximo;
       if (RosterWork.paginas && RosterWork.paginas.postosViaturas && RosterWork.paginas.postosViaturas.atualizarCard) {
         RosterWork.paginas.postosViaturas.atualizarCard(v.id_viatura, v);
@@ -357,6 +369,19 @@
     }
     RosterWork.painel.fechar();
     if (r.log && RosterWork.resumo) RosterWork.resumo.abrirModal(r.log, { pagina: 'Postos' });
+  }
+
+  /* cancelou uma mudança marcada: atualiza o card, fecha o painel e mostra o resumo (como o Salvar) */
+  function aoCancelarMudanca(resumoEstado, log) {
+    if (!ctx || !ctx.viatura) return;
+    var v = ctx.viatura;
+    if (RosterWork.postosMudancas) RosterWork.postosMudancas.aplicarResumo(v, resumoEstado);
+    if (RosterWork.paginas && RosterWork.paginas.postosViaturas && RosterWork.paginas.postosViaturas.atualizarCard) {
+      RosterWork.paginas.postosViaturas.atualizarCard(v.id_viatura, v);
+    }
+    sujo = false;
+    RosterWork.painel.fechar();
+    if (log && RosterWork.resumo) RosterWork.resumo.abrirModal(log, { pagina: 'Postos' });
   }
 
   /* sucesso da criação: fecha, recarrega a árvore (o novo card aparece) e mostra o resumo */
@@ -387,8 +412,7 @@
 
   function confirmarExcluir() {
     if (!ctx || !ctx.viatura || !RosterWork.pedirData) return;
-    var msg = RosterWork.mensagens.postos.confirmarExcluirViatura.replace('{prefixo}', ctx.viatura.nome || '')
-      + ' ' + RosterWork.mensagens.postos.impactoDistribuicao;
+    var msg = RosterWork.mensagens.postos.confirmarExcluirViatura.replace('{prefixo}', ctx.viatura.nome || '');
     RosterWork.pedirData({
       mensagem: msg,
       textoConfirmar: RosterWork.mensagens.botoes.excluirViatura,
@@ -456,7 +480,8 @@
     modo = 'editar';
     aoFecharDono = (typeof limparSelecao === 'function') ? limparSelecao : null;
     ctx = { viatura: viatura, unidade: unidade, btnSalvar: null };
-    valores = { status: viatura.status, cnh: viatura.cnh,
+    /* o Estado mostra como a viatura fica depois das mudanças marcadas (dá para marcar a volta) */
+    valores = { status: viatura.estado_final || viatura.status, cnh: viatura.cnh,
                 min: viatura.efetivo_minimo, ideal: viatura.efetivo_ideal, max: viatura.efetivo_maximo };
     originais = { status: valores.status, cnh: valores.cnh, min: valores.min, ideal: valores.ideal, max: valores.max };
     sujo = false;

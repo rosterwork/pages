@@ -174,9 +174,21 @@
       falhaEditar: 'Não foi possível salvar. Tente de novo.',
       descartarAlteracoes: 'Descartar as alterações não salvas desta instalação?',
       descartarViatura: 'Descartar as alterações não salvas desta viatura?',
-      confirmarTransferirViatura: 'Transferir a viatura {prefixo} de {origem} para {destino}? Isso altera a distribuição da escala.',
-      confirmarExcluirViatura: 'Excluir a viatura {prefixo}? Ela sai das telas e da distribuição da escala; o histórico é mantido.',
-      confirmarExcluirInstalacao: 'Excluir a instalação {nome}? Ela sai das telas e da distribuição da escala; o histórico é mantido.',
+      confirmarTransferirViatura: 'Transferir a viatura {prefixo} de {origem} para {destino}? Ela passa para {destino} a partir desta data. Até a véspera continua em {origem}, e os dias anteriores não mudam.',
+      confirmarExcluirViatura: 'Excluir a viatura {prefixo}? A partir desta data o posto sai da escala. Os dias anteriores continuam como estão.',
+      confirmarExcluirInstalacao: 'Excluir a instalação {nome}? A partir desta data o posto sai da escala. Os dias anteriores continuam como estão.',
+      /* estado e exclusão com data: a data do modal é a data em que a mudança vale */
+      novoEstadoVale: 'O novo estado vale a partir desta data. A escala é refeita desse dia em diante.',
+      postoComeca: 'O posto começa a valer nesta data.',
+      mudancaAPartir: '{estado} a partir de {data}',
+      transferenciaAPartir: 'Transferência para {unidade} a partir de {data}',
+      /* linha do período no card (primeiro e último dia reais do posto) */
+      periodoPermanente: 'Permanente',
+      periodoDesde: 'desde {data}',
+      periodoAte: 'até {data}',
+      periodoIntervalo: '{inicio} a {fim}',
+      confirmarCancelarMudanca: 'Cancelar a mudança marcada ({mudanca})? A escala é refeita a partir dessa data.',
+      falhaCancelarMudanca: 'Não foi possível cancelar a mudança. Tente de novo.',
       falhaTransferir: 'Não foi possível transferir. Tente de novo.',
       falhaExcluir: 'Não foi possível excluir. Tente de novo.',
       falhaExcluirInstalacao: 'Não foi possível excluir a instalação. Tente de novo.',
@@ -187,7 +199,7 @@
       confirmarRemoverManutencao: 'Remover esta janela de manutenção?',
       confirmarEncerrarManutencao: 'Encerrar a manutenção de {prefixo} agora? A viatura deixa de ser marcada como "Em manutenção" na escala.',
       /* a viatura é única no sistema: se já existe em outra unidade, oferece a transferência */
-      viaturaEmOutraUnidade: 'A viatura {prefixo} já está cadastrada em {unidade}. Deseja transferi-la para {destino}? Os dados que você digitou serão aplicados a ela.',
+      viaturaEmOutraUnidade: 'A viatura {prefixo} já está cadastrada em {unidade}. Deseja transferi-la para {destino} a partir de {data}? Os dados que você digitou serão aplicados a ela.',
       /* ponto crítico: postos alimentam a distribuição da escala */
       impactoDistribuicao: 'Este é um ponto crítico do sistema: as viaturas e instalações alimentam a distribuição da escala. Vá até a Distribuição para conferir os modelos e corrigir o que for necessário.'
     },
@@ -234,6 +246,9 @@
         chefeCondutor:       { texto: 'Chefe assumiu a direção por falta de condutor', icone: 'icone-alerta', nivel: 'alerta' },
         afastadoTroca:       { texto: 'Militar afastado, não vai assumir o serviço', icone: 'icone-alerta', nivel: 'alerta' },
         semCondutor:         { texto: 'Viatura sem condutor', icone: 'icone-alerta', nivel: 'erro' },
+        /* efetivo do posto fora dos limites (uma linha por posto); {faixas} = ", das 20:00 às 08:00" quando é só parte do dia */
+        abaixoMinimo:        { texto: 'Efetivo abaixo do mínimo: {posto} ({pessoas} de {minimo}){faixas}', faixa: 'das {hi} às {hf}', icone: 'icone-alerta', nivel: 'erro' },
+        acimaMaximo:         { texto: 'Efetivo acima do máximo: {posto} ({pessoas} de {maximo})', icone: 'icone-alerta', nivel: 'erro' },
         /* militar de serviço sem função ({n} = quantidade; o painel escolhe singular ou plural) */
         semFuncao:           { texto: 'Militar sem função definida', textoPlural: '{n} militares sem função definida', icone: 'icone-alerta', nivel: 'erro' }
       },
@@ -317,8 +332,7 @@
       falhaSalvar: 'Não foi possível salvar. Tente de novo.',
       composicaoVazia: 'Defina pelo menos um militar em alguma unidade.',
       excluirModelo: 'Excluir este modelo de distribuição? As vagas que ele define serão perdidas.',
-      postoVazio: function (unidade, posto) { return unidade + ': ' + posto + ' sem efetivo'; },
-      postoVazioUnidade: function (unidade) { return unidade + ': posto sem efetivo'; },
+      abaixoMinimo: function (unidade, posto, pessoas, minimo) { return unidade + ': efetivo abaixo do mínimo em ' + posto + ' (' + pessoas + ' de ' + minimo + ')'; },
       salvarImpacto: 'Salvar este modelo recalcula as escalas já distribuídas que usam esta composição. Continuar?',
       reforcoSemOrigem: 'Nenhuma outra unidade tem militar disponível para reforço.',
       excessoEnvio: function (unidade) { return unidade + ': mandando mais reforço do que há militar disponível'; }
@@ -330,7 +344,9 @@
       confirmarBaixa: 'Dar baixa em {pessoa} (CPF {cpf})? Ele fica inativo a partir da data escolhida, sai da escala e pode ser readmitido depois.',
       falhaBaixa: 'Não foi possível dar baixa. Tente de novo.',
       falhaSalvar: 'Não foi possível salvar. Tente de novo.',
-      confirmarTransferencia: 'Transferir {pessoa} de {origem} para {destino}? Ele sai da escala da unidade atual e fica disponível para ser escalado na nova.',
+      confirmarTransferencia: 'Transferir {pessoa} de {origem} para {destino} a partir de {data}? O militar sai da escala da unidade atual nessa data e fica disponível para ser escalado na nova.',
+      /* há uma transferência marcada: a nova toma o lugar dela */
+      transferenciaSubstitui: ' A transferência marcada para {data} será substituída.',
       falhaTransferencia: 'Não foi possível transferir. Tente de novo.',
       dataFutura: 'A data não pode ser futura.',
       confirmarPromocao: 'Promover {pessoa} a {grau} em {data}?',
@@ -613,7 +629,9 @@
       exclusaoConcluida: 'Exclusão em {pagina} concluída',
       /* modal de data — recálculo direcionado ao alterar modelo/regra/viatura/instalação/ritmo */
       recalcularDesde: 'A partir de qual data a escala deve ser recalculada?',
-      dataMuitoAntiga: 'A data não pode ser mais de uma semana no passado.'
+      dataMuitoAntiga: 'A data não pode ser mais de uma semana no passado.',
+      /* dica do botão de adicionar desativado quando o posto está cheio (modelo e Editar do dia) */
+      efetivoMaximo: 'Efetivo máximo: {n}'
     },
 
     /* rótulos de botão de avisos e confirmações */
@@ -631,6 +649,8 @@
       cancelar: 'Cancelar',
       transferir: 'Transferir',
       remover: 'Remover',
+      cancelarMudanca: 'Cancelar mudança',
+      manter: 'Manter',
       promover: 'Promover',
       readmitir: 'Readmitir',
       darBaixa: 'Dar baixa',

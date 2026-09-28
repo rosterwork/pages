@@ -17,23 +17,6 @@
 
   /* ---------- formatação ---------- */
 
-  /* data ISO (AAAA-MM-DD) -> DD/MM/AAAA */
-  function formatarData(iso) {
-    if (!iso) return '';
-    var p = String(iso).slice(0, 10).split('-');
-    return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : iso;
-  }
-
-  /* período como texto (regra aprovada):
-     sem datas -> "Permanente"; só início -> "desde DD/MM/AAAA";
-     início e fim -> "DD/MM/AAAA → DD/MM/AAAA"; só fim -> "até DD/MM/AAAA" */
-  function textoPeriodo(inicio, fim) {
-    if (!inicio && !fim) return 'Permanente';
-    if (inicio && !fim) return 'desde ' + formatarData(inicio);
-    if (!inicio && fim) return 'até ' + formatarData(fim);
-    return formatarData(inicio) + ' a ' + formatarData(fim);
-  }
-
   /* selo de status: Ativo (verde) / Inativo (neutro, sem modificador) */
   function preencherStatus(selo, status) {
     if (!selo) return;
@@ -79,7 +62,8 @@
       card.setAttribute('data-instalacao-id', inst.id_instalacao);
       card.querySelector('.posto-nome').textContent = inst.nome || '';
       preencherStatus(card.querySelector('.selo'), inst.status);
-      card.querySelector('.posto-periodo').textContent = textoPeriodo(inst.data_inicio, inst.data_exclusao);
+      /* período real + próxima mudança de estado (postos-mudancas.js) */
+      if (RosterWork.postosMudancas) RosterWork.postosMudancas.preencherCard(card, inst);
       var dados = card.querySelector('.posto-dados');
       adicionarDado(dados, 'Efetivo mínimo', inst.efetivo_minimo);
       adicionarDado(dados, 'Efetivo ideal', inst.efetivo_ideal);
@@ -107,7 +91,7 @@
   }
 
   /* atualização cirúrgica de um card após salvar (sem recarregar a árvore = sem flash):
-     repinta o selo de status e os três valores de efetivo */
+     repinta o selo de status, o período, a mudança marcada e os três valores de efetivo */
   function atualizarCard(id, dados) {
     if (id == null || !dados) return;
     var card = document.querySelector('.posto-cartao[data-instalacao-id="' + id + '"]');
@@ -117,6 +101,7 @@
       selo.classList.remove('selo--sucesso');
       preencherStatus(selo, dados.status);
     }
+    if (dados.posto && RosterWork.postosMudancas) RosterWork.postosMudancas.preencherCard(card, dados.posto);
     var valores = card.querySelectorAll('.posto-dado-valor');
     if (valores[0]) valores[0].textContent = dados.min;
     if (valores[1]) valores[1].textContent = dados.ideal;
