@@ -126,7 +126,7 @@
     if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal();   // recalcula a escala: círculo + tela travada
     RosterWork.apiFetch('/rest/v1/rpc/promover_militar', {
       metodo: 'POST',
-      corpo: { p_admin_cpf: RosterWork.sessao.cpf(), p_cpf: ctx.pessoa.usuario_id, p_tipo: tipo, p_data: dataIso }
+      corpo: { p_cpf: ctx.pessoa.usuario_id, p_tipo: tipo, p_data: dataIso }
     })
       .then(function (resp) {
         if (!resp.ok) return { _falha: 'servidor' };   // servidor/sessão (o 401 já é tratado no apiFetch)

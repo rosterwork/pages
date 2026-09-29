@@ -244,7 +244,7 @@
   }
 
   /* carrega a hierarquia de unidades e o conteúdo da página (em cache; o conteúdo por RPC) */
-  /* corpo opcional para a RPC de conteúdo (a página pode mandar p_admin_cpf, período, etc.);
+  /* corpo opcional para a RPC de conteúdo (a página pode mandar o período, etc.);
      se for função, é reavaliada a cada busca — permite filtros dinâmicos (ex.: o período do histórico) */
   function corpoConteudo() {
     var c = opcoesAtuais && opcoesAtuais.corpoRpc;

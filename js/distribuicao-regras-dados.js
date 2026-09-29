@@ -24,8 +24,8 @@
     funcoes: function (unidadeIds) { return rpc('dist_regras_funcoes', { p_unidade_ids: unidadeIds }); },
     listar: function (unidadeIds) { return rpc('dist_regras_listar', { p_unidade_ids: unidadeIds }); },
     /* grava em LOTE: adicionar = [{usuario_id, unidade_id, tipo, funcao}] · remover = [ids] */
-    salvar: function (adicionar, remover, por, recalcularDesde) {
-      return rpcJson('dist_regras_salvar', { p_adicionar: adicionar || [], p_remover: remover || [], p_autor: por, p_recalcular_desde: recalcularDesde || null });
+    salvar: function (adicionar, remover, recalcularDesde) {
+      return rpcJson('dist_regras_salvar', { p_adicionar: adicionar || [], p_remover: remover || [], p_recalcular_desde: recalcularDesde || null });
     }
   };
 })();

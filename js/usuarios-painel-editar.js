@@ -169,7 +169,7 @@
 
     if (ctx.secao === 'pessoais') {
       return {
-        p_admin_cpf: RosterWork.sessao.cpf(), p_cpf: ctx.pessoa.usuario_id,
+        p_cpf: ctx.pessoa.usuario_id,
         p_nome_completo: txt('nome_completo'),
         p_rg: V.soDigitos(txt('rg')),
         p_data_nascimento: V.paraISO(txt('data_de_nascimento')),
@@ -183,7 +183,7 @@
       };
     }
     return {
-      p_admin_cpf: RosterWork.sessao.cpf(), p_cpf: ctx.pessoa.usuario_id,
+      p_cpf: ctx.pessoa.usuario_id,
       p_nome_completo: p.nome_completo,
       p_rg: V.soDigitos(p.rg),
       p_data_nascimento: p.data_de_nascimento,

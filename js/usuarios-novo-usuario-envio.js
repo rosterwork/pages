@@ -108,14 +108,6 @@
 
   /* ---------- coleta e envio ---------- */
 
-  /* CPF do admin logado (quem está cadastrando) */
-  function adminCpf() {
-    try {
-      var u = JSON.parse(sessionStorage.getItem('rosterwork_user'));
-      return (u && (u.cpf || u.usuario_id)) || '';
-    } catch (e) { return ''; }
-  }
-
   /* monta o payload da RPC inserir_usuario_admin a partir do DOM */
   function coletar(raiz) {
     function val(id) { var el = raiz.querySelector('#' + id); return el ? el.value.trim() : ''; }
@@ -127,7 +119,6 @@
       if (iso) promocoes.push(iso);
     }
     return {
-      p_admin_cpf: adminCpf(),
       p_cpf: soDigitos(val('nu-cpf')),
       p_nome_completo: val('nu-nome-completo'),
       p_rg: soDigitos(val('nu-rg')),

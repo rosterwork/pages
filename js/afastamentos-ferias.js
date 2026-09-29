@@ -125,7 +125,6 @@
       p_usuario_id: militarEscolhido,
       p_data_inicio: RosterWork.data.paraISO(raiz.querySelector('#fer-inicio').value),
       p_data_fim: RosterWork.data.paraISO(raiz.querySelector('#fer-fim').value),
-      p_created_by: RosterWork.sessao.cpf(),
       p_confirmar_trocas: !!confirmarTrocas
     };
     RosterWork.afastamentosDados.inserirFerias(corpo).then(function (r) {

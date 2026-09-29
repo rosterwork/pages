@@ -595,7 +595,7 @@
         input.value = obs;
         input.addEventListener('change', function () {
           if (!posto.manutencao_id || !RosterWork.escalasDados) return;
-          RosterWork.escalasDados.atualizarManutencaoObs(posto.manutencao_id, input.value, (RosterWork.sessao.perfil() || {}).cpf || null)
+          RosterWork.escalasDados.atualizarManutencaoObs(posto.manutencao_id, input.value)
             .then(function (r) {
               if (!RosterWork.avisar) return;
               if (r && r._falha === 'conexao') RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.semConexao });

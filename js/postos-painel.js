@@ -217,7 +217,7 @@
     if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal();   // excluir recalcula a escala: círculo + tela travada
     RosterWork.apiFetch('/rest/v1/rpc/excluir_instalacao', {
       metodo: 'POST',
-      corpo: { p_admin_cpf: RosterWork.sessao.cpf(), p_instalacao_id: ctx.inst.id_instalacao, p_recalcular_desde: recalcularDesde || null }
+      corpo: { p_instalacao_id: ctx.inst.id_instalacao, p_recalcular_desde: recalcularDesde || null }
     })
       .then(function (resp) {
         if (!resp.ok) return { _falha: 'servidor' };   // servidor/sessão (o 401 já é tratado no apiFetch)
@@ -312,7 +312,6 @@
             p_efetivo_min: valores.min,
             p_efetivo_ideal: valores.ideal,
             p_efetivo_max: valores.max,
-            p_created_by: RosterWork.sessao.cpf(),
             p_recalcular_desde: iso
           }, RosterWork.mensagens.postos.falhaAdicionar, aplicarSucessoNovo);
         }
@@ -333,7 +332,6 @@
           p_efetivo_min: valores.min,
           p_efetivo_ideal: valores.ideal,
           p_efetivo_max: valores.max,
-          p_atualizado_por: RosterWork.sessao.cpf(),
           p_recalcular_desde: iso
         }, RosterWork.mensagens.postos.falhaEditar, function (r) { aplicarSucesso(inst, r); });
       }

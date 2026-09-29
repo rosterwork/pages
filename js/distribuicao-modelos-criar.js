@@ -64,7 +64,7 @@
       }
     });
     var payload = {
-      ctx: grupo.cia.unidade_id, user: RosterWork.sessao.cpf() || 'sistema',
+      ctx: grupo.cia.unidade_id,
       id_grupo_completo: null, nome: '', chaves: chaves, grupos_parciais: []
     };
     var botao = document.getElementById('distribuicao-nm-criar');
@@ -101,7 +101,7 @@
       textoConfirmar: RosterWork.mensagens.botoes.excluirModelo,
       aoConfirmar: function (iso) {
         if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal();   // recalcula a escala: círculo + tela travada
-        RosterWork.distribuicaoDados.excluirModelo(modeloId, RosterWork.sessao.cpf(), iso).then(function (r) {
+        RosterWork.distribuicaoDados.excluirModelo(modeloId, iso).then(function (r) {
           if (RosterWork.esconderVeuGlobal) RosterWork.esconderVeuGlobal();
           if (r && r.ok) {
             RosterWork.distribuicaoModelos.recarregarLista();

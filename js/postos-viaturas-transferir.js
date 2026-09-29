@@ -38,7 +38,6 @@
     RosterWork.apiFetch('/rest/v1/rpc/transferir_viatura', {
       metodo: 'POST',
       corpo: {
-        p_admin_cpf: RosterWork.sessao.cpf(),
         p_viatura_id: ctx.viatura.id_viatura,
         p_unidade_destino: ctx.destino.unidade_id,
         p_recalcular_desde: recalcularDesde || null

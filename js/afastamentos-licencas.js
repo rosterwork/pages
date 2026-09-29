@@ -183,7 +183,6 @@
       p_cid: ehSaude ? raiz.querySelector('#lic-cid').value.trim() : null,
       p_medico: ehSaude ? raiz.querySelector('#lic-medico').value.trim() : null,
       p_motivo: raiz.querySelector('#lic-motivo').value.trim(),
-      p_created_by: RosterWork.sessao.cpf(),
       p_confirmar_trocas: !!confirmarTrocas
     };
     RosterWork.afastamentosDados.inserirLicenca(corpo).then(function (r) {

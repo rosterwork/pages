@@ -73,8 +73,8 @@
   /* grava os ajustes do dia (lista de Colocar/Tirar) na escalas_manuais via RPC.
      Resolve no objeto da RPC ({success,log}) ou num marcador de falha:
      { _falha: 'conexao' } (sem rede) | { _falha: 'servidor' } (HTTP não-ok). */
-  function salvarAjustesDia(contextoId, iso, ajustes, autorCpf) {
-    return RosterWork.apiFetch('/rest/v1/rpc/salvar_ajustes_dia', { metodo: 'POST', corpo: { p_contexto_id: Number(contextoId), p_data: iso, p_ajustes: ajustes || [], p_autor_cpf: autorCpf || null } })
+  function salvarAjustesDia(contextoId, iso, ajustes) {
+    return RosterWork.apiFetch('/rest/v1/rpc/salvar_ajustes_dia', { metodo: 'POST', corpo: { p_contexto_id: Number(contextoId), p_data: iso, p_ajustes: ajustes || [] } })
       .then(function (r) { return r.ok ? r.json() : { _falha: 'servidor' }; })
       .catch(function () { return { _falha: 'conexao' }; });
   }
@@ -85,21 +85,21 @@
       .then(function (r) { return r.ok ? r.json() : null; })
       .catch(function () { return null; });
   }
-  function cicloAcao(rpc, unidadeId, cpf, iso, autorCpf, horario) {
-    var corpo = { p_admin_cpf: autorCpf || null, p_unidade_id: Number(unidadeId), p_cpf: String(cpf), p_data: iso };
+  function cicloAcao(rpc, unidadeId, cpf, iso, horario) {
+    var corpo = { p_unidade_id: Number(unidadeId), p_cpf: String(cpf), p_data: iso };
     if (horario != null) corpo.p_horario = horario;
     return RosterWork.apiFetch('/rest/v1/rpc/' + rpc, { metodo: 'POST', corpo: corpo })
       .then(function (r) { return r.ok ? r.json() : { _falha: 'servidor' }; })
       .catch(function () { return { _falha: 'conexao' }; });
   }
-  function cicloAdicionar(unidadeId, cpf, iso, autorCpf, horario) { return cicloAcao('escala_ciclo_adicionar', unidadeId, cpf, iso, autorCpf, horario || '08:00'); }
-  function cicloRetirar(unidadeId, cpf, iso, autorCpf) { return cicloAcao('escala_ciclo_retirar', unidadeId, cpf, iso, autorCpf); }
+  function cicloAdicionar(unidadeId, cpf, iso, horario) { return cicloAcao('escala_ciclo_adicionar', unidadeId, cpf, iso, horario || '08:00'); }
+  function cicloRetirar(unidadeId, cpf, iso) { return cicloAcao('escala_ciclo_retirar', unidadeId, cpf, iso); }
   /* só leitura: o que quebra (trocas/folgas) se o militar sair na data — para o aviso do modal */
-  function cicloRetirarAnalisar(unidadeId, cpf, iso, autorCpf) { return cicloAcao('escala_ciclo_retirar_analisar', unidadeId, cpf, iso, autorCpf); }
-  function cicloCancelarSaida(unidadeId, cpf, iso, autorCpf) { return cicloAcao('escala_ciclo_cancelar_saida', unidadeId, cpf, iso, autorCpf); }
+  function cicloRetirarAnalisar(unidadeId, cpf, iso) { return cicloAcao('escala_ciclo_retirar_analisar', unidadeId, cpf, iso); }
+  function cicloCancelarSaida(unidadeId, cpf, iso) { return cicloAcao('escala_ciclo_cancelar_saida', unidadeId, cpf, iso); }
   /* Salvar em lote das mudanças do ciclo acumuladas na tela (recalcula uma vez) */
-  function cicloSalvarLote(unidadeId, iso, mudancas, autorCpf) {
-    return RosterWork.apiFetch('/rest/v1/rpc/escala_ciclo_salvar_lote', { metodo: 'POST', corpo: { p_admin_cpf: autorCpf || null, p_unidade_id: Number(unidadeId), p_data: iso, p_mudancas: mudancas || [] } })
+  function cicloSalvarLote(unidadeId, iso, mudancas) {
+    return RosterWork.apiFetch('/rest/v1/rpc/escala_ciclo_salvar_lote', { metodo: 'POST', corpo: { p_unidade_id: Number(unidadeId), p_data: iso, p_mudancas: mudancas || [] } })
       .then(function (r) { return r.ok ? r.json() : { _falha: 'servidor' }; })
       .catch(function () { return { _falha: 'conexao' }; });
   }
@@ -110,15 +110,15 @@
       .then(function (r) { return r.ok ? r.json() : null; })
       .catch(function () { return null; });
   }
-  function pontuaisSalvar(unidadeId, iso, entradas, autorCpf) {
-    return RosterWork.apiFetch('/rest/v1/rpc/escala_pontuais_salvar', { metodo: 'POST', corpo: { p_admin_cpf: autorCpf || null, p_unidade_id: Number(unidadeId), p_data: iso, p_entradas: entradas || [] } })
+  function pontuaisSalvar(unidadeId, iso, entradas) {
+    return RosterWork.apiFetch('/rest/v1/rpc/escala_pontuais_salvar', { metodo: 'POST', corpo: { p_unidade_id: Number(unidadeId), p_data: iso, p_entradas: entradas || [] } })
       .then(function (r) { return r.ok ? r.json() : { _falha: 'servidor' }; })
       .catch(function () { return { _falha: 'conexao' }; });
   }
 
   /* ---- nota da manutenção (editada inline no painel do dia) ---- */
-  function atualizarManutencaoObs(manutencaoId, obs, autorCpf) {
-    return RosterWork.apiFetch('/rest/v1/rpc/atualizar_manutencao_observacao', { metodo: 'POST', corpo: { p_manutencao_id: manutencaoId, p_observacao: obs || '', p_por: autorCpf || null } })
+  function atualizarManutencaoObs(manutencaoId, obs) {
+    return RosterWork.apiFetch('/rest/v1/rpc/atualizar_manutencao_observacao', { metodo: 'POST', corpo: { p_manutencao_id: manutencaoId, p_observacao: obs || '' } })
       .then(function (r) { return r.ok ? r.json() : { _falha: 'servidor' }; })
       .catch(function () { return { _falha: 'conexao' }; });
   }

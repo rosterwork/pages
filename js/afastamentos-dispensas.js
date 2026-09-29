@@ -175,7 +175,6 @@
       p_tipo: tipoEscolhido,
       p_fora_do_fluxo: foraDoFluxo,
       p_motivo: raiz.querySelector('#dis-motivo').value.trim(),
-      p_created_by: RosterWork.sessao.cpf(),
       p_confirmar_trocas: !!confirmarTrocas
     };
     RosterWork.afastamentosDados.inserirDispensa(corpo).then(function (r) {

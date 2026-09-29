@@ -34,7 +34,7 @@
     /* estrutura do grupo (CIA+PELs) com os postos, sem vagas — para criar um modelo novo */
     estruturaGrupo: function (contextoId, data) { return rpc('dist_estrutura_grupo', { p_contexto_id: contextoId, p_data: data || null }); },
     /* exclui um modelo (e poda os parciais que ficaram órfãos) */
-    excluirModelo: function (id, autor, recalcularDesde) { return rpc('dist_excluir_modelo', { p_grupo_completo_id: id, p_autor: autor || null, p_recalcular_desde: recalcularDesde || null }); },
+    excluirModelo: function (id, recalcularDesde) { return rpc('dist_excluir_modelo', { p_grupo_completo_id: id, p_recalcular_desde: recalcularDesde || null }); },
     /* pré-preenche um modelo recém-criado, copiando as vagas de um modelo que caiba (por unidade) */
     prefill: function (id) { return rpc('dist_prefill_modelo', { p_grupo_completo: id }); }
   };

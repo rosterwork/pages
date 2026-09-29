@@ -157,7 +157,7 @@
       metodo: 'POST',
       corpo: {
         p_viatura_id: ctx.viatura.id_viatura, p_data_inicio: ctx.valores.inicio,
-        p_data_fim: ctx.valores.fim, p_observacao: ctx.valores.obs, p_por: RosterWork.sessao.cpf()
+        p_data_fim: ctx.valores.fim, p_observacao: ctx.valores.obs
       }
     })
       .then(function (resp) { if (!resp.ok) return { _falha: 'servidor' }; return resp.json(); })
@@ -195,7 +195,7 @@
   function encerrar(id) {
     if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal();   // recalcula a escala: círculo + tela travada
     RosterWork.apiFetch('/rest/v1/rpc/encerrar_manutencao', {
-      metodo: 'POST', corpo: { p_manutencao_id: id, p_por: RosterWork.sessao.cpf() }
+      metodo: 'POST', corpo: { p_manutencao_id: id }
     })
       .then(function (resp) { if (!resp.ok) return { _falha: 'servidor' }; return resp.json(); })
       .then(function (r) {
@@ -230,7 +230,7 @@
   function remover(id) {
     if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal();   // recalcula a escala: círculo + tela travada
     RosterWork.apiFetch('/rest/v1/rpc/remover_manutencao', {
-      metodo: 'POST', corpo: { p_manutencao_id: id, p_por: RosterWork.sessao.cpf() }
+      metodo: 'POST', corpo: { p_manutencao_id: id }
     })
       .then(function (resp) { if (!resp.ok) return { _falha: 'servidor' }; return resp.json(); })
       .then(function (r) {

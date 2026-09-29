@@ -62,7 +62,7 @@
     /* avisa também das trocas/folgas da origem que a transferência vai cancelar (best-effort) */
     RosterWork.apiFetch('/rest/v1/rpc/escala_ciclo_retirar_analisar', {
       metodo: 'POST',
-      corpo: { p_admin_cpf: RosterWork.sessao.cpf(), p_unidade_id: Number(ins.lotacao_id) || null, p_cpf: (ctx.pessoa && ctx.pessoa.usuario_id) || null, p_data: dataIso }
+      corpo: { p_unidade_id: Number(ins.lotacao_id) || null, p_cpf: (ctx.pessoa && ctx.pessoa.usuario_id) || null, p_data: dataIso }
     }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
       .then(function (a) {
         var pend = (a && a.success && a.pendencias) || null;
@@ -80,7 +80,6 @@
   function transferir(dataIso) {
     if (!ctx || !ctx.destino) return;
     gravar('transferir_militar', {
-      p_admin_cpf: RosterWork.sessao.cpf(),
       p_cpf: ctx.pessoa.usuario_id,
       p_unidade_destino: ctx.destino.unidade_id,
       p_data_vigencia: dataIso

@@ -308,7 +308,7 @@
     enviar('/rest/v1/rpc/inserir_viatura', {
       p_unidade_id: unidadeNova.unidade_id, p_prefixo: valores.prefixo, p_cnh: valores.cnh,
       p_status: valores.status, p_efetivo_min: valores.min, p_efetivo_ideal: valores.ideal,
-      p_efetivo_max: valores.max, p_created_by: RosterWork.sessao.cpf(),
+      p_efetivo_max: valores.max,
       p_confirmar_transferencia: !!confirmar, p_recalcular_desde: recalcDesde
     }, RosterWork.mensagens.postos.falhaAdicionar, aplicarSucessoNovo, tratarJaExiste);
   }
@@ -353,7 +353,7 @@
         enviar('/rest/v1/rpc/atualizar_viatura', {
           p_viatura_id: v.id_viatura, p_status: valores.status, p_cnh: valores.cnh,
           p_efetivo_min: valores.min, p_efetivo_ideal: valores.ideal, p_efetivo_max: valores.max,
-          p_atualizado_por: RosterWork.sessao.cpf(), p_recalcular_desde: iso
+          p_recalcular_desde: iso
         }, RosterWork.mensagens.postos.falhaEditar, function (r) { aplicarSucesso(v, r); });
       }
     });
@@ -429,7 +429,7 @@
     if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal();   // excluir recalcula a escala: círculo + tela travada
     RosterWork.apiFetch('/rest/v1/rpc/excluir_viatura', {
       metodo: 'POST',
-      corpo: { p_admin_cpf: RosterWork.sessao.cpf(), p_viatura_id: ctx.viatura.id_viatura, p_recalcular_desde: recalcularDesde || null }
+      corpo: { p_viatura_id: ctx.viatura.id_viatura, p_recalcular_desde: recalcularDesde || null }
     })
       .then(function (resp) {
         if (!resp.ok) return { _falha: 'servidor' };   // servidor/sessão (o 401 já é tratado no apiFetch)

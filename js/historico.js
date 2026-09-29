@@ -30,9 +30,9 @@
     return d.toISOString();
   }
 
-  /* corpo da RPC listar_historico (admin + período) — função: reavaliada a cada (re)carga */
+  /* corpo da RPC listar_historico (o período; o admin vem da sessão) — função: reavaliada a cada (re)carga */
   function corpoRpc() {
-    return { p_admin_cpf: RosterWork.sessao.cpf(), p_data_inicio: dataInicioDoPeriodo() };
+    return { p_data_inicio: dataInicioDoPeriodo() };
   }
 
   function rotuloAcao(acao) {

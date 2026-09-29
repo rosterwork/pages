@@ -9,7 +9,7 @@
   window.RosterWork = window.RosterWork || {};
 
 
-  function montarPayload(estado, ctx, user) {
+  function montarPayload(estado, ctx) {
     /* mapa tempId → unidade_id */
     var vagaUnidade = {};
     estado.unidades.forEach(function (u) {
@@ -104,7 +104,6 @@
     var chaves = Object.keys(chavesSet);
     return {
       ctx: ctx,
-      user: user || 'sistema',
       id_grupo_completo: (estado.modeloId && String(estado.modeloId).indexOf('novo') !== 0) ? estado.modeloId : null,
       nome: '',
       chaves: chaves,
@@ -114,7 +113,7 @@
 
   function gravar(estado, recalcularDesde) {
     var ctx = RosterWork.distribuicaoModelos.contextoId();
-    var payload = montarPayload(estado, ctx, RosterWork.sessao.cpf());
+    var payload = montarPayload(estado, ctx);
     payload.data = RosterWork.distribuicaoPeriodos.data();   /* grava no período escolhido */
     if (recalcularDesde) payload.recalcular_desde = recalcularDesde;
     if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal();   // recalcula a escala: círculo + tela travada

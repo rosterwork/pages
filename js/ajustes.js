@@ -140,7 +140,7 @@
         if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal();   // recalcula a escala: círculo + tela travada
         RosterWork.apiFetch('/rest/v1/rpc/ajustes_ritmo_salvar', {
           metodo: 'POST',
-          corpo: { p_unidade_id: ctx.unidade.unidade_id, p_ritmo: ctx.escolhido, p_por: RosterWork.sessao.cpf(), p_recalcular_desde: iso }
+          corpo: { p_unidade_id: ctx.unidade.unidade_id, p_ritmo: ctx.escolhido, p_recalcular_desde: iso }
         }).then(function (resp) {
           if (!resp.ok) return { _falha: 'servidor' };
           return resp.json();

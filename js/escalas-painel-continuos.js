@@ -81,7 +81,7 @@
   /* o Tirar ainda avisa da cascata (trocas/folgas) na hora, antes de entrar na lista */
   function tirar(m) {
     var base = texto(msg().confirmarTirar, { pessoa: (m.grad || '') + ' ' + (m.nome || ''), data: formatarData(ctx.iso) });
-    RosterWork.escalasDados.cicloRetirarAnalisar(ctx.unidadeId, m.cpf, ctx.iso, RosterWork.sessao.cpf()).then(function (a) {
+    RosterWork.escalasDados.cicloRetirarAnalisar(ctx.unidadeId, m.cpf, ctx.iso).then(function (a) {
       var pend = (a && a.success && a.pendencias) || null;
       var mensagem = base + (RosterWork.textoImpactoSaida ? RosterWork.textoImpactoSaida(pend) : '');
       if (RosterWork.confirmar) {
@@ -197,7 +197,7 @@
       return o;
     });
     if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal();   // recalcula a escala: círculo + tela travada
-    RosterWork.escalasDados.cicloSalvarLote(uid, iso, mudancas, RosterWork.sessao.cpf()).then(function (r) {
+    RosterWork.escalasDados.cicloSalvarLote(uid, iso, mudancas).then(function (r) {
       if (RosterWork.esconderVeuGlobal) RosterWork.esconderVeuGlobal();
       if (r && r._falha === 'conexao') { RosterWork.avisar && RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.semConexao }); return; }
       if (r && r._falha === 'servidor') { RosterWork.avisar && RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.falhaServidor }); return; }

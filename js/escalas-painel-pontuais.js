@@ -178,7 +178,7 @@
     var uid = ctx.unidadeId, iso = ctx.iso;
     var entradas = estado.map(function (e) { return { cpf: e.cpf, hi: e.hi, hf: e.hf }; });
     if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal();   // recalcula a escala: círculo + tela travada
-    RosterWork.escalasDados.pontuaisSalvar(uid, iso, entradas, RosterWork.sessao.cpf()).then(function (r) {
+    RosterWork.escalasDados.pontuaisSalvar(uid, iso, entradas).then(function (r) {
       if (RosterWork.esconderVeuGlobal) RosterWork.esconderVeuGlobal();
       if (r && r._falha === 'conexao') { RosterWork.avisar && RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.semConexao }); return; }
       if (r && r._falha === 'servidor') { RosterWork.avisar && RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.falhaServidor }); return; }

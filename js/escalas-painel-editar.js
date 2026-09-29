@@ -679,7 +679,7 @@
     /* captura antes do salvar assíncrono (o ctx pode ser zerado ao fechar) */
     var uid = ctx.unidadeId, isoSalvo = ctx.iso, ctxId = ctx.contextoId;
     if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal();   // recalcula a escala: círculo + tela travada
-    RosterWork.escalasDados.salvarAjustesDia(ctxId, isoSalvo, rascunho, RosterWork.sessao.cpf()).then(function (r) {
+    RosterWork.escalasDados.salvarAjustesDia(ctxId, isoSalvo, rascunho).then(function (r) {
       if (RosterWork.esconderVeuGlobal) RosterWork.esconderVeuGlobal();
       if (r && r._falha === 'conexao') {
         if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.semConexao });

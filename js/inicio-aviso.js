@@ -211,13 +211,12 @@
   function desativar(avisoId, onMudou, pagina) {
     pagina = pagina || 'Início';
     if (!RW.confirmar) return;
-    var u = RosterWork.sessao.perfil();
     RW.confirmar({
       tipo: 'aviso', mensagem: msg().confirmarRemoverAviso,
       textoConfirmar: RW.mensagens.botoes.remover,
       textoCancelar: RW.mensagens.botoes.cancelar,
       aoConfirmar: function () {
-        RW.apiFetch('/rest/v1/rpc/fn_avisos_desativar', { metodo: 'POST', corpo: { p_aviso_id: avisoId, p_por: u && u.cpf } })
+        RW.apiFetch('/rest/v1/rpc/fn_avisos_desativar', { metodo: 'POST', corpo: { p_aviso_id: avisoId } })
           .then(function (resp) { return resp.ok ? resp.json() : { _falha: 'servidor' }; })
           .then(function (r) {
             if (r && r._falha === 'servidor') { RW.avisar && RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.falhaServidor }); return; }

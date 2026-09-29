@@ -282,7 +282,7 @@
       textoConfirmar: RW.mensagens.botoes.salvar,
       aoConfirmar: function (iso) {
         if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal();   // recalcula a escala: círculo + tela travada
-        RW.distribuicaoRegrasDados.salvar(adds, removidos, RosterWork.sessao.cpf(), iso).then(function (r) {
+        RW.distribuicaoRegrasDados.salvar(adds, removidos, iso).then(function (r) {
           if (RW.esconderVeuGlobal) RW.esconderVeuGlobal();
           if (r && r._falha === 'servidor') { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.falhaServidor }); return; }
           if (r && r.success) {

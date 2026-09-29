@@ -240,7 +240,7 @@
     if (!pessoaAtual) return;
     RosterWork.apiFetch('/rest/v1/rpc/readmitir_militar', {
       metodo: 'POST',
-      corpo: { p_admin_cpf: RosterWork.sessao.cpf(), p_cpf: pessoaAtual.usuario_id, p_data: dataIso }
+      corpo: { p_cpf: pessoaAtual.usuario_id, p_data: dataIso }
     })
       .then(function (resp) { return resp.ok ? resp.json() : { _falha: 'servidor' }; })
       .then(function (r) {
@@ -275,7 +275,7 @@
     /* avisa também das trocas/folgas que a baixa vai cancelar (best-effort: se falhar, aviso simples) */
     RosterWork.apiFetch('/rest/v1/rpc/escala_ciclo_retirar_analisar', {
       metodo: 'POST',
-      corpo: { p_admin_cpf: RosterWork.sessao.cpf(), p_unidade_id: Number(ins.lotacao_id) || null, p_cpf: pessoaAtual.usuario_id, p_data: dataIso }
+      corpo: { p_unidade_id: Number(ins.lotacao_id) || null, p_cpf: pessoaAtual.usuario_id, p_data: dataIso }
     }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
       .then(function (a) {
         var pend = (a && a.success && a.pendencias) || null;
@@ -295,7 +295,7 @@
     if (!pessoaAtual) return;
     RosterWork.apiFetch('/rest/v1/rpc/dar_baixa_militar', {
       metodo: 'POST',
-      corpo: { p_cpf: pessoaAtual.usuario_id, p_admin_cpf: RosterWork.sessao.cpf(), p_data: dataIso }
+      corpo: { p_cpf: pessoaAtual.usuario_id, p_data: dataIso }
     })
       .then(function (resp) {
         if (!resp.ok) return { _falha: 'servidor' };   // servidor/sessão (o 401 já é tratado no apiFetch)

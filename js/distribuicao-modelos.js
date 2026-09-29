@@ -24,7 +24,7 @@
     var id = rascunhoId();
     if (!id) return Promise.resolve();
     limparRascunho();   /* limpa a marca ANTES do async, para não tentar excluir duas vezes */
-    return RosterWork.distribuicaoDados.excluirModelo(id, RosterWork.sessao.cpf()).catch(function () {});
+    return RosterWork.distribuicaoDados.excluirModelo(id).catch(function () {});
   }
 
   function unidadeDoGrupo(id) {
