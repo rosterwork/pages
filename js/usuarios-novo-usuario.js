@@ -184,7 +184,8 @@
       titulo: config ? config.titulo : 'Novo usuário',
       editavel: revisao,
       aoMudarModo: revisao ? function () { montarConteudo(config); } : null,
-      aoFechar: function () { sujo = false; }
+      aoFechar: function () { sujo = false; },
+      aoTentarFechar: function () { if (!sujo) return false; tentarFechar(); return true; }   // Esc/X confirmam o descarte
     });
     montarConteudo(config);
   }

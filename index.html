@@ -118,7 +118,7 @@
             <span>Fale conosco</span>
           </button>
           <button type="button" class="dropdown-item" id="btn-manual">
-            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-nota.svg#icone-nota" /></svg>
+            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-manual.svg#icone-manual" /></svg>
             <span>Manual</span>
           </button>
           <div class="dropdown-divisor"></div>
@@ -1135,7 +1135,7 @@
       </div>
       <div class="escala-legenda-itens oculto">
         <!-- por que o militar está trabalhando no dia (um por linha de serviço) -->
-        <div class="escala-legenda-grupo">
+        <div class="escala-legenda-grupo" data-legenda-grupo="origem">
           <span class="rotulo-secao">Origem do serviço</span>
           <div class="escala-legenda-grade">
             <span class="escala-legenda-item">
@@ -1165,7 +1165,7 @@
           </div>
         </div>
         <!-- quem deixou o serviço (linha riscada na grade; no painel vai para as Observações) -->
-        <div class="escala-legenda-grupo">
+        <div class="escala-legenda-grupo" data-legenda-grupo="riscado">
           <span class="rotulo-secao">Nome riscado</span>
           <div class="escala-legenda-grade">
             <span class="escala-legenda-item">
@@ -1179,21 +1179,21 @@
           </div>
         </div>
         <!-- sobre a função que o militar ocupa -->
-        <div class="escala-legenda-grupo">
+        <div class="escala-legenda-grupo" data-legenda-grupo="funcao">
           <span class="rotulo-secao">Função</span>
           <div class="escala-legenda-grade">
             <span class="escala-legenda-item">
               <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-cadeado.svg#icone-cadeado"/></svg>
               <span>Função fixada</span>
             </span>
-            <span class="escala-legenda-item">
+            <span class="escala-legenda-item" data-legenda-item="aviso">
               <svg class="icone escala-distribuicao-marca-aviso" width="12" height="12" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
               <span>Aviso</span>
             </span>
           </div>
         </div>
         <!-- sobre o militar (vale sempre, não só no dia) -->
-        <div class="escala-legenda-grupo">
+        <div class="escala-legenda-grupo" data-legenda-grupo="militar">
           <span class="rotulo-secao">Militar</span>
           <div class="escala-legenda-grade">
             <span class="escala-legenda-item">
@@ -1203,11 +1203,11 @@
           </div>
         </div>
         <!-- caixa Observações do painel -->
-        <div class="escala-legenda-grupo">
+        <div class="escala-legenda-grupo" data-legenda-grupo="observacoes">
           <span class="rotulo-secao">Observações</span>
           <div class="escala-legenda-grade">
             <span class="escala-legenda-item">
-              <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-nota.svg#icone-nota"/></svg>
+              <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-anotacao.svg#icone-anotacao"/></svg>
               <span>Nota do administrador</span>
             </span>
           </div>
@@ -1219,7 +1219,7 @@
   <!-- linha de Observação do dia (troca/folga/admin): ícone + texto + ✕ (o ✕ só nas do admin, no Editar) -->
   <template id="tpl-escala-observacao">
     <div class="escala-observacao">
-      <svg class="icone escala-observacao-icone"><use href="icones/icone-nota.svg#icone-nota" /></svg>
+      <svg class="icone escala-observacao-icone"><use href="icones/icone-anotacao.svg#icone-anotacao" /></svg>
       <span class="escala-observacao-texto"></span>
       <button type="button" class="escala-observacao-remover" aria-label="Excluir observação">
         <svg class="icone"><use href="icones/icone-fechar.svg#icone-fechar" /></svg>

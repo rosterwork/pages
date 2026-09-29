@@ -103,5 +103,8 @@
 
   function reset() { ctx = null; }
 
-  window.RosterWork.postosViaturasTransferir = { montar: montar, reset: reset };
+  /* um destino escolhido e ainda não transferido */
+  function temRascunho() { return !!(ctx && ctx.destino); }
+
+  window.RosterWork.postosViaturasTransferir = { montar: montar, reset: reset, temRascunho: temRascunho };
 })();

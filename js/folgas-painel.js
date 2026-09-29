@@ -183,7 +183,7 @@
     var militar = opcoes.militar || {};
     var titulo = modo === 'conceder' ? msg().acaoConceder : msg().acaoSolicitar;
     aoFecharExterno = opcoes.aoFechar || null;
-    RW.painel.abrir({ titulo: titulo, subtitulo: nomeDe(militar), aoFechar: fecharReset });
+    RW.painel.abrir({ titulo: titulo, subtitulo: nomeDe(militar), aoFechar: fecharReset, aoTentarFechar: tentarFecharForm });
     var subcab = RW.painel.subcabecalho(); if (subcab) { subcab.textContent = ''; subcab.classList.add('oculto'); }
     var corpo = RW.painel.corpo(); corpo.textContent = '';
     var raiz = RosterWork.tpl('tpl-folga-form'); corpo.appendChild(raiz);
@@ -267,7 +267,7 @@
     opcoes = opcoes || {};
     var militar = opcoes.militar || {};
     aoFecharExterno = opcoes.aoFechar || null;
-    RW.painel.abrir({ titulo: msg().acaoAjuste, subtitulo: nomeDe(militar), aoFechar: fecharReset });
+    RW.painel.abrir({ titulo: msg().acaoAjuste, subtitulo: nomeDe(militar), aoFechar: fecharReset, aoTentarFechar: tentarFecharForm });
     var subcab = RW.painel.subcabecalho(); if (subcab) { subcab.textContent = ''; subcab.classList.add('oculto'); }
     var corpo = RW.painel.corpo(); corpo.textContent = '';
     var raiz = RosterWork.tpl('tpl-folga-form-ajuste'); corpo.appendChild(raiz);
@@ -361,6 +361,17 @@
       parar();
       if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao });
     });
+  }
+
+  /* Esc/X do painel: com o formulário mexido, faz a mesma pergunta do Cancelar (e fecha) */
+  function tentarFecharForm() {
+    if (!(form && form.sujo) || !RW.confirmar) return false;
+    RW.confirmar({
+      tipo: 'aviso', mensagem: RW.mensagens.edicao.sairSemSalvar,
+      textoConfirmar: RW.mensagens.botoes.descartar, textoCancelar: RW.mensagens.botoes.continuarEditando,
+      aoConfirmar: function () { if (form) form.sujo = false; RW.painel.fechar(); }
+    });
+    return true;
   }
 
   function cancelarForm() {

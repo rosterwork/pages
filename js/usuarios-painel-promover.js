@@ -202,5 +202,12 @@
 
   function reset() { ctx = null; }
 
-  window.RosterWork.usuariosPainelPromover = { montar: montar, reset: reset };
+  /* algo escolhido e ainda não promovido: a data preenchida ou um tipo diferente do atual */
+  function temRascunho() {
+    if (!ctx) return false;
+    var tipo = ctx.tipoEl ? ctx.tipoEl.getAttribute('data-valor') : null;
+    return !!((ctx.dataEl && ctx.dataEl.value.trim()) || (tipo && ctx.atual && tipo !== ctx.atual.tipo));
+  }
+
+  window.RosterWork.usuariosPainelPromover = { montar: montar, reset: reset, temRascunho: temRascunho };
 })();

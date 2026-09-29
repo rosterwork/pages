@@ -189,6 +189,28 @@
     return V.paraISO(vigenciaEl.value);
   }
 
+  /* o que foi preenchido e ainda não confirmado nas ações de carreira: Promover, Transferir
+     e a data "A partir de" da baixa/readmissão (mudada do padrão, hoje) */
+  function rascunhoCarreira() {
+    var P = RosterWork.usuariosPainelPromover, T = RosterWork.usuariosPainelTransferir;
+    var dataMudada = !!(vigenciaEl && document.body.contains(vigenciaEl) && vigenciaEl.value !== hojeBR());
+    return dataMudada || !!(P && P.temRascunho && P.temRascunho()) || !!(T && T.temRascunho && T.temRascunho());
+  }
+
+  /* Esc/X do painel: com dados em edição ou ação de carreira preenchida, pergunta antes de descartar */
+  function tentarFecharFicha() {
+    var E = RosterWork.usuariosPainelEditar;
+    if (!((E && E.sujo && E.sujo()) || rascunhoCarreira()) || !RosterWork.confirmar) return false;
+    RosterWork.confirmar({
+      tipo: 'aviso',
+      mensagem: RosterWork.mensagens.edicao.sairSemSalvar,
+      textoConfirmar: RosterWork.mensagens.botoes.descartar,
+      textoCancelar: RosterWork.mensagens.botoes.continuarEditando,
+      aoConfirmar: function () { RosterWork.painel.fechar(); }
+    });
+    return true;
+  }
+
   function montarBaixa(corpo) {
     var secao = RosterWork.painel.criarSecaoColapsavel('Dar baixa do sistema', { aberta: false });
     if (!secao) return;
@@ -456,6 +478,7 @@
     if (RosterWork.usuariosPainelAcesso) RosterWork.usuariosPainelAcesso.reset();
     fichaAtual = null;
     pessoaAtual = null;
+    vigenciaEl = null;
     var cb = aoFecharPagina;
     aoFecharPagina = null;
     if (cb) cb();
@@ -475,10 +498,17 @@
       subtitulo: pessoa.nome_completo || '',
       editavel: RosterWork.sessao.ehAdmin(),
       aoMudarModo: aoMudarModo,
-      aoFechar: aoFecharGaveta
+      aoFechar: aoFecharGaveta,
+      aoTentarFechar: tentarFecharFicha
     });
     montarAbas();
     carregarFicha(pessoa.usuario_id);
+  }
+
+  /* guarda-de-saída: o navegador avisa ao fechar/recarregar com ação de carreira preenchida
+     (os dados em edição já são vigiados pelo usuarios-painel-editar) */
+  if (RosterWork.guardaSaida && RosterWork.guardaSaida.registrar) {
+    RosterWork.guardaSaida.registrar(function () { return !!(pessoaAtual && rascunhoCarreira()); });
   }
 
   window.RosterWork.usuariosPainel = { abrir: abrir };

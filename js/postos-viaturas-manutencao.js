@@ -273,5 +273,11 @@
 
   function reset() { ctx = null; }
 
-  window.RosterWork.postosViaturasManutencao = { montar: montar, reset: reset };
+  /* há algo preenchido no "Agendar manutenção" que ainda não foi agendado? */
+  function temRascunho() {
+    var v = ctx && ctx.valores;
+    return !!(v && (v.inicio || v.fim || (v.obs || '').trim()));
+  }
+
+  window.RosterWork.postosViaturasManutencao = { montar: montar, reset: reset, temRascunho: temRascunho };
 })();

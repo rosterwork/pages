@@ -192,5 +192,10 @@
 
   function reset() { ctx = null; }
 
-  window.RosterWork.usuariosPainelTransferir = { montar: montar, reset: reset };
+  /* um destino escolhido ou a data mudada, e ainda não transferido */
+  function temRascunho() {
+    return !!(ctx && (ctx.destino || (ctx.dataEl && ctx.dataEl.value !== hojeBR())));
+  }
+
+  window.RosterWork.usuariosPainelTransferir = { montar: montar, reset: reset, temRascunho: temRascunho };
 })();

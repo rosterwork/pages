@@ -124,11 +124,29 @@
     if (mensagem && mensagem.value) sujo = true;
   }
 
+  /* fechar com o formulário mexido pede confirmação (Cancelar, Esc e X) */
+  function tentarFechar() {
+    if (sujo && RW.confirmar) {
+      RW.confirmar({
+        tipo: 'aviso', mensagem: msg().descartarAviso,
+        textoConfirmar: RW.mensagens.botoes.descartar,
+        textoCancelar: RW.mensagens.botoes.continuarEditando,
+        aoConfirmar: function () { sujo = false; RW.painel.fechar(); }
+      });
+      return;
+    }
+    RW.painel.fechar();
+  }
+
   /* abre o painel de criação; grava e chama onMudou no sucesso */
   function abrirNovo(onMudou, pagina) {
     pagina = pagina || 'Início';
     if (!RW.painel) return;
-    RW.painel.abrir({ titulo: 'Novo comunicado', aoFechar: function () { sujo = false; } });
+    RW.painel.abrir({
+      titulo: 'Novo comunicado',
+      aoFechar: function () { sujo = false; },
+      aoTentarFechar: function () { if (!sujo) return false; tentarFechar(); return true; }
+    });
     var corpo = RW.painel.corpo();
     var rodape = RW.painel.rodape();
     var tplForm = document.getElementById('tpl-inicio-aviso-form');
@@ -166,16 +184,7 @@
     if (titulo) titulo.focus();
     validar(raiz);
 
-    if (cancelar) cancelar.addEventListener('click', function () {
-      if (sujo && RW.confirmar) {
-        RW.confirmar({
-          tipo: 'aviso', mensagem: msg().descartarAviso,
-          textoConfirmar: RW.mensagens.botoes.descartar,
-          textoCancelar: RW.mensagens.botoes.continuarEditando,
-          aoConfirmar: function () { sujo = false; RW.painel.fechar(); }
-        });
-      } else { RW.painel.fechar(); }
-    });
+    if (cancelar) cancelar.addEventListener('click', tentarFechar);
 
     if (salvar) salvar.addEventListener('click', function () {
       if (salvar.disabled) return;

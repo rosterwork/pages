@@ -14,3 +14,57 @@
   align-items: center;
   gap: 8px;
 }
+
+/* ---------- Legenda da grade (caixa do botão "Legenda" no sub-cabeçalho) ----------
+   Reusa os grupos e itens da legenda do painel (.escala-legenda-*, em escalas-painel.css);
+   aqui ficam a largura da caixa (a mesma do painel) e as amostras de cor/faixa. */
+.escala-legenda-menu {
+  width: 400px;
+}
+
+.escala-legenda-menu .dropdown-menu-rolagem {
+  padding: 12px;
+}
+
+/* itens de texto longo numa coluna só; os selos do modo Militares em duas (dupla classe: vence a
+   grade de três colunas do escalas-painel.css, que carrega depois) */
+.escala-legenda-grade.escala-legenda-grade--uma {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.escala-legenda-grade.escala-legenda-grade--duas {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* amostra de cor: as cores do gráfico de cobertura, a célula vazia e o fim de semana */
+.escala-legenda-cor {
+  display: inline-block;
+  flex-shrink: 0;
+  min-width: 12px;
+  min-height: 12px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pequeno);
+}
+
+.escala-legenda-cor--completa { background-color: var(--sucesso-fundo-forte); border-color: transparent; }
+.escala-legenda-cor--ressalva { background-color: var(--alerta-fundo-forte); border-color: transparent; }
+.escala-legenda-cor--sem-funcao { background-color: var(--erro-fundo-forte); border-color: transparent; }
+.escala-legenda-cor--fds { background-color: var(--fundo-suave); }
+.escala-legenda-cor--vazia { background-color: transparent; }
+
+/* amostra da faixa do horário na linha do militar: cinza fora do turno, claro no turno */
+.escala-legenda-faixa {
+  display: inline-block;
+  flex-shrink: 0;
+  min-width: 24px;
+  min-height: 12px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pequeno);
+  background-image: linear-gradient(to right,
+    var(--fundo-medio) 0 30%, transparent 30% 70%, var(--fundo-medio) 70% 100%);
+}
+
+/* a linha de erro da célula: ícone vermelho, como na grade */
+.escala-legenda-item--erro .icone {
+  color: var(--erro);
+}

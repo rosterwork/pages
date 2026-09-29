@@ -70,6 +70,16 @@
         </button>
       </div>
     </div>
+
+    <!-- legenda da grade: o que cada cor, ícone e selo quer dizer (o conteúdo acompanha o modo; escalas-legenda.js) -->
+    <div class="dropdown" id="escala-legenda-grade">
+      <button type="button" class="botao botao--pequeno" id="escala-legenda-botao">Legenda</button>
+      <div class="dropdown-menu dropdown-menu--largo escala-legenda-menu">
+        <div class="dropdown-menu-rolagem">
+          <div class="escala-legenda-itens" data-legenda-conteudo></div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="pagina-corpo pagina-corpo--colado"></div>
@@ -194,6 +204,96 @@
     <div class="escala-semana-unidade">
       <span class="escala-semana-unidade-nome"></span>
       <span class="escala-semana-unidade-cidade"></span>
+    </div>
+  </div>
+</template>
+
+<!-- legenda da grade (Mês/Semana/Colunas): o gráfico de cobertura, a linha de erro e a faixa do horário;
+     os grupos de origem, nome riscado e função vêm do molde da legenda do painel (#tpl-escala-legenda) -->
+<template id="tpl-escala-legenda-grade">
+  <div class="escala-legenda-grupo">
+    <span class="rotulo-secao">Cobertura</span>
+    <div class="escala-legenda-grade">
+      <span class="escala-legenda-item">
+        <span class="escala-legenda-cor escala-legenda-cor--completa"></span>
+        <span>Completa</span>
+      </span>
+      <span class="escala-legenda-item">
+        <span class="escala-legenda-cor escala-legenda-cor--ressalva"></span>
+        <span>Com ressalva</span>
+      </span>
+      <span class="escala-legenda-item">
+        <span class="escala-legenda-cor escala-legenda-cor--sem-funcao"></span>
+        <span>Militar sem função</span>
+      </span>
+    </div>
+  </div>
+  <div class="escala-legenda-grupo">
+    <span class="rotulo-secao">Na célula</span>
+    <div class="escala-legenda-grade escala-legenda-grade--uma">
+      <span class="escala-legenda-item escala-legenda-item--erro">
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+        <span>Funções fora da disponibilidade</span>
+      </span>
+      <span class="escala-legenda-item">
+        <span class="escala-legenda-faixa"></span>
+        <span>Horário: o trecho claro é o turno</span>
+      </span>
+    </div>
+  </div>
+</template>
+
+<!-- legenda do modo Militares: os selos da célula e o destaque dos dias (amostras com as classes reais) -->
+<template id="tpl-escala-legenda-militares">
+  <div class="escala-legenda-grupo">
+    <span class="rotulo-secao">Na célula</span>
+    <div class="escala-legenda-grade escala-legenda-grade--duas">
+      <span class="escala-legenda-item">
+        <span class="escala-mil-servico">
+          <span class="linha-escalado-hora-ini">08</span>
+          <svg class="icone linha-escalado-hora-seta" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+          <span class="linha-escalado-hora-fim">08</span>
+        </span>
+        <span>Serviço</span>
+      </span>
+      <span class="escala-legenda-item">
+        <span class="escala-mil-servico">
+          <svg class="icone escala-mil-servico-extra" aria-hidden="true"><use href="icones/icone-extrajornada.svg#icone-extrajornada"/></svg>
+          <span class="linha-escalado-hora-ini">08</span>
+          <svg class="icone linha-escalado-hora-seta" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+          <span class="linha-escalado-hora-fim">20</span>
+        </span>
+        <span>Extrajornada</span>
+      </span>
+      <span class="escala-legenda-item">
+        <span class="escala-mil-servico escala-mil-servico--trocado">
+          <span class="linha-escalado-hora-ini">08</span>
+          <svg class="icone linha-escalado-hora-seta" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+          <span class="linha-escalado-hora-fim">08</span>
+        </span>
+        <span>Trocado</span>
+      </span>
+      <span class="escala-legenda-item">
+        <span class="escala-mil-afast">FÉR</span>
+        <span>Afastado</span>
+      </span>
+      <span class="escala-legenda-item">
+        <span class="escala-legenda-cor escala-legenda-cor--vazia"></span>
+        <span>Vazio: sem serviço</span>
+      </span>
+    </div>
+  </div>
+  <div class="escala-legenda-grupo">
+    <span class="rotulo-secao">Dias</span>
+    <div class="escala-legenda-grade escala-legenda-grade--duas">
+      <span class="escala-legenda-item">
+        <span class="escala-mil-dia--hoje"><span class="escala-mil-dia-numero">12</span></span>
+        <span>Hoje</span>
+      </span>
+      <span class="escala-legenda-item">
+        <span class="escala-legenda-cor escala-legenda-cor--fds"></span>
+        <span>Fim de semana</span>
+      </span>
     </div>
   </div>
 </template>

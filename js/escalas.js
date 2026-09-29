@@ -90,6 +90,8 @@
     mostrar('#escala-sub-militares', modo === 'militares');
     /* a busca do sub-cabeçalho vale nos modos de grade; o modo Militares usa a sua própria */
     mostrar('#escala-busca-geral', modo !== 'militares');
+    /* a legenda do sub-cabeçalho acompanha o modo */
+    if (RosterWork.escalasLegenda) RosterWork.escalasLegenda.atualizar(conteudo, modo);
     if (modo === 'colunas') {
       aplicarTipoColunas();
     } else {

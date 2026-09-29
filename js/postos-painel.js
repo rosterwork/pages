@@ -271,6 +271,13 @@
     }
   }
 
+  /* Esc/X do painel: com alteração não salva, faz a mesma pergunta do Cancelar */
+  function tentarFecharPainel() {
+    if (!sujo) return false;
+    aoClicarCancelar();
+    return true;
+  }
+
   /* envia ao banco (insert/update) com loading no botão e os 3 erros distintos */
   function enviar(endpoint, corpo, msgFalha, aoSucesso) {
     if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal();   // recalcula a escala: círculo + tela travada
@@ -425,7 +432,8 @@
       titulo: tituloUnidade(unidade),
       tituloExtra: unidade.cidade ? '- ' + unidade.cidade : '',
       modoFixo: 'editar',
-      aoFechar: aoFechar
+      aoFechar: aoFechar,
+      aoTentarFechar: tentarFecharPainel
     });
     montarSubcabecalho(inst.nome);
     montarCorpo();
@@ -446,7 +454,8 @@
     RosterWork.painel.abrir({
       titulo: tituloUnidade(unidade),
       tituloExtra: unidade.cidade ? '- ' + unidade.cidade : '',
-      aoFechar: aoFechar
+      aoFechar: aoFechar,
+      aoTentarFechar: tentarFecharPainel
     });
     montarSubcabecalho('Nova instalação');
     montarCorpo();

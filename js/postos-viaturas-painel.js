@@ -202,6 +202,9 @@
     var corpo = RosterWork.painel.corpo();
     if (!corpo) return;
     corpo.textContent = '';
+    /* a aba que sai da tela leva junto o que estava preenchido nela (não fica rascunho escondido) */
+    if (RosterWork.postosViaturasManutencao) RosterWork.postosViaturasManutencao.reset();
+    if (RosterWork.postosViaturasTransferir) RosterWork.postosViaturasTransferir.reset();
 
     if (secaoAtual === 'manutencoes') {
       if (RosterWork.postosViaturasManutencao) {
@@ -256,8 +259,22 @@
     atualizarSalvar();
   }
 
+  /* alteração não salva no painel: os dados do topo, a manutenção preenchida e ainda não
+     agendada ou o destino escolhido e ainda não transferido */
+  function algoNaoSalvo() {
+    var M = RosterWork.postosViaturasManutencao, T = RosterWork.postosViaturasTransferir;
+    return sujo || !!(M && M.temRascunho && M.temRascunho()) || !!(T && T.temRascunho && T.temRascunho());
+  }
+
+  /* Esc/X do painel: com alteração não salva, faz a mesma pergunta do Cancelar */
+  function tentarFecharPainel() {
+    if (!algoNaoSalvo()) return false;
+    aoClicarCancelar();
+    return true;
+  }
+
   function aoClicarCancelar() {
-    if (sujo && RosterWork.confirmar) {
+    if (algoNaoSalvo() && RosterWork.confirmar) {
       RosterWork.confirmar({
         tipo: 'aviso',
         mensagem: RosterWork.mensagens.postos.descartarViatura,
@@ -493,7 +510,8 @@
     RosterWork.painel.abrir({
       titulo: viatura.nome || '',
       subtitulo: textoLocal(unidade),
-      aoFechar: aoFechar
+      aoFechar: aoFechar,
+      aoTentarFechar: tentarFecharPainel
     });
     secaoAtual = 'dados';
     montarAbas();
@@ -514,7 +532,8 @@
     RosterWork.painel.abrir({
       titulo: 'Nova viatura',
       subtitulo: textoLocal(unidade),
-      aoFechar: aoFechar
+      aoFechar: aoFechar,
+      aoTentarFechar: tentarFecharPainel
     });
     secaoAtual = 'dados';   /* criar não tem Manutenções: sem abas */
     montarCorpo();
@@ -523,7 +542,7 @@
 
   /* guarda-de-saída: o navegador avisa ao fechar/recarregar com alteração não salva */
   if (RosterWork.guardaSaida && RosterWork.guardaSaida.registrar) {
-    RosterWork.guardaSaida.registrar(function () { return sujo; });
+    RosterWork.guardaSaida.registrar(function () { return !!(ctx && algoNaoSalvo()); });
   }
 
   window.RosterWork.postosViaturasPainel = { abrir: abrir, abrirNovo: abrirNovo };

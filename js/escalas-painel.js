@@ -856,7 +856,7 @@
   }
 
   /* ícone por classe de observação (troca/folga automáticas; admin manual) */
-  var ICONE_OBS = { troca: 'icone-origem-troca', folga: 'icone-folgas', admin: 'icone-nota' };
+  var ICONE_OBS = { troca: 'icone-origem-troca', folga: 'icone-folgas', admin: 'icone-anotacao' };
 
   /* seção "Observações" do dia: trocas + folgas (automáticas) + notas do admin (manuais),
      nesta ordem (vem pronta do ler_distribuicao_dia). No Editar do admin: botão para adicionar
@@ -874,7 +874,7 @@
     function linhaObs(o) {
       var linha = RosterWork.tpl('tpl-escala-observacao');
       if (!linha) return null;
-      definirIcone(linha.querySelector('.escala-observacao-icone'), ICONE_OBS[o.classe] || 'icone-nota');
+      definirIcone(linha.querySelector('.escala-observacao-icone'), ICONE_OBS[o.classe] || 'icone-anotacao');
       linha.querySelector('.escala-observacao-texto').textContent = m.observacaoTexto(o);
       var rem = linha.querySelector('.escala-observacao-remover');
       /* ✕ só nas do admin, no Editar; trocas e folgas nunca podem ser apagadas */
