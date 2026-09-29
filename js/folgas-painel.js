@@ -89,7 +89,7 @@
       tipo: 'aviso', mensagem: situacao === 'pendente' ? msg().confirmarCancelarPendente : msg().confirmarCancelar, confirmarPerigo: true,
       aoConfirmar: function () {
         if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal();   // reverte a folga na escala: círculo + tela travada
-        RW.folgasDados.cancelar(lancamentoId, ctx.cpf).then(function (r) {
+        RW.folgasDados.cancelar(lancamentoId).then(function (r) {
           if (RW.esconderVeuGlobal) RW.esconderVeuGlobal();
           if (r && r.success) {
             RW.painel.fechar();
@@ -257,8 +257,8 @@
     var motivo = (raiz.querySelector('#ff-motivo') || {}).value || '';
     var btn = form.btnConfirmar;
     var promessa = (form.modo === 'conceder')
-      ? RW.folgasDados.dar({ p_usuario_id: form.cpfAlvo, p_data: form.dataIso, p_horario_inicio: hi, p_horario_fim: hf, p_motivo: motivo, p_dado_por: ctx.cpf })
-      : RW.folgasDados.solicitar({ p_usuario_id: ctx.cpf, p_data: form.dataIso, p_horario_inicio: hi, p_horario_fim: hf, p_motivo: motivo });
+      ? RW.folgasDados.dar({ p_usuario_id: form.cpfAlvo, p_data: form.dataIso, p_horario_inicio: hi, p_horario_fim: hf, p_motivo: motivo })
+      : RW.folgasDados.solicitar({ p_data: form.dataIso, p_horario_inicio: hi, p_horario_fim: hf, p_motivo: motivo });
     finalizar(promessa, btn, form.modo === 'conceder');   // conceder recalcula a escala (véu); solicitar não (pontos)
   }
 
@@ -316,7 +316,7 @@
     if (!motivo.trim()) { marcarErro(campoM, msg().formMotivo); ok = false; }
     if (!ok) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.camposCorrigir }); return; }
     var btn = form.btnConfirmar;
-    finalizar(RW.folgasDados.ajustar(form.cpfAlvo, minutos, motivo, ctx.cpf), btn, false);   // ajuste de saldo não mexe na escala
+    finalizar(RW.folgasDados.ajustar(form.cpfAlvo, minutos, motivo), btn, false);   // ajuste de saldo não mexe na escala
   }
 
   /* ---------- rodapé, envio e fechamento dos formulários ---------- */

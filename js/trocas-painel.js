@@ -118,11 +118,11 @@
     } else if (acao === 'aprovar') {
       var temProblema = troca._analise && troca._analise.veredito === 'problema';
       confirmarEntao(temProblema ? m.confirmarAprovarComProblema : m.confirmarAprovar, temProblema, function () {
-        executar(d.aprovar(troca.troca_id, true, ctx.cpf), btn, ctx, {
+        executar(d.aprovar(troca.troca_id, true), btn, ctx, {
           /* Desfazer = cancelar a troca aprovada (reverte a escala e redistribui) */
           desfazer: function () {
             if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal();   // o desfazer cancela a troca e recalcula a escala: véu global
-            return d.cancelar(troca.troca_id, ctx.cpf).then(function (res) {
+            return d.cancelar(troca.troca_id).then(function (res) {
               if (RW.esconderVeuGlobal) RW.esconderVeuGlobal();
               if (res && res.ok && ctx.aoMudar) ctx.aoMudar();
               return res;
@@ -132,11 +132,11 @@
       });
     } else if (acao === 'aprovar-forcar') {
       confirmarEntao(m.confirmarForcar, true, function () {
-        executar(d.aprovar(troca.troca_id, true, ctx.cpf, true), btn, ctx, {
+        executar(d.aprovar(troca.troca_id, true, true), btn, ctx, {
           /* Desfazer = cancelar a troca aprovada (reverte a escala e redistribui) */
           desfazer: function () {
             if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal();   // o desfazer cancela a troca e recalcula a escala: véu global
-            return d.cancelar(troca.troca_id, ctx.cpf).then(function (res) {
+            return d.cancelar(troca.troca_id).then(function (res) {
               if (RW.esconderVeuGlobal) RW.esconderVeuGlobal();
               if (res && res.ok && ctx.aoMudar) ctx.aoMudar();
               return res;
@@ -145,9 +145,9 @@
         }, true);   // força também recalcula a escala → véu
       });
     } else if (acao === 'rejeitar') {
-      confirmarEntao(m.confirmarRejeitar, true, function () { executar(d.aprovar(troca.troca_id, false, ctx.cpf), btn, ctx); });
+      confirmarEntao(m.confirmarRejeitar, true, function () { executar(d.aprovar(troca.troca_id, false), btn, ctx); });
     } else if (acao === 'cancelar') {
-      confirmarEntao(m.confirmarCancelar, true, function () { executar(d.cancelar(troca.troca_id, ctx.cpf), btn, ctx, null, true); });   // cancelar reverte a escala → véu
+      confirmarEntao(m.confirmarCancelar, true, function () { executar(d.cancelar(troca.troca_id), btn, ctx, null, true); });   // cancelar reverte a escala → véu
     }
   }
 

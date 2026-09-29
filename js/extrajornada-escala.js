@@ -597,7 +597,7 @@
       atualizarCelula(celula, uid, isoDia);
       aposMudarCelula(celula, uid, isoDia);
       function desfazer(msg) { aplicarLocal(m.cpf, uid, isoDia, []); atualizarCelula(celula, uid, isoDia); aposMudarCelula(celula, uid, isoDia); if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: msg }); }
-      RW.extrajornadaDados.definirEscala(m.cpf, isoDia, [1, 2, 3, 4], RosterWork.sessao.cpf(), uid).then(
+      RW.extrajornadaDados.definirEscala(m.cpf, isoDia, [1, 2, 3, 4], uid).then(
         function (r) { if (!r || !r.success) desfazer((r && r.error) || RW.mensagens.geral.falhaServidor); },
         function () { desfazer(RW.mensagens.geral.semConexao); });
       return;
@@ -747,7 +747,7 @@
     var bolinhas = vaga.querySelectorAll('.extra-bolinha');
     Array.prototype.forEach.call(bolinhas, function (b) { b.disabled = true; });
     function destravar() { Array.prototype.forEach.call(bolinhas, function (b) { b.disabled = false; }); }
-    RW.extrajornadaDados.definirEscala(cpf, isoDia, blocos, RosterWork.sessao.cpf(), uid).then(function (r) {
+    RW.extrajornadaDados.definirEscala(cpf, isoDia, blocos, uid).then(function (r) {
       destravar();
       if (r && r.success) {
         aplicarLocal(cpf, uid, isoDia, blocos);   // espelha o banco no modelo local (sem recarregar o mês)
@@ -800,7 +800,7 @@
     }
     /* staging da remoção (sem loading): salva 0 blocos e NÃO reconcilia na hora. Vira pendência — extra já
        inserido marca 'removido'; rascunho some de vez — e o "Inserir/Atualizar escala" aplica tudo em lote */
-    RW.extrajornadaDados.definirEscala(cpf, isoDia, [], RosterWork.sessao.cpf(), uid).then(function (r) {
+    RW.extrajornadaDados.definirEscala(cpf, isoDia, [], uid).then(function (r) {
       if (!r || !r.success) {   // falhou: restaura a vaga + avisa
         if (celula) atualizarCelula(celula, uid, isoDia);
         if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor });

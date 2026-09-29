@@ -50,9 +50,9 @@
     carregarEscala: function (competenciaISO) {
       return RosterWork.rpc('extra_escala_carregar', { p_competencia: competenciaISO });
     },
-    definirEscala: function (usuario, dataISO, blocos, por, unidade) {
+    definirEscala: function (usuario, dataISO, blocos, unidade) {
       return RosterWork.rpc('extra_escala_definir', {
-        p_usuario: usuario, p_data: dataISO, p_blocos: blocos, p_por: por,
+        p_usuario: usuario, p_data: dataISO, p_blocos: blocos,
         p_unidade_destino: (unidade === undefined || unidade === null) ? null : unidade
       });
     },

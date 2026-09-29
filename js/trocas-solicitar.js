@@ -365,7 +365,6 @@
     var devTotal = ctx.devSel ? ctx.devSel.total : true;
     var corpo = {
       p_contexto_id: ctx.servicoCtx,
-      p_solicitante_cpf: RosterWork.sessao.cpf(),
       p_parceiro_cpf: ctx.parceiroSel.cpf,
       p_data_servico_solicitante: ctx.servicoDia,
       p_horario_inicio: servTotal ? null : ctx.servicoSel.hi,
@@ -377,7 +376,7 @@
     RW.trocasDados.solicitar(corpo).then(function (r) {
       if (btn && RW.pararCarregando) RW.pararCarregando(btn);
       if (r && r.ok) {
-        var trocaId = r.troca_id, meu = RosterWork.sessao.cpf();
+        var trocaId = r.troca_id;
         if (RW.painel) RW.painel.fechar();
         if (ctx.aoSolicitar) ctx.aoSolicitar();
         if (r.log && RW.resumo) {
@@ -385,7 +384,7 @@
             pagina: 'Trocas',
             /* Desfazer = apaga a troca recém-criada por completo (última chance), como se nunca tivesse existido */
             desfazer: (trocaId && RW.trocasDados) ? function () {
-              return RW.trocasDados.cancelar(trocaId, meu, true).then(function (res) {
+              return RW.trocasDados.cancelar(trocaId, true).then(function (res) {
                 if (res && res.ok && ctx && ctx.aoMudar) ctx.aoMudar();
                 return res;
               });

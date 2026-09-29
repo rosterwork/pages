@@ -14,14 +14,14 @@
     saldos: function () { return RosterWork.rpc('folgas_listar_saldos', {}); },
     extrato: function (cpf) { return RosterWork.rpc('folgas_extrato', { p_usuario_id: cpf }); },
     servicos: function (cpf) { return RosterWork.rpc('folgas_servicos_militar', { p_usuario_id: cpf }); },
-    solicitacoes: function (cpf) { return RosterWork.rpc('folgas_listar_solicitacoes', { p_cpf: cpf }); },
-    lancamentos: function (cpf, escopo, desde) { return RosterWork.rpc('folgas_listar_lancamentos', { p_cpf: cpf, p_escopo: escopo, p_desde: desde }); },
+    solicitacoes: function () { return RosterWork.rpc('folgas_listar_solicitacoes', {}); },
+    lancamentos: function (escopo, desde) { return RosterWork.rpc('folgas_listar_lancamentos', { p_escopo: escopo, p_desde: desde }); },
     solicitar: function (corpo) { return RosterWork.rpc('folgas_solicitar', corpo); },
-    decidir: function (id, aprovar, por) { return RosterWork.rpc('folgas_decidir', { p_lancamento_id: id, p_aprovar: aprovar, p_decidido_por: por }); },
+    decidir: function (id, aprovar) { return RosterWork.rpc('folgas_decidir', { p_lancamento_id: id, p_aprovar: aprovar }); },
     analisar: function (id) { return RosterWork.rpc('fn_folgas_analisar_impacto', { p_lancamento_id: id }); },
     dar: function (corpo) { return RosterWork.rpc('folgas_dar', corpo); },
-    ajustar: function (cpf, minutos, motivo, por) { return RosterWork.rpc('folgas_ajustar_saldo', { p_usuario_id: cpf, p_minutos: minutos, p_motivo: motivo, p_por: por }); },
-    cancelar: function (id, por) { return RosterWork.rpc('folgas_cancelar', { p_lancamento_id: id, p_por: por }); }
+    ajustar: function (cpf, minutos, motivo) { return RosterWork.rpc('folgas_ajustar_saldo', { p_usuario_id: cpf, p_minutos: minutos, p_motivo: motivo }); },
+    cancelar: function (id) { return RosterWork.rpc('folgas_cancelar', { p_lancamento_id: id }); }
   };
 
   /* ---------- formatadores ---------- */

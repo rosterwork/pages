@@ -103,15 +103,15 @@
   function despachar(acao, sol, ctx, btn) {
     var d = RW.folgasDados, m = msg();
     if (acao === 'recusar') {
-      confirmarEntao(m.confirmarRecusar, true, function () { executar(d.decidir(sol.id, false, ctx.cpf), btn, ctx); });
+      confirmarEntao(m.confirmarRecusar, true, function () { executar(d.decidir(sol.id, false), btn, ctx); });
     } else if (acao === 'aprovar') {
       var temProblema = sol._analise && sol._analise.veredito === 'problema';
       confirmarEntao(temProblema ? m.confirmarAprovarComProblema : m.confirmarAprovar, temProblema, function () {
-        executar(d.decidir(sol.id, true, ctx.cpf), btn, ctx, {
+        executar(d.decidir(sol.id, true), btn, ctx, {
           /* Desfazer = cancelar a folga aprovada (o militar volta ao serviço e as horas voltam) */
           desfazer: function () {
             if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal();   // o desfazer cancela a folga e recalcula a escala: véu global
-            return d.cancelar(sol.id, ctx.cpf).then(function (res) {
+            return d.cancelar(sol.id).then(function (res) {
               if (RW.esconderVeuGlobal) RW.esconderVeuGlobal();
               if (res && res.success && ctx.aoMudar) ctx.aoMudar();
               return { ok: !!(res && res.success), erro: res && res.error };   // o geral-resumo espera {ok,erro}, não {success,error}

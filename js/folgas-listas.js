@@ -66,7 +66,7 @@
     if (!el || !document.contains(el)) return;
     carregandoEm(el);
     var req = ++seqAprov;
-    RW.folgasDados.solicitacoes(ctx.cpf).then(function (lista) {
+    RW.folgasDados.solicitacoes().then(function (lista) {
       if (!document.contains(el) || req !== seqAprov) return;
       if (lista == null) { vazioEm(el, msg().falhaCarregar); return; }   // null = falha (Postgres devolve [] p/ vazio)
       renderAprovacoes(el, Array.isArray(lista) ? lista : []);
@@ -94,7 +94,7 @@
     if (!el || !document.contains(el)) return;
     carregandoEm(el);
     var req = ++seqHist;
-    RW.folgasDados.lancamentos(ctx.cpf, 'todos', desdeDoPeriodo()).then(function (lista) {
+    RW.folgasDados.lancamentos('todos', desdeDoPeriodo()).then(function (lista) {
       if (!document.contains(el) || req !== seqHist) return;
       if (lista == null) { vazioEm(el, msg().falhaCarregar); return; }   // null = falha
       renderHistorico(el, Array.isArray(lista) ? lista : []);
