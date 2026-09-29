@@ -111,16 +111,18 @@
     if (window.RosterWork.painel) window.RosterWork.painel.fechar();   /* a gaveta é da página que sai */
     if (window.RosterWork.mostrarVeu) window.RosterWork.mostrarVeu(conteudo);
 
-    var resposta;
+    /* o download pode falhar no começo (fetch) ou no meio da leitura (text): cancelado por uma
+       navegação mais nova, sai quieto (a nova cuida do véu); falha de rede na vigente, some o véu */
+    var resposta, html;
     try {
       resposta = await fetch(def.html, navAbort ? { signal: navAbort.signal } : undefined);
+      if (meu !== navToken) return;               /* outra navegação assumiu enquanto baixava */
+      if (!resposta.ok) { esconderVeu(); return; }
+      html = await resposta.text();
     } catch (e) {
-      /* download cancelado por uma navegação mais nova: sai quieto (a nova cuida do véu) */
+      if (meu === navToken) esconderVeu();
       return;
     }
-    if (meu !== navToken) return;                 /* outra navegação assumiu enquanto baixava */
-    if (!resposta.ok) { esconderVeu(); return; }
-    var html = await resposta.text();
     if (meu !== navToken) return;
     inserirFragmento(html);
 
