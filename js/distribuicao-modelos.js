@@ -163,13 +163,15 @@
       if (!linha) return;
       linha.setAttribute('data-modelo-id', m.id_grupo_completo);
       var st = validar(m.unidades);
-      if (st.nivel !== 'ok') {
+      /* período copiado de uma mudança de posto e ainda não revisado: no mínimo amarelo */
+      var nivel = (st.nivel === 'ok' && m.a_revisar) ? 'alerta' : st.nivel;
+      if (nivel !== 'ok') {
         var sEl = linha.querySelector('.distribuicao-modelo-status');
         var ok = linha.querySelector('.distribuicao-modelo-ok');
         var er = linha.querySelector('.distribuicao-modelo-erro');
         if (ok) ok.classList.add('oculto');
         if (er) er.classList.remove('oculto');
-        if (sEl) sEl.classList.add(st.nivel === 'erro' ? 'distribuicao-modelo-status--erro' : 'distribuicao-modelo-status--alerta');
+        if (sEl) sEl.classList.add(nivel === 'erro' ? 'distribuicao-modelo-status--erro' : 'distribuicao-modelo-status--alerta');
       }
       var celulas = linha.querySelector('.distribuicao-modelo-celulas');
       grupo.unidades.forEach(function (u) {
@@ -189,7 +191,8 @@
       if (area) area.addEventListener('click', function () { pedirSaida(function () { selecionar(m.id_grupo_completo); }); });
       var menu = linha.querySelector('.distribuicao-modelo-menu');
       if (menu) {
-        if (RosterWork.sessao.ehAdmin()) {
+        /* editar/excluir: só admin, e não num período que já terminou (só leitura) */
+        if (RosterWork.sessao.ehAdmin() && !RosterWork.distribuicaoPeriodos.somenteLeitura()) {
           var itens = menu.querySelectorAll('.dropdown-item');
           if (itens[0]) itens[0].addEventListener('click', function () { pedirSaida(function () { editarModelo(m.id_grupo_completo); }); });
           if (itens[1]) itens[1].addEventListener('click', function () { pedirSaida(function () { if (RosterWork.distribuicaoCriar) RosterWork.distribuicaoCriar.excluir(m.id_grupo_completo); }); });
@@ -240,16 +243,32 @@
     marcarAtivo();
     if (RosterWork.distribuicaoEditar && RosterWork.distribuicaoEditar.mostrarHistorico) RosterWork.distribuicaoEditar.mostrarHistorico(false);   /* Ver: sem desfazer/refazer */
     carregandoEm(document.getElementById('distribuicao-corpo'));
-    RosterWork.distribuicaoDados.lerModelo(id).then(function (dados) {
+    RosterWork.distribuicaoDados.lerModelo(id, RosterWork.distribuicaoPeriodos.data()).then(function (dados) {
       if (selId !== id) return;                /* resposta obsoleta: outro modelo já foi aberto */
       if (!dados) { erroCorpo(); return; }     /* RPC falhou: mostra erro, não deixa o giratório preso */
       var m = modelos.filter(function (x) { return x.id_grupo_completo === id; })[0];
       var comp = {};
       ((m && m.unidades) || []).forEach(function (cu) { comp[cu.unidade_id] = { oficiais: cu.oficiais, pracas: cu.pracas }; });
       var contagem = contarUnidades(dados.unidades, comp);
-      renderCorpo(dados, statusVisual(contagem), contagem);   /* clicar = VER (read-only), para todos */
-      renderRodape({ itens: validar(contagem).itens });
+      var status = statusVisual(contagem);
+      var revisar = itensRevisar(dados.unidades, status);
+      renderCorpo(dados, status, contagem);   /* clicar = VER (read-only), para todos */
+      renderRodape({ itens: validar(contagem).itens.concat(revisar) });
     }).catch(erroCorpo);
+  }
+
+  /* pelotões cujo período veio de uma mudança de posto e ainda não foi revisado: linha amarela no
+     rodapé e o cabeçalho do pelotão em amarelo (quando não tem erro) */
+  function itensRevisar(unidades, status) {
+    var periodo = RosterWork.distribuicaoPeriodos.periodo();
+    var motivo = periodo && periodo.motivo;
+    var itens = [];
+    (unidades || []).forEach(function (u) {
+      if (!u.a_revisar) return;
+      if (!status.unidades[u.unidade_id]) status.unidades[u.unidade_id] = 'alerta';
+      itens.push({ codigo: 'revisar', nivel: 'alerta', texto: RosterWork.mensagens.distribuicao.revisarPeriodo(u.nome || '', motivo) });
+    });
+    return itens;
   }
 
   /* admin: "Editar" no menu ⋯ abre o modo de edição */
@@ -257,7 +276,7 @@
     selId = id;
     marcarAtivo();
     carregandoEm(document.getElementById('distribuicao-corpo'));
-    RosterWork.distribuicaoDados.lerModelo(id).then(function (dados) {
+    RosterWork.distribuicaoDados.lerModelo(id, RosterWork.distribuicaoPeriodos.data()).then(function (dados) {
       if (selId !== id) return;                /* resposta obsoleta */
       if (!dados) { erroCorpo(); return; }     /* RPC falhou */
       var m = modelos.filter(function (x) { return x.id_grupo_completo === id; })[0];
@@ -608,11 +627,18 @@
     }
     carregandoEm(document.getElementById('distribuicao-lista-modelos'));
     var req = ++seqCarregar;
-    return RosterWork.distribuicaoDados.listarModelos(g.cia.unidade_id).then(function (lista) {
-      if (req !== seqCarregar) return;   /* outra carga (troca de unidade/aba) assumiu */
-      if (lista == null) { modelos = []; erroLista(); return; }   /* RPC falhou: mostra erro, não mascara como "sem modelos" */
-      modelos = Array.isArray(lista) ? lista : [];
-      renderPainel();
+    var P = RosterWork.distribuicaoPeriodos;
+    /* primeiro os períodos (o seletor); depois os modelos do período escolhido */
+    return P.carregar(g.cia.unidade_id, recarregar).then(function () {
+      if (req !== seqCarregar) return;
+      /* período que já terminou é só leitura: não cria modelo */
+      if (btnNovo && RosterWork.sessao.ehAdmin()) btnNovo.disabled = P.somenteLeitura();
+      return RosterWork.distribuicaoDados.listarModelos(g.cia.unidade_id, P.data()).then(function (lista) {
+        if (req !== seqCarregar) return;   /* outra carga (troca de unidade/aba/período) assumiu */
+        if (lista == null) { modelos = []; erroLista(); return; }   /* RPC falhou: mostra erro, não mascara como "sem modelos" */
+        modelos = Array.isArray(lista) ? lista : [];
+        renderPainel();
+      });
     });
   }
 

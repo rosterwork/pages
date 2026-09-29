@@ -115,6 +115,7 @@
   function gravar(estado, recalcularDesde) {
     var ctx = RosterWork.distribuicaoModelos.contextoId();
     var payload = montarPayload(estado, ctx, RosterWork.sessao.cpf());
+    payload.data = RosterWork.distribuicaoPeriodos.data();   /* grava no período escolhido */
     if (recalcularDesde) payload.recalcular_desde = recalcularDesde;
     if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal();   // recalcula a escala: círculo + tela travada
     return RosterWork.distribuicaoDados.salvar(payload).then(function (r) {
@@ -123,6 +124,12 @@
         RosterWork.distribuicaoEditar.limpoAposSalvar();
         RosterWork.distribuicaoModelos.recarregar();
         if (r.log && RosterWork.resumo) RosterWork.resumo.abrirModal(r.log, { pagina: 'Distribuição' });
+        /* períodos seguintes já revisados não recebem a mudança: avisa quais são */
+        var naoAtualizados = r.periodos_nao_atualizados || [];
+        if (naoAtualizados.length) {
+          RosterWork.avisar({ tipo: 'aviso', mensagem: RosterWork.mensagens.distribuicao.naoAtualizados(
+            naoAtualizados.map(RosterWork.distribuicaoPeriodos.textoNaFrase)) });
+        }
       } else {
         RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.distribuicao.falhaSalvar });
       }
@@ -134,13 +141,27 @@
 
   /* salvar pede a data de recálculo (modal padrão, começa amanhã): com erro vermelho
      avisa do erro; sem erro, avisa do impacto nas escalas já distribuídas. Ao confirmar,
-     grava e o banco recalcula as unidades do modelo a partir da data escolhida. */
+     grava e o banco recalcula as unidades do modelo a partir da data escolhida. A gravação vale no
+     período escolhido no seletor (distribuicao-periodos). */
   function salvar(estado, unidadesContagem) {
     var st = RosterWork.distribuicaoModelos.validar(unidadesContagem);
     var temVermelho = st.itens.some(function (i) { return i.nivel === 'erro'; });
+    var mensagem = temVermelho ? RosterWork.mensagens.distribuicao.salvarComErro
+                               : RosterWork.mensagens.distribuicao.salvarImpacto;
+    var P = RosterWork.distribuicaoPeriodos;
+    /* período que ainda vai começar: a escala é refeita a partir do início dele, sem perguntar a data */
+    if (P.futuro()) {
+      RosterWork.confirmar({
+        tipo: 'aviso',
+        mensagem: mensagem,
+        textoConfirmar: RosterWork.mensagens.botoes.salvar,
+        textoCancelar: RosterWork.mensagens.botoes.cancelar,
+        aoConfirmar: function () { gravar(estado, P.periodo().inicio); }
+      });
+      return;
+    }
     RosterWork.pedirData({
-      mensagem: temVermelho ? RosterWork.mensagens.distribuicao.salvarComErro
-                            : RosterWork.mensagens.distribuicao.salvarImpacto,
+      mensagem: mensagem,
       textoConfirmar: RosterWork.mensagens.botoes.salvar,
       aoConfirmar: function (iso) { gravar(estado, iso); }
     });

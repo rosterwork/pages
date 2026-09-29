@@ -11,8 +11,9 @@
    cirúrgica (sem flash), no criar recarrega a árvore; confirma no
    modal geral-resumo com o log do banco. A data do modal é a data
    em que o novo estado (ou a exclusão, ou o começo) vale; embaixo do
-   Estado ficam as mudanças marcadas, com Cancelar (postos-mudancas.js).
-   Moldes em postos.html; casca da gaveta em geral-painel.
+   Estado ficam as mudanças marcadas, com Cancelar (postos-mudancas.js);
+   na edição, a seção "Linha do tempo" (só leitura, postos-linha-tempo.js)
+   vem antes do Excluir. Moldes em postos.html; casca da gaveta em geral-painel.
    ============================================================ */
 (function () {
   'use strict';
@@ -179,7 +180,11 @@
     linhas.push(montarLinhaEfetivo('Ef. máximo', 'max'));
     linhas.forEach(function (linha) { if (linha) secao.appendChild(linha); });
     corpo.appendChild(secao);
-    if (modo === 'editar') montarExcluir(corpo);
+    if (modo === 'editar') {
+      /* a linha do tempo do posto (só leitura), antes do Excluir */
+      if (RosterWork.postosLinhaTempo) RosterWork.postosLinhaTempo.montar(corpo, null, ctx.inst.id_instalacao);
+      montarExcluir(corpo);
+    }
   }
 
   /* ---------- excluir instalação (ação crítica, no rodapé do painel; vale a partir da data do modal) ---------- */

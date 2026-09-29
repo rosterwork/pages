@@ -32,11 +32,13 @@
 
       <div class="login-formulario">
 
-        <div id="nova-senha-form">
-          <h1 class="nova-senha-titulo" id="nova-senha-titulo">Nova senha</h1>
-          <!-- modo senha provisória: entrou com a senha criada pelo administrador (Redefinir senha) -->
-          <h1 class="nova-senha-titulo oculto" id="nova-senha-titulo-provisoria">Troque a senha provisória</h1>
-          <p class="nova-senha-intro oculto" id="nova-senha-intro-provisoria">Você entrou com uma senha provisória, criada pelo administrador. Para continuar, defina a sua própria senha.</p>
+        <!-- enquanto o link é conferido -->
+        <p class="nova-senha-intro" id="nova-senha-conferindo" role="status"></p>
+
+        <!-- link válido: de quem é a conta + a senha nova -->
+        <div class="oculto" id="nova-senha-form">
+          <h1 class="nova-senha-titulo">Nova senha</h1>
+          <p class="nova-senha-intro">Conta de <strong id="nova-senha-conta"></strong>. Escolha a sua nova senha, com ao menos 6 caracteres.</p>
 
           <div class="login-campos">
             <div class="campo">
@@ -60,7 +62,6 @@
         <div class="login-links">
           <button class="botao botao--texto" type="button" id="btn-ir-login">Ir para o login</button>
           <button class="botao botao--texto oculto" type="button" id="btn-pedir-novo">Pedir novo link</button>
-          <button class="botao botao--texto oculto" type="button" id="btn-sair">Sair</button>
         </div>
 
       </div>
@@ -68,7 +69,7 @@
     </div>
   </div>
 
-  <!-- camada que impede clique por engano enquanto o envio está no ar -->
+  <!-- camada que impede clique por engano enquanto a conferência ou o envio está no ar -->
   <div class="carregando-bloqueio oculto" id="carregando-bloqueio"></div>
 
   <template id="carregando-pontos">

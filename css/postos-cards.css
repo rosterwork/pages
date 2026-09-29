@@ -70,6 +70,29 @@
   color: var(--texto-suave);
 }
 
+/* seção "Linha do tempo" do painel: um trecho por linha (datas e unidade à esquerda; Hoje e situação à direita) */
+.posto-trecho { align-items: center; }
+.posto-trecho-textos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 4px 0;
+}
+.posto-trecho-datas { font-size: 12px; color: var(--texto); }
+.posto-trecho-unidade { font-size: 11px; color: var(--texto-suave); }
+.posto-trecho--atual .posto-trecho-datas { font-weight: 600; color: var(--texto-forte); }
+.posto-trecho-selos { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+
+/* caixa "Mudanças marcadas" do painel: o selo "Revisar na Distribuição" fica embaixo do texto da mudança */
+.posto-mudanca-textos {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+
 /* bloco de dados: efetivo mínimo e máximo */
 .posto-dados {
   display: flex;

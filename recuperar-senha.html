@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Recuperar a senha do Roster Work." />
+  <meta name="description" content="Pedir uma nova senha do Roster Work ao administrador." />
   <link rel="icon" href="icones/logo-aba.svg" type="image/svg+xml" />
   <title>Recuperar senha — Roster Work</title>
   <link rel="stylesheet" href="css/geral-tema.css" />
@@ -34,7 +34,7 @@
 
         <div id="recuperar-pedido">
           <h1 class="recuperar-senha-titulo">Recuperar senha</h1>
-          <p class="recuperar-senha-intro">Digite seu CPF ou RG. Enviaremos um link para redefinir a senha no email cadastrado.</p>
+          <p class="recuperar-senha-intro">Digite seu CPF ou RG. Os administradores da sua unidade recebem o pedido, e um deles entrega a você um link para criar a nova senha.</p>
 
           <div class="login-campos">
             <div class="campo">
@@ -44,7 +44,7 @@
             </div>
           </div>
 
-          <button class="botao botao--primario" id="btn-enviar-link" type="button">Enviar link</button>
+          <button class="botao botao--primario" id="btn-enviar-pedido" type="button">Enviar pedido</button>
         </div>
 
         <p class="recuperar-senha-sucesso oculto" id="recuperar-sucesso" role="status"></p>
@@ -58,7 +58,7 @@
     </div>
   </div>
 
-  <!-- camada que impede clique por engano enquanto o envio está no ar -->
+  <!-- camada que impede clique por engano enquanto o pedido está no ar -->
   <div class="carregando-bloqueio oculto" id="carregando-bloqueio"></div>
 
   <template id="carregando-pontos">

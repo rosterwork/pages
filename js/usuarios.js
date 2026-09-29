@@ -465,13 +465,23 @@
 
     ligarAbas(conteudo);
 
+    /* veio de um aviso que aponta um militar (ex.: pedido de nova senha): a ficha dele abre
+       quando a página termina de montar (se ainda for esta a página na tela) */
+    var cpfPedido = window.RosterWork.referenciaPedida ? window.RosterWork.referenciaPedida('usuarios') : null;
+
     /* a árvore (componente compartilhado) cuida das unidades e injeta os botões de
        recolher/expandir os títulos; passamos como cada unidade marcada mostra as
        pessoas e recebemos quem está visível (filtro de graus) */
-    return window.RosterWork.arvoreUnidades.montar(container, {
+    var pronto = window.RosterWork.arvoreUnidades.montar(container, {
       renderConteudo: renderConteudo,
       aoRenderizar: aoRenderizarGraus
     });
+    if (cpfPedido && /^\d{11}$/.test(cpfPedido) && window.RosterWork.usuariosPainel) {
+      Promise.resolve(pronto).then(function () {
+        if (document.body.contains(container)) window.RosterWork.usuariosPainel.abrir({ usuario_id: cpfPedido }, limparSelecao);
+      });
+    }
+    return pronto;
   }
 
   /* usado após uma readmissão: recarrega os inativos e re-renderiza a árvore */

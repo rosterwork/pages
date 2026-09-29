@@ -121,10 +121,28 @@
   </div>
 </template>
 
+<!-- molde: um trecho da seção "Linha do tempo" do painel (datas + unidade, à esquerda; Hoje + situação, à direita) -->
+<template id="tpl-posto-trecho">
+  <div class="linha-info posto-trecho">
+    <span class="posto-trecho-textos">
+      <span class="posto-trecho-datas"></span>
+      <span class="posto-trecho-unidade oculto"></span>
+    </span>
+    <span class="posto-trecho-selos">
+      <span class="selo posto-trecho-hoje oculto">Hoje</span>
+      <span class="selo posto-trecho-situacao"></span>
+    </span>
+  </div>
+</template>
+
 <!-- molde: uma mudança marcada (texto + Cancelar) -->
 <template id="tpl-posto-mudanca-item">
   <div class="linha-info">
-    <span class="linha-info-rotulo"></span>
+    <span class="posto-mudanca-textos">
+      <span class="linha-info-rotulo"></span>
+      <!-- a mudança abriu um período na Distribuição que ainda não foi revisado -->
+      <span class="selo selo--alerta posto-mudanca-revisar oculto">Revisar na Distribuição</span>
+    </span>
     <button type="button" class="botao botao--texto posto-mudanca-cancelar">Cancelar</button>
   </div>
 </template>

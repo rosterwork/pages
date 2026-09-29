@@ -16,7 +16,7 @@
   color: var(--texto-forte);
 }
 
-/* explicação do modo senha provisória (igual à introdução da tela de recuperar senha) */
+/* de quem é a conta e a espera da conferência do link (igual à introdução da tela de recuperar senha) */
 .nova-senha-intro {
   margin: 0;
   font-size: 13px;
@@ -30,7 +30,7 @@
   color: var(--sucesso);
 }
 
-/* link do email inválido ou expirado */
+/* link inválido, vencido ou já usado */
 .nova-senha-invalido {
   margin: 0;
   font-size: 13px;

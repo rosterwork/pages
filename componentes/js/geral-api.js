@@ -154,12 +154,6 @@
           body: JSON.stringify({ password: nova })
         }).then(function (u) {
           if (!u.ok) return { erro: 'servidor' };
-          /* trocou a própria senha: desliga a marca de senha provisória, se houver (melhor esforço) */
-          fetch(SUPABASE_URL + '/rest/v1/rpc/senha_provisoria_concluir', {
-            method: 'POST',
-            headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + t.access_token, 'Content-Type': 'application/json' },
-            body: '{}'
-          }).catch(function () {});
           return fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
             method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: email, password: nova })

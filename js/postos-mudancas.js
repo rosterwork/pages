@@ -3,9 +3,12 @@
    Cada mudança de estado e a exclusão valem a partir de uma data
    (tabela postos_estados). Aqui ficam, no card, a linha do período
    real (primeiro e último dia: "desde 05/10/2026", "até 06/10/2026")
-   e a da próxima mudança de estado ("Reserva a partir de 07/10"), e
+   e a da próxima mudança de estado ("Inativo a partir de 07/10"), e
    a caixa "Mudanças marcadas" do painel, com o Cancelar de cada uma
-   (RPC cancelar_mudanca_posto). Moldes em postos.html.
+   (RPC cancelar_mudanca_posto). A mudança que abriu um período na
+   Distribuição ainda não revisado ganha o selo "Revisar na Distribuição";
+   se o período já foi revisado, o Cancelar avisa que o ajuste sai junto.
+   Moldes em postos.html.
    ============================================================ */
 (function () {
   'use strict';
@@ -93,7 +96,8 @@
     if (!RosterWork.confirmar) return;
     RosterWork.confirmar({
       tipo: 'aviso',
-      mensagem: RosterWork.mensagens.postos.confirmarCancelarMudanca.replace('{mudanca}', textoMudanca(m, dataLonga)),
+      mensagem: RosterWork.mensagens.postos.confirmarCancelarMudanca.replace('{mudanca}', textoMudanca(m, dataLonga))
+        + (m.periodo && m.periodo.ajustado ? RosterWork.mensagens.postos.descartaAjusteDistribuicao : ''),
       textoConfirmar: RosterWork.mensagens.botoes.cancelarMudanca,
       textoCancelar: RosterWork.mensagens.botoes.manter,
       aoConfirmar: function () { cancelar(m, aoCancelada); }
@@ -110,6 +114,7 @@
       var linha = RosterWork.tpl('tpl-posto-mudanca-item');
       if (!linha) return;
       linha.querySelector('.linha-info-rotulo').textContent = textoMudanca(m, dataLonga);
+      if (m.periodo && m.periodo.a_revisar) linha.querySelector('.posto-mudanca-revisar').classList.remove('oculto');
       linha.querySelector('.posto-mudanca-cancelar').addEventListener('click', function () {
         confirmarCancelar(m, aoCancelada);
       });

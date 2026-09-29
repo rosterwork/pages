@@ -608,3 +608,20 @@
 .distribuicao-nm-btn:hover { background: var(--fundo-medio); border-color: var(--borda-forte); }
 .distribuicao-nm-valor { min-width: 16px; text-align: center; font-size: 13px; color: var(--texto-forte); }
 
+
+/* ---- seletor de período (subcabeçalho da aba Modelos): a lista de períodos ----
+   o seletor em si é o geral-periodo (igual ao da Escala); aqui fica só a lista */
+.distribuicao-periodo-menu { min-width: 280px; }
+.distribuicao-periodo-item { min-height: 40px; }
+.distribuicao-periodo-item .distribuicao-modelo-status { flex: 0 0 18px; padding-left: 0; }
+.distribuicao-periodo-textos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 4px 0;
+  text-align: left;
+}
+.distribuicao-periodo-datas { font-size: 12px; }
+.distribuicao-periodo-motivo { font-size: 11px; font-weight: 400; color: var(--texto-suave); }
+/* o grupo "Anteriores" da lista é o componente compartilhado geral-anteriores */

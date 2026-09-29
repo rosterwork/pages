@@ -66,18 +66,23 @@
     return el;
   }
 
+  /* pendências da administração que aparecem no sino, com a gravidade da bolinha: as que viviam no
+     antigo selo da Escala e as da Distribuição (período a revisar, período com erro) */
+  var PENDENCIAS_SINO = { fora_escala: 'erro', manutencao: 'alerta', distribuicao: 'alerta', distribuicao_erro: 'erro' };
+
   /* pendência da administração no sino: estado que espera decisão, sem "lida" — fica
-     até ser resolvido. Bolinha colorida por gravidade; clicar abre Avisos › Administração.
-     (só os dois tipos que viviam no antigo selo da Escala: fora_escala e manutencao) */
+     até ser resolvido. Bolinha colorida por gravidade; clicar abre a página onde se resolve
+     (a Distribuição) ou, sem página, Avisos › Administração */
   function montarItemPendencia(p) {
     var el = RosterWork.tpl('dropdown-item-aviso');
     if (!el) return null;
-    el.classList.add(p.tipo === 'fora_escala' ? 'aviso-item--erro' : 'aviso-item--alerta');
+    el.classList.add('aviso-item--' + (PENDENCIAS_SINO[p.tipo] || 'alerta'));
     var contagem = (p.contagem != null) ? String(p.contagem) + ' · ' : '';
     el.querySelector('.aviso-item-titulo').textContent = contagem + (p.texto || '');
     el.addEventListener('click', function () {
       if (RW.fecharDropdowns) RW.fecharDropdowns();
-      if (RW.irParaPagina) RW.irParaPagina('avisos', 'administracao');
+      if (!RW.irParaPagina) return;
+      if (p.pagina) RW.irParaPagina(p.pagina, p.aba); else RW.irParaPagina('avisos', 'administracao');
     });
     return el;
   }
@@ -95,10 +100,8 @@
 
   function montar(caixa, pendencias) {
     if (!lista) return;
-    /* só as pendências que moravam no antigo selo da Escala vão para o sino */
-    var pend = (pendencias || []).filter(function (p) {
-      return p.tipo === 'fora_escala' || p.tipo === 'manutencao';
-    });
+    /* só as pendências da lista do sino (as do antigo selo da Escala e as da Distribuição) */
+    var pend = (pendencias || []).filter(function (p) { return !!PENDENCIAS_SINO[p.tipo]; });
     var abertos = (caixa && caixa.abertos) || { total: 0, pessoal: 0, administracao: 0 };
     var itens = ((caixa && caixa.itens) || []).filter(function (n) { return n.aberto; });
 
@@ -140,7 +143,7 @@
   /* marca como lida e vai para a tela do assunto, já na aba onde se resolve.
      O que pede ação continua em aberto até alguém decidir — ler não resolve. */
   function abrir(n) {
-    function irPara() { if (n.pagina && RW.irParaPagina) RW.irParaPagina(n.pagina, n.aba); }
+    function irPara() { if (n.pagina && RW.irParaPagina) RW.irParaPagina(n.pagina, n.aba, n.referencia_id); }
     if (RW.fecharDropdowns) RW.fecharDropdowns();
     if (n.lida) { irPara(); return; }
     RW.apiFetch('/rest/v1/rpc/notificacoes_marcar_lidas', { metodo: 'POST', corpo: { p_ids: [n.id] } })

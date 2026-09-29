@@ -4,8 +4,9 @@
    subtítulo = a unidade, e o sub-cabeçalho traz as abas
    **Dados** e **Manutenções**.
    - Dados: Estado (Ativo/Inativo) · CNH · guarnição
-     (mín/ideal/máx) + as seções **Transferir**
-     (postos-viaturas-transferir.js) e **Excluir viatura**.
+     (mín/ideal/máx) + as seções **Linha do tempo** (só leitura,
+     postos-linha-tempo.js), **Transferir** (postos-viaturas-transferir.js)
+     e **Excluir viatura**.
    - Manutenções: o histórico de janelas (postos-viaturas-manutencao.js).
    O rodapé Cancelar/Salvar é dos Dados; some na aba Manutenções.
 
@@ -226,6 +227,8 @@
       corpo.appendChild(secao);
     }
     if (modo === 'editar') {
+      /* a linha do tempo da viatura (só leitura), antes do Transferir */
+      if (RosterWork.postosLinhaTempo) RosterWork.postosLinhaTempo.montar(corpo, ctx.viatura.id_viatura, null);
       if (RosterWork.postosViaturasTransferir) {
         RosterWork.postosViaturasTransferir.montar(corpo, ctx.viatura, ctx.unidade, { aoConcluir: aoTransferido });
       }

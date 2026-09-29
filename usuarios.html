@@ -400,9 +400,9 @@
   </div>
 </template>
 
-<!-- molde: estado do token de acesso (seção Acesso ao sistema) -->
-<template id="tpl-usuarios-token-estado">
-  <div class="ficha-observacao"><span data-token-estado></span></div>
+<!-- molde: situação do acesso (seção Acesso ao sistema): o token de quem não tem conta ou o link de nova senha -->
+<template id="tpl-usuarios-acesso-estado">
+  <div class="ficha-observacao"><span data-acesso-estado></span></div>
 </template>
 
 <!-- molde: botão de gerar token de acesso -->
@@ -414,9 +414,19 @@
   <button type="button" class="botao botao--perigo">Dar baixa</button>
 </template>
 
-<!-- molde: botão de redefinir senha (aba Dados, modo Editar do admin) -->
-<template id="tpl-usuarios-redefinir-senha-botao">
-  <button type="button" class="botao botao--perigo">Redefinir senha</button>
+<!-- molde: botão de gerar o link de nova senha (seção Acesso ao sistema, militar com conta) -->
+<template id="tpl-usuarios-link-botao">
+  <button type="button" class="botao botao--primario">Gerar link de nova senha</button>
+</template>
+
+<!-- molde: link de nova senha recém-gerado, para o admin copiar e entregar -->
+<template id="tpl-usuarios-link-senha">
+  <div class="ficha-observacao"><span>Entregue o link ao militar depois de confirmar que o pedido é mesmo dele. O link vale uma vez e expira em 24 horas.</span></div>
+  <label class="campo">
+    <span class="campo-rotulo">Link de nova senha</span>
+    <input class="campo-entrada" type="text" readonly data-link-senha />
+  </label>
+  <button type="button" class="botao" data-copiar-link>Copiar link</button>
 </template>
 
 <!-- molde: botão de readmissão (aba Carreira, modo Editar do admin, militar inativo) -->

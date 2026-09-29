@@ -97,20 +97,20 @@
       senhaIncorreta: 'Senha incorreta'
     },
 
-    /* recuperação de senha (páginas standalone recuperar-senha e nova-senha) */
+    /* esqueci minha senha (páginas standalone recuperar-senha e nova-senha): o pedido vai ao
+       administrador, que entrega um link de nova senha */
     recuperacao: {
       identificadorVazio: 'Digite seu CPF ou RG',
       identificadorInvalido: 'CPF ou RG inválido',
-      enviado: function (email) { return 'Enviamos um link de redefinição para ' + email + '. O email chega em nome de Supabase Auth (remetente diferente do nome do site), então confira também o spam.'; },
+      pedidoEnviado: 'Pedido enviado. Fale com um administrador para receber o seu link de nova senha.',
       naoEncontrado: 'CPF ou RG não encontrado',
       semConta: 'Este cadastro ainda não tem acesso liberado. Fale com um administrador.',
-      limite: 'Muitos pedidos em pouco tempo. Aguarde alguns minutos e tente de novo.',
-      falha: 'Não foi possível enviar o link. Tente de novo.',
+      falha: 'Não foi possível enviar o pedido. Tente de novo.',
       erroConexao: 'Erro de conexão. Tente novamente.',
       senhaCurta: 'A senha precisa de ao menos 6 caracteres.',
       senhaNaoConfere: 'A confirmação não bate com a nova senha.',
       senhaIgual: 'A nova senha precisa ser diferente da senha atual.',
-      linkInvalido: 'Este link é inválido ou expirou. Peça um novo.',
+      linkInvalido: 'Este link é inválido ou expirou. Peça um novo ao administrador.',
       redefinida: 'Senha redefinida com sucesso. Você já pode entrar.',
       falhaRedefinir: 'Não foi possível redefinir a senha. Tente de novo.'
     },
@@ -188,7 +188,12 @@
       periodoAte: 'até {data}',
       periodoIntervalo: '{inicio} a {fim}',
       confirmarCancelarMudanca: 'Cancelar a mudança marcada ({mudanca})? A escala é refeita a partir dessa data.',
+      /* a mudança abriu um período na Distribuição que já foi revisado: cancelar a descarta */
+      descartaAjusteDistribuicao: ' O período da Distribuição que já foi revisado será descartado.',
       falhaCancelarMudanca: 'Não foi possível cancelar a mudança. Tente de novo.',
+      /* seção "Linha do tempo" do painel do posto */
+      falhaLinhaTempo: 'Não foi possível carregar a linha do tempo.',
+      semLinhaTempo: 'Sem registros.',
       falhaTransferir: 'Não foi possível transferir. Tente de novo.',
       falhaExcluir: 'Não foi possível excluir. Tente de novo.',
       falhaExcluirInstalacao: 'Não foi possível excluir a instalação. Tente de novo.',
@@ -335,7 +340,19 @@
       abaixoMinimo: function (unidade, posto, pessoas, minimo) { return unidade + ': efetivo abaixo do mínimo em ' + posto + ' (' + pessoas + ' de ' + minimo + ')'; },
       salvarImpacto: 'Salvar este modelo recalcula as escalas já distribuídas que usam esta composição. Continuar?',
       reforcoSemOrigem: 'Nenhuma outra unidade tem militar disponível para reforço.',
-      excessoEnvio: function (unidade) { return unidade + ': mandando mais reforço do que há militar disponível'; }
+      excessoEnvio: function (unidade) { return unidade + ': mandando mais reforço do que há militar disponível'; },
+      /* períodos (seletor ‹ período ›): cada mudança de posto com data abre um período novo */
+      periodoTodos: 'Todos os dias',
+      periodoAte: 'até {data}',
+      periodoDesde: 'a partir de {data}',
+      periodoIntervalo: '{inicio} a {fim}',
+      periodoIntervaloFrase: 'de {inicio} a {fim}',
+      revisarPeriodo: function (unidade, motivo) { return unidade + ': revise este período' + (motivo ? ' (' + motivo + ')' : ''); },
+      /* salvou um período e a mudança não chegou aos seguintes, que já tinham sido revisados */
+      naoAtualizados: function (periodos) {
+        if (periodos.length === 1) return 'Esta mudança não vale no período ' + periodos[0] + ', que já foi revisado. Ajuste-o também, se precisar.';
+        return 'Esta mudança não vale nos períodos ' + periodos.slice(0, -1).join(', ') + ' e ' + periodos[periodos.length - 1] + ', que já foram revisados. Ajuste-os também, se precisar.';
+      }
     },
 
     /* usuários (ficha do militar no painel lateral) */
@@ -357,9 +374,10 @@
       falhaPromocao: 'Não foi possível promover. Tente de novo.',
       confirmarReadmissao: 'Readmitir {pessoa} ao efetivo? Ele volta como ativo, fora da escala automática (você o recoloca pela seção Contínuos da Escala).',
       falhaReadmissao: 'Não foi possível readmitir. Tente de novo.',
-      confirmarRedefinirSenha: 'Redefinir a senha de {pessoa}? Ele vai entrar com uma senha provisória e terá de trocá-la no primeiro acesso. As sessões abertas dele serão encerradas.',
-      senhaRedefinida: 'Senha de {pessoa} redefinida. Senha provisória: {senha}. Passe para ele: no primeiro acesso, o sistema pede que ele troque a senha.',
-      falhaRedefinirSenha: 'Não foi possível redefinir a senha. Tente de novo.',
+      linkNenhum: 'Nenhum link de nova senha ativo. Se o militar esqueceu a senha, gere um link e entregue a ele.',
+      linkAtivo: 'Link de nova senha ativo até {ate}. Se ele perder, gere um novo.',
+      falhaLink: 'Não foi possível gerar o link. Tente de novo.',
+      falhaCopiar: 'Não foi possível copiar. Selecione o link e copie manualmente.',
       tokenNenhum: 'Este militar ainda não tem conta. Gere um token e entregue a ele para criar o acesso.',
       tokenAtivo: 'Token ativo, expira em {ate}. Entregue ao militar; se ele perder, gere um novo.',
       tokenEmUso: 'Token em uso. O militar tem até {ate} para concluir o cadastro.',
@@ -654,7 +672,10 @@
       promover: 'Promover',
       readmitir: 'Readmitir',
       darBaixa: 'Dar baixa',
-      redefinirSenha: 'Redefinir senha',
+      gerarLink: 'Gerar link de nova senha',
+      gerarNovoLink: 'Gerar novo link',
+      copiarLink: 'Copiar link',
+      linkCopiado: 'Link copiado',
       gerarToken: 'Gerar token de acesso',
       gerarNovoToken: 'Gerar novo token',
       salvar: 'Salvar',

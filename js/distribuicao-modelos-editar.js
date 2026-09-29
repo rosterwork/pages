@@ -1057,8 +1057,9 @@
   function atualizarRodape() {
     atualizarHistorico();
     if (!rodapeEl) return;
-    /* rascunho nasce com o Salvar HABILITADO (é o Salvar que confirma o modelo novo), mesmo sem edição */
-    rodapeEl.querySelector('.distribuicao-salvar').disabled = !sujo && !ehRascunho();
+    /* rascunho nasce com o Salvar HABILITADO (é o Salvar que confirma o modelo novo), mesmo sem edição;
+       período "a revisar" também: salvar sem mudança é o que marca a cópia como revisada */
+    rodapeEl.querySelector('.distribuicao-salvar').disabled = !sujo && !ehRascunho() && !(composicao && composicao.a_revisar);
     var st = RosterWork.distribuicaoModelos.validar(unidadesComContagem());
     var itens = st.itens.length ? st.itens
       : [{ nivel: 'ok', texto: RosterWork.mensagens.distribuicao.tudoCerto(listarNomes(grupo.unidades.map(function (u) { return u.nome; }))) }];

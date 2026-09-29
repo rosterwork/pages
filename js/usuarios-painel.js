@@ -319,142 +319,6 @@
       });
   }
 
-  /* seção "Redefinir senha" (aba Dados, modo Editar do admin) — só p/ militar
-     ativo com conta de login; gera uma senha temporária que o admin repassa */
-  function podeRedefinirSenha() {
-    return !ehInativo() && fichaAtual && fichaAtual.tem_conta !== false;
-  }
-
-  function montarRedefinirSenha(corpo) {
-    var secao = RosterWork.painel.criarSecaoColapsavel('Redefinir senha', { aberta: false });
-    if (!secao) return;
-    secao.classList.add('painel-secao--rodape');
-    var alvo = secao.querySelector('.painel-secao-corpo');
-    var btn = RosterWork.tpl('tpl-usuarios-redefinir-senha-botao');
-    if (btn) {
-      btn.addEventListener('click', confirmarRedefinirSenha);
-      alvo.appendChild(btn);
-    }
-    corpo.appendChild(secao);
-  }
-
-  /* modal de confirmação (vermelho, como o Dar baixa) */
-  function confirmarRedefinirSenha() {
-    if (!fichaAtual || !pessoaAtual || !RosterWork.confirmar) return;
-    var ins = fichaAtual.institucionais || {};
-    var p = fichaAtual.pessoais || {};
-    var pessoa = ((ins.grau_nome || pessoaAtual.grau_nome || '') + ' ' +
-                  (p.nome_completo || pessoaAtual.nome_completo || '')).trim();
-    var msg = RosterWork.mensagens.usuarios.confirmarRedefinirSenha.replace('{pessoa}', pessoa);
-    RosterWork.confirmar({
-      tipo: 'erro',
-      mensagem: msg,
-      textoConfirmar: RosterWork.mensagens.botoes.redefinirSenha,
-      textoCancelar: RosterWork.mensagens.botoes.cancelar,
-      confirmarPerigo: true,
-      aoConfirmar: redefinirSenha
-    });
-  }
-
-  /* chama a RPC; no sucesso mostra a senha temporária num aviso (nunca vai ao log) */
-  function redefinirSenha() {
-    if (!pessoaAtual) return;
-    RosterWork.apiFetch('/rest/v1/rpc/admin_redefinir_senha', {
-      metodo: 'POST',
-      corpo: { p_cpf: pessoaAtual.usuario_id }
-    })
-      .then(function (resp) { return resp.ok ? resp.json() : { _falha: 'servidor' }; })
-      .then(function (r) {
-        if (r && r._falha === 'servidor') {
-          if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.falhaServidor });
-        } else if (r && r.success) {
-          var ins = (fichaAtual && fichaAtual.institucionais) || {};
-          var p = (fichaAtual && fichaAtual.pessoais) || {};
-          var pessoa = ((ins.grau_nome || pessoaAtual.grau_nome || '') + ' ' +
-                        (p.nome_completo || pessoaAtual.nome_completo || '')).trim();
-          if (RosterWork.avisar) RosterWork.avisar({
-            tipo: 'sucesso',
-            mensagem: RosterWork.mensagens.usuarios.senhaRedefinida
-              .replace('{pessoa}', pessoa).replace('{senha}', r.senha_temporaria || '')
-          });
-        } else if (RosterWork.avisar) {
-          RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || RosterWork.mensagens.usuarios.falhaRedefinirSenha });
-        }
-      })
-      .catch(function () {
-        if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.semConexao });
-      });
-  }
-
-  /* seção "Acesso ao sistema" (Ver, admin) — militar sem conta: gera e entrega o token */
-  function podeGerarToken() {
-    return RosterWork.sessao.ehAdmin() && !ehInativo() && fichaAtual && fichaAtual.tem_conta === false;
-  }
-
-  /* ISO "AAAA-MM-DDTHH:MM:SS" -> "DD/MM HH:MM" */
-  function formatarDataHora(iso) {
-    if (!iso) return '';
-    var partes = String(iso).slice(0, 16).split('T');
-    if (partes.length < 2) return formatarData(iso);
-    var d = partes[0].split('-');
-    return d.length === 3 ? d[2] + '/' + d[1] + ' ' + partes[1] : iso;
-  }
-
-  function atualizarEstadoToken(estadoEl, botao) {
-    if (!pessoaAtual || !estadoEl || !botao) return;
-    RosterWork.apiFetch('/rest/v1/rpc/convite_estado', { metodo: 'POST', corpo: { p_cpf: pessoaAtual.usuario_id } })
-      .then(function (resp) { return resp.ok ? resp.json() : null; })
-      .then(function (e) {
-        if (!e || !e.ok) return;
-        var T = RosterWork.mensagens.usuarios, B = RosterWork.mensagens.botoes;
-        if (e.estado === 'ativo') {
-          estadoEl.textContent = T.tokenAtivo.replace('{ate}', formatarDataHora(e.ate));
-          botao.textContent = B.gerarNovoToken;
-        } else if (e.estado === 'em_uso') {
-          estadoEl.textContent = T.tokenEmUso.replace('{ate}', formatarDataHora(e.ate));
-          botao.textContent = B.gerarNovoToken;
-        } else {
-          estadoEl.textContent = T.tokenNenhum;
-          botao.textContent = B.gerarToken;
-        }
-      })
-      .catch(function () {});
-  }
-
-  function gerarToken(estadoEl, botao) {
-    if (!pessoaAtual) return;
-    RosterWork.apiFetch('/rest/v1/rpc/convite_gerar', { metodo: 'POST', corpo: { p_cpf: pessoaAtual.usuario_id } })
-      .then(function (resp) { return resp.ok ? resp.json() : { _falha: 'servidor' }; })
-      .then(function (r) {
-        if (r && r._falha === 'servidor') {
-          if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.falhaServidor });
-        } else if (r && r.success) {
-          if (RosterWork.avisar) RosterWork.avisar({ tipo: 'sucesso', mensagem: RosterWork.mensagens.usuarios.tokenGerado.replace('{token}', r.token || '') });
-          atualizarEstadoToken(estadoEl, botao);
-        } else if (RosterWork.avisar) {
-          RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || RosterWork.mensagens.usuarios.falhaToken });
-        }
-      })
-      .catch(function () {
-        if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.semConexao });
-      });
-  }
-
-  function montarAcessoToken(corpo) {
-    var secao = RosterWork.painel.criarSecaoColapsavel('Acesso ao sistema', { aberta: true });
-    if (!secao) return;
-    var alvo = secao.querySelector('.painel-secao-corpo');
-    var estadoBox = RosterWork.tpl('tpl-usuarios-token-estado');
-    var botao = RosterWork.tpl('tpl-usuarios-token-botao');
-    if (!estadoBox || !botao) return;
-    var estadoEl = estadoBox.querySelector('[data-token-estado]');
-    alvo.appendChild(estadoBox);
-    botao.addEventListener('click', function () { gerarToken(estadoEl, botao); });
-    alvo.appendChild(botao);
-    corpo.appendChild(secao);
-    atualizarEstadoToken(estadoEl, botao);
-  }
-
   /* ---------- estados do corpo ---------- */
 
   function mostrarErro(corpo) {
@@ -502,6 +366,7 @@
     if (RosterWork.usuariosPainelEditar) RosterWork.usuariosPainelEditar.reset();
     if (RosterWork.usuariosPainelTransferir) RosterWork.usuariosPainelTransferir.reset();
     if (RosterWork.usuariosPainelPromover) RosterWork.usuariosPainelPromover.reset();
+    if (RosterWork.usuariosPainelAcesso) RosterWork.usuariosPainelAcesso.reset();
     corpo.textContent = '';
     montarSemConta(corpo);
 
@@ -524,10 +389,10 @@
     } else {
       if (admin && RosterWork.usuariosPainelEditar) {
         RosterWork.usuariosPainelEditar.montar(corpo, fichaAtual, pessoaAtual, { aoSalvar: aoSalvarDados, aoVoltar: voltarParaVer }, 'pessoais');
-        if (podeRedefinirSenha()) montarRedefinirSenha(corpo);
       } else {
         montarDados(corpo);
-        if (podeGerarToken()) montarAcessoToken(corpo);
+        /* Acesso ao sistema (só admin): token de quem não tem conta ou link de nova senha */
+        if (RosterWork.usuariosPainelAcesso) RosterWork.usuariosPainelAcesso.montar(corpo, fichaAtual, pessoaAtual);
       }
     }
   }
@@ -588,6 +453,7 @@
     if (RosterWork.usuariosPainelEditar) RosterWork.usuariosPainelEditar.reset();
     if (RosterWork.usuariosPainelTransferir) RosterWork.usuariosPainelTransferir.reset();
     if (RosterWork.usuariosPainelPromover) RosterWork.usuariosPainelPromover.reset();
+    if (RosterWork.usuariosPainelAcesso) RosterWork.usuariosPainelAcesso.reset();
     fichaAtual = null;
     pessoaAtual = null;
     var cb = aoFecharPagina;

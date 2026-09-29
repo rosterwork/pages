@@ -14,13 +14,13 @@
     manual: { html: 'manual.html', css: ['css/manual.css'], js: [] },   /* index-manual.js já vem no shell (liga o botão + registra a página) */
     avisos: { html: 'avisos.html', css: ['css/avisos.css'], js: ['js/inicio-aviso.js', 'js/avisos-notificacoes.js', 'js/avisos-pendencias.js', 'js/avisos.js'] },
     escalas: { html: 'escalas.html', css: ['css/escalas-controles.css', 'css/escalas-mes.css', 'css/escalas-semana.css', 'css/escalas-dia.css', 'css/escalas-colunas.css', 'css/escalas-calendario.css', 'css/escalas-militares.css', 'css/escalas-painel.css', 'css/escalas-painel-secoes.css'], js: ['js/escalas-dados.js', 'js/escalas-celula.js', 'js/escalas-mes.js', 'js/escalas-semana.js', 'js/escalas-dia.js', 'js/escalas-colunas.js', 'js/escalas-calendario.js', 'js/escalas-militares.js', 'js/escalas-militares-painel.js', 'js/escalas-painel.js', 'js/escalas-painel-editar.js', 'js/escalas-painel-continuos.js', 'js/escalas-painel-pontuais.js', 'js/escalas.js'] },
-    usuarios: { html: 'usuarios.html', css: ['css/usuarios-cards.css', 'css/usuarios-filtros.css'], js: ['js/usuarios-exibir.js', 'js/usuarios-painel.js', 'js/usuarios-painel-editar.js', 'js/usuarios-painel-transferir.js', 'js/usuarios-painel-promover.js', 'js/usuarios-novo-usuario-dados.js', 'js/usuarios-novo-usuario-envio.js', 'js/usuarios-novo-usuario.js', 'js/usuarios-correcoes.js', 'js/usuarios-cadastros.js', 'js/usuarios.js'] },
-    postos: { html: 'postos.html', css: ['css/postos-cards.css'], js: ['js/postos-mudancas.js', 'js/postos-painel.js', 'js/postos-viaturas-transferir.js', 'js/postos-viaturas-manutencao.js', 'js/postos-viaturas-painel.js', 'js/postos-viaturas.js', 'js/postos.js'] },
+    usuarios: { html: 'usuarios.html', css: ['css/usuarios-cards.css', 'css/usuarios-filtros.css'], js: ['js/usuarios-exibir.js', 'js/usuarios-painel.js', 'js/usuarios-painel-editar.js', 'js/usuarios-painel-transferir.js', 'js/usuarios-painel-promover.js', 'js/usuarios-painel-acesso.js', 'js/usuarios-novo-usuario-dados.js', 'js/usuarios-novo-usuario-envio.js', 'js/usuarios-novo-usuario.js', 'js/usuarios-correcoes.js', 'js/usuarios-cadastros.js', 'js/usuarios.js'] },
+    postos: { html: 'postos.html', css: ['css/postos-cards.css'], js: ['js/postos-mudancas.js', 'js/postos-linha-tempo.js', 'js/postos-painel.js', 'js/postos-viaturas-transferir.js', 'js/postos-viaturas-manutencao.js', 'js/postos-viaturas-painel.js', 'js/postos-viaturas.js', 'js/postos.js'] },
     trocas: { html: 'trocas.html', css: ['css/trocas.css'], js: ['js/trocas-dados.js', 'js/trocas-painel.js', 'js/trocas-pendencia-painel.js', 'js/trocas-solicitar.js', 'js/trocas.js'] },
     folgas: { html: 'folgas.html', css: ['css/folgas.css', 'css/folgas-painel.css'], js: ['js/folgas-dados.js', 'js/folgas-minhas.js', 'js/folgas-saldos.js', 'js/folgas-listas.js', 'js/folgas-painel.js', 'js/folgas-aprovacao-painel.js', 'js/folgas.js'] },
     extrajornada: { html: 'extrajornada.html', css: ['css/extrajornada.css', 'css/escalas-mes.css', 'css/escalas-semana.css', 'css/escalas-painel.css'], js: ['js/extrajornada-dados.js', 'js/escalas-dados.js', 'js/escalas-celula.js', 'js/escalas-mes.js', 'js/escalas-painel.js', 'js/escalas-painel-editar.js', 'js/extrajornada-escala.js', 'js/extrajornada-disponibilidade.js', 'js/extrajornada-cotas-painel.js', 'js/extrajornada-painel-dia.js', 'js/extrajornada.js'] },
     afastamentos: { html: 'afastamentos.html', css: ['css/afastamentos-atestados.css'], js: ['js/afastamentos-dados.js', 'js/afastamentos-ferias.js', 'js/afastamentos-licencas.js', 'js/afastamentos-dispensas.js', 'js/afastamentos.js'] },
-    distribuicao: { html: 'distribuicao.html', css: ['css/distribuicao.css', 'css/distribuicao-regras.css'], js: ['js/distribuicao-modelos-dados.js', 'js/distribuicao-modelos.js', 'js/distribuicao-modelos-editar.js', 'js/distribuicao-modelos-salvar.js', 'js/distribuicao-modelos-criar.js', 'js/distribuicao-regras-dados.js', 'js/distribuicao-regras.js', 'js/distribuicao.js'] },
+    distribuicao: { html: 'distribuicao.html', css: ['css/distribuicao.css', 'css/distribuicao-regras.css'], js: ['js/distribuicao-modelos-dados.js', 'js/distribuicao-periodos.js', 'js/distribuicao-modelos.js', 'js/distribuicao-modelos-editar.js', 'js/distribuicao-modelos-salvar.js', 'js/distribuicao-modelos-criar.js', 'js/distribuicao-regras-dados.js', 'js/distribuicao-regras.js', 'js/distribuicao.js'] },
     historico: { html: 'historico.html', css: ['css/historico.css'], js: ['js/historico.js'] },
     ajustes: { html: 'ajustes.html', css: ['css/ajustes.css'], js: ['js/ajustes.js'] },
     programador: { html: 'programador.html', css: ['css/programador.css'], js: ['js/programador.js'] }
@@ -84,6 +84,7 @@
   /* aba pedida por quem mandou navegar (um aviso, uma pendência, um card do
      Início): guardada até a página montar. Vale uma vez só. */
   var abaPedida = null;
+  var referenciaPedida = null;
 
   /* clica na aba escolhida depois que a página montou — o resto acontece pelo
      mesmo caminho de sempre (o ouvinte de .aba avisa a página) */
@@ -196,13 +197,24 @@
      respeita o guarda de saída e marca o menu; páginas sem item de menu funcionam */
   /* aba: opcional — abre a página já na aba pedida (ex.: um aviso de correção
      leva a Usuários › Correções, não à página inteira) */
-  window.RosterWork.irParaPagina = function (pagina, aba) {
+  /* referencia (opcional): o registro que a página deve abrir ao chegar (ex.: o aviso de pedido
+     de nova senha leva o CPF, e Usuários abre a ficha); a página lê uma vez por referenciaPedida */
+  window.RosterWork.irParaPagina = function (pagina, aba, referencia) {
     if (!manifesto[pagina]) return;
     podeNavegar().then(function (ok) {
       if (!ok) return;
       abaPedida = aba ? { pagina: pagina, aba: aba } : null;
+      referenciaPedida = referencia ? { pagina: pagina, valor: String(referencia) } : null;
       navegar(pagina, true);
     });
+  };
+
+  /* entrega à página a referência pedida por quem mandou navegar (vale uma vez só) */
+  window.RosterWork.referenciaPedida = function (pagina) {
+    if (!referenciaPedida || referenciaPedida.pagina !== pagina) return null;
+    var valor = referenciaPedida.valor;
+    referenciaPedida = null;
+    return valor;
   };
 
   if (document.readyState === 'loading') {

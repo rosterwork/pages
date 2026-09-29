@@ -70,7 +70,7 @@
   /* marca como lida e navega para a tela do assunto */
   function abrir(n, aoMudar) {
     function irPara() {
-      if (n.pagina && RW.irParaPagina) RW.irParaPagina(n.pagina, n.aba);
+      if (n.pagina && RW.irParaPagina) RW.irParaPagina(n.pagina, n.aba, n.referencia_id);
     }
     if (n.lida) { irPara(); return; }
     RW.apiFetch('/rest/v1/rpc/notificacoes_marcar_lidas', { metodo: 'POST', corpo: { p_ids: [n.id] } })

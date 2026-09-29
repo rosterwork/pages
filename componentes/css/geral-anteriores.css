@@ -1,0 +1,26 @@
+/* ============================================================
+   COMPONENTE geral-anteriores — grupo "Anteriores (N)"
+   Botão que abre e fecha, numa lista com histórico, os itens que
+   já passaram (períodos da Distribuição, trechos da linha do tempo
+   do posto). Molde #tpl-anteriores no shell; comportamento em
+   geral-anteriores.js.
+   ============================================================ */
+
+.anteriores {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  min-height: 28px;
+  padding: 0 8px;
+  border: none;
+  border-radius: var(--raio-pequeno);
+  background: none;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--texto-suave);
+  transition: background-color 0.15s ease;
+}
+.anteriores:hover { background-color: var(--fundo-medio); }
+.anteriores-seta { transform: rotate(-90deg); }   /* fechado = > */
+.anteriores[aria-expanded="true"] .anteriores-seta { transform: none; }

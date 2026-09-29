@@ -79,6 +79,7 @@
               <a class="lista-item lista-item--clicavel manual-item manual-item--parte" href="#distribuicao">Distribuição</a>
               <ul>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#ver-modelos">Ver os modelos</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#periodos-modelos">Os períodos</a></li>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#as-regras">As regras por militar</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#editar-modelos">Editar os modelos</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#editar-regras">Criar e editar regras</a></li>
@@ -406,27 +407,25 @@
                 <li><strong>CPF ou RG.</strong> Digite o seu documento. Pode ser o CPF (11 números) ou o RG (8 ou 9 números). O campo coloca os pontos e o traço sozinho.</li>
                 <li><strong>Senha.</strong> Digite a sua senha.</li>
                 <li><strong>Entrar.</strong> Clique no botão Entrar, ou aperte a tecla Enter.</li>
-                <li><strong>Atalhos.</strong> "Criar conta" abre o cadastro para quem ainda não tem acesso. "Esqueci minha senha" ajuda a definir uma senha nova.</li>
+                <li><strong>Atalhos.</strong> "Criar conta" abre o cadastro para quem ainda não tem acesso. "Esqueci minha senha" pede ao administrador um link para criar uma senha nova.</li>
               </ol>
               <p class="manual-nota"><strong>O que as mensagens indicam.</strong> "Usuário não encontrado" aparece quando o documento ainda não tem cadastro no sistema; para se cadastrar, use "Criar conta". "Senha incorreta" aparece quando a senha não confere.</p>
               <p class="manual-nota"><strong>Já entrou antes?</strong> Enquanto a sua sessão estiver ativa, o sistema abre direto na tela inicial, sem pedir o login de novo.</p>
-              <p class="manual-nota"><strong>Senha provisória.</strong> Se o administrador redefiniu a sua senha, ele passa a você uma senha provisória. Ao entrar com ela, o sistema abre a tela "Troque a senha provisória" antes de tudo: escolha a sua senha, confirme e salve. Só então o sistema abre.</p>
 
               <h3 id="esqueci-senha">Esqueci minha senha</h3>
-              <p>Se esqueceu a senha, clique em <strong>"Esqueci minha senha"</strong>, na tela de entrada. Abre a tela <strong>Recuperar senha</strong>: digite o seu CPF ou RG e clique em <strong>Enviar link</strong>.</p>
+              <p>Se esqueceu a senha, clique em <strong>"Esqueci minha senha"</strong>, na tela de entrada. Abre a tela <strong>Recuperar senha</strong>: digite o seu CPF ou RG e clique em <strong>Enviar pedido</strong>.</p>
               <figure class="manual-figura">
-                <img src="manual/imagens/recuperar-senha.png" alt="Tela Recuperar senha: o campo CPF ou RG (1) e o botão Enviar link (2)." />
+                <img src="manual/imagens/recuperar-senha.png" alt="Tela Recuperar senha: o campo CPF ou RG (1) e o botão Enviar pedido (2)." />
                 <figcaption>
                   <ol class="manual-chamadas">
                     <li>Campo CPF ou RG</li>
-                    <li>Botão Enviar link</li>
+                    <li>Botão Enviar pedido</li>
                   </ol>
                 </figcaption>
               </figure>
-              <p>O sistema manda um <strong>e-mail com um link</strong> para o endereço cadastrado e mostra esse endereço com uma parte escondida, por exemplo r****@g****.com. O remetente aparece como <strong>Supabase Auth</strong>; se não encontrar o e-mail, confira a caixa de spam.</p>
-              <p>O link abre a tela <strong>Nova senha</strong>: digite a nova senha duas vezes, com ao menos 6 caracteres, e salve. Depois é só entrar com a senha nova. Cada link serve uma vez só e por pouco tempo; vencido ou já usado, a tela avisa, e o botão <strong>Pedir novo link</strong> começa de novo.</p>
-              <p class="manual-nota"><strong>O que as mensagens indicam.</strong> "CPF ou RG não encontrado": o documento não tem cadastro. "Este cadastro ainda não tem acesso liberado": você ainda não criou a sua conta; veja "Criar conta", logo abaixo. "Muitos pedidos em pouco tempo": espere um minuto antes de pedir outro link.</p>
-              <p class="manual-nota"><strong>Sem acesso ao e-mail?</strong> Fale com o administrador. Ele redefine a sua senha e passa uma senha provisória; no primeiro acesso com ela, o sistema pede que você escolha a sua.</p>
+              <p>O pedido chega aos <strong>administradores da sua unidade</strong>, no sino de avisos. Fale com um deles: ele confere que é você e entrega um <strong>link de nova senha</strong>, em mãos ou por mensagem.</p>
+              <p>O link abre a tela <strong>Nova senha</strong>, com o seu nome no alto: digite a nova senha duas vezes, com ao menos 6 caracteres, e salve. Depois é só entrar com a senha nova; até lá, a senha antiga continua valendo. Cada link serve uma vez só e vale por 24 horas. Vencido ou já usado, a tela avisa, e o botão <strong>Pedir novo link</strong> leva de volta ao pedido.</p>
+              <p class="manual-nota"><strong>O que as mensagens indicam.</strong> "CPF ou RG não encontrado": o documento não tem cadastro. "Este cadastro ainda não tem acesso liberado": você ainda não criou a sua conta; veja "Criar conta", logo abaixo.</p>
 
               <h3 id="criar-conta">Criar conta</h3>
               <p>Quem ainda não tem acesso usa "Criar conta", na tela de entrada. A tela começa pedindo <strong>só o seu CPF</strong> e, a partir dele, segue por um de três caminhos.</p>
@@ -912,6 +911,25 @@
                 </figure>
                 <p><strong>Toda mudança tem data.</strong> Ao incluir um posto, mudar o estado, excluir ou transferir uma viatura, o sistema pergunta <strong>a partir de quando</strong> a mudança vale. A data já vem com o dia seguinte e aceita até uma semana para trás. A escala é refeita dessa data em diante, e os dias anteriores continuam como estão. Ao incluir, essa data é o <strong>primeiro dia</strong> do posto; ao excluir, o posto sai das telas quando a data chega; ao transferir, a viatura continua na unidade antiga até a véspera e passa para a nova na data. O efetivo e a CNH exigida valem na hora.</p>
                 <p>Enquanto a data não chega, a mudança fica na caixa <strong>Mudanças marcadas</strong>, logo abaixo do estado, e cada uma tem o botão <strong>Cancelar</strong>. O campo <strong>Estado</strong> mostra como o posto vai ficar depois das mudanças marcadas; assim você marca, por exemplo, a ida para Inativo num dia e a volta ao Ativo em outro. Uma mudança nova substitui as que estavam marcadas para depois dela.</p>
+                <p><strong>A mudança chega à Distribuição.</strong> Cada mudança de posto com data abre um período novo na <strong>Distribuição</strong> (veja "Os períodos"). Quando o período precisa de revisão, a mudança mostra o selo <strong>Revisar na Distribuição</strong> na caixa Mudanças marcadas. Se você cancelar uma mudança cujo período já foi revisado, o sistema avisa que esse ajuste será descartado junto.</p>
+                <figure class="manual-figura">
+                  <img src="manual/imagens/postos-mudanca-revisar.png" alt="A caixa Mudanças marcadas de uma viatura, com o selo Revisar na Distribuição embaixo da mudança (1)." />
+                  <figcaption>
+                    <ol class="manual-chamadas">
+                      <li>Selo Revisar na Distribuição</li>
+                    </ol>
+                  </figcaption>
+                </figure>
+                <p><strong>A linha do tempo do posto.</strong> No painel do posto, a seção <strong>Linha do tempo</strong> mostra toda a vida dele, um trecho por linha: as datas e a situação (Ativo, Em manutenção, Inativo ou Excluída) e, na viatura que já mudou de unidade, a unidade de cada trecho. O trecho de hoje leva o selo <strong>Hoje</strong>, e os que já passaram ficam agrupados em <strong>Anteriores</strong>. A seção é só para leitura; as mudanças continuam no Estado, nas Manutenções, no Transferir e no Excluir.</p>
+                <figure class="manual-figura">
+                  <img src="manual/imagens/postos-linha-tempo.png" alt="A seção Linha do tempo de uma viatura: o grupo Anteriores (1) e o trecho de hoje, com o selo Hoje (2), seguido de uma manutenção, uma inativação e a volta ao Ativo." />
+                  <figcaption>
+                    <ol class="manual-chamadas">
+                      <li>Trechos que já passaram</li>
+                      <li>Trecho de hoje</li>
+                    </ol>
+                  </figcaption>
+                </figure>
                 <p class="manual-nota">Se algum militar estiver colocado num posto que não existe naquele dia, ele aparece em <strong>sem função</strong> na Escala, para você corrigir.</p>
                 <p class="manual-nota"><strong>Ponto crítico.</strong> Viaturas e instalações são a base da <strong>distribuição da escala</strong>. Ao incluir, alterar, desativar, excluir ou transferir um posto, vale conferir os modelos na <strong>Distribuição</strong>, que é onde a escala automática decide quem senta em cada posto. Numa transferência, a unidade que recebe a viatura precisa ganhar as vagas dela nos seus modelos.</p>
                 <h3 id="manutencao-viaturas">Manutenção de viaturas <span class="manual-selo-admin">Apenas administradores</span></h3>
@@ -944,6 +962,18 @@
                   </ol>
                 </figcaption>
               </figure>
+              <h3 id="periodos-modelos">Os períodos</h3>
+              <p>Os postos mudam com o tempo: uma viatura fica inativa, é transferida para outra unidade, um posto novo começa. Por isso os modelos são guardados <strong>por período</strong>. Cada mudança de posto com data abre um período novo, e a escala de cada dia usa os modelos do período daquele dia. A manutenção de viatura não abre período, porque a viatura segue na escala.</p>
+              <p>No subcabeçalho da aba <strong>Modelos</strong> fica o seletor de <strong>período</strong>, igual ao da Escala. As setas passam de um período para outro, e o clique nas datas abre a lista de períodos, cada um com a sua situação (os mesmos sinais de completo e de alerta dos modelos) e o motivo, como "ABT-01: Inativo". Os períodos que já passaram ficam agrupados em <strong>Anteriores</strong>. A página abre no período atual, e a lista de modelos e as vagas mostram sempre o período escolhido.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/distribuicao-periodos.png" alt="O seletor de período no subcabeçalho da Distribuição (1) e a lista de períodos aberta, com a situação, as datas e o motivo de cada um (2)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>Seletor de período</li>
+                    <li>Lista de períodos, com a situação e o motivo</li>
+                  </ol>
+                </figcaption>
+              </figure>
               <p><strong>As vagas do modelo.</strong> Ao clicar num modelo, à direita aparecem as suas <strong>vagas</strong>, agrupadas por posto. Cada vaga é uma linha com a <strong>função</strong> (Condutor, Rádio Operador, Efetivo, e assim por diante), o <strong>Tipo</strong> (oficial ou praça), a <strong>Antiguidade</strong> (se o sistema prefere o mais antigo ou o mais moderno para aquela vaga), o <strong>Grau</strong> (a graduação ideal) e o <strong>Rodízio</strong> (se a vaga entra no rodízio). O rodapé confirma quando está tudo certo, em verde, ou lista o que falta, em amarelo.</p>
               <figure class="manual-figura manual-figura--cheia">
                 <img src="manual/imagens/distribuicao-vagas.png" alt="As vagas de um posto: a função de cada vaga (1) e o tipo, a antiguidade, o grau e o rodízio (2)." />
@@ -973,7 +1003,11 @@
               <div class="manual-admin manual-zona-admin">
                 <h3 id="editar-modelos">Editar os modelos <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p><strong>Editar um modelo.</strong> No menu de opções de um modelo, <strong>Editar</strong> abre o modo de edição. Ali você clica nas células de <strong>Tipo</strong>, <strong>Antiguidade</strong> e <strong>Grau</strong> para escolher o valor, marca o <strong>Rodízio</strong>, usa <strong>+ Nova função</strong> para incluir uma vaga e o botão de remover para tirar, e <strong>+ Acúmulo</strong> para a mesma pessoa cobrir mais de uma função. Com o posto no efetivo máximo, o <strong>+ Nova função</strong> fica desativado. Um posto com menos pessoas que o efetivo mínimo fica em vermelho, como os demais erros, e a escala automática continua usando o modelo. <strong>Desfazer</strong> e <strong>Refazer</strong> ficam no canto do subcabeçalho, e também respondem a Ctrl+Z e Ctrl+Y. Ao <strong>Salvar</strong>, o sistema avisa que as escalas já montadas serão recalculadas e mostra um resumo do que mudou.</p>
-                <p><strong>Novo modelo.</strong> O botão <strong>Novo modelo</strong>, no rodapé da lista, cria um do zero: você define quantos oficiais e praças, por unidade, aquele modelo atende. Ele aparece na hora, e fica de vez quando você clica em Salvar; ao cancelar ou sair sem salvar, ele é descartado.</p>
+                <p><strong>Novo modelo.</strong> O botão <strong>Novo modelo</strong>, no rodapé da lista, cria um do zero: você define quantos oficiais e praças, por unidade, aquele modelo atende. Ele aparece na hora, e fica de vez quando você clica em Salvar; ao cancelar ou sair sem salvar, ele é descartado. O modelo novo vale em todos os períodos.</p>
+                <p><strong>Editar por período.</strong> A edição vale no período escolhido no seletor. Um período que já terminou fica só para leitura. Num período que ainda vai começar, o Salvar refaz a escala a partir do início dele, sem perguntar a data.</p>
+                <p><strong>O período novo vem pronto para revisar.</strong> Quando um posto sai (fica inativo, é excluído ou é transferido), o período novo nasce como cópia do anterior, já sem as vagas desse posto. Quando o posto volta, o período nasce da cópia do último período em que ele existia. Só o pelotão afetado ganha uma cópia própria; os outros continuam iguais em todos os períodos. Até você revisar, o modelo fica em amarelo, o pelotão aparece destacado e o rodapé mostra, por exemplo, "1ºPEL: revise este período (ABT-01: Inativo)". O aviso também aparece no sino. Enquanto isso, a escala funciona normalmente: quem sobrou fica sem função, em vermelho, para você colocar manualmente. Para revisar, mova as vagas que sobraram e clique em <strong>Salvar</strong>; se a cópia já estiver certa, basta Salvar.</p>
+                <p><strong>Período com erro.</strong> Um período atual ou futuro com erro vermelho gera no sino o aviso <strong>Distribuição com erro</strong>, por exemplo "Distribuição com erro a partir de 03/10/2026 (1ºPEL)". O clique leva à Distribuição, e o aviso some quando o erro é corrigido.</p>
+                <p class="manual-nota"><strong>Um período revisado fica como você deixou.</strong> Enquanto não é revisada, a cópia acompanha as mudanças feitas no período anterior. Depois de revisada, ela só muda quando você a edita, e ao salvar o período anterior o sistema avisa quais períodos seguintes não receberam a mudança.</p>
                 <p class="manual-nota"><strong>Editar um pelotão vale para todos os modelos com aquela quantidade.</strong> A configuração das vagas de cada unidade fica guardada junto com a <strong>quantidade de militares</strong> dela. Assim, quando dois ou mais modelos têm um pelotão com a <strong>mesma quantidade</strong>, eles usam a <strong>mesma configuração</strong> daquele pelotão.</p>
                 <p><strong>Exemplo.</strong> Você tem três modelos e, nos três, o 1º Pelotão aparece com sete praças. Se abrir um deles e mudar as vagas do 1º Pelotão, trocando uma função ou ajustando a antiguidade, a mesma mudança passa a valer nos <strong>três</strong>, porque todos apontam para a configuração de "1º Pelotão com sete praças". Se um quarto modelo tiver o 1º Pelotão com <strong>seis</strong> praças, ele tem a sua própria configuração e continua como está.</p>
                 <p>A exceção é o <strong>acúmulo entre unidades</strong>: quando uma vaga acumula uma função de outra unidade, aquela combinação passa a valer <strong>só naquele modelo</strong>, e a edição fica restrita a ele.</p>
@@ -1005,7 +1039,20 @@
                 </figcaption>
               </figure>
               <p><strong>A ficha do militar.</strong> Um clique no card abre a ficha no painel à direita, com o grau e o nome de guerra no topo e o nome completo logo abaixo. Ela tem duas abas: <strong>Dados</strong>, com os dados pessoais (nome completo, CPF, RG, idade, nascimento, CNH, celular e e-mail), e <strong>Carreira</strong>, com os dados institucionais (posto, setor, inclusão, colocação, antiguidade, lotação e situação) e o histórico de <strong>Promoções</strong> e <strong>Transferências</strong>, que abrem ao clicar. Qualquer pessoa consulta a ficha; editar é tarefa do administrador.</p>
-              <p><strong>A antiguidade.</strong> O sistema define a antiguidade de forma automática. Ele mantém uma lista única, do mais antigo (1) ao mais moderno, e decide a ordem assim: primeiro o <strong>posto ou graduação</strong> (o mais alto vem antes); no mesmo posto, vem antes quem chegou a ele primeiro, pela <strong>data da promoção</strong>; se as datas empatarem, compara as promoções anteriores, uma a uma; e, persistindo o empate, a <strong>colocação</strong> no curso de formação (o menor número vem antes). Quando alguém é cadastrado ou promovido, o sistema reorganiza a lista sozinho. A posição aparece na ficha, em <strong>Antiguidade no sistema</strong>, e é a ordem padrão da lista de Usuários. Na escala, ela decide quem tem a preferência nas funções e serve de desempate.</p>
+              <p><strong>A antiguidade.</strong> O sistema define a antiguidade de forma automática. Ele mantém uma lista única, do mais antigo (1) ao mais moderno, e compara os militares pelos critérios abaixo, nesta ordem. Quando dois empatam num critério, decide o seguinte.</p>
+              <figure class="manual-diagrama manual-ordem">
+                <ol class="manual-ordem-lista">
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">1</span><span class="manual-ordem-texto"><strong>Posto ou graduação</strong><span>O mais alto vem antes.</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">2</span><span class="manual-ordem-texto"><strong>Data da promoção atual</strong><span>Vem antes quem chegou ao posto primeiro.</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">3</span><span class="manual-ordem-texto"><strong>Promoções anteriores</strong><span>Comparadas uma a uma, da mais recente para a mais antiga.</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">4</span><span class="manual-ordem-texto"><strong>Colocação no curso</strong><span>No curso de formação, o menor número vem antes.</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">5</span><span class="manual-ordem-texto"><strong>Data de inclusão</strong><span>A mais antiga vem antes.</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">6</span><span class="manual-ordem-texto"><strong>Data de nascimento</strong><span>O mais velho vem antes.</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">7</span><span class="manual-ordem-texto"><strong>Ordem alfabética</strong><span>Pelo nome completo, de A a Z.</span></span></li>
+                </ol>
+                <figcaption class="manual-diagrama-legenda">A ordem da antiguidade. A data de inclusão e a data de nascimento seguem o Estatuto dos Militares.</figcaption>
+              </figure>
+              <p>Sempre que alguém é cadastrado, promovido ou tem corrigido um dado que entra nessa ordem, o sistema refaz a lista inteira sozinho, e a escala passa a seguir a nova ordem. A posição aparece na ficha, em <strong>Antiguidade no sistema</strong>, e é a ordem padrão da lista de Usuários. Na escala, ela decide quem tem a preferência nas funções e serve de desempate.</p>
               <figure class="manual-figura">
                 <img src="manual/imagens/usuarios-ficha.png" alt="A ficha de um militar no painel: as abas Dados e Carreira (1) e os dados pessoais logo abaixo (2)." />
                 <figcaption>
@@ -1044,6 +1091,17 @@
                 </figure>
                 <p>Ao gerar, o código aparece <strong>uma vez</strong> num aviso. Anote e <strong>entregue ao militar</strong>, em mãos ou por mensagem; ele usa esse código na tela "Criar conta" para conferir os dados e definir a senha. Depois de gerado, o botão passa a mostrar a situação do token e vira <strong>Gerar novo token</strong>, para o caso de o militar perder o código ou não concluir a tempo.</p>
                 <p class="manual-nota">O sistema guarda apenas uma versão protegida do token, nunca o código em si, então ele não pode ser consultado depois. Se o militar precisar, gere um novo: o anterior deixa de valer.</p>
+                <p><strong>Link de nova senha.</strong> Quando um militar esquece a senha e faz o pedido na tela de entrada, o aviso <strong>Pedido de nova senha</strong> chega ao seu sino. Um clique nele abre a ficha da pessoa, com a seção <strong>Acesso ao sistema</strong>. Clique em <strong>Gerar link de nova senha</strong>: o link aparece logo abaixo, com o botão <strong>Copiar link</strong>, pronto para você colar numa mensagem ao militar. O aviso sai do sino de todos os administradores. O mesmo botão fica sempre na ficha de quem já tem conta, então dá para gerar o link também sem pedido.</p>
+                <figure class="manual-figura">
+                  <img src="manual/imagens/usuarios-senha-link.png" alt="Ficha de um militar com conta: a seção Acesso ao sistema com o botão Gerar novo link (1) e o link de nova senha com o botão Copiar link (2)." />
+                  <figcaption>
+                    <ol class="manual-chamadas">
+                      <li>Botão Gerar link de nova senha, que vira Gerar novo link</li>
+                      <li>O link e o botão Copiar link</li>
+                    </ol>
+                  </figcaption>
+                </figure>
+                <p class="manual-nota"><strong>Confirme que é a própria pessoa.</strong> O link dá acesso à conta. Antes de entregar, confirme que o pedido é mesmo do militar, pessoalmente ou pelo telefone que já está na ficha. O link vale uma vez e por 24 horas, e gerar outro cancela o anterior. A senha antiga continua valendo até ele criar a nova, e você nunca vê nem escolhe a senha de ninguém.</p>
                 <h3 id="carreira">Promover, transferir e dar baixa <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>As mudanças de carreira ficam na ficha, quando você troca de <strong>Ver</strong> para <strong>Editar</strong> (o alternador no alto do painel) e abre a aba <strong>Carreira</strong>. Ali, três blocos abrem ao clicar: <strong>Promover</strong>, <strong>Transferir</strong> e <strong>Dar baixa do sistema</strong>. Cada ação registra no histórico e mostra um resumo ao final.</p>
                 <figure class="manual-figura">
@@ -1079,7 +1137,6 @@
                 </figure>
                 <p><strong>Dar baixa.</strong> No fim da aba, o bloco <strong>Dar baixa do sistema</strong> traz a data <strong>A partir de</strong> e o botão <strong>Dar baixa</strong>. A confirmação mostra o nome e o CPF e avisa das <strong>trocas e folgas que serão canceladas</strong>. O militar passa a <strong>Inativo</strong> e sai do efetivo ativo, reaparecendo só com o filtro <strong>Inativos</strong>. Para um militar já inativo, no lugar dessas ações aparece <strong>Readmitir ao efetivo</strong>, com uma data, que o traz de volta.</p>
                 <p><strong>Ajustar os dados da ficha.</strong> No mesmo modo Editar, a aba <strong>Dados</strong> deixa mudar os dados pessoais e a aba <strong>Carreira</strong>, os institucionais (nome de guerra, setor, inclusão e colocação). O <strong>CPF</strong> não muda, e o <strong>grau</strong> e a <strong>lotação</strong> também não se editam aqui, porque mudam por promoção e transferência. Ao <strong>Salvar</strong>, o sistema grava e mostra o resumo. Se você alterar a <strong>CNH</strong>, ele pede uma data para recalcular a distribuição, já que a CNH decide quem pode ser condutor.</p>
-                <p class="manual-nota"><strong>Redefinir senha.</strong> Para um militar que <strong>já tem conta</strong>, a aba Dados no Editar traz o botão <strong>Redefinir senha</strong>, que gera uma <strong>senha provisória</strong>, sorteada pelo sistema e mostrada uma vez, para você repassar a ele. No primeiro acesso com ela, o sistema <strong>obriga</strong> o militar a trocá-la antes de entrar. É diferente do <strong>token</strong>, que serve ao primeiro acesso de quem ainda não criou a conta.</p>
                 <h3 id="aprovacoes">Aprovar cadastros e correções <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>Em <strong>Usuários</strong>, a aba <strong>Aprovações</strong> reúne o que espera a sua decisão sobre pessoas. O número na aba conta os pendentes, e a tela traz duas filas: <strong>Cadastros</strong> e <strong>Correções</strong>.</p>
                 <figure class="manual-figura manual-figura--cheia">
@@ -1200,6 +1257,7 @@
                   </figcaption>
                 </figure>
                 <p>Duas pendências <strong>não levam a outra tela</strong>, e sim <strong>listam os itens</strong> ali mesmo, para você consertar como quiser: <strong>Operacional lotado sem ciclo na escala</strong> mostra os militares lotados sem ciclo, para acertar pelo Contínuos, e <strong>Viaturas em manutenção</strong> mostra as viaturas paradas, para você reorganizar o dia na Escala ou, em Postos, encerrar a manutenção ou deixar a viatura Inativa. É a mesma lista que abastece o <strong>"Precisa de você"</strong> da aba Para mim, com o que é seu.</p>
+                <p>Duas pendências levam direto à <strong>Distribuição</strong>: <strong>Distribuição a revisar</strong>, quando uma mudança de posto abriu um período que ainda precisa de revisão, e <strong>Distribuição com erro</strong>, quando um período atual ou futuro tem erro vermelho. Essas duas e as duas de cima também aparecem no <strong>sino</strong>, com a bolinha amarela ou vermelha conforme a gravidade.</p>
                 <p><strong>Criar um comunicado.</strong> Na aba <strong>Comunicados</strong>, o botão <strong>Novo comunicado</strong> abre o painel. No topo você escolhe o <strong>destinatário</strong>: <strong>Unidades</strong> (na árvore, e uma unidade alcança as de baixo), <strong>Militares</strong> (da lista, com busca) ou <strong>Todos</strong>. Abaixo vêm o <strong>título</strong> e a <strong>mensagem</strong>. Ao <strong>Salvar</strong>, o comunicado é publicado e passa a aparecer no mural para quem ele alcança.</p>
                 <figure class="manual-figura">
                   <img src="manual/imagens/avisos-novo-comunicado.png" alt="O painel Novo comunicado: o destinatário Unidades, Militares ou Todos (1) e os campos de título e mensagem (2)." />

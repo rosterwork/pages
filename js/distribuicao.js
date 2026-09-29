@@ -3,6 +3,7 @@
    Liga as abas (Modelos/Regras), descobre o grupo (CIA + PELs) a partir
    da seleção de unidades do cabeçalho, monta o cabeçalho de colunas do
    painel e dispara a carga dos modelos. Reage à troca de unidades.
+   O seletor de período (distribuicao-periodos) aparece só na aba Modelos.
    ============================================================ */
 (function () {
   'use strict';
@@ -83,6 +84,7 @@
     }
     var btn = document.getElementById('distribuicao-novo-modelo');
     if (btn) btn.disabled = true;
+    if (window.RosterWork.distribuicaoPeriodos) window.RosterWork.distribuicaoPeriodos.mostrar(false);
   }
 
   var carregadoModelos = null;   // id da CIA já carregada na aba Modelos
@@ -97,6 +99,8 @@
      (assim alternar Modelos↔Regras não recarrega — preserva a edição de modelos) */
   function carregarAba(aba, grupo) {
     var gid = grupo ? grupo.cia.unidade_id : null;
+    /* o seletor de período vale só para os modelos */
+    if (window.RosterWork.distribuicaoPeriodos) window.RosterWork.distribuicaoPeriodos.mostrar(aba !== 'regras' && !!grupo);
     if (aba === 'regras') {
       if (carregadoRegras === gid) return;
       carregadoRegras = gid;

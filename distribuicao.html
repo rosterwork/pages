@@ -11,6 +11,19 @@
       <button type="button" class="aba aba--ativa" data-aba="modelos">Modelos</button>
       <button type="button" class="aba" data-aba="regras">Regras</button>
     </div>
+    <!-- período dos modelos (aba Modelos): setas passam de período; o nome abre a lista (distribuicao-periodos.js) -->
+    <div class="geral-periodo oculto" id="distribuicao-periodo">
+      <button type="button" class="botao botao--icone botao--pequeno" id="distribuicao-periodo-anterior" aria-label="Período anterior">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-esquerda.svg#icone-seta-esquerda"/></svg>
+      </button>
+      <span class="dropdown">
+        <button type="button" class="geral-periodo-nome" id="distribuicao-periodo-nome"></button>
+        <div class="dropdown-menu distribuicao-periodo-menu" id="distribuicao-periodo-lista"></div>
+      </span>
+      <button type="button" class="botao botao--icone botao--pequeno" id="distribuicao-periodo-proximo" aria-label="Próximo período">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
+      </button>
+    </div>
     <!-- desfazer/refazer da edição do modelo: só aparece durante o Editar (o JS tira o .oculto) -->
     <div class="distribuicao-historico oculto">
       <button type="button" class="botao botao--icone distribuicao-desfazer" aria-label="Desfazer" data-dica="Desfazer" disabled>
@@ -77,6 +90,20 @@
 </div>
 
 <!-- ===================== MOLDES — painel de modelos ===================== -->
+
+<!-- molde: um período na lista do seletor (situação com os ícones do status dos modelos + datas + motivo) -->
+<template id="tpl-distribuicao-periodo-item">
+  <button type="button" class="dropdown-item distribuicao-periodo-item">
+    <span class="distribuicao-modelo-status" aria-hidden="true">
+      <svg class="icone distribuicao-modelo-ok" width="13" height="13"><use href="icones/icone-check.svg#icone-check"/></svg>
+      <svg class="icone distribuicao-modelo-erro oculto" width="13" height="13"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+    </span>
+    <span class="distribuicao-periodo-textos">
+      <span class="distribuicao-periodo-datas"></span>
+      <span class="distribuicao-periodo-motivo"></span>
+    </span>
+  </button>
+</template>
 
 <!-- molde: uma célula (coluna) do cabeçalho do painel ou de uma linha de modelo -->
 <template id="tpl-distribuicao-coluna">

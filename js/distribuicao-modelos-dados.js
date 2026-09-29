@@ -15,10 +15,12 @@
   window.RosterWork.distribuicaoDados = {
     /* hierarquia de unidades (para o sub-cabeçalho de colunas e o grupo CIA+PELs) */
     buscarUnidades: function () { return rpc('buscar_unidades_ordenadas', {}); },
-    /* modelos do contexto: composição (of/pç) e contagem de vagas por unidade */
-    listarModelos: function (contextoId) { return rpc('dist_listar_modelos', { p_contexto_id: contextoId }); },
-    /* postos e vagas de um modelo (para o corpo) */
-    lerModelo: function (idGrupoCompleto) { return rpc('dist_ler_modelo', { p_grupo_completo_id: idGrupoCompleto }); },
+    /* períodos do contexto (seletor ‹ período ›): datas, motivo e situação de cada um */
+    listarPeriodos: function (contextoId) { return rpc('dist_listar_periodos', { p_contexto_id: contextoId }); },
+    /* modelos do contexto no período da data: composição (of/pç) e contagem de vagas por unidade */
+    listarModelos: function (contextoId, data) { return rpc('dist_listar_modelos', { p_contexto_id: contextoId, p_data: data || null }); },
+    /* postos e vagas de um modelo no período da data (para o corpo) */
+    lerModelo: function (idGrupoCompleto, data) { return rpc('dist_ler_modelo', { p_grupo_completo_id: idGrupoCompleto, p_data: data || null }); },
     /* graus hierárquicos (para o "Grau ideal" das vagas) — cache de sessão */
     buscarGraus: function () {
       if (grausCache) return Promise.resolve(grausCache);
@@ -30,7 +32,7 @@
     /* grava um modelo (RPC cirúrgica: não mexe nos outros modelos do contexto) */
     salvar: function (payload) { return rpc('dist_salvar_modelo', { p_payload: payload }); },
     /* estrutura do grupo (CIA+PELs) com os postos, sem vagas — para criar um modelo novo */
-    estruturaGrupo: function (contextoId) { return rpc('dist_estrutura_grupo', { p_contexto_id: contextoId }); },
+    estruturaGrupo: function (contextoId, data) { return rpc('dist_estrutura_grupo', { p_contexto_id: contextoId, p_data: data || null }); },
     /* exclui um modelo (e poda os parciais que ficaram órfãos) */
     excluirModelo: function (id, autor, recalcularDesde) { return rpc('dist_excluir_modelo', { p_grupo_completo_id: id, p_autor: autor || null, p_recalcular_desde: recalcularDesde || null }); },
     /* pré-preenche um modelo recém-criado, copiando as vagas de um modelo que caiba (por unidade) */

@@ -1,7 +1,8 @@
 /* ============================================================
    RECUPERAR SENHA — tela pública (antes da sessão)
-   Pede o CPF/RG, chama recuperar_senha_iniciar (o banco dispara o
-   email e devolve só o email mascarado) e mostra a confirmação.
+   Pede o CPF/RG e chama senha_pedir_ajuda: o banco avisa os
+   administradores da unidade (um aviso por pessoa, sem repetir),
+   e um deles entrega o link de nova senha. Sem e-mail.
    Reusa a máscara e os helpers de erro de campo do login.
    ============================================================ */
 (function () {
@@ -13,7 +14,7 @@
   document.addEventListener('DOMContentLoaded', function () {
     var M = window.RosterWork.mensagens.recuperacao;
     var input = document.getElementById('entrada-identificador');
-    var btnEnviar = document.getElementById('btn-enviar-link');
+    var btnEnviar = document.getElementById('btn-enviar-pedido');
     var blocoPedido = document.getElementById('recuperar-pedido');
     var sucesso = document.getElementById('recuperar-sucesso');
     var btnVoltar = document.getElementById('btn-voltar-login');
@@ -41,7 +42,7 @@
       }
 
       window.RosterWork.iniciarCarregando(btnEnviar);
-      fetch(SUPABASE_URL + '/rest/v1/rpc/recuperar_senha_iniciar', {
+      fetch(SUPABASE_URL + '/rest/v1/rpc/senha_pedir_ajuda', {
         method: 'POST',
         headers: {
           'apikey': SUPABASE_KEY,
@@ -55,13 +56,12 @@
       }).then(function (resultado) {
         window.RosterWork.pararCarregando(btnEnviar);
         if (resultado && resultado.ok) {
-          sucesso.textContent = M.enviado(resultado.email_mascarado);
+          sucesso.textContent = M.pedidoEnviado;
           blocoPedido.classList.add('oculto');
           sucesso.classList.remove('oculto');
           return;
         }
         var motivo = resultado && resultado.motivo;
-        if (motivo === 'limite') { window.RosterWork.mostrarErroCampo(input, M.limite); return; }
         if (motivo === 'sem_conta') { window.RosterWork.mostrarErroCampo(input, M.semConta); return; }
         if (motivo === 'nao_encontrado') { window.RosterWork.mostrarErroCampo(input, M.naoEncontrado); return; }
         window.RosterWork.mostrarErroCampo(input, M.falha);

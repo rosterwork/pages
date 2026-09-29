@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="componentes/css/geral-calendario.css" />
   <link rel="stylesheet" href="componentes/css/geral-calendario-mes.css" />
   <link rel="stylesheet" href="componentes/css/geral-periodo.css" />
+  <link rel="stylesheet" href="componentes/css/geral-anteriores.css" />
   <link rel="stylesheet" href="componentes/css/geral-layout-lateral.css" />
   <link rel="stylesheet" href="componentes/css/geral-barra-periodo.css" />
   <link rel="stylesheet" href="componentes/css/geral-rodape.css" />
@@ -382,6 +383,7 @@
   <script src="componentes/js/geral-barra-periodo.js"></script>
   <script src="componentes/js/geral-abas.js"></script>
   <script src="componentes/js/geral-painel.js"></script>
+  <script src="componentes/js/geral-anteriores.js"></script>
   <script src="componentes/js/geral-impacto.js"></script>
   <script src="js/index-navegacao.js"></script>
   <script src="js/index-fale-conosco.js"></script>
@@ -806,6 +808,15 @@
 
   <template id="tpl-painel-estado">
     <div class="painel-estado"></div>
+  </template>
+
+  <!-- grupo "Anteriores (N)": abre e fecha os itens que já passaram numa lista com histórico (geral-anteriores) -->
+  <template id="tpl-anteriores">
+    <button type="button" class="anteriores" aria-expanded="false">
+      <svg class="icone anteriores-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      <span>Anteriores</span>
+      <span class="anteriores-qtd"></span>
+    </button>
   </template>
 
   <!-- carregando de container (painel/página): o círculo, nunca os pontinhos -->
