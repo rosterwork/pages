@@ -28,8 +28,8 @@
   var INST = [
     { k: 'nome_de_guerra', rotulo: 'Nome de guerra', tipo: 'texto', max: 40, ph: 'Ex.: Andrade' },
     { k: 'tipo', rotulo: 'Setor', tipo: 'selecao', opcoes: ['Operacional', 'Administrativo'] },
-    { k: 'data_de_inclusao', rotulo: 'Inclusão', tipo: 'data', max: 10, num: true, ph: 'dd/mm/aaaa', cal: true },
-    { k: 'classificacao', rotulo: 'Colocação', tipo: 'numero', max: 4, num: true, ph: 'Ex.: 14' }
+    { k: 'data_de_inclusao', rotulo: 'Inclusão no quadro', tipo: 'data', max: 10, num: true, ph: 'dd/mm/aaaa', cal: true, ajuda: true },
+    { k: 'classificacao', rotulo: 'Colocação', rotuloPorQuadro: true, tipo: 'numero', max: 4, num: true, ph: 'Ex.: 14' }
   ];
 
   function soDigitos(v) { return String(v == null ? '' : v).replace(/\D/g, ''); }
@@ -76,7 +76,10 @@
 
     var campo = RosterWork.tpl('tpl-ficha-campo');
     if (!campo) return null;
-    campo.querySelector('.campo-rotulo').textContent = c.rotulo;
+    /* a colocação diz o curso (CFO, CHOE ou CFP), pelo quadro do militar */
+    campo.querySelector('.campo-rotulo').textContent = (c.rotuloPorQuadro && ctx && ctx.ficha)
+      ? C.nomeColocacao((ctx.ficha.institucionais || {}).quadro) : c.rotulo;
+    if (c.ajuda) { var ajuda = campo.querySelector('[data-ajuda]'); if (ajuda) ajuda.classList.remove('oculto'); }
     var input = campo.querySelector('.campo-entrada');
     input.setAttribute('data-campo', c.k);
     input.value = valor || '';
@@ -154,6 +157,12 @@
       if (!inclEl.value.trim()) erro(inclEl, T.inclusaoVazia);
       else if (!incl) erro(inclEl, T.dataInvalida);
       else if (nascD && incl <= nascD) erro(inclEl, T.inclusaoAposNascimento);
+      else {
+        /* a inclusão no quadro vai até o dia da primeira promoção do quadro atual */
+        var promocoes = ctx.ficha.promocoes || [];
+        var primeira = promocoes.length ? V.parseData(isoParaBR(promocoes[0].data)) : null;
+        if (primeira && incl > primeira) erro(inclEl, T.inclusaoDepoisPromocao);
+      }
 
       var coloc = campoEl(raiz, 'classificacao');
       if (!coloc.value.trim()) erro(coloc, T.colocacaoVazia);

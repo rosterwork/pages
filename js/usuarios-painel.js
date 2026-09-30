@@ -115,7 +115,7 @@
       { rotulo: 'Posto', valor: ins.grau_nome },
       { rotulo: 'Nome de guerra', valor: ins.nome_de_guerra },
       { rotulo: 'Setor', valor: ins.tipo },
-      { rotulo: 'Inclusão', valor: formatarData(ins.data_de_inclusao) },
+      { rotulo: 'Inclusão no quadro', valor: formatarData(ins.data_de_inclusao) },
       { rotulo: RosterWork.campos.nomeColocacao(ins.quadro), valor: formatarColocacao(ins.classificacao) },
       { rotulo: 'Antiguidade no sistema', valor: ins.antiguidade_sistema },
       { rotulo: 'Lotação', valor: textoLotacao(ins) },
@@ -130,7 +130,7 @@
     var transferencias = (fichaAtual && fichaAtual.transferencias) || [];
     if (promocoes.length) {
       var linhasP = promocoes.map(function (pr) {
-        return { rotulo: pr.grau_nome || pr.grau || '', valor: formatarData(pr.data) };
+        return { rotulo: pr.grau || pr.grau_nome || '', valor: formatarData(pr.data) };
       });
       montarSecao(corpo, 'Promoções', linhasP, false);
     }

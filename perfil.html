@@ -81,11 +81,11 @@
             <span class="perfil-dado-valor" id="perfil-ver-setor"></span>
           </div>
           <div class="perfil-dado">
-            <span class="perfil-dado-rotulo">Inclusão</span>
+            <span class="perfil-dado-rotulo">Inclusão no quadro</span>
             <span class="perfil-dado-valor" id="perfil-ver-inclusao"></span>
           </div>
           <div class="perfil-dado">
-            <span class="perfil-dado-rotulo">Colocação</span>
+            <span class="perfil-dado-rotulo" id="perfil-ver-colocacao-rotulo">Colocação</span>
             <span class="perfil-dado-valor" id="perfil-ver-colocacao"></span>
           </div>
           <div class="perfil-dado">
@@ -182,12 +182,13 @@
             <span class="campo-erro-texto"></span>
           </div>
           <label class="campo">
-            <span class="campo-rotulo">Data de inclusão</span>
+            <span class="campo-rotulo">Inclusão no quadro</span>
             <input class="campo-entrada" id="perfil-f-inclusao" data-campo="data_de_inclusao" data-formato="data" type="text" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" autocomplete="off" />
+            <span class="campo-ajuda">Data de entrada no seu quadro atual (praças ou oficiais), não a data de entrada na corporação.</span>
             <span class="campo-erro-texto"></span>
           </label>
           <label class="campo">
-            <span class="campo-rotulo">Colocação</span>
+            <span class="campo-rotulo" id="perfil-f-colocacao-rotulo">Colocação</span>
             <input class="campo-entrada" id="perfil-f-colocacao" data-campo="classificacao_cfo_cfp" data-formato="numero" type="text" inputmode="numeric" maxlength="4" placeholder="0000" autocomplete="off" />
             <span class="campo-erro-texto"></span>
           </label>

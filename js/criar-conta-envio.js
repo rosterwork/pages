@@ -135,6 +135,12 @@
       if (!selecao(id)) erro(el(id), ESCOLHAS[id]());
     });
 
+    /* a inclusão no quadro vai até o dia da primeira promoção (vale no cadastro novo e no token) */
+    var inclusao = V.parseData(valor('cc-inclusao'));
+    var primeira = el('cc-promocoes').querySelector('.campo-entrada');
+    var dataPrimeira = primeira ? V.parseData(primeira.value) : null;
+    if (inclusao && dataPrimeira && dataPrimeira < inclusao) erro(el('cc-inclusao'), T().inclusaoDepoisPromocao);
+
     return ok;
   }
 

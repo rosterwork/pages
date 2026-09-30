@@ -73,16 +73,17 @@
     if (!selecao('nu-lotacao')) erro(campo('nu-lotacao'), textos.lotacaoVazia);
     if (!selecao('nu-setor')) erro(campo('nu-setor'), textos.setorVazio);
 
-    /* promoções: cada uma deve estar preenchida, válida e em ordem crescente
-       (a primeira depois da inclusão) */
+    /* promoções: cada uma deve estar preenchida, válida e em ordem crescente;
+       a inclusão no quadro vai até o dia da primeira promoção */
     var promos = raiz.querySelectorAll('#nu-promocoes input');
-    var anterior = incl;
+    var anterior = null;
     for (var i = 0; i < promos.length; i++) {
       var p = promos[i];
       if (!p.value.trim()) { erro(p, textos.promocaoVazia); continue; }
       var dt = parseData(p.value);
       if (!dt) { erro(p, textos.dataInvalida); continue; }
-      if (anterior && dt <= anterior) erro(p, textos.promocaoOrdem);
+      if (i === 0) { if (incl && dt < incl) erro(inclEl, textos.inclusaoDepoisPromocao); }
+      else if (anterior && dt <= anterior) erro(p, textos.promocaoOrdem);
       anterior = dt;
     }
 

@@ -93,6 +93,10 @@
     preencher('perfil-ver-setor', institucionais.tipo);
     preencher('perfil-ver-inclusao', RosterWork.data.isoParaBR(institucionais.data_de_inclusao));
     preencher('perfil-ver-colocacao', institucionais.classificacao);
+    /* o rótulo da colocação diz o curso (CFO, CHOE ou CFP), pelo quadro */
+    var rotuloColocacao = C ? C.nomeColocacao(institucionais.quadro) : 'Colocação';
+    preencher('perfil-ver-colocacao-rotulo', rotuloColocacao);
+    preencher('perfil-f-colocacao-rotulo', rotuloColocacao);
     preencher('perfil-ver-cnh', pessoais.cnh);
   }
 

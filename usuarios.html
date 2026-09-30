@@ -267,8 +267,9 @@
         <span class="campo-erro-texto"></span>
       </label>
       <label class="campo">
-        <span class="campo-rotulo">Data de inclusão</span>
+        <span class="campo-rotulo">Inclusão no quadro</span>
         <input class="campo-entrada" id="nu-inclusao" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" />
+        <span class="campo-ajuda">Data de entrada no quadro atual do militar (praças ou oficiais), não a data de entrada na corporação.</span>
         <span class="campo-erro-texto"></span>
       </label>
       <label class="campo">
@@ -499,6 +500,8 @@
   <label class="campo">
     <span class="campo-rotulo"></span>
     <input class="campo-entrada" type="text" name="ficha-campo" />
+    <!-- dica da inclusão no quadro: aparece só nesse campo -->
+    <span class="campo-ajuda oculto" data-ajuda="inclusao">Data de entrada no quadro atual do militar (praças ou oficiais), não a data de entrada na corporação.</span>
     <span class="campo-erro-texto"></span>
   </label>
 </template>

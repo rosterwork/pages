@@ -114,16 +114,17 @@
       ['Posto', c.grau_nome],
       ['Nome de guerra', c.nome_de_guerra],
       ['Setor', c.tipo],
-      ['Inclusão', D.isoParaBR(c.data_de_inclusao)],
-      ['Colocação', c.classificacao],
+      ['Inclusão no quadro', D.isoParaBR(c.data_de_inclusao)],
+      [C.nomeColocacao(c.quadro), c.classificacao],
       ['Lotação', c.lotacao_nome],
       ['Pedido em', D.isoParaBR(c.criado_em)]
     ]);
 
-    var promocoes = c.promocoes || [];
+    /* as promoções pelo grau (Sd., Cb.…), do posto pedido para baixo: o banco manda o grau de cada data */
+    var promocoes = c.promocoes_graus || [];
     if (!promocoes.length) return;
-    secao(corpo, 'Datas de promoções', promocoes.map(function (iso, i) {
-      return [String(i + 1) + 'ª', D.isoParaBR(iso)];
+    secao(corpo, 'Datas de promoções', promocoes.map(function (p) {
+      return [p.grau, D.isoParaBR(p.data)];
     }));
   }
 

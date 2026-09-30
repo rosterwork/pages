@@ -201,6 +201,7 @@
         else if (/RG/.test(erro)) alvo = formulario.querySelector('[data-campo="rg"]');
         else if (/Celular/.test(erro)) alvo = formulario.querySelector('[data-campo="celular"]');
         else if (/CNH/.test(erro)) alvo = formulario.querySelector('[data-campo="cnh"]');
+        else if (/[Ii]nclusão/.test(erro)) alvo = formulario.querySelector('[data-campo="data_de_inclusao"]');
         if (alvo) {
           C().marcarErro(alvo, erro);
           mostrarPrimeiroErro();
