@@ -111,10 +111,11 @@
     ]);
 
     secao(corpo, 'Dados institucionais', [
+      ['Quadro', c.quadro],
+      ['Inclusão no quadro', D.isoParaBR(c.data_de_inclusao)],
       ['Posto', c.grau_nome],
       ['Nome de guerra', c.nome_de_guerra],
       ['Setor', c.tipo],
-      ['Inclusão no quadro', D.isoParaBR(c.data_de_inclusao)],
       [C.nomeColocacao(c.quadro), c.classificacao],
       ['Lotação', c.lotacao_nome],
       ['Pedido em', D.isoParaBR(c.criado_em)]

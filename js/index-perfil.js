@@ -88,10 +88,11 @@
     preencher('perfil-ver-celular', celular);
     preencher('perfil-ver-email', pessoais.email);
 
-    preencher('perfil-ver-nome-guerra', institucionais.nome_de_guerra);
     preencher('perfil-ver-quadro', institucionais.quadro);
-    preencher('perfil-ver-setor', institucionais.tipo);
     preencher('perfil-ver-inclusao', RosterWork.data.isoParaBR(institucionais.data_de_inclusao));
+    preencher('perfil-ver-posto', institucionais.grau_nome);
+    preencher('perfil-ver-nome-guerra', institucionais.nome_de_guerra);
+    preencher('perfil-ver-setor', institucionais.tipo);
     preencher('perfil-ver-colocacao', institucionais.classificacao);
     /* o rótulo da colocação diz o curso (CFO, CHOE ou CFP), pelo quadro */
     var rotuloColocacao = C ? C.nomeColocacao(institucionais.quadro) : 'Colocação';

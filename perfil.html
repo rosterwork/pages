@@ -69,20 +69,24 @@
         <span class="rotulo-secao">Carreira</span>
         <div class="perfil-grade">
           <div class="perfil-dado">
-            <span class="perfil-dado-rotulo">Nome de guerra</span>
-            <span class="perfil-dado-valor" id="perfil-ver-nome-guerra"></span>
-          </div>
-          <div class="perfil-dado">
             <span class="perfil-dado-rotulo">Quadro</span>
             <span class="perfil-dado-valor" id="perfil-ver-quadro"></span>
           </div>
           <div class="perfil-dado">
-            <span class="perfil-dado-rotulo">Setor</span>
-            <span class="perfil-dado-valor" id="perfil-ver-setor"></span>
-          </div>
-          <div class="perfil-dado">
             <span class="perfil-dado-rotulo">Inclusão no quadro</span>
             <span class="perfil-dado-valor" id="perfil-ver-inclusao"></span>
+          </div>
+          <div class="perfil-dado">
+            <span class="perfil-dado-rotulo">Posto</span>
+            <span class="perfil-dado-valor" id="perfil-ver-posto"></span>
+          </div>
+          <div class="perfil-dado">
+            <span class="perfil-dado-rotulo">Nome de guerra</span>
+            <span class="perfil-dado-valor" id="perfil-ver-nome-guerra"></span>
+          </div>
+          <div class="perfil-dado">
+            <span class="perfil-dado-rotulo">Setor</span>
+            <span class="perfil-dado-valor" id="perfil-ver-setor"></span>
           </div>
           <div class="perfil-dado">
             <span class="perfil-dado-rotulo" id="perfil-ver-colocacao-rotulo">Colocação</span>
@@ -163,6 +167,12 @@
         <span class="rotulo-secao">Carreira</span>
         <div class="perfil-formulario">
           <label class="campo">
+            <span class="campo-rotulo">Inclusão no quadro</span>
+            <input class="campo-entrada" id="perfil-f-inclusao" data-campo="data_de_inclusao" data-formato="data" type="text" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" autocomplete="off" />
+            <span class="campo-ajuda">Data de entrada no seu quadro atual (praças ou oficiais), não a data de entrada na corporação.</span>
+            <span class="campo-erro-texto"></span>
+          </label>
+          <label class="campo">
             <span class="campo-rotulo">Nome de guerra</span>
             <input class="campo-entrada" id="perfil-f-nome-guerra" data-campo="nome_de_guerra" data-formato="guerra" type="text" maxlength="40" autocomplete="off" />
             <span class="campo-erro-texto"></span>
@@ -181,12 +191,6 @@
             </div>
             <span class="campo-erro-texto"></span>
           </div>
-          <label class="campo">
-            <span class="campo-rotulo">Inclusão no quadro</span>
-            <input class="campo-entrada" id="perfil-f-inclusao" data-campo="data_de_inclusao" data-formato="data" type="text" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" autocomplete="off" />
-            <span class="campo-ajuda">Data de entrada no seu quadro atual (praças ou oficiais), não a data de entrada na corporação.</span>
-            <span class="campo-erro-texto"></span>
-          </label>
           <label class="campo">
             <span class="campo-rotulo" id="perfil-f-colocacao-rotulo">Colocação</span>
             <input class="campo-entrada" id="perfil-f-colocacao" data-campo="classificacao_cfo_cfp" data-formato="numero" type="text" inputmode="numeric" maxlength="4" placeholder="0000" autocomplete="off" />

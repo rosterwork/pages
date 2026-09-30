@@ -112,10 +112,11 @@
   function montarInstitucionais(corpo) {
     var ins = (fichaAtual && fichaAtual.institucionais) || {};
     montarSecao(corpo, 'Dados institucionais', [
+      { rotulo: 'Quadro', valor: ins.quadro },
+      { rotulo: 'Inclusão no quadro', valor: formatarData(ins.data_de_inclusao) },
       { rotulo: 'Posto', valor: ins.grau_nome },
       { rotulo: 'Nome de guerra', valor: ins.nome_de_guerra },
       { rotulo: 'Setor', valor: ins.tipo },
-      { rotulo: 'Inclusão no quadro', valor: formatarData(ins.data_de_inclusao) },
       { rotulo: RosterWork.campos.nomeColocacao(ins.quadro), valor: formatarColocacao(ins.classificacao) },
       { rotulo: 'Antiguidade no sistema', valor: ins.antiguidade_sistema },
       { rotulo: 'Lotação', valor: textoLotacao(ins) },
