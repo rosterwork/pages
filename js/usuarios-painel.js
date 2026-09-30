@@ -29,13 +29,6 @@
     return n.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
   }
 
-  /* 9 dígitos -> XX.XXX.XXX-X (8 dígitos fica como veio) */
-  function formatarRg(rg) {
-    var n = soDigitos(rg);
-    if (n.length === 9) return n.replace(/(\d{2})(\d{3})(\d{3})(\d{1})/, '$1.$2.$3-$4');
-    return rg || '';
-  }
-
   /* 11 dígitos -> (XX) XXXXX-XXXX */
   function formatarCelular(cel) {
     var n = soDigitos(cel);
@@ -106,7 +99,7 @@
     montarSecao(corpo, 'Dados pessoais', [
       { rotulo: 'Nome completo', valor: p.nome_completo },
       { rotulo: 'CPF', valor: formatarCpf(p.cpf) },
-      { rotulo: 'RG', valor: formatarRg(p.rg) },
+      { rotulo: 'RG', valor: RosterWork.campos.mascararRg(soDigitos(p.rg)) },
       { rotulo: 'Idade', valor: (p.idade != null ? p.idade + ' anos' : '') },
       { rotulo: 'Nascimento', valor: formatarData(p.data_de_nascimento) },
       { rotulo: 'CNH', valor: p.cnh },

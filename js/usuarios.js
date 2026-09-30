@@ -74,14 +74,6 @@
     return partes.length === 3 ? partes[2] + '/' + partes[1] : iso;
   }
 
-  /* RG (8-9 dígitos) -> XX.XXX.XXX-X / XX.XXX.XXX */
-  function formatarRg(rg) {
-    var d = String(rg || '').replace(/\D/g, '');
-    if (d.length === 9) return d.replace(/(\d{2})(\d{3})(\d{3})(\d{1})/, '$1.$2.$3-$4');
-    if (d.length === 8) return d.replace(/(\d{2})(\d{3})(\d{3})/, '$1.$2.$3');
-    return rg || '';
-  }
-
   /* celular (10-11 dígitos) -> (XX) XXXXX-XXXX */
   function formatarCelular(cel) {
     var d = String(cel || '').replace(/\D/g, '');
@@ -99,7 +91,7 @@
 
   /* o identificador escolhido no Exibir (CPF/RG/telefone/email); vazio vira "-" */
   function textoIdentificador(pessoa, tipo) {
-    if (tipo === 'rg') return pessoa.rg ? formatarRg(pessoa.rg) : '-';
+    if (tipo === 'rg') return pessoa.rg ? RosterWork.campos.mascararRg(String(pessoa.rg).replace(/\D/g, '')) : '-';
     if (tipo === 'telefone') return pessoa.celular ? formatarCelular(pessoa.celular) : '-';
     if (tipo === 'email') return pessoa.email || '-';
     return formatarCpf(pessoa.usuario_id);

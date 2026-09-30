@@ -28,13 +28,15 @@
     return d.slice(0, 3) + '.' + d.slice(3, 6) + '.' + d.slice(6, 9) + '-' + d.slice(9);
   }
 
-  /* RG aceita os dois formatos em uso: 00.000.000-0 (9 dígitos) e 00.000.000-00 (10) */
+  /* RG nos dois formatos em uso: 0.000.000-0 (8 dígitos) e 00.000.000-0 (9);
+     ao digitar o 9º número, o desenho passa de um para o outro (igual ao login) */
   function mascararRg(d) {
-    d = d.substring(0, 10);
-    if (d.length <= 2) return d;
-    if (d.length <= 5) return d.slice(0, 2) + '.' + d.slice(2);
-    if (d.length <= 8) return d.slice(0, 2) + '.' + d.slice(2, 5) + '.' + d.slice(5);
-    return d.slice(0, 2) + '.' + d.slice(2, 5) + '.' + d.slice(5, 8) + '-' + d.slice(8);
+    d = d.substring(0, 9);
+    if (d.length === 9) return d.slice(0, 2) + '.' + d.slice(2, 5) + '.' + d.slice(5, 8) + '-' + d.slice(8);
+    if (d.length <= 1) return d;
+    if (d.length <= 4) return d.slice(0, 1) + '.' + d.slice(1);
+    if (d.length <= 7) return d.slice(0, 1) + '.' + d.slice(1, 4) + '.' + d.slice(4);
+    return d.slice(0, 1) + '.' + d.slice(1, 4) + '.' + d.slice(4, 7) + '-' + d.slice(7);
   }
 
   function mascararCelular(d) {
@@ -266,10 +268,10 @@
   }
 
   /* RG não tem dígito verificador padrão; valem os dois formatos em uso:
-     00.000.000-0 (9 dígitos) e 00.000.000-00 (10) */
+     0.000.000-0 (8 dígitos) e 00.000.000-0 (9) */
   function validarRg(valor) {
     var n = soDigitos(valor).length;
-    return n === 9 || n === 10;
+    return n === 8 || n === 9;
   }
 
   function validarEmail(valor) {

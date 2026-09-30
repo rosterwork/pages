@@ -19,7 +19,7 @@
 
   var PESSOAIS = [
     { k: 'nome_completo', rotulo: 'Nome completo', tipo: 'nome', max: 100, ph: 'Ex.: João Carlos Andrade' },
-    { k: 'rg', rotulo: 'RG', tipo: 'rg', max: 13, num: true, ph: '00.000.000-0' },
+    { k: 'rg', rotulo: 'RG', tipo: 'rg', max: 12, num: true, ph: '00.000.000-0' },
     { k: 'data_de_nascimento', rotulo: 'Nascimento', tipo: 'data', max: 10, num: true, ph: 'dd/mm/aaaa', cal: true },
     { k: 'cnh', rotulo: 'CNH', tipo: 'selecao', opcoes: ['Nenhuma', 'A', 'B', 'C', 'D', 'E', 'AB', 'AC', 'AD', 'AE'] },
     { k: 'celular', rotulo: 'Celular', tipo: 'celular', max: 15, num: true, ph: '(00) 00000-0000' },
