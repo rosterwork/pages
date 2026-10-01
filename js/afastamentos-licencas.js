@@ -1,7 +1,7 @@
 /* ============================================================
    LICENÇAS — painel "Nova licença" (modo criação, só admin)
-   Unidade (seletor em árvore) -> Militar, Tipo (5 tipos; saúde própria
-   mostra CID/médico), Período (máscara + calendário) e Motivo. Um
+   Unidade (seletor em árvore) -> Militar, Tipo (5 tipos), Período
+   (máscara + calendário) e Motivo (sem dado médico). Um
    indicador sugere fora/segue o fluxo pela regra dos 16 dias (o admin
    decide no toggle). Salva por RosterWork.afastamentosDados.inserirLicenca.
    ============================================================ */
@@ -98,10 +98,9 @@
     atualizarSalvar(raiz);
   }
 
-  /* Tipo: dropdown estático (5 tipos); saúde própria revela CID/médico */
+  /* Tipo: dropdown estático (5 tipos) */
   function ligarTipo(raiz) {
     var gatilho = raiz.querySelector('#lic-tipo');
-    var saude = raiz.querySelector('#lic-saude');
     var drop = gatilho ? gatilho.closest('.dropdown') : null;
     var itens = drop ? drop.querySelectorAll('.dropdown-item') : [];
     for (var i = 0; i < itens.length; i++) {
@@ -109,7 +108,6 @@
         var btn = ev.currentTarget;
         tipoEscolhido = btn.getAttribute('data-tipo');
         definirTexto(gatilho, btn.textContent.trim());
-        if (saude) saude.classList.toggle('oculto', tipoEscolhido !== 'propria_saude');
         sujo = true;
         atualizarSalvar(raiz);
       });
@@ -171,7 +169,6 @@
 
   function salvar(raiz, confirmarTrocas) {
     if (!militarEscolhido || !tipoEscolhido || calcularDias(raiz) == null) return;
-    var ehSaude = tipoEscolhido === 'propria_saude';
     var btnSalvar = raiz.querySelector('#lic-salvar'); if (btnSalvar) btnSalvar.disabled = true;
     if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal();
     var corpo = {
@@ -180,8 +177,6 @@
       p_data_fim: RosterWork.data.paraISO(raiz.querySelector('#lic-fim').value),
       p_tipo: tipoEscolhido,
       p_fora_do_fluxo: foraDoFluxo,
-      p_cid: ehSaude ? raiz.querySelector('#lic-cid').value.trim() : null,
-      p_medico: ehSaude ? raiz.querySelector('#lic-medico').value.trim() : null,
       p_motivo: raiz.querySelector('#lic-motivo').value.trim(),
       p_confirmar_trocas: !!confirmarTrocas
     };
