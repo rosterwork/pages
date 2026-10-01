@@ -19,6 +19,11 @@
   gap: 8px;
 }
 
+/* "Ler os termos" (seção Privacidade): do tamanho do texto, à esquerda */
+.perfil-ler-termos {
+  align-self: flex-start;
+}
+
 /* ---------- cartão de identificação (topo da aba Perfil) ---------- */
 .perfil-cartao {
   display: flex;

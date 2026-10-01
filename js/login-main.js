@@ -55,3 +55,10 @@
   var botao = document.getElementById('btn-esqueci-senha');
   if (botao) botao.addEventListener('click', function () { window.location.href = 'recuperar-senha.html'; });
 })();
+
+/* "Termos e privacidade" abre a página pública em outra aba (o login continua aberto) */
+(function () {
+  'use strict';
+  var botao = document.getElementById('btn-termos');
+  if (botao) botao.addEventListener('click', function () { window.open('termos.html', '_blank', 'noopener'); });
+})();

@@ -141,6 +141,9 @@
     var dataPrimeira = primeira ? V.parseData(primeira.value) : null;
     if (inclusao && dataPrimeira && dataPrimeira < inclusao) erro(el('cc-inclusao'), T().inclusaoDepoisPromocao);
 
+    /* a ciência dos termos vale nos dois caminhos */
+    if (el('cc-termos').getAttribute('aria-checked') !== 'true') erro(el('cc-termos'), RW.mensagens.termos.obrigatorio);
+
     return ok;
   }
 
@@ -196,7 +199,8 @@
       p_email: valor('cc-email').toLowerCase(),
       p_celular: V.soDigitos(valor('cc-celular')),
       p_senha: el('cc-senha').value,
-      p_correcoes: montarCorrecoes()
+      p_correcoes: montarCorrecoes(),
+      p_termos_ciente: true
     })
       .then(function (r) {
         RW.pararCarregando(botao);
@@ -234,7 +238,8 @@
       p_lotacao_atual: parseInt(selecao('cc-lotacao'), 10),
       p_tipo: selecao('cc-setor'),
       p_promocoes: promocoes,
-      p_senha: el('cc-senha').value
+      p_senha: el('cc-senha').value,
+      p_termos_ciente: true
     })
       .then(function (r) {
         RW.pararCarregando(botao);
@@ -270,9 +275,26 @@
     else enviarNovo(botao, promo.promocoes);
   }
 
+  /* ---------- ciência dos termos ----------
+     a caixinha marca e desmarca (também pelo texto); "Ler os termos" abre a página
+     em outra aba, para o formulário preenchido não se perder */
+  function ligarTermos() {
+    var caixa = el('cc-termos');
+    function alternar() {
+      var marcada = caixa.getAttribute('aria-checked') !== 'true';
+      caixa.setAttribute('aria-checked', marcada ? 'true' : 'false');
+      caixa.classList.toggle('caixa-selecao--marcada', marcada);
+      if (marcada) C.limparErro(caixa);
+    }
+    caixa.addEventListener('click', alternar);
+    el('cc-termos-rotulo').addEventListener('click', alternar);
+    el('cc-termos-ler').addEventListener('click', function () { window.open('termos.html', '_blank', 'noopener'); });
+  }
+
   function ligar(fnRpc) {
     rpc = fnRpc;
     ligarValidacoes();
+    ligarTermos();
     var botao = el('cc-enviar');
     if (botao) botao.addEventListener('click', enviar);
   }

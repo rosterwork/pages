@@ -94,6 +94,29 @@
   width: 100%;
 }
 
+/* ciência dos termos: a caixinha e o texto numa linha; "Ler os termos" e o erro logo abaixo, alinhados ao texto */
+.criar-conta-termos-linha {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.criar-conta-termos-rotulo {
+  font-size: 13px;
+  color: var(--texto);
+  cursor: pointer;
+}
+
+.criar-conta-corpo .criar-conta-termos-ler {
+  width: auto;
+  align-self: flex-start;
+  margin-left: 24px;
+}
+
+.criar-conta-termos .campo-erro-texto {
+  margin-left: 24px;
+}
+
 /* o link de volta, centrado sob o botão */
 .criar-conta-links {
   display: flex;

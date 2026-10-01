@@ -67,6 +67,18 @@
   padding: 16px;
 }
 
+/* texto corrido no corpo (ex.: a janela de ciência dos termos) */
+.modal-texto {
+  margin: 0;
+  font-size: 13px;
+  color: var(--texto);
+}
+
+/* botão de texto no corpo fica à esquerda, do tamanho do texto (não estica na coluna) */
+.modal-corpo > .botao--texto {
+  align-self: flex-start;
+}
+
 /* rodapé fixo: ações alinhadas à direita */
 .modal-rodape {
   display: flex;

@@ -115,6 +115,14 @@
       falhaRedefinir: 'Não foi possível redefinir a senha. Tente de novo.'
     },
 
+    /* termos de uso e privacidade (Criar conta, janela de ciência ao entrar e Meu perfil) */
+    termos: {
+      obrigatorio: 'Marque que leu os Termos de uso e privacidade.',
+      falhaCiencia: 'Não foi possível registrar a ciência. Tente de novo.',
+      pendente: 'Ciência pendente',
+      ciente: function (versao, dataBR) { return 'Ciente da versão ' + versao + ' em ' + dataBR; }
+    },
+
     /* fale conosco (modal de recado) */
     faleConosco: {
       assuntoVazio: 'Informe o assunto.',

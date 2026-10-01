@@ -72,6 +72,12 @@
   color: var(--texto-suave);
 }
 
+/* versão do sistema no rodapé do menu do usuário: informação, não ação */
+.dropdown-versao {
+  font-size: 11px;
+  color: var(--texto-fraco);
+}
+
 .dropdown-divisor {
   height: 0;
   margin: 4px 0;

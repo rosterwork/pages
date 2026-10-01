@@ -121,11 +121,19 @@
             <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-manual.svg#icone-manual" /></svg>
             <span>Manual</span>
           </button>
+          <button type="button" class="dropdown-item" id="btn-termos">
+            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-termos.svg#icone-termos" /></svg>
+            <span>Termos e privacidade</span>
+          </button>
           <div class="dropdown-divisor"></div>
           <button id="btn-sair" class="dropdown-item dropdown-item--perigo">
             <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-sair.svg#icone-sair" /></svg>
             <span>Sair</span>
           </button>
+          <!-- a versão do sistema mora só aqui (critérios: REGRAS §11) -->
+          <div class="dropdown-menu-rodape">
+            <span class="dropdown-versao">Versão 1.0.0</span>
+          </div>
         </div>
       </div>
     </header>
@@ -296,6 +304,23 @@
     </div>
   </div>
 
+  <!-- TERMOS: ciência da versão vigente ao entrar (só fecha por "Estou ciente" ou "Sair"; js/index-termos.js) -->
+  <div class="modal-veu" id="veu-termos">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="termos-ciencia-titulo">
+      <div class="modal-cabecalho">
+        <span class="modal-titulo" id="termos-ciencia-titulo">Termos de uso e privacidade</span>
+      </div>
+      <div class="modal-corpo">
+        <p class="modal-texto">Para continuar usando o sistema, leia os Termos de uso e privacidade e confirme que está ciente.</p>
+        <button type="button" class="botao botao--texto" id="termos-ciencia-ler">Ler os termos</button>
+      </div>
+      <div class="modal-rodape">
+        <button type="button" class="botao" id="termos-ciencia-sair">Sair</button>
+        <button type="button" class="botao botao--primario" id="termos-ciencia-confirmar">Estou ciente</button>
+      </div>
+    </div>
+  </div>
+
   <!-- FALE CONOSCO: envio de recado (exceção à regra § modal: formulário em modal, para bloquear a tela ao fundo; ver REGRAS §4) -->
   <div class="modal-veu" id="veu-fale-conosco">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="fc-titulo">
@@ -387,6 +412,7 @@
   <script src="componentes/js/geral-impacto.js"></script>
   <script src="js/index-navegacao.js"></script>
   <script src="js/index-fale-conosco.js"></script>
+  <script src="js/index-termos.js"></script>
 
   <!-- MOLDES: análise de impacto na escala (componente geral-impacto — Trocas e Folgas) -->
   <template id="tpl-geral-impacto-veredito">

@@ -55,6 +55,17 @@
     });
   }
 
+  /* Privacidade: a ciência dos Termos de uso e privacidade (a leitura mora no index-termos.js) */
+  function ligarTermos() {
+    if (!RosterWork.termos) return;
+    var ler = document.getElementById('perfil-ler-termos');
+    if (ler) ler.addEventListener('click', RosterWork.termos.abrirPagina);
+    RosterWork.termos.situacao().then(function (s) {
+      var M = RosterWork.mensagens.termos;
+      preencher('perfil-ver-termos', s ? (s.pendente ? M.pendente : M.ciente(s.versao_ciente, s.ciente_em_br)) : null);
+    });
+  }
+
   /* abas do subcabeçalho: mesmo mecanismo das outras páginas */
   function ligarAbas() {
     var trilho = document.getElementById('perfil-abas');
@@ -113,6 +124,7 @@
 
     ligarAbas();
     ligarTema();
+    ligarTermos();
     if (RosterWork.perfilSenha) RosterWork.perfilSenha.iniciar(usuario);
 
     /* uma leitura da ficha alimenta a aba Perfil e o formulário de Meus dados */
