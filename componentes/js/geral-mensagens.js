@@ -611,6 +611,7 @@
       acoes: {
         criacao: 'Criou',
         atualizacao: 'Editou',
+        alteracao: 'Alterou',
         exclusao: 'Excluiu',
         adicao: 'Adicionou',
         remocao: 'Removeu',
