@@ -5,6 +5,9 @@
    UMA vez (na célula ativa) e as SETAS movem entre as células.
    Enter/Espaço ativa (dispara o clique que já existe).
    Uso: RosterWork.gradeTeclado.ativar(grade, { celula, linha })
+   ou, para leiaute próprio (ex.: o calendário, com várias células por
+   dia): { celula, matriz } — matriz(grade) devolve as linhas de
+   células prontas, com null nos buracos (dias de fora do mês).
    Chamar após cada render (a grade é reconstruída; setup idempotente
    por elemento — a grade nova recebe o listener; a antiga é descartada).
    ============================================================ */
@@ -28,8 +31,19 @@
     celula.focus();
   }
 
+  /* primeira / última célula existente da linha (pula os buracos null) */
+  function primeiraDaLinha(linha) {
+    for (var i = 0; i < linha.length; i++) if (linha[i]) return linha[i];
+    return null;
+  }
+
+  function ultimaDaLinha(linha) {
+    for (var i = linha.length - 1; i >= 0; i--) if (linha[i]) return linha[i];
+    return null;
+  }
+
   function ativar(grade, op) {
-    if (!grade || !op || !op.celula || !op.linha) return;
+    if (!grade || !op || !op.celula || (!op.linha && !op.matriz)) return;
     var celulas = grade.querySelectorAll(op.celula);
     if (!celulas.length) return;
 
@@ -50,7 +64,7 @@
       var seta = { ArrowRight: 1, ArrowLeft: 1, ArrowDown: 1, ArrowUp: 1, Home: 1, End: 1 };
       if (!seta[evento.key]) return;
 
-      var m = matriz(grade, op);
+      var m = op.matriz ? op.matriz(grade) : matriz(grade, op);
       var r = -1, col = -1;
       for (var i = 0; i < m.length && r === -1; i++) {
         var j = m[i].indexOf(c);
@@ -63,8 +77,8 @@
       else if (evento.key === 'ArrowLeft') destino = m[r][col - 1];
       else if (evento.key === 'ArrowDown') destino = m[r + 1] && m[r + 1][col];
       else if (evento.key === 'ArrowUp') destino = m[r - 1] && m[r - 1][col];
-      else if (evento.key === 'Home') destino = m[r][0];
-      else if (evento.key === 'End') destino = m[r][m[r].length - 1];
+      else if (evento.key === 'Home') destino = primeiraDaLinha(m[r]);
+      else if (evento.key === 'End') destino = ultimaDaLinha(m[r]);
 
       if (destino) { evento.preventDefault(); focar(grade, op, destino); }
     });

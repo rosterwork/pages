@@ -106,47 +106,32 @@
   <div class="escala-dia-unidade" data-abre-dia></div>
 </template>
 
-<!-- ===== modo Colunas: grade flexível (dias × unidades ou unidades × dias) ===== -->
+<!-- ===== modo Colunas → Unidades: grade dias (linhas) × unidades (colunas) =====
+     (o Colunas → Dias é o calendário contínuo: componente geral-calendario-mes + tpl-escala-calendario-unidade) -->
 <template id="tpl-escala-colunas">
   <div class="escala-colunas">
     <div class="escala-colunas-grade"></div>
   </div>
 </template>
 
-<!-- cabeçalho (fixo no topo): canto + uma coluna (dia ou unidade) por coluna -->
+<!-- cabeçalho (fixo no topo): canto + uma unidade por coluna -->
 <template id="tpl-escala-colunas-cabecalho">
   <div class="escala-colunas-linha escala-colunas-cabecalho">
     <div class="escala-colunas-canto"></div>
   </div>
 </template>
 
-<!-- cabeçalho de coluna = dia (Colunas → Dias) -->
-<template id="tpl-escala-colunas-cab-dia">
-  <div class="escala-colunas-cab-dia">
-    <span class="escala-colunas-cab-dia-semana"></span>
-    <span class="escala-colunas-cab-dia-numero"></span>
-  </div>
-</template>
-
-<!-- cabeçalho de coluna = unidade (Colunas → Unidades) -->
+<!-- cabeçalho de coluna = unidade -->
 <template id="tpl-escala-colunas-cab-unidade">
   <div class="escala-colunas-cab-unidade"></div>
 </template>
 
-<!-- uma linha: rótulo fixo (unidade ou dia) + as células (o JS anexa, reusa tpl-escala-mes-celula) -->
+<!-- uma linha: rótulo fixo (o dia) + as células (o JS anexa, reusa tpl-escala-mes-celula) -->
 <template id="tpl-escala-colunas-linha">
   <div class="escala-colunas-linha"></div>
 </template>
 
-<!-- rótulo de linha = unidade (Colunas → Dias) -->
-<template id="tpl-escala-colunas-rotulo-unidade">
-  <div class="escala-colunas-rotulo-unidade">
-    <span class="escala-colunas-rotulo-nome"></span>
-    <span class="escala-colunas-rotulo-cidade"></span>
-  </div>
-</template>
-
-<!-- rótulo de linha = dia (Colunas → Unidades) -->
+<!-- rótulo de linha = dia -->
 <template id="tpl-escala-colunas-rotulo-dia">
   <div class="escala-colunas-rotulo-dia">
     <span class="escala-colunas-rotulo-semana"></span>
@@ -169,7 +154,7 @@
 
 
 
-<!-- modo Mês → Calendário: um bloco por unidade dentro do dia (nome + a célula do Mês) -->
+<!-- modos Mês → Calendário e Colunas → Dias: um bloco por unidade dentro do dia (nome + a célula do Mês) -->
 <template id="tpl-escala-calendario-unidade">
   <div class="escala-calendario-unidade">
     <span class="escala-calendario-unidade-nome"></span>

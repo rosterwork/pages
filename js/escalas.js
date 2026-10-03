@@ -74,6 +74,12 @@
     return ativo ? parseInt(ativo.getAttribute('data-colunas'), 10) : 3;
   }
 
+  /* modos que mostram o mês inteiro (período = mês, setas ±1 mês): Mês e Colunas → Dias */
+  function periodoMensal() {
+    var modo = modoAtual();
+    return modo === 'mes' || (modo === 'colunas' && tipoColunasAtual() === 'dias');
+  }
+
   /* dentro de Colunas: "Dias" mostra a quantidade (2–5); "Unidades" mostra as unidades */
   function aplicarTipoColunas() {
     var tipo = tipoColunasAtual();
@@ -239,14 +245,16 @@
       window.RosterWork.escalasDia.renderizar(corpo, { dataRef: refData });
       return;
     }
-    /* modo Colunas: grade flexível — Dias (unidades×N dias) ou Unidades (7 dias×unidades ligadas) */
+    /* modo Colunas: Dias = o calendário do mês em N colunas contínuas (mesma montagem do Mês → Calendário);
+       Unidades = grade 7 dias × unidades ligadas */
     if (modoAtual() === 'colunas') {
-      if (!window.RosterWork.escalasColunas) { mostrarEstado(corpo, 'Em construção.'); return; }
       if (!unidades && idsAplicados().length) { mostrarCarregando(corpo); return; }
       if (tipoColunasAtual() === 'unidades') {
-        window.RosterWork.escalasColunas.renderizar(corpo, { tipo: 'unidades', colunas: colunasUnidadesLigadas(), dataRef: refData, vigente: vigente });
+        if (!window.RosterWork.escalasColunas) { mostrarEstado(corpo, 'Em construção.'); return; }
+        window.RosterWork.escalasColunas.renderizar(corpo, { colunas: colunasUnidadesLigadas(), dataRef: refData, vigente: vigente });
       } else {
-        window.RosterWork.escalasColunas.renderizar(corpo, { tipo: 'dias', colunas: unidadesColuna(), dataRef: refData, quantidade: quantidadeColunas(), vigente: vigente });
+        if (!window.RosterWork.escalasCalendario) { mostrarEstado(corpo, 'Em construção.'); return; }
+        window.RosterWork.escalasCalendario.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData, diasPorLinha: quantidadeColunas(), vigente: vigente });
       }
       return;
     }
@@ -291,18 +299,13 @@
   function textoPeriodo() {
     var modo = modoAtual();
     if (modo === 'dia') return formatarDia(refData);
-    if (modo === 'mes') return formatarMes(refData);
+    if (periodoMensal()) return formatarMes(refData);
     if (modo === 'militares') {
       /* quinzena: 14 dias a partir do domingo da semana (navega ±7, mostra 14) */
       var domQ = inicioSemana(refData);
       var fimQ = new Date(domQ);
       fimQ.setDate(fimQ.getDate() + 13);
       return formatarIntervalo(domQ, fimQ);
-    }
-    if (modo === 'colunas' && tipoColunasAtual() === 'dias') {
-      var fim = new Date(refData);
-      fim.setDate(fim.getDate() + quantidadeColunas() - 1);
-      return formatarIntervalo(refData, fim);
     }
     /* semana e colunas→unidades: a semana de domingo a sábado */
     var dom = inicioSemana(refData);
@@ -320,15 +323,13 @@
     var modo = modoAtual();
     if (modo === 'dia') {
       refData.setDate(refData.getDate() + direcao);
-    } else if (modo === 'mes') {
+    } else if (periodoMensal()) {
       /* navega por mês inteiro sem transbordar: em dia 29-31, setMonth sozinho pularia para o mês seguinte */
       var diaMes = refData.getDate();
       refData.setDate(1);
       refData.setMonth(refData.getMonth() + direcao);
       var ultimoDiaMes = new Date(refData.getFullYear(), refData.getMonth() + 1, 0).getDate();
       refData.setDate(Math.min(diaMes, ultimoDiaMes));
-    } else if (modo === 'colunas' && tipoColunasAtual() === 'dias') {
-      refData.setDate(refData.getDate() + direcao * quantidadeColunas());
     } else {
       refData.setDate(refData.getDate() + direcao * 7);
     }
@@ -476,9 +477,8 @@
         ancora: conteudo.querySelector('.geral-periodo'),
         obterModo: function () {
           var modo = modoAtual();
-          if (modo === 'mes') return 'mes';
-          if (modo === 'semana' || modo === 'militares') return 'semana';
-          if (modo === 'colunas') return tipoColunasAtual() === 'unidades' ? 'semana' : 'dia';
+          if (periodoMensal()) return 'mes';
+          if (modo === 'semana' || modo === 'militares' || modo === 'colunas') return 'semana';
           return 'dia';
         },
         obterData: function () { return refData; },

@@ -3,6 +3,8 @@
    7 dias da semana nas colunas, semanas nas linhas. Cabeçalho
    dos dias fixo no topo. Célula = um dia, com o número no topo
    esquerdo; o conteúdo dentro de cada dia é de quem usa.
+   Variante --continuo (diasPorLinha): N colunas (custom property
+   --calendario-colunas), sem cabeçalho, sigla + número em cada dia.
    Componente compartilhado (Escala e Extrajornada).
    O z-index 2 é o empilhamento interno do sticky (exceção à
    escala 10/20/30/40; ver MANUAL §8). Montagem:
@@ -20,7 +22,7 @@
 /* ---------- cabeçalho dos dias da semana (7 colunas, fixo no topo) ---------- */
 .geral-calendario-mes-cabecalho {
   display: grid;
-  grid-template-columns: repeat(7, minmax(200px, 1fr));
+  grid-template-columns: repeat(var(--calendario-colunas, 7), minmax(200px, 1fr));
   position: sticky;
   top: 0;
   min-height: 32px;
@@ -49,11 +51,11 @@
   flex-direction: column;
 }
 
-/* cada semana: 7 colunas de no mínimo 200px que crescem para preencher;
-   quando não cabem, a grade rola na horizontal */
+/* cada semana: 7 colunas (ou N, na variante contínua) de no mínimo 200px que crescem
+   para preencher; quando não cabem, a grade rola na horizontal */
 .geral-calendario-mes-semana {
   display: grid;
-  grid-template-columns: repeat(7, minmax(200px, 1fr));
+  grid-template-columns: repeat(var(--calendario-colunas, 7), minmax(200px, 1fr));
 }
 
 /* ---------- célula de um dia ---------- */
@@ -113,4 +115,36 @@
 .geral-calendario-mes-dia--fora .geral-calendario-mes-dia-topo {
   background-color: var(--fundo-suave);
   border-bottom: none;   /* dia de outro mês não tem conteúdo abaixo, então sem linha solta */
+}
+
+/* sigla do dia da semana ao lado do número: só existe na variante contínua (abaixo) */
+.geral-calendario-mes-sigla {
+  display: none;
+}
+
+/* ---------- variante contínua (diasPorLinha): N colunas, sem cabeçalho dom…sáb ---------- */
+/* o dia da semana muda a cada linha, então não há cabeçalho fixo: cada dia traz a sigla */
+.geral-calendario-mes--continuo .geral-calendario-mes-cabecalho {
+  display: none;
+}
+
+/* sem cabeçalho, a faixa do número gruda no topo; sigla e número lado a lado ("SÁB 3") */
+.geral-calendario-mes--continuo .geral-calendario-mes-dia-topo {
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.geral-calendario-mes--continuo .geral-calendario-mes-sigla {
+  display: inline;
+  font-size: 9px;   /* microetiqueta: rótulo não-textual em caixa alta (MANUAL §5) */
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--texto-fraco);
+}
+
+.geral-calendario-mes--continuo .geral-calendario-mes-dia--fora .geral-calendario-mes-sigla {
+  color: var(--texto-debil);
 }

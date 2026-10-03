@@ -19,7 +19,7 @@
 
 /* larguras: coluna da unidade (fixa) + 7 dias que crescem para preencher */
 .escala-semana-grade {
-  --col-unidade: 216px;
+  --col-unidade: 160px;
 }
 
 /* cada linha é uma grade própria com as mesmas colunas — por isso alinham */

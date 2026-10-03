@@ -1,12 +1,11 @@
 /* ============================================================
-   ESCALAS — modo Colunas (grade flexível)
-   Dois sub-tipos, ambos reusando a célula compartilhada
+   ESCALAS — modo Colunas → Unidades (grade flexível)
+   Os 7 dias da semana nas linhas × as unidades ligadas nas colunas
+   (o Mês numa janela de semana), reusando a célula compartilhada
    escalas-celula.js (mesmo miolo do Mês/Semana), então o painel
-   (escalas-painel.js) casa por `.escala-mes-celula` sem mudança:
-     • Dias      — unidades nas linhas × N dias (2–5) nas colunas,
-                   a partir da referência (a Semana com N dias).
-     • Unidades  — os 7 dias da semana nas linhas × as unidades
-                   ligadas nas colunas (o Mês numa janela de semana).
+   (escalas-painel.js) casa por `.escala-mes-celula` sem mudança.
+   O Colunas → Dias é o calendário contínuo (escalas-calendario.js
+   com diasPorLinha).
    Dados: escalas-dados.js (RPC ler_escala_mes). Não escreve estilo
    (só a custom property --n-colunas, orientada a dados).
    ============================================================ */
@@ -38,17 +37,7 @@
     return { iso: dataISO(d), numero: d.getDate(), semana: sem, fds: (sem === 0 || sem === 6), hoje: dataISO(d) === dataISO(new Date()) };
   }
 
-  /* N dias consecutivos a partir da referência (Colunas → Dias) */
-  function diasConsecutivos(dataRef, n) {
-    var base = new Date(dataRef.getFullYear(), dataRef.getMonth(), dataRef.getDate());
-    var dias = [];
-    for (var i = 0; i < n; i++) {
-      dias.push(infoDia(new Date(base.getFullYear(), base.getMonth(), base.getDate() + i)));
-    }
-    return dias;
-  }
-
-  /* os 7 dias (domingo→sábado) a partir da referência (Colunas → Unidades) */
+  /* os 7 dias (domingo→sábado) a partir da referência */
   function diasDaSemana(dataRef) {
     var dom = inicioSemana(dataRef);
     var dias = [];
@@ -87,33 +76,14 @@
     return celula;
   }
 
-  /* cabeçalho de coluna = um dia (Colunas → Dias) */
-  function cabecalhoDia(info) {
-    var cel = RosterWork.tpl('tpl-escala-colunas-cab-dia');
-    cel.querySelector('.escala-colunas-cab-dia-semana').textContent = DIAS_ABREV[info.semana];
-    cel.querySelector('.escala-colunas-cab-dia-numero').textContent = String(info.numero);
-    if (info.fds) cel.classList.add('escala-colunas-cab-dia--fds');
-    if (info.hoje) cel.classList.add('escala-colunas-cab-dia--hoje');
-    return cel;
-  }
-
-  /* cabeçalho de coluna = uma unidade (Colunas → Unidades) */
+  /* cabeçalho de coluna = uma unidade */
   function cabecalhoUnidade(unidade) {
     var cel = RosterWork.tpl('tpl-escala-colunas-cab-unidade');
     cel.textContent = unidade.nome;
     return cel;
   }
 
-  /* rótulo de linha = uma unidade (Colunas → Dias) */
-  function rotuloUnidade(unidade) {
-    var r = RosterWork.tpl('tpl-escala-colunas-rotulo-unidade');
-    r.querySelector('.escala-colunas-rotulo-nome').textContent = unidade.nome;
-    var cidade = r.querySelector('.escala-colunas-rotulo-cidade');
-    if (cidade) cidade.textContent = unidade.cidade || '';
-    return r;
-  }
-
-  /* rótulo de linha = um dia (Colunas → Unidades) */
+  /* rótulo de linha = um dia */
   function rotuloDia(info) {
     var r = RosterWork.tpl('tpl-escala-colunas-rotulo-dia');
     r.querySelector('.escala-colunas-rotulo-semana').textContent = DIAS_ABREV[info.semana];
@@ -123,19 +93,15 @@
     return r;
   }
 
-  /* desenha a grade conforme o sub-tipo (dias × unidades) */
+  /* desenha a grade: os 7 dias da semana (linhas) × as unidades ligadas (colunas) */
   function renderizar(corpo, opcoes) {
     if (!corpo) return;
     if (window.RosterWork.escalasCelula) RosterWork.escalasCelula.limparObservadores();
-    var tipo = (opcoes && opcoes.tipo) || 'dias';
-    var colunas = (opcoes && opcoes.colunas) || [];   // as unidades envolvidas
+    var colunas = (opcoes && opcoes.colunas) || [];   // as unidades ligadas
     var dataRef = (opcoes && opcoes.dataRef) || new Date();
-    var quantidade = (opcoes && opcoes.quantidade) || 3;
 
     if (!colunas.length) {
-      mostrarEstado(corpo, tipo === 'unidades'
-        ? 'Ligue ao menos uma unidade nas abas acima.'
-        : 'Selecione uma companhia ou pelotão no seletor de unidades.');
+      mostrarEstado(corpo, 'Ligue ao menos uma unidade nas abas acima.');
       return;
     }
     if (!window.RosterWork.escalasDados) {
@@ -145,7 +111,7 @@
 
     mostrarCarregando(corpo);
 
-    var dias = tipo === 'unidades' ? diasDaSemana(dataRef) : diasConsecutivos(dataRef, quantidade);
+    var dias = diasDaSemana(dataRef);
     var inicio = dias[0].iso, fim = dias[dias.length - 1].iso;
     var ids = colunas.map(function (c) { return c.id; });
 
@@ -164,39 +130,22 @@
       var maxGlobal = RosterWork.escalasCelula ? RosterWork.escalasCelula.calcularMaxGlobal(cobertura, ids) : 0;
       maxGlobalAtual = maxGlobal;
 
-      /* nº de colunas da grade (dias ou unidades) — orienta o grid-template via custom property */
-      var nColunas = tipo === 'unidades' ? colunas.length : dias.length;
-      grade.style.setProperty('--n-colunas', String(nColunas));
+      /* nº de colunas da grade (as unidades) — orienta o grid-template via custom property */
+      grade.style.setProperty('--n-colunas', String(colunas.length));
 
       var cabecalho = RosterWork.tpl('tpl-escala-colunas-cabecalho');
-      if (tipo === 'unidades') {
-        colunas.forEach(function (c) { cabecalho.appendChild(cabecalhoUnidade(c)); });
-      } else {
-        dias.forEach(function (info) { cabecalho.appendChild(cabecalhoDia(info)); });
-      }
+      colunas.forEach(function (c) { cabecalho.appendChild(cabecalhoUnidade(c)); });
       grade.appendChild(cabecalho);
 
-      if (tipo === 'unidades') {
-        /* uma linha por dia; as colunas são as unidades ligadas */
-        dias.forEach(function (info) {
-          var linha = RosterWork.tpl('tpl-escala-colunas-linha');
-          linha.appendChild(rotuloDia(info));
-          colunas.forEach(function (c) {
-            linha.appendChild(montarCelula(c, info.iso, dados, cobertura, erro, conflito, maxGlobal));
-          });
-          grade.appendChild(linha);
-        });
-      } else {
-        /* uma linha por unidade; as colunas são os N dias */
+      /* uma linha por dia; as colunas são as unidades ligadas */
+      dias.forEach(function (info) {
+        var linha = RosterWork.tpl('tpl-escala-colunas-linha');
+        linha.appendChild(rotuloDia(info));
         colunas.forEach(function (c) {
-          var linha = RosterWork.tpl('tpl-escala-colunas-linha');
-          linha.appendChild(rotuloUnidade(c));
-          dias.forEach(function (info) {
-            linha.appendChild(montarCelula(c, info.iso, dados, cobertura, erro, conflito, maxGlobal));
-          });
-          grade.appendChild(linha);
+          linha.appendChild(montarCelula(c, info.iso, dados, cobertura, erro, conflito, maxGlobal));
         });
-      }
+        grade.appendChild(linha);
+      });
 
       corpo.appendChild(wrap);
       if (RosterWork.escalasCelula) RosterWork.escalasCelula.ativarGraficos(wrap);

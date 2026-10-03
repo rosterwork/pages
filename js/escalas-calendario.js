@@ -6,6 +6,8 @@
    do Mês → Agenda (escalas-celula.js: gráfico de cobertura + lista).
    A célula reusa `.escala-mes-celula`, então o painel (escalas-painel.js)
    abre e realça sem mudança. Não escreve estilo CSS.
+   Também desenha o Colunas → Dias: o mesmo calendário com a opção
+   diasPorLinha (N colunas em sequência contínua; ver o componente).
    ============================================================ */
 (function () {
   'use strict';
@@ -56,7 +58,24 @@
     });
   }
 
-  /* desenha o mês de opcoes.dataRef como calendário, com a escala em cada dia */
+  /* matriz da navegação por teclado: cada linha do calendário vira uma linha por unidade, com a
+     célula dela em cada dia (null nos dias de fora do mês). Assim ↑/↓ passam pelas unidades do
+     dia e seguem para a linha de baixo; ←/→ andam entre os dias, na mesma unidade */
+  function matrizTeclado(wrap) {
+    var m = [];
+    Array.prototype.forEach.call(wrap.querySelectorAll('.geral-calendario-mes-semana'), function (linha) {
+      var dias = Array.prototype.map.call(linha.children, function (d) { return d.querySelectorAll('.escala-mes-celula'); });
+      var porDia = 0;
+      dias.forEach(function (cels) { porDia = Math.max(porDia, cels.length); });
+      for (var u = 0; u < porDia; u++) {
+        m.push(dias.map(function (cels) { return cels[u] || null; }));
+      }
+    });
+    return m;
+  }
+
+  /* desenha o mês de opcoes.dataRef como calendário, com a escala em cada dia
+     (opcoes.diasPorLinha: N colunas contínuas, o Colunas → Dias; ausente = semana dom→sáb) */
   function renderizar(corpo, opcoes) {
     if (!corpo) return;
     if (window.RosterWork.escalasCelula) RosterWork.escalasCelula.limparObservadores();
@@ -93,6 +112,7 @@
          (os de outro mês ficam só com o número apagado, como calendário tradicional) */
       RosterWork.geralCalendarioMes.renderizar(corpo, {
         dataRef: dataRef,
+        diasPorLinha: opcoes.diasPorLinha,
         aoDia: function (celulaDia, data, noMes) {
           if (!noMes) return;
           preencherDia(celulaDia, dataISO(data), colunas, dados, cobertura, erro, conflito, maxGlobal);
@@ -101,6 +121,7 @@
 
       var wrap = corpo.querySelector('.geral-calendario-mes');
       if (wrap && RosterWork.escalasCelula) RosterWork.escalasCelula.ativarGraficos(wrap);
+      if (wrap && RosterWork.gradeTeclado) RosterWork.gradeTeclado.ativar(wrap, { celula: '.escala-mes-celula', matriz: matrizTeclado });
     }, function () {
       if (document.contains(corpo) && req === reqSeq && (!opcoes.vigente || opcoes.vigente())) mostrarEstado(corpo, window.RosterWork.mensagens.escala.falhaCarregarMes);
     });
