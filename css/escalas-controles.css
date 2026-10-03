@@ -7,7 +7,8 @@
 /* a régua de período ‹ rótulo › virou o componente compartilhado geral-periodo
    (componentes/css/geral-periodo.css) */
 
-/* subgrupos lado a lado: Colunas (tipo + quantidade) e unidades */
+/* grupos de abas lado a lado: os modos ([Dia] + as demais visões), Colunas (tipo + quantidade) e unidades */
+.escala-modos,
 .escala-sub-colunas,
 .escala-sub-unidades {
   display: inline-flex;

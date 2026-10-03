@@ -37,12 +37,17 @@
     } catch (e) { return null; }
   }
 
+  /* preferências da sessão (o login grava o que vem do banco: tema, menu, unidades, visão da Escala) */
+  function lerPreferencias() {
+    try {
+      return JSON.parse(sessionStorage.getItem('rosterwork_preferencias')) || {};
+    } catch (e) { return {}; }
+  }
+
   /* ids das unidades aplicadas (a fonte da verdade é o sessionStorage, como no resto do site) */
   function idsAplicados() {
-    try {
-      var prefs = JSON.parse(sessionStorage.getItem('rosterwork_preferencias'));
-      return prefs && Array.isArray(prefs.unidades_selecionadas) ? prefs.unidades_selecionadas : [];
-    } catch (e) { return []; }
+    var prefs = lerPreferencias();
+    return Array.isArray(prefs.unidades_selecionadas) ? prefs.unidades_selecionadas : [];
   }
 
   /* liga/desliga a classe .oculto de um elemento do sub-cabeçalho */
@@ -53,9 +58,60 @@
 
   /* ---------- abas de modo e subgrupos ---------- */
 
+  /* os modos ficam em dois grupos ([Dia] e as demais visões) dentro de #escala-modos */
   function modoAtual() {
     var ativo = conteudo.querySelector('#escala-modos .aba--ativa');
-    return ativo ? ativo.getAttribute('data-modo') : 'mes';
+    return ativo ? ativo.getAttribute('data-modo') : 'dia';
+  }
+
+  /* marca, entre as abas de `trilhos`, a que tem `atributo` = valor (e desmarca as demais);
+     valor que não existe na tela é ignorado */
+  function marcarAba(trilhos, atributo, valor) {
+    var abas = conteudo.querySelectorAll(trilhos + ' .aba');
+    var alvo = null;
+    for (var i = 0; i < abas.length; i++) {
+      if (abas[i].getAttribute(atributo) === String(valor)) alvo = abas[i];
+    }
+    if (!alvo) return;
+    for (var j = 0; j < abas.length; j++) {
+      var ativa = abas[j] === alvo;
+      abas[j].classList.toggle('aba--ativa', ativa);
+      abas[j].setAttribute('aria-selected', ativa ? 'true' : 'false');
+    }
+  }
+
+  /* os dois grupos de modo valem como uma escolha só: a aba clicada fica marcada e a do outro grupo se desmarca */
+  function trocarModo(aba) {
+    marcarAba('#escala-modos', 'data-modo', aba.getAttribute('data-modo'));
+    aplicarModo();
+    salvarVisao();
+  }
+
+  /* ---------- última visão usada (lembrada no banco por usuário, como o tema) ---------- */
+
+  /* reabre a Escala na última visão (modo + escolhas do subgrupo); sem nada salvo, fica o Dia do HTML.
+     A data não é lembrada: a Escala sempre abre em hoje */
+  function restaurarVisao() {
+    var visao = lerPreferencias().escala_visao;
+    if (!visao || typeof visao !== 'object') return;
+    marcarAba('#escala-modos', 'data-modo', visao.modo);
+    marcarAba('#escala-sub-mes', 'data-mes', visao.mes);
+    marcarAba('#escala-colunas-tipo', 'data-colunas-tipo', visao.colunas_tipo);
+    marcarAba('#escala-colunas-qtd', 'data-colunas', visao.colunas_qtd);
+  }
+
+  /* guarda a visão atual na sessão e no banco (só quando a pessoa troca; vale em qualquer computador) */
+  function salvarVisao() {
+    var visao = { modo: modoAtual(), mes: subMesAtual(), colunas_tipo: tipoColunasAtual(), colunas_qtd: quantidadeColunas() };
+    var prefs = lerPreferencias();
+    prefs.escala_visao = visao;
+    try { sessionStorage.setItem('rosterwork_preferencias', JSON.stringify(prefs)); } catch (e) {}
+    if (obterToken() && RosterWork.apiFetch) {
+      RosterWork.apiFetch('/rest/v1/rpc/fn_preferencias_salvar', {
+        metodo: 'POST',
+        corpo: { p_escala_visao: visao }
+      }).catch(function () {});   // falhou: só não lembra desta vez (a tela já está certa)
+    }
   }
 
   /* subgrupo do modo Mês: 'agenda' ou 'calendario' */
@@ -451,10 +507,13 @@
     conteudo = fragmento;
     refData = new Date();
 
-    RosterWork.abas.ligar(conteudo.querySelector('#escala-modos'), aplicarModo);
-    RosterWork.abas.ligar(conteudo.querySelector('#escala-sub-mes'), renderizarCorpo);
-    RosterWork.abas.ligar(conteudo.querySelector('#escala-colunas-tipo'), function () { aplicarTipoColunas(); renderizarCorpo(); });
-    RosterWork.abas.ligar(conteudo.querySelector('#escala-colunas-qtd'), function () { atualizarPeriodo(); renderizarCorpo(); });
+    RosterWork.abas.ligar(conteudo.querySelector('#escala-modo-principal'), trocarModo);
+    RosterWork.abas.ligar(conteudo.querySelector('#escala-modo-visoes'), trocarModo);
+    RosterWork.abas.ligar(conteudo.querySelector('#escala-sub-mes'), function () { renderizarCorpo(); salvarVisao(); });
+    RosterWork.abas.ligar(conteudo.querySelector('#escala-colunas-tipo'), function () { aplicarTipoColunas(); renderizarCorpo(); salvarVisao(); });
+    RosterWork.abas.ligar(conteudo.querySelector('#escala-colunas-qtd'), function () { atualizarPeriodo(); renderizarCorpo(); salvarVisao(); });
+    /* reabre na última visão usada antes de montar (sem piscar o Dia) */
+    restaurarVisao();
     /* Colunas → Unidades: ligar/desligar uma unidade muda as colunas → re-renderiza */
     RosterWork.abas.ligar(conteudo.querySelector('#escala-unidades-abas'), renderizarCorpo);
 
@@ -514,7 +573,7 @@
        velho de um salvamento feito por outro (ou de quem fechou o navegador antes de
        terminar). Fila vazia = verificação rápida. */
     function montarInicial() {
-      aplicarModo();        // estado inicial (Mês já vem ativo no HTML) + preenche o período
+      aplicarModo();        // estado inicial (a última visão usada, ou o Dia do HTML) + preenche o período
       carregarUnidades();   // popula as abas de unidade em segundo plano
     }
     if (window.RosterWork.drenarRecalculo) {

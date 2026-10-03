@@ -7,12 +7,18 @@
   </div>
 
   <div class="pagina-subcabecalho">
-    <div class="abas" id="escala-modos">
-      <button type="button" class="aba aba--ativa" data-modo="mes">Mês</button>
-      <button type="button" class="aba" data-modo="semana">Semana</button>
-      <button type="button" class="aba" data-modo="colunas">Colunas</button>
-      <button type="button" class="aba" data-modo="dia">Dia</button>
-      <button type="button" class="aba" data-modo="militares">Militares</button>
+    <!-- modos: o Dia (a escala principal, impressa e exibida na passagem de serviço) num grupo próprio,
+         à frente das outras visões; os dois grupos valem como uma escolha só (escalas.js) -->
+    <div class="escala-modos" id="escala-modos">
+      <div class="abas" id="escala-modo-principal">
+        <button type="button" class="aba aba--ativa" data-modo="dia">Dia</button>
+      </div>
+      <div class="abas" id="escala-modo-visoes">
+        <button type="button" class="aba" data-modo="militares">Militares</button>
+        <button type="button" class="aba" data-modo="mes">Mês</button>
+        <button type="button" class="aba" data-modo="semana">Semana</button>
+        <button type="button" class="aba" data-modo="colunas">Colunas</button>
+      </div>
     </div>
 
     <div class="geral-periodo">
