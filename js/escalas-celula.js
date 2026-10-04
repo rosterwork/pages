@@ -1,10 +1,11 @@
 /* ============================================================
-   ESCALAS — célula compartilhada (Mês e Semana)
+   ESCALAS — célula compartilhada (Mês, Semana, Colunas, Calendário
+   e Extrajornada)
    O miolo de uma célula unidade×dia: o gráfico de cobertura
-   (silhueta pintada num <canvas>, lendo as cores do tema) + a
-   lista de militares de serviço. Usada pelo escalas-mes.js e pelo
-   escalas-semana.js. Não busca no banco nem escreve estilo CSS —
-   exceção: pinta o canvas lendo o tema (REGRAS §3/§4 e MANUAL §11).
+   (24 barras por hora pintadas num <canvas>, lendo as cores do tema)
+   + a lista de militares de serviço. Não busca no banco nem escreve
+   estilo CSS — exceção: pinta o canvas lendo o tema (REGRAS §3/§4 e
+   MANUAL §11).
    ============================================================ */
 (function () {
   'use strict';
@@ -14,7 +15,15 @@
   var observerGrafico = null;   // redesenha os gráficos quando a largura muda
   var observerTema = null;      // repinta os gráficos (canvas) quando o tema muda de cor
   var temaGrafico = null;       // cache das cores do tema lidas para o canvas
-  var RAIO_CANTO = 2;           // raio (px CSS) do arredondamento das quinas da silhueta
+
+  /* desenho do gráfico de cobertura: uma barra por hora (medidas em px CSS) */
+  var BARRA_VAO = 1;              // vão entre as barras
+  var BARRA_RAIO = 1.5;           // raio dos cantos de cima da barra
+  var BARRA_LINHA = 2;            // espessura da linha forte no topo da barra
+  var BARRA_MINIMA = 2;           // altura mínima de uma hora com alguém de serviço
+  var OPACIDADE_OK = 0.3;         // corpo da barra no "tudo certo" (verde claro)
+  var OPACIDADE_PROBLEMA = 0.4;   // corpo da barra com ressalva (amarelo) ou militar sem função (vermelho)
+  var OPACIDADE_HOVER = 0.75;     // corpo da barra da hora com o mouse em cima
 
   /* origem -> nome do arquivo de ícone (o cadeado é à parte, quando fixado) */
   var ICONE_ORIGEM = {
@@ -77,108 +86,29 @@
     return 'linear-gradient(to right, ' + paradas.join(', ') + ')';
   }
 
-  /* o canvas não herda as cores do CSS: lê direto das variáveis do :root a cor da silhueta
-     (--texto-debil), a espessura do traço (--grafico-traco) e os fundos do preenchimento de status
-     por hora (--erro-fundo-forte/--sucesso-fundo-forte) — a cor continua vindo do tema, só por
-     outro caminho (ver REGRAS §3) */
+  /* o canvas não herda as cores do CSS: lê direto das variáveis do :root as cores cheias de
+     estado (--sucesso/--alerta/--erro) — a cor continua vindo do tema, só por outro caminho
+     (ver REGRAS §3); o corpo claro da barra é a mesma cor com transparência */
   function lerTema() {
     var cs = getComputedStyle(document.documentElement);
     return {
-      traco: (cs.getPropertyValue('--texto-debil') || '').trim(),
-      esp: parseFloat(cs.getPropertyValue('--grafico-traco')),
-      erroFundo: (cs.getPropertyValue('--erro-fundo-forte') || '').trim(),
-      sucessoFundo: (cs.getPropertyValue('--sucesso-fundo-forte') || '').trim(),
-      alertaFundo: (cs.getPropertyValue('--alerta-fundo-forte') || '').trim()
+      sucesso: (cs.getPropertyValue('--sucesso') || '').trim(),
+      alerta: (cs.getPropertyValue('--alerta') || '').trim(),
+      erro: (cs.getPropertyValue('--erro') || '').trim()
     };
   }
 
-  /* alinha uma coordenada ao grid de pixels FÍSICOS: espessura par cai em pixel inteiro,
-     ímpar no meio do pixel — é isso que faz TODO o traço sair com a mesma espessura */
-  function alinhar(v, esp) {
-    return (esp % 2) ? Math.floor(v) + 0.5 : Math.round(v);
-  }
-
-  /* pontos do contorno da silhueta (base + laterais + topo em degraus) em pixels FÍSICOS;
-     TUDO recuado meio-traço para dentro das bordas (xEsq..xDir, yBase..topo), senão a metade
-     externa do traço é cortada e as laterais/base saem mais finas. cob = nº por hora */
-  function pontosSilhueta(cob, max, xEsq, xDir, yBase, util, esp) {
-    var w = xDir - xEsq;
-    var pts = [[xEsq, yBase]];
-    for (var h = 0; h < 24; h++) {
-      var x0 = alinhar(xEsq + h / 24 * w, esp);
-      var x1 = alinhar(xEsq + (h + 1) / 24 * w, esp);
-      var y = alinhar(yBase - ((Number(cob[h]) || 0) / max) * util, esp);
-      pts.push([x0, y], [x1, y]);
-    }
-    pts.push([xDir, yBase]);
-    return pts;
-  }
-
-  /* tira vértices duplicados e colineares: sobram só as quinas reais do contorno fechado
-     (sem isso, os degraus iguais viram pontos repetidos que estragam o arredondamento) */
-  function simplificar(pts) {
-    var u = [];
-    for (var i = 0; i < pts.length; i++) {
-      var p = pts[i], q = u[u.length - 1];
-      if (!q || p[0] !== q[0] || p[1] !== q[1]) u.push(p);
-    }
-    var saida = [], m = u.length;
-    for (var j = 0; j < m; j++) {
-      var a = u[(j - 1 + m) % m], b = u[j], c = u[(j + 1) % m];
-      if ((b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]) !== 0) saida.push(b);
-    }
-    return saida;
-  }
-
-  /* traça o contorno fechado arredondando cada quina por RECUO limitado a meia-aresta de
-     cada lado + curva quadrática: as curvas sempre se ligam por um trecho reto, então
-     encaixam em degraus de qualquer tamanho; as retas seguem nítidas e uniformes */
-  function tracarContorno(ctx, pts, raio) {
-    var n = pts.length;
+  /* retângulo com só os cantos de cima arredondados (navegador sem roundRect: cantos retos) */
+  function retanguloTopoRedondo(ctx, x, y, largura, altura, raio) {
     ctx.beginPath();
-    if (n < 3) {
-      if (n) {
-        ctx.moveTo(pts[0][0], pts[0][1]);
-        for (var k = 1; k < n; k++) ctx.lineTo(pts[k][0], pts[k][1]);
-        ctx.closePath();
-      }
-      return;
-    }
-    for (var i = 0; i < n; i++) {
-      var prev = pts[(i - 1 + n) % n], v = pts[i], next = pts[(i + 1) % n];
-      var dp = Math.hypot(prev[0] - v[0], prev[1] - v[1]) || 1;
-      var dn = Math.hypot(next[0] - v[0], next[1] - v[1]) || 1;
-      var d = Math.min(raio, dp / 2, dn / 2);
-      var pe = [v[0] + (prev[0] - v[0]) / dp * d, v[1] + (prev[1] - v[1]) / dp * d];
-      var ps = [v[0] + (next[0] - v[0]) / dn * d, v[1] + (next[1] - v[1]) / dn * d];
-      if (i === 0) ctx.moveTo(pe[0], pe[1]);
-      else ctx.lineTo(pe[0], pe[1]);
-      ctx.quadraticCurveTo(v[0], v[1], ps[0], ps[1]);
-    }
-    ctx.closePath();
+    if (ctx.roundRect) ctx.roundRect(x, y, largura, altura, [raio, raio, 0, 0]);
+    else ctx.rect(x, y, largura, altura);
+    ctx.fill();
   }
 
-  /* gradiente horizontal verde/amarelo/vermelho por hora, com mescla de 'mescla' px só nas junções
-     onde a cor muda de uma hora para a outra (dentro da hora a cor é chapada). 'erro' = string
-     de 24 dígitos: 1 = vermelho (sem função), 2 = amarelo (ressalva), outro = verde. Cores do tema (REGRAS §3) */
-  function gradienteHoras(ctx, erro, xEsq, xDir, corOk, corErro, corAlerta, mescla) {
-    var W = xDir - xEsq;
-    var g = ctx.createLinearGradient(xEsq, 0, xDir, 0);
-    var meia = W > 0 ? (mescla / 2) / W : 0;   // metade da mescla, em fração do eixo
-    var cor = function (h) { var c = erro.charAt(h); return c === '1' ? corErro : c === '2' ? corAlerta : corOk; };
-    g.addColorStop(0, cor(0));
-    for (var h = 1; h < 24; h++) {
-      if (cor(h) === cor(h - 1)) continue;     // mesma cor nas duas horas: sem junção
-      var o = h / 24;
-      g.addColorStop(Math.max(0, o - meia), cor(h - 1));
-      g.addColorStop(Math.min(1, o + meia), cor(h));
-    }
-    g.addColorStop(1, cor(23));
-    return g;
-  }
-
-  /* pinta um gráfico no seu <canvas>: silhueta uniforme + (no hover) a linha-cursor.
-     Trabalha em pixels físicos (devicePixelRatio) para o traço sair nítido em qualquer tela */
+  /* pinta um gráfico no seu <canvas>: 24 barras (uma por hora, altura = militares de serviço) com o
+     corpo claro na cor do estado e uma linha forte no topo; a hora com o mouse em cima (horaCursor)
+     fica com o corpo forte. Trabalha em pixels físicos (devicePixelRatio) para sair nítido em qualquer tela */
   function pintarGrafico(grafico, horaCursor) {
     var canvas = grafico.querySelector('.escala-mes-grafico-canvas');
     if (!canvas || !canvas.getContext) return;
@@ -194,46 +124,32 @@
     if (canvas.height !== Hf) canvas.height = Hf;
 
     var tema = temaGrafico || (temaGrafico = lerTema());
-    var esp = Math.max(1, Math.round(tema.esp * dpr)) || 1;   // px físicos (mín. 1; cai a 1 se o tema faltar)
-    var xEsq = alinhar(esp / 2, esp), xDir = alinhar(Wf - esp / 2, esp);
-    var yBase = alinhar(Hf - esp / 2, esp), util = yBase - alinhar(esp / 2, esp);
+    var erro = grafico.dataset.erro || '';   // por hora: 1 = sem função (vermelho), 2 = ressalva (amarelo), outro = ok (verde)
+    var vao = Math.round(BARRA_VAO * dpr), raio = BARRA_RAIO * dpr, linha = Math.round(BARRA_LINHA * dpr);
+    var passo = (Wf + vao) / 24;   // uma hora = barra + vão
+    var util = Hf - Math.round(dpr);   // 1px de folga no topo, para a linha não encostar na borda do canvas
 
     var ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, Wf, Hf);
-
-    var pts = simplificar(pontosSilhueta(cob, max, xEsq, xDir, yBase, util, esp));
-
-    /* preenchimento por hora atrás da silhueta (verde = distribuído, vermelho = sem função),
-       recortado no contorno para não passar do topo nem das laterais; a mescla de 1,5px sai
-       só nas junções verde↔vermelho (ver gradienteHoras) */
-    var erro = grafico.dataset.erro || '';
-    if (erro) {
-      ctx.save();
-      tracarContorno(ctx, pts, RAIO_CANTO * dpr);
-      ctx.clip();
-      ctx.fillStyle = gradienteHoras(ctx, erro, xEsq, xDir, tema.sucessoFundo, tema.erroFundo, tema.alertaFundo, 1.5 * dpr);
-      ctx.fillRect(0, 0, Wf, Hf);
-      ctx.restore();
+    for (var h = 0; h < 24; h++) {
+      var n = Number(cob[h]) || 0;
+      if (n <= 0) continue;   // hora sem ninguém de serviço: sem barra
+      var altura = Math.max(Math.round(BARRA_MINIMA * dpr), Math.round(Math.min(n, max) / max * util));
+      /* bordas da barra no pixel físico inteiro: o vão sai sempre nítido e do mesmo tamanho */
+      var x = Math.round(h * passo), largura = Math.round((h + 1) * passo - vao) - x, y = Hf - altura;
+      var marca = erro.charAt(h);
+      var problema = marca === '1' || marca === '2';
+      ctx.fillStyle = marca === '1' ? tema.erro : marca === '2' ? tema.alerta : tema.sucesso;
+      /* corpo claro (forte na hora com o mouse em cima) + linha forte no topo, na mesma cor */
+      ctx.globalAlpha = h === horaCursor ? OPACIDADE_HOVER : (problema ? OPACIDADE_PROBLEMA : OPACIDADE_OK);
+      retanguloTopoRedondo(ctx, x, y, largura, altura, raio);
+      ctx.globalAlpha = 1;
+      retanguloTopoRedondo(ctx, x, y, largura, Math.min(linha, altura), raio);
     }
-
-    ctx.lineWidth = esp;
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
-    ctx.strokeStyle = tema.traco;
-    tracarContorno(ctx, pts, RAIO_CANTO * dpr);
-    ctx.stroke();
-
-    if (horaCursor != null) {
-      var n = Number(cob[horaCursor]) || 0;
-      var cx = alinhar(xEsq + (horaCursor + 0.5) / 24 * (xDir - xEsq), esp);
-      ctx.beginPath();                       // linha-cursor: mesma cor da silhueta
-      ctx.moveTo(cx, yBase);
-      ctx.lineTo(cx, alinhar(yBase - (n / max) * util, esp));
-      ctx.stroke();
-    }
+    ctx.globalAlpha = 1;
   }
 
-  /* mini-gráfico de cobertura no topo da célula (silhueta pintada em <canvas>; MANUAL §11).
+  /* mini-gráfico de cobertura no topo da célula (barras por hora pintadas em <canvas>; MANUAL §11).
      Só guarda os dados; o desenho (que precisa do tamanho real) fica em pintarGrafico */
   function montarGrafico(cobertura, maxGlobal, erro) {
     if (maxGlobal <= 0) return null;
@@ -261,7 +177,7 @@
   /* hora exibida no gráfico (a janela começa às 08h) */
   function rotuloHora(h) { return ((8 + h) % 24) + 'h'; }
 
-  /* hover do gráfico: repinta o canvas sob o mouse com a linha-cursor por hora e move a
+  /* hover do gráfico: repinta o canvas sob o mouse com a barra da hora apontada em destaque e move a
      dica "Nh · X militares" (segue o ponteiro; posição via custom property — exceção REGRAS §4) */
   function ligarHover(escalaEl) {
     var dica = document.getElementById('escala-mes-dica');
@@ -348,21 +264,14 @@
     return linha;
   }
 
-  /* preenche o miolo de uma célula (unidade × dia): gráfico de cobertura + linha de erro +
-     militares. Reaproveitada na renderização e no refresh de uma célula (atualizarCelula). */
-  function preencherCelula(celula, cobDia, erroDia, conflitoDia, pessoas, maxGlobal) {
+  /* preenche o miolo de uma célula (unidade × dia): gráfico de cobertura + militares. Os erros
+     aparecem só na cor do gráfico (o texto fica no painel do dia, ao clicar). Reaproveitada na
+     renderização e no refresh de uma célula (atualizarCelula). */
+  function preencherCelula(celula, cobDia, erroDia, pessoas, maxGlobal) {
     celula.textContent = '';
     if (cobDia) {
       var grafico = montarGrafico(cobDia, maxGlobal, erroDia);
       if (grafico) celula.appendChild(grafico);
-    }
-    if (conflitoDia) {
-      var erroLinha = RosterWork.tpl('tpl-escala-mes-erro');
-      if (erroLinha) {
-        var nomeErro = erroLinha.querySelector('.linha-escalado-nome');
-        if (nomeErro) nomeErro.textContent = window.RosterWork.mensagens.escala.funcoesForaDisponibilidade;
-        celula.appendChild(erroLinha);
-      }
     }
     (pessoas || []).forEach(function (p) {
       var linhaP = montarPessoa(p);

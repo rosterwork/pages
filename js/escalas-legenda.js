@@ -1,39 +1,34 @@
 /* ============================================================
    ESCALAS — legenda da grade (botão "Legenda" no sub-cabeçalho)
    O que cada cor, ícone e selo quer dizer, conforme o modo:
-     · Mês/Semana/Colunas: cobertura (cores do gráfico), a linha de
-       erro e a faixa do horário + os grupos da legenda do painel
-       (origem, nome riscado, função fixada)
-     · Dia: os grupos da legenda do painel (o desenho é o mesmo)
+     · Mês/Semana/Colunas/Calendário: cobertura (cores do gráfico:
+       completa, com ressalva, erro grave) e a faixa do horário + os
+       grupos dos ícones (origem, nome riscado, função, militar,
+       observações). O painel do dia abre de qualquer modo e não tem
+       legenda própria, então os ícones dele também ficam aqui
+     · Dia: os grupos dos ícones (o desenho é o mesmo)
      · Militares: os selos da célula e o destaque dos dias
-   Os grupos compartilhados vêm do molde da legenda do painel
-   (#tpl-escala-legenda, no shell): o texto fica num lugar só.
-   Clona moldes; não cria HTML.
+   Os grupos compartilhados vêm do molde #tpl-escala-legenda (no
+   shell): o texto fica num lugar só. Clona moldes; não cria HTML.
    ============================================================ */
 (function () {
   'use strict';
 
   window.RosterWork = window.RosterWork || {};
 
-  /* grupos do molde do painel usados em cada modo (data-legenda-grupo) */
+  /* grupos do molde usados em cada modo (data-legenda-grupo) */
   var GRUPOS_PAINEL = {
-    grade: ['origem', 'riscado', 'funcao'],
+    grade: ['origem', 'riscado', 'funcao', 'militar', 'observacoes'],
     dia: ['origem', 'funcao', 'militar', 'observacoes']
   };
 
-  /* copia grupos da legenda do painel; na grade, o "Aviso" não aparece na célula e sai */
-  function clonarGruposPainel(alvo, nomes, semAviso) {
+  /* copia os grupos pedidos do molde */
+  function clonarGruposPainel(alvo, nomes) {
     var molde = document.getElementById('tpl-escala-legenda');
     if (!molde) return;
     nomes.forEach(function (nome) {
       var grupo = molde.content.querySelector('[data-legenda-grupo="' + nome + '"]');
-      if (!grupo) return;
-      var copia = grupo.cloneNode(true);
-      if (semAviso) {
-        var aviso = copia.querySelector('[data-legenda-item="aviso"]');
-        if (aviso) aviso.classList.add('oculto');
-      }
-      alvo.appendChild(copia);
+      if (grupo) alvo.appendChild(grupo.cloneNode(true));
     });
   }
 
@@ -48,9 +43,9 @@
     if (!alvo) return;
     alvo.textContent = '';
     if (modo === 'militares') { clonar(alvo, 'tpl-escala-legenda-militares'); return; }
-    if (modo === 'dia') { clonarGruposPainel(alvo, GRUPOS_PAINEL.dia, false); return; }
+    if (modo === 'dia') { clonarGruposPainel(alvo, GRUPOS_PAINEL.dia); return; }
     clonar(alvo, 'tpl-escala-legenda-grade');
-    clonarGruposPainel(alvo, GRUPOS_PAINEL.grade, true);
+    clonarGruposPainel(alvo, GRUPOS_PAINEL.grade);
   }
 
   window.RosterWork.escalasLegenda = { atualizar: atualizar };

@@ -199,8 +199,34 @@
   </div>
 </template>
 
-<!-- legenda da grade (Mês/Semana/Colunas): o gráfico de cobertura, a linha de erro e a faixa do horário;
-     os grupos de origem, nome riscado e função vêm do molde da legenda do painel (#tpl-escala-legenda) -->
+<!-- rodapé do painel do dia (Distribuição › Ver): as alterações manuais do dia, retrátil e começando fechado;
+     só aparece quando há alguma (o JS preenche a contagem e a lista) -->
+<template id="tpl-escala-alteracoes">
+  <div class="escala-alteracoes">
+    <div class="escala-alteracoes-cabecalho">
+      <span class="escala-alteracoes-titulo">Alterações manuais <span class="escala-alteracoes-qtd"></span></span>
+      <button type="button" class="botao-discreto escala-alteracoes-toggle" aria-label="Mostrar ou ocultar as alterações manuais" aria-expanded="false">
+        <svg class="icone escala-alteracoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      </button>
+    </div>
+    <div class="escala-alteracoes-lista oculto"></div>
+  </div>
+</template>
+
+<!-- uma alteração manual: quem e quando + o que mudou (o resumo vem do componente geral-resumo) -->
+<template id="tpl-escala-alteracao">
+  <div class="escala-alteracao">
+    <div class="escala-alteracao-cabecalho">
+      <span class="escala-alteracao-autor"></span>
+      <span class="escala-alteracao-quando"></span>
+    </div>
+    <div class="escala-alteracao-resumo"></div>
+  </div>
+</template>
+
+<!-- legenda da grade (Mês/Semana/Colunas/Calendário): as cores do gráfico de cobertura (vermelho = a escala
+     não funciona; amarelo = funciona com erro aceitável; o texto do erro fica no painel do dia) e a faixa do
+     horário; os demais grupos vêm do molde da legenda do painel (#tpl-escala-legenda) -->
 <template id="tpl-escala-legenda-grade">
   <div class="escala-legenda-grupo">
     <span class="rotulo-secao">Cobertura</span>
@@ -214,18 +240,14 @@
         <span>Com ressalva</span>
       </span>
       <span class="escala-legenda-item">
-        <span class="escala-legenda-cor escala-legenda-cor--sem-funcao"></span>
-        <span>Militar sem função</span>
+        <span class="escala-legenda-cor escala-legenda-cor--erro-grave"></span>
+        <span>Erro grave</span>
       </span>
     </div>
   </div>
   <div class="escala-legenda-grupo">
     <span class="rotulo-secao">Na célula</span>
     <div class="escala-legenda-grade escala-legenda-grade--uma">
-      <span class="escala-legenda-item escala-legenda-item--erro">
-        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
-        <span>Funções fora da disponibilidade</span>
-      </span>
       <span class="escala-legenda-item">
         <span class="escala-legenda-faixa"></span>
         <span>Horário: o trecho claro é o turno</span>

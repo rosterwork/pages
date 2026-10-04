@@ -239,7 +239,6 @@
       falhaCarregarMes: 'Não foi possível carregar a escala.',
       descartarAlteracoes: 'Descartar as alterações não salvas desta distribuição?',
       falhaSalvar: 'Não foi possível salvar. Tente de novo.',
-      funcoesForaDisponibilidade: 'Funções fora da disponibilidade',
       selecioneMilitar: 'Selecione um militar',
       deixarVazio: 'Deixar vazio',
       funcaoVaziaExcluir: 'Função manual sem militar será excluída ao salvar. Continuar?',
@@ -264,7 +263,13 @@
         abaixoMinimo:        { texto: 'Efetivo abaixo do mínimo: {posto} ({pessoas} de {minimo}){faixas}', faixa: 'das {hi} às {hf}', icone: 'icone-alerta', nivel: 'erro' },
         acimaMaximo:         { texto: 'Efetivo acima do máximo: {posto} ({pessoas} de {maximo})', icone: 'icone-alerta', nivel: 'erro' },
         /* militar de serviço sem função ({n} = quantidade; o painel escolhe singular ou plural) */
-        semFuncao:           { texto: 'Militar sem função definida', textoPlural: '{n} militares sem função definida', icone: 'icone-alerta', nivel: 'erro' }
+        semFuncao:           { texto: 'Militar sem função definida', textoPlural: '{n} militares sem função definida', icone: 'icone-alerta', nivel: 'erro' },
+        /* regras e habilitação, conferidas em toda colocação (automática ou manual); {militar} = grad + nome */
+        cnhIncompativel:     { texto: 'Condutor sem a CNH exigida: {militar} em {posto}', icone: 'icone-alerta', nivel: 'erro' },
+        regraProibida:       { texto: 'Função proibida pela regra: {militar} em {funcao}', icone: 'icone-alerta', nivel: 'erro' },
+        exclusivoFora:       { texto: 'Militar exclusivo fora da sua função: {militar} em {funcao}', icone: 'icone-alerta', nivel: 'alerta' },
+        grauDiferente:       { texto: 'Grau diferente do ideal: {militar} em {funcao}', icone: 'icone-alerta', nivel: 'alerta' },
+        manutencao:          { texto: 'Viatura em manutenção: {posto}', icone: 'icone-alerta', nivel: 'alerta' }
       },
       /* detalhe por militar dos avisos amarelos (expansível sob cada linha do aviso):
          {pessoa} = grad + nome · {funcao} = nome da vaga · {motivo} = a razão (abaixo) */

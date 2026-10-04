@@ -85,7 +85,6 @@
       var dados = resultado.militares;
       var cobertura = resultado.cobertura || {};
       var erro = resultado.erro || {};
-      var conflito = resultado.conflito || {};
       if (!document.contains(corpo) || req !== reqSeq || (opcoes.vigente && !opcoes.vigente())) return;   // saiu da página, outra render começou, ou trocou de modo
       corpo.textContent = '';
 
@@ -123,8 +122,7 @@
           var pessoas = (dados[c.id] && dados[c.id][info.iso]) || [];
           var cobDia = (cobertura[c.id] && cobertura[c.id][info.iso]) || null;
           var erroDia = (erro[c.id] && erro[c.id][info.iso]) || null;
-          var conflitoDia = !!(conflito[c.id] && conflito[c.id][info.iso]);
-          if (RosterWork.escalasCelula) RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, conflitoDia, pessoas, maxGlobal);
+          if (RosterWork.escalasCelula) RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxGlobal);
           linha.appendChild(celula);
         });
         grade.appendChild(linha);
@@ -150,9 +148,8 @@
       if (!document.contains(celula)) return;
       var cobDia = (r.cobertura[unidadeId] && r.cobertura[unidadeId][iso]) || null;
       var erroDia = (r.erro[unidadeId] && r.erro[unidadeId][iso]) || null;
-      var conflitoDia = !!(r.conflito[unidadeId] && r.conflito[unidadeId][iso]);
       var pessoas = (r.militares[unidadeId] && r.militares[unidadeId][iso]) || [];
-      RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, conflitoDia, pessoas, maxGlobalAtual);
+      RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxGlobalAtual);
       RosterWork.escalasCelula.desenharGraficos(celula);
     }).catch(function () {});   // refresh de 1 célula falhou: mantém a célula atual (o salvamento já avisou)
   }

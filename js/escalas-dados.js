@@ -11,8 +11,8 @@
   window.RosterWork = window.RosterWork || {};
 
   /* grade do mês (RPC ler_escala_mes): por unidade×dia devolve militares + cobertura +
-     erro (por hora, para o gráfico) + conflito. A RPC entrega { unidade: { dia: {...} } };
-     aqui só reorganizamos nas quatro tabelas que o render consome. */
+     erro (por hora, para o gráfico: 0 verde, 1 vermelho, 2 amarelo). A RPC entrega { unidade: { dia: {...} } };
+     aqui só reorganizamos nas três tabelas que o render consome. */
   function carregar(unidadesIds, inicio, fim) {
     var ids = (unidadesIds || []).map(Number);
     return RosterWork.apiFetch('/rest/v1/rpc/ler_escala_mes', {
@@ -22,21 +22,20 @@
       .then(function (grade) { return reorganizar(grade || {}); });
   }
 
-  /* { unidade: { dia: { militares, cobertura, erro, conflito } } } -> quatro mapas por unidade/dia */
+  /* { unidade: { dia: { militares, cobertura, erro } } } -> três mapas por unidade/dia */
   function reorganizar(grade) {
-    var militares = {}, cobertura = {}, erro = {}, conflito = {};
+    var militares = {}, cobertura = {}, erro = {};
     Object.keys(grade).forEach(function (uid) {
-      militares[uid] = {}; cobertura[uid] = {}; erro[uid] = {}; conflito[uid] = {};
+      militares[uid] = {}; cobertura[uid] = {}; erro[uid] = {};
       var dias = grade[uid] || {};
       Object.keys(dias).forEach(function (iso) {
         var c = dias[iso] || {};
         militares[uid][iso] = c.militares || [];
         cobertura[uid][iso] = c.cobertura || [];
         erro[uid][iso] = c.erro || [];
-        conflito[uid][iso] = c.conflito || false;
       });
     });
-    return { militares: militares, cobertura: cobertura, erro: erro, conflito: conflito };
+    return { militares: militares, cobertura: cobertura, erro: erro };
   }
 
   /* grade do modo Militares (RPC ler_escala_militares): por unidade, a lista de militares
@@ -66,6 +65,14 @@
     var corpo = { p_unidade_id: Number(unidadeId), p_data: iso };
     if (rascunho != null) corpo.p_rascunho = rascunho;
     return RosterWork.apiFetch('/rest/v1/rpc/ler_distribuicao_dia', { metodo: 'POST', corpo: corpo })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; });
+  }
+
+  /* alterações manuais do dia de uma unidade (RPC escala_alteracoes_dia): [{ autor, criado_em, resumo }]
+     do mais novo ao mais antigo; null em falha (o rodapé então não aparece) */
+  function lerAlteracoesDia(unidadeId, iso) {
+    return RosterWork.apiFetch('/rest/v1/rpc/escala_alteracoes_dia', { metodo: 'POST', corpo: { p_unidade_id: Number(unidadeId), p_data: iso } })
       .then(function (r) { return r.ok ? r.json() : null; })
       .catch(function () { return null; });
   }
@@ -137,7 +144,7 @@
 
   window.RosterWork.escalasDados = {
     carregar: carregar, carregarMilitares: carregarMilitares, lerMilitarDia: lerMilitarDia,
-    lerDistribuicaoDia: lerDistribuicaoDia, salvarAjustesDia: salvarAjustesDia,
+    lerDistribuicaoDia: lerDistribuicaoDia, lerAlteracoesDia: lerAlteracoesDia, salvarAjustesDia: salvarAjustesDia,
     continuosListar: continuosListar, cicloAdicionar: cicloAdicionar, cicloRetirar: cicloRetirar,
     cicloRetirarAnalisar: cicloRetirarAnalisar,
     cicloCancelarSaida: cicloCancelarSaida, cicloSalvarLote: cicloSalvarLote,

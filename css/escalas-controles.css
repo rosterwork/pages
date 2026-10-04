@@ -47,9 +47,10 @@
   border-radius: var(--raio-pequeno);
 }
 
-.escala-legenda-cor--completa { background-color: var(--sucesso-fundo-forte); border-color: transparent; }
-.escala-legenda-cor--ressalva { background-color: var(--alerta-fundo-forte); border-color: transparent; }
-.escala-legenda-cor--sem-funcao { background-color: var(--erro-fundo-forte); border-color: transparent; }
+/* as três cores da cobertura imitam a barra do gráfico: corpo claro + traço forte de 2px em cima */
+.escala-legenda-cor--completa { background-color: var(--sucesso-fundo-forte); border-color: transparent; border-top: 2px solid var(--sucesso); }
+.escala-legenda-cor--ressalva { background-color: var(--alerta-fundo-forte); border-color: transparent; border-top: 2px solid var(--alerta); }
+.escala-legenda-cor--erro-grave { background-color: var(--erro-fundo-forte); border-color: transparent; border-top: 2px solid var(--erro); }
 .escala-legenda-cor--fds { background-color: var(--fundo-suave); }
 .escala-legenda-cor--vazia { background-color: transparent; }
 
@@ -63,9 +64,4 @@
   border-radius: var(--raio-pequeno);
   background-image: linear-gradient(to right,
     var(--fundo-medio) 0 30%, transparent 30% 70%, var(--fundo-medio) 70% 100%);
-}
-
-/* a linha de erro da célula: ícone vermelho, como na grade */
-.escala-legenda-item--erro .icone {
-  color: var(--erro);
 }

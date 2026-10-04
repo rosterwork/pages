@@ -156,13 +156,13 @@
   flex-shrink: 0;
   height: 18px;
   padding: 2px 4px 0;
-  cursor: none;   /* ponteiro oculto sobre o gráfico — a linha-cursor desenhada marca a hora (MANUAL §8) */
+  cursor: none;   /* ponteiro oculto sobre o gráfico — a barra da hora apontada, em destaque, marca a hora (MANUAL §8) */
 }
 
-/* a silhueta, o preenchimento de status por hora (verde/vermelho) e a linha-cursor do hover são
-   pintados no <canvas> pelo escalas-mes.js; o canvas não herda var(), então o JS lê do tema a cor
-   --texto-debil, a espessura --grafico-traco e os fundos --erro-fundo-forte/--sucesso-fundo-forte,
-   alinhando o traço ao pixel físico. Ver MANUAL §11 */
+/* as 24 barras por hora (corpo claro na cor do estado + linha forte no topo; a da hora com o mouse
+   em cima fica forte) são pintadas no <canvas> pelo escalas-celula.js; o canvas não herda var(),
+   então o JS lê do tema as cores cheias --sucesso/--alerta/--erro (o corpo claro é a mesma cor
+   com transparência). Ver MANUAL §11 */
 .escala-mes-grafico-canvas {
   display: block;
   width: 100%;
@@ -260,13 +260,6 @@
   width: 23px;
   flex-shrink: 0;
   text-align: left;
-}
-
-/* linha de erro de distribuição na célula do mês: ícone de alerta + mensagem, tudo vermelho */
-.linha-escalado--erro,
-.linha-escalado--erro .linha-escalado-icones,
-.linha-escalado--erro .linha-escalado-nome {
-  color: var(--erro);
 }
 
 /* folga e troca: o militar aparece, mas riscado (graduação, nome e HORÁRIO) e apagado. O horário

@@ -43,6 +43,7 @@
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#ver-servico">Ver a minha escala e o meu serviço</a></li>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#continuos-pontuais">Contínuos, pontuais e a distribuição do dia</a></li>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#icones-escala">Os ícones da escala</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#erros-escala">Erros e ressalvas da escala</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#montar-ciclo">Montar o ciclo (Contínuos e Pontuais)</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#distribuicao-dia">A distribuição do dia</a></li>
               </ul>
@@ -535,7 +536,7 @@
               </figure>
               <p><strong>Pontuais.</strong> O administrador pode escalar um militar <strong>só num dia</strong>, fora do ciclo. Ele trabalha naquele dia e segue fora do ciclo nos demais.</p>
               <p><strong>A distribuição do dia.</strong> Ao <strong>clicar num dia</strong> na grade, abre um painel à direita com aquele dia montado. O painel tem três abas: <strong>Distribuição</strong> (os postos, as funções e quem está em cada uma), <strong>Contínuos</strong> (quem o ciclo escala naquele dia) e <strong>Pontuais</strong> (os militares pontuais do dia). Qualquer pessoa abre o painel para ver; o administrador também edita.</p>
-              <p>No alto ficam os <strong>avisos</strong> do dia, em vermelho os erros e em amarelo as ressalvas, e quem está de serviço sem função aparece numa caixa vermelha. O painel mostra os postos que têm alguém no dia. Um posto com menos gente que o efetivo mínimo entra nos avisos, por exemplo "Efetivo abaixo do mínimo: ABT-01 (2 de 3)", com o horário quando isso acontece só numa parte do dia.</p>
+              <p>No alto ficam os <strong>avisos</strong> do dia, em vermelho os erros graves e em amarelo as ressalvas (a lista completa está em <strong>Erros e ressalvas da escala</strong>, logo abaixo), e quem está de serviço sem função aparece numa caixa vermelha. O painel mostra os postos que têm alguém no dia. Um posto com menos gente que o efetivo mínimo entra nos avisos, por exemplo "Efetivo abaixo do mínimo: ABT-01 (2 de 3)", com o horário quando isso acontece só numa parte do dia.</p>
               <figure class="manual-figura">
                 <img src="manual/imagens/escala-painel-dia.png" alt="O painel de um dia: as abas Distribuição, Contínuos e Pontuais (1) e os postos com as suas funções e os militares de serviço (2)." />
                 <figcaption>
@@ -617,26 +618,21 @@
                 </li>
               </ul>
 
-              <p>Na tela, a mesma explicação fica na <strong>legenda</strong>, em dois lugares.</p>
-              <p><strong>Nas grades.</strong> No alto da página Escala, à direita, o botão <strong>Legenda</strong> abre uma caixa com o que aparece no modo em que você está. No modo Militares, a caixa mostra os selos da grade, e no modo Dia, os mesmos grupos do painel. Nas grades de Mês, Semana, Colunas e Calendário, ela explica também o gráfico de <strong>cobertura</strong> no alto de cada célula, que pinta cada hora de uma cor:</p>
+              <p>Na tela, a mesma explicação fica na <strong>Legenda</strong>: no alto da página Escala, à direita, o botão <strong>Legenda</strong> abre uma caixa com o que aparece no modo em que você está. No modo Militares, a caixa mostra os selos da grade, e no modo Dia, os ícones do painel. Nas grades de Mês, Semana, Colunas e Calendário, ela traz todos os ícones e explica também o gráfico de <strong>cobertura</strong> no alto de cada célula, que pinta cada hora de uma cor:</p>
               <ul class="manual-lista">
                 <li><strong>Verde:</strong> tudo certo naquela hora.</li>
-                <li><strong>Amarelo:</strong> há uma ressalva, como o grau rebaixado ou o rodízio repetido.</li>
-                <li><strong>Vermelho:</strong> algum militar ficou sem função.</li>
+                <li><strong>Amarelo:</strong> uma ressalva. A escala funciona, com um erro aceitável.</li>
+                <li><strong>Vermelho:</strong> um erro grave. A escala não funciona como está e precisa de correção.</li>
               </ul>
-              <p>Parando o mouse sobre o gráfico, aparecem a hora e quantos militares estão de serviço. A linha vermelha avisa funções fora da disponibilidade, e a faixa de cada militar mostra em claro o trecho do turno.</p>
+              <p>Parando o mouse sobre o gráfico, aparecem a hora e quantos militares estão de serviço, e a faixa de cada militar mostra em claro o trecho do turno.</p>
               <figure class="manual-figura">
-                <img src="manual/imagens/escala-legenda-grade.png" alt="A caixa da Legenda aberta pelo botão no alto da página Escala (1), com os grupos Cobertura e Na célula (2) e, abaixo, os grupos de origem, nome riscado e função." />
+                <img src="manual/imagens/escala-legenda-grade.png" alt="A caixa da Legenda aberta pelo botão no alto da página Escala (1), com os grupos Cobertura e Na célula (2) e, abaixo, os grupos de origem, nome riscado, função, militar e observações." />
                 <figcaption>
                   <ol class="manual-chamadas">
                     <li>Botão Legenda</li>
                     <li>Cobertura e o que mais aparece na célula</li>
                   </ol>
                 </figcaption>
-              </figure>
-              <p><strong>No painel do dia.</strong> Na aba Distribuição, clique em <strong>Legendas</strong>, no rodapé. Ela começa fechada e reúne os ícones nos mesmos cinco grupos.</p>
-              <figure class="manual-figura">
-                <img src="manual/imagens/escala-legenda.png" alt="A legenda aberta no rodapé do painel do dia, com os grupos Origem do serviço, Nome riscado, Função, Militar e Observações." />
               </figure>
               <p>Cada tela mostra uma parte desses ícones:</p>
               <ul class="manual-lista">
@@ -655,6 +651,34 @@
                   </ol>
                 </figcaption>
               </figure>
+
+              <h3 id="erros-escala">Erros e ressalvas da escala</h3>
+              <p>A escala usa duas cores para avisar que algo não está certo. O <strong>vermelho</strong> é um <strong>erro grave</strong>: a escala não funciona como está e precisa de correção. O <strong>amarelo</strong> é uma <strong>ressalva</strong>: a escala funciona, com um erro aceitável.</p>
+              <p>Na grade, o erro aparece só pela cor das barras do gráfico de cobertura, hora a hora. Para saber o que é, clique na célula: o painel do dia lista os avisos no alto, primeiro os vermelhos e depois os amarelos, e marca o militar envolvido. Parando o mouse sobre ele, aparece o motivo.</p>
+              <p><strong>Erros graves (vermelho).</strong></p>
+              <ul class="manual-lista">
+                <li><strong>Militar sem função definida:</strong> o militar está de serviço, mas fica sem função em parte do dia. Quando o sistema sabe o motivo, o aviso diz qual: <strong>Falta modelo de distribuição</strong>, <strong>Distribuição com erro</strong> ou <strong>Sem solução automática</strong>.</li>
+                <li><strong>Efetivo abaixo do mínimo:</strong> o posto tem menos gente que o mínimo configurado.</li>
+                <li><strong>Efetivo acima do máximo:</strong> o posto tem mais gente que o máximo configurado.</li>
+                <li><strong>Viatura sem condutor:</strong> a viatura ficou sem ninguém na direção.</li>
+                <li><strong>Funções fora da disponibilidade:</strong> um militar ocupa uma função num horário fora do serviço dele.</li>
+                <li><strong>Militar sem serviço no dia:</strong> um militar ocupa uma função num dia em que não está de serviço.</li>
+                <li><strong>Dois militares no mesmo horário:</strong> a mesma função tem duas pessoas na mesma hora.</li>
+                <li><strong>Condutor sem a CNH exigida:</strong> o condutor não tem a categoria de CNH que a viatura pede.</li>
+                <li><strong>Função proibida pela regra:</strong> o militar está numa função que a regra dele proíbe.</li>
+              </ul>
+              <p><strong>Ressalvas (amarelo).</strong></p>
+              <ul class="manual-lista">
+                <li><strong>Grau rebaixado por falta de efetivo:</strong> faltou militar do grau ideal e a função ficou com um de outro grau.</li>
+                <li><strong>Grau diferente do ideal:</strong> a função ficou com um militar fora do grau ideal, por ser o exclusivo dela ou por escolha do administrador.</li>
+                <li><strong>Rodízio repetido por falta de opção:</strong> o militar repetiu a função do último serviço, porque não havia outro.</li>
+                <li><strong>Condutor exclusivo indisponível:</strong> o condutor exclusivo da viatura não estava disponível e outro motorista assumiu a direção.</li>
+                <li><strong>Chefe assumiu a direção:</strong> faltou condutor e o chefe da viatura passou a dirigir.</li>
+                <li><strong>Militar afastado, não vai assumir o serviço:</strong> quem cobre um serviço por troca entrou de férias, licença ou dispensa naquele dia.</li>
+                <li><strong>Viatura em manutenção:</strong> a viatura está em manutenção e segue com militares escalados nela.</li>
+                <li><strong>Militar exclusivo fora da sua função:</strong> um militar exclusivo de uma função foi colocado em outra.</li>
+              </ul>
+              <p><strong>Alterações manuais.</strong> Quando o administrador corrige um erro, a hora volta ao verde. O rastro fica no rodapé da aba Distribuição, no painel do dia: as <strong>Alterações manuais</strong>, com a quantidade ao lado. Ao abrir, aparecem quem mexeu, quando e o quê, entre os ajustes da distribuição, os militares pontuais e as entradas e saídas do ciclo daquele dia. Todos podem ver. Num dia sem alteração, o rodapé não aparece.</p>
 
               <div class="manual-admin manual-zona-admin">
                 <h3 id="montar-ciclo">Montar o ciclo: Contínuos e Pontuais <span class="manual-selo-admin">Apenas administradores</span></h3>
@@ -695,6 +719,7 @@
                   </figcaption>
                 </figure>
                 <p>Quando você muda uma função, o que o sistema tinha montado aparece <strong>riscado</strong> logo abaixo, uma barra cinza marca o que ainda falta salvar, e o <strong>Salvar</strong> grava. Esses ajustes manuais ganham o ícone de <strong>Função fixada</strong> (cadeado), ficam <strong>por cima</strong> do automático e continuam valendo mesmo quando o sistema recalcula a escala.</p>
+                <p>As regras de cada militar valem também para os seus ajustes. Colocar um condutor sem a CNH exigida pela viatura, ou um militar numa função que a regra dele proíbe, fica em vermelho e trava o <strong>Salvar</strong>, assim como o horário fora da disponibilidade e dois militares no mesmo horário. Colocar um militar exclusivo fora da sua função, ou com grau diferente do ideal, fica em amarelo e o <strong>Salvar</strong> segue liberado.</p>
               </div>
             </section>
 

@@ -65,7 +65,6 @@
       var dados = resultado.militares;
       var cobertura = resultado.cobertura || {};
       var erro = resultado.erro || {};
-      var conflito = resultado.conflito || {};
       if (!document.contains(corpo) || req !== reqSeq || (opcoes.vigente && !opcoes.vigente())) return;   // saiu da página, outra render começou, ou trocou de modo
       corpo.textContent = '';
 
@@ -109,8 +108,7 @@
           var pessoas = opcoes.soCobertura ? [] : ((dados[c.id] && dados[c.id][iso]) || []);
           var cobDia = (cobertura[c.id] && cobertura[c.id][iso]) || null;
           var erroDia = (erro[c.id] && erro[c.id][iso]) || null;
-          var conflitoDia = !!(conflito[c.id] && conflito[c.id][iso]);
-          if (RosterWork.escalasCelula) RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, conflitoDia, pessoas, maxGlobal);
+          if (RosterWork.escalasCelula) RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxGlobal);
           /* gancho opcional: quem reusa a grade (ex.: Extrajornada) sobrepõe algo na célula (a Escala não passa) */
           if (opcoes.aoCelula) opcoes.aoCelula(celula, c.id, iso, { cobertura: cobDia, erro: erroDia, maxGlobal: maxGlobal });
           linha.appendChild(celula);
@@ -141,9 +139,8 @@
       if (!document.contains(celula)) return;
       var cobDia = (r.cobertura[unidadeId] && r.cobertura[unidadeId][iso]) || null;
       var erroDia = (r.erro[unidadeId] && r.erro[unidadeId][iso]) || null;
-      var conflitoDia = !!(r.conflito[unidadeId] && r.conflito[unidadeId][iso]);
       var pessoas = (r.militares[unidadeId] && r.militares[unidadeId][iso]) || [];
-      RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, conflitoDia, pessoas, maxGlobalAtual);
+      RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxGlobalAtual);
       RosterWork.escalasCelula.desenharGraficos(celula);
     }).catch(function () {});   // refresh de 1 célula falhou: mantém a célula atual (o salvamento já avisou)
   }

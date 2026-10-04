@@ -622,36 +622,70 @@
   gap: 8px;
 }
 
-/* ---------- legenda dos ícones de origem (rodapé do painel, retrátil) ---------- */
-.escala-legenda {
+/* ---------- alterações manuais do dia (rodapé do painel, retrátil; antes era a legenda) ---------- */
+.escala-alteracoes {
   width: 100%;
   display: flex;
-  flex-direction: column;   /* título acima, lista de opções abaixo */
+  flex-direction: column;   /* título acima, lista abaixo */
   gap: 8px;
 }
 
-.escala-legenda-cabecalho {
+.escala-alteracoes-cabecalho {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.escala-legenda-titulo {
+.escala-alteracoes-titulo {
   font-size: 11px;
   font-weight: 600;
   color: var(--texto-forte);
 }
 
-/* chevron: aponta para cima quando fechada e gira para baixo quando aberta
+/* chevron: aponta para cima quando fechado e gira para baixo quando aberto
    (giro instantâneo, como na árvore) */
-.escala-legenda-seta {
+.escala-alteracoes-seta {
   transform: rotate(180deg);
 }
 
-.escala-legenda-toggle[aria-expanded="true"] .escala-legenda-seta {
+.escala-alteracoes-toggle[aria-expanded="true"] .escala-alteracoes-seta {
   transform: rotate(0);
 }
 
+/* a lista não toma o painel inteiro: rola quando há muitas alterações */
+.escala-alteracoes-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+/* uma alteração: quem + quando numa linha, o resumo abaixo; divisória entre elas */
+.escala-alteracao + .escala-alteracao {
+  padding-top: 8px;
+  border-top: 1px solid var(--borda);
+}
+
+.escala-alteracao-cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.escala-alteracao-autor {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.escala-alteracao-quando {
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+/* ---------- grupos de ícones da Legenda do sub-cabeçalho da Escala ---------- */
 /* grupos empilhados (origem, nome riscado, função, militar, observações), cada um com o seu título */
 .escala-legenda-itens {
   display: flex;

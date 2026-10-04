@@ -122,6 +122,54 @@
     }
   }
 
+  /* problemas da colocação (vindos do banco em dados.problemas) -> chave no catálogo de erros;
+     vermelho trava a escala, amarelo deixa funcionar */
+  var PROBLEMA_COLOCACAO = {
+    cnh_incompativel: 'cnhIncompativel',
+    regra_proibida:   'regraProibida',
+    exclusivo_fora:   'exclusivoFora',
+    grau_diferente:   'grauDiferente'
+  };
+
+  function defsProblemas(m) {
+    var cat = (RosterWork.mensagens && RosterWork.mensagens.escala && RosterWork.mensagens.escala.erros) || {};
+    return ((m && m.problemas) || []).map(function (c) { return cat[PROBLEMA_COLOCACAO[c]]; }).filter(Boolean);
+  }
+
+  /* anexa a cada militar das funções os códigos dos problemas da colocação dele (m.problemas), para a
+     linha e a caixa do posto pintarem certo; quem decide é o banco, aqui só se casa militar+posto+função */
+  function anexarProblemas(dados) {
+    var porChave = {};
+    ((dados && dados.problemas) || []).forEach(function (p) {
+      if (!PROBLEMA_COLOCACAO[p.codigo]) return;
+      var k = p.cpf + '|' + p.posto_id + '|' + p.funcao;
+      porChave[k] = porChave[k] || [];
+      if (porChave[k].indexOf(p.codigo) < 0) porChave[k].push(p.codigo);
+    });
+    ((dados && dados.postos) || []).forEach(function (po) {
+      (po.funcoes || []).forEach(function (f) {
+        (f.militares || []).forEach(function (m) { m.problemas = porChave[m.cpf + '|' + po.id + '|' + f.nome] || []; });
+      });
+    });
+    return dados;
+  }
+
+  /* problemas da colocação na linha do militar: dica com o motivo; vermelho pinta os ícones como o conflito
+     de disponibilidade, amarelo ganha a marca discreta do aviso do motor */
+  function marcarProblemas(linha, m) {
+    var defs = defsProblemas(m);
+    if (!defs.length) return;
+    var atual = linha.getAttribute('data-dica');
+    var motivos = defs.map(function (d) { return d.texto.replace(/:.*$/, ''); }).join('; ');   // "Condutor sem a CNH exigida"
+    linha.setAttribute('data-dica', atual ? atual + '; ' + motivos : motivos);
+    var icones = linha.querySelector('.escala-distribuicao-icones');
+    if (!icones) return;
+    if (defs.some(function (d) { return d.nivel === 'erro'; })) { icones.classList.add('escala-incompativel'); return; }
+    if (icones.querySelector('.escala-distribuicao-marca-aviso')) return;
+    var marca = RosterWork.tpl('tpl-escala-mes-origem');
+    if (marca) { definirIcone(marca, 'icone-alerta'); marca.classList.add('escala-distribuicao-marca-aviso'); icones.appendChild(marca); }
+  }
+
   /* texto da dica do ícone de regra: uma regra por linha ("Exclusivo: Rádio Operador") */
   function textoRegras(regras) {
     var cat = (RosterWork.mensagens && RosterWork.mensagens.escala && RosterWork.mensagens.escala.regra) || {};
@@ -149,14 +197,16 @@
     return '';
   }
 
-  /* nível de um militar na função: 'erro' (fora da disponibilidade) > 'alerta' (aviso amarelo) > '' */
+  /* nível de um militar na função: 'erro' (fora da disponibilidade, CNH, regra proibida) > 'alerta'
+     (aviso amarelo do motor, exclusivo fora da função, grau diferente) > '' */
   function nivelDoMilitar(m) {
     if (!m) return '';
-    if (m.incompativel) return 'erro';
+    var probs = defsProblemas(m);
+    if (m.incompativel || probs.some(function (d) { return d.nivel === 'erro'; })) return 'erro';
     var cat = (RosterWork.mensagens && RosterWork.mensagens.escala && RosterWork.mensagens.escala.erros) || {};
     var temAlerta = String(m.aviso || '').split(',').some(function (a) {
       var d = cat[AVISO_MOTOR[a]]; return d && d.nivel === 'alerta';
-    });
+    }) || probs.some(function (d) { return d.nivel === 'alerta'; });
     return temAlerta ? 'alerta' : '';
   }
 
@@ -190,21 +240,6 @@
     });
   }
 
-  /* chaves dos erros presentes nos postos (para a lista do aviso), em ordem fixa de exibição */
-  function errosPresentes(postos) {
-    var tem = {};
-    (postos || []).forEach(function (po) {
-      if (po.sem_condutor) tem.semCondutor = true;
-      (po.funcoes || []).forEach(function (f) {
-        if (f.sobreposicao) tem.sobreposicao = true;
-        (f.militares || []).forEach(function (m) {
-          if (m.incompativel) tem[(m.disp_hi && m.disp_hf) ? 'foraDisponibilidade' : 'semServico'] = true;
-        });
-      });
-    });
-    return ['semCondutor', 'foraDisponibilidade', 'semServico', 'sobreposicao'].filter(function (k) { return tem[k]; });
-  }
-
   /* "1ºPEL: 5 praças"; compostos juntam unidades com " + " (ex.: "2ªCIBM: 1 oficial + 1ºPEL: 7 praças") */
   function textoComposicao(unidades) {
     return (unidades || []).map(function (u) {
@@ -231,37 +266,6 @@
   /* o posto tem alguém em alguma função? (no Ver, o posto sem ninguém não aparece) */
   function temAlguem(posto) {
     return ((posto && posto.funcoes) || []).some(function (f) { return (f.militares || []).length > 0; });
-  }
-
-  /* linhas do efetivo fora dos limites, uma por posto (inclusive os que não aparecem no Ver, sem ninguém) */
-  function linhasEfetivo(postos, cat) {
-    var linhas = [];
-    (postos || []).forEach(function (po) {
-      var ab = po.abaixo_minimo;
-      if (ab && cat.abaixoMinimo) {
-        var faixas = ab.faixas || [];
-        var diaTodo = faixas.length === 1 && faixas[0].hi === '08:00' && faixas[0].hf === '08:00';
-        var textoFaixas = diaTodo ? '' : ', ' + faixas.map(function (f) { return preencher(cat.abaixoMinimo.faixa, f); }).join(' e ');
-        linhas.push({ def: cat.abaixoMinimo, texto: preencher(cat.abaixoMinimo.texto,
-          { posto: po.nome, pessoas: ab.pessoas, minimo: ab.minimo, faixas: textoFaixas }) });
-      }
-      var ac = po.acima_maximo;
-      if (ac && cat.acimaMaximo) {
-        linhas.push({ def: cat.acimaMaximo, texto: preencher(cat.acimaMaximo.texto, { posto: po.nome, pessoas: ac.pessoas, maximo: ac.maximo }) });
-      }
-    });
-    return linhas;
-  }
-
-  /* quais avisos do motor estão presentes hoje (para a lista do topo) */
-  function avisosDoMotor(postos, semFuncao) {
-    var r = { distribuicaoTravada: false, resolvaEscala: false, grauRebaixado: false, rodizioRepetido: false, exclusivoCondutor: false, chefeCondutor: false };
-    function marcar(m) { var k = AVISO_MOTOR[m && m.aviso]; if (k && r.hasOwnProperty(k)) r[k] = true; }
-    (postos || []).forEach(function (po) {
-      (po.funcoes || []).forEach(function (f) { (f.militares || []).forEach(marcar); });
-    });
-    (semFuncao || []).forEach(marcar);
-    return r;
   }
 
   /* texto com {marcadores} preenchidos a partir de um objeto de dados */
@@ -343,44 +347,98 @@
     lista.appendChild(grupo);
   }
 
-  /* aviso do topo: uma linha por item presente — distribuição travada + conflitos + falta modelo
-     (erro, vermelho) e depois grau rebaixado / rodízio repetido (alerta, amarelo).
-     mostrarAcao revela o "CORRIJA PARA SALVAR" */
-  function montarAviso(postos, mostrarAcao, faltamModelos, semFuncao) {
+  /* a lista de avisos do topo vem pronta do banco (dados.problemas, a mesma fonte do gráfico da grade),
+     no Ver e no Editar (no Editar, calculada sobre o rascunho ainda não salvo): uma linha por tipo de
+     problema, vermelho primeiro e amarelo depois. O detalhe amarelo expansível (quem + vaga + motivo)
+     segue montado pelos dados dos postos. mostrarAcao revela o "CORRIJA PARA SALVAR" */
+  function montarAvisoProblemas(problemas, postos, faltamModelos, mostrarAcao) {
+    var lista = problemas || [];
+    if (!lista.length) return null;
     var cat = (RosterWork.mensagens && RosterWork.mensagens.escala && RosterWork.mensagens.escala.erros) || {};
-    var faltam = faltamModelos || [];
-    var mot = avisosDoMotor(postos, semFuncao);   // travada + resolvaEscala (vindos do semFuncao)
-    var det = detalharAvisosMotor(postos);        // avisos amarelos por militar (split de vírgula)
-    var chaves = [];
-    if (mot.distribuicaoTravada) chaves.push('distribuicaoTravada');   // 🔴 a trava, no topo
-    if (mot.resolvaEscala) chaves.push('resolvaEscala');   // 🔴 sem solução automática — resolver na Escala
-    errosPresentes(postos).forEach(function (k) { chaves.push(k); });  // 🔴 conflitos de edição + viatura sem condutor
-    if (mot.chefeCondutor) chaves.push('chefeCondutor');   // 🟡 chefe assumiu a direção por falta de condutor
-    var temAmarelo = det.grauRebaixado.length || det.grauExclusivo.length || det.rodizioRepetido.length || det.exclusivoCondutor.length || det.afastadoTroca.length;
-    var qSemFuncao = (semFuncao || []).length;
-    var efetivo = linhasEfetivo(postos, cat);   // 🔴 efetivo abaixo do mínimo / acima do máximo, por posto
-    if (!chaves.length && !faltam.length && !temAmarelo && !qSemFuncao && !efetivo.length) return null;
     var aviso = RosterWork.tpl('tpl-escala-distribuicao-aviso');
     if (!aviso) return null;
-    var lista = aviso.querySelector('.escala-distribuicao-aviso-lista');
-    chaves.forEach(function (k) { var def = cat[k]; if (def) avisoItem(lista, def.icone, def.texto, def.nivel); });
-    efetivo.forEach(function (l) { avisoItem(lista, l.def.icone, l.texto, l.def.nivel); });
-    if (qSemFuncao && cat.semFuncao) {   // 🔴 militar de serviço sem função (singular/plural pela quantidade)
-      var txtSF = qSemFuncao === 1 ? cat.semFuncao.texto : preencher(cat.semFuncao.textoPlural, { n: qSemFuncao });
-      avisoItem(lista, cat.semFuncao.icone, txtSF, cat.semFuncao.nivel);
+    var alvo = aviso.querySelector('.escala-distribuicao-aviso-lista');
+
+    var por = {};
+    lista.forEach(function (p) { (por[p.codigo] = por[p.codigo] || []).push(p); });
+    function tem(codigo) { return !!(por[codigo] && por[codigo].length); }
+    function linha(def, texto) { if (def) avisoItem(alvo, def.icone, texto || def.texto, def.nivel); }
+    function militar(p) { return ((p.grad || '') + ' ' + (p.nome || '')).trim(); }
+    /* uma linha por ocorrência distinta (ex.: o mesmo militar na mesma função em duas faixas vira uma linha) */
+    function porOcorrencia(codigo, def, chave, dadosTexto) {
+      if (!def || !tem(codigo)) return;
+      var vistos = {};
+      por[codigo].forEach(function (p) {
+        var k = chave(p);
+        if (vistos[k]) return;
+        vistos[k] = true;
+        linha(def, preencher(def.texto, dadosTexto(p)));
+      });
     }
-    var defFM = cat.faltaModelo || { texto: 'Falta modelo de distribuição', icone: 'icone-alerta', nivel: 'erro' };
-    faltam.forEach(function (f) {   // 🔴 uma linha por trecho sem modelo (texto dinâmico)
-      avisoItem(lista, defFM.icone, defFM.texto + ': ' + textoComposicao(f.unidades) + ', ' + formatarHora(f.hi) + ' às ' + formatarHora(f.hf), defFM.nivel);
+    /* efetivo por posto: junta as faixas do mesmo posto ("das 08h às 14h e das 20h às 08h") */
+    function linhasEfetivoProblemas(codigo, def) {
+      if (!def || !tem(codigo)) return;
+      var postosVistos = [], porPosto = {};
+      por[codigo].forEach(function (p) {
+        if (!porPosto[p.posto_id]) { porPosto[p.posto_id] = []; postosVistos.push(p.posto_id); }
+        porPosto[p.posto_id].push(p);
+      });
+      postosVistos.forEach(function (id) {
+        var itens = porPosto[id];
+        var acima = codigo === 'acima_maximo';
+        var pessoas = itens.reduce(function (v, p) { return acima ? Math.max(v, p.quantidade) : Math.min(v, p.quantidade); }, acima ? -Infinity : Infinity);
+        var diaTodo = itens.length === 1 && itens[0].hi === '08:00' && itens[0].hf === '08:00';
+        var faixas = (acima || diaTodo) ? '' : ', ' + itens.map(function (p) { return preencher(def.faixa, { hi: p.hi, hf: p.hf }); }).join(' e ');
+        linha(def, preencher(def.texto, { posto: itens[0].posto || '', pessoas: pessoas, minimo: itens[0].limite, maximo: itens[0].limite, faixas: faixas }));
+      });
+    }
+
+    /* 🔴 vermelho: a escala não funciona */
+    if (tem('parcial_com_erro')) linha(cat.distribuicaoTravada);
+    if (tem('resolva_escala')) linha(cat.resolvaEscala);
+    if (tem('sem_condutor')) linha(cat.semCondutor);
+    if (tem('fora_disponibilidade')) linha(cat.foraDisponibilidade);
+    if (tem('sem_servico')) linha(cat.semServico);
+    if (tem('sobreposicao')) linha(cat.sobreposicao);
+    porOcorrencia('cnh_incompativel', cat.cnhIncompativel, function (p) { return p.cpf + '|' + p.posto_id; },
+      function (p) { return { militar: militar(p), posto: p.posto || '' }; });
+    porOcorrencia('regra_proibida', cat.regraProibida, function (p) { return p.cpf + '|' + p.funcao; },
+      function (p) { return { militar: militar(p), funcao: p.funcao || '' }; });
+    linhasEfetivoProblemas('abaixo_minimo', cat.abaixoMinimo);
+    linhasEfetivoProblemas('acima_maximo', cat.acimaMaximo);
+    var semFuncao = {};
+    ['sem_funcao', 'sem_modelo', 'parcial_com_erro', 'resolva_escala'].forEach(function (c) {
+      (por[c] || []).forEach(function (p) { semFuncao[p.cpf] = true; });
     });
-    montarAvisoGrupo(lista, 'grauRebaixado', det.grauRebaixado, cat.grauRebaixado);         // 🟡 expansível: quem + vaga + motivo
-    montarAvisoGrupo(lista, 'grauExclusivo', det.grauExclusivo, cat.grauExclusivo);         // 🟡 grau ≠ ideal por regra exclusiva
-    montarAvisoGrupo(lista, 'rodizioRepetido', det.rodizioRepetido, cat.rodizioRepetido);   // 🟡
-    montarAvisoGrupo(lista, 'exclusivoCondutor', det.exclusivoCondutor, cat.exclusivoCondutor);   // 🟡
-    montarAvisoGrupo(lista, 'afastadoTroca', det.afastadoTroca, cat.afastadoTroca);   // 🟡 coberto por troca mas afastado
+    var qSemFuncao = Object.keys(semFuncao).length;
+    if (qSemFuncao && cat.semFuncao) linha(cat.semFuncao, qSemFuncao === 1 ? cat.semFuncao.texto : preencher(cat.semFuncao.textoPlural, { n: qSemFuncao }));
+    if (tem('sem_modelo')) {
+      var defFM = cat.faltaModelo || { texto: 'Falta modelo de distribuição', icone: 'icone-alerta', nivel: 'erro' };
+      var faltam = faltamModelos || [];
+      if (!faltam.length) linha(defFM);
+      faltam.forEach(function (f) {   // uma linha por trecho sem modelo, com a composição do trecho
+        linha(defFM, defFM.texto + ': ' + textoComposicao(f.unidades) + ', ' + formatarHora(f.hi) + ' às ' + formatarHora(f.hf));
+      });
+    }
+
+    /* 🟡 amarelo: funciona, com erro aceitável */
+    if (tem('chefe_condutor')) linha(cat.chefeCondutor);
+    porOcorrencia('manutencao', cat.manutencao, function (p) { return p.posto_id; },
+      function (p) { return { posto: p.posto || '' }; });
+    porOcorrencia('exclusivo_fora', cat.exclusivoFora, function (p) { return p.cpf + '|' + p.funcao; },
+      function (p) { return { militar: militar(p), funcao: p.funcao || '' }; });
+    porOcorrencia('grau_diferente', cat.grauDiferente, function (p) { return p.cpf + '|' + p.funcao; },
+      function (p) { return { militar: militar(p), funcao: p.funcao || '' }; });
+    var det = detalharAvisosMotor(postos);   // quem + vaga + motivo, para o detalhe expansível
+    [['grau_por_falta', 'grauRebaixado'], ['grau_exclusivo', 'grauExclusivo'], ['rodizio_quebrado', 'rodizioRepetido'],
+     ['exclusivo_condutor', 'exclusivoCondutor'], ['afastado', 'afastadoTroca']].forEach(function (par) {
+      if (tem(par[0])) montarAvisoGrupo(alvo, par[1], det[par[1]], cat[par[1]]);
+    });
+
+    if (!alvo.children.length) return null;
     if (mostrarAcao) {
-      var ac = aviso.querySelector('.escala-distribuicao-aviso-acao');
-      if (ac) ac.classList.remove('oculto');
+      var acao = aviso.querySelector('.escala-distribuicao-aviso-acao');
+      if (acao) acao.classList.remove('oculto');
     }
     return aviso;
   }
@@ -500,6 +558,7 @@
     if (!(opts && opts.ghost)) {
       marcarConflito(linha, m, horas.querySelector('.escala-distribuicao-hora-ini'), horas.querySelector('.escala-distribuicao-hora-fim'));
       marcarAviso(linha, m);
+      marcarProblemas(linha, m);
     }
     return linha;
   }
@@ -619,11 +678,12 @@
       if (!pCtx || pCtx.unidadeId !== unidadeId || pCtx.iso !== iso) return;   // outro dia/unidade foi aberto enquanto carregava
       corpo.textContent = '';
       if (!dados) { mostrarEstado(corpo, RosterWork.mensagens.escala.falhaCarregar); return; }   // falha de leitura: mostra erro, não "dia vazio"
+      anexarProblemas(dados);   // CNH, regra, exclusivo e grau de cada militar (para pintar a linha e o posto)
       var postos = (dados && dados.postos) || [];
       var semFuncao = (dados && dados.sem_funcao) || [];
       if (!postos.length && !semFuncao.length) { mostrarEstado(corpo, 'Sem distribuição neste dia.'); return; }
 
-      var aviso = montarAviso(postos, false, dados && dados.faltam_modelos, semFuncao);   // Ver: erros + falta-modelo + avisos do motor, sem "CORRIJA" (não há edição)
+      var aviso = montarAvisoProblemas(dados.problemas, postos, dados.faltam_modelos, false);   // Ver: a lista vem pronta do banco (mesma fonte do gráfico)
       if (aviso) corpo.appendChild(aviso);
 
       /* sem função definida: caixa de erro acima dos postos, só com a lista de militares */
@@ -665,25 +725,47 @@
     });
   }
 
-  /* legenda dos ícones de origem no rodapé: retrátil pelo chevron; sempre começa fechada
-     (ao fechar e reabrir o painel, volta retraída) */
-  function aplicarLegenda(toggle, itens, aberta) {
-    toggle.setAttribute('aria-expanded', aberta ? 'true' : 'false');
-    itens.classList.toggle('oculto', !aberta);
+  /* rodapé retrátil: abre/fecha pelo chevron; sempre começa fechado (ao reabrir o painel, volta retraído) */
+  function aplicarRetratil(toggle, conteudo, aberto) {
+    toggle.setAttribute('aria-expanded', aberto ? 'true' : 'false');
+    conteudo.classList.toggle('oculto', !aberto);
   }
 
-  function montarLegenda(rodape) {
+  /* rodapé "Alterações manuais (N)": quem mexeu no dia, quando e o quê (ajustes da Distribuição,
+     pontuais e entradas/saídas do ciclo que começam no dia). Sem alterações, o rodapé não aparece */
+  function montarAlteracoes(rodape, unidadeId, iso) {
     rodape.textContent = '';
-    var legenda = RosterWork.tpl('tpl-escala-legenda');
-    if (!legenda) { rodape.classList.add('oculto'); return; }
-    var toggle = legenda.querySelector('.escala-legenda-toggle');
-    var itens = legenda.querySelector('.escala-legenda-itens');
-    aplicarLegenda(toggle, itens, false);
-    toggle.addEventListener('click', function () {
-      aplicarLegenda(toggle, itens, toggle.getAttribute('aria-expanded') !== 'true');
+    rodape.classList.add('oculto');
+    if (!RosterWork.escalasDados || !RosterWork.escalasDados.lerAlteracoesDia) return;
+    RosterWork.escalasDados.lerAlteracoesDia(unidadeId, iso).then(function (lista) {
+      /* outro dia/unidade/seção foi aberto enquanto carregava: não mexe no rodapé */
+      if (!pCtx || pCtx.unidadeId !== unidadeId || pCtx.iso !== iso || pCtx.secao !== 'distribuicao' || RosterWork.painel.modo() === 'editar') return;
+      if (!lista || !lista.length) return;
+      var bloco = RosterWork.tpl('tpl-escala-alteracoes');
+      if (!bloco) return;
+      bloco.querySelector('.escala-alteracoes-qtd').textContent = '(' + lista.length + ')';
+      var conteudo = bloco.querySelector('.escala-alteracoes-lista');
+      lista.forEach(function (alt) {
+        var item = RosterWork.tpl('tpl-escala-alteracao');
+        if (!item) return;
+        item.querySelector('.escala-alteracao-autor').textContent = alt.autor || '';
+        var quando = item.querySelector('.escala-alteracao-quando');
+        if (RosterWork.resumo && RosterWork.resumo.formatarQuando) quando.textContent = RosterWork.resumo.formatarQuando(alt.criado_em);
+        if (RosterWork.resumo && RosterWork.resumo.desenhar) {
+          var no = RosterWork.resumo.desenhar(alt.resumo, { mostrarQuando: false });
+          if (no) item.querySelector('.escala-alteracao-resumo').appendChild(no);
+        }
+        conteudo.appendChild(item);
+      });
+      var toggle = bloco.querySelector('.escala-alteracoes-toggle');
+      aplicarRetratil(toggle, conteudo, false);
+      toggle.addEventListener('click', function () {
+        aplicarRetratil(toggle, conteudo, toggle.getAttribute('aria-expanded') !== 'true');
+      });
+      rodape.textContent = '';
+      rodape.appendChild(bloco);
+      rodape.classList.remove('oculto');
     });
-    rodape.appendChild(legenda);
-    rodape.classList.remove('oculto');
   }
 
   /* avisado pelo geral-painel ao trocar Ver/Editar: redesenha a seção atual no novo modo */
@@ -717,7 +799,7 @@
         RosterWork.escalasPainelEditar.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso, voltarParaVer);
       } else {
         montarDistribuicao(corpo, pCtx.unidadeId, pCtx.iso);
-        if (rodape) montarLegenda(rodape);
+        if (rodape) montarAlteracoes(rodape, pCtx.unidadeId, pCtx.iso);
       }
     } else if (secao === 'continuos' && RosterWork.escalasPainelContinuos) {
       RosterWork.escalasPainelContinuos.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso, editar);
@@ -948,7 +1030,9 @@
       temAlguem: temAlguem,
       nivelFuncao: nivelDaFuncao,
       nivelPosto: nivelDoPosto,
-      montarAviso: montarAviso,
+      montarAvisoProblemas: montarAvisoProblemas,
+      anexarProblemas: anexarProblemas,
+      marcarProblemas: marcarProblemas,
       montarBusca: montarBusca,
       montarManutencao: montarManutencao,
       observacoes: montarObservacoes

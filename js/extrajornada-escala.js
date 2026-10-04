@@ -151,7 +151,7 @@
     var req = ++calSeq;
     RW.escalasDados.carregar(ids, inicio, fim).then(function (r) {
       if (!el.cal || !el.cal.isConnected || req !== calSeq) return;
-      var cob = (r && r.cobertura) || {}, err = (r && r.erro) || {}, conf = (r && r.conflito) || {};
+      var cob = (r && r.cobertura) || {}, err = (r && r.erro) || {};
       var maxGlobal = RW.escalasCelula.calcularMaxGlobal(cob, ids);
       RW.geralCalendarioMes.renderizar(el.cal, { dataRef: comp, aoDia: function (celulaDia, data, noMes) {
         if (!noMes) return;   // dia de outro mês fica só com o número apagado
@@ -164,8 +164,7 @@
           cel.dataset.unidadeNome = c.nomePainel || c.nome; cel.dataset.unidadeCidade = c.cidade || '';
           var cobDia = (cob[c.id] && cob[c.id][isoDia]) || null;
           var errDia = (err[c.id] && err[c.id][isoDia]) || null;
-          var confDia = !!(conf[c.id] && conf[c.id][isoDia]);
-          RW.escalasCelula.preencherCelula(cel, cobDia, errDia, confDia, [], maxGlobal);
+          RW.escalasCelula.preencherCelula(cel, cobDia, errDia, [], maxGlobal);
           sobreporCelula(cel, c.id, isoDia, cobDia);
           celulaDia.appendChild(bloco);
         });

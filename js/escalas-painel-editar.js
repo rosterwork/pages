@@ -19,7 +19,7 @@
   var ctx = null;        // { corpo, rodape, unidadeId, iso, contextoId, dados, aoCancelar, btnSalvar }
   var pickerAberto = null;
   var novos = {};        // chaves de ajustes do rascunho que não estão no base
-  var haConflito = false; // alguma função fora da disponibilidade no desenho atual
+  var haConflito = false; // algum vermelho causado pelo manual no desenho atual (trava o Salvar)
   var vagas = [];        // funções adicionadas à mão ainda sem militar (uma por posto)
 
 
@@ -427,6 +427,7 @@
     if (m.bloqueado) preencherHoras(linha, m.periodos);
     else preencherHorasEditar(linha, posto, funcao, m);
     if (p.marcarConflito) p.marcarConflito(linha, m, null, null);   // ícones + dica; a faixa errada é pintada por período no preencherHorasEditar
+    if (p.marcarProblemas) p.marcarProblemas(linha, m);   // CNH/regra proibida (vermelho), exclusivo/grau (amarelo)
     if (sobrepoe) marcarSobreposicao(linha);
 
     if (!m.bloqueado) {
@@ -584,9 +585,15 @@
       ctx.dados = dados;
       calcularNovos();
       var p = pecas();
-      haConflito = !!(p.temConflito && p.temConflito(dados.postos, true));   // só manual → trava o Salvar
+      if (p.anexarProblemas) p.anexarProblemas(dados);   // CNH, regra, exclusivo e grau de cada militar (do banco, sobre o rascunho)
+      /* trava o Salvar (só o que o manual causou): fora da disponibilidade, sobreposição e acima do máximo;
+         e o vermelho da escolha manual (condutor sem a CNH exigida, função proibida pela regra) */
+      var vermelhoManual = (dados.problemas || []).some(function (pr) {
+        return (pr.codigo === 'cnh_incompativel' || pr.codigo === 'regra_proibida') && pr.manual;
+      });
+      haConflito = !!(p.temConflito && p.temConflito(dados.postos, true)) || vermelhoManual;
       atualizarSalvar();
-      var aviso = p.montarAviso ? p.montarAviso(dados.postos, sujo && haConflito, dados.faltam_modelos, dados.sem_funcao) : null;   // erros + falta-modelo + avisos do motor; "CORRIJA" só quando o manual trava
+      var aviso = p.montarAvisoProblemas ? p.montarAvisoProblemas(dados.problemas, dados.postos, dados.faltam_modelos, sujo && haConflito) : null;   // a mesma lista do Ver, sobre o rascunho; "CORRIJA" só quando o manual trava
       if (aviso) corpo.appendChild(aviso);
       var semFuncao = dados.sem_funcao || [];
       if (semFuncao.length) {
@@ -657,7 +664,7 @@
   }
 
   function salvar() {
-    if (haConflito) return;   // trava: não salva com função fora da disponibilidade
+    if (haConflito) return;   // trava: não salva com vermelho do manual (disponibilidade, sobreposição, máximo, CNH, regra proibida)
     if (!sujo) { if (ctx && ctx.aoCancelar) ctx.aoCancelar(); return; }
     if (!ctx || ctx.contextoId == null) return;
     /* função manual sem militar (vaga) será excluída ao salvar — confirma antes */
