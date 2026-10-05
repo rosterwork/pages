@@ -229,6 +229,8 @@
         imporCaminhoUnico(no);
       }
       atualizarVisual();
+      /* árvore solta (sem Aplicar, ex.: painel Imprimir escala): avisa a cada marcação */
+      if (typeof opcoes.aoMudar === 'function') opcoes.aoMudar(idsSelecionados());
     }
 
     /* estado visual das caixas + contagem (modo multi) */
@@ -453,6 +455,11 @@
       mostrarCarregando: mostrarCarregando,
       montarResumo: montarResumo,
       idsSelecionados: idsSelecionados,
+      /* as unidades marcadas com os dados delas (nome, tipo, cidade...) */
+      unidadesSelecionadas: function () {
+        return nos.filter(function (no) { return !!selecionados[no.definicao.unidade_id]; })
+          .map(function (no) { return no.definicao; });
+      },
       aplicarSelecaoPorIds: aplicarSelecaoPorIds,
       unidadeSelecionada: function () {
         var lista = idsSelecionados();

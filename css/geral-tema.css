@@ -89,6 +89,13 @@
      (igual nos dois temas, porque as imagens não mudam com o tema) */
   --anotacao:            rgb(40,  96,  232);
   --anotacao-texto:      var(--cinza-0);
+  /* cores do PDF da escala (escalas-impressao-pdf.js lê daqui): papel é sempre claro,
+     então são iguais nos dois temas; preto e cinza, para sair bem em impressora comum */
+  --impressao-texto-forte: var(--cinza-950);
+  --impressao-texto:       var(--cinza-900);
+  --impressao-texto-suave: var(--cinza-750);
+  --impressao-borda:       var(--cinza-300);
+  --impressao-fundo:       var(--cinza-150);
 
   /* -------------------------------------------------------
      Véu do modal
@@ -147,7 +154,7 @@
      Tokens do componente ícone
      ------------------------------------------------------- */
   --icone-traco: 1.5;   /* espessura do traço de todos os ícones — menos o logo */
-  --grafico-traco: 1;   /* espessura do traço dos gráficos canvas (independente dos ícones) */
+  --arvore-traco: 1;    /* traço fino do ícone de unidade da árvore (independente dos ícones) */
 }
 
 /* -------------------------------------------------------

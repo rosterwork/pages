@@ -36,7 +36,7 @@
 /* ícone da unidade (à esquerda do nome): mesma cor da linha-guia vertical; traço fino */
 .arvore-unidade-icone {
   color: var(--borda);
-  stroke-width: var(--grafico-traco);
+  stroke-width: var(--arvore-traco);
   fill: currentColor;
 }
 

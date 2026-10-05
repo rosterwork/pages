@@ -77,6 +77,21 @@
       .catch(function () { return null; });
   }
 
+  /* impressão (PDF): a escala do período para as unidades marcadas, como no modo Dia
+     ({unidades, dias}); o painel pede em blocos pequenos. null = falha */
+  function lerImpressao(ids, inicio, fim) {
+    return RosterWork.apiFetch('/rest/v1/rpc/escala_impressao', { metodo: 'POST', corpo: { p_unidade_ids: ids, p_inicio: inicio, p_fim: fim } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; });
+  }
+
+  /* impressão: dias do período com erro grave nas unidades marcadas ([{data, unidade_id, unidade}]). null = falha */
+  function lerImpressaoErros(ids, inicio, fim) {
+    return RosterWork.apiFetch('/rest/v1/rpc/escala_impressao_erros', { metodo: 'POST', corpo: { p_unidade_ids: ids, p_inicio: inicio, p_fim: fim } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; });
+  }
+
   /* grava os ajustes do dia (lista de Colocar/Tirar) na escalas_manuais via RPC.
      Resolve no objeto da RPC ({success,log}) ou num marcador de falha:
      { _falha: 'conexao' } (sem rede) | { _falha: 'servidor' } (HTTP não-ok). */
@@ -145,6 +160,7 @@
   window.RosterWork.escalasDados = {
     carregar: carregar, carregarMilitares: carregarMilitares, lerMilitarDia: lerMilitarDia,
     lerDistribuicaoDia: lerDistribuicaoDia, lerAlteracoesDia: lerAlteracoesDia, salvarAjustesDia: salvarAjustesDia,
+    lerImpressao: lerImpressao, lerImpressaoErros: lerImpressaoErros,
     continuosListar: continuosListar, cicloAdicionar: cicloAdicionar, cicloRetirar: cicloRetirar,
     cicloRetirarAnalisar: cicloRetirarAnalisar,
     cicloCancelarSaida: cicloCancelarSaida, cicloSalvarLote: cicloSalvarLote,

@@ -330,6 +330,33 @@
         if (o.tipo === 'devolucao') return base + ' (Devolução da troca de ' + (o.orig_data || '') + '.)';
         if (o.dev_pendente) return base + ' Devolução: a definir.';
         return base + ' Devolução: ' + (o.dev_data || '') + ' das ' + hh(o.dev_hi) + ' às ' + hh(o.dev_hf) + '.';
+      },
+      /* Imprimir escala (painel → PDF; escalas-impressao.js e escalas-impressao-pdf.js) */
+      impressao: {
+        titulo: 'Imprimir escala',
+        subtitulo: 'Arquivo em PDF',
+        dataInvalida: 'Data inválida.',
+        fimAntesInicio: 'A data final não pode ser antes da inicial.',
+        limiteDias: 'Escolha até 31 dias por arquivo.',
+        resumo: function (dias, unidades) {
+          return dias + (dias === 1 ? ' dia' : ' dias') + ' · ' + unidades + (unidades === 1 ? ' unidade' : ' unidades');
+        },
+        /* aviso do painel quando algum dia do período tem erro grave (vermelho) */
+        avisoTitulo: function (n) { return n === 1 ? 'Erro grave em 1 dia do período' : 'Erro grave em ' + n + ' dias do período'; },
+        avisoDescricao: function (lista) { return lista + '. O PDF sai do jeito que está na escala.'; },
+        falhaGerar: 'Não foi possível gerar o PDF. Tente de novo.',
+        /* textos de dentro do PDF */
+        pdf: {
+          titulo: 'Escala de serviço',
+          observacoes: 'Observações',
+          semFuncao: 'Sem função definida',
+          semDistribuicao: 'Sem distribuição neste dia.',
+          continuacao: '(continuação)',
+          site: 'www.rosterwork.com',
+          pagina: function (n, total) { return 'Página ' + n + ' de ' + total; },
+          deServico: function (ritmo, n) { return (ritmo ? ritmo + ' · ' : '') + n + ' de serviço'; },
+          arquivo: function (periodo, unidade) { return 'Escala ' + (unidade ? unidade + ' ' : '') + periodo + '.pdf'; }
+        }
       }
     },
 

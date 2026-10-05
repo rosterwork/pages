@@ -370,6 +370,26 @@
     return formatarIntervalo(dom, sab);
   }
 
+  /* data padrão da impressão: no Dia, o dia exibido; nos outros modos, hoje se aparece na tela,
+     senão o primeiro dia exibido */
+  function dataPadraoImpressao() {
+    var modo = modoAtual();
+    if (modo === 'dia') return new Date(refData.getFullYear(), refData.getMonth(), refData.getDate());
+    var ini, fim;
+    if (periodoMensal()) {
+      ini = new Date(refData.getFullYear(), refData.getMonth(), 1);
+      fim = new Date(refData.getFullYear(), refData.getMonth() + 1, 0);
+    } else {
+      var dom = inicioSemana(refData);
+      ini = new Date(dom.getFullYear(), dom.getMonth(), dom.getDate());
+      fim = new Date(ini);
+      fim.setDate(fim.getDate() + (modo === 'militares' ? 13 : 6));
+    }
+    var agora = new Date();
+    var hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+    return (hoje >= ini && hoje <= fim) ? hoje : ini;
+  }
+
   function atualizarPeriodo() {
     var el = conteudo.querySelector('#escala-periodo-nome');
     if (el) el.textContent = textoPeriodo();
@@ -528,6 +548,12 @@
     var btnProximo = conteudo.querySelector('#escala-periodo-proximo');
     if (btnAnterior) btnAnterior.addEventListener('click', function () { navegar(-1); });
     if (btnProximo) btnProximo.addEventListener('click', function () { navegar(1); });
+
+    /* Imprimir: abre o painel "Imprimir escala" com a data padrão do que está na tela */
+    var btnImprimir = conteudo.querySelector('#escala-imprimir');
+    if (btnImprimir && window.RosterWork.escalasImpressao) {
+      btnImprimir.addEventListener('click', function () { RosterWork.escalasImpressao.abrir({ data: dataPadraoImpressao() }); });
+    }
 
     /* clicar no rótulo do período abre o calendário; o dia escolhido vira a referência */
     var rotuloPeriodo = conteudo.querySelector('#escala-periodo-nome');

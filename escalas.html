@@ -55,6 +55,11 @@
 
     <span class="espacador-flex"></span>
 
+    <!-- imprimir: abre o painel "Imprimir escala" (datas + unidades → PDF); à esquerda da busca, em todos os modos -->
+    <button type="button" class="botao botao--pequeno botao--quadrado" id="escala-imprimir" aria-label="Imprimir escala" data-dica="Imprimir">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-imprimir.svg#icone-imprimir"/></svg>
+    </button>
+
     <!-- busca de militar (nome/CPF/RG) nos modos de grade (Mês/Semana/Colunas/Dia); o modo Militares tem a sua própria -->
     <div class="busca oculto" id="escala-busca-geral">
       <button type="button" class="busca-modo" aria-label="Alternar entre marcar e filtrar" data-dica="Marcar">
@@ -211,6 +216,58 @@
     </div>
     <div class="escala-alteracoes-lista oculto"></div>
   </div>
+</template>
+
+<!-- painel "Imprimir escala" (botão do sub-cabeçalho; escalas-impressao.js): datas De/Até (já com o dia exibido)
+     + atalhos, a árvore de unidades (já marcada com o seletor), o resumo e o aviso de erro grave -->
+<template id="tpl-escala-impressao">
+  <div class="painel-secao">
+    <span class="rotulo-secao">Datas</span>
+    <div class="escala-impressao-datas">
+      <label class="campo">
+        <span class="campo-rotulo">De</span>
+        <input class="campo-entrada" type="text" name="impressao-inicio" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" data-impressao-inicio />
+        <span class="campo-erro-texto"></span>
+      </label>
+      <label class="campo">
+        <span class="campo-rotulo">Até</span>
+        <input class="campo-entrada" type="text" name="impressao-fim" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" data-impressao-fim />
+        <span class="campo-erro-texto"></span>
+      </label>
+    </div>
+    <div class="escala-impressao-atalhos">
+      <button type="button" class="botao botao--pequeno" data-impressao-atalho="dia">Só este dia</button>
+      <button type="button" class="botao botao--pequeno" data-impressao-atalho="semana">7 dias</button>
+      <button type="button" class="botao botao--pequeno" data-impressao-atalho="mes">Até o fim do mês</button>
+    </div>
+    <span class="campo-ajuda">Até 31 dias por arquivo. Cada dia começa numa folha nova.</span>
+  </div>
+  <div class="painel-secao">
+    <span class="rotulo-secao">Unidades</span>
+    <div class="campo">
+      <div class="arvore" data-impressao-arvore></div>
+      <span class="campo-erro-texto"></span>
+    </div>
+  </div>
+  <div class="painel-secao">
+    <span class="rotulo-secao">O que vai sair</span>
+    <span class="campo-ajuda" data-impressao-resumo></span>
+    <div class="impacto-aviso impacto-aviso--problema oculto" data-impressao-aviso>
+      <svg class="icone impacto-aviso-icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+      <span class="impacto-aviso-textos">
+        <span class="impacto-aviso-titulo"></span>
+        <span class="impacto-aviso-desc"></span>
+      </span>
+    </div>
+  </div>
+</template>
+<template id="tpl-escala-impressao-acoes">
+  <button type="button" class="botao" data-impressao-cancelar>Cancelar</button>
+  <button type="button" class="botao botao--primario" data-impressao-gerar>Gerar PDF</button>
+</template>
+<!-- link escondido que baixa o PDF pronto (clicado e retirado na hora) -->
+<template id="tpl-escala-impressao-baixar">
+  <a class="oculto" href="#" download="escala.pdf">PDF</a>
 </template>
 
 <!-- uma alteração manual: quem e quando + o que mudou (o resumo vem do componente geral-resumo) -->

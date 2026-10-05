@@ -44,6 +44,7 @@
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#continuos-pontuais">Contínuos, pontuais e a distribuição do dia</a></li>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#icones-escala">Os ícones da escala</a></li>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#erros-escala">Erros e ressalvas da escala</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#imprimir-escala">Imprimir a escala</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#montar-ciclo">Montar o ciclo (Contínuos e Pontuais)</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#distribuicao-dia">A distribuição do dia</a></li>
               </ul>
@@ -679,6 +680,44 @@
                 <li><strong>Militar exclusivo fora da sua função:</strong> um militar exclusivo de uma função foi colocado em outra.</li>
               </ul>
               <p><strong>Alterações manuais.</strong> Quando o administrador corrige um erro, a hora volta ao verde. O rastro fica no rodapé da aba Distribuição, no painel do dia: as <strong>Alterações manuais</strong>, com a quantidade ao lado. Ao abrir, aparecem quem mexeu, quando e o quê, entre os ajustes da distribuição, os militares pontuais e as entradas e saídas do ciclo daquele dia. Todos podem ver. Num dia sem alteração, o rodapé não aparece.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/escala-alteracoes.png" alt="O rodapé do painel do dia com as Alterações manuais abertas: o título com a quantidade (1) e uma alteração com quem mexeu, quando e o quê (2)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>Alterações manuais, com a quantidade</li>
+                    <li>Uma alteração: quem mexeu, quando e o quê</li>
+                  </ol>
+                </figcaption>
+              </figure>
+
+              <h3 id="imprimir-escala">Imprimir a escala</h3>
+              <p>Para levar a escala ao papel ou enviar por mensagem, use o botão com o ícone de <strong>impressora</strong>, no alto da página Escala, à esquerda da pesquisa. Ele aparece em todos os modos e para todos.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/escala-imprimir-botao.png" alt="O alto da página Escala, com o botão de imprimir (1) à esquerda da pesquisa e do botão Legenda." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>Botão Imprimir</li>
+                  </ol>
+                </figcaption>
+              </figure>
+              <p>O botão abre, à direita, o painel <strong>Imprimir escala</strong>:</p>
+              <ul class="manual-lista">
+                <li><strong>Datas:</strong> De e Até já vêm com o dia que está na tela. Para mais de um dia, mude o Até ou use os atalhos <strong>Só este dia</strong>, <strong>7 dias</strong> e <strong>Até o fim do mês</strong>. Cabem até 31 dias por arquivo.</li>
+                <li><strong>Unidades:</strong> a mesma árvore do seletor do alto, já marcada com as unidades que você está vendo. Marcar ou desmarcar aqui não muda o seletor.</li>
+                <li><strong>Erro grave:</strong> se algum dia do período tiver erro grave, o painel avisa quais dias e unidades. O PDF sai do jeito que está na escala.</li>
+              </ul>
+              <figure class="manual-figura">
+                <img src="manual/imagens/escala-imprimir.png" alt="O painel Imprimir escala: as datas De e Até com os atalhos (1), a árvore de unidades marcadas (2) e o botão Gerar PDF (3)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>Datas e atalhos</li>
+                    <li>Unidades que vão no arquivo</li>
+                    <li>Gerar PDF</li>
+                  </ol>
+                </figcaption>
+              </figure>
+              <p>Ao clicar em <strong>Gerar PDF</strong>, o arquivo é baixado, pronto para imprimir ou compartilhar. Cada dia começa numa folha nova, com as unidades em sequência e o mesmo conteúdo do modo Dia: os postos, as funções, quem está em cada uma, os horários e as Observações. No alto da folha fica só a logo, e no rodapé o endereço do site e o número da página.</p>
+              <p>Uma unidade que cabe numa folha nunca é dividida: se não couber no espaço que sobrou, ela vai inteira para a folha seguinte. A unidade maior que uma folha continua na seguinte só entre um posto e outro, com o nome repetido, a marca <strong>(continuação)</strong> e a data.</p>
 
               <div class="manual-admin manual-zona-admin">
                 <h3 id="montar-ciclo">Montar o ciclo: Contínuos e Pontuais <span class="manual-selo-admin">Apenas administradores</span></h3>
@@ -719,6 +758,7 @@
                   </figcaption>
                 </figure>
                 <p>Quando você muda uma função, o que o sistema tinha montado aparece <strong>riscado</strong> logo abaixo, uma barra cinza marca o que ainda falta salvar, e o <strong>Salvar</strong> grava. Esses ajustes manuais ganham o ícone de <strong>Função fixada</strong> (cadeado), ficam <strong>por cima</strong> do automático e continuam valendo mesmo quando o sistema recalcula a escala.</p>
+                <p>O <strong>Chefe de Socorro</strong> e o <strong>Oficial de Área</strong> são escolhidos pelo sistema, conforme a normativa, e ficam travados: no Editar não dá para trocar, remover nem mudar o horário deles.</p>
                 <p>As regras de cada militar valem também para os seus ajustes. Colocar um condutor sem a CNH exigida pela viatura, ou um militar numa função que a regra dele proíbe, fica em vermelho e trava o <strong>Salvar</strong>, assim como o horário fora da disponibilidade e dois militares no mesmo horário. Colocar um militar exclusivo fora da sua função, ou com grau diferente do ideal, fica em amarelo e o <strong>Salvar</strong> segue liberado.</p>
               </div>
             </section>

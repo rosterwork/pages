@@ -721,3 +721,18 @@
 .escala-legenda-item .icone {
   flex-shrink: 0;
 }
+
+/* ---------- painel Imprimir escala (escalas-impressao.js) ---------- */
+/* De e Até lado a lado */
+.escala-impressao-datas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* atalhos do período (Só este dia · 7 dias · Até o fim do mês) */
+.escala-impressao-atalhos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}

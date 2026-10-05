@@ -88,6 +88,18 @@
   padding: 0;
 }
 
+/* botão só de ícone COM moldura: quadrado, mesma borda e fundo do botão comum (ex.: Imprimir,
+   ao lado do botão Legenda); exige aria-label e dica */
+.botao--quadrado {
+  min-width: var(--botao-altura);
+  padding: 0;
+  gap: 0;
+}
+
+.botao--pequeno.botao--quadrado {
+  min-width: var(--botao-altura-pequeno);
+}
+
 .botao--texto {
   min-height: auto;
   padding: 0;

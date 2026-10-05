@@ -1021,6 +1021,7 @@
       definirIcone: definirIcone,
       iconeOrigem: ICONE_ORIGEM,
       formatarHora: formatarHora,
+      dataPorExtenso: dataPorExtenso,
       abreviarFuncao: abreviarFuncao,
       linha: montarLinhaEscalado,
       grupo: montarGrupoFuncao,
