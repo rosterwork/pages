@@ -46,8 +46,7 @@
     var espacoAcima = rect.top - lim.top - folga;
     var alturaDesejada = painel.scrollHeight;   /* altura natural do conteúdo (ignora o teto de rolagem) */
     /* abre para cima quando o conteúdo não cabe embaixo E há mais espaço em cima — vale com ou sem
-       limite de altura (antes, no modo "limitarAltura", ele quase nunca virava: preferia encolher e
-       rolar por dentro mesmo com muito espaço acima) */
+       limite de altura */
     var acima = espacoAbaixo < alturaDesejada && espacoAcima > espacoAbaixo;
 
     /* altura máxima = espaço daquele lado (só quando o componente quer rolar por dentro) */

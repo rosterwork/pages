@@ -563,7 +563,7 @@
     <button type="button" class="dropdown-item"></button>
   </template>
 
-  <!-- MOLDES: resumo de alterações (componente geral-resumo — modal de confirmação ao salvar e, depois, página de Histórico) -->
+  <!-- MOLDES: resumo de alterações (componente geral-resumo — modal de confirmação ao salvar e página de Histórico) -->
   <template id="tpl-resumo">
     <div class="resumo">
       <div class="resumo-cabecalho">
@@ -608,7 +608,7 @@
     </div>
   </template>
 
-  <!-- MOLDES: calendário (componente compartilhado — escalas e, futuramente, folgas/férias) -->
+  <!-- MOLDES: calendário (componente compartilhado) -->
   <template id="tpl-calendario">
     <div class="calendario">
       <div class="calendario-cabecalho">
@@ -890,7 +890,7 @@
     <svg class="icone" width="13" height="13" aria-hidden="true"><use href="icones/icone-origem-base.svg#icone-origem-base"/></svg>
   </template>
 
-  <!-- MOLDES: wrapper da grade Mês/Agenda (dias × unidades) — promovido de escalas.html (2026-08-12);
+  <!-- MOLDES: wrapper da grade Mês/Agenda (dias × unidades);
        o renderizador escalas-mes.js o clona, e a Extrajornada reusa a mesma grade -->
   <template id="tpl-escala-mes">
     <div class="escala-mes">
@@ -908,7 +908,7 @@
     <span class="escala-mes-titulo"></span>
   </template>
 
-  <!-- ===== moldes do PAINEL DO DIA no modo EDITAR + seções (compartilhados Escala + Extrajornada); movidos de escalas.html na Fase 2b ===== -->
+  <!-- ===== moldes do PAINEL DO DIA no modo EDITAR + seções (compartilhados Escala + Extrajornada) ===== -->
   <!-- abas de seção do painel de detalhes (clonadas para o sub-cabeçalho da gaveta) -->
   <template id="tpl-escala-painel-secoes">
     <div class="abas abas--pequenas">
@@ -1042,7 +1042,7 @@
     <button type="button" class="escala-picker-militar escala-picker-vazio"></button>
   </template>
 
-  <!-- ===== moldes do PAINEL DO DIA (compartilhados Escala + Extrajornada); movidos de escalas.html na Fase 2 do redesenho ===== -->
+  <!-- ===== moldes do PAINEL DO DIA (compartilhados Escala + Extrajornada) ===== -->
   <!-- painel Distribuição: estado vazio (texto), carregando (giratório), grupo de função e linha de militar -->
   <template id="tpl-escala-distribuicao-estado">
     <div class="escala-distribuicao-estado"></div>
@@ -1145,7 +1145,7 @@
   </template>
 
   <!-- grupos de ícones da escala (fonte única dos textos): copiados pela Legenda do sub-cabeçalho da
-       Escala (js/escalas-legenda.js), conforme o modo. O painel do dia não tem mais legenda própria -->
+       Escala (js/escalas-legenda.js), conforme o modo -->
   <template id="tpl-escala-legenda">
     <!-- por que o militar está trabalhando no dia (um por linha de serviço) -->
     <div class="escala-legenda-grupo" data-legenda-grupo="origem">

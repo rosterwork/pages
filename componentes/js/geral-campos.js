@@ -4,10 +4,6 @@
    conectores, campo de data com calendário, campo de seleção
    (dropdown) e a marcação de erro embaixo do campo.
    Expõe RosterWork.campos e RosterWork.validacoes.
-
-   Morava dentro de js/usuarios-novo-usuario*.js, o que escondia
-   tudo isso de quem não carrega a página Usuários — e levou o
-   Meu perfil a refazer máscara e validação por conta própria.
    ============================================================ */
 (function () {
   'use strict';

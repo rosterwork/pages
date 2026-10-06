@@ -1,7 +1,6 @@
 /* ============================================================
-   CALENDÁRIO — componente compartilhado (escalas e, futuramente,
-   folgas/férias). Três modos: dia, mês e semana. O desenho segue
-   o antigo flatpickr, mas todas as cores vêm do tema (cinza, modo
+   CALENDÁRIO — componente compartilhado.
+   Três modos: dia, mês e semana. Todas as cores vêm do tema (cinza, modo
    escuro automático). O seletor de mês/ano usa o dropdown geral;
    as setas usam os ícones de seta do site.
    Comportamento: js/geral-calendario.js

@@ -156,11 +156,11 @@
     destino.appendChild(grupo);
   }
 
-  /* nome que a regra usa: "Efetivo N" vira só "Efetivo" (B4 — vale para todos os efetivos) */
+  /* nome que a regra usa: "Efetivo N" vira só "Efetivo" (vale para todos os efetivos) */
   function nomeCanonico(f) { return /^Efetivo \d+$/.test(f) ? 'Efetivo' : f; }
 
-  /* funções que aceitam regra numa unidade: sem Chefe de Socorro / Oficial de Área (B5 — são sempre os
-     mais antigos, regra absoluta), com "Efetivo N" juntado em "Efetivo" (B4), sem repetir */
+  /* funções que aceitam regra numa unidade: sem Chefe de Socorro / Oficial de Área (são sempre os
+     mais antigos, regra absoluta), com "Efetivo N" juntado em "Efetivo", sem repetir */
   function funcoesRegulaveis(unidadeId) {
     var vistos = {}, out = [];
     (funcoesPorUnidade[unidadeId] || []).forEach(function (f) {

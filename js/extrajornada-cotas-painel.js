@@ -28,7 +28,7 @@
   var timerSim = null;
   var cargaSeq = 0;                     // token de requisição: ignora resposta antiga (troca rápida de mês/aba)
   var mostrarSeloNovo = false;          // o selo "Novo" só aparece quando há mistura (não na 1ª distribuição, em que todos são novos)
-  var selecionado = null;               // cpf do militar selecionado (destaca a linha; pinta a grade na fase futura)
+  var selecionado = null;               // cpf do militar selecionado (destaca a linha)
 
   /* ---------- utilidades ---------- */
 
@@ -93,7 +93,7 @@
     return arr;
   }
 
-  /* seleção do militar: destaca a linha (barra de acento); a pintura da grade pela preferência é fase futura */
+  /* seleção do militar: destaca a linha (barra de acento) */
   function marcarSelecionado() {
     if (!el.grupos) return;
     var itens = el.grupos.querySelectorAll('.extra-cota-item');

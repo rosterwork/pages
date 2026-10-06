@@ -8,8 +8,8 @@
      modal de confirmação (#veu-resumo) com o título de sucesso; se
      "desfazer" (função que reverte e devolve Promise) vier, mostra o
      texto "Desfazer" (última chance de reverter a ação recém-aplicada).
-   Peça reutilizável: o modal ao salvar (Postos) agora e a página
-   de Histórico depois. O "quando" vem do banco (criado_em).
+   Peça reutilizável: o modal ao salvar (Postos) e a página
+   de Histórico. O "quando" vem do banco (criado_em).
    Moldes #tpl-resumo / -alvo / -mudanca e #veu-resumo no shell.
    ============================================================ */
 (function () {

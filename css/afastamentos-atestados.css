@@ -49,7 +49,7 @@
   color: var(--texto-suave);
 }
 
-/* indicador de fluxo no painel Novo atestado: ≤15 dias segue / ≥16 sai */
+/* indicador de fluxo: ≤15 dias segue / ≥16 sai */
 .atestado-fluxo {
   display: flex;
   flex-direction: column;

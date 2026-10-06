@@ -144,7 +144,7 @@
       contexto: { pagina: 'Página', aba: 'Aba', unidades: 'Unidades', navegador: 'Navegador', tela: 'Tela', tema: 'Tema', url: 'Endereço' }
     },
 
-    /* cadastro de usuário (modal Novo usuário) */
+    /* cadastro de usuário (Novo usuário) */
     cadastro: {
       nomeVazio: 'Preencha o nome completo',
       nomeIncompleto: 'Digite o nome completo',
@@ -434,7 +434,7 @@
       vago: 'vago'
     },
 
-    /* trocas (lista por abas, painel de detalhe + análise de impacto e modal Nova troca) */
+    /* trocas (lista por abas, painel de detalhe + análise de impacto) */
     trocas: {
       falhaCarregar: 'Não foi possível carregar as trocas.',
       falhaAnalise: 'Não foi possível analisar o impacto desta troca.',
@@ -488,7 +488,7 @@
       falhaAcao: 'Não foi possível concluir. Tente de novo.',
       /* título do painel lateral de solicitar */
       tituloPainel: 'Solicitar troca',
-      /* modal Nova troca — validações */
+      /* Nova troca — validações */
       novaParceiro: 'Selecione o parceiro.',
       novaData: 'Selecione o dia do seu serviço.',
       novaMesmaPessoa: 'Você não pode trocar com você mesmo.',
@@ -496,7 +496,7 @@
       /* componente barra de período (rótulo do topo) */
       barraCobreTudo: 'Serviço inteiro',
       barraTrecho: 'Trecho',
-      /* estados dos campos do modal */
+      /* estados dos campos */
       parceiroOcupado: 'já de serviço nesse horário',
       /* afastado no dia (a chave é o afastamento que o banco devolve) */
       parceiroAfastado: { 'Férias': 'de férias nesse dia', 'Licença': 'de licença nesse dia', 'Dispensa': 'de dispensa nesse dia' },
@@ -574,7 +574,7 @@
       falhaAnalise: 'Não foi possível analisar o impacto.'
     },
 
-    /* extrajornada (cotas de hora extra — abas Disponibilidade e Cotas) */
+    /* extrajornada (cotas de hora extra) */
     extrajornada: {
       disponibilidadeSalva: 'Disponibilidade salva.',
       falhaSalvar: 'Não foi possível salvar. Tente de novo.',
@@ -627,7 +627,7 @@
       avisosTitulo: 'Avisos'
     },
 
-    /* edição não salva (modais com formulário) */
+    /* edição não salva */
     edicao: {
       sairSemSalvar: 'Você tem alterações não salvas. Se sair agora, elas serão perdidas.'
     },

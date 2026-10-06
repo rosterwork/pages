@@ -449,7 +449,7 @@
       window.RosterWork.usuariosExibir.ligarOrdem(conteudo, repintar);
     }
 
-    /* modal "Novo usuário" — abre pelo botão do cabeçalho da página */
+    /* "Novo usuário" — abre pelo botão do cabeçalho da página */
     if (window.RosterWork.novoUsuario) window.RosterWork.novoUsuario.ligar(conteudo);
     /* o botão só aparece para admin (a página Usuários é acessível a todos) */
     var btnNovoUsuario = conteudo.querySelector('#btn-novo-usuario');

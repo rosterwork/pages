@@ -2,7 +2,7 @@
    DISTRIBUIÇÃO — aba Modelos (visualização)
    Painel esquerdo (lista de modelos por composição) + corpo (vagas do
    modelo selecionado, agrupadas por unidade, com acúmulo espelhado) +
-   rodapé (status). Edição entra na Rodada 2.
+   rodapé (status).
    ============================================================ */
 (function () {
   'use strict';
@@ -36,9 +36,7 @@
 
   /* ---- CATÁLOGO DE ERROS da distribuição: a LISTA ÚNICA que define cada erro (código · domínio ·
      severidade). É a "fonte única": `problemasDaUnidade` decide a severidade lendo daqui, e ninguém
-     mais decide por conta própria. A MENSAGEM de cada erro fica em geral-mensagens (ligada pelo código).
-     Os erros do domínio ESCALA (travar por distribuição vermelha, rebaixou grau, etc.) entram no mesmo
-     padrão nas etapas seguintes. ---- */
+     mais decide por conta própria. A MENSAGEM de cada erro fica em geral-mensagens (ligada pelo código). ---- */
   var CATALOGO_ERROS = {
     falta_vaga:        { dominio: 'distribuicao', nivel: 'erro' },
     vaga_a_mais:       { dominio: 'distribuicao', nivel: 'erro' },
@@ -52,10 +50,9 @@
 
   /* problemas de UMA unidade → [{codigo, nivel, texto}]. É o ÚNICO lugar do FRONTEND que checa as
      condições; o `validar` (rodapé) e o `unidadeNivel` (cor) usam ele — assim nunca divergem entre si.
-     ⚠️ AMARRAÇÃO: estas regras DEVEM ser IDÊNTICAS às do juiz do banco `dist_validar_modelo` (o juiz é
+     AMARRAÇÃO: estas regras DEVEM ser IDÊNTICAS às do juiz do banco `dist_validar_modelo` (o juiz é
      a autoridade — o motor e o salvar obedecem ele; esta cópia existe só para o feedback INSTANTÂNEO da
-     tela). Mudou uma regra aqui → mude lá também. O teste `scratchpad/verificar-etapa3.mjs` quebra se
-     divergirem. */
+     tela). Mudou uma regra aqui → mude lá também. */
   function problemasDaUnidade(u) {
     var M = RosterWork.mensagens.distribuicao;
     var ud = unidadeDoGrupo(u.unidade_id);
@@ -179,7 +176,7 @@
         if (!cel) return;
         var d = unidadeDados(m.unidades, u.unidade_id);
         cel.querySelector('.distribuicao-modelo-celula-texto').textContent = d ? (d.oficiais || 0) + '·' + (d.pracas || 0) : '–';
-        /* ícone de acúmulo entre unidades quando a unidade está fundida com outra (item 13) */
+        /* ícone de acúmulo entre unidades quando a unidade está fundida com outra */
         if (d && d.acumulada) cel.querySelector('.distribuicao-modelo-celula-acumulo').classList.remove('oculto');
         /* cor do texto da célula pelo erro/alerta DAQUELA unidade (só a unidade com erro fica colorida) */
         var nivCel = d ? unidadeNivel(d) : null;

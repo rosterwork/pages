@@ -1,7 +1,6 @@
 /* ============================================================
    TPL — clona um <template> pelo id e devolve o 1º elemento
-   Fonte única do antigo clonar(id) que era redeclarado em
-   dezenas de páginas. Devolve o firstElementChild do conteúdo
+   Devolve o firstElementChild do conteúdo
    clonado, ou null se o molde não existir.
    API: RosterWork.tpl(id)
    ============================================================ */

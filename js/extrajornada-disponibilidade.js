@@ -70,7 +70,7 @@
   function montarCotas() {
     if (!RW.dropdownNumeros) return;
     var opcoes = estado.fecha24h ? [4, 8] : [1, 2, 3, 4, 5, 6, 7, 8];
-    /* voluntário pede pelo menos 1 cota (ou 4 se fecha 24h); o 0 saiu da lista */
+    /* voluntário pede pelo menos 1 cota (ou 4 se fecha 24h) */
     if (estado.voluntario && estado.cotas < opcoes[0]) estado.cotas = opcoes[0];
     RW.dropdownNumeros.preencher(el.cotasMenu, {
       opcoes: opcoes,
@@ -429,7 +429,7 @@
         if (!editavel()) { marcarSeg(el.voluntario, estado.voluntario); return; }   // mês de leitura: ignora (e desfaz a marca)
         estado.voluntario = aba.getAttribute('data-valor') === 'sim';
         aplicarVoluntario();
-        montarCotas();       // ao virar voluntário, garante cota >= 1 (o 0 saiu)
+        montarCotas();       // ao virar voluntário, garante cota >= 1
         atualizarBotoes();
       });
       RW.abas.ligar(el.fecha24h, function (aba) {
@@ -466,7 +466,7 @@
           textoConfirmar: RW.mensagens.botoes.descartar,
           textoCancelar: RW.mensagens.botoes.continuarEditando,
           aoConfirmar: renderMes,
-          aoCancelar: function () {   // manteve a edição: o mês volta pro desta aba (e o seletor reflete)
+          aoCancelar: function () {   // manteve a edição: o mês volta para o desta aba (e o seletor reflete)
             RW.extrajornadaMes.definir(comp);
             if (RW.extrajornadaMes.atualizarSeletor) RW.extrajornadaMes.atualizarSeletor();
           }

@@ -1,5 +1,5 @@
 /* ============================================================
-   DISTRIBUIÇÃO — criar / excluir modelo (Rodada 2)
+   DISTRIBUIÇÃO — criar / excluir modelo
    Modal "Novo modelo": contadores de Oficiais/Praças por unidade →
    gera a composição e abre a edição vazia. Excluir confirma
    e chama a RPC. Só admin.

@@ -1,6 +1,6 @@
 /* ============================================================
    ÁRVORE DE UNIDADES — títulos das unidades selecionadas
-   Componente compartilhado (usuários e, futuramente, folgas/férias).
+   Componente compartilhado.
    Molde: #tpl-arvore-unidade (index.html) · lógica:
    componentes/js/geral-arvore-unidades.js
    Estrutura e recuo reaproveitam geral-arvore.css.
@@ -13,7 +13,7 @@
   --arvore-titulo-altura: 30px;   /* = min-height da .arvore-linha; passo do empilhamento */
   /* a árvore encolhe até o conteúdo (a linha mais larga) e só cresce até a borda da
      tela quando precisa — assim os selos/contagens à direita alinham numa coluna
-     colada ao conteúdo, ignorando os indents (Fase 4.01) */
+     colada ao conteúdo, ignorando os indents */
   width: fit-content;
   max-width: 100%;
 }
@@ -22,7 +22,7 @@
   position: sticky;
   top: calc(var(--nivel-titulo, 0) * var(--arvore-titulo-altura));
   /* z-index decresce com a profundidade: o pai fica na frente, então um nível
-     empurrado pra cima some por baixo do pai. Faixa interna, abaixo do dropdown (MANUAL §8). */
+     empurrado para cima some por baixo do pai. Faixa interna, abaixo do dropdown (MANUAL §8). */
   z-index: max(1, calc(8 - var(--nivel-titulo, 0)));
   background-color: var(--fundo-superficie);
   cursor: default;   /* não é clicável: quem controla a visibilidade é o seletor */

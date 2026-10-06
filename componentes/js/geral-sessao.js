@@ -1,8 +1,7 @@
 /* ============================================================
    SESSÃO — dados do usuário logado (lê o sessionStorage)
    Fonte única para o perfil (rosterwork_user), o CPF e se é
-   administrador. Antes cada página redeclarava perfil()/cpf()/
-   ehAdmin(); agora todas usam RosterWork.sessao.
+   administrador.
    API: RosterWork.sessao.perfil() / .cpf() / .ehAdmin()
    ============================================================ */
 (function () {

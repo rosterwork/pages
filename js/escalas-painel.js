@@ -5,7 +5,7 @@
    companhia acima), complemento = " - cidade", subtítulo = data
    por extenso, abas Distribuição/Contínuos/Pontuais.
    Distribuição lista os postos do dia (posto / função / militares,
-   modo Ver); Contínuos e Pontuais são etapa futura.
+   modo Ver).
    ============================================================ */
 (function () {
   'use strict';
@@ -46,13 +46,13 @@
     if (uso) uso.setAttribute('href', 'icones/' + nomeIcone + '.svg#' + nomeIcone);
   }
 
-  /* "08:00" -> "08h" (hora cheia, como no painel do site antigo) */
+  /* "08:00" -> "08h" (hora cheia) */
   function formatarHora(hhmm) {
     if (!hhmm) return '';
     return hhmm.split(':')[0] + 'h';
   }
 
-  /* abrevia as funções longas (espelha o site antigo), separando a base do número
+  /* abrevia as funções longas, separando a base do número
      ("Radio Operador 2" → "Radio Op. 2"); as demais ficam como estão */
   function abreviarFuncao(nome) {
     var m = /^(.*?)\s+(\d+)$/.exec(nome || '');
@@ -75,7 +75,7 @@
     return ((emMin(hora) - ini + 1440) % 1440) <= jan;
   }
 
-  /* início válido: dentro da janela e não na ponta final (não dá pra começar quando ela acaba) */
+  /* início válido: dentro da janela e não na ponta final (não dá para começar quando ela acaba) */
   function inicioValido(hora, hi, hf) { return dentroDaJanela(hora, hi, hf) && hora !== hf; }
   /* fim válido: dentro da janela e não na ponta inicial */
   function fimValido(hora, hi, hf) { return dentroDaJanela(hora, hi, hf) && hora !== hi; }
@@ -234,7 +234,7 @@
       return (po.funcoes || []).some(function (f) {
         var mils = f.militares || [];
         var inc = mils.some(function (mil) { return mil.incompativel && (!soManual || mil.fixado); });
-        var sob = !!f.sobreposicao;   // sobreposição na função sempre trava (não dá pra ter 2 militares no mesmo horário)
+        var sob = !!f.sobreposicao;   // sobreposição na função sempre trava (não dá para ter 2 militares no mesmo horário)
         return inc || sob;
       });
     });
@@ -393,7 +393,7 @@
       });
     }
 
-    /* 🔴 vermelho: a escala não funciona */
+    /* vermelho: a escala não funciona */
     if (tem('parcial_com_erro')) linha(cat.distribuicaoTravada);
     if (tem('resolva_escala')) linha(cat.resolvaEscala);
     if (tem('sem_condutor')) linha(cat.semCondutor);
@@ -421,7 +421,7 @@
       });
     }
 
-    /* 🟡 amarelo: funciona, com erro aceitável */
+    /* amarelo: funciona, com erro aceitável */
     if (tem('chefe_condutor')) linha(cat.chefeCondutor);
     porOcorrencia('manutencao', cat.manutencao, function (p) { return p.posto_id; },
       function (p) { return { posto: p.posto || '' }; });
@@ -566,7 +566,7 @@
   /* MESCLA (viatura): junta o papel especial (Chefe/Of. Área) com o Condutor do MESMO militar
      numa entrada de dois rótulos (um nome só). A numeração dos "Efetivo N" vem PRONTA do banco
      (calcular_faixas_onde_dia renumera por cadeira, contando o par acumulado como 1, POR FAIXA);
-     aqui não se renumera mais, senão a folga/troca parcial quebraria. Copia (não muta o leitor). */
+     aqui não se renumera, senão a folga/troca parcial quebraria. Copia (não muta o leitor). */
   function mesclarFuncoesViatura(posto) {
     var lista = ((posto && posto.funcoes) || []).map(function (f) {
       var c = {}; for (var k in f) c[k] = f[k]; return c;   // cópia rasa

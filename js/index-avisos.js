@@ -1,6 +1,6 @@
 /* ============================================================
    SINO do cabeçalho — os AVISOS do usuário
-   Um sino só, como em qualquer sistema sério: a pessoa é uma só,
+   Um sino só: a pessoa é uma só,
    e mais um sino seria mais um lugar para esquecer de olhar. A
    separação por papel acontece DENTRO da gaveta, em dois blocos:
    "Para você" e "Administração".
@@ -66,8 +66,7 @@
     return el;
   }
 
-  /* pendências da administração que aparecem no sino, com a gravidade da bolinha: as que viviam no
-     antigo selo da Escala e as da Distribuição (período a revisar, período com erro) */
+  /* pendências da administração que aparecem no sino, com a gravidade da bolinha */
   var PENDENCIAS_SINO = { fora_escala: 'erro', manutencao: 'alerta', distribuicao: 'alerta', distribuicao_erro: 'erro' };
 
   /* pendência da administração no sino: estado que espera decisão, sem "lida" — fica
@@ -100,7 +99,7 @@
 
   function montar(caixa, pendencias) {
     if (!lista) return;
-    /* só as pendências da lista do sino (as do antigo selo da Escala e as da Distribuição) */
+    /* só as pendências da lista do sino */
     var pend = (pendencias || []).filter(function (p) { return !!PENDENCIAS_SINO[p.tipo]; });
     var abertos = (caixa && caixa.abertos) || { total: 0, pessoal: 0, administracao: 0 };
     var itens = ((caixa && caixa.itens) || []).filter(function (n) { return n.aberto; });

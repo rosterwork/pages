@@ -96,15 +96,9 @@
   <div class="pagina-corpo pagina-corpo--colado"></div>
 </div>
 
-<!-- a dica do gráfico (#escala-mes-dica) e os moldes da célula foram promovidos ao shell (index.html) — compartilhados com a Extrajornada -->
-
 <template id="tpl-escala-aba-unidade">
   <button type="button" class="aba"></button>
 </template>
-
-<!-- modo Mês / Agenda (grade dias × unidades): wrapper promovido ao shell (index.html) — reusado pela Extrajornada -->
-
-<!-- tpl-escala-mes-celula promovido ao shell (index.html) — usado por Mês/Semana/Colunas + Extrajornada -->
 
 <!-- modo Dia: árvore de unidades com a distribuição do dia (postos → funções) -->
 <template id="tpl-escala-dia">
@@ -150,20 +144,12 @@
   </div>
 </template>
 
-<!-- tpl-escala-mes-pessoa/-hora-par/-erro/-grafico/-origem promovidos ao shell (index.html) — clonados pelo escalas-celula.js compartilhado -->
-
 <!-- ícone de regra (exclusivo/proibido) na tira de ícones do militar; o span recebe a dica (data-dica) -->
 <template id="tpl-escala-regra-icone">
   <span class="escala-distribuicao-regra">
     <svg class="icone" width="13" height="13" aria-hidden="true"><use href="icones/icone-regra.svg#icone-regra"/></svg>
   </span>
 </template>
-
-<!-- tpl-escala-estado + tpl-escala-carregando promovidos ao shell (index.html) — usados pela grade compartilhada -->
-
-<!-- calendário de mês promovido ao componente geral-calendario-mes (moldes no index.html) -->
-
-
 
 <!-- modos Mês → Calendário e Colunas → Dias: um bloco por unidade dentro do dia (nome + a célula do Mês) -->
 <template id="tpl-escala-calendario-unidade">

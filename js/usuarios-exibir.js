@@ -7,7 +7,7 @@
    não são .dropdown-item). Ordem: escolha única entre as quatro
    (fecha ao escolher, são .dropdown-item). O estado dos dois vive
    em rosterwork_preferencias.exibir — some no login (volta ao
-   padrão), como pediu o dono.
+   padrão).
    ============================================================ */
 (function () {
   'use strict';

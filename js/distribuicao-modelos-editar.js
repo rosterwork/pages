@@ -1,10 +1,9 @@
 /* ============================================================
-   DISTRIBUIÇÃO — edição de um modelo (Rodada 2A)
+   DISTRIBUIÇÃO — edição de um modelo
    Estado mutável das vagas do modelo selecionado + renderizar editável
    (perfil, antiguidade, grau ideal e rodízio por clique na célula),
    "Nova função" / remover vaga, Desfazer/Refazer e o rodapé de ações.
-   A FUNÇÃO é derivada da posição (não se escolhe). O acúmulo editável
-   e os papéis especiais entram em seguida. Só admin.
+   A FUNÇÃO é derivada da posição (não se escolhe). Só admin.
    ============================================================ */
 (function () {
   'use strict';
@@ -168,7 +167,7 @@
       menu.appendChild(item(o[1], vg.tipo_contador === o[0], function () { mudar(vg, function () { vg.tipo_contador = o[0]; if (vg.ideal) { vg.ideal = null; vg.ideal_calc = null; } }); }));
     });
   }
-  /* ---------- antiguidade: numeração sem buracos + auto-reordenação POR UNIDADE/PELOTÃO (como no antigo) ----------
+  /* ---------- antiguidade: numeração sem buracos + auto-reordenação POR UNIDADE/PELOTÃO ----------
      O número é o ranking de antiguidade DENTRO do pelotão (único no pelotão); cada pelotão é independente. */
   function vagasDaUnidade(unidade) {
     var lista = [];
@@ -277,7 +276,7 @@
       return oficiais ? ehOf : !ehOf;
     });
   }
-  /* menu de grau: só "ou +" / "ou −" (o "somente igual" saiu). O grau nasce SEM sentido e a lista de
+  /* menu de grau: só "ou +" / "ou −". O grau nasce SEM sentido e a lista de
      graus só habilita depois de escolher o sentido; a lista segue o sentido (Sd.→Sub.Ten. para "+",
      Sub.Ten.→Sd. para "−"). Trocar o sentido atualiza o campo NA HORA, sem fechar o menu. */
   function menuGrau(rolagem, vg, cel) {
@@ -422,7 +421,7 @@
     return membros;
   }
   /* Chefe de Socorro / Oficial de Área podem acumular o Condutor do PRÓPRIO posto — a única
-     exceção à regra "acúmulo só entre postos diferentes" (item 11) */
+     exceção à regra "acúmulo só entre postos diferentes" */
   function ehPapelViatura(vg) { return vg.papel_especial === 'chefe_socorro' || vg.papel_especial === 'oficial_area'; }
   function ehCondutor(vg) { return /^Condutor/i.test(vg.nome_funcao || ''); }
   /* acúmulo DENTRO da mesma viatura (Chefe/OA + Condutor do próprio posto): a linha do Condutor
@@ -463,7 +462,7 @@
     }
     return true;
   }
-  /* v pode entrar no grupo de `membros`? (item 11 = postos diferentes; item 17 = mesclar grupos, teto 3) */
+  /* v pode entrar no grupo de `membros`? (postos diferentes; mesclar grupos, teto 3) */
   function elegivelParaGrupo(membros, v) {
     if (membros.indexOf(v) >= 0) return false;    /* já está no grupo */
     if (v.papel_especial) return false;           /* função de fora nunca é papel especial */
@@ -482,7 +481,7 @@
     });
   }
   /* junta v ao grupo do `principal` — serve para função solta OU para MESCLAR outro grupo
-     inteiro (item 17); o principal continua sendo a 1ª (âncora) */
+     inteiro; o principal continua sendo a 1ª (âncora) */
   function juntarAcumulo(principal, v) {
     mudar(v, function () {
       var atual = grupoAcumulo(principal);
@@ -500,7 +499,7 @@
       if (resto.length) reagruparAcumulo(resto);
     });
   }
-  /* passar o mouse num chip acende TODOS do mesmo grupo, em qualquer linha (itens 14/17) */
+  /* passar o mouse num chip acende TODOS do mesmo grupo, em qualquer linha */
   function ligarRealceGrupo(chipEl, grupoId) {
     chipEl.addEventListener('mouseenter', function () { realcarGrupo(grupoId, true); });
     chipEl.addEventListener('mouseleave', function () { realcarGrupo(grupoId, false); });
@@ -553,7 +552,7 @@
     });
     chipEl.addEventListener('drop', function (e) { e.preventDefault(); });
   }
-  /* ---------- escada de acúmulo: Unidade → Posto → Função (item 3) ---------- */
+  /* ---------- escada de acúmulo: Unidade → Posto → Função ---------- */
   /* um nó (unidade ou posto): a linha inteira expande/recolhe em sanfona */
   function escadaNo(nome) {
     var no = RosterWork.tpl('tpl-distribuicao-escada-no');
@@ -569,7 +568,7 @@
     folha.querySelector('.arvore-seta').classList.add('arvore-seta--oculta');
     var linha = folha.querySelector('.arvore-linha');
     if (jaAgrupada) {
-      folha.querySelector('.distribuicao-escada-icone').classList.remove('oculto');   /* já em outro grupo (item 17) */
+      folha.querySelector('.distribuicao-escada-icone').classList.remove('oculto');   /* já em outro grupo */
       linha.setAttribute('data-grupo', grupoId);
       ligarRealceEscada(linha, menu, grupoId);   /* hover realça o par na lista */
     }
@@ -630,7 +629,7 @@
       var uniNo = escadaNo(u.nome || '');
       var uniFilhos = uniNo.querySelector('.arvore-filhos');
       postosEls.forEach(function (pn) { uniFilhos.appendChild(pn); });
-      if (u === uAlvo) {   /* item 6.01a: a unidade da vaga atual já nasce expandida */
+      if (u === uAlvo) {   /* a unidade da vaga atual já nasce expandida */
         uniNo.classList.add('arvore-grupo--aberto');
         var stAlvo = uniNo.querySelector('.arvore-seta');
         if (stAlvo) stAlvo.setAttribute('aria-expanded', 'true');
@@ -756,7 +755,7 @@
     var membros = grupoAcumulo(vg);
     var grupoId = membros[0].tempId;   /* âncora do grupo — realça o par no hover */
     membros.forEach(function (s) {
-      /* item 14: a função NATIVA do posto desta linha fica só com o nome (sem X, sem ícone);
+      /* a função NATIVA do posto desta linha fica só com o nome (sem X, sem ícone);
          as vindas de OUTRO posto — e, no acúmulo dentro do mesmo posto, a função adicionada —
          levam o X e o ÍCONE de acúmulo (marcam o que foi acumulado) */
       var nativa = posto.vagas.indexOf(s) >= 0;
@@ -897,7 +896,7 @@
       if (u.unidade_id === destino.unidade_id) return;   /* a origem é sempre outra unidade */
       var d = disponiveisEnvio(u.unidade_id, vd);
       var temEfetivo = vd.tipo_contador === 'Oficiais' ? d.of > 0 : d.pc > 0;
-      if (!temEfetivo && vd.origemUnidadeId !== u.unidade_id) return;   /* some da lista se não tem militar desse tipo pra enviar */
+      if (!temEfetivo && vd.origemUnidadeId !== u.unidade_id) return;   /* some da lista se não tem militar desse tipo para enviar */
       menu.appendChild(item(u.nome, vd.origemUnidadeId === u.unidade_id, function () {
         mudar(vd, function () {
           var antiga = vd.origemUnidadeId;
@@ -969,7 +968,7 @@
     el.querySelector('.distribuicao-vaga-remover').addEventListener('click', function () { removerVemDe(unidade, vd); });
     return el;
   }
-  /* bloco "Vem de" da unidade (só quando há reforço; senão, botão discreto pra criar o 1º).
+  /* bloco "Vem de" da unidade (só quando há reforço; senão, botão discreto para criar o 1º).
      Modelo de 1 unidade não tem de onde receber. */
   function renderVemDe(unidade, corpoSec) {
     if (estado.unidades.length < 2) return;
@@ -1025,7 +1024,7 @@
       var corpoSec = sec.querySelector('.distribuicao-unidade-corpo');
       var postosStatus = status.postos[u.unidade_id] || {};
       u.postos.forEach(function (p) { corpoSec.appendChild(renderPosto(u, p, postosStatus)); });
-      renderVemDe(u, corpoSec);   /* bloco "Vem de" (ou o botão discreto pra criar o primeiro) */
+      renderVemDe(u, corpoSec);   /* bloco "Vem de" (ou o botão discreto para criar o primeiro) */
       corpo.appendChild(sec);
     });
     atualizarRodape();

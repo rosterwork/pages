@@ -167,7 +167,7 @@
   color: var(--texto-fraco);
 }
 
-/* ---------- aba "Pendências": o que espera decisão ---------- */
+/* ---------- o que espera decisão ---------- */
 .avisos-pendencia {
   display: flex;
   align-items: center;

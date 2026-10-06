@@ -1,6 +1,6 @@
 /* ============================================================
    AJUSTES — configurações das unidades (NAVEGACAO §4/§5)
-   Índice interno à esquerda (seções de ajuste; por ora "Escala →
+   Índice interno à esquerda (seções de ajuste; "Escala →
    Ritmo das unidades") e, no corpo, a árvore de unidades com um
    card do RITMO (escala_config: 24/48 · 24/72 · 12/36) por unidade
    marcada. Admin clica no card → painel direito edita o ritmo

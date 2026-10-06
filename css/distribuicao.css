@@ -4,10 +4,6 @@
    Cores/medidas só do tema (geral-tema) e das escalas do MANUAL.
    ============================================================ */
 
-/* o layout de painel esquerdo + área principal foi promovido ao componente
-   compartilhado geral-layout-lateral (componentes/css/geral-layout-lateral.css);
-   aqui fica só o específico da Distribuição */
-
 /* cabeçalho do painel: alinha as colunas (unidades) com os modelos da lista
    (sobrescreve o padrão de título do geral-painel-esquerdo-cabecalho) */
 /* cabeçalho de colunas = faixa (geral-faixa); reserva a barra de acento das linhas
@@ -103,7 +99,7 @@
   font-size: 12px;
   color: var(--texto);
 }
-/* ícone de acúmulo entre unidades, à esquerda dos números (item 13) */
+/* ícone de acúmulo entre unidades, à esquerda dos números */
 .distribuicao-modelo-celula-acumulo { flex-shrink: 0; color: var(--texto-suave); }
 /* texto da célula da lista fica vermelho/amarelo quando AQUELA unidade tem erro/alerta */
 .distribuicao-modelo-celula--erro .distribuicao-modelo-celula-texto { color: var(--erro); }
@@ -125,9 +121,6 @@
   font-size: 13px;
   color: var(--texto-fraco);
 }
-
-/* a coluna direita (edição) e a área de rolagem foram promovidas ao componente
-   geral-layout-lateral (.geral-corpo-lateral / .geral-corpo-lateral-rolagem) */
 
 /* ---- seção colapsável de uma unidade ---- */
 .distribuicao-unidade {
@@ -373,19 +366,16 @@
   white-space: nowrap;
   transition: background-color 0.15s ease, color 0.15s ease;
 }
-/* acúmulo NÃO é erro — sem o amarelo (que se confundia com o aviso de posto vazio);
+/* acúmulo NÃO é erro — sem o amarelo;
    a marca do acúmulo é só o ícone (e o X, quando a função vem de outro posto) */
 .distribuicao-chip--acumulo { color: var(--texto-suave); }
-/* hover num chip acende TODOS do mesmo grupo, em qualquer linha (itens 14/17) */
+/* hover num chip acende TODOS do mesmo grupo, em qualquer linha */
 .distribuicao-chip--realce { background-color: var(--fundo-contraste); color: var(--texto-invertido); }
 .distribuicao-chip-origem { font-weight: 700; }
 .distribuicao-chip-icone { flex-shrink: 0; }
 /* arrastar chip para reordenar o acúmulo ao vivo (1º = principal) */
 .distribuicao-chip[draggable="true"] { cursor: pointer; }
 .distribuicao-chip--arrastando { opacity: 0.4; }
-
-/* o esqueleto do rodapé (empilha status/linha) foi promovido ao geral-rodape
-   (.rodape-pilha); aqui fica só o específico da Distribuição */
 
 .distribuicao-status-item {
   display: flex;
@@ -399,7 +389,7 @@
 .distribuicao-status-item--erro .distribuicao-status-icone { color: var(--erro); }
 
 /* ============================================================
-   Edição (Rodada 2A)
+   Edição
    ============================================================ */
 
 /* células editáveis (perfil, antiguidade, grau) — o gatilho mostra o valor */
@@ -519,7 +509,6 @@
 /* as ações Cancelar/Salvar usam .rodape-acoes (geral-rodape) */
 
 /* acúmulo editável */
-/* (rodapé-extra removido: Duplicar/Excluir saíram para o menu ⋯ do modelo) */
 .distribuicao-chip-remover {
   display: inline-flex;
   align-items: center;
@@ -530,7 +519,7 @@
   cursor: pointer;
 }
 .distribuicao-acumulo-add { display: inline-flex; }
-/* escada de acúmulo (Unidade → Posto → Função, item 3) — reusa as classes .arvore-* do seletor de
+/* escada de acúmulo (Unidade → Posto → Função) — reusa as classes .arvore-* do seletor de
    unidades; aqui fica só o específico: largura, folhas (funções) e o realce do par no hover */
 .dropdown-menu.distribuicao-escada { min-width: 240px; }
 .distribuicao-escada-folha .arvore-nome { font-weight: 400; color: var(--texto); }

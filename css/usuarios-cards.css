@@ -22,7 +22,7 @@
   line-height: 1.3;
 }
 
-/* linha do nome: graduação + nome de guerra (peso 500, como no exemplo) */
+/* linha do nome: graduação + nome de guerra (peso 500) */
 .usuario-item-pessoa {
   display: flex;
   align-items: baseline;
@@ -42,7 +42,7 @@
   color: var(--texto-forte);
 }
 
-/* linha do CPF (onde o exemplo tinha a função) */
+/* linha do CPF */
 .usuario-item-cpf {
   font-size: 11px;
   color: var(--texto-suave);
@@ -67,8 +67,7 @@
   color: var(--texto-suave);
 }
 
-/* card clicável: abre a ficha do militar no painel (cursor + realce no hover).
-   Espelha .usuario-linha do /exemplo e .posto-cartao--clicavel dos postos. */
+/* card clicável: abre a ficha do militar no painel (cursor + realce no hover). */
 .usuario-item--clicavel {
   cursor: pointer;
   border-radius: var(--raio-medio);

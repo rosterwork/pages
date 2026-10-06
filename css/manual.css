@@ -81,9 +81,6 @@
   color: var(--texto);
 }
 
-/* placeholder de conteúdo ainda não escrito */
-.manual-em-construcao { color: var(--texto-debil); font-style: italic; }
-
 /* figuras (recortes anotados) — pequenas, centralizadas na coluna de texto
    (width fit-content encolhe a caixa até a imagem, e margin auto a centraliza) */
 .manual-figura { margin: 16px auto; max-width: 560px; width: fit-content; }

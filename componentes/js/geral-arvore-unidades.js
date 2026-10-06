@@ -146,7 +146,7 @@
     btnMenos = nivel.querySelector('.titulos-niveis-menos');
   }
 
-  /* liga/desliga os botões +/− e (compat) avisa a página, se ela quiser saber */
+  /* liga/desliga os botões +/− e avisa a página, se ela quiser saber */
   function notificarTitulos(podeEncolher, podeExpandir) {
     if (btnMenos) btnMenos.disabled = !podeEncolher;
     if (btnMais) btnMais.disabled = !podeExpandir;
@@ -194,7 +194,7 @@
     if (titulosOcultos < 0) titulosOcultos = 0;
 
     /* com níveis recolhidos, a árvore começa no nó da trilha que sobrou no topo;
-       sem recolhimento, desenha as raízes como antes */
+       sem recolhimento, desenha as raízes */
     var raizVisivel = null;
     if (titulosOcultos > 0 && idMaisFundo) {
       raizVisivel = arvore.mapa[idMaisFundo];

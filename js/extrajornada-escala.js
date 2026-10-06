@@ -54,7 +54,7 @@
     return m.pref;
   }
   /* o militar selecionado é candidato neste dia? (candidato = voluntário livre com cota). Governa o
-     esmaecimento da coluna de data: dia sem candidatura fica marcado como indisponível pra ele. */
+     esmaecimento da coluna de data: dia sem candidatura fica marcado como indisponível para ele. */
   function selCandidatoNoDia(isoDia) {
     var lista = candidatos[isoDia] || [];
     for (var i = 0; i < lista.length; i++) { if (lista[i].cpf === militarSel) return true; }
@@ -273,44 +273,12 @@
   }
   function rotulo(txt) { var r = RosterWork.tpl('tpl-extra-cel-rotulo'); if (r) r.textContent = txt; return r; }
 
-  /* ---------- casamento extra × aviso: um extra "cobre" um aviso quando o perfil dele atende a necessidade.
-     RESERVADO para a RECOMENDAÇÃO (voluntários que suprem os erros), fase futura — ainda não é chamado. ---------- */
-  function satisfazGrau(grauAnt, av) {
-    var a = Number(grauAnt), id = Number(av.ideal_ant);   // grau_antiguidade: menor = mais antigo
-    if (av.sentido === '+') return a <= id;   // ideal ou mais antigo
-    if (av.sentido === '-') return a >= id;   // ideal ou mais moderno
-    return a === id;                          // grau exato
-  }
-  function extraSatisfaz(ex, av) {
-    if (av.necessita === 'erro') return false;   // falta de distribuição: extra não resolve (admin cria o modelo)
-    if (av.necessita === 'condutor') return /[CDE]/.test(ex.cnh || '');
-    if (av.necessita === 'grau') return satisfazGrau(ex.grau_ant, av);
-    return true;   // apto: qualquer extra colocado
-  }
-  /* casamento guloso: aviso mais específico primeiro (condutor, grau), depois apto; cada extra cobre 1 aviso */
-  function resolverAvisos(lista, extras) {
-    var pool = extras.map(function (e) { return { cnh: e.cnh, grau_ant: e.grau_ant, usado: false }; });
-    var ordem = { condutor: 0, grau: 1, apto: 2 };
-    var idx = lista.map(function (av, i) { return { av: av, i: i }; });
-    idx.sort(function (p, q) { return (ordem[p.av.necessita] || 9) - (ordem[q.av.necessita] || 9); });
-    var res = {};
-    idx.forEach(function (o) {
-      for (var k = 0; k < pool.length; k++) {
-        if (!pool[k].usado && extraSatisfaz(pool[k], o.av)) { pool[k].usado = true; res[o.i] = true; break; }
-      }
-    });
-    return res;
-  }
-
   /* insere um nó logo após uma âncora (ou no fim da célula, se não houver) e vira a nova âncora */
   function inserirApos(celula, ancora, node) {
     if (ancora && ancora.insertAdjacentElement) ancora.insertAdjacentElement('afterend', node);
     else celula.appendChild(node);
     return node;
   }
-
-  /* (badgeAviso/inserirAvisos removidos na Fase 3: os avisos da escala saíram da célula
-     e agora vivem no painel do dia, gaveta — extrajornada-painel-dia.js) */
 
   /* indicadores do topo da célula: barra de cobertura "antes" (real) + "depois" (com os extras), cada
      uma SEGUIDA dos SEUS avisos, embaixo dela. Sem "Sem avisos" (barra verde = ok). Os avisos do "depois"
@@ -341,7 +309,7 @@
 
     /* caixa em GRADE de 2 colunas (rótulo | barra); SEMPRE as duas linhas, barras alinhadas:
        "antes" = a barra base; "depois" = a barra com extra OU o texto "sem extra" (espaço reservado).
-       Os AVISOS saíram da célula: vivem no painel do dia (gaveta). */
+       Os AVISOS vivem no painel do dia (gaveta). */
     caixa = RosterWork.tpl('tpl-extra-cel-barras');
     if (!caixa) return;
     celula.insertBefore(caixa, real);
@@ -364,7 +332,7 @@
   }
 
   /* repinta SÓ os indicadores da célula (barra "depois" + avisos), sem recarregar o mês nem reconstruir
-     a grade — usado ao ligar/desligar bloco ou remover um extra (acaba o "piscar" da tela) */
+     a grade — usado ao ligar/desligar bloco ou remover um extra */
   function repintarIndicadores(celula, uid, isoDia) {
     if (!celula) return;
     montarIndicadores(celula, uid, isoDia, coberturas[chaveCel(uid, isoDia)]);   // ele mesmo limpa a caixa/depois e preserva a barra base
@@ -577,7 +545,7 @@
       if (secs && menu) menu.appendChild(secs);
       var gatilho = add.querySelector('.extra-cel-add-gatilho');
       if (gatilho) gatilho.addEventListener('click', function (ev) {
-        ev.stopPropagation();   // não sobe pra grade (protege a gaveta) nem abre o painel do dia
+        ev.stopPropagation();   // não sobe para a grade (protege a gaveta) nem abre o painel do dia
         if (add.classList.contains('dropdown--aberto')) { if (RW.fecharDropdowns) RW.fecharDropdowns(); return; }
         atualizarSelecionadoNoMenu(menu, celula, uid, isoDia);   // (re)monta o atalho "Selecionado" com o militar atual das Cotas
         if (RW.abrirDropdown) RW.abrirDropdown(add);

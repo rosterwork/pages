@@ -1,5 +1,5 @@
 /* ============================================================
-   ESCALAS — modo Dia (árvore de unidades, como o site antigo)
+   ESCALAS — modo Dia (árvore de unidades)
    Títulos em árvore (geral-arvore-unidades, igual a Usuários) e,
    dentro de cada unidade marcada, os militares DISTRIBUÍDOS POR
    POSTO E FUNÇÃO no dia — o mesmo desenho do painel (caixa por

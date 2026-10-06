@@ -153,7 +153,7 @@
     window.RosterWork.novoUsuarioDados.inserir(coletar(raiz)).then(function (resp) {
       if (botao && window.RosterWork.pararCarregando) window.RosterWork.pararCarregando(botao);
       if (resp && resp.success) {
-        if (aoSucesso) aoSucesso();   // limpa o formulário, fecha o modal e recarrega a árvore
+        if (aoSucesso) aoSucesso();   // limpa o formulário e recarrega a árvore
         if (resp.log && window.RosterWork.resumo) window.RosterWork.resumo.abrirModal(resp.log, { pagina: 'Usuários' });
       } else {
         window.RosterWork.avisar({ tipo: 'erro', mensagem: (resp && resp.error) ? resp.error : window.RosterWork.mensagens.cadastro.falha });

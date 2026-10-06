@@ -72,7 +72,7 @@
   /* ---------- promoções (datas por grau da carreira) ---------- */
 
   /* ao escolher o Posto: um campo de data por grau do mesmo quadro, do posto
-     escolhido para baixo, do mais antigo até o posto (regra do site antigo) */
+     escolhido para baixo, do mais antigo até o posto */
   function atualizarPromocoes(grauId, raiz) {
     var secao = raiz.querySelector('#nu-promocoes-secao');
     var container = raiz.querySelector('#nu-promocoes');

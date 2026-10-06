@@ -294,7 +294,7 @@
   outline-offset: -2px;
 }
 
-/* estado da tela: carregando, vazio ou em construção */
+/* estado da tela: carregando ou vazio */
 .escala-mes-estado {
   flex: 1 1 0;
   display: flex;

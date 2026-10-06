@@ -3,7 +3,7 @@
    Três visões: Todas (árvore de unidades — a troca fica na unidade
    de quem solicitou), Minhas (as trocas em que eu entro) e
    Pendentes (dívidas de devolução). "Solicitar" é o botão do
-   cabeçalho (abre o formulário inline). As ações (aceitar / aprovar /
+   cabeçalho. As ações (aceitar / aprovar /
    aprovar sem confirmação / rejeitar / cancelar) ficam no painel,
    conforme o papel de quem olha.
    Registra RosterWork.paginas.trocas = { iniciar }.

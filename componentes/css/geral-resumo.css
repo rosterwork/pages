@@ -4,7 +4,7 @@
    ({ alvos:[{ onde, mudancas:[{tipo,rotulo,de,para}] }] }):
    título + data/hora (uma vez) + um bloco por
    alvo, uma linha por mudança conforme o tipo. Miolo reutilizável:
-   o modal de confirmação ao salvar (Postos) e, depois, a página
+   o modal de confirmação ao salvar (Postos) e a página
    de Histórico. Comportamento: componentes/js/geral-resumo.js
    ============================================================ */
 

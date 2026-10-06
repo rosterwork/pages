@@ -1,7 +1,7 @@
 /* ============================================================
    Data — utilidades de data compartilhadas (RosterWork.data)
    Fonte única para máscara, parse e conversão de datas no site
-   (evita cópias iguais em Usuários, Atestados, etc.). Trabalha
+   (evita cópias iguais em Usuários, etc.). Trabalha
    sempre com o formato de tela dd/mm/aaaa e o formato de banco
    AAAA-MM-DD. `soDigitos` fica aqui por ser a base das máscaras.
    ============================================================ */

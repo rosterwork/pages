@@ -6,7 +6,7 @@
    legenda + ações (padrão da Distribuição). Só variáveis e escalas do tema.
    ============================================================ */
 
-/* estado "em construção" centralizado */
+/* estado centralizado */
 .extra-estado {
   flex: 1 1 0;
   display: flex;
@@ -391,7 +391,7 @@
 }
 /* cada militar é um cartão de borda completa (branco, para saltar no painel suave) */
 /* linha do militar (casca visual em geral-lista): sem linha; a barra de acento
-   à esquerda marca o militar selecionado (pinta a grade na fase futura) */
+   à esquerda marca o militar selecionado */
 .extra-cota-item {
   display: flex;
   flex-direction: column;
@@ -560,7 +560,7 @@
 
 /* militar selecionado no painel de Cotas: nas células, fundo só nos dias em que ele é candidato, pela
    preferência (verde = quer · vermelho = não quer); elegível sem preferência fica sem cor. O dia inteiro
-   sem candidatura (indisponível pra ele) é marcado na COLUNA DE DATA, não na célula, pra não encher a
+   sem candidatura (indisponível para ele) é marcado na COLUNA DE DATA, não na célula, para não encher a
    grade de fundo cinza. Só na Extrajornada (este CSS só carrega aqui). */
 .extra-escala-cal .escala-mes-celula:hover {   /* a grade da extra não usa o realce de hover do Mês (a cor da célula é a preferência) */
   --celula-fundo-fora: var(--fundo-suave);
@@ -570,13 +570,12 @@
 .extra-escala-cal .escala-mes-celula--pref-quer:hover { background-color: var(--sucesso-fundo); }
 .extra-escala-cal .escala-mes-celula--pref-nao,
 .extra-escala-cal .escala-mes-celula--pref-nao:hover { background-color: var(--erro-fundo); }
-/* dia inteiro indisponível pro militar selecionado: coluna de data esmaecida (fundo + texto). O
+/* dia inteiro indisponível para o militar selecionado: coluna de data esmaecida (fundo + texto). O
    .escala-mes-linha na cadeia sobe a especificidade acima do realce de fim de semana (mesmo peso, e este
    CSS carrega ANTES do escalas-mes.css). O círculo de "hoje" fica no número, então sobrevive. */
 .extra-escala-cal .escala-mes-linha .escala-mes-data--indisponivel { background-color: var(--fundo-medio); }
 .extra-escala-cal .escala-mes-data--indisponivel .escala-mes-data-semana,
 .extra-escala-cal .escala-mes-data--indisponivel .escala-mes-data-numero { color: var(--texto-debil); }
-/* (o aviso da célula .extra-cel-aviso saiu na Fase 3: agora no painel do dia, .extra-painel-aviso) */
 
 /* painel do dia (gaveta): seção de avisos — resolvido pelo extra (✓ verde, texto riscado) / restou (âmbar ou vermelho) */
 .extra-painel-aviso {
@@ -715,7 +714,7 @@
 }
 /* a célula, dentro do calendário: sem as bordas da grade do Mês (o dia do calendário já tem as suas) */
 .extra-calendario-unidade .escala-mes-celula { border-right: none; border-bottom: none; }
-/* dia inteiro indisponível pro militar selecionado: cinza no NÚMERO da data (equivale ao esmaecido da coluna de data na Agenda) */
+/* dia inteiro indisponível para o militar selecionado: cinza no NÚMERO da data (equivale ao esmaecido da coluna de data na Agenda) */
 .extra-escala-cal .geral-calendario-mes-dia--indisponivel .geral-calendario-mes-numero {
   background-color: var(--fundo-medio);
   color: var(--texto-debil);

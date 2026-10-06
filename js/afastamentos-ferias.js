@@ -35,7 +35,7 @@
     if (btn) btn.disabled = !(militarEscolhido && calcularDias(raiz) != null);
   }
 
-  /* máscara de data preservando a posição do cursor (igual aos Atestados) */
+  /* máscara de data preservando a posição do cursor */
   function ligarMascaraData(input) {
     if (!input) return;
     input.addEventListener('input', function () {

@@ -507,7 +507,7 @@
       var orig = montarOriginal(g);
       if (orig) lista.appendChild(orig);
     });
-    /* função com menos de 24h cobertas: linha "cabe mais" pra somar militar (não apagável) */
+    /* função com menos de 24h cobertas: linha "cabe mais" para somar militar (não apagável) */
     if ((funcao.vao || []).length) {
       var cobertura = montarLinhaCobertura(posto, funcao);
       if (cobertura) lista.appendChild(cobertura);

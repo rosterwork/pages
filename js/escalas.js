@@ -199,7 +199,7 @@
     renderizarCorpo();
   }
 
-  /* ---------- corpo da grade (por enquanto, só Mês → Agenda) ---------- */
+  /* ---------- corpo da grade ---------- */
 
   /* unidades que viram coluna: as aplicadas no seletor que são CIA/CIBM/PEL (ordem da hierarquia) */
   function unidadesColuna() {
@@ -231,7 +231,7 @@
     return unidadesColuna().filter(function (c) { return ligadas[String(c.id)]; });
   }
 
-  /* estado simples no corpo (vazio, em construção), clonando o molde */
+  /* estado simples no corpo (vazio), clonando o molde */
   function mostrarEstado(corpo, texto) {
     corpo.textContent = '';
     var tpl = document.getElementById('tpl-escala-estado');
@@ -249,7 +249,7 @@
     corpo.appendChild(tpl.content.cloneNode(true));
   }
 
-  /* desenha o corpo conforme o modo ativo; prontos: Mês → Agenda (dados) e Mês → Calendário (estrutura) */
+  /* desenha o corpo conforme o modo ativo */
   function renderizarCorpo() {
     /* Escala sempre fresca: se um salvamento deixou recálculo a completar,
        esvazia a fila (1º plano) antes de mostrar, para nunca exibir dado velho */

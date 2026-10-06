@@ -1,5 +1,5 @@
 /* ============================================================
-   DISTRIBUIÇÃO — salvar um modelo (Rodada 2A)
+   DISTRIBUIÇÃO — salvar um modelo
    Monta o payload (vagas agrupadas por chave de composição) e grava
    pela RPC cirúrgica dist_salvar_modelo (não mexe nos outros modelos).
    Salvar com erro vermelho pede confirmação num modal.

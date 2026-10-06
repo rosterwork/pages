@@ -264,7 +264,7 @@
   white-space: nowrap;
 }
 
-/* dentro do chip, as horas hugam a seta (sem a largura fixa que o Mês usa) */
+/* dentro do chip, as horas encostam na seta (sem a largura fixa que o Mês usa) */
 .escala-mil-servico .linha-escalado-hora-ini,
 .escala-mil-servico .linha-escalado-hora-fim {
   width: auto;

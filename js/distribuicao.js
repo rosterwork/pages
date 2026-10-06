@@ -109,7 +109,6 @@
       if (carregadoModelos === gid) return;
       carregadoModelos = gid;
       montarColunas(grupo);
-      /* o botão "Novo modelo" é ligado na Rodada 2 (criação) */
       if (window.RosterWork.distribuicaoModelos) return window.RosterWork.distribuicaoModelos.carregar(grupo);
     }
   }

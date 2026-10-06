@@ -3,8 +3,7 @@
    Fica na base de um corpo/seção (borda no topo + fundo suave),
    sem rolar com o conteúdo. O conteúdo é de cada tela: ações à
    direita (.rodape-acoes), status, desfazer/refazer, etc.
-   Em uso: Distribuição (rodapé de status/edição) e Trocas (aba
-   Solicitar — Cancelar/Solicitar).
+   Em uso: Distribuição (rodapé de status/edição).
    ============================================================ */
 .rodape {
   flex-shrink: 0;

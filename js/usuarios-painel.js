@@ -108,7 +108,7 @@
     ], true);
   }
 
-  /* seção "Dados institucionais" (Ver) — agora na aba Carreira */
+  /* seção "Dados institucionais" (Ver) */
   function montarInstitucionais(corpo) {
     var ins = (fichaAtual && fichaAtual.institucionais) || {};
     montarSecao(corpo, 'Dados institucionais', [
@@ -366,7 +366,7 @@
   }
 
   /* desenha o corpo conforme a aba ativa e o modo Ver/Editar */
-  /* observação no topo da ficha quando o militar não tem conta de login (item 8) */
+  /* observação no topo da ficha quando o militar não tem conta de login */
   function montarSemConta(corpo) {
     if (!fichaAtual || fichaAtual.tem_conta !== false) return;
     var tpl = document.getElementById('tpl-usuarios-sem-conta');

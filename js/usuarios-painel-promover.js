@@ -31,7 +31,7 @@
     return null;
   }
 
-  /* grau resultante conforme o tipo escolhido (regra do usuário) */
+  /* grau resultante conforme o tipo escolhido */
   function calcularNovoGrau(graus, atual, tipo) {
     if (!atual || !tipo) return null;
     if (tipo === atual.tipo) {

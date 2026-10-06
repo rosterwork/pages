@@ -4,9 +4,6 @@
    a navegação de período e os contêineres dos subgrupos.
    ============================================================ */
 
-/* a régua de período ‹ rótulo › virou o componente compartilhado geral-periodo
-   (componentes/css/geral-periodo.css) */
-
 /* grupos de abas lado a lado: os modos ([Dia] + as demais visões), Colunas (tipo + quantidade) e unidades */
 .escala-modos,
 .escala-sub-colunas,
