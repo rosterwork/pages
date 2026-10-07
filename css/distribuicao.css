@@ -479,7 +479,7 @@
 .distribuicao-historico { display: flex; gap: 4px; margin-left: auto; }
 
 /* rodapé de edição: resumo de status · Cancelar/Salvar
-   (a linha em si usa .rodape-linha, promovido ao geral-rodape) */
+   (a linha em si usa .rodape-linha) */
 .distribuicao-status-resumo {
   flex: 1;
   min-width: 0;
