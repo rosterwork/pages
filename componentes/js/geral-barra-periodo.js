@@ -182,8 +182,6 @@
       avisar();
     }
 
-    function resetar() { ini = limIni; fim = limFim; pintar(); avisar(); }
-
     /* crava um trecho dentro da faixa (preso ao limite) — usado por pré-preenchimentos */
     function definirValor(inicioMin, fimMin) {
       var a = Math.max(limIni, Math.min(inicioMin, limFim));
@@ -199,7 +197,7 @@
 
     if (!ativo) { el.classList.add('barra-periodo--desativada'); hIni.disabled = true; hFim.disabled = true; }
     pintar();
-    return { valor: valor, definirLimite: definirLimite, definirValor: definirValor, resetar: resetar, ativar: ativar, desativar: desativar, elemento: el };
+    return { valor: valor, definirLimite: definirLimite, definirValor: definirValor, ativar: ativar, desativar: desativar, elemento: el };
   }
 
   RW.barraPeriodo = { criar: criar };

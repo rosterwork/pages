@@ -273,13 +273,6 @@
   }
   function rotulo(txt) { var r = RosterWork.tpl('tpl-extra-cel-rotulo'); if (r) r.textContent = txt; return r; }
 
-  /* insere um nó logo após uma âncora (ou no fim da célula, se não houver) e vira a nova âncora */
-  function inserirApos(celula, ancora, node) {
-    if (ancora && ancora.insertAdjacentElement) ancora.insertAdjacentElement('afterend', node);
-    else celula.appendChild(node);
-    return node;
-  }
-
   /* indicadores do topo da célula: barra de cobertura "antes" (real) + "depois" (com os extras), cada
      uma SEGUIDA dos SEUS avisos, embaixo dela. Sem "Sem avisos" (barra verde = ok). Os avisos do "depois"
      (resultado REAL do motor: o que sobrou + erro novo, ex.: falta de distribuição) só aparecem quando há
@@ -819,7 +812,6 @@
     var cp = RW.extrajornadaCotasPainel;
     if (cp && cp.sincronizarMes) cp.sincronizarMes(comp);   // painel de Cotas segue o mesmo mês
   }
-  function mesAtual() { return comp; }
   /* nome da unidade mãe (CIA/CIBM): as unidades vêm com ela em primeiro (RPC ordena CIA/CIBM antes) */
   function contextoNome() { return (unidades[0] && unidades[0].nome) || ''; }
 
@@ -912,5 +904,5 @@
   function recarregar() { return carregado ? carregar(true) : Promise.resolve(); }
 
   RW.extrajornadaEscala = { montar: montar, ativar: ativar, desativar: desativar, recarregar: recarregar,
-    mesAtual: mesAtual, contextoNome: contextoNome, estaSujo: estaSujo, renderMes: renderMes };
+    contextoNome: contextoNome, estaSujo: estaSujo, renderMes: renderMes };
 })();

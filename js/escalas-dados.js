@@ -114,11 +114,8 @@
       .then(function (r) { return r.ok ? r.json() : { _falha: 'servidor' }; })
       .catch(function () { return { _falha: 'conexao' }; });
   }
-  function cicloAdicionar(unidadeId, cpf, iso, horario) { return cicloAcao('escala_ciclo_adicionar', unidadeId, cpf, iso, horario || '08:00'); }
-  function cicloRetirar(unidadeId, cpf, iso) { return cicloAcao('escala_ciclo_retirar', unidadeId, cpf, iso); }
   /* só leitura: o que quebra (trocas/folgas) se o militar sair na data — para o aviso do modal */
   function cicloRetirarAnalisar(unidadeId, cpf, iso) { return cicloAcao('escala_ciclo_retirar_analisar', unidadeId, cpf, iso); }
-  function cicloCancelarSaida(unidadeId, cpf, iso) { return cicloAcao('escala_ciclo_cancelar_saida', unidadeId, cpf, iso); }
   /* Salvar em lote das mudanças do ciclo acumuladas na tela (recalcula uma vez) */
   function cicloSalvarLote(unidadeId, iso, mudancas) {
     return RosterWork.apiFetch('/rest/v1/rpc/escala_ciclo_salvar_lote', { metodo: 'POST', corpo: { p_unidade_id: Number(unidadeId), p_data: iso, p_mudancas: mudancas || [] } })
@@ -161,9 +158,7 @@
     carregar: carregar, carregarMilitares: carregarMilitares, lerMilitarDia: lerMilitarDia,
     lerDistribuicaoDia: lerDistribuicaoDia, lerAlteracoesDia: lerAlteracoesDia, salvarAjustesDia: salvarAjustesDia,
     lerImpressao: lerImpressao, lerImpressaoErros: lerImpressaoErros,
-    continuosListar: continuosListar, cicloAdicionar: cicloAdicionar, cicloRetirar: cicloRetirar,
-    cicloRetirarAnalisar: cicloRetirarAnalisar,
-    cicloCancelarSaida: cicloCancelarSaida, cicloSalvarLote: cicloSalvarLote,
+    continuosListar: continuosListar, cicloRetirarAnalisar: cicloRetirarAnalisar, cicloSalvarLote: cicloSalvarLote,
     pontuaisListar: pontuaisListar, pontuaisSalvar: pontuaisSalvar,
     atualizarManutencaoObs: atualizarManutencaoObs,
     observacaoAdicionar: observacaoAdicionar, observacaoRemover: observacaoRemover

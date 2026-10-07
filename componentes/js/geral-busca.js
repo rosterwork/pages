@@ -36,7 +36,7 @@
 
   /* cria a busca a partir da caixa .busca (com input, botão de modo e limpar).
      config: { caixa, aoBuscar(termo, modo), debounce }
-     Devolve { termo(), modo(), limpar(), focar() }. */
+     Devolve { modo(), limpar() }. */
   function criar(config) {
     config = config || {};
     var caixa = config.caixa;
@@ -82,10 +82,8 @@
     }
 
     return {
-      termo: function () { return termo; },
       modo: function () { return modo; },
-      limpar: function () { if (limpar) limpar.click(); else { entrada.value = ''; termo = ''; caixa.classList.remove('busca--com-texto'); avisar(); } },
-      focar: function () { entrada.focus(); }
+      limpar: function () { if (limpar) limpar.click(); else { entrada.value = ''; termo = ''; caixa.classList.remove('busca--com-texto'); avisar(); } }
     };
   }
 

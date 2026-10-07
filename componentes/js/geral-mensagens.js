@@ -455,12 +455,6 @@
         rejeitada_admin: 'Rejeitada',
         cancelada: 'Cancelada'
       },
-      /* selo de veredito (lista); a faixa e os avisos do painel vêm do componente geral-impacto */
-      veredito: {
-        ok: 'Sem impacto',
-        alerta: function (n) { return n === 1 ? '1 alerta' : n + ' alertas'; },
-        problema: function (n) { return n === 1 ? '1 problema' : n + ' problemas'; }
-      },
       /* painel de detalhe */
       linhaDia: 'Dia',
       linhaHorario: 'Horário',
@@ -515,7 +509,6 @@
       /* aviso de saldo (quando as durações diferem) */
       saldoParceiroDeve: function (h) { return 'O parceiro fica devendo ' + h + 'h a você.'; },
       saldoVoceDeve: function (h) { return 'Você fica devendo ' + h + 'h ao parceiro.'; },
-      saldoPendente: function (h) { return 'Sem devolução: você fica devendo ' + h + 'h.'; },
       saldoQuite: 'Com esta troca, vocês ficam sem dívida de horas.',
       /* aba Pendentes: dica do card + painel de extrato */
       pendResumo: function (n) { return n === 1 ? '1 troca entre vocês' : n + ' trocas entre vocês'; },

@@ -89,15 +89,6 @@
     return { texto: (textos && textos[status]) || status || '', classe: CLASSE_SITUACAO[status] || 'selo--escuro' };
   }
 
-  /* selo de veredito para as abas A confirmar / A aprovar */
-  function vereditoSelo(troca) {
-    var m = RW.mensagens.trocas.veredito;
-    if (troca.veredito === 'problema') return { texto: m.problema(troca.veredito_problemas || 0), classe: 'selo--erro' };
-    if (troca.veredito === 'alerta') return { texto: m.alerta(troca.veredito_alertas || 0), classe: 'selo--alerta' };
-    if (troca.veredito === 'ok') return { texto: m.ok, classe: 'selo--sucesso' };
-    return situacao(troca.status);
-  }
-
   RW.trocasFormato = {
     dataLonga: dataLonga,
     dataCurta: dataCurta,
@@ -105,7 +96,6 @@
     nomeMilitar: nomeMilitar,
     horario: horario,
     metaLista: metaLista,
-    situacao: situacao,
-    vereditoSelo: vereditoSelo
+    situacao: situacao
   };
 })();

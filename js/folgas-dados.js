@@ -11,7 +11,6 @@
 
 
   RW.folgasDados = {
-    saldos: function () { return RosterWork.rpc('folgas_listar_saldos', {}); },
     extrato: function (cpf) { return RosterWork.rpc('folgas_extrato', { p_usuario_id: cpf }); },
     servicos: function (cpf) { return RosterWork.rpc('folgas_servicos_militar', { p_usuario_id: cpf }); },
     solicitacoes: function () { return RosterWork.rpc('folgas_listar_solicitacoes', {}); },

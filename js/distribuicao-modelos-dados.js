@@ -31,8 +31,6 @@
     },
     /* grava um modelo (RPC cirúrgica: não mexe nos outros modelos do contexto) */
     salvar: function (payload) { return rpc('dist_salvar_modelo', { p_payload: payload }); },
-    /* estrutura do grupo (CIA+PELs) com os postos, sem vagas — para criar um modelo novo */
-    estruturaGrupo: function (contextoId, data) { return rpc('dist_estrutura_grupo', { p_contexto_id: contextoId, p_data: data || null }); },
     /* exclui um modelo (e poda os parciais que ficaram órfãos) */
     excluirModelo: function (id, recalcularDesde) { return rpc('dist_excluir_modelo', { p_grupo_completo_id: id, p_recalcular_desde: recalcularDesde || null }); },
     /* pré-preenche um modelo recém-criado, copiando as vagas de um modelo que caiba (por unidade) */

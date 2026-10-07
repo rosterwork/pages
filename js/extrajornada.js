@@ -41,7 +41,6 @@
       mesComp = new Date(d.getFullYear(), d.getMonth(), 1);
       try { sessionStorage.setItem(MES_KEY, iso(mesComp)); } catch (e) {}   // lembra a escolha na sessão (sobrevive ao F5)
     },
-    reiniciar: function () { mesComp = mesInicial(); try { sessionStorage.removeItem(MES_KEY); } catch (e) {} },
     restaurar: function () {   // ao abrir a página: usa o mês guardado (F5); sem nada guardado, cai na regra do mês atual
       var salvo = null; try { salvo = sessionStorage.getItem(MES_KEY); } catch (e) {}
       var d = salvo ? dataMes(salvo) : null;

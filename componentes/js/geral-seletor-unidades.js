@@ -460,11 +460,7 @@
         return nos.filter(function (no) { return !!selecionados[no.definicao.unidade_id]; })
           .map(function (no) { return no.definicao; });
       },
-      aplicarSelecaoPorIds: aplicarSelecaoPorIds,
-      unidadeSelecionada: function () {
-        var lista = idsSelecionados();
-        return lista.length ? lista[0] : null;
-      }
+      aplicarSelecaoPorIds: aplicarSelecaoPorIds
     };
   }
 

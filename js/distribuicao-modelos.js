@@ -639,15 +639,12 @@
     });
   }
 
-  function desmarcar() { selId = null; marcarAtivo(); }
-
   window.RosterWork.distribuicaoModelos = {
     carregar: carregar,
     validar: validar,
     recarregar: recarregar,
     recarregarLista: function () { return carregar(grupo); },
     editar: editarModelo,
-    desmarcar: desmarcar,
     nivelStatus: nivelStatus,
     montarItemStatus: montarItemStatus,
     contarUnidades: contarUnidades,
