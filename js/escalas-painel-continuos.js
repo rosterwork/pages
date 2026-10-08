@@ -2,8 +2,8 @@
    ESCALA — painel do dia › seção CONTÍNUOS (ciclo automático)
    Lista os militares operacionais da unidade divididos em
    "Na escala" (no ciclo, com Tirar / Cancelar saída) e
-   "Fora da escala" (com Adicionar). No modo Ver é só leitura.
-   No modo Editar as mudanças NÃO vão ao banco a cada clique:
+   "Fora da escala" (com Adicionar). Só o admin vê a seção, e ela
+   abre sempre em edição. As mudanças NÃO vão ao banco a cada clique:
    ficam acumuladas na tela (selo "Vai entrar" / "Vai sair") e
    só o Salvar aplica tudo de uma vez, recalculando a escala
    UMA vez (RPC escala_ciclo_salvar_lote). O "Tirar" ainda mostra
@@ -15,7 +15,7 @@
 
   window.RosterWork = window.RosterWork || {};
 
-  var ctx = null;        // { corpo, rodape, unidadeId, iso, editar, btnSalvar }
+  var ctx = null;        // { corpo, rodape, unidadeId, iso, btnSalvar }
   var mils = [];         // militares carregados do banco
   var pendentes = {};    // cpf -> { acao: 'adicionar'|'tirar'|'cancelar_saida', horario? }
 
@@ -119,13 +119,11 @@
         var extra = null, acao = null;
         if (pend) {
           extra = seloTexto(pend.acao === 'tirar' ? msg().continuosVaiSair : msg().continuosVaiCancelar);
-          if (ctx.editar) acao = botao(msg().continuosDesfazer, null, function () { desfazerPendente(m.cpf); });
+          acao = botao(msg().continuosDesfazer, null, function () { desfazerPendente(m.cpf); });
         } else {
           if (m.estado === 'saida_marcada') extra = seloTexto(texto(msg().continuosSaiEm, { data: formatarData(m.saida_em) }));
-          if (ctx.editar) {
-            if (m.estado === 'saida_marcada') acao = botao(msg().btnCancelarSaida, null, function () { cancelarSaida(m); });
-            else acao = botao(msg().btnTirar, 'escala-secao-botao--perigo', function () { tirar(m); });
-          }
+          if (m.estado === 'saida_marcada') acao = botao(msg().btnCancelarSaida, null, function () { cancelarSaida(m); });
+          else acao = botao(msg().btnTirar, 'escala-secao-botao--perigo', function () { tirar(m); });
         }
         var el = linha(m, extra, acao);
         if (el && !pend && m.folga_hoje && !m.serve_hoje) {   // é dia dele, mas está de folga: nome riscado
@@ -146,8 +144,8 @@
         var extra = null, acao = null;
         if (pend) {
           extra = seloTexto(msg().continuosVaiEntrar);
-          if (ctx.editar) acao = botao(msg().continuosDesfazer, null, function () { desfazerPendente(m.cpf); });
-        } else if (ctx.editar) {
+          acao = botao(msg().continuosDesfazer, null, function () { desfazerPendente(m.cpf); });
+        } else {
           acao = botao(msg().btnAdicionar, 'botao--primario', function () { adicionar(m); });
         }
         caixaFora.appendChild(linha(m, extra, acao));
@@ -162,7 +160,6 @@
     var rodape = ctx.rodape;
     if (!rodape) return;
     rodape.textContent = '';
-    if (!ctx.editar) { rodape.classList.add('oculto'); return; }
     var tpl = document.getElementById('tpl-escala-painel-acoes');
     if (!tpl) { rodape.classList.add('oculto'); return; }
     rodape.appendChild(tpl.content.cloneNode(true));
@@ -235,8 +232,8 @@
     });
   }
 
-  function montar(corpo, rodape, unidadeId, iso, editar) {
-    ctx = { corpo: corpo, rodape: rodape, unidadeId: unidadeId, iso: iso, editar: !!editar, btnSalvar: null };
+  function montar(corpo, rodape, unidadeId, iso) {
+    ctx = { corpo: corpo, rodape: rodape, unidadeId: unidadeId, iso: iso, btnSalvar: null };
     mils = [];
     pendentes = {};
     montarRodape();

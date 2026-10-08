@@ -10,8 +10,11 @@
    cada dia vem da contagem desde 01/01/2000 (não reinicia no dia 1º),
    então o mesmo dia do ciclo cai sempre na mesma coluna, mês após
    mês. Sem o cabeçalho dom…sáb; cada dia mostra a sigla + o número.
+   Opção unidadesPorDia (N ≥ 1, Escala e Extrajornada): cada dia empilha
+   um bloco por unidade; o dia vira um bloco cinza e os blocos de cada
+   unidade se alinham na mesma altura em toda a linha do calendário.
    Componente compartilhado (Escala e Extrajornada).
-   API: RosterWork.geralCalendarioMes.renderizar(corpo, { dataRef, aoDia, diasPorLinha })
+   API: RosterWork.geralCalendarioMes.renderizar(corpo, { dataRef, aoDia, diasPorLinha, unidadesPorDia })
    ============================================================ */
 (function () {
   'use strict';
@@ -51,6 +54,12 @@
       wrap.classList.add('geral-calendario-mes--continuo');
       /* nº de colunas orientado a dados → custom property (o grid-template lê) */
       wrap.style.setProperty('--calendario-colunas', String(n));
+    }
+    var unidades = (opcoes && opcoes.unidadesPorDia) || 0;
+    if (unidades >= 1) {
+      wrap.classList.add('geral-calendario-mes--unidades');
+      /* nº de unidades por dia orientado a dados → custom property (as linhas da grade de cada semana) */
+      wrap.style.setProperty('--calendario-unidades', String(unidades));
     }
 
     var ano = dataRef.getFullYear(), mes = dataRef.getMonth();

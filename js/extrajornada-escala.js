@@ -153,7 +153,7 @@
       if (!el.cal || !el.cal.isConnected || req !== calSeq) return;
       var cob = (r && r.cobertura) || {}, err = (r && r.erro) || {};
       var maxGlobal = RW.escalasCelula.calcularMaxGlobal(cob, ids);
-      RW.geralCalendarioMes.renderizar(el.cal, { dataRef: comp, aoDia: function (celulaDia, data, noMes) {
+      RW.geralCalendarioMes.renderizar(el.cal, { dataRef: comp, unidadesPorDia: colunas.length, aoDia: function (celulaDia, data, noMes) {
         if (!noMes) return;   // dia de outro mês fica só com o número apagado
         var isoDia = iso(data);
         colunas.forEach(function (c) {

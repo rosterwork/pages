@@ -53,7 +53,7 @@
   }
 
   /* abrevia as funções longas, separando a base do número
-     ("Radio Operador 2" → "Radio Op. 2"); as demais ficam como estão */
+     ("Rádio Operador 2" → "Rádio Op. 2"); as demais ficam como estão */
   function abreviarFuncao(nome) {
     var m = /^(.*?)\s+(\d+)$/.exec(nome || '');
     var base = m ? m[1] : (nome || '');
@@ -61,7 +61,7 @@
     var n = base.toLowerCase();
     if (n === 'oficial de área' || n === 'oficial de area') return 'Of. Área' + num;
     if (n === 'chefe de socorro') return 'Chef. Soc.' + num;
-    if (n === 'radio operador' || n === 'rádio operador') return 'Radio Op.' + num;
+    if (n === 'radio operador' || n === 'rádio operador') return 'Rádio Op.' + num;
     return base + num;
   }
 
@@ -491,7 +491,7 @@
     confirmarDescarte(function () { RosterWork.painel.fechar(); });
     return true;                                  // segura o fechamento até confirmar
   }
-  /* guarda a troca de aba (seção ou Ver/Editar): segura o clique antes de o geral-abas trocar,
+  /* guarda a troca de aba de seção: segura o clique antes de o geral-abas trocar,
      confirma o descarte e só então repassa o clique. Sem "piscar" (intercepta na captura). */
   function ligarGuardaAbas(trilho) {
     if (!trilho) return;
@@ -503,15 +503,6 @@
       e.stopPropagation();                        // segura o ouvinte delegado do geral-abas
       confirmarDescarte(function () { limparSecoesSujas(); aba.click(); });
     }, true);                                     // captura: roda antes do geral-abas
-  }
-  /* as abas Ver/Editar vivem no #painel-abas do shell (persistente): liga uma vez só */
-  var guardaModoLigado = false;
-  function ligarGuardaModo() {
-    if (guardaModoLigado) return;
-    var abas = document.getElementById('painel-abas');
-    if (!abas) return;
-    guardaModoLigado = true;
-    ligarGuardaAbas(abas);
   }
 
   /* um horário: início + seta + fim (a seta some quando não há fim) */
@@ -768,20 +759,20 @@
     });
   }
 
-  /* avisado pelo geral-painel ao trocar Ver/Editar: redesenha a seção atual no novo modo */
+  /* avisado pelo geral-painel ao entrar na edição (botão Editar) ou voltar para a leitura:
+     redesenha a seção atual no novo modo */
   function aoMudarModo() {
     if (pCtx) mostrarSecao(pCtx.secao);
   }
 
-  /* volta para o modo Ver clicando na aba (o geral-painel cuida da troca) */
+  /* Salvar/Cancelar da Distribuição: volta para a leitura (o geral-painel reexibe o Editar) */
   function voltarParaVer() {
     if (RosterWork.escalasPainelEditar) RosterWork.escalasPainelEditar.reset();
-    var abas = document.getElementById('painel-abas');
-    var ver = abas ? abas.querySelector('[data-painel-modo="ver"]') : null;
-    if (ver) ver.click();
+    RosterWork.painel.voltarParaLeitura();
   }
 
-  /* troca o conteúdo do corpo e o rodapé conforme a aba de seção e o modo Ver/Editar */
+  /* troca o conteúdo do corpo e o rodapé conforme a aba de seção; a Distribuição tem
+     leitura e edição (botão Editar), Contínuos e Pontuais (só admin) são sempre edição */
   function mostrarSecao(secao) {
     if (!pCtx) return;
     pCtx.secao = secao;
@@ -802,9 +793,9 @@
         if (rodape) montarAlteracoes(rodape, pCtx.unidadeId, pCtx.iso);
       }
     } else if (secao === 'continuos' && RosterWork.escalasPainelContinuos) {
-      RosterWork.escalasPainelContinuos.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso, editar);
+      RosterWork.escalasPainelContinuos.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso);
     } else if (secao === 'pontuais' && RosterWork.escalasPainelPontuais) {
-      RosterWork.escalasPainelPontuais.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso, editar);
+      RosterWork.escalasPainelPontuais.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso);
     } else {
       corpo.textContent = '';
       if (rodape) { rodape.textContent = ''; rodape.classList.add('oculto'); }
@@ -830,24 +821,27 @@
       titulo: celula.dataset.unidadeNome || '',
       tituloExtra: cidade ? '- ' + cidade : '',
       subtitulo: dataPorExtenso(iso),
-      editavel: RosterWork.sessao.ehAdmin(),   // só admin vê a aba Editar (o backend também trava em salvar_ajustes_dia)
+      botaoEditar: RosterWork.sessao.ehAdmin(),   // só admin vê o Editar (o backend também trava em salvar_ajustes_dia)
       aoMudarModo: aoMudarModo,
       aoFechar: desmarcar,
       aoTentarFechar: tentarFecharPainel       // Esc/X confirmam antes de descartar rascunho
     });
-    ligarGuardaModo();                         // guarda das abas Ver/Editar (uma vez só)
 
-    /* barra de seções (abas); o geral-abas cuida da troca visual e nos avisa a aba escolhida */
+    /* barra de seções (abas), só do admin: o comum vê só a Distribuição, sem abas.
+       O geral-abas cuida da troca visual e nos avisa a aba escolhida */
     var sub = RosterWork.painel.subcabecalho();
     var tpl = document.getElementById('tpl-escala-painel-secoes');
-    if (sub && tpl) {
+    if (RosterWork.sessao.ehAdmin() && sub && tpl) {
       sub.appendChild(tpl.content.cloneNode(true));
       sub.classList.remove('oculto');
       var trilho = sub.querySelector('.abas');
       if (trilho && RosterWork.abas) {
         ligarGuardaAbas(trilho);   // confirma o descarte antes de trocar de seção com rascunho
         RosterWork.abas.ligar(trilho, function (aba) {
-          mostrarSecao(aba.getAttribute('data-secao'));
+          var secao = aba.getAttribute('data-secao');
+          /* trocar de aba volta para a leitura; o Editar só existe na Distribuição */
+          RosterWork.painel.liberarEditar(secao === 'distribuicao');
+          mostrarSecao(secao);
         });
       }
     }

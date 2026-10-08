@@ -1,9 +1,11 @@
 /* ============================================================
    PROGRAMADOR — MENSAGENS (só programador)
-   Lista os recados (recados_listar), filtra por status, mostra o
-   detalhe à direita (com o contexto), permite mudar o status
-   (manual), editar/salvar assunto+mensagem e criar lembretes.
-   Atualiza o selo do menu (RosterWork.recadosSelo).
+   Liga as abas da página (Mensagens · Bugs; a aba Bugs mora em
+   programador-bugs.js). Lista os recados (recados_listar), filtra
+   por status, mostra o detalhe à direita (com o contexto e o bug
+   ligado), permite mudar o status (manual), editar/salvar
+   assunto+mensagem, criar lembretes e criar um bug a partir da
+   mensagem. Atualiza o selo do menu (RosterWork.recadosSelo).
    ============================================================ */
 (function () {
   'use strict';
@@ -14,6 +16,7 @@
   var recados = [];
   var filtro = 'todos';
   var selecionadoId = null;
+  var abaAtual = 'mensagens';
 
   var SELO_STATUS = { nao_lido: 'selo--alerta', lido: '', resolvido: 'selo--sucesso' };
 
@@ -25,9 +28,40 @@
   /* ---------- carga ---------- */
   function iniciar(conteudo) {
     raiz = conteudo;
+    filtro = 'todos';
+    selecionadoId = null;
+    abaAtual = 'mensagens';
+    ligarAbas();
     ligarFiltro();
     ligarNovo();
+    if (RosterWork.programadorBugs) {
+      RosterWork.programadorBugs.iniciar(conteudo, {
+        aoMudarRecados: recarregarRecados,
+        aoAbrirMensagem: abrirMensagem,
+        aoMudarSubtitulo: atualizarSubtitulo
+      });
+    }
     return carregar();
+  }
+
+  /* ---------- abas da página ---------- */
+  function ligarAbas() {
+    var trilho = raiz.querySelector('#programador-abas');
+    if (!trilho || !RosterWork.abas) return;
+    RosterWork.abas.ligar(trilho, function (aba) {
+      abaAtual = aba.getAttribute('data-aba') || 'mensagens';
+      var paineis = raiz.querySelectorAll('[data-aba-painel]');
+      for (var i = 0; i < paineis.length; i++) {
+        paineis[i].classList.toggle('oculto', paineis[i].getAttribute('data-aba-painel') !== abaAtual);
+      }
+      atualizarSubtitulo();
+    });
+  }
+
+  /* troca de aba por código: o clique passa pelo mesmo caminho do mouse */
+  function irParaAba(nome) {
+    var botao = raiz.querySelector('#programador-abas .aba[data-aba="' + nome + '"]');
+    if (botao && !botao.classList.contains('aba--ativa')) botao.click();
   }
 
   function carregar() {
@@ -45,6 +79,10 @@
   function atualizarSubtitulo() {
     var sub = raiz.querySelector('.pagina-subtitulo');
     if (!sub) return;
+    if (abaAtual === 'bugs' && RosterWork.programadorBugs) {
+      sub.textContent = RosterWork.programadorBugs.subtitulo();
+      return;
+    }
     var n = recados.filter(function (r) { return r.status !== 'resolvido'; }).length;
     sub.textContent = n ? (n === 1 ? '1 não resolvida' : n + ' não resolvidas') : 'Tudo resolvido';
   }
@@ -122,6 +160,7 @@
     });
 
     montarContexto(no, rec);
+    montarBugLigado(no, rec);   /* a seção ainda no molde, antes de ir para a tela */
 
     var btnSalvar = no.querySelector('#programador-det-salvar');
     function revisar() {
@@ -158,6 +197,44 @@
       lista.appendChild(linha);
     });
     sec.classList.remove('oculto');
+  }
+
+  /* seção "Bug ligado" (programador-bug-ligado.js): criar, ligar, desligar, abrir o bug */
+  function montarBugLigado(no, rec) {
+    var vaga = no.querySelector('.programador-bug-ligado-vaga');
+    if (!vaga || !RosterWork.programadorBugLigado) return;
+    RosterWork.programadorBugLigado.montarSecao(vaga, rec, {
+      irParaAba: irParaAba,
+      aoMudar: function () {
+        recarregarRecados();
+        if (RosterWork.programadorBugs) RosterWork.programadorBugs.recarregar();
+      }
+    });
+  }
+
+  /* recados mudaram por outro caminho (bug ligado, resolvido, reaberto): relê sem perder
+     o que estiver sendo editado; com edição pendente, refaz só a seção Bug ligado */
+  function recarregarRecados() {
+    return RosterWork.rpc('recados_listar').then(function (r) {
+      if (!Array.isArray(r)) return;
+      recados = r;
+      renderLista();
+      atualizarSubtitulo();
+      var rec = selecionadoId ? recadoPorId(selecionadoId) : null;
+      var detalhe = raiz.querySelector('#programador-detalhe');
+      var salvar = raiz.querySelector('#programador-det-salvar');
+      if (rec && salvar && !salvar.disabled) montarBugLigado(detalhe, rec);
+      else if (rec) selecionar(selecionadoId);
+      if (RosterWork.recadosSelo) RosterWork.recadosSelo.atualizar();
+    }).catch(function () {});
+  }
+
+  /* vinda da aba Bugs (mensagem ligada): mostra a mensagem, mesmo fora do filtro atual */
+  function abrirMensagem(id) {
+    irParaAba('mensagens');
+    var rec = recadoPorId(id);
+    if (rec && filtro !== 'todos' && rec.status !== filtro) marcarFiltro('todos');
+    selecionar(id);
   }
 
   function mudarStatus(id, status) {
@@ -205,11 +282,20 @@
     if (!trilho) return;
     trilho.querySelectorAll('.aba').forEach(function (b) {
       b.addEventListener('click', function () {
-        filtro = b.getAttribute('data-filtro') || 'todos';
-        trilho.querySelectorAll('.aba').forEach(function (x) { x.classList.remove('aba--ativa'); });
-        b.classList.add('aba--ativa');
+        marcarFiltro(b.getAttribute('data-filtro') || 'todos');
         renderLista();
       });
+    });
+  }
+
+  function marcarFiltro(nome) {
+    filtro = nome;
+    var trilho = raiz.querySelector('#programador-filtro');
+    if (!trilho) return;
+    trilho.querySelectorAll('.aba').forEach(function (x) {
+      var ativa = x.getAttribute('data-filtro') === nome;
+      x.classList.toggle('aba--ativa', ativa);
+      if (x.hasAttribute('aria-selected')) x.setAttribute('aria-selected', ativa ? 'true' : 'false');
     });
   }
 

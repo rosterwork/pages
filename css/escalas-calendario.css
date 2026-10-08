@@ -1,33 +1,43 @@
 /* ============================================================
    ESCALAS — modo Mês / Calendário (conteúdo dos dias)
-   Preenche cada dia do componente geral-calendario-mes com, por
-   unidade, o nome + a célula do Mês (`.escala-mes-celula`, miolo
-   pelo escalas-celula.js). Aqui só entram o bloco por unidade e o
-   ajuste da célula reusada dentro do calendário.
+   Preenche cada dia do componente geral-calendario-mes (variante
+   --unidades: o dia em bloco cinza, as unidades alinhadas por linha)
+   com, por unidade, o nome + a célula do Mês (`.escala-mes-celula`,
+   miolo pelo escalas-celula.js). Aqui só entram o bloquinho da
+   unidade e o ajuste da célula reusada dentro dele.
    Montagem: js/escalas-calendario.js
    ============================================================ */
 
-/* um bloco por unidade dentro do dia: a divisória no topo separa do número (1º bloco)
-   e separa as unidades entre si — número, título e conteúdo ficam em camadas claras */
+/* um bloquinho branco por unidade sobre o cinza do dia (padrão de blocos, MANUAL §11): a separação é
+   o fundo, sem linhas. Passar o mouse, a seleção e a busca valem para o bloquinho inteiro */
 .escala-calendario-unidade {
-  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
   padding-top: 4px;
-  border-top: 1px solid var(--borda);
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-superficie);
+  box-shadow: var(--sombra-bloco);
+  transition: background-color 0.15s ease;
 }
 
-/* o primeiro bloco encosta na faixa do número: a divisória dele mora na faixa (border-bottom, sticky),
-   então aqui tiramos a linha e a margem do topo (o padding-top fica como respiro abaixo da linha).
-   Não é :first-child (a faixa do número é o 1º filho do dia), então pega-se pelo irmão adjacente. */
-.geral-calendario-mes-dia-topo + .escala-calendario-unidade {
-  margin-top: 0;
-  border-top: none;
+.escala-calendario-unidade:has(.escala-mes-celula:hover) {
+  background-color: var(--fundo-suave);
 }
 
-/* nome da unidade = rótulo de seção apagado, em caixa alta (não compete com o número,
-   que é o elemento forte do dia) */
+.escala-calendario-unidade:has(.escala-mes-celula--selecionada) {
+  background-color: var(--fundo-medio);
+}
+
+.escala-calendario-unidade:has(.escala-mes-celula--busca) {
+  outline: 2px solid var(--foco);
+  outline-offset: -2px;
+}
+
+/* nome da unidade = rótulo de seção apagado, em caixa alta (não compete com o número do dia) */
 .escala-calendario-unidade-nome {
   display: block;
-  padding: 0 2px 2px;
+  padding: 0 4px 2px;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.5px;
@@ -38,9 +48,17 @@
   text-overflow: ellipsis;
 }
 
-/* a célula do Mês, dentro do calendário: sem as bordas da grade do Mês
-   (o próprio dia do calendário já tem as suas); o clique e o realce seguem */
-.escala-calendario-unidade .escala-mes-celula {
-  border-right: none;
-  border-bottom: none;
+/* a célula do Mês, dentro do bloquinho: transparente (o fundo e os estados são do bloquinho);
+   o clique, o foco do teclado e as cores do "fora do turno" seguem da célula */
+.escala-calendario-unidade .escala-mes-celula,
+.escala-calendario-unidade .escala-mes-celula:hover,
+.escala-calendario-unidade .escala-mes-celula--selecionada,
+.escala-calendario-unidade .escala-mes-celula--selecionada:hover {
+  border-radius: 0;
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.escala-calendario-unidade .escala-mes-celula--busca {
+  outline: none;
 }

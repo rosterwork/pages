@@ -562,9 +562,9 @@
    preferência (verde = quer · vermelho = não quer); elegível sem preferência fica sem cor. O dia inteiro
    sem candidatura (indisponível para ele) é marcado na COLUNA DE DATA, não na célula, para não encher a
    grade de fundo cinza. Só na Extrajornada (este CSS só carrega aqui). */
-.extra-escala-cal .escala-mes-celula:hover {   /* a grade da extra não usa o realce de hover do Mês (a cor da célula é a preferência) */
+.extra-escala-cal .escala-mes-celula:hover {   /* a grade da extra não usa o realce de hover do Mês (a cor da célula é a preferência): o bloquinho segue branco */
   --celula-fundo-fora: var(--fundo-suave);
-  background-color: transparent;
+  background-color: var(--fundo-superficie);
 }
 .extra-escala-cal .escala-mes-celula--pref-quer,
 .extra-escala-cal .escala-mes-celula--pref-quer:hover { background-color: var(--sucesso-fundo); }
@@ -686,23 +686,26 @@
 .extra-escala-cal .escala-mes-celula { padding-bottom: 4px; cursor: pointer; }
 .extra-escala-cal .escala-mes-grafico { cursor: pointer; }
 
-/* ---------- modo Calendário (grade de mês; reusa o componente geral-calendario-mes) ---------- */
-/* um bloco por unidade dentro do dia: a divisória no topo separa do número e as unidades entre si (espelha a Escala) */
+/* ---------- modo Calendário (grade de mês; reusa o componente geral-calendario-mes, variante --unidades) ---------- */
+/* um bloquinho branco por unidade sobre o cinza do dia, sem linhas (padrão de blocos, espelha a Escala). Sem
+   realce de hover (a cor é a preferência); a seleção, a preferência e a busca valem para o bloquinho inteiro */
 .extra-calendario-unidade {
-  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
   padding-top: 4px;
-  border-top: 1px solid var(--borda);
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-superficie);
+  box-shadow: var(--sombra-bloco);
 }
-/* primeiro bloco encosta na faixa do número: a divisória vive na faixa (sticky), então tira-se a linha e a
-   margem do topo daqui (padding-top fica como respiro abaixo da linha); pega-se pelo irmão adjacente. */
-.geral-calendario-mes-dia-topo + .extra-calendario-unidade {
-  margin-top: 0;
-  border-top: none;
-}
+.extra-calendario-unidade:has(.escala-mes-celula--selecionada) { background-color: var(--fundo-medio); }
+.extra-calendario-unidade:has(.escala-mes-celula--pref-quer) { background-color: var(--sucesso-fundo); }
+.extra-calendario-unidade:has(.escala-mes-celula--pref-nao) { background-color: var(--erro-fundo); }
+.extra-calendario-unidade:has(.escala-mes-celula--busca) { outline: 2px solid var(--foco); outline-offset: -2px; }
 /* nome da unidade: rótulo apagado em caixa alta, não compete com o número do dia */
 .extra-calendario-unidade-nome {
   display: block;
-  padding: 0 2px 2px;
+  padding: 0 4px 2px;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.5px;
@@ -712,8 +715,18 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* a célula, dentro do calendário: sem as bordas da grade do Mês (o dia do calendário já tem as suas) */
-.extra-calendario-unidade .escala-mes-celula { border-right: none; border-bottom: none; }
+/* a célula, dentro do bloquinho: transparente (o fundo e os estados são do bloquinho) */
+.extra-escala-cal .extra-calendario-unidade .escala-mes-celula,
+.extra-escala-cal .extra-calendario-unidade .escala-mes-celula:hover,
+.extra-escala-cal .extra-calendario-unidade .escala-mes-celula--pref-quer,
+.extra-escala-cal .extra-calendario-unidade .escala-mes-celula--pref-quer:hover,
+.extra-escala-cal .extra-calendario-unidade .escala-mes-celula--pref-nao,
+.extra-escala-cal .extra-calendario-unidade .escala-mes-celula--pref-nao:hover {
+  border-radius: 0;
+  background-color: transparent;
+  box-shadow: none;
+}
+.extra-escala-cal .extra-calendario-unidade .escala-mes-celula--busca { outline: none; }
 /* dia inteiro indisponível para o militar selecionado: cinza no NÚMERO da data (equivale ao esmaecido da coluna de data na Agenda) */
 .extra-escala-cal .geral-calendario-mes-dia--indisponivel .geral-calendario-mes-numero {
   background-color: var(--fundo-medio);

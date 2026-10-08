@@ -45,24 +45,6 @@
   line-height: 1.2;
 }
 
-/* ✕ à esquerda do nome da função (só funções manuais): exclui a função inteira */
-.escala-funcao-remover {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  padding: 0;
-  border: none;
-  background: none;
-  cursor: pointer;
-  color: var(--texto-fraco);
-  transition: color 0.15s ease;
-}
-
-.escala-funcao-remover:hover {
-  color: var(--erro);
-}
-
 /* coluna direita: os militares daquela função, empilhados e centrados na vertical
    (alinha o nome com os rótulos empilhados da função quando Chefe/Condutor mesclam) */
 .escala-distribuicao-militares {

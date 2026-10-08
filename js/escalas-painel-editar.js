@@ -226,7 +226,7 @@
     fecharPicker(); desenhar();
   }
 
-  /* ✕ à esquerda: exclui uma função inteira inserida à mão (+ renumera as de cima) */
+  /* ✕ da função manual: exclui a função inteira com o militar (+ renumera as de cima) */
   function excluirFuncao(posto, funcao) {
     rascunho = (rascunho || []).filter(function (a) { return !(a.acao === 'colocar' && mesmoLocal(a, posto, funcao)); });
     renumerarApos(posto, funcao.nome);
@@ -441,7 +441,7 @@
     var nPer = (m.periodos && m.periodos.length) || 0;
     if (!m.bloqueado && nPer >= 2) acao = acaoPorPeriodos(posto, funcao, m, m.periodos);   // 2+ períodos → 1 ✕ por período
     else if (m.bloqueado) acao = acaoVazia();
-    else if (funcao.manual) acao = acaoRemover(function () { esvaziar(posto, funcao, m, null); });   // militar de função manual → remove o militar (a função vira vaga)
+    else if (funcao.manual) acao = acaoRemover(function () { excluirFuncao(posto, funcao); });   // função manual → ✕ exclui a função inteira (com o militar)
     else if (m.fixado) acao = acaoRestaurar(function () { restaurar(posto, funcao, m.cpf, false); });  // militar manual em função automática → ↺ restaura o automático
     else acao = acaoRemover(function () { remover(posto, funcao, m); });   // automático → ✕ (vira vaga vazia com cadeado)
     if (acao) linha.appendChild(acao);
@@ -481,10 +481,6 @@
     fnEl.textContent = p.abreviarFuncao ? p.abreviarFuncao(funcao.nome) : funcao.nome;
     var nf = p.nivelFuncao ? p.nivelFuncao(funcao) : '';
     if (nf) fnEl.classList.add('escala-distribuicao-funcao--' + nf);
-    if (funcao.manual) {
-      var fx = RosterWork.tpl('tpl-escala-funcao-remover');
-      if (fx) { fx.addEventListener('click', function (ev) { ev.stopPropagation(); excluirFuncao(posto, funcao); }); fnEl.insertBefore(fx, fnEl.firstChild); }
-    }
     var lista = grupo.querySelector('.escala-distribuicao-militares');
     var ghostPorCpf = {};
     (funcao.ghosts || []).forEach(function (g) { ghostPorCpf[g.cpf] = g; });
@@ -540,22 +536,22 @@
     return botao;
   }
 
-  /* uma vaga vazia: rótulo da função + ✕ à esquerda + linha "Selecione um militar" (clica → picker) */
+  /* uma vaga vazia: rótulo da função + linha com cadeado, "Selecione um militar" (clica → picker) e ✕ à direita (descarta) */
   function montarVagaPendente(posto, vaga) {
     var p = pecas();
     var grupo = RosterWork.tpl('tpl-escala-distribuicao-grupo');
     if (!grupo) return null;
     var fnEl = grupo.querySelector('.escala-distribuicao-funcao');
     fnEl.textContent = p.abreviarFuncao ? p.abreviarFuncao(vaga.nome) : vaga.nome;
-    var fx = RosterWork.tpl('tpl-escala-funcao-remover');
-    if (fx) { fx.addEventListener('click', function (ev) { ev.stopPropagation(); descartarVaga(vaga); }); fnEl.insertBefore(fx, fnEl.firstChild); }
     var lista = grupo.querySelector('.escala-distribuicao-militares');
     var linha = RosterWork.tpl('tpl-escala-distribuicao-escalado');
     if (linha) {
       linha.classList.add('escala-distribuicao-escalado--edicao', 'escala-distribuicao-escalado--clicavel', 'escala-distribuicao-escalado--vaga');
+      var cad = RosterWork.tpl('tpl-escala-mes-origem');
+      if (cad && p.definirIcone) { p.definirIcone(cad, 'icone-cadeado'); linha.querySelector('.escala-distribuicao-icones').appendChild(cad); }
       linha.querySelector('.escala-distribuicao-nome').textContent = RosterWork.mensagens.escala.selecioneMilitar;
       linha.addEventListener('click', function () { abrirPicker(linha, posto, { nome: vaga.nome }, null, vaga); });
-      linha.appendChild(acaoVazia());
+      linha.appendChild(acaoRemover(function () { descartarVaga(vaga); }));
       lista.appendChild(linha);
     }
     return grupo;

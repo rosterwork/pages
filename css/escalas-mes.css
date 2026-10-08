@@ -2,7 +2,10 @@
    ESCALAS — modo Mês / Agenda
    Grade: dias nas linhas, unidades (CIA/CIBM/PEL) nas colunas.
    Cabeçalho das unidades fixo no topo e coluna de data fixa à
-   esquerda; sem moldura nas células — só as linhas da grade.
+   esquerda. Padrão de blocos (MANUAL §11): cada dia é uma faixa
+   cinza arredondada e cada célula um bloquinho branco, sem linhas.
+   A célula (.escala-mes-celula) é a mesma da Semana, do Colunas, do
+   Calendário e da Extrajornada.
    Os z-index 1/2/3 são o empilhamento interno do sticky desta
    grade (exceção à escala 10/20/30/40; ver MANUAL §8).
    Dados: js/escalas-dados.js · montagem: js/escalas-mes.js
@@ -16,27 +19,41 @@
   position: relative;
 }
 
-/* larguras das colunas: data (fixa) + unidades (mínimo, crescem para preencher) */
+/* larguras das colunas: data e unidades fixas; as linhas empilham com 8px entre elas e cada uma
+   termina na última unidade (align-items: flex-start = a linha tem a largura do conteúdo) */
 .escala-mes-grade {
   --col-data: 72px;
   --col-unidade: 240px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 0 8px 8px;
 }
 
 /* cada linha é uma grade própria com as MESMAS colunas — por isso alinham */
 .escala-mes-linha {
   display: grid;
-  grid-template-columns: var(--escala-colunas, var(--col-data) var(--col-unidade) 1fr);
+  grid-template-columns: var(--escala-colunas, var(--col-data) var(--col-unidade));
+  column-gap: 4px;
+}
+
+/* o dia = faixa cinza arredondada com as células (bloquinhos) dentro */
+.escala-mes-linha:not(.escala-mes-cabecalho) {
+  padding: 4px;
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-pagina);
 }
 
 /* uma classe por quantidade de colunas de unidade (1 a 8) */
-.escala-mes-grade--1 { --escala-colunas: var(--col-data) repeat(1, var(--col-unidade)) 1fr; }
-.escala-mes-grade--2 { --escala-colunas: var(--col-data) repeat(2, var(--col-unidade)) 1fr; }
-.escala-mes-grade--3 { --escala-colunas: var(--col-data) repeat(3, var(--col-unidade)) 1fr; }
-.escala-mes-grade--4 { --escala-colunas: var(--col-data) repeat(4, var(--col-unidade)) 1fr; }
-.escala-mes-grade--5 { --escala-colunas: var(--col-data) repeat(5, var(--col-unidade)) 1fr; }
-.escala-mes-grade--6 { --escala-colunas: var(--col-data) repeat(6, var(--col-unidade)) 1fr; }
-.escala-mes-grade--7 { --escala-colunas: var(--col-data) repeat(7, var(--col-unidade)) 1fr; }
-.escala-mes-grade--8 { --escala-colunas: var(--col-data) repeat(8, var(--col-unidade)) 1fr; }
+.escala-mes-grade--1 { --escala-colunas: var(--col-data) repeat(1, var(--col-unidade)); }
+.escala-mes-grade--2 { --escala-colunas: var(--col-data) repeat(2, var(--col-unidade)); }
+.escala-mes-grade--3 { --escala-colunas: var(--col-data) repeat(3, var(--col-unidade)); }
+.escala-mes-grade--4 { --escala-colunas: var(--col-data) repeat(4, var(--col-unidade)); }
+.escala-mes-grade--5 { --escala-colunas: var(--col-data) repeat(5, var(--col-unidade)); }
+.escala-mes-grade--6 { --escala-colunas: var(--col-data) repeat(6, var(--col-unidade)); }
+.escala-mes-grade--7 { --escala-colunas: var(--col-data) repeat(7, var(--col-unidade)); }
+.escala-mes-grade--8 { --escala-colunas: var(--col-data) repeat(8, var(--col-unidade)); }
 
 /* ---------- altura e sticky comuns aos cabeçalhos das visões do mês (Agenda e Calendário) ---------- */
 .escala-grade-cabecalho {
@@ -46,10 +63,11 @@
 }
 
 /* ---------- cabeçalho da Agenda fixo no topo (nomes das unidades) ---------- */
+/* sem linhas, no branco da área; a margem de 4px casa as colunas com as das faixas dos dias */
 .escala-mes-cabecalho {
   z-index: 2;
-  background-color: var(--fundo-suave);
-  border-bottom: 1px solid var(--borda);
+  padding: 0 4px;
+  background-color: var(--fundo-superficie);
 }
 
 .escala-mes-titulo {
@@ -59,8 +77,7 @@
   min-width: 0;
   min-height: 32px;
   padding: 0 8px;
-  border-right: 1px solid var(--borda);
-  background-color: var(--fundo-suave);
+  background-color: var(--fundo-superficie);
   font-size: 11px;
   font-weight: 700;
   color: var(--texto-forte);
@@ -70,19 +87,19 @@
 }
 
 /* ---------- coluna de data fixa à esquerda ---------- */
+/* fundo opaco = o da faixa (cobre as células ao rolar na horizontal) */
 .escala-mes-data,
 .escala-mes-canto {
   position: sticky;
   left: 0;
   z-index: 1;
-  background-color: var(--fundo-superficie);
-  border-right: 1px solid var(--borda);
+  background-color: var(--fundo-pagina);
 }
 
 /* o canto (cruzamento data × cabeçalho) fica acima de tudo */
 .escala-mes-canto {
   z-index: 3;
-  background-color: var(--fundo-suave);
+  background-color: var(--fundo-superficie);
 }
 
 .escala-mes-data {
@@ -91,8 +108,7 @@
   align-items: flex-start;
   justify-content: flex-start;
   gap: 2px;
-  padding: 8px;
-  border-bottom: 1px solid var(--borda);
+  padding: 4px;
 }
 
 .escala-mes-data-semana {
@@ -122,24 +138,29 @@
   color: var(--texto-invertido);
 }
 
-/* fim de semana: realce só na coluna de data, num cinza claro */
+/* fim de semana: a faixa inteira um tom mais escura (a data junto, que é opaca) */
+.escala-mes-linha--fds:not(.escala-mes-cabecalho),
 .escala-mes-linha--fds .escala-mes-data {
-  background-color: var(--fundo-suave);
+  background-color: var(--fundo-medio);
 }
 
-/* ---------- célula (unidade × dia): lista corrida de nomes ---------- */
+/* ---------- célula (unidade × dia): bloquinho branco com a lista corrida de nomes ---------- */
 .escala-mes-celula {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  border-right: 1px solid var(--borda);
-  border-bottom: 1px solid var(--borda);
+  padding-bottom: 4px;
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-superficie);
+  box-shadow: var(--sombra-bloco);
   cursor: pointer;
+  transition: background-color 0.15s ease;
 }
 
 /* hover e seleção da célula (abrem a gaveta de detalhes). --celula-fundo-fora controla
-   a cor do "fora do turno" nas barras, separado do fundo da célula, para que as barras
-   continuem visíveis (mais escuras no hover, mais claras na seleção) */
+   a cor do "fora do turno" nas linhas, separado do fundo da célula, para que continue
+   visível: um tom acima do fundo da célula (no hover, --fundo-medio; na seleção, cujo
+   fundo já é --fundo-medio, a --borda) */
 .escala-mes-celula:hover {
   --celula-fundo-fora: var(--fundo-medio);
   background-color: var(--fundo-suave);
@@ -147,8 +168,8 @@
 
 .escala-mes-celula--selecionada,
 .escala-mes-celula--selecionada:hover {
-  --celula-fundo-fora: var(--fundo-medio);
-  background-color: var(--fundo-pagina);
+  --celula-fundo-fora: var(--borda);
+  background-color: var(--fundo-medio);
 }
 
 /* mini-gráfico de cobertura no topo da célula (perfil de militares por hora) */

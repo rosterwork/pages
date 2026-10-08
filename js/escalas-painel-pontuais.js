@@ -1,10 +1,10 @@
 /* ============================================================
    ESCALA — painel do dia › seção PONTUAIS
    Militar avulso num dia/horário (entra na distribuição do dia,
-   sem entrar no ciclo). No modo Editar (admin): lista os pontuais
-   do dia com horário editável + ✕ e uma caixa "Adicionar pontual"
-   com os elegíveis; Salvar substitui o conjunto da unidade no dia
-   e redistribui. No modo Ver é só leitura.
+   sem entrar no ciclo). Só o admin vê a seção, e ela abre sempre
+   em edição: lista os pontuais do dia com horário editável + ✕ e
+   uma caixa "Adicionar pontual" com os elegíveis; Salvar substitui
+   o conjunto da unidade no dia e redistribui.
    ============================================================ */
 (function () {
   'use strict';
@@ -13,7 +13,7 @@
 
   var HORAS = ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23'];
 
-  var ctx = null;      // { corpo, rodape, unidadeId, iso, editar, btnSalvar }
+  var ctx = null;      // { corpo, rodape, unidadeId, iso, btnSalvar }
   var estado = null;   // [{ cpf, grad, nome, hi, hf }]
   var elegiveis = [];  // [{ cpf, grad, nome }]
   var sujo = false;
@@ -113,31 +113,27 @@
     corpo.textContent = '';
 
     var caixas = [];
-    if (ctx.editar) RosterWork.escalasPainel.pecas.montarBusca(corpo, caixas);
+    RosterWork.escalasPainel.pecas.montarBusca(corpo, caixas);
 
     var caixa = RosterWork.painel.criarCaixa(msg().pontuaisDoDia);
     if (caixa) {
       if (!estado.length) caixaVazia(caixa, msg().pontuaisVazio);
       estado.forEach(function (e) {
-        var horas = ctx.editar ? horasEditar(e) : horasVer(e);
-        var acao = ctx.editar ? removerAcao(e) : null;
-        caixa.appendChild(linha(e, horas, acao));
+        caixa.appendChild(linha(e, horasEditar(e), removerAcao(e)));
       });
       corpo.appendChild(caixa);
       caixas.push(caixa);
     }
 
-    if (ctx.editar) {
-      var disp = elegiveis.filter(function (m) { return !jaNoEstado(m.cpf); });
-      var caixaAdd = RosterWork.painel.criarCaixa(msg().pontuaisAdicionar);
-      if (caixaAdd) {
-        if (!disp.length) caixaVazia(caixaAdd, msg().pontuaisElegiveisVazio);
-        disp.forEach(function (m) {
-          caixaAdd.appendChild(linha(m, null, botao(msg().btnAdicionar, 'botao--primario', function () { adicionarPontual(m); })));
-        });
-        corpo.appendChild(caixaAdd);
-        caixas.push(caixaAdd);
-      }
+    var disp = elegiveis.filter(function (m) { return !jaNoEstado(m.cpf); });
+    var caixaAdd = RosterWork.painel.criarCaixa(msg().pontuaisAdicionar);
+    if (caixaAdd) {
+      if (!disp.length) caixaVazia(caixaAdd, msg().pontuaisElegiveisVazio);
+      disp.forEach(function (m) {
+        caixaAdd.appendChild(linha(m, null, botao(msg().btnAdicionar, 'botao--primario', function () { adicionarPontual(m); })));
+      });
+      corpo.appendChild(caixaAdd);
+      caixas.push(caixaAdd);
     }
   }
 
@@ -148,7 +144,6 @@
     var rodape = ctx.rodape;
     if (!rodape) return;
     rodape.textContent = '';
-    if (!ctx.editar) { rodape.classList.add('oculto'); return; }
     var tpl = document.getElementById('tpl-escala-painel-acoes');
     if (!tpl) { rodape.classList.add('oculto'); return; }
     rodape.appendChild(tpl.content.cloneNode(true));
@@ -216,8 +211,8 @@
     });
   }
 
-  function montar(corpo, rodape, unidadeId, iso, editar) {
-    ctx = { corpo: corpo, rodape: rodape, unidadeId: unidadeId, iso: iso, editar: !!editar, btnSalvar: null };
+  function montar(corpo, rodape, unidadeId, iso) {
+    ctx = { corpo: corpo, rodape: rodape, unidadeId: unidadeId, iso: iso, btnSalvar: null };
     estado = [];
     elegiveis = [];
     sujo = false;

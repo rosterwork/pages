@@ -96,6 +96,7 @@
   --impressao-texto-suave: var(--cinza-750);
   --impressao-borda:       var(--cinza-300);
   --impressao-fundo:       var(--cinza-150);
+  --impressao-papel:       var(--cinza-0);
 
   /* -------------------------------------------------------
      Véu do modal

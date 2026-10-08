@@ -241,6 +241,8 @@
               <button type="button" class="aba aba--ativa" data-painel-modo="ver">Ver</button>
               <button type="button" class="aba" data-painel-modo="editar">Editar</button>
             </div>
+            <!-- botão Editar (config.botaoEditar): sai da leitura para a edição; some durante a edição -->
+            <button type="button" class="botao botao--pequeno oculto" id="painel-editar">Editar</button>
             <button type="button" class="botao botao--icone botao--pequeno" id="painel-fechar" aria-label="Fechar painel">
               <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
             </button>
@@ -989,13 +991,6 @@
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-restaurar.svg#icone-restaurar"/></svg>
       </button>
     </span>
-  </template>
-
-  <!-- ✕ à esquerda da função: exclui uma função inserida à mão (só funções manuais) -->
-  <template id="tpl-escala-funcao-remover">
-    <button type="button" class="escala-funcao-remover" aria-label="Excluir função">
-      <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
-    </button>
   </template>
 
   <!-- linha dos valores originais (automático) abaixo de uma linha alterada: itálico + riscado -->

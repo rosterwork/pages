@@ -113,3 +113,187 @@
   font-size: 12px;
   color: var(--texto-suave);
 }
+
+/* ============================================================
+   PROGRAMADOR — BUGS (lista + detalhe + formulário)
+   Mesma casca da aba Mensagens; aqui só o que é próprio dos bugs.
+   Selos: gravidade (Grave = erro, Moderado = alerta, Leve = neutro)
+   e situação (Em correção = escuro, Corrigido = sucesso).
+   ============================================================ */
+
+/* cabeçalho do painel esquerdo com duas linhas: situação + gravidade/período */
+.programador-bugs-filtros {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  padding: 8px 12px;
+}
+
+.programador-bugs-seletores {
+  display: flex;
+  gap: 8px;
+}
+
+.programador-bugs-seletores .dropdown {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.programador-bugs-seletores .seletor {
+  width: 100%;
+  font-size: 12px;
+}
+
+/* 2ª linha do item: onde acontece (corta) + data */
+.programador-bug-item-onde {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.programador-bug-item-data {
+  flex-shrink: 0;
+}
+
+/* detalhe */
+.programador-bug-selos {
+  display: flex;
+  gap: 4px;
+}
+
+.programador-bug-titulo {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.programador-bug-bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.programador-bug-descricao {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--texto);
+  white-space: pre-wrap;
+}
+
+/* andamento: um passo por linha (quando · ação por quem) + nota */
+.programador-bug-andamento {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.programador-bug-passo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.programador-bug-passo-linha {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--texto);
+}
+
+.programador-bug-passo-quando {
+  flex-shrink: 0;
+  color: var(--texto-suave);
+}
+
+.programador-bug-passo-nota {
+  font-size: 12px;
+  color: var(--texto-suave);
+  white-space: pre-wrap;
+}
+
+/* mensagens ligadas (abrem na aba Mensagens) e o bug ligado da mensagem */
+.programador-bug-mensagens {
+  display: flex;
+  flex-direction: column;
+}
+
+.programador-bug-mensagem,
+.programador-bug-ligado {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 32px;
+  padding: 4px 12px;
+  font-size: 12px;
+  text-align: left;
+}
+
+.programador-bug-mensagem-autor {
+  flex-shrink: 0;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.programador-bug-mensagem-assunto,
+.programador-bug-ligado-titulo {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--texto);
+}
+
+.programador-bug-mensagem-data {
+  flex-shrink: 0;
+  color: var(--texto-suave);
+}
+
+.programador-bug-ligado-titulo {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+/* seção "Bug ligado" no detalhe da mensagem: sem bug, os dois botões;
+   com bug, a linha do bug + o "x" de desligar */
+.programador-detalhe-bug {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.programador-bug-ligado-acoes {
+  display: flex;
+  gap: 8px;
+}
+
+.programador-bug-ligado-linha {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.programador-bug-ligado-linha .programador-bug-ligado {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* opção de "Ligar a bug existente": título (corta) + selo de gravidade */
+.programador-ligar-opcao {
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.programador-ligar-opcao-titulo {
+  max-width: 360px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

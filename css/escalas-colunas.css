@@ -4,7 +4,9 @@
    fixo no topo (as unidades); o nº de colunas vem da custom property
    --n-colunas. As células reusam `.escala-mes-celula` (miolo =
    escalas-celula.js), então aqui só entram a moldura da grade, o
-   cabeçalho e a coluna-rótulo. Os z-index 1–3 são o empilhamento
+   cabeçalho e a coluna-rótulo. Padrão de blocos (MANUAL §11), como
+   a Agenda: cada dia é uma faixa cinza arredondada e cada célula um
+   bloquinho branco, sem linhas. Os z-index 1–3 são o empilhamento
    interno do sticky (exceção 10/20/30/40; MANUAL §8).
    O Colunas → Dias é o calendário contínuo (escalas-calendario.js).
    Montagem: js/escalas-colunas.js
@@ -18,26 +20,42 @@
   position: relative;
 }
 
-/* larguras: coluna-rótulo (fixa, cabe "SÁB 30") + N colunas que crescem para preencher */
+/* larguras: coluna-rótulo (fixa, cabe "SÁB 30") + N colunas que crescem para preencher; as linhas
+   empilham com 8px entre elas, e a grade cresce até a largura mínima das colunas (as faixas cobrem
+   todas as células ao rolar na horizontal) */
 .escala-colunas-grade {
   --col-rotulo: 88px;
   --n-colunas: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: min-content;
+  padding: 0 8px 8px;
 }
 
 /* cada linha é uma grade própria com as mesmas colunas — por isso alinham */
 .escala-colunas-linha {
   display: grid;
   grid-template-columns: var(--col-rotulo) repeat(var(--n-colunas), minmax(168px, 1fr));
+  column-gap: 4px;
+}
+
+/* o dia = faixa cinza arredondada com as células (bloquinhos) dentro */
+.escala-colunas-linha:not(.escala-colunas-cabecalho) {
+  padding: 4px;
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-pagina);
 }
 
 /* ---------- cabeçalho de coluna, fixo no topo ---------- */
+/* sem linhas, no branco da área; a margem de 4px casa as colunas com as das faixas */
 .escala-colunas-cabecalho {
   position: sticky;
   top: 0;
   z-index: 2;
   min-height: 32px;
-  background-color: var(--fundo-suave);
-  border-bottom: 1px solid var(--borda);
+  padding: 0 4px;
+  background-color: var(--fundo-superficie);
 }
 
 /* canto (cruzamento rótulo × cabeçalho) acima de tudo */
@@ -45,8 +63,7 @@
   position: sticky;
   left: 0;
   z-index: 3;
-  background-color: var(--fundo-suave);
-  border-right: 1px solid var(--borda);
+  background-color: var(--fundo-superficie);
 }
 
 /* cabeçalho de coluna = unidade */
@@ -56,7 +73,6 @@
   justify-content: center;
   min-height: 32px;
   padding: 4px 8px;
-  border-left: 1px solid var(--borda);
   font-size: 12px;
   font-weight: 700;
   text-align: center;
@@ -64,6 +80,7 @@
 }
 
 /* ---------- coluna-rótulo (fixa à esquerda) = um dia ---------- */
+/* fundo opaco = o da faixa (cobre as células ao rolar na horizontal) */
 .escala-colunas-rotulo-dia {
   position: sticky;
   left: 0;
@@ -72,10 +89,8 @@
   align-items: center;
   gap: 8px;
   min-width: 0;
-  padding: 8px 12px;
-  background-color: var(--fundo-superficie);
-  border-right: 1px solid var(--borda);
-  border-bottom: 1px solid var(--borda);
+  padding: 4px 8px;
+  background-color: var(--fundo-pagina);
 }
 
 .escala-colunas-rotulo-semana {
@@ -103,4 +118,8 @@
   color: var(--texto-invertido);
 }
 
-.escala-colunas-rotulo--fds { background-color: var(--fundo-suave); }
+/* fim de semana: a faixa inteira um tom mais escura (o rótulo junto, que é opaco), como na Agenda */
+.escala-colunas-linha:has(.escala-colunas-rotulo--fds),
+.escala-colunas-rotulo--fds {
+  background-color: var(--fundo-medio);
+}

@@ -111,6 +111,7 @@
       RosterWork.geralCalendarioMes.renderizar(corpo, {
         dataRef: dataRef,
         diasPorLinha: opcoes.diasPorLinha,
+        unidadesPorDia: colunas.length,   // um bloco por unidade em cada dia, alinhados por linha
         aoDia: function (celulaDia, data, noMes) {
           if (!noMes) return;
           preencherDia(celulaDia, dataISO(data), colunas, dados, cobertura, erro, maxGlobal);

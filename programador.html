@@ -9,6 +9,7 @@
   <div class="pagina-subcabecalho">
     <div class="abas" id="programador-abas">
       <button type="button" class="aba aba--ativa" data-aba="mensagens">Mensagens</button>
+      <button type="button" class="aba" data-aba="bugs">Bugs</button>
     </div>
   </div>
 
@@ -35,6 +36,60 @@
 
       <div class="geral-corpo-lateral">
         <div class="geral-corpo-lateral-rolagem" id="programador-detalhe"></div>
+      </div>
+
+    </div>
+
+    <div class="geral-layout-lateral oculto" data-aba-painel="bugs">
+
+      <aside class="geral-painel-esquerdo programador-esquerdo">
+        <div class="geral-painel-esquerdo-cabecalho programador-filtro-barra programador-bugs-filtros">
+          <div class="abas abas--pequenas" id="bugs-filtro-situacao">
+            <button type="button" class="aba aba--ativa" data-situacao="aberto">Abertos</button>
+            <button type="button" class="aba" data-situacao="em_correcao">Em correção</button>
+            <button type="button" class="aba" data-situacao="corrigido">Corrigidos</button>
+            <button type="button" class="aba" data-situacao="descartado">Descartados</button>
+          </div>
+          <div class="programador-bugs-seletores">
+            <div class="dropdown" id="bugs-gravidade-dropdown">
+              <button type="button" class="seletor" id="bugs-gravidade">
+                <span class="seletor-texto" id="bugs-gravidade-texto">Todas as gravidades</span>
+                <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+              </button>
+              <div class="dropdown-menu" id="bugs-gravidade-menu">
+                <div class="dropdown-titulo">Gravidade</div>
+                <button type="button" class="dropdown-item dropdown-item--ativo" data-gravidade="">Todas as gravidades</button>
+                <button type="button" class="dropdown-item" data-gravidade="grave">Grave</button>
+                <button type="button" class="dropdown-item" data-gravidade="moderado">Moderado</button>
+                <button type="button" class="dropdown-item" data-gravidade="leve">Leve</button>
+              </div>
+            </div>
+            <div class="dropdown" id="bugs-periodo-dropdown">
+              <button type="button" class="seletor" id="bugs-periodo">
+                <span class="seletor-texto" id="bugs-periodo-texto">Todo o período</span>
+                <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+              </button>
+              <div class="dropdown-menu" id="bugs-periodo-menu">
+                <div class="dropdown-titulo">Aberto em</div>
+                <button type="button" class="dropdown-item dropdown-item--ativo" data-dias="">Todo o período</button>
+                <button type="button" class="dropdown-item" data-dias="7">Últimos 7 dias</button>
+                <button type="button" class="dropdown-item" data-dias="30">Últimos 30 dias</button>
+                <button type="button" class="dropdown-item" data-dias="90">Últimos 90 dias</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="geral-painel-esquerdo-lista" id="bugs-lista"></div>
+        <div class="geral-painel-esquerdo-rodape">
+          <button type="button" class="botao programador-novo-botao" id="bugs-novo">
+            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-mais.svg#icone-mais"/></svg>
+            Novo bug
+          </button>
+        </div>
+      </aside>
+
+      <div class="geral-corpo-lateral">
+        <div class="geral-corpo-lateral-rolagem" id="bugs-detalhe"></div>
       </div>
 
     </div>
@@ -86,6 +141,8 @@
         </div>
       </div>
 
+      <div class="programador-bug-ligado-vaga"></div>
+
       <div class="programador-detalhe-contexto">
         <span class="rotulo-secao">Contexto (a tela do usuário)</span>
         <div id="programador-det-contexto"></div>
@@ -95,6 +152,52 @@
         <button type="button" class="botao botao--primario" id="programador-det-salvar" disabled>Salvar</button>
       </div>
     </div>
+  </template>
+
+  <!-- molde: seção "Bug ligado" do detalhe da mensagem (refeita a cada ligação):
+       sem bug, criar ou ligar a um bug existente; com bug, o bug e o desligar -->
+  <template id="tpl-programador-bug-ligado">
+    <div class="programador-detalhe-bug">
+      <span class="rotulo-secao">Bug ligado</span>
+      <div class="programador-bug-ligado-acoes" id="programador-det-sem-bug">
+        <button type="button" class="botao" id="programador-det-criar-bug">
+          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-mais.svg#icone-mais"/></svg>
+          Criar bug desta mensagem
+        </button>
+        <div class="dropdown">
+          <button type="button" class="botao" id="programador-det-ligar">
+            Ligar a bug existente
+            <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+          </button>
+          <div class="dropdown-menu">
+            <div class="dropdown-titulo">Bugs abertos e em correção</div>
+            <div id="programador-det-ligar-opcoes"></div>
+          </div>
+        </div>
+      </div>
+      <div class="programador-bug-ligado-linha" id="programador-det-com-bug">
+        <button type="button" class="lista-item lista-item--clicavel programador-bug-ligado" id="programador-det-bug">
+          <span class="programador-bug-ligado-titulo"></span>
+          <span class="selo programador-bug-ligado-situacao"></span>
+        </button>
+        <button type="button" class="botao botao--icone" id="programador-det-desligar" aria-label="Desligar do bug" data-dica="Desligar do bug">
+          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+        </button>
+      </div>
+    </div>
+  </template>
+
+  <!-- molde: opção de "Ligar a bug existente" (título + gravidade) -->
+  <template id="tpl-bug-ligar-opcao">
+    <button type="button" class="dropdown-item programador-ligar-opcao">
+      <span class="programador-ligar-opcao-titulo"></span>
+      <span class="selo"></span>
+    </button>
+  </template>
+
+  <!-- molde: nenhum bug para ligar -->
+  <template id="tpl-bug-ligar-vazio">
+    <div class="dropdown-item dropdown-item--inativo"></div>
   </template>
 
   <!-- molde: uma linha do contexto -->
@@ -129,5 +232,159 @@
   <!-- molde: detalhe vazio (nada selecionado) -->
   <template id="tpl-programador-detalhe-vazio">
     <div class="programador-vazio"><span></span></div>
+  </template>
+
+  <!-- molde: item da lista de bugs (título + gravidade; onde + data) -->
+  <template id="tpl-bug-item">
+    <button type="button" class="lista-item lista-item--clicavel programador-item">
+      <span class="programador-item-linha1">
+        <span class="programador-item-assunto"></span>
+        <span class="selo programador-item-selo"></span>
+      </span>
+      <span class="programador-item-linha2">
+        <span class="programador-bug-item-onde"></span>
+        <span class="programador-bug-item-data"></span>
+      </span>
+    </button>
+  </template>
+
+  <!-- molde: detalhe do bug (à direita) -->
+  <template id="tpl-bug-detalhe">
+    <div class="programador-detalhe">
+      <div class="programador-detalhe-topo">
+        <span class="programador-bug-selos">
+          <span class="selo bug-det-gravidade"></span>
+          <span class="selo bug-det-situacao"></span>
+        </span>
+        <span class="programador-detalhe-quando bug-det-registro"></span>
+      </div>
+      <h2 class="programador-bug-titulo bug-det-titulo"></h2>
+
+      <div class="programador-bug-info">
+        <div class="linha-info">
+          <span class="linha-info-rotulo">Relatado por</span>
+          <span class="linha-info-valor bug-det-relator"></span>
+        </div>
+        <div class="linha-info">
+          <span class="linha-info-rotulo">Onde acontece</span>
+          <span class="linha-info-valor bug-det-onde"></span>
+        </div>
+        <div class="linha-info">
+          <span class="linha-info-rotulo">Responsável</span>
+          <span class="linha-info-valor bug-det-responsavel"></span>
+        </div>
+      </div>
+
+      <div class="programador-bug-bloco">
+        <span class="rotulo-secao">O que acontece</span>
+        <p class="programador-bug-descricao bug-det-descricao"></p>
+      </div>
+
+      <div class="programador-bug-bloco bug-det-mensagens-bloco">
+        <span class="rotulo-secao">Mensagens ligadas <span class="bug-det-mensagens-qtd"></span></span>
+        <div class="programador-bug-mensagens bug-det-mensagens"></div>
+      </div>
+
+      <div class="programador-bug-bloco">
+        <span class="rotulo-secao">Andamento</span>
+        <div class="programador-bug-andamento bug-det-andamento"></div>
+      </div>
+
+      <label class="campo bug-det-nota-campo">
+        <span class="campo-rotulo bug-det-nota-rotulo-correcao">O que foi feito ou motivo do descarte</span>
+        <span class="campo-rotulo bug-det-nota-rotulo-descarte">Motivo do descarte</span>
+        <textarea class="campo-entrada" id="bug-det-nota" rows="3"></textarea>
+        <span class="campo-erro-texto" role="alert"></span>
+      </label>
+
+      <div class="programador-detalhe-acoes">
+        <button type="button" class="botao" id="bug-det-editar">Editar</button>
+        <button type="button" class="botao" id="bug-det-descartar">Descartar</button>
+        <button type="button" class="botao" id="bug-det-devolver">Devolver</button>
+        <button type="button" class="botao" id="bug-det-reabrir">Reabrir</button>
+        <button type="button" class="botao botao--primario" id="bug-det-assumir">Assumir correção</button>
+        <button type="button" class="botao botao--primario" id="bug-det-corrigir">Marcar corrigido</button>
+      </div>
+    </div>
+  </template>
+
+  <!-- molde: um passo do andamento (quando · ação por quem; nota) -->
+  <template id="tpl-bug-passo">
+    <div class="programador-bug-passo">
+      <span class="programador-bug-passo-linha">
+        <span class="programador-bug-passo-quando"></span>
+        <span class="programador-bug-passo-texto"></span>
+      </span>
+      <span class="programador-bug-passo-nota"></span>
+    </div>
+  </template>
+
+  <!-- molde: uma mensagem ligada ao bug (abre na aba Mensagens) -->
+  <template id="tpl-bug-mensagem">
+    <button type="button" class="lista-item lista-item--clicavel programador-bug-mensagem">
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-mensagem.svg#icone-mensagem"/></svg>
+      <span class="programador-bug-mensagem-autor"></span>
+      <span class="programador-bug-mensagem-assunto"></span>
+      <span class="programador-bug-mensagem-data"></span>
+    </button>
+  </template>
+
+  <!-- molde: novo bug / editar bug (à direita) -->
+  <template id="tpl-bug-formulario">
+    <div class="programador-detalhe">
+      <span class="rotulo-secao bug-form-titulo-novo">Novo bug</span>
+      <span class="rotulo-secao bug-form-titulo-editar">Editar bug</span>
+      <label class="campo">
+        <span class="campo-rotulo">Título</span>
+        <input class="campo-entrada" id="bug-form-titulo" type="text" maxlength="80" placeholder="Resumo em poucas palavras" />
+        <span class="campo-erro-texto" role="alert"></span>
+      </label>
+      <div class="campo">
+        <span class="campo-rotulo">Gravidade</span>
+        <div class="abas abas--pequenas programador-bug-gravidade" id="bug-form-gravidade">
+          <button type="button" class="aba" data-gravidade="leve">Leve</button>
+          <button type="button" class="aba" data-gravidade="moderado">Moderado</button>
+          <button type="button" class="aba" data-gravidade="grave">Grave</button>
+        </div>
+        <span class="campo-erro-texto" role="alert"></span>
+      </div>
+      <div class="campo">
+        <span class="campo-rotulo">Relatado por (opcional)</span>
+        <div class="dropdown" id="bug-form-relator-dropdown">
+          <input class="campo-entrada" id="bug-form-relator" type="text" maxlength="100" placeholder="Pesquisar militar" autocomplete="off" aria-label="Relatado por" />
+          <div class="dropdown-menu" id="bug-form-relator-menu"></div>
+        </div>
+        <span class="campo-erro-texto" role="alert"></span>
+      </div>
+      <label class="campo">
+        <span class="campo-rotulo">Onde acontece (opcional)</span>
+        <input class="campo-entrada" id="bug-form-onde" type="text" maxlength="120" placeholder="Página e aba" />
+      </label>
+      <label class="campo">
+        <span class="campo-rotulo">O que acontece e como repetir</span>
+        <textarea class="campo-entrada" id="bug-form-descricao" rows="6" placeholder="Descreva o problema"></textarea>
+        <span class="campo-erro-texto" role="alert"></span>
+      </label>
+      <div class="programador-detalhe-acoes">
+        <button type="button" class="botao" id="bug-form-cancelar">Cancelar</button>
+        <button type="button" class="botao botao--primario" id="bug-form-criar">Criar bug</button>
+        <button type="button" class="botao botao--primario" id="bug-form-salvar">Salvar</button>
+      </div>
+    </div>
+  </template>
+
+  <!-- molde: opção do campo Relatado por (militar) -->
+  <template id="tpl-bug-relator-opcao">
+    <button type="button" class="dropdown-item"></button>
+  </template>
+
+  <!-- molde: "Ninguém" no topo do campo Relatado por (limpa a escolha) -->
+  <template id="tpl-bug-relator-ninguem">
+    <button type="button" class="dropdown-item">Ninguém</button>
+  </template>
+
+  <!-- molde: aviso de pesquisa sem resultado no campo Relatado por -->
+  <template id="tpl-bug-relator-vazio">
+    <div class="dropdown-item dropdown-item--inativo programador-relator-vazio"></div>
   </template>
 </div>

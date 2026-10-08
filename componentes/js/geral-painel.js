@@ -1,6 +1,7 @@
 /* ============================================================
    GERAL-PAINEL — painel lateral de detalhes (a "gaveta" direita)
-   Casca compartilhada: abre/fecha, alterna Ver/Editar e entrega à
+   Casca compartilhada: abre/fecha, alterna Ver/Editar (pelas abas ou
+   pelo botão Editar) e entrega à
    página os pontos onde montar o conteúdo (corpo, sub-cabeçalho e
    rodapé) e as peças prontas (seção, caixa, linha rótulo/valor).
    Só liga/desliga classe e clona moldes — não inventa estrutura.
@@ -11,11 +12,13 @@
 
   window.RosterWork = window.RosterWork || {};
 
-  var painel, elTitulo, elTituloExtra, elSubtitulo, elAbas, elSubcabecalho, elCorpo, elRodape, elFechar;
+  var painel, elTitulo, elTituloExtra, elSubtitulo, elAbas, elEditar, elSubcabecalho, elCorpo, elRodape, elFechar;
   var aoFecharAtual = null;       // callback da página, disparado ao fechar
   var aoTentarFecharAtual = null; // interceptador opcional do fechar por gesto (Esc/X): devolve true para segurar
   var aoMudarModoAtual = null;    // callback da página, disparado ao trocar Ver/Editar
   var modoAtual = 'ver';
+  var comBotaoEditar = false;     // config.botaoEditar: leitura com o botão Editar (no lugar das abas Ver/Editar)
+  var editarLiberado = false;     // o conteúdo atual tem leitura com edição (a página decide por aba)
 
   function pegarReferencias() {
     painel = document.getElementById('painel');
@@ -23,6 +26,7 @@
     elTituloExtra = document.getElementById('painel-titulo-extra');
     elSubtitulo = document.getElementById('painel-subtitulo');
     elAbas = document.getElementById('painel-abas');
+    elEditar = document.getElementById('painel-editar');
     elSubcabecalho = document.getElementById('painel-subcabecalho');
     elCorpo = document.getElementById('painel-corpo');
     elRodape = document.getElementById('painel-rodape');
@@ -42,6 +46,27 @@
     modoAtual = modo;
   }
 
+  /* o botão Editar só aparece na leitura, e só onde a página liberou */
+  function atualizarBotaoEditar() {
+    if (!elEditar) return;
+    elEditar.classList.toggle('oculto', !(comBotaoEditar && editarLiberado && modoAtual === 'ver'));
+  }
+
+  /* a página diz se o conteúdo que vai montar tem leitura com edição (mostra o Editar);
+     trocar de conteúdo sempre volta para a leitura, sem avisar (a página já vai redesenhar) */
+  function liberarEditar(sim) {
+    editarLiberado = !!sim;
+    ativarAba('ver');
+    atualizarBotaoEditar();
+  }
+
+  /* Salvar/Cancelar da edição: volta para a leitura e avisa a página para redesenhar */
+  function voltarParaLeitura() {
+    ativarAba('ver');
+    atualizarBotaoEditar();
+    if (aoMudarModoAtual) aoMudarModoAtual('ver');
+  }
+
   function limparConteudo() {
     elCorpo.textContent = '';
     elSubcabecalho.textContent = '';
@@ -50,7 +75,7 @@
     elRodape.classList.add('oculto');
   }
 
-  /* abre o painel. config = { titulo, tituloExtra?, subtitulo, editavel?, modoFixo?, largo?, aoMudarModo?(modo), aoFechar?(), aoTentarFechar?()->bool }
+  /* abre o painel. config = { titulo, tituloExtra?, subtitulo, editavel?, modoFixo?, botaoEditar?, largo?, aoMudarModo?(modo), aoFechar?(), aoTentarFechar?()->bool }
      o corpo/sub-cabeçalho/rodapé nascem vazios; a página preenche pelos getters abaixo */
   function abrir(config) {
     if (!painel) return;
@@ -80,6 +105,11 @@
     aoMudarModoAtual = config.aoMudarModo || null;
     ativarAba(modoFixo || 'ver');
 
+    /* botaoEditar: abre na leitura com o botão Editar (liberado até a página dizer o contrário) */
+    comBotaoEditar = !!config.botaoEditar;
+    editarLiberado = comBotaoEditar;
+    atualizarBotaoEditar();
+
     limparConteudo();
     aoFecharAtual = config.aoFechar || null;
     aoTentarFecharAtual = config.aoTentarFechar || null;
@@ -96,6 +126,9 @@
     aoFecharAtual = null;
     aoTentarFecharAtual = null;
     aoMudarModoAtual = null;
+    comBotaoEditar = false;
+    editarLiberado = false;
+    atualizarBotaoEditar();
     if (cb) cb();
   }
 
@@ -189,6 +222,15 @@
       });
     }
 
+    /* botão Editar: entra na edição e some até a página voltar para a leitura */
+    if (elEditar) {
+      elEditar.addEventListener('click', function () {
+        ativarAba('editar');
+        atualizarBotaoEditar();
+        if (aoMudarModoAtual) aoMudarModoAtual('editar');
+      });
+    }
+
     /* Esc fecha — mas o modal tem precedência (não vaza para o painel atrás) */
     document.addEventListener('keydown', function (evento) {
       if (evento.key !== 'Escape') return;
@@ -212,6 +254,8 @@
     subcabecalho: function () { return elSubcabecalho; },
     rodape: function () { return elRodape; },
     modo: function () { return modoAtual; },
+    liberarEditar: liberarEditar,
+    voltarParaLeitura: voltarParaLeitura,
     criarSecao: criarSecao,
     criarCaixa: criarCaixa,
     criarLinha: criarLinha,

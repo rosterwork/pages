@@ -144,6 +144,32 @@
       contexto: { pagina: 'Página', aba: 'Aba', unidades: 'Unidades', navegador: 'Navegador', tela: 'Tela', tema: 'Tema', url: 'Endereço' }
     },
 
+    /* programador › bugs (registro e andamento dos bugs a corrigir) */
+    programadorBugs: {
+      vazioLista: 'Nenhum bug por aqui.',
+      vazioDetalhe: 'Selecione um bug à esquerda para ver os detalhes.',
+      carregando: 'Carregando…',
+      falhaCarregar: 'Não foi possível carregar os bugs. Tente de novo.',
+      gravidades: { leve: 'Leve', moderado: 'Moderado', grave: 'Grave' },
+      situacoes: { aberto: 'Aberto', em_correcao: 'Em correção', corrigido: 'Corrigido', descartado: 'Descartado' },
+      passos: { aberto: 'Aberto por', assumido: 'Assumido por', devolvido: 'Devolvido por', corrigido: 'Corrigido por', descartado: 'Descartado por', reaberto: 'Reaberto por' },
+      naoInformado: 'Não informado',
+      ninguem: 'Ninguém',
+      registro: function (autor, quando) { return 'Registrado por ' + autor + ' em ' + quando; },
+      subtitulo: function (n) { return n ? (n === 1 ? '1 bug a corrigir' : n + ' bugs a corrigir') : 'Nenhum bug a corrigir'; },
+      tituloVazio: 'Informe o título.',
+      gravidadeVazia: 'Escolha a gravidade.',
+      descricaoVazia: 'Descreva o problema.',
+      motivoVazio: 'Escreva o motivo do descarte.',
+      relatorNenhum: 'Nenhum militar encontrado.',
+      nenhumAberto: 'Nenhum bug aberto ou em correção.',
+      relatorFalha: 'Não foi possível carregar os militares.',
+      confirmarCorrigido: 'Marcar este bug como corrigido? As mensagens ligadas passam para Resolvido e quem relatou recebe um aviso.',
+      confirmarDescartar: 'Descartar este bug? Ele sai da lista de abertos e ninguém recebe aviso.',
+      botaoCorrigido: 'Marcar corrigido',
+      botaoDescartar: 'Descartar'
+    },
+
     /* cadastro de usuário (Novo usuário) */
     cadastro: {
       nomeVazio: 'Preencha o nome completo',

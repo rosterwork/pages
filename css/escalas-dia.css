@@ -3,21 +3,45 @@
    A árvore vem do geral-arvore-unidades; as caixas por posto e as
    linhas de militar reusam grupo-caixa (geral-painel.css) e
    escala-distribuicao-* (escalas-painel.css). Aqui só o bloco
-   clicável da unidade (abre o painel do dia).
+   clicável da unidade (abre o painel do dia). Padrão de blocos
+   (MANUAL §11): a unidade é um bloco cinza arredondado e cada posto
+   um bloquinho branco dentro dele.
    Montagem: js/escalas-dia.js
    ============================================================ */
 .escala-dia-unidade {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
   max-width: 640px;
-  padding: 8px;
+  padding: 4px;
   border-radius: var(--raio-medio);
+  background-color: var(--fundo-pagina);
   cursor: pointer;
+}
+
+/* cada posto = bloquinho branco; a caixa vermelha "Sem função definida" segue com a sua cor */
+.escala-dia-unidade .grupo-caixa {
+  border-radius: var(--raio-pequeno);
+}
+
+.escala-dia-unidade .grupo-caixa:not(.grupo-caixa--erro) {
+  border: none;
+  background-color: var(--fundo-superficie);
+  box-shadow: var(--sombra-bloco);
   transition: background-color 0.15s ease;
 }
 
-.escala-dia-unidade:hover { background-color: var(--fundo-suave); }
+/* passar o mouse clareia os bloquinhos; o painel aberto (o escalas-painel marca com a mesma classe
+   das células) os escurece, e o bloco da unidade fica no seu cinza */
+.escala-dia-unidade:hover .grupo-caixa:not(.grupo-caixa--erro) {
+  background-color: var(--fundo-suave);
+}
 
-/* realce do painel aberto (o escalas-painel marca com a mesma classe das células) */
-.escala-dia-unidade.escala-mes-celula--selecionada { background-color: var(--fundo-medio); }
+.escala-dia-unidade.escala-mes-celula--selecionada,
+.escala-dia-unidade.escala-mes-celula--selecionada:hover {
+  background-color: var(--fundo-pagina);
+}
+
+.escala-dia-unidade.escala-mes-celula--selecionada .grupo-caixa:not(.grupo-caixa--erro) {
+  background-color: var(--fundo-medio);
+}

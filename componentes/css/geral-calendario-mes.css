@@ -5,6 +5,8 @@
    esquerdo; o conteúdo dentro de cada dia é de quem usa.
    Variante --continuo (diasPorLinha): N colunas (custom property
    --calendario-colunas), sem cabeçalho, sigla + número em cada dia.
+   Variante --unidades (unidadesPorDia): o dia em bloco cinza e as
+   unidades alinhadas por linha (custom property --calendario-unidades).
    Componente compartilhado (Escala e Extrajornada).
    O z-index 2 é o empilhamento interno do sticky (exceção à
    escala 10/20/30/40; ver MANUAL §8). Montagem:
@@ -147,4 +149,62 @@
 
 .geral-calendario-mes--continuo .geral-calendario-mes-dia--fora .geral-calendario-mes-sigla {
   color: var(--texto-debil);
+}
+
+/* ---------- variante com unidades (unidadesPorDia): padrão de blocos (MANUAL §11) ---------- */
+/* o cabeçalho segue as colunas dos dias (mesmo vão e margem); o fundo fica no container, que cresce
+   até a largura mínima das colunas para cobrir também os vãos ao rolar na horizontal */
+.geral-calendario-mes--unidades .geral-calendario-mes-cabecalho {
+  column-gap: 8px;
+  min-width: min-content;
+  padding: 0 8px;
+  background-color: var(--fundo-superficie);
+}
+
+.geral-calendario-mes--unidades .geral-calendario-mes-cabecalho-dia {
+  border-bottom: none;
+}
+
+.geral-calendario-mes--unidades .geral-calendario-mes-grade {
+  gap: 8px;
+  padding: 0 8px 8px;
+}
+
+.geral-calendario-mes--continuo.geral-calendario-mes--unidades .geral-calendario-mes-grade {
+  padding-top: 8px;
+}
+
+/* cada linha do calendário = a faixa do número + uma linha por unidade; cada dia ocupa todas elas como
+   subgrade, então o bloco de cada unidade começa na mesma altura nos dias da linha e o mais alto define
+   a altura dos outros (cada linha se ajusta sozinha) */
+.geral-calendario-mes--unidades .geral-calendario-mes-semana {
+  grid-template-rows: auto repeat(var(--calendario-unidades, 1), auto);
+  column-gap: 8px;
+  row-gap: 4px;
+}
+
+/* o dia = bloco cinza arredondado; quem usa pinta cada unidade como um bloquinho branco dentro dele */
+.geral-calendario-mes--unidades .geral-calendario-mes-dia {
+  grid-row: 1 / -1;
+  display: grid;
+  grid-template-rows: subgrid;
+  padding: 4px;
+  border: none;
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-pagina);
+}
+
+.geral-calendario-mes--unidades .geral-calendario-mes-dia--fora {
+  background-color: var(--fundo-suave);
+}
+
+/* a faixa do número continua grudando no topo, agora no cinza do bloco e sem a linha embaixo */
+.geral-calendario-mes--unidades .geral-calendario-mes-dia-topo {
+  padding: 0 4px;
+  background-color: var(--fundo-pagina);
+  border-bottom: none;
+}
+
+.geral-calendario-mes--unidades .geral-calendario-mes-dia--fora .geral-calendario-mes-dia-topo {
+  background-color: var(--fundo-suave);
 }

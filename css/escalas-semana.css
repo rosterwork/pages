@@ -4,7 +4,9 @@
    Coluna da unidade fixa à esquerda e cabeçalho dos dias fixo no
    topo. As células dos dias reusam `.escala-mes-celula` (miolo =
    componente escalas-celula.js), então aqui só entram a moldura da
-   grade e a coluna/​cabeçalho próprios. Os z-index 1–3 são o
+   grade e a coluna/​cabeçalho próprios. Padrão de blocos (MANUAL
+   §11): cada unidade é uma faixa cinza arredondada e cada dia um
+   bloquinho branco, sem linhas. Os z-index 1–3 são o
    empilhamento interno do sticky (exceção 10/20/30/40; MANUAL §8).
    Montagem: js/escalas-semana.js
    ============================================================ */
@@ -17,25 +19,41 @@
   position: relative;
 }
 
-/* larguras: coluna da unidade (fixa) + 7 dias que crescem para preencher */
+/* larguras: coluna da unidade (fixa) + 7 dias que crescem para preencher; as linhas empilham
+   com 8px entre elas, e a grade cresce até a largura mínima das colunas (as faixas cobrem
+   todas as células ao rolar na horizontal) */
 .escala-semana-grade {
   --col-unidade: 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: min-content;
+  padding: 0 8px 8px;
 }
 
 /* cada linha é uma grade própria com as mesmas colunas — por isso alinham */
 .escala-semana-linha {
   display: grid;
   grid-template-columns: var(--col-unidade) repeat(7, minmax(168px, 1fr));
+  column-gap: 4px;
+}
+
+/* a unidade = faixa cinza arredondada com os dias (bloquinhos) dentro */
+.escala-semana-linha:not(.escala-semana-cabecalho) {
+  padding: 4px;
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-pagina);
 }
 
 /* ---------- cabeçalho dos dias, fixo no topo ---------- */
+/* sem linhas, no branco da área; a margem de 4px casa as colunas com as das faixas */
 .escala-semana-cabecalho {
   position: sticky;
   top: 0;
   z-index: 2;
   min-height: 32px;
-  background-color: var(--fundo-suave);
-  border-bottom: 1px solid var(--borda);
+  padding: 0 4px;
+  background-color: var(--fundo-superficie);
 }
 
 /* canto (cruzamento unidade × dias) acima de tudo */
@@ -43,8 +61,7 @@
   position: sticky;
   left: 0;
   z-index: 3;
-  background-color: var(--fundo-suave);
-  border-right: 1px solid var(--borda);
+  background-color: var(--fundo-superficie);
 }
 
 .escala-semana-dia {
@@ -54,7 +71,6 @@
   gap: 4px;
   min-height: 32px;
   padding: 4px 2px;
-  border-left: 1px solid var(--borda);
 }
 
 .escala-semana-dia-semana {
@@ -87,6 +103,7 @@
 .escala-semana-dia--fds { background-color: var(--fundo-suave); }
 
 /* ---------- coluna da unidade (fixa à esquerda) ---------- */
+/* fundo opaco = o da faixa (cobre as células ao rolar na horizontal) */
 .escala-semana-unidade {
   position: sticky;
   left: 0;
@@ -96,10 +113,8 @@
   justify-content: center;
   gap: 2px;
   min-width: 0;
-  padding: 8px 12px;
-  background-color: var(--fundo-superficie);
-  border-right: 1px solid var(--borda);
-  border-bottom: 1px solid var(--borda);
+  padding: 4px 8px;
+  background-color: var(--fundo-pagina);
 }
 
 .escala-semana-unidade-nome {

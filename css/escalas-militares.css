@@ -3,7 +3,9 @@
    Grade: militares nas linhas, dias da quinzena nas colunas.
    Cada UNIDADE selecionada vira uma linha-título (sticky) que
    recolhe/expande seus militares. Coluna do militar fixa à
-   esquerda e cabeçalho dos dias fixo no topo.
+   esquerda e cabeçalho dos dias fixo no topo. Padrão de blocos
+   (MANUAL §11): cada unidade é um bloco cinza arredondado com o
+   título em cima e os militares numa tabela branca dentro.
    Os z-index 1–6 são o empilhamento interno do sticky desta
    grade (exceção à escala 10/20/30/40; ver MANUAL §8).
    Dados: js/escalas-dados.js · montagem: js/escalas-militares.js
@@ -18,10 +20,13 @@
 }
 
 /* larguras: coluna do militar (fixa) + os 14 dias da quinzena, que crescem para preencher.
-   Todas as linhas usam a mesma grade (via --mil-colunas), por isso as colunas alinham. */
+   Todas as linhas usam a mesma grade (via --mil-colunas), por isso as colunas alinham. A grade
+   cresce até a largura mínima das colunas (os blocos cobrem todas as células ao rolar na horizontal) */
 .escala-mil-grade {
   --col-militar: 216px;
   --mil-colunas: var(--col-militar) repeat(14, minmax(60px, 1fr));
+  min-width: min-content;
+  padding: 0 8px 8px;
 }
 
 .escala-mil-linha {
@@ -30,13 +35,14 @@
 }
 
 /* ---------- cabeçalho dos dias, fixo no topo ---------- */
+/* sem linhas, no branco da área; a margem de 4px casa as colunas com as da tabela dos blocos */
 .escala-mil-cabecalho {
   position: sticky;
   top: 0;
   z-index: 4;
   min-height: 32px;
-  background-color: var(--fundo-suave);
-  border-bottom: 1px solid var(--borda);
+  padding: 0 4px;
+  background-color: var(--fundo-superficie);
 }
 
 /* canto (cruzamento militar × dias) acima de tudo */
@@ -44,8 +50,7 @@
   position: sticky;
   left: 0;
   z-index: 6;
-  background-color: var(--fundo-suave);
-  border-right: 1px solid var(--borda);
+  background-color: var(--fundo-superficie);
 }
 
 .escala-mil-dia {
@@ -55,7 +60,6 @@
   gap: 4px;
   min-height: 32px;
   padding: 4px 2px;
-  border-left: 1px solid var(--borda);
 }
 
 .escala-mil-dia-semana {
@@ -88,15 +92,32 @@
 .escala-mil-dia--fds { background-color: var(--fundo-suave); }
 .escala-mil-celula--fds { background-color: var(--fundo-suave); }
 
+/* ---------- a unidade = bloco cinza arredondado (título em cima + tabela branca dentro) ---------- */
+.escala-mil-unidade {
+  margin-top: 8px;
+  padding: 0 4px 4px;
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-pagina);
+}
+
+/* tabela dos militares = bloquinho branco; as linhas da tabela continuam por dentro. overflow: clip
+   recorta os cantos sem virar área de rolagem (a coluna do militar segue grudando à esquerda) */
+.escala-mil-unidade-corpo {
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-superficie);
+  box-shadow: var(--sombra-bloco);
+  overflow: clip;
+}
+
 /* ---------- linha-título da unidade (recolhe/expande) ---------- */
-/* é uma linha da grade (estica e alinha com as colunas); o clicável é o botão da 1ª coluna */
+/* é uma linha da grade (estica e alinha com as colunas); o clicável é o botão da 1ª coluna.
+   Fundo opaco = o cinza do bloco (cobre os militares que passam por baixo ao rolar) */
 .escala-mil-unidade-titulo {
   position: sticky;
   top: 32px;   /* logo abaixo do cabeçalho dos dias */
   z-index: 3;
   min-height: 28px;
-  background-color: var(--fundo-medio);
-  border-bottom: 1px solid var(--borda);
+  background-color: var(--fundo-pagina);
 }
 
 /* botão do título na 1ª coluna, fixo à esquerda na rolagem horizontal */
@@ -110,7 +131,7 @@
   min-height: 28px;
   padding: 0 8px;
   border: none;
-  background-color: var(--fundo-medio);
+  background-color: var(--fundo-pagina);
   font: inherit;
   color: inherit;
   cursor: pointer;
@@ -315,19 +336,18 @@
   padding: 0 8px;
   background-color: var(--fundo-suave);
   border-right: 1px solid var(--borda);
-  border-bottom: 1px solid var(--borda);
   font-size: 11px;
   font-weight: 600;
   color: var(--texto-suave);
 }
 
+/* a linha de totais é a última da tabela: sem linha embaixo (a borda é a do bloquinho) */
 .escala-mil-total-valor {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 24px;
   border-left: 1px solid var(--borda);
-  border-bottom: 1px solid var(--borda);
   font-size: 11px;
   font-weight: 700;
   color: var(--texto-suave);
