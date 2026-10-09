@@ -131,14 +131,18 @@
         </span>
       </span>
     </button>
-    <span class="dropdown distribuicao-modelo-menu">
-      <button type="button" class="botao botao--icone botao--pequeno distribuicao-modelo-menu-gatilho" aria-label="Opções do modelo">
-        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-tres-pontos.svg#icone-tres-pontos"/></svg>
-      </button>
-      <div class="dropdown-menu">
-        <button type="button" class="dropdown-item" data-acao="editar">Editar</button>
-        <button type="button" class="dropdown-item dropdown-item--perigo" data-acao="excluir">Excluir</button>
-      </div>
+    <!-- ações da linha (só admin): a dica fica no span, que recebe o mouse também com o botão inativo -->
+    <span class="distribuicao-modelo-acoes">
+      <span class="distribuicao-modelo-acao" data-dica="Editar">
+        <button type="button" class="botao botao--icone botao--pequeno distribuicao-modelo-editar" aria-label="Editar modelo">
+          <svg class="icone" width="15" height="15" aria-hidden="true"><use href="icones/icone-editar.svg#icone-editar"/></svg>
+        </button>
+      </span>
+      <span class="distribuicao-modelo-acao" data-dica="Excluir">
+        <button type="button" class="botao botao--icone botao--pequeno distribuicao-modelo-excluir" aria-label="Excluir modelo">
+          <svg class="icone" width="15" height="15" aria-hidden="true"><use href="icones/icone-lixeira.svg#icone-lixeira"/></svg>
+        </button>
+      </span>
     </span>
   </div>
 </template>

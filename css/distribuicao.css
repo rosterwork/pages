@@ -34,13 +34,34 @@
   background: transparent;
   cursor: pointer;
 }
-.distribuicao-modelo-menu { flex-shrink: 0; }
-.distribuicao-modelo-menu-gatilho {
-  opacity: 0;
-  transition: background-color 0.15s ease;
+/* ações da linha (lápis e lixeira, só admin): sempre visíveis e discretas; fortes com o mouse na
+   linha ou o foco do teclado; a lixeira fica vermelha com o mouse. Inativas: apagadas, sem caixa,
+   e o mouse passa ao span de fora, que tem a dica do motivo */
+.distribuicao-modelo-acoes {
+  flex-shrink: 0;
+  display: flex;
+  gap: 4px;
 }
-.distribuicao-modelo:hover .distribuicao-modelo-menu-gatilho,
-.lista-item--ativo .distribuicao-modelo-menu-gatilho { opacity: 1; }
+.distribuicao-modelo-acao { display: inline-flex; }
+.distribuicao-modelo-acoes .botao--icone { color: var(--texto-fraco); }
+.distribuicao-modelo:hover .distribuicao-modelo-acoes .botao--icone:not(:disabled),
+.distribuicao-modelo-acoes .botao--icone:focus-visible { color: var(--texto-forte); }
+.distribuicao-modelo:hover .distribuicao-modelo-acoes .distribuicao-modelo-excluir:not(:disabled):hover { color: var(--erro); }
+.distribuicao-modelo-acoes .botao--icone:disabled {
+  background-color: transparent;
+  border-color: transparent;
+  color: var(--texto-debil);
+  pointer-events: none;
+}
+/* a dica das ações abre embaixo e alinhada à direita (em cima e centrada, a lista do painel a cortaria) */
+.distribuicao-modelo-acoes .distribuicao-modelo-acao[data-dica]::after {
+  top: calc(100% + 4px);
+  bottom: auto;
+  left: auto;
+  right: 0;
+  transform: none;
+  width: max-content;
+}
 
 .distribuicao-modelo-status {
   flex: 0 0 22px;

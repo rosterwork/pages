@@ -414,6 +414,9 @@
       falhaSalvar: 'Não foi possível salvar. Tente de novo.',
       composicaoVazia: 'Defina pelo menos um militar.',
       modeloJaExiste: function (unidade) { return unidade + ' já tem um modelo com essa composição. Ele foi aberto.'; },
+      /* dicas do lápis e da lixeira da linha do modelo, quando inativos */
+      periodoSoLeitura: 'Período encerrado, só leitura.',
+      modeloEmEdicao: 'Este modelo já está em edição.',
       excluirModelo: 'Excluir este modelo de distribuição? As vagas que ele define serão perdidas.',
       abaixoMinimo: function (unidade, posto, pessoas, minimo) { return unidade + ': efetivo abaixo do mínimo em ' + posto + ' (' + pessoas + ' de ' + minimo + ')'; },
       salvarImpacto: 'Salvar este modelo recalcula as escalas já distribuídas que usam esta composição. Continuar?',

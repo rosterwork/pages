@@ -12,6 +12,7 @@
   var modelos = [];      /* retorno de dist_listar_modelos (cada modelo tem uma unidade) */
   var unidadeSel = null; /* unidade do filtro do painel: os modelos dela aparecem na lista */
   var selId = null;      /* id_grupo_completo selecionado */
+  var emEdicaoId = null; /* modelo aberto no Editar (o lápis dele fica inativo) */
   var seqCarregar = 0;   /* token da lista: ignora resposta antiga ao trocar de unidade rápido */
 
 
@@ -190,18 +191,43 @@
       if (m.id_grupo_completo === selId) linha.classList.add('lista-item--ativo');
       var area = linha.querySelector('.distribuicao-modelo-area');
       if (area) area.addEventListener('click', function () { pedirSaida(function () { selecionar(m.id_grupo_completo); }); });
-      var menu = linha.querySelector('.distribuicao-modelo-menu');
-      if (menu) {
-        /* editar/excluir: só admin, e não num período que já terminou (só leitura) */
-        if (RosterWork.sessao.ehAdmin() && !RosterWork.distribuicaoPeriodos.somenteLeitura()) {
-          var itens = menu.querySelectorAll('.dropdown-item');
-          if (itens[0]) itens[0].addEventListener('click', function () { pedirSaida(function () { editarModelo(m.id_grupo_completo); }); });
-          if (itens[1]) itens[1].addEventListener('click', function () { pedirSaida(function () { if (RosterWork.distribuicaoCriar) RosterWork.distribuicaoCriar.excluir(m.id_grupo_completo); }); });
-        } else {
-          menu.classList.add('oculto');
-        }
-      }
+      ligarAcoes(linha, m);
       lista.appendChild(linha);
+    });
+    marcarEmEdicao();
+  }
+
+  /* lápis (editar) e lixeira (excluir) da linha: só admin; inativos num período que já terminou */
+  function ligarAcoes(linha, m) {
+    var acoes = linha.querySelector('.distribuicao-modelo-acoes');
+    if (!acoes) return;
+    if (!RosterWork.sessao.ehAdmin()) { acoes.classList.add('oculto'); return; }
+    var editar = acoes.querySelector('.distribuicao-modelo-editar');
+    var excluir = acoes.querySelector('.distribuicao-modelo-excluir');
+    if (RosterWork.distribuicaoPeriodos.somenteLeitura()) {
+      inativar(editar, RosterWork.mensagens.distribuicao.periodoSoLeitura);
+      inativar(excluir, RosterWork.mensagens.distribuicao.periodoSoLeitura);
+      return;
+    }
+    editar.addEventListener('click', function () { pedirSaida(function () { editarModelo(m.id_grupo_completo); }); });
+    excluir.addEventListener('click', function () { pedirSaida(function () { if (RosterWork.distribuicaoCriar) RosterWork.distribuicaoCriar.excluir(m.id_grupo_completo); }); });
+  }
+
+  /* botão da linha inativo (ou de volta a ativo, com motivo null): a dica do span de fora diz o motivo */
+  function inativar(botao, motivo) {
+    var acao = botao && botao.parentNode;
+    if (!acao) return;
+    if (!acao.dataset.dicaPadrao) acao.dataset.dicaPadrao = acao.getAttribute('data-dica') || '';
+    botao.disabled = !!motivo;
+    acao.setAttribute('data-dica', motivo || acao.dataset.dicaPadrao);
+  }
+
+  /* o lápis do modelo que está aberto no Editar fica inativo (os outros voltam a ativos) */
+  function marcarEmEdicao() {
+    if (RosterWork.distribuicaoPeriodos.somenteLeitura()) return;
+    Array.prototype.forEach.call(document.querySelectorAll('#distribuicao-lista-modelos .distribuicao-modelo'), function (linha) {
+      var editando = !!emEdicaoId && linha.getAttribute('data-modelo-id') === emEdicaoId;
+      inativar(linha.querySelector('.distribuicao-modelo-editar'), editando ? RosterWork.mensagens.distribuicao.modeloEmEdicao : null);
     });
   }
 
@@ -241,7 +267,9 @@
   /* ---- corpo: vagas do modelo selecionado ---- */
   function selecionar(id) {
     selId = id;
+    emEdicaoId = null;
     marcarAtivo();
+    marcarEmEdicao();
     if (RosterWork.distribuicaoEditar && RosterWork.distribuicaoEditar.mostrarHistorico) RosterWork.distribuicaoEditar.mostrarHistorico(false);   /* Ver: sem desfazer/refazer */
     carregandoEm(document.getElementById('distribuicao-corpo'));
     RosterWork.distribuicaoDados.lerModelo(id, RosterWork.distribuicaoPeriodos.data()).then(function (dados) {
@@ -272,7 +300,7 @@
     return itens;
   }
 
-  /* admin: "Editar" no menu ⋯ abre o modo de edição */
+  /* admin: o lápis da linha abre o modo de edição */
   function editarModelo(id) {
     selId = id;
     marcarAtivo();
@@ -282,6 +310,8 @@
       if (!dados) { erroCorpo(); return; }     /* RPC falhou */
       var m = modelos.filter(function (x) { return x.id_grupo_completo === id; })[0];
       if (RosterWork.distribuicaoEditar) RosterWork.distribuicaoEditar.abrir(m, dados);
+      emEdicaoId = id;
+      marcarEmEdicao();
     }).catch(erroCorpo);
   }
 
@@ -573,7 +603,9 @@
   /* tira a seleção da lista (o Novo modelo ocupa o corpo) */
   function limparSelecao() {
     selId = null;
+    emEdicaoId = null;
     marcarAtivo();
+    marcarEmEdicao();
     if (RosterWork.distribuicaoEditar && RosterWork.distribuicaoEditar.mostrarHistorico) RosterWork.distribuicaoEditar.mostrarHistorico(false);
   }
 
@@ -588,6 +620,7 @@
     if (unidadeId != null) unidadeSel = unidadeId;
     if (unidadeSel == null || !unidadeDoGrupo(unidadeSel)) unidadeSel = g.unidades[0].unidade_id;
     selId = null;
+    emEdicaoId = null;
     /* a lista (re)carregou: não há edição aberta → descarta estado obsoleto do editor (sujo, pilhas) */
     if (RosterWork.distribuicaoEditar && RosterWork.distribuicaoEditar.descartar) RosterWork.distribuicaoEditar.descartar();
     limparCorpo();
