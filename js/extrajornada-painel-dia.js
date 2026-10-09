@@ -258,7 +258,9 @@
       if (!t || !t.closest) return;
       /* não rouba o clique dos controles in-cell (candidatos/vagas/+/bolinhas) nem de formulários */
       if (t.closest('button, input, .dropdown, .extra-vaga')) return;
-      var cel = t.closest('.escala-mes-celula');
+      /* no Calendário, o bloquinho inteiro da unidade (nome incluso) vale como a célula que está dentro dele */
+      var alvo = t.closest('.escala-mes-celula, .extra-calendario-unidade');
+      var cel = alvo && alvo.classList.contains('extra-calendario-unidade') ? alvo.querySelector('.escala-mes-celula') : alvo;
       if (cel && cel.dataset.unidadeId && cel.dataset.iso) abrir(cel);
     });
   }

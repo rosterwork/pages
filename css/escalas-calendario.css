@@ -9,7 +9,8 @@
    ============================================================ */
 
 /* um bloquinho branco por unidade sobre o cinza do dia (padrão de blocos, MANUAL §11): a separação é
-   o fundo, sem linhas. Passar o mouse, a seleção e a busca valem para o bloquinho inteiro */
+   o fundo, sem linhas. O clique, passar o mouse, a seleção e a busca valem para o bloquinho inteiro
+   (nome da unidade e sobra do fim inclusos; o clique abre a célula de dentro, escalas-painel.js) */
 .escala-calendario-unidade {
   display: flex;
   flex-direction: column;
@@ -18,10 +19,13 @@
   border-radius: var(--raio-pequeno);
   background-color: var(--fundo-superficie);
   box-shadow: var(--sombra-bloco);
+  cursor: pointer;
   transition: background-color 0.15s ease;
 }
 
-.escala-calendario-unidade:has(.escala-mes-celula:hover) {
+/* o "fora do turno" da célula sobe um tom junto, para não sumir no fundo do hover */
+.escala-calendario-unidade:hover {
+  --celula-fundo-fora: var(--fundo-medio);
   background-color: var(--fundo-suave);
 }
 

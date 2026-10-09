@@ -886,8 +886,10 @@
   function ligar(conteudo) {
     if (!conteudo) return;
     conteudo.addEventListener('click', function (evento) {
-      /* célula da grade OU bloco marcado (ex.: a unidade do modo Dia em árvore) */
-      var celula = evento.target.closest ? evento.target.closest('.escala-mes-celula, [data-abre-dia]') : null;
+      /* célula da grade OU bloco marcado (ex.: a unidade do modo Dia em árvore); no Calendário (Mês e
+         Colunas → Dias), o bloquinho inteiro da unidade (nome incluso) vale como a célula que está dentro dele */
+      var alvo = evento.target.closest ? evento.target.closest('.escala-mes-celula, [data-abre-dia], .escala-calendario-unidade') : null;
+      var celula = alvo && alvo.classList.contains('escala-calendario-unidade') ? alvo.querySelector('.escala-mes-celula') : alvo;
       if (celula) abrirParaCelula(celula);
     });
     if (!remarcarLigado) {

@@ -688,7 +688,8 @@
 
 /* ---------- modo Calendário (grade de mês; reusa o componente geral-calendario-mes, variante --unidades) ---------- */
 /* um bloquinho branco por unidade sobre o cinza do dia, sem linhas (padrão de blocos, espelha a Escala). Sem
-   realce de hover (a cor é a preferência); a seleção, a preferência e a busca valem para o bloquinho inteiro */
+   realce de hover (a cor é a preferência); o clique, a seleção, a preferência e a busca valem para o bloquinho
+   inteiro (nome da unidade incluso; o clique abre a célula de dentro, extrajornada-painel-dia.js) */
 .extra-calendario-unidade {
   display: flex;
   flex-direction: column;
@@ -697,6 +698,7 @@
   border-radius: var(--raio-pequeno);
   background-color: var(--fundo-superficie);
   box-shadow: var(--sombra-bloco);
+  cursor: pointer;
 }
 .extra-calendario-unidade:has(.escala-mes-celula--selecionada) { background-color: var(--fundo-medio); }
 .extra-calendario-unidade:has(.escala-mes-celula--pref-quer) { background-color: var(--sucesso-fundo); }
