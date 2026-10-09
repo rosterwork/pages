@@ -14,7 +14,7 @@
   window.RosterWork = window.RosterWork || {};
 
   var DIAS_ABREV = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
-  var maxGlobalAtual = 0;   // pico de cobertura da renderização atual (reusado no refresh de uma célula)
+  var maxPorUnidadeAtual = {};   // pico de cobertura de cada unidade na renderização atual (reusado no refresh de uma célula)
   var reqSeq = 0;           // token de requisição: ignora resposta antiga quando outra render começou
 
 
@@ -104,8 +104,9 @@
       grade.appendChild(cab);
 
       /* pico global de cobertura (escala comum a todos os gráficos da semana) */
-      var maxGlobal = RosterWork.escalasCelula ? RosterWork.escalasCelula.calcularMaxGlobal(cobertura, ids) : 0;
-      maxGlobalAtual = maxGlobal;
+      /* pico de cada unidade na semana (a régua dos gráficos da unidade) */
+      var maxPorUnidade = RosterWork.escalasCelula ? RosterWork.escalasCelula.calcularMaxPorUnidade(cobertura, ids) : {};
+      maxPorUnidadeAtual = maxPorUnidade;
 
       /* uma linha por unidade */
       colunas.forEach(function (c) {
@@ -122,7 +123,7 @@
           var pessoas = (dados[c.id] && dados[c.id][info.iso]) || [];
           var cobDia = (cobertura[c.id] && cobertura[c.id][info.iso]) || null;
           var erroDia = (erro[c.id] && erro[c.id][info.iso]) || null;
-          if (RosterWork.escalasCelula) RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxGlobal);
+          if (RosterWork.escalasCelula) RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxPorUnidade[c.id]);
           linha.appendChild(celula);
         });
         grade.appendChild(linha);
@@ -149,7 +150,7 @@
       var cobDia = (r.cobertura[unidadeId] && r.cobertura[unidadeId][iso]) || null;
       var erroDia = (r.erro[unidadeId] && r.erro[unidadeId][iso]) || null;
       var pessoas = (r.militares[unidadeId] && r.militares[unidadeId][iso]) || [];
-      RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxGlobalAtual);
+      RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxPorUnidadeAtual[unidadeId]);
       RosterWork.escalasCelula.desenharGraficos(celula);
     }).catch(function () {});   // refresh de 1 célula falhou: mantém a célula atual (o salvamento já avisou)
   }

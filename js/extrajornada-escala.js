@@ -28,7 +28,7 @@
   var coberturas = {};       // cobertura (info) de cada célula visível, p/ repintar só os indicadores { 'uid|iso': info }
   var ensaio = {};           // estado pós-motor por célula { 'uid|iso': { antes:{cobertura,erro,avisos}, depois:{cobertura,erro,avisos} } } — antes=base SEM extra, depois=COM extras
   var timersEnsaio = {};     // debounce do ensaio por dia { iso: timer }
-  var escalaAplicada = 0;    // pico (max) aplicado a TODAS as barras — inclui os extras; recalculado a cada mudança
+  var escalaAplicada = {};   // pico (max) aplicado às barras de cada unidade { uid: pico } — inclui os extras; recalculado a cada mudança
   var buscaCtrl = null;      // controle da busca compartilhada (geral-busca)
   var buscaTermo = '';       // termo atual (nome/CPF/RG); vazio = sem busca
   var buscaModo = 'marcar';  // 'marcar' (realça o candidato) | 'filtrar' (esconde quem não casa)
@@ -114,9 +114,9 @@
     if (!el.cal || !RW.escalasMes) return;
     coberturas = {};   // a passada de renderização repovoa (sobreporCelula guarda a cobertura de cada célula)
     ensaio = {};   // o ensaio de cada dia COM extra repovoa (analisarDiasComExtra, após o render)
-    escalaAplicada = 0;   // recalculada no aoTerminar (com as coberturas de todas as células já guardadas)
+    escalaAplicada = {};   // recalculada no aoTerminar (com as coberturas de todas as células já guardadas)
     RW.escalasMes.renderizar(el.cal, { colunas: colunasSelecionadas(), dataRef: comp, aoCelula: sobreporCelula, soCobertura: true,
-      aoTerminar: function () { aplicarEscala(escalaGlobal()); aplicarBuscaGrade(); pintarSelecionado(); } });   // ajusta a escala + reaplica a busca + a pintura da seleção
+      aoTerminar: function () { aplicarEscala(escalaPorUnidade()); aplicarBuscaGrade(); pintarSelecionado(); } });   // ajusta a escala + reaplica a busca + a pintura da seleção
   }
   /* troca do modo da grade (Agenda ↔ Calendário): o geral-abas já trocou a aba ativa; re-renderiza e
      refaz o ensaio dos dias com extra (renderGrade zera o cache do ensaio) */
@@ -140,7 +140,7 @@
      unidade, a MESMA célula do modo Agenda (sobreporCelula). Busca a cobertura como o Agenda faz por dentro. */
   function renderGradeCalendario() {
     if (!el.cal) return;
-    coberturas = {}; ensaio = {}; escalaAplicada = 0;
+    coberturas = {}; ensaio = {}; escalaAplicada = {};
     var colunas = colunasSelecionadas();
     if (!colunas.length) { mostrarEstadoCal('Selecione uma companhia ou pelotão no seletor de unidades.'); return; }
     if (!RW.escalasDados || !RW.geralCalendarioMes || !RW.escalasCelula) { mostrarEstadoCal(RW.mensagens.escala.falhaCarregarMes); return; }
@@ -152,7 +152,7 @@
     RW.escalasDados.carregar(ids, inicio, fim).then(function (r) {
       if (!el.cal || !el.cal.isConnected || req !== calSeq) return;
       var cob = (r && r.cobertura) || {}, err = (r && r.erro) || {};
-      var maxGlobal = RW.escalasCelula.calcularMaxGlobal(cob, ids);
+      var maxPorUnidade = RW.escalasCelula.calcularMaxPorUnidade(cob, ids);   // a régua dos gráficos de cada unidade
       RW.geralCalendarioMes.renderizar(el.cal, { dataRef: comp, unidadesPorDia: colunas.length, aoDia: function (celulaDia, data, noMes) {
         if (!noMes) return;   // dia de outro mês fica só com o número apagado
         var isoDia = iso(data);
@@ -164,13 +164,13 @@
           cel.dataset.unidadeNome = c.nomePainel || c.nome; cel.dataset.unidadeCidade = c.cidade || '';
           var cobDia = (cob[c.id] && cob[c.id][isoDia]) || null;
           var errDia = (err[c.id] && err[c.id][isoDia]) || null;
-          RW.escalasCelula.preencherCelula(cel, cobDia, errDia, [], maxGlobal);
-          sobreporCelula(cel, c.id, isoDia, cobDia);
+          RW.escalasCelula.preencherCelula(cel, cobDia, errDia, [], maxPorUnidade[c.id]);
+          sobreporCelula(cel, c.id, isoDia, { cobertura: cobDia, erro: errDia, maxUnidade: maxPorUnidade[c.id] });   // o mesmo pacote que a Agenda entrega (aoCelula)
           celulaDia.appendChild(bloco);
         });
       } });
       var wrap = el.cal.querySelector('.geral-calendario-mes');
-      aplicarEscala(escalaGlobal());
+      aplicarEscala(escalaPorUnidade());
       aplicarBuscaGrade();
       pintarSelecionado();
       if (wrap && RW.escalasCelula) RW.escalasCelula.ativarGraficos(wrap);
@@ -230,34 +230,46 @@
     return arr;
   }
 
-  /* ---------- escala de altura das barras: pico global (antes + extras) do mês inteiro ---------- */
-  /* maior valor de cobertura "depois" em qualquer célula (inclui as sem extra = cobertura antes) */
-  function escalaGlobal() {
-    var m = 0;
+  /* ---------- escala de altura das barras: pico de cada unidade (antes + extras) no mês inteiro ---------- */
+  /* maior valor de cobertura "depois" de cada unidade, em qualquer célula dela (inclui as sem extra =
+     cobertura antes): { uid: pico } */
+  function escalaPorUnidade() {
+    var picos = {};
     for (var k in coberturas) {
       var info = coberturas[k]; if (!info || !info.cobertura) continue;
       var p = k.split('|'), uid = p[0], iso = p[1];
       var ens = ensaio[k];   // com ensaio, o pico usa a cobertura REAL do "depois"; senão a aproximação
       var dep = (ens && ens.depois && ens.depois.cobertura) ? ens.depois.cobertura
               : coberturaDepois(info.cobertura, (celulas[uid] && celulas[uid][iso]) || []);
-      for (var h = 0; h < dep.length; h++) { var v = Number(dep[h]) || 0; if (v > m) m = v; }
+      var pico = picos[uid] || 0;
+      for (var h = 0; h < dep.length; h++) { var v = Number(dep[h]) || 0; if (v > pico) pico = v; }
+      picos[uid] = pico;
     }
-    return m;
+    return picos;
   }
-  /* aplica um max a TODAS as barras da grade (a mesma escala p/ antes e depois; cabe o maior valor) */
-  function aplicarEscala(target) {
-    escalaAplicada = target;
-    if (!el.cal || !target) return;
-    Array.prototype.forEach.call(el.cal.querySelectorAll('.escala-mes-grafico'), function (g) { g.dataset.max = String(target); });
+  /* aplica a cada barra o pico da unidade da sua célula (a mesma escala p/ o antes e o depois da unidade;
+     cabe o maior valor). Unidade sem pico calculado fica com a régua que a célula já tem */
+  function aplicarEscala(picos) {
+    escalaAplicada = picos;
+    if (!el.cal) return;
+    Array.prototype.forEach.call(el.cal.querySelectorAll('.escala-mes-grafico'), function (g) {
+      var celula = g.closest('.escala-mes-celula');
+      var pico = celula && picos[celula.dataset.unidadeId];
+      if (pico) g.dataset.max = String(pico);
+    });
   }
-  /* recalcula o pico; se mudou, re-ajusta todas as barras e re-pinta (senão, não faz nada) */
+  function mesmosPicos(a, b) {
+    var ka = Object.keys(a), kb = Object.keys(b);
+    return ka.length === kb.length && ka.every(function (k) { return a[k] === b[k]; });
+  }
+  /* recalcula os picos; se algum mudou, re-ajusta as barras e re-pinta (senão, não faz nada) */
   function sincronizarEscala() {
-    var target = escalaGlobal();
-    if (target === escalaAplicada) return;
-    aplicarEscala(target);
+    var picos = escalaPorUnidade();
+    if (mesmosPicos(picos, escalaAplicada)) return;
+    aplicarEscala(picos);
     if (el.cal && RW.escalasCelula && RW.escalasCelula.desenharGraficos) RW.escalasCelula.desenharGraficos(el.cal);
   }
-  /* depois de mudar os blocos de uma célula: re-ajusta a escala global (re-fit se o pico mudou),
+  /* depois de mudar os blocos de uma célula: re-ajusta a escala das unidades (re-fit se um pico mudou),
      repinta os indicadores da célula e ensaia o dia no motor */
   function aposMudarCelula(celula, uid, isoDia) {
     sincronizarEscala();
@@ -291,7 +303,7 @@
     var temExtra = salvos.some(function (m) { return !m.removido; }) || (pendentes[chaveCel(uid, isoDia)] || []).length > 0;
     var ens = ensaio[chaveCel(uid, isoDia)];             // { antes, depois } do motor, ou undefined até o ensaio chegar
     var eAntes = ens && ens.antes, eDepois = ens && ens.depois;
-    var cob = info && info.cobertura, max = info && info.maxGlobal;
+    var cob = info && info.cobertura, max = info && info.maxUnidade;
 
     /* barra "antes": com ensaio vem da BASE (SEM extras) e SOBRESCREVE o ler_escala_mes — assim um erro
        CAUSADO pelo extra não aparece aqui; sem ensaio ainda, fica o real */
@@ -314,7 +326,7 @@
       if (grDepois) {
         grDepois.classList.add('escala-mes-grafico--depois');
         grDepois.dataset.cob = (eDepois && eDepois.cobertura ? eDepois.cobertura : coberturaDepois(cob, salvos)).join(',');
-        grDepois.dataset.max = String(escalaAplicada || max);   // escala global (inclui extras)
+        grDepois.dataset.max = String(escalaAplicada[uid] || max);   // escala da unidade (inclui extras)
         grDepois.dataset.erro = erroMarcas(eDepois ? eDepois.erro : info.erro);
         caixa.appendChild(grDepois);
       }
@@ -356,7 +368,7 @@
         unidades.forEach(function (u) {   // guarda antes(base) + depois(com extras) de CADA unidade do dia
           ensaio[chaveCel(u.id, isoDia)] = { antes: ant[String(u.id)] || null, depois: dep[String(u.id)] || null };
         });
-        sincronizarEscala();   // o "depois" do ensaio pode mudar o pico → reescala todas as barras
+        sincronizarEscala();   // o "depois" do ensaio pode mudar o pico da unidade → reescala as barras dela
         repintarDia(isoDia);
       });
     }, 400);

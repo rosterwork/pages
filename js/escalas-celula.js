@@ -151,12 +151,12 @@
 
   /* mini-gráfico de cobertura no topo da célula (barras por hora pintadas em <canvas>; MANUAL §11).
      Só guarda os dados; o desenho (que precisa do tamanho real) fica em pintarGrafico */
-  function montarGrafico(cobertura, maxGlobal, erro) {
-    if (maxGlobal <= 0) return null;
+  function montarGrafico(cobertura, maxUnidade, erro) {
+    if (!(maxUnidade > 0)) return null;
     var g = RosterWork.tpl('tpl-escala-mes-grafico');
     if (!g) return null;
     g.dataset.cob = cobertura.join(',');
-    g.dataset.max = maxGlobal;
+    g.dataset.max = maxUnidade;
     var marcas = '';
     for (var h = 0; h < 24; h++) {
       var e = erro && erro[h];   // 1 = sem função (vermelho), 2 = ressalva (amarelo), 0 = ok (verde)
@@ -266,11 +266,12 @@
 
   /* preenche o miolo de uma célula (unidade × dia): gráfico de cobertura + militares. Os erros
      aparecem só na cor do gráfico (o texto fica no painel do dia, ao clicar). Reaproveitada na
-     renderização e no refresh de uma célula (atualizarCelula). */
-  function preencherCelula(celula, cobDia, erroDia, pessoas, maxGlobal) {
+     renderização e no refresh de uma célula (atualizarCelula). maxUnidade = a régua do gráfico
+     (o pico da unidade da célula no período exibido; ver calcularMaxPorUnidade) */
+  function preencherCelula(celula, cobDia, erroDia, pessoas, maxUnidade) {
     celula.textContent = '';
     if (cobDia) {
-      var grafico = montarGrafico(cobDia, maxGlobal, erroDia);
+      var grafico = montarGrafico(cobDia, maxUnidade, erroDia);
       if (grafico) celula.appendChild(grafico);
     }
     (pessoas || []).forEach(function (p) {
@@ -279,16 +280,20 @@
     });
   }
 
-  /* pico de cobertura entre as unidades ids (escala comum a todos os gráficos da grade) */
-  function calcularMaxGlobal(cobertura, ids) {
-    var maxGlobal = 0;
+  /* pico de cobertura de cada unidade no período carregado: { unidadeId: pico }. É a régua dos gráficos
+     da unidade (a barra cheia = o maior nº de militares numa mesma hora): os dias da mesma unidade são
+     comparáveis entre si; cada unidade tem a sua (o nº real fica na dica) */
+  function calcularMaxPorUnidade(cobertura, ids) {
+    var porUnidade = {};
     (ids || []).forEach(function (id) {
+      var pico = 0;
       var porDiaCob = (cobertura && cobertura[id]) || {};
       Object.keys(porDiaCob).forEach(function (iso) {
-        porDiaCob[iso].forEach(function (n) { if (n > maxGlobal) maxGlobal = n; });
+        porDiaCob[iso].forEach(function (n) { if (n > pico) pico = n; });
       });
+      porUnidade[id] = pico;
     });
-    return maxGlobal;
+    return porUnidade;
   }
 
   function limparObservadores() {
@@ -314,7 +319,7 @@
 
   window.RosterWork.escalasCelula = {
     preencherCelula: preencherCelula,
-    calcularMaxGlobal: calcularMaxGlobal,
+    calcularMaxPorUnidade: calcularMaxPorUnidade,
     ativarGraficos: ativarGraficos,
     desenharGraficos: desenharGraficos,
     limparObservadores: limparObservadores

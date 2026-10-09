@@ -15,7 +15,7 @@
   window.RosterWork = window.RosterWork || {};
 
   var DIAS_ABREV = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
-  var maxGlobalAtual = 0;   // pico de cobertura da renderização atual (reusado no refresh de uma célula)
+  var maxPorUnidadeAtual = {};   // pico de cobertura de cada unidade na renderização atual (reusado no refresh de uma célula)
   var reqSeq = 0;           // token de requisição: ignora resposta antiga quando outra render começou
 
 
@@ -62,7 +62,7 @@
   }
 
   /* uma célula (unidade × dia), reusando a célula do Mês (o painel casa por .escala-mes-celula) */
-  function montarCelula(unidade, iso, dados, cobertura, erro, maxGlobal) {
+  function montarCelula(unidade, iso, dados, cobertura, erro, maxPorUnidade) {
     var celula = RosterWork.tpl('tpl-escala-mes-celula');
     celula.dataset.iso = iso;
     celula.dataset.unidadeId = unidade.id;
@@ -71,7 +71,7 @@
     var pessoas = (dados[unidade.id] && dados[unidade.id][iso]) || [];
     var cobDia = (cobertura[unidade.id] && cobertura[unidade.id][iso]) || null;
     var erroDia = (erro[unidade.id] && erro[unidade.id][iso]) || null;
-    if (RosterWork.escalasCelula) RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxGlobal);
+    if (RosterWork.escalasCelula) RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxPorUnidade[unidade.id]);
     return celula;
   }
 
@@ -125,8 +125,9 @@
       var wrap = RosterWork.tpl('tpl-escala-colunas');
       var grade = wrap.querySelector('.escala-colunas-grade');
 
-      var maxGlobal = RosterWork.escalasCelula ? RosterWork.escalasCelula.calcularMaxGlobal(cobertura, ids) : 0;
-      maxGlobalAtual = maxGlobal;
+      /* pico de cada unidade no período (a régua dos gráficos da unidade) */
+      var maxPorUnidade = RosterWork.escalasCelula ? RosterWork.escalasCelula.calcularMaxPorUnidade(cobertura, ids) : {};
+      maxPorUnidadeAtual = maxPorUnidade;
 
       /* nº de colunas da grade (as unidades) — orienta o grid-template via custom property */
       grade.style.setProperty('--n-colunas', String(colunas.length));
@@ -140,7 +141,7 @@
         var linha = RosterWork.tpl('tpl-escala-colunas-linha');
         linha.appendChild(rotuloDia(info));
         colunas.forEach(function (c) {
-          linha.appendChild(montarCelula(c, info.iso, dados, cobertura, erro, maxGlobal));
+          linha.appendChild(montarCelula(c, info.iso, dados, cobertura, erro, maxPorUnidade));
         });
         grade.appendChild(linha);
       });
@@ -166,7 +167,7 @@
       var cobDia = (r.cobertura[unidadeId] && r.cobertura[unidadeId][iso]) || null;
       var erroDia = (r.erro[unidadeId] && r.erro[unidadeId][iso]) || null;
       var pessoas = (r.militares[unidadeId] && r.militares[unidadeId][iso]) || [];
-      RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxGlobalAtual);
+      RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxPorUnidadeAtual[unidadeId]);
       RosterWork.escalasCelula.desenharGraficos(celula);
     }).catch(function () {});   // refresh de 1 célula falhou: mantém a célula atual (o salvamento já avisou)
   }

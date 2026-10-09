@@ -11,7 +11,7 @@
   window.RosterWork = window.RosterWork || {};
 
   var DIAS_ABREV = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
-  var maxGlobalAtual = 0;   // pico de cobertura da renderização atual (reusado no refresh de uma célula)
+  var maxPorUnidadeAtual = {};   // pico de cobertura de cada unidade na renderização atual (reusado no refresh de uma célula)
   var reqSeq = 0;           // token de requisição: ignora resposta antiga quando outra render começou
 
 
@@ -82,8 +82,9 @@
       grade.appendChild(cabecalho);
 
       /* pico global de cobertura (escala comum a todos os gráficos do mês) */
-      var maxGlobal = RosterWork.escalasCelula ? RosterWork.escalasCelula.calcularMaxGlobal(cobertura, ids) : 0;
-      maxGlobalAtual = maxGlobal;   // guarda p/ o refresh de uma célula (atualizarCelula)
+      /* pico de cada unidade no mês (a régua dos gráficos da unidade) */
+      var maxPorUnidade = RosterWork.escalasCelula ? RosterWork.escalasCelula.calcularMaxPorUnidade(cobertura, ids) : {};
+      maxPorUnidadeAtual = maxPorUnidade;   // guarda p/ o refresh de uma célula (atualizarCelula)
 
       /* uma linha por dia do mês */
       var hojeISO = dataISO(new Date());
@@ -108,9 +109,9 @@
           var pessoas = opcoes.soCobertura ? [] : ((dados[c.id] && dados[c.id][iso]) || []);
           var cobDia = (cobertura[c.id] && cobertura[c.id][iso]) || null;
           var erroDia = (erro[c.id] && erro[c.id][iso]) || null;
-          if (RosterWork.escalasCelula) RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxGlobal);
+          if (RosterWork.escalasCelula) RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxPorUnidade[c.id]);
           /* gancho opcional: quem reusa a grade (ex.: Extrajornada) sobrepõe algo na célula (a Escala não passa) */
-          if (opcoes.aoCelula) opcoes.aoCelula(celula, c.id, iso, { cobertura: cobDia, erro: erroDia, maxGlobal: maxGlobal });
+          if (opcoes.aoCelula) opcoes.aoCelula(celula, c.id, iso, { cobertura: cobDia, erro: erroDia, maxUnidade: maxPorUnidade[c.id] });
           linha.appendChild(celula);
         });
         grade.appendChild(linha);
@@ -128,7 +129,7 @@
 
   /* refresh de uma única célula (unidade × dia) após salvar no painel — sem re-renderizar a
      grade toda, preservando rolagem, realce e hover. Editar a distribuição não muda quem está
-     de serviço (isso vem do QUANDO, intocado), então a cobertura e o maxGlobal seguem válidos. */
+     de serviço (isso vem do QUANDO, intocado), então a cobertura e o pico da unidade seguem válidos. */
   function atualizarCelula(unidadeId, iso) {
     if (!window.RosterWork.escalasDados || !window.RosterWork.escalasCelula) return;
     var grade = document.querySelector('.escala-mes-grade');
@@ -140,7 +141,7 @@
       var cobDia = (r.cobertura[unidadeId] && r.cobertura[unidadeId][iso]) || null;
       var erroDia = (r.erro[unidadeId] && r.erro[unidadeId][iso]) || null;
       var pessoas = (r.militares[unidadeId] && r.militares[unidadeId][iso]) || [];
-      RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxGlobalAtual);
+      RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxPorUnidadeAtual[unidadeId]);
       RosterWork.escalasCelula.desenharGraficos(celula);
     }).catch(function () {});   // refresh de 1 célula falhou: mantém a célula atual (o salvamento já avisou)
   }
