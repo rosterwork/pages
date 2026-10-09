@@ -9,9 +9,8 @@
   'use strict';
   window.RosterWork = window.RosterWork || {};
 
-  var grupo = null;        /* { cia, unidades:[...] } */
-  var composicao = null;   /* unidades do modelo (of/pç), de dist_listar_modelos */
-  var estado = null;       /* { modeloId, unidades:[{unidade_id, nome, tipo, chave, postos:[{...vagas}]}] } */
+  var composicao = null;   /* a unidade do modelo (of/pç), de dist_listar_modelos */
+  var estado = null;       /* { modeloId, unidades:[{unidade_id, nome, tipo, chave, postos:[{...vagas}]}] } — uma unidade */
   var graus = [];
   var seq = 0;
   var pilhaUndo = [], pilhaRedo = [];
@@ -74,17 +73,10 @@
         unidade_id: u.unidade_id, nome: u.nome, tipo: u.tipo,
         oficiais: cu.oficiais || 0, pracas: cu.pracas || 0,
         chave: chaveUnidade({ unidade_id: u.unidade_id, oficiais: cu.oficiais, pracas: cu.pracas }),
-        postos: postos,
-        vemDe: (u.vem_de || []).map(function (r) {   /* reforços que ENTRAM nesta unidade (origem = de onde vem) */
-          return {
-            tempId: 't' + (seq++), origemUnidadeId: r.origem_unidade_id,
-            tipo_contador: r.tipo_contador, ordem: r.ordem, ordemSentido: r.ordem_sentido || null,
-            ideal: r.ideal, ideal_calc: r.ideal_calc, rodizio: !!r.rodizio
-          };
-        })
+        postos: postos
       };
     });
-    /* a chave de cada vaga (preserva compostas existentes); resolve acúmulo idSlot→tempId */
+    /* a chave de cada vaga; resolve acúmulo idSlot→tempId */
     var mapa = {};
     unidades.forEach(function (u) {
       u.postos.forEach(function (p) { p.vagas.forEach(function (v) { mapa[v.idSlot] = v.tempId; if (!v.chave) v.chave = u.chave; }); });
@@ -552,8 +544,8 @@
     });
     chipEl.addEventListener('drop', function (e) { e.preventDefault(); });
   }
-  /* ---------- escada de acúmulo: Unidade → Posto → Função ---------- */
-  /* um nó (unidade ou posto): a linha inteira expande/recolhe em sanfona */
+  /* ---------- escada de acúmulo: Posto → Função (só da unidade do modelo) ---------- */
+  /* um nó (posto): a linha inteira expande/recolhe em sanfona */
   function escadaNo(nome) {
     var no = RosterWork.tpl('tpl-distribuicao-escada-no');
     no.querySelector('.arvore-nome').textContent = nome || '';
@@ -607,34 +599,21 @@
     var menu = wrap.querySelector('.dropdown-menu');
     menu.classList.add('distribuicao-escada');
     var membros = grupoAcumulo(vg);
-    var uAlvo = unidadeDaVaga(vg);   /* a unidade da vaga atual começa aberta na escada */
+    var unidade = unidadeDaVaga(vg);   /* o acúmulo é só entre postos da própria unidade */
     var algum = false;
-    estado.unidades.forEach(function (u) {
-      var postosEls = [];
-      u.postos.forEach(function (p) {
-        var funcoes = p.vagas.filter(function (v) { return elegivelParaGrupo(membros, v); });
-        if (!funcoes.length) return;
-        var postoNo = escadaNo(p.nome || '');
-        var filhos = postoNo.querySelector('.arvore-filhos');
-        funcoes.forEach(function (v) {
-          var grupoV = grupoAcumulo(v);
-          filhos.appendChild(escadaFolha(v.nome_funcao || '', grupoV.length > 1, grupoV[0].tempId, menu, function () {
-            juntarAcumulo(membros[0], v);
-          }));
-        });
-        postosEls.push(postoNo);
-      });
-      if (!postosEls.length) return;
+    ((unidade && unidade.postos) || []).forEach(function (p) {
+      var funcoes = p.vagas.filter(function (v) { return elegivelParaGrupo(membros, v); });
+      if (!funcoes.length) return;
       algum = true;
-      var uniNo = escadaNo(u.nome || '');
-      var uniFilhos = uniNo.querySelector('.arvore-filhos');
-      postosEls.forEach(function (pn) { uniFilhos.appendChild(pn); });
-      if (u === uAlvo) {   /* a unidade da vaga atual já nasce expandida */
-        uniNo.classList.add('arvore-grupo--aberto');
-        var stAlvo = uniNo.querySelector('.arvore-seta');
-        if (stAlvo) stAlvo.setAttribute('aria-expanded', 'true');
-      }
-      menu.appendChild(uniNo);
+      var postoNo = escadaNo(p.nome || '');
+      var filhos = postoNo.querySelector('.arvore-filhos');
+      funcoes.forEach(function (v) {
+        var grupoV = grupoAcumulo(v);
+        filhos.appendChild(escadaFolha(v.nome_funcao || '', grupoV.length > 1, grupoV[0].tempId, menu, function () {
+          juntarAcumulo(membros[0], v);
+        }));
+      });
+      menu.appendChild(postoNo);
     });
     if (!algum) {
       var vazio = RosterWork.tpl('tpl-distribuicao-item');
@@ -843,152 +822,6 @@
     return el;
   }
 
-  /* ---------- "Vem de": reforço que ENTRA na unidade (militar de outra unidade concorre aqui) ----------
-     Fica na unidade que RECEBE; a coluna mostra a ORIGEM (de onde o militar sai). Antiguidade = quem sai da origem. */
-  function nomeUnidade(id) {
-    for (var i = 0; i < estado.unidades.length; i++) if (estado.unidades[i].unidade_id === id) return estado.unidades[i].nome;
-    return null;
-  }
-  /* militares que uma unidade ainda pode ENVIAR de reforço (composição − já enviados), por tipo;
-     `exceto` = reforço a desconsiderar (o que está sendo mexido). */
-  function disponiveisEnvio(unidadeId, exceto) {
-    var of = 0, pc = 0;
-    estado.unidades.forEach(function (u) { if (u.unidade_id === unidadeId) { of = u.oficiais || 0; pc = u.pracas || 0; } });
-    estado.unidades.forEach(function (d) {
-      (d.vemDe || []).forEach(function (r) {
-        if (r === exceto || r.origemUnidadeId !== unidadeId) return;
-        if (r.tipo_contador === 'Oficiais') of--; else pc--;
-      });
-    });
-    return { of: of, pc: pc };
-  }
-  /* reforços que SAEM de uma origem (em qualquer destino) — tratados como "slots de saída" do pelotão */
-  function reforcosDaOrigem(origemId) {
-    var lista = [];
-    estado.unidades.forEach(function (u) { (u.vemDe || []).forEach(function (r) { if (r.origemUnidadeId === origemId) lista.push(r); }); });
-    return lista;
-  }
-  /* compacta a antiguidade dos reforços de uma origem (sem repetir): antigos 1,2,3… · modernos 1,2… — igual às vagas */
-  function compactarReforcos(origemId) {
-    if (origemId == null) return;
-    var refs = reforcosDaOrigem(origemId);
-    var antigos = refs.filter(function (r) { return ordemComSinal(r) > 0; }).sort(function (a, b) { return ordemComSinal(a) - ordemComSinal(b); });
-    var modernos = refs.filter(function (r) { return ordemComSinal(r) < 0; }).sort(function (a, b) { return Math.abs(ordemComSinal(a)) - Math.abs(ordemComSinal(b)); });
-    antigos.forEach(function (r, i) { definirOrdem(r, 1 + i); });
-    modernos.forEach(function (r, i) { definirOrdem(r, -(1 + i)); });
-  }
-  /* aplica a antiguidade digitada num reforço: empurra os do mesmo sentido com nº ≥ e compacta (igual reordenarUnidade) */
-  function reordenarReforcos(origemId, vdInsere, novoSinal) {
-    if (novoSinal == null) { definirOrdem(vdInsere, null); compactarReforcos(origemId); return; }
-    var neg = novoSinal < 0, abs = Math.abs(novoSinal);
-    reforcosDaOrigem(origemId).forEach(function (r) {
-      if (r === vdInsere) return;
-      var n = ordemComSinal(r); if (n == null) return;
-      var mesmoSentido = neg ? (n < 0) : (n > 0); if (!mesmoSentido) return;
-      if (Math.abs(n) >= abs) definirOrdem(r, n < 0 ? n - 1 : n + 1);
-    });
-    definirOrdem(vdInsere, neg ? -abs : abs);
-    compactarReforcos(origemId);
-  }
-  function menuOrigem(menu, destino, vd) {
-    menu.textContent = '';
-    estado.unidades.forEach(function (u) {
-      if (u.unidade_id === destino.unidade_id) return;   /* a origem é sempre outra unidade */
-      var d = disponiveisEnvio(u.unidade_id, vd);
-      var temEfetivo = vd.tipo_contador === 'Oficiais' ? d.of > 0 : d.pc > 0;
-      if (!temEfetivo && vd.origemUnidadeId !== u.unidade_id) return;   /* some da lista se não tem militar desse tipo para enviar */
-      menu.appendChild(item(u.nome, vd.origemUnidadeId === u.unidade_id, function () {
-        mudar(vd, function () {
-          var antiga = vd.origemUnidadeId;
-          vd.origemUnidadeId = u.unidade_id;
-          compactarReforcos(antiga); compactarReforcos(u.unidade_id);   /* reordena a antiguidade nas duas origens */
-        });
-      }));
-    });
-  }
-  function novoVemDe(unidade) {
-    /* nasce numa origem com militar disponível (praça por padrão; senão oficial); se ninguém tem, avisa e não cria */
-    var origem = null, tipo = null, fallback = null;
-    for (var i = 0; i < estado.unidades.length; i++) {
-      var u = estado.unidades[i];
-      if (u.unidade_id === unidade.unidade_id) continue;
-      var d = disponiveisEnvio(u.unidade_id, null);
-      if (d.pc > 0) { origem = u.unidade_id; tipo = 'Pracas'; break; }
-      if (d.of > 0 && fallback == null) fallback = u.unidade_id;
-    }
-    if (origem == null && fallback != null) { origem = fallback; tipo = 'Oficiais'; }
-    if (origem == null) { RosterWork.avisar({ tipo: 'aviso', mensagem: RosterWork.mensagens.distribuicao.reforcoSemOrigem }); return; }
-    registrar();
-    unidade.vemDe.push({
-      tempId: 't' + (seq++), origemUnidadeId: origem,
-      tipo_contador: tipo, ordem: null, ordemSentido: null, ideal: null, ideal_calc: null, rodizio: false   /* nasce sem critério (igual às vagas) */
-    });
-    renderizar();
-  }
-  function removerVemDe(unidade, vd) {
-    registrar();
-    var origem = vd.origemUnidadeId;
-    unidade.vemDe = unidade.vemDe.filter(function (r) { return r !== vd; });
-    compactarReforcos(origem);   /* a antiguidade se reordena sem o que saiu */
-    renderizar();
-  }
-  function renderVemDeLinha(unidade, vd) {
-    var el = RosterWork.tpl('tpl-distribuicao-reforco-linha');
-    el.querySelector('.distribuicao-vaga-num').textContent = vd._pv;
-
-    var origemCel = el.querySelector('.distribuicao-reforco-origem');
-    var origemNome = nomeUnidade(vd.origemUnidadeId);
-    origemCel.querySelector('.distribuicao-cel-texto').textContent = origemNome || '';
-    origemCel.classList.toggle('distribuicao-cel--vazio', !origemNome);
-    menuOrigem(origemCel.querySelector('.dropdown-menu'), unidade, vd);
-
-    var perfil = el.querySelector('.distribuicao-vaga-perfil');
-    gatilho(perfil, vd.tipo_contador === 'Oficiais' ? 'Oficial' : 'Praça');
-    menuPerfil(perfil.querySelector('.dropdown-menu'), vd);
-
-    var antig = el.querySelector('.distribuicao-vaga-antig');
-    gatilho(antig, textoAntiguidade(vd), !vd.ordem);
-    menuAntiguidade(antig.querySelector('.dropdown-menu'), vd, function (s) { mudar(vd, function () { reordenarReforcos(vd.origemUnidadeId, vd, s); }); });
-
-    /* grau só quando NÃO há antiguidade (critérios alternativos de quem sai), igual às vagas */
-    var grau = el.querySelector('.distribuicao-vaga-grau');
-    if (vd.ordem) {
-      gatilho(grau, '', true);
-      bloquear(grau);
-    } else {
-      gatilho(grau, textoGrau(vd), !vd.ideal);
-      menuGrau(grau.querySelector('.dropdown-menu'), vd);
-    }
-
-    var rod = el.querySelector('.distribuicao-rod-toggle');
-    rod.classList.toggle('distribuicao-rod-toggle--on', !!vd.rodizio);
-    rod.querySelector('.icone').classList.toggle('oculto', !vd.rodizio);
-    rod.addEventListener('click', function () { mudar(vd, function () { vd.rodizio = !vd.rodizio; }); });
-
-    el.querySelector('.distribuicao-vaga-remover').addEventListener('click', function () { removerVemDe(unidade, vd); });
-    return el;
-  }
-  /* bloco "Vem de" da unidade (só quando há reforço; senão, botão discreto para criar o 1º).
-     Modelo de 1 unidade não tem de onde receber. */
-  function renderVemDe(unidade, corpoSec) {
-    if (estado.unidades.length < 2) return;
-    var maisBtn;
-    if (unidade.vemDe && unidade.vemDe.length) {
-      var bloco = RosterWork.tpl('tpl-distribuicao-reforco-bloco');
-      var linhas = bloco.querySelector('.distribuicao-vagas-linhas');
-      unidade.vemDe.forEach(function (vd) { linhas.appendChild(renderVemDeLinha(unidade, vd)); });
-      maisBtn = RosterWork.tpl('tpl-distribuicao-nova-reforco');
-      maisBtn.querySelector('.distribuicao-nova-funcao').addEventListener('click', function () { novoVemDe(unidade); });
-      bloco.querySelector('.distribuicao-posto-vagas').appendChild(maisBtn);
-      corpoSec.appendChild(bloco);
-    } else {
-      maisBtn = RosterWork.tpl('tpl-distribuicao-nova-reforco');
-      maisBtn.classList.add('distribuicao-nova-funcao-linha--solta');   /* solto: sem borda dupla com o posto acima */
-      maisBtn.querySelector('.distribuicao-nova-funcao').addEventListener('click', function () { novoVemDe(unidade); });
-      corpoSec.appendChild(maisBtn);
-    }
-  }
-
   function numerar() {
     var n = 0;
     estado.unidades.forEach(function (u) {
@@ -1000,7 +833,6 @@
           v++; vg._pv = n + '.' + v;
         });
       });
-      (u.vemDe || []).forEach(function (r, i) { r._pv = String(i + 1); });
     });
   }
 
@@ -1024,7 +856,6 @@
       var corpoSec = sec.querySelector('.distribuicao-unidade-corpo');
       var postosStatus = status.postos[u.unidade_id] || {};
       u.postos.forEach(function (p) { corpoSec.appendChild(renderPosto(u, p, postosStatus)); });
-      renderVemDe(u, corpoSec);   /* bloco "Vem de" (ou o botão discreto para criar o primeiro) */
       corpo.appendChild(sec);
     });
     atualizarRodape();
@@ -1061,7 +892,7 @@
     rodapeEl.querySelector('.distribuicao-salvar').disabled = !sujo && !ehRascunho() && !(composicao && composicao.a_revisar);
     var st = RosterWork.distribuicaoModelos.validar(unidadesComContagem());
     var itens = st.itens.length ? st.itens
-      : [{ nivel: 'ok', texto: RosterWork.mensagens.distribuicao.tudoCerto(listarNomes(grupo.unidades.map(function (u) { return u.nome; }))) }];
+      : [{ nivel: 'ok', texto: RosterWork.mensagens.distribuicao.tudoCerto((estado.unidades[0] && estado.unidades[0].nome) || '') }];
     var nivel = RosterWork.distribuicaoModelos.nivelStatus(itens);
     var unico = itens.length <= 1;
     var resumo = rodapeEl.querySelector('.distribuicao-status-resumo');
@@ -1079,11 +910,6 @@
       rod.insertBefore(lista, rodapeEl);
     }
   }
-  function listarNomes(nomes) {
-    if (nomes.length <= 1) return nomes.join('');
-    return nomes.slice(0, -1).join(', ') + ' e ' + nomes[nomes.length - 1];
-  }
-
   /* contagem para o validar — MESMA função usada no modo Ver (sincroniza os erros) */
   function unidadesComContagem() {
     var comp = {};
@@ -1095,9 +921,10 @@
   function salvar() {
     if (RosterWork.distribuicaoSalvar) RosterWork.distribuicaoSalvar.salvar(estado, unidadesComContagem());
   }
-  /* confirma o descarte de edição não salva antes de abandonar (trocar de modelo, de página, etc.);
-     sem alteração, segue direto. Ao confirmar, marca limpo para o aoSair não re-perguntar. */
-  function confirmarSaida(aoSair) {
+  /* confirma o descarte de edição não salva antes de abandonar (trocar de modelo, de unidade, de página, etc.);
+     sem alteração, segue direto. Ao confirmar, marca limpo para o aoSair não re-perguntar.
+     aoCancelar (opcional) roda quando a pessoa continua editando. */
+  function confirmarSaida(aoSair, aoCancelar) {
     /* rascunho também conta como "alteração pendente" (o modelo novo some se sair sem Salvar) */
     if (!sujo && !ehRascunho()) { aoSair(); return; }
     RosterWork.confirmar({
@@ -1105,7 +932,8 @@
       mensagem: RosterWork.mensagens.distribuicao.descartar,
       textoConfirmar: RosterWork.mensagens.botoes.descartar,
       textoCancelar: RosterWork.mensagens.botoes.continuarEditando,
-      aoConfirmar: function () { sujo = false; aoSair(); }
+      aoConfirmar: function () { sujo = false; aoSair(); },
+      aoCancelar: aoCancelar
     });
   }
   /* descarta o estado de edição sem perguntar — usado quando a lista recarrega (já passou pela confirmação) */
@@ -1121,8 +949,8 @@
   }
 
   /* ---------- API ---------- */
-  function abrir(g, modelo, dados) {
-    grupo = g; composicao = modelo;
+  function abrir(modelo, dados) {
+    composicao = modelo;
     pilhaUndo = []; pilhaRedo = []; sujo = false;
     return RosterWork.distribuicaoDados.buscarGraus().then(function (lista) {
       graus = lista || [];

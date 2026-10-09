@@ -21,7 +21,6 @@
   var celulas = {};      // extras SALVOS por unidade×dia { uid: { iso: [ {cpf,grad,nome,blocos,cnh,grau_ant,...} ] } }
   var avisos = {};       // avisos da escala resolvíveis por extra, por unidade×dia { uid: { iso: [ {tipo,onde,necessita,ideal_ant,ideal_nome,sentido} ] } }
   var candidatos = {};   // voluntários por DIA (pré-carregados) { iso: [ {cpf,grad,nome,pref,cota,colocado,fecha24,cnh,grau_ant,bloqueado,unidade_id,unidade_nome} ] }
-  var escopo = 'grupo';  // escopo das cotas do mês: 'grupo' (deslocamento, candidatos agrupados por unidade) | 'por_unidade' (só a unidade da célula)
   var pendentes = {};    // extras ESCOLHIDOS mas ainda sem bloco { 'uid|iso': [ {cpf,grad,nome} ] }
   var carregado = false;
   var cargaSeq = 0;          // token de requisição da grade: ignora resposta antiga ao trocar de mês/escopo rápido
@@ -206,7 +205,6 @@
       celulas = r.celulas || {};
       avisos = r.avisos || {};
       candidatos = r.candidatos || {};
-      escopo = r.escopo || 'grupo';
       renderGrade();
       if (RW.extrajornadaCotasPainel && RW.extrajornadaCotasPainel.atualizarContexto) RW.extrajornadaCotasPainel.atualizarContexto();   // o painel de Cotas mostra a unidade mãe (vem daqui)
       atualizarInserir();
@@ -436,13 +434,13 @@
     if (s.some(function (m) { return m.cpf === cpf && !m.removido; })) return true;   // 'removido' pendente = livre p/ recolocar
     return (pendentes[chaveCel(uid, isoDia)] || []).some(function (m) { return m.cpf === cpf; });
   }
-  /* candidatos de um balde, agrupados por pelotão (o da célula primeiro), tirando os já colocados; respeita o escopo */
+  /* candidatos de um balde, agrupados por pelotão (o da célula primeiro), tirando os já colocados;
+     nos dois escopos de cotas o extra pode tirar em outra unidade (a cota gasta é sempre a dele) */
   function candidatosBucket(uid, isoDia, pref) {
     var mapa = {};
     (candidatos[isoDia] || []).forEach(function (m) {
       if (balde(m.pref) !== pref) return;
       if (jaColocado(m.cpf, uid, isoDia)) return;
-      if (escopo !== 'grupo' && m.unidade_id !== uid) return;
       (mapa[m.unidade_id] = mapa[m.unidade_id] || { id: m.unidade_id, nome: m.unidade_nome || '', mils: [] }).mils.push(m);
     });
     var arr = Object.keys(mapa).map(function (k) { return mapa[k]; });
@@ -471,8 +469,7 @@
     candidatosBucket(uid, isoDia, sec.pref).forEach(function (g) {
       var uEl = RosterWork.tpl('tpl-extra-dia-unidade'); if (!uEl) return;
       var rot = uEl.querySelector('.extra-dia-unidade-rotulo');
-      if (escopo === 'grupo') rot.textContent = g.nome + (g.id === uid ? ' · esta unidade' : ' · deslocamento');
-      else rot.classList.add('oculto');
+      rot.textContent = RW.mensagens.extrajornada.rotuloUnidade(g.nome, g.id === uid);
       var listaEl = uEl.querySelector('.extra-dia-unidade-lista');
       g.mils.forEach(function (m) {
         var c = montarCandidato(m, uid, isoDia, celula, sec.pref);
@@ -518,7 +515,6 @@
     if (!militarSel) return;
     var ms = (candidatos[isoDia] || []).filter(function (x) { return x.cpf === militarSel; })[0];
     if (!ms) return;
-    if (escopo !== 'grupo' && ms.unidade_id !== uid) return;
     if (jaColocado(ms.cpf, uid, isoDia)) return;
     var uSel = RosterWork.tpl('tpl-extra-dia-unidade');
     if (!uSel) return;
@@ -912,7 +908,7 @@
     if (RW.escalasMes && el.cal) RW.escalasMes.limpar(el.cal);   // solta os observers dos gráficos ao sair
   }
 
-  /* recarrega a grade em silêncio (o painel de Cotas chama após salvar: o escopo/cotas mudaram → dropdown atualiza) */
+  /* recarrega a grade em silêncio (o painel de Cotas chama após salvar: as cotas mudaram → dropdown atualiza) */
   function recarregar() { return carregado ? carregar(true) : Promise.resolve(); }
 
   RW.extrajornadaEscala = { montar: montar, ativar: ativar, desativar: desativar, recarregar: recarregar,

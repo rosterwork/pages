@@ -1,9 +1,10 @@
 /* ============================================================
    DISTRIBUIÇÃO — entrada da página
    Liga as abas (Modelos/Regras), descobre o grupo (CIA + PELs) a partir
-   da seleção de unidades do cabeçalho, monta o cabeçalho de colunas do
-   painel e dispara a carga dos modelos. Reage à troca de unidades.
-   O seletor de período (distribuicao-periodos) aparece só na aba Modelos.
+   da seleção de unidades do cabeçalho, monta o filtro de unidades do
+   painel (cada unidade tem os seus modelos) e dispara a carga dos modelos.
+   Reage à troca de unidades. O seletor de período (distribuicao-periodos)
+   aparece só na aba Modelos.
    ============================================================ */
 (function () {
   'use strict';
@@ -33,14 +34,15 @@
     });
   }
 
-  /* a partir da seleção, acha a CIA/CIBM do grupo e lista CIA + PELs filhos */
+  /* a partir da seleção, acha a CIA/CIBM do grupo e lista CIA + PELs filhos;
+     `inicial` = a unidade do grupo escolhida no seletor do topo (o filtro do painel abre nela) */
   function obterGrupo(ids, mapa) {
-    var cia = null;
+    var cia = null, inicial = null;
     for (var i = 0; i < ids.length; i++) {
       var u = mapa[ids[i]];
       if (!u) continue;
-      if (u.tipo === 'PEL') { cia = mapa[u.unidade_pai_id] || null; if (cia) break; }
-      if (u.tipo === 'CIA' || u.tipo === 'CIBM') { cia = u; break; }
+      if (u.tipo === 'PEL') { cia = mapa[u.unidade_pai_id] || null; if (cia) { inicial = u.unidade_id; break; } }
+      if (u.tipo === 'CIA' || u.tipo === 'CIBM') { cia = u; inicial = u.unidade_id; break; }
     }
     if (!cia) return null;
     var pels = [];
@@ -51,28 +53,47 @@
       }
     }
     pels.sort(function (a, b) { return (a.nome || '').localeCompare(b.nome || ''); });
-    return { cia: cia, unidades: [cia].concat(pels) };
+    return { cia: cia, unidades: [cia].concat(pels), inicial: inicial };
   }
 
-  /* cabeçalho de colunas do painel: 1ª célula (alinha com o status) + uma por unidade */
-  function montarColunas(grupo) {
-    var cab = document.getElementById('distribuicao-colunas');
-    if (!cab) return;
-    cab.textContent = '';
-    var marca = RosterWork.tpl('tpl-distribuicao-coluna');
-    if (marca) { marca.classList.add('distribuicao-col--marca'); marca.textContent = ''; cab.appendChild(marca); }
-    grupo.unidades.forEach(function (u) {
-      var c = RosterWork.tpl('tpl-distribuicao-coluna');
-      if (c) { c.textContent = u.nome || ''; cab.appendChild(c); }
+  /* marca no filtro a unidade escolhida (também desfaz a marca quando a troca é cancelada) */
+  function marcarFiltro(unidadeId) {
+    var trilho = document.getElementById('distribuicao-unidades');
+    if (!trilho) return;
+    Array.prototype.forEach.call(trilho.querySelectorAll('.aba'), function (b) {
+      var ativa = Number(b.getAttribute('data-unidade')) === unidadeId;
+      b.classList.toggle('aba--ativa', ativa);
+      b.setAttribute('aria-selected', ativa ? 'true' : 'false');
     });
-    /* reserva, à direita, o espaço do botão "⋯" que cada linha de modelo tem (alinha as colunas) */
-    var menu = RosterWork.tpl('tpl-distribuicao-coluna');
-    if (menu) { menu.classList.add('distribuicao-col--menu'); menu.textContent = ''; cab.appendChild(menu); }
+  }
+
+  /* filtro do painel: a companhia e os pelotões dela, cada um com os seus modelos */
+  function montarFiltro(grupo, unidadeId) {
+    var trilho = document.getElementById('distribuicao-unidades');
+    if (!trilho) return;
+    trilho.textContent = '';
+    grupo.unidades.forEach(function (u) {
+      var b = RosterWork.tpl('tpl-distribuicao-filtro-unidade');
+      if (!b) return;
+      b.textContent = u.nome || '';
+      b.setAttribute('data-unidade', u.unidade_id);
+      trilho.appendChild(b);
+    });
+    marcarFiltro(unidadeId);
+    if (trilho.dataset.ligado) return;
+    trilho.dataset.ligado = '1';
+    trilho.addEventListener('rosterwork:aba', function (ev) {
+      var M = window.RosterWork.distribuicaoModelos;
+      var id = Number(ev.detail.aba.getAttribute('data-unidade'));
+      if (!M || id === M.unidadeSelecionada()) return;
+      /* trocar de unidade com edição aberta pede confirmação; cancelar volta a marca do filtro */
+      pedirSaida(function () { M.escolherUnidade(id); }, function () { marcarFiltro(M.unidadeSelecionada()); });
+    });
   }
 
   /* aviso (nada selecionado): limpa painel/corpo/rodapé e mostra a mensagem */
   function mostrarAviso(texto) {
-    ['distribuicao-colunas', 'distribuicao-corpo', 'distribuicao-rodape'].forEach(function (id) {
+    ['distribuicao-unidades', 'distribuicao-corpo', 'distribuicao-rodape'].forEach(function (id) {
       var el = document.getElementById(id);
       if (el) el.textContent = '';
     });
@@ -108,8 +129,8 @@
     } else {
       if (carregadoModelos === gid) return;
       carregadoModelos = gid;
-      montarColunas(grupo);
-      if (window.RosterWork.distribuicaoModelos) return window.RosterWork.distribuicaoModelos.carregar(grupo);
+      montarFiltro(grupo, grupo.inicial);
+      if (window.RosterWork.distribuicaoModelos) return window.RosterWork.distribuicaoModelos.carregar(grupo, grupo.inicial);
     }
   }
 
@@ -146,12 +167,13 @@
     });
   }
 
-  /* confirma o descarte de edição não salva (Modelos OU Regras) antes de abandonar (ou segue direto) */
-  function pedirSaida(aoSair) {
+  /* confirma o descarte de edição não salva (Modelos OU Regras) antes de abandonar (ou segue direto);
+     aoCancelar (opcional) roda quando a pessoa desiste de sair da edição dos modelos */
+  function pedirSaida(aoSair, aoCancelar) {
     var ed = window.RosterWork.distribuicaoEditar;
     var rg = window.RosterWork.distribuicaoRegras;
     var passo2 = function () { if (rg && rg.confirmarSaida) rg.confirmarSaida(aoSair); else aoSair(); };
-    if (ed && ed.confirmarSaida) ed.confirmarSaida(passo2); else passo2();
+    if (ed && ed.confirmarSaida) ed.confirmarSaida(passo2, aoCancelar); else passo2();
   }
 
   function iniciar(conteudo) {

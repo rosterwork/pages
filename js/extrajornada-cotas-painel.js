@@ -310,7 +310,6 @@
      false ao re-simular / trocar escopo (concedido volta ao sugerido) */
   function aplicarResposta(r, usarSalvo) {
     estado.modo = r.modo || 'grupo';
-    estado.temDeslocamento = !!r.tem_deslocamento;   // há extra colocado fora da unidade de origem (trava do escopo)
     estado.grupos = (r.grupos || []).map(function (gr) {
       return {
         unidadeId: (gr.unidade_id == null ? null : gr.unidade_id),
@@ -395,12 +394,6 @@
 
   function trocarEscopo(modo) {
     if (modo === estado.modo || !RW.extrajornadaDados) return;
-    /* trava A: só bloqueia ir para "por unidade" havendo extra colocado FORA da unidade de origem (deslocamento) */
-    if (modo === 'por_unidade' && estado.temDeslocamento) {
-      if (RW.avisar) RW.avisar({ tipo: 'aviso', mensagem: RW.mensagens.extrajornada.escopoDeslocamento });
-      atualizarEscopoBotoes();   // desfaz a marcação da bolinha (o navegador já marcou no clique; estado.modo não mudou)
-      return;
-    }
     function aplicar() {
       var config = (modo === 'grupo')
         ? { modo: 'grupo', total: totalGeral() }

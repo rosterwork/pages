@@ -603,11 +603,15 @@
                 </li>
               </ul>
 
-              <p><strong>Militar.</strong> Fala do próprio militar e vale todos os dias.</p>
+              <p><strong>Militar.</strong> Fala do próprio militar.</p>
               <ul class="manual-legenda manual-legenda--compacta">
                 <li>
                   <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-regra.svg#icone-regra"/></svg></span>
                   <span class="manual-legenda-texto"><strong>Tem regra.</strong> O militar tem uma regra própria na unidade: é exclusivo de certas funções ou proibido nelas, conforme a página Distribuição, em Regras. Parando o mouse sobre o ícone, aparecem as regras. Aparece no painel do dia e no modo Dia.</span>
+                </li>
+                <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-reforco.svg#icone-reforco"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>De outra unidade.</strong> O militar é de outra unidade e, naquele dia, tira o serviço nesta, como o extra de outro pelotão. Parando o mouse sobre o ícone, aparece a unidade dele. Aparece no painel do dia e no modo Dia.</span>
                 </li>
               </ul>
 
@@ -615,7 +619,7 @@
               <ul class="manual-legenda manual-legenda--compacta">
                 <li>
                   <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-anotacao.svg#icone-anotacao"/></svg></span>
-                  <span class="manual-legenda-texto"><strong>Nota do administrador.</strong> Um recado que o administrador escreveu para aquele dia, na caixa Observações do painel. A mesma caixa lista as trocas e as folgas do dia.</span>
+                  <span class="manual-legenda-texto"><strong>Nota do administrador.</strong> Um recado que o administrador escreveu para aquele dia, na caixa Observações do painel. A mesma caixa lista as trocas, as folgas e quem veio de outra unidade naquele dia, como "Sd. Sampaio veio do 2ºPEL das 08h às 20h.".</span>
                 </li>
               </ul>
 
@@ -638,7 +642,7 @@
               <p>Cada tela mostra uma parte desses ícones:</p>
               <ul class="manual-lista">
                 <li><strong>Grade</strong> (Mês, Semana, Colunas e Calendário): a origem do serviço, o nome riscado e a função fixada.</li>
-                <li><strong>Painel do dia e modo Dia:</strong> a origem do serviço, a função fixada, o aviso e o Tem regra. As folgas, as trocas e as notas do dia ficam na caixa Observações.</li>
+                <li><strong>Painel do dia e modo Dia:</strong> a origem do serviço, a função fixada, o aviso, o Tem regra e o De outra unidade. As folgas, as trocas, quem veio de outra unidade e as notas do dia ficam na caixa Observações.</li>
                 <li><strong>Modo Militares:</strong> ao clicar num dia, o painel escreve a origem por extenso, por exemplo "Origem: Contínuo". Na grade, cada dia mostra o horário do serviço (riscado quando o militar passou o serviço numa troca), FÉR, LIC ou DIS no afastamento e o ícone de Extrajornada na hora extra.</li>
               </ul>
               <p><strong>Militar afastado não vai assumir.</strong> Pode acontecer de um militar assumir um serviço por <strong>troca</strong> e, mais tarde, entrar de <strong>férias, licença ou dispensa</strong> naquele mesmo dia. Nesse caso ele continua na lista do serviço, mas com um <strong>aviso amarelo</strong>: na prática ele não vai assumir, porque está afastado.</p>
@@ -678,6 +682,7 @@
                 <li><strong>Militar afastado, não vai assumir o serviço:</strong> quem cobre um serviço por troca entrou de férias, licença ou dispensa naquele dia.</li>
                 <li><strong>Viatura em manutenção:</strong> a viatura está em manutenção e segue com militares escalados nela.</li>
                 <li><strong>Militar exclusivo fora da sua função:</strong> um militar exclusivo de uma função foi colocado em outra.</li>
+                <li><strong>Militar em duas unidades ao mesmo tempo:</strong> o mesmo militar está em funções de duas unidades no mesmo horário, por exemplo "Sd. Sampaio está em duas unidades diferentes ao mesmo tempo (2ºPEL e 1ºPEL)". Acontece quando o administrador coloca no <strong>Editar</strong> um militar que já está de serviço em outra unidade: o sistema permite e avisa nas duas unidades.</li>
               </ul>
               <p><strong>Alterações manuais.</strong> Quando o administrador corrige um erro, a hora volta ao verde. O rastro fica no rodapé do painel do dia: as <strong>Alterações manuais</strong>, com a quantidade ao lado. Ao abrir, aparecem quem mexeu, quando e o quê, entre os ajustes da distribuição, os militares pontuais e as entradas e saídas do ciclo daquele dia. Todos podem ver. Num dia sem alteração, o rodapé não aparece.</p>
               <figure class="manual-figura">
@@ -932,7 +937,7 @@
               <div class="manual-admin manual-zona-admin">
                 <h3 id="extra-admin">Cotas e montar a escala de extra <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>Você organiza a extra na aba <strong>Escala</strong>. À esquerda fica o painel <strong>Cotas</strong>, para repartir o mês; ao lado, a <strong>grade do mês</strong>, para colocar os extras dia a dia.</p>
-                <p><strong>Repartir as cotas.</strong> No painel <strong>Cotas</strong>, você define quantas cotas o mês tem e o sistema reparte entre os voluntários. Primeiro o <strong>escopo</strong>: o <strong>grupo inteiro</strong> (a companhia e seus pelotões, num total só) ou <strong>por unidade</strong> (cada unidade com o seu total).</p>
+                <p><strong>Repartir as cotas.</strong> No painel <strong>Cotas</strong>, você define quantas cotas o mês tem e o sistema reparte entre os voluntários. Primeiro o <strong>escopo</strong>: o <strong>grupo inteiro</strong> (a companhia e seus pelotões, num total só) ou <strong>por unidade</strong> (cada unidade com o seu total). O escopo serve só para repartir as cotas: nos dois, você escolhe em qual unidade o extra tira, mesmo fora do pelotão dele, e a cota gasta é sempre a do militar.</p>
                 <p>Você digita o <strong>total de cotas</strong> e o sistema sugere quanto cada um recebe, com <strong>prioridade para quem foi menos atendido nos últimos 12 meses</strong>, ou seja, quem recebeu a <strong>menor porcentagem das cotas que pediu</strong>; havendo empate, o <strong>mais antigo</strong> primeiro.</p>
                 <p><strong>Ajustar e salvar.</strong> Cada linha é um voluntário, com quanto ele <strong>pediu</strong> e o <strong>Concedido</strong>, que você pode mudar manualmente (respeitando o pedido e o "fecha 24 h" de quem só aceita turno inteiro). Uma <strong>porcentagem colorida</strong> mostra quanto do pedido dele foi atendido neste mês. Se a soma passar do total, o grupo fica <strong>vermelho</strong> e não deixa salvar. <strong>Salvar</strong> reparte, registra no histórico e abre o resumo.</p>
                 <figure class="manual-figura">
@@ -945,7 +950,7 @@
                   </figcaption>
                 </figure>
                 <p><strong>A grade do mês.</strong> Ao lado, a grade mostra <strong>dias por unidade</strong>, e cada dia traz <strong>duas barras de cobertura</strong>: <strong>antes</strong> (sem os extras) e <strong>depois</strong> (já com os extras que você está montando). Dá para ver em <strong>Agenda</strong> ou <strong>Calendário</strong>, e há uma <strong>busca</strong> por nome. Ao clicar num voluntário no painel de Cotas, a grade se <strong>pinta pela preferência</strong> dele (verde nos dias que quer, vermelho nos que não quer).</p>
-                <p><strong>Colocar um extra.</strong> Em cada dia, o <strong>+</strong> abre os voluntários daquele dia em três grupos: <strong>Interessados</strong> (quem quer), <strong>Outros</strong> e <strong>Não querem</strong>. Ao escolher um, ele vira uma <strong>vaga</strong> na célula, com <strong>quatro bolinhas</strong> (os quatro blocos de 6 horas): você clica para dar de 6 a 24 horas, e o sistema <strong>trava na cota</strong> do militar. Quem é "fecha 24 h" entra já com o turno inteiro, travado. O <strong>✕</strong> tira o militar.</p>
+                <p><strong>Colocar um extra.</strong> Em cada dia, o <strong>+</strong> abre os voluntários daquele dia em três grupos: <strong>Interessados</strong> (quem quer), <strong>Outros</strong> e <strong>Não querem</strong>. Dentro de cada grupo, os voluntários vêm separados por unidade: primeiro os da unidade da célula e depois os de outras unidades, marcados <strong>deslocamento</strong>. Escolhendo um de outra unidade, ele tira o serviço na unidade da célula. Ao escolher um, ele vira uma <strong>vaga</strong> na célula, com <strong>quatro bolinhas</strong> (os quatro blocos de 6 horas): você clica para dar de 6 a 24 horas, e o sistema <strong>trava na cota</strong> do militar. Quem é "fecha 24 h" entra já com o turno inteiro, travado. O <strong>✕</strong> tira o militar.</p>
                 <figure class="manual-figura">
                   <img src="manual/imagens/extra-grade-dia.png" alt="Uma célula da grade: as barras de cobertura antes e depois (1) e um voluntário colocado, com as quatro bolinhas dos blocos de 6 horas (2)." />
                   <figcaption>
@@ -1067,16 +1072,16 @@
               <h2>Distribuição</h2>
               <h3 id="ver-modelos">Ver os modelos</h3>
               <p>A Distribuição é onde fica o <strong>desenho da escala automática</strong>: quais funções cada posto tem e quem o sistema prefere colocar em cada uma. Qualquer pessoa pode abrir <strong>Distribuição</strong>, escolher uma companhia ou um pelotão no seletor de unidades e olhar como está montada. A página tem duas abas, <strong>Modelos</strong> e <strong>Regras</strong>.</p>
-              <p><strong>O que é um modelo.</strong> Um modelo é um <strong>plano pronto para um dia de serviço</strong>, e vale para o <strong>grupo inteiro de uma vez</strong>: a companhia (uma <strong>CIA</strong> ou uma <strong>CIBM</strong>) junto com os <strong>seus pelotões</strong>. Ele lista, em cada unidade do grupo, os postos que entram e, dentro de cada posto, as funções a preencher (Condutor, Rádio Operador, Efetivo, e assim por diante). As colunas que você vê na lista são as unidades do grupo.</p>
-              <p><strong>O que os números significam.</strong> Um modelo é definido por um <strong>conjunto de números</strong>: quantos oficiais e praças em cada unidade do grupo. Na lista à esquerda, cada unidade aparece com um par de números, como <strong>1·6</strong>, em que o <strong>primeiro conta os oficiais</strong> e o <strong>segundo conta as praças</strong>. Então <strong>1·6</strong> é um dia com um oficial e seis praças.</p>
-              <p>Um modelo pode ser, por exemplo, a companhia com um oficial, o 1º Pelotão com sete praças, o 2º Pelotão com quatro praças e o 3º Pelotão com três praças. Esse conjunto de números é a <strong>identidade</strong> do modelo: a cada dia, a escala automática usa o modelo cujos números batem com quem está de serviço.</p>
+              <p><strong>O que é um modelo.</strong> Um modelo é um <strong>plano pronto para um dia de serviço de uma unidade</strong>: a companhia (uma <strong>CIA</strong> ou uma <strong>CIBM</strong>) ou um dos <strong>seus pelotões</strong>. Ele lista os postos da unidade que entram e, dentro de cada posto, as funções a preencher (Condutor, Rádio Operador, Efetivo, e assim por diante). Cada unidade tem os seus modelos.</p>
+              <p><strong>Escolher a unidade.</strong> No alto da lista, à esquerda, fica o <strong>filtro de unidades</strong>, com a companhia e os pelotões dela. A página abre na unidade escolhida no seletor de unidades, e um clique em outra mostra os modelos dela.</p>
+              <p><strong>O que os números significam.</strong> Cada modelo é definido pela <strong>quantidade de militares de serviço</strong> na unidade, escrita por extenso na linha: <strong>Oficiais</strong> e <strong>Praças</strong>. Então "Oficiais: 0" e "Praças: 3" é um dia com três praças. A cada dia, a escala automática usa, em cada unidade, o modelo cujos números batem com quem está de serviço nela.</p>
               <p>Na linha, um sinal de <strong>completo</strong> diz que o modelo dá conta daquele tamanho de equipe, e um sinal de <strong>alerta</strong> mostra que falta alguma coisa.</p>
               <figure class="manual-figura">
-                <img src="manual/imagens/distribuicao-modelo-lista.png" alt="Uma linha da lista de modelos: o sinal de completo (1) e, por unidade, os números de oficiais e praças que o modelo atende (2)." />
+                <img src="manual/imagens/distribuicao-modelo-lista.png" alt="A lista de modelos: o filtro de unidades (1) e a linha de um modelo, com o sinal de completo e os oficiais e praças que ele atende (2)." />
                 <figcaption>
                   <ol class="manual-chamadas">
-                    <li>Sinal de completo</li>
-                    <li>Oficiais e praças de cada unidade</li>
+                    <li>Filtro de unidades</li>
+                    <li>Sinal de completo, oficiais e praças do modelo</li>
                   </ol>
                 </figcaption>
               </figure>
@@ -1123,23 +1128,19 @@
               </figure>
               <div class="manual-admin manual-zona-admin">
                 <h3 id="editar-modelos">Editar os modelos <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p><strong>Editar um modelo.</strong> No menu de opções de um modelo, <strong>Editar</strong> abre o modo de edição. Ali você clica nas células de <strong>Tipo</strong>, <strong>Antiguidade</strong> e <strong>Grau</strong> para escolher o valor, marca o <strong>Rodízio</strong>, usa <strong>+ Nova função</strong> para incluir uma vaga e o botão de remover para tirar, e <strong>+ Acúmulo</strong> para a mesma pessoa cobrir mais de uma função.</p>
+                <p><strong>Editar um modelo.</strong> No menu de opções de um modelo, <strong>Editar</strong> abre o modo de edição. Ali você clica nas células de <strong>Tipo</strong>, <strong>Antiguidade</strong> e <strong>Grau</strong> para escolher o valor, marca o <strong>Rodízio</strong>, usa <strong>+ Nova função</strong> para incluir uma vaga e o botão de remover para tirar, e <strong>+ Acúmulo</strong> para a mesma pessoa cobrir mais de uma função, entre os postos da própria unidade. Para um militar cobrir uma função em <strong>outra unidade</strong>, use o <strong>Editar</strong> da distribuição do dia, na Escala.</p>
                 <p>Com o posto no efetivo máximo, o <strong>+ Nova função</strong> fica desativado. Um posto com menos pessoas que o efetivo mínimo fica em vermelho, como os demais erros, e a escala automática continua usando o modelo.</p>
                 <p><strong>Desfazer</strong> e <strong>Refazer</strong> ficam no canto do subcabeçalho, e também respondem a Ctrl+Z e Ctrl+Y. Ao <strong>Salvar</strong>, o sistema avisa que as escalas já montadas serão recalculadas e mostra um resumo do que mudou.</p>
-                <p><strong>Novo modelo.</strong> O botão <strong>Novo modelo</strong>, no rodapé da lista, cria um do zero: você define quantos oficiais e praças, por unidade, aquele modelo atende. Ele aparece na hora, e fica de vez quando você clica em Salvar; ao cancelar ou sair sem salvar, ele é descartado. O modelo novo vale em todos os períodos.</p>
+                <p><strong>Novo modelo.</strong> O botão <strong>Novo modelo</strong>, no rodapé da lista, cria um do zero para a <strong>unidade do filtro</strong>: o espaço à direita pede quantos <strong>oficiais</strong> e <strong>praças</strong> aquele modelo atende. Se a unidade já tem um modelo com esses números, o sistema avisa e abre o que existe. O modelo novo já vem com as vagas do maior modelo da unidade que caiba nele, aparece na hora, e fica de vez quando você clica em Salvar; ao cancelar ou sair sem salvar, ele é descartado. O modelo novo vale em todos os períodos.</p>
                 <p><strong>Editar por período.</strong> A edição vale no período escolhido no seletor. Um período que já terminou fica só para leitura. Num período que ainda vai começar, o Salvar refaz a escala a partir do início dele, sem perguntar a data.</p>
                 <p><strong>O período novo vem pronto para revisar.</strong> Quando um posto sai (fica inativo, é excluído ou é transferido), o período novo nasce como cópia do anterior, já sem as vagas desse posto. Quando o posto volta, o período nasce da cópia do último período em que ele existia. Só o pelotão afetado ganha uma cópia própria; os outros continuam iguais em todos os períodos.</p>
                 <p>Até você revisar, o modelo fica em amarelo, o pelotão aparece destacado e o rodapé mostra, por exemplo, "1ºPEL: revise este período (ABT-01: Inativo)". O aviso também aparece no sino. Enquanto isso, a escala funciona normalmente: quem sobrou fica sem função, em vermelho, para você colocar manualmente.</p>
                 <p>Para revisar, mova as vagas que sobraram e clique em <strong>Salvar</strong>; se a cópia já estiver certa, basta Salvar.</p>
                 <p><strong>Período com erro.</strong> Um período atual ou futuro com erro vermelho gera no sino o aviso <strong>Distribuição com erro</strong>, por exemplo "Distribuição com erro a partir de 03/10/2026 (1ºPEL)". O clique leva à Distribuição, e o aviso some quando o erro é corrigido.</p>
                 <p class="manual-nota"><strong>Um período revisado fica como você deixou.</strong> Enquanto não é revisada, a cópia acompanha as mudanças feitas no período anterior. Depois de revisada, ela só muda quando você a edita, e ao salvar o período anterior o sistema avisa quais períodos seguintes não receberam a mudança.</p>
-                <p class="manual-nota"><strong>Editar um pelotão vale para todos os modelos com aquela quantidade.</strong> A configuração das vagas de cada unidade fica guardada junto com a <strong>quantidade de militares</strong> dela. Assim, quando dois ou mais modelos têm um pelotão com a <strong>mesma quantidade</strong>, eles usam a <strong>mesma configuração</strong> daquele pelotão.</p>
-                <p><strong>Exemplo.</strong> Você tem três modelos e, nos três, o 1º Pelotão aparece com sete praças. Se abrir um deles e mudar as vagas do 1º Pelotão, trocando uma função ou ajustando a antiguidade, a mesma mudança passa a valer nos <strong>três</strong>, porque todos apontam para a configuração de "1º Pelotão com sete praças". Se um quarto modelo tiver o 1º Pelotão com <strong>seis</strong> praças, ele tem a sua própria configuração e continua como está.</p>
-                <p>A exceção é o <strong>acúmulo entre unidades</strong>: quando uma vaga acumula uma função de outra unidade, aquela combinação passa a valer <strong>só naquele modelo</strong>, e a edição fica restrita a ele.</p>
                 <h3 id="editar-regras">Criar e editar regras <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>Na aba <strong>Regras</strong>, escolha um militar à esquerda e use <strong>+ Adicionar</strong>, escolhendo a função, ou o botão de remover, nos grupos <strong>Proibidas</strong> e <strong>Exclusivas</strong>. Ao <strong>Salvar</strong>, o sistema grava e já redistribui os dias futuros. Alguns pontos:</p>
                 <ul class="manual-lista">
-                  <li>No grupo <strong>Proibidas</strong> existe a opção <strong>Acumular em outra unidade</strong>: o militar fica reservado à sua própria unidade e sai da lista de reforços para outras.</li>
                   <li>No grupo <strong>Exclusivas</strong>, a função <strong>Condutor</strong> aparece só para quem tem <strong>CNH C ou maior</strong>.</li>
                   <li>O <strong>Chefe de Socorro</strong> e o <strong>Oficial de Área</strong> ficam de fora das regras, porque são sempre os mais antigos de serviço.</li>
                   <li>A regra de uma função vale também para as funções adicionadas dela, como <strong>Rancheiro 2</strong> ou <strong>Efetivo 3</strong>.</li>

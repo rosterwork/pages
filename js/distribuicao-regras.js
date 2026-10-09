@@ -181,8 +181,6 @@
     var menu = add.querySelector('.dropdown-menu');
     var jaTem = regrasDoMilitar(militar.usuario_id, tipo).map(function (r) { return r.funcao; });
     var disponiveis = funcoesRegulaveis(militar.unidade_id).filter(function (f) { return jaTem.indexOf(f) === -1; });
-    // proibido especial: bloqueia reforço e acúmulo em outra unidade (não é função de slot; só no proibido)
-    if (tipo === 'proibido' && jaTem.indexOf('Acumular em outra unidade') === -1) disponiveis.push('Acumular em outra unidade');
     // exclusivo de Condutor só para quem tem CNH C ou maior (C/D/E); B/A/AB não pode ser exclusivo condutor
     if (tipo === 'exclusivo' && !/[CDE]/i.test(militar.cnh || '')) disponiveis = disponiveis.filter(function (f) { return !/^condutor/i.test(f); });
     if (!disponiveis.length) {

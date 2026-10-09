@@ -4,46 +4,17 @@
    Cores/medidas só do tema (geral-tema) e das escalas do MANUAL.
    ============================================================ */
 
-/* cabeçalho do painel: alinha as colunas (unidades) com os modelos da lista
-   (sobrescreve o padrão de título do geral-painel-esquerdo-cabecalho) */
-/* cabeçalho de colunas = faixa (geral-faixa); reserva a barra de acento das linhas
-   (2px) e mantém o arranjo das colunas, para as colunas casarem com as células */
-.distribuicao-painel-cabecalho {
-  align-items: stretch;
-  gap: 0;
-  padding: 0 4px;
-  border-left: 2px solid transparent;
+/* filtro do painel: a companhia e os pelotões (abas pequenas); com muitos pelotões, quebra em duas linhas */
+.distribuicao-filtro-barra {
+  min-height: 40px;
+}
+.distribuicao-filtro-barra .abas {
+  flex-wrap: wrap;
 }
 
 .distribuicao-novo-modelo {
   width: 100%;
   justify-content: center;
-}
-
-/* célula de coluna no cabeçalho do painel (nome curto da unidade) */
-.distribuicao-col {
-  flex: 1 1 0;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--texto-fraco);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-/* primeira coluna (alinha com o status da linha do modelo) */
-.distribuicao-col--marca {
-  flex: 0 0 22px;
-}
-/* última coluna: reserva o espaço do botão "⋯" de cada linha (alinhamento) */
-.distribuicao-col--menu {
-  flex: 0 0 var(--botao-altura-pequeno);
 }
 
 /* linha de um modelo (casca visual em geral-lista; sem linha, a faixa agrupa) */
@@ -89,19 +60,19 @@
   min-width: 0;
 }
 
+/* uma coluna da composição ("Oficiais: 1" · "Praças: 5") */
 .distribuicao-modelo-celula {
   flex: 1 1 0;
   min-width: 0;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 4px;
   font-size: 12px;
   color: var(--texto);
 }
-/* ícone de acúmulo entre unidades, à esquerda dos números */
-.distribuicao-modelo-celula-acumulo { flex-shrink: 0; color: var(--texto-suave); }
-/* texto da célula da lista fica vermelho/amarelo quando AQUELA unidade tem erro/alerta */
+.distribuicao-modelo-celula-rotulo { color: var(--texto-suave); }
+/* o número fica vermelho/amarelo quando o modelo tem erro/alerta */
 .distribuicao-modelo-celula--erro .distribuicao-modelo-celula-texto { color: var(--erro); }
 .distribuicao-modelo-celula--alerta .distribuicao-modelo-celula-texto { color: var(--alerta); }
 
@@ -454,27 +425,6 @@
   font-size: 12px;
 }
 
-/* ---- bloco "Vem de" (reforço que entra: militar de outra unidade concorre aqui) ---- */
-.distribuicao-reforco-rotulo {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  align-self: flex-start;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--texto-suave);
-}
-.distribuicao-reforco-rotulo .icone { color: var(--texto-fraco); }
-.distribuicao-reforco-ajuda {
-  font-size: 11px;
-  color: var(--texto-fraco);
-}
-/* célula de origem: ícone + nome da unidade de onde vem o militar */
-.distribuicao-reforco-origem .distribuicao-cel-gatilho { gap: 4px; }
-.distribuicao-reforco-origem .icone { color: var(--texto-fraco); }
-/* botão "+ Vem de" solto (unidade ainda sem reforço): sem borda no topo — o posto acima já divide */
-.distribuicao-nova-funcao-linha--solta { border-top: none; }
-
 /* desfazer/refazer da edição do modelo: no subcabeçalho, empurrado para a direita (só durante o Editar) */
 .distribuicao-historico { display: flex; gap: 4px; margin-left: auto; }
 
@@ -556,30 +506,21 @@
 /* dica enquanto não há sentido escolhido (a lista de graus só habilita depois) */
 .distribuicao-grau-dica { padding: 6px 8px; font-size: 12px; color: var(--texto-fraco); }
 
-/* modal Novo modelo — composição por unidade */
-.distribuicao-nm-ajuda { font-size: 12px; color: var(--texto-fraco); margin-bottom: 12px; }
-/* cabeçalho de colunas (Unidades · Oficiais · Praças) — alinha com as linhas abaixo */
-.distribuicao-nm-cabecalho {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding-bottom: 4px;
-  margin-bottom: 8px;
-  border-bottom: 1px solid var(--borda);
-}
-.distribuicao-nm-col-unidade,
+/* Novo modelo, no corpo — a composição da unidade escolhida (Oficiais · Praças) */
+.distribuicao-novo { display: flex; flex-direction: column; gap: 12px; padding: 16px; }
+.distribuicao-novo-campos { display: flex; gap: 24px; }
+.distribuicao-novo-campo { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.distribuicao-novo-acoes { display: flex; gap: 8px; }
+.distribuicao-nm-ajuda { font-size: 12px; color: var(--texto-fraco); }
 .distribuicao-nm-col {
+  width: 76px;
+  text-align: center;
   font-size: 11px;
   font-weight: 600;
   color: var(--texto-fraco);
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
-.distribuicao-nm-col-unidade { flex: 1; }
-.distribuicao-nm-col { width: 76px; text-align: center; }
-.distribuicao-nm-linhas { display: flex; flex-direction: column; gap: 8px; }
-.distribuicao-nm-linha { display: flex; align-items: center; gap: 12px; }
-.distribuicao-nm-unidade { flex: 1; font-size: 13px; font-weight: 500; color: var(--texto); }
 .distribuicao-nm-contador { width: 76px; display: flex; align-items: center; justify-content: center; gap: 4px; }
 .distribuicao-nm-btn {
   width: 24px;

@@ -190,6 +190,17 @@
     icones.appendChild(el);
   }
 
+  /* militar de outra unidade (ex.: extra que tira aqui) na tira de ícones; a dica diz a unidade dele */
+  function marcarOutraUnidade(linha, m) {
+    if (!m || !m.de_unidade) return;
+    var icones = linha.querySelector('.escala-distribuicao-icones');
+    if (!icones) return;
+    var el = RosterWork.tpl('tpl-escala-outra-unidade-icone');
+    if (!el) return;
+    el.setAttribute('data-dica', RosterWork.mensagens.escala.deOutraUnidade(m.de_unidade));
+    icones.appendChild(el);
+  }
+
   /* pior de dois níveis, na ordem 'erro' > 'alerta' > '' */
   function piorNivel(a, b) {
     if (a === 'erro' || b === 'erro') return 'erro';
@@ -392,6 +403,22 @@
         linha(def, preencher(def.texto, { posto: itens[0].posto || '', pessoas: pessoas, minimo: itens[0].limite, maximo: itens[0].limite, faixas: faixas }));
       });
     }
+    /* militar em duas unidades ao mesmo tempo: uma linha por militar e par de unidades, juntando as faixas */
+    function linhasDuasUnidades(def) {
+      if (!def || !tem('duas_unidades')) return;
+      var ordem = [], porMilitar = {};
+      por.duas_unidades.forEach(function (p) {
+        var k = p.cpf + '|' + (p.unidades || []).join('|');
+        if (!porMilitar[k]) { porMilitar[k] = []; ordem.push(k); }
+        porMilitar[k].push(p);
+      });
+      ordem.forEach(function (k) {
+        var itens = porMilitar[k];
+        var diaTodo = itens.length === 1 && itens[0].hi === '08:00' && itens[0].hf === '08:00';
+        var faixas = diaTodo ? '' : ', ' + itens.map(function (p) { return preencher(def.faixa, { hi: p.hi, hf: p.hf }); }).join(' e ');
+        linha(def, preencher(def.texto, { militar: militar(itens[0]), unidades: (itens[0].unidades || []).join(' e '), faixas: faixas }));
+      });
+    }
 
     /* vermelho: a escala não funciona */
     if (tem('parcial_com_erro')) linha(cat.distribuicaoTravada);
@@ -423,6 +450,7 @@
 
     /* amarelo: funciona, com erro aceitável */
     if (tem('chefe_condutor')) linha(cat.chefeCondutor);
+    linhasDuasUnidades(cat.duasUnidades);
     porOcorrencia('manutencao', cat.manutencao, function (p) { return p.posto_id; },
       function (p) { return { posto: p.posto || '' }; });
     porOcorrencia('exclusivo_fora', cat.exclusivoFora, function (p) { return p.cpf + '|' + p.funcao; },
@@ -536,6 +564,7 @@
       if (cadeado) { definirIcone(cadeado, 'icone-cadeado'); icones.appendChild(cadeado); }
     }
     marcarRegras(linha, m);
+    marcarOutraUnidade(linha, m);
 
     linha.querySelector('.escala-distribuicao-grad').textContent = m.grad || '';
     linha.querySelector('.escala-distribuicao-nome').textContent = m.nome || '';
@@ -933,10 +962,10 @@
     destino.appendChild(pilula);
   }
 
-  /* ícone por classe de observação (troca/folga automáticas; admin manual) */
-  var ICONE_OBS = { troca: 'icone-origem-troca', folga: 'icone-folgas', admin: 'icone-anotacao' };
+  /* ícone por classe de observação (troca/folga/outra unidade automáticas; admin manual) */
+  var ICONE_OBS = { troca: 'icone-origem-troca', folga: 'icone-folgas', outra_unidade: 'icone-reforco', admin: 'icone-anotacao' };
 
-  /* seção "Observações" do dia: trocas + folgas (automáticas) + notas do admin (manuais),
+  /* seção "Observações" do dia: trocas + folgas + quem veio de outra unidade (automáticas) + notas do admin (manuais),
      nesta ordem (vem pronta do ler_distribuicao_dia). No Editar do admin: botão para adicionar
      (com limite) e ✕ para excluir SÓ as do admin. No Ver/página de Dia: só leitura.
      opcoes = { editar, unidadeId, iso }. */

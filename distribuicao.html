@@ -39,9 +39,11 @@
     <!-- ABA MODELOS: painel de modelos (esquerda) + edição do modelo (corpo + rodapé) -->
     <div class="geral-layout-lateral" data-aba-painel="modelos">
 
-      <!-- painel esquerdo: biblioteca de modelos (tabela: colunas = unidades do grupo) -->
+      <!-- painel esquerdo: modelos da unidade escolhida no filtro (a companhia e os pelotões dela) -->
       <aside class="geral-painel-esquerdo" id="distribuicao-painel">
-        <div class="faixa distribuicao-painel-cabecalho" id="distribuicao-colunas"></div>
+        <div class="geral-painel-esquerdo-cabecalho distribuicao-filtro-barra">
+          <div class="abas abas--pequenas" id="distribuicao-unidades" role="tablist" aria-label="Unidade"></div>
+        </div>
         <div class="geral-painel-esquerdo-lista" id="distribuicao-lista-modelos"></div>
         <div class="geral-painel-esquerdo-rodape">
           <button type="button" class="botao distribuicao-novo-modelo" id="distribuicao-novo-modelo" disabled>
@@ -105,12 +107,12 @@
   </button>
 </template>
 
-<!-- molde: uma célula (coluna) do cabeçalho do painel ou de uma linha de modelo -->
-<template id="tpl-distribuicao-coluna">
-  <span class="distribuicao-col"></span>
+<!-- molde: uma unidade no filtro do painel (aba pequena) -->
+<template id="tpl-distribuicao-filtro-unidade">
+  <button type="button" class="aba" role="tab" aria-selected="false"></button>
 </template>
 
-<!-- molde: linha de um modelo na lista (a 1ª célula é o rótulo, as demais são as unidades) -->
+<!-- molde: linha de um modelo na lista (status + composição por extenso, em duas colunas) -->
 <template id="tpl-distribuicao-modelo">
   <div class="lista-item lista-item--clicavel distribuicao-modelo">
     <button type="button" class="distribuicao-modelo-area">
@@ -118,7 +120,16 @@
         <svg class="icone distribuicao-modelo-ok" width="13" height="13"><use href="icones/icone-check.svg#icone-check"/></svg>
         <svg class="icone distribuicao-modelo-erro oculto" width="13" height="13"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
       </span>
-      <span class="distribuicao-modelo-celulas"></span>
+      <span class="distribuicao-modelo-celulas">
+        <span class="distribuicao-modelo-celula">
+          <span class="distribuicao-modelo-celula-rotulo">Oficiais:</span>
+          <span class="distribuicao-modelo-celula-texto distribuicao-modelo-oficiais"></span>
+        </span>
+        <span class="distribuicao-modelo-celula">
+          <span class="distribuicao-modelo-celula-rotulo">Praças:</span>
+          <span class="distribuicao-modelo-celula-texto distribuicao-modelo-pracas"></span>
+        </span>
+      </span>
     </button>
     <span class="dropdown distribuicao-modelo-menu">
       <button type="button" class="botao botao--icone botao--pequeno distribuicao-modelo-menu-gatilho" aria-label="Opções do modelo">
@@ -130,15 +141,6 @@
       </div>
     </span>
   </div>
-</template>
-
-<!-- molde: célula de uma unidade na linha do modelo (ex.: "1·6" = 1 of / 6 pç); o ícone de acúmulo
-     aparece à esquerda dos números quando a unidade está fundida com outra por acúmulo entre unidades -->
-<template id="tpl-distribuicao-modelo-celula">
-  <span class="distribuicao-modelo-celula">
-    <svg class="icone distribuicao-modelo-celula-acumulo oculto" width="11" height="11" aria-hidden="true"><use href="icones/icone-acumulo.svg#icone-acumulo"/></svg>
-    <span class="distribuicao-modelo-celula-texto"></span>
-  </span>
 </template>
 
 <!-- molde: estado do painel (aviso "selecione...", vazio) -->
@@ -286,97 +288,6 @@
   </div>
 </template>
 
-<!-- ===================== MOLDES — reforço ===================== -->
-
-<!-- molde: bloco "Vem de" de uma unidade (reforço que ENTRA; a coluna mostra a unidade de origem) -->
-<template id="tpl-distribuicao-reforco-bloco">
-  <div class="distribuicao-posto distribuicao-posto--reforco">
-    <div class="distribuicao-posto-rotulo">
-      <span class="distribuicao-reforco-rotulo">
-        <svg class="icone" width="15" height="15" aria-hidden="true"><use href="icones/icone-reforco.svg#icone-reforco"/></svg>
-        Reforço
-      </span>
-      <span class="distribuicao-reforco-ajuda">de outra unidade</span>
-    </div>
-    <div class="distribuicao-posto-vagas">
-      <div class="distribuicao-vagas-cabecalho">
-        <span class="distribuicao-vc distribuicao-vc--num">Vaga</span>
-        <span class="distribuicao-vc distribuicao-vc--func">Origem</span>
-        <span class="distribuicao-vc distribuicao-vc--perfil">Tipo</span>
-        <span class="distribuicao-vc distribuicao-vc--antig">Antiguidade</span>
-        <span class="distribuicao-vc distribuicao-vc--grau">Grau</span>
-        <span class="distribuicao-vc distribuicao-vc--rod">Rod.</span>
-        <span class="distribuicao-vc distribuicao-vc--acao"></span>
-      </div>
-      <div class="distribuicao-vagas-linhas"></div>
-    </div>
-  </div>
-</template>
-
-<!-- molde: linha de reforço no modo Ver (só-leitura) -->
-<template id="tpl-distribuicao-reforco-ver">
-  <div class="distribuicao-vaga">
-    <span class="distribuicao-vaga-num"></span>
-    <span class="distribuicao-vaga-func distribuicao-reforco-origem">
-      <svg class="icone" width="13" height="13" aria-hidden="true"><use href="icones/icone-reforco.svg#icone-reforco"/></svg>
-      <span class="distribuicao-cel-texto"></span>
-    </span>
-    <span class="distribuicao-vaga-perfil"></span>
-    <span class="distribuicao-vaga-antig"></span>
-    <span class="distribuicao-vaga-grau"></span>
-    <span class="distribuicao-vaga-rod">
-      <svg class="icone oculto" width="12" height="12" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg>
-    </span>
-    <span class="distribuicao-vaga-acao"></span>
-  </div>
-</template>
-
-<!-- molde: linha de reforço EDITÁVEL (Destino no lugar de Funções) -->
-<template id="tpl-distribuicao-reforco-linha">
-  <div class="distribuicao-vaga distribuicao-vaga--editar">
-    <span class="distribuicao-vaga-num"></span>
-    <span class="distribuicao-vaga-func distribuicao-reforco-origem dropdown distribuicao-cel">
-      <button type="button" class="distribuicao-cel-gatilho">
-        <svg class="icone" width="13" height="13" aria-hidden="true"><use href="icones/icone-reforco.svg#icone-reforco"/></svg>
-        <span class="distribuicao-cel-texto"></span>
-      </button>
-      <div class="dropdown-menu"></div>
-    </span>
-    <span class="distribuicao-vaga-perfil dropdown distribuicao-cel">
-      <button type="button" class="distribuicao-cel-gatilho"></button>
-      <div class="dropdown-menu"></div>
-    </span>
-    <span class="distribuicao-vaga-antig dropdown distribuicao-cel">
-      <button type="button" class="distribuicao-cel-gatilho"></button>
-      <div class="dropdown-menu"></div>
-    </span>
-    <span class="distribuicao-vaga-grau dropdown distribuicao-cel">
-      <button type="button" class="distribuicao-cel-gatilho"></button>
-      <div class="dropdown-menu"></div>
-    </span>
-    <span class="distribuicao-vaga-rod">
-      <button type="button" class="distribuicao-rod-toggle" aria-label="Rodízio">
-        <svg class="icone oculto" width="12" height="12" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg>
-      </button>
-    </span>
-    <span class="distribuicao-vaga-acao">
-      <button type="button" class="botao botao--icone botao--pequeno distribuicao-vaga-remover" aria-label="Remover reforço">
-        <svg class="icone" width="13" height="13" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
-      </button>
-    </span>
-  </div>
-</template>
-
-<!-- molde: linha "+ Vem de" (mesma linha-pai do "+ Nova função"; só o botão é clicável) -->
-<template id="tpl-distribuicao-nova-reforco">
-  <div class="distribuicao-nova-funcao-linha">
-    <button type="button" class="botao-discreto distribuicao-nova-funcao">
-      <svg class="icone" width="13" height="13" aria-hidden="true"><use href="icones/icone-mais.svg#icone-mais"/></svg>
-      Reforço
-    </button>
-  </div>
-</template>
-
 <!-- molde: botão/menu "+ Acúmulo de função" (dentro da célula de função da vaga principal) -->
 <template id="tpl-distribuicao-acumulo-add">
   <span class="dropdown distribuicao-acumulo-add">
@@ -388,7 +299,7 @@
   </span>
 </template>
 
-<!-- molde: nó da escada de acúmulo (Unidade → Posto → Função) — reusa as classes .arvore-* do seletor;
+<!-- molde: nó da escada de acúmulo (Posto → Função, só da unidade do modelo) — reusa as classes .arvore-* do seletor;
      a linha inteira expande/recolhe (nó) ou seleciona (folha); o ícone marca função já agrupada -->
 <template id="tpl-distribuicao-escada-no">
   <div class="arvore-grupo">
@@ -473,47 +384,34 @@
   </div>
 </div>
 
-<!-- MODAL: novo modelo (composição de Oficiais/Praças por unidade) -->
-<div class="modal-veu" id="veu-distribuicao-novo-modelo">
-  <div class="modal" role="dialog" aria-modal="true" aria-label="Novo modelo">
-    <div class="modal-cabecalho">
-      <span class="modal-titulo">Novo modelo de distribuição</span>
-      <span class="espacador-flex"></span>
-      <button type="button" class="botao botao--icone botao--pequeno" id="distribuicao-nm-fechar" aria-label="Fechar">
-        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
-      </button>
-    </div>
-    <div class="modal-corpo">
-      <p class="distribuicao-nm-ajuda">Quantos militares disponíveis este modelo cobre, por unidade:</p>
-      <div class="distribuicao-nm-cabecalho">
-        <span class="distribuicao-nm-col-unidade">Unidades</span>
+<!-- molde: criar modelo, no corpo (a composição da unidade escolhida no filtro: Oficiais · Praças) -->
+<template id="tpl-distribuicao-novo-modelo">
+  <section class="distribuicao-novo">
+    <span class="rotulo-secao">Novo modelo · <span class="distribuicao-novo-unidade"></span></span>
+    <p class="distribuicao-nm-ajuda">Quantos militares disponíveis este modelo cobre:</p>
+    <div class="distribuicao-novo-campos">
+      <div class="distribuicao-novo-campo">
         <span class="distribuicao-nm-col">Oficiais</span>
-        <span class="distribuicao-nm-col">Praças</span>
+        <div class="distribuicao-nm-contador" data-perfil="oficiais">
+          <button type="button" class="distribuicao-nm-btn" data-delta="-1" aria-label="Menos oficiais">−</button>
+          <span class="distribuicao-nm-valor">0</span>
+          <button type="button" class="distribuicao-nm-btn" data-delta="1" aria-label="Mais oficiais">+</button>
+        </div>
       </div>
-      <div class="distribuicao-nm-linhas" id="distribuicao-nm-linhas"></div>
+      <div class="distribuicao-novo-campo">
+        <span class="distribuicao-nm-col">Praças</span>
+        <div class="distribuicao-nm-contador" data-perfil="pracas">
+          <button type="button" class="distribuicao-nm-btn" data-delta="-1" aria-label="Menos praças">−</button>
+          <span class="distribuicao-nm-valor">0</span>
+          <button type="button" class="distribuicao-nm-btn" data-delta="1" aria-label="Mais praças">+</button>
+        </div>
+      </div>
     </div>
-    <div class="modal-rodape">
-      <button type="button" class="botao" id="distribuicao-nm-cancelar">Cancelar</button>
-      <button type="button" class="botao botao--primario" id="distribuicao-nm-criar">Criar</button>
+    <div class="distribuicao-novo-acoes">
+      <button type="button" class="botao distribuicao-novo-cancelar">Cancelar</button>
+      <button type="button" class="botao botao--primario distribuicao-novo-criar">Criar</button>
     </div>
-  </div>
-</div>
-
-<!-- molde: linha de composição do modal Novo modelo (unidade + contadores Of/Pç) -->
-<template id="tpl-distribuicao-nm-linha">
-  <div class="distribuicao-nm-linha">
-    <span class="distribuicao-nm-unidade"></span>
-    <div class="distribuicao-nm-contador" data-perfil="oficiais">
-      <button type="button" class="distribuicao-nm-btn" data-delta="-1" aria-label="Menos oficiais">−</button>
-      <span class="distribuicao-nm-valor">0</span>
-      <button type="button" class="distribuicao-nm-btn" data-delta="1" aria-label="Mais oficiais">+</button>
-    </div>
-    <div class="distribuicao-nm-contador" data-perfil="pracas">
-      <button type="button" class="distribuicao-nm-btn" data-delta="-1" aria-label="Menos praças">−</button>
-      <span class="distribuicao-nm-valor">0</span>
-      <button type="button" class="distribuicao-nm-btn" data-delta="1" aria-label="Mais praças">+</button>
-    </div>
-  </div>
+  </section>
 </template>
 
 <!-- ===================== MOLDES — aba Regras ===================== -->

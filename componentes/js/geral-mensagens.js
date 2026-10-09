@@ -295,7 +295,10 @@
         regraProibida:       { texto: 'Função proibida pela regra: {militar} em {funcao}', icone: 'icone-alerta', nivel: 'erro' },
         exclusivoFora:       { texto: 'Militar exclusivo fora da sua função: {militar} em {funcao}', icone: 'icone-alerta', nivel: 'alerta' },
         grauDiferente:       { texto: 'Grau diferente do ideal: {militar} em {funcao}', icone: 'icone-alerta', nivel: 'alerta' },
-        manutencao:          { texto: 'Viatura em manutenção: {posto}', icone: 'icone-alerta', nivel: 'alerta' }
+        manutencao:          { texto: 'Viatura em manutenção: {posto}', icone: 'icone-alerta', nivel: 'alerta' },
+        /* o mesmo militar em funções de duas unidades no mesmo horário; {unidades} = "2ºPEL e 1ºPEL" (a dele primeiro);
+           {faixas} = ", das 08:00 às 20:00" quando é só parte do dia */
+        duasUnidades:        { texto: '{militar} está em duas unidades diferentes ao mesmo tempo ({unidades}){faixas}', faixa: 'das {hi} às {hf}', icone: 'icone-alerta', nivel: 'alerta' }
       },
       /* detalhe por militar dos avisos amarelos (expansível sob cada linha do aviso):
          {pessoa} = grad + nome · {funcao} = nome da vaga · {motivo} = a razão (abaixo) */
@@ -338,7 +341,9 @@
       emManutencao: 'Em manutenção',
       /* linha da cadeira vazia (sem ninguém), no lugar do nome do militar */
       vagaVazia: function (motivo) { return motivo === 'trava' ? 'Sem solução automática' : (motivo === 'habilitado' ? 'Vazio por falta de habilitado' : 'Vazio por falta de efetivo'); },
-      /* Observações do dia (trocas) — o banco manda os dados, aqui vira texto */
+      /* dica do ícone do militar de outra unidade: "Do 2ºPEL" / "Da 2ªCIBM" */
+      deOutraUnidade: function (nome) { return (/ª/.test(nome || '') ? 'Da ' : 'Do ') + (nome || ''); },
+      /* Observações do dia (trocas, folgas, outra unidade) — o banco manda os dados, aqui vira texto */
       observacoesTitulo: 'Observações',
       observacaoLimite: 200,
       observacaoFalhaSalvar: 'Não foi possível salvar a observação.',
@@ -347,6 +352,11 @@
         function hh(t) { return t ? (String(t).slice(3) === '00' ? String(t).slice(0, 2) + 'h' : t) : ''; }
         function quem(g, n) { return ((g ? g + ' ' : '') + (n || '')).trim(); }
         if (o.classe === 'admin') return o.texto || '';
+        if (o.classe === 'outra_unidade') {
+          var de = (/ª/.test(o.de_unidade || '') ? 'da ' : 'do ') + (o.de_unidade || '');
+          if (o.hi === o.hf) return quem(o.grad, o.nome) + ' veio ' + de + '.';
+          return quem(o.grad, o.nome) + ' veio ' + de + ' das ' + hh(o.hi) + ' às ' + hh(o.hf) + '.';
+        }
         if (o.classe === 'folga') {
           if (o.dia_inteiro || o.hi === o.hf) return quem(o.grad, o.nome) + ' está de folga o dia todo.';
           return quem(o.grad, o.nome) + ' está de folga das ' + hh(o.hi) + ' às ' + hh(o.hf) + '.';
@@ -402,12 +412,11 @@
       descartar: 'Descartar as alterações não salvas deste modelo?',
       salvarComErro: 'Este modelo ainda tem erros (em vermelho). Salvar mesmo assim?',
       falhaSalvar: 'Não foi possível salvar. Tente de novo.',
-      composicaoVazia: 'Defina pelo menos um militar em alguma unidade.',
+      composicaoVazia: 'Defina pelo menos um militar.',
+      modeloJaExiste: function (unidade) { return unidade + ' já tem um modelo com essa composição. Ele foi aberto.'; },
       excluirModelo: 'Excluir este modelo de distribuição? As vagas que ele define serão perdidas.',
       abaixoMinimo: function (unidade, posto, pessoas, minimo) { return unidade + ': efetivo abaixo do mínimo em ' + posto + ' (' + pessoas + ' de ' + minimo + ')'; },
       salvarImpacto: 'Salvar este modelo recalcula as escalas já distribuídas que usam esta composição. Continuar?',
-      reforcoSemOrigem: 'Nenhuma outra unidade tem militar disponível para reforço.',
-      excessoEnvio: function (unidade) { return unidade + ': mandando mais reforço do que há militar disponível'; },
       /* períodos (seletor ‹ período ›): cada mudança de posto com data abre um período novo */
       periodoTodos: 'Todos os dias',
       periodoAte: 'até {data}',
@@ -625,8 +634,9 @@
       removerMesmoAssim: 'Remover mesmo assim',
       cotaMenor: 'O número de cotas ficou menor do que o que já foi colocado no calendário. Tire alguns extras antes de reduzir o total.',
       cotaEstourada: 'Você distribuiu mais cotas do que o total permite. Reduza o Concedido do grupo em vermelho antes de salvar.',
-      escopoDeslocamento: 'Você tem extras colocados fora da unidade de origem. Tire esses extras antes de mudar para "por unidade".',
       escopoTrocar: 'Mudar a forma de repartir altera a distribuição das cotas quando você salvar.',
+      /* rótulo de cada unidade na lista do "+" da célula: a da célula ou outra (o extra tira nesta célula) */
+      rotuloUnidade: function (nome, daCelula) { return nome + (daCelula ? ' · esta unidade' : ' · deslocamento'); },
       /* "Inserir na escala" (efetiva os extras) */
       inserida: 'Extras inseridos na escala.',
       semExtras: 'Não há extras para inserir.',

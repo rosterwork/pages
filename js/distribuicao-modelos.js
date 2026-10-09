@@ -1,15 +1,16 @@
 /* ============================================================
    DISTRIBUIÇÃO — aba Modelos (visualização)
-   Painel esquerdo (lista de modelos por composição) + corpo (vagas do
-   modelo selecionado, agrupadas por unidade, com acúmulo espelhado) +
-   rodapé (status).
+   Cada unidade tem os seus modelos: o painel esquerdo lista os modelos
+   da unidade escolhida no filtro (a composição por extenso) + corpo (vagas
+   do modelo selecionado, com acúmulo espelhado) + rodapé (status).
    ============================================================ */
 (function () {
   'use strict';
   window.RosterWork = window.RosterWork || {};
 
   var grupo = null;      /* { cia, unidades:[{unidade_id, nome, tipo, ...}] } */
-  var modelos = [];      /* retorno de dist_listar_modelos */
+  var modelos = [];      /* retorno de dist_listar_modelos (cada modelo tem uma unidade) */
+  var unidadeSel = null; /* unidade do filtro do painel: os modelos dela aparecem na lista */
   var selId = null;      /* id_grupo_completo selecionado */
   var seqCarregar = 0;   /* token da lista: ignora resposta antiga ao trocar de unidade rápido */
 
@@ -40,7 +41,6 @@
   var CATALOGO_ERROS = {
     falta_vaga:        { dominio: 'distribuicao', nivel: 'erro' },
     vaga_a_mais:       { dominio: 'distribuicao', nivel: 'erro' },
-    excesso_envio:     { dominio: 'distribuicao', nivel: 'erro' },
     falta_papel:       { dominio: 'distribuicao', nivel: 'erro' },
     vaga_sem_criterio: { dominio: 'distribuicao', nivel: 'erro' },
     /* posto com menos pessoas que o efetivo mínimo: vermelho aqui (igual aos outros), mas o banco não o
@@ -62,7 +62,6 @@
     var add = function (codigo, texto) { lista.push({ codigo: codigo, nivel: CATALOGO_ERROS[codigo].nivel, texto: texto }); };
     if ((u.vagas_pracas || 0) < (u.pracas || 0)) add('falta_vaga', M.faltaVagas(nome, u.vagas_pracas || 0, u.pracas || 0, 'praças'));
     if ((u.vagas_oficiais || 0) < (u.oficiais || 0)) add('falta_vaga', M.faltaVagas(nome, u.vagas_oficiais || 0, u.oficiais || 0, 'oficiais'));
-    if ((u.pracas || 0) < 0 || (u.oficiais || 0) < 0) add('excesso_envio', M.excessoEnvio(nome));   /* reforço demais */
     if ((tipo === 'CIA' || tipo === 'CIBM') && (u.oficiais || 0) > 0 && !u.tem_oficial_area) add('falta_papel', M.semPapel(nome, 'Oficial de Área'));
     if (tipo === 'PEL' && (u.pracas || 0) > 0 && !u.tem_chefe_socorro) add('falta_papel', M.semPapel(nome, 'Chefe de Socorro'));
     /* posto abaixo do efetivo mínimo (mínimo 0 nunca entra) */
@@ -117,8 +116,16 @@
     return null;
   }
 
+  /* pinta a cor das duas colunas (Oficiais · Praças) pelo erro/alerta da unidade do modelo */
+  function pintarCelulas(linha, nivel) {
+    Array.prototype.forEach.call(linha.querySelectorAll('.distribuicao-modelo-celula'), function (cel) {
+      cel.classList.remove('distribuicao-modelo-celula--erro', 'distribuicao-modelo-celula--alerta');
+      if (nivel) cel.classList.add('distribuicao-modelo-celula--' + nivel);
+    });
+  }
+
   /* pinta o status de UM modelo na lista ao vivo (o editor chama a cada mudança): repinta só o ícone
-     geral e a cor de cada célula, com a MESMA regra do rodapé (validar/unidadeNivel). Ao cancelar, o
+     geral e a cor das colunas, com a MESMA regra do rodapé (validar/unidadeNivel). Ao cancelar, o
      recarregar da lista repõe o estado salvo. Modelo novo (sem linha) é ignorado. */
   function atualizarStatusModelo(modeloId, unidades) {
     var linha = document.querySelector('#distribuicao-lista-modelos [data-modelo-id="' + modeloId + '"]');
@@ -134,28 +141,33 @@
       sEl.classList.remove('distribuicao-modelo-status--erro', 'distribuicao-modelo-status--alerta');
       if (temErro) sEl.classList.add(st.nivel === 'erro' ? 'distribuicao-modelo-status--erro' : 'distribuicao-modelo-status--alerta');
     }
-    /* as células seguem a ordem de grupo.unidades (igual ao renderPainel) */
-    var celulas = linha.querySelectorAll('.distribuicao-modelo-celula');
-    grupo.unidades.forEach(function (u, i) {
-      var cel = celulas[i];
-      if (!cel) return;
-      var d = unidadeDados(unidades, u.unidade_id);
-      var niv = d ? unidadeNivel(d) : null;
-      cel.classList.remove('distribuicao-modelo-celula--erro', 'distribuicao-modelo-celula--alerta');
-      if (niv) cel.classList.add('distribuicao-modelo-celula--' + niv);
-    });
+    var d = unidadeDados(unidades, unidadeSel);
+    pintarCelulas(linha, d ? unidadeNivel(d) : null);
+  }
+
+  /* a unidade de um modelo (cada modelo tem uma só) */
+  function unidadeDoModelo(m) { return (m && m.unidades && m.unidades[0]) || null; }
+
+  /* modelos da unidade escolhida no filtro, do menor para o maior (oficiais, depois praças) */
+  function modelosDaUnidade(unidadeId) {
+    return modelos.filter(function (m) { var u = unidadeDoModelo(m); return u && u.unidade_id === unidadeId; })
+      .sort(function (a, b) {
+        var ua = unidadeDoModelo(a), ub = unidadeDoModelo(b);
+        return ((ua.oficiais || 0) - (ub.oficiais || 0)) || ((ua.pracas || 0) - (ub.pracas || 0));
+      });
   }
 
   function renderPainel() {
     var lista = document.getElementById('distribuicao-lista-modelos');
     if (!lista) return;
     lista.textContent = '';
-    if (!modelos.length) {
+    var daUnidade = modelosDaUnidade(unidadeSel);
+    if (!daUnidade.length) {
       var est = RosterWork.tpl('tpl-distribuicao-estado');
       if (est) { est.textContent = RosterWork.mensagens.distribuicao.semModelos; lista.appendChild(est); }
       return;
     }
-    modelos.forEach(function (m) {
+    daUnidade.forEach(function (m) {
       var linha = RosterWork.tpl('tpl-distribuicao-modelo');
       if (!linha) return;
       linha.setAttribute('data-modelo-id', m.id_grupo_completo);
@@ -170,19 +182,11 @@
         if (er) er.classList.remove('oculto');
         if (sEl) sEl.classList.add(nivel === 'erro' ? 'distribuicao-modelo-status--erro' : 'distribuicao-modelo-status--alerta');
       }
-      var celulas = linha.querySelector('.distribuicao-modelo-celulas');
-      grupo.unidades.forEach(function (u) {
-        var cel = RosterWork.tpl('tpl-distribuicao-modelo-celula');
-        if (!cel) return;
-        var d = unidadeDados(m.unidades, u.unidade_id);
-        cel.querySelector('.distribuicao-modelo-celula-texto').textContent = d ? (d.oficiais || 0) + '·' + (d.pracas || 0) : '–';
-        /* ícone de acúmulo entre unidades quando a unidade está fundida com outra */
-        if (d && d.acumulada) cel.querySelector('.distribuicao-modelo-celula-acumulo').classList.remove('oculto');
-        /* cor do texto da célula pelo erro/alerta DAQUELA unidade (só a unidade com erro fica colorida) */
-        var nivCel = d ? unidadeNivel(d) : null;
-        if (nivCel) cel.classList.add('distribuicao-modelo-celula--' + nivCel);
-        celulas.appendChild(cel);
-      });
+      /* composição por extenso, em duas colunas: "Oficiais: N" · "Praças: N" */
+      var d = unidadeDoModelo(m);
+      linha.querySelector('.distribuicao-modelo-oficiais').textContent = String(d.oficiais || 0);
+      linha.querySelector('.distribuicao-modelo-pracas').textContent = String(d.pracas || 0);
+      pintarCelulas(linha, unidadeNivel(d));
       if (m.id_grupo_completo === selId) linha.classList.add('lista-item--ativo');
       var area = linha.querySelector('.distribuicao-modelo-area');
       if (area) area.addEventListener('click', function () { pedirSaida(function () { selecionar(m.id_grupo_completo); }); });
@@ -277,7 +281,7 @@
       if (selId !== id) return;                /* resposta obsoleta */
       if (!dados) { erroCorpo(); return; }     /* RPC falhou */
       var m = modelos.filter(function (x) { return x.id_grupo_completo === id; })[0];
-      if (RosterWork.distribuicaoEditar) RosterWork.distribuicaoEditar.abrir(grupo, m, dados);
+      if (RosterWork.distribuicaoEditar) RosterWork.distribuicaoEditar.abrir(m, dados);
     }).catch(erroCorpo);
   }
 
@@ -335,7 +339,6 @@
       var corpoSec = sec.querySelector('.distribuicao-unidade-corpo');
       var postosStatus = (status && status.postos[u.unidade_id]) || {};
       (u.postos || []).forEach(function (p) { corpoSec.appendChild(renderPosto(p, mapaSlots, postosStatus)); });
-      renderVemDeVer(u, corpoSec);   /* bloco de reforço (só-leitura) */
       corpo.appendChild(sec);
     });
   }
@@ -363,27 +366,6 @@
       linhas.appendChild(renderVaga(vg, mapaSlots, p));
     });
     return el;
-  }
-
-  /* bloco de reforço no modo Ver (só-leitura): origem · tipo · antiguidade/grau · rodízio */
-  function renderVemDeVer(u, corpoSec) {
-    if (!u || !u.vem_de || !u.vem_de.length) return;
-    var bloco = RosterWork.tpl('tpl-distribuicao-reforco-bloco');
-    if (!bloco) return;
-    var linhas = bloco.querySelector('.distribuicao-vagas-linhas');
-    u.vem_de.forEach(function (r, i) {
-      var el = RosterWork.tpl('tpl-distribuicao-reforco-ver');
-      if (!el) return;
-      el.querySelector('.distribuicao-vaga-num').textContent = String(i + 1);
-      var ud = unidadeDoGrupo(r.origem_unidade_id);
-      el.querySelector('.distribuicao-reforco-origem .distribuicao-cel-texto').textContent = ud ? ud.nome : '';
-      el.querySelector('.distribuicao-vaga-perfil').textContent = r.tipo_contador === 'Oficiais' ? 'Oficial' : 'Praça';
-      el.querySelector('.distribuicao-vaga-antig').textContent = r.ordem ? (r.ordem + 'º mais ' + (r.ordem_sentido === 'moderno' ? 'moderno' : 'antigo')) : '';
-      el.querySelector('.distribuicao-vaga-grau').textContent = r.ideal ? (r.ideal + (r.ideal_calc === '+' ? ' ou +' : (r.ideal_calc === '-' ? ' ou -' : ''))) : '';
-      if (r.rodizio) { var ic = el.querySelector('.distribuicao-vaga-rod .icone'); if (ic) ic.classList.remove('oculto'); }
-      linhas.appendChild(el);
-    });
-    corpoSec.appendChild(bloco);
   }
 
   /* grupo de acúmulo do slot: [principal, …dependentes] (principal = 1ª posição) */
@@ -495,26 +477,10 @@
      unidades que entram no modelo, isto é, com composição > 0). `comp` = { unidade_id: { oficiais, pracas } }. */
   function contarUnidades(unidades, comp) {
     comp = comp || {};
-    /* reforço: quanto cada unidade ENVIA (é origem) e RECEBE (é destino), por tipo */
-    var enviados = {}, recebidos = {};
-    (unidades || []).forEach(function (u) {
-      (u.vemDe || u.vem_de || []).forEach(function (r) {
-        var origem = r.origemUnidadeId != null ? r.origemUnidadeId : r.origem_unidade_id;
-        var of = r.tipo_contador === 'Oficiais' ? 1 : 0, pc = r.tipo_contador === 'Oficiais' ? 0 : 1;
-        recebidos[u.unidade_id] = recebidos[u.unidade_id] || { of: 0, pc: 0 };
-        recebidos[u.unidade_id].of += of; recebidos[u.unidade_id].pc += pc;
-        if (origem != null) {
-          enviados[origem] = enviados[origem] || { of: 0, pc: 0 };
-          enviados[origem].of += of; enviados[origem].pc += pc;
-        }
-      });
-    });
     return (unidades || []).map(function (u) {
       var c = comp[u.unidade_id] || {};
-      var env = enviados[u.unidade_id] || { of: 0, pc: 0 };
-      var rec = recebidos[u.unidade_id] || { of: 0, pc: 0 };
-      var alocarOf = (c.oficiais || 0) - env.of + rec.of;   /* a alocar = disponível − enviados + recebidos */
-      var alocarPc = (c.pracas || 0) - env.pc + rec.pc;
+      var alocarOf = c.oficiais || 0;   /* a alocar = a composição do modelo */
+      var alocarPc = c.pracas || 0;
       var temComposicao = (c.oficiais || 0) > 0 || (c.pracas || 0) > 0;
       var vof = 0, vpc = 0, oa = false, cs = false, abaixo = [], semCriterio = [];
       (u.postos || []).forEach(function (p) {
@@ -586,23 +552,14 @@
     var rod = document.getElementById('distribuicao-rodape');
     if (!rod) return;
     rod.textContent = '';
+    var ud = unidadeDoGrupo(unidadeSel);
     var itens = status.itens.length ? status.itens
-      : [{ nivel: 'ok', texto: RosterWork.mensagens.distribuicao.tudoCerto(listarNomes(grupo.unidades.map(function (u) { return u.nome; }))) }];
+      : [{ nivel: 'ok', texto: RosterWork.mensagens.distribuicao.tudoCerto(ud ? ud.nome : '') }];
     preencherStatus(rod, itens);
   }
 
-  /* "A, B e C" */
-  function listarNomes(nomes) {
-    if (nomes.length <= 1) return nomes.join('');
-    return nomes.slice(0, -1).join(', ') + ' e ' + nomes[nomes.length - 1];
-  }
-
-  /* ---- API da página ---- */
-  function carregar(g) {
-    grupo = g;
-    selId = null;
-    /* a lista (re)carregou: não há edição aberta → descarta estado obsoleto do editor (sujo, pilhas) */
-    if (RosterWork.distribuicaoEditar && RosterWork.distribuicaoEditar.descartar) RosterWork.distribuicaoEditar.descartar();
+  /* corpo sem modelo aberto: a mensagem "selecione um modelo" e o rodapé vazio */
+  function limparCorpo() {
     var corpo = document.getElementById('distribuicao-corpo');
     var rod = document.getElementById('distribuicao-rodape');
     if (rod) rod.textContent = '';
@@ -611,6 +568,29 @@
       var est = RosterWork.tpl('tpl-distribuicao-estado');
       if (est) { est.textContent = RosterWork.mensagens.distribuicao.selecioneModelo; corpo.appendChild(est); }
     }
+  }
+
+  /* tira a seleção da lista (o Novo modelo ocupa o corpo) */
+  function limparSelecao() {
+    selId = null;
+    marcarAtivo();
+    if (RosterWork.distribuicaoEditar && RosterWork.distribuicaoEditar.mostrarHistorico) RosterWork.distribuicaoEditar.mostrarHistorico(false);
+  }
+
+  /* troca a unidade do filtro: recarrega a lista (exclui um modelo rascunho deixado sem salvar) */
+  function escolherUnidade(unidadeId) {
+    return excluirRascunho().then(function () { return carregar(grupo, unidadeId); });
+  }
+
+  /* ---- API da página ---- */
+  function carregar(g, unidadeId) {
+    grupo = g;
+    if (unidadeId != null) unidadeSel = unidadeId;
+    if (unidadeSel == null || !unidadeDoGrupo(unidadeSel)) unidadeSel = g.unidades[0].unidade_id;
+    selId = null;
+    /* a lista (re)carregou: não há edição aberta → descarta estado obsoleto do editor (sujo, pilhas) */
+    if (RosterWork.distribuicaoEditar && RosterWork.distribuicaoEditar.descartar) RosterWork.distribuicaoEditar.descartar();
+    limparCorpo();
     var btnNovo = document.getElementById('distribuicao-novo-modelo');
     if (btnNovo) {
       btnNovo.classList.toggle('oculto', !RosterWork.sessao.ehAdmin());   // só admin cria modelo
@@ -618,7 +598,10 @@
         btnNovo.disabled = false;
         if (!btnNovo._ligado) {
           btnNovo._ligado = true;
-          btnNovo.addEventListener('click', function () { if (RosterWork.distribuicaoCriar) RosterWork.distribuicaoCriar.novo(grupo); });
+          /* o modelo novo é da unidade do filtro; com edição aberta, confirma antes */
+          btnNovo.addEventListener('click', function () {
+            pedirSaida(function () { if (RosterWork.distribuicaoCriar) RosterWork.distribuicaoCriar.novo(grupo, unidadeSel); });
+          });
         }
       }
     }
@@ -644,6 +627,12 @@
     validar: validar,
     recarregar: recarregar,
     recarregarLista: function () { return carregar(grupo); },
+    escolherUnidade: escolherUnidade,
+    unidadeSelecionada: function () { return unidadeSel; },
+    modelosDaUnidade: modelosDaUnidade,
+    selecionar: selecionar,
+    limparSelecao: limparSelecao,
+    limparCorpo: limparCorpo,
     editar: editarModelo,
     nivelStatus: nivelStatus,
     montarItemStatus: montarItemStatus,

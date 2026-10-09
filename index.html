@@ -1131,6 +1131,13 @@
     </div>
   </template>
 
+  <!-- militar de outra unidade na tira de ícones; o span recebe a dica com a unidade dele (data-dica) -->
+  <template id="tpl-escala-outra-unidade-icone">
+    <span class="escala-distribuicao-outra-unidade">
+      <svg class="icone" width="13" height="13" aria-hidden="true"><use href="icones/icone-reforco.svg#icone-reforco"/></svg>
+    </span>
+  </template>
+
   <template id="tpl-escala-distribuicao-hora">
     <span class="escala-distribuicao-hora">
       <span class="escala-distribuicao-hora-ini"></span>
@@ -1207,6 +1214,10 @@
         <span class="escala-legenda-item">
           <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-regra.svg#icone-regra"/></svg>
           <span>Tem regra</span>
+        </span>
+        <span class="escala-legenda-item">
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-reforco.svg#icone-reforco"/></svg>
+          <span>De outra unidade</span>
         </span>
       </div>
     </div>

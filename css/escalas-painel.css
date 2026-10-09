@@ -459,7 +459,8 @@
 }
 
 /* ícone de regra (exclusivo/proibido) na tira de ícones — o span recebe a dica (data-dica) */
-.escala-distribuicao-regra {
+.escala-distribuicao-regra,
+.escala-distribuicao-outra-unidade {
   display: inline-flex;
   align-items: center;
 }
