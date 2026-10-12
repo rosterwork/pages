@@ -2,25 +2,24 @@
   <div class="pagina-cabecalho">
     <div class="pagina-titulos">
       <h1>Distribuição</h1>
-      <span class="pagina-subtitulo"></span>
     </div>
-  </div>
-
-  <div class="pagina-subcabecalho">
     <div class="abas" id="distribuicao-abas">
       <button type="button" class="aba aba--ativa" data-aba="modelos">Modelos</button>
       <button type="button" class="aba" data-aba="regras">Regras</button>
     </div>
+  </div>
+
+  <div class="pagina-subcabecalho">
     <!-- período dos modelos (aba Modelos): setas passam de período; o nome abre a lista (distribuicao-periodos.js) -->
     <div class="geral-periodo oculto" id="distribuicao-periodo">
-      <button type="button" class="botao botao--icone botao--pequeno" id="distribuicao-periodo-anterior" aria-label="Período anterior">
+      <button type="button" class="botao botao--icone" id="distribuicao-periodo-anterior" aria-label="Período anterior">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-esquerda.svg#icone-seta-esquerda"/></svg>
       </button>
       <span class="dropdown">
         <button type="button" class="geral-periodo-nome" id="distribuicao-periodo-nome"></button>
         <div class="dropdown-menu distribuicao-periodo-menu" id="distribuicao-periodo-lista"></div>
       </span>
-      <button type="button" class="botao botao--icone botao--pequeno" id="distribuicao-periodo-proximo" aria-label="Próximo período">
+      <button type="button" class="botao botao--icone" id="distribuicao-periodo-proximo" aria-label="Próximo período">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
       </button>
     </div>
@@ -42,7 +41,7 @@
       <!-- painel esquerdo: modelos da unidade escolhida no filtro (a companhia e os pelotões dela) -->
       <aside class="geral-painel-esquerdo" id="distribuicao-painel">
         <div class="geral-painel-esquerdo-cabecalho distribuicao-filtro-barra">
-          <div class="abas abas--pequenas" id="distribuicao-unidades" role="tablist" aria-label="Unidade"></div>
+          <div class="abas abas--seletor" id="distribuicao-unidades" role="tablist" aria-label="Unidade"></div>
         </div>
         <div class="geral-painel-esquerdo-lista" id="distribuicao-lista-modelos"></div>
         <div class="geral-painel-esquerdo-rodape">

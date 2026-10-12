@@ -2,23 +2,21 @@
   <div class="pagina-cabecalho">
     <div class="pagina-titulos">
       <h1>Extrajornada</h1>
-      <span class="pagina-subtitulo"></span>
     </div>
-  </div>
-
-  <div class="pagina-subcabecalho">
     <div class="abas" id="extrajornada-abas">
       <button type="button" class="aba aba--ativa" data-aba="escala">Escala</button>
       <button type="button" class="aba" data-aba="disponibilidade">Disponibilidade</button>
     </div>
+  </div>
 
+  <div class="pagina-subcabecalho">
     <!-- seletor de mês ÚNICO, compartilhado pelas duas abas (o orquestrador é o dono) -->
     <div class="geral-periodo" id="extra-periodo">
-      <button type="button" class="botao botao--icone botao--pequeno" id="extra-periodo-anterior" aria-label="Mês anterior">
+      <button type="button" class="botao botao--icone" id="extra-periodo-anterior" aria-label="Mês anterior">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-esquerda.svg#icone-seta-esquerda"/></svg>
       </button>
       <span class="geral-periodo-nome" id="extra-periodo-nome"></span>
-      <button type="button" class="botao botao--icone botao--pequeno" id="extra-periodo-proximo" aria-label="Próximo mês">
+      <button type="button" class="botao botao--icone" id="extra-periodo-proximo" aria-label="Próximo mês">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
       </button>
     </div>
@@ -26,11 +24,11 @@
     <!-- escopo dos interessados (Total / a CIA / cada PEL): só na aba Disponibilidade, para voluntário -->
     <div class="extra-interessados oculto" id="extra-interessados">
       <span class="extra-interessados-rotulo">Interessados</span>
-      <div class="abas abas--pequenas" id="extra-procura-abas"></div>
+      <div class="abas abas--seletor" id="extra-procura-abas"></div>
     </div>
 
     <!-- modo da grade (Agenda = dias × unidades · Calendário = mês): só na aba Escala -->
-    <div class="abas abas--pequenas oculto" id="extra-escala-modos">
+    <div class="abas abas--seletor oculto" id="extra-escala-modos">
       <button type="button" class="aba aba--ativa" data-modo="agenda">Agenda</button>
       <button type="button" class="aba" data-modo="calendario">Calendário</button>
     </div>
@@ -107,7 +105,7 @@
           <div class="extra-disp-aviso" id="extra-disp-aviso"></div>
           <div class="campo">
             <span class="campo-rotulo">Sou voluntário em <span id="extra-mes-inline"></span></span>
-            <div class="abas abas--pequenas" id="extra-voluntario">
+            <div class="abas abas--seletor" id="extra-voluntario">
               <button type="button" class="aba" data-valor="sim">Sim</button>
               <button type="button" class="aba" data-valor="nao">Não</button>
             </div>
@@ -115,7 +113,7 @@
 
           <div class="campo extra-so-voluntario">
             <span class="campo-rotulo">Fechar blocos de 24 h <span class="extra-nota">(4/8)</span></span>
-            <div class="abas abas--pequenas" id="extra-fecha24h">
+            <div class="abas abas--seletor" id="extra-fecha24h">
               <button type="button" class="aba" data-valor="sim">Sim</button>
               <button type="button" class="aba" data-valor="nao">Não</button>
             </div>

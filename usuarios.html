@@ -2,7 +2,7 @@
   <div class="pagina-cabecalho">
     <div class="pagina-titulos">
       <h1>Usuários</h1>
-      <span class="pagina-subtitulo"></span>
+      <span class="pagina-titulo-contagem"></span>
     </div>
     <span class="espacador-flex"></span>
     <div class="dropdown" id="dropdown-ordem">
@@ -76,8 +76,6 @@
       <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-novo-usuario.svg#icone-novo-usuario"/></svg>
       <span>Novo usuário</span>
     </button>
-  </div>
-  <div class="pagina-subcabecalho">
     <div class="abas" id="usuarios-abas">
       <button type="button" class="aba aba--ativa" data-aba="efetivo">Efetivo</button>
       <button type="button" class="aba oculto" data-aba="aprovacoes" id="usuarios-aba-aprovacoes">
@@ -85,6 +83,10 @@
         <span class="selo aba-contagem oculto" id="usuarios-aprovacoes-contagem"></span>
       </button>
     </div>
+  </div>
+
+  <!-- barra sempre presente (os filtros da aba Efetivo moram nela): o conteúdo não "pula" ao trocar de aba -->
+  <div class="pagina-subcabecalho">
     <span class="espacador-flex"></span>
 
     <div class="usuarios-filtros" id="usuarios-filtros">
@@ -377,7 +379,7 @@
 
 <!-- molde: abas de seção do painel da ficha (Dados / Carreira) -->
 <template id="tpl-usuarios-painel-secoes">
-  <div class="abas abas--pequenas">
+  <div class="abas">
     <button type="button" class="aba aba--ativa" data-secao="dados">Dados</button>
     <button type="button" class="aba" data-secao="carreira">Carreira</button>
   </div>

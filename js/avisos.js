@@ -70,7 +70,7 @@
     var listaNotificacoes = conteudo.querySelector('#avisos-notificacoes');
     var minhasPendencias = conteudo.querySelector('#avisos-minhas-pendencias');
     var pendenciasAdministracao = conteudo.querySelector('#avisos-pendencias');
-    var subtitulo = conteudo.querySelector('#avisos-subtitulo');
+    var contagem = conteudo.querySelector('#avisos-contagem');
     var btnNovo = conteudo.querySelector('#btn-novo-aviso-pagina');
     var btnLidas = conteudo.querySelector('#avisos-marcar-lidas');
     var abaAdministracao = conteudo.querySelector('#avisos-aba-administracao');
@@ -79,9 +79,9 @@
 
     var emAberto = 0;
 
-    function escreverSubtitulo() {
-      if (!subtitulo) return;
-      subtitulo.textContent = !emAberto ? ''
+    function escreverContagem() {
+      if (!contagem) return;
+      contagem.textContent = !emAberto ? ''
         : (emAberto === 1 ? '1 em aberto' : emAberto + ' em aberto');
     }
 
@@ -101,7 +101,7 @@
     function carregarNotificacoes() {
       if (!RW.avisosNotificacoes) return Promise.resolve();
       return RW.avisosNotificacoes.carregar(listaNotificacoes, carregarNotificacoes)
-        .then(function (n) { emAberto = n; escreverSubtitulo(); ajustarCabecalho(); });
+        .then(function (n) { emAberto = n; escreverContagem(); ajustarCabecalho(); });
     }
 
     /* uma leitura enche "Precisa de você" e a aba Administração, e devolve

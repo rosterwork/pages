@@ -2,14 +2,11 @@
   <div class="pagina-cabecalho">
     <div class="pagina-titulos">
       <h1>Escala</h1>
-      <span class="pagina-subtitulo"></span>
     </div>
-  </div>
-
-  <div class="pagina-subcabecalho">
     <!-- modos: o Dia (a escala principal, impressa e exibida na passagem de serviço) num grupo próprio,
-         à frente das outras visões; os dois grupos valem como uma escolha só (escalas.js) -->
-    <div class="escala-modos" id="escala-modos">
+         à frente das outras visões; os dois grupos valem como uma escolha só (escalas.js),
+         com um traço só (data-abas-grupo) -->
+    <div class="escala-modos" id="escala-modos" data-abas-grupo>
       <div class="abas" id="escala-modo-principal">
         <button type="button" class="aba aba--ativa" data-modo="dia">Dia</button>
       </div>
@@ -20,28 +17,30 @@
         <button type="button" class="aba" data-modo="colunas">Colunas</button>
       </div>
     </div>
+  </div>
 
+  <div class="pagina-subcabecalho">
     <div class="geral-periodo">
-      <button type="button" class="botao botao--icone botao--pequeno" id="escala-periodo-anterior" aria-label="Período anterior">
+      <button type="button" class="botao botao--icone" id="escala-periodo-anterior" aria-label="Período anterior">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-esquerda.svg#icone-seta-esquerda"/></svg>
       </button>
       <button type="button" class="geral-periodo-nome" id="escala-periodo-nome"></button>
-      <button type="button" class="botao botao--icone botao--pequeno" id="escala-periodo-proximo" aria-label="Próximo período">
+      <button type="button" class="botao botao--icone" id="escala-periodo-proximo" aria-label="Próximo período">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
       </button>
     </div>
 
-    <div class="abas abas--pequenas oculto" id="escala-sub-mes">
+    <div class="abas abas--seletor oculto" id="escala-sub-mes">
       <button type="button" class="aba aba--ativa" data-mes="agenda">Agenda</button>
       <button type="button" class="aba" data-mes="calendario">Calendário</button>
     </div>
 
     <div class="escala-sub-colunas oculto" id="escala-sub-colunas">
-      <div class="abas abas--pequenas" id="escala-colunas-tipo">
+      <div class="abas abas--seletor" id="escala-colunas-tipo">
         <button type="button" class="aba aba--ativa" data-colunas-tipo="dias">Dias</button>
         <button type="button" class="aba" data-colunas-tipo="unidades">Unidades</button>
       </div>
-      <div class="abas abas--pequenas" id="escala-colunas-qtd">
+      <div class="abas abas--seletor" id="escala-colunas-qtd">
         <button type="button" class="aba" data-colunas="2">2</button>
         <button type="button" class="aba aba--ativa" data-colunas="3">3</button>
         <button type="button" class="aba" data-colunas="4">4</button>
@@ -50,13 +49,13 @@
     </div>
 
     <div class="escala-sub-unidades oculto" id="escala-sub-unidades">
-      <div class="abas abas--pequenas" id="escala-unidades-abas" data-abas-multi></div>
+      <div class="abas abas--seletor" id="escala-unidades-abas" data-abas-multi></div>
     </div>
 
     <span class="espacador-flex"></span>
 
     <!-- imprimir: abre o painel "Imprimir escala" (datas + unidades → PDF); à esquerda da busca, em todos os modos -->
-    <button type="button" class="botao botao--pequeno botao--quadrado" id="escala-imprimir" aria-label="Imprimir escala" data-dica="Imprimir">
+    <button type="button" class="botao botao--quadrado" id="escala-imprimir" aria-label="Imprimir escala" data-dica="Imprimir">
       <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-imprimir.svg#icone-imprimir"/></svg>
     </button>
 
@@ -84,7 +83,7 @@
 
     <!-- legenda da grade: o que cada cor, ícone e selo quer dizer (o conteúdo acompanha o modo; escalas-legenda.js) -->
     <div class="dropdown" id="escala-legenda-grade">
-      <button type="button" class="botao botao--pequeno" id="escala-legenda-botao">Legenda</button>
+      <button type="button" class="botao" id="escala-legenda-botao">Legenda</button>
       <div class="dropdown-menu dropdown-menu--largo escala-legenda-menu">
         <div class="dropdown-menu-rolagem">
           <div class="escala-legenda-itens" data-legenda-conteudo></div>

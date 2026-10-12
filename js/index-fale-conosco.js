@@ -77,7 +77,8 @@
       var pagina = '';
       var sel = document.querySelector('.menu-item--selecionado');
       if (sel) pagina = sel.getAttribute('data-pagina') || '';
-      var abaAtiva = document.querySelector('.pagina-subcabecalho .aba--ativa');
+      /* a aba ativa do menu da página (não a do seletor), onde quer que o menu esteja */
+      var abaAtiva = document.querySelector('.pagina .abas:not(.abas--seletor) .aba--ativa');
       var prefs = null;
       try { prefs = JSON.parse(sessionStorage.getItem('rosterwork_preferencias')); } catch (e) {}
       return {

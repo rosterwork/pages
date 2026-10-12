@@ -1,11 +1,11 @@
 /* ============================================================
-   ESCALAS — controles do sub-cabeçalho (régua de modos)
-   As abas de modo usam o componente geral .abas; aqui ficam
-   a navegação de período e os contêineres dos subgrupos.
+   ESCALAS — controles da barra
+   As abas de modo ficam no cabeçalho: o componente geral .abas
+   (data-abas-grupo) cuida do traço único, do espaço entre os grupos
+   e da divisória. Aqui ficam os contêineres dos subgrupos da barra.
    ============================================================ */
 
-/* grupos de abas lado a lado: os modos ([Dia] + as demais visões), Colunas (tipo + quantidade) e unidades */
-.escala-modos,
+/* seletores lado a lado na barra: Colunas (tipo + quantidade) e unidades */
 .escala-sub-colunas,
 .escala-sub-unidades {
   display: inline-flex;

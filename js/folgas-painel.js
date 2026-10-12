@@ -111,15 +111,15 @@
     aoFecharExterno = aoFechar || null;
     RW.painel.abrir({ titulo: nomeDe(militar), subtitulo: unidadePai(militar.lotacao_atual), aoFechar: fecharReset });
 
-    var subcab = RW.painel.subcabecalho();
-    if (subcab) {
-      subcab.textContent = '';
+    var linha = RW.painel.linhaAbas();
+    if (linha) {
+      linha.textContent = '';
       var abas = RosterWork.tpl('tpl-folga-painel-subabas');
       if (abas) {
         /* Ações só para o admin, e nunca sobre si mesmo (o banco também trava conceder/ajustar o próprio) */
         if (!ctx.admin || militar.usuario_id === ctx.cpf) { var b = abas.querySelector('[data-sub="acoes"]'); if (b) b.remove(); }
-        subcab.classList.remove('oculto');
-        subcab.appendChild(abas);
+        linha.classList.remove('oculto');
+        linha.appendChild(abas);
         if (RW.abas) RW.abas.ligar(abas, function (aba) {
           if (aba.getAttribute('data-sub') === 'acoes') mostrarAcoes(); else mostrarExtrato();
         });
@@ -184,7 +184,7 @@
     var titulo = modo === 'conceder' ? msg().acaoConceder : msg().acaoSolicitar;
     aoFecharExterno = opcoes.aoFechar || null;
     RW.painel.abrir({ titulo: titulo, subtitulo: nomeDe(militar), aoFechar: fecharReset, aoTentarFechar: tentarFecharForm });
-    var subcab = RW.painel.subcabecalho(); if (subcab) { subcab.textContent = ''; subcab.classList.add('oculto'); }
+    var linha = RW.painel.linhaAbas(); if (linha) { linha.textContent = ''; linha.classList.add('oculto'); }
     var corpo = RW.painel.corpo(); corpo.textContent = '';
     var raiz = RosterWork.tpl('tpl-folga-form'); corpo.appendChild(raiz);
 
@@ -268,7 +268,7 @@
     var militar = opcoes.militar || {};
     aoFecharExterno = opcoes.aoFechar || null;
     RW.painel.abrir({ titulo: msg().acaoAjuste, subtitulo: nomeDe(militar), aoFechar: fecharReset, aoTentarFechar: tentarFecharForm });
-    var subcab = RW.painel.subcabecalho(); if (subcab) { subcab.textContent = ''; subcab.classList.add('oculto'); }
+    var linha = RW.painel.linhaAbas(); if (linha) { linha.textContent = ''; linha.classList.add('oculto'); }
     var corpo = RW.painel.corpo(); corpo.textContent = '';
     var raiz = RosterWork.tpl('tpl-folga-form-ajuste'); corpo.appendChild(raiz);
     form = { modo: 'ajuste', cpfAlvo: militar.usuario_id, saldoAtual: opcoes.saldoAtual || 0, tipo: 'adicionar', sujo: false, btnConfirmar: null, aoVoltar: opcoes.aoVoltar || null };

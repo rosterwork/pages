@@ -1,9 +1,9 @@
 /* ============================================================
    GERAL-PAINEL — painel lateral de detalhes (a "gaveta" direita)
-   Casca compartilhada: abre/fecha, alterna Ver/Editar (pelas abas ou
+   Casca compartilhada: abre/fecha, alterna Ver/Editar (pelo seletor ou
    pelo botão Editar) e entrega à
-   página os pontos onde montar o conteúdo (corpo, sub-cabeçalho e
-   rodapé) e as peças prontas (seção, caixa, linha rótulo/valor).
+   página os pontos onde montar o conteúdo (linha das abas de seção,
+   corpo, sub-cabeçalho e rodapé) e as peças prontas (seção, caixa, linha rótulo/valor).
    Só liga/desliga classe e clona moldes — não inventa estrutura.
    Estrutura no index.html (#painel); estilos em geral-painel.css.
    ============================================================ */
@@ -12,7 +12,7 @@
 
   window.RosterWork = window.RosterWork || {};
 
-  var painel, elTitulo, elTituloExtra, elSubtitulo, elAbas, elEditar, elSubcabecalho, elCorpo, elRodape, elFechar;
+  var painel, elTitulo, elTituloExtra, elSubtitulo, elAbas, elEditar, elLinhaAbas, elSubcabecalho, elCorpo, elRodape, elFechar;
   var aoFecharAtual = null;       // callback da página, disparado ao fechar
   var aoTentarFecharAtual = null; // interceptador opcional do fechar por gesto (Esc/X): devolve true para segurar
   var aoMudarModoAtual = null;    // callback da página, disparado ao trocar Ver/Editar
@@ -27,6 +27,7 @@
     elSubtitulo = document.getElementById('painel-subtitulo');
     elAbas = document.getElementById('painel-abas');
     elEditar = document.getElementById('painel-editar');
+    elLinhaAbas = document.getElementById('painel-linha-abas');
     elSubcabecalho = document.getElementById('painel-subcabecalho');
     elCorpo = document.getElementById('painel-corpo');
     elRodape = document.getElementById('painel-rodape');
@@ -69,6 +70,8 @@
 
   function limparConteudo() {
     elCorpo.textContent = '';
+    elLinhaAbas.textContent = '';
+    elLinhaAbas.classList.add('oculto');
     elSubcabecalho.textContent = '';
     elSubcabecalho.classList.add('oculto');
     elRodape.textContent = '';
@@ -76,7 +79,7 @@
   }
 
   /* abre o painel. config = { titulo, tituloExtra?, subtitulo, editavel?, modoFixo?, botaoEditar?, largo?, aoMudarModo?(modo), aoFechar?(), aoTentarFechar?()->bool }
-     o corpo/sub-cabeçalho/rodapé nascem vazios; a página preenche pelos getters abaixo */
+     a linha das abas/corpo/sub-cabeçalho/rodapé nascem vazios; a página preenche pelos getters abaixo */
   function abrir(config) {
     if (!painel) return;
     config = config || {};
@@ -211,7 +214,7 @@
       cab.setAttribute('aria-expanded', abrir ? 'true' : 'false');
     });
 
-    /* as abas Ver/Editar usam o componente geral de abas (geral-abas.js já cuida do
+    /* o seletor Ver/Editar usa o componente geral de abas (geral-abas.js já cuida do
        visual por delegação); aqui só reagimos à troca: guardamos o modo e avisamos a página */
     if (window.RosterWork.abas) {
       window.RosterWork.abas.ligar(elAbas, function (aba) {
@@ -250,6 +253,7 @@
     fechar: fechar,
     estaAberto: estaAberto,
     definirTitulos: definirTitulos,
+    linhaAbas: function () { return elLinhaAbas; },
     corpo: function () { return elCorpo; },
     subcabecalho: function () { return elSubcabecalho; },
     rodape: function () { return elRodape; },

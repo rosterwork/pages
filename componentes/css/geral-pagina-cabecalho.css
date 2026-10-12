@@ -14,40 +14,47 @@
   min-height: 0;
 }
 
-/* cabeçalho da página: altura fixa de 65px, reserva título + subtítulo */
+/* cabeçalho da página, em duas linhas: a do título (48px; ações à direita)
+   e, quando a página tem abas, a das abas (36px, o trilho .abas como último filho) */
 .pagina-cabecalho {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 16px;
-  min-height: 65px;
+  column-gap: 16px;
   flex-shrink: 0;
   padding: 0 16px;
   border-bottom: 1px solid var(--borda);
 }
 
+/* linha do título: o h1 e a contagem lado a lado, na mesma linha de base,
+   centrados na altura da linha */
 .pagina-titulos {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  flex-wrap: wrap;
+  align-content: center;
+  align-items: baseline;
+  gap: 8px;
+  min-height: 48px;
 }
 
 .pagina-titulos h1 {
   font-size: 18px;
 }
 
-/* subtítulo: uma linha; reserva o espaço mesmo vazio para o título não "pular"
-   quando a contagem entrar (não cresce além de uma linha) */
-.pagina-subtitulo {
-  min-height: 16px;
-  line-height: 16px;
+/* contagem ao lado do título (ex.: "61 militares"); o JS preenche */
+.pagina-titulo-contagem {
   font-size: 12px;
   color: var(--texto-suave);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-/* sub-cabeçalho: barra de controles, altura fixa de 46px */
+/* linha das abas: o trilho ocupa a largura toda, embaixo do título */
+.pagina-cabecalho > .abas,
+.pagina-cabecalho > [data-abas-grupo] {
+  flex-basis: 100%;
+}
+
+/* sub-cabeçalho: barra de controles (branca, 46px; controles com 32px) */
 .pagina-subcabecalho {
   display: flex;
   align-items: center;
@@ -56,7 +63,7 @@
   flex-shrink: 0;
   padding: 0 16px;
   border-bottom: 1px solid var(--borda);
-  background-color: var(--fundo-suave);
+  background-color: var(--fundo-superficie);
 }
 
 /* corpo rolável da página */

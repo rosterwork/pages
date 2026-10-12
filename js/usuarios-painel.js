@@ -415,14 +415,14 @@
 
   function aoMudarModo() { mostrarSecao(); }
 
-  /* sub-cabeçalho: abas Dados / Carreira */
+  /* linha das abas do painel: Dados / Carreira */
   function montarAbas() {
-    var sub = RosterWork.painel.subcabecalho();
+    var linha = RosterWork.painel.linhaAbas();
     var tpl = document.getElementById('tpl-usuarios-painel-secoes');
-    if (!sub || !tpl) return;
-    sub.appendChild(tpl.content.cloneNode(true));
-    sub.classList.remove('oculto');
-    var trilho = sub.querySelector('.abas');
+    if (!linha || !tpl) return;
+    linha.appendChild(tpl.content.cloneNode(true));
+    linha.classList.remove('oculto');
+    var trilho = linha.querySelector('.abas');
     if (trilho && RosterWork.abas) {
       RosterWork.abas.ligar(trilho, function (aba) {
         secaoAtual = aba.getAttribute('data-secao') || 'dados';

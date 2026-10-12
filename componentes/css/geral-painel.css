@@ -36,22 +36,41 @@
   width: 560px;
 }
 
-/* cabeçalho: títulos + abas Ver/Editar + fechar */
+/* cabeçalho, em duas linhas como o da página: a do título (48px; Ver/Editar ou
+   Editar + fechar à direita) e, quando o painel tem seções, a das abas (36px) */
 .painel-cabecalho {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  column-gap: 8px;
   flex-shrink: 0;
-  min-height: 55px;
   padding: 0 12px;
   border-bottom: 1px solid var(--borda);
 }
 
+/* o título ocupa o espaço livre e empurra os botões para a direita;
+   título longo corta com reticências (não joga os botões para baixo) */
 .painel-titulos {
   display: flex;
+  flex: 1 1 0;
   flex-direction: column;
   justify-content: center;
   min-width: 0;
+  min-height: 48px;
+}
+
+/* linha das abas de seção (a página preenche): o trilho ocupa a largura toda e,
+   como na página, a linha desce 1px para o traço apoiar na borda de baixo
+   (o cabeçalho do painel fica com a mesma altura do da página) */
+.painel-linha-abas {
+  display: flex;
+  flex-basis: 100%;
+  min-height: 36px;
+  margin-bottom: -1px;
+}
+
+.painel-linha-abas > .abas {
+  margin-bottom: 0;
 }
 
 .painel-titulo {
@@ -87,21 +106,22 @@
   text-overflow: ellipsis;
 }
 
-/* abas Ver/Editar travadas num modo (modoFixo): visíveis, mas não clicáveis */
+/* seletor Ver/Editar travado num modo (modoFixo): visível, mas não clicável */
 .painel-abas--fixo {
   pointer-events: none;
 }
 
-/* sub-cabeçalho: barra de abas de seção (a página preenche) */
+/* sub-cabeçalho: barra de controles e submenu do painel (a página preenche),
+   igual à barra da página — branca, 46px, controles com 32px */
 .painel-subcabecalho {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
-  min-height: 38px;
+  min-height: 46px;
   padding: 0 12px;
   border-bottom: 1px solid var(--borda);
-  background-color: var(--fundo-suave);
+  background-color: var(--fundo-superficie);
 }
 
 /* corpo rolável: recebe as peças (seção / caixa / linha) */

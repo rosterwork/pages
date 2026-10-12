@@ -236,16 +236,17 @@
               </span>
               <span class="painel-subtitulo" id="painel-subtitulo"></span>
             </div>
-            <span class="espacador-flex"></span>
-            <div class="abas abas--pequenas painel-abas oculto" id="painel-abas">
+            <div class="abas abas--seletor painel-abas oculto" id="painel-abas">
               <button type="button" class="aba aba--ativa" data-painel-modo="ver">Ver</button>
               <button type="button" class="aba" data-painel-modo="editar">Editar</button>
             </div>
             <!-- botão Editar (config.botaoEditar): sai da leitura para a edição; some durante a edição -->
-            <button type="button" class="botao botao--pequeno oculto" id="painel-editar">Editar</button>
-            <button type="button" class="botao botao--icone botao--pequeno" id="painel-fechar" aria-label="Fechar painel">
+            <button type="button" class="botao oculto" id="painel-editar">Editar</button>
+            <button type="button" class="botao botao--icone" id="painel-fechar" aria-label="Fechar painel">
               <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
             </button>
+            <!-- abas de seção (a página preenche): embaixo do título, como na página -->
+            <div class="painel-linha-abas oculto" id="painel-linha-abas"></div>
           </div>
           <div class="painel-subcabecalho oculto" id="painel-subcabecalho"></div>
           <div class="painel-corpo" id="painel-corpo"></div>
@@ -337,7 +338,7 @@
         </label>
         <div class="campo">
           <span class="campo-rotulo">Tipo</span>
-          <div class="abas abas--pequenas" id="fc-tipo">
+          <div class="abas abas--seletor" id="fc-tipo">
             <button type="button" class="aba" data-valor="sugestao">Sugestão</button>
             <button type="button" class="aba" data-valor="problema">Problema</button>
             <button type="button" class="aba" data-valor="outro">Outro</button>
@@ -758,7 +759,7 @@
   <template id="tpl-inicio-aviso-form">
     <div class="campo">
       <span class="campo-rotulo">Para quem</span>
-      <div class="abas abas--pequenas" id="aviso-alcance">
+      <div class="abas abas--seletor" id="aviso-alcance">
         <button type="button" class="aba aba--ativa" data-valor="unidades">Unidades</button>
         <button type="button" class="aba" data-valor="militares">Militares</button>
         <button type="button" class="aba" data-valor="todos">Todos</button>
@@ -911,9 +912,9 @@
   </template>
 
   <!-- ===== moldes do PAINEL DO DIA no modo EDITAR + seções (compartilhados Escala + Extrajornada) ===== -->
-  <!-- abas de seção do painel de detalhes (clonadas para o sub-cabeçalho da gaveta) -->
+  <!-- abas de seção do painel de detalhes (clonadas para a linha das abas da gaveta) -->
   <template id="tpl-escala-painel-secoes">
-    <div class="abas abas--pequenas">
+    <div class="abas">
       <button type="button" class="aba aba--ativa" data-secao="distribuicao">Distribuição</button>
       <button type="button" class="aba" data-secao="continuos">Contínuos</button>
       <button type="button" class="aba" data-secao="pontuais">Pontuais</button>

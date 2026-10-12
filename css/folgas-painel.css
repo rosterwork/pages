@@ -103,13 +103,3 @@
 .folga-acoes-btn {
   width: 100%;
 }
-
-/* seletor de direção do ajuste (Adicionar / Descontar), ocupa a largura */
-.folga-ajuste-tipo {
-  display: flex;
-  width: 100%;
-}
-.folga-ajuste-tipo .aba {
-  flex: 1;
-  justify-content: center;
-}

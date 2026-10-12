@@ -77,7 +77,7 @@
   }
 
   function atualizarSubtitulo() {
-    var sub = raiz.querySelector('.pagina-subtitulo');
+    var sub = raiz.querySelector('.pagina-titulo-contagem');
     if (!sub) return;
     if (abaAtual === 'bugs' && RosterWork.programadorBugs) {
       sub.textContent = RosterWork.programadorBugs.subtitulo();

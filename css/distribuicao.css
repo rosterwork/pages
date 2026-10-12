@@ -4,9 +4,10 @@
    Cores/medidas só do tema (geral-tema) e das escalas do MANUAL.
    ============================================================ */
 
-/* filtro do painel: a companhia e os pelotões (abas pequenas); com muitos pelotões, quebra em duas linhas */
+/* filtro do painel: a companhia e os pelotões (seletor), na altura das barras;
+   com muitos pelotões, quebra em duas linhas */
 .distribuicao-filtro-barra {
-  min-height: 40px;
+  min-height: 46px;
 }
 .distribuicao-filtro-barra .abas {
   flex-wrap: wrap;

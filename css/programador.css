@@ -9,12 +9,9 @@
   width: 340px;
 }
 
-/* a barra de filtro ocupa a altura toda do cabeçalho do painel */
+/* a barra de filtro ocupa a altura toda do cabeçalho do painel (a altura das barras) */
 .programador-filtro-barra {
-  min-height: 40px;
-}
-.programador-filtro-barra .abas {
-  width: 100%;
+  min-height: 46px;
 }
 
 /* item da lista (empilha assunto/selo e tipo/autor) */
@@ -121,7 +118,7 @@
    e situação (Em correção = escuro, Corrigido = sucesso).
    ============================================================ */
 
-/* cabeçalho do painel esquerdo com duas linhas: situação + gravidade/período */
+/* cabeçalho do painel esquerdo com duas linhas: o menu de situação + gravidade/período */
 .programador-bugs-filtros {
   flex-direction: column;
   align-items: stretch;
@@ -139,7 +136,7 @@
   min-width: 0;
 }
 
-.programador-bugs-seletores .seletor {
+.programador-bugs-filtros .seletor {
   width: 100%;
   font-size: 12px;
 }

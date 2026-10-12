@@ -58,11 +58,6 @@
   color: var(--texto-suave);
 }
 
-/* o seletor de tema acompanha o próprio conteúdo (não estica com o campo) */
-.perfil-tema {
-  align-self: flex-start;
-}
-
 /* ---------- grade de dados em leitura (rótulo em cima, valor embaixo) ----------
    O equivalente de PÁGINA da .linha-info da gaveta: sem divisórias, em colunas. */
 .perfil-grade {

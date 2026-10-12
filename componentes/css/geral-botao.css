@@ -83,6 +83,14 @@
   color: var(--texto-forte);
 }
 
+/* desabilitado sem caixa: só o ícone apaga (ex.: as setas do período quando não há
+   período antes ou depois) */
+.botao--icone:disabled {
+  border-color: transparent;
+  background-color: transparent;
+  color: var(--texto-debil);
+}
+
 .botao--pequeno.botao--icone {
   min-width: var(--botao-altura-pequeno);
   padding: 0;

@@ -2,11 +2,8 @@
   <div class="pagina-cabecalho">
     <div class="pagina-titulos">
       <h1>Programador</h1>
-      <span class="pagina-subtitulo"></span>
+      <span class="pagina-titulo-contagem"></span>
     </div>
-  </div>
-
-  <div class="pagina-subcabecalho">
     <div class="abas" id="programador-abas">
       <button type="button" class="aba aba--ativa" data-aba="mensagens">Mensagens</button>
       <button type="button" class="aba" data-aba="bugs">Bugs</button>
@@ -18,7 +15,7 @@
 
       <aside class="geral-painel-esquerdo programador-esquerdo">
         <div class="geral-painel-esquerdo-cabecalho programador-filtro-barra">
-          <div class="abas abas--pequenas" id="programador-filtro">
+          <div class="abas abas--seletor" id="programador-filtro">
             <button type="button" class="aba aba--ativa" data-filtro="todos">Todos</button>
             <button type="button" class="aba" data-filtro="nao_lido">Não lidos</button>
             <button type="button" class="aba" data-filtro="lido">Lidos</button>
@@ -44,11 +41,19 @@
 
       <aside class="geral-painel-esquerdo programador-esquerdo">
         <div class="geral-painel-esquerdo-cabecalho programador-filtro-barra programador-bugs-filtros">
-          <div class="abas abas--pequenas" id="bugs-filtro-situacao">
-            <button type="button" class="aba aba--ativa" data-situacao="aberto">Abertos</button>
-            <button type="button" class="aba" data-situacao="em_correcao">Em correção</button>
-            <button type="button" class="aba" data-situacao="corrigido">Corrigidos</button>
-            <button type="button" class="aba" data-situacao="descartado">Descartados</button>
+          <!-- situação: menu suspenso (as quatro opções não cabem num seletor na largura do painel) -->
+          <div class="dropdown" id="bugs-situacao-dropdown">
+            <button type="button" class="seletor" id="bugs-situacao">
+              <span class="seletor-texto" id="bugs-situacao-texto">Abertos</span>
+              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+            </button>
+            <div class="dropdown-menu" id="bugs-situacao-menu">
+              <div class="dropdown-titulo">Situação</div>
+              <button type="button" class="dropdown-item dropdown-item--ativo" data-situacao="aberto">Abertos</button>
+              <button type="button" class="dropdown-item" data-situacao="em_correcao">Em correção</button>
+              <button type="button" class="dropdown-item" data-situacao="corrigido">Corrigidos</button>
+              <button type="button" class="dropdown-item" data-situacao="descartado">Descartados</button>
+            </div>
           </div>
           <div class="programador-bugs-seletores">
             <div class="dropdown" id="bugs-gravidade-dropdown">
@@ -134,7 +139,7 @@
 
       <div class="campo">
         <span class="campo-rotulo">Situação</span>
-        <div class="abas abas--pequenas" id="programador-det-status">
+        <div class="abas abas--seletor" id="programador-det-status">
           <button type="button" class="aba" data-status="nao_lido">Não lido</button>
           <button type="button" class="aba" data-status="lido">Lido</button>
           <button type="button" class="aba" data-status="resolvido">Resolvido</button>
@@ -341,7 +346,7 @@
       </label>
       <div class="campo">
         <span class="campo-rotulo">Gravidade</span>
-        <div class="abas abas--pequenas programador-bug-gravidade" id="bug-form-gravidade">
+        <div class="abas abas--seletor programador-bug-gravidade" id="bug-form-gravidade">
           <button type="button" class="aba" data-gravidade="leve">Leve</button>
           <button type="button" class="aba" data-gravidade="moderado">Moderado</button>
           <button type="button" class="aba" data-gravidade="grave">Grave</button>

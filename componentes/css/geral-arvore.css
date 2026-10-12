@@ -10,7 +10,7 @@
   align-items: center;
   gap: 8px;
   width: 218px;
-  min-height: 30px;
+  min-height: 32px;
   padding: 0 8px;
   border: 1px solid var(--borda-forte);
   border-radius: var(--raio-medio);

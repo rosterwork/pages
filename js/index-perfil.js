@@ -117,11 +117,6 @@
     var usuario = sessao();
     if (!usuario) return;
 
-    var subtitulo = document.getElementById('perfil-subtitulo');
-    if (subtitulo) {
-      subtitulo.textContent = ((usuario.grau_abreviacao || '') + ' ' + (usuario.nome_de_guerra || '')).trim();
-    }
-
     ligarAbas();
     ligarTema();
     ligarTermos();

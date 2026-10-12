@@ -2,26 +2,26 @@
   <div class="pagina-cabecalho">
     <div class="pagina-titulos">
       <h1>Folgas</h1>
-      <span class="pagina-subtitulo"></span>
     </div>
     <span class="espacador-flex"></span>
     <button type="button" class="botao botao--primario" id="btn-solicitar-folga">
       <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-mais.svg#icone-mais"/></svg>
       <span>Solicitar folga</span>
     </button>
-  </div>
-
-  <div class="pagina-subcabecalho">
     <div class="abas" id="folgas-abas">
       <button type="button" class="aba aba--ativa" data-aba="minhas">Minhas folgas</button>
       <button type="button" class="aba" data-aba="equipe">Equipe</button>
       <button type="button" class="aba oculto" data-aba="aprovacoes" id="folgas-aba-aprovacoes">Aprovações</button>
     </div>
+  </div>
+
+  <!-- barra sempre presente (os controles da aba Equipe moram nela): o conteúdo não "pula" ao trocar de aba -->
+  <div class="pagina-subcabecalho">
     <span class="espacador-flex"></span>
 
     <!-- controles da aba Equipe: alternância Saldos/Histórico + busca + período -->
     <div class="folgas-controles oculto" data-controles="equipe">
-      <div class="abas abas--pequenas" id="folgas-equipe-modo">
+      <div class="abas abas--seletor" id="folgas-equipe-modo">
         <button type="button" class="aba aba--ativa" data-modo="saldos">Saldos</button>
         <button type="button" class="aba" data-modo="historico">Histórico</button>
       </div>
@@ -163,7 +163,7 @@
 
 <!-- molde: sub-abas do painel do militar (Extrato / Ações) -->
 <template id="tpl-folga-painel-subabas">
-  <div class="abas abas--pequenas" id="folga-painel-subabas">
+  <div class="abas" id="folga-painel-subabas">
     <button type="button" class="aba aba--ativa" data-sub="extrato">Extrato</button>
     <button type="button" class="aba" data-sub="acoes">Ações</button>
   </div>
@@ -215,7 +215,7 @@
   <div class="folga-form">
     <div class="campo">
       <span class="campo-rotulo">Tipo de ajuste</span>
-      <div class="abas abas--pequenas folga-ajuste-tipo" id="fa-tipo">
+      <div class="abas abas--seletor" id="fa-tipo">
         <button type="button" class="aba aba--ativa" data-tipo="adicionar">Adicionar (+)</button>
         <button type="button" class="aba" data-tipo="descontar">Descontar (−)</button>
       </div>

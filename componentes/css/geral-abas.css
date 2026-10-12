@@ -1,27 +1,40 @@
 /* ============================================================
-   ABAS — alternador de visões (pílulas num trilho)
-   Componente compartilhado. O estado ativo (.aba--ativa) é
-   ligado pelo JS de cada página; aqui fica só o visual.
+   ABAS E SELETOR — alternador de visões (componente compartilhado)
+   Duas variantes:
+   - ABAS (.abas): o menu da tela, sublinhado, embaixo do título
+     da página ou do painel; um traço desliza até a aba ativa.
+   - SELETOR (.abas.abas--seletor): o submenu, opções lado a lado
+     numa moldura de 32px; a escolhida fica cinza, com a letra em negrito.
+   O estado ativo (.aba--ativa) é ligado pelo JS; a posição do traço
+   vem do geral-abas.js (--indicador-x / --indicador-largura).
    ============================================================ */
 
-/* trilho que agrupa as abas */
+/* ---------- abas (o menu) ---------- */
+
+/* trilho (as duas variantes) */
 .abas {
+  position: relative;
   display: inline-flex;
-  gap: 2px;
-  padding: 2px;
-  background-color: var(--fundo-medio);
-  border-radius: var(--raio-medio);
 }
 
-/* uma aba (botão; reset e transição vêm de geral-base.css) */
+/* trilho do menu: sem fundo, estica na linha e desce 1px para o traço
+   apoiar na borda de baixo do cabeçalho (o seletor não herda isso) */
+.abas:not(.abas--seletor) {
+  align-self: stretch;
+  gap: 24px;
+  min-height: 36px;
+  margin-bottom: -1px;
+}
+
+/* uma aba (botão; reset e transição vêm de geral-base.css). No menu, sem folga
+   lateral: o texto da primeira aba alinha com o título e o traço tem a largura
+   exata da palavra (o seletor tem a sua própria folga, abaixo) */
 .aba {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 26px;
-  padding: 0 12px;
-  border-radius: var(--raio-pequeno);
-  font-size: 12px;
+  padding: 0;
+  font-size: 13px;
   font-weight: 500;
   color: var(--texto-suave);
   white-space: nowrap;
@@ -31,23 +44,118 @@
   color: var(--texto-forte);
 }
 
-/* aba selecionada: ganha a pílula clara e o texto forte */
 .aba--ativa,
 .aba--ativa:hover {
-  background-color: var(--fundo-superficie);
   color: var(--texto-forte);
   font-weight: 600;
 }
 
-/* variante compacta (usada nos subgrupos) */
-.abas--pequenas .aba {
-  min-height: 22px;
-  padding: 0 8px;
-  font-size: 11px;
+/* grupo de trilhos que vale como uma escolha só (ex.: a Escala): um traço só,
+   no contêiner, e entre os grupos o mesmo espaço das abas (24px) */
+[data-abas-grupo] {
+  position: relative;
+  display: inline-flex;
+  align-self: stretch;
+  gap: 24px;
+  min-height: 36px;
+  margin-bottom: -1px;
 }
 
-/* contagem dentro da aba (ex.: quantos pedidos esperam decisão) —
-   um .selo encolhido, colado no rótulo; some quando não há nada */
+[data-abas-grupo] > .abas {
+  margin-bottom: 0;
+}
+
+/* divisória entre os grupos: traço vertical no meio do espaço, sem somar espaço */
+[data-abas-grupo] > .abas + .abas::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  width: 1px;
+  min-height: 16px;
+  margin-top: -8px;
+  background-color: var(--borda-forte);
+}
+
+/* o traço da aba ativa: a posição e a largura são dados calculados */
+.abas::after,
+[data-abas-grupo]::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: var(--indicador-largura, 0);
+  height: 2px;
+  background-color: var(--texto-forte);
+  transform: translateX(var(--indicador-x, 0));
+}
+
+[data-abas-grupo] > .abas::after {
+  content: none;
+}
+
+/* o deslize liga só depois do primeiro desenho (a página abre com o traço no lugar) */
+.abas--deslizar::after {
+  transition: transform 0.2s ease, width 0.2s ease;
+}
+
+/* quem pediu menos movimento no sistema vê o traço trocar de lugar sem deslizar */
+@media (prefers-reduced-motion: reduce) {
+  .abas--deslizar::after {
+    transition: none;
+  }
+}
+
+/* ---------- seletor (o submenu) ---------- */
+
+/* sempre compacto: a moldura tem a largura das opções e nunca estica (barra,
+   painel ou formulário); só quebra linha se faltar espaço */
+.abas--seletor {
+  width: fit-content;
+  max-width: 100%;
+  border: 1px solid var(--borda-forte);
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-superficie);
+}
+
+.abas--seletor::after {
+  content: none;
+}
+
+/* 30px + a borda = 32px, a altura dos botões e dos campos */
+.abas--seletor .aba {
+  min-height: 30px;
+  padding: 0 12px;
+  font-size: 12px;
+}
+
+.abas--seletor .aba + .aba {
+  border-left: 1px solid var(--borda);
+}
+
+/* as pontas acompanham a curva da moldura (o escolhido escuro não vaza) */
+.abas--seletor .aba:first-child {
+  border-radius: var(--raio-medio) 0 0 var(--raio-medio);
+}
+
+.abas--seletor .aba:last-child {
+  border-radius: 0 var(--raio-medio) var(--raio-medio) 0;
+}
+
+.abas--seletor .aba:only-child {
+  border-radius: var(--raio-medio);
+}
+
+.abas--seletor .aba--ativa,
+.abas--seletor .aba--ativa:hover {
+  background-color: var(--fundo-medio);
+  color: var(--texto-forte);
+}
+
+/* ---------- contagem dentro da aba (as duas variantes) ---------- */
+
+/* ex.: quantos pedidos esperam decisão — um .selo encolhido, colado
+   no rótulo; some quando não há nada */
 .aba-contagem {
   margin-left: 4px;
   padding: 0 4px;

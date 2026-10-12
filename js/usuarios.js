@@ -22,7 +22,7 @@
 
   /* contagem de cards exibidos na passada atual (para o subtítulo da página) */
   var contagemVisivel = 0;
-  var elSubtitulo = null;
+  var elContagem = null;
 
   /* nada marcado = todas as situações. "Correção pendente" não é situação do
      militar (ele continua Ativo/Férias/...), então soma às demais em vez de excluir */
@@ -307,7 +307,7 @@
 
   /* escreve a contagem no subtítulo da página e zera o acumulador para a próxima passada */
   function atualizarSubtitulo() {
-    if (elSubtitulo) elSubtitulo.textContent = contagemVisivel === 1 ? '1 militar' : contagemVisivel + ' militares';
+    if (elContagem) elContagem.textContent = contagemVisivel === 1 ? '1 militar' : contagemVisivel + ' militares';
     contagemVisivel = 0;
   }
 
@@ -381,7 +381,7 @@
     var container = conteudo.querySelector('#arvore-usuarios');
     if (!container || !window.RosterWork.arvoreUnidades || !window.RosterWork.filtroArvore) return;
 
-    elSubtitulo = conteudo.querySelector('.pagina-subtitulo');
+    elContagem = conteudo.querySelector('.pagina-titulo-contagem');
     contagemVisivel = 0;
     termoBusca = '';
     modoBusca = 'marcar';

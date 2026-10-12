@@ -856,14 +856,14 @@
       aoTentarFechar: tentarFecharPainel       // Esc/X confirmam antes de descartar rascunho
     });
 
-    /* barra de seções (abas), só do admin: o comum vê só a Distribuição, sem abas.
+    /* linha das abas de seção, só do admin: o comum vê só a Distribuição, sem abas.
        O geral-abas cuida da troca visual e nos avisa a aba escolhida */
-    var sub = RosterWork.painel.subcabecalho();
+    var linha = RosterWork.painel.linhaAbas();
     var tpl = document.getElementById('tpl-escala-painel-secoes');
-    if (RosterWork.sessao.ehAdmin() && sub && tpl) {
-      sub.appendChild(tpl.content.cloneNode(true));
-      sub.classList.remove('oculto');
-      var trilho = sub.querySelector('.abas');
+    if (RosterWork.sessao.ehAdmin() && linha && tpl) {
+      linha.appendChild(tpl.content.cloneNode(true));
+      linha.classList.remove('oculto');
+      var trilho = linha.querySelector('.abas');
       if (trilho && RosterWork.abas) {
         ligarGuardaAbas(trilho);   // confirma o descarte antes de trocar de seção com rascunho
         RosterWork.abas.ligar(trilho, function (aba) {

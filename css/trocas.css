@@ -298,11 +298,6 @@
   padding-top: 2px;
 }
 
-/* toggle Escolher dia / Deixar pendente (reusa .abas--pequenas) */
-.trocas-dev-toggle {
-  width: max-content;
-}
-
 .trocas-dev-data {
   margin-top: 8px;
 }

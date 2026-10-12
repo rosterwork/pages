@@ -150,9 +150,6 @@
     var u = RosterWork.sessao.perfil();
     if (!u || !u.ok) return Promise.resolve();
 
-    var saud = document.getElementById('inicio-saudacao');
-    if (saud) saud.textContent = 'Olá, ' + ((u.grau_abreviacao || '') + ' ' + (u.nome_de_guerra || '')).trim() + '.';
-
     var cards = document.getElementById('inicio-cards');
     if (cards) vazio(cards, RW.mensagens.inicio.carregando);
 

@@ -89,7 +89,7 @@
   color: var(--texto-suave);
 }
 
-/* linha da decisão do admin: rótulo + toggle Sim/Não (abas--pequenas) */
+/* linha da decisão do admin: rótulo + toggle Sim/Não (abas--seletor) */
 .atestado-fluxo-decisao {
   display: flex;
   align-items: center;

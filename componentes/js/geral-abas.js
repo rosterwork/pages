@@ -37,6 +37,73 @@
     }
   }
 
+  /* ---------- o traço das abas (o menu) ----------
+     Mede a aba ativa e grava a posição e a largura no trilho (dado calculado,
+     REGRAS §5); o CSS desenha o traço. Um grupo [data-abas-grupo] tem um traço
+     só, no contêiner. O seletor (.abas--seletor) e a multi-seleção não têm traço. */
+  var agendados = new WeakSet();
+  var observadorTamanho = window.ResizeObserver
+    ? new ResizeObserver(function (entradas) {
+      for (var i = 0; i < entradas.length; i++) agendarTraco(donoDoTraco(entradas[i].target));
+    })
+    : null;
+
+  function ehMenu(trilho) {
+    return !trilho.classList.contains('abas--seletor') && !trilho.hasAttribute('data-abas-multi');
+  }
+
+  /* quem desenha o traço: o grupo, se houver; senão, o próprio trilho */
+  function donoDoTraco(elemento) {
+    return elemento.closest('[data-abas-grupo]') || elemento.closest('.abas');
+  }
+
+  function posicionarTraco(dono) {
+    if (!dono.isConnected) return;
+    var ativa = dono.querySelector('.aba--ativa:not(.oculto)');
+    /* largura exata (com fração de pixel): o traço termina junto com o texto */
+    var caixa = ativa ? ativa.getBoundingClientRect() : null;
+    var largura = caixa ? caixa.width : 0;
+    if (!largura) {
+      dono.style.setProperty('--indicador-largura', '0px');
+      return;
+    }
+    var deslocamento = caixa.left - dono.getBoundingClientRect().left;
+    dono.style.setProperty('--indicador-x', deslocamento + 'px');
+    dono.style.setProperty('--indicador-largura', largura + 'px');
+    /* o deslize liga só depois do primeiro desenho: a página abre com o traço no lugar */
+    if (!dono.classList.contains('abas--deslizar')) {
+      requestAnimationFrame(function () { dono.classList.add('abas--deslizar'); });
+    }
+  }
+
+  /* junta várias mudanças do mesmo quadro numa medida só */
+  function agendarTraco(dono) {
+    if (!dono || agendados.has(dono)) return;
+    agendados.add(dono);
+    requestAnimationFrame(function () {
+      agendados.delete(dono);
+      posicionarTraco(dono);
+    });
+  }
+
+  /* liga o traço uma vez por dono (marca no elemento, recriado a cada navegação no SPA):
+     acompanha a troca de aba (por clique ou pela própria página), o .oculto e o tamanho */
+  function prepararTraco(trilho) {
+    if (!ehMenu(trilho)) return;
+    var dono = donoDoTraco(trilho);
+    if (!dono.dataset.tracoPronto) {
+      dono.dataset.tracoPronto = '1';
+      new MutationObserver(function () { agendarTraco(dono); })
+        .observe(dono, { attributes: true, attributeFilter: ['class'], subtree: true });
+      if (observadorTamanho) {
+        observadorTamanho.observe(dono);
+        var abas = dono.querySelectorAll('.aba');
+        for (var i = 0; i < abas.length; i++) observadorTamanho.observe(abas[i]);
+      }
+    }
+    agendarTraco(dono);
+  }
+
   /* um único ouvinte para as abas de todo o site (delegação no documento) —
      funciona inclusive nos fragmentos de página carregados depois */
   document.addEventListener('click', function (evento) {
@@ -45,6 +112,7 @@
     var trilho = aba.closest('.abas');
     if (!trilho) return;
     prepararAria(trilho);
+    prepararTraco(trilho);
     if (trilho.hasAttribute('data-abas-multi')) {
       alternarMulti(trilho, aba);
     } else {
@@ -58,6 +126,7 @@
   function ligar(trilho, aoTrocar) {
     if (!trilho || !aoTrocar) return;
     prepararAria(trilho);
+    prepararTraco(trilho);
     trilho.addEventListener('rosterwork:aba', function (evento) { aoTrocar(evento.detail.aba); });
   }
 

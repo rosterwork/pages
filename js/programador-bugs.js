@@ -103,13 +103,7 @@
 
   /* ---------- filtros ---------- */
   function ligarFiltros() {
-    var trilho = q('#bugs-filtro-situacao');
-    if (trilho && RosterWork.abas) {
-      RosterWork.abas.ligar(trilho, function (aba) {
-        filtroSituacao = aba.getAttribute('data-situacao') || 'aberto';
-        renderLista();
-      });
-    }
+    ligarMenu('#bugs-situacao-menu', '#bugs-situacao-texto', 'data-situacao', function (valor) { filtroSituacao = valor || 'aberto'; });
     ligarMenu('#bugs-gravidade-menu', '#bugs-gravidade-texto', 'data-gravidade', function (valor) { filtroGravidade = valor; });
     ligarMenu('#bugs-periodo-menu', '#bugs-periodo-texto', 'data-dias', function (valor) { filtroDias = Number(valor) || 0; });
   }
@@ -131,15 +125,16 @@
     });
   }
 
-  /* põe o filtro de situação numa aba sem clique (o bug mudou de situação) */
+  /* põe o filtro de situação no menu sem clique (o bug mudou de situação) */
   function marcarSituacao(situacao) {
     filtroSituacao = situacao;
-    var trilho = q('#bugs-filtro-situacao');
-    if (!trilho) return;
-    Array.prototype.forEach.call(trilho.querySelectorAll('.aba'), function (b) {
-      var ativa = b.getAttribute('data-situacao') === situacao;
-      b.classList.toggle('aba--ativa', ativa);
-      if (b.hasAttribute('aria-selected')) b.setAttribute('aria-selected', ativa ? 'true' : 'false');
+    var menu = q('#bugs-situacao-menu');
+    var texto = q('#bugs-situacao-texto');
+    if (!menu) return;
+    Array.prototype.forEach.call(menu.querySelectorAll('.dropdown-item'), function (item) {
+      var ativo = item.getAttribute('data-situacao') === situacao;
+      item.classList.toggle('dropdown-item--ativo', ativo);
+      if (ativo && texto) texto.textContent = item.textContent;
     });
   }
 

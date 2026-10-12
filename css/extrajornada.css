@@ -92,11 +92,6 @@
   border-color: var(--fundo-contraste);
 }
 
-/* os segmentados Sim/Não têm só a largura dos botões (não esticam no campo) */
-.extra-decl .abas {
-  align-self: flex-start;
-}
-
 /* listas de datas marcadas (duas colunas), no formato DD/MM/AA */
 .extra-listas {
   display: grid;
