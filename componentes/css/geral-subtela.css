@@ -1,0 +1,51 @@
+/* ============================================================
+   SUB-TELA DE PAINEL — componente compartilhado
+   Uma tela que abre no lugar do conteúdo, dentro do mesmo painel
+   (painel do dia da Escala: formulário e militar no dia; Folgas:
+   conceder, solicitar e ajustar): o Voltar no topo, o cabeçalho
+   (título + subtítulo) e as seções (.grupo-caixa, com o rótulo
+   numerado "1. Dia"). O texto do Voltar fica no molde da página.
+   ============================================================ */
+
+/* volta ao conteúdo de antes (botão de texto com a seta, no topo) */
+.subtela-voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+}
+
+/* o conteúdo: cabeçalho, seções e notas, um embaixo do outro */
+.subtela {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.subtela-cab {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.subtela-titulo {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.subtela-subtitulo {
+  font-size: 12px;
+  color: var(--texto-fraco);
+}
+
+/* texto de apoio numa seção */
+.subtela-ajuda {
+  font-size: 12px;
+  color: var(--texto-fraco);
+}
+
+/* embaixo de uma opção (geral-opcao): recuado até o texto dela */
+.subtela-ajuda--opcao {
+  padding: 0 8px 4px 32px;
+}

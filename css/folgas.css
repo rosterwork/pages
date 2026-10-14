@@ -54,32 +54,6 @@
   border-bottom: 1px solid var(--borda);
 }
 
-/* linha de Aprovações: clicável (abre o painel de aprovação) */
-.folga-linha--clicavel {
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-}
-
-.folga-linha--clicavel:hover {
-  background-color: var(--fundo-suave);
-}
-
-/* painel de aprovação: detalhe da folga (nome + seções) */
-.folga-aprov-secao {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.folga-aprov-secao + .folga-aprov-secao {
-  margin-top: 16px;
-}
-
-.folga-aprov-nome {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--texto-forte);
-}
 .folga-linha-textos {
   display: flex;
   flex-direction: column;

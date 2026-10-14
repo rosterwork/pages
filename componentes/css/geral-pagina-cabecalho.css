@@ -102,6 +102,14 @@
   justify-content: center;
 }
 
+/* coluna de leitura: listas de cartões e textos numa página ficam numa coluna de
+   até 720px, alinhada à esquerda (linha curta se lê melhor, e o selo e a seta
+   ficam perto do texto, em vez de irem para o outro lado da tela) */
+.coluna-leitura {
+  width: 100%;
+  max-width: 720px;
+}
+
 /* variante: corpo "colado" (sem respiro) para grades que cuidam da própria
    rolagem nas duas direções (ex.: a grade de escalas) */
 .pagina-corpo--colado {

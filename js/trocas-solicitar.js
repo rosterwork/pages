@@ -1,9 +1,10 @@
 /* ============================================================
    TROCAS — "Solicitar" (formulário no painel lateral geral-painel)
    Dois cartões empilhados: Solicitante (unidade/militar em leitura,
-   dia via calendário, período na barra) e Solicitado (unidade +
-   parceiro do grupo, devolução opcional com toggle pendente/dia +
-   barra). Durações diferentes geram saldo (aviso). Ações no rodapé
+   dia via calendário, período: Serviço inteiro ou Parte do serviço,
+   componente geral-horario) e Solicitado (unidade + parceiro do
+   grupo, devolução opcional com toggle pendente/dia + o mesmo
+   período). Durações diferentes geram saldo (aviso). Ações no rodapé
    do painel; o X/Esc confirmam o descarte quando há dados.
    Expõe RosterWork.trocasSolicitar.{ ligar, abrir }.
      ligar({ aoSolicitar, aoMudar }) — guarda os callbacks (1x)
@@ -12,7 +13,6 @@
 (function () {
   'use strict';
   var RW = window.RosterWork = window.RosterWork || {};
-  var TOTAL = 1440;
 
   var guardaLigado = false;
   var ctx = null;
@@ -29,13 +29,10 @@
   /* datas e horários */
   function isoDe(d) { var m = d.getMonth() + 1, dia = d.getDate(); return d.getFullYear() + '-' + (m < 10 ? '0' + m : m) + '-' + (dia < 10 ? '0' + dia : dia); }
   function dataDeIso(iso) { var p = iso.split('-'); return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2])); }
-  function horaParaMin(hhmm) { var h = parseInt(hhmm.substring(0, 2), 10), m = parseInt(hhmm.substring(3, 5), 10); var min = (h - 8) * 60 + m; return min < 0 ? min + TOTAL : min; }
-  function limiteDoServico(s) {
-    if (!s || !s.horario_inicio || !s.horario_fim) return { inicioMin: 0, fimMin: TOTAL };
-    var a = horaParaMin(s.horario_inicio), b = horaParaMin(s.horario_fim);
-    if (b <= a) b += TOTAL;
-    if (b > TOTAL) b = TOTAL;
-    return { inicioMin: a, fimMin: b };
+  /* o horário do serviço { hi, hf } (sem horário = o dia todo, 08h às 08h) */
+  function horarioDoServico(s) {
+    if (!s || !s.horario_inicio || !s.horario_fim) return { hi: '08:00', hf: '08:00' };
+    return { hi: String(s.horario_inicio).slice(0, 5), hf: String(s.horario_fim).slice(0, 5) };
   }
   function servicoDoDia(lista, iso) { for (var i = 0; i < lista.length; i++) if (lista[i].data === iso) return lista[i]; return null; }
 
@@ -215,14 +212,10 @@
     }
   }
 
-  /* serviço: dia (calendário) + barra */
-  /* barra do serviço sempre visível; nasce travada e liga ao escolher o dia */
-  function montarBarraServico() {
-    var alvo = q('#ts-barra-servico');
-    if (!alvo || !RW.barraPeriodo) return;
-    alvo.textContent = '';
-    ctx.barraServico = RW.barraPeriodo.criar(alvo, {
-      desativado: true,
+  /* serviço: dia (calendário) + período (Serviço inteiro / Parte do serviço);
+     o período fica sempre visível, desligado até escolher o dia */
+  function montarPeriodoServico() {
+    ctx.periodoServico = RosterWork.horario.periodoServico(q('#ts-servico-periodo'), {
       aoMudar: function (v) { ctx.servicoSel = v; atualizarSaldo(); agendarParceiros(); }
     });
   }
@@ -234,16 +227,15 @@
     ctx.servicoCtx = s.contexto_id;
     q('#ts-data').value = RW.trocasFormato.dataNumerica(iso);
     limparErro(q('#ts-data'));
-    var lim = limiteDoServico(s);
-    if (!ctx.barraServico) montarBarraServico();
-    ctx.barraServico.definirLimite(lim.inicioMin, lim.fimMin);
-    ctx.barraServico.ativar();
-    /* cobrança: a barra já vem com as horas da dívida, do início do turno, presa ao turno */
+    if (!ctx.periodoServico) montarPeriodoServico();
+    ctx.periodoServico.definirServico(horarioDoServico(s));
+    /* cobrança: o período já vem com as horas da dívida, do início do turno (o turno inteiro, se ela cobre tudo) */
     if (ctx.cobrar && ctx.cobrar.minutos > 0) {
-      var fimAlvo = lim.inicioMin + ctx.cobrar.minutos;
-      ctx.barraServico.definirValor(lim.inicioMin, fimAlvo > lim.fimMin ? lim.fimMin : fimAlvo);
+      var H = RosterWork.horario, turno = ctx.periodoServico.valor();
+      var ini = H.faixa(turno)[0];
+      if (ctx.cobrar.minutos < turno.minutos) ctx.periodoServico.definirParte(turno.hi, H.hhmm(ini + ctx.cobrar.minutos));
     }
-    ctx.servicoSel = ctx.barraServico.valor();
+    ctx.servicoSel = ctx.periodoServico.valor();
     carregarParceiros();
     atualizarSaldo();
   }
@@ -251,12 +243,11 @@
   /* parceiro trocou: carrega os dias dele para a devolução */
   function aoTrocarParceiro() {
     ctx.devDia = null; ctx.devSel = null; ctx.parceiroServicos = [];
-    ctx.barraDevolucao = null;
     q('#ts-dev-data').value = '';
-    /* no modo "Escolher dia" a barra de devolução volta travada; no "pendente" some */
+    /* no modo "Marcar dia" o período da devolução volta desligado; no "pendente" some */
     var emDia = q('#ts-dev-data') && !q('#ts-dev-data').classList.contains('oculto');
-    if (emDia) { montarBarraDevolucao(); q('#ts-periodo-devolucao').classList.remove('oculto'); }
-    else { var barra = q('#ts-barra-devolucao'); if (barra) barra.textContent = ''; q('#ts-periodo-devolucao').classList.add('oculto'); }
+    if (ctx.periodoDevolucao) ctx.periodoDevolucao.limpar();
+    q('#ts-periodo-devolucao').classList.toggle('oculto', !emDia);
     /* saldo já existente com o parceiro (para o aviso líquido); enquanto carrega, mostra os pontinhos */
     ctx.saldoEntre = null; ctx.saldoCarregando = false;
     if (ctx.parceiroSel) {
@@ -277,13 +268,9 @@
     }).catch(function () {});
   }
 
-  /* devolução: toggle pendente/dia + calendário + barra */
-  function montarBarraDevolucao() {
-    var alvo = q('#ts-barra-devolucao');
-    if (!alvo || !RW.barraPeriodo) return;
-    alvo.textContent = '';
-    ctx.barraDevolucao = RW.barraPeriodo.criar(alvo, {
-      desativado: true,
+  /* devolução: toggle pendente/dia + calendário + o mesmo período */
+  function montarPeriodoDevolucao() {
+    ctx.periodoDevolucao = RosterWork.horario.periodoServico(q('#ts-dev-periodo'), {
       aoMudar: function (v) { ctx.devSel = v; atualizarSaldo(); }
     });
     ctx.devSel = null;
@@ -300,8 +287,9 @@
         atualizarSaldo();
       } else {
         q('#ts-dev-data').classList.remove('oculto');
-        /* barra travada aparece já no modo "Escolher dia"; liga quando o dia for escolhido */
-        montarBarraDevolucao();
+        /* o período aparece já no modo "Marcar dia", desligado; liga quando o dia for escolhido */
+        if (!ctx.periodoDevolucao) montarPeriodoDevolucao();
+        else ctx.periodoDevolucao.limpar();
         q('#ts-periodo-devolucao').classList.remove('oculto');
       }
     });
@@ -312,11 +300,9 @@
     if (!s) return;
     ctx.devDia = iso;
     q('#ts-dev-data').value = RW.trocasFormato.dataNumerica(iso);
-    var lim = limiteDoServico(s);
-    if (!ctx.barraDevolucao) montarBarraDevolucao();
-    ctx.barraDevolucao.definirLimite(lim.inicioMin, lim.fimMin);
-    ctx.barraDevolucao.ativar();
-    ctx.devSel = ctx.barraDevolucao.valor();
+    if (!ctx.periodoDevolucao) montarPeriodoDevolucao();
+    ctx.periodoDevolucao.definirServico(horarioDoServico(s));
+    ctx.devSel = ctx.periodoDevolucao.valor();
     q('#ts-periodo-devolucao').classList.remove('oculto');
     atualizarSaldo();
   }
@@ -354,6 +340,7 @@
     var ok = true;
     if (!ctx.servicoDia) { marcarErro(q('#ts-data'), txt('novaData')); ok = false; }
     else if (!ctx.servicoSel || ctx.servicoSel.minutos <= 0) { marcarErro(q('#ts-data'), txt('novaServicoVazio')); ok = false; }
+    if (ctx.devDia && ctx.devSel && ctx.devSel.minutos <= 0) { marcarErro(q('#ts-dev-data'), txt('novaDevolucaoVazia')); ok = false; }
     if (!ctx.parceiroSel) { marcarErro(q('#ts-parceiro'), txt('novaParceiro')); ok = false; }
     if (ctx.parceiroSel && ctx.parceiroSel.cpf === RosterWork.sessao.cpf()) { marcarErro(q('#ts-parceiro'), txt('novaMesmaPessoa')); ok = false; }
     return ok;
@@ -422,13 +409,13 @@
   /* o painel avisa ao fechar (X/Esc/Cancelar/sucesso): o formulário some, então marca fechado */
   function aoFecharReset() { aberto = false; }
   function resetCampos() {
-    ctx.servicoDia = null; ctx.servicoCtx = null; ctx.servicoSel = null; ctx.barraServico = null;
+    ctx.servicoDia = null; ctx.servicoCtx = null; ctx.servicoSel = null;
     ctx.unidadeSel = null; ctx.parceiroSel = null;
-    ctx.devDia = null; ctx.devSel = null; ctx.barraDevolucao = null; ctx.parceiroServicos = [];
+    ctx.devDia = null; ctx.devSel = null; ctx.parceiroServicos = [];
     ctx.saldoEntre = null; ctx.saldoCarregando = false;
 
     if (q('#ts-data')) q('#ts-data').value = '';
-    montarBarraServico();   /* barra do serviço volta visível e travada */
+    if (ctx.periodoServico) ctx.periodoServico.limpar(); else montarPeriodoServico();   /* o período volta desligado */
     definirTexto(q('#ts-unidade'), txt('modalSelecione'), true);
     var pmenu = q('#ts-parceiro-menu'); if (pmenu) pmenu.textContent = '';
     habilitarParceiro(false); definirParceiro(txt('modalDiaAntes'), true);
@@ -439,7 +426,7 @@
       for (var i = 0; i < abas.length; i++) abas[i].classList.toggle('aba--ativa', abas[i].getAttribute('data-dev') === 'pendente');
     }
     if (q('#ts-dev-data')) { q('#ts-dev-data').value = ''; q('#ts-dev-data').classList.add('oculto'); }
-    var bd = q('#ts-barra-devolucao'); if (bd) bd.textContent = '';
+    if (ctx.periodoDevolucao) ctx.periodoDevolucao.limpar();
     if (q('#ts-periodo-devolucao')) q('#ts-periodo-devolucao').classList.add('oculto');
     if (q('#ts-saldo')) q('#ts-saldo').classList.add('oculto');
 
@@ -453,7 +440,7 @@
 
   /* abre o painel lateral, monta o formulário (molde) e carrega os dados.
      opcoes.cobrar = { cpf, nome, grau, minutos } liga o modo cobrança:
-     o devedor entra como parceiro e a barra do serviço já nasce com as horas da dívida */
+     o devedor entra como parceiro e o período do serviço já nasce com as horas da dívida */
   function abrir(opcoes) {
     if (!RW.painel) return;
     RW.painel.abrir({ titulo: txt('tituloPainel'), aoFechar: aoFecharReset, aoTentarFechar: guardaFechar });
@@ -465,8 +452,8 @@
     ctx = {
       raiz: corpo, aoSolicitar: cbs.aoSolicitar, aoMudar: cbs.aoMudar,
       unidades: [], meusServicos: [], parceiroServicos: [],
-      servicoDia: null, servicoSel: null, barraServico: null, unidadeSel: null, parceiroSel: null,
-      devDia: null, devSel: null, barraDevolucao: null,
+      servicoDia: null, servicoSel: null, periodoServico: null, unidadeSel: null, parceiroSel: null,
+      devDia: null, devSel: null, periodoDevolucao: null,
       saldoEntre: null, saldoCarregando: false,
       cobrar: (opcoes && opcoes.cobrar) || null
     };

@@ -63,6 +63,27 @@
     return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : '';
   }
 
+  var DIAS_SEMANA = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+
+  var DIAS_CURTOS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+
+  /* AAAA-MM-DD -> "30/10/2026 (sex)" ('' se vazio) */
+  function comDiaCurto(iso) {
+    var br = isoParaBR(iso);
+    if (!br) return '';
+    var p = String(iso).slice(0, 10).split('-');
+    return br + ' (' + DIAS_CURTOS[new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2])).getDay()] + ')';
+  }
+
+  /* AAAA-MM-DD -> "Sexta-feira, 30/10/2026" ('' se vazio) */
+  function comDiaSemana(iso) {
+    var br = isoParaBR(iso);
+    if (!br) return '';
+    var p = String(iso).slice(0, 10).split('-');
+    var d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+    return DIAS_SEMANA[d.getDay()] + ', ' + br;
+  }
+
   window.RosterWork.data = {
     soDigitos: soDigitos,
     mascararData: mascararData,
@@ -70,6 +91,8 @@
     paraIsoDeData: paraIsoDeData,
     paraISO: paraISO,
     paraBR: paraBR,
-    isoParaBR: isoParaBR
+    isoParaBR: isoParaBR,
+    comDiaSemana: comDiaSemana,
+    comDiaCurto: comDiaCurto
   };
 })();

@@ -1,9 +1,12 @@
 /* ============================================================
    FOLGAS — orquestrador da página
-   Liga as abas (Minhas folgas · Equipe · Aprovações), a alternância
-   Saldos/Histórico da Equipe, e monta os módulos. "Solicitar folga"
-   é o botão do cabeçalho (autosserviço); conceder/ajustar vivem no
-   painel do militar.
+   Liga as abas (Minhas folgas · Equipe · Pendências), a alternância
+   Saldos/Histórico da Equipe, e monta os módulos. A ação da aba fica
+   à esquerda do subcabeçalho: Minhas folgas = "Solicitar folga"
+   (autosserviço); Equipe = "Dar folga" (só admin). Conceder e ajustar
+   também vivem no painel do militar. A aba Pendências (só admin) é
+   a fila dos pedidos de folga (geral-fila), a mesma da página
+   Pendências.
    Registra RosterWork.paginas.folgas = { iniciar }.
    ============================================================ */
 (function () {
@@ -14,6 +17,7 @@
   var estado = { aba: 'minhas', equipeModo: 'saldos' };
   var ctx = null;
   var ouvindo = false;
+  var fila = null;   // a fila da aba Pendências (geral-fila)
 
 
   function painelVisivel(nome, mostra) {
@@ -28,7 +32,13 @@
     painelVisivel('minhas', a === 'minhas');
     painelVisivel('equipe-saldos', eqSaldos);
     painelVisivel('equipe-historico', eqHist);
-    painelVisivel('aprovacoes', a === 'aprovacoes');
+    painelVisivel('pendencias', a === 'pendencias');
+
+    /* a ação da aba: Solicitar folga nas Minhas folgas; Dar folga na Equipe (só admin) */
+    var btnSolicitar = document.getElementById('btn-solicitar-folga');
+    if (btnSolicitar) btnSolicitar.classList.toggle('oculto', a !== 'minhas');
+    var btnDar = document.getElementById('btn-dar-folga');
+    if (btnDar) btnDar.classList.toggle('oculto', !(a === 'equipe' && ctx && ctx.admin));
 
     var ctrls = document.querySelector('.folgas-controles[data-controles="equipe"]');
     if (ctrls) ctrls.classList.toggle('oculto', a !== 'equipe');
@@ -37,15 +47,32 @@
     var periodo = document.getElementById('folgas-periodo');
     if (periodo) periodo.classList.toggle('oculto', !eqHist);
     /* o +/- de expandir/recolher títulos (criado pela árvore na camada) só faz sentido na Equipe → Saldos,
-       que é a única aba com árvore; nas demais (Minhas, Aprovações, Histórico) fica escondido */
+       que é a única aba com árvore; nas demais (Minhas, Histórico, Pendências) fica escondido */
     var niveis = document.querySelector('.folgas-corpo .titulos-niveis');
     if (niveis) niveis.classList.toggle('oculto', !eqSaldos);
   }
 
   function carregarAba() {
     if (estado.aba === 'minhas' && RW.folgasMinhas) RW.folgasMinhas.carregar();
-    else if (estado.aba === 'aprovacoes' && RW.folgasListas) RW.folgasListas.carregarAprovacoes();
     else if (estado.aba === 'equipe' && estado.equipeModo === 'historico' && RW.folgasListas) RW.folgasListas.carregarHistorico();
+    else if (estado.aba === 'pendencias') carregarPendencias();
+  }
+
+  /* a aba Pendências: os pedidos de folga para aprovar (o número vai no selo da aba) */
+  function escreverSeloPendencias(n) {
+    var s = document.getElementById('folgas-pendencias-contagem');
+    if (!s) return;
+    s.textContent = n ? String(n) : '';
+    s.classList.toggle('oculto', !n);
+  }
+  function carregarPendencias() {
+    if (!fila || !RW.fila) return Promise.resolve();
+    return RW.fila.ler().then(function (r) {
+      if (!r) return;
+      var folgas = RW.fila.doTipo(r.aprovar, ['folga']);
+      fila.definir(folgas);
+      escreverSeloPendencias(folgas.length);
+    });
   }
 
   function aoTrocarAba(aba) {
@@ -58,8 +85,8 @@
   function recarregarAtivo() {
     if (RW.arvoreUnidades) RW.arvoreUnidades.recarregar();
     if (RW.folgasMinhas) RW.folgasMinhas.carregar();
-    if (estado.aba === 'aprovacoes' && RW.folgasListas) RW.folgasListas.carregarAprovacoes();
-    else if (estado.aba === 'equipe' && estado.equipeModo === 'historico' && RW.folgasListas) RW.folgasListas.carregarHistorico();
+    if (estado.aba === 'equipe' && estado.equipeModo === 'historico' && RW.folgasListas) RW.folgasListas.carregarHistorico();
+    else if (estado.aba === 'pendencias') carregarPendencias();
   }
 
   function iniciar(conteudo) {
@@ -70,13 +97,25 @@
     var abas = conteudo.querySelector('#folgas-abas');
     if (RW.abas && abas) RW.abas.ligar(abas, aoTrocarAba);
 
-    var abaAprov = conteudo.querySelector('#folgas-aba-aprovacoes');
-    if (abaAprov) abaAprov.classList.toggle('oculto', !ctx.admin);
     var abaEquipe = conteudo.querySelector('#folgas-abas [data-aba="equipe"]');   // Equipe é só do admin
     if (abaEquipe) abaEquipe.classList.toggle('oculto', !ctx.admin);
+    var abaPend = conteudo.querySelector('#folgas-aba-pendencias');   // Pendências também
+    if (abaPend) abaPend.classList.toggle('oculto', !ctx.admin);
+    fila = (ctx.admin && RW.fila) ? RW.fila.criar(conteudo.querySelector('#folgas-pendencias'), {
+      vazio: RW.mensagens.pendencias.vazioFolgas,
+      /* depois de decidir: a fila, o placar de saldos e as minhas folgas */
+      recarregar: function () {
+        if (RW.arvoreUnidades) RW.arvoreUnidades.recarregar();
+        if (RW.folgasMinhas) RW.folgasMinhas.carregar();
+        return carregarPendencias();
+      }
+    }) : null;
+    if (fila) RW.fila.contar().then(function (c) { escreverSeloPendencias(c.aprovar.folga || 0); });
 
     var btnSolicitar = conteudo.querySelector('#btn-solicitar-folga');
     if (btnSolicitar) btnSolicitar.addEventListener('click', function () { if (RW.folgasMinhas) RW.folgasMinhas.solicitar(); });
+    var btnDar = conteudo.querySelector('#btn-dar-folga');
+    if (btnDar) btnDar.addEventListener('click', function () { if (RW.folgasPainel) RW.folgasPainel.abrirFormFolga({ modo: 'dar' }); });
 
     var modoTrilho = conteudo.querySelector('#folgas-equipe-modo');
     if (RW.abas && modoTrilho) RW.abas.ligar(modoTrilho, function (aba) {
@@ -96,8 +135,8 @@
 
     if (!ouvindo) {
       window.addEventListener('rosterwork_units_changed', function () {
-        if (estado.aba === 'aprovacoes' && RW.folgasListas) RW.folgasListas.carregarAprovacoes();
-        else if (estado.aba === 'equipe' && estado.equipeModo === 'historico' && RW.folgasListas) RW.folgasListas.carregarHistorico();
+        if (estado.aba === 'equipe' && estado.equipeModo === 'historico' && RW.folgasListas) RW.folgasListas.carregarHistorico();
+        else if (estado.aba === 'pendencias') carregarPendencias();
       });
       ouvindo = true;
     }

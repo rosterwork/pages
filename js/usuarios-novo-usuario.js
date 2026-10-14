@@ -172,7 +172,7 @@
   /* abre o Novo usuário no painel direito (modo criação): clona o formulário e o
      rodapé, liga máscaras/seleções/lotação/graus e as ações. Nasce novo a cada abertura. */
   /* config (opcional) abre o MESMO formulário em modo revisão de cadastro:
-     { titulo, dados, rotuloSalvar, rotuloRecusar, aoVer(corpo), aoSalvar(raiz), aoRecusar(raiz) }.
+     { titulo, subtitulo, dados, rotuloSalvar, rotuloRecusar, aoVer(corpo), aoSalvar(raiz), aoRecusar(raiz), aoFechar() }.
      Com aoVer o painel ganha as abas Ver | Editar e começa no Ver: o administrador
      confere o pedido primeiro e só entra no formulário se for corrigir algo. */
   function abrirPainel(config) {
@@ -182,9 +182,10 @@
     var revisao = !!(config && config.aoVer);
     window.RosterWork.painel.abrir({
       titulo: config ? config.titulo : 'Novo usuário',
+      subtitulo: config ? config.subtitulo : '',
       editavel: revisao,
       aoMudarModo: revisao ? function () { montarConteudo(config); } : null,
-      aoFechar: function () { sujo = false; },
+      aoFechar: function () { sujo = false; if (config && config.aoFechar) config.aoFechar(); },
       aoTentarFechar: function () { if (!sujo) return false; tentarFechar(); return true; }   // Esc/X confirmam o descarte
     });
     montarConteudo(config);
@@ -275,7 +276,8 @@
     /* Cancelar fecha com confirmação se houver alterações (o ✕/Esc do painel
        descartam; o guarda-de-saída cobre fechar/recarregar do navegador) */
     if (btnCancelar) {
-      if (config && config.rotuloRecusar) btnCancelar.textContent = config.rotuloRecusar;
+      /* na revisão o Cancelar vira o Recusar (vermelho, como nos outros painéis de decisão) */
+      if (config && config.rotuloRecusar) { btnCancelar.textContent = config.rotuloRecusar; btnCancelar.classList.add('botao--perigo'); }
       btnCancelar.addEventListener('click',
         (config && config.aoRecusar) ? function () { config.aoRecusar(raiz); } : tentarFechar);
     }

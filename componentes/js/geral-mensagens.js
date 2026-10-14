@@ -31,9 +31,7 @@
       rgInvalido: 'O RG deve ter 8 ou 9 dígitos.',
       emailInvalido: 'Endereço de e-mail inválido.',
       nomeCurto: 'Nome muito curto.',
-      confirmarRecusar: 'Recusar as alterações selecionadas?',
       semMinhas: 'Você ainda não pediu nenhuma correção.',
-      semPedidos: 'Nenhuma solicitação pendente.',
       senhaCurta: 'A senha precisa de ao menos 6 caracteres.',
       senhaNaoConfere: 'A confirmação não bate com a nova senha.',
       senhaIgual: 'A nova senha é igual à atual.',
@@ -50,27 +48,40 @@
       confirmarRemoverAviso: 'Remover este comunicado? Ele deixa de aparecer para quem o recebeu.',
       descartarAviso: 'Descartar este comunicado não publicado?',
       falhaSalvarAviso: 'Não foi possível publicar o comunicado. Tente de novo.',
-      falhaRemoverAviso: 'Não foi possível remover o comunicado. Tente de novo.'
+      falhaRemoverAviso: 'Não foi possível remover o comunicado. Tente de novo.',
+      /* as linhas do cartão de pendências de administração */
+      pendTrocas: 'Trocas a aprovar',
+      pendFolgas: 'Folgas a aprovar',
+      pendCorrecoes: 'Correções de dados',
+      pendForaEscala: 'Militares fora da escala'
     },
 
-    /* usuários › aprovações › cadastros (quem pediu acesso pela tela pública) */
+    /* Pendências › cadastros (quem pediu acesso pela tela pública) */
     cadastros: {
-      semCadastros: 'Nenhum cadastro esperando aprovação.',
       jaExiste: 'Já está na ficha',
       jaTemConta: 'Já tem acesso',
       emailEmUso: 'E-mail em uso',
-      confirmarRecusar: 'Recusar este cadastro? A pessoa não terá acesso ao sistema.',
+      painelTitulo: 'Revisar cadastro',
+      painelSituacao: 'Aguardando aprovação',
+      botaoAprovar: 'Aprovar',
+      botaoRecusar: 'Recusar',
       falha: 'Não foi possível concluir. Tente de novo.'
     },
 
-    /* avisos (página das três abas: Para mim · Administração · Comunicados) */
+    /* Pendências › correção de dados (as alterações que o militar pediu na ficha) */
+    correcoes: {
+      painelTitulo: 'Correção de dados',
+      painelSituacao: 'Aguardando aprovação',
+      caixaPedido: 'Alterações pedidas',
+      frase: function (nome, n, data) { return nome + ' pediu ' + (n === 1 ? '1 alteração' : n + ' alterações') + ' em ' + data + '. Aprovar ou recusar vale para as marcadas.'; }
+    },
+
+    /* avisos (a página das duas abas: Para mim · Comunicados; os grupos do sino) */
     avisos: {
       semNotificacoes: 'Nada novo por aqui.',
       semAbertos: 'Nada esperando por você.',
       grupoPessoal: 'Para você',
       grupoAdministracao: 'Administração',
-      semPendencias: 'Nada esperando por você.',
-      semPendenciasAdministracao: 'Nada esperando a sua decisão.',
       semComunicados: 'Nenhum comunicado.',
       carregando: 'Carregando…',
       falhaCarregar: 'Não foi possível carregar.'
@@ -246,7 +257,7 @@
 
     /* afastamentos — painéis Nova licença / Nova dispensa (decisão fora do fluxo) */
     afastamentos: {
-      foraDoFluxo: 'Sai do ciclo por tempo indeterminado; volta quando o administrador o incluir de novo pelos Contínuos.',
+      foraDoFluxo: 'Sai do ciclo por tempo indeterminado; volta quando o administrador o incluir de novo pela aba Ciclo da Escala.',
       segueNoFluxo: 'Continua no fluxo, só bloqueia os dias do afastamento.',
       falhaSalvarLicenca: 'Não foi possível salvar a licença. Tente de novo.',
       falhaSalvarDispensa: 'Não foi possível salvar a dispensa. Tente de novo.',
@@ -265,10 +276,6 @@
       falhaCarregarMes: 'Não foi possível carregar a escala.',
       descartarAlteracoes: 'Descartar as alterações não salvas desta distribuição?',
       falhaSalvar: 'Não foi possível salvar. Tente de novo.',
-      selecioneMilitar: 'Selecione um militar',
-      deixarVazio: 'Deixar vazio',
-      funcaoVaziaExcluir: 'Função manual sem militar será excluída ao salvar. Continuar?',
-      sobreposicaoFuncao: 'Dois militares no mesmo horário nesta função',
       /* catálogo de erros/avisos da distribuição na escala — o aviso-lista do topo mostra uma linha
          [ícone + texto] por item presente; nivel 'erro' (vermelho) ou 'alerta' (amarelo) */
       erros: {
@@ -298,7 +305,7 @@
         manutencao:          { texto: 'Viatura em manutenção: {posto}', icone: 'icone-alerta', nivel: 'alerta' },
         /* o mesmo militar em funções de duas unidades no mesmo horário; {unidades} = "2ºPEL e 1ºPEL" (a dele primeiro);
            {faixas} = ", das 08:00 às 20:00" quando é só parte do dia */
-        duasUnidades:        { texto: '{militar} está em duas unidades diferentes ao mesmo tempo ({unidades}){faixas}', faixa: 'das {hi} às {hf}', icone: 'icone-alerta', nivel: 'alerta' }
+        duasUnidades:        { texto: '{militar} está em duas unidades diferentes ao mesmo tempo ({unidades}){faixas}', faixa: 'das {hi} às {hf}', icone: 'icone-alerta', nivel: 'erro' }
       },
       /* detalhe por militar dos avisos amarelos (expansível sob cada linha do aviso):
          {pessoa} = grad + nome · {funcao} = nome da vaga · {motivo} = a razão (abaixo) */
@@ -318,7 +325,7 @@
         proibido:  'Proibido: {funcao}'
       },
       buscaVazia: 'Nenhum militar encontrado.',
-      /* seções Contínuos (ciclo) e Pontuais do painel do dia */
+      /* aba Ciclo (seção dos contínuos) do painel do dia */
       continuosNaEscala: 'Contínuos do dia',
       continuosFora: 'Fora da escala',
       continuosVazioNaEscala: 'Nenhum contínuo nesse dia.',
@@ -333,10 +340,80 @@
       btnAdicionar: 'Adicionar',
       btnCancelarSaida: 'Cancelar saída',
       confirmarTirar: 'Tirar {pessoa} do ciclo a partir de {data}? Ele deixa de aparecer na escala automática daqui em diante.',
-      pontuaisDoDia: 'Pontuais do dia',
-      pontuaisAdicionar: 'Adicionar pontual',
-      pontuaisVazio: 'Nenhum pontual neste dia.',
-      pontuaisElegiveisVazio: 'Ninguém disponível para inserir.',
+      /* o Dia (lista, formulário Quem · Quando · Onde e militar no dia) */
+      deFolga: 'De folga',
+      semFuncaoRotulo: 'Sem função',
+      vazioEscolher: 'Vazio, escolher',
+      semNinguem: 'Sem ninguém, escolher',
+      semNinguemTexto: 'Sem ninguém',
+      /* dia sem ninguém de serviço na unidade */
+      semDistribuicao: 'Sem distribuição neste dia.',
+      alteracoesNaoSalvas: function (n) { return n === 1 ? '1 alteração não salva' : n + ' alterações não salvas'; },
+      /* "Condutor da AA-01", "Rancheiro do Rancho" */
+      funcaoNoPosto: function (funcao, posto, feminino) { return funcao + (feminino ? ' da ' : ' do ') + posto; },
+      dasAs: function (hi, hf) { return 'das ' + hi + ' às ' + hf; },
+      formAdicionar: 'Adicionar militar ao dia',
+      formPreencher: function (lugar) { return 'Quem fica no ' + lugar; },
+      formNovaFuncao: function (militar) { return 'Nova função para o ' + militar; },
+      formHoje: function (texto) { return 'Hoje: ' + texto; },
+      formBotaoAdicionar: 'Adicionar ao dia',
+      formBotaoAplicar: 'Aplicar',
+      formBotaoNovaFuncao: 'Adicionar função',
+      semFuncaoNoDia: 'sem função',
+      semFuncaoDas: function (periodos) { return 'sem função ' + periodos; },
+      ninguemEncontrado: 'Ninguém encontrado.',
+      novaFuncao: function (nome) { return 'Nova função: ' + nome; },
+      /* situação da função no horário (lista de funções do formulário) */
+      itemVazia: 'vazia',
+      itemSai: function (nomes) { return nomes.join(' e ') + (nomes.length > 1 ? ' saem' : ' sai'); },
+      /* a Nova função num horário em que ele já tem função: ele acumula (para deixar uma, desmarca-se na tela do militar) */
+      vaiAcumular: function (lugares) {
+        var lista = lugares.map(function (l) { return 'no ' + l; });
+        var texto = lista.length > 1 ? lista.slice(0, -1).join(', ') + ' e ' + lista[lista.length - 1] : lista[0];
+        return 'Nesse horário ele também está ' + texto + ' e vai acumular. Para deixar '
+          + (lugares.length > 1 ? 'uma delas' : 'essa função') + ', desmarque na tela do militar.';
+      },
+      /* militar no dia: a função desmarcada (ele deixa) */
+      semHorarioLivre: 'O serviço dele já está todo nesta função. Diminua um horário antes de adicionar outro.',
+      militarDeixa: function (lugar, periodos) { return 'Deixa esta função: o ' + lugar + ' fica vazio ' + (periodos || 'o dia todo') + '.'; },
+      /* o efeito da escolha numa frase: "Sd. Godoy fica sem função das 14h às 20h, e o Sd. Tavares fica sem função das 08h às 14h." */
+      avisoSemFuncao: function (militar, hi, hf) { return militar + ' fica sem função das ' + hi + ' às ' + hf; },
+      avisoEfeito: function (partes) {
+        var t = partes.length > 1 ? partes.slice(0, -1).join(', ') + ', e ' + partes[partes.length - 1] : partes[0];
+        return t.charAt(0).toUpperCase() + t.slice(1) + '.';
+      },
+      /* Chefe de Socorro e Oficial de Área: o mais antigo assume sozinho */
+      assumeChefe: function (militar, atual) {
+        return militar + ' é a praça mais antiga do dia: assume o Chefe de Socorro automaticamente nesse horário.'
+          + (atual ? ' ' + atual + ' deixa de ser o Chefe.' : '');
+      },
+      assumeOficial: function (militar, atual) {
+        return militar + ' é o oficial mais antigo do dia: assume o Oficial de Área automaticamente nesse horário.'
+          + (atual ? ' ' + atual + ' deixa de ser o Oficial de Área.' : '');
+      },
+      assumePapel: function (militar, lugar, periodos, antigos) {
+        return militar + ' assume o ' + lugar + (periodos ? ' ' + periodos : '') + (antigos ? ', no lugar do ' + antigos : '') + '.';
+      },
+      formErroQuem: 'Escolha o militar.',
+      formErroOnde: 'Escolha o posto e a função.',
+      formErroMesmaFuncao: 'O militar já está nessa função nesse horário.',
+      formErroPeriodos: 'Os períodos se cruzam. Ajuste os horários.',
+      servico: function (hi, hf, origem) {
+        var por = { pontual: ', pontual', troca: ', por troca', extra: ', de extrajornada' }[origem] || ', pelo ciclo';
+        return 'De serviço das ' + hi + ' às ' + hf + por;
+      },
+      semServicoNoDia: 'Sem serviço neste dia.',
+      folgaSiMesmo: 'Você não pode dar folga a si mesmo.',
+      /* modal do banco de horas (Contabilizar · Não contabilizar · Cancelar) */
+      contabilizarPontual: function (militar, horas, data) {
+        return 'O ' + militar + ' vai trabalhar ' + horas + ' a mais em ' + data + '. Contabilizar +' + horas + ' no banco de horas dele?';
+      },
+      contabilizarTirarPontual: function (militar, horas) {
+        return 'Este pontual somou +' + horas + ' ao banco de horas do ' + militar + '. Contabilizar −' + horas + ' para desfazer?';
+      },
+      /* aba Extrajornada do painel do dia */
+      extraDoDia: 'Extrajornada do dia',
+      extraVazio: 'Ninguém de extrajornada neste dia.',
       falhaAcaoCiclo: 'Não foi possível alterar o ciclo. Tente de novo.',
       emManutencao: 'Em manutenção',
       /* linha da cadeira vazia (sem ninguém), no lugar do nome do militar */
@@ -346,8 +423,6 @@
       /* Observações do dia (trocas, folgas, outra unidade) — o banco manda os dados, aqui vira texto */
       observacoesTitulo: 'Observações',
       observacaoLimite: 200,
-      observacaoFalhaSalvar: 'Não foi possível salvar a observação.',
-      observacaoFalhaExcluir: 'Não foi possível excluir a observação.',
       observacaoTexto: function (o) {
         function hh(t) { return t ? (String(t).slice(3) === '00' ? String(t).slice(0, 2) + 'h' : t) : ''; }
         function quem(g, n) { return ((g ? g + ' ' : '') + (n || '')).trim(); }
@@ -451,7 +526,7 @@
       promocaoTipoInvalida: 'Essa mudança de tipo rebaixaria o militar, não é uma promoção.',
       postoAtualDesconhecido: 'Não foi possível identificar o posto atual deste militar.',
       falhaPromocao: 'Não foi possível promover. Tente de novo.',
-      confirmarReadmissao: 'Readmitir {pessoa} ao efetivo? Ele volta como ativo, fora da escala automática (você o recoloca pela seção Contínuos da Escala).',
+      confirmarReadmissao: 'Readmitir {pessoa} ao efetivo? Ele volta como ativo, fora da escala automática (você o recoloca pela aba Ciclo da Escala).',
       falhaReadmissao: 'Não foi possível readmitir. Tente de novo.',
       linkNenhum: 'Nenhum link de nova senha ativo. Se o militar esqueceu a senha, gere um link e entregue a ele.',
       linkAtivo: 'Link de nova senha ativo até {ate}. Se ele perder, gere um novo.',
@@ -465,11 +540,49 @@
     },
 
     /* análise de impacto na escala — componente compartilhado (geral-impacto), usado por Trocas e Folgas */
+    /* Pendências (o que espera decisão: Para mim · Administração) */
+    pendencias: {
+      contagem: function (n) { return n === 1 ? '1 esperando decisão' : n + ' esperando decisão'; },
+      /* o cartão de cada pedido: quem e o quê, e a linha de apoio */
+      trocaAdmin: function (sol, par) { return sol + ' troca com ' + par; },
+      trocaMinha: function (sol) { return sol + ' quer trocar com você'; },
+      folga: function (nome) { return nome + ' pediu folga'; },
+      cadastro: function (nome) { return nome + ' pediu acesso ao sistema'; },
+      dados: function (nome) { return nome + ' pediu correção de dados'; },
+      metaServico: function (data, trecho) { return 'Serviço de ' + data + ' · ' + trecho; },
+      servicoInteiro: 'serviço inteiro',
+      trechoHoras: function (hi, hf) { return 'das ' + hi + ' às ' + hf; },
+      metaCadastro: function (unidade, data) { return ['Cadastro', unidade, 'pedido em ' + data].filter(Boolean).join(' · '); },
+      metaDados: function (n, data) { return (n === 1 ? '1 alteração' : n + ' alterações') + ' · pedido em ' + data; },
+      /* listas sem nada (página Pendências) */
+      vazioMinhas: 'Nenhum pedido esperando a sua resposta.',
+      vazioAprovar: 'Nenhum pedido para aprovar.',
+      vazioFiltro: 'Nenhum pedido deste tipo para aprovar.',
+      vazioCorrigir: 'Nada para corrigir.',
+      /* listas sem nada (as abas Pendências da Trocas, da Folgas e da Usuários) */
+      vazioTrocasMinhas: 'Nenhum pedido de troca esperando a sua resposta.',
+      vazioTrocasAprovar: 'Nenhum pedido de troca para aprovar.',
+      vazioFolgas: 'Nenhum pedido de folga para aprovar.',
+      vazioUsuarios: 'Nenhum pedido de cadastro ou de correção para aprovar.',
+      falhaCarregar: 'Não foi possível carregar as pendências.'
+    },
+
+    /* painel de decisão (Trocas e Folgas): a posição do pedido na fila da Pendências */
+    decisao: {
+      posicao: function (situacao, n, total) { return situacao + ' · ' + n + ' de ' + total; },
+      /* o "Como fica a escala" (seção que abre e fecha) */
+      comoFicaEscala: 'Como fica a escala',
+      diaTitulo: function (titulo, data, unidade) { return [titulo, data, unidade].filter(Boolean).join(' · '); },
+      semEscala: 'Não há escala para mostrar neste dia.',
+      falhaEscala: 'Não foi possível montar a escala. Feche e abra de novo para tentar outra vez.'
+    },
+
     impacto: {
       okFrase: 'Sem impacto na escala.',
-      alertaFrase: function (n) { return n === 1 ? '1 ponto de atenção.' : n + ' pontos de atenção.'; },
-      problemaFrase: function (n) { return n === 1 ? '1 problema impede uma escala segura.' : n + ' problemas impedem uma escala segura.'; },
-      vago: 'vago'
+      /* o selo do resultado nos cartões da Pendências */
+      seloOk: 'Sem impacto',
+      seloAlerta: function (n) { return n === 1 ? '1 ponto de atenção' : n + ' pontos de atenção'; },
+      seloProblema: function (n) { return n === 1 ? '1 problema' : n + ' problemas'; }
     },
 
     /* trocas (lista por abas, painel de detalhe + análise de impacto) */
@@ -490,16 +603,15 @@
         pendente_aprovacao: 'Aguardando aprovação',
         aprovada: 'Aprovada',
         rejeitada_parceiro: 'Recusada',
-        rejeitada_admin: 'Rejeitada',
+        rejeitada_admin: 'Recusada pela administração',
         cancelada: 'Cancelada'
       },
-      /* painel de detalhe */
-      linhaDia: 'Dia',
-      linhaHorario: 'Horário',
-      linhaDevolucao: 'Devolução',
-      servicoTotal: 'Serviço total · 08h às 08h',
-      faixaHorario: function (ini, fim) { return ini + ' às ' + fim; },
-      devolucaoPendente: 'Pendente (débito)',
+      /* painel da troca (componente geral-decisao) */
+      painelTitulo: 'Troca de serviço',
+      caixaServico: 'Serviço',
+      caixaDevolucao: 'Devolução',
+      fraseNoLugar: function (quemTrabalha, quemFolga) { return quemTrabalha + ' trabalha no lugar do ' + quemFolga + '.'; },
+      devolucaoNaoMarcada: 'Ainda não marcada.',
       /* meta da linha na lista */
       metaServico: function (dataCurta) { return 'Serviço ' + dataCurta; },
       meta24h: '24h',
@@ -511,11 +623,9 @@
       pendHoras: function (h) { return h + 'h'; },
       /* confirmações antes de cada ação */
       confirmarAceitar: 'Aceitar esta troca? Ela seguirá para aprovação do administrador.',
-      confirmarRecusar: 'Recusar esta troca?',
       confirmarAprovar: 'Aprovar esta troca? A escala será atualizada na hora.',
       confirmarAprovarComProblema: 'A análise apontou problemas que podem quebrar a escala. Aprovar mesmo assim?',
       confirmarForcar: 'Aprovar sem a confirmação do solicitado? A troca é aplicada na escala na hora.',
-      confirmarRejeitar: 'Rejeitar esta troca?',
       confirmarCancelar: 'Cancelar esta troca?',
       falhaAcao: 'Não foi possível concluir. Tente de novo.',
       /* título do painel lateral de solicitar */
@@ -524,10 +634,8 @@
       novaParceiro: 'Selecione o parceiro.',
       novaData: 'Selecione o dia do seu serviço.',
       novaMesmaPessoa: 'Você não pode trocar com você mesmo.',
-      novaServicoVazio: 'Ajuste o trecho do serviço na barra.',
-      /* componente barra de período (rótulo do topo) */
-      barraCobreTudo: 'Serviço inteiro',
-      barraTrecho: 'Trecho',
+      novaServicoVazio: 'O horário da troca precisa ficar dentro do serviço.',
+      novaDevolucaoVazia: 'O horário da devolução precisa ficar dentro do serviço do parceiro.',
       /* estados dos campos */
       parceiroOcupado: 'já de serviço nesse horário',
       /* afastado no dia (a chave é o afastamento que o banco devolve) */
@@ -563,45 +671,56 @@
       falhaCarregar: 'Não foi possível carregar as folgas.',
       falhaExtrato: 'Não foi possível carregar o extrato.',
       vazioSaldos: 'Nenhum militar nas unidades selecionadas.',
-      vazioSolicitacoes: 'Nenhuma solicitação de folga pendente.',
       vazioLancamentos: 'Nenhuma folga registrada no período.',
       extratoVazio: 'Sem lançamentos ainda.',
       pickerVazio: 'Selecione unidades no topo para escolher o militar.',
+      buscaVazia: 'Nenhum militar encontrado.',
       situacao: { pendente: 'Pendente', aprovada: 'Aprovada', concedida: 'Concedida', recusada: 'Recusada', cancelada: 'Cancelada' },
       origemAjuste: 'Ajuste do admin',
-      origemEscala: 'Inserido na escala',
-      solicitouFolga: 'solicitou folga',
+      origemPontual: 'Serviço a mais na escala',
+      naoContabilizada: 'Não contabilizada',
+      /* modal do banco de horas ao conceder folga (Contabilizar · Não contabilizar · Cancelar) */
+      contabilizarFolga: function (militar, data, periodo, horas, passado) {
+        return 'Dar folga ao ' + militar + ' em ' + data + ', ' + periodo + '.'
+          + (passado ? ' Esse dia já passou: a escala dele será refeita.' : '')
+          + ' Contabilizar −' + horas + ' no banco de horas dele?';
+      },
+      periodoDas: function (hi, hf) { return 'das ' + hi + ' às ' + hf; },
+      horasExtenso: function (h) { return h + (h === 1 ? ' hora' : ' horas'); },
       pendenteNaoConta: 'não conta no saldo até aprovar',
       diaInteiro: 'Dia inteiro',
-      consome: function (label) { return 'Consome ' + label; },
-      saldoFicaria: function (saldo) { return 'saldo ficaria em ' + saldo; },
+      /* formulários (sub-tela): o saldo no alto, o serviço do dia, o consumo da folga e o saldo depois do ajuste */
+      saldoAtual: function (saldo) { return 'Saldo atual: ' + saldo; },
+      deServico: function (hi, hf) { return 'De serviço das ' + hi + ' às ' + hf; },
+      consumoSaldo: function (horas, saldo) { return 'Consome ' + horas + ' do banco de horas. O saldo fica em ' + saldo + '.'; },
+      saldoPassa: function (de, para) { return 'O saldo passa de ' + de + ' para ' + para + '.'; },
       porNome: function (nome) { return 'por ' + nome; },
       acaoSolicitar: 'Solicitar folga',
       acaoConceder: 'Conceder folga',
-      acaoAjuste: 'Ajuste de saldo',
+      acaoDar: 'Dar folga',
+      acaoAjuste: 'Ajustar saldo',
       botaoSolicitar: 'Solicitar',
       botaoConceder: 'Conceder folga',
+      botaoDar: 'Dar folga',
       botaoAjuste: 'Salvar ajuste',
       formMilitar: 'Selecione o militar.',
       formData: 'Escolha o dia da folga.',
-      formPeriodo: 'Ajuste o trecho na barra.',
+      formPeriodo: 'O horário da folga precisa ficar dentro do serviço.',
       formHoras: 'Informe as horas do crédito.',
       formHorasInvalida: 'Horas inválidas.',
       formMotivo: 'Informe o motivo do ajuste.',
-      saldoPrefixo: 'Saldo:',
       confirmarAprovar: 'Aprovar esta folga? O saldo do militar será atualizado.',
       confirmarAprovarComProblema: 'A análise apontou problemas que podem quebrar a escala. Aprovar mesmo assim?',
-      confirmarRecusar: 'Recusar esta solicitação de folga?',
-      confirmarCancelar: 'Cancelar esta folga? O militar volta ao serviço na escala e as horas voltam ao saldo.',
+      confirmarCancelar: 'Cancelar esta folga? O militar volta ao serviço na escala e, se ela foi contabilizada, as horas voltam ao saldo.',
       confirmarCancelarPendente: 'Cancelar esta solicitação de folga?',
       falhaAcao: 'Não foi possível concluir. Tente de novo.',
-      /* painel de aprovação (detalhe + análise de impacto) */
+      /* painel de aprovação (componente geral-decisao) */
       painelFolga: 'Folga',
-      painelPendente: 'Pendente',
-      linhaDia: 'Dia',
-      linhaTrecho: 'Trecho',
-      linhaHoras: 'Horas',
-      linhaMotivo: 'Motivo',
+      painelPendente: 'Aguardando aprovação',
+      caixaFolga: 'Folga',
+      fraseFolgaInteira: function (nome) { return nome + ' folga no serviço inteiro.'; },
+      fraseFolgaParte: function (nome, hi, hf) { return nome + ' folga das ' + hi + ' às ' + hf + '.'; },
+      motivoPedido: function (motivo) { return 'Motivo: ' + motivo; },
       falhaAnalise: 'Não foi possível analisar o impacto.'
     },
 
@@ -753,6 +872,9 @@
       gerarToken: 'Gerar token de acesso',
       gerarNovoToken: 'Gerar novo token',
       salvar: 'Salvar',
+      /* modal do banco de horas (folga e pontual) */
+      contabilizar: 'Contabilizar',
+      naoContabilizar: 'Não contabilizar',
       /* modal de resumo — reverter a ação recém-aplicada (última chance) */
       desfazer: 'Desfazer',
       desfazendo: 'Desfazendo…'

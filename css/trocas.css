@@ -73,55 +73,8 @@
   color: var(--texto-suave);
 }
 
-/* ---------- painel: detalhe ---------- */
-.troca-detalhe {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.troca-secao {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.troca-pares {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.troca-pessoa {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  flex: 1;
-  min-width: 0;
-}
-
-.troca-pessoa-nome {
-  font-size: 14px;
-  color: var(--texto-forte);
-}
-
-.troca-pessoa-info {
-  font-size: 12px;
-  color: var(--texto-suave);
-}
-
-.troca-pares-seta {
-  color: var(--texto-fraco);
-  flex-shrink: 0;
-}
-
-.troca-linhas {
-  display: flex;
-  flex-direction: column;
-}
-
-/* O visual da análise de impacto (veredito, avisos, antes/depois) fica no componente
-   compartilhado geral-impacto.css (classes .impacto-*), usado por Trocas e Folgas. */
+/* O painel da troca (o pedido em caixas, a análise e a recusa com motivo) é o
+   componente compartilhado geral-decisao (+ geral-impacto), o mesmo da Folga. */
 
 /* ---------- Pendentes (dívidas de devolução) ---------- */
 .trocas-pendentes-descricao {
@@ -291,11 +244,6 @@
   background-color: var(--fundo-medio);
   color: var(--texto-suave);
   cursor: default;
-}
-
-/* container onde o JS injeta a barra de período */
-.trocas-barra {
-  padding-top: 2px;
 }
 
 .trocas-dev-data {

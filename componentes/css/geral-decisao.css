@@ -1,0 +1,68 @@
+/* ============================================================
+   PAINEL DE DECISÃO — componente compartilhado
+   O corpo do painel que aprova ou recusa um pedido (troca, folga):
+   o pedido em caixas (.grupo-caixa, as mesmas das sub-telas: o
+   título, o dia com "08h → 08h", a frase, a régua e um texto
+   extra), a nota do saldo, a análise (geral-impacto), o "Como fica
+   a escala" (seção que abre e fecha; o dia inteiro com o desenho do
+   painel do dia) e, ao recusar, a caixa do motivo.
+   Moldes #tpl-decisao* no index.html; lógica em geral-decisao.js.
+   ============================================================ */
+
+.decisao,
+.decisao-pedido {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.decisao-caixa,
+.decisao-recusa {
+  gap: 8px;
+}
+
+/* o dia à esquerda e o horário à direita */
+.decisao-caixa-dia {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.decisao-caixa-data {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+/* quem faz o quê (ex.: "Sd. Sampaio trabalha no lugar do Sd. Verde.") */
+.decisao-caixa-frase {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--texto);
+}
+
+/* o complemento (ex.: o motivo do pedido) */
+.decisao-caixa-extra {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+/* "Como fica a escala": cada dia com o título e as caixas dos postos (o desenho do painel do dia) */
+.decisao-dia,
+.decisao-dia-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.decisao-dia + .decisao-dia {
+  margin-top: 16px;
+}
+
+.decisao-dia-titulo {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}

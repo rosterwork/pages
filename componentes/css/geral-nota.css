@@ -1,0 +1,52 @@
+/* ============================================================
+   NOTA — componente compartilhado
+   Caixa curta de informação, com ícone (16px) + texto (.nota-texto).
+   Cinza (.nota): informa (ex.: "Vale só para este dia", quem assume
+   o Chefe de Socorro, o saldo depois do ajuste). Amarela
+   (.nota--alerta): avisa o efeito de uma escolha (ex.: quem fica
+   sem função, o saldo que fica negativo). Vermelha (.nota--erro):
+   um problema (ex.: a viatura que ficaria sem condutor). Verde
+   (.nota--sucesso): está tudo certo (ex.: "Sem impacto na escala").
+   Um título curto pode abrir o texto (.nota-titulo).
+   ============================================================ */
+
+.nota {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--texto-suave);
+  background-color: var(--fundo-suave);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+}
+
+.nota .icone {
+  flex-shrink: 0;
+}
+
+.nota--alerta {
+  align-items: flex-start;
+  color: var(--alerta);
+  background-color: var(--alerta-fundo);
+  border-color: transparent;
+}
+
+.nota--erro {
+  align-items: flex-start;
+  color: var(--erro);
+  background-color: var(--erro-fundo);
+  border-color: transparent;
+}
+
+.nota--sucesso {
+  color: var(--sucesso);
+  background-color: var(--sucesso-fundo);
+  border-color: transparent;
+}
+
+/* o título que abre o texto (ex.: "Cria um saldo de 24h.") */
+.nota-titulo {
+  font-weight: 600;
+}

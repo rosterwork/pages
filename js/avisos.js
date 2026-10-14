@@ -1,12 +1,9 @@
 /* ============================================================
-   AVISOS — três abas, cada uma com um dono claro:
-     · Para mim    — o que espera VOCÊ (pendências suas) e, abaixo,
-                     o histórico do que aconteceu com você
-     · Administração — só administrador: o que espera a decisão
-                      dele, com a contagem no selo da aba
+   AVISOS — duas abas, cada uma com um dono claro:
+     · Para mim    — o histórico do que aconteceu com você
      · Comunicados — o mural; o admin publica e remove aqui
-   A separação segue a regra que vale em qualquer caixa de avisos:
-   o que PEDE AÇÃO não se mistura com o que só INFORMA.
+   O que PEDE DECISÃO não mora aqui: fica na página Pendências
+   (Avisos é o que se lê; Pendências, o que se decide).
    Este arquivo liga as abas, cuida dos comunicados e decide quais
    botões do cabeçalho aparecem em cada aba. O admin cria pelo
    "Novo comunicado" e remove pela lixeira, reusando o módulo
@@ -68,13 +65,9 @@
   function iniciar(conteudo) {
     var listaComunicados = conteudo.querySelector('#avisos-lista');
     var listaNotificacoes = conteudo.querySelector('#avisos-notificacoes');
-    var minhasPendencias = conteudo.querySelector('#avisos-minhas-pendencias');
-    var pendenciasAdministracao = conteudo.querySelector('#avisos-pendencias');
     var contagem = conteudo.querySelector('#avisos-contagem');
     var btnNovo = conteudo.querySelector('#btn-novo-aviso-pagina');
     var btnLidas = conteudo.querySelector('#avisos-marcar-lidas');
-    var abaAdministracao = conteudo.querySelector('#avisos-aba-administracao');
-    var seloAdministracao = conteudo.querySelector('#avisos-administracao-contagem');
     if (!listaComunicados || !RW.apiFetch) return Promise.resolve();
 
     var emAberto = 0;
@@ -104,18 +97,6 @@
         .then(function (n) { emAberto = n; escreverContagem(); ajustarCabecalho(); });
     }
 
-    /* uma leitura enche "Precisa de você" e a aba Administração, e devolve
-       quantas são de administração (para o selo da aba) */
-    function carregarPendencias() {
-      if (!RW.avisosPendencias) return Promise.resolve();
-      return RW.avisosPendencias.carregar(minhasPendencias, pendenciasAdministracao)
-        .then(function (quantas) {
-          if (!seloAdministracao) return;
-          seloAdministracao.textContent = quantas ? String(quantas) : '';
-          seloAdministracao.classList.toggle('oculto', !quantas);
-        });
-    }
-
     if (btnNovo && RosterWork.sessao.ehAdmin()) {
       btnNovo.addEventListener('click', function () { RW.inicioAviso.abrirNovo(carregarComunicados, 'Avisos'); });
     }
@@ -128,9 +109,6 @@
       });
     }
 
-    /* a aba Administração é só do administrador */
-    if (abaAdministracao) abaAdministracao.classList.toggle('oculto', !RosterWork.sessao.ehAdmin());
-
     /* abas do subcabeçalho (mesmo mecanismo das outras páginas) */
     var trilho = conteudo.querySelector('#avisos-abas');
     var paineis = conteudo.querySelectorAll('[data-aba-painel]');
@@ -141,14 +119,12 @@
           paineis[i].classList.toggle('oculto', paineis[i].getAttribute('data-aba-painel') !== abaAtual);
         }
         ajustarCabecalho();
-        if (abaAtual === 'administracao') carregarPendencias();
       });
     }
 
     abaAtual = 'paramim';
     vazio(listaComunicados, RW.mensagens.avisos.carregando);
     carregarComunicados();
-    carregarPendencias();
     return carregarNotificacoes();
   }
 

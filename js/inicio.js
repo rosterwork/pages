@@ -75,17 +75,18 @@
 
   function irPara(pagina, aba) { if (RW.irParaPagina) RW.irParaPagina(pagina, aba); }
 
-  /* card de pendências de administração: linhas com contagem que abrem a tela */
+  /* card de pendências de administração: linhas com contagem; todas abrem Pendências › Administração */
   function cardPendencias(cont, p) {
     if (!p) return;
     var el = RosterWork.tpl('tpl-inicio-pend');
     if (!el) return;
     var linhas = el.querySelector('.inicio-pend-linhas');
+    function irPendencias() { irPara('pendencias', 'administracao'); }
     var defs = [
-      { n: p.trocas, txt: 'Trocas a aprovar', ir: function () { irPara('trocas', 'pendentes'); } },
-      { n: p.folgas, txt: 'Folgas a aprovar', ir: function () { irPara('folgas', 'aprovacoes'); } },
-      { n: p.solicitacoes, txt: 'Correções de dados', ir: function () { irPara('usuarios', 'aprovacoes'); } },
-      { n: p.fora_escala, txt: 'Militares fora da escala', ir: function () { irPara('avisos', 'administracao'); } }
+      { n: p.trocas, txt: RW.mensagens.inicio.pendTrocas, ir: irPendencias },
+      { n: p.folgas, txt: RW.mensagens.inicio.pendFolgas, ir: irPendencias },
+      { n: p.solicitacoes, txt: RW.mensagens.inicio.pendCorrecoes, ir: irPendencias },
+      { n: p.fora_escala, txt: RW.mensagens.inicio.pendForaEscala, ir: irPendencias }
     ];
     var algum = false;
     defs.forEach(function (d) {

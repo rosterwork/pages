@@ -16,6 +16,9 @@
   <link rel="stylesheet" href="componentes/css/geral-flutuante.css" />
   <link rel="stylesheet" href="componentes/css/geral-dropdown.css" />
   <link rel="stylesheet" href="componentes/css/geral-dropdown-numeros.css" />
+  <link rel="stylesheet" href="componentes/css/geral-horario.css" />
+  <link rel="stylesheet" href="componentes/css/geral-subtela.css" />
+  <link rel="stylesheet" href="componentes/css/geral-nota.css" />
   <link rel="stylesheet" href="componentes/css/geral-modal.css" />
   <link rel="stylesheet" href="componentes/css/geral-aviso.css" />
   <link rel="stylesheet" href="componentes/css/geral-data-modal.css" />
@@ -34,11 +37,11 @@
   <link rel="stylesheet" href="componentes/css/geral-periodo.css" />
   <link rel="stylesheet" href="componentes/css/geral-anteriores.css" />
   <link rel="stylesheet" href="componentes/css/geral-layout-lateral.css" />
-  <link rel="stylesheet" href="componentes/css/geral-barra-periodo.css" />
   <link rel="stylesheet" href="componentes/css/geral-rodape.css" />
   <link rel="stylesheet" href="componentes/css/geral-painel.css" />
   <link rel="stylesheet" href="componentes/css/geral-pedido.css" />
   <link rel="stylesheet" href="componentes/css/geral-impacto.css" />
+  <link rel="stylesheet" href="componentes/css/geral-decisao.css" />
   <link rel="stylesheet" href="css/index-cabecalho.css" />
   <link rel="stylesheet" href="css/index-perfil.css" />
   <link rel="stylesheet" href="css/index-comunicado.css" />
@@ -146,6 +149,13 @@
           <button type="button" class="menu-item menu-item--selecionado" data-pagina="inicio" aria-label="Início">
             <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-inicio.svg#icone-inicio" /></svg>
             <span class="menu-item-label">Início</span>
+          </button>
+
+          <!-- o que espera decisão (para todos); o número é o que falta decidir -->
+          <button type="button" class="menu-item" data-pagina="pendencias" aria-label="Pendências">
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-pendencias.svg#icone-pendencias" /></svg>
+            <span class="menu-item-label">Pendências</span>
+            <span class="menu-item-selo oculto" aria-hidden="true"></span>
           </button>
 
           <div class="sidebar-divisor"></div>
@@ -281,6 +291,7 @@
       </div>
       <div class="modal-rodape">
         <button type="button" class="botao aviso-cancelar oculto"></button>
+        <button type="button" class="botao aviso-alternativo oculto"></button>
         <button type="button" class="botao botao--primario aviso-confirmar">OK</button>
       </div>
     </div>
@@ -389,6 +400,7 @@
   <script src="componentes/js/geral-flutuante.js"></script>
   <script src="componentes/js/geral-dropdown.js"></script>
   <script src="componentes/js/geral-dropdown-numeros.js"></script>
+  <script src="componentes/js/geral-horario.js"></script>
   <script src="componentes/js/geral-modal.js"></script>
   <script src="componentes/js/geral-aviso.js"></script>
   <script src="componentes/js/geral-data-modal.js"></script>
@@ -408,39 +420,22 @@
   <script src="componentes/js/geral-busca.js"></script>
   <script src="componentes/js/geral-calendario.js"></script>
   <script src="componentes/js/geral-calendario-mes.js"></script>
-  <script src="componentes/js/geral-barra-periodo.js"></script>
   <script src="componentes/js/geral-abas.js"></script>
   <script src="componentes/js/geral-painel.js"></script>
   <script src="componentes/js/geral-anteriores.js"></script>
   <script src="componentes/js/geral-impacto.js"></script>
+  <script src="componentes/js/geral-decisao.js"></script>
+  <script src="componentes/js/geral-fila.js"></script>
   <script src="js/index-navegacao.js"></script>
   <script src="js/index-fale-conosco.js"></script>
   <script src="js/index-termos.js"></script>
 
-  <!-- MOLDES: análise de impacto na escala (componente geral-impacto — Trocas e Folgas) -->
-  <template id="tpl-geral-impacto-veredito">
-    <div class="impacto-veredito">
-      <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
-      <span class="impacto-veredito-texto"></span>
-    </div>
-  </template>
-  <template id="tpl-geral-impacto-aviso">
-    <div class="impacto-aviso">
-      <svg class="icone impacto-aviso-icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
-      <span class="impacto-aviso-textos">
-        <span class="impacto-aviso-titulo"></span>
-        <span class="impacto-aviso-desc"></span>
-      </span>
-    </div>
-  </template>
-  <template id="tpl-geral-impacto-antesdepois">
-    <div class="impacto-antesdepois">
-      <span class="impacto-ad-rotulo"></span>
-      <span class="impacto-ad-valores">
-        <span class="impacto-ad-de"></span>
-        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
-        <span class="impacto-ad-para"></span>
-      </span>
+  <!-- MOLDES: análise de impacto na escala (componente geral-impacto — painel de decisão de Trocas e Folgas) -->
+  <!-- um ponto da análise: nota amarela (atenção) ou vermelha (problema); sem nenhum, a nota verde -->
+  <template id="tpl-geral-impacto-nota">
+    <div class="nota impacto-nota">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+      <span class="nota-texto"><span class="nota-titulo"></span> <span class="impacto-nota-desc"></span></span>
     </div>
   </template>
 
@@ -459,19 +454,6 @@
   <!-- separador dos dois blocos do sino: "Para você" e "Administração" -->
   <template id="dropdown-grupo-aviso">
     <div class="dropdown-titulo aviso-grupo"></div>
-  </template>
-
-  <template id="tpl-barra-periodo">
-    <div class="barra-periodo">
-      <div class="barra-periodo-topo"><span class="barra-periodo-rotulo"></span><span class="barra-periodo-horas"></span></div>
-      <div class="barra-periodo-trilho">
-        <div class="barra-periodo-limite"></div>
-        <div class="barra-periodo-fill"></div>
-        <button type="button" class="barra-periodo-handle" data-tipo="inicio" role="slider" aria-label="Início do período"></button>
-        <button type="button" class="barra-periodo-handle" data-tipo="fim" role="slider" aria-label="Fim do período"></button>
-      </div>
-      <div class="barra-periodo-escala"><span>08h</span><span>14h</span><span>20h</span><span>02h</span><span>08h</span></div>
-    </div>
   </template>
 
   <template id="tpl-seletor-no">
@@ -749,6 +731,21 @@
     </button>
   </template>
 
+  <!-- um pedido numa linha, clicável (Pendências): o ícone do tipo (o JS põe o desenho),
+       quem e o quê, o selo do resultado da análise e a seta -->
+  <template id="tpl-pedido-linha">
+    <button type="button" class="pedido pedido--linha">
+      <svg class="icone pedido-linha-icone" width="18" height="18" aria-hidden="true"><use href=""/></svg>
+      <span class="pedido-textos">
+        <span class="pedido-quem"></span>
+        <span class="pedido-meta"></span>
+      </span>
+      <span class="espacador-flex"></span>
+      <span class="selo pedido-linha-selo oculto"></span>
+      <svg class="icone pedido-linha-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
+    </button>
+  </template>
+
   <!-- lista de pedidos sem nada (o texto é preenchido pelo JS) -->
   <template id="tpl-pedido-vazio">
     <div class="pedido-vazio"></div>
@@ -912,13 +909,19 @@
   </template>
 
   <!-- ===== moldes do PAINEL DO DIA no modo EDITAR + seções (compartilhados Escala + Extrajornada) ===== -->
-  <!-- abas de seção do painel de detalhes (clonadas para a linha das abas da gaveta) -->
+  <!-- abas de seção do painel do dia (clonadas para a linha das abas da gaveta): Dia (distribuição do
+       dia + Editar), Ciclo (os contínuos) e Extrajornada; data-so-admin = a aba some para quem não é administrador -->
   <template id="tpl-escala-painel-secoes">
     <div class="abas">
-      <button type="button" class="aba aba--ativa" data-secao="distribuicao">Distribuição</button>
-      <button type="button" class="aba" data-secao="continuos">Contínuos</button>
-      <button type="button" class="aba" data-secao="pontuais">Pontuais</button>
+      <button type="button" class="aba aba--ativa" data-secao="distribuicao">Dia</button>
+      <button type="button" class="aba" data-secao="continuos" data-so-admin>Ciclo</button>
+      <button type="button" class="aba" data-secao="extra">Extrajornada</button>
     </div>
+  </template>
+
+  <!-- aba Extrajornada: selo do extra planejado que ainda não foi inserido na escala -->
+  <template id="tpl-escala-extra-selo">
+    <span class="selo selo--alerta">Não inserido na escala</span>
   </template>
 
   <!-- rodapé do painel no modo Editar: Cancelar + Salvar -->
@@ -927,7 +930,7 @@
     <button type="button" class="botao botao--primario escala-painel-salvar" disabled>Salvar</button>
   </template>
 
-  <!-- Contínuos / Pontuais: linha de militar (grad + nome + extra + ação) -->
+  <!-- Ciclo: linha de militar (grad + nome + extra + ação) -->
   <template id="tpl-escala-secao-item">
     <div class="escala-secao-item">
       <span class="escala-secao-grad"></span>
@@ -947,101 +950,339 @@
     </div>
   </template>
 
-  <!-- Contínuos / Pontuais: botão de ação de uma linha (Tirar / Adicionar / Cancelar saída) -->
+  <!-- Ciclo: botão de ação de uma linha (Tirar / Adicionar / Cancelar saída) -->
   <template id="tpl-escala-secao-botao">
     <button type="button" class="botao botao--pequeno escala-secao-botao"></button>
   </template>
 
-  <!-- Pontuais: ✕ que remove um pontual da lista -->
-  <template id="tpl-escala-secao-remover">
-    <button type="button" class="escala-edicao-remover" aria-label="Remover pontual">
-      <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
-    </button>
-  </template>
-
-  <!-- Contínuos / Pontuais: estado vazio de uma caixa de seção (texto) -->
+  <!-- Ciclo e formulário do Editar: estado vazio de uma lista (texto) -->
   <template id="tpl-escala-secao-vazio">
     <div class="escala-secao-vazio"></div>
   </template>
 
-  <!-- Contínuos: selo "Sai em DD/MM" de um militar com saída marcada -->
+  <!-- Ciclo: selo "Sai em DD/MM" de um militar com saída marcada -->
   <template id="tpl-escala-secao-selo">
     <span class="selo selo--alerta escala-secao-selo"></span>
   </template>
 
-  <!-- coluna de ação de uma linha no modo Editar: ✕ remover desta função -->
-  <template id="tpl-escala-edicao-acao">
-    <span class="escala-edicao-acao">
-      <button type="button" class="escala-edicao-remover" aria-label="Remover desta função">
-        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+  <!-- ===== formulário Novo usuário (usuarios-novo-usuario.js): Usuários › Novo usuário e a revisão de cadastro da Pendências ===== -->
+  <!-- molde: formulário Novo usuário — abre no painel direito (lógica em usuarios-novo-usuario.js) -->
+  <template id="tpl-novo-usuario">
+    <div class="painel-secao">
+      <button type="button" class="painel-secao-cabecalho" aria-expanded="true">
+        <span class="rotulo-secao">Dados pessoais</span>
+        <svg class="icone painel-secao-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
       </button>
-    </span>
-  </template>
+      <div class="painel-secao-corpo">
+        <label class="campo">
+          <span class="campo-rotulo">Nome completo</span>
+          <input class="campo-entrada" id="nu-nome-completo" type="text" maxlength="100" placeholder="Ex.: João Carlos Andrade" />
+          <span class="campo-erro-texto"></span>
+        </label>
+        <label class="campo">
+          <span class="campo-rotulo">CPF</span>
+          <input class="campo-entrada" id="nu-cpf" type="text" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" />
+          <span class="campo-erro-texto"></span>
+        </label>
+        <label class="campo">
+          <span class="campo-rotulo">RG</span>
+          <input class="campo-entrada" id="nu-rg" type="text" inputmode="numeric" maxlength="12" placeholder="00.000.000-0" />
+          <span class="campo-erro-texto"></span>
+        </label>
+        <label class="campo">
+          <span class="campo-rotulo">Data de nascimento</span>
+          <input class="campo-entrada" id="nu-nascimento" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" />
+          <span class="campo-erro-texto"></span>
+        </label>
+        <div class="campo">
+          <span class="campo-rotulo">CNH</span>
+          <div class="dropdown">
+            <button type="button" class="campo-entrada campo-selecao" id="nu-cnh">
+              <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+            </button>
+            <div class="dropdown-menu">
+              <button type="button" class="dropdown-item" data-valor="Nenhuma">Nenhuma</button>
+              <button type="button" class="dropdown-item" data-valor="A">A</button>
+              <button type="button" class="dropdown-item" data-valor="B">B</button>
+              <button type="button" class="dropdown-item" data-valor="C">C</button>
+              <button type="button" class="dropdown-item" data-valor="D">D</button>
+              <button type="button" class="dropdown-item" data-valor="E">E</button>
+              <button type="button" class="dropdown-item" data-valor="AB">AB</button>
+              <button type="button" class="dropdown-item" data-valor="AC">AC</button>
+              <button type="button" class="dropdown-item" data-valor="AD">AD</button>
+              <button type="button" class="dropdown-item" data-valor="AE">AE</button>
+            </div>
+          </div>
+          <span class="campo-erro-texto"></span>
+        </div>
+        <label class="campo">
+          <span class="campo-rotulo">Celular</span>
+          <input class="campo-entrada" id="nu-celular" type="text" inputmode="numeric" maxlength="15" placeholder="(00) 00000-0000" />
+          <span class="campo-erro-texto"></span>
+        </label>
+        <label class="campo">
+          <span class="campo-rotulo">E-mail (opcional)</span>
+          <input class="campo-entrada" id="nu-email" type="text" maxlength="80" placeholder="nome@exemplo.com" />
+          <span class="campo-erro-texto"></span>
+        </label>
+      </div>
+    </div>
 
-  <!-- ✕ de UM período (multi-período): mesmo botão, rótulo próprio -->
-  <template id="tpl-escala-edicao-remover-periodo">
-    <button type="button" class="escala-edicao-remover" aria-label="Remover este período">
-      <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
-    </button>
-  </template>
-
-  <!-- ação restaurar (↺): desfaz o ajuste manual, voltando ao automático -->
-  <template id="tpl-escala-edicao-restaurar">
-    <span class="escala-edicao-acao">
-      <button type="button" class="escala-edicao-restaurar" aria-label="Restaurar o automático">
-        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-restaurar.svg#icone-restaurar"/></svg>
+    <div class="painel-secao">
+      <button type="button" class="painel-secao-cabecalho" aria-expanded="true">
+        <span class="rotulo-secao">Dados institucionais</span>
+        <svg class="icone painel-secao-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
       </button>
-    </span>
-  </template>
+      <div class="painel-secao-corpo">
+        <div class="campo">
+          <span class="campo-rotulo">Tipo</span>
+          <div class="dropdown">
+            <button type="button" class="campo-entrada campo-selecao" id="nu-tipo">
+              <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+            </button>
+            <div class="dropdown-menu" id="nu-tipo-menu"></div>
+          </div>
+          <span class="campo-erro-texto"></span>
+        </div>
+        <label class="campo">
+          <span class="campo-rotulo">Inclusão no quadro</span>
+          <input class="campo-entrada" id="nu-inclusao" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" />
+          <span class="campo-ajuda">Data de entrada no quadro atual do militar (praças ou oficiais), não a data de entrada na corporação.</span>
+          <span class="campo-erro-texto"></span>
+        </label>
+        <div class="campo">
+          <span class="campo-rotulo">Posto / Patente</span>
+          <div class="dropdown">
+            <button type="button" class="campo-entrada campo-selecao" id="nu-posto" disabled>
+              <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione o tipo antes</span>
+              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+            </button>
+            <div class="dropdown-menu" id="nu-posto-menu"></div>
+          </div>
+          <span class="campo-erro-texto"></span>
+        </div>
+        <label class="campo">
+          <span class="campo-rotulo">Nome de guerra</span>
+          <input class="campo-entrada" id="nu-nome-guerra" type="text" maxlength="40" placeholder="Ex.: Andrade" />
+          <span class="campo-erro-texto"></span>
+        </label>
+        <label class="campo">
+          <span class="campo-rotulo" id="nu-colocacao-rotulo">Colocação</span>
+          <input class="campo-entrada" id="nu-colocacao" type="text" inputmode="numeric" maxlength="4" placeholder="Selecione o tipo antes" disabled />
+          <span class="campo-erro-texto"></span>
+        </label>
+        <div class="campo">
+          <span class="campo-rotulo">Setor atual</span>
+          <div class="dropdown">
+            <button type="button" class="campo-entrada campo-selecao" id="nu-setor">
+              <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+            </button>
+            <div class="dropdown-menu">
+              <button type="button" class="dropdown-item" data-valor="Operacional">Operacional</button>
+              <button type="button" class="dropdown-item" data-valor="Administrativo">Administrativo</button>
+            </div>
+          </div>
+          <span class="campo-erro-texto"></span>
+        </div>
+        <div class="campo">
+          <span class="campo-rotulo">Lotação atual</span>
+          <div class="dropdown" id="nu-lotacao-dropdown">
+            <button type="button" class="campo-entrada campo-selecao" id="nu-lotacao">
+              <span class="campo-selecao-texto campo-selecao-texto--vazio" id="nu-lotacao-texto">Selecione uma unidade</span>
+              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+            </button>
+            <div class="dropdown-menu dropdown-menu--largo">
+              <div class="dropdown-menu-rolagem">
+                <div class="arvore" id="nu-lotacao-arvore"></div>
+              </div>
+            </div>
+          </div>
+          <span class="campo-erro-texto"></span>
+        </div>
+      </div>
+    </div>
 
-  <!-- linha dos valores originais (automático) abaixo de uma linha alterada: itálico + riscado -->
-  <template id="tpl-escala-edicao-original">
-    <div class="escala-distribuicao-escalado escala-distribuicao-original">
-      <span class="escala-distribuicao-grad"></span>
-      <span class="escala-distribuicao-nome"></span>
-      <div class="escala-distribuicao-horas"></div>
+    <div class="painel-secao oculto" id="nu-promocoes-secao">
+      <button type="button" class="painel-secao-cabecalho" aria-expanded="true">
+        <span class="rotulo-secao">Datas de promoções</span>
+        <svg class="icone painel-secao-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="painel-secao-corpo" id="nu-promocoes"></div>
     </div>
   </template>
 
-  <!-- seletor de hora redonda do modo Editar: wrapper com a seta; os dois dropdowns
-       (início → fim) são criados pelo componente geral-dropdown-numeros e inseridos pelo JS -->
-  <template id="tpl-escala-hora-editar">
-    <span class="escala-distribuicao-hora escala-hora-editar">
-      <svg class="icone escala-distribuicao-hora-seta" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+  <!-- molde: ações do rodapé do painel Novo usuário -->
+  <template id="tpl-novo-usuario-acoes">
+    <button type="button" class="botao" id="nu-cancelar">Cancelar</button>
+    <button type="button" class="botao botao--primario" id="nu-salvar">Salvar</button>
+  </template>
+
+  <!-- molde: item de campo de seleção montado pelo JS (Tipo, Posto) -->
+  <template id="tpl-nu-opcao">
+    <button type="button" class="dropdown-item"></button>
+  </template>
+
+  <!-- molde: campo de data de promoção (clonado por posto na carreira) -->
+  <template id="tpl-nu-promocao">
+    <label class="campo">
+      <span class="campo-rotulo"></span>
+      <input class="campo-entrada" type="text" name="promocao-data" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" />
+      <span class="campo-erro-texto"></span>
+    </label>
+  </template>
+
+  <!-- ===== painel de decisão (componente geral-decisao; Trocas e Folgas, na Pendências e na página de cada assunto) ===== -->
+  <!-- o corpo: o pedido em caixas, a nota do saldo, a análise, o "Como fica a escala" (fechado) e, ao recusar, o motivo -->
+  <template id="tpl-decisao">
+    <div class="decisao">
+      <div class="decisao-pedido"></div>
+      <div class="decisao-saldo oculto"></div>
+      <div class="impacto-analise decisao-analise"></div>
+      <div class="decisao-escala"></div>
+      <div class="grupo-caixa decisao-recusa oculto">
+        <span class="rotulo-secao">Recusar o pedido</span>
+        <label class="campo">
+          <span class="campo-rotulo">Motivo (opcional)</span>
+          <textarea class="campo-entrada decisao-motivo" maxlength="200" placeholder="Ex.: o efetivo do dia já está no mínimo"></textarea>
+        </label>
+        <span class="subtela-ajuda">O motivo vai no aviso da recusa.</span>
+      </div>
+    </div>
+  </template>
+  <!-- uma caixa do pedido: o título, o dia com o horário, a frase, a régua e um texto extra -->
+  <template id="tpl-decisao-caixa">
+    <div class="grupo-caixa decisao-caixa">
+      <span class="rotulo-secao"></span>
+      <div class="decisao-caixa-dia"><span class="decisao-caixa-data"></span></div>
+      <span class="decisao-caixa-frase"></span>
+      <span class="decisao-caixa-extra"></span>
+    </div>
+  </template>
+  <!-- um dia no "Como fica a escala": o título (ex.: Serviço · Sexta-feira, 30/10/2026 · 2ºPEL) e o dia inteiro da unidade -->
+  <template id="tpl-decisao-dia">
+    <div class="decisao-dia">
+      <span class="decisao-dia-titulo"></span>
+      <div class="decisao-dia-lista"></div>
+    </div>
+  </template>
+  <!-- a nota do saldo de folgas (amarela quando ficaria negativo) -->
+  <template id="tpl-decisao-saldo">
+    <div class="nota">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+      <span class="nota-texto"></span>
+    </div>
+  </template>
+  <!-- o rodapé enquanto recusa -->
+  <template id="tpl-decisao-recusa-acoes">
+    <button type="button" class="botao" data-acao="voltar">Voltar</button>
+    <button type="button" class="botao botao--perigo" data-acao="confirmar-recusa">Confirmar recusa</button>
+  </template>
+  <!-- o rodapé do painel da troca (o JS deixa só as ações do papel e do estado de quem olha):
+       Recusar = o militar chamado para a troca; Recusar (admin) = a administração -->
+  <template id="tpl-troca-acoes">
+    <button type="button" class="botao" data-acao="cancelar">Cancelar troca</button>
+    <button type="button" class="botao botao--perigo" data-acao="recusar">Recusar</button>
+    <button type="button" class="botao botao--primario" data-acao="aceitar">Aceitar</button>
+    <button type="button" class="botao" data-acao="aprovar-forcar">Aprovar sem confirmação</button>
+    <button type="button" class="botao botao--perigo" data-acao="recusar-admin">Recusar</button>
+    <button type="button" class="botao botao--primario" data-acao="aprovar">Aprovar</button>
+  </template>
+  <!-- o rodapé Recusar / Aprovar (folga e correção de dados) -->
+  <template id="tpl-decisao-acoes">
+    <button type="button" class="botao botao--perigo" data-acao="recusar">Recusar</button>
+    <button type="button" class="botao botao--primario" data-acao="aprovar">Aprovar</button>
+  </template>
+
+  <!-- ===== horário em campos e régua do dia (componente geral-horario; Escala e Folgas) ===== -->
+  <!-- um horário: início → fim (os dois campos vêm do geral-dropdown-numeros, um de cada lado da seta),
+       o ✕ (quando há mais de um horário) e o Adicionar horário -->
+  <template id="tpl-horario">
+    <span class="horario">
+      <span class="horario-par">
+        <svg class="icone horario-seta" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+      </span>
+      <button type="button" class="botao-discreto horario-remover" aria-label="Remover este horário" data-dica="Remover este horário">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+      </button>
+      <button type="button" class="botao-discreto horario-adicionar" aria-label="Adicionar horário" data-dica="Adicionar horário">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-horario-mais.svg#icone-horario-mais"/></svg>
+      </button>
     </span>
   </template>
 
-  <!-- picker do modo Editar: militares do grupo, por unidade (recolhível), sem checkbox -->
-  <template id="tpl-escala-picker">
-    <div class="escala-picker" role="dialog" aria-label="Selecionar militar"></div>
+  <!-- horário que não se muda (ex.: Chefe de Socorro e Oficial de Área): o campo tracejado -->
+  <!-- um horário só para ler: "08h → 08h" (painel de decisão) -->
+  <template id="tpl-horario-leitura">
+    <span class="horario-leitura">
+      <span class="horario-leitura-ini"></span>
+      <svg class="icone horario-seta" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+      <span class="horario-leitura-fim"></span>
+    </span>
+  </template>
+  <template id="tpl-horario-fixo">
+    <span class="horario-fixo"></span>
   </template>
 
-  <template id="tpl-escala-picker-unidade">
-    <div class="escala-picker-unidade">
-      <button type="button" class="escala-picker-unidade-cab" aria-expanded="true">
-        <svg class="icone escala-picker-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
-        <span class="escala-picker-unidade-nome"></span>
-      </button>
-      <div class="escala-picker-militares"></div>
+  <!-- a régua do dia de serviço (08h às 08h) com as horas embaixo -->
+  <template id="tpl-regua">
+    <div class="regua-dia">
+      <div class="regua"></div>
+      <div class="regua-escala" aria-hidden="true"><span>08h</span><span>14h</span><span>20h</span><span>02h</span><span>08h</span></div>
     </div>
   </template>
 
-  <template id="tpl-escala-picker-militar">
-    <button type="button" class="escala-picker-militar">
-      <span class="escala-picker-militar-grad"></span>
-      <span class="escala-picker-militar-nome"></span>
-    </button>
+  <!-- um pedaço da régua: a posição e a largura vêm das propriedades --pedaco-ini e --pedaco-tam (porcentagem do dia) -->
+  <template id="tpl-regua-pedaco">
+    <span class="regua-pedaco"></span>
   </template>
 
-  <!-- opção no topo do picker: limpa o militar e a vaga volta a "Selecione um militar" -->
-  <template id="tpl-escala-picker-vazio">
-    <button type="button" class="escala-picker-militar escala-picker-vazio"></button>
+  <!-- período dentro de um serviço (Folgas e Trocas): Serviço inteiro ou Parte do serviço; na parte, os campos;
+       embaixo, a régua com o serviço e o trecho escolhido (o JS dá o nome dos rádios e põe a régua) -->
+  <template id="tpl-periodo-servico">
+    <div class="periodo-servico">
+      <label class="geral-opcao"><input type="radio" value="inteiro" checked disabled /><span>Serviço inteiro</span></label>
+      <label class="geral-opcao"><input type="radio" value="parte" disabled /><span>Parte do serviço</span></label>
+      <div class="periodo-servico-horario oculto"></div>
+    </div>
   </template>
 
   <!-- ===== moldes do PAINEL DO DIA (compartilhados Escala + Extrajornada) ===== -->
   <!-- painel Distribuição: estado vazio (texto), carregando (giratório), grupo de função e linha de militar -->
   <template id="tpl-escala-distribuicao-estado">
     <div class="escala-distribuicao-estado"></div>
+  </template>
+
+  <!-- selo do que ainda não foi salvo: a edição do Dia e a prévia do painel de decisão (some depois de salvar) -->
+  <template id="tpl-escala-edicao-novo">
+    <span class="selo">Novo</span>
+  </template>
+
+  <!-- lista do Dia (aba Dia do painel da Escala e da Extrajornada, e o "Como fica a escala" do painel de decisão;
+       escalas-painel-editar.js): uma linha = função · militar · horários · ações (quem só lê não tem as ações) -->
+  <template id="tpl-escala-edicao-linha">
+    <div class="escala-edicao-linha">
+      <span class="escala-edicao-funcao"></span>
+      <span class="escala-edicao-pessoa">
+        <span class="escala-distribuicao-icones"></span>
+        <span class="escala-distribuicao-grad"></span>
+        <span class="escala-distribuicao-nome"></span>
+      </span>
+      <div class="escala-distribuicao-horas"></div>
+      <span class="escala-edicao-acoes"></span>
+    </div>
+  </template>
+
+  <!-- um rótulo de função na linha (dois empilhados quando o mesmo militar acumula, ex.: Chefe de Socorro e Condutor) -->
+  <template id="tpl-escala-edicao-funcao-rotulo">
+    <span class="escala-edicao-funcao-rotulo"></span>
+  </template>
+
+  <!-- horário sem ninguém (quem só lê): o texto vermelho, sem botão -->
+  <template id="tpl-escala-edicao-vazio-leitura">
+    <span class="escala-edicao-vazio-leitura"></span>
   </template>
 
   <!-- aviso de conflito no topo da Distribuição: lista os erros do dia (um por linha, com ícone) a partir de RosterWork.mensagens.escala.erros -->
@@ -1093,13 +1334,6 @@
   <!-- um rótulo de função (empilha quando o mesmo militar acumula, ex.: Chefe de Socorro / Condutor) -->
   <template id="tpl-escala-distribuicao-funcao-rotulo">
     <span class="escala-distribuicao-funcao-rotulo"></span>
-  </template>
-
-  <template id="tpl-escala-distribuicao-adicionar">
-    <button type="button" class="escala-distribuicao-adicionar">
-      <svg class="icone" aria-hidden="true"><use href="icones/icone-mais.svg#icone-mais"></use></svg>
-      <span>Adicionar função</span>
-    </button>
   </template>
 
   <!-- viatura em manutenção: aviso amarelo + nota (só leitura no Ver; editável no Editar) -->
@@ -1245,11 +1479,12 @@
     </div>
   </template>
 
-  <!-- adicionar observação (Editar do admin): botão que abre o campo com limite de caracteres -->
+  <!-- adicionar observação (admin, no Dia): botão que abre o campo com limite de caracteres; a nota entra
+       na lista e grava junto com o Salvar do dia -->
   <template id="tpl-escala-observacao-adicionar">
     <div class="escala-observacao-add">
-      <button type="button" class="botao-discreto escala-observacao-add-botao">
-        <svg class="icone" aria-hidden="true"><use href="icones/icone-mais.svg#icone-mais" /></svg>
+      <button type="button" class="botao botao--pequeno escala-observacao-add-botao">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-anotacao.svg#icone-anotacao" /></svg>
         <span>Adicionar observação</span>
       </button>
       <div class="escala-observacao-campo oculto">
@@ -1258,7 +1493,7 @@
           <span class="escala-observacao-contador"></span>
           <div class="escala-observacao-campo-acoes">
             <button type="button" class="botao botao--pequeno escala-observacao-cancelar">Cancelar</button>
-            <button type="button" class="botao botao--pequeno botao--primario escala-observacao-salvar">Salvar</button>
+            <button type="button" class="botao botao--pequeno botao--primario escala-observacao-salvar">Adicionar</button>
           </div>
         </div>
       </div>

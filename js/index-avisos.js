@@ -9,6 +9,8 @@
      · pede ação  → sai quando o assunto é resolvido, por qualquer administrador
      · só informa → sai quando você lê
    O número do sino conta os em aberto (não é "não lidas").
+   A mesma leitura dá o número do item Pendências no menu (o que
+   espera decisão), e os avisos de decisão levam para lá.
    Estrutura e moldes vivem no index.html.
    ============================================================ */
 (function () {
@@ -66,12 +68,23 @@
     return el;
   }
 
+  /* o que espera decisão mora na página Pendências (é o número do item no menu) */
+  var DECISAO = { troca: true, folga: true, cadastro: true, dados: true };
+
+  function atualizarMenu(quantos) {
+    var item = document.querySelector('.menu-item[data-pagina="pendencias"]');
+    var selo = item ? item.querySelector('.menu-item-selo') : null;
+    if (!selo) return;
+    selo.textContent = quantos > 99 ? '99+' : String(quantos);
+    selo.classList.toggle('oculto', !quantos);
+  }
+
   /* pendências da administração que aparecem no sino, com a gravidade da bolinha */
   var PENDENCIAS_SINO = { fora_escala: 'erro', manutencao: 'alerta', distribuicao: 'alerta', distribuicao_erro: 'erro' };
 
   /* pendência da administração no sino: estado que espera decisão, sem "lida" — fica
      até ser resolvido. Bolinha colorida por gravidade; clicar abre a página onde se resolve
-     (a Distribuição) ou, sem página, Avisos › Administração */
+     (a Distribuição) ou, sem página, Pendências › Administração */
   function montarItemPendencia(p) {
     var el = RosterWork.tpl('dropdown-item-aviso');
     if (!el) return null;
@@ -81,7 +94,7 @@
     el.addEventListener('click', function () {
       if (RW.fecharDropdowns) RW.fecharDropdowns();
       if (!RW.irParaPagina) return;
-      if (p.pagina) RW.irParaPagina(p.pagina, p.aba); else RW.irParaPagina('avisos', 'administracao');
+      if (p.pagina) RW.irParaPagina(p.pagina, p.aba); else RW.irParaPagina('pendencias', 'administracao');
     });
     return el;
   }
@@ -107,6 +120,7 @@
     /* o número do sino soma as notificações em aberto + as pendências (estado que fica até resolver) */
     var totalPend = pend.reduce(function (s, p) { return s + (Number(p.contagem) || 0); }, 0);
     atualizarBadge((abertos.total || 0) + totalPend);
+    atualizarMenu((pendencias || []).reduce(function (s, p) { return s + (DECISAO[p.tipo] ? (Number(p.contagem) || 0) : 0); }, 0));
 
     /* "Marcar todas como lidas" só faz sentido para o que informa —
        decisão pendente não se apaga declarando que foi vista */
@@ -140,9 +154,15 @@
   }
 
   /* marca como lida e vai para a tela do assunto, já na aba onde se resolve.
-     O que pede ação continua em aberto até alguém decidir — ler não resolve. */
+     O que pede ação continua em aberto até alguém decidir — ler não resolve.
+     O aviso de uma decisão (troca, folga, cadastro, correção) leva à Pendências,
+     já com o pedido aberto. */
   function abrir(n) {
-    function irPara() { if (n.pagina && RW.irParaPagina) RW.irParaPagina(n.pagina, n.aba, n.referencia_id); }
+    function irPara() {
+      if (!RW.irParaPagina) return;
+      if (n.acao && DECISAO[n.tipo]) RW.irParaPagina('pendencias', n.escopo === 'administracao' ? 'administracao' : 'paramim', n.referencia_id);
+      else if (n.pagina) RW.irParaPagina(n.pagina, n.aba, n.referencia_id);
+    }
     if (RW.fecharDropdowns) RW.fecharDropdowns();
     if (n.lida) { irPara(); return; }
     RW.apiFetch('/rest/v1/rpc/notificacoes_marcar_lidas', { metodo: 'POST', corpo: { p_ids: [n.id] } })

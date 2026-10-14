@@ -3,6 +3,8 @@
    RosterWork.avisar({ tipo, mensagem, textoOk, aoConfirmar })  -> 1 botão (OK)
    RosterWork.confirmar({ tipo, mensagem, textoConfirmar, textoCancelar,
                           aoConfirmar, aoCancelar })             -> 2 botões
+   + textoAlternativo/aoAlternativo (opcional)                   -> 3 botões
+     (o do meio é a outra forma de confirmar, ex.: "Não contabilizar")
    tipo: 'sucesso' | 'aviso' | 'erro'. Aparece sobre qualquer modal e
    só fecha pelos botões (nunca por clique fora nem Esc). O elemento
    #veu-aviso é fixo no shell; aqui só preenchemos e mostramos/escondemos.
@@ -12,9 +14,10 @@
 
   window.RosterWork = window.RosterWork || {};
 
-  var veu, caixa, mensagemEl, iconeSucesso, iconeAlerta, btnConfirmar, btnCancelar;
+  var veu, caixa, mensagemEl, iconeSucesso, iconeAlerta, btnConfirmar, btnCancelar, btnAlternativo;
   var aoConfirmar = null;
   var aoCancelar = null;
+  var aoAlternativo = null;
   var focoAnterior = null;   /* quem tinha o foco antes do aviso (para devolver) */
 
   function preparar() {
@@ -27,6 +30,12 @@
     iconeAlerta = veu.querySelector('.aviso-icone--alerta');
     btnConfirmar = veu.querySelector('.aviso-confirmar');
     btnCancelar = veu.querySelector('.aviso-cancelar');
+    btnAlternativo = veu.querySelector('.aviso-alternativo');
+    btnAlternativo.addEventListener('click', function () {
+      var fn = aoAlternativo;
+      fechar();
+      if (fn) fn();
+    });
     btnConfirmar.addEventListener('click', function () {
       var fn = aoConfirmar;
       fechar();
@@ -67,9 +76,16 @@
     } else {
       btnCancelar.classList.add('oculto');
     }
+    if (opcoes.textoAlternativo) {
+      btnAlternativo.textContent = opcoes.textoAlternativo;
+      btnAlternativo.classList.remove('oculto');
+    } else {
+      btnAlternativo.classList.add('oculto');
+    }
 
     aoConfirmar = opcoes.aoConfirmar || null;
     aoCancelar = opcoes.aoCancelar || null;
+    aoAlternativo = opcoes.aoAlternativo || null;
 
     focoAnterior = document.activeElement;
     veu.classList.add('modal-veu--aberto');
@@ -93,9 +109,11 @@
       mensagem: opcoes.mensagem,
       textoConfirmar: opcoes.textoConfirmar || 'Confirmar',
       textoCancelar: opcoes.textoCancelar || 'Cancelar',
+      textoAlternativo: opcoes.textoAlternativo,
       confirmarPerigo: opcoes.confirmarPerigo,
       aoConfirmar: opcoes.aoConfirmar,
-      aoCancelar: opcoes.aoCancelar
+      aoCancelar: opcoes.aoCancelar,
+      aoAlternativo: opcoes.aoAlternativo
     });
   }
 

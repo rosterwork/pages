@@ -23,7 +23,6 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-width: 720px;
 }
 
 .aviso-cartao {
@@ -165,88 +164,4 @@
   flex-shrink: 0;
   font-size: 11px;
   color: var(--texto-fraco);
-}
-
-/* ---------- o que espera decisão ---------- */
-.avisos-pendencia {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  min-height: 48px;
-  padding: 8px 12px;
-  text-align: left;
-  border: 1px solid var(--borda);
-  border-radius: var(--raio-medio);
-  background-color: var(--fundo-superficie);
-  transition: background-color 0.15s ease;
-}
-
-.avisos-pendencia:hover {
-  background-color: var(--fundo-suave);
-}
-
-.avisos-pendencia-contagem {
-  flex-shrink: 0;
-}
-
-.avisos-pendencia-texto {
-  font-size: 13px;
-  color: var(--texto-forte);
-}
-
-.avisos-pendencia-seta {
-  flex-shrink: 0;
-  color: var(--texto-fraco);
-}
-
-/* pendências "fora da escala" e "viaturas em manutenção": empilham cabeçalho + lista (não navegam) */
-.avisos-pendencia--fora,
-.avisos-pendencia--manut {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 8px;
-  cursor: default;
-}
-.avisos-pendencia-cab {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.avisos-fora-lista,
-.avisos-manut-lista {
-  list-style: none;
-  margin: 0;
-  padding: 0 0 0 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.avisos-fora-item,
-.avisos-manut-item {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  min-height: 24px;
-}
-.avisos-fora-grad {
-  flex-shrink: 0;
-  font-size: 11px;
-  color: var(--texto-suave);
-}
-.avisos-fora-nome,
-.avisos-manut-viatura {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--texto-forte);
-}
-.avisos-manut-desde {
-  font-size: 11px;
-  color: var(--texto-suave);
-}
-.avisos-fora-unidade,
-.avisos-manut-unidade {
-  margin-left: auto;
-  font-size: 11px;
-  color: var(--texto-suave);
 }

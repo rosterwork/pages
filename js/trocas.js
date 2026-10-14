@@ -1,10 +1,12 @@
 /* ============================================================
    TROCAS — orquestrador da página
-   Três visões: Todas (árvore de unidades — a troca fica na unidade
-   de quem solicitou), Minhas (as trocas em que eu entro) e
-   Pendentes (dívidas de devolução). "Solicitar" é o botão do
-   cabeçalho. As ações (aceitar / aprovar /
-   aprovar sem confirmação / rejeitar / cancelar) ficam no painel,
+   Quatro visões: Todas (árvore de unidades — a troca fica na unidade
+   de quem solicitou), Minhas (as trocas em que eu entro), Saldos
+   (as dívidas de horas) e Pendências (a fila do que espera decisão:
+   a troca que pediram a você e, para o administrador, as trocas para
+   aprovar; componente geral-fila, a mesma da página Pendências).
+   "Solicitar" é o botão da barra. As ações (aceitar / aprovar /
+   aprovar sem confirmação / recusar / cancelar) ficam no painel,
    conforme o papel de quem olha.
    Registra RosterWork.paginas.trocas = { iniciar }.
    ============================================================ */
@@ -20,6 +22,7 @@
   var ouvindoUnidades = false;
   var arvoreMontada = false;
   var reqSeq = 0;   // token de requisição das listas (ignora resposta antiga ao trocar de aba/unidade)
+  var filaMinhas = null, filaAprovar = null;   // as filas da aba Pendências (geral-fila)
 
   function unidades() {
     try { var p = JSON.parse(sessionStorage.getItem('rosterwork_preferencias')); return p && Array.isArray(p.unidades_selecionadas) ? p.unidades_selecionadas : []; } catch (e) { return []; }
@@ -157,7 +160,27 @@
   function carregarAba(nome) {
     if (nome === 'todas') { if (arvoreMontada && RW.arvoreUnidades) RW.arvoreUnidades.recarregar(); else montarArvoreTodas(); }
     else if (nome === 'minhas') carregarMinhas();
-    else if (nome === 'pendentes') carregarPendentes();
+    else if (nome === 'saldos') carregarPendentes();
+    else if (nome === 'pendencias') carregarPendencias();
+  }
+
+  /* ---------- Pendências: a fila do que espera decisão (o número vai no selo da aba) ---------- */
+  function escreverSeloPendencias(n) {
+    var s = conteudo.querySelector('#trocas-pendencias-contagem');
+    if (!s) return;
+    s.textContent = n ? String(n) : '';
+    s.classList.toggle('oculto', !n);
+  }
+  function carregarPendencias() {
+    if (!filaMinhas || !RW.fila) return Promise.resolve();
+    return RW.fila.ler().then(function (r) {
+      if (!r || !document.contains(conteudo)) return;
+      var minhas = RW.fila.doTipo(r.minhas, ['troca']);
+      var aprovar = contexto.ehAdmin ? RW.fila.doTipo(r.aprovar, ['troca']) : [];
+      filaMinhas.definir(minhas);
+      if (filaAprovar) filaAprovar.definir(aprovar);
+      escreverSeloPendencias(minhas.length + aprovar.length);
+    });
   }
 
   function aoTrocarAba(aba) {
@@ -198,6 +221,13 @@
 
     var abas = conteudo.querySelector('#trocas-abas');
     if (RW.abas && abas) RW.abas.ligar(abas, aoTrocarAba);
+
+    /* a aba Pendências: para todos a troca que pediram a você; para o administrador, também as trocas para aprovar */
+    var m = RW.mensagens.pendencias;
+    filaMinhas = RW.fila ? RW.fila.criar(conteudo.querySelector('#trocas-pendencias-minhas'), { vazio: m.vazioTrocasMinhas, recarregar: carregarPendencias }) : null;
+    filaAprovar = (RW.fila && contexto.ehAdmin) ? RW.fila.criar(conteudo.querySelector('#trocas-pendencias-aprovar'), { vazio: m.vazioTrocasAprovar, recarregar: carregarPendencias }) : null;
+    conteudo.querySelector('#trocas-pendencias-secao-aprovar').classList.toggle('oculto', !contexto.ehAdmin);
+    if (RW.fila) RW.fila.contar().then(function (c) { escreverSeloPendencias((c.minhas.troca || 0) + (contexto.ehAdmin ? (c.aprovar.troca || 0) : 0)); });
 
     var btn = conteudo.querySelector('#btn-solicitar-troca');
     if (btn) btn.addEventListener('click', abrirSolicitar);

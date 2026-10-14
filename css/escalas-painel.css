@@ -55,51 +55,12 @@
   justify-content: center;
 }
 
-/* botão "+ Adicionar função" (Editar): visual do rótulo de função, porém mais largo e sem quebra */
-.escala-distribuicao-adicionar {
-  display: inline-flex;
-  align-items: center;
-  align-self: flex-start;
-  gap: 4px;
-  margin-top: 4px;
-  padding: 0;
-  border: none;
-  background: none;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
-  color: var(--texto-suave);
-  transition: color 0.15s ease;
-}
-
-.escala-distribuicao-adicionar:not(:disabled):hover {
-  color: var(--texto-forte);
-}
-
-/* inativo enquanto o posto tem uma vaga vazia (uma de cada vez) */
-.escala-distribuicao-adicionar:disabled {
-  color: var(--texto-fraco);
-  cursor: default;
-}
-
-.escala-distribuicao-adicionar .icone {
-  width: 14px;
-  height: 14px;
-}
-
 /* linha de um militar: ícone + nome + graduação + horário */
 .escala-distribuicao-escalado {
   display: flex;
   align-items: center;
   gap: 4px;
   min-height: 14px;
-}
-
-/* vaga ainda sem militar: o "Selecione um militar" fica apagado e em itálico */
-.escala-distribuicao-escalado--vaga .escala-distribuicao-nome {
-  color: var(--texto-fraco);
-  font-style: italic;
 }
 
 /* realce do "marcar" da busca do sub-cabeçalho (modo Dia): inverte a linha do militar casado */
@@ -195,172 +156,6 @@
 .escala-distribuicao-escalado--automatico .escala-distribuicao-nome,
 .escala-distribuicao-escalado--automatico .escala-distribuicao-grad {
   color: var(--texto-fraco);
-}
-
-/* linha no modo Editar: canaleta reservada à esquerda; o conteúdo não se desloca */
-.escala-distribuicao-escalado--edicao {
-  padding-left: 8px;
-}
-
-/* barra cinza quando a linha foi alterada à mão (fica na canaleta, sem empurrar nada) */
-.escala-distribuicao-escalado--alterada {
-  box-shadow: inset 2px 0 0 var(--borda-forte);
-}
-
-/* coluna de ação à direita (✕), largura reservada para o conteúdo não dançar */
-.escala-edicao-acao {
-  flex-shrink: 0;
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-}
-
-/* cada ✕ da coluna de ação alinha com a altura de um par de horário (multi-período) */
-.escala-edicao-acao .escala-edicao-remover {
-  min-height: 16px;
-}
-
-.escala-edicao-remover {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: none;
-  background: none;
-  cursor: pointer;
-  color: var(--texto-fraco);
-}
-
-.escala-edicao-remover:hover {
-  color: var(--erro);
-}
-
-/* linha editável clicável (abre o picker de militar) */
-.escala-distribuicao-escalado--clicavel {
-  cursor: pointer;
-}
-
-.escala-distribuicao-escalado--clicavel:hover {
-  background-color: var(--fundo-medio);
-}
-
-/* ---------- picker de militar (painel flutuante posicionado por geral-flutuante) ---------- */
-.escala-picker {
-  z-index: 10;
-  min-width: 200px;
-  max-height: var(--flutuante-max-h, 280px);
-  overflow-y: auto;
-  padding: 4px;
-  background-color: var(--fundo-superficie);
-  border: 1px solid var(--borda);
-  border-radius: var(--raio-medio);
-  box-shadow: var(--sombra-flutuante);
-}
-
-.escala-picker-unidade-cab {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  width: 100%;
-  min-height: 26px;
-  padding: 0 4px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: var(--texto-suave);
-}
-
-.escala-picker-seta {
-  flex-shrink: 0;
-}
-
-.escala-picker-unidade-cab[aria-expanded="false"] .escala-picker-seta {
-  transform: rotate(-90deg);
-}
-
-.escala-picker-unidade-cab[aria-expanded="false"] + .escala-picker-militares {
-  display: none;
-}
-
-.escala-picker-militar {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  width: 100%;
-  min-height: 30px;
-  padding: 0 8px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  border-radius: var(--raio-pequeno);
-  font-size: 13px;
-  color: var(--texto-forte);
-}
-
-.escala-picker-militar:hover {
-  background-color: var(--fundo-medio);
-}
-
-.escala-picker-militar--ocupado,
-.escala-picker-militar--ocupado .escala-picker-militar-grad {
-  color: var(--texto-fraco);
-}
-
-/* opção "Deixar vazio" no topo do picker */
-.escala-picker-vazio {
-  color: var(--texto-fraco);
-  font-style: italic;
-}
-
-.escala-picker-militar-grad {
-  flex-shrink: 0;
-  font-size: 11px;
-  color: var(--texto-suave);
-}
-
-/* linha dos valores originais (automático) abaixo de uma alteração: itálico, apagada e riscada */
-.escala-distribuicao-original {
-  padding-left: 8px;
-  font-style: italic;
-  color: var(--texto-fraco);
-  text-decoration: line-through;
-}
-
-.escala-distribuicao-original .escala-distribuicao-grad,
-.escala-distribuicao-original .escala-distribuicao-nome,
-.escala-distribuicao-original .escala-distribuicao-hora {
-  color: var(--texto-fraco);
-}
-
-/* ação restaurar (↺) */
-.escala-edicao-restaurar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: none;
-  background: none;
-  cursor: pointer;
-  color: var(--texto-suave);
-}
-
-.escala-edicao-restaurar:hover {
-  color: var(--texto-forte);
-}
-
-/* ---------- seletor de hora redonda (Editar): wrapper inline ---------- */
-/* os gatilhos e o menu vêm do componente geral-dropdown-numeros */
-.escala-hora-editar {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  min-height: 16px;
 }
 
 /* ---------- conflito: parte fora da disponibilidade do militar ---------- */
@@ -720,3 +515,4 @@
   flex-wrap: wrap;
   gap: 8px;
 }
+

@@ -1,8 +1,11 @@
 /* ============================================================
    FOLGAS — gaveta lateral (geral-painel)
    Detalhe do militar com sub-abas: EXTRATO (saldo + lançamentos)
-   e AÇÕES (gestor: Conceder folga / Ajustar saldo). Os formulários
-   (solicitar / conceder / ajuste) reaproveitam a mesma gaveta.
+   e AÇÕES (gestor: Conceder folga / Ajustar saldo). Conceder e Ajustar
+   abrem como sub-tela dentro do painel do militar (geral-subtela, com
+   "Voltar às ações"); o Solicitar e o Dar folga (com o Quem: a lista dos
+   militares das unidades do topo, com o saldo) abrem a gaveta só deles.
+   O período da folga usa o horário em campos e a régua (geral-horario).
    O militar é sempre pré-selecionado (nada de picker no topo).
    Expõe RosterWork.folgasPainel.{ ligar, abrirDetalhe, abrirFormFolga,
    abrirFormAjuste, linhaExtrato }.
@@ -10,7 +13,6 @@
 (function () {
   'use strict';
   var RW = window.RosterWork = window.RosterWork || {};
-  var TOTAL = 1440;
 
   var ctx = null;            // { cpf, admin, aoMudar }
   var form = null;           // formulário aberto (ou null)
@@ -47,11 +49,11 @@
     var d = fmt().dataNumerica(l.data_ref);
     if (d) return d;
     if (l.origem === 'ajuste') return msg().origemAjuste;
-    if (l.origem === 'escala') return msg().origemEscala;
+    if (l.origem === 'pontual') return msg().origemPontual;
     return '';
   }
   function subLinha(l) {
-    if (l.origem === 'escala') return msg().origemEscala;
+    if (l.origem === 'pontual') return msg().origemPontual;
     if (l.origem === 'ajuste') return l.motivo || '';
     if (l.situacao === 'pendente') return msg().pendenteNaoConta;
     return l.motivo || '';
@@ -62,10 +64,12 @@
     linha.querySelector('.folga-extrato-data').textContent = tituloLinha(l);
     linha.querySelector('.folga-extrato-motivo').textContent = subLinha(l);
     var vEl = linha.querySelector('.folga-extrato-valor');
-    if (l.situacao === 'pendente' || l.situacao === 'recusada') {
+    var naoContabilizada = l.origem === 'folga' && l.contabilizada === false;   // folga dada sem descontar do banco: não mexe no saldo
+    if (l.situacao === 'pendente' || l.situacao === 'recusada' || naoContabilizada) {
+      var chave = naoContabilizada ? 'nao_contabilizada' : l.situacao;
       var selo = RosterWork.tpl('tpl-folga-selo');
-      selo.classList.add(fmt().situacaoClasse(l.situacao));
-      selo.textContent = msg().situacao[l.situacao];
+      selo.classList.add(fmt().situacaoClasse(chave));
+      selo.textContent = naoContabilizada ? msg().naoContabilizada : msg().situacao[l.situacao];
       vEl.appendChild(selo);
     } else {
       vEl.textContent = fmt().valorTexto(l.sinal, l.minutos);
@@ -109,7 +113,7 @@
     form = null;
     detalhe = { militar: militar, dados: null, aoFechar: aoFechar };
     aoFecharExterno = aoFechar || null;
-    RW.painel.abrir({ titulo: nomeDe(militar), subtitulo: unidadePai(militar.lotacao_atual), aoFechar: fecharReset });
+    RW.painel.abrir({ titulo: nomeDe(militar), subtitulo: unidadePai(militar.lotacao_atual), aoFechar: fecharReset, aoTentarFechar: tentarFecharForm });
 
     var linha = RW.painel.linhaAbas();
     if (linha) {
@@ -120,7 +124,9 @@
         if (!ctx.admin || militar.usuario_id === ctx.cpf) { var b = abas.querySelector('[data-sub="acoes"]'); if (b) b.remove(); }
         linha.classList.remove('oculto');
         linha.appendChild(abas);
+        guardarAbas(abas);
         if (RW.abas) RW.abas.ligar(abas, function (aba) {
+          sairDoForm();
           if (aba.getAttribute('data-sub') === 'acoes') mostrarAcoes(); else mostrarExtrato();
         });
       }
@@ -166,71 +172,181 @@
     var raiz = RosterWork.tpl('tpl-folga-painel-acoes'); if (!raiz) return;
     var bConceder = raiz.querySelector('[data-acao="conceder"]');
     var bAjustar = raiz.querySelector('[data-acao="ajustar"]');
-    var voltar = function () { abrirDetalhe(detalhe.militar, detalhe.aoFechar); };
     if (bConceder) bConceder.addEventListener('click', function () {
-      abrirFormFolga({ modo: 'conceder', militar: detalhe.militar, saldoAtual: saldoDetalhe(), aoFechar: detalhe.aoFechar, aoVoltar: voltar });
+      abrirFormFolga({ modo: 'conceder', militar: detalhe.militar, saldoAtual: saldoDetalhe(), aoVoltar: voltarAcoes });
     });
     if (bAjustar) bAjustar.addEventListener('click', function () {
-      abrirFormAjuste({ militar: detalhe.militar, saldoAtual: saldoDetalhe(), aoFechar: detalhe.aoFechar, aoVoltar: voltar });
+      abrirFormAjuste({ militar: detalhe.militar, saldoAtual: saldoDetalhe(), aoVoltar: voltarAcoes });
     });
     corpo.appendChild(raiz);
   }
 
-  /* ---------- FORMULÁRIO de folga (solicitar / conceder) ---------- */
+  /* ---------- sub-tela dentro do painel do militar ---------- */
+
+  /* sai do formulário: some com ele e com o rodapé dele */
+  function sairDoForm() {
+    form = null;
+    var rodape = RW.painel.rodape();
+    if (rodape) { rodape.textContent = ''; rodape.classList.add('oculto'); }
+  }
+  function voltarAcoes() { sairDoForm(); mostrarAcoes(); }
+
+  /* trocar de aba com o formulário mexido: segura o clique antes do geral-abas, pergunta e só então troca */
+  function guardarAbas(trilho) {
+    trilho.addEventListener('click', function (e) {
+      var aba = e.target.closest('.aba');
+      if (!aba || aba.classList.contains('aba--ativa') || !(form && form.sujo) || !RW.confirmar) return;
+      e.preventDefault();
+      e.stopPropagation();
+      RW.confirmar({
+        tipo: 'aviso', mensagem: RW.mensagens.edicao.sairSemSalvar,
+        textoConfirmar: RW.mensagens.botoes.descartar, textoCancelar: RW.mensagens.botoes.continuarEditando,
+        aoConfirmar: function () { sairDoForm(); aba.click(); }
+      });
+    }, true);
+  }
+
+  /* põe o formulário no corpo: dentro do painel do militar (com o Voltar) ou numa gaveta só dele (Solicitar) */
+  function montarSubtela(raiz, opcoes, titulo) {
+    if (opcoes.aoVoltar) {
+      sairDoForm();
+    } else {
+      aoFecharExterno = opcoes.aoFechar || null;
+      RW.painel.abrir({ titulo: titulo, subtitulo: nomeDe(opcoes.militar || {}), aoFechar: fecharReset, aoTentarFechar: tentarFecharForm });
+      var linha = RW.painel.linhaAbas(); if (linha) { linha.textContent = ''; linha.classList.add('oculto'); }
+    }
+    var corpo = RW.painel.corpo(); corpo.textContent = '';
+    if (opcoes.aoVoltar) {
+      var voltar = RosterWork.tpl('tpl-folga-voltar');
+      if (voltar) { voltar.addEventListener('click', cancelarForm); corpo.appendChild(voltar); }
+    }
+    raiz.querySelector('.folga-form-saldo').textContent = msg().saldoAtual(fmt().saldoTexto(opcoes.saldoAtual || 0));
+    corpo.appendChild(raiz);
+  }
+
+  /* ---------- FORMULÁRIO de folga (solicitar / conceder / dar) ---------- */
   function abrirFormFolga(opcoes) {
     opcoes = opcoes || {};
     var modo = opcoes.modo || 'solicitar';
     var militar = opcoes.militar || {};
-    var titulo = modo === 'conceder' ? msg().acaoConceder : msg().acaoSolicitar;
-    aoFecharExterno = opcoes.aoFechar || null;
-    RW.painel.abrir({ titulo: titulo, subtitulo: nomeDe(militar), aoFechar: fecharReset, aoTentarFechar: tentarFecharForm });
-    var linha = RW.painel.linhaAbas(); if (linha) { linha.textContent = ''; linha.classList.add('oculto'); }
-    var corpo = RW.painel.corpo(); corpo.textContent = '';
-    var raiz = RosterWork.tpl('tpl-folga-form'); corpo.appendChild(raiz);
+    var titulo = modo === 'conceder' ? msg().acaoConceder : (modo === 'dar' ? msg().acaoDar : msg().acaoSolicitar);
+    var raiz = RosterWork.tpl('tpl-folga-form'); if (!raiz) return;
+    /* dentro do painel do militar o título é o da sub-tela; na gaveta do Solicitar ele já está no alto;
+       no Dar folga o militar ainda não foi escolhido (o saldo de cada um está no Quem) */
+    var tituloEl = raiz.querySelector('.folga-form-titulo');
+    if (opcoes.aoVoltar) tituloEl.textContent = titulo; else tituloEl.classList.add('oculto');
+    if (modo === 'dar') {
+      raiz.querySelector('.subtela-cab').classList.add('oculto');
+      raiz.querySelector('.folga-form-quem').classList.remove('oculto');
+    }
+    numerarSecoes(raiz);
+    montarSubtela(raiz, opcoes, titulo);
 
-    form = { modo: modo, cpfAlvo: militar.usuario_id, saldoAtual: opcoes.saldoAtual || 0, dataIso: null, mexeu: false, barra: null, servicos: [], sujo: false, btnConfirmar: null, aoVoltar: opcoes.aoVoltar || null };
+    form = { modo: modo, cpfAlvo: militar.usuario_id || null, nome: nomeDe(militar), saldoAtual: opcoes.saldoAtual || 0, dataIso: null,
+      servicos: [], sujo: false, btnConfirmar: null, aoVoltar: opcoes.aoVoltar || null, raiz: raiz };
+    form.periodo = RosterWork.horario.periodoServico(raiz.querySelector('#ff-periodo'), {
+      aoMudar: function () { form.sujo = true; atualizarConsumo(raiz); }
+    });
 
-    /* dias de serviço do militar → calendário + janela da barra de período */
-    if (RW.folgasDados.servicos) RW.folgasDados.servicos(form.cpfAlvo).then(function (lista) { form.servicos = Array.isArray(lista) ? lista : []; }).catch(function () {});
-
+    if (modo === 'dar') {
+      raiz.querySelector('#ff-data').disabled = true;   // o dia vem depois de escolher o militar
+      ligarQuem(raiz);
+    } else {
+      carregarServicos();
+    }
     ligarFormFolga(raiz);
     montarAcoesForm(function () { enviarFolga(raiz); });
   }
 
+  /* os números das seções que aparecem: "1. Quem", "2. Dia"... */
+  function numerarSecoes(raiz) {
+    var n = 0;
+    [].forEach.call(raiz.querySelectorAll('.folga-form-secao'), function (s) {
+      if (!s.classList.contains('oculto')) s.querySelector('.folga-form-num').textContent = String(++n);
+    });
+  }
+
+  /* dias de serviço do militar → calendário + horário do serviço */
+  function carregarServicos() {
+    form.servicos = [];
+    if (!form.cpfAlvo || !RW.folgasDados.servicos) return;
+    var cpf = form.cpfAlvo;
+    RW.folgasDados.servicos(cpf).then(function (lista) {
+      if (form && form.cpfAlvo === cpf) form.servicos = Array.isArray(lista) ? lista : [];
+    }).catch(function () {});
+  }
+
+  /* ---------- Quem (Dar folga): os militares das unidades do topo, menos o próprio admin ---------- */
+  function ligarQuem(raiz) {
+    var busca = raiz.querySelector('#ff-busca');
+    var lista = raiz.querySelector('.folga-form-militares');
+    function desenhar() {
+      lista.textContent = '';
+      var todos = (RW.folgasSaldos && RW.folgasSaldos.militares()) || [];
+      todos = todos.filter(function (m) { return m.usuario_id !== (ctx && ctx.cpf); });
+      var termo = RosterWork.busca.normalizar(busca.value.trim());
+      var achados = todos.filter(function (m) {
+        return !termo || RosterWork.busca.normalizar((m.grau_abreviacao || '') + ' ' + (m.nome_de_guerra || '')).indexOf(termo) !== -1
+          || RosterWork.busca.normalizar(m.nome_completo || '').indexOf(termo) !== -1;
+      });
+      if (!achados.length) {
+        var v = RosterWork.tpl('tpl-folga-form-vazio');
+        if (v) { v.textContent = todos.length ? msg().buscaVazia : msg().pickerVazio; lista.appendChild(v); }
+        return;
+      }
+      achados.forEach(function (m) {
+        var item = RosterWork.tpl('tpl-folga-form-militar');
+        if (!item) return;
+        item.querySelector('.folga-form-militar-grad').textContent = m.grau_abreviacao || '';
+        item.querySelector('.folga-form-militar-nome').textContent = m.nome_de_guerra || '';
+        var selo = item.querySelector('.folga-form-militar-saldo');
+        selo.textContent = fmt().saldoTexto(m.saldo_minutos);
+        var classe = fmt().saldoSeloClasse(m.saldo_minutos);
+        if (classe) selo.classList.add(classe);
+        if (m.usuario_id === form.cpfAlvo) item.classList.add('lista-item--ativo');
+        item.addEventListener('click', function () { escolherMilitar(raiz, m); desenhar(); });
+        lista.appendChild(item);
+      });
+    }
+    busca.addEventListener('input', desenhar);
+    desenhar();
+  }
+
+  /* militar escolhido: o saldo dele vale para o consumo; o dia e o período recomeçam */
+  function escolherMilitar(raiz, m) {
+    form.cpfAlvo = m.usuario_id;
+    form.nome = nomeDe(m);
+    form.saldoAtual = m.saldo_minutos || 0;
+    form.sujo = true;
+    form.dataIso = null;
+    var data = raiz.querySelector('#ff-data');
+    data.value = ''; data.disabled = false;
+    limparErro(data.closest('.campo'));
+    raiz.querySelector('#ff-servico').classList.add('oculto');
+    if (form.periodo) form.periodo.limpar();
+    carregarServicos();
+    atualizarConsumo(raiz);
+  }
+
   function servicoDoDia(iso) { for (var i = 0; i < form.servicos.length; i++) if (String(form.servicos[i].data).slice(0, 10) === iso) return form.servicos[i]; return null; }
   function temServico(iso) { return !!servicoDoDia(iso); }
-  function horaParaMin(hhmm) { var h = parseInt(hhmm.substring(0, 2), 10), m = parseInt(hhmm.substring(3, 5) || '0', 10); var min = (h - 8) * 60 + m; return min < 0 ? min + TOTAL : min; }
-  function limiteDoDia(s) { var a = horaParaMin(s.hi || '08:00'), b = horaParaMin(s.hf || '08:00'); if (b <= a) b += TOTAL; if (b > TOTAL) b = TOTAL; return { inicioMin: a, fimMin: b }; }
-  /* a barra nasce travada (24h); ao escolher o dia ela assume a janela do serviço e liga */
-  function ativarBarraNoDia() {
-    if (!form.barra || !form.dataIso) return;
-    var s = servicoDoDia(form.dataIso); if (!s) return;
-    var lim = limiteDoDia(s);
-    form.barra.definirLimite(lim.inicioMin, lim.fimMin);
-    form.barra.ativar();
-    form.mexeu = false;   // dia novo recomeça como "dia inteiro"
+  /* quanto a folga consome: o período escolhido (0 sem dia ou com a parte fora do serviço) */
+  function minutosFolga() {
+    var v = form.periodo && form.periodo.valor();
+    return v ? v.minutos : 0;
   }
-  function minutosFolga() { return (form.barra && form.dataIso) ? form.barra.valor().minutos : 0; }
+
   function atualizarConsumo(raiz) {
     var el = raiz.querySelector('#ff-consumo'); if (!el) return;
-    el.classList.remove('folga-form-consumo--alerta');
-    if (!form.dataIso) { el.textContent = ''; return; }
     var consumo = minutosFolga();
-    var texto = msg().consome(fmt().horasAbs(consumo));
+    el.classList.toggle('oculto', !form.dataIso || !consumo);
+    if (!form.dataIso || !consumo) return;
     var ficaria = form.saldoAtual - consumo;
-    if (ficaria < 0) { texto += ' · ' + msg().saldoFicaria(fmt().saldoTexto(ficaria)); el.classList.add('folga-form-consumo--alerta'); }
-    el.textContent = texto;
+    el.querySelector('.nota-texto').textContent = msg().consumoSaldo(fmt().horasAbs(consumo), fmt().saldoTexto(ficaria));
+    el.classList.toggle('nota--alerta', ficaria < 0);
   }
 
   function ligarFormFolga(raiz) {
-    /* barra de período sempre presente, travada até escolher o dia; mexer nela = "parte do dia" */
-    if (RW.barraPeriodo) {
-      form.barra = RW.barraPeriodo.criar(raiz.querySelector('#ff-barra'), {
-        desativado: true,
-        aoMudar: function () { atualizarConsumo(raiz); },
-        aoMexer: function () { form.mexeu = true; form.sujo = true; atualizarConsumo(raiz); }
-      });
-    }
     var dataInput = raiz.querySelector('#ff-data');
     if (RW.calendario && dataInput) {
       RW.calendario.ligar(dataInput, {
@@ -240,7 +356,12 @@
           form.dataIso = isoDe(d); form.sujo = true;
           dataInput.value = fmt().dataNumerica(form.dataIso);
           limparErro(dataInput.closest('.campo'));
-          ativarBarraNoDia();
+          /* dia novo: recomeça no serviço inteiro, com o horário do serviço embaixo do dia */
+          var sv = servicoDoDia(form.dataIso);
+          if (form.periodo) form.periodo.definirServico(sv ? { hi: sv.hi, hf: sv.hf } : null);
+          var ajuda = raiz.querySelector('#ff-servico');
+          ajuda.classList.toggle('oculto', !sv);
+          if (sv) ajuda.textContent = msg().deServico(RosterWork.horario.curta(sv.hi || '08:00'), RosterWork.horario.curta(sv.hf || '08:00'));
           atualizarConsumo(raiz);
         }
       });
@@ -250,27 +371,45 @@
   }
 
   function enviarFolga(raiz) {
+    if (!form.cpfAlvo) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: msg().formMilitar }); return; }
     if (!form.dataIso) { marcarErro(raiz.querySelector('#ff-data').closest('.campo'), msg().formData); if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.camposCorrigir }); return; }
-    if (form.mexeu && form.barra && form.barra.valor().minutos <= 0) { marcarErro(raiz.querySelector('#ff-data').closest('.campo'), msg().formPeriodo); if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.camposCorrigir }); return; }
-    var hi = null, hf = null;
-    if (form.mexeu && form.barra) { var v = form.barra.valor(); hi = v.hi; hf = v.hf; }
+    var per = form.periodo && form.periodo.valor();
+    if (!per || !per.valido) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: msg().formPeriodo }); return; }
+    var hi = per.total ? null : per.hi, hf = per.total ? null : per.hf;
     var motivo = (raiz.querySelector('#ff-motivo') || {}).value || '';
     var btn = form.btnConfirmar;
-    var promessa = (form.modo === 'conceder')
-      ? RW.folgasDados.dar({ p_usuario_id: form.cpfAlvo, p_data: form.dataIso, p_horario_inicio: hi, p_horario_fim: hf, p_motivo: motivo })
-      : RW.folgasDados.solicitar({ p_data: form.dataIso, p_horario_inicio: hi, p_horario_fim: hf, p_motivo: motivo });
-    finalizar(promessa, btn, form.modo === 'conceder');   // conceder recalcula a escala (véu); solicitar não (pontos)
+    if (form.modo === 'solicitar') {
+      finalizar(RW.folgasDados.solicitar({ p_data: form.dataIso, p_horario_inicio: hi, p_horario_fim: hf, p_motivo: motivo }), btn, false);   // solicitar não mexe na escala (pontos)
+      return;
+    }
+    /* conceder e dar: o admin escolhe se a folga desconta do banco de horas; recalcula a escala (véu) */
+    var conceder = function (contabilizar) {
+      finalizar(RW.folgasDados.dar({ p_usuario_id: form.cpfAlvo, p_data: form.dataIso, p_horario_inicio: hi, p_horario_fim: hf, p_motivo: motivo, p_contabilizar: contabilizar }), btn, true);
+    };
+    var s = servicoDoDia(form.dataIso) || {};
+    var periodo = msg().periodoDas(horaCurta(hi || s.hi), horaCurta(hf || s.hf));
+    RW.confirmar({
+      tipo: 'aviso',
+      mensagem: msg().contabilizarFolga(form.nome, diaMes(form.dataIso), periodo, horasTexto(minutosFolga())),
+      textoConfirmar: RW.mensagens.botoes.contabilizar,
+      textoAlternativo: RW.mensagens.botoes.naoContabilizar,
+      textoCancelar: RW.mensagens.botoes.cancelar,
+      aoConfirmar: function () { conceder(true); },
+      aoAlternativo: function () { conceder(false); }
+    });
   }
+
+  /* textos do modal do banco de horas: "08:00" -> "08h"; "2026-10-14" -> "14/10"; 1440 -> "24 horas" */
+  function horaCurta(hhmm) { var t = hhmm || '08:00', m = t.substring(3, 5); return t.substring(0, 2) + 'h' + (m && m !== '00' ? m : ''); }
+  function diaMes(iso) { var p = String(iso || '').split('-'); return p.length === 3 ? p[2] + '/' + p[1] : ''; }
+  function horasTexto(min) { return (min % 60 === 0) ? msg().horasExtenso(min / 60) : fmt().horasAbs(min); }
 
   /* ---------- FORMULÁRIO de ajuste (adicionar / descontar saldo) ---------- */
   function abrirFormAjuste(opcoes) {
     opcoes = opcoes || {};
     var militar = opcoes.militar || {};
-    aoFecharExterno = opcoes.aoFechar || null;
-    RW.painel.abrir({ titulo: msg().acaoAjuste, subtitulo: nomeDe(militar), aoFechar: fecharReset, aoTentarFechar: tentarFecharForm });
-    var linha = RW.painel.linhaAbas(); if (linha) { linha.textContent = ''; linha.classList.add('oculto'); }
-    var corpo = RW.painel.corpo(); corpo.textContent = '';
-    var raiz = RosterWork.tpl('tpl-folga-form-ajuste'); corpo.appendChild(raiz);
+    var raiz = RosterWork.tpl('tpl-folga-form-ajuste'); if (!raiz) return;
+    montarSubtela(raiz, opcoes, msg().acaoAjuste);
     form = { modo: 'ajuste', cpfAlvo: militar.usuario_id, saldoAtual: opcoes.saldoAtual || 0, tipo: 'adicionar', sujo: false, btnConfirmar: null, aoVoltar: opcoes.aoVoltar || null };
 
     var toggle = raiz.querySelector('#fa-tipo');
@@ -296,14 +435,12 @@
 
   function atualizarPreviaAjuste(raiz) {
     var el = raiz.querySelector('#fa-previa'); if (!el) return;
-    el.textContent = '';
-    el.classList.remove('folga-form-consumo--alerta');
     var delta = minutosAjuste(raiz);
+    el.classList.toggle('oculto', delta === null);
     if (delta === null) return;
     var novo = form.saldoAtual + delta;
-    el.appendChild(document.createTextNode(msg().saldoPrefixo + ' '));
-    el.appendChild(fmt().dePara(fmt().saldoTexto(form.saldoAtual), fmt().saldoTexto(novo)));
-    if (novo < 0) el.classList.add('folga-form-consumo--alerta');
+    el.querySelector('.nota-texto').textContent = msg().saldoPassa(fmt().saldoTexto(form.saldoAtual), fmt().saldoTexto(novo));
+    el.classList.toggle('nota--alerta', novo < 0);
   }
 
   function enviarAjuste(raiz) {
@@ -323,6 +460,7 @@
   function textoConfirmar() {
     if (!form) return RW.mensagens.botoes.salvar;
     if (form.modo === 'conceder') return msg().botaoConceder;
+    if (form.modo === 'dar') return msg().botaoDar;
     if (form.modo === 'ajuste') return msg().botaoAjuste;
     return msg().botaoSolicitar;
   }

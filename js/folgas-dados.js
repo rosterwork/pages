@@ -13,10 +13,9 @@
   RW.folgasDados = {
     extrato: function (cpf) { return RosterWork.rpc('folgas_extrato', { p_usuario_id: cpf }); },
     servicos: function (cpf) { return RosterWork.rpc('folgas_servicos_militar', { p_usuario_id: cpf }); },
-    solicitacoes: function () { return RosterWork.rpc('folgas_listar_solicitacoes', {}); },
     lancamentos: function (escopo, desde) { return RosterWork.rpc('folgas_listar_lancamentos', { p_escopo: escopo, p_desde: desde }); },
     solicitar: function (corpo) { return RosterWork.rpc('folgas_solicitar', corpo); },
-    decidir: function (id, aprovar) { return RosterWork.rpc('folgas_decidir', { p_lancamento_id: id, p_aprovar: aprovar }); },
+    decidir: function (id, aprovar, motivo) { return RosterWork.rpc('folgas_decidir', { p_lancamento_id: id, p_aprovar: aprovar, p_motivo: motivo || null }); },
     analisar: function (id) { return RosterWork.rpc('fn_folgas_analisar_impacto', { p_lancamento_id: id }); },
     dar: function (corpo) { return RosterWork.rpc('folgas_dar', corpo); },
     ajustar: function (cpf, minutos, motivo) { return RosterWork.rpc('folgas_ajustar_saldo', { p_usuario_id: cpf, p_minutos: minutos, p_motivo: motivo }); },
@@ -44,7 +43,7 @@
 
   var SIT_CLASSE = {
     pendente: 'selo--alerta', aprovada: 'selo--sucesso', concedida: 'selo--sucesso',
-    recusada: 'selo--erro', cancelada: 'selo--escuro'
+    recusada: 'selo--erro', cancelada: 'selo--escuro', nao_contabilizada: 'selo--escuro'
   };
   function situacaoClasse(s) { return SIT_CLASSE[s] || 'selo--escuro'; }
 

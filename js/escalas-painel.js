@@ -3,9 +3,10 @@
    Liga o clique numa célula da grade Mês/Agenda à "gaveta"
    (componente geral-painel): título = unidade (o pelotão mostra a
    companhia acima), complemento = " - cidade", subtítulo = data
-   por extenso, abas Distribuição/Contínuos/Pontuais.
-   Distribuição lista os postos do dia (posto / função / militares,
-   modo Ver).
+   por extenso, abas Dia/Ciclo/Extrajornada (Ciclo só para o
+   administrador; por dentro, as seções distribuicao/continuos/extra).
+   O Dia (escalas-painel-editar.js) é a mesma lista para todos: o
+   admin já edita nela; quem não é admin só lê.
    ============================================================ */
 (function () {
   'use strict';
@@ -403,7 +404,7 @@
         linha(def, preencher(def.texto, { posto: itens[0].posto || '', pessoas: pessoas, minimo: itens[0].limite, maximo: itens[0].limite, faixas: faixas }));
       });
     }
-    /* militar em duas unidades ao mesmo tempo: uma linha por militar e par de unidades, juntando as faixas */
+    /* militar em duas unidades ao mesmo tempo (vermelho): uma linha por militar e par de unidades, juntando as faixas */
     function linhasDuasUnidades(def) {
       if (!def || !tem('duas_unidades')) return;
       var ordem = [], porMilitar = {};
@@ -433,6 +434,7 @@
       function (p) { return { militar: militar(p), funcao: p.funcao || '' }; });
     linhasEfetivoProblemas('abaixo_minimo', cat.abaixoMinimo);
     linhasEfetivoProblemas('acima_maximo', cat.acimaMaximo);
+    linhasDuasUnidades(cat.duasUnidades);   // o mesmo militar em duas unidades ao mesmo tempo não pode
     var semFuncao = {};
     ['sem_funcao', 'sem_modelo', 'parcial_com_erro', 'resolva_escala'].forEach(function (c) {
       (por[c] || []).forEach(function (p) { semFuncao[p.cpf] = true; });
@@ -450,7 +452,6 @@
 
     /* amarelo: funciona, com erro aceitável */
     if (tem('chefe_condutor')) linha(cat.chefeCondutor);
-    linhasDuasUnidades(cat.duasUnidades);
     porOcorrencia('manutencao', cat.manutencao, function (p) { return p.posto_id; },
       function (p) { return { posto: p.posto || '' }; });
     porOcorrencia('exclusivo_fora', cat.exclusivoFora, function (p) { return p.cpf + '|' + p.funcao; },
@@ -487,19 +488,17 @@
     pCtx = null;
     if (RosterWork.escalasPainelEditar) RosterWork.escalasPainelEditar.reset();
     if (RosterWork.escalasPainelContinuos) RosterWork.escalasPainelContinuos.reset();
-    if (RosterWork.escalasPainelPontuais) RosterWork.escalasPainelPontuais.reset();
+    if (RosterWork.escalasPainelExtra) RosterWork.escalasPainelExtra.reset();
   }
 
   /* ---------- guarda de descarte: avisa antes de perder rascunho não salvo ---------- */
-  /* seções com rascunho não salvo (Editar, Pontuais e Contínuos, todas com Salvar em lote) */
+  /* seções com rascunho não salvo (Editar do Dia e Ciclo, as duas com Salvar em lote) */
   function secaoSuja() {
     return !!((RosterWork.escalasPainelEditar && RosterWork.escalasPainelEditar.estaSujo && RosterWork.escalasPainelEditar.estaSujo())
-      || (RosterWork.escalasPainelPontuais && RosterWork.escalasPainelPontuais.estaSujo && RosterWork.escalasPainelPontuais.estaSujo())
       || (RosterWork.escalasPainelContinuos && RosterWork.escalasPainelContinuos.estaSujo && RosterWork.escalasPainelContinuos.estaSujo()));
   }
   function limparSecoesSujas() {
     if (RosterWork.escalasPainelEditar) RosterWork.escalasPainelEditar.reset();
-    if (RosterWork.escalasPainelPontuais) RosterWork.escalasPainelPontuais.reset();
     if (RosterWork.escalasPainelContinuos) RosterWork.escalasPainelContinuos.reset();
   }
   /* mesmo aviso do botão Cancelar (Descartar / Continuar editando) */
@@ -647,40 +646,21 @@
     return grupo;
   }
 
-  function mostrarEstado(corpo, texto) {
-    var estado = RosterWork.tpl('tpl-escala-distribuicao-estado');
-    if (estado) { estado.textContent = texto; corpo.appendChild(estado); }
-  }
-
-  /* carregando: o giratório centralizado no painel (sem texto) */
-  function mostrarCarregando(corpo) {
-    var no = RosterWork.tpl('tpl-escala-distribuicao-carregando');
-    if (no) corpo.appendChild(no);
-  }
-
-  /* bloco "Em manutenção" (amarelo) da viatura: aviso + a nota. Só leitura no Ver;
-     editável no Editar (salva na hora via atualizar_manutencao_observacao). */
-  function montarManutencao(posto, editavel) {
+  /* bloco "Em manutenção" (amarelo) da viatura: aviso + a nota. Só leitura, ou editável (admin no Dia):
+     aoMudar(texto) leva a nota para o rascunho, que grava junto com o Salvar do dia */
+  function montarManutencao(posto, editavel, aoMudar, valor) {
     var el = RosterWork.tpl('tpl-escala-manutencao');
     if (!el) return null;
     var tit = el.querySelector('.escala-manutencao-titulo');
     if (tit) tit.textContent = (RosterWork.mensagens.escala || {}).emManutencao || 'Em manutenção';
     var input = el.querySelector('.escala-manutencao-nota');
     var verTxt = el.querySelector('.escala-manutencao-nota-ver');
-    var obs = posto.manutencao_obs || '';
+    var obs = valor != null ? valor : (posto.manutencao_obs || '');
     if (editavel) {
       if (verTxt) verTxt.classList.add('oculto');
       if (input) {
         input.value = obs;
-        input.addEventListener('change', function () {
-          if (!posto.manutencao_id || !RosterWork.escalasDados) return;
-          RosterWork.escalasDados.atualizarManutencaoObs(posto.manutencao_id, input.value)
-            .then(function (r) {
-              if (!RosterWork.avisar) return;
-              if (r && r._falha === 'conexao') RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.semConexao });
-              else if (r && (r._falha === 'servidor' || r.success === false)) RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || RosterWork.mensagens.geral.falhaServidor });
-            });
-        });
+        input.addEventListener('input', function () { if (aoMudar) aoMudar(input.value); });
       }
     } else {
       if (input) input.classList.add('oculto');
@@ -689,77 +669,23 @@
     return el;
   }
 
-  /* seção Distribuição: a caixa "Sem função definida" (acima) e uma caixa por posto */
-  function montarDistribuicao(corpo, unidadeId, iso) {
-    var editar = RosterWork.painel.modo() === 'editar';
-    corpo.textContent = '';
-    mostrarCarregando(corpo);
-    RosterWork.escalasDados.lerDistribuicaoDia(unidadeId, iso).then(function (dados) {
-      if (!pCtx || pCtx.unidadeId !== unidadeId || pCtx.iso !== iso) return;   // outro dia/unidade foi aberto enquanto carregava
-      corpo.textContent = '';
-      if (!dados) { mostrarEstado(corpo, RosterWork.mensagens.escala.falhaCarregar); return; }   // falha de leitura: mostra erro, não "dia vazio"
-      anexarProblemas(dados);   // CNH, regra, exclusivo e grau de cada militar (para pintar a linha e o posto)
-      var postos = (dados && dados.postos) || [];
-      var semFuncao = (dados && dados.sem_funcao) || [];
-      if (!postos.length && !semFuncao.length) { mostrarEstado(corpo, 'Sem distribuição neste dia.'); return; }
-
-      var aviso = montarAvisoProblemas(dados.problemas, postos, dados.faltam_modelos, false);   // Ver: a lista vem pronta do banco (mesma fonte do gráfico)
-      if (aviso) corpo.appendChild(aviso);
-
-      /* sem função definida: caixa de erro acima dos postos, só com a lista de militares */
-      if (semFuncao.length) {
-        var caixaErro = RosterWork.painel.criarCaixa('Sem função definida', true);
-        if (caixaErro) {
-          semFuncao.forEach(function (m) {
-            var linha = montarLinhaEscalado(m);
-            if (linha) caixaErro.appendChild(linha);
-          });
-          corpo.appendChild(caixaErro);
-        }
-      }
-
-      postos.forEach(function (posto) {
-        /* no modo Ver, mostra só os postos com alguém (e sempre os em manutenção); no Editar, todos os ativos */
-        if (!editar && !temAlguem(posto) && !posto.em_manutencao) return;
-        var caixa = RosterWork.painel.criarCaixa(posto.nome);
-        if (!caixa) return;
-        if (posto.em_manutencao) {
-          /* viatura em manutenção: caixa amarela + aviso/nota; o efetivo FICA nela, só sinalizado */
-          caixa.classList.add('grupo-caixa--posto-alerta', 'grupo-caixa--manutencao');
-          var m = montarManutencao(posto, false);
-          if (m) caixa.appendChild(m);
-        } else {
-          var np = nivelDoPosto(posto);
-          if (np) caixa.classList.add('grupo-caixa--posto-' + np);
-        }
-        mesclarFuncoesViatura(posto).forEach(function (funcao) {
-          var grupo = montarGrupoFuncao(funcao, editar);
-          if (grupo) caixa.appendChild(grupo);
-        });
-        corpo.appendChild(caixa);
-      });
-
-      /* Observações do dia (trocas, folgas, notas do admin): depois dos cards de posto */
-      var caixaObs = montarObservacoes((dados && dados.observacoes) || [], { editar: editar, unidadeId: unidadeId, iso: iso });
-      if (caixaObs) corpo.appendChild(caixaObs);
-    });
-  }
-
   /* rodapé retrátil: abre/fecha pelo chevron; sempre começa fechado (ao reabrir o painel, volta retraído) */
   function aplicarRetratil(toggle, conteudo, aberto) {
     toggle.setAttribute('aria-expanded', aberto ? 'true' : 'false');
     conteudo.classList.toggle('oculto', !aberto);
   }
 
-  /* rodapé "Alterações manuais (N)": quem mexeu no dia, quando e o quê (ajustes da Distribuição,
-     pontuais e entradas/saídas do ciclo que começam no dia). Sem alterações, o rodapé não aparece */
-  function montarAlteracoes(rodape, unidadeId, iso) {
+  /* rodapé "Alterações manuais (N)": quem mexeu no dia, quando e o quê (ajustes do Dia, pontuais,
+     folgas, observações e entradas/saídas do ciclo que começam no dia). Sem alterações, o rodapé não
+     aparece. aindaVale() diz se o rodapé ainda é dele quando a leitura chega (o Dia pode ter mudado) */
+  function montarAlteracoes(rodape, unidadeId, iso, aindaVale) {
     rodape.textContent = '';
     rodape.classList.add('oculto');
     if (!RosterWork.escalasDados || !RosterWork.escalasDados.lerAlteracoesDia) return;
     RosterWork.escalasDados.lerAlteracoesDia(unidadeId, iso).then(function (lista) {
-      /* outro dia/unidade/seção foi aberto enquanto carregava: não mexe no rodapé */
-      if (!pCtx || pCtx.unidadeId !== unidadeId || pCtx.iso !== iso || pCtx.secao !== 'distribuicao' || RosterWork.painel.modo() === 'editar') return;
+      /* outro dia/unidade/seção foi aberto enquanto carregava, ou o Dia ganhou alteração: não mexe no rodapé */
+      if (!pCtx || pCtx.unidadeId !== unidadeId || pCtx.iso !== iso || pCtx.secao !== 'distribuicao') return;
+      if (aindaVale && !aindaVale()) return;
       if (!lista || !lista.length) return;
       var bloco = RosterWork.tpl('tpl-escala-alteracoes');
       if (!bloco) return;
@@ -788,43 +714,27 @@
     });
   }
 
-  /* avisado pelo geral-painel ao entrar na edição (botão Editar) ou voltar para a leitura:
-     redesenha a seção atual no novo modo */
-  function aoMudarModo() {
-    if (pCtx) mostrarSecao(pCtx.secao);
-  }
-
-  /* Salvar/Cancelar da Distribuição: volta para a leitura (o geral-painel reexibe o Editar) */
-  function voltarParaVer() {
-    if (RosterWork.escalasPainelEditar) RosterWork.escalasPainelEditar.reset();
-    RosterWork.painel.voltarParaLeitura();
-  }
-
-  /* troca o conteúdo do corpo e o rodapé conforme a aba de seção; a Distribuição tem
-     leitura e edição (botão Editar), Contínuos e Pontuais (só admin) são sempre edição */
+  /* troca o conteúdo do corpo e o rodapé conforme a aba de seção: o Dia é a lista que o admin edita
+     (e os outros só leem), o Ciclo (só admin) é sempre edição, a Extrajornada é só leitura (todos) */
   function mostrarSecao(secao) {
     if (!pCtx) return;
     pCtx.secao = secao;
     var corpo = RosterWork.painel.corpo();
     if (!corpo) return;
     var rodape = RosterWork.painel.rodape();
-    var editar = RosterWork.painel.modo() === 'editar';
+    /* o subcabeçalho é de cada seção (o Dia do admin põe nele o Adicionar militar) */
+    var sub = RosterWork.painel.subcabecalho();
+    if (sub) { sub.textContent = ''; sub.classList.add('oculto'); }
     /* ao entrar numa seção, zera as outras (rascunhos/estado não vazam entre abas) */
     if (secao !== 'distribuicao' && RosterWork.escalasPainelEditar) RosterWork.escalasPainelEditar.reset();
     if (secao !== 'continuos' && RosterWork.escalasPainelContinuos) RosterWork.escalasPainelContinuos.reset();
-    if (secao !== 'pontuais' && RosterWork.escalasPainelPontuais) RosterWork.escalasPainelPontuais.reset();
-
-    if (secao === 'distribuicao') {
-      if (editar && RosterWork.escalasPainelEditar) {
-        RosterWork.escalasPainelEditar.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso, voltarParaVer);
-      } else {
-        montarDistribuicao(corpo, pCtx.unidadeId, pCtx.iso);
-        if (rodape) montarAlteracoes(rodape, pCtx.unidadeId, pCtx.iso);
-      }
+    if (secao !== 'extra' && RosterWork.escalasPainelExtra) RosterWork.escalasPainelExtra.reset();
+    if (secao === 'distribuicao' && RosterWork.escalasPainelEditar) {
+      RosterWork.escalasPainelEditar.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso, { admin: RosterWork.sessao.ehAdmin() });
     } else if (secao === 'continuos' && RosterWork.escalasPainelContinuos) {
       RosterWork.escalasPainelContinuos.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso);
-    } else if (secao === 'pontuais' && RosterWork.escalasPainelPontuais) {
-      RosterWork.escalasPainelPontuais.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso);
+    } else if (secao === 'extra' && RosterWork.escalasPainelExtra) {
+      RosterWork.escalasPainelExtra.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso);
     } else {
       corpo.textContent = '';
       if (rodape) { rodape.textContent = ''; rodape.classList.add('oculto'); }
@@ -850,28 +760,23 @@
       titulo: celula.dataset.unidadeNome || '',
       tituloExtra: cidade ? '- ' + cidade : '',
       subtitulo: dataPorExtenso(iso),
-      botaoEditar: RosterWork.sessao.ehAdmin(),   // só admin vê o Editar (o backend também trava em salvar_ajustes_dia)
-      aoMudarModo: aoMudarModo,
       aoFechar: desmarcar,
       aoTentarFechar: tentarFecharPainel       // Esc/X confirmam antes de descartar rascunho
     });
 
-    /* linha das abas de seção, só do admin: o comum vê só a Distribuição, sem abas.
-       O geral-abas cuida da troca visual e nos avisa a aba escolhida */
+    /* linha das abas de seção: todos veem Dia e Extrajornada; o Ciclo ([data-so-admin]) só o admin. O geral-abas cuida da troca visual e nos avisa a aba escolhida */
     var linha = RosterWork.painel.linhaAbas();
     var tpl = document.getElementById('tpl-escala-painel-secoes');
-    if (RosterWork.sessao.ehAdmin() && linha && tpl) {
+    if (linha && tpl) {
       linha.appendChild(tpl.content.cloneNode(true));
+      if (!RosterWork.sessao.ehAdmin()) {
+        linha.querySelectorAll('[data-so-admin]').forEach(function (aba) { aba.remove(); });
+      }
       linha.classList.remove('oculto');
       var trilho = linha.querySelector('.abas');
       if (trilho && RosterWork.abas) {
         ligarGuardaAbas(trilho);   // confirma o descarte antes de trocar de seção com rascunho
-        RosterWork.abas.ligar(trilho, function (aba) {
-          var secao = aba.getAttribute('data-secao');
-          /* trocar de aba volta para a leitura; o Editar só existe na Distribuição */
-          RosterWork.painel.liberarEditar(secao === 'distribuicao');
-          mostrarSecao(secao);
-        });
+        RosterWork.abas.ligar(trilho, function (aba) { mostrarSecao(aba.getAttribute('data-secao')); });
       }
     }
 
@@ -927,7 +832,7 @@
     }
   }
 
-  /* busca reutilizável no topo de uma seção do painel (Contínuos/Pontuais): filtra os
+  /* busca reutilizável no topo de uma seção do painel (Ciclo): filtra os
      .escala-secao-item das `caixas` pelo grau + nome (sem acento, lendo as spans); caixa
      que fica sem resultado mostra a mensagem de vazio. Reusa a pílula .busca (geral-busca.css). */
   function montarBusca(destino, caixas) {
@@ -966,9 +871,9 @@
   var ICONE_OBS = { troca: 'icone-origem-troca', folga: 'icone-folgas', outra_unidade: 'icone-reforco', admin: 'icone-anotacao' };
 
   /* seção "Observações" do dia: trocas + folgas + quem veio de outra unidade (automáticas) + notas do admin (manuais),
-     nesta ordem (vem pronta do ler_distribuicao_dia). No Editar do admin: botão para adicionar
-     (com limite) e ✕ para excluir SÓ as do admin. No Ver/página de Dia: só leitura.
-     opcoes = { editar, unidadeId, iso }. */
+     nesta ordem (vem pronta do ler_distribuicao_dia). Para o admin no Dia: botão para adicionar (com limite)
+     e ✕ para excluir SÓ as do admin; as duas coisas vão para o rascunho e gravam no Salvar do dia.
+     Sem editar: só leitura. opcoes = { editar, aoAdicionar(texto), aoRemover(observacao) } */
   function montarObservacoes(obs, opcoes) {
     opcoes = opcoes || {};
     var editar = !!opcoes.editar;
@@ -985,13 +890,8 @@
       linha.querySelector('.escala-observacao-texto').textContent = m.observacaoTexto(o);
       var rem = linha.querySelector('.escala-observacao-remover');
       /* ✕ só nas do admin, no Editar; trocas e folgas nunca podem ser apagadas */
-      if (editar && o.classe === 'admin' && o.id) {
-        rem.addEventListener('click', function () {
-          RosterWork.escalasDados.observacaoRemover(o.id).then(function (r) {
-            if (r && r.success) { if (linha.parentNode) linha.parentNode.removeChild(linha); }
-            else if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: m.observacaoFalhaExcluir });
-          });
-        });
+      if (editar && o.classe === 'admin' && opcoes.aoRemover) {
+        rem.addEventListener('click', function () { opcoes.aoRemover(o); });
       } else {
         rem.classList.add('oculto');
       }
@@ -1015,18 +915,8 @@
         var fechar = function () { campo.classList.add('oculto'); botao.classList.remove('oculto'); };
         var gravar = function () {
           var texto = input.value.trim();
-          if (!texto) { fechar(); return; }
-          salvar.disabled = true;
-          RosterWork.escalasDados.observacaoAdicionar(opcoes.unidadeId, opcoes.iso, texto).then(function (r) {
-            salvar.disabled = false;
-            if (r && r.success && r.observacao) {
-              var nova = linhaObs(r.observacao);
-              if (nova) caixa.insertBefore(nova, add);   /* a nova entra no fim da lista, antes do form */
-              fechar();
-            } else if (RosterWork.avisar) {
-              RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || m.observacaoFalhaSalvar });
-            }
-          });
+          fechar();
+          if (texto && opcoes.aoAdicionar) opcoes.aoAdicionar(texto);
         };
         botao.addEventListener('click', abrir);
         cancelar.addEventListener('click', fechar);
@@ -1041,17 +931,23 @@
 
   window.RosterWork.escalasPainel = {
     ligar: ligar,
-    /* peças de montagem reaproveitadas pelo modo Editar (escalas-painel-editar.js) */
+    /* peças de montagem reaproveitadas pelo Dia (escalas-painel-editar/-formulario/-militar)
+       e pela gaveta da Extrajornada */
     pecas: {
       definirIcone: definirIcone,
       iconeOrigem: ICONE_ORIGEM,
       formatarHora: formatarHora,
+      hora: montarHora,
+      marcarAviso: marcarAviso,
+      marcarRegras: marcarRegras,
+      marcarOutraUnidade: marcarOutraUnidade,
       dataPorExtenso: dataPorExtenso,
       abreviarFuncao: abreviarFuncao,
       linha: montarLinhaEscalado,
       grupo: montarGrupoFuncao,
       mesclarFuncoes: mesclarFuncoesViatura,
       marcarConflito: marcarConflito,
+      alteracoes: montarAlteracoes,
       temConflito: temConflito,
       temAlguem: temAlguem,
       nivelFuncao: nivelDaFuncao,

@@ -1,5 +1,6 @@
 /* ============================================================
-   ESCALA — painel do dia › seção CONTÍNUOS (ciclo automático)
+   ESCALA — painel do dia › aba CICLO (seção "continuos": o ciclo automático)
+   No topo, a frase de que as mudanças valem a partir do dia aberto.
    Lista os militares operacionais da unidade divididos em
    "Na escala" (no ciclo, com Tirar / Cancelar saída) e
    "Fora da escala" (com Adicionar). Só o admin vê a seção, e ela
@@ -101,6 +102,13 @@
     var corpo = ctx.corpo;
     corpo.textContent = '';
 
+    /* a frase do topo: o que muda aqui vale a partir do dia aberto e segue nos próximos dias */
+    var nota = RosterWork.tpl('tpl-escala-ciclo-nota');
+    if (nota) {
+      nota.querySelector('.escala-ciclo-nota-data').textContent = formatarData(ctx.iso).slice(0, 5);
+      corpo.appendChild(nota);
+    }
+
     var caixas = [];
     if (mils.length) RosterWork.escalasPainel.pecas.montarBusca(corpo, caixas);
 
@@ -155,7 +163,7 @@
     }
   }
 
-  /* ---------- rodapé (Cancelar / Salvar), igual aos Pontuais ---------- */
+  /* ---------- rodapé (Cancelar / Salvar), igual ao Editar do Dia ---------- */
   function montarRodape() {
     var rodape = ctx.rodape;
     if (!rodape) return;

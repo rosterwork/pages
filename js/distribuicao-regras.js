@@ -173,7 +173,7 @@
     return out;
   }
 
-  /* o "+ Adicionar" com o menu das funções ainda não usadas nesse tipo */
+  /* o "Adicionar" com o menu das funções ainda não usadas nesse tipo */
   function montarAdicionar(destino, militar, tipo) {
     if (!destino) return;
     var add = RosterWork.tpl('tpl-regras-add');

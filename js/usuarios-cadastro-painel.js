@@ -1,11 +1,15 @@
 /* ============================================================
-   USUÁRIOS › Aprovações › Cadastros — quem pediu acesso.
+   USUÁRIOS — o painel do cadastro de quem pediu acesso
    O militar se cadastrou pela tela pública; aqui o administrador
-   ANALISA e CORRIGE antes de liberar. Por isso o clique não abre
-   um resumo: abre o MESMO formulário do "Novo usuário", já
-   preenchido com o que ele mandou — o administrador ajusta o que
-   estiver errado e aprova, ou recusa com um motivo.
-   A conta de acesso só nasce na aprovação.
+   ANALISA e CORRIGE antes de liberar. Por isso o pedido abre o
+   MESMO formulário do "Novo usuário" (usuarios-novo-usuario.js),
+   começando no Ver (o pedido como ele mandou) e com o Editar para
+   corrigir; o rodapé é Recusar / Aprovar. Recusar pede o motivo
+   (opcional) no próprio painel (geral-decisao).
+   A conta de acesso só nasce na aprovação. Abre pela fila
+   (geral-fila) da página Pendências e da aba Pendências da Usuários.
+   Expõe: RosterWork.usuariosCadastroPainel.abrir(cadastro, ctx).
+   ctx = { posicao?: { n, total }, aoMudar(), aoFechar() }
    Clona moldes; não cria HTML.
    ============================================================ */
 (function () {
@@ -13,7 +17,7 @@
 
   var RW = window.RosterWork = window.RosterWork || {};
 
-  var lista, aoMudar;
+  var ctxAtual = null;
 
   function rpc(nome, corpo) {
     return RW.apiFetch('/rest/v1/rpc/' + nome, { metodo: 'POST', corpo: corpo || {} })
@@ -26,55 +30,6 @@
     if (c.ja_existe_pessoa) return RW.mensagens.cadastros.jaExiste;
     if (c.email_em_uso) return RW.mensagens.cadastros.emailEmUso;
     return '';
-  }
-
-  function carregar() {
-    if (!lista || !document.contains(lista)) return Promise.resolve(0);
-    return rpc('cadastros_listar')
-      .then(function (itens) {
-        itens = Array.isArray(itens) ? itens : [];
-        renderizar(itens);
-        return itens.length;
-      })
-      .catch(function () { return 0; });
-  }
-
-  function renderizar(itens) {
-    lista.textContent = '';
-    if (!itens.length) {
-      var vazio = RosterWork.tpl('tpl-pedido-vazio');
-      if (vazio) { vazio.textContent = RW.mensagens.cadastros.semCadastros; lista.appendChild(vazio); }
-      return;
-    }
-    itens.forEach(function (c) {
-      var cartao = RosterWork.tpl('tpl-cadastro-item');
-      if (!cartao) return;
-      cartao.querySelector('.cadastro-quem').textContent =
-        ((c.grau_abreviacao || '') + ' ' + (c.nome_de_guerra || '')).trim();
-      cartao.querySelector('.cadastro-meta').textContent =
-        [c.lotacao_nome, RW.data.isoParaBR(c.criado_em)].filter(Boolean).join(' · ');
-      var selo = cartao.querySelector('.cadastro-alerta');
-      var texto = alerta(c);
-      selo.textContent = texto;
-      selo.classList.toggle('oculto', !texto);
-      cartao.addEventListener('click', function () { revisar(c); });
-      lista.appendChild(cartao);
-    });
-  }
-
-  /* abre o pedido no painel: começa em Ver (leitura) e o Editar traz o
-     formulário do Novo usuário preenchido, para o administrador corrigir */
-  function revisar(c) {
-    if (!RW.novoUsuario || !RW.novoUsuario.abrirPainel) return;
-    RW.novoUsuario.abrirPainel({
-      titulo: 'Revisar cadastro',
-      dados: c,
-      rotuloSalvar: 'Aprovar',
-      rotuloRecusar: 'Recusar',
-      aoVer: function (corpo) { montarLeitura(corpo, c); },
-      aoSalvar: function (raiz) { aprovar(c, raiz); },
-      aoRecusar: function () { recusar(c); }
-    });
   }
 
   /* ---------- modo Ver: o pedido como o militar mandou ---------- */
@@ -189,26 +144,24 @@
       .catch(function () { falhar(botao); });
   }
 
+  /* Recusar: a caixa do motivo (opcional) no fim do painel; Confirmar recusa grava */
   function recusar(c) {
-    RW.confirmar({
-      tipo: 'aviso',
-      mensagem: RW.mensagens.cadastros.confirmarRecusar,
-      textoConfirmar: RW.mensagens.botoes.remover,
-      textoCancelar: RW.mensagens.botoes.cancelar,
-      aoConfirmar: function () {
-        rpc('cadastro_recusar', { p_id: c.id, p_motivo: null })
-          .then(function (r) { concluir(r, null); })
-          .catch(function () { falhar(null); });
-      }
+    var partes = RW.decisao.montarRecusa(RW.painel.corpo());
+    RW.decisao.recusar(partes, function (motivo, botao) {
+      if (RW.iniciarCarregando) RW.iniciarCarregando(botao);
+      rpc('cadastro_recusar', { p_id: c.id, p_motivo: motivo || null })
+        .then(function (r) { concluir(r, botao); })
+        .catch(function () { falhar(botao); });
     });
   }
 
   function concluir(r, botao) {
     if (RW.pararCarregando && botao) RW.pararCarregando(botao);
     if (r && r.success) {
+      var ctx = ctxAtual;
       if (RW.novoUsuario.marcarLimpo) RW.novoUsuario.marcarLimpo();
       if (RW.painel) RW.painel.fechar();
-      if (aoMudar) aoMudar();
+      if (ctx && ctx.aoMudar) ctx.aoMudar();
       if (r.log && RW.resumo) RW.resumo.abrirModal(r.log, { pagina: 'Usuários' });
       return;
     }
@@ -220,10 +173,24 @@
     RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao });
   }
 
-  function iniciar(conteudo, onMudou) {
-    aoMudar = onMudou;
-    lista = conteudo.querySelector('#usuarios-cadastros');
+  /* abre o pedido no painel: começa em Ver (leitura) e o Editar traz o
+     formulário do Novo usuário preenchido, para o administrador corrigir */
+  function abrir(c, ctx) {
+    if (!RW.novoUsuario || !RW.novoUsuario.abrirPainel) return;
+    ctxAtual = ctx || {};
+    var m = RW.mensagens.cadastros;
+    RW.novoUsuario.abrirPainel({
+      titulo: m.painelTitulo,
+      subtitulo: ctxAtual.posicao ? RW.mensagens.decisao.posicao(m.painelSituacao, ctxAtual.posicao.n, ctxAtual.posicao.total) : m.painelSituacao,
+      dados: c,
+      rotuloSalvar: m.botaoAprovar,
+      rotuloRecusar: m.botaoRecusar,
+      aoVer: function (corpo) { montarLeitura(corpo, c); },
+      aoSalvar: function (raiz) { aprovar(c, raiz); },
+      aoRecusar: function () { recusar(c); },
+      aoFechar: function () { if (ctxAtual && ctxAtual.aoFechar) ctxAtual.aoFechar(); }
+    });
   }
 
-  RW.usuariosCadastros = { iniciar: iniciar, carregar: carregar };
+  RW.usuariosCadastroPainel = { abrir: abrir };
 })();

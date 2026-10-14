@@ -1,8 +1,8 @@
 /* ============================================================
-   FOLGAS — listas de Aprovações e Histórico (aba Equipe)
-   Aprovações: fila de pedidos pendentes (admin Aprova/Recusa).
-   Histórico: todas as folgas já decididas, filtro de período.
-   Expõe RosterWork.folgasListas.{ ligar, carregarAprovacoes, carregarHistorico }.
+   FOLGAS — lista do Histórico (aba Equipe)
+   Todas as folgas já decididas, com o filtro de período. Os pedidos
+   pendentes se decidem na página Pendências.
+   Expõe RosterWork.folgasListas.{ ligar, carregarHistorico }.
    ============================================================ */
 (function () {
   'use strict';
@@ -11,7 +11,6 @@
   var ctx = null;
   var periodo = '30';
   var seqHist = 0;    // token do Histórico: ignora resposta antiga ao trocar de período rápido
-  var seqAprov = 0;   // token das Aprovações: ignora resposta antiga ao trocar de unidade/aba rápido
 
   function fmt() { return RW.folgasFormato; }
   function msg() { return RW.mensagens.folgas; }
@@ -35,45 +34,6 @@
   }
   function vazioEm(el, texto) { limpar(el); var v = RosterWork.tpl('tpl-folga-lista-vazio'); if (v) { v.textContent = texto; el.appendChild(v); } }
 
-  /* ---------- Aprovações (a decisão fica no painel de aprovação) ---------- */
-  function renderAprovacoes(el, lista) {
-    if (!lista.length) { vazioEm(el, msg().vazioSolicitacoes); return; }
-    limpar(el);
-    lista.forEach(function (s) {
-      var item = RosterWork.tpl('tpl-folga-linha'); if (!item) return;
-      item.querySelector('.folga-linha-titulo').textContent = (s.nome || '') + ' ' + msg().solicitouFolga;
-      var meta = item.querySelector('.folga-linha-meta');
-      meta.textContent = '';
-      meta.appendChild(document.createTextNode(fmt().dataNumerica(s.data_ref) + ' · '));
-      meta.appendChild(fmt().periodoNo(s.horario_inicio, s.horario_fim));
-      if (s.motivo) meta.appendChild(document.createTextNode(' · ' + s.motivo));
-      var fim = item.querySelector('.folga-linha-fim');
-      var selo = RosterWork.tpl('tpl-folga-selo');
-      if (selo) { selo.classList.add(fmt().situacaoClasse('pendente')); selo.textContent = msg().situacao.pendente; fim.appendChild(selo); }
-      /* admin: clicar na linha abre o painel de aprovação (detalhe + impacto + Aprovar/Recusar) */
-      if (ctx.admin) {
-        item.classList.add('folga-linha--clicavel');
-        item.addEventListener('click', function () {
-          if (RW.folgasAprovacaoPainel) RW.folgasAprovacaoPainel.abrir(s, { cpf: ctx.cpf, admin: ctx.admin, aoMudar: ctx.aoMudar });
-        });
-      }
-      el.appendChild(item);
-    });
-  }
-
-  function carregarAprovacoes() {
-    var el = document.getElementById('folgas-aprovacoes');
-    if (!el || !document.contains(el)) return;
-    carregandoEm(el);
-    var req = ++seqAprov;
-    RW.folgasDados.solicitacoes().then(function (lista) {
-      if (!document.contains(el) || req !== seqAprov) return;
-      if (lista == null) { vazioEm(el, msg().falhaCarregar); return; }   // null = falha (Postgres devolve [] p/ vazio)
-      renderAprovacoes(el, Array.isArray(lista) ? lista : []);
-    }).catch(function () { if (document.contains(el) && req === seqAprov) vazioEm(el, msg().falhaCarregar); });
-  }
-
-  /* ---------- Histórico (todas as folgas) ---------- */
   function renderHistorico(el, lista) {
     if (!lista.length) { vazioEm(el, msg().vazioLancamentos); return; }
     limpar(el);
@@ -113,5 +73,5 @@
 
   function ligar(conteudo, contexto) { ctx = contexto || {}; periodo = '30'; ligarControles(conteudo); }
 
-  RW.folgasListas = { ligar: ligar, carregarAprovacoes: carregarAprovacoes, carregarHistorico: carregarHistorico };
+  RW.folgasListas = { ligar: ligar, carregarHistorico: carregarHistorico };
 })();

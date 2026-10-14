@@ -278,6 +278,14 @@
   <span class="extra-cel-sem-extra">sem extra</span>
 </template>
 
+<!-- Painel do dia (gaveta): as abas Dia (avisos + distribuição com os extras) e Extrajornada (quem está de extra) -->
+<template id="tpl-extra-painel-secoes">
+  <div class="abas">
+    <button type="button" class="aba aba--ativa" data-secao="dia">Dia</button>
+    <button type="button" class="aba" data-secao="extra">Extrajornada</button>
+  </div>
+</template>
+
 <!-- Painel do dia (gaveta): uma linha de aviso — resolvido pelo extra (✓) / restou (▲) -->
 <template id="tpl-extra-painel-aviso">
   <div class="extra-painel-aviso">

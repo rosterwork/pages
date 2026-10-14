@@ -44,8 +44,8 @@
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#icones-escala">Os ícones da escala</a></li>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#erros-escala">Erros e ressalvas da escala</a></li>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#imprimir-escala">Imprimir a escala</a></li>
-                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#montar-ciclo">Montar o ciclo (Contínuos e Pontuais)</a></li>
-                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#distribuicao-dia">A distribuição do dia</a></li>
+                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#montar-ciclo">Montar o ciclo (aba Ciclo)</a></li>
+                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#distribuicao-dia">Ajustar o dia</a></li>
               </ul>
             </li>
             <li>
@@ -170,7 +170,7 @@
                 <li><strong>O efetivo (as pessoas).</strong> Os militares cadastrados, cada um com seus dados (grau, lotação, CNH, antiguidade). Sem efetivo, não há quem escalar. Fica em <strong>Usuários</strong>.</li>
                 <li><strong>Os postos e viaturas (onde servem).</strong> Os lugares de serviço: <strong>instalações</strong> (locais fixos, como a Central de Operações) e <strong>viaturas</strong> (que exigem CNH e podem entrar em manutenção). Cada posto tem um <strong>efetivo mínimo, ideal e máximo</strong> (quantos militares). Fica em <strong>Postos</strong>.</li>
                 <li><strong>Os modelos e regras (o gabarito).</strong> O administrador monta, por unidade, um <strong>modelo</strong> que diz quais funções e vagas existem no dia; a distribuição segue esse gabarito. As <strong>regras</strong> ajustam quem pode ou não ir para certas funções. Fica em <strong>Distribuição</strong>.</li>
-                <li><strong>O ciclo da unidade (quem está de serviço).</strong> O <strong>ritmo</strong> da unidade, em <strong>Ajustes</strong>, e a entrada de cada militar no ciclo, pelo <strong>Adicionar</strong> da aba Contínuos, no painel do dia da <strong>Escala</strong>.</li>
+                <li><strong>O ciclo da unidade (quem está de serviço).</strong> O <strong>ritmo</strong> da unidade, em <strong>Ajustes</strong>, e a entrada de cada militar no ciclo, pelo <strong>Adicionar</strong> da aba Ciclo, no painel do dia da <strong>Escala</strong>.</li>
               </ul>
 
               <h3 class="manual-topico">O que muda a escala</h3>
@@ -182,7 +182,7 @@
                 </li>
                 <li>
                   <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-folgas.svg#icone-folgas"/></svg></span>
-                  <span class="manual-legenda-texto"><strong>Folga.</strong> O militar tira um dia (ou um trecho) de serviço, então <strong>sai da escala</strong> naquele período. É um banco de horas: o saldo sobe quando trabalha a mais e desce quando folga. Passa por aprovação.</span>
+                  <span class="manual-legenda-texto"><strong>Folga.</strong> O militar tira um dia (ou um trecho) de serviço, então <strong>sai da escala</strong> naquele período. É um banco de horas: o saldo sobe com o serviço a mais que o administrador contabiliza e desce quando o militar folga. Passa por aprovação.</span>
                 </li>
                 <li>
                   <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-extrajornada.svg#icone-extrajornada"/></svg></span>
@@ -190,11 +190,11 @@
                 </li>
                 <li>
                   <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-afastamentos.svg#icone-afastamentos"/></svg></span>
-                  <span class="manual-legenda-texto"><strong>Afastamento.</strong> Férias, licenças e dispensas <strong>tiram</strong> o militar da escala pelos dias do afastamento. Numa licença ou dispensa longa, o administrador decide se o militar também sai do ciclo; nesse caso, ele volta depois pelo <strong>Adicionar</strong> da aba Contínuos.</span>
+                  <span class="manual-legenda-texto"><strong>Afastamento.</strong> Férias, licenças e dispensas <strong>tiram</strong> o militar da escala pelos dias do afastamento. Numa licença ou dispensa longa, o administrador decide se o militar também sai do ciclo; nesse caso, ele volta depois pelo <strong>Adicionar</strong> da aba Ciclo.</span>
                 </li>
                 <li>
                   <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-cadeado.svg#icone-cadeado"/></svg></span>
-                  <span class="manual-legenda-texto"><strong>Ajuste do administrador.</strong> O administrador pode mudar a escala <strong>manualmente</strong>. No painel do dia, ele troca quem está numa função, muda o horário ou abre uma função nova; essas escolhas ganham o ícone de <strong>Função fixada</strong> (cadeado) e são mantidas quando o sistema recalcula. Pelas abas Contínuos e Pontuais, ele inclui ou tira militares da escala.</span>
+                  <span class="manual-legenda-texto"><strong>Ajuste do administrador.</strong> O administrador pode mudar a escala <strong>manualmente</strong>. Na aba Dia do painel do dia, ele coloca um militar só naquele dia, muda as funções e os horários de quem está de serviço ou dá folga; as mudanças de função ganham o ícone de <strong>Função fixada</strong> (cadeado) e são mantidas quando o sistema recalcula. Pela aba Ciclo, ele inclui ou tira militares da escala dali em diante.</span>
                 </li>
               </ul>
 
@@ -534,14 +534,15 @@
                 </div>
                 <figcaption class="manual-diagrama-legenda">O ritmo 24/48: cada militar faz um dia de serviço (24 horas) e folga os dois dias seguintes (48 horas). O sistema repete esse padrão sozinho, por meses à frente. Outros ritmos, como o 24/72 e o 12/36, seguem a mesma ideia.</figcaption>
               </figure>
-              <p><strong>Pontuais.</strong> O administrador pode escalar um militar <strong>só num dia</strong>, fora do ciclo. Ele trabalha naquele dia e segue fora do ciclo nos demais.</p>
-              <p><strong>A distribuição do dia.</strong> Ao <strong>clicar num dia</strong> na grade, abre um painel à direita com aquele dia montado: no alto, a unidade e a data e, abaixo, os postos, as funções e quem está em cada uma.</p>
-              <p>No alto ficam os <strong>avisos</strong> do dia, em vermelho os erros graves e em amarelo as ressalvas (a lista completa está em <strong>Erros e ressalvas da escala</strong>, logo abaixo), e quem está de serviço sem função aparece numa caixa vermelha. O painel mostra os postos que têm alguém no dia. Um posto com menos gente que o efetivo mínimo entra nos avisos, por exemplo "Efetivo abaixo do mínimo: ABT-01 (2 de 3)", com o horário quando isso acontece só numa parte do dia.</p>
+              <p><strong>Pontuais.</strong> O administrador pode escalar um militar <strong>só num dia</strong>, fora do ciclo, em um ou mais horários, inclusive um militar de outra unidade. Ele trabalha naquele dia e segue fora do ciclo nos demais.</p>
+              <p><strong>A distribuição do dia.</strong> Ao <strong>clicar num dia</strong> na grade, abre um painel à direita com aquele dia montado: no alto, a unidade e a data e, abaixo, os postos, as funções e quem está em cada uma. Embaixo da data ficam as abas: <strong>Dia</strong>, com o dia montado, e <strong>Extrajornada</strong>, com quem está de extra naquele dia e naquela unidade, com o horário. O extra que ainda não foi inserido na escala aparece com o selo "Não inserido na escala".</p>
+              <p>No alto ficam os <strong>avisos</strong> do dia, em vermelho os erros graves e em amarelo as ressalvas (a lista completa está em <strong>Erros e ressalvas da escala</strong>, logo abaixo), e o horário em que uma função ficou sem ninguém aparece em vermelho, com a função também vermelha. Depois dos postos vêm <strong>Sem função</strong> (com o título vermelho: quem está de serviço sem função em algum horário), <strong>De folga</strong> e as <strong>Observações</strong>. O painel mostra os postos que têm alguma função no dia. Um posto com menos gente que o efetivo mínimo entra nos avisos, por exemplo "Efetivo abaixo do mínimo: ABT-01 (2 de 3)", com o horário quando isso acontece só numa parte do dia.</p>
               <figure class="manual-figura">
-                <img src="manual/imagens/escala-painel-dia.png" alt="O painel de um dia: a unidade e a data (1) e os postos com as suas funções e os militares de serviço (2)." />
+                <img src="manual/imagens/escala-painel-dia.png" alt="O painel de um dia: a unidade e a data (1), as abas Dia e Extrajornada (2) e os postos com as suas funções e os militares de serviço (3)." />
                 <figcaption>
                   <ol class="manual-chamadas">
                     <li>Unidade e data</li>
+                    <li>Abas Dia e Extrajornada</li>
                     <li>Postos, com as funções e os militares de serviço</li>
                   </ol>
                 </figcaption>
@@ -554,7 +555,7 @@
               <ul class="manual-legenda manual-legenda--compacta">
                 <li>
                   <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-origem-base.svg#icone-origem-base"/></svg></span>
-                  <span class="manual-legenda-texto"><strong>Entrada.</strong> O primeiro dia do militar no ciclo. Só o administrador cria a entrada, ao incluir o militar pelo <strong>Adicionar</strong> da aba Contínuos, na data escolhida. Vale para a primeira vez e para cada volta ao ciclo, como o retorno de uma licença ou dispensa longa, a readmissão ou a chegada de outra unidade.</span>
+                  <span class="manual-legenda-texto"><strong>Entrada.</strong> O primeiro dia do militar no ciclo. Só o administrador cria a entrada, ao incluir o militar pelo <strong>Adicionar</strong> da aba Ciclo, na data escolhida. Vale para a primeira vez e para cada volta ao ciclo, como o retorno de uma licença ou dispensa longa, a readmissão ou a chegada de outra unidade.</span>
                 </li>
                 <li>
                   <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-origem-sistema.svg#icone-origem-sistema"/></svg></span>
@@ -562,11 +563,11 @@
                 </li>
                 <li>
                   <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-origem-saida.svg#icone-origem-saida"/></svg></span>
-                  <span class="manual-legenda-texto"><strong>Saída.</strong> O último dia de serviço do militar antes de ele sair do ciclo, e o par da Entrada. O militar sai do ciclo quando o administrador usa o <strong>Tirar</strong> da aba Contínuos, na baixa, na transferência, numa licença ou dispensa longa que o administrador decide tirar do ciclo, e quando ele passa a administrativo, pela ficha ou por pedido aprovado no Meu perfil.</span>
+                  <span class="manual-legenda-texto"><strong>Saída.</strong> O último dia de serviço do militar antes de ele sair do ciclo, e o par da Entrada. O militar sai do ciclo quando o administrador usa o <strong>Tirar</strong> da aba Ciclo, na baixa, na transferência, numa licença ou dispensa longa que o administrador decide tirar do ciclo, e quando ele passa a administrativo, pela ficha ou por pedido aprovado no Meu perfil.</span>
                 </li>
                 <li>
                   <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-origem-pontual.svg#icone-origem-pontual"/></svg></span>
-                  <span class="manual-legenda-texto"><strong>Pontual.</strong> Escalado só naquele dia, pela aba <strong>Pontuais</strong>.</span>
+                  <span class="manual-legenda-texto"><strong>Pontual.</strong> Escalado só naquele dia, pelo <strong>Adicionar militar</strong> do painel do dia.</span>
                 </li>
                 <li>
                   <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-origem-troca.svg#icone-origem-troca"/></svg></span>
@@ -670,6 +671,7 @@
                 <li><strong>Dois militares no mesmo horário:</strong> a mesma função tem duas pessoas na mesma hora.</li>
                 <li><strong>Condutor sem a CNH exigida:</strong> o condutor não tem a categoria de CNH que a viatura pede.</li>
                 <li><strong>Função proibida pela regra:</strong> o militar está numa função que a regra dele proíbe.</li>
+                <li><strong>Militar em duas unidades ao mesmo tempo:</strong> o mesmo militar está em funções de duas unidades no mesmo horário, por exemplo "Sd. Sampaio está em duas unidades diferentes ao mesmo tempo (2ºPEL e 1ºPEL)". Um militar não acumula funções em unidades diferentes; quando a escolha do administrador causa isso, o <strong>Salvar</strong> fica travado.</li>
               </ul>
               <p><strong>Ressalvas (amarelo).</strong></p>
               <ul class="manual-lista">
@@ -681,7 +683,6 @@
                 <li><strong>Militar afastado, não vai assumir o serviço:</strong> quem cobre um serviço por troca entrou de férias, licença ou dispensa naquele dia.</li>
                 <li><strong>Viatura em manutenção:</strong> a viatura está em manutenção e segue com militares escalados nela.</li>
                 <li><strong>Militar exclusivo fora da sua função:</strong> um militar exclusivo de uma função foi colocado em outra.</li>
-                <li><strong>Militar em duas unidades ao mesmo tempo:</strong> o mesmo militar está em funções de duas unidades no mesmo horário, por exemplo "Sd. Sampaio está em duas unidades diferentes ao mesmo tempo (2ºPEL e 1ºPEL)". Acontece quando o administrador coloca no <strong>Editar</strong> um militar que já está de serviço em outra unidade: o sistema permite e avisa nas duas unidades.</li>
               </ul>
               <p><strong>Alterações manuais.</strong> Quando o administrador corrige um erro, a hora volta ao verde. O rastro fica no rodapé do painel do dia: as <strong>Alterações manuais</strong>, com a quantidade ao lado. Ao abrir, aparecem quem mexeu, quando e o quê, entre os ajustes da distribuição, os militares pontuais e as entradas e saídas do ciclo daquele dia. Todos podem ver. Num dia sem alteração, o rodapé não aparece.</p>
               <figure class="manual-figura">
@@ -724,16 +725,16 @@
               <p>Uma unidade que cabe numa folha nunca é dividida: se não couber no espaço que sobrou, ela vai inteira para a folha seguinte. A unidade maior que uma folha continua na seguinte só entre um posto e outro, com o nome repetido, a marca <strong>(continuação)</strong> e a data.</p>
 
               <div class="manual-admin manual-zona-admin">
-                <h3 id="montar-ciclo">Montar o ciclo: Contínuos e Pontuais <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p>No painel do dia, você monta quem está de serviço nas abas <strong>Contínuos</strong> e <strong>Pontuais</strong>, que só o administrador vê. As duas já abrem prontas para editar: cada mudança fica marcada na tela e o <strong>Salvar</strong> aplica todas de uma vez.</p>
-                <p><strong>Contínuos (o ciclo).</strong> A aba mostra, em "Contínuos do dia", quem o ciclo escala naquele dia (quem está de folga aparece riscado) e, em "Fora da escala", quem não está no ciclo. Ali, você coloca e tira militares da escala:</p>
+                <h3 id="montar-ciclo">Montar o ciclo: a aba Ciclo <span class="manual-selo-admin">Apenas administradores</span></h3>
+                <p>No painel do dia, você monta quem está no ciclo pela aba <strong>Ciclo</strong>, que só o administrador vê. Ela já abre pronta para editar, e uma nota no alto lembra que as mudanças valem a partir daquele dia e seguem nos próximos. Cada mudança fica marcada na tela e o <strong>Salvar</strong> aplica todas de uma vez.</p>
+                <p><strong>O ciclo.</strong> A aba mostra, em "Contínuos do dia", quem o ciclo escala naquele dia (quem está de folga aparece riscado) e, em "Fora da escala", quem não está no ciclo. Ali, você coloca e tira militares da escala:</p>
                 <ul class="manual-lista">
                   <li><strong>Colocar na escala.</strong> Em "Fora da escala", o <strong>Adicionar</strong> marca um militar para entrar no ciclo a partir daquele dia. É assim que se coloca alguém na escala, inclusive o retorno de quem saiu por uma licença ou dispensa longa, de quem foi readmitido depois de uma baixa ou de quem chegou por transferência (a partir da data dela).</li>
                   <li><strong>Tirar da escala.</strong> Em "Contínuos do dia", o <strong>Tirar</strong> marca a saída daquele dia em diante. Quando já há saída marcada, aparecem "Sai em DD/MM" e <strong>Cancelar saída</strong>. Na escala, o último dia de serviço antes da saída ganha o ícone de <strong>Saída</strong>.</li>
                 </ul>
                 <p>Cada mudança recebe um selo ("Vai entrar" ou "Vai sair") e o <strong>Salvar</strong> aplica todas de uma vez, recalculando a escala uma única vez.</p>
                 <figure class="manual-figura">
-                  <img src="manual/imagens/escala-continuos.png" alt="A aba Contínuos: em Contínuos do dia, cada militar tem o botão Tirar para marcar a saída (1)." />
+                  <img src="manual/imagens/escala-continuos.png" alt="A aba Ciclo: em Contínuos do dia, cada militar tem o botão Tirar para marcar a saída (1)." />
                   <figcaption>
                     <ol class="manual-chamadas">
                       <li>Botão Tirar, que marca a saída</li>
@@ -741,39 +742,69 @@
                   </figcaption>
                 </figure>
                 <p class="manual-nota"><strong>Tirar do ciclo mexe no que dependia dele.</strong> Ao clicar em <strong>Tirar</strong>, e também ao dar baixa ou transferir, o sistema mostra quanto vai cancelar antes de você confirmar, por exemplo "isto também vai cancelar 2 trocas e 1 folga". Tirar um militar do ciclo cancela as trocas e as folgas futuras dele, devolve o saldo das folgas e avisa os envolvidos.</p>
-                <p><strong>Pontuais.</strong> Na aba <strong>Pontuais</strong>, você insere o militar naquele dia, ajusta o horário e pode remover. Ao <strong>Salvar</strong>, o dia é redistribuído com os pontuais.</p>
-                <h3 id="distribuicao-dia">A distribuição do dia <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p>Na aba <strong>Distribuição</strong> do painel do dia, você ajusta as funções daquele dia. A aba abre na leitura, igual à que todos veem, e o botão <strong>Editar</strong>, no alto do painel, abre a edição. Ao <strong>Salvar</strong> ou <strong>Cancelar</strong>, o painel volta para a leitura.</p>
+                <p><strong>Só naquele dia.</strong> Para escalar um militar só num dia, sem entrar no ciclo, use o <strong>Adicionar militar</strong> da aba Dia (veja <strong>Ajustar o dia</strong>, logo abaixo).</p>
+                <h3 id="distribuicao-dia">Ajustar o dia <span class="manual-selo-admin">Apenas administradores</span></h3>
+                <p>Na aba <strong>Dia</strong> do painel do dia, você ajusta aquele dia. Para o administrador, a aba já abre pronta para editar: a lista é a mesma que todos veem, com o botão <strong>Adicionar militar</strong> no alto do painel e o <strong>lápis</strong> em cada linha. As mudanças valem <strong>só para aquele dia</strong> e ficam marcadas na tela, com o selo <strong>Novo</strong>, até você clicar em <strong>Salvar</strong>, que grava tudo de uma vez. O rodapé mostra quantas alterações faltam salvar, e o <strong>Cancelar</strong> desfaz todas.</p>
                 <figure class="manual-figura">
-                  <img src="manual/imagens/escala-painel-admin.png" alt="O alto do painel do dia para o administrador: o botão Editar (1) e as abas Distribuição, Contínuos e Pontuais (2)." />
+                  <img src="manual/imagens/escala-painel-admin.png" alt="O alto do painel do dia para o administrador: as abas Dia, Ciclo e Extrajornada (1), o botão Adicionar militar (2) e o lápis de uma linha (3)." />
                   <figcaption>
                     <ol class="manual-chamadas">
-                      <li>Botão Editar, que abre a edição da distribuição</li>
-                      <li>Abas Distribuição, Contínuos e Pontuais</li>
+                      <li>Abas Dia, Ciclo e Extrajornada</li>
+                      <li>Adicionar militar</li>
+                      <li>Lápis, que abre o militar no dia</li>
                     </ol>
                   </figcaption>
                 </figure>
-                <p>Na edição aparecem todos os postos ativos do dia, inclusive os vazios, e você mexe <strong>só naquele dia</strong>:</p>
+                <p><strong>Adicionar militar.</strong> Abre um formulário em três partes:</p>
                 <ul class="manual-lista">
-                  <li><strong>Trocar</strong> o militar de uma função, escolhendo outro na lista.</li>
-                  <li><strong>Remover</strong> um militar de uma função, deixando a vaga vazia.</li>
-                  <li><strong>Adicionar função</strong> num posto, para incluir uma vaga e preenchê-la. A função adicionada aparece com o cadeado, e o <strong>✕</strong> dela exclui a função inteira. Com o posto no efetivo máximo, o botão fica desativado.</li>
-                  <li><strong>Mudar o horário</strong> de uma função, dentro da disponibilidade do militar.</li>
-                  <li><strong>Restaurar</strong>, para voltar uma função ao que o sistema tinha montado.</li>
+                  <li><strong>Quem:</strong> escolha a unidade (a lista abre na unidade do painel, mas vale qualquer unidade do estado) e procure o militar pelo nome. Só aparecem militares que não estão de serviço em lugar nenhum nesse dia e não estão afastados. Se ele for o mais antigo do dia, o formulário avisa que ele vai assumir o Chefe de Socorro (ou o Oficial de Área).</li>
+                  <li><strong>Quando:</strong> o horário de serviço dele, dentro do dia de serviço, das 08h às 08h. Para mais de um horário no mesmo dia, por exemplo das 20h às 21h e das 00h às 08h, use o ícone <strong>Adicionar horário</strong>.</li>
+                  <li><strong>Onde:</strong> deixe em <strong>O sistema distribui</strong>, para ele entrar na distribuição automática do dia, ou escolha o posto e a função. Embaixo de cada função aparece como ela está nesse horário: vazia, ou quem sai dela.</li>
                 </ul>
+                <p>Ao clicar em <strong>Adicionar ao dia</strong>, o sistema pergunta se as horas entram no banco de horas do militar (<strong>Contabilizar</strong> ou <strong>Não contabilizar</strong>). Quem vem de outra unidade trabalha aqui só naquele dia; se ele for de outra companhia, os administradores da área dele recebem um aviso no sino.</p>
                 <figure class="manual-figura">
-                  <img src="manual/imagens/escala-editar.png" alt="O painel do dia em edição: uma função com o horário e o botão de remover (1), uma função adicionada com o cadeado e o botão que a exclui (2) e o Adicionar função do posto (3)." />
+                  <img src="manual/imagens/escala-form-adicionar.png" alt="O formulário Adicionar militar: a unidade e a busca do militar (1), o horário com o ícone Adicionar horário (2) e o Onde (3)." />
                   <figcaption>
                     <ol class="manual-chamadas">
-                      <li>Função com o horário e o botão de remover</li>
-                      <li>Função adicionada, com o cadeado e o ✕ que a exclui</li>
-                      <li>Adicionar função no posto</li>
+                      <li>Unidade e busca do militar</li>
+                      <li>Horário, com o Adicionar horário</li>
+                      <li>Onde: o sistema distribui ou você escolhe a função</li>
                     </ol>
                   </figcaption>
                 </figure>
-                <p>Quando você muda uma função, o que o sistema tinha montado aparece <strong>riscado</strong> logo abaixo, uma barra cinza marca o que ainda falta salvar, e o <strong>Salvar</strong> grava. Esses ajustes manuais ganham o ícone de <strong>Função fixada</strong> (cadeado), ficam <strong>por cima</strong> do automático e continuam valendo mesmo quando o sistema recalcula a escala.</p>
-                <p>O <strong>Chefe de Socorro</strong> e o <strong>Oficial de Área</strong> são escolhidos pelo sistema, conforme a normativa, e ficam travados: na edição não dá para trocar, remover nem mudar o horário deles.</p>
-                <p>As regras de cada militar valem também para os seus ajustes. Colocar um condutor sem a CNH exigida pela viatura, ou um militar numa função que a regra dele proíbe, fica em vermelho e trava o <strong>Salvar</strong>, assim como o horário fora da disponibilidade e dois militares no mesmo horário. Colocar um militar exclusivo fora da sua função, ou com grau diferente do ideal, fica em amarelo e o <strong>Salvar</strong> segue liberado.</p>
+                <p><strong>O militar no dia.</strong> O <strong>lápis</strong> de uma linha abre o dia daquele militar: uma régua com o serviço dele e as <strong>Funções no dia</strong>.</p>
+                <ul class="manual-lista">
+                  <li><strong>Deixar uma função:</strong> desmarque a caixa da função. A tela avisa o efeito, por exemplo que o lugar fica vazio naquele horário.</li>
+                  <li><strong>Mudar o horário:</strong> clique no início ou no fim e escolha a hora, dentro do serviço dele. O ícone <strong>Adicionar horário</strong> põe mais um horário na mesma função.</li>
+                  <li><strong>Dar função:</strong> num horário em que ele está de serviço sem função.</li>
+                  <li><strong>Nova função:</strong> põe o militar em outra função, no horário que você escolher. Se ele já tem função nesse horário, passa a acumular as duas, no mesmo posto ou em outro posto da unidade (nunca em unidades diferentes).</li>
+                  <li><strong>Tirar do dia:</strong> o militar do ciclo fica de folga naquele dia, e o sistema pergunta se as horas saem do banco de horas dele; o militar escalado só naquele dia sai da escala.</li>
+                </ul>
+                <p>Clique em <strong>Aplicar</strong> para voltar à lista com a mudança.</p>
+                <figure class="manual-figura">
+                  <img src="manual/imagens/escala-militar-dia.png" alt="O militar no dia: a caixa de marcar de uma função (1), os horários com o ícone Adicionar horário (2) e os botões Nova função e Tirar do dia (3)." />
+                  <figcaption>
+                    <ol class="manual-chamadas">
+                      <li>Caixa de marcar: desmarcada, ele deixa a função</li>
+                      <li>Horários, com o Adicionar horário</li>
+                      <li>Nova função e Tirar do dia</li>
+                    </ol>
+                  </figcaption>
+                </figure>
+                <p><strong>Horário sem ninguém.</strong> Quando você tira alguém de uma função num horário, esse horário fica vermelho, com o botão <strong>Sem ninguém, escolher</strong>. Ele abre o mesmo formulário, já com a função e o horário, e mostra também quem está de serviço sem função nesse horário. A linha mexida tem ainda o ícone <strong>Voltar ao automático</strong>, que desfaz o ajuste.</p>
+                <figure class="manual-figura">
+                  <img src="manual/imagens/escala-editar.png" alt="Uma função mexida no dia: a linha com o selo Novo e o ícone Voltar ao automático (1) e o horário sem ninguém, com o botão Sem ninguém, escolher (2)." />
+                  <figcaption>
+                    <ol class="manual-chamadas">
+                      <li>Linha mexida: selo Novo e Voltar ao automático</li>
+                      <li>Horário sem ninguém, com o botão Sem ninguém, escolher</li>
+                    </ol>
+                  </figcaption>
+                </figure>
+                <p>O que você muda nas funções ganha o ícone de <strong>Função fixada</strong> (cadeado), fica <strong>por cima</strong> do automático e continua valendo mesmo quando o sistema recalcula a escala. Quando alguém entra ou sai do dia, o sistema refaz a distribuição automática daquele dia, e a lista já mostra como vai ficar antes de você salvar.</p>
+                <p>O <strong>Chefe de Socorro</strong> e o <strong>Oficial de Área</strong> são sempre o mais antigo de serviço, conforme a normativa, e ficam travados: não dá para tirar, trocar nem mudar o horário deles. Se você puser no dia alguém mais antigo, ele assume o papel, e a lista avisa no alto quem assume no lugar de quem.</p>
+                <p>As <strong>observações</strong> do dia ficam no fim da lista: o botão <strong>Adicionar observação</strong> inclui uma nota, e o <strong>✕</strong> exclui as suas. Elas também gravam no <strong>Salvar</strong>.</p>
+                <p>As regras de cada militar valem também para os seus ajustes. Colocar um condutor sem a CNH exigida pela viatura, ou um militar numa função que a regra dele proíbe, fica em vermelho e trava o <strong>Salvar</strong>, assim como o horário fora da disponibilidade, dois militares no mesmo horário e o militar em duas unidades ao mesmo tempo. Colocar um militar exclusivo fora da sua função, ou com grau diferente do ideal, fica em amarelo e o <strong>Salvar</strong> segue liberado.</p>
               </div>
             </section>
 
@@ -865,10 +896,17 @@
               <h2>Folgas</h2>
               <h3 id="solicitar-folga">Solicitar uma folga</h3>
               <p>Tirar uma folga é deixar de fazer um serviço que já está escalado para você, descontando as horas desse serviço do seu <strong>banco de horas de folga</strong>. É um sistema separado da Extrajornada (que é hora paga pelo estado); as horas daqui não são hora extra.</p>
-              <p><strong>O seu saldo.</strong> O saldo é o seu banco de horas: ele <strong>sobe</strong> quando você trabalha a mais (um serviço além do seu ciclo, ou um ajuste do administrador) e <strong>desce</strong> quando você tira folga. Pode ficar <strong>negativo</strong> (você fica devendo horas), e o sistema avisa na hora de pedir. Um pedido em aberto não mexe no saldo até ser aprovado.</p>
-              <p><strong>Como pedir.</strong> Na página <strong>Folgas</strong>, aba <strong>Minhas folgas</strong>, o botão <strong>Solicitar folga</strong> abre um painel. Escolha <strong>um dia em que você está de serviço</strong> e o <strong>período</strong> (o turno inteiro ou um trecho), e pode escrever um <strong>motivo</strong>. O pedido nasce como "Pendente", e as horas só saem do seu saldo quando ele é aprovado.</p>
+              <p><strong>O seu saldo.</strong> O saldo é o seu banco de horas: ele <strong>sobe</strong> quando o administrador contabiliza um serviço que você fez a mais, além do seu ciclo, ou faz um ajuste, e <strong>desce</strong> quando você tira folga. Pode ficar <strong>negativo</strong> (você fica devendo horas), e o sistema avisa na hora de pedir. Um pedido em aberto não mexe no saldo até ser aprovado.</p>
+              <p><strong>Como pedir.</strong> Na página <strong>Folgas</strong>, aba <strong>Minhas folgas</strong>, o botão <strong>Solicitar folga</strong>, no alto da lista, abre um painel. Escolha <strong>um dia em que você está de serviço</strong> e o <strong>período</strong>: o <strong>serviço inteiro</strong> ou só uma <strong>parte do serviço</strong>, marcando o início e o fim, com a régua do dia mostrando o trecho. Pode escrever um <strong>motivo</strong>. No fim, o painel mostra quanto o pedido consome do banco de horas e como fica o seu saldo. O pedido nasce como "Pendente", e as horas só saem do seu saldo quando ele é aprovado.</p>
               <figure class="manual-figura">
-                <img src="manual/imagens/folga-solicitar.png" alt="Painel Solicitar folga, com o dia do serviço, o período e o motivo." />
+                <img src="manual/imagens/folga-solicitar.png" alt="Painel Solicitar folga: o dia (1), o período em parte do serviço, com os horários e a régua (2), e quanto o pedido consome do banco de horas (3)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>Dia da folga</li>
+                    <li>Período: serviço inteiro ou parte do serviço</li>
+                    <li>Quanto consome do banco de horas</li>
+                  </ol>
+                </figcaption>
               </figure>
               <p><strong>Aprovação e escala.</strong> Um administrador <strong>Aprova</strong> ou <strong>Recusa</strong>. Aprovada, a folga passa a valer: na escala, no dia da folga, <strong>você aparece riscado</strong> e as horas são descontadas do saldo. Recusada, encerra.</p>
               <p><strong>Acompanhar e cancelar.</strong> A aba <strong>Minhas folgas</strong> reúne o seu <strong>saldo</strong> em destaque, os <strong>pedidos em aberto</strong> e o seu <strong>extrato</strong> (os lançamentos que sobem e descem o saldo), cada um com a sua situação. Enquanto o pedido está "Pendente", você pode cancelá-lo no botão <strong>✕</strong> ao lado dele; depois de aprovado, o cancelamento fica com o administrador.</p>
@@ -901,6 +939,16 @@
                   </figcaption>
                 </figure>
                 <p><strong>A aba Equipe.</strong> Ela mostra o efetivo em dois modos: <strong>Saldos</strong>, o saldo de cada militar, e <strong>Histórico</strong>, os lançamentos de folga do efetivo. Ao clicar num militar em <strong>Saldos</strong>, abre o painel dele com o <strong>extrato</strong> (saldo e lançamentos) e a aba <strong>Ações</strong>, com duas ferramentas. A aba Ações não aparece no seu próprio nome: a sua folga e o seu saldo ficam com outro administrador.</p>
+                <p><strong>Dar folga.</strong> Na aba <strong>Equipe</strong>, o botão <strong>Dar folga</strong>, no alto da lista, dá uma folga sem abrir o militar antes. Em <strong>Quem</strong>, procure o militar pelo nome: a lista mostra os das unidades escolhidas no topo, com o saldo de cada um. Depois, o dia, o período e o motivo seguem como no <strong>Conceder folga</strong>, logo abaixo.</p>
+                <figure class="manual-figura">
+                  <img src="manual/imagens/folga-dar.png" alt="O painel Dar folga: a busca e a lista dos militares com o saldo de cada um (1) e o dia, o período e o motivo (2)." />
+                  <figcaption>
+                    <ol class="manual-chamadas">
+                      <li>Quem: a busca e os militares, com o saldo</li>
+                      <li>Dia, período e motivo</li>
+                    </ol>
+                  </figcaption>
+                </figure>
                 <figure class="manual-figura">
                   <img src="manual/imagens/folga-equipe.png" alt="Painel de um militar na aba Ações: as abas Extrato e Ações (1) e os botões Conceder folga e Ajustar saldo (2)." />
                   <figcaption>
@@ -910,8 +958,8 @@
                     </ol>
                   </figcaption>
                 </figure>
-                <p><strong>Conceder folga.</strong> Dá uma folga a um militar direto, sem depender de pedido. O calendário só oferece os <strong>dias em que ele está de serviço</strong>; você escolhe o dia e o período, e a folga já vale (situação "Concedida"): as horas saem do saldo e ele aparece riscado na escala.</p>
-                <p><strong>Ajustar saldo.</strong> Acerta o banco de horas manualmente: <strong>Adicionar</strong> ou <strong>Descontar</strong> uma quantidade de horas, sempre com um <strong>motivo</strong>. Serve para corrigir o saldo quando algo não passou pelo fluxo normal. Muda só o número, não mexe na escala.</p>
+                <p><strong>Conceder folga.</strong> Dá uma folga a um militar direto, sem depender de pedido. Abre dentro do painel dele, com <strong>Voltar às ações</strong> no alto. O calendário só oferece os <strong>dias em que ele está de serviço</strong>; você escolhe o dia e o período (o serviço inteiro ou uma parte, com o início e o fim) e confirma. Antes de gravar, o sistema pergunta se a folga entra no banco de horas: <strong>Contabilizar</strong> desconta as horas do saldo dele; <strong>Não contabilizar</strong> dá a folga sem mexer no saldo, e no extrato ela aparece como "Não contabilizada"; <strong>Cancelar</strong> volta ao formulário. A folga já vale (situação "Concedida") e ele aparece riscado na escala.</p>
+                <p><strong>Ajustar saldo.</strong> Acerta o banco de horas manualmente: <strong>Adicionar</strong> ou <strong>Descontar</strong> uma quantidade de horas, sempre com um <strong>motivo</strong>. Também abre dentro do painel do militar, e uma nota mostra como o saldo fica, por exemplo "O saldo passa de 0h para +12h.". Serve para corrigir o saldo quando algo não passou pelo fluxo normal. Muda só o número, não mexe na escala.</p>
               </div>
             </section>
 
@@ -960,7 +1008,7 @@
                   </figcaption>
                 </figure>
                 <p><strong>Inserir na escala.</strong> Enquanto você monta, os extras ficam como <strong>rascunho</strong> e a barra "depois" é só uma prévia. O botão <strong>Inserir na escala</strong> aplica tudo de uma vez, e a escala automática <strong>recalcula</strong> os dias afetados. <strong>Remover</strong> um extra que <strong>já está na escala</strong> e que deixaria um <strong>furo</strong> pede uma <strong>confirmação</strong> antes.</p>
-                <p><strong>O dia por dentro.</strong> Clicar numa célula abre o <strong>painel do dia</strong>. Em <strong>Ver</strong>, ficam os avisos daquele dia, o que o extra <strong>resolveu</strong> e o que <strong>ficou faltando</strong>, e a distribuição já com os extras. Em <strong>Editar</strong>, o mesmo editor da Escala, para acertar o dia manualmente.</p>
+                <p><strong>O dia por dentro.</strong> Clicar numa célula abre o <strong>painel do dia</strong>, com duas abas, só para consultar. Em <strong>Dia</strong>, ficam os avisos daquele dia, o que o extra <strong>resolveu</strong> e o que <strong>ficou faltando</strong>, e a distribuição já com os extras. Em <strong>Extrajornada</strong>, quem está de extra naquele dia e naquela unidade, a mesma aba do painel do dia da Escala. Para acertar a escala do dia manualmente, use o painel do dia na página <strong>Escala</strong>.</p>
               </div>
             </section>
 
@@ -974,7 +1022,7 @@
               <ul class="manual-lista">
                 <li><strong>Efetivo mínimo</strong> (de 0 a 10): quantas pessoas o posto precisa ter ao mesmo tempo. Com menos gente, a Distribuição e a Escala mostram um erro vermelho, e a escala continua sendo montada. Com <strong>mínimo 0</strong>, o posto é uma reserva: pode ficar sem ninguém, sem erro.</li>
                 <li><strong>Efetivo ideal</strong> (de 1 a 10): a quantidade com que o posto trabalha bem, como referência.</li>
-                <li><strong>Efetivo máximo</strong> (de 1 a 10): quantas pessoas o posto comporta. O sistema nunca passa desse número; com o posto cheio, os botões de incluir mais uma função ficam desativados. Para baixar o máximo abaixo das vagas que o posto tem num modelo da Distribuição, tire as vagas lá antes.</li>
+                <li><strong>Efetivo máximo</strong> (de 1 a 10): quantas pessoas o posto comporta. O sistema nunca passa desse número; com o posto cheio, ele não oferece uma função nova nesse posto ao colocar alguém no dia. Para baixar o máximo abaixo das vagas que o posto tem num modelo da Distribuição, tire as vagas lá antes.</li>
               </ul>
               <p><strong>O que o card mostra.</strong> Cada card traz o <strong>estado</strong>, o <strong>período</strong> e o <strong>efetivo</strong>; a viatura mostra também o <strong>prefixo</strong> e a <strong>CNH exigida</strong>. Quando há uma mudança de estado marcada para os próximos dias, ela aparece logo abaixo, como <strong>Inativo a partir de 07/10</strong>.</p>
               <figure class="manual-figura">
@@ -1127,8 +1175,8 @@
               </figure>
               <div class="manual-admin manual-zona-admin">
                 <h3 id="editar-modelos">Editar os modelos <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p><strong>Editar um modelo.</strong> Na lista, cada modelo tem dois ícones: o <strong>lápis</strong>, que abre o modo de edição, e a <strong>lixeira</strong>, que exclui o modelo depois de uma confirmação. Num período que já terminou, os dois ficam inativos. No modo de edição, você clica nas células de <strong>Tipo</strong>, <strong>Antiguidade</strong> e <strong>Grau</strong> para escolher o valor, marca o <strong>Rodízio</strong>, usa <strong>+ Nova função</strong> para incluir uma vaga e o botão de remover para tirar, e <strong>+ Acúmulo</strong> para a mesma pessoa cobrir mais de uma função, entre os postos da própria unidade. Para um militar cobrir uma função em <strong>outra unidade</strong>, use o <strong>Editar</strong> da distribuição do dia, na Escala.</p>
-                <p>Com o posto no efetivo máximo, o <strong>+ Nova função</strong> fica desativado. Um posto com menos pessoas que o efetivo mínimo fica em vermelho, como os demais erros, e a escala automática continua usando o modelo.</p>
+                <p><strong>Editar um modelo.</strong> Na lista, cada modelo tem dois ícones: o <strong>lápis</strong>, que abre o modo de edição, e a <strong>lixeira</strong>, que exclui o modelo depois de uma confirmação. Num período que já terminou, os dois ficam inativos. No modo de edição, você clica nas células de <strong>Tipo</strong>, <strong>Antiguidade</strong> e <strong>Grau</strong> para escolher o valor, marca o <strong>Rodízio</strong>, usa <strong>Nova função</strong> para incluir uma vaga e o botão de remover para tirar, e <strong>Acúmulo</strong> para a mesma pessoa cobrir mais de uma função, entre os postos da própria unidade. Uma pessoa não acumula funções em unidades diferentes; para um militar de <strong>outra unidade</strong> trabalhar aqui num dia, use o <strong>Adicionar militar</strong> do painel do dia, na Escala.</p>
+                <p>Com o posto no efetivo máximo, o <strong>Nova função</strong> fica desativado. Um posto com menos pessoas que o efetivo mínimo fica em vermelho, como os demais erros, e a escala automática continua usando o modelo.</p>
                 <p><strong>Desfazer</strong> e <strong>Refazer</strong> ficam no canto do subcabeçalho, e também respondem a Ctrl+Z e Ctrl+Y. Ao <strong>Salvar</strong>, o sistema avisa que as escalas já montadas serão recalculadas e mostra um resumo do que mudou.</p>
                 <p><strong>Novo modelo.</strong> O botão <strong>Novo modelo</strong>, no rodapé da lista, cria um do zero para a <strong>unidade do filtro</strong>: o espaço à direita pede quantos <strong>oficiais</strong> e <strong>praças</strong> aquele modelo atende. Se a unidade já tem um modelo com esses números, o sistema avisa e abre o que existe. O modelo novo já vem com as vagas do maior modelo da unidade que caiba nele, aparece na hora, e fica de vez quando você clica em Salvar; ao cancelar ou sair sem salvar, ele é descartado. O modelo novo vale em todos os períodos.</p>
                 <p><strong>Editar por período.</strong> A edição vale no período escolhido no seletor. Um período que já terminou fica só para leitura. Num período que ainda vai começar, o Salvar refaz a escala a partir do início dele, sem perguntar a data.</p>
@@ -1138,7 +1186,7 @@
                 <p><strong>Período com erro.</strong> Um período atual ou futuro com erro vermelho gera no sino o aviso <strong>Distribuição com erro</strong>, por exemplo "Distribuição com erro a partir de 03/10/2026 (1ºPEL)". O clique leva à Distribuição, e o aviso some quando o erro é corrigido.</p>
                 <p class="manual-nota"><strong>Um período revisado fica como você deixou.</strong> Enquanto não é revisada, a cópia acompanha as mudanças feitas no período anterior. Depois de revisada, ela só muda quando você a edita, e ao salvar o período anterior o sistema avisa quais períodos seguintes não receberam a mudança.</p>
                 <h3 id="editar-regras">Criar e editar regras <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p>Na aba <strong>Regras</strong>, escolha um militar à esquerda e use <strong>+ Adicionar</strong>, escolhendo a função, ou o botão de remover, nos grupos <strong>Proibidas</strong> e <strong>Exclusivas</strong>. Ao <strong>Salvar</strong>, o sistema grava e já redistribui os dias futuros. Alguns pontos:</p>
+                <p>Na aba <strong>Regras</strong>, escolha um militar à esquerda e use <strong>Adicionar</strong>, escolhendo a função, ou o botão de remover, nos grupos <strong>Proibidas</strong> e <strong>Exclusivas</strong>. Ao <strong>Salvar</strong>, o sistema grava e já redistribui os dias futuros. Alguns pontos:</p>
                 <ul class="manual-lista">
                   <li>No grupo <strong>Exclusivas</strong>, a função <strong>Condutor</strong> aparece só para quem tem <strong>CNH C ou maior</strong>.</li>
                   <li>O <strong>Chefe de Socorro</strong> e o <strong>Oficial de Área</strong> ficam de fora das regras, porque são sempre os mais antigos de serviço.</li>
@@ -1152,7 +1200,7 @@
               <h3 id="ver-efetivo">Ver o efetivo e as fichas</h3>
               <p>A página <strong>Usuários</strong> reúne todo o efetivo. Na aba <strong>Efetivo</strong>, as unidades aparecem em árvore (a companhia e seus pelotões) e, ao abrir uma unidade, os militares dela surgem em <strong>cards</strong>. O número ao lado do título diz quantos estão à vista.</p>
               <p><strong>O card de cada militar.</strong> Traz a abreviação do <strong>grau</strong>, o <strong>nome</strong>, um <strong>identificador</strong> e um <strong>selo de situação</strong>: "Ativo" em verde, ou "Férias", "Licença" e "Dispensa" em âmbar, com a data até quando valem.</p>
-              <p><strong>Ajustar o que aparece.</strong> Dois botões no alto mudam a exibição. O <strong>Exibir</strong> (o olho) escolhe o identificador visível (CPF, RG, telefone ou e-mail), o formato do nome (só o de guerra ou o nome completo com o de guerra em destaque) e liga ou desliga a hierarquia, que é a abreviação do grau.</p>
+              <p><strong>Ajustar o que aparece.</strong> Dois botões na barra logo abaixo das abas, à direita, mudam a exibição. O <strong>Exibir</strong> (o olho) escolhe o identificador visível (CPF, RG, telefone ou e-mail), o formato do nome (só o de guerra ou o nome completo com o de guerra em destaque) e liga ou desliga a hierarquia, que é a abreviação do grau.</p>
               <p>O <strong>Ordem</strong> organiza a lista por <strong>antiguidade</strong> (do mais antigo, o padrão, ou do mais moderno) ou em ordem <strong>alfabética</strong> (de A a Z ou de Z a A). Essas escolhas valem só para você.</p>
               <p><strong>Filtrar e procurar.</strong> Os filtros de <strong>Graus</strong> e <strong>Situação</strong> encolhem a lista ao que interessa, e o funil fica destacado quando algum está ativo. A <strong>busca</strong> tem dois modos, trocados no botão ao lado: <strong>Marcar</strong> realça quem combina com o texto sem esconder os demais, e <strong>Filtrar</strong> deixa à vista só quem combina. Ela procura por nome de guerra, nome completo, CPF ou RG.</p>
               <figure class="manual-figura manual-figura--cheia">
@@ -1194,7 +1242,7 @@
               <p class="manual-nota">Quando o militar foi cadastrado <strong>sem conta de login</strong>, a ficha avisa no topo, com "Sem acesso ao sistema". Ele existe para a escala funcionar, mas não entra em trocas, folgas nem extrajornada enquanto não criar a própria conta.</p>
               <div class="manual-admin manual-zona-admin">
                 <h3 id="cadastrar-efetivo">Cadastrar o efetivo e liberar acesso <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p>Para incluir um militar, abra <strong>Usuários</strong> e clique em <strong>Novo usuário</strong>, no topo da lista. O cadastro abre no painel à direita.</p>
+                <p>Para incluir um militar, abra <strong>Usuários</strong> e clique em <strong>Novo usuário</strong>, no alto da lista, à esquerda. O cadastro abre no painel à direita.</p>
                 <p>Você preenche os <strong>dados pessoais</strong> (nome, CPF, RG, nascimento, CNH e celular) e os <strong>dados institucionais</strong> (tipo, inclusão no quadro, posto ou graduação, nome de guerra, colocação, setor e lotação). Ao escolher o posto, o sistema pede também as <strong>datas de promoção</strong> de cada graduação. Essas datas, a inclusão no quadro e a colocação definem a posição do militar na <strong>antiguidade</strong>, que o sistema calcula sozinho.</p>
                 <p class="manual-nota"><strong>Inclusão no quadro:</strong> a data de entrada no quadro atual do militar, de praças ou de oficiais, e não a de entrada na corporação. Ela vai até o dia da primeira promoção do quadro.</p>
                 <p>O <strong>e-mail é opcional</strong>: a ficha pode existir só para a escala funcionar, e o militar informa o próprio e-mail quando for criar o acesso.</p>
@@ -1317,9 +1365,9 @@
               <p class="manual-nota">A página é de consulta. O motivo de uma licença ou dispensa fica só com o administrador.</p>
               <div class="manual-admin manual-zona-admin">
                 <h3 id="registrar-afastamento">Registrar um afastamento <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p>O botão no topo (<strong>Novas férias</strong>, <strong>Nova licença</strong> ou <strong>Nova dispensa</strong>, conforme a aba) abre o painel. Em todos você escolhe a <strong>unidade</strong>, o <strong>militar</strong> e o <strong>período</strong>. As férias param por aí. A <strong>licença</strong> pede ainda o <strong>tipo</strong> (própria saúde, saúde de familiar, interesses particulares, especial ou capacitação). A <strong>dispensa</strong> pede o <strong>tipo</strong> (gala, nojo ou comum). Licença e dispensa aceitam também um <strong>motivo</strong>.</p>
+                <p>O botão no alto da lista, à esquerda (<strong>Novas férias</strong>, <strong>Nova licença</strong> ou <strong>Nova dispensa</strong>, conforme a aba), abre o painel. Em todos você escolhe a <strong>unidade</strong>, o <strong>militar</strong> e o <strong>período</strong>. As férias param por aí. A <strong>licença</strong> pede ainda o <strong>tipo</strong> (própria saúde, saúde de familiar, interesses particulares, especial ou capacitação). A <strong>dispensa</strong> pede o <strong>tipo</strong> (gala, nojo ou comum). Licença e dispensa aceitam também um <strong>motivo</strong>.</p>
                 <p><strong>Dentro ou fora do fluxo da escala.</strong> Ao preencher o período de uma licença ou dispensa, aparece um indicador com os <strong>dias</strong> e uma sugestão: até 15 dias, "Segue no fluxo"; de 16 em diante, "Fora do fluxo". Quem decide é você, no botão <strong>Tirar do fluxo da escala?</strong>, com Sim ou Não.</p>
-                <p>Fora do fluxo, o militar sai do ciclo por tempo indeterminado, e você o traz de volta pelo <strong>Adicionar</strong> da aba Contínuos quando for o caso; seguindo no fluxo, ele continua no ciclo e só os dias do afastamento saem da escala. As férias afastam o militar da escala no período.</p>
+                <p>Fora do fluxo, o militar sai do ciclo por tempo indeterminado, e você o traz de volta pelo <strong>Adicionar</strong> da aba Ciclo quando for o caso; seguindo no fluxo, ele continua no ciclo e só os dias do afastamento saem da escala. As férias afastam o militar da escala no período.</p>
                 <figure class="manual-figura">
                   <img src="manual/imagens/afastamentos-nova-licenca.png" alt="O painel Nova licença: o Tipo de licença (1) e o indicador com os dias e o botão Tirar do fluxo da escala Sim ou Não (2)." />
                   <figcaption>
@@ -1396,7 +1444,7 @@
                     </ol>
                   </figcaption>
                 </figure>
-                <p>Duas pendências <strong>não levam a outra tela</strong>, e sim <strong>listam os itens</strong> ali mesmo, para você consertar como quiser: <strong>Operacional lotado sem ciclo na escala</strong> mostra os militares lotados sem ciclo, para acertar pelo Contínuos, e <strong>Viaturas em manutenção</strong> mostra as viaturas paradas, para você reorganizar o dia na Escala ou, em Postos, encerrar a manutenção ou deixar a viatura Inativa. É a mesma lista que abastece o "Precisa de você" da aba Para mim, com o que é seu.</p>
+                <p>Duas pendências <strong>não levam a outra tela</strong>, e sim <strong>listam os itens</strong> ali mesmo, para você consertar como quiser: <strong>Operacional lotado sem ciclo na escala</strong> mostra os militares lotados sem ciclo, para acertar pela aba Ciclo, e <strong>Viaturas em manutenção</strong> mostra as viaturas paradas, para você reorganizar o dia na Escala ou, em Postos, encerrar a manutenção ou deixar a viatura Inativa. É a mesma lista que abastece o "Precisa de você" da aba Para mim, com o que é seu.</p>
                 <p>Duas pendências levam direto à <strong>Distribuição</strong>: <strong>Distribuição a revisar</strong>, quando uma mudança de posto abriu um período que ainda precisa de revisão, e <strong>Distribuição com erro</strong>, quando um período atual ou futuro tem erro vermelho. Essas duas e as duas de cima também aparecem no <strong>sino</strong>, com a bolinha amarela ou vermelha conforme a gravidade.</p>
                 <p><strong>Criar um comunicado.</strong> Na aba <strong>Comunicados</strong>, o botão <strong>Novo comunicado</strong> abre o painel. No topo você escolhe o <strong>destinatário</strong>: <strong>Unidades</strong> (na árvore, e uma unidade alcança as de baixo), <strong>Militares</strong> (da lista, com busca) ou <strong>Todos</strong>. Abaixo vêm o <strong>título</strong> e a <strong>mensagem</strong>. Ao <strong>Salvar</strong>, o comunicado é publicado e passa a aparecer no mural para quem ele alcança.</p>
                 <figure class="manual-figura">

@@ -92,11 +92,18 @@
       .catch(function () { return null; });
   }
 
-  /* grava os ajustes do dia (lista de Colocar/Tirar) na escalas_manuais via RPC.
+  /* prévia do Editar do Dia (RPC escala_dia_simular): o dia como ficaria com o rascunho
+     {ajustes, pontuais?, folgas}; pontuais e folgas entram num ensaio no banco (nada é gravado) */
+  function simularDia(unidadeId, iso, rascunho) {
+    return RosterWork.apiFetch('/rest/v1/rpc/escala_dia_simular', { metodo: 'POST', corpo: { p_unidade_id: Number(unidadeId), p_data: iso, p_rascunho: rascunho || {} } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; });
+  }
+  /* Salvar do Editar do Dia (RPC escala_dia_salvar): pontuais, folgas e funções num salvamento só.
      Resolve no objeto da RPC ({success,log}) ou num marcador de falha:
      { _falha: 'conexao' } (sem rede) | { _falha: 'servidor' } (HTTP não-ok). */
-  function salvarAjustesDia(contextoId, iso, ajustes) {
-    return RosterWork.apiFetch('/rest/v1/rpc/salvar_ajustes_dia', { metodo: 'POST', corpo: { p_contexto_id: Number(contextoId), p_data: iso, p_ajustes: ajustes || [] } })
+  function salvarDia(unidadeId, iso, rascunho) {
+    return RosterWork.apiFetch('/rest/v1/rpc/escala_dia_salvar', { metodo: 'POST', corpo: { p_unidade_id: Number(unidadeId), p_data: iso, p_rascunho: rascunho || {} } })
       .then(function (r) { return r.ok ? r.json() : { _falha: 'servidor' }; })
       .catch(function () { return { _falha: 'conexao' }; });
   }
@@ -123,44 +130,28 @@
       .catch(function () { return { _falha: 'conexao' }; });
   }
 
-  /* ---- Pontuais (militar avulso no dia) ---- */
-  function pontuaisListar(unidadeId, iso) {
-    return RosterWork.apiFetch('/rest/v1/rpc/escala_pontuais_listar', { metodo: 'POST', corpo: { p_unidade_id: Number(unidadeId), p_data: iso } })
+  /* ---- Extrajornada do dia (aba do painel do dia): quem tira extra nesta unidade ---- */
+  function extraDia(unidadeId, iso) {
+    return RosterWork.apiFetch('/rest/v1/rpc/extra_dia_listar', { metodo: 'POST', corpo: { p_unidade_id: Number(unidadeId), p_data: iso } })
       .then(function (r) { return r.ok ? r.json() : null; })
       .catch(function () { return null; });
   }
-  function pontuaisSalvar(unidadeId, iso, entradas) {
-    return RosterWork.apiFetch('/rest/v1/rpc/escala_pontuais_salvar', { metodo: 'POST', corpo: { p_unidade_id: Number(unidadeId), p_data: iso, p_entradas: entradas || [] } })
-      .then(function (r) { return r.ok ? r.json() : { _falha: 'servidor' }; })
-      .catch(function () { return { _falha: 'conexao' }; });
-  }
 
-  /* ---- nota da manutenção (editada inline no painel do dia) ---- */
-  function atualizarManutencaoObs(manutencaoId, obs) {
-    return RosterWork.apiFetch('/rest/v1/rpc/atualizar_manutencao_observacao', { metodo: 'POST', corpo: { p_manutencao_id: manutencaoId, p_observacao: obs || '' } })
-      .then(function (r) { return r.ok ? r.json() : { _falha: 'servidor' }; })
-      .catch(function () { return { _falha: 'conexao' }; });
-  }
-
-  /* ---- observações manuais do admin no dia (Editar) ---- */
-  function observacaoAdicionar(unidadeId, iso, texto) {
-    return RosterWork.apiFetch('/rest/v1/rpc/escala_observacao_adicionar', { metodo: 'POST', corpo: { p_unidade_id: Number(unidadeId), p_data: iso, p_texto: texto || '' } })
-      .then(function (r) { return r.ok ? r.json() : { _falha: 'servidor' }; })
-      .catch(function () { return { _falha: 'conexao' }; });
-  }
-  function observacaoRemover(id) {
-    return RosterWork.apiFetch('/rest/v1/rpc/escala_observacao_remover', { metodo: 'POST', corpo: { p_id: id } })
-      .then(function (r) { return r.ok ? r.json() : { _falha: 'servidor' }; })
-      .catch(function () { return { _falha: 'conexao' }; });
+  /* quem pode entrar no dia como pontual (RPC escala_dia_disponiveis): de folga na unidade buscada (e nas de
+     baixo dela), sem serviço e sem afastamento; "assume" = vira o Chefe de Socorro / Oficial de Área.
+     null em falha */
+  function disponiveis(unidadeId, iso, unidadeBusca) {
+    return RosterWork.apiFetch('/rest/v1/rpc/escala_dia_disponiveis', { metodo: 'POST', corpo: { p_unidade_id: Number(unidadeId), p_data: iso, p_unidade_busca: Number(unidadeBusca) } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; });
   }
 
   window.RosterWork.escalasDados = {
     carregar: carregar, carregarMilitares: carregarMilitares, lerMilitarDia: lerMilitarDia,
-    lerDistribuicaoDia: lerDistribuicaoDia, lerAlteracoesDia: lerAlteracoesDia, salvarAjustesDia: salvarAjustesDia,
+    lerDistribuicaoDia: lerDistribuicaoDia, lerAlteracoesDia: lerAlteracoesDia, simularDia: simularDia, salvarDia: salvarDia,
     lerImpressao: lerImpressao, lerImpressaoErros: lerImpressaoErros,
     continuosListar: continuosListar, cicloRetirarAnalisar: cicloRetirarAnalisar, cicloSalvarLote: cicloSalvarLote,
-    pontuaisListar: pontuaisListar, pontuaisSalvar: pontuaisSalvar,
-    atualizarManutencaoObs: atualizarManutencaoObs,
-    observacaoAdicionar: observacaoAdicionar, observacaoRemover: observacaoRemover
+    extraDia: extraDia,
+    disponiveis: disponiveis
   };
 })();

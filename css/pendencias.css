@@ -1,0 +1,94 @@
+/* ============================================================
+   PENDÊNCIAS — o que espera decisão, num lugar só
+   Duas abas (Para mim · Administração), cada uma na coluna de
+   leitura (720px). As listas são a fila do componente geral-fila
+   (.pedido-lista com o cartão .pedido--linha, que abre o painel de
+   decisão; as seções são .pedido-secoes/.pedido-secao). Aqui: os
+   cartões "Para corrigir".
+   ============================================================ */
+
+/* ---------- "Para corrigir" ---------- */
+/* o que leva à tela do conserto (ex.: a Distribuição a revisar) */
+.pendencias-corrigir {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 12px;
+  text-align: left;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-superficie);
+  transition: background-color 0.15s ease;
+}
+
+button.pendencias-corrigir:hover {
+  background-color: var(--fundo-suave);
+}
+
+.pendencias-corrigir-contagem {
+  flex-shrink: 0;
+}
+
+.pendencias-corrigir-texto {
+  font-size: 13px;
+  color: var(--texto-forte);
+}
+
+.pendencias-corrigir-seta {
+  flex-shrink: 0;
+  color: var(--texto-fraco);
+}
+
+/* fora da escala e viaturas em manutenção: a contagem em cima e a lista embaixo (não navegam) */
+.pendencias-corrigir--lista {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.pendencias-corrigir-cab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pendencias-corrigir-itens {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0 0 0 8px;
+  list-style: none;
+}
+
+.pendencias-corrigir-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-height: 24px;
+}
+
+.pendencias-corrigir-grad {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+.pendencias-corrigir-nome {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--texto-forte);
+}
+
+.pendencias-corrigir-desde {
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+.pendencias-corrigir-unidade {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--texto-suave);
+}

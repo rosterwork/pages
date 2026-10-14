@@ -3,20 +3,28 @@
     <div class="pagina-titulos">
       <h1>Folgas</h1>
     </div>
-    <span class="espacador-flex"></span>
-    <button type="button" class="botao botao--primario" id="btn-solicitar-folga">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-mais.svg#icone-mais"/></svg>
-      <span>Solicitar folga</span>
-    </button>
     <div class="abas" id="folgas-abas">
       <button type="button" class="aba aba--ativa" data-aba="minhas">Minhas folgas</button>
       <button type="button" class="aba" data-aba="equipe">Equipe</button>
-      <button type="button" class="aba oculto" data-aba="aprovacoes" id="folgas-aba-aprovacoes">Aprovações</button>
+      <!-- só administrador: os pedidos de folga para aprovar (a mesma fila da página Pendências) -->
+      <button type="button" class="aba oculto" data-aba="pendencias" id="folgas-aba-pendencias">
+        <span>Pendências</span>
+        <span class="selo aba-contagem oculto" id="folgas-pendencias-contagem"></span>
+      </button>
     </div>
   </div>
 
-  <!-- barra sempre presente (os controles da aba Equipe moram nela): o conteúdo não "pula" ao trocar de aba -->
+  <!-- barra sempre presente: à esquerda a ação da aba (Minhas folgas: Solicitar folga; Equipe: Dar folga),
+       à direita os controles da Equipe; o conteúdo não "pula" ao trocar de aba -->
   <div class="pagina-subcabecalho">
+    <button type="button" class="botao botao--primario" id="btn-solicitar-folga">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-folgas.svg#icone-folgas"/></svg>
+      <span>Solicitar folga</span>
+    </button>
+    <button type="button" class="botao botao--primario oculto" id="btn-dar-folga">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-folgas.svg#icone-folgas"/></svg>
+      <span>Dar folga</span>
+    </button>
     <span class="espacador-flex"></span>
 
     <!-- controles da aba Equipe: alternância Saldos/Histórico + busca + período -->
@@ -59,8 +67,10 @@
     </div>
     <!-- Equipe · Histórico (todas as folgas) -->
     <div class="pagina-corpo-rolagem oculto folgas-lista" data-aba-painel="equipe-historico" id="folgas-historico"></div>
-    <!-- Aprovações (fila de pedidos) -->
-    <div class="pagina-corpo-rolagem oculto folgas-lista" data-aba-painel="aprovacoes" id="folgas-aprovacoes"></div>
+    <!-- Pendências (os pedidos de folga para aprovar; componente geral-fila) -->
+    <div class="pagina-corpo-rolagem oculto" data-aba-painel="pendencias">
+      <div class="pedido-lista coluna-leitura" id="folgas-pendencias"></div>
+    </div>
   </div>
 </div>
 
@@ -96,7 +106,7 @@
   </div>
 </template>
 
-<!-- molde: linha de lista (Aprovações e Histórico) -->
+<!-- molde: linha de lista (Histórico) -->
 <template id="tpl-folga-linha">
   <div class="folga-linha" role="button" tabindex="0">
     <span class="folga-linha-textos">
@@ -108,27 +118,6 @@
   </div>
 </template>
 
-<!-- molde: botões de decisão do admin numa solicitação (Recusar / Aprovar) -->
-<!-- molde: detalhe da folga no painel de aprovação (militar + linhas + análise de impacto) -->
-<template id="tpl-folga-detalhe">
-  <div class="folga-aprov-detalhe">
-    <div class="folga-aprov-secao">
-      <span class="rotulo-secao">Folga solicitada</span>
-      <span class="folga-aprov-nome" data-nome></span>
-      <div class="folga-aprov-linhas" data-linhas></div>
-    </div>
-    <div class="folga-aprov-secao oculto" data-secao-analise>
-      <span class="rotulo-secao">Análise de impacto</span>
-      <div class="impacto-analise" data-analise></div>
-    </div>
-  </div>
-</template>
-
-<!-- molde: ações do painel de aprovação (rodapé) -->
-<template id="tpl-folga-aprovacao-acoes">
-  <button type="button" class="botao botao--perigo" data-acao="recusar">Recusar</button>
-  <button type="button" class="botao botao--primario" data-acao="aprovar">Aprovar</button>
-</template>
 
 <!-- molde: lista vazia (texto preenchido pelo JS) -->
 <template id="tpl-folga-lista-vazio">
@@ -189,48 +178,104 @@
   </div>
 </template>
 
-<!-- molde: formulário de folga (solicitar / conceder) -->
+<!-- molde: as sub-telas do painel do militar (conceder folga, ajustar saldo) voltam às ações -->
+<template id="tpl-folga-voltar">
+  <button type="button" class="botao botao--texto subtela-voltar">
+    <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-esquerda.svg#icone-seta-esquerda"/></svg>
+    <span>Voltar às ações</span>
+  </button>
+</template>
+
+<!-- molde: formulário de folga (solicitar / conceder / dar), no padrão de sub-tela (geral-subtela):
+     o título e o saldo vêm do JS; o Quem só aparece no Dar folga; os números das seções vêm do JS
+     (contam só as que aparecem); o período (Serviço inteiro / Parte do serviço) vem do componente geral-horario -->
 <template id="tpl-folga-form">
-  <div class="folga-form">
-    <label class="campo">
-      <span class="campo-rotulo">Dia da folga</span>
-      <input type="text" class="campo-entrada" id="ff-data" readonly placeholder="Escolher dia" />
-      <span class="campo-erro-texto"></span>
-    </label>
-    <div class="campo">
-      <span class="campo-rotulo">Período</span>
-      <div id="ff-barra"></div>
+  <div class="subtela folga-form">
+    <div class="subtela-cab">
+      <span class="subtela-titulo folga-form-titulo"></span>
+      <span class="subtela-subtitulo folga-form-saldo"></span>
     </div>
-    <div class="folga-form-consumo" id="ff-consumo"></div>
-    <label class="campo">
-      <span class="campo-rotulo">Motivo</span>
-      <input type="text" class="campo-entrada" id="ff-motivo" maxlength="120" placeholder="Ex.: assunto particular" />
-      <span class="campo-erro-texto"></span>
-    </label>
+    <div class="grupo-caixa folga-form-secao folga-form-quem oculto">
+      <span class="rotulo-secao"><span class="folga-form-num"></span>. Quem</span>
+      <div class="busca">
+        <span class="busca-modo" aria-hidden="true">
+          <svg class="icone" width="16" height="16"><use href="icones/icone-pesquisar.svg#icone-pesquisar"/></svg>
+        </span>
+        <input type="text" class="busca-entrada" id="ff-busca" maxlength="60" placeholder="Pesquisar militar" aria-label="Pesquisar militar" />
+      </div>
+      <div class="folga-form-militares"></div>
+    </div>
+    <div class="grupo-caixa folga-form-secao">
+      <span class="rotulo-secao"><span class="folga-form-num"></span>. Dia</span>
+      <label class="campo">
+        <input type="text" class="campo-entrada" id="ff-data" readonly placeholder="Escolher dia" aria-label="Dia da folga" />
+        <span class="campo-erro-texto"></span>
+      </label>
+      <span class="subtela-ajuda oculto" id="ff-servico"></span>
+    </div>
+    <div class="grupo-caixa folga-form-secao">
+      <span class="rotulo-secao"><span class="folga-form-num"></span>. Período</span>
+      <div id="ff-periodo"></div>
+    </div>
+    <div class="grupo-caixa folga-form-secao">
+      <span class="rotulo-secao"><span class="folga-form-num"></span>. Motivo</span>
+      <label class="campo">
+        <input type="text" class="campo-entrada" id="ff-motivo" maxlength="120" placeholder="Ex.: assunto particular" aria-label="Motivo" />
+        <span class="campo-erro-texto"></span>
+      </label>
+    </div>
+    <div class="nota oculto" id="ff-consumo">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+      <span class="nota-texto"></span>
+    </div>
   </div>
+</template>
+
+<!-- molde: um militar do Quem (Dar folga): graduação, nome e o saldo; o escolhido fica marcado -->
+<template id="tpl-folga-form-militar">
+  <button type="button" class="lista-item lista-item--clicavel folga-form-militar">
+    <span class="folga-form-militar-grad"></span>
+    <span class="folga-form-militar-nome"></span>
+    <span class="espacador-flex"></span>
+    <span class="selo folga-form-militar-saldo"></span>
+  </button>
+</template>
+
+<!-- molde: o Quem sem militar para mostrar (o texto vem do JS) -->
+<template id="tpl-folga-form-vazio">
+  <span class="folga-form-vazio"></span>
 </template>
 
 <!-- molde: formulário de ajuste de saldo (adicionar / descontar, com motivo) -->
 <template id="tpl-folga-form-ajuste">
-  <div class="folga-form">
-    <div class="campo">
-      <span class="campo-rotulo">Tipo de ajuste</span>
+  <div class="subtela folga-form">
+    <div class="subtela-cab">
+      <span class="subtela-titulo">Ajustar saldo</span>
+      <span class="subtela-subtitulo folga-form-saldo"></span>
+    </div>
+    <div class="grupo-caixa">
+      <span class="rotulo-secao">1. Ajuste</span>
       <div class="abas abas--seletor" id="fa-tipo">
         <button type="button" class="aba aba--ativa" data-tipo="adicionar">Adicionar (+)</button>
         <button type="button" class="aba" data-tipo="descontar">Descontar (−)</button>
       </div>
+      <label class="campo">
+        <span class="campo-rotulo">Horas</span>
+        <input type="text" class="campo-entrada" id="fa-horas" inputmode="decimal" maxlength="6" placeholder="Ex.: 12" />
+        <span class="campo-erro-texto"></span>
+      </label>
     </div>
-    <label class="campo">
-      <span class="campo-rotulo">Horas</span>
-      <input type="text" class="campo-entrada" id="fa-horas" inputmode="decimal" maxlength="6" placeholder="Ex.: 12" />
-      <span class="campo-erro-texto"></span>
-    </label>
-    <div class="folga-form-consumo" id="fa-previa"></div>
-    <label class="campo">
-      <span class="campo-rotulo">Motivo</span>
-      <input type="text" class="campo-entrada" id="fa-motivo" maxlength="120" placeholder="Ex.: limpou o quartel dia 26/05" />
-      <span class="campo-erro-texto"></span>
-    </label>
+    <div class="grupo-caixa">
+      <span class="rotulo-secao">2. Motivo</span>
+      <label class="campo">
+        <input type="text" class="campo-entrada" id="fa-motivo" maxlength="120" placeholder="Ex.: limpou o quartel dia 26/05" aria-label="Motivo" />
+        <span class="campo-erro-texto"></span>
+      </label>
+    </div>
+    <div class="nota oculto" id="fa-previa">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-folgas.svg#icone-folgas"/></svg>
+      <span class="nota-texto"></span>
+    </div>
   </div>
 </template>
 

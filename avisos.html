@@ -4,42 +4,28 @@
       <h1>Avisos</h1>
       <span class="pagina-titulo-contagem" id="avisos-contagem"></span>
     </div>
-    <span class="espacador-flex"></span>
-    <button type="button" class="botao oculto" id="avisos-marcar-lidas">Marcar todas como lidas</button>
-    <button type="button" class="botao botao--primario oculto" id="btn-novo-aviso-pagina">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-mais.svg#icone-mais"/></svg>
-      <span>Novo comunicado</span>
-    </button>
     <div class="abas" id="avisos-abas">
       <button type="button" class="aba aba--ativa" data-aba="paramim">Para mim</button>
-      <button type="button" class="aba oculto" data-aba="administracao" id="avisos-aba-administracao">
-        <span>Administração</span>
-        <span class="selo aba-contagem oculto" id="avisos-administracao-contagem"></span>
-      </button>
       <button type="button" class="aba" data-aba="comunicados">Comunicados</button>
     </div>
   </div>
 
+  <!-- barra de comandos: à esquerda a ação da aba (Para mim: Marcar todas como lidas; Comunicados: Novo comunicado, só admin) -->
+  <div class="pagina-subcabecalho">
+    <button type="button" class="botao botao--primario oculto" id="btn-novo-aviso-pagina">Novo comunicado</button>
+    <button type="button" class="botao oculto" id="avisos-marcar-lidas">Marcar todas como lidas</button>
+  </div>
   <div class="pagina-corpo">
-    <!-- o que é seu: primeiro o que espera você, depois o que já aconteceu -->
-    <div class="avisos-aba" data-aba-painel="paramim">
-      <div class="avisos-secao">
-        <span class="rotulo-secao">Precisa de você</span>
-        <div class="avisos-lista" id="avisos-minhas-pendencias"></div>
-      </div>
+    <!-- o que aconteceu com você (o que espera decisão fica na página Pendências) -->
+    <div class="avisos-aba coluna-leitura" data-aba-painel="paramim">
       <div class="avisos-secao">
         <span class="rotulo-secao">Histórico</span>
         <div class="avisos-lista" id="avisos-notificacoes"></div>
       </div>
     </div>
 
-    <!-- só administrador: o que espera a decisão dele -->
-    <div class="avisos-aba oculto" data-aba-painel="administracao">
-      <div class="avisos-lista" id="avisos-pendencias"></div>
-    </div>
-
     <!-- o mural: os comunicados que alcançam você -->
-    <div class="avisos-aba oculto" data-aba-painel="comunicados">
+    <div class="avisos-aba coluna-leitura oculto" data-aba-painel="comunicados">
       <div class="avisos-lista" id="avisos-lista"></div>
     </div>
   </div>
@@ -81,52 +67,6 @@
       <span class="espacador-flex"></span>
       <span class="avisos-notificacao-hora"></span>
     </button>
-  </template>
-
-  <!-- molde: uma pendência (o que espera decisão) -->
-  <template id="tpl-avisos-pendencia">
-    <button type="button" class="avisos-pendencia">
-      <span class="selo selo--alerta avisos-pendencia-contagem"></span>
-      <span class="avisos-pendencia-texto"></span>
-      <span class="espacador-flex"></span>
-      <svg class="icone avisos-pendencia-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
-    </button>
-  </template>
-
-  <!-- pendência "operacional fora da escala": cabeçalho + a lista de nomes (não navega — o conserto é no Contínuos) -->
-  <template id="tpl-avisos-pendencia-fora">
-    <div class="avisos-pendencia avisos-pendencia--fora">
-      <div class="avisos-pendencia-cab">
-        <span class="selo selo--alerta avisos-pendencia-contagem"></span>
-        <span class="avisos-pendencia-texto"></span>
-      </div>
-      <ul class="avisos-fora-lista"></ul>
-    </div>
-  </template>
-  <template id="tpl-avisos-fora-item">
-    <li class="avisos-fora-item">
-      <span class="avisos-fora-grad"></span>
-      <span class="avisos-fora-nome"></span>
-      <span class="avisos-fora-unidade"></span>
-    </li>
-  </template>
-
-  <!-- pendência "viaturas em manutenção": cabeçalho + a lista de viaturas (não navega — o conserto é na Escala/Distribuição) -->
-  <template id="tpl-avisos-pendencia-manutencao">
-    <div class="avisos-pendencia avisos-pendencia--manut">
-      <div class="avisos-pendencia-cab">
-        <span class="selo selo--alerta avisos-pendencia-contagem"></span>
-        <span class="avisos-pendencia-texto"></span>
-      </div>
-      <ul class="avisos-manut-lista"></ul>
-    </div>
-  </template>
-  <template id="tpl-avisos-manut-item">
-    <li class="avisos-manut-item">
-      <span class="avisos-manut-viatura"></span>
-      <span class="avisos-manut-desde">desde <span class="avisos-manut-data"></span></span>
-      <span class="avisos-manut-unidade"></span>
-    </li>
   </template>
 
   <template id="tpl-avisos-vazio">

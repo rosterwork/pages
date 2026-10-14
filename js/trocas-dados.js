@@ -18,9 +18,9 @@
     militares: function (unidadeId, dia, hi, hf) { return RosterWork.rpc('fn_trocas_listar_militares', { p_unidade_id: unidadeId, p_data: dia || null, p_hi: hi || null, p_hf: hf || null }); },
     meusServicos: function (cpf, contextoId) { return RosterWork.rpc('fn_trocas_meus_servicos', { p_cpf: cpf, p_contexto_id: contextoId }); },
     solicitar: function (corpo) { return RosterWork.rpc('fn_trocas_solicitar', corpo); },
-    confirmar: function (trocaId, aceitar) { return RosterWork.rpc('fn_trocas_confirmar', { p_troca_id: trocaId, p_aceitar: aceitar }); },
+    confirmar: function (trocaId, aceitar, motivo) { return RosterWork.rpc('fn_trocas_confirmar', { p_troca_id: trocaId, p_aceitar: aceitar, p_motivo: motivo || null }); },
     /* forcar (só admin): aprova direto de "aguardando confirmação", sem o solicitado confirmar */
-    aprovar: function (trocaId, aceitar, forcar) { return RosterWork.rpc('fn_trocas_aprovar', { p_troca_id: trocaId, p_aceitar: aceitar, p_forcar: !!forcar }); },
+    aprovar: function (trocaId, aceitar, forcar, motivo) { return RosterWork.rpc('fn_trocas_aprovar', { p_troca_id: trocaId, p_aceitar: aceitar, p_forcar: !!forcar, p_motivo: motivo || null }); },
     cancelar: function (trocaId, desfazer) { return RosterWork.rpc('fn_trocas_cancelar', { p_troca_id: trocaId, p_desfazer: !!desfazer }); },
     /* saldo líquido de horas entre o logado e outroCpf (> 0 = o outro me deve; < 0 = eu devo) */
     saldoEntre: function (outroCpf) { return RosterWork.rpc('fn_trocas_saldo_entre', { p_outro_cpf: outroCpf }); },
@@ -60,11 +60,6 @@
 
   function nomeMilitar(grau, nome) { return ((grau || '') + ' ' + (nome || '')).trim(); }
 
-  function horario(troca) {
-    if (!troca.horario_inicio || !troca.horario_fim) return RW.mensagens.trocas.servicoTotal;
-    return RW.mensagens.trocas.faixaHorario(troca.horario_inicio, troca.horario_fim);
-  }
-
   /* "Serviço 12/07 · 24h" — linha de apoio na lista */
   function metaLista(troca) {
     var m = RW.mensagens.trocas;
@@ -94,7 +89,6 @@
     dataCurta: dataCurta,
     dataNumerica: dataNumerica,
     nomeMilitar: nomeMilitar,
-    horario: horario,
     metaLista: metaLista,
     situacao: situacao
   };

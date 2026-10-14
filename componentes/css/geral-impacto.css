@@ -1,41 +1,16 @@
 /* ---------- ANÁLISE DE IMPACTO NA ESCALA (componente compartilhado) ----------
-   Usado no painel de detalhe das Trocas e das Folgas: a faixa de veredito
-   (verde/amarelo/vermelho), a lista de avisos e as linhas "antes → depois". */
+   O resultado do ensaio no painel de decisão (Trocas e Folgas): uma nota
+   por ponto (geral-nota), empilhadas.
+   O aviso avulso (.impacto-aviso) serve à Impressão e ao saldo do
+   Solicitar troca. */
 
 .impacto-analise {
   display: flex;
   flex-direction: column;
+  gap: 12px;
 }
 
-/* faixa de veredito */
-.impacto-veredito {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 36px;
-  padding: 8px 12px;
-  border-radius: var(--raio-medio);
-  font-size: 13px;
-  font-weight: 500;
-  margin-bottom: 8px;
-}
-
-.impacto-veredito--ok {
-  background-color: var(--sucesso-fundo);
-  color: var(--sucesso);
-}
-
-.impacto-veredito--alerta {
-  background-color: var(--alerta-fundo);
-  color: var(--alerta);
-}
-
-.impacto-veredito--problema {
-  background-color: var(--erro-fundo);
-  color: var(--erro);
-}
-
-/* um aviso (problema ou alerta) */
+/* ---------- aviso avulso (Impressão, saldo do Solicitar troca) ---------- */
 .impacto-aviso {
   display: flex;
   align-items: flex-start;
@@ -77,47 +52,4 @@
   font-size: 12px;
   color: var(--texto-suave);
   line-height: 1.4;
-}
-
-/* antes/depois de um posto afetado */
-.impacto-antesdepois {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  min-height: 32px;
-  margin-top: 8px;
-  padding: 8px 12px;
-  border: 1px solid var(--borda);
-  border-radius: var(--raio-medio);
-}
-
-.impacto-ad-rotulo {
-  font-size: 12px;
-  color: var(--texto-suave);
-}
-
-.impacto-ad-valores {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 13px;
-}
-
-.impacto-ad-valores .icone {
-  color: var(--texto-fraco);
-}
-
-.impacto-ad-de {
-  color: var(--texto-suave);
-  text-decoration: line-through;
-}
-
-.impacto-ad-para {
-  font-weight: 500;
-  color: var(--texto-forte);
-}
-
-.impacto-ad-para--vago {
-  color: var(--erro);
 }

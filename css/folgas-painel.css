@@ -1,6 +1,7 @@
 /* ============================================================
    FOLGAS — conteúdo da gaveta (painel lateral): extrato do militar
-   e os formulários (solicitar / dar folga / ajuste de saldo).
+   e a aba Ações. Os formulários (solicitar / conceder / ajustar) usam
+   os componentes geral-subtela, geral-horario e geral-nota.
    Só variáveis do tema; medidas das escalas do MANUAL.
    ============================================================ */
 
@@ -80,20 +81,6 @@
   flex-shrink: 0;
 }
 
-/* formulários (solicitar / dar / ajuste) */
-.folga-form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.folga-form-consumo {
-  font-size: 12px;
-  color: var(--texto-suave);
-}
-.folga-form-consumo--alerta {
-  color: var(--alerta);
-}
-
 /* aba Ações do painel (gestor) */
 .folga-acoes {
   display: flex;
@@ -102,4 +89,35 @@
 }
 .folga-acoes-btn {
   width: 100%;
+}
+
+/* Dar folga › Quem: a busca na largura toda e a lista dos militares (casca .lista-item, geral-lista) */
+.folga-form-quem .busca {
+  width: 100%;
+}
+.folga-form-militares {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 224px;
+  overflow-y: auto;
+}
+.folga-form-militar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+  padding: 0 8px;
+  font-size: 13px;
+  text-align: left;
+  color: var(--texto);
+}
+.folga-form-militar-grad {
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+.folga-form-vazio {
+  padding: 8px;
+  font-size: 12px;
+  color: var(--texto-fraco);
 }

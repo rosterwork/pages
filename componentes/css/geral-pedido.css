@@ -1,8 +1,9 @@
 /* ============================================================
    CARTÃO DE PEDIDO — uma solicitação com várias alterações dentro
-   Usado em duas telas: "Meu perfil › Minhas solicitações" (só
-   leitura, com o selo da situação) e "Usuários › Correções"
-   (a fila do admin, cada linha selecionável + "Selecionar tudo").
+   Usado em "Meu perfil › Minhas solicitações" (só leitura, com o
+   selo da situação) e "Usuários › Correções" (a fila do admin,
+   cada linha selecionável + "Selecionar tudo"); a variante
+   .pedido--linha é o cartão clicável da Pendências.
    Por ser compartilhado, mora em componentes/ e os moldes ficam
    no shell (index.html). MANUAL-VISUAL §11.
    ============================================================ */
@@ -116,6 +117,57 @@ button.pedido-item:hover {
 
 .pedido-item-status {
   flex-shrink: 0;
+}
+
+/* ---------- seções de uma fila (Pendências e a aba Pendências da Trocas) ----------
+   As seções empilhadas (ex.: "Esperando sua resposta" e "Para aprovar"),
+   cada uma com o rótulo e a lista dela. */
+.pedido-secoes {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.pedido-secao {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ---------- um pedido numa linha (Pendências) ----------
+   O cartão inteiro é o botão que abre o painel de decisão: o ícone do
+   tipo, quem e o quê, o selo do resultado da análise e a seta. */
+.pedido--linha {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  transition: background-color 0.15s ease;
+}
+
+.pedido--linha:hover {
+  background-color: var(--fundo-suave);
+}
+
+/* o pedido aberto no painel */
+.pedido--selecionado,
+.pedido--selecionado:hover {
+  background-color: var(--fundo-medio);
+}
+
+.pedido-linha-icone {
+  flex-shrink: 0;
+  color: var(--texto-suave);
+}
+
+.pedido-linha-selo {
+  flex-shrink: 0;
+}
+
+.pedido-linha-seta {
+  flex-shrink: 0;
+  color: var(--texto-fraco);
 }
 
 /* ---------- lista sem nada ---------- */

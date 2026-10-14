@@ -323,57 +323,60 @@
     atualizarSubtitulo();
   }
 
-  /* ---------- abas da página: Efetivo | Correções (só admin) ----------
-     Os controles do cabeçalho (Ordem, Exibir) e os filtros só valem para a
-     árvore do Efetivo, então somem na aba Correções. */
+  /* ---------- abas da página: Efetivo | Pendências (só admin) ----------
+     Os controles da barra (filtros, Ordem, Exibir) só valem para a árvore do
+     Efetivo, então somem na aba Pendências. A Pendências é a fila dos cadastros
+     e das correções de dados (geral-fila), a mesma da página Pendências. */
+  var fila = null;
+
+  function escreverSeloPendencias(n) {
+    var s = document.getElementById('usuarios-pendencias-contagem');
+    if (!s) return;
+    s.textContent = n ? String(n) : '';
+    s.classList.toggle('oculto', !n);
+  }
+
+  function carregarPendencias() {
+    if (!fila || !window.RosterWork.fila) return Promise.resolve();
+    return window.RosterWork.fila.ler().then(function (r) {
+      if (!r) return;
+      var pedidos = window.RosterWork.fila.doTipo(r.aprovar, ['cadastro', 'dados']);
+      fila.definir(pedidos);
+      escreverSeloPendencias(pedidos.length);
+    });
+  }
+
   function mostrarAba(conteudo, nome) {
     var paineis = conteudo.querySelectorAll('[data-aba-painel]');
     for (var i = 0; i < paineis.length; i++) {
       paineis[i].classList.toggle('oculto', paineis[i].getAttribute('data-aba-painel') !== nome);
     }
-    var soEfetivo = ['#usuarios-filtros', '#dropdown-ordem', '#dropdown-exibir'];
-    soEfetivo.forEach(function (seletor) {
+    ['#usuarios-filtros', '#dropdown-ordem', '#dropdown-exibir'].forEach(function (seletor) {
       var el = conteudo.querySelector(seletor);
       if (el) el.classList.toggle('oculto', nome !== 'efetivo');
     });
-    if (nome === 'aprovacoes') atualizarAprovacoes();
-  }
-
-  /* recarrega as duas filas (cadastros + correções) e soma no selo da aba */
-  function atualizarAprovacoes() {
-    var C = window.RosterWork.usuariosCorrecoes;
-    var K = window.RosterWork.usuariosCadastros;
-    return Promise.all([
-      K ? K.carregar() : 0,
-      C ? C.carregar() : 0
-    ]).then(function (contagens) {
-      var quantos = (contagens[0] || 0) + (contagens[1] || 0);
-      var selo = document.getElementById('usuarios-aprovacoes-contagem');
-      if (!selo) return;
-      selo.textContent = quantos ? String(quantos) : '';
-      selo.classList.toggle('oculto', !quantos);
-    });
+    if (nome === 'pendencias') carregarPendencias();
   }
 
   function ligarAbas(conteudo) {
+    var admin = RosterWork.sessao.ehAdmin();
     var trilho = conteudo.querySelector('#usuarios-abas');
-    var abaAprovacoes = conteudo.querySelector('#usuarios-aba-aprovacoes');
-    if (abaAprovacoes) abaAprovacoes.classList.toggle('oculto', !RosterWork.sessao.ehAdmin());
+    var abaPendencias = conteudo.querySelector('#usuarios-aba-pendencias');
+    if (abaPendencias) abaPendencias.classList.toggle('oculto', !admin);
     if (window.RosterWork.abas && trilho) {
       window.RosterWork.abas.ligar(trilho, function (aba) {
         mostrarAba(conteudo, aba.getAttribute('data-aba'));
       });
     }
-    if (!RosterWork.sessao.ehAdmin()) return;
-
-    /* depois de decidir: refaz as filas, a contagem e os cards (o dado mudou) */
-    var aoDecidir = function () {
-      atualizarAprovacoes();
-      if (window.RosterWork.arvoreUnidades) window.RosterWork.arvoreUnidades.recarregar();
-    };
-    if (window.RosterWork.usuariosCorrecoes) window.RosterWork.usuariosCorrecoes.iniciar(conteudo, aoDecidir);
-    if (window.RosterWork.usuariosCadastros) window.RosterWork.usuariosCadastros.iniciar(conteudo, aoDecidir);
-    atualizarAprovacoes();
+    fila = (admin && window.RosterWork.fila) ? window.RosterWork.fila.criar(conteudo.querySelector('#usuarios-pendencias'), {
+      vazio: RosterWork.mensagens.pendencias.vazioUsuarios,
+      /* depois de decidir: a fila e os cards do efetivo (o dado mudou) */
+      recarregar: function () {
+        if (window.RosterWork.arvoreUnidades) window.RosterWork.arvoreUnidades.recarregar();
+        return carregarPendencias();
+      }
+    }) : null;
+    if (fila) window.RosterWork.fila.contar().then(function (c) { escreverSeloPendencias((c.aprovar.cadastro || 0) + (c.aprovar.dados || 0)); });
   }
 
   /* a navegação chama iniciar() toda vez que a página de usuários é exibida */

@@ -1,14 +1,15 @@
 /* ============================================================
    EXTRAJORNADA — painel do dia (gaveta), aba Escala
    Clicar numa célula da grade abre a gaveta geral-painel (a mesma da
-   Escala), com as abas Ver / Editar iguais às da Escala:
-     • Ver   — no topo os AVISOS antes/depois (o que o extra resolveu ✓
-               e o que restou ▲) e, abaixo, a DISTRIBUIÇÃO "depois" (com
-               os extras), por ENSAIO no motor (RPC extra_distribuicao_dia).
-     • Editar— reusa o editor da Escala (escalas-painel-editar): edita a
-               distribuição REAL do dia (salvar_ajustes_dia), igual à
-               Escala. Só admin.
-   Reusa RosterWork.escalasPainel.pecas + os moldes tpl-escala-* (no shell).
+   Escala), com duas abas, só de leitura (a escala se edita na Escala):
+     • Dia          — no topo os AVISOS antes/depois (o que o extra resolveu ✓
+                      e o que restou ▲) e, abaixo, a DISTRIBUIÇÃO "depois" (com
+                      os extras), por ENSAIO no motor (RPC extra_distribuicao_dia).
+     • Extrajornada — quem está de extra no dia nesta unidade (a mesma aba do
+                      painel da Escala: escalas-painel-extra).
+   A lista do dia é a mesma do Dia da Escala (escalas-painel-editar, só de
+   leitura, com o dia já lido); os avisos reusam RosterWork.escalasPainel.pecas
+   e os moldes tpl-escala-* (no shell).
    Não cria HTML (clona moldes) nem escreve estilo (só classList/textContent).
    RosterWork.extrajornadaPainelDia.
    ============================================================ */
@@ -21,9 +22,7 @@
   var MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 
   var celulaSel = null;
-  var pCtx = null;              // { uid, iso } do dia aberto
-  var guardaModoLigado = false; // guarda das abas Ver/Editar (uma vez)
-  var salvaLigado = false;      // ouvinte de 'rosterwork_escala_salva' (uma vez)
+  var pCtx = null;   // { uid, iso, secao } do dia aberto
 
   function dataPorExtenso(iso) {
     var p = (iso || '').split('-');
@@ -32,11 +31,9 @@
     return DIAS[d.getDay()] + ', ' + d.getDate() + ' de ' + MESES[d.getMonth()] + ' de ' + d.getFullYear();
   }
 
-  function resetEditar() {
-    if (RW.escalasPainelEditar && RW.escalasPainelEditar.reset) RW.escalasPainelEditar.reset();
-  }
   function desmarcar() {
-    resetEditar();
+    if (RW.escalasPainelExtra) RW.escalasPainelExtra.reset();
+    if (RW.escalasPainelEditar) RW.escalasPainelEditar.reset();
     if (celulaSel) celulaSel.classList.remove('escala-mes-celula--selecionada');
     celulaSel = null;
     pCtx = null;
@@ -94,128 +91,47 @@
     if (!caixa) return;
     resolvidos.forEach(function (a) { var l = linhaAviso(a, 'ok'); if (l) caixa.appendChild(l); });
     depois.forEach(function (a) { var l = linhaAviso(a, a.necessita === 'erro' ? 'erro' : 'alerta'); if (l) caixa.appendChild(l); });
-    corpo.appendChild(caixa);
+    corpo.insertBefore(caixa, corpo.firstChild);   // fica no topo, acima da lista do dia
   }
 
-  /* ---------- distribuição "depois" (reusa as peças do painel da Escala) ---------- */
+  /* ---------- distribuição "depois": a mesma lista do Dia da Escala, só de leitura ---------- */
 
-  function renderDistribuicao(corpo, dados) {
-    var pecas = RW.escalasPainel && RW.escalasPainel.pecas;
-    if (!pecas) { mostrarEstado(corpo, msgFalha()); return; }
-    var postos = (dados && dados.postos) || [];
-    var semFuncao = (dados && dados.sem_funcao) || [];
-    if (!postos.length && !semFuncao.length) { mostrarEstado(corpo, 'Sem distribuição neste dia.'); return; }
-
-    if (semFuncao.length) {
-      var caixaErro = RW.painel.criarCaixa('Sem função definida', true);
-      if (caixaErro) {
-        semFuncao.forEach(function (m) { var l = pecas.linha(m); if (l) caixaErro.appendChild(l); });
-        corpo.appendChild(caixaErro);
-      }
-    }
-
-    postos.forEach(function (posto) {
-      if (!(posto.funcoes && posto.funcoes.length) && !posto.em_manutencao) return;
-      var caixa = RW.painel.criarCaixa(posto.nome);
-      if (!caixa) return;
-      if (posto.em_manutencao) {
-        caixa.classList.add('grupo-caixa--posto-alerta', 'grupo-caixa--manutencao');
-        var m = pecas.montarManutencao(posto, false);
-        if (m) caixa.appendChild(m);
-      } else {
-        var np = pecas.nivelPosto(posto);
-        if (np) caixa.classList.add('grupo-caixa--posto-' + np);
-      }
-      pecas.mesclarFuncoes(posto).forEach(function (funcao) {
-        var g = pecas.grupo(funcao, false);
-        if (g) caixa.appendChild(g);
-      });
-      corpo.appendChild(caixa);
-    });
-
-    var caixaObs = pecas.observacoes((dados && dados.observacoes) || [], { editar: false });
-    if (caixaObs) corpo.appendChild(caixaObs);
+  function renderDistribuicao(corpo, uid, iso, dados) {
+    if (!RW.escalasPainelEditar) { mostrarEstado(corpo, msgFalha()); return; }
+    /* sem a lista de avisos do topo: a caixa Avisos daqui já mostra o que o extra resolveu e o que ficou */
+    RW.escalasPainelEditar.montar(corpo, null, uid, iso, { admin: false, dados: dados || {}, semAvisos: true });
   }
 
-  /* modo Ver: busca a distribuição "depois" + avisos e desenha */
-  function renderVer(corpo) {
+  /* aba Dia: busca a distribuição "depois" + avisos e desenha */
+  function renderDia(corpo) {
     if (!pCtx) return;
     var uid = pCtx.uid, iso = pCtx.iso;
     mostrarCarregando(corpo);
     RW.extrajornadaDados.distribuicaoDia(uid, iso).then(function (r) {
-      if (!pCtx || pCtx.uid !== uid || pCtx.iso !== iso) return;   // outra célula abriu enquanto carregava
+      if (!pCtx || pCtx.uid !== uid || pCtx.iso !== iso || pCtx.secao !== 'dia') return;   // outra célula ou aba abriu enquanto carregava
       corpo.textContent = '';
       if (!r || r.ok === false) { mostrarEstado(corpo, msgFalha()); return; }
+      renderDistribuicao(corpo, uid, iso, r.distribuicao);
       renderAvisos(corpo, uid, r);
-      renderDistribuicao(corpo, r.distribuicao);
     });
   }
 
-  /* ---------- guarda das abas Ver/Editar (espelha o escalas-painel) ---------- */
-
-  function secaoSuja() {
-    return !!(RW.escalasPainelEditar && RW.escalasPainelEditar.estaSujo && RW.escalasPainelEditar.estaSujo());
-  }
-  function confirmarDescarte(aoConfirmar) {
-    if (!RW.confirmar) { aoConfirmar(); return; }
-    RW.confirmar({
-      tipo: 'aviso',
-      mensagem: RW.mensagens.escala.descartarAlteracoes,
-      textoConfirmar: RW.mensagens.botoes.descartar,
-      textoCancelar: RW.mensagens.botoes.continuarEditando,
-      aoConfirmar: aoConfirmar
-    });
-  }
-  function tentarFechar() {
-    if (!secaoSuja()) return false;
-    confirmarDescarte(function () { RW.painel.fechar(); });
-    return true;
-  }
-  function voltarParaVer() {
-    resetEditar();
-    var abas = document.getElementById('painel-abas');
-    var ver = abas ? abas.querySelector('[data-painel-modo="ver"]') : null;
-    if (ver) ver.click();
-  }
-  function ligarGuardaModo() {
-    if (guardaModoLigado) return;
-    var abas = document.getElementById('painel-abas');
-    if (!abas) return;
-    guardaModoLigado = true;
-    abas.addEventListener('click', function (e) {
-      if (!pCtx) return;   // outra tela é a dona do painel
-      var aba = e.target.closest('.aba');
-      if (!aba || aba.classList.contains('aba--ativa') || !secaoSuja()) return;
-      e.preventDefault();
-      e.stopPropagation();
-      confirmarDescarte(function () { resetEditar(); aba.click(); });
-    }, true);   // captura: roda antes do geral-abas
-  }
-  /* após salvar uma edição, a cobertura da grade muda: recarrega a grade da extra */
-  function ligarSalva() {
-    if (salvaLigado) return;
-    salvaLigado = true;
-    window.addEventListener('rosterwork_escala_salva', function () {
-      if (RW.extrajornadaEscala && RW.extrajornadaEscala.recarregar) RW.extrajornadaEscala.recarregar();
-    });
-  }
-
-  /* desenha a aba atual (Ver ou Editar) no corpo/rodapé da gaveta */
-  function mostrar() {
+  /* desenha a aba escolhida (Dia ou Extrajornada); nenhuma tem rodapé de ações */
+  function mostrar(secao) {
     if (!pCtx) return;
+    pCtx.secao = secao;
     var corpo = RW.painel.corpo();
     if (!corpo) return;
     var rodape = RW.painel.rodape();
-    var editar = RW.painel.modo && RW.painel.modo() === 'editar';
-    if (editar && RW.escalasPainelEditar) {
-      RW.escalasPainelEditar.montar(corpo, rodape, pCtx.uid, pCtx.iso, voltarParaVer);   // editor da Escala (edita o dia real)
+    if (RW.escalasPainelEditar) RW.escalasPainelEditar.reset();
+    if (secao === 'extra' && RW.escalasPainelExtra) {
+      RW.escalasPainelExtra.montar(corpo, rodape, pCtx.uid, pCtx.iso);
     } else {
-      resetEditar();
-      if (rodape) { rodape.textContent = ''; rodape.classList.add('oculto'); }   // Ver não tem rodapé de ações
-      renderVer(corpo);
+      if (RW.escalasPainelExtra) RW.escalasPainelExtra.reset();
+      if (rodape) { rodape.textContent = ''; rodape.classList.add('oculto'); }
+      renderDia(corpo);
     }
   }
-  function aoMudarModo() { if (pCtx) mostrar(); }
 
   /* ---------- abrir a gaveta para uma célula ---------- */
 
@@ -224,21 +140,25 @@
     desmarcar();
     celula.classList.add('escala-mes-celula--selecionada');
     celulaSel = celula;
-    pCtx = { uid: celula.dataset.unidadeId, iso: celula.dataset.iso };
+    pCtx = { uid: celula.dataset.unidadeId, iso: celula.dataset.iso, secao: 'dia' };
     var cidade = celula.dataset.unidadeCidade;
 
     RW.painel.abrir({
       titulo: celula.dataset.unidadeNome || '',
       tituloExtra: cidade ? '- ' + cidade : '',
       subtitulo: dataPorExtenso(pCtx.iso),
-      editavel: !!(RW.sessao && RW.sessao.ehAdmin && RW.sessao.ehAdmin()),   // só admin vê a aba Editar (o backend também trava em salvar_ajustes_dia)
-      aoMudarModo: aoMudarModo,
-      aoFechar: desmarcar,
-      aoTentarFechar: tentarFechar   // Esc/X confirmam antes de descartar rascunho
+      aoFechar: desmarcar
     });
-    ligarGuardaModo();
-    ligarSalva();
-    mostrar();
+    /* abas Dia e Extrajornada embaixo do título; o geral-abas cuida da troca visual */
+    var linha = RW.painel.linhaAbas();
+    var tpl = document.getElementById('tpl-extra-painel-secoes');
+    if (linha && tpl) {
+      linha.appendChild(tpl.content.cloneNode(true));
+      linha.classList.remove('oculto');
+      var trilho = linha.querySelector('.abas');
+      if (trilho && RW.abas) RW.abas.ligar(trilho, function (aba) { mostrar(aba.getAttribute('data-secao')); });
+    }
+    mostrar('dia');
   }
 
   /* ---------- ligação: clique numa célula da grade abre a gaveta ---------- */

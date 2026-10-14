@@ -1,0 +1,171 @@
+/* ============================================================
+   HORÁRIO EM CAMPOS e RÉGUA DO DIA — componente compartilhado
+   (painel do dia da Escala e formulários da Folgas e das Trocas).
+   O horário: início → fim em campos que abrem a lista de horas
+   (geral-dropdown-numeros), com o ✕ e o Adicionar horário.
+   A régua: o dia de serviço (08h às 08h) com os pedaços.
+   Moldes no index.html (#tpl-horario, -fixo, #tpl-regua,
+   #tpl-regua-pedaco, #tpl-periodo-servico); JS em geral-horario.js.
+   ============================================================ */
+
+/* ---------- uma linha de horário: os campos, o ✕ e o Adicionar horário ---------- */
+.horario {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* início → fim, com a seta entre os dois */
+.horario-par {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 16px;
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+.horario-seta {
+  width: 8px;
+  height: 12px;
+}
+
+/* só para ler: "08h → 08h", sem campos (painel de decisão) */
+.horario-leitura {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.horario-leitura .horario-seta {
+  color: var(--texto-fraco);
+}
+
+/* os campos com borda e fundo branco (parecem o que são: botões que abrem a lista de horas);
+   todos da mesma largura, então as setas de linhas diferentes ficam uma embaixo da outra */
+.horario .dropdown-numeros-btn,
+.horario-fixo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  min-height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--borda-forte);
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-superficie);
+  font-size: 13px;
+  color: var(--texto-forte);
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.horario .dropdown-numeros-btn:not(:disabled):hover {
+  border-color: var(--texto-forte);
+  background-color: var(--fundo-superficie);
+}
+
+/* desligado (ex.: função desmarcada): apagado e sem clique */
+.horario .dropdown-numeros-btn:disabled {
+  border-color: var(--borda);
+  background-color: var(--fundo-suave);
+  color: var(--texto-fraco);
+  cursor: default;
+}
+
+/* horário que não se muda (ex.: Chefe de Socorro, Oficial de Área): tracejado */
+.horario-fixo {
+  border-style: dashed;
+  color: var(--texto-suave);
+}
+
+.horario .botao-discreto {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  min-height: 28px;
+}
+
+/* o ✕ e o Adicionar horário que não valem na linha guardam o lugar (as linhas ficam alinhadas) */
+.horario-acao--vazia {
+  visibility: hidden;
+}
+
+/* ---------- período dentro de um serviço: as opções, os campos da parte e a régua, um embaixo do outro ---------- */
+.periodo-servico {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ---------- régua do dia (08h às 08h) ---------- */
+.regua-dia {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* afastada dos campos de horário que ficam logo acima */
+.regua-dia--afastada {
+  margin-top: 8px;
+}
+
+.regua {
+  position: relative;
+  min-height: 8px;
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-medio);
+  overflow: hidden;
+}
+
+/* cada pedaço se posiciona pelas propriedades --pedaco-ini e --pedaco-tam (porcentagem do dia) */
+.regua-pedaco {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--pedaco-ini) * 1%);
+  width: calc(var(--pedaco-tam) * 1%);
+  background-color: var(--texto-fraco);
+}
+
+/* o que ainda não foi salvo, ou o trecho escolhido */
+.regua-pedaco--novo {
+  background-color: var(--texto-forte);
+}
+
+/* horário sem função: hachurado */
+.regua-pedaco--vazio {
+  background: repeating-linear-gradient(135deg, var(--borda-forte) 0 2px, transparent 2px 5px);
+}
+
+/* a régua grande: os pedaços levam o nome escrito */
+.regua-dia--grande .regua {
+  min-height: 28px;
+  border-radius: var(--raio-medio);
+}
+
+.regua-dia--grande .regua-pedaco {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 11px;
+  white-space: nowrap;
+  color: var(--texto-invertido);
+  border-right: 2px solid var(--fundo-superficie);
+}
+
+.regua-dia--grande .regua-pedaco--vazio {
+  color: var(--texto-suave);
+}
+
+/* as horas embaixo da régua */
+.regua-escala {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--texto-fraco);
+}

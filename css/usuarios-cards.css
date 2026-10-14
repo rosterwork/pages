@@ -108,33 +108,3 @@
   color: var(--texto-fraco);
 }
 
-/* ---------- aba Aprovações: duas seções (Cadastros e Correções) ---------- */
-.usuarios-aprovacoes {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.usuarios-secao {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* um pedido de cadastro: a linha inteira abre a revisão no painel */
-.cadastro-item {
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
-  text-align: left;
-  transition: background-color 0.15s ease;
-}
-
-.cadastro-item:hover {
-  background-color: var(--fundo-suave);
-}
-
-.cadastro-seta {
-  flex-shrink: 0;
-  color: var(--texto-fraco);
-}

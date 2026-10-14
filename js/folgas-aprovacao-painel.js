@@ -1,72 +1,65 @@
 /* ============================================================
-   FOLGAS — painel lateral de aprovação de uma solicitação
-   Abre o geral-painel com: detalhe da folga (militar, dia, trecho,
-   motivo), a análise de impacto na escala (componente compartilhado
-   geral-impacto) e o rodapé com Aprovar/Recusar. Espelha o
-   trocas-painel.js. Aprovar recalcula (véu) e oferece Desfazer.
+   FOLGAS — painel de aprovação de uma folga (geral-decisao)
+   O pedido numa caixa (o dia com o horário, quem folga, a régua e
+   o motivo), a nota do saldo (quando a lista traz o saldo do
+   militar), a análise de impacto (geral-impacto), o "Como fica a
+   escala" (fechado; o dia inteiro só ao abrir) e o rodapé
+   Recusar/Aprovar. Recusar pede o motivo opcional no próprio
+   painel. Espelha o trocas-painel.js. Aprovar recalcula (véu) e
+   oferece Desfazer. Abre pela fila (geral-fila) da página
+   Pendências e da aba Pendências da Folgas.
    Expõe: RosterWork.folgasAprovacaoPainel.abrir(solicitacao, ctx).
-   ctx = { cpf, admin, aoMudar(), aoFechar() }
+   ctx = { cpf, admin, posicao?: { n, total }, aoMudar(), aoFechar() }
    ============================================================ */
 (function () {
   'use strict';
   var RW = window.RosterWork = window.RosterWork || {};
 
   var solAtual = null;
+  var partes = null;       // as partes do painel aberto (geral-decisao)
   var btnAprovar = null;   // botão Aprovar da solicitação aberta: travado até a análise de impacto chegar
 
   function fmt() { return RW.folgasFormato; }
   function msg() { return RW.mensagens.folgas; }
-  function hh(t) {
-    if (!t) return '';
-    var s = String(t).slice(0, 5);   // normaliza p/ HH:MM (o banco pode mandar HH:MM:SS)
-    return s.slice(3) === '00' ? s.slice(0, 2) + 'h' : s;
-  }
-  function trechoTexto(sol) {
-    if (!sol.horario_inicio || !sol.horario_fim || sol.horario_inicio === sol.horario_fim) return msg().diaInteiro;
-    return hh(sol.horario_inicio) + ' às ' + hh(sol.horario_fim);
-  }
-  function carregandoEm(alvo) {
-    var pts = document.getElementById('carregando-pontos');
-    if (pts) alvo.appendChild(pts.content.cloneNode(true));
-  }
 
-  /* ---------- corpo (detalhe) ---------- */
+  /* ---------- corpo: o pedido numa caixa e a nota do saldo ---------- */
   function montarCorpo(sol) {
-    var corpo = RW.painel.corpo(); if (!corpo) return;
-    corpo.textContent = '';
-    var det = RosterWork.tpl('tpl-folga-detalhe'); if (!det) return;
-    var m = msg();
-    var nome = det.querySelector('[data-nome]'); if (nome) nome.textContent = sol.nome || '';
-    var linhas = det.querySelector('[data-linhas]');
-    if (linhas) {
-      linhas.appendChild(RW.painel.criarLinha(m.linhaDia, fmt().dataLonga(sol.data_ref)));
-      linhas.appendChild(RW.painel.criarLinha(m.linhaTrecho, trechoTexto(sol)));
-      linhas.appendChild(RW.painel.criarLinha(m.linhaHoras, fmt().horasAbs(sol.minutos)));
-      if (sol.motivo) linhas.appendChild(RW.painel.criarLinha(m.linhaMotivo, sol.motivo));
+    partes = RW.decisao.montar(RW.painel.corpo());
+    if (!partes) return;
+    var m = msg(), H = RW.horario;
+    /* sem horário (ou início = fim) = o serviço inteiro, 08h às 08h */
+    var parcial = sol.horario_inicio && sol.horario_fim && sol.horario_inicio !== sol.horario_fim;
+    var t = parcial ? { hi: String(sol.horario_inicio).slice(0, 5), hf: String(sol.horario_fim).slice(0, 5) } : { hi: '08:00', hf: '08:00' };
+    var caixa = RW.decisao.caixa({
+      titulo: m.caixaFolga,
+      data: RW.data.comDiaSemana(sol.data_ref),
+      hi: t.hi, hf: t.hf,
+      frase: parcial ? m.fraseFolgaParte(sol.nome || '', H.curta(t.hi), H.curta(t.hf)) : m.fraseFolgaInteira(sol.nome || ''),
+      regua: { servico: { hi: '08:00', hf: '08:00' }, trecho: t },
+      extra: sol.motivo ? m.motivoPedido(sol.motivo) : ''
+    });
+    if (caixa) partes.pedido.appendChild(caixa);
+    /* quanto a folga consome e como o saldo fica (a mesma nota do Solicitar folga) */
+    if (sol.saldo_minutos != null) {
+      var ficaria = sol.saldo_minutos - (sol.minutos || 0);
+      RW.decisao.saldo(partes, m.consumoSaldo(fmt().horasAbs(sol.minutos || 0), fmt().saldoTexto(ficaria)), ficaria < 0);
     }
-    corpo.appendChild(det);
   }
 
   /* ---------- análise de impacto (desenho no componente compartilhado geral-impacto) ---------- */
   function carregarAnalise(sol) {
-    var corpo = RW.painel.corpo(); if (!corpo) return;
-    var sec = corpo.querySelector('[data-secao-analise]');
-    var alvo = corpo.querySelector('[data-analise]');
-    if (!sec || !alvo) return;
-    sec.classList.remove('oculto');
-    alvo.textContent = '';
-    carregandoEm(alvo);
+    var minhas = partes;
+    if (!minhas) return;
+    RW.decisao.analisando(minhas);
     RW.folgasDados.analisar(sol.id).then(function (r) {
       if (!RW.painel.estaAberto() || solAtual !== sol) return;
       if (btnAprovar) btnAprovar.disabled = false;   // análise chegou: libera o Aprovar
-      if (!r || !r.ok) { alvo.textContent = ''; var e = RW.painel.criarEstado(msg().falhaAnalise); if (e) alvo.appendChild(e); return; }
-      sol._analise = r;
-      if (RW.impacto) RW.impacto.desenhar(alvo, r);
+      if (r && r.ok) sol._analise = r;
+      RW.decisao.analise(minhas, r && r.ok ? r : null, msg().falhaAnalise);
     }).catch(function () {
       if (!RW.painel.estaAberto() || solAtual !== sol) return;
       if (btnAprovar) btnAprovar.disabled = false;   // falhou a análise: libera o Aprovar (o banco ainda decide)
-      alvo.textContent = '';
-      var e = RW.painel.criarEstado(msg().falhaAnalise); if (e) alvo.appendChild(e);
+      RW.decisao.analise(minhas, null, msg().falhaAnalise);
     });
   }
 
@@ -103,7 +96,8 @@
   function despachar(acao, sol, ctx, btn) {
     var d = RW.folgasDados, m = msg();
     if (acao === 'recusar') {
-      confirmarEntao(m.confirmarRecusar, true, function () { executar(d.decidir(sol.id, false), btn, ctx); });
+      /* o motivo (opcional) vai no aviso ao militar */
+      RW.decisao.recusar(partes, function (motivo, botao) { executar(d.decidir(sol.id, false, motivo), botao, ctx); });
     } else if (acao === 'aprovar') {
       var temProblema = sol._analise && sol._analise.veredito === 'problema';
       confirmarEntao(temProblema ? m.confirmarAprovarComProblema : m.confirmarAprovar, temProblema, function () {
@@ -127,7 +121,7 @@
     rodape.textContent = '';
     btnAprovar = null;
     if (!ctx.admin || sol.is_meu) { rodape.classList.add('oculto'); return; }   // admin não decide a própria folga (o banco também trava)
-    var tpl = document.getElementById('tpl-folga-aprovacao-acoes');
+    var tpl = document.getElementById('tpl-decisao-acoes');
     if (!tpl) return;
     var frag = tpl.content.cloneNode(true);   /* fragmento inteiro (dois botões irmãos), não firstElementChild */
     ['recusar', 'aprovar'].forEach(function (acao) {
@@ -143,15 +137,19 @@
   /* ---------- abrir ---------- */
   function abrir(sol, ctx) {
     if (!RW.painel || !sol) return;
+    ctx = ctx || {};
+    var situacao = msg().painelPendente;
     RW.painel.abrir({
       titulo: msg().painelFolga,
-      subtitulo: msg().painelPendente,
-      aoFechar: function () { solAtual = null; if (ctx && ctx.aoFechar) ctx.aoFechar(); }
+      subtitulo: ctx.posicao ? RW.mensagens.decisao.posicao(situacao, ctx.posicao.n, ctx.posicao.total) : situacao,
+      aoFechar: function () { solAtual = null; partes = null; if (ctx.aoFechar) ctx.aoFechar(); }
     });
     solAtual = sol;
     montarCorpo(sol);
     montarAcoes(sol, ctx);
     carregarAnalise(sol);
+    /* o dia inteiro como fica: fechado; só lê se abrirem */
+    RW.decisao.escala(partes, function () { return RW.rpc('pedido_escala_comparar', { p_tipo: 'folga', p_id: sol.id }); });
   }
 
   RW.folgasAprovacaoPainel = { abrir: abrir };
