@@ -172,7 +172,7 @@
   /* abre o Novo usuário no painel direito (modo criação): clona o formulário e o
      rodapé, liga máscaras/seleções/lotação/graus e as ações. Nasce novo a cada abertura. */
   /* config (opcional) abre o MESMO formulário em modo revisão de cadastro:
-     { titulo, subtitulo, dados, rotuloSalvar, rotuloRecusar, aoVer(corpo), aoSalvar(raiz), aoRecusar(raiz), aoFechar() }.
+     { titulo, tituloExtra?, subtitulo, dados, rotuloSalvar, rotuloRecusar, aoVer(corpo), aoSalvar(raiz), aoRecusar(raiz), aoFechar() }.
      Com aoVer o painel ganha as abas Ver | Editar e começa no Ver: o administrador
      confere o pedido primeiro e só entra no formulário se for corrigir algo. */
   function abrirPainel(config) {
@@ -182,6 +182,7 @@
     var revisao = !!(config && config.aoVer);
     window.RosterWork.painel.abrir({
       titulo: config ? config.titulo : 'Novo usuário',
+      tituloExtra: config ? config.tituloExtra : '',
       subtitulo: config ? config.subtitulo : '',
       editavel: revisao,
       aoMudarModo: revisao ? function () { montarConteudo(config); } : null,

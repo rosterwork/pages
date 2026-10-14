@@ -55,12 +55,12 @@
     var m = RW.mensagens.correcoes;
     RW.painel.abrir({
       titulo: m.painelTitulo,
+      tituloExtra: RW.mensagens.decisao.tituloPelotao(pedido.pelotoes),
       subtitulo: ctx.posicao ? RW.mensagens.decisao.posicao(m.painelSituacao, ctx.posicao.n, ctx.posicao.total) : m.painelSituacao,
       aoFechar: function () { if (ctx.aoFechar) ctx.aoFechar(); }
     });
-    var partes = RW.decisao.montar(RW.painel.corpo());
+    var partes = RW.decisao.montar(RW.painel.corpo());   // sem análise: correção de dados não mexe na escala
     if (!partes) return;
-    partes.analise.classList.add('oculto');   // correção de dados não mexe na escala
 
     var itens = pedido.itens || [];
     var nome = ((pedido.grad || '') + ' ' + (pedido.nome || '')).trim();

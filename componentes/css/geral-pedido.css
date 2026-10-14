@@ -161,6 +161,18 @@ button.pedido-item:hover {
   color: var(--texto-suave);
 }
 
+/* o pelotão do pedido (só nas listas do administrador): coluna da mesma
+   largura em todos os cartões, para os nomes alinharem; dois pelotões
+   ficam um embaixo do outro */
+.pedido-linha-pelotao {
+  flex-shrink: 0;
+  width: 48px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--texto-suave);
+  white-space: pre-line;
+}
+
 .pedido-linha-selo {
   flex-shrink: 0;
 }

@@ -1,15 +1,17 @@
 /* ============================================================
    IMPACTO NA ESCALA — componente compartilhado (Trocas e Folgas)
    Desenha, num alvo, o resultado da análise de impacto vinda do
-   banco: uma nota por ponto (amarela = atenção, vermelha = problema;
-   sem nenhum, a nota verde "Sem impacto na escala"). O dia inteiro
-   ("Como fica a escala") é do geral-decisao, que abre sob pedido.
-   selo() dá o selo do resultado para os cartões da Pendências.
+   banco: uma nota por ponto (vermelha = problema, amarela = atenção,
+   na ordem do banco) e, depois, as verdes (o que o pedido resolve ou
+   o resumo "tudo certo"); sem nenhuma, a verde "Sem impacto na
+   escala". O dia inteiro ("Como fica a escala") é do geral-decisao,
+   que abre sob pedido. selo() dá o selo do resultado para os cartões
+   da Pendências e o título da Análise.
    Não cria HTML solto: clona os moldes tpl-geral-impacto-* do shell.
    Uso: RosterWork.impacto.desenhar(alvoEl, resultado)
    resultado = { veredito:'ok'|'alerta'|'problema', problemas, alertas,
-                 avisos:[{gravidade,titulo,descricao}],
-                 antes_depois:[{posto,funcao,de,para}] }
+                 avisos:[{gravidade,tipo,titulo,descricao}],
+                 verdes:[{titulo,descricao}] }
    ============================================================ */
 (function () {
   'use strict';
@@ -32,13 +34,18 @@
     if (!alvo || !r) return;
     alvo.textContent = '';
     var avisos = r.avisos || [];
-    if (!avisos.length) {
+    var verdes = r.verdes || [];
+    if (!avisos.length && !verdes.length) {
       var ok = nota('sucesso', msg().okFrase, '');
       if (ok) alvo.appendChild(ok);
       return;
     }
     avisos.forEach(function (a) {
       var el = nota(a.gravidade === 'problema' ? 'erro' : 'alerta', a.titulo ? a.titulo + '.' : '', a.descricao);
+      if (el) alvo.appendChild(el);
+    });
+    verdes.forEach(function (v) {
+      var el = nota('sucesso', v.titulo ? v.titulo + '.' : '', v.descricao);
       if (el) alvo.appendChild(el);
     });
   }

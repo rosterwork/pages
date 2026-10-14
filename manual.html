@@ -49,6 +49,13 @@
               </ul>
             </li>
             <li>
+              <a class="lista-item lista-item--clicavel manual-item manual-item--parte" href="#pendencias">Pendências</a>
+              <ul>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#minhas-pendencias">O que espera a sua resposta</a></li>
+                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#decidir-pedidos">Decidir os pedidos</a></li>
+              </ul>
+            </li>
+            <li>
               <a class="lista-item lista-item--clicavel manual-item manual-item--parte" href="#trocas">Trocas</a>
               <ul>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#solicitar-troca">Solicitar e acompanhar uma troca</a></li>
@@ -114,7 +121,7 @@
               <a class="lista-item lista-item--clicavel manual-item manual-item--parte" href="#avisos">Avisos</a>
               <ul>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#meus-avisos">Os meus avisos</a></li>
-                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#comunicados">Criar comunicados e resolver pendências</a></li>
+                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#comunicados">Criar comunicados</a></li>
               </ul>
             </li>
             <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--parte" href="#historico">Histórico</a></li>
@@ -203,7 +210,7 @@
               <h3 class="manual-topico">Quem faz o quê</h3>
               <ul class="manual-lista">
                 <li><strong>O militar (usuário comum).</strong> Consulta a sua escala, pede <strong>trocas</strong> e <strong>folgas</strong>, declara disponibilidade de <strong>extrajornada</strong> e vê os seus <strong>avisos</strong>. Ele participa e solicita, não monta nem edita a escala.</li>
-                <li><strong>O administrador.</strong> Cadastra o efetivo e os postos, monta os <strong>modelos</strong> e a <strong>escala</strong>, <strong>aprova</strong> os pedidos (trocas, folgas, correções), lança extrajornada, registra afastamentos e atos de carreira. Ele monta e mantém o sistema.</li>
+                <li><strong>O administrador.</strong> Cadastra o efetivo e os postos, monta os <strong>modelos</strong> e a <strong>escala</strong>, <strong>aprova</strong> os pedidos (trocas, folgas, cadastros e correções) na página <strong>Pendências</strong>, lança extrajornada, registra afastamentos e atos de carreira. Ele monta e mantém o sistema.</li>
               </ul>
               <p>O administrador também é um militar: faz as próprias solicitações como usuário e aprova como administrador, sem trocar de modo. Ele nunca decide o que é seu: não aprova uma troca da qual participa, nem decide, concede ou ajusta a própria folga. Isso fica com outro administrador.</p>
 
@@ -213,6 +220,10 @@
                 <li>
                   <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-inicio.svg#icone-inicio"/></svg></span>
                   <span class="manual-legenda-texto"><strong>Início.</strong> O resumo do seu dia: o próximo serviço, as horas da semana, o saldo de folgas, a próxima extra e as próximas férias. É por onde o sistema abre.</span>
+                </li>
+                <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-pendencias.svg#icone-pendencias"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>Pendências.</strong> O que espera a sua resposta, como a troca que um colega pediu a você. Você <strong>age</strong>: aceita ou recusa. O número ao lado do nome conta quantos pedidos esperam você.</span>
                 </li>
                 <li>
                   <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-escalas.svg#icone-escalas"/></svg></span>
@@ -419,10 +430,10 @@
 
               <p><strong>Menu (à esquerda).</strong> Lista as áreas do sistema. Clique numa para abri-la, e a área aberta fica destacada.</p>
               <figure class="manual-figura manual-comum">
-                <img src="manual/imagens/mold-menu-comum.png" alt="Menu lateral: Início, Escala, Trocas, Folgas, Extrajornada, Afastamentos, Postos, Distribuição, Usuários e Ajustes." />
+                <img src="manual/imagens/mold-menu-comum.png" alt="Menu lateral: Início, Pendências, Escala, Trocas, Folgas, Extrajornada, Afastamentos, Postos, Distribuição, Usuários e Ajustes." />
               </figure>
               <figure class="manual-figura manual-admin">
-                <img src="manual/imagens/mold-menu-admin.png" alt="Menu lateral do administrador: as áreas comuns mais o Histórico." />
+                <img src="manual/imagens/mold-menu-admin.png" alt="Menu lateral do administrador: as áreas comuns mais o Histórico, com o número de pedidos ao lado de Pendências." />
               </figure>
               <p>No pé do menu, o botão <strong>Recolher menu</strong> encolhe a barra para sobrar espaço. Recolhida, aparece só o ícone, e o nome surge ao passar o mouse. Essa escolha fica salva para os próximos logins.</p>
               <figure class="manual-figura">
@@ -458,7 +469,7 @@
               </figure>
               <ol class="manual-passos">
                 <li><strong>Tema.</strong> O botão de sol e lua alterna entre o tema claro e o escuro. A sua escolha fica salva.</li>
-                <li><strong>Sino de avisos.</strong> Mostra os seus avisos em aberto, como uma troca para confirmar ou uma folga decidida, e o número conta quantos estão em aberto. Clicar num aviso leva direto à tela do assunto. A seção Avisos explica o sino em detalhe.</li>
+                <li><strong>Sino de avisos.</strong> Mostra os seus avisos em aberto, como uma troca para confirmar ou uma folga decidida, e o número conta quantos estão em aberto. Clicar num aviso leva direto à tela do assunto; o aviso que pede a sua resposta abre a página Pendências, já no pedido. A seção Avisos explica o sino em detalhe.</li>
                 <li><strong>Menu do canto (seu nome).</strong> Abre Meu perfil, Fale conosco, Manual, Termos e privacidade e Sair. No rodapé do menu aparece a versão do sistema.</li>
               </ol>
               <h3 id="meu-perfil">Meu perfil</h3>
@@ -808,26 +819,110 @@
               </div>
             </section>
 
+            <section class="manual-secao" id="pendencias">
+              <h2>Pendências</h2>
+              <h3 id="minhas-pendencias">O que espera a sua resposta</h3>
+              <p>A página <strong>Pendências</strong>, logo abaixo do Início no menu, reúne o que espera uma resposta sua. O número ao lado do nome, no menu, conta quantos pedidos esperam você. Hoje, é a <strong>troca que um colega pediu a você</strong>: ela aparece como um cartão, com quem pediu, o dia do serviço e o resultado da análise. O mesmo pedido também está na aba <strong>Pendências</strong> da página Trocas.</p>
+              <p>Clicar no cartão abre o pedido no painel à direita:</p>
+              <ul class="manual-lista">
+                <li><strong>O pedido.</strong> Em caixas: o <strong>serviço</strong> (o dia, o horário e quem trabalha no lugar de quem) e a <strong>devolução</strong>.</li>
+                <li><strong>Análise (1).</strong> O que a troca muda na escala, uma nota por ponto: <strong>vermelha</strong> é um problema, <strong>amarela</strong> pede atenção e <strong>verde</strong> diz que está tudo certo. Ao lado do título fica o resultado: "Sem impacto", "2 pontos de atenção" ou "1 problema".</li>
+                <li><strong>Como fica a escala (2).</strong> Começa fechado. Ao abrir, mostra o dia inteiro do pelotão como ficaria: quem sai aparece <strong>riscado</strong>, quem entra pela troca ganha o selo <strong>Novo</strong>, e quem o sistema mudou de lugar por causa dela fica só com uma <strong>barra cinza</strong> à esquerda.</li>
+              </ul>
+              <p>No rodapé ficam <strong>Recusar</strong> e <strong>Aceitar</strong> (3). Aceitando, a troca segue para a aprovação de um administrador. Recusando, você pode escrever o <strong>motivo</strong>, que vai no aviso para quem pediu, e a troca se encerra.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/troca-aceitar.png" alt="Painel de uma troca pedida a você: a análise, com o resultado e as notas (1), o Como fica a escala, ainda fechado (2), e os botões Recusar e Aceitar (3)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>Análise, com o resultado e as notas</li>
+                    <li>Como fica a escala</li>
+                    <li>Recusar e Aceitar</li>
+                  </ol>
+                </figcaption>
+              </figure>
+              <div class="manual-admin manual-zona-admin">
+                <h3 id="decidir-pedidos">Decidir os pedidos <span class="manual-selo-admin">Apenas administradores</span></h3>
+                <p>Para o administrador, a página tem duas abas: <strong>Para mim</strong> (o que é seu como militar) e <strong>Administração</strong>, com os pedidos que esperam a decisão de um administrador numa lista só: trocas, folgas, cadastros e correções de dados. Os seus próprios pedidos não aparecem para você: ficam com outro administrador.</p>
+                <p>O seletor <strong>Todos · Trocas · Folgas · Usuários</strong> (1) filtra a lista. Cada cartão mostra o <strong>pelotão</strong> do pedido (2), porque você cuida de todos os pelotões da companhia, e o <strong>resultado da análise</strong> (3). A lista vem pela data do serviço, a mais próxima primeiro.</p>
+                <figure class="manual-figura manual-figura--cheia">
+                  <img src="manual/imagens/pendencias-lista.png" alt="A aba Administração da página Pendências: o seletor do tipo de pedido (1), o pelotão do pedido (2), o resultado da análise (3) e a seção Para corrigir (4)." />
+                  <figcaption>
+                    <ol class="manual-chamadas">
+                      <li>Seletor do tipo de pedido</li>
+                      <li>Pelotão do pedido</li>
+                      <li>Resultado da análise</li>
+                      <li>Para corrigir</li>
+                    </ol>
+                  </figcaption>
+                </figure>
+                <p><strong>Para corrigir (4).</strong> Embaixo da lista fica o que precisa de conserto e não é um pedido: os <strong>militares operacionais fora da escala</strong> (com o nome e o pelotão, para acertar pela aba Ciclo da Escala), as <strong>viaturas em manutenção</strong> (para reorganizar o dia na Escala ou, em Postos, encerrar a manutenção ou deixar a viatura Inativa), a <strong>Distribuição a revisar</strong> (quando uma mudança de posto abriu um período que ainda precisa de revisão) e a <strong>Distribuição com erro</strong> (quando um período atual ou futuro tem erro vermelho); estas duas levam à Distribuição. Nada aqui tem "lido": cada item some sozinho quando alguém resolve. Todos aparecem também no <strong>sino</strong>, com a bolinha amarela ou vermelha conforme a gravidade.</p>
+                <p><strong>De onde vêm.</strong> Você recebe os pedidos e os avisos da sua <strong>companhia inteira</strong>. Lotado num pelotão, vê os da companhia e de todos os pelotões dela. Lotado na companhia ou acima, vê os da sua unidade e das que estão abaixo.</p>
+                <p><strong>O painel de decisão.</strong> Clicar no cartão abre o pedido, com o pelotão no título (1). Depois do pedido em caixas vem a <strong>Análise</strong>, com o resultado ao lado do título (2) e uma nota por ponto (3). Para montar a análise, o sistema aprova o pedido de mentira, refaz a escala do dia e compara com a de hoje, usando os mesmos avisos que a Escala mostra. Cada nota diz quem, onde e quando:</p>
+                <ul class="manual-lista">
+                  <li><strong>Vermelha:</strong> um problema, como uma viatura que fica sem condutor, um posto abaixo do mínimo, ou quem vai assumir o serviço estar inativo, de férias, licença ou dispensa, já ter uma hora extra no dia ou sobrepor outro serviço.</li>
+                  <li><strong>Amarela:</strong> um ponto de atenção, como um militar que <strong>repete o rodízio</strong>, um posto que <strong>fica com menos gente</strong>, um acúmulo de funções ou o <strong>saldo de horas</strong> que a troca ou a folga cria.</li>
+                  <li><strong>Verde:</strong> o que o pedido <strong>resolve</strong> na escala e, quando não sobra nada vermelho nem amarelo, "A escala continua sem problemas" (ou "Não cria problema novo na escala", quando o dia já tinha avisos).</li>
+                </ul>
+                <figure class="manual-figura">
+                  <img src="manual/imagens/pendencias-decisao.png" alt="Painel de decisão de uma troca: o pelotão no título (1), a Análise com o resultado (2) e a nota de um militar que repete o rodízio (3)." />
+                  <figcaption>
+                    <ol class="manual-chamadas">
+                      <li>Pelotão do pedido</li>
+                      <li>Análise, com o resultado</li>
+                      <li>Uma nota: quem, onde e quando</li>
+                    </ol>
+                  </figcaption>
+                </figure>
+                <p><strong>Como fica a escala.</strong> Ao abrir a seção, o dia inteiro aparece como ficaria: quem sai, <strong>riscado</strong> na função de onde saiu (1); quem o sistema <strong>mudou de lugar</strong> por causa do pedido, só com a <strong>barra cinza</strong> à esquerda (2); e quem <strong>entra pelo pedido</strong>, com o selo <strong>Novo</strong> (3). O selo Novo só existe aqui, antes de aprovar: depois, a escala mostra a troca ou a folga do jeito de sempre.</p>
+                <figure class="manual-figura">
+                  <img src="manual/imagens/pendencias-escala.png" alt="O Como fica a escala aberto: o militar que sai, riscado (1), o militar que o sistema mudou de lugar, só com a barra cinza (2), e o militar que entra pela troca, com o selo Novo (3)." />
+                  <figcaption>
+                    <ol class="manual-chamadas">
+                      <li>Quem sai, riscado</li>
+                      <li>Quem o sistema mudou de lugar: só a barra cinza</li>
+                      <li>Quem entra pelo pedido: o selo Novo</li>
+                    </ol>
+                  </figcaption>
+                </figure>
+                <p><strong>Aprovar ou recusar.</strong> O <strong>Aprovar</strong> fica disponível assim que a análise termina e pede uma <strong>confirmação</strong>. Quando a análise apontou um problema, o aviso é mais firme ("podem quebrar a escala. Aprovar mesmo assim?"): o sistema <strong>sinaliza, não trava</strong>, e a decisão é sua. Logo depois aparece um resumo com a opção de <strong>Desfazer</strong>. O <strong>Recusar</strong> abre, no próprio painel, a caixa do <strong>motivo</strong> (1), que é opcional e vai no aviso da recusa; <strong>Confirmar recusa</strong> (2) encerra o pedido e <strong>Voltar</strong> desiste. Depois de decidir, o painel abre o próximo pedido da lista.</p>
+                <figure class="manual-figura">
+                  <img src="manual/imagens/pendencias-recusar.png" alt="A recusa no painel: a caixa do motivo, opcional (1), e o botão Confirmar recusa (2), ao lado do Voltar." />
+                  <figcaption>
+                    <ol class="manual-chamadas">
+                      <li>Motivo da recusa (opcional)</li>
+                      <li>Confirmar recusa</li>
+                    </ol>
+                  </figcaption>
+                </figure>
+                <p class="manual-nota"><strong>Também nas páginas do assunto.</strong> Os mesmos pedidos aparecem na aba <strong>Pendências</strong> da Trocas, da Folgas e da Usuários, com o mesmo cartão e o mesmo painel. Decidido num lugar, o pedido some dos dois.</p>
+              </div>
+            </section>
+
             <section class="manual-secao" id="trocas">
               <h2>Trocas</h2>
               <h3 id="solicitar-troca">Solicitar e acompanhar uma troca</h3>
               <p>Uma troca é quando você pede que outro militar cubra um serviço seu. Pode ser o <strong>turno inteiro</strong> ou apenas um <strong>período de horas</strong> dele, e você pode marcar uma <strong>devolução</strong> (um dia do colega que você cobre em retorno) ou deixar essa devolução para depois.</p>
               <p><strong>Como pedir.</strong> Na página <strong>Trocas</strong>, clique em <strong>Solicitar troca</strong>. Abre um painel com dois blocos:</p>
               <ul class="manual-lista">
-                <li><strong>Solicitante</strong> (você): escolha o <strong>dia do serviço</strong> que quer passar e, no <strong>período</strong>, mantenha o turno inteiro ou marque só as horas que quer trocar.</li>
-                <li><strong>Solicitado</strong>: escolha a <strong>unidade</strong> e o <strong>militar</strong> que vai cobrir. Quem já está de serviço no horário, ou afastado no dia (férias, licença ou dispensa), aparece apagado, com o motivo, e não pode ser escolhido. Em <strong>Devolução</strong>, deixe em <strong>Pendência</strong> (você fica devendo o serviço, para acertar mais tarde) ou escolha <strong>Marcar dia</strong> (aponte um dia do colega e o período que você cobre em troca).</li>
+                <li><strong>Solicitante</strong> (você): escolha o <strong>dia do serviço</strong> (1) que quer passar e, no <strong>período</strong> (2), deixe em <strong>Serviço inteiro</strong> ou escolha <strong>Parte do serviço</strong> e marque o início e o fim, com a régua do dia mostrando o trecho.</li>
+                <li><strong>Solicitado</strong>: escolha a <strong>unidade</strong> e o <strong>militar</strong> (3) que vai cobrir. Quem já está de serviço no horário, ou afastado no dia (férias, licença ou dispensa), aparece apagado, com o motivo, e não pode ser escolhido. Em <strong>Devolução</strong> (4), deixe em <strong>Pendência</strong> (você fica devendo o serviço, para acertar mais tarde) ou escolha <strong>Marcar dia</strong> (aponte um dia do colega e o período que você cobre em troca).</li>
               </ul>
               <figure class="manual-figura">
-                <img src="manual/imagens/troca-solicitar.png" alt="Painel Solicitar troca, com os blocos Solicitante e Solicitado e a opção de Devolução." />
+                <img src="manual/imagens/troca-solicitar.png" alt="Painel Solicitar troca: o dia do serviço (1), o período, serviço inteiro ou parte do serviço (2), o militar que vai cobrir (3) e a devolução (4)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>Dia do serviço</li>
+                    <li>Período: serviço inteiro ou parte do serviço</li>
+                    <li>Militar que vai cobrir</li>
+                    <li>Devolução</li>
+                  </ol>
+                </figcaption>
               </figure>
               <p>Ao confirmar, a troca nasce como "Aguardando confirmação" e segue para o militar que você escolheu.</p>
 
-              <p><strong>Quando pedem uma troca a você.</strong> O pedido aparece na aba <strong>Minhas</strong> e nos seus avisos. Ao abrir a troca, um painel mostra quem troca, o dia, o horário e a devolução, junto de uma análise do impacto na escala. No rodapé, você <strong>Aceita</strong> ou <strong>Recusa</strong>: aceitando, a troca segue para a aprovação de um administrador; recusando, ela se encerra.</p>
-              <figure class="manual-figura">
-                <img src="manual/imagens/troca-aceitar.png" alt="Painel de uma troca recebida, mostrando quem troca e o serviço, com os botões Aceitar e Recusar." />
-              </figure>
+              <p><strong>Quando pedem uma troca a você.</strong> O pedido aparece na página <strong>Pendências</strong>, na aba <strong>Pendências</strong> daqui e nos seus avisos. Ao abri-lo, você vê o pedido, a análise e como fica a escala, e <strong>Aceita</strong> ou <strong>Recusa</strong>, podendo escrever o motivo. A parte <strong>Pendências</strong> deste manual mostra esse painel.</p>
 
-              <p><strong>Acompanhar as suas trocas.</strong> A página Trocas tem três abas: <strong>Todas</strong> (as trocas da sua unidade), <strong>Minhas</strong> (as que você participa, como solicitante ou solicitado) e <strong>Pendentes</strong> (as devoluções em aberto). Cada troca traz um <strong>selo</strong> com a situação: Aguardando confirmação, Aguardando aprovação, Aprovada, Recusada, Rejeitada ou Cancelada.</p>
+              <p><strong>Acompanhar as suas trocas.</strong> A página Trocas tem quatro abas (1): <strong>Todas</strong> (as trocas da sua unidade), <strong>Minhas</strong> (as que você participa, como solicitante ou solicitado), <strong>Saldos</strong> (as dívidas de horas em aberto) e <strong>Pendências</strong> (o que espera a sua resposta). Cada troca traz um <strong>selo</strong> (2) com a situação: Aguardando confirmação, Aguardando aprovação, Aprovada, Recusada, Recusada pela administração ou Cancelada.</p>
               <figure class="manual-diagrama manual-fluxo">
                 <div class="manual-fluxo-linha">
                   <span class="selo selo--alerta">Aguardando confirmação</span>
@@ -836,10 +931,16 @@
                   <svg class="icone manual-fluxo-seta" width="22" height="22" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
                   <span class="selo selo--sucesso">Aprovada</span>
                 </div>
-                <figcaption class="manual-diagrama-legenda">O caminho de uma troca: nasce Aguardando confirmação; quando o colega aceita, vai a Aguardando aprovação; quando o administrador aprova, fica Aprovada e passa a valer na escala. Ela pode encerrar antes: Recusada (o colega recusa), Rejeitada (o administrador nega) ou Cancelada (quem pediu, ou o administrador, desfaz).</figcaption>
+                <figcaption class="manual-diagrama-legenda">O caminho de uma troca: nasce Aguardando confirmação; quando o colega aceita, vai a Aguardando aprovação; quando o administrador aprova, fica Aprovada e passa a valer na escala. Ela pode encerrar antes: Recusada (o colega recusa), Recusada pela administração (o administrador nega) ou Cancelada (quem pediu, ou o administrador, desfaz).</figcaption>
               </figure>
               <figure class="manual-figura manual-figura--larga">
-                <img src="manual/imagens/troca-abas.png" alt="As abas Todas, Minhas e Pendentes e a lista de trocas, cada uma com o seu selo de situação." />
+                <img src="manual/imagens/troca-abas.png" alt="As abas Todas, Minhas, Saldos e Pendências (1) e a lista de trocas, cada uma com o seu selo de situação (2)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>As quatro abas</li>
+                    <li>Selo com a situação da troca</li>
+                  </ol>
+                </figcaption>
               </figure>
 
               <p><strong>Cancelar a sua solicitação.</strong> Enquanto a troca está aguardando (confirmação ou aprovação), você pode abri-la e usar <strong>Cancelar troca</strong>. Depois de aprovada, apenas um administrador pode desfazê-la.</p>
@@ -852,42 +953,26 @@
                 <img src="manual/imagens/escala-troca-riscado.png" alt="Dia 13 na grade da escala: 3ºSgt. Meireles aparece riscado e Sd. Sampaio entra no lugar dele." />
               </figure>
 
-              <p><strong>Devolução e pendências.</strong> Quando você marca a devolução, com o dia e o período do colega, as duas datas ficam casadas e ninguém fica devendo. Se a devolução tiver duração diferente do serviço, ou se você a deixar em <strong>Pendência</strong>, a diferença vira uma <strong>dívida de horas</strong>: quem passou o serviço fica devendo a quem cobriu. A aba <strong>Pendentes</strong> reúne essas dívidas, você vê as que envolvem você e o administrador vê todas.</p>
+              <p><strong>Devolução e pendências.</strong> Quando você marca a devolução, com o dia e o período do colega, as duas datas ficam casadas e ninguém fica devendo. Se a devolução tiver duração diferente do serviço, ou se você a deixar em <strong>Pendência</strong>, a diferença vira uma <strong>dívida de horas</strong>: quem passou o serviço fica devendo a quem cobriu. A aba <strong>Saldos</strong> reúne essas dívidas, você vê as que envolvem você e o administrador vê todas.</p>
               <figure class="manual-figura">
-                <img src="manual/imagens/troca-pendente.png" alt="Card da aba Pendentes: 3ºSgt. Meireles deve 24h a Sd. Sampaio, com a seta que abre o histórico." />
+                <img src="manual/imagens/troca-pendente.png" alt="Card da aba Saldos: 3ºSgt. Meireles deve 24h a Sd. Sampaio, com a seta que abre o histórico." />
               </figure>
               <p><strong>Ver o histórico e cobrar.</strong> Clique num card para abrir, à direita, o <strong>histórico</strong> entre vocês dois: cada troca vira uma linha com a data, <strong>quem folgou</strong> e <strong>quem trabalhou</strong> e as horas, para você ver de onde o saldo veio. Um <strong>Ver mais</strong> traz as trocas mais antigas.</p>
-              <p>Nesse painel, quem tem horas a receber usa o botão <strong>Cobrar</strong>: ele abre o <strong>Solicitar troca</strong> já apontado para quem deve, com as horas da dívida prontas na barra do serviço. Você só escolhe qual dia seu o colega vai cobrir e confirma, e quando a troca é aprovada, a dívida é acertada.</p>
+              <p>Nesse painel, quem tem horas a receber usa o botão <strong>Cobrar</strong>: ele abre o <strong>Solicitar troca</strong> já apontado para quem deve, com as horas da dívida prontas no período do serviço. Você só escolhe qual dia seu o colega vai cobrir e confirma, e quando a troca é aprovada, a dívida é acertada.</p>
               <figure class="manual-figura">
                 <img src="manual/imagens/troca-extrato.png" alt="Painel da pendência: o saldo no topo, o histórico das trocas (quem folgou, quem trabalhou e as horas) e o botão Cobrar." />
               </figure>
               <div class="manual-admin manual-zona-admin">
                 <h3 id="aprovar-trocas">Aprovar trocas <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p>Depois que o colega aceita, a troca fica "Aguardando aprovação" e espera um administrador. Na aba <strong>Todas</strong>, você abre a troca que quer decidir.</p>
-                <p><strong>A análise de impacto.</strong> Ao abrir a troca, o painel mostra um <strong>veredito em cores</strong> sobre o efeito dela na escala, com a lista do que foi encontrado:</p>
-                <ul class="manual-lista">
-                  <li><strong>Verde:</strong> sem impacto, pode aprovar tranquilo.</li>
-                  <li><strong>Amarelo:</strong> uma ressalva, como <strong>acúmulo</strong> de funções no dia ou <strong>saldo de horas</strong> (quando a devolução tem duração diferente do serviço).</li>
-                  <li><strong>Vermelho:</strong> um problema, como quem vai assumir estar <strong>inativo, de férias, licença ou dispensa</strong>, <strong>já ter uma hora extra</strong> naquele dia ou <strong>sobrepor</strong> outro serviço.</li>
-                </ul>
-                <p>O botão <strong>Aprovar</strong> fica disponível assim que a análise termina.</p>
-                <figure class="manual-figura">
-                  <img src="manual/imagens/troca-aprovar.png" alt="Painel de uma troca aguardando aprovação: a análise de impacto com o veredito em amarelo (1) e o aviso que explica o motivo (2)." />
-                  <figcaption>
-                    <ol class="manual-chamadas">
-                      <li>Veredito da análise de impacto</li>
-                      <li>Aviso que explica o motivo</li>
-                    </ol>
-                  </figcaption>
-                </figure>
+                <p>Depois que o colega aceita, a troca fica "Aguardando aprovação" e espera um administrador. Ela aparece na página <strong>Pendências</strong> e na aba <strong>Pendências</strong> daqui; o painel de decisão, a análise e o Como fica a escala estão explicados em <strong>Pendências › Decidir os pedidos</strong>.</p>
                 <p><strong>As ações.</strong> No rodapé do painel, o que aparece depende do momento da troca:</p>
                 <ul class="manual-lista">
                   <li>Enquanto ela <strong>ainda espera o colega aceitar</strong>, você pode <strong>Aprovar sem confirmação</strong>, que aprova sem aguardar o outro militar (útil quando ele demora a responder).</li>
-                  <li>Depois de <strong>aceita pelo colega</strong>, ficam <strong>Aprovar</strong> e <strong>Rejeitar</strong>.</li>
+                  <li>Depois de <strong>aceita pelo colega</strong>, ficam <strong>Aprovar</strong> e <strong>Recusar</strong> (com o motivo opcional, que vai no aviso aos dois).</li>
                   <li>Já <strong>aprovada</strong>, você ainda pode <strong>Cancelar troca</strong>, que desfaz a troca e volta a escala ao que era.</li>
                 </ul>
-                <p class="manual-nota">Numa troca da qual você participa, como quem pediu ou como o colega, os botões de decisão não aparecem: outro administrador aprova ou rejeita.</p>
-                <p>Cada ação pede uma <strong>confirmação</strong> antes de aplicar. Quando a análise apontou um problema, o aviso é mais firme ("podem quebrar a escala. Aprovar mesmo assim?"): o sistema <strong>sinaliza, não trava</strong>, e a decisão é sua. Logo depois de aprovar aparece um resumo, com a opção de <strong>Desfazer</strong>. Aprovada, a troca passa a valer na escala (o riscado da seção anterior) e a dívida de horas entre os dois é acertada.</p>
+                <p class="manual-nota">Numa troca da qual você participa, como quem pediu ou como o colega, os botões de decisão não aparecem: outro administrador aprova ou recusa.</p>
+                <p>Aprovada, a troca passa a valer na escala (o riscado da seção anterior) e a dívida de horas entre os dois é acertada.</p>
                 <p><strong>Afastamento depois da troca.</strong> Se, mais tarde, o militar que assumiu o serviço entrar de <strong>férias, licença ou dispensa</strong> naquele dia, quem lança o afastamento é avisado de que ele cobre um serviço por troca e decide se segue. Seguindo, a troca não é desfeita, mas a escala marca aquele serviço em <strong>amarelo</strong>, porque na prática ele não vai assumir.</p>
               </div>
             </section>
@@ -908,7 +993,7 @@
                   </ol>
                 </figcaption>
               </figure>
-              <p><strong>Aprovação e escala.</strong> Um administrador <strong>Aprova</strong> ou <strong>Recusa</strong>. Aprovada, a folga passa a valer: na escala, no dia da folga, <strong>você aparece riscado</strong> e as horas são descontadas do saldo. Recusada, encerra.</p>
+              <p><strong>Aprovação e escala.</strong> Um administrador <strong>Aprova</strong> ou <strong>Recusa</strong>. Aprovada, a folga passa a valer: na escala, no dia da folga, <strong>você aparece riscado</strong> e as horas são descontadas do saldo. Recusada, encerra; a recusa pode trazer o motivo, que chega no seu aviso.</p>
               <p><strong>Acompanhar e cancelar.</strong> A aba <strong>Minhas folgas</strong> reúne o seu <strong>saldo</strong> em destaque, os <strong>pedidos em aberto</strong> e o seu <strong>extrato</strong> (os lançamentos que sobem e descem o saldo), cada um com a sua situação. Enquanto o pedido está "Pendente", você pode cancelá-lo no botão <strong>✕</strong> ao lado dele; depois de aprovado, o cancelamento fica com o administrador.</p>
               <figure class="manual-figura">
                 <img src="manual/imagens/folga-minhas.png" alt="Aba Minhas folgas: o saldo em destaque (1) e um pedido Pendente, que ainda não conta no saldo, com o botão de cancelar (2)." />
@@ -921,20 +1006,15 @@
               </figure>
               <div class="manual-admin manual-zona-admin">
                 <h3 id="aprovar-folgas">Aprovar e conceder folgas <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p>Na página <strong>Folgas</strong>, você tem duas abas a mais: <strong>Aprovações</strong>, com os pedidos à espera, e <strong>Equipe</strong>, com o efetivo.</p>
-                <p><strong>Decidir um pedido.</strong> A aba <strong>Aprovações</strong> reúne as folgas "Pendente". Ao abrir uma, o painel mostra o militar, o dia, o trecho e o motivo, e uma <strong>análise de impacto</strong> com um <strong>veredito em cores</strong>. Como a folga tira o militar do serviço daquele dia, o veredito olha a <strong>cobertura</strong>: o que acontece com a escala quando ele sai.</p>
-                <ul class="manual-lista">
-                  <li><strong>Verde:</strong> a saída dele não deixa buraco, pode aprovar tranquilo.</li>
-                  <li><strong>Amarelo:</strong> uma ressalva na cobertura daquele dia.</li>
-                  <li><strong>Vermelho:</strong> um problema, o dia fica sem gente ou a distribuição não fecha sem ele.</li>
-                </ul>
-                <p>No rodapé ficam <strong>Aprovar</strong> e <strong>Recusar</strong>. O <strong>Aprovar</strong> libera assim que a análise termina, e cada ação pede uma <strong>confirmação</strong>. Quando a análise apontou um problema, o aviso é mais firme ("podem quebrar a escala. Aprovar mesmo assim?"): o sistema <strong>sinaliza, não trava</strong>, e a decisão é sua. Aprovada, a folga passa a valer (na escala o militar fica <strong>riscado</strong> e as horas saem do saldo dele) e aparece um resumo com a opção de <strong>Desfazer</strong>. Recusada, encerra.</p>
+                <p>Na página <strong>Folgas</strong>, você tem duas abas a mais: <strong>Equipe</strong>, com o efetivo, e <strong>Pendências</strong>, com os pedidos de folga à espera.</p>
+                <p><strong>Decidir um pedido.</strong> Os pedidos de folga ficam na página <strong>Pendências</strong> e na aba <strong>Pendências</strong> daqui. O painel mostra a caixa da folga (o dia, o trecho e o motivo), a <strong>Análise</strong> e o <strong>Como fica a escala</strong>, como explicado em <strong>Pendências › Decidir os pedidos</strong>. Como a folga tira o militar do serviço daquele dia, a análise olha o que a saída dele faz na escala: um posto que <strong>fica com menos gente</strong> (1), um que fica abaixo do mínimo, uma viatura sem condutor. Logo depois das notas da escala vem o <strong>saldo</strong> (2): quanto a folga consome do banco de horas e como o saldo dele fica. Se o saldo fica negativo, a nota é amarela e conta como ponto de atenção.</p>
+                <p>No rodapé ficam <strong>Recusar</strong> (com o motivo opcional, que vai no aviso ao militar) e <strong>Aprovar</strong>. Aprovada, a folga passa a valer (na escala o militar fica <strong>riscado</strong> e as horas saem do saldo dele) e aparece um resumo com a opção de <strong>Desfazer</strong>. Recusada, encerra.</p>
                 <figure class="manual-figura">
-                  <img src="manual/imagens/folga-aprovar.png" alt="Painel de um pedido de folga em Aprovações: a análise de impacto, com o veredito em cores (1) e o detalhe do efeito na cobertura do dia (2)." />
+                  <img src="manual/imagens/folga-aprovar.png" alt="Painel de decisão de uma folga: a nota de um posto que fica com menos gente (1) e a nota do saldo, que fica negativo (2)." />
                   <figcaption>
                     <ol class="manual-chamadas">
-                      <li>Veredito da análise de impacto</li>
-                      <li>Efeito na cobertura do dia</li>
+                      <li>O que a saída do militar faz na escala</li>
+                      <li>O saldo do militar depois da folga</li>
                     </ol>
                   </figcaption>
                 </figure>
@@ -1321,18 +1401,19 @@
                 <p><strong>Ajustar os dados da ficha.</strong> No mesmo modo Editar, a aba <strong>Dados</strong> deixa mudar os dados pessoais e a aba <strong>Carreira</strong>, os institucionais (inclusão no quadro, nome de guerra, setor e colocação). O <strong>CPF</strong> não muda, e o <strong>grau</strong> e a <strong>lotação</strong> também não se editam aqui, porque mudam por promoção e transferência.</p>
                 <p>Ao <strong>Salvar</strong>, o sistema grava e mostra o resumo. Se você alterar a <strong>CNH</strong>, ele pede uma data para recalcular a distribuição, já que a CNH decide quem pode ser condutor.</p>
                 <h3 id="aprovacoes">Aprovar cadastros e correções <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p>Em <strong>Usuários</strong>, a aba <strong>Aprovações</strong> reúne o que espera a sua decisão sobre pessoas. O número na aba conta os pendentes, e a tela traz duas filas: <strong>Cadastros</strong> e <strong>Correções</strong>.</p>
+                <p>Os cadastros e as correções de dados que esperam a sua decisão ficam na página <strong>Pendências</strong> (no seletor, <strong>Usuários</strong>) e na aba <strong>Pendências</strong> da página Usuários (1), numa lista só. O número na aba conta os pedidos, e cada cartão mostra o pelotão de quem pediu.</p>
                 <figure class="manual-figura manual-figura--cheia">
-                  <img src="manual/imagens/usuarios-aprovacoes.png" alt="A aba Aprovações com as duas filas: um card em Cadastros com o selo de alerta (1) e um card em Correções com as linhas de valor atual e valor novo e os botões Aprovar e Recusar (2)." />
+                  <img src="manual/imagens/usuarios-pendencias.png" alt="A aba Pendências da página Usuários (1): um pedido de cadastro com o selo de alerta (2) e um pedido de correção de dados (3)." />
                   <figcaption>
                     <ol class="manual-chamadas">
+                      <li>A aba Pendências, com o número de pedidos</li>
                       <li>Cadastro, com o selo de alerta</li>
-                      <li>Correção, com o valor atual, o novo e os botões Aprovar e Recusar</li>
+                      <li>Correção de dados</li>
                     </ol>
                   </figcaption>
                 </figure>
-                <p><strong>Cadastros (liberar um novo acesso).</strong> Aqui ficam os militares que se <strong>cadastraram sozinhos</strong> pela tela <strong>Criar conta</strong>. Cada card mostra o militar, a lotação e a data do pedido; um <strong>selo de alerta</strong> avisa quando há algo a conferir, como um CPF que <strong>já tem conta</strong>, um cadastro que <strong>já existe</strong> ou um <strong>e-mail em uso</strong>.</p>
-                <p>Clicando no card, o pedido abre no painel: em <strong>Ver</strong>, do jeito que o militar enviou; em <strong>Editar</strong>, o mesmo formulário do Novo usuário já preenchido, para você <strong>corrigir</strong> o que precisar. Os botões são <strong>Aprovar</strong> e <strong>Recusar</strong>, e a conta de acesso só nasce quando você aprova.</p>
+                <p><strong>Cadastros (liberar um novo acesso).</strong> Aqui ficam os militares que se <strong>cadastraram sozinhos</strong> pela tela <strong>Criar conta</strong>. Cada cartão (2) mostra o pelotão, o militar e a data do pedido; um <strong>selo de alerta</strong> avisa quando há algo a conferir, como um CPF que <strong>já tem conta</strong>, um cadastro que <strong>já existe</strong> ou um <strong>e-mail em uso</strong>.</p>
+                <p>Clicando no cartão, o pedido abre no painel: em <strong>Ver</strong>, do jeito que o militar enviou; em <strong>Editar</strong>, o mesmo formulário do Novo usuário já preenchido, para você <strong>corrigir</strong> o que precisar. Os botões são <strong>Aprovar</strong> e <strong>Recusar</strong>, e a conta de acesso só nasce quando você aprova. O Recusar pede o motivo, que é opcional, no próprio painel.</p>
                 <figure class="manual-figura">
                   <img src="manual/imagens/usuarios-cadastro-revisar.png" alt="Um cadastro aberto no painel, em modo Ver: os dados do pedido como o militar enviou (1) e os botões Aprovar e Recusar no rodapé (2)." />
                   <figcaption>
@@ -1342,8 +1423,8 @@
                     </ol>
                   </figcaption>
                 </figure>
-                <p><strong>Correções (mudanças de dados).</strong> São os pedidos que os militares mandam pelo <strong>Meu perfil</strong>. Cada card é um militar com as alterações que ele enviou juntas, e cada linha mostra o <strong>campo</strong>, o <strong>valor atual</strong> e o <strong>novo</strong>, com uma caixa de seleção, mais o <strong>Selecionar tudo</strong> no topo.</p>
-                <p><strong>Aprovar</strong> e <strong>Recusar</strong> valem só para o que está marcado, então você pode aceitar umas alterações e recusar outras no mesmo pedido. Esta fila mostra os pedidos das <strong>unidades selecionadas</strong> no seletor de unidades.</p>
+                <p><strong>Correções (mudanças de dados).</strong> São os pedidos que os militares mandam pelo <strong>Meu perfil</strong>. Cada cartão (3) é um militar com as alterações que ele enviou juntas. Clicando, o painel mostra cada linha com o <strong>campo</strong>, o <strong>valor atual</strong> e o <strong>novo</strong>, com uma caixa de seleção, mais o <strong>Selecionar tudo</strong> no topo.</p>
+                <p><strong>Aprovar</strong> e <strong>Recusar</strong> valem só para o que está marcado, então você pode aceitar umas alterações e recusar outras no mesmo pedido. O Recusar também pede o motivo opcional. A lista mostra os pedidos da <strong>sua área</strong>: a companhia inteira.</p>
                 <p class="manual-nota">No <strong>Efetivo</strong>, o card de quem tem uma correção esperando ganha o selo "Correção pendente", visível só para os administradores.</p>
               </div>
             </section>
@@ -1420,32 +1501,20 @@
                 <img src="manual/imagens/aviso-sino.png" alt="O sino do cabeçalho aberto, com o número de avisos em aberto e a lista de avisos." />
               </figure>
               <p><strong>Ler e resolver.</strong> Um aviso que <strong>só informa</strong> (por exemplo, "Troca aprovada") sai da lista <strong>quando você o lê</strong>. Um aviso que <strong>pede uma ação sua</strong> (como uma troca esperando a sua confirmação) fica na lista <strong>até o assunto ser resolvido</strong>, mesmo que você já o tenha visto.</p>
-              <p>Clicar num aviso leva direto para a tela do assunto. Há também o <strong>Marcar todas como lidas</strong>, que limpa de uma vez os avisos que só informam, e o <strong>Ver todos</strong>, que abre a página Avisos.</p>
+              <p>Clicar num aviso leva direto para a tela do assunto; o aviso que pede uma resposta sua abre a página <strong>Pendências</strong>, já no pedido. Há também o <strong>Marcar todas como lidas</strong>, que limpa de uma vez os avisos que só informam, e o <strong>Ver todos</strong>, que abre a página Avisos.</p>
               <p><strong>O que chega para você.</strong> Os avisos acompanham o que acontece com as suas trocas, folgas e dados:</p>
               <ul class="manual-lista">
-                <li><strong>Trocas:</strong> "Troca de serviço para confirmar" (quando um colega pede que você cubra o serviço dele), "Troca aprovada", "Troca recusada", "Troca negada pela administração" e "Troca cancelada".</li>
+                <li><strong>Trocas:</strong> "Troca de serviço para confirmar" (quando um colega pede que você cubra o serviço dele), "Troca aprovada", "Troca recusada", "Troca recusada pela administração" e "Troca cancelada".</li>
                 <li><strong>Folgas:</strong> "Folga aprovada", "Folga recusada", "Folga cancelada", "Folga concedida" (quando o administrador concede uma folga direto para você) e "Saldo de folgas ajustado".</li>
                 <li><strong>Dados:</strong> quando o administrador decide uma correção de dados que você pediu.</li>
               </ul>
-              <p><strong>A página Avisos.</strong> O <strong>Ver todos</strong> abre a página Avisos, com duas abas. Em <strong>Para mim</strong>, no topo aparece o "Precisa de você" (o que espera uma ação sua, como uma troca a confirmar) e, abaixo, o <strong>histórico</strong> de tudo que já aconteceu com você. Em <strong>Comunicados</strong> ficam os <strong>avisos gerais</strong> que o administrador publica para as unidades ou os militares escolhidos, ou para todos, e que você lê.</p>
-              <figure class="manual-figura">
-                <img src="manual/imagens/aviso-pagina.png" alt="A página Avisos, aba Para mim, com o Precisa de você e o histórico dos avisos." />
+              <p>Quando quem recusou escreveu um motivo, ele vem no aviso.</p>
+              <p><strong>A página Avisos.</strong> O <strong>Ver todos</strong> abre a página Avisos, com duas abas. Em <strong>Para mim</strong> fica o <strong>histórico</strong> de tudo que já aconteceu com você; o que espera uma resposta sua fica na página <strong>Pendências</strong>. Em <strong>Comunicados</strong> ficam os <strong>avisos gerais</strong> que o administrador publica para as unidades ou os militares escolhidos, ou para todos, e que você lê.</p>
+              <figure class="manual-figura manual-figura--cheia">
+                <img src="manual/imagens/aviso-pagina.png" alt="A página Avisos, aba Para mim, com o histórico dos avisos." />
               </figure>
               <div class="manual-admin manual-zona-admin">
-                <h3 id="comunicados">Criar comunicados e resolver pendências <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p><strong>A aba Administração.</strong> Além de Para mim e Comunicados, você tem a aba <strong>Administração</strong>, com um número no selo. Ela lista as <strong>pendências</strong> que esperam a sua decisão. Uma pendência não é um aviso que você lê: é um <strong>estado</strong> que some sozinho quando alguém resolve o assunto. Cada uma mostra uma <strong>contagem</strong> e um texto, e clicar leva direto à tela onde se resolve, como as trocas ou as folgas a aprovar.</p>
-                <p><strong>De onde vêm.</strong> Você recebe os avisos e as pendências da sua <strong>companhia inteira</strong>. Lotado num pelotão, vê os da companhia e de todos os pelotões dela. Lotado na companhia ou acima, vê os da sua unidade e das que estão abaixo.</p>
-                <figure class="manual-figura manual-figura--larga">
-                  <img src="manual/imagens/avisos-administracao.png" alt="A aba Administração dos avisos: uma pendência comum com a contagem e a seta (1) e a de militares operacionais fora da escala, listando os militares (2)." />
-                  <figcaption>
-                    <ol class="manual-chamadas">
-                      <li>Pendência com a contagem</li>
-                      <li>Pendência que lista os militares ali mesmo</li>
-                    </ol>
-                  </figcaption>
-                </figure>
-                <p>Duas pendências <strong>não levam a outra tela</strong>, e sim <strong>listam os itens</strong> ali mesmo, para você consertar como quiser: <strong>Operacional lotado sem ciclo na escala</strong> mostra os militares lotados sem ciclo, para acertar pela aba Ciclo, e <strong>Viaturas em manutenção</strong> mostra as viaturas paradas, para você reorganizar o dia na Escala ou, em Postos, encerrar a manutenção ou deixar a viatura Inativa. É a mesma lista que abastece o "Precisa de você" da aba Para mim, com o que é seu.</p>
-                <p>Duas pendências levam direto à <strong>Distribuição</strong>: <strong>Distribuição a revisar</strong>, quando uma mudança de posto abriu um período que ainda precisa de revisão, e <strong>Distribuição com erro</strong>, quando um período atual ou futuro tem erro vermelho. Essas duas e as duas de cima também aparecem no <strong>sino</strong>, com a bolinha amarela ou vermelha conforme a gravidade.</p>
+                <h3 id="comunicados">Criar comunicados <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p><strong>Criar um comunicado.</strong> Na aba <strong>Comunicados</strong>, o botão <strong>Novo comunicado</strong> abre o painel. No topo você escolhe o <strong>destinatário</strong>: <strong>Unidades</strong> (na árvore, e uma unidade alcança as de baixo), <strong>Militares</strong> (da lista, com busca) ou <strong>Todos</strong>. Abaixo vêm o <strong>título</strong> e a <strong>mensagem</strong>. Ao <strong>Salvar</strong>, o comunicado é publicado e passa a aparecer no mural para quem ele alcança.</p>
                 <figure class="manual-figura">
                   <img src="manual/imagens/avisos-novo-comunicado.png" alt="O painel Novo comunicado: o destinatário Unidades, Militares ou Todos (1) e os campos de título e mensagem (2)." />
@@ -1505,7 +1574,7 @@
                   <span class="manual-legenda-texto"><strong>Cinza.</strong> Encerrado sem efeito, como algo cancelado.</span>
                 </li>
               </ul>
-              <p>Os <strong>selos</strong> são essas etiquetas coloridas que resumem a situação de um item. Os mais comuns são "Ativo", "Pendente", "Aprovada", "Recusada" (ou "Rejeitada") e "Cancelada".</p>
+              <p>Os <strong>selos</strong> são essas etiquetas coloridas que resumem a situação de um item. Os mais comuns são "Ativo", "Pendente", "Aprovada", "Recusada" (ou "Recusada pela administração") e "Cancelada".</p>
             </section>
 
             <section class="manual-secao" id="onde-buscar-ajuda">

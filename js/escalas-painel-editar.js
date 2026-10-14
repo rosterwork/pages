@@ -14,8 +14,9 @@
    só de leitura, com o dia já lido (opções dados e semAvisos). O
    "Como fica a escala" do painel de decisão (Trocas e Folgas) também,
    no modo comparação (opção comparar): só leitura, com quem saiu
-   riscado na função de onde saiu e quem entrou com o "Novo" (as marcas
-   vêm do banco, pedido_escala_comparar).
+   riscado na função de onde saiu, quem entra pelo pedido com o "Novo"
+   e quem o sistema remanejou só com a barra cinza (as marcas vêm do
+   banco, pedido_escala_comparar).
    ============================================================ */
 (function () {
   'use strict';
@@ -435,7 +436,7 @@
   }
 
   /* uma linha do dia: rótulo da função (só na 1ª linha dela) · militar · horário · ações.
-     op = { ghost, folga, icone, novo, acoes } */
+     op = { ghost, folga, icone, novo, alterada, acoes }: novo = o selo "Novo" e a barra cinza; alterada = só a barra */
   function linhaMilitar(rotulos, nivel, m, op) {
     op = op || {};
     var p = pecas();
@@ -456,8 +457,8 @@
     if (op.novo) {
       var selo = RosterWork.tpl('tpl-escala-edicao-novo');
       if (selo) linha.querySelector('.escala-edicao-pessoa').appendChild(selo);
-      linha.classList.add('escala-edicao-linha--alterada');
     }
+    if (op.novo || op.alterada) linha.classList.add('escala-edicao-linha--alterada');
     var horas = linha.querySelector('.escala-distribuicao-horas');
     (m.periodos || []).forEach(function (per) { var h = p.hora(per); if (h) horas.appendChild(h); });
     if (op.ghost) linha.classList.add('escala-edicao-linha--original');
@@ -535,10 +536,11 @@
         }
         acoes.push(botao('tpl-escala-edicao-lapis', function () { abrirMilitar(m.cpf); }));
       }
-      /* na comparação, o "Novo" vem do banco (quem entrou na função); na edição, do rascunho ainda não salvo */
+      /* na comparação, as marcas vêm do banco ("Novo" = quem entra pelo pedido; só a barra = quem o
+         sistema remanejou); na edição, o "Novo" vem do rascunho ainda não salvo */
       var novo = ctx.comparar ? !!m.novo : ctx.admin && ((m.fixado && ajusteNovo(function (a) { return a.acao === 'colocar' && a.cpf === m.cpf && noLocal(a, posto, f.nome); }))
         || pontualNovo(m.cpf));
-      var linha = linhaMilitar(rotulos, nivel, m, { novo: novo, acoes: acoes });
+      var linha = linhaMilitar(rotulos, nivel, m, { novo: novo, alterada: ctx.comparar && !!m.mudou, acoes: acoes });
       if (linha && (sobrepostos[m.cpf] || (m.periodos || []).some(function (per) { return foraDaDisponibilidade(per, m); }))) {
         linha.classList.add('escala-edicao-linha--erro');
       }

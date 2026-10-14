@@ -181,6 +181,7 @@
     var m = RW.mensagens.cadastros;
     RW.novoUsuario.abrirPainel({
       titulo: m.painelTitulo,
+      tituloExtra: RW.mensagens.decisao.tituloPelotao(c.pelotoes),
       subtitulo: ctxAtual.posicao ? RW.mensagens.decisao.posicao(m.painelSituacao, ctxAtual.posicao.n, ctxAtual.posicao.total) : m.painelSituacao,
       dados: c,
       rotuloSalvar: m.botaoAprovar,

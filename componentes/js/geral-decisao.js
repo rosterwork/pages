@@ -6,9 +6,13 @@
                         não é de decisão (a revisão de cadastro)
      · caixa(cfg)     → uma caixa do pedido: título, dia com o
                         horário, a frase, a régua e um texto extra
-     · saldo(partes, texto, alerta) → a nota do saldo (folga)
-     · analisando(partes) / analise(partes, r) → os pontinhos e,
-                        depois, as notas do geral-impacto
+     · saldo(partes, texto, alerta) → a nota do saldo (folga): entra
+                        na Análise, depois das notas da escala e
+                        antes das verdes
+     · analisando(partes) / analise(partes, r) → a seção Análise:
+                        os pontinhos e, depois, o selo do resultado
+                        no título e as notas do geral-impacto (a
+                        seção só aparece no painel que analisa)
      · escala(partes, carregar) → o "Como fica a escala": fechado;
                         lê e desenha o dia inteiro só ao abrir
      · recusar(partes, aoConfirmar) → a caixa do motivo e o rodapé
@@ -32,8 +36,10 @@
     var partes = {
       raiz: raiz,
       pedido: raiz.querySelector('.decisao-pedido'),
-      saldo: raiz.querySelector('.decisao-saldo'),
+      analiseSecao: raiz.querySelector('.decisao-analise-secao'),
+      analiseSelo: raiz.querySelector('.decisao-analise-selo'),
       analise: raiz.querySelector('.decisao-analise'),
+      saldo: null,   // { texto, alerta }: a nota do saldo, desenhada junto com a análise
       escala: raiz.querySelector('.decisao-escala'),
       recusa: raiz.querySelector('.decisao-recusa'),
       motivo: raiz.querySelector('.decisao-motivo')
@@ -91,32 +97,49 @@
     return el;
   }
 
+  /* guarda a nota do saldo; ela aparece com a análise (analise()) */
   function saldo(partes, texto, alerta) {
     if (!partes) return;
-    partes.saldo.textContent = '';
-    partes.saldo.classList.toggle('oculto', !texto);
-    if (!texto) return;
+    partes.saldo = texto ? { texto: texto, alerta: !!alerta } : null;
+  }
+
+  /* a nota do saldo dentro da Análise: depois das notas da escala, antes das verdes */
+  function desenharSaldo(partes) {
+    if (!partes.saldo) return;
     var n = RosterWork.tpl('tpl-decisao-saldo');
     if (!n) return;
-    n.classList.toggle('nota--alerta', !!alerta);
-    n.querySelector('.nota-texto').textContent = texto;
-    partes.saldo.appendChild(n);
+    n.classList.toggle('nota--alerta', partes.saldo.alerta);
+    n.querySelector('.nota-texto').textContent = partes.saldo.texto;
+    partes.analise.insertBefore(n, partes.analise.querySelector('.nota--sucesso'));
   }
 
   function analisando(partes) {
     if (!partes) return;
+    partes.analiseSecao.classList.remove('oculto');
+    partes.analiseSelo.classList.add('oculto');
     partes.analise.textContent = '';
     var pts = document.getElementById('carregando-pontos');
     if (pts) partes.analise.appendChild(pts.content.cloneNode(true));
   }
 
-  /* r = resultado da análise; sem r (falhou), o texto de falha */
+  /* r = resultado da análise; sem r (falhou), o texto de falha. O selo do título
+     é o mesmo do cartão da Pendências (ex.: "2 pontos de atenção") */
   function analise(partes, r, textoFalha) {
     if (!partes) return;
+    partes.analiseSecao.classList.remove('oculto');
     partes.analise.textContent = '';
-    if (r && r.ok !== false && RW.impacto) { RW.impacto.desenhar(partes.analise, r); return; }
-    var e = RW.painel && RW.painel.criarEstado ? RW.painel.criarEstado(textoFalha || '') : null;
-    if (e) partes.analise.appendChild(e);
+    var selo = r && r.ok !== false && RW.impacto ? RW.impacto.selo(r) : null;
+    partes.analiseSelo.classList.remove('selo--erro', 'selo--alerta', 'selo--sucesso');
+    if (selo) partes.analiseSelo.classList.add(selo.classe);
+    partes.analiseSelo.classList.toggle('oculto', !selo);
+    partes.analiseSelo.textContent = selo ? selo.texto : '';
+    if (r && r.ok !== false && RW.impacto) {
+      RW.impacto.desenhar(partes.analise, r);
+    } else {
+      var e = RW.painel && RW.painel.criarEstado ? RW.painel.criarEstado(textoFalha || '') : null;
+      if (e) partes.analise.appendChild(e);
+    }
+    desenharSaldo(partes);
   }
 
   /* "Como fica a escala": a seção que abre e fecha, fechada no começo. O dia só é lido na

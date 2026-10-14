@@ -736,6 +736,7 @@
   <template id="tpl-pedido-linha">
     <button type="button" class="pedido pedido--linha">
       <svg class="icone pedido-linha-icone" width="18" height="18" aria-hidden="true"><use href=""/></svg>
+      <span class="pedido-linha-pelotao oculto"></span>
       <span class="pedido-textos">
         <span class="pedido-quem"></span>
         <span class="pedido-meta"></span>
@@ -1139,8 +1140,15 @@
   <template id="tpl-decisao">
     <div class="decisao">
       <div class="decisao-pedido"></div>
-      <div class="decisao-saldo oculto"></div>
-      <div class="impacto-analise decisao-analise"></div>
+      <!-- a análise: o título com o selo do resultado e as notas (vermelhas, amarelas, o saldo e as verdes);
+           só aparece no painel que analisa (troca e folga) -->
+      <div class="decisao-analise-secao oculto">
+        <div class="decisao-analise-cabecalho">
+          <span class="rotulo-secao">Análise</span>
+          <span class="selo decisao-analise-selo oculto"></span>
+        </div>
+        <div class="impacto-analise decisao-analise"></div>
+      </div>
       <div class="decisao-escala"></div>
       <div class="grupo-caixa decisao-recusa oculto">
         <span class="rotulo-secao">Recusar o pedido</span>

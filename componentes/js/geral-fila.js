@@ -11,7 +11,8 @@
                    mais próxima primeiro; null se a leitura falhou
      · doTipo(pedidos, tipos) → só os pedidos desses tipos
      · criar(lista, opcoes) → uma fila na tela: desenha os cartões
-                   (geral-pedido, .pedido--linha), abre o painel do
+                   (geral-pedido, .pedido--linha; nas listas do
+                   administrador, com o pelotão), abre o painel do
                    tipo com o "N de M" e, depois de decidir, pede à
                    página para reler (opcoes.recarregar) e abre o
                    pedido que tomou o lugar do decidido.
@@ -85,6 +86,11 @@
     return msg().trechoHoras(RW.horario.curta(String(hi).slice(0, 5)), RW.horario.curta(String(hf).slice(0, 5)));
   }
 
+  /* o pelotão do pedido, só nas listas do administrador (no "Para mim" é sempre o do próprio militar) */
+  function pelotoes(p) {
+    return !p.minha && Array.isArray(p.dado.pelotoes) ? p.dado.pelotoes.filter(Boolean) : [];
+  }
+
   /* quem e o quê, a linha de apoio e o selo, por tipo de pedido */
   function textos(p) {
     var m = msg(), d = p.dado;
@@ -108,7 +114,8 @@
       var alerta = d.ja_tem_conta ? c.jaTemConta : (d.ja_existe_pessoa ? c.jaExiste : (d.email_em_uso ? c.emailEmUso : ''));
       return {
         quem: m.cadastro(nome(d.grau_abreviacao, d.nome_de_guerra)),
-        meta: m.metaCadastro(d.lotacao_nome, RW.data.isoParaBR(d.criado_em)),
+        /* com a coluna do pelotão, a lotação sai da linha de apoio */
+        meta: m.metaCadastro(pelotoes(p).length ? null : d.lotacao_nome, RW.data.isoParaBR(d.criado_em)),
         selo: alerta ? { classe: 'selo--alerta', texto: alerta } : null
       };
     }
@@ -126,6 +133,10 @@
     el.dataset.pedido = p.tipo + ':' + p.id;
     var uso = el.querySelector('.pedido-linha-icone use');
     if (uso) uso.setAttribute('href', 'icones/icone-' + ICONES[p.tipo] + '.svg#icone-' + ICONES[p.tipo]);
+    var pel = pelotoes(p);
+    var colPelotao = el.querySelector('.pedido-linha-pelotao');
+    colPelotao.textContent = pel.join('\n');
+    colPelotao.classList.toggle('oculto', !pel.length);
     el.querySelector('.pedido-quem').textContent = t.quem;
     el.querySelector('.pedido-meta').textContent = t.meta;
     var selo = el.querySelector('.pedido-linha-selo');

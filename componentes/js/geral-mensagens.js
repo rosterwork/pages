@@ -570,6 +570,8 @@
     /* painel de decisão (Trocas e Folgas): a posição do pedido na fila da Pendências */
     decisao: {
       posicao: function (situacao, n, total) { return situacao + ' · ' + n + ' de ' + total; },
+      /* o pelotão no espaço pequeno ao lado do título do painel ("- 2ºPEL", "- 1ºPEL e 2ºPEL") */
+      tituloPelotao: function (lista) { return lista && lista.length ? '- ' + lista.join(' e ') : ''; },
       /* o "Como fica a escala" (seção que abre e fecha) */
       comoFicaEscala: 'Como fica a escala',
       diaTitulo: function (titulo, data, unidade) { return [titulo, data, unidade].filter(Boolean).join(' · '); },

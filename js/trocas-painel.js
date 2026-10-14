@@ -183,6 +183,7 @@
     var situacao = fmt().situacao(troca.status).texto;
     RW.painel.abrir({
       titulo: msg().painelTitulo,
+      tituloExtra: RW.mensagens.decisao.tituloPelotao(troca.pelotoes),
       subtitulo: ctx.posicao ? RW.mensagens.decisao.posicao(situacao, ctx.posicao.n, ctx.posicao.total) : situacao,
       aoFechar: function () { trocaAtual = null; partes = null; if (ctx.aoFechar) ctx.aoFechar(); }
     });
@@ -191,12 +192,11 @@
     trocaAtual = troca;
     montarCorpo(troca);
     montarAcoes(troca, ctx);
+    /* só a troca em aberto tem a Análise e o "Como fica a escala" */
     if (troca.status === 'pendente_confirmacao' || troca.status === 'pendente_aprovacao') {
       carregarAnalise(troca);
       /* o dia inteiro como fica: fechado; só lê se abrirem */
       RW.decisao.escala(partes, function () { return RW.rpc('pedido_escala_comparar', { p_tipo: 'troca', p_id: troca.troca_id }); });
-    } else if (partes) {
-      partes.analise.classList.add('oculto');
     }
   }
 

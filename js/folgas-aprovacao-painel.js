@@ -1,8 +1,8 @@
 /* ============================================================
    FOLGAS — painel de aprovação de uma folga (geral-decisao)
    O pedido numa caixa (o dia com o horário, quem folga, a régua e
-   o motivo), a nota do saldo (quando a lista traz o saldo do
-   militar), a análise de impacto (geral-impacto), o "Como fica a
+   o motivo), a Análise (geral-impacto, com a nota do saldo depois
+   das notas da escala, quando a lista traz o saldo), o "Como fica a
    escala" (fechado; o dia inteiro só ao abrir) e o rodapé
    Recusar/Aprovar. Recusar pede o motivo opcional no próprio
    painel. Espelha o trocas-painel.js. Aprovar recalcula (véu) e
@@ -141,6 +141,7 @@
     var situacao = msg().painelPendente;
     RW.painel.abrir({
       titulo: msg().painelFolga,
+      tituloExtra: RW.mensagens.decisao.tituloPelotao(sol.pelotoes),
       subtitulo: ctx.posicao ? RW.mensagens.decisao.posicao(situacao, ctx.posicao.n, ctx.posicao.total) : situacao,
       aoFechar: function () { solAtual = null; partes = null; if (ctx.aoFechar) ctx.aoFechar(); }
     });
