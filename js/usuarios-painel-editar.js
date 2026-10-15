@@ -22,8 +22,9 @@
     { k: 'rg', rotulo: 'RG', tipo: 'rg', max: 12, num: true, ph: '00.000.000-0' },
     { k: 'data_de_nascimento', rotulo: 'Nascimento', tipo: 'data', max: 10, num: true, ph: 'dd/mm/aaaa', cal: true },
     { k: 'cnh', rotulo: 'CNH', tipo: 'selecao', opcoes: ['Nenhuma', 'A', 'B', 'C', 'D', 'E', 'AB', 'AC', 'AD', 'AE'] },
-    { k: 'celular', rotulo: 'Celular', tipo: 'celular', max: 15, num: true, ph: '(00) 00000-0000' },
-    { k: 'email', rotulo: 'Email', tipo: 'texto', max: 80, ph: 'nome@exemplo.com' }
+    { k: 'celular', rotulo: 'Celular (opcional)', tipo: 'celular', max: 15, num: true, ph: '(00) 00000-0000' },
+    /* quem tem conta é identificado pelo e-mail: só é opcional para quem ainda não tem */
+    { k: 'email', rotulo: 'E-mail', rotuloSemConta: 'E-mail (opcional)', tipo: 'texto', max: 80, ph: 'nome@exemplo.com' }
   ];
   var INST = [
     { k: 'data_de_inclusao', rotulo: 'Inclusão no quadro', tipo: 'data', max: 10, num: true, ph: 'dd/mm/aaaa', cal: true, ajuda: true },
@@ -77,8 +78,10 @@
     var campo = RosterWork.tpl('tpl-ficha-campo');
     if (!campo) return null;
     /* a colocação diz o curso (CFO, CHOE ou CFP), pelo quadro do militar */
+    var semConta = !!(ctx && ctx.ficha && ctx.ficha.tem_conta === false);
     campo.querySelector('.campo-rotulo').textContent = (c.rotuloPorQuadro && ctx && ctx.ficha)
-      ? C.nomeColocacao((ctx.ficha.institucionais || {}).quadro) : c.rotulo;
+      ? C.nomeColocacao((ctx.ficha.institucionais || {}).quadro)
+      : ((c.rotuloSemConta && semConta) ? c.rotuloSemConta : c.rotulo);
     if (c.ajuda) { var ajuda = campo.querySelector('[data-ajuda]'); if (ajuda) ajuda.classList.remove('oculto'); }
     var input = campo.querySelector('.campo-entrada');
     input.setAttribute('data-campo', c.k);
@@ -137,12 +140,12 @@
 
       if (!valorSelecao(raiz, 'cnh')) erro(campoEl(raiz, 'cnh'), T.cnhVazia);
 
+      /* celular é opcional; o e-mail também, para quem ainda não tem conta */
       var cel = campoEl(raiz, 'celular');
-      if (!cel.value.trim()) erro(cel, T.celularVazio);
-      else if (V.soDigitos(cel.value).length !== 11) erro(cel, T.celularInvalido);
+      if (cel.value.trim() && V.soDigitos(cel.value).length !== 11) erro(cel, T.celularInvalido);
 
       var email = campoEl(raiz, 'email');
-      if (!email.value.trim()) erro(email, T.emailVazio);
+      if (!email.value.trim()) { if (ctx.ficha.tem_conta !== false) erro(email, T.emailVazio); }
       else if (!V.validarEmail(email.value)) erro(email, T.emailInvalido);
     } else {
       var guerra = campoEl(raiz, 'nome_de_guerra');
@@ -230,6 +233,20 @@
     enviar(corpo);
   }
 
+  /* o administrador trocou o próprio e-mail: as funções do banco identificam quem está logado pelo
+     e-mail do token, então a sessão guarda o novo e o token é renovado (o novo já vem com ele) */
+  function atualizarEmailDaSessao(corpo) {
+    var eu = RosterWork.sessao && RosterWork.sessao.cpf();
+    var antes = String(((ctx && ctx.ficha && ctx.ficha.pessoais) || {}).email || '').toLowerCase();
+    var depois = String(corpo.p_email || '').toLowerCase();
+    if (!eu || corpo.p_cpf !== eu || !depois || depois === antes) return Promise.resolve();
+    try {
+      var usuario = JSON.parse(sessionStorage.getItem('rosterwork_user'));
+      if (usuario) { usuario.email = depois; sessionStorage.setItem('rosterwork_user', JSON.stringify(usuario)); }
+    } catch (e) {}
+    return RosterWork.renovarSessao ? RosterWork.renovarSessao().catch(function () {}) : Promise.resolve();
+  }
+
   function enviar(corpo) {
     /* CNH mudou (p_recalcular_desde) = recalcula a escala: círculo + tela travada;
        demais edições são rápidas: pontos no botão */
@@ -249,8 +266,12 @@
           if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.falhaServidor });
         } else if (r && r.success) {
           sujo = false;
-          if (ctx && ctx.aoSalvar) ctx.aoSalvar();
-          if (r.log && RosterWork.resumo) RosterWork.resumo.abrirModal(r.log, { pagina: 'Usuários' });
+          var aoSalvar = ctx && ctx.aoSalvar;
+          /* a ficha só recarrega depois da sessão em dia */
+          atualizarEmailDaSessao(corpo).then(function () {
+            if (aoSalvar) aoSalvar();
+            if (r.log && RosterWork.resumo) RosterWork.resumo.abrirModal(r.log, { pagina: 'Usuários' });
+          });
         } else if (RosterWork.avisar) {
           RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || RosterWork.mensagens.usuarios.falhaSalvar });
         }

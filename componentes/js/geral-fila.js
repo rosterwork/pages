@@ -18,17 +18,17 @@
                    pedido que tomou o lugar do decidido.
                    opcoes = { vazio, recarregar() → Promise }
                    devolve { definir(pedidos), abrirId(id), quantos() }
-   Os painéis: RosterWork.trocasPainel, .folgasAprovacaoPainel,
-   .usuariosCadastroPainel e .usuariosCorrecaoPainel (cada página
-   carrega os do seu assunto). Clona moldes; não cria HTML.
+   Os painéis: RosterWork.trocasPainel, .folgasAprovacaoPainel e
+   .usuariosCorrecaoPainel (cada página carrega os do seu assunto).
+   Clona moldes; não cria HTML.
    RosterWork.fila.
    ============================================================ */
 (function () {
   'use strict';
   var RW = window.RosterWork = window.RosterWork || {};
 
-  var DECISAO = ['troca', 'folga', 'cadastro', 'dados'];
-  var ICONES = { troca: 'trocas', folga: 'folgas', cadastro: 'novo-usuario', dados: 'editar' };
+  var DECISAO = ['troca', 'folga', 'dados'];
+  var ICONES = { troca: 'trocas', folga: 'folgas', dados: 'editar' };
 
   function msg() { return RW.mensagens.pendencias; }
   function nome(grau, n) { return ((grau || '') + ' ' + (n || '')).trim(); }
@@ -51,8 +51,7 @@
   function pedido(tipo, d, minha) {
     var id = tipo === 'troca' ? d.troca_id : (tipo === 'dados' ? d.solicitacao_id : d.id);
     var data = tipo === 'troca' ? d.data_servico_solicitante
-      : tipo === 'folga' ? d.data_ref
-      : tipo === 'cadastro' ? d.criado_em : d.solicitado_em;
+      : tipo === 'folga' ? d.data_ref : d.solicitado_em;
     return { tipo: tipo, id: String(id), dado: d, data: String(data || ''), minha: minha };
   }
 
@@ -107,16 +106,6 @@
         quem: m.folga(d.nome || ''),
         meta: m.metaServico(RW.data.comDiaCurto(d.data_ref), trechoTexto(d.horario_inicio, d.horario_fim)),
         selo: RW.impacto.selo({ veredito: d.veredito, problemas: d.veredito_problemas, alertas: d.veredito_alertas })
-      };
-    }
-    if (p.tipo === 'cadastro') {
-      var c = RW.mensagens.cadastros;
-      var alerta = d.ja_tem_conta ? c.jaTemConta : (d.ja_existe_pessoa ? c.jaExiste : (d.email_em_uso ? c.emailEmUso : ''));
-      return {
-        quem: m.cadastro(nome(d.grau_abreviacao, d.nome_de_guerra)),
-        /* com a coluna do pelotão, a lotação sai da linha de apoio */
-        meta: m.metaCadastro(pelotoes(p).length ? null : d.lotacao_nome, RW.data.isoParaBR(d.criado_em)),
-        selo: alerta ? { classe: 'selo--alerta', texto: alerta } : null
       };
     }
     return {
@@ -207,7 +196,6 @@
       };
       if (p.tipo === 'troca' && RW.trocasPainel) RW.trocasPainel.abrir(p.dado, ctx);
       else if (p.tipo === 'folga' && RW.folgasAprovacaoPainel) RW.folgasAprovacaoPainel.abrir(p.dado, ctx);
-      else if (p.tipo === 'cadastro' && RW.usuariosCadastroPainel) RW.usuariosCadastroPainel.abrir(p.dado, ctx);
       else if (p.tipo === 'dados' && RW.usuariosCorrecaoPainel) RW.usuariosCorrecaoPainel.abrir(p.dado, ctx);
     }
 

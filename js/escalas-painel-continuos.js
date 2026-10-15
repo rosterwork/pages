@@ -79,20 +79,21 @@
     pendentes[m.cpf] = { acao: 'cancelar_saida' };
     marcarSujo(); renderizar();
   }
-  /* o Tirar ainda avisa da cascata (trocas/folgas) na hora, antes de entrar na lista */
+  /* o Tirar avisa na hora, com a lista do que vai acontecer (trocas, folgas e extras que a saída
+     cancela), antes de entrar na lista; sem a lista, não tira */
   function tirar(m) {
-    var base = texto(msg().confirmarTirar, { pessoa: (m.grad || '') + ' ' + (m.nome || ''), data: formatarData(ctx.iso) });
+    var mensagem = texto(msg().confirmarTirar, { pessoa: (m.grad || '') + ' ' + (m.nome || ''), data: formatarData(ctx.iso) });
+    var S = RosterWork.mensagens.saida;
     RosterWork.escalasDados.cicloRetirarAnalisar(ctx.unidadeId, m.cpf, ctx.iso).then(function (a) {
-      var pend = (a && a.success && a.pendencias) || null;
-      var mensagem = base + (RosterWork.textoImpactoSaida ? RosterWork.textoImpactoSaida(pend) : '');
-      if (RosterWork.confirmar) {
-        RosterWork.confirmar({
-          tipo: 'aviso', mensagem: mensagem, textoConfirmar: msg().btnTirar,
-          aoConfirmar: function () { pendentes[m.cpf] = { acao: 'tirar' }; marcarSujo(); renderizar(); }
-        });
-      } else {
-        pendentes[m.cpf] = { acao: 'tirar' }; marcarSujo(); renderizar();
+      if (!a || !a.success) {
+        RosterWork.avisar({ tipo: 'erro', mensagem: (a && a.error) || S.falhaLista });
+        return;
       }
+      var aviso = RosterWork.avisoSaida(a.pendencias, { tipo: 'tirar', escala: S.escalaTirar });
+      RosterWork.confirmar({
+        tipo: 'aviso', mensagem: mensagem, itens: aviso.itens, nota: aviso.nota, textoConfirmar: msg().btnTirar,
+        aoConfirmar: function () { pendentes[m.cpf] = { acao: 'tirar' }; marcarSujo(); renderizar(); }
+      });
     });
   }
 

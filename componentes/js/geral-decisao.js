@@ -2,8 +2,6 @@
    PAINEL DE DECISÃO — componente compartilhado (Trocas e Folgas)
    Monta o corpo do painel que aprova ou recusa um pedido:
      · montar(corpo)  → o esqueleto; devolve as partes
-     · montarRecusa(corpo) → só a caixa do motivo, num painel que
-                        não é de decisão (a revisão de cadastro)
      · caixa(cfg)     → uma caixa do pedido: título, dia com o
                         horário, a frase, a régua e um texto extra
      · saldo(partes, texto, alerta) → a nota do saldo (folga): entra
@@ -45,22 +43,6 @@
       motivo: raiz.querySelector('.decisao-motivo')
     };
     /* motivo escrito e não enviado: o navegador avisa antes de sair */
-    if (cancelarGuarda) cancelarGuarda();
-    cancelarGuarda = RW.guardaSaida ? RW.guardaSaida.registrar(function () {
-      return document.contains(partes.motivo) && !partes.recusa.classList.contains('oculto') && partes.motivo.value.trim() !== '';
-    }) : null;
-    return partes;
-  }
-
-  /* só a caixa do motivo, no fim de um painel que não é de decisão (a revisão de cadastro);
-     devolve as partes que o recusar() usa */
-  function montarRecusa(corpo) {
-    if (!corpo) return null;
-    var raiz = RosterWork.tpl('tpl-decisao');
-    var recusa = raiz ? raiz.querySelector('.decisao-recusa') : null;
-    if (!recusa) return null;
-    corpo.appendChild(recusa);
-    var partes = { recusa: recusa, motivo: recusa.querySelector('.decisao-motivo') };
     if (cancelarGuarda) cancelarGuarda();
     cancelarGuarda = RW.guardaSaida ? RW.guardaSaida.registrar(function () {
       return document.contains(partes.motivo) && !partes.recusa.classList.contains('oculto') && partes.motivo.value.trim() !== '';
@@ -216,5 +198,5 @@
     });
   }
 
-  RW.decisao = { montar: montar, montarRecusa: montarRecusa, caixa: caixa, saldo: saldo, analisando: analisando, analise: analise, escala: escala, recusar: recusar };
+  RW.decisao = { montar: montar, caixa: caixa, saldo: saldo, analisando: analisando, analise: analise, escala: escala, recusar: recusar };
 })();

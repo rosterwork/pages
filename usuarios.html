@@ -6,7 +6,7 @@
     </div>
     <div class="abas" id="usuarios-abas">
       <button type="button" class="aba aba--ativa" data-aba="efetivo">Efetivo</button>
-      <!-- só administrador: cadastros e correções de dados para aprovar (a mesma fila da página Pendências) -->
+      <!-- só administrador: correções de dados para aprovar (a mesma fila da página Pendências) -->
       <button type="button" class="aba oculto" data-aba="pendencias" id="usuarios-aba-pendencias">
         <span>Pendências</span>
         <span class="selo aba-contagem oculto" id="usuarios-pendencias-contagem"></span>
@@ -158,14 +158,14 @@
     </div>
   </div>
 
-  <!-- Pendências (só administrador): cadastros e correções de dados para aprovar (componente geral-fila) -->
+  <!-- Pendências (só administrador): correções de dados para aprovar (componente geral-fila) -->
   <div class="pagina-corpo oculto" data-aba-painel="pendencias">
     <div class="pedido-lista coluna-leitura" id="usuarios-pendencias"></div>
   </div>
 
 </div>
 
-<!-- o formulário Novo usuário (#tpl-novo-usuario e companhia) mora no index.html: também abre na Pendências (revisão de cadastro) -->
+<!-- o formulário Novo usuário (#tpl-novo-usuario e companhia) mora no index.html -->
 
 <template id="tpl-usuario-item">
   <div class="usuario-item" role="button" tabindex="0">
@@ -217,14 +217,14 @@
   </div>
 </template>
 
-<!-- molde: situação do acesso (seção Acesso ao sistema): o token de quem não tem conta ou o link de nova senha -->
+<!-- molde: situação do acesso (seção Acesso ao sistema): sem link, o que fazer; com link, até quando ele vale -->
 <template id="tpl-usuarios-acesso-estado">
   <div class="ficha-observacao"><span data-acesso-estado></span></div>
 </template>
 
-<!-- molde: botão de gerar token de acesso -->
-<template id="tpl-usuarios-token-botao">
-  <button type="button" class="botao botao--primario">Gerar token de acesso</button>
+<!-- molde: botão de gerar o link de cadastro (seção Acesso ao sistema, militar sem conta) -->
+<template id="tpl-usuarios-link-cadastro-botao">
+  <button type="button" class="botao botao--primario">Gerar link de cadastro</button>
 </template>
 
 <template id="tpl-usuarios-baixa-botao">
@@ -232,18 +232,19 @@
 </template>
 
 <!-- molde: botão de gerar o link de nova senha (seção Acesso ao sistema, militar com conta) -->
-<template id="tpl-usuarios-link-botao">
+<template id="tpl-usuarios-link-senha-botao">
   <button type="button" class="botao botao--primario">Gerar link de nova senha</button>
 </template>
 
-<!-- molde: link de nova senha recém-gerado, para o admin copiar e entregar -->
-<template id="tpl-usuarios-link-senha">
-  <div class="ficha-observacao"><span>Entregue o link ao militar depois de confirmar que o pedido é mesmo dele. O link vale uma vez e expira em 24 horas.</span></div>
+<!-- molde: o link que está valendo: a mensagem pronta para mandar no privado do militar.
+     Enquanto ele vale não se gera outro; para trocar, cancela -->
+<template id="tpl-usuarios-acesso-link">
   <label class="campo">
-    <span class="campo-rotulo">Link de nova senha</span>
-    <input class="campo-entrada" type="text" readonly data-link-senha />
+    <span class="campo-rotulo">Mensagem para enviar</span>
+    <textarea class="campo-entrada" rows="10" readonly data-acesso-mensagem></textarea>
   </label>
-  <button type="button" class="botao" data-copiar-link>Copiar link</button>
+  <button type="button" class="botao botao--primario" data-acesso-copiar>Copiar mensagem</button>
+  <button type="button" class="botao" data-acesso-cancelar>Cancelar link</button>
 </template>
 
 <!-- molde: botão de readmissão (aba Carreira, modo Editar do admin, militar inativo) -->
@@ -251,8 +252,8 @@
   <button type="button" class="botao botao--primario">Readmitir ao efetivo</button>
 </template>
 
-<!-- molde: seção Transferir (aba Carreira, modo Editar do admin) — transferência marcada (com Cancelar,
-     só quando há uma) + origem + seletor de unidade + data + botão -->
+<!-- molde: seção Transferir (aba Carreira, modo Editar do admin) — origem + seletor de unidade + data + botão;
+     com uma transferência marcada, só ela aparece (com Cancelar) e os campos somem -->
 <template id="tpl-usuarios-transferir">
   <div class="grupo-caixa oculto" data-transferir-marcada>
     <span class="rotulo-secao">Mudanças marcadas</span>
@@ -260,12 +261,13 @@
       <span class="linha-info-rotulo" data-transferir-marcada-texto></span>
       <button type="button" class="botao botao--texto" data-transferir-cancelar>Cancelar</button>
     </div>
+    <span class="subtela-ajuda">Para marcar outra, cancele esta primeiro.</span>
   </div>
-  <div class="linha-info">
+  <div class="linha-info" data-transferir-campo>
     <span class="linha-info-rotulo">De</span>
     <span class="linha-info-valor" data-origem></span>
   </div>
-  <div class="campo">
+  <div class="campo" data-transferir-campo>
     <span class="campo-rotulo">Para</span>
     <div class="dropdown" data-transferir-dropdown>
       <button type="button" class="campo-entrada campo-selecao">
@@ -279,12 +281,12 @@
       </div>
     </div>
   </div>
-  <label class="campo">
+  <label class="campo" data-transferir-campo>
     <span class="campo-rotulo">A partir de</span>
     <input class="campo-entrada" type="text" name="transferir-data" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" data-transferir-data />
     <span class="campo-erro-texto"></span>
   </label>
-  <button type="button" class="botao botao--primario" data-transferir-botao disabled>Transferir</button>
+  <button type="button" class="botao botao--primario" data-transferir-campo data-transferir-botao disabled>Transferir</button>
 </template>
 
 <!-- molde: seção Promover (aba Carreira, modo Editar do admin) — Tipo + hierarquia automática + data -->

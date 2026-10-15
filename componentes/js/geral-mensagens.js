@@ -11,12 +11,16 @@
 
   window.RosterWork = window.RosterWork || {};
 
+  /* o artigo da unidade pelo ordinal do nome: "o 2ºPEL", "a 2ªCIBM" */
+  function artigo(unidade) { return /ª/.test(unidade || '') ? 'a' : 'o'; }
+
   window.RosterWork.mensagens = {
 
-    /* meu perfil (pedido de correção de dados + troca de senha) */
+    /* meu perfil (e-mail e celular direto, pedido de correção do resto + troca de senha) */
     perfil: {
       falhaDados: 'Não foi possível salvar. Tente de novo.',
       solicitacaoEnviada: 'Solicitação enviada para aprovação.',
+      demaisParaAprovacao: 'As demais alterações foram enviadas para a aprovação do administrador.',
       aguardando: function (n) {
         return n === 1
           ? '1 alteração aguardando a aprovação do administrador.'
@@ -56,18 +60,6 @@
       pendForaEscala: 'Militares fora da escala'
     },
 
-    /* Pendências › cadastros (quem pediu acesso pela tela pública) */
-    cadastros: {
-      jaExiste: 'Já está na ficha',
-      jaTemConta: 'Já tem acesso',
-      emailEmUso: 'E-mail em uso',
-      painelTitulo: 'Revisar cadastro',
-      painelSituacao: 'Aguardando aprovação',
-      botaoAprovar: 'Aprovar',
-      botaoRecusar: 'Recusar',
-      falha: 'Não foi possível concluir. Tente de novo.'
-    },
-
     /* Pendências › correção de dados (as alterações que o militar pediu na ficha) */
     correcoes: {
       painelTitulo: 'Correção de dados',
@@ -87,15 +79,31 @@
       falhaCarregar: 'Não foi possível carregar.'
     },
 
-    /* criar conta (página standalone, antes da sessão) */
+    /* links de acesso que o administrador gera (páginas standalone criar-conta e nova-senha):
+       o que as duas telas dizem sobre o link e a conferência do CPF */
+    linkAcesso: {
+      conferindo: 'Conferindo o link…',
+      cpfVazio: 'Digite o seu CPF',
+      cpfInvalido: 'CPF inválido',
+      cpfNaoConfere: 'Este CPF não confere com o link.',
+      invalido: 'Este link não é mais válido. Peça um novo link ao administrador da sua unidade.',
+      erroConexao: 'Erro de conexão. Tente novamente.',
+      /* cadastro */
+      semLinkCadastro: 'Para criar a sua conta, peça o link de cadastro ao administrador da sua unidade.',
+      expiradoCadastro: function (data, hora) { return 'Este link de cadastro expirou em ' + data + ' às ' + hora + '. Peça um novo link ao administrador da sua unidade.'; },
+      usadoCadastro: 'Este link já foi usado e a conta já foi criada. Entre com o seu CPF e a sua senha.',
+      /* nova senha */
+      semLinkSenha: 'Para criar uma nova senha, peça o link ao administrador da sua unidade.',
+      expiradoSenha: function (data, hora) { return 'Este link de nova senha expirou em ' + data + ' às ' + hora + '. Peça um novo link ao administrador da sua unidade.'; },
+      usadoSenha: 'Este link já foi usado. Entre com o seu CPF e a sua nova senha.'
+    },
+
+    /* criar conta (página standalone, aberta pelo link de cadastro) */
     criarConta: {
-      enviado: 'Cadastro enviado. Um administrador vai analisar.',
-      falha: 'Não foi possível enviar o cadastro. Tente de novo.',
       falhaOpcoes: 'Não foi possível carregar os postos e as unidades. Verifique a sua internet. A página vai recarregar.',
-      jaTemAcesso: 'Esse CPF já tem acesso ao sistema. Vamos abrir a recuperação de senha.',
       contaCriada: 'Conta criada. Você já pode entrar com o seu CPF e a sua senha.',
-      contaCriadaComCorrecoes: 'Conta criada. Você já pode entrar. As alterações que você fez vão passar pela aprovação de um administrador.',
-      resgateFalha: 'Não foi possível criar a conta. Tente de novo.'
+      contaCriadaComCorrecoes: 'Conta criada. Você já pode entrar. As outras alterações que você fez vão passar pela aprovação de um administrador.',
+      falha: 'Não foi possível criar a conta. Tente de novo.'
     },
 
     /* login (página standalone, antes da sessão) */
@@ -108,20 +116,11 @@
       senhaIncorreta: 'Senha incorreta'
     },
 
-    /* esqueci minha senha (páginas standalone recuperar-senha e nova-senha): o pedido vai ao
-       administrador, que entrega um link de nova senha */
-    recuperacao: {
-      identificadorVazio: 'Digite seu CPF ou RG',
-      identificadorInvalido: 'CPF ou RG inválido',
-      pedidoEnviado: 'Pedido enviado. Fale com um administrador para receber o seu link de nova senha.',
-      naoEncontrado: 'CPF ou RG não encontrado',
-      semConta: 'Este cadastro ainda não tem acesso liberado. Fale com um administrador.',
-      falha: 'Não foi possível enviar o pedido. Tente de novo.',
-      erroConexao: 'Erro de conexão. Tente novamente.',
+    /* nova senha (página standalone, aberta pelo link de nova senha que o administrador gera) */
+    novaSenha: {
       senhaCurta: 'A senha precisa de ao menos 6 caracteres.',
       senhaNaoConfere: 'A confirmação não bate com a nova senha.',
       senhaIgual: 'A nova senha precisa ser diferente da senha atual.',
-      linkInvalido: 'Este link é inválido ou expirou. Peça um novo ao administrador.',
       redefinida: 'Senha redefinida com sucesso. Você já pode entrar.',
       falhaRedefinir: 'Não foi possível redefinir a senha. Tente de novo.'
     },
@@ -208,8 +207,6 @@
       setorVazio: 'Selecione o setor',
       promocaoVazia: 'Preencha a data',
       promocaoOrdem: 'Deve ser após a data anterior',
-      tokenVazio: 'Digite o token de acesso',
-      tokenInvalido: 'Token inválido ou expirado',
       sucesso: 'Usuário cadastrado com sucesso.',
       falha: 'Não foi possível cadastrar o usuário.'
     },
@@ -339,7 +336,7 @@
       btnTirar: 'Tirar',
       btnAdicionar: 'Adicionar',
       btnCancelarSaida: 'Cancelar saída',
-      confirmarTirar: 'Tirar {pessoa} do ciclo a partir de {data}? Ele deixa de aparecer na escala automática daqui em diante.',
+      confirmarTirar: 'Tirar {pessoa} do ciclo a partir de {data}? O que vai acontecer:',
       /* o Dia (lista, formulário Quem · Quando · Onde e militar no dia) */
       deFolga: 'De folga',
       semFuncaoRotulo: 'Sem função',
@@ -509,15 +506,56 @@
       }
     },
 
+    /* saída do militar da escala (transferência, Tirar do ciclo e baixa): a lista do aviso,
+       um item por troca, folga e extra que a saída cancela (montada em RosterWork.avisoSaida) */
+    saida: {
+      tituloEscala: 'Escala',
+      tituloTroca: 'Troca',
+      tituloFolga: 'Folga',
+      tituloExtra: 'Extra',
+      tituloCotas: 'Cotas',
+      escalaTransferencia: function (origem, destino) {
+        return 'Sai da escala ' + (origem ? 'd' + artigo(origem) + ' ' + origem + ' ' : '') +
+          'nessa data e fica disponível para ser escalado n' + artigo(destino) + ' ' + destino + '.';
+      },
+      escalaTirar: 'Deixa de aparecer na escala automática daqui em diante.',
+      escalaBaixa: 'Fica inativo nessa data, sai da escala e pode ser readmitido depois.',
+      /* "Com Sd. Sampaio, serviço de 30/10/2026 (aguardando aprovação): será cancelada." */
+      trocaCancelada: function (com, servico, devolucao, situacao) {
+        return 'Com ' + com + ', serviço de ' + servico + (devolucao ? ' e devolução de ' + devolucao : '') +
+          (situacao ? ' (' + situacao + ')' : '') + ': será cancelada.';
+      },
+      /* uma parte já aconteceu: só a outra sai, e fica o saldo */
+      trocaParte: function (com, dias, parte, diaParte, horas, devedor, credor) {
+        return 'Com ' + com + ', de ' + dias + ': ' + (parte === 'devolucao' ? 'a devolução' : 'o serviço') + ' de ' +
+          diaParte + ' sai, e fica um saldo de ' + horas + ': o ' + devedor + ' deve ao ' + credor + '.';
+      },
+      folgaCancelada: function (dia, situacao, horasDeVolta) {
+        return 'De ' + dia + (situacao ? ' (' + situacao + ')' : '') + ': será cancelada' +
+          (horasDeVolta ? ', e as ' + horasDeVolta + ' voltam ao saldo' : '') + '.';
+      },
+      extraSai: function (dia, unidade, cotasContinuam) {
+        return 'De ' + dia + (unidade ? ' n' + artigo(unidade) + ' ' + unidade : '') + ': sai' +
+          (cotasContinuam ? ', e as cotas dele continuam.' : '.');
+      },
+      cotasBaixa: function (mesAno) { return 'Se estiver disponível para extra, sai da divisão das cotas a partir de ' + mesAno + '.'; },
+      notaTransferencia: 'As trocas, folgas e extras canceladas não voltam, mesmo que a transferência seja cancelada depois.',
+      notaTirar: 'As trocas, folgas e extras canceladas não voltam, mesmo que ele volte ao ciclo depois.',
+      notaBaixa: 'As trocas, folgas e extras canceladas não voltam, mesmo que ele seja readmitido depois.',
+      /* a lista não carregou: sem ela, a saída não é feita */
+      falhaLista: 'Não foi possível conferir as trocas, folgas e extras deste militar. Tente de novo.'
+    },
+
     /* usuários (ficha do militar no painel lateral) */
     usuarios: {
       falhaFicha: 'Não foi possível carregar a ficha.',
-      confirmarBaixa: 'Dar baixa em {pessoa} (CPF {cpf})? Ele fica inativo a partir da data escolhida, sai da escala e pode ser readmitido depois.',
+      confirmarBaixa: 'Dar baixa em {pessoa} (CPF {cpf}) a partir de {data}? O que vai acontecer:',
       falhaBaixa: 'Não foi possível dar baixa. Tente de novo.',
       falhaSalvar: 'Não foi possível salvar. Tente de novo.',
-      confirmarTransferencia: 'Transferir {pessoa} de {origem} para {destino} a partir de {data}? O militar sai da escala da unidade atual nessa data e fica disponível para ser escalado na nova.',
-      /* há uma transferência marcada: a nova toma o lugar dela */
-      transferenciaSubstitui: ' A transferência marcada para {data} será substituída.',
+      confirmarTransferencia: function (pessoa, origem, destino, data) {
+        return 'Transferir ' + pessoa + (origem ? ' d' + artigo(origem) + ' ' + origem : '') +
+          ' para ' + artigo(destino) + ' ' + destino + ' a partir de ' + data + '? O que vai acontecer:';
+      },
       falhaTransferencia: 'Não foi possível transferir. Tente de novo.',
       dataFutura: 'A data não pode ser futura.',
       confirmarPromocao: 'Promover {pessoa} a {grau} em {data}?',
@@ -528,15 +566,32 @@
       falhaPromocao: 'Não foi possível promover. Tente de novo.',
       confirmarReadmissao: 'Readmitir {pessoa} ao efetivo? Ele volta como ativo, fora da escala automática (você o recoloca pela aba Ciclo da Escala).',
       falhaReadmissao: 'Não foi possível readmitir. Tente de novo.',
-      linkNenhum: 'Nenhum link de nova senha ativo. Se o militar esqueceu a senha, gere um link e entregue a ele.',
-      linkAtivo: 'Link de nova senha ativo até {ate}. Se ele perder, gere um novo.',
+      /* selo único do card na lista (a situação do militar e, para o administrador, a da conta) */
+      seloAtivo: 'Ativo',
+      seloInativo: 'Inativo',
+      seloInativoDesde: function (data) { return 'Inativo desde ' + data; },
+      seloAfastadoAte: function (situacao, data) { return situacao + ' até ' + data; },
+      seloLinkCadastro: function (ate) { return 'Link de cadastro até ' + ate; },
+      seloSemConta: 'Sem conta',
+      /* seção "Acesso ao sistema" da ficha: o link que o administrador manda no privado do militar */
+      acessoSemConta: 'Este militar ainda não tem conta. Gere o link de cadastro e envie a ele.',
+      acessoComConta: 'Se o militar esqueceu a senha, confirme que o pedido é mesmo dele e gere o link de nova senha.',
+      linkCadastroAtivo: 'Link de cadastro ativo até {ate}. Envie a mensagem no privado do militar, nunca em grupo. O link vale uma vez.',
+      linkSenhaAtivo: 'Link de nova senha ativo até {ate}. Envie a mensagem no privado do militar, nunca em grupo. O link vale uma vez.',
+      mensagemCadastro: function (nome, link, data, hora) {
+        return 'Roster Work: link de cadastro para ' + nome + '.\n\n' +
+          'Abra o link para criar a sua senha e conferir os seus dados:\n' + link + '\n\n' +
+          'O link é pessoal, vale uma vez e expira em ' + data + ' às ' + hora + '. Não repasse.';
+      },
+      mensagemSenha: function (nome, link, data, hora) {
+        return 'Roster Work: link de nova senha para ' + nome + '.\n\n' +
+          'Abra o link para criar a sua nova senha:\n' + link + '\n\n' +
+          'O link é pessoal, vale uma vez e expira em ' + data + ' às ' + hora + '. Não repasse.';
+      },
+      confirmarCancelarLink: 'Cancelar o link? Ele deixa de funcionar na hora.',
       falhaLink: 'Não foi possível gerar o link. Tente de novo.',
-      falhaCopiar: 'Não foi possível copiar. Selecione o link e copie manualmente.',
-      tokenNenhum: 'Este militar ainda não tem conta. Gere um token e entregue a ele para criar o acesso.',
-      tokenAtivo: 'Token ativo, expira em {ate}. Entregue ao militar; se ele perder, gere um novo.',
-      tokenEmUso: 'Token em uso. O militar tem até {ate} para concluir o cadastro.',
-      tokenGerado: 'Entregue este código ao militar para ele criar a conta: {token}. Vale uma vez e expira em 72 horas.',
-      falhaToken: 'Não foi possível gerar o token. Tente de novo.'
+      falhaCancelarLink: 'Não foi possível cancelar o link. Tente de novo.',
+      falhaCopiar: 'Não foi possível copiar. Selecione a mensagem e copie manualmente.'
     },
 
     /* análise de impacto na escala — componente compartilhado (geral-impacto), usado por Trocas e Folgas */
@@ -547,12 +602,10 @@
       trocaAdmin: function (sol, par) { return sol + ' troca com ' + par; },
       trocaMinha: function (sol) { return sol + ' quer trocar com você'; },
       folga: function (nome) { return nome + ' pediu folga'; },
-      cadastro: function (nome) { return nome + ' pediu acesso ao sistema'; },
       dados: function (nome) { return nome + ' pediu correção de dados'; },
       metaServico: function (data, trecho) { return 'Serviço de ' + data + ' · ' + trecho; },
       servicoInteiro: 'serviço inteiro',
       trechoHoras: function (hi, hf) { return 'das ' + hi + ' às ' + hf; },
-      metaCadastro: function (unidade, data) { return ['Cadastro', unidade, 'pedido em ' + data].filter(Boolean).join(' · '); },
       metaDados: function (n, data) { return (n === 1 ? '1 alteração' : n + ' alterações') + ' · pedido em ' + data; },
       /* listas sem nada (página Pendências) */
       vazioMinhas: 'Nenhum pedido esperando a sua resposta.',
@@ -563,7 +616,7 @@
       vazioTrocasMinhas: 'Nenhum pedido de troca esperando a sua resposta.',
       vazioTrocasAprovar: 'Nenhum pedido de troca para aprovar.',
       vazioFolgas: 'Nenhum pedido de folga para aprovar.',
-      vazioUsuarios: 'Nenhum pedido de cadastro ou de correção para aprovar.',
+      vazioUsuarios: 'Nenhum pedido de correção para aprovar.',
       falhaCarregar: 'Não foi possível carregar as pendências.'
     },
 
@@ -833,6 +886,7 @@
     geral: {
       camposCorrigir: 'Há campos a corrigir. Revise os destacados em vermelho.',
       erroConexao: 'Erro de conexão. Tente novamente.',
+      falhaCarregar: 'Não foi possível carregar. Tente de novo.',
       /* salvar — três falhas distintas (sem conexão / servidor / banco rejeitou) */
       semConexao: 'Sem conexão. Nada foi salvo. Verifique sua internet e tente de novo.',
       falhaServidor: 'Não foi possível concluir a ação. Atualize a página e tente de novo.',
@@ -854,8 +908,6 @@
       descartar: 'Descartar',
       sairSemSalvar: 'Sair sem salvar',
       irParaLogin: 'Ir para o login',
-      enviarCadastro: 'Enviar cadastro',
-      criarConta: 'Criar conta',
       excluirModelo: 'Excluir modelo',
       excluirViatura: 'Excluir viatura',
       excluirInstalacao: 'Excluir instalação',
@@ -867,12 +919,9 @@
       promover: 'Promover',
       readmitir: 'Readmitir',
       darBaixa: 'Dar baixa',
-      gerarLink: 'Gerar link de nova senha',
-      gerarNovoLink: 'Gerar novo link',
-      copiarLink: 'Copiar link',
-      linkCopiado: 'Link copiado',
-      gerarToken: 'Gerar token de acesso',
-      gerarNovoToken: 'Gerar novo token',
+      copiarMensagem: 'Copiar mensagem',
+      mensagemCopiada: 'Mensagem copiada',
+      cancelarLink: 'Cancelar link',
       salvar: 'Salvar',
       /* modal do banco de horas (folga e pontual) */
       contabilizar: 'Contabilizar',
@@ -884,16 +933,41 @@
 
   };
 
-  /* frase-resumo do que será cancelado quando um militar sai da escala (trocas/folgas órfãs),
-     acoplada ao modal de confirmação da remoção/baixa/transferência. '' quando não há impacto. */
-  window.RosterWork.textoImpactoSaida = function (pendencias) {
-    if (!pendencias) return '';
-    var nT = (pendencias.trocas || []).length;
-    var nF = (pendencias.folgas || []).length;
-    if (!nT && !nF) return '';
-    var itens = [];
-    if (nT) itens.push(nT + (nT === 1 ? ' troca' : ' trocas'));
-    if (nF) itens.push(nF + (nF === 1 ? ' folga' : ' folgas'));
-    return ' Isto também vai cancelar ' + itens.join(' e ') + ', avisando os envolvidos.';
+  /* o aviso da saída do militar da escala (transferência, Tirar do ciclo e baixa): a lista do que vai
+     acontecer, com o item da escala e um item por troca, folga e extra do plano que a análise
+     (escala_ciclo_retirar_analisar) devolve; a nota só quando há o que cancelar.
+     opcoes = { tipo: 'transferencia' | 'tirar' | 'baixa', escala: texto do item da escala,
+     cotas: texto do item das cotas (só na baixa) }. Devolve { itens: [{ titulo, texto }], nota } */
+  window.RosterWork.avisoSaida = function (pendencias, opcoes) {
+    var M = window.RosterWork.mensagens;
+    var S = M.saida;
+    var p = pendencias || {};
+    var horas = window.RosterWork.tempo.horas;
+    /* "DD/MM/AAAA" -> "AAAAMMDD", para pôr os dias da troca em ordem */
+    var ordem = function (d) { return d.split('/').reverse().join(''); };
+    var itens = [{ titulo: S.tituloEscala, texto: opcoes.escala }];
+    (p.trocas || []).forEach(function (t) {
+      if (t.acao === 'tirar_parte') {
+        var dias = [t.servico, t.devolucao].filter(Boolean)
+          .sort(function (a, b) { return ordem(a).localeCompare(ordem(b)); })
+          .map(function (d) { return d.slice(0, 5); }).join(' e ');
+        var diaParte = (t.sai === 'devolucao' ? t.devolucao : t.servico) || '';
+        itens.push({ titulo: S.tituloTroca, texto: S.trocaParte(t.com, dias, t.sai, diaParte.slice(0, 5), horas(t.minutos), t.devedor, t.credor) });
+      } else {
+        var situacao = (M.trocas.situacao[t.status] || '').toLowerCase();
+        itens.push({ titulo: S.tituloTroca, texto: S.trocaCancelada(t.com, t.servico, t.devolucao, situacao) });
+      }
+    });
+    (p.folgas || []).forEach(function (f) {
+      var situacao = f.situacao === 'pendente' ? '' : (M.folgas.situacao[f.situacao] || '').toLowerCase();
+      itens.push({ titulo: S.tituloFolga, texto: S.folgaCancelada(f.dia, situacao, f.volta_saldo ? horas(f.minutos) : '') });
+    });
+    (p.extras || []).forEach(function (e) {
+      itens.push({ titulo: S.tituloExtra, texto: S.extraSai(e.dia, e.unidade, opcoes.tipo !== 'baixa') });
+    });
+    var cancela = itens.length > 1;
+    if (opcoes.cotas) itens.push({ titulo: S.tituloCotas, texto: opcoes.cotas });
+    var notas = { transferencia: S.notaTransferencia, tirar: S.notaTirar, baixa: S.notaBaixa };
+    return { itens: itens, nota: cancela ? (notas[opcoes.tipo] || '') : '' };
   };
 })();

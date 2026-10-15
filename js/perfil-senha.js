@@ -30,7 +30,9 @@
       if (nova.value === atual.value) { if (erro) erro.textContent = M.senhaIgual; return; }
 
       if (RosterWork.iniciarCarregando) RosterWork.iniciarCarregando(salvar);
-      RosterWork.trocarSenha(usuario.email, atual.value, nova.value).then(function (retorno) {
+      /* o e-mail do momento: o militar pode ter acabado de trocá-lo em Meus dados */
+      var email = ((RosterWork.sessao && RosterWork.sessao.perfil()) || usuario).email;
+      RosterWork.trocarSenha(email, atual.value, nova.value).then(function (retorno) {
         if (RosterWork.pararCarregando) RosterWork.pararCarregando(salvar);
         if (retorno && retorno.ok) {
           atual.value = ''; nova.value = ''; confirma.value = ''; revisar();

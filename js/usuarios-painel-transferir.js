@@ -3,10 +3,11 @@
    Só admin. Seção "Transferir": lotação atual (origem), seletor de
    unidade de destino (reusa geral-seletor-unidades, modo único) e
    a data "A partir de" (até uma semana para trás ou no futuro; a
-   transferência vale a partir dela). A transferência futura fica
-   marcada no topo da seção, com Cancelar (cancelar_transferencia_militar);
-   uma nova toma o lugar da marcada. Confirma por modal (altera a
-   escala) e grava por transferir_militar. Recarrega a ficha.
+   transferência vale a partir dela). Com uma transferência futura
+   marcada, a seção mostra só ela, com Cancelar (cancelar_transferencia_militar):
+   para marcar outra, é preciso cancelar a marcada antes. Confirma por
+   modal, com a lista do que vai acontecer (trocas, folgas e extras que
+   a saída cancela), e grava por transferir_militar. Recarrega a ficha.
    Orquestração no usuarios-painel.js.
    ============================================================ */
 (function () {
@@ -39,7 +40,7 @@
     if (alvo) alvo.textContent = msg || '';
   }
 
-  /* confirmação (altera a escala -> sempre passa por modal) */
+  /* confirmação (altera a escala -> sempre passa por modal, com a lista do que vai acontecer) */
   function confirmar() {
     if (!ctx || !ctx.destino || !RosterWork.confirmar) return;
     var V = RosterWork.validacoes;
@@ -50,26 +51,29 @@
     if (dt < limite) { erroData(RosterWork.mensagens.geral.dataMuitoAntiga); return; }
 
     var ins = (ctx.ficha && ctx.ficha.institucionais) || {};
-    var msgBase = RosterWork.mensagens.usuarios.confirmarTransferencia
-      .replace('{pessoa}', nomePessoa())
-      .replace('{origem}', ins.lotacao_nome || '-')
-      .replace('{destino}', ctx.destino.nome || '-')
-      .replace('{data}', ctx.dataEl.value);
-    if (ctx.marcada) {
-      msgBase += RosterWork.mensagens.usuarios.transferenciaSubstitui.replace('{data}', RosterWork.data.isoParaBR(ctx.marcada.data));
-    }
+    var M = RosterWork.mensagens;
+    /* no aviso, a origem vai pelo nome da unidade (a lotação vem como "2ªCIBM / 2ºPEL"), igual ao destino */
+    var origem = (ins.lotacao_nome || '').split(' / ').pop();
+    var destino = ctx.destino.nome || '-';
+    var mensagem = M.usuarios.confirmarTransferencia(nomePessoa(), origem, destino, ctx.dataEl.value);
+    var escala = M.saida.escalaTransferencia(origem, destino);
     var dataIso = V.paraISO(ctx.dataEl.value);
-    /* avisa também das trocas/folgas da origem que a transferência vai cancelar (best-effort) */
+    /* a lista das trocas, folgas e extras que a transferência cancela; sem ela, não transfere */
     RosterWork.apiFetch('/rest/v1/rpc/escala_ciclo_retirar_analisar', {
       metodo: 'POST',
       corpo: { p_unidade_id: Number(ins.lotacao_id) || null, p_cpf: (ctx.pessoa && ctx.pessoa.usuario_id) || null, p_data: dataIso }
     }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
       .then(function (a) {
-        var pend = (a && a.success && a.pendencias) || null;
-        var msg = msgBase + (RosterWork.textoImpactoSaida ? RosterWork.textoImpactoSaida(pend) : '');
+        if (!a || !a.success) {
+          RosterWork.avisar({ tipo: 'erro', mensagem: (a && a.error) || M.saida.falhaLista });
+          return;
+        }
+        var aviso = RosterWork.avisoSaida(a.pendencias, { tipo: 'transferencia', escala: escala });
         RosterWork.confirmar({
           tipo: 'aviso',
-          mensagem: msg,
+          mensagem: mensagem,
+          itens: aviso.itens,
+          nota: aviso.nota,
           textoConfirmar: RosterWork.mensagens.botoes.transferir,
           textoCancelar: RosterWork.mensagens.botoes.cancelar,
           aoConfirmar: function () { transferir(dataIso); }
@@ -150,11 +154,14 @@
     alvo.appendChild(tpl.content.cloneNode(true));
     corpo.appendChild(secao);
 
+    /* com uma marcada, a seção mostra só ela: para marcar outra, é preciso cancelá-la antes */
     if (marcada) {
       var caixa = alvo.querySelector('[data-transferir-marcada]');
       caixa.querySelector('[data-transferir-marcada-texto]').textContent = textoMarcada(marcada);
       caixa.querySelector('[data-transferir-cancelar]').addEventListener('click', confirmarCancelar);
       caixa.classList.remove('oculto');
+      alvo.querySelectorAll('[data-transferir-campo]').forEach(function (el) { el.classList.add('oculto'); });
+      return;
     }
 
     var ins = ficha.institucionais || {};

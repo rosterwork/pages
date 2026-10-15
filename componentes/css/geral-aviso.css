@@ -3,7 +3,8 @@
    Usa a casca do modal (geral-modal). Três tipos, pela cor do ícone:
    sucesso (verde, ícone curtida), aviso (amarelo) e erro (vermelho)
    — aviso/erro usam o triângulo. Um botão (OK) ou dois (confirmar/
-   cancelar). Só fecha pelos botões. Comportamento: geral-aviso.js
+   cancelar). Pode ter uma lista (título + texto) e uma nota no fim.
+   Só fecha pelos botões. Comportamento: geral-aviso.js
    ============================================================ */
 
 /* o aviso é um modal pequeno */
@@ -23,10 +24,56 @@
   flex-shrink: 0;
 }
 
+/* mensagem, lista e nota numa coluna ao lado do ícone */
+.aviso-textos {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
 .aviso-mensagem {
   font-size: 13px;
   line-height: 1.45;
   color: var(--texto);
+}
+
+/* com lista, o ícone vai para o alto */
+.aviso-corpo--lista {
+  align-items: flex-start;
+}
+
+/* a lista do que vai acontecer: um item por linha, título curto + texto */
+.aviso-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.aviso-lista-item {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--texto);
+}
+
+.aviso-lista-titulo {
+  flex-shrink: 0;
+  width: 48px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+/* a nota do fim (o que não volta) */
+.aviso-nota {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--texto-suave);
 }
 
 /* o aviso é curto e não rola: o rodapé é contínuo com o corpo (sem a linha) */

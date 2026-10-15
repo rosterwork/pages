@@ -36,11 +36,22 @@
       </div>
       <h1 class="criar-conta-titulo">Criar conta</h1>
 
-      <!-- PASSO 1: identificação pelo CPF (revela o token quando o admin já pré-cadastrou) -->
-      <div class="criar-conta-corpo" id="cc-passo1">
+      <!-- O LINK: enquanto é conferido, e quando não vale (sem link, expirado, usado ou cancelado) -->
+      <div class="criar-conta-corpo" id="cc-link">
+        <p class="criar-conta-nota" role="status">
+          <svg class="icone criar-conta-nota-icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+          <span id="cc-link-texto"></span>
+        </p>
+        <div class="criar-conta-links oculto" id="cc-link-acoes">
+          <button class="botao botao--texto" type="button" id="cc-link-login">Ir para o login</button>
+        </div>
+      </div>
+
+      <!-- PASSO 1: o CPF confere com o link -->
+      <div class="criar-conta-corpo oculto" id="cc-passo1">
         <p class="criar-conta-nota">
           <svg class="icone criar-conta-nota-icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
-          <span>Informe seu CPF para começar.</span>
+          <span>Para começar, informe o seu CPF.</span>
         </p>
         <div class="criar-conta-secao">
           <label class="campo">
@@ -48,33 +59,18 @@
             <input class="campo-entrada" id="cc-p1-cpf" type="text" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" />
             <span class="campo-erro-texto"></span>
           </label>
-          <label class="campo oculto" id="cc-p1-token-campo">
-            <span class="campo-rotulo">Token de acesso</span>
-            <input class="campo-entrada" id="cc-p1-token" type="text" maxlength="9" placeholder="XXXX-XXXX" autocomplete="off" spellcheck="false" />
-            <span class="campo-erro-texto"></span>
-          </label>
         </div>
-        <p class="criar-conta-nota oculto" id="cc-p1-token-nota">
-          <svg class="icone criar-conta-nota-icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
-          <span>Seu cadastro já foi iniciado por um administrador. Peça a ele o token de acesso e digite acima para continuar.</span>
-        </p>
         <button class="botao botao--primario" id="cc-p1-continuar" type="button">Continuar</button>
         <div class="criar-conta-links">
           <button class="botao botao--texto" type="button" id="cc-voltar-login">Voltar ao login</button>
         </div>
       </div>
 
-      <!-- PASSO 2: ficha completa (conferir/alterar ou preencher) -->
+      <!-- PASSO 2: a ficha que o administrador cadastrou, para conferir e criar a senha -->
       <div class="criar-conta-corpo oculto" id="cc-corpo">
-        <!-- cadastro novo: tudo em branco, vira pedido para o admin aprovar -->
-        <p class="criar-conta-nota" id="cc-nota-novo">
+        <p class="criar-conta-nota">
           <svg class="icone criar-conta-nota-icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
-          <span>O cadastro passa pela aprovação de um administrador antes de liberar o acesso.</span>
-        </p>
-        <!-- resgate por token: dados já preenchidos para conferir e criar a senha -->
-        <p class="criar-conta-nota oculto" id="cc-nota-token">
-          <svg class="icone criar-conta-nota-icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
-          <span>Confira seus dados e crie sua senha. E-mail, celular e senha valem na hora. Se você alterar qualquer outro dado, a mudança vai para a aprovação de um administrador. Posto, lotação e promoções são atualizados pelo administrador.</span>
+          <span>Confira os seus dados, preencha o seu e-mail e o seu celular e crie a sua senha. Se algum outro dado estiver errado, corrija aqui: a correção vai para a aprovação de um administrador. CPF, posto, lotação e promoções só podem ser conferidos.</span>
         </p>
 
         <div class="criar-conta-secao">
@@ -223,7 +219,7 @@
           </label>
         </div>
 
-        <!-- ciência dos termos: obrigatória nos dois caminhos (o banco confere de novo) -->
+        <!-- ciência dos termos: obrigatória (o banco confere de novo) -->
         <div class="campo criar-conta-termos">
           <div class="criar-conta-termos-linha">
             <button type="button" class="caixa-selecao" id="cc-termos" role="checkbox" aria-checked="false" aria-labelledby="cc-termos-rotulo">
@@ -235,7 +231,7 @@
           <span class="campo-erro-texto"></span>
         </div>
 
-        <button class="botao botao--primario" id="cc-enviar" type="button">Enviar cadastro</button>
+        <button class="botao botao--primario" id="cc-enviar" type="button">Criar conta</button>
 
         <div class="criar-conta-links">
           <button class="botao botao--texto" type="button" id="cc-p2-voltar">Voltar</button>
@@ -348,14 +344,24 @@
       <div class="modal-corpo aviso-corpo">
         <svg class="icone aviso-icone aviso-icone--sucesso oculto" width="32" height="32" aria-hidden="true"><use href="icones/icone-sucesso.svg#icone-sucesso"/></svg>
         <svg class="icone aviso-icone aviso-icone--alerta oculto" width="32" height="32" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
-        <span class="aviso-mensagem" id="aviso-veu-mensagem"></span>
+        <div class="aviso-textos">
+          <span class="aviso-mensagem" id="aviso-veu-mensagem"></span>
+          <ul class="aviso-lista oculto"></ul>
+          <span class="aviso-nota oculto"></span>
+        </div>
       </div>
       <div class="modal-rodape">
         <button type="button" class="botao aviso-cancelar oculto"></button>
+        <button type="button" class="botao aviso-alternativo oculto"></button>
         <button type="button" class="botao botao--primario aviso-confirmar">OK</button>
       </div>
     </div>
   </div>
+
+  <!-- molde: um item da lista do aviso (componente geral-aviso) -->
+  <template id="tpl-aviso-lista-item">
+    <li class="aviso-lista-item"><span class="aviso-lista-titulo"></span><span class="aviso-lista-texto"></span></li>
+  </template>
 
   <script src="componentes/js/geral-limpar-comentarios.js"></script>
   <script src="componentes/js/geral-carregando.js"></script>
@@ -372,7 +378,7 @@
   <script src="componentes/js/geral-seletor-unidades.js"></script>
   <script src="js/criar-conta-envio.js"></script>
   <script src="js/criar-conta.js"></script>
-  <script src="js/criar-conta-assumir.js"></script>
+  <script src="js/criar-conta-link.js"></script>
 
 </body>
 </html>

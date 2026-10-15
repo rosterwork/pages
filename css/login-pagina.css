@@ -54,3 +54,12 @@
   gap: 4px;
   align-items: flex-start;
 }
+
+/* orientação fixa embaixo do Entrar: a senha nova se pede ao administrador */
+.login-ajuda {
+  margin: 0;
+  width: 100%;
+  font-size: 13px;
+  color: var(--texto-fraco);
+  text-align: center;
+}

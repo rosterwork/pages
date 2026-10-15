@@ -1,10 +1,12 @@
 /* ============================================================
-   CRIAR CONTA — a tela pública onde o militar se cadastra.
-   Fica fora do sistema (não é fragmento da SPA): quem chega aqui
-   ainda não tem acesso. O cadastro NÃO cria conta nenhuma — vira
-   um pedido, e a conta só nasce quando um administrador aprova.
-   A tela nunca diz se um CPF já existe: a resposta é sempre a
-   mesma, para ninguém varrer CPFs por aqui.
+   CRIAR CONTA — a tela aberta pelo link de cadastro que o
+   administrador gera na ficha. Fica fora do sistema (não é
+   fragmento da SPA): quem chega aqui ainda não tem acesso.
+   O link e o CPF são conferidos no criar-conta-link.js; aqui a
+   ficha que o administrador cadastrou aparece para conferir:
+   e-mail e celular são da pessoa e valem na hora; o resto que
+   ela corrigir vai para a aprovação de um administrador; CPF,
+   posto, lotação e promoções ficam só para conferência.
 
    Reusa o que o sistema já tem, para o cadastro ser IGUAL ao
    "Novo usuário": RosterWork.campos (máscaras, calendário,
@@ -23,13 +25,9 @@
   var lotacao = null;                           /* instância do seletor de unidades (modo único) */
   var opcoesProntas = Promise.resolve(false);   /* resolve quando postos + árvore terminam de carregar */
 
-  /* dois caminhos de cadastro:
-       'novo'  — CPF inédito: ficha em branco, vira pedido para o admin aprovar
-       'token' — CPF já pré-cadastrado: dados carregados por token para conferir e criar a senha */
-  var modo = 'novo';
-  var contextoToken = { cpf: '', token: '' };   /* guarda o par que o envio por token precisa reenviar */
+  var contexto = { cpf: '', codigo: '' };   /* o CPF conferido e o código do link, que o envio reenvia */
 
-  /* as duas funções do cadastro são públicas (anon); o apiFetch manda a
+  /* as funções desta tela são públicas (anon); o apiFetch manda a
      chave publicável quando não há sessão, então serve aqui também */
   function rpc(nome, corpo) {
     return RW.apiFetch('/rest/v1/rpc/' + nome, { metodo: 'POST', corpo: corpo || {} })
@@ -164,7 +162,7 @@
     return false;
   }
 
-  /* ---------- preencher / alternar passos (fluxo "assumir conta") ---------- */
+  /* ---------- preencher / alternar passos ---------- */
 
   /* "2018-02-15" -> "15/02/2018" (sem passar por Date, evita fuso) */
   function isoParaBR(iso) {
@@ -191,7 +189,7 @@
     return null;
   }
 
-  /* joga os dados da ficha nos campos do passo 2, deixando tudo editável */
+  /* joga os dados da ficha nos campos do passo 2 */
   function preencher(dados) {
     if (!dados) return;
     document.getElementById('cc-nome-completo').value = dados.nome_completo || '';
@@ -232,25 +230,6 @@
     }
   }
 
-  /* zera o passo 2 (cadastro do zero, quando não há ficha) */
-  function limparFormulario() {
-    var entradas = document.querySelectorAll('#cc-corpo .campo-entrada');
-    for (var i = 0; i < entradas.length; i++) {
-      if (entradas[i].tagName === 'INPUT') entradas[i].value = '';
-    }
-    C.definirSelecao(document.getElementById('cc-cnh'), '');
-    C.definirSelecao(document.getElementById('cc-setor'), '');
-    C.definirSelecao(document.getElementById('cc-tipo'), '');
-    var posto = document.getElementById('cc-posto');
-    selecaoComRotulo(posto, '', 'Selecione o tipo antes');
-    posto.disabled = true;
-    var coloc = document.getElementById('cc-colocacao');
-    coloc.value = ''; coloc.disabled = true; coloc.placeholder = 'Selecione o tipo antes';
-    document.getElementById('cc-colocacao-rotulo').textContent = 'Colocação';
-    limparPromocoes();
-    if (C.limparErros) C.limparErros(document.getElementById('cc-corpo'));
-  }
-
   /* ---------- alternar entre os passos ---------- */
   function mostrarPasso2() {
     document.getElementById('cc-passo1').classList.add('oculto');
@@ -261,8 +240,8 @@
     document.getElementById('cc-passo1').classList.remove('oculto');
   }
 
-  /* ---------- resgate por token: o que a pessoa confere, não edita ----------
-     CPF é a identidade que casou com o token; posto, lotação e promoções mudam
+  /* ---------- o que a pessoa confere, não edita ----------
+     CPF é a identidade que casou com o link; posto, lotação e promoções mudam
      por evento (Promover/Transferir), então aqui ficam só para conferência */
   function travarConferencia() {
     ['cc-cpf', 'cc-tipo', 'cc-posto', 'cc-lotacao'].forEach(function (id) {
@@ -272,43 +251,11 @@
     var proms = document.getElementById('cc-promocoes').querySelectorAll('.campo-entrada');
     for (var i = 0; i < proms.length; i++) proms[i].disabled = true;
   }
-  /* volta a liberar o que o token havia travado (posto segue a cargo da cascata do Tipo) */
-  function destravarConferencia() {
-    ['cc-cpf', 'cc-tipo', 'cc-lotacao'].forEach(function (id) {
-      var e = document.getElementById(id);
-      if (e) e.disabled = false;
-    });
-  }
-
-  function trocarNota(mostrarToken) {
-    document.getElementById('cc-nota-novo').classList.toggle('oculto', mostrarToken);
-    document.getElementById('cc-nota-token').classList.toggle('oculto', !mostrarToken);
-  }
-  function rotularEnvio(chave) {
-    var b = document.getElementById('cc-enviar');
-    if (b) b.textContent = RW.mensagens.botoes[chave];
-  }
-
-  /* entra no passo 2 no caminho do token: ficha carregada, conferência travada */
-  function iniciarModoToken(cpf, token, dados) {
-    modo = 'token';
-    contextoToken = { cpf: cpf, token: token };
+  /* entra no passo 2: a ficha carregada, a conferência travada */
+  function abrirFicha(cpf, codigo, dados) {
+    contexto = { cpf: cpf, codigo: codigo };
     preencher(dados);
     travarConferencia();
-    trocarNota(true);
-    rotularEnvio('criarConta');
-    mostrarPasso2();
-  }
-
-  /* entra no passo 2 no caminho do cadastro novo: tudo em branco */
-  function iniciarModoNovo(cpf) {
-    modo = 'novo';
-    contextoToken = { cpf: '', token: '' };
-    limparFormulario();
-    destravarConferencia();
-    document.getElementById('cc-cpf').value = C.mascararCpf(C.soDigitos(cpf || ''));
-    trocarNota(false);
-    rotularEnvio('enviarCadastro');
     mostrarPasso2();
   }
 
@@ -354,12 +301,9 @@
 
   RW.criarConta = {
     marcarEnviado: function () { enviado = true; },
-    iniciarModoToken: iniciarModoToken,
-    iniciarModoNovo: iniciarModoNovo,
-    voltarPasso1: voltarPasso1,
+    abrirFicha: abrirFicha,
     aguardarOpcoes: function () { return opcoesProntas; },
-    modo: function () { return modo; },
-    contextoToken: function () { return contextoToken; }
+    contexto: function () { return contexto; }
   };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar);

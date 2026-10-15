@@ -3,8 +3,8 @@
    (a moldura do cartão vem de login-pagina.css)
    ============================================================ */
 
-/* agrupa título + campos + botão com o mesmo respiro do formulário */
-#nova-senha-form {
+/* cada passo (o CPF e a senha nova) agrupa título + campos + botão com o mesmo respiro do formulário */
+.nova-senha-passo {
   display: flex;
   flex-direction: column;
   gap: var(--gap-formulario);
@@ -16,7 +16,7 @@
   color: var(--texto-forte);
 }
 
-/* de quem é a conta e a espera da conferência do link (igual à introdução da tela de recuperar senha) */
+/* a orientação de cada passo e a espera da conferência do link */
 .nova-senha-intro {
   margin: 0;
   font-size: 13px;

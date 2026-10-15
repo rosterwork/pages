@@ -35,8 +35,24 @@
         <!-- enquanto o link é conferido -->
         <p class="nova-senha-intro" id="nova-senha-conferindo" role="status"></p>
 
-        <!-- link válido: de quem é a conta + a senha nova -->
-        <div class="oculto" id="nova-senha-form">
+        <!-- link válido: primeiro o CPF confere com o link -->
+        <div class="nova-senha-passo oculto" id="nova-senha-cpf">
+          <h1 class="nova-senha-titulo">Nova senha</h1>
+          <p class="nova-senha-intro">Para continuar, informe o seu CPF.</p>
+
+          <div class="login-campos">
+            <div class="campo">
+              <label class="campo-rotulo" for="cpf-conferir">CPF</label>
+              <input class="campo-entrada" type="text" id="cpf-conferir" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" autocomplete="off" />
+              <span class="campo-erro-texto" role="alert"></span>
+            </div>
+          </div>
+
+          <button class="botao botao--primario" id="btn-conferir-cpf" type="button">Continuar</button>
+        </div>
+
+        <!-- CPF certo: de quem é a conta + a senha nova -->
+        <div class="nova-senha-passo oculto" id="nova-senha-form">
           <h1 class="nova-senha-titulo">Nova senha</h1>
           <p class="nova-senha-intro">Conta de <strong id="nova-senha-conta"></strong>. Escolha a sua nova senha, com ao menos 6 caracteres.</p>
 
@@ -61,7 +77,6 @@
 
         <div class="login-links">
           <button class="botao botao--texto" type="button" id="btn-ir-login">Ir para o login</button>
-          <button class="botao botao--texto oculto" type="button" id="btn-pedir-novo">Pedir novo link</button>
         </div>
 
       </div>
@@ -80,6 +95,8 @@
 
   <script src="componentes/js/geral-carregando.js"></script>
   <script src="componentes/js/geral-mensagens.js"></script>
+  <script src="componentes/js/geral-campos.js"></script>
+  <script src="componentes/js/geral-api.js"></script>
   <!-- reusa mostrarErroCampo/esconderErroCampo do login -->
   <script src="js/login-auth.js"></script>
   <script src="js/nova-senha.js"></script>

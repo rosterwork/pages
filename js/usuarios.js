@@ -116,18 +116,32 @@
     });
   }
 
-  /* preenche o selo de situação: Ativo (verde), Férias até DD/MM (âmbar) ou Inativo (neutro) */
+  /* "AAAA-MM-DDTHH:MM:SS" (Brasília) -> "DD/MM HH:MM" */
+  function formatarDataHoraCurta(iso) {
+    var partes = String(iso || '').slice(0, 16).split('T');
+    var d = partes[0].split('-');
+    return d.length === 3 ? d[2] + '/' + d[1] + (partes[1] ? ' ' + partes[1] : '') : '';
+  }
+
+  /* um selo só por militar, na ordem: Inativo (neutro escuro), afastamento até DD/MM
+     (âmbar), e, só para o administrador (o banco manda a conta só para ele), o link de
+     cadastro até DD/MM HH:MM (âmbar) ou Sem conta (neutro); senão Ativo (verde) */
   function preencherSituacao(selo, pessoa) {
     if (!selo) return;
+    var T = RosterWork.mensagens.usuarios;
     if (pessoa.situacao === 'Inativo') {
-      selo.textContent = pessoa.situacao_ate ? 'Inativo desde ' + formatarDataCurta(pessoa.situacao_ate) : 'Inativo';
+      selo.textContent = pessoa.situacao_ate ? T.seloInativoDesde(formatarDataCurta(pessoa.situacao_ate)) : T.seloInativo;
       selo.classList.add('selo--escuro');
     } else if (pessoa.situacao === 'Férias' || pessoa.situacao === 'Licença' || pessoa.situacao === 'Dispensa') {
-      /* afastamentos temporários: mostram até quando (âmbar), como as férias */
-      selo.textContent = pessoa.situacao + ' até ' + formatarDataCurta(pessoa.situacao_ate);
+      selo.textContent = T.seloAfastadoAte(pessoa.situacao, formatarDataCurta(pessoa.situacao_ate));
       selo.classList.add('selo--alerta');
+    } else if (pessoa.link_cadastro_ate) {
+      selo.textContent = T.seloLinkCadastro(formatarDataHoraCurta(pessoa.link_cadastro_ate));
+      selo.classList.add('selo--alerta');
+    } else if (pessoa.tem_conta === false) {
+      selo.textContent = T.seloSemConta;
     } else {
-      selo.textContent = 'Ativo';
+      selo.textContent = T.seloAtivo;
       selo.classList.add('selo--sucesso');
     }
   }
@@ -325,8 +339,8 @@
 
   /* ---------- abas da página: Efetivo | Pendências (só admin) ----------
      Os controles da barra (filtros, Ordem, Exibir) só valem para a árvore do
-     Efetivo, então somem na aba Pendências. A Pendências é a fila dos cadastros
-     e das correções de dados (geral-fila), a mesma da página Pendências. */
+     Efetivo, então somem na aba Pendências. A Pendências é a fila das
+     correções de dados (geral-fila), a mesma da página Pendências. */
   var fila = null;
 
   function escreverSeloPendencias(n) {
@@ -340,7 +354,7 @@
     if (!fila || !window.RosterWork.fila) return Promise.resolve();
     return window.RosterWork.fila.ler().then(function (r) {
       if (!r) return;
-      var pedidos = window.RosterWork.fila.doTipo(r.aprovar, ['cadastro', 'dados']);
+      var pedidos = window.RosterWork.fila.doTipo(r.aprovar, ['dados']);
       fila.definir(pedidos);
       escreverSeloPendencias(pedidos.length);
     });
@@ -376,7 +390,7 @@
         return carregarPendencias();
       }
     }) : null;
-    if (fila) window.RosterWork.fila.contar().then(function (c) { escreverSeloPendencias((c.aprovar.cadastro || 0) + (c.aprovar.dados || 0)); });
+    if (fila) window.RosterWork.fila.contar().then(function (c) { escreverSeloPendencias(c.aprovar.dados || 0); });
   }
 
   /* a navegação chama iniciar() toda vez que a página de usuários é exibida */

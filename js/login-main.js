@@ -42,20 +42,6 @@
 
 })();
 
-/* "Criar conta" leva à tela pública de cadastro (fora do sistema) */
-(function () {
-  'use strict';
-  var botao = document.getElementById('btn-criar-conta');
-  if (botao) botao.addEventListener('click', function () { window.location.href = 'criar-conta.html'; });
-})();
-
-/* "Esqueci minha senha" leva à tela pública de recuperação (fora do sistema) */
-(function () {
-  'use strict';
-  var botao = document.getElementById('btn-esqueci-senha');
-  if (botao) botao.addEventListener('click', function () { window.location.href = 'recuperar-senha.html'; });
-})();
-
 /* "Termos e privacidade" abre a página pública em outra aba (o login continua aberto) */
 (function () {
   'use strict';

@@ -69,7 +69,7 @@
   }
 
   /* o que espera decisão mora na página Pendências (é o número do item no menu) */
-  var DECISAO = { troca: true, folga: true, cadastro: true, dados: true };
+  var DECISAO = { troca: true, folga: true, dados: true };
 
   function atualizarMenu(quantos) {
     var item = document.querySelector('.menu-item[data-pagina="pendencias"]');
@@ -155,7 +155,7 @@
 
   /* marca como lida e vai para a tela do assunto, já na aba onde se resolve.
      O que pede ação continua em aberto até alguém decidir — ler não resolve.
-     O aviso de uma decisão (troca, folga, cadastro, correção) leva à Pendências,
+     O aviso de uma decisão (troca, folga, correção) leva à Pendências,
      já com o pedido aberto. */
   function abrir(n) {
     function irPara() {

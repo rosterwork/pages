@@ -5,6 +5,8 @@
                           aoConfirmar, aoCancelar })             -> 2 botões
    + textoAlternativo/aoAlternativo (opcional)                   -> 3 botões
      (o do meio é a outra forma de confirmar, ex.: "Não contabilizar")
+   + itens: [{ titulo, texto }] e nota (opcionais, no confirmar)  -> lista
+     embaixo da mensagem e nota no fim; com lista, o ícone vai para o alto
    tipo: 'sucesso' | 'aviso' | 'erro'. Aparece sobre qualquer modal e
    só fecha pelos botões (nunca por clique fora nem Esc). O elemento
    #veu-aviso é fixo no shell; aqui só preenchemos e mostramos/escondemos.
@@ -14,7 +16,7 @@
 
   window.RosterWork = window.RosterWork || {};
 
-  var veu, caixa, mensagemEl, iconeSucesso, iconeAlerta, btnConfirmar, btnCancelar, btnAlternativo;
+  var veu, caixa, corpoEl, mensagemEl, listaEl, notaEl, iconeSucesso, iconeAlerta, btnConfirmar, btnCancelar, btnAlternativo;
   var aoConfirmar = null;
   var aoCancelar = null;
   var aoAlternativo = null;
@@ -25,7 +27,10 @@
     veu = document.getElementById('veu-aviso');
     if (!veu) return false;
     caixa = veu.querySelector('.modal--aviso');
+    corpoEl = veu.querySelector('.aviso-corpo');
     mensagemEl = veu.querySelector('.aviso-mensagem');
+    listaEl = veu.querySelector('.aviso-lista');
+    notaEl = veu.querySelector('.aviso-nota');
     iconeSucesso = veu.querySelector('.aviso-icone--sucesso');
     iconeAlerta = veu.querySelector('.aviso-icone--alerta');
     btnConfirmar = veu.querySelector('.aviso-confirmar');
@@ -55,6 +60,22 @@
     focoAnterior = null;
   }
 
+  /* a lista (título curto + texto, um item por linha) e a nota do fim */
+  function preencherLista(itens, nota) {
+    listaEl.textContent = '';
+    itens.forEach(function (it) {
+      var li = RosterWork.tpl('tpl-aviso-lista-item');
+      if (!li) return;
+      li.querySelector('.aviso-lista-titulo').textContent = it.titulo || '';
+      li.querySelector('.aviso-lista-texto').textContent = it.texto || '';
+      listaEl.appendChild(li);
+    });
+    listaEl.classList.toggle('oculto', !itens.length);
+    corpoEl.classList.toggle('aviso-corpo--lista', itens.length > 0);
+    notaEl.textContent = nota;
+    notaEl.classList.toggle('oculto', !nota);
+  }
+
   function mostrar(opcoes) {
     if (!preparar()) return;
     var tipo = opcoes.tipo || 'aviso';
@@ -66,6 +87,7 @@
     iconeAlerta.classList.toggle('oculto', tipo === 'sucesso');
 
     mensagemEl.textContent = opcoes.mensagem || '';
+    preencherLista(opcoes.itens || [], opcoes.nota || '');
     btnConfirmar.textContent = opcoes.textoConfirmar || 'OK';
     /* botão de confirmação em vermelho para ações destrutivas (ex.: excluir do sistema) */
     btnConfirmar.classList.toggle('botao--perigo', !!opcoes.confirmarPerigo);
@@ -113,7 +135,9 @@
       confirmarPerigo: opcoes.confirmarPerigo,
       aoConfirmar: opcoes.aoConfirmar,
       aoCancelar: opcoes.aoCancelar,
-      aoAlternativo: opcoes.aoAlternativo
+      aoAlternativo: opcoes.aoAlternativo,
+      itens: opcoes.itens,
+      nota: opcoes.nota
     });
   }
 

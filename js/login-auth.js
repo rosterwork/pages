@@ -80,9 +80,8 @@
           'Authorization': 'Bearer ' + SUPABASE_KEY,
           'Content-Type': 'application/json'
         },
-        /* a senha vai junto: quem se cadastrou e ainda espera aprovação não tem
-           conta de acesso, então é o banco quem confere a senha dele. Sem isso o
-           estado do cadastro apareceria para qualquer um que digitasse o CPF. */
+        /* a senha vai junto: o banco confere a senha antes de devolver o e-mail
+           da conta, para o e-mail não aparecer para quem só digitou o CPF. */
         body: JSON.stringify({ p_identificador: identificador, p_senha: senha })
       });
 

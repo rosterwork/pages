@@ -45,13 +45,12 @@
 
     if (!selecao('nu-cnh')) erro(campo('nu-cnh'), textos.cnhVazia);
 
+    /* celular e e-mail são OPCIONAIS no cadastro do admin: são dados da própria
+       pessoa, que os informa ao criar a conta pelo link de cadastro.
+       Se vierem preenchidos, confere o formato. */
     var cel = campo('nu-celular');
-    if (!cel.value.trim()) erro(cel, textos.celularVazio);
-    else if (soDigitos(cel.value).length !== 11) erro(cel, textos.celularInvalido);
+    if (cel.value.trim() && soDigitos(cel.value).length !== 11) erro(cel, textos.celularInvalido);
 
-    /* e-mail é OPCIONAL no cadastro do admin: a ficha pode existir só para a
-       escala funcionar, e quem assume a conta informa o próprio e-mail depois.
-       Se vier preenchido, confere o formato. */
     var email = campo('nu-email');
     if (email.value.trim() && !validarEmail(email.value)) erro(email, textos.emailInvalido);
 

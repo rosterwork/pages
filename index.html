@@ -287,7 +287,11 @@
       <div class="modal-corpo aviso-corpo">
         <svg class="icone aviso-icone aviso-icone--sucesso oculto" width="32" height="32" aria-hidden="true"><use href="icones/icone-sucesso.svg#icone-sucesso"/></svg>
         <svg class="icone aviso-icone aviso-icone--alerta oculto" width="32" height="32" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
-        <span class="aviso-mensagem" id="aviso-veu-mensagem"></span>
+        <div class="aviso-textos">
+          <span class="aviso-mensagem" id="aviso-veu-mensagem"></span>
+          <ul class="aviso-lista oculto"></ul>
+          <span class="aviso-nota oculto"></span>
+        </div>
       </div>
       <div class="modal-rodape">
         <button type="button" class="botao aviso-cancelar oculto"></button>
@@ -437,6 +441,11 @@
       <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
       <span class="nota-texto"><span class="nota-titulo"></span> <span class="impacto-nota-desc"></span></span>
     </div>
+  </template>
+
+  <!-- janela de aviso (geral-aviso): um item da lista do que vai acontecer (título curto + texto) -->
+  <template id="tpl-aviso-lista-item">
+    <li class="aviso-lista-item"><span class="aviso-lista-titulo"></span><span class="aviso-lista-texto"></span></li>
   </template>
 
   <!-- sino: uma notificação (a linha inteira leva à tela do assunto) -->
@@ -966,7 +975,7 @@
     <span class="selo selo--alerta escala-secao-selo"></span>
   </template>
 
-  <!-- ===== formulário Novo usuário (usuarios-novo-usuario.js): Usuários › Novo usuário e a revisão de cadastro da Pendências ===== -->
+  <!-- ===== formulário Novo usuário (usuarios-novo-usuario.js): Usuários › Novo usuário ===== -->
   <!-- molde: formulário Novo usuário — abre no painel direito (lógica em usuarios-novo-usuario.js) -->
   <template id="tpl-novo-usuario">
     <div class="painel-secao">
@@ -1018,7 +1027,7 @@
           <span class="campo-erro-texto"></span>
         </div>
         <label class="campo">
-          <span class="campo-rotulo">Celular</span>
+          <span class="campo-rotulo">Celular (opcional)</span>
           <input class="campo-entrada" id="nu-celular" type="text" inputmode="numeric" maxlength="15" placeholder="(00) 00000-0000" />
           <span class="campo-erro-texto"></span>
         </label>

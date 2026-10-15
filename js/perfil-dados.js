@@ -1,7 +1,8 @@
 /* ============================================================
    MEU PERFIL — aba "Meus dados": UM formulário com todos os campos
-   corrigíveis. O militar altera quantos quiser e envia um pedido só
-   (perfil_solicitar recebe a lista); quem aplica é o administrador.
+   corrigíveis. O militar altera quantos quiser e salva de uma vez
+   (perfil_solicitar recebe a lista): e-mail e celular são dele e
+   valem na hora; o resto vira um pedido que o administrador aplica.
    Abaixo, "Minhas solicitações", agrupadas por pedido.
 
    Usa os componentes de formulário do site (RosterWork.campos e
@@ -170,7 +171,30 @@
     if (entrada) entrada.focus();
   }
 
-  /* envia TODAS as alterações num pedido só */
+  /* e-mail e celular valeram na hora: passam a ser o "gravado" do formulário e da aba Perfil.
+     O e-mail novo também vai para a sessão aberta: as funções do banco identificam quem está
+     logado pelo e-mail do token, então o token é renovado (o novo já vem com o e-mail novo) */
+  function aplicarDiretos(alteracoes) {
+    alteracoes.forEach(function (a) {
+      if (a.campo !== 'email' && a.campo !== 'celular') return;
+      /* o banco guarda o e-mail em minúsculas: a tela fica igual */
+      campos.forEach(function (c) {
+        if (c.campo !== a.campo) return;
+        originais[a.campo] = a.campo === 'email' ? ler(c).toLowerCase() : ler(c);
+        escrever(c, originais[a.campo]);
+      });
+      var ver = document.getElementById(a.campo === 'email' ? 'perfil-ver-email' : 'perfil-ver-celular');
+      if (ver) ver.textContent = originais[a.campo];
+      if (a.campo !== 'email') return;
+      try {
+        var usuario = JSON.parse(sessionStorage.getItem('rosterwork_user'));
+        if (usuario) { usuario.email = originais.email; sessionStorage.setItem('rosterwork_user', JSON.stringify(usuario)); }
+      } catch (e) {}
+      if (RosterWork.renovarSessao) RosterWork.renovarSessao().catch(function () {});
+    });
+  }
+
+  /* salva TODAS as alterações de uma vez: e-mail e celular na hora, o resto num pedido só */
   function enviarPedido() {
     var alteracoes = montarAlteracoes();
     var M = RosterWork.mensagens.perfil;
@@ -188,9 +212,12 @@
       .then(function (retorno) {
         if (RosterWork.pararCarregando) RosterWork.pararCarregando(enviar);
         if (retorno && retorno.success) {
-          restaurar();      /* o pedido está pendente: o formulário volta ao que está gravado */
+          if (retorno.diretos > 0) aplicarDiretos(alteracoes);
+          restaurar();      /* o que foi para aprovação está pendente: o formulário volta ao que está gravado */
           carregarMinhas();
-          RosterWork.avisar({ tipo: 'sucesso', mensagem: M.solicitacaoEnviada });
+          /* o que valeu na hora abre o resumo; o que foi para aprovação ganha o aviso por cima */
+          if (retorno.log && RosterWork.resumo) RosterWork.resumo.abrirModal(retorno.log, { pagina: 'Meu perfil' });
+          if (retorno.itens > 0) RosterWork.avisar({ tipo: 'sucesso', mensagem: retorno.log ? M.demaisParaAprovacao : M.solicitacaoEnviada });
           return;
         }
         /* o banco recusou: mostra no campo quando dá para saber qual é */

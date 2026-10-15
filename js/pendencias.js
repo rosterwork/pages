@@ -3,9 +3,9 @@
    Duas abas, cada uma com um dono claro:
      · Para mim       — o que espera você como militar (a troca
                         que pediram a você)
-     · Administração  — só administrador: trocas, folgas, cadastros
-                        e correções para aprovar (com o seletor do
-                        tipo na barra) e o "Para corrigir"
+     · Administração  — só administrador: trocas, folgas e correções
+                        para aprovar (com o seletor do tipo na barra)
+                        e o "Para corrigir"
    O militar comum não vê abas nem barra. As filas são o componente
    geral-fila (o mesmo das abas Pendências da Trocas, da Folgas e da
    Usuários): o mesmo cartão, o mesmo painel e, depois de decidir, o
@@ -20,7 +20,7 @@
   var RW = window.RosterWork = window.RosterWork || {};
   RW.paginas = RW.paginas || {};
 
-  var TIPOS_DO_FILTRO = { troca: ['troca'], folga: ['folga'], usuarios: ['cadastro', 'dados'] };
+  var TIPOS_DO_FILTRO = { troca: ['troca'], folga: ['folga'], usuarios: ['dados'] };
 
   var conteudo = null;
   var admin = false;

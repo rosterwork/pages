@@ -100,7 +100,7 @@
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#ver-efetivo">Ver o efetivo e as fichas</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#cadastrar-efetivo">Cadastrar o efetivo e liberar acesso</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#carreira">Promover, transferir e dar baixa</a></li>
-                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#aprovacoes">Aprovar cadastros e correções</a></li>
+                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#aprovacoes">Aprovar correções de dados</a></li>
               </ul>
             </li>
             <li>
@@ -210,7 +210,7 @@
               <h3 class="manual-topico">Quem faz o quê</h3>
               <ul class="manual-lista">
                 <li><strong>O militar (usuário comum).</strong> Consulta a sua escala, pede <strong>trocas</strong> e <strong>folgas</strong>, declara disponibilidade de <strong>extrajornada</strong> e vê os seus <strong>avisos</strong>. Ele participa e solicita, não monta nem edita a escala.</li>
-                <li><strong>O administrador.</strong> Cadastra o efetivo e os postos, monta os <strong>modelos</strong> e a <strong>escala</strong>, <strong>aprova</strong> os pedidos (trocas, folgas, cadastros e correções) na página <strong>Pendências</strong>, lança extrajornada, registra afastamentos e atos de carreira. Ele monta e mantém o sistema.</li>
+                <li><strong>O administrador.</strong> Cadastra o efetivo e os postos, monta os <strong>modelos</strong> e a <strong>escala</strong>, <strong>aprova</strong> os pedidos (trocas, folgas e correções) na página <strong>Pendências</strong>, lança extrajornada, registra afastamentos e atos de carreira. Ele monta e mantém o sistema.</li>
               </ul>
               <p>O administrador também é um militar: faz as próprias solicitações como usuário e aprova como administrador, sem trocar de modo. Ele nunca decide o que é seu: não aprova uma troca da qual participa, nem decide, concede ou ajusta a própria folga. Isso fica com outro administrador.</p>
 
@@ -337,13 +337,13 @@
               <h3 id="entrar">Entrar no sistema</h3>
               <p>Para usar o Roster Work, cada militar entra com o seu documento e a sua senha.</p>
               <figure class="manual-figura">
-                <img src="manual/imagens/login-entrar.png" alt="Tela de login: campo CPF ou RG (1), campo Senha (2), botão Entrar (3) e os atalhos Criar conta, Esqueci minha senha e Termos e privacidade (4)." />
+                <img src="manual/imagens/login-entrar.png" alt="Tela de login: campo CPF ou RG (1), campo Senha (2), botão Entrar (3) e, embaixo, a orientação para quem esqueceu a senha e o atalho Termos e privacidade (4)." />
                 <figcaption>
                   <ol class="manual-chamadas">
                     <li>Campo CPF ou RG</li>
                     <li>Campo Senha</li>
                     <li>Botão Entrar</li>
-                    <li>Atalhos Criar conta, Esqueci minha senha e Termos e privacidade</li>
+                    <li>Orientação para quem esqueceu a senha e o atalho Termos e privacidade</li>
                   </ol>
                 </figcaption>
               </figure>
@@ -351,28 +351,28 @@
                 <li><strong>CPF ou RG.</strong> Digite o seu documento. Pode ser o CPF (11 números) ou o RG (8 ou 9 números). O campo coloca os pontos e o traço sozinho.</li>
                 <li><strong>Senha.</strong> Digite a sua senha.</li>
                 <li><strong>Entrar.</strong> Clique no botão Entrar, ou aperte a tecla Enter.</li>
-                <li><strong>Atalhos.</strong> <strong>Criar conta</strong> abre o cadastro para quem ainda não tem acesso. <strong>Esqueci minha senha</strong> pede ao administrador um link para criar uma senha nova. <strong>Termos e privacidade</strong> abre, em outra aba, os termos de uso e o aviso de privacidade.</li>
+                <li><strong>Embaixo.</strong> Quem esqueceu a senha procura o administrador da sua unidade (veja <strong>Esqueci minha senha</strong>). <strong>Termos e privacidade</strong> abre, em outra aba, os termos de uso e o aviso de privacidade.</li>
               </ol>
-              <p class="manual-nota"><strong>O que as mensagens indicam.</strong> "Usuário não encontrado" aparece quando o documento ainda não tem cadastro no sistema; para se cadastrar, use <strong>Criar conta</strong>. "Senha incorreta" aparece quando a senha não confere.</p>
+              <p class="manual-nota"><strong>O que as mensagens indicam.</strong> "Usuário não encontrado" aparece quando o documento não está no sistema. "Procure um administrador para liberar o seu acesso" aparece quando você está cadastrado mas ainda não criou a sua conta: peça ao administrador o link de cadastro (veja <strong>Criar conta</strong>). "Senha incorreta" aparece quando a senha não confere.</p>
               <p class="manual-nota"><strong>Já entrou antes?</strong> Enquanto a sua sessão estiver ativa, o sistema abre direto na tela inicial, sem pedir o login de novo.</p>
 
               <h3 id="esqueci-senha">Esqueci minha senha</h3>
-              <p>Se esqueceu a senha, clique em <strong>Esqueci minha senha</strong>, na tela de entrada. Abre a tela <strong>Recuperar senha</strong>: digite o seu CPF ou RG e clique em <strong>Enviar pedido</strong>.</p>
+              <p>Se esqueceu a senha, procure <strong>pessoalmente</strong> o administrador da sua unidade. Ele confere que é você e manda, no seu privado (WhatsApp ou e-mail), uma mensagem com o <strong>link de nova senha</strong> e a data e a hora em que o link expira.</p>
+              <p>O link abre a tela <strong>Nova senha</strong>. Informe o seu CPF e clique em <strong>Continuar</strong>.</p>
               <figure class="manual-figura">
-                <img src="manual/imagens/recuperar-senha.png" alt="Tela Recuperar senha: o campo CPF ou RG (1) e o botão Enviar pedido (2)." />
+                <img src="manual/imagens/nova-senha-cpf.png" alt="Tela Nova senha: o campo CPF (1) e o botão Continuar (2)." />
                 <figcaption>
                   <ol class="manual-chamadas">
-                    <li>Campo CPF ou RG</li>
-                    <li>Botão Enviar pedido</li>
+                    <li>Campo CPF</li>
+                    <li>Botão Continuar</li>
                   </ol>
                 </figcaption>
               </figure>
-              <p>O pedido chega aos <strong>administradores da sua companhia</strong>, no sino de avisos. Fale com um deles: ele confere que é você e entrega um <strong>link de nova senha</strong>, em mãos ou por mensagem.</p>
-              <p>O link abre a tela <strong>Nova senha</strong>, com o seu nome no alto: digite a nova senha duas vezes, com ao menos 6 caracteres, e salve. Depois é só entrar com a senha nova; até lá, a senha antiga continua valendo. Cada link serve uma vez só e vale por 24 horas. Vencido ou já usado, a tela avisa, e o botão <strong>Pedir novo link</strong> leva de volta ao pedido.</p>
-              <p class="manual-nota"><strong>O que as mensagens indicam.</strong> "CPF ou RG não encontrado": o documento não tem cadastro. "Este cadastro ainda não tem acesso liberado": você ainda não criou a sua conta; veja <strong>Criar conta</strong>, logo abaixo.</p>
+              <p>Com o CPF certo, aparece o seu nome: digite a nova senha duas vezes, com ao menos 6 caracteres, e salve. Depois é só entrar com a senha nova; até lá, a senha antiga continua valendo.</p>
+              <p class="manual-nota"><strong>Sobre o link.</strong> Ele é pessoal, serve uma vez e vale por 24 horas. Vencido, já usado ou cancelado, a tela avisa; peça um novo ao administrador. "Este CPF não confere com o link" aparece quando o CPF digitado não é o da pessoa para quem o link foi gerado; depois de cinco tentativas erradas, o link é cancelado.</p>
 
               <h3 id="criar-conta">Criar conta</h3>
-              <p>Quem ainda não tem acesso usa <strong>Criar conta</strong>, na tela de entrada. A tela começa pedindo <strong>só o seu CPF</strong> e, a partir dele, segue por um de três caminhos.</p>
+              <p>A sua conta nasce de um <strong>link de cadastro</strong> que o administrador gera na sua ficha e manda no seu privado, com a data e a hora em que ele expira. A tela de criar conta só abre por esse link. Ao abrir, ela pede o seu <strong>CPF</strong>.</p>
               <figure class="manual-figura">
                 <img src="manual/imagens/criar-conta-passo1.png" alt="Primeiro passo de criar conta: o campo CPF (1) e o botão Continuar (2)." />
                 <figcaption>
@@ -382,43 +382,21 @@
                   </ol>
                 </figcaption>
               </figure>
-              <p>Se o seu CPF <strong>já tem acesso</strong>, a tela avisa e leva você para <strong>Esqueci minha senha</strong>. Se o seu CPF <strong>ainda não está no sistema</strong>, ela abre o formulário em branco para um cadastro novo, explicado mais abaixo. E se um administrador <strong>já cadastrou você</strong> (por exemplo, para a escala funcionar enquanto você estava afastado), a tela pede um <strong>token de acesso</strong>.</p>
-              <p><strong>Assumir a sua ficha com o token.</strong> O token é um código curto que você <strong>pede ao seu administrador</strong>. Ele o entrega em mãos ou por mensagem, vale por tempo limitado e serve uma vez. Digite o seu CPF e o token para continuar.</p>
+              <p>Com o CPF certo, os seus dados aparecem preenchidos para você <strong>conferir e criar a senha</strong>. Preencha o seu <strong>e-mail</strong> e o seu <strong>celular</strong>, confira o resto e, no fim, defina a senha que passará a usar. A senha é sempre escolhida por você; o administrador nunca a define.</p>
               <figure class="manual-figura">
-                <img src="manual/imagens/criar-conta-token.png" alt="Passo 1 quando o CPF já foi cadastrado: o campo CPF (1), o campo Token de acesso (2) e a orientação de pedir o token ao administrador (3)." />
+                <img src="manual/imagens/criar-conta.png" alt="Segundo passo: o aviso do que você confere e do que vai para aprovação (1) e um campo de conferência que fica travado, como o CPF (2)." />
                 <figcaption>
                   <ol class="manual-chamadas">
-                    <li>Campo CPF</li>
-                    <li>Campo Token de acesso</li>
-                    <li>Orientação para pedir o token ao administrador</li>
-                  </ol>
-                </figcaption>
-              </figure>
-              <p>Com o token certo, os seus dados aparecem preenchidos para você <strong>conferir e criar a senha</strong>. Confira tudo e, no fim, defina a senha que passará a usar. A senha é sempre escolhida por você; o administrador nunca a define.</p>
-              <figure class="manual-figura">
-                <img src="manual/imagens/criar-conta.png" alt="Passo 2 do resgate por token: o aviso de que os dados vieram preenchidos (1) e um campo de conferência que fica travado, como o CPF (2)." />
-                <figcaption>
-                  <ol class="manual-chamadas">
-                    <li>Aviso de que os dados vieram preenchidos</li>
+                    <li>Aviso do que você confere e do que vai para aprovação</li>
                     <li>Campo de conferência, travado, como o CPF</li>
                   </ol>
                 </figcaption>
               </figure>
-              <p>Ao confirmar, a sua conta é criada e você já entra com o seu CPF e a senha. <strong>E-mail, celular e senha valem na hora.</strong> Se você corrigir qualquer outro dado (nome, RG, nascimento e afins), a mudança passa pela aprovação de um administrador antes de valer, como uma correção comum. <strong>Posto, lotação e promoções</strong> aparecem só para conferência: eles mudam por promoção e transferência, feitas pelo administrador.</p>
-              <p><strong>Cadastro novo (CPF fora do sistema).</strong> Quando o seu CPF ainda não existe no sistema, você preenche a ficha inteira: os <strong>dados pessoais</strong> (nome, CPF, RG, nascimento, CNH, celular e e-mail), os <strong>dados institucionais</strong> (tipo, <strong>inclusão no quadro</strong>, posto ou graduação, nome de guerra, colocação por antiguidade, setor e a lotação, na mesma árvore usada no resto do sistema) e a <strong>senha</strong>.</p>
-              <p class="manual-nota"><strong>Inclusão no quadro.</strong> Informe a data em que você entrou no seu <strong>quadro atual</strong>, de praças ou de oficiais. Não é a data de entrada na corporação: quem foi praça e hoje é oficial informa a data de entrada no quadro de oficiais. Essa data vai até o dia da primeira promoção do quadro, e o sistema confere a ordem das datas.</p>
-              <p>Ao enviar, o sistema confirma com "Cadastro enviado. Um administrador vai analisar." e volta para a tela de entrada. Esse cadastro vira um pedido, e o acesso só é liberado quando um administrador aprova.</p>
-              <p>Até a aprovação, ao tentar entrar você vê "Seu cadastro está aguardando a aprovação de um administrador.", o sinal de que o pedido chegou e está na fila. Assim que for aprovado, você entra com o seu documento e a senha que escolheu. Se o cadastro for recusado, a mensagem é "Seu cadastro não foi aprovado. Fale com um administrador."</p>
-              <figure class="manual-figura">
-                <img src="manual/imagens/login-aguardando.png" alt="No login, um cadastro ainda não aprovado mostra a mensagem 'Seu cadastro está aguardando a aprovação de um administrador.' em vermelho, abaixo do campo (1)." />
-                <figcaption>
-                  <ol class="manual-chamadas">
-                    <li>Mensagem de cadastro aguardando aprovação</li>
-                  </ol>
-                </figcaption>
-              </figure>
-              <p><strong>Termos de uso e privacidade.</strong> Nos dois caminhos, antes de enviar, marque <strong>Li e estou ciente dos Termos de uso e privacidade</strong>; a marcação é obrigatória. <strong>Ler os termos</strong> abre o texto em outra aba, e o que você já preencheu continua na tela.</p>
-              <p class="manual-nota">Nenhum dado seu aparece na tela antes do token certo. Por isso, quem foi cadastrado por um administrador só assume a própria ficha com o token, que chega pelas mãos dele.</p>
+              <p><strong>E-mail e celular são seus e valem na hora.</strong> Se outro dado estiver errado (nome, RG, nascimento, CNH e afins), corrija ali mesmo: a correção passa pela aprovação de um administrador antes de valer, como uma correção comum. <strong>CPF, posto, lotação e promoções</strong> aparecem só para conferência: eles mudam por promoção e transferência, feitas pelo administrador.</p>
+              <p class="manual-nota"><strong>Inclusão no quadro.</strong> É a data em que você entrou no seu <strong>quadro atual</strong>, de praças ou de oficiais. Não é a data de entrada na corporação: quem foi praça e hoje é oficial tem a data de entrada no quadro de oficiais. Essa data vai até o dia da primeira promoção do quadro.</p>
+              <p><strong>Termos de uso e privacidade.</strong> Antes de criar a conta, marque <strong>Li e estou ciente dos Termos de uso e privacidade</strong>; a marcação é obrigatória. <strong>Ler os termos</strong> abre o texto em outra aba, e o que você já preencheu continua na tela.</p>
+              <p>Ao clicar em <strong>Criar conta</strong>, a sua conta é criada e você já entra com o seu CPF e a senha.</p>
+              <p class="manual-nota"><strong>Sobre o link.</strong> Ele é pessoal, serve uma vez e vale por 24 horas. Vencido, já usado ou cancelado, a tela avisa; peça um novo ao administrador. Depois de cinco CPFs errados, o link é cancelado. Nenhum dado seu aparece na tela antes do CPF certo.</p>
 
               <h3 id="termos">Termos de uso e privacidade</h3>
               <p>Os <strong>Termos de uso e privacidade</strong> explicam as regras de uso do sistema e o que ele faz com os seus dados: quais dados guarda, para quê, quem vê, onde ficam, por quanto tempo e quais são os seus direitos. Eles abrem em outra aba pelo atalho <strong>Termos e privacidade</strong>, na tela de entrada e no menu do canto (seu nome).</p>
@@ -480,21 +458,21 @@
 
               <p><strong>Perfil (1).</strong> Mostra o seu cartão de identificação (grau, nome de guerra, lotação e o papel, Usuário ou Administrador) e os seus dados em leitura, separados em Identificação e Carreira. No fim, em Preferências, você troca o Tema, claro ou escuro, que muda na hora, e em Privacidade vê de qual versão dos Termos de uso e privacidade você está ciente e quando, com o atalho <strong>Ler os termos</strong>.</p>
 
-              <p><strong>Meus dados (2).</strong> É onde você pede uma correção nos seus dados. Um aviso no topo lembra a regra: toda alteração passa pela aprovação do administrador.</p>
+              <p><strong>Meus dados (2).</strong> É onde você muda os seus dados. Um aviso no topo lembra a regra: e-mail e celular são salvos na hora; as demais alterações passam pela aprovação do administrador.</p>
               <figure class="manual-figura">
-                <img src="manual/imagens/perfil-dados.png" alt="Aba Meus dados: o aviso de aprovação e os campos editáveis." />
+                <img src="manual/imagens/perfil-dados.png" alt="Aba Meus dados: o aviso da regra (e-mail e celular na hora, o resto por aprovação) e os campos editáveis." />
               </figure>
-              <p>Altere os campos que precisar. O campo mexido fica <strong>destacado</strong> e aparece um contador ("1 alteração a enviar"). Depois, clique em <strong>Solicitar correção</strong> para enviar tudo num pedido só, ou em <strong>Desfazer</strong> para voltar ao que estava.</p>
+              <p>Altere os campos que precisar. O campo mexido fica <strong>destacado</strong> e aparece um contador ("1 alteração a enviar"). Depois, clique em <strong>Salvar alterações</strong> para mandar tudo de uma vez, ou em <strong>Desfazer</strong> para voltar ao que estava.</p>
               <figure class="manual-figura">
-                <img src="manual/imagens/perfil-acao.png" alt="Um campo alterado e destacado (1) e o botão Solicitar correção (2)." />
+                <img src="manual/imagens/perfil-acao.png" alt="Um campo alterado e destacado (1) e o botão Salvar alterações (2)." />
                 <figcaption>
                   <ol class="manual-chamadas">
                     <li>Campo alterado, em destaque</li>
-                    <li>Botão Solicitar correção</li>
+                    <li>Botão Salvar alterações</li>
                   </ol>
                 </figcaption>
               </figure>
-              <p class="manual-nota"><strong>Como funciona a aprovação:</strong> você só <strong>solicita</strong>; o pedido fica <strong>pendente</strong> até um administrador aprovar. Vale para todos os dados, inclusive celular, e-mail e CNH. Abaixo do formulário, em "Minhas solicitações", você acompanha cada pedido pelo status: Pendente, Aprovada ou Recusada. O CPF não entra (é o seu login), e grau e lotação também não (mudam só por promoção ou transferência).</p>
+              <p class="manual-nota"><strong>O que vale na hora e o que vai para aprovação:</strong> <strong>e-mail e celular</strong> são seus e valem assim que você salva, com um resumo do que mudou. O resto você <strong>solicita</strong>: o pedido fica <strong>pendente</strong> até um administrador aprovar, inclusive a CNH, que decide se você pode ser escalado como condutor. Abaixo do formulário, em "Minhas solicitações", você acompanha cada pedido pelo status: Pendente, Aprovada ou Recusada. O CPF não entra (é o seu login), e grau e lotação também não (mudam só por promoção ou transferência).</p>
 
               <p><strong>Segurança (3).</strong> Aqui você troca a sua senha: digite a senha atual, a nova (ao menos 6 caracteres e diferente da atual) e confirme. A senha muda na hora, sem precisar de aprovação.</p>
               <figure class="manual-figura">
@@ -752,7 +730,7 @@
                     </ol>
                   </figcaption>
                 </figure>
-                <p class="manual-nota"><strong>Tirar do ciclo mexe no que dependia dele.</strong> Ao clicar em <strong>Tirar</strong>, e também ao dar baixa ou transferir, o sistema mostra quanto vai cancelar antes de você confirmar, por exemplo "isto também vai cancelar 2 trocas e 1 folga". Tirar um militar do ciclo cancela as trocas e as folgas futuras dele, devolve o saldo das folgas e avisa os envolvidos.</p>
+                <p class="manual-nota"><strong>Tirar do ciclo mexe no que dependia dele.</strong> Ao clicar em <strong>Tirar</strong>, e também ao dar baixa ou transferir, a janela de confirmação mostra a lista do que vai acontecer a partir da data: cada troca, folga e extra do militar e o que acontece com ela. O que já aconteceu não é desfeito. A troca em que nenhuma parte aconteceu é cancelada inteira; se uma parte já aconteceu, só a outra sai e fica um saldo entre os dois, em Trocas, na aba Saldos. As folgas que ainda não aconteceram são canceladas, e as horas descontadas voltam ao saldo. As extras saem da escala e da Extrajornada, e as horas voltam para a cota dele. Quem tinha troca ou folga cancelada recebe um aviso, e os dois militares de uma troca que perdeu uma parte recebem o aviso "Troca alterada", com o saldo. O que foi cancelado não volta, mesmo que o militar volte ao ciclo depois.</p>
                 <p><strong>Só naquele dia.</strong> Para escalar um militar só num dia, sem entrar no ciclo, use o <strong>Adicionar militar</strong> da aba Dia (veja <strong>Ajustar o dia</strong>, logo abaixo).</p>
                 <h3 id="distribuicao-dia">Ajustar o dia <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>Na aba <strong>Dia</strong> do painel do dia, você ajusta aquele dia. Para o administrador, a aba já abre pronta para editar: a lista é a mesma que todos veem, com o botão <strong>Adicionar militar</strong> no alto do painel e o <strong>lápis</strong> em cada linha. As mudanças valem <strong>só para aquele dia</strong> e ficam marcadas na tela, com o selo <strong>Novo</strong>, até você clicar em <strong>Salvar</strong>, que grava tudo de uma vez. O rodapé mostra quantas alterações faltam salvar, e o <strong>Cancelar</strong> desfaz todas.</p>
@@ -842,7 +820,7 @@
               </figure>
               <div class="manual-admin manual-zona-admin">
                 <h3 id="decidir-pedidos">Decidir os pedidos <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p>Para o administrador, a página tem duas abas: <strong>Para mim</strong> (o que é seu como militar) e <strong>Administração</strong>, com os pedidos que esperam a decisão de um administrador numa lista só: trocas, folgas, cadastros e correções de dados. Os seus próprios pedidos não aparecem para você: ficam com outro administrador.</p>
+                <p>Para o administrador, a página tem duas abas: <strong>Para mim</strong> (o que é seu como militar) e <strong>Administração</strong>, com os pedidos que esperam a decisão de um administrador numa lista só: trocas, folgas e correções de dados. Os seus próprios pedidos não aparecem para você: ficam com outro administrador.</p>
                 <p>O seletor <strong>Todos · Trocas · Folgas · Usuários</strong> (1) filtra a lista. Cada cartão mostra o <strong>pelotão</strong> do pedido (2), porque você cuida de todos os pelotões da companhia, e o <strong>resultado da análise</strong> (3). A lista vem pela data do serviço, a mais próxima primeiro.</p>
                 <figure class="manual-figura manual-figura--cheia">
                   <img src="manual/imagens/pendencias-lista.png" alt="A aba Administração da página Pendências: o seletor do tipo de pedido (1), o pelotão do pedido (2), o resultado da análise (3) e a seção Para corrigir (4)." />
@@ -1280,6 +1258,10 @@
               <h3 id="ver-efetivo">Ver o efetivo e as fichas</h3>
               <p>A página <strong>Usuários</strong> reúne todo o efetivo. Na aba <strong>Efetivo</strong>, as unidades aparecem em árvore (a companhia e seus pelotões) e, ao abrir uma unidade, os militares dela surgem em <strong>cards</strong>. O número ao lado do título diz quantos estão à vista.</p>
               <p><strong>O card de cada militar.</strong> Traz a abreviação do <strong>grau</strong>, o <strong>nome</strong>, um <strong>identificador</strong> e um <strong>selo de situação</strong>: "Ativo" em verde, ou "Férias", "Licença" e "Dispensa" em âmbar, com a data até quando valem.</p>
+              <div class="manual-bloco-admin manual-admin">
+                <span class="manual-selo-admin">Apenas administradores</span>
+                <p>Para você, o selo mostra também a conta de quem está ativo: <strong>"Sem conta"</strong>, em cinza, para quem ainda não criou a conta, e <strong>"Link de cadastro até"</strong>, em âmbar, com a data e a hora, enquanto o link de cadastro que você gerou estiver valendo. Cada militar tem um selo só.</p>
+              </div>
               <p><strong>Ajustar o que aparece.</strong> Dois botões na barra logo abaixo das abas, à direita, mudam a exibição. O <strong>Exibir</strong> (o olho) escolhe o identificador visível (CPF, RG, telefone ou e-mail), o formato do nome (só o de guerra ou o nome completo com o de guerra em destaque) e liga ou desliga a hierarquia, que é a abreviação do grau.</p>
               <p>O <strong>Ordem</strong> organiza a lista por <strong>antiguidade</strong> (do mais antigo, o padrão, ou do mais moderno) ou em ordem <strong>alfabética</strong> (de A a Z ou de Z a A). Essas escolhas valem só para você.</p>
               <p><strong>Filtrar e procurar.</strong> Os filtros de <strong>Graus</strong> e <strong>Situação</strong> encolhem a lista ao que interessa, e o funil fica destacado quando algum está ativo. A <strong>busca</strong> tem dois modos, trocados no botão ao lado: <strong>Marcar</strong> realça quem combina com o texto sem esconder os demais, e <strong>Filtrar</strong> deixa à vista só quem combina. Ela procura por nome de guerra, nome completo, CPF ou RG.</p>
@@ -1323,45 +1305,46 @@
               <div class="manual-admin manual-zona-admin">
                 <h3 id="cadastrar-efetivo">Cadastrar o efetivo e liberar acesso <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>Para incluir um militar, abra <strong>Usuários</strong> e clique em <strong>Novo usuário</strong>, no alto da lista, à esquerda. O cadastro abre no painel à direita.</p>
-                <p>Você preenche os <strong>dados pessoais</strong> (nome, CPF, RG, nascimento, CNH e celular) e os <strong>dados institucionais</strong> (tipo, inclusão no quadro, posto ou graduação, nome de guerra, colocação, setor e lotação). Ao escolher o posto, o sistema pede também as <strong>datas de promoção</strong> de cada graduação. Essas datas, a inclusão no quadro e a colocação definem a posição do militar na <strong>antiguidade</strong>, que o sistema calcula sozinho.</p>
+                <p>Você preenche os <strong>dados pessoais</strong> (nome, CPF, RG, nascimento e CNH) e os <strong>dados institucionais</strong> (tipo, inclusão no quadro, posto ou graduação, nome de guerra, colocação, setor e lotação). Ao escolher o posto, o sistema pede também as <strong>datas de promoção</strong> de cada graduação. Essas datas, a inclusão no quadro e a colocação definem a posição do militar na <strong>antiguidade</strong>, que o sistema calcula sozinho.</p>
                 <p class="manual-nota"><strong>Inclusão no quadro:</strong> a data de entrada no quadro atual do militar, de praças ou de oficiais, e não a de entrada na corporação. Ela vai até o dia da primeira promoção do quadro.</p>
-                <p>O <strong>e-mail é opcional</strong>: a ficha pode existir só para a escala funcionar, e o militar informa o próprio e-mail quando for criar o acesso.</p>
+                <p><strong>Celular e e-mail são opcionais</strong>: são dados do próprio militar, que ele informa ao criar a conta. A ficha pode existir só para a escala funcionar.</p>
                 <figure class="manual-figura">
-                  <img src="manual/imagens/usuarios-novo.png" alt="Painel Novo usuário: a seção Dados pessoais (1), o campo E-mail marcado como opcional (2) e o início da seção Dados institucionais (3). O botão Salvar fica no rodapé do painel." />
+                  <img src="manual/imagens/usuarios-novo.png" alt="Painel Novo usuário: a seção Dados pessoais (1), os campos Celular e E-mail, marcados como opcionais (2), e o início da seção Dados institucionais (3). O botão Salvar fica no rodapé do painel." />
                   <figcaption>
                     <ol class="manual-chamadas">
                       <li>Seção Dados pessoais</li>
-                      <li>Campo E-mail, opcional</li>
+                      <li>Campos Celular e E-mail, opcionais</li>
                       <li>Seção Dados institucionais</li>
                     </ol>
                   </figcaption>
                 </figure>
                 <p>Ao <strong>Salvar</strong>, o militar passa a existir no sistema e já aparece na árvore de unidades; se for operacional, pode entrar na escala. O sistema mostra um resumo do que foi cadastrado.</p>
-                <p class="manual-nota"><strong>Cadastrar não cria senha.</strong> O Novo usuário registra a pessoa, não o acesso. Não existe senha padrão, e você nunca escolhe a senha de ninguém: quem cria a senha é o próprio militar, ao assumir a conta.</p>
-                <p><strong>Liberar o acesso (gerar o token).</strong> O militar assume a própria conta com um <strong>token de acesso</strong> que você gera na ficha dele. Enquanto ele não tem acesso, abra a ficha (clique no card, em <strong>Usuários</strong>) e, no painel à direita, a seção <strong>Acesso ao sistema</strong> mostra a situação e o botão <strong>Gerar token de acesso</strong>.</p>
+                <p class="manual-nota"><strong>Cadastrar não cria senha.</strong> O Novo usuário registra a pessoa, não o acesso. Não existe senha padrão, e você nunca escolhe a senha de ninguém: quem cria a senha é o próprio militar, ao criar a conta pelo link.</p>
+                <p><strong>Liberar o acesso (o link de cadastro).</strong> O militar cria a própria conta por um <strong>link de cadastro</strong> que você gera na ficha dele. Abra a ficha (clique no card, em <strong>Usuários</strong>): enquanto ele não tem conta, a seção <strong>Acesso ao sistema</strong>, no painel à direita, mostra a situação e o botão <strong>Gerar link de cadastro</strong>.</p>
                 <figure class="manual-figura">
-                  <img src="manual/imagens/usuarios-token.png" alt="Ficha de um militar sem conta: a seção Acesso ao sistema com a situação do token (1) e o botão Gerar token de acesso (2)." />
+                  <img src="manual/imagens/usuarios-link-cadastro.png" alt="Ficha de um militar sem conta: a seção Acesso ao sistema com a situação do acesso (1) e o botão Gerar link de cadastro (2)." />
                   <figcaption>
                     <ol class="manual-chamadas">
                       <li>Situação do acesso</li>
-                      <li>Botão Gerar token de acesso</li>
+                      <li>Botão Gerar link de cadastro</li>
                     </ol>
                   </figcaption>
                 </figure>
-                <p>Ao gerar, o código aparece <strong>uma vez</strong> num aviso. Anote e <strong>entregue ao militar</strong>, em mãos ou por mensagem; ele usa esse código na tela <strong>Criar conta</strong> para conferir os dados e definir a senha. Depois de gerado, o botão passa a mostrar a situação do token e vira <strong>Gerar novo token</strong>, para o caso de o militar perder o código ou não concluir a tempo.</p>
-                <p class="manual-nota">O sistema guarda apenas uma versão protegida do token, nunca o código em si, então ele não pode ser consultado depois. Se o militar precisar, gere um novo: o anterior deixa de valer.</p>
-                <p><strong>Link de nova senha.</strong> Quando um militar esquece a senha e faz o pedido na tela de entrada, o aviso <strong>Pedido de nova senha</strong> chega ao seu sino. Um clique nele abre a ficha da pessoa, com a seção <strong>Acesso ao sistema</strong>. Clique em <strong>Gerar link de nova senha</strong>: o link aparece logo abaixo, com o botão <strong>Copiar link</strong>, pronto para você colar numa mensagem ao militar.</p>
-                <p>O aviso sai do sino de todos os administradores. O mesmo botão fica sempre na ficha de quem já tem conta, então dá para gerar o link também sem pedido.</p>
+                <p>Ao gerar, a seção mostra até quando o link vale e a <strong>mensagem pronta</strong>: o nome do militar, o link e a data e a hora em que ele expira. Clique em <strong>Copiar mensagem</strong> e cole no <strong>privado</strong> do militar (WhatsApp ou e-mail), <strong>nunca num grupo</strong>. Ele abre o link, confirma o CPF, confere os dados e cria a senha.</p>
                 <figure class="manual-figura">
-                  <img src="manual/imagens/usuarios-senha-link.png" alt="Ficha de um militar com conta: a seção Acesso ao sistema com o botão Gerar novo link (1) e o link de nova senha com o botão Copiar link (2)." />
+                  <img src="manual/imagens/usuarios-link-mensagem.png" alt="O link gerado: até quando ele vale (1), a mensagem pronta para mandar (2) e os botões Copiar mensagem e Cancelar link (3)." />
                   <figcaption>
                     <ol class="manual-chamadas">
-                      <li>Botão Gerar link de nova senha, que vira Gerar novo link</li>
-                      <li>O link e o botão Copiar link</li>
+                      <li>Até quando o link vale</li>
+                      <li>A mensagem pronta para mandar</li>
+                      <li>Botões Copiar mensagem e Cancelar link</li>
                     </ol>
                   </figcaption>
                 </figure>
-                <p class="manual-nota"><strong>Confirme que é a própria pessoa.</strong> O link dá acesso à conta. Antes de entregar, confirme que o pedido é mesmo do militar, pessoalmente ou pelo telefone que já está na ficha. O link vale uma vez e por 24 horas, e gerar outro cancela o anterior. A senha antiga continua valendo até ele criar a nova, e você nunca vê nem escolhe a senha de ninguém.</p>
+                <p><strong>Um link por vez.</strong> Enquanto o link vale (24 horas, uma vez só), a ficha mostra sempre a mesma mensagem, e o botão de gerar outro não aparece. Se você mandou para a pessoa errada, ou o militar perdeu a mensagem e o link venceu, use <strong>Cancelar link</strong>: ele deixa de funcionar na hora, e o botão de gerar volta. Enquanto o link vale, o card do militar mostra o selo "Link de cadastro até", com a data e a hora.</p>
+                <p>Quando o militar cria a conta, você recebe no sino o aviso <strong>Conta criada</strong>, que abre a ficha dele. Se não foi ele quem criou, você percebe na hora. O e-mail e o celular que ele informou já valem; se ele corrigiu outro dado, a correção chega para você aprovar, como uma correção comum.</p>
+                <p><strong>Link de nova senha.</strong> Quem já tem conta e esqueceu a senha pede a você <strong>pessoalmente</strong>. Na ficha dele, a mesma seção <strong>Acesso ao sistema</strong> traz o botão <strong>Gerar link de nova senha</strong>, que funciona do mesmo jeito: a mensagem pronta, <strong>Copiar mensagem</strong>, <strong>Cancelar link</strong> e um link por vez. O militar abre o link, confirma o CPF e cria a senha nova.</p>
+                <p class="manual-nota"><strong>Confirme que é a própria pessoa.</strong> O link dá acesso à conta. Antes de gerar o link de nova senha, confirme que o pedido é mesmo do militar, pessoalmente ou pelo telefone que já está na ficha. A senha antiga continua valendo até ele criar a nova, e você nunca vê nem escolhe a senha de ninguém.</p>
                 <h3 id="carreira">Promover, transferir e dar baixa <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>As mudanças de carreira ficam na ficha, quando você troca de <strong>Ver</strong> para <strong>Editar</strong> (o alternador no alto do painel) e abre a aba <strong>Carreira</strong>. Ali, três blocos abrem ao clicar: <strong>Promover</strong>, <strong>Transferir</strong> e <strong>Dar baixa do sistema</strong>. Cada ação registra no histórico e mostra um resumo ao final.</p>
                 <figure class="manual-figura">
@@ -1386,44 +1369,32 @@
                   </figcaption>
                 </figure>
                 <p><strong>Transferir.</strong> O bloco mostra a lotação atual em <strong>De</strong>, você escolhe a unidade em <strong>Para</strong> (na árvore de unidades) e a data <strong>A partir de</strong>, que aceita até uma semana para trás ou uma data futura. A transferência vale a partir dessa data: até a véspera o militar é da unidade antiga e, daí em diante, da nova. Na escala, os dias anteriores continuam na unidade antiga.</p>
-                <p>Antes de confirmar, o sistema avisa quais <strong>trocas e folgas da unidade de origem</strong> a saída vai cancelar. Confirmando, o militar sai do ciclo da unidade antiga na data e fica disponível na nova, onde você o coloca no ciclo pela aba <strong>Contínuos</strong> do painel do dia, a partir da data da transferência.</p>
-                <p>Uma transferência com data futura fica em <strong>Mudanças marcadas</strong>, no alto do bloco, com o botão <strong>Cancelar</strong>. Até a data, o militar continua na unidade antiga. Há uma transferência marcada por vez: marcar outra substitui a anterior.</p>
+                <p>Antes de confirmar, a janela mostra a <strong>lista do que vai acontecer</strong> a partir da data: a saída da escala e cada troca, folga e extra do militar que muda, pela mesma regra do Tirar do ciclo (veja <strong>Montar o ciclo</strong>). Na transferência, as cotas de extra dele continuam. O que foi cancelado não volta, mesmo que a transferência seja cancelada depois. Confirmando, o militar sai do ciclo da unidade antiga na data e fica disponível na nova, onde você o coloca no ciclo pela aba <strong>Ciclo</strong> do painel do dia, a partir da data da transferência.</p>
                 <figure class="manual-figura">
-                  <img src="manual/imagens/usuarios-transferir.png" alt="O bloco Transferir: a transferência marcada com o botão Cancelar (1) e a data A partir de (2)." />
+                  <img src="manual/imagens/usuarios-transferir.png" alt="A confirmação da transferência: a lista do que vai acontecer (1) e a nota de que o que foi cancelado não volta (2)." />
                   <figcaption>
                     <ol class="manual-chamadas">
-                      <li>Transferência marcada, com o Cancelar</li>
-                      <li>Data em que a transferência vale</li>
+                      <li>A lista do que vai acontecer</li>
+                      <li>O que foi cancelado não volta</li>
                     </ol>
                   </figcaption>
                 </figure>
-                <p><strong>Dar baixa.</strong> No fim da aba, o bloco <strong>Dar baixa do sistema</strong> traz a data <strong>A partir de</strong> e o botão <strong>Dar baixa</strong>. A confirmação mostra o nome e o CPF e avisa das <strong>trocas e folgas que serão canceladas</strong>. O militar passa a "Inativo" e sai do efetivo ativo, reaparecendo só com o filtro <strong>Inativos</strong>. Para um militar já inativo, no lugar dessas ações aparece <strong>Readmitir ao efetivo</strong>, com uma data, que o traz de volta.</p>
-                <p><strong>Ajustar os dados da ficha.</strong> No mesmo modo Editar, a aba <strong>Dados</strong> deixa mudar os dados pessoais e a aba <strong>Carreira</strong>, os institucionais (inclusão no quadro, nome de guerra, setor e colocação). O <strong>CPF</strong> não muda, e o <strong>grau</strong> e a <strong>lotação</strong> também não se editam aqui, porque mudam por promoção e transferência.</p>
+                <p>Uma transferência com data futura fica em <strong>Mudanças marcadas</strong>, no alto do bloco, com o botão <strong>Cancelar</strong>. Até a data, o militar continua na unidade antiga. Enquanto houver uma marcada, o bloco mostra só ela: para marcar outra, cancele a marcada primeiro.</p>
+                <p><strong>Dar baixa.</strong> No fim da aba, o bloco <strong>Dar baixa do sistema</strong> traz a data <strong>A partir de</strong> e o botão <strong>Dar baixa</strong>. A confirmação mostra o nome, o CPF e a <strong>lista do que vai acontecer</strong>: as trocas, folgas e extras, como na transferência, e as <strong>cotas</strong>, porque o militar sai da divisão das cotas de extra a partir do mês. O militar passa a "Inativo" e sai do efetivo ativo, reaparecendo só com o filtro <strong>Inativos</strong>. Para um militar já inativo, no lugar dessas ações aparece <strong>Readmitir ao efetivo</strong>, com uma data, que o traz de volta.</p>
+                <p><strong>Ajustar os dados da ficha.</strong> No mesmo modo Editar, a aba <strong>Dados</strong> deixa mudar os dados pessoais e a aba <strong>Carreira</strong>, os institucionais (inclusão no quadro, nome de guerra, setor e colocação). O <strong>CPF</strong> não muda, e o <strong>grau</strong> e a <strong>lotação</strong> também não se editam aqui, porque mudam por promoção e transferência. <strong>Celular e e-mail são opcionais</strong>, com uma exceção: quem já tem conta precisa de e-mail, porque é por ele que a conta é identificada. Se você trocar o e-mail de quem tem conta, o da conta muda junto, e o militar continua entrando com o CPF e a senha de sempre.</p>
                 <p>Ao <strong>Salvar</strong>, o sistema grava e mostra o resumo. Se você alterar a <strong>CNH</strong>, ele pede uma data para recalcular a distribuição, já que a CNH decide quem pode ser condutor.</p>
-                <h3 id="aprovacoes">Aprovar cadastros e correções <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p>Os cadastros e as correções de dados que esperam a sua decisão ficam na página <strong>Pendências</strong> (no seletor, <strong>Usuários</strong>) e na aba <strong>Pendências</strong> da página Usuários (1), numa lista só. O número na aba conta os pedidos, e cada cartão mostra o pelotão de quem pediu.</p>
+                <h3 id="aprovacoes">Aprovar correções de dados <span class="manual-selo-admin">Apenas administradores</span></h3>
+                <p>As correções de dados que esperam a sua decisão ficam na página <strong>Pendências</strong> (no seletor, <strong>Usuários</strong>) e na aba <strong>Pendências</strong> da página Usuários (1). O número na aba conta os pedidos, e cada cartão mostra o pelotão de quem pediu.</p>
                 <figure class="manual-figura manual-figura--cheia">
-                  <img src="manual/imagens/usuarios-pendencias.png" alt="A aba Pendências da página Usuários (1): um pedido de cadastro com o selo de alerta (2) e um pedido de correção de dados (3)." />
+                  <img src="manual/imagens/usuarios-pendencias.png" alt="A aba Pendências da página Usuários (1) e um pedido de correção de dados (2)." />
                   <figcaption>
                     <ol class="manual-chamadas">
                       <li>A aba Pendências, com o número de pedidos</li>
-                      <li>Cadastro, com o selo de alerta</li>
                       <li>Correção de dados</li>
                     </ol>
                   </figcaption>
                 </figure>
-                <p><strong>Cadastros (liberar um novo acesso).</strong> Aqui ficam os militares que se <strong>cadastraram sozinhos</strong> pela tela <strong>Criar conta</strong>. Cada cartão (2) mostra o pelotão, o militar e a data do pedido; um <strong>selo de alerta</strong> avisa quando há algo a conferir, como um CPF que <strong>já tem conta</strong>, um cadastro que <strong>já existe</strong> ou um <strong>e-mail em uso</strong>.</p>
-                <p>Clicando no cartão, o pedido abre no painel: em <strong>Ver</strong>, do jeito que o militar enviou; em <strong>Editar</strong>, o mesmo formulário do Novo usuário já preenchido, para você <strong>corrigir</strong> o que precisar. Os botões são <strong>Aprovar</strong> e <strong>Recusar</strong>, e a conta de acesso só nasce quando você aprova. O Recusar pede o motivo, que é opcional, no próprio painel.</p>
-                <figure class="manual-figura">
-                  <img src="manual/imagens/usuarios-cadastro-revisar.png" alt="Um cadastro aberto no painel, em modo Ver: os dados do pedido como o militar enviou (1) e os botões Aprovar e Recusar no rodapé (2)." />
-                  <figcaption>
-                    <ol class="manual-chamadas">
-                      <li>Dados do pedido, como o militar enviou</li>
-                      <li>Botões Aprovar e Recusar</li>
-                    </ol>
-                  </figcaption>
-                </figure>
-                <p><strong>Correções (mudanças de dados).</strong> São os pedidos que os militares mandam pelo <strong>Meu perfil</strong>. Cada cartão (3) é um militar com as alterações que ele enviou juntas. Clicando, o painel mostra cada linha com o <strong>campo</strong>, o <strong>valor atual</strong> e o <strong>novo</strong>, com uma caixa de seleção, mais o <strong>Selecionar tudo</strong> no topo.</p>
+                <p><strong>Correções (mudanças de dados).</strong> São os pedidos que os militares mandam pelo <strong>Meu perfil</strong> (ou ao criar a conta, quando corrigem algum dado). Cada cartão (2) é um militar com as alterações que ele enviou juntas. Clicando, o painel mostra cada linha com o <strong>campo</strong>, o <strong>valor atual</strong> e o <strong>novo</strong>, com uma caixa de seleção, mais o <strong>Selecionar tudo</strong> no topo.</p>
                 <p><strong>Aprovar</strong> e <strong>Recusar</strong> valem só para o que está marcado, então você pode aceitar umas alterações e recusar outras no mesmo pedido. O Recusar também pede o motivo opcional. A lista mostra os pedidos da <strong>sua área</strong>: a companhia inteira.</p>
                 <p class="manual-nota">No <strong>Efetivo</strong>, o card de quem tem uma correção esperando ganha o selo "Correção pendente", visível só para os administradores.</p>
               </div>
@@ -1504,7 +1475,7 @@
               <p>Clicar num aviso leva direto para a tela do assunto; o aviso que pede uma resposta sua abre a página <strong>Pendências</strong>, já no pedido. Há também o <strong>Marcar todas como lidas</strong>, que limpa de uma vez os avisos que só informam, e o <strong>Ver todos</strong>, que abre a página Avisos.</p>
               <p><strong>O que chega para você.</strong> Os avisos acompanham o que acontece com as suas trocas, folgas e dados:</p>
               <ul class="manual-lista">
-                <li><strong>Trocas:</strong> "Troca de serviço para confirmar" (quando um colega pede que você cubra o serviço dele), "Troca aprovada", "Troca recusada", "Troca recusada pela administração" e "Troca cancelada".</li>
+                <li><strong>Trocas:</strong> "Troca de serviço para confirmar" (quando um colega pede que você cubra o serviço dele), "Troca aprovada", "Troca recusada", "Troca recusada pela administração", "Troca cancelada" e "Troca alterada" (quando uma parte da troca sai porque um dos dois saiu da escala, e fica um saldo entre vocês).</li>
                 <li><strong>Folgas:</strong> "Folga aprovada", "Folga recusada", "Folga cancelada", "Folga concedida" (quando o administrador concede uma folga direto para você) e "Saldo de folgas ajustado".</li>
                 <li><strong>Dados:</strong> quando o administrador decide uma correção de dados que você pediu.</li>
               </ul>

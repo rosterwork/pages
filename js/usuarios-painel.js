@@ -276,7 +276,7 @@
       });
   }
 
-  /* modal de confirmação da baixa (texto com o nome e o CPF) */
+  /* modal de confirmação da baixa (nome, CPF e a lista do que vai acontecer) */
   function confirmarBaixa() {
     if (!fichaAtual || !pessoaAtual || !RosterWork.confirmar) return;
     var ins = fichaAtual.institucionais || {};
@@ -286,19 +286,29 @@
     var cpf = formatarCpf(pessoaAtual.usuario_id);
     var dataIso = dataVigenciaIso();
     if (!dataIso) return;   /* data inválida/futura: o campo já mostra o erro */
-    var msgBase = RosterWork.mensagens.usuarios.confirmarBaixa
-      .replace('{pessoa}', pessoa).replace('{cpf}', cpf);
-    /* avisa também das trocas/folgas que a baixa vai cancelar (best-effort: se falhar, aviso simples) */
+    var M = RosterWork.mensagens;
+    var mensagem = M.usuarios.confirmarBaixa
+      .replace('{pessoa}', pessoa).replace('{cpf}', cpf).replace('{data}', vigenciaEl.value);
+    /* a data da baixa não passa de hoje; o que ela cancela conta a partir de hoje (o que já aconteceu fica),
+       e a disponibilidade de extra sai a partir deste mês */
+    var hojeIso = RosterWork.data.paraIsoDeData(new Date());
+    var cotas = M.saida.cotasBaixa(hojeIso.slice(5, 7) + '/' + hojeIso.slice(0, 4));
+    /* a lista das trocas, folgas e extras que a baixa cancela; sem ela, não dá baixa */
     RosterWork.apiFetch('/rest/v1/rpc/escala_ciclo_retirar_analisar', {
       metodo: 'POST',
-      corpo: { p_unidade_id: Number(ins.lotacao_id) || null, p_cpf: pessoaAtual.usuario_id, p_data: dataIso }
+      corpo: { p_unidade_id: Number(ins.lotacao_id) || null, p_cpf: pessoaAtual.usuario_id, p_data: hojeIso }
     }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
       .then(function (a) {
-        var pend = (a && a.success && a.pendencias) || null;
-        var msg = msgBase + (RosterWork.textoImpactoSaida ? RosterWork.textoImpactoSaida(pend) : '');
+        if (!a || !a.success) {
+          RosterWork.avisar({ tipo: 'erro', mensagem: (a && a.error) || M.saida.falhaLista });
+          return;
+        }
+        var aviso = RosterWork.avisoSaida(a.pendencias, { tipo: 'baixa', escala: M.saida.escalaBaixa, cotas: cotas });
         RosterWork.confirmar({
           tipo: 'erro',
-          mensagem: msg,
+          mensagem: mensagem,
+          itens: aviso.itens,
+          nota: aviso.nota,
           textoConfirmar: RosterWork.mensagens.botoes.darBaixa,
           textoCancelar: RosterWork.mensagens.botoes.cancelar,
           confirmarPerigo: true,

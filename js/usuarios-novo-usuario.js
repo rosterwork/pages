@@ -169,49 +169,26 @@
 
   /* ---------- abertura no painel + ligação da página ---------- */
 
-  /* abre o Novo usuário no painel direito (modo criação): clona o formulário e o
-     rodapé, liga máscaras/seleções/lotação/graus e as ações. Nasce novo a cada abertura. */
-  /* config (opcional) abre o MESMO formulário em modo revisão de cadastro:
-     { titulo, tituloExtra?, subtitulo, dados, rotuloSalvar, rotuloRecusar, aoVer(corpo), aoSalvar(raiz), aoRecusar(raiz), aoFechar() }.
-     Com aoVer o painel ganha as abas Ver | Editar e começa no Ver: o administrador
-     confere o pedido primeiro e só entra no formulário se for corrigir algo. */
-  function abrirPainel(config) {
-    config = (config && config.titulo) ? config : null;
-    if (!window.RosterWork.painel) return;
-
-    var revisao = !!(config && config.aoVer);
-    window.RosterWork.painel.abrir({
-      titulo: config ? config.titulo : 'Novo usuário',
-      tituloExtra: config ? config.tituloExtra : '',
-      subtitulo: config ? config.subtitulo : '',
-      editavel: revisao,
-      aoMudarModo: revisao ? function () { montarConteudo(config); } : null,
-      aoFechar: function () { sujo = false; if (config && config.aoFechar) config.aoFechar(); },
+  /* abre o Novo usuário no painel direito: clona o formulário e o rodapé, liga
+     máscaras/seleções/lotação/graus e as ações. Nasce novo a cada abertura. */
+  function abrirPainel() {
+    var painel = window.RosterWork.painel;
+    if (!painel) return;
+    painel.abrir({
+      titulo: 'Novo usuário',
+      aoFechar: function () { sujo = false; },
       aoTentarFechar: function () { if (!sujo) return false; tentarFechar(); return true; }   // Esc/X confirmam o descarte
     });
-    montarConteudo(config);
-  }
-
-  /* desenha o painel conforme o modo do momento: no Ver o corpo é montado por
-     quem abriu (a fila de cadastros), no Editar vem o formulário. O rodapé é o
-     mesmo nos dois — dá para aprovar sem precisar passar pelo formulário. */
-  function montarConteudo(config) {
-    var painel = window.RosterWork.painel;
     var corpo = painel.corpo();
     var rodape = painel.rodape();
     if (corpo) corpo.textContent = '';
     if (rodape) { rodape.textContent = ''; rodape.classList.add('oculto'); }
     sujo = false;
-
-    if (config && config.aoVer && painel.modo() === 'ver') {
-      if (corpo) config.aoVer(corpo);
-    } else {
-      montarFormulario(config, corpo);
-    }
-    montarRodape(config);
+    montarFormulario(corpo);
+    montarRodape();
   }
 
-  function montarFormulario(config, corpo) {
+  function montarFormulario(corpo) {
     var tplForm = document.getElementById('tpl-novo-usuario');
     var secoesForm = [];
     if (corpo && tplForm) {
@@ -240,11 +217,7 @@
     var lotacao = prepararLotacao(raiz);
     if (lotacao) lotacao.montarArvore();
 
-    /* modo revisão: o formulário abre com o que o militar mandou. Espera os
-       graus, porque é o Posto que cria os campos de promoção. */
-    Promise.resolve(carregarGraus(raiz)).then(function () {
-      if (config && config.dados) preencher(raiz, config.dados, lotacao);
-    });
+    carregarGraus(raiz);
 
     /* marca alterações não salvas: digitação e escolha de opções. Ligado nos nós
        clonados (descartados ao fechar), não no corpo do painel — que é compartilhado
@@ -262,8 +235,8 @@
     if (nome) nome.focus();
   }
 
-  /* rodapé: Cancelar/Salvar na criação, Recusar/Aprovar na revisão */
-  function montarRodape(config) {
+  /* rodapé: Cancelar / Salvar */
+  function montarRodape() {
     var rodape = window.RosterWork.painel.rodape();
     var tplAcoes = document.getElementById('tpl-novo-usuario-acoes');
     if (!rodape || !tplAcoes) return;
@@ -276,23 +249,10 @@
 
     /* Cancelar fecha com confirmação se houver alterações (o ✕/Esc do painel
        descartam; o guarda-de-saída cobre fechar/recarregar do navegador) */
-    if (btnCancelar) {
-      /* na revisão o Cancelar vira o Recusar (vermelho, como nos outros painéis de decisão) */
-      if (config && config.rotuloRecusar) { btnCancelar.textContent = config.rotuloRecusar; btnCancelar.classList.add('botao--perigo'); }
-      btnCancelar.addEventListener('click',
-        (config && config.aoRecusar) ? function () { config.aoRecusar(raiz); } : tentarFechar);
-    }
-    if (!btnSalvar) return;
+    if (btnCancelar) btnCancelar.addEventListener('click', tentarFechar);
+    if (!btnSalvar || !window.RosterWork.novoUsuarioEnvio) return;
 
-    /* revisão: quem decide o que fazer com o pedido é a fila de cadastros */
-    if (config && config.aoSalvar) {
-      if (config.rotuloSalvar) btnSalvar.textContent = config.rotuloSalvar;
-      btnSalvar.addEventListener('click', function () { config.aoSalvar(raiz); });
-      return;
-    }
-
-    /* criação: valida, envia e, no sucesso, fecha o painel e atualiza a lista */
-    if (!window.RosterWork.novoUsuarioEnvio) return;
+    /* valida, envia e, no sucesso, fecha o painel e atualiza a lista */
     btnSalvar.addEventListener('click', function () {
       window.RosterWork.novoUsuarioEnvio.enviar(raiz, function () {
         sujo = false;
@@ -302,52 +262,6 @@
         }
       });
     });
-  }
-
-
-  /* ---------- modo revisão: joga o pedido dentro do formulário ----------
-     A ordem importa: Tipo habilita o Posto, e o Posto é quem cria os
-     campos de promoção — só depois dá para preenchê-los. */
-  function preencher(raiz, d, lotacao) {
-    function texto(id, valor) { var e = raiz.querySelector(id); if (e) e.value = valor || ''; }
-    texto('#nu-nome-completo', d.nome_completo);
-    texto('#nu-cpf', mascararCpf(String(d.cpf || '')));
-    texto('#nu-rg', mascararRg(String(d.rg || '')));
-    texto('#nu-nascimento', RosterWork.data.isoParaBR(d.data_nascimento));
-    texto('#nu-celular', mascararCelular(String(d.celular || '')));
-    texto('#nu-email', d.email);
-    texto('#nu-nome-guerra', d.nome_de_guerra);
-    texto('#nu-inclusao', RosterWork.data.isoParaBR(d.data_de_inclusao));
-    texto('#nu-colocacao', d.classificacao);
-    C.definirSelecao(raiz.querySelector('#nu-cnh'), d.cnh);
-    C.definirSelecao(raiz.querySelector('#nu-setor'), d.tipo);
-
-    var grau = null;
-    for (var i = 0; i < graus.length; i++) {
-      if (String(graus[i].grau_id) === String(d.grau_hierarquico)) { grau = graus[i]; break; }
-    }
-    if (grau) {
-      C.definirSelecao(raiz.querySelector('#nu-tipo'), grau.tipo);
-      aoEscolherTipo(grau.tipo, raiz);
-      C.definirSelecao(raiz.querySelector('#nu-posto'), grau.grau_nome);
-      raiz.querySelector('#nu-posto').setAttribute('data-valor', String(grau.grau_id));
-      atualizarPromocoes(grau.grau_id, raiz);
-      var campos = raiz.querySelectorAll('#nu-promocoes .campo-entrada');
-      var datas = d.promocoes || [];
-      for (var j = 0; j < campos.length && j < datas.length; j++) {
-        campos[j].value = RosterWork.data.isoParaBR(datas[j]);
-      }
-    }
-    /* a colocação só habilita depois do Tipo — reescreve por último */
-    texto('#nu-colocacao', d.classificacao);
-    /* a lotação pedida já vem escolhida; o administrador troca pela árvore se quiser */
-    var gatilhoLot = raiz.querySelector('#nu-lotacao');
-    var textoLot = raiz.querySelector('#nu-lotacao-texto');
-    if (gatilhoLot && d.lotacao_atual) gatilhoLot.setAttribute('data-valor', String(d.lotacao_atual));
-    if (textoLot && d.lotacao_nome) {
-      textoLot.textContent = d.lotacao_nome;
-      textoLot.classList.remove('campo-selecao-texto--vazio');
-    }
   }
 
   /* chamado pelo usuarios.js a cada vez que a página de usuários é exibida
@@ -367,6 +281,6 @@
     }
   }
 
-  /* máscaras e helpers de campo reaproveitados pela ficha do militar (usuarios-painel.js) */
-  window.RosterWork.novoUsuario = { ligar: ligar, abrirPainel: abrirPainel, marcarLimpo: function () { sujo = false; } };
+  /* a página Usuários liga o botão Novo usuário a cada exibição */
+  window.RosterWork.novoUsuario = { ligar: ligar };
 })();
