@@ -12,16 +12,7 @@
 
   var RW = window.RosterWork = window.RosterWork || {};
 
-  /* ⚠️⚠️ TEMPORÁRIO — SÓ PARA OS TESTES. REVERTER PARA false QUANDO OS TESTES ACABAREM.
-     Enquanto true, a sessão não cai no meio dos testes: o timer de inatividade vai a 12h
-     e o token é renovado ao voltar o foco/visibilidade da aba — isso resolve o caso das
-     3 abas simultâneas, em que as de 2º plano têm o timer estrangulado pelo navegador e o
-     token de 1h vence antes de renovar. NÃO é a segurança de produção: o vencimento de 1h
-     do token em si é o "JWT expiry" no dashboard do Supabase (esse não muda por aqui).
-     Ver DOCUMENTACAO.md › Login/Sessão (nota "MODO DE TESTE"). */
-  var MODO_TESTE = true;
-
-  var INATIVIDADE_MS = (MODO_TESTE ? 12 : 2) * 60 * 60 * 1000;   /* sem ação encerram a sessão (2h em produção) */
+  var INATIVIDADE_MS = 2 * 60 * 60 * 1000;     /* 2h sem ação encerram a sessão */
   var AVISO_MS = 60 * 1000;                    /* o aviso aparece nos últimos 60s (contagem de 1:00) */
   var FOLGA_RENOVAR_MS = 2 * 60 * 1000;        /* renova o token quando falta menos que isto para vencer */
   var ANEL_TRACO = 3;                          /* espessura do anel, em px CSS */
@@ -48,7 +39,6 @@
   /* ---------- relógio de inatividade ---------- */
 
   function reiniciarInatividade() {
-    if (MODO_TESTE) return;    /* ⚠️ TESTE: sem expiração por inatividade (não agenda o aviso) */
     if (avisoAberto) return;   /* durante o aviso, só "Continuar" reinicia */
     clearTimeout(timerInatividade);
     timerInatividade = setTimeout(mostrarAviso, INATIVIDADE_MS - AVISO_MS);
@@ -180,14 +170,6 @@
     document.addEventListener('keydown', reiniciarInatividade, true);
     reiniciarInatividade();
     intervaloRenovar = setInterval(talvezRenovar, 60 * 1000);
-
-    /* MODO DE TESTE: renova ao voltar o foco/visibilidade da aba (a de 2º plano tem o
-       timer estrangulado; ao voltar, o token pode estar vencido → renova antes da ação).
-       ⚠️ TEMPORÁRIO — some junto com MODO_TESTE. */
-    if (MODO_TESTE) {
-      document.addEventListener('visibilitychange', function () { if (!document.hidden) talvezRenovar(); });
-      window.addEventListener('focus', talvezRenovar);
-    }
   }
 
   if (document.readyState === 'loading') {

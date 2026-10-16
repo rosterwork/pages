@@ -13,8 +13,8 @@
 
   window.RosterWork = window.RosterWork || {};
 
-  var SUPABASE_URL = 'https://dyrroflwjsntlunwteod.supabase.co';
-  var SUPABASE_KEY = 'sb_publishable_UsjhNoRoOrKQdNhmt-oj4g_3a7fvl52';
+  var SUPABASE_URL = 'https://oadzjrekpuddagfydfzn.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_NKSki2dWOD6k6_jle3Ha7w_uq1nYcXx';
 
   /* ---------- sessão (sessionStorage) ---------- */
 
