@@ -79,8 +79,8 @@
     selo.classList.toggle('oculto', !quantos);
   }
 
-  /* pendências da administração que aparecem no sino, com a gravidade da bolinha */
-  var PENDENCIAS_SINO = { fora_escala: 'erro', manutencao: 'alerta', distribuicao: 'alerta', distribuicao_erro: 'erro' };
+  /* pendências que aparecem no sino, com a gravidade da bolinha (a da extra vem do banco: o último dia é erro) */
+  var PENDENCIAS_SINO = { fora_escala: 'erro', manutencao: 'alerta', distribuicao: 'alerta', distribuicao_erro: 'erro', extra_prazo: 'alerta' };
 
   /* pendência da administração no sino: estado que espera decisão, sem "lida" — fica
      até ser resolvido. Bolinha colorida por gravidade; clicar abre a página onde se resolve
@@ -88,13 +88,15 @@
   function montarItemPendencia(p) {
     var el = RosterWork.tpl('dropdown-item-aviso');
     if (!el) return null;
-    el.classList.add('aviso-item--' + (PENDENCIAS_SINO[p.tipo] || 'alerta'));
-    var contagem = (p.contagem != null) ? String(p.contagem) + ' · ' : '';
+    el.classList.add('aviso-item--' + (p.nivel || PENDENCIAS_SINO[p.tipo] || 'alerta'));
+    /* a contagem regressiva da extra é uma frase só (sem o número na frente) e traz o prazo embaixo */
+    var contagem = (p.contagem != null && !p.mensagem) ? String(p.contagem) + ' · ' : '';
     el.querySelector('.aviso-item-titulo').textContent = contagem + (p.texto || '');
+    el.querySelector('.aviso-item-mensagem').textContent = p.mensagem || '';
     el.addEventListener('click', function () {
       if (RW.fecharDropdowns) RW.fecharDropdowns();
       if (!RW.irParaPagina) return;
-      if (p.pagina) RW.irParaPagina(p.pagina, p.aba); else RW.irParaPagina('pendencias', 'administracao');
+      if (p.pagina) RW.irParaPagina(p.pagina, p.aba, p.referencia); else RW.irParaPagina('pendencias', 'administracao');
     });
     return el;
   }

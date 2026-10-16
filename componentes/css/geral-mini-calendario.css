@@ -1,0 +1,128 @@
+/* ============================================================
+   COMPONENTE geral-mini-calendario — o mês em miniatura
+   7 colunas (dom a sáb), só os dias do mês; cada dia é um botão
+   com o número (canto de cima à esquerda), um número pequeno no
+   canto de cima à direita e um texto embaixo. Os estados pintam o
+   dia: --quer (verde), --nao (vermelho) e --ocupado (cinza, sem
+   clique).
+   Usado no Solicitar extra (Extrajornada).
+   Montagem: componentes/js/geral-mini-calendario.js
+   ============================================================ */
+
+.mini-calendario {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.mini-calendario-cab {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--texto-fraco);
+}
+
+.mini-calendario-dia {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 48px;
+  padding: 4px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-superficie);
+  font-family: inherit;
+  text-align: left;
+  color: var(--texto-forte);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.mini-calendario-dia:hover {
+  border-color: var(--foco);
+}
+
+.mini-calendario-dia:disabled {
+  cursor: default;
+}
+
+.mini-calendario-numero {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.mini-calendario-conta {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 11px;
+  color: var(--texto-fraco);
+}
+
+.mini-calendario-texto {
+  margin-top: auto;
+  font-size: 11px;
+  text-align: center;
+  color: var(--texto-suave);
+}
+
+.mini-calendario-dia--quer {
+  border-color: var(--sucesso-fundo-forte);
+  background-color: var(--sucesso-fundo);
+}
+
+.mini-calendario-dia--quer .mini-calendario-texto {
+  font-weight: 600;
+  color: var(--sucesso);
+}
+
+.mini-calendario-dia--nao {
+  border-color: var(--erro-fundo-forte);
+  background-color: var(--erro-fundo);
+}
+
+.mini-calendario-dia--nao .mini-calendario-texto {
+  font-weight: 600;
+  color: var(--erro);
+}
+
+.mini-calendario-dia--ocupado,
+.mini-calendario-dia--ocupado:hover {
+  border-color: var(--fundo-medio);
+  background-color: var(--fundo-suave);
+  cursor: default;
+}
+
+.mini-calendario-dia--ocupado .mini-calendario-numero,
+.mini-calendario-dia--ocupado .mini-calendario-texto {
+  color: var(--texto-debil);
+}
+
+/* a legenda embaixo da grade: amostra da cor + o nome */
+.mini-calendario-legenda {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.mini-calendario-legenda-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mini-calendario-legenda-cor {
+  width: 12px;
+  min-height: 12px;
+  border: 1px solid var(--borda-forte);
+  border-radius: var(--raio-pequeno);
+}
+
+.mini-calendario-legenda-cor--quer { border-color: var(--sucesso-fundo-forte); background-color: var(--sucesso-fundo); }
+.mini-calendario-legenda-cor--nao { border-color: var(--erro-fundo-forte); background-color: var(--erro-fundo); }
+.mini-calendario-legenda-cor--ocupado { border-color: var(--fundo-medio); background-color: var(--fundo-suave); }

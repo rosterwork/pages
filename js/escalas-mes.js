@@ -105,8 +105,10 @@
           celula.dataset.unidadeId = c.id;
           celula.dataset.unidadeNome = c.nomePainel || c.nome;
           celula.dataset.unidadeCidade = c.cidade || '';
-          /* soCobertura (ex.: Extrajornada): desenha só o gráfico de cobertura, sem a lista de militares */
+          /* soCobertura: desenha só o gráfico de cobertura, sem a lista de militares;
+             semExtra (Extrajornada): a lista sem quem está de extra (a escala de antes da extra) */
           var pessoas = opcoes.soCobertura ? [] : ((dados[c.id] && dados[c.id][iso]) || []);
+          if (opcoes.semExtra) pessoas = pessoas.filter(function (p) { return p.origem !== 'extra'; });
           var cobDia = (cobertura[c.id] && cobertura[c.id][iso]) || null;
           var erroDia = (erro[c.id] && erro[c.id][iso]) || null;
           if (RosterWork.escalasCelula) RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxPorUnidade[c.id]);

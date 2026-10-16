@@ -319,6 +319,7 @@
 
   window.RosterWork.escalasCelula = {
     preencherCelula: preencherCelula,
+    montarGrafico: montarGrafico,
     calcularMaxPorUnidade: calcularMaxPorUnidade,
     ativarGraficos: ativarGraficos,
     desenharGraficos: desenharGraficos,

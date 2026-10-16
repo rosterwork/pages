@@ -526,6 +526,7 @@
   function iniciar(fragmento) {
     conteudo = fragmento;
     refData = new Date();
+    if (RosterWork.escalasExtraRascunho) RosterWork.escalasExtraRascunho.zerar();   // a extra do painel do dia começa sem rascunho
 
     RosterWork.abas.ligar(conteudo.querySelector('#escala-modo-principal'), trocarModo);
     RosterWork.abas.ligar(conteudo.querySelector('#escala-modo-visoes'), trocarModo);

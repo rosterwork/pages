@@ -21,6 +21,8 @@
    Cada desenho é conferido (todo posto saiu, no lugar certo) e o
    desenho conferido é o próprio arquivo; se algo não bate, fica o
    anterior, e no último caso o jeito simples (quebra livre).
+   As peças (recursos, medidas, desenho, blocos e download) também
+   servem aos relatórios da Extrajornada (extrajornada-relatorios-pdf.js).
    Cantos arredondados (a biblioteca não arredonda tabela): os desenhos
    acima pintam os blocos com fundo quadrado; o escolhido é redesenhado
    sem esses fundos e com os blocos arredondados na camada de fundo de
@@ -505,5 +507,16 @@
     });
   }
 
-  RW.escalasImpressaoPdf = { gerar: gerar };
+  RW.escalasImpressaoPdf = {
+    gerar: gerar,
+    /* peças para outros relatórios no mesmo formato (os da Extrajornada): as cores e ícones do tema
+       (carrega a biblioteca no 1º uso), as medidas, o desenho conferido, os blocos arredondados e o download */
+    preparar: function () { return carregarRecursos().then(montarEstilo); },
+    medidas: { MARGENS: MARGENS, LOGO_LARGURA: LOGO_LARGURA, LOGO_MARGEM: LOGO_MARGEM, RODAPE_MARGEM: RODAPE_MARGEM,
+      FONTE: FONTE, BLOCO: BLOCO, BLOQUINHO: BLOQUINHO, ESPACO: ESPACO, SETA_LARGURA: SETA_LARGURA, SETA_MARGEM: SETA_MARGEM,
+      ESPACAMENTO_CAIXA_ALTA: ESPACAMENTO_CAIXA_ALTA, CELULA: CELULA },
+    desenhar: function (doc, c) { return desenhar({ doc: doc, marcadores: [] }, c); },
+    blocosArredondados: blocosArredondados,
+    baixar: baixar
+  };
 })();

@@ -1,9 +1,10 @@
 /* ============================================================
    EXTRAJORNADA — estilos da página
-   Aba Disponibilidade: layout de painel esquerdo (geral-layout-lateral)
-   com a declaração à esquerda e o calendário (geral-calendario-mes, no
-   TAMANHO ORIGINAL, colado) ocupando a área principal; rodapé com a
-   legenda + ações (padrão da Distribuição). Só variáveis e escalas do tema.
+   Abas Calendário (o calendário da Escala com os ajustes riscados e o
+   painel Solicitar extra), Voluntários (a repartição das cotas em blocos),
+   Distribuição (A escalar + a grade com as barras antes/depois, a escala
+   do dia, as extras com os horários e o rodapé Salvar e Lançar na escala) e Relatórios (as etapas e a prévia dos ajustes).
+   Só variáveis e escalas do tema.
    ============================================================ */
 
 /* estado centralizado */
@@ -16,466 +17,380 @@
   font-size: 13px;
 }
 
-/* ---------- aba Disponibilidade ---------- */
-
-/* declaração (a lista do painel esquerdo): campos empilhados com respiro */
-.extra-decl {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 12px;
-}
-
-.extra-nota {
-  font-weight: 400;
-  color: var(--texto-fraco);
-}
-
-.extra-ajuda {
-  font-size: 11px;
-  color: var(--texto-fraco);
-}
-
-/* aviso da janela de edição (topo da declaração): texto simples, sem caixa */
-.extra-disp-aviso {
-  font-size: 12px;
-  color: var(--texto-suave);
-}
-
-/* controle travado (fora da janela / mês de leitura): mostra o valor, não recebe clique */
-.extra-trava {
-  pointer-events: none;
-}
-
-/* resumo do que o militar RECEBEU no mês passado (abaixo das listas) */
-.extra-disp-resumo {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-top: 12px;
-  border-top: 1px solid var(--borda);
-}
-.extra-disp-resumo-titulo {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--texto-forte);
-}
-.extra-disp-resumo-dias {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.extra-resumo-dia {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-height: 24px;
-}
-.extra-resumo-data {
-  font-size: 12px;
-  color: var(--texto-suave);
-}
-.extra-resumo-blocos {
-  display: flex;
-  gap: 4px;
-}
-.extra-resumo-bola {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 1px solid var(--borda-forte);
-  background-color: var(--fundo-medio);
-}
-.extra-resumo-bola--cheia {
-  background-color: var(--fundo-contraste);
-  border-color: var(--fundo-contraste);
-}
-
-/* listas de datas marcadas (duas colunas), no formato DD/MM/AA */
-.extra-listas {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-.extra-lista {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-.extra-lista-topo {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4px;
-}
-.extra-lista-rotulo {
-  font-size: 11px;
-  font-weight: 600;
-}
-.extra-lista-rotulo--quero { color: var(--sucesso); }
-.extra-lista-rotulo--nao { color: var(--erro); }
-.extra-lista-conta {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--texto-suave);
-}
-.extra-lista--incompleta .extra-lista-conta { color: var(--erro); }
-.extra-lista--cheia .extra-lista-conta { color: var(--sucesso); }
-
-/* barrinha 0→10 com a marca do mínimo (5) no meio */
-.extra-barra {
-  position: relative;
-  height: 4px;
-  background: var(--fundo-medio);
-  border-radius: var(--raio-pequeno);
-}
-.extra-barra::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: -1px;
-  bottom: -1px;
-  border-left: 1px solid var(--texto-fraco);
-}
-.extra-barra-fill {
-  height: 100%;
-  width: var(--fill, 0%);
-  background: var(--fundo-contraste);
-  border-radius: var(--raio-pequeno);
-}
-.extra-lista--incompleta .extra-barra-fill { background: var(--erro); }
-.extra-lista--cheia .extra-barra-fill { background: var(--sucesso); }
-
-.extra-lista-datas {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.extra-data-item {
-  font-size: 12px;
-  color: var(--texto);
-}
-.extra-aviso-col {
-  font-size: 11px;
-  color: var(--erro);
-}
-
-/* área do calendário: ocupa a área principal; o geral-calendario-mes
-   (colado, tamanho original) preenche e cuida da própria rolagem */
-.extra-cal-area {
+/* ---------- aba Calendário (o padrão do calendário da Escala) ---------- */
+/* o calendário ocupa a área inteira e rola por dentro (o geral-calendario-mes cuida da rolagem) */
+.extra-cal {
   flex: 1 1 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
 }
 
-/* dia clicável (só dias do mês exibido); relative ancora a procura (absoluta) na célula */
-.extra-cal-dia {
-  position: relative;
-  cursor: pointer;
+/* antes do lançamento: o aviso amarelo em cima do calendário */
+.extra-cal-aviso { margin: 8px 8px 0; }
+
+/* a nota embaixo da linha de um ajuste: quem saiu (apagada) e quem entrou (em negrito) */
+.extra-cal-nota {
+  display: block;
+  padding: 0 4px 2px 8px;
+  font-size: 11px;
+  color: var(--texto-fraco);
 }
 
-/* ciclo de clique: neutro = branco (sem classe) → quero = verde → não = vermelho */
-.extra-cal-dia--quero {
-  background-color: var(--sucesso-fundo);
+.extra-cal-nota--entrou {
+  font-weight: 600;
+  color: var(--texto-suave);
 }
 
-.extra-cal-dia--quero .geral-calendario-mes-numero {
+/* ---------- painel Solicitar extra (largo) ---------- */
+.extra-sol {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.extra-sol-linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 32px;
+}
+
+.extra-sol-rotulo {
+  font-size: 13px;
+  color: var(--texto);
+}
+
+.extra-sol-ajuda {
+  font-size: 12px;
+  color: var(--texto-fraco);
+}
+
+.extra-sol-cotas {
+  min-width: 160px;
+}
+
+.extra-sol-contas {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  font-size: 13px;
+}
+
+.extra-sol-conta {
+  white-space: nowrap;
+}
+
+.extra-sol-conta--quer {
   color: var(--sucesso);
 }
 
-.extra-cal-dia--nao {
-  background-color: var(--erro-fundo);
-}
-
-.extra-cal-dia--nao .geral-calendario-mes-numero {
+.extra-sol-conta--nao {
   color: var(--erro);
 }
 
-/* dia indisponível: o militar já está de serviço/folga/férias/atestado — apagado e sem clique */
-.extra-cal-dia--indisponivel {
-  cursor: default;
-  background-color: var(--fundo-suave);
+.extra-sol-minimo {
+  color: var(--texto-suave);
 }
 
-.extra-cal-dia--indisponivel .geral-calendario-mes-numero {
-  color: var(--texto-debil);
+/* ---------- abas: sem a Distribuição (militar comum), os dois grupos viram um só, sem o traço entre eles ---------- */
+.extra-abas--comum > .abas + .abas::before {
+  content: none;
 }
 
-/* texto no centro da célula: motivo do bloqueio, ou "Quero" / "Não quero" */
-.extra-cal-texto {
-  display: block;
+/* ============================================================
+   Aba Voluntários (a repartição das cotas; padrão de blocos, sem traços)
+   ============================================================ */
+.extra-vol {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  background-color: var(--fundo-superficie);
+}
+
+/* faixa de cima: total recebido, forma de repartir e os números do mês */
+.extra-vol-banda {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  padding: 12px 16px;
+}
+.extra-vol-banda-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--texto);
+}
+.extra-vol-total {
+  width: 64px;
   text-align: center;
-  margin-top: 4px;
-  font-size: 11px;
-  color: var(--texto-suave);
 }
-.extra-cal-dia--quero .extra-cal-texto { color: var(--sucesso); }
-.extra-cal-dia--nao .extra-cal-texto { color: var(--erro); }
-.extra-cal-dia--indisponivel .extra-cal-texto { color: var(--texto-debil); }
-
-/* número de voluntários do escopo: canto inferior direito da célula */
-.extra-cal-procura {
-  position: absolute;
-  right: 6px;
-  bottom: 5px;
-  font-size: 11px;
-  color: var(--texto-debil);
-}
-
-/* grupo "Interessados" no subcabeçalho (rótulo + abas de escopo) */
-.extra-interessados {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.extra-interessados-rotulo {
-  font-size: 12px;
-  color: var(--texto-suave);
-}
-
-/* calendário da Disponibilidade menor (escopado a esta tela): células mais estreitas e baixas */
-#extra-disp-cal .geral-calendario-mes-cabecalho,
-#extra-disp-cal .geral-calendario-mes-semana {
-  grid-template-columns: repeat(7, minmax(90px, 1fr));
-}
-#extra-disp-cal .geral-calendario-mes-dia {
-  min-height: 64px;
-}
-
-/* ---------- Cotas no painel fixo à esquerda (geral-layout-lateral; admin: repartição justa) ---------- */
-
-/* cabeçalho em coluna: título + contexto numa linha, seletor de escopo embaixo */
-.extra-cota-cabecalho {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 8px;
-  padding: 8px 12px;
-}
-.extra-cota-cab-linha {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-/* unidade mãe (companhia/CIBM) ao lado do título, em tom suave */
-.extra-cota-contexto {
-  font-size: 12px;
-  color: var(--texto-fraco);
-}
-/* lista rolável do painel: SEM padding, para a banda-título de cada grupo grudar rente às bordas
-   (o respiro do conteúdo vem do .extra-cota-grupo-corpo) */
-.extra-cota-lista {
-  padding: 0;
-}
-
-/* seletor de escopo no cabeçalho do painel esquerdo: "Repartir por" + as bolinhas, tudo numa linha só */
-.extra-cota-escopo-barra {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.extra-cota-escopo-rotulo {
-  flex-shrink: 0;
-}
-/* as duas bolinhas lado a lado; sem respiro lateral (padding 0) para caber tudo na mesma linha no painel de 300px */
-.extra-cota-escopo {
-  display: flex;
-  gap: 12px;
-}
-.extra-cota-escopo .geral-opcao {
-  padding: 0;
-}
-/* no cabeçalho o hover fica só na bolinha (o realce do rótulo inteiro pesava aqui) */
-.extra-cota-escopo .geral-opcao:hover {
-  background: transparent;
-}
-.extra-cota-escopo .geral-opcao:hover input[type="radio"] {
-  border-color: var(--texto-forte);
-}
-/* comum vê o modo marcado mas não troca (só leitura) */
-.extra-cota-escopo--travado {
-  pointer-events: none;
-}
-
-/* grupos empilhados (sem gap): a banda-título fixa de cada um faz a separação */
-.extra-cota-grupos {
-  display: flex;
-  flex-direction: column;
-}
-/* uma seção por grupo/unidade: banda-título fixa + corpo (resumo + cartões dos militares) */
-.extra-cota-grupo {
-  display: flex;
-  flex-direction: column;
-}
-/* estourou (distribuiu mais cotas que o total): título do grupo em vermelho + divisória vermelha */
-.extra-cota-grupo--estourado .extra-cota-grupo-nome {
-  color: var(--erro);
-}
-.extra-cota-grupo--estourado .extra-cota-grupo-cabecalho {
-  border-bottom-color: var(--erro);
-}
-/* título dentro da banda = nome/cidade + chevron (sanfona no Por unidade) */
-.extra-cota-grupo-titulo {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  min-width: 0;
-  padding: 0;
-  background-color: transparent;
-  border: none;
-  text-align: left;
-  cursor: pointer;
-}
-/* grupo = uma seção só → não recolhe (sem chevron, título sem clique) */
-.extra-cota-grupo--sem-recolher .extra-cota-grupo-titulo {
-  cursor: default;
-}
-.extra-cota-grupo-seta {
-  flex-shrink: 0;
-  color: var(--texto-fraco);
-}
-.extra-cota-grupo-titulo:hover .extra-cota-grupo-seta {
-  color: var(--texto-forte);
-}
-.extra-cota-grupo--fechado .extra-cota-grupo-seta {
-  transform: rotate(-90deg);
-}
-.extra-cota-grupo-id {
+.extra-vol-numero {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 0;
+  font-size: 11px;
+  color: var(--texto-suave);
 }
-.extra-cota-grupo-nome {
+.extra-vol-numero-valor {
+  font-size: 16px;
+  font-weight: 700;
   color: var(--texto-forte);
 }
-.extra-cota-grupo-cidade {
-  font-size: 11px;
-  color: var(--texto-fraco);
+.extra-vol-numero-valor--ok { color: var(--sucesso); }
+.extra-vol-numero-valor--erro { color: var(--erro); }
+.extra-vol-leitura {
+  font-size: 12px;
+  color: var(--texto-suave);
 }
-/* corpo colapsável: resumo + lista (o respiro lateral, 12px, mora no resumo e no item) */
-.extra-cota-grupo-corpo {
-  display: flex;
-  flex-direction: column;
-}
-.extra-cota-grupo--fechado .extra-cota-grupo-corpo {
+/* o que é só do administrador some para o comum, e vice-versa */
+.extra-vol--comum .extra-vol-so-admin,
+.extra-vol--admin .extra-vol-so-comum {
   display: none;
 }
-/* caixa Cotas na banda: rótulo "Cotas" ao lado do campo (inline, para a banda ficar enxuta) */
-.extra-cota-grupo-total-campo {
-  flex-direction: row;
-  align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
+
+/* o número de cada lista no seletor da barra */
+.extra-vol-filtro-num {
+  margin-left: 4px;
+  font-variant-numeric: tabular-nums;
 }
-.extra-cota-grupo-total {
+
+/* a lista rola; os blocos ficam no branco da página */
+.extra-vol-rolagem {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 16px 16px;
+}
+
+/* uma linha (cabeçalho e militares): colunas fixas que casam entre os blocos */
+.extra-vol-linha {
+  display: grid;
+  grid-template-columns: 56px minmax(240px, 2fr) 72px 112px 96px 112px minmax(96px, 1fr);
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 4px 12px;
+  font-size: 13px;
+  color: var(--texto);
+}
+.extra-vol--comum .extra-vol-linha {
+  grid-template-columns: minmax(240px, 2fr) 72px 112px 96px 112px minmax(96px, 1fr);
+}
+.extra-vol-linha--resposta,
+.extra-vol--comum .extra-vol-linha--resposta {
+  grid-template-columns: minmax(240px, 2fr) minmax(120px, 1fr);
+}
+/* cabeçalho das colunas: no branco, sem linha, preso no topo ao rolar; o recuo casa com as linhas dos blocos */
+.extra-vol-cab {
+  position: sticky;
+  top: 0;
+  z-index: 1;   /* empilhamento interno do sticky (MANUAL §8, faixa 1-9) */
+  min-height: 32px;
+  padding: 8px 16px 4px;
+  background-color: var(--fundo-superficie);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+
+/* bloco cinza = a unidade; bloquinho branco = as linhas dela */
+.extra-vol-bloco {
+  margin-bottom: 8px;
+  padding: 4px;
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-pagina);
+}
+.extra-vol-bloco-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--texto-forte);
+}
+.extra-vol-bloco-detalhe {
+  font-weight: 400;
+  color: var(--texto-suave);
+}
+.extra-vol-bloco--estourado .extra-vol-bloco-nome { color: var(--erro); }
+.extra-vol-bloco-cotas {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 400;
+  color: var(--texto);
+}
+.extra-vol-bloco-total {
   width: 56px;
   text-align: center;
 }
-.extra-cota-grupo-lista {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
+.extra-vol-bloco-restam {
+  font-weight: 400;
+  color: var(--texto-suave);
 }
-.extra-cota-grupo-vazio {
-  padding: 12px 0;
+.extra-vol-bloco-restam--erro { color: var(--erro); }
+.extra-vol-bloquinho {
+  padding: 4px 0;
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-superficie);
+  box-shadow: var(--sombra-bloco);
+}
+.extra-vol-bloquinho .extra-estado {
+  padding: 12px;
+}
+
+/* linha clicável (administrador): abre a solicitação no painel; a aberta fica no tom do selecionado */
+.extra-vol-linha--clicavel {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.extra-vol-linha--clicavel:hover { background-color: var(--fundo-suave); }
+.extra-vol-linha--ativa,
+.extra-vol-linha--ativa:hover { background-color: var(--fundo-medio); }
+/* marcar da busca: anel para achar o militar */
+.extra-vol-linha--busca {
+  outline: 2px solid var(--foco);
+  outline-offset: -2px;
+}
+
+.extra-vol-militar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.extra-vol-grad {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+.extra-vol-nome {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+.extra-vol-militar .selo { margin-left: 4px; }
+.extra-vol-taxa--verde { color: var(--sucesso); font-weight: 600; }
+.extra-vol-taxa--amarelo { color: var(--alerta); font-weight: 600; }
+.extra-vol-taxa--vermelho { color: var(--erro); font-weight: 600; }
+/* sugerido acima do menor do grupo: recebeu a cota que sobrou */
+.extra-vol-sugerido--extra {
+  color: var(--sucesso);
+  font-weight: 600;
+}
+.extra-vol-conc {
+  width: 72px;
+}
+/* concedido diferente do sugerido */
+.extra-vol-conc--alterado .extra-vol-conc-gatilho {
+  border-color: var(--texto-forte);
+}
+.extra-vol-fora,
+.extra-vol-respondeu {
   font-size: 12px;
   color: var(--texto-fraco);
 }
-/* cada militar é um cartão de borda completa (branco, para saltar no painel suave) */
-/* linha do militar (casca visual em geral-lista): sem linha; a barra de acento
-   à esquerda marca o militar selecionado */
-.extra-cota-item {
+.extra-vol-mudancas {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+/* painel do militar: caixas e frases (sem linhas rótulo/valor) */
+.extra-vol-painel {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 8px 12px;
+  gap: 12px;
 }
-.extra-cota-item-topo {
+.extra-vol-frase {
+  font-size: 13px;
+  color: var(--texto);
+}
+.extra-vol-ajuda {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+.extra-vol-rotulo-quero {
+  font-weight: 600;
+  color: var(--sucesso);
+}
+.extra-vol-rotulo-nao {
+  font-weight: 600;
+  color: var(--erro);
+}
+/* a marcação do termo no painel: a caixa de seleção + o texto, clicáveis juntos */
+.extra-vol-termo {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-height: 32px;
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 13px;
+  color: var(--texto);
+  text-align: left;
+  cursor: pointer;
 }
-.extra-cota-grad {
+
+/* ============================================================
+   Aba Distribuição › A escalar (painel esquerdo)
+   ============================================================ */
+.extra-escalar-faltando {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+.extra-escalar-grupo-cidade {
   font-size: 11px;
   color: var(--texto-suave);
 }
-.extra-cota-nome {
-  font-weight: 600;
-  color: var(--texto-forte);
-}
-
-/* linha de baixo: só o resumo (taxa colorida · pedido · sugerido · feito) */
-.extra-cota-meta {
-  font-size: 12px;
-  color: var(--texto-suave);
-}
-.extra-cota-meta b {
-  font-weight: 600;
-  color: var(--texto-forte);
-}
-.extra-cota-taxa-num { min-width: 36px; }
-
-/* taxa colorida em relação à média do cartão (verde >= média · amarelo acima da metade · vermelho na metade ou menos) */
-.extra-cota-taxa-num.extra-cota-taxa--verde { color: var(--sucesso); }
-.extra-cota-taxa-num.extra-cota-taxa--amarelo { color: var(--alerta); }
-.extra-cota-taxa-num.extra-cota-taxa--vermelho { color: var(--erro); }
-
-/* sugerido: verde quando recebeu a cota extra */
-.extra-cota-sug--extra {
-  padding: 0 8px;
-  border-radius: var(--raio-pequeno);
-  background-color: var(--sucesso-fundo);
-  color: var(--sucesso);
-}
-
-/* concedido: dropdown de números; marca quando difere do sugerido */
-.extra-cota-conc {
-  width: 60px;
-}
-.extra-cota-conc--alterado .extra-cota-conc-gatilho {
-  border-color: var(--texto-forte);
-}
-
-/* comum: o concedido é só leitura, mantém a borda do campo (desabilitado), só sem a seta ▾
-   (o hover já não acende porque o campo fica :disabled, ver geral-campo.css) */
-.extra-cota-conc--leitura .seletor-seta {
-  display: none;
-}
-
-/* estado vazio / restrito no lugar da lista */
-.extra-cota-estado {
-  padding: 24px 8px;
-  text-align: center;
-  font-size: 13px;
-  color: var(--texto-fraco);
-}
-
-/* banda-título FIXA do grupo (padrão do cabeçalho de unidade da Distribuição + fundo Militares):
-   título (nome/cidade) à esquerda, caixa Cotas à direita; gruda no topo ao rolar os militares */
-/* casca (grude, fundo, altura, divisória, arranjo) em geral-faixa */
-.extra-cota-grupo-cabecalho {
-  justify-content: space-between;
-  gap: 12px;
-}
-/* resumo por grupo (2 linhas: distribuídas/restam · escaladas/restam), abaixo da banda */
-.extra-cota-grupo-resumo {
+.extra-escalar-item {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-  padding: 6px 12px;
+  gap: 4px;
+  width: 100%;
+  padding: 8px 12px;
+  text-align: left;
   font-size: 12px;
+  color: var(--texto);
+}
+.extra-escalar-linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.extra-escalar-conta {
+  font-variant-numeric: tabular-nums;
   color: var(--texto-suave);
 }
-.extra-cota-grupo-resumo b {
-  font-weight: 600;
-  color: var(--texto-forte);
+.extra-escalar-barra {
+  display: block;
+  min-height: 4px;
+  border-radius: var(--raio-total);
+  background-color: var(--fundo-medio);
+  overflow: hidden;
 }
-.extra-cota-r--ok { color: var(--sucesso); }
-.extra-cota-r--erro { color: var(--erro); }
+.extra-escalar-barra-fill {
+  display: block;
+  min-height: 4px;
+  width: var(--fill, 0%);
+  background-color: var(--texto-forte);
+}
+.extra-escalar-item--completo .extra-escalar-barra-fill { background-color: var(--sucesso); }
+.extra-escalar-nota {
+  margin: 0;
+  padding: 12px;
+  font-size: 11px;
+  color: var(--texto-fraco);
+}
 
 /* ============================================================
    Aba Escala (organização da extra do mês)
@@ -494,6 +409,15 @@
 }
 .extra-cel-barras .escala-mes-grafico { min-width: 0; }   /* a barra encolhe na grade, sem esticar por cima do rótulo */
 
+/* a escala do dia embaixo do "antes": as linhas da Escala, na largura toda da caixa */
+.extra-cel-escala {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 4px;
+}
+.extra-cel-escala .linha-escalado { padding-left: 0; padding-right: 0; }
+
 /* micro-rótulo à esquerda da barra — caixa alta */
 .extra-cel-rotulo {
   font-size: 9px;
@@ -509,7 +433,7 @@
   color: var(--texto-fraco);
 }
 
-/* resumo dos candidatos na célula: bolinhas + contagem à esquerda, "+" à direita */
+/* quantos candidatos o dia tem, por preferência (ponto + número), e o Escalar à direita */
 .extra-cel-resumo {
   display: flex;
   align-items: center;
@@ -530,30 +454,7 @@
   font-size: 11px;
   color: var(--texto-suave);
 }
-/* botão "+" que abre o dropdown de candidatos (só admin) */
-.extra-cel-add-gatilho {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 22px;
-  min-height: 22px;
-  padding: 0;
-  background-color: transparent;
-  border: 1px solid var(--borda-forte);
-  border-radius: var(--raio-pequeno);
-  color: var(--texto-suave);
-  cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-}
-.extra-cel-add-gatilho:hover { background-color: var(--fundo-medio); color: var(--texto-forte); }
-/* menu do "+": largura confortável p/ as seções de candidatos */
-.extra-cel-add-menu {
-  min-width: 220px;
-  max-width: 280px;
-  padding: 4px;
-}
-
-/* militar selecionado no painel de Cotas: nas células, fundo só nos dias em que ele é candidato, pela
+/* militar selecionado no A escalar: nas células, fundo só nos dias em que ele é candidato, pela
    preferência (verde = quer · vermelho = não quer); elegível sem preferência fica sem cor. O dia inteiro
    sem candidatura (indisponível para ele) é marcado na COLUNA DE DATA, não na célula, para não encher a
    grade de fundo cinza. Só na Extrajornada (este CSS só carrega aqui). */
@@ -572,27 +473,8 @@
 .extra-escala-cal .escala-mes-data--indisponivel .escala-mes-data-semana,
 .extra-escala-cal .escala-mes-data--indisponivel .escala-mes-data-numero { color: var(--texto-debil); }
 
-/* painel do dia (gaveta): seção de avisos — resolvido pelo extra (✓ verde, texto riscado) / restou (âmbar ou vermelho) */
-.extra-painel-aviso {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 20px;
-  padding: 2px 0;
-  font-size: 12px;
-}
-.extra-painel-aviso-icone { flex-shrink: 0; }
-.extra-painel-aviso-texto { color: var(--texto); }
-.extra-painel-aviso-marca { font-size: 11px; color: var(--sucesso); }
-.extra-painel-aviso--ok { color: var(--sucesso); }
-.extra-painel-aviso--ok .extra-painel-aviso-texto { color: var(--texto-fraco); text-decoration: line-through; }
-.extra-painel-aviso--alerta { color: var(--alerta); }
-.extra-painel-aviso--alerta .extra-painel-aviso-texto { color: var(--alerta); }
-.extra-painel-aviso--erro { color: var(--erro); }
-.extra-painel-aviso--erro .extra-painel-aviso-texto { color: var(--erro); }
-
-/* vaga da célula em DUAS linhas (a coluna da grade é estreita, ~168px): nome sozinho em cima
-   com a largura toda + X; embaixo o pelotão (só em deslocamento) e as bolinhas menores */
+/* extra na célula em DUAS linhas (a coluna da grade é estreita, ~168px): o nome e o X em cima;
+   embaixo o pelotão (só em deslocamento), o 24h e os 4 horários de 6 h, que marcam e desmarcam */
 .extra-vaga {
   display: flex;
   align-items: flex-start;
@@ -612,67 +494,30 @@
 .extra-vaga-id { flex: 1; min-width: 0; }
 .extra-vaga-grad { color: var(--texto-suave); }
 .extra-vaga-nome { font-weight: 600; color: var(--texto-forte); }
-.extra-vaga-pelotao { color: var(--texto-suave); }   /* aparece só quando é de outra unidade (deslocamento) */
+.extra-vaga-pelotao { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--texto-suave); }   /* aparece só quando é de outra unidade (deslocamento) */
 .extra-vaga-blocos { display: flex; gap: 2px; }
-.extra-vaga-x { min-height: 18px; min-width: 18px; }
+.extra-vaga-tirar { flex-shrink: 0; }
 
-/* as 4 bolinhas de bloco (6 h cada) */
-.extra-bolinha {
-  min-width: 16px;
-  min-height: 16px;
-  border-radius: 50%;
-  border: 1px solid var(--borda);
-  background-color: transparent;
-  cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+/* quem está sendo escalado pelo A escalar: a vaga apagada, com o traço tracejado, nos dias livres dele */
+.extra-vaga--fantasma {
+  border-left-style: dashed;
+  background-color: var(--fundo-superficie);
 }
-.extra-bolinha:not(:disabled):hover { border-color: var(--foco); }
-.extra-bolinha--ativa {
-  background-color: var(--fundo-contraste);
-  border-color: var(--fundo-contraste);
-}
-/* prévia do hover cumulativo (depois de --ativa p/ sobrepor): vai ligar = preto (como ficará após o clique); vai desligar = vazio */
-.extra-bolinha--previa-on { background-color: var(--fundo-contraste); border-color: var(--fundo-contraste); }
-.extra-bolinha--previa-off { background-color: transparent; border-color: var(--borda); }
-/* fecha 24 h: bolinhas travadas (somente leitura) — preenchidas em cinza, sem cara de clicável */
-.extra-vaga--fecha24 .extra-bolinha--ativa { background-color: var(--fundo-medio); border-color: var(--borda); }
-.extra-bolinha:disabled { cursor: default; }
+.extra-vaga--fantasma .extra-vaga-grad,
+.extra-vaga--fantasma .extra-vaga-nome { color: var(--texto-suave); font-weight: 400; }
 
-/* ---------- seções de candidatos DENTRO da célula (compacto, alinhado à densidade da grade) ---------- */
+/* o Escalar, à direita das contagens */
+.extra-cel-escalar { flex-shrink: 0; }
+
+/* a barra de quem está sendo escalado (em cima da grade) */
+.extra-pincel { margin: 8px 8px 0; }
+
+/* o ponto da preferência (na célula e na legenda) */
 .extra-dia-ponto { width: 6px; height: 6px; border-radius: 50%; flex: none; background: var(--texto-debil); }
 .extra-dia-ponto--quer { background: var(--sucesso); }
 .extra-dia-ponto--neutro { background: var(--texto-debil); }
 .extra-dia-ponto--nao { background: var(--erro); }
 
-/* as três seções (Interessados/Outros/Não querem), separadas dos Selecionados por uma margem */
-.extra-dia-secoes { display: flex; flex-direction: column; gap: 2px; margin-top: 8px; }
-.extra-dia-secao-topo { display: flex; align-items: center; gap: 4px; width: 100%; min-height: 22px; padding: 2px 4px; background: var(--fundo-suave); border: none; border-radius: var(--raio-pequeno); cursor: pointer; text-align: left; font-size: 11px; transition: background-color 0.15s ease; }
-.extra-dia-secao-topo:hover { background: var(--fundo-medio); }
-.extra-dia-secao-nome { flex: 1; color: var(--texto-forte); }
-.extra-dia-secao-conta { font-size: 11px; color: var(--texto-fraco); }
-.extra-dia-secao-seta { color: var(--texto-suave); }
-.extra-dia-secao--fechado .extra-dia-secao-seta { transform: rotate(-90deg); }
-.extra-dia-secao--fechado .extra-dia-secao-corpo { display: none; }
-.extra-dia-secao-corpo { padding: 2px 0 2px 4px; }
-
-.extra-dia-unidade + .extra-dia-unidade { margin-top: 4px; }
-.extra-dia-unidade-rotulo { display: block; font-size: 11px; color: var(--texto-fraco); padding-left: 4px; margin-bottom: 2px; }
-
-.extra-dia-cand { display: flex; align-items: center; gap: 4px; width: 100%; min-height: 22px; padding: 2px 4px; background: none; border: none; border-radius: var(--raio-pequeno); cursor: pointer; text-align: left; font-size: 11px; transition: background-color 0.15s ease; }
-.extra-dia-cand:hover { background: var(--fundo-suave); }
-.extra-dia-cand-id { color: var(--texto-forte); }
-.extra-dia-cand-grad { color: var(--texto-suave); }
-.extra-dia-cand-nota { margin-left: auto; font-size: 11px; color: var(--texto-fraco); }
-/* sem cota: linha apagada e não clicável (botão disabled no JS) — grad+nome esmaecidos, ponto atenuado; o selo "sem cota" segue legível */
-.extra-dia-cand--bloqueado { cursor: default; }
-.extra-dia-cand--bloqueado:hover { background: none; }
-.extra-dia-cand--bloqueado .extra-dia-cand-id,
-.extra-dia-cand--bloqueado .extra-dia-cand-grad { color: var(--texto-debil); }
-.extra-dia-cand--bloqueado .extra-dia-ponto { opacity: 0.4; }
-/* busca "marcar": realça o candidato que casa (invertido, padrão do site) */
-.extra-dia-cand--busca { background: var(--fundo-contraste); }
-.extra-dia-cand--busca .extra-dia-cand-id,
-.extra-dia-cand--busca .extra-dia-cand-grad { color: var(--texto-invertido); }
 /* busca: acende a célula onde o militar casado já está colocado de extra */
 .extra-escala-cal .escala-mes-celula--busca { outline: 2px solid var(--foco); outline-offset: -2px; }
 
@@ -684,7 +529,7 @@
 /* ---------- modo Calendário (grade de mês; reusa o componente geral-calendario-mes, variante --unidades) ---------- */
 /* um bloquinho branco por unidade sobre o cinza do dia, sem linhas (padrão de blocos, espelha a Escala). Sem
    realce de hover (a cor é a preferência); o clique, a seleção, a preferência e a busca valem para o bloquinho
-   inteiro (nome da unidade incluso; o clique abre a célula de dentro, extrajornada-painel-dia.js) */
+   inteiro (nome da unidade incluso; o clique abre a célula de dentro, escalas-painel.js) */
 .extra-calendario-unidade {
   display: flex;
   flex-direction: column;
@@ -696,6 +541,8 @@
   cursor: pointer;
 }
 .extra-calendario-unidade:has(.escala-mes-celula--selecionada) { background-color: var(--fundo-medio); }
+/* a unidade sem ninguém no dia: guarda o lugar (a altura de uma unidade com um militar), sem aparecer */
+.extra-calendario-unidade--vazia { visibility: hidden; }
 .extra-calendario-unidade:has(.escala-mes-celula--pref-quer) { background-color: var(--sucesso-fundo); }
 .extra-calendario-unidade:has(.escala-mes-celula--pref-nao) { background-color: var(--erro-fundo); }
 .extra-calendario-unidade:has(.escala-mes-celula--busca) { outline: 2px solid var(--foco); outline-offset: -2px; }
@@ -732,3 +579,227 @@
 
 /* etiqueta "24h" do fecha 24 h: contornada e com texto forte, p/ marcar o turno fixo (visível, não só na dica) */
 .extra-vaga-24h { font-size: 11px; color: var(--texto-forte); border: 1px solid var(--borda-forte); border-radius: var(--raio-pequeno); padding: 0 4px; }
+
+/* ---------- aba Distribuição: o rodapé (Salvar e Lançar na escala) ---------- */
+.extra-lancar-texto {
+  font-size: 12px;
+  color: var(--texto-fraco);
+}
+
+/* ============================================================
+   ABA RELATÓRIOS: as etapas do mês (esquerda) e a prévia dos ajustes (direita)
+   ============================================================ */
+.extra-rel {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 32px;
+  padding: 24px;
+  overflow: auto;
+}
+
+.extra-rel-etapas {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 0 0 480px;
+}
+
+.extra-rel-lista {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* uma etapa: a marca (número ou check) e, ao lado, o título, o texto e o botão; o fio liga as marcas */
+.extra-rel-etapa {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  padding-bottom: 24px;
+}
+
+.extra-rel-etapa:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  top: 28px;
+  bottom: 4px;
+  left: 13px;
+  width: 1px;
+  background-color: var(--borda);
+}
+
+.extra-rel-marca {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-self: flex-start;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  min-height: 28px;
+  border: 1px solid var(--borda-forte);
+  border-radius: 50%;
+  background-color: var(--fundo-suave);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--texto-suave);
+}
+
+.extra-rel-check {
+  display: none;
+}
+
+.extra-rel-etapa--feita .extra-rel-marca {
+  border-color: var(--sucesso);
+  background-color: var(--sucesso);
+  color: var(--texto-invertido);
+}
+
+.extra-rel-etapa--feita .extra-rel-numero {
+  display: none;
+}
+
+.extra-rel-etapa--feita .extra-rel-check {
+  display: block;
+}
+
+.extra-rel-etapa--atual .extra-rel-marca {
+  border-color: var(--fundo-contraste);
+  background-color: var(--fundo-contraste);
+  color: var(--texto-invertido);
+}
+
+.extra-rel-etapa-corpo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding-top: 4px;
+}
+
+.extra-rel-etapa-titulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.extra-rel-etapa-texto {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.extra-rel-botao {
+  margin-top: 4px;
+}
+
+/* a prévia: um bloco com o cabeçalho cinza, a tabela e as cotas alteradas */
+.extra-rel-previa {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-width: 0;
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-superficie);
+  box-shadow: var(--sombra-bloco);
+}
+
+.extra-rel-previa-cab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: var(--raio-medio) var(--raio-medio) 0 0;
+  background-color: var(--fundo-medio);
+}
+
+.extra-rel-previa-comparado {
+  font-size: 12px;
+  color: var(--texto-fraco);
+}
+
+.extra-rel-tabela-rolagem {
+  overflow-x: auto;
+}
+
+.extra-rel-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  color: var(--texto);
+}
+
+.extra-rel-tabela th {
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-align: left;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+
+.extra-rel-tabela td {
+  padding: 8px 12px;
+  vertical-align: top;
+}
+
+.extra-rel-tabela tbody tr:nth-child(odd) {
+  background-color: var(--fundo-suave);
+}
+
+.extra-rel-militar {
+  display: block;
+}
+
+.extra-rel-unidade,
+.extra-rel-autor,
+.extra-rel-vezes {
+  display: block;
+  font-size: 12px;
+  color: var(--texto-fraco);
+}
+
+.extra-rel-horario {
+  display: block;
+}
+
+.extra-rel-era .extra-rel-horario {
+  text-decoration: line-through;
+  color: var(--texto-fraco);
+}
+
+.extra-rel-ficou .extra-rel-horario {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.extra-rel-sem {
+  font-style: italic;
+  color: var(--texto-fraco);
+}
+
+.extra-rel-vazio {
+  margin: 0;
+  padding: 16px 12px;
+  font-size: 13px;
+  color: var(--texto-fraco);
+}
+
+.extra-rel-cotas {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+}
+
+.extra-rel-cotas-texto {
+  font-size: 13px;
+  color: var(--texto);
+}

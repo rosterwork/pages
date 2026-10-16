@@ -10,13 +10,13 @@
 
 
   RW.extrajornadaDados = {
-    /* limites do seletor de mês (compartilhado pelas duas abas): mês anterior com
+    /* limites do seletor de mês (compartilhado pelas abas): mês anterior com
        dados no contexto + atual + próximo; para trás só com dados, para frente para no próximo */
     carregarNavMeses: function (competenciaISO) {
       return RosterWork.rpc('extra_nav_meses', { p_competencia: competenciaISO });
     },
 
-    /* disponibilidade do militar logado (o banco identifica pelo login) */
+    /* a solicitação do militar logado num mês (o banco identifica pelo login) */
     carregarDisponibilidade: function (competenciaISO) {
       return RosterWork.rpc('extra_disponibilidade_carregar', { p_competencia: competenciaISO });
     },
@@ -46,31 +46,31 @@
       });
     },
 
-    /* Escala (admin): organiza a extra do mês */
+    /* Distribuição (admin): a grade do mês (extras salvas, candidatos e unidades) */
     carregarEscala: function (competenciaISO) {
       return RosterWork.rpc('extra_escala_carregar', { p_competencia: competenciaISO });
     },
-    definirEscala: function (usuario, dataISO, blocos, unidade) {
-      return RosterWork.rpc('extra_escala_definir', {
-        p_usuario: usuario, p_data: dataISO, p_blocos: blocos,
-        p_unidade_destino: (unidade === undefined || unidade === null) ? null : unidade
-      });
+    /* ENSAIO no motor real de UM dia: a cobertura sem e com as extras, com o rascunho do dia por cima
+       (a grade da Distribuição). mudancas = [{ cpf, data, unidade, blocos }] */
+    analisarDia: function (dataISO, mudancas) {
+      return RosterWork.rpc('extra_analisar_dia', { p_data: dataISO, p_mudancas: mudancas || [] });
     },
-    /* efetiva os extras do mês na escala (linhas is_extra em escalas_quando + o motor refaz o "onde") */
-    inserirEscala: function (competenciaISO) {
-      return RosterWork.rpc('extra_escala_inserir', { p_competencia: competenciaISO });
+    /* Lançar na escala: o que mudou desde o último lançamento (dias que serão redistribuídos) e o lançamento */
+    previaLancamento: function (competenciaISO) {
+      return RosterWork.rpc('extra_lancamento_previa', { p_competencia: competenciaISO });
     },
-    /* análise de impacto ANTES de remover um extra inserido (avisa se abrir furo) */
-    analisarRemocao: function (usuario, dataISO) {
-      return RosterWork.rpc('extra_analisar_remocao', { p_usuario: usuario, p_data: dataISO });
+    lancar: function (competenciaISO) {
+      return RosterWork.rpc('extra_lancar', { p_competencia: competenciaISO });
     },
-    /* ENSAIO no motor real de UM dia: avisos verdadeiros (pós-motor) dos extras pendentes daquele dia */
-    analisarDia: function (dataISO) {
-      return RosterWork.rpc('extra_analisar_dia', { p_data: dataISO });
+
+    /* Calendário (todos): o lançado e, depois que o mês começou, o atual (para os riscados) */
+    carregarCalendario: function (competenciaISO) {
+      return RosterWork.rpc('extra_calendario', { p_competencia: competenciaISO });
     },
-    /* painel do dia (gaveta): distribuição "depois" (com os extras) + avisos antes/depois de UMA unidade */
-    distribuicaoDia: function (unidadeId, dataISO) {
-      return RosterWork.rpc('extra_distribuicao_dia', { p_unidade_id: unidadeId, p_data: dataISO });
+
+    /* Relatórios (admin): as etapas do mês, o lançado e os ajustes */
+    carregarRelatorios: function (competenciaISO) {
+      return RosterWork.rpc('extra_relatorios', { p_competencia: competenciaISO });
     }
   };
 })();

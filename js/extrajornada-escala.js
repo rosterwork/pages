@@ -1,12 +1,16 @@
 /* ============================================================
-   EXTRAJORNADA — aba Escala (organização da extra do mês, admin)
-   Reusa a grade compartilhada do Mês (escalas-mes.js, opção
-   soCobertura = só as barras, sem a lista de serviço): dias × unidades
-   do grupo, cada célula com a cobertura real (antes) + a cobertura
-   depois-dos-extras. A colocação é NA CÉLULA: seções de candidatos
-   (Interessados / Outros / Não querem, dos candidatos pré-carregados na
-   grade, sem chamada ao banco por clique) e o militar escolhido vira uma
-   vaga (nome em cima, pelotão + bolinhas embaixo, com X) na própria célula.
+   EXTRAJORNADA — aba Distribuição (organização da extra do mês, admin)
+   Reusa a grade compartilhada do Mês (escalas-mes.js, com a escala do
+   dia sem as extras): dias × unidades do grupo, cada célula com a
+   cobertura sem extra (antes) e a escala do dia, a cobertura com as
+   extras (depois, por ensaio no motor) e as extras do dia, que o
+   administrador mexe ali mesmo: marca e desmarca os horários de 6 h e
+   tira do dia (X). Escolher um militar no A escalar põe a vaga apagada
+   dele nos dias livres, para marcar direto. Tudo vai para o rascunho do
+   mês (escalas-extra-rascunho.js), o mesmo do painel do dia; o Salvar e
+   o Lançar na escala ficam no rodapé (extrajornada-lancar.js). Clicar
+   na célula (ou no Escalar) abre o painel do dia.
+   As peças de dentro da célula ficam em extrajornada-escala-celula.js.
    RosterWork.extrajornadaEscala.
    ============================================================ */
 (function () {
@@ -18,179 +22,126 @@
   var el = {};
   var comp = null;       // Date do 1º dia do mês
   var unidades = [];     // colunas da grade [{id,nome,cidade}]
-  var celulas = {};      // extras SALVOS por unidade×dia { uid: { iso: [ {cpf,grad,nome,blocos,cnh,grau_ant,...} ] } }
-  var avisos = {};       // avisos da escala resolvíveis por extra, por unidade×dia { uid: { iso: [ {tipo,onde,necessita,ideal_ant,ideal_nome,sentido} ] } }
-  var candidatos = {};   // voluntários por DIA (pré-carregados) { iso: [ {cpf,grad,nome,pref,cota,colocado,fecha24,cnh,grau_ant,bloqueado,unidade_id,unidade_nome} ] }
-  var pendentes = {};    // extras ESCOLHIDOS mas ainda sem bloco { 'uid|iso': [ {cpf,grad,nome} ] }
+  var celulas = {};      // extras SALVAS por unidade×dia { uid: { iso: [ {cpf,grad,nome,blocos,fecha24,inserido,...} ] } }
+  var candidatos = {};   // voluntários livres por DIA { iso: [ {cpf,grad,nome,pref,cota,fecha24,unidade_id,unidade_nome,...} ] }
   var carregado = false;
-  var cargaSeq = 0;          // token de requisição da grade: ignora resposta antiga ao trocar de mês/escopo rápido
-  var coberturas = {};       // cobertura (info) de cada célula visível, p/ repintar só os indicadores { 'uid|iso': info }
-  var ensaio = {};           // estado pós-motor por célula { 'uid|iso': { antes:{cobertura,erro,avisos}, depois:{cobertura,erro,avisos} } } — antes=base SEM extra, depois=COM extras
-  var timersEnsaio = {};     // debounce do ensaio por dia { iso: timer }
-  var escalaAplicada = {};   // pico (max) aplicado às barras de cada unidade { uid: pico } — inclui os extras; recalculado a cada mudança
-  var buscaCtrl = null;      // controle da busca compartilhada (geral-busca)
-  var buscaTermo = '';       // termo atual (nome/CPF/RG); vazio = sem busca
-  var buscaModo = 'marcar';  // 'marcar' (realça o candidato) | 'filtrar' (esconde quem não casa)
-  var ativa = false;         // a aba Escala está ativa? (re-renderiza a grade na troca da seleção de unidades só quando ativa)
-  var listenerUnidades = false;   // o ouvinte de rosterwork_units_changed é ligado uma vez só
-  var militarSel = null;          // cpf do militar selecionado no painel de Cotas (pinta as células pela preferência)
-  var listenerMilitar = false;    // o ouvinte de rosterwork_extra_militar é ligado uma vez só
-  var calSeq = 0;                 // token de requisição do modo Calendário (ignora resposta antiga)
+  var cargaSeq = 0;          // token da grade: ignora resposta antiga ao trocar de mês rápido
+  var coberturas = {};       // cobertura (info) de cada célula visível { 'uid|iso': info }
+  var ensaio = {};           // estado pós-motor por célula { 'uid|iso': { antes, depois } } (antes = SEM extra, depois = COM extras e rascunho)
+  var timersEnsaio = {};     // espera do ensaio por dia { iso: timer }
+  var seqEnsaio = {};        // token do ensaio por dia (vale a última resposta)
+  var escalaAplicada = {};   // pico aplicado às barras de cada unidade { uid: pico }
+  var buscaCtrl = null;
+  var buscaTermo = '';
+  var buscaModo = 'marcar';
+  var ativa = false;
+  var ouvintesLigados = false;
+  var militarSel = null;     // cpf do militar escolhido no A escalar (pinta as células e põe a vaga apagada dele)
+  var calSeq = 0;
 
   function iso(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
   function chaveCel(uid, isoDia) { return uid + '|' + isoDia; }
+  function C() { return RW.extrajornadaEscalaCelula; }
+  function R() { return RW.escalasExtraRascunho; }
+  function salvosDia(uid, isoDia) { return (celulas[uid] && celulas[uid][isoDia]) || []; }
+  function efetivas(uid, isoDia) { return C().extrasDaCelula(salvosDia(uid, isoDia), uid, isoDia, candidatos[isoDia] || []); }
+  function pintarSelecionado() { if (el.cal) C().pintar(el.cal, candidatos, militarSel); }
+  function nomeUnidade(uid) { var u = unidades.filter(function (x) { return String(x.id) === String(uid); })[0]; return u ? u.nome : ''; }
 
-  /* preferência do militar selecionado (Cotas) para PINTAR esta célula: 'quer'/'nao_quer' só na UNIDADE DELE
-     (pelotão, ou CIA se for a lotação); 'inelegivel' quando não é candidato no dia (marca a coluna de data);
-     null nas outras unidades ou sem ninguém selecionado (sem cor). A cor é da unidade dele, não muda com o escopo. */
-  function prefSelecionadoNaCelula(uid, isoDia) {
-    if (!militarSel) return null;
-    var lista = candidatos[isoDia] || [];
-    var m = null;
-    for (var i = 0; i < lista.length; i++) { if (lista[i].cpf === militarSel) { m = lista[i]; break; } }
-    if (!m) return 'inelegivel';
-    if (m.unidade_id !== uid) return null;   // é candidato no dia, mas esta não é a unidade dele → sem cor
-    return m.pref;
-  }
-  /* o militar selecionado é candidato neste dia? (candidato = voluntário livre com cota). Governa o
-     esmaecimento da coluna de data: dia sem candidatura fica marcado como indisponível para ele. */
-  function selCandidatoNoDia(isoDia) {
-    var lista = candidatos[isoDia] || [];
-    for (var i = 0; i < lista.length; i++) { if (lista[i].cpf === militarSel) return true; }
-    return false;
-  }
-  /* pinta a seleção do militar (Cotas): nas CÉLULAS só verde = quer / vermelho = não quer (dias em que ele é
-     candidato; elegível sem preferência fica sem marca); o dia inteiro em que ele NÃO é candidato fica
-     esmaecido na COLUNA DE DATA (não enche a grade de fundo). Sem militar selecionado, tudo volta ao normal. */
-  function pintarSelecionado() {
-    if (!el.cal) return;
-    var cels = el.cal.querySelectorAll('.escala-mes-celula');
-    for (var i = 0; i < cels.length; i++) {
-      var cel = cels[i];
-      cel.classList.remove('escala-mes-celula--pref-quer', 'escala-mes-celula--pref-nao');
-      var pref = prefSelecionadoNaCelula(parseInt(cel.getAttribute('data-unidade-id'), 10), cel.getAttribute('data-iso'));
-      if (pref === 'quer') cel.classList.add('escala-mes-celula--pref-quer');
-      else if (pref === 'nao_quer') cel.classList.add('escala-mes-celula--pref-nao');
+  /* o que está salvo de um militar num dia (em qualquer unidade): { unidade, blocos } ou null */
+  function salvoDe(cpf, isoDia) {
+    for (var u in celulas) {
+      var m = (celulas[u][isoDia] || []).filter(function (x) { return x.cpf === cpf; })[0];
+      if (m) return { unidade: Number(u), blocos: (m.blocos || []).map(Number) };
     }
-    if (el.cal.querySelector('.geral-calendario-mes')) {
-      /* Calendário: sem coluna de data, marca o NÚMERO do dia */
-      var dias = el.cal.querySelectorAll('.geral-calendario-mes-dia');
-      for (var k = 0; k < dias.length; k++) {
-        var celC = dias[k].querySelector('.escala-mes-celula');   // dias de outro mês não têm célula → nunca marcam
-        var isoC = celC ? celC.getAttribute('data-iso') : null;
-        dias[k].classList.toggle('geral-calendario-mes-dia--indisponivel', !!(militarSel && isoC && !selCandidatoNoDia(isoC)));
-      }
-    } else {
-      /* Agenda: marca a coluna de data (cabeçalho da linha) */
-      var linhas = el.cal.querySelectorAll('.escala-mes-linha');
-      for (var j = 0; j < linhas.length; j++) {
-        var data = linhas[j].querySelector('.escala-mes-data');
-        if (!data) continue;
-        var celRef = linhas[j].querySelector('.escala-mes-celula');
-        var isoLinha = celRef ? celRef.getAttribute('data-iso') : null;
-        data.classList.toggle('escala-mes-data--indisponivel', !!(militarSel && isoLinha && !selCandidatoNoDia(isoLinha)));
-      }
-    }
+    return null;
+  }
+  /* o militar tem extra no dia (o salvo com o rascunho por cima)? */
+  function temExtraNoDia(cpf, isoDia) {
+    var mud = R().obter(cpf, isoDia);
+    return mud ? mud.blocos.length > 0 : !!salvoDe(cpf, isoDia);
+  }
+
+  /* ---------- mexer na célula: vai para o rascunho ---------- */
+  function definirNaCelula(m, uid, isoDia, blocos) {
+    R().definir({ cpf: m.cpf, data: isoDia, unidade: uid, blocos: blocos, antes: salvoDe(m.cpf, isoDia), militar: { grad: m.grad, nome: m.nome } });
+  }
+  function marcarNaCelula(m, uid, isoDia, bloco) {
+    var atual = (m.blocos || []).slice();
+    var i = atual.indexOf(bloco);
+    if (m.fecha24) atual = atual.length ? [] : [1, 2, 3, 4];
+    else if (i >= 0) atual.splice(i, 1);
+    else atual.push(bloco);
+    definirNaCelula(m, uid, isoDia, atual);
   }
 
   /* ---------- grade (reusa a do Mês, escalas-mes.js) ---------- */
-  /* colunas = as unidades da companhia que estão na SELEÇÃO GLOBAL do cabeçalho; o painel de Cotas NÃO
-     filtra (usa a lista completa `unidades`). Vazio → escalas-mes mostra "Selecione uma companhia ou pelotão..." */
+  /* colunas = as unidades da companhia que estão na SELEÇÃO do cabeçalho */
   function colunasSelecionadas() {
-    var sel = null;
-    try { if (RW.seletorUnidadesCabecalho && RW.seletorUnidadesCabecalho.idsSelecionados) sel = RW.seletorUnidadesCabecalho.idsSelecionados(); } catch (e) {}
-    if (!sel || !sel.length) { try { var p = JSON.parse(sessionStorage.getItem('rosterwork_preferencias')); sel = (p && p.unidades_selecionadas) || []; } catch (e2) { sel = []; } }   // seletor ainda não pronto → usa a preferência (padrão do login)
-    var selStr = (sel || []).map(String);
-    return unidades.filter(function (u) { return selStr.indexOf(String(u.id)) >= 0; });
+    var selStr = RW.extrajornadaUnidades.selecionadas();
+    /* o painel do dia mostra a companhia acima do pelotão ("2ªCIBM / 2ºPEL"); a companhia vem primeiro */
+    var cia = unidades[0];
+    return unidades.filter(function (u) { return selStr.indexOf(String(u.id)) >= 0; }).map(function (u) {
+      return Object.assign({}, u, { nomePainel: cia && cia.id !== u.id ? cia.nome + ' / ' + u.nome : u.nome });
+    });
   }
-  /* modo da grade lido do toggle (fonte da verdade = DOM; volta a 'agenda' ao remontar o fragmento) */
   function subModoAtual() {
     var at = el.modos && el.modos.querySelector('.aba--ativa');
     return (at && at.getAttribute('data-modo')) || 'agenda';
   }
+  function depoisDoRender() { aplicarEscala(escalaPorUnidade()); aplicarBuscaGrade(); pintarSelecionado(); }
   function renderGrade() {
     if (subModoAtual() === 'calendario') { renderGradeCalendario(); return; }
     if (!el.cal || !RW.escalasMes) return;
-    coberturas = {};   // a passada de renderização repovoa (sobreporCelula guarda a cobertura de cada célula)
-    ensaio = {};   // o ensaio de cada dia COM extra repovoa (analisarDiasComExtra, após o render)
-    escalaAplicada = {};   // recalculada no aoTerminar (com as coberturas de todas as células já guardadas)
-    RW.escalasMes.renderizar(el.cal, { colunas: colunasSelecionadas(), dataRef: comp, aoCelula: sobreporCelula, soCobertura: true,
-      aoTerminar: function () { aplicarEscala(escalaPorUnidade()); aplicarBuscaGrade(); pintarSelecionado(); } });   // ajusta a escala + reaplica a busca + a pintura da seleção
+    coberturas = {}; ensaio = {}; escalaAplicada = {};
+    RW.escalasMes.renderizar(el.cal, { colunas: colunasSelecionadas(), dataRef: comp, aoCelula: sobreporCelula, semExtra: true,
+      aoTerminar: depoisDoRender });
   }
-  /* troca do modo da grade (Agenda ↔ Calendário): o geral-abas já trocou a aba ativa; re-renderiza e
-     refaz o ensaio dos dias com extra (renderGrade zera o cache do ensaio) */
-  function aplicarSubModo() {
-    renderGrade();
-    analisarDiasComExtra();
-  }
-  /* estado vazio / carregando na grade (modo Calendário; reusa os moldes da Escala, que estão no shell) */
+  function aplicarSubModo() { renderGrade(); analisarDiasComExtra(); }
   function mostrarEstadoCal(texto) {
     if (!el.cal) return;
     el.cal.textContent = '';
-    var n = RosterWork.tpl('tpl-escala-estado'); if (!n) return;
+    var n = RW.tpl('tpl-escala-estado'); if (!n) return;
     n.textContent = texto; el.cal.appendChild(n);
   }
-  function mostrarCarregandoCal() {
-    if (!el.cal) return;
-    el.cal.textContent = '';
-    var n = RosterWork.tpl('tpl-escala-carregando'); if (n) el.cal.appendChild(n);
-  }
-  /* modo Calendário: o mês em semanas × 7 dias (componente geral-calendario-mes); dentro de cada dia, por
-     unidade, a MESMA célula do modo Agenda (sobreporCelula). Busca a cobertura como o Agenda faz por dentro. */
+  /* modo Calendário: o mês em semanas × 7 dias (geral-calendario-mes); dentro de cada dia, por unidade, a MESMA
+     célula do modo Agenda (sobreporCelula) */
   function renderGradeCalendario() {
     if (!el.cal) return;
     coberturas = {}; ensaio = {}; escalaAplicada = {};
     var colunas = colunasSelecionadas();
-    if (!colunas.length) { mostrarEstadoCal('Selecione uma companhia ou pelotão no seletor de unidades.'); return; }
+    if (!colunas.length) { mostrarEstadoCal(RW.mensagens.escala.selecioneUnidade); return; }
     if (!RW.escalasDados || !RW.geralCalendarioMes || !RW.escalasCelula) { mostrarEstadoCal(RW.mensagens.escala.falhaCarregarMes); return; }
-    mostrarCarregandoCal();
+    el.cal.textContent = '';
+    var car = RW.tpl('tpl-escala-carregando'); if (car) el.cal.appendChild(car);
     var ano = comp.getFullYear(), mes = comp.getMonth();
-    var inicio = iso(new Date(ano, mes, 1)), fim = iso(new Date(ano, mes + 1, 0));
     var ids = colunas.map(function (c) { return c.id; });
     var req = ++calSeq;
-    RW.escalasDados.carregar(ids, inicio, fim).then(function (r) {
+    RW.escalasDados.carregar(ids, iso(new Date(ano, mes, 1)), iso(new Date(ano, mes + 1, 0))).then(function (r) {
       if (!el.cal || !el.cal.isConnected || req !== calSeq) return;
-      var cob = (r && r.cobertura) || {}, err = (r && r.erro) || {};
-      var maxPorUnidade = RW.escalasCelula.calcularMaxPorUnidade(cob, ids);   // a régua dos gráficos de cada unidade
+      var cob = (r && r.cobertura) || {}, err = (r && r.erro) || {}, mil = (r && r.militares) || {};
+      var maxPorUnidade = RW.escalasCelula.calcularMaxPorUnidade(cob, ids);
       RW.geralCalendarioMes.renderizar(el.cal, { dataRef: comp, unidadesPorDia: colunas.length, aoDia: function (celulaDia, data, noMes) {
-        if (!noMes) return;   // dia de outro mês fica só com o número apagado
+        if (!noMes) return;
         var isoDia = iso(data);
         colunas.forEach(function (c) {
-          var bloco = RosterWork.tpl('tpl-extra-calendario-unidade'); if (!bloco) return;
+          var bloco = RW.tpl('tpl-extra-calendario-unidade'); if (!bloco) return;
           bloco.querySelector('.extra-calendario-unidade-nome').textContent = c.nome;
           var cel = bloco.querySelector('.escala-mes-celula');
           cel.dataset.iso = isoDia; cel.dataset.unidadeId = c.id;
           cel.dataset.unidadeNome = c.nomePainel || c.nome; cel.dataset.unidadeCidade = c.cidade || '';
           var cobDia = (cob[c.id] && cob[c.id][isoDia]) || null;
           var errDia = (err[c.id] && err[c.id][isoDia]) || null;
-          RW.escalasCelula.preencherCelula(cel, cobDia, errDia, [], maxPorUnidade[c.id]);
-          sobreporCelula(cel, c.id, isoDia, { cobertura: cobDia, erro: errDia, maxUnidade: maxPorUnidade[c.id] });   // o mesmo pacote que a Agenda entrega (aoCelula)
+          var pessoas = ((mil[c.id] && mil[c.id][isoDia]) || []).filter(function (p) { return p.origem !== 'extra'; });
+          RW.escalasCelula.preencherCelula(cel, cobDia, errDia, pessoas, maxPorUnidade[c.id]);
+          sobreporCelula(cel, c.id, isoDia, { cobertura: cobDia, erro: errDia, maxUnidade: maxPorUnidade[c.id] });
           celulaDia.appendChild(bloco);
         });
       } });
+      depoisDoRender();
       var wrap = el.cal.querySelector('.geral-calendario-mes');
-      aplicarEscala(escalaPorUnidade());
-      aplicarBuscaGrade();
-      pintarSelecionado();
-      if (wrap && RW.escalasCelula) RW.escalasCelula.ativarGraficos(wrap);
+      if (wrap) RW.escalasCelula.ativarGraficos(wrap);
     }, function () { if (el.cal && el.cal.isConnected && req === calSeq) mostrarEstadoCal(RW.mensagens.escala.falhaCarregarMes); });
-  }
-
-  /* ---------- pendência: há extra colocado (celulas) que ainda não entrou na escala (inserido=false) ---------- */
-  function haPendencia() {
-    for (var uid in celulas) {
-      var dias = celulas[uid];
-      for (var d in dias) {
-        var arr = dias[d] || [];
-        for (var i = 0; i < arr.length; i++) if (!arr[i].inserido || arr[i].removido) return true;   // inclusão OU remoção pendente
-      }
-    }
-    return false;
-  }
-  /* rodapé "Inserir/Atualizar escala": só p/ admin; ativo só quando há alteração a aplicar (haPendencia) */
-  function atualizarInserir() {
-    if (el.rodape) el.rodape.classList.toggle('oculto', !RosterWork.sessao.ehAdmin());
-    if (el.inserir) el.inserir.disabled = !haPendencia();
   }
 
   function carregar(silencioso) {
@@ -203,50 +154,27 @@
       r = r || {};
       unidades = r.unidades || [];
       celulas = r.celulas || {};
-      avisos = r.avisos || {};
       candidatos = r.candidatos || {};
+      R().mes(iso(comp).slice(0, 8) + '01');
       renderGrade();
-      if (RW.extrajornadaCotasPainel && RW.extrajornadaCotasPainel.atualizarContexto) RW.extrajornadaCotasPainel.atualizarContexto();   // o painel de Cotas mostra a unidade mãe (vem daqui)
-      atualizarInserir();
-      analisarDiasComExtra();   // ensaia cada dia com extra → antes(base) e depois(com extras) reais na prévia
+      analisarDiasComExtra();
     }, function () { if (!silencioso) RW.esconderVeu(conteudo); });
   }
 
-  /* ---------- cobertura "depois" (barra 2) ---------- */
-  var BLOCO_IDX = { 1: [0, 6], 2: [6, 12], 3: [12, 18], 4: [18, 24] };
-  function coberturaDepois(cob, extras) {
-    var arr = cob.slice();
-    extras.forEach(function (m) {
-      /* removido: sai da cobertura "antes" (−1); inserido: já contado na "antes" (0); pendente novo: soma (+1) */
-      var delta = m.removido ? -1 : (m.inserido ? 0 : 1);
-      if (!delta) return;
-      (m.blocos || []).forEach(function (b) {
-        var r = BLOCO_IDX[b]; if (!r) return;
-        for (var h = r[0]; h < r[1]; h++) arr[h] = Math.max(0, (Number(arr[h]) || 0) + delta);
-      });
-    });
-    return arr;
-  }
-
-  /* ---------- escala de altura das barras: pico de cada unidade (antes + extras) no mês inteiro ---------- */
-  /* maior valor de cobertura "depois" de cada unidade, em qualquer célula dela (inclui as sem extra =
-     cobertura antes): { uid: pico } */
+  /* ---------- altura das barras: o pico de cada unidade (antes + extras) no mês inteiro ---------- */
   function escalaPorUnidade() {
     var picos = {};
     for (var k in coberturas) {
       var info = coberturas[k]; if (!info || !info.cobertura) continue;
-      var p = k.split('|'), uid = p[0], iso = p[1];
-      var ens = ensaio[k];   // com ensaio, o pico usa a cobertura REAL do "depois"; senão a aproximação
-      var dep = (ens && ens.depois && ens.depois.cobertura) ? ens.depois.cobertura
-              : coberturaDepois(info.cobertura, (celulas[uid] && celulas[uid][iso]) || []);
+      var p = k.split('|'), uid = p[0], d = p[1];
+      var ens = ensaio[k];
+      var dep = (ens && ens.depois && ens.depois.cobertura) ? ens.depois.cobertura : C().coberturaDepois(info.cobertura, efetivas(uid, d));
       var pico = picos[uid] || 0;
       for (var h = 0; h < dep.length; h++) { var v = Number(dep[h]) || 0; if (v > pico) pico = v; }
       picos[uid] = pico;
     }
     return picos;
   }
-  /* aplica a cada barra o pico da unidade da sua célula (a mesma escala p/ o antes e o depois da unidade;
-     cabe o maior valor). Unidade sem pico calculado fica com a régua que a célula já tem */
   function aplicarEscala(picos) {
     escalaAplicada = picos;
     if (!el.cal) return;
@@ -256,661 +184,201 @@
       if (pico) g.dataset.max = String(pico);
     });
   }
-  function mesmosPicos(a, b) {
-    var ka = Object.keys(a), kb = Object.keys(b);
-    return ka.length === kb.length && ka.every(function (k) { return a[k] === b[k]; });
-  }
-  /* recalcula os picos; se algum mudou, re-ajusta as barras e re-pinta (senão, não faz nada) */
   function sincronizarEscala() {
     var picos = escalaPorUnidade();
-    if (mesmosPicos(picos, escalaAplicada)) return;
+    var ka = Object.keys(picos), kb = Object.keys(escalaAplicada);
+    if (ka.length === kb.length && ka.every(function (k) { return picos[k] === escalaAplicada[k]; })) return;
     aplicarEscala(picos);
-    if (el.cal && RW.escalasCelula && RW.escalasCelula.desenharGraficos) RW.escalasCelula.desenharGraficos(el.cal);
+    if (el.cal && RW.escalasCelula) RW.escalasCelula.desenharGraficos(el.cal);
   }
-  /* depois de mudar os blocos de uma célula: re-ajusta a escala das unidades (re-fit se um pico mudou),
-     repinta os indicadores da célula e ensaia o dia no motor */
-  function aposMudarCelula(celula, uid, isoDia) {
-    sincronizarEscala();
-    if (celula) repintarIndicadores(celula, uid, isoDia);
-    atualizarEnsaioDia(isoDia);
-    atualizarInserir();   // colocar/editar/remover muda a pendência → botão do rodapé reage na hora
-  }
+  function rotulo(txt) { var r = RW.tpl('tpl-extra-cel-rotulo'); if (r) r.textContent = txt; return r; }
 
-  function erroMarcas(erro) {
-    var s = '';
-    for (var h = 0; h < 24; h++) { var e = erro && erro[h]; s += (e === 2 || e === '2') ? '2' : (e ? '1' : '0'); }
-    return s;
-  }
-  function rotulo(txt) { var r = RosterWork.tpl('tpl-extra-cel-rotulo'); if (r) r.textContent = txt; return r; }
-
-  /* indicadores do topo da célula: barra de cobertura "antes" (real) + "depois" (com os extras), cada
-     uma SEGUIDA dos SEUS avisos, embaixo dela. Sem "Sem avisos" (barra verde = ok). Os avisos do "depois"
-     (resultado REAL do motor: o que sobrou + erro novo, ex.: falta de distribuição) só aparecem quando há
-     extra pendente no dia; sem extra, o "depois" = "antes", então mostra só os avisos do "antes". */
-  function montarIndicadores(celula, uid, isoDia, info) {
-    var real = celula.querySelector('.escala-mes-grafico:not(.escala-mes-grafico--depois)');   // barra "antes" (base, do escalas-celula)
-    /* limpa a estrutura anterior de indicadores, PRESERVANDO a barra base 'real' */
+  /* o topo da célula, em grade (rótulo | barra): "antes" (sem extra) com a escala do dia embaixo e "depois"
+     (com as extras; sem extra, o texto apagado). Refazer preserva a barra base e a escala do dia. */
+  function montarIndicadores(celula, uid, isoDia, info, extras) {
+    var real = celula.querySelector('.escala-mes-grafico:not(.escala-mes-grafico--depois)');
+    var escala = C().escalaDoDia(celula);
     var caixa = celula.querySelector('.extra-cel-barras');
-    if (real && caixa && caixa.contains(real)) celula.insertBefore(real, caixa);   // tira a barra base da caixa antiga
     if (caixa && caixa.parentNode) caixa.parentNode.removeChild(caixa);
-    var depAntigo = celula.querySelector('.escala-mes-grafico--depois');
-    if (depAntigo && depAntigo.parentNode) depAntigo.parentNode.removeChild(depAntigo);
-    if (!real) return;
-
-    var salvos = (celulas[uid] && celulas[uid][isoDia]) || [];
-    var temExtra = salvos.some(function (m) { return !m.removido; }) || (pendentes[chaveCel(uid, isoDia)] || []).length > 0;
-    var ens = ensaio[chaveCel(uid, isoDia)];             // { antes, depois } do motor, ou undefined até o ensaio chegar
+    if (!real) { if (escala) celula.insertBefore(escala, celula.firstChild); return; }
+    var ens = ensaio[chaveCel(uid, isoDia)];
     var eAntes = ens && ens.antes, eDepois = ens && ens.depois;
     var cob = info && info.cobertura, max = info && info.maxUnidade;
-
-    /* barra "antes": com ensaio vem da BASE (SEM extras) e SOBRESCREVE o ler_escala_mes — assim um erro
-       CAUSADO pelo extra não aparece aqui; sem ensaio ainda, fica o real */
-    if (eAntes && eAntes.cobertura) {
-      real.dataset.cob = eAntes.cobertura.join(',');
-      real.dataset.erro = erroMarcas(eAntes.erro);
-    }
-
-    /* caixa em GRADE de 2 colunas (rótulo | barra); SEMPRE as duas linhas, barras alinhadas:
-       "antes" = a barra base; "depois" = a barra com extra OU o texto "sem extra" (espaço reservado).
-       Os AVISOS vivem no painel do dia (gaveta). */
-    caixa = RosterWork.tpl('tpl-extra-cel-barras');
+    /* com ensaio, o "antes" vem da base SEM extras (um erro causado pela extra não aparece aqui) */
+    if (eAntes && eAntes.cobertura) { real.dataset.cob = eAntes.cobertura.join(','); real.dataset.erro = C().erroMarcas(eAntes.erro); }
+    caixa = RW.tpl('tpl-extra-cel-barras');
     if (!caixa) return;
-    celula.insertBefore(caixa, real);
+    celula.insertBefore(caixa, celula.firstChild);
     var rA = rotulo('antes'); if (rA) caixa.appendChild(rA);
-    caixa.appendChild(real);   // move a barra base para dentro da caixa
+    caixa.appendChild(real);
+    if (escala) caixa.appendChild(escala);
     var rD = rotulo('depois'); if (rD) caixa.appendChild(rD);
-    if (temExtra && cob && max > 0) {
-      var grDepois = RosterWork.tpl('tpl-escala-mes-grafico');
-      if (grDepois) {
-        grDepois.classList.add('escala-mes-grafico--depois');
-        grDepois.dataset.cob = (eDepois && eDepois.cobertura ? eDepois.cobertura : coberturaDepois(cob, salvos)).join(',');
-        grDepois.dataset.max = String(escalaAplicada[uid] || max);   // escala da unidade (inclui extras)
-        grDepois.dataset.erro = erroMarcas(eDepois ? eDepois.erro : info.erro);
-        caixa.appendChild(grDepois);
+    if (extras.length && cob && max > 0) {
+      var g = RW.tpl('tpl-escala-mes-grafico');
+      if (g) {
+        g.classList.add('escala-mes-grafico--depois');
+        g.dataset.cob = (eDepois && eDepois.cobertura ? eDepois.cobertura : C().coberturaDepois(cob, extras)).join(',');
+        g.dataset.max = String(escalaAplicada[uid] || max);
+        g.dataset.erro = C().erroMarcas(eDepois ? eDepois.erro : info.erro);
+        caixa.appendChild(g);
       }
     } else {
-      var vazio = RosterWork.tpl('tpl-extra-cel-sem-extra');   // sem extra no dia: texto apagado na coluna da barra
+      var vazio = RW.tpl('tpl-extra-cel-sem-extra');
       if (vazio) caixa.appendChild(vazio);
     }
   }
 
-  /* repinta SÓ os indicadores da célula (barra "depois" + avisos), sem recarregar o mês nem reconstruir
-     a grade — usado ao ligar/desligar bloco ou remover um extra */
-  function repintarIndicadores(celula, uid, isoDia) {
-    if (!celula) return;
-    montarIndicadores(celula, uid, isoDia, coberturas[chaveCel(uid, isoDia)]);   // ele mesmo limpa a caixa/depois e preserva a barra base
-    if (RW.escalasCelula && RW.escalasCelula.desenharGraficos) RW.escalasCelula.desenharGraficos(celula);
+  /* ---------- a célula: os indicadores, as extras, a vaga apagada do A escalar e o resumo ---------- */
+  function sobreporCelula(celula, uid, isoDia, info) {
+    coberturas[chaveCel(uid, isoDia)] = info || null;
+    Array.prototype.forEach.call(celula.querySelectorAll(':scope > .extra-vaga, :scope > .extra-cel-resumo'), function (n) { n.parentNode.removeChild(n); });
+    var extras = efetivas(uid, isoDia);
+    var cand = candidatos[isoDia] || [];
+    montarIndicadores(celula, uid, isoDia, info, extras);
+    extras.forEach(function (m) {
+      var v = C().vaga(m, uid, cand, {
+        aoMarcar: function (k) { marcarNaCelula(m, uid, isoDia, k); },
+        aoTirar: function () { definirNaCelula(m, uid, isoDia, []); }
+      });
+      if (v) celula.appendChild(v);
+    });
+    /* quem está sendo escalado: a vaga apagada na unidade dele, nos dias em que ele está livre e sem extra */
+    var sel = militarSel && C().candidato(militarSel, cand);
+    if (sel && String(sel.unidade_id) === String(uid) && !temExtraNoDia(militarSel, isoDia)) {
+      var f = C().vaga({ cpf: sel.cpf, grad: sel.grad, nome: sel.nome, blocos: [], fecha24: !!sel.fecha24 }, uid, cand, {
+        fantasma: true, aoMarcar: function (k) { marcarNaCelula({ cpf: sel.cpf, grad: sel.grad, nome: sel.nome, blocos: [], fecha24: !!sel.fecha24 }, uid, isoDia, k); }
+      });
+      if (f) celula.appendChild(f);
+    }
+    var resumo = C().resumo(cand, extras); if (resumo) celula.appendChild(resumo);
+  }
+  function refazerCelula(cel) {
+    var uid = parseInt(cel.getAttribute('data-unidade-id'), 10), d = cel.getAttribute('data-iso');
+    sobreporCelula(cel, uid, d, coberturas[chaveCel(uid, d)]);
+    aplicarBuscaCelula(cel, uid, d);
+    if (RW.escalasCelula) RW.escalasCelula.desenharGraficos(cel);
+  }
+  function refazerDia(isoDia) {
+    if (!el.cal) return;
+    Array.prototype.forEach.call(el.cal.querySelectorAll('.escala-mes-celula[data-iso="' + isoDia + '"]'), refazerCelula);
+    sincronizarEscala();
+  }
+  function refazerTudo() {
+    if (!el.cal) return;
+    Array.prototype.forEach.call(el.cal.querySelectorAll('.escala-mes-celula[data-iso]'), refazerCelula);
+    sincronizarEscala();
+    pintarSelecionado();
   }
 
-  /* ---------- ensaio no motor real, por dia (deixa os avisos da prévia fiéis ao que o Inserir faria) ---------- */
-  function diaTemExtra(isoDia) {   // qualquer extra no dia (inserido, pendente ou pendência de remoção) → precisa do ensaio antes(base)×depois
-    for (var u in celulas) if ((celulas[u][isoDia] || []).length > 0) return true;
-    return false;
-  }
-  function repintarDia(isoDia) {
-    if (!el.cal) return;
-    Array.prototype.forEach.call(el.cal.querySelectorAll('.escala-mes-celula[data-iso="' + isoDia + '"]'), function (cel) {
-      var uid = parseInt(cel.getAttribute('data-unidade-id'), 10);
-      repintarIndicadores(cel, uid, isoDia);
-    });
-  }
-  /* ensaia o dia no motor (com debounce) e repinta os avisos daquele dia com o resultado REAL */
+  /* ---------- ensaio no motor real, por dia, com o rascunho do dia ---------- */
   function analisarDiaEnsaio(isoDia) {
-    if (!RosterWork.sessao.ehAdmin() || !RW.extrajornadaDados || !RW.extrajornadaDados.analisarDia) return;
+    if (!RosterWork.sessao.ehAdmin() || !RW.extrajornadaDados) return;
     if (timersEnsaio[isoDia]) clearTimeout(timersEnsaio[isoDia]);
     timersEnsaio[isoDia] = setTimeout(function () {
       delete timersEnsaio[isoDia];
-      RW.extrajornadaDados.analisarDia(isoDia).then(function (r) {
-        if (!r || !r.ok || !el.cal || !el.cal.isConnected) return;
+      var meu = seqEnsaio[isoDia] = (seqEnsaio[isoDia] || 0) + 1;
+      var mudancas = R().doDia(isoDia).map(function (m) { return { cpf: m.cpf, data: m.data, unidade: m.unidade, blocos: m.blocos }; });
+      RW.extrajornadaDados.analisarDia(isoDia, mudancas).then(function (r) {
+        if (!r || !r.ok || !el.cal || !el.cal.isConnected || meu !== seqEnsaio[isoDia]) return;
         var ant = r.antes || {}, dep = r.depois || {};
-        unidades.forEach(function (u) {   // guarda antes(base) + depois(com extras) de CADA unidade do dia
-          ensaio[chaveCel(u.id, isoDia)] = { antes: ant[String(u.id)] || null, depois: dep[String(u.id)] || null };
-        });
-        sincronizarEscala();   // o "depois" do ensaio pode mudar o pico da unidade → reescala as barras dela
-        repintarDia(isoDia);
+        unidades.forEach(function (u) { ensaio[chaveCel(u.id, isoDia)] = { antes: ant[String(u.id)] || null, depois: dep[String(u.id)] || null }; });
+        refazerDia(isoDia);
       });
     }, 400);
   }
-  /* dia sem pendente volta a mostrar os avisos ATUAIS (limpa o ensaio guardado) */
-  function limparEnsaioDia(isoDia) {
-    var mudou = false;
-    unidades.forEach(function (u) {
-      var k = chaveCel(u.id, isoDia);
-      if (k in ensaio) { delete ensaio[k]; mudou = true; }
-    });
-    if (mudou) { sincronizarEscala(); repintarDia(isoDia); }
-  }
-  /* o dia mudou (bloco ligado/desligado ou remoção): tem extra → ensaia; não tem → volta ao atual */
-  function atualizarEnsaioDia(isoDia) {
-    if (diaTemExtra(isoDia)) analisarDiaEnsaio(isoDia);
-    else limparEnsaioDia(isoDia);
-  }
-  /* ao carregar/renderizar: dispara o ensaio de cada dia que tem QUALQUER extra (antes/base × depois) */
+  /* cada dia com extra (salva ou no rascunho) precisa do ensaio antes × depois */
   function analisarDiasComExtra() {
-    var vistos = {};
-    for (var u in celulas) for (var d in celulas[u]) {
-      if (!vistos[d] && (celulas[u][d] || []).length > 0) {
-        vistos[d] = true; analisarDiaEnsaio(d);
-      }
-    }
+    var dias = {};
+    for (var u in celulas) for (var d in celulas[u]) if ((celulas[u][d] || []).length) dias[d] = true;
+    R().lista().forEach(function (m) { dias[m.data] = true; });
+    Object.keys(dias).forEach(analisarDiaEnsaio);
   }
 
-  /* ---------- sobreposição na célula ---------- */
-  function sobreporCelula(celula, uid, isoDia, info) {
-    coberturas[chaveCel(uid, isoDia)] = info || null;   // guarda p/ repintar só os indicadores depois
-    montarIndicadores(celula, uid, isoDia, info);
-
-    /* SELECIONADOS: os extras colocados (salvos com bloco + pendentes sem bloco), dentro da célula */
-    var salvos = (celulas[uid] && celulas[uid][isoDia]) || [];
-    salvos.forEach(function (m) { if (m.removido) return; var v = montarVaga(m, uid, isoDia, m.blocos || [], !!m.fecha24); if (v) celula.appendChild(v); });
-    (pendentes[chaveCel(uid, isoDia)] || []).forEach(function (m) {
-      if (salvos.some(function (s) { return s.cpf === m.cpf; })) return;   // já salvo → não duplica
-      var v = montarVaga(m, uid, isoDia, [], false); if (v) celula.appendChild(v);
-    });
-
-    /* RESUMO dos candidatos (bolinhas + contagem) + o "+" que abre o dropdown com as seções (só admin) */
-    var resumo = montarResumo(celula, uid, isoDia); if (resumo) celula.appendChild(resumo);
-  }
-
-  /* ---------- seções de candidatos DENTRO da célula (Interessados / Outros / Não querem) ---------- */
-  var SECOES_DIA = [
-    { nome: 'Interessados', pref: 'quer' },
-    { nome: 'Outros', pref: 'neutro' },
-    { nome: 'Não querem', pref: 'nao_quer' }
-  ];
-  var secaoAberta = {};   // estado de aberto/fechado por célula×seção { 'uid|iso|pref': bool }
-  function pontoClasse(pref) {
-    return pref === 'quer' ? 'extra-dia-ponto--quer' : (pref === 'nao_quer' ? 'extra-dia-ponto--nao' : 'extra-dia-ponto--neutro');
-  }
-  function balde(pref) { return pref === 'quer' ? 'quer' : (pref === 'nao_quer' ? 'nao_quer' : 'neutro'); }
-  /* preferência + unidade de origem de um colocado (busca nos candidatos pré-carregados do dia) */
-  function origemDe(cpf, uid, isoDia) {
-    var c = (candidatos[isoDia] || []).filter(function (m) { return m.cpf === cpf; })[0];
-    if (c) return { pref: c.pref, unidade_id: c.unidade_id, unidade_nome: c.unidade_nome || '' };
-    return { pref: 'neutro', unidade_id: uid, unidade_nome: '' };
-  }
-  function jaColocado(cpf, uid, isoDia) {
-    var s = (celulas[uid] && celulas[uid][isoDia]) || [];
-    if (s.some(function (m) { return m.cpf === cpf && !m.removido; })) return true;   // 'removido' pendente = livre p/ recolocar
-    return (pendentes[chaveCel(uid, isoDia)] || []).some(function (m) { return m.cpf === cpf; });
-  }
-  /* candidatos de um balde, agrupados por pelotão (o da célula primeiro), tirando os já colocados;
-     nos dois escopos de cotas o extra pode tirar em outra unidade (a cota gasta é sempre a dele) */
-  function candidatosBucket(uid, isoDia, pref) {
-    var mapa = {};
-    (candidatos[isoDia] || []).forEach(function (m) {
-      if (balde(m.pref) !== pref) return;
-      if (jaColocado(m.cpf, uid, isoDia)) return;
-      (mapa[m.unidade_id] = mapa[m.unidade_id] || { id: m.unidade_id, nome: m.unidade_nome || '', mils: [] }).mils.push(m);
-    });
-    var arr = Object.keys(mapa).map(function (k) { return mapa[k]; });
-    arr.sort(function (a, b) { return (b.id === uid ? 1 : 0) - (a.id === uid ? 1 : 0) || String(a.nome).localeCompare(String(b.nome)); });
-    arr.forEach(function (g) { g.mils.sort(function (a, b) { return (a.bloqueado ? 1 : 0) - (b.bloqueado ? 1 : 0); }); });   // sem cota vão para o fim de cada unidade
-    return arr;
-  }
-  /* botão de um candidato (reusado nas seções do dropdown e no atalho "Selecionado"): coloca o extra ao clicar */
-  function montarCandidato(m, uid, isoDia, celula, pref) {
-    var c = RosterWork.tpl('tpl-extra-dia-cand'); if (!c) return null;
-    c.querySelector('.extra-dia-ponto').classList.add(pontoClasse(pref || m.pref));
-    c.querySelector('.extra-dia-cand-grad').textContent = m.grad || '';
-    c.querySelector('.extra-dia-cand-nome').textContent = m.nome || '';
-    if (RW.busca) c.setAttribute('data-busca', RW.busca.chave(m));
-    if (m.bloqueado) {   // sem cota: botão apagado, não clicável (rede de segurança silenciosa)
-      c.classList.add('extra-dia-cand--bloqueado'); c.disabled = true;
-      var n = c.querySelector('.extra-dia-cand-nota'); if (n) { n.textContent = 'sem cota'; n.classList.remove('oculto'); }
-    } else {
-      c.addEventListener('click', function (ev) { ev.stopPropagation(); if (RW.fecharDropdowns) RW.fecharDropdowns(); selecionarCandidato(m, uid, isoDia, celula); });
-    }
-    return c;
-  }
-  /* preenche o corpo de uma seção com os candidatos (só quando a seção está aberta) */
-  function preencherSecao(corpo, celula, uid, isoDia, sec) {
-    corpo.textContent = '';
-    candidatosBucket(uid, isoDia, sec.pref).forEach(function (g) {
-      var uEl = RosterWork.tpl('tpl-extra-dia-unidade'); if (!uEl) return;
-      var rot = uEl.querySelector('.extra-dia-unidade-rotulo');
-      rot.textContent = RW.mensagens.extrajornada.rotuloUnidade(g.nome, g.id === uid);
-      var listaEl = uEl.querySelector('.extra-dia-unidade-lista');
-      g.mils.forEach(function (m) {
-        var c = montarCandidato(m, uid, isoDia, celula, sec.pref);
-        if (c) listaEl.appendChild(c);
-      });
-      corpo.appendChild(uEl);
-    });
-    if (buscaTermo) aplicarBuscaCelula(celula, uid, isoDia);   // reaplica a busca aos candidatos recém-abertos
-  }
-  function montarSecoes(celula, uid, isoDia) {
-    var wrap = RosterWork.tpl('tpl-extra-dia-secoes'); if (!wrap) return null;
-    SECOES_DIA.forEach(function (sec) {
-      var grupos = candidatosBucket(uid, isoDia, sec.pref);
-      var total = grupos.reduce(function (s, g) { return s + g.mils.length; }, 0);
-      var secEl = RosterWork.tpl('tpl-extra-dia-secao'); if (!secEl) return;
-      secEl.querySelector('.extra-dia-ponto').classList.add(pontoClasse(sec.pref));
-      secEl.querySelector('.extra-dia-secao-nome').textContent = sec.nome;
-      secEl.querySelector('.extra-dia-secao-conta').textContent = String(total);
-      var chave = chaveCel(uid, isoDia) + '|' + sec.pref;
-      var aberta = !!secaoAberta[chave];
-      secEl.classList.toggle('extra-dia-secao--fechado', !aberta);
-      var topo = secEl.querySelector('.extra-dia-secao-topo');
-      topo.setAttribute('aria-expanded', String(aberta));
-      var corpo = secEl.querySelector('.extra-dia-secao-corpo');
-      if (aberta) preencherSecao(corpo, celula, uid, isoDia, sec);   // candidatos só quando aberta (célula compacta)
-      topo.addEventListener('click', function (ev) {
-        ev.stopPropagation();
-        secaoAberta[chave] = !secaoAberta[chave];
-        secEl.classList.toggle('extra-dia-secao--fechado', !secaoAberta[chave]);
-        topo.setAttribute('aria-expanded', String(secaoAberta[chave]));
-        if (secaoAberta[chave] && !corpo.firstChild) preencherSecao(corpo, celula, uid, isoDia, sec);
-      });
-      wrap.appendChild(secEl);
-    });
-    return wrap;
-  }
-  /* (re)monta o atalho "Selecionado" no topo do menu do "+": o militar escolhido nas Cotas, se for
-     candidato LIVRE nesta célula. Chamado quando o dropdown abre (militarSel pode ter mudado desde o render). */
-  function atualizarSelecionadoNoMenu(menu, celula, uid, isoDia) {
-    if (!menu) return;
-    var antigo = menu.querySelector('.extra-dia-unidade--selecionado');
-    if (antigo) menu.removeChild(antigo);
-    if (!militarSel) return;
-    var ms = (candidatos[isoDia] || []).filter(function (x) { return x.cpf === militarSel; })[0];
-    if (!ms) return;
-    if (jaColocado(ms.cpf, uid, isoDia)) return;
-    var uSel = RosterWork.tpl('tpl-extra-dia-unidade');
-    if (!uSel) return;
-    uSel.classList.add('extra-dia-unidade--selecionado');
-    uSel.querySelector('.extra-dia-unidade-rotulo').textContent = 'Selecionado';
-    var cSel = montarCandidato(ms, uid, isoDia, celula, ms.pref);
-    if (cSel) uSel.querySelector('.extra-dia-unidade-lista').appendChild(cSel);
-    menu.insertBefore(uSel, menu.firstChild);
-  }
-  /* resumo na célula (bolinhas + contagem por preferência) + o "+" cujo dropdown carrega as seções
-     (Interessados/Outros/Não querem). Só admin vê o "+"; o comum vê só as contagens. */
-  function montarResumo(celula, uid, isoDia) {
-    var wrap = RosterWork.tpl('tpl-extra-cel-resumo');
-    if (!wrap) return null;
-    var contas = wrap.querySelector('.extra-cel-resumo-contas');
-    SECOES_DIA.forEach(function (sec) {
-      var grupos = candidatosBucket(uid, isoDia, sec.pref);
-      var total = grupos.reduce(function (s, g) { return s + g.mils.length; }, 0);
-      var c = RosterWork.tpl('tpl-extra-cel-resumo-conta');
-      if (!c) return;
-      c.querySelector('.extra-dia-ponto').classList.add(pontoClasse(sec.pref));
-      c.querySelector('.extra-cel-resumo-num').textContent = String(total);
-      if (contas) contas.appendChild(c);
-    });
-    var add = wrap.querySelector('.extra-cel-add');
-    if (RosterWork.sessao.ehAdmin() && add) {
-      var menu = add.querySelector('.dropdown-menu');
-      var secs = montarSecoes(celula, uid, isoDia);   // as seções vivem no menu do "+"
-      if (secs && menu) menu.appendChild(secs);
-      var gatilho = add.querySelector('.extra-cel-add-gatilho');
-      if (gatilho) gatilho.addEventListener('click', function (ev) {
-        ev.stopPropagation();   // não sobe para a grade (protege a gaveta) nem abre o painel do dia
-        if (add.classList.contains('dropdown--aberto')) { if (RW.fecharDropdowns) RW.fecharDropdowns(); return; }
-        atualizarSelecionadoNoMenu(menu, celula, uid, isoDia);   // (re)monta o atalho "Selecionado" com o militar atual das Cotas
-        if (RW.abrirDropdown) RW.abrirDropdown(add);
-      });
-    } else if (add && add.parentNode) {
-      add.parentNode.removeChild(add);   // comum não coloca extra
-    }
-    return wrap;
-  }
-  /* selecionar um candidato: pendente (sem bloco) na célula; fecha 24 h entra já com os 4 blocos, travado, e salva */
-  function selecionarCandidato(m, uid, isoDia, celula) {
-    if (m.bloqueado) return;   // sem cota: o botão já vem disabled; rede de segurança silenciosa (sem modal)
-    if (jaColocado(m.cpf, uid, isoDia)) return;
-    if (m.fecha24) {   // fecha 24 h: tudo ou nada — coloca os 4 blocos, trava, e grava (otimista, desfaz se falhar)
-      aplicarLocal(m.cpf, uid, isoDia, [1, 2, 3, 4]);
-      atualizarCelula(celula, uid, isoDia);
-      aposMudarCelula(celula, uid, isoDia);
-      function desfazer(msg) { aplicarLocal(m.cpf, uid, isoDia, []); atualizarCelula(celula, uid, isoDia); aposMudarCelula(celula, uid, isoDia); if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: msg }); }
-      RW.extrajornadaDados.definirEscala(m.cpf, isoDia, [1, 2, 3, 4], uid).then(
-        function (r) { if (!r || !r.success) desfazer((r && r.error) || RW.mensagens.geral.falhaServidor); },
-        function () { desfazer(RW.mensagens.geral.semConexao); });
-      return;
-    }
-    var k = chaveCel(uid, isoDia);
-    pendentes[k] = pendentes[k] || [];
-    if (!pendentes[k].some(function (x) { return x.cpf === m.cpf; })) {
-      pendentes[k].push({ cpf: m.cpf, grad: m.grad, nome: m.nome, cota: m.cota, colocado: m.colocado, fecha24: m.fecha24 });
-    }
-    atualizarCelula(celula, uid, isoDia);
-  }
-  /* re-renderiza só as vagas + seções da célula (mantém gráficos e avisos) */
-  function atualizarCelula(celula, uid, isoDia) {
-    if (RW.fecharDropdowns) RW.fecharDropdowns();   // fecha o "+" (limpa o flutuante) antes de reconstruir
-    Array.prototype.forEach.call(celula.querySelectorAll('.extra-vaga, .extra-cel-resumo'), function (e) {
-      if (e.parentNode) e.parentNode.removeChild(e);
-    });
-    var salvos = (celulas[uid] && celulas[uid][isoDia]) || [];
-    salvos.forEach(function (m) { if (m.removido) return; var v = montarVaga(m, uid, isoDia, m.blocos || [], !!m.fecha24); if (v) celula.appendChild(v); });
-    (pendentes[chaveCel(uid, isoDia)] || []).forEach(function (m) {
-      if (salvos.some(function (s) { return s.cpf === m.cpf; })) return;
-      var v = montarVaga(m, uid, isoDia, [], false); if (v) celula.appendChild(v);
-    });
-    var resumo = montarResumo(celula, uid, isoDia); if (resumo) celula.appendChild(resumo);
-    if (buscaTermo) aplicarBuscaCelula(celula, uid, isoDia);   // reaplica a busca (acende/apaga a célula conforme os colocados)
-  }
-
-  /* ---------- vaga (extra colocado): nome + 4 bolinhas + X ---------- */
-  function montarVaga(m, uid, isoDia, blocosAtivos, travado) {
-    var vaga = RosterWork.tpl('tpl-extra-vaga');
-    if (!vaga) return null;
-    vaga.querySelector('.extra-vaga-grad').textContent = m.grad || '';
-    vaga.querySelector('.extra-vaga-nome').textContent = m.nome || '';
-    var origem = origemDe(m.cpf, uid, isoDia);   // ponto de preferência + pelotão só em deslocamento
-    var ponto = vaga.querySelector('.extra-vaga-origem');
-    if (ponto) ponto.classList.add(pontoClasse(origem.pref));
-    var pelotao = vaga.querySelector('.extra-vaga-pelotao');   // mostra o pelotão SÓ quando é de outra unidade (a coluna já diz a unidade da célula)
-    if (pelotao && origem.unidade_id && origem.unidade_id !== uid) { pelotao.textContent = origem.unidade_nome; pelotao.classList.remove('oculto'); }
-    if (travado) {   // fecha 24 h: marca visível ("24h") + bolinhas travadas + dica (não só na dica)
-      vaga.classList.add('extra-vaga--fecha24');
-      var t24 = vaga.querySelector('.extra-vaga-24h'); if (t24) t24.classList.remove('oculto');
-      var dica = RW.mensagens && RW.mensagens.extrajornada && RW.mensagens.extrajornada.fecha24Dica;
-      if (dica) vaga.setAttribute('title', dica);
-    }
-    var ativos = (blocosAtivos || []).map(Number);
-    var admin = RosterWork.sessao.ehAdmin();
-    var cota = (m.cota == null) ? 99 : m.cota;
-    /* bolinhas CUMULATIVAS: clicar no bloco N liga 1..N; clicar na maior ligada reduz uma (desliga ela);
-       o hover mostra a prévia do que o clique faria (bloco que vai ligar / que vai desligar) */
-    var bolinhas = Array.prototype.slice.call(vaga.querySelectorAll('.extra-bolinha'));
-    function nivelAtivo() {   // maior bloco ligado (0 = nenhum); os blocos são contíguos 1..N
-      var max = 0;
-      bolinhas.forEach(function (b) { var n = +b.getAttribute('data-bloco'); if (b.classList.contains('extra-bolinha--ativa') && n > max) max = n; });
-      return max;
-    }
-    function aplicarNivel(nivel) {   // preenche 1..nivel, apaga o resto
-      bolinhas.forEach(function (b) { var n = +b.getAttribute('data-bloco'); b.classList.toggle('extra-bolinha--ativa', n <= nivel); });
-    }
-    function previa(nivel) {   // realça só o que MUDA: vai ligar (previa-on) / vai desligar (previa-off); nivel<0 limpa
-      var atual = nivelAtivo();
-      bolinhas.forEach(function (b) {
-        var n = +b.getAttribute('data-bloco');
-        b.classList.remove('extra-bolinha--previa-on', 'extra-bolinha--previa-off');
-        if (nivel < 0) return;
-        if (n > atual && n <= nivel) b.classList.add('extra-bolinha--previa-on');
-        else if (n <= atual && n > nivel) b.classList.add('extra-bolinha--previa-off');
-      });
-    }
-    bolinhas.forEach(function (b) {
-      var n = +b.getAttribute('data-bloco');
-      if (ativos.indexOf(n) >= 0) b.classList.add('extra-bolinha--ativa');
-      if (!admin || travado) { b.disabled = true; return; }   // travado = fecha 24 h (imutável)
-      b.addEventListener('mouseenter', function () { if (!b.disabled) previa((n === nivelAtivo()) ? n - 1 : n); });
-      b.addEventListener('mouseleave', function () { previa(-1); });
-      b.addEventListener('click', function () {
-        if (b.disabled) return;
-        var atual = nivelAtivo();
-        var novo = (n === atual) ? n - 1 : n;   // clicar liga 1..n; na maior ligada, reduz uma
-        /* trava de cota (só ao aumentar): total do mês do modelo, trocando o nível atual do dia pelo novo */
-        if (novo > atual && (colocadoDe(m.cpf) - atual + novo) > cota) {
-          if (RW.avisar) RW.avisar({ tipo: 'aviso', mensagem: RW.mensagens.extrajornada.cotaNoLimite });
-          return;
-        }
-        if (novo <= 0) { remover(m.cpf, uid, isoDia, vaga, !!m.inserido); return; }   // zerou os blocos = remove o extra
-        aplicarNivel(novo);
-        previa(-1);   // o estado real assume; some a prévia
-        salvarBlocos(m.cpf, uid, isoDia, blocosDaVaga(vaga), vaga, b);
-      });
-    });
-    var x = vaga.querySelector('.extra-vaga-x');
-    if (x) {
-      if (!admin) x.classList.add('oculto');   // comum não remove extra: o X nem aparece
-      else x.addEventListener('click', function () { remover(m.cpf, uid, isoDia, vaga, !!m.inserido); });
-    }
-    return vaga;
-  }
-  function blocosDaVaga(vaga) {
-    var arr = [];
-    Array.prototype.forEach.call(vaga.querySelectorAll('.extra-bolinha--ativa'), function (b) { arr.push(parseInt(b.getAttribute('data-bloco'), 10)); });
-    arr.sort(function (a, b) { return a - b; });
-    return arr;
-  }
-
-  /* ---------- salvar / remover (extra_escala_definir com a unidade = deslocamento) ---------- */
-  function temSalvo(cpf, uid, isoDia) {
-    var l = (celulas[uid] && celulas[uid][isoDia]) || [];
-    return l.some(function (m) { return m.cpf === cpf; });
-  }
-  function removerPendente(cpf, uid, isoDia) {
-    var k = chaveCel(uid, isoDia);
-    if (pendentes[k]) pendentes[k] = pendentes[k].filter(function (m) { return m.cpf !== cpf; });
-  }
-
-  /* dados completos de um candidato do dia (grad, nome, cnh, grau_ant, cota, colocado, unidade, fecha24) */
-  function dadosCandidato(cpf, isoDia) {
-    return (candidatos[isoDia] || []).filter(function (m) { return m.cpf === cpf; })[0] || null;
-  }
-  /* total de blocos do militar no mês, lido do modelo local (celulas) — fonte da trava de cota, sempre atual */
-  function colocadoDe(cpf) {
-    var total = 0, u, d;
-    for (u in celulas) for (d in celulas[u]) (celulas[u][d] || []).forEach(function (m) {
-      if (m.cpf === cpf) total += (m.blocos || []).length;
-    });
-    return total;
-  }
-  /* espelha no modelo local (celulas/pendentes) o que o extra_escala_definir fez no banco, para os
-     indicadores e re-renders seguintes lerem o estado certo sem recarregar o mês */
-  function aplicarLocal(cpf, uid, isoDia, blocos) {
-    blocos = blocos || [];
-    var dia = ((celulas[uid] = celulas[uid] || {})[isoDia] = celulas[uid][isoDia] || []);
-    var ex = dia.filter(function (m) { return m.cpf === cpf; })[0];
-    if (blocos.length) {
-      if (ex) { ex.blocos = blocos.slice(); ex.inserido = false; ex.removido = false; }   // editou/recolocou → volta a pendente (Atualizar; limpa 'removido')
-      else {
-        var c = dadosCandidato(cpf, isoDia) || {};
-        dia.push({ cpf: cpf, grad: c.grad, nome: c.nome, blocos: blocos.slice(), cnh: c.cnh, grau_ant: c.grau_ant,
-          fecha24: c.fecha24, cota: c.cota, unidade_id: c.unidade_id, unidade_nome: c.unidade_nome, inserido: false });
-      }
-    } else if (ex) {
-      celulas[uid][isoDia] = dia.filter(function (m) { return m.cpf !== cpf; });   // 0 blocos: remove (espelha o delete)
-    }
-    removerPendente(cpf, uid, isoDia);
-  }
-
-  function salvarBlocos(cpf, uid, isoDia, blocos, vaga, botao) {
-    if (!RW.extrajornadaDados) return;
-    var bolinhas = vaga.querySelectorAll('.extra-bolinha');
-    Array.prototype.forEach.call(bolinhas, function (b) { b.disabled = true; });
-    function destravar() { Array.prototype.forEach.call(bolinhas, function (b) { b.disabled = false; }); }
-    RW.extrajornadaDados.definirEscala(cpf, isoDia, blocos, uid).then(function (r) {
-      destravar();
-      if (r && r.success) {
-        aplicarLocal(cpf, uid, isoDia, blocos);   // espelha o banco no modelo local (sem recarregar o mês)
-        var celula = vaga && vaga.closest ? vaga.closest('.escala-mes-celula') : null;
-        aposMudarCelula(celula, uid, isoDia);   // re-ajusta a escala (re-fit se o pico mudou) + repinta a célula + ensaia
-      } else {
-        if (botao) botao.classList.toggle('extra-bolinha--ativa');   // desfaz o visual
-        if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor });
-      }
-    }, function () {
-      destravar();
-      if (botao) botao.classList.toggle('extra-bolinha--ativa');
-      if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao });
-    });
-  }
-
-  function remover(cpf, uid, isoDia, vaga, inserido) {
-    /* extra JÁ na escala: analisa o impacto antes; se a remoção abrir furo, confirma com o admin */
-    if (inserido && temSalvo(cpf, uid, isoDia) && RW.extrajornadaDados.analisarRemocao) {
-      RW.extrajornadaDados.analisarRemocao(cpf, isoDia).then(function (a) {
-        if (a && a.ok && a.veredito === 'problema' && RW.confirmar) {
-          var av = (a.avisos && a.avisos[0]) || {};
-          RW.confirmar({
-            tipo: 'aviso',
-            mensagem: (av.descricao || av.titulo || RW.mensagens.extrajornada.removerAbreFuro),
-            textoConfirmar: RW.mensagens.extrajornada.removerMesmoAssim,
-            aoConfirmar: function () { efetuarRemocao(cpf, uid, isoDia, vaga, true); }
-          });
-        } else { efetuarRemocao(cpf, uid, isoDia, vaga, true); }
-      }, function () { efetuarRemocao(cpf, uid, isoDia, vaga, true); });
-    } else {
-      efetuarRemocao(cpf, uid, isoDia, vaga, inserido);
-    }
-  }
-  /* marca um extra JÁ inserido como remoção PENDENTE (mantém blocos/inserido: a barra "depois" subtrai
-     e o "Inserir/Atualizar escala" aplica no lote); o militar some da célula mas não sai da escala ainda */
-  function marcarRemovido(cpf, uid, isoDia) {
-    var dia = (celulas[uid] && celulas[uid][isoDia]) || [];
-    var ex = dia.filter(function (m) { return m.cpf === cpf; })[0];
-    if (ex) ex.removido = true;
-  }
-  function efetuarRemocao(cpf, uid, isoDia, vaga, inserido) {
-    var celula = vaga && vaga.closest ? vaga.closest('.escala-mes-celula') : null;
-    var eraSalvo = temSalvo(cpf, uid, isoDia);
-    removerPendente(cpf, uid, isoDia);
-    if (vaga && vaga.parentNode) vaga.parentNode.removeChild(vaga);
-    if (!eraSalvo) {   // era só pendente (sem bloco) → nada no banco; devolve o militar às seções
-      if (celula) atualizarCelula(celula, uid, isoDia);
-      return;
-    }
-    /* staging da remoção (sem loading): salva 0 blocos e NÃO reconcilia na hora. Vira pendência — extra já
-       inserido marca 'removido'; rascunho some de vez — e o "Inserir/Atualizar escala" aplica tudo em lote */
-    RW.extrajornadaDados.definirEscala(cpf, isoDia, [], uid).then(function (r) {
-      if (!r || !r.success) {   // falhou: restaura a vaga + avisa
-        if (celula) atualizarCelula(celula, uid, isoDia);
-        if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor });
-        return;
-      }
-      if (inserido) marcarRemovido(cpf, uid, isoDia);   // remoção de extra já inserido → pendência de remoção
-      else aplicarLocal(cpf, uid, isoDia, []);           // rascunho → some do modelo local
-      if (celula) atualizarCelula(celula, uid, isoDia);
-      aposMudarCelula(celula, uid, isoDia);   // re-ajusta a escala + repinta + ensaia + o botão do rodapé reage
-    }, function () {
-      if (celula) atualizarCelula(celula, uid, isoDia);
-      if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao });
-    });
-  }
-
-  /* ---------- "Inserir na escala": efetiva os extras; o motor refaz o "onde" dos dias afetados ---------- */
-  function inserirNaEscala() {
-    if (!RW.extrajornadaDados) return;
-    if (el.inserir) el.inserir.disabled = true;
-    if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal();   // efetiva os extras e o motor recalcula a escala: véu global + recálculo pendente
-    RW.extrajornadaDados.inserirEscala(iso(comp)).then(function (r) {
-      if (el.inserir) el.inserir.disabled = false;
-      if (RW.esconderVeuGlobal) RW.esconderVeuGlobal();
-      if (r && r.ok) {
-        carregar(true);   // reload silencioso: barras "depois"/avisos refletem o motor (resolvido ou falta de distribuição)
-        if (r.log && RW.resumo) RW.resumo.abrirModal(r.log, { pagina: 'Extrajornada' });   // modal de resumo (§8.2)
-        else if (RW.avisar) RW.avisar({ tipo: 'sucesso', mensagem: RW.mensagens.extrajornada.inserida });
-      } else if (RW.avisar) {
-        RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor });
-      }
-    }, function () {
-      if (el.inserir) el.inserir.disabled = false;
-      if (RW.esconderVeuGlobal) RW.esconderVeuGlobal();
-      if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao });
-    });
-  }
-
-  /* ---------- mês compartilhado (o seletor é do orquestrador) ---------- */
-  /* há edição não salva? só o painel de Cotas edita aqui (a grade auto-salva) */
-  function estaSujo() {
-    var cp = RW.extrajornadaCotasPainel;
-    return !!(cp && cp.temEdicaoAberta && cp.temEdicaoAberta());
-  }
-  /* redesenha o mês compartilhado (o orquestrador chama ao trocar o mês) */
+  /* ---------- mês compartilhado ---------- */
+  function estaSujo() { return R().sujo(); }
+  function descartar() { R().limpar(); }
   function renderMes() {
-    pendentes = {};
     comp = RW.extrajornadaMes.obter();
+    R().zerar();
     carregar();
-    var cp = RW.extrajornadaCotasPainel;
-    if (cp && cp.sincronizarMes) cp.sincronizarMes(comp);   // painel de Cotas segue o mesmo mês
+    if (RW.extrajornadaEscalar) RW.extrajornadaEscalar.sincronizarMes(comp);
   }
-  /* nome da unidade mãe (CIA/CIBM): as unidades vêm com ela em primeiro (RPC ordena CIA/CIBM antes) */
   function contextoNome() { return (unidades[0] && unidades[0].nome) || ''; }
 
-  /* ---------- busca de militar (nome/CPF/RG): marca/filtra candidatos + acende células ---------- */
-  function aplicarBusca(termo, modo) {
-    buscaTermo = termo || '';
-    buscaModo = modo || 'marcar';
-    aplicarBuscaGrade();
-  }
-  function casaLinhaBusca(db) { return RW.busca.casaTexto(buscaTermo, db); }   // casa o termo contra o data-busca pré-computado
+  /* ---------- busca de militar (nome/CPF/RG): acende as células onde ele tira extra ---------- */
+  function aplicarBusca(termo, modo) { buscaTermo = termo || ''; buscaModo = modo || 'marcar'; aplicarBuscaGrade(); }
   function aplicarBuscaCelula(cel, uid, isoDia) {
+    if (!RW.busca) return;
     var tem = !!buscaTermo;
-    var colocadoCasa = tem && ((celulas[uid] && celulas[uid][isoDia]) || []).some(function (m) {
-      return !m.removido && RW.busca.casaMilitar(buscaTermo, m);   // (b) acende a célula se um extra COLOCADO ali casa
-    });
-    cel.classList.toggle('escala-mes-celula--busca', colocadoCasa);
-    Array.prototype.forEach.call(cel.querySelectorAll('.extra-dia-cand'), function (row) {   // (a) candidatos das seções abertas
-      var casa = casaLinhaBusca(row.getAttribute('data-busca') || '');
-      row.classList.toggle('extra-dia-cand--busca', tem && casa && buscaModo === 'marcar');
-      row.classList.toggle('oculto', tem && !casa && buscaModo === 'filtrar');
+    var lista = efetivas(uid, isoDia);
+    var porCpf = {};
+    lista.forEach(function (m) { porCpf[m.cpf] = m; });
+    cel.classList.toggle('escala-mes-celula--busca', tem && lista.some(function (m) { return RW.busca.casaMilitar(buscaTermo, m); }));
+    Array.prototype.forEach.call(cel.querySelectorAll(':scope > .extra-vaga:not(.extra-vaga--fantasma)'), function (v) {
+      var m = porCpf[v.dataset.cpf];
+      v.classList.toggle('oculto', tem && buscaModo === 'filtrar' && !(m && RW.busca.casaMilitar(buscaTermo, m)));
     });
   }
   function aplicarBuscaGrade() {
-    if (!el.cal || !RW.busca) return;
-    Array.prototype.forEach.call(el.cal.querySelectorAll('.escala-mes-celula'), function (cel) {
+    if (!el.cal) return;
+    Array.prototype.forEach.call(el.cal.querySelectorAll('.escala-mes-celula[data-iso]'), function (cel) {
       aplicarBuscaCelula(cel, parseInt(cel.getAttribute('data-unidade-id'), 10), cel.getAttribute('data-iso'));
     });
   }
 
-  /* ---------- montagem ---------- */
+  /* ---------- montagem da aba ---------- */
   function montar(cont) {
     conteudo = cont;
-    comp = RW.extrajornadaMes ? RW.extrajornadaMes.obter() : new Date(new Date().getFullYear(), new Date().getMonth(), 1);   // mês compartilhado com a Disponibilidade
+    comp = RW.extrajornadaMes ? RW.extrajornadaMes.obter() : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     carregado = false;
-    pendentes = {};
-
-    el.cal = cont.querySelector('#extra-escala-cal');
-    /* a grade reusa .escala-mes-celula; o clique de célula da ESCALA é delegado no .conteudo do shell
-       (escalas-painel.js) e sobrevive à navegação → abriria a gaveta da Escala. Barra aqui: os cliques
-       da grade da extra (célula, seções de candidatos, bolinhas, X) não borbulham até esse ouvinte. */
-    if (el.cal) el.cal.addEventListener('click', function (ev) { ev.stopPropagation(); });
-
-    el.rodape = cont.querySelector('#extra-escala-rodape');
-    el.inserir = cont.querySelector('#extra-escala-inserir');
-    if (el.inserir) el.inserir.addEventListener('click', inserirNaEscala);
-
-    el.busca = cont.querySelector('#extra-busca');   // busca de militar (nome/CPF/RG) do sub-cabeçalho, só na aba Escala
+    militarSel = null;
+    el.cal = cont.querySelector('#extra-escala-cal');   // o clique na célula abre o painel do dia (escalas-painel.js)
+    el.busca = cont.querySelector('#extra-busca');
     if (el.busca && RW.busca) buscaCtrl = RW.busca.criar({ caixa: el.busca, aoBuscar: aplicarBusca });
-
-    el.modos = cont.querySelector('#extra-escala-modos');   // toggle Agenda/Calendário (só na aba Escala)
+    el.modos = cont.querySelector('#extra-escala-modos');
     if (el.modos && RW.abas && !el.modos.dataset.ligado) { RW.abas.ligar(el.modos, aplicarSubModo); el.modos.dataset.ligado = '1'; }
-
-    /* trocar a seleção global de unidades (cabeçalho) re-renderiza só as COLUNAS da grade, sem chamar o
-       banco (os dados de todas as unidades já vêm carregados). Ligado uma vez (o fragmento remonta a cada
-       navegação, mas o ouvinte de window fica; ele lê o estado atual do módulo). */
-    if (!listenerUnidades) {
-      window.addEventListener('rosterwork_units_changed', function () {
-        if (ativa && el.cal && el.cal.isConnected) renderGrade();
-      });
-      listenerUnidades = true;
-    }
-    /* o painel de Cotas avisa qual militar foi selecionado → pinta as células pela preferência dele */
-    if (!listenerMilitar) {
-      window.addEventListener('rosterwork_extra_militar', function (e) {
-        militarSel = (e && e.detail && e.detail.cpf) || null;
-        pintarSelecionado();
-      });
-      listenerMilitar = true;
-    }
+    /* ouvintes de window ligados uma vez (o fragmento remonta a cada navegação; eles leem o estado atual) */
+    if (ouvintesLigados) return;
+    ouvintesLigados = true;
+    /* a seleção de unidades do cabeçalho redesenha só as colunas (os dados de todas já vieram) */
+    window.addEventListener('rosterwork_units_changed', function () { if (ativa && el.cal && el.cal.isConnected) renderGrade(); });
+    /* o A escalar escolheu (ou soltou) um militar: pinta as células e põe a vaga apagada dele */
+    window.addEventListener('rosterwork_extra_militar', function (e) {
+      militarSel = (e && e.detail && e.detail.cpf) || null;
+      if (!ativa || !el.cal || !el.cal.isConnected) return;
+      refazerTudo();
+    });
+    /* o rascunho mudou (aqui ou no painel do dia): refaz o dia e ensaia de novo */
+    window.addEventListener('rosterwork_extra_rascunho', function (e) {
+      if (!ativa || !el.cal || !el.cal.isConnected) return;
+      var d = (e && e.detail) || {};
+      if (d.salvou) return;   // a página recarrega (rosterwork_escala_recarregar)
+      if (d.limpou) { ensaio = {}; refazerTudo(); analisarDiasComExtra(); return; }
+      if (d.data) { refazerDia(d.data); analisarDiaEnsaio(d.data); }
+    });
   }
 
   function ativar() {
     ativa = true;
-    if (el.busca) el.busca.classList.remove('oculto');   // busca só aparece na aba Escala
-    if (el.modos) el.modos.classList.remove('oculto');   // toggle Agenda/Calendário só na aba Escala
+    if (el.busca) el.busca.classList.remove('oculto');
+    if (el.modos) el.modos.classList.remove('oculto');
     var alvo = RW.extrajornadaMes ? RW.extrajornadaMes.obter() : comp;
-    if (!carregado) { carregado = true; comp = alvo; carregar(); }   // o aviso de pendência (com o Inserir) some/aparece no carregar
-    else if (iso(alvo) !== iso(comp)) renderMes();   // a outra aba mudou o mês enquanto esta estava fora
-    else renderGrade();   // mesmo mês: a grade foi limpa no desativar, redesenha do estado em cache
+    if (!carregado) { carregado = true; comp = alvo; carregar(); }
+    else if (iso(alvo) !== iso(comp)) renderMes();
+    else { renderGrade(); analisarDiasComExtra(); }
   }
   function desativar() {
     ativa = false;
     if (el.busca) el.busca.classList.add('oculto');
     if (el.modos) el.modos.classList.add('oculto');
-    if (buscaCtrl) buscaCtrl.limpar();   // limpa a busca ao sair da aba (não deixa filtro velho)
-    if (RW.escalasMes && el.cal) RW.escalasMes.limpar(el.cal);   // solta os observers dos gráficos ao sair
+    if (buscaCtrl) buscaCtrl.limpar();
+    if (RW.escalasMes && el.cal) RW.escalasMes.limpar(el.cal);
   }
 
-  /* recarrega a grade em silêncio (o painel de Cotas chama após salvar: as cotas mudaram → dropdown atualiza) */
+  /* recarrega a grade em silêncio (depois de salvar, de lançar ou de mudar as cotas) */
   function recarregar() { return carregado ? carregar(true) : Promise.resolve(); }
 
   RW.extrajornadaEscala = { montar: montar, ativar: ativar, desativar: desativar, recarregar: recarregar,
-    contextoNome: contextoNome, estaSujo: estaSujo, renderMes: renderMes };
+    contextoNome: contextoNome, estaSujo: estaSujo, descartar: descartar, renderMes: renderMes,
+    nomeUnidade: nomeUnidade };
 })();

@@ -1,12 +1,13 @@
 /* ============================================================
    AJUSTES — configurações das unidades (NAVEGACAO §4/§5)
-   Índice interno à esquerda (seções de ajuste; "Escala →
-   Ritmo das unidades") e, no corpo, a árvore de unidades com um
-   card do RITMO (escala_config: 24/48 · 24/72 · 12/36) por unidade
-   marcada. Admin clica no card → painel direito edita o ritmo
-   (ajustes_ritmo_salvar: grava, REGENERA a escala automática dos
-   lotados e audita → modal de resumo). Não-admin só visualiza.
-   As preferências pessoais (tema) moram no Meu perfil (cabeçalho).
+   Abas no cabeçalho: Escala e Extrajornada. Na Escala, a árvore de
+   unidades com um card do RITMO (escala_config: 24/48 · 24/72 ·
+   12/36) por unidade marcada. Admin clica no card → painel direito
+   edita o ritmo (ajustes_ritmo_salvar: grava, REGENERA a escala
+   automática dos lotados e audita → modal de resumo). Não-admin só
+   visualiza. A aba Extrajornada (os prazos) fica em
+   ajustes-extrajornada.js. As preferências pessoais (tema) moram no
+   Meu perfil (cabeçalho).
    ============================================================ */
 (function () {
   'use strict';
@@ -164,8 +165,20 @@
     });
   }
 
+  /* ---------- abas (Escala · Extrajornada) ---------- */
+  function trocarAba(conteudo, nome) {
+    if (RosterWork.painel && RosterWork.painel.estaAberto()) RosterWork.painel.fechar();
+    Array.prototype.forEach.call(conteudo.querySelectorAll('.pagina-corpo [data-aba-painel]'), function (p) {
+      p.classList.toggle('oculto', p.getAttribute('data-aba-painel') !== nome);
+    });
+    if (nome === 'extrajornada' && RosterWork.ajustesExtrajornada) RosterWork.ajustesExtrajornada.ativar();
+  }
+
   /* ---------- entrada da página ---------- */
   function iniciar(conteudo) {
+    var abas = conteudo.querySelector('#ajustes-abas');
+    if (abas && RosterWork.abas) RosterWork.abas.ligar(abas, function (aba) { trocarAba(conteudo, aba.getAttribute('data-aba')); });
+    if (RosterWork.ajustesExtrajornada) RosterWork.ajustesExtrajornada.montar(conteudo);
     var container = conteudo.querySelector('#arvore-ajustes');
     if (!container || !RosterWork.arvoreUnidades) return Promise.resolve();
     return RosterWork.arvoreUnidades.montar(container, {

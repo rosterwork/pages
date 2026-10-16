@@ -6,7 +6,9 @@
    por extenso, abas Dia/Ciclo/Extrajornada (Ciclo só para o
    administrador; por dentro, as seções distribuicao/continuos/extra).
    O Dia (escalas-painel-editar.js) é a mesma lista para todos: o
-   admin já edita nela; quem não é admin só lê.
+   admin já edita nela; quem não é admin só lê. A Extrajornada
+   (escalas-painel-extra.js) também é do administrador editar.
+   O mesmo painel abre na página Extrajornada (Calendário e Distribuição).
    ============================================================ */
 (function () {
   'use strict';
@@ -492,14 +494,16 @@
   }
 
   /* ---------- guarda de descarte: avisa antes de perder rascunho não salvo ---------- */
-  /* seções com rascunho não salvo (Editar do Dia e Ciclo, as duas com Salvar em lote) */
+  /* seções com rascunho não salvo (Dia e Ciclo; o rascunho da Extrajornada é do mês e não se perde ao trocar de dia ou de aba) */
   function secaoSuja() {
     return !!((RosterWork.escalasPainelEditar && RosterWork.escalasPainelEditar.estaSujo && RosterWork.escalasPainelEditar.estaSujo())
-      || (RosterWork.escalasPainelContinuos && RosterWork.escalasPainelContinuos.estaSujo && RosterWork.escalasPainelContinuos.estaSujo()));
+      || (RosterWork.escalasPainelContinuos && RosterWork.escalasPainelContinuos.estaSujo && RosterWork.escalasPainelContinuos.estaSujo())
+      || (RosterWork.escalasPainelExtra && RosterWork.escalasPainelExtra.estaSujo && RosterWork.escalasPainelExtra.estaSujo()));
   }
   function limparSecoesSujas() {
     if (RosterWork.escalasPainelEditar) RosterWork.escalasPainelEditar.reset();
     if (RosterWork.escalasPainelContinuos) RosterWork.escalasPainelContinuos.reset();
+    if (RosterWork.escalasPainelExtra) RosterWork.escalasPainelExtra.reset();
   }
   /* mesmo aviso do botão Cancelar (Descartar / Continuar editando) */
   function confirmarDescarte(aoConfirmar) {
@@ -514,6 +518,11 @@
   }
   /* interceptador do Esc/X (via geral-painel.aoTentarFechar): segura o fechamento se houver rascunho */
   function tentarFecharPainel() {
+    /* na Escala, o rascunho da extra só aparece no painel: fechar pede para descartar */
+    if (RosterWork.escalasPainelExtra && RosterWork.escalasPainelExtra.fecharSujo && RosterWork.escalasPainelExtra.fecharSujo()) {
+      RosterWork.escalasExtraRascunho.cancelar(function () { RosterWork.painel.fechar(); });
+      return true;
+    }
     if (!secaoSuja()) return false;               // nada sujo: deixa o painel fechar normalmente
     confirmarDescarte(function () { RosterWork.painel.fechar(); });
     return true;                                  // segura o fechamento até confirmar
@@ -715,7 +724,8 @@
   }
 
   /* troca o conteúdo do corpo e o rodapé conforme a aba de seção: o Dia é a lista que o admin edita
-     (e os outros só leem), o Ciclo (só admin) é sempre edição, a Extrajornada é só leitura (todos) */
+     (e os outros só leem), o Ciclo (só admin) é sempre edição, a Extrajornada o admin edita (os horários
+     de cada militar, no rascunho do mês) e os outros só leem */
   function mostrarSecao(secao) {
     if (!pCtx) return;
     pCtx.secao = secao;
@@ -741,13 +751,14 @@
     }
   }
 
-  /* abrir outra célula com rascunho aberto: confirma o descarte antes de trocar */
-  function abrirParaCelula(celula) {
-    if (secaoSuja()) { confirmarDescarte(function () { abrirParaCelulaAgora(celula); }); return; }
-    abrirParaCelulaAgora(celula);
+  /* abrir outra célula com rascunho aberto: confirma o descarte antes de trocar.
+     secao = a aba que abre primeiro (a Extrajornada abre na aba Extrajornada; o padrão é o Dia) */
+  function abrirParaCelula(celula, secao) {
+    if (secaoSuja()) { confirmarDescarte(function () { abrirParaCelulaAgora(celula, secao); }); return; }
+    abrirParaCelulaAgora(celula, secao);
   }
 
-  function abrirParaCelulaAgora(celula) {
+  function abrirParaCelulaAgora(celula, secao) {
     desmarcar();
     celula.classList.add('escala-mes-celula--selecionada');
     celulaSelecionada = celula;
@@ -755,7 +766,8 @@
     var unidadeId = celula.dataset.unidadeId;
     var iso = celula.dataset.iso;
     var cidade = celula.dataset.unidadeCidade;
-    pCtx = { unidadeId: unidadeId, iso: iso, secao: 'distribuicao' };
+    var inicial = secao || 'distribuicao';
+    pCtx = { unidadeId: unidadeId, iso: iso, secao: inicial };
     RosterWork.painel.abrir({
       titulo: celula.dataset.unidadeNome || '',
       tituloExtra: cidade ? '- ' + cidade : '',
@@ -774,13 +786,18 @@
       }
       linha.classList.remove('oculto');
       var trilho = linha.querySelector('.abas');
+      if (trilho) {
+        Array.prototype.forEach.call(trilho.querySelectorAll('.aba'), function (a) {
+          a.classList.toggle('aba--ativa', a.getAttribute('data-secao') === inicial);
+        });
+      }
       if (trilho && RosterWork.abas) {
         ligarGuardaAbas(trilho);   // confirma o descarte antes de trocar de seção com rascunho
         RosterWork.abas.ligar(trilho, function (aba) { mostrarSecao(aba.getAttribute('data-secao')); });
       }
     }
 
-    mostrarSecao('distribuicao');
+    mostrarSecao(inicial);
   }
 
   /* localiza, na grade atual (qualquer modo), a célula de uma unidade+dia */
@@ -814,17 +831,24 @@
     })();
   }
 
-  /* um clique delegado no fragmento da página: pega a célula clicada e abre a gaveta.
-     Delegado no fragmento (não na grade) para sobreviver às remontagens da grade */
+  /* um clique delegado no conteúdo do shell: pega a célula clicada e abre a gaveta (Escala e Extrajornada).
+     Delegado no conteúdo (não na grade) para sobreviver às remontagens da grade; liga uma vez só
+     (marca no elemento, que fica entre as navegações) */
   var remarcarLigado = false;
   function ligar(conteudo) {
-    if (!conteudo) return;
+    if (!conteudo || conteudo.dataset.painelDiaLigado) return;
+    conteudo.dataset.painelDiaLigado = '1';
     conteudo.addEventListener('click', function (evento) {
       /* célula da grade OU bloco marcado (ex.: a unidade do modo Dia em árvore); no Calendário (Mês e
-         Colunas → Dias), o bloquinho inteiro da unidade (nome incluso) vale como a célula que está dentro dele */
-      var alvo = evento.target.closest ? evento.target.closest('.escala-mes-celula, [data-abre-dia], .escala-calendario-unidade') : null;
-      var celula = alvo && alvo.classList.contains('escala-calendario-unidade') ? alvo.querySelector('.escala-mes-celula') : alvo;
-      if (celula) abrirParaCelula(celula);
+         Colunas → Dias, e o calendário da Extrajornada), o bloquinho inteiro da unidade (nome incluso)
+         vale como a célula que está dentro dele */
+      var alvo = evento.target.closest ? evento.target.closest('.escala-mes-celula, [data-abre-dia], .escala-calendario-unidade, .extra-calendario-unidade') : null;
+      var celula = alvo && (alvo.classList.contains('escala-calendario-unidade') || alvo.classList.contains('extra-calendario-unidade'))
+        ? alvo.querySelector('.escala-mes-celula') : alvo;
+      if (!celula || !celula.dataset.unidadeId || !celula.dataset.iso) return;
+      /* a grade pode pedir a aba que abre primeiro (a Extrajornada abre na aba Extrajornada) */
+      var dono = celula.closest('[data-painel-secao]');
+      abrirParaCelula(celula, dono ? dono.getAttribute('data-painel-secao') : null);
     });
     if (!remarcarLigado) {
       remarcarLigado = true;
@@ -931,6 +955,7 @@
 
   window.RosterWork.escalasPainel = {
     ligar: ligar,
+    abrir: abrirParaCelula,
     /* peças de montagem reaproveitadas pelo Dia (escalas-painel-editar/-formulario/-militar)
        e pela gaveta da Extrajornada */
     pecas: {

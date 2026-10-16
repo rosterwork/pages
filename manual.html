@@ -72,8 +72,13 @@
             <li>
               <a class="lista-item lista-item--clicavel manual-item manual-item--parte" href="#extrajornada">Extrajornada</a>
               <ul>
-                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#declarar-extra">Declarar disponibilidade</a></li>
-                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#extra-admin">Cotas e montar a escala de extra</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#solicitar-extra">Pedir a extra do mês</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#calendario-extra">Ver quem tira extra</a></li>
+                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#extra-cotas">Termos e cotas</a></li>
+                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#extra-distribuir">Distribuir a extra do mês</a></li>
+                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#extra-painel">O painel do dia</a></li>
+                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#extra-lancar">Salvar e lançar na escala</a></li>
+                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#extra-relatorios">Relatórios</a></li>
               </ul>
             </li>
             <li>
@@ -115,6 +120,8 @@
               <ul>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#ver-ritmo">Ver o ritmo das unidades</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#mudar-ritmo">Mudar o ritmo</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#ver-prazos">Ver os prazos da extrajornada</a></li>
+                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#mudar-prazos">Mudar os prazos</a></li>
               </ul>
             </li>
             <li>
@@ -209,7 +216,7 @@
 
               <h3 class="manual-topico">Quem faz o quê</h3>
               <ul class="manual-lista">
-                <li><strong>O militar (usuário comum).</strong> Consulta a sua escala, pede <strong>trocas</strong> e <strong>folgas</strong>, declara disponibilidade de <strong>extrajornada</strong> e vê os seus <strong>avisos</strong>. Ele participa e solicita, não monta nem edita a escala.</li>
+                <li><strong>O militar (usuário comum).</strong> Consulta a sua escala, pede <strong>trocas</strong> e <strong>folgas</strong>, pede a <strong>extrajornada</strong> e vê os seus <strong>avisos</strong>. Ele participa e solicita, não monta nem edita a escala.</li>
                 <li><strong>O administrador.</strong> Cadastra o efetivo e os postos, monta os <strong>modelos</strong> e a <strong>escala</strong>, <strong>aprova</strong> os pedidos (trocas, folgas e correções) na página <strong>Pendências</strong>, lança extrajornada, registra afastamentos e atos de carreira. Ele monta e mantém o sistema.</li>
               </ul>
               <p>O administrador também é um militar: faz as próprias solicitações como usuário e aprova como administrador, sem trocar de modo. Ele nunca decide o que é seu: não aprova uma troca da qual participa, nem decide, concede ou ajusta a própria folga. Isso fica com outro administrador.</p>
@@ -239,7 +246,7 @@
                 </li>
                 <li>
                   <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-extrajornada.svg#icone-extrajornada"/></svg></span>
-                  <span class="manual-legenda-texto"><strong>Extrajornada.</strong> As horas pagas pelo estado. Se você é voluntário, <strong>age</strong> declarando os dias em que quer ou não trabalhar; e consulta a escala de extra.</span>
+                  <span class="manual-legenda-texto"><strong>Extrajornada.</strong> As horas pagas pelo estado. Você <strong>age</strong> pedindo a extra do mês (se é voluntário, as cotas e os dias que quer ou não pode) e consulta quem tira extra em cada dia.</span>
                 </li>
                 <li>
                   <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-afastamentos.svg#icone-afastamentos"/></svg></span>
@@ -1023,50 +1030,133 @@
 
             <section class="manual-secao" id="extrajornada">
               <h2>Extrajornada</h2>
-              <h3 id="declarar-extra">Declarar disponibilidade</h3>
-              <p>A extrajornada é a <strong>hora extra paga</strong>: o estado paga em dinheiro para o militar trabalhar horas a mais. Ela é organizada em <strong>cotas</strong> (cada cota vale <strong>6 horas</strong>) e é um sistema separado das Folgas. Na página <strong>Extrajornada</strong>, aba <strong>Disponibilidade</strong>, você preenche a sua <strong>declaração</strong>, mês a mês: se quer participar, quantas cotas quer e em quais dias.</p>
-              <p><strong>Sou voluntário.</strong> Só o voluntário recebe extrajornada, então o primeiro passo é responder <strong>Sou voluntário</strong>. Em <strong>Não</strong>, a declaração termina aí. Em <strong>Sim</strong>, aparecem as cotas e as datas para você preencher.</p>
-              <p><strong>Quantas cotas você quer.</strong> Escolha <strong>quantas cotas</strong> deseja no mês, de <strong>1 a 8</strong> (de 6 a 48 horas). O botão <strong>Fechar blocos de 24 h</strong> é para quem só aceita <strong>turnos inteiros</strong>: ligando ele, as cotas ficam em <strong>4</strong> (um turno de 24 horas) ou <strong>8</strong> (dois turnos).</p>
-              <p><strong>Marcar os dias.</strong> No calendário, cada clique num dia alterna entre <strong>Quero</strong> (verde), <strong>Não quero</strong> (vermelho) e neutro (branco). Eles se organizam em duas listas, <strong>Datas que quero</strong> e <strong>Datas que não quero</strong>, e você marca <strong>de 5 a 10 datas em cada uma</strong> (o mínimo de 5 diminui se você tiver poucos dias livres no mês). Cada lista mostra um contador, e um aviso indica quantas datas ainda faltam.</p>
+              <h3 id="solicitar-extra">Pedir a extra do mês</h3>
+              <p>A extrajornada é a <strong>hora extra paga</strong>: o estado paga em dinheiro para o militar trabalhar horas a mais. É um sistema separado das Folgas. O dia tem <strong>quatro horários fixos de 6 horas</strong> (08h às 14h, 14h às 20h, 20h às 02h e 02h às 08h) e cada horário vale <strong>uma cota</strong>; no mês, são no máximo 8 cotas (48 horas). Só recebe extra quem é <strong>voluntário</strong> e tem o <strong>termo</strong> recebido.</p>
+              <p>Na página <strong>Extrajornada</strong>, aba <strong>Calendário</strong>, o botão <strong>Solicitar extra</strong> abre, à direita, o pedido do mês seguinte, em quatro partes:</p>
+              <ol class="manual-passos">
+                <li><strong>Voluntário.</strong> Responda <strong>Sim</strong> ou <strong>Não</strong>. Em Não, o pedido termina aí; em Sim, aparecem as outras partes.</li>
+                <li><strong>Cotas.</strong> Escolha em <strong>Quantas cotas quero</strong> de 1 a 8. Quem só aceita turnos inteiros marca <strong>Fechar blocos de 24 h</strong>: as cotas ficam em 4 (um turno) ou 8 (dois turnos).</li>
+                <li><strong>Datas.</strong> No calendário, cada clique num dia alterna entre <strong>Quero</strong> (verde) e <strong>Não posso</strong> (vermelho). Marque pelo menos 5 dias que quer (menos, se você tiver poucos dias livres) e no máximo 10 em cada; Não posso não tem mínimo. No canto de cada dia aparece quantos voluntários querem aquele dia, no total ou na sua unidade. Os dias em que você já está de serviço, troca, folga, férias, licença ou dispensa ficam travados.</li>
+                <li><strong>Termo.</strong> O pedido não substitui o documento do eProtocolo. O painel mostra "Termo pendente" até o administrador registrar o seu termo.</li>
+              </ol>
+              <p>O botão <strong>Solicitar</strong> envia o pedido e abre o resumo.</p>
               <figure class="manual-figura">
-                <img src="manual/imagens/extra-disp-declarar.png" alt="Painel Minha declaração: Sou voluntário em Sim, Fechar blocos de 24 h, Quantas cotas quero e as listas Datas que quero e Datas que não quero." />
+                <img src="manual/imagens/extra-solicitar.png" alt="O painel Solicitar extra: a pergunta do voluntário (1), as cotas com o Fechar blocos de 24 h (2) e o calendário das datas, com dias em Quero e Não posso (3)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>Voluntário</li>
+                    <li>Cotas e Fechar blocos de 24 h</li>
+                    <li>Datas que quer e que não pode</li>
+                  </ol>
+                </figcaption>
               </figure>
-              <p><strong>Dias em que você já está ocupado.</strong> Um dia em que você já tem <strong>serviço, troca, folga, férias, licença ou dispensa</strong> fica <strong>apagado e não pode ser marcado</strong>, com o motivo escrito na própria data.</p>
-              <p><strong>Quantos querem cada dia.</strong> No canto de cada dia aparece <strong>quantos voluntários querem aquele dia</strong>, para você enxergar os mais e os menos procurados. No alto da tela, um seletor escolhe de qual grupo é essa contagem: a <strong>sua unidade</strong>, a <strong>companhia</strong> inteira ou outro <strong>pelotão</strong>.</p>
+              <p><strong>O prazo.</strong> Você pede sempre a extra do mês seguinte e pode mudar o pedido até o prazo da companhia, que o painel mostra no alto (o padrão é o dia 25). Depois do prazo, o botão vira <strong>Minha solicitação</strong> e mostra o que você pediu, só para ver. Quem ainda não respondeu recebe nos últimos dias uma contagem regressiva no sino, como "Faltam 3 dias para solicitar a extra de novembro"; ela some quando você responde, sim ou não, e um clique nela abre o pedido.</p>
+
+              <h3 id="calendario-extra">Ver quem tira extra</h3>
+              <p>A aba <strong>Calendário</strong> mostra o mês com <strong>quem tira extra em cada dia</strong> e o horário, um bloco por unidade, nas unidades marcadas no seletor do cabeçalho. As unidades ficam alinhadas em cada linha do calendário. Clicar num dia abre o painel do dia na aba <strong>Extrajornada</strong>, e a <strong>busca</strong> marca ou filtra um militar.</p>
+              <p>Enquanto a extra do mês está sendo montada, o calendário já mostra a distribuição com um aviso amarelo: "Novembro em distribuição. Ainda não foi lançado na escala, por isso não aparece na escala de serviço. As datas podem mudar até o lançamento.".</p>
               <figure class="manual-figura manual-figura--larga">
-                <img src="manual/imagens/extra-disp-calendario.png" alt="Alguns dias do calendário da disponibilidade: em verde os que você quer, em vermelho os que não quer, em cinza um dia com serviço (bloqueado), e o número de interessados no canto de cada dia." />
+                <img src="manual/imagens/extra-calendario.png" alt="O calendário da extra de novembro com o aviso amarelo de que ainda está em distribuição (1) e, num dia, os militares de extra de cada unidade com o horário (2)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>Aviso de que o mês ainda está em distribuição</li>
+                    <li>Quem tira extra no dia, por unidade, com o horário</li>
+                  </ol>
+                </figcaption>
               </figure>
-              <p><strong>O prazo.</strong> Você declara sempre a disponibilidade do <strong>mês seguinte</strong>, e só <strong>até o dia 25</strong> do mês atual. Um aviso no topo da declaração mostra o estado: as datas em que as alterações são permitidas, ou, quando o prazo fecha, quando a próxima declaração abre. Fora do prazo, você ainda vê a sua declaração, mas não pode mudá-la.</p>
-              <p><strong>Meses anteriores.</strong> Você pode voltar aos meses passados, só para ver. Num mês em que foi voluntário, aparece um resumo do que você <strong>recebeu</strong>: o total de cotas e cada data com quatro bolinhas, uma para cada bloco de 6 horas. Num mês em que não foi voluntário, o sistema apenas informa isso.</p>
-              <p><strong>A escala de extra.</strong> Na aba <strong>Escala</strong>, você consulta como a extra do mês foi repartida: à esquerda, o painel <strong>Cotas</strong> da unidade, com quanto cada voluntário pediu, quanto recebeu e a taxa de atendimento; ao lado, a grade do mês, com os voluntários colocados em cada dia. Clicando num dia, você vê a distribuição dele. É só consulta: repartir as cotas e colocar os extras é tarefa do administrador.</p>
+              <p><strong>Depois que o mês começa</strong>, uma extra que mudou aparece riscada com a nota do que houve, como "foi para 24/11" ou "horário mudou", e a que entrou diz de onde veio, como "ajuste, veio de 20/11".</p>
+              <p><strong>A aba Voluntários</strong> mostra como as cotas do mês foram repartidas: quantas a unidade recebeu e, para cada voluntário, quanto pediu e quanto recebeu; quem ainda está sem termo aparece com o selo "Termo pendente". É só consulta: repartir as cotas e montar a extra é tarefa do administrador.</p>
+
               <div class="manual-admin manual-zona-admin">
-                <h3 id="extra-admin">Cotas e montar a escala de extra <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p>Você organiza a extra na aba <strong>Escala</strong>. À esquerda fica o painel <strong>Cotas</strong>, para repartir o mês; ao lado, a <strong>grade do mês</strong>, para colocar os extras dia a dia.</p>
-                <p><strong>Repartir as cotas.</strong> No painel <strong>Cotas</strong>, você define quantas cotas o mês tem e o sistema reparte entre os voluntários. Primeiro o <strong>escopo</strong>: o <strong>grupo inteiro</strong> (a companhia e seus pelotões, num total só) ou <strong>por unidade</strong> (cada unidade com o seu total). O escopo serve só para repartir as cotas: nos dois, você escolhe em qual unidade o extra tira, mesmo fora do pelotão dele, e a cota gasta é sempre a do militar.</p>
-                <p>Você digita o <strong>total de cotas</strong> e o sistema sugere quanto cada um recebe, com <strong>prioridade para quem foi menos atendido nos últimos 12 meses</strong>, ou seja, quem recebeu a <strong>menor porcentagem das cotas que pediu</strong>; havendo empate, o <strong>mais antigo</strong> primeiro.</p>
-                <p><strong>Ajustar e salvar.</strong> Cada linha é um voluntário, com quanto ele <strong>pediu</strong> e o <strong>Concedido</strong>, que você pode mudar manualmente (respeitando o pedido e o "fecha 24 h" de quem só aceita turno inteiro). Uma <strong>porcentagem colorida</strong> mostra quanto do pedido dele foi atendido neste mês. Se a soma passar do total, o grupo fica <strong>vermelho</strong> e não deixa salvar. <strong>Salvar</strong> reparte, registra no histórico e abre o resumo.</p>
-                <figure class="manual-figura">
-                  <img src="manual/imagens/extra-cota-painel.png" alt="Painel de Cotas: o escopo grupo ou por unidade (1) e uma linha de voluntário com o pedido, o Concedido e a porcentagem de atendimento (2)." />
+                <h3 id="extra-cotas">Termos e cotas <span class="manual-selo-admin">Apenas administradores</span></h3>
+                <p>Na aba <strong>Voluntários</strong>, você registra o <strong>termo</strong> de cada voluntário e reparte as cotas do mês. Quem está com o termo pendente fica fora das cotas e da distribuição. O seletor da barra mostra <strong>Voluntários</strong>, <strong>Termo pendente</strong>, <strong>Não voluntários</strong> e <strong>Sem resposta</strong>.</p>
+                <p>No alto ficam os números do mês. Em <strong>Cotas recebidas</strong>, digite quantas cotas a companhia recebeu e escolha em <strong>Repartir por</strong> se o total é do <strong>Grupo</strong> inteiro ou de cada unidade. O sistema sugere a repartição, com prioridade para <strong>quem foi menos atendido nos últimos 12 meses</strong>; <strong>Usar a sugestão</strong> aplica a sugestão a todos, e o <strong>Concedido</strong> de cada um você pode mudar. <strong>Salvar</strong> grava tudo de uma vez e abre o resumo.</p>
+                <figure class="manual-figura manual-figura--cheia">
+                  <img src="manual/imagens/extra-voluntarios.png" alt="Os números do mês na aba Voluntários: o campo Cotas recebidas (1), o Repartir por Grupo ou Por unidade (2) e o botão Usar a sugestão (3), com Repartidas, Restam e Na escala." />
                   <figcaption>
                     <ol class="manual-chamadas">
-                      <li>Repartir por grupo ou por unidade</li>
-                      <li>Linha de um voluntário: o pedido, o concedido e a taxa de atendimento</li>
+                      <li>Cotas recebidas</li>
+                      <li>Repartir por</li>
+                      <li>Usar a sugestão</li>
                     </ol>
                   </figcaption>
                 </figure>
-                <p><strong>A grade do mês.</strong> Ao lado, a grade mostra <strong>dias por unidade</strong>, e cada dia traz <strong>duas barras de cobertura</strong>: <strong>antes</strong> (sem os extras) e <strong>depois</strong> (já com os extras que você está montando). Dá para ver em <strong>Agenda</strong> ou <strong>Calendário</strong>, e há uma <strong>busca</strong> por nome. Ao clicar num voluntário no painel de Cotas, a grade se <strong>pinta pela preferência</strong> dele (verde nos dias que quer, vermelho nos que não quer).</p>
-                <p><strong>Colocar um extra.</strong> Em cada dia, o <strong>+</strong> abre os voluntários daquele dia em três grupos: <strong>Interessados</strong> (quem quer), <strong>Outros</strong> e <strong>Não querem</strong>. Dentro de cada grupo, os voluntários vêm separados por unidade: primeiro os da unidade da célula e depois os de outras unidades, marcados <strong>deslocamento</strong>. Escolhendo um de outra unidade, ele tira o serviço na unidade da célula. Ao escolher um, ele vira uma <strong>vaga</strong> na célula, com <strong>quatro bolinhas</strong> (os quatro blocos de 6 horas): você clica para dar de 6 a 24 horas, e o sistema <strong>trava na cota</strong> do militar. Quem é "fecha 24 h" entra já com o turno inteiro, travado. O <strong>✕</strong> tira o militar.</p>
+                <p>Embaixo, cada voluntário é uma linha da sua unidade, com a caixa do <strong>Termo</strong>, quanto ele pediu, o atendimento, o sugerido, o <strong>Concedido</strong> e quanto já está na escala. Clicar na linha abre o painel com a solicitação dele, onde o termo também se marca.</p>
+                <p class="manual-nota">Não dá para desmarcar o termo de quem já tem extra na distribuição: tire as extras dele antes.</p>
+
+                <h3 id="extra-distribuir">Distribuir a extra do mês <span class="manual-selo-admin">Apenas administradores</span></h3>
+                <p>Na aba <strong>Distribuição</strong> você monta a extra do mês. À esquerda fica o <strong>A escalar</strong>: quem tem termo e cota, por unidade, com quanto já está na grade, como "2 de 4". Ao lado, a grade do mês (<strong>Agenda</strong> ou <strong>Calendário</strong>). Cada célula traz, de cima para baixo:</p>
+                <ul class="manual-lista">
+                  <li>a barra <strong>antes</strong>, a cobertura do dia sem extra, com a escala do dia embaixo;</li>
+                  <li>a barra <strong>depois</strong>, a cobertura já com as extras, inclusive o que você ainda não salvou;</li>
+                  <li>cada extra, com os <strong>quatro horários</strong>: clique num horário para marcar ou desmarcar; quem fecha 24 h tem a marca "24h" e os quatro vão juntos. O <strong>✕</strong> tira o militar do dia;</li>
+                  <li>quantos voluntários livres o dia tem (os que querem, os sem preferência e os que não podem) e o botão <strong>Escalar</strong>, que abre o painel do dia.</li>
+                </ul>
                 <figure class="manual-figura">
-                  <img src="manual/imagens/extra-grade-dia.png" alt="Uma célula da grade: as barras de cobertura antes e depois (1) e um voluntário colocado, com as quatro bolinhas dos blocos de 6 horas (2)." />
+                  <img src="manual/imagens/extra-celula.png" alt="Uma célula da Distribuição: as barras antes e depois com a escala do dia (1), uma extra com os quatro horários (2), o botão que tira a extra do dia (3) e o botão Escalar (4)." />
                   <figcaption>
                     <ol class="manual-chamadas">
-                      <li>Barras de cobertura, antes e depois</li>
-                      <li>Voluntário colocado, com os quatro blocos de 6 horas</li>
+                      <li>Barras antes e depois, com a escala do dia</li>
+                      <li>Uma extra e os quatro horários de 6 horas</li>
+                      <li>Tirar deste dia</li>
+                      <li>Escalar: abre o painel do dia</li>
                     </ol>
                   </figcaption>
                 </figure>
-                <p><strong>Inserir na escala.</strong> Enquanto você monta, os extras ficam como <strong>rascunho</strong> e a barra "depois" é só uma prévia. O botão <strong>Inserir na escala</strong> aplica tudo de uma vez, e a escala automática <strong>recalcula</strong> os dias afetados. <strong>Remover</strong> um extra que <strong>já está na escala</strong> e que deixaria um <strong>furo</strong> pede uma <strong>confirmação</strong> antes.</p>
-                <p><strong>O dia por dentro.</strong> Clicar numa célula abre o <strong>painel do dia</strong>, com duas abas, só para consultar. Em <strong>Dia</strong>, ficam os avisos daquele dia, o que o extra <strong>resolveu</strong> e o que <strong>ficou faltando</strong>, e a distribuição já com os extras. Em <strong>Extrajornada</strong>, quem está de extra naquele dia e naquela unidade, a mesma aba do painel do dia da Escala. Para acertar a escala do dia manualmente, use o painel do dia na página <strong>Escala</strong>.</p>
+                <p><strong>Escalar um militar no mês.</strong> Clique nele no <strong>A escalar</strong>. A grade se pinta pela preferência dele (verde nos dias que quer, vermelho nos que não pode, apagado onde ele está ocupado) e, nos dias livres da unidade dele, aparece a <strong>vaga dele tracejada</strong>: um clique num horário já o coloca no dia. Em cima da grade, a barra "Escalando Sd. Bueno: 2 de 4 cotas." acompanha as cotas e fica vermelha quando ele passa da cota. <strong>Soltar</strong> encerra.</p>
+                <figure class="manual-figura manual-figura--larga">
+                  <img src="manual/imagens/extra-escalando.png" alt="A barra de quem está sendo escalado, com as cotas e o botão Soltar (1), e a vaga tracejada dele num dia livre (2)." />
+                  <figcaption>
+                    <ol class="manual-chamadas">
+                      <li>Quem está sendo escalado, as cotas e o Soltar</li>
+                      <li>A vaga dele num dia livre</li>
+                    </ol>
+                  </figcaption>
+                </figure>
+                <p>O que você mexe fica guardado na tela até salvar, para o mês inteiro: trocar de dia não perde nada. O rodapé diz quantas alterações faltam salvar e tem <strong>Cancelar</strong>, <strong>Salvar</strong> e <strong>Lançar na escala</strong> (veja <strong>Salvar e lançar na escala</strong>, abaixo).</p>
+
+                <h3 id="extra-painel">O painel do dia <span class="manual-selo-admin">Apenas administradores</span></h3>
+                <p>O painel do dia, aberto pelo <strong>Escalar</strong>, por um clique na célula ou pela página <strong>Escala</strong>, tem a aba <strong>Extrajornada</strong>. No alto, a <strong>Cobertura do dia</strong> mostra as barras sem extra e com extra e o que a extra resolveu. Embaixo vem a lista do dia em grupos: <strong>Neste dia</strong>, <strong>Querem este dia</strong>, <strong>Disponíveis</strong>, <strong>Não querem este dia</strong> (fechado; <strong>Mostrar</strong> abre) e <strong>Indisponíveis</strong>, com o motivo, como "De serviço" ou "Férias até 20/11".</p>
+                <p>Cada militar é uma linha: os outros dias de extra dele, com as horas de cada um, as cotas, como "4 de 6", e os quatro horários deste dia, que você marca e desmarca como na grade.</p>
+                <figure class="manual-figura">
+                  <img src="manual/imagens/extra-painel-lista.png" alt="O grupo Querem este dia no painel: as horas de início dos quatro horários (1), os outros dias de extra de um militar, com as horas (2), e os quatro horários deste dia (3), ao lado das cotas." />
+                  <figcaption>
+                    <ol class="manual-chamadas">
+                      <li>As horas de início dos quatro horários</li>
+                      <li>Os outros dias de extra dele</li>
+                      <li>Os quatro horários deste dia</li>
+                    </ol>
+                  </figcaption>
+                </figure>
+                <p><strong>Mudar de data.</strong> Clique nos outros dias de um militar: embaixo do nome abrem os horários daqueles dias, e você desmarca lá e marca aqui, sem sair do painel.</p>
+                <p><strong>Passou da cota.</strong> Quando você marca mais horários do que a cota de um militar, o contador fica vermelho e a linha abre sozinha com o aviso "Passou 1 cota. Desmarque 1 horário dos outros dias aqui embaixo, ou deste dia.". Enquanto alguém passar da cota, o sistema não salva.</p>
+                <figure class="manual-figura">
+                  <img src="manual/imagens/extra-painel-cota.png" alt="Um militar que passou da cota: o contador vermelho (1) e, embaixo do aviso, os horários do outro dia, para desmarcar (2)." />
+                  <figcaption>
+                    <ol class="manual-chamadas">
+                      <li>As cotas em vermelho</li>
+                      <li>Os horários do outro dia, para desmarcar</li>
+                    </ol>
+                  </figcaption>
+                </figure>
+                <p class="manual-nota">O painel e a grade mexem nas mesmas alterações. Na página <strong>Escala</strong>, fechar o painel com alteração não salva pede para descartar. Quem não é administrador vê só o grupo <strong>Neste dia</strong>, sem mexer.</p>
+
+                <h3 id="extra-lancar">Salvar e lançar na escala <span class="manual-selo-admin">Apenas administradores</span></h3>
+                <p><strong>Salvar</strong> grava todas as alterações de uma vez e abre o resumo. O sistema recusa quem não é voluntário com termo, quem não está livre no dia e quem passaria da cota, com uma mensagem como "Cb. Horta passaria da cota: 5 de 4. Desmarque horários em outro dia antes de salvar.".</p>
+                <p><strong>Lançar na escala</strong> põe as extras do mês na escala: cada uma vira serviço, conta na cobertura e entra na distribuição da unidade onde o militar tira a extra. A extra não entra no banco de horas de folga. Antes, uma confirmação lista os dias em que a distribuição será refeita. Com alterações não salvas, o lançamento salva antes. Até o mês começar, dá para mudar e lançar de novo quantas vezes precisar.</p>
+                <p><strong>Depois que o mês começa</strong>, o Lançar sai de cena: cada Salvar já põe a mudança direto na escala e registra o ajuste (o que era, o que ficou, quem fez e o motivo, escrito no campo <strong>Motivo do ajuste</strong> do painel). O militar recebe um aviso no sino, como "Sua extra de novembro mudou", e o painel do dia lista os <strong>Ajustes deste dia</strong>.</p>
+
+                <h3 id="extra-relatorios">Relatórios <span class="manual-selo-admin">Apenas administradores</span></h3>
+                <p>A aba <strong>Relatórios</strong> acompanha o mês em cinco etapas: <strong>Solicitações</strong>, <strong>Termos e cotas</strong>, <strong>Distribuição e lançamento</strong>, <strong>Ajustes do mês</strong> e <strong>Relatório de ajustes</strong>. A etapa feita ganha a marca verde e a de agora fica em destaque. Ao lado, a prévia do relatório de ajustes mostra quem mudou desde o lançamento, o que era, o que ficou e o motivo.</p>
+                <figure class="manual-figura">
+                  <img src="manual/imagens/extra-relatorios.png" alt="As etapas do mês na aba Relatórios, com a etapa Distribuição e lançamento e o botão do relatório inicial (1)." />
+                  <figcaption>
+                    <ol class="manual-chamadas">
+                      <li>Distribuição e lançamento, com o relatório inicial</li>
+                    </ol>
+                  </figcaption>
+                </figure>
+                <p>Os dois relatórios saem em PDF, no formato do PDF da escala: o <strong>relatório inicial</strong> (o que foi lançado, refeito a cada lançamento) e o <strong>relatório de ajustes</strong>, liberado a partir do dia 1º do mês seguinte.</p>
               </div>
             </section>
 
@@ -1436,18 +1526,29 @@
             <section class="manual-secao" id="ajustes">
               <h2>Ajustes</h2>
               <h3 id="ver-ritmo">Ver o ritmo das unidades</h3>
-              <p>A página <strong>Ajustes</strong> guarda as configurações das unidades. À esquerda fica o índice das seções (por ora uma, <strong>Escala › Ritmo das unidades</strong>) e, no corpo, a árvore de unidades com um <strong>card de ritmo</strong> em cada uma.</p>
+              <p>A página <strong>Ajustes</strong> guarda as configurações das unidades, em duas abas embaixo do título: <strong>Escala</strong> e <strong>Extrajornada</strong>. Na aba <strong>Escala</strong> fica a árvore de unidades, com um <strong>card de ritmo</strong> em cada uma.</p>
               <p><strong>O ritmo</strong> é a cadência de serviço e folga da escala automática da unidade, como o <strong>24/48</strong> (24 h de serviço e 48 de folga). O card mostra o valor e a explicação por extenso.</p>
               <figure class="manual-figura manual-figura--cheia">
-                <img src="manual/imagens/ajustes-ritmo.png" alt="A página Ajustes: o índice com Ritmo das unidades (1) e o card de ritmo de uma unidade, com o valor 24/48 e a explicação (2)." />
+                <img src="manual/imagens/ajustes-ritmo.png" alt="A página Ajustes: as abas Escala e Extrajornada (1) e o card de ritmo de uma unidade, com o valor 24/48 e a explicação (2)." />
                 <figcaption>
                   <ol class="manual-chamadas">
-                    <li>Ritmo das unidades, no índice</li>
+                    <li>Abas Escala e Extrajornada</li>
                     <li>Card de ritmo da unidade</li>
                   </ol>
                 </figcaption>
               </figure>
-              <p class="manual-nota">A página é de consulta: só o administrador muda o ritmo.</p>
+              <p class="manual-nota">A página é de consulta: só o administrador muda o ritmo e os prazos.</p>
+              <h3 id="ver-prazos">Ver os prazos da extrajornada</h3>
+              <p>A aba <strong>Extrajornada</strong> mostra os prazos da companhia, que valem também para os pelotões, em quatro cards: <strong>Solicitações</strong> (até que dia do mês você pede a extra do mês seguinte; o padrão é o dia 25), <strong>Aviso a quem não respondeu</strong> (quantos dias antes do fim do prazo começa a contagem regressiva no sino; o padrão é 5), <strong>Envio do planejamento</strong> e <strong>Envio do relatório de ajustes</strong> ao comando. Prazo sem data mostra "Não definido".</p>
+              <figure class="manual-figura manual-figura--larga">
+                <img src="manual/imagens/ajustes-prazos.png" alt="A aba Extrajornada do Ajustes com os quatro cards de prazos: Solicitações (1) e Aviso a quem não respondeu (2), entre outros." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>O prazo das solicitações</li>
+                    <li>O aviso a quem não respondeu</li>
+                  </ol>
+                </figcaption>
+              </figure>
               <div class="manual-admin manual-zona-admin">
                 <h3 id="mudar-ritmo">Mudar o ritmo <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>Clique no card e o painel à direita abre em edição: escolha o novo ritmo no seletor (<strong>24/48</strong>, <strong>24/72</strong> ou <strong>12/36</strong>) e veja a nota do <strong>Efeito</strong>, que avisa que a escala automática da unidade será regerada. O <strong>Salvar</strong> só habilita quando você troca o valor.</p>
@@ -1461,6 +1562,8 @@
                   </figcaption>
                 </figure>
                 <p><strong>Ao salvar.</strong> Como o ritmo muda o "quando" do serviço de todos, o sistema pede a <strong>data</strong> a partir da qual ele vale (começa amanhã), regenera a escala automática dos militares da unidade dessa data em diante, recalcula a distribuição, registra no histórico e abre o resumo.</p>
+                <h3 id="mudar-prazos">Mudar os prazos <span class="manual-selo-admin">Apenas administradores</span></h3>
+                <p>Na aba <strong>Extrajornada</strong>, clique em qualquer card e o painel à direita abre os quatro prazos juntos: o dia das solicitações (1 a 28), os dias do aviso (0 a 15) e os dias de envio do planejamento e do relatório de ajustes, que podem ficar em branco. <strong>Salvar</strong> grava, registra no histórico e abre o resumo. A Extrajornada, o sino e as etapas dos Relatórios passam a usar os prazos novos.</p>
               </div>
             </section>
 

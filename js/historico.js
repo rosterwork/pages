@@ -70,6 +70,8 @@
     folga: { aba: 'Folgas', icone: 'icone-folgas' },
     extra_cota: { aba: 'Extrajornada', icone: 'icone-extrajornada' },
     extra_alocacao: { aba: 'Extrajornada', icone: 'icone-extrajornada' },
+    extra_disponibilidade: { aba: 'Extrajornada', icone: 'icone-extrajornada' },
+    extra_prazos: { aba: 'Ajustes', icone: 'icone-ajustes' },
     atestado: { aba: 'Afastamentos', icone: 'icone-afastamentos' },
     ferias: { aba: 'Afastamentos', icone: 'icone-afastamentos' },
     licenca: { aba: 'Afastamentos', icone: 'icone-afastamentos' },

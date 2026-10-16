@@ -3,29 +3,58 @@
     <div class="pagina-titulos">
       <h1>Ajustes</h1>
     </div>
+    <!-- abas: os ajustes da Escala (ritmo das unidades) e da Extrajornada (prazos) -->
+    <div class="abas" id="ajustes-abas">
+      <button type="button" class="aba aba--ativa" data-aba="escala">Escala</button>
+      <button type="button" class="aba" data-aba="extrajornada">Extrajornada</button>
+    </div>
   </div>
 
   <div class="pagina-corpo pagina-corpo--colado">
-    <div class="geral-layout-lateral">
+    <!-- Escala: a árvore de unidades com o card do ritmo em cada unidade marcada -->
+    <section class="geral-corpo-lateral" data-aba-painel="escala">
+      <div class="geral-corpo-lateral-rolagem">
+        <div class="arvore arvore-unidades" id="arvore-ajustes"></div>
+      </div>
+    </section>
 
-      <!-- índice interno (não abas): as seções de ajuste -->
-      <aside class="geral-painel-esquerdo" id="ajustes-indice">
-        <div class="geral-painel-esquerdo-lista">
-          <div class="ajustes-indice-grupo">
-            <div class="faixa"><span class="rotulo-secao">Escala</span></div>
-            <button type="button" class="lista-item lista-item--clicavel ajustes-indice-item lista-item--ativo" data-ajuste="ritmo">Ritmo das unidades</button>
-          </div>
+    <!-- Extrajornada: os prazos da companhia (o administrador clica num card para editar no painel direito) -->
+    <section class="ajustes-extra oculto" data-aba-painel="extrajornada">
+      <div class="ajustes-extra-cab">
+        <span class="rotulo-secao">Prazos</span>
+        <span class="ajustes-extra-ajuda" id="ajustes-prazos-ajuda"></span>
+      </div>
+      <div class="ajustes-extra-cartoes" id="ajustes-prazos">
+        <div class="ajuste-cartao" role="button" tabindex="0" data-prazo="solicitacao">
+          <span class="ajuste-cartao-textos">
+            <span class="ajuste-cartao-titulo">Solicitações</span>
+            <span class="ajuste-cartao-ajuda">O militar pede a extra do mês seguinte do dia 01 até este dia.</span>
+          </span>
+          <span class="selo ajuste-cartao-valor"></span>
         </div>
-      </aside>
-
-      <!-- registro: a árvore de unidades com o card do ritmo em cada unidade marcada -->
-      <section class="geral-corpo-lateral">
-        <div class="geral-corpo-lateral-rolagem">
-          <div class="arvore arvore-unidades" id="arvore-ajustes"></div>
+        <div class="ajuste-cartao" role="button" tabindex="0" data-prazo="aviso">
+          <span class="ajuste-cartao-textos">
+            <span class="ajuste-cartao-titulo">Aviso a quem não respondeu</span>
+            <span class="ajuste-cartao-ajuda">Contagem regressiva no sino e na Extrajornada, só para quem ainda não respondeu.</span>
+          </span>
+          <span class="selo ajuste-cartao-valor"></span>
         </div>
-      </section>
-
-    </div>
+        <div class="ajuste-cartao" role="button" tabindex="0" data-prazo="planejamento">
+          <span class="ajuste-cartao-textos">
+            <span class="ajuste-cartao-titulo">Envio do planejamento</span>
+            <span class="ajuste-cartao-ajuda">Data limite para fechar o planejamento e enviar o relatório inicial.</span>
+          </span>
+          <span class="selo ajuste-cartao-valor"></span>
+        </div>
+        <div class="ajuste-cartao" role="button" tabindex="0" data-prazo="relatorio">
+          <span class="ajuste-cartao-textos">
+            <span class="ajuste-cartao-titulo">Envio do relatório de ajustes</span>
+            <span class="ajuste-cartao-ajuda">Dia do mês seguinte para enviar o relatório de ajustes.</span>
+          </span>
+          <span class="selo ajuste-cartao-valor"></span>
+        </div>
+      </div>
+    </section>
   </div>
 </div>
 
@@ -61,4 +90,45 @@
 <template id="tpl-ajuste-painel-acoes">
   <button type="button" class="botao" id="ajuste-cancelar">Cancelar</button>
   <button type="button" class="botao botao--primario" id="ajuste-salvar" disabled>Salvar</button>
+</template>
+
+<!-- molde: edição dos prazos da extrajornada (painel direito); em branco = sem prazo definido -->
+<template id="tpl-ajuste-prazos-editar">
+  <div class="ajustes-prazos-form">
+    <div class="grupo-caixa">
+      <span class="rotulo-secao">Solicitações</span>
+      <label class="ajustes-prazo-campo">
+        <span class="ajustes-prazo-rotulo">Abertas do dia 01 até o dia</span>
+        <span class="ajustes-prazo-linha">
+          <input type="text" name="prazo-solicitacao" inputmode="numeric" maxlength="2" class="campo-entrada ajustes-prazo-numero" data-campo="solicitacao_dia" />
+          <span class="ajustes-prazo-sufixo">do mês anterior ao da extra</span>
+        </span>
+      </label>
+      <label class="ajustes-prazo-campo">
+        <span class="ajustes-prazo-rotulo">Avisar quem não respondeu</span>
+        <span class="ajustes-prazo-linha">
+          <input type="text" name="prazo-aviso" inputmode="numeric" maxlength="2" class="campo-entrada ajustes-prazo-numero" data-campo="aviso_dias" />
+          <span class="ajustes-prazo-sufixo">dias antes do fim do prazo</span>
+        </span>
+      </label>
+    </div>
+    <div class="grupo-caixa">
+      <span class="rotulo-secao">Envios ao comando</span>
+      <label class="ajustes-prazo-campo">
+        <span class="ajustes-prazo-rotulo">Planejamento enviado até o dia</span>
+        <span class="ajustes-prazo-linha">
+          <input type="text" name="prazo-planejamento" inputmode="numeric" maxlength="2" class="campo-entrada ajustes-prazo-numero" data-campo="planejamento_dia" />
+          <span class="ajustes-prazo-sufixo">do mês anterior ao da extra</span>
+        </span>
+      </label>
+      <label class="ajustes-prazo-campo">
+        <span class="ajustes-prazo-rotulo">Relatório de ajustes enviado até o dia</span>
+        <span class="ajustes-prazo-linha">
+          <input type="text" name="prazo-relatorio" inputmode="numeric" maxlength="2" class="campo-entrada ajustes-prazo-numero" data-campo="relatorio_dia" />
+          <span class="ajustes-prazo-sufixo">do mês seguinte ao da extra</span>
+        </span>
+      </label>
+      <span class="ajustes-prazo-ajuda">Em branco = sem prazo definido. As etapas mostram a data só quando ela existe.</span>
+    </div>
+  </div>
 </template>

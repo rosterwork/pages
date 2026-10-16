@@ -271,6 +271,7 @@
     escala: {
       falhaCarregar: 'Não foi possível carregar.',
       falhaCarregarMes: 'Não foi possível carregar a escala.',
+      selecioneUnidade: 'Selecione uma companhia ou pelotão no seletor de unidades.',
       descartarAlteracoes: 'Descartar as alterações não salvas desta distribuição?',
       falhaSalvar: 'Não foi possível salvar. Tente de novo.',
       /* catálogo de erros/avisos da distribuição na escala — o aviso-lista do topo mostra uma linha
@@ -411,6 +412,39 @@
       /* aba Extrajornada do painel do dia */
       extraDoDia: 'Extrajornada do dia',
       extraVazio: 'Ninguém de extrajornada neste dia.',
+      /* aba Extrajornada do painel do dia: a lista do dia com os horários de 6 h, a cobertura e os ajustes */
+      extraPainel: {
+        naoLancado: function (mes) { return mes.charAt(0).toUpperCase() + mes.slice(1) + ' ainda não foi lançado na escala: o que mudar aqui fica na distribuição.'; },
+        lancadoEm: function (data) { return 'Lançado na escala em ' + data + '. As mudanças daqui entram no relatório de ajustes.'; },
+        lancadoAntes: function (data) { return 'Lançado na escala em ' + data + '. O que mudar aqui fica na distribuição até lançar de novo, na aba Distribuição.'; },
+        mesComecou: 'O mês já começou: as mudanças daqui entram direto na escala e no relatório de ajustes.',
+        cobertura: 'Cobertura do dia',
+        resolvido: 'resolvido pelo extra',
+        resolvidoRascunho: 'resolvido pelo extra, ainda não salvo',
+        grupos: { neste: 'Neste dia', querem: 'Querem este dia', disponiveis: 'Disponíveis', naoQuerem: 'Não querem este dia', indisponiveis: 'Indisponíveis' },
+        ninguemNeste: 'Ninguém de extra neste dia.',
+        semVoluntarios: 'Nenhum voluntário com termo recebido e cota neste mês.',
+        cota: function (feito, total) { return feito + ' de ' + total; },
+        dia: function (dd) { return 'dia ' + dd; },
+        diaSemana: function (dd, semana) { return 'dia ' + dd + ' · ' + semana; },
+        horas: function (n) { return n + 'h'; },
+        ocupado: { servico: 'De serviço', troca: 'De serviço por troca', folga: 'De folga', ferias: 'Férias', licenca: 'Licença', dispensa: 'Dispensa' },
+        ate: function (texto, data) { return texto + ' até ' + data; },
+        extraEm: function (unidade) { return 'Extra no ' + unidade; },
+        passou: function (n) { return 'Passou ' + n + (n === 1 ? ' cota.' : ' cotas.'); },
+        passouTexto: function (n) { return ' Desmarque ' + n + (n === 1 ? ' horário' : ' horários') + ' dos outros dias aqui embaixo, ou deste dia.'; },
+        alteracoes: function (n, dias) {
+          if (!n) return '';
+          return (n === 1 ? '1 alteração' : n + ' alterações') + (dias > 1 ? ' em ' + dias + ' dias' : '') + ' não salva' + (n === 1 ? '' : 's');
+        },
+        descartar: function (n) { return 'Descartar ' + (n === 1 ? 'a alteração' : 'as ' + n + ' alterações') + ' da extra que ainda não foram salvas?'; },
+        ajustesDoDia: function (n) { return 'Ajustes deste dia (' + n + ')'; },
+        motivoNota: function (m) { return ' Motivo: ' + m + '.'; },
+        ajusteAdicionou: function (quem, ficou) { return quem + ' entrou: ' + ficou + '.'; },
+        ajusteTirou: function (quem, era) { return quem + ' saiu (era ' + era + ').'; },
+        ajusteHorario: function (quem, era, ficou) { return quem + ': horário mudou de ' + era + ' para ' + ficou + '.'; },
+        falha: 'Não foi possível carregar a extra deste dia.'
+      },
       falhaAcaoCiclo: 'Não foi possível alterar o ciclo. Tente de novo.',
       emManutencao: 'Em manutenção',
       /* linha da cadeira vazia (sem ninguém), no lugar do nome do militar */
@@ -781,42 +815,16 @@
 
     /* extrajornada (cotas de hora extra) */
     extrajornada: {
-      disponibilidadeSalva: 'Disponibilidade salva.',
       falhaSalvar: 'Não foi possível salvar. Tente de novo.',
-      /* dica do dia bloqueado no calendário (o militar já está ocupado, não pode marcar) */
+      /* o motivo escrito no dia ocupado do Solicitar extra (o militar não pode marcar) */
       bloqueadoMotivo: { servico: 'Serviço', troca: 'Troca', folga: 'Folga', ferias: 'Férias', licenca: 'Licença', dispensa: 'Dispensa' },
-      quero: 'Quero',
-      naoQuero: 'Não quero',
-      procuraTotal: 'Total',
-      minDatas: function (n) { return 'Marque pelo menos ' + n + ' data(s) em cada coluna (quero e não quero).'; },
-      ambosCheios: 'As duas colunas já têm 10 datas.',
-      queroCheio: '"Datas que quero" já tem 10, este dia foi para "não quero".',
-      naoCheio: '"Datas que não quero" já tem 10 datas.',
-      marqueSim: 'Marque "Sim" em "Sou voluntário" para escolher suas cotas e dias.',
-      /* janela de edição da disponibilidade (só o próximo mês, até o dia 25) */
-      janelaAberta: function (ini, fim) { return 'Alterações permitidas de ' + ini + ' a ' + fim + '.'; },
-      janelaEncerrada: function (fim, abre) { return 'Prazo encerrado em ' + fim + '. A próxima declaração abre em ' + abre + '.'; },
-      mesEncerrado: 'Mês encerrado, apenas visualização.',
-      naoFoiVoluntario: 'Você não foi voluntário neste mês.',
-      semDeclaracao: 'Sem declaração de disponibilidade neste mês.',
-      prazoEncerrado: 'O prazo para declarar a disponibilidade deste mês está encerrado.',
-      resumoRecebeu: function (n) { return 'Você recebeu ' + n + (n === 1 ? ' cota' : ' cotas') + ' neste mês.'; },
-      cotasSalvas: 'Cotas repartidas.',
       semCotasMudanca: 'Nenhuma cota foi alterada.',
       semVoluntarios: 'Nenhum voluntário declarou disponibilidade neste mês.',
       falhaCotas: 'Não foi possível carregar as cotas.',
-      cotaNoLimite: 'Este militar já atingiu o limite de cotas.',
-      fecha24Dica: 'Fecha 24 h, turno fixo (não editável).',
-      removerAbreFuro: 'Remover este extra pode deixar um furo na escala.',
-      removerMesmoAssim: 'Remover mesmo assim',
+      fecha24Dica: 'Fecha 24 h: os 4 horários vão juntos.',
       cotaMenor: 'O número de cotas ficou menor do que o que já foi colocado no calendário. Tire alguns extras antes de reduzir o total.',
       cotaEstourada: 'Você distribuiu mais cotas do que o total permite. Reduza o Concedido do grupo em vermelho antes de salvar.',
       escopoTrocar: 'Mudar a forma de repartir altera a distribuição das cotas quando você salvar.',
-      /* rótulo de cada unidade na lista do "+" da célula: a da célula ou outra (o extra tira nesta célula) */
-      rotuloUnidade: function (nome, daCelula) { return nome + (daCelula ? ' · esta unidade' : ' · deslocamento'); },
-      /* "Inserir na escala" (efetiva os extras) */
-      inserida: 'Extras inseridos na escala.',
-      semExtras: 'Não há extras para inserir.',
       /* rótulos curtos dos avisos da escala que uma extra pode resolver (grade da aba Escala);
          o front acrescenta o local, ex.: "Rodízio repetido: Almoxarife" */
       avisosGrade: {
@@ -830,7 +838,159 @@
         sem_funcao: 'Militar sem função definida',
         sem_funcao_plural: '{n} militares sem função definida'
       },
-      avisosTitulo: 'Avisos'
+      /* aba Calendário: quem tira extra em cada dia e os ajustes do mês */
+      calendario: {
+        emDistribuicao: function (mes) { return mes.charAt(0).toUpperCase() + mes.slice(1) + ' em distribuição.'; },
+        falha: 'Não foi possível carregar o calendário.',
+        foiPara: function (dia) { return 'foi para ' + dia; },
+        horarioMudou: 'horário mudou',
+        retirada: 'retirada',
+        veioDe: function (dia) { return 'ajuste, veio de ' + dia; },
+        era: function (hi, hf) { return 'ajuste, era ' + hi + ' às ' + hf; },
+        nova: 'ajuste, extra nova',
+        prazoAberto: function (mes, ate) { return 'Solicitações de ' + mes + ' até ' + ate; },
+        prazoFaltam: function (mes, n, ate) {
+          var m = mes.charAt(0).toUpperCase() + mes.slice(1);
+          if (n === 0) return m + ': último dia para solicitar (até ' + ate + ')';
+          return m + ': ' + (n === 1 ? 'falta 1 dia' : 'faltam ' + n + ' dias') + ' para solicitar (até ' + ate + ')';
+        },
+        prazoEncerrado: function (mes, em) { return 'Solicitações de ' + mes + ' encerradas em ' + em; }
+      },
+      /* painel Solicitar extra (o mês em aberto) e Minha solicitação (depois do prazo, só para ver) */
+      solicitar: {
+        botao: 'Solicitar extra',
+        botaoLeitura: 'Minha solicitação',
+        titulo: function (mes) { return 'Solicitar extra de ' + mes; },
+        tituloLeitura: function (mes) { return 'Minha solicitação de ' + mes; },
+        prazo: function (ate) { return 'Prazo: até ' + ate + ', às 23h59.'; },
+        prazoTexto: ' Até lá você pode enviar e mudar. A solicitação não substitui o documento do eProtocolo.',
+        encerrado: function (em) { return 'Prazo encerrado em ' + em + '.'; },
+        encerradoTexto: ' Esta é a sua solicitação, só para ver. A solicitação não substitui o documento do eProtocolo.',
+        semResposta: ' Você não respondeu a solicitação deste mês.',
+        cotas: function (n) { return n + (n === 1 ? ' cota' : ' cotas'); },
+        dia: { quer: 'Quero', nao_quer: 'Não posso' },
+        total: 'Total',
+        termoPendente: 'Termo pendente',
+        termoRecebido: function (data) { return 'Termo recebido em ' + data; },
+        enviada: function (quando) { return 'Enviada em ' + quando + '.'; },
+        minDatas: function (n) { return 'Marque pelo menos ' + n + (n === 1 ? ' data que você quer.' : ' datas que você quer.'); },
+        cheio: 'Você já marcou 10 datas nesta coluna.'
+      },
+      /* aba Distribuição: o rodapé (Salvar e Lançar na escala) e a barra do A escalar */
+      distribuicao: {
+        selo: function (feito, total) { return 'Distribuição: ' + feito + ' de ' + total + ' cotas na grade'; },
+        naoLancada: function (ate) { return 'Distribuição salva, ainda não lançada. Depois de lançar, até ' + ate + ' dá para mudar e lançar de novo.'; },
+        lancadaMudou: function (ate) { return 'Há mudanças na distribuição que ainda não foram lançadas. Até ' + ate + ' dá para lançar de novo.'; },
+        lancada: function (em, ate) { return 'Lançada na escala em ' + em + '. Até ' + ate + ' dá para mudar e lançar de novo.'; },
+        iniciado: 'O mês já começou: o que salvar entra direto na escala e vai para o relatório de ajustes.',
+        semExtras: 'Nenhuma extra na grade ainda.',
+        confirmar: function (mes) { return 'Lançar a extra de ' + mes + ' na escala? Nos dias abaixo a distribuição será refeita: quem está em cada posto e viatura pode mudar.'; },
+        confirmarNota: function (resto, ate) {
+          return (resto > 0 ? 'E mais ' + resto + (resto === 1 ? ' dia. ' : ' dias. ') : '') + 'O relatório inicial fica pronto em Relatórios. Até ' + ate + ' você ainda pode mudar e lançar de novo.';
+        },
+        botao: 'Lançar na escala',
+        lancadaOk: 'Extra lançada na escala.',
+        escalando: function (quem, feito, cota) { return 'Escalando ' + quem + ': ' + feito + ' de ' + cota + (cota === 1 ? ' cota.' : ' cotas.'); }
+      },
+      /* aba Relatórios: as etapas do mês e a prévia do relatório de ajustes */
+      relatorios: {
+        etapaAtual: { solicitacoes: 'Solicitações', termos: 'Termos e cotas', montagem: 'Distribuição e lançamento', ajustes: 'Ajustes do mês', relatorio: 'Relatório de ajustes' },
+        solicitacoes: function (ini, fim, vol, nao, sem) {
+          return ini + ' a ' + fim + '. ' + vol + (vol === 1 ? ' voluntário, ' : ' voluntários, ') + nao + (nao === 1 ? ' não voluntário, ' : ' não voluntários, ') + sem + ' sem resposta.';
+        },
+        termos: function (rec, pend, recebidas, repartidas) {
+          return rec + (rec === 1 ? ' termo recebido e ' : ' termos recebidos e ') + pend + (pend === 1 ? ' pendente. ' : ' pendentes. ') + recebidas + ' cotas recebidas, ' + repartidas + ' repartidas.';
+        },
+        prazoEnvio: function (dia) { return ' Envio ao comando até ' + dia + '.'; },
+        lancado: function (em, por, ate, iniciado) {
+          return 'Lançado na escala em ' + em + (por ? ', pelo ' + por : '') + '. ' + (iniciado ? 'Até ' + ate + ' dava para mudar e lançar de novo; cada lançamento refaz o relatório inicial.' : 'Até ' + ate + ' dá para mudar e lançar de novo; cada lançamento refaz o relatório inicial.');
+        },
+        naoLancado: function (ate) { return 'Ainda não lançado. Até ' + ate + ' a distribuição pode ser lançada e relançada.'; },
+        ajustesQtd: function (n) { return n + ' até agora'; },
+        ajustesPeriodo: function (ini, fim) { return ini + ' a ' + fim + '. Feitos na Distribuição ou no painel do dia, na Escala ou na Extrajornada.'; },
+        relatorioDisponivel: function (dia) { return 'Fica disponível a partir de ' + dia + ' e não sai mais daqui. Até lá, a prévia ao lado mostra como está.'; },
+        relatorioPronto: function (dia) { return 'Disponível desde ' + dia + ' e não sai mais daqui.'; },
+        previa: 'Prévia do relatório de ajustes',
+        relatorioFinal: 'Relatório de ajustes',
+        comparado: function (dia) { return 'comparado com o lançamento de ' + dia; },
+        semLancamento: 'A comparação começa quando a extra for lançada na escala.',
+        semAjustes: 'Nenhuma extra mudou desde o lançamento.',
+        retirada: 'retirada',
+        nova: 'extra nova',
+        mudouVezes: function (n) { return 'mudou ' + n + ' vezes'; },
+        semMotivo: 'Sem motivo',
+        cotasIguais: 'Nenhuma. As cotas de cada militar continuam as do lançamento.',
+        cotasMudaram: function (quem, de, para) { return quem + ': de ' + de + ' para ' + para + ' cotas.'; },
+        falha: 'Não foi possível carregar os relatórios.',
+        falhaPdf: 'Não foi possível gerar o PDF. Tente de novo.',
+        /* os PDFs (no formato do PDF da escala) */
+        pdf: {
+          tituloInicial: 'Extrajornada: planejamento',
+          subInicial: function (mes, data) { return mes + ' · lançado na escala em ' + data; },
+          tituloAjustes: 'Extrajornada: ajustes do mês',
+          subAjustes: function (mes, data) { return mes + ' · comparado com o lançamento de ' + data; },
+          colMilitar: 'Militar',
+          colCotas: 'Cotas',
+          colDatas: 'Datas e horários',
+          colEra: 'Era',
+          colFicou: 'Ficou',
+          colMotivo: 'Motivo',
+          rg: function (rg) { return 'RG ' + rg; },
+          unidadeInicial: function (n, cotas) { return n + (n === 1 ? ' voluntário · ' : ' voluntários · ') + cotas + (cotas === 1 ? ' cota' : ' cotas'); },
+          unidadeAjustes: function (n) { return n + (n === 1 ? ' extra ajustada' : ' extras ajustadas'); },
+          totalInicial: function (n, cotas) { return 'Total: ' + n + (n === 1 ? ' voluntário · ' : ' voluntários · ') + cotas + (cotas === 1 ? ' cota' : ' cotas') + ' (' + (cotas * 6) + ' horas)'; },
+          totalAjustes: function (n, de, para) {
+            return n + (n === 1 ? ' extra ajustada · ' : ' extras ajustadas · ') + (de === para ? 'cotas sem alteração (' + de + ')' : 'cotas de ' + de + ' para ' + para);
+          },
+          quemNaoAparece: function (data) { return 'Quem não aparece cumpriu as datas do lançamento de ' + data + '.'; },
+          semAjustes: 'Nenhuma extra mudou desde o lançamento.',
+          nova: 'extra nova',
+          retirada: 'retirada',
+          semMotivo: 'Sem motivo',
+          arquivoInicial: 'extrajornada-planejamento',
+          arquivoAjustes: 'extrajornada-ajustes'
+        }
+      },
+      /* Ajustes › Extrajornada: os prazos da companhia */
+      prazos: {
+        tituloPainel: 'Prazos da extrajornada',
+        subtitulo: function (unidade) { return unidade + ' e pelotões'; },
+        ajuda: function (unidade) { return 'Valem para a ' + unidade + ' e os pelotões. Aparecem na Extrajornada, no sino e nas etapas dos relatórios.'; },
+        ateDia: function (n) { return 'Até o dia ' + n; },
+        diasAntes: function (n) { return n === 0 ? 'Sem aviso' : (n === 1 ? '1 dia antes' : n + ' dias antes'); },
+        dia: function (n) { return 'Dia ' + n; },
+        naoDefinido: 'Não definido',
+        falha: 'Não foi possível carregar os prazos.'
+      },
+      /* aba Voluntários (repartição das cotas + termo do eProtocolo) e o A escalar da Distribuição */
+      voluntarios: {
+        semPendentes: 'Nenhum termo pendente neste mês.',
+        semNaoVoluntarios: 'Ninguém respondeu que não é voluntário neste mês.',
+        semResposta: 'Todos já responderam neste mês.',
+        semNaUnidade: 'Nenhum voluntário nesta unidade.',
+        escopo: { grupo: 'Grupo', por_unidade: 'Por unidade' },
+        blocoDetalhe: function (cidade, n) { return (cidade ? cidade + ' · ' : '') + n + (n === 1 ? ' militar' : ' militares'); },
+        restam: function (n) { return 'restam ' + n; },
+        foraAteTermo: 'fora até o termo',
+        naEscala: function (feito, total) { return feito + ' de ' + total; },
+        tituloPainel: function (mes, ano) { return 'Solicitação de ' + mes + ' de ' + ano; },
+        pedido: function (cotas, fecha24) { return 'Voluntário · ' + cotas + (cotas === 1 ? ' cota' : ' cotas') + ' · ' + (fecha24 ? 'fecha 24 h' : 'sem fechar 24 h'); },
+        enviada: function (quando) { return 'Enviada em ' + quando + '.'; },
+        datas: function (dias) {
+          if (!dias.length) return 'nenhuma';
+          return dias.length === 1 ? dias[0] : dias.slice(0, -1).join(', ') + ' e ' + dias[dias.length - 1];
+        },
+        termoRecebido: function (data, por) { return 'Recebido em ' + data + (por ? ' pelo ' + por : '') + '.'; },
+        termoPendente: 'Pendente.',
+        termoAoSalvar: 'A marcação vale quando você salvar.',
+        termoComExtra: function (quem) { return quem + ' já tem extra na distribuição. Tire as extras dele antes de desmarcar o termo.'; },
+        atendimento: function (meses, pediu, recebeu) {
+          if (!meses) return 'Primeira vez como voluntário.';
+          return 'Voluntário em ' + meses + (meses === 1 ? ' mês' : ' meses') + '. Pediu ' + pediu + (pediu === 1 ? ' cota' : ' cotas') + ' e recebeu ' + recebeu + '.';
+        },
+        faltando: function (n) { return n === 0 ? 'tudo na grade' : n + (n === 1 ? ' cota faltando' : ' cotas faltando'); },
+        semEscalar: 'Ninguém com cota para escalar neste mês.'
+      }
     },
 
     /* edição não salva */
@@ -874,6 +1034,8 @@
         folga: 'Folga',
         extra_cota: 'Cotas (extrajornada)',
         extra_alocacao: 'Extra (escala do mês)',
+        extra_disponibilidade: 'Solicitação de extra',
+        extra_prazos: 'Prazos (extrajornada)',
         atestado: 'Atestado',
         ferias: 'Férias',
         licenca: 'Licença',

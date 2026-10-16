@@ -130,11 +130,20 @@
       .catch(function () { return { _falha: 'conexao' }; });
   }
 
-  /* ---- Extrajornada do dia (aba do painel do dia): quem tira extra nesta unidade ---- */
-  function extraDia(unidadeId, iso) {
-    return RosterWork.apiFetch('/rest/v1/rpc/extra_dia_listar', { metodo: 'POST', corpo: { p_unidade_id: Number(unidadeId), p_data: iso } })
+  /* ---- Extrajornada do dia (aba do painel do dia, na Escala e na Extrajornada) ---- */
+  function rpcExtra(nome, corpo) {
+    return RosterWork.apiFetch('/rest/v1/rpc/' + nome, { metodo: 'POST', corpo: corpo })
       .then(function (r) { return r.ok ? r.json() : null; })
       .catch(function () { return null; });
+  }
+  /* quem tira extra nesta unidade no dia, os ajustes do dia e a cobertura sem e com extra; com o
+     rascunho (ops), a cobertura e os dias mexidos já com as mudanças (ensaio no motor, nada é gravado) */
+  function extraPainel(unidadeId, iso, ops) {
+    return rpcExtra('extra_dia_painel', { p_unidade: Number(unidadeId), p_data: iso, p_ops: ops || [] });
+  }
+  /* a lista do dia: os voluntários com termo e cota, a preferência, as extras deles no mês e quem não pode (o motivo) */
+  function extraLista(unidadeId, iso) {
+    return rpcExtra('extra_dia_lista', { p_unidade: Number(unidadeId), p_data: iso });
   }
 
   /* quem pode entrar no dia como pontual (RPC escala_dia_disponiveis): de folga na unidade buscada (e nas de
@@ -151,7 +160,7 @@
     lerDistribuicaoDia: lerDistribuicaoDia, lerAlteracoesDia: lerAlteracoesDia, simularDia: simularDia, salvarDia: salvarDia,
     lerImpressao: lerImpressao, lerImpressaoErros: lerImpressaoErros,
     continuosListar: continuosListar, cicloRetirarAnalisar: cicloRetirarAnalisar, cicloSalvarLote: cicloSalvarLote,
-    extraDia: extraDia,
+    extraPainel: extraPainel, extraLista: extraLista,
     disponiveis: disponiveis
   };
 })();
