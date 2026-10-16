@@ -29,7 +29,7 @@
   var INST = [
     { k: 'data_de_inclusao', rotulo: 'Inclusão no quadro', tipo: 'data', max: 10, num: true, ph: 'dd/mm/aaaa', cal: true, ajuda: true },
     { k: 'nome_de_guerra', rotulo: 'Nome de guerra', tipo: 'texto', max: 40, ph: 'Ex.: Andrade' },
-    { k: 'tipo', rotulo: 'Setor', tipo: 'selecao', opcoes: ['Operacional', 'Administrativo'] },
+    { k: 'tipo', rotulo: 'Setor', tipo: 'selecao', opcoes: ['Operacional', 'Administrativo', 'Aluno'] },
     { k: 'classificacao', rotulo: 'Colocação', rotuloPorQuadro: true, tipo: 'numero', max: 4, num: true, ph: 'Ex.: 14' }
   ];
 

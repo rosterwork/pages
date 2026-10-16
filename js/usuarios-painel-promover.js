@@ -1,7 +1,7 @@
 /* ============================================================
    USUÁRIOS — promoção (aba Carreira, modo Editar)
    Só admin. Seção "Promover": escolhe o Tipo (Oficial / Praça /
-   Oficial Especial) e o sistema define a Hierarquia resultante —
+   Oficial Especialista) e o sistema define a Hierarquia resultante —
    se manteve o tipo, a PRÓXIMA da carreira; se mudou, a PRIMEIRA
    do novo tipo (o admin não pula graus). A data tem que ser
    posterior à última promoção. Confirma por modal e grava por

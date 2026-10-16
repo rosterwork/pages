@@ -264,7 +264,7 @@
   function grausDoPerfil(tipoContador) {
     var oficiais = tipoContador === 'Oficiais';
     return graus.filter(function (g) {
-      var ehOf = (g.tipo === 'Oficial' || g.tipo === 'Oficial Especial');
+      var ehOf = (g.tipo === 'Oficial' || g.tipo === 'Oficial Especialista');
       return oficiais ? ehOf : !ehOf;
     });
   }
