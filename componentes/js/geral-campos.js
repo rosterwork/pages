@@ -24,10 +24,12 @@
     return d.slice(0, 3) + '.' + d.slice(3, 6) + '.' + d.slice(6, 9) + '-' + d.slice(9);
   }
 
-  /* RG nos dois formatos em uso: 0.000.000-0 (8 dígitos) e 00.000.000-0 (9);
-     ao digitar o 9º número, o desenho passa de um para o outro (igual ao login) */
+  /* RG nos dois formatos antigos: 0.000.000-0 (8 dígitos) e 00.000.000-0 (9);
+     na carteira nova do Paraná o RG é o próprio CPF (11), no formato do CPF.
+     O desenho acompanha a quantidade de números digitados (igual ao login) */
   function mascararRg(d) {
-    d = d.substring(0, 9);
+    d = d.substring(0, 11);
+    if (d.length >= 10) return mascararCpf(d);
     if (d.length === 9) return d.slice(0, 2) + '.' + d.slice(2, 5) + '.' + d.slice(5, 8) + '-' + d.slice(8);
     if (d.length <= 1) return d;
     if (d.length <= 4) return d.slice(0, 1) + '.' + d.slice(1);
@@ -263,11 +265,12 @@
     return resto === parseInt(n[10], 10);
   }
 
-  /* RG não tem dígito verificador padrão; valem os dois formatos em uso:
-     0.000.000-0 (8 dígitos) e 00.000.000-0 (9) */
-  function validarRg(valor) {
-    var n = soDigitos(valor).length;
-    return n === 8 || n === 9;
+  /* RG não tem dígito verificador padrão; valem os dois formatos antigos,
+     0.000.000-0 (8 dígitos) e 00.000.000-0 (9), e o da carteira nova, que é
+     o próprio CPF da pessoa (11 dígitos iguais ao `cpf`) */
+  function validarRg(valor, cpf) {
+    var d = soDigitos(valor);
+    return d.length === 8 || d.length === 9 || (d.length === 11 && d === soDigitos(cpf || ''));
   }
 
   function validarEmail(valor) {

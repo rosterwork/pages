@@ -39,7 +39,10 @@
     },
     'cc-rg': {
       vazio: function () { return T().rgVazio; },
-      formato: function (v) { return V.validarRg(v) ? null : T().rgInvalido; }
+      formato: function (v) {
+        if (V.validarRg(v, valor('cc-cpf'))) return null;
+        return V.soDigitos(v).length === 11 ? T().rgDiferenteCpf : T().rgInvalido;
+      }
     },
     'cc-nascimento': {
       vazio: function () { return T().nascimentoVazio; },

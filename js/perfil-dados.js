@@ -20,6 +20,7 @@
   var campos = [];      /* [{ el, campo, formato }] — montado a cada abertura */
   var originais = {};   /* campo -> valor gravado (como aparece no controle) */
   var enviar, desfazer, contagem, lista, formulario;
+  var cpfProprio = '';  /* o RG da carteira nova é o próprio CPF */
   var reqMinhas = 0;    /* token de "Minhas solicitações": ignora resposta antiga ao reentrar */
 
   function C() { return RosterWork.campos; }
@@ -145,7 +146,7 @@
       } else if (controle.formato === 'celular') {
         if (V().soDigitos(valor).length !== 11) { C().marcarErro(controle.el, T.celularInvalido); ok = false; return; }
       } else if (controle.formato === 'rg') {
-        if (!V().validarRg(valor)) { C().marcarErro(controle.el, T.rgInvalido); ok = false; return; }
+        if (!V().validarRg(valor, cpfProprio)) { C().marcarErro(controle.el, V().soDigitos(valor).length === 11 ? T.rgDiferenteCpf : T.rgInvalido); ok = false; return; }
       } else if (controle.campo === 'email') {
         if (!V().validarEmail(valor)) { C().marcarErro(controle.el, T.emailInvalido); ok = false; return; }
       } else if (controle.campo === 'nome_completo' && valor.trim().split(/\s+/).length < 2) {
@@ -323,6 +324,7 @@
   function iniciar(ficha) {
     var pessoais = (ficha && ficha.pessoais) || {};
     var institucionais = (ficha && ficha.institucionais) || {};
+    cpfProprio = pessoais.cpf || '';
 
     enviar = document.getElementById('perfil-enviar');
     desfazer = document.getElementById('perfil-desfazer');

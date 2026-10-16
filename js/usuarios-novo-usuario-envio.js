@@ -35,7 +35,7 @@
 
     var rg = campo('nu-rg');
     if (!rg.value.trim()) erro(rg, textos.rgVazio);
-    else if (!rgValido(rg.value)) erro(rg, textos.rgInvalido);
+    else if (!rgValido(rg.value, cpf.value)) erro(rg, soDigitos(rg.value).length === 11 ? textos.rgDiferenteCpf : textos.rgInvalido);
 
     var nascEl = campo('nu-nascimento');
     var nasc = parseData(nascEl.value);
