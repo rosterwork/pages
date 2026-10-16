@@ -11,6 +11,11 @@
 (function () {
   'use strict';
 
+  /* TRAVA TEMPORÁRIA: só estas unidades podem ser marcadas ou escolhidas
+     (2ªCIBM e os pelotões dela, as únicas com dados); as demais abrem, mas
+     não selecionam. Para desfazer: apagar esta lista e os usos de unidadeTravada. */
+  var UNIDADES_LIBERADAS = [20, 143, 144, 145];
+
   /* cache da lista de unidades — todas as instâncias reusam a mesma busca */
   var unidadesCache = null;
   var buscaEmAndamento = null;
@@ -65,6 +70,12 @@
     var dropdownEl = opcoes.dropdownEl || null;
     var contagemEl = opcoes.contagemEl || null;
     var btnAplicarEl = opcoes.btnAplicarEl || null;
+    /* todasUnidades: ignora a trava temporária (destino das transferências) */
+    var todasUnidades = opcoes.todasUnidades === true;
+
+    function unidadeTravada(definicao) {
+      return !todasUnidades && UNIDADES_LIBERADAS.indexOf(definicao.unidade_id) === -1;
+    }
 
     var nos = [];          /* todos os nós, em lista plana */
     var raizesNos = [];    /* nós do primeiro nível (sanfona do topo) */
@@ -91,11 +102,18 @@
       el.querySelector('.arvore-nome').textContent = definicao.nome;
       el.querySelector('.arvore-detalhe').textContent = definicao.cidade || '';
 
-      /* modo único não usa caixa: ela some e o clique vale na linha inteira */
+      /* modo único não usa caixa: ela some e o clique vale na linha inteira.
+         Unidade travada: nome apagado (único) ou caixa desativada (multi) */
+      var travada = unidadeTravada(definicao);
       if (modo === 'unico') {
         if (no.caixa) no.caixa.classList.add('oculto');
+        if (travada) no.linha.classList.add('arvore-linha--travada');
       } else if (no.caixa) {
         no.caixa.setAttribute('aria-label', definicao.nome);
+        if (travada) {
+          no.caixa.disabled = true;
+          no.caixa.classList.add('caixa-selecao--travada');
+        }
       }
 
       var filhosContainer = el.querySelector('.arvore-filhos');
@@ -129,13 +147,18 @@
         no.linha.addEventListener('click', function () {
           if (no.filhos.length > 0) {
             alternarExpansao(no);
-          } else {
+          } else if (!travada) {
             alternarSelecao(no);
           }
         });
       } else {
-        /* modo único: clicar na linha (qualquer nível) seleciona e fecha */
+        /* modo único: clicar na linha (qualquer nível) seleciona e fecha;
+           a travada só abre/recolhe os filhos */
         no.linha.addEventListener('click', function () {
+          if (travada) {
+            alternarExpansao(no);
+            return;
+          }
           selecionarUnico(no);
         });
       }

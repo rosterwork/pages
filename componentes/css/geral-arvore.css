@@ -91,6 +91,12 @@
   color: var(--texto-forte);
 }
 
+/* trava temporária do seletor de unidades: unidade sem dados, não marca */
+.caixa-selecao--travada:not(.caixa-selecao--marcada):not(.caixa-selecao--parcial) {
+  border-color: var(--borda);
+  background-color: var(--fundo-suave);
+}
+
 /* ---------- ÁRVORE (hierarquias) ---------- */
 .arvore {
   display: flex;
@@ -154,6 +160,11 @@
   font-weight: 600;
   color: var(--texto-forte);
   white-space: nowrap;
+}
+
+/* trava temporária, modo único (sem caixa): o nome apagado indica que não escolhe */
+.arvore-linha--travada .arvore-nome {
+  color: var(--texto-fraco);
 }
 
 .arvore-detalhe {

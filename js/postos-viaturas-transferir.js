@@ -87,6 +87,7 @@
 
     var seletor = RosterWork.seletorUnidades.criar({
       modo: 'unico',
+      todasUnidades: true,
       dropdownEl: dropdownEl,
       arvoreEl: arvoreEl,
       textoEl: textoEl,
