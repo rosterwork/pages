@@ -54,7 +54,8 @@
     if (c.tipo === 'data') return isoParaBR(v);
     if (c.tipo === 'rg') return C.mascararRg(soDigitos(v));
     if (c.tipo === 'celular') return C.mascararCelular(soDigitos(v));
-    if (c.tipo === 'numero') { var n = parseInt(soDigitos(v), 10); return isNaN(n) ? '' : String(n); }
+    /* colocação: "0000" = sem colocação, o campo abre vazio */
+    if (c.tipo === 'numero') { var n = parseInt(soDigitos(v), 10); return (isNaN(n) || n === 0) ? '' : String(n); }
     return String(v);
   }
 
@@ -166,9 +167,7 @@
         var primeira = promocoes.length ? V.parseData(isoParaBR(promocoes[0].data)) : null;
         if (primeira && incl > primeira) erro(inclEl, T.inclusaoDepoisPromocao);
       }
-
-      var coloc = campoEl(raiz, 'classificacao');
-      if (!coloc.value.trim()) erro(coloc, T.colocacaoVazia);
+      /* a colocação pode ficar vazia: sem colocação (o banco grava "0000") */
     }
     return ok;
   }

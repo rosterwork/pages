@@ -64,6 +64,7 @@
     instalacao: { aba: 'Postos', icone: 'icone-postos' },
     viatura: { aba: 'Postos', icone: 'icone-postos' },
     usuario: { aba: 'Usuários', icone: 'icone-usuarios' },
+    antiguidade: { aba: 'Usuários', icone: 'icone-usuarios' },
     escala: { aba: 'Escala', icone: 'icone-escalas' },
     distribuicao: { aba: 'Distribuição', icone: 'icone-distribuicao' },
     regra: { aba: 'Distribuição', icone: 'icone-distribuicao' },

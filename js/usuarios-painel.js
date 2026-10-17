@@ -43,10 +43,10 @@
     return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : iso;
   }
 
-  /* "0014" -> "14" (tira os zeros à esquerda da colocação) */
+  /* "0014" -> "14" (tira os zeros à esquerda da colocação); "0000" = sem colocação (a linha mostra "-") */
   function formatarColocacao(valor) {
     var n = parseInt(soDigitos(valor), 10);
-    return isNaN(n) ? '' : String(n);
+    return (isNaN(n) || n === 0) ? '' : String(n);
   }
 
   /* data de hoje em DD/MM/AAAA (padrão dos campos "A partir de") */

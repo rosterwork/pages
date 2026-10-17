@@ -120,8 +120,9 @@
       var vazio = valor === '';
 
       /* nenhum campo pode ficar em branco — vale para o formulário todo, mudado
-         ou não (quem não tem carteira escolhe "Nenhuma" na CNH) */
-      if (vazio) {
+         ou não (quem não tem carteira escolhe "Nenhuma" na CNH); só a colocação
+         pode seguir em branco para quem não tem (gravada como "0000") */
+      if (vazio && !(controle.campo === 'classificacao_cfo_cfp' && originais.classificacao_cfo_cfp === '')) {
         C().marcarErro(controle.el, {
           nome_completo: T.nomeVazio, rg: T.rgVazio, data_de_nascimento: T.nascimentoVazio,
           celular: T.celularVazio, cnh: T.cnhVazia,
@@ -343,7 +344,8 @@
       nome_de_guerra: institucionais.nome_de_guerra || '',
       tipo: institucionais.tipo || '',
       data_de_inclusao: RosterWork.data.isoParaBR(institucionais.data_de_inclusao),
-      classificacao_cfo_cfp: institucionais.classificacao || ''
+      /* "0000" = sem colocação: o campo abre vazio */
+      classificacao_cfo_cfp: parseInt(V().soDigitos(institucionais.classificacao), 10) ? institucionais.classificacao : ''
     };
 
     campos = [];

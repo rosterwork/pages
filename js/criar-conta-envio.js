@@ -72,8 +72,9 @@
         return (nasc && d <= nasc) ? T().inclusaoAposNascimento : null;
       }
     },
+    /* quem a ficha trouxe sem colocação pode deixar em branco (o banco ignora o vazio) */
     'cc-colocacao': {
-      vazio: function () { return T().colocacaoVazia; }
+      vazio: function () { return RW.criarConta.contexto().semColocacao ? null : T().colocacaoVazia; }
     },
     'cc-senha': {
       vazio: function () { return RW.mensagens.perfil.senhaCurta; },
@@ -127,7 +128,7 @@
     Object.keys(REGRAS).forEach(function (id) {
       var regra = REGRAS[id];
       var v = valor(id);
-      if (!v) { erro(el(id), regra.vazio()); return; }
+      if (!v) { var msgVazio = regra.vazio(); if (msgVazio) erro(el(id), msgVazio); return; }
       if (regra.formato) {
         var msg = regra.formato(v);
         if (msg) erro(el(id), msg);

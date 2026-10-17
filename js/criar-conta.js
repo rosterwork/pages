@@ -25,7 +25,7 @@
   var lotacao = null;                           /* instância do seletor de unidades (modo único) */
   var opcoesProntas = Promise.resolve(false);   /* resolve quando postos + árvore terminam de carregar */
 
-  var contexto = { cpf: '', codigo: '' };   /* o CPF conferido e o código do link, que o envio reenvia */
+  var contexto = { cpf: '', codigo: '' };   /* o CPF conferido e o código do link, que o envio reenvia (e se a ficha veio sem colocação) */
 
   /* as funções desta tela são públicas (anon); o apiFetch manda a
      chave publicável quando não há sessão, então serve aqui também */
@@ -212,8 +212,9 @@
       selecaoComRotulo(document.getElementById('cc-posto'), String(grau.grau_id), grau.nome);
       atualizarPromocoes(grau.grau_id);
     }
-    document.getElementById('cc-colocacao').value =
-      dados.classificacao ? String(parseInt(dados.classificacao, 10)) : '';
+    /* "0000" = sem colocação: o campo abre vazio */
+    var colocacao = parseInt(dados.classificacao, 10);
+    document.getElementById('cc-colocacao').value = colocacao ? String(colocacao) : '';
 
     /* as datas de promoção, na mesma ordem em que a tela as coleta */
     var proms = dados.promocoes || [];
@@ -253,7 +254,7 @@
   }
   /* entra no passo 2: a ficha carregada, a conferência travada */
   function abrirFicha(cpf, codigo, dados) {
-    contexto = { cpf: cpf, codigo: codigo };
+    contexto = { cpf: cpf, codigo: codigo, semColocacao: !(parseInt(dados.classificacao, 10) > 0) };
     preencher(dados);
     travarConferencia();
     mostrarPasso2();

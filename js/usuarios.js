@@ -369,7 +369,13 @@
       var el = conteudo.querySelector(seletor);
       if (el) el.classList.toggle('oculto', nome !== 'efetivo');
     });
+    /* a Antiguidade tem a própria busca (o Salvar dela fica no rodapé da aba) */
+    var buscaAntiguidade = conteudo.querySelector('#antiguidade-busca');
+    if (buscaAntiguidade) buscaAntiguidade.classList.toggle('oculto', nome !== 'antiguidade');
+    var btnNovoUsuario = conteudo.querySelector('#btn-novo-usuario');
+    if (btnNovoUsuario) btnNovoUsuario.classList.toggle('oculto', !RosterWork.sessao.ehAdmin() || nome === 'antiguidade');
     if (nome === 'pendencias') carregarPendencias();
+    if (nome === 'antiguidade' && window.RosterWork.usuariosAntiguidade) window.RosterWork.usuariosAntiguidade.mostrar();
   }
 
   function ligarAbas(conteudo) {
@@ -377,6 +383,9 @@
     var trilho = conteudo.querySelector('#usuarios-abas');
     var abaPendencias = conteudo.querySelector('#usuarios-aba-pendencias');
     if (abaPendencias) abaPendencias.classList.toggle('oculto', !admin);
+    var abaAntiguidade = conteudo.querySelector('#usuarios-aba-antiguidade');
+    if (abaAntiguidade) abaAntiguidade.classList.toggle('oculto', !admin);
+    if (admin && window.RosterWork.usuariosAntiguidade) window.RosterWork.usuariosAntiguidade.iniciar(conteudo);
     if (window.RosterWork.abas && trilho) {
       window.RosterWork.abas.ligar(trilho, function (aba) {
         mostrarAba(conteudo, aba.getAttribute('data-aba'));

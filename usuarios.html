@@ -6,6 +6,8 @@
     </div>
     <div class="abas" id="usuarios-abas">
       <button type="button" class="aba aba--ativa" data-aba="efetivo">Efetivo</button>
+      <!-- só administrador: a ordem de antiguidade da companhia, por posto -->
+      <button type="button" class="aba oculto" data-aba="antiguidade" id="usuarios-aba-antiguidade">Antiguidade</button>
       <!-- só administrador: correções de dados para aprovar (a mesma fila da página Pendências) -->
       <button type="button" class="aba oculto" data-aba="pendencias" id="usuarios-aba-pendencias">
         <span>Pendências</span>
@@ -22,6 +24,14 @@
       <span>Novo usuário</span>
     </button>
     <span class="espacador-flex"></span>
+
+    <div class="busca oculto" id="antiguidade-busca">
+      <svg class="icone antiguidade-busca-lupa" width="16" height="16" aria-hidden="true"><use href="icones/icone-pesquisar.svg#icone-pesquisar"/></svg>
+      <input type="text" class="busca-entrada" maxlength="100" placeholder="Pesquisar militar" aria-label="Pesquisar militar" />
+      <button type="button" class="busca-limpar" aria-label="Limpar pesquisa">
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+      </button>
+    </div>
 
     <div class="usuarios-filtros" id="usuarios-filtros">
     <svg class="icone filtro-funil" id="filtro-funil" width="16" height="16" aria-hidden="true"><use href="icones/icone-filtrar.svg#icone-filtrar"/></svg>
@@ -158,6 +168,25 @@
     </div>
   </div>
 
+  <!-- Antiguidade (só administrador): a companhia em bloco cinza e cada posto num bloquinho branco,
+       como no PDF da escala; os títulos (unidade e posto) ficam presos no alto ao rolar -->
+  <div class="pagina-corpo pagina-corpo--camada oculto" data-aba-painel="antiguidade">
+    <div class="pagina-corpo-rolagem">
+      <div class="antiguidade-lista" id="antiguidade-lista"></div>
+    </div>
+    <!-- salvar: ativo só com alteração; Cancelar volta à ordem gravada -->
+    <div class="rodape rodape-pilha">
+      <div class="rodape-linha">
+        <span class="antiguidade-mudancas" id="antiguidade-mudancas"></span>
+        <span class="espacador-flex"></span>
+        <div class="rodape-acoes">
+          <button type="button" class="botao" id="antiguidade-cancelar">Cancelar</button>
+          <button type="button" class="botao botao--primario" id="antiguidade-salvar" disabled>Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Pendências (só administrador): correções de dados para aprovar (componente geral-fila) -->
   <div class="pagina-corpo oculto" data-aba-painel="pendencias">
     <div class="pedido-lista coluna-leitura" id="usuarios-pendencias"></div>
@@ -189,6 +218,53 @@
 
 <template id="tpl-usuario-vazio">
   <div class="usuario-vazio">Nenhum militar com os filtros atuais.</div>
+</template>
+
+<!-- molde (aba Antiguidade): a companhia = bloco cinza com o título dentro, como no PDF
+     (nome completo e, embaixo, sigla · cidade) -->
+<template id="tpl-antiguidade-unidade">
+  <section class="antiguidade-unidade">
+    <div class="antiguidade-unidade-titulo">
+      <span class="antiguidade-unidade-nome" data-unidade-nome></span>
+      <span class="antiguidade-unidade-detalhe"><span data-unidade-sigla></span> · <span data-unidade-cidade></span></span>
+    </div>
+    <div class="antiguidade-postos" data-postos></div>
+  </section>
+</template>
+
+<!-- molde (aba Antiguidade): um posto = bloquinho branco, com os militares na ordem;
+     o título recolhe/expande a lista (chevron à direita, como o título da unidade no modo Militares) -->
+<template id="tpl-antiguidade-posto">
+  <div class="grupo-caixa antiguidade-posto">
+    <button type="button" class="antiguidade-posto-titulo" aria-expanded="true">
+      <span class="rotulo-secao" data-posto-titulo></span>
+      <svg class="icone antiguidade-posto-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+    </button>
+    <div class="antiguidade-posto-lista" data-posto-lista></div>
+  </div>
+</template>
+
+<!-- molde (aba Antiguidade): um militar (graduação + nome, como no PDF); as setas aparecem
+     quando a linha é escolhida -->
+<template id="tpl-antiguidade-linha">
+  <div class="antiguidade-linha" role="button" tabindex="0">
+    <span class="antiguidade-numero" data-numero></span>
+    <span class="antiguidade-grad" data-grad></span>
+    <span class="antiguidade-nome" data-guerra></span>
+    <span class="antiguidade-pelotao" data-pelotao></span>
+    <span class="antiguidade-setas">
+      <button type="button" class="botao botao--icone botao--pequeno" data-mover="cima" aria-label="Subir uma posição" data-dica="Subir">
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-mover-cima.svg#icone-mover-cima"/></svg>
+      </button>
+      <button type="button" class="botao botao--icone botao--pequeno" data-mover="baixo" aria-label="Descer uma posição" data-dica="Descer">
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-mover-baixo.svg#icone-mover-baixo"/></svg>
+      </button>
+    </span>
+  </div>
+</template>
+
+<template id="tpl-antiguidade-vazio">
+  <div class="usuario-vazio">Nenhum militar ativo na sua companhia.</div>
 </template>
 
 <!-- molde: abas de seção do painel da ficha (Dados / Carreira) -->

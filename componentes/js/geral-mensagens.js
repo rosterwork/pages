@@ -1041,7 +1041,8 @@
         ferias: 'Férias',
         licenca: 'Licença',
         dispensa: 'Dispensa',
-        unidade: 'Ajustes da unidade'
+        unidade: 'Ajustes da unidade',
+        antiguidade: 'Antiguidade'
       }
     },
 

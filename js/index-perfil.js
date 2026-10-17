@@ -104,7 +104,8 @@
     preencher('perfil-ver-posto', institucionais.grau_nome);
     preencher('perfil-ver-nome-guerra', institucionais.nome_de_guerra);
     preencher('perfil-ver-setor', institucionais.tipo);
-    preencher('perfil-ver-colocacao', institucionais.classificacao);
+    /* "0000" = sem colocação: aparece "-" */
+    preencher('perfil-ver-colocacao', parseInt(String(institucionais.classificacao || '').replace(/\D/g, ''), 10) ? institucionais.classificacao : '');
     /* o rótulo da colocação diz o curso (CFO, CHOE ou CFP), pelo quadro */
     var rotuloColocacao = C ? C.nomeColocacao(institucionais.quadro) : 'Colocação';
     preencher('perfil-ver-colocacao-rotulo', rotuloColocacao);
