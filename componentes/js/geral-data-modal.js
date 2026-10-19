@@ -1,7 +1,11 @@
 /* ============================================================
    MODAL DE DATA — pergunta "a partir de qual data recalcular"
-   RosterWork.pedirData({ mensagem, textoConfirmar, aoConfirmar(iso), aoCancelar })
-   Campo de data (máscara + calendário). Padrão = amanhã; mínimo =
+   RosterWork.pedirData({ mensagem, textoConfirmar, confirmarPerigo, sugerida,
+                          aoConfirmar(iso), aoCancelar })
+   Campo de data (máscara + calendário). Padrão = o próximo dia de
+   serviço (o dia vira às 08h; o plantão em curso não muda).
+   sugerida: a data vem escrita numa frase e o campo só aparece em
+   "Escolher outra data" (configuração sem data própria). Mínimo =
    hoje − 7 dias (permite passado recente e futuro, sem teto). Fecha
    só pelos botões. O #veu-data é fixo no shell; aqui só preenchemos
    e mostramos/escondemos (o geral-modal cuida do Tab preso/foco).
@@ -11,7 +15,7 @@
 
   window.RosterWork = window.RosterWork || {};
 
-  var veu, mensagemEl, input, campoEl, erroEl, btnConfirmar, btnCancelar;
+  var veu, mensagemEl, sugestaoEl, sugestaoDataEl, btnOutra, input, campoEl, erroEl, btnConfirmar, btnCancelar;
   var aoConfirmar = null;
   var aoCancelar = null;
   var focoAnterior = null;
@@ -21,6 +25,9 @@
     veu = document.getElementById('veu-data');
     if (!veu) return false;
     mensagemEl = veu.querySelector('.data-modal-mensagem');
+    sugestaoEl = veu.querySelector('.data-modal-sugestao');
+    sugestaoDataEl = veu.querySelector('.data-modal-sugestao-data');
+    btnOutra = veu.querySelector('.data-modal-outra');
     input = veu.querySelector('[data-recalculo-data]');
     campoEl = input.closest('.campo');
     erroEl = veu.querySelector('.campo-erro-texto');
@@ -28,6 +35,7 @@
     btnCancelar = veu.querySelector('.data-modal-cancelar');
     if (RosterWork.campos) RosterWork.campos.ligarData(input);
     btnConfirmar.addEventListener('click', confirmar);
+    btnOutra.addEventListener('click', mostrarCampo);
     btnCancelar.addEventListener('click', function () {
       var fn = aoCancelar;
       fechar();
@@ -59,6 +67,22 @@
   /* meia-noite de hoje */
   function meiaNoiteHoje() { var d = new Date(); d.setHours(0, 0, 0, 0); return d; }
 
+  /* o dia de serviço em curso: ele vira às 08h, então antes disso ainda é o dia anterior */
+  function diaDeServico() {
+    var d = meiaNoiteHoje();
+    if (new Date().getHours() < 8) d.setDate(d.getDate() - 1);
+    return d;
+  }
+
+  /* "Escolher outra data": troca a frase pelo campo, já com a data sugerida */
+  function mostrarCampo() {
+    sugestaoEl.classList.add('oculto');
+    btnOutra.classList.add('oculto');
+    campoEl.classList.remove('oculto');
+    input.focus();
+    if (input.select) input.select();
+  }
+
   function confirmar() {
     var D = RosterWork.data;
     var M = RosterWork.mensagens;
@@ -78,20 +102,29 @@
   function pedirData(opcoes) {
     if (!preparar()) return;
     opcoes = opcoes || {};
-    mensagemEl.textContent = opcoes.mensagem || RosterWork.mensagens.geral.recalcularDesde;
+    var sugerida = !!opcoes.sugerida;
+    /* no modo sugerido a frase da data já explica; sem mensagem própria, o espaço some */
+    var mensagem = opcoes.mensagem || (sugerida ? '' : RosterWork.mensagens.geral.recalcularDesde);
+    mensagemEl.textContent = mensagem;
+    mensagemEl.classList.toggle('oculto', !mensagem);
     btnConfirmar.textContent = opcoes.textoConfirmar || 'Confirmar';
     /* botão de confirmação em vermelho para ações destrutivas (ex.: excluir modelo) */
     btnConfirmar.classList.toggle('botao--perigo', !!opcoes.confirmarPerigo);
     btnConfirmar.classList.toggle('botao--primario', !opcoes.confirmarPerigo);
     limparErro();
-    /* padrão: amanhã */
-    var amanha = meiaNoiteHoje();
-    amanha.setDate(amanha.getDate() + 1);
-    input.value = RosterWork.data.paraBR(amanha);
+    /* padrão: o próximo dia de serviço (amanhã, virando às 08h) */
+    var dia = diaDeServico();
+    dia.setDate(dia.getDate() + 1);
+    input.value = RosterWork.data.paraBR(dia);
+    sugestaoDataEl.textContent = input.value;
+    sugestaoEl.classList.toggle('oculto', !sugerida);
+    btnOutra.classList.toggle('oculto', !sugerida);
+    campoEl.classList.toggle('oculto', sugerida);
     aoConfirmar = opcoes.aoConfirmar || null;
     aoCancelar = opcoes.aoCancelar || null;
     focoAnterior = document.activeElement;
     veu.classList.add('modal-veu--aberto');
+    if (sugerida) { btnConfirmar.focus(); return; }
     input.focus();
     if (input.select) input.select();
   }

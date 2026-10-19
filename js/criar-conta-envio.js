@@ -69,7 +69,8 @@
         var d = V.parseData(v);
         if (!d) return T().dataInvalida;
         var nasc = nascimento();
-        return (nasc && d <= nasc) ? T().inclusaoAposNascimento : null;
+        if (nasc && d <= nasc) return T().inclusaoAposNascimento;
+        return C.grauValeNaInclusao(RW.criarConta.nomeDoPosto(), d) ? null : T().inclusaoSd3;
       }
     },
     /* quem a ficha trouxe sem colocação pode deixar em branco (o banco ignora o vazio) */
@@ -139,16 +140,19 @@
       if (!selecao(id)) erro(el(id), ESCOLHAS[id]());
     });
 
-    /* a inclusão no quadro vai até o dia da primeira promoção */
-    var inclusao = V.parseData(valor('cc-inclusao'));
-    var primeira = el('cc-promocoes').querySelector('.campo-entrada');
-    var dataPrimeira = primeira ? V.parseData(primeira.value) : null;
-    if (inclusao && dataPrimeira && dataPrimeira < inclusao) erro(el('cc-inclusao'), T().inclusaoDepoisPromocao);
+    /* as datas de promoção (as gravadas e as preenchidas): válidas, em ordem e nenhuma antes da inclusão */
+    if (!C.conferirPromocoes(camposDeData(), V.parseData(valor('cc-inclusao')), el('cc-inclusao'))) ok = false;
 
     /* a ciência dos termos é obrigatória */
     if (el('cc-termos').getAttribute('aria-checked') !== 'true') erro(el('cc-termos'), RW.mensagens.termos.obrigatorio);
 
     return ok;
+  }
+
+  /* os campos de data de promoção, do posto mais baixo ao mais alto (os de praça primeiro) */
+  function camposDeData() {
+    var praca = Array.prototype.slice.call(document.querySelectorAll('#cc-promocoes-praca .campo-entrada'));
+    return praca.concat(Array.prototype.slice.call(document.querySelectorAll('#cc-promocoes .campo-entrada')));
   }
 
   /* deixa a colocação no mesmo formato guardado (4 dígitos, zeros à esquerda),
@@ -161,8 +165,11 @@
 
   /* os campos que a pessoa pode ter corrigido. O banco compara com o valor atual
      e só manda para aprovação o que mudou; e-mail, celular e senha vão fora
-     daqui, valem na hora. */
+     daqui, valem na hora. As datas de promoção vão só as que estavam vazias e
+     ela preencheu (promocao_<grau_id>); as gravadas ficam travadas. */
   function montarCorrecoes() {
+    var datas = camposDeData().filter(function (input) { return !input.disabled && input.value.trim(); })
+      .map(function (input) { return { campo: 'promocao_' + input.getAttribute('data-grau'), valor: V.paraISO(input.value.trim()) }; });
     return [
       { campo: 'nome_completo', valor: valor('cc-nome-completo') },
       { campo: 'rg', valor: V.soDigitos(valor('cc-rg')) },
@@ -172,7 +179,7 @@
       { campo: 'tipo', valor: selecao('cc-setor') },
       { campo: 'data_de_inclusao', valor: V.paraISO(valor('cc-inclusao')) },
       { campo: 'classificacao_cfo_cfp', valor: colocacaoNormalizada() }
-    ];
+    ].concat(datas);
   }
 
   function irParaLogin() { window.location.href = 'login.html'; }

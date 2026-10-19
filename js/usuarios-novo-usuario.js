@@ -37,23 +37,15 @@
     popularOpcoes(raiz.querySelector('#nu-tipo-menu'), itens);
   }
 
-  /* ao escolher o Tipo: popula o Posto com os graus daquele tipo,
-     habilita Posto e Colocação e ajusta o rótulo da Colocação pelo quadro */
+  var tipoEscolhido = null;   /* o Tipo escolhido */
+
+  /* ao escolher o Tipo: habilita a Colocação, ajusta o rótulo dela pelo quadro e recomeça o
+     Posto (que só libera com a data de inclusão) */
   function aoEscolherTipo(tipo, raiz) {
+    tipoEscolhido = tipo;
     var doTipo = graus.filter(function (g) { return g.tipo === tipo; });
-
-    popularOpcoes(raiz.querySelector('#nu-posto-menu'), doTipo.map(function (g) {
-      return { rotulo: g.grau_nome, valor: String(g.grau_id) };
-    }));
-
     var posto = raiz.querySelector('#nu-posto');
-    if (posto) {
-      posto.disabled = false;
-      posto.removeAttribute('data-valor');
-      var postoTexto = posto.querySelector('.campo-selecao-texto');
-      postoTexto.textContent = 'Selecione';
-      postoTexto.classList.add('campo-selecao-texto--vazio');
-    }
+    if (posto) posto.removeAttribute('data-valor');
 
     var quadro = doTipo.length ? doTipo[0].quadro : null;
     var colocacao = raiz.querySelector('#nu-colocacao');
@@ -65,51 +57,86 @@
     }
     if (colocacaoRotulo) colocacaoRotulo.textContent = nomeColocacao(quadro);
 
-    /* trocar o tipo reseta o posto: as promoções somem até escolher um novo posto */
+    /* trocar o tipo reseta o posto: as datas somem até escolher um novo posto */
     limparPromocoes(raiz);
+    atualizarPostos(raiz);
   }
 
-  /* ---------- promoções (datas por grau da carreira) ---------- */
-
-  /* ao escolher o Posto: um campo de data por grau do mesmo quadro, do posto
-     escolhido para baixo, do mais antigo até o posto */
-  function atualizarPromocoes(grauId, raiz) {
-    var secao = raiz.querySelector('#nu-promocoes-secao');
-    var container = raiz.querySelector('#nu-promocoes');
-    if (!container) return;
-    container.textContent = '';
-
-    var grauSel = null;
-    for (var i = 0; i < graus.length; i++) {
-      if (String(graus[i].grau_id) === String(grauId)) { grauSel = graus[i]; break; }
+  /* o Posto segue o Tipo e a data de inclusão: sem a inclusão ele fica travado (é ela que diz se
+     existe o Sd 3ª Classe); a lista traz só os postos que valem para a inclusão, e o escolhido que
+     deixou de valer volta a "Selecione" */
+  function atualizarPostos(raiz) {
+    var posto = raiz.querySelector('#nu-posto');
+    if (!posto || !tipoEscolhido) return;
+    var texto = posto.querySelector('.campo-selecao-texto');
+    var campoInclusao = raiz.querySelector('#nu-inclusao');
+    var inclusao = RosterWork.validacoes.parseData(campoInclusao ? campoInclusao.value : '');
+    if (!inclusao) {
+      posto.disabled = true;
+      if (!postoEscolhido) {
+        texto.textContent = RosterWork.mensagens.cadastro.postoAntesInclusao;
+        texto.classList.add('campo-selecao-texto--vazio');
+      }
+      atualizarPromocoes(raiz);
+      return;
     }
-    if (!grauSel) { limparPromocoes(raiz); return; }
+    var validos = graus.filter(function (g) { return g.tipo === tipoEscolhido && C.grauValeNaInclusao(g.grau_nome, inclusao); });
+    popularOpcoes(raiz.querySelector('#nu-posto-menu'), validos.map(function (g) {
+      return { rotulo: g.grau_nome, valor: String(g.grau_id) };
+    }));
+    posto.disabled = false;
+    var vale = validos.some(function (g) { return String(g.grau_id) === String(postoEscolhido); });
+    if (postoEscolhido && !vale) {
+      postoEscolhido = null;
+      posto.removeAttribute('data-valor');
+    }
+    if (!postoEscolhido) {
+      texto.textContent = 'Selecione';
+      texto.classList.add('campo-selecao-texto--vazio');
+    }
+    atualizarPromocoes(raiz);
+  }
 
-    var promos = graus.filter(function (g) {
-      return g.quadro === grauSel.quadro && g.grau_antiguidade >= grauSel.grau_antiguidade;
-    });
-    promos.sort(function (a, b) { return b.grau_antiguidade - a.grau_antiguidade; });
+  /* ---------- datas de promoção (um campo por posto depois do primeiro, todos opcionais) ---------- */
 
-    var tpl = document.getElementById('tpl-nu-promocao');
-    if (!tpl) return;
-    promos.forEach(function (g) {
-      var campo = tpl.content.cloneNode(true).firstElementChild;
+  var postoEscolhido = null;   /* grau_id do Posto escolhido */
+  var datasDigitadas = {};     /* o que foi digitado em cada posto (por grau_id): volta se o campo some e reaparece */
+
+  /* os campos seguem o Posto e a data de inclusão (que diz o primeiro posto da praça): as Datas de
+     promoções da carreira e, do oficial, a parte recolhida das datas como praça */
+  function atualizarPromocoes(raiz) {
+    var inclusao = raiz.querySelector('#nu-inclusao');
+    var postos = C.postosComData(graus, postoEscolhido, RosterWork.validacoes.parseData(inclusao ? inclusao.value : ''), []);
+    montarDatas(raiz.querySelector('#nu-promocoes-secao'), raiz.querySelector('#nu-promocoes'), postos.carreira);
+    montarDatas(raiz.querySelector('#nu-promocoes-praca-secao'), raiz.querySelector('#nu-promocoes-praca'), postos.praca);
+  }
+
+  /* refaz os campos de uma seção só quando a lista de postos muda (digitar a inclusão não refaz à toa) */
+  function montarDatas(secao, lista, postos) {
+    if (!secao || !lista) return;
+    var chave = postos.map(function (g) { return g.grau_id; }).join(',');
+    if (lista.getAttribute('data-postos') === chave) return;
+    lista.setAttribute('data-postos', chave);
+    lista.textContent = '';
+    postos.forEach(function (g) {
+      var campo = RosterWork.tpl('tpl-nu-promocao');
+      if (!campo) return;
       campo.querySelector('.campo-rotulo').textContent = g.grau_abreviacao;
       var input = campo.querySelector('.campo-entrada');
       input.setAttribute('data-grau', g.grau_id);
+      input.value = datasDigitadas[g.grau_id] || '';
       ligarMascara(input, mascararData);
       ligarCalendario(input);
-      container.appendChild(campo);
+      input.addEventListener('input', function () { datasDigitadas[g.grau_id] = input.value; });
+      lista.appendChild(campo);
     });
-
-    if (secao) secao.classList.remove('oculto');
+    secao.classList.toggle('oculto', !postos.length);
   }
 
   function limparPromocoes(raiz) {
-    var secao = raiz.querySelector('#nu-promocoes-secao');
-    var container = raiz.querySelector('#nu-promocoes');
-    if (container) container.textContent = '';
-    if (secao) secao.classList.add('oculto');
+    postoEscolhido = null;
+    datasDigitadas = {};
+    atualizarPromocoes(raiz);
   }
 
   function carregarGraus(raiz) {
@@ -184,6 +211,9 @@
     if (corpo) corpo.textContent = '';
     if (rodape) { rodape.textContent = ''; rodape.classList.add('oculto'); }
     sujo = false;
+    tipoEscolhido = null;
+    postoEscolhido = null;
+    datasDigitadas = {};
     montarFormulario(corpo);
     montarRodape();
   }
@@ -209,10 +239,14 @@
     ligarCalendario(raiz.querySelector('#nu-inclusao'));
     ligarNome(raiz.querySelector('#nu-nome-completo'));
 
+    /* a inclusão libera o Posto e diz o primeiro posto da praça: o Posto e as datas acompanham */
+    var inclusao = raiz.querySelector('#nu-inclusao');
+    if (inclusao) inclusao.addEventListener('input', function () { atualizarPostos(raiz); });
+
     ligarSelecao(raiz.querySelector('#nu-cnh'));
     ligarSelecao(raiz.querySelector('#nu-setor'));
     ligarSelecao(raiz.querySelector('#nu-tipo'), function (valor) { aoEscolherTipo(valor, raiz); });
-    ligarSelecao(raiz.querySelector('#nu-posto'), function (valor) { atualizarPromocoes(valor, raiz); });
+    ligarSelecao(raiz.querySelector('#nu-posto'), function (valor) { postoEscolhido = valor; atualizarPromocoes(raiz); });
 
     var lotacao = prepararLotacao(raiz);
     if (lotacao) lotacao.montarArvore();

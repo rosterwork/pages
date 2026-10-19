@@ -131,12 +131,14 @@
   }
 
   /* mudar o ritmo regenera o serviço (QUANDO) de todos e recalcula a distribuição:
-     pede a data (modal padrão, começa amanhã) e manda como p_recalcular_desde */
+     mostra a data já sugerida (modal padrão, amanhã; "Escolher outra data" abre o campo) e manda
+     como p_recalcular_desde */
   function salvar() {
     if (!sujo()) return;
     RosterWork.pedirData({
       mensagem: RosterWork.mensagens.postos.impactoDistribuicao,
       textoConfirmar: RosterWork.mensagens.botoes.salvar,
+      sugerida: true,
       aoConfirmar: function (iso) {
         if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal();   // recalcula a escala: círculo + tela travada
         RosterWork.apiFetch('/rest/v1/rpc/ajustes_ritmo_salvar', {

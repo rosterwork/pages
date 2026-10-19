@@ -1,10 +1,10 @@
 /* ============================================================
-   USUÁRIOS — seção "Acesso ao sistema" da ficha (modo Ver, só admin)
+   USUÁRIOS — bloco "Acesso ao sistema" da ficha (aba Dados, só admin)
    O administrador gera o link e manda a mensagem pronta no privado
    do militar:
    · sem conta: link de cadastro (a pessoa confere a ficha e cria a conta);
    · com conta: link de nova senha (quem esqueceu a senha pede pessoalmente).
-   Um link por vez: enquanto ele vale, a seção mostra só a mensagem,
+   Um link por vez: enquanto ele vale, o bloco mostra só a mensagem,
    "Copiar mensagem" e "Cancelar link". O estado vem de acesso_estado.
    Gerar e cancelar gravam no Histórico, mas não abrem o modal de
    resumo (exceção da REGRAS §8.2: o que importa aqui é a mensagem).
@@ -15,7 +15,7 @@
 
   window.RosterWork = window.RosterWork || {};
 
-  var ctx = null;   // { pessoa, alvo }: a seção da ficha aberta
+  var ctx = null;   // { pessoa, alvo }: o bloco da ficha aberta
 
   function avisarErro(mensagem) {
     if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: mensagem });
@@ -61,23 +61,24 @@
     }).catch(falhou);
   }
 
-  /* desenha a seção: sem link, o que fazer + o botão de gerar;
+  /* desenha o bloco: sem link, o que fazer + o botão de gerar;
      com link, até quando vale + a mensagem, Copiar mensagem e Cancelar link */
   function desenhar(atual, estado) {
     if (ctx !== atual) return;
     var T = RosterWork.mensagens.usuarios;
-    atual.alvo.textContent = '';
-    var box = RosterWork.tpl('tpl-usuarios-acesso-estado');
-    if (!box) return;
-    var texto = box.querySelector('[data-acesso-estado]');
-    atual.alvo.appendChild(box);
+    /* o bloco guarda o título (o 1º filho); o resto é redesenhado */
+    while (atual.alvo.children.length > 1) atual.alvo.removeChild(atual.alvo.lastChild);
+    var texto = RosterWork.tpl('tpl-usuarios-acesso-estado');
+    if (!texto) return;
+    atual.alvo.appendChild(texto);
 
     if (!estado.link) {
       texto.textContent = estado.tem_conta ? T.acessoComConta : T.acessoSemConta;
-      var botao = RosterWork.tpl(estado.tem_conta ? 'tpl-usuarios-link-senha-botao' : 'tpl-usuarios-link-cadastro-botao');
-      if (!botao) return;
+      var acoes = RosterWork.tpl(estado.tem_conta ? 'tpl-usuarios-link-senha-botao' : 'tpl-usuarios-link-cadastro-botao');
+      if (!acoes) return;
+      var botao = acoes.querySelector('button');
       botao.addEventListener('click', function () { gerar(atual, botao); });
-      atual.alvo.appendChild(botao);
+      atual.alvo.appendChild(acoes);
       return;
     }
 
@@ -163,16 +164,16 @@
     });
   }
 
-  /* ---------- seção ---------- */
+  /* ---------- bloco ---------- */
 
   function montar(corpo, ficha, pessoa) {
     ctx = null;
-    if (!RosterWork.sessao.ehAdmin() || !ficha || !pessoa || pessoa.situacao === 'Inativo') return;
-    var secao = RosterWork.painel.criarSecaoColapsavel('Acesso ao sistema', { aberta: true });
-    if (!secao) return;
-    var atual = { pessoa: pessoa, alvo: secao.querySelector('.painel-secao-corpo') };
+    if (!RosterWork.sessao.ehAdmin() || !ficha || !pessoa || pessoa.situacao === 'Inativo' || !RosterWork.usuariosPainelLeitura) return;
+    var bloco = RosterWork.usuariosPainelLeitura.bloco('Acesso ao sistema');
+    if (!bloco) return;
+    var atual = { pessoa: pessoa, alvo: bloco };
     ctx = atual;
-    corpo.appendChild(secao);
+    corpo.appendChild(bloco);
     carregar(atual);
   }
 

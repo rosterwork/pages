@@ -222,8 +222,8 @@
   align-self: flex-start;
 }
 
-/* ---------- Solicitar (formulário no painel lateral, aberto pelo botão do cabeçalho) ---------- */
-/* os dois cartões (Solicitante · Solicitado) empilham na largura do painel */
+/* ---------- Solicitar / Registrar (formulário no painel lateral, aberto pelos botões da barra) ---------- */
+/* os cartões (E-protocolo · Solicitante · Solicitado) empilham na largura do painel */
 .troca-solicitar-form {
   display: flex;
   flex-direction: column;
@@ -233,6 +233,13 @@
 .trocas-cartao {
   display: flex;
   flex-direction: column;
+  gap: 12px;
+}
+
+/* E-protocolo: Parte e Ano lado a lado (o Ano só precisa de 4 números) */
+.trocas-protocolo {
+  display: grid;
+  grid-template-columns: 1fr 96px;
   gap: 12px;
 }
 
@@ -250,13 +257,14 @@
   margin-top: 8px;
 }
 
-/* aviso de saldo (durações diferentes) — reusa o visual do .impacto-aviso */
-.trocas-saldo {
+/* avisos do formulário (saldo de horas; solicitado sem conta) — reusam o visual do .impacto-aviso */
+.trocas-aviso {
   margin-top: 4px;
 }
 
-/* item de parceiro indisponível: nome + motivo à direita */
-.troca-parceiro-ocupado {
+/* item de militar ocupado (inativo) ou sem conta (escolhível): nome + motivo à direita */
+.troca-parceiro-ocupado,
+.troca-parceiro-sem-conta {
   justify-content: space-between;
   gap: 8px;
 }

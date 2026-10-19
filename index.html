@@ -40,6 +40,7 @@
   <link rel="stylesheet" href="componentes/css/geral-layout-lateral.css" />
   <link rel="stylesheet" href="componentes/css/geral-rodape.css" />
   <link rel="stylesheet" href="componentes/css/geral-painel.css" />
+  <link rel="stylesheet" href="componentes/css/geral-alteracoes.css" />
   <link rel="stylesheet" href="componentes/css/geral-pedido.css" />
   <link rel="stylesheet" href="componentes/css/geral-impacto.css" />
   <link rel="stylesheet" href="componentes/css/geral-decisao.css" />
@@ -302,7 +303,8 @@
     </div>
   </div>
 
-  <!-- MODAL DE DATA: "a partir de qual data recalcular a escala" (recálculo direcionado ao alterar modelo/regra/viatura/instalação/ritmo) -->
+  <!-- MODAL DE DATA: "a partir de qual data recalcular a escala" (recálculo direcionado ao alterar modelo/regra/viatura/instalação/ritmo).
+       Modo sugerido (configuração): a data vem escrita e o campo só aparece em "Escolher outra data" -->
   <div class="modal-veu" id="veu-data">
     <div class="modal modal--data" role="dialog" aria-modal="true" aria-labelledby="data-modal-titulo">
       <div class="modal-cabecalho">
@@ -310,6 +312,8 @@
       </div>
       <div class="modal-corpo">
         <span class="data-modal-mensagem"></span>
+        <p class="modal-texto data-modal-sugestao oculto">A escala será refeita a partir de <span class="data-modal-sugestao-data"></span>.</p>
+        <button type="button" class="botao botao--texto data-modal-outra oculto">Escolher outra data</button>
         <label class="campo">
           <span class="campo-rotulo">A partir de</span>
           <input class="campo-entrada" type="text" name="recalculo-data" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" data-recalculo-data autocomplete="off" />
@@ -410,6 +414,7 @@
   <script src="componentes/js/geral-aviso.js"></script>
   <script src="componentes/js/geral-data-modal.js"></script>
   <script src="componentes/js/geral-resumo.js"></script>
+  <script src="componentes/js/geral-alteracoes.js"></script>
   <script src="componentes/js/geral-guarda-saida.js"></script>
   <script src="componentes/js/geral-api.js"></script>
   <script src="componentes/js/geral-recalculo.js"></script>
@@ -499,37 +504,42 @@
     <div class="dropdown-divisor"></div>
   </template>
 
-  <!-- MOLDE: botões de recolher/expandir os títulos da árvore (o geral-arvore-unidades injeta em toda página com árvore) -->
-  <template id="tpl-titulos-niveis">
-    <div class="titulos-niveis">
-      <button type="button" class="botao-discreto titulos-niveis-mais" aria-label="Expandir a estrutura de títulos" data-dica="Mais títulos" disabled>
-        <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-estrutura-mais.svg#icone-estrutura-mais"/></svg>
-      </button>
-      <button type="button" class="botao-discreto titulos-niveis-menos" aria-label="Recolher a estrutura de títulos" data-dica="Menos títulos" disabled>
-        <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-estrutura-menos.svg#icone-estrutura-menos"/></svg>
-      </button>
-    </div>
-  </template>
-
   <template id="carregando-pontos">
     <span class="carregando-pontos" aria-label="Carregando">
       <span>.</span><span>.</span><span>.</span>
     </span>
   </template>
 
-  <!-- MOLDES: árvore de unidades (componente compartilhado — usuários, folgas, férias) -->
-  <template id="tpl-arvore-unidade">
-    <div class="arvore-grupo">
-      <div class="arvore-linha">
-        <svg class="icone arvore-unidade-icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-unidade.svg#icone-unidade"/></svg>
-        <span class="arvore-nome"></span>
-        <span class="arvore-detalhe"></span>
-        <span class="espacador-flex"></span>
+  <!-- MOLDES: árvore de unidades (componente compartilhado geral-arvore-unidades, no desenho do PDF da escala) -->
+  <!-- a trilha no alto: as siglas das unidades de cima (um item por unidade) -->
+  <template id="tpl-arvore-trilha">
+    <div class="arvore-trilha"></div>
+  </template>
+
+  <template id="tpl-arvore-trilha-item">
+    <span class="arvore-trilha-item">
+      <svg class="icone arvore-trilha-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
+      <span class="arvore-trilha-nome"></span>
+    </span>
+  </template>
+
+  <!-- a unidade marcada: bloco cinza com o título dentro (nome completo, sigla · cidade e a contagem) e o conteúdo da página -->
+  <template id="tpl-arvore-bloco">
+    <section class="arvore-bloco">
+      <div class="arvore-bloco-titulo">
+        <span class="arvore-bloco-textos">
+          <span class="arvore-bloco-nome"></span>
+          <span class="arvore-bloco-detalhe"><span data-sigla></span> · <span data-cidade></span></span>
+        </span>
         <span class="arvore-contagem"></span>
       </div>
       <div class="arvore-conteudo"></div>
-      <div class="arvore-filhos"></div>
-    </div>
+    </section>
+  </template>
+
+  <!-- o bloquinho branco onde a página põe a lista da unidade (dentro do bloco) -->
+  <template id="tpl-arvore-bloquinho">
+    <div class="bloquinho"></div>
   </template>
 
   <!-- a árvore é um container: carrega com o círculo, não com os pontinhos (MANUAL §8) -->
@@ -956,25 +966,25 @@
   <!-- rodapé do painel do dia (Distribuição › Ver): as alterações manuais do dia, retrátil e começando fechado;
        só aparece quando há alguma (o JS preenche a contagem e a lista) -->
   <template id="tpl-escala-alteracoes">
-    <div class="escala-alteracoes">
-      <div class="escala-alteracoes-cabecalho">
-        <span class="escala-alteracoes-titulo">Alterações manuais <span class="escala-alteracoes-qtd"></span></span>
-        <button type="button" class="botao-discreto escala-alteracoes-toggle" aria-label="Mostrar ou ocultar as alterações manuais" aria-expanded="false">
-          <svg class="icone escala-alteracoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+    <div class="alteracoes">
+      <div class="alteracoes-cabecalho">
+        <span class="alteracoes-titulo">Alterações manuais <span class="alteracoes-qtd"></span></span>
+        <button type="button" class="botao-discreto alteracoes-toggle" aria-label="Mostrar ou ocultar as alterações manuais" aria-expanded="false">
+          <svg class="icone alteracoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
         </button>
       </div>
-      <div class="escala-alteracoes-lista oculto"></div>
+      <div class="alteracoes-lista oculto"></div>
     </div>
   </template>
 
   <!-- uma alteração manual: quem e quando + o que mudou (o resumo vem do componente geral-resumo) -->
-  <template id="tpl-escala-alteracao">
-    <div class="escala-alteracao">
-      <div class="escala-alteracao-cabecalho">
-        <span class="escala-alteracao-autor"></span>
-        <span class="escala-alteracao-quando"></span>
+  <template id="tpl-alteracao">
+    <div class="alteracao">
+      <div class="alteracao-cabecalho">
+        <span class="alteracao-autor"></span>
+        <span class="alteracao-quando"></span>
       </div>
-      <div class="escala-alteracao-resumo"></div>
+      <div class="alteracao-resumo"></div>
     </div>
   </template>
 
@@ -1472,9 +1482,9 @@
           <span class="campo-erro-texto"></span>
         </div>
         <label class="campo">
-          <span class="campo-rotulo">Inclusão no quadro</span>
+          <span class="campo-rotulo">Data de inclusão</span>
           <input class="campo-entrada" id="nu-inclusao" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" />
-          <span class="campo-ajuda">Data de entrada no quadro atual do militar (praças ou oficiais), não a data de entrada na corporação.</span>
+          <span class="campo-ajuda">A data do primeiro posto na corporação.</span>
           <span class="campo-erro-texto"></span>
         </label>
         <div class="campo">
@@ -1538,6 +1548,15 @@
       </button>
       <div class="painel-secao-corpo" id="nu-promocoes"></div>
     </div>
+
+    <!-- só para oficial: as datas de quando era praça, recolhidas (não entram na antiguidade) -->
+    <div class="painel-secao oculto" id="nu-promocoes-praca-secao">
+      <button type="button" class="painel-secao-cabecalho" aria-expanded="false">
+        <span class="rotulo-secao">Datas como praça (só registro)</span>
+        <svg class="icone painel-secao-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="painel-secao-corpo" id="nu-promocoes-praca"></div>
+    </div>
   </template>
 
   <!-- molde: ações do rodapé do painel Novo usuário -->
@@ -1551,7 +1570,7 @@
     <button type="button" class="dropdown-item"></button>
   </template>
 
-  <!-- molde: campo de data de promoção (clonado por posto na carreira) -->
+  <!-- molde: campo de data de promoção (clonado por posto: Novo usuário e ficha › Carreira) -->
   <template id="tpl-nu-promocao">
     <label class="campo">
       <span class="campo-rotulo"></span>
@@ -1901,15 +1920,26 @@
     </div>
   </template>
 
-  <!-- linha de Observação do dia (troca/folga/admin): ícone + texto + ✕ (o ✕ só nas do admin, no Editar) -->
+  <!-- grupo das Observações do dia (Administração, Trocas, Folgas, De outra unidade): o título com o ícone
+       e a lista numerada (o número vem do CSS) -->
+  <template id="tpl-escala-observacao-grupo">
+    <div class="escala-observacao-grupo">
+      <div class="escala-observacao-grupo-titulo">
+        <svg class="icone escala-observacao-icone"><use href="icones/icone-anotacao.svg#icone-anotacao" /></svg>
+        <span class="escala-observacao-grupo-nome"></span>
+      </div>
+      <ol class="escala-observacao-lista"></ol>
+    </div>
+  </template>
+
+  <!-- item de Observação do dia: texto + ✕ (o ✕ só nas do admin, no Editar) -->
   <template id="tpl-escala-observacao">
-    <div class="escala-observacao">
-      <svg class="icone escala-observacao-icone"><use href="icones/icone-anotacao.svg#icone-anotacao" /></svg>
+    <li class="escala-observacao">
       <span class="escala-observacao-texto"></span>
       <button type="button" class="escala-observacao-remover" aria-label="Excluir observação">
         <svg class="icone"><use href="icones/icone-fechar.svg#icone-fechar" /></svg>
       </button>
-    </div>
+    </li>
   </template>
 
   <!-- adicionar observação (admin, no Dia): botão que abre o campo com limite de caracteres; a nota entra

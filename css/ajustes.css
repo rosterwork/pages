@@ -23,6 +23,17 @@
 .ajuste-cartao--clicavel { cursor: pointer; transition: background-color 0.15s ease; }
 .ajuste-cartao--clicavel:hover { background-color: var(--fundo-suave); }
 
+/* aba Escala: a lista da árvore com as margens das outras telas (8px em cima, 16px nas laterais e embaixo) */
+[data-aba-painel="escala"] > .geral-corpo-lateral-rolagem {
+  padding: 8px 16px 16px;
+}
+
+/* o ritmo dentro do bloco da unidade (árvore): é o bloquinho branco, na largura do bloco */
+.arvore-conteudo .ajuste-cartao {
+  max-width: none;
+  border-radius: var(--raio-pequeno);
+}
+
 .ajuste-cartao-textos {
   display: flex;
   flex-direction: column;

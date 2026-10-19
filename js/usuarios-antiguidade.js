@@ -2,6 +2,8 @@
    USUÁRIOS — aba Antiguidade (só administrador)
    Lê a companhia do admin (antiguidade_listar) e mostra cada posto
    com os militares na ordem; o número é a posição dentro do posto.
+   Usa as peças da árvore de unidades: a trilha (as unidades de cima),
+   o bloco da companhia e um bloquinho por posto.
    Clicar no militar marca a linha e mostra as setas (as teclas ↑ e ↓
    também movem); quem mudou de lugar ganha a canaleta. O título de
    cada posto recolhe e expande a lista (fica assim enquanto a página
@@ -83,11 +85,16 @@
       atualizarRodape();
       return;
     }
-    var bloco = RW.tpl('tpl-antiguidade-unidade');
-    bloco.querySelector('[data-unidade-nome]').textContent = dados.unidade.nome_completo || dados.unidade.nome || '';
-    bloco.querySelector('[data-unidade-sigla]').textContent = dados.unidade.nome || '';
-    bloco.querySelector('[data-unidade-cidade]').textContent = dados.unidade.cidade || '';
-    var area = bloco.querySelector('[data-postos]');
+    var trilha = RW.tpl('tpl-arvore-trilha');
+    if (trilha && RW.arvoreUnidades) RW.arvoreUnidades.trilha(trilha, dados.unidade.id);
+    if (trilha) lista.appendChild(trilha);
+    var bloco = RW.tpl('tpl-arvore-bloco');
+    bloco.querySelector('.arvore-bloco-nome').textContent = dados.unidade.nome_completo || dados.unidade.nome || '';
+    bloco.querySelector('[data-sigla]').textContent = dados.unidade.nome || '';
+    bloco.querySelector('[data-cidade]').textContent = dados.unidade.cidade || '';
+    var total = grupos.reduce(function (n, g) { return n + (g.militares || []).length; }, 0);
+    bloco.querySelector('.arvore-contagem').textContent = total === 1 ? '1 militar' : total + ' militares';
+    var area = bloco.querySelector('.arvore-conteudo');
     grupos.forEach(function (g) {
       var caixa = RW.tpl('tpl-antiguidade-posto');
       caixa.setAttribute('data-nivel', g.nivel);
@@ -133,16 +140,16 @@
 
   /* ---------- recolher e expandir um posto (como o título da unidade no modo Militares) ---------- */
   function recolher(caixa, recolhido) {
-    caixa.classList.toggle('antiguidade-posto--recolhido', recolhido);
+    caixa.classList.toggle('bloquinho--recolhido', recolhido);
     caixa.querySelector('.antiguidade-posto-titulo').setAttribute('aria-expanded', recolhido ? 'false' : 'true');
     recolhidos[caixa.getAttribute('data-nivel')] = recolhido;
   }
 
   /* ---------- escolher e mover ---------- */
   function escolher(cpf) {
-    if (selecionado && pessoas[selecionado]) pessoas[selecionado].linha.classList.remove('antiguidade-linha--selecionada');
+    if (selecionado && pessoas[selecionado]) pessoas[selecionado].linha.classList.remove('linha-militar--selecionada');
     selecionado = cpf;
-    if (cpf && pessoas[cpf]) pessoas[cpf].linha.classList.add('antiguidade-linha--selecionada');
+    if (cpf && pessoas[cpf]) pessoas[cpf].linha.classList.add('linha-militar--selecionada');
   }
 
   /* troca com o vizinho; no DOM quem sai do lugar é o vizinho, então a linha escolhida não perde o foco */
@@ -175,6 +182,7 @@
     if (!grupos.length || !RW.pedirData) return;
     RW.pedirData({
       textoConfirmar: RW.mensagens.botoes.salvar,
+      sugerida: true,
       aoConfirmar: function (iso) { enviar(grupos, iso); }
     });
   }
@@ -207,7 +215,7 @@
       p.atual.forEach(function (cpf) {
         var m = pessoas[cpf].dados;
         var casa = !!termoBusca && RW.busca.casaMilitar(termoBusca, { nome: m.nome, nome_completo: m.nome_completo, cpf: cpf });
-        pessoas[cpf].linha.classList.toggle('antiguidade-linha--marcada', casa);
+        pessoas[cpf].linha.classList.toggle('linha-militar--marcada', casa);
         if (casa && !primeira) primeira = pessoas[cpf].linha;
       });
     });
@@ -222,7 +230,7 @@
         var titulo = e.target.closest('.antiguidade-posto-titulo');
         if (titulo) {
           var caixa = titulo.closest('.antiguidade-posto');
-          recolher(caixa, !caixa.classList.contains('antiguidade-posto--recolhido'));
+          recolher(caixa, !caixa.classList.contains('bloquinho--recolhido'));
           return;
         }
         var linha = e.target.closest('.antiguidade-linha');

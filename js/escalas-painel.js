@@ -363,9 +363,11 @@
 
   /* a lista de avisos do topo vem pronta do banco (dados.problemas, a mesma fonte do gráfico da grade),
      no Ver e no Editar (no Editar, calculada sobre o rascunho ainda não salvo): uma linha por tipo de
-     problema, vermelho primeiro e amarelo depois. O detalhe amarelo expansível (quem + vaga + motivo)
-     segue montado pelos dados dos postos. mostrarAcao revela o "CORRIJA PARA SALVAR" */
-  function montarAvisoProblemas(problemas, postos, faltamModelos, mostrarAcao) {
+     problema, vermelho primeiro e amarelo depois; no vermelho, da causa para a consequência: o modelo,
+     quem ficou sem função, os postos e o militar em situação errada. faltamModelos e modelosComErro
+     trazem a composição de cada trecho. O detalhe amarelo expansível (quem + vaga + motivo) segue
+     montado pelos dados dos postos. mostrarAcao revela o "CORRIJA PARA SALVAR" */
+  function montarAvisoProblemas(problemas, postos, faltamModelos, modelosComErro, mostrarAcao) {
     var lista = problemas || [];
     if (!lista.length) return null;
     var cat = (RosterWork.mensagens && RosterWork.mensagens.escala && RosterWork.mensagens.escala.erros) || {};
@@ -423,10 +425,32 @@
       });
     }
 
-    /* vermelho: a escala não funciona */
-    if (tem('parcial_com_erro')) linha(cat.distribuicaoTravada);
+    /* modelo com erro ou faltando: uma linha por trecho, com a composição do trecho */
+    function linhasModelo(codigo, def, trechos) {
+      if (!def || !tem(codigo)) return;
+      var lista = trechos || [];
+      if (!lista.length) linha(def);
+      lista.forEach(function (f) {
+        linha(def, def.texto + ': ' + textoComposicao(f.unidades) + ', ' + formatarHora(f.hi) + ' às ' + formatarHora(f.hf));
+      });
+    }
+
+    /* vermelho: a escala não funciona. Primeiro a causa no modelo */
+    linhasModelo('parcial_com_erro', cat.modeloComErro, modelosComErro);
+    linhasModelo('sem_modelo', cat.faltaModelo || { texto: 'Falta modelo de distribuição', icone: 'icone-alerta', nivel: 'erro' }, faltamModelos);
+    /* depois quem ficou sem função */
+    var semFuncao = {};
+    ['sem_funcao', 'sem_modelo', 'parcial_com_erro', 'resolva_escala'].forEach(function (c) {
+      (por[c] || []).forEach(function (p) { semFuncao[p.cpf] = true; });
+    });
+    var qSemFuncao = Object.keys(semFuncao).length;
+    if (qSemFuncao && cat.semFuncao) linha(cat.semFuncao, qSemFuncao === 1 ? cat.semFuncao.texto : preencher(cat.semFuncao.textoPlural, { n: qSemFuncao }));
+    /* os postos */
     if (tem('resolva_escala')) linha(cat.resolvaEscala);
     if (tem('sem_condutor')) linha(cat.semCondutor);
+    linhasEfetivoProblemas('abaixo_minimo', cat.abaixoMinimo);
+    linhasEfetivoProblemas('acima_maximo', cat.acimaMaximo);
+    /* o militar em situação errada */
     if (tem('fora_disponibilidade')) linha(cat.foraDisponibilidade);
     if (tem('sem_servico')) linha(cat.semServico);
     if (tem('sobreposicao')) linha(cat.sobreposicao);
@@ -434,23 +458,7 @@
       function (p) { return { militar: militar(p), posto: p.posto || '' }; });
     porOcorrencia('regra_proibida', cat.regraProibida, function (p) { return p.cpf + '|' + p.funcao; },
       function (p) { return { militar: militar(p), funcao: p.funcao || '' }; });
-    linhasEfetivoProblemas('abaixo_minimo', cat.abaixoMinimo);
-    linhasEfetivoProblemas('acima_maximo', cat.acimaMaximo);
     linhasDuasUnidades(cat.duasUnidades);   // o mesmo militar em duas unidades ao mesmo tempo não pode
-    var semFuncao = {};
-    ['sem_funcao', 'sem_modelo', 'parcial_com_erro', 'resolva_escala'].forEach(function (c) {
-      (por[c] || []).forEach(function (p) { semFuncao[p.cpf] = true; });
-    });
-    var qSemFuncao = Object.keys(semFuncao).length;
-    if (qSemFuncao && cat.semFuncao) linha(cat.semFuncao, qSemFuncao === 1 ? cat.semFuncao.texto : preencher(cat.semFuncao.textoPlural, { n: qSemFuncao }));
-    if (tem('sem_modelo')) {
-      var defFM = cat.faltaModelo || { texto: 'Falta modelo de distribuição', icone: 'icone-alerta', nivel: 'erro' };
-      var faltam = faltamModelos || [];
-      if (!faltam.length) linha(defFM);
-      faltam.forEach(function (f) {   // uma linha por trecho sem modelo, com a composição do trecho
-        linha(defFM, defFM.texto + ': ' + textoComposicao(f.unidades) + ', ' + formatarHora(f.hi) + ' às ' + formatarHora(f.hf));
-      });
-    }
 
     /* amarelo: funciona, com erro aceitável */
     if (tem('chefe_condutor')) linha(cat.chefeCondutor);
@@ -678,12 +686,6 @@
     return el;
   }
 
-  /* rodapé retrátil: abre/fecha pelo chevron; sempre começa fechado (ao reabrir o painel, volta retraído) */
-  function aplicarRetratil(toggle, conteudo, aberto) {
-    toggle.setAttribute('aria-expanded', aberto ? 'true' : 'false');
-    conteudo.classList.toggle('oculto', !aberto);
-  }
-
   /* rodapé "Alterações manuais (N)": quem mexeu no dia, quando e o quê (ajustes do Dia, pontuais,
      folgas, observações e entradas/saídas do ciclo que começam no dia). Sem alterações, o rodapé não
      aparece. aindaVale() diz se o rodapé ainda é dele quando a leitura chega (o Dia pode ter mudado) */
@@ -695,28 +697,8 @@
       /* outro dia/unidade/seção foi aberto enquanto carregava, ou o Dia ganhou alteração: não mexe no rodapé */
       if (!pCtx || pCtx.unidadeId !== unidadeId || pCtx.iso !== iso || pCtx.secao !== 'distribuicao') return;
       if (aindaVale && !aindaVale()) return;
-      if (!lista || !lista.length) return;
-      var bloco = RosterWork.tpl('tpl-escala-alteracoes');
+      var bloco = RosterWork.alteracoes ? RosterWork.alteracoes.montar('tpl-escala-alteracoes', lista) : null;
       if (!bloco) return;
-      bloco.querySelector('.escala-alteracoes-qtd').textContent = '(' + lista.length + ')';
-      var conteudo = bloco.querySelector('.escala-alteracoes-lista');
-      lista.forEach(function (alt) {
-        var item = RosterWork.tpl('tpl-escala-alteracao');
-        if (!item) return;
-        item.querySelector('.escala-alteracao-autor').textContent = alt.autor || '';
-        var quando = item.querySelector('.escala-alteracao-quando');
-        if (RosterWork.resumo && RosterWork.resumo.formatarQuando) quando.textContent = RosterWork.resumo.formatarQuando(alt.criado_em);
-        if (RosterWork.resumo && RosterWork.resumo.desenhar) {
-          var no = RosterWork.resumo.desenhar(alt.resumo, { mostrarQuando: false });
-          if (no) item.querySelector('.escala-alteracao-resumo').appendChild(no);
-        }
-        conteudo.appendChild(item);
-      });
-      var toggle = bloco.querySelector('.escala-alteracoes-toggle');
-      aplicarRetratil(toggle, conteudo, false);
-      toggle.addEventListener('click', function () {
-        aplicarRetratil(toggle, conteudo, toggle.getAttribute('aria-expanded') !== 'true');
-      });
       rodape.textContent = '';
       rodape.appendChild(bloco);
       rodape.classList.remove('oculto');
@@ -893,9 +875,21 @@
 
   /* ícone por classe de observação (troca/folga/outra unidade automáticas; admin manual) */
   var ICONE_OBS = { troca: 'icone-origem-troca', folga: 'icone-folgas', outra_unidade: 'icone-reforco', admin: 'icone-anotacao' };
+  /* a ordem fixa dos grupos das Observações */
+  var ORDEM_OBS = ['admin', 'troca', 'folga', 'outra_unidade'];
 
-  /* seção "Observações" do dia: trocas + folgas + quem veio de outra unidade (automáticas) + notas do admin (manuais),
-     nesta ordem (vem pronta do ler_distribuicao_dia). Para o admin no Dia: botão para adicionar (com limite)
+  /* separa as observações nos grupos, na ordem fixa; dentro do grupo fica a ordem que veio (o banco já ordena
+     por antiguidade; as notas novas do Editar entram no fim de Administração). Usado no painel e no PDF.
+     Devolve [{ classe, titulo, itens }] só com os grupos que têm itens */
+  function agruparObservacoes(obs) {
+    var titulos = RosterWork.mensagens.escala.observacoesGrupos;
+    return ORDEM_OBS.map(function (classe) {
+      return { classe: classe, titulo: titulos[classe], itens: (obs || []).filter(function (o) { return o.classe === classe; }) };
+    }).filter(function (g) { return g.itens.length; });
+  }
+
+  /* seção "Observações" do dia em grupos: Administração (notas manuais do admin), Trocas, Folgas e De outra unidade
+     (automáticas), cada um com a sua lista numerada. Para o admin no Dia: botão para adicionar (com limite)
      e ✕ para excluir SÓ as do admin; as duas coisas vão para o rascunho e gravam no Salvar do dia.
      Sem editar: só leitura. opcoes = { editar, aoAdicionar(texto), aoRemover(observacao) } */
   function montarObservacoes(obs, opcoes) {
@@ -910,7 +904,6 @@
     function linhaObs(o) {
       var linha = RosterWork.tpl('tpl-escala-observacao');
       if (!linha) return null;
-      definirIcone(linha.querySelector('.escala-observacao-icone'), ICONE_OBS[o.classe] || 'icone-anotacao');
       linha.querySelector('.escala-observacao-texto').textContent = m.observacaoTexto(o);
       var rem = linha.querySelector('.escala-observacao-remover');
       /* ✕ só nas do admin, no Editar; trocas e folgas nunca podem ser apagadas */
@@ -922,7 +915,15 @@
       return linha;
     }
 
-    obs.forEach(function (o) { var l = linhaObs(o); if (l) caixa.appendChild(l); });
+    agruparObservacoes(obs).forEach(function (g) {
+      var grupo = RosterWork.tpl('tpl-escala-observacao-grupo');
+      if (!grupo) return;
+      definirIcone(grupo.querySelector('.escala-observacao-icone'), ICONE_OBS[g.classe]);
+      grupo.querySelector('.escala-observacao-grupo-nome').textContent = g.titulo;
+      var lista = grupo.querySelector('.escala-observacao-lista');
+      g.itens.forEach(function (o) { var l = linhaObs(o); if (l) lista.appendChild(l); });
+      caixa.appendChild(grupo);
+    });
 
     if (editar) {
       var add = RosterWork.tpl('tpl-escala-observacao-adicionar');
@@ -982,7 +983,8 @@
       marcarProblemas: marcarProblemas,
       montarBusca: montarBusca,
       montarManutencao: montarManutencao,
-      observacoes: montarObservacoes
+      observacoes: montarObservacoes,
+      agruparObservacoes: agruparObservacoes
     }
   };
 })();

@@ -1,12 +1,12 @@
 /* ============================================================
    ESCALAS — modo Dia (árvore de unidades)
-   Títulos em árvore (geral-arvore-unidades, igual a Usuários) e,
-   dentro de cada unidade marcada, os militares DISTRIBUÍDOS POR
-   POSTO E FUNÇÃO no dia — o mesmo desenho do painel (caixa por
+   A árvore de unidades (geral-arvore-unidades, igual a Usuários) e,
+   dentro do bloco de cada unidade marcada, os militares DISTRIBUÍDOS
+   POR POSTO E FUNÇÃO no dia — o mesmo desenho do painel (caixa por
    posto + função à esquerda + militares/horários), reusando as
    peças do escalas-painel (pecas.grupo/linha) e o CSS existente.
    Clicar no bloco da unidade abre o painel do dia (Ver/Editar) —
-   o bloco carrega [data-abre-dia] + data-iso/unidade, e o
+   o bloco ganha [data-abre-dia] + data-iso/unidade, e o
    escalas-painel casa por eles. Dados: RPC escala_dia_arvore
    (uma linha por unidade: ritmo, efetivo e o JSON do painel).
    ============================================================ */
@@ -48,10 +48,11 @@
     if (no) { no.textContent = texto; container.appendChild(no); }
   }
 
-  /* conteúdo de uma unidade marcada: bloco clicável com a distribuição do dia */
+  /* conteúdo de uma unidade marcada: a distribuição do dia no bloco da árvore, que fica clicável */
   function renderConteudo(container, unidade, itens) {
-    var bloco = RosterWork.tpl('tpl-escala-dia-unidade');
+    var bloco = container.closest('.arvore-bloco');
     if (!bloco) return;
+    bloco.setAttribute('data-abre-dia', '');
     bloco.dataset.iso = isoAtual;
     bloco.dataset.unidadeId = unidade.unidade_id;
     bloco.dataset.unidadeNome = nomePainel(unidade);
@@ -72,7 +73,7 @@
           var linha = pecas.linha(m);
           if (linha) caixaErro.appendChild(linha);
         });
-        bloco.appendChild(caixaErro);
+        container.appendChild(caixaErro);
         vazio = false;
       }
     }
@@ -89,16 +90,15 @@
         var grupo = pecas.grupo(funcao);
         if (grupo) caixa.appendChild(grupo);
       });
-      bloco.appendChild(caixa);
+      container.appendChild(caixa);
       vazio = false;
     });
 
     /* Observações do dia (trocas): depois dos cards de posto */
     var caixaObs = pecas && pecas.observacoes ? pecas.observacoes(dados.observacoes || []) : null;
-    if (caixaObs) { bloco.appendChild(caixaObs); vazio = false; }
+    if (caixaObs) { container.appendChild(caixaObs); vazio = false; }
 
-    if (vazio) mostrarEstado(bloco, 'Sem distribuição neste dia.');
-    container.appendChild(bloco);
+    if (vazio) mostrarEstado(container, 'Sem distribuição neste dia.');
   }
 
   /* selo do título: o ritmo (leitura; muda em Ajustes) + o efetivo distribuído */

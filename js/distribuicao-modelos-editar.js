@@ -923,16 +923,24 @@
   }
   /* confirma o descarte de edição não salva antes de abandonar (trocar de modelo, de unidade, de página, etc.);
      sem alteração, segue direto. Ao confirmar, marca limpo para o aoSair não re-perguntar.
-     aoCancelar (opcional) roda quando a pessoa continua editando. */
-  function confirmarSaida(aoSair, aoCancelar) {
+     aoCancelar (opcional) roda quando a pessoa continua editando. levarRascunho: o modelo novo acompanha a
+     saída (troca para um período editável), então só as alterações são descartadas. */
+  function confirmarSaida(aoSair, aoCancelar, levarRascunho) {
+    var rascunho = ehRascunho();
     /* rascunho também conta como "alteração pendente" (o modelo novo some se sair sem Salvar) */
-    if (!sujo && !ehRascunho()) { aoSair(); return; }
+    if (!sujo && (!rascunho || levarRascunho)) { aoSair(); return; }
     RosterWork.confirmar({
       tipo: 'aviso',
       mensagem: RosterWork.mensagens.distribuicao.descartar,
       textoConfirmar: RosterWork.mensagens.botoes.descartar,
       textoCancelar: RosterWork.mensagens.botoes.continuarEditando,
-      aoConfirmar: function () { sujo = false; aoSair(); },
+      aoConfirmar: function () {
+        sujo = false;
+        if (!rascunho || levarRascunho) { aoSair(); return; }
+        /* o modelo novo descartado é excluído na hora e sai da lista */
+        descartar();
+        RosterWork.distribuicaoModelos.descartarRascunho().then(aoSair);
+      },
       aoCancelar: aoCancelar
     });
   }
@@ -940,11 +948,10 @@
   function descartar() { sujo = false; pilhaUndo = []; pilhaRedo = []; mostrarHistorico(false); }
 
   function cancelar() {
-    /* cancelar um modelo RASCUNHO (recém-criado, nunca salvo) o exclui; um modelo já salvo só recarrega */
+    /* cancelar um modelo RASCUNHO (recém-criado, nunca salvo) o exclui (no confirmarSaida); um modelo já salvo só recarrega */
     var souRascunho = ehRascunho();
     confirmarSaida(function () {
-      if (souRascunho) RosterWork.distribuicaoModelos.excluirRascunho().then(function () { RosterWork.distribuicaoModelos.recarregarLista(); });
-      else RosterWork.distribuicaoModelos.recarregar();
+      if (!souRascunho) RosterWork.distribuicaoModelos.recarregar();
     });
   }
 

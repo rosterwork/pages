@@ -144,9 +144,14 @@
     fechar();
   }
 
-  function definirTitulos(titulo, subtitulo) {
+  /* troca os títulos depois de aberto; extra = o complemento ao lado do título (vazio some) */
+  function definirTitulos(titulo, subtitulo, extra) {
     if (typeof titulo === 'string') elTitulo.textContent = titulo;
     if (typeof subtitulo === 'string') elSubtitulo.textContent = subtitulo;
+    if (typeof extra === 'string' && elTituloExtra) {
+      elTituloExtra.textContent = extra;
+      elTituloExtra.classList.toggle('oculto', !extra);
+    }
   }
 
   /* ----- peças reutilizáveis (clonam os moldes do shell) ----- */

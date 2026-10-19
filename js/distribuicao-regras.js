@@ -269,8 +269,8 @@
     if (bCancelar) bCancelar.addEventListener('click', function () { confirmarSaida(recarregarRegras); });
   }
 
-  /* grava tudo de uma vez: pede a data de recálculo (modal padrão, começa amanhã), depois
-     grava e o banco recalcula só as unidades das regras a partir da data escolhida */
+  /* grava tudo de uma vez: mostra a data de recálculo já sugerida (modal padrão, amanhã; "Escolher
+     outra data" abre o campo), depois grava e o banco recalcula só as unidades das regras a partir dela */
   function salvar() {
     var adds = regras.filter(function (r) { return r.id == null; })
       .map(function (r) { return { usuario_id: r.usuario_id, unidade_id: r.unidade_id, tipo: r.tipo, funcao: r.funcao }; });
@@ -278,6 +278,7 @@
     RW.pedirData({
       mensagem: RW.mensagens.distribuicao.salvarImpacto,
       textoConfirmar: RW.mensagens.botoes.salvar,
+      sugerida: true,
       aoConfirmar: function (iso) {
         if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal();   // recalcula a escala: círculo + tela travada
         RW.distribuicaoRegrasDados.salvar(adds, removidos, iso).then(function (r) {

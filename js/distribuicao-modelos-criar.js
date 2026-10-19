@@ -98,6 +98,7 @@
   function excluir(modeloId) {
     RosterWork.pedirData({
       confirmarPerigo: true,
+      sugerida: true,
       mensagem: RosterWork.mensagens.distribuicao.excluirModelo,
       textoConfirmar: RosterWork.mensagens.botoes.excluirModelo,
       aoConfirmar: function (iso) {

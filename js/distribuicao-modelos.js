@@ -28,6 +28,17 @@
     limparRascunho();   /* limpa a marca ANTES do async, para não tentar excluir duas vezes */
     return RosterWork.distribuicaoDados.excluirModelo(id).catch(function () {});
   }
+  /* descarte confirmado do modelo novo: exclui e já tira da lista e do corpo (sem reler a lista) */
+  function descartarRascunho() {
+    var id = rascunhoId();
+    if (!id) return Promise.resolve();
+    modelos = modelos.filter(function (m) { return m.id_grupo_completo !== id; });
+    selId = null;
+    emEdicaoId = null;
+    renderPainel();
+    limparCorpo();
+    return excluirRascunho();
+  }
 
   function unidadeDoGrupo(id) {
     for (var i = 0; i < grupo.unidades.length; i++) {
@@ -190,7 +201,11 @@
       pintarCelulas(linha, unidadeNivel(d));
       if (m.id_grupo_completo === selId) linha.classList.add('lista-item--ativo');
       var area = linha.querySelector('.distribuicao-modelo-area');
-      if (area) area.addEventListener('click', function () { pedirSaida(function () { selecionar(m.id_grupo_completo); }); });
+      /* o modelo novo descartado na confirmação some da lista: não há o que abrir */
+      if (area) area.addEventListener('click', function () {
+        var eraRascunho = m.id_grupo_completo === rascunhoId();
+        pedirSaida(function () { if (!eraRascunho) selecionar(m.id_grupo_completo); });
+      });
       ligarAcoes(linha, m);
       lista.appendChild(linha);
     });
@@ -210,7 +225,11 @@
       return;
     }
     editar.addEventListener('click', function () { pedirSaida(function () { editarModelo(m.id_grupo_completo); }); });
-    excluir.addEventListener('click', function () { pedirSaida(function () { if (RosterWork.distribuicaoCriar) RosterWork.distribuicaoCriar.excluir(m.id_grupo_completo); }); });
+    /* lixeira do modelo novo: o descarte confirmado já o exclui */
+    excluir.addEventListener('click', function () {
+      var eraRascunho = m.id_grupo_completo === rascunhoId();
+      pedirSaida(function () { if (!eraRascunho && RosterWork.distribuicaoCriar) RosterWork.distribuicaoCriar.excluir(m.id_grupo_completo); });
+    });
   }
 
   /* botão da linha inativo (ou de volta a ativo, com motivo null): a dica do span de fora diz o motivo */
@@ -300,8 +319,9 @@
     return itens;
   }
 
-  /* admin: o lápis da linha abre o modo de edição */
+  /* admin: o lápis da linha abre o modo de edição; num período encerrado (só leitura) abre para ver */
   function editarModelo(id) {
+    if (RosterWork.distribuicaoPeriodos.somenteLeitura()) { selecionar(id); return; }
     selId = id;
     marcarAtivo();
     carregandoEm(document.getElementById('distribuicao-corpo'));
@@ -315,10 +335,14 @@
     }).catch(erroCorpo);
   }
 
-  /* recarrega a lista e reabre o modelo atual em modo VER (descarta a edição em curso) */
+  /* recarrega a lista e reabre o modelo atual em modo VER (descarta a edição em curso); o modelo novo
+     (ainda não salvo) reabre em edição, para acompanhar a troca de período */
   function recarregar() {
     var id = selId;
-    return carregar(grupo).then(function () { if (id) selecionar(id); });
+    return carregar(grupo).then(function () {
+      if (!id) return;
+      if (id === rascunhoId()) editarModelo(id); else selecionar(id);
+    });
   }
 
   /* numera os postos (1,2,3…) e as vagas (P.V) na ordem de exibição; mapeia id_slot */
@@ -679,6 +703,7 @@
     marcarRascunho: marcarRascunho,
     limparRascunho: limparRascunho,
     excluirRascunho: excluirRascunho,
+    descartarRascunho: descartarRascunho,
     contextoId: function () { return grupo ? grupo.cia.unidade_id : null; }
   };
 })();

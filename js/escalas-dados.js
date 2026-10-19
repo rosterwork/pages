@@ -114,15 +114,17 @@
       .then(function (r) { return r.ok ? r.json() : null; })
       .catch(function () { return null; });
   }
-  function cicloAcao(rpc, unidadeId, cpf, iso, horario) {
-    var corpo = { p_unidade_id: Number(unidadeId), p_cpf: String(cpf), p_data: iso };
-    if (horario != null) corpo.p_horario = horario;
+  function cicloAcao(rpc, unidadeId, cpf, iso, extras) {
+    var corpo = Object.assign({ p_unidade_id: Number(unidadeId), p_cpf: String(cpf), p_data: iso }, extras || {});
     return RosterWork.apiFetch('/rest/v1/rpc/' + rpc, { metodo: 'POST', corpo: corpo })
       .then(function (r) { return r.ok ? r.json() : { _falha: 'servidor' }; })
       .catch(function () { return { _falha: 'conexao' }; });
   }
-  /* só leitura: o que quebra (trocas/folgas) se o militar sair na data — para o aviso do modal */
-  function cicloRetirarAnalisar(unidadeId, cpf, iso) { return cicloAcao('escala_ciclo_retirar_analisar', unidadeId, cpf, iso); }
+  /* só leitura: o que quebra (trocas/folgas/extras) se o militar sair do ciclo na data, só no período
+     do dia (o da próxima entrada fica) — para o aviso do modal */
+  function cicloRetirarAnalisar(unidadeId, cpf, iso) {
+    return cicloAcao('escala_ciclo_retirar_analisar', unidadeId, cpf, iso, { p_so_periodo: true });
+  }
   /* Salvar em lote das mudanças do ciclo acumuladas na tela (recalcula uma vez) */
   function cicloSalvarLote(unidadeId, iso, mudancas) {
     return RosterWork.apiFetch('/rest/v1/rpc/escala_ciclo_salvar_lote', { metodo: 'POST', corpo: { p_unidade_id: Number(unidadeId), p_data: iso, p_mudancas: mudancas || [] } })

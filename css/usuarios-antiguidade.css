@@ -1,208 +1,42 @@
 /* ============================================================
    USUÁRIOS — aba Antiguidade
-   Desenho do PDF da escala (escalas-impressao-pdf.js), com as medidas
-   convertidas de pt para px (1pt = 1,33px) e arredondadas para a
-   escala do site: a companhia é um bloco cinza com o título dentro, e
-   cada posto é um bloquinho branco com fio cinza (sem sombra), 8px
-   entre eles. Uma coluna só, na largura do PDF (515pt = 688px). Os
-   títulos ficam presos no alto ao rolar, empilhados como na árvore de
-   unidades: a unidade em cima e o posto logo abaixo (o pai na frente).
-   O título do posto recolhe e expande a lista, como o título da
-   unidade no modo Militares. Pesos do PDF (400 e 600); o número da
-   antiguidade fica em negrito.
+   A trilha, o bloco da companhia, os bloquinhos dos postos e a linha
+   do militar são as peças da árvore de unidades
+   (geral-arvore-unidades.css), no desenho do PDF da escala. Aqui só
+   o que é da aba: a busca, o pelotão, as setas e a canaleta de
+   alterado.
    ============================================================ */
-
-.antiguidade-lista {
-  --antiguidade-titulo-altura: 58px;   /* altura do título da unidade: o do posto gruda logo abaixo */
-}
 
 .antiguidade-busca-lupa {
   flex-shrink: 0;
   color: var(--texto-suave);
 }
 
-/* ---------- a companhia = bloco cinza (PDF: 5pt nas laterais e na base) ---------- */
-.antiguidade-unidade {
-  display: flex;
-  flex-direction: column;
-  max-width: 688px;
-  padding: 0 8px 8px;
-  border-radius: var(--raio-medio);
-  background-color: var(--fundo-pagina);
-}
-
-/* o título fica no alto do bloco, sem respiro acima: já nasce onde gruda.
-   PDF: 7pt em cima, texto a 8pt da borda (bloco 8px + 4px), nome 12pt = 16px,
-   sigla · cidade 9pt = 12px, 8pt até o 1º posto */
-.antiguidade-unidade-titulo {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-height: var(--antiguidade-titulo-altura);
-  padding: 8px 4px 12px;
-  background-color: var(--fundo-pagina);
-}
-
-.antiguidade-unidade-nome {
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1.3;
-  color: var(--texto-forte);
-}
-
-.antiguidade-unidade-detalhe {
-  font-size: 12px;
-  color: var(--texto-suave);
-}
-
-/* os postos, 8px entre eles (PDF: 5pt) */
-.antiguidade-postos {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* ---------- o posto = bloquinho branco com fio cinza, como no PDF ---------- */
-/* o respiro de cima e o vão passam para o próprio título, que os leva junto quando gruda */
-.antiguidade-unidade .grupo-caixa {
-  gap: 0;
-  padding-top: 0;
-  border-radius: var(--raio-pequeno);
-  background-color: var(--fundo-superficie);
-}
-
-/* o título do posto: gruda logo abaixo do título da unidade e recolhe/expande a lista */
-.antiguidade-posto-titulo {
-  position: sticky;
-  top: var(--antiguidade-titulo-altura);
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 8px 0 4px;
-  background-color: var(--fundo-superficie);
-  font: inherit;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-/* PDF: o título do posto vai em caixa alta, peso 600 e na cor forte */
-.antiguidade-posto-titulo .rotulo-secao {
-  font-weight: 600;
-  color: var(--texto-forte);
-}
-
-.antiguidade-posto-seta {
-  flex-shrink: 0;
-  color: var(--texto-suave);
-}
-
-.antiguidade-posto-lista {
-  display: flex;
-  flex-direction: column;
-}
-
-/* recolhido: some a lista, a seta aponta para a direita e o respiro fica igual em cima e embaixo */
-.antiguidade-posto--recolhido .antiguidade-posto-lista { display: none; }
-.antiguidade-posto--recolhido .antiguidade-posto-seta { transform: rotate(-90deg); }
-.antiguidade-posto--recolhido .antiguidade-posto-titulo { padding-bottom: 0; }
-
 /* durante a busca: revela os postos recolhidos (para mostrar quem casa), como no modo Militares */
-.antiguidade-lista--buscando .antiguidade-posto-lista { display: flex; }
-.antiguidade-lista--buscando .antiguidade-posto--recolhido .antiguidade-posto-titulo { padding-bottom: 4px; }
-
-/* ---------- um militar: como a linha do PDF (2pt em cima e embaixo) ---------- */
-.antiguidade-linha {
-  display: flex;
-  align-items: baseline;   /* graduação e nome pela base das letras, como no PDF */
-  gap: 4px;
-  padding: 2px 4px;
-  border-radius: var(--raio-pequeno);
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-}
-
-.antiguidade-linha:hover {
-  background-color: var(--fundo-suave);
-}
-
-.antiguidade-linha--selecionada,
-.antiguidade-linha--selecionada:hover {
-  background-color: var(--fundo-medio);
-}
+.antiguidade-lista--buscando .bloquinho-lista { display: flex; }
+.antiguidade-lista--buscando .bloquinho--recolhido .bloquinho-titulo { padding-bottom: 4px; }
 
 /* mexida e ainda não salva: a canaleta lateral da linha alterada (MANUAL §7) */
 .antiguidade-linha--alterada {
   box-shadow: inset 2px 0 0 var(--borda-forte);
 }
 
-/* o número fica no lugar da coluna "função" do PDF (8,5pt, cinza), em negrito */
-.antiguidade-numero {
-  flex-shrink: 0;
-  min-width: 24px;
-  font-size: 11px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--texto-suave);
-}
-
-.antiguidade-grad {
-  flex-shrink: 0;
-  font-size: 11px;
-  color: var(--texto-suave);
-}
-
-/* PDF: nome de guerra 10pt = 13px, peso 600, cor forte */
-.antiguidade-nome {
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--texto-forte);
-}
-
-/* o pelotão fica no lugar da coluna "horário" do PDF (9pt = 12px, cor de texto) */
+/* o pelotão fica na coluna de dado da linha */
 .antiguidade-pelotao {
-  flex-shrink: 0;
   min-width: 48px;
   text-align: right;
-  font-size: 12px;
-  color: var(--texto);
 }
 
 /* as setas só aparecem na linha escolhida, sem aumentar a altura dela */
 .antiguidade-setas {
   display: none;
-  flex-shrink: 0;
   align-self: center;
   gap: 2px;
-  margin: -4px 0;   /* os botões (26px) sobram para cima e para baixo sem empurrar a linha (23px) */
+  margin: -4px 0;   /* os botões (26px) sobram para cima e para baixo sem empurrar a linha (24px) */
 }
 
-.antiguidade-linha--selecionada .antiguidade-setas {
+.linha-militar--selecionada .antiguidade-setas {
   display: flex;
-}
-
-/* realce da busca: inverte a linha, como no modo Dia */
-.antiguidade-linha--marcada,
-.antiguidade-linha--marcada:hover {
-  background-color: var(--fundo-contraste);
-}
-
-.antiguidade-linha--marcada .antiguidade-numero,
-.antiguidade-linha--marcada .antiguidade-grad,
-.antiguidade-linha--marcada .antiguidade-nome,
-.antiguidade-linha--marcada .antiguidade-pelotao,
-.antiguidade-linha--marcada .botao--icone {
-  color: var(--texto-invertido);
 }
 
 /* rodapé: o texto das mudanças (como em Extrajornada › Voluntários) */

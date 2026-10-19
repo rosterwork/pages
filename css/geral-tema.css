@@ -155,7 +155,6 @@
      Tokens do componente ícone
      ------------------------------------------------------- */
   --icone-traco: 1.5;   /* espessura do traço de todos os ícones — menos o logo */
-  --arvore-traco: 1;    /* traço fino do ícone de unidade da árvore (independente dos ícones) */
 }
 
 /* -------------------------------------------------------

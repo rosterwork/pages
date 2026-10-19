@@ -1,21 +1,21 @@
 /* ============================================================
-   USUÁRIOS — edição dos dados da ficha (modo Editar)
-   Só admin. Monta os campos editáveis de UMA seção por vez:
-   'pessoais' (aba Dados) ou 'institucionais' (aba Carreira),
-   reaproveitando máscaras/dropdowns/calendário/validações do Novo
-   usuário (RosterWork.campos / RosterWork.validacoes). CPF é só
-   leitura; grau e lotação não entram aqui (mudam por evento —
-   promoção / transferência). Salva pela RPC atualizar_dados_militar
-   (o payload sempre vai completo: o que não está na aba vem da
-   própria ficha). Orquestração no usuarios-painel.js.
+   USUÁRIOS — correção dos dados da ficha (sub-telas, só admin)
+   Corrigir dados pessoais (aba Dados) e Corrigir dados
+   institucionais (aba Carreira): um bloco com os campos de UMA
+   seção, reaproveitando máscaras, dropdowns, calendário e
+   validações do Novo usuário (RosterWork.campos / validacoes). CPF
+   só leitura; grau e lotação não entram aqui (mudam por evento:
+   promoção e transferência). O campo mudado ganha a canaleta e o
+   rodapé conta as alterações. Salva pela RPC atualizar_dados_militar
+   (o payload vai completo: o que não está na sub-tela vem da ficha).
+   Orquestração no usuarios-painel.js.
    ============================================================ */
 (function () {
   'use strict';
 
   window.RosterWork = window.RosterWork || {};
 
-  var ctx = null;     // { ficha, pessoa, aoSalvar, aoVoltar, btnSalvar, secao }
-  var sujo = false;   // há alteração não salva?
+  var ctx = null;   // { ficha, pessoa, secao, raiz, ctl, campos: [{ c, el, inicial }] }
 
   var PESSOAIS = [
     { k: 'nome_completo', rotulo: 'Nome completo', tipo: 'nome', max: 100, ph: 'Ex.: João Carlos Andrade' },
@@ -27,7 +27,7 @@
     { k: 'email', rotulo: 'E-mail', rotuloSemConta: 'E-mail (opcional)', tipo: 'texto', max: 80, ph: 'nome@exemplo.com' }
   ];
   var INST = [
-    { k: 'data_de_inclusao', rotulo: 'Inclusão no quadro', tipo: 'data', max: 10, num: true, ph: 'dd/mm/aaaa', cal: true, ajuda: true },
+    { k: 'data_de_inclusao', rotulo: 'Data de inclusão', tipo: 'data', max: 10, num: true, ph: 'dd/mm/aaaa', cal: true, ajuda: true },
     { k: 'nome_de_guerra', rotulo: 'Nome de guerra', tipo: 'texto', max: 40, ph: 'Ex.: Andrade' },
     { k: 'tipo', rotulo: 'Setor', tipo: 'selecao', opcoes: ['Operacional', 'Administrativo', 'Aluno'] },
     { k: 'classificacao', rotulo: 'Colocação', rotuloPorQuadro: true, tipo: 'numero', max: 4, num: true, ph: 'Ex.: 14' }
@@ -42,11 +42,6 @@
     return n.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
   }
 
-  function marcarSujo() {
-    sujo = true;
-    if (ctx && ctx.btnSalvar) ctx.btnSalvar.disabled = false;
-  }
-
   function valorInicial(c, dados) {
     var v = dados ? dados[c.k] : null;
     if (v == null || v === '') return '';
@@ -58,6 +53,25 @@
     if (c.tipo === 'numero') { var n = parseInt(soDigitos(v), 10); return (isNaN(n) || n === 0) ? '' : String(n); }
     return String(v);
   }
+
+  /* o valor de agora de um campo (texto digitado ou opção escolhida) */
+  function valorAtual(item) {
+    return item.c.tipo === 'selecao' ? (item.el.getAttribute('data-valor') || '') : item.el.value.trim();
+  }
+
+  /* quantos campos mudaram; o campo mudado ganha a canaleta */
+  function mudancas() {
+    if (!ctx) return 0;
+    var n = 0;
+    ctx.campos.forEach(function (item) {
+      var mudou = valorAtual(item) !== item.inicial;
+      item.el.closest('.campo').classList.toggle('ficha-campo--alterado', mudou);
+      if (mudou) n++;
+    });
+    return n;
+  }
+
+  function aoMudar() { if (ctx && ctx.ctl) ctx.ctl.aoMudar(); }
 
   function montarCampo(c, valor) {
     var C = RosterWork.campos;
@@ -72,8 +86,8 @@
       else { texto.textContent = 'Selecione'; texto.classList.add('campo-selecao-texto--vazio'); }
       var menu = campoS.querySelector('.dropdown-menu');
       C.popularOpcoes(menu, c.opcoes.map(function (o) { return { rotulo: o, valor: o }; }));
-      C.ligarSelecao(gatilho, marcarSujo);
-      return campoS;
+      C.ligarSelecao(gatilho, aoMudar);
+      return { no: campoS, el: gatilho };
     }
 
     var campo = RosterWork.tpl('tpl-ficha-campo');
@@ -96,33 +110,18 @@
     else if (c.tipo === 'celular') C.ligarMascara(input, C.mascararCelular);
     else if (c.tipo === 'data') { C.ligarMascara(input, C.mascararData); if (c.cal) C.ligarCalendario(input); }
     else if (c.tipo === 'numero') input.addEventListener('input', function () { input.value = soDigitos(input.value); });
-    input.addEventListener('input', marcarSujo);
-    return campo;
+    input.addEventListener('input', function () { C.limparErro(input); aoMudar(); });
+    return { no: campo, el: input };
   }
 
-  function marcar(el, msg) {
-    var campo = el ? el.closest('.campo') : null;
-    if (!campo) return;
-    campo.classList.add('campo--erro');
-    var alvo = campo.querySelector('.campo-erro-texto');
-    if (alvo) alvo.textContent = msg;
-  }
-  function limparErros(raiz) {
-    var campos = raiz.querySelectorAll('.campo--erro');
-    for (var i = 0; i < campos.length; i++) {
-      campos[i].classList.remove('campo--erro');
-      var alvo = campos[i].querySelector('.campo-erro-texto');
-      if (alvo) alvo.textContent = '';
-    }
-  }
   function campoEl(raiz, k) { return raiz.querySelector('[data-campo="' + k + '"]'); }
   function valorSelecao(raiz, k) { var el = campoEl(raiz, k); return el ? el.getAttribute('data-valor') : null; }
 
-  /* valida só os campos da seção montada (reusa as validações do cadastro) */
+  /* valida só os campos da sub-tela (reusa as validações do cadastro) */
   function validar(raiz) {
-    limparErros(raiz);
-    var V = RosterWork.validacoes, T = RosterWork.mensagens.cadastro, ok = true;
-    function erro(el, msg) { if (el) { marcar(el, msg); ok = false; } }
+    var C = RosterWork.campos, V = RosterWork.validacoes, T = RosterWork.mensagens.cadastro, ok = true;
+    C.limparErros(raiz);
+    function erro(el, msg) { if (el) { C.marcarErro(el, msg); ok = false; } }
 
     if (ctx.secao === 'pessoais') {
       var nome = campoEl(raiz, 'nome_completo');
@@ -161,10 +160,11 @@
       if (!inclEl.value.trim()) erro(inclEl, T.inclusaoVazia);
       else if (!incl) erro(inclEl, T.dataInvalida);
       else if (nascD && incl <= nascD) erro(inclEl, T.inclusaoAposNascimento);
+      else if (!RosterWork.campos.grauValeNaInclusao((ctx.ficha.institucionais || {}).grau_nome, incl)) erro(inclEl, T.inclusaoSd3);
       else {
-        /* a inclusão no quadro vai até o dia da primeira promoção do quadro atual */
-        var promocoes = ctx.ficha.promocoes || [];
-        var primeira = promocoes.length ? V.parseData(isoParaBR(promocoes[0].data)) : null;
+        /* a data de inclusão (o primeiro posto na corporação) vem antes de todas as promoções */
+        var datas = (ctx.ficha.promocoes || []).map(function (pr) { return pr.data; }).filter(Boolean).sort();
+        var primeira = datas.length ? V.parseData(isoParaBR(datas[0])) : null;
         if (primeira && incl > primeira) erro(inclEl, T.inclusaoDepoisPromocao);
       }
       /* a colocação pode ficar vazia: sem colocação (o banco grava "0000") */
@@ -172,7 +172,7 @@
     return ok;
   }
 
-  /* payload completo: os campos da seção vêm dos inputs; o resto, da ficha */
+  /* payload completo: os campos da sub-tela vêm dos inputs; o resto, da ficha */
   function coletar(raiz) {
     var V = RosterWork.validacoes;
     var p = ctx.ficha.pessoais || {}, ins = ctx.ficha.institucionais || {};
@@ -208,16 +208,16 @@
     };
   }
 
-  function salvar() {
-    var raiz = RosterWork.painel.corpo();
-    if (!raiz || !ctx) return;
+  function salvar(botao) {
+    if (!ctx) return;
+    var raiz = ctx.raiz;
     if (!validar(raiz)) {
       if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.camposCorrigir });
       return;
     }
     var corpo = coletar(raiz);
     /* a CNH alimenta o motor (condutor): se ela mudou, pede a data (modal padrão) antes de gravar,
-       para o banco recalcular a distribuição da unidade a partir dela — igual às outras telas */
+       para o banco recalcular a distribuição da unidade a partir dela, igual às outras telas */
     var cnhAntes = (ctx.ficha && ctx.ficha.pessoais && ctx.ficha.pessoais.cnh) || '';
     if (ctx.secao === 'pessoais'
         && String(corpo.p_cnh || '').toUpperCase() !== String(cnhAntes).toUpperCase()
@@ -225,18 +225,19 @@
       RosterWork.pedirData({
         mensagem: RosterWork.mensagens.postos.impactoDistribuicao,
         textoConfirmar: RosterWork.mensagens.botoes.salvar,
-        aoConfirmar: function (iso) { corpo.p_recalcular_desde = iso; enviar(corpo); }
+        sugerida: true,
+        aoConfirmar: function (iso) { corpo.p_recalcular_desde = iso; enviar(corpo, botao); }
       });
       return;
     }
-    enviar(corpo);
+    enviar(corpo, botao);
   }
 
   /* o administrador trocou o próprio e-mail: as funções do banco identificam quem está logado pelo
      e-mail do token, então a sessão guarda o novo e o token é renovado (o novo já vem com ele) */
-  function atualizarEmailDaSessao(corpo) {
+  function atualizarEmailDaSessao(corpo, ficha) {
     var eu = RosterWork.sessao && RosterWork.sessao.cpf();
-    var antes = String(((ctx && ctx.ficha && ctx.ficha.pessoais) || {}).email || '').toLowerCase();
+    var antes = String(((ficha && ficha.pessoais) || {}).email || '').toLowerCase();
     var depois = String(corpo.p_email || '').toLowerCase();
     if (!eu || corpo.p_cpf !== eu || !depois || depois === antes) return Promise.resolve();
     try {
@@ -246,13 +247,14 @@
     return RosterWork.renovarSessao ? RosterWork.renovarSessao().catch(function () {}) : Promise.resolve();
   }
 
-  function enviar(corpo) {
+  function enviar(corpo, botao) {
+    var atual = ctx;
+    if (!atual) return;
     /* CNH mudou (p_recalcular_desde) = recalcula a escala: círculo + tela travada;
-       demais edições são rápidas: pontos no botão */
+       demais correções são rápidas: pontos no botão */
     var recalcula = !!corpo.p_recalcular_desde;
-    var btn = ctx.btnSalvar;
-    function iniciar() { if (recalcula) { if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal(); } else if (btn && RosterWork.iniciarCarregando) RosterWork.iniciarCarregando(btn); }
-    function parar() { if (recalcula) { if (RosterWork.esconderVeuGlobal) RosterWork.esconderVeuGlobal(); } else if (btn && RosterWork.pararCarregando) RosterWork.pararCarregando(btn); }
+    function iniciar() { if (recalcula) { if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal(); } else if (botao && RosterWork.iniciarCarregando) RosterWork.iniciarCarregando(botao); }
+    function parar() { if (recalcula) { if (RosterWork.esconderVeuGlobal) RosterWork.esconderVeuGlobal(); } else if (botao && RosterWork.pararCarregando) RosterWork.pararCarregando(botao); }
     iniciar();
     RosterWork.apiFetch('/rest/v1/rpc/atualizar_dados_militar', { metodo: 'POST', corpo: corpo })
       .then(function (resp) {
@@ -264,13 +266,8 @@
         if (r && r._falha === 'servidor') {
           if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.falhaServidor });
         } else if (r && r.success) {
-          sujo = false;
-          var aoSalvar = ctx && ctx.aoSalvar;
-          /* a ficha só recarrega depois da sessão em dia */
-          atualizarEmailDaSessao(corpo).then(function () {
-            if (aoSalvar) aoSalvar();
-            if (r.log && RosterWork.resumo) RosterWork.resumo.abrirModal(r.log, { pagina: 'Usuários' });
-          });
+          /* a ficha só relê depois da sessão em dia */
+          atualizarEmailDaSessao(corpo, atual.ficha).then(function () { atual.ctl.concluir(r); });
         } else if (RosterWork.avisar) {
           RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || RosterWork.mensagens.usuarios.falhaSalvar });
         }
@@ -281,71 +278,40 @@
       });
   }
 
-  function cancelar() {
-    if (sujo && RosterWork.confirmar) {
-      RosterWork.confirmar({
-        tipo: 'aviso',
-        mensagem: RosterWork.mensagens.edicao.sairSemSalvar,
-        textoConfirmar: RosterWork.mensagens.botoes.descartar,
-        textoCancelar: RosterWork.mensagens.botoes.continuarEditando,
-        aoConfirmar: function () { sujo = false; if (ctx && ctx.aoVoltar) ctx.aoVoltar(); }
-      });
-    } else if (ctx && ctx.aoVoltar) {
-      ctx.aoVoltar();
-    }
-  }
-
-  function montarRodape() {
-    var rodape = RosterWork.painel.rodape();
-    var tpl = document.getElementById('tpl-ficha-editar-acoes');
-    if (!rodape || !tpl) return;
-    rodape.textContent = '';
-    rodape.appendChild(tpl.content.cloneNode(true));
-    rodape.classList.remove('oculto');
-    var btnCancelar = rodape.querySelector('.ficha-editar-cancelar');
-    if (btnCancelar) btnCancelar.addEventListener('click', cancelar);
-    ctx.btnSalvar = rodape.querySelector('.ficha-editar-salvar');
-    if (ctx.btnSalvar) { ctx.btnSalvar.disabled = true; ctx.btnSalvar.addEventListener('click', salvar); }
-  }
-
-  /* monta os campos de UMA seção + o rodapé. secao = 'pessoais' | 'institucionais'.
-     Não limpa o corpo (o orquestrador já fez e pode anexar ações depois). */
-  function montar(corpo, ficha, pessoa, opcoes, secao) {
-    if (!corpo || !ficha) return;
+  /* a sub-tela de UMA seção ('pessoais' | 'institucionais') no corpo; devolve o que o rodapé usa */
+  function montarSubtela(corpo, ficha, pessoa, secao, ctl) {
+    if (!corpo || !ficha || !RosterWork.usuariosPainelLeitura) return null;
     secao = (secao === 'institucionais') ? 'institucionais' : 'pessoais';
-    ctx = { ficha: ficha, pessoa: pessoa, aoSalvar: opcoes && opcoes.aoSalvar, aoVoltar: opcoes && opcoes.aoVoltar, btnSalvar: null, secao: secao };
-    sujo = false;
+    var L = RosterWork.usuariosPainelLeitura;
+    var subtela = RosterWork.tpl(secao === 'pessoais' ? 'tpl-ficha-sub-pessoais' : 'tpl-ficha-sub-institucionais');
+    if (!subtela) return null;
+    ctx = { ficha: ficha, pessoa: pessoa, secao: secao, raiz: subtela, ctl: ctl, campos: [] };
 
-    if (secao === 'pessoais') {
-      var p = ficha.pessoais || {};
-      var secP = RosterWork.painel.criarSecaoColapsavel('Dados pessoais', { aberta: true });
-      if (secP) {
-        var alvoP = secP.querySelector('.painel-secao-corpo');
-        alvoP.appendChild(RosterWork.painel.criarLinha('CPF', formatarCpf(p.cpf)));
-        PESSOAIS.forEach(function (c) { var el = montarCampo(c, valorInicial(c, p)); if (el) alvoP.appendChild(el); });
-        corpo.appendChild(secP);
-      }
-    } else {
-      var ins = ficha.institucionais || {};
-      var secI = RosterWork.painel.criarSecaoColapsavel('Dados institucionais', { aberta: true });
-      if (secI) {
-        var alvoI = secI.querySelector('.painel-secao-corpo');
-        INST.forEach(function (c) { var el = montarCampo(c, valorInicial(c, ins)); if (el) alvoI.appendChild(el); });
-        corpo.appendChild(secI);
-      }
-    }
-    montarRodape();
+    var dados = secao === 'pessoais' ? (ficha.pessoais || {}) : (ficha.institucionais || {});
+    var b = L.bloco(secao === 'pessoais' ? 'Dados pessoais' : 'Dados institucionais');
+    if (!b) return null;
+    if (secao === 'pessoais') L.linha(b, 'CPF', formatarCpf(dados.cpf));
+    (secao === 'pessoais' ? PESSOAIS : INST).forEach(function (c) {
+      var inicial = valorInicial(c, dados);
+      var montado = montarCampo(c, inicial);
+      if (!montado) return;
+      b.appendChild(montado.no);
+      ctx.campos.push({ c: c, el: montado.el, inicial: inicial });
+    });
+    subtela.appendChild(b);
+    corpo.appendChild(subtela);
+
+    var atual = ctx;
+    return {
+      textoAplicar: RosterWork.mensagens.botoes.salvar,
+      mudancas: function () { return ctx === atual ? mudancas() : 0; },
+      podeAplicar: function () { return ctx === atual && mudancas() > 0; },
+      sujo: function () { return ctx === atual && mudancas() > 0; },
+      aplicar: salvar
+    };
   }
 
-  function reset() {
-    ctx = null;
-    sujo = false;
-  }
+  function reset() { ctx = null; }
 
-  /* guarda-de-saída: o navegador avisa ao fechar/recarregar com alteração não salva */
-  if (RosterWork.guardaSaida && RosterWork.guardaSaida.registrar) {
-    RosterWork.guardaSaida.registrar(function () { return sujo; });
-  }
-
-  window.RosterWork.usuariosPainelEditar = { montar: montar, reset: reset, sujo: function () { return sujo; } };
+  window.RosterWork.usuariosPainelEditar = { montarSubtela: montarSubtela, reset: reset };
 })();

@@ -40,14 +40,15 @@
     return b;
   }
 
-  /* uma linha da lista: grad + nome + (selo/vazio no extra) + (botão na ação) */
-  function linha(m, extraEl, acaoEl) {
+  /* uma linha da lista: grad + nome + (selo/vazio no extra) + (um ou mais botões na ação) */
+  function linha(m, extraEl, acoes) {
     var el = RosterWork.tpl('tpl-escala-secao-item');
     if (!el) return null;
     el.querySelector('.escala-secao-grad').textContent = m.grad || '';
     el.querySelector('.escala-secao-nome').textContent = m.nome || '';
     if (extraEl) el.querySelector('.escala-secao-extra').appendChild(extraEl);
-    if (acaoEl) el.querySelector('.escala-secao-acao').appendChild(acaoEl);
+    var areaAcao = el.querySelector('.escala-secao-acao');
+    [].concat(acoes || []).forEach(function (botaoAcao) { if (botaoAcao) areaAcao.appendChild(botaoAcao); });
     return el;
   }
 
@@ -130,9 +131,14 @@
           extra = seloTexto(pend.acao === 'tirar' ? msg().continuosVaiSair : msg().continuosVaiCancelar);
           acao = botao(msg().continuosDesfazer, null, function () { desfazerPendente(m.cpf); });
         } else {
-          if (m.estado === 'saida_marcada') extra = seloTexto(texto(msg().continuosSaiEm, { data: formatarData(m.saida_em) }));
-          if (m.estado === 'saida_marcada') acao = botao(msg().btnCancelarSaida, null, function () { cancelarSaida(m); });
-          else acao = botao(msg().btnTirar, 'escala-secao-botao--perigo', function () { tirar(m); });
+          /* com saída marcada: Cancelar saída ou Tirar, que traz a saída para este dia */
+          var btnTirar = botao(msg().btnTirar, 'escala-secao-botao--perigo', function () { tirar(m); });
+          if (m.estado === 'saida_marcada') {
+            extra = seloTexto(texto(msg().continuosSaiEm, { data: formatarData(m.saida_em) }));
+            acao = [botao(msg().btnCancelarSaida, null, function () { cancelarSaida(m); }), btnTirar];
+          } else {
+            acao = btnTirar;
+          }
         }
         var el = linha(m, extra, acao);
         if (el && !pend && m.folga_hoje && !m.serve_hoje) {   // é dia dele, mas está de folga: nome riscado

@@ -51,6 +51,7 @@
   }
 
   function mesmo(a, b) { return !!a && !!b && (a.inicio || '') === (b.inicio || ''); }
+  function contem(p, dia) { return (!p.inicio || p.inicio <= dia) && (!p.fim || p.fim >= dia); }
   function posicao() {
     for (var i = 0; i < periodos.length; i++) { if (mesmo(periodos[i], escolhido)) return i; }
     return -1;
@@ -118,7 +119,8 @@
     montarLista();
   }
 
-  /* troca de período: com edição não salva, confirma o descarte antes */
+  /* troca de período: com edição não salva, confirma o descarte antes; o modelo novo (ainda não
+     salvo) vai junto para um período editável, e num período encerrado sai como nas outras saídas */
   function escolher(p) {
     if (mesmo(p, escolhido)) return;
     var seguir = function () {
@@ -127,10 +129,11 @@
       if (aoTrocar) aoTrocar();
     };
     var ed = RosterWork.distribuicaoEditar;
-    if (ed && ed.confirmarSaida) ed.confirmarSaida(seguir); else seguir();
+    if (ed && ed.confirmarSaida) ed.confirmarSaida(seguir, null, !p.passado); else seguir();
   }
 
-  /* carrega os períodos do grupo; mantém o escolhido (se ainda existe) ou vai para o atual */
+  /* carrega os períodos do grupo; fica no período que contém o dia que estava na tela (o período pode
+     ter se dividido ou juntado) ou vai para o atual */
   function carregar(contextoId, trocar) {
     aoTrocar = trocar;
     if (contextoId !== contexto) { contexto = contextoId; escolhido = null; }
@@ -138,7 +141,8 @@
     return RosterWork.distribuicaoDados.listarPeriodos(contextoId).then(function (lista) {
       if (req !== seq) return;
       periodos = Array.isArray(lista) ? lista : [];
-      var mantido = periodos.filter(function (p) { return mesmo(p, escolhido); })[0];
+      var dia = diaDo(escolhido);
+      var mantido = dia ? periodos.filter(function (p) { return contem(p, dia); })[0] : null;
       escolhido = mantido || periodos.filter(function (p) { return p.atual; })[0] || periodos[periodos.length - 1] || null;
       montarSeletor();
     });

@@ -1,14 +1,23 @@
 /* ============================================================
-   TROCAS — "Solicitar" (formulário no painel lateral geral-painel)
-   Dois cartões empilhados: Solicitante (unidade/militar em leitura,
-   dia via calendário, período: Serviço inteiro ou Parte do serviço,
-   componente geral-horario) e Solicitado (unidade + parceiro do
-   grupo, devolução opcional com toggle pendente/dia + o mesmo
-   período). Durações diferentes geram saldo (aviso). Ações no rodapé
-   do painel; o X/Esc confirmam o descarte quando há dados.
+   TROCAS — formulário Solicitar / Registrar (painel lateral)
+   Solicitar: o logado pede (Solicitante em leitura), só dias
+   futuros; o solicitado confirma (sem conta, vai direto para a
+   aprovação). Registrar (só admin): escolhe o solicitante,
+   aceita dias de até 7 dias atrás e grava a troca já aprovada,
+   depois da análise de impacto (a mesma do Aprovar).
+   Nos dois: o E-protocolo (Parte e Ano, obrigatórios), o dia e
+   o período do serviço, o solicitado e a devolução (Pendência
+   ou Marcar dia). Os campos ficam em trocas-solicitar-campos.js;
+   aqui ficam a abertura, os modos, o E-protocolo, a análise, a
+   validação e o envio. Ações no rodapé do painel; o X/Esc
+   confirmam o descarte quando há dados.
    Expõe RosterWork.trocasSolicitar.{ ligar, abrir }.
      ligar({ aoSolicitar, aoMudar }) — guarda os callbacks (1x)
-     abrir() — abre o painel, monta e carrega o formulário
+     abrir(opcoes) — abre o painel e monta o formulário:
+       {} = Solicitar · { registrar: true } = Registrar ·
+       { cobrar: { cpf, nome, grau, minutos } } = Solicitar em
+       modo cobrança (o devedor entra como parceiro e o período
+       já nasce com as horas da dívida)
    ============================================================ */
 (function () {
   'use strict';
@@ -16,338 +25,88 @@
 
   var guardaLigado = false;
   var ctx = null;
-  var cbs = {};           // callbacks da página (aoSolicitar, aoMudar), guardados no ligar
-  var aberto = false;     // painel de solicitar aberto? (zera o temDados depois de fechar)
-  var timerParceiros = null;
-  var reqParceiros = 0;   // token: ignora resposta antiga ao trocar de dia/unidade rápido
+  var cbs = {};            // callbacks da página (aoSolicitar, aoMudar), guardados no ligar
+  var aberto = false;      // painel aberto? (zera o temDados depois de fechar)
+  var timerAnalise = null;
+  var reqAnalise = 0;      // token: ignora a análise antiga quando o pedido muda no meio
 
+  function C() { return RW.trocasCampos; }
   function txt(chave) { return RW.mensagens.trocas[chave]; }
   function perfilLotacao() { var u = RosterWork.sessao.perfil(); return u ? u.lotacao_id : null; }
-  function nomeDe(u) { return ((u.grau_abreviacao ? u.grau_abreviacao + ' ' : '') + (u.nome_de_guerra || '')).trim(); }
   function q(sel) { return ctx && ctx.raiz ? ctx.raiz.querySelector(sel) : null; }
 
-  /* datas e horários */
-  function isoDe(d) { var m = d.getMonth() + 1, dia = d.getDate(); return d.getFullYear() + '-' + (m < 10 ? '0' + m : m) + '-' + (dia < 10 ? '0' + dia : dia); }
-  function dataDeIso(iso) { var p = iso.split('-'); return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2])); }
-  /* o horário do serviço { hi, hf } (sem horário = o dia todo, 08h às 08h) */
-  function horarioDoServico(s) {
-    if (!s || !s.horario_inicio || !s.horario_fim) return { hi: '08:00', hf: '08:00' };
-    return { hi: String(s.horario_inicio).slice(0, 5), hf: String(s.horario_fim).slice(0, 5) };
+  /* ---------- E-protocolo ---------- */
+  function ligarSoNumeros(inp) {
+    if (!inp) return;
+    inp.addEventListener('input', function () { var v = inp.value.replace(/\D/g, ''); if (v !== inp.value) inp.value = v; });
   }
-  function servicoDoDia(lista, iso) { for (var i = 0; i < lista.length; i++) if (lista[i].data === iso) return lista[i]; return null; }
+  function parteNumero() { var v = (q('#ts-parte') || {}).value || ''; return /^\d{1,7}$/.test(v) && Number(v) > 0 ? Number(v) : null; }
+  function parteAno() { var v = (q('#ts-parte-ano') || {}).value || ''; return /^\d{4}$/.test(v) ? Number(v) : null; }
 
-  /* campos */
-  function definirTexto(g, t, v) { var e = g ? g.querySelector('.campo-selecao-texto') : null; if (!e) return; e.textContent = t; e.classList.toggle('campo-selecao-texto--vazio', !!v); }
-  function definirLeitura(sel, t) { var e = q(sel); if (e) e.textContent = t; }
-  function limparErro(g) { var c = g ? g.closest('.campo') : null; if (!c) return; c.classList.remove('campo--erro'); var ctl = c.querySelector('input, select, textarea'); if (ctl) ctl.removeAttribute('aria-invalid'); var a = c.querySelector('.campo-erro-texto'); if (a) a.textContent = ''; }
-  function marcarErro(g, m) { var c = g ? g.closest('.campo') : null; if (!c) return; c.classList.add('campo--erro'); var ctl = c.querySelector('input, select, textarea'); if (ctl) ctl.setAttribute('aria-invalid', 'true'); var a = c.querySelector('.campo-erro-texto'); if (a) { a.setAttribute('role', 'alert'); a.textContent = m; } }
-  function montarOpcoes(menu, itens, aoEscolher) {
-    if (!menu) return;
-    menu.textContent = '';
-    var tpl = document.getElementById('tpl-troca-opcao');
-    itens.forEach(function (it) {
-      var b = tpl.content.cloneNode(true).firstElementChild;
-      b.textContent = it.texto;
-      b.addEventListener('click', function () { aoEscolher(it.dado, it.texto); if (RW.fecharDropdowns) RW.fecharDropdowns(); });
-      menu.appendChild(b);
-    });
-  }
-
-  /* unidade do parceiro — limitada ao grupo (CIA/CIBM + PELs) */
-  function calcularGrupo(lista, lotacaoId) {
-    var porId = {};
-    lista.forEach(function (u) { porId[u.unidade_id] = u; });
-    var atual = porId[lotacaoId] || null, raiz = atual;
-    while (atual) {
-      if (atual.tipo === 'CIA' || atual.tipo === 'CIBM') { raiz = atual; break; }
-      raiz = atual;
-      atual = atual.unidade_pai_id ? porId[atual.unidade_pai_id] : null;
-    }
-    if (!raiz) return [];
-    var grupo = [raiz];
-    lista.forEach(function (u) {
-      if (u.unidade_id === raiz.unidade_id) return;
-      var p = u.unidade_pai_id ? porId[u.unidade_pai_id] : null;
-      while (p) { if (p.unidade_id === raiz.unidade_id) { grupo.push(u); break; } p = p.unidade_pai_id ? porId[p.unidade_pai_id] : null; }
-    });
-    return grupo;
-  }
+  /* ---------- unidades (do grupo da lotação de quem está logado) ---------- */
   function carregarUnidades() {
-    RW.apiFetch('/rest/v1/rpc/buscar_unidades_ordenadas', { metodo: 'POST', corpo: {} })
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (lista) {
-        if (!Array.isArray(lista)) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.falhaServidor }); return; }   // falha: não deixa o seletor de unidade vazio sem aviso
-        ctx.unidades = lista; preencherUnidades(calcularGrupo(ctx.unidades, perfilLotacao()));
-      })
-      .catch(function () { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.erroConexao }); });
-  }
-  function preencherUnidades(grupo) {
-    var gat = q('#ts-unidade');
-    montarOpcoes(q('#ts-unidade-menu'), grupo.map(function (u) { return { texto: u.nome, dado: u }; }), function (u) {
-      ctx.unidadeSel = u.unidade_id;
-      definirTexto(gat, u.nome, false);
-      carregarParceiros();
-    });
-    var propria = grupo.filter(function (u) { return u.unidade_id === perfilLotacao(); })[0];
-    if (propria) { ctx.unidadeSel = propria.unidade_id; definirTexto(gat, propria.nome, false); }
-  }
-
-  /* parceiros (ocupados no dia/horário ficam apagados) */
-  function agendarParceiros() { if (timerParceiros) clearTimeout(timerParceiros); timerParceiros = setTimeout(carregarParceiros, 350); }
-  function carregarParceiros() {
-    if (!ctx.unidadeSel) { habilitarParceiro(false); definirParceiro(txt('modalUnidadeAntes'), true); return; }
-    if (!ctx.servicoDia || !ctx.servicoSel) { habilitarParceiro(false); definirParceiro(txt('modalDiaAntes'), true); return; }
-    habilitarParceiro(false);
-    definirParceiro(txt('modalCarregando'), true);
-    var req = ++reqParceiros;
-    RW.trocasDados.militares(ctx.unidadeSel, ctx.servicoDia, ctx.servicoSel.hi, ctx.servicoSel.hf).then(function (lista) {
-      if (req !== reqParceiros) return;   // resposta obsoleta: outro dia/unidade já foi escolhido
-      preencherParceiros(Array.isArray(lista) ? lista : []);
-    }).catch(function () { if (req !== reqParceiros) return; habilitarParceiro(false); definirParceiro(txt('modalCarregarFalha'), true); });
-  }
-  function nomeMil(m) { return ((m && m.grau_abreviacao ? m.grau_abreviacao + ' ' : '') + ((m && m.nome_de_guerra) || '')).trim(); }
-
-  /* ---------- campo Militar = COMBOBOX (aparência de seleção + digitação) ----------
-     O estado fica no próprio input: value = parceiro escolhido; placeholder = os estados
-     ("Escolha o dia antes", "Selecione", "Carregando…"). Escolhe no menu (mouse) OU digita p/ filtrar. */
-  function parceiroInput() { return q('#ts-parceiro'); }
-  function definirParceiro(texto, vazio) {
-    var inp = parceiroInput(); if (!inp) return;
-    if (vazio) { inp.value = ''; inp.placeholder = texto || ''; } else { inp.value = texto || ''; }
-  }
-  function habilitarParceiro(on) {
-    var inp = parceiroInput(); if (inp) inp.disabled = !on;
-  }
-  function filtrarParceiros() {
-    var menu = q('#ts-parceiro-menu'), inp = parceiroInput();
-    if (!menu || !inp) return;
-    var termo = RosterWork.busca.normalizar(inp.value.trim());
-    var visiveis = 0;
-    Array.prototype.forEach.call(menu.querySelectorAll('[data-busca]'), function (it) {
-      var casa = !termo || (it.getAttribute('data-busca') || '').indexOf(termo) !== -1;
-      it.classList.toggle('oculto', !casa);
-      if (casa) visiveis++;
-    });
-    var vazio = menu.querySelector('.troca-parceiro-vazio');   /* aviso quando o filtro não casa com ninguém */
-    if (vazio) vazio.classList.toggle('oculto', visiveis > 0);
-  }
-  function mostrarTodosParceiros() {
-    var menu = q('#ts-parceiro-menu'); if (!menu) return;
-    Array.prototype.forEach.call(menu.querySelectorAll('[data-busca]'), function (it) { it.classList.remove('oculto'); });
-    var vazio = menu.querySelector('.troca-parceiro-vazio');
-    if (vazio) vazio.classList.add('oculto');
-  }
-  /* liga o input UMA vez por elemento (a página é remontada a cada visita → a marca fica no elemento) */
-  function ligarComboParceiro() {
-    var inp = parceiroInput();
-    if (!inp || inp.dataset.ligado) return;
-    inp.dataset.ligado = '1';
-    /* 1º clique seleciona tudo, então digitar substitui o nome (em vez de acrescentar) */
-    inp.addEventListener('mousedown', function (e) {
-      if (!inp.disabled && document.activeElement !== inp) { e.preventDefault(); inp.focus(); }
-    });
-    inp.addEventListener('focus', function () { mostrarTodosParceiros(); inp.select(); });
-    inp.addEventListener('input', filtrarParceiros);
-    inp.addEventListener('blur', function () {   /* saiu sem escolher: volta ao parceiro atual (ou ao placeholder) */
-      if (ctx.parceiroSel) definirParceiro(nomeMil(ctx.parceiroSel), false);
-      else definirParceiro(txt('modalSelecione'), true);
-    });
-    inp.addEventListener('keydown', function (e) {   /* Enter escolhe a 1ª opção visível */
-      if (e.key !== 'Enter') return;
-      e.preventDefault();
-      var menu = q('#ts-parceiro-menu');
-      var vis = menu && menu.querySelector('.dropdown-item:not(.dropdown-item--inativo):not(.oculto)');
-      if (vis) vis.click();
-    });
-  }
-
-  function preencherParceiros(lista) {
-    var menu = q('#ts-parceiro-menu'); if (!menu) return;   // painel fechado durante o fetch
-    var meu = RosterWork.sessao.cpf();
-    menu.textContent = '';
-    ligarComboParceiro();
-    var tplOk = document.getElementById('tpl-troca-opcao');
-    var tplOc = document.getElementById('tpl-troca-parceiro-ocupado');
-    var disponiveis = 0, aindaSelecionado = false;
-    lista.forEach(function (mil) {
-      if (mil.cpf === meu) return;
-      var nome = nomeMil(mil);
-      if (mil.ocupado) {
-        var oc = tplOc.content.cloneNode(true).firstElementChild;
-        oc.querySelector('.troca-parceiro-nome').textContent = nome;
-        /* afastado (férias/licença/dispensa) diz o motivo; senão, já está de serviço no horário */
-        oc.querySelector('.troca-parceiro-motivo').textContent =
-          (mil.afastamento && txt('parceiroAfastado')[mil.afastamento]) || txt('parceiroOcupado');
-        oc.setAttribute('data-busca', RosterWork.busca.normalizar(nome));
-        menu.appendChild(oc);
-      } else {
-        var b = tplOk.content.cloneNode(true).firstElementChild;
-        b.textContent = nome;
-        b.setAttribute('data-busca', RosterWork.busca.normalizar(nome));
-        b.addEventListener('click', function () {
-          ctx.parceiroSel = mil;
-          definirParceiro(nome, false);
-          limparErro(parceiroInput());
-          if (RW.fecharDropdowns) RW.fecharDropdowns();
-          aoTrocarParceiro();
-        });
-        menu.appendChild(b);
-        disponiveis++;
-        if (ctx.parceiroSel && ctx.parceiroSel.cpf === mil.cpf) aindaSelecionado = true;
-      }
-    });
-    var tplVazio = document.getElementById('tpl-troca-parceiro-vazio');   /* aviso do filtro, oculto até zerar */
-    if (tplVazio) { var vm = tplVazio.content.cloneNode(true).firstElementChild; vm.textContent = txt('modalFiltroVazio'); vm.classList.add('oculto'); menu.appendChild(vm); }
-    if (ctx.parceiroSel && !aindaSelecionado) { ctx.parceiroSel = null; ctx.parceiroServicos = []; }
-    if (disponiveis === 0) { habilitarParceiro(false); definirParceiro(txt('modalParceiroVazio'), true); }
-    else {
-      habilitarParceiro(true);
-      /* cobrança: escolhe o devedor sozinho assim que ele aparece disponível na unidade selecionada */
-      if (ctx.cobrar && !ctx.parceiroSel) {
-        var alvo = lista.filter(function (mm) { return mm && mm.cpf === ctx.cobrar.cpf && !mm.ocupado; })[0];
-        if (alvo) { ctx.parceiroSel = alvo; limparErro(parceiroInput()); aoTrocarParceiro(); }
-      }
-      if (ctx.parceiroSel) definirParceiro(nomeMil(ctx.parceiroSel), false);
-      else definirParceiro(txt('modalSelecione'), true);
-    }
-  }
-
-  /* serviço: dia (calendário) + período (Serviço inteiro / Parte do serviço);
-     o período fica sempre visível, desligado até escolher o dia */
-  function montarPeriodoServico() {
-    ctx.periodoServico = RosterWork.horario.periodoServico(q('#ts-servico-periodo'), {
-      aoMudar: function (v) { ctx.servicoSel = v; atualizarSaldo(); agendarParceiros(); }
-    });
-  }
-  function escolherDiaServico(data) {
-    var iso = isoDe(data);
-    var s = servicoDoDia(ctx.meusServicos, iso);
-    if (!s) return;
-    ctx.servicoDia = iso;
-    ctx.servicoCtx = s.contexto_id;
-    q('#ts-data').value = RW.trocasFormato.dataNumerica(iso);
-    limparErro(q('#ts-data'));
-    if (!ctx.periodoServico) montarPeriodoServico();
-    ctx.periodoServico.definirServico(horarioDoServico(s));
-    /* cobrança: o período já vem com as horas da dívida, do início do turno (o turno inteiro, se ela cobre tudo) */
-    if (ctx.cobrar && ctx.cobrar.minutos > 0) {
-      var H = RosterWork.horario, turno = ctx.periodoServico.valor();
-      var ini = H.faixa(turno)[0];
-      if (ctx.cobrar.minutos < turno.minutos) ctx.periodoServico.definirParte(turno.hi, H.hhmm(ini + ctx.cobrar.minutos));
-    }
-    ctx.servicoSel = ctx.periodoServico.valor();
-    carregarParceiros();
-    atualizarSaldo();
-  }
-
-  /* parceiro trocou: carrega os dias dele para a devolução */
-  function aoTrocarParceiro() {
-    ctx.devDia = null; ctx.devSel = null; ctx.parceiroServicos = [];
-    q('#ts-dev-data').value = '';
-    /* no modo "Marcar dia" o período da devolução volta desligado; no "pendente" some */
-    var emDia = q('#ts-dev-data') && !q('#ts-dev-data').classList.contains('oculto');
-    if (ctx.periodoDevolucao) ctx.periodoDevolucao.limpar();
-    q('#ts-periodo-devolucao').classList.toggle('oculto', !emDia);
-    /* saldo já existente com o parceiro (para o aviso líquido); enquanto carrega, mostra os pontinhos */
-    ctx.saldoEntre = null; ctx.saldoCarregando = false;
-    if (ctx.parceiroSel) {
-      var cpfAlvo = ctx.parceiroSel.cpf;
-      ctx.saldoCarregando = true;
-      RW.trocasDados.saldoEntre(cpfAlvo).then(function (n) {
-        if (!ctx.parceiroSel || ctx.parceiroSel.cpf !== cpfAlvo) return;   // trocou de parceiro no meio
-        ctx.saldoEntre = Number(n) || 0; ctx.saldoCarregando = false; atualizarSaldo();
-      }).catch(function () {
-        if (!ctx.parceiroSel || ctx.parceiroSel.cpf !== cpfAlvo) return;
-        ctx.saldoEntre = 0; ctx.saldoCarregando = false; atualizarSaldo();
+    var meu = ctx;
+    C().carregarGrupo(perfilLotacao()).then(function (grupo) {
+      if (ctx !== meu || !q('#ts-unidade-menu')) return;   // painel fechado ou reaberto no meio
+      var propria = C().preencherUnidades(q('#ts-unidade-menu'), q('#ts-unidade'), grupo, perfilLotacao(), function (u) {
+        ctx.unidadeSel = u.unidade_id;
+        C().carregarParceiros();
       });
-    }
-    atualizarSaldo();
-    if (!ctx.parceiroSel) return;
-    RW.trocasDados.meusServicos(ctx.parceiroSel.cpf, null).then(function (lista) {
-      ctx.parceiroServicos = Array.isArray(lista) ? lista : [];
-    }).catch(function () {});
-  }
-
-  /* devolução: toggle pendente/dia + calendário + o mesmo período */
-  function montarPeriodoDevolucao() {
-    ctx.periodoDevolucao = RosterWork.horario.periodoServico(q('#ts-dev-periodo'), {
-      aoMudar: function (v) { ctx.devSel = v; atualizarSaldo(); }
-    });
-    ctx.devSel = null;
-  }
-  function ligarDevToggle() {
-    var trilho = q('#ts-dev-toggle');
-    if (!RW.abas || !trilho) return;
-    RW.abas.ligar(trilho, function (aba) {
-      var modo = aba.getAttribute('data-dev');
-      if (modo === 'pendente') {
-        ctx.devDia = null; ctx.devSel = null;
-        q('#ts-dev-data').classList.add('oculto');
-        q('#ts-periodo-devolucao').classList.add('oculto');
-        atualizarSaldo();
-      } else {
-        q('#ts-dev-data').classList.remove('oculto');
-        /* o período aparece já no modo "Marcar dia", desligado; liga quando o dia for escolhido */
-        if (!ctx.periodoDevolucao) montarPeriodoDevolucao();
-        else ctx.periodoDevolucao.limpar();
-        q('#ts-periodo-devolucao').classList.remove('oculto');
-      }
+      if (propria) ctx.unidadeSel = propria.unidade_id;
+      if (!ctx.registrar) return;
+      /* a unidade do solicitado acompanha a do solicitante (como no Solicitar, a mesma unidade); pode ser mudada depois */
+      var propriaSol = C().preencherUnidades(q('#ts-sol-unidade-menu'), q('#ts-sol-unidade'), grupo, perfilLotacao(), function (u) {
+        ctx.solUnidadeSel = u.unidade_id;
+        ctx.unidadeSel = u.unidade_id;
+        C().definirTexto(q('#ts-unidade'), u.nome, false);
+        C().carregarSolicitantes();
+        C().carregarParceiros();
+      });
+      if (propriaSol) { ctx.solUnidadeSel = propriaSol.unidade_id; C().carregarSolicitantes(); }
     });
   }
-  function escolherDiaDevolucao(data) {
-    var iso = isoDe(data);
-    var s = servicoDoDia(ctx.parceiroServicos, iso);
-    if (!s) return;
-    ctx.devDia = iso;
-    q('#ts-dev-data').value = RW.trocasFormato.dataNumerica(iso);
-    if (!ctx.periodoDevolucao) montarPeriodoDevolucao();
-    ctx.periodoDevolucao.definirServico(horarioDoServico(s));
-    ctx.devSel = ctx.periodoDevolucao.valor();
-    q('#ts-periodo-devolucao').classList.remove('oculto');
-    atualizarSaldo();
+
+  /* ---------- análise de impacto (só no Registrar): roda quando o pedido está completo;
+     o Registrar fica travado até ela chegar, igual ao Aprovar ---------- */
+  function camposCompletos() {
+    var devolucaoOk = !C().devMarcarDia() || (ctx.devDia && ctx.devSel && ctx.devSel.minutos > 0);
+    return !!(ctx.solicitanteSel && ctx.servicoDia && ctx.servicoSel && ctx.servicoSel.minutos > 0 && ctx.parceiroSel && devolucaoOk);
+  }
+  function partesAnalise() {
+    var s = q('#ts-analise');
+    return s ? { analiseSecao: s, analiseSelo: s.querySelector('.decisao-analise-selo'), analise: s.querySelector('.decisao-analise'), saldo: null } : null;
+  }
+  function travarEnvio(travado) { if (ctx && ctx.registrar && ctx.btnEnviar) ctx.btnEnviar.disabled = travado; }
+  function agendarAnalise() {
+    if (!ctx || !ctx.registrar) return;
+    if (timerAnalise) clearTimeout(timerAnalise);
+    reqAnalise++;   // a análise anterior deixa de valer
+    ctx.analise = null;
+    var partes = partesAnalise();
+    if (!partes) return;
+    if (!camposCompletos()) { partes.analiseSecao.classList.add('oculto'); travarEnvio(false); return; }
+    travarEnvio(true);
+    RW.decisao.analisando(partes);
+    timerAnalise = setTimeout(analisar, 350);
+  }
+  function analisar() {
+    var req = ++reqAnalise, partes = partesAnalise();
+    var corpo = montarCorpo();
+    corpo.p_ensaio = true;
+    RW.trocasDados.registrar(corpo).then(function (r) {
+      if (req !== reqAnalise || !q('#ts-analise')) return;
+      ctx.analise = r && r.ok ? r : null;
+      RW.decisao.analise(partes, ctx.analise, (r && r.erro) || txt('falhaAnalise'));
+      travarEnvio(false);   // chegou: libera o Registrar (o banco ainda decide)
+    }).catch(function () {
+      if (req !== reqAnalise || !q('#ts-analise')) return;
+      RW.decisao.analise(partes, null, txt('falhaAnalise'));
+      travarEnvio(false);
+    });
   }
 
-  /* saldo (durações diferentes) */
-  function atualizarSaldo() {
-    var elSaldo = q('#ts-saldo'), elTexto = q('#ts-saldo-texto');
-    if (!elSaldo || !elTexto) return;
-    var m = RW.mensagens.trocas;
-    /* o aviso mostra o saldo LÍQUIDO com o parceiro, então depende dos dois: serviço e parceiro */
-    if (!ctx.servicoSel || !ctx.parceiroSel) { elSaldo.classList.add('oculto'); return; }
-    /* ainda buscando o saldo já existente entre os dois: três pontinhos */
-    if (ctx.saldoCarregando || ctx.saldoEntre === null || ctx.saldoEntre === undefined) {
-      elTexto.textContent = '';
-      var pts = document.getElementById('carregando-pontos');
-      if (pts) elTexto.appendChild(pts.content.cloneNode(true));
-      elSaldo.classList.remove('oculto');
-      return;
-    }
-    var x = ctx.servicoSel.minutos;
-    var y = (ctx.devDia && ctx.devSel) ? ctx.devSel.minutos : 0;
-    /* quanto EU fico devendo ao parceiro no fim: (serviço − devolução) menos o que ele já me devia */
-    var net = (x - y) - ctx.saldoEntre;
-    var texto;
-    if (net > 0) texto = m.saldoVoceDeve(Math.round(net / 60));
-    else if (net < 0) texto = m.saldoParceiroDeve(Math.round(-net / 60));
-    else if (ctx.saldoEntre !== 0) texto = m.saldoQuite;   // esta troca zera uma dívida que existia
-    else { elSaldo.classList.add('oculto'); return; }       // troca equilibrada, sem dívida prévia: nada a avisar
-    elTexto.textContent = texto;
-    elSaldo.classList.remove('oculto');
-  }
-
-  /* validação e envio */
-  function validar() {
-    var ok = true;
-    if (!ctx.servicoDia) { marcarErro(q('#ts-data'), txt('novaData')); ok = false; }
-    else if (!ctx.servicoSel || ctx.servicoSel.minutos <= 0) { marcarErro(q('#ts-data'), txt('novaServicoVazio')); ok = false; }
-    if (ctx.devDia && ctx.devSel && ctx.devSel.minutos <= 0) { marcarErro(q('#ts-dev-data'), txt('novaDevolucaoVazia')); ok = false; }
-    if (!ctx.parceiroSel) { marcarErro(q('#ts-parceiro'), txt('novaParceiro')); ok = false; }
-    if (ctx.parceiroSel && ctx.parceiroSel.cpf === RosterWork.sessao.cpf()) { marcarErro(q('#ts-parceiro'), txt('novaMesmaPessoa')); ok = false; }
-    return ok;
-  }
-  function enviar(btn) {
-    if (!validar()) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.camposCorrigir }); return; }
-    if (btn && RW.iniciarCarregando) RW.iniciarCarregando(btn);
+  /* ---------- validação e envio ---------- */
+  function montarCorpo() {
     var servTotal = ctx.servicoSel.total;
     var devTotal = ctx.devSel ? ctx.devSel.total : true;
     var corpo = {
@@ -358,143 +117,209 @@
       p_horario_fim: servTotal ? null : ctx.servicoSel.hf,
       p_data_servico_parceiro: ctx.devDia || null,
       p_devolucao_horario_inicio: (ctx.devDia && !devTotal) ? ctx.devSel.hi : null,
-      p_devolucao_horario_fim: (ctx.devDia && !devTotal) ? ctx.devSel.hf : null
+      p_devolucao_horario_fim: (ctx.devDia && !devTotal) ? ctx.devSel.hf : null,
+      p_parte_numero: parteNumero(),
+      p_parte_ano: parteAno()
     };
-    RW.trocasDados.solicitar(corpo).then(function (r) {
+    if (ctx.registrar) corpo.p_solicitante_cpf = ctx.solicitanteSel.cpf;
+    return corpo;
+  }
+  function validar() {
+    var ok = true, erro = C().marcarErro;
+    if (!parteNumero()) { erro(q('#ts-parte'), txt('novaParte')); ok = false; }
+    if (!parteAno()) { erro(q('#ts-parte-ano'), txt('novaAno')); ok = false; }
+    if (ctx.registrar && !ctx.solicitanteSel) { erro(q('#ts-solicitante'), txt('novaSolicitante')); ok = false; }
+    if (!ctx.servicoDia) { erro(q('#ts-data'), ctx.registrar ? txt('novaDataRegistrar') : txt('novaData')); ok = false; }
+    else if (!ctx.servicoSel || ctx.servicoSel.minutos <= 0) { erro(q('#ts-data'), txt('novaServicoVazio')); ok = false; }
+    if (C().devMarcarDia() && !ctx.devDia) { erro(q('#ts-dev-data'), txt('modalDevAjuda')); ok = false; }
+    else if (ctx.devDia && ctx.devSel && ctx.devSel.minutos <= 0) { erro(q('#ts-dev-data'), txt('novaDevolucaoVazia')); ok = false; }
+    if (!ctx.parceiroSel) { erro(q('#ts-parceiro'), txt('novaParceiro')); ok = false; }
+    if (ctx.parceiroSel && ctx.parceiroSel.cpf === C().cpfSolicitante()) { erro(q('#ts-parceiro'), txt('novaMesmaPessoa')); ok = false; }
+    return ok;
+  }
+  function mostrarVeu() { if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal(); }
+  function esconderVeu() { if (RW.esconderVeuGlobal) RW.esconderVeuGlobal(); }
+  /* depois de gravar: fecha, recarrega a página e abre o resumo com o Desfazer (apaga a troca recém-criada
+     por completo, como se nunca tivesse existido; a registrada também volta a escala, então usa o véu) */
+  function concluir(r, depois, aoMudar, comVeu) {
+    var trocaId = r.troca_id;
+    if (RW.painel) RW.painel.fechar();
+    if (depois) depois();
+    if (!r.log || !RW.resumo) return;
+    RW.resumo.abrirModal(r.log, {
+      pagina: 'Trocas',
+      desfazer: trocaId ? function () {
+        if (comVeu) mostrarVeu();
+        return RW.trocasDados.cancelar(trocaId, true).then(function (res) {
+          if (comVeu) esconderVeu();
+          if (res && res.ok && aoMudar) aoMudar();
+          return res;
+        }).catch(function (e) { if (comVeu) esconderVeu(); throw e; });
+      } : null
+    });
+  }
+  function enviar(btn) {
+    if (!validar()) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.camposCorrigir }); return; }
+    if (ctx.registrar) { confirmarRegistro(); return; }
+    if (btn && RW.iniciarCarregando) RW.iniciarCarregando(btn);
+    var aoSolicitar = ctx.aoSolicitar, aoMudar = ctx.aoMudar;
+    RW.trocasDados.solicitar(montarCorpo()).then(function (r) {
       if (btn && RW.pararCarregando) RW.pararCarregando(btn);
-      if (r && r.ok) {
-        var trocaId = r.troca_id;
-        if (RW.painel) RW.painel.fechar();
-        if (ctx.aoSolicitar) ctx.aoSolicitar();
-        if (r.log && RW.resumo) {
-          RW.resumo.abrirModal(r.log, {
-            pagina: 'Trocas',
-            /* Desfazer = apaga a troca recém-criada por completo (última chance), como se nunca tivesse existido */
-            desfazer: (trocaId && RW.trocasDados) ? function () {
-              return RW.trocasDados.cancelar(trocaId, true).then(function (res) {
-                if (res && res.ok && ctx && ctx.aoMudar) ctx.aoMudar();
-                return res;
-              });
-            } : null
-          });
-        }
-      } else if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: (r && r.erro) || RW.mensagens.trocas.falhaAcao });
+      if (r && r.ok) concluir(r, aoSolicitar, aoMudar, false);
+      else if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: (r && r.erro) || txt('falhaAcao') });
     }).catch(function () {
       if (btn && RW.pararCarregando) RW.pararCarregando(btn);
       if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao });
     });
   }
+  /* Registrar: confirma (avisando quando a análise apontou problema) e grava já aprovada */
+  function confirmarRegistro() {
+    var temProblema = !!(ctx.analise && ctx.analise.veredito === 'problema');
+    if (!RW.confirmar) { gravarRegistro(); return; }
+    RW.confirmar({
+      tipo: 'aviso', mensagem: temProblema ? txt('confirmarRegistrarComProblema') : txt('confirmarRegistrar'),
+      confirmarPerigo: temProblema, aoConfirmar: gravarRegistro
+    });
+  }
+  function gravarRegistro() {
+    var corpo = montarCorpo();
+    corpo.p_ensaio = false;
+    var aoMudar = ctx.aoMudar;
+    mostrarVeu();   // grava e recalcula a escala: véu global
+    RW.trocasDados.registrar(corpo).then(function (r) {
+      esconderVeu();
+      if (r && r.ok) concluir(r, aoMudar, aoMudar, true);
+      else if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: (r && r.erro) || txt('falhaAcao') });
+    }).catch(function () {
+      esconderVeu();
+      if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao });
+    });
+  }
 
-  /* estado, cancelar, reset */
-  function temDados() { return aberto && !!(ctx && (ctx.servicoDia || ctx.parceiroSel)); }
-  /* fecha o painel; com dados digitados, confirma o descarte antes (mesmo aviso do X/Esc) */
-  function cancelar() {
-    if (!temDados() || !RW.confirmar) { if (RW.painel) RW.painel.fechar(); return; }
+  /* ---------- estado, cancelar, reset ---------- */
+  function temDados() {
+    if (!aberto || !ctx) return false;
+    var parte = q('#ts-parte');
+    return !!(ctx.servicoDia || ctx.parceiroSel || ctx.solicitanteSel || (parte && parte.value.trim()));
+  }
+  function confirmarDescarte() {
     RW.confirmar({
       tipo: 'aviso', mensagem: RW.mensagens.edicao.sairSemSalvar,
       textoConfirmar: RW.mensagens.botoes.descartar, textoCancelar: RW.mensagens.botoes.continuarEditando,
       aoConfirmar: function () { if (RW.painel) RW.painel.fechar(); }
     });
+  }
+  /* fecha o painel; com dados digitados, confirma o descarte antes (mesmo aviso do X/Esc) */
+  function cancelar() {
+    if (!temDados() || !RW.confirmar) { if (RW.painel) RW.painel.fechar(); return; }
+    confirmarDescarte();
   }
   /* o X e o Esc do painel passam por aqui: segura o fechamento se houver dados a descartar */
   function guardaFechar() {
     if (!temDados() || !RW.confirmar) return false;
-    RW.confirmar({
-      tipo: 'aviso', mensagem: RW.mensagens.edicao.sairSemSalvar,
-      textoConfirmar: RW.mensagens.botoes.descartar, textoCancelar: RW.mensagens.botoes.continuarEditando,
-      aoConfirmar: function () { if (RW.painel) RW.painel.fechar(); }
-    });
+    confirmarDescarte();
     return true;
   }
   /* o painel avisa ao fechar (X/Esc/Cancelar/sucesso): o formulário some, então marca fechado */
   function aoFecharReset() { aberto = false; }
-  function resetCampos() {
-    ctx.servicoDia = null; ctx.servicoCtx = null; ctx.servicoSel = null;
-    ctx.unidadeSel = null; ctx.parceiroSel = null;
-    ctx.devDia = null; ctx.devSel = null; ctx.parceiroServicos = [];
-    ctx.saldoEntre = null; ctx.saldoCarregando = false;
-
-    if (q('#ts-data')) q('#ts-data').value = '';
-    if (ctx.periodoServico) ctx.periodoServico.limpar(); else montarPeriodoServico();   /* o período volta desligado */
-    definirTexto(q('#ts-unidade'), txt('modalSelecione'), true);
-    var pmenu = q('#ts-parceiro-menu'); if (pmenu) pmenu.textContent = '';
-    habilitarParceiro(false); definirParceiro(txt('modalDiaAntes'), true);
-
-    var toggle = q('#ts-dev-toggle');
-    if (toggle) {
-      var abas = toggle.querySelectorAll('.aba');
-      for (var i = 0; i < abas.length; i++) abas[i].classList.toggle('aba--ativa', abas[i].getAttribute('data-dev') === 'pendente');
-    }
-    if (q('#ts-dev-data')) { q('#ts-dev-data').value = ''; q('#ts-dev-data').classList.add('oculto'); }
-    if (ctx.periodoDevolucao) ctx.periodoDevolucao.limpar();
-    if (q('#ts-periodo-devolucao')) q('#ts-periodo-devolucao').classList.add('oculto');
-    if (q('#ts-saldo')) q('#ts-saldo').classList.add('oculto');
-
-    if (!ctx.raiz) return;
-    var erros = ctx.raiz.querySelectorAll('.campo--erro');
-    for (var j = 0; j < erros.length; j++) {
-      erros[j].classList.remove('campo--erro');
-      var a = erros[j].querySelector('.campo-erro-texto'); if (a) a.textContent = '';
-    }
+  /* o formulário recém-montado: tudo vazio, o Ano no ano atual (pode ser mudado) */
+  function prepararCampos() {
+    q('#ts-parte-ano').value = String(new Date().getFullYear());
+    C().montarPeriodoServico();   /* o período começa desligado */
+    ctx.comboParceiro.habilitar(false);
+    ctx.comboParceiro.definir(txt('modalDiaAntes'), true);
+    if (!ctx.registrar) return;
+    var data = q('#ts-data');
+    data.disabled = true;   // no Registrar, o dia espera o solicitante
+    data.placeholder = txt('modalSolicitanteAntes');
+    ctx.comboSolicitante.habilitar(false);
+    ctx.comboSolicitante.definir(txt('modalUnidadeAntes'), true);
   }
 
-  /* abre o painel lateral, monta o formulário (molde) e carrega os dados.
-     opcoes.cobrar = { cpf, nome, grau, minutos } liga o modo cobrança:
-     o devedor entra como parceiro e o período do serviço já nasce com as horas da dívida */
+  /* ---------- abrir ---------- */
   function abrir(opcoes) {
     if (!RW.painel) return;
-    RW.painel.abrir({ titulo: txt('tituloPainel'), aoFechar: aoFecharReset, aoTentarFechar: guardaFechar });
+    var registrar = !!(opcoes && opcoes.registrar);
+    RW.painel.abrir({ titulo: registrar ? txt('tituloRegistrar') : txt('tituloPainel'), aoFechar: aoFecharReset, aoTentarFechar: guardaFechar });
 
     var corpo = RW.painel.corpo(); corpo.textContent = '';
     var molde = document.getElementById('tpl-troca-solicitar');
     if (molde) corpo.appendChild(molde.content.cloneNode(true));
+    /* mostra só o que é do modo (Solicitar: o logado em leitura; Registrar: escolher o solicitante) */
+    var modo = registrar ? 'registrar' : 'solicitar';
+    Array.prototype.forEach.call(corpo.querySelectorAll('[data-modo]'), function (el) {
+      el.classList.toggle('oculto', el.getAttribute('data-modo') !== modo);
+    });
 
     ctx = {
-      raiz: corpo, aoSolicitar: cbs.aoSolicitar, aoMudar: cbs.aoMudar,
-      unidades: [], meusServicos: [], parceiroServicos: [],
-      servicoDia: null, servicoSel: null, periodoServico: null, unidadeSel: null, parceiroSel: null,
+      raiz: corpo, registrar: registrar, aoSolicitar: cbs.aoSolicitar, aoMudar: cbs.aoMudar,
+      meusServicos: [], parceiroServicos: [],
+      servicoDia: null, servicoCtx: null, servicoSel: null, periodoServico: null, unidadeSel: null, parceiroSel: null,
+      solUnidadeSel: null, solicitanteSel: null,
       devDia: null, devSel: null, periodoDevolucao: null,
-      saldoEntre: null, saldoCarregando: false,
-      cobrar: (opcoes && opcoes.cobrar) || null
+      saldoEntre: null, saldoCarregando: false, analise: null, btnEnviar: null,
+      cobrar: (!registrar && opcoes && opcoes.cobrar) || null
     };
     aberto = true;
+    C().iniciar(ctx, { aoMudarPedido: agendarAnalise });
 
     montarAcoes();
 
-    if (RW.calendario) {
-      RW.calendario.ligar(q('#ts-data'), {
-        obterData: function () { return ctx.servicoDia ? dataDeIso(ctx.servicoDia) : (ctx.meusServicos[0] ? dataDeIso(ctx.meusServicos[0].data) : new Date()); },
-        permiteDia: function (d) { return !!servicoDoDia(ctx.meusServicos, isoDe(d)); },
-        aoEscolher: escolherDiaServico
-      });
-      RW.calendario.ligar(q('#ts-dev-data'), {
-        obterData: function () { return ctx.devDia ? dataDeIso(ctx.devDia) : (ctx.parceiroServicos[0] ? dataDeIso(ctx.parceiroServicos[0].data) : new Date()); },
-        permiteDia: function (d) { return !!servicoDoDia(ctx.parceiroServicos, isoDe(d)); },
-        aoEscolher: escolherDiaDevolucao
+    ctx.comboParceiro = C().comboMilitar(q('#ts-parceiro'), q('#ts-parceiro-menu'), {
+      atual: function () { return ctx.parceiroSel; },
+      aoEscolher: function (mil) { ctx.parceiroSel = mil; C().aoTrocarParceiro(); },
+      aoPerder: function () { ctx.parceiroSel = null; C().aoTrocarParceiro(); },
+      ignorar: function () { return [RosterWork.sessao.cpf(), C().cpfSolicitante()]; }   // nem quem pede nem o admin que registra
+    });
+    if (registrar) {
+      ctx.comboSolicitante = C().comboMilitar(q('#ts-solicitante'), q('#ts-solicitante-menu'), {
+        atual: function () { return ctx.solicitanteSel; },
+        aoEscolher: function (mil) { ctx.solicitanteSel = mil; C().aoTrocarSolicitante(); },
+        aoPerder: function () { ctx.solicitanteSel = null; C().aoTrocarSolicitante(); },
+        ignorar: function () { return [RosterWork.sessao.cpf()]; }   // quem participa não registra a própria troca
       });
     }
 
-    ligarDevToggle();
-    ligarLimpezaErros(corpo);
+    if (RW.calendario) {
+      RW.calendario.ligar(q('#ts-data'), {
+        obterData: function () { return ctx.servicoDia ? C().dataDeIso(ctx.servicoDia) : (ctx.meusServicos[0] ? C().dataDeIso(ctx.meusServicos[0].data) : new Date()); },
+        permiteDia: function (d) { return !!C().servicoDoDia(ctx.meusServicos, C().isoDe(d)); },
+        aoEscolher: C().escolherDiaServico
+      });
+      RW.calendario.ligar(q('#ts-dev-data'), {
+        obterData: function () { return ctx.devDia ? C().dataDeIso(ctx.devDia) : (ctx.parceiroServicos[0] ? C().dataDeIso(ctx.parceiroServicos[0].data) : new Date()); },
+        permiteDia: function (d) { return !!C().servicoDoDia(ctx.parceiroServicos, C().isoDe(d)); },
+        aoEscolher: C().escolherDiaDevolucao
+      });
+    }
 
-    var u = RosterWork.sessao.perfil();
-    definirLeitura('#ts-minha-unidade', (u && u.lotacao_path) || '');
-    definirLeitura('#ts-meu-nome', u ? nomeDe(u) : '');
-    resetCampos();
-    RW.trocasDados.meusServicos(RosterWork.sessao.cpf(), null).then(function (l) { ctx.meusServicos = Array.isArray(l) ? l : []; }).catch(function () {});
+    C().ligarDevToggle();
+    ligarLimpezaErros(corpo);
+    ligarSoNumeros(q('#ts-parte'));
+    ligarSoNumeros(q('#ts-parte-ano'));
+    prepararCampos();
+
+    if (!registrar) {
+      var u = RosterWork.sessao.perfil();
+      q('#ts-minha-unidade').textContent = (u && u.lotacao_path) || '';
+      q('#ts-meu-nome').textContent = u ? C().nomeMil(u) : '';
+      var meu = ctx;
+      RW.trocasDados.meusServicos(RosterWork.sessao.cpf(), null).then(function (l) { if (ctx === meu) ctx.meusServicos = Array.isArray(l) ? l : []; }).catch(function () {});
+    }
     carregarUnidades();
   }
 
-  /* rodapé do painel: Cancelar / Solicitar troca */
+  /* rodapé do painel: Cancelar / Solicitar troca (ou Registrar troca) */
   function montarAcoes() {
     var rodape = RW.painel.rodape(); if (!rodape) return;
     rodape.textContent = ''; rodape.classList.remove('oculto');
-    var tpl = document.getElementById('tpl-troca-solicitar-acoes'); if (!tpl) return;
+    var tpl = document.getElementById(ctx.registrar ? 'tpl-troca-registrar-acoes' : 'tpl-troca-solicitar-acoes'); if (!tpl) return;
     var frag = tpl.content.cloneNode(true);
     var bCancelar = frag.querySelector('[data-acao="cancelar"]');
-    var bSolicitar = frag.querySelector('[data-acao="solicitar"]');
+    var bEnviar = frag.querySelector('[data-acao="solicitar"]');
     if (bCancelar) bCancelar.addEventListener('click', cancelar);
-    if (bSolicitar) bSolicitar.addEventListener('click', function () { enviar(bSolicitar); });
+    if (bEnviar) bEnviar.addEventListener('click', function () { enviar(bEnviar); });
+    ctx.btnEnviar = bEnviar;
     rodape.appendChild(frag);
   }
 

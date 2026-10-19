@@ -74,11 +74,11 @@
   padding: 16px;
 }
 
-/* variante: corpo que hospeda uma camada fixa sobre a lista (ex.: controles no canto).
-   o respiro do topo fica aqui (fixo, acima da rolagem) p/ os cabeçalhos sticky colarem
-   sempre no mesmo ponto; a rolagem e o respiro lateral/inferior ficam no .pagina-corpo-rolagem */
+/* variante: corpo com o respiro do topo fixo, acima da rolagem, para os cabeçalhos
+   sticky (ex.: a trilha da árvore de unidades) colarem sempre no mesmo ponto;
+   a rolagem e o respiro lateral/inferior ficam no .pagina-corpo-rolagem */
 .pagina-corpo--camada {
-  --respiro-topo: 16px;   /* respiro fixo do topo; os controles flutuantes (.titulos-niveis) derivam dele */
+  --respiro-topo: 16px;   /* respiro fixo do topo */
   overflow: visible;
   padding: var(--respiro-topo) 0 0;
   position: relative;

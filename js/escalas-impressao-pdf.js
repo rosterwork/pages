@@ -67,6 +67,8 @@
 
   function txt() { return RW.mensagens.escala.impressao.pdf; }
   function pecas() { return (RW.escalasPainel && RW.escalasPainel.pecas) || {}; }
+  /* as observações nos grupos da tela (a mesma peça do painel do dia) */
+  function gruposObservacoes(obs) { return pecas().agruparObservacoes ? pecas().agruparObservacoes(obs) : [{ titulo: '', itens: obs || [] }]; }
 
   /* ---------- recursos ---------- */
   function carregarScript(src) {
@@ -202,10 +204,16 @@
     if (!linhas.length) linhas.push({ marcador: t.semDistribuicao, no: { text: t.semDistribuicao, fontSize: FONTE.texto, color: c.suave, margin: CELULA.vazio } });
     if ((item.observacoes || []).length) {
       var tituloObs = tituloBloquinho(t.observacoes);
+      /* os mesmos grupos da tela (Administração, Trocas, Folgas, De outra unidade), cada um com a lista numerada */
+      var gruposObs = gruposObservacoes(item.observacoes).map(function (g) {
+        return [{ stack: [
+          { text: g.titulo, bold: true, fontSize: FONTE.texto, color: c.forte, margin: [0, 0, 0, 2] },
+          { ol: g.itens.map(RW.mensagens.escala.observacaoTexto), fontSize: FONTE.texto, color: c.texto }
+        ] }];
+      });
       linhas.push({ marcador: tituloObs, no: { table: { widths: ['*'], body: [
-        [{ text: tituloObs, bold: true, fontSize: FONTE.posto, characterSpacing: ESPACAMENTO_CAIXA_ALTA, color: c.forte }],
-        [{ ul: item.observacoes.map(RW.mensagens.escala.observacaoTexto), fontSize: FONTE.texto, color: c.texto }]
-      ] }, layout: layoutBloquinho(c, preencher) } });
+        [{ text: tituloObs, bold: true, fontSize: FONTE.posto, characterSpacing: ESPACAMENTO_CAIXA_ALTA, color: c.forte }]
+      ].concat(gruposObs) }, layout: layoutBloquinho(c, preencher) } });
     }
     return linhas;
   }
@@ -407,7 +415,8 @@
     });
     var obs = item.observacoes || [];
     if (obs.length) {
-      h += ESTIMATIVA.posto + obs.reduce(function (s, o) {
+      /* o título do bloquinho, uma linha por título de grupo e as linhas de cada item */
+      h += ESTIMATIVA.posto + gruposObservacoes(obs).length * ESTIMATIVA.linhaTexto + obs.reduce(function (s, o) {
         return s + ESTIMATIVA.linhaTexto * Math.ceil(((RW.mensagens.escala.observacaoTexto(o) || '').length + 1) / ESTIMATIVA.letrasPorLinha);
       }, 0);
     }

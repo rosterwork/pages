@@ -167,18 +167,18 @@
     return !!(sel && sel.has('Inativo'));
   }
 
-  /* abre a ficha do militar no painel e realça o card clicado (ver = todos) */
+  /* abre a ficha do militar no painel e realça a linha clicada (ver = todos) */
   function abrirFicha(card, pessoa) {
-    if (cardSelecionado) cardSelecionado.classList.remove('usuario-item--selecionada');
+    if (cardSelecionado) cardSelecionado.classList.remove('linha-militar--selecionada');
     cardSelecionado = card;
-    card.classList.add('usuario-item--selecionada');
+    card.classList.add('linha-militar--selecionada');
     if (window.RosterWork.usuariosPainel) window.RosterWork.usuariosPainel.abrir(pessoa, limparSelecao);
   }
 
   /* o painel chama isto ao fechar (X, Esc ou troca de página): tira o realce */
   function limparSelecao() {
     if (cardSelecionado) {
-      cardSelecionado.classList.remove('usuario-item--selecionada');
+      cardSelecionado.classList.remove('linha-militar--selecionada');
       cardSelecionado = null;
     }
   }
@@ -204,8 +204,8 @@
     /* quem pediu correção e ainda espera decisão (só o admin decide, só ele vê) */
     var correcao = item.querySelector('.usuario-item-correcao');
     if (correcao) correcao.classList.toggle('oculto', !(pessoa.correcao_pendente && RosterWork.sessao.ehAdmin()));
-    if (casa && modoBusca === 'marcar') item.classList.add('usuario-item--marcado');
-    item.classList.add('usuario-item--clicavel');
+    if (casa && modoBusca === 'marcar') item.classList.add('linha-militar--marcada');
+    item.classList.add('linha-militar--clicavel');
     item.addEventListener('click', function () { abrirFicha(item, pessoa); });
     container.appendChild(item);
     contagemVisivel++;
@@ -234,29 +234,32 @@
     return copia;
   }
 
-  /* monta os cards de pessoa dentro de uma unidade marcada (ativos + inativos quando filtrado) */
+  /* monta as linhas de pessoa num bloquinho branco do bloco da unidade (ativos + inativos quando filtrado);
+     unidade sem ninguém fica só com o título */
   function renderConteudo(container, unidade, pessoas) {
     var tpl = document.getElementById('tpl-usuario-item');
-    if (!tpl) return;
+    var bloquinho = RosterWork.tpl('tpl-arvore-bloquinho');
+    if (!tpl || !bloquinho) return;
     var adicionou = 0;
     var total = pessoas.length;
     ordenarPessoas(pessoas).forEach(function (pessoa) {
       if (!pessoaPassaSituacao(pessoa)) return;
-      if (montarCard(container, tpl, pessoa)) adicionou++;
+      if (montarCard(bloquinho, tpl, pessoa)) adicionou++;
     });
     /* inativos da unidade: só quando o filtro de situação inclui "Inativos" */
     if (mostrarInativos()) {
       var inativos = inativosPorUnidade[unidade.unidade_id] || [];
       total += inativos.length;
       ordenarPessoas(inativos).forEach(function (pessoa) {
-        if (montarCard(container, tpl, pessoa)) adicionou++;
+        if (montarCard(bloquinho, tpl, pessoa)) adicionou++;
       });
     }
     /* a unidade tem militares, mas nenhum passou pelos filtros atuais */
     if (total > 0 && adicionou === 0) {
       var tplVazio = document.getElementById('tpl-usuario-vazio');
-      if (tplVazio) container.appendChild(tplVazio.content.cloneNode(true));
+      if (tplVazio) bloquinho.appendChild(tplVazio.content.cloneNode(true));
     }
+    if (total > 0) container.appendChild(bloquinho);
   }
 
   /* liga a busca: botão de modo (marcar↔filtrar), o input (com debounce) e o limpar */

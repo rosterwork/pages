@@ -27,20 +27,22 @@
   }
 
   function limparSelecao() {
-    if (cardSelecionado) { cardSelecionado.classList.remove('folga-saldo-item--selecionada'); cardSelecionado = null; }
+    if (cardSelecionado) { cardSelecionado.classList.remove('linha-militar--selecionada'); cardSelecionado = null; }
   }
 
   function abrir(card, militar) {
-    if (cardSelecionado) cardSelecionado.classList.remove('folga-saldo-item--selecionada');
+    if (cardSelecionado) cardSelecionado.classList.remove('linha-militar--selecionada');
     cardSelecionado = card;
-    card.classList.add('folga-saldo-item--selecionada');
+    card.classList.add('linha-militar--selecionada');
     if (RW.folgasPainel) RW.folgasPainel.abrirDetalhe(militar, limparSelecao);
   }
 
-  /* a árvore chama isto por unidade marcada: monta os militares com o saldo */
+  /* a árvore chama isto por unidade marcada: monta os militares com o saldo num bloquinho branco
+     (unidade sem ninguém fica só com o título) */
   function renderConteudo(container, unidade, itens) {
     var tpl = document.getElementById('tpl-folga-saldo-item');
-    if (!tpl) return;
+    var bloquinho = RW.tpl('tpl-arvore-bloquinho');
+    if (!tpl || !bloquinho) return;
     var adicionou = 0;
     itens.forEach(function (m) {
       if (!casaBusca(m)) return;
@@ -52,7 +54,7 @@
       var classe = fmt().saldoSeloClasse(m.saldo_minutos);
       if (classe) selo.classList.add(classe);
       item.addEventListener('click', function () { abrir(item, m); });
-      container.appendChild(item);
+      bloquinho.appendChild(item);
       adicionou++;
     });
     if (itens.length > 0 && adicionou === 0) {
@@ -60,9 +62,10 @@
       if (tplV) {
         var v = tplV.content.cloneNode(true).firstElementChild;
         v.textContent = RW.mensagens.folgas.vazioSaldos;
-        container.appendChild(v);
+        bloquinho.appendChild(v);
       }
     }
+    if (itens.length) container.appendChild(bloquinho);
   }
 
   /* a árvore avisa quais militares estão nas unidades marcadas (base do picker de "Dar folga") */

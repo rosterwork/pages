@@ -168,11 +168,11 @@
     </div>
   </div>
 
-  <!-- Antiguidade (só administrador): a companhia em bloco cinza e cada posto num bloquinho branco,
-       como no PDF da escala; os títulos (unidade e posto) ficam presos no alto ao rolar -->
+  <!-- Antiguidade (só administrador): as peças da árvore de unidades (trilha, bloco da companhia e um
+       bloquinho por posto), como no PDF da escala; trilha e títulos ficam presos no alto ao rolar -->
   <div class="pagina-corpo pagina-corpo--camada oculto" data-aba-painel="antiguidade">
     <div class="pagina-corpo-rolagem">
-      <div class="antiguidade-lista" id="antiguidade-lista"></div>
+      <div class="arvore arvore-unidades antiguidade-lista" id="antiguidade-lista"></div>
     </div>
     <!-- salvar: ativo só com alteração; Cancelar volta à ordem gravada -->
     <div class="rodape rodape-pilha">
@@ -196,18 +196,18 @@
 
 <!-- o formulário Novo usuário (#tpl-novo-usuario e companhia) mora no index.html -->
 
+<!-- molde: um militar na linha da árvore (como a linha do PDF): graduação + nome, o identificador numa coluna e os selos no fim -->
 <template id="tpl-usuario-item">
-  <div class="usuario-item" role="button" tabindex="0">
-    <span class="usuario-item-textos">
-      <span class="usuario-item-pessoa">
-        <span class="usuario-item-grad"></span>
-        <span class="usuario-item-nome"></span>
-      </span>
-      <span class="usuario-item-cpf"></span>
+  <div class="linha-militar usuario-item" role="button" tabindex="0">
+    <span class="linha-militar-pessoa">
+      <span class="linha-militar-grad usuario-item-grad"></span>
+      <span class="linha-militar-nome usuario-item-nome"></span>
     </span>
-    <span class="espacador-flex"></span>
-    <span class="selo selo--alerta usuario-item-correcao oculto">Correção pendente</span>
-    <span class="selo usuario-item-selo"></span>
+    <span class="linha-militar-coluna usuario-item-cpf"></span>
+    <span class="linha-militar-fim usuario-item-selos">
+      <span class="selo selo--alerta usuario-item-correcao oculto">Correção pendente</span>
+      <span class="selo usuario-item-selo"></span>
+    </span>
   </div>
 </template>
 
@@ -220,39 +220,29 @@
   <div class="usuario-vazio">Nenhum militar com os filtros atuais.</div>
 </template>
 
-<!-- molde (aba Antiguidade): a companhia = bloco cinza com o título dentro, como no PDF
-     (nome completo e, embaixo, sigla · cidade) -->
-<template id="tpl-antiguidade-unidade">
-  <section class="antiguidade-unidade">
-    <div class="antiguidade-unidade-titulo">
-      <span class="antiguidade-unidade-nome" data-unidade-nome></span>
-      <span class="antiguidade-unidade-detalhe"><span data-unidade-sigla></span> · <span data-unidade-cidade></span></span>
-    </div>
-    <div class="antiguidade-postos" data-postos></div>
-  </section>
-</template>
-
-<!-- molde (aba Antiguidade): um posto = bloquinho branco, com os militares na ordem;
-     o título recolhe/expande a lista (chevron à direita, como o título da unidade no modo Militares) -->
+<!-- molde (aba Antiguidade): um posto = bloquinho branco da árvore, com os militares na ordem;
+     o título recolhe/expande a lista (chevron à direita) -->
 <template id="tpl-antiguidade-posto">
-  <div class="grupo-caixa antiguidade-posto">
-    <button type="button" class="antiguidade-posto-titulo" aria-expanded="true">
+  <div class="bloquinho bloquinho--com-titulo antiguidade-posto">
+    <button type="button" class="bloquinho-titulo antiguidade-posto-titulo" aria-expanded="true">
       <span class="rotulo-secao" data-posto-titulo></span>
-      <svg class="icone antiguidade-posto-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      <svg class="icone bloquinho-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
     </button>
-    <div class="antiguidade-posto-lista" data-posto-lista></div>
+    <div class="bloquinho-lista" data-posto-lista></div>
   </div>
 </template>
 
-<!-- molde (aba Antiguidade): um militar (graduação + nome, como no PDF); as setas aparecem
-     quando a linha é escolhida -->
+<!-- molde (aba Antiguidade): um militar na linha da árvore (número, graduação + nome e o pelotão);
+     as setas aparecem quando a linha é escolhida -->
 <template id="tpl-antiguidade-linha">
-  <div class="antiguidade-linha" role="button" tabindex="0">
-    <span class="antiguidade-numero" data-numero></span>
-    <span class="antiguidade-grad" data-grad></span>
-    <span class="antiguidade-nome" data-guerra></span>
-    <span class="antiguidade-pelotao" data-pelotao></span>
-    <span class="antiguidade-setas">
+  <div class="linha-militar linha-militar--clicavel antiguidade-linha" role="button" tabindex="0">
+    <span class="linha-militar-numero" data-numero></span>
+    <span class="linha-militar-pessoa">
+      <span class="linha-militar-grad" data-grad></span>
+      <span class="linha-militar-nome" data-guerra></span>
+    </span>
+    <span class="linha-militar-coluna antiguidade-pelotao" data-pelotao></span>
+    <span class="linha-militar-fim antiguidade-setas">
       <button type="button" class="botao botao--icone botao--pequeno" data-mover="cima" aria-label="Subir uma posição" data-dica="Subir">
         <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-mover-cima.svg#icone-mover-cima"/></svg>
       </button>
@@ -267,6 +257,8 @@
   <div class="usuario-vazio">Nenhum militar ativo na sua companhia.</div>
 </template>
 
+<!-- ===== ficha do militar (painel direito; usuarios-painel*.js), no padrão do painel da Escala ===== -->
+
 <!-- molde: abas de seção do painel da ficha (Dados / Carreira) -->
 <template id="tpl-usuarios-painel-secoes">
   <div class="abas">
@@ -275,41 +267,89 @@
   </div>
 </template>
 
-<!-- molde: botão de baixa (aba Carreira, modo Editar do admin) -->
-<!-- molde: campo de data "A partir de" (baixa e readmissão) -->
-<template id="tpl-usuarios-data-vigencia">
-  <label class="campo">
-    <span class="campo-rotulo">A partir de</span>
-    <input class="campo-entrada" type="text" name="vigencia-data" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" data-vigencia-data autocomplete="off" />
-    <span class="campo-erro-texto"></span>
-  </label>
-</template>
-
-<!-- molde: observação "Sem acesso ao sistema" (militar cadastrado sem conta de login) -->
-<template id="tpl-usuarios-sem-conta">
-  <div class="ficha-observacao">
-    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-cadeado.svg#icone-cadeado"/></svg>
-    <span>Sem acesso ao sistema. Cadastrado sem conta de login, não participa de trocas, folgas nem extrajornada até criar a própria conta.</span>
+<!-- molde: um bloco da ficha (caixa cinza com o título); o lápis aparece para o admin e abre a correção -->
+<template id="tpl-ficha-bloco">
+  <div class="grupo-caixa">
+    <div class="ficha-bloco-cab">
+      <span class="rotulo-secao"></span>
+      <button type="button" class="botao-discreto oculto" data-ficha-lapis>
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-editar.svg#icone-editar"/></svg>
+      </button>
+    </div>
   </div>
 </template>
 
-<!-- molde: situação do acesso (seção Acesso ao sistema): sem link, o que fazer; com link, até quando ele vale -->
+<!-- molde: bloco que recolhe (começa fechado; abre e fecha pelo chevron) -->
+<template id="tpl-ficha-bloco-recolhivel">
+  <div class="grupo-caixa">
+    <button type="button" class="ficha-bloco-cab ficha-bloco-cab--recolhivel" aria-expanded="false">
+      <span class="rotulo-secao"></span>
+      <svg class="icone ficha-bloco-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+    </button>
+    <div class="ficha-bloco-corpo oculto"></div>
+  </div>
+</template>
+
+<!-- molde: uma linha de dado do bloco (rótulo à esquerda, valor ao lado; o complemento em cinza) -->
+<template id="tpl-ficha-linha">
+  <div class="ficha-linha">
+    <span class="ficha-linha-rotulo"></span>
+    <span class="ficha-linha-valor"><span data-ficha-valor></span><span class="ficha-linha-extra" data-ficha-extra></span></span>
+  </div>
+</template>
+
+<!-- molde: nota "Sem acesso ao sistema" (militar cadastrado sem conta de login) -->
+<template id="tpl-usuarios-sem-conta">
+  <div class="nota">
+    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-cadeado.svg#icone-cadeado"/></svg>
+    <span class="nota-texto">Sem acesso ao sistema. Cadastrado sem conta de login, não participa de trocas, folgas nem extrajornada até criar a própria conta.</span>
+  </div>
+</template>
+
+<!-- molde: nota da transferência marcada (data futura), com o Cancelar (só admin) -->
+<template id="tpl-ficha-marcada">
+  <div class="nota">
+    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-historico.svg#icone-historico"/></svg>
+    <span class="nota-texto"><span data-marcada-texto></span>. Para marcar outra, cancele esta primeiro.</span>
+    <button type="button" class="botao botao--texto ficha-nota-acao" data-marcada-cancelar>Cancelar</button>
+  </div>
+</template>
+
+<!-- molde: barra do painel na Carreira (admin, militar ativo) -->
+<template id="tpl-ficha-acoes-carreira">
+  <button type="button" class="botao botao--primario" data-ficha-acao="promover">Promover</button>
+  <button type="button" class="botao botao--primario" data-ficha-acao="transferir">Transferir</button>
+</template>
+
+<!-- molde: barra do painel na Carreira (admin, militar inativo) -->
+<template id="tpl-ficha-acoes-inativo">
+  <button type="button" class="botao botao--primario" data-ficha-acao="readmitir">Readmitir ao efetivo</button>
+</template>
+
+<!-- molde: o Dar baixa, no fim da Carreira (admin, militar ativo) -->
+<template id="tpl-ficha-baixa-botao">
+  <div class="ficha-acoes-fim">
+    <button type="button" class="botao ficha-botao--perigo">Dar baixa do sistema</button>
+  </div>
+</template>
+
+<!-- molde: situação do acesso (bloco Acesso ao sistema): sem link, o que fazer; com link, até quando ele vale -->
 <template id="tpl-usuarios-acesso-estado">
-  <div class="ficha-observacao"><span data-acesso-estado></span></div>
+  <span class="subtela-ajuda" data-acesso-estado></span>
 </template>
 
-<!-- molde: botão de gerar o link de cadastro (seção Acesso ao sistema, militar sem conta) -->
+<!-- molde: botão de gerar o link de cadastro (bloco Acesso ao sistema, militar sem conta) -->
 <template id="tpl-usuarios-link-cadastro-botao">
-  <button type="button" class="botao botao--primario">Gerar link de cadastro</button>
+  <div class="ficha-acoes-fim">
+    <button type="button" class="botao botao--primario">Gerar link de cadastro</button>
+  </div>
 </template>
 
-<template id="tpl-usuarios-baixa-botao">
-  <button type="button" class="botao botao--perigo">Dar baixa</button>
-</template>
-
-<!-- molde: botão de gerar o link de nova senha (seção Acesso ao sistema, militar com conta) -->
+<!-- molde: botão de gerar o link de nova senha (bloco Acesso ao sistema, militar com conta) -->
 <template id="tpl-usuarios-link-senha-botao">
-  <button type="button" class="botao botao--primario">Gerar link de nova senha</button>
+  <div class="ficha-acoes-fim">
+    <button type="button" class="botao botao--primario">Gerar link de nova senha</button>
+  </div>
 </template>
 
 <!-- molde: o link que está valendo: a mensagem pronta para mandar no privado do militar.
@@ -319,83 +359,181 @@
     <span class="campo-rotulo">Mensagem para enviar</span>
     <textarea class="campo-entrada" rows="10" readonly data-acesso-mensagem></textarea>
   </label>
-  <button type="button" class="botao botao--primario" data-acesso-copiar>Copiar mensagem</button>
-  <button type="button" class="botao" data-acesso-cancelar>Cancelar link</button>
+  <div class="ficha-acoes-fim">
+    <button type="button" class="botao botao--primario" data-acesso-copiar>Copiar mensagem</button>
+    <button type="button" class="botao" data-acesso-cancelar>Cancelar link</button>
+  </div>
 </template>
 
-<!-- molde: botão de readmissão (aba Carreira, modo Editar do admin, militar inativo) -->
-<template id="tpl-usuarios-readmitir-botao">
-  <button type="button" class="botao botao--primario">Readmitir ao efetivo</button>
-</template>
-
-<!-- molde: seção Transferir (aba Carreira, modo Editar do admin) — origem + seletor de unidade + data + botão;
-     com uma transferência marcada, só ela aparece (com Cancelar) e os campos somem -->
-<template id="tpl-usuarios-transferir">
-  <div class="grupo-caixa oculto" data-transferir-marcada>
-    <span class="rotulo-secao">Mudanças marcadas</span>
-    <div class="linha-info">
-      <span class="linha-info-rotulo" data-transferir-marcada-texto></span>
-      <button type="button" class="botao botao--texto" data-transferir-cancelar>Cancelar</button>
-    </div>
-    <span class="subtela-ajuda">Para marcar outra, cancele esta primeiro.</span>
-  </div>
-  <div class="linha-info" data-transferir-campo>
-    <span class="linha-info-rotulo">De</span>
-    <span class="linha-info-valor" data-origem></span>
-  </div>
-  <div class="campo" data-transferir-campo>
-    <span class="campo-rotulo">Para</span>
-    <div class="dropdown" data-transferir-dropdown>
-      <button type="button" class="campo-entrada campo-selecao">
-        <span class="campo-selecao-texto campo-selecao-texto--vazio" data-transferir-texto>Selecione a unidade</span>
-        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+<!-- molde: rodapé do admin sem sub-tela: as alterações na ficha (retrátil, começa fechado; componente geral-alteracoes) -->
+<template id="tpl-ficha-alteracoes">
+  <div class="alteracoes">
+    <div class="alteracoes-cabecalho">
+      <span class="alteracoes-titulo">Alterações na ficha <span class="alteracoes-qtd"></span></span>
+      <button type="button" class="botao-discreto alteracoes-toggle" aria-label="Mostrar ou ocultar as alterações na ficha" aria-expanded="false">
+        <svg class="icone alteracoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
       </button>
-      <div class="dropdown-menu dropdown-menu--largo">
-        <div class="dropdown-menu-rolagem">
-          <div class="arvore" data-transferir-arvore></div>
+    </div>
+    <div class="alteracoes-lista oculto"></div>
+  </div>
+</template>
+
+<!-- ===== sub-telas da ficha (abrem no lugar da ficha: Voltar no topo; Cancelar + o botão de aplicar no rodapé) ===== -->
+
+<template id="tpl-ficha-voltar-dados">
+  <button type="button" class="botao botao--texto subtela-voltar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-esquerda.svg#icone-seta-esquerda"/></svg><span>Voltar aos dados</span></button>
+</template>
+
+<template id="tpl-ficha-voltar-carreira">
+  <button type="button" class="botao botao--texto subtela-voltar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-esquerda.svg#icone-seta-esquerda"/></svg><span>Voltar à carreira</span></button>
+</template>
+
+<!-- molde: rodapé das sub-telas (o texto do botão de aplicar vem de RosterWork.mensagens.botoes) -->
+<template id="tpl-ficha-sub-acoes">
+  <span class="ficha-rodape-info"></span>
+  <button type="button" class="botao" data-sub-cancelar>Cancelar</button>
+  <button type="button" class="botao botao--primario" data-sub-aplicar></button>
+</template>
+
+<!-- molde: sub-tela Corrigir dados pessoais (os campos vêm do usuarios-painel-editar.js) -->
+<template id="tpl-ficha-sub-pessoais">
+  <div class="subtela">
+    <div class="subtela-cab">
+      <span class="subtela-titulo">Corrigir dados pessoais</span>
+      <span class="subtela-subtitulo">Para consertar um dado incorreto.</span>
+    </div>
+  </div>
+</template>
+
+<!-- molde: sub-tela Corrigir dados institucionais -->
+<template id="tpl-ficha-sub-institucionais">
+  <div class="subtela">
+    <div class="subtela-cab">
+      <span class="subtela-titulo">Corrigir dados institucionais</span>
+      <span class="subtela-subtitulo">Para consertar um dado incorreto.</span>
+    </div>
+  </div>
+</template>
+
+<!-- molde: sub-tela Datas de promoções (os campos vêm do usuarios-painel-datas.js) -->
+<template id="tpl-ficha-sub-datas">
+  <div class="subtela">
+    <div class="subtela-cab">
+      <span class="subtela-titulo">Datas de promoções</span>
+      <span class="subtela-subtitulo">Deixe em branco o que não tiver.</span>
+    </div>
+  </div>
+</template>
+
+<!-- molde: sub-tela Promover: o tipo, a hierarquia que o sistema calcula e a data -->
+<template id="tpl-ficha-sub-promover">
+  <div class="subtela">
+    <div class="subtela-cab">
+      <span class="subtela-titulo">Promover</span>
+      <span class="subtela-subtitulo">Hoje: <span data-sub-valor></span></span>
+    </div>
+    <div class="grupo-caixa">
+      <span class="rotulo-secao">1. Tipo</span>
+      <div class="campo">
+        <div class="dropdown">
+          <button type="button" class="campo-entrada campo-selecao" data-promover-tipo aria-label="Tipo">
+            <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+          </button>
+          <div class="dropdown-menu"></div>
         </div>
       </div>
     </div>
-  </div>
-  <label class="campo" data-transferir-campo>
-    <span class="campo-rotulo">A partir de</span>
-    <input class="campo-entrada" type="text" name="transferir-data" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" data-transferir-data />
-    <span class="campo-erro-texto"></span>
-  </label>
-  <button type="button" class="botao botao--primario" data-transferir-campo data-transferir-botao disabled>Transferir</button>
-</template>
-
-<!-- molde: seção Promover (aba Carreira, modo Editar do admin) — Tipo + hierarquia automática + data -->
-<template id="tpl-usuarios-promover">
-  <div class="campo">
-    <span class="campo-rotulo">Tipo</span>
-    <div class="dropdown">
-      <button type="button" class="campo-entrada campo-selecao" data-promover-tipo>
-        <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
-        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
-      </button>
-      <div class="dropdown-menu"></div>
+    <div class="grupo-caixa">
+      <span class="rotulo-secao">2. Promovido a</span>
+      <span class="ficha-promovido" data-promover-hierarquia>-</span>
+    </div>
+    <div class="grupo-caixa">
+      <span class="rotulo-secao">3. Data da promoção</span>
+      <label class="campo">
+        <input class="campo-entrada" type="text" name="promover-data" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" aria-label="Data da promoção" data-promover-data autocomplete="off" />
+        <span class="campo-erro-texto"></span>
+      </label>
+    </div>
+    <div class="nota oculto" data-promover-nota>
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+      <span class="nota-texto"></span>
     </div>
   </div>
-  <div class="linha-info">
-    <span class="linha-info-rotulo">Promovido a</span>
-    <span class="linha-info-valor" data-promover-hierarquia>-</span>
-  </div>
-  <label class="campo">
-    <span class="campo-rotulo">Data da promoção</span>
-    <input class="campo-entrada" type="text" name="promover-data" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" data-promover-data />
-    <span class="campo-erro-texto"></span>
-  </label>
-  <button type="button" class="botao botao--primario" data-promover-botao disabled>Promover</button>
 </template>
 
-<!-- molde: campo editável de texto (aba Dados, modo Editar) -->
+<!-- molde: sub-tela Transferir: a unidade de destino e a data -->
+<template id="tpl-ficha-sub-transferir">
+  <div class="subtela">
+    <div class="subtela-cab">
+      <span class="subtela-titulo">Transferir</span>
+      <span class="subtela-subtitulo">Hoje: <span data-sub-valor></span></span>
+    </div>
+    <div class="grupo-caixa">
+      <span class="rotulo-secao">1. Para</span>
+      <div class="campo">
+        <div class="dropdown" data-transferir-dropdown>
+          <button type="button" class="campo-entrada campo-selecao" aria-label="Para">
+            <span class="campo-selecao-texto campo-selecao-texto--vazio" data-transferir-texto>Selecione a unidade</span>
+            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+          </button>
+          <div class="dropdown-menu dropdown-menu--largo">
+            <div class="dropdown-menu-rolagem">
+              <div class="arvore" data-transferir-arvore></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="grupo-caixa">
+      <span class="rotulo-secao">2. A partir de</span>
+      <label class="campo">
+        <input class="campo-entrada" type="text" name="transferir-data" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" aria-label="A partir de" data-transferir-data autocomplete="off" />
+        <span class="campo-erro-texto"></span>
+      </label>
+    </div>
+  </div>
+</template>
+
+<!-- molde: sub-tela Dar baixa do sistema (a data; o que a baixa cancela aparece na confirmação) -->
+<template id="tpl-ficha-sub-baixa">
+  <div class="subtela">
+    <div class="subtela-cab">
+      <span class="subtela-titulo">Dar baixa do sistema</span>
+    </div>
+    <div class="grupo-caixa">
+      <span class="rotulo-secao">A partir de</span>
+      <label class="campo">
+        <input class="campo-entrada" type="text" name="vigencia-data" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" aria-label="A partir de" data-vigencia-data autocomplete="off" />
+        <span class="campo-erro-texto"></span>
+      </label>
+    </div>
+  </div>
+</template>
+
+<!-- molde: sub-tela Readmitir ao efetivo (militar inativo) -->
+<template id="tpl-ficha-sub-readmitir">
+  <div class="subtela">
+    <div class="subtela-cab">
+      <span class="subtela-titulo">Readmitir ao efetivo</span>
+    </div>
+    <div class="grupo-caixa">
+      <span class="rotulo-secao">A partir de</span>
+      <label class="campo">
+        <input class="campo-entrada" type="text" name="vigencia-data" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" aria-label="A partir de" data-vigencia-data autocomplete="off" />
+        <span class="campo-erro-texto"></span>
+      </label>
+    </div>
+  </div>
+</template>
+
+<!-- molde: campo editável de texto (sub-telas de correção) -->
 <template id="tpl-ficha-campo">
   <label class="campo">
     <span class="campo-rotulo"></span>
     <input class="campo-entrada" type="text" name="ficha-campo" />
-    <!-- dica da inclusão no quadro: aparece só nesse campo -->
-    <span class="campo-ajuda oculto" data-ajuda="inclusao">Data de entrada no quadro atual do militar (praças ou oficiais), não a data de entrada na corporação.</span>
+    <!-- dica da data de inclusão: aparece só nesse campo -->
+    <span class="campo-ajuda oculto" data-ajuda="inclusao">A data do primeiro posto na corporação.</span>
     <span class="campo-erro-texto"></span>
   </label>
 </template>
@@ -413,10 +551,4 @@
     </div>
     <span class="campo-erro-texto"></span>
   </div>
-</template>
-
-<!-- molde: rodapé de ações do Editar (Cancelar / Salvar) -->
-<template id="tpl-ficha-editar-acoes">
-  <button type="button" class="botao ficha-editar-cancelar">Cancelar</button>
-  <button type="button" class="botao botao--primario ficha-editar-salvar">Salvar</button>
 </template>

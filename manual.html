@@ -60,6 +60,7 @@
               <ul>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#solicitar-troca">Solicitar e acompanhar uma troca</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#aprovar-trocas">Aprovar trocas</a></li>
+                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#registrar-troca">Registrar uma troca</a></li>
               </ul>
             </li>
             <li>
@@ -105,6 +106,7 @@
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#ver-efetivo">Ver o efetivo e as fichas</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#cadastrar-efetivo">Cadastrar o efetivo e liberar acesso</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#carreira">Promover, transferir e dar baixa</a></li>
+                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#ajustar-antiguidade">Ajustar a antiguidade</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#aprovacoes">Aprovar correções de dados</a></li>
               </ul>
             </li>
@@ -399,8 +401,8 @@
                   </ol>
                 </figcaption>
               </figure>
-              <p><strong>E-mail e celular são seus e valem na hora.</strong> Se outro dado estiver errado (nome, RG, nascimento, CNH e afins), corrija ali mesmo: a correção passa pela aprovação de um administrador antes de valer, como uma correção comum. <strong>CPF, posto, lotação e promoções</strong> aparecem só para conferência: eles mudam por promoção e transferência, feitas pelo administrador.</p>
-              <p class="manual-nota"><strong>Inclusão no quadro.</strong> É a data em que você entrou no seu <strong>quadro atual</strong>, de praças ou de oficiais. Não é a data de entrada na corporação: quem foi praça e hoje é oficial tem a data de entrada no quadro de oficiais. Essa data vai até o dia da primeira promoção do quadro.</p>
+              <p><strong>E-mail e celular são seus e valem na hora.</strong> Se outro dado estiver errado (nome, RG, nascimento, CNH e afins), corrija ali mesmo: a correção passa pela aprovação de um administrador antes de valer, como uma correção comum. <strong>CPF, posto e lotação</strong> aparecem só para conferência: eles mudam por promoção e transferência, feitas pelo administrador. As <strong>datas de promoção</strong> já gravadas também; as que estiverem vazias você pode preencher, e elas vão para a aprovação junto com as correções.</p>
+              <p class="manual-nota"><strong>Data de inclusão.</strong> É o seu início na corporação, a data do seu primeiro posto: quem foi incluído a partir de 01/11/2024 começa como Soldado 3ª Classe; antes disso, como Soldado 2ª Classe. As datas de promoção são as dos postos seguintes, e nenhuma pode ser antes da data de inclusão. Se você é oficial e foi praça, as datas daquele tempo ficam à parte, só como registro.</p>
               <p><strong>Termos de uso e privacidade.</strong> Antes de criar a conta, marque <strong>Li e estou ciente dos Termos de uso e privacidade</strong>; a marcação é obrigatória. <strong>Ler os termos</strong> abre o texto em outra aba, e o que você já preencheu continua na tela.</p>
               <p>Ao clicar em <strong>Criar conta</strong>, a sua conta é criada e você já entra com o seu CPF e a senha.</p>
               <p class="manual-nota"><strong>Sobre o link.</strong> Ele é pessoal, serve uma vez e vale por 24 horas. Vencido, já usado ou cancelado, a tela avisa; peça um novo ao administrador. Depois de cinco CPFs errados, o link é cancelado. Nenhum dado seu aparece na tela antes do CPF certo.</p>
@@ -487,12 +489,18 @@
               </figure>
 
               <h3 id="a-arvore">A árvore de unidades</h3>
-              <p>Algumas telas organizam a informação numa <strong>árvore de unidades</strong>: a sua corporação em hierarquia (companhia, pelotão, e assim por diante). Você a encontra, por exemplo, em <strong>Trocas</strong> (aba Todas), <strong>Usuários</strong> e <strong>Postos</strong>.</p>
-              <p><strong>Como ela se monta.</strong> A árvore mostra só as unidades que você marcou no <strong>seletor de unidades</strong> (no topo da tela). As unidades <strong>acima</strong> delas aparecem como <strong>títulos</strong>, que situam a lista, e o conteúdo daquela tela (os militares, as trocas, as instalações…) aparece <strong>dentro da unidade marcada</strong>, com uma <strong>contagem</strong> ao lado. Os títulos <strong>grudam no topo</strong> enquanto você rola, então você sempre sabe em qual unidade está.</p>
-              <p><strong>Mostrar mais ou menos níveis.</strong> No canto superior direito da lista há dois botões, <strong>Mais títulos</strong> e <strong>Menos títulos</strong> (o nome aparece ao passar o mouse). Eles mostram mais ou menos níveis do topo da hierarquia: <strong>Menos títulos</strong> encolhe (esconde os níveis mais altos e deixa a lista mais curta e direta) e <strong>Mais títulos</strong> os traz de volta.</p>
-              <p>Há um limite: a árvore nunca esconde a unidade que você marcou nem o nível logo acima dela, e ao chegar nesse limite o botão fica desativado.</p>
+              <p>Algumas telas organizam a informação pela <strong>árvore de unidades</strong>: a sua corporação em hierarquia (companhia, pelotão, e assim por diante). Você a encontra, por exemplo, em <strong>Trocas</strong> (aba Todas), <strong>Usuários</strong>, <strong>Postos</strong> e na <strong>Escala</strong> (modo Dia).</p>
+              <p><strong>Como ela se monta.</strong> Cada unidade que você marcou no <strong>seletor de unidades</strong> (no topo da tela) aparece num <strong>bloco cinza</strong>, um embaixo do outro. No título do bloco ficam o nome da unidade, a sigla e a cidade, com uma <strong>contagem</strong> ao lado, e dentro dele fica o conteúdo daquela tela (os militares, as trocas, as instalações…).</p>
+              <p><strong>A trilha no alto.</strong> Acima dos blocos, a <strong>trilha</strong> mostra as siglas das unidades de cima, por exemplo CBMPR › 4ºCRBM, e situa a lista. Enquanto você rola, a trilha e o título do bloco <strong>ficam presos no topo</strong>, então você sempre sabe em qual unidade está. Quando o bloco de uma companhia termina e começa o de um pelotão dela, a companhia passa para a trilha (CBMPR › 4ºCRBM › 2ªCIBM) e o título do pelotão fica logo abaixo.</p>
               <figure class="manual-figura manual-figura--larga">
-                <img src="manual/imagens/mold-arvore.png" alt="A árvore de unidades: os títulos das unidades em hierarquia, a contagem na unidade marcada, e os botões Mais títulos e Menos títulos no canto superior direito." />
+                <img src="manual/imagens/mold-arvore.png" alt="A árvore de unidades: a trilha com as unidades de cima (1), o título do bloco com o nome, a sigla e a cidade da unidade (2) e a contagem (3)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>Trilha com as unidades de cima</li>
+                    <li>Título do bloco da unidade</li>
+                    <li>Contagem</li>
+                  </ol>
+                </figcaption>
               </figure>
             </section>
 
@@ -615,9 +623,12 @@
               <ul class="manual-legenda manual-legenda--compacta">
                 <li>
                   <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-anotacao.svg#icone-anotacao"/></svg></span>
-                  <span class="manual-legenda-texto"><strong>Nota do administrador.</strong> Um recado que o administrador escreveu para aquele dia, na caixa Observações do painel. A mesma caixa lista as trocas, as folgas e quem veio de outra unidade naquele dia, como "Sd. Sampaio veio do 2ºPEL das 08h às 20h.".</span>
+                  <span class="manual-legenda-texto"><strong>Nota do administrador.</strong> Um recado que o administrador escreveu para aquele dia, na caixa Observações do painel. A mesma caixa organiza o dia em grupos, sempre na mesma ordem: <strong>Administração</strong> (os recados), <strong>Trocas</strong>, <strong>Folgas</strong> e <strong>De outra unidade</strong>, cada um com os itens numerados, como "1. Sd. Sampaio veio do 2ºPEL das 08h às 20h.". Dentro de cada grupo, os militares seguem a antiguidade.</span>
                 </li>
               </ul>
+              <figure class="manual-figura">
+                <img src="manual/imagens/escala-observacoes.png" alt="A caixa Observações do painel do dia, com os grupos Administração, Trocas e Folgas, cada um com os seus itens numerados." />
+              </figure>
 
               <p>Na tela, a mesma explicação fica na <strong>Legenda</strong>: no alto da página Escala, à direita, o botão <strong>Legenda</strong> abre uma caixa com o que aparece no modo em que você está. No modo Militares, a caixa mostra os selos da grade, e no modo Dia, os ícones do painel. Nas grades de Mês, Semana, Colunas e Calendário, ela traz todos os ícones e explica também o gráfico de <strong>cobertura</strong> no alto de cada célula, que pinta cada hora de uma cor:</p>
               <ul class="manual-lista">
@@ -638,7 +649,7 @@
               <p>Cada tela mostra uma parte desses ícones:</p>
               <ul class="manual-lista">
                 <li><strong>Grade</strong> (Mês, Semana, Colunas e Calendário): a origem do serviço, o nome riscado e a função fixada.</li>
-                <li><strong>Painel do dia e modo Dia:</strong> a origem do serviço, a função fixada, o aviso, o Tem regra e o De outra unidade. As folgas, as trocas, quem veio de outra unidade e as notas do dia ficam na caixa Observações.</li>
+                <li><strong>Painel do dia e modo Dia:</strong> a origem do serviço, a função fixada, o aviso, o Tem regra e o De outra unidade. As notas do dia, as trocas, as folgas e quem veio de outra unidade ficam na caixa Observações, cada um no seu grupo.</li>
                 <li><strong>Modo Militares:</strong> ao clicar num dia, o painel escreve a origem por extenso, por exemplo "Origem: Contínuo". Na grade, cada dia mostra o horário do serviço (riscado quando o militar passou o serviço numa troca), FÉR, LIC ou DIS no afastamento e o ícone de Extrajornada na hora extra.</li>
               </ul>
               <p><strong>Militar afastado não vai assumir.</strong> Pode acontecer de um militar assumir um serviço por <strong>troca</strong> e, mais tarde, entrar de <strong>férias, licença ou dispensa</strong> naquele mesmo dia. Nesse caso ele continua na lista do serviço, mas com um <strong>aviso amarelo</strong>: na prática ele não vai assumir, porque está afastado.</p>
@@ -655,13 +666,16 @@
 
               <h3 id="erros-escala">Erros e ressalvas da escala</h3>
               <p>A escala usa duas cores para avisar que algo não está certo. O <strong>vermelho</strong> é um <strong>erro grave</strong>: a escala não funciona como está e precisa de correção. O <strong>amarelo</strong> é uma <strong>ressalva</strong>: a escala funciona, com um erro aceitável.</p>
-              <p>Na grade, o erro aparece só pela cor das barras do gráfico de cobertura, hora a hora. Para saber o que é, clique na célula: o painel do dia lista os avisos no alto, primeiro os vermelhos e depois os amarelos, e marca o militar envolvido. Parando o mouse sobre ele, aparece o motivo.</p>
+              <p>Na grade, o erro aparece só pela cor das barras do gráfico de cobertura, hora a hora. Para saber o que é, clique na célula: o painel do dia lista os avisos no alto, primeiro os vermelhos e depois os amarelos, e marca o militar envolvido. Os vermelhos vão da causa para a consequência: primeiro o modelo, depois quem ficou sem função, os postos e, por último, o militar em situação errada. Parando o mouse sobre ele, aparece o motivo.</p>
               <p><strong>Erros graves (vermelho).</strong></p>
               <ul class="manual-lista">
-                <li><strong>Militar sem função definida:</strong> o militar está de serviço, mas fica sem função em parte do dia. Quando o sistema sabe o motivo, o aviso diz qual: <strong>Falta modelo de distribuição</strong>, <strong>Distribuição com erro</strong> ou <strong>Sem solução automática</strong>.</li>
+                <li><strong>Modelo de distribuição com erro:</strong> o modelo daquela composição tem erro vermelho, por exemplo sem vagas, e o sistema não distribui a unidade, só mostra quem está de serviço. O aviso diz qual modelo, como "Modelo de distribuição com erro: 2ºPEL: 3 praças, 08h às 08h". Corrija o modelo na Distribuição.</li>
+                <li><strong>Falta modelo de distribuição:</strong> não existe modelo para a composição de quem está de serviço, como "Falta modelo de distribuição: 2ºPEL: 2 praças, 08h às 08h". Crie esse modelo na Distribuição.</li>
+                <li><strong>Militar sem função definida:</strong> o militar está de serviço, mas fica sem função em parte do dia. Parando o mouse sobre ele, aparece o motivo.</li>
+                <li><strong>Sem solução automática:</strong> o Chefe de Socorro ou o Oficial de Área não pode cumprir um acúmulo, por falta de CNH ou por regra, e ninguém do posto pode substituí-lo. O posto fica para o administrador resolver.</li>
+                <li><strong>Viatura sem condutor:</strong> a viatura ficou sem ninguém na direção.</li>
                 <li><strong>Efetivo abaixo do mínimo:</strong> o posto tem menos gente que o mínimo configurado.</li>
                 <li><strong>Efetivo acima do máximo:</strong> o posto tem mais gente que o máximo configurado.</li>
-                <li><strong>Viatura sem condutor:</strong> a viatura ficou sem ninguém na direção.</li>
                 <li><strong>Funções fora da disponibilidade:</strong> um militar ocupa uma função num horário fora do serviço dele.</li>
                 <li><strong>Militar sem serviço no dia:</strong> um militar ocupa uma função num dia em que não está de serviço.</li>
                 <li><strong>Dois militares no mesmo horário:</strong> a mesma função tem duas pessoas na mesma hora.</li>
@@ -726,7 +740,7 @@
                 <p><strong>O ciclo.</strong> A aba mostra, em "Contínuos do dia", quem o ciclo escala naquele dia (quem está de folga aparece riscado) e, em "Fora da escala", quem não está no ciclo. Ali, você coloca e tira militares da escala:</p>
                 <ul class="manual-lista">
                   <li><strong>Colocar na escala.</strong> Em "Fora da escala", o <strong>Adicionar</strong> marca um militar para entrar no ciclo a partir daquele dia. É assim que se coloca alguém na escala, inclusive o retorno de quem saiu por uma licença ou dispensa longa, de quem foi readmitido depois de uma baixa ou de quem chegou por transferência (a partir da data dela).</li>
-                  <li><strong>Tirar da escala.</strong> Em "Contínuos do dia", o <strong>Tirar</strong> marca a saída daquele dia em diante. Quando já há saída marcada, aparecem "Sai em DD/MM" e <strong>Cancelar saída</strong>. Na escala, o último dia de serviço antes da saída ganha o ícone de <strong>Saída</strong>.</li>
+                  <li><strong>Tirar da escala.</strong> Em "Contínuos do dia", o <strong>Tirar</strong> marca a saída daquele dia em diante. Na escala, o último dia de serviço antes da saída ganha o ícone de <strong>Saída</strong>. Tirado no dia em que entrou no ciclo, sem serviço antes, o militar some da escala. Quando já há saída marcada, aparecem "Sai em DD/MM", o <strong>Cancelar saída</strong>, que apaga a saída e o deixa seguir no ciclo, e o <strong>Tirar</strong>, que traz a saída para o dia aberto. Cada entrada abre um período próprio, que vai até a saída dele ou até a véspera da próxima entrada. O Tirar e o Cancelar saída mexem só no período do dia aberto: a entrada seguinte e o que é dela continuam como estão.</li>
                 </ul>
                 <p>Cada mudança recebe um selo ("Vai entrar" ou "Vai sair") e o <strong>Salvar</strong> aplica todas de uma vez, recalculando a escala uma única vez.</p>
                 <figure class="manual-figura">
@@ -799,7 +813,7 @@
                 </figure>
                 <p>O que você muda nas funções ganha o ícone de <strong>Função fixada</strong> (cadeado), fica <strong>por cima</strong> do automático e continua valendo mesmo quando o sistema recalcula a escala. Quando alguém entra ou sai do dia, o sistema refaz a distribuição automática daquele dia, e a lista já mostra como vai ficar antes de você salvar.</p>
                 <p>O <strong>Chefe de Socorro</strong> e o <strong>Oficial de Área</strong> são sempre o mais antigo de serviço, conforme a normativa, e ficam travados: não dá para tirar, trocar nem mudar o horário deles. Se você puser no dia alguém mais antigo, ele assume o papel, e a lista avisa no alto quem assume no lugar de quem.</p>
-                <p>As <strong>observações</strong> do dia ficam no fim da lista: o botão <strong>Adicionar observação</strong> inclui uma nota, e o <strong>✕</strong> exclui as suas. Elas também gravam no <strong>Salvar</strong>.</p>
+                <p>As <strong>observações</strong> do dia ficam no fim da lista, em grupos: <strong>Administração</strong>, <strong>Trocas</strong>, <strong>Folgas</strong> e <strong>De outra unidade</strong>. O botão <strong>Adicionar observação</strong> inclui uma nota no grupo Administração, e o <strong>✕</strong> exclui as suas. Elas também gravam no <strong>Salvar</strong>.</p>
                 <p>As regras de cada militar valem também para os seus ajustes. Colocar um condutor sem a CNH exigida pela viatura, ou um militar numa função que a regra dele proíbe, fica em vermelho e trava o <strong>Salvar</strong>, assim como o horário fora da disponibilidade, dois militares no mesmo horário e o militar em duas unidades ao mesmo tempo. Colocar um militar exclusivo fora da sua função, ou com grau diferente do ideal, fica em amarelo e o <strong>Salvar</strong> segue liberado.</p>
               </div>
             </section>
@@ -887,15 +901,17 @@
               <h2>Trocas</h2>
               <h3 id="solicitar-troca">Solicitar e acompanhar uma troca</h3>
               <p>Uma troca é quando você pede que outro militar cubra um serviço seu. Pode ser o <strong>turno inteiro</strong> ou apenas um <strong>período de horas</strong> dele, e você pode marcar uma <strong>devolução</strong> (um dia do colega que você cobre em retorno) ou deixar essa devolução para depois.</p>
-              <p><strong>Como pedir.</strong> Na página <strong>Trocas</strong>, clique em <strong>Solicitar troca</strong>. Abre um painel com dois blocos:</p>
+              <p><strong>Como pedir.</strong> Antes, abra a <strong>parte</strong> da troca no E-protocolo: o sistema pede o número dela. Na página <strong>Trocas</strong>, clique em <strong>Solicitar troca</strong>. Abre um painel com três blocos:</p>
               <ul class="manual-lista">
-                <li><strong>Solicitante</strong> (você): escolha o <strong>dia do serviço</strong> (1) que quer passar e, no <strong>período</strong> (2), deixe em <strong>Serviço inteiro</strong> ou escolha <strong>Parte do serviço</strong> e marque o início e o fim, com a régua do dia mostrando o trecho.</li>
-                <li><strong>Solicitado</strong>: escolha a <strong>unidade</strong> e o <strong>militar</strong> (3) que vai cobrir. Quem já está de serviço no horário, ou afastado no dia (férias, licença ou dispensa), aparece apagado, com o motivo, e não pode ser escolhido. Em <strong>Devolução</strong> (4), deixe em <strong>Pendência</strong> (você fica devendo o serviço, para acertar mais tarde) ou escolha <strong>Marcar dia</strong> (aponte um dia do colega e o período que você cobre em troca).</li>
+                <li><strong>E-protocolo</strong> (1): o número da <strong>Parte</strong> e o <strong>Ano</strong>. O ano já vem preenchido com o ano atual, e você pode mudar. Os dois são obrigatórios.</li>
+                <li><strong>Solicitante</strong> (você): escolha o <strong>dia do serviço</strong> (2) que quer passar e, no <strong>período</strong> (3), deixe em <strong>Serviço inteiro</strong> ou escolha <strong>Parte do serviço</strong> e marque o início e o fim, com a régua do dia mostrando o trecho.</li>
+                <li><strong>Solicitado</strong>: escolha a <strong>unidade</strong> e o <strong>militar</strong> (4) que vai cobrir. Quem já está de serviço no horário, ou afastado no dia (férias, licença ou dispensa), aparece apagado, com o motivo, e não pode ser escolhido. Quem ainda não tem conta no sistema aparece com "sem conta no sistema" e pode ser escolhido normalmente. Em <strong>Devolução</strong> (5), deixe em <strong>Pendência</strong> (você fica devendo o serviço, para acertar mais tarde) ou escolha <strong>Marcar dia</strong> (aponte um dia do colega e o período que você cobre em troca).</li>
               </ul>
               <figure class="manual-figura">
-                <img src="manual/imagens/troca-solicitar.png" alt="Painel Solicitar troca: o dia do serviço (1), o período, serviço inteiro ou parte do serviço (2), o militar que vai cobrir (3) e a devolução (4)." />
+                <img src="manual/imagens/troca-solicitar.png" alt="Painel Solicitar troca: a parte do E-protocolo, com o número e o ano (1), o dia do serviço (2), o período, serviço inteiro ou parte do serviço (3), o militar que vai cobrir (4) e a devolução (5)." />
                 <figcaption>
                   <ol class="manual-chamadas">
+                    <li>Parte do E-protocolo: número e ano</li>
                     <li>Dia do serviço</li>
                     <li>Período: serviço inteiro ou parte do serviço</li>
                     <li>Militar que vai cobrir</li>
@@ -903,7 +919,8 @@
                   </ol>
                 </figcaption>
               </figure>
-              <p>Ao confirmar, a troca nasce como "Aguardando confirmação" e segue para o militar que você escolheu.</p>
+              <p>Ao confirmar, a troca nasce como "Aguardando confirmação" e segue para o militar que você escolheu. Se ele ainda não tem conta no sistema, não tem como confirmar: o painel avisa, e a troca nasce como "Aguardando aprovação" e vai direto para o administrador.</p>
+              <p>O mesmo serviço não entra em duas trocas no mesmo horário. Se ele já tem uma troca aguardando ou aprovada, o novo pedido é recusado.</p>
 
               <p><strong>Quando pedem uma troca a você.</strong> O pedido aparece na página <strong>Pendências</strong>, na aba <strong>Pendências</strong> daqui e nos seus avisos. Ao abri-lo, você vê o pedido, a análise e como fica a escala, e <strong>Aceita</strong> ou <strong>Recusa</strong>, podendo escrever o motivo. A parte <strong>Pendências</strong> deste manual mostra esse painel.</p>
 
@@ -916,7 +933,7 @@
                   <svg class="icone manual-fluxo-seta" width="22" height="22" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
                   <span class="selo selo--sucesso">Aprovada</span>
                 </div>
-                <figcaption class="manual-diagrama-legenda">O caminho de uma troca: nasce Aguardando confirmação; quando o colega aceita, vai a Aguardando aprovação; quando o administrador aprova, fica Aprovada e passa a valer na escala. Ela pode encerrar antes: Recusada (o colega recusa), Recusada pela administração (o administrador nega) ou Cancelada (quem pediu, ou o administrador, desfaz).</figcaption>
+                <figcaption class="manual-diagrama-legenda">O caminho de uma troca: nasce Aguardando confirmação; quando o colega aceita, vai a Aguardando aprovação (se o colega não tem conta, ela já nasce assim); quando o administrador aprova, fica Aprovada e passa a valer na escala. Ela pode encerrar antes: Recusada (o colega recusa), Recusada pela administração (o administrador nega) ou Cancelada (quem pediu, ou o administrador, desfaz).</figcaption>
               </figure>
               <figure class="manual-figura manual-figura--larga">
                 <img src="manual/imagens/troca-abas.png" alt="As abas Todas, Minhas, Saldos e Pendências (1) e a lista de trocas, cada uma com o seu selo de situação (2)." />
@@ -933,7 +950,7 @@
                 <img src="manual/imagens/troca-cancelar.png" alt="Rodapé do painel de uma troca, com o botão Cancelar troca em destaque." />
               </figure>
 
-              <p><strong>A troca aprovada na escala.</strong> Depois da aprovação do administrador, a troca passa a valer na escala. No dia trocado, o militar que passou o serviço aparece <strong>riscado</strong> e quem assumiu entra no lugar, os dois com o ícone de troca. Havendo devolução, o mesmo acontece no dia dela, com os papéis invertidos.</p>
+              <p><strong>A troca aprovada na escala.</strong> Depois da aprovação do administrador, a troca passa a valer na escala. No dia trocado, o militar que passou o serviço aparece <strong>riscado</strong> e quem assumiu entra no lugar, os dois com o ícone de troca. Havendo devolução, o mesmo acontece no dia dela, com os papéis invertidos. No painel do dia, o grupo <strong>Trocas</strong> das <strong>Observações</strong> escreve a troca por extenso, com a parte do E-protocolo e a devolução, por exemplo: "Sd. Sampaio cumpre a escala de serviço do 3ºSgt. Meireles, no período das 08h às 20h, conforme a Parte nº 250/2026. A devolução será definida posteriormente.".</p>
               <figure class="manual-figura manual-figura--larga">
                 <img src="manual/imagens/escala-troca-riscado.png" alt="Dia 13 na grade da escala: 3ºSgt. Meireles aparece riscado e Sd. Sampaio entra no lugar dele." />
               </figure>
@@ -949,16 +966,28 @@
               </figure>
               <div class="manual-admin manual-zona-admin">
                 <h3 id="aprovar-trocas">Aprovar trocas <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p>Depois que o colega aceita, a troca fica "Aguardando aprovação" e espera um administrador. Ela aparece na página <strong>Pendências</strong> e na aba <strong>Pendências</strong> daqui; o painel de decisão, a análise e o Como fica a escala estão explicados em <strong>Pendências › Decidir os pedidos</strong>.</p>
+                <p>Depois que o colega aceita, a troca fica "Aguardando aprovação" e espera um administrador. Ela aparece na página <strong>Pendências</strong> e na aba <strong>Pendências</strong> daqui; o painel de decisão, a análise e o Como fica a escala estão explicados em <strong>Pendências › Decidir os pedidos</strong>. Na caixa <strong>Serviço</strong>, a troca mostra a <strong>Parte nº</strong> do E-protocolo, para você conferir antes de aprovar. Quando o colega não tem conta no sistema, a troca já chega aguardando a sua aprovação, e a análise avisa que ele não confirmou.</p>
                 <p><strong>As ações.</strong> No rodapé do painel, o que aparece depende do momento da troca:</p>
                 <ul class="manual-lista">
-                  <li>Enquanto ela <strong>ainda espera o colega aceitar</strong>, você pode <strong>Aprovar sem confirmação</strong>, que aprova sem aguardar o outro militar (útil quando ele demora a responder).</li>
+                  <li>Enquanto ela <strong>ainda espera o colega aceitar</strong>, você pode <strong>Aprovar sem confirmação</strong>, que aprova sem aguardar o outro militar (útil quando ele demora a responder). Como o Aprovar, o botão só libera depois que a análise chega.</li>
                   <li>Depois de <strong>aceita pelo colega</strong>, ficam <strong>Aprovar</strong> e <strong>Recusar</strong> (com o motivo opcional, que vai no aviso aos dois).</li>
                   <li>Já <strong>aprovada</strong>, você ainda pode <strong>Cancelar troca</strong>, que desfaz a troca e volta a escala ao que era.</li>
                 </ul>
                 <p class="manual-nota">Numa troca da qual você participa, como quem pediu ou como o colega, os botões de decisão não aparecem: outro administrador aprova ou recusa.</p>
-                <p>Aprovada, a troca passa a valer na escala (o riscado da seção anterior) e a dívida de horas entre os dois é acertada.</p>
+                <p>Aprovada, a troca passa a valer na escala (o riscado da seção anterior) e a dívida de horas entre os dois é acertada. Se, até lá, aquele horário do serviço já tiver sido trocado com outra pessoa, a troca não pode mais ser aprovada: a análise mostra isso em vermelho.</p>
                 <p><strong>Afastamento depois da troca.</strong> Se, mais tarde, o militar que assumiu o serviço entrar de <strong>férias, licença ou dispensa</strong> naquele dia, quem lança o afastamento é avisado de que ele cobre um serviço por troca e decide se segue. Seguindo, a troca não é desfeita, mas a escala marca aquele serviço em <strong>amarelo</strong>, porque na prática ele não vai assumir.</p>
+                <h3 id="registrar-troca">Registrar uma troca <span class="manual-selo-admin">Apenas administradores</span></h3>
+                <p>Quando a troca chega pelo E-protocolo e não foi pedida no sistema, você mesmo a registra. Na página <strong>Trocas</strong>, clique em <strong>Registrar troca</strong>, ao lado de Solicitar troca. Abre o mesmo painel do pedido, com uma diferença no bloco <strong>Solicitante</strong> (1): em vez de você, escolha a <strong>unidade</strong> e o <strong>militar</strong> que passa o serviço. Depois preencha a <strong>parte</strong> do E-protocolo, o dia, o período, quem cobre e a devolução, como num pedido. O dia pode ser de até <strong>7 dias atrás</strong>, para registrar uma troca que já aconteceu.</p>
+                <figure class="manual-figura">
+                  <img src="manual/imagens/troca-registrar.png" alt="Bloco Solicitante do Registrar troca: a unidade e o militar que passa o serviço, escolhidos pelo administrador (1)." />
+                  <figcaption>
+                    <ol class="manual-chamadas">
+                      <li>Solicitante: unidade e militar</li>
+                    </ol>
+                  </figcaption>
+                </figure>
+                <p>Com tudo preenchido, a <strong>Análise</strong> aparece no fim do painel, a mesma de quando você aprova uma troca, e o botão <strong>Registrar troca</strong> só libera quando ela chega. Ao confirmar, a troca <strong>já entra aprovada</strong>: a escala muda na hora e os dois militares recebem o aviso de troca aprovada. Se o registro foi um engano, o <strong>Desfazer</strong> do resumo apaga a troca e volta a escala ao que era.</p>
+                <p class="manual-nota">Você não registra uma troca da qual participa: o seu nome não aparece nas listas. Se o militar já pediu a mesma troca no sistema, o registro é recusado e o aviso indica aprovar o pedido pela aba Pendências.</p>
               </div>
             </section>
 
@@ -1223,7 +1252,7 @@
                     </ol>
                   </figcaption>
                 </figure>
-                <p><strong>Toda mudança tem data.</strong> Ao incluir um posto, mudar o estado, excluir ou transferir uma viatura, o sistema pergunta <strong>a partir de quando</strong> a mudança vale. A data já vem com o dia seguinte e aceita até uma semana para trás. A escala é refeita dessa data em diante, e os dias anteriores continuam como estão.</p>
+                <p><strong>Toda mudança tem data.</strong> Ao incluir um posto, mudar o estado, excluir ou transferir uma viatura, o sistema pergunta <strong>a partir de quando</strong> a mudança vale. A data já vem com o próximo dia de serviço e aceita até uma semana para trás. A escala é refeita dessa data em diante, e os dias anteriores continuam como estão.</p>
                 <p>Ao incluir, essa data é o <strong>primeiro dia</strong> do posto; ao excluir, o posto sai das telas quando a data chega; ao transferir, a viatura continua na unidade antiga até a véspera e passa para a nova na data. O efetivo e a CNH exigida valem na hora.</p>
                 <p>Enquanto a data não chega, a mudança fica na caixa <strong>Mudanças marcadas</strong>, logo abaixo do estado, e cada uma tem o botão <strong>Cancelar</strong>. O campo <strong>Estado</strong> mostra como o posto vai ficar depois das mudanças marcadas; assim você marca, por exemplo, a ida para Inativo num dia e a volta ao Ativo em outro. Uma mudança nova substitui as que estavam marcadas para depois dela.</p>
                 <p><strong>A mudança chega à Distribuição.</strong> Cada mudança de posto com data abre um período novo na <strong>Distribuição</strong> (veja <strong>Os períodos</strong>). Quando o período precisa de revisão, a mudança mostra o selo <strong>Revisar na Distribuição</strong> na caixa Mudanças marcadas. Se você cancelar uma mudança cujo período já foi revisado, o sistema avisa que esse ajuste será descartado junto.</p>
@@ -1281,7 +1310,7 @@
                 </figcaption>
               </figure>
               <h3 id="periodos-modelos">Os períodos</h3>
-              <p>Os postos mudam com o tempo: uma viatura fica inativa, é transferida para outra unidade, um posto novo começa. Por isso os modelos são guardados <strong>por período</strong>. Cada mudança de posto com data abre um período novo, e a escala de cada dia usa os modelos do período daquele dia. A manutenção de viatura não abre período, porque a viatura segue na escala.</p>
+              <p>Os postos mudam com o tempo: uma viatura fica inativa, é transferida para outra unidade, um posto novo começa. Por isso os modelos são guardados <strong>por período</strong>. Cada mudança de posto com data abre um período novo, e a escala de cada dia usa os modelos do período daquele dia. A manutenção de viatura não abre período, porque a viatura segue na escala. O começo de uma unidade, quando ela ganha as primeiras viaturas ou instalações, também não abre período: o modelo vale em todos os dias.</p>
               <p>No subcabeçalho da aba <strong>Modelos</strong> fica o seletor de <strong>período</strong>, igual ao da Escala. As setas passam de um período para outro, e o clique nas datas abre a lista de períodos, cada um com a sua situação (os mesmos sinais de completo e de alerta dos modelos) e o motivo, como "ABT-01: Inativo".</p>
               <p>Os períodos que já passaram ficam agrupados em <strong>Anteriores</strong>. A página abre no período atual, e a lista de modelos e as vagas mostram sempre o período escolhido.</p>
               <figure class="manual-figura">
@@ -1325,8 +1354,8 @@
                 <h3 id="editar-modelos">Editar os modelos <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p><strong>Editar um modelo.</strong> Na lista, cada modelo tem dois ícones: o <strong>lápis</strong>, que abre o modo de edição, e a <strong>lixeira</strong>, que exclui o modelo depois de uma confirmação. Num período que já terminou, os dois ficam inativos. No modo de edição, você clica nas células de <strong>Tipo</strong>, <strong>Antiguidade</strong> e <strong>Grau</strong> para escolher o valor, marca o <strong>Rodízio</strong>, usa <strong>Nova função</strong> para incluir uma vaga e o botão de remover para tirar, e <strong>Acúmulo</strong> para a mesma pessoa cobrir mais de uma função, entre os postos da própria unidade. Uma pessoa não acumula funções em unidades diferentes; para um militar de <strong>outra unidade</strong> trabalhar aqui num dia, use o <strong>Adicionar militar</strong> do painel do dia, na Escala.</p>
                 <p>Com o posto no efetivo máximo, o <strong>Nova função</strong> fica desativado. Um posto com menos pessoas que o efetivo mínimo fica em vermelho, como os demais erros, e a escala automática continua usando o modelo.</p>
-                <p><strong>Desfazer</strong> e <strong>Refazer</strong> ficam no canto do subcabeçalho, e também respondem a Ctrl+Z e Ctrl+Y. Ao <strong>Salvar</strong>, o sistema avisa que as escalas já montadas serão recalculadas e mostra um resumo do que mudou.</p>
-                <p><strong>Novo modelo.</strong> O botão <strong>Novo modelo</strong>, no rodapé da lista, cria um do zero para a <strong>unidade do filtro</strong>: o espaço à direita pede quantos <strong>oficiais</strong> e <strong>praças</strong> aquele modelo atende. Se a unidade já tem um modelo com esses números, o sistema avisa e abre o que existe. O modelo novo já vem com as vagas do maior modelo da unidade que caiba nele, aparece na hora, e fica de vez quando você clica em Salvar; ao cancelar ou sair sem salvar, ele é descartado. O modelo novo vale em todos os períodos.</p>
+                <p><strong>Desfazer</strong> e <strong>Refazer</strong> ficam no canto do subcabeçalho, e também respondem a Ctrl+Z e Ctrl+Y. Ao <strong>Salvar</strong>, o sistema avisa que as escalas já montadas serão recalculadas e mostra a partir de quando: o próximo dia de serviço, para não mexer no plantão que já está rodando. Para outra data, clique em <strong>Escolher outra data</strong>. Depois de salvar, aparece um resumo do que mudou.</p>
+                <p><strong>Novo modelo.</strong> O botão <strong>Novo modelo</strong>, no rodapé da lista, cria um do zero para a <strong>unidade do filtro</strong>: o espaço à direita pede quantos <strong>oficiais</strong> e <strong>praças</strong> aquele modelo atende. Se a unidade já tem um modelo com esses números, o sistema avisa e abre o que existe. O modelo novo já vem com as vagas do maior modelo da unidade que caiba nele, aparece na hora, e fica de vez quando você clica em Salvar; ao cancelar ou sair sem salvar, ele é descartado. O modelo novo vale em todos os períodos e, se você trocar de período antes de salvar, ele vai junto para o período escolhido.</p>
                 <p><strong>Editar por período.</strong> A edição vale no período escolhido no seletor. Um período que já terminou fica só para leitura. Num período que ainda vai começar, o Salvar refaz a escala a partir do início dele, sem perguntar a data.</p>
                 <p><strong>O período novo vem pronto para revisar.</strong> Quando um posto sai (fica inativo, é excluído ou é transferido), o período novo nasce como cópia do anterior, já sem as vagas desse posto. Quando o posto volta, o período nasce da cópia do último período em que ele existia. Só o pelotão afetado ganha uma cópia própria; os outros continuam iguais em todos os períodos.</p>
                 <p>Até você revisar, o modelo fica em amarelo, o pelotão aparece destacado e o rodapé mostra, por exemplo, "1ºPEL: revise este período (ABT-01: Inativo)". O aviso também aparece no sino. Enquanto isso, a escala funciona normalmente: quem sobrou fica sem função, em vermelho, para você colocar manualmente.</p>
@@ -1346,8 +1375,8 @@
             <section class="manual-secao" id="usuarios">
               <h2>Usuários (o efetivo)</h2>
               <h3 id="ver-efetivo">Ver o efetivo e as fichas</h3>
-              <p>A página <strong>Usuários</strong> reúne todo o efetivo. Na aba <strong>Efetivo</strong>, as unidades aparecem em árvore (a companhia e seus pelotões) e, ao abrir uma unidade, os militares dela surgem em <strong>cards</strong>. O número ao lado do título diz quantos estão à vista.</p>
-              <p><strong>O card de cada militar.</strong> Traz a abreviação do <strong>grau</strong>, o <strong>nome</strong>, um <strong>identificador</strong> e um <strong>selo de situação</strong>: "Ativo" em verde, ou "Férias", "Licença" e "Dispensa" em âmbar, com a data até quando valem.</p>
+              <p>A página <strong>Usuários</strong> reúne todo o efetivo. Na aba <strong>Efetivo</strong>, as unidades aparecem na <strong>árvore de unidades</strong> (um bloco para a companhia e um para cada pelotão), e os militares de cada uma ficam dentro do bloco, <strong>um por linha</strong>. O número ao lado do título da página diz quantos estão à vista.</p>
+              <p><strong>A linha de cada militar.</strong> Traz a abreviação do <strong>grau</strong>, o <strong>nome</strong>, um <strong>identificador</strong> e um <strong>selo de situação</strong>: "Ativo" em verde, ou "Férias", "Licença" e "Dispensa" em âmbar, com a data até quando valem.</p>
               <div class="manual-bloco-admin manual-admin">
                 <span class="manual-selo-admin">Apenas administradores</span>
                 <p>Para você, o selo mostra também a conta de quem está ativo: <strong>"Sem conta"</strong>, em cinza, para quem ainda não criou a conta, e <strong>"Link de cadastro até"</strong>, em âmbar, com a data e a hora, enquanto o link de cadastro que você gerou estiver valendo. Cada militar tem um selo só.</p>
@@ -1356,7 +1385,7 @@
               <p>O <strong>Ordem</strong> organiza a lista por <strong>antiguidade</strong> (do mais antigo, o padrão, ou do mais moderno) ou em ordem <strong>alfabética</strong> (de A a Z ou de Z a A). Essas escolhas valem só para você.</p>
               <p><strong>Filtrar e procurar.</strong> Os filtros de <strong>Graus</strong> e <strong>Situação</strong> encolhem a lista ao que interessa, e o funil fica destacado quando algum está ativo. A <strong>busca</strong> tem dois modos, trocados no botão ao lado: <strong>Marcar</strong> realça quem combina com o texto sem esconder os demais, e <strong>Filtrar</strong> deixa à vista só quem combina. Ela procura por nome de guerra, nome completo, CPF ou RG.</p>
               <figure class="manual-figura manual-figura--cheia">
-                <img src="manual/imagens/usuarios-efetivo.png" alt="Um card do efetivo com o grau, o nome e o identificador (1) e o selo de situação (2); no alto da página, os botões Ordem e Exibir (3)." />
+                <img src="manual/imagens/usuarios-efetivo.png" alt="Uma linha do efetivo com o grau, o nome e o identificador (1) e o selo de situação (2); no alto da página, os botões Ordem e Exibir (3)." />
                 <figcaption>
                   <ol class="manual-chamadas">
                     <li>Grau, nome e identificador</li>
@@ -1365,38 +1394,48 @@
                   </ol>
                 </figcaption>
               </figure>
-              <p><strong>A ficha do militar.</strong> Um clique no card abre a ficha no painel à direita, com o grau e o nome de guerra no topo e o nome completo logo abaixo.</p>
-              <p>Ela tem duas abas: <strong>Dados</strong>, com os dados pessoais (nome completo, CPF, RG, idade, nascimento, CNH, celular e e-mail), e <strong>Carreira</strong>, com os dados institucionais (quadro, inclusão no quadro, posto, nome de guerra, setor, colocação no curso de formação (CFP, CFO ou CHOE), antiguidade, lotação e situação) e o histórico de <strong>Promoções</strong> e <strong>Transferências</strong>, que abrem ao clicar. Qualquer pessoa consulta a ficha; editar é tarefa do administrador.</p>
-              <p>Em <strong>Promoções</strong>, cada data aparece com a abreviação da graduação (Sd., Cb. e assim por diante), só as do quadro atual.</p>
-              <p><strong>A antiguidade.</strong> O sistema define a antiguidade de forma automática. Ele mantém uma lista única, do mais antigo (1) ao mais moderno, e compara os militares pelos critérios abaixo, nesta ordem. Quando dois empatam num critério, decide o seguinte.</p>
-              <figure class="manual-diagrama manual-ordem">
-                <ol class="manual-ordem-lista">
-                  <li class="manual-ordem-passo"><span class="manual-ordem-num">1</span><span class="manual-ordem-texto"><strong>Posto ou graduação</strong><span>O mais alto vem antes.</span></span></li>
-                  <li class="manual-ordem-passo"><span class="manual-ordem-num">2</span><span class="manual-ordem-texto"><strong>Data da promoção atual</strong><span>Vem antes quem chegou ao posto primeiro.</span></span></li>
-                  <li class="manual-ordem-passo"><span class="manual-ordem-num">3</span><span class="manual-ordem-texto"><strong>Promoções anteriores</strong><span>Comparadas uma a uma, da mais recente para a mais antiga. Contam só as do quadro atual. Entre um oficial do quadro normal e um do CHOE, contam as de 2º Tenente para cima; se forem iguais, o do quadro normal vem antes.</span></span></li>
-                  <li class="manual-ordem-passo"><span class="manual-ordem-num">4</span><span class="manual-ordem-texto"><strong>Inclusão no quadro</strong><span>A mais antiga vem antes.</span></span></li>
-                  <li class="manual-ordem-passo"><span class="manual-ordem-num">5</span><span class="manual-ordem-texto"><strong>Colocação no curso</strong><span>No curso de formação, o menor número vem antes.</span></span></li>
-                  <li class="manual-ordem-passo"><span class="manual-ordem-num">6</span><span class="manual-ordem-texto"><strong>Data de nascimento</strong><span>O mais velho vem antes.</span></span></li>
-                  <li class="manual-ordem-passo"><span class="manual-ordem-num">7</span><span class="manual-ordem-texto"><strong>Ordem alfabética</strong><span>Pelo nome completo, de A a Z.</span></span></li>
-                </ol>
-                <figcaption class="manual-diagrama-legenda">A ordem da antiguidade. Para quem mudou de quadro (de praça para oficial), contam só as datas do quadro atual; as anteriores ficam guardadas como histórico.</figcaption>
-              </figure>
-              <p>Sempre que alguém é cadastrado, promovido ou tem corrigido um dado que entra nessa ordem, o sistema refaz a lista inteira sozinho, e a escala passa a seguir a nova ordem. A posição aparece na ficha, em <strong>Antiguidade no sistema</strong>, e é a ordem padrão da lista de Usuários. Na escala, ela decide quem tem a preferência nas funções e serve de desempate.</p>
+              <p><strong>A ficha do militar.</strong> Um clique na linha do militar abre a ficha no painel à direita, com o grau e o nome de guerra no topo, a lotação ao lado e o nome completo logo abaixo. As informações ficam em blocos, cada linha com o rótulo e o valor ao lado; o que ainda não foi preenchido aparece com um traço.</p>
+              <p>Ela tem duas abas: <strong>Dados</strong>, com os dados pessoais (nome completo, CPF, RG, nascimento com a idade, CNH, celular e e-mail), e <strong>Carreira</strong>, com os <strong>Dados institucionais</strong> (quadro, posto, nome de guerra, setor, data de inclusão, colocação no curso de formação (CFP, CFO ou CHOE), antiguidade, lotação e situação), as <strong>Datas de promoções</strong> e as <strong>Transferências</strong>. Qualquer pessoa consulta a ficha; corrigir os dados e mudar a carreira é tarefa do administrador.</p>
               <figure class="manual-figura">
-                <img src="manual/imagens/usuarios-ficha.png" alt="A ficha de um militar no painel: as abas Dados e Carreira (1) e os dados pessoais logo abaixo (2)." />
+                <img src="manual/imagens/usuarios-ficha.png" alt="A ficha de um militar no painel: as abas Dados e Carreira (1) e o bloco Dados pessoais (2)." />
                 <figcaption>
                   <ol class="manual-chamadas">
                     <li>Abas Dados e Carreira</li>
-                    <li>Dados pessoais</li>
+                    <li>Bloco Dados pessoais</li>
                   </ol>
                 </figcaption>
               </figure>
-              <p class="manual-nota">Quando o militar foi cadastrado <strong>sem conta de login</strong>, a ficha avisa no topo, com "Sem acesso ao sistema". Ele existe para a escala funcionar, mas não entra em trocas, folgas nem extrajornada enquanto não criar a própria conta.</p>
+              <p class="manual-nota">Quando o militar foi cadastrado <strong>sem conta de login</strong>, a aba Dados avisa no topo, com "Sem acesso ao sistema". Ele existe para a escala funcionar, mas não entra em trocas, folgas nem extrajornada enquanto não criar a própria conta.</p>
+              <p><strong>A data de inclusão e as datas de promoção.</strong> A <strong>data de inclusão</strong> é o início do militar na corporação, a data do primeiro posto. Na praça, o primeiro posto depende dela: quem foi incluído a partir de 01/11/2024 começa como Soldado 3ª Classe; antes disso, como Soldado 2ª Classe. Em <strong>Datas de promoções</strong> aparece a data de cada posto seguinte, na ordem da carreira, com a abreviação (Sd.1ªCl., Cb. e assim por diante); o posto ainda sem data aparece com um traço.</p>
+              <p>No oficial, o bloco mostra os postos do quadro dele (Cadete, Aspirante, 2º Tenente e os seguintes; no quadro de especialistas, Cadete Especialista, 2º Tenente e os seguintes). Se ele foi praça, as datas daquele tempo ficam num bloco à parte, <strong>Datas como praça (só registro)</strong>, que abre e fecha pela seta e não entra na antiguidade. A data de inclusão não muda quando o militar passa de praça para oficial.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/usuarios-datas.png" alt="A aba Carreira de um oficial: as Datas de promoções, uma por posto (1), e o bloco Datas como praça, fechado, que abre pela seta (2)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>Datas de promoções, uma por posto</li>
+                    <li>Datas como praça, que abre pela seta</li>
+                  </ol>
+                </figcaption>
+              </figure>
+              <p><strong>A antiguidade.</strong> A posição de cada militar aparece na ficha, em <strong>Antiguidade</strong> (por exemplo, "37º no sistema"), e é a ordem padrão da lista de Usuários. Na escala, ela decide quem tem a preferência nas funções e serve de desempate.</p>
+              <p>Hoje, enquanto faltam as datas de promoção de muita gente, a ordem dentro de cada posto é a que o administrador define, e quem é cadastrado ou promovido entra como o mais moderno do posto. Quando as datas estiverem cadastradas, o sistema volta a calcular a antiguidade sozinho, comparando os militares pelos critérios abaixo, nesta ordem. Quando dois empatam num critério, decide o seguinte.</p>
+              <figure class="manual-diagrama manual-ordem">
+                <ol class="manual-ordem-lista">
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">1</span><span class="manual-ordem-texto"><strong>Posto ou graduação</strong><span>O mais alto vem antes.</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">2</span><span class="manual-ordem-texto"><strong>As datas dos postos</strong><span>Comparadas do posto atual para baixo: vem antes quem chegou primeiro. Na praça, a data de inclusão vale como a do primeiro posto. No oficial, contam do posto atual até o 2º Tenente; no Cadete e no Cadete Especialista, conta a entrada no quadro.</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">3</span><span class="manual-ordem-texto"><strong>Quadro normal antes do especialista</strong><span>Com essas datas iguais, o oficial do quadro normal vem antes do oficial especialista (CHOE).</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">4</span><span class="manual-ordem-texto"><strong>A data de Aspirante</strong><span>Entre dois oficiais do quadro normal, a de Aspirante também conta.</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">5</span><span class="manual-ordem-texto"><strong>Entrada no quadro</strong><span>Na praça, a data de inclusão; no oficial, a data de Cadete ou de Cadete Especialista. A mais antiga vem antes.</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">6</span><span class="manual-ordem-texto"><strong>Colocação no curso</strong><span>No curso de formação, o menor número vem antes.</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">7</span><span class="manual-ordem-texto"><strong>Data de nascimento</strong><span>O mais velho vem antes.</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">8</span><span class="manual-ordem-texto"><strong>Ordem alfabética</strong><span>Pelo nome completo, de A a Z.</span></span></li>
+                </ol>
+                <figcaption class="manual-diagrama-legenda">A ordem da antiguidade quando o sistema calcula sozinho. As datas de quando um oficial era praça ficam só como registro.</figcaption>
+              </figure>
               <div class="manual-admin manual-zona-admin">
                 <h3 id="cadastrar-efetivo">Cadastrar o efetivo e liberar acesso <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>Para incluir um militar, abra <strong>Usuários</strong> e clique em <strong>Novo usuário</strong>, no alto da lista, à esquerda. O cadastro abre no painel à direita.</p>
-                <p>Você preenche os <strong>dados pessoais</strong> (nome, CPF, RG, nascimento e CNH) e os <strong>dados institucionais</strong> (tipo, inclusão no quadro, posto ou graduação, nome de guerra, colocação, setor e lotação). Ao escolher o posto, o sistema pede também as <strong>datas de promoção</strong> de cada graduação. Essas datas, a inclusão no quadro e a colocação definem a posição do militar na <strong>antiguidade</strong>, que o sistema calcula sozinho.</p>
-                <p class="manual-nota"><strong>Inclusão no quadro:</strong> a data de entrada no quadro atual do militar, de praças ou de oficiais, e não a de entrada na corporação. Ela vai até o dia da primeira promoção do quadro.</p>
+                <p>Você preenche os <strong>dados pessoais</strong> (nome, CPF, RG, nascimento e CNH), os <strong>dados institucionais</strong> (tipo, data de inclusão, posto ou graduação, nome de guerra, colocação, setor e lotação) e, se tiver, as <strong>datas de promoção</strong>. O militar entra na antiguidade como o mais moderno do posto; ajuste a posição dele na aba Antiguidade (veja <strong>Ajustar a antiguidade</strong>).</p>
                 <p><strong>Celular e e-mail são opcionais</strong>: são dados do próprio militar, que ele informa ao criar a conta. A ficha pode existir só para a escala funcionar.</p>
                 <figure class="manual-figura">
                   <img src="manual/imagens/usuarios-novo.png" alt="Painel Novo usuário: a seção Dados pessoais (1), os campos Celular e E-mail, marcados como opcionais (2), e o início da seção Dados institucionais (3). O botão Salvar fica no rodapé do painel." />
@@ -1408,11 +1447,22 @@
                     </ol>
                   </figcaption>
                 </figure>
+                <p><strong>O posto e as datas de promoção.</strong> O <strong>Posto</strong> só libera depois do tipo e da <strong>data de inclusão</strong>, porque a lista de postos depende dela: o Soldado 3ª Classe só aparece para quem foi incluído a partir de 01/11/2024. Ao escolher o posto, o sistema abre a seção <strong>Datas de promoções</strong>, com um campo para cada posto depois do primeiro (o primeiro é a própria data de inclusão). No oficial que foi praça, as datas daquele tempo ficam na seção <strong>Datas como praça (só registro)</strong>, que abre ao clicar.</p>
+                <figure class="manual-figura">
+                  <img src="manual/imagens/usuarios-novo-inclusao.png" alt="Dados institucionais do Novo usuário: a Data de inclusão, com a dica (1), e o Posto, que libera depois dela (2)." />
+                  <figcaption>
+                    <ol class="manual-chamadas">
+                      <li>Data de inclusão</li>
+                      <li>Posto, liberado depois da data de inclusão</li>
+                    </ol>
+                  </figcaption>
+                </figure>
+                <p class="manual-nota"><strong>Data de inclusão:</strong> o início na corporação, a data do primeiro posto. Ela não muda quando o militar passa de praça para oficial. As datas de promoção são opcionais: deixe em branco o que não tiver e complete depois, pelo lápis da ficha. Nenhuma pode ser antes da data de inclusão, e elas sobem junto com o posto.</p>
                 <p>Ao <strong>Salvar</strong>, o militar passa a existir no sistema e já aparece na árvore de unidades; se for operacional, pode entrar na escala. O sistema mostra um resumo do que foi cadastrado.</p>
                 <p class="manual-nota"><strong>Cadastrar não cria senha.</strong> O Novo usuário registra a pessoa, não o acesso. Não existe senha padrão, e você nunca escolhe a senha de ninguém: quem cria a senha é o próprio militar, ao criar a conta pelo link.</p>
-                <p><strong>Liberar o acesso (o link de cadastro).</strong> O militar cria a própria conta por um <strong>link de cadastro</strong> que você gera na ficha dele. Abra a ficha (clique no card, em <strong>Usuários</strong>): enquanto ele não tem conta, a seção <strong>Acesso ao sistema</strong>, no painel à direita, mostra a situação e o botão <strong>Gerar link de cadastro</strong>.</p>
+                <p><strong>Liberar o acesso (o link de cadastro).</strong> O militar cria a própria conta por um <strong>link de cadastro</strong> que você gera na ficha dele. Abra a ficha (clique na linha do militar, em <strong>Usuários</strong>): enquanto ele não tem conta, o bloco <strong>Acesso ao sistema</strong>, na aba Dados, mostra a situação e o botão <strong>Gerar link de cadastro</strong>.</p>
                 <figure class="manual-figura">
-                  <img src="manual/imagens/usuarios-link-cadastro.png" alt="Ficha de um militar sem conta: a seção Acesso ao sistema com a situação do acesso (1) e o botão Gerar link de cadastro (2)." />
+                  <img src="manual/imagens/usuarios-link-cadastro.png" alt="Ficha de um militar sem conta: o bloco Acesso ao sistema com a situação do acesso (1) e o botão Gerar link de cadastro (2)." />
                   <figcaption>
                     <ol class="manual-chamadas">
                       <li>Situação do acesso</li>
@@ -1420,7 +1470,7 @@
                     </ol>
                   </figcaption>
                 </figure>
-                <p>Ao gerar, a seção mostra até quando o link vale e a <strong>mensagem pronta</strong>: o nome do militar, o link e a data e a hora em que ele expira. Clique em <strong>Copiar mensagem</strong> e cole no <strong>privado</strong> do militar (WhatsApp ou e-mail), <strong>nunca num grupo</strong>. Ele abre o link, confirma o CPF, confere os dados e cria a senha.</p>
+                <p>Ao gerar, o bloco mostra até quando o link vale e a <strong>mensagem pronta</strong>: o nome do militar, o link e a data e a hora em que ele expira. Clique em <strong>Copiar mensagem</strong> e cole no <strong>privado</strong> do militar (WhatsApp ou e-mail), <strong>nunca num grupo</strong>. Ele abre o link, confirma o CPF, confere os dados e cria a senha.</p>
                 <figure class="manual-figura">
                   <img src="manual/imagens/usuarios-link-mensagem.png" alt="O link gerado: até quando ele vale (1), a mensagem pronta para mandar (2) e os botões Copiar mensagem e Cancelar link (3)." />
                   <figcaption>
@@ -1431,34 +1481,34 @@
                     </ol>
                   </figcaption>
                 </figure>
-                <p><strong>Um link por vez.</strong> Enquanto o link vale (24 horas, uma vez só), a ficha mostra sempre a mesma mensagem, e o botão de gerar outro não aparece. Se você mandou para a pessoa errada, ou o militar perdeu a mensagem e o link venceu, use <strong>Cancelar link</strong>: ele deixa de funcionar na hora, e o botão de gerar volta. Enquanto o link vale, o card do militar mostra o selo "Link de cadastro até", com a data e a hora.</p>
+                <p><strong>Um link por vez.</strong> Enquanto o link vale (24 horas, uma vez só), a ficha mostra sempre a mesma mensagem, e o botão de gerar outro não aparece. Se você mandou para a pessoa errada, ou o militar perdeu a mensagem e o link venceu, use <strong>Cancelar link</strong>: ele deixa de funcionar na hora, e o botão de gerar volta. Enquanto o link vale, a linha do militar mostra o selo "Link de cadastro até", com a data e a hora.</p>
                 <p>Quando o militar cria a conta, você recebe no sino o aviso <strong>Conta criada</strong>, que abre a ficha dele. Se não foi ele quem criou, você percebe na hora. O e-mail e o celular que ele informou já valem; se ele corrigiu outro dado, a correção chega para você aprovar, como uma correção comum.</p>
-                <p><strong>Link de nova senha.</strong> Quem já tem conta e esqueceu a senha pede a você <strong>pessoalmente</strong>. Na ficha dele, a mesma seção <strong>Acesso ao sistema</strong> traz o botão <strong>Gerar link de nova senha</strong>, que funciona do mesmo jeito: a mensagem pronta, <strong>Copiar mensagem</strong>, <strong>Cancelar link</strong> e um link por vez. O militar abre o link, confirma o CPF e cria a senha nova.</p>
+                <p><strong>Link de nova senha.</strong> Quem já tem conta e esqueceu a senha pede a você <strong>pessoalmente</strong>. Na ficha dele, o mesmo bloco <strong>Acesso ao sistema</strong> traz o botão <strong>Gerar link de nova senha</strong>, que funciona do mesmo jeito: a mensagem pronta, <strong>Copiar mensagem</strong>, <strong>Cancelar link</strong> e um link por vez. O militar abre o link, confirma o CPF e cria a senha nova.</p>
                 <p class="manual-nota"><strong>Confirme que é a própria pessoa.</strong> O link dá acesso à conta. Antes de gerar o link de nova senha, confirme que o pedido é mesmo do militar, pessoalmente ou pelo telefone que já está na ficha. A senha antiga continua valendo até ele criar a nova, e você nunca vê nem escolhe a senha de ninguém.</p>
                 <h3 id="carreira">Promover, transferir e dar baixa <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p>As mudanças de carreira ficam na ficha, quando você troca de <strong>Ver</strong> para <strong>Editar</strong> (o alternador no alto do painel) e abre a aba <strong>Carreira</strong>. Ali, três blocos abrem ao clicar: <strong>Promover</strong>, <strong>Transferir</strong> e <strong>Dar baixa do sistema</strong>. Cada ação registra no histórico e mostra um resumo ao final.</p>
+                <p>Para você, a ficha já abre pronta para editar. As mudanças de carreira ficam na aba <strong>Carreira</strong>: <strong>Promover</strong> e <strong>Transferir</strong> na barra logo abaixo das abas, e o botão vermelho <strong>Dar baixa do sistema</strong> no fim da aba. Cada um abre a sua tela no lugar da ficha, com <strong>Voltar</strong> em cima e, no rodapé, <strong>Cancelar</strong> e o botão que grava. Cada ação pede confirmação, registra no histórico e mostra um resumo ao final.</p>
                 <figure class="manual-figura">
-                  <img src="manual/imagens/usuarios-editar-carreira.png" alt="A ficha em modo Editar, aba Carreira: o alternador Ver e Editar (1) e os blocos Promover, Transferir e Dar baixa do sistema (2)." />
+                  <img src="manual/imagens/usuarios-editar-carreira.png" alt="A aba Carreira para o administrador: os botões Promover e Transferir na barra (1) e o lápis de corrigir no título do bloco (2)." />
                   <figcaption>
                     <ol class="manual-chamadas">
-                      <li>Alternador Ver e Editar</li>
-                      <li>Blocos Promover, Transferir e Dar baixa do sistema</li>
+                      <li>Botões Promover e Transferir</li>
+                      <li>Lápis de corrigir o bloco</li>
                     </ol>
                   </figcaption>
                 </figure>
-                <p><strong>Promover.</strong> Escolha o <strong>Tipo</strong> da carreira e o sistema calcula sozinho o posto de destino, em <strong>Promovido a</strong>: no mesmo tipo, a graduação seguinte; mudando de tipo, a graduação de entrada do novo tipo. O sistema não pula graus, e uma mudança que seria rebaixamento não é aceita. A <strong>data</strong> precisa ser posterior à última promoção e não pode cair no futuro. Ao confirmar, o banco atualiza o grau e a antiguidade e recalcula a escala.</p>
-                <p>Quando a promoção leva o militar para outro quadro (de praça para oficial), a <strong>inclusão no quadro</strong> passa a ser a data dessa promoção, e as datas do quadro anterior ficam guardadas como histórico.</p>
+                <p><strong>Promover.</strong> Escolha o <strong>Tipo</strong> da carreira e o sistema calcula sozinho o posto de destino, em <strong>Promovido a</strong>: no mesmo tipo, o posto seguinte; mudando de tipo, o posto de entrada do novo tipo. O sistema não pula postos, e uma mudança que seria rebaixamento não é aceita. A <strong>data da promoção</strong> não pode cair no futuro e precisa ser depois da última data de promoção gravada (ou da data de inclusão, se não houver nenhuma), como diz a nota logo abaixo. Ao confirmar, o sistema grava a data do novo posto, atualiza o posto e a antiguidade e recalcula a escala.</p>
+                <p>Quando a promoção leva o militar de praça para oficial, a data de inclusão continua a mesma: a data da promoção vira a do novo posto (Cadete ou Cadete Especialista), e as datas de quando ele era praça ficam guardadas como registro.</p>
                 <figure class="manual-figura">
-                  <img src="manual/imagens/usuarios-promover.png" alt="O bloco Promover aberto: o Tipo escolhido (1), o posto calculado em Promovido a (2) e a data com o botão Promover (3)." />
+                  <img src="manual/imagens/usuarios-promover.png" alt="A tela Promover: o Tipo (1), o posto calculado em Promovido a (2) e a data da promoção, com a nota da data limite (3). O botão Promover fica no rodapé." />
                   <figcaption>
                     <ol class="manual-chamadas">
                       <li>Tipo da carreira</li>
                       <li>Posto calculado em Promovido a</li>
-                      <li>Data e botão Promover</li>
+                      <li>Data da promoção e a nota da data limite</li>
                     </ol>
                   </figcaption>
                 </figure>
-                <p><strong>Transferir.</strong> O bloco mostra a lotação atual em <strong>De</strong>, você escolhe a unidade em <strong>Para</strong> (na árvore de unidades) e a data <strong>A partir de</strong>, que aceita até uma semana para trás ou uma data futura. A transferência vale a partir dessa data: até a véspera o militar é da unidade antiga e, daí em diante, da nova. Na escala, os dias anteriores continuam na unidade antiga.</p>
+                <p><strong>Transferir.</strong> A tela mostra a lotação de hoje logo abaixo do título. Você escolhe a unidade em <strong>Para</strong> (na árvore de unidades) e a data <strong>A partir de</strong>, que aceita até uma semana para trás ou uma data futura. A transferência vale a partir dessa data: até a véspera o militar é da unidade antiga e, daí em diante, da nova. Na escala, os dias anteriores continuam na unidade antiga.</p>
                 <p>Antes de confirmar, a janela mostra a <strong>lista do que vai acontecer</strong> a partir da data: a saída da escala e cada troca, folga e extra do militar que muda, pela mesma regra do Tirar do ciclo (veja <strong>Montar o ciclo</strong>). Na transferência, as cotas de extra dele continuam. O que foi cancelado não volta, mesmo que a transferência seja cancelada depois. Confirmando, o militar sai do ciclo da unidade antiga na data e fica disponível na nova, onde você o coloca no ciclo pela aba <strong>Ciclo</strong> do painel do dia, a partir da data da transferência.</p>
                 <figure class="manual-figura">
                   <img src="manual/imagens/usuarios-transferir.png" alt="A confirmação da transferência: a lista do que vai acontecer (1) e a nota de que o que foi cancelado não volta (2)." />
@@ -1469,10 +1519,26 @@
                     </ol>
                   </figcaption>
                 </figure>
-                <p>Uma transferência com data futura fica em <strong>Mudanças marcadas</strong>, no alto do bloco, com o botão <strong>Cancelar</strong>. Até a data, o militar continua na unidade antiga. Enquanto houver uma marcada, o bloco mostra só ela: para marcar outra, cancele a marcada primeiro.</p>
-                <p><strong>Dar baixa.</strong> No fim da aba, o bloco <strong>Dar baixa do sistema</strong> traz a data <strong>A partir de</strong> e o botão <strong>Dar baixa</strong>. A confirmação mostra o nome, o CPF e a <strong>lista do que vai acontecer</strong>: as trocas, folgas e extras, como na transferência, e as <strong>cotas</strong>, porque o militar sai da divisão das cotas de extra a partir do mês. O militar passa a "Inativo" e sai do efetivo ativo, reaparecendo só com o filtro <strong>Inativos</strong>. Para um militar já inativo, no lugar dessas ações aparece <strong>Readmitir ao efetivo</strong>, com uma data, que o traz de volta.</p>
-                <p><strong>Ajustar os dados da ficha.</strong> No mesmo modo Editar, a aba <strong>Dados</strong> deixa mudar os dados pessoais e a aba <strong>Carreira</strong>, os institucionais (inclusão no quadro, nome de guerra, setor e colocação). O <strong>CPF</strong> não muda, e o <strong>grau</strong> e a <strong>lotação</strong> também não se editam aqui, porque mudam por promoção e transferência. <strong>Celular e e-mail são opcionais</strong>, com uma exceção: quem já tem conta precisa de e-mail, porque é por ele que a conta é identificada. Se você trocar o e-mail de quem tem conta, o da conta muda junto, e o militar continua entrando com o CPF e a senha de sempre.</p>
-                <p>Ao <strong>Salvar</strong>, o sistema grava e mostra o resumo. Se você alterar a <strong>CNH</strong>, ele pede uma data para recalcular a distribuição, já que a CNH decide quem pode ser condutor.</p>
+                <p>Uma transferência com data futura aparece como uma nota no alto da aba <strong>Carreira</strong>, com o botão <strong>Cancelar</strong>. Até a data, o militar continua na unidade antiga. Enquanto ela existir, o botão Transferir fica desligado: para marcar outra, cancele a marcada primeiro.</p>
+                <p><strong>Dar baixa.</strong> No fim da aba Carreira, o botão <strong>Dar baixa do sistema</strong> abre a tela com a data <strong>A partir de</strong> (hoje, se você não mudar) e o botão <strong>Dar baixa</strong>. A confirmação mostra o nome, o CPF e a <strong>lista do que vai acontecer</strong>: as trocas, folgas e extras, como na transferência, e as <strong>cotas</strong>, porque o militar sai da divisão das cotas de extra a partir do mês. O militar passa a "Inativo" e sai do efetivo ativo, reaparecendo só com o filtro <strong>Inativos</strong>. Na ficha de um militar inativo, a barra traz só <strong>Readmitir ao efetivo</strong>: a tela pede a data, e ele volta ativo, mas fora do ciclo; você o coloca na escala pela aba <strong>Ciclo</strong> do painel do dia.</p>
+                <p><strong>Corrigir os dados da ficha.</strong> O <strong>lápis</strong> no título de cada bloco abre a correção daquele bloco: <strong>Dados pessoais</strong>, na aba Dados, e <strong>Dados institucionais</strong> (data de inclusão, nome de guerra, setor e colocação) e <strong>Datas de promoções</strong>, na aba Carreira. O campo que você muda ganha uma marca à esquerda, e o rodapé conta as alterações não salvas. O <strong>CPF</strong> não muda, e o <strong>posto</strong> e a <strong>lotação</strong> também não se corrigem aqui, porque mudam por promoção e transferência. <strong>Celular e e-mail são opcionais</strong>, com uma exceção: quem já tem conta precisa de e-mail, porque é por ele que a conta é identificada. Se você trocar o e-mail de quem tem conta, o da conta muda junto, e o militar continua entrando com o CPF e a senha de sempre.</p>
+                <p>Nas <strong>Datas de promoções</strong>, todas são opcionais: preencha as que tiver e deixe em branco o que não tiver; apagar uma data a tira da ficha. Nenhuma pode ser antes da data de inclusão, e elas sobem junto com o posto. A data de inclusão também confere o posto: o Soldado 3ª Classe só vale para quem foi incluído a partir de 01/11/2024.</p>
+                <p>Ao <strong>Salvar</strong>, o sistema grava e mostra o resumo. Se você alterar a <strong>CNH</strong>, ele mostra a partir de quando a distribuição será recalculada, já que a CNH decide quem pode ser condutor: o próximo dia de serviço, ou outra data em <strong>Escolher outra data</strong>. Se você trocar de aba ou fechar a ficha com algo digitado e não salvo, o sistema pergunta antes de descartar.</p>
+                <p><strong>Alterações na ficha.</strong> No rodapé da ficha, você vê o que já foi mudado naquele militar, por quem e quando. A lista começa fechada e abre pela seta.</p>
+                <h3 id="ajustar-antiguidade">Ajustar a antiguidade <span class="manual-selo-admin">Apenas administradores</span></h3>
+                <p>Enquanto faltam as datas de promoção, é você quem define a ordem dentro de cada posto, na aba <strong>Antiguidade</strong> da página Usuários. Ela mostra a sua companhia, com um bloco por posto, do mais antigo ao mais moderno. Cada militar aparece com o número dentro do posto, a graduação, o nome de guerra e o pelotão.</p>
+                <p>Clique no militar e use as <strong>setas</strong> (ou as teclas ↑ e ↓ do teclado) para subir ou descer uma posição. Quem mudou de lugar ganha uma marca à esquerda, e o rodapé conta as alterações. O título de cada posto recolhe a lista, e a busca, no alto, realça quem você procura.</p>
+                <figure class="manual-figura manual-figura--cheia">
+                  <img src="manual/imagens/usuarios-antiguidade.png" alt="A aba Antiguidade: o título de um posto, que recolhe a lista (1), o militar escolhido, com as setas para subir e descer (2), e o botão Salvar no rodapé (3)." />
+                  <figcaption>
+                    <ol class="manual-chamadas">
+                      <li>Título do posto, que recolhe a lista</li>
+                      <li>Militar escolhido, com as setas</li>
+                      <li>Botão Salvar</li>
+                    </ol>
+                  </figcaption>
+                </figure>
+                <p>Nada é gravado até você clicar em <strong>Salvar</strong>. O sistema mostra a partir de que data a escala será refeita, porque a antiguidade decide o Chefe de Socorro e a ordem das vagas: o próximo dia de serviço, ou outra data em <strong>Escolher outra data</strong>. Depois, mostra o resumo. <strong>Cancelar</strong> volta à ordem gravada. Quem é cadastrado ou promovido entra como o mais moderno do posto: ajuste a posição dele aqui.</p>
                 <h3 id="aprovacoes">Aprovar correções de dados <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>As correções de dados que esperam a sua decisão ficam na página <strong>Pendências</strong> (no seletor, <strong>Usuários</strong>) e na aba <strong>Pendências</strong> da página Usuários (1). O número na aba conta os pedidos, e cada cartão mostra o pelotão de quem pediu.</p>
                 <figure class="manual-figura manual-figura--cheia">
@@ -1486,7 +1552,7 @@
                 </figure>
                 <p><strong>Correções (mudanças de dados).</strong> São os pedidos que os militares mandam pelo <strong>Meu perfil</strong> (ou ao criar a conta, quando corrigem algum dado). Cada cartão (2) é um militar com as alterações que ele enviou juntas. Clicando, o painel mostra cada linha com o <strong>campo</strong>, o <strong>valor atual</strong> e o <strong>novo</strong>, com uma caixa de seleção, mais o <strong>Selecionar tudo</strong> no topo.</p>
                 <p><strong>Aprovar</strong> e <strong>Recusar</strong> valem só para o que está marcado, então você pode aceitar umas alterações e recusar outras no mesmo pedido. O Recusar também pede o motivo opcional. A lista mostra os pedidos da <strong>sua área</strong>: a companhia inteira.</p>
-                <p class="manual-nota">No <strong>Efetivo</strong>, o card de quem tem uma correção esperando ganha o selo "Correção pendente", visível só para os administradores.</p>
+                <p class="manual-nota">No <strong>Efetivo</strong>, a linha de quem tem uma correção esperando ganha o selo "Correção pendente", visível só para os administradores.</p>
               </div>
             </section>
 
@@ -1496,7 +1562,7 @@
               <p>A página <strong>Afastamentos</strong> reúne quem está fora por <strong>férias</strong>, <strong>licença</strong> ou <strong>dispensa</strong>, cada uma em sua aba. A aba mostra a árvore das unidades escolhidas no seletor, com os afastados e a contagem por unidade. Cada item traz o militar, o tipo (na licença e na dispensa), o período e os dias.</p>
               <p>Nas licenças e dispensas, um selo diz como o afastamento mexe na escala: "Segue no fluxo", o militar continua no ciclo e só os dias do afastamento saem da escala; "Fora do fluxo", o militar saiu do ciclo e volta quando o administrador o incluir de novo.</p>
               <figure class="manual-figura manual-figura--larga">
-                <img src="manual/imagens/afastamentos-lista.png" alt="A aba Licenças: a árvore de uma unidade com dois militares afastados, cada um com os dias (1) e o selo Fora do fluxo ou Segue no fluxo (2)." />
+                <img src="manual/imagens/afastamentos-lista.png" alt="A aba Licenças: o bloco de uma unidade com dois militares afastados, cada um com os dias (1) e o selo Fora do fluxo ou Segue no fluxo (2)." />
                 <figcaption>
                   <ol class="manual-chamadas">
                     <li>Dias do afastamento</li>
@@ -1561,7 +1627,7 @@
                     </ol>
                   </figcaption>
                 </figure>
-                <p><strong>Ao salvar.</strong> Como o ritmo muda o "quando" do serviço de todos, o sistema pede a <strong>data</strong> a partir da qual ele vale (começa amanhã), regenera a escala automática dos militares da unidade dessa data em diante, recalcula a distribuição, registra no histórico e abre o resumo.</p>
+                <p><strong>Ao salvar.</strong> Como o ritmo muda o "quando" do serviço de todos, o sistema mostra a <strong>data</strong> a partir da qual ele vale (o próximo dia de serviço, ou outra em <strong>Escolher outra data</strong>), regenera a escala automática dos militares da unidade dessa data em diante, recalcula a distribuição, registra no histórico e abre o resumo.</p>
                 <h3 id="mudar-prazos">Mudar os prazos <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>Na aba <strong>Extrajornada</strong>, clique em qualquer card e o painel à direita abre os quatro prazos juntos: o dia das solicitações (1 a 28), os dias do aviso (0 a 15) e os dias de envio do planejamento e do relatório de ajustes, que podem ficar em branco. <strong>Salvar</strong> grava, registra no histórico e abre o resumo. A Extrajornada, o sino e as etapas dos Relatórios passam a usar os prazos novos.</p>
               </div>

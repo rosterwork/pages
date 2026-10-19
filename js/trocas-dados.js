@@ -16,8 +16,11 @@
     analisar: function (trocaId) { return RosterWork.rpc('fn_trocas_analisar_impacto', { p_troca_id: trocaId }); },
     pendencias: function () { return RosterWork.rpc('fn_trocas_pendencias_listar', {}); },
     militares: function (unidadeId, dia, hi, hf) { return RosterWork.rpc('fn_trocas_listar_militares', { p_unidade_id: unidadeId, p_data: dia || null, p_hi: hi || null, p_hf: hf || null }); },
-    meusServicos: function (cpf, contextoId) { return RosterWork.rpc('fn_trocas_meus_servicos', { p_cpf: cpf, p_contexto_id: contextoId }); },
+    /* ultimos7Dias (só admin, no Registrar): inclui os serviços de até 7 dias atrás */
+    meusServicos: function (cpf, contextoId, ultimos7Dias) { return RosterWork.rpc('fn_trocas_meus_servicos', { p_cpf: cpf, p_contexto_id: contextoId, p_ultimos_7_dias: !!ultimos7Dias }); },
     solicitar: function (corpo) { return RosterWork.rpc('fn_trocas_solicitar', corpo); },
+    /* Registrar (só admin): grava já aprovada; com corpo.p_ensaio = true só devolve a análise de impacto */
+    registrar: function (corpo) { return RosterWork.rpc('fn_trocas_registrar', corpo); },
     confirmar: function (trocaId, aceitar, motivo) { return RosterWork.rpc('fn_trocas_confirmar', { p_troca_id: trocaId, p_aceitar: aceitar, p_motivo: motivo || null }); },
     /* forcar (só admin): aprova direto de "aguardando confirmação", sem o solicitado confirmar */
     aprovar: function (trocaId, aceitar, forcar, motivo) { return RosterWork.rpc('fn_trocas_aprovar', { p_troca_id: trocaId, p_aceitar: aceitar, p_forcar: !!forcar, p_motivo: motivo || null }); },

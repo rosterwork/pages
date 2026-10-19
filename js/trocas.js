@@ -76,9 +76,12 @@
     lista.appendChild(el);
   }
 
-  /* ---------- Todas: árvore de unidades ---------- */
+  /* ---------- Todas: árvore de unidades (as trocas da unidade num bloquinho branco) ---------- */
   function renderTrocasNaUnidade(container, unidade, trocas) {
-    trocas.forEach(function (t) { var el = montarItemTroca(t); if (el) container.appendChild(el); });
+    var bloquinho = trocas.length ? RW.tpl('tpl-arvore-bloquinho') : null;
+    if (!bloquinho) return;
+    trocas.forEach(function (t) { var el = montarItemTroca(t); if (el) bloquinho.appendChild(el); });
+    container.appendChild(bloquinho);
   }
   function contagemTrocas(trocas) { return trocas.length === 1 ? '1 troca' : trocas.length + ' trocas'; }
 
@@ -207,9 +210,12 @@
     carregarAba(estado.aba);
   }
 
-  /* Solicitar: o botão do cabeçalho abre o formulário no painel lateral */
+  /* Solicitar e Registrar (só admin): os botões da barra abrem o formulário no painel lateral */
   function abrirSolicitar() {
     if (RW.trocasSolicitar) RW.trocasSolicitar.abrir();
+  }
+  function abrirRegistrar() {
+    if (RW.trocasSolicitar) RW.trocasSolicitar.abrir({ registrar: true });
   }
 
   function iniciar(conteudoEl) {
@@ -231,6 +237,11 @@
 
     var btn = conteudo.querySelector('#btn-solicitar-troca');
     if (btn) btn.addEventListener('click', abrirSolicitar);
+    var btnRegistrar = conteudo.querySelector('#btn-registrar-troca');
+    if (btnRegistrar) {
+      btnRegistrar.classList.toggle('oculto', !contexto.ehAdmin);
+      btnRegistrar.addEventListener('click', abrirRegistrar);
+    }
 
     if (RW.trocasSolicitar) RW.trocasSolicitar.ligar({
       aoSolicitar: function () { irParaAba('minhas'); },

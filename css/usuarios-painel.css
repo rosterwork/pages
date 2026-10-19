@@ -1,0 +1,124 @@
+/* ============================================================
+   USUÁRIOS — a ficha do militar no painel direito
+   No padrão do painel da Escala: blocos cinza (.grupo-caixa) com o
+   título e o lápis do admin; as linhas rótulo · valor sem traço
+   entre elas; o bloco que recolhe (datas como praça); o campo
+   mudado com a canaleta; o Dar baixa em vermelho de contorno.
+   Moldes no usuarios.html; comportamento em usuarios-painel*.js.
+   ============================================================ */
+
+/* o título do bloco, com o lápis à direita */
+.ficha-bloco-cab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 24px;
+}
+
+/* o bloco que recolhe: o título inteiro é o botão, com o chevron à direita */
+.ficha-bloco-cab--recolhivel {
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ficha-bloco-seta {
+  flex-shrink: 0;
+  color: var(--texto-fraco);
+}
+
+/* fechado, o chevron aponta para a direita */
+.ficha-bloco-cab--recolhivel[aria-expanded="false"] .ficha-bloco-seta {
+  transform: rotate(-90deg);
+}
+
+.ficha-bloco-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* uma linha de dado: o rótulo numa coluna fixa e o valor logo ao lado */
+.ficha-linha {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  column-gap: 8px;
+  align-items: baseline;
+  min-height: 26px;
+  padding: 2px 4px;
+}
+
+.ficha-linha-rotulo {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.ficha-linha-valor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--texto-forte);
+  overflow-wrap: anywhere;
+}
+
+/* o que falta: o traço em cinza */
+.ficha-linha-valor--vazio {
+  font-weight: 400;
+  color: var(--texto-fraco);
+}
+
+/* o complemento do valor (a idade, a cidade) */
+.ficha-linha-extra {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--texto-suave);
+}
+
+/* botões que não esticam (no fim da Carreira e nos blocos) */
+.ficha-acoes-fim {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* o Dar baixa: contorno e texto em vermelho (a confirmação é que é vermelha cheia) */
+.ficha-botao--perigo {
+  color: var(--erro);
+  border-color: var(--erro);
+}
+
+/* o Cancelar da transferência marcada, na ponta da nota */
+.ficha-nota-acao {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* rodapé das sub-telas: "N alterações não salvas" à esquerda dos botões */
+.ficha-rodape-info {
+  align-self: center;
+  margin-right: auto;
+  font-size: 12px;
+  color: var(--texto-fraco);
+}
+
+/* o campo mudado e ainda não salvo: a canaleta cinza à esquerda (como a linha mexida da Escala) */
+.ficha-campo--alterado {
+  padding-left: 8px;
+  box-shadow: inset 2px 0 0 var(--borda-forte);
+}
+
+/* Promover: a hierarquia que o sistema calcula */
+.ficha-promovido {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}

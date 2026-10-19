@@ -2,12 +2,9 @@
    AFASTAMENTOS / ATESTADOS — lista (na árvore) e indicador de fluxo
    ============================================================ */
 
-/* lista de atestados dentro de uma unidade marcada */
+/* lista de uma unidade marcada: o bloquinho branco da árvore (geral-arvore-unidades), uma linha por militar */
 .atestados-lista {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 8px 0;
+  gap: 4px;
 }
 
 .atestado-item {
@@ -15,10 +12,7 @@
   align-items: center;
   gap: 8px;
   min-height: 24px;
-  padding: 8px 12px;
-  border: 1px solid var(--borda);
-  border-radius: var(--raio-medio);
-  background-color: var(--fundo-superficie);
+  padding: 2px 4px;
 }
 
 .atestado-textos {

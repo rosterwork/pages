@@ -1,431 +1,214 @@
 /* ============================================================
    USUÁRIOS — painel lateral com a ficha do militar
-   Abre ao clicar num card. Título = graduação + nome de guerra;
-   subtítulo = nome completo. Sub-cabeçalho com as abas Dados e
-   Carreira; abas Ver/Editar no topo (Editar só admin). Busca a
-   ficha pela RPC buscar_ficha_militar. No Editar da Carreira, o
-   admin pode dar baixa do militar (confirmação + RPC
-   dar_baixa_militar). As peças (seção colapsável, linha, estado)
-   vêm de geral-painel.
+   No padrão do painel da Escala: sem Ver/Editar. Título = graduação
+   + nome de guerra, com a lotação ao lado; subtítulo = nome
+   completo; abas Dados · Carreira. Quem não é admin só lê. O admin
+   já abre editando: o lápis de cada bloco abre a correção e, na
+   Carreira, a barra do painel traz Promover e Transferir (para o
+   inativo, Readmitir ao efetivo); o Dar baixa fica no fim. Cada
+   ação abre uma sub-tela no lugar da ficha, com Voltar no topo e
+   Cancelar + o botão de aplicar no rodapé; sem sub-tela, o rodapé
+   do admin mostra as Alterações na ficha. A ficha vem de
+   buscar_ficha_militar; a leitura em usuarios-painel-leitura.js;
+   cada sub-tela no seu arquivo (editar, datas, promover,
+   transferir, baixa).
    ============================================================ */
 (function () {
   'use strict';
 
   window.RosterWork = window.RosterWork || {};
 
-  var fichaAtual = null;      // ficha carregada (redesenha ao trocar de aba/modo)
-  var pessoaAtual = null;     // pessoa do card (título, CPF na baixa)
+  var fichaAtual = null;      // ficha carregada (redesenha ao trocar de aba)
+  var grausLista = [];        // os graus (o posto de cada data de promoção), carregados com a ficha
+  var alteracoes = [];        // o que foi mudado na ficha (rodapé do admin)
+  var pessoaAtual = null;     // pessoa do card (CPF, situação)
   var aoFecharPagina = null;  // callback da página (limpa o realce do card)
-  var secaoAtual = 'dados';   // aba ativa do sub-cabeçalho
+  var secaoAtual = 'dados';   // aba ativa
+  var sub = null;             // a sub-tela aberta: { textoAplicar, perigo, mudancas, podeAplicar, sujo, aplicar }
 
-  /* ---------- formatação (só exibição) ---------- */
-
-  function soDigitos(v) { return String(v == null ? '' : v).replace(/\D/g, ''); }
-
-  /* 11 dígitos -> XXX.XXX.XXX-XX */
-  function formatarCpf(cpf) {
-    var n = soDigitos(cpf);
-    if (n.length !== 11) return cpf || '';
-    return n.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-  }
-
-  /* 11 dígitos -> (XX) XXXXX-XXXX */
-  function formatarCelular(cel) {
-    var n = soDigitos(cel);
-    if (n.length !== 11) return cel || '';
-    return n.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-  }
-
-  /* ISO (AAAA-MM-DD) -> DD/MM/AAAA */
-  function formatarData(iso) {
-    if (!iso) return '';
-    var p = String(iso).slice(0, 10).split('-');
-    return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : iso;
-  }
-
-  /* "0014" -> "14" (tira os zeros à esquerda da colocação); "0000" = sem colocação (a linha mostra "-") */
-  function formatarColocacao(valor) {
-    var n = parseInt(soDigitos(valor), 10);
-    return (isNaN(n) || n === 0) ? '' : String(n);
-  }
-
-  /* data de hoje em DD/MM/AAAA (padrão dos campos "A partir de") */
-  function hojeBR() {
-    var d = new Date();
-    var dia = ('0' + d.getDate()).slice(-2), mes = ('0' + (d.getMonth() + 1)).slice(-2);
-    return dia + '/' + mes + '/' + d.getFullYear();
-  }
-
-  /* militar veio da lista de inativos (o card carrega situacao='Inativo') */
+  function ehAdmin() { return RosterWork.sessao.ehAdmin(); }
   function ehInativo() { return !!(pessoaAtual && pessoaAtual.situacao === 'Inativo'); }
 
-  /* "Ativo" | "Inativo desde DD/MM/AAAA" | "Férias/Licença/Dispensa até DD/MM/AAAA" */
-  function textoSituacao(ins) {
-    if (ehInativo()) {
-      return pessoaAtual && pessoaAtual.situacao_ate
-        ? 'Inativo desde ' + formatarData(pessoaAtual.situacao_ate) : 'Inativo';
+  /* a sub-tela aberta tem algo digitado e não salvo? */
+  function rascunho() { return !!(sub && sub.sujo && sub.sujo()); }
+
+  /* ---------- sub-telas ---------- */
+
+  /* troca a ficha por uma sub-tela: o Voltar no topo e Cancelar + o botão de aplicar no rodapé.
+     criar(corpo, ctl) desenha o conteúdo e devolve a sub-tela; ctl.aoMudar() atualiza o rodapé,
+     ctl.concluir(r, opcoes) fecha a sub-tela depois de gravar */
+  function abrirSubtela(moldeVoltar, criar) {
+    var corpo = RosterWork.painel.corpo(), rodape = RosterWork.painel.rodape(), barra = RosterWork.painel.subcabecalho();
+    if (!corpo || !rodape || !fichaAtual) return;
+    if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
+    resetarModulos();
+    if (barra) { barra.textContent = ''; barra.classList.add('oculto'); }
+    corpo.textContent = '';
+    corpo.scrollTop = 0;
+    var voltar = RosterWork.tpl(moldeVoltar);
+    if (voltar) { voltar.addEventListener('click', fecharSubtela); corpo.appendChild(voltar); }
+
+    rodape.textContent = '';
+    var tpl = document.getElementById('tpl-ficha-sub-acoes');
+    if (tpl) rodape.appendChild(tpl.content.cloneNode(true));
+    var info = rodape.querySelector('.ficha-rodape-info');
+    var aplicar = rodape.querySelector('[data-sub-aplicar]');
+    var cancelar = rodape.querySelector('[data-sub-cancelar]');
+
+    var atual = null;
+    function atualizarRodape() {
+      if (!atual || sub !== atual) return;
+      var n = atual.mudancas ? atual.mudancas() : 0;
+      if (info) info.textContent = n ? RosterWork.mensagens.escala.alteracoesNaoSalvas(n) : '';
+      if (aplicar) aplicar.disabled = !atual.podeAplicar();
     }
-    if (ins && (ins.situacao === 'Férias' || ins.situacao === 'Licença' || ins.situacao === 'Dispensa')) {
-      return ins.situacao + ' até ' + formatarData(ins.situacao_ate);
+    atual = criar(corpo, { aoMudar: atualizarRodape, concluir: concluirSubtela });
+    if (!atual) { fecharSubtela(); return; }
+    sub = atual;
+    if (aplicar) {
+      aplicar.textContent = atual.textoAplicar;
+      if (atual.perigo) { aplicar.classList.remove('botao--primario'); aplicar.classList.add('botao--perigo'); }
+      aplicar.addEventListener('click', function () { if (sub === atual && atual.podeAplicar()) atual.aplicar(aplicar); });
     }
-    return 'Ativo';
+    if (cancelar) cancelar.addEventListener('click', fecharSubtela);
+    rodape.classList.remove('oculto');
+    atualizarRodape();
   }
 
-  /* "1ºPEL — Curitiba" (cidade ao lado, quando houver) */
-  function textoLotacao(ins) {
-    var nome = (ins && ins.lotacao_nome) || '';
-    var cidade = (ins && ins.lotacao_cidade) || '';
-    return cidade ? nome + ' - ' + cidade : nome;
+  /* Voltar e Cancelar: volta à ficha e o que foi digitado se perde (como na Escala) */
+  function fecharSubtela() {
+    sub = null;
+    mostrarSecao();
   }
 
-  /* ---------- seções ---------- */
-
-  /* uma seção colapsável com linhas rótulo/valor (vazio vira "-") */
-  function montarSecao(corpo, titulo, linhas, aberta) {
-    var secao = RosterWork.painel.criarSecaoColapsavel(titulo, { aberta: aberta });
-    if (!secao) return;
-    var alvo = secao.querySelector('.painel-secao-corpo');
-    linhas.forEach(function (l) {
-      var valor = (l.valor == null || l.valor === '') ? '-' : l.valor;
-      var linha = RosterWork.painel.criarLinha(l.rotulo, valor);
-      if (linha) alvo.appendChild(linha);
-    });
-    corpo.appendChild(secao);
-  }
-
-  /* aba Dados (Ver): só os dados pessoais */
-  function montarDados(corpo) {
-    var p = (fichaAtual && fichaAtual.pessoais) || {};
-    montarSecao(corpo, 'Dados pessoais', [
-      { rotulo: 'Nome completo', valor: p.nome_completo },
-      { rotulo: 'CPF', valor: formatarCpf(p.cpf) },
-      { rotulo: 'RG', valor: RosterWork.campos.mascararRg(soDigitos(p.rg)) },
-      { rotulo: 'Idade', valor: (p.idade != null ? p.idade + ' anos' : '') },
-      { rotulo: 'Nascimento', valor: formatarData(p.data_de_nascimento) },
-      { rotulo: 'CNH', valor: p.cnh },
-      { rotulo: 'Celular', valor: formatarCelular(p.celular) },
-      { rotulo: 'Email', valor: p.email }
-    ], true);
-  }
-
-  /* seção "Dados institucionais" (Ver) */
-  function montarInstitucionais(corpo) {
-    var ins = (fichaAtual && fichaAtual.institucionais) || {};
-    montarSecao(corpo, 'Dados institucionais', [
-      { rotulo: 'Quadro', valor: ins.quadro },
-      { rotulo: 'Inclusão no quadro', valor: formatarData(ins.data_de_inclusao) },
-      { rotulo: 'Posto', valor: ins.grau_nome },
-      { rotulo: 'Nome de guerra', valor: ins.nome_de_guerra },
-      { rotulo: 'Setor', valor: ins.tipo },
-      { rotulo: RosterWork.campos.nomeColocacao(ins.quadro), valor: formatarColocacao(ins.classificacao) },
-      { rotulo: 'Antiguidade no sistema', valor: ins.antiguidade_sistema },
-      { rotulo: 'Lotação', valor: textoLotacao(ins) },
-      { rotulo: 'Situação', valor: textoSituacao(ins) }
-    ], true);
-  }
-
-  /* aba Carreira (Ver): institucionais + histórico de promoções e transferências */
-  function montarCarreira(corpo) {
-    montarInstitucionais(corpo);
-    var promocoes = (fichaAtual && fichaAtual.promocoes) || [];
-    var transferencias = (fichaAtual && fichaAtual.transferencias) || [];
-    if (promocoes.length) {
-      var linhasP = promocoes.map(function (pr) {
-        return { rotulo: pr.grau || pr.grau_nome || '', valor: formatarData(pr.data) };
-      });
-      montarSecao(corpo, 'Promoções', linhasP, false);
+  /* gravou: volta à ficha relida e abre o resumo; opcoes.fechar (baixa, readmissão) fecha o painel */
+  function concluirSubtela(r, opcoes) {
+    sub = null;
+    if (opcoes && opcoes.fechar) {
+      RosterWork.painel.fechar();
+      if (RosterWork.paginas && RosterWork.paginas.usuarios && RosterWork.paginas.usuarios.recarregarInativos) RosterWork.paginas.usuarios.recarregarInativos();
+    } else if (pessoaAtual) {
+      carregarFicha(pessoaAtual.usuario_id);
     }
-    if (transferencias.length) {
-      var linhasT = transferencias.map(function (t) {
-        return { rotulo: (t.origem || '?') + ' para ' + (t.destino || '?'), valor: formatarData(t.data) };
-      });
-      montarSecao(corpo, 'Transferências', linhasT, false);
-    }
-  }
-
-  /* após promover/transferir: volta ao Ver e recarrega a ficha (grau/lotação/
-     histórico mudaram) e a lista de cards (a árvore lê buscar_efetivo, com cache) */
-  function aoConcluirCarreira() {
-    voltarParaVer();
-    if (pessoaAtual) carregarFicha(pessoaAtual.usuario_id);
+    /* o card na lista mostra grau, nome, lotação e o selo: a árvore relê */
     if (RosterWork.arvoreUnidades && RosterWork.arvoreUnidades.recarregar) RosterWork.arvoreUnidades.recarregar();
+    if (r && r.log && RosterWork.resumo) RosterWork.resumo.abrirModal(r.log, { pagina: 'Usuários' });
   }
 
-  /* seção "Dar baixa do sistema" — grudada no rodapé, começa fechada */
-  var vigenciaEl = null;   /* campo "A partir de" da baixa/readmissão (data escolhida) */
+  function abrirCorrecao(secao) {
+    abrirSubtela(secao === 'pessoais' ? 'tpl-ficha-voltar-dados' : 'tpl-ficha-voltar-carreira', function (corpo, ctl) {
+      return RosterWork.usuariosPainelEditar.montarSubtela(corpo, fichaAtual, pessoaAtual, secao, ctl);
+    });
+  }
 
-  /* campo de data "A partir de" (padrão hoje, máscara + calendário) no corpo da seção */
-  function montarCampoData(corpo) {
-    var campo = RosterWork.tpl('tpl-usuarios-data-vigencia');
-    if (!campo) return null;
-    var input = campo.querySelector('[data-vigencia-data]');
-    if (input && RosterWork.campos) {
-      RosterWork.campos.ligarMascara(input, RosterWork.campos.mascararData);
-      RosterWork.campos.ligarCalendario(input);
-      input.value = hojeBR();
+  function abrirDatas() {
+    abrirSubtela('tpl-ficha-voltar-carreira', function (corpo, ctl) {
+      return RosterWork.usuariosPainelDatas.montarSubtela(corpo, fichaAtual, pessoaAtual, grausLista, ctl);
+    });
+  }
+
+  function abrirAcao(acao) {
+    var modulos = {
+      promover: function (corpo, ctl) { return RosterWork.usuariosPainelPromover.montarSubtela(corpo, fichaAtual, pessoaAtual, ctl); },
+      transferir: function (corpo, ctl) { return RosterWork.usuariosPainelTransferir.montarSubtela(corpo, fichaAtual, pessoaAtual, ctl); },
+      baixa: function (corpo, ctl) { return RosterWork.usuariosPainelBaixa.montarBaixa(corpo, fichaAtual, pessoaAtual, ctl); },
+      readmitir: function (corpo, ctl) { return RosterWork.usuariosPainelBaixa.montarReadmitir(corpo, fichaAtual, pessoaAtual, ctl); }
+    };
+    if (modulos[acao]) abrirSubtela('tpl-ficha-voltar-carreira', modulos[acao]);
+  }
+
+  /* ---------- a ficha (leitura) ---------- */
+
+  function resetarModulos() {
+    ['usuariosPainelEditar', 'usuariosPainelDatas', 'usuariosPainelPromover', 'usuariosPainelTransferir', 'usuariosPainelBaixa', 'usuariosPainelAcesso']
+      .forEach(function (nome) { if (RosterWork[nome] && RosterWork[nome].reset) RosterWork[nome].reset(); });
+  }
+
+  /* barra do painel: as ações da Carreira (só admin) */
+  function montarBarra() {
+    var barra = RosterWork.painel.subcabecalho();
+    if (!barra) return;
+    barra.textContent = '';
+    barra.classList.add('oculto');
+    if (secaoAtual !== 'carreira' || !ehAdmin()) return;
+    var tpl = document.getElementById(ehInativo() ? 'tpl-ficha-acoes-inativo' : 'tpl-ficha-acoes-carreira');
+    if (!tpl) return;
+    barra.appendChild(tpl.content.cloneNode(true));
+    Array.prototype.forEach.call(barra.querySelectorAll('[data-ficha-acao]'), function (b) {
+      b.addEventListener('click', function () { abrirAcao(b.getAttribute('data-ficha-acao')); });
+    });
+    /* com uma transferência marcada, outra só depois de cancelar a marcada */
+    var transferir = barra.querySelector('[data-ficha-acao="transferir"]');
+    if (transferir && RosterWork.usuariosPainelTransferir) transferir.disabled = RosterWork.usuariosPainelTransferir.temMarcada(fichaAtual);
+    barra.classList.remove('oculto');
+  }
+
+  /* rodapé do admin, sem sub-tela: as Alterações na ficha (sem nenhuma, não aparece) */
+  function montarRodape() {
+    var rodape = RosterWork.painel.rodape();
+    if (!rodape) return;
+    rodape.textContent = '';
+    rodape.classList.add('oculto');
+    if (!ehAdmin() || !RosterWork.alteracoes) return;
+    var bloco = RosterWork.alteracoes.montar('tpl-ficha-alteracoes', alteracoes);
+    if (!bloco) return;
+    rodape.appendChild(bloco);
+    rodape.classList.remove('oculto');
+  }
+
+  /* desenha a ficha da aba ativa; o admin ganha os lápis, a barra e o Dar baixa */
+  function mostrarSecao() {
+    var corpo = RosterWork.painel.corpo();
+    if (!corpo || !fichaAtual) return;
+    sub = null;
+    resetarModulos();
+    corpo.textContent = '';
+    montarBarra();
+    montarRodape();
+    var L = RosterWork.usuariosPainelLeitura;
+    var admin = ehAdmin(), ativo = !ehInativo();
+    if (secaoAtual === 'carreira') {
+      if (admin && ativo && RosterWork.usuariosPainelTransferir) {
+        RosterWork.usuariosPainelTransferir.montarMarcada(corpo, fichaAtual, { concluir: concluirSubtela });
+      }
+      L.montarCarreira(corpo, fichaAtual, pessoaAtual, grausLista, (admin && ativo) ? {
+        corrigirInstitucionais: function () { abrirCorrecao('institucionais'); },
+        corrigirDatas: abrirDatas
+      } : null);
+      if (admin && ativo) {
+        var baixa = RosterWork.tpl('tpl-ficha-baixa-botao');
+        if (baixa) {
+          baixa.querySelector('button').addEventListener('click', function () { abrirAcao('baixa'); });
+          corpo.appendChild(baixa);
+        }
+      }
+    } else {
+      L.montarDados(corpo, fichaAtual, admin ? { corrigir: function () { abrirCorrecao('pessoais'); } } : null);
+      /* Acesso ao sistema (só admin, militar ativo): link de cadastro ou de nova senha */
+      if (RosterWork.usuariosPainelAcesso) RosterWork.usuariosPainelAcesso.montar(corpo, fichaAtual, pessoaAtual);
     }
-    corpo.appendChild(campo);
-    return input;
   }
 
-  /* valida o campo "A partir de": devolve o ISO ou null (marca o erro no campo) */
-  function dataVigenciaIso() {
-    var V = RosterWork.validacoes;
-    if (!vigenciaEl || !V) return null;
-    var campo = vigenciaEl.closest('.campo');
-    var erroEl = campo && campo.querySelector('.campo-erro-texto');
-    function erro(m) { if (campo) campo.classList.add('campo--erro'); if (erroEl) erroEl.textContent = m; }
-    if (campo) campo.classList.remove('campo--erro');
-    var dt = V.parseData(vigenciaEl.value);
-    if (!dt) { erro(RosterWork.mensagens.cadastro.dataInvalida); return null; }
-    var hoje = new Date(); hoje.setHours(0, 0, 0, 0);
-    if (dt > hoje) { erro(RosterWork.mensagens.usuarios.dataFutura); return null; }
-    return V.paraISO(vigenciaEl.value);
-  }
+  /* ---------- descarte do rascunho ---------- */
 
-  /* o que foi preenchido e ainda não confirmado nas ações de carreira: Promover, Transferir
-     e a data "A partir de" da baixa/readmissão (mudada do padrão, hoje) */
-  function rascunhoCarreira() {
-    var P = RosterWork.usuariosPainelPromover, T = RosterWork.usuariosPainelTransferir;
-    var dataMudada = !!(vigenciaEl && document.body.contains(vigenciaEl) && vigenciaEl.value !== hojeBR());
-    return dataMudada || !!(P && P.temRascunho && P.temRascunho()) || !!(T && T.temRascunho && T.temRascunho());
-  }
-
-  /* Esc/X do painel: com dados em edição ou ação de carreira preenchida, pergunta antes de descartar */
-  function tentarFecharFicha() {
-    var E = RosterWork.usuariosPainelEditar;
-    if (!((E && E.sujo && E.sujo()) || rascunhoCarreira()) || !RosterWork.confirmar) return false;
+  function confirmarDescarte(aoConfirmar) {
     RosterWork.confirmar({
       tipo: 'aviso',
       mensagem: RosterWork.mensagens.edicao.sairSemSalvar,
       textoConfirmar: RosterWork.mensagens.botoes.descartar,
       textoCancelar: RosterWork.mensagens.botoes.continuarEditando,
-      aoConfirmar: function () { RosterWork.painel.fechar(); }
+      aoConfirmar: aoConfirmar
     });
+  }
+
+  /* Esc/X do painel: com algo digitado numa sub-tela, pergunta antes de descartar */
+  function tentarFecharFicha() {
+    if (!rascunho() || !RosterWork.confirmar) return false;
+    confirmarDescarte(function () { sub = null; RosterWork.painel.fechar(); });
     return true;
   }
 
-  function montarBaixa(corpo) {
-    var secao = RosterWork.painel.criarSecaoColapsavel('Dar baixa do sistema', { aberta: false });
-    if (!secao) return;
-    secao.classList.add('painel-secao--rodape');
-    var alvo = secao.querySelector('.painel-secao-corpo');
-    vigenciaEl = montarCampoData(alvo);
-    var btn = RosterWork.tpl('tpl-usuarios-baixa-botao');
-    if (btn) {
-      btn.addEventListener('click', confirmarBaixa);
-      alvo.appendChild(btn);
-    }
-    corpo.appendChild(secao);
-  }
-
-  /* seção Readmitir (aba Carreira, modo Editar do admin, militar inativo) */
-  function montarReadmitir(corpo) {
-    var secao = RosterWork.painel.criarSecaoColapsavel('Readmitir ao efetivo', { aberta: true });
-    if (!secao) return;
-    secao.classList.add('painel-secao--rodape');
-    var alvo = secao.querySelector('.painel-secao-corpo');
-    vigenciaEl = montarCampoData(alvo);
-    var btn = RosterWork.tpl('tpl-usuarios-readmitir-botao');
-    if (btn) {
-      btn.addEventListener('click', confirmarReadmissao);
-      alvo.appendChild(btn);
-    }
-    corpo.appendChild(secao);
-  }
-
-  function confirmarReadmissao() {
-    if (!pessoaAtual || !RosterWork.confirmar) return;
-    var ins = (fichaAtual && fichaAtual.institucionais) || {};
-    var p = (fichaAtual && fichaAtual.pessoais) || {};
-    var pessoa = ((ins.grau_nome || pessoaAtual.grau_nome || '') + ' ' +
-                  (p.nome_completo || pessoaAtual.nome_completo || '')).trim();
-    var dataIso = dataVigenciaIso();
-    if (!dataIso) return;   /* data inválida/futura: o campo já mostra o erro */
-    var msg = RosterWork.mensagens.usuarios.confirmarReadmissao.replace('{pessoa}', pessoa);
-    RosterWork.confirmar({
-      tipo: 'aviso',
-      mensagem: msg,
-      textoConfirmar: RosterWork.mensagens.botoes.readmitir,
-      textoCancelar: RosterWork.mensagens.botoes.cancelar,
-      aoConfirmar: function () { readmitir(dataIso); }
-    });
-  }
-
-  function readmitir(dataIso) {
-    if (!pessoaAtual) return;
-    RosterWork.apiFetch('/rest/v1/rpc/readmitir_militar', {
-      metodo: 'POST',
-      corpo: { p_cpf: pessoaAtual.usuario_id, p_data: dataIso }
-    })
-      .then(function (resp) { return resp.ok ? resp.json() : { _falha: 'servidor' }; })
-      .then(function (r) {
-        if (r && r._falha === 'servidor') {
-          if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.falhaServidor });
-        } else if (r && r.success) {
-          RosterWork.painel.fechar();
-          if (RosterWork.arvoreUnidades && RosterWork.arvoreUnidades.recarregar) RosterWork.arvoreUnidades.recarregar();
-          if (RosterWork.paginas && RosterWork.paginas.usuarios && RosterWork.paginas.usuarios.recarregarInativos) RosterWork.paginas.usuarios.recarregarInativos();
-          if (r.log && RosterWork.resumo) RosterWork.resumo.abrirModal(r.log, { pagina: 'Usuários' });
-        } else if (RosterWork.avisar) {
-          RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || RosterWork.mensagens.usuarios.falhaReadmissao });
-        }
-      })
-      .catch(function () {
-        if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.semConexao });
-      });
-  }
-
-  /* modal de confirmação da baixa (nome, CPF e a lista do que vai acontecer) */
-  function confirmarBaixa() {
-    if (!fichaAtual || !pessoaAtual || !RosterWork.confirmar) return;
-    var ins = fichaAtual.institucionais || {};
-    var p = fichaAtual.pessoais || {};
-    var pessoa = ((ins.grau_nome || pessoaAtual.grau_nome || '') + ' ' +
-                  (p.nome_completo || pessoaAtual.nome_completo || '')).trim();
-    var cpf = formatarCpf(pessoaAtual.usuario_id);
-    var dataIso = dataVigenciaIso();
-    if (!dataIso) return;   /* data inválida/futura: o campo já mostra o erro */
-    var M = RosterWork.mensagens;
-    var mensagem = M.usuarios.confirmarBaixa
-      .replace('{pessoa}', pessoa).replace('{cpf}', cpf).replace('{data}', vigenciaEl.value);
-    /* a data da baixa não passa de hoje; o que ela cancela conta a partir de hoje (o que já aconteceu fica),
-       e a disponibilidade de extra sai a partir deste mês */
-    var hojeIso = RosterWork.data.paraIsoDeData(new Date());
-    var cotas = M.saida.cotasBaixa(hojeIso.slice(5, 7) + '/' + hojeIso.slice(0, 4));
-    /* a lista das trocas, folgas e extras que a baixa cancela; sem ela, não dá baixa */
-    RosterWork.apiFetch('/rest/v1/rpc/escala_ciclo_retirar_analisar', {
-      metodo: 'POST',
-      corpo: { p_unidade_id: Number(ins.lotacao_id) || null, p_cpf: pessoaAtual.usuario_id, p_data: hojeIso }
-    }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
-      .then(function (a) {
-        if (!a || !a.success) {
-          RosterWork.avisar({ tipo: 'erro', mensagem: (a && a.error) || M.saida.falhaLista });
-          return;
-        }
-        var aviso = RosterWork.avisoSaida(a.pendencias, { tipo: 'baixa', escala: M.saida.escalaBaixa, cotas: cotas });
-        RosterWork.confirmar({
-          tipo: 'erro',
-          mensagem: mensagem,
-          itens: aviso.itens,
-          nota: aviso.nota,
-          textoConfirmar: RosterWork.mensagens.botoes.darBaixa,
-          textoCancelar: RosterWork.mensagens.botoes.cancelar,
-          confirmarPerigo: true,
-          aoConfirmar: function () { darBaixa(dataIso); }
-        });
-      });
-  }
-
-  function darBaixa(dataIso) {
-    if (!pessoaAtual) return;
-    RosterWork.apiFetch('/rest/v1/rpc/dar_baixa_militar', {
-      metodo: 'POST',
-      corpo: { p_cpf: pessoaAtual.usuario_id, p_data: dataIso }
-    })
-      .then(function (resp) {
-        if (!resp.ok) return { _falha: 'servidor' };   // servidor/sessão (o 401 já é tratado no apiFetch)
-        return resp.json();
-      })
-      .then(function (r) {
-        if (r && r._falha === 'servidor') {
-          if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.falhaServidor });
-        } else if (r && r.success) {
-          RosterWork.painel.fechar();
-          if (RosterWork.arvoreUnidades && RosterWork.arvoreUnidades.recarregar) RosterWork.arvoreUnidades.recarregar();
-          /* com o filtro Inativos ativo, o recém-baixado passa a aparecer na lista de inativos (espelha o Readmitir) */
-          if (RosterWork.paginas && RosterWork.paginas.usuarios && RosterWork.paginas.usuarios.recarregarInativos) RosterWork.paginas.usuarios.recarregarInativos();
-          if (r.log && RosterWork.resumo) RosterWork.resumo.abrirModal(r.log, { pagina: 'Usuários' });
-        } else if (RosterWork.avisar) {
-          RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || RosterWork.mensagens.usuarios.falhaBaixa });
-        }
-      })
-      .catch(function () {
-        if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.semConexao });
-      });
-  }
-
-  /* ---------- estados do corpo ---------- */
-
-  function mostrarErro(corpo) {
-    corpo.textContent = '';
-    var estado = RosterWork.painel.criarEstado(RosterWork.mensagens.usuarios.falhaFicha);
-    if (estado) corpo.appendChild(estado);
-  }
-
-  function mostrarCarregando(corpo) {
-    var estado = RosterWork.painel.criarCarregando();
-    if (estado) corpo.appendChild(estado);
-  }
-
-  /* ---------- abas e modo ---------- */
-
-  /* volta para o modo Ver (clica na aba Ver do topo) */
-  function voltarParaVer() {
-    var abas = document.getElementById('painel-abas');
-    var ver = abas ? abas.querySelector('[data-painel-modo="ver"]') : null;
-    if (ver) ver.click();
-  }
-
-  /* após salvar a edição: volta para Ver e recarrega os dados atualizados */
-  function aoSalvarDados() {
-    voltarParaVer();
-    if (pessoaAtual) carregarFicha(pessoaAtual.usuario_id);
-    /* o card na lista mostra grau/nome de guerra/colocação/RG/celular/email — recarrega p/ refletir a edição */
-    if (RosterWork.arvoreUnidades && RosterWork.arvoreUnidades.recarregar) RosterWork.arvoreUnidades.recarregar();
-  }
-
-  /* desenha o corpo conforme a aba ativa e o modo Ver/Editar */
-  /* observação no topo da ficha quando o militar não tem conta de login */
-  function montarSemConta(corpo) {
-    if (!fichaAtual || fichaAtual.tem_conta !== false) return;
-    var tpl = document.getElementById('tpl-usuarios-sem-conta');
-    if (tpl) corpo.appendChild(tpl.content.cloneNode(true));
-  }
-
-  function mostrarSecao() {
-    var corpo = RosterWork.painel.corpo();
-    if (!corpo || !fichaAtual) return;
-    var editar = RosterWork.painel.modo() === 'editar';
-    var rodape = RosterWork.painel.rodape();
-    if (rodape) { rodape.textContent = ''; rodape.classList.add('oculto'); }
-    if (RosterWork.usuariosPainelEditar) RosterWork.usuariosPainelEditar.reset();
-    if (RosterWork.usuariosPainelTransferir) RosterWork.usuariosPainelTransferir.reset();
-    if (RosterWork.usuariosPainelPromover) RosterWork.usuariosPainelPromover.reset();
-    if (RosterWork.usuariosPainelAcesso) RosterWork.usuariosPainelAcesso.reset();
-    corpo.textContent = '';
-    montarSemConta(corpo);
-
-    var admin = editar && RosterWork.sessao.ehAdmin();
-    if (secaoAtual === 'carreira') {
-      if (admin && ehInativo()) {
-        /* inativo: a Carreira/Editar mostra os institucionais (Ver) + a ação Readmitir
-           (Promover/Transferir/Baixa não se aplicam a quem está fora do efetivo) */
-        montarInstitucionais(corpo);
-        montarReadmitir(corpo);
-      } else if (admin && RosterWork.usuariosPainelEditar) {
-        /* Editar: campos institucionais + as ações (Promover, Transferir, Dar baixa) */
-        RosterWork.usuariosPainelEditar.montar(corpo, fichaAtual, pessoaAtual, { aoSalvar: aoSalvarDados, aoVoltar: voltarParaVer }, 'institucionais');
-        if (RosterWork.usuariosPainelPromover) RosterWork.usuariosPainelPromover.montar(corpo, fichaAtual, pessoaAtual, { aoConcluir: aoConcluirCarreira });
-        if (RosterWork.usuariosPainelTransferir) RosterWork.usuariosPainelTransferir.montar(corpo, fichaAtual, pessoaAtual, { aoConcluir: aoConcluirCarreira });
-        montarBaixa(corpo);
-      } else {
-        montarCarreira(corpo);
-      }
-    } else {
-      if (admin && RosterWork.usuariosPainelEditar) {
-        RosterWork.usuariosPainelEditar.montar(corpo, fichaAtual, pessoaAtual, { aoSalvar: aoSalvarDados, aoVoltar: voltarParaVer }, 'pessoais');
-      } else {
-        montarDados(corpo);
-        /* Acesso ao sistema (só admin): token de quem não tem conta ou link de nova senha */
-        if (RosterWork.usuariosPainelAcesso) RosterWork.usuariosPainelAcesso.montar(corpo, fichaAtual, pessoaAtual);
-      }
-    }
-  }
-
-  function aoMudarModo() { mostrarSecao(); }
-
-  /* linha das abas do painel: Dados / Carreira */
+  /* abas Dados / Carreira (a troca com rascunho pede para descartar antes, como na Escala) */
   function montarAbas() {
     var linha = RosterWork.painel.linhaAbas();
     var tpl = document.getElementById('tpl-usuarios-painel-secoes');
@@ -433,7 +216,15 @@
     linha.appendChild(tpl.content.cloneNode(true));
     linha.classList.remove('oculto');
     var trilho = linha.querySelector('.abas');
-    if (trilho && RosterWork.abas) {
+    if (!trilho) return;
+    trilho.addEventListener('click', function (e) {
+      var aba = e.target.closest('.aba');
+      if (!aba || aba.classList.contains('aba--ativa') || !rascunho() || !RosterWork.confirmar) return;
+      e.preventDefault();
+      e.stopPropagation();                        // segura o ouvinte do geral-abas
+      confirmarDescarte(function () { sub = null; aba.click(); });
+    }, true);                                     // captura: roda antes do geral-abas
+    if (RosterWork.abas) {
       RosterWork.abas.ligar(trilho, function (aba) {
         secaoAtual = aba.getAttribute('data-secao') || 'dados';
         mostrarSecao();
@@ -441,30 +232,53 @@
     }
   }
 
-  /* título/subtítulo a partir da ficha carregada (refletem promoção/edição do nome) */
+  /* título (graduação + nome de guerra), a lotação ao lado ("- 2ºPEL") e o nome completo */
   function atualizarTitulo() {
     if (!fichaAtual || !RosterWork.painel.definirTitulos) return;
     var ins = fichaAtual.institucionais || {};
     var p = fichaAtual.pessoais || {};
     var grad = ins.grau_abreviacao || (pessoaAtual && pessoaAtual.grau_abreviacao) || '';
     var guerra = ins.nome_de_guerra || (pessoaAtual && pessoaAtual.nome_de_guerra) || '';
-    RosterWork.painel.definirTitulos((grad + ' ' + guerra).trim(), p.nome_completo || '');
+    var unidade = String(ins.lotacao_nome || '').split(' / ').pop();
+    RosterWork.painel.definirTitulos((grad + ' ' + guerra).trim(), p.nome_completo || '', unidade ? '- ' + unidade : '');
   }
 
+  /* ---------- carregar ---------- */
+
+  function mostrarErro(corpo) {
+    corpo.textContent = '';
+    var estado = RosterWork.painel.criarEstado(RosterWork.mensagens.usuarios.falhaFicha);
+    if (estado) corpo.appendChild(estado);
+  }
+
+  /* as alterações na ficha (só admin; sem elas, o rodapé não aparece) */
+  function lerAlteracoes(usuarioId) {
+    if (!ehAdmin()) return Promise.resolve([]);
+    return RosterWork.apiFetch('/rest/v1/rpc/ficha_alteracoes', { metodo: 'POST', corpo: { p_cpf: usuarioId } })
+      .then(function (resp) { return resp.ok ? resp.json() : []; })
+      .catch(function () { return []; });
+  }
+
+  /* a ficha, os graus e as alterações juntos; a resposta de outra ficha (aberta depois) é ignorada */
   function carregarFicha(usuarioId) {
     var corpo = RosterWork.painel.corpo();
     if (!corpo) return;
     corpo.textContent = '';
-    mostrarCarregando(corpo);
-    RosterWork.apiFetch('/rest/v1/rpc/buscar_ficha_militar', {
+    var carregando = RosterWork.painel.criarCarregando();
+    if (carregando) corpo.appendChild(carregando);
+    var fichaP = RosterWork.apiFetch('/rest/v1/rpc/buscar_ficha_militar', {
       metodo: 'POST',
       corpo: { p_usuario_id: usuarioId }
-    })
-      .then(function (resp) { return resp.ok ? resp.json() : null; })
-      .then(function (ficha) {
-        if (!RosterWork.painel.estaAberto()) return;
+    }).then(function (resp) { return resp.ok ? resp.json() : null; });
+    var grausP = RosterWork.novoUsuarioDados ? RosterWork.novoUsuarioDados.buscarGraus() : Promise.resolve([]);
+    Promise.all([fichaP, grausP, lerAlteracoes(usuarioId)])
+      .then(function (r) {
+        if (!RosterWork.painel.estaAberto() || !pessoaAtual || pessoaAtual.usuario_id !== usuarioId) return;
+        var ficha = r[0];
         if (!ficha) { var a = RosterWork.painel.corpo(); if (a) mostrarErro(a); return; }
         fichaAtual = ficha;
+        grausLista = r[1] || [];
+        alteracoes = Array.isArray(r[2]) ? r[2] : [];
         atualizarTitulo();
         mostrarSecao();
       })
@@ -476,13 +290,11 @@
 
   /* a gaveta foi fechada: zera o estado e avisa a página (limpa o realce) */
   function aoFecharGaveta() {
-    if (RosterWork.usuariosPainelEditar) RosterWork.usuariosPainelEditar.reset();
-    if (RosterWork.usuariosPainelTransferir) RosterWork.usuariosPainelTransferir.reset();
-    if (RosterWork.usuariosPainelPromover) RosterWork.usuariosPainelPromover.reset();
-    if (RosterWork.usuariosPainelAcesso) RosterWork.usuariosPainelAcesso.reset();
+    resetarModulos();
+    sub = null;
     fichaAtual = null;
     pessoaAtual = null;
-    vigenciaEl = null;
+    alteracoes = [];
     var cb = aoFecharPagina;
     aoFecharPagina = null;
     if (cb) cb();
@@ -492,6 +304,7 @@
   function abrir(pessoa, aoFechar) {
     if (!RosterWork.painel || !pessoa) return;
     fichaAtual = null;
+    sub = null;
     pessoaAtual = pessoa;
     aoFecharPagina = aoFechar || null;
     secaoAtual = 'dados';
@@ -500,8 +313,6 @@
     RosterWork.painel.abrir({
       titulo: (grad + ' ' + guerra).trim(),
       subtitulo: pessoa.nome_completo || '',
-      editavel: RosterWork.sessao.ehAdmin(),
-      aoMudarModo: aoMudarModo,
       aoFechar: aoFecharGaveta,
       aoTentarFechar: tentarFecharFicha
     });
@@ -509,10 +320,9 @@
     carregarFicha(pessoa.usuario_id);
   }
 
-  /* guarda-de-saída: o navegador avisa ao fechar/recarregar com ação de carreira preenchida
-     (os dados em edição já são vigiados pelo usuarios-painel-editar) */
+  /* guarda-de-saída: o navegador avisa ao fechar/recarregar com algo digitado numa sub-tela */
   if (RosterWork.guardaSaida && RosterWork.guardaSaida.registrar) {
-    RosterWork.guardaSaida.registrar(function () { return !!(pessoaAtual && rascunhoCarreira()); });
+    RosterWork.guardaSaida.registrar(function () { return !!(pessoaAtual && rascunho()); });
   }
 
   window.RosterWork.usuariosPainel = { abrir: abrir };

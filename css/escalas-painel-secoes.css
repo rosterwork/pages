@@ -48,10 +48,11 @@
   flex-shrink: 0;
 }
 
-/* coluna de ação à direita (botão ou ✕) */
+/* coluna de ação à direita (um ou dois botões, ou ✕) */
 .escala-secao-acao {
   display: inline-flex;
   align-items: center;
+  gap: 4px;
   flex-shrink: 0;
 }
 

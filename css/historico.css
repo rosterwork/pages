@@ -17,18 +17,18 @@
 #historico-autor-seletor { width: 190px; }
 #historico-periodo-seletor { width: 160px; }
 
-/* pilha de eventos dentro da unidade (na .arvore-conteudo) */
+/* pilha de eventos dentro do bloco da unidade (na .arvore-conteudo) */
 .historico-eventos {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-/* cartão de um evento */
+/* cartão de um evento: um bloquinho branco do bloco da unidade (contorno fino, raio pequeno) */
 .historico-evento {
   background-color: var(--fundo-superficie);
   border: 1px solid var(--borda);
-  border-radius: var(--raio-medio);
+  border-radius: var(--raio-pequeno);
   padding: 12px 16px;
 }
 

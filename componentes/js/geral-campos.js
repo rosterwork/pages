@@ -2,7 +2,8 @@
    CAMPOS — o comportamento padrão de formulário, compartilhado
    Máscaras (CPF, RG, celular, data), capitalização de nome com
    conectores, campo de data com calendário, campo de seleção
-   (dropdown) e a marcação de erro embaixo do campo.
+   (dropdown), os postos que ganham data de promoção e a marcação
+   de erro embaixo do campo.
    Expõe RosterWork.campos e RosterWork.validacoes.
    ============================================================ */
 (function () {
@@ -186,6 +187,66 @@
     return 'Colocação';
   }
 
+  /* ---------- datas de promoção por posto (Novo usuário, ficha e Criar conta) ----------
+     Quais postos ganham campo de data. O primeiro posto da carreira não ganha: a data dele é a de
+     inclusão. A praça incluída a partir de 01/11/2024 começa como Sd 3ª Classe; antes, como Sd 2ª
+     Classe (o Sd 3ª Classe não existia). O oficial tem os postos do quadro dele até o atual (o
+     primeiro, Cadete ou Cadete Especialista, é a entrada no quadro) e, à parte, os de praça, só para
+     registro. Posto que já tem data sempre aparece. Sem a inclusão não há como saber o primeiro
+     posto: nenhum campo. Recebe os graus de buscar_graus_hierarquicos, o grau atual, a inclusão
+     (Date ou null) e os ids dos postos com data; devolve { carreira, praca }, do posto mais baixo ao
+     mais alto. */
+  var INICIO_SD_3A_CLASSE = new Date(2024, 10, 1);
+
+  /* o Sd 3ª Classe só existe para quem foi incluído a partir de 01/11/2024 */
+  function grauValeNaInclusao(grauNome, inclusao) {
+    return !(grauNome === 'Soldado 3ª Classe' && inclusao && inclusao < INICIO_SD_3A_CLASSE);
+  }
+
+  function postosComData(graus, grauId, inclusao, comData) {
+    var atual = null, tem = {}, nivelPrimeiro = Infinity;
+    (comData || []).forEach(function (id) { tem[String(id)] = true; });
+    (graus || []).forEach(function (g) { if (String(g.grau_id) === String(grauId)) atual = g; });
+    if (!atual || !inclusao) return { carreira: [], praca: [] };
+    var primeiro = (inclusao >= INICIO_SD_3A_CLASSE) ? 'Soldado 3ª Classe' : 'Soldado 2ª Classe';
+    graus.forEach(function (g) { if (g.grau_nome === primeiro) nivelPrimeiro = g.grau_antiguidade; });
+
+    function doQuadro(quadro, entra) {
+      return graus.filter(function (g) { return g.quadro === quadro && entra(g); })
+        .sort(function (a, b) { return b.grau_antiguidade - a.grau_antiguidade; });
+    }
+    function depoisDoPrimeiro(g) { return g.grau_antiguidade < nivelPrimeiro || !!tem[String(g.grau_id)]; }
+    function ateOAtual(g) { return g.grau_antiguidade >= atual.grau_antiguidade; }
+
+    if (atual.quadro === 'QPBM') {
+      return { carreira: doQuadro('QPBM', function (g) { return depoisDoPrimeiro(g) && ateOAtual(g); }), praca: [] };
+    }
+    return { carreira: doQuadro(atual.quadro, ateOAtual), praca: doQuadro('QPBM', depoisDoPrimeiro) };
+  }
+
+  /* confere as datas de promoção juntas, na ordem da carreira (do posto mais baixo ao mais alto):
+     data válida, nenhuma antes da inclusão e sempre crescendo; vazia não é erro (todas são
+     opcionais). O conflito com a inclusão fica no campo da inclusão quando ele está no mesmo
+     formulário (inclusaoEl); senão, na própria data. Devolve se está tudo certo */
+  function conferirPromocoes(inputs, inclusao, inclusaoEl) {
+    var T = RosterWork.mensagens.cadastro, ok = true, anterior = null;
+    (inputs || []).forEach(function (input) {
+      var valor = (input.value || '').trim();
+      if (!valor) return;
+      var data = parseData(valor);
+      if (!data) { marcarErro(input, T.dataInvalida); ok = false; return; }
+      if (inclusao && data < inclusao) {
+        if (inclusaoEl) marcarErro(inclusaoEl, T.inclusaoDepoisPromocao); else marcarErro(input, T.promocaoAntesInclusao);
+        ok = false;
+      } else if (anterior && data <= anterior) {
+        marcarErro(input, T.promocaoOrdem);
+        ok = false;
+      }
+      anterior = data;
+    });
+    return ok;
+  }
+
   /* ---------- erro embaixo do campo (o padrão do site) ---------- */
 
   /* marca o .campo que contém o elemento com a borda vermelha + a mensagem.
@@ -290,6 +351,7 @@
 
   RosterWork.campos = {
     soDigitos: soDigitos, nomeColocacao: nomeColocacao,
+    postosComData: postosComData, conferirPromocoes: conferirPromocoes, grauValeNaInclusao: grauValeNaInclusao,
     mascararCpf: mascararCpf, mascararRg: mascararRg,
     mascararCelular: mascararCelular, mascararData: mascararData,
     capitalizarNome: capitalizarNome, filtrarLetras: filtrarLetras,

@@ -46,10 +46,6 @@
     if (busca) busca.classList.toggle('oculto', !eqSaldos);
     var periodo = document.getElementById('folgas-periodo');
     if (periodo) periodo.classList.toggle('oculto', !eqHist);
-    /* o +/- de expandir/recolher títulos (criado pela árvore na camada) só faz sentido na Equipe → Saldos,
-       que é a única aba com árvore; nas demais (Minhas, Histórico, Pendências) fica escondido */
-    var niveis = document.querySelector('.folgas-corpo .titulos-niveis');
-    if (niveis) niveis.classList.toggle('oculto', !eqSaldos);
   }
 
   function carregarAba() {

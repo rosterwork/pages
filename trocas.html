@@ -15,11 +15,16 @@
     </div>
   </div>
 
-  <!-- barra de comandos: à esquerda a ação (Solicitar troca, em todas as abas) -->
+  <!-- barra de comandos: à esquerda as ações, em todas as abas (Solicitar troca; Registrar troca, só admin) -->
   <div class="pagina-subcabecalho">
     <button type="button" class="botao botao--primario" id="btn-solicitar-troca">
       <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-trocas.svg#icone-trocas"/></svg>
       <span>Solicitar troca</span>
+    </button>
+    <!-- a administração registra a troca já aprovada, com a parte do E-protocolo -->
+    <button type="button" class="botao botao--primario oculto" id="btn-registrar-troca">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg>
+      <span>Registrar troca</span>
     </button>
   </div>
 
@@ -56,18 +61,53 @@
   </div>
 </div>
 
-<!-- molde: formulário Solicitar troca (montado no painel lateral) -->
+<!-- molde: formulário Solicitar troca / Registrar troca (montado no painel lateral).
+     data-modo: o que só aparece num dos dois (solicitar = o logado pede; registrar = o admin escolhe o solicitante) -->
 <template id="tpl-troca-solicitar">
   <div class="troca-solicitar-form">
     <div class="grupo-caixa trocas-cartao">
+      <span class="rotulo-secao">E-protocolo</span>
+      <div class="trocas-protocolo">
+        <label class="campo">
+          <span class="campo-rotulo">Parte</span>
+          <input type="text" class="campo-entrada" id="ts-parte" inputmode="numeric" maxlength="7" autocomplete="off" />
+          <span class="campo-erro-texto"></span>
+        </label>
+        <label class="campo">
+          <span class="campo-rotulo">Ano</span>
+          <input type="text" class="campo-entrada" id="ts-parte-ano" inputmode="numeric" maxlength="4" autocomplete="off" />
+          <span class="campo-erro-texto"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="grupo-caixa trocas-cartao">
       <span class="rotulo-secao">Solicitante</span>
-      <div class="campo">
+      <div class="campo" data-modo="solicitar">
         <span class="campo-rotulo">Unidade</span>
         <div class="campo-entrada campo-entrada--leitura" id="ts-minha-unidade"></div>
       </div>
-      <div class="campo">
+      <div class="campo" data-modo="solicitar">
         <span class="campo-rotulo">Militar</span>
         <div class="campo-entrada campo-entrada--leitura" id="ts-meu-nome"></div>
+      </div>
+      <div class="campo oculto" data-modo="registrar">
+        <span class="campo-rotulo">Unidade</span>
+        <div class="dropdown" id="ts-sol-unidade-dropdown">
+          <button type="button" class="campo-entrada campo-selecao" id="ts-sol-unidade" aria-label="Unidade do solicitante">
+            <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+          </button>
+          <div class="dropdown-menu" id="ts-sol-unidade-menu"></div>
+        </div>
+      </div>
+      <div class="campo oculto" data-modo="registrar">
+        <span class="campo-rotulo">Militar</span>
+        <div class="dropdown" id="ts-solicitante-dropdown">
+          <input class="campo-entrada" id="ts-solicitante" type="text" maxlength="100" placeholder="Selecione a unidade antes" autocomplete="off" aria-label="Militar solicitante" disabled />
+          <div class="dropdown-menu" id="ts-solicitante-menu"></div>
+        </div>
+        <span class="campo-erro-texto"></span>
       </div>
       <label class="campo">
         <span class="campo-rotulo">Dia do serviço</span>
@@ -112,10 +152,27 @@
         <span class="campo-rotulo">Período da devolução</span>
         <div id="ts-dev-periodo"></div>
       </div>
-      <div class="impacto-aviso impacto-aviso--alerta trocas-saldo oculto" id="ts-saldo">
+      <div class="impacto-aviso impacto-aviso--alerta trocas-aviso oculto" id="ts-saldo">
         <svg class="icone impacto-aviso-icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
         <span class="impacto-aviso-textos"><span class="impacto-aviso-titulo" id="ts-saldo-texto"></span></span>
       </div>
+      <!-- o solicitado ainda não tem conta (só no Solicitar): ninguém confirma, a troca vai direto para a aprovação -->
+      <div class="impacto-aviso impacto-aviso--alerta trocas-aviso oculto" id="ts-sem-conta">
+        <svg class="icone impacto-aviso-icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+        <span class="impacto-aviso-textos">
+          <span class="impacto-aviso-titulo">Este militar ainda não tem conta no sistema.</span>
+          <span class="impacto-aviso-desc">A troca vai direto para a aprovação do administrador.</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- análise de impacto (só no Registrar): a mesma do Aprovar, desenhada pelo geral-impacto -->
+    <div class="decisao-analise-secao oculto" id="ts-analise">
+      <div class="decisao-analise-cabecalho">
+        <span class="rotulo-secao">Análise</span>
+        <span class="selo decisao-analise-selo oculto"></span>
+      </div>
+      <div class="impacto-analise decisao-analise"></div>
     </div>
   </div>
 </template>
@@ -124,6 +181,12 @@
 <template id="tpl-troca-solicitar-acoes">
   <button type="button" class="botao" data-acao="cancelar">Cancelar</button>
   <button type="button" class="botao botao--primario" data-acao="solicitar">Solicitar troca</button>
+</template>
+
+<!-- molde: ações do rodapé do painel Registrar (o Registrar espera a análise chegar) -->
+<template id="tpl-troca-registrar-acoes">
+  <button type="button" class="botao" data-acao="cancelar">Cancelar</button>
+  <button type="button" class="botao botao--primario" data-acao="solicitar">Registrar troca</button>
 </template>
 
 <!-- molde: linha de uma troca na lista -->
@@ -215,5 +278,13 @@
   <button type="button" class="dropdown-item dropdown-item--inativo troca-parceiro-ocupado">
     <span class="troca-parceiro-nome"></span>
     <span class="troca-parceiro-motivo"></span>
+  </button>
+</template>
+
+<!-- molde: item de militar que ainda não tem conta (pode ser escolhido) -->
+<template id="tpl-troca-militar-sem-conta">
+  <button type="button" class="dropdown-item troca-parceiro-sem-conta">
+    <span class="troca-parceiro-nome"></span>
+    <span class="troca-parceiro-motivo">sem conta no sistema</span>
   </button>
 </template>

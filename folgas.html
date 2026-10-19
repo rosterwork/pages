@@ -94,15 +94,16 @@
   </div>
 </template>
 
-<!-- molde: linha do militar no placar (Equipe · Saldos) -->
+<!-- molde: linha do militar no placar (Equipe · Saldos), na linha da árvore de unidades -->
 <template id="tpl-folga-saldo-item">
-  <div class="folga-saldo-item folga-saldo-item--clicavel" role="button" tabindex="0">
-    <span class="folga-saldo-textos">
-      <span class="folga-saldo-grad"></span>
-      <span class="folga-saldo-nome"></span>
+  <div class="linha-militar linha-militar--clicavel folga-saldo-item" role="button" tabindex="0">
+    <span class="linha-militar-pessoa">
+      <span class="linha-militar-grad folga-saldo-grad"></span>
+      <span class="linha-militar-nome folga-saldo-nome"></span>
     </span>
-    <span class="espacador-flex"></span>
-    <span class="selo folga-saldo-selo"></span>
+    <span class="linha-militar-fim">
+      <span class="selo folga-saldo-selo"></span>
+    </span>
   </div>
 </template>
 

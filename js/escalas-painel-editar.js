@@ -671,7 +671,7 @@
     haConflito = !!p.temConflito(dados.postos, true) || vermelhoManual;
 
     if (!ctx.semAvisos) {
-      var aviso = p.montarAvisoProblemas(dados.problemas, dados.postos, dados.faltam_modelos, ctx.admin && contarAlteracoes() > 0 && haConflito);
+      var aviso = p.montarAvisoProblemas(dados.problemas, dados.postos, dados.faltam_modelos, dados.modelos_com_erro, ctx.admin && contarAlteracoes() > 0 && haConflito);
       if (aviso) corpo.appendChild(aviso);
     }
     if (ctx.admin) notasPapeis(corpo, dados);

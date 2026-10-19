@@ -72,21 +72,16 @@
     if (!selecao('nu-lotacao')) erro(campo('nu-lotacao'), textos.lotacaoVazia);
     if (!selecao('nu-setor')) erro(campo('nu-setor'), textos.setorVazio);
 
-    /* promoções: cada uma deve estar preenchida, válida e em ordem crescente;
-       a inclusão no quadro vai até o dia da primeira promoção */
-    var promos = raiz.querySelectorAll('#nu-promocoes input');
-    var anterior = null;
-    for (var i = 0; i < promos.length; i++) {
-      var p = promos[i];
-      if (!p.value.trim()) { erro(p, textos.promocaoVazia); continue; }
-      var dt = parseData(p.value);
-      if (!dt) { erro(p, textos.dataInvalida); continue; }
-      if (i === 0) { if (incl && dt < incl) erro(inclEl, textos.inclusaoDepoisPromocao); }
-      else if (anterior && dt <= anterior) erro(p, textos.promocaoOrdem);
-      anterior = dt;
-    }
+    /* datas de promoção (opcionais), na ordem da carreira: as de praça vêm antes das de oficial */
+    if (!C.conferirPromocoes(camposDeData(raiz), incl, inclEl)) ok = false;
 
     return ok;
+  }
+
+  /* os campos de data de promoção, do posto mais baixo ao mais alto (os de praça primeiro) */
+  function camposDeData(raiz) {
+    var praca = Array.prototype.slice.call(raiz.querySelectorAll('#nu-promocoes-praca input'));
+    return praca.concat(Array.prototype.slice.call(raiz.querySelectorAll('#nu-promocoes input')));
   }
 
   /* limpa o erro de um campo assim que o usuário volta a editá-lo.
@@ -112,12 +107,12 @@
   function coletar(raiz) {
     function val(id) { var el = raiz.querySelector('#' + id); return el ? el.value.trim() : ''; }
     function selecao(id) { var el = raiz.querySelector('#' + id); return el ? el.getAttribute('data-valor') : null; }
-    var promocoes = [];
-    var inputs = raiz.querySelectorAll('#nu-promocoes input');
-    for (var i = 0; i < inputs.length; i++) {
-      var iso = paraISO(inputs[i].value);
-      if (iso) promocoes.push(iso);
-    }
+    /* cada data com o posto dela; a vazia não vai */
+    var datas = [];
+    camposDeData(raiz).forEach(function (input) {
+      var iso = paraISO(input.value);
+      if (iso) datas.push({ grau_id: parseInt(input.getAttribute('data-grau'), 10), data: iso });
+    });
     return {
       p_cpf: soDigitos(val('nu-cpf')),
       p_nome_completo: val('nu-nome-completo'),
@@ -132,7 +127,7 @@
       p_classificacao: val('nu-colocacao'),
       p_lotacao_atual: parseInt(selecao('nu-lotacao'), 10),
       p_tipo: selecao('nu-setor'),
-      p_promocoes: promocoes
+      p_datas: datas
     };
   }
 

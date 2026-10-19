@@ -6,7 +6,9 @@
    ficha que o administrador cadastrou aparece para conferir:
    e-mail e celular são da pessoa e valem na hora; o resto que
    ela corrigir vai para a aprovação de um administrador; CPF,
-   posto, lotação e promoções ficam só para conferência.
+   posto, lotação e as datas de promoção já gravadas ficam só
+   para conferência (as datas vazias ela pode preencher, e elas
+   também vão para a aprovação).
 
    Reusa o que o sistema já tem, para o cadastro ser IGUAL ao
    "Novo usuário": RosterWork.campos (máscaras, calendário,
@@ -82,38 +84,61 @@
     limparPromocoes();
   }
 
+  /* ---------- datas de promoção: um campo por posto depois do primeiro (a regra do Novo usuário) ---------- */
+
+  var postoEscolhido = null;   /* grau_id do Posto */
+  var datasFicha = {};         /* as datas já gravadas, por grau_id (ISO): ficam travadas */
+  var datasDigitadas = {};     /* o que a pessoa digitou nas vazias: volta se o campo some e reaparece */
+
   function limparPromocoes() {
-    document.getElementById('cc-promocoes').textContent = '';
-    document.getElementById('cc-promocoes-secao').classList.add('oculto');
+    postoEscolhido = null;
+    datasDigitadas = {};
+    atualizarPromocoes();
   }
 
-  /* um campo de data por grau já percorrido, do mais antigo até o posto escolhido */
-  function atualizarPromocoes(grauId) {
-    var container = document.getElementById('cc-promocoes');
-    container.textContent = '';
-
-    var escolhido = null;
-    for (var i = 0; i < graus.length; i++) {
-      if (String(graus[i].grau_id) === String(grauId)) { escolhido = graus[i]; break; }
-    }
-    if (!escolhido) { limparPromocoes(); return; }
-
-    var promos = graus.filter(function (g) {
-      return g.quadro === escolhido.quadro && g.antiguidade >= escolhido.antiguidade;
+  /* os graus no formato de buscar_graus_hierarquicos, que a regra dos postos lê */
+  function grausDaRegra() {
+    return graus.map(function (g) {
+      return { grau_id: g.grau_id, grau_nome: g.nome, grau_abreviacao: g.abreviacao, quadro: g.quadro, grau_antiguidade: g.antiguidade };
     });
-    promos.sort(function (a, b) { return b.antiguidade - a.antiguidade; });
+  }
 
+  /* os campos seguem o Posto e a data de inclusão (que diz o primeiro posto da praça): os da carreira
+     e, do oficial, as datas como praça */
+  function atualizarPromocoes() {
+    var inclusao = RW.validacoes.parseData(document.getElementById('cc-inclusao').value);
+    var postos = C.postosComData(grausDaRegra(), postoEscolhido, inclusao, Object.keys(datasFicha));
+    montarDatas('cc-promocoes-secao', 'cc-promocoes', postos.carreira);
+    montarDatas('cc-promocoes-praca-secao', 'cc-promocoes-praca', postos.praca);
+  }
+
+  /* refaz os campos de uma seção só quando a lista de postos muda; a data gravada vem travada */
+  function montarDatas(idSecao, idLista, postos) {
+    var lista = document.getElementById(idLista);
+    var chave = postos.map(function (g) { return g.grau_id; }).join(',');
+    if (lista.getAttribute('data-postos') === chave) return;
+    lista.setAttribute('data-postos', chave);
+    lista.textContent = '';
     var tpl = document.getElementById('tpl-cc-promocao');
     if (!tpl) return;
-    promos.forEach(function (g) {
+    postos.forEach(function (g) {
       var campo = tpl.content.cloneNode(true).firstElementChild;
-      campo.querySelector('.campo-rotulo').textContent = g.abreviacao;
+      campo.querySelector('.campo-rotulo').textContent = g.grau_abreviacao;
       var input = campo.querySelector('.campo-entrada');
       input.setAttribute('data-grau', g.grau_id);
-      C.ligarData(input);
-      container.appendChild(campo);
+      var gravada = datasFicha[String(g.grau_id)];
+      if (gravada) {
+        input.value = isoParaBR(gravada);
+        input.disabled = true;
+      } else {
+        input.value = datasDigitadas[g.grau_id] || '';
+        C.ligarData(input);
+        C.ligarValidacao(input, function (v) { return RW.validacoes.parseData(v) ? null : RW.mensagens.cadastro.dataInvalida; });
+        input.addEventListener('input', function () { datasDigitadas[g.grau_id] = input.value; });
+      }
+      lista.appendChild(campo);
     });
-    document.getElementById('cc-promocoes-secao').classList.toggle('oculto', !promos.length);
+    document.getElementById(idSecao).classList.toggle('oculto', !postos.length);
   }
 
   /* ---------- lotação: a MESMA árvore do Novo usuário ---------- */
@@ -143,10 +168,13 @@
     C.ligarData(document.getElementById('cc-inclusao'));
     C.ligarNomeDeGuerra(document.getElementById('cc-nome-guerra'));
 
+    /* a inclusão diz o primeiro posto da praça: as datas acompanham */
+    document.getElementById('cc-inclusao').addEventListener('input', atualizarPromocoes);
+
     C.ligarSelecao(document.getElementById('cc-cnh'));
     C.ligarSelecao(document.getElementById('cc-setor'));
     C.ligarSelecao(document.getElementById('cc-tipo'), aoEscolherTipo);
-    C.ligarSelecao(document.getElementById('cc-posto'), atualizarPromocoes);
+    C.ligarSelecao(document.getElementById('cc-posto'), function (valor) { postoEscolhido = valor; atualizarPromocoes(); });
   }
 
   /* ---------- há algo digitado? (guarda de saída) ---------- */
@@ -204,24 +232,22 @@
     C.definirSelecao(document.getElementById('cc-cnh'), dados.cnh);
     C.definirSelecao(document.getElementById('cc-setor'), dados.tipo);
 
-    /* Tipo -> Posto -> Colocação -> promoções (a mesma cascata do preenchimento manual) */
+    /* as datas de promoção já gravadas, por posto: entram travadas */
+    datasFicha = {};
+    (dados.datas || []).forEach(function (d) { datasFicha[String(d.grau_id)] = d.data; });
+
+    /* Tipo -> Posto -> Colocação -> datas de promoção (a mesma cascata do preenchimento manual) */
     var grau = grauPorId(dados.grau_hierarquico);
     if (grau) {
       C.definirSelecao(document.getElementById('cc-tipo'), grau.tipo);
       aoEscolherTipo(grau.tipo);
       selecaoComRotulo(document.getElementById('cc-posto'), String(grau.grau_id), grau.nome);
-      atualizarPromocoes(grau.grau_id);
+      postoEscolhido = grau.grau_id;
+      atualizarPromocoes();
     }
     /* "0000" = sem colocação: o campo abre vazio */
     var colocacao = parseInt(dados.classificacao, 10);
     document.getElementById('cc-colocacao').value = colocacao ? String(colocacao) : '';
-
-    /* as datas de promoção, na mesma ordem em que a tela as coleta */
-    var proms = dados.promocoes || [];
-    var camposProm = document.getElementById('cc-promocoes').querySelectorAll('.campo-entrada');
-    for (var i = 0; i < camposProm.length && i < proms.length; i++) {
-      camposProm[i].value = isoParaBR(proms[i]);
-    }
 
     /* lotação: a mesma árvore; marca a unidade e reflete no gatilho */
     if (lotacao && dados.lotacao_atual) {
@@ -242,15 +268,14 @@
   }
 
   /* ---------- o que a pessoa confere, não edita ----------
-     CPF é a identidade que casou com o link; posto, lotação e promoções mudam
-     por evento (Promover/Transferir), então aqui ficam só para conferência */
+     CPF é a identidade que casou com o link; posto e lotação mudam por evento
+     (Promover/Transferir), então aqui ficam só para conferência. As datas de
+     promoção já gravadas vêm travadas do montarDatas */
   function travarConferencia() {
     ['cc-cpf', 'cc-tipo', 'cc-posto', 'cc-lotacao'].forEach(function (id) {
       var e = document.getElementById(id);
       if (e) e.disabled = true;
     });
-    var proms = document.getElementById('cc-promocoes').querySelectorAll('.campo-entrada');
-    for (var i = 0; i < proms.length; i++) proms[i].disabled = true;
   }
   /* entra no passo 2: a ficha carregada, a conferência travada */
   function abrirFicha(cpf, codigo, dados) {
@@ -304,7 +329,9 @@
     marcarEnviado: function () { enviado = true; },
     abrirFicha: abrirFicha,
     aguardarOpcoes: function () { return opcoesProntas; },
-    contexto: function () { return contexto; }
+    contexto: function () { return contexto; },
+    /* o nome do posto da ficha (o Sd 3ª Classe só vale para inclusão a partir de 01/11/2024) */
+    nomeDoPosto: function () { var g = grauPorId(postoEscolhido); return g ? g.nome : ''; }
   };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar);

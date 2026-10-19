@@ -16,7 +16,7 @@
 
   var trocaAtual = null;
   var partes = null;       // as partes do painel aberto (geral-decisao)
-  var btnAprovar = null;   // botão Aprovar da troca aberta: fica travado até a análise de impacto chegar
+  var btnAprovar = null;   // botão Aprovar (ou Aprovar sem confirmação) da troca aberta: travado até a análise chegar
 
   function fmt() { return RW.trocasFormato; }
   function msg() { return RW.mensagens.trocas; }
@@ -26,26 +26,28 @@
     return hi && hf ? { hi: String(hi).slice(0, 5), hf: String(hf).slice(0, 5) } : { hi: '08:00', hf: '08:00' };
   }
 
-  /* uma perna da troca: o dia, o horário, quem trabalha no lugar de quem e a régua */
-  function caixaPerna(titulo, iso, hi, hf, quemTrabalha, quemFolga) {
+  /* uma perna da troca: o dia, o horário, quem trabalha no lugar de quem, a régua e um texto extra */
+  function caixaPerna(titulo, iso, hi, hf, quemTrabalha, quemFolga, extra) {
     var t = trecho(hi, hf);
     return RW.decisao.caixa({
       titulo: titulo,
       data: RW.data.comDiaSemana(iso),
       hi: t.hi, hf: t.hf,
       frase: msg().fraseNoLugar(quemTrabalha, quemFolga),
-      regua: { servico: { hi: '08:00', hf: '08:00' }, trecho: t }
+      regua: { servico: { hi: '08:00', hf: '08:00' }, trecho: t },
+      extra: extra
     });
   }
 
-  /* ---------- corpo: o pedido em caixas ---------- */
+  /* ---------- corpo: o pedido em caixas (a parte do E-protocolo vai na caixa Serviço, para conferir) ---------- */
   function montarCorpo(troca) {
     partes = RW.decisao.montar(RW.painel.corpo());
     if (!partes) return;
     var m = msg();
     var sol = fmt().nomeMilitar(troca.solicitante_grau, troca.solicitante_nome);
     var par = fmt().nomeMilitar(troca.parceiro_grau, troca.parceiro_nome);
-    var servico = caixaPerna(m.caixaServico, troca.data_servico_solicitante, troca.horario_inicio, troca.horario_fim, par, sol);
+    var parte = troca.parte_numero ? m.parteNumero(troca.parte_numero, troca.parte_ano) : '';
+    var servico = caixaPerna(m.caixaServico, troca.data_servico_solicitante, troca.horario_inicio, troca.horario_fim, par, sol, parte);
     if (servico) partes.pedido.appendChild(servico);
     var devolucao = troca.data_servico_parceiro
       ? caixaPerna(m.caixaDevolucao, troca.data_servico_parceiro, troca.devolucao_horario_inicio, troca.devolucao_horario_fim, sol, par)
@@ -128,7 +130,9 @@
         executar(d.aprovar(troca.troca_id, true), btn, ctx, { desfazer: desfazerAprovacao(troca, ctx) }, true);   // aprovar recalcula a escala → véu
       });
     } else if (acao === 'aprovar-forcar') {
-      confirmarEntao(m.confirmarForcar, true, function () {
+      /* sem a confirmação do solicitado; quando a análise apontou problema, o mesmo aviso do Aprovar */
+      var forcarComProblema = troca._analise && troca._analise.veredito === 'problema';
+      confirmarEntao(forcarComProblema ? m.confirmarAprovarComProblema : m.confirmarForcar, true, function () {
         executar(d.aprovar(troca.troca_id, true, true), btn, ctx, { desfazer: desfazerAprovacao(troca, ctx) }, true);   // força também recalcula a escala → véu
       });
     } else if (acao === 'recusar-admin') {
@@ -167,8 +171,8 @@
       if (!btn) return;
       if (!usar[acao]) { if (btn.parentNode) btn.parentNode.removeChild(btn); return; }
       btn.addEventListener('click', function () { despachar(acao, troca, ctx, btn); });
-      /* Aprovar depende da análise (aviso "pode quebrar a escala"): trava até ela chegar */
-      if (acao === 'aprovar') { btnAprovar = btn; btn.disabled = true; }
+      /* Aprovar (com ou sem confirmação) depende da análise (aviso "pode quebrar a escala"): trava até ela chegar */
+      if (acao === 'aprovar' || acao === 'aprovar-forcar') { btnAprovar = btn; btn.disabled = true; }
     });
 
     rodape.appendChild(frag);

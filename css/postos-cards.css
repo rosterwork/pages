@@ -7,6 +7,11 @@
    dados em linhas rótulo/valor com divisória (padrão .linha-info).
    ============================================================ */
 
+/* os cards ficam lado a lado: aqui o bloco da unidade usa a largura toda (as listas param em 688px) */
+.postos-painel .arvore-unidades {
+  max-width: none;
+}
+
 /* fileira de cards (e o botão "+" do admin como último item): quebra linha e
    os itens ficam colados no topo. Cards de largura fixa para o "+" encostar */
 .postos-cards {
@@ -14,7 +19,6 @@
   flex-wrap: wrap;
   align-items: flex-start;
   gap: 8px;
-  padding: 4px 0;
 }
 
 /* card de uma instalação (mesmo padrão do .cartao do guia visual) */

@@ -200,14 +200,16 @@
       tipoVazio: 'Selecione o tipo',
       postoVazio: 'Selecione o posto',
       guerraVazio: 'Preencha o nome de guerra',
-      inclusaoVazia: 'Preencha a inclusão no quadro',
-      inclusaoAposNascimento: 'A inclusão no quadro deve ser após o nascimento',
-      inclusaoDepoisPromocao: 'A inclusão no quadro não pode ser depois da primeira promoção',
+      inclusaoVazia: 'Preencha a data de inclusão',
+      inclusaoAposNascimento: 'A data de inclusão deve ser após o nascimento',
+      inclusaoDepoisPromocao: 'A data de inclusão não pode ser depois de uma promoção',
+      inclusaoSd3: 'Soldado 3ª Classe só para quem foi incluído a partir de 01/11/2024',
+      postoAntesInclusao: 'Preencha a data de inclusão antes',
       colocacaoVazia: 'Preencha a colocação',
       lotacaoVazia: 'Selecione a lotação',
       setorVazio: 'Selecione o setor',
-      promocaoVazia: 'Preencha a data',
       promocaoOrdem: 'Deve ser após a data anterior',
+      promocaoAntesInclusao: 'A promoção não pode ser antes da data de inclusão',
       sucesso: 'Usuário cadastrado com sucesso.',
       falha: 'Não foi possível cadastrar o usuário.'
     },
@@ -283,6 +285,8 @@
         sobreposicao:        { texto: 'Dois militares no mesmo horário',    icone: 'icone-alerta', nivel: 'erro' },
         faltaModelo:         { texto: 'Falta modelo de distribuição',       icone: 'icone-alerta', nivel: 'erro' },
         distribuicaoTravada: { texto: 'Distribuição com erro, corrija a distribuição', icone: 'icone-alerta', nivel: 'erro' },
+        /* lista do topo: uma linha por trecho, com a composição ("Modelo de distribuição com erro: 2ºPEL: 3 praças, 08h às 08h") */
+        modeloComErro:       { texto: 'Modelo de distribuição com erro',    icone: 'icone-alerta', nivel: 'erro' },
         grauRebaixado:       { texto: 'Grau rebaixado por falta de efetivo',  icone: 'icone-alerta', nivel: 'alerta' },
         grauExclusivo:       { texto: 'Grau diferente do ideal (função exclusiva)', icone: 'icone-alerta', nivel: 'alerta' },
         rodizioRepetido:     { texto: 'Rodízio repetido por falta de opção',   icone: 'icone-alerta', nivel: 'alerta' },
@@ -452,12 +456,19 @@
       vagaVazia: function (motivo) { return motivo === 'trava' ? 'Sem solução automática' : (motivo === 'habilitado' ? 'Vazio por falta de habilitado' : 'Vazio por falta de efetivo'); },
       /* dica do ícone do militar de outra unidade: "Do 2ºPEL" / "Da 2ªCIBM" */
       deOutraUnidade: function (nome) { return (/ª/.test(nome || '') ? 'Da ' : 'Do ') + (nome || ''); },
-      /* Observações do dia (trocas, folgas, outra unidade) — o banco manda os dados, aqui vira texto */
+      /* Observações do dia (notas do admin, trocas, folgas, outra unidade) — o banco manda os dados, aqui vira texto */
       observacoesTitulo: 'Observações',
+      /* os grupos, na ordem fixa em que aparecem */
+      observacoesGrupos: { admin: 'Administração', troca: 'Trocas', folga: 'Folgas', outra_unidade: 'De outra unidade' },
       observacaoLimite: 200,
       observacaoTexto: function (o) {
         function hh(t) { return t ? (String(t).slice(3) === '00' ? String(t).slice(0, 2) + 'h' : t) : ''; }
         function quem(g, n) { return ((g ? g + ' ' : '') + (n || '')).trim(); }
+        /* "das 08h às 09h", "das 08h às 09h e das 10h às 11h", "das 08h às 09h, das 10h às 11h e das 14h às 15h" */
+        function periodos(lista) {
+          var t = lista.map(function (p) { return 'das ' + hh(p.hi) + ' às ' + hh(p.hf); });
+          return t.length > 1 ? t.slice(0, -1).join(', ') + ' e ' + t[t.length - 1] : t[0];
+        }
         if (o.classe === 'admin') return o.texto || '';
         if (o.classe === 'outra_unidade') {
           var de = (/ª/.test(o.de_unidade || '') ? 'da ' : 'do ') + (o.de_unidade || '');
@@ -468,11 +479,19 @@
           if (o.dia_inteiro || o.hi === o.hf) return quem(o.grad, o.nome) + ' está de folga o dia todo.';
           return quem(o.grad, o.nome) + ' está de folga das ' + hh(o.hi) + ' às ' + hh(o.hf) + '.';
         }
-        var base = quem(o.cobre_grad, o.cobre_nome) + ' trocou o serviço com ' + quem(o.saiu_grad, o.saiu_nome)
-                 + ' das ' + hh(o.hi) + ' às ' + hh(o.hf) + '.';
-        if (o.tipo === 'devolucao') return base + ' (Devolução da troca de ' + (o.orig_data || '') + '.)';
-        if (o.dev_pendente) return base + ' Devolução: a definir.';
-        return base + ' Devolução: ' + (o.dev_data || '') + ' das ' + hh(o.dev_hi) + ' às ' + hh(o.dev_hf) + '.';
+        /* troca: quem cumpre a escala de quem, os períodos (serviço inteiro: sem período), a parte do E-protocolo
+           e a devolução; no dia da devolução, a frase invertida com a data da troca de origem */
+        var todos = o.periodos || [];
+        var comHora = todos.filter(function (p) { return p.hi && p.hf; });
+        var inteiro = !comHora.length || comHora.length < todos.length;
+        var frase = quem(o.cobre_grad, o.cobre_nome) + ' cumpre a escala de serviço do ' + quem(o.saiu_grad, o.saiu_nome)
+                  + (inteiro ? '' : ', no período ' + periodos(comHora))
+                  + (o.tipo === 'devolucao' ? ', como devolução da troca de ' + (o.orig_data || '') : '')
+                  + ', conforme a Parte nº ' + o.parte_numero + '/' + o.parte_ano + '.';
+        if (o.tipo === 'devolucao') return frase;
+        if (o.dev_pendente) return frase + ' A devolução será definida posteriormente.';
+        if (!o.dev_hi || !o.dev_hf) return frase + ' A devolução ocorrerá no serviço de ' + (o.dev_data || '') + '.';
+        return frase + ' A devolução ocorrerá em ' + (o.dev_data || '') + ', das ' + hh(o.dev_hi) + ' às ' + hh(o.dev_hf) + '.';
       },
       /* Imprimir escala (painel → PDF; escalas-impressao.js e escalas-impressao-pdf.js) */
       impressao: {
@@ -594,7 +613,10 @@
       falhaTransferencia: 'Não foi possível transferir. Tente de novo.',
       dataFutura: 'A data não pode ser futura.',
       confirmarPromocao: 'Promover {pessoa} a {grau} em {data}?',
-      promocaoDataAnterior: 'A data deve ser posterior à última promoção (ou à inclusão no quadro).',
+      promocaoDataAnterior: 'A data deve ser posterior à última promoção (ou à data de inclusão).',
+      /* a nota da sub-tela Promover: de quando a data tem que ser depois */
+      promocaoDepoisUltima: function (data) { return 'A data precisa ser depois de ' + data + ', a última data gravada.'; },
+      promocaoDepoisInclusao: function (data) { return 'A data precisa ser depois de ' + data + ', a data de inclusão.'; },
       topoCarreira: 'Já está no topo desta carreira.',
       promocaoTipoInvalida: 'Essa mudança de tipo rebaixaria o militar, não é uma promoção.',
       postoAtualDesconhecido: 'Não foi possível identificar o posto atual deste militar.',
@@ -702,6 +724,8 @@
       caixaDevolucao: 'Devolução',
       fraseNoLugar: function (quemTrabalha, quemFolga) { return quemTrabalha + ' trabalha no lugar do ' + quemFolga + '.'; },
       devolucaoNaoMarcada: 'Ainda não marcada.',
+      /* a parte do E-protocolo que formaliza a troca (caixa Serviço do painel) */
+      parteNumero: function (numero, ano) { return 'Parte nº ' + numero + '/' + ano; },
       /* meta da linha na lista */
       metaServico: function (dataCurta) { return 'Serviço ' + dataCurta; },
       meta24h: '24h',
@@ -717,10 +741,17 @@
       confirmarAprovarComProblema: 'A análise apontou problemas que podem quebrar a escala. Aprovar mesmo assim?',
       confirmarForcar: 'Aprovar sem a confirmação do solicitado? A troca é aplicada na escala na hora.',
       confirmarCancelar: 'Cancelar esta troca?',
+      confirmarRegistrar: 'Registrar esta troca? Ela já entra aprovada e a escala é atualizada na hora.',
+      confirmarRegistrarComProblema: 'A análise apontou problemas que podem quebrar a escala. Registrar mesmo assim?',
       falhaAcao: 'Não foi possível concluir. Tente de novo.',
-      /* título do painel lateral de solicitar */
+      /* título do painel lateral de solicitar e de registrar (só admin) */
       tituloPainel: 'Solicitar troca',
+      tituloRegistrar: 'Registrar troca',
       /* Nova troca — validações */
+      novaParte: 'Informe o número da parte.',
+      novaAno: 'Informe o ano com 4 números.',
+      novaSolicitante: 'Selecione o solicitante.',
+      novaDataRegistrar: 'Selecione o dia do serviço.',
       novaParceiro: 'Selecione o parceiro.',
       novaData: 'Selecione o dia do seu serviço.',
       novaMesmaPessoa: 'Você não pode trocar com você mesmo.',
@@ -731,6 +762,7 @@
       /* afastado no dia (a chave é o afastamento que o banco devolve) */
       parceiroAfastado: { 'Férias': 'de férias nesse dia', 'Licença': 'de licença nesse dia', 'Dispensa': 'de dispensa nesse dia' },
       modalUnidadeAntes: 'Selecione a unidade antes',
+      modalSolicitanteAntes: 'Escolha o solicitante antes',
       modalDiaAntes: 'Escolha o dia antes',
       modalParceiroAntes: 'Selecione o parceiro antes',
       modalSelecione: 'Selecione',

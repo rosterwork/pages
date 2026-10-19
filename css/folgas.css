@@ -11,38 +11,7 @@
   gap: 8px;
 }
 
-/* ---------- placar (aba Saldos): linha do militar na árvore ---------- */
-.folga-saldo-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 40px;
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--borda);
-}
-.folga-saldo-item--clicavel {
-  cursor: pointer;
-}
-.folga-saldo-item--clicavel:hover {
-  background-color: var(--fundo-suave);
-}
-.folga-saldo-item--selecionada {
-  background-color: var(--fundo-medio);
-}
-.folga-saldo-textos {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  min-width: 0;
-}
-.folga-saldo-grad {
-  font-size: 11px;
-  color: var(--texto-fraco);
-}
-.folga-saldo-nome {
-  font-size: 13px;
-  color: var(--texto);
-}
+/* placar (aba Saldos): a linha do militar e o bloquinho são os da árvore (geral-arvore-unidades) */
 
 /* ---------- listas (Solicitações · Lançamentos) ---------- */
 .folga-linha {

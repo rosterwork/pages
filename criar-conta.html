@@ -70,7 +70,7 @@
       <div class="criar-conta-corpo oculto" id="cc-corpo">
         <p class="criar-conta-nota">
           <svg class="icone criar-conta-nota-icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
-          <span>Confira os seus dados, preencha o seu e-mail e o seu celular e crie a sua senha. Se algum outro dado estiver errado, corrija aqui: a correção vai para a aprovação de um administrador. CPF, posto, lotação e promoções só podem ser conferidos.</span>
+          <span>Confira os seus dados, preencha o seu e-mail e o seu celular e crie a sua senha. Se algum outro dado estiver errado, corrija aqui: a correção vai para a aprovação de um administrador. CPF, posto, lotação e as datas de promoção já preenchidas só podem ser conferidos; as datas vazias você pode preencher.</span>
         </p>
 
         <div class="criar-conta-secao">
@@ -143,9 +143,9 @@
             <span class="campo-erro-texto"></span>
           </div>
           <label class="campo">
-            <span class="campo-rotulo">Inclusão no quadro</span>
+            <span class="campo-rotulo">Data de inclusão</span>
             <input class="campo-entrada" id="cc-inclusao" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" />
-            <span class="campo-ajuda">Data de entrada no seu quadro atual (praças ou oficiais), não a data de entrada na corporação.</span>
+            <span class="campo-ajuda">A data do seu primeiro posto na corporação.</span>
             <span class="campo-erro-texto"></span>
           </label>
           <div class="campo">
@@ -206,6 +206,12 @@
           <div class="criar-conta-promocoes" id="cc-promocoes"></div>
         </div>
 
+        <!-- só para oficial: as datas de quando era praça (não entram na antiguidade) -->
+        <div class="criar-conta-secao oculto" id="cc-promocoes-praca-secao">
+          <span class="rotulo-secao">Datas como praça (só registro)</span>
+          <div class="criar-conta-promocoes" id="cc-promocoes-praca"></div>
+        </div>
+
         <!-- senha: sem título — só a divisória separa dos dados; o login é por CPF -->
         <div class="criar-conta-secao">
           <label class="campo">
@@ -242,7 +248,7 @@
     </div>
   </div>
 
-  <!-- molde: campo de data de promoção (clonado por posto já percorrido) -->
+  <!-- molde: campo de data de promoção (clonado por posto depois do primeiro) -->
   <template id="tpl-cc-promocao">
     <label class="campo">
       <span class="campo-rotulo"></span>

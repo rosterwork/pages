@@ -324,7 +324,40 @@
   font-size: 12px;
 }
 
-/* ---------- Observações do dia (trocas + folgas + notas do admin) ---------- */
+/* ---------- Observações do dia: grupos (Administração, Trocas, Folgas, De outra unidade),
+   cada um com o título (ícone + nome) e a lista numerada ---------- */
+.escala-observacao-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.escala-observacao-grupo + .escala-observacao-grupo {
+  margin-top: 8px;
+}
+.escala-observacao-grupo-titulo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+.escala-observacao-icone {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: var(--texto-fraco);
+}
+/* lista numerada: o número vem do contador (o item é flex, para o ✕ ficar à direita) */
+.escala-observacao-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: observacao;
+}
 .escala-observacao {
   display: flex;
   align-items: flex-start;
@@ -332,16 +365,12 @@
   font-size: 12px;
   line-height: 1.4;
   color: var(--texto-suave);
-  padding: 4px 0;
+  counter-increment: observacao;
 }
-.escala-observacao + .escala-observacao {
-  border-top: 1px solid var(--borda);
-}
-.escala-observacao-icone {
-  width: 14px;
-  height: 14px;
+.escala-observacao::before {
+  content: counter(observacao) ".";
   flex-shrink: 0;
-  margin-top: 1px;
+  min-width: 14px;
   color: var(--texto-fraco);
 }
 .escala-observacao-texto {
@@ -399,69 +428,6 @@
 .escala-observacao-campo-acoes {
   display: flex;
   gap: 8px;
-}
-
-/* ---------- alterações manuais do dia (rodapé do painel, retrátil) ---------- */
-.escala-alteracoes {
-  width: 100%;
-  display: flex;
-  flex-direction: column;   /* título acima, lista abaixo */
-  gap: 8px;
-}
-
-.escala-alteracoes-cabecalho {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.escala-alteracoes-titulo {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--texto-forte);
-}
-
-/* chevron: aponta para cima quando fechado e gira para baixo quando aberto
-   (giro instantâneo, como na árvore) */
-.escala-alteracoes-seta {
-  transform: rotate(180deg);
-}
-
-.escala-alteracoes-toggle[aria-expanded="true"] .escala-alteracoes-seta {
-  transform: rotate(0);
-}
-
-/* a lista não toma o painel inteiro: rola quando há muitas alterações */
-.escala-alteracoes-lista {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-height: 320px;
-  overflow-y: auto;
-}
-
-/* uma alteração: quem + quando numa linha, o resumo abaixo; divisória entre elas */
-.escala-alteracao + .escala-alteracao {
-  padding-top: 8px;
-  border-top: 1px solid var(--borda);
-}
-
-.escala-alteracao-cabecalho {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.escala-alteracao-autor {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--texto-forte);
-}
-
-.escala-alteracao-quando {
-  font-size: 11px;
-  color: var(--texto-suave);
 }
 
 /* ---------- grupos de ícones da Legenda do sub-cabeçalho da Escala ---------- */

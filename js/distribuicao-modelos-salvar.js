@@ -80,10 +80,11 @@
     });
   }
 
-  /* salvar pede a data de recálculo (modal padrão, começa amanhã): com erro vermelho
-     avisa do erro; sem erro, avisa do impacto nas escalas já distribuídas. Ao confirmar,
-     grava e o banco recalcula as unidades do modelo a partir da data escolhida. A gravação vale no
-     período escolhido no seletor (distribuicao-periodos). */
+  /* salvar mostra a data de recálculo já sugerida (modal padrão: o próximo dia de serviço, para o
+     plantão em curso não mudar; "Escolher outra data" abre o campo). Com erro vermelho avisa do erro;
+     sem erro, avisa do impacto nas escalas já distribuídas. Ao confirmar, grava e o banco recalcula as
+     unidades do modelo a partir da data. A gravação vale no período escolhido no seletor
+     (distribuicao-periodos). */
   function salvar(estado, unidadesContagem) {
     var st = RosterWork.distribuicaoModelos.validar(unidadesContagem);
     var temVermelho = st.itens.some(function (i) { return i.nivel === 'erro'; });
@@ -104,6 +105,7 @@
     RosterWork.pedirData({
       mensagem: mensagem,
       textoConfirmar: RosterWork.mensagens.botoes.salvar,
+      sugerida: true,
       aoConfirmar: function (iso) { gravar(estado, iso); }
     });
   }

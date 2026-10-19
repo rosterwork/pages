@@ -21,6 +21,7 @@
   var originais = {};   /* campo -> valor gravado (como aparece no controle) */
   var enviar, desfazer, contagem, lista, formulario;
   var cpfProprio = '';  /* o RG da carteira nova é o próprio CPF */
+  var grauNome = '';    /* o posto: o Sd 3ª Classe só vale para inclusão a partir de 01/11/2024 */
   var reqMinhas = 0;    /* token de "Minhas solicitações": ignora resposta antiga ao reentrar */
 
   function C() { return RosterWork.campos; }
@@ -143,6 +144,9 @@
         }
         if (controle.campo === 'data_de_inclusao' && nascimento && data <= nascimento) {
           C().marcarErro(controle.el, T.inclusaoAposNascimento); ok = false; return;
+        }
+        if (controle.campo === 'data_de_inclusao' && !C().grauValeNaInclusao(grauNome, data)) {
+          C().marcarErro(controle.el, T.inclusaoSd3); ok = false; return;
         }
       } else if (controle.formato === 'celular') {
         if (V().soDigitos(valor).length !== 11) { C().marcarErro(controle.el, T.celularInvalido); ok = false; return; }
@@ -326,6 +330,7 @@
     var pessoais = (ficha && ficha.pessoais) || {};
     var institucionais = (ficha && ficha.institucionais) || {};
     cpfProprio = pessoais.cpf || '';
+    grauNome = institucionais.grau_nome || '';
 
     enviar = document.getElementById('perfil-enviar');
     desfazer = document.getElementById('perfil-desfazer');

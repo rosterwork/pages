@@ -1,72 +1,269 @@
 /* ============================================================
-   ÁRVORE DE UNIDADES — títulos das unidades selecionadas
-   Componente compartilhado.
-   Molde: #tpl-arvore-unidade (index.html) · lógica:
-   componentes/js/geral-arvore-unidades.js
-   Estrutura e recuo reaproveitam geral-arvore.css.
+   ÁRVORE DE UNIDADES — componente compartilhado (desenho do PDF
+   da escala). No alto, a trilha das unidades de cima (siglas); cada
+   unidade marcada é um bloco cinza com o título dentro, e o conteúdo
+   vai em bloquinhos brancos com contorno fino (sem sombra). Presos
+   no alto ao rolar: a trilha, o título do bloco que está passando e
+   o título do bloquinho (quando tem). z-index interno (MANUAL §8).
+   Moldes no index.html · lógica: componentes/js/geral-arvore-unidades.js
    ============================================================ */
 
-/* títulos fixos: cada nível gruda no topo ao rolar, empilhado pela profundidade
-   (--nivel-titulo, gravada pelo JS). Fundo = o branco da área: parado não muda nada;
-   ao rolar, cobre o conteúdo que passa por baixo. z-index interno (ver MANUAL §8). */
 .arvore-unidades {
-  --arvore-titulo-altura: 30px;   /* = min-height da .arvore-linha; passo do empilhamento */
-  /* a árvore encolhe até o conteúdo (a linha mais larga) e só cresce até a borda da
-     tela quando precisa — assim os selos/contagens à direita alinham numa coluna
-     colada ao conteúdo, ignorando os indents */
-  width: fit-content;
-  max-width: 100%;
+  --arvore-trilha-altura: 20px;
+  --arvore-bloco-titulo-altura: 58px;   /* o título do bloquinho gruda logo abaixo */
+  gap: 8px;
+  width: 100%;
+  max-width: 688px;                     /* largura do PDF */
 }
 
-.arvore-unidades .arvore-linha {
+/* com a árvore à mostra, o respiro fixo do topo da página cai para 8px: com a trilha,
+   fica a mesma distância (10px) da linha de cima até a trilha e da trilha até o 1º bloco */
+.pagina-corpo--camada:has(> .pagina-corpo-rolagem:not(.oculto) .arvore-unidades) {
+  --respiro-topo: 8px;
+}
+
+/* ---------- trilha: as unidades de cima ---------- */
+.arvore-trilha {
   position: sticky;
-  top: calc(var(--nivel-titulo, 0) * var(--arvore-titulo-altura));
-  /* z-index decresce com a profundidade: o pai fica na frente, então um nível
-     empurrado para cima some por baixo do pai. Faixa interna, abaixo do dropdown (MANUAL §8). */
-  z-index: max(1, calc(8 - var(--nivel-titulo, 0)));
-  background-color: var(--fundo-superficie);
-  cursor: default;   /* não é clicável: quem controla a visibilidade é o seletor */
-}
-
-/* hover não dá feedback (não é clicável) e mantém a cobertura opaca */
-.arvore-unidades .arvore-linha:hover {
+  top: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  min-height: var(--arvore-trilha-altura);
+  padding: 0 4px;
   background-color: var(--fundo-superficie);
 }
 
-/* ícone da unidade (à esquerda do nome): mesma cor da linha-guia vertical; traço fino */
-.arvore-unidade-icone {
-  color: var(--borda);
-  stroke-width: var(--arvore-traco);
-  fill: currentColor;
-}
-
-/* selo "N militares": visível na unidade marcada; reservado (invisível) na ancestral */
-.arvore-contagem {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--texto-suave);
-  background-color: var(--fundo-medio);
-  border-radius: var(--raio-total);
-  padding: 2px 8px;
+.arvore-trilha-item {
+  display: inline-flex;
+  align-items: center;
   white-space: nowrap;
 }
 
-.arvore-contagem--oculta {
-  visibility: hidden;
+.arvore-trilha-seta {
+  margin: 0 8px;
+  color: var(--texto-fraco);
 }
 
-/* área das pessoas dentro de uma unidade marcada; a border-left mantém a linha-guia
-   contínua (alinhada com .arvore-filhos) e o padding-left indenta um pouco os nomes */
+.arvore-trilha-item:first-child .arvore-trilha-seta {
+  display: none;
+}
+
+.arvore-trilha-nome {
+  font-size: var(--rotulo-secao-fonte);
+  font-weight: 600;
+  letter-spacing: var(--rotulo-secao-espacamento);
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+
+/* ---------- bloco: a unidade marcada (PDF: 5pt nas laterais e na base) ---------- */
+.arvore-bloco {
+  display: flex;
+  flex-direction: column;
+  padding: 0 8px 8px;
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-pagina);
+}
+
+/* o título nasce onde gruda: logo abaixo da trilha.
+   PDF: nome 12pt = 16px; sigla · cidade 9pt = 12px */
+.arvore-bloco-titulo {
+  position: sticky;
+  top: var(--arvore-trilha-altura);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--arvore-bloco-titulo-altura);
+  padding: 8px 4px 12px;
+  background-color: var(--fundo-pagina);
+}
+
+.arvore-bloco-textos {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.arvore-bloco-nome {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--texto-forte);
+}
+
+.arvore-bloco-detalhe {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+/* selo da contagem ("N militares") */
+.arvore-contagem {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: var(--raio-total);
+  background-color: var(--fundo-medio);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--texto-suave);
+}
+
+/* o conteúdo da página, 8px entre os bloquinhos (PDF: 5pt) */
 .arvore-conteudo {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  margin-left: 16px;
-  padding-left: 16px;
-  border-left: 1px solid var(--borda);
+  gap: 8px;
 }
 
-/* estados de carregando e vazio, centralizados na área da árvore */
+/* ---------- bloquinho branco (dentro do bloco), como o posto no PDF ---------- */
+.bloquinho {
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-superficie);
+}
+
+/* com título: o respiro de cima vai para o título, que o leva junto quando gruda */
+.bloquinho--com-titulo {
+  padding-top: 0;
+}
+
+/* o título do bloquinho gruda logo abaixo do título do bloco e recolhe/expande a lista */
+.bloquinho-titulo {
+  position: sticky;
+  top: calc(var(--arvore-trilha-altura) + var(--arvore-bloco-titulo-altura));
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 0 4px;
+  background-color: var(--fundo-superficie);
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* PDF: o título do posto vai em caixa alta, peso 600 e na cor forte */
+.bloquinho-titulo .rotulo-secao {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.bloquinho-seta {
+  flex-shrink: 0;
+  color: var(--texto-suave);
+}
+
+.bloquinho-lista {
+  display: flex;
+  flex-direction: column;
+}
+
+/* recolhido: some a lista, a seta aponta para a direita e o respiro fica igual em cima e embaixo */
+.bloquinho--recolhido .bloquinho-lista { display: none; }
+.bloquinho--recolhido .bloquinho-seta { transform: rotate(-90deg); }
+.bloquinho--recolhido .bloquinho-titulo { padding-bottom: 0; }
+
+/* ---------- linha do militar, como a linha do PDF ---------- */
+.linha-militar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 24px;
+  padding: 2px 4px;
+  border-radius: var(--raio-pequeno);
+  transition: background-color 0.15s ease;
+}
+
+/* o número (posição) fica no lugar da coluna "função" do PDF, em negrito */
+.linha-militar-numero {
+  flex-shrink: 0;
+  min-width: 24px;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--texto-suave);
+}
+
+/* graduação + nome de guerra pela base das letras; PDF: nome 10pt = 13px, peso 600 */
+.linha-militar-pessoa {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+}
+
+.linha-militar-grad {
+  flex-shrink: 0;
+  font-size: 11px;
+  white-space: nowrap;
+  color: var(--texto-suave);
+}
+
+.linha-militar-nome {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+/* a coluna de dado fica no lugar da coluna "horário" do PDF (9pt = 12px) */
+.linha-militar-coluna {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--texto);
+}
+
+/* o fim da linha (selos, botões) */
+.linha-militar-fim {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.linha-militar--clicavel {
+  cursor: pointer;
+}
+
+.linha-militar--clicavel:hover {
+  background-color: var(--fundo-suave);
+}
+
+/* selecionada: a linha cujo painel está aberto (ou a escolhida para mover) */
+.linha-militar--selecionada,
+.linha-militar--selecionada:hover {
+  background-color: var(--fundo-medio);
+}
+
+/* realce da busca: inverte a linha */
+.linha-militar--marcada,
+.linha-militar--marcada:hover {
+  background-color: var(--fundo-contraste);
+}
+
+.linha-militar--marcada .linha-militar-numero,
+.linha-militar--marcada .linha-militar-grad,
+.linha-militar--marcada .linha-militar-nome,
+.linha-militar--marcada .linha-militar-coluna,
+.linha-militar--marcada .botao--icone {
+  color: var(--texto-invertido);
+}
+
+/* ---------- estados da árvore (carregando e vazio), centralizados na área ---------- */
 .arvore-estado {
   padding: 24px 16px;
   text-align: center;
@@ -78,16 +275,4 @@
 .arvore-estado--carregando {
   display: flex;
   justify-content: center;
-}
-
-/* ---------- CONTROLE DE NÍVEIS DE TÍTULO (recolher/expandir) ---------- */
-/* camada fixa no canto superior direito do corpo (a 16px da borda, fora do recuo);
-   os botões usam .botao-discreto (estilo fantasma, em geral-botao.css) */
-.titulos-niveis {
-  position: absolute;
-  top: calc(var(--respiro-topo, 16px) + 8px);   /* 8px abaixo do respiro fixo do .pagina-corpo--camada */
-  right: 16px;
-  display: inline-flex;
-  gap: 2px;
-  z-index: 9;   /* acima de todos os títulos fixos (máx. 8) — ver MANUAL §8 */
 }
