@@ -422,17 +422,25 @@
     return el;
   }
 
-  /* grupo de acúmulo do slot: [principal, …dependentes] (principal = 1ª posição) */
+  /* principal do grupo de acúmulo do slot: guarda a configuração do grupo (é uma pessoa só) */
+  function principalVer(vg, mapaSlots) {
+    return vg.acumulo_slot_id && mapaSlots[vg.acumulo_slot_id] ? mapaSlots[vg.acumulo_slot_id] : vg;
+  }
+  /* grupo de acúmulo do slot na ordem de entrada (acumulo_ordem), a mesma do Editar */
   function grupoAcumulo(vg, mapaSlots) {
-    var principal = vg.acumulo_slot_id && mapaSlots[vg.acumulo_slot_id] ? mapaSlots[vg.acumulo_slot_id] : vg;
-    var deps = [];
+    var principal = principalVer(vg, mapaSlots);
+    var membros = [principal];
     for (var id in mapaSlots) {
       if (Object.prototype.hasOwnProperty.call(mapaSlots, id) && mapaSlots[id].acumulo_slot_id === principal.id_slot) {
-        deps.push(mapaSlots[id]);
+        membros.push(mapaSlots[id]);
       }
     }
-    deps.sort(function (a, b) { return (a._pv || '').localeCompare(b._pv || ''); });
-    return [principal].concat(deps);
+    membros.sort(function (a, b) {
+      var d = (a.acumulo_ordem || 0) - (b.acumulo_ordem || 0);
+      if (d !== 0) return d;
+      return a === principal ? -1 : (b === principal ? 1 : 0);
+    });
+    return membros;
   }
 
   /* acúmulo DENTRO da mesma viatura (Chefe/OA + Condutor do próprio posto): a linha do Condutor
@@ -482,17 +490,21 @@
       funcEl.appendChild(chip(nomeExibirVer(posto, vg, mapaSlots), false, null));
     } else {
       membros.forEach(function (s) {
-        var acumulada = !!s.acumulo_slot_id;   /* acumulada = amarela em qualquer linha; principal = cinza */
+        /* a função desta linha fica só com o nome; as outras do grupo (de outro posto, ou o Condutor
+           mesclado na linha do papel) levam o ícone de acúmulo, como no Editar */
+        var acumulada = s !== vg;
         var mesmoPosto = !!(posto && (posto.vagas || []).indexOf(s) >= 0);   /* mesma viatura → sem badge de origem */
         funcEl.appendChild(chip(nomeExibirVer(posto, s, mapaSlots), acumulada, (acumulada && !mesmoPosto) ? s._pv : null));
       });
     }
 
-    el.querySelector('.distribuicao-vaga-perfil').textContent = (vg.tipo_contador === 'Oficiais') ? 'Oficial' : 'Praça';
+    /* a linha mostra a configuração do grupo de acúmulo (a da principal) */
+    var cfg = principalVer(vg, mapaSlots);
+    el.querySelector('.distribuicao-vaga-perfil').textContent = (cfg.tipo_contador === 'Oficiais') ? 'Oficial' : 'Praça';
 
     var antig = el.querySelector('.distribuicao-vaga-antig');
-    if (vg.ordem != null && vg.ordem > 0) {
-      antig.textContent = vg.ordem + 'º mais ' + (vg.ordem_sentido === 'moderno' ? 'moderno' : 'antigo');
+    if (cfg.ordem != null && cfg.ordem > 0) {
+      antig.textContent = cfg.ordem + 'º mais ' + (cfg.ordem_sentido === 'moderno' ? 'moderno' : 'antigo');
       antig.classList.add('distribuicao-vaga-antig--def');
     } else {
       antig.textContent = '';
@@ -500,16 +512,16 @@
 
     /* grau só quando NÃO há antiguidade (critérios alternativos); senão fica vazio */
     var grau = el.querySelector('.distribuicao-vaga-grau');
-    if (vg.ordem != null && vg.ordem > 0) {
+    if (cfg.ordem != null && cfg.ordem > 0) {
       grau.textContent = '';
-    } else if (vg.ideal) {
-      grau.textContent = vg.ideal + (vg.ideal_calc === '+' ? ' ou +' : (vg.ideal_calc === '-' ? ' ou -' : ''));
+    } else if (cfg.ideal) {
+      grau.textContent = cfg.ideal + (cfg.ideal_calc === '+' ? ' ou +' : (cfg.ideal_calc === '-' ? ' ou -' : ''));
       grau.classList.add('distribuicao-vaga-grau--def');
     } else {
       grau.textContent = '';
     }
 
-    el.querySelector('.distribuicao-vaga-rod').textContent = vg.rodizio ? 'Sim' : '-';
+    el.querySelector('.distribuicao-vaga-rod').textContent = cfg.rodizio ? 'Sim' : '-';
     return el;
   }
 

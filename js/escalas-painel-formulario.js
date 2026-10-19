@@ -2,8 +2,9 @@
    ESCALAS — formulário Quem · Quando · Onde do Dia (só admin)
    Sub-tela do painel do dia, de três jeitos:
    - adicionar: o botão "Adicionar militar" do subcabeçalho (só quem
-     está de folga, de qualquer unidade: a árvore começa na unidade do
-     painel; entra como pontual, com o modal do banco de horas);
+     está de folga, de qualquer unidade e setor: a árvore começa na
+     unidade do painel e a lista vem por unidade, a escolhida primeiro;
+     entra como pontual, com o modal do banco de horas);
    - preencher: o "Sem ninguém, escolher" (posto e função já escolhidos;
      primeiro quem está sem função nesse horário, depois os de folga);
    - nova: a "Nova função" do militar no dia (o militar já escolhido;
@@ -176,6 +177,7 @@
       item.addEventListener('click', aoEscolher);
       itens.push({ cpf: m.cpf, el: item });
       lista.appendChild(item);
+      return item;
     }
 
     function marcarEscolhido() {
@@ -235,12 +237,14 @@
       carregarDisponiveis(unidadeId);
     }
 
-    /* quem está de folga na unidade escolhida (e nas de baixo dela), fora quem já entrou como pontual no rascunho */
+    /* quem está de folga na área da unidade escolhida, fora quem já entrou como pontual no rascunho:
+       um título por unidade (a escolhida primeiro, na ordem que o banco manda) e os militares embaixo */
     function carregarDisponiveis(unidadeBusca) {
       var lista = el.listaFolga;
       itens = itens.filter(function (it) { return !lista.contains(it.el); });
       lista.textContent = '';
       el.vazio = null;
+      el.titulos = [];
       var giro = RosterWork.tpl('tpl-escala-distribuicao-carregando');
       if (giro) lista.appendChild(giro);
       el.buscaUnidade = unidadeBusca;
@@ -249,11 +253,22 @@
         lista.textContent = '';
         var jaPontuais = {};
         (api.rascunho().pontuais || []).forEach(function (x) { jaPontuais[x.cpf] = true; });
+        var unidadeAtual = null, grupo = null;
         (resp || []).filter(function (m) { return !jaPontuais[m.cpf]; }).forEach(function (m) {
-          itemMilitar(lista, m, m.unidade || '', function () {
+          if (m.unidade_id !== unidadeAtual) {
+            unidadeAtual = m.unidade_id;
+            grupo = { el: RosterWork.tpl('tpl-escala-form-unidade'), itens: [] };
+            if (grupo.el) {
+              grupo.el.textContent = m.unidade || '';
+              lista.appendChild(grupo.el);
+              el.titulos.push(grupo);
+            }
+          }
+          var item = itemMilitar(lista, m, '', function () {
             est.mil = { cpf: m.cpf, grad: m.grad, nome: m.nome, janelas: [], deFolga: true, assume: m.assume || null };
             atualizar();
           });
+          if (item) grupo.itens.push(item);
         });
         var vazio = RosterWork.tpl('tpl-escala-secao-vazio');
         if (vazio) {
@@ -276,6 +291,10 @@
         var casa = RosterWork.busca.casaTexto(termo, it.el.getAttribute('data-busca'));
         it.el.classList.toggle('oculto', !casa);
         if (casa) visiveis++;
+      });
+      /* o título da unidade some quando ninguém dela casa com a busca */
+      (el.titulos || []).forEach(function (g) {
+        g.el.classList.toggle('oculto', !g.itens.some(function (it) { return !it.classList.contains('oculto'); }));
       });
       if (el.vazio) el.vazio.classList.toggle('oculto', visiveis > 0);
     }

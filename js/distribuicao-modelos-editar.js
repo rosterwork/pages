@@ -13,6 +13,7 @@
   var estado = null;       /* { modeloId, unidades:[{unidade_id, nome, tipo, chave, postos:[{...vagas}]}] } — uma unidade */
   var graus = [];
   var seq = 0;
+  var seqMenu = 0;
   var pilhaUndo = [], pilhaRedo = [];
   var sujo = false;
 
@@ -155,8 +156,9 @@
 
   function menuPerfil(menu, vg) {
     menu.textContent = '';
+    var cfg = principalDe(vg);
     [['Pracas', 'Praça'], ['Oficiais', 'Oficial']].forEach(function (o) {
-      menu.appendChild(item(o[1], vg.tipo_contador === o[0], function () { mudar(vg, function () { vg.tipo_contador = o[0]; if (vg.ideal) { vg.ideal = null; vg.ideal_calc = null; } }); }));
+      menu.appendChild(item(o[1], cfg.tipo_contador === o[0], function () { mudarGrupo(vg, function (p) { p.tipo_contador = o[0]; if (p.ideal) { p.ideal = null; p.ideal_calc = null; } }); }));
     });
   }
   /* ---------- antiguidade: numeração sem buracos + auto-reordenação POR UNIDADE/PELOTÃO ----------
@@ -186,10 +188,14 @@
     else if (n < 0) { v.ordem = -n; v.ordemSentido = 'moderno'; }
     else { v.ordem = n; v.ordemSentido = 'antigo'; }
   }
+  /* a antiguidade é de quem senta: cada grupo de acúmulo conta uma vez só (pela principal) */
+  function principaisDaUnidade(unidade) {
+    return vagasDaUnidade(unidade).filter(function (v) { return !v.acumuloTempId; });
+  }
   /* compacta a numeração de UMA unidade/pelotão: papel especial = 1º mais antigo; comuns antigos seguem 2,3…; modernos 1,2… (sem buracos) */
   function compactarUnidade(unidade) {
     if (!unidade) return;
-    var vagas = vagasDaUnidade(unidade);
+    var vagas = principaisDaUnidade(unidade);
     var temEspecial = vagas.some(function (v) { return v.papel_especial; });
     vagas.forEach(function (v) { if (v.papel_especial) { v.ordem = 1; v.ordemSentido = 'antigo'; } });
     var antigos = vagas.filter(function (v) { return !v.papel_especial && ordemComSinal(v) > 0; })
@@ -199,11 +205,12 @@
     var inicioAntigo = temEspecial ? 2 : 1;
     antigos.forEach(function (v, i) { definirOrdem(v, inicioAntigo + i); });
     modernos.forEach(function (v, i) { definirOrdem(v, -(1 + i)); });
+    vagas.forEach(sincronizarGrupo);   /* as acumuladas acompanham a principal */
   }
   /* aplica a antiguidade digitada numa unidade/pelotão: empurra os do mesmo sentido com nº ≥ e compacta */
   function reordenarUnidade(unidade, vgInsere, novoSinal) {
     if (novoSinal == null) { definirOrdem(vgInsere, null); compactarUnidade(unidade); return; }
-    var vagas = vagasDaUnidade(unidade);
+    var vagas = principaisDaUnidade(unidade);
     var temEspecial = vagas.some(function (v) { return v !== vgInsere && v.papel_especial; });
     var neg = novoSinal < 0, abs = Math.abs(novoSinal);
     if (temEspecial && abs === 1 && !neg) abs = 2;   /* o 1º mais antigo é do papel especial */
@@ -218,8 +225,9 @@
   }
   function aplicarAntiguidade(vg, sinal) {
     registrar();
-    var u = unidadeDaVaga(vg);
-    if (u) reordenarUnidade(u, vg, sinal); else definirOrdem(vg, sinal);
+    var p = principalDe(vg);   /* vale para o grupo de acúmulo inteiro */
+    var u = unidadeDaVaga(p);
+    if (u) reordenarUnidade(u, p, sinal); else { definirOrdem(p, sinal); sincronizarGrupo(p); }
     renderizar();
   }
 
@@ -233,7 +241,7 @@
     var rModerno = ctrl.querySelector('[data-modo="moderno"]');
     var sinal = ctrl.querySelector('.distribuicao-antig-sinal');
     var input = ctrl.querySelector('.distribuicao-antig-input');
-    var nome = 'antig-' + alvo.tempId;
+    var nome = 'antig-' + (++seqMenu);   /* nome próprio por menu: linhas do mesmo grupo editam o mesmo alvo */
     [rVazio, rAntigo, rModerno].forEach(function (r) { r.name = nome; });
     var modo = alvo.ordemSentido === 'moderno' ? 'moderno' : (alvo.ordem ? 'antigo' : 'vazio');
     if (modo === 'vazio') { rVazio.checked = true; input.value = ''; input.disabled = true; sinal.classList.add('oculto'); }
@@ -271,10 +279,11 @@
   /* menu de grau: só "ou +" / "ou −". O grau nasce SEM sentido e a lista de
      graus só habilita depois de escolher o sentido; a lista segue o sentido (Sd.→Sub.Ten. para "+",
      Sub.Ten.→Sd. para "−"). Trocar o sentido atualiza o campo NA HORA, sem fechar o menu. */
-  function menuGrau(rolagem, vg, cel) {
+  function menuGrau(rolagem, linhaVg) {
     rolagem.textContent = '';
+    var vg = principalDe(linhaVg);   /* o grau é do grupo de acúmulo inteiro */
     var ctrl = RosterWork.tpl('tpl-distribuicao-grau-menu');
-    var nome = 'grau-' + vg.tempId;
+    var nome = 'grau-' + linhaVg.tempId;
     var rMais = ctrl.querySelector('[data-calc="antigo"]');    /* igual ou mais antigo = '+' */
     var rMenos = ctrl.querySelector('[data-calc="moderno"]');  /* igual ou mais moderno = '-' */
     rMais.name = nome; rMenos.name = nome;
@@ -286,13 +295,19 @@
 
     function sentido() { return rMenos.checked ? '-' : (rMais.checked ? '+' : null); }
 
-    /* grava ideal/calc SEM re-renderizar (o menu fica aberto): só atualiza a célula e o rodapé */
+    /* grava ideal/calc SEM re-renderizar (o menu fica aberto): atualiza a célula de grau e a cor de
+       erro de todas as linhas do grupo, e o rodapé */
     function aplicar(ideal, calc) {
       registrar();
       vg.ideal = ideal; vg.ideal_calc = calc;
-      gatilho(cel, textoGrau(vg), !vg.ideal);
-      var linha = cel.closest('.distribuicao-vaga');   /* tira/põe a cor de erro da linha na hora */
-      if (linha) linha.classList.toggle('distribuicao-vaga--erro', vagaIncompleta(vg));
+      sincronizarGrupo(vg);
+      var corpo = document.getElementById('distribuicao-corpo');
+      grupoAcumulo(vg).forEach(function (m) {
+        var linha = corpo && corpo.querySelector('.distribuicao-vaga[data-tempid="' + m.tempId + '"]');
+        if (!linha) return;   /* o Condutor mesclado na linha do papel não tem linha própria */
+        gatilho(linha.querySelector('.distribuicao-vaga-grau'), textoGrau(vg), !vg.ideal);
+        linha.classList.toggle('distribuicao-vaga--erro', vagaIncompleta(m));
+      });
       atualizarRodape();
     }
 
@@ -342,6 +357,10 @@
 
   /* aplica uma mudança numa vaga: registra undo, executa, re-renderiza */
   function mudar(vg, fn) { registrar(); fn(); renderizar(); }
+  /* mudança de configuração (tipo, grau, rodízio): feita na principal e copiada para o grupo inteiro */
+  function mudarGrupo(vg, fn) {
+    mudar(vg, function () { var p = principalDe(vg); fn(p); sincronizarGrupo(p); });
+  }
 
   /* ---------- nova função / remover vaga ---------- */
   function novaVaga(posto) {
@@ -358,10 +377,12 @@
   function removerVaga(posto, vg) {
     registrar();
     var unidade = unidadeDaVaga(vg);
-    var principal = vg.acumuloTempId ? acharVaga(vg.acumuloTempId) : null;
-    todasVagas().forEach(function (v) { if (v.acumuloTempId === vg.tempId) { v.acumuloTempId = null; v.acumuloOrdem = 0; } });   /* se era principal, solta as acumuladas */
+    var resto = grupoAcumulo(vg).filter(function (v) { return v !== vg; });
     posto.vagas = posto.vagas.filter(function (v) { return v !== vg; });
-    if (principal && acharVaga(principal.tempId)) reagruparAcumulo(grupoAcumulo(principal));   /* era dependente: renumera o grupo */
+    /* saiu o papel especial: cada função volta com a configuração que tinha antes de entrar no grupo;
+       saiu outra: as demais continuam acumuladas entre si */
+    if (vg.papel_especial) resto.forEach(function (v) { v.acumuloTempId = null; v.acumuloOrdem = 0; });
+    else if (resto.length) reagruparAcumulo(resto);
     rederivarPosto(posto);
     compactarUnidade(unidade);   /* sem buracos na antiguidade do pelotão após remover */
     renderizar();
@@ -399,7 +420,20 @@
     for (var i = 0; i < t.length; i++) if (t[i].tempId === tempId) return t[i];
     return null;
   }
-  /* grupo de acúmulo, NA ORDEM (acumuloOrdem): a 1ª é a principal. Mesma ordem em toda vaga do grupo. */
+  /* a configuração (tipo, antiguidade, grau, rodízio) é do GRUPO de acúmulo, porque é uma pessoa só.
+     Ela mora na principal: no grupo comum, as outras funções guardam uma cópia igual; no grupo do
+     Chefe de Socorro / Oficial de Área, vale a do papel e as outras guardam a própria (que volta
+     quando saem do grupo). Qual função é a principal não aparece na tela (o banco põe o Condutor). */
+  var CAMPOS_CONFIG = ['tipo_contador', 'ordem', 'ordemSentido', 'ideal', 'ideal_calc', 'rodizio'];
+  function principalDe(vg) { return vg.acumuloTempId ? (acharVaga(vg.acumuloTempId) || vg) : vg; }
+  function sincronizarGrupo(principal) {
+    if (principal.papel_especial) return;
+    todasVagas().forEach(function (v) {
+      if (v.acumuloTempId === principal.tempId) CAMPOS_CONFIG.forEach(function (c) { v[c] = principal[c]; });
+    });
+  }
+  function temCriterio(vg) { return !!(vg.ordem || vg.ideal); }
+  /* grupo de acúmulo, NA ORDEM de entrada (acumuloOrdem). Mesma ordem em toda vaga do grupo. */
   function grupoAcumulo(vg) {
     var principal = vg.acumuloTempId ? (acharVaga(vg.acumuloTempId) || vg) : vg;
     var membros = todasVagas().filter(function (v) { return v === principal || v.acumuloTempId === principal.tempId; });
@@ -443,13 +477,16 @@
     if (!posto || posto.tipo !== 'viatura' || !ehCondutor(vg)) return false;
     return posto.vagas.filter(function (v) { return !ehSecundariaMesmoPostoEm(posto, v); }).length > 1;
   }
-  /* postos não podem repetir dentro de um grupo, salvo a exceção papel de viatura + Condutor do mesmo posto */
+  /* postos não podem repetir dentro de um grupo, salvo a exceção papel de viatura + Condutor do mesmo posto
+     (o papel, se houver, é a âncora do grupo, em qualquer posição) */
   function postosDoGrupoValidos(membros) {
-    var vistos = [], anchor = membros[0], postoAnchor = postoDaVaga(anchor);
-    for (var i = 0; i < membros.length; i++) {
-      var p = postoDaVaga(membros[i]);
+    var anchor = membros.filter(ehPapelViatura)[0] || membros[0], postoAnchor = postoDaVaga(anchor);
+    var ordem = [anchor].concat(membros.filter(function (m) { return m !== anchor; }));
+    var vistos = [];
+    for (var i = 0; i < ordem.length; i++) {
+      var p = postoDaVaga(ordem[i]);
       if (vistos.indexOf(p) >= 0) {
-        if (!(ehPapelViatura(anchor) && p === postoAnchor && ehCondutor(membros[i]))) return false;
+        if (!(ehPapelViatura(anchor) && p === postoAnchor && ehCondutor(ordem[i]))) return false;
       } else { vistos.push(p); }
     }
     return true;
@@ -472,23 +509,40 @@
       m.acumuloTempId = (m === princ) ? null : princ.tempId;
     });
   }
-  /* junta v ao grupo do `principal` — serve para função solta OU para MESCLAR outro grupo
-     inteiro; o principal continua sendo a 1ª (âncora) */
-  function juntarAcumulo(principal, v) {
-    mudar(v, function () {
-      var atual = grupoAcumulo(principal);
-      var outro = grupoAcumulo(v).filter(function (x) { return atual.indexOf(x) < 0; });
-      reagruparAcumulo(atual.concat(outro));
+  /* acumular: junta o grupo da linha (onde se clicou em Acúmulo) com o da função escolhida na lista.
+     Vale a configuração de quem já tem; o outro lado copia e vai para o fim. Os dois com configuração:
+     vale a do grupo maior (empate: a da função escolhida). O grupo do Chefe de Socorro / Oficial de
+     Área sempre manda e o papel fica em 1º; quem entra nele guarda a própria configuração. */
+  function juntarAcumulo(linhaVg, escolhida) {
+    mudar(escolhida, function () {
+      var daLinha = grupoAcumulo(linhaVg), daEscolhida = grupoAcumulo(escolhida);
+      var pLinha = principalDe(linhaVg), pEscolhida = principalDe(escolhida);
+      var ficaLinha;
+      if (pLinha.papel_especial || pEscolhida.papel_especial) ficaLinha = !!pLinha.papel_especial;
+      else if (temCriterio(pLinha) !== temCriterio(pEscolhida)) ficaLinha = temCriterio(pLinha);
+      else if (temCriterio(pLinha) && daLinha.length !== daEscolhida.length) ficaLinha = daLinha.length > daEscolhida.length;
+      else ficaLinha = false;
+      var fica = ficaLinha ? daLinha : daEscolhida;
+      var entra = ficaLinha ? daEscolhida : daLinha;
+      reagruparAcumulo(fica.concat(entra));
+      sincronizarGrupo(fica[0]);
+      compactarUnidade(unidadeDaVaga(fica[0]));   /* o número de antiguidade de quem entrou fica livre */
     });
   }
-  /* tira uma função do grupo (pelo X); vale para qualquer membro — se era a âncora, o
-     próximo assume; o que saiu volta a ser vaga solta */
+  /* tira uma função do grupo (pelo X); vale para qualquer membro (se era a principal, a próxima
+     assume). Do grupo comum ela sai com a cópia da configuração, e a antiguidade fica no número
+     seguinte ao do grupo; do grupo do papel, volta com a configuração que tinha antes de entrar. */
   function desagruparVaga(s) {
     mudar(s, function () {
+      var doPapel = !!principalDe(s).papel_especial;
       var resto = grupoAcumulo(s).filter(function (x) { return x !== s; });
       s.acumuloTempId = null;
       s.acumuloOrdem = 0;
       if (resto.length) reagruparAcumulo(resto);
+      var u = unidadeDaVaga(s);
+      var n = ordemComSinal(s);
+      if (u && n != null) reordenarUnidade(u, s, doPapel ? n : n + (n > 0 ? 1 : -1));
+      else compactarUnidade(u);
     });
   }
   /* passar o mouse num chip acende TODOS do mesmo grupo, em qualquer linha */
@@ -501,48 +555,6 @@
     if (!corpo) return;
     var chips = corpo.querySelectorAll('.distribuicao-chip[data-grupo="' + grupoId + '"]');
     for (var i = 0; i < chips.length; i++) chips[i].classList.toggle('distribuicao-chip--realce', ligar);
-  }
-  /* arrastar um chip reordena o grupo AO VIVO (os chips deslizam); quem fica em 1º vira a principal */
-  var arrastoChip = null;
-  function mesmoGrupo(a, b) { return grupoAcumulo(a)[0].tempId === grupoAcumulo(b)[0].tempId; }
-  function comitarOrdemChips(funcEl) {
-    var ordenados = [];
-    funcEl.querySelectorAll('.distribuicao-chip[data-tempid]').forEach(function (el) {
-      var m = acharVaga(el.getAttribute('data-tempid'));
-      if (m) ordenados.push(m);
-    });
-    if (ordenados.length < 2) return;
-    var atual = grupoAcumulo(ordenados[0]);
-    var igual = atual.length === ordenados.length && atual.every(function (m, i) { return m === ordenados[i]; });
-    if (igual) return;                       /* nada mudou → não registra nem re-renderiza */
-    registrar();
-    reagruparAcumulo(ordenados);
-    renderizar();
-  }
-  function ligarArrastoChip(chipEl, membro, funcEl) {
-    chipEl.setAttribute('draggable', 'true');
-    chipEl.setAttribute('data-tempid', membro.tempId);
-    chipEl.addEventListener('dragstart', function (e) {
-      arrastoChip = membro;
-      chipEl.classList.add('distribuicao-chip--arrastando');
-      if (e.dataTransfer) { e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', membro.tempId); } catch (_) {} }
-      e.stopPropagation();
-    });
-    chipEl.addEventListener('dragend', function () {
-      chipEl.classList.remove('distribuicao-chip--arrastando');
-      if (arrastoChip) { arrastoChip = null; comitarOrdemChips(funcEl); }
-    });
-    chipEl.addEventListener('dragover', function (e) {
-      if (!arrastoChip || arrastoChip === membro || !mesmoGrupo(arrastoChip, membro)) return;
-      e.preventDefault();
-      if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
-      var arrastadoEl = funcEl.querySelector('.distribuicao-chip--arrastando');
-      if (!arrastadoEl || arrastadoEl === chipEl) return;
-      var rect = chipEl.getBoundingClientRect();
-      var depois = (e.clientX - rect.left) > rect.width / 2;   /* move o chip arrastado para a posição sob o cursor */
-      funcEl.insertBefore(arrastadoEl, depois ? chipEl.nextSibling : chipEl);
-    });
-    chipEl.addEventListener('drop', function (e) { e.preventDefault(); });
   }
   /* ---------- escada de acúmulo: Posto → Função (só da unidade do modelo) ---------- */
   /* um nó (posto): a linha inteira expande/recolhe em sanfona */
@@ -610,14 +622,14 @@
       funcoes.forEach(function (v) {
         var grupoV = grupoAcumulo(v);
         filhos.appendChild(escadaFolha(v.nome_funcao || '', grupoV.length > 1, grupoV[0].tempId, menu, function () {
-          juntarAcumulo(membros[0], v);
+          juntarAcumulo(vg, v);
         }));
       });
       menu.appendChild(postoNo);
     });
     if (!algum) {
       var vazio = RosterWork.tpl('tpl-distribuicao-item');
-      vazio.textContent = 'Nenhuma função livre';
+      vazio.textContent = RosterWork.mensagens.distribuicao.nenhumaFuncaoLivre;
       vazio.classList.add('dropdown-item--inativo');
       menu.appendChild(vazio);
     }
@@ -637,74 +649,60 @@
     unidade.postos.forEach(function (p) { p.vagas.forEach(function (v) { if (v.papel_especial === tipo) achado = { posto: p, vaga: v }; }); });
     return achado;
   }
-  function clicarPapel(unidade, posto, tipo, aqui) {
-    if (aqui) { removerPapel(unidade, tipo); return; }   /* "Remover daqui" → tira o papel deste posto */
-    abrirModalPapel(unidade, posto, tipo);               /* mover/colocar pede sempre confirmação */
+  function nomeDoPapel(tipo) { return tipo === 'oficial_area' ? 'Oficial de Área' : 'Chefe de Socorro'; }
+  /* funções que o papel acumula em OUTRO posto (o Condutor da própria viatura não conta: nunca vai junto) */
+  function acumulosDeFora(atual) {
+    return todasVagas().filter(function (v) { return v.acumuloTempId === atual.vaga.tempId && postoDaVaga(v) !== atual.posto; });
+  }
+  /* o ícone do papel num posto: com acúmulos de outro posto, o modal pergunta se vão junto; sem, move direto */
+  function clicarPapel(unidade, posto, tipo) {
+    var atual = papelDaUnidade(unidade, tipo);
+    if (atual && acumulosDeFora(atual).length) abrirModalPapel(unidade, posto, tipo, atual);
+    else moverPapel(unidade, posto, tipo, false);
   }
   function moverPapel(unidade, posto, tipo, trazerAcumulos) {
     registrar();
     var atual = papelDaUnidade(unidade, tipo);
-    var secundarias = [];
+    var levar = [];
     if (atual) {
-      if (trazerAcumulos) secundarias = todasVagas().filter(function (v) { return v.acumuloTempId === atual.vaga.tempId; });
-      else todasVagas().forEach(function (v) { if (v.acumuloTempId === atual.vaga.tempId) v.acumuloTempId = null; });
+      grupoAcumulo(atual.vaga).forEach(function (v) {
+        if (v === atual.vaga) return;
+        /* vão junto (se o admin escolheu) as de outro posto; no posto de destino, só o Condutor dele.
+           As demais, e o Condutor da viatura de onde o papel sai, voltam com a configuração que tinham */
+        var vaiJunto = trazerAcumulos && postoDaVaga(v) !== atual.posto && (postoDaVaga(v) !== posto || ehCondutor(v));
+        if (vaiJunto) levar.push(v);
+        else { v.acumuloTempId = null; v.acumuloOrdem = 0; }
+      });
       atual.posto.vagas = atual.posto.vagas.filter(function (v) { return v !== atual.vaga; });
       rederivarPosto(atual.posto);
     }
     var nova = {
       tempId: 't' + (seq++), idSlot: null, chave: null,
-      nome_funcao: tipo === 'oficial_area' ? 'Oficial de Área' : 'Chefe de Socorro',
+      nome_funcao: nomeDoPapel(tipo),
       tipo_contador: tipo === 'oficial_area' ? 'Oficiais' : 'Pracas',
       base: null, ideal: null, ideal_calc: null, ordem: 1, ordemSentido: 'antigo', rodizio: false,
       papel_especial: tipo, slot_numero: null, acumuloIdSlot: null, acumuloTempId: null, acumuloOrdem: 0
     };
     posto.vagas.unshift(nova);   /* papel especial vai na 1ª posição */
-    if (secundarias.length) reagruparAcumulo([nova].concat(secundarias));   /* nova vira principal das que vieram junto */
+    if (levar.length) reagruparAcumulo([nova].concat(levar));   /* nova vira principal das que vieram junto */
     rederivarPosto(posto);
     compactarUnidade(unidade);   /* especial ocupa o 1º mais antigo do pelotão; comuns recuam para 2,3… */
     renderizar();
   }
-  function removerPapel(unidade, tipo) {
-    registrar();
-    var atual = papelDaUnidade(unidade, tipo);
-    if (atual) {
-      todasVagas().forEach(function (v) { if (v.acumuloTempId === atual.vaga.tempId) v.acumuloTempId = null; });
-      atual.posto.vagas = atual.posto.vagas.filter(function (v) { return v !== atual.vaga; });
-      rederivarPosto(atual.posto);
-    }
-    compactarUnidade(unidade);   /* liberou o 1º mais antigo do pelotão; comuns voltam a 1,2… */
-    renderizar();
-  }
-  function abrirModalPapel(unidade, posto, tipo) {
-    var atual = papelDaUnidade(unidade, tipo);
-    var temAcumulos = !!(atual && todasVagas().some(function (v) { return v.acumuloTempId === atual.vaga.tempId; }));
-    modalPapelCtx = { unidade: unidade, posto: posto, tipo: tipo, comAcumulos: temAcumulos };
-    var nomePapel = tipo === 'oficial_area' ? 'Oficial de Área' : 'Chefe de Socorro';
-    var origem = atual ? (atual.posto.nome || '') : null;
-    var destino = posto.nome || '';
-    var titulo = document.getElementById('distribuicao-papel-titulo');
-    var msg = document.getElementById('distribuicao-papel-msg');
-    var bl = document.getElementById('distribuicao-papel-limpo');
-    var bok = document.getElementById('distribuicao-papel-confirmar');
-    if (titulo) titulo.textContent = origem ? 'Mover ' + nomePapel : 'Colocar ' + nomePapel;
-    if (msg) {
-      if (origem && temAcumulos) msg.textContent = 'Mover o ' + nomePapel + ' de "' + origem + '" para "' + destino + '". Ele tem funções acumuladas. Quer levá-las junto?';
-      else if (origem) msg.textContent = 'Mover o ' + nomePapel + ' de "' + origem + '" para "' + destino + '"?';
-      else msg.textContent = 'Colocar o ' + nomePapel + ' em "' + destino + '"?';
-    }
-    if (bl) bl.classList.toggle('oculto', !temAcumulos);
-    if (bok) bok.textContent = temAcumulos ? 'Levar junto' : (origem ? 'Mover' : 'Colocar');
+  function abrirModalPapel(unidade, posto, tipo, atual) {
+    var M = RosterWork.mensagens.distribuicao;
+    var nomePapel = nomeDoPapel(tipo);
+    modalPapelCtx = { unidade: unidade, posto: posto, tipo: tipo };
+    document.getElementById('distribuicao-papel-titulo').textContent = M.moverPapelTitulo(nomePapel);
+    document.getElementById('distribuicao-papel-msg').textContent = M.moverPapelAcumulos(nomePapel, atual.posto.nome || '', posto.nome || '');
     ligarModalPapel();
     if (RosterWork.abrirModal) RosterWork.abrirModal('veu-distribuicao-papel');
   }
   function ligarModalPapel() {
     var fechar = function () { if (RosterWork.fecharModais) RosterWork.fecharModais(); };
-    var bc = document.getElementById('distribuicao-papel-cancelar');
-    var bl = document.getElementById('distribuicao-papel-limpo');
-    var bok = document.getElementById('distribuicao-papel-confirmar');
-    if (bc) bc.onclick = fechar;
-    if (bl) bl.onclick = function () { fechar(); moverPapel(modalPapelCtx.unidade, modalPapelCtx.posto, modalPapelCtx.tipo, false); };
-    if (bok) bok.onclick = function () { fechar(); moverPapel(modalPapelCtx.unidade, modalPapelCtx.posto, modalPapelCtx.tipo, modalPapelCtx.comAcumulos); };
+    document.getElementById('distribuicao-papel-cancelar').onclick = fechar;
+    document.getElementById('distribuicao-papel-limpo').onclick = function () { fechar(); moverPapel(modalPapelCtx.unidade, modalPapelCtx.posto, modalPapelCtx.tipo, false); };
+    document.getElementById('distribuicao-papel-confirmar').onclick = function () { fechar(); moverPapel(modalPapelCtx.unidade, modalPapelCtx.posto, modalPapelCtx.tipo, true); };
   }
 
   function textoAntiguidade(vg) {
@@ -716,65 +714,68 @@
     return vg.ideal + (vg.ideal_calc === '+' ? ' ou +' : vg.ideal_calc === '-' ? ' ou -' : '');
   }
 
-  /* vaga "incompleta": principal, não papel especial, sem antiguidade e sem grau — o motor não teria
-     critério para escolher quem senta (vira item no rodapé + linha em cor de erro) */
+  /* vaga "incompleta": o grupo dela (não papel especial) não tem antiguidade nem grau — o motor não
+     teria critério para escolher quem senta (vira item no rodapé + campos em cor de erro, em todas as
+     linhas do grupo) */
   function vagaIncompleta(vg) {
-    return !vg.acumuloTempId && !vg.papel_especial && !vg.ordem && !vg.ideal;
+    var p = principalDe(vg);
+    return !p.papel_especial && !temCriterio(p);
   }
 
   function renderVaga(posto, vg) {
     var el = RosterWork.tpl('tpl-distribuicao-vaga-editar');
+    el.setAttribute('data-tempid', vg.tempId);
     el.classList.toggle('distribuicao-vaga--erro', vagaIncompleta(vg));
     el.querySelector('.distribuicao-vaga-num').textContent = vg._pv;
-    var ehSecundaria = !!vg.acumuloTempId;
+    /* a linha mostra a configuração do GRUPO (a da principal). Edita-se em qualquer linha do grupo
+       comum; no grupo do papel especial, as funções acumuladas mostram a do papel, travada */
+    var cfg = principalDe(vg);
+    var travada = !!vg.acumuloTempId && !!cfg.papel_especial;
 
-    /* funções = o grupo de acúmulo NA ORDEM (1ª = principal); própria cinza, acumuladas amarelas.
-       Arrastar um chip reordena o grupo em TODAS as vagas; o 1º vira a principal. */
+    /* funções = o grupo de acúmulo na ordem de entrada */
     var funcEl = el.querySelector('.distribuicao-vaga-func');
     var membros = grupoAcumulo(vg);
     var grupoId = membros[0].tempId;   /* âncora do grupo — realça o par no hover */
     membros.forEach(function (s) {
-      /* a função NATIVA do posto desta linha fica só com o nome (sem X, sem ícone);
-         as vindas de OUTRO posto — e, no acúmulo dentro do mesmo posto, a função adicionada —
-         levam o X e o ÍCONE de acúmulo (marcam o que foi acumulado) */
-      var nativa = posto.vagas.indexOf(s) >= 0;
-      var excecaoMesmoPosto = !!s.acumuloTempId && postoDaVaga(s) === postoDaVaga(membros[0]);
-      var deFora = !nativa || excecaoMesmoPosto;
-      var temIcone = deFora;   /* ícone na função acumulada (a mesma que tem o X) */
-      var aoRemover = deFora ? function () { desagruparVaga(s); } : null;
-      var chipEl = chip(nomeExibir(posto, s) || '-', temIcone, null, aoRemover);
+      /* a função desta linha fica só com o nome (sem X, sem ícone); as outras do grupo — as de
+         OUTRO posto e, no acúmulo dentro do mesmo posto, o Condutor mesclado na linha do papel —
+         levam o X e o ÍCONE de acúmulo (marcam o que foi acumulado). O X no papel especial tira
+         do grupo a função desta linha (o papel é o dono do grupo) */
+      var deFora = s !== vg;
+      var aoRemover = deFora ? function () { desagruparVaga(s.papel_especial ? vg : s); } : null;
+      var chipEl = chip(nomeExibir(posto, s) || '-', deFora, null, aoRemover);
       chipEl.setAttribute('data-grupo', grupoId);
-      if (membros.length > 1) { ligarArrastoChip(chipEl, s, funcEl); ligarRealceGrupo(chipEl, grupoId); }
+      if (membros.length > 1) ligarRealceGrupo(chipEl, grupoId);
       funcEl.appendChild(chipEl);
     });
-    if (membros.length < 3) funcEl.appendChild(botaoAcumulo(membros[0]));   /* + Acúmulo em qualquer linha (entra no grupo) */
+    if (membros.length < 3) funcEl.appendChild(botaoAcumulo(vg));   /* Acúmulo em qualquer linha (entra no grupo) */
 
     var perfil = el.querySelector('.distribuicao-vaga-perfil');
-    gatilho(perfil, vg.tipo_contador === 'Oficiais' ? 'Oficial' : 'Praça');
-    if (ehSecundaria) bloquear(perfil); else menuPerfil(perfil.querySelector('.dropdown-menu'), vg);
+    gatilho(perfil, cfg.tipo_contador === 'Oficiais' ? 'Oficial' : 'Praça');
+    if (travada) bloquear(perfil); else menuPerfil(perfil.querySelector('.dropdown-menu'), vg);
 
     var antig = el.querySelector('.distribuicao-vaga-antig');
-    gatilho(antig, textoAntiguidade(vg), !vg.ordem);
-    /* papel especial fica fixo em "1º mais antigo" (não editável); acumulada também é bloqueada */
-    if (ehSecundaria || vg.papel_especial) bloquear(antig); else menuAntiguidade(antig.querySelector('.dropdown-menu'), vg, function (s) { aplicarAntiguidade(vg, s); });
+    gatilho(antig, textoAntiguidade(cfg), !cfg.ordem);
+    /* papel especial fica fixo em "1º mais antigo" (não editável), e as funções acumuladas nele também */
+    if (travada || vg.papel_especial) bloquear(antig); else menuAntiguidade(antig.querySelector('.dropdown-menu'), cfg, function (s) { aplicarAntiguidade(vg, s); });
 
     /* grau só quando NÃO há antiguidade (são critérios alternativos); o valor de grau fica guardado mesmo oculto */
     var grau = el.querySelector('.distribuicao-vaga-grau');
-    if (vg.ordem) {
+    if (cfg.ordem) {
       gatilho(grau, '', true);
       bloquear(grau);
     } else {
-      gatilho(grau, textoGrau(vg), !vg.ideal);
-      if (ehSecundaria) bloquear(grau); else menuGrau(grau.querySelector('.dropdown-menu'), vg, grau);
+      gatilho(grau, textoGrau(cfg), !cfg.ideal);
+      if (travada) bloquear(grau); else menuGrau(grau.querySelector('.dropdown-menu'), vg);
     }
 
     var rod = el.querySelector('.distribuicao-rod-toggle');
-    rod.classList.toggle('distribuicao-rod-toggle--on', !!vg.rodizio);
-    rod.querySelector('.icone').classList.toggle('oculto', !vg.rodizio);
-    /* rodízio não se aplica quando a pessoa já é escolhida por antiguidade, nem em papel
-       especial / vaga acumulada — desativa de vez (o CSS tira a mãozinha e apaga o campo) */
-    if (ehSecundaria || vg.papel_especial || vg.ordem) rod.disabled = true;
-    else rod.addEventListener('click', function () { mudar(vg, function () { vg.rodizio = !vg.rodizio; }); });
+    rod.classList.toggle('distribuicao-rod-toggle--on', !!cfg.rodizio);
+    rod.querySelector('.icone').classList.toggle('oculto', !cfg.rodizio);
+    /* rodízio não se aplica quando a pessoa já é escolhida por antiguidade, nem no papel especial
+       (e nas funções acumuladas nele) — desativa de vez (o CSS tira a mãozinha e apaga o campo) */
+    if (travada || vg.papel_especial || cfg.ordem) rod.disabled = true;
+    else rod.addEventListener('click', function () { mudarGrupo(vg, function (p) { p.rodizio = !p.rodizio; }); });
 
     var btnRemover = el.querySelector('.distribuicao-vaga-remover');
     if (condutorObrigatorio(posto, vg)) btnRemover.classList.add('oculto');   /* não deixa excluir o Condutor obrigatório */
@@ -792,17 +793,23 @@
       if (uso) uso.setAttribute('href', 'icones/icone-viatura.svg#icone-viatura');
       el.querySelector('.distribuicao-posto-cnh').textContent = posto.cnh ? 'CNH ' + posto.cnh : '';
     }
-    /* papel especial pelo menu no nome do posto: Oficial de Área (CIA/CIBM) ou Chefe de Socorro (PEL) */
+    /* efetivo máximo: com o posto cheio, não cabe mais ninguém (nem nova função, nem o papel especial) */
+    var cheio = posto.efetivo_maximo != null && RosterWork.distribuicaoModelos.pessoasDoPosto(posto) >= posto.efetivo_maximo;
+    var dicaCheio = RosterWork.mensagens.geral.efetivoMaximo.replace('{n}', posto.efetivo_maximo);
+    /* papel especial embaixo da CNH: Oficial de Área (CIA/CIBM) ou Chefe de Socorro (PEL). Selo aceso
+       no posto onde ele está; nos outros, o selo "Mover …" que o traz para cá */
     var tipoPapel = (unidade.tipo === 'CIA' || unidade.tipo === 'CIBM') ? 'oficial_area'
                   : (unidade.tipo === 'PEL' ? 'chefe_socorro' : null);
     if (tipoPapel) {
-      var wrap = el.querySelector('.distribuicao-posto-nome-wrap');
-      var menu = el.querySelector('.distribuicao-posto-menu');
-      wrap.classList.add('dropdown');
       var aqui = posto.vagas.some(function (v) { return v.papel_especial === tipoPapel; });
-      var nomePapel = tipoPapel === 'oficial_area' ? 'Oficial de Área' : 'Chefe de Socorro';
-      menu.appendChild(item(aqui ? 'Remover ' + nomePapel + ' daqui' : 'Mover ' + nomePapel + ' aqui', false,
-        function () { clicarPapel(unidade, posto, tipoPapel, aqui); }));
+      var seloPapel = el.querySelector(aqui ? '.distribuicao-posto-papel' : '.distribuicao-posto-papel-acao');
+      seloPapel.querySelector('.distribuicao-posto-papel-nome').textContent = nomeDoPapel(tipoPapel);
+      seloPapel.classList.remove('oculto');
+      if (!aqui) {
+        var mover = seloPapel.querySelector('.distribuicao-posto-papel-mover');
+        if (cheio) { mover.disabled = true; seloPapel.setAttribute('data-dica', dicaCheio); }
+        else mover.addEventListener('click', function () { clicarPapel(unidade, posto, tipoPapel); });
+      }
     }
     var linhas = el.querySelector('.distribuicao-vagas-linhas');
     posto.vagas.forEach(function (vg) {
@@ -811,10 +818,10 @@
     });
     var linhaNova = RosterWork.tpl('tpl-distribuicao-nova-funcao');
     var botaoNova = linhaNova.querySelector('.distribuicao-nova-funcao');
-    /* efetivo máximo: com o posto cheio, não cabe mais ninguém (a dica fica na linha, o botão desativado) */
-    if (posto.efetivo_maximo != null && RosterWork.distribuicaoModelos.pessoasDoPosto(posto) >= posto.efetivo_maximo) {
+    /* com o posto cheio, a dica fica na linha e o botão desativado */
+    if (cheio) {
       botaoNova.disabled = true;
-      linhaNova.setAttribute('data-dica', RosterWork.mensagens.geral.efetivoMaximo.replace('{n}', posto.efetivo_maximo));
+      linhaNova.setAttribute('data-dica', dicaCheio);
     } else {
       botaoNova.addEventListener('click', function () { novaVaga(posto); });
     }

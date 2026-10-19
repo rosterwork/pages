@@ -291,6 +291,9 @@
         grauExclusivo:       { texto: 'Grau diferente do ideal (função exclusiva)', icone: 'icone-alerta', nivel: 'alerta' },
         rodizioRepetido:     { texto: 'Rodízio repetido por falta de opção',   icone: 'icone-alerta', nivel: 'alerta' },
         resolvaEscala:       { texto: 'Sem solução automática, precisa de ação do administrador', icone: 'icone-alerta', nivel: 'erro' },
+        /* posto travado (uma linha por posto): por regra, ou por falta de CNH para a direção */
+        postoSemSolucao:     { texto: 'Sem solução automática, precisa de ação do administrador: {posto}', icone: 'icone-alerta', nivel: 'erro' },
+        semCondutorHabilitado: { texto: 'Viatura sem condutor habilitado: {posto} (CNH {cnh})', icone: 'icone-alerta', nivel: 'erro' },
         exclusivoCondutor:   { texto: 'Condutor exclusivo indisponível, motorista substituído', icone: 'icone-alerta', nivel: 'alerta' },
         chefeCondutor:       { texto: 'Chefe assumiu a direção por falta de condutor', icone: 'icone-alerta', nivel: 'alerta' },
         afastadoTroca:       { texto: 'Militar afastado, não vai assumir o serviço', icone: 'icone-alerta', nivel: 'alerta' },
@@ -546,6 +549,14 @@
       excluirModelo: 'Excluir este modelo de distribuição? As vagas que ele define serão perdidas.',
       abaixoMinimo: function (unidade, posto, pessoas, minimo) { return unidade + ': efetivo abaixo do mínimo em ' + posto + ' (' + pessoas + ' de ' + minimo + ')'; },
       salvarImpacto: 'Salvar este modelo recalcula as escalas já distribuídas que usam esta composição. Continuar?',
+      /* papel especial (Chefe de Socorro / Oficial de Área): o modal que pergunta se as funções
+         acumuladas em outro posto vão junto quando o papel muda de posto */
+      moverPapelTitulo: function (papel) { return 'Mover ' + papel; },
+      moverPapelAcumulos: function (papel, origem, destino) {
+        return 'Mover o ' + papel + ' de "' + origem + '" para "' + destino + '". Ele tem funções acumuladas. Quer levá-las junto?';
+      },
+      /* lista do Acúmulo sem nenhuma função que possa entrar no grupo */
+      nenhumaFuncaoLivre: 'Nenhuma função livre',
       /* períodos (seletor ‹ período ›): cada mudança de posto com data abre um período novo */
       periodoTodos: 'Todos os dias',
       periodoAte: 'até {data}',
@@ -1018,7 +1029,7 @@
         termoAoSalvar: 'A marcação vale quando você salvar.',
         termoComExtra: function (quem) { return quem + ' já tem extra na distribuição. Tire as extras dele antes de desmarcar o termo.'; },
         atendimento: function (meses, pediu, recebeu) {
-          if (!meses) return 'Primeira vez como voluntário.';
+          if (!meses) return 'Nenhum mês contado ainda.';
           return 'Voluntário em ' + meses + (meses === 1 ? ' mês' : ' meses') + '. Pediu ' + pediu + (pediu === 1 ? ' cota' : ' cotas') + ' e recebeu ' + recebeu + '.';
         },
         faltando: function (n) { return n === 0 ? 'tudo na grade' : n + (n === 1 ? ' cota faltando' : ' cotas faltando'); },

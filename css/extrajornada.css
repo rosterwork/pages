@@ -159,6 +159,9 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* a nota cinza embaixo dos números: desde quando a porcentagem de atendimento é contada */
+.extra-vol-contagem { margin: 0 16px 12px; }
+
 /* a lista rola; os blocos ficam no branco da página */
 .extra-vol-rolagem {
   flex: 1 1 0;

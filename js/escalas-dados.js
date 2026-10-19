@@ -148,9 +148,9 @@
     return rpcExtra('extra_dia_lista', { p_unidade: Number(unidadeId), p_data: iso });
   }
 
-  /* quem pode entrar no dia como pontual (RPC escala_dia_disponiveis): de folga na unidade buscada (e nas de
-     baixo dela), sem serviço e sem afastamento; "assume" = vira o Chefe de Socorro / Oficial de Área.
-     null em falha */
+  /* quem pode entrar no dia como pontual (RPC escala_dia_disponiveis): de folga na área da unidade buscada
+     (pelotão = a companhia inteira), de qualquer setor, sem serviço e sem afastamento; vem por unidade, a buscada
+     primeiro; "assume" = vira o Chefe de Socorro / Oficial de Área. null em falha */
   function disponiveis(unidadeId, iso, unidadeBusca) {
     return RosterWork.apiFetch('/rest/v1/rpc/escala_dia_disponiveis', { metodo: 'POST', corpo: { p_unidade_id: Number(unidadeId), p_data: iso, p_unidade_busca: Number(unidadeBusca) } })
       .then(function (r) { return r.ok ? r.json() : null; })

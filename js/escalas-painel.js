@@ -445,8 +445,12 @@
     });
     var qSemFuncao = Object.keys(semFuncao).length;
     if (qSemFuncao && cat.semFuncao) linha(cat.semFuncao, qSemFuncao === 1 ? cat.semFuncao.texto : preencher(cat.semFuncao.textoPlural, { n: qSemFuncao }));
-    /* os postos */
-    if (tem('resolva_escala')) linha(cat.resolvaEscala);
+    /* os postos: o travado diz o motivo e o posto; a frase geral fica para o dia gravado sem o posto travado */
+    porOcorrencia('sem_condutor_habilitado', cat.semCondutorHabilitado, function (p) { return p.posto_id; },
+      function (p) { return { posto: p.posto || '', cnh: p.cnh || '' }; });
+    porOcorrencia('posto_sem_solucao', cat.postoSemSolucao, function (p) { return p.posto_id; },
+      function (p) { return { posto: p.posto || '' }; });
+    if (tem('resolva_escala') && !tem('sem_condutor_habilitado') && !tem('posto_sem_solucao')) linha(cat.resolvaEscala);
     if (tem('sem_condutor')) linha(cat.semCondutor);
     linhasEfetivoProblemas('abaixo_minimo', cat.abaixoMinimo);
     linhasEfetivoProblemas('acima_maximo', cat.acimaMaximo);

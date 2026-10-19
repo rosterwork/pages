@@ -179,14 +179,18 @@
   <div class="distribuicao-posto">
     <div class="distribuicao-posto-rotulo">
       <span class="distribuicao-posto-numero"></span>
-      <span class="distribuicao-posto-nome-wrap">
-        <button type="button" class="distribuicao-posto-nome">
-          <svg class="icone distribuicao-posto-icone" width="15" height="15" aria-hidden="true"><use href="icones/icone-instalacao.svg#icone-instalacao"/></svg>
-          <span class="distribuicao-posto-nome-texto"></span>
-        </button>
-        <div class="dropdown-menu distribuicao-posto-menu"></div>
+      <span class="distribuicao-posto-nome">
+        <svg class="icone distribuicao-posto-icone" width="15" height="15" aria-hidden="true"><use href="icones/icone-instalacao.svg#icone-instalacao"/></svg>
+        <span class="distribuicao-posto-nome-texto"></span>
       </span>
       <span class="distribuicao-posto-cnh"></span>
+      <!-- papel especial (só no Editar; o JS preenche o nome: Chefe de Socorro ou Oficial de Área): selo aceso
+           no posto onde ele está; nos outros, o selo tracejado (como o Acúmulo) que o traz para cá.
+           Com o posto cheio, a dica do motivo fica no span de fora, que recebe o mouse com o botão inativo -->
+      <span class="distribuicao-posto-papel oculto"><span class="distribuicao-posto-papel-nome"></span></span>
+      <span class="distribuicao-posto-papel-acao oculto">
+        <button type="button" class="distribuicao-add-gatilho distribuicao-posto-papel-mover">Mover <span class="distribuicao-posto-papel-nome"></span></button>
+      </span>
     </div>
     <div class="distribuicao-posto-vagas">
       <div class="distribuicao-vagas-cabecalho">
@@ -367,7 +371,8 @@
   </button>
 </template>
 
-<!-- MODAL: mover/colocar papel especial — confirma sempre (origem→destino); "Mover sem acúmulos" só aparece quando há acúmulos a decidir -->
+<!-- MODAL: mover o papel especial quando ele acumula funções de outro posto (sem isso, move direto):
+     levar as funções junto ou mover sem elas -->
 <div class="modal-veu" id="veu-distribuicao-papel">
   <div class="modal modal--aviso" role="dialog" aria-modal="true" aria-label="Papel especial">
     <div class="modal-cabecalho">
@@ -378,8 +383,8 @@
     </div>
     <div class="modal-rodape">
       <button type="button" class="botao" id="distribuicao-papel-cancelar">Cancelar</button>
-      <button type="button" class="botao oculto" id="distribuicao-papel-limpo">Mover sem acúmulos</button>
-      <button type="button" class="botao botao--primario" id="distribuicao-papel-confirmar">Mover</button>
+      <button type="button" class="botao" id="distribuicao-papel-limpo">Mover sem acúmulos</button>
+      <button type="button" class="botao botao--primario" id="distribuicao-papel-confirmar">Levar junto</button>
     </div>
   </div>
 </div>

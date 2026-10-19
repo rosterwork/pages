@@ -224,48 +224,44 @@
 .distribuicao-posto--erro .distribuicao-posto-icone { color: var(--erro); }
 .distribuicao-posto--alerta .distribuicao-posto-nome-texto,
 .distribuicao-posto--alerta .distribuicao-posto-icone { color: var(--alerta); }
-/* mantém o tom no hover da edição (o nome é gatilho do menu de papel especial) */
-.distribuicao-posto--erro .dropdown.distribuicao-posto-nome-wrap .distribuicao-posto-nome:hover { background: var(--erro-fundo); }
-.distribuicao-posto--alerta .dropdown.distribuicao-posto-nome-wrap .distribuicao-posto-nome:hover { background: var(--alerta-fundo); }
 
-.distribuicao-posto-nome-wrap {
-  position: relative;
-  align-self: flex-start;
-  max-width: 100%;
-}
 .distribuicao-posto-nome {
   display: flex;
+  align-self: flex-start;
   align-items: center;
   gap: 4px;
   max-width: 100%;
-  padding: 0;
   font-size: 13px;
   font-weight: 600;
   color: var(--texto-forte);
-  text-align: left;
   border-radius: var(--raio-pequeno);
-  cursor: default;
 }
 .distribuicao-posto-icone { color: var(--texto-suave); }
 .distribuicao-posto-nome-texto {
   white-space: nowrap;
 }
-/* na edição, o nome do posto vira gatilho do menu de papel especial;
-   o botão se dimensiona pelo conteúdo (não encolhe) para o fundo do hover acompanhar o texto inteiro */
-.dropdown.distribuicao-posto-nome-wrap .distribuicao-posto-nome {
-  cursor: pointer;
-  padding: 2px 4px;
-  margin: -2px -4px;
-  max-width: none;
-  flex-shrink: 0;
-  transition: background-color 0.15s ease;
-}
-.dropdown.distribuicao-posto-nome-wrap .distribuicao-posto-nome:hover { background: var(--fundo-medio); }
-
 .distribuicao-posto-cnh {
   font-size: 11px;
   color: var(--texto-fraco);
 }
+/* papel especial (só no Editar): selo aceso no posto onde ele está (pílula de seleção, fundo médio);
+   nos outros postos, o selo tracejado do Acúmulo (.distribuicao-add-gatilho) que traz o papel para cá */
+.distribuicao-posto-papel {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--texto-forte);
+  background: var(--fundo-medio);
+  border-radius: var(--raio-total);
+  white-space: nowrap;
+}
+.distribuicao-posto-papel-acao { display: inline-flex; align-self: flex-start; }
+.distribuicao-posto-papel-mover { white-space: nowrap; }
+/* inativo (posto no efetivo máximo): apagado, e o mouse passa ao span de fora, que tem a dica do motivo */
+.distribuicao-posto-papel-mover:disabled { color: var(--texto-debil); pointer-events: none; }
 
 /* ---- tabela de vagas ---- */
 .distribuicao-posto-vagas {
@@ -366,9 +362,6 @@
 .distribuicao-chip--realce { background-color: var(--fundo-contraste); color: var(--texto-invertido); }
 .distribuicao-chip-origem { font-weight: 700; }
 .distribuicao-chip-icone { flex-shrink: 0; }
-/* arrastar chip para reordenar o acúmulo ao vivo (1º = principal) */
-.distribuicao-chip[draggable="true"] { cursor: pointer; }
-.distribuicao-chip--arrastando { opacity: 0.4; }
 
 .distribuicao-status-item {
   display: flex;
