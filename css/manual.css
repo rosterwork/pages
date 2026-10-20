@@ -378,7 +378,9 @@
 
 /* ------------------------------------------------------------
    Impressão em A4 — imprime só o documento: esconde a moldura do app
-   (cabeçalho, menu, painel) e o índice; a área de leitura ocupa a folha.
+   (cabeçalho, menu, painel) e o índice; a área de leitura ocupa a folha
+   (sem a largura mínima da casca, que cortaria o texto à direita). O
+   papel sai sempre claro: o geral-tema.js tira o escuro ao imprimir.
    ------------------------------------------------------------ */
 @media print {
   @page { size: A4; margin: 16mm; }
@@ -394,7 +396,7 @@
   body:has(.manual) .geral-layout-lateral,
   body:has(.manual) .geral-corpo-lateral,
   body:has(.manual) .geral-corpo-lateral-rolagem {
-    display: block; height: auto; min-height: 0; overflow: visible;
+    display: block; height: auto; min-height: 0; min-width: 0; overflow: visible;
     margin: 0; border: none; box-shadow: none; border-radius: 0;
   }
   .manual-folha { max-width: none; margin: 0; padding: 0; }

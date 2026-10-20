@@ -86,3 +86,42 @@
   background-color: var(--fundo-medio);
   color: var(--texto-forte);
 }
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   O botão Filtros fica só com o ícone (o nome segue para o leitor
+   de tela), com o número de filtros ligados no canto, como o Mais
+   da barra de baixo. O menu põe as colunas uma embaixo da outra.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .filtros-botao > .botao {
+    position: relative;
+    min-width: var(--botao-altura);
+    padding: 0;
+    gap: 0;
+  }
+
+  html[data-celular] .filtros-botao > .botao > span:not(.filtros-contagem) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  html[data-celular] .filtros-botao > .botao > .seletor-seta {
+    display: none;
+  }
+
+  html[data-celular] .filtros-contagem {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+  }
+
+  html[data-celular] .dropdown--aberto .filtros-menu {
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+  }
+}

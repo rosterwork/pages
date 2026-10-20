@@ -67,12 +67,27 @@
       dono.style.setProperty('--indicador-largura', '0px');
       return;
     }
-    var deslocamento = caixa.left - dono.getBoundingClientRect().left;
+    /* o traço anda junto com as abas quando o trilho rola (no celular): conta a rolagem */
+    var deslocamento = caixa.left - dono.getBoundingClientRect().left + dono.scrollLeft;
     dono.style.setProperty('--indicador-x', deslocamento + 'px');
     dono.style.setProperty('--indicador-largura', largura + 'px');
+    mostrarAtiva(dono, deslocamento, largura);
     /* o deslize liga só depois do primeiro desenho: a página abre com o traço no lugar */
     if (!dono.classList.contains('abas--deslizar')) {
       requestAnimationFrame(function () { dono.classList.add('abas--deslizar'); });
+    }
+  }
+
+  /* no celular, as abas que não cabem rolam para o lado: a escolhida fica à vista, com o
+     espaço entre as abas de folga para a vizinha aparecer */
+  function mostrarAtiva(dono, inicio, largura) {
+    if (!(window.RosterWork.celular && window.RosterWork.celular())) return;
+    if (dono.scrollWidth <= dono.clientWidth) return;
+    var folga = parseFloat(getComputedStyle(dono).columnGap) || 0;
+    if (inicio - folga < dono.scrollLeft) {
+      dono.scrollLeft = inicio - folga;
+    } else if (inicio + largura + folga > dono.scrollLeft + dono.clientWidth) {
+      dono.scrollLeft = inicio + largura + folga - dono.clientWidth;
     }
   }
 

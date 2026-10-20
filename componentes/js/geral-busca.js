@@ -103,5 +103,46 @@
     return !!dig && db.indexOf(dig) !== -1;
   }
 
+  /* ---------- no celular: a busca da barra recolhida num botão de ícone ----------
+     Na barra de controles a busca aparece como o quadrado da lupa (geral-busca.css). Tocar
+     nela (ou chegar ao campo pelo Tab) abre o campo numa linha só dela, com o cursor dentro.
+     Sem texto, recolhe ao sair do campo; com texto, fica aberta (a pesquisa continua valendo).
+     Vale para toda busca de barra, ligada por criar() ou pela página. */
+  function buscaDaBarra(elemento) {
+    var caixa = elemento && elemento.closest ? elemento.closest('.busca') : null;
+    return (caixa && caixa.closest('.pagina-subcabecalho')) ? caixa : null;
+  }
+
+  function noCelular() {
+    return !!(window.RosterWork.celular && window.RosterWork.celular());
+  }
+
+  /* o toque na busca recolhida só abre: não troca o modo marcar/filtrar */
+  document.addEventListener('click', function (evento) {
+    var caixa = buscaDaBarra(evento.target);
+    if (!caixa || !noCelular() || caixa.classList.contains('busca--aberta')) return;
+    evento.preventDefault();
+    evento.stopPropagation();
+    caixa.classList.add('busca--aberta');
+    var entrada = caixa.querySelector('.busca-entrada');
+    if (entrada) entrada.focus();
+  }, true);
+
+  document.addEventListener('focusin', function (evento) {
+    var caixa = buscaDaBarra(evento.target);
+    if (caixa && noCelular() && evento.target.classList.contains('busca-entrada')) caixa.classList.add('busca--aberta');
+  });
+
+  /* espera o foco chegar ao próximo: tocar no limpar ou no modo, dentro da busca, não recolhe */
+  document.addEventListener('focusout', function (evento) {
+    var caixa = buscaDaBarra(evento.target);
+    if (!caixa || !caixa.classList.contains('busca--aberta')) return;
+    setTimeout(function () {
+      if (caixa.contains(document.activeElement)) return;
+      var entrada = caixa.querySelector('.busca-entrada');
+      if (!entrada || !entrada.value) caixa.classList.remove('busca--aberta');
+    }, 0);
+  });
+
   window.RosterWork.busca = { criar: criar, normalizar: normalizar, casaMilitar: casaMilitar, chave: chave, casaTexto: casaTexto };
 })();

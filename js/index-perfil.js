@@ -3,8 +3,9 @@
    menu do cabeçalho navega para cá). Este arquivo vem no shell:
    liga o botão do cabeçalho, registra RosterWork.paginas.perfil,
    liga as abas do subcabeçalho e preenche a aba "Perfil" (leitura)
-   e o tema. A aba "Meus dados" fica em perfil-dados.js e a de
-   "Segurança" em perfil-senha.js (carregados pela página). Aqui o
+   e o seletor do tema (RosterWork.tema, em geral-tema.js). A aba
+   "Meus dados" fica em perfil-dados.js e a de "Segurança" em
+   perfil-senha.js (carregados pela página). Aqui o
    militar só SOLICITA: quem aprova é o administrador, em Usuários.
    Só preenche espaços que já existem no HTML; não cria HTML.
    ============================================================ */
@@ -30,28 +31,27 @@
     if (el) el.textContent = valor || '-';
   }
 
-  function temaAtual() {
-    return document.documentElement.getAttribute('data-tema') === 'escuro' ? 'escuro' : 'claro';
-  }
-
-  function marcarTema(trilho) {
-    var atual = temaAtual();
+  /* Tema: o seletor mostra a ESCOLHA (Automático, Claro ou Escuro), não a cor da tela */
+  function marcarTema() {
+    var trilho = document.getElementById('perfil-tema');
+    if (!trilho) return;
+    var atual = RosterWork.tema.escolha();
     var abas = trilho.querySelectorAll('.aba');
     for (var i = 0; i < abas.length; i++) {
-      abas[i].classList.toggle('aba--ativa', abas[i].getAttribute('data-valor') === atual);
+      var ativa = abas[i].getAttribute('data-valor') === atual;
+      abas[i].classList.toggle('aba--ativa', ativa);
+      abas[i].setAttribute('aria-selected', ativa ? 'true' : 'false');
     }
   }
 
   function ligarTema() {
     var trilho = document.getElementById('perfil-tema');
     if (!trilho || !RosterWork.abas) return;
-    marcarTema(trilho);
+    marcarTema();
     RosterWork.abas.ligar(trilho, function (aba) {
-      if (aba.getAttribute('data-valor') !== temaAtual()) {
-        var botao = document.getElementById('cabecalho-btn-tema');
-        if (botao) botao.click();   /* reusa o handler do cabeçalho (salva no banco) */
-      }
-      marcarTema(trilho);
+      var valor = aba.getAttribute('data-valor');
+      if (valor !== RosterWork.tema.escolha()) RosterWork.tema.escolher(valor);
+      marcarTema();
     });
   }
 
@@ -144,6 +144,8 @@
       if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
       if (RosterWork.irParaPagina) RosterWork.irParaPagina('perfil');
     });
+    /* o botão lua/sol do topo também muda a escolha: o seletor acompanha (com a página aberta) */
+    window.addEventListener('rosterwork_tema', marcarTema);
   }
 
   RosterWork.paginas.perfil = { iniciar: iniciar };

@@ -162,3 +162,43 @@
   min-width: 16px;
   justify-content: center;
 }
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   As abas do menu ganham a altura do toque e, quando não cabem,
+   rolam para o lado (sem barra de rolagem à vista); o geral-abas.js
+   deixa a escolhida à vista. As abas da página correm de ponta a
+   ponta do bloco. O seletor usa a letra do texto padrão.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .abas:not(.abas--seletor),
+  html[data-celular] [data-abas-grupo] {
+    min-height: var(--botao-altura);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  html[data-celular] .abas:not(.abas--seletor)::-webkit-scrollbar,
+  html[data-celular] [data-abas-grupo]::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* dentro do grupo, quem rola é o grupo (um traço só) */
+  html[data-celular] [data-abas-grupo] > .abas {
+    flex-shrink: 0;
+    overflow: visible;
+  }
+
+  /* as abas da página correm até a borda do bloco; o texto da primeira continua alinhado ao título */
+  html[data-celular] .pagina-cabecalho > .abas,
+  html[data-celular] .pagina-cabecalho > [data-abas-grupo] {
+    flex-grow: 1;
+    margin-left: calc(-1 * var(--respiro-pagina));
+    margin-right: calc(-1 * var(--respiro-pagina));
+    padding: 0 var(--respiro-pagina);
+  }
+
+  html[data-celular] .abas--seletor .aba {
+    font-size: var(--fonte-padrao);
+  }
+}

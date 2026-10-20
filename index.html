@@ -6,6 +6,7 @@
   <meta name="description" content="Roster Work — sistema de escala de serviço da corporação." />
   <link rel="icon" href="icones/logo-aba.svg" type="image/svg+xml" />
   <title>Roster Work</title>
+  <script src="componentes/js/geral-tema.js"></script>
   <script src="js/index-sessao.js"></script>
   <link rel="stylesheet" href="css/geral-tema.css" />
   <link rel="stylesheet" href="css/geral-base.css" />
@@ -494,6 +495,7 @@
   <script src="componentes/js/geral-grade-teclado.js"></script>
   <script src="componentes/js/geral-sessao.js"></script>
   <script src="componentes/js/geral-tpl.js"></script>
+  <script src="componentes/js/geral-celular.js"></script>
   <script src="componentes/js/geral-tempo.js"></script>
   <script src="componentes/js/geral-mensagens.js"></script>
   <script src="componentes/js/geral-data.js"></script>
@@ -706,6 +708,21 @@
         <span class="arvore-nome"></span>
       </div>
       <div class="arvore-filhos"></div>
+    </div>
+  </template>
+
+  <!-- MOLDE: tela que não existe no celular (Distribuição, Histórico). No celular, o roteador
+       (index-navegacao.js) põe no lugar da tela, com o nome dela no título -->
+  <template id="tpl-pagina-so-computador">
+    <div class="pagina">
+      <div class="pagina-cabecalho">
+        <div class="pagina-titulos">
+          <h1></h1>
+        </div>
+      </div>
+      <div class="pagina-corpo">
+        <div class="pagina-so-computador">Esta tela só funciona no computador.</div>
+      </div>
     </div>
   </template>
 

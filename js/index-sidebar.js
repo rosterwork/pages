@@ -34,7 +34,8 @@
 
   /* folha "Mais" (só no celular): o "Mais" da barra de baixo abre o menu lateral como uma
      folha de baixo para cima; ela fecha ao tocar no véu, ao escolher uma tela, no Esc e no
-     voltar do navegador. A navegação em si é a do roteador (os itens são os do menu) */
+     voltar do navegador (RosterWork.voltar, do roteador: o voltar só fecha a folha, a tela
+     fica). A navegação em si é a do roteador (os itens são os do menu) */
   function ligarFolhaMais(casca) {
     var botaoMais = document.querySelector('.barra-celular-mais');
     var veu = document.querySelector('.sidebar-folha-veu');
@@ -46,10 +47,12 @@
     function abrir() {
       casca.classList.add('casca--mais-aberto');
       botaoMais.setAttribute('aria-expanded', 'true');
+      if (window.RosterWork.voltar) window.RosterWork.voltar.empilhar(fechar);
     }
 
     function fechar() {
       if (!aberta()) return;
+      if (window.RosterWork.voltar) window.RosterWork.voltar.desempilhar(fechar);   /* fechou de outro jeito: tira a entrada do voltar */
       casca.classList.remove('casca--mais-aberto');
       botaoMais.setAttribute('aria-expanded', 'false');
     }
@@ -64,7 +67,6 @@
     document.addEventListener('keydown', function (evento) {
       if (evento.key === 'Escape') fechar();
     });
-    window.addEventListener('popstate', fechar);
   }
 
   /* o "Mais" mostra o mesmo número do item Pendências (que mora na folha): copia o

@@ -81,13 +81,15 @@
       var abaAtiva = document.querySelector('.pagina .abas:not(.abas--seletor) .aba--ativa');
       var prefs = null;
       try { prefs = JSON.parse(sessionStorage.getItem('rosterwork_preferencias')); } catch (e) {}
+      /* o tema escolhido e a cor que a pessoa via: "claro", "escuro" ou "automático (escuro)" */
+      var corTela = RosterWork.tema.escuro() ? 'escuro' : 'claro';
       return {
         pagina: pagina,
         aba: abaAtiva ? abaAtiva.textContent.trim() : '',
         unidades: (prefs && prefs.unidades_selecionadas) || [],
         navegador: navigator.userAgent,
         tela: window.innerWidth + 'x' + window.innerHeight,
-        tema: document.documentElement.getAttribute('data-tema') || 'sistema',
+        tema: RosterWork.tema.escolha() === 'automatico' ? 'automático (' + corTela + ')' : corTela,
         url: location.href
       };
     }

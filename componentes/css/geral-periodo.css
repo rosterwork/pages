@@ -26,3 +26,14 @@
   color: var(--texto-forte);
   user-select: none;
 }
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   O nome do período fica numa linha só, na letra do texto padrão.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .geral-periodo-nome {
+    white-space: nowrap;
+    font-size: var(--fonte-padrao);
+  }
+}

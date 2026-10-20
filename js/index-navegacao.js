@@ -39,6 +39,7 @@
      conteúdo em outra). O AbortController ainda cancela o download abandonado. */
   var navToken = 0;
   var navAbort = null;
+  var paginaAtual = null;   /* a tela da navegação mais recente */
 
   function marcarAtivo(pagina) {
     for (var i = 0; i < itens.length; i++) {
@@ -66,16 +67,19 @@
     });
   }
 
-  /* insere um fragmento de HTML já escrito à mão no container de conteúdo;
-     o roteador apenas posiciona o arquivo — não inventa estrutura */
-  function inserirFragmento(html) {
-    /* troca a página, preservando um eventual véu de carregamento já exibido */
+  /* tira a página que sai, preservando o véu de carregamento e o painel lateral — ambos vivem no shell */
+  function limparConteudo() {
     var filhos = Array.prototype.slice.call(conteudo.children);
     for (var i = 0; i < filhos.length; i++) {
-      /* preserva o véu de carregamento e o painel lateral — ambos vivem no shell */
       if (!filhos[i].classList.contains('carregando-veu') &&
           !filhos[i].classList.contains('painel-lateral')) conteudo.removeChild(filhos[i]);
     }
+  }
+
+  /* insere um fragmento de HTML já escrito à mão no container de conteúdo;
+     o roteador apenas posiciona o arquivo — não inventa estrutura */
+  function inserirFragmento(html) {
+    limparConteudo();   /* troca a página, preservando um eventual véu de carregamento já exibido */
     var faixa = document.createRange();
     var fragmento = faixa.createContextualFragment(html);
     if (window.RosterWork.limparComentarios) window.RosterWork.limparComentarios(fragmento);   // tira os comentários HTML antes de entrar no DOM
@@ -96,6 +100,24 @@
     if (alvo && !alvo.classList.contains('oculto')) alvo.click();
   }
 
+  /* telas que não existem no celular: o item do menu diz (data-lugar-celular="fora") */
+  function foraDoCelular(pagina) {
+    if (!(window.RosterWork.celular && window.RosterWork.celular())) return false;
+    return !!document.querySelector('.menu-item[data-pagina="' + pagina + '"][data-lugar-celular="fora"]');
+  }
+
+  /* no celular, quem chega a uma dessas telas (por um aviso, um link ou o endereço) vê o vazio
+     "Esta tela só funciona no computador." (molde #tpl-pagina-so-computador), com o nome da tela
+     tirado do item do menu, no lugar da tela quebrada; o CSS e o JS da tela nem carregam */
+  function mostrarSoComputador(pagina) {
+    var tela = window.RosterWork.tpl ? window.RosterWork.tpl('tpl-pagina-so-computador') : null;
+    if (!tela) return;
+    var nome = document.querySelector('.menu-item[data-pagina="' + pagina + '"] .menu-item-label');
+    tela.querySelector('h1').textContent = nome ? nome.textContent : '';
+    limparConteudo();
+    conteudo.insertBefore(tela, conteudo.firstChild);
+  }
+
   async function navegar(pagina, empurrar) {
     var def = manifesto[pagina];
     if (!def) return;
@@ -104,13 +126,31 @@
     /* cancela o download da navegação anterior que ainda esteja no ar */
     if (navAbort) navAbort.abort();
     navAbort = ('AbortController' in window) ? new AbortController() : null;
+    paginaAtual = pagina;
 
     function esconderVeu() { if (window.RosterWork.esconderVeu) window.RosterWork.esconderVeu(conteudo); }
+
+    /* a camada aberta (o painel ou a folha "Mais", no celular) sai junto com a página: a entrada
+       dela no histórico vira a da página nova, sem voltar antes */
+    var trocarEntrada = !!camada;
+    camada = null;
+    function registrarEndereco() {
+      if (!empurrar) return;
+      if (trocarEntrada) history.replaceState({ pagina: pagina }, '', '?pagina=' + pagina);
+      else history.pushState({ pagina: pagina }, '', '?pagina=' + pagina);
+    }
 
     marcarAtivo(pagina);
     if (window.RosterWork.fecharDropdowns) window.RosterWork.fecharDropdowns();
     if (window.RosterWork.painel) window.RosterWork.painel.fechar();   /* a gaveta é da página que sai */
     if (window.RosterWork.mostrarVeu) window.RosterWork.mostrarVeu(conteudo);
+
+    if (foraDoCelular(pagina)) {
+      mostrarSoComputador(pagina);
+      esconderVeu();
+      registrarEndereco();
+      return;
+    }
 
     /* o download pode falhar no começo (fetch) ou no meio da leitura (text): cancelado por uma
        navegação mais nova, sai quieto (a nova cuida do véu); falha de rede na vigente, some o véu */
@@ -143,7 +183,7 @@
       abrirAbaPedida(pagina); esconderVeu();
     }, function () { if (meu === navToken) esconderVeu(); });
 
-    if (empurrar) history.pushState({ pagina: pagina }, '', '?pagina=' + pagina);
+    registrarEndereco();
   }
 
   function rotaDaUrl() {
@@ -185,9 +225,28 @@
     }
 
     window.addEventListener('popstate', function (evento) {
+      if (popsIgnorados) { popsIgnorados--; return; }    /* volta feita pelo sistema ao tirar a entrada de uma camada */
+      if (camada) {                                        /* o voltar fecha a camada aberta; a tela fica */
+        var aoVoltar = camada;
+        camada = null;
+        aoVoltar();
+        return;
+      }
       var pagina = (evento.state && evento.state.pagina) || rotaDaUrl();
+      /* entrada de uma camada que já fechou (ex.: o avançar depois de fechar o painel), na mesma tela: pula */
+      if (evento.state && evento.state.camada && pagina === paginaAtual) {
+        popsIgnorados++;
+        history.back();
+        return;
+      }
       if (pagina && manifesto[pagina]) navegar(pagina, false);
     });
+
+    /* recarregou na entrada de uma camada: a camada não existe mais, volta à entrada da tela */
+    if (history.state && history.state.camada) {
+      popsIgnorados++;
+      history.back();
+    }
 
     /* rota inicial = a da URL; sem ela (ex.: logo após o login, que abre index.html
        sem ?pagina, ou F5 na raiz) cai no Início — a home é a rota padrão */
@@ -210,6 +269,28 @@
       referenciaPedida = referencia ? { pagina: pagina, valor: String(referencia) } : null;
       navegar(pagina, true);
     });
+  };
+
+  /* ---------- voltar do navegador: fecha a camada aberta (celular) ----------
+     A camada que cobre a tela no celular (o painel, a folha "Mais") ganha uma entrada no
+     histórico, no mesmo endereço: o voltar (o do Android) gasta essa entrada e a camada fecha,
+     em vez de a tela trocar. empilhar(aoVoltar): cria a entrada (uma só por vez; reabrir só
+     troca quem atende). desempilhar(aoVoltar): a camada fechou por outro caminho (X, Salvar,
+     tocar fora): tira a entrada, sem trocar de tela (a volta que isso causa é ignorada). */
+  var camada = null;        /* quem atende o voltar agora */
+  var popsIgnorados = 0;    /* voltas feitas pelo próprio sistema */
+
+  window.RosterWork.voltar = {
+    empilhar: function (aoVoltar) {
+      if (!camada) history.pushState(Object.assign({}, history.state, { camada: true }), '');
+      camada = aoVoltar;
+    },
+    desempilhar: function (aoVoltar) {
+      if (!camada || camada !== aoVoltar) return;
+      camada = null;
+      popsIgnorados++;
+      history.back();
+    }
   };
 
   /* entrega à página a referência pedida por quem mandou navegar (vale uma vez só) */

@@ -1,56 +1,25 @@
 (function () {
   'use strict';
 
-  /* aplica o tema salvo nas preferências */
-  var prefs = null;
-  try { prefs = JSON.parse(sessionStorage.getItem('rosterwork_preferencias')); } catch (e) {}
-
-  if (prefs && prefs.tema === 'escuro') {
-    document.documentElement.setAttribute('data-tema', 'escuro');
-  } else {
-    document.documentElement.removeAttribute('data-tema');
-  }
-
+  /* botão lua/sol: fixa claro ou escuro (o tema já foi aplicado pelo geral-tema.js; o
+     Automático se escolhe em Meu perfil). O ícone acompanha também a troca do aparelho */
   var btnTema = document.getElementById('cabecalho-btn-tema');
   var iconeLua = document.getElementById('cabecalho-icone-lua');
   var iconeSol = document.getElementById('cabecalho-icone-sol');
 
   function atualizarIconeTema() {
-    var escuro = document.documentElement.getAttribute('data-tema') === 'escuro';
+    var escuro = RosterWork.tema.escuro();
     if (iconeLua) iconeLua.classList.toggle('oculto', escuro);
     if (iconeSol) iconeSol.classList.toggle('oculto', !escuro);
     if (btnTema) btnTema.setAttribute('data-dica', escuro ? 'Tema claro' : 'Tema escuro');
   }
 
   atualizarIconeTema();
+  window.addEventListener('rosterwork_tema', atualizarIconeTema);
 
   if (btnTema) {
     btnTema.addEventListener('click', function () {
-      var escuro = document.documentElement.getAttribute('data-tema') === 'escuro';
-      var novoTema = escuro ? 'claro' : 'escuro';
-
-      if (novoTema === 'escuro') {
-        document.documentElement.setAttribute('data-tema', 'escuro');
-      } else {
-        document.documentElement.removeAttribute('data-tema');
-      }
-
-      atualizarIconeTema();
-
-      /* atualiza cache na sessão */
-      var prefsAtual = null;
-      try { prefsAtual = JSON.parse(sessionStorage.getItem('rosterwork_preferencias')); } catch (e) {}
-      prefsAtual = prefsAtual || {};
-      prefsAtual.tema = novoTema;
-      sessionStorage.setItem('rosterwork_preferencias', JSON.stringify(prefsAtual));
-
-      /* persiste no banco */
-      if (RosterWork.obterToken()) {
-        RosterWork.apiFetch('/rest/v1/rpc/fn_preferencias_salvar', {
-          metodo: 'POST',
-          corpo: { p_tema: novoTema }
-        }).catch(function () {});
-      }
+      RosterWork.tema.escolher(RosterWork.tema.escuro() ? 'claro' : 'escuro');
     });
   }
 

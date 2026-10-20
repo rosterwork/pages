@@ -19,6 +19,10 @@
 
 :root {
 
+  /* controles do próprio navegador (calendário do campo de data, listas, barras
+     de rolagem) no tema claro; o modo escuro troca para dark */
+  color-scheme: light;
+
   /* -------------------------------------------------------
      Primitivos de cinza — referência interna, não usar fora
      ------------------------------------------------------- */
@@ -201,6 +205,8 @@
    Modo escuro — redefine apenas os papéis semânticos
    ------------------------------------------------------- */
 html[data-tema="escuro"] {
+
+  color-scheme: dark;
 
   --fundo-pagina:          var(--cinza-950);
   --fundo-superficie:      var(--cinza-940);

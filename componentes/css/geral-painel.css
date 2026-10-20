@@ -318,6 +318,11 @@
     font-size: 13px;
   }
 
+  /* linha das abas de seção na altura do toque (as abas rolam quando não cabem, geral-abas.css) */
+  html[data-celular] .painel-linha-abas {
+    min-height: var(--botao-altura);
+  }
+
   /* rodapé: os botões dividem a largura; os que não cabem lado a lado descem de linha */
   html[data-celular] .painel-rodape {
     flex-wrap: wrap;

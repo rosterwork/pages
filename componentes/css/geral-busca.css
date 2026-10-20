@@ -61,3 +61,43 @@
 .busca--com-texto .busca-limpar {
   visibility: visible;
 }
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   Na barra de controles a busca fica recolhida num botão de ícone
+   (o quadrado da lupa, como o Filtros). Tocar abre o campo numa
+   linha só dela, no fim da barra (geral-busca.js põe .busca--aberta);
+   sem texto, ela recolhe ao sair do campo.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .pagina-subcabecalho .busca:not(.busca--aberta) {
+    position: relative;
+    justify-content: center;
+    width: var(--botao-altura);
+    padding: 0;
+    border-radius: var(--raio-medio);
+    color: var(--texto);
+  }
+
+  /* recolhida, o campo continua no Tab (ao chegar nele, a busca abre), mas não aparece */
+  html[data-celular] .pagina-subcabecalho .busca:not(.busca--aberta) .busca-entrada {
+    position: absolute;
+    width: 1px;
+    opacity: 0;
+  }
+
+  html[data-celular] .pagina-subcabecalho .busca:not(.busca--aberta) .busca-limpar {
+    display: none;
+  }
+
+  html[data-celular] .pagina-subcabecalho .busca:not(.busca--aberta) .busca-modo {
+    color: var(--texto);
+  }
+
+  /* aberta: a linha toda, embaixo do resto da barra */
+  html[data-celular] .pagina-subcabecalho > .busca--aberta,
+  html[data-celular] .pagina-subcabecalho > :has(> .busca--aberta) {
+    order: 3;
+    flex-basis: 100%;
+  }
+}

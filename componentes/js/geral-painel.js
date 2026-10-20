@@ -118,10 +118,27 @@
     aoTentarFecharAtual = config.aoTentarFechar || null;
     painel.classList.toggle('painel-lateral--largo', !!config.largo);  // 400px (padrão) ou 560px
     painel.classList.add('painel-lateral--aberto');
+    if (window.RosterWork.voltar && window.RosterWork.celular && window.RosterWork.celular()) {
+      window.RosterWork.voltar.empilhar(aoVoltar);
+    }
+  }
+
+  /* no celular o painel cobre a tela: o voltar do navegador (o do Android) fecha o painel em vez
+     de trocar de tela. Ao abrir, o painel ganha uma entrada no histórico (RosterWork.voltar, no
+     roteador); o voltar a gasta e pede para fechar como o X. Com dados não salvos (a pergunta
+     abre) ou com um aviso aberto, o painel fica e a entrada volta. */
+  function aoVoltar() {
+    if (!estaAberto()) return;
+    if (document.querySelector('.modal-veu--aberto') || (aoTentarFecharAtual && aoTentarFecharAtual())) {
+      window.RosterWork.voltar.empilhar(aoVoltar);
+      return;
+    }
+    fechar();
   }
 
   function fechar() {
     if (!estaAberto()) return;
+    if (window.RosterWork.voltar) window.RosterWork.voltar.desempilhar(aoVoltar);   /* fechou pelo X, Salvar etc.: tira a entrada do voltar */
     painel.classList.remove('painel-lateral--aberto');
     painel.classList.remove('painel-lateral--largo');
     limparConteudo();

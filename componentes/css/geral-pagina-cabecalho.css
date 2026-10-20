@@ -158,10 +158,74 @@
 
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
-   O grupo Administração vira só o botão "Administração", que abre o
-   menu (geral-dropdown) com o rótulo como título e uma ação por linha.
+   A barra de controles quebra em linhas: em cima as ações (a do
+   militar e o "Administração", que abre o menu com uma ação por
+   linha), dividindo a largura; embaixo o resto da régua, com os
+   controles só de ícone. A tela que não existe no celular mostra
+   o vazio "Esta tela só funciona no computador.".
    ============================================================ */
 @media (max-width: 767px) {
+  /* a barra quebra em linhas; cada peça traz os 8px de cima (a linha da quebra, vazia, não soma espaço) */
+  html[data-celular] .pagina-subcabecalho {
+    flex-wrap: wrap;
+    row-gap: 0;
+    padding-bottom: 8px;
+  }
+
+  /* ordem das linhas: as ações (0), a quebra (1), o resto da régua (2) e a busca aberta (3, geral-busca.css) */
+  html[data-celular] .pagina-subcabecalho > * {
+    order: 2;
+    margin-top: 8px;
+  }
+
+  /* as ações dividem a largura da linha de cima; o texto que não cabe quebra dentro do botão */
+  html[data-celular] .pagina-subcabecalho > .botao:not(.botao--quadrado):not(.botao--icone),
+  html[data-celular] .pagina-subcabecalho > .acoes-admin {
+    order: 0;
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  html[data-celular] .pagina-subcabecalho > .botao:not(.botao--quadrado):not(.botao--icone) {
+    white-space: normal;
+  }
+
+  html[data-celular] .pagina-subcabecalho > .acoes-admin > .acoes-admin-gatilho {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  /* a quebra depois das ações (só quando há ação à vista) */
+  html[data-celular] .pagina-subcabecalho:has(> .acoes-admin:not(.oculto), > .botao:not(.botao--quadrado):not(.botao--icone):not(.oculto))::before {
+    content: '';
+    order: 1;
+    flex-basis: 100%;
+  }
+
+  /* o espaçador some quando nada à vista vem depois dele (não abre uma linha vazia) */
+  html[data-celular] .pagina-subcabecalho > .espacador-flex:not(:has(~ :not(.oculto))) {
+    display: none;
+  }
+
+  /* o traço das ferramentas sai: na linha de baixo tudo já é ícone */
+  html[data-celular] .pagina-subcabecalho-divisor {
+    display: none;
+  }
+
+  /* os menus da barra (Filtros, Ordem, Exibir, Legenda, Administração) cabem na tela e quebram o texto */
+  html[data-celular] .pagina-subcabecalho .dropdown-menu {
+    max-width: calc(100% - 16px);
+    white-space: normal;
+  }
+
+  /* tela fora do celular (Distribuição, Histórico): o vazio no lugar da tela (molde #tpl-pagina-so-computador) */
+  html[data-celular] .pagina-so-computador {
+    padding: 32px 16px;
+    text-align: center;
+    font-size: var(--fonte-padrao);
+    color: var(--texto-suave);
+  }
+
   html[data-celular] .acoes-admin {
     padding: 0;
     background-color: transparent;
