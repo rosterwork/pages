@@ -440,8 +440,9 @@
   font-size: 12px;
 }
 
-/* desfazer/refazer da edição do modelo: no subcabeçalho, empurrado para a direita (só durante o Editar) */
-.distribuicao-historico { display: flex; gap: 4px; margin-left: auto; }
+/* desfazer/refazer da edição do modelo: as ferramentas do subcabeçalho, depois do traço, empurradas
+   para a direita (só durante o Editar) */
+.distribuicao-historico { display: flex; align-items: center; gap: 8px; margin-left: auto; }
 
 /* rodapé de edição: resumo de status · Cancelar/Salvar
    (a linha em si usa .rodape-linha) */

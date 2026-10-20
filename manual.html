@@ -596,7 +596,7 @@
                 </li>
               </ul>
 
-              <p><strong>Nome riscado.</strong> Marca quem deixou o serviço naquele dia. Na grade da escala, o nome aparece riscado, como em <s>3ºSgt. Meireles</s>, e com dois ícones: a origem que o militar tinha no dia e o motivo da saída. No painel do dia, essas saídas ficam na caixa Observações.</p>
+              <p><strong>Nome riscado.</strong> Marca quem deixou o serviço naquele dia. Na grade da escala, o nome aparece riscado, como em <s>3ºSgt. Meireles</s>, e com dois ícones: a origem que o militar tinha no dia e o motivo da saída. Na célula, os nomes riscados ficam no fim da lista, depois de quem está de serviço: primeiro os de folga, depois os de troca, cada grupo pela antiguidade. Quem passou só parte do serviço aparece duas vezes: entre os de serviço, com as horas que cumpre, e riscado no fim, com as horas que passou. No painel do dia, essas saídas ficam na caixa Observações.</p>
               <ul class="manual-legenda manual-legenda--compacta">
                 <li>
                   <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-folgas.svg#icone-folgas"/></svg></span>
@@ -969,7 +969,7 @@
 
               <p><strong>A troca aprovada na escala.</strong> Depois da aprovação do administrador, a troca passa a valer na escala. No dia trocado, o militar que passou o serviço aparece <strong>riscado</strong> e quem assumiu entra no lugar, os dois com o ícone de troca. Havendo devolução, o mesmo acontece no dia dela, com os papéis invertidos. No painel do dia, o grupo <strong>Trocas</strong> das <strong>Observações</strong> escreve a troca por extenso, com a parte do E-protocolo e a devolução, por exemplo: "Sd. Sampaio cumpre a escala de serviço do 3ºSgt. Meireles, no período das 08h às 20h, conforme a Parte nº 250/2026. A devolução será definida posteriormente.".</p>
               <figure class="manual-figura manual-figura--larga">
-                <img src="manual/imagens/escala-troca-riscado.png" alt="Dia 13 na grade da escala: 3ºSgt. Meireles aparece riscado e Sd. Sampaio entra no lugar dele." />
+                <img src="manual/imagens/escala-troca-riscado.png" alt="Dia 13 na grade da escala: Sd. Sampaio entra no lugar do 3ºSgt. Meireles (1), que aparece riscado no fim da lista (2)." />
               </figure>
 
               <p><strong>Devolução e pendências.</strong> Quando você marca a devolução, com o dia e o período do colega, as duas datas ficam casadas e ninguém fica devendo. Se a devolução tiver duração diferente do serviço, ou se você a deixar em <strong>Pendência</strong>, a diferença vira uma <strong>dívida de horas</strong>: quem passou o serviço fica devendo a quem cobriu. A aba <strong>Saldos</strong> reúne essas dívidas, você vê as que envolvem você e o administrador vê todas.</p>
@@ -1402,7 +1402,7 @@
               </div>
               <p><strong>Ajustar o que aparece.</strong> Dois botões na barra logo abaixo das abas, à direita, mudam a exibição. O <strong>Exibir</strong> (o olho) escolhe o identificador visível (CPF, RG, telefone ou e-mail), o formato do nome (só o de guerra ou o nome completo com o de guerra em destaque) e liga ou desliga a hierarquia, que é a abreviação do grau.</p>
               <p>O <strong>Ordem</strong> organiza a lista por <strong>antiguidade</strong> (do mais antigo, o padrão, ou do mais moderno) ou em ordem <strong>alfabética</strong> (de A a Z ou de Z a A). Essas escolhas valem só para você.</p>
-              <p><strong>Filtrar e procurar.</strong> Os filtros de <strong>Graus</strong> e <strong>Situação</strong> encolhem a lista ao que interessa, e o funil fica destacado quando algum está ativo. A <strong>busca</strong> tem dois modos, trocados no botão ao lado: <strong>Marcar</strong> realça quem combina com o texto sem esconder os demais, e <strong>Filtrar</strong> deixa à vista só quem combina. Ela procura por nome de guerra, nome completo, CPF ou RG.</p>
+              <p><strong>Filtrar e procurar.</strong> O botão <strong>Filtros</strong> abre as colunas <strong>Graus</strong> e <strong>Situação</strong>, que encolhem a lista ao que interessa. O número no botão diz quantos filtros estão ligados, e a linha <strong>Filtros</strong>, embaixo da barra, mostra quais: o x de cada etiqueta tira só aquele filtro, e <strong>Limpar filtros</strong> tira todos. A <strong>busca</strong> tem dois modos, trocados no botão ao lado: <strong>Marcar</strong> realça quem combina com o texto sem esconder os demais, e <strong>Filtrar</strong> deixa à vista só quem combina. Ela procura por nome de guerra, nome completo, CPF ou RG.</p>
               <div class="manual-bloco-admin manual-admin">
                 <span class="manual-selo-admin">Apenas administradores</span>
                 <p>Em <strong>Situação</strong>, depois de um traço, ficam <strong>Correção pendente</strong> e <strong>Inativos</strong>. Elas começam desmarcadas e somam à lista: com <strong>Todos</strong> marcado, aparecem todos e mais elas; para ver só elas, desmarque <strong>Todos</strong>.</p>
@@ -1696,15 +1696,15 @@
               <h2>Histórico <span class="manual-selo-admin">Apenas administradores</span></h2>              <p>O <strong>Histórico</strong> é o registro de auditoria do sistema: cada ação que grava algo (cadastrar, promover, afastar, mudar o ritmo, aprovar uma folga, publicar um comunicado) deixa um evento aqui. As trocas têm o histórico próprio, na aba Todas da página Trocas. A página usa a mesma árvore de unidades, com os eventos <strong>agrupados por unidade</strong> e a contagem "N registros" em cada uma.</p>
               <p><strong>Cada evento é um cartão que abre.</strong> Recolhido, ele mostra a <strong>parte do sistema</strong> a que pertence (Usuários, Escala, Afastamentos e assim por diante), o <strong>assunto</strong> e a linha com <strong>quem fez, o que fez e quando</strong>. Clicando, o cartão revela os <strong>detalhes</strong> das mudanças, no mesmo formato do resumo que aparece ao salvar.</p>
               <figure class="manual-figura manual-figura--cheia">
-                <img src="manual/imagens/historico-lista.png" alt="A página Histórico: os filtros Tipo, Autor e Período (1) e a árvore com eventos recolhidos, cada um com a parte, o assunto e quem fez, o que fez e quando (2)." />
+                <img src="manual/imagens/historico-lista.png" alt="A página Histórico: o Período e o botão Filtros (1) e a árvore com eventos recolhidos, cada um com a parte, o assunto e quem fez, o que fez e quando (2)." />
                 <figcaption>
                   <ol class="manual-chamadas">
-                    <li>Filtros de tipo, autor e período</li>
+                    <li>O período e o botão Filtros (tipo e autor)</li>
                     <li>Evento recolhido</li>
                   </ol>
                 </figcaption>
               </figure>
-              <p><strong>Filtrar.</strong> No topo, o <strong>Período</strong> (Hoje, Últimos 7 dias, Últimos 30 dias ou Tudo, começando nos 30 dias) refaz a busca ao mudar; o <strong>Tipo</strong> restringe pela parte do sistema e o <strong>Autor</strong>, por quem fez a alteração. Um <strong>x</strong> em cada um volta para "Todos".</p>
+              <p><strong>Filtrar.</strong> À esquerda, o <strong>Período</strong> (Hoje, Últimos 7 dias, Últimos 30 dias ou Tudo, começando nos 30 dias) refaz a busca ao mudar. À direita, o botão <strong>Filtros</strong> abre as colunas <strong>Tipo</strong> (a parte do sistema) e <strong>Autor</strong> (quem fez a alteração), e dá para marcar mais de um em cada. A linha <strong>Filtros</strong>, embaixo da barra, mostra o que está ligado: o x de cada etiqueta tira só aquele, e <strong>Limpar filtros</strong> tira todos. Trocar o período limpa o Tipo e o Autor.</p>
               <figure class="manual-figura">
                 <img src="manual/imagens/historico-evento.png" alt="Um evento aberto no histórico: o cabeçalho com o autor, a ação e a data (1) e os detalhes das mudanças (2)." />
                 <figcaption>

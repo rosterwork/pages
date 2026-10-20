@@ -25,22 +25,12 @@
       <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-folgas.svg#icone-folgas"/></svg>
       <span>Dar folga</span>
     </button>
-    <span class="espacador-flex"></span>
 
-    <!-- controles da aba Equipe: alternância Saldos/Histórico + busca + período -->
+    <!-- controles da aba Equipe, à esquerda: a escolha Saldos/Histórico e, no Histórico, o período -->
     <div class="folgas-controles oculto" data-controles="equipe">
       <div class="abas abas--seletor" id="folgas-equipe-modo">
         <button type="button" class="aba aba--ativa" data-modo="saldos">Saldos</button>
         <button type="button" class="aba" data-modo="historico">Histórico</button>
-      </div>
-      <div class="busca" id="busca-folgas">
-        <span class="busca-modo" aria-hidden="true">
-          <svg class="icone" width="16" height="16"><use href="icones/icone-pesquisar.svg#icone-pesquisar"/></svg>
-        </span>
-        <input type="text" class="busca-entrada" id="busca-folgas-entrada" maxlength="60" placeholder="Pesquisar militar" aria-label="Pesquisar militar" />
-        <button type="button" class="busca-limpar" id="busca-folgas-limpar" aria-label="Limpar pesquisa">
-          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
-        </button>
       </div>
       <div class="dropdown oculto" id="folgas-periodo">
         <button type="button" class="seletor" id="folgas-periodo-seletor">
@@ -55,6 +45,18 @@
           <button type="button" class="dropdown-item" data-periodo="tudo">Tudo</button>
         </div>
       </div>
+    </div>
+    <span class="espacador-flex"></span>
+
+    <!-- busca da aba Equipe, no modo Saldos -->
+    <div class="busca oculto" id="busca-folgas">
+      <span class="busca-modo" aria-hidden="true">
+        <svg class="icone" width="16" height="16"><use href="icones/icone-pesquisar.svg#icone-pesquisar"/></svg>
+      </span>
+      <input type="text" class="busca-entrada" id="busca-folgas-entrada" maxlength="60" placeholder="Pesquisar militar" aria-label="Pesquisar militar" />
+      <button type="button" class="busca-limpar" id="busca-folgas-limpar" aria-label="Limpar pesquisa">
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+      </button>
     </div>
   </div>
 

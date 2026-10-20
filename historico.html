@@ -5,31 +5,9 @@
     </div>
   </div>
 
+  <!-- barra: o período à esquerda (refaz a busca); à direita, o botão Filtros (componente geral-filtros)
+       com Tipo e Autor, os de quem aparece no período -->
   <div class="pagina-subcabecalho">
-    <span class="espacador-flex"></span>
-
-    <div class="dropdown" id="historico-tipo">
-      <button type="button" class="seletor" id="historico-tipo-seletor">
-        <span class="seletor-texto" id="historico-tipo-texto">Todos os tipos</span>
-        <span class="seletor-limpar" id="historico-tipo-limpar" data-dica="Limpar">
-          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
-        </span>
-        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
-      </button>
-      <div class="dropdown-menu" id="historico-tipo-menu"></div>
-    </div>
-
-    <div class="dropdown" id="historico-autor">
-      <button type="button" class="seletor" id="historico-autor-seletor">
-        <span class="seletor-texto" id="historico-autor-texto">Todos os autores</span>
-        <span class="seletor-limpar" id="historico-autor-limpar" data-dica="Limpar">
-          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
-        </span>
-        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
-      </button>
-      <div class="dropdown-menu" id="historico-autor-menu"></div>
-    </div>
-
     <div class="dropdown" id="historico-periodo">
       <button type="button" class="seletor" id="historico-periodo-seletor">
         <span class="seletor-texto" id="historico-periodo-texto">Últimos 30 dias</span>
@@ -42,6 +20,12 @@
         <button type="button" class="dropdown-item" data-periodo="30">Últimos 30 dias</button>
         <button type="button" class="dropdown-item" data-periodo="tudo">Tudo</button>
       </div>
+    </div>
+    <span class="espacador-flex"></span>
+
+    <div class="filtros" id="historico-filtros">
+      <div data-filtro="tipo" data-filtro-nome="Tipo" data-filtro-titulo="Tipo"></div>
+      <div data-filtro="autor" data-filtro-nome="Autor" data-filtro-titulo="Autor"></div>
     </div>
   </div>
 
@@ -77,11 +61,6 @@
     </button>
     <div class="historico-evento-corpo oculto"></div>
   </div>
-</template>
-
-<!-- molde: item dos dropdowns de filtro (tipo / autor), montado pelo JS -->
-<template id="tpl-historico-opcao">
-  <button type="button" class="dropdown-item"></button>
 </template>
 
 <!-- molde: unidade marcada sem eventos no período/filtros -->

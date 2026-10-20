@@ -1134,7 +1134,7 @@
       efetivoMaximo: 'Efetivo máximo: {n}',
       /* afastamento com data-limite (selo da Usuários, linha da Escala): "Férias até 31/10" */
       afastadoAte: function (situacao, data) { return situacao + ' até ' + data; },
-      /* filtro com só as opções à parte marcadas (ex.: "só Afastamentos", "só Inativos"): etiqueta e gatilho */
+      /* filtro com só as opções à parte marcadas (ex.: "só Afastamentos", "só Inativos"): a etiqueta da linha "Filtros:" */
       filtroSo: function (rotulo) { return 'só ' + rotulo; }
     },
 

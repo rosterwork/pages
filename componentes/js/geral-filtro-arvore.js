@@ -20,16 +20,12 @@
      fora do "Todos", e é um ACRÉSCIMO: "Todos" + ela = tudo e mais ela. Desmarcar o "Todos"
      com uma separada marcada = só as separadas. A seleção nunca fica vazia: sem nada,
      volta ao "Todos".
-     config: { arvoreEl, mestreEl, gatilhoEl, triggerEl, limparEl, rotuloVazio, plural, colapsarTudo, onChange }
+     Usado pelo botão Filtros (geral-filtros), uma coluna por filtro.
+     config: { arvoreEl, mestreEl, colapsarTudo, onChange }
      Devolve { definir(arvore), passa(valor), temFiltro(), desmarcar(valores), limpar(), resumo() }. */
   function criar(config) {
     var arvoreEl = config.arvoreEl;
     var mestreEl = config.mestreEl || null;
-    var gatilho = config.gatilhoEl || null;
-    var triggerEl = config.triggerEl || null;
-    var limparEl = config.limparEl || null;
-    var rotuloVazio = config.rotuloVazio || 'Todos';
-    var plural = config.plural || 'itens';
     var onChange = config.onChange || function () {};
 
     var selecionados = new Set();   /* as normais escolhidas (vazio = "Todos") e as separadas marcadas */
@@ -89,7 +85,7 @@
       return selecionados.has(valor);
     }
 
-    /* o que está marcado, para as etiquetas e o texto do gatilho: um grupo inteiro marcado vira um
+    /* o que está marcado, para as etiquetas da linha "Filtros:": um grupo inteiro marcado vira um
        item só (ex.: "Praças"); as separadas vêm por último ("só Afastamentos" quando só elas valem).
        [{ rotulo, valores }] na ordem da árvore */
     function resumo() {
@@ -114,17 +110,6 @@
       return lista;
     }
 
-    function atualizarGatilho() {
-      if (gatilho) {
-        if (!temFiltro()) gatilho.textContent = rotuloVazio;
-        else {
-          var itens = resumo();
-          gatilho.textContent = itens.length === 1 ? itens[0].rotulo : itens.length + ' ' + plural;
-        }
-      }
-      if (triggerEl) triggerEl.classList.toggle('seletor--com-filtro', temFiltro());
-    }
-
     /* mestre "Todos": marcado quando valem todas as normais */
     function pintarMestre() {
       if (!mestreEl) return;
@@ -137,7 +122,6 @@
     function pintar() {
       pintores.forEach(function (p) { p(); });
       pintarMestre();
-      atualizarGatilho();
     }
 
     function mudou() {
@@ -259,12 +243,8 @@
       pintar();
     }
 
-    /* liga uma vez os controles fixos: o mestre "Todos" e o "x" do gatilho (que volta ao padrão) */
+    /* liga uma vez o mestre "Todos" */
     if (mestreEl) mestreEl.addEventListener('click', alternarTodos);
-    if (limparEl) limparEl.addEventListener('click', function (evento) {
-      evento.stopPropagation();
-      limpar();
-    });
 
     return {
       definir: definir,

@@ -42,24 +42,6 @@
   flex-shrink: 0;
 }
 
-/* "x" de limpar dentro do gatilho do filtro: só aparece quando há filtro ativo */
-.seletor-limpar {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  color: var(--texto-fraco);
-  cursor: pointer;
-}
-
-.seletor-limpar:hover {
-  color: var(--texto-forte);
-}
-
-.seletor--com-filtro .seletor-limpar {
-  display: inline-flex;
-}
-
 /* ---------- CAIXA DE SELEÇÃO (listas e árvores) ---------- */
 /* é um <button role="checkbox">: navegável por Tab, marca com Espaço/Enter */
 .caixa-selecao {

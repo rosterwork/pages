@@ -6,8 +6,9 @@
    seletor do cabeçalho. Cada evento = cartão (a página [ícone+nome]
    como título + o assunto como subtítulo + autor · verbo · data) +
    as mudanças desenhadas pelo geral-resumo.
-   Filtros: Período (rebusca), Tipo e Autor (em memória, populados
-   dos eventos carregados). Moldes em historico.html.
+   Filtros: Período (rebusca, à esquerda) e o botão Filtros (componente
+   geral-filtros) com Tipo e Autor, em memória e de escolha múltipla,
+   populados dos eventos carregados. Moldes em historico.html.
    ============================================================ */
 (function () {
   'use strict';
@@ -16,8 +17,7 @@
   window.RosterWork.paginas = window.RosterWork.paginas || {};
 
   var periodo = '30';     // padrão: últimos 30 dias (persiste entre navegações)
-  var filtroTipo = null;  // { valor, rotulo } ou null = todos
-  var filtroAutor = null; // { valor, rotulo } ou null = todos
+  var filtros = null;     // o botão Filtros (Tipo e Autor), criado no iniciar
 
 
   /* atalho de período -> data de início (ISO) ou null (Tudo) */
@@ -47,9 +47,7 @@
   /* aplica os filtros de tipo e autor (em memória) a uma lista de eventos */
   function aplicarFiltros(itens) {
     return (itens || []).filter(function (e) {
-      if (filtroTipo && e.entidade !== filtroTipo.valor) return false;
-      if (filtroAutor && e.autor_cpf !== filtroAutor.valor) return false;
-      return true;
+      return !filtros || (filtros.passa('tipo', e.entidade) && filtros.passa('autor', e.autor_cpf));
     });
   }
 
@@ -139,9 +137,9 @@
     if (wrap !== container) container.appendChild(wrap);
   }
 
-  /* ---------- filtros Tipo / Autor (em memória) ---------- */
+  /* ---------- filtros Tipo / Autor (em memória, no botão Filtros) ---------- */
 
-  /* valores distintos de uma chave nos eventos, com rótulo, ordenados */
+  /* valores distintos de uma chave nos eventos, como opções do filtro, ordenadas pelo rótulo */
   function distintos(eventos, chave, rotuloDe) {
     var vistos = {}, lista = [];
     (eventos || []).forEach(function (e) {
@@ -154,61 +152,11 @@
     return lista;
   }
 
-  /* reflete a seleção no gatilho (texto + "x" de limpar) */
-  function aplicarSelecao(idBase, textoTodos, sel) {
-    var texto = document.getElementById(idBase + '-texto');
-    var gatilho = document.getElementById(idBase + '-seletor');
-    if (texto) texto.textContent = sel ? sel.rotulo : textoTodos;
-    if (gatilho) gatilho.classList.toggle('seletor--com-filtro', !!sel);
-  }
-
-  /* (re)monta o menu de um filtro: "Todos" + as opções distintas */
-  function popularFiltro(idBase, textoTodos, opcoes, definir) {
-    var menu = document.getElementById(idBase + '-menu');
-    if (!menu) return;
-    menu.textContent = '';
-    function add(sel) {
-      var b = RosterWork.tpl('tpl-historico-opcao');
-      if (!b) return;
-      b.textContent = sel ? sel.rotulo : textoTodos;
-      b.addEventListener('click', function () {
-        definir(sel);
-        aplicarSelecao(idBase, textoTodos, sel);
-        if (RosterWork.arvoreUnidades) RosterWork.arvoreUnidades.atualizar();
-      });
-      menu.appendChild(b);
-    }
-    add(null);
-    opcoes.forEach(function (o) { add(o); });
-  }
-
-  /* a árvore avisa quais eventos estão nas unidades marcadas → alimenta os dropdowns */
+  /* a árvore avisa quais eventos estão nas unidades marcadas → alimenta as colunas Tipo e Autor */
   function aoRenderizar(eventos) {
-    popularFiltro('historico-tipo', 'Todos os tipos',
-      distintos(eventos, 'entidade', function (e) { return rotuloTipo(e.entidade); }),
-      function (sel) { filtroTipo = sel; });
-    popularFiltro('historico-autor', 'Todos os autores',
-      distintos(eventos, 'autor_cpf', function (e) { return e.autor || e.autor_cpf; }),
-      function (sel) { filtroAutor = sel; });
-  }
-
-  /* o "x" de limpar de um filtro volta para "Todos" */
-  function ligarLimpar(idBase, textoTodos, definir) {
-    var limpar = document.getElementById(idBase + '-limpar');
-    if (limpar) limpar.addEventListener('click', function (ev) {
-      ev.stopPropagation();   // não abre o dropdown
-      definir(null);
-      aplicarSelecao(idBase, textoTodos, null);
-      if (RosterWork.arvoreUnidades) RosterWork.arvoreUnidades.atualizar();
-    });
-  }
-
-  /* trocar o período é uma nova busca → tipo/autor voltam a "Todos" */
-  function limparFiltrosSecundarios() {
-    filtroTipo = null;
-    filtroAutor = null;
-    aplicarSelecao('historico-tipo', 'Todos os tipos', null);
-    aplicarSelecao('historico-autor', 'Todos os autores', null);
+    if (!filtros) return;
+    filtros.definir('tipo', distintos(eventos, 'entidade', function (e) { return rotuloTipo(e.entidade); }));
+    filtros.definir('autor', distintos(eventos, 'autor_cpf', function (e) { return e.autor || e.autor_cpf; }));
   }
 
   /* ---------- período ---------- */
@@ -221,7 +169,7 @@
         item.addEventListener('click', function () {
           periodo = item.getAttribute('data-periodo');
           if (texto) texto.textContent = item.textContent;
-          limparFiltrosSecundarios();
+          if (filtros) filtros.limpar();   /* nova busca → Tipo e Autor voltam a "Todos" */
           if (RosterWork.arvoreUnidades) RosterWork.arvoreUnidades.recarregar();
         });
       })(itens[i]);
@@ -237,14 +185,14 @@
 
   /* a navegação chama iniciar() toda vez que a página é exibida */
   function iniciar(conteudo) {
-    /* os filtros de Tipo/Autor são derivados dos eventos carregados: ao reentrar na página,
-       zera para não filtrar em silêncio com o gatilho mostrando "Todos" (o Período persiste de propósito) */
-    filtroTipo = null;
-    filtroAutor = null;
+    /* Tipo e Autor vêm dos eventos carregados: o botão Filtros é novo a cada visita (volta a "Todos";
+       o Período persiste de propósito) */
+    var caixa = conteudo.querySelector('#historico-filtros');
+    filtros = (caixa && RosterWork.filtros) ? RosterWork.filtros.criar(caixa, {
+      aoMudar: function () { if (RosterWork.arvoreUnidades) RosterWork.arvoreUnidades.atualizar(); }
+    }) : null;
     ligarPeriodo(conteudo);
     sincronizarLabelPeriodo(conteudo);
-    ligarLimpar('historico-tipo', 'Todos os tipos', function (s) { filtroTipo = s; });
-    ligarLimpar('historico-autor', 'Todos os autores', function (s) { filtroAutor = s; });
     var container = conteudo.querySelector('#arvore-historico');
     if (!container || !RosterWork.arvoreUnidades) return;
     return RosterWork.arvoreUnidades.montar(container, {

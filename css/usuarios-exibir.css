@@ -1,40 +1,8 @@
 /* ============================================================
-   USUÁRIOS — filtros do sub-cabeçalho: larguras fixas dos
-   pré-filtros, separação para a busca e o funil indicador.
-   (o "x" de limpar dentro do gatilho fica em geral-arvore.css)
+   USUÁRIOS — menu "Exibir" da barra de controles (usuarios-exibir.js):
+   as opções que mantêm o menu aberto. Os filtros da barra são o
+   componente geral (geral-filtros).
    ============================================================ */
-
-/* os filtros andam juntos: são um bloco só, que some na aba Correções */
-.usuarios-filtros {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* larguras fixas dos pré-filtros */
-#dropdown-graus .seletor {
-  width: 135px;
-}
-
-#dropdown-situacao .seletor {
-  width: 160px;
-}
-
-/* 16px entre os filtros e a busca: 8px do gap do sub-cabeçalho + 8px aqui */
-#busca-usuarios {
-  margin-left: 8px;
-}
-
-/* funil indicador (um só, à esquerda dos filtros): claro sem filtro, escuro com filtro ativo */
-.filtro-funil {
-  flex-shrink: 0;
-  color: var(--texto-fraco);
-  transition: color 0.15s ease;
-}
-
-.filtro-funil--ativo {
-  color: var(--texto-forte);
-}
 
 /* ---------- menu "Exibir" (cabeçalho): opções que mantêm o menu aberto ---------- */
 /* mesma linha do .dropdown-item, mas classe própria para o geral-dropdown NÃO fechar

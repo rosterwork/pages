@@ -4,9 +4,8 @@
   window.RosterWork = window.RosterWork || {};
   window.RosterWork.paginas = window.RosterWork.paginas || {};
 
-  /* filtros do sub-cabeçalho (instâncias de geral-filtro-arvore, criadas no iniciar) */
-  var filtroSituacao = null;
-  var filtroGraus = null;
+  /* o botão Filtros do sub-cabeçalho (geral-filtros: Graus e Situação), criado no iniciar */
+  var filtros = null;
 
   /* busca do sub-cabeçalho */
   var termoBusca = '';
@@ -28,14 +27,14 @@
      acréscimos). "Correção pendente" não é situação do militar (ele continua Ativo/Férias/...),
      então soma às demais em vez de excluir */
   function pessoaPassaSituacao(pessoa) {
-    if (!filtroSituacao) return true;
-    if (pessoa.correcao_pendente && filtroSituacao.passa('Correção pendente')) return true;
-    return filtroSituacao.passa(pessoa.situacao);
+    if (!filtros) return true;
+    if (pessoa.correcao_pendente && filtros.passa('situacao', 'Correção pendente')) return true;
+    return filtros.passa('situacao', pessoa.situacao);
   }
 
   /* nada marcado = todos os graus */
   function pessoaPassaHierarquia(pessoa) {
-    return !filtroGraus || filtroGraus.passa(pessoa.grau_nome);
+    return !filtros || filtros.passa('graus', pessoa.grau_nome);
   }
 
   /* tira acentos e caixa para comparar nomes sem diferença de acentuação */
@@ -159,9 +158,9 @@
       .catch(function () { inativosPorUnidade = {}; });
   }
 
-  /* o filtro de situação inclui "Inativos"? */
+  /* o filtro de situação inclui "Inativos"? (opção só do administrador) */
   function mostrarInativos() {
-    return !!(filtroSituacao && filtroSituacao.passa('Inativo'));
+    return !!(filtros && RosterWork.sessao.ehAdmin() && filtros.passa('situacao', 'Inativo'));
   }
 
   /* abre a ficha do militar no painel e realça a linha clicada (ver = todos) */
@@ -327,13 +326,7 @@
 
   /* o componente da árvore chama isto a cada render (ao fim da passada), com as pessoas visíveis */
   function aoRenderizarGraus(pessoasVisiveis) {
-    var arvore = arvoreDeGraus(pessoasVisiveis || []);
-    var tem = arvore.length > 0;
-    var vazio = document.getElementById('graus-vazio');
-    if (vazio) vazio.classList.toggle('oculto', tem);
-    var conteudo = document.getElementById('graus-conteudo');
-    if (conteudo) conteudo.classList.toggle('oculto', !tem);
-    if (tem && filtroGraus) filtroGraus.definir(arvore);
+    if (filtros) filtros.definir('graus', arvoreDeGraus(pessoasVisiveis || []));
     atualizarSubtitulo();
   }
 
@@ -365,10 +358,11 @@
     for (var i = 0; i < paineis.length; i++) {
       paineis[i].classList.toggle('oculto', paineis[i].getAttribute('data-aba-painel') !== nome);
     }
-    ['#usuarios-filtros', '#dropdown-ordem', '#dropdown-exibir'].forEach(function (seletor) {
+    ['#busca-usuarios', '#usuarios-divisor', '#dropdown-ordem', '#dropdown-exibir'].forEach(function (seletor) {
       var el = conteudo.querySelector(seletor);
       if (el) el.classList.toggle('oculto', nome !== 'efetivo');
     });
+    if (filtros) filtros.mostrar(nome === 'efetivo');   /* o botão Filtros e a linha "Filtros:" */
     /* a Antiguidade tem a própria busca (o Salvar dela fica no rodapé da aba) */
     var buscaAntiguidade = conteudo.querySelector('#antiguidade-busca');
     if (buscaAntiguidade) buscaAntiguidade.classList.toggle('oculto', nome !== 'antiguidade');
@@ -405,35 +399,19 @@
   /* a navegação chama iniciar() toda vez que a página de usuários é exibida */
   function iniciar(conteudo) {
     var container = conteudo.querySelector('#arvore-usuarios');
-    if (!container || !window.RosterWork.arvoreUnidades || !window.RosterWork.filtroArvore) return;
+    if (!container || !window.RosterWork.arvoreUnidades || !window.RosterWork.filtros) return;
 
     elContagem = conteudo.querySelector('.pagina-titulo-contagem');
     contagemVisivel = 0;
     termoBusca = '';
     modoBusca = 'marcar';
 
-    /* funil indicador (um só): escuro quando graus OU situação tem filtro de fato */
-    var funil = conteudo.querySelector('#filtro-funil');
-    var reagir = function () {
-      var ativo = (filtroGraus && filtroGraus.temFiltro()) || (filtroSituacao && filtroSituacao.temFiltro());
-      if (funil) funil.classList.toggle('filtro-funil--ativo', !!ativo);
-      if (window.RosterWork.arvoreUnidades) window.RosterWork.arvoreUnidades.atualizar();
-    };
-
-    /* filtro de situação: árvore estática (Ativos/Férias) */
-    filtroSituacao = window.RosterWork.filtroArvore.criar({
-      arvoreEl: conteudo.querySelector('#situacao-arvore'),
-      mestreEl: conteudo.querySelector('#situacao-todos'),
-      gatilhoEl: conteudo.querySelector('#situacao-texto'),
-      triggerEl: conteudo.querySelector('#situacao-seletor'),
-      limparEl: conteudo.querySelector('#situacao-limpar'),
-      rotuloVazio: 'Todas as situações',
-      plural: 'situações',
-      colapsarTudo: true,   /* marcar todas as situações = "Todos" (as individuais desmarcam) */
-      onChange: reagir
+    /* o botão Filtros (Graus e Situação): cada mudança re-renderiza a árvore */
+    filtros = window.RosterWork.filtros.criar(conteudo.querySelector('#usuarios-filtros'), {
+      aoMudar: function () { if (window.RosterWork.arvoreUnidades) window.RosterWork.arvoreUnidades.atualizar(); }
     });
-    /* Ativos/Férias/Licença/Dispensa para todos; Inativos só para administradores
-       (é um filtro à parte, vem de fonte separada e não se mistura com o efetivo ativo) */
+    /* Situação: Ativos/Férias/Licença/Dispensa para todos; Correção pendente e Inativos só para
+       administradores, à parte (acréscimos; os inativos vêm de fonte separada) */
     var opcoesSituacao = [
       { rotulo: 'Ativos', valor: 'Ativo' },
       { rotulo: 'Férias', valor: 'Férias' },
@@ -444,24 +422,14 @@
       opcoesSituacao.push({ rotulo: 'Correção pendente', valor: 'Correção pendente', separado: true });
       opcoesSituacao.push({ rotulo: 'Inativos', valor: 'Inativo', separado: true });
     }
-    filtroSituacao.definir(opcoesSituacao);
+    if (filtros) filtros.definir('situacao', opcoesSituacao);
 
     /* carrega os inativos em segundo plano; quando chegam, re-renderiza (só aparecem se filtrados) */
     carregarInativos().then(function () {
       if (window.RosterWork.arvoreUnidades) window.RosterWork.arvoreUnidades.atualizar();
     });
 
-    /* filtro de graus: árvore dinâmica (montada no aoRenderizar, com as patentes presentes) */
-    filtroGraus = window.RosterWork.filtroArvore.criar({
-      arvoreEl: conteudo.querySelector('#graus-arvore'),
-      mestreEl: conteudo.querySelector('#graus-todos'),
-      gatilhoEl: conteudo.querySelector('#graus-texto'),
-      triggerEl: conteudo.querySelector('#graus-seletor'),
-      limparEl: conteudo.querySelector('#graus-limpar'),
-      rotuloVazio: 'Todos os graus',
-      plural: 'graus',
-      onChange: reagir
-    });
+    /* Graus: montado no aoRenderizarGraus, com as patentes de quem aparece */
 
     ligarBusca(conteudo);
 

@@ -3,18 +3,11 @@
    Os eventos aparecem dentro da árvore de unidades
    (geral-arvore-unidades), agrupados por unidade. Cada evento é um
    cartão: cabeçalho (autor · ação · data-hora) + as mudanças pelo
-   componente geral-resumo. Filtros (tipo/autor/período) no
-   sub-cabeçalho. Lógica em js/historico.js.
+   componente geral-resumo. No sub-cabeçalho, o período e o botão
+   Filtros (tipo/autor). Lógica em js/historico.js.
    ============================================================ */
 
-/* filtros do sub-cabeçalho (largura própria + separação) */
-#historico-tipo,
-#historico-autor,
-#historico-periodo {
-  margin-left: 8px;
-}
-#historico-tipo-seletor { width: 150px; }
-#historico-autor-seletor { width: 190px; }
+/* período do sub-cabeçalho (à esquerda; Tipo e Autor ficam no botão Filtros, componente geral) */
 #historico-periodo-seletor { width: 160px; }
 
 /* pilha de eventos dentro do bloco da unidade (na .arvore-conteudo) */
