@@ -13,7 +13,7 @@
   margin: 0 auto;
   background: var(--fundo-pagina);
   color: var(--texto);
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   font-weight: 400;
 }
 
@@ -44,9 +44,9 @@
   height: 32px;
 }
 
-/* alinha o logo com a sidebar quando expandida (180px = 8px pad + 164px + 8px pad) */
+/* alinha o logo com a sidebar quando expandida (largura do menu = 8px pad + logo + 8px pad) */
 .casca:not(.casca--recolhida) .cabecalho-logo {
-  min-width: 164px;
+  min-width: calc(var(--menu-largura) - 16px);
 }
 
 /* Botão do usuário logado */
@@ -87,8 +87,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 32px;
-  min-height: 32px;
+  min-width: var(--botao-altura);
+  min-height: var(--botao-altura);
   padding: 0;
   border: none;
   border-radius: var(--raio-medio);
@@ -164,7 +164,7 @@ button.aviso-item:hover {
 .aviso-item-ponto {
   width: 6px;
   height: 6px;
-  margin-top: 6px;
+  margin-top: 4px;
   flex-shrink: 0;
   border-radius: 50%;
   background-color: transparent;
@@ -224,4 +224,68 @@ button.aviso-item:hover {
 
 .cabecalho-usuario-seta {
   color: var(--texto-fraco);
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   ============================================================ */
+@media (max-width: 767px) {
+  /* casca sem a largura mínima do computador; a altura é a da tela visível
+     (no celular o 100vh conta a área embaixo da barra do navegador e esconderia a barra de baixo) */
+  html[data-celular] .casca {
+    min-width: 0;
+    height: 100%;
+  }
+
+  /* topo compacto: logo menor, o seletor no espaço que sobra, só o avatar do usuário */
+  html[data-celular] .cabecalho {
+    gap: 4px;
+  }
+
+  html[data-celular] .casca .cabecalho-logo {
+    min-width: 0;
+    padding: 0 4px;
+  }
+
+  html[data-celular] .cabecalho-logo svg {
+    height: 28px;
+  }
+
+  html[data-celular] .cabecalho-unidades {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  html[data-celular] .cabecalho-unidades .seletor,
+  html[data-celular] .cabecalho-unidades .seletor-texto {
+    min-width: 0;
+  }
+
+  html[data-celular] .cabecalho-unidades .seletor-texto {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* o tema fica no Meu perfil; o espaçador sai porque o seletor já ocupa o espaço livre */
+  html[data-celular] .cabecalho > .espacador-flex,
+  html[data-celular] .cabecalho-btn--tema,
+  html[data-celular] .cabecalho-usuario-textos,
+  html[data-celular] .cabecalho-usuario-seta {
+    display: none;
+  }
+
+  /* botão do usuário com 44px: o avatar (28px) + 8px de cada lado */
+  html[data-celular] .cabecalho-usuario {
+    padding: 8px;
+  }
+
+  /* menus do topo cabem na largura da tela e quebram o texto */
+  html[data-celular] .cabecalho .dropdown-menu {
+    max-width: calc(100% - 8px);
+    white-space: normal;
+  }
+
+  html[data-celular] .cabecalho-usuario + .dropdown-menu .dropdown-item {
+    min-height: var(--botao-altura);
+  }
 }

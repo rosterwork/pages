@@ -10,11 +10,21 @@
     </div>
   </div>
 
-  <!-- barra de comandos: à esquerda a ação da aba (só admin) -->
+  <!-- barra de comandos: à esquerda o grupo Administração (só admin), em todas as abas;
+       cada botão leva à aba dele e abre o painel de criação -->
   <div class="pagina-subcabecalho">
-    <button type="button" class="botao botao--primario oculto" id="btn-nova-ferias">Novas férias</button>
-    <button type="button" class="botao botao--primario oculto" id="btn-nova-licenca">Nova licença</button>
-    <button type="button" class="botao botao--primario oculto" id="btn-nova-dispensa">Nova dispensa</button>
+    <div class="dropdown acoes-admin oculto">
+      <button type="button" class="botao acoes-admin-gatilho">
+        <span>Administração</span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu acoes-admin-menu">
+        <span class="rotulo-secao acoes-admin-rotulo">Administração</span>
+        <button type="button" class="botao" id="btn-nova-ferias">Novas férias</button>
+        <button type="button" class="botao" id="btn-nova-licenca">Nova licença</button>
+        <button type="button" class="botao" id="btn-nova-dispensa">Nova dispensa</button>
+      </div>
+    </div>
   </div>
 
   <div class="pagina-corpo pagina-corpo--camada">

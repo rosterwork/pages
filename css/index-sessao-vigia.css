@@ -7,7 +7,7 @@
 
 /* caixa pequena, como o aviso */
 .modal--sessao {
-  width: 380px;
+  width: var(--modal-largura-pequeno);
 }
 
 /* corpo em linha: anel à esquerda, mensagem à direita */
@@ -48,7 +48,7 @@
 }
 
 .sessao-mensagem {
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   line-height: 1.45;
   color: var(--texto);
 }

@@ -9,7 +9,7 @@
   flex-shrink: 0;
   border-top: 1px solid var(--borda);
   background-color: var(--fundo-suave);
-  padding: 8px 16px;
+  padding: 8px var(--respiro-pagina);
 }
 
 /* ações alinhadas à direita (Cancelar + ação principal) */

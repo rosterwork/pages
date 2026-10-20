@@ -201,6 +201,7 @@
   function abrirPainel() {
     var painel = window.RosterWork.painel;
     if (!painel) return;
+    if (window.RosterWork.fecharDropdowns) window.RosterWork.fecharDropdowns();   // o botão mora no grupo Administração (no celular, um menu)
     painel.abrir({
       titulo: 'Novo usuário',
       aoFechar: function () { sujo = false; },

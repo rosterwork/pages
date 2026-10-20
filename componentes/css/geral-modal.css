@@ -2,12 +2,12 @@
    MODAL — componente compartilhado entre páginas
    Casca padronizada: véu + caixa + cabeçalho + corpo + rodapé.
    Só para aviso e confirmação — edição/criação de dados vai no
-   painel direito (REGRAS §4). Tamanho único (480px).
+   painel direito (REGRAS §4). Tamanho único (480px, --modal-largura).
    Comportamento: componentes/js/geral-modal.js
    ============================================================ */
 
 /* véu: cobre a tela e centraliza o modal. Aparece/some com fade
-   (opacity/visibility — exceção de transição para sobreposições, MANUAL §8) */
+   (opacity/visibility — exceção de transição para sobreposições, Guia visual › Camadas, movimento e foco) */
 .modal-veu {
   position: fixed;
   inset: 0;
@@ -30,8 +30,8 @@
 .modal {
   display: flex;
   flex-direction: column;
-  width: 480px;
-  max-width: calc(100% - 48px);
+  width: var(--modal-largura);
+  max-width: calc(100% - 2 * var(--modal-respiro));
   max-height: calc(100vh - 96px);
   background-color: var(--fundo-superficie);
   border: 1px solid var(--borda);
@@ -70,7 +70,7 @@
 /* texto corrido no corpo (ex.: a janela de ciência dos termos) */
 .modal-texto {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   color: var(--texto);
 }
 
@@ -87,4 +87,26 @@
   flex-shrink: 0;
   padding: 12px 16px;
   border-top: 1px solid var(--borda);
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   A largura vem do tema (a tela, menos o respiro de 16px); a altura
+   é limitada pela tela visível (o 100vh do celular conta a área
+   embaixo da barra do navegador). Os botões dividem a largura e os
+   que não cabem lado a lado descem de linha; um botão de texto
+   (ex.: o Desfazer do resumo) continua do tamanho do texto.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .modal {
+    max-height: calc(100% - 96px);
+  }
+
+  html[data-celular] .modal-rodape {
+    flex-wrap: wrap;
+  }
+
+  html[data-celular] .modal-rodape > .botao:not(.botao--texto) {
+    flex: 1 1 0;
+  }
 }

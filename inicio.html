@@ -11,7 +11,17 @@
     <section class="inicio-bloco">
       <div class="inicio-bloco-cabecalho">
         <span class="rotulo-secao">Avisos</span>
-        <button type="button" class="botao botao--pequeno oculto" id="btn-novo-aviso">Novo comunicado</button>
+        <!-- grupo Administração (só admin): o comunicado se cria também daqui -->
+        <div class="dropdown acoes-admin oculto">
+          <button type="button" class="botao acoes-admin-gatilho">
+            <span>Administração</span>
+            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+          </button>
+          <div class="dropdown-menu acoes-admin-menu">
+            <span class="rotulo-secao acoes-admin-rotulo">Administração</span>
+            <button type="button" class="botao" id="btn-novo-aviso">Novo comunicado</button>
+          </div>
+        </div>
       </div>
       <div class="inicio-avisos" id="inicio-avisos"></div>
     </section>

@@ -1,0 +1,802 @@
+/* ============================================================
+   PROGRAMADOR — GUIA VISUAL
+   O índice à esquerda (geral-layout-lateral + geral-lista) e o
+   documento à direita: seções com pranchetas (o palco pontilhado
+   com o exemplo vivo), tabelas de variáveis, certo e errado e as
+   medidas azuis (--anotacao) desenhadas pelo programador-guia.js.
+   A prancheta Celular recebe os papéis do celular pelo JS (lidos
+   do tema). Só o que é do guia; as peças mostradas usam as classes
+   reais dos componentes.
+   ============================================================ */
+
+/* ---- índice ---- */
+.guia-indice-titulo {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.guia-indice {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+}
+
+.guia-grupo {
+  padding: 12px 12px 4px;
+  color: var(--texto-fraco);
+}
+
+.guia-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 13px;
+  color: var(--texto);
+  text-align: left;
+}
+
+/* ---- documento ---- */
+.guia-documento {
+  padding: 24px 32px 32px;
+}
+
+.guia-secao {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 980px;
+}
+
+.guia-titulo {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.guia-texto {
+  margin: 0;
+  max-width: 720px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--texto);
+}
+
+/* as regras completas (o texto que a IA lê no lugar do manual) */
+.guia-regras {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0 0 0 16px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--texto);
+}
+
+.guia-regras code,
+.guia-texto code,
+.guia-tabela code {
+  font-size: 12px;
+  color: var(--texto-forte);
+}
+
+.guia-bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ---- pranchetas: o exemplo vivo no palco pontilhado ---- */
+.guia-pranchetas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+}
+
+/* o palco do celular tem a largura de um celular comum: 390px por dentro
+   (+ 32px de folga de cada lado + a borda), para o "100%" do celular ser de verdade */
+.guia-prancheta--celular .guia-palco {
+  width: calc(390px + 2 * 32px + 2px);
+}
+
+.guia-prancheta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.guia-palco {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 150px;
+  padding: 32px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-suave);
+  background-image: radial-gradient(var(--borda) 1px, transparent 1px);
+  background-size: 8px 8px;
+}
+
+/* palco de várias peças lado a lado (variações de um componente) */
+.guia-palco--vitrine {
+  flex-wrap: wrap;
+  gap: 16px 24px;
+}
+
+/* palco de peças empilhadas, alinhadas à esquerda */
+.guia-palco--pilha {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.guia-linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* vitrine com peças de alturas diferentes: alinhadas pelo topo */
+.guia-palco--topo {
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+/* uma peça da vitrine com a legenda embaixo */
+.guia-peca {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.guia-campo-exemplo {
+  width: 280px;
+}
+
+/* folga à esquerda para o número da medida de uma peça que ocupa a largura toda */
+.guia-folga {
+  display: flex;
+  justify-content: center;
+  width: calc(100% - 24px);
+  margin-left: 24px;
+}
+
+.guia-nota-exemplo {
+  width: 100%;
+  max-width: 480px;
+}
+
+/* o "errado" do seletor: esticado na largura toda */
+.guia-seletor-esticado {
+  width: 100%;
+}
+
+.guia-linha--topo {
+  align-items: flex-start;
+  gap: 24px;
+}
+
+/* o menu suspenso parado, para medir (o de verdade flutua) */
+.guia-menu-parado {
+  display: block;
+}
+
+/* um pedaço de página (cabeçalho, barra) dentro do palco; a margem da
+   esquerda guarda o lugar dos números das medidas */
+.guia-pagina-exemplo {
+  width: calc(100% - 24px);
+  margin-left: 24px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-superficie);
+}
+
+/* palco de peça mais larga que o documento (a barra inteira): rola para o lado */
+.guia-palco--rolavel {
+  justify-content: flex-start;
+  overflow-x: auto;
+}
+
+.guia-palco--rolavel .guia-pagina-exemplo {
+  flex-shrink: 0;
+  width: max-content;
+  min-width: calc(100% - 24px);
+}
+
+/* o painel de exemplo: a mesma gaveta, parada no palco, com altura para o corpo aparecer */
+.guia-painel-exemplo {
+  min-width: 0;
+  min-height: 320px;
+  border: 1px solid var(--borda);
+}
+
+.guia-legenda-exemplo {
+  padding: 12px;
+}
+
+/* lista e detalhe: o layout lateral de verdade, num quadro do palco */
+.guia-layout-exemplo {
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+}
+
+.guia-lista-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 13px;
+  color: var(--texto);
+  text-align: left;
+}
+
+/* listas de leitura, cartão, árvore: na largura que teriam na página */
+.guia-coluna-exemplo,
+.guia-cartao-exemplo {
+  width: 100%;
+}
+
+/* a margem da esquerda guarda o lugar dos números das medidas */
+.guia-arvore-exemplo {
+  width: calc(100% - 24px);
+  max-width: 688px;
+  margin-left: 24px;
+}
+
+/* o item do sino fora do menu do sino */
+.guia-sino-exemplo {
+  width: 360px;
+  padding: 4px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-superficie);
+}
+
+/* ---- caixas, tabelas, certo e errado ---- */
+.guia-colunas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.guia-caixa {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-superficie);
+}
+
+.guia-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.guia-tabela th {
+  padding: 4px 8px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--texto-suave);
+  background-color: var(--fundo-suave);
+}
+
+.guia-tabela td {
+  padding: 4px 8px;
+  border-top: 1px solid var(--borda);
+  color: var(--texto);
+  vertical-align: top;
+}
+
+.guia-tabela--larga {
+  font-size: 13px;
+}
+
+/* tabelas de cores: as mesmas colunas em todos os grupos */
+.guia-tabela--cores {
+  table-layout: fixed;
+}
+
+.guia-tabela--cores th:nth-child(1) { width: 48px; }
+.guia-tabela--cores th:nth-child(2) { width: 232px; }
+.guia-tabela--cores th:nth-child(3),
+.guia-tabela--cores th:nth-child(4) { width: 168px; }
+
+/* valor que muda no celular ou no escuro (o JS liga a classe) */
+.guia-muda {
+  font-weight: 700;
+  color: var(--texto-forte);
+}
+
+.guia-exemplo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.guia-legenda {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+/* ---- medidas azuis (traço + número), posicionadas pelo JS ---- */
+.guia-cota {
+  position: absolute;
+  left: var(--cota-x);
+  top: var(--cota-y);
+  pointer-events: none;
+}
+
+.guia-cota--horizontal {
+  width: var(--cota-tamanho);
+  min-height: 1px;
+  background-color: var(--anotacao);
+}
+
+.guia-cota--vertical {
+  width: 1px;
+  min-height: var(--cota-tamanho);
+  background-color: var(--anotacao);
+}
+
+/* as pontas do traço */
+.guia-cota--horizontal::before,
+.guia-cota--horizontal::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  width: 1px;
+  min-height: 7px;
+  background-color: var(--anotacao);
+}
+
+.guia-cota--horizontal::before { left: 0; }
+.guia-cota--horizontal::after { right: 0; }
+
+.guia-cota--vertical::before,
+.guia-cota--vertical::after {
+  content: '';
+  position: absolute;
+  left: -3px;
+  width: 7px;
+  min-height: 1px;
+  background-color: var(--anotacao);
+}
+
+.guia-cota--vertical::before { top: 0; }
+.guia-cota--vertical::after { bottom: 0; }
+
+.guia-cota-pilula {
+  position: absolute;
+  padding: 0 4px;
+  border-radius: var(--raio-pequeno);
+  background-color: var(--anotacao);
+  color: var(--anotacao-texto);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+/* número embaixo do traço horizontal (padrão) ou em cima (--acima) */
+.guia-cota--horizontal .guia-cota-pilula {
+  top: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.guia-cota--acima .guia-cota-pilula {
+  top: auto;
+  bottom: 5px;
+}
+
+/* número à esquerda do traço vertical (padrão) ou à direita (--direita) */
+.guia-cota--vertical .guia-cota-pilula {
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+}
+
+.guia-cota--direita .guia-cota-pilula {
+  right: auto;
+  left: 6px;
+}
+
+/* sem espaço ao lado (tela estreita): o número do traço vertical fica em cima dele */
+.guia-cota--numero-acima .guia-cota-pilula {
+  top: auto;
+  right: auto;
+  bottom: calc(100% + 4px);
+  left: -3px;
+  transform: none;
+}
+
+.guia-cota--direita.guia-cota--numero-acima .guia-cota-pilula {
+  left: auto;
+  right: -3px;
+}
+
+/* rótulo sem traço (letra, raio): alinhado pela borda direita da peça */
+.guia-cota--rotulo {
+  transform: translateX(-100%);
+}
+
+/* rótulo à direita da peça, no meio da altura (pilha de textos) */
+.guia-cota--ao-lado {
+  transform: translateY(-50%);
+}
+
+.guia-cota--rotulo .guia-cota-pilula {
+  position: static;
+  display: inline-block;
+}
+
+/* ---- telas: o desenho da casca ---- */
+.guia-palco--tela {
+  align-items: flex-start;
+  gap: 24px;
+  min-height: 300px;
+  padding: 24px 32px 32px 24px;
+}
+
+.guia-tela,
+.guia-tela-celular {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--texto-suave);
+}
+
+/* a margem da direita guarda o lugar do número da medida do topo */
+.guia-tela {
+  width: 100%;
+  max-width: 400px;
+  min-height: 250px;
+  margin-right: 24px;
+}
+
+.guia-tela-topo,
+.guia-tela-celular-topo {
+  display: flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 0 8px;
+  border: 1px dashed var(--borda-forte);
+  border-radius: var(--raio-pequeno);
+}
+
+.guia-tela-corpo {
+  display: flex;
+  flex: 1;
+  gap: 4px;
+}
+
+.guia-tela-menu {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  border: 1px dashed var(--borda-forte);
+  border-radius: var(--raio-pequeno);
+}
+
+.guia-tela-bloco {
+  display: flex;
+  flex: 1;
+  border: 1px solid var(--borda-forte);
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-superficie);
+}
+
+.guia-tela-pagina {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.guia-tela-faixa {
+  display: flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--borda);
+}
+
+.guia-tela-miolo {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--texto-fraco);
+}
+
+.guia-tela-painel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  border-left: 1px solid var(--borda-forte);
+  background-color: var(--fundo-suave);
+}
+
+.guia-tela-celular {
+  width: 140px;
+  min-height: 250px;
+  padding: 4px;
+  border: 1px solid var(--texto-fraco);
+  border-radius: var(--raio-medio);
+}
+
+.guia-tela-celular-bloco {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  border: 1px solid var(--borda-forte);
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-superficie);
+}
+
+.guia-tela-celular-barra {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 26px;
+  border: 1px dashed var(--borda-forte);
+  border-radius: var(--raio-pequeno);
+}
+
+.guia-tela-celular-bloco .guia-tela-faixa--rodape {
+  justify-content: flex-end;
+  border-top: 1px solid var(--borda);
+  border-bottom: 0;
+}
+
+/* ---- espaçamento: a régua (barras 3 vezes maiores para enxergar) ---- */
+.guia-regua {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+}
+
+.guia-regua-item {
+  display: grid;
+  grid-template-columns: 112px 32px 1fr;
+  align-items: center;
+  gap: 12px;
+}
+
+.guia-regua-barra {
+  justify-self: start;
+  min-height: 16px;
+  border-radius: var(--raio-pequeno);
+  background-color: var(--anotacao);
+}
+
+.guia-regua-barra--2 { width: 6px; }
+.guia-regua-barra--4 { width: 12px; }
+.guia-regua-barra--8 { width: 24px; }
+.guia-regua-barra--12 { width: 36px; }
+.guia-regua-barra--16 { width: 48px; }
+.guia-regua-barra--24 { width: 72px; }
+.guia-regua-barra--32 { width: 96px; }
+
+.guia-regua-numero {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--texto-forte);
+}
+
+.guia-regua-uso {
+  font-size: 13px;
+  color: var(--texto-suave);
+}
+
+/* ---- cores: amostra do papel no tema ligado agora ---- */
+.guia-amostra {
+  display: inline-block;
+  width: 24px;
+  min-height: 24px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pequeno);
+  vertical-align: middle;
+}
+
+.guia-amostra[data-cor="fundo-pagina"] { background-color: var(--fundo-pagina); }
+.guia-amostra[data-cor="fundo-superficie"] { background-color: var(--fundo-superficie); }
+.guia-amostra[data-cor="fundo-suave"] { background-color: var(--fundo-suave); }
+.guia-amostra[data-cor="fundo-medio"] { background-color: var(--fundo-medio); }
+.guia-amostra[data-cor="fundo-contraste"] { background-color: var(--fundo-contraste); }
+.guia-amostra[data-cor="fundo-contraste-hover"] { background-color: var(--fundo-contraste-hover); }
+.guia-amostra[data-cor="texto-forte"] { background-color: var(--texto-forte); }
+.guia-amostra[data-cor="texto"] { background-color: var(--texto); }
+.guia-amostra[data-cor="texto-suave"] { background-color: var(--texto-suave); }
+.guia-amostra[data-cor="texto-fraco"] { background-color: var(--texto-fraco); }
+.guia-amostra[data-cor="texto-debil"] { background-color: var(--texto-debil); }
+.guia-amostra[data-cor="texto-invertido"] { background-color: var(--texto-invertido); }
+.guia-amostra[data-cor="borda"] { background-color: var(--borda); }
+.guia-amostra[data-cor="borda-forte"] { background-color: var(--borda-forte); }
+.guia-amostra[data-cor="foco"] { background-color: var(--foco); }
+.guia-amostra[data-cor="erro"] { background-color: var(--erro); }
+.guia-amostra[data-cor="erro-fundo"] { background-color: var(--erro-fundo); }
+.guia-amostra[data-cor="erro-hover"] { background-color: var(--erro-hover); }
+.guia-amostra[data-cor="sucesso"] { background-color: var(--sucesso); }
+.guia-amostra[data-cor="sucesso-fundo"] { background-color: var(--sucesso-fundo); }
+.guia-amostra[data-cor="alerta"] { background-color: var(--alerta); }
+.guia-amostra[data-cor="alerta-fundo"] { background-color: var(--alerta-fundo); }
+.guia-amostra[data-cor="erro-fundo-forte"] { background-color: var(--erro-fundo-forte); }
+.guia-amostra[data-cor="sucesso-fundo-forte"] { background-color: var(--sucesso-fundo-forte); }
+.guia-amostra[data-cor="alerta-fundo-forte"] { background-color: var(--alerta-fundo-forte); }
+.guia-amostra[data-cor="veu-modal"] { background-color: var(--veu-modal); }
+.guia-amostra[data-cor="anotacao"] { background-color: var(--anotacao); }
+.guia-amostra[data-cor="anotacao-texto"] { background-color: var(--anotacao-texto); }
+.guia-amostra[data-cor="impressao-texto-forte"] { background-color: var(--impressao-texto-forte); }
+.guia-amostra[data-cor="impressao-texto"] { background-color: var(--impressao-texto); }
+.guia-amostra[data-cor="impressao-texto-suave"] { background-color: var(--impressao-texto-suave); }
+.guia-amostra[data-cor="impressao-borda"] { background-color: var(--impressao-borda); }
+.guia-amostra[data-cor="impressao-fundo"] { background-color: var(--impressao-fundo); }
+.guia-amostra[data-cor="impressao-papel"] { background-color: var(--impressao-papel); }
+
+/* ---- tipografia: uma linha por tamanho da escala ---- */
+.guia-tipo { color: var(--texto); }
+.guia-tipo--22 { font-size: 22px; font-weight: 600; color: var(--texto-forte); }
+.guia-tipo--18 { font-size: 18px; font-weight: 600; color: var(--texto-forte); }
+.guia-tipo--16 { font-size: 16px; font-weight: 600; color: var(--texto-forte); }
+.guia-tipo--14 { font-size: 14px; font-weight: 600; color: var(--texto-forte); }
+.guia-tipo--padrao { font-size: var(--fonte-padrao); }
+.guia-tipo--12 { font-size: 12px; color: var(--texto-suave); }
+.guia-tipo--11 { font-size: 11px; color: var(--texto-suave); }
+
+/* microetiqueta: a sigla do dia na grade */
+.guia-tipo--micro {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--texto-fraco);
+}
+
+/* ---- raios, bordas e sombras: as formas de amostra ---- */
+.guia-forma {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 128px;
+  min-height: 64px;
+  padding: 8px;
+  border: 1px solid var(--borda);
+  background-color: var(--fundo-superficie);
+  font-size: 11px;
+  color: var(--texto-suave);
+  text-align: center;
+}
+
+.guia-forma--raio-pequeno { border-radius: var(--raio-pequeno); }
+.guia-forma--raio-medio { border-radius: var(--raio-medio); }
+.guia-forma--raio-total { border-radius: var(--raio-total); }
+
+.guia-forma--circulo {
+  width: 64px;
+  border-radius: 50%;
+}
+
+.guia-forma--sombra-bloco { border-radius: var(--raio-medio); box-shadow: var(--sombra-bloco); }
+.guia-forma--sombra-flutuante { border-radius: var(--raio-medio); box-shadow: var(--sombra-flutuante); }
+.guia-forma--sombra-modal { border-radius: var(--raio-medio); box-shadow: var(--sombra-modal); }
+
+/* exceções documentadas: a canaleta do que foi mexido e o anel de 2px da célula escolhida */
+.guia-forma--canaleta { border-radius: var(--raio-pequeno); box-shadow: inset 2px 0 0 var(--borda-forte); }
+.guia-forma--anel { border-radius: var(--raio-pequeno); box-shadow: inset 0 0 0 2px var(--foco); }
+
+/* ---- logotipo ---- */
+.guia-logo {
+  height: 48px;
+  color: var(--texto-forte);
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   O índice vira uma faixa que rola para o lado, em cima do
+   documento; cada seção mostra só a prancheta Celular (a tela já
+   é a do celular) e as tabelas rolam para o lado.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .guia-layout {
+    flex-direction: column;
+  }
+
+  html[data-celular] .guia-layout > .geral-painel-esquerdo {
+    flex-shrink: 0;
+    width: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--borda);
+  }
+
+  html[data-celular] .guia-layout .geral-painel-esquerdo-cabecalho,
+  html[data-celular] .guia-grupo {
+    display: none;
+  }
+
+  html[data-celular] .guia-indice {
+    flex-direction: row;
+    gap: 4px;
+    padding: 8px var(--respiro-pagina);
+    overflow-x: auto;
+  }
+
+  html[data-celular] .guia-item {
+    width: auto;
+    padding: 0 12px;
+    white-space: nowrap;
+  }
+
+  html[data-celular] .guia-documento {
+    padding: 16px var(--respiro-pagina) 24px;
+  }
+
+  html[data-celular] .guia-pranchetas,
+  html[data-celular] .guia-colunas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  html[data-celular] .guia-prancheta:not(.guia-prancheta--celular) {
+    display: none;
+  }
+
+  html[data-celular] .guia-prancheta--celular .guia-palco {
+    width: auto;
+  }
+
+  /* peça de página ainda sem desenho de celular, mais larga que a tela: o palco rola para o lado */
+  html[data-celular] .guia-palco {
+    overflow-x: auto;
+  }
+
+  html[data-celular] .guia-sino-exemplo {
+    width: 100%;
+  }
+
+  /* os dois celulares desenhados, um embaixo do outro */
+  html[data-celular] .guia-palco--tela {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  html[data-celular] .guia-tabela {
+    display: block;
+    overflow-x: auto;
+  }
+
+  /* o painel de exemplo fica parado no palco (o painel de verdade cobre a tela no celular) */
+  html[data-celular] .guia-painel-exemplo {
+    position: relative;
+    inset: auto;
+    z-index: 1;
+  }
+
+  /* o campo de exemplo deixa lugar dos dois lados para os números das medidas */
+  html[data-celular] .guia-palco .guia-campo-exemplo {
+    width: calc(100% - 64px);
+  }
+}

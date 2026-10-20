@@ -366,8 +366,6 @@
     /* a Antiguidade tem a própria busca (o Salvar dela fica no rodapé da aba) */
     var buscaAntiguidade = conteudo.querySelector('#antiguidade-busca');
     if (buscaAntiguidade) buscaAntiguidade.classList.toggle('oculto', nome !== 'antiguidade');
-    var btnNovoUsuario = conteudo.querySelector('#btn-novo-usuario');
-    if (btnNovoUsuario) btnNovoUsuario.classList.toggle('oculto', !RosterWork.sessao.ehAdmin() || nome === 'antiguidade');
     if (nome === 'pendencias') carregarPendencias();
     if (nome === 'antiguidade' && window.RosterWork.usuariosAntiguidade) window.RosterWork.usuariosAntiguidade.mostrar();
   }
@@ -443,11 +441,11 @@
       window.RosterWork.usuariosExibir.ligarOrdem(conteudo, repintar);
     }
 
-    /* "Novo usuário" — abre pelo botão do cabeçalho da página */
+    /* "Novo usuário" — abre pelo botão do grupo Administração da barra */
     if (window.RosterWork.novoUsuario) window.RosterWork.novoUsuario.ligar(conteudo);
-    /* o botão só aparece para admin (a página Usuários é acessível a todos) */
-    var btnNovoUsuario = conteudo.querySelector('#btn-novo-usuario');
-    if (btnNovoUsuario) btnNovoUsuario.classList.toggle('oculto', !RosterWork.sessao.ehAdmin());
+    /* o grupo só aparece para admin, em todas as abas (a página Usuários é acessível a todos) */
+    var grupoAdmin = conteudo.querySelector('.acoes-admin');
+    if (grupoAdmin) grupoAdmin.classList.toggle('oculto', !RosterWork.sessao.ehAdmin());
 
     ligarAbas(conteudo);
 

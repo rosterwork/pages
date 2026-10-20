@@ -38,7 +38,7 @@
 /* ---------- VÉU DE CARREGAMENTO ---------- */
 /* elemento fixo dentro do container (que precisa ser position: relative); cobre tudo
    com o .giratorio centralizado. Entra na hora (transição none no estado visível) e
-   sai com fade — exceção de transição registrada no MANUAL §8 */
+   sai com fade — exceção de transição registrada no Guia visual › Camadas, movimento e foco */
 .carregando-veu {
   position: absolute;
   inset: 0;

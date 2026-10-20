@@ -4,7 +4,7 @@
    unidade marcada é um bloco cinza com o título dentro, e o conteúdo
    vai em bloquinhos brancos com contorno fino (sem sombra). Presos
    no alto ao rolar: a trilha, o título do bloco que está passando e
-   o título do bloquinho (quando tem). z-index interno (MANUAL §8).
+   o título do bloquinho (quando tem). z-index interno (Guia visual › Camadas, movimento e foco).
    Moldes no index.html · lógica: componentes/js/geral-arvore-unidades.js
    ============================================================ */
 
@@ -213,7 +213,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   font-weight: 600;
   color: var(--texto-forte);
 }
@@ -267,7 +267,7 @@
 .arvore-estado {
   padding: 24px 16px;
   text-align: center;
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   color: var(--texto-suave);
 }
 

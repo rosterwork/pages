@@ -9,13 +9,13 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  width: 218px;
-  min-height: 32px;
+  width: var(--seletor-largura);
+  min-height: var(--botao-altura);
   padding: 0 8px;
   border: 1px solid var(--borda-forte);
   border-radius: var(--raio-medio);
   background-color: var(--fundo-superficie);
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   font-weight: 500;
   color: var(--texto);
   user-select: none;
@@ -138,7 +138,7 @@
 }
 
 .arvore-nome {
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   font-weight: 600;
   color: var(--texto-forte);
   white-space: nowrap;

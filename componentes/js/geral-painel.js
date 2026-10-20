@@ -199,7 +199,7 @@
     return el;
   }
 
-  /* carregando do corpo: o painel é um container, então usa o círculo (MANUAL §8) */
+  /* carregando do corpo: o painel é um container, então usa o círculo (Guia visual › Vazio e carregando) */
   function criarCarregando() {
     return RosterWork.tpl('tpl-painel-carregando');
   }

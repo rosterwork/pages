@@ -12,7 +12,7 @@
 .faixa {
   position: sticky;
   top: 0;
-  z-index: 1;   /* empilhamento interno do sticky (MANUAL §8, faixa 1-9) */
+  z-index: 1;   /* empilhamento interno do sticky (Guia visual › Camadas, movimento e foco; faixa 1-9) */
   display: flex;
   align-items: center;
   gap: 8px;

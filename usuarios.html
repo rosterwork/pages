@@ -16,13 +16,23 @@
     </div>
   </div>
 
-  <!-- barra sempre presente (o conteúdo não "pula" ao trocar de aba): à esquerda a ação (Novo usuário, só admin);
-       à direita, na aba Efetivo, o botão Filtros (componente geral-filtros), a busca e, depois do traço, Ordem e Exibir -->
+  <!-- barra sempre presente (o conteúdo não "pula" ao trocar de aba): à esquerda o grupo Administração
+       (Novo usuário, só admin, em todas as abas); à direita, na aba Efetivo, o botão Filtros (componente
+       geral-filtros), a busca e, depois do traço, Ordem e Exibir -->
   <div class="pagina-subcabecalho">
-    <button type="button" class="botao botao--primario oculto" id="btn-novo-usuario">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-novo-usuario.svg#icone-novo-usuario"/></svg>
-      <span>Novo usuário</span>
-    </button>
+    <div class="dropdown acoes-admin oculto">
+      <button type="button" class="botao acoes-admin-gatilho">
+        <span>Administração</span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu acoes-admin-menu">
+        <span class="rotulo-secao acoes-admin-rotulo">Administração</span>
+        <button type="button" class="botao" id="btn-novo-usuario">
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-novo-usuario.svg#icone-novo-usuario"/></svg>
+          <span>Novo usuário</span>
+        </button>
+      </div>
+    </div>
     <span class="espacador-flex"></span>
 
     <div class="busca oculto" id="antiguidade-busca">

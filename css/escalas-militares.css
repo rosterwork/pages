@@ -4,10 +4,10 @@
    Cada UNIDADE selecionada vira uma linha-título (sticky) que
    recolhe/expande seus militares. Coluna do militar fixa à
    esquerda e cabeçalho dos dias fixo no topo. Padrão de blocos
-   (MANUAL §11): cada unidade é um bloco cinza arredondado com o
+   (Guia visual › Grade da escala): cada unidade é um bloco cinza arredondado com o
    título em cima e os militares numa tabela branca dentro.
    Os z-index 1–6 são o empilhamento interno do sticky desta
-   grade (exceção à escala 10/20/30/40; ver MANUAL §8).
+   grade (exceção à escala 10/20/30/40; ver Guia visual › Camadas, movimento e foco).
    Dados: js/escalas-dados.js · montagem: js/escalas-militares.js
    ============================================================ */
 
@@ -63,7 +63,7 @@
 }
 
 .escala-mil-dia-semana {
-  font-size: 9px;   /* microetiqueta: rótulo não-textual em caixa alta (MANUAL §5) */
+  font-size: 9px;   /* microetiqueta: rótulo não-textual em caixa alta (Guia visual › Tipografia) */
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -230,7 +230,7 @@
   text-overflow: ellipsis;
 }
 
-/* CPF é só exibição (identificador numérico não-textual) — entra na exceção de 9px (MANUAL §5) */
+/* CPF é só exibição (identificador numérico não-textual) — entra na exceção de 9px (Guia visual › Tipografia) */
 .escala-mil-pessoa-cpf {
   font-size: 9px;
   color: var(--texto-suave);

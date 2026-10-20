@@ -15,7 +15,7 @@ body {
 
 body {
   font-family: 'Montserrat', 'Segoe UI', sans-serif;
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   line-height: 1.45;
   color: var(--texto);
   background-color: var(--fundo-pagina);

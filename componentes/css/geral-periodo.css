@@ -19,7 +19,7 @@
   align-items: center;
   justify-content: center;
   min-width: 110px;
-  min-height: 32px;
+  min-height: var(--botao-altura);
   padding: 0 8px;
   font-size: 12px;
   font-weight: 600;

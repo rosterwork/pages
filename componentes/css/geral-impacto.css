@@ -43,7 +43,7 @@
 }
 
 .impacto-aviso-titulo {
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   font-weight: 500;
   color: var(--texto-forte);
 }

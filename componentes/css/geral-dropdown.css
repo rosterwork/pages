@@ -94,7 +94,7 @@
   border: none;
   border-radius: var(--raio-pequeno);
   background: none;
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   font-weight: 400;
   color: var(--texto);
   text-align: left;

@@ -53,3 +53,30 @@
   bottom: auto;
   transform: translateY(-50%);
 }
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   No toque o :hover fica preso depois de tocar no botão e a dica
+   ficaria parada na tela; por isso ela não aparece pelo :hover. Ela
+   aparece ao pressionar e segurar (classe .dica--toque, posta pelo
+   geral-dica.js), sem selecionar texto nem abrir o menu do navegador.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] [data-dica] {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  html[data-celular] [data-dica]:hover::after {
+    opacity: 0;
+    visibility: hidden;
+    transition: none;
+  }
+
+  html[data-celular] [data-dica].dica--toque::after {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.15s ease, visibility 0s;
+  }
+}

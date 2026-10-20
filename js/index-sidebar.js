@@ -32,11 +32,65 @@
     }
   }
 
+  /* folha "Mais" (só no celular): o "Mais" da barra de baixo abre o menu lateral como uma
+     folha de baixo para cima; ela fecha ao tocar no véu, ao escolher uma tela, no Esc e no
+     voltar do navegador. A navegação em si é a do roteador (os itens são os do menu) */
+  function ligarFolhaMais(casca) {
+    var botaoMais = document.querySelector('.barra-celular-mais');
+    var veu = document.querySelector('.sidebar-folha-veu');
+    var menu = document.querySelector('.sidebar');
+    if (!botaoMais || !menu) return;
+
+    function aberta() { return casca.classList.contains('casca--mais-aberto'); }
+
+    function abrir() {
+      casca.classList.add('casca--mais-aberto');
+      botaoMais.setAttribute('aria-expanded', 'true');
+    }
+
+    function fechar() {
+      if (!aberta()) return;
+      casca.classList.remove('casca--mais-aberto');
+      botaoMais.setAttribute('aria-expanded', 'false');
+    }
+
+    botaoMais.addEventListener('click', function () {
+      if (aberta()) fechar(); else abrir();
+    });
+    if (veu) veu.addEventListener('click', fechar);
+    menu.addEventListener('click', function (evento) {
+      if (evento.target.closest('.menu-item')) fechar();
+    });
+    document.addEventListener('keydown', function (evento) {
+      if (evento.key === 'Escape') fechar();
+    });
+    window.addEventListener('popstate', fechar);
+  }
+
+  /* o "Mais" mostra o mesmo número do item Pendências (que mora na folha): copia o
+     número e se ele aparece toda vez que o selo do item muda */
+  function espelharSeloPendencias() {
+    var origem = document.querySelector('.sidebar .menu-item[data-pagina="pendencias"] .menu-item-selo');
+    var destino = document.querySelector('.barra-celular-selo');
+    if (!origem || !destino || !window.MutationObserver) return;
+
+    function copiar() {
+      destino.textContent = origem.textContent;
+      destino.classList.toggle('oculto', origem.classList.contains('oculto'));
+    }
+
+    copiar();
+    new MutationObserver(copiar).observe(origem, { attributes: true, attributeFilter: ['class'], childList: true, characterData: true, subtree: true });
+  }
+
   function inicializar() {
     var casca = document.querySelector('.casca');
     var botao = document.querySelector('.sidebar-toggle');
 
     if (!casca || !botao) return;
+
+    ligarFolhaMais(casca);
+    espelharSeloPendencias();
 
     /* lê estado inicial das preferências salvas na sessão */
     var prefs = null;

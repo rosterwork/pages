@@ -9,7 +9,7 @@
    unidades alinhadas por linha (custom property --calendario-unidades).
    Componente compartilhado (Escala e Extrajornada).
    O z-index 2 é o empilhamento interno do sticky (exceção à
-   escala 10/20/30/40; ver MANUAL §8). Montagem:
+   escala 10/20/30/40; ver Guia visual › Camadas, movimento e foco). Montagem:
    componentes/js/geral-calendario-mes.js
    ============================================================ */
 
@@ -105,7 +105,7 @@
 /* faixa do topo do dia (número): GRUDA logo abaixo do cabeçalho dos dias (32px) e, com fundo opaco,
    cobre o conteúdo que rola por baixo — o número da data fica visível enquanto a semana está na tela e as
    unidades passam por trás, sem os textos se sobreporem. Confinada ao dia (grade iguala a altura das 7
-   células), então solta na virada da semana. z-index 1 = faixa interna do sticky, abaixo do cabeçalho (z 2; MANUAL §8) */
+   células), então solta na virada da semana. z-index 1 = faixa interna do sticky, abaixo do cabeçalho (z 2; Guia visual › Camadas, movimento e foco) */
 .geral-calendario-mes-dia-topo {
   position: sticky;
   top: 32px;
@@ -140,7 +140,7 @@
 
 .geral-calendario-mes--continuo .geral-calendario-mes-sigla {
   display: inline;
-  font-size: 9px;   /* microetiqueta: rótulo não-textual em caixa alta (MANUAL §5) */
+  font-size: 9px;   /* microetiqueta: rótulo não-textual em caixa alta (Guia visual › Tipografia) */
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -151,7 +151,7 @@
   color: var(--texto-debil);
 }
 
-/* ---------- variante com unidades (unidadesPorDia): padrão de blocos (MANUAL §11) ---------- */
+/* ---------- variante com unidades (unidadesPorDia): padrão de blocos (Guia visual › Grade da escala) ---------- */
 /* o cabeçalho segue as colunas dos dias (mesmo vão e margem); o fundo fica no container, que cresce
    até a largura mínima das colunas para cobrir também os vãos ao rolar na horizontal */
 .geral-calendario-mes--unidades .geral-calendario-mes-cabecalho {

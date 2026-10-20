@@ -192,7 +192,7 @@
 .extra-vol-cab {
   position: sticky;
   top: 0;
-  z-index: 1;   /* empilhamento interno do sticky (MANUAL §8, faixa 1-9) */
+  z-index: 1;   /* empilhamento interno do sticky (Guia visual › Camadas, movimento e foco; faixa 1-9) */
   min-height: 32px;
   padding: 8px 16px 4px;
   background-color: var(--fundo-superficie);
@@ -407,7 +407,7 @@
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: center;
-  gap: 2px 6px;
+  gap: 2px 4px;
   padding: 2px 4px 0;
 }
 .extra-cel-barras .escala-mes-grafico { min-width: 0; }   /* a barra encolhe na grade, sem esticar por cima do rótulo */

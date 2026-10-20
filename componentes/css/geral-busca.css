@@ -8,8 +8,8 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  width: 240px;
-  min-height: 32px;
+  width: var(--busca-largura);
+  min-height: var(--campo-altura);
   padding: 0 4px;
   border: 1px solid var(--borda-forte);
   border-radius: var(--raio-total);
@@ -30,7 +30,7 @@
   min-width: 0;
   border: none;
   background: none;
-  font-size: 13px;
+  font-size: var(--campo-fonte);
   color: var(--texto);
   outline: none;
 }

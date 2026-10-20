@@ -22,7 +22,7 @@
   align-items: center;
   column-gap: 16px;
   flex-shrink: 0;
-  padding: 0 16px;
+  padding: 0 var(--respiro-pagina);
   border-bottom: 1px solid var(--borda);
 }
 
@@ -61,7 +61,7 @@
   gap: 8px;
   min-height: 46px;
   flex-shrink: 0;
-  padding: 0 16px;
+  padding: 0 var(--respiro-pagina);
   border-bottom: 1px solid var(--borda);
   background-color: var(--fundo-superficie);
 }
@@ -76,19 +76,46 @@
   background-color: var(--borda-forte);
 }
 
+/* grupo ADMINISTRAÇÃO: as ações de administrador de uma barra (ou de um bloco, como o
+   Avisos do Início) num bloco cinza com o rótulo; a ação do militar fica fora, antes dele.
+   Nasce com .oculto e a página o mostra só ao admin (o servidor continua garantindo a
+   permissão). É um .dropdown: no computador o menu não tem caixa (display: contents) e o
+   bloco é desenhado no próprio grupo; no celular aparece só o botão "Administração", que
+   abre o menu (geral-dropdown) com as ações em linhas */
+.acoes-admin {
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 4px 4px 12px;
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-medio);
+}
+
+.acoes-admin > .acoes-admin-menu {
+  display: contents;
+}
+
+.acoes-admin-gatilho {
+  display: none;
+}
+
+.acoes-admin-rotulo {
+  color: var(--texto-fraco);
+}
+
 /* corpo rolável da página */
 .pagina-corpo {
   flex: 1 1 0;
   min-height: 0;
   overflow-y: auto;
-  padding: 16px;
+  padding: var(--respiro-pagina);
 }
 
 /* variante: corpo com o respiro do topo fixo, acima da rolagem, para os cabeçalhos
    sticky (ex.: a trilha da árvore de unidades) colarem sempre no mesmo ponto;
    a rolagem e o respiro lateral/inferior ficam no .pagina-corpo-rolagem */
 .pagina-corpo--camada {
-  --respiro-topo: 16px;   /* respiro fixo do topo */
+  --respiro-topo: var(--respiro-pagina);   /* respiro fixo do topo */
   overflow: visible;
   padding: var(--respiro-topo) 0 0;
   position: relative;
@@ -100,7 +127,7 @@
   flex: 1 1 0;
   min-height: 0;
   overflow-y: auto;
-  padding: 0 16px 16px;   /* sem padding-top: o respiro do topo é fixo no .pagina-corpo--camada (acima da rolagem) */
+  padding: 0 var(--respiro-pagina) var(--respiro-pagina);   /* sem padding-top: o respiro do topo é fixo no .pagina-corpo--camada (acima da rolagem) */
 }
 
 /* estado único (ex.: o giratório de carregando das árvores) centralizado na área
@@ -127,4 +154,46 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   O grupo Administração vira só o botão "Administração", que abre o
+   menu (geral-dropdown) com o rótulo como título e uma ação por linha.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .acoes-admin {
+    padding: 0;
+    background-color: transparent;
+  }
+
+  html[data-celular] .acoes-admin-gatilho {
+    display: inline-flex;
+  }
+
+  html[data-celular] .acoes-admin > .acoes-admin-menu {
+    display: none;
+  }
+
+  html[data-celular] .dropdown--aberto > .acoes-admin-menu {
+    display: block;
+  }
+
+  html[data-celular] .acoes-admin-rotulo {
+    display: block;
+    padding: 8px 12px 4px;
+  }
+
+  html[data-celular] .acoes-admin-menu .botao {
+    display: flex;   /* uma ação por linha */
+    justify-content: flex-start;
+    padding: 0 12px;
+    border-color: transparent;
+    border-radius: var(--raio-pequeno);
+    background-color: transparent;
+  }
+
+  html[data-celular] .acoes-admin-menu .botao:hover {
+    background-color: var(--fundo-medio);
+  }
 }

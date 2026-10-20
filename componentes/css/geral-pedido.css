@@ -5,7 +5,7 @@
    cada linha selecionável + "Selecionar tudo"); a variante
    .pedido--linha é o cartão clicável da Pendências.
    Por ser compartilhado, mora em componentes/ e os moldes ficam
-   no shell (index.html). MANUAL-VISUAL §11.
+   no shell (index.html). Guia visual › Listas de leitura e cartões.
    ============================================================ */
 
 .pedido-lista {
@@ -40,7 +40,7 @@
 }
 
 .pedido-quem {
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   font-weight: 500;
   color: var(--texto-forte);
 }
@@ -186,6 +186,6 @@ button.pedido-item:hover {
 .pedido-vazio {
   padding: 32px 16px;
   text-align: center;
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   color: var(--texto-suave);
 }

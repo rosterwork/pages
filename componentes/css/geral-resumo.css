@@ -34,7 +34,7 @@
 
 /* assunto: o que foi alterado (resumo.titulo) — ex.: nome da instalação, "Distribuição de DD/MM" */
 .resumo-assunto {
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   font-weight: 600;
   color: var(--texto-forte);
 }

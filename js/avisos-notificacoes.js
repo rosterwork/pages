@@ -82,21 +82,25 @@
       .catch(irPara);
   }
 
-  /* carrega os últimos 30 dias; devolve quantos avisos estão EM ABERTO
-     (é o número do subtítulo e o que decide se o "Marcar todas" aparece) */
+  /* carrega os últimos 30 dias; devolve { emAberto, informativos }: quantos avisos estão EM
+     ABERTO (o número ao lado do título) e se há aviso que só informa em aberto (o que decide
+     se o "Marcar todas" aparece: ele não apaga o que pede decisão, como no sino) */
   function carregar(lista, aoMudar) {
     return RW.apiFetch('/rest/v1/rpc/notificacoes_listar', { metodo: 'POST', corpo: { p_limite: 100, p_dias: 30 } })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (caixa) {
         var itens = (caixa && caixa.itens) || [];
         renderizar(lista, itens, aoMudar);
-        return (caixa && caixa.abertos && caixa.abertos.total) || 0;
+        return {
+          emAberto: (caixa && caixa.abertos && caixa.abertos.total) || 0,
+          informativos: itens.some(function (n) { return n.aberto && !n.acao; })
+        };
       })
       .catch(function () {
         var vazio = RosterWork.tpl('tpl-avisos-vazio');
         lista.textContent = '';
         if (vazio) { vazio.textContent = RW.mensagens.avisos.falhaCarregar; lista.appendChild(vazio); }
-        return 0;
+        return { emAberto: 0, informativos: false };
       });
   }
 

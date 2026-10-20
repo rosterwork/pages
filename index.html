@@ -66,7 +66,7 @@
         </svg>
       </div>
 
-      <div class="dropdown" id="dropdown-unidades">
+      <div class="dropdown cabecalho-unidades" id="dropdown-unidades">
         <button type="button" class="seletor">
           <svg class="icone seletor-icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-mapa-pin.svg#icone-mapa-pin"/></svg>
           <span class="seletor-texto" id="seletor-unidades-texto">Carregando</span>
@@ -86,7 +86,7 @@
 
       <div class="espacador-flex"></div>
 
-      <button type="button" class="cabecalho-btn" id="cabecalho-btn-tema" aria-label="Alternar tema claro ou escuro" data-dica="Tema escuro">
+      <button type="button" class="cabecalho-btn cabecalho-btn--tema" id="cabecalho-btn-tema" aria-label="Alternar tema claro ou escuro" data-dica="Tema escuro">
         <svg class="icone" width="16" height="16" id="cabecalho-icone-lua" aria-hidden="true"><use href="icones/icone-lua.svg#icone-lua" /></svg>
         <svg width="16" height="16" id="cabecalho-icone-sol" class="icone oculto" aria-hidden="true"><use href="icones/icone-sol.svg#icone-sol" /></svg>
       </button>
@@ -146,16 +146,27 @@
 
     <div class="casca-corpo">
 
-      <nav class="sidebar">
+      <!-- véu da folha "Mais" (só no celular): tocar nele fecha a folha -->
+      <div class="sidebar-folha-veu" aria-hidden="true"></div>
+
+      <!-- menu lateral; no celular vira a folha "Mais" (data-lugar-celular diz onde cada item mora no
+           celular: barra = na barra de baixo, mais = nesta folha, fora = não aparece) -->
+      <nav class="sidebar" id="menu-lateral">
+        <!-- topo da folha "Mais" (só no celular) -->
+        <div class="sidebar-folha-topo">
+          <span class="sidebar-folha-alca" aria-hidden="true"></span>
+          <span class="rotulo-secao sidebar-folha-titulo">Mais telas</span>
+        </div>
+
         <div class="sidebar-itens">
 
-          <button type="button" class="menu-item menu-item--selecionado" data-pagina="inicio" aria-label="Início">
+          <button type="button" class="menu-item menu-item--selecionado" data-pagina="inicio" data-lugar-celular="barra" aria-label="Início">
             <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-inicio.svg#icone-inicio" /></svg>
             <span class="menu-item-label">Início</span>
           </button>
 
           <!-- o que espera decisão (para todos); o número é o que falta decidir -->
-          <button type="button" class="menu-item" data-pagina="pendencias" aria-label="Pendências">
+          <button type="button" class="menu-item" data-pagina="pendencias" data-lugar-celular="mais" aria-label="Pendências">
             <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-pendencias.svg#icone-pendencias" /></svg>
             <span class="menu-item-label">Pendências</span>
             <span class="menu-item-selo oculto" aria-hidden="true"></span>
@@ -163,63 +174,63 @@
 
           <div class="sidebar-divisor"></div>
 
-          <button type="button" class="menu-item" data-pagina="escalas" aria-label="Escala">
+          <button type="button" class="menu-item" data-pagina="escalas" data-lugar-celular="barra" aria-label="Escala">
             <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-escalas.svg#icone-escalas" /></svg>
             <span class="menu-item-label">Escala</span>
           </button>
 
-          <button type="button" class="menu-item" data-pagina="trocas" aria-label="Trocas">
+          <button type="button" class="menu-item" data-pagina="trocas" data-lugar-celular="barra" aria-label="Trocas">
             <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-trocas.svg#icone-trocas" /></svg>
             <span class="menu-item-label">Trocas</span>
           </button>
 
-          <button type="button" class="menu-item" data-pagina="folgas" aria-label="Folgas">
+          <button type="button" class="menu-item" data-pagina="folgas" data-lugar-celular="barra" aria-label="Folgas">
             <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-folgas.svg#icone-folgas" /></svg>
             <span class="menu-item-label">Folgas</span>
           </button>
 
-          <button type="button" class="menu-item" data-pagina="extrajornada" aria-label="Extrajornada">
+          <button type="button" class="menu-item" data-pagina="extrajornada" data-lugar-celular="mais" aria-label="Extrajornada">
             <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-extrajornada.svg#icone-extrajornada" /></svg>
             <span class="menu-item-label">Extrajornada</span>
           </button>
 
-          <button type="button" class="menu-item" data-pagina="afastamentos" aria-label="Afastamentos">
+          <button type="button" class="menu-item" data-pagina="afastamentos" data-lugar-celular="mais" aria-label="Afastamentos">
             <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-afastamentos.svg#icone-afastamentos" /></svg>
             <span class="menu-item-label">Afastamentos</span>
           </button>
 
           <div class="sidebar-divisor"></div>
 
-          <button type="button" class="menu-item" data-pagina="postos" aria-label="Postos">
+          <button type="button" class="menu-item" data-pagina="postos" data-lugar-celular="mais" aria-label="Postos">
             <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-postos.svg#icone-postos" /></svg>
             <span class="menu-item-label">Postos</span>
           </button>
 
-          <button type="button" class="menu-item" data-pagina="distribuicao" aria-label="Distribuição">
+          <button type="button" class="menu-item" data-pagina="distribuicao" data-lugar-celular="fora" aria-label="Distribuição">
             <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-distribuicao.svg#icone-distribuicao" /></svg>
             <span class="menu-item-label">Distribuição</span>
           </button>
 
           <div class="sidebar-divisor"></div>
 
-          <button type="button" class="menu-item" data-pagina="usuarios" aria-label="Usuários">
+          <button type="button" class="menu-item" data-pagina="usuarios" data-lugar-celular="mais" aria-label="Usuários">
             <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-usuarios.svg#icone-usuarios" /></svg>
             <span class="menu-item-label">Usuários</span>
           </button>
 
-          <button type="button" class="menu-item" data-pagina="historico" data-admin aria-label="Histórico">
+          <button type="button" class="menu-item" data-pagina="historico" data-lugar-celular="fora" data-admin aria-label="Histórico">
             <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-historico.svg#icone-historico" /></svg>
             <span class="menu-item-label">Histórico</span>
           </button>
 
-          <button type="button" class="menu-item" data-pagina="ajustes" aria-label="Ajustes">
+          <button type="button" class="menu-item" data-pagina="ajustes" data-lugar-celular="mais" aria-label="Ajustes">
             <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-ajustes.svg#icone-ajustes" /></svg>
             <span class="menu-item-label">Ajustes</span>
           </button>
 
           <div class="sidebar-divisor" data-programador></div>
 
-          <button type="button" class="menu-item" data-pagina="programador" data-programador aria-label="Programador">
+          <button type="button" class="menu-item" data-pagina="programador" data-lugar-celular="mais" data-programador aria-label="Programador">
             <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-codigo.svg#icone-codigo" /></svg>
             <span class="menu-item-label">Programador</span>
             <span class="menu-item-selo oculto" aria-hidden="true"></span>
@@ -268,6 +279,35 @@
       </main>
 
     </div>
+
+    <!-- BARRA DE BAIXO (só no celular): as quatro telas mais usadas + "Mais", que abre o menu lateral
+         como folha. Os itens são .menu-item com data-pagina: o roteador liga e marca, como no menu lateral -->
+    <nav class="barra-celular">
+      <button type="button" class="menu-item barra-celular-item" data-pagina="inicio">
+        <span class="barra-celular-icone"><svg class="icone" width="22" height="22" aria-hidden="true"><use href="icones/icone-inicio.svg#icone-inicio" /></svg></span>
+        <span class="barra-celular-rotulo">Início</span>
+      </button>
+      <button type="button" class="menu-item barra-celular-item" data-pagina="escalas">
+        <span class="barra-celular-icone"><svg class="icone" width="22" height="22" aria-hidden="true"><use href="icones/icone-escalas.svg#icone-escalas" /></svg></span>
+        <span class="barra-celular-rotulo">Escala</span>
+      </button>
+      <button type="button" class="menu-item barra-celular-item" data-pagina="trocas">
+        <span class="barra-celular-icone"><svg class="icone" width="22" height="22" aria-hidden="true"><use href="icones/icone-trocas.svg#icone-trocas" /></svg></span>
+        <span class="barra-celular-rotulo">Trocas</span>
+      </button>
+      <button type="button" class="menu-item barra-celular-item" data-pagina="folgas">
+        <span class="barra-celular-icone"><svg class="icone" width="22" height="22" aria-hidden="true"><use href="icones/icone-folgas.svg#icone-folgas" /></svg></span>
+        <span class="barra-celular-rotulo">Folgas</span>
+      </button>
+      <!-- o número é o mesmo do item Pendências (copiado pelo js/index-sidebar.js) -->
+      <button type="button" class="barra-celular-item barra-celular-mais" aria-expanded="false" aria-controls="menu-lateral">
+        <span class="barra-celular-icone">
+          <svg class="icone" width="22" height="22" aria-hidden="true"><use href="icones/icone-mais-telas.svg#icone-mais-telas" /></svg>
+          <span class="menu-item-selo barra-celular-selo oculto" aria-hidden="true"></span>
+        </span>
+        <span class="barra-celular-rotulo">Mais</span>
+      </button>
+    </nav>
 
   </div>
 
@@ -597,7 +637,7 @@
     <div class="bloquinho"></div>
   </template>
 
-  <!-- a árvore é um container: carrega com o círculo, não com os pontinhos (MANUAL §8) -->
+  <!-- a árvore é um container: carrega com o círculo, não com os pontinhos (Guia visual › Vazio e carregando) -->
   <template id="tpl-arvore-carregando">
     <div class="arvore-estado arvore-estado--carregando">
       <div class="giratorio" aria-label="Carregando" role="status"></div>

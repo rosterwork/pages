@@ -16,7 +16,7 @@
 .antiguidade-lista--buscando .bloquinho-lista { display: flex; }
 .antiguidade-lista--buscando .bloquinho--recolhido .bloquinho-titulo { padding-bottom: 4px; }
 
-/* mexida e ainda não salva: a canaleta lateral da linha alterada (MANUAL §7) */
+/* mexida e ainda não salva: a canaleta lateral da linha alterada (Guia visual › Raios, bordas e sombras) */
 .antiguidade-linha--alterada {
   box-shadow: inset 2px 0 0 var(--borda-forte);
 }

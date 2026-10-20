@@ -52,12 +52,12 @@
   align-items: center;
   justify-content: center;
   min-width: 48px;
-  min-height: 32px;
+  min-height: var(--botao-altura);
   padding: 0 8px;
   border: 1px solid var(--borda-forte);
   border-radius: var(--raio-medio);
   background-color: var(--fundo-superficie);
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   color: var(--texto-forte);
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }

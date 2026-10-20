@@ -5,7 +5,7 @@
    (24 barras por hora pintadas num <canvas>, lendo as cores do tema)
    + a lista de militares de serviço. Não busca no banco nem escreve
    estilo CSS — exceção: pinta o canvas lendo o tema (REGRAS §3/§4 e
-   MANUAL §11).
+   Guia visual › Grade da escala).
    ============================================================ */
 (function () {
   'use strict';
@@ -163,7 +163,7 @@
     ctx.globalAlpha = 1;
   }
 
-  /* mini-gráfico de cobertura no topo da célula (barras por hora pintadas em <canvas>; MANUAL §11).
+  /* mini-gráfico de cobertura no topo da célula (barras por hora pintadas em <canvas>; Guia visual › Grade da escala).
      Só guarda os dados; o desenho (que precisa do tamanho real) fica em pintarGrafico */
   function montarGrafico(cobertura, maxUnidade, erro) {
     if (!(maxUnidade > 0)) return null;

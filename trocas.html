@@ -15,17 +15,27 @@
     </div>
   </div>
 
-  <!-- barra de comandos: à esquerda as ações, em todas as abas (Solicitar troca; Registrar troca, só admin) -->
+  <!-- barra de comandos: à esquerda as ações, em todas as abas (Solicitar troca, do militar;
+       o grupo Administração, só admin) -->
   <div class="pagina-subcabecalho">
     <button type="button" class="botao botao--primario" id="btn-solicitar-troca">
       <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-trocas.svg#icone-trocas"/></svg>
       <span>Solicitar troca</span>
     </button>
-    <!-- a administração registra a troca já aprovada, com a parte do E-protocolo (botão comum: a ação principal é Solicitar troca) -->
-    <button type="button" class="botao oculto" id="btn-registrar-troca">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg>
-      <span>Registrar troca</span>
-    </button>
+    <!-- a administração registra a troca já aprovada, com a parte do E-protocolo -->
+    <div class="dropdown acoes-admin oculto">
+      <button type="button" class="botao acoes-admin-gatilho">
+        <span>Administração</span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu acoes-admin-menu">
+        <span class="rotulo-secao acoes-admin-rotulo">Administração</span>
+        <button type="button" class="botao" id="btn-registrar-troca">
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg>
+          <span>Registrar troca</span>
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Todas: árvore de unidades (as trocas ficam na unidade de quem solicitou) -->

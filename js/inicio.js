@@ -163,10 +163,16 @@
 
     carregarAvisos();
 
+    /* o grupo Administração do bloco Avisos (Novo comunicado) só para o admin;
+       no celular é um menu (fecha antes de abrir o painel) */
+    var grupoAdmin = document.querySelector('.inicio-bloco .acoes-admin');
     var btnNovoAviso = document.getElementById('btn-novo-aviso');
-    if (btnNovoAviso && RW.inicioAviso && RW.inicioAviso.ehAdmin()) {
-      btnNovoAviso.classList.remove('oculto');
-      btnNovoAviso.addEventListener('click', function () { RW.inicioAviso.abrirNovo(carregarAvisos); });
+    if (grupoAdmin && btnNovoAviso && RW.inicioAviso && RW.inicioAviso.ehAdmin()) {
+      grupoAdmin.classList.remove('oculto');
+      btnNovoAviso.addEventListener('click', function () {
+        if (RW.fecharDropdowns) RW.fecharDropdowns();
+        RW.inicioAviso.abrirNovo(carregarAvisos);
+      });
     }
 
     return Promise.resolve();

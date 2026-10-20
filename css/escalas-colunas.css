@@ -4,10 +4,10 @@
    fixo no topo (as unidades); o nº de colunas vem da custom property
    --n-colunas. As células reusam `.escala-mes-celula` (miolo =
    escalas-celula.js), então aqui só entram a moldura da grade, o
-   cabeçalho e a coluna-rótulo. Padrão de blocos (MANUAL §11), como
+   cabeçalho e a coluna-rótulo. Padrão de blocos (Guia visual › Grade da escala), como
    a Agenda: cada dia é uma faixa cinza arredondada e cada célula um
    bloquinho branco, sem linhas. Os z-index 1–3 são o empilhamento
-   interno do sticky (exceção 10/20/30/40; MANUAL §8).
+   interno do sticky (exceção 10/20/30/40; Guia visual › Camadas, movimento e foco).
    O Colunas → Dias é o calendário contínuo (escalas-calendario.js).
    Montagem: js/escalas-colunas.js
    ============================================================ */
@@ -94,7 +94,7 @@
 }
 
 .escala-colunas-rotulo-semana {
-  font-size: 9px;   /* microetiqueta: rótulo não-textual em caixa alta (MANUAL §5) */
+  font-size: 9px;   /* microetiqueta: rótulo não-textual em caixa alta (Guia visual › Tipografia) */
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;

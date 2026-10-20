@@ -4,10 +4,11 @@
    Coluna da unidade fixa à esquerda e cabeçalho dos dias fixo no
    topo. As células dos dias reusam `.escala-mes-celula` (miolo =
    componente escalas-celula.js), então aqui só entram a moldura da
-   grade e a coluna/​cabeçalho próprios. Padrão de blocos (MANUAL
-   §11): cada unidade é uma faixa cinza arredondada e cada dia um
-   bloquinho branco, sem linhas. Os z-index 1–3 são o
-   empilhamento interno do sticky (exceção 10/20/30/40; MANUAL §8).
+   grade e a coluna/​cabeçalho próprios. Padrão de blocos (Guia
+   visual › Grade da escala): cada unidade é uma faixa cinza
+   arredondada e cada dia um bloquinho branco, sem linhas. Os
+   z-index 1–3 são o empilhamento interno do sticky (exceção
+   10/20/30/40; Guia visual › Camadas, movimento e foco).
    Montagem: js/escalas-semana.js
    ============================================================ */
 
@@ -74,7 +75,7 @@
 }
 
 .escala-semana-dia-semana {
-  font-size: 9px;   /* microetiqueta: rótulo não-textual em caixa alta (MANUAL §5) */
+  font-size: 9px;   /* microetiqueta: rótulo não-textual em caixa alta (Guia visual › Tipografia) */
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;

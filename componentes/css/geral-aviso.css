@@ -9,7 +9,7 @@
 
 /* o aviso é um modal pequeno */
 .modal--aviso {
-  width: 380px;
+  width: var(--modal-largura-pequeno);
 }
 
 /* corpo em linha: ícone à esquerda, mensagem à direita */
@@ -34,7 +34,7 @@
 }
 
 .aviso-mensagem {
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   line-height: 1.45;
   color: var(--texto);
 }
@@ -57,7 +57,7 @@
 .aviso-lista-item {
   display: flex;
   gap: 8px;
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   line-height: 1.45;
   color: var(--texto);
 }

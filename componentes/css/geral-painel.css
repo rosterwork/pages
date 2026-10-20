@@ -3,7 +3,8 @@
    Vive DENTRO do bloco de conteúdo, ao lado da página: não cobre
    o cabeçalho nem o menu — EMPURRA a página, que encolhe ao abrir
    (o `.conteudo` é uma linha; ver index-sidebar.css). Sem animação
-   de posição (aparece/some por classe — MANUAL §8). Largura 400px (larga: 560px).
+   de posição (aparece/some por classe — Guia visual › Camadas, movimento e foco). Largura 400px (larga: 560px),
+   pelos papéis --painel-largura e --painel-largura-largo do tema.
    Casca compartilhada (igual em todas as páginas); o conteúdo é
    montado por cada página com as peças do fim deste arquivo.
    Comportamento: componentes/js/geral-painel.js
@@ -13,10 +14,10 @@
 .painel-lateral {
   display: none;
   flex-direction: column;
-  width: 400px;
+  width: var(--painel-largura);
   flex-shrink: 0;
   min-height: 0;
-  /* z-index 1 (faixa 1–9, MANUAL §8): o painel precisa COBRIR conteúdo posicionado da
+  /* z-index 1 (faixa 1–9, Guia visual › Camadas, movimento e foco): o painel precisa COBRIR conteúdo posicionado da
      página que vaze por baixo dele — ex.: um botão com data-dica ganha position:relative
      (geral-dica) e, sendo posicionado, pintaria ACIMA do painel estático. Isto NÃO muda o
      "empurra, não sobrepõe" (o painel segue no fluxo, flex); só garante a cobertura.
@@ -33,7 +34,7 @@
 
 /* tamanho largo — conteúdo que precisa de mais espaço (ligado por config.largo) */
 .painel-lateral--largo {
-  width: 560px;
+  width: var(--painel-largura-largo);
 }
 
 /* cabeçalho, em duas linhas como o da página: a do título (48px; Ver/Editar ou
@@ -81,7 +82,7 @@
 }
 
 .painel-titulo-nome {
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   font-weight: 600;
   color: var(--texto-forte);
   white-space: nowrap;
@@ -195,7 +196,7 @@
 }
 
 .linha-info-valor {
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   font-weight: 500;
   color: var(--texto-forte);
   text-align: right;
@@ -220,7 +221,7 @@
 /* cabeçalho da seção colapsável: sticky no topo do corpo rolável do painel.
    O fundo sólido "sangra" até as bordas do corpo (margem negativa de 12px = o padding
    do corpo, recomposta no padding) para cobrir a faixa lateral e esconder o conteúdo
-   que passa por baixo — o recuo do texto fica igual. z-index na faixa 1–9 (MANUAL §8). */
+   que passa por baixo — o recuo do texto fica igual. z-index na faixa 1–9 (Guia visual › Camadas, movimento e foco). */
 .painel-secao-cabecalho {
   position: sticky;
   top: 0;
@@ -288,4 +289,41 @@
    gruda no rodapé quando sobra espaço; com rolagem, fica no fim e rola junto */
 .painel-secao--rodape {
   margin-top: auto;
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   O painel cobre a tela inteira, inclusive o topo e a barra de
+   baixo, e fecha no X. Camada 9 (o topo da faixa interna, Guia visual › Camadas, movimento e foco):
+   acima de qualquer parte da página e abaixo dos menus (10), dos
+   modais (20) e da dica (40), que seguem aparecendo por cima dele.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .painel-lateral {
+    position: fixed;
+    inset: 0;
+    z-index: 9;
+    border-left: none;
+  }
+
+  html[data-celular] .painel-cabecalho {
+    padding: 0 4px 0 12px;
+  }
+
+  html[data-celular] .painel-titulo-nome {
+    font-size: 16px;
+  }
+
+  html[data-celular] .painel-subtitulo {
+    font-size: 13px;
+  }
+
+  /* rodapé: os botões dividem a largura; os que não cabem lado a lado descem de linha */
+  html[data-celular] .painel-rodape {
+    flex-wrap: wrap;
+  }
+
+  html[data-celular] .painel-rodape > .botao:not(.botao--texto) {
+    flex: 1 1 0;
+  }
 }

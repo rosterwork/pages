@@ -1,7 +1,8 @@
 /* ============================================================
    PROGRAMADOR — MENSAGENS (só programador)
-   Liga as abas da página (Mensagens · Bugs; a aba Bugs mora em
-   programador-bugs.js). Lista os recados (recados_listar), filtra
+   Liga as abas da página (Mensagens · Bugs · Guia visual; a aba
+   Bugs mora em programador-bugs.js e o Guia visual em
+   programador-guia.js). Lista os recados (recados_listar), filtra
    por status, mostra o detalhe à direita (com o contexto e o bug
    ligado), permite mudar o status (manual), editar/salvar
    assunto+mensagem, criar lembretes e criar um bug a partir da
@@ -41,6 +42,7 @@
         aoMudarSubtitulo: atualizarSubtitulo
       });
     }
+    if (RosterWork.programadorGuia) RosterWork.programadorGuia.iniciar(conteudo);
     return carregar();
   }
 
@@ -54,6 +56,7 @@
       for (var i = 0; i < paineis.length; i++) {
         paineis[i].classList.toggle('oculto', paineis[i].getAttribute('data-aba-painel') !== abaAtual);
       }
+      if (abaAtual === 'guia' && RosterWork.programadorGuia) RosterWork.programadorGuia.mostrar();
       atualizarSubtitulo();
     });
   }
@@ -79,6 +82,7 @@
   function atualizarSubtitulo() {
     var sub = raiz.querySelector('.pagina-titulo-contagem');
     if (!sub) return;
+    if (abaAtual === 'guia') { sub.textContent = ''; return; }
     if (abaAtual === 'bugs' && RosterWork.programadorBugs) {
       sub.textContent = RosterWork.programadorBugs.subtitulo();
       return;

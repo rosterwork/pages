@@ -4,7 +4,7 @@
    folha por dia, as unidades em sequência, só a logo no alto e o
    site + "Página X de Y" no rodapé. O conteúdo é o do modo Dia
    (postos, funções, militares, horários, sem função, observações),
-   no padrão de blocos (MANUAL §11): a unidade é um bloco cinza com o
+   no padrão de blocos (Guia visual › Impressão da escala): a unidade é um bloco cinza com o
    título dentro e cada posto um bloquinho branco com contorno fino.
    O PDF é desenhado aqui, como o canvas do gráfico (exceção REGRAS
    §3/§4): cores lidas do tema (--impressao-*), medidas em pontos

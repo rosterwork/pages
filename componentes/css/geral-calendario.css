@@ -48,7 +48,7 @@
   padding: 0 8px;
   border-radius: var(--raio-pequeno);
   color: var(--texto-forte);
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   font-weight: 600;
 }
 

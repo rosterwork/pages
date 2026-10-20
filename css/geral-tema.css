@@ -118,6 +118,45 @@
   --sombra-modal:     0 20px 32px -8px rgb(0 0 0 / 0.16), 0 8px 16px -4px rgb(0 0 0 / 0.10);
 
   /* -------------------------------------------------------
+     Tamanhos da tela — medidas que mudam conforme o aparelho
+     (como o modo escuro troca só as cores). Componentes usam
+     o papel, nunca o número. Também mudam por aparelho:
+     --botao-altura, --campo-altura e --campo-fonte (tokens
+     do botão e do campo, abaixo).
+     ------------------------------------------------------- */
+  --fonte-padrao:            13px;   /* letra do texto padrão */
+  --respiro-pagina:          16px;   /* respiro do cabeçalho, da barra e do corpo da página */
+  --menu-largura:           180px;   /* menu lateral aberto */
+  --menu-largura-recolhido:  52px;   /* menu lateral recolhido (só ícones) */
+  --painel-largura:         400px;   /* painel lateral */
+  --painel-largura-largo:   560px;   /* painel lateral largo (config.largo) */
+  --modal-largura:          480px;   /* modal */
+  --modal-largura-pequeno:  380px;   /* aviso, data e sessão */
+  --modal-respiro:           24px;   /* distância mínima do modal às bordas da tela */
+  --busca-largura:          240px;   /* campo de busca */
+  --seletor-largura:        218px;   /* seletor de unidades */
+
+  /* valores no celular (até 767px): o bloco do celular, no fim deste
+     arquivo, troca cada papel pelo seu valor aqui. O Guia visual lê
+     estes mesmos nomes para desenhar a prancheta do celular */
+  --fonte-padrao-celular:            15px;
+  --respiro-pagina-celular:          12px;
+  --botao-altura-celular:            44px;
+  --botao-fonte-celular:             15px;
+  --campo-altura-celular:            44px;
+  --campo-fonte-celular:             16px;   /* 16px: menos que isso o iPhone dá zoom ao tocar no campo */
+  --campo-rotulo-fonte-celular:      13px;
+  --rotulo-secao-fonte-celular:      12px;
+  --modal-respiro-celular:           16px;
+  --painel-largura-celular:          100%;   /* o painel cobre a tela */
+  --painel-largura-largo-celular:    100%;
+  --modal-largura-celular:           100%;   /* na largura da tela, menos o respiro */
+  --modal-largura-pequeno-celular:   100%;
+  --busca-largura-celular:           100%;
+  --seletor-largura-celular:         100%;
+  --menu-altura-celular:             64px;   /* barra de baixo (o menu no celular) */
+
+  /* -------------------------------------------------------
      Espaçamentos de formulário
      ------------------------------------------------------- */
   --gap-campos:      8px;   /* gap de linha entre campos na grade do formulário */
@@ -133,6 +172,7 @@
   --campo-altura-multi:      64px;
   --campo-padding:            8px;
   --campo-erro-fonte:        11px;
+  --campo-fonte:             13px;   /* letra digitada nos campos e na busca */
 
   /* -------------------------------------------------------
      Tokens do rótulo de seção
@@ -190,4 +230,30 @@ html[data-tema="escuro"] {
   --alerta:              rgb(230, 178, 98);
   --alerta-fundo:        rgb(58,  47,  26);
   --alerta-fundo-forte:  rgb(84,  64,  30);
+}
+
+/* -------------------------------------------------------
+   Celular (até 767px) — redefine apenas os papéis de tamanho,
+   como o modo escuro redefine só as cores. Liga só com a marca
+   data-celular no <html> (js/index-sessao.js; por enquanto, só
+   para o programador)
+   ------------------------------------------------------- */
+@media (max-width: 767px) {
+  html[data-celular] {
+    --fonte-padrao:           var(--fonte-padrao-celular);
+    --respiro-pagina:         var(--respiro-pagina-celular);
+    --botao-altura:           var(--botao-altura-celular);
+    --botao-fonte:            var(--botao-fonte-celular);
+    --campo-altura:           var(--campo-altura-celular);
+    --campo-fonte:            var(--campo-fonte-celular);
+    --campo-rotulo-fonte:     var(--campo-rotulo-fonte-celular);
+    --rotulo-secao-fonte:     var(--rotulo-secao-fonte-celular);
+    --modal-respiro:          var(--modal-respiro-celular);
+    --painel-largura:         var(--painel-largura-celular);
+    --painel-largura-largo:   var(--painel-largura-largo-celular);
+    --modal-largura:          var(--modal-largura-celular);
+    --modal-largura-pequeno:  var(--modal-largura-pequeno-celular);
+    --busca-largura:          var(--busca-largura-celular);
+    --seletor-largura:        var(--seletor-largura-celular);
+  }
 }

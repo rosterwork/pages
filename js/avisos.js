@@ -5,9 +5,9 @@
    O que PEDE DECISÃO não mora aqui: fica na página Pendências
    (Avisos é o que se lê; Pendências, o que se decide).
    Este arquivo liga as abas, cuida dos comunicados e decide quais
-   botões do cabeçalho aparecem em cada aba. O admin cria pelo
-   "Novo comunicado" e remove pela lixeira, reusando o módulo
-   RosterWork.inicioAviso (com auditoria).
+   botões da barra aparecem (os mesmos em todas as abas). O admin cria
+   pelo "Novo comunicado" (grupo Administração) e remove pela lixeira,
+   reusando o módulo RosterWork.inicioAviso (com auditoria).
    Clona moldes; não cria HTML.
    ============================================================ */
 (function () {
@@ -71,6 +71,7 @@
     if (!listaComunicados || !RW.apiFetch) return Promise.resolve();
 
     var emAberto = 0;
+    var informativos = false;   // há aviso que só informa em aberto (o que o "Marcar todas" apaga)
 
     function escreverContagem() {
       if (!contagem) return;
@@ -78,10 +79,10 @@
         : (emAberto === 1 ? '1 em aberto' : emAberto + ' em aberto');
     }
 
-    /* os botões do cabeçalho mudam conforme a aba */
-    function ajustarCabecalho() {
-      if (btnNovo) btnNovo.classList.toggle('oculto', !(RosterWork.sessao.ehAdmin() && abaAtual === 'comunicados'));
-      if (btnLidas) btnLidas.classList.toggle('oculto', !(abaAtual === 'paramim' && emAberto > 0));
+    /* "Marcar todas como lidas" aparece em todas as abas quando há aviso que só informa em aberto
+       (decisão pendente não se apaga declarando que foi vista, como no sino) */
+    function ajustarBarra() {
+      if (btnLidas) btnLidas.classList.toggle('oculto', !informativos);
     }
 
     function carregarComunicados() {
@@ -94,11 +95,18 @@
     function carregarNotificacoes() {
       if (!RW.avisosNotificacoes) return Promise.resolve();
       return RW.avisosNotificacoes.carregar(listaNotificacoes, carregarNotificacoes)
-        .then(function (n) { emAberto = n; escreverContagem(); ajustarCabecalho(); });
+        .then(function (r) { emAberto = r.emAberto; informativos = r.informativos; escreverContagem(); ajustarBarra(); });
     }
 
+    /* o grupo Administração (Novo comunicado) só para o admin, em todas as abas;
+       no celular é um menu (fecha antes de abrir o painel) */
+    var grupoAdmin = conteudo.querySelector('.acoes-admin');
+    if (grupoAdmin) grupoAdmin.classList.toggle('oculto', !RosterWork.sessao.ehAdmin());
     if (btnNovo && RosterWork.sessao.ehAdmin()) {
-      btnNovo.addEventListener('click', function () { RW.inicioAviso.abrirNovo(carregarComunicados, 'Avisos'); });
+      btnNovo.addEventListener('click', function () {
+        if (RW.fecharDropdowns) RW.fecharDropdowns();
+        RW.inicioAviso.abrirNovo(carregarComunicados, 'Avisos');
+      });
     }
     if (btnLidas && RW.avisosNotificacoes) {
       btnLidas.addEventListener('click', function () {
@@ -109,7 +117,7 @@
       });
     }
 
-    /* abas do subcabeçalho (mesmo mecanismo das outras páginas) */
+    /* abas embaixo do título (mesmo mecanismo das outras páginas) */
     var trilho = conteudo.querySelector('#avisos-abas');
     var paineis = conteudo.querySelectorAll('[data-aba-painel]');
     if (trilho && RW.abas) {
@@ -118,7 +126,6 @@
         for (var i = 0; i < paineis.length; i++) {
           paineis[i].classList.toggle('oculto', paineis[i].getAttribute('data-aba-painel') !== abaAtual);
         }
-        ajustarCabecalho();
       });
     }
 

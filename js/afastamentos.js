@@ -4,8 +4,10 @@
    (listar_ferias · listar_licencas · listar_dispensas). Como a
    geral-arvore-unidades é única por página, a árvore da aba ativa é
    (re)montada na troca de aba. Os botões "Novas férias / Nova licença
-   / Nova dispensa" (só admin) abrem o painel de criação. Ao trocar de
-   aba com o painel aberto, ele é fechado (com aviso se houver dados).
+   / Nova dispensa" (grupo Administração, só admin, em todas as abas)
+   levam à aba deles e abrem o painel de criação. Trocar de aba ou abrir
+   outro "Novo" com o painel aberto fecha o painel (com aviso se houver
+   dados).
    ============================================================ */
 (function () {
   'use strict';
@@ -126,48 +128,46 @@
     });
   }
 
-  /* mostra só o botão "Novo/Nova ..." da aba ativa, e só para admin */
-  function ajustarBotoes(conteudo, aba) {
-    Object.keys(ABAS).forEach(function (nome) {
-      var btn = conteudo.querySelector(ABAS[nome].botao);
-      if (btn) btn.classList.toggle('oculto', !(nome === aba && RosterWork.sessao.ehAdmin()));
-    });
-  }
-
   function aplicarAba(conteudo, alvo) {
     var paineis = conteudo.querySelectorAll('[data-aba-painel]');
     for (var i = 0; i < paineis.length; i++) {
       paineis[i].classList.toggle('oculto', paineis[i].getAttribute('data-aba-painel') !== alvo);
     }
-    ajustarBotoes(conteudo, alvo);
     if (ABAS[alvo]) montarArvore(conteudo, alvo);
+  }
+
+  /* com o painel de criação aberto, fecha antes de seguir (confirma o descarte se houver dados);
+     vale para a troca de aba e para os botões "Novo/Nova ..." */
+  function fecharPainelESeguir(seguir) {
+    if (!RosterWork.painel || !RosterWork.painel.estaAberto()) { seguir(); return; }
+    var sujo = !!(RosterWork.afastamentoSujo && RosterWork.afastamentoSujo());
+    if (!sujo || !RosterWork.confirmar) {
+      RosterWork.painel.fechar();
+      seguir();
+      return;
+    }
+    RosterWork.confirmar({
+      tipo: 'aviso',
+      mensagem: RosterWork.mensagens.edicao.sairSemSalvar,
+      textoConfirmar: RosterWork.mensagens.botoes.sairSemSalvar,
+      textoCancelar: RosterWork.mensagens.botoes.continuarEditando,
+      aoConfirmar: function () { RosterWork.painel.fechar(); seguir(); }
+    });
   }
 
   function ligarAbas(conteudo) {
     var trilho = conteudo.querySelector('#afastamentos-abas');
     if (!trilho || !window.RosterWork.abas) return;
 
-    /* guarda: com o painel de criação aberto, trocar de aba fecha o painel
-       (confirma o descarte se houver dados). Captura: roda antes do geral-abas. */
+    /* guarda: com o painel aberto, a troca de aba espera o painel fechar.
+       Captura: roda antes do geral-abas. */
     trilho.addEventListener('click', function (e) {
       if (!RosterWork.painel || !RosterWork.painel.estaAberto()) return;
       var aba = e.target.closest('.aba');
       if (!aba) return;
       e.preventDefault();
       e.stopPropagation();
-      var sujo = !!(RosterWork.afastamentoSujo && RosterWork.afastamentoSujo());
-      if (!sujo || !RosterWork.confirmar) {
-        RosterWork.painel.fechar();
-        aba.click();   // painel fechado: agora o geral-abas troca normalmente
-        return;
-      }
-      RosterWork.confirmar({
-        tipo: 'aviso',
-        mensagem: RosterWork.mensagens.edicao.sairSemSalvar,
-        textoConfirmar: RosterWork.mensagens.botoes.sairSemSalvar,
-        textoCancelar: RosterWork.mensagens.botoes.continuarEditando,
-        aoConfirmar: function () { RosterWork.painel.fechar(); aba.click(); }
-      });
+      fecharPainelESeguir(function () { aba.click(); });   // painel fechado: agora o geral-abas troca normalmente
     }, true);
 
     window.RosterWork.abas.ligar(trilho, function (aba) {
@@ -175,19 +175,28 @@
     });
   }
 
+  /* "Novo/Nova ...": leva à aba do tipo (o registro criado aparece na lista certa) e abre o painel */
+  function abrirNovo(conteudo, nome) {
+    var mod = window.RosterWork[ABAS[nome].modulo];
+    if (!mod || !mod.abrirNovo) return;
+    if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();   // no celular o grupo é um menu
+    fecharPainelESeguir(function () {
+      var aba = conteudo.querySelector('#afastamentos-abas .aba[data-aba="' + nome + '"]');
+      if (aba && !aba.classList.contains('aba--ativa')) aba.click();
+      mod.abrirNovo();
+    });
+  }
+
   function iniciar(conteudo) {
     ligarAbas(conteudo);
-    /* liga cada botão "Novo/Nova ..." ao abrirNovo do seu módulo */
+    /* o grupo Administração (os três "Novo/Nova ...") só para o admin, em todas as abas */
+    var grupoAdmin = conteudo.querySelector('.acoes-admin');
+    if (grupoAdmin) grupoAdmin.classList.toggle('oculto', !RosterWork.sessao.ehAdmin());
     Object.keys(ABAS).forEach(function (nome) {
       var btn = conteudo.querySelector(ABAS[nome].botao);
-      var modulo = ABAS[nome].modulo;
-      if (btn) btn.addEventListener('click', function () {
-        var mod = window.RosterWork[modulo];
-        if (mod && mod.abrirNovo) mod.abrirNovo();
-      });
+      if (btn) btn.addEventListener('click', function () { abrirNovo(conteudo, nome); });
     });
     /* a aba Licenças começa ativa (ver afastamentos.html) */
-    ajustarBotoes(conteudo, 'licencas');
     return montarArvore(conteudo, 'licencas');
   }
 

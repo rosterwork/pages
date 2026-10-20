@@ -24,7 +24,7 @@
 /* item do índice: a casca visual vem de .lista-item (barra de acento no ativo) */
 .manual-item {
   display: block;
-  padding: 6px 12px;
+  padding: 8px 12px;
   color: var(--texto);
   text-decoration: none;
   font-size: 13px;
@@ -39,7 +39,7 @@
 .manual-folha {
   max-width: 820px;
   margin: 0;
-  padding: 32px 40px;
+  padding: 32px;
   font-size: 14px;
   line-height: 1.55;
   counter-reset: manual-parte;
@@ -61,7 +61,7 @@
 /* seções — numeração automática (contador CSS) das partes e subseções */
 .manual-secao { margin-bottom: 32px; scroll-margin-top: 16px; counter-reset: manual-sub; }
 .manual-secao > h2 {
-  font-size: 20px; font-weight: 700; color: var(--texto-forte);
+  font-size: 18px; font-weight: 700; color: var(--texto-forte);
   border-bottom: 1px solid var(--borda); padding-bottom: 8px; margin: 0 0 16px;
 }
 .manual-secao > h2::before { counter-increment: manual-parte; content: counter(manual-parte) ". "; }
@@ -294,7 +294,7 @@
   color: var(--texto-fraco);
 }
 .manual-turno-linha { display: flex; gap: 0; width: 100%; }
-.manual-turno-seg { min-width: 0; padding: 10px 6px; text-align: center; font-size: 12px; }
+.manual-turno-seg { min-width: 0; padding: 8px; text-align: center; font-size: 12px; }
 .manual-turno-seg--1 { flex: 1 1 0; }
 .manual-turno-seg--2 { flex: 2 1 0; }
 .manual-turno-seg--3 { flex: 3 1 0; }

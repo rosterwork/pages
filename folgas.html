@@ -14,17 +14,26 @@
     </div>
   </div>
 
-  <!-- barra sempre presente: à esquerda a ação da aba (Minhas folgas: Solicitar folga; Equipe: Dar folga),
-       à direita os controles da Equipe; o conteúdo não "pula" ao trocar de aba -->
+  <!-- barra sempre presente: à esquerda as ações, em todas as abas (Solicitar folga, do militar;
+       o grupo Administração com Dar folga, só admin), depois os controles da Equipe; à direita a busca -->
   <div class="pagina-subcabecalho">
     <button type="button" class="botao botao--primario" id="btn-solicitar-folga">
       <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-folgas.svg#icone-folgas"/></svg>
       <span>Solicitar folga</span>
     </button>
-    <button type="button" class="botao botao--primario oculto" id="btn-dar-folga">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-folgas.svg#icone-folgas"/></svg>
-      <span>Dar folga</span>
-    </button>
+    <div class="dropdown acoes-admin oculto">
+      <button type="button" class="botao acoes-admin-gatilho">
+        <span>Administração</span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu acoes-admin-menu">
+        <span class="rotulo-secao acoes-admin-rotulo">Administração</span>
+        <button type="button" class="botao" id="btn-dar-folga">
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-folgas.svg#icone-folgas"/></svg>
+          <span>Dar folga</span>
+        </button>
+      </div>
+    </div>
 
     <!-- controles da aba Equipe, à esquerda: a escolha Saldos/Histórico e, no Histórico, o período -->
     <div class="folgas-controles oculto" data-controles="equipe">

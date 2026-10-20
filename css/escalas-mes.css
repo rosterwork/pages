@@ -2,12 +2,12 @@
    ESCALAS — modo Mês / Agenda
    Grade: dias nas linhas, unidades (CIA/CIBM/PEL) nas colunas.
    Cabeçalho das unidades fixo no topo e coluna de data fixa à
-   esquerda. Padrão de blocos (MANUAL §11): cada dia é uma faixa
+   esquerda. Padrão de blocos (Guia visual › Grade da escala): cada dia é uma faixa
    cinza arredondada e cada célula um bloquinho branco, sem linhas.
    A célula (.escala-mes-celula) é a mesma da Semana, do Colunas, do
    Calendário e da Extrajornada.
    Os z-index 1/2/3 são o empilhamento interno do sticky desta
-   grade (exceção à escala 10/20/30/40; ver MANUAL §8).
+   grade (exceção à escala 10/20/30/40; ver Guia visual › Camadas, movimento e foco).
    Dados: js/escalas-dados.js · montagem: js/escalas-mes.js
    ============================================================ */
 
@@ -112,7 +112,7 @@
 }
 
 .escala-mes-data-semana {
-  font-size: 9px;   /* microetiqueta: rótulo não-textual em caixa alta (MANUAL §5) */
+  font-size: 9px;   /* microetiqueta: rótulo não-textual em caixa alta (Guia visual › Tipografia) */
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -177,13 +177,13 @@
   flex-shrink: 0;
   height: 18px;
   padding: 2px 4px 0;
-  cursor: none;   /* ponteiro oculto sobre o gráfico — a barra da hora apontada, em destaque, marca a hora (MANUAL §8) */
+  cursor: none;   /* ponteiro oculto sobre o gráfico — a barra da hora apontada, em destaque, marca a hora (Guia visual › Camadas, movimento e foco) */
 }
 
 /* as 24 barras por hora (corpo claro na cor do estado + linha forte no topo; a da hora com o mouse
    em cima fica forte) são pintadas no <canvas> pelo escalas-celula.js; o canvas não herda var(),
    então o JS lê do tema as cores cheias --sucesso/--alerta/--erro (o corpo claro é a mesma cor
-   com transparência). Ver MANUAL §11 */
+   com transparência). Ver Guia visual › Grade da escala */
 .escala-mes-grafico-canvas {
   display: block;
   width: 100%;

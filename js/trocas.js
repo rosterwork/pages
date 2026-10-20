@@ -210,11 +210,13 @@
     carregarAba(estado.aba);
   }
 
-  /* Solicitar e Registrar (só admin): os botões da barra abrem o formulário no painel lateral */
+  /* Solicitar e Registrar (só admin): os botões da barra abrem o formulário no painel lateral;
+     o Registrar fica no grupo Administração, que no celular é um menu (fecha antes de abrir) */
   function abrirSolicitar() {
     if (RW.trocasSolicitar) RW.trocasSolicitar.abrir();
   }
   function abrirRegistrar() {
+    if (RW.fecharDropdowns) RW.fecharDropdowns();
     if (RW.trocasSolicitar) RW.trocasSolicitar.abrir({ registrar: true });
   }
 
@@ -237,11 +239,10 @@
 
     var btn = conteudo.querySelector('#btn-solicitar-troca');
     if (btn) btn.addEventListener('click', abrirSolicitar);
+    var grupoAdmin = conteudo.querySelector('.acoes-admin');
+    if (grupoAdmin) grupoAdmin.classList.toggle('oculto', !contexto.ehAdmin);
     var btnRegistrar = conteudo.querySelector('#btn-registrar-troca');
-    if (btnRegistrar) {
-      btnRegistrar.classList.toggle('oculto', !contexto.ehAdmin);
-      btnRegistrar.addEventListener('click', abrirRegistrar);
-    }
+    if (btnRegistrar) btnRegistrar.addEventListener('click', abrirRegistrar);
 
     if (RW.trocasSolicitar) RW.trocasSolicitar.ligar({
       aoSolicitar: function () { irParaAba('minhas'); },

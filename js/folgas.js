@@ -1,10 +1,11 @@
 /* ============================================================
    FOLGAS — orquestrador da página
    Liga as abas (Minhas folgas · Equipe · Pendências), a alternância
-   Saldos/Histórico da Equipe, e monta os módulos. A ação da aba fica
-   à esquerda do subcabeçalho: Minhas folgas = "Solicitar folga"
-   (autosserviço); Equipe = "Dar folga" (só admin). Conceder e ajustar
-   também vivem no painel do militar. A aba Pendências (só admin) é
+   Saldos/Histórico da Equipe, e monta os módulos. As ações ficam à
+   esquerda do subcabeçalho, em todas as abas: "Solicitar folga"
+   (autosserviço) e, no grupo Administração (só admin), "Dar folga".
+   Conceder e ajustar também vivem no painel do militar.
+   A aba Pendências (só admin) é
    a fila dos pedidos de folga (geral-fila), a mesma da página
    Pendências.
    Registra RosterWork.paginas.folgas = { iniciar }.
@@ -33,12 +34,6 @@
     painelVisivel('equipe-saldos', eqSaldos);
     painelVisivel('equipe-historico', eqHist);
     painelVisivel('pendencias', a === 'pendencias');
-
-    /* a ação da aba: Solicitar folga nas Minhas folgas; Dar folga na Equipe (só admin) */
-    var btnSolicitar = document.getElementById('btn-solicitar-folga');
-    if (btnSolicitar) btnSolicitar.classList.toggle('oculto', a !== 'minhas');
-    var btnDar = document.getElementById('btn-dar-folga');
-    if (btnDar) btnDar.classList.toggle('oculto', !(a === 'equipe' && ctx && ctx.admin));
 
     var ctrls = document.querySelector('.folgas-controles[data-controles="equipe"]');
     if (ctrls) ctrls.classList.toggle('oculto', a !== 'equipe');
@@ -108,10 +103,17 @@
     }) : null;
     if (fila) RW.fila.contar().then(function (c) { escreverSeloPendencias(c.aprovar.folga || 0); });
 
+    /* as ações valem em todas as abas; o grupo Administração (Dar folga) só para o admin,
+       e no celular é um menu (fecha antes de abrir o painel) */
     var btnSolicitar = conteudo.querySelector('#btn-solicitar-folga');
     if (btnSolicitar) btnSolicitar.addEventListener('click', function () { if (RW.folgasMinhas) RW.folgasMinhas.solicitar(); });
+    var grupoAdmin = conteudo.querySelector('.acoes-admin');
+    if (grupoAdmin) grupoAdmin.classList.toggle('oculto', !ctx.admin);
     var btnDar = conteudo.querySelector('#btn-dar-folga');
-    if (btnDar) btnDar.addEventListener('click', function () { if (RW.folgasPainel) RW.folgasPainel.abrirFormFolga({ modo: 'dar' }); });
+    if (btnDar) btnDar.addEventListener('click', function () {
+      if (RW.fecharDropdowns) RW.fecharDropdowns();
+      if (RW.folgasPainel) RW.folgasPainel.abrirFormFolga({ modo: 'dar' });
+    });
 
     var modoTrilho = conteudo.querySelector('#folgas-equipe-modo');
     if (RW.abas && modoTrilho) RW.abas.ligar(modoTrilho, function (aba) {
