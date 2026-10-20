@@ -13,11 +13,15 @@
     return acc;
   }
 
-  /* Cria um filtro em árvore de checkbox. O interruptor mestre "Todos" (fora da
-     árvore, acima de uma divisória) fica marcado quando NADA ou TUDO está selecionado;
-     clicar nele limpa. Grupos marcam/desmarcam o grupo (com parcial); folhas marcam 1 valor.
-     config: { arvoreEl, mestreEl, gatilhoEl, triggerEl, limparEl, rotuloVazio, plural, onChange }
-     Devolve { definir(arvore), selecionados(), temFiltro() }. */
+  /* Cria um filtro em árvore de checkbox. Grupos marcam/desmarcam o grupo (com parcial);
+     folhas marcam 1 valor. O interruptor mestre "Todos" (fora da árvore, acima de uma
+     divisória) vale para as opções NORMAIS: marcado = todas elas (nada escolhido).
+     Opção com `separado: true` (ex.: Inativos, Afastamentos) fica depois de uma divisória,
+     fora do "Todos", e é um ACRÉSCIMO: "Todos" + ela = tudo e mais ela. Desmarcar o "Todos"
+     com uma separada marcada = só as separadas. A seleção nunca fica vazia: sem nada,
+     volta ao "Todos".
+     config: { arvoreEl, mestreEl, gatilhoEl, triggerEl, limparEl, rotuloVazio, plural, colapsarTudo, onChange }
+     Devolve { definir(arvore), passa(valor), temFiltro(), desmarcar(valores), limpar(), resumo() }. */
   function criar(config) {
     var arvoreEl = config.arvoreEl;
     var mestreEl = config.mestreEl || null;
@@ -28,19 +32,43 @@
     var plural = config.plural || 'itens';
     var onChange = config.onChange || function () {};
 
-    var selecionados = new Set();
-    var rotulos = {};      /* valor -> rótulo (resumo de 1 selecionado) */
+    var selecionados = new Set();   /* as normais escolhidas (vazio = "Todos") e as separadas marcadas */
+    var semNormais = false;         /* "Todos" desmarcado com só separadas: nenhuma normal passa */
     var pintores = [];     /* repintam as caixas da árvore conforme a seleção */
-    var totalFolhas = 0;   /* folhas que contam para "Todos" (exclui as separadas) */
+    var totalFolhas = 0;   /* folhas normais (as que contam para "Todos") */
     var separadas = new Set();   /* valores fora do "Todos" (ex.: Inativos) — divisória acima */
-    var colapsarTudo = !!config.colapsarTudo;   /* marcar todos os normais = limpar (só "Todos" fica) */
+    var colapsarTudo = !!config.colapsarTudo;   /* marcar todas as normais = "Todos" (elas se desmarcam) */
     var assinatura = '';   /* evita reconstruir o DOM quando a árvore não muda */
+    var arvoreAtual = [];  /* a última árvore definida (o resumo agrupa por ela) */
 
-    /* quantos dos NORMAIS (não separados) estão selecionados */
-    function normaisSelecionados() {
+    function normaisMarcadas() {
       var n = 0;
       selecionados.forEach(function (v) { if (!separadas.has(v)) n++; });
       return n;
+    }
+
+    function separadasMarcadas() {
+      var n = 0;
+      selecionados.forEach(function (v) { if (separadas.has(v)) n++; });
+      return n;
+    }
+
+    function tirarNormais() {
+      Array.from(selecionados).forEach(function (v) { if (!separadas.has(v)) selecionados.delete(v); });
+    }
+
+    /* "Todos" (as normais todas): nada escolhido entre as normais (ou todas, fora do modo colapsar) */
+    function todosNormais() {
+      if (semNormais) return false;
+      var n = normaisMarcadas();
+      return n === 0 || (!colapsarTudo && n === totalFolhas);
+    }
+
+    /* depois de cada mudança: todas as normais marcadas viram "Todos" (modo colapsar); escolher uma
+       normal desfaz o "só separadas"; e sem separada marcada não há "só separadas" (nunca vazio) */
+    function arrumar() {
+      if (colapsarTudo && totalFolhas > 0 && normaisMarcadas() === totalFolhas) tirarNormais();
+      if (semNormais && (normaisMarcadas() > 0 || separadasMarcadas() === 0)) semNormais = false;
     }
 
     function molde() {
@@ -48,34 +76,62 @@
       return tpl ? tpl.content.cloneNode(true).firstElementChild : null;
     }
 
-    /* "mostra tudo" (sem filtro): no modo colapsar, só quando nada está selecionado
-       (marcar todos os normais colapsa para vazio); senão, vazio ou tudo selecionado */
-    function mostraTudo() {
-      return colapsarTudo ? (selecionados.size === 0) : (selecionados.size === 0 || selecionados.size === totalFolhas);
+    /* há filtro de fato quando não é o padrão ("Todos", sem separada) */
+    function temFiltro() {
+      return !(todosNormais() && separadasMarcadas() === 0);
     }
 
-    /* há filtro de fato quando a seleção não é "mostra tudo" */
-    function temFiltro() {
-      return !mostraTudo();
+    /* um valor passa no filtro? (separada: só marcada; normal: "Todos" ou escolhida) */
+    function passa(valor) {
+      if (separadas.has(valor)) return selecionados.has(valor);
+      if (semNormais) return false;
+      if (todosNormais()) return true;
+      return selecionados.has(valor);
+    }
+
+    /* o que está marcado, para as etiquetas e o texto do gatilho: um grupo inteiro marcado vira um
+       item só (ex.: "Praças"); as separadas vêm por último ("só Afastamentos" quando só elas valem).
+       [{ rotulo, valores }] na ordem da árvore */
+    function resumo() {
+      var lista = [];
+      function visitar(no) {
+        if (no.filhos && no.filhos.length) {
+          var folhas = folhasDe(no, []);
+          if (folhas.length && folhas.every(function (v) { return selecionados.has(v); })) {
+            lista.push({ rotulo: no.rotulo, valores: folhas });
+          } else {
+            no.filhos.forEach(visitar);
+          }
+        } else if (no.valor != null && selecionados.has(no.valor)) {
+          lista.push({ rotulo: no.rotulo, valores: [no.valor] });
+        }
+      }
+      if (!todosNormais()) arvoreAtual.forEach(function (no) { if (!no.separado) visitar(no); });
+      arvoreAtual.forEach(function (no) {
+        if (!no.separado || !selecionados.has(no.valor)) return;
+        lista.push({ rotulo: semNormais ? RosterWork.mensagens.geral.filtroSo(no.rotulo) : no.rotulo, valores: [no.valor] });
+      });
+      return lista;
     }
 
     function atualizarGatilho() {
       if (gatilho) {
-        var n = selecionados.size;
-        if (mostraTudo()) gatilho.textContent = rotuloVazio;
-        else if (n === 1) gatilho.textContent = rotulos[Array.from(selecionados)[0]] || (n + ' ' + plural);
-        else gatilho.textContent = n + ' ' + plural;
+        if (!temFiltro()) gatilho.textContent = rotuloVazio;
+        else {
+          var itens = resumo();
+          gatilho.textContent = itens.length === 1 ? itens[0].rotulo : itens.length + ' ' + plural;
+        }
       }
       if (triggerEl) triggerEl.classList.toggle('seletor--com-filtro', temFiltro());
     }
 
-    /* mestre "Todos": marcado quando mostra tudo */
+    /* mestre "Todos": marcado quando valem todas as normais */
     function pintarMestre() {
       if (!mestreEl) return;
       var caixa = mestreEl.querySelector('.caixa-selecao');
       if (!caixa) return;
-      caixa.classList.toggle('caixa-selecao--marcada', mostraTudo());
-      caixa.setAttribute('aria-checked', mostraTudo() ? 'true' : 'false');
+      caixa.classList.toggle('caixa-selecao--marcada', todosNormais());
+      caixa.setAttribute('aria-checked', todosNormais() ? 'true' : 'false');
     }
 
     function pintar() {
@@ -84,25 +140,48 @@
       atualizarGatilho();
     }
 
+    function mudou() {
+      arrumar();
+      pintar();
+      onChange();
+    }
+
     function alternarValores(valores) {
       var todos = valores.every(function (v) { return selecionados.has(v); });
       valores.forEach(function (v) {
         if (todos) selecionados.delete(v); else selecionados.add(v);
       });
-      /* colapsar: selecionou todos os normais = igual a "Todos" → limpa os normais
-         (mantém os separados, ex.: Inativos, que são um acréscimo independente) */
-      if (colapsarTudo && totalFolhas > 0 && normaisSelecionados() === totalFolhas) {
-        Array.from(selecionados).forEach(function (v) { if (!separadas.has(v)) selecionados.delete(v); });
+      mudou();
+    }
+
+    /* clique no "Todos": desmarcado → volta a todas as normais (as separadas ficam);
+       marcado → com separada marcada, passa a "só as separadas"; sem separada, não muda (nunca vazio) */
+    function alternarTodos() {
+      if (todosNormais()) {
+        if (separadasMarcadas() === 0) return;
+        tirarNormais();
+        semNormais = true;
+      } else {
+        tirarNormais();
+        semNormais = false;
       }
+      mudou();
+    }
+
+    /* volta ao padrão: "Todos", sem separada */
+    function limpar() {
+      if (!temFiltro()) return;
+      selecionados.clear();
+      semNormais = false;
       pintar();
       onChange();
     }
 
-    function limpar() {
-      if (selecionados.size === 0) return;
-      selecionados.clear();
-      pintar();
-      onChange();
+    /* desmarca os valores (o "x" da etiqueta na linha "Filtros:") */
+    function desmarcar(valores) {
+      var tirou = false;
+      (valores || []).forEach(function (v) { if (selecionados.delete(v)) tirou = true; });
+      if (tirou) mudou();
     }
 
     /* monta um filho (grupo ou folha), recursivo */
@@ -132,7 +211,6 @@
         });
       } else {
         el.querySelector('.arvore-seta').classList.add('arvore-seta--oculta');
-        rotulos[no.valor] = no.rotulo;
         linha.addEventListener('click', function () { alternarValores([no.valor]); });
         pintores.push(function () {
           var sel = selecionados.has(no.valor);
@@ -146,6 +224,7 @@
     /* (re)define a árvore; só reconstrói o DOM se a estrutura mudou */
     function definir(arvore) {
       arvore = arvore || [];
+      arvoreAtual = arvore;
       var ass = JSON.stringify(arvore);
       if (ass !== assinatura) {
         assinatura = ass;
@@ -159,8 +238,8 @@
         Array.from(selecionados).forEach(function (v) {
           if (!validos[v]) { selecionados.delete(v); podou = true; }
         });
+        if (podou) arrumar();
         pintores = [];
-        rotulos = {};
         arvoreEl.textContent = '';
         var divisorPosto = false;
         arvore.forEach(function (no) {
@@ -180,8 +259,8 @@
       pintar();
     }
 
-    /* liga uma vez os controles fixos: o mestre "Todos" e o "x" do gatilho (ambos limpam) */
-    if (mestreEl) mestreEl.addEventListener('click', function () { limpar(); });
+    /* liga uma vez os controles fixos: o mestre "Todos" e o "x" do gatilho (que volta ao padrão) */
+    if (mestreEl) mestreEl.addEventListener('click', alternarTodos);
     if (limparEl) limparEl.addEventListener('click', function (evento) {
       evento.stopPropagation();
       limpar();
@@ -189,8 +268,11 @@
 
     return {
       definir: definir,
-      selecionados: function () { return selecionados; },
-      temFiltro: temFiltro
+      passa: passa,
+      temFiltro: temFiltro,
+      desmarcar: desmarcar,
+      limpar: limpar,
+      resumo: resumo
     };
   }
 

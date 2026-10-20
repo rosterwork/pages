@@ -78,6 +78,17 @@
           li.querySelector('.pendencias-corrigir-nome').textContent = x.nome || '';
           li.querySelector('.pendencias-corrigir-unidade').textContent = x.unidade || '';
         });
+      } else if (g.tipo === 'retorno_afastamento') {
+        /* não navega: a entrada no ciclo se marca no Contínuos */
+        el = RosterWork.tpl('tpl-pendencias-retorno');
+        if (!el) return;
+        itensCorrigir(el, g.militares, 'tpl-pendencias-retorno-item', function (li, x) {
+          li.querySelector('.pendencias-corrigir-grad').textContent = x.grad || '';
+          li.querySelector('.pendencias-corrigir-nome').textContent = x.nome || '';
+          li.querySelector('.pendencias-corrigir-motivo').textContent = x.motivo || '';
+          li.querySelector('.pendencias-corrigir-data').textContent = x.volta || '';
+          li.querySelector('.pendencias-corrigir-unidade').textContent = x.unidade || '';
+        });
       } else if (g.tipo === 'manutencao') {
         /* não navega: o conserto é na Escala/Distribuição */
         el = RosterWork.tpl('tpl-pendencias-manutencao');

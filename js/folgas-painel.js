@@ -120,8 +120,8 @@
       linha.textContent = '';
       var abas = RosterWork.tpl('tpl-folga-painel-subabas');
       if (abas) {
-        /* Ações só para o admin, e nunca sobre si mesmo (o banco também trava conceder/ajustar o próprio) */
-        if (!ctx.admin || militar.usuario_id === ctx.cpf) { var b = abas.querySelector('[data-sub="acoes"]'); if (b) b.remove(); }
+        /* Ações só para o admin; sobre si mesmo, ele ajusta o saldo, mas não concede folga a si (o banco também trava) */
+        if (!ctx.admin) { var b = abas.querySelector('[data-sub="acoes"]'); if (b) b.remove(); }
         linha.classList.remove('oculto');
         linha.appendChild(abas);
         guardarAbas(abas);
@@ -172,6 +172,7 @@
     var raiz = RosterWork.tpl('tpl-folga-painel-acoes'); if (!raiz) return;
     var bConceder = raiz.querySelector('[data-acao="conceder"]');
     var bAjustar = raiz.querySelector('[data-acao="ajustar"]');
+    if (bConceder && detalhe.militar && detalhe.militar.usuario_id === (ctx && ctx.cpf)) { bConceder.remove(); bConceder = null; }
     if (bConceder) bConceder.addEventListener('click', function () {
       abrirFormFolga({ modo: 'conceder', militar: detalhe.militar, saldoAtual: saldoDetalhe(), aoVoltar: voltarAcoes });
     });

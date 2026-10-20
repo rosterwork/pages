@@ -13,7 +13,7 @@
   var DIAS_ABREV = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
   var maxPorUnidadeAtual = {};   // pico de cobertura de cada unidade na renderização atual (reusado no refresh de uma célula)
   var reqSeq = 0;           // token de requisição: ignora resposta antiga quando outra render começou
-
+  var comAfastados = true;  // os afastados entram na célula só na Escala (a Extrajornada reusa a grade com semExtra/soCobertura)
 
   function dataISO(d) {
     return d.getFullYear() + '-' +
@@ -42,6 +42,7 @@
     if (window.RosterWork.escalasCelula) RosterWork.escalasCelula.limparObservadores();
     var colunas = (opcoes && opcoes.colunas) || [];
     var dataRef = (opcoes && opcoes.dataRef) || new Date();
+    comAfastados = !(opcoes && (opcoes.semExtra || opcoes.soCobertura));
 
     if (!colunas.length) {
       mostrarEstado(corpo, 'Selecione uma companhia ou pelotão no seletor de unidades.');
@@ -63,6 +64,7 @@
     var req = ++reqSeq;
     window.RosterWork.escalasDados.carregar(ids, inicio, fim).then(function (resultado) {
       var dados = resultado.militares;
+      var afastados = resultado.afastados || {};
       var cobertura = resultado.cobertura || {};
       var erro = resultado.erro || {};
       if (!document.contains(corpo) || req !== reqSeq || (opcoes.vigente && !opcoes.vigente())) return;   // saiu da página, outra render começou, ou trocou de modo
@@ -109,9 +111,10 @@
              semExtra (Extrajornada): a lista sem quem está de extra (a escala de antes da extra) */
           var pessoas = opcoes.soCobertura ? [] : ((dados[c.id] && dados[c.id][iso]) || []);
           if (opcoes.semExtra) pessoas = pessoas.filter(function (p) { return p.origem !== 'extra'; });
+          var afastadosDia = comAfastados ? ((afastados[c.id] && afastados[c.id][iso]) || []) : [];
           var cobDia = (cobertura[c.id] && cobertura[c.id][iso]) || null;
           var erroDia = (erro[c.id] && erro[c.id][iso]) || null;
-          if (RosterWork.escalasCelula) RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxPorUnidade[c.id]);
+          if (RosterWork.escalasCelula) RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxPorUnidade[c.id], afastadosDia);
           /* gancho opcional: quem reusa a grade (ex.: Extrajornada) sobrepõe algo na célula (a Escala não passa) */
           if (opcoes.aoCelula) opcoes.aoCelula(celula, c.id, iso, { cobertura: cobDia, erro: erroDia, maxUnidade: maxPorUnidade[c.id] });
           linha.appendChild(celula);
@@ -143,7 +146,8 @@
       var cobDia = (r.cobertura[unidadeId] && r.cobertura[unidadeId][iso]) || null;
       var erroDia = (r.erro[unidadeId] && r.erro[unidadeId][iso]) || null;
       var pessoas = (r.militares[unidadeId] && r.militares[unidadeId][iso]) || [];
-      RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxPorUnidadeAtual[unidadeId]);
+      var afastadosDia = comAfastados ? ((r.afastados[unidadeId] && r.afastados[unidadeId][iso]) || []) : [];
+      RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxPorUnidadeAtual[unidadeId], afastadosDia);
       RosterWork.escalasCelula.desenharGraficos(celula);
     }).catch(function () {});   // refresh de 1 célula falhou: mantém a célula atual (o salvamento já avisou)
   }

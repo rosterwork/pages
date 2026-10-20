@@ -75,7 +75,9 @@
       var chip = RosterWork.tpl('tpl-escala-mil-servico');
       if (!chip) return;
       if (trocado) chip.classList.add('escala-mil-servico--trocado');
-      if (extra) {   // serviço de extrajornada: revela o ícone próprio + dica
+      /* serviço de extrajornada: revela o ícone próprio + dica (cada horário diz se é de extra; o dia com
+         extra e outro serviço, como um pontual, tem o ícone só no horário da extra) */
+      if (per.extra !== undefined ? per.extra : extra) {
         var ico = chip.querySelector('.escala-mil-servico-extra');
         if (ico) ico.classList.remove('oculto');
         chip.setAttribute('title', 'Extrajornada (hora extra)');

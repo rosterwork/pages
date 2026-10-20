@@ -95,11 +95,18 @@
       tirar.addEventListener('click', function (e) { e.stopPropagation(); if (opcoes.aoTirar) opcoes.aoTirar(); });
     }
     var ativos = (m.blocos || []).map(Number);
+    var doPontual = ((c && c.blocos_pontual) || []).map(Number);   // os horários que um pontual dele ocupa no dia
     Array.prototype.forEach.call(v.querySelectorAll('.escala-extra-marca'), function (b) {
       var k = +b.getAttribute('data-bloco');
       var on = ativos.indexOf(k) >= 0;
+      var pontual = !on && doPontual.indexOf(k) >= 0;
       b.classList.toggle('escala-extra-marca--on', on);
+      b.classList.toggle('escala-extra-marca--pontual', pontual);
       b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      if (pontual) {
+        b.disabled = true;
+        b.setAttribute('data-dica', RW.mensagens.escala.extraPainel.blocoPontual);
+      }
       b.addEventListener('click', function (e) { e.stopPropagation(); if (opcoes.aoMarcar) opcoes.aoMarcar(k); });
     });
     return v;

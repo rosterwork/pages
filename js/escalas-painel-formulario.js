@@ -9,6 +9,10 @@
      primeiro quem está sem função nesse horário, depois os de folga);
    - nova: a "Nova função" do militar no dia (o militar já escolhido;
      primeiro "Para onde", depois o Quando).
+   Quem tem só parte do dia livre (ex.: a extra das 08h às 02h) aparece
+   com o que ocupa o resto ao lado do nome e já vem com as horas livres;
+   o horário que cruza o que ele já tem fica vermelho e desliga o botão
+   de confirmar.
    Quando: um ou mais horários (o Adicionar horário na 1ª linha). Onde:
    o posto e a função (a lista diz a situação de cada função no
    horário); no Adicionar, também "O sistema distribui". Se ele já tem
@@ -48,6 +52,14 @@
 
     function janelasDoQuando() { return est.periodos.map(H.faixa); }
     function eDestino(e) { return est.posto && e.posto.id === est.posto.id && e.funcao === est.funcao; }
+
+    /* o que o militar escolhido (de folga) já tem no dia, em minutos: [[início, fim]] */
+    function ocupadoDoMilitar() { return ((est.mil && est.mil.ocupado) || []).map(H.faixa); }
+    /* o horário cruza o que ele já tem no dia? */
+    function emConflito(per) {
+      var f = H.faixa(per);
+      return ocupadoDoMilitar().some(function (o) { return !!H.cruza(f, o); });
+    }
 
     /* as funções dele nesta unidade que cruzam os horários escolhidos (fora a função de destino) */
     function funcoesAtuais() {
@@ -237,8 +249,9 @@
       carregarDisponiveis(unidadeId);
     }
 
-    /* quem está de folga na área da unidade escolhida, fora quem já entrou como pontual no rascunho:
-       um título por unidade (a escolhida primeiro, na ordem que o banco manda) e os militares embaixo */
+    /* quem tem horas livres no dia na área da unidade escolhida, fora quem já entrou como pontual no rascunho:
+       um título por unidade (a escolhida primeiro, na ordem que o banco manda) e os militares embaixo; ao lado
+       do nome, o que já ocupa o dia dele (ex.: "Extra das 08h às 02h") */
     function carregarDisponiveis(unidadeBusca) {
       var lista = el.listaFolga;
       itens = itens.filter(function (it) { return !lista.contains(it.el); });
@@ -264,8 +277,16 @@
               el.titulos.push(grupo);
             }
           }
-          var item = itemMilitar(lista, m, '', function () {
-            est.mil = { cpf: m.cpf, grad: m.grad, nome: m.nome, janelas: [], deFolga: true, assume: m.assume || null };
+          var ocupado = m.ocupado || [];
+          var texto = ocupado.length
+            ? msg().ocupadoNoDia(ocupado.map(function (o) { return { hi: H.curta(o.hi), hf: H.curta(o.hf), tipo: o.tipo }; }))
+            : '';
+          var item = itemMilitar(lista, m, texto, function () {
+            est.mil = { cpf: m.cpf, grad: m.grad, nome: m.nome, janelas: [], deFolga: true, assume: m.assume || null, ocupado: ocupado };
+            /* no Adicionar, o horário vem com as horas livres dele (no "Sem ninguém", é o da vaga) */
+            if (cfg.modo === 'adicionar' && (m.livres || []).length) {
+              est.periodos = m.livres.map(function (l) { return { hi: l.hi, hf: l.hf }; });
+            }
             atualizar();
           });
           if (item) grupo.itens.push(item);
@@ -299,9 +320,9 @@
       if (el.vazio) el.vazio.classList.toggle('oculto', visiveis > 0);
     }
 
-    /* "Adicionar horário": o próximo horário livre depois do último (uma hora) */
+    /* "Adicionar horário": o próximo horário livre depois do último (uma hora), pulando o que ele já tem no dia */
     function adicionarPeriodo() {
-      var livres = H.menos([[0, 1440]], H.uniao(janelasDoQuando()));
+      var livres = H.menos([[0, 1440]], H.uniao(janelasDoQuando().concat(ocupadoDoMilitar())));
       if (!livres.length) return;
       var fimUltimo = H.faixa(est.periodos[est.periodos.length - 1])[1];
       var g = livres.filter(function (x) { return x[0] >= fimUltimo; })[0] || livres[0];
@@ -310,13 +331,13 @@
     }
 
     /* os horários do Quando (dropdown de números; de serviço, só as horas do serviço dele): o ✕ quando há
-       mais de um e o Adicionar horário na 1ª linha */
+       mais de um e o Adicionar horário na 1ª linha; o que cruza o que ele já tem no dia fica vermelho */
     function montarPeriodos() {
       el.periodos.textContent = '';
       var opc = H.opcoesHoras(est.mil && !est.mil.deFolga ? est.mil.janelas : null);
       est.periodos.forEach(function (per, i) {
         var linha = RosterWork.horario.linha({
-          hi: per.hi, hf: per.hf, opcoes: opc,
+          hi: per.hi, hf: per.hf, opcoes: opc, erro: emConflito(per),
           aoInicio: function (h) { per.hi = h; atualizar(); },
           aoFim: function (h) { per.hf = h; atualizar(); },
           aoRemover: est.periodos.length > 1 ? function () { est.periodos.splice(i, 1); atualizar(); } : null,
@@ -390,7 +411,8 @@
           : msg().assumeOficial(nomeDe(est.mil), quemTemPapel(assume));
       }
 
-      /* Quando: os horários e a régua (com as funções que ele já tem, se está de serviço) */
+      /* Quando: os horários e a régua (com as funções que ele já tem, se está de serviço, ou o que já ocupa o
+         dia dele, se vem de folga); horário em conflito desliga o botão de confirmar */
       montarPeriodos();
       var pedacos = [];
       if (deServico) {
@@ -398,8 +420,10 @@
           e.periodos.forEach(function (per) { pedacos.push({ hi: per.hi, hf: per.hf }); });
         });
       }
+      ((est.mil && est.mil.ocupado) || []).forEach(function (o) { pedacos.push({ hi: o.hi, hf: o.hf }); });
       est.periodos.forEach(function (per) { pedacos.push({ hi: per.hi, hf: per.hf, classe: 'novo' }); });
       H.regua(el.regua, pedacos);
+      api.travarAplicar(est.periodos.some(emConflito));
 
       /* Onde: "O sistema distribui" só no Adicionar (quem entra de folga) */
       var podeSistema = cfg.modo === 'adicionar';
@@ -436,6 +460,7 @@
     /* ---------- aplicar ---------- */
 
     function aplicar() {
+      if (est.periodos.some(emConflito)) return;   // o botão já fica desligado
       var js = janelasDoQuando();
       var soma = function (lista) { return lista.reduce(function (s, w) { return s + w[1] - w[0]; }, 0); };
       var erro = !est.mil ? msg().formErroQuem

@@ -54,10 +54,13 @@
 
     <span class="espacador-flex"></span>
 
-    <!-- imprimir: abre o painel "Imprimir escala" (datas + unidades → PDF); à esquerda da busca, em todos os modos -->
-    <button type="button" class="botao botao--quadrado" id="escala-imprimir" aria-label="Imprimir escala" data-dica="Imprimir">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-imprimir.svg#icone-imprimir"/></svg>
-    </button>
+    <!-- botão Filtros (componente geral-filtros: um lugar por filtro, que vira uma coluna do menu) nos modos Mês,
+         Semana e Colunas; a linha "Filtros:" entra abaixo da barra. As opções vêm do escalas-filtros.js;
+         Afastamentos fica fora do "Todos" e é um acréscimo (começa desmarcado) -->
+    <div class="filtros oculto" id="escala-filtros">
+      <div data-filtro="graus" data-filtro-nome="Grau" data-filtro-titulo="Graus"></div>
+      <div data-filtro="situacao" data-filtro-nome="Situação" data-filtro-titulo="Situação"></div>
+    </div>
 
     <!-- busca de militar (nome/CPF/RG) nos modos de grade (Mês/Semana/Colunas/Dia); o modo Militares tem a sua própria -->
     <div class="busca oculto" id="escala-busca-geral">
@@ -81,15 +84,16 @@
       </div>
     </div>
 
-    <!-- legenda da grade: o que cada cor, ícone e selo quer dizer (o conteúdo acompanha o modo; escalas-legenda.js) -->
-    <div class="dropdown" id="escala-legenda-grade">
-      <button type="button" class="botao" id="escala-legenda-botao">Legenda</button>
-      <div class="dropdown-menu dropdown-menu--largo escala-legenda-menu">
-        <div class="dropdown-menu-rolagem">
-          <div class="escala-legenda-itens" data-legenda-conteudo></div>
-        </div>
-      </div>
-    </div>
+    <!-- ferramentas, depois do traço, em todos os modos: Legenda e Imprimir -->
+    <span class="pagina-subcabecalho-divisor" aria-hidden="true"></span>
+
+    <!-- legenda da grade (molde geral #tpl-legenda): o que cada cor, ícone e selo quer dizer; o conteúdo acompanha o modo (escalas-legenda.js) -->
+    <div id="escala-legenda-grade"></div>
+
+    <!-- imprimir: abre o painel "Imprimir escala" (datas + unidades → PDF) -->
+    <button type="button" class="botao botao--quadrado" id="escala-imprimir" aria-label="Imprimir escala" data-dica="Imprimir">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-imprimir.svg#icone-imprimir"/></svg>
+    </button>
   </div>
 
   <div class="pagina-corpo pagina-corpo--colado"></div>
@@ -253,6 +257,10 @@
       <span class="escala-legenda-item">
         <span class="escala-legenda-faixa"></span>
         <span>Horário: o trecho claro é o turno</span>
+      </span>
+      <span class="escala-legenda-item">
+        <span class="linha-escalado linha-escalado--afastamento"><span class="linha-escalado-grad">Sd.</span><span class="linha-escalado-nome">Nome</span></span>
+        <span>Afastado: aparece com o filtro Afastamentos</span>
       </span>
     </div>
   </div>

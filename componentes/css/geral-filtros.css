@@ -1,0 +1,88 @@
+/* ============================================================
+   FILTROS — o botão Filtros da barra de controles e a linha "Filtros:"
+   Moldes do botão (#tpl-filtros), de cada coluna do menu (#tpl-filtro)
+   e da linha (#tpl-filtros-ativos, #tpl-filtro-ativo) no index.html;
+   comportamento em geral-filtros.js. Mudar aqui muda os filtros de
+   todas as páginas de uma vez.
+   ============================================================ */
+
+/* a caixa do botão Filtros na barra, antes da busca */
+.filtros {
+  display: flex;
+  align-items: center;
+}
+
+/* o menu do botão: uma coluna por filtro, lado a lado */
+.dropdown--aberto .filtros-menu {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(200px, auto);
+  gap: 16px;
+  padding: 8px;
+}
+
+/* ---------- linha "Filtros:" embaixo da barra (só aparece com filtro ligado) ---------- */
+.filtros-ativos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  flex-shrink: 0;
+  padding: 4px 16px;
+  border-bottom: 1px solid var(--borda);
+  background-color: var(--fundo-superficie);
+}
+
+.filtros-ativos-rotulo {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.filtros-ativos-lista {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* etiqueta de um filtro ligado: "Situação: Férias" + o x que tira só ele */
+.filtro-ativo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 24px;
+  padding: 0 4px 0 8px;
+  border: 1px solid var(--borda-forte);
+  border-radius: var(--raio-total);
+  background-color: var(--fundo-suave);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--texto);
+  white-space: nowrap;
+}
+
+.filtro-ativo-tipo {
+  font-weight: 400;
+  color: var(--texto-suave);
+}
+
+.filtro-ativo-tipo::after {
+  content: ':';
+}
+
+.filtro-ativo-tirar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  min-height: 16px;
+  border-radius: 50%;
+  color: var(--texto-fraco);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.filtro-ativo-tirar:hover {
+  background-color: var(--fundo-medio);
+  color: var(--texto-forte);
+}

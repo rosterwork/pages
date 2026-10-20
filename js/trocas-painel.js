@@ -158,9 +158,9 @@
     if (troca.status === 'pendente_confirmacao') {
       if (souParceiro) { usar.aceitar = true; usar.recusar = true; }
       if (souSolicitante) usar.cancelar = true;
-      if (ctx.ehAdmin && !souSolicitante && !souParceiro) usar['aprovar-forcar'] = true;   /* admin aprova sem esperar o solicitado, mas não uma troca da qual participa (o banco também trava) */
+      if (ctx.ehAdmin) usar['aprovar-forcar'] = true;   /* admin aprova sem esperar o solicitado, inclusive a troca da qual participa */
     } else if (troca.status === 'pendente_aprovacao') {
-      if (ctx.ehAdmin && !souSolicitante && !souParceiro) { usar.aprovar = true; usar['recusar-admin'] = true; }   /* quem participa não decide (o banco também trava) */
+      if (ctx.ehAdmin) { usar.aprovar = true; usar['recusar-admin'] = true; }   /* o admin decide inclusive a troca da qual participa */
       if (souSolicitante) usar.cancelar = true;
     } else if (troca.status === 'aprovada' && ctx.ehAdmin) {
       usar.cancelar = true;

@@ -70,13 +70,17 @@
       antes: salvo ? { unidade: salvo.unidade_id, blocos: salvo.blocos } : null, militar: { grad: m.grad, nome: m.nome } });
   }
 
-  function pintarMarcas(caixa, blocos, ligar) {
+  /* os 4 horários; o que um pontual do militar ocupa (bloqueados) fica desligado, com a dica (se ainda não marcado) */
+  function pintarMarcas(caixa, blocos, ligar, bloqueados) {
     Array.prototype.forEach.call(caixa.querySelectorAll('.escala-extra-marca'), function (b) {
       var k = +b.getAttribute('data-bloco');
       var on = (blocos || []).indexOf(k) >= 0;
+      var pontual = !on && (bloqueados || []).indexOf(k) >= 0;
       b.classList.toggle('escala-extra-marca--on', on);
+      b.classList.toggle('escala-extra-marca--pontual', pontual);
       b.setAttribute('aria-pressed', on ? 'true' : 'false');
-      if (!ligar) b.disabled = true;
+      if (!ligar || pontual) b.disabled = true;
+      if (pontual) b.setAttribute('data-dica', msg().blocoPontual);
     });
   }
 
@@ -130,7 +134,7 @@
     cota.textContent = msg().cota(total, m.cota || 0);
     cota.classList.toggle('escala-extra-cota--erro', passou > 0);
 
-    pintarMarcas(l.querySelector(':scope > .escala-extra-marcas'), hoje ? hoje.blocos : [], ctx.admin);
+    pintarMarcas(l.querySelector(':scope > .escala-extra-marcas'), hoje ? hoje.blocos : [], ctx.admin, m.blocos_pontual);
 
     /* a parte aberta embaixo do nome: o aviso (passou da cota) e os horários dos outros dias;
        passar da cota abre e deixa aberta (o administrador acerta ali e fecha quando quiser) */

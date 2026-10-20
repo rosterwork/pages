@@ -66,6 +66,16 @@
   background-color: var(--fundo-superficie);
 }
 
+/* traço que separa as ferramentas (Ordem, Exibir, Legenda, Imprimir) do resto da barra */
+.pagina-subcabecalho-divisor {
+  align-self: center;
+  flex-shrink: 0;
+  width: 1px;
+  min-height: 20px;
+  margin: 0 4px;
+  background-color: var(--borda-forte);
+}
+
 /* corpo rolável da página */
 .pagina-corpo {
   flex: 1 1 0;

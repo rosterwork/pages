@@ -80,8 +80,8 @@
           'Authorization': 'Bearer ' + SUPABASE_KEY,
           'Content-Type': 'application/json'
         },
-        /* a senha vai junto: o banco confere a senha antes de devolver o e-mail
-           da conta, para o e-mail não aparecer para quem só digitou o CPF. */
+        /* a senha vai junto: o banco confere a senha antes de devolver o endereço de
+           login da conta (sorteado, diferente do e-mail da ficha), que só serve para entrar. */
         body: JSON.stringify({ p_identificador: identificador, p_senha: senha })
       });
 
@@ -112,7 +112,9 @@
 
       if (!respAuth.ok) {
         desbloquear();
-        mostrarErroCampo(inputSenha, window.RosterWork.mensagens.login.senhaIncorreta);
+        /* 429: o Supabase recusou por excesso de entradas do mesmo endereço de internet */
+        if (respAuth.status === 429) mostrarErroCampo(inputId, window.RosterWork.mensagens.geral.muitasEntradas);
+        else mostrarErroCampo(inputSenha, window.RosterWork.mensagens.login.senhaIncorreta);
         return;
       }
 

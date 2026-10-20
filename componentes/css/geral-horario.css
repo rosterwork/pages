@@ -75,6 +75,13 @@
   cursor: default;
 }
 
+/* horário com conflito (ex.: cruza o que o militar já tem no dia): os dois campos vermelhos */
+.horario--erro .dropdown-numeros-btn,
+.horario--erro .dropdown-numeros-btn:not(:disabled):hover {
+  border-color: var(--erro);
+  color: var(--erro);
+}
+
 /* horário que não se muda (ex.: Chefe de Socorro, Oficial de Área): tracejado */
 .horario-fixo {
   border-style: dashed;

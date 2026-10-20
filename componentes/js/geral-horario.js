@@ -122,11 +122,12 @@
 
   /* ---------- uma linha de horário ---------- */
 
-  /* cfg = { hi, hf, opcoes {inicios, fins}, fixo, desligado, aoInicio(hora), aoFim(hora), aoRemover, aoAdicionar, semAcoes }
-     sem aoRemover / aoAdicionar, o botão guarda o lugar escondido; semAcoes tira os dois */
+  /* cfg = { hi, hf, opcoes {inicios, fins}, fixo, desligado, erro, aoInicio(hora), aoFim(hora), aoRemover, aoAdicionar, semAcoes }
+     sem aoRemover / aoAdicionar, o botão guarda o lugar escondido; semAcoes tira os dois; erro = campos vermelhos */
   function linha(cfg) {
     var el = RosterWork.tpl('tpl-horario');
     if (!el) return null;
+    if (cfg.erro) el.classList.add('horario--erro');
     var par = el.querySelector('.horario-par');
     var seta = par.querySelector('.horario-seta');
     if (cfg.fixo) {

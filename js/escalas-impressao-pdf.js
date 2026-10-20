@@ -52,6 +52,7 @@
   var RAIO = { unidade: 6, posto: 3.5 };  // cantos arredondados do bloco da unidade e do bloquinho
   var ESPACAMENTO_CAIXA_ALTA = 0.6;       // entre letras do título do posto (caixa alta)
   var FONTE = { titulo: 16, data: 11, unidade: 12, detalhe: 9, posto: 8.5, funcao: 8.5, grad: 8.5, nome: 10, hora: 9, texto: 9, rodape: 8 };
+  var ALTURA_LINHA = 1.22;                // altura de uma linha de texto da Montserrat, em vezes o tamanho da fonte
   /* margens dentro das células: o deslocamento no topo alinha as letras menores à linha do nome */
   var CELULA = { titulo: [3, 0, 3, 3], funcao: [0, 1.5, 0, 0], militar: [0, 0, 0, 0], hora: [0, 1, 0, 0], vazio: [3, 2, 3, 2] };
   /* respiros dos blocos: a unidade (lado, topo, entre bloquinhos, base) e o bloquinho (lado, entre colunas, topo, entre linhas, base) */
@@ -169,19 +170,38 @@
     return { table: { widths: COLUNAS, body: corpo }, layout: layoutBloquinho(c, preencher) };
   }
 
+  /* altura aproximada (pt) do conteúdo de uma linha do posto: o nome ou os horários empilhados, o que for maior */
+  function alturaLinha(periodos) {
+    return Math.max(FONTE.nome * ALTURA_LINHA, (periodos || []).length * FONTE.hora * ALTURA_LINHA + CELULA.hora[1]);
+  }
+
   function linhasDoPosto(posto, c) {
     var mesclar = pecas().mesclarFuncoes || function (p) { return p.funcoes || []; };
     var linhas = [];
     mesclar(posto).forEach(function (f) {
-      var daFuncao = [];
+      var daFuncao = [], alturas = [];
       if (f.vazio && RW.mensagens.escala.vagaVazia) {
         daFuncao.push([{ text: RW.mensagens.escala.vagaVazia(f.vazio_motivo), italics: true, fontSize: FONTE.texto, color: c.suave, margin: CELULA.militar }, { text: '' }]);
+        alturas.push(alturaLinha([]));
       }
-      (f.militares || []).forEach(function (m) { daFuncao.push([celulaMilitar(m, c), horarios(m.periodos, c)]); });
-      /* o rótulo da função só na 1ª linha dela (mescla Chefe + Condutor = dois rótulos empilhados) */
-      var rotulo = ((f.nomes && f.nomes.length) ? f.nomes : [f.nome]).join('\n');
+      (f.militares || []).forEach(function (m) {
+        daFuncao.push([celulaMilitar(m, c), horarios(m.periodos, c)]);
+        alturas.push(alturaLinha(m.periodos));
+      });
+      if (!daFuncao.length) return;
+      /* o rótulo da função (mescla Chefe + Condutor = dois rótulos empilhados) ocupa as linhas dela, no meio da
+         altura: a biblioteca não centraliza na vertical, então a margem de cima vem da altura aproximada das linhas */
+      var rotulos = (f.nomes && f.nomes.length) ? f.nomes : [f.nome];
+      var margem = CELULA.funcao;
+      if (daFuncao.length > 1) {
+        var total = alturas.reduce(function (s, h) { return s + h; }, 0) + (daFuncao.length - 1) * 2 * BLOQUINHO.linha;
+        margem = [0, Math.max(CELULA.funcao[1], (total - rotulos.length * FONTE.funcao * ALTURA_LINHA) / 2), 0, 0];
+      }
       daFuncao.forEach(function (resto, i) {
-        linhas.push([{ text: i === 0 ? rotulo : '', fontSize: FONTE.funcao, color: c.suave, margin: CELULA.funcao }].concat(resto));
+        var celula = i === 0
+          ? { text: rotulos.join('\n'), rowSpan: daFuncao.length, fontSize: FONTE.funcao, color: c.suave, margin: margem }
+          : {};
+        linhas.push([celula].concat(resto));
       });
     });
     return linhas;

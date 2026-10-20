@@ -41,7 +41,7 @@ button.pendencias-corrigir:hover {
   color: var(--texto-fraco);
 }
 
-/* fora da escala e viaturas em manutenção: a contagem em cima e a lista embaixo (não navegam) */
+/* fora da escala, retorno de afastamento e viaturas em manutenção: a contagem em cima e a lista embaixo (não navegam) */
 .pendencias-corrigir--lista {
   flex-direction: column;
   align-items: stretch;
@@ -82,7 +82,8 @@ button.pendencias-corrigir:hover {
   color: var(--texto-forte);
 }
 
-.pendencias-corrigir-desde {
+.pendencias-corrigir-desde,
+.pendencias-corrigir-volta {
   font-size: 11px;
   color: var(--texto-suave);
 }

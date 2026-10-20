@@ -34,7 +34,21 @@
     pontual: 'icone-origem-pontual',
     sistema: 'icone-origem-sistema',
     folga: 'icone-folgas',
-    extra: 'icone-extrajornada'
+    extra: 'icone-extrajornada',
+    afastamento: 'icone-afastamentos'
+  };
+
+  /* origem -> situação do filtro da barra (escalas-filtros.js): o ciclo é a Prontidão */
+  var SITUACAO_ORIGEM = {
+    base: 'prontidao',
+    saida: 'prontidao',
+    sistema: 'prontidao',
+    troca: 'trocas',
+    troca_saida: 'trocas',
+    extra: 'extra',
+    pontual: 'pontual',
+    folga: 'folga',
+    afastamento: 'afastamento'
   };
 
 
@@ -243,8 +257,23 @@
     linha.querySelector('.linha-escalado-grad').textContent = p.grad || '';
     linha.querySelector('.linha-escalado-nome').textContent = p.nome || '';
     if (window.RosterWork.busca) linha.setAttribute('data-busca', window.RosterWork.busca.chave(p));   // busca do sub-cabeçalho (nome/CPF/RG)
-    /* um par início→fim por período (disponibilidade quebrada = vários, empilhados em coluna) */
+    /* o que os filtros da barra leem: a situação e o grau (com o grupo e a ordem, para a lista de graus) */
+    linha.setAttribute('data-situacao', SITUACAO_ORIGEM[p.origem] || 'prontidao');
+    if (p.grau) {
+      linha.setAttribute('data-grau', p.grau);
+      linha.setAttribute('data-grad', p.grad || '');
+      linha.setAttribute('data-quadro', p.quadro || '');
+      linha.setAttribute('data-grau-ordem', p.grau_ordem != null ? String(p.grau_ordem) : '');
+    }
     var horaWrap = linha.querySelector('.linha-escalado-hora');
+    /* afastado (férias, licença ou dispensa): vem escondido (só aparece com o filtro Afastamentos)
+       e, no lugar do horário, "Férias até DD/MM" */
+    if (p.origem === 'afastamento') {
+      linha.classList.add('linha-escalado--afastamento', 'oculto');
+      horaWrap.textContent = RosterWork.mensagens.geral.afastadoAte(p.afastamento || '', RosterWork.data.isoParaBR(p.ate).slice(0, 5));
+      return linha;
+    }
+    /* um par início→fim por período (disponibilidade quebrada = vários, empilhados em coluna) */
     (p.periodos || []).forEach(function (per) {
       if (!per.inicio) return;
       var par = RosterWork.tpl('tpl-escala-mes-hora-par');
@@ -267,14 +296,15 @@
   /* preenche o miolo de uma célula (unidade × dia): gráfico de cobertura + militares. Os erros
      aparecem só na cor do gráfico (o texto fica no painel do dia, ao clicar). Reaproveitada na
      renderização e no refresh de uma célula (atualizarCelula). maxUnidade = a régua do gráfico
-     (o pico da unidade da célula no período exibido; ver calcularMaxPorUnidade) */
-  function preencherCelula(celula, cobDia, erroDia, pessoas, maxUnidade) {
+     (o pico da unidade da célula no período exibido; ver calcularMaxPorUnidade).
+     afastados (só a Escala manda): os de férias, licença ou dispensa no dia, depois dos de serviço */
+  function preencherCelula(celula, cobDia, erroDia, pessoas, maxUnidade, afastados) {
     celula.textContent = '';
     if (cobDia) {
       var grafico = montarGrafico(cobDia, maxUnidade, erroDia);
       if (grafico) celula.appendChild(grafico);
     }
-    (pessoas || []).forEach(function (p) {
+    (pessoas || []).concat(afastados || []).forEach(function (p) {
       var linhaP = montarPessoa(p);
       if (linhaP) celula.appendChild(linhaP);
     });

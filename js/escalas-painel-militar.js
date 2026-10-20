@@ -185,8 +185,11 @@
       var j = mil.janelas;
       tela.querySelector('.escala-distribuicao-grad').textContent = mil.grad;
       tela.querySelector('.escala-militar-nome-texto').textContent = mil.nome;
+      /* o serviço dele aqui no dia, cada horário com a origem (ex.: a extra e o pontual) */
       tela.querySelector('.escala-militar-servico').textContent = j.length
-        ? msg().servico(H.curta(j[0].hi), H.curta(j[0].hf), mil.pontual ? 'pontual' : mil.origem)
+        ? msg().servico(j.slice().sort(function (a, b) { return H.emMin(a.hi) - H.emMin(b.hi); }).map(function (x) {
+          return { hi: H.curta(x.hi), hf: H.curta(x.hf), origem: x.origem || mil.origem };
+        }))
         : msg().semServicoNoDia;
 
       var livres = semFuncao();
@@ -200,7 +203,8 @@
       var btNova = tela.querySelector('.escala-militar-nova');
       var btTirar = tela.querySelector('.escala-militar-tirar');
       btNova.disabled = !j.length;
-      btTirar.disabled = !j.length && !mil.pontual;
+      /* só extra aqui: a extra sai pela aba Extrajornada */
+      btTirar.disabled = !mil.pontual && (!j.length || j.every(function (x) { return x.origem === 'extra'; }));
       btNova.addEventListener('click', function () { novaFuncao(livres[0] || j[0]); });
       btTirar.addEventListener('click', tirarDoDia);
       corpo.appendChild(tela);
@@ -216,7 +220,8 @@
     }
 
     /* Tirar do dia: o pontual sai do dia (se as horas dele já foram para o banco de horas, pergunta se tira);
-       o do ciclo ganha folga no dia inteiro (pergunta se desconta do banco de horas) */
+       o do ciclo ganha folga no dia inteiro (pergunta se desconta do banco de horas). Quem também serve em outra
+       unidade no dia ganha a folga só nos horários daqui (fora a extra), e o serviço de lá não muda */
     function tirarDoDia() {
       var botoes = RosterWork.mensagens.botoes;
       function perguntar(mensagem, aoSim, aoNao) {
@@ -237,12 +242,17 @@
         return;
       }
       if (cpf === RosterWork.sessao.cpf()) { RosterWork.avisar({ tipo: 'erro', mensagem: msg().folgaSiMesmo }); return; }
-      var min = mil.janelas.reduce(function (s, x) { var f = H.faixa(x); return s + f[1] - f[0]; }, 0);
+      var daqui = mil.outraUnidade
+        ? H.uniao(mil.janelas.filter(function (x) { return x.origem !== 'extra'; }).map(H.faixa)).map(H.periodo)
+        : null;
+      var janelas = daqui || mil.janelas;
+      if (!janelas.length) return;
+      var min =janelas.reduce(function (s, x) { var f = H.faixa(x); return s + f[1] - f[0]; }, 0);
       var fm = RosterWork.mensagens.folgas;
-      var periodo = fm.periodoDas(H.curta(mil.janelas[0].hi), H.curta(mil.janelas[0].hf));
+      var periodo = fm.periodoDas(H.curta(janelas[0].hi), H.curta(janelas[0].hf));
       perguntar(fm.contabilizarFolga(nomeDe(mil), diaMes(api.iso()), periodo, H.horasTexto(min), api.iso() < hojeIso()),
-        function () { api.darFolga(cpf, true); api.concluir(); },
-        function () { api.darFolga(cpf, false); api.concluir(); });
+        function () { api.darFolga(cpf, true, daqui); api.concluir(); },
+        function () { api.darFolga(cpf, false, daqui); api.concluir(); });
     }
 
     desenhar();

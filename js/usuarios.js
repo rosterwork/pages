@@ -24,20 +24,18 @@
   var contagemVisivel = 0;
   var elContagem = null;
 
-  /* nada marcado = todas as situações. "Correção pendente" não é situação do
-     militar (ele continua Ativo/Férias/...), então soma às demais em vez de excluir */
+  /* a situação do militar passa no filtro ("Todos" = as normais; Inativos e Correção pendente são
+     acréscimos). "Correção pendente" não é situação do militar (ele continua Ativo/Férias/...),
+     então soma às demais em vez de excluir */
   function pessoaPassaSituacao(pessoa) {
-    var sel = filtroSituacao ? filtroSituacao.selecionados() : null;
-    if (!sel || sel.size === 0) return true;
-    if (sel.has('Correção pendente') && pessoa.correcao_pendente) return true;
-    return sel.has(pessoa.situacao);
+    if (!filtroSituacao) return true;
+    if (pessoa.correcao_pendente && filtroSituacao.passa('Correção pendente')) return true;
+    return filtroSituacao.passa(pessoa.situacao);
   }
 
   /* nada marcado = todos os graus */
   function pessoaPassaHierarquia(pessoa) {
-    var sel = filtroGraus ? filtroGraus.selecionados() : null;
-    if (!sel || sel.size === 0) return true;
-    return sel.has(pessoa.grau_nome);
+    return !filtroGraus || filtroGraus.passa(pessoa.grau_nome);
   }
 
   /* tira acentos e caixa para comparar nomes sem diferença de acentuação */
@@ -133,7 +131,7 @@
       selo.textContent = pessoa.situacao_ate ? T.seloInativoDesde(formatarDataCurta(pessoa.situacao_ate)) : T.seloInativo;
       selo.classList.add('selo--escuro');
     } else if (pessoa.situacao === 'Férias' || pessoa.situacao === 'Licença' || pessoa.situacao === 'Dispensa') {
-      selo.textContent = T.seloAfastadoAte(pessoa.situacao, formatarDataCurta(pessoa.situacao_ate));
+      selo.textContent = RosterWork.mensagens.geral.afastadoAte(pessoa.situacao, formatarDataCurta(pessoa.situacao_ate));
       selo.classList.add('selo--alerta');
     } else if (pessoa.link_cadastro_ate) {
       selo.textContent = T.seloLinkCadastro(formatarDataHoraCurta(pessoa.link_cadastro_ate));
@@ -163,8 +161,7 @@
 
   /* o filtro de situação inclui "Inativos"? */
   function mostrarInativos() {
-    var sel = filtroSituacao ? filtroSituacao.selecionados() : null;
-    return !!(sel && sel.has('Inativo'));
+    return !!(filtroSituacao && filtroSituacao.passa('Inativo'));
   }
 
   /* abre a ficha do militar no painel e realça a linha clicada (ver = todos) */

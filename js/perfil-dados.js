@@ -159,6 +159,8 @@
         if (!V().validarEmail(valor)) { C().marcarErro(controle.el, T.emailInvalido); ok = false; return; }
       } else if (controle.campo === 'nome_completo' && valor.trim().split(/\s+/).length < 2) {
         C().marcarErro(controle.el, T.nomeIncompleto); ok = false; return;
+      } else if (controle.campo === 'classificacao_cfo_cfp' && !parseInt(valor, 10)) {   /* o militar informa a colocação: zero não vale */
+        C().marcarErro(controle.el, T.colocacaoZero); ok = false; return;
       }
 
       /* passou: se mudou, vira item do pedido (já no formato que o banco espera) */
@@ -190,9 +192,7 @@
     if (entrada) entrada.focus();
   }
 
-  /* e-mail e celular valeram na hora: passam a ser o "gravado" do formulário e da aba Perfil.
-     O e-mail novo também vai para a sessão aberta: as funções do banco identificam quem está
-     logado pelo e-mail do token, então o token é renovado (o novo já vem com o e-mail novo) */
+  /* e-mail e celular valeram na hora: passam a ser o "gravado" do formulário e da aba Perfil */
   function aplicarDiretos(alteracoes) {
     alteracoes.forEach(function (a) {
       if (a.campo !== 'email' && a.campo !== 'celular') return;
@@ -204,12 +204,6 @@
       });
       var ver = document.getElementById(a.campo === 'email' ? 'perfil-ver-email' : 'perfil-ver-celular');
       if (ver) ver.textContent = originais[a.campo];
-      if (a.campo !== 'email') return;
-      try {
-        var usuario = JSON.parse(sessionStorage.getItem('rosterwork_user'));
-        if (usuario) { usuario.email = originais.email; sessionStorage.setItem('rosterwork_user', JSON.stringify(usuario)); }
-      } catch (e) {}
-      if (RosterWork.renovarSessao) RosterWork.renovarSessao().catch(function () {});
     });
   }
 
@@ -248,6 +242,7 @@
         else if (/Celular/.test(erro)) alvo = formulario.querySelector('[data-campo="celular"]');
         else if (/CNH/.test(erro)) alvo = formulario.querySelector('[data-campo="cnh"]');
         else if (/[Ii]nclusão/.test(erro)) alvo = formulario.querySelector('[data-campo="data_de_inclusao"]');
+        else if (/Colocação/.test(erro)) alvo = formulario.querySelector('[data-campo="classificacao_cfo_cfp"]');
         if (alvo) {
           C().marcarErro(alvo, erro);
           mostrarPrimeiroErro();

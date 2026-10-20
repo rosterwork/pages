@@ -140,13 +140,14 @@
   /* troca a senha do usuário logado. Exige a senha ATUAL (confirma com um login),
      troca via PUT /auth/v1/user e renova a sessão com a senha nova (a troca pode
      invalidar a sessão antiga). Resolve num marcador:
-     { ok: true } | { erro: 'atual' } (senha atual errada) | { erro: 'servidor' } | { erro: 'conexao' } */
+     { ok: true } | { erro: 'atual' } (senha atual errada) | { erro: 'limite' } (excesso de entradas
+     do mesmo endereço de internet) | { erro: 'servidor' } | { erro: 'conexao' } */
   function trocarSenha(email, atual, nova) {
     return fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
       method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: email, password: atual })
     }).then(function (r) {
-      if (!r.ok) return { erro: 'atual' };
+      if (!r.ok) return { erro: r.status === 429 ? 'limite' : 'atual' };
       return r.json().then(function (t) {
         return fetch(SUPABASE_URL + '/auth/v1/user', {
           method: 'PUT',

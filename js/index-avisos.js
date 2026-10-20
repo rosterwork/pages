@@ -80,7 +80,7 @@
   }
 
   /* pendências que aparecem no sino, com a gravidade da bolinha (a da extra vem do banco: o último dia é erro) */
-  var PENDENCIAS_SINO = { fora_escala: 'erro', manutencao: 'alerta', distribuicao: 'alerta', distribuicao_erro: 'erro', extra_prazo: 'alerta' };
+  var PENDENCIAS_SINO = { fora_escala: 'erro', retorno_afastamento: 'alerta', manutencao: 'alerta', distribuicao: 'alerta', distribuicao_erro: 'erro', extra_prazo: 'alerta' };
 
   /* pendência da administração no sino: estado que espera decisão, sem "lida" — fica
      até ser resolvido. Bolinha colorida por gravidade; clicar abre a página onde se resolve

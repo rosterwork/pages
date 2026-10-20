@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="icone-legenda" viewBox="0 0 24 24">
+    <rect x="3.5" y="4" width="5" height="5" rx="1.5"/>
+    <path d="M12 6.5H20.5"/>
+    <rect x="3.5" y="15" width="5" height="5" rx="1.5"/>
+    <path d="M12 17.5H20.5"/>
+  </symbol>
+</svg>

@@ -120,7 +120,7 @@
     var rodape = RW.painel.rodape(); if (!rodape) return;
     rodape.textContent = '';
     btnAprovar = null;
-    if (!ctx.admin || sol.is_meu) { rodape.classList.add('oculto'); return; }   // admin não decide a própria folga (o banco também trava)
+    if (!ctx.admin) { rodape.classList.add('oculto'); return; }   // só o admin decide (inclusive a própria folga)
     var tpl = document.getElementById('tpl-decisao-acoes');
     if (!tpl) return;
     var frag = tpl.content.cloneNode(true);   /* fragmento inteiro (dois botões irmãos), não firstElementChild */

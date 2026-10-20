@@ -30,7 +30,7 @@
       if (nova.value === atual.value) { if (erro) erro.textContent = M.senhaIgual; return; }
 
       if (RosterWork.iniciarCarregando) RosterWork.iniciarCarregando(salvar);
-      /* o e-mail do momento: o militar pode ter acabado de trocá-lo em Meus dados */
+      /* o endereço de login da conta (vem do login; não muda quando o e-mail da ficha muda) */
       var email = ((RosterWork.sessao && RosterWork.sessao.perfil()) || usuario).email;
       RosterWork.trocarSenha(email, atual.value, nova.value).then(function (retorno) {
         if (RosterWork.pararCarregando) RosterWork.pararCarregando(salvar);
@@ -41,6 +41,10 @@
         }
         if (retorno && retorno.erro === 'atual') {
           if (erro) erro.textContent = M.senhaAtualErrada;
+          return;
+        }
+        if (retorno && retorno.erro === 'limite') {
+          if (erro) erro.textContent = RosterWork.mensagens.geral.muitasEntradas;
           return;
         }
         RosterWork.avisar({

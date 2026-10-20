@@ -20,6 +20,7 @@
     perfil: {
       falhaDados: 'Não foi possível salvar. Tente de novo.',
       solicitacaoEnviada: 'Solicitação enviada para aprovação.',
+      dadosSalvos: 'Dados salvos.',
       demaisParaAprovacao: 'As demais alterações foram enviadas para a aprovação do administrador.',
       aguardando: function (n) {
         return n === 1
@@ -211,6 +212,7 @@
       promocaoOrdem: 'Deve ser após a data anterior',
       promocaoAntesInclusao: 'A promoção não pode ser antes da data de inclusão',
       promocaoVazia: 'Preencha a data da promoção',
+      colocacaoZero: 'Informe a sua colocação no curso',
       sucesso: 'Usuário cadastrado com sucesso.',
       falha: 'Não foi possível cadastrar o usuário.'
     },
@@ -340,6 +342,8 @@
       continuosVazioNaEscala: 'Nenhum contínuo nesse dia.',
       continuosVazioFora: 'Todos os militares já estão no ciclo.',
       continuosSaiEm: 'Sai em {data}',
+      continuosAfastadoAte: '{motivo} até {data}',
+      continuosEntraEm: 'Entra em {data}',
       continuosDeFolga: 'De folga neste dia',
       continuosVaiEntrar: 'Vai entrar',
       continuosVaiSair: 'Vai sair',
@@ -407,9 +411,18 @@
       formErroOnde: 'Escolha o posto e a função.',
       formErroMesmaFuncao: 'O militar já está nessa função nesse horário.',
       formErroPeriodos: 'Os períodos se cruzam. Ajuste os horários.',
-      servico: function (hi, hf, origem) {
-        var por = { pontual: ', pontual', troca: ', por troca', extra: ', de extrajornada' }[origem] || ', pelo ciclo';
-        return 'De serviço das ' + hi + ' às ' + hf + por;
+      /* o serviço dele no dia, cada horário com a origem: "De serviço das 08h às 02h, de extrajornada e das 02h às 08h, pontual" */
+      servico: function (lista) {
+        var por = { pontual: ', pontual', troca: ', por troca', extra: ', de extrajornada' };
+        var partes = lista.map(function (p) { return 'das ' + p.hi + ' às ' + p.hf + (por[p.origem] || ', pelo ciclo'); });
+        return 'De serviço ' + (partes.length > 1 ? partes.slice(0, -1).join(', ') + ' e ' + partes[partes.length - 1] : partes[0]);
+      },
+      /* lista do Adicionar militar: o que já ocupa o dia de quem tem horas livres ("Extra das 08h às 02h") */
+      ocupadoNoDia: function (lista) {
+        var nome = { servico: 'serviço', extra: 'extra', pontual: 'pontual', troca: 'troca', folga: 'folga' };
+        var partes = lista.map(function (p) { return (nome[p.tipo] || nome.servico) + ' das ' + p.hi + ' às ' + p.hf; });
+        var t = partes.length > 1 ? partes.slice(0, -1).join(', ') + ' e ' + partes[partes.length - 1] : partes[0];
+        return t.charAt(0).toUpperCase() + t.slice(1);
       },
       semServicoNoDia: 'Sem serviço neste dia.',
       folgaSiMesmo: 'Você não pode dar folga a si mesmo.',
@@ -440,6 +453,8 @@
         diaSemana: function (dd, semana) { return 'dia ' + dd + ' · ' + semana; },
         horas: function (n) { return n + 'h'; },
         ocupado: { servico: 'De serviço', troca: 'De serviço por troca', folga: 'De folga', ferias: 'Férias', licenca: 'Licença', dispensa: 'Dispensa' },
+        /* dica do horário de 6 h desligado porque o militar tem pontual nele */
+        blocoPontual: 'Pontual neste horário',
         ate: function (texto, data) { return texto + ' até ' + data; },
         extraEm: function (unidade) { return 'Extra no ' + unidade; },
         passou: function (n) { return 'Passou ' + n + (n === 1 ? ' cota.' : ' cotas.'); },
@@ -598,6 +613,12 @@
         return 'Com ' + com + ', de ' + dias + ': ' + (parte === 'devolucao' ? 'a devolução' : 'o serviço') + ' de ' +
           diaParte + ' sai, e fica um saldo de ' + horas + ': o ' + devedor + ' deve ao ' + credor + '.';
       },
+      /* troca de outros dois militares feita em cima de um serviço que sai (troca em cima de troca):
+         "Entre Cb. Veloso e Cb. Mendes, serviço de 22/10/2026 (aprovada): será cancelada junto, porque foi feita sobre um serviço que sai." */
+      trocaEmCima: function (entre, servico, devolucao, situacao) {
+        return 'Entre ' + entre + ', serviço de ' + servico + (devolucao ? ' e devolução de ' + devolucao : '') +
+          (situacao ? ' (' + situacao + ')' : '') + ': será cancelada junto, porque foi feita sobre um serviço que sai.';
+      },
       folgaCancelada: function (dia, situacao, horasDeVolta) {
         return 'De ' + dia + (situacao ? ' (' + situacao + ')' : '') + ': será cancelada' +
           (horasDeVolta ? ', e as ' + horasDeVolta + ' voltam ao saldo' : '') + '.';
@@ -641,7 +662,6 @@
       seloAtivo: 'Ativo',
       seloInativo: 'Inativo',
       seloInativoDesde: function (data) { return 'Inativo desde ' + data; },
-      seloAfastadoAte: function (situacao, data) { return situacao + ' até ' + data; },
       seloLinkCadastro: function (ate) { return 'Link de cadastro até ' + ate; },
       seloSemConta: 'Sem conta',
       /* seção "Acesso ao sistema" da ficha: o link que o administrador manda no privado do militar */
@@ -1100,6 +1120,9 @@
       /* salvar — três falhas distintas (sem conexão / servidor / banco rejeitou) */
       semConexao: 'Sem conexão. Nada foi salvo. Verifique sua internet e tente de novo.',
       falhaServidor: 'Não foi possível concluir a ação. Atualize a página e tente de novo.',
+      /* o Supabase recusou a entrada por excesso de entradas do mesmo endereço de internet
+         (login e conferência da senha atual na troca de senha) */
+      muitasEntradas: 'Muitas entradas seguidas nesta rede. Aguarde alguns minutos e tente de novo.',
       /* confirmação no modal geral-resumo; {pagina} = nome da tela. O título depende
          da ação: exclusão tem texto próprio (senão diria "alterações salvas" para algo apagado) */
       alteracoesSalvas: 'Alterações em {pagina} salvas com sucesso',
@@ -1108,7 +1131,11 @@
       recalcularDesde: 'A partir de qual data a escala deve ser recalculada?',
       dataMuitoAntiga: 'A data não pode ser mais de uma semana no passado.',
       /* dica do botão de adicionar desativado quando o posto está cheio (modelo e Editar do dia) */
-      efetivoMaximo: 'Efetivo máximo: {n}'
+      efetivoMaximo: 'Efetivo máximo: {n}',
+      /* afastamento com data-limite (selo da Usuários, linha da Escala): "Férias até 31/10" */
+      afastadoAte: function (situacao, data) { return situacao + ' até ' + data; },
+      /* filtro com só as opções à parte marcadas (ex.: "só Afastamentos", "só Inativos"): etiqueta e gatilho */
+      filtroSo: function (rotulo) { return 'só ' + rotulo; }
     },
 
     /* rótulos de botão de avisos e confirmações */
@@ -1163,6 +1190,8 @@
           .map(function (d) { return d.slice(0, 5); }).join(' e ');
         var diaParte = (t.sai === 'devolucao' ? t.devolucao : t.servico) || '';
         itens.push({ titulo: S.tituloTroca, texto: S.trocaParte(t.com, dias, t.sai, diaParte.slice(0, 5), horas(t.minutos), t.devedor, t.credor) });
+      } else if (t.acao === 'cancelar_em_cima') {
+        itens.push({ titulo: S.tituloTroca, texto: S.trocaEmCima(t.entre, t.servico, t.devolucao, (M.trocas.situacao[t.status] || '').toLowerCase()) });
       } else {
         var situacao = (M.trocas.situacao[t.status] || '').toLowerCase();
         itens.push({ titulo: S.tituloTroca, texto: S.trocaCancelada(t.com, t.servico, t.devolucao, situacao) });

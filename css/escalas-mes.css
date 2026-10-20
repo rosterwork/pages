@@ -296,6 +296,22 @@
   color: var(--texto-fraco);
 }
 
+/* afastado (férias, licença ou dispensa): só aparece com o filtro Afastamentos. Faixas diagonais (as do
+   selo de afastamento do modo Militares), o nome apagado e, no lugar do horário, "Férias até DD/MM" */
+.linha-escalado--afastamento {
+  border-radius: var(--raio-pequeno);
+  background-image: repeating-linear-gradient(-45deg,
+    var(--fundo-suave) 0 4px, var(--fundo-medio) 4px 8px);
+}
+
+.linha-escalado--afastamento .linha-escalado-nome {
+  color: var(--texto-suave);
+}
+
+.linha-escalado--afastamento .linha-escalado-hora {
+  font-weight: 600;
+}
+
 /* realce do "marcar" da busca do sub-cabeçalho: inverte a linha do militar casado (igual ao card de Usuários) */
 .linha-escalado--busca {
   background-color: var(--fundo-contraste);

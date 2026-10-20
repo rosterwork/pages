@@ -250,6 +250,13 @@
   border-color: var(--fundo-contraste);
 }
 
+/* horário que um pontual do militar ocupa: apagado e desligado (a dica diz por quê) */
+.escala-extra-marca--pontual,
+.escala-extra-marca--pontual:disabled:hover {
+  border-color: var(--borda);
+  background-color: var(--fundo-medio);
+}
+
 /* aberto embaixo do nome: o aviso de cota e os horários dos outros dias */
 .escala-extra-outros {
   grid-column: 2 / -1;

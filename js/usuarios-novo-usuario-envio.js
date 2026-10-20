@@ -66,8 +66,7 @@
     else if (!incl) erro(inclEl, textos.dataInvalida);
     else if (nasc && incl <= nasc) erro(inclEl, textos.inclusaoAposNascimento);
 
-    var coloc = campo('nu-colocacao');
-    if (coloc && !coloc.disabled && !coloc.value.trim()) erro(coloc, textos.colocacaoVazia);
+    /* a colocação é opcional para o administrador (em branco, o banco grava "0000"); o militar a informa ao entrar */
 
     if (!selecao('nu-lotacao')) erro(campo('nu-lotacao'), textos.lotacaoVazia);
     if (!selecao('nu-setor')) erro(campo('nu-setor'), textos.setorVazio);

@@ -221,13 +221,16 @@
     return lista;
   }
 
-  /* o militar de serviço no dia: { cpf, grad, nome, janelas, unidade, daUnidade, origem, pontual } (null se não está de serviço) */
+  /* o militar de serviço no dia: { cpf, grad, nome, janelas, unidade, daUnidade, origem, pontual, outraUnidade }
+     (null se não está de serviço). janelas = os horários de serviço dele nesta unidade, cada um com a origem;
+     outraUnidade = também serve em outra unidade no dia */
   function militarDoDia(cpf) {
     var d = (ctx && ctx.dados) || {};
     var mil = null;
     (d.picker || []).forEach(function (u) {
       (u.militares || []).forEach(function (m) {
-        if (m.cpf === cpf) mil = { cpf: cpf, grad: m.grad || '', nome: m.nome || '', janelas: m.disp || [], unidade: u.unidade_nome, daUnidade: !!u.editando, deFolga: false };
+        if (m.cpf === cpf) mil = { cpf: cpf, grad: m.grad || '', nome: m.nome || '', janelas: m.disp || [], unidade: u.unidade_nome, daUnidade: !!u.editando, deFolga: false,
+          outraUnidade: !!m.outra_unidade };
       });
     });
     if (!mil) return null;
@@ -341,17 +344,43 @@
     });
   }
 
-  /* Tirar do dia (militar do ciclo): folga do dia inteiro; as colocações dele saem */
-  function darFolga(cpf, contabilizar) {
-    rasc.folgas = rasc.folgas.filter(function (f) { return f.cpf !== cpf; })
-      .concat([{ cpf: cpf, hi: null, hf: null, contabilizar: !!contabilizar }]);
+  /* tira das colocações e dos cortes manuais do militar os trechos dados (o resto de cada um continua) */
+  function cortarAjustes(cpf, trechos) {
+    var novos = [];
+    rasc.ajustes.forEach(function (a) {
+      if (a.cpf !== cpf) { novos.push(a); return; }
+      menos([faixa(a)], trechos).forEach(function (f) {
+        var b = copiar(a), pr = periodo(f);
+        b.hi = pr.hi; b.hf = pr.hf;
+        novos.push(b);
+      });
+    });
+    rasc.ajustes = novos;
+  }
+
+  /* Tirar do dia (militar do ciclo): folga do dia inteiro e as colocações dele saem. Com periodos (quem também
+     serve em outra unidade no dia), a folga e o corte valem só nesses horários: o serviço de lá não muda */
+  function darFolga(cpf, contabilizar, periodos) {
+    rasc.folgas = rasc.folgas.filter(function (f) { return f.cpf !== cpf; });
+    if (periodos && periodos.length) {
+      periodos.forEach(function (p) { rasc.folgas.push({ cpf: cpf, hi: p.hi, hf: p.hf, contabilizar: !!contabilizar }); });
+      cortarAjustes(cpf, periodos.map(faixa));
+      return;
+    }
+    rasc.folgas.push({ cpf: cpf, hi: null, hf: null, contabilizar: !!contabilizar });
     rasc.ajustes = rasc.ajustes.filter(function (a) { return a.cpf !== cpf; });
   }
 
-  /* Tirar do dia (pontual): sai do dia; estornar = as horas que ele somou saem do banco de horas */
+  /* Tirar do dia (pontual): sai do dia; estornar = as horas que ele somou saem do banco de horas.
+     Quem tem outro serviço aqui no dia (ex.: a extra) perde só os ajustes manuais das horas do pontual */
   function tirarPontual(cpf, estornar) {
+    var mil = militarDoDia(cpf);
+    var pont = rasc.pontuais.filter(function (x) { return x.cpf === cpf; })[0];
+    var horas = ((pont && pont.periodos) || []).map(faixa);
+    var outras = mil ? menos(mil.janelas.map(faixa), horas) : [];
     rasc.pontuais = rasc.pontuais.filter(function (x) { return x.cpf !== cpf; });
-    rasc.ajustes = rasc.ajustes.filter(function (a) { return a.cpf !== cpf; });
+    if (outras.length) cortarAjustes(cpf, horas);
+    else rasc.ajustes = rasc.ajustes.filter(function (a) { return a.cpf !== cpf; });
     if (estornar && rasc.estornar.indexOf(cpf) < 0) rasc.estornar.push(cpf);
   }
 
@@ -554,15 +583,19 @@
     return !janelas.some(function (j) { var g = faixa(j); return f[0] >= g[0] && f[1] <= g[1]; });
   }
 
-  /* o rótulo da função na 1ª linha dela (dois empilhados quando o mesmo militar acumula);
-     nivel 'alerta' = amarelo (ressalva), 'erro' = vermelho */
-  function rotular(linha, rotulos, nivel) {
-    var fn = linha.querySelector('.escala-edicao-funcao');
+  /* o bloco de uma função: o rótulo à esquerda, no meio da altura das linhas dela (dois empilhados quando o
+     mesmo militar acumula), e o lugar das linhas. nivel 'alerta' = amarelo (ressalva), 'erro' = vermelho.
+     Sem rótulos (Sem função, De folga), só alinha as linhas com as das funções. Devolve { el, linhas } */
+  function novoGrupo(rotulos, nivel) {
+    var el = RosterWork.tpl('tpl-escala-edicao-grupo');
+    if (!el) return null;
+    var fn = el.querySelector('.escala-edicao-funcao');
     (rotulos || []).forEach(function (nm) {
       var r = RosterWork.tpl('tpl-escala-edicao-funcao-rotulo');
       if (r) { r.textContent = pecas().abreviarFuncao(nm); fn.appendChild(r); }
     });
     if (nivel && rotulos && rotulos.length) fn.classList.add('escala-edicao-funcao--' + nivel);
+    return { el: el, linhas: el.querySelector('.escala-edicao-linhas') };
   }
 
   /* a linha vazia do molde; quem só lê não tem a coluna das ações */
@@ -575,14 +608,13 @@
     return linha;
   }
 
-  /* uma linha do dia: rótulo da função (só na 1ª linha dela) · militar · horário · ações.
+  /* uma linha do dia: militar · horário · ações (a função fica no bloco dela).
      op = { ghost, folga, icone, novo, alterada, acoes }: novo = o selo "Novo" e a barra cinza; alterada = só a barra */
-  function linhaMilitar(rotulos, nivel, m, op) {
+  function linhaMilitar(m, op) {
     op = op || {};
     var p = pecas();
     var linha = novaLinha();
     if (!linha) return null;
-    rotular(linha, rotulos, nivel);
     var icones = linha.querySelector('.escala-distribuicao-icones');
     var ic = RosterWork.tpl('tpl-escala-mes-origem');
     if (ic) { p.definirIcone(ic, op.icone || p.iconeOrigem[m.origem] || p.iconeOrigem.sistema); icones.appendChild(ic); }
@@ -615,11 +647,10 @@
 
   /* horário sem ninguém na função (dentro do que o modelo pede) ou cadeira vazia do motor: para o admin,
      o botão vermelho que abre o formulário já preenchido; para quem só lê, o texto vermelho */
-  function linhaVazia(rotulos, posto, nomeFuncao, per, texto) {
+  function linhaVazia(posto, nomeFuncao, per, texto) {
     var p = pecas();
     var linha = novaLinha();
     if (!linha) return null;
-    rotular(linha, rotulos, 'erro');
     var pessoa = linha.querySelector('.escala-edicao-pessoa');
     pessoa.textContent = '';
     if (ctx.admin) {
@@ -656,13 +687,14 @@
     return set;
   }
 
-  /* as linhas de uma função: militares, o automático trocado/tirado (riscado, só para o admin) e os horários sem ninguém */
+  /* o bloco de uma função: militares, o automático trocado/tirado (riscado, só para o admin) e os horários sem
+     ninguém, com a função no meio da altura de todas as linhas */
   function linhasFuncao(caixa, posto, f) {
     var p = pecas();
     var temVao = !!f.vazio || (f.vao || []).length > 0;
-    var nivel = temVao ? 'erro' : p.nivelFuncao(f);
-    var rotulos = (f.nomes && f.nomes.length) ? f.nomes : [f.nome];
-    function por(linha) { if (linha) { caixa.appendChild(linha); rotulos = []; } }
+    var grupo = novoGrupo((f.nomes && f.nomes.length) ? f.nomes : [f.nome], temVao ? 'erro' : p.nivelFuncao(f));
+    if (!grupo) return;
+    function por(linha) { if (linha) grupo.linhas.appendChild(linha); }
     var sobrepostos = cpfsSobrepostos(f);
     (f.militares || []).forEach(function (m) {
       var acoes = [];
@@ -678,7 +710,7 @@
       }
       /* na comparação, as marcas vêm do banco ("Novo" = quem entra pelo pedido; só a barra = quem o
          sistema remanejou); na edição não há marca, porque cada mudança já está gravada */
-      var linha = linhaMilitar(rotulos, nivel, m, { novo: !!(ctx.comparar && m.novo), alterada: ctx.comparar && !!m.mudou, acoes: acoes });
+      var linha = linhaMilitar(m, { novo: !!(ctx.comparar && m.novo), alterada: ctx.comparar && !!m.mudou, acoes: acoes });
       if (linha && (sobrepostos[m.cpf] || (m.periodos || []).some(function (per) { return foraDaDisponibilidade(per, m); }))) {
         linha.classList.add('escala-edicao-linha--erro');
       }
@@ -695,11 +727,12 @@
             });
           }));
         }
-        por(linhaMilitar(rotulos, nivel, g, { ghost: true, acoes: acoes }));
+        por(linhaMilitar(g, { ghost: true, acoes: acoes }));
       });
     }
-    if (f.vazio) por(linhaVazia(rotulos, posto, f.nome, { hi: '08:00', hf: '08:00' }, msg().vazioEscolher));
-    (f.vao || []).forEach(function (v) { por(linhaVazia(rotulos, posto, f.nome, v, msg().semNinguem)); });
+    if (f.vazio) por(linhaVazia(posto, f.nome, { hi: '08:00', hf: '08:00' }, msg().vazioEscolher));
+    (f.vao || []).forEach(function (v) { por(linhaVazia(posto, f.nome, v, msg().semNinguem)); });
+    if (grupo.linhas.children.length) caixa.appendChild(grupo.el);
   }
 
   function caixaPosto(posto) {
@@ -731,11 +764,14 @@
     var caixa = RosterWork.painel.criarCaixa(msg().semFuncaoRotulo);
     if (!caixa) return null;
     caixa.classList.add('grupo-caixa--posto-erro');
+    var grupo = novoGrupo([], null);
+    if (!grupo) return caixa;
     sem.forEach(function (m) {
       var acoes = ctx.admin ? [botao('tpl-escala-edicao-lapis', function () { abrirMilitar(m.cpf); })] : [];
-      var l = linhaMilitar([], false, m, { acoes: acoes });
-      if (l) caixa.appendChild(l);
+      var l = linhaMilitar(m, { acoes: acoes });
+      if (l) grupo.linhas.appendChild(l);
     });
+    caixa.appendChild(grupo.el);
     return caixa;
   }
 
@@ -744,11 +780,14 @@
     if (!folgas.length) return null;
     var caixa = RosterWork.painel.criarCaixa(msg().deFolga);
     if (!caixa) return null;
+    var grupo = novoGrupo([], null);
+    if (!grupo) return caixa;
     folgas.forEach(function (f) {
-      var linha = linhaMilitar([], false, { cpf: f.cpf, grad: f.grad, nome: f.nome, periodos: [{ hi: f.hi, hf: f.hf }] },
+      var linha = linhaMilitar({ cpf: f.cpf, grad: f.grad, nome: f.nome, periodos: [{ hi: f.hi, hf: f.hf }] },
         { folga: true, icone: 'icone-folgas' });
-      if (linha) caixa.appendChild(linha);
+      if (linha) grupo.linhas.appendChild(linha);
     });
+    caixa.appendChild(grupo.el);
     return caixa;
   }
 
@@ -827,6 +866,7 @@
     if (!ctx.emSub) foto = copiar(rasc);   // de uma sub-tela para outra, a foto continua a do dia
     ctx.emSub = true;
     ctx.comHistorico = false;
+    ctx.aplicarTravado = false;
     if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
     montarSubcabecalho();
     var corpo = ctx.corpo;
@@ -843,7 +883,18 @@
     var cancelar = rodape.querySelector('.escala-sub-cancelar');
     var aplicar = rodape.querySelector('.escala-sub-aplicar');
     if (cancelar) cancelar.addEventListener('click', cancelarSub);
-    if (aplicar) { aplicar.textContent = textoAplicar; aplicar.addEventListener('click', function () { aoAplicar(); }); }
+    if (aplicar) {
+      aplicar.textContent = textoAplicar;
+      aplicar.disabled = ctx.aplicarTravado;
+      aplicar.addEventListener('click', function () { aoAplicar(); });
+    }
+  }
+  /* a sub-tela desliga o botão de confirmar enquanto há conflito (ex.: horário que cruza o que o militar já tem) */
+  function travarAplicar(travado) {
+    if (!ctx) return;
+    ctx.aplicarTravado = !!travado;
+    var aplicar = ctx.rodape && ctx.rodape.querySelector('.escala-sub-aplicar');
+    if (aplicar) aplicar.disabled = ctx.aplicarTravado;
   }
   /* Cancelar: volta ao dia gravado, sem gravar nada. Aplicar: a mudança grava (desenhar) */
   function cancelarSub() {
@@ -902,6 +953,7 @@
       unidadeId: function () { return ctx && ctx.unidadeId; },
       rascunho: function () { return rasc; },
       abrir: abrirSub,
+      travarAplicar: travarAplicar,
       concluir: concluirSub,
       cancelar: cancelarSub,
       previa: previa,

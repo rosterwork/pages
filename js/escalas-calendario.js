@@ -39,7 +39,7 @@
   }
 
   /* preenche a célula de UM dia (calendário) com, por unidade, a célula do Mês */
-  function preencherDia(celulaDia, iso, colunas, dados, cobertura, erro, maxPorUnidade) {
+  function preencherDia(celulaDia, iso, colunas, dados, cobertura, erro, maxPorUnidade, afastados) {
     colunas.forEach(function (c) {
       var bloco = RosterWork.tpl('tpl-escala-calendario-unidade');
       if (!bloco) return;
@@ -52,7 +52,7 @@
       var pessoas = (dados[c.id] && dados[c.id][iso]) || [];
       var cobDia = (cobertura[c.id] && cobertura[c.id][iso]) || null;
       var erroDia = (erro[c.id] && erro[c.id][iso]) || null;
-      if (RosterWork.escalasCelula) RosterWork.escalasCelula.preencherCelula(cel, cobDia, erroDia, pessoas, maxPorUnidade[c.id]);
+      if (RosterWork.escalasCelula) RosterWork.escalasCelula.preencherCelula(cel, cobDia, erroDia, pessoas, maxPorUnidade[c.id], (afastados[c.id] && afastados[c.id][iso]) || []);
       celulaDia.appendChild(bloco);
     });
   }
@@ -101,6 +101,7 @@
     window.RosterWork.escalasDados.carregar(ids, inicio, fim).then(function (resultado) {
       if (!document.contains(corpo) || req !== reqSeq || (opcoes.vigente && !opcoes.vigente())) return;   // saiu da página, outra render começou, ou trocou de modo
       var dados = resultado.militares;
+      var afastados = resultado.afastados || {};
       var cobertura = resultado.cobertura || {};
       var erro = resultado.erro || {};
       /* pico de cada unidade no mês (a régua dos gráficos da unidade) */
@@ -115,7 +116,7 @@
         unidadesPorDia: colunas.length,   // um bloco por unidade em cada dia, alinhados por linha
         aoDia: function (celulaDia, data, noMes) {
           if (!noMes) return;
-          preencherDia(celulaDia, dataISO(data), colunas, dados, cobertura, erro, maxPorUnidade);
+          preencherDia(celulaDia, dataISO(data), colunas, dados, cobertura, erro, maxPorUnidade, afastados);
         }
       });
 
@@ -140,7 +141,7 @@
       var cobDia = (r.cobertura[unidadeId] && r.cobertura[unidadeId][iso]) || null;
       var erroDia = (r.erro[unidadeId] && r.erro[unidadeId][iso]) || null;
       var pessoas = (r.militares[unidadeId] && r.militares[unidadeId][iso]) || [];
-      RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxPorUnidadeAtual[unidadeId]);
+      RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxPorUnidadeAtual[unidadeId], (r.afastados[unidadeId] && r.afastados[unidadeId][iso]) || []);
       RosterWork.escalasCelula.desenharGraficos(celula);
     }).catch(function () {});   // refresh de 1 célula falhou: mantém a célula atual (o salvamento já avisou)
   }

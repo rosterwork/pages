@@ -3,7 +3,8 @@
    No topo, a frase de que as mudanças valem a partir do dia aberto.
    Lista os militares operacionais da unidade divididos em
    "Na escala" (no ciclo, com Tirar / Cancelar saída) e
-   "Fora da escala" (com Adicionar). Só o admin vê a seção, e ela
+   "Fora da escala" (com Adicionar; o afastado no dia e quem já tem
+   a entrada marcada ganham só o selo, sem botão). Só o admin vê a seção, e ela
    abre sempre em edição. As mudanças NÃO vão ao banco a cada clique:
    ficam acumuladas na tela (selo "Vai entrar" / "Vai sair") e
    só o Salvar aplica tudo de uma vez, recalculando a escala
@@ -160,6 +161,12 @@
         if (pend) {
           extra = seloTexto(msg().continuosVaiEntrar);
           acao = botao(msg().continuosDesfazer, null, function () { desfazerPendente(m.cpf); });
+        } else if (m.afastamento) {
+          /* afastado no dia não entra na escala de nenhuma forma: só o selo, sem botão */
+          extra = seloTexto(texto(msg().continuosAfastadoAte, { motivo: m.afastamento.motivo, data: formatarData(m.afastamento.ate).slice(0, 5) }));
+        } else if (m.entra_em) {
+          /* a entrada já está marcada: só o selo, sem botão (muda-se pelo Tirar no dia da entrada) */
+          extra = seloTexto(texto(msg().continuosEntraEm, { data: formatarData(m.entra_em).slice(0, 5) }));
         } else {
           acao = botao(msg().btnAdicionar, 'botao--primario', function () { adicionar(m); });
         }

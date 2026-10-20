@@ -10,9 +10,10 @@
 
   window.RosterWork = window.RosterWork || {};
 
-  /* grade do mês (RPC ler_escala_mes): por unidade×dia devolve militares + cobertura +
+  /* grade do mês (RPC ler_escala_mes): por unidade×dia devolve militares + afastados + cobertura +
      erro (por hora, para o gráfico: 0 verde, 1 vermelho, 2 amarelo). A RPC entrega { unidade: { dia: {...} } };
-     aqui só reorganizamos nas três tabelas que o render consome. */
+     aqui só reorganizamos nas tabelas que o render consome. Os afastados (férias, licença, dispensa)
+     ficam à parte: só a Escala os mostra, com o filtro Afastamentos */
   function carregar(unidadesIds, inicio, fim) {
     var ids = (unidadesIds || []).map(Number);
     return RosterWork.apiFetch('/rest/v1/rpc/ler_escala_mes', {
@@ -22,20 +23,21 @@
       .then(function (grade) { return reorganizar(grade || {}); });
   }
 
-  /* { unidade: { dia: { militares, cobertura, erro } } } -> três mapas por unidade/dia */
+  /* { unidade: { dia: { militares, afastados, cobertura, erro } } } -> quatro mapas por unidade/dia */
   function reorganizar(grade) {
-    var militares = {}, cobertura = {}, erro = {};
+    var militares = {}, afastados = {}, cobertura = {}, erro = {};
     Object.keys(grade).forEach(function (uid) {
-      militares[uid] = {}; cobertura[uid] = {}; erro[uid] = {};
+      militares[uid] = {}; afastados[uid] = {}; cobertura[uid] = {}; erro[uid] = {};
       var dias = grade[uid] || {};
       Object.keys(dias).forEach(function (iso) {
         var c = dias[iso] || {};
         militares[uid][iso] = c.militares || [];
+        afastados[uid][iso] = c.afastados || [];
         cobertura[uid][iso] = c.cobertura || [];
         erro[uid][iso] = c.erro || [];
       });
     });
-    return { militares: militares, cobertura: cobertura, erro: erro };
+    return { militares: militares, afastados: afastados, cobertura: cobertura, erro: erro };
   }
 
   /* grade do modo Militares (RPC ler_escala_militares): por unidade, a lista de militares

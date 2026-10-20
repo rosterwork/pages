@@ -17,13 +17,6 @@
   var refData = null;           // data de referência da navegação de período
   var ouvinteRegistrado = false;
 
-  /* busca do sub-cabeçalho (nome/CPF/RG) nos modos de grade; o modo Militares tem a sua própria */
-  var buscaCtrl = null;
-  var buscaTermo = '';
-  var buscaModo = 'marcar';     // 'marcar' (realça) | 'filtrar' (esconde quem não casa)
-  var buscaObserver = null;     // reaplica a busca quando o corpo muda (render assíncrono, célula atualizada)
-  var buscaAgendada = false;
-
   /* senha compartilhada dos modos de grade (latest-wins): cada render (trocar de
      aba, navegar período, aplicar unidades) incrementa; a resposta atrasada de um
      modo confere se ainda é a vigente antes de pintar. Sem isto, a busca do Mês
@@ -150,8 +143,8 @@
     mostrar('#escala-sub-mes', modo === 'mes');
     mostrar('#escala-sub-colunas', modo === 'colunas');
     mostrar('#escala-sub-militares', modo === 'militares');
-    /* a busca do sub-cabeçalho vale nos modos de grade; o modo Militares usa a sua própria */
-    mostrar('#escala-busca-geral', modo !== 'militares');
+    /* a busca vale fora do Militares (que usa a sua própria); os filtros, só nas grades (escalas-filtros.js) */
+    if (RosterWork.escalasFiltros) RosterWork.escalasFiltros.aplicarModo(modo);
     /* a legenda do sub-cabeçalho acompanha o modo */
     if (RosterWork.escalasLegenda) RosterWork.escalasLegenda.atualizar(conteudo, modo);
     if (modo === 'colunas') {
@@ -464,64 +457,6 @@
     }
   }
 
-  /* ---------- busca do sub-cabeçalho (nome/CPF/RG) nos modos de grade ---------- */
-
-  /* aplica a busca ativa nas linhas de militar da grade: no modo Militares não age
-     (ele tem a sua própria busca). 'marcar' realça a linha casada e acende a célula;
-     'filtrar' esconde as linhas que não casam. */
-  function aplicarBuscaEscala() {
-    if (!conteudo || !window.RosterWork.busca || modoAtual() === 'militares') return;
-    var corpo = conteudo.querySelector('.pagina-corpo');
-    if (!corpo) return;
-    var RW = window.RosterWork;
-    /* limpa o anel das células antes de recolocá-lo nas que casam agora */
-    Array.prototype.forEach.call(corpo.querySelectorAll('.escala-mes-celula--busca'), function (cel) {
-      cel.classList.remove('escala-mes-celula--busca');
-    });
-    Array.prototype.forEach.call(corpo.querySelectorAll('.linha-escalado'), function (linha) {
-      var casa = RW.busca.casaTexto(buscaTermo, linha.getAttribute('data-busca'));
-      linha.classList.toggle('linha-escalado--busca', !!buscaTermo && casa && buscaModo === 'marcar');
-      linha.classList.toggle('oculto', !!buscaTermo && !casa && buscaModo === 'filtrar');
-      if (buscaTermo && casa) {
-        var cel = linha.closest('.escala-mes-celula');
-        if (cel) cel.classList.add('escala-mes-celula--busca');
-      }
-    });
-    /* modo Dia: a árvore usa a linha do painel (não há célula de grade); só realça/esconde a linha */
-    Array.prototype.forEach.call(corpo.querySelectorAll('.escala-distribuicao-escalado'), function (linha) {
-      var casa = RW.busca.casaTexto(buscaTermo, linha.getAttribute('data-busca'));
-      linha.classList.toggle('escala-distribuicao-escalado--busca', !!buscaTermo && casa && buscaModo === 'marcar');
-      linha.classList.toggle('oculto', !!buscaTermo && !casa && buscaModo === 'filtrar');
-    });
-  }
-
-  /* reaplica a busca depois que o corpo muda (nova grade, célula atualizada, re-render);
-     agenda no próximo quadro para não reprocessar a cada mutação isolada */
-  function agendarBuscaEscala() {
-    if (buscaAgendada || !buscaTermo) return;
-    buscaAgendada = true;
-    requestAnimationFrame(function () { buscaAgendada = false; aplicarBuscaEscala(); });
-  }
-
-  /* liga a busca do sub-cabeçalho: cria o controle .busca e observa o corpo para reaplicar.
-     Observa só childList (a busca só troca classes) para não entrar em laço. */
-  function ligarBuscaGeral() {
-    var caixa = conteudo.querySelector('#escala-busca-geral');
-    if (!caixa || !window.RosterWork.busca) return;
-    buscaTermo = '';
-    buscaModo = 'marcar';
-    buscaCtrl = window.RosterWork.busca.criar({
-      caixa: caixa,
-      aoBuscar: function (termo, modo) { buscaTermo = termo; buscaModo = modo; aplicarBuscaEscala(); }
-    });
-    if (buscaObserver) buscaObserver.disconnect();
-    var corpo = conteudo.querySelector('.pagina-corpo');
-    if (corpo && window.MutationObserver) {
-      buscaObserver = new MutationObserver(agendarBuscaEscala);
-      buscaObserver.observe(corpo, { childList: true, subtree: true });
-    }
-  }
-
   /* a navegação chama isto toda vez que a página de escalas é exibida */
   function iniciar(fragmento) {
     conteudo = fragmento;
@@ -541,9 +476,10 @@
     /* clicar numa célula da grade abre a gaveta de detalhes */
     if (window.RosterWork.escalasPainel) RosterWork.escalasPainel.ligar(conteudo);
 
-    /* busca do modo Militares (menu lateral) e busca do sub-cabeçalho (grade) */
+    /* busca do modo Militares; filtros e busca da grade (escalas-filtros.js); o botão Legenda (molde geral) */
     ligarBuscaMilitares();
-    ligarBuscaGeral();
+    if (window.RosterWork.escalasFiltros) RosterWork.escalasFiltros.iniciar(conteudo, modoAtual);
+    if (window.RosterWork.legenda) RosterWork.legenda.montar(conteudo.querySelector('#escala-legenda-grade'));
 
     var btnAnterior = conteudo.querySelector('#escala-periodo-anterior');
     var btnProximo = conteudo.querySelector('#escala-periodo-proximo');

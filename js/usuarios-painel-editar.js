@@ -233,20 +233,6 @@
     enviar(corpo, botao);
   }
 
-  /* o administrador trocou o próprio e-mail: as funções do banco identificam quem está logado pelo
-     e-mail do token, então a sessão guarda o novo e o token é renovado (o novo já vem com ele) */
-  function atualizarEmailDaSessao(corpo, ficha) {
-    var eu = RosterWork.sessao && RosterWork.sessao.cpf();
-    var antes = String(((ficha && ficha.pessoais) || {}).email || '').toLowerCase();
-    var depois = String(corpo.p_email || '').toLowerCase();
-    if (!eu || corpo.p_cpf !== eu || !depois || depois === antes) return Promise.resolve();
-    try {
-      var usuario = JSON.parse(sessionStorage.getItem('rosterwork_user'));
-      if (usuario) { usuario.email = depois; sessionStorage.setItem('rosterwork_user', JSON.stringify(usuario)); }
-    } catch (e) {}
-    return RosterWork.renovarSessao ? RosterWork.renovarSessao().catch(function () {}) : Promise.resolve();
-  }
-
   function enviar(corpo, botao) {
     var atual = ctx;
     if (!atual) return;
@@ -266,8 +252,7 @@
         if (r && r._falha === 'servidor') {
           if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.falhaServidor });
         } else if (r && r.success) {
-          /* a ficha só relê depois da sessão em dia */
-          atualizarEmailDaSessao(corpo, atual.ficha).then(function () { atual.ctl.concluir(r); });
+          atual.ctl.concluir(r);
         } else if (RosterWork.avisar) {
           RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || RosterWork.mensagens.usuarios.falhaSalvar });
         }

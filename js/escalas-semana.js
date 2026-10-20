@@ -83,6 +83,7 @@
     var req = ++reqSeq;
     window.RosterWork.escalasDados.carregar(ids, inicio, fim).then(function (resultado) {
       var dados = resultado.militares;
+      var afastados = resultado.afastados || {};
       var cobertura = resultado.cobertura || {};
       var erro = resultado.erro || {};
       if (!document.contains(corpo) || req !== reqSeq || (opcoes.vigente && !opcoes.vigente())) return;   // saiu da página, outra render começou, ou trocou de modo
@@ -123,7 +124,7 @@
           var pessoas = (dados[c.id] && dados[c.id][info.iso]) || [];
           var cobDia = (cobertura[c.id] && cobertura[c.id][info.iso]) || null;
           var erroDia = (erro[c.id] && erro[c.id][info.iso]) || null;
-          if (RosterWork.escalasCelula) RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxPorUnidade[c.id]);
+          if (RosterWork.escalasCelula) RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxPorUnidade[c.id], (afastados[c.id] && afastados[c.id][info.iso]) || []);
           linha.appendChild(celula);
         });
         grade.appendChild(linha);
@@ -150,7 +151,7 @@
       var cobDia = (r.cobertura[unidadeId] && r.cobertura[unidadeId][iso]) || null;
       var erroDia = (r.erro[unidadeId] && r.erro[unidadeId][iso]) || null;
       var pessoas = (r.militares[unidadeId] && r.militares[unidadeId][iso]) || [];
-      RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxPorUnidadeAtual[unidadeId]);
+      RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxPorUnidadeAtual[unidadeId], (r.afastados[unidadeId] && r.afastados[unidadeId][iso]) || []);
       RosterWork.escalasCelula.desenharGraficos(celula);
     }).catch(function () {});   // refresh de 1 célula falhou: mantém a célula atual (o salvamento já avisou)
   }

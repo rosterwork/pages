@@ -27,6 +27,7 @@
   <link rel="stylesheet" href="componentes/css/geral-arvore-unidades.css" />
   <link rel="stylesheet" href="componentes/css/geral-selo.css" />
   <link rel="stylesheet" href="componentes/css/geral-busca.css" />
+  <link rel="stylesheet" href="componentes/css/geral-filtros.css" />
   <link rel="stylesheet" href="componentes/css/geral-pagina-cabecalho.css" />
   <link rel="stylesheet" href="componentes/css/geral-abas.css" />
   <link rel="stylesheet" href="componentes/css/geral-opcao.css" />
@@ -283,26 +284,6 @@
     </div>
   </div>
 
-  <!-- AVISO: modal de aviso/confirmação (componente geral-aviso); fica fora da casca para ficar acima de qualquer modal -->
-  <div class="modal-veu" id="veu-aviso">
-    <div class="modal modal--aviso" role="alertdialog" aria-modal="true" aria-labelledby="aviso-veu-mensagem">
-      <div class="modal-corpo aviso-corpo">
-        <svg class="icone aviso-icone aviso-icone--sucesso oculto" width="32" height="32" aria-hidden="true"><use href="icones/icone-sucesso.svg#icone-sucesso"/></svg>
-        <svg class="icone aviso-icone aviso-icone--alerta oculto" width="32" height="32" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
-        <div class="aviso-textos">
-          <span class="aviso-mensagem" id="aviso-veu-mensagem"></span>
-          <ul class="aviso-lista oculto"></ul>
-          <span class="aviso-nota oculto"></span>
-        </div>
-      </div>
-      <div class="modal-rodape">
-        <button type="button" class="botao aviso-cancelar oculto"></button>
-        <button type="button" class="botao aviso-alternativo oculto"></button>
-        <button type="button" class="botao botao--primario aviso-confirmar">OK</button>
-      </div>
-    </div>
-  </div>
-
   <!-- MODAL DE DATA: "a partir de qual data recalcular a escala" (recálculo direcionado ao alterar modelo/regra/viatura/instalação/ritmo).
        Modo sugerido (configuração): a data vem escrita e o campo só aparece em "Escolher outra data" -->
   <div class="modal-veu" id="veu-data">
@@ -344,23 +325,53 @@
     </div>
   </div>
 
-  <!-- DATAS DE PROMOÇÃO: ao entrar, só para a praça com data faltando (uma vez por login; js/index-promocoes.js).
-       Exceção à regra do modal (como o Fale conosco): os campos ficam na própria janela -->
-  <div class="modal-veu" id="veu-promocoes">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="promocoes-lembrete-titulo">
+  <!-- DADOS PENDENTES: ao entrar, quando falta algo no cadastro (uma vez por login; js/index-dados-pendentes.js): a CNH
+       (todos) e a colocação no CFP e as datas de promoção (praças). Exceção à regra do modal (como o Fale conosco):
+       os campos ficam na própria janela -->
+  <div class="modal-veu" id="veu-dados-pendentes">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="dados-pendentes-titulo">
       <div class="modal-cabecalho">
-        <span class="modal-titulo" id="promocoes-lembrete-titulo">Datas de promoção pendentes</span>
+        <span class="modal-titulo" id="dados-pendentes-titulo">Dados pendentes no cadastro</span>
       </div>
       <div class="modal-corpo">
-        <p class="modal-texto">Seu cadastro está sem algumas datas de promoção. Preencha as que faltam:</p>
-        <div class="perfil-formulario" id="promocoes-lembrete-campos"></div>
-        <p class="modal-texto">Essas datas definem a sua antiguidade, que o sistema usa para organizar a escala. Você pode consultá-las em:</p>
-        <a class="botao botao--texto" href="https://www.sysbm.bombeiros.pr.gov.br/cpp/index.php" target="_blank" rel="noopener noreferrer">https://www.sysbm.bombeiros.pr.gov.br/cpp/index.php</a>
-        <p class="modal-texto">As datas informadas passam pela conferência de um administrador.</p>
+        <p class="modal-texto">Seu cadastro está sem alguns dados. Preencha os que faltam:</p>
+        <div class="perfil-formulario">
+          <div class="campo oculto" id="dados-pendentes-cnh-campo">
+            <span class="campo-rotulo">CNH</span>
+            <div class="dropdown">
+              <button type="button" class="campo-entrada campo-selecao" id="dados-pendentes-cnh" data-valor="">
+                <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+                <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+              </button>
+              <div class="dropdown-menu">
+                <button type="button" class="dropdown-item" data-valor="Nenhuma">Não tenho CNH</button>
+                <button type="button" class="dropdown-item" data-valor="A">A</button>
+                <button type="button" class="dropdown-item" data-valor="B">B</button>
+                <button type="button" class="dropdown-item" data-valor="C">C</button>
+                <button type="button" class="dropdown-item" data-valor="D">D</button>
+                <button type="button" class="dropdown-item" data-valor="E">E</button>
+                <button type="button" class="dropdown-item" data-valor="AB">AB</button>
+                <button type="button" class="dropdown-item" data-valor="AC">AC</button>
+                <button type="button" class="dropdown-item" data-valor="AD">AD</button>
+                <button type="button" class="dropdown-item" data-valor="AE">AE</button>
+              </div>
+            </div>
+            <span class="campo-erro-texto"></span>
+          </div>
+          <label class="campo oculto" id="dados-pendentes-colocacao-campo">
+            <span class="campo-rotulo">Colocação CFP</span>
+            <input class="campo-entrada" id="dados-pendentes-colocacao" type="text" inputmode="numeric" maxlength="4" placeholder="Ex.: 0001" autocomplete="off" />
+            <span class="campo-erro-texto"></span>
+          </label>
+          <div class="perfil-formulario oculto" id="dados-pendentes-postos"></div>
+        </div>
+        <p class="modal-texto oculto" data-dados-pendentes-link>As datas de promoção e a colocação no CFP definem a sua antiguidade, que o sistema usa para organizar a escala. Você pode consultá-las em:</p>
+        <a class="botao botao--texto oculto" data-dados-pendentes-link href="https://www.sysbm.bombeiros.pr.gov.br/cpp/index.php" target="_blank" rel="noopener noreferrer">https://www.sysbm.bombeiros.pr.gov.br/cpp/index.php</a>
+        <p class="modal-texto">Os dados informados passam pela conferência de um administrador.</p>
       </div>
       <div class="modal-rodape">
-        <button type="button" class="botao" id="promocoes-lembrete-depois">Preencher depois</button>
-        <button type="button" class="botao botao--primario" id="promocoes-lembrete-salvar" disabled>Salvar</button>
+        <button type="button" class="botao" id="dados-pendentes-depois">Preencher depois</button>
+        <button type="button" class="botao botao--primario" id="dados-pendentes-salvar" disabled>Salvar</button>
       </div>
     </div>
   </div>
@@ -395,6 +406,27 @@
       <div class="modal-rodape">
         <button type="button" class="botao" id="fc-cancelar">Cancelar</button>
         <button type="button" class="botao botao--primario" id="fc-enviar">Enviar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AVISO: modal de aviso/confirmação (componente geral-aviso); fora da casca e depois das outras janelas (as janelas
+       dividem a mesma camada e a de baixo no HTML fica por cima), para ficar acima de qualquer modal; só o aviso de sessão vem depois -->
+  <div class="modal-veu" id="veu-aviso">
+    <div class="modal modal--aviso" role="alertdialog" aria-modal="true" aria-labelledby="aviso-veu-mensagem">
+      <div class="modal-corpo aviso-corpo">
+        <svg class="icone aviso-icone aviso-icone--sucesso oculto" width="32" height="32" aria-hidden="true"><use href="icones/icone-sucesso.svg#icone-sucesso"/></svg>
+        <svg class="icone aviso-icone aviso-icone--alerta oculto" width="32" height="32" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+        <div class="aviso-textos">
+          <span class="aviso-mensagem" id="aviso-veu-mensagem"></span>
+          <ul class="aviso-lista oculto"></ul>
+          <span class="aviso-nota oculto"></span>
+        </div>
+      </div>
+      <div class="modal-rodape">
+        <button type="button" class="botao aviso-cancelar oculto"></button>
+        <button type="button" class="botao aviso-alternativo oculto"></button>
+        <button type="button" class="botao botao--primario aviso-confirmar">OK</button>
       </div>
     </div>
   </div>
@@ -448,6 +480,8 @@
   <script src="componentes/js/geral-seletor-unidades.js"></script>
   <script src="componentes/js/geral-arvore-unidades.js"></script>
   <script src="componentes/js/geral-filtro-arvore.js"></script>
+  <script src="componentes/js/geral-filtros.js"></script>
+  <script src="componentes/js/geral-legenda.js"></script>
   <script src="componentes/js/geral-busca.js"></script>
   <script src="componentes/js/geral-calendario.js"></script>
   <script src="componentes/js/geral-calendario-mes.js"></script>
@@ -461,7 +495,7 @@
   <script src="js/index-navegacao.js"></script>
   <script src="js/index-fale-conosco.js"></script>
   <script src="js/index-termos.js"></script>
-  <script src="js/index-promocoes.js"></script>
+  <script src="js/index-dados-pendentes.js"></script>
 
   <!-- MOLDES: análise de impacto na escala (componente geral-impacto — painel de decisão de Trocas e Folgas) -->
   <!-- um ponto da análise: nota amarela (atenção) ou vermelha (problema); sem nenhum, a nota verde -->
@@ -632,6 +666,70 @@
         <span class="arvore-nome"></span>
       </div>
       <div class="arvore-filhos"></div>
+    </div>
+  </template>
+
+  <!-- MOLDES: filtros da barra de controles (componente geral-filtros). A página escreve um lugar por filtro
+       (<div data-filtro="..." data-filtro-nome data-filtro-titulo>) dentro da caixa .filtros; o componente põe
+       ali o botão Filtros (com o número de filtros ligados) e leva cada lugar para o menu, como uma coluna
+       (#tpl-filtro). A linha "Filtros:" entra logo abaixo da barra -->
+  <template id="tpl-filtros">
+    <div class="dropdown filtros-botao">
+      <button type="button" class="botao">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-filtrar.svg#icone-filtrar"/></svg>
+        <span>Filtros</span>
+        <span class="selo selo--escuro filtros-contagem oculto"></span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu filtros-menu"></div>
+    </div>
+  </template>
+
+  <template id="tpl-filtro">
+    <div class="filtro">
+      <div class="dropdown-titulo"></div>
+      <div class="arvore-linha filtro-todos">
+        <span class="arvore-seta arvore-seta--oculta" aria-hidden="true"><svg class="icone" width="12" height="12"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg></span>
+        <button type="button" class="caixa-selecao" role="checkbox" aria-checked="true">
+          <svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg>
+        </button>
+        <span class="arvore-nome">Todos</span>
+      </div>
+      <div class="dropdown-divisor"></div>
+      <div class="arvore filtro-arvore"></div>
+    </div>
+  </template>
+
+  <template id="tpl-filtros-ativos">
+    <div class="filtros-ativos oculto">
+      <span class="filtros-ativos-rotulo">Filtros:</span>
+      <div class="filtros-ativos-lista"></div>
+      <button type="button" class="botao botao--texto filtros-ativos-limpar">Limpar filtros</button>
+    </div>
+  </template>
+
+  <template id="tpl-filtro-ativo">
+    <span class="filtro-ativo">
+      <span class="filtro-ativo-tipo"></span>
+      <span class="filtro-ativo-valor"></span>
+      <button type="button" class="filtro-ativo-tirar" aria-label="Tirar filtro">
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+      </button>
+    </span>
+  </template>
+
+  <!-- MOLDE: botão Legenda da barra de controles (componente geral-legenda). A página escreve o lugar
+       (<div id="..."></div>) e preenche a caixa [data-legenda-conteudo] com o que a tela mostra -->
+  <template id="tpl-legenda">
+    <div class="dropdown legenda">
+      <button type="button" class="botao botao--quadrado" aria-label="Legenda" data-dica="Legenda">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-legenda.svg#icone-legenda"/></svg>
+      </button>
+      <div class="dropdown-menu dropdown-menu--largo escala-legenda-menu">
+        <div class="dropdown-menu-rolagem">
+          <div class="escala-legenda-itens" data-legenda-conteudo></div>
+        </div>
+      </div>
     </div>
   </template>
 
@@ -1535,7 +1633,7 @@
           <span class="campo-erro-texto"></span>
         </label>
         <label class="campo">
-          <span class="campo-rotulo" id="nu-colocacao-rotulo">Colocação</span>
+          <span class="campo-rotulo"><span id="nu-colocacao-rotulo">Colocação</span> (opcional)</span>
           <input class="campo-entrada" id="nu-colocacao" type="text" inputmode="numeric" maxlength="4" placeholder="Selecione o tipo antes" disabled />
           <span class="campo-erro-texto"></span>
         </label>
@@ -1744,10 +1842,17 @@
   </template>
 
   <!-- lista do Dia (aba Dia do painel da Escala e da Extrajornada, e o "Como fica a escala" do painel de decisão;
-       escalas-painel-editar.js): uma linha = função · militar · horários · ações (quem só lê não tem as ações) -->
+       escalas-painel-editar.js): uma função = o rótulo à esquerda, no meio da altura das linhas dela, e as linhas -->
+  <template id="tpl-escala-edicao-grupo">
+    <div class="escala-edicao-grupo">
+      <span class="escala-edicao-funcao"></span>
+      <div class="escala-edicao-linhas"></div>
+    </div>
+  </template>
+
+  <!-- uma linha da função = militar · horários · ações (quem só lê não tem as ações) -->
   <template id="tpl-escala-edicao-linha">
     <div class="escala-edicao-linha">
-      <span class="escala-edicao-funcao"></span>
       <span class="escala-edicao-pessoa">
         <span class="escala-distribuicao-icones"></span>
         <span class="escala-distribuicao-grad"></span>

@@ -79,6 +79,25 @@
     </li>
   </template>
 
+  <!-- "retorno de afastamento sem entrada no ciclo": a contagem e a lista de nomes com a volta (não navega: a entrada se marca no Contínuos) -->
+  <template id="tpl-pendencias-retorno">
+    <div class="pendencias-corrigir pendencias-corrigir--lista">
+      <div class="pendencias-corrigir-cab">
+        <span class="selo selo--alerta pendencias-corrigir-contagem"></span>
+        <span class="pendencias-corrigir-texto"></span>
+      </div>
+      <ul class="pendencias-corrigir-itens"></ul>
+    </div>
+  </template>
+  <template id="tpl-pendencias-retorno-item">
+    <li class="pendencias-corrigir-item">
+      <span class="pendencias-corrigir-grad"></span>
+      <span class="pendencias-corrigir-nome"></span>
+      <span class="pendencias-corrigir-volta"><span class="pendencias-corrigir-motivo"></span>, volta em <span class="pendencias-corrigir-data"></span></span>
+      <span class="pendencias-corrigir-unidade"></span>
+    </li>
+  </template>
+
   <!-- "viaturas em manutenção": a contagem e a lista de viaturas (não navega: o conserto é na Escala/Distribuição) -->
   <template id="tpl-pendencias-manutencao">
     <div class="pendencias-corrigir pendencias-corrigir--lista">

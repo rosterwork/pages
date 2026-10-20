@@ -126,6 +126,7 @@
     if (!el.legenda) return;
     var id = LEGENDA[abaAtual];
     el.legenda.classList.toggle('oculto', !id);
+    if (el.legendaDivisor) el.legendaDivisor.classList.toggle('oculto', !id);
     var alvo = el.legenda.querySelector('[data-legenda-conteudo]');
     if (!alvo) return;
     alvo.textContent = '';
@@ -187,7 +188,8 @@
     el.periodoNome = conteudo.querySelector('#extra-periodo-nome');
     el.ant = conteudo.querySelector('#extra-periodo-anterior');
     el.prox = conteudo.querySelector('#extra-periodo-proximo');
-    el.legenda = conteudo.querySelector('#extra-legenda');
+    el.legenda = RW.legenda ? RW.legenda.montar(conteudo.querySelector('#extra-legenda')) : null;
+    el.legendaDivisor = conteudo.querySelector('#extra-legenda-divisor');
     if (el.ant) el.ant.addEventListener('click', function () { if (navAnt) irParaMes(navAnt); });
     if (el.prox) el.prox.addEventListener('click', function () { if (navProx) irParaMes(navProx); });
 
