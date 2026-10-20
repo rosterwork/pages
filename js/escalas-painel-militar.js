@@ -8,7 +8,7 @@
    cada horário quando há mais de um. Horário sem função tem o "Dar
    função". Ações: Nova função (Para onde + Quando) e Tirar do dia
    (do ciclo: folga, com o modal do banco de horas; pontual: sai do
-   dia). As mudanças ficam aqui até Aplicar, que as grava no rascunho
+   dia). As mudanças ficam aqui até Aplicar, que as grava
    (escalas-painel-editar.js) e volta ao dia.
    ============================================================ */
 (function () {

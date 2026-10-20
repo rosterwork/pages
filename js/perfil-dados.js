@@ -26,7 +26,7 @@
 
   function C() { return RosterWork.campos; }
   function V() { return RosterWork.validacoes; }
-
+  function P() { return RosterWork.perfilDadosPromocoes; }   /* a seção das datas de promoção (perfil-dados-promocoes.js) */
 
   /* lê o valor do controle (campo de texto ou seletor) */
   function ler(controle) {
@@ -73,6 +73,7 @@
   function restaurar() {
     C().limparErros(formulario);
     for (var i = 0; i < campos.length; i++) escrever(campos[i], originais[campos[i].campo]);
+    if (P()) P().sincronizar();
     revisar();
   }
 
@@ -120,11 +121,12 @@
       var valor = ler(controle);
       var vazio = valor === '';
 
-      /* nenhum campo pode ficar em branco — vale para o formulário todo, mudado
-         ou não (quem não tem carteira escolhe "Nenhuma" na CNH); só a colocação
-         pode seguir em branco para quem não tem (gravada como "0000") */
-      if (vazio && !(controle.campo === 'classificacao_cfo_cfp' && originais.classificacao_cfo_cfp === '')) {
-        C().marcarErro(controle.el, {
+      /* nenhum campo pode ficar em branco — vale para o formulário todo, mudado ou não (quem não
+         tem carteira escolhe "Nenhuma" na CNH); só a colocação (gravada como "0000" para quem não
+         tem) e a data de promoção que ainda não tem data (todas são opcionais) */
+      var promocao = P() && P().ehPromocao(controle.campo);
+      if (vazio && !(promocao && originais[controle.campo] === '') && !(controle.campo === 'classificacao_cfo_cfp' && originais.classificacao_cfo_cfp === '')) {
+        C().marcarErro(controle.el, promocao ? T.promocaoVazia : {
           nome_completo: T.nomeVazio, rg: T.rgVazio, data_de_nascimento: T.nascimentoVazio,
           celular: T.celularVazio, cnh: T.cnhVazia,
           email: T.emailVazio, nome_de_guerra: T.guerraVazio, tipo: T.setorVazio,
@@ -133,6 +135,7 @@
         ok = false;
         return;
       }
+      if (vazio) return;
 
       /* formato, só de quem está preenchido */
       if (controle.formato === 'data') {
@@ -165,7 +168,17 @@
       alteracoes.push({ campo: controle.campo, valor: valor });
     });
 
+    if (P() && !P().conferir()) ok = false;   /* as datas de promoção juntas: em ordem e depois da inclusão */
+
     return ok ? alteracoes : null;
+  }
+
+  /* um campo que entra depois (as datas de promoção): passa a valer como os do HTML */
+  function adicionarControle(controle, original) {
+    campos.push(controle);
+    originais[controle.campo] = original || '';
+    escrever(controle, originais[controle.campo]);
+    ligarControle(controle);
   }
 
   /* leva o primeiro campo com erro para a tela — senão o vermelho fica fora da vista */
@@ -372,6 +385,7 @@
     if (enviar) enviar.addEventListener('click', enviarPedido);
     revisar();
     carregarMinhas();
+    if (P()) P().montar(institucionais, ficha && ficha.promocoes, formulario.querySelector('[data-campo="data_de_inclusao"]'), adicionarControle).then(revisar);
   }
 
   /* o navegador avisa se sair com correções digitadas e não enviadas

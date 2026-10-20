@@ -5,10 +5,9 @@
    O link e o CPF são conferidos no criar-conta-link.js; aqui a
    ficha que o administrador cadastrou aparece para conferir:
    e-mail e celular são da pessoa e valem na hora; o resto que
-   ela corrigir vai para a aprovação de um administrador; CPF,
-   posto, lotação e as datas de promoção já gravadas ficam só
-   para conferência (as datas vazias ela pode preencher, e elas
-   também vão para a aprovação).
+   ela corrigir vai para a aprovação de um administrador, inclusive
+   as datas de promoção (preencher as vazias ou corrigir as
+   gravadas); CPF, posto e lotação ficam só para conferência.
 
    Reusa o que o sistema já tem, para o cadastro ser IGUAL ao
    "Novo usuário": RosterWork.campos (máscaras, calendário,
@@ -126,16 +125,13 @@
       campo.querySelector('.campo-rotulo').textContent = g.grau_abreviacao;
       var input = campo.querySelector('.campo-entrada');
       input.setAttribute('data-grau', g.grau_id);
+      /* a gravada vem preenchida e pode ser corrigida (vai para a aprovação, e não volta a ficar em branco) */
       var gravada = datasFicha[String(g.grau_id)];
-      if (gravada) {
-        input.value = isoParaBR(gravada);
-        input.disabled = true;
-      } else {
-        input.value = datasDigitadas[g.grau_id] || '';
-        C.ligarData(input);
-        C.ligarValidacao(input, function (v) { return RW.validacoes.parseData(v) ? null : RW.mensagens.cadastro.dataInvalida; });
-        input.addEventListener('input', function () { datasDigitadas[g.grau_id] = input.value; });
-      }
+      if (gravada) input.setAttribute('data-gravada', '');
+      input.value = Object.prototype.hasOwnProperty.call(datasDigitadas, g.grau_id) ? datasDigitadas[g.grau_id] : isoParaBR(gravada);
+      C.ligarData(input);
+      C.ligarValidacao(input, function (v) { return RW.validacoes.parseData(v) ? null : RW.mensagens.cadastro.dataInvalida; });
+      input.addEventListener('input', function () { datasDigitadas[g.grau_id] = input.value; });
       lista.appendChild(campo);
     });
     document.getElementById(idSecao).classList.toggle('oculto', !postos.length);
@@ -269,8 +265,7 @@
 
   /* ---------- o que a pessoa confere, não edita ----------
      CPF é a identidade que casou com o link; posto e lotação mudam por evento
-     (Promover/Transferir), então aqui ficam só para conferência. As datas de
-     promoção já gravadas vêm travadas do montarDatas */
+     (Promover/Transferir), então aqui ficam só para conferência */
   function travarConferencia() {
     ['cc-cpf', 'cc-tipo', 'cc-posto', 'cc-lotacao'].forEach(function (id) {
       var e = document.getElementById(id);

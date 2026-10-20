@@ -344,6 +344,27 @@
     </div>
   </div>
 
+  <!-- DATAS DE PROMOÇÃO: ao entrar, só para a praça com data faltando (uma vez por login; js/index-promocoes.js).
+       Exceção à regra do modal (como o Fale conosco): os campos ficam na própria janela -->
+  <div class="modal-veu" id="veu-promocoes">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="promocoes-lembrete-titulo">
+      <div class="modal-cabecalho">
+        <span class="modal-titulo" id="promocoes-lembrete-titulo">Datas de promoção pendentes</span>
+      </div>
+      <div class="modal-corpo">
+        <p class="modal-texto">Seu cadastro está sem algumas datas de promoção. Preencha as que faltam:</p>
+        <div class="perfil-formulario" id="promocoes-lembrete-campos"></div>
+        <p class="modal-texto">Essas datas definem a sua antiguidade, que o sistema usa para organizar a escala. Você pode consultá-las em:</p>
+        <a class="botao botao--texto" href="https://www.sysbm.bombeiros.pr.gov.br/cpp/index.php" target="_blank" rel="noopener noreferrer">https://www.sysbm.bombeiros.pr.gov.br/cpp/index.php</a>
+        <p class="modal-texto">As datas informadas passam pela conferência de um administrador.</p>
+      </div>
+      <div class="modal-rodape">
+        <button type="button" class="botao" id="promocoes-lembrete-depois">Preencher depois</button>
+        <button type="button" class="botao botao--primario" id="promocoes-lembrete-salvar" disabled>Salvar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- FALE CONOSCO: envio de recado (exceção à regra § modal: formulário em modal, para bloquear a tela ao fundo; ver REGRAS §4) -->
   <div class="modal-veu" id="veu-fale-conosco">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="fc-titulo">
@@ -440,6 +461,7 @@
   <script src="js/index-navegacao.js"></script>
   <script src="js/index-fale-conosco.js"></script>
   <script src="js/index-termos.js"></script>
+  <script src="js/index-promocoes.js"></script>
 
   <!-- MOLDES: análise de impacto na escala (componente geral-impacto — painel de decisão de Trocas e Folgas) -->
   <!-- um ponto da análise: nota amarela (atenção) ou vermelha (problema); sem nenhum, a nota verde -->
@@ -454,7 +476,6 @@
   <template id="tpl-aviso-lista-item">
     <li class="aviso-lista-item"><span class="aviso-lista-titulo"></span><span class="aviso-lista-texto"></span></li>
   </template>
-
   <!-- sino: uma notificação (a linha inteira leva à tela do assunto) -->
   <template id="dropdown-item-aviso">
     <button type="button" class="aviso-item">
@@ -1005,6 +1026,18 @@
     </button>
   </template>
 
+  <!-- subcabeçalho do admin, à direita: desfazer e refazer a última mudança do dia (o JS liga e desliga) -->
+  <template id="tpl-escala-edicao-historico">
+    <div class="escala-edicao-historico">
+      <button type="button" class="botao botao--icone escala-edicao-historico-desfazer" aria-label="Desfazer" data-dica="Desfazer" disabled>
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-desfazer.svg#icone-desfazer"/></svg>
+      </button>
+      <button type="button" class="botao botao--icone escala-edicao-historico-refazer" aria-label="Refazer" data-dica="Refazer" disabled>
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-refazer.svg#icone-refazer"/></svg>
+      </button>
+    </div>
+  </template>
+
   <!-- lápis: abre o militar no dia -->
   <template id="tpl-escala-edicao-lapis">
     <button type="button" class="botao-discreto" aria-label="Editar o militar no dia">
@@ -1016,13 +1049,6 @@
   <template id="tpl-escala-edicao-desfazer">
     <button type="button" class="botao-discreto" aria-label="Voltar ao automático">
       <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-restaurar.svg#icone-restaurar"/></svg>
-    </button>
-  </template>
-
-  <!-- desfaz a folga ainda não salva -->
-  <template id="tpl-escala-edicao-tirar-folga">
-    <button type="button" class="botao-discreto" aria-label="Desfazer esta folga">
-      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
     </button>
   </template>
 
@@ -1039,7 +1065,7 @@
     </div>
   </template>
 
-  <!-- rodapé do dia: quantas alterações faltam salvar -->
+  <!-- rodapé do Ciclo e da Extrajornada: quantas alterações faltam salvar -->
   <template id="tpl-escala-edicao-info">
     <span class="escala-edicao-info"></span>
   </template>
@@ -1746,7 +1772,6 @@
   <template id="tpl-escala-distribuicao-aviso">
     <div class="escala-distribuicao-aviso">
       <div class="escala-distribuicao-aviso-lista"></div>
-      <span class="escala-distribuicao-aviso-acao oculto">CORRIJA PARA SALVAR</span>
     </div>
   </template>
 
@@ -1947,8 +1972,7 @@
     </li>
   </template>
 
-  <!-- adicionar observação (admin, no Dia): botão que abre o campo com limite de caracteres; a nota entra
-       na lista e grava junto com o Salvar do dia -->
+  <!-- adicionar observação (admin, no Dia): botão que abre o campo com limite de caracteres; a nota grava na hora -->
   <template id="tpl-escala-observacao-adicionar">
     <div class="escala-observacao-add">
       <button type="button" class="botao botao--pequeno escala-observacao-add-botao">

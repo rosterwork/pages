@@ -140,7 +140,10 @@
       if (!selecao(id)) erro(el(id), ESCOLHAS[id]());
     });
 
-    /* as datas de promoção (as gravadas e as preenchidas): válidas, em ordem e nenhuma antes da inclusão */
+    /* as datas de promoção: a gravada não volta a ficar em branco; todas válidas, em ordem e nenhuma antes da inclusão */
+    camposDeData().forEach(function (input) {
+      if (input.hasAttribute('data-gravada') && !input.value.trim()) erro(input, T().promocaoVazia);
+    });
     if (!C.conferirPromocoes(camposDeData(), V.parseData(valor('cc-inclusao')), el('cc-inclusao'))) ok = false;
 
     /* a ciência dos termos é obrigatória */
@@ -165,10 +168,10 @@
 
   /* os campos que a pessoa pode ter corrigido. O banco compara com o valor atual
      e só manda para aprovação o que mudou; e-mail, celular e senha vão fora
-     daqui, valem na hora. As datas de promoção vão só as que estavam vazias e
-     ela preencheu (promocao_<grau_id>); as gravadas ficam travadas. */
+     daqui, valem na hora. As datas de promoção vão as preenchidas (promocao_<grau_id>);
+     a gravada que não mudou o banco deixa de fora. */
   function montarCorrecoes() {
-    var datas = camposDeData().filter(function (input) { return !input.disabled && input.value.trim(); })
+    var datas = camposDeData().filter(function (input) { return input.value.trim(); })
       .map(function (input) { return { campo: 'promocao_' + input.getAttribute('data-grau'), valor: V.paraISO(input.value.trim()) }; });
     return [
       { campo: 'nome_completo', valor: valor('cc-nome-completo') },

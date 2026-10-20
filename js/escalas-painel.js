@@ -240,20 +240,6 @@
     return nivel;
   }
 
-  /* há conflito nos postos do dia? fora da disponibilidade (incompativel) ou sobreposição
-     na função. soManual=true conta só o que envolve ajuste manual (é o que trava o Salvar) */
-  function temConflito(postos, soManual) {
-    return (postos || []).some(function (po) {
-      if (po.acima_maximo) return true;   // acima do efetivo máximo sempre trava (nunca passa do máximo)
-      return (po.funcoes || []).some(function (f) {
-        var mils = f.militares || [];
-        var inc = mils.some(function (mil) { return mil.incompativel && (!soManual || mil.fixado); });
-        var sob = !!f.sobreposicao;   // sobreposição na função sempre trava (não dá para ter 2 militares no mesmo horário)
-        return inc || sob;
-      });
-    });
-  }
-
   /* "1ºPEL: 5 praças"; compostos juntam unidades com " + " (ex.: "2ªCIBM: 1 oficial + 1ºPEL: 7 praças") */
   function textoComposicao(unidades) {
     return (unidades || []).map(function (u) {
@@ -361,13 +347,12 @@
     lista.appendChild(grupo);
   }
 
-  /* a lista de avisos do topo vem pronta do banco (dados.problemas, a mesma fonte do gráfico da grade),
-     no Ver e no Editar (no Editar, calculada sobre o rascunho ainda não salvo): uma linha por tipo de
-     problema, vermelho primeiro e amarelo depois; no vermelho, da causa para a consequência: o modelo,
-     quem ficou sem função, os postos e o militar em situação errada. faltamModelos e modelosComErro
-     trazem a composição de cada trecho. O detalhe amarelo expansível (quem + vaga + motivo) segue
-     montado pelos dados dos postos. mostrarAcao revela o "CORRIJA PARA SALVAR" */
-  function montarAvisoProblemas(problemas, postos, faltamModelos, modelosComErro, mostrarAcao) {
+  /* a lista de avisos do topo vem pronta do banco (dados.problemas, a mesma fonte do gráfico da grade):
+     uma linha por tipo de problema, vermelho primeiro e amarelo depois; no vermelho, da causa para a
+     consequência: o modelo, quem ficou sem função, os postos e o militar em situação errada.
+     faltamModelos e modelosComErro trazem a composição de cada trecho. O detalhe amarelo expansível
+     (quem + vaga + motivo) segue montado pelos dados dos postos */
+  function montarAvisoProblemas(problemas, postos, faltamModelos, modelosComErro) {
     var lista = problemas || [];
     if (!lista.length) return null;
     var cat = (RosterWork.mensagens && RosterWork.mensagens.escala && RosterWork.mensagens.escala.erros) || {};
@@ -479,10 +464,6 @@
     });
 
     if (!alvo.children.length) return null;
-    if (mostrarAcao) {
-      var acao = aviso.querySelector('.escala-distribuicao-aviso-acao');
-      if (acao) acao.classList.remove('oculto');
-    }
     return aviso;
   }
 
@@ -506,10 +487,10 @@
   }
 
   /* ---------- guarda de descarte: avisa antes de perder rascunho não salvo ---------- */
-  /* seções com rascunho não salvo (Dia e Ciclo; o rascunho da Extrajornada é do mês e não se perde ao trocar de dia ou de aba) */
+  /* seções com rascunho não salvo (o Ciclo; o Dia grava cada mudança na hora, e o rascunho da Extrajornada é do mês
+     e não se perde ao trocar de dia ou de aba) */
   function secaoSuja() {
-    return !!((RosterWork.escalasPainelEditar && RosterWork.escalasPainelEditar.estaSujo && RosterWork.escalasPainelEditar.estaSujo())
-      || (RosterWork.escalasPainelContinuos && RosterWork.escalasPainelContinuos.estaSujo && RosterWork.escalasPainelContinuos.estaSujo())
+    return !!((RosterWork.escalasPainelContinuos && RosterWork.escalasPainelContinuos.estaSujo && RosterWork.escalasPainelContinuos.estaSujo())
       || (RosterWork.escalasPainelExtra && RosterWork.escalasPainelExtra.estaSujo && RosterWork.escalasPainelExtra.estaSujo()));
   }
   function limparSecoesSujas() {
@@ -668,7 +649,7 @@
   }
 
   /* bloco "Em manutenção" (amarelo) da viatura: aviso + a nota. Só leitura, ou editável (admin no Dia):
-     aoMudar(texto) leva a nota para o rascunho, que grava junto com o Salvar do dia */
+     aoMudar(texto) recebe a nota ao sair do campo, e ela grava na hora */
   function montarManutencao(posto, editavel, aoMudar, valor) {
     var el = RosterWork.tpl('tpl-escala-manutencao');
     if (!el) return null;
@@ -681,7 +662,7 @@
       if (verTxt) verTxt.classList.add('oculto');
       if (input) {
         input.value = obs;
-        input.addEventListener('input', function () { if (aoMudar) aoMudar(input.value); });
+        input.addEventListener('change', function () { if (aoMudar) aoMudar(input.value); });
       }
     } else {
       if (input) input.classList.add('oculto');
@@ -894,7 +875,7 @@
 
   /* seção "Observações" do dia em grupos: Administração (notas manuais do admin), Trocas, Folgas e De outra unidade
      (automáticas), cada um com a sua lista numerada. Para o admin no Dia: botão para adicionar (com limite)
-     e ✕ para excluir SÓ as do admin; as duas coisas vão para o rascunho e gravam no Salvar do dia.
+     e ✕ para excluir SÓ as do admin; as duas coisas gravam na hora.
      Sem editar: só leitura. opcoes = { editar, aoAdicionar(texto), aoRemover(observacao) } */
   function montarObservacoes(obs, opcoes) {
     opcoes = opcoes || {};
@@ -978,7 +959,6 @@
       mesclarFuncoes: mesclarFuncoesViatura,
       marcarConflito: marcarConflito,
       alteracoes: montarAlteracoes,
-      temConflito: temConflito,
       temAlguem: temAlguem,
       nivelFuncao: nivelDaFuncao,
       nivelPosto: nivelDoPosto,

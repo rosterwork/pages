@@ -14,8 +14,8 @@
    horário); no Adicionar, também "O sistema distribui". Se ele já tem
    função no horário, uma nota avisa que vai acumular (para deixar uma,
    desmarca-se na tela do militar). Quem é o mais antigo assume o Chefe
-   de Socorro ou o Oficial de Área sozinho, e a tela avisa. Aplica no
-   rascunho (escalas-painel-editar.js) e volta ao dia.
+   de Socorro ou o Oficial de Área sozinho, e a tela avisa. O botão
+   de confirmar grava (escalas-painel-editar.js) e volta ao dia.
    ============================================================ */
 (function () {
   'use strict';

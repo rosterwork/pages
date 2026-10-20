@@ -5,12 +5,18 @@
    ciência, que só fecha por "Estou ciente" (termos_dar_ciencia,
    grava no Histórico; a própria janela confirma, sem o resumo) ou
    por "Sair". Liga o item "Termos e privacidade" do menu do usuário
-   e expõe RosterWork.termos para o Meu perfil.
+   e expõe RosterWork.termos para o Meu perfil. A janela dos termos
+   tem a vez: RosterWork.termos.liberado avisa as outras janelas de
+   entrada (o lembrete das datas de promoção) quando podem abrir.
    ============================================================ */
 (function () {
   'use strict';
 
   window.RosterWork = window.RosterWork || {};
+
+  /* resolve quando a tela de entrada está livre: o véu da primeira página sumiu e a ciência está em dia */
+  var liberar;
+  var liberado = new Promise(function (resolver) { liberar = resolver; });
 
   /* a página pública abre em outra aba: o que está na tela não se perde */
   function abrirPagina() {
@@ -31,6 +37,7 @@
         if (RosterWork.pararCarregando) RosterWork.pararCarregando(botao);
         if (r && r.success) {
           if (RosterWork.fecharModais) RosterWork.fecharModais();
+          liberar();
           return;
         }
         RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || RosterWork.mensagens.termos.falhaCiencia });
@@ -41,13 +48,17 @@
       });
   }
 
-  /* abre a janela depois que a primeira página termina de carregar: o véu de
-     carregamento fica acima dos modais e cobriria a janela (espera até ~5 s) */
-  function abrirQuandoLivre(tentativas) {
+  /* espera a primeira página terminar de carregar: o véu de carregamento fica
+     acima dos modais e cobriria a janela (espera até ~5 s) */
+  function quandoLivre(acao, tentativas) {
     if (document.querySelector('.carregando-veu--visivel') && tentativas > 0) {
-      setTimeout(function () { abrirQuandoLivre(tentativas - 1); }, 200);
+      setTimeout(function () { quandoLivre(acao, tentativas - 1); }, 200);
       return;
     }
+    acao();
+  }
+
+  function abrirJanela() {
     if (RosterWork.abrirModal) RosterWork.abrirModal('veu-termos');
   }
 
@@ -66,11 +77,11 @@
     if (confirmar) confirmar.addEventListener('click', function () { darCiencia(confirmar); });
 
     situacao().then(function (s) {
-      if (s && s.pendente) abrirQuandoLivre(25);
+      quandoLivre((s && s.pendente) ? abrirJanela : liberar, 25);
     });
   }
 
-  window.RosterWork.termos = { situacao: situacao, abrirPagina: abrirPagina };
+  window.RosterWork.termos = { situacao: situacao, abrirPagina: abrirPagina, liberado: liberado };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', inicializar);

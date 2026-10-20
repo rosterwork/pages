@@ -123,8 +123,7 @@
     if (avisoAberto) return;
     avisoAberto = true;
     inicioAviso = performance.now();
-    if (RW.abrirModal) RW.abrirModal('veu-sessao');
-    if (btnContinuar) btnContinuar.focus();
+    if (RW.abrirModal) RW.abrirModal('veu-sessao', btnContinuar);
     quadroAnel = window.requestAnimationFrame(pintarAnel);
     clearTimeout(timerExpiracao);
     timerExpiracao = setTimeout(expirarPorInatividade, AVISO_MS);

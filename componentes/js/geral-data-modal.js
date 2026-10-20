@@ -124,9 +124,9 @@
     aoCancelar = opcoes.aoCancelar || null;
     focoAnterior = document.activeElement;
     veu.classList.add('modal-veu--aberto');
-    if (sugerida) { btnConfirmar.focus(); return; }
-    input.focus();
-    if (input.select) input.select();
+    RosterWork.focarJanela(veu, sugerida ? btnConfirmar : input, function () {
+      if (!sugerida && input.select) input.select();
+    });
   }
 
   window.RosterWork.pedirData = pedirData;

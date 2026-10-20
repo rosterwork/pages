@@ -14,6 +14,13 @@
   gap: 8px;
 }
 
+/* subcabeçalho do admin: o desfazer e o refazer, à direita */
+.escala-edicao-historico {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
 /* uma linha: função · militar · horários · ações (horários e ações juntos, à direita) */
 .escala-edicao-linha {
   display: grid;
@@ -59,7 +66,7 @@
   justify-content: flex-end;
 }
 
-/* linha mexida e ainda não salva: a barra cinza à esquerda */
+/* na comparação (Trocas e Folgas), quem entra pelo pedido ou o sistema remanejou: a barra cinza à esquerda */
 .escala-edicao-linha--alterada {
   box-shadow: inset 2px 0 0 var(--borda-forte);
 }
@@ -100,7 +107,7 @@
   color: var(--erro);
 }
 
-/* rodapé: quantas alterações faltam salvar, à esquerda dos botões */
+/* rodapé do Ciclo e da Extrajornada: quantas alterações faltam salvar, à esquerda dos botões */
 .escala-edicao-info {
   margin-right: auto;
   align-self: center;

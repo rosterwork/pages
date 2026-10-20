@@ -401,7 +401,7 @@
                   </ol>
                 </figcaption>
               </figure>
-              <p><strong>E-mail e celular são seus e valem na hora.</strong> Se outro dado estiver errado (nome, RG, nascimento, CNH e afins), corrija ali mesmo: a correção passa pela aprovação de um administrador antes de valer, como uma correção comum. <strong>CPF, posto e lotação</strong> aparecem só para conferência: eles mudam por promoção e transferência, feitas pelo administrador. As <strong>datas de promoção</strong> já gravadas também; as que estiverem vazias você pode preencher, e elas vão para a aprovação junto com as correções.</p>
+              <p><strong>E-mail e celular são seus e valem na hora.</strong> Se outro dado estiver errado (nome, RG, nascimento, CNH e afins), corrija ali mesmo: a correção passa pela aprovação de um administrador antes de valer, como uma correção comum. <strong>CPF, posto e lotação</strong> aparecem só para conferência: eles mudam por promoção e transferência, feitas pelo administrador. As <strong>datas de promoção</strong> você pode preencher, se estiverem vazias, ou corrigir, se estiverem erradas: elas vão para a aprovação junto com as correções. Uma data já cadastrada não pode ficar em branco.</p>
               <p class="manual-nota"><strong>Data de inclusão.</strong> É o seu início na corporação, a data do seu primeiro posto: quem foi incluído a partir de 01/11/2024 começa como Soldado 3ª Classe; antes disso, como Soldado 2ª Classe. As datas de promoção são as dos postos seguintes, e nenhuma pode ser antes da data de inclusão. Se você é oficial e foi praça, as datas daquele tempo ficam à parte, só como registro.</p>
               <p><strong>Termos de uso e privacidade.</strong> Antes de criar a conta, marque <strong>Li e estou ciente dos Termos de uso e privacidade</strong>; a marcação é obrigatória. <strong>Ler os termos</strong> abre o texto em outra aba, e o que você já preencheu continua na tela.</p>
               <p>Ao clicar em <strong>Criar conta</strong>, a sua conta é criada e você já entra com o seu CPF e a senha.</p>
@@ -481,6 +481,7 @@
                   </ol>
                 </figcaption>
               </figure>
+              <p><strong>Datas de promoções.</strong> Depois da Carreira, há um campo para cada posto depois do primeiro. Preencha as datas que faltam e corrija as que estiverem erradas; a que você não souber pode ficar em branco, mas uma data já cadastrada não pode ser apagada. Se você é praça, o seu primeiro posto (Soldado 2ª Classe ou 3ª Classe) aparece no alto com a data de inclusão, porque a data dele é a de inclusão: mudar uma muda a outra. As datas seguem a ordem da carreira, e nenhuma pode ser antes da data de inclusão.</p>
               <p class="manual-nota"><strong>O que vale na hora e o que vai para aprovação:</strong> <strong>e-mail e celular</strong> são seus e valem assim que você salva, com um resumo do que mudou. O resto você <strong>solicita</strong>: o pedido fica <strong>pendente</strong> até um administrador aprovar, inclusive a CNH, que decide se você pode ser escalado como condutor. Abaixo do formulário, em "Minhas solicitações", você acompanha cada pedido pelo status: Pendente, Aprovada ou Recusada. O CPF não entra (é o seu login), e grau e lotação também não (mudam só por promoção ou transferência).</p>
 
               <p><strong>Segurança (3).</strong> Aqui você troca a sua senha: digite a senha atual, a nova (ao menos 6 caracteres e diferente da atual) e confirme. A senha muda na hora, sem precisar de aprovação.</p>
@@ -755,13 +756,15 @@
                 <p class="manual-nota"><strong>Tirar do ciclo mexe no que dependia dele.</strong> Ao clicar em <strong>Tirar</strong>, e também ao dar baixa ou transferir, a janela de confirmação mostra a lista do que vai acontecer a partir da data: cada troca, folga e extra do militar e o que acontece com ela. O que já aconteceu não é desfeito. A troca em que nenhuma parte aconteceu é cancelada inteira; se uma parte já aconteceu, só a outra sai e fica um saldo entre os dois, em Trocas, na aba Saldos. As folgas que ainda não aconteceram são canceladas, e as horas descontadas voltam ao saldo. As extras saem da escala e da Extrajornada, e as horas voltam para a cota dele. Quem tinha troca ou folga cancelada recebe um aviso, e os dois militares de uma troca que perdeu uma parte recebem o aviso "Troca alterada", com o saldo. O que foi cancelado não volta, mesmo que o militar volte ao ciclo depois.</p>
                 <p><strong>Só naquele dia.</strong> Para escalar um militar só num dia, sem entrar no ciclo, use o <strong>Adicionar militar</strong> da aba Dia (veja <strong>Ajustar o dia</strong>, logo abaixo).</p>
                 <h3 id="distribuicao-dia">Ajustar o dia <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p>Na aba <strong>Dia</strong> do painel do dia, você ajusta aquele dia. Para o administrador, a aba já abre pronta para editar: a lista é a mesma que todos veem, com o botão <strong>Adicionar militar</strong> no alto do painel e o <strong>lápis</strong> em cada linha. As mudanças valem <strong>só para aquele dia</strong> e ficam marcadas na tela, com o selo <strong>Novo</strong>, até você clicar em <strong>Salvar</strong>, que grava tudo de uma vez. O rodapé mostra quantas alterações faltam salvar, e o <strong>Cancelar</strong> desfaz todas.</p>
+                <p>Na aba <strong>Dia</strong> do painel do dia, você ajusta aquele dia. Para o administrador, a aba já abre pronta para editar: a lista é a mesma que todos veem, com o botão <strong>Adicionar militar</strong> no alto do painel e o <strong>lápis</strong> em cada linha. As mudanças valem <strong>só para aquele dia</strong> e não precisam de Salvar: cada uma grava na hora, e a escala da página já mostra o dia atualizado.</p>
+                <p><strong>Desfazer e Refazer.</strong> Os ícones no alto do painel, à direita, desfazem a última mudança e a refazem (também pelo teclado: <strong>Ctrl+Z</strong> desfaz e <strong>Ctrl+Y</strong> refaz). Valem para as mudanças feitas enquanto o painel está aberto naquele dia; ao fechar o painel ou trocar de dia, começam do zero. Desfazer não manda aviso a ninguém: se você deu folga a um militar e desfez, ele não recebe aviso de folga cancelada.</p>
                 <figure class="manual-figura">
-                  <img src="manual/imagens/escala-painel-admin.png" alt="O alto do painel do dia para o administrador: as abas Dia, Ciclo e Extrajornada (1), o botão Adicionar militar (2) e o lápis de uma linha (3)." />
+                  <img src="manual/imagens/escala-painel-admin.png" alt="O alto do painel do dia para o administrador: as abas Dia, Ciclo e Extrajornada (1), o botão Adicionar militar (2), os ícones Desfazer e Refazer (3) e o lápis de uma linha (4)." />
                   <figcaption>
                     <ol class="manual-chamadas">
                       <li>Abas Dia, Ciclo e Extrajornada</li>
                       <li>Adicionar militar</li>
+                      <li>Desfazer e Refazer</li>
                       <li>Lápis, que abre o militar no dia</li>
                     </ol>
                   </figcaption>
@@ -791,7 +794,7 @@
                   <li><strong>Nova função:</strong> põe o militar em outra função, no horário que você escolher. Se ele já tem função nesse horário, passa a acumular as duas, no mesmo posto ou em outro posto da unidade (nunca em unidades diferentes).</li>
                   <li><strong>Tirar do dia:</strong> o militar do ciclo fica de folga naquele dia, e o sistema pergunta se as horas saem do banco de horas dele; o militar escalado só naquele dia sai da escala.</li>
                 </ul>
-                <p>Clique em <strong>Aplicar</strong> para voltar à lista com a mudança.</p>
+                <p>Clique em <strong>Aplicar</strong> para gravar a mudança e voltar à lista.</p>
                 <figure class="manual-figura">
                   <img src="manual/imagens/escala-militar-dia.png" alt="O militar no dia: a caixa de marcar de uma função (1), os horários com o ícone Adicionar horário (2) e os botões Nova função e Tirar do dia (3)." />
                   <figcaption>
@@ -804,18 +807,19 @@
                 </figure>
                 <p><strong>Horário sem ninguém.</strong> Quando você tira alguém de uma função num horário, esse horário fica vermelho, com o botão <strong>Sem ninguém, escolher</strong>. Ele abre o mesmo formulário, já com a função e o horário, e mostra também quem está de serviço sem função nesse horário. A linha mexida tem ainda o ícone <strong>Voltar ao automático</strong>, que desfaz o ajuste.</p>
                 <figure class="manual-figura">
-                  <img src="manual/imagens/escala-editar.png" alt="Uma função mexida no dia: a linha com o selo Novo e o ícone Voltar ao automático (1) e o horário sem ninguém, com o botão Sem ninguém, escolher (2)." />
+                  <img src="manual/imagens/escala-editar.png" alt="Uma função mexida no dia: a linha com o cadeado e o ícone Voltar ao automático (1) e o horário sem ninguém, com o botão Sem ninguém, escolher (2)." />
                   <figcaption>
                     <ol class="manual-chamadas">
-                      <li>Linha mexida: selo Novo e Voltar ao automático</li>
+                      <li>Linha mexida: cadeado e Voltar ao automático</li>
                       <li>Horário sem ninguém, com o botão Sem ninguém, escolher</li>
                     </ol>
                   </figcaption>
                 </figure>
-                <p>O que você muda nas funções ganha o ícone de <strong>Função fixada</strong> (cadeado), fica <strong>por cima</strong> do automático e continua valendo mesmo quando o sistema recalcula a escala. Quando alguém entra ou sai do dia, o sistema refaz a distribuição automática daquele dia, e a lista já mostra como vai ficar antes de você salvar.</p>
+                <p>O que você muda nas funções ganha o ícone de <strong>Função fixada</strong> (cadeado), fica <strong>por cima</strong> do automático e continua valendo mesmo quando o sistema recalcula a escala. Quando alguém entra ou sai do dia, o sistema refaz a distribuição automática daquele dia, e a lista mostra na hora como ficou.</p>
                 <p>O <strong>Chefe de Socorro</strong> e o <strong>Oficial de Área</strong> são sempre o mais antigo de serviço, conforme a normativa, e ficam travados: não dá para tirar, trocar nem mudar o horário deles. Se você puser no dia alguém mais antigo, ele assume o papel, e a lista avisa no alto quem assume no lugar de quem.</p>
-                <p>As <strong>observações</strong> do dia ficam no fim da lista, em grupos: <strong>Administração</strong>, <strong>Trocas</strong>, <strong>Folgas</strong> e <strong>De outra unidade</strong>. O botão <strong>Adicionar observação</strong> inclui uma nota no grupo Administração, e o <strong>✕</strong> exclui as suas. Elas também gravam no <strong>Salvar</strong>.</p>
-                <p>As regras de cada militar valem também para os seus ajustes. Colocar um condutor sem a CNH exigida pela viatura, ou um militar numa função que a regra dele proíbe, fica em vermelho e trava o <strong>Salvar</strong>, assim como o horário fora da disponibilidade, dois militares no mesmo horário e o militar em duas unidades ao mesmo tempo. Colocar um militar exclusivo fora da sua função, ou com grau diferente do ideal, fica em amarelo e o <strong>Salvar</strong> segue liberado.</p>
+                <p>As <strong>observações</strong> do dia ficam no fim da lista, em grupos: <strong>Administração</strong>, <strong>Trocas</strong>, <strong>Folgas</strong> e <strong>De outra unidade</strong>. O botão <strong>Adicionar observação</strong> inclui uma nota no grupo Administração, e o <strong>✕</strong> exclui as suas. Elas também gravam na hora.</p>
+                <p>As regras de cada militar valem também para os seus ajustes. Colocar um condutor sem a CNH exigida pela viatura, ou um militar numa função que a regra dele proíbe, não grava: o sistema avisa o motivo e a lista fica como estava. O mesmo vale para o horário fora do serviço do militar, dois militares no mesmo horário, o militar em duas unidades ao mesmo tempo e o posto acima do efetivo máximo. Se o dia já tinha um erro em vermelho de antes, ele não impede as outras mudanças, e você o corrige quando quiser. Colocar um militar exclusivo fora da sua função, ou com grau diferente do ideal, fica em amarelo e grava normalmente.</p>
+                <p>Se outro administrador mexer no mesmo dia enquanto o seu painel está aberto, a sua próxima mudança não grava: o sistema avisa, mostra o dia atualizado e você faz a mudança de novo.</p>
               </div>
             </section>
 

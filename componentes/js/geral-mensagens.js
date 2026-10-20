@@ -210,6 +210,7 @@
       setorVazio: 'Selecione o setor',
       promocaoOrdem: 'Deve ser após a data anterior',
       promocaoAntesInclusao: 'A promoção não pode ser antes da data de inclusão',
+      promocaoVazia: 'Preencha a data da promoção',
       sucesso: 'Usuário cadastrado com sucesso.',
       falha: 'Não foi possível cadastrar o usuário.'
     },
@@ -277,6 +278,8 @@
       selecioneUnidade: 'Selecione uma companhia ou pelotão no seletor de unidades.',
       descartarAlteracoes: 'Descartar as alterações não salvas desta distribuição?',
       falhaSalvar: 'Não foi possível salvar. Tente de novo.',
+      /* aba Dia: a escala do dia mudou depois que a tela leu (outro administrador ou o sistema) */
+      diaDesatualizado: 'A escala deste dia foi alterada por outra pessoa ou pelo sistema. A tela foi atualizada: confira e faça a mudança de novo.',
       /* catálogo de erros/avisos da distribuição na escala — o aviso-lista do topo mostra uma linha
          [ícone + texto] por item presente; nivel 'erro' (vermelho) ou 'alerta' (amarelo) */
       erros: {

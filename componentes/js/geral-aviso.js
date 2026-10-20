@@ -111,7 +111,7 @@
 
     focoAnterior = document.activeElement;
     veu.classList.add('modal-veu--aberto');
-    btnConfirmar.focus();
+    if (RosterWork.focarJanela) RosterWork.focarJanela(veu, btnConfirmar); else btnConfirmar.focus();
   }
 
   function avisar(opcoes) {

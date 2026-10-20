@@ -34,15 +34,30 @@
     return abertos[abertos.length - 1].querySelector('.modal');
   }
 
-  /* abre o véu pelo id do elemento ".modal-veu" e leva o foco para dentro */
-  function abrir(idVeu) {
+  /* leva o foco para dentro da janela que acabou de abrir: o alvo pedido ou o primeiro elemento
+     focável. O véu entra com transição de visibilidade (0.15s, geral-modal.css) e, até ela
+     começar a valer, o navegador recusa o foco; por isso o foco espera. Não tira o foco de quem
+     já entrou na janela nesse meio-tempo. depois(): o que fazer com o foco já dentro */
+  var ESPERA_FOCO = 200;
+  function focarJanela(veu, alvo, depois) {
+    var modal = veu && veu.querySelector('.modal');
+    if (!modal) return;
+    setTimeout(function () {
+      if (!veu.classList.contains('modal-veu--aberto') || modal.contains(document.activeElement)) return;
+      var destino = (alvo && modal.contains(alvo)) ? alvo : focaveis(modal)[0];
+      if (!destino) return;
+      destino.focus();
+      if (typeof depois === 'function') depois();
+    }, ESPERA_FOCO);
+  }
+
+  /* abre o véu pelo id do elemento ".modal-veu" e leva o foco para dentro (alvo: opcional) */
+  function abrir(idVeu, alvo) {
     var veu = document.getElementById(idVeu);
     if (!veu) return;
     focoAnterior = document.activeElement;
     veu.classList.add('modal-veu--aberto');
-    var modal = veu.querySelector('.modal');
-    var alvos = modal ? focaveis(modal) : [];
-    if (alvos.length) alvos[0].focus();
+    focarJanela(veu, alvo);
   }
 
   /* fecha todos os modais abertos e devolve o foco para quem abriu */
@@ -80,15 +95,16 @@
 
   /* Enter → ação principal do modal do topo (como nos grandes sites). Dispara o botão
      `--primario` (nunca o perigoso/Desfazer). Ressalvas: em textarea o Enter é quebra de
-     linha; se o foco já está num botão do modal, deixa o Enter nativo agir (evita disparo
-     duplo). Assim Resumo/Aviso/Data confirmam com Enter, com foco em qualquer lugar do modal. */
+     linha; se o foco já está num botão ou num link do modal, deixa o Enter nativo agir (evita
+     disparo duplo; o link abre). Assim Resumo/Aviso/Data confirmam com Enter, com foco em
+     qualquer lugar do modal. */
   document.addEventListener('keydown', function (evento) {
     if (evento.key !== 'Enter') return;
     var modal = modalDoTopo();
     if (!modal) return;
     var ativo = document.activeElement;
     if (ativo && ativo.tagName === 'TEXTAREA') return;
-    if (ativo && ativo.tagName === 'BUTTON' && modal.contains(ativo)) return;
+    if (ativo && (ativo.tagName === 'BUTTON' || ativo.tagName === 'A') && modal.contains(ativo)) return;
     var principal = modal.querySelector('.botao--primario');
     if (principal && !principal.disabled && principal.offsetParent !== null) {
       evento.preventDefault();
@@ -99,4 +115,5 @@
   window.RosterWork = window.RosterWork || {};
   window.RosterWork.abrirModal = abrir;
   window.RosterWork.fecharModais = fecharTodos;
+  window.RosterWork.focarJanela = focarJanela;   /* para as janelas que abrem o próprio véu (aviso, data) */
 })();

@@ -92,16 +92,16 @@
       .catch(function () { return null; });
   }
 
-  /* prévia do Editar do Dia (RPC escala_dia_simular): o dia como ficaria com o rascunho
+  /* prévia das sub-telas do Dia (RPC escala_dia_simular): o dia como ficaria com o rascunho
      {ajustes, pontuais?, folgas}; pontuais e folgas entram num ensaio no banco (nada é gravado) */
   function simularDia(unidadeId, iso, rascunho) {
     return RosterWork.apiFetch('/rest/v1/rpc/escala_dia_simular', { metodo: 'POST', corpo: { p_unidade_id: Number(unidadeId), p_data: iso, p_rascunho: rascunho || {} } })
       .then(function (r) { return r.ok ? r.json() : null; })
       .catch(function () { return null; });
   }
-  /* Salvar do Editar do Dia (RPC escala_dia_salvar): pontuais, folgas e funções num salvamento só.
-     Resolve no objeto da RPC ({success,log}) ou num marcador de falha:
-     { _falha: 'conexao' } (sem rede) | { _falha: 'servidor' } (HTTP não-ok). */
+  /* grava uma mudança do Dia (RPC escala_dia_salvar): pontuais, folgas, funções, observações e nota num
+     salvamento só. Resolve no objeto da RPC ({success, log, criadas, dia}, ou {success:false, error,
+     desatualizado}) ou num marcador de falha: { _falha: 'conexao' } (sem rede) | { _falha: 'servidor' } (HTTP não-ok). */
   function salvarDia(unidadeId, iso, rascunho) {
     return RosterWork.apiFetch('/rest/v1/rpc/escala_dia_salvar', { metodo: 'POST', corpo: { p_unidade_id: Number(unidadeId), p_data: iso, p_rascunho: rascunho || {} } })
       .then(function (r) { return r.ok ? r.json() : { _falha: 'servidor' }; })
