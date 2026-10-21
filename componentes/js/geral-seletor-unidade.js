@@ -159,7 +159,10 @@
       inicioX = null;
       if (Math.abs(andouX) < DESLIZE_MINIMO || Math.abs(andouX) < 2 * Math.abs(andouY)) return;
       var vizinha = unidades[posicaoEscolhida() + (andouX < 0 ? 1 : -1)];
-      if (vizinha) escolher(String(vizinha.id));
+      if (!vizinha) return;
+      escolher(String(vizinha.id));
+      /* o topo volta, para mostrar no seletor a unidade que entrou */
+      if (RosterWork.recolherTopo) RosterWork.recolherTopo.mostrar();
     }, { passive: true });
   }
 
