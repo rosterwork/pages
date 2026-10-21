@@ -18,7 +18,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 110px;
+  min-width: var(--periodo-nome-largura);
   min-height: var(--botao-altura);
   padding: 0 8px;
   font-size: 12px;
@@ -29,11 +29,24 @@
 
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
-   O nome do período fica numa linha só, na letra do texto padrão.
+   O nome do período fica numa linha só, na letra do texto padrão,
+   sem folga dos lados (as setas, de ícone, já separam); o nome que
+   abre o calendário tem a folga de toque dos botões (geral-botao.css).
    ============================================================ */
 @media (max-width: 767px) {
   html[data-celular] .geral-periodo-nome {
+    padding: 0;
     white-space: nowrap;
     font-size: var(--fonte-padrao);
+  }
+
+  html[data-celular] button.geral-periodo-nome {
+    position: relative;
+  }
+
+  html[data-celular] button.geral-periodo-nome::before {
+    content: '';
+    position: absolute;
+    inset: calc((var(--botao-altura) - var(--toque-altura-celular)) / 2);
   }
 }

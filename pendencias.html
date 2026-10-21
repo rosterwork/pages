@@ -34,6 +34,11 @@
         <span class="rotulo-secao">Esperando sua resposta</span>
         <div class="pedido-lista" id="pendencias-minhas"></div>
       </div>
+      <!-- o que você responde até uma data (ex.: a extra do mês seguinte); só aparece quando há -->
+      <div class="pedido-secao oculto" id="pendencias-secao-prazos">
+        <span class="rotulo-secao">Prazos</span>
+        <div class="pedido-lista" id="pendencias-prazos"></div>
+      </div>
     </div>
 
     <!-- só administrador: o que espera a decisão dele e o que precisa de conserto -->
@@ -56,6 +61,18 @@
     <button type="button" class="pendencias-corrigir">
       <span class="selo selo--alerta pendencias-corrigir-contagem"></span>
       <span class="pendencias-corrigir-texto"></span>
+      <span class="espacador-flex"></span>
+      <svg class="icone pendencias-corrigir-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
+    </button>
+  </template>
+
+  <!-- prazo seu: o texto, até quando embaixo e a seta (leva à tela onde se responde) -->
+  <template id="tpl-pendencias-prazo">
+    <button type="button" class="pendencias-corrigir">
+      <span class="pendencias-prazo-textos">
+        <span class="pendencias-corrigir-texto"></span>
+        <span class="pendencias-prazo-mensagem"></span>
+      </span>
       <span class="espacador-flex"></span>
       <svg class="icone pendencias-corrigir-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
     </button>
@@ -98,21 +115,4 @@
     </li>
   </template>
 
-  <!-- "viaturas em manutenção": a contagem e a lista de viaturas (não navega: o conserto é na Escala/Distribuição) -->
-  <template id="tpl-pendencias-manutencao">
-    <div class="pendencias-corrigir pendencias-corrigir--lista">
-      <div class="pendencias-corrigir-cab">
-        <span class="selo selo--alerta pendencias-corrigir-contagem"></span>
-        <span class="pendencias-corrigir-texto"></span>
-      </div>
-      <ul class="pendencias-corrigir-itens"></ul>
-    </div>
-  </template>
-  <template id="tpl-pendencias-manut-item">
-    <li class="pendencias-corrigir-item">
-      <span class="pendencias-corrigir-nome"></span>
-      <span class="pendencias-corrigir-desde">desde <span class="pendencias-corrigir-data"></span></span>
-      <span class="pendencias-corrigir-unidade"></span>
-    </li>
-  </template>
 </div>

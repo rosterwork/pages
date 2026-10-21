@@ -233,9 +233,10 @@
   }
 
   /* nível do posto: o pior das suas funções; viatura sem condutor é erro (não opera sem motorista);
-     efetivo abaixo do mínimo ou acima do máximo também é erro */
+     efetivo abaixo do mínimo ou acima do máximo também é erro; abaixo do ideal é alerta */
   function nivelDoPosto(posto) {
-    var nivel = (posto && (posto.sem_condutor || posto.abaixo_minimo || posto.acima_maximo)) ? 'erro' : '';
+    var nivel = (posto && (posto.sem_condutor || posto.abaixo_minimo || posto.acima_maximo)) ? 'erro'
+      : (posto && posto.abaixo_ideal ? 'alerta' : '');
     ((posto && posto.funcoes) || []).forEach(function (f) { nivel = piorNivel(nivel, nivelDaFuncao(f)); });
     return nivel;
   }
@@ -274,8 +275,9 @@
   }
 
   /* avisos amarelos por tipo, cada um com o militar + a vaga (para a lista expansível).
-     m.aviso pode ter mais de um motivo (vírgula) — cada motivo entra no seu tipo. */
-  function detalharAvisosMotor(postos) {
+     m.aviso pode ter mais de um motivo (vírgula) — cada motivo entra no seu tipo. Só entra o militar
+     que tem o aviso na lista do banco (presentes['codigo|cpf']): o amarelo que é consequência fica de fora */
+  function detalharAvisosMotor(postos, presentes) {
     var det = { grauRebaixado: [], grauExclusivo: [], rodizioRepetido: [], exclusivoCondutor: [], afastadoTroca: [] };
     (postos || []).forEach(function (po) {
       (po.funcoes || []).forEach(function (f) {
@@ -283,7 +285,7 @@
           if (!m.aviso) return;
           String(m.aviso).split(',').forEach(function (a) {
             var k = AVISO_MOTOR[a];
-            if (det[k]) det[k].push({ m: m, f: f });
+            if (det[k] && presentes[a + '|' + m.cpf]) det[k].push({ m: m, f: f });
           });
         });
       });
@@ -347,11 +349,12 @@
     lista.appendChild(grupo);
   }
 
-  /* a lista de avisos do topo vem pronta do banco (dados.problemas, a mesma fonte do gráfico da grade):
-     uma linha por tipo de problema, vermelho primeiro e amarelo depois; no vermelho, da causa para a
-     consequência: o modelo, quem ficou sem função, os postos e o militar em situação errada.
-     faltamModelos e modelosComErro trazem a composição de cada trecho. O detalhe amarelo expansível
-     (quem + vaga + motivo) segue montado pelos dados dos postos */
+  /* a lista de avisos do topo vem pronta do banco (dados.problemas, a mesma fonte do gráfico da grade),
+     só com os erros principais: a consequência de um erro (o efetivo da unidade sem modelo, a tripulação
+     do posto travado, o amarelo de uma colocação vermelha) fica de fora. Uma linha por tipo de problema,
+     vermelho primeiro e amarelo depois; no vermelho: o modelo, quem ficou sem função, os postos e o
+     militar em situação errada. faltamModelos e modelosComErro trazem a composição de cada trecho.
+     O detalhe amarelo expansível (quem + vaga + motivo) segue montado pelos dados dos postos */
   function montarAvisoProblemas(problemas, postos, faltamModelos, modelosComErro) {
     var lista = problemas || [];
     if (!lista.length) return null;
@@ -360,8 +363,11 @@
     if (!aviso) return null;
     var alvo = aviso.querySelector('.escala-distribuicao-aviso-lista');
 
-    var por = {};
-    lista.forEach(function (p) { (por[p.codigo] = por[p.codigo] || []).push(p); });
+    var por = {}, presentes = {};
+    lista.forEach(function (p) {
+      (por[p.codigo] = por[p.codigo] || []).push(p);
+      presentes[p.codigo + '|' + p.cpf] = true;
+    });
     function tem(codigo) { return !!(por[codigo] && por[codigo].length); }
     function linha(def, texto) { if (def) avisoItem(alvo, def.icone, texto || def.texto, def.nivel); }
     function militar(p) { return ((p.grad || '') + ' ' + (p.nome || '')).trim(); }
@@ -390,7 +396,7 @@
         var pessoas = itens.reduce(function (v, p) { return acima ? Math.max(v, p.quantidade) : Math.min(v, p.quantidade); }, acima ? -Infinity : Infinity);
         var diaTodo = itens.length === 1 && itens[0].hi === '08:00' && itens[0].hf === '08:00';
         var faixas = (acima || diaTodo) ? '' : ', ' + itens.map(function (p) { return preencher(def.faixa, { hi: p.hi, hf: p.hf }); }).join(' e ');
-        linha(def, preencher(def.texto, { posto: itens[0].posto || '', pessoas: pessoas, minimo: itens[0].limite, maximo: itens[0].limite, faixas: faixas }));
+        linha(def, preencher(def.texto, { posto: itens[0].posto || '', pessoas: pessoas, minimo: itens[0].limite, ideal: itens[0].limite, maximo: itens[0].limite, faixas: faixas }));
       });
     }
     /* militar em duas unidades ao mesmo tempo (vermelho): uma linha por militar e par de unidades, juntando as faixas */
@@ -423,19 +429,19 @@
     /* vermelho: a escala não funciona. Primeiro a causa no modelo */
     linhasModelo('parcial_com_erro', cat.modeloComErro, modelosComErro);
     linhasModelo('sem_modelo', cat.faltaModelo || { texto: 'Falta modelo de distribuição', icone: 'icone-alerta', nivel: 'erro' }, faltamModelos);
-    /* depois quem ficou sem função */
+    /* depois quem ficou sem função (quem ficou sem função por falta de modelo já está na linha do modelo) */
     var semFuncao = {};
-    ['sem_funcao', 'sem_modelo', 'parcial_com_erro', 'resolva_escala'].forEach(function (c) {
+    ['sem_funcao', 'resolva_escala'].forEach(function (c) {
       (por[c] || []).forEach(function (p) { semFuncao[p.cpf] = true; });
     });
     var qSemFuncao = Object.keys(semFuncao).length;
     if (qSemFuncao && cat.semFuncao) linha(cat.semFuncao, qSemFuncao === 1 ? cat.semFuncao.texto : preencher(cat.semFuncao.textoPlural, { n: qSemFuncao }));
-    /* os postos: o travado diz o motivo e o posto; a frase geral fica para o dia gravado sem o posto travado */
+    /* os postos: o travado diz o motivo e o posto; a frase geral fica para quem o banco não liga a um posto travado */
     porOcorrencia('sem_condutor_habilitado', cat.semCondutorHabilitado, function (p) { return p.posto_id; },
       function (p) { return { posto: p.posto || '', cnh: p.cnh || '' }; });
     porOcorrencia('posto_sem_solucao', cat.postoSemSolucao, function (p) { return p.posto_id; },
       function (p) { return { posto: p.posto || '' }; });
-    if (tem('resolva_escala') && !tem('sem_condutor_habilitado') && !tem('posto_sem_solucao')) linha(cat.resolvaEscala);
+    if (tem('resolva_escala')) linha(cat.resolvaEscala);
     if (tem('sem_condutor')) linha(cat.semCondutor);
     linhasEfetivoProblemas('abaixo_minimo', cat.abaixoMinimo);
     linhasEfetivoProblemas('acima_maximo', cat.acimaMaximo);
@@ -451,13 +457,12 @@
 
     /* amarelo: funciona, com erro aceitável */
     if (tem('chefe_condutor')) linha(cat.chefeCondutor);
-    porOcorrencia('manutencao', cat.manutencao, function (p) { return p.posto_id; },
-      function (p) { return { posto: p.posto || '' }; });
+    linhasEfetivoProblemas('abaixo_ideal', cat.abaixoIdeal);
     porOcorrencia('exclusivo_fora', cat.exclusivoFora, function (p) { return p.cpf + '|' + p.funcao; },
       function (p) { return { militar: militar(p), funcao: p.funcao || '' }; });
     porOcorrencia('grau_diferente', cat.grauDiferente, function (p) { return p.cpf + '|' + p.funcao; },
       function (p) { return { militar: militar(p), funcao: p.funcao || '' }; });
-    var det = detalharAvisosMotor(postos);   // quem + vaga + motivo, para o detalhe expansível
+    var det = detalharAvisosMotor(postos, presentes);   // quem + vaga + motivo, para o detalhe expansível
     [['grau_por_falta', 'grauRebaixado'], ['grau_exclusivo', 'grauExclusivo'], ['rodizio_quebrado', 'rodizioRepetido'],
      ['exclusivo_condutor', 'exclusivoCondutor'], ['afastado', 'afastadoTroca']].forEach(function (par) {
       if (tem(par[0])) montarAvisoGrupo(alvo, par[1], det[par[1]], cat[par[1]]);
@@ -648,26 +653,14 @@
     return grupo;
   }
 
-  /* bloco "Em manutenção" (amarelo) da viatura: aviso + a nota. Só leitura, ou editável (admin no Dia):
-     aoMudar(texto) recebe a nota ao sair do campo, e ela grava na hora */
-  function montarManutencao(posto, editavel, aoMudar, valor) {
-    var el = RosterWork.tpl('tpl-escala-manutencao');
+  /* troca de viatura com data: "No lugar da ABT-14935 até 25/10", embaixo do prefixo (null sem troca) */
+  function montarNoLugar(posto) {
+    if (!posto || !posto.no_lugar_de || !posto.substituida_ate) return null;
+    var el = RosterWork.tpl('tpl-escala-posto-no-lugar');
     if (!el) return null;
-    var tit = el.querySelector('.escala-manutencao-titulo');
-    if (tit) tit.textContent = (RosterWork.mensagens.escala || {}).emManutencao || 'Em manutenção';
-    var input = el.querySelector('.escala-manutencao-nota');
-    var verTxt = el.querySelector('.escala-manutencao-nota-ver');
-    var obs = valor != null ? valor : (posto.manutencao_obs || '');
-    if (editavel) {
-      if (verTxt) verTxt.classList.add('oculto');
-      if (input) {
-        input.value = obs;
-        input.addEventListener('change', function () { if (aoMudar) aoMudar(input.value); });
-      }
-    } else {
-      if (input) input.classList.add('oculto');
-      if (verTxt) { verTxt.textContent = obs; verTxt.classList.toggle('oculto', !obs); }
-    }
+    var p = String(posto.substituida_ate).slice(0, 10).split('-');
+    el.textContent = RosterWork.mensagens.escala.noLugarDe
+      .replace('{prefixo}', posto.no_lugar_de).replace('{data}', p.length === 3 ? p[2] + '/' + p[1] : '');
     return el;
   }
 
@@ -707,7 +700,11 @@
     if (secao !== 'continuos' && RosterWork.escalasPainelContinuos) RosterWork.escalasPainelContinuos.reset();
     if (secao !== 'extra' && RosterWork.escalasPainelExtra) RosterWork.escalasPainelExtra.reset();
     if (secao === 'distribuicao' && RosterWork.escalasPainelEditar) {
-      RosterWork.escalasPainelEditar.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso, { admin: RosterWork.sessao.ehAdmin() });
+      /* o Editar posto é da companhia (os postos são dela) */
+      RosterWork.escalasPainelEditar.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso, {
+        admin: RosterWork.sessao.ehAdmin(),
+        adminPosto: RosterWork.sessao.podeAdministrar('companhia', pCtx.unidadeId)
+      });
     } else if (secao === 'continuos' && RosterWork.escalasPainelContinuos) {
       RosterWork.escalasPainelContinuos.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso);
     } else if (secao === 'extra' && RosterWork.escalasPainelExtra) {
@@ -966,7 +963,7 @@
       anexarProblemas: anexarProblemas,
       marcarProblemas: marcarProblemas,
       montarBusca: montarBusca,
-      montarManutencao: montarManutencao,
+      noLugar: montarNoLugar,
       observacoes: montarObservacoes,
       agruparObservacoes: agruparObservacoes
     }

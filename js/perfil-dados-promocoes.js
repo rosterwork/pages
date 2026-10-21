@@ -1,6 +1,6 @@
 /* ============================================================
    MEU PERFIL — "Meus dados", seção das datas de promoção.
-   Um campo por posto depois do primeiro (a regra do Criar conta,
+   Um campo por posto depois do primeiro (a regra do Novo usuário,
    RosterWork.campos.postosComData), pelo posto e pela data de
    inclusão gravados. Todas podem ser preenchidas ou corrigidas e
    vão para a aprovação como promocao_<grau_id>; a vazia pode

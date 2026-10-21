@@ -3,8 +3,10 @@
    Cada mudança de estado e a exclusão valem a partir de uma data
    (tabela postos_estados). Aqui ficam, no card, a linha do período
    real (primeiro e último dia: "desde 05/10/2026", "até 06/10/2026")
-   e a da próxima mudança de estado ("Inativo a partir de 07/10"), e
-   a caixa "Mudanças marcadas" do painel, com o Cancelar de cada uma
+   e a da próxima mudança ("Inativo a partir de 07/10"; na troca de
+   viatura com data, a que está no lugar: "ABT-12870 no lugar"), e a
+   caixa "Mudanças marcadas" do painel (estado, transferência e troca
+   de viatura), com o Cancelar de cada uma
    (RPC cancelar_mudanca_posto). A mudança que abriu um período na
    Distribuição ainda não revisado ganha o selo "Revisar na Distribuição";
    se o período já foi revisado, o Cancelar avisa que o ajuste sai junto.
@@ -25,9 +27,16 @@
     return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : '';
   }
 
-  /* "Reserva a partir de 07/10/2026" ou "Transferência para 2ºPEL a partir de 07/10/2026" */
+  /* "Inativo a partir de 07/10/2026", "Transferência para 2ºPEL a partir de 07/10/2026" ou a troca de viatura:
+     "ABT-12870 (CNH C) a partir de 26/10/2026" ou "ABT-12870 (CNH C) de 26/10/2026 a 30/10/2026" */
   function textoMudanca(m, formatar) {
     var t = RosterWork.mensagens.postos;
+    if (m.tipo === 'prefixo') {
+      var base = m.fim
+        ? t.trocaIntervalo.replace('{inicio}', formatar(m.data)).replace('{fim}', formatar(m.fim))
+        : t.trocaAPartir.replace('{data}', formatar(m.data));
+      return base.replace('{prefixo}', m.prefixo || '').replace('{cnh}', m.cnh || '');
+    }
     if (m.tipo === 'transferencia') {
       return t.transferenciaAPartir.replace('{unidade}', m.destino || '').replace('{data}', formatar(m.data));
     }
@@ -43,8 +52,12 @@
     return t.periodoIntervalo.replace('{inicio}', dataLonga(inicio)).replace('{fim}', dataLonga(fim));
   }
 
-  /* linha da mudança no card: a próxima mudança de estado ou transferência (o começo e a exclusão já estão no período) */
+  /* linha da mudança no card: na troca de viatura com data, a que está no lugar; senão, a próxima mudança de
+     estado, transferência ou troca de viatura (o começo e a exclusão já estão no período) */
   function textoMudancaCard(posto) {
+    if (posto.hoje_ate && posto.hoje_prefixo && posto.hoje_prefixo !== posto.nome) {
+      return RosterWork.mensagens.postos.noLugar.replace('{prefixo}', posto.hoje_prefixo);
+    }
     var proxima = (posto.mudancas || []).filter(function (m) { return m.estado !== 'Excluída'; })[0];
     return proxima ? textoMudanca(proxima, dataCurta) : '';
   }

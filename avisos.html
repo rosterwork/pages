@@ -11,7 +11,7 @@
   </div>
 
   <!-- barra de comandos: à esquerda as ações, em todas as abas (Marcar todas como lidas, do militar, quando há
-       aviso que informa em aberto; o grupo Administração com Novo comunicado, só admin) -->
+       aviso em aberto; o grupo Administração com Novo comunicado, só admin) -->
   <div class="pagina-subcabecalho">
     <button type="button" class="botao oculto" id="avisos-marcar-lidas">Marcar todas como lidas</button>
     <div class="dropdown acoes-admin oculto">
@@ -31,6 +31,8 @@
       <div class="avisos-secao">
         <span class="rotulo-secao">Histórico</span>
         <div class="avisos-lista" id="avisos-notificacoes"></div>
+        <!-- os 90 dias vêm de 50 em 50: some quando não há mais -->
+        <button type="button" class="botao avisos-mais-antigos oculto" id="avisos-mais-antigos">Mostrar mais antigos</button>
       </div>
     </div>
 

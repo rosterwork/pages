@@ -68,10 +68,10 @@
     var contagem = conteudo.querySelector('#avisos-contagem');
     var btnNovo = conteudo.querySelector('#btn-novo-aviso-pagina');
     var btnLidas = conteudo.querySelector('#avisos-marcar-lidas');
+    var btnMais = conteudo.querySelector('#avisos-mais-antigos');
     if (!listaComunicados || !RW.apiFetch) return Promise.resolve();
 
-    var emAberto = 0;
-    var informativos = false;   // há aviso que só informa em aberto (o que o "Marcar todas" apaga)
+    var emAberto = 0;   // o mesmo número do sino
 
     function escreverContagem() {
       if (!contagem) return;
@@ -79,10 +79,13 @@
         : (emAberto === 1 ? '1 em aberto' : emAberto + ' em aberto');
     }
 
-    /* "Marcar todas como lidas" aparece em todas as abas quando há aviso que só informa em aberto
-       (decisão pendente não se apaga declarando que foi vista, como no sino) */
+    /* "Marcar todas como lidas" aparece em todas as abas enquanto houver aviso em aberto */
     function ajustarBarra() {
-      if (btnLidas) btnLidas.classList.toggle('oculto', !informativos);
+      if (btnLidas) btnLidas.classList.toggle('oculto', !emAberto);
+    }
+
+    function mostrarMais(mais) {
+      if (btnMais) btnMais.classList.toggle('oculto', !mais);
     }
 
     function carregarComunicados() {
@@ -95,7 +98,13 @@
     function carregarNotificacoes() {
       if (!RW.avisosNotificacoes) return Promise.resolve();
       return RW.avisosNotificacoes.carregar(listaNotificacoes, carregarNotificacoes)
-        .then(function (r) { emAberto = r.emAberto; informativos = r.informativos; escreverContagem(); ajustarBarra(); });
+        .then(function (r) {
+          if (!r) return;   /* uma leitura mais nova já está a caminho */
+          emAberto = r.emAberto;
+          escreverContagem();
+          ajustarBarra();
+          mostrarMais(r.mais);
+        });
     }
 
     /* o grupo Administração (Novo comunicado) só para o admin, em todas as abas;
@@ -113,6 +122,16 @@
         RW.avisosNotificacoes.marcarTodas().then(function () {
           carregarNotificacoes();
           if (RW.avisosSino) RW.avisosSino.recarregar();
+        });
+      });
+    }
+    /* o lote seguinte do Histórico (os pontinhos no botão enquanto lê) */
+    if (btnMais && RW.avisosNotificacoes) {
+      btnMais.addEventListener('click', function () {
+        RW.iniciarCarregando(btnMais);
+        RW.avisosNotificacoes.maisAntigos().then(function (r) {
+          RW.pararCarregando(btnMais);
+          if (r) mostrarMais(r.mais);
         });
       });
     }

@@ -2,7 +2,8 @@
    USUÁRIOS — a ficha em leitura (os blocos do painel)
    Blocos cinza com as linhas rótulo · valor, no padrão do painel
    da Escala: aba Dados (Dados pessoais) e aba Carreira (Dados
-   institucionais e Transferências; as datas de promoção vêm do
+   institucionais, Administração quando o militar tem papel e
+   Transferências; as datas de promoção vêm do
    usuarios-painel-datas.js). O lápis do bloco aparece quando a
    página passa a ação de corrigir (só admin). Expõe também as
    peças (bloco, bloco que recolhe, linha) para as sub-telas.
@@ -117,7 +118,19 @@
     corpo.appendChild(b);
   }
 
-  /* Carreira: os dados institucionais, as datas de promoção e as transferências.
+  /* Administração: o papel, onde vale e quem concedeu (para todos; sem papel, não aparece) */
+  function montarAdministracao(corpo, ficha) {
+    var adm = ficha.administracao;
+    if (!adm || !adm.papel) return;
+    var b = bloco('Administração');
+    if (!b) return;
+    linha(b, 'Papel', adm.rotulo);
+    linha(b, 'Vale para', adm.vale_para);
+    linha(b, 'Concedido por', adm.concedido_por ? adm.concedido_por + (adm.concedido_em ? ' em ' + formatarData(adm.concedido_em) : '') : '');
+    corpo.appendChild(b);
+  }
+
+  /* Carreira: os dados institucionais, a administração, as datas de promoção e as transferências.
      opcoes = { corrigirInstitucionais, corrigirDatas } (só admin) */
   function montarCarreira(corpo, ficha, pessoa, graus, opcoes) {
     if (!corpo || !ficha) return;
@@ -136,6 +149,7 @@
       linha(b, 'Situação', textoSituacao(ins, pessoa));
       corpo.appendChild(b);
     }
+    montarAdministracao(corpo, ficha);
     if (RosterWork.usuariosPainelDatas) RosterWork.usuariosPainelDatas.montarVer(corpo, ficha, graus, opcoes.corrigirDatas);
     var transferencias = ficha.transferencias || [];
     if (transferencias.length) {

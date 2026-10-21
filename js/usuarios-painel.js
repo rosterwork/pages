@@ -2,16 +2,17 @@
    USUÁRIOS — painel lateral com a ficha do militar
    No padrão do painel da Escala: sem Ver/Editar. Título = graduação
    + nome de guerra, com a lotação ao lado; subtítulo = nome
-   completo; abas Dados · Carreira. Quem não é admin só lê. O admin
-   já abre editando: o lápis de cada bloco abre a correção e, na
+   completo; abas Dados · Carreira. Quem não é admin de companhia
+   da área do militar só lê. O admin já abre editando: o lápis de cada bloco abre a correção e, na
    Carreira, a barra do painel traz Promover e Transferir (para o
-   inativo, Readmitir ao efetivo); o Dar baixa fica no fim. Cada
+   inativo, Readmitir ao efetivo) e, para quem pode mudar o papel
+   deste militar, Administração; o Dar baixa fica no fim. Cada
    ação abre uma sub-tela no lugar da ficha, com Voltar no topo e
    Cancelar + o botão de aplicar no rodapé; sem sub-tela, o rodapé
    do admin mostra as Alterações na ficha. A ficha vem de
    buscar_ficha_militar; a leitura em usuarios-painel-leitura.js;
    cada sub-tela no seu arquivo (editar, datas, promover,
-   transferir, baixa).
+   transferir, baixa, administracao).
    ============================================================ */
 (function () {
   'use strict';
@@ -26,7 +27,12 @@
   var secaoAtual = 'dados';   // aba ativa
   var sub = null;             // a sub-tela aberta: { textoAplicar, perigo, mudancas, podeAplicar, sujo, aplicar }
 
-  function ehAdmin() { return RosterWork.sessao.ehAdmin(); }
+  /* a ficha é da companhia: edita o admin de companhia (ou o geral) da área do militar; os demais só leem */
+  function ehAdmin() {
+    var ins = (fichaAtual && fichaAtual.institucionais) || {};
+    var lotacao = ins.lotacao_id || (pessoaAtual && pessoaAtual.lotacao_atual);
+    return RosterWork.sessao.podeAdministrar('companhia', lotacao);
+  }
   function ehInativo() { return !!(pessoaAtual && pessoaAtual.situacao === 'Inativo'); }
 
   /* a sub-tela aberta tem algo digitado e não salvo? */
@@ -112,7 +118,8 @@
       promover: function (corpo, ctl) { return RosterWork.usuariosPainelPromover.montarSubtela(corpo, fichaAtual, pessoaAtual, ctl); },
       transferir: function (corpo, ctl) { return RosterWork.usuariosPainelTransferir.montarSubtela(corpo, fichaAtual, pessoaAtual, ctl); },
       baixa: function (corpo, ctl) { return RosterWork.usuariosPainelBaixa.montarBaixa(corpo, fichaAtual, pessoaAtual, ctl); },
-      readmitir: function (corpo, ctl) { return RosterWork.usuariosPainelBaixa.montarReadmitir(corpo, fichaAtual, pessoaAtual, ctl); }
+      readmitir: function (corpo, ctl) { return RosterWork.usuariosPainelBaixa.montarReadmitir(corpo, fichaAtual, pessoaAtual, ctl); },
+      administracao: function (corpo, ctl) { return RosterWork.usuariosPainelAdministracao.montarSubtela(corpo, fichaAtual, pessoaAtual, ctl); }
     };
     if (modulos[acao]) abrirSubtela('tpl-ficha-voltar-carreira', modulos[acao]);
   }
@@ -120,7 +127,7 @@
   /* ---------- a ficha (leitura) ---------- */
 
   function resetarModulos() {
-    ['usuariosPainelEditar', 'usuariosPainelDatas', 'usuariosPainelPromover', 'usuariosPainelTransferir', 'usuariosPainelBaixa', 'usuariosPainelAcesso']
+    ['usuariosPainelEditar', 'usuariosPainelDatas', 'usuariosPainelPromover', 'usuariosPainelTransferir', 'usuariosPainelBaixa', 'usuariosPainelAcesso', 'usuariosPainelAdministracao']
       .forEach(function (nome) { if (RosterWork[nome] && RosterWork[nome].reset) RosterWork[nome].reset(); });
   }
 
@@ -140,6 +147,9 @@
     /* com uma transferência marcada, outra só depois de cancelar a marcada */
     var transferir = barra.querySelector('[data-ficha-acao="transferir"]');
     if (transferir && RosterWork.usuariosPainelTransferir) transferir.disabled = RosterWork.usuariosPainelTransferir.temMarcada(fichaAtual);
+    /* Administração: o banco diz se quem está logado pode mudar o papel deste militar */
+    var administracao = barra.querySelector('[data-ficha-acao="administracao"]');
+    if (administracao) administracao.classList.toggle('oculto', !(fichaAtual.administracao && fichaAtual.administracao.pode_definir));
     barra.classList.remove('oculto');
   }
 

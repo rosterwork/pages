@@ -1,16 +1,24 @@
 /* ============================================================
    DADOS PENDENTES — janela ao entrar (shell)
-   Uma vez por login, quando falta algo no cadastro de quem entrou
-   (dados_pendentes: o banco decide o que pedir). Para todos, a CNH
-   em "Nenhuma" ainda não confirmada; para a praça, a colocação no
-   CFP e as datas de promoção (do primeiro posto, que vale pela data
-   de inclusão, ao atual). Abre depois da janela dos termos, que tem
-   a vez. Os campos ficam na própria janela (exceção à regra do
-   modal, como o Fale conosco): "Salvar" habilita quando algo muda e
-   manda as alterações por perfil_solicitar (o mesmo caminho do Meus
-   dados: vão para a aprovação; "Não tenho CNH" só confirma). Com
-   tudo preenchido a janela fecha, senão continua aberta. "Preencher
-   depois" desfaz o que não foi salvo e fecha.
+   Uma vez por login, depois da janela dos termos, que tem a vez.
+   O banco (dados_pendentes) diz o que pedir; a janela tem dois modos:
+   - CONFERIR, enquanto o militar não conferiu a ficha que o
+     administrador cadastrou: a ficha para leitura (a mesma leitura
+     do Meu perfil, buscar_ficha_militar) e, em "Falta preencher",
+     o que falta. "Confirmar" envia o preenchido e registra a
+     conferência (cadastro_conferir), sem cobrar o que ficou em
+     branco; "Corrigir em Meus dados" registra a conferência e leva
+     ao Meus dados; "Conferir depois" desfaz e fecha.
+   - PENDENTES, com a ficha já conferida, só quando falta algo:
+     para todos, a CNH em "Nenhuma" ainda não confirmada; para a
+     praça, a colocação no CFP e as datas de promoção (do primeiro
+     posto, que vale pela data de inclusão, ao atual). "Salvar"
+     habilita quando algo muda; com tudo preenchido a janela fecha,
+     senão continua aberta. "Preencher depois" desfaz e fecha.
+   O preenchido vai por perfil_solicitar (o mesmo caminho do Meus
+   dados: vai para a aprovação; "Não tenho CNH" só confirma). Os
+   campos ficam na própria janela (exceção à regra do modal, como
+   o Fale conosco).
    ============================================================ */
 (function () {
   'use strict';
@@ -18,14 +26,20 @@
   window.RosterWork = window.RosterWork || {};
 
   var campos = [];   /* [{ el, campo, tipo, original }]: a CNH, a colocação e um por posto */
-  var veu, salvar;
+  var veu, salvar, confirmar, corrigirBotao;
+  var modo = 'pendentes';   /* 'conferir' ou 'pendentes' */
 
   function C() { return RosterWork.campos; }
   function V() { return RosterWork.validacoes; }
 
+  function sessao() {
+    try { return JSON.parse(sessionStorage.getItem('rosterwork_user')); } catch (e) { return null; }
+  }
+
   /* "uma vez por login": a marca fica no rosterwork_user, que o login grava de novo a cada entrada */
   function jaLembrado() {
-    try { return !!JSON.parse(sessionStorage.getItem('rosterwork_user')).dadosPendentesLembrados; } catch (e) { return true; }
+    var usuario = sessao();
+    return usuario ? !!usuario.dadosPendentesLembrados : true;
   }
 
   function marcarLembrado() {
@@ -47,6 +61,7 @@
     return campos.filter(function (c) { return ler(c) !== c.original; });
   }
 
+  /* o Salvar (modo pendentes) só habilita com algo mudado; o Confirmar vale sempre */
   function revisar() {
     if (salvar) salvar.disabled = !alterados().length;
   }
@@ -55,6 +70,15 @@
     c.original = original || '';
     escrever(c, c.original);
     campos.push(c);
+  }
+
+  /* o que é de um modo só aparece nele */
+  function aplicarModo(novo) {
+    modo = novo;
+    var deConferir = veu.querySelectorAll('[data-modo-conferir]');
+    for (var i = 0; i < deConferir.length; i++) deConferir[i].classList.toggle('oculto', modo !== 'conferir');
+    var dePendentes = veu.querySelectorAll('[data-modo-pendentes]');
+    for (var j = 0; j < dePendentes.length; j++) dePendentes[j].classList.toggle('oculto', modo !== 'pendentes');
   }
 
   /* mostra só o que veio do banco: cada item com o valor gravado ou o enviado e esperando a aprovação */
@@ -82,10 +106,67 @@
     });
     lista.classList.toggle('oculto', !lista.children.length);
 
+    /* a caixa do que falta só aparece quando falta algo (o título dela é só do modo conferir) */
+    document.getElementById('dados-pendentes-falta').classList.toggle('oculto', !campos.length);
+
     /* o endereço do SYSBM só acompanha a colocação e as datas */
     var link = document.querySelectorAll('[data-dados-pendentes-link]');
     for (var i = 0; i < link.length; i++) link[i].classList.toggle('oculto', !r.link);
     revisar();
+  }
+
+  /* ---------- a ficha para leitura (modo conferir) ---------- */
+  function escreverFicha(id, valor) {
+    document.getElementById('dados-pendentes-ver-' + id).textContent = valor || '-';
+  }
+
+  function preencherFicha(ficha, r) {
+    var pessoais = ficha.pessoais || {}, institucionais = ficha.institucionais || {};
+    var D = RosterWork.data;
+    escreverFicha('grad', institucionais.grau_abreviacao);
+    escreverFicha('guerra', institucionais.nome_de_guerra);
+    escreverFicha('lotacao', institucionais.lotacao_nome);
+    escreverFicha('nome-completo', pessoais.nome_completo);
+    escreverFicha('cpf', C().mascararCpf(C().soDigitos(pessoais.cpf)));
+    escreverFicha('rg', C().mascararRg(C().soDigitos(pessoais.rg)));
+    escreverFicha('nascimento', D.isoParaBR(pessoais.data_de_nascimento));
+    escreverFicha('celular', C().mascararCelular(C().soDigitos(pessoais.celular)));
+    escreverFicha('email', pessoais.email);
+    escreverFicha('quadro', institucionais.quadro);
+    escreverFicha('inclusao', D.isoParaBR(institucionais.data_de_inclusao));
+    escreverFicha('posto', institucionais.grau_nome);
+    escreverFicha('nome-guerra', institucionais.nome_de_guerra);
+    escreverFicha('setor', institucionais.tipo);
+    /* "0000" = sem colocação: aparece "-"; o rótulo diz o curso (CFO, CHOE ou CFP), pelo quadro */
+    escreverFicha('colocacao', parseInt(String(institucionais.classificacao || '').replace(/\D/g, ''), 10) ? institucionais.classificacao : '');
+    escreverFicha('colocacao-rotulo', C().nomeColocacao(institucionais.quadro));
+    escreverFicha('cnh', pessoais.cnh);
+
+    /* o que está em "Falta preencher" não se repete na leitura (a inclusão é a data do primeiro posto) */
+    var comDatas = (r.postos || []).length > 0;
+    document.getElementById('dados-pendentes-dado-cnh').classList.toggle('oculto', !!r.cnh);
+    document.getElementById('dados-pendentes-dado-colocacao').classList.toggle('oculto', !!r.colocacao);
+    document.getElementById('dados-pendentes-dado-inclusao').classList.toggle('oculto', comDatas);
+
+    var lista = document.getElementById('dados-pendentes-ver-promocoes');
+    lista.textContent = '';
+    if (!comDatas) {
+      (ficha.promocoes || []).forEach(function (promocao) {
+        var dado = RosterWork.tpl('tpl-dados-pendentes-promocao');
+        if (!dado) return;
+        dado.querySelector('.perfil-dado-rotulo').textContent = promocao.grau_nome;
+        dado.querySelector('.perfil-dado-valor').textContent = D.isoParaBR(promocao.data);
+        lista.appendChild(dado);
+      });
+    }
+    document.getElementById('dados-pendentes-ver-promocoes-secao').classList.toggle('oculto', !lista.children.length);
+  }
+
+  /* a mesma leitura da aba Perfil do Meu perfil */
+  function lerFicha() {
+    var usuario = sessao();
+    if (!usuario || !usuario.cpf) return Promise.resolve(null);
+    return RosterWork.rpc('buscar_ficha_militar', { p_usuario_id: usuario.cpf }).catch(function () { return null; });
   }
 
   /* volta ao que está gravado (ou já foi enviado) */
@@ -129,9 +210,29 @@
     return c.tipo === 'data' ? V().paraISO(valor) : valor;
   }
 
+  function mudancas() {
+    return alterados().map(function (c) { return { campo: c.campo, valor: valorParaEnvio(c) }; });
+  }
+
+  /* o banco recusou: o conflito com a inclusão fica no primeiro posto e o da colocação no campo dela */
+  function mostrarRecusa(r) {
+    var erro = (r && r.error) || RosterWork.mensagens.perfil.falhaDados;
+    var alvo = campos.filter(function (c) {
+      return (/[Ii]nclusão/.test(erro) && c.campo === 'data_de_inclusao') || (/Colocação/.test(erro) && c.tipo === 'colocacao');
+    })[0];
+    if (alvo) C().marcarErro(alvo.el, erro);
+    else RosterWork.avisar({ tipo: 'erro', mensagem: erro });
+  }
+
+  function semConexao(botao) {
+    if (RosterWork.pararCarregando) RosterWork.pararCarregando(botao);
+    RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.semConexao });
+  }
+
+  /* modo pendentes: "Salvar" */
   function enviar() {
     if (!conferir()) return;
-    var mudou = alterados().map(function (c) { return { campo: c.campo, valor: valorParaEnvio(c) }; });
+    var mudou = mudancas();
     if (!mudou.length) return;
     var M = RosterWork.mensagens;
     if (RosterWork.iniciarCarregando) RosterWork.iniciarCarregando(salvar);
@@ -147,25 +248,68 @@
           RosterWork.avisar({ tipo: 'sucesso', mensagem: r.itens > 0 ? M.perfil.solicitacaoEnviada : M.perfil.dadosSalvos });
           return;
         }
-        /* o banco recusou: o conflito com a inclusão fica no primeiro posto e o da colocação no campo dela */
-        var erro = (r && r.error) || M.perfil.falhaDados;
-        var alvo = campos.filter(function (c) {
-          return (/[Ii]nclusão/.test(erro) && c.campo === 'data_de_inclusao') || (/Colocação/.test(erro) && c.tipo === 'colocacao');
-        })[0];
-        if (alvo) C().marcarErro(alvo.el, erro);
-        else RosterWork.avisar({ tipo: 'erro', mensagem: erro });
+        mostrarRecusa(r);
       })
-      .catch(function () {
-        if (RosterWork.pararCarregando) RosterWork.pararCarregando(salvar);
-        RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.semConexao });
-      });
+      .catch(function () { semConexao(salvar); });
   }
 
-  /* abre com o foco no primeiro item sem valor */
-  function abrir(r) {
+  /* modo conferir: "Confirmar" envia o que foi preenchido (o que ficou em branco não é cobrado)
+     e registra a conferência; a própria janela confirma (o aviso), sem o resumo */
+  function confirmarFicha() {
+    if (!conferir()) return;
+    var mudou = mudancas();
+    var M = RosterWork.mensagens;
+    if (RosterWork.iniciarCarregando) RosterWork.iniciarCarregando(confirmar);
+    var envio = mudou.length
+      ? RosterWork.rpc('perfil_solicitar', { p_alteracoes: mudou })
+      : Promise.resolve({ success: true, itens: 0 });
+    envio
+      .then(function (r) {
+        if (!r || !r.success) {
+          if (RosterWork.pararCarregando) RosterWork.pararCarregando(confirmar);
+          mostrarRecusa(r);
+          return;
+        }
+        /* o enviado passa a ser o "gravado": se a conferência falhar, o próximo Confirmar não reenvia */
+        campos.forEach(function (c) { c.original = ler(c); });
+        return RosterWork.rpc('cadastro_conferir').then(function (conferencia) {
+          if (RosterWork.pararCarregando) RosterWork.pararCarregando(confirmar);
+          if (!conferencia || !conferencia.success) {
+            RosterWork.avisar({ tipo: 'erro', mensagem: (conferencia && conferencia.error) || M.perfil.falhaDados });
+            return;
+          }
+          if (RosterWork.fecharModais) RosterWork.fecharModais();
+          RosterWork.avisar({ tipo: 'sucesso', mensagem: r.itens > 0 ? M.perfil.cadastroConferidoComPedido : M.perfil.cadastroConferido });
+        });
+      })
+      .catch(function () { semConexao(confirmar); });
+  }
+
+  /* modo conferir: olhar a ficha e achar o erro também é conferir; a correção é feita no Meus dados */
+  function corrigir() {
+    if (RosterWork.iniciarCarregando) RosterWork.iniciarCarregando(corrigirBotao);
+    RosterWork.rpc('cadastro_conferir')
+      .then(function (conferencia) {
+        if (RosterWork.pararCarregando) RosterWork.pararCarregando(corrigirBotao);
+        if (!conferencia || !conferencia.success) {
+          RosterWork.avisar({ tipo: 'erro', mensagem: (conferencia && conferencia.error) || RosterWork.mensagens.perfil.falhaDados });
+          return;
+        }
+        restaurar();
+        if (RosterWork.fecharModais) RosterWork.fecharModais();
+        if (RosterWork.irParaPagina) RosterWork.irParaPagina('perfil', 'dados');
+      })
+      .catch(function () { semConexao(corrigirBotao); });
+  }
+
+  /* abre no modo pedido, com o foco no primeiro item sem valor; sem item vazio, no modo conferir,
+     o foco vai para o Confirmar (no rodapé), e a ficha abre do começo */
+  function abrir(r, novoModo) {
+    aplicarModo(novoModo);
     montar(r);
     var vazio = campos.filter(function (c) { return !c.original; })[0];
-    if (RosterWork.abrirModal) RosterWork.abrirModal('veu-dados-pendentes', vazio ? vazio.el : null);
+    var alvo = vazio ? vazio.el : (modo === 'conferir' ? confirmar : null);
+    if (RosterWork.abrirModal) RosterWork.abrirModal('veu-dados-pendentes', alvo);
   }
 
   /* os campos fixos da janela (a CNH e a colocação) são ligados uma vez; os das datas, a cada montagem */
@@ -177,17 +321,26 @@
     colocacao.addEventListener('input', function () { C().limparErro(colocacao); revisar(); });
   }
 
+  /* "Preencher depois" e "Conferir depois": desfaz o que não foi salvo e fecha */
+  function fecharDepois() {
+    restaurar();
+    if (RosterWork.fecharModais) RosterWork.fecharModais();
+  }
+
   function inicializar() {
     veu = document.getElementById('veu-dados-pendentes');
     salvar = document.getElementById('dados-pendentes-salvar');
+    confirmar = document.getElementById('dados-pendentes-confirmar');
+    corrigirBotao = document.getElementById('dados-pendentes-corrigir');
     var depois = document.getElementById('dados-pendentes-depois');
-    if (!veu || !salvar || !depois || !RosterWork.campos) return;
+    var conferirDepois = document.getElementById('dados-pendentes-conferir-depois');
+    if (!veu || !salvar || !confirmar || !corrigirBotao || !depois || !conferirDepois || !RosterWork.campos) return;
     ligarCamposFixos();
-    depois.addEventListener('click', function () {
-      restaurar();
-      if (RosterWork.fecharModais) RosterWork.fecharModais();
-    });
+    depois.addEventListener('click', fecharDepois);
+    conferirDepois.addEventListener('click', fecharDepois);
     salvar.addEventListener('click', enviar);
+    confirmar.addEventListener('click', confirmarFicha);
+    corrigirBotao.addEventListener('click', corrigir);
 
     /* o navegador avisa se fechar com dados digitados e não salvos */
     if (RosterWork.guardaSaida) {
@@ -203,7 +356,19 @@
         var r = resultado[0];
         if (!r || !r.success) return;   // falhou: tenta de novo no próximo carregamento
         marcarLembrado();
-        if (r.pendente) abrir(r);
+        if (!r.conferir) {
+          if (r.pendente) abrir(r, 'pendentes');
+          return;
+        }
+        /* sem a ficha não há o que conferir: fica para a próxima entrada (o que falta ainda é pedido) */
+        lerFicha().then(function (ficha) {
+          if (ficha && ficha.pessoais) {
+            preencherFicha(ficha, r);
+            abrir(r, 'conferir');
+          } else if (r.pendente) {
+            abrir(r, 'pendentes');
+          }
+        });
       });
   }
 

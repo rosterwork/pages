@@ -1,0 +1,25 @@
+/* ============================================================
+   COMPONENTE geral-posto-editar — os campos de edição de um posto
+   O efetivo (mínimo, ideal e máximo lado a lado) e a viatura
+   (prefixo, CNH, as datas da troca e o aviso). Painel do dia da
+   Escala e painel de Postos; cada parte fica numa caixa de quem usa.
+   ============================================================ */
+
+/* campos lado a lado, da mesma largura */
+.posto-editar-linha {
+  display: flex;
+  gap: 8px;
+}
+
+.posto-editar-linha > .campo {
+  flex: 1;
+  min-width: 0;
+}
+
+/* a viatura e as datas da troca: um campo embaixo do outro */
+.posto-editar-viatura,
+.posto-editar-datas {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

@@ -187,7 +187,7 @@
     return 'Colocação';
   }
 
-  /* ---------- datas de promoção por posto (Novo usuário, ficha e Criar conta) ----------
+  /* ---------- datas de promoção por posto (Novo usuário, ficha e Meus dados) ----------
      Quais postos ganham campo de data. O primeiro posto da carreira não ganha: a data dele é a de
      inclusão. A praça incluída a partir de 01/11/2024 começa como Sd 3ª Classe; antes, como Sd 2ª
      Classe (o Sd 3ª Classe não existia). O oficial tem os postos do quadro dele até o atual (o

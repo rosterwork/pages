@@ -285,33 +285,19 @@
   font-weight: 500;
 }
 
-/* viatura em manutenção: bloco de aviso amarelo + a nota (só leitura no Ver; input no Editar) */
-.escala-manutencao {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: 8px;
-}
-.escala-manutencao-cab {
+/* o título do posto com o Editar posto à direita (só admin) */
+.escala-posto-cab {
   display: flex;
   align-items: center;
-  gap: 4px;
-  color: var(--alerta);
-  font-size: 12px;
-  font-weight: 600;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 24px;
 }
-.escala-manutencao-nota-ver {
-  font-size: 12px;
+
+/* troca de viatura com data: "No lugar da ... até ...", embaixo do prefixo */
+.escala-posto-no-lugar {
+  font-size: 11px;
   color: var(--texto-suave);
-}
-/* o efetivo da viatura em manutenção também fica amarelo — mas o vermelho (fora da disponibilidade) vence */
-.grupo-caixa--manutencao .escala-distribuicao-grad,
-.grupo-caixa--manutencao .escala-distribuicao-nome {
-  color: var(--alerta);
-}
-.grupo-caixa--manutencao .escala-distribuicao-grad.escala-incompativel,
-.grupo-caixa--manutencao .escala-distribuicao-nome.escala-incompativel {
-  color: var(--erro);
 }
 
 /* cadeira vazia (sem ninguém): linha vermelha no lugar do militar, dentro da função */

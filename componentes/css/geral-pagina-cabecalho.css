@@ -158,24 +158,41 @@
 
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
-   A barra de controles quebra em linhas: em cima as ações (a do
-   militar e o "Administração", que abre o menu com uma ação por
-   linha), dividindo a largura; embaixo o resto da régua, com os
-   controles só de ícone. A tela que não existe no celular mostra
+   A barra de controles quebra em três linhas: em cima as ações (a
+   do militar e o "Administração", que abre o menu com uma ação por
+   linha), dividindo a largura; no meio o período, à esquerda, e o
+   seletor (no celular, o menu dele), à direita; embaixo, à direita,
+   os controles só de ícone. A tela que não existe no celular mostra
    o vazio "Esta tela só funciona no computador.".
    ============================================================ */
 @media (max-width: 767px) {
-  /* a barra quebra em linhas; cada peça traz os 8px de cima (a linha da quebra, vazia, não soma espaço) */
+  /* a barra quebra em linhas, alinhadas à direita; cada peça traz os 8px de cima (a linha da quebra, vazia, não soma espaço) */
   html[data-celular] .pagina-subcabecalho {
     flex-wrap: wrap;
+    justify-content: flex-end;
     row-gap: 0;
     padding-bottom: 8px;
   }
 
-  /* ordem das linhas: as ações (0), a quebra (1), o resto da régua (2) e a busca aberta (3, geral-busca.css) */
+  /* ordem das linhas: as ações (0), a quebra (1), o período e o seletor (2), a quebra (3),
+     os ícones (4) e a busca aberta (5, geral-busca.css) */
   html[data-celular] .pagina-subcabecalho > * {
-    order: 2;
+    order: 4;
     margin-top: 8px;
+  }
+
+  /* linha do meio: o período e o seletor (o seletor, o menu dele ou o grupo que os contém, ex.: Colunas e Equipe) */
+  html[data-celular] .pagina-subcabecalho > .geral-periodo,
+  html[data-celular] .pagina-subcabecalho > .abas--seletor,
+  html[data-celular] .pagina-subcabecalho > .dropdown:has(> .seletor),
+  html[data-celular] .pagina-subcabecalho > :has(> .abas--seletor),
+  html[data-celular] .pagina-subcabecalho > :has(> .dropdown > .seletor) {
+    order: 2;
+  }
+
+  /* o período fica à esquerda; o seletor que não cabe ao lado dele desce para uma linha só dele, à direita */
+  html[data-celular] .pagina-subcabecalho > .geral-periodo {
+    margin-right: auto;
   }
 
   /* as ações dividem a largura da linha de cima; o texto que não cabe quebra dentro do botão */
@@ -202,8 +219,15 @@
     flex-basis: 100%;
   }
 
-  /* o espaçador some quando nada à vista vem depois dele (não abre uma linha vazia) */
-  html[data-celular] .pagina-subcabecalho > .espacador-flex:not(:has(~ :not(.oculto))) {
+  /* a quebra entre a linha do período e a dos ícones */
+  html[data-celular] .pagina-subcabecalho::after {
+    content: '';
+    order: 3;
+    flex-basis: 100%;
+  }
+
+  /* o espaçador sai: o alinhamento à direita vem da barra */
+  html[data-celular] .pagina-subcabecalho > .espacador-flex {
     display: none;
   }
 
@@ -216,6 +240,11 @@
   html[data-celular] .pagina-subcabecalho .dropdown-menu {
     max-width: calc(100% - 16px);
     white-space: normal;
+  }
+
+  /* linha de menu: sem moldura, a altura dela já é a área de toque (o calendário do período fica como está) */
+  html[data-celular] .pagina-subcabecalho .dropdown-menu:not(.calendario-menu) > .dropdown-item {
+    min-height: var(--toque-altura-celular);
   }
 
   /* tela fora do celular (Distribuição, Histórico): o vazio no lugar da tela (molde #tpl-pagina-so-computador) */
@@ -248,13 +277,20 @@
     padding: 8px 12px 4px;
   }
 
+  /* uma ação por linha, com a altura do toque; sem a folga de toque do botão: as linhas
+     são coladas e a folga de uma pegaria o toque da vizinha */
   html[data-celular] .acoes-admin-menu .botao {
-    display: flex;   /* uma ação por linha */
+    display: flex;
     justify-content: flex-start;
+    min-height: var(--toque-altura-celular);
     padding: 0 12px;
     border-color: transparent;
     border-radius: var(--raio-pequeno);
     background-color: transparent;
+  }
+
+  html[data-celular] .acoes-admin-menu .botao::before {
+    content: none;
   }
 
   html[data-celular] .acoes-admin-menu .botao:hover {

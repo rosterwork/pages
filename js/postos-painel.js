@@ -3,17 +3,17 @@
    Editar: clicar num card (abrir). Criar: o botão "+" (abrirNovo,
    Adicionar instalação) — mesmo painel, sem abas, com a linha
    "Instalação" no topo. Título = unidade; uma seção .painel-secao
-   com as linhas editáveis (Estado + efetivo mínimo/ideal/máximo)
-   como seletores. Rodapé Cancelar/Salvar no padrão do Editar das
+   com o Estado e a caixa Efetivo (mínimo, ideal e máximo lado a
+   lado, do componente geral-posto-editar, o mesmo do Editar posto
+   da Escala). Rodapé Cancelar/Salvar no padrão do Editar das
    escalas: Salvar só habilita com dado válido e ordem mínimo ≤
    ideal ≤ máximo. Grava pelo RPC atualizar_instalacao (editar) ou
    inserir_instalacao (criar); no editar atualiza o card de forma
    cirúrgica (sem flash), no criar recarrega a árvore; confirma no
-   modal geral-resumo com o log do banco. A data do modal é a data
-   em que o novo estado (ou a exclusão, ou o começo) vale; embaixo do
-   Estado ficam as mudanças marcadas, com Cancelar (postos-mudancas.js);
-   na edição, a seção "Linha do tempo" (só leitura, postos-linha-tempo.js)
-   vem antes do Excluir. Moldes em postos.html; casca da gaveta em geral-painel.
+   modal geral-resumo com o log do banco. Só o estado (a exclusão e o
+   começo) pede a data do modal, a data em que ele vale; o efetivo vale
+   na hora. Embaixo do Estado ficam as mudanças marcadas, com Cancelar
+   (postos-mudancas.js). Moldes em postos.html; casca da gaveta em geral-painel.
    ============================================================ */
 (function () {
   'use strict';
@@ -89,28 +89,16 @@
     return linha;
   }
 
-  /* linha de um efetivo: opções 1 a 10 pelo dropdown de números; o mínimo começa em 0 (posto reserva,
-     sem erro de efetivo) */
-  function montarLinhaEfetivo(rotulo, chave) {
-    var linha = RosterWork.tpl('tpl-posto-editar-linha');
-    if (!linha) return null;
-    linha.querySelector('.campo-rotulo').textContent = rotulo;
-    var gatilho = linha.querySelector('.campo-selecao');
-    var vazio = valores[chave] == null;
-    definirTexto(gatilho, vazio ? 'Selecione' : String(valores[chave]), vazio);
-    var menu = linha.querySelector('.dropdown-menu');
-    if (menu && RosterWork.dropdownNumeros) {
-      RosterWork.dropdownNumeros.preencher(menu, {
-        opcoes: chave === 'min' ? [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-        valor: valores[chave],
-        aoEscolher: function (v) {
-          valores[chave] = v;
-          definirTexto(gatilho, String(v));
-          aoMudar();
-        }
-      });
-    }
-    return linha;
+  /* caixa Efetivo: mínimo, ideal e máximo lado a lado (componente geral-posto-editar; o mínimo começa em 0,
+     posto reserva, sem erro de efetivo) */
+  function montarCaixaEfetivo() {
+    var caixa = RosterWork.painel.criarCaixa('Efetivo');
+    var efetivo = RosterWork.postoEditar.efetivo({ min: valores.min, ideal: valores.ideal, max: valores.max }, function (e) {
+      valores.min = e.min; valores.ideal = e.ideal; valores.max = e.max;
+      aoMudar();
+    });
+    if (caixa && efetivo) caixa.appendChild(efetivo.el);
+    return caixa;
   }
 
   /* linha "Instalação" (modo criação): o menu é preenchido por popularInstalacoes */
@@ -175,16 +163,10 @@
     linhas.push(montarLinhaEstado());
     /* embaixo do Estado: as mudanças marcadas (estado ou exclusão com data futura), com Cancelar */
     if (modo === 'editar' && RosterWork.postosMudancas) linhas.push(RosterWork.postosMudancas.criarLista(ctx.inst, aoCancelarMudanca));
-    linhas.push(montarLinhaEfetivo('Ef. mínimo', 'min'));
-    linhas.push(montarLinhaEfetivo('Ef. ideal', 'ideal'));
-    linhas.push(montarLinhaEfetivo('Ef. máximo', 'max'));
+    linhas.push(montarCaixaEfetivo());
     linhas.forEach(function (linha) { if (linha) secao.appendChild(linha); });
     corpo.appendChild(secao);
-    if (modo === 'editar') {
-      /* a linha do tempo do posto (só leitura), antes do Excluir */
-      if (RosterWork.postosLinhaTempo) RosterWork.postosLinhaTempo.montar(corpo, null, ctx.inst.id_instalacao);
-      montarExcluir(corpo);
-    }
+    if (modo === 'editar') montarExcluir(corpo);
   }
 
   /* ---------- excluir instalação (ação crítica, no rodapé do painel; vale a partir da data do modal) ---------- */
@@ -327,21 +309,24 @@
     }
     if (!sujo) return;
     var inst = ctx.inst;   // referência compartilhada com o card (mutável p/ reabrir o painel já fresco)
+    var mudouEstado = valores.estado !== originais.estado;
+    /* o estado só vai quando mudou, com a data do modal; o efetivo vale na hora */
+    function enviarEdicao(iso) {
+      enviar('/rest/v1/rpc/atualizar_instalacao', {
+        p_instalacao_id: inst.id_instalacao,
+        p_estado: mudouEstado ? valores.estado : null,
+        p_efetivo_min: valores.min,
+        p_efetivo_ideal: valores.ideal,
+        p_efetivo_max: valores.max,
+        p_recalcular_desde: iso || null
+      }, RosterWork.mensagens.postos.falhaEditar, function (r) { aplicarSucesso(inst, r); });
+    }
+    if (!mudouEstado) { enviarEdicao(null); return; }
     /* mudou o estado: a data do modal é a data em que o novo estado vale */
-    var t = RosterWork.mensagens.postos;
     RosterWork.pedirData({
-      mensagem: valores.estado !== originais.estado ? t.novoEstadoVale : t.impactoDistribuicao,
+      mensagem: RosterWork.mensagens.postos.novoEstadoVale,
       textoConfirmar: RosterWork.mensagens.botoes.salvar,
-      aoConfirmar: function (iso) {
-        enviar('/rest/v1/rpc/atualizar_instalacao', {
-          p_instalacao_id: inst.id_instalacao,
-          p_estado: valores.estado,
-          p_efetivo_min: valores.min,
-          p_efetivo_ideal: valores.ideal,
-          p_efetivo_max: valores.max,
-          p_recalcular_desde: iso
-        }, RosterWork.mensagens.postos.falhaEditar, function (r) { aplicarSucesso(inst, r); });
-      }
+      aoConfirmar: function (iso) { enviarEdicao(iso); }
     });
   }
 

@@ -24,9 +24,6 @@
   function buscarUnidades() {
     if (unidadesCache) return Promise.resolve(unidadesCache);
     if (buscaEmAndamento) return buscaEmAndamento;
-    /* sem sessão TAMBÉM busca: a hierarquia é pública (buscar_unidades_ordenadas
-       é SECURITY DEFINER e responde ao anon) porque a tela de Criar conta
-       precisa da MESMA árvore de lotação, e quem se cadastra ainda não entrou */
     buscaEmAndamento = RosterWork.apiFetch('/rest/v1/rpc/buscar_unidades_ordenadas', {
       metodo: 'POST',
       corpo: {}

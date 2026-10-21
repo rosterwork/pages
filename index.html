@@ -39,6 +39,7 @@
   <link rel="stylesheet" href="componentes/css/geral-mini-calendario.css" />
   <link rel="stylesheet" href="componentes/css/geral-periodo.css" />
   <link rel="stylesheet" href="componentes/css/geral-anteriores.css" />
+  <link rel="stylesheet" href="componentes/css/geral-posto-editar.css" />
   <link rel="stylesheet" href="componentes/css/geral-layout-lateral.css" />
   <link rel="stylesheet" href="componentes/css/geral-rodape.css" />
   <link rel="stylesheet" href="componentes/css/geral-painel.css" />
@@ -366,53 +367,146 @@
     </div>
   </div>
 
-  <!-- DADOS PENDENTES: ao entrar, quando falta algo no cadastro (uma vez por login; js/index-dados-pendentes.js): a CNH
-       (todos) e a colocação no CFP e as datas de promoção (praças). Exceção à regra do modal (como o Fale conosco):
-       os campos ficam na própria janela -->
+  <!-- DADOS PENDENTES: ao entrar (uma vez por login; js/index-dados-pendentes.js), em dois modos. "Conferir" enquanto
+       o militar não conferiu a ficha: a ficha para leitura e, em "Falta preencher", o que falta. "Pendentes" depois,
+       só quando falta algo: a CNH (todos) e a colocação no CFP e as datas de promoção (praças). O que é de um modo só
+       leva data-modo-conferir ou data-modo-pendentes. Exceção à regra do modal (como o Fale conosco): os campos
+       ficam na própria janela -->
   <div class="modal-veu" id="veu-dados-pendentes">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="dados-pendentes-titulo">
       <div class="modal-cabecalho">
-        <span class="modal-titulo" id="dados-pendentes-titulo">Dados pendentes no cadastro</span>
+        <span class="modal-titulo" id="dados-pendentes-titulo">
+          <span data-modo-conferir>Confira o seu cadastro</span>
+          <span data-modo-pendentes>Dados pendentes no cadastro</span>
+        </span>
       </div>
       <div class="modal-corpo">
-        <p class="modal-texto">Seu cadastro está sem alguns dados. Preencha os que faltam:</p>
-        <div class="perfil-formulario">
-          <div class="campo oculto" id="dados-pendentes-cnh-campo">
-            <span class="campo-rotulo">CNH</span>
-            <div class="dropdown">
-              <button type="button" class="campo-entrada campo-selecao" id="dados-pendentes-cnh" data-valor="">
-                <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
-                <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
-              </button>
-              <div class="dropdown-menu">
-                <button type="button" class="dropdown-item" data-valor="Nenhuma">Não tenho CNH</button>
-                <button type="button" class="dropdown-item" data-valor="A">A</button>
-                <button type="button" class="dropdown-item" data-valor="B">B</button>
-                <button type="button" class="dropdown-item" data-valor="C">C</button>
-                <button type="button" class="dropdown-item" data-valor="D">D</button>
-                <button type="button" class="dropdown-item" data-valor="E">E</button>
-                <button type="button" class="dropdown-item" data-valor="AB">AB</button>
-                <button type="button" class="dropdown-item" data-valor="AC">AC</button>
-                <button type="button" class="dropdown-item" data-valor="AD">AD</button>
-                <button type="button" class="dropdown-item" data-valor="AE">AE</button>
-              </div>
-            </div>
-            <span class="campo-erro-texto"></span>
+        <p class="modal-texto" data-modo-conferir>Estes são os dados que o administrador cadastrou para você. Se estiver tudo certo, clique em Confirmar.</p>
+        <div class="perfil-cartao" data-modo-conferir>
+          <div class="perfil-cartao-pessoa">
+            <span class="perfil-cartao-grad" id="dados-pendentes-ver-grad"></span>
+            <span class="perfil-cartao-nome" id="dados-pendentes-ver-guerra"></span>
           </div>
-          <label class="campo oculto" id="dados-pendentes-colocacao-campo">
-            <span class="campo-rotulo">Colocação CFP</span>
-            <input class="campo-entrada" id="dados-pendentes-colocacao" type="text" inputmode="numeric" maxlength="4" placeholder="Ex.: 0001" autocomplete="off" />
-            <span class="campo-erro-texto"></span>
-          </label>
-          <div class="perfil-formulario oculto" id="dados-pendentes-postos"></div>
+          <span class="perfil-cartao-lotacao" id="dados-pendentes-ver-lotacao"></span>
+        </div>
+        <p class="modal-texto" data-modo-pendentes>Seu cadastro está sem alguns dados. Preencha os que faltam:</p>
+        <!-- o que falta, numa caixa (some quando nada falta); o título só no modo conferir -->
+        <div class="grupo-caixa" id="dados-pendentes-falta">
+          <span class="rotulo-secao" data-modo-conferir>Falta preencher</span>
+          <div class="perfil-formulario">
+            <div class="campo oculto" id="dados-pendentes-cnh-campo">
+              <span class="campo-rotulo">CNH</span>
+              <div class="dropdown">
+                <button type="button" class="campo-entrada campo-selecao" id="dados-pendentes-cnh" data-valor="">
+                  <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+                  <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+                </button>
+                <div class="dropdown-menu">
+                  <button type="button" class="dropdown-item" data-valor="Nenhuma">Não tenho CNH</button>
+                  <button type="button" class="dropdown-item" data-valor="A">A</button>
+                  <button type="button" class="dropdown-item" data-valor="B">B</button>
+                  <button type="button" class="dropdown-item" data-valor="C">C</button>
+                  <button type="button" class="dropdown-item" data-valor="D">D</button>
+                  <button type="button" class="dropdown-item" data-valor="E">E</button>
+                  <button type="button" class="dropdown-item" data-valor="AB">AB</button>
+                  <button type="button" class="dropdown-item" data-valor="AC">AC</button>
+                  <button type="button" class="dropdown-item" data-valor="AD">AD</button>
+                  <button type="button" class="dropdown-item" data-valor="AE">AE</button>
+                </div>
+              </div>
+              <span class="campo-erro-texto"></span>
+            </div>
+            <label class="campo oculto" id="dados-pendentes-colocacao-campo">
+              <span class="campo-rotulo">Colocação CFP</span>
+              <input class="campo-entrada" id="dados-pendentes-colocacao" type="text" inputmode="numeric" maxlength="4" placeholder="Ex.: 0001" autocomplete="off" />
+              <span class="campo-erro-texto"></span>
+            </label>
+            <div class="perfil-formulario oculto" id="dados-pendentes-postos"></div>
+          </div>
         </div>
         <p class="modal-texto oculto" data-dados-pendentes-link>As datas de promoção e a colocação no CFP definem a sua antiguidade, que o sistema usa para organizar a escala. Você pode consultá-las em:</p>
         <a class="botao botao--texto oculto" data-dados-pendentes-link href="https://www.sysbm.bombeiros.pr.gov.br/cpp/index.php" target="_blank" rel="noopener noreferrer">https://www.sysbm.bombeiros.pr.gov.br/cpp/index.php</a>
-        <p class="modal-texto">Os dados informados passam pela conferência de um administrador.</p>
+        <p class="modal-texto" data-modo-pendentes>Os dados informados passam pela conferência de um administrador.</p>
+        <!-- a ficha para leitura, uma caixa por grupo (os mesmos nomes da aba Perfil do Meu perfil); o que está em "Falta preencher" sai daqui -->
+        <div class="perfil-secao" data-modo-conferir>
+          <div class="grupo-caixa">
+            <span class="rotulo-secao">Identificação</span>
+            <div class="perfil-grade perfil-grade--duas">
+              <div class="perfil-dado">
+                <span class="perfil-dado-rotulo">Nome completo</span>
+                <span class="perfil-dado-valor" id="dados-pendentes-ver-nome-completo"></span>
+              </div>
+              <div class="perfil-dado">
+                <span class="perfil-dado-rotulo">CPF</span>
+                <span class="perfil-dado-valor" id="dados-pendentes-ver-cpf"></span>
+              </div>
+              <div class="perfil-dado">
+                <span class="perfil-dado-rotulo">RG</span>
+                <span class="perfil-dado-valor" id="dados-pendentes-ver-rg"></span>
+              </div>
+              <div class="perfil-dado">
+                <span class="perfil-dado-rotulo">Nascimento</span>
+                <span class="perfil-dado-valor" id="dados-pendentes-ver-nascimento"></span>
+              </div>
+              <div class="perfil-dado">
+                <span class="perfil-dado-rotulo">Celular</span>
+                <span class="perfil-dado-valor" id="dados-pendentes-ver-celular"></span>
+              </div>
+              <div class="perfil-dado">
+                <span class="perfil-dado-rotulo">E-mail</span>
+                <span class="perfil-dado-valor" id="dados-pendentes-ver-email"></span>
+              </div>
+            </div>
+          </div>
+          <div class="grupo-caixa">
+            <span class="rotulo-secao">Carreira</span>
+            <div class="perfil-grade perfil-grade--duas">
+              <div class="perfil-dado">
+                <span class="perfil-dado-rotulo">Quadro</span>
+                <span class="perfil-dado-valor" id="dados-pendentes-ver-quadro"></span>
+              </div>
+              <div class="perfil-dado" id="dados-pendentes-dado-inclusao">
+                <span class="perfil-dado-rotulo">Data de inclusão</span>
+                <span class="perfil-dado-valor" id="dados-pendentes-ver-inclusao"></span>
+              </div>
+              <div class="perfil-dado">
+                <span class="perfil-dado-rotulo">Posto</span>
+                <span class="perfil-dado-valor" id="dados-pendentes-ver-posto"></span>
+              </div>
+              <div class="perfil-dado">
+                <span class="perfil-dado-rotulo">Nome de guerra</span>
+                <span class="perfil-dado-valor" id="dados-pendentes-ver-nome-guerra"></span>
+              </div>
+              <div class="perfil-dado">
+                <span class="perfil-dado-rotulo">Setor</span>
+                <span class="perfil-dado-valor" id="dados-pendentes-ver-setor"></span>
+              </div>
+              <div class="perfil-dado" id="dados-pendentes-dado-colocacao">
+                <span class="perfil-dado-rotulo" id="dados-pendentes-ver-colocacao-rotulo">Colocação</span>
+                <span class="perfil-dado-valor" id="dados-pendentes-ver-colocacao"></span>
+              </div>
+              <div class="perfil-dado" id="dados-pendentes-dado-cnh">
+                <span class="perfil-dado-rotulo">Habilitação</span>
+                <span class="perfil-dado-valor" id="dados-pendentes-ver-cnh"></span>
+              </div>
+            </div>
+          </div>
+          <div class="grupo-caixa" id="dados-pendentes-ver-promocoes-secao">
+            <span class="rotulo-secao">Datas de promoções</span>
+            <div class="perfil-grade perfil-grade--duas" id="dados-pendentes-ver-promocoes"></div>
+          </div>
+        </div>
+        <p class="perfil-nota" data-modo-conferir>
+          <svg class="icone perfil-nota-icone" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+          <span>Algum dado errado? Corrija em Meus dados. A correção vai para a aprovação de um administrador.</span>
+        </p>
+        <button type="button" class="botao botao--texto" id="dados-pendentes-corrigir" data-modo-conferir>Corrigir em Meus dados</button>
       </div>
       <div class="modal-rodape">
-        <button type="button" class="botao" id="dados-pendentes-depois">Preencher depois</button>
-        <button type="button" class="botao botao--primario" id="dados-pendentes-salvar" disabled>Salvar</button>
+        <button type="button" class="botao" id="dados-pendentes-conferir-depois" data-modo-conferir>Conferir depois</button>
+        <button type="button" class="botao botao--primario" id="dados-pendentes-confirmar" data-modo-conferir>Confirmar</button>
+        <button type="button" class="botao" id="dados-pendentes-depois" data-modo-pendentes>Preencher depois</button>
+        <button type="button" class="botao botao--primario" id="dados-pendentes-salvar" data-modo-pendentes disabled>Salvar</button>
       </div>
     </div>
   </div>
@@ -531,6 +625,7 @@
   <script src="componentes/js/geral-abas.js"></script>
   <script src="componentes/js/geral-painel.js"></script>
   <script src="componentes/js/geral-anteriores.js"></script>
+  <script src="componentes/js/geral-posto-editar.js"></script>
   <script src="componentes/js/geral-impacto.js"></script>
   <script src="componentes/js/geral-decisao.js"></script>
   <script src="componentes/js/geral-fila.js"></script>
@@ -666,6 +761,83 @@
     <button type="button" class="dropdown-item"></button>
   </template>
 
+  <!-- MOLDES: edição de posto (componente geral-posto-editar — painel do dia da Escala e painel de Postos).
+       Quem usa põe cada parte numa caixa (Efetivo, Viatura) -->
+
+  <!-- o efetivo do posto: mínimo, ideal e máximo lado a lado (números pelo geral-dropdown-numeros) -->
+  <template id="tpl-posto-editar-efetivo">
+    <div class="posto-editar-linha">
+      <div class="campo" data-efetivo="min">
+        <span class="campo-rotulo">Mínimo</span>
+        <div class="dropdown">
+          <button type="button" class="campo-entrada campo-selecao" aria-label="Efetivo mínimo">
+            <span class="campo-selecao-texto"></span>
+            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+          </button>
+          <div class="dropdown-menu"></div>
+        </div>
+      </div>
+      <div class="campo" data-efetivo="ideal">
+        <span class="campo-rotulo">Ideal</span>
+        <div class="dropdown">
+          <button type="button" class="campo-entrada campo-selecao" aria-label="Efetivo ideal">
+            <span class="campo-selecao-texto"></span>
+            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+          </button>
+          <div class="dropdown-menu"></div>
+        </div>
+      </div>
+      <div class="campo" data-efetivo="max">
+        <span class="campo-rotulo">Máximo</span>
+        <div class="dropdown">
+          <button type="button" class="campo-entrada campo-selecao" aria-label="Efetivo máximo">
+            <span class="campo-selecao-texto"></span>
+            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+          </button>
+          <div class="dropdown-menu"></div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- a viatura: prefixo e CNH; as datas da troca aparecem quando um dos dois muda; o aviso amarelo,
+       quando o prefixo já está em outro posto naqueles dias -->
+  <template id="tpl-posto-editar-viatura">
+    <div class="posto-editar-viatura">
+      <label class="campo">
+        <span class="campo-rotulo">Prefixo</span>
+        <input type="text" name="posto-prefixo" class="campo-entrada" data-viatura-prefixo placeholder="Ex.: ABT-01" maxlength="12" autocomplete="off" />
+      </label>
+      <div class="campo">
+        <span class="campo-rotulo">CNH exigida</span>
+        <div class="abas abas--seletor" data-viatura-cnh aria-label="CNH exigida">
+          <button type="button" class="aba" data-valor="A">A</button>
+          <button type="button" class="aba" data-valor="B">B</button>
+          <button type="button" class="aba" data-valor="C">C</button>
+          <button type="button" class="aba" data-valor="D">D</button>
+          <button type="button" class="aba" data-valor="E">E</button>
+        </div>
+      </div>
+      <div class="posto-editar-datas oculto" data-viatura-datas>
+        <div class="posto-editar-linha">
+          <label class="campo">
+            <span class="campo-rotulo">A partir de</span>
+            <input type="text" name="posto-troca-inicio" class="campo-entrada" data-viatura-inicio inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" />
+          </label>
+          <label class="campo">
+            <span class="campo-rotulo">Até (opcional)</span>
+            <input type="text" name="posto-troca-fim" class="campo-entrada" data-viatura-fim inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" />
+          </label>
+        </div>
+        <span class="campo-ajuda">Sem a data do Até, a troca é para sempre.</span>
+      </div>
+      <div class="nota nota--alerta oculto" data-viatura-aviso>
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+        <span class="nota-texto"></span>
+      </div>
+    </div>
+  </template>
+
   <!-- MOLDES: resumo de alterações (componente geral-resumo — modal de confirmação ao salvar e página de Histórico) -->
   <template id="tpl-resumo">
     <div class="resumo">
@@ -788,6 +960,22 @@
         </div>
       </div>
     </div>
+  </template>
+
+  <!-- MOLDES: no celular, o seletor da barra de controles vira este menu suspenso (geral-abas.js). O gatilho
+       mostra a opção escolhida e a lista repete as opções do seletor, que fica escondido e continua dono da escolha -->
+  <template id="tpl-seletor-menu">
+    <div class="dropdown seletor-menu">
+      <button type="button" class="seletor">
+        <span class="seletor-texto"></span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu"></div>
+    </div>
+  </template>
+
+  <template id="tpl-seletor-menu-item">
+    <button type="button" class="dropdown-item"></button>
   </template>
 
   <!-- MOLDES: calendário (componente compartilhado) -->
@@ -1237,6 +1425,28 @@
   <template id="tpl-escala-sub-acoes">
     <button type="button" class="botao escala-sub-cancelar">Cancelar</button>
     <button type="button" class="botao botao--primario escala-sub-aplicar"></button>
+  </template>
+
+  <!-- ===== Editar posto (só admin; escalas-painel-posto.js): o efetivo e, na viatura, a troca de prefixo e CNH ===== -->
+
+  <!-- o título do posto no painel do dia, com o botão Editar posto à direita -->
+  <template id="tpl-escala-posto-cab">
+    <div class="escala-posto-cab">
+      <span class="rotulo-secao"></span>
+      <button type="button" class="botao-discreto escala-posto-editar" aria-label="Editar posto">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-ajustar.svg#icone-ajustar"/></svg>
+      </button>
+    </div>
+  </template>
+
+  <!-- a sub-tela: título e o nome do posto; as caixas Efetivo e Viatura vêm do componente geral-posto-editar -->
+  <template id="tpl-escala-posto-form">
+    <div class="subtela">
+      <div class="subtela-cab">
+        <span class="subtela-titulo">Editar posto</span>
+        <span class="subtela-subtitulo"></span>
+      </div>
+    </div>
   </template>
 
   <!-- ===== formulário Quem · Quando · Onde (Adicionar militar, horário sem ninguém e Nova função; escalas-painel-formulario.js) ===== -->
@@ -1765,6 +1975,14 @@
     </label>
   </template>
 
+  <!-- molde: uma data de promoção para leitura (janela dos dados pendentes, modo conferir) -->
+  <template id="tpl-dados-pendentes-promocao">
+    <div class="perfil-dado">
+      <span class="perfil-dado-rotulo"></span>
+      <span class="perfil-dado-valor"></span>
+    </div>
+  </template>
+
   <!-- ===== painel de decisão (componente geral-decisao; Trocas e Folgas, na Pendências e na página de cada assunto) ===== -->
   <!-- o corpo: o pedido em caixas, a nota do saldo, a análise, o "Como fica a escala" (fechado) e, ao recusar, o motivo -->
   <template id="tpl-decisao">
@@ -1980,17 +2198,9 @@
     <span class="escala-distribuicao-funcao-rotulo"></span>
   </template>
 
-  <!-- viatura em manutenção: aviso amarelo + nota (só leitura no Ver; editável no Editar) -->
-  <template id="tpl-escala-manutencao">
-    <div class="escala-manutencao">
-      <div class="escala-manutencao-cab">
-        <svg class="icone escala-manutencao-icone" width="16" height="16"><use href="icones/icone-alerta.svg#icone-alerta"></use></svg>
-        <span class="escala-manutencao-titulo">Em manutenção</span>
-      </div>
-      <input type="text" class="campo-entrada escala-manutencao-nota" maxlength="120"
-             placeholder="Detalhe (ex.: substituída por ABT-41)" />
-      <span class="escala-manutencao-nota-ver"></span>
-    </div>
+  <!-- troca de viatura com data: embaixo do prefixo, a viatura de sempre e o último dia da troca -->
+  <template id="tpl-escala-posto-no-lugar">
+    <span class="escala-posto-no-lugar"></span>
   </template>
 
   <template id="tpl-escala-vaga-vazia">

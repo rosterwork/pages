@@ -90,7 +90,9 @@
     preencher('perfil-cartao-grad', usuario.grau_abreviacao);
     preencher('perfil-cartao-nome', usuario.nome_de_guerra);
     preencher('perfil-cartao-lotacao', institucionais.lotacao_nome || usuario.lotacao_path);
-    preencher('perfil-cartao-papel', usuario.is_administrador ? 'Administrador' : 'Usuário');
+    /* o papel de administração (o da ficha, senão o do login); sem papel, Usuário */
+    var adm = (ficha && ficha.administracao && ficha.administracao.papel) ? ficha.administracao : usuario.administracao;
+    preencher('perfil-cartao-papel', (adm && adm.rotulo) || (usuario.is_administrador ? 'Administrador' : 'Usuário'));
 
     preencher('perfil-ver-nome-completo', pessoais.nome_completo);
     preencher('perfil-ver-cpf', formatarCpf(usuario.cpf));

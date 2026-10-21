@@ -137,11 +137,66 @@
     trilho.dispatchEvent(new CustomEvent('rosterwork:aba', { detail: { aba: aba } }));
   });
 
+  /* ---------- no celular: o seletor da barra vira menu ----------
+     Na barra de controles, o seletor de escolha única vira o menu suspenso "Opção ▾" (moldes
+     #tpl-seletor-menu e #tpl-seletor-menu-item), logo depois dele. O seletor fica escondido
+     (.abas--em-menu, geral-abas.css) e continua dono da escolha: tocar num item clica a aba
+     dele, e a página reage como sempre. O menu acompanha o seletor: a opção escolhida, as
+     opções escondidas e os números delas. A multisseleção fica como está. */
+
+  /* o texto que a aba mostra, sem as partes escondidas (ex.: a contagem com .oculto) */
+  function textoVisivel(elemento) {
+    var texto = '';
+    for (var i = 0; i < elemento.childNodes.length; i++) {
+      var filho = elemento.childNodes[i];
+      if (filho.nodeType === Node.TEXT_NODE) texto += filho.textContent;
+      else if (filho.nodeType === Node.ELEMENT_NODE && !filho.classList.contains('oculto')) texto += ' ' + textoVisivel(filho) + ' ';
+    }
+    return texto.replace(/\s+/g, ' ').trim();
+  }
+
+  function prepararMenuDoCelular(trilho) {
+    if (!trilho.classList.contains('abas--seletor') || trilho.hasAttribute('data-abas-multi')) return;
+    if (trilho.dataset.menuPronto || !trilho.closest('.pagina-subcabecalho')) return;
+    if (!(window.RosterWork.celular && window.RosterWork.celular())) return;
+    var menu = window.RosterWork.tpl ? window.RosterWork.tpl('tpl-seletor-menu') : null;
+    if (!menu) return;
+    trilho.dataset.menuPronto = '1';
+    var gatilho = menu.querySelector('.seletor');
+    var texto = menu.querySelector('.seletor-texto');
+    var lista = menu.querySelector('.dropdown-menu');
+
+    function desenhar() {
+      var ativa = trilho.querySelector('.aba--ativa');
+      texto.textContent = ativa ? textoVisivel(ativa) : '';
+      lista.textContent = '';
+      Array.prototype.forEach.call(trilho.querySelectorAll('.aba'), function (aba) {
+        if (aba.classList.contains('oculto')) return;
+        var item = window.RosterWork.tpl('tpl-seletor-menu-item');
+        item.textContent = textoVisivel(aba);
+        item.classList.toggle('dropdown-item--ativo', aba === ativa);
+        item.addEventListener('click', function () {
+          aba.click();
+          gatilho.focus();
+        });
+        lista.appendChild(item);
+      });
+    }
+
+    trilho.classList.add('abas--em-menu');
+    trilho.after(menu);
+    new MutationObserver(desenhar).observe(trilho, {
+      subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['class']
+    });
+    desenhar();
+  }
+
   /* açúcar para a página reagir à troca: aoTrocar(abaAtiva) roda quando a aba muda */
   function ligar(trilho, aoTrocar) {
     if (!trilho || !aoTrocar) return;
     prepararAria(trilho);
     prepararTraco(trilho);
+    prepararMenuDoCelular(trilho);
     trilho.addEventListener('rosterwork:aba', function (evento) { aoTrocar(evento.detail.aba); });
   }
 

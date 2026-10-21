@@ -178,15 +178,6 @@ button.aviso-item:hover {
   font-weight: 600;
 }
 
-/* pendência no sino: bolinha colorida por gravidade (vermelho = fora da escala,
-   amarelo = viatura em manutenção) e título em destaque; fica até ser resolvida */
-.aviso-item--erro .aviso-item-ponto { background-color: var(--erro); }
-.aviso-item--alerta .aviso-item-ponto { background-color: var(--alerta); }
-.aviso-item--erro .aviso-item-titulo,
-.aviso-item--alerta .aviso-item-titulo {
-  font-weight: 600;
-}
-
 .aviso-item-titulo {
   font-size: 12px;
   color: var(--texto-forte);
@@ -279,13 +270,25 @@ button.aviso-item:hover {
     padding: 8px;
   }
 
+  /* o sino tem a altura dos botões e a folga de toque deles (geral-botao.css) */
+  html[data-celular] .cabecalho-btn {
+    position: relative;
+  }
+
+  html[data-celular] .cabecalho-btn::before {
+    content: '';
+    position: absolute;
+    inset: calc((var(--botao-altura) - var(--toque-altura-celular)) / 2);
+  }
+
   /* menus do topo cabem na largura da tela e quebram o texto */
   html[data-celular] .cabecalho .dropdown-menu {
     max-width: calc(100% - 8px);
     white-space: normal;
   }
 
+  /* linha de menu: sem moldura, a altura dela já é a área de toque */
   html[data-celular] .cabecalho-usuario + .dropdown-menu .dropdown-item {
-    min-height: var(--botao-altura);
+    min-height: var(--toque-altura-celular);
   }
 }

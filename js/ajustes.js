@@ -47,7 +47,8 @@
     card.querySelector('.ajuste-cartao-valor').textContent = ritmo;
     card.querySelector('.ajuste-cartao-ajuda').textContent = descreverRitmo(ritmo);
     card.setAttribute('data-unidade-id', unidade.unidade_id);
-    if (RosterWork.sessao.ehAdmin()) {
+    /* o ritmo é da companhia: muda o admin de companhia (ou o geral) cuja área tem a unidade */
+    if (RosterWork.sessao.podeAdministrar('companhia', unidade.unidade_id)) {
       card.classList.add('ajuste-cartao--clicavel');
       card.addEventListener('click', function () { abrirPainel(unidade, ritmo); });
     }

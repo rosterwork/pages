@@ -152,6 +152,11 @@
   color: var(--texto-forte);
 }
 
+/* o menu que faz as vezes do seletor da barra só existe no celular (ver o bloco do celular) */
+.dropdown.seletor-menu {
+  display: none;
+}
+
 /* ---------- contagem dentro da aba (as duas variantes) ---------- */
 
 /* ex.: quantos pedidos esperam decisão — um .selo encolhido, colado
@@ -168,7 +173,8 @@
    As abas do menu ganham a altura do toque e, quando não cabem,
    rolam para o lado (sem barra de rolagem à vista); o geral-abas.js
    deixa a escolhida à vista. As abas da página correm de ponta a
-   ponta do bloco. O seletor usa a letra do texto padrão.
+   ponta do bloco. O seletor usa a letra do texto padrão; na barra
+   de controles ele vira o menu "Opção ▾" (geral-abas.js).
    ============================================================ */
 @media (max-width: 767px) {
   html[data-celular] .abas:not(.abas--seletor),
@@ -200,5 +206,24 @@
 
   html[data-celular] .abas--seletor .aba {
     font-size: var(--fonte-padrao);
+  }
+
+  /* na barra, o seletor vira o menu: ele some, o menu aparece (e some junto quando a página o esconde) */
+  html[data-celular] .abas--em-menu {
+    display: none;
+  }
+
+  html[data-celular] .seletor-menu {
+    display: inline-flex;
+  }
+
+  html[data-celular] .abas--em-menu.oculto + .seletor-menu {
+    display: none;
+  }
+
+  /* o gatilho do menu tem a largura da opção escolhida */
+  html[data-celular] .seletor-menu > .seletor {
+    width: auto;
+    max-width: 100%;
   }
 }

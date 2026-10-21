@@ -83,6 +83,9 @@
       if (!pecas || !RosterWork.painel || !(pecas.temAlguem && pecas.temAlguem(posto))) return;
       var caixa = RosterWork.painel.criarCaixa(posto.nome);
       if (!caixa) return;
+      /* troca de viatura com data: "No lugar da ... até ..." embaixo do prefixo */
+      var noLugar = pecas.noLugar ? pecas.noLugar(posto) : null;
+      if (noLugar) caixa.querySelector('.rotulo-secao').insertAdjacentElement('afterend', noLugar);
       var np = pecas.nivelPosto ? pecas.nivelPosto(posto) : '';
       if (np) caixa.classList.add('grupo-caixa--posto-' + np);
       var funcoes = pecas.mesclarFuncoes ? pecas.mesclarFuncoes(posto) : (posto.funcoes || []);

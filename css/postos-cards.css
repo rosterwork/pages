@@ -59,7 +59,7 @@
 }
 
 /* linha de status: selo de estado + período como texto (sem divisória). Quando os dois não cabem
-   (ex.: "Manutenção até 15/10" + "01/09/2026 a 06/10/2026"), o período desce inteiro para a linha de baixo */
+   (ex.: "Substituída até 15/10" + "01/09/2026 a 06/10/2026"), o período desce inteiro para a linha de baixo */
 .posto-status {
   display: flex;
   flex-wrap: wrap;
@@ -73,20 +73,6 @@
   font-size: 11px;
   color: var(--texto-suave);
 }
-
-/* seção "Linha do tempo" do painel: um trecho por linha (datas e unidade à esquerda; Hoje e situação à direita) */
-.posto-trecho { align-items: center; }
-.posto-trecho-textos {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-  padding: 4px 0;
-}
-.posto-trecho-datas { font-size: 12px; color: var(--texto); }
-.posto-trecho-unidade { font-size: 11px; color: var(--texto-suave); }
-.posto-trecho--atual .posto-trecho-datas { font-weight: 600; color: var(--texto-forte); }
-.posto-trecho-selos { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
 
 /* caixa "Mudanças marcadas" do painel: o selo "Revisar na Distribuição" fica embaixo do texto da mudança */
 .posto-mudanca-textos {
@@ -174,85 +160,4 @@
 .posto-adicionar:hover {
   border-color: var(--borda-forte);
   color: var(--texto-forte);
-}
-
-/* aba Viaturas — painel: campo de prefixo (texto livre LETRAS-NÚMERO) na linha editável */
-.viatura-prefixo {
-  width: 160px;
-}
-
-/* aba Manutenção do painel: form de registro em cima, lista de registros embaixo */
-.viatura-manutencao {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* form "Agendar manutenção": campos empilhados + botão, com divisória inferior */
-.viatura-manut-form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--borda);
-}
-
-.viatura-manut-agendar {
-  align-self: stretch;
-  justify-content: center;
-}
-
-/* lista de janelas de manutenção */
-.viatura-manut-lista {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* uma janela (cartão cinza no padrão .grupo-caixa) */
-.viatura-manut-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 12px;
-  border: 1px solid var(--borda);
-  border-radius: var(--raio-medio);
-  background-color: var(--fundo-suave);
-}
-
-.viatura-manut-item-topo {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.viatura-manut-item-periodo {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--texto-forte);
-  font-variant-numeric: tabular-nums;
-}
-
-.viatura-manut-item-obs {
-  font-size: 12px;
-  color: var(--texto-suave);
-}
-
-/* ações da janela: Encerrar agora (só na em aberto) + Remover */
-.viatura-manut-item-acoes {
-  display: flex;
-  gap: 8px;
-  margin-top: 4px;
-}
-
-.viatura-manut-remover {
-  align-self: flex-start;
-}
-
-/* lista de manutenção vazia (ou erro de carregamento) */
-.viatura-manut-vazio {
-  padding: 4px 8px;
-  font-size: 12px;
-  color: var(--texto-suave);
 }

@@ -65,18 +65,33 @@
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    Na barra de controles a busca fica recolhida num botão de ícone
-   (o quadrado da lupa, como o Filtros). Tocar abre o campo numa
-   linha só dela, no fim da barra (geral-busca.js põe .busca--aberta);
-   sem texto, ela recolhe ao sair do campo.
+   (o quadrado da lupa, como o Filtros), com a altura e a folga de
+   toque dos botões. Tocar abre o campo numa linha só dela, no fim
+   da barra (geral-busca.js põe .busca--aberta), na altura dos
+   campos; sem texto, ela recolhe ao sair do campo.
    ============================================================ */
 @media (max-width: 767px) {
   html[data-celular] .pagina-subcabecalho .busca:not(.busca--aberta) {
     position: relative;
     justify-content: center;
     width: var(--botao-altura);
+    min-height: var(--botao-altura);
     padding: 0;
     border-radius: var(--raio-medio);
     color: var(--texto);
+  }
+
+  /* a folga de toque dos botões (geral-botao.css), descontada a borda de 1px */
+  html[data-celular] .pagina-subcabecalho .busca:not(.busca--aberta)::before {
+    content: '';
+    position: absolute;
+    inset: calc((var(--botao-altura) - var(--toque-altura-celular)) / 2 - 1px);
+  }
+
+  /* recolhida, a busca inteira é um alvo só: as peças de dentro não pegam o toque (o Tab continua
+     chegando ao campo), senão o celular mede o toque até o botão do meio e a folga perde para o vizinho */
+  html[data-celular] .pagina-subcabecalho .busca:not(.busca--aberta) > * {
+    pointer-events: none;
   }
 
   /* recolhida, o campo continua no Tab (ao chegar nele, a busca abre), mas não aparece */
@@ -94,10 +109,10 @@
     color: var(--texto);
   }
 
-  /* aberta: a linha toda, embaixo do resto da barra */
+  /* aberta: a linha toda, embaixo da linha dos ícones (a ordem das linhas está no geral-pagina-cabecalho.css) */
   html[data-celular] .pagina-subcabecalho > .busca--aberta,
   html[data-celular] .pagina-subcabecalho > :has(> .busca--aberta) {
-    order: 3;
+    order: 5;
     flex-basis: 100%;
   }
 }

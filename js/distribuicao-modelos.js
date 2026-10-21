@@ -15,6 +15,9 @@
   var emEdicaoId = null; /* modelo aberto no Editar (o lápis dele fica inativo) */
   var seqCarregar = 0;   /* token da lista: ignora resposta antiga ao trocar de unidade rápido */
 
+  /* a Distribuição é da companhia: edita o admin de companhia (ou o geral) cuja área tem a companhia do grupo */
+  function podeEditar() { return !!(grupo && grupo.cia) && RosterWork.sessao.podeAdministrar('companhia', grupo.cia.unidade_id); }
+
 
   /* RASCUNHO: um modelo recém-criado que ainda NÃO foi confirmado com Salvar. Fica marcado na sessão
      (por aba); se o usuário não salvar (cancelar, sair ou atualizar), ele é excluído. */
@@ -57,7 +60,9 @@
     vaga_sem_criterio: { dominio: 'distribuicao', nivel: 'erro' },
     /* posto com menos pessoas que o efetivo mínimo: vermelho aqui (igual aos outros), mas o banco não o
        põe na trava — a escala automática continua sendo distribuída */
-    abaixo_minimo:     { dominio: 'distribuicao', nivel: 'erro' }
+    abaixo_minimo:     { dominio: 'distribuicao', nivel: 'erro' },
+    /* posto com menos pessoas que o efetivo ideal (do mínimo para cima): amarelo, não trava */
+    abaixo_ideal:      { dominio: 'distribuicao', nivel: 'alerta' }
   };
 
   /* problemas de UMA unidade → [{codigo, nivel, texto}]. É o ÚNICO lugar do FRONTEND que checa as
@@ -78,6 +83,8 @@
     if (tipo === 'PEL' && (u.pracas || 0) > 0 && !u.tem_chefe_socorro) add('falta_papel', M.semPapel(nome, 'Chefe de Socorro'));
     /* posto abaixo do efetivo mínimo (mínimo 0 nunca entra) */
     (u.abaixoMinimo || []).forEach(function (a) { add('abaixo_minimo', M.abaixoMinimo(nome, a.posto, a.pessoas, a.minimo)); });
+    /* posto abaixo do efetivo ideal (do mínimo para cima; mínimo 0 nunca entra) */
+    (u.abaixoIdeal || []).forEach(function (a) { add('abaixo_ideal', M.abaixoIdeal(nome, a.posto, a.pessoas, a.ideal)); });
     (u.semCriterio || []).forEach(function (posto) { add('vaga_sem_criterio', M.vagaSemCriterio(nome, posto)); });
     if ((u.pracas || 0) >= 0 && (u.vagas_pracas || 0) > (u.pracas || 0)) add('vaga_a_mais', M.excessoVagas(nome, u.vagas_pracas || 0, u.pracas || 0, 'praças'));
     if ((u.oficiais || 0) >= 0 && (u.vagas_oficiais || 0) > (u.oficiais || 0)) add('vaga_a_mais', M.excessoVagas(nome, u.vagas_oficiais || 0, u.oficiais || 0, 'oficiais'));
@@ -104,6 +111,7 @@
       res.unidades[c.unidade_id] = unidadeNivel(c);
       var mp = {};
       (c.abaixoMinimo || []).forEach(function (a) { mp[a.posto] = 'erro'; });
+      (c.abaixoIdeal || []).forEach(function (a) { if (!mp[a.posto]) mp[a.posto] = 'alerta'; });
       res.postos[c.unidade_id] = mp;
     });
     return res;
@@ -216,7 +224,7 @@
   function ligarAcoes(linha, m) {
     var acoes = linha.querySelector('.distribuicao-modelo-acoes');
     if (!acoes) return;
-    if (!RosterWork.sessao.ehAdmin()) { acoes.classList.add('oculto'); return; }
+    if (!podeEditar()) { acoes.classList.add('oculto'); return; }
     var editar = acoes.querySelector('.distribuicao-modelo-editar');
     var excluir = acoes.querySelector('.distribuicao-modelo-excluir');
     if (RosterWork.distribuicaoPeriodos.somenteLeitura()) {
@@ -539,7 +547,7 @@
          : (itens.some(function (i) { return i.nivel === 'alerta'; }) ? 'alerta' : 'ok');
   }
   /* contagem por unidade a partir dos POSTOS/VAGAS (mesma lógica no Ver e no Editar → erros sincronizados):
-     conta as vagas principais por tipo, detecta os papéis especiais e os postos abaixo do efetivo mínimo (só nas
+     conta as vagas principais por tipo, detecta os papéis especiais e os postos abaixo do efetivo mínimo e do ideal (só nas
      unidades que entram no modelo, isto é, com composição > 0). `comp` = { unidade_id: { oficiais, pracas } }. */
   function contarUnidades(unidades, comp) {
     comp = comp || {};
@@ -548,7 +556,7 @@
       var alocarOf = c.oficiais || 0;   /* a alocar = a composição do modelo */
       var alocarPc = c.pracas || 0;
       var temComposicao = (c.oficiais || 0) > 0 || (c.pracas || 0) > 0;
-      var vof = 0, vpc = 0, oa = false, cs = false, abaixo = [], semCriterio = [];
+      var vof = 0, vpc = 0, oa = false, cs = false, abaixo = [], abaixoIdeal = [], semCriterio = [];
       (u.postos || []).forEach(function (p) {
         var vagas = p.vagas || [];
         var faltaCriterio = false;
@@ -556,6 +564,8 @@
         var pessoas = pessoasDoPosto(p);
         var minimo = p.efetivo_minimo || 0;
         if (temComposicao && minimo >= 1 && pessoas < minimo) abaixo.push({ posto: p.nome || '', pessoas: pessoas, minimo: minimo });
+        var ideal = p.efetivo_ideal || 0;
+        if (temComposicao && minimo >= 1 && pessoas >= minimo && pessoas < ideal) abaixoIdeal.push({ posto: p.nome || '', pessoas: pessoas, ideal: ideal });
         vagas.forEach(function (v) {
           if (v.acumulo_slot_id || v.acumuloTempId) return;   /* só principais */
           if (v.tipo_contador === 'Oficiais') vof++; else vpc++;
@@ -569,7 +579,7 @@
       return {
         unidade_id: u.unidade_id, oficiais: alocarOf, pracas: alocarPc,
         vagas_oficiais: vof, vagas_pracas: vpc, tem_oficial_area: oa, tem_chefe_socorro: cs,
-        abaixoMinimo: abaixo, semCriterio: semCriterio
+        abaixoMinimo: abaixo, abaixoIdeal: abaixoIdeal, semCriterio: semCriterio
       };
     });
   }
@@ -662,8 +672,8 @@
     limparCorpo();
     var btnNovo = document.getElementById('distribuicao-novo-modelo');
     if (btnNovo) {
-      btnNovo.classList.toggle('oculto', !RosterWork.sessao.ehAdmin());   // só admin cria modelo
-      if (RosterWork.sessao.ehAdmin()) {
+      btnNovo.classList.toggle('oculto', !podeEditar());   // só o admin de companhia da área cria modelo
+      if (podeEditar()) {
         btnNovo.disabled = false;
         if (!btnNovo._ligado) {
           btnNovo._ligado = true;
@@ -681,7 +691,7 @@
     return P.carregar(g.cia.unidade_id, recarregar).then(function () {
       if (req !== seqCarregar) return;
       /* período que já terminou é só leitura: não cria modelo */
-      if (btnNovo && RosterWork.sessao.ehAdmin()) btnNovo.disabled = P.somenteLeitura();
+      if (btnNovo && podeEditar()) btnNovo.disabled = P.somenteLeitura();
       return RosterWork.distribuicaoDados.listarModelos(g.cia.unidade_id, P.data()).then(function (lista) {
         if (req !== seqCarregar) return;   /* outra carga (troca de unidade/aba/período) assumiu */
         if (lista == null) { modelos = []; erroLista(); return; }   /* RPC falhou: mostra erro, não mascara como "sem modelos" */

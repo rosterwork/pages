@@ -324,7 +324,8 @@
 
   function montar(corpo, rodape, unidadeId, iso) {
     if (ctx) reset();
-    ctx = { corpo: corpo, rodape: rodape, uid: unidadeId, iso: iso, admin: RosterWork.sessao.ehAdmin(), ativo: true,
+    /* a Extrajornada é da companhia: o admin de companhia (ou o geral) da área da unidade mexe; os demais só veem */
+    ctx = { corpo: corpo, rodape: rodape, uid: unidadeId, iso: iso, admin: RosterWork.sessao.podeAdministrar('companhia', unidadeId), ativo: true,
       lista: null, painel: null, seqLista: 0, seqPainel: 0, abertos: {}, mostrar: {}, timer: null,
       listaEl: null, coberturaEl: null, ajustesEl: null, buscaTermo: '', buscaModo: 'marcar' };
     if (rodape) { rodape.textContent = ''; rodape.classList.add('oculto'); }

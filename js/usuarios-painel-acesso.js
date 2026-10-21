@@ -168,7 +168,9 @@
 
   function montar(corpo, ficha, pessoa) {
     ctx = null;
-    if (!RosterWork.sessao.ehAdmin() || !ficha || !pessoa || pessoa.situacao === 'Inativo' || !RosterWork.usuariosPainelLeitura) return;
+    /* o acesso é da ficha: só o admin de companhia (ou o geral) da área do militar */
+    if (!ficha || !pessoa || !RosterWork.sessao.podeAdministrar('companhia', pessoa.lotacao_atual)) return;
+    if (pessoa.situacao === 'Inativo' || !RosterWork.usuariosPainelLeitura) return;
     var bloco = RosterWork.usuariosPainelLeitura.bloco('Acesso ao sistema');
     if (!bloco) return;
     var atual = { pessoa: pessoa, alvo: bloco };

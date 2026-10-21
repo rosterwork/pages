@@ -38,9 +38,10 @@
 
   /* monta os cards de instalação (+ o botão "+", se admin) dentro de uma unidade marcada.
      Unidade sem instalações: o admin ainda vê o "+" (para cadastrar a primeira);
-     o usuário comum vê a mensagem de vazio. */
+     o usuário comum vê a mensagem de vazio. Os postos são da companhia: admin aqui é
+     o de companhia (ou o geral) cuja área tem esta unidade; os demais só consultam. */
   function renderConteudo(container, unidade, instalacoes) {
-    var admin = RosterWork.sessao.ehAdmin();
+    var admin = RosterWork.sessao.podeAdministrar('companhia', unidade.unidade_id);
     if ((!instalacoes || instalacoes.length === 0) && !admin) {
       var tplVazio = document.getElementById('tpl-postos-vazio');
       if (tplVazio) container.appendChild(tplVazio.content.cloneNode(true));

@@ -21,7 +21,7 @@
   var buscaCtrl = null;
 
   function msg() { return RW.mensagens.extrajornada.voluntarios; }
-  function admin() { return RosterWork.sessao.ehAdmin(); }
+  function admin() { return RosterWork.sessao.temPapel('companhia'); }   // a Extrajornada é da companhia
   function tpl(id) { return RosterWork.tpl(id); }
   function soma(arr, f) { var s = 0; arr.forEach(function (x) { s += f(x) || 0; }); return s; }
   function unidade(estado, uid) { for (var i = 0; i < estado.unidades.length; i++) if (estado.unidades[i].unidade_id === uid) return estado.unidades[i]; return null; }

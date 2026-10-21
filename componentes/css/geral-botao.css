@@ -162,3 +162,23 @@
 .botao-discreto:disabled:hover {
   background-color: transparent;
 }
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   O botão aparece com a altura do tema (--botao-altura) e toca
+   numa área maior, a do dedo (--toque-altura-celular): uma folga
+   invisível em volta, o ::before (o ::after é o da dica), que não
+   muda o desenho nem o espaço que o botão ocupa.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .botao {
+    position: relative;
+  }
+
+  /* o ::before se mede por dentro da borda de 1px do botão: a folga desconta essa borda */
+  html[data-celular] .botao::before {
+    content: '';
+    position: absolute;
+    inset: calc((var(--botao-altura) - var(--toque-altura-celular)) / 2 - 1px);
+  }
+}

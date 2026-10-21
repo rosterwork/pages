@@ -21,6 +21,9 @@
       falhaDados: 'Não foi possível salvar. Tente de novo.',
       solicitacaoEnviada: 'Solicitação enviada para aprovação.',
       dadosSalvos: 'Dados salvos.',
+      /* a janela ao entrar, no modo "Confira o seu cadastro" */
+      cadastroConferido: 'Cadastro conferido.',
+      cadastroConferidoComPedido: 'Cadastro conferido. Os dados que você preencheu vão para a aprovação de um administrador.',
       demaisParaAprovacao: 'As demais alterações foram enviadas para a aprovação do administrador.',
       aguardando: function (n) {
         return n === 1
@@ -72,7 +75,7 @@
     /* avisos (a página das duas abas: Para mim · Comunicados; os grupos do sino) */
     avisos: {
       semNotificacoes: 'Nada novo por aqui.',
-      semAbertos: 'Nada esperando por você.',
+      semAbertos: 'Nenhum aviso novo.',
       grupoPessoal: 'Para você',
       grupoAdministracao: 'Administração',
       semComunicados: 'Nenhum comunicado.',
@@ -101,9 +104,7 @@
 
     /* criar conta (página standalone, aberta pelo link de cadastro) */
     criarConta: {
-      falhaOpcoes: 'Não foi possível carregar os postos e as unidades. Verifique a sua internet. A página vai recarregar.',
       contaCriada: 'Conta criada. Você já pode entrar com o seu CPF e a sua senha.',
-      contaCriadaComCorrecoes: 'Conta criada. Você já pode entrar. As outras alterações que você fez vão passar pela aprovação de um administrador.',
       falha: 'Não foi possível criar a conta. Tente de novo.'
     },
 
@@ -231,6 +232,15 @@
       postoComeca: 'O posto começa a valer nesta data.',
       mudancaAPartir: '{estado} a partir de {data}',
       transferenciaAPartir: 'Transferência para {unidade} a partir de {data}',
+      /* troca de viatura marcada: para sempre ou com data de volta */
+      trocaAPartir: '{prefixo} (CNH {cnh}) a partir de {data}',
+      trocaIntervalo: '{prefixo} (CNH {cnh}) de {inicio} a {fim}',
+      /* card durante a troca com data: o selo e a viatura que está no lugar */
+      substituidaAte: 'Substituída até {data}',
+      noLugar: '{prefixo} no lugar',
+      /* as viaturas que já serviram neste posto (painel) */
+      anteriorPeriodo: '{inicio} a {fim}',
+      anteriorViatura: '{prefixo}, CNH {cnh}',
       /* linha do período no card (primeiro e último dia reais do posto) */
       periodoPermanente: 'Permanente',
       periodoDesde: 'desde {data}',
@@ -240,22 +250,21 @@
       /* a mudança abriu um período na Distribuição que já foi revisado: cancelar a descarta */
       descartaAjusteDistribuicao: ' O período da Distribuição que já foi revisado será descartado.',
       falhaCancelarMudanca: 'Não foi possível cancelar a mudança. Tente de novo.',
-      /* seção "Linha do tempo" do painel do posto */
-      falhaLinhaTempo: 'Não foi possível carregar a linha do tempo.',
-      semLinhaTempo: 'Sem registros.',
       falhaTransferir: 'Não foi possível transferir. Tente de novo.',
       falhaExcluir: 'Não foi possível excluir. Tente de novo.',
       falhaExcluirInstalacao: 'Não foi possível excluir a instalação. Tente de novo.',
-      falhaManutencoes: 'Não foi possível carregar as manutenções.',
-      falhaAgendarManutencao: 'Não foi possível agendar a manutenção. Tente de novo.',
-      falhaEncerrarManutencao: 'Não foi possível encerrar a manutenção. Tente de novo.',
-      falhaRemoverManutencao: 'Não foi possível remover. Tente de novo.',
-      confirmarRemoverManutencao: 'Remover esta janela de manutenção?',
-      confirmarEncerrarManutencao: 'Encerrar a manutenção de {prefixo} agora? A viatura deixa de ser marcada como "Em manutenção" na escala.',
       /* a viatura é única no sistema: se já existe em outra unidade, oferece a transferência */
       viaturaEmOutraUnidade: 'A viatura {prefixo} já está cadastrada em {unidade}. Deseja transferi-la para {destino} a partir de {data}? Os dados que você digitou serão aplicados a ela.',
       /* ponto crítico: postos alimentam a distribuição da escala */
       impactoDistribuicao: 'Este é um ponto crítico do sistema: as viaturas e instalações alimentam a distribuição da escala. Vá até a Distribuição para conferir os modelos e corrigir o que for necessário.'
+    },
+
+    /* edição de posto (componente geral-posto-editar: painel do dia da Escala e painel de Postos) */
+    postoEditar: {
+      /* o prefixo da troca já está em outro posto naqueles dias (só avisa, não impede de salvar) */
+      emUsoDia: '{prefixo} também está em uso em {unidade}, em {data}. Confira antes de salvar.',
+      emUsoPeriodo: '{prefixo} também está em uso em {unidade}, de {inicio} a {fim}. Confira antes de salvar.',
+      falhaSalvar: 'Não foi possível salvar o posto. Tente de novo.'
     },
 
     /* afastamentos — painéis Nova licença / Nova dispensa (decisão fora do fluxo) */
@@ -305,6 +314,7 @@
         semCondutor:         { texto: 'Viatura sem condutor', icone: 'icone-alerta', nivel: 'erro' },
         /* efetivo do posto fora dos limites (uma linha por posto); {faixas} = ", das 20:00 às 08:00" quando é só parte do dia */
         abaixoMinimo:        { texto: 'Efetivo abaixo do mínimo: {posto} ({pessoas} de {minimo}){faixas}', faixa: 'das {hi} às {hf}', icone: 'icone-alerta', nivel: 'erro' },
+        abaixoIdeal:         { texto: 'Efetivo abaixo do ideal: {posto} ({pessoas} de {ideal}){faixas}', faixa: 'das {hi} às {hf}', icone: 'icone-alerta', nivel: 'alerta' },
         acimaMaximo:         { texto: 'Efetivo acima do máximo: {posto} ({pessoas} de {maximo})', icone: 'icone-alerta', nivel: 'erro' },
         /* militar de serviço sem função ({n} = quantidade; o painel escolhe singular ou plural) */
         semFuncao:           { texto: 'Militar sem função definida', textoPlural: '{n} militares sem função definida', icone: 'icone-alerta', nivel: 'erro' },
@@ -313,7 +323,6 @@
         regraProibida:       { texto: 'Função proibida pela regra: {militar} em {funcao}', icone: 'icone-alerta', nivel: 'erro' },
         exclusivoFora:       { texto: 'Militar exclusivo fora da sua função: {militar} em {funcao}', icone: 'icone-alerta', nivel: 'alerta' },
         grauDiferente:       { texto: 'Grau diferente do ideal: {militar} em {funcao}', icone: 'icone-alerta', nivel: 'alerta' },
-        manutencao:          { texto: 'Viatura em manutenção: {posto}', icone: 'icone-alerta', nivel: 'alerta' },
         /* o mesmo militar em funções de duas unidades no mesmo horário; {unidades} = "2ºPEL e 1ºPEL" (a dele primeiro);
            {faixas} = ", das 08:00 às 20:00" quando é só parte do dia */
         duasUnidades:        { texto: '{militar} está em duas unidades diferentes ao mesmo tempo ({unidades}){faixas}', faixa: 'das {hi} às {hf}', icone: 'icone-alerta', nivel: 'erro' }
@@ -472,7 +481,8 @@
         falha: 'Não foi possível carregar a extra deste dia.'
       },
       falhaAcaoCiclo: 'Não foi possível alterar o ciclo. Tente de novo.',
-      emManutencao: 'Em manutenção',
+      /* embaixo do prefixo, na troca de viatura com data */
+      noLugarDe: 'No lugar da {prefixo} até {data}',
       /* linha da cadeira vazia (sem ninguém), no lugar do nome do militar */
       vagaVazia: function (motivo) { return motivo === 'trava' ? 'Sem solução automática' : (motivo === 'habilitado' ? 'Vazio por falta de habilitado' : 'Vazio por falta de efetivo'); },
       /* dica do ícone do militar de outra unidade: "Do 2ºPEL" / "Da 2ªCIBM" */
@@ -566,6 +576,7 @@
       modeloEmEdicao: 'Este modelo já está em edição.',
       excluirModelo: 'Excluir este modelo de distribuição? As vagas que ele define serão perdidas.',
       abaixoMinimo: function (unidade, posto, pessoas, minimo) { return unidade + ': efetivo abaixo do mínimo em ' + posto + ' (' + pessoas + ' de ' + minimo + ')'; },
+      abaixoIdeal: function (unidade, posto, pessoas, ideal) { return unidade + ': efetivo abaixo do ideal em ' + posto + ' (' + pessoas + ' de ' + ideal + ')'; },
       salvarImpacto: 'Salvar este modelo recalcula as escalas já distribuídas que usam esta composição. Continuar?',
       /* papel especial (Chefe de Socorro / Oficial de Área): o modal que pergunta se as funções
          acumuladas em outro posto vão junto quando o papel muda de posto */
@@ -658,6 +669,7 @@
       falhaPromocao: 'Não foi possível promover. Tente de novo.',
       confirmarReadmissao: 'Readmitir {pessoa} ao efetivo? Ele volta como ativo, fora da escala automática (você o recoloca pela aba Ciclo da Escala).',
       falhaReadmissao: 'Não foi possível readmitir. Tente de novo.',
+      falhaAdministracao: 'Não foi possível salvar a administração. Tente de novo.',
       /* selo único do card na lista (a situação do militar e, para o administrador, a da conta) */
       seloAtivo: 'Ativo',
       seloInativo: 'Inativo',
@@ -688,7 +700,7 @@
     /* análise de impacto na escala — componente compartilhado (geral-impacto), usado por Trocas e Folgas */
     /* Pendências (o que espera decisão: Para mim · Administração) */
     pendencias: {
-      contagem: function (n) { return n === 1 ? '1 esperando decisão' : n + ' esperando decisão'; },
+      contagem: function (n) { return n === 1 ? '1 esperando você' : n + ' esperando você'; },
       /* o cartão de cada pedido: quem e o quê, e a linha de apoio */
       trocaAdmin: function (sol, par) { return sol + ' troca com ' + par; },
       trocaMinha: function (sol) { return sol + ' quer trocar com você'; },

@@ -158,9 +158,9 @@
       .catch(function () { inativosPorUnidade = {}; });
   }
 
-  /* o filtro de situação inclui "Inativos"? (opção só do administrador) */
+  /* o filtro de situação inclui "Inativos"? (opção só do administrador de companhia) */
   function mostrarInativos() {
-    return !!(filtros && RosterWork.sessao.ehAdmin() && filtros.passa('situacao', 'Inativo'));
+    return !!(filtros && RosterWork.sessao.temPapel('companhia') && filtros.passa('situacao', 'Inativo'));
   }
 
   /* abre a ficha do militar no painel e realça a linha clicada (ver = todos) */
@@ -197,9 +197,9 @@
     /* identificador escolhido (CPF/RG/telefone/email) */
     item.querySelector('.usuario-item-cpf').textContent = textoIdentificador(pessoa, ex.identificador);
     preencherSituacao(item.querySelector('.usuario-item-selo'), pessoa);
-    /* quem pediu correção e ainda espera decisão (só o admin decide, só ele vê) */
+    /* quem pediu correção e ainda espera decisão (decide o admin de companhia da área; só ele vê) */
     var correcao = item.querySelector('.usuario-item-correcao');
-    if (correcao) correcao.classList.toggle('oculto', !(pessoa.correcao_pendente && RosterWork.sessao.ehAdmin()));
+    if (correcao) correcao.classList.toggle('oculto', !(pessoa.correcao_pendente && RosterWork.sessao.podeAdministrar('companhia', pessoa.lotacao_atual)));
     if (casa && modoBusca === 'marcar') item.classList.add('linha-militar--marcada');
     item.classList.add('linha-militar--clicavel');
     item.addEventListener('click', function () { abrirFicha(item, pessoa); });
@@ -371,7 +371,7 @@
   }
 
   function ligarAbas(conteudo) {
-    var admin = RosterWork.sessao.ehAdmin();
+    var admin = RosterWork.sessao.temPapel('companhia');   // Antiguidade e Pendências são do admin de companhia
     var trilho = conteudo.querySelector('#usuarios-abas');
     var abaPendencias = conteudo.querySelector('#usuarios-aba-pendencias');
     if (abaPendencias) abaPendencias.classList.toggle('oculto', !admin);
@@ -416,7 +416,7 @@
       { rotulo: 'Licença', valor: 'Licença' },
       { rotulo: 'Dispensa', valor: 'Dispensa' }
     ];
-    if (RosterWork.sessao.ehAdmin()) {
+    if (RosterWork.sessao.temPapel('companhia')) {
       opcoesSituacao.push({ rotulo: 'Correção pendente', valor: 'Correção pendente', separado: true });
       opcoesSituacao.push({ rotulo: 'Inativos', valor: 'Inativo', separado: true });
     }
@@ -443,9 +443,9 @@
 
     /* "Novo usuário" — abre pelo botão do grupo Administração da barra */
     if (window.RosterWork.novoUsuario) window.RosterWork.novoUsuario.ligar(conteudo);
-    /* o grupo só aparece para admin, em todas as abas (a página Usuários é acessível a todos) */
+    /* o grupo só aparece para o admin de companhia, em todas as abas (a página Usuários é acessível a todos) */
     var grupoAdmin = conteudo.querySelector('.acoes-admin');
-    if (grupoAdmin) grupoAdmin.classList.toggle('oculto', !RosterWork.sessao.ehAdmin());
+    if (grupoAdmin) grupoAdmin.classList.toggle('oculto', !RosterWork.sessao.temPapel('companhia'));
 
     ligarAbas(conteudo);
 

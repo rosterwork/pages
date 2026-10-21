@@ -4,6 +4,8 @@
    correção de dados aprovada… Cada uma sabe para onde ir ao
    clicar, e o clique marca como lida. Não lidas em negrito, com
    um ponto à esquerda; agrupadas por dia (Hoje · Ontem · data).
+   Os últimos 90 dias, de 50 em 50: maisAntigos() traz o lote
+   seguinte e continua o grupo do dia onde o anterior parou.
    Clona moldes; não cria HTML.
    ============================================================ */
 (function () {
@@ -37,19 +39,27 @@
     }
   }
 
-  function renderizar(lista, itens, aoMudar) {
-    lista.textContent = '';
-    if (!itens.length) {
-      var vazio = RosterWork.tpl('tpl-avisos-vazio');
-      if (vazio) { vazio.textContent = RW.mensagens.avisos.semNotificacoes; lista.appendChild(vazio); }
-      return;
+  /* o histórico na tela: a lista, quem avisar ao marcar lida, o último aviso mostrado
+     (o ponto de partida do lote seguinte) e o dia do último grupo */
+  var historico = { lista: null, aoMudar: null, ultimo: null, diaAtual: '', leitura: 0 };
+
+  /* continuar = acrescenta o lote embaixo, sem repetir o rótulo do dia */
+  function renderizar(itens, continuar) {
+    var lista = historico.lista;
+    if (!continuar) {
+      lista.textContent = '';
+      historico.diaAtual = '';
+      if (!itens.length) {
+        var vazio = RosterWork.tpl('tpl-avisos-vazio');
+        if (vazio) { vazio.textContent = RW.mensagens.avisos.semNotificacoes; lista.appendChild(vazio); }
+        return;
+      }
     }
-    var diaAtual = '';
     itens.forEach(function (n) {
       var data = new Date(n.criado_em);
       var dia = rotuloDoDia(data);
-      if (dia !== diaAtual) {
-        diaAtual = dia;
+      if (dia !== historico.diaAtual) {
+        historico.diaAtual = dia;
         var titulo = RosterWork.tpl('tpl-avisos-dia');
         if (titulo) { titulo.textContent = dia; lista.appendChild(titulo); }
       }
@@ -61,10 +71,11 @@
       el.querySelector('.avisos-notificacao-texto').textContent = n.texto || '';
       el.querySelector('.avisos-notificacao-hora').textContent = hora(data);
       el.addEventListener('click', function () {
-        abrir(n, aoMudar);
+        abrir(n, historico.aoMudar);
       });
       lista.appendChild(el);
     });
+    if (itens.length) historico.ultimo = itens[itens.length - 1];
   }
 
   /* marca como lida e navega para a tela do assunto */
@@ -82,26 +93,53 @@
       .catch(irPara);
   }
 
-  /* carrega os últimos 30 dias; devolve { emAberto, informativos }: quantos avisos estão EM
-     ABERTO (o número ao lado do título) e se há aviso que só informa em aberto (o que decide
-     se o "Marcar todas" aparece: ele não apaga o que pede decisão, como no sino) */
+  var LOTE = 50;
+
+  /* um lote do histórico; com "antes", o que vem depois do último já mostrado */
+  function ler(antes) {
+    var corpo = { p_limite: LOTE };
+    if (antes) { corpo.p_antes = antes.criado_em; corpo.p_antes_id = antes.id; }
+    return RW.apiFetch('/rest/v1/rpc/notificacoes_listar', { metodo: 'POST', corpo: corpo })
+      .then(function (r) { return r.ok ? r.json() : null; });
+  }
+
+  /* lê o primeiro lote; devolve { emAberto, mais }: quantos avisos estão EM ABERTO (o número
+     ao lado do título, o mesmo do sino; com algum, o "Marcar todas" aparece) e se há lote
+     mais antigo (o "Mostrar mais antigos"). A última leitura vence: a de antes devolve null */
   function carregar(lista, aoMudar) {
-    return RW.apiFetch('/rest/v1/rpc/notificacoes_listar', { metodo: 'POST', corpo: { p_limite: 100, p_dias: 30 } })
-      .then(function (r) { return r.ok ? r.json() : null; })
+    var minha = ++historico.leitura;
+    historico.lista = lista;
+    historico.aoMudar = aoMudar;
+    historico.ultimo = null;
+    return ler(null)
       .then(function (caixa) {
-        var itens = (caixa && caixa.itens) || [];
-        renderizar(lista, itens, aoMudar);
+        if (minha !== historico.leitura) return null;
+        renderizar((caixa && caixa.itens) || [], false);
         return {
           emAberto: (caixa && caixa.abertos && caixa.abertos.total) || 0,
-          informativos: itens.some(function (n) { return n.aberto && !n.acao; })
+          mais: !!(caixa && caixa.mais)
         };
       })
       .catch(function () {
+        if (minha !== historico.leitura) return null;
         var vazio = RosterWork.tpl('tpl-avisos-vazio');
         lista.textContent = '';
         if (vazio) { vazio.textContent = RW.mensagens.avisos.falhaCarregar; lista.appendChild(vazio); }
-        return { emAberto: 0, informativos: false };
+        return { emAberto: 0, mais: false };
       });
+  }
+
+  /* o lote seguinte, embaixo do que já está na tela; devolve { mais } (null se a lista foi
+     relida no meio). Na falha, o botão fica para tentar de novo */
+  function maisAntigos() {
+    var minha = historico.leitura;
+    return ler(historico.ultimo)
+      .then(function (caixa) {
+        if (minha !== historico.leitura) return null;
+        renderizar((caixa && caixa.itens) || [], true);
+        return { mais: !!(caixa && caixa.mais) };
+      })
+      .catch(function () { return minha !== historico.leitura ? null : { mais: true }; });
   }
 
   function marcarTodas() {
@@ -110,5 +148,5 @@
       .catch(function () { return null; });
   }
 
-  RW.avisosNotificacoes = { carregar: carregar, marcarTodas: marcarTodas };
+  RW.avisosNotificacoes = { carregar: carregar, maisAntigos: maisAntigos, marcarTodas: marcarTodas };
 })();

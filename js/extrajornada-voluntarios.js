@@ -34,7 +34,7 @@
       base: { modo: 'grupo', totalGrupo: 0, totais: {} }, mostrarNovo: false, lista: 'voluntarios', selecionado: null };
   }
 
-  function admin() { return RosterWork.sessao.ehAdmin(); }
+  function admin() { return RosterWork.sessao.temPapel('companhia'); }   // a Extrajornada é da companhia
   function ativo() { return naAba && el.lista && el.lista.isConnected; }
   function iso(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-01'; }
   function lista() { return RW.extrajornadaVoluntariosLista; }

@@ -4,12 +4,14 @@
    e o desfazer/refazer (à direita) ficam no subcabeçalho, cada
    militar tem o lápis (abre o militar no dia) e o ↺ (volta ao
    automático), o horário sem ninguém vira o botão vermelho "Sem
-   ninguém, escolher", e as observações e a nota da viatura em
-   manutenção também se editam aqui. Quem não é admin só lê.
+   ninguém, escolher", e as observações também se editam aqui; o
+   título de cada posto tem o Editar posto (escalas-painel-posto.js:
+   o efetivo e a troca de viatura, gravados fora do rascunho do dia).
+   Quem não é admin só lê.
    Cada mudança grava na hora (escala_dia_salvar, um registro no
    histórico, sem o modal de resumo): o banco devolve o dia gravado e
    a grade atualiza a célula. Rascunho de uma mudança: { ajustes,
-   pontuais, estornar, folgas, observacoes, manutencao }. O desfazer/
+   pontuais, estornar, folgas, observacoes }. O desfazer/
    refazer grava o caminho de volta (silencioso: ninguém é avisado).
    As sub-telas (formulário e militar no dia) ficam em
    escalas-painel-formulario.js e -militar.js e usam a API daqui
@@ -103,29 +105,17 @@
     return n;
   }
 
-  /* notas da viatura em manutenção que mudaram: [{ id, observacao }] */
-  function manutencaoMudada() {
-    var lista = [];
-    ((base && base.dados && base.dados.postos) || []).forEach(function (po) {
-      if (!po.manutencao_id || !(po.manutencao_id in rasc.manutencao)) return;
-      if ((rasc.manutencao[po.manutencao_id] || '').trim() !== (po.manutencao_obs || '').trim()) {
-        lista.push({ id: po.manutencao_id, observacao: rasc.manutencao[po.manutencao_id] });
-      }
-    });
-    return lista;
-  }
-
-  /* o rascunho mudou o dia gravado? (funções, pontuais, folgas, observações ou nota) */
+  /* o rascunho mudou o dia gravado? (funções, pontuais, folgas ou observações) */
   function haMudanca() {
     if (!rasc || !base) return false;
     return !mesmosAjustes(base.ajustes, rasc.ajustes) || difPontuais() > 0 || rasc.folgas.length > 0
-      || rasc.observacoes.adicionar.length > 0 || rasc.observacoes.remover.length > 0 || manutencaoMudada().length > 0;
+      || rasc.observacoes.adicionar.length > 0 || rasc.observacoes.remover.length > 0;
   }
 
   /* o rascunho recomeça do dia gravado */
   function novoRascunho() {
     rasc = { ajustes: copiar(base.ajustes), pontuais: copiar(base.pontuais), estornar: [], folgas: [],
-      observacoes: { adicionar: [], remover: [] }, manutencao: {} };
+      observacoes: { adicionar: [], remover: [] } };
   }
 
   /* o dia gravado (a leitura, ou o que o banco devolve ao gravar) vira a base */
@@ -140,7 +130,7 @@
     ctx.chaveDados = JSON.stringify(paraPrevia());
   }
 
-  /* o que vai à prévia das sub-telas (só o que muda a escala: observações e nota não pedem nova prévia) */
+  /* o que vai à prévia das sub-telas (só o que muda a escala: as observações não pedem nova prévia) */
   function paraPrevia() {
     var r = { ajustes: rasc.ajustes, folgas: rasc.folgas };
     if (difPontuais() > 0) r.pontuais = rasc.pontuais;
@@ -151,18 +141,17 @@
     var r = paraPrevia();
     r.estornar = rasc.estornar;
     r.observacoes = rasc.observacoes;
-    r.manutencao = manutencaoMudada();
     return r;
   }
 
   /* o caminho de volta de uma mudança gravada sobre "antes": a camada manual e os pontuais como estavam, as
-     folgas e as observações que ela criou saem, as observações que ela tirou voltam e a nota volta ao texto anterior.
+     folgas e as observações que ela criou saem e as observações que ela tirou voltam.
      Só volta a ter horas no banco de horas o pontual que as perdeu na mudança (o estorno) */
   function inverso(envio, antes, criadas) {
     criadas = criadas || {};
     var dados = antes.dados || {};
     var volta = { ajustes: copiar(antes.ajustes), estornar: [], folgas: [], folgas_cancelar: copiar(criadas.folgas || []),
-      observacoes: { adicionar: [], remover: copiar(criadas.observacoes || []) }, manutencao: [] };
+      observacoes: { adicionar: [], remover: copiar(criadas.observacoes || []) } };
     if (envio.pontuais) {
       var contou = {}, eram = {};
       (dados.pontuais || []).forEach(function (x) { contou[x.cpf] = !!x.contabilizado; });
@@ -176,10 +165,6 @@
     ((envio.observacoes && envio.observacoes.remover) || []).forEach(function (id) {
       var o = (dados.observacoes || []).filter(function (x) { return x.id === id; })[0];
       if (o) volta.observacoes.adicionar.push(o.texto);
-    });
-    (envio.manutencao || []).forEach(function (m) {
-      var po = (dados.postos || []).filter(function (x) { return x.manutencao_id === m.id; })[0];
-      volta.manutencao.push({ id: m.id, observacao: (po && po.manutencao_obs) || '' });
     });
     return volta;
   }
@@ -735,25 +720,36 @@
     if (grupo.linhas.children.length) caixa.appendChild(grupo.el);
   }
 
+  /* o título do posto: o admin de companhia tem o Editar posto ao lado (o efetivo e, na viatura, a troca de
+     prefixo e CNH; os postos são da companhia); na troca de viatura com data, embaixo vem "No lugar da ... até ..." */
+  function montarTituloPosto(caixa, posto) {
+    var rotulo = caixa.querySelector('.rotulo-secao');
+    if (ctx.adminPosto && !ctx.comparar && !ctx.dadosProntos && RosterWork.escalasPainelPosto && rotulo) {
+      var cab = RosterWork.tpl('tpl-escala-posto-cab');
+      if (cab) {
+        cab.querySelector('.rotulo-secao').textContent = posto.nome || '';
+        cab.querySelector('.escala-posto-editar').addEventListener('click', function () {
+          if (ctx && !ctx.salvando) RosterWork.escalasPainelPosto.abrir(posto);
+        });
+        rotulo.replaceWith(cab);
+        rotulo = cab;
+      }
+    }
+    var noLugar = pecas().noLugar ? pecas().noLugar(posto) : null;
+    if (noLugar && rotulo) rotulo.insertAdjacentElement('afterend', noLugar);
+  }
+
   function caixaPosto(posto) {
     var p = pecas();
     /* posto sem nenhuma função no dia (reserva sem ninguém) não aparece; o Adicionar militar chega nele pelo Onde */
-    if (!(posto.funcoes || []).length && !posto.em_manutencao) return null;
+    if (!(posto.funcoes || []).length) return null;
     var caixa = RosterWork.painel.criarCaixa(posto.nome);
     if (!caixa) return null;
-    if (posto.em_manutencao) {
-      /* viatura em manutenção: caixa amarela + aviso/nota (o admin edita a nota); o efetivo FICA nela */
-      caixa.classList.add('grupo-caixa--posto-alerta', 'grupo-caixa--manutencao');
-      /* a nota grava ao sair do campo */
-      var man = p.montarManutencao(posto, ctx.admin, function (texto) {
-        mudar(function () { rasc.manutencao[posto.manutencao_id] = texto; });
-      });
-      if (man) caixa.appendChild(man);
-    } else {
-      var np = p.nivelPosto(posto);
-      if (np) caixa.classList.add('grupo-caixa--posto-' + np);
-      if (!np && (posto.funcoes || []).some(function (f) { return f.vazio || (f.vao || []).length; })) caixa.classList.add('grupo-caixa--posto-erro');
-    }
+    montarTituloPosto(caixa, posto);
+    /* o vermelho (cadeira vazia ou horário sem ninguém) vence o amarelo */
+    var np = p.nivelPosto(posto);
+    if (np !== 'erro' && (posto.funcoes || []).some(function (f) { return f.vazio || (f.vao || []).length; })) np = 'erro';
+    if (np) caixa.classList.add('grupo-caixa--posto-' + np);
     p.mesclarFuncoes(posto).forEach(function (f) { linhasFuncao(caixa, posto, f); });
     return caixa;
   }
@@ -854,7 +850,16 @@
   /* lê o dia de novo e zera o desfazer/refazer */
   function recarregar() {
     if (!ctx) return;
-    montar(ctx.corpo, ctx.rodape, ctx.unidadeId, ctx.iso, { admin: ctx.admin });
+    montar(ctx.corpo, ctx.rodape, ctx.unidadeId, ctx.iso, { admin: ctx.admin, adminPosto: ctx.adminPosto });
+  }
+
+  /* relê o dia sem zerar o desfazer/refazer (o Editar posto grava fora do rascunho do dia) */
+  function reler() {
+    if (!ctx) return;
+    if (ctx.rodape) { ctx.rodape.textContent = ''; ctx.rodape.classList.add('oculto'); }
+    ctx.comHistorico = false;
+    base = null;
+    desenhar();
   }
 
   /* ---------- sub-telas (formulário e militar no dia) ---------- */
@@ -910,12 +915,13 @@
 
   /* ---------- ciclo de vida ---------- */
 
-  /* opcoes = { admin, dados, semAvisos }: o admin edita; os outros só leem. dados = o dia já lido
-     (não busca no banco); semAvisos = sem a lista de avisos do topo (a página tem a sua).
-     Sem rodape, o rodapé não é usado */
+  /* opcoes = { admin, adminPosto, dados, semAvisos }: o admin edita o dia; adminPosto (o de companhia)
+     tem o Editar posto; os outros só leem. dados = o dia já lido (não busca no banco); semAvisos = sem a
+     lista de avisos do topo (a página tem a sua). Sem rodape, o rodapé não é usado */
   function montar(corpo, rodape, unidadeId, iso, opcoes) {
     opcoes = opcoes || {};
-    ctx = { corpo: corpo, rodape: rodape, unidadeId: unidadeId, iso: iso, admin: !!opcoes.admin, comparar: !!opcoes.comparar,
+    ctx = { corpo: corpo, rodape: rodape, unidadeId: unidadeId, iso: iso, admin: !!opcoes.admin, adminPosto: !!opcoes.adminPosto,
+      comparar: !!opcoes.comparar,
       dadosProntos: opcoes.dados || null, semAvisos: !!opcoes.semAvisos,
       dados: null, dadosAntes: null, chaveDados: null, emSub: false, comHistorico: false, salvando: false };
     rasc = null; base = null; foto = null; pilhaDesfazer = []; pilhaRefazer = [];
@@ -946,7 +952,7 @@
   window.RosterWork.escalasPainelEditar = {
     montar: montar,
     reset: reset,
-    /* para as sub-telas (escalas-painel-formulario.js e escalas-painel-militar.js) */
+    /* para as sub-telas (escalas-painel-formulario.js, escalas-painel-militar.js e escalas-painel-posto.js) */
     sub: {
       dados: function () { return ctx && ctx.dados; },
       iso: function () { return ctx && ctx.iso; },
@@ -956,6 +962,7 @@
       travarAplicar: travarAplicar,
       concluir: concluirSub,
       cancelar: cancelarSub,
+      reler: reler,
       previa: previa,
       abrirFormulario: abrirFormulario,
       aplicarColocacao: aplicarColocacao,

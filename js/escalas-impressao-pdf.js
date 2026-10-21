@@ -218,7 +218,7 @@
     }
     var temAlguem = pecas().temAlguem || function () { return true; };
     (item.postos || []).filter(temAlguem).forEach(function (p) {
-      var nome = tituloBloquinho(p.nome + (p.em_manutencao && RW.mensagens.escala.emManutencao ? ' · ' + RW.mensagens.escala.emManutencao : ''));
+      var nome = tituloBloquinho(p.nome);
       linhas.push({ marcador: nome, no: tabelaPosto(nome, linhasDoPosto(p, c), c, preencher) });
     });
     if (!linhas.length) linhas.push({ marcador: t.semDistribuicao, no: { text: t.semDistribuicao, fontSize: FONTE.texto, color: c.suave, margin: CELULA.vazio } });

@@ -4,13 +4,13 @@
    e mais um sino seria mais um lugar para esquecer de olhar. A
    separação por papel acontece DENTRO da gaveta, em dois blocos:
    "Para você" e "Administração".
-   A gaveta mostra só o que está EM ABERTO — o que já foi resolvido
-   ou lido sai daqui e fica no histórico da página Avisos:
-     · pede ação  → sai quando o assunto é resolvido, por qualquer administrador
-     · só informa → sai quando você lê
-   O número do sino conta os em aberto (não é "não lidas").
-   A mesma leitura dá o número do item Pendências no menu (o que
-   espera decisão), e os avisos de decisão levam para lá.
+   A gaveta mostra só os avisos EM ABERTO: nem lidos nem resolvidos
+   (o pedido que outro administrador decidiu sai sozinho). O número
+   conta esses e zera quando você lê; o que foi lido fica no
+   histórico da página Avisos.
+   O que falta fazer (pedidos, prazos e o que corrigir) não mora
+   aqui: fica na página Pendências, e a mesma leitura escreve o
+   número do item dela no menu. Os avisos de decisão levam para lá.
    Estrutura e moldes vivem no index.html.
    ============================================================ */
 (function () {
@@ -68,8 +68,18 @@
     return el;
   }
 
-  /* o que espera decisão mora na página Pendências (é o número do item no menu) */
+  /* o que falta fazer mora na página Pendências, com o número no item do menu. Quanto
+     cada item de pendencias_listar soma nele: um pedido vale 1 (o grupo traz quantos);
+     uma situação vale 1 por assunto ("fora da escala" é um problema só, com a lista de
+     militares dentro). Tipo fora das duas listas não soma */
   var DECISAO = { troca: true, folga: true, dados: true };
+  var SITUACAO = { fora_escala: true, retorno_afastamento: true, distribuicao: true, distribuicao_erro: true, extra_prazo: true };
+
+  function quantoSoma(p) {
+    var n = Number(p.contagem) || 0;
+    if (DECISAO[p.tipo]) return n;
+    return SITUACAO[p.tipo] && n ? 1 : 0;
+  }
 
   function atualizarMenu(quantos) {
     var item = document.querySelector('.menu-item[data-pagina="pendencias"]');
@@ -77,28 +87,6 @@
     if (!selo) return;
     selo.textContent = quantos > 99 ? '99+' : String(quantos);
     selo.classList.toggle('oculto', !quantos);
-  }
-
-  /* pendências que aparecem no sino, com a gravidade da bolinha (a da extra vem do banco: o último dia é erro) */
-  var PENDENCIAS_SINO = { fora_escala: 'erro', retorno_afastamento: 'alerta', manutencao: 'alerta', distribuicao: 'alerta', distribuicao_erro: 'erro', extra_prazo: 'alerta' };
-
-  /* pendência da administração no sino: estado que espera decisão, sem "lida" — fica
-     até ser resolvido. Bolinha colorida por gravidade; clicar abre a página onde se resolve
-     (a Distribuição) ou, sem página, Pendências › Administração */
-  function montarItemPendencia(p) {
-    var el = RosterWork.tpl('dropdown-item-aviso');
-    if (!el) return null;
-    el.classList.add('aviso-item--' + (p.nivel || PENDENCIAS_SINO[p.tipo] || 'alerta'));
-    /* a contagem regressiva da extra é uma frase só (sem o número na frente) e traz o prazo embaixo */
-    var contagem = (p.contagem != null && !p.mensagem) ? String(p.contagem) + ' · ' : '';
-    el.querySelector('.aviso-item-titulo').textContent = contagem + (p.texto || '');
-    el.querySelector('.aviso-item-mensagem').textContent = p.mensagem || '';
-    el.addEventListener('click', function () {
-      if (RW.fecharDropdowns) RW.fecharDropdowns();
-      if (!RW.irParaPagina) return;
-      if (p.pagina) RW.irParaPagina(p.pagina, p.aba, p.referencia); else RW.irParaPagina('pendencias', 'administracao');
-    });
-    return el;
   }
 
   /* um bloco com título, só quando ele tem algo */
@@ -114,29 +102,18 @@
 
   function montar(caixa, pendencias) {
     if (!lista) return;
-    /* só as pendências da lista do sino */
-    var pend = (pendencias || []).filter(function (p) { return !!PENDENCIAS_SINO[p.tipo]; });
     var abertos = (caixa && caixa.abertos) || { total: 0, pessoal: 0, administracao: 0 };
-    var itens = ((caixa && caixa.itens) || []).filter(function (n) { return n.aberto; });
+    var itens = (caixa && caixa.itens) || [];   /* a leitura já traz só os em aberto */
 
-    /* o número do sino soma as notificações em aberto + as pendências (estado que fica até resolver) */
-    var totalPend = pend.reduce(function (s, p) { return s + (Number(p.contagem) || 0); }, 0);
-    atualizarBadge((abertos.total || 0) + totalPend);
-    atualizarMenu((pendencias || []).reduce(function (s, p) { return s + (DECISAO[p.tipo] ? (Number(p.contagem) || 0) : 0); }, 0));
+    atualizarBadge(abertos.total || 0);
+    atualizarMenu((pendencias || []).reduce(function (s, p) { return s + quantoSoma(p); }, 0));
 
-    /* "Marcar todas como lidas" só faz sentido para o que informa —
-       decisão pendente não se apaga declarando que foi vista */
-    if (btnMarcarTodas) {
-      var informativasAbertas = itens.some(function (n) { return !n.acao; });
-      btnMarcarTodas.classList.toggle('oculto', !informativasAbertas);
-    }
+    /* "Marcar todas como lidas" enquanto houver aviso em aberto (o pedido continua na Pendências) */
+    if (btnMarcarTodas) btnMarcarTodas.classList.toggle('oculto', !abertos.total);
 
     lista.textContent = '';
-    /* pendências primeiro: fixas no topo, sem "lida", até serem resolvidas */
-    pend.forEach(function (p) { var el = montarItemPendencia(p); if (el) lista.appendChild(el); });
-
     if (!itens.length) {
-      if (!pend.length) mostrarVazio(RW.mensagens.avisos.semAbertos);
+      mostrarVazio(RW.mensagens.avisos.semAbertos);
       return;
     }
 
@@ -156,9 +133,8 @@
   }
 
   /* marca como lida e vai para a tela do assunto, já na aba onde se resolve.
-     O que pede ação continua em aberto até alguém decidir — ler não resolve.
      O aviso de uma decisão (troca, folga, correção) leva à Pendências,
-     já com o pedido aberto. */
+     já com o pedido aberto; o pedido continua lá até alguém decidir. */
   function abrir(n) {
     function irPara() {
       if (!RW.irParaPagina) return;
@@ -176,9 +152,9 @@
     if (!RW.apiFetch || !RW.obterToken || !RW.obterToken()) return;
     function corpoJson(r) { return r.ok ? r.json() : null; }
     function nulo() { return null; }
-    /* uma leitura de cada fonte: notificações (eventos) + pendências (estado do admin) */
+    /* uma leitura de cada fonte: os avisos em aberto (o sino) + as pendências (o número do menu) */
     Promise.all([
-      RW.apiFetch('/rest/v1/rpc/notificacoes_listar', { metodo: 'POST', corpo: { p_limite: 15 } }).then(corpoJson).catch(nulo),
+      RW.apiFetch('/rest/v1/rpc/notificacoes_listar', { metodo: 'POST', corpo: { p_limite: 20, p_so_abertos: true } }).then(corpoJson).catch(nulo),
       RW.apiFetch('/rest/v1/rpc/pendencias_listar', { metodo: 'POST', corpo: {} }).then(corpoJson).catch(nulo)
     ]).then(function (res) {
       montar(res[0], Array.isArray(res[1]) ? res[1] : []);
@@ -204,8 +180,9 @@
     });
   }
 
-  /* quem mexe em aviso (a página Avisos) pede o refresco do sino */
-  RW.avisosSino = { recarregar: carregar };
+  /* quem mexe em aviso (a página Avisos) pede o refresco do sino; a página
+     Pendências soma os selos das abas pela mesma regra do número do menu */
+  RW.avisosSino = { recarregar: carregar, quantoSoma: quantoSoma };
 
   carregar();
 })();

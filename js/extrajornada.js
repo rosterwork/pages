@@ -156,8 +156,8 @@
   function iniciar(conteudo) {
     if (RW.escalasExtraRascunho) RW.escalasExtraRascunho.zerar();
     var abas = conteudo.querySelector('#extrajornada-abas');
-    /* Distribuição e Relatórios são só do administrador; sem elas, os dois grupos viram um só (sem o traço entre eles) */
-    var ehAdmin = RosterWork.sessao.ehAdmin();
+    /* Distribuição e Relatórios são só do administrador de companhia; sem elas, os dois grupos viram um só (sem o traço entre eles) */
+    var ehAdmin = RosterWork.sessao.temPapel('companhia');
     ['montagem', 'relatorios'].forEach(function (n) {
       var a = conteudo.querySelector('#extrajornada-abas [data-aba="' + n + '"]');
       if (a) a.classList.toggle('oculto', !ehAdmin);

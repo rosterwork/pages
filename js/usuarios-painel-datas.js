@@ -8,7 +8,7 @@
    apaga), com as de praça no bloco que recolhe; confere a ordem e
    a inclusão, grava por promocoes_salvar e abre o resumo. Quais
    postos ganham campo: RosterWork.campos.postosComData (o mesmo do
-   Novo usuário e do Criar conta). Orquestração no usuarios-painel.js.
+   Novo usuário e do Meus dados). Orquestração no usuarios-painel.js.
    ============================================================ */
 (function () {
   'use strict';

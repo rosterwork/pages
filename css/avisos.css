@@ -25,6 +25,11 @@
   gap: 8px;
 }
 
+/* "Mostrar mais antigos" no fim do Histórico: do tamanho do rótulo, sem esticar na coluna */
+.avisos-mais-antigos {
+  align-self: flex-start;
+}
+
 .aviso-cartao {
   display: flex;
   align-items: flex-start;

@@ -1,8 +1,8 @@
 /* ============================================================
    COMPONENTE geral-anteriores — grupo "Anteriores (N)"
    Botão que abre e fecha, numa lista com histórico, os itens que
-   já passaram (períodos da Distribuição, trechos da linha do tempo
-   do posto). Molde #tpl-anteriores no shell; comportamento em
+   já passaram (períodos da Distribuição, as viaturas que já serviram
+   num posto). Molde #tpl-anteriores no shell; comportamento em
    geral-anteriores.js.
    ============================================================ */
 

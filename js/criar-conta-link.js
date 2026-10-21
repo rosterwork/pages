@@ -6,11 +6,12 @@
      - vale       -> o passo 1 pede o CPF;
      - não vale   -> só a mensagem (sem link, expirado, usado ou
                      cancelado) e o caminho para o login.
-   O CPF certo (acesso_link_conferir) traz a ficha para o passo 2;
-   errado, conta uma tentativa (a 5ª cancela o link).
+   O CPF certo (acesso_link_conferir) traz o nome, o posto, o
+   celular e o e-mail para o passo 2; errado, conta uma tentativa
+   (a 5ª cancela o link).
    Abrir o link não o gasta: só o "Criar conta" gasta.
    O preenchimento e a troca de passos ficam no criar-conta.js
-   (RosterWork.criarConta.abrirFicha).
+   (RosterWork.criarConta.abrirPasso2).
    ============================================================ */
 (function () {
   'use strict';
@@ -88,12 +89,8 @@
           mostrarInvalido(r);
           return;
         }
-        /* os postos e a árvore precisam estar carregados antes de preencher a ficha */
-        var aguardar = (RW.criarConta && RW.criarConta.aguardarOpcoes) ? RW.criarConta.aguardarOpcoes() : Promise.resolve();
-        aguardar.then(function () {
-          RW.pararCarregando(botao);
-          if (RW.criarConta) RW.criarConta.abrirFicha(cpf, codigo, r.dados);
-        });
+        RW.pararCarregando(botao);
+        if (RW.criarConta) RW.criarConta.abrirPasso2(cpf, codigo, r.dados);
       })
       .catch(function () {
         RW.pararCarregando(botao);

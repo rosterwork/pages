@@ -4,7 +4,7 @@
    leitura (720px). As listas são a fila do componente geral-fila
    (.pedido-lista com o cartão .pedido--linha, que abre o painel de
    decisão; as seções são .pedido-secoes/.pedido-secao). Aqui: os
-   cartões "Para corrigir".
+   cartões "Para corrigir" e os "Prazos".
    ============================================================ */
 
 /* ---------- "Para corrigir" ---------- */
@@ -41,7 +41,19 @@ button.pendencias-corrigir:hover {
   color: var(--texto-fraco);
 }
 
-/* fora da escala, retorno de afastamento e viaturas em manutenção: a contagem em cima e a lista embaixo (não navegam) */
+/* prazo (Para mim): o texto e, embaixo, até quando */
+.pendencias-prazo-textos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pendencias-prazo-mensagem {
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+/* fora da escala e retorno de afastamento: a contagem em cima e a lista embaixo (não navegam) */
 .pendencias-corrigir--lista {
   flex-direction: column;
   align-items: stretch;
@@ -82,7 +94,6 @@ button.pendencias-corrigir:hover {
   color: var(--texto-forte);
 }
 
-.pendencias-corrigir-desde,
 .pendencias-corrigir-volta {
   font-size: 11px;
   color: var(--texto-suave);

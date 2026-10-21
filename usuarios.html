@@ -283,10 +283,11 @@
   </div>
 </template>
 
-<!-- molde: barra do painel na Carreira (admin, militar ativo) -->
+<!-- molde: barra do painel na Carreira (admin, militar ativo); Administração só para quem pode mudar o papel deste militar -->
 <template id="tpl-ficha-acoes-carreira">
   <button type="button" class="botao botao--primario" data-ficha-acao="promover">Promover</button>
   <button type="button" class="botao botao--primario" data-ficha-acao="transferir">Transferir</button>
+  <button type="button" class="botao botao--primario oculto" data-ficha-acao="administracao">Administração</button>
 </template>
 
 <!-- molde: barra do painel na Carreira (admin, militar inativo) -->
@@ -491,6 +492,38 @@
         <input class="campo-entrada" type="text" name="vigencia-data" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" aria-label="A partir de" data-vigencia-data autocomplete="off" />
         <span class="campo-erro-texto"></span>
       </label>
+    </div>
+  </div>
+</template>
+
+<!-- molde: sub-tela Administração: o papel e onde ele vale; a nota diz o que o papel escolhido faz -->
+<template id="tpl-ficha-sub-administracao">
+  <div class="subtela">
+    <div class="subtela-cab">
+      <span class="subtela-titulo">Administração</span>
+      <span class="subtela-subtitulo">Hoje: <span data-sub-valor></span></span>
+    </div>
+    <div class="grupo-caixa">
+      <span class="rotulo-secao">1. Papel</span>
+      <div class="campo">
+        <div class="dropdown">
+          <button type="button" class="campo-entrada campo-selecao" data-administracao-papel aria-label="Papel">
+            <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+          </button>
+          <div class="dropdown-menu"></div>
+        </div>
+      </div>
+    </div>
+    <div class="grupo-caixa">
+      <span class="rotulo-secao">2. Vale para</span>
+      <span class="ficha-promovido" data-administracao-vale>-</span>
+    </div>
+    <div class="nota oculto" data-administracao-nota>
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+      <span class="nota-texto oculto" data-nota-papel="pelotao">Cuida do dia a dia do pelotão: escala do dia, afastamentos, folgas, trocas e avisos. Distribuição, Postos, Ciclo e Usuários ficam com a companhia. Termina sozinho na transferência ou na baixa.</span>
+      <span class="nota-texto oculto" data-nota-papel="companhia">Cuida de tudo da companhia e dos pelotões, inclusive Distribuição, Postos, Ciclo e Usuários, e nomeia os administradores de pelotão. Termina sozinho na transferência para fora da companhia ou na baixa.</span>
+      <span class="nota-texto oculto" data-nota-papel="geral">Cuida de todas as unidades e nomeia os administradores de companhia. Termina sozinho na baixa.</span>
     </div>
   </div>
 </template>

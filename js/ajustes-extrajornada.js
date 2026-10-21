@@ -23,7 +23,7 @@
   var guardaLigada = false;
 
   function msg() { return RW.mensagens.extrajornada.prazos; }
-  function admin() { return RosterWork.sessao.ehAdmin(); }
+  function admin() { return RosterWork.sessao.temPapel('companhia'); }   // a Extrajornada é da companhia
   function valorDe(v) { return v == null ? '' : String(v); }
   function sujo() {
     if (!edicao || !prazos) return false;

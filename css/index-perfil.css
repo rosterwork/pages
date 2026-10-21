@@ -66,6 +66,11 @@
   gap: 16px;
 }
 
+/* variante de duas colunas, para caber numa janela de 480px (a dos dados pendentes) */
+.perfil-grade--duas {
+  grid-template-columns: repeat(2, 1fr);
+}
+
 .perfil-dado {
   display: flex;
   flex-direction: column;

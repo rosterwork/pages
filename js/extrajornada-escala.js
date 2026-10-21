@@ -272,7 +272,7 @@
 
   /* ---------- ensaio no motor real, por dia, com o rascunho do dia ---------- */
   function analisarDiaEnsaio(isoDia) {
-    if (!RosterWork.sessao.ehAdmin() || !RW.extrajornadaDados) return;
+    if (!RosterWork.sessao.temPapel('companhia') || !RW.extrajornadaDados) return;   // o ensaio é do admin de companhia
     if (timersEnsaio[isoDia]) clearTimeout(timersEnsaio[isoDia]);
     timersEnsaio[isoDia] = setTimeout(function () {
       delete timersEnsaio[isoDia];

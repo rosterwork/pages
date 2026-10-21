@@ -19,6 +19,9 @@
   var removidos = [];         // ids das regras salvas removidas localmente (só aplicam no Salvar)
   var seqCarregar = 0;        // token da carga: ignora resposta antiga ao trocar de unidade rápido
 
+  // as regras são da Distribuição (companhia): edita o admin de companhia (ou o geral) cuja área tem a companhia do grupo
+  function podeEditar() { return !!(grupoAtual && grupoAtual.cia) && RosterWork.sessao.podeAdministrar('companhia', grupoAtual.cia.unidade_id); }
+
   // grau + nome (não depende do módulo de Trocas, que só carrega naquela página)
   function nomeMilitar(grau, nome) { return ((grau || '') + ' ' + (nome || '')).trim(); }
 
@@ -145,14 +148,14 @@
         var item = RosterWork.tpl('tpl-regras-item');
         item.querySelector('.regras-item-texto').textContent = r.funcao;
         var rem = item.querySelector('.regras-item-remover');
-        if (RosterWork.sessao.ehAdmin()) {
+        if (podeEditar()) {
           rem.classList.remove('oculto');
           rem.addEventListener('click', function () { remover(r); });
         }
         itens.appendChild(item);
       });
     }
-    if (RosterWork.sessao.ehAdmin()) montarAdicionar(grupo.querySelector('.regras-grupo-add'), militar, tipo);
+    if (podeEditar()) montarAdicionar(grupo.querySelector('.regras-grupo-add'), militar, tipo);
     destino.appendChild(grupo);
   }
 
@@ -251,7 +254,7 @@
   function atualizarRodape() {
     var rod = document.getElementById('regras-rodape');
     if (!rod) return;
-    rod.classList.toggle('oculto', !RosterWork.sessao.ehAdmin());   // rodapé de edição só para o admin (comum é só leitura)
+    rod.classList.toggle('oculto', !podeEditar());   // rodapé de edição só para o admin de companhia da área (os demais só leem)
     var n = contarAlteracoes();
     var bSalvar = rod.querySelector('.regras-salvar');
     var bCancelar = rod.querySelector('.regras-cancelar');

@@ -2,10 +2,10 @@
   'use strict';
 
 
-  /* itens marcados só aparecem para o papel certo: data-admin (admin),
-     data-programador (programador — item + divisória da seção) */
+  /* itens marcados só aparecem para o papel certo: data-admin (admin de companhia ou geral:
+     o Histórico), data-programador (programador — item + divisória da seção) */
   function aplicarPermissoesMenu() {
-    if (!RosterWork.sessao.ehAdmin()) {
+    if (!RosterWork.sessao.temPapel('companhia')) {
       var admins = document.querySelectorAll('.menu-item[data-admin]');
       for (var i = 0; i < admins.length; i++) admins[i].classList.add('oculto');
     }

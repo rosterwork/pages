@@ -139,13 +139,14 @@
   --modal-respiro:           24px;   /* distância mínima do modal às bordas da tela */
   --busca-largura:          240px;   /* campo de busca */
   --seletor-largura:        218px;   /* seletor de unidades */
+  --periodo-nome-largura:   110px;   /* largura mínima do nome do período: as setas não andam ao trocar de mês */
 
   /* valores no celular (até 767px): o bloco do celular, no fim deste
      arquivo, troca cada papel pelo seu valor aqui. O Guia visual lê
      estes mesmos nomes para desenhar a prancheta do celular */
   --fonte-padrao-celular:            15px;
   --respiro-pagina-celular:          12px;
-  --botao-altura-celular:            44px;
+  --botao-altura-celular:            36px;
   --botao-fonte-celular:             15px;
   --campo-altura-celular:            44px;
   --campo-fonte-celular:             16px;   /* 16px: menos que isso o iPhone dá zoom ao tocar no campo */
@@ -158,7 +159,9 @@
   --modal-largura-pequeno-celular:   100%;
   --busca-largura-celular:           100%;
   --seletor-largura-celular:         100%;
+  --periodo-nome-largura-celular:   124px;   /* o mês mais comprido ("novembro 2026") na letra do celular */
   --menu-altura-celular:             64px;   /* barra de baixo (o menu no celular) */
+  --toque-altura-celular:            44px;   /* área de toque: o botão de 36px toca numa folga invisível até 44px */
 
   /* -------------------------------------------------------
      Espaçamentos de formulário
@@ -261,5 +264,6 @@ html[data-tema="escuro"] {
     --modal-largura-pequeno:  var(--modal-largura-pequeno-celular);
     --busca-largura:          var(--busca-largura-celular);
     --seletor-largura:        var(--seletor-largura-celular);
+    --periodo-nome-largura:   var(--periodo-nome-largura-celular);
   }
 }

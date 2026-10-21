@@ -6,9 +6,11 @@
      · contar()  → os números, sem o detalhe (leitura leve):
                    { minhas: {tipo: n}, aprovar: {tipo: n} }
      · ler()     → o que espera decisão, com o detalhe:
-                   { minhas: [], aprovar: [], corrigir: [] }; cada
-                   pedido { tipo, id, dado, data, minha }, os de data
-                   mais próxima primeiro; null se a leitura falhou
+                   { minhas: [], aprovar: [], corrigir: [], prazos: [] };
+                   cada pedido { tipo, id, dado, data, minha }, os de
+                   data mais próxima primeiro; corrigir e prazos são os
+                   grupos que não são pedido (do administrador e seus,
+                   como o prazo da extra); null se a leitura falhou
      · doTipo(pedidos, tipos) → só os pedidos desses tipos
      · criar(lista, opcoes) → uma fila na tela: desenha os cartões
                    (geral-pedido, .pedido--linha; nas listas do
@@ -58,12 +60,12 @@
   function ler() {
     return RW.rpc('pendencias_listar', { p_detalhe: true }).then(function (grupos) {
       if (!Array.isArray(grupos)) return null;
-      var r = { minhas: [], aprovar: [], corrigir: [] };
+      var r = { minhas: [], aprovar: [], corrigir: [], prazos: [] };
       grupos.forEach(function (g) {
         if (DECISAO.indexOf(g.tipo) >= 0) {
           (g.itens || []).forEach(function (d) { (g.minha ? r.minhas : r.aprovar).push(pedido(g.tipo, d, !!g.minha)); });
-        } else if (!g.minha) {
-          r.corrigir.push(g);
+        } else {
+          (g.minha ? r.prazos : r.corrigir).push(g);
         }
       });
       function porData(a, b) { return a.data < b.data ? -1 : (a.data > b.data ? 1 : 0); }

@@ -186,3 +186,22 @@
   content: "- ";
   color: var(--texto);
 }
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   O seletor tem a altura dos botões e a mesma folga de toque
+   deles (ver geral-botao.css): uma área invisível em volta até
+   --toque-altura-celular, sem mudar o desenho.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .seletor {
+    position: relative;
+  }
+
+  /* o ::before se mede por dentro da borda de 1px: a folga desconta essa borda */
+  html[data-celular] .seletor::before {
+    content: '';
+    position: absolute;
+    inset: calc((var(--botao-altura) - var(--toque-altura-celular)) / 2 - 1px);
+  }
+}
