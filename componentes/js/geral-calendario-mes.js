@@ -96,5 +96,6 @@
     corpo.appendChild(wrap);
   }
 
-  window.RosterWork.geralCalendarioMes = { renderizar: renderizar };
+  /* colunaContinua: o PDF do Colunas → Dias monta as linhas nas mesmas colunas da tela */
+  window.RosterWork.geralCalendarioMes = { renderizar: renderizar, colunaContinua: colunaContinua };
 })();

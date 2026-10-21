@@ -559,6 +559,24 @@
           pagina: function (n, total) { return 'Página ' + n + ' de ' + total; },
           deServico: function (ritmo, n) { return (ritmo ? ritmo + ' · ' : '') + n + ' de serviço'; },
           arquivo: function (periodo, unidade) { return 'Escala ' + (unidade ? unidade + ' ' : '') + periodo + '.pdf'; }
+        },
+        /* painel e PDF das grades: Agenda, Calendário e Colunas (escalas-impressao-grade.js e -grade-pdf.js) */
+        grade: {
+          titulos: { agenda: 'Imprimir agenda', calendario: 'Imprimir calendário', 'colunas-dias': 'Imprimir colunas', 'colunas-unidades': 'Imprimir colunas' },
+          nomes: { agenda: 'Agenda', calendario: 'Calendário', 'colunas-dias': 'Colunas', 'colunas-unidades': 'Colunas' },
+          subtitulo: function (paisagem, continua) {
+            var folha = 'A4 ' + (paisagem ? 'paisagem' : 'retrato');
+            return continua ? 'PDF em página contínua, na largura da ' + folha : 'Arquivo em PDF, ' + folha;
+          },
+          /* "27/09 a 31/10/2026"; vários trechos: "04/10 a 10/10 e 18/10 a 24/10/2026" */
+          trecho: function (inicio, fim) { return inicio === fim ? inicio : inicio + ' a ' + fim; },
+          juntar: function (lista) { return lista.length > 1 ? lista.slice(0, -1).join(', ') + ' e ' + lista[lista.length - 1] : (lista[0] || ''); },
+          mes: function (nomeMes, ano) { return nomeMes + ' de ' + ano; },
+          periodo: function (dias, texto) { return dias + (dias === 1 ? ' dia: ' : ' dias: ') + texto + '.'; },
+          folhas: function (n, continua) { return continua ? 'Uma página contínua.' : (n === 1 ? '1 folha.' : n + ' folhas.'); },
+          falhaPrevia: 'Não foi possível montar a prévia. Tente de novo.',
+          longaDemais: 'A página contínua ficou longa demais para os leitores de PDF. Escolha Folhas A4 ou um período menor.',
+          arquivo: function (nome, periodo, unidade) { return 'Escala ' + nome.toLowerCase() + ' ' + (unidade ? unidade + ' ' : '') + periodo + '.pdf'; }
         }
       }
     },

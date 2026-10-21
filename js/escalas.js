@@ -83,11 +83,11 @@
   /* ---------- última visão usada (lembrada no banco por usuário, como o tema) ---------- */
 
   /* reabre a Escala na última visão (modo + escolhas do subgrupo); sem nada salvo, fica o Dia do HTML.
-     A data não é lembrada: a Escala sempre abre em hoje */
+     A data não é lembrada: a Escala sempre abre em hoje. A Semana está oculta: quem a usava abre no Mês */
   function restaurarVisao() {
     var visao = lerPreferencias().escala_visao;
     if (!visao || typeof visao !== 'object') return;
-    marcarAba('#escala-modos', 'data-modo', visao.modo);
+    marcarAba('#escala-modos', 'data-modo', visao.modo === 'semana' ? 'mes' : visao.modo);
     marcarAba('#escala-sub-mes', 'data-mes', visao.mes);
     marcarAba('#escala-colunas-tipo', 'data-colunas-tipo', visao.colunas_tipo);
     marcarAba('#escala-colunas-qtd', 'data-colunas', visao.colunas_qtd);
@@ -414,6 +414,31 @@
     return periodoContemHoje() ? hojeSemHora() : intervaloExibido().inicio;
   }
 
+  /* o PDF das grades conforme a tela (null = o PDF do Dia, que vale no Dia e no Militares) */
+  function formatoImpressao() {
+    var modo = modoAtual();
+    if (modo === 'mes') return subMesAtual() === 'calendario' ? 'calendario' : 'agenda';
+    if (modo === 'colunas') return tipoColunasAtual() === 'unidades' ? 'colunas-unidades' : 'colunas-dias';
+    return null;
+  }
+
+  /* Imprimir: as grades abrem o painel delas, já com o mês, as unidades e as colunas da tela;
+     o Dia e o Militares, o "Imprimir escala" com a data padrão do que está na tela */
+  function abrirImpressao() {
+    var formato = formatoImpressao();
+    if (formato && RosterWork.escalasImpressaoGrade) {
+      var daTela = formato === 'colunas-unidades' ? colunasUnidadesLigadas() : unidadesColuna();
+      RosterWork.escalasImpressaoGrade.abrir({
+        formato: formato,
+        data: new Date(refData.getFullYear(), refData.getMonth(), refData.getDate()),
+        unidades: daTela.map(function (u) { return u.id; }),
+        diasPorLinha: quantidadeColunas()
+      });
+      return;
+    }
+    if (RosterWork.escalasImpressao) RosterWork.escalasImpressao.abrir({ data: dataPadraoImpressao() });
+  }
+
   /* o rótulo do período e o "Hoje", que só aparece quando o período da tela não contém hoje */
   function atualizarPeriodo() {
     var el = conteudo.querySelector('#escala-periodo-nome');
@@ -540,11 +565,9 @@
       });
     }
 
-    /* Imprimir: abre o painel "Imprimir escala" com a data padrão do que está na tela */
+    /* Imprimir: abre o painel conforme a aba (abrirImpressao) */
     var btnImprimir = conteudo.querySelector('#escala-imprimir');
-    if (btnImprimir && window.RosterWork.escalasImpressao) {
-      btnImprimir.addEventListener('click', function () { RosterWork.escalasImpressao.abrir({ data: dataPadraoImpressao() }); });
-    }
+    if (btnImprimir) btnImprimir.addEventListener('click', abrirImpressao);
 
     /* clicar no rótulo do período abre o calendário; o dia escolhido vira a referência */
     var rotuloPeriodo = conteudo.querySelector('#escala-periodo-nome');

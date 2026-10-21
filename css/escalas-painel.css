@@ -468,3 +468,83 @@
   gap: 8px;
 }
 
+/* ---------- painel Imprimir das grades (escalas-impressao-grade.js) ---------- */
+/* o rótulo à esquerda e o controle à direita (o mês) */
+.escala-impressao-linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* "Do dia [ ] ao dia [ ]": as listas de números (geral-dropdown-numeros) com o gatilho de campo */
+.escala-impressao-dias {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.escala-impressao-dias .campo-selecao {
+  min-width: 88px;
+}
+
+/* o que mostrar em cada célula: a caixa de seleção e o texto, a linha inteira clicável */
+.escala-impressao-mostrar {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.escala-impressao-opcao {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: var(--fonte-padrao);
+  color: var(--texto);
+  text-align: left;
+  cursor: pointer;
+}
+
+/* a prévia: o próprio PDF, no leitor do navegador; o véu de carregamento e o aviso cobrem o quadro */
+.escala-impressao-previa {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pequeno);
+  overflow: hidden;
+  background-color: var(--fundo-pagina);
+}
+
+.escala-impressao-previa-quadro {
+  display: block;
+  width: 100%;
+  min-height: 440px;
+  border: none;
+}
+
+.escala-impressao-previa-aviso {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--fundo-superficie);
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   O navegador do celular não mostra PDF dentro da página: o painel
+   das grades fica sem a prévia (o Gerar PDF continua)
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .escala-impressao-previa-secao {
+    display: none;
+  }
+}
+

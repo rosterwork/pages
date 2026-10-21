@@ -62,9 +62,18 @@
      Afastamentos é um acréscimo ("Todos" + Afastamentos = todos e os afastados; desmarcar
      o "Todos" deixa só os afastados) — a regra mora no geral-filtro-arvore */
   function passaFiltros(linha) {
-    var situacao = linha.getAttribute('data-situacao');
+    return passa(linha.getAttribute('data-situacao'), linha.getAttribute('data-grau'));
+  }
+
+  function passa(situacao, grau) {
     if (!filtros || !filtrosValem()) return situacao !== 'afastamento';
-    return filtros.passa('graus', linha.getAttribute('data-grau')) && filtros.passa('situacao', situacao);
+    return filtros.passa('graus', grau) && filtros.passa('situacao', situacao);
+  }
+
+  /* a pessoa (dado da grade) passa nos filtros da tela? O PDF das grades sai igual à tela */
+  function passaPessoa(p) {
+    var celula = window.RosterWork.escalasCelula;
+    return passa(celula ? celula.situacao(p) : 'prontidao', p.grau || null);
   }
 
   /* aplica filtro + busca nas linhas da grade. 'marcar' realça a linha casada e acende a célula;
@@ -137,5 +146,5 @@
     }
   }
 
-  window.RosterWork.escalasFiltros = { iniciar: iniciar, aplicarModo: aplicarModo };
+  window.RosterWork.escalasFiltros = { iniciar: iniciar, aplicarModo: aplicarModo, passaPessoa: passaPessoa };
 })();

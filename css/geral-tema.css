@@ -94,13 +94,19 @@
   --anotacao:            rgb(40,  96,  232);
   --anotacao-texto:      var(--cinza-0);
   /* cores do PDF da escala (escalas-impressao-pdf.js lê daqui): papel é sempre claro,
-     então são iguais nos dois temas; preto e cinza, para sair bem em impressora comum */
+     então são iguais nos dois temas; preto e cinza, para sair bem em impressora comum.
+     As grades (Agenda, Calendário, Colunas) usam também a faixa do horário e as cores
+     do gráfico de cobertura (as do tema claro) */
   --impressao-texto-forte: var(--cinza-950);
   --impressao-texto:       var(--cinza-900);
   --impressao-texto-suave: var(--cinza-750);
   --impressao-borda:       var(--cinza-300);
   --impressao-fundo:       var(--cinza-150);
   --impressao-papel:       var(--cinza-0);
+  --impressao-faixa:       var(--cinza-200);
+  --impressao-sucesso:     rgb(38,  110, 60);
+  --impressao-alerta:      rgb(158, 102, 12);
+  --impressao-erro:        rgb(176, 36,  36);
 
   /* -------------------------------------------------------
      Véu do modal

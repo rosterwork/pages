@@ -6,7 +6,8 @@
     <!-- modos: o Dia (a escala principal, impressa e exibida na passagem de serviço) num grupo próprio,
          à frente das outras visões; os dois grupos valem como uma escolha só (escalas.js),
          com um traço só (data-abas-grupo). No celular ficam só o Dia e o Mês (Agenda e Calendário):
-         o que tem .escala-so-computador some lá (escalas-controles.css) -->
+         o que tem .escala-so-computador some lá (escalas-controles.css). A Semana fica oculta para
+         todos (o modo continua no código) -->
     <div class="escala-modos" id="escala-modos" data-abas-grupo>
       <div class="abas" id="escala-modo-principal">
         <button type="button" class="aba aba--ativa" data-modo="dia">Dia</button>
@@ -14,7 +15,7 @@
       <div class="abas" id="escala-modo-visoes">
         <button type="button" class="aba escala-so-computador" data-modo="militares">Militares</button>
         <button type="button" class="aba" data-modo="mes">Mês</button>
-        <button type="button" class="aba escala-so-computador" data-modo="semana">Semana</button>
+        <button type="button" class="aba escala-so-computador oculto" data-modo="semana">Semana</button>
         <button type="button" class="aba escala-so-computador" data-modo="colunas">Colunas</button>
       </div>
     </div>
@@ -102,7 +103,7 @@
   <div class="pagina-corpo pagina-corpo--colado"></div>
 </div>
 
-<!-- uma aba de unidade: o seletor do Colunas › Unidades -->
+<!-- uma aba solta (o texto vem do JS): as unidades do Colunas › Unidades e da faixa do celular, e as semanas do Imprimir -->
 <template id="tpl-escala-aba-unidade">
   <button type="button" class="aba"></button>
 </template>
@@ -232,6 +233,99 @@
 <template id="tpl-escala-impressao-acoes">
   <button type="button" class="botao" data-impressao-cancelar>Cancelar</button>
   <button type="button" class="botao botao--primario" data-impressao-gerar>Gerar PDF</button>
+</template>
+
+<!-- painel "Imprimir" das grades (Agenda, Calendário, Colunas; escalas-impressao-grade.js; o rodapé é o
+     tpl-escala-impressao-acoes): o formato, o período (semanas no Calendário e no Colunas › Unidades, dias na
+     Agenda e no Colunas › Dias, pelo data-impressao-so), o que mostrar em cada célula, a prévia (o próprio PDF,
+     no leitor do navegador) e as unidades (a árvore do seletor, já marcada com as da tela) -->
+<template id="tpl-escala-impressao-grade">
+  <div class="painel-secao">
+    <span class="rotulo-secao">Formato</span>
+    <div class="abas abas--seletor" data-impressao-formato>
+      <button type="button" class="aba aba--ativa" data-formato="folhas">Folhas A4</button>
+      <button type="button" class="aba" data-formato="continua">Página contínua</button>
+    </div>
+    <span class="campo-ajuda">Folhas A4 para imprimir. Página contínua: uma página só, na largura da A4, para ver na tela.</span>
+  </div>
+  <div class="painel-secao">
+    <span class="rotulo-secao" data-impressao-so="semanas">Semanas</span>
+    <span class="rotulo-secao" data-impressao-so="dias">Dias</span>
+    <div class="escala-impressao-linha">
+      <span class="campo-rotulo">Mês</span>
+      <div class="geral-periodo">
+        <button type="button" class="botao botao--icone" aria-label="Mês anterior" data-impressao-mes-anterior>
+          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-esquerda.svg#icone-seta-esquerda"/></svg>
+        </button>
+        <button type="button" class="geral-periodo-nome" data-impressao-mes-nome></button>
+        <button type="button" class="botao botao--icone" aria-label="Próximo mês" data-impressao-mes-proximo>
+          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
+        </button>
+      </div>
+    </div>
+    <!-- semanas: "Mês todo" e, embaixo, uma por linha do calendário do mês (o JS clona o tpl-escala-aba-unidade);
+         os dois trilhos são de marcar vários (data-abas-multi) e a regra de qual fica marcada é do JS -->
+    <div class="abas abas--seletor" data-impressao-so="semanas" data-abas-multi data-impressao-mes-todo-trilho>
+      <button type="button" class="aba" data-impressao-mes-todo>Mês todo</button>
+    </div>
+    <div class="abas abas--seletor" data-impressao-so="semanas" data-abas-multi data-impressao-semanas></div>
+    <!-- dias: as listas só oferecem os dias que o mês tem; o "ao dia", do "Do dia" em diante -->
+    <div class="escala-impressao-dias" data-impressao-so="dias">
+      <span class="campo-rotulo">Do dia</span>
+      <div class="dropdown" data-impressao-dia="de">
+        <button type="button" class="campo-entrada campo-selecao" aria-label="Do dia">
+          <span class="campo-selecao-texto"></span>
+          <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+        </button>
+        <div class="dropdown-menu"></div>
+      </div>
+      <span class="campo-rotulo">ao dia</span>
+      <div class="dropdown" data-impressao-dia="ate">
+        <button type="button" class="campo-entrada campo-selecao" aria-label="Ao dia">
+          <span class="campo-selecao-texto"></span>
+          <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+        </button>
+        <div class="dropdown-menu"></div>
+      </div>
+    </div>
+    <span class="campo-ajuda" data-impressao-periodo></span>
+  </div>
+  <div class="painel-secao">
+    <span class="rotulo-secao">Mostrar</span>
+    <div class="escala-impressao-mostrar">
+      <button type="button" class="escala-impressao-opcao" role="checkbox" aria-checked="true" data-mostrar="grafico">
+        <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg></span>
+        <span>Gráfico de cobertura</span>
+      </button>
+      <button type="button" class="escala-impressao-opcao" role="checkbox" aria-checked="true" data-mostrar="icones">
+        <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg></span>
+        <span>Ícones de origem</span>
+      </button>
+      <button type="button" class="escala-impressao-opcao" role="checkbox" aria-checked="true" data-mostrar="faixa">
+        <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg></span>
+        <span>Faixa do horário</span>
+      </button>
+    </div>
+    <span class="campo-ajuda">Os filtros da tela (Graus e Situação) também valem no PDF.</span>
+  </div>
+  <div class="painel-secao escala-impressao-previa-secao">
+    <span class="rotulo-secao">Prévia</span>
+    <div class="escala-impressao-previa">
+      <iframe class="escala-impressao-previa-quadro" title="Prévia do PDF" data-impressao-previa></iframe>
+      <span class="painel-estado escala-impressao-previa-aviso oculto" data-impressao-previa-aviso></span>
+      <div class="carregando-veu" data-impressao-previa-carregando>
+        <div class="giratorio" aria-label="Carregando" role="status"></div>
+      </div>
+    </div>
+    <span class="campo-ajuda" data-impressao-folhas></span>
+  </div>
+  <div class="painel-secao">
+    <span class="rotulo-secao">Unidades</span>
+    <div class="campo">
+      <div class="arvore" data-impressao-arvore></div>
+      <span class="campo-erro-texto"></span>
+    </div>
+  </div>
 </template>
 
 <!-- legenda da grade (Mês/Semana/Colunas/Calendário): as cores do gráfico de cobertura (vermelho = a escala

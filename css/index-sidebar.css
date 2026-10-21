@@ -357,4 +357,55 @@
   html[data-celular] .sidebar-divisor {
     margin: 4px 0;
   }
+
+  /* ---------- folha "Mais" em movimento (js/index-sidebar.js) ----------
+     Abre subindo e o véu aparece junto; arrastada para baixo, acompanha o dedo (--folha-arrasto) e o véu
+     clareia (--folha-veu), dado da tela; ao soltar ou fechar, desliza (casca--mais-soltando) e, fechando,
+     sai pela borda de baixo (casca--mais-fechando). Exceção da regra de transição: o transform das folhas
+     do celular (Guia visual). A alça e o título não passam o gesto ao navegador (puxar não recarrega) */
+  html[data-celular] .casca--mais-aberto .sidebar {
+    transform: translateY(var(--folha-arrasto, 0px));
+    animation: folha-mais-sobe 0.25s ease;
+  }
+
+  html[data-celular] .casca--mais-aberto .sidebar-folha-veu {
+    opacity: var(--folha-veu, 1);
+    animation: folha-mais-veu 0.25s ease;
+  }
+
+  html[data-celular] .casca--mais-soltando .sidebar {
+    transition: transform 0.2s ease;
+  }
+
+  html[data-celular] .casca--mais-soltando .sidebar-folha-veu {
+    transition: opacity 0.2s ease;
+  }
+
+  html[data-celular] .casca--mais-fechando .sidebar {
+    transform: translateY(100%);
+  }
+
+  html[data-celular] .casca--mais-fechando .sidebar-folha-veu {
+    opacity: 0;
+  }
+
+  html[data-celular] .sidebar-folha-topo {
+    touch-action: none;
+  }
+
+  @keyframes folha-mais-sobe {
+    from { transform: translateY(100%); }
+  }
+
+  @keyframes folha-mais-veu {
+    from { opacity: 0; }
+  }
+
+  /* quem pede menos movimento no aparelho: a folha aparece e some na hora */
+  @media (prefers-reduced-motion: reduce) {
+    html[data-celular] .casca--mais-aberto .sidebar,
+    html[data-celular] .casca--mais-aberto .sidebar-folha-veu {
+      animation: none;
+    }
+  }
 }

@@ -61,12 +61,11 @@
     return t >= 480 ? t - 480 : t + 960;
   }
 
-  /* gradient no fundo da linha: cinza nas horas FORA do turno e branco no turno,
-     na janela 08h→08h. O JS calcula só as POSIÇÕES (%); a cor vem do tema. Exceção (REGRAS §4) */
-  function fundoTurno(periodos, inverter) {
-    if (!periodos || !periodos.length) return '';
+  /* os trechos do turno na janela 08h→08h, em % ([início, fim], em ordem); a faixa do horário
+     da tela e a do PDF (escalas-impressao-grade-celula.js) saem daqui */
+  function trechosTurno(periodos) {
     var trechos = [];
-    periodos.forEach(function (p) {
+    (periodos || []).forEach(function (p) {
       if (!p.inicio) return;
       var ini = minDesde8(p.inicio);
       var fim = p.fim ? minDesde8(p.fim) : ini;
@@ -74,8 +73,14 @@
       if (fim > 1440) fim = 1440;
       trechos.push([ini / 1440 * 100, fim / 1440 * 100]);
     });
+    return trechos.sort(function (a, b) { return a[0] - b[0]; });
+  }
+
+  /* gradient no fundo da linha: cinza nas horas FORA do turno e branco no turno,
+     na janela 08h→08h. O JS calcula só as POSIÇÕES (%); a cor vem do tema. Exceção (REGRAS §4) */
+  function fundoTurno(periodos, inverter) {
+    var trechos = trechosTurno(periodos);
     if (!trechos.length) return '';
-    trechos.sort(function (a, b) { return a[0] - b[0]; });
     /* invertido: cinza no fundo, "buracos" transparentes (brancos) nos trechos do turno */
     /* posGrad() mapeia o tempo [0–100%] para o inset de 4px do canvas (.escala-mes-grafico
        tem padding: 2px 4px 0). Sem âncoras fixas nos gutters: cada lado só ganha um stop
@@ -248,7 +253,7 @@
       if (origemCiclo) { definirIcone(origemCiclo, ICONE_ORIGEM[p.origem_base]); icones.appendChild(origemCiclo); }
     }
     var origem = RosterWork.tpl('tpl-escala-mes-origem');
-    if (origem) { definirIcone(origem, ICONE_ORIGEM[p.origem] || ICONE_ORIGEM.sistema); icones.appendChild(origem); }
+    if (origem) { definirIcone(origem, iconeDaOrigem(p.origem)); icones.appendChild(origem); }
     if (p.fixado) {
       var cadeado = RosterWork.tpl('tpl-escala-mes-origem');
       if (cadeado) { definirIcone(cadeado, 'icone-cadeado'); icones.appendChild(cadeado); }
@@ -258,7 +263,7 @@
     linha.querySelector('.linha-escalado-nome').textContent = p.nome || '';
     if (window.RosterWork.busca) linha.setAttribute('data-busca', window.RosterWork.busca.chave(p));   // busca do sub-cabeçalho (nome/CPF/RG)
     /* o que os filtros da barra leem: a situação e o grau (com o grupo e a ordem, para a lista de graus) */
-    linha.setAttribute('data-situacao', SITUACAO_ORIGEM[p.origem] || 'prontidao');
+    linha.setAttribute('data-situacao', situacao(p));
     if (p.grau) {
       linha.setAttribute('data-grau', p.grau);
       linha.setAttribute('data-grad', p.grad || '');
@@ -347,12 +352,29 @@
     }
   }
 
+  /* o ícone de cada origem e todos eles (o PDF das grades carrega os arquivos uma vez) */
+  function iconeDaOrigem(origem) { return ICONE_ORIGEM[origem] || ICONE_ORIGEM.sistema; }
+  function iconesDasOrigens() {
+    var nomes = [];
+    Object.keys(ICONE_ORIGEM).forEach(function (k) { if (nomes.indexOf(ICONE_ORIGEM[k]) < 0) nomes.push(ICONE_ORIGEM[k]); });
+    return nomes;
+  }
+
+  /* a situação da pessoa para os filtros da barra (o ciclo é a Prontidão) */
+  function situacao(p) { return SITUACAO_ORIGEM[p.origem] || 'prontidao'; }
+
   window.RosterWork.escalasCelula = {
     preencherCelula: preencherCelula,
     montarGrafico: montarGrafico,
     calcularMaxPorUnidade: calcularMaxPorUnidade,
     ativarGraficos: ativarGraficos,
     desenharGraficos: desenharGraficos,
-    limparObservadores: limparObservadores
+    limparObservadores: limparObservadores,
+    /* peças para o PDF das grades: a mesma origem, situação, hora e faixa da tela */
+    iconeDaOrigem: iconeDaOrigem,
+    iconesDasOrigens: iconesDasOrigens,
+    situacao: situacao,
+    soHora: soHora,
+    trechosTurno: trechosTurno
   };
 })();

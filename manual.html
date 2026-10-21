@@ -60,6 +60,7 @@
               <a class="lista-item lista-item--clicavel manual-item manual-item--parte" href="#trocas">Trocas</a>
               <ul>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#solicitar-troca">Solicitar e acompanhar uma troca</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#alterar-troca">Alterar uma troca</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#aprovar-trocas">Aprovar trocas</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#registrar-troca">Registrar uma troca</a></li>
               </ul>
@@ -116,6 +117,7 @@
               <ul>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#ver-afastamentos">Ver os afastamentos</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#registrar-afastamento">Registrar um afastamento</a></li>
+                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#ferias-militar">As férias de um militar</a></li>
               </ul>
             </li>
             <li>
@@ -970,7 +972,7 @@
 
               <p><strong>Quando pedem uma troca a você.</strong> O pedido aparece na página <strong>Pendências</strong>, na aba <strong>Pendências</strong> daqui e nos seus avisos. Ao abri-lo, você vê o pedido, a análise e como fica a escala, e <strong>Aceita</strong> ou <strong>Recusa</strong>, podendo escrever o motivo. A parte <strong>Pendências</strong> deste manual mostra esse painel.</p>
 
-              <p><strong>Acompanhar as suas trocas.</strong> A página Trocas tem quatro abas (1): <strong>Todas</strong> (as trocas da sua unidade), <strong>Minhas</strong> (as que você participa, como solicitante ou solicitado), <strong>Saldos</strong> (as dívidas de horas em aberto) e <strong>Pendências</strong> (o que espera a sua resposta). Cada troca traz um <strong>selo</strong> (2) com a situação: Aguardando confirmação, Aguardando aprovação, Aprovada, Recusada, Recusada pela administração ou Cancelada.</p>
+              <p><strong>Acompanhar as suas trocas.</strong> A página Trocas tem quatro abas (1): <strong>Todas</strong> (as trocas da sua unidade), <strong>Minhas</strong> (as que você participa, como solicitante ou solicitado), <strong>Saldos</strong> (as dívidas de horas em aberto) e <strong>Pendências</strong> (o que espera a sua resposta). Cada troca traz um <strong>selo</strong> (2) com a situação: Aguardando confirmação, Aguardando aprovação, Aprovada, Recusada, Recusada pela administração, Cancelada ou Substituída (a troca de antes de uma alteração aprovada).</p>
               <figure class="manual-diagrama manual-fluxo">
                 <div class="manual-fluxo-linha">
                   <span class="selo selo--alerta">Aguardando confirmação</span>
@@ -1010,6 +1012,30 @@
               <figure class="manual-figura">
                 <img src="manual/imagens/troca-extrato.png" alt="Painel da pendência: o saldo no topo, o histórico das trocas (quem folgou, quem trabalhou e as horas) e o botão Cobrar." />
               </figure>
+
+              <h3 id="alterar-troca">Alterar uma troca</h3>
+              <p>Quando você e o colega combinam outro dia, outro horário ou outra devolução, ou quando a parte do E-protocolo sai depois, a troca pode ser alterada. Na página <strong>Trocas</strong>, abra a troca (na aba <strong>Minhas</strong>, por exemplo) e clique em <strong>Editar</strong>, no alto do painel. Abre o mesmo formulário do pedido, já preenchido, com você e o colega fixos: mude a <strong>parte</strong> (1), o <strong>dia e o período</strong> do serviço (2) ou a <strong>devolução</strong> (3) e clique em <strong>Salvar</strong>. O solicitante e o solicitado podem alterar. Para trocar com outro colega, cancele e peça uma troca nova.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/troca-editar.png" alt="Painel Editar troca: a parte do E-protocolo (1), o dia e o período do serviço (2) e a devolução (3), com o solicitante e o solicitado fixos." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>Parte do E-protocolo</li>
+                    <li>Dia e período do serviço</li>
+                    <li>Devolução</li>
+                  </ol>
+                </figcaption>
+              </figure>
+              <p>O que acontece ao salvar depende do que mudou:</p>
+              <ul class="manual-lista">
+                <li><strong>Só a parte do E-protocolo:</strong> vale na hora, e o colega recebe um aviso.</li>
+                <li><strong>Troca ainda aguardando:</strong> ela muda e volta para o colega aceitar de novo. Se quem alterou foi o solicitado, quem aceita é o solicitante.</li>
+                <li><strong>Troca já aprovada:</strong> a mudança vira uma <strong>alteração</strong>, que o colega aceita e o administrador aprova, como um pedido novo. Até lá a troca continua valendo na escala como estava, e, se a alteração for recusada ou cancelada, nada muda. Aprovada, ela entra no lugar, e a troca de antes fica na lista como <strong>Substituída</strong>.</li>
+              </ul>
+              <p>O painel de uma alteração mostra a caixa <strong>Antes</strong> (1), com a troca como era, acima do serviço e da devolução novos. Quem pediu a alteração pode desistir com <strong>Cancelar alteração</strong>.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/troca-alteracao.png" alt="Painel de uma alteração aguardando confirmação: a caixa Antes, com a troca como era (1), e o serviço novo logo abaixo." />
+              </figure>
+              <p class="manual-nota">Uma alteração por vez: enquanto uma espera, a troca mostra o aviso no topo e fica sem o Editar. Só mudam os dias que ainda não chegaram. Se o serviço que a troca passou já foi trocado de novo com outra pessoa, cancele aquela troca primeiro: o sistema avisa qual é.</p>
               <div class="manual-admin manual-zona-admin">
                 <h3 id="aprovar-trocas">Aprovar trocas <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>Depois que o colega aceita, a troca fica "Aguardando aprovação" e espera um administrador. Ela aparece na página <strong>Pendências</strong> e na aba <strong>Pendências</strong> daqui; o painel de decisão, a análise e o Como fica a escala estão explicados em <strong>Pendências › Decidir os pedidos</strong>. Na caixa <strong>Serviço</strong>, a troca mostra a <strong>Parte nº</strong> do E-protocolo, para você conferir antes de aprovar. Quando o colega não tem conta no sistema, a troca já chega aguardando a sua aprovação, e a análise avisa que ele não confirmou.</p>
@@ -1022,6 +1048,7 @@
                 <p class="manual-nota">Numa troca da qual você participa, como quem pediu ou como o colega, você também vê os botões de decisão e pode aprovar ou recusar.</p>
                 <p>Aprovada, a troca passa a valer na escala (o riscado da seção anterior) e a dívida de horas entre os dois é acertada. Se, até lá, aquele horário do serviço já tiver sido trocado com outra pessoa, a troca não pode mais ser aprovada: a análise mostra isso em vermelho.</p>
                 <p><strong>Afastamento depois da troca.</strong> Se, mais tarde, o militar que assumiu o serviço entrar de <strong>férias, licença ou dispensa</strong> naquele dia, quem lança o afastamento é avisado de que ele cobre um serviço por troca e decide se segue. Seguindo, a troca não é desfeita, mas a escala marca aquele serviço em <strong>amarelo</strong>, porque na prática ele não vai assumir.</p>
+                <p><strong>Alterações.</strong> A alteração de uma troca aprovada chega como um pedido próprio, com o selo "Alteração aguardando aprovação" e a caixa <strong>Antes</strong>, e você aprova ou recusa como qualquer troca. Aprovada, só os dias que mudam são refeitos na escala. Você também pode alterar direto uma troca da sua área da qual não participa: na página Trocas, abra a troca e use <strong>Editar</strong>. A <strong>Análise</strong> aparece antes de salvar, como no Registrar, e a mudança vale na hora, sem o aceite dos dois; o dia pode ser de até <strong>7 dias atrás</strong>.</p>
                 <h3 id="registrar-troca">Registrar uma troca <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>Quando a troca chega pelo E-protocolo e não foi pedida no sistema, você mesmo a registra. Na página <strong>Trocas</strong>, clique em <strong>Registrar troca</strong>, no bloco <strong>Administração</strong>, ao lado de Solicitar troca. Abre o mesmo painel do pedido, com uma diferença no bloco <strong>Solicitante</strong> (1): em vez de você, escolha a <strong>unidade</strong> e o <strong>militar</strong> que passa o serviço. Depois preencha a <strong>parte</strong> do E-protocolo, o dia, o período, quem cobre e a devolução, como num pedido. O dia pode ser de até <strong>7 dias atrás</strong>, para registrar uma troca que já aconteceu.</p>
                 <figure class="manual-figura">
@@ -1636,7 +1663,7 @@
               <p class="manual-nota">A página é de consulta. O motivo de uma licença ou dispensa fica só com o administrador.</p>
               <div class="manual-admin manual-zona-admin">
                 <h3 id="registrar-afastamento">Registrar um afastamento <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p>No bloco <strong>Administração</strong>, no alto da página, ficam <strong>Novas férias</strong>, <strong>Nova licença</strong> e <strong>Nova dispensa</strong>; cada um mostra a aba dele e abre o painel. Em todos você escolhe a <strong>unidade</strong>, o <strong>militar</strong> e o <strong>período</strong>. As férias param por aí. A <strong>licença</strong> pede ainda o <strong>tipo</strong> (própria saúde, saúde de familiar, interesses particulares, especial ou capacitação). A <strong>dispensa</strong> pede o <strong>tipo</strong> (gala, nojo ou comum). Licença e dispensa aceitam também um <strong>motivo</strong>.</p>
+                <p>No bloco <strong>Administração</strong>, no alto da página, ficam <strong>Novas férias</strong>, <strong>Nova licença</strong> e <strong>Nova dispensa</strong>; cada um mostra a aba dele e abre o painel. Em todos você escolhe a <strong>unidade</strong>, o <strong>militar</strong> e o <strong>período</strong>. Nas férias, escolhido o militar, aparecem os períodos que ele já tem e uma linha para o novo (veja <strong>As férias de um militar</strong>, abaixo). A <strong>licença</strong> pede ainda o <strong>tipo</strong> (própria saúde, saúde de familiar, interesses particulares, especial ou capacitação). A <strong>dispensa</strong> pede o <strong>tipo</strong> (gala, nojo ou comum). Licença e dispensa aceitam também um <strong>motivo</strong>.</p>
                 <p><strong>Dentro ou fora do fluxo da escala.</strong> Ao preencher o período de uma licença ou dispensa, aparece um indicador com os <strong>dias</strong> e uma sugestão: até 15 dias, "Segue no fluxo"; de 16 em diante, "Fora do fluxo". Quem decide é você, no botão <strong>Tirar do fluxo da escala?</strong>, com Sim ou Não.</p>
                 <p>Fora do fluxo, o militar sai do ciclo por tempo indeterminado, e você o traz de volta pelo <strong>Adicionar</strong> da aba Ciclo quando for o caso; seguindo no fluxo, ele continua no ciclo e só os dias do afastamento saem da escala. As férias afastam o militar da escala no período. Cinco dias antes da volta, se o militar estiver fora do ciclo e ainda não tiver entrada marcada, o aviso <strong>Retorno de afastamento sem entrada no ciclo</strong> aparece em Pendências, no Para corrigir.</p>
                 <figure class="manual-figura">
@@ -1649,6 +1676,20 @@
                   </figcaption>
                 </figure>
                 <p><strong>Ao salvar.</strong> O sistema recalcula a escala. Se o militar tiver um serviço assumido por <strong>troca</strong> dentro do período, ele avisa e pede confirmação antes de prosseguir. Depois grava, registra no histórico e abre o resumo. O afastamento passa a aparecer como selo de situação, como "Licença até 30/09", no Efetivo e na escala.</p>
+                <h3 id="ferias-militar">As férias de um militar <span class="manual-selo-admin">Apenas administradores</span></h3>
+                <p>Na aba <strong>Férias</strong>, clique em qualquer linha de um militar: abre o painel <strong>Férias</strong> dele, com <strong>todos os períodos</strong>, um por linha. Cada linha tem a data de início e a de fim lado a lado e os dias. O <strong>✕</strong> tira o período, e o <strong>Adicionar período</strong>, na primeira linha, abre uma linha nova no fim. O militar pode ter vários períodos no mesmo ano; só não podem se cruzar.</p>
+                <p><strong>O que já passou fica como está.</strong> Dá para mudar as férias até uma semana para trás. O período que terminou antes disso aparece apagado e não muda. O que começou antes disso mantém a data de início e não pode ser tirado, mas a data de fim ainda muda, por exemplo quando o militar volta antes.</p>
+                <figure class="manual-figura">
+                  <img src="manual/imagens/afastamentos-ferias.png" alt="O painel Férias do Sd. Antunes com três períodos: o de julho apagado, porque já passou (1), o Adicionar período na primeira linha (2) e o ✕ que tira o período de dezembro (3)." />
+                  <figcaption>
+                    <ol class="manual-chamadas">
+                      <li>Período que já passou, que não muda</li>
+                      <li>Adicionar período</li>
+                      <li>Tirar o período</li>
+                    </ol>
+                  </figcaption>
+                </figure>
+                <p><strong>Ao salvar.</strong> O sistema grava tudo de uma vez e refaz a escala desde o primeiro dia que mudou: para o militar que está no ciclo, os dias que deixaram de ser férias voltam a ser serviço, e os novos saem. Se nos dias novos ele já tem uma <strong>troca</strong>, uma <strong>extrajornada</strong> ou uma <strong>folga</strong>, o sistema mostra a lista e pergunta se você continua. Continuando, nada disso é desfeito: o serviço fica em amarelo na escala e a folga continua marcada.</p>
               </div>
             </section>
 

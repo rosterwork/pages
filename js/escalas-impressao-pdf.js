@@ -22,7 +22,8 @@
    desenho conferido é o próprio arquivo; se algo não bate, fica o
    anterior, e no último caso o jeito simples (quebra livre).
    As peças (recursos, medidas, desenho, blocos e download) também
-   servem aos relatórios da Extrajornada (extrajornada-relatorios-pdf.js).
+   servem aos relatórios da Extrajornada (extrajornada-relatorios-pdf.js)
+   e ao PDF das grades (escalas-impressao-grade-pdf.js).
    Cantos arredondados (a biblioteca não arredonda tabela): os desenhos
    acima pintam os blocos com fundo quadrado; o escolhido é redesenhado
    sem esses fundos e com os blocos arredondados na camada de fundo de
@@ -119,15 +120,29 @@
     return recursos;
   }
 
+  /* um arquivo de ícone de icones/ (o texto), buscado uma vez; usado pelo PDF das grades (os ícones de origem) */
+  var arquivosIcone = {};
+  function buscarIcone(nome) {
+    if (!arquivosIcone[nome]) {
+      arquivosIcone[nome] = buscar('icones/' + nome + '.svg', true).catch(function (e) { delete arquivosIcone[nome]; throw e; });
+    }
+    return arquivosIcone[nome];
+  }
+
+  /* o ícone de traço como <svg> solto, na cor dada e com o traço do tema */
+  function svgDeTraco(texto, corTraco) {
+    var traco = getComputedStyle(document.documentElement).getPropertyValue('--icone-traco').trim() || '1.5';
+    return svgDoIcone(texto, '<g fill="none" stroke="' + corTraco + '" stroke-width="' + traco + '" stroke-linecap="round" stroke-linejoin="round">');
+  }
+
   /* ---------- peças do documento ---------- */
   function montarEstilo(icones) {
     var c = {
       forte: cor('--impressao-texto-forte'), texto: cor('--impressao-texto'), suave: cor('--impressao-texto-suave'),
       borda: cor('--impressao-borda'), fundo: cor('--impressao-fundo'), papel: cor('--impressao-papel')
     };
-    var traco = getComputedStyle(document.documentElement).getPropertyValue('--icone-traco').trim() || '1.5';
     c.logo = svgDoIcone(icones.logo.replace(/currentColor/g, c.forte), '<g>');
-    c.seta = svgDoIcone(icones.seta, '<g fill="none" stroke="' + c.suave + '" stroke-width="' + traco + '" stroke-linecap="round" stroke-linejoin="round">');
+    c.seta = svgDeTraco(icones.seta, c.suave);
     return c;
   }
 
@@ -544,8 +559,13 @@
     medidas: { MARGENS: MARGENS, LOGO_LARGURA: LOGO_LARGURA, LOGO_MARGEM: LOGO_MARGEM, RODAPE_MARGEM: RODAPE_MARGEM,
       FONTE: FONTE, BLOCO: BLOCO, BLOQUINHO: BLOQUINHO, ESPACO: ESPACO, SETA_LARGURA: SETA_LARGURA, SETA_MARGEM: SETA_MARGEM,
       ESPACAMENTO_CAIXA_ALTA: ESPACAMENTO_CAIXA_ALTA, CELULA: CELULA },
-    desenhar: function (doc, c) { return desenhar({ doc: doc, marcadores: [] }, c); },
+    /* marcadores (opcional): [{ texto }] em ordem; o resultado diz em que folha caiu cada um (null se algum sumiu) */
+    desenhar: function (doc, c, marcadores) { return desenhar({ doc: doc, marcadores: marcadores || [] }, c); },
     blocosArredondados: blocosArredondados,
-    baixar: baixar
+    baixar: baixar,
+    /* para o PDF das grades: uma cor do tema (em hex), um arquivo de ícone e o ícone de traço como <svg> solto */
+    cor: cor,
+    buscarIcone: buscarIcone,
+    svgDeTraco: svgDeTraco
   };
 })();

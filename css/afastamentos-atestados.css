@@ -78,6 +78,14 @@
   text-align: center;
 }
 
+/* o Adicionar período fica na ponta direita: a dica dele abre para a esquerda (centrada, mesmo escondida,
+   passaria da borda e daria rolagem para o lado no painel) */
+.ferias-periodo .horario-adicionar::after {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
 /* indicador de fluxo: ≤15 dias segue / ≥16 sai */
 .atestado-fluxo {
   display: flex;
