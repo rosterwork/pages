@@ -76,6 +76,15 @@
     return passa(celula ? celula.situacao(p) : 'prontidao', p.grau || null);
   }
 
+  /* os filtros ligados, como as etiquetas da linha "Filtros:" (["Situação: Afastamentos", ...]; nenhum = []),
+     para a nota do painel de impressão */
+  function resumo() {
+    if (!conteudo || !filtrosValem()) return [];
+    return Array.prototype.map.call(conteudo.querySelectorAll('.filtros-ativos:not(.oculto) .filtro-ativo'), function (etiqueta) {
+      return etiqueta.querySelector('.filtro-ativo-tipo').textContent + ': ' + etiqueta.querySelector('.filtro-ativo-valor').textContent;
+    });
+  }
+
   /* aplica filtro + busca nas linhas da grade. 'marcar' realça a linha casada e acende a célula;
      'filtrar' esconde as linhas que não casam. No modo Militares não age (busca própria) */
   function aplicar() {
@@ -146,5 +155,5 @@
     }
   }
 
-  window.RosterWork.escalasFiltros = { iniciar: iniciar, aplicarModo: aplicarModo, passaPessoa: passaPessoa };
+  window.RosterWork.escalasFiltros = { iniciar: iniciar, aplicarModo: aplicarModo, passaPessoa: passaPessoa, resumo: resumo };
 })();

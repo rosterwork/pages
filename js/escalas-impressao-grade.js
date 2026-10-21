@@ -1,13 +1,14 @@
 /* ============================================================
    ESCALAS — Imprimir as grades (painel → PDF)
    Nas grades (Agenda, Calendário, Colunas), o botão Imprimir abre o
-   painel direito largo: o formato (Folhas A4 ou Página contínua), o
-   período (semanas no Calendário e no Colunas › Unidades; dias na
-   Agenda e no Colunas › Dias), o que mostrar em cada célula, a prévia
-   (o próprio PDF, no leitor do navegador) e as unidades. A prévia é
-   refeita a cada mudança (a última pedida vale) e o Gerar PDF baixa o
-   mesmo arquivo. Os dados são os da tela (ler_escala_mes) e seguem os
-   filtros da barra; o desenho fica no escalas-impressao-grade-pdf.js.
+   painel direito largo, e sai o que está na tela: a grade, o mês (no
+   Colunas › Unidades, a semana), as unidades e os filtros, resumidos
+   na nota do alto. Nas caixas numeradas: o formato (Folhas A4 ou
+   Página contínua), o período (no Calendário, o "Mês todo" ou as
+   semanas escolhidas; na Agenda e no Colunas › Dias, do dia ao dia),
+   o que mostrar em cada célula e a prévia (o próprio PDF, no leitor do
+   navegador), refeita a cada mudança (a última pedida vale). O Gerar
+   PDF baixa o mesmo arquivo; o desenho fica no escalas-impressao-grade-pdf.js.
    No celular o painel fica sem a prévia (o navegador não mostra PDF
    dentro da página).
    ============================================================ */
@@ -17,67 +18,88 @@
   var RW = window.RosterWork = window.RosterWork || {};
 
   var MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
-  var TIPOS_COM_ESCALA = ['CIA', 'CIBM', 'PEL'];
   var ESPERA_PREVIA = 400;   // ms sem mexer antes de refazer a prévia
-  /* o período de cada grade (semanas ou dias) e a folha (paisagem ou retrato) */
+  /* o período de cada grade (semanas, dias ou a semana da tela) e a folha (paisagem ou retrato) */
   var FORMATOS = {
     agenda: { periodo: 'dias', paisagem: false },
     calendario: { periodo: 'semanas', paisagem: true },
     'colunas-dias': { periodo: 'dias', paisagem: true },
-    'colunas-unidades': { periodo: 'semanas', paisagem: false }
+    'colunas-unidades': { periodo: 'semana', paisagem: false }
   };
 
-  var form = null;          // o painel aberto: escolhas e elementos
+  var form = null;          // o painel aberto: escolhas e peças
   var tokenPrevia = 0;      // latest-wins da prévia
   var esperaPrevia = null;
-  var cacheDados = null;    // { chave, promessa }: mudar só o formato ou o Mostrar não busca de novo
+  var cacheDados = null;    // { chave, promessa }: mudar o formato, o Mostrar ou o período não busca de novo
 
   function msg() { return RW.mensagens.escala.impressao.grade; }
 
   /* ---------- datas ---------- */
   function somarDias(d, n) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
   function ultimoDia(mes) { return new Date(mes.getFullYear(), mes.getMonth() + 1, 0).getDate(); }
-  function curta(d) { return RW.data.paraBR(d).slice(0, 5); }
 
-  /* as linhas do calendário do mês (domingo a sábado), da semana do dia 1º à do último dia */
+  /* "4 a 10 de outubro" ou, entre dois meses, "27 de setembro a 3 de outubro" */
+  function intervalo(a, b) {
+    if (a.getMonth() === b.getMonth()) return msg().doMes(msg().trecho(String(a.getDate()), String(b.getDate())), MESES[b.getMonth()]);
+    return msg().trecho(msg().doMes(String(a.getDate()), MESES[a.getMonth()]), msg().doMes(String(b.getDate()), MESES[b.getMonth()]));
+  }
+
+  /* trechos do mesmo mês: "1 a 3, 11 a 17 e 25 a 31 de outubro" */
+  function trechosDoMes(trechos) {
+    var dias = trechos.map(function (t) { return msg().trecho(String(t[0].getDate()), String(t[1].getDate())); });
+    return msg().doMes(msg().juntar(dias), MESES[trechos[0][0].getMonth()]);
+  }
+
+  /* as linhas do calendário do mês (domingo a sábado) e, em cada uma, o primeiro e o último dia que são do mês */
   function semanasDoMes(mes) {
-    var inicio = somarDias(mes, -mes.getDay());
-    var fim = new Date(mes.getFullYear(), mes.getMonth() + 1, 0);
+    var fimMes = new Date(mes.getFullYear(), mes.getMonth() + 1, 0);
     var lista = [];
-    for (var d = inicio; d <= fim; d = somarDias(d, 7)) lista.push({ inicio: d, fim: somarDias(d, 6) });
+    for (var d = somarDias(mes, -mes.getDay()); d <= fimMes; d = somarDias(d, 7)) {
+      var fim = somarDias(d, 6);
+      lista.push({ inicio: d, primeiro: d < mes ? mes : d, ultimo: fim > fimMes ? fimMes : fim });
+    }
     return lista;
   }
 
-  /* "27/09 a 31/10/2026" ou, com vários trechos, "04/10 a 10/10 e 18/10 a 24/10/2026" */
-  function textoTrechos(trechos) {
-    var ultimo = trechos[trechos.length - 1][1];
-    var mesmoAno = trechos[0][0].getFullYear() === ultimo.getFullYear();
-    var partes = trechos.map(function (t, i) {
-      var fim = (i === trechos.length - 1 || !mesmoAno) ? RW.data.paraBR(t[1]) : curta(t[1]);
-      var inicio = mesmoAno ? curta(t[0]) : RW.data.paraBR(t[0]);
-      if (t[0].getTime() === t[1].getTime()) inicio = fim;
-      return msg().trecho(inicio, fim);
-    });
-    return msg().juntar(partes);
+  /* a semana de hoje, se o mês da tela tem hoje; senão a 1ª */
+  function semanaDeHoje() {
+    var agora = new Date();
+    var hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+    var i = semanasDoMes(form.mes).map(function (s) { return s.primeiro <= hoje && hoje <= s.ultimo; }).indexOf(true);
+    return i >= 0 ? i : 0;
   }
 
-  /* ---------- o período escolhido ---------- */
-  /* { dias: [{ data, fora }] em ordem, trechos, inicio, fim (o que buscar), texto, quantos } */
+  /* ---------- o período ---------- */
+  /* { dias: [{ data, fora }] em ordem, busca: { inicio, fim } (o que a tela carrega), texto (no PDF),
+     frase (no painel; vazia quando sai o mês todo) } */
   function periodoEscolhido() {
     var mes = form.mes;
-    var nomeMes = msg().mes(MESES[mes.getMonth()], mes.getFullYear());
-    var dias = [], trechos = [];
-    if (FORMATOS[form.formato].periodo === 'semanas') {
+    var fimMes = new Date(mes.getFullYear(), mes.getMonth() + 1, 0);
+    var nomeMes = msg().comAno(MESES[mes.getMonth()], mes.getFullYear());
+    var dias = [];
+    var periodo = FORMATOS[form.formato].periodo;
+    if (periodo === 'semana') {
+      /* Colunas › Unidades: a semana da tela (domingo a sábado), como ela está */
+      var domingo = somarDias(form.data, -form.data.getDay());
+      for (var k = 0; k < 7; k++) dias.push({ data: somarDias(domingo, k), fora: false });
+      var sabado = dias[6].data;
+      return { dias: dias, busca: { inicio: domingo, fim: sabado }, texto: msg().comAno(intervalo(domingo, sabado), sabado.getFullYear()), frase: '' };
+    }
+    if (periodo === 'semanas') {
+      /* as semanas inteiras, com os dias de outro mês vazios, como na tela */
       var semanas = semanasDoMes(mes);
-      form.semanas.forEach(function (i) {
+      var escolhidas = form.mesTodo ? semanas.map(function (s, i) { return i; }) : form.semanas;
+      var trechos = [];
+      escolhidas.forEach(function (i) {
         var s = semanas[i];
-        for (var k = 0; k < 7; k++) dias.push({ data: somarDias(s.inicio, k), fora: false });
+        for (var j = 0; j < 7; j++) { var d = somarDias(s.inicio, j); dias.push({ data: d, fora: d.getMonth() !== mes.getMonth() }); }
         var anterior = trechos[trechos.length - 1];
-        if (anterior && somarDias(anterior[1], 1).getTime() === s.inicio.getTime()) anterior[1] = s.fim;
-        else trechos.push([s.inicio, s.fim]);
+        if (anterior && somarDias(anterior[1], 1).getTime() === s.primeiro.getTime()) anterior[1] = s.ultimo;
+        else trechos.push([s.primeiro, s.ultimo]);
       });
-      return { dias: dias, inicio: dias[0].data, fim: dias[dias.length - 1].data, quantos: dias.length,
-        texto: form.mesTodo ? nomeMes : textoTrechos(trechos) };
+      return { dias: dias, busca: { inicio: mes, fim: fimMes },
+        texto: form.mesTodo ? nomeMes : msg().comAno(trechosDoMes(trechos), mes.getFullYear()),
+        frase: form.mesTodo ? '' : msg().semanas(escolhidas.map(function (i) { return String(i + 1); }), trechosDoMes(trechos)) };
     }
     var de = new Date(mes.getFullYear(), mes.getMonth(), form.de);
     var ate = new Date(mes.getFullYear(), mes.getMonth(), form.ate);
@@ -88,63 +110,47 @@
       inicio = somarDias(de, -RW.geralCalendarioMes.colunaContinua(de, n));
       fim = somarDias(ate, n - 1 - RW.geralCalendarioMes.colunaContinua(ate, n));
     }
-    for (var d = inicio; d <= fim; d = somarDias(d, 1)) dias.push({ data: d, fora: d < de || d > ate });
+    for (var d2 = inicio; d2 <= fim; d2 = somarDias(d2, 1)) dias.push({ data: d2, fora: d2 < de || d2 > ate });
     var todos = form.de === 1 && form.ate === ultimoDia(mes);
-    return { dias: dias, inicio: inicio, fim: fim, quantos: form.ate - form.de + 1, texto: todos ? nomeMes : textoTrechos([[de, ate]]) };
-  }
-
-  /* só CIA/CIBM/PEL têm escala; as outras marcadas na árvore são só o caminho. Na ordem da tela
-     (as que a tela não mostra vão no fim, na ordem da árvore) */
-  function unidadesComEscala() {
-    if (!form || !form.seletor) return [];
-    var lista = form.seletor.unidadesSelecionadas().filter(function (u) { return TIPOS_COM_ESCALA.indexOf(u.tipo) >= 0; });
-    function posicao(u, i) { var p = form.ordemTela.indexOf(u.unidade_id); return p >= 0 ? p : form.ordemTela.length + i; }
-    return lista.map(function (u, i) { return { u: u, p: posicao(u, i) }; })
-      .sort(function (a, b) { return a.p - b.p; })
-      .map(function (x) { return x.u; });
+    return { dias: dias, busca: { inicio: mes, fim: fimMes },
+      texto: todos ? nomeMes : msg().comAno(intervalo(de, ate), mes.getFullYear()),
+      frase: todos ? '' : msg().dias(form.ate - form.de + 1, intervalo(de, ate)) };
   }
 
   /* ---------- semanas ---------- */
-  function montarSemanas() {
-    var total = semanasDoMes(form.mes).length;
+  /* "Mês todo" marcado: só ele. Desmarcado: os botões das semanas do mês (cada um com as datas na dica),
+     já com a semana de hoje */
+  function marcarMesTodo(sim) {
+    form.mesTodo = sim;
+    form.mesTodoBotao.setAttribute('aria-checked', sim ? 'true' : 'false');
+    form.mesTodoBotao.querySelector('.caixa-selecao').classList.toggle('caixa-selecao--marcada', sim);
+    form.lista.classList.toggle('oculto', sim);
     form.lista.textContent = '';
-    for (var i = 0; i < total; i++) {
+    form.semanas = [];
+    if (sim) return;
+    form.semanas = [semanaDeHoje()];
+    semanasDoMes(form.mes).forEach(function (s, i) {
       var aba = RW.tpl('tpl-escala-aba-unidade');
       if (!aba) return;
+      var datas = intervalo(s.primeiro, s.ultimo);
       aba.textContent = String(i + 1);
       aba.setAttribute('data-semana', i);
+      aba.setAttribute('data-dica', datas);
+      aba.setAttribute('aria-label', msg().semanaRotulo(i + 1, datas));
+      if (i === form.semanas[0]) aba.classList.add('aba--ativa');
       form.lista.appendChild(aba);
-    }
-    marcarSemanas();
-  }
-
-  function marcarSemanas() {
-    form.mesTodoBotao.classList.toggle('aba--ativa', form.mesTodo);
-    form.mesTodoBotao.setAttribute('aria-pressed', form.mesTodo ? 'true' : 'false');
-    Array.prototype.forEach.call(form.lista.querySelectorAll('[data-semana]'), function (aba) {
-      var marcada = form.semanas.indexOf(Number(aba.getAttribute('data-semana'))) >= 0;
-      aba.classList.toggle('aba--ativa', marcada);
-      aba.setAttribute('aria-pressed', marcada ? 'true' : 'false');
     });
+    pintarSemanas();
   }
 
-  function todasAsSemanas() { return semanasDoMes(form.mes).map(function (s, i) { return i; }); }
-
-  /* com o Mês todo marcado, a semana clicada fica sozinha; depois, cada clique põe ou tira uma (nunca zera);
-     com todas marcadas, volta o Mês todo */
-  function escolherSemana(i) {
-    if (form.mesTodo) {
-      form.mesTodo = false;
-      form.semanas = [i];
-    } else if (form.semanas.indexOf(i) >= 0) {
-      if (form.semanas.length > 1) form.semanas.splice(form.semanas.indexOf(i), 1);
-    } else {
-      form.semanas.push(i);
-      form.semanas.sort(function (a, b) { return a - b; });
-    }
-    if (form.semanas.length === semanasDoMes(form.mes).length) form.mesTodo = true;
-    marcarSemanas();
-    mudou();
+  /* o componente de abas já marcou ou desmarcou (de marcar vários, nunca zera); aqui a escolha vem da tela */
+  function pintarSemanas() {
+    form.semanas = [];
+    Array.prototype.forEach.call(form.lista.querySelectorAll('[data-semana]'), function (aba) {
+      var marcada = aba.classList.contains('aba--ativa');
+      aba.setAttribute('aria-pressed', marcada ? 'true' : 'false');
+      if (marcada) form.semanas.push(Number(aba.getAttribute('data-semana')));
+    });
   }
 
   /* ---------- dias ---------- */
@@ -163,27 +169,15 @@
     });
   }
 
-  /* ---------- mês ---------- */
-  /* trocar o mês volta para o mês todo (todas as semanas, ou do dia 1º ao último) */
-  function mudarMes(data) {
-    form.mes = new Date(data.getFullYear(), data.getMonth(), 1);
-    form.mesNome.textContent = MESES[form.mes.getMonth()] + ' ' + form.mes.getFullYear();
-    form.mesTodo = true;
-    form.semanas = todasAsSemanas();
-    form.de = 1;
-    form.ate = ultimoDia(form.mes);
-    if (FORMATOS[form.formato].periodo === 'semanas') montarSemanas(); else montarDias();
-    mudou();
-  }
-
   /* ---------- prévia ---------- */
   function mudou() {
     var p = periodoEscolhido();
-    form.periodo.textContent = msg().periodo(p.quantos, p.texto);
+    form.periodo.textContent = p.frase;
+    form.periodo.classList.toggle('oculto', !p.frase);
     agendarPrevia();
   }
 
-  /* dados da tela (ler_escala_mes) do período; o mesmo pedido não busca de novo */
+  /* os dados da tela (ler_escala_mes) do mês ou da semana; o mesmo pedido não busca de novo */
   function carregarDados(ids, inicio, fim) {
     var chave = ids.join(',') + '|' + inicio + '|' + fim;
     if (cacheDados && cacheDados.chave === chave) return cacheDados.promessa;
@@ -195,18 +189,17 @@
 
   /* monta o PDF das escolhas atuais: { arquivo, folhas, nome } */
   function pedirArquivo() {
-    var unidades = unidadesComEscala();
-    if (!unidades.length) return Promise.reject({ semUnidade: true });
+    if (!form.unidades.length) return Promise.reject({ semUnidade: true });
     var p = periodoEscolhido();
-    var ids = unidades.map(function (u) { return u.unidade_id; });
-    return carregarDados(ids, RW.data.paraIsoDeData(p.inicio), RW.data.paraIsoDeData(p.fim)).then(function (dados) {
+    var ids = form.unidades.map(function (u) { return u.unidade_id; });
+    return carregarDados(ids, RW.data.paraIsoDeData(p.busca.inicio), RW.data.paraIsoDeData(p.busca.fim)).then(function (dados) {
       return RW.escalasImpressaoGradePdf.gerar({
         formato: form.formato,
         paisagem: FORMATOS[form.formato].paisagem,
         continua: form.continua,
         mostrar: form.mostrar,
         diasPorLinha: form.diasPorLinha,
-        unidades: unidades,
+        unidades: form.unidades,
         dias: p.dias,
         texto: p.texto,
         dados: dados
@@ -245,7 +238,7 @@
       /* o leitor do navegador sem a barra dele, na largura do quadro */
       form.previa.src = form.url + '#toolbar=0&navpanes=0&view=FitH';
       form.aviso.classList.add('oculto');
-      form.folhas.textContent = msg().folhas(r.folhas, form.continua);
+      form.folhas.textContent = msg().folhas(r.folhas, form.continua, FORMATOS[form.formato].paisagem);
       mostrarCarregando(false);
     }, function (e) {
       if (form !== ref || token !== tokenPrevia) return;
@@ -259,11 +252,6 @@
   /* ---------- gerar ---------- */
   /* baixa o arquivo da prévia (ou monta agora, se a prévia ainda não saiu) e fecha o painel */
   function gerar() {
-    if (RW.campos) RW.campos.limparErro(form.arvore);
-    if (!unidadesComEscala().length) {
-      if (RW.campos) RW.campos.marcarErro(form.arvore, avisoDaFalha({ semUnidade: true }));
-      return;
-    }
     var botao = form.gerar;
     var promessa = (form.pedido && form.pedido.token === tokenPrevia) ? form.pedido.promessa : pedirArquivo();
     if (RW.iniciarCarregando) RW.iniciarCarregando(botao);
@@ -274,7 +262,8 @@
       if (RW.painel) RW.painel.fechar();
     }).catch(function (e) {
       terminar();
-      if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: e && e.longaDemais ? msg().longaDemais : RW.mensagens.escala.impressao.falhaGerar });
+      var mensagem = (e && (e.semUnidade || e.longaDemais)) ? avisoDaFalha(e) : RW.mensagens.escala.impressao.falhaGerar;
+      if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: mensagem });
     });
   }
 
@@ -289,7 +278,27 @@
 
   function subtitulo() { return msg().subtitulo(FORMATOS[form.formato].paisagem, form.continua); }
 
-  /* opcoes: { formato, data (a data da tela), unidades (ids da tela), diasPorLinha } */
+  /* a nota do alto: "Calendário de outubro de 2026, 2ªCIBM, 1ºPEL e 2ºPEL, sem filtros." */
+  function resumoDaTela() {
+    var periodo = FORMATOS[form.formato].periodo === 'semana'
+      ? msg().daSemana(periodoEscolhido().texto)
+      : msg().doMesDaTela(msg().comAno(MESES[form.mes.getMonth()], form.mes.getFullYear()));
+    var unidades = msg().juntar(form.unidades.map(function (u) { return u.nome; }));
+    return msg().resumo(msg().nomes[form.formato], periodo, unidades, form.filtros);
+  }
+
+  /* as caixas visíveis, numeradas em ordem (o Colunas › Unidades não tem a do período) */
+  function numerarCaixas() {
+    var n = 0;
+    Array.prototype.forEach.call(form.raiz.querySelectorAll('.painel-corpo > .grupo-caixa'), function (caixa) {
+      if (caixa.classList.contains('oculto')) return;
+      n++;
+      Array.prototype.forEach.call(caixa.querySelectorAll('[data-impressao-num]'), function (el) { el.textContent = String(n); });
+    });
+  }
+
+  /* opcoes: { formato, data (a da tela), unidades ([{ unidade_id, nome }] da tela, na ordem dela), diasPorLinha,
+     filtros (os ligados na tela, em texto) } */
   function abrir(opcoes) {
     if (!RW.painel || !FORMATOS[opcoes.formato]) return;
     fecharLimpo();
@@ -306,21 +315,25 @@
     var raiz = document.getElementById('painel');
     var data = opcoes.data || new Date();
     function peca(nome) { return raiz.querySelector('[data-impressao-' + nome + ']'); }
-    /* as escolhas (formato, Mostrar, mês, semanas, dias) e as peças do painel */
+    /* as escolhas (formato, Mostrar, semanas, dias), o que vem da tela e as peças do painel */
     form = {
       raiz: raiz, formato: formato, continua: false, mostrar: { grafico: true, icones: true, faixa: true },
-      diasPorLinha: opcoes.diasPorLinha || 3, ordemTela: (opcoes.unidades || []).map(Number),
-      mes: new Date(data.getFullYear(), data.getMonth(), 1), mesTodo: true, semanas: [], de: 1, ate: 1,
-      mesNome: peca('mes-nome'), mesTodoBotao: peca('mes-todo'), lista: peca('semanas'), periodo: peca('periodo'),
-      previa: peca('previa'), aviso: peca('previa-aviso'), carregando: peca('previa-carregando'), folhas: peca('folhas'),
-      arvore: peca('arvore'), gerar: peca('gerar'), seletor: null, pedido: null, url: null
+      diasPorLinha: opcoes.diasPorLinha || 3, unidades: opcoes.unidades || [], filtros: opcoes.filtros || [],
+      data: new Date(data.getFullYear(), data.getMonth(), data.getDate()), mes: new Date(data.getFullYear(), data.getMonth(), 1),
+      mesTodo: true, semanas: [], de: 1, ate: 1,
+      mesTodoBotao: peca('mes-todo'), lista: peca('semanas'), periodo: peca('periodo'), previa: peca('previa'),
+      aviso: peca('previa-aviso'), carregando: peca('previa-carregando'), folhas: peca('folhas'), gerar: peca('gerar'),
+      pedido: null, url: null
     };
 
-    /* só as peças do período desta grade (semanas ou dias) */
+    /* só as peças do período desta grade (semanas ou dias); o Colunas › Unidades fica sem a caixa */
     var periodo = FORMATOS[formato].periodo;
+    peca('periodo-caixa').classList.toggle('oculto', periodo === 'semana');
     Array.prototype.forEach.call(raiz.querySelectorAll('[data-impressao-so]'), function (el) {
       el.classList.toggle('oculto', el.getAttribute('data-impressao-so') !== periodo);
     });
+    numerarCaixas();
+    peca('resumo').textContent = resumoDaTela();
 
     /* formato: Folhas A4 ou Página contínua */
     RW.abas.ligar(raiz.querySelector('[data-impressao-formato]'), function (aba) {
@@ -329,26 +342,9 @@
       agendarPrevia();
     });
 
-    /* mês: as setas e o calendário do rótulo */
-    raiz.querySelector('[data-impressao-mes-anterior]').addEventListener('click', function () { mudarMes(new Date(form.mes.getFullYear(), form.mes.getMonth() - 1, 1)); });
-    raiz.querySelector('[data-impressao-mes-proximo]').addEventListener('click', function () { mudarMes(new Date(form.mes.getFullYear(), form.mes.getMonth() + 1, 1)); });
-    if (RW.calendario) {
-      RW.calendario.ligar(form.mesNome, {
-        ancora: form.mesNome.parentNode,
-        obterModo: function () { return 'mes'; },
-        obterData: function () { return form.mes; },
-        aoEscolher: mudarMes
-      });
-    }
-
-    /* semanas: o Mês todo e cada semana (o componente de abas marca primeiro; a regra daqui vale por cima) */
-    RW.abas.ligar(raiz.querySelector('[data-impressao-mes-todo-trilho]'), function () {
-      form.mesTodo = true;
-      form.semanas = todasAsSemanas();
-      marcarSemanas();
-      mudou();
-    });
-    RW.abas.ligar(form.lista, function (aba) { escolherSemana(Number(aba.getAttribute('data-semana'))); });
+    /* semanas: o Mês todo (caixa de marcar) e, quando desmarcado, os botões de cada semana */
+    form.mesTodoBotao.addEventListener('click', function () { marcarMesTodo(!form.mesTodo); mudou(); });
+    RW.abas.ligar(form.lista, function () { pintarSemanas(); mudou(); });
 
     /* Mostrar: cada caixa liga ou desliga a sua peça da célula */
     Array.prototype.forEach.call(raiz.querySelectorAll('[data-mostrar]'), function (opcao) {
@@ -364,33 +360,10 @@
     raiz.querySelector('[data-impressao-cancelar]').addEventListener('click', function () { RW.painel.fechar(); });
     form.gerar.addEventListener('click', gerar);
 
-    /* o período começa no mês da tela: semanas = o mês todo (no Colunas › Unidades, a semana da tela);
-       dias = do 1º ao último */
-    form.mesNome.textContent = MESES[form.mes.getMonth()] + ' ' + form.mes.getFullYear();
-    form.semanas = todasAsSemanas();
+    /* o período começa no mês todo da tela (semanas: o Mês todo marcado; dias: do 1º ao último) */
     form.ate = ultimoDia(form.mes);
-    if (formato === 'colunas-unidades') {
-      var domingo = somarDias(data, -data.getDay());
-      var semanaDaTela = semanasDoMes(form.mes).findIndex(function (s) { return s.inicio.getTime() === domingo.getTime(); });
-      if (semanaDaTela >= 0 && form.semanas.length > 1) { form.mesTodo = false; form.semanas = [semanaDaTela]; }
-    }
-    if (periodo === 'semanas') montarSemanas(); else montarDias();
-
-    /* a árvore do seletor, solta no painel e já marcada com as unidades da tela */
-    if (RW.seletorUnidades) {
-      var ref = form;
-      form.seletor = RW.seletorUnidades.criar({
-        modo: 'multi',
-        arvoreEl: form.arvore,
-        aoMudar: function () { if (RW.campos) RW.campos.limparErro(form.arvore); mudou(); }
-      });
-      mostrarCarregando(true);
-      form.seletor.montarArvore().then(function () {
-        if (form !== ref) return;   // o painel fechou ou reabriu enquanto carregava
-        form.seletor.aplicarSelecaoPorIds(opcoes.unidades || []);
-        mudou();
-      });
-    }
+    if (periodo === 'dias') montarDias();
+    mudou();
   }
 
   RW.escalasImpressaoGrade = { abrir: abrir };

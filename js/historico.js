@@ -71,10 +71,10 @@
     extra_alocacao: { aba: 'Extrajornada', icone: 'icone-extrajornada' },
     extra_disponibilidade: { aba: 'Extrajornada', icone: 'icone-extrajornada' },
     extra_prazos: { aba: 'Ajustes', icone: 'icone-ajustes' },
-    atestado: { aba: 'Afastamentos', icone: 'icone-afastamentos' },
-    ferias: { aba: 'Afastamentos', icone: 'icone-afastamentos' },
-    licenca: { aba: 'Afastamentos', icone: 'icone-afastamentos' },
-    dispensa: { aba: 'Afastamentos', icone: 'icone-afastamentos' },
+    atestado: { aba: 'Usuários', icone: 'icone-usuarios' },
+    ferias: { aba: 'Usuários', icone: 'icone-usuarios' },
+    licenca: { aba: 'Usuários', icone: 'icone-usuarios' },
+    dispensa: { aba: 'Usuários', icone: 'icone-usuarios' },
     unidade: { aba: 'Ajustes', icone: 'icone-ajustes' }
   };
 

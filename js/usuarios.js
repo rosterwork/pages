@@ -163,12 +163,19 @@
     return !!(filtros && RosterWork.sessao.temPapel('pelotao') && filtros.passa('situacao', 'Inativo'));
   }
 
-  /* abre a ficha do militar no painel e realça a linha clicada (ver = todos) */
-  function abrirFicha(card, pessoa) {
+  /* abre a ficha do militar no painel e realça a linha clicada (ver = todos);
+     opcoes = { secao, ano }: as abas de afastamento abrem a ficha na aba e no ano delas */
+  function abrirFicha(card, pessoa, opcoes) {
     if (cardSelecionado) cardSelecionado.classList.remove('linha-militar--selecionada');
     cardSelecionado = card;
     card.classList.add('linha-militar--selecionada');
-    if (window.RosterWork.usuariosPainel) window.RosterWork.usuariosPainel.abrir(pessoa, limparSelecao);
+    if (window.RosterWork.usuariosPainel) window.RosterWork.usuariosPainel.abrir(pessoa, limparSelecao, opcoes);
+  }
+
+  /* as abas Férias · Licenças · Dispensas desenham a lista delas (usuarios-afastamentos.js) */
+  function afastamentos() {
+    var m = window.RosterWork.usuariosAfastamentos;
+    return m && m.ativa() ? m : null;
   }
 
   /* o painel chama isto ao fechar (X, Esc ou troca de página): tira o realce */
@@ -233,6 +240,7 @@
   /* monta as linhas de pessoa num bloquinho branco do bloco da unidade (ativos + inativos quando filtrado);
      unidade sem ninguém fica só com o título */
   function renderConteudo(container, unidade, pessoas) {
+    if (afastamentos()) { afastamentos().renderConteudo(container, unidade, pessoas); return; }
     var tpl = document.getElementById('tpl-usuario-item');
     var bloquinho = RosterWork.tpl('tpl-arvore-bloquinho');
     if (!tpl || !bloquinho) return;
@@ -326,13 +334,34 @@
 
   /* o componente da árvore chama isto a cada render (ao fim da passada), com as pessoas visíveis */
   function aoRenderizarGraus(pessoasVisiveis) {
-    if (filtros) filtros.definir('graus', arvoreDeGraus(pessoasVisiveis || []));
+    if (afastamentos()) afastamentos().aoRenderizar(pessoasVisiveis);
+    else if (filtros) filtros.definir('graus', arvoreDeGraus(pessoasVisiveis || []));
     atualizarSubtitulo();
   }
 
-  /* ---------- abas da página: Efetivo | Pendências (só admin) ----------
-     Os controles da barra (filtros, Ordem, Exibir) só valem para a árvore do
-     Efetivo, então somem na aba Pendências. A Pendências é a fila das
+  /* a contagem de cada unidade: os militares (Efetivo) ou quem teve afastamento no ano */
+  function textoContagem(itens) {
+    if (afastamentos()) return afastamentos().textoContagem(itens);
+    return itens.length === 1 ? '1 militar' : itens.length + ' militares';
+  }
+
+  /* o que as abas de afastamento usam daqui: a árvore, a busca, a ordem, os graus, a ficha e a contagem */
+  var emprestado = {
+    atualizar: function () { if (window.RosterWork.arvoreUnidades) window.RosterWork.arvoreUnidades.atualizar(); },
+    busca: function (pessoa) {
+      if (!termoBusca) return '';
+      if (pessoaCasaBusca(pessoa)) return modoBusca === 'marcar' ? 'marcar' : '';
+      return modoBusca === 'filtrar' ? 'esconder' : '';
+    },
+    ordenar: function (pessoas) { return ordenarPessoas(pessoas); },
+    arvoreDeGraus: function (pessoas) { return arvoreDeGraus(pessoas); },
+    abrirFicha: function (item, pessoa, opcoes) { abrirFicha(item, pessoa, opcoes); },
+    contar: function () { contagemVisivel++; }
+  };
+
+  /* ---------- abas da página: Efetivo · Férias · Licenças · Dispensas | Antiguidade · Pendências (só admin) ----------
+     A busca e a Ordem valem para as listas (Efetivo e as de afastamento, que usam a mesma
+     árvore); os Filtros e o Exibir do Efetivo, só para ele. A Pendências é a fila das
      correções de dados (geral-fila), a mesma da página Pendências. */
   var fila = null;
 
@@ -354,15 +383,22 @@
   }
 
   function mostrarAba(conteudo, nome) {
+    /* Férias · Licenças · Dispensas usam a árvore do Efetivo, com a busca e a Ordem; o Exibir é só do Efetivo */
+    var lista = nome === 'efetivo' || nome === 'ferias' || nome === 'licencas' || nome === 'dispensas';
     var paineis = conteudo.querySelectorAll('[data-aba-painel]');
     for (var i = 0; i < paineis.length; i++) {
-      paineis[i].classList.toggle('oculto', paineis[i].getAttribute('data-aba-painel') !== nome);
+      paineis[i].classList.toggle('oculto', paineis[i].getAttribute('data-aba-painel') !== (lista ? 'efetivo' : nome));
     }
-    ['#busca-usuarios', '#usuarios-divisor', '#dropdown-ordem', '#dropdown-exibir'].forEach(function (seletor) {
+    ['#busca-usuarios', '#usuarios-divisor', '#dropdown-ordem'].forEach(function (seletor) {
       var el = conteudo.querySelector(seletor);
-      if (el) el.classList.toggle('oculto', nome !== 'efetivo');
+      if (el) el.classList.toggle('oculto', !lista);
     });
+    var exibirEl = conteudo.querySelector('#dropdown-exibir');
+    if (exibirEl) exibirEl.classList.toggle('oculto', nome !== 'efetivo');
     if (filtros) filtros.mostrar(nome === 'efetivo');   /* o botão Filtros e a linha "Filtros:" */
+    /* as abas de afastamento: o ano e os Filtros delas; a árvore redesenha as linhas da aba */
+    if (window.RosterWork.usuariosAfastamentos) window.RosterWork.usuariosAfastamentos.mostrar(nome);
+    if (nome === 'efetivo') emprestado.atualizar();
     /* a Antiguidade tem a própria busca (o Salvar dela fica no rodapé da aba) */
     var buscaAntiguidade = conteudo.querySelector('#antiguidade-busca');
     if (buscaAntiguidade) buscaAntiguidade.classList.toggle('oculto', nome !== 'antiguidade');
@@ -447,6 +483,9 @@
     var grupoAdmin = conteudo.querySelector('.acoes-admin');
     if (grupoAdmin) grupoAdmin.classList.toggle('oculto', !RosterWork.sessao.temPapel('pelotao'));
 
+    /* Férias · Licenças · Dispensas: o ano e os Filtros delas entram na barra, escondidos */
+    if (window.RosterWork.usuariosAfastamentos) window.RosterWork.usuariosAfastamentos.iniciar(conteudo, emprestado);
+
     ligarAbas(conteudo);
 
     /* veio de um aviso que aponta um militar (ex.: pedido de nova senha): a ficha dele abre
@@ -458,7 +497,8 @@
        pessoas e recebemos quem está visível (filtro de graus) */
     var pronto = window.RosterWork.arvoreUnidades.montar(container, {
       renderConteudo: renderConteudo,
-      aoRenderizar: aoRenderizarGraus
+      aoRenderizar: aoRenderizarGraus,
+      textoContagem: textoContagem
     });
     if (cpfPedido && /^\d{11}$/.test(cpfPedido) && window.RosterWork.usuariosPainel) {
       Promise.resolve(pronto).then(function () {

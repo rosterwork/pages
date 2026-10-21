@@ -422,8 +422,9 @@
     return null;
   }
 
-  /* Imprimir: as grades abrem o painel delas, já com o mês, as unidades e as colunas da tela;
-     o Dia e o Militares, o "Imprimir escala" com a data padrão do que está na tela */
+  /* Imprimir: as grades abrem o painel delas, que imprime o que está na tela (o mês ou a semana, as unidades
+     na ordem da tela, as colunas e os filtros ligados); o Dia e o Militares, o "Imprimir escala" com a data
+     padrão do que está na tela */
   function abrirImpressao() {
     var formato = formatoImpressao();
     if (formato && RosterWork.escalasImpressaoGrade) {
@@ -431,8 +432,9 @@
       RosterWork.escalasImpressaoGrade.abrir({
         formato: formato,
         data: new Date(refData.getFullYear(), refData.getMonth(), refData.getDate()),
-        unidades: daTela.map(function (u) { return u.id; }),
-        diasPorLinha: quantidadeColunas()
+        unidades: daTela.map(function (u) { return { unidade_id: u.id, nome: u.nome }; }),
+        diasPorLinha: quantidadeColunas(),
+        filtros: RosterWork.escalasFiltros ? RosterWork.escalasFiltros.resumo() : []
       });
       return;
     }

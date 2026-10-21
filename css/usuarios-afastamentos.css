@@ -1,0 +1,120 @@
+/* ============================================================
+   USUÁRIOS — abas Férias · Licenças · Dispensas e os períodos da ficha
+   A linha do militar que cresce para baixo: o nome à esquerda e, à
+   direita, um afastamento do ano por linha (o tipo e as datas, os
+   dias e o fluxo), alinhados pela direita. Na ficha, a sub-tela de
+   um tipo: uma caixa por período (início → fim e os dias; em
+   licença e dispensa, a decisão do fluxo e o motivo).
+   Moldes no usuarios.html; comportamento em usuarios-afastamentos.js
+   e usuarios-painel-afastamentos*.js.
+   ============================================================ */
+
+/* a linha do militar: o nome no alto, os afastamentos empilhados à direita */
+.usuario-afastamento-item {
+  align-items: flex-start;
+}
+
+/* o nome nunca some (a pilha é que quebra o texto) */
+.usuario-afastamento-item > .linha-militar-pessoa {
+  flex: 1 0 auto;
+  padding-top: 2px;
+}
+
+.usuario-afastamento-pilha {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  min-width: 0;
+}
+
+.usuario-afastamento-linha {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 0;
+}
+
+.usuario-afastamento-texto {
+  flex-shrink: 1;
+  min-width: 0;
+  white-space: normal;
+  text-align: right;
+}
+
+/* ---------- ficha: a sub-tela dos períodos de um tipo ---------- */
+
+.ficha-periodos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* início → fim no molde do horário, com dois campos de data e os dias ao lado */
+.ficha-periodo-datas .horario-par {
+  min-width: 0;
+}
+
+.ficha-periodo-datas .campo-entrada {
+  flex: 0 1 112px;
+  width: 112px;
+  min-width: 0;
+  text-align: center;
+}
+
+/* licença e dispensa: a decisão do fluxo (pergunta + Sim/Não) e a frase do que ela faz */
+.ficha-periodo-fluxo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ficha-periodo-decisao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ficha-periodo-pergunta {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   Na lista, os afastamentos descem para baixo do nome, na largura
+   toda, alinhados pela esquerda. Na sub-tela, as duas datas ocupam
+   a linha e os dias vão para baixo.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .usuario-afastamento-pilha {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    align-items: flex-start;
+  }
+
+  html[data-celular] .usuario-afastamento-linha {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  html[data-celular] .usuario-afastamento-texto {
+    text-align: left;
+  }
+
+  html[data-celular] .ficha-periodo-datas {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+
+  html[data-celular] .ficha-periodo-datas .horario-par {
+    flex: 1 1 100%;
+  }
+
+  html[data-celular] .ficha-periodo-datas .campo-entrada {
+    flex: 1 1 0;
+    width: auto;
+  }
+}

@@ -120,7 +120,8 @@
         paddingRight: function (i) { return i % 2 === 0 ? DIA.lado : 0; },
         paddingTop: function (i) { return i === 0 ? DIA.topo : DIA.entre; },
         paddingBottom: function (i) { return i === ultima ? DIA.base : DIA.entre; },
-        /* o dia de fora do período (Colunas › Dias) fica sem o bloco cinza, só com o número apagado */
+        /* o dia de fora (de outro mês no Calendário, fora do escolhido no Colunas › Dias) fica vazio, como na
+           tela: sem o bloco cinza, só com o número apagado */
         fillColor: function (i, no, col) { return preencher && col % 2 === 0 && !linha[col / 2].fora ? c.fundo : null; }
       }
     };
@@ -336,10 +337,25 @@
     }
     return escolhido.then(function (e) {
       if (cfg.continua && alturaDoDesenho(e.desenho) > LIMITE_CONTINUA) throw { longaDemais: true };
-      var plano = { modo: e.plano.modo, partes: e.plano.partes, preencher: false, caixas: e.desenho.caixas };
+      var plano = { modo: e.plano.modo, partes: e.plano.partes, preencher: false, caixas: igualarAlturas(e.desenho.caixas) };
       return desenharPlano(plano).then(function (r) {
         return r.desenho.assinatura === e.desenho.assinatura ? r.desenho : e.desenho;
       }, function () { return e.desenho; });
+    });
+  }
+
+  /* as células brancas da mesma linha com a altura da mais alta, como na tela (no calendário, a mesma unidade
+     em todos os dias da linha; na agenda, as unidades do mesmo dia). Elas começam na mesma altura, então se
+     agrupam pelo topo em cada folha. Só o fundo muda: o texto fica no lugar */
+  function igualarAlturas(caixas) {
+    function topo(b) { return Math.round(b.y1 * 2) / 2; }
+    return (caixas || []).map(function (folha) {
+      var fimPorTopo = {};
+      folha.papel.forEach(function (b) { fimPorTopo[topo(b)] = Math.max(fimPorTopo[topo(b)] || 0, b.y2); });
+      return {
+        cinza: folha.cinza,
+        papel: folha.papel.map(function (b) { return { x1: b.x1, y1: b.y1, x2: b.x2, y2: fimPorTopo[topo(b)] }; })
+      };
     });
   }
 

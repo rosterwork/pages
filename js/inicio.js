@@ -9,8 +9,11 @@
    o botão que abre o painel. O painel do dia abre só de leitura,
    com o militar destacado (escalas-painel.js). "Hoje" é o dia de
    serviço (vira às 08h). Abaixo, os 3 comunicados mais recentes
-   (fn_avisos_listar) e, ao lado (computador), os atalhos. Só clona
-   moldes.
+   (fn_avisos_listar) e, ao lado (computador), os atalhos. A página
+   aparece inteira de uma vez (o véu espera o mês e os avisos), e a
+   troca de mês usa o mesmo véu. No computador os dias têm largura
+   mínima: quando não cabem, o calendário rola para o lado até hoje
+   e até o dia clicado. Só clona moldes.
    ============================================================ */
 (function () {
   'use strict';
@@ -30,6 +33,7 @@
   var AVISOS_NO_INICIO = 3;
 
   var el = {};
+  var conteudo = null;   // o bloco de conteúdo do shell (o véu de carregamento mora nele)
   var estado = { mes: null, dados: null, selecionado: null, pedido: 0 };
 
   function iso(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
@@ -169,37 +173,63 @@
     el.mesHoje.classList.toggle('oculto', estado.mes.getFullYear() === hoje.getFullYear() && estado.mes.getMonth() === hoje.getMonth());
   }
 
-  /* lê e desenha o mês; só a última leitura pedida desenha */
+  /* lê e desenha o mês (embaixo do véu: o mês anterior fica até o novo chegar); só a última leitura pedida
+     desenha. A promessa sempre se cumpre, com falha também (a mensagem fica no lugar do calendário) */
   function carregarMes() {
     var pedido = ++estado.pedido;
     estado.dados = null;
     atualizarBarra();
     limparDia();
-    estadoCalendario('tpl-escala-carregando');
     var fim = new Date(estado.mes.getFullYear(), estado.mes.getMonth() + 1, 0);
-    RW.rpc('inicio_calendario', { p_inicio: iso(estado.mes), p_fim: iso(fim) }).then(function (r) {
+    return RW.rpc('inicio_calendario', { p_inicio: iso(estado.mes), p_fim: iso(fim) }).then(function (r) {
       if (pedido !== estado.pedido || !el.calendario.isConnected) return;
       if (!r || !r.dias) { estadoCalendario('tpl-escala-estado', RW.mensagens.inicio.falhaCarregar); return; }
       estado.dados = { dias: r.dias, unidades: r.unidades || {} };
       estado.selecionado = diaPadrao();
       desenharMes();
+      rolarAte(hojeIso());   // a grade abre em hoje (quando os dias não cabem na largura)
     }, function () {
       if (pedido !== estado.pedido || !el.calendario.isConnected) return;
       estadoCalendario('tpl-escala-estado', RW.mensagens.inicio.falhaCarregar);
     });
   }
 
+  /* troca de mês: o véu cobre a tela até o mês novo chegar, como na troca de página (nada aparece em
+     pedaços); só a última troca pedida tira o véu, e só se a página ainda é o Início */
   function irParaMes(d) {
     estado.mes = new Date(d.getFullYear(), d.getMonth(), 1);
-    carregarMes();
+    if (RW.mostrarVeu) RW.mostrarVeu(conteudo);
+    var leitura = carregarMes();
+    var meu = estado.pedido;
+    leitura.then(function () {
+      if (meu === estado.pedido && el.calendario.isConnected && RW.esconderVeu) RW.esconderVeu(conteudo);
+    });
   }
 
-  /* computador: o clique abre o painel do dia (o grupo da unidade, no dia com duas); celular: escolhe o dia */
+  /* deixa o dia à vista quando os 7 dias não cabem na largura (computador: painel aberto ou tela estreita),
+     rolando o calendário para o lado pelo ajudante comum das grades, com a ponta do dia anterior à vista.
+     soSeEscondido: só rola se o dia não estiver inteiro na tela */
+  function rolarAte(diaIso, soSeEscondido) {
+    if (celular() || !RW.periodo) return;
+    var botao = el.calendario.querySelector('.mini-calendario-dia[data-iso="' + diaIso + '"]');
+    if (!botao) return;
+    if (soSeEscondido) {
+      var area = el.calendario.getBoundingClientRect(), dia = botao.getBoundingClientRect();
+      if (dia.left >= area.left && dia.right <= area.right) return;
+    }
+    /* o anterior é o que está à esquerda na mesma linha; no domingo (1ª coluna), o próprio dia */
+    var anterior = dataDeIso(diaIso).getDay() === 0 ? botao : botao.previousElementSibling;
+    RW.periodo.rolarAteHoje(el.calendario, botao, anterior, { horizontal: true });
+  }
+
+  /* computador: o clique abre o painel do dia (o grupo da unidade, no dia com duas) e o calendário, que
+     o painel estreitou, rola para o dia continuar à vista; celular: escolhe o dia */
   function aoClicarCalendario(e) {
     var botao = e.target.closest('.mini-calendario-dia');
     if (!botao || !estado.dados) return;
     if (celular()) { selecionar(botao.dataset.iso); return; }
     abrirPainel(e.target.closest('[data-unidade-id]'));
+    rolarAte(botao.dataset.iso, true);
   }
 
   /* ---------- dia tocado (celular) ---------- */
@@ -299,8 +329,9 @@
     });
   }
 
+  /* a promessa sempre se cumpre, com falha também (a mensagem fica na caixa) */
   function carregarAvisos() {
-    RW.rpc('fn_avisos_listar', {})
+    return RW.rpc('fn_avisos_listar', {})
       .then(function (a) { if (el.avisos.isConnected) montarAvisos(Array.isArray(a) ? a : []); })
       .catch(function () {
         if (!el.avisos.isConnected) return;
@@ -311,12 +342,13 @@
 
   /* ---------- atalhos (computador) ---------- */
 
-  /* Escala de hoje: o painel do dia de serviço de hoje (do mês na tela ou, fora dele, lido à parte) */
+  /* Escala de hoje: o painel do dia de serviço de hoje (do mês na tela ou, fora dele, lido à parte); com o
+     mês de hoje na tela, o calendário rola para hoje continuar à vista */
   function abrirHoje(botao) {
     var hoje = hojeIso();
     var dia = estado.dados && estado.dados.dias[hoje];
     if (dia) {
-      if (unidadeDoDia(dia)) { marcarDia(botao, unidadeDoDia(dia), hoje, estado.dados.unidades); abrirPainel(botao); }
+      if (unidadeDoDia(dia)) { marcarDia(botao, unidadeDoDia(dia), hoje, estado.dados.unidades); abrirPainel(botao); rolarAte(hoje, true); }
       return;
     }
     RW.rpc('inicio_calendario', { p_inicio: hoje, p_fim: hoje }).then(function (r) {
@@ -338,9 +370,12 @@
     });
   }
 
-  function iniciar() {
+  /* o roteador tira o véu quando a promessa se cumpre: ela espera o mês e os avisos, para a página
+     aparecer inteira de uma vez */
+  function iniciar(conteudoPagina) {
     var u = RW.sessao.perfil();
     if (!u || !u.ok) return Promise.resolve();
+    conteudo = conteudoPagina || document.querySelector('.conteudo');
 
     function porId(id) { return document.getElementById(id); }
     el = {
@@ -369,7 +404,7 @@
     el.calendario.addEventListener('click', aoClicarCalendario);
     el.diaLinhas.addEventListener('click', function (e) { abrirPainel(e.target.closest('.escala-calendario-unidade')); });
     el.diaEscala.addEventListener('click', function () { abrirPainel(el.diaEscala); });
-    carregarMes();
+    var mes = carregarMes();
 
     /* os avisos: Ver todos leva aos Comunicados; o grupo Administração (Novo comunicado) só para o admin,
        e no celular é um menu (fecha antes de abrir o painel) */
@@ -383,10 +418,10 @@
         RW.inicioAviso.abrirNovo(carregarAvisos);
       });
     }
-    carregarAvisos();
+    var avisos = carregarAvisos();
 
     ligarAtalhos();
-    return Promise.resolve();
+    return Promise.all([mes, avisos]).then(function () {});
   }
 
   RW.paginas.inicio = { iniciar: iniciar };

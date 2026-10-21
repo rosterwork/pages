@@ -2,8 +2,11 @@
    USUÁRIOS — painel lateral com a ficha do militar
    No padrão do painel da Escala: sem Ver/Editar. Título = graduação
    + nome de guerra, com a lotação ao lado; subtítulo = nome
-   completo; abas Dados · Carreira. Quem não administra o militar
-   (a área do papel) só lê. O admin já abre editando: o lápis de cada bloco abre a correção e, na
+   completo; abas Dados · Carreira · Férias · Licenças · Dispensas
+   (abre na aba de onde veio o clique; as três de afastamento em
+   usuarios-painel-afastamentos.js, com o ano no subcabeçalho). Quem
+   não administra o militar (a área do papel) só lê. O admin já abre
+   editando: o lápis de cada bloco abre a correção e, na
    Carreira, a barra do painel traz Promover e Transferir (para o
    inativo, Readmitir ao efetivo) e, para quem pode mudar o papel
    deste militar, Administração; o Dar baixa fica no fim. Cada
@@ -25,6 +28,7 @@
   var pessoaAtual = null;     // pessoa do card (CPF, situação)
   var aoFecharPagina = null;  // callback da página (limpa o realce do card)
   var secaoAtual = 'dados';   // aba ativa
+  var anoInicial = null;      // o ano da página, quando a ficha abre por uma aba de afastamento
   var sub = null;             // a sub-tela aberta: { textoAplicar, perigo, mudancas, podeAplicar, sujo, aplicar }
 
   /* edita quem administra o militar (qualquer admin cuja área tem a lotação dele); os demais só leem */
@@ -90,6 +94,9 @@
   /* gravou: volta à ficha relida e abre o resumo; opcoes.fechar (baixa, readmissão) fecha o painel */
   function concluirSubtela(r, opcoes) {
     sub = null;
+    /* os afastamentos relidos na ficha (no mesmo ano) e na lista da página */
+    if (RosterWork.usuariosPainelAfastamentos) RosterWork.usuariosPainelAfastamentos.esquecer(true);
+    if (RosterWork.usuariosAfastamentos) RosterWork.usuariosAfastamentos.recarregar();
     if (opcoes && opcoes.fechar) {
       RosterWork.painel.fechar();
       if (RosterWork.paginas && RosterWork.paginas.usuarios && RosterWork.paginas.usuarios.recarregarInativos) RosterWork.paginas.usuarios.recarregarInativos();
@@ -124,10 +131,20 @@
     if (modulos[acao]) abrirSubtela('tpl-ficha-voltar-carreira', modulos[acao]);
   }
 
+  /* o lápis de uma caixa de afastamento: os períodos daquele tipo no ano (alvo = { categoria, tipo, rotulo, ano, periodos }) */
+  function abrirAfastamento(alvo) {
+    abrirSubtela('tpl-ficha-voltar-' + secaoAtual, function (corpo, ctl) {
+      return RosterWork.usuariosPainelAfastamentosEditar.montarSubtela(corpo, {
+        pessoa: pessoaAtual, categoria: alvo.categoria, tipo: alvo.tipo, rotulo: alvo.rotulo, ano: alvo.ano, periodos: alvo.periodos
+      }, ctl);
+    });
+  }
+
   /* ---------- a ficha (leitura) ---------- */
 
   function resetarModulos() {
-    ['usuariosPainelEditar', 'usuariosPainelDatas', 'usuariosPainelPromover', 'usuariosPainelTransferir', 'usuariosPainelBaixa', 'usuariosPainelAcesso', 'usuariosPainelAdministracao']
+    ['usuariosPainelEditar', 'usuariosPainelDatas', 'usuariosPainelPromover', 'usuariosPainelTransferir', 'usuariosPainelBaixa', 'usuariosPainelAcesso', 'usuariosPainelAdministracao',
+      'usuariosPainelAfastamentos', 'usuariosPainelAfastamentosEditar']
       .forEach(function (nome) { if (RosterWork[nome] && RosterWork[nome].reset) RosterWork[nome].reset(); });
   }
 
@@ -177,7 +194,13 @@
     montarRodape();
     var L = RosterWork.usuariosPainelLeitura;
     var admin = ehAdmin(), ativo = !ehInativo();
-    if (secaoAtual === 'carreira') {
+    var afast = RosterWork.usuariosPainelAfastamentos;
+    if (afast && afast.ehSecao(secaoAtual)) {
+      /* Férias · Licenças · Dispensas: o ano no subcabeçalho e uma caixa por tipo; o lápis só para quem administra o militar ativo */
+      afast.montar(corpo, RosterWork.painel.subcabecalho(), {
+        secao: secaoAtual, pessoa: pessoaAtual, admin: admin && ativo, anoInicial: anoInicial, editar: abrirAfastamento
+      });
+    } else if (secaoAtual === 'carreira') {
       if (admin && ativo && RosterWork.usuariosPainelTransferir) {
         RosterWork.usuariosPainelTransferir.montarMarcada(corpo, fichaAtual, { concluir: concluirSubtela });
       }
@@ -227,6 +250,10 @@
     linha.classList.remove('oculto');
     var trilho = linha.querySelector('.abas');
     if (!trilho) return;
+    /* a aba de onde veio o clique (Dados, ou a de afastamento da página) */
+    Array.prototype.forEach.call(trilho.querySelectorAll('.aba'), function (aba) {
+      aba.classList.toggle('aba--ativa', aba.getAttribute('data-secao') === secaoAtual);
+    });
     trilho.addEventListener('click', function (e) {
       var aba = e.target.closest('.aba');
       if (!aba || aba.classList.contains('aba--ativa') || !rascunho() || !RosterWork.confirmar) return;
@@ -301,6 +328,7 @@
   /* a gaveta foi fechada: zera o estado e avisa a página (limpa o realce) */
   function aoFecharGaveta() {
     resetarModulos();
+    if (RosterWork.usuariosPainelAfastamentos) RosterWork.usuariosPainelAfastamentos.esquecer();
     sub = null;
     fichaAtual = null;
     pessoaAtual = null;
@@ -310,14 +338,17 @@
     if (cb) cb();
   }
 
-  /* abre a gaveta para a pessoa clicada. aoFechar = callback da página */
-  function abrir(pessoa, aoFechar) {
+  /* abre a gaveta para a pessoa clicada. aoFechar = callback da página;
+     opcoes = { secao, ano }: as abas de afastamento da página abrem a ficha na aba e no ano delas */
+  function abrir(pessoa, aoFechar, opcoes) {
     if (!RosterWork.painel || !pessoa) return;
     fichaAtual = null;
     sub = null;
     pessoaAtual = pessoa;
     aoFecharPagina = aoFechar || null;
-    secaoAtual = 'dados';
+    secaoAtual = (opcoes && opcoes.secao) || 'dados';
+    anoInicial = (opcoes && opcoes.ano) || null;
+    if (RosterWork.usuariosPainelAfastamentos) RosterWork.usuariosPainelAfastamentos.esquecer();
     var grad = pessoa.grau_abreviacao || '';
     var guerra = pessoa.nome_de_guerra || '';
     RosterWork.painel.abrir({

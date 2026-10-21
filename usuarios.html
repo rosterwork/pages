@@ -6,6 +6,10 @@
     </div>
     <div class="abas" id="usuarios-abas">
       <button type="button" class="aba aba--ativa" data-aba="efetivo">Efetivo</button>
+      <!-- a lista completa do efetivo com os afastamentos do ano de cada um (usuarios-afastamentos.js) -->
+      <button type="button" class="aba" data-aba="ferias">Férias</button>
+      <button type="button" class="aba" data-aba="licencas">Licenças</button>
+      <button type="button" class="aba" data-aba="dispensas">Dispensas</button>
       <!-- só administrador: a ordem de antiguidade da companhia, por posto -->
       <button type="button" class="aba oculto" data-aba="antiguidade" id="usuarios-aba-antiguidade">Antiguidade</button>
       <!-- só administrador: correções de dados para aprovar (a mesma fila da página Pendências) -->
@@ -17,8 +21,9 @@
   </div>
 
   <!-- barra sempre presente (o conteúdo não "pula" ao trocar de aba): à esquerda o grupo Administração
-       (Novo usuário, só admin, em todas as abas); à direita, na aba Efetivo, o botão Filtros (componente
-       geral-filtros), a busca e, depois do traço, Ordem e Exibir -->
+       (Novo usuário, só admin, em todas as abas) e, nas abas Férias · Licenças · Dispensas, o ano
+       (#tpl-usuarios-ano, posto pelo JS); à direita o botão Filtros da aba (componente geral-filtros),
+       a busca e, depois do traço, Ordem e (só no Efetivo) Exibir -->
   <div class="pagina-subcabecalho">
     <div class="dropdown acoes-admin oculto">
       <button type="button" class="botao acoes-admin-gatilho">
@@ -47,6 +52,13 @@
     <div class="filtros" id="usuarios-filtros">
       <div data-filtro="graus" data-filtro-nome="Grau" data-filtro-titulo="Graus"></div>
       <div data-filtro="situacao" data-filtro-nome="Situação" data-filtro-titulo="Situação"></div>
+    </div>
+
+    <!-- Filtros das abas Férias · Licenças · Dispensas: Graus, Situação no ano e Tipo (o Tipo some em Férias) -->
+    <div class="filtros oculto" id="usuarios-afast-filtros">
+      <div data-filtro="graus" data-filtro-nome="Grau" data-filtro-titulo="Graus"></div>
+      <div data-filtro="situacao" data-filtro-nome="Situação" data-filtro-titulo="Situação"></div>
+      <div data-filtro="tipo" data-filtro-nome="Tipo" data-filtro-titulo="Tipo"></div>
     </div>
 
     <div class="busca" id="busca-usuarios">
@@ -188,6 +200,48 @@
   <div class="usuario-vazio">Nenhum militar com os filtros atuais.</div>
 </template>
 
+<!-- molde (abas Férias · Licenças · Dispensas): o militar e, à direita, um afastamento do ano por linha -->
+<template id="tpl-usuario-afastamento-item">
+  <div class="linha-militar linha-militar--clicavel usuario-item usuario-afastamento-item" role="button" tabindex="0">
+    <span class="linha-militar-pessoa">
+      <span class="linha-militar-grad usuario-item-grad"></span>
+      <span class="linha-militar-nome usuario-item-nome"></span>
+    </span>
+    <span class="usuario-afastamento-pilha"></span>
+  </div>
+</template>
+
+<!-- molde: um afastamento na linha do militar (o tipo e as datas, os dias e, em licença e dispensa, o fluxo) -->
+<template id="tpl-usuario-afastamento-linha">
+  <span class="usuario-afastamento-linha">
+    <span class="linha-militar-coluna usuario-afastamento-texto"></span>
+    <span class="selo usuario-afastamento-dias"></span>
+    <span class="selo usuario-afastamento-fluxo"></span>
+  </span>
+</template>
+
+<!-- molde: o ano das abas de afastamento (na barra e na ficha): as setas passam de ano,
+     o ano abre a lista dos anos, o Hoje (só fora do ano atual) volta a ele -->
+<template id="tpl-usuarios-ano">
+  <div class="geral-periodo">
+    <button type="button" class="botao botao--icone" data-ano-anterior aria-label="Ano anterior">
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-esquerda.svg#icone-seta-esquerda"/></svg>
+    </button>
+    <span class="dropdown">
+      <button type="button" class="geral-periodo-nome" data-ano-nome aria-label="Escolher o ano"></button>
+      <div class="dropdown-menu" data-ano-lista></div>
+    </span>
+    <button type="button" class="botao botao--icone" data-ano-proximo aria-label="Próximo ano">
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
+    </button>
+    <button type="button" class="botao geral-periodo-hoje oculto" data-ano-hoje>Hoje</button>
+  </div>
+</template>
+
+<template id="tpl-usuarios-ano-item">
+  <button type="button" class="dropdown-item"></button>
+</template>
+
 <!-- molde (aba Antiguidade): um posto = bloquinho branco da árvore, com os militares na ordem;
      o título recolhe/expande a lista (chevron à direita) -->
 <template id="tpl-antiguidade-posto">
@@ -227,11 +281,15 @@
 
 <!-- ===== ficha do militar (painel direito; usuarios-painel*.js), no padrão do painel da Escala ===== -->
 
-<!-- molde: abas de seção do painel da ficha (Dados / Carreira) -->
+<!-- molde: abas de seção do painel da ficha (Dados · Carreira · Férias · Licenças · Dispensas);
+     a ficha abre na aba de onde veio o clique (usuarios-painel.js marca a ativa) -->
 <template id="tpl-usuarios-painel-secoes">
   <div class="abas">
     <button type="button" class="aba aba--ativa" data-secao="dados">Dados</button>
     <button type="button" class="aba" data-secao="carreira">Carreira</button>
+    <button type="button" class="aba" data-secao="ferias">Férias</button>
+    <button type="button" class="aba" data-secao="licencas">Licenças</button>
+    <button type="button" class="aba" data-secao="dispensas">Dispensas</button>
   </div>
 </template>
 
@@ -264,6 +322,11 @@
     <span class="ficha-linha-rotulo"></span>
     <span class="ficha-linha-valor"><span data-ficha-valor></span><span class="ficha-linha-extra" data-ficha-extra></span></span>
   </div>
+</template>
+
+<!-- molde: frase em cinza dentro de um bloco (ex.: a caixa de um tipo sem período no ano) -->
+<template id="tpl-ficha-ajuda">
+  <span class="subtela-ajuda"></span>
 </template>
 
 <!-- molde: nota "Sem acesso ao sistema" (militar cadastrado sem conta de login) -->
@@ -355,6 +418,18 @@
 
 <template id="tpl-ficha-voltar-carreira">
   <button type="button" class="botao botao--texto subtela-voltar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-esquerda.svg#icone-seta-esquerda"/></svg><span>Voltar à carreira</span></button>
+</template>
+
+<template id="tpl-ficha-voltar-ferias">
+  <button type="button" class="botao botao--texto subtela-voltar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-esquerda.svg#icone-seta-esquerda"/></svg><span>Voltar às férias</span></button>
+</template>
+
+<template id="tpl-ficha-voltar-licencas">
+  <button type="button" class="botao botao--texto subtela-voltar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-esquerda.svg#icone-seta-esquerda"/></svg><span>Voltar às licenças</span></button>
+</template>
+
+<template id="tpl-ficha-voltar-dispensas">
+  <button type="button" class="botao botao--texto subtela-voltar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-esquerda.svg#icone-seta-esquerda"/></svg><span>Voltar às dispensas</span></button>
 </template>
 
 <!-- molde: rodapé das sub-telas (o texto do botão de aplicar vem de RosterWork.mensagens.botoes) -->
@@ -525,6 +600,65 @@
       <span class="nota-texto oculto" data-nota-papel="companhia">Faz todas as ações de administrador na companhia e nos pelotões dela. Termina sozinho na transferência para fora da companhia ou na baixa.</span>
       <span class="nota-texto oculto" data-nota-papel="geral">Faz todas as ações de administrador em todas as unidades. Termina sozinho na baixa.</span>
     </div>
+  </div>
+</template>
+
+<!-- molde: sub-tela dos períodos de um tipo de afastamento no ano (o lápis da caixa do tipo, na ficha):
+     o tipo e o ano no título, uma caixa por período e o Adicionar período (usuarios-painel-afastamentos-editar.js) -->
+<template id="tpl-ficha-sub-afastamento">
+  <div class="subtela">
+    <div class="subtela-cab">
+      <span class="subtela-titulo" data-sub-titulo></span>
+      <span class="subtela-subtitulo" data-sub-subtitulo></span>
+    </div>
+    <div class="ficha-periodos" data-periodos></div>
+    <div class="nota nota--erro oculto" data-periodos-nota>
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+      <span class="nota-texto"></span>
+    </div>
+    <div class="ficha-acoes-fim">
+      <button type="button" class="botao" data-periodo-adicionar>Adicionar período</button>
+    </div>
+  </div>
+</template>
+
+<!-- molde: um período na sub-tela (caixa com a situação e o ✕): início → fim e os dias; em licença e
+     dispensa, a decisão do fluxo (sugere Sim a partir de 16 dias) e o motivo. O que é de mais de uma
+     semana atrás fica travado, com a frase que explica -->
+<template id="tpl-ficha-periodo">
+  <div class="grupo-caixa ficha-periodo">
+    <div class="ficha-bloco-cab">
+      <span class="rotulo-secao" data-periodo-situacao></span>
+      <button type="button" class="botao-discreto" data-periodo-remover aria-label="Remover este período" data-dica="Remover este período">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+      </button>
+    </div>
+    <div class="campo" data-periodo-campo>
+      <span class="campo-rotulo">Período</span>
+      <span class="horario ficha-periodo-datas">
+        <span class="horario-par">
+          <input class="campo-entrada" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" aria-label="Data de início" autocomplete="off" data-periodo-inicio />
+          <svg class="icone horario-seta" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+          <input class="campo-entrada" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" aria-label="Data de fim" autocomplete="off" data-periodo-fim />
+        </span>
+        <span class="selo oculto" data-periodo-dias></span>
+      </span>
+    </div>
+    <div class="ficha-periodo-fluxo oculto" data-periodo-fluxo>
+      <div class="ficha-periodo-decisao">
+        <span class="ficha-periodo-pergunta">Tirar do fluxo da escala?</span>
+        <div class="abas abas--seletor">
+          <button type="button" class="aba" data-fora="sim">Sim</button>
+          <button type="button" class="aba" data-fora="nao">Não</button>
+        </div>
+      </div>
+      <span class="subtela-ajuda" data-periodo-fluxo-texto></span>
+    </div>
+    <label class="campo oculto" data-periodo-motivo>
+      <span class="campo-rotulo">Motivo</span>
+      <textarea class="campo-entrada" maxlength="200" placeholder="Opcional. Não escreva diagnóstico nem dados médicos."></textarea>
+    </label>
+    <span class="subtela-ajuda oculto" data-periodo-travado>Terminou há mais de uma semana, por isso não muda.</span>
   </div>
 </template>
 

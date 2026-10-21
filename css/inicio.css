@@ -3,8 +3,10 @@
    Computador: o calendário e os avisos à esquerda, na mesma
    largura, e os atalhos numa coluna ao lado. O calendário é o mês
    em miniatura (geral-mini-calendario) em tamanho grande, com as
-   linhas da Escala dentro de cada dia. Celular: uma coluna, só os
-   ícones no dia, a caixa do dia tocado e os avisos embaixo.
+   linhas da Escala dentro de cada dia e a largura mínima dos dias
+   (rola para o lado, como a grade de mês da Escala). Celular: uma
+   coluna, só os ícones no dia, a caixa do dia tocado e os avisos
+   embaixo.
    Cores/medidas do tema.
    ============================================================ */
 
@@ -40,7 +42,16 @@
 }
 
 /* ---------- calendário ---------- */
+/* como a grade de mês da Escala: cada dia tem largura mínima e, quando os 7 não cabem (o painel aberto
+   ao lado ou a tela estreita), o calendário rola para o lado em vez de encolher os dias. 180px = a largura
+   que cabe no monitor de 1920px sem o painel. A folga de 2px deixa o anel de foco da borda à vista */
+.inicio-calendario {
+  overflow-x: auto;
+  padding: 2px;
+}
+
 .inicio-calendario .mini-calendario {
+  grid-template-columns: repeat(7, minmax(180px, 1fr));
   gap: 8px;
 }
 
@@ -215,7 +226,14 @@
     display: flex;
   }
 
+  /* no celular os 7 dias cabem na largura (o painel abre por cima, em tela cheia): sem rolar para o lado */
+  html[data-celular] .inicio-calendario {
+    overflow-x: visible;
+    padding: 0;
+  }
+
   html[data-celular] .inicio-calendario .mini-calendario {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 4px;
   }
 

@@ -262,24 +262,61 @@
       falhaSalvar: 'Não foi possível salvar o posto. Tente de novo.'
     },
 
-    /* afastamentos — painéis Nova licença / Nova dispensa (decisão fora do fluxo) */
+    /* afastamentos — abas Férias · Licenças · Dispensas de Usuários e as mesmas abas da ficha */
     afastamentos: {
+      /* o tipo por extenso (caixas da ficha e sub-tela) e curto (linha da lista); 'licenca' é o tipo de
+         saúde que o banco esconde de quem não administra o militar */
+      tipos: {
+        ferias: 'Férias', licenca: 'Licença',
+        propria_saude: 'Tratamento da própria saúde', saude_familiar: 'Tratamento de saúde de familiar',
+        interesses: 'Interesses particulares', especial: 'Especial', capacitacao: 'Capacitação',
+        gala: 'Gala (casamento)', nojo: 'Nojo (falecimento)', comum: 'Comum'
+      },
+      tiposCurtos: {
+        licenca: 'Licença', propria_saude: 'Própria saúde', saude_familiar: 'Saúde de familiar',
+        interesses: 'Interesses particulares', especial: 'Especial', capacitacao: 'Capacitação',
+        gala: 'Gala', nojo: 'Nojo', comum: 'Comum'
+      },
+      /* filtro Situação e contagem de cada unidade, pela categoria da aba */
+      comNoAno: { ferias: 'Com férias no ano', licenca: 'Com licença no ano', dispensa: 'Com dispensa no ano' },
+      semNoAno: { ferias: 'Sem férias no ano', licenca: 'Sem licença no ano', dispensa: 'Sem dispensa no ano' },
+      contagem: function (n, categoria) {
+        return n + (categoria === 'ferias' ? ' com férias' : categoria === 'dispensa' ? ' com dispensa' : ' com licença');
+      },
+      dias: function (n) { return n === 1 ? '1 dia' : n + ' dias'; },
+      seloFora: 'Fora do fluxo',
+      seloSegue: 'Segue no fluxo',
+      extraFora: 'fora do fluxo',
+      /* a situação do período na ficha */
+      emCurso: 'Em curso',
+      marcado: 'Marcado',
+      encerrado: 'Encerrado',
+      novo: 'Novo período',
+      /* a caixa de um tipo sem período no ano (administrador) e a aba sem nada (quem só lê) */
+      vazioTipo: function (categoria, ano) {
+        if (categoria === 'ferias') return 'Nenhum período de férias em ' + ano + '.';
+        return (categoria === 'dispensa' ? 'Nenhuma dispensa' : 'Nenhuma licença') + ' deste tipo em ' + ano + '.';
+      },
+      vazioAba: function (categoria, ano) {
+        return (categoria === 'ferias' ? 'Nenhum período de férias' : categoria === 'dispensa' ? 'Nenhuma dispensa' : 'Nenhuma licença') + ' em ' + ano + '.';
+      },
+      subtitulo: function (ano) { return 'Os períodos de ' + ano + '.'; },
+      falhaCarregar: 'Não foi possível carregar os afastamentos.',
+      /* a decisão do fluxo (licença e dispensa), embaixo do Sim/Não */
       foraDoFluxo: 'Sai do ciclo por tempo indeterminado; volta quando o administrador o incluir de novo pela aba Ciclo da Escala.',
       segueNoFluxo: 'Continua no fluxo, só bloqueia os dias do afastamento.',
-      falhaSalvarLicenca: 'Não foi possível salvar a licença. Tente de novo.',
-      falhaSalvarDispensa: 'Não foi possível salvar a dispensa. Tente de novo.',
-      /* aviso ao lançar afastamento sobre um dia coberto por troca aprovada; datas = lista já formatada */
-      confirmarTroca: function (datas) { return 'Este militar cobre serviço por troca em ' + datas + '. Se você lançar o afastamento, ele deixa de assumir esse serviço, e a escala vai marcá-lo em amarelo. Continuar?'; },
-      /* painel Férias: o problema de um período (vai para a nota embaixo da lista) */
-      feriasFimAntes: 'A data de fim deve ser igual ou depois do início.',
-      feriasCruza: function (periodo) { return 'Este período cruza com as férias de ' + periodo + '.'; },
-      feriasLimite: function (data) { return 'Só dá para mudar as férias a partir de ' + data + '.'; },
-      /* aviso antes de gravar: o que o militar já tem nos dias que entram nas férias */
-      feriasConfirmar: 'Nos dias novos das férias, este militar já tem:',
-      feriasTroca: function (dia, com) { return 'Cobre o serviço ' + (com ? 'de ' + com + ' ' : '') + 'em ' + dia + '.'; },
-      feriasExtra: function (dia, unidade) { return 'Em ' + dia + (unidade ? ', n' + artigo(unidade) + ' ' + unidade : '') + '.'; },
-      feriasFolga: function (dia, situacao) { return 'Em ' + dia + (situacao ? ' (' + situacao + ')' : '') + '.'; },
-      feriasNotaConfirmar: 'Se você continuar, nada disso é desfeito: o serviço fica em amarelo na escala e a folga continua marcada.'
+      /* o problema de um período (vai para a nota embaixo da lista) */
+      fimAntes: 'A data de fim deve ser igual ou depois do início.',
+      cruza: function (periodo) { return 'Este período cruza com o de ' + periodo + '.'; },
+      limite: function (data) { return 'Só dá para mudar o que vai de ' + data + ' em diante.'; },
+      /* aviso antes de gravar: o que o militar já tem nos dias novos e se ele continua fora da escala */
+      confirmarTem: 'Nos dias novos, este militar já tem:',
+      confirmarSo: 'Confira antes de salvar:',
+      itemTroca: function (dia, com) { return 'Cobre o serviço ' + (com ? 'de ' + com + ' ' : '') + 'em ' + dia + '.'; },
+      itemExtra: function (dia, unidade) { return 'Em ' + dia + (unidade ? ', n' + artigo(unidade) + ' ' + unidade : '') + '.'; },
+      itemFolga: function (dia, situacao) { return 'Em ' + dia + (situacao ? ' (' + situacao + ')' : '') + '.'; },
+      itemContinuaFora: function (data) { return 'Continua fora da escala desde ' + data + '. A volta é pela aba Ciclo da Escala.'; },
+      notaConfirmar: 'Se você continuar, nada disso é desfeito: o serviço fica em amarelo na escala e a folga continua marcada.'
     },
 
     /* ajustes — painel do ritmo da unidade (o Salvar pergunta a data a partir da qual o ritmo vale) */
@@ -563,12 +600,28 @@
             var folha = 'A4 ' + (paisagem ? 'paisagem' : 'retrato');
             return continua ? 'PDF em página contínua, na largura da ' + folha : 'Arquivo em PDF, ' + folha;
           },
-          /* "27/09 a 31/10/2026"; vários trechos: "04/10 a 10/10 e 18/10 a 24/10/2026" */
+          /* as datas: "4 a 10 de outubro", "1 a 3, 11 a 17 e 25 a 31 de outubro", "outubro de 2026" */
           trecho: function (inicio, fim) { return inicio === fim ? inicio : inicio + ' a ' + fim; },
           juntar: function (lista) { return lista.length > 1 ? lista.slice(0, -1).join(', ') + ' e ' + lista[lista.length - 1] : (lista[0] || ''); },
-          mes: function (nomeMes, ano) { return nomeMes + ' de ' + ano; },
-          periodo: function (dias, texto) { return dias + (dias === 1 ? ' dia: ' : ' dias: ') + texto + '.'; },
-          folhas: function (n, continua) { return continua ? 'Uma página contínua.' : (n === 1 ? '1 folha.' : n + ' folhas.'); },
+          doMes: function (dias, nomeMes) { return dias + ' de ' + nomeMes; },
+          comAno: function (texto, ano) { return texto + ' de ' + ano; },
+          /* a frase embaixo do período (só quando não sai o mês todo) e o nome de cada botão de semana */
+          semanas: function (numeros, datas) {
+            var lista = numeros.length > 1 ? numeros.slice(0, -1).join(', ') + ' e ' + numeros[numeros.length - 1] : numeros[0];
+            return (numeros.length > 1 ? 'Semanas ' : 'Semana ') + lista + ': ' + datas + '.';
+          },
+          semanaRotulo: function (n, datas) { return 'Semana ' + n + ', ' + datas; },
+          dias: function (n, datas) { return n + (n === 1 ? ' dia: ' : ' dias: ') + datas + '.'; },
+          /* a nota do alto: "Calendário de outubro de 2026, 2ªCIBM, 1ºPEL e 2ºPEL, sem filtros." */
+          doMesDaTela: function (texto) { return 'de ' + texto; },
+          daSemana: function (texto) { return 'da semana de ' + texto; },
+          resumo: function (grade, periodo, unidades, filtros) {
+            var comFiltros = filtros.length ? (filtros.length > 1 ? 'com os filtros ' : 'com o filtro ') + filtros.join('; ') : 'sem filtros';
+            return grade + ' ' + periodo + ', ' + unidades + ', ' + comFiltros + '.';
+          },
+          folhas: function (n, continua, paisagem) {
+            return continua ? 'Uma página contínua.' : (n === 1 ? '1 folha' : n + ' folhas') + ', A4 ' + (paisagem ? 'paisagem' : 'retrato') + '.';
+          },
           falhaPrevia: 'Não foi possível montar a prévia. Tente de novo.',
           longaDemais: 'A página contínua ficou longa demais para os leitores de PDF. Escolha Folhas A4 ou um período menor.',
           arquivo: function (nome, periodo, unidade) { return 'Escala ' + nome.toLowerCase() + ' ' + (unidade ? unidade + ' ' : '') + periodo + '.pdf'; }
