@@ -657,6 +657,10 @@
 .guia-amostra[data-cor="impressao-borda"] { background-color: var(--impressao-borda); }
 .guia-amostra[data-cor="impressao-fundo"] { background-color: var(--impressao-fundo); }
 .guia-amostra[data-cor="impressao-papel"] { background-color: var(--impressao-papel); }
+.guia-amostra[data-cor="impressao-faixa"] { background-color: var(--impressao-faixa); }
+.guia-amostra[data-cor="impressao-sucesso"] { background-color: var(--impressao-sucesso); }
+.guia-amostra[data-cor="impressao-alerta"] { background-color: var(--impressao-alerta); }
+.guia-amostra[data-cor="impressao-erro"] { background-color: var(--impressao-erro); }
 
 /* ---- tipografia: uma linha por tamanho da escala ---- */
 .guia-tipo { color: var(--texto); }

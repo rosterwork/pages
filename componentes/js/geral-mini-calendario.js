@@ -2,7 +2,7 @@
    COMPONENTE geral-mini-calendario — o mês em miniatura
    Grade de 7 colunas (dom a sáb) só com os dias do mês, para marcar
    ou escolher dias dentro de um painel (Solicitar extra, na
-   Extrajornada).
+   Extrajornada), e o calendário pessoal do Início.
    Cada dia é um botão com o número, um número pequeno no canto e um
    texto embaixo; quem usa pinta (classes mini-calendario-dia--*),
    escreve e liga o clique pelo gancho aoDia.

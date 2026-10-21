@@ -67,13 +67,6 @@
   /* meia-noite de hoje */
   function meiaNoiteHoje() { var d = new Date(); d.setHours(0, 0, 0, 0); return d; }
 
-  /* o dia de serviço em curso: ele vira às 08h, então antes disso ainda é o dia anterior */
-  function diaDeServico() {
-    var d = meiaNoiteHoje();
-    if (new Date().getHours() < 8) d.setDate(d.getDate() - 1);
-    return d;
-  }
-
   /* "Escolher outra data": troca a frase pelo campo, já com a data sugerida */
   function mostrarCampo() {
     sugestaoEl.classList.add('oculto');
@@ -113,7 +106,7 @@
     btnConfirmar.classList.toggle('botao--primario', !opcoes.confirmarPerigo);
     limparErro();
     /* padrão: o próximo dia de serviço (amanhã, virando às 08h) */
-    var dia = diaDeServico();
+    var dia = RosterWork.data.diaDeServico();
     dia.setDate(dia.getDate() + 1);
     input.value = RosterWork.data.paraBR(dia);
     sugestaoDataEl.textContent = input.value;

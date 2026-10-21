@@ -1328,6 +1328,15 @@
     <svg class="icone" width="13" height="13" aria-hidden="true"><use href="icones/icone-origem-base.svg#icone-origem-base"/></svg>
   </template>
 
+  <!-- um bloco por unidade dentro do dia (nome + a célula do Mês): Escala › Mês › Calendário,
+       Colunas › Dias e a caixa do dia tocado do Início (celular) -->
+  <template id="tpl-escala-calendario-unidade">
+    <div class="escala-calendario-unidade">
+      <span class="escala-calendario-unidade-nome"></span>
+      <div class="escala-mes-celula"></div>
+    </div>
+  </template>
+
   <!-- MOLDES: wrapper da grade Mês/Agenda (dias × unidades);
        o renderizador escalas-mes.js o clona, e a Extrajornada reusa a mesma grade -->
   <template id="tpl-escala-mes">

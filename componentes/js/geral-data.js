@@ -84,6 +84,14 @@
     return DIAS_SEMANA[d.getDay()] + ', ' + br;
   }
 
+  /* o dia de serviço em curso (Date à meia-noite): ele vira às 08h, então antes disso ainda é o dia anterior */
+  function diaDeServico() {
+    var agora = new Date();
+    var d = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+    if (agora.getHours() < 8) d.setDate(d.getDate() - 1);
+    return d;
+  }
+
   window.RosterWork.data = {
     soDigitos: soDigitos,
     mascararData: mascararData,
@@ -93,6 +101,7 @@
     paraBR: paraBR,
     isoParaBR: isoParaBR,
     comDiaSemana: comDiaSemana,
-    comDiaCurto: comDiaCurto
+    comDiaCurto: comDiaCurto,
+    diaDeServico: diaDeServico
   };
 })();

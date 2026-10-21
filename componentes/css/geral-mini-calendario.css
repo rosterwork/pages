@@ -4,8 +4,10 @@
    com o número (canto de cima à esquerda), um número pequeno no
    canto de cima à direita e um texto embaixo. Os estados pintam o
    dia: --quer (verde), --nao (vermelho) e --ocupado (cinza, sem
-   clique).
-   Usado no Solicitar extra (Extrajornada).
+   clique). Marcas de quem usa: --hoje (o número no círculo
+   escuro), --selecionado (a moldura escura do dia escolhido) e
+   --afastado (listrado, como o afastamento da Escala).
+   Usado no Solicitar extra (Extrajornada) e no calendário do Início.
    Montagem: componentes/js/geral-mini-calendario.js
    ============================================================ */
 
@@ -98,6 +100,35 @@
 .mini-calendario-dia--ocupado .mini-calendario-numero,
 .mini-calendario-dia--ocupado .mini-calendario-texto {
   color: var(--texto-debil);
+}
+
+/* hoje: o número no círculo escuro (o mesmo do calendário do mês) */
+.mini-calendario-dia--hoje .mini-calendario-numero {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 24px;
+  border-radius: 50%;
+  background-color: var(--fundo-contraste);
+  color: var(--texto-invertido);
+}
+
+/* o dia escolhido: moldura escura em volta */
+.mini-calendario-dia--selecionado {
+  outline: 2px solid var(--texto-forte);
+  outline-offset: 1px;
+}
+
+/* afastado (férias, licença, dispensa): as faixas diagonais do afastamento da Escala */
+.mini-calendario-dia--afastado {
+  background-image: repeating-linear-gradient(-45deg, var(--fundo-suave) 0 4px, var(--fundo-medio) 4px 8px);
+}
+
+.mini-calendario-dia--afastado .mini-calendario-texto {
+  font-weight: 600;
+  color: var(--texto-suave);
 }
 
 /* a legenda embaixo da grade: amostra da cor + o nome */

@@ -93,10 +93,15 @@
     return { dias: dias, inicio: inicio, fim: fim, quantos: form.ate - form.de + 1, texto: todos ? nomeMes : textoTrechos([[de, ate]]) };
   }
 
-  /* só CIA/CIBM/PEL têm escala; as outras marcadas na árvore são só o caminho */
+  /* só CIA/CIBM/PEL têm escala; as outras marcadas na árvore são só o caminho. Na ordem da tela
+     (as que a tela não mostra vão no fim, na ordem da árvore) */
   function unidadesComEscala() {
     if (!form || !form.seletor) return [];
-    return form.seletor.unidadesSelecionadas().filter(function (u) { return TIPOS_COM_ESCALA.indexOf(u.tipo) >= 0; });
+    var lista = form.seletor.unidadesSelecionadas().filter(function (u) { return TIPOS_COM_ESCALA.indexOf(u.tipo) >= 0; });
+    function posicao(u, i) { var p = form.ordemTela.indexOf(u.unidade_id); return p >= 0 ? p : form.ordemTela.length + i; }
+    return lista.map(function (u, i) { return { u: u, p: posicao(u, i) }; })
+      .sort(function (a, b) { return a.p - b.p; })
+      .map(function (x) { return x.u; });
   }
 
   /* ---------- semanas ---------- */
@@ -123,11 +128,7 @@
     });
   }
 
-  function todasAsSemanas() {
-    var lista = [];
-    for (var i = 0; i < semanasDoMes(form.mes).length; i++) lista.push(i);
-    return lista;
-  }
+  function todasAsSemanas() { return semanasDoMes(form.mes).map(function (s, i) { return i; }); }
 
   /* com o Mês todo marcado, a semana clicada fica sozinha; depois, cada clique põe ou tira uma (nunca zera);
      com todas marcadas, volta o Mês todo */
@@ -154,15 +155,11 @@
     [['de', faixa(1, ultimo), form.de], ['ate', faixa(form.de, ultimo), form.ate]].forEach(function (item) {
       var caixa = form.raiz.querySelector('[data-impressao-dia="' + item[0] + '"]');
       caixa.querySelector('.campo-selecao-texto').textContent = String(item[2]);
-      RW.dropdownNumeros.preencher(caixa.querySelector('.dropdown-menu'), {
-        opcoes: item[1],
-        valor: item[2],
-        aoEscolher: function (valor) {
-          if (item[0] === 'de') { form.de = valor; if (form.ate < valor) form.ate = valor; } else form.ate = valor;
-          montarDias();
-          mudou();
-        }
-      });
+      RW.dropdownNumeros.preencher(caixa.querySelector('.dropdown-menu'), { opcoes: item[1], valor: item[2], aoEscolher: function (valor) {
+        if (item[0] === 'de') { form.de = valor; if (form.ate < valor) form.ate = valor; } else form.ate = valor;
+        montarDias();
+        mudou();
+      } });
     });
   }
 
@@ -308,30 +305,15 @@
 
     var raiz = document.getElementById('painel');
     var data = opcoes.data || new Date();
+    function peca(nome) { return raiz.querySelector('[data-impressao-' + nome + ']'); }
+    /* as escolhas (formato, Mostrar, mês, semanas, dias) e as peças do painel */
     form = {
-      raiz: raiz,
-      formato: formato,
-      continua: false,
-      mostrar: { grafico: true, icones: true, faixa: true },
-      diasPorLinha: opcoes.diasPorLinha || 3,
-      mes: new Date(data.getFullYear(), data.getMonth(), 1),
-      mesTodo: true,
-      semanas: [],
-      de: 1,
-      ate: 1,
-      mesNome: raiz.querySelector('[data-impressao-mes-nome]'),
-      mesTodoBotao: raiz.querySelector('[data-impressao-mes-todo]'),
-      lista: raiz.querySelector('[data-impressao-semanas]'),
-      periodo: raiz.querySelector('[data-impressao-periodo]'),
-      previa: raiz.querySelector('[data-impressao-previa]'),
-      aviso: raiz.querySelector('[data-impressao-previa-aviso]'),
-      carregando: raiz.querySelector('[data-impressao-previa-carregando]'),
-      folhas: raiz.querySelector('[data-impressao-folhas]'),
-      arvore: raiz.querySelector('[data-impressao-arvore]'),
-      gerar: raiz.querySelector('[data-impressao-gerar]'),
-      seletor: null,
-      pedido: null,
-      url: null
+      raiz: raiz, formato: formato, continua: false, mostrar: { grafico: true, icones: true, faixa: true },
+      diasPorLinha: opcoes.diasPorLinha || 3, ordemTela: (opcoes.unidades || []).map(Number),
+      mes: new Date(data.getFullYear(), data.getMonth(), 1), mesTodo: true, semanas: [], de: 1, ate: 1,
+      mesNome: peca('mes-nome'), mesTodoBotao: peca('mes-todo'), lista: peca('semanas'), periodo: peca('periodo'),
+      previa: peca('previa'), aviso: peca('previa-aviso'), carregando: peca('previa-carregando'), folhas: peca('folhas'),
+      arvore: peca('arvore'), gerar: peca('gerar'), seletor: null, pedido: null, url: null
     };
 
     /* só as peças do período desta grade (semanas ou dias) */
