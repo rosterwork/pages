@@ -6,14 +6,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Entrar no Roster Work — sistema de escala de serviço." />
   <link rel="icon" href="icones/logo-aba.svg" type="image/svg+xml" />
+  <!-- app instalável no celular: manifesto, ícone do iPhone e o nome na tela de início -->
+  <link rel="manifest" href="aplicativo.webmanifest" />
+  <link rel="apple-touch-icon" href="logos/aplicativo-180.png" />
+  <meta name="apple-mobile-web-app-title" content="Roster Work" />
   <title>Login — Roster Work</title>
   <script src="componentes/js/geral-tema.js"></script>
+  <script src="componentes/js/geral-aplicativo.js"></script>
+  <script src="componentes/js/geral-conectado.js"></script>
   <script src="js/login-sessao.js"></script>
   <link rel="stylesheet" href="css/geral-tema.css" />
   <link rel="stylesheet" href="css/geral-base.css" />
   <link rel="stylesheet" href="componentes/css/geral-botao.css" />
   <link rel="stylesheet" href="componentes/css/geral-campo.css" />
   <link rel="stylesheet" href="componentes/css/geral-carregando.css" />
+  <link rel="stylesheet" href="componentes/css/geral-arvore.css" />
   <link rel="stylesheet" href="css/login-pagina.css" />
 </head>
 <body>
@@ -44,6 +51,17 @@
             <label class="campo-rotulo" for="entrada-senha">Senha</label>
             <input class="campo-entrada" type="password" id="entrada-senha" name="senha" autocomplete="current-password" />
             <span class="campo-erro-texto" role="alert"></span>
+          </div>
+
+          <!-- login lembrado neste aparelho (geral-conectado): 7 dias sem uso, 30 no app do celular, onde já vem marcada -->
+          <div class="login-conectado">
+            <div class="login-conectado-linha">
+              <button type="button" class="caixa-selecao" id="login-conectado" role="checkbox" aria-checked="false" aria-labelledby="login-conectado-rotulo">
+                <svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg>
+              </button>
+              <span class="login-conectado-rotulo" id="login-conectado-rotulo">Manter-me conectado neste dispositivo</span>
+            </div>
+            <span class="campo-ajuda">Não marque em computador de uso coletivo.</span>
           </div>
 
         </div>

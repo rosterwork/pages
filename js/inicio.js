@@ -1,19 +1,19 @@
 /* ============================================================
-   INÍCIO — o calendário do militar e os avisos
-   O mês de quem está logado (inicio_calendario: a mesma leitura do
-   mês da Escala, filtrada por ele) no mês em miniatura do Solicitar
-   extra (geral-mini-calendario). No computador, cada dia traz as
-   linhas da Escala (ícone, Serviço/Extra/Troca e o horário, pelo
-   escalas-celula.js) e o clique abre o painel do dia; no celular, o
-   dia mostra só os ícones e o toque leva o dia à caixa embaixo, com
-   o botão que abre o painel. O painel do dia abre só de leitura,
-   com o militar destacado (escalas-painel.js). "Hoje" é o dia de
-   serviço (vira às 08h). Abaixo, os 3 comunicados mais recentes
-   (fn_avisos_listar) e, ao lado (computador), os atalhos. A página
-   aparece inteira de uma vez (o véu espera o mês e os avisos), e a
-   troca de mês usa o mesmo véu. No computador os dias têm largura
-   mínima: quando não cabem, o calendário rola para o lado até hoje
-   e até o dia clicado. Só clona moldes.
+   INÍCIO — o calendário do militar, os avisos e as pendências
+   À esquerda, o mês de quem está logado (inicio_calendario: a mesma
+   leitura do mês da Escala, filtrada por ele) no mês em miniatura do
+   Solicitar extra (geral-mini-calendario), com os ícones da Escala em
+   cada dia; o clique (ou o toque) escolhe o dia, e o resumo embaixo
+   mostra as linhas dele, com o botão que abre o painel do dia (só de
+   leitura, com o militar destacado: escalas-painel.js). "Hoje" é o
+   dia de serviço (vira às 08h). Ao lado, os avisos (fn_avisos_listar)
+   e as pendências: o que espera a sua decisão (a fila da Pendências,
+   geral-fila, que abre o painel de decisão), os prazos e os seus
+   pedidos em andamento e resolvidos nos últimos 30 dias
+   (inicio_meus_pedidos); para o administrador, também a aba
+   Administração. Cada lista mostra o que cabe na altura da tela e o
+   Ver todos leva ao resto. A página aparece inteira de uma vez (o véu
+   espera tudo), e a troca de mês usa o mesmo véu. Só clona moldes.
    ============================================================ */
 (function () {
   'use strict';
@@ -30,18 +30,25 @@
   };
   /* as linhas de quem saiu do serviço (riscadas na Escala) */
   var RISCADA = { folga: true, troca_saida: true };
-  var AVISOS_NO_INICIO = 3;
+  /* embaixo do calendário (tela estreita ou celular), cada lista mostra os 3 primeiros */
+  var LISTA_EMPILHADA = 3;
+  /* o ícone de cada pedido (os mesmos da fila da Pendências) e a cor do selo da correção de dados */
+  var ICONE_PEDIDO = { troca: 'trocas', folga: 'folgas', dados: 'editar' };
+  var SELO_DADOS = { pendente: 'selo--alerta', aprovada: 'selo--sucesso', recusada: 'selo--erro', parcial: 'selo--alerta' };
 
   var el = {};
   var conteudo = null;   // o bloco de conteúdo do shell (o véu de carregamento mora nele)
   var estado = { mes: null, dados: null, selecionado: null, pedido: 0 };
+  var pend = { aba: 'paramim', filaMinhas: null, filaAprovar: null, pedido: 0 };
+  var tamanhoLigado = false;
 
   function iso(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
   function dataDeIso(s) { var p = String(s).split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
-  function ddmm(s) { var p = String(s || '').slice(0, 10).split('-'); return p.length === 3 ? p[2] + '/' + p[1] : ''; }
   function celular() { return !!(RW.celular && RW.celular()); }
   function hojeIso() { return iso(RW.data.diaDeServico()); }
   function cpfLogado() { var u = RW.sessao.perfil(); return u ? u.cpf : null; }
+  function nomeDe(grau, nome) { return ((grau || '') + ' ' + (nome || '')).trim(); }
+  function irPara(pagina, aba, referencia) { if (pagina && RW.irParaPagina) RW.irParaPagina(pagina, aba || null, referencia); }
 
   /* ---------- o dia e o painel do dia ---------- */
 
@@ -108,41 +115,26 @@
     return svg;
   }
 
-  /* um dia no quadradinho: no computador as linhas, no celular os ícones; o afastado, listrado */
+  /* um dia no quadradinho: os ícones das linhas dele (folga e troca de saída apagados); o afastado,
+     listrado com a sigla (FÉR, LIC, DIS) */
   function desenharDia(botao, diaIso) {
-    var unidades = estado.dados.unidades;
     var dia = estado.dados.dias[diaIso] || { linhas: [] };
     var linhas = dia.linhas || [];
     var texto = botao.querySelector('.mini-calendario-texto');
     if (diaIso === hojeIso()) botao.classList.add('mini-calendario-dia--hoje');
-    if (celular() && diaIso === estado.selecionado) botao.classList.add('mini-calendario-dia--selecionado');
-    if (unidadeDoDia(dia)) marcarDia(botao, unidadeDoDia(dia), diaIso, unidades);
+    if (diaIso === estado.selecionado) botao.classList.add('mini-calendario-dia--selecionado');
 
     var afast = linhas.filter(function (l) { return l.origem === 'afastamento'; })[0];
     if (afast) {
       botao.classList.add('mini-calendario-dia--afastado');
-      texto.textContent = celular()
-        ? String(afast.afastamento || '').slice(0, 3).toUpperCase()
-        : RW.mensagens.geral.afastadoAte(afast.afastamento || '', ddmm(afast.ate));
+      texto.textContent = String(afast.afastamento || '').slice(0, 3).toUpperCase();
       return;
     }
-    if (celular()) {
-      linhas.forEach(function (l) {
-        var ic = icone(ICONE_ORIGEM[l.origem] || ICONE_ORIGEM.sistema);
-        if (!ic) return;
-        if (RISCADA[l.origem]) ic.classList.add('inicio-icone--riscado');
-        texto.appendChild(ic);
-      });
-      return;
-    }
-    var grupos = porUnidade(linhas);
-    grupos.forEach(function (g) {
-      var cont = RW.tpl('tpl-inicio-dia-linhas');
-      if (!cont) return;
-      preencherLinhas(cont, g.linhas);
-      /* dia em duas unidades: cada grupo abre o painel da sua */
-      if (grupos.length > 1) marcarDia(cont, g.unidade, diaIso, unidades);
-      botao.appendChild(cont);
+    linhas.forEach(function (l) {
+      var ic = icone(ICONE_ORIGEM[l.origem] || ICONE_ORIGEM.sistema);
+      if (!ic) return;
+      if (RISCADA[l.origem]) ic.classList.add('inicio-icone--riscado');
+      texto.appendChild(ic);
     });
   }
 
@@ -151,7 +143,7 @@
     mostrarDia(estado.selecionado);
   }
 
-  /* o dia que a caixa mostra ao abrir o mês: o próximo serviço de hoje em diante; sem ele, hoje; fora do
+  /* o dia que o resumo mostra ao abrir o mês: o próximo serviço de hoje em diante; sem ele, hoje; fora do
      mês de hoje, o primeiro dia com algo marcado */
   function diaPadrao() {
     var dias = estado.dados.dias;
@@ -187,7 +179,6 @@
       estado.dados = { dias: r.dias, unidades: r.unidades || {} };
       estado.selecionado = diaPadrao();
       desenharMes();
-      rolarAte(hojeIso());   // a grade abre em hoje (quando os dias não cabem na largura)
     }, function () {
       if (pedido !== estado.pedido || !el.calendario.isConnected) return;
       estadoCalendario('tpl-escala-estado', RW.mensagens.inicio.falhaCarregar);
@@ -206,33 +197,14 @@
     });
   }
 
-  /* deixa o dia à vista quando os 7 dias não cabem na largura (computador: painel aberto ou tela estreita),
-     rolando o calendário para o lado pelo ajudante comum das grades, com a ponta do dia anterior à vista.
-     soSeEscondido: só rola se o dia não estiver inteiro na tela */
-  function rolarAte(diaIso, soSeEscondido) {
-    if (celular() || !RW.periodo) return;
-    var botao = el.calendario.querySelector('.mini-calendario-dia[data-iso="' + diaIso + '"]');
-    if (!botao) return;
-    if (soSeEscondido) {
-      var area = el.calendario.getBoundingClientRect(), dia = botao.getBoundingClientRect();
-      if (dia.left >= area.left && dia.right <= area.right) return;
-    }
-    /* o anterior é o que está à esquerda na mesma linha; no domingo (1ª coluna), o próprio dia */
-    var anterior = dataDeIso(diaIso).getDay() === 0 ? botao : botao.previousElementSibling;
-    RW.periodo.rolarAteHoje(el.calendario, botao, anterior, { horizontal: true });
-  }
-
-  /* computador: o clique abre o painel do dia (o grupo da unidade, no dia com duas) e o calendário, que
-     o painel estreitou, rola para o dia continuar à vista; celular: escolhe o dia */
+  /* o clique (ou o toque) escolhe o dia; o resumo mostra as linhas dele */
   function aoClicarCalendario(e) {
     var botao = e.target.closest('.mini-calendario-dia');
     if (!botao || !estado.dados) return;
-    if (celular()) { selecionar(botao.dataset.iso); return; }
-    abrirPainel(e.target.closest('[data-unidade-id]'));
-    rolarAte(botao.dataset.iso, true);
+    selecionar(botao.dataset.iso);
   }
 
-  /* ---------- dia tocado (celular) ---------- */
+  /* ---------- resumo do dia escolhido ---------- */
 
   function limparDia() {
     el.diaTitulo.textContent = '';
@@ -251,10 +223,10 @@
     mostrarDia(diaIso);
   }
 
-  /* a caixa do dia: as linhas por unidade (o bloco do Calendário da Escala) e o botão do painel do dia */
+  /* o resumo: as linhas por unidade (o bloco do Calendário da Escala) e o botão do painel do dia */
   function mostrarDia(diaIso) {
     limparDia();
-    if (!celular() || !diaIso || !estado.dados) return;
+    if (!diaIso || !estado.dados) return;
     var d = dataDeIso(diaIso);
     var unidades = estado.dados.unidades;
     var dia = estado.dados.dias[diaIso] || { linhas: [] };
@@ -290,6 +262,33 @@
     });
   }
 
+  /* ---------- o que cabe na tela ---------- */
+
+  /* mostra os cartões da lista que cabem nela (ao lado do calendário, até o fim da tela; embaixo dele, os 3
+     primeiros) e esconde o resto; o Ver todos aparece quando algum ficou de fora */
+  function encaixarLista(lista, botao, aoLado) {
+    if (!lista) return;
+    var itens = Array.prototype.slice.call(lista.querySelectorAll('.inicio-aviso, .pedido--linha'));
+    itens.forEach(function (c) { c.classList.remove('oculto'); });
+    var limite = lista.getBoundingClientRect().bottom;
+    var escondidos = 0, cheio = false;
+    itens.forEach(function (c, i) {
+      if (!cheio) cheio = aoLado ? c.getBoundingClientRect().bottom > limite + 1 : i >= LISTA_EMPILHADA;
+      if (cheio) { c.classList.add('oculto'); escondidos++; }
+    });
+    if (botao) botao.classList.toggle('oculto', !escondidos);
+  }
+
+  /* ao lado do calendário, avisos e pendências dividem a altura da tela; embaixo dele (tela estreita ou
+     celular), cada caixa tem a altura do que mostra */
+  function encaixar() {
+    if (!el.meio || !el.meio.isConnected) return;
+    var aoLado = !celular() && Math.abs(el.meio.getBoundingClientRect().top - el.esquerda.getBoundingClientRect().top) < 4;
+    el.meio.classList.toggle('inicio-meio--lado', aoLado);
+    encaixarLista(el.avisos, el.avisosTodos, aoLado);
+    encaixarLista(el.pendCaixa.querySelector('[data-pend-painel="' + pend.aba + '"]'), el.pendTodos, aoLado);
+  }
+
   /* ---------- avisos ---------- */
 
   function vazio(container, texto) {
@@ -300,21 +299,21 @@
 
   /* "Cap. Rocha · 20/10" */
   function metaAviso(a) {
-    var autor = ((a.criado_por_grau || '') + ' ' + (a.criado_por_nome || '')).trim();
+    var autor = nomeDe(a.criado_por_grau, a.criado_por_nome);
     var d = a.criado_em ? new Date(a.criado_em) : null;
     var data = (d && !isNaN(d)) ? String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') : '';
     return [autor, data].filter(Boolean).join(' · ');
   }
 
-  /* a caixa só aparece com comunicado ou para o admin; mostra os mais recentes e o Ver todos (N) */
+  /* a caixa só aparece com comunicado ou para o admin; o Ver todos (N) aparece quando algum não cabe */
   function montarAvisos(avisos) {
     var admin = !!(RW.inicioAviso && RW.inicioAviso.ehAdmin());
     el.avisosCaixa.classList.toggle('oculto', !avisos.length && !admin);
     el.avisosTotal.textContent = String(avisos.length);
-    el.avisosTodos.classList.toggle('oculto', !avisos.length);
-    if (!avisos.length) { vazio(el.avisos, RW.mensagens.avisos.semComunicados); return; }
+    el.avisosTodos.classList.add('oculto');
+    if (!avisos.length) { vazio(el.avisos, RW.mensagens.avisos.semComunicados); encaixar(); return; }
     el.avisos.textContent = '';
-    avisos.slice(0, AVISOS_NO_INICIO).forEach(function (a) {
+    avisos.forEach(function (a) {
       var cartao = RW.tpl('tpl-inicio-aviso');
       if (!cartao) return;
       cartao.querySelector('.inicio-aviso-titulo').textContent = a.titulo || '';
@@ -327,6 +326,7 @@
       }
       el.avisos.appendChild(cartao);
     });
+    encaixar();
   }
 
   /* a promessa sempre se cumpre, com falha também (a mensagem fica na caixa) */
@@ -340,15 +340,164 @@
       });
   }
 
+  /* ---------- pendências ---------- */
+
+  /* um cartão da Pendências (geral-pedido) com o selo da situação; o clique leva aonde o assunto mora */
+  function cartaoPendencia(nomeIcone, quem, meta, selo, aoClicar) {
+    var c = RW.tpl('tpl-pedido-linha');
+    if (!c) return null;
+    var uso = c.querySelector('.pedido-linha-icone use');
+    if (uso) uso.setAttribute('href', 'icones/icone-' + nomeIcone + '.svg#icone-' + nomeIcone);
+    c.querySelector('.pedido-quem').textContent = quem;
+    c.querySelector('.pedido-meta').textContent = meta || '';
+    var s = c.querySelector('.pedido-linha-selo');
+    s.textContent = selo.texto;
+    s.classList.add(selo.classe);
+    s.classList.remove('oculto');
+    c.addEventListener('click', aoClicar);
+    return c;
+  }
+
+  /* um pedido seu (em andamento ou resolvido): a frase, o dia e o selo com a situação; leva à página dele */
+  function cartaoMeuPedido(p) {
+    var M = RW.mensagens, mi = M.inicio, pe = M.pendencias;
+    var outro = nomeDe(p.outro_grau, p.outro_nome);
+    var resolvido = !p.andamento;
+    var meta = pe.metaServico(RW.data.comDiaCurto(p.data), RW.fila.trecho(p.horario_inicio, p.horario_fim));
+    if (p.tipo === 'troca') {
+      var quem = p.alteracao ? mi.trocaAlteracao(outro)
+        : (p.papel === 'solicitante' ? mi.trocaVoce(outro, resolvido) : mi.trocaOutro(outro, resolvido));
+      return cartaoPendencia(ICONE_PEDIDO.troca, quem, meta, RW.trocasFormato.situacao(p.situacao, p.alteracao),
+        function () { irPara('trocas', 'minhas'); });
+    }
+    if (p.tipo === 'folga') {
+      return cartaoPendencia(ICONE_PEDIDO.folga, mi.folgaVoce, meta,
+        { texto: M.folgas.situacao[p.situacao] || '', classe: RW.folgasFormato.situacaoClasse(p.situacao) },
+        function () { irPara('folgas', 'minhas'); });
+    }
+    return cartaoPendencia(ICONE_PEDIDO.dados, mi.dadosVoce, pe.metaDados(p.alteracoes || 0, RW.data.isoParaBR(p.data)),
+      { texto: mi.situacaoDados[p.situacao] || '', classe: SELO_DADOS[p.situacao] || 'selo--escuro' },
+      function () { irPara('perfil'); });
+  }
+
+  /* um prazo seu (ex.: a extra do mês): leva aonde se responde */
+  function cartaoPrazo(g) {
+    return cartaoPendencia(g.tipo === 'extra_prazo' ? 'extrajornada' : 'alerta', g.texto || '', g.mensagem || '',
+      { texto: RW.mensagens.inicio.seloPrazo, classe: 'selo--alerta' },
+      function () { irPara(g.pagina, g.aba, g.referencia); });
+  }
+
+  /* o que o administrador precisa corrigir: os nomes ficam na página Pendências (ou a tela do conserto) */
+  function cartaoCorrigir(g) {
+    var mi = RW.mensagens.inicio;
+    var meta = g.militares ? mi.metaMilitares(Number(g.contagem) || g.militares.length) : (g.mensagem || '');
+    var selo = g.nivel === 'alerta' ? { texto: mi.seloRevisar, classe: 'selo--alerta' } : { texto: mi.seloCorrigir, classe: 'selo--erro' };
+    return cartaoPendencia('alerta', g.texto || '', meta, selo, function () {
+      if (g.pagina) irPara(g.pagina, g.aba);
+      else irPara('pendencias', 'administracao');
+    });
+  }
+
+  function preencher(lista, itens, montar) {
+    lista.textContent = '';
+    itens.forEach(function (x) { var c = montar(x); if (c) lista.appendChild(c); });
+  }
+
+  /* a fila da Pendências (abre o painel de decisão): vazia, nem aparece */
+  function definirFila(fila, lista, pedidos) {
+    lista.classList.toggle('oculto', !pedidos.length);
+    if (!pedidos.length) { lista.textContent = ''; return; }
+    if (fila) fila.definir(pedidos);
+  }
+
+  function escreverSelo(selo, n) {
+    selo.textContent = n ? String(n) : '';
+    selo.classList.toggle('oculto', !n);
+  }
+
+  /* o militar: uma lista só, com o título; o administrador: as abas, com o número do que depende dele (a
+     mesma conta da página Pendências). A caixa só aparece quando há alguma coisa */
+  function montarPendencias(fila, meus) {
+    var admin = RW.sessao.temPapel('pelotao');
+    var quanto = RW.avisosSino ? RW.avisosSino.quantoSoma : function () { return 0; };
+    function somar(grupos) { return grupos.reduce(function (s, g) { return s + quanto(g); }, 0); }
+    var temParaMim = fila.minhas.length + fila.prazos.length + meus.length > 0;
+    var temAdmin = admin && fila.aprovar.length + fila.corrigir.length > 0;
+
+    el.pendCaixa.classList.toggle('oculto', !temParaMim && !temAdmin);
+    el.pendTitulo.classList.toggle('oculto', admin);
+    el.pendAbas.classList.toggle('oculto', !admin);
+    escreverSelo(el.pendContagemParaMim, fila.minhas.length + somar(fila.prazos));
+    escreverSelo(el.pendContagemAdministracao, fila.aprovar.length + somar(fila.corrigir));
+
+    definirFila(pend.filaMinhas, el.pendMinhas, fila.minhas);
+    el.pendMeus.textContent = '';
+    fila.prazos.forEach(function (g) { var c = cartaoPrazo(g); if (c) el.pendMeus.appendChild(c); });
+    meus.forEach(function (p) { var c = cartaoMeuPedido(p); if (c) el.pendMeus.appendChild(c); });
+    el.pendVazio.paramim.classList.toggle('oculto', temParaMim);
+
+    if (admin) {
+      definirFila(pend.filaAprovar, el.pendAprovar, fila.aprovar);
+      preencher(el.pendCorrigir, fila.corrigir, cartaoCorrigir);
+      el.pendVazio.administracao.classList.toggle('oculto', temAdmin);
+    }
+    encaixar();
+  }
+
+  /* o que espera a sua decisão e os prazos (a mesma leitura da Pendências) + os seus pedidos; só a última
+     leitura pedida desenha; a promessa sempre se cumpre */
+  function carregarPendencias() {
+    var meu = ++pend.pedido;
+    return Promise.all([
+      RW.fila ? RW.fila.ler() : Promise.resolve(null),
+      RW.rpc('inicio_meus_pedidos', {}).catch(function () { return null; })
+    ]).then(function (r) {
+      if (meu !== pend.pedido || !el.pendCaixa.isConnected) return;
+      montarPendencias(r[0] || { minhas: [], aprovar: [], corrigir: [], prazos: [] }, Array.isArray(r[1]) ? r[1] : []);
+    });
+  }
+
+  function trocarAba(aba) {
+    pend.aba = aba;
+    Array.prototype.forEach.call(el.pendCaixa.querySelectorAll('[data-pend-painel]'), function (p) {
+      p.classList.toggle('oculto', p.getAttribute('data-pend-painel') !== aba);
+    });
+    encaixar();
+  }
+
+  function ligarPendencias() {
+    var porId = function (id) { return document.getElementById(id); };
+    el.pendCaixa = porId('inicio-pend-caixa');
+    el.pendTitulo = porId('inicio-pend-titulo');
+    el.pendAbas = porId('inicio-pend-abas');
+    el.pendTodos = porId('inicio-pend-todos');
+    el.pendContagemParaMim = porId('inicio-pend-paramim-contagem');
+    el.pendContagemAdministracao = porId('inicio-pend-administracao-contagem');
+    el.pendMinhas = porId('inicio-pend-minhas');
+    el.pendMeus = porId('inicio-pend-meus');
+    el.pendAprovar = porId('inicio-pend-aprovar');
+    el.pendCorrigir = porId('inicio-pend-corrigir');
+    el.pendVazio = {
+      paramim: el.pendCaixa.querySelector('[data-pend-painel="paramim"] [data-pend-vazio]'),
+      administracao: el.pendCaixa.querySelector('[data-pend-painel="administracao"] [data-pend-vazio]')
+    };
+    pend.aba = 'paramim';
+    /* as filas abrem o painel de decisão no espaço do painel; depois de decidir, as pendências se releem */
+    var opcoes = { situacao: true, recarregar: carregarPendencias };
+    pend.filaMinhas = RW.fila ? RW.fila.criar(el.pendMinhas, opcoes) : null;
+    pend.filaAprovar = (RW.fila && RW.sessao.temPapel('pelotao')) ? RW.fila.criar(el.pendAprovar, opcoes) : null;
+    if (RW.abas) RW.abas.ligar(el.pendAbas, function (aba) { trocarAba(aba.getAttribute('data-pend')); });
+    el.pendTodos.addEventListener('click', function () { irPara('pendencias', pend.aba); });
+  }
+
   /* ---------- atalhos (computador) ---------- */
 
-  /* Escala de hoje: o painel do dia de serviço de hoje (do mês na tela ou, fora dele, lido à parte); com o
-     mês de hoje na tela, o calendário rola para hoje continuar à vista */
+  /* Escala de hoje: o painel do dia de serviço de hoje (do mês na tela ou, fora dele, lido à parte) */
   function abrirHoje(botao) {
     var hoje = hojeIso();
     var dia = estado.dados && estado.dados.dias[hoje];
     if (dia) {
-      if (unidadeDoDia(dia)) { marcarDia(botao, unidadeDoDia(dia), hoje, estado.dados.unidades); abrirPainel(botao); rolarAte(hoje, true); }
+      if (unidadeDoDia(dia)) { marcarDia(botao, unidadeDoDia(dia), hoje, estado.dados.unidades); abrirPainel(botao); }
       return;
     }
     RW.rpc('inicio_calendario', { p_inicio: hoje, p_fim: hoje }).then(function (r) {
@@ -365,13 +514,13 @@
         var qual = b.getAttribute('data-atalho');
         if (qual === 'hoje') { abrirHoje(b); return; }
         var pagina = { troca: 'trocas', folga: 'folgas', extra: 'extrajornada' }[qual];
-        if (pagina && RW.irParaPagina) RW.irParaPagina(pagina, null, 'solicitar');
+        if (pagina) irPara(pagina, null, 'solicitar');
       });
     });
   }
 
-  /* o roteador tira o véu quando a promessa se cumpre: ela espera o mês e os avisos, para a página
-     aparecer inteira de uma vez */
+  /* o roteador tira o véu quando a promessa se cumpre: ela espera o mês, os avisos e as pendências, para a
+     página aparecer inteira de uma vez */
   function iniciar(conteudoPagina) {
     var u = RW.sessao.perfil();
     if (!u || !u.ok) return Promise.resolve();
@@ -382,7 +531,8 @@
       calendario: porId('inicio-calendario'), mesNome: porId('inicio-mes-nome'), mesHoje: porId('inicio-mes-hoje'),
       diaTitulo: porId('inicio-dia-titulo'), diaLinhas: porId('inicio-dia-linhas'), diaVazio: porId('inicio-dia-vazio'),
       diaEscala: porId('inicio-dia-escala'), avisosCaixa: porId('inicio-avisos-caixa'), avisos: porId('inicio-avisos'),
-      avisosTodos: porId('inicio-avisos-todos'), avisosTotal: porId('inicio-avisos-total')
+      avisosTodos: porId('inicio-avisos-todos'), avisosTotal: porId('inicio-avisos-total'),
+      esquerda: document.querySelector('.inicio-esquerda'), meio: document.querySelector('.inicio-meio')
     };
     if (!el.calendario || !RW.rpc || !RW.obterToken || !RW.obterToken()) return Promise.resolve();
 
@@ -408,7 +558,7 @@
 
     /* os avisos: Ver todos leva aos Comunicados; o grupo Administração (Novo comunicado) só para o admin,
        e no celular é um menu (fecha antes de abrir o painel) */
-    el.avisosTodos.addEventListener('click', function () { if (RW.irParaPagina) RW.irParaPagina('avisos', 'comunicados'); });
+    el.avisosTodos.addEventListener('click', function () { irPara('avisos', 'comunicados'); });
     var grupoAdmin = document.querySelector('#inicio-avisos-caixa .acoes-admin');
     var btnNovoAviso = porId('btn-novo-aviso');
     if (grupoAdmin && btnNovoAviso && RW.inicioAviso && RW.inicioAviso.ehAdmin()) {
@@ -420,8 +570,16 @@
     }
     var avisos = carregarAvisos();
 
+    ligarPendencias();
+    var pendencias = carregarPendencias();
+
     ligarAtalhos();
-    return Promise.all([mes, avisos]).then(function () {});
+    /* a janela mudou de tamanho: refaz a conta do que cabe (liga uma vez só; vale só com o Início na tela) */
+    if (!tamanhoLigado) {
+      tamanhoLigado = true;
+      window.addEventListener('resize', function () { encaixar(); });
+    }
+    return Promise.all([mes, avisos, pendencias]).then(encaixar);
   }
 
   RW.paginas.inicio = { iniciar: iniciar };

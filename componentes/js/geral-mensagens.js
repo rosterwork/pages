@@ -56,7 +56,18 @@
       falhaSalvarAviso: 'Não foi possível publicar o comunicado. Tente de novo.',
       falhaRemoverAviso: 'Não foi possível remover o comunicado. Tente de novo.',
       /* o nome de cada linha do dia no calendário */
-      rotulos: { servico: 'Serviço', extra: 'Extra', troca: 'Troca' }
+      rotulos: { servico: 'Serviço', extra: 'Extra', troca: 'Troca' },
+      /* as pendências: os seus pedidos (em andamento e resolvidos), os prazos e o que precisa ser corrigido */
+      trocaVoce: function (outro, resolvida) { return (resolvida ? 'Você quis trocar com ' : 'Você quer trocar com ') + outro; },
+      trocaOutro: function (outro, resolvida) { return outro + (resolvida ? ' quis trocar com você' : ' quer trocar com você'); },
+      trocaAlteracao: function (outro) { return 'Alteração da troca com ' + outro; },
+      folgaVoce: 'Você pediu folga',
+      dadosVoce: 'Você pediu correção de dados',
+      situacaoDados: { pendente: 'Aguardando aprovação', aprovada: 'Aprovada', recusada: 'Recusada', parcial: 'Aprovada em parte' },
+      seloPrazo: 'Prazo',
+      seloCorrigir: 'Corrigir',
+      seloRevisar: 'Revisar',
+      metaMilitares: function (n) { return n === 1 ? '1 militar' : n + ' militares'; }
     },
 
     /* Pendências › correção de dados (as alterações que o militar pediu na ficha) */
@@ -780,6 +791,8 @@
       /* o cartão de cada pedido: quem e o quê, e a linha de apoio */
       trocaAdmin: function (sol, par) { return sol + ' troca com ' + par; },
       trocaMinha: function (sol) { return sol + ' quer trocar com você'; },
+      /* o selo do pedido que espera a sua decisão (o Início mostra a situação no lugar da análise) */
+      aguardandoVoce: 'Aguardando você',
       /* a alteração de uma troca aprovada (quem pediu pode ser o solicitado) */
       trocaAdminAlteracao: function (sol, par) { return 'Alteração da troca de ' + sol + ' com ' + par; },
       trocaMinhaAlteracao: function (quemPediu) { return quemPediu + ' quer alterar uma troca com você'; },
@@ -1165,7 +1178,16 @@
     /* sessão */
     sessao: {
       expirada: 'Sua sessão expirou. Entre novamente.',
-      expiradaInatividade: 'Sua sessão expirou por inatividade. Entre novamente.'
+      expiradaInatividade: 'Sua sessão expirou por inatividade. Entre novamente.',
+      /* Meu perfil › Segurança › Aparelhos */
+      sairTodosConfirmar: 'Sair de todos os aparelhos? A sua sessão será encerrada neste e em todos os outros aparelhos, inclusive no app do celular.',
+      sairTodosErro: 'Não foi possível sair de todos os aparelhos. Tente de novo.'
+    },
+
+    /* app no celular: o passo a passo quando o navegador não abre a janela de instalação */
+    aplicativo: {
+      instalarIphone: 'Para instalar no iPhone, abra o sistema no Safari, toque em Compartilhar e depois em Adicionar à Tela de Início.',
+      instalarAndroid: 'Para instalar, toque no menu do navegador (os três pontos) e depois em Instalar app ou Adicionar à tela inicial. Se o app já estiver instalado, abra pelo ícone Roster Work na tela do celular.'
     },
 
     /* histórico (página de auditoria, admin) — rótulos legíveis das ações e tipos */
@@ -1242,6 +1264,7 @@
       descartar: 'Descartar',
       sairSemSalvar: 'Sair sem salvar',
       irParaLogin: 'Ir para o login',
+      sairDeTodos: 'Sair de todos',
       excluirModelo: 'Excluir modelo',
       excluirViatura: 'Excluir viatura',
       excluirInstalacao: 'Excluir instalação',

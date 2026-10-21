@@ -5,8 +5,14 @@
   <meta name="viewport" content="width=1920" />
   <meta name="description" content="Roster Work — sistema de escala de serviço da corporação." />
   <link rel="icon" href="icones/logo-aba.svg" type="image/svg+xml" />
+  <!-- app instalável no celular: manifesto, ícone do iPhone e o nome na tela de início -->
+  <link rel="manifest" href="aplicativo.webmanifest" />
+  <link rel="apple-touch-icon" href="logos/aplicativo-180.png" />
+  <meta name="apple-mobile-web-app-title" content="Roster Work" />
   <title>Roster Work</title>
   <script src="componentes/js/geral-tema.js"></script>
+  <script src="componentes/js/geral-aplicativo.js"></script>
+  <script src="componentes/js/geral-conectado.js"></script>
   <script src="js/index-sessao.js"></script>
   <link rel="stylesheet" href="css/geral-tema.css" />
   <link rel="stylesheet" href="css/geral-base.css" />
@@ -134,6 +140,11 @@
           <button type="button" class="dropdown-item" id="btn-termos">
             <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-termos.svg#icone-termos" /></svg>
             <span>Termos e privacidade</span>
+          </button>
+          <!-- só no celular, fora do app instalado (geral-aplicativo.js; o toque no index-cabecalho.js) -->
+          <button type="button" class="dropdown-item oculto" id="btn-instalar-app">
+            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-celular.svg#icone-celular" /></svg>
+            <span>Instalar no celular</span>
           </button>
           <div class="dropdown-divisor"></div>
           <button id="btn-sair" class="dropdown-item dropdown-item--perigo">

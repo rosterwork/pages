@@ -1,7 +1,8 @@
 /* ============================================================
    MEU PERFIL — aba "Segurança": troca de senha. Exige a senha
    atual, valida no cliente e troca por RosterWork.trocarSenha
-   (que renova a sessão com a senha nova).
+   (que renova a sessão com a senha nova). Também o "Sair de todos
+   os aparelhos" (RosterWork.sairDeTodos).
    ============================================================ */
 (function () {
   'use strict';
@@ -55,6 +56,26 @@
     });
 
     revisar();
+
+    /* Aparelhos: encerra a sessão em todos os aparelhos (confirmação antes); deu certo, vai ao login */
+    var sairTodos = document.getElementById('sair-todos');
+    if (sairTodos) {
+      sairTodos.addEventListener('click', function () {
+        RosterWork.confirmar({
+          tipo: 'aviso',
+          mensagem: RosterWork.mensagens.sessao.sairTodosConfirmar,
+          textoConfirmar: RosterWork.mensagens.botoes.sairDeTodos,
+          aoConfirmar: function () {
+            RosterWork.iniciarCarregando(sairTodos);
+            RosterWork.sairDeTodos().then(function (saiu) {
+              if (saiu) return;
+              RosterWork.pararCarregando(sairTodos);
+              RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.sessao.sairTodosErro });
+            });
+          }
+        });
+      });
+    }
   }
 
   RosterWork.perfilSenha = { iniciar: iniciar };

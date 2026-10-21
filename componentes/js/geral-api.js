@@ -32,6 +32,8 @@
       access_token: accessToken,
       refresh_token: refreshToken
     }));
+    /* Manter-me conectado: o aparelho guarda a chave nova e conta o uso */
+    if (window.RosterWork.conectado) window.RosterWork.conectado.atualizar(accessToken, refreshToken);
   }
 
   function limparSessao() {
@@ -39,13 +41,21 @@
     sessionStorage.clear();
   }
 
+  /* o aparelho esquece o login lembrado quando ele é desta conta */
+  function esquecerLembrado(token) {
+    var conectado = window.RosterWork.conectado;
+    if (conectado && conectado.daSessao(token)) conectado.esquecer();
+  }
+
   /* ---------- saída (logout voluntário) ---------- */
 
+  /* sai só deste aparelho (scope=local): o app do celular e os outros aparelhos seguem conectados */
   function sair() {
     var token = obterToken();
     if (token) {
+      esquecerLembrado(token);
       /* keepalive: a chamada de logout completa mesmo durante a ida ao login */
-      fetch(SUPABASE_URL + '/auth/v1/logout', {
+      fetch(SUPABASE_URL + '/auth/v1/logout?scope=local', {
         method: 'POST',
         headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + token },
         keepalive: true
@@ -55,6 +65,18 @@
     window.location.replace('login.html');
   }
 
+  /* encerra a sessão em todos os aparelhos (scope=global), inclusive no app do celular.
+     Resolve false quando o servidor não confirmou (a sessão segue aberta) */
+  function sairDeTodos() {
+    return apiFetch('/auth/v1/logout?scope=global', { metodo: 'POST' }).then(function (resp) {
+      if (!resp.ok) return false;
+      esquecerLembrado(obterToken());
+      limparSessao();
+      window.location.replace('login.html');
+      return true;
+    }, function () { return false; });
+  }
+
   /* ---------- encerramento forçado (token inválido ou inatividade) ---------- */
 
   var encerrando = false;   /* um aviso só, mesmo se várias chamadas falharem juntas */
@@ -62,6 +84,7 @@
   function expirarSessao(mensagem) {
     if (encerrando) return;
     encerrando = true;
+    /* o login lembrado fica: na tela de entrada, o servidor diz se ele ainda vale */
     limparSessao();
     function irParaLogin() { window.location.replace('login.html'); }
     if (window.RosterWork.avisar) {
@@ -85,10 +108,14 @@
     var sessao = obterSessao();
     if (!sessao || !sessao.refresh_token) return Promise.reject(new Error('sem refresh_token'));
 
+    /* Manter-me conectado: renova pela chave mais nova do aparelho, que outra aba pode já ter trocado */
+    var lembrado = window.RosterWork.conectado ? window.RosterWork.conectado.daSessao(sessao.access_token) : null;
+    var chave = lembrado ? lembrado.refresh_token : sessao.refresh_token;
+
     renovacaoEmAndamento = fetch(SUPABASE_URL + '/auth/v1/token?grant_type=refresh_token', {
       method: 'POST',
       headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refresh_token: sessao.refresh_token })
+      body: JSON.stringify({ refresh_token: chave })
     }).then(function (resp) {
       if (!resp.ok) throw new Error('falha ao renovar a sessão');
       return resp.json();
@@ -181,4 +208,5 @@
   window.RosterWork.obterToken = obterToken;
   window.RosterWork.trocarSenha = trocarSenha;
   window.RosterWork.sair = sair;
+  window.RosterWork.sairDeTodos = sairDeTodos;
 })();

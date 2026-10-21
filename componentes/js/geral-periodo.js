@@ -7,8 +7,7 @@
    que mostra que há mais para trás. Com muitos dados, o começo de
    hoje continua à vista e o resto se lê rolando. O visual do
    período (‹ rótulo › Hoje) mora no geral-periodo.css; cada página
-   liga o seu. Componente compartilhado (Escala, Extrajornada e o
-   calendário do Início, que também rola até o dia clicado).
+   liga o seu. Componente compartilhado (Escala e Extrajornada).
    API: RosterWork.periodo.rolarAteHoje(area, hoje, anterior, opcoes)
    ============================================================ */
 (function () {

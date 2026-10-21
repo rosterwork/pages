@@ -30,6 +30,26 @@
     });
   }
 
+  /* Instalar no celular: aparece no celular, fora do app instalado. No Android abre a janela do
+     navegador; sem ela (iPhone, outro navegador, app já instalado), o aviso com o passo a passo */
+  var btnInstalar = document.getElementById('btn-instalar-app');
+
+  function atualizarInstalar() {
+    btnInstalar.classList.toggle('oculto', !RosterWork.aplicativo.podeInstalar());
+  }
+
+  if (btnInstalar && RosterWork.aplicativo) {
+    atualizarInstalar();
+    window.addEventListener('rosterwork_instalacao', atualizarInstalar);
+    btnInstalar.addEventListener('click', function () {
+      RosterWork.aplicativo.pedirInstalacao().then(function (abriu) {
+        if (abriu) return;
+        var textos = RosterWork.mensagens.aplicativo;
+        RosterWork.avisar({ tipo: 'aviso', mensagem: RosterWork.aplicativo.iphone() ? textos.instalarIphone : textos.instalarAndroid });
+      });
+    });
+  }
+
   var perfil = null;
   try { perfil = JSON.parse(sessionStorage.getItem('rosterwork_user')); } catch (e) {}
   if (!perfil || !perfil.ok) return;

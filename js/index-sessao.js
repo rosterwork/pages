@@ -9,7 +9,7 @@
      com a página de 1920px. Roda antes da primeira pintura, como o tema */
   function ligarCelular() {
     try {
-      if (Math.min(screen.width, screen.height) >= 768) return;
+      if (!window.RosterWork.aplicativo.celular()) return;   /* a conta do celular mora no geral-aplicativo.js */
       var viewport = document.querySelector('meta[name="viewport"]');
       if (viewport) viewport.setAttribute('content', 'width=device-width, initial-scale=1');
       document.documentElement.setAttribute('data-celular', '');

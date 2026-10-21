@@ -55,6 +55,29 @@
   width: 100%;
 }
 
+/* Manter-me conectado: a caixinha e o texto numa linha; o alerta logo abaixo, alinhado ao texto */
+.login-conectado {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.login-conectado-linha {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.login-conectado-rotulo {
+  font-size: var(--fonte-padrao);
+  color: var(--texto);
+  cursor: pointer;
+}
+
+.login-conectado .campo-ajuda {
+  margin-left: 24px;
+}
+
 .login-links {
   display: flex;
   flex-direction: column;

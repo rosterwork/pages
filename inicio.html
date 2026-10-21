@@ -6,8 +6,9 @@
   </div>
 
   <!-- o mês do calendário: ‹ nome › (o nome abre a escolha do mês) e o Hoje fora do mês atual; à direita,
-       a Legenda. No celular, os dois ficam na mesma linha (--uma-linha) -->
-  <div class="pagina-subcabecalho pagina-subcabecalho--uma-linha">
+       a Legenda, antes da faixa do painel (não anda quando ele abre). No celular, os dois ficam na mesma
+       linha (--uma-linha) -->
+  <div class="pagina-subcabecalho pagina-subcabecalho--uma-linha inicio-barra">
     <div class="geral-periodo">
       <button type="button" class="botao botao--icone" id="inicio-mes-anterior" aria-label="Mês anterior">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-esquerda.svg#icone-seta-esquerda"/></svg>
@@ -24,40 +25,76 @@
 
   <div class="pagina-corpo">
     <div class="inicio-layout">
-      <div class="inicio-principal">
-        <section class="inicio-calendario" id="inicio-calendario"></section>
+      <div class="inicio-area">
+        <div class="inicio-esquerda">
+          <section class="inicio-calendario" id="inicio-calendario"></section>
 
-        <!-- celular: o dia tocado (as linhas dele, as mesmas da Escala) e o botão do painel do dia -->
-        <section class="inicio-caixa inicio-dia">
-          <span class="inicio-dia-titulo" id="inicio-dia-titulo"></span>
-          <div class="inicio-dia-linhas" id="inicio-dia-linhas"></div>
-          <span class="inicio-vazio oculto" id="inicio-dia-vazio">Nada marcado neste dia.</span>
-          <button type="button" class="botao inicio-dia-escala" id="inicio-dia-escala">Ver a escala do dia</button>
-        </section>
+          <!-- o resumo do dia escolhido (as linhas dele, as mesmas da Escala) e o botão do painel do dia -->
+          <section class="inicio-caixa inicio-dia">
+            <span class="inicio-dia-titulo" id="inicio-dia-titulo"></span>
+            <div class="inicio-dia-linhas" id="inicio-dia-linhas"></div>
+            <span class="inicio-vazio oculto" id="inicio-dia-vazio">Nada marcado neste dia.</span>
+            <button type="button" class="botao inicio-dia-escala" id="inicio-dia-escala">Ver a escala do dia</button>
+          </section>
+        </div>
 
-        <!-- só aparece com comunicado ou para o administrador (que cria por aqui) -->
-        <section class="inicio-caixa oculto" id="inicio-avisos-caixa">
-          <div class="inicio-caixa-cabecalho">
-            <span class="rotulo-secao">Avisos</span>
-            <span class="espacador-flex"></span>
-            <!-- grupo Administração (só admin): o comunicado se cria também daqui -->
-            <div class="dropdown acoes-admin oculto">
-              <button type="button" class="botao acoes-admin-gatilho">
-                <span>Administração</span>
-                <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
-              </button>
-              <div class="dropdown-menu acoes-admin-menu">
-                <span class="rotulo-secao acoes-admin-rotulo">Administração</span>
-                <button type="button" class="botao" id="btn-novo-aviso">Novo comunicado</button>
+        <div class="inicio-meio">
+          <!-- só aparece com comunicado ou para o administrador (que cria por aqui) -->
+          <section class="inicio-caixa oculto" id="inicio-avisos-caixa">
+            <div class="inicio-caixa-cabecalho">
+              <span class="rotulo-secao">Avisos</span>
+              <span class="espacador-flex"></span>
+              <!-- grupo Administração (só admin): o comunicado se cria também daqui -->
+              <div class="dropdown acoes-admin oculto">
+                <button type="button" class="botao acoes-admin-gatilho">
+                  <span>Administração</span>
+                  <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+                </button>
+                <div class="dropdown-menu acoes-admin-menu">
+                  <span class="rotulo-secao acoes-admin-rotulo">Administração</span>
+                  <button type="button" class="botao" id="btn-novo-aviso">Novo comunicado</button>
+                </div>
               </div>
+              <button type="button" class="botao oculto" id="inicio-avisos-todos"><span>Ver todos (<span id="inicio-avisos-total"></span>)</span></button>
             </div>
-            <button type="button" class="botao oculto" id="inicio-avisos-todos"><span>Ver todos (<span id="inicio-avisos-total"></span>)</span></button>
-          </div>
-          <div class="inicio-avisos" id="inicio-avisos"></div>
-        </section>
+            <div class="inicio-avisos" id="inicio-avisos"></div>
+          </section>
+
+          <!-- pendências: o militar vê uma lista só ("Para mim", com o título); o administrador, as abas Para mim
+               e Administração com o número do que depende dele. Cada lista: os pedidos que esperam decisão (a
+               fila da Pendências, que abre o painel de decisão) e, embaixo, os prazos e os seus pedidos (Para mim)
+               ou o que precisa ser corrigido (Administração). Só aparece quando há alguma coisa -->
+          <section class="inicio-caixa oculto" id="inicio-pend-caixa">
+            <div class="inicio-pend-cabecalho">
+              <span class="rotulo-secao" id="inicio-pend-titulo">Pendências</span>
+              <div class="abas oculto" id="inicio-pend-abas">
+                <button type="button" class="aba aba--ativa" data-pend="paramim">
+                  <span>Para mim</span>
+                  <span class="selo aba-contagem oculto" id="inicio-pend-paramim-contagem"></span>
+                </button>
+                <button type="button" class="aba" data-pend="administracao">
+                  <span>Administração</span>
+                  <span class="selo aba-contagem oculto" id="inicio-pend-administracao-contagem"></span>
+                </button>
+              </div>
+              <span class="espacador-flex"></span>
+              <button type="button" class="botao oculto" id="inicio-pend-todos">Ver todos</button>
+            </div>
+            <div class="inicio-pend-lista" data-pend-painel="paramim">
+              <div class="pedido-lista" id="inicio-pend-minhas"></div>
+              <div class="pedido-lista" id="inicio-pend-meus"></div>
+              <span class="inicio-vazio oculto" data-pend-vazio>Nada pendente.</span>
+            </div>
+            <div class="inicio-pend-lista oculto" data-pend-painel="administracao">
+              <div class="pedido-lista" id="inicio-pend-aprovar"></div>
+              <div class="pedido-lista" id="inicio-pend-corrigir"></div>
+              <span class="inicio-vazio oculto" data-pend-vazio>Nada pendente.</span>
+            </div>
+          </section>
+        </div>
       </div>
 
-      <!-- computador: os atalhos ao lado do calendário -->
+      <!-- computador: os atalhos na faixa do painel (o painel abre no lugar deles) -->
       <aside class="inicio-caixa inicio-atalhos">
         <span class="rotulo-secao">Atalhos</span>
         <div class="inicio-atalhos-linhas">
@@ -89,11 +126,6 @@
       </aside>
     </div>
   </div>
-
-  <!-- as linhas do dia dentro do quadradinho (computador): a célula da Escala, sem a moldura dela -->
-  <template id="tpl-inicio-dia-linhas">
-    <span class="escala-mes-celula inicio-calendario-linhas"></span>
-  </template>
 
   <!-- um comunicado: título + mensagem (até 2 linhas) + autor e data + a lixeira de quem pode desativar -->
   <template id="tpl-inicio-aviso">

@@ -4,7 +4,9 @@
    em segundo plano (RosterWork.renovarSessao) e zera um relógio de
    inatividade a cada ação. Após 2h sem ação, abre um aviso com
    contagem de 60s (anel pintado em <canvas>); sem resposta, encerra
-   a sessão. Só roda no shell (index.html).
+   a sessão. Com o Manter-me conectado (componentes/js/geral-conectado.js),
+   só renova: o aparelho fica conectado pelo prazo dele, sem o aviso de 2h.
+   Só roda no shell (index.html).
    CSS: css/index-sessao-vigia.css · markup: #veu-sessao no index.html
    ============================================================ */
 (function () {
@@ -23,6 +25,7 @@
   var quadroAnel = null;         /* requestAnimationFrame do anel */
   var inicioAviso = 0;           /* performance.now() na abertura do aviso */
   var avisoAberto = false;
+  var semInatividade = false;    /* Manter-me conectado: o aparelho fica conectado pelo prazo, sem o aviso de 2h */
 
   var veu, canvas, tempoEl, btnContinuar, btnSair;
 
@@ -39,7 +42,7 @@
   /* ---------- relógio de inatividade ---------- */
 
   function reiniciarInatividade() {
-    if (avisoAberto) return;   /* durante o aviso, só "Continuar" reinicia */
+    if (avisoAberto || semInatividade) return;   /* durante o aviso, só "Continuar" reinicia */
     clearTimeout(timerInatividade);
     timerInatividade = setTimeout(mostrarAviso, INATIVIDADE_MS - AVISO_MS);
   }
@@ -159,6 +162,7 @@
 
   function iniciar() {
     if (!pegarElementos()) return;
+    semInatividade = !!(RW.conectado && RW.obterToken && RW.conectado.daSessao(RW.obterToken()));
     btnContinuar.addEventListener('click', continuar);
     btnSair.addEventListener('click', function () {
       pararTudo();

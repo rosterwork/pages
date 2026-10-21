@@ -18,8 +18,12 @@
                    tipo com o "N de M" e, depois de decidir, pede à
                    página para reler (opcoes.recarregar) e abre o
                    pedido que tomou o lugar do decidido.
-                   opcoes = { vazio, recarregar() → Promise }
+                   opcoes = { vazio, recarregar() → Promise, situacao }
+                   (situacao: o selo diz a situação, "Aguardando
+                   você" ou "Aguardando aprovação", no lugar do da
+                   análise; o Início)
                    devolve { definir(pedidos), abrirId(id), quantos() }
+     · trecho(hi, hf) → "serviço inteiro" ou "das 08h às 14h"
    Os painéis: RosterWork.trocasPainel, .folgasAprovacaoPainel e
    .usuariosCorrecaoPainel (cada página carrega os do seu assunto).
    Clona moldes; não cria HTML.
@@ -92,8 +96,24 @@
     return !p.minha && Array.isArray(p.dado.pelotoes) ? p.dado.pelotoes.filter(Boolean) : [];
   }
 
+  /* o selo da situação (opcoes.situacao): tudo o que está na fila espera decisão */
+  function seloSituacao(p) {
+    var M = RW.mensagens, d = p.dado;
+    var texto = p.minha ? M.pendencias.aguardandoVoce
+      : p.tipo === 'troca' ? (d.substitui_troca_id ? M.trocas.situacaoAlteracao : M.trocas.situacao).pendente_aprovacao
+      : p.tipo === 'folga' ? M.folgas.situacao.pendente
+      : M.correcoes.painelSituacao;
+    return { texto: texto, classe: 'selo--alerta' };
+  }
+
   /* quem e o quê, a linha de apoio e o selo, por tipo de pedido */
-  function textos(p) {
+  function textos(p, situacao) {
+    var t = textosAnalise(p);
+    if (situacao) t.selo = seloSituacao(p);
+    return t;
+  }
+
+  function textosAnalise(p) {
     var m = msg(), d = p.dado;
     if (p.tipo === 'troca') {
       var sol = nome(d.solicitante_grau, d.solicitante_nome), par = nome(d.parceiro_grau, d.parceiro_nome);
@@ -121,10 +141,10 @@
     };
   }
 
-  function cartao(p, aoAbrir) {
+  function cartao(p, aoAbrir, situacao) {
     var el = RosterWork.tpl('tpl-pedido-linha');
     if (!el) return null;
-    var t = textos(p);
+    var t = textos(p, situacao);
     el.dataset.pedido = p.tipo + ':' + p.id;
     var uso = el.querySelector('.pedido-linha-icone use');
     if (uso) uso.setAttribute('href', 'icones/icone-' + ICONES[p.tipo] + '.svg#icone-' + ICONES[p.tipo]);
@@ -163,7 +183,7 @@
         if (v) { v.textContent = opcoes.vazio || ''; lista.appendChild(v); }
         return;
       }
-      pedidos.forEach(function (p) { var el = cartao(p, abrir); if (el) lista.appendChild(el); });
+      pedidos.forEach(function (p) { var el = cartao(p, abrir, !!opcoes.situacao); if (el) lista.appendChild(el); });
       marcar();
     }
 
@@ -217,5 +237,5 @@
     return { definir: definir, abrirId: abrirId, quantos: function () { return pedidos.length; } };
   }
 
-  RW.fila = { contar: contar, ler: ler, doTipo: doTipo, criar: criar };
+  RW.fila = { contar: contar, ler: ler, doTipo: doTipo, criar: criar, trecho: trechoTexto };
 })();

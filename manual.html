@@ -235,7 +235,7 @@
               <ul class="manual-legenda manual-legenda--compacta">
                 <li>
                   <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-inicio.svg#icone-inicio"/></svg></span>
-                  <span class="manual-legenda-texto"><strong>Início.</strong> O seu mês num calendário: os dias em que você trabalha, com o horário, e as folgas, trocas e afastamentos, além dos avisos mais recentes. É por onde o sistema abre.</span>
+                  <span class="manual-legenda-texto"><strong>Início.</strong> O seu mês num calendário (os dias em que você trabalha, as folgas, as trocas e os afastamentos), os avisos mais recentes e as suas pendências. É por onde o sistema abre.</span>
                 </li>
                 <li>
                   <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-pendencias.svg#icone-pendencias"/></svg></span>
@@ -353,11 +353,12 @@
               <h3 id="entrar">Entrar no sistema</h3>
               <p>Para usar o Roster Work, cada militar entra com o seu documento e a sua senha.</p>
               <figure class="manual-figura">
-                <img src="manual/imagens/login-entrar.png" alt="Tela de login: campo CPF ou RG (1), campo Senha (2), botão Entrar (3) e, embaixo, a versão do sistema (4)." />
+                <img src="manual/imagens/login-entrar.png" alt="Tela de login: campo CPF ou RG (1), campo Senha (2), a caixa Manter-me conectado neste dispositivo (3), botão Entrar (4) e, embaixo, a versão do sistema (5)." />
                 <figcaption>
                   <ol class="manual-chamadas">
                     <li>Campo CPF ou RG</li>
                     <li>Campo Senha</li>
+                    <li>Manter-me conectado neste dispositivo</li>
                     <li>Botão Entrar</li>
                     <li>Versão do sistema</li>
                   </ol>
@@ -366,11 +367,12 @@
               <ol class="manual-passos">
                 <li><strong>CPF ou RG.</strong> Digite o seu documento. Pode ser o CPF (11 números) ou o RG (8 ou 9 números). Na carteira de identidade nova, o RG é o próprio CPF. O campo coloca os pontos e o traço sozinho.</li>
                 <li><strong>Senha.</strong> Digite a sua senha.</li>
+                <li><strong>Manter-me conectado neste dispositivo.</strong> Marque só no seu computador ou no seu celular. Marcada, o aparelho entra sozinho nas próximas vezes, sem pedir o documento e a senha, até ficar 7 dias sem uso (30 dias no app do celular). Nunca marque em computador de uso coletivo, como o do quartel.</li>
                 <li><strong>Entrar.</strong> Clique no botão Entrar, ou aperte a tecla Enter.</li>
                 <li><strong>Embaixo.</strong> A versão do sistema em uso.</li>
               </ol>
               <p class="manual-nota"><strong>O que as mensagens indicam.</strong> "Usuário não encontrado" aparece quando o documento não está no sistema. "Procure um administrador para liberar o seu acesso" aparece quando você está cadastrado mas ainda não criou a sua conta: peça ao administrador o link de cadastro (veja <strong>Criar conta</strong>). "Senha incorreta" aparece quando a senha não confere. Depois de cinco senhas erradas seguidas, o login daquele CPF fica bloqueado por 15 minutos, com a mensagem "Muitas tentativas erradas. Tente de novo em N minutos."; nesse tempo, nem a senha certa entra. "Muitas entradas seguidas nesta rede" aparece quando muita gente entrou pela mesma internet em poucos minutos, como num treinamento: aguarde alguns minutos e tente de novo.</p>
-              <p class="manual-nota"><strong>Já entrou antes?</strong> Enquanto a sua sessão estiver ativa, o sistema abre direto na tela inicial, sem pedir o login de novo.</p>
+              <p class="manual-nota"><strong>Já entrou antes?</strong> Enquanto a sua sessão estiver ativa, o sistema abre direto na tela inicial, sem pedir o login de novo. Sem o Manter-me conectado, a sessão termina ao fechar o navegador ou depois de 2 horas sem uso. Com ele, o botão Entrar gira e o sistema abre sozinho; para desligar, use Sair no menu do canto (seu nome).</p>
 
               <h3 id="esqueci-senha">Esqueci minha senha</h3>
               <p>Se esqueceu a senha, procure <strong>pessoalmente</strong> o administrador da sua unidade. Ele confere que é você e manda, no seu privado (WhatsApp ou e-mail), uma mensagem com o <strong>link de nova senha</strong> e a data e a hora em que o link expira.</p>
@@ -464,7 +466,7 @@
               <ol class="manual-passos">
                 <li><strong>Tema.</strong> O botão de sol e lua troca entre o tema claro e o escuro, e a sua escolha fica salva. Para o sistema acompanhar o claro ou escuro do seu aparelho, escolha Automático em Meu perfil.</li>
                 <li><strong>Sino de avisos.</strong> Mostra os seus avisos novos, como uma troca para confirmar ou uma folga decidida, e o número conta quantos você ainda não leu. Clicar num aviso leva direto à tela do assunto; o aviso que pede a sua resposta abre a página Pendências, já no pedido. A seção Avisos explica o sino em detalhe.</li>
-                <li><strong>Menu do canto (seu nome).</strong> Abre Meu perfil, Fale conosco, Manual, Termos e privacidade e Sair. No rodapé do menu aparece a versão do sistema.</li>
+                <li><strong>Menu do canto (seu nome).</strong> Abre Meu perfil, Fale conosco, Manual, Termos e privacidade e Sair; no celular, também Instalar no celular. O Sair encerra a sessão só no aparelho em que você está. No rodapé do menu aparece a versão do sistema.</li>
               </ol>
               <h3 id="no-celular">No celular</h3>
               <p>No celular, o sistema se ajusta à tela do aparelho. O menu vira uma <strong>barra embaixo</strong>, com Início, Escala, Trocas, Folgas e <strong>Mais</strong>. Toque em Mais para ver as outras telas (Pendências, Extrajornada, Postos, Usuários e Ajustes); o número no Mais é o de pendências esperando a sua decisão. Para fechar o Mais, arraste a folha para baixo ou toque fora dela.</p>
@@ -472,6 +474,7 @@
               <p>Os detalhes e os formulários abrem na tela inteira: para fechar, toque no X ou use o voltar do celular. Nos botões que só têm ícone, segure o dedo sobre o botão para ver o nome dele.</p>
               <p><strong>A Escala no celular.</strong> Ficam o Dia e o Mês, com a Agenda e o Calendário (Militares e Colunas, só no computador). Na <strong>Agenda</strong>, aparece uma unidade por vez, começando pela sua: escolha a unidade no botão à esquerda dos ícones, ou deslize a tela para o lado. No <strong>Calendário</strong>, todas as unidades aparecem no dia. A Agenda e o Calendário da Extrajornada funcionam do mesmo jeito.</p>
               <p><strong>Só no computador.</strong> A Distribuição não aparece no menu do celular; quem chega a ela por um aviso ou um link vê "Esta tela só funciona no computador.".</p>
+              <p><strong>Instalar o app no celular.</strong> O sistema pode ficar na tela do seu celular como um app, com o ícone do Roster Work, abrindo em tela cheia, sem passar pela loja. No menu do canto (seu nome), toque em <strong>Instalar no celular</strong>. No Android, confirme na janela que o navegador abre. No iPhone, abra o sistema no Safari, toque em <strong>Compartilhar</strong> e depois em <strong>Adicionar à Tela de Início</strong>. No app, a caixa Manter-me conectado já vem marcada: ele continua conectado até ficar 30 dias sem uso. As novidades do sistema chegam sozinhas ao app.</p>
               <div class="manual-bloco-admin manual-admin">
                 <span class="manual-selo-admin">Apenas administradores</span>
                 <p>O <strong>Histórico</strong> também só funciona no computador.</p>
@@ -504,8 +507,9 @@
 
               <p><strong>Segurança (3).</strong> Aqui você troca a sua senha: digite a senha atual, a nova (ao menos 6 caracteres e diferente da atual) e confirme. A senha muda na hora, sem precisar de aprovação.</p>
               <figure class="manual-figura">
-                <img src="manual/imagens/perfil-senha.png" alt="Aba Segurança: Senha atual, Nova senha e Confirmar nova senha, com o botão Trocar senha." />
+                <img src="manual/imagens/perfil-senha.png" alt="Aba Segurança: Senha atual, Nova senha e Confirmar nova senha, com o botão Trocar senha; embaixo, Aparelhos, com o botão Sair de todos os aparelhos." />
               </figure>
+              <p><strong>Aparelhos.</strong> O botão <strong>Sair de todos os aparelhos</strong> encerra a sua sessão neste e em todos os outros aparelhos, inclusive no app do celular e nos computadores em que você marcou Manter-me conectado. Use quando esquecer a caixa marcada num computador de uso coletivo ou perder o celular. O sistema pede confirmação e volta à tela de login.</p>
 
               <h3 id="a-arvore">A árvore de unidades</h3>
               <p>Algumas telas organizam a informação pela <strong>árvore de unidades</strong>: a sua corporação em hierarquia (companhia, pelotão, e assim por diante). Você a encontra, por exemplo, em <strong>Trocas</strong> (aba Todas), <strong>Usuários</strong>, <strong>Postos</strong> e na <strong>Escala</strong> (modo Dia).</p>
@@ -528,17 +532,27 @@
               <h3 id="ver-servico">Ver a minha escala e o meu serviço</h3>
               <p>Você tem duas telas para ver quando e onde trabalha: o <strong>Início</strong> (o seu mês) e a <strong>Escala</strong> (a visão completa da unidade).</p>
 
-              <p><strong>O Início (o seu mês).</strong> Assim que você entra, o Início mostra o seu mês num calendário, com o dia de hoje no círculo escuro. Cada dia em que você trabalha traz o horário e, ao lado, o mesmo ícone da Escala: <strong>Serviço</strong>, <strong>Extra</strong> ou <strong>Troca</strong>. O serviço que deixou de ser seu, por uma folga ou por uma troca, aparece riscado. As férias, licenças e dispensas aparecem listradas, com o dia em que terminam. As setas mudam o mês, o botão <strong>Hoje</strong> volta ao mês atual e o botão <strong>Legenda</strong> explica os ícones. Lembre que o dia de serviço vai das 08h às 08h do dia seguinte: até as 08h, "hoje" ainda é o dia anterior.</p>
+              <p><strong>O Início (o seu mês).</strong> Assim que você entra, o Início mostra o seu mês num calendário, com o dia de hoje no círculo escuro. Cada dia em que você trabalha traz o mesmo ícone da Escala: <strong>Serviço</strong>, <strong>Extra</strong> ou <strong>Troca</strong>. O serviço que deixou de ser seu, por uma folga ou por uma troca, aparece com o ícone apagado. As férias, licenças e dispensas aparecem listradas, com a sigla (FÉR, LIC ou DIS). As setas mudam o mês, o botão <strong>Hoje</strong> volta ao mês atual e o botão <strong>Legenda</strong> explica os ícones. Lembre que o dia de serviço vai das 08h às 08h do dia seguinte: até as 08h, "hoje" ainda é o dia anterior.</p>
               <figure class="manual-figura manual-figura--larga">
-                <img src="manual/imagens/inicio-calendario.png" alt="Três dias do calendário do Início: o dia de hoje no círculo escuro (1) e um dia com duas linhas, Extra das 08h às 02h e Serviço das 02h às 08h (2)." />
+                <img src="manual/imagens/inicio-calendario.png" alt="Uma semana do calendário do Início: o dia de hoje no círculo escuro (1) e um dia com os ícones de Extra e de Serviço (2)." />
                 <figcaption>
                   <ol class="manual-chamadas">
                     <li>Hoje</li>
-                    <li>Os seus horários no dia, com o ícone de cada um</li>
+                    <li>Os ícones do dia</li>
                   </ol>
                 </figcaption>
               </figure>
-              <p><strong>A escala completa do dia.</strong> Clique num dia para abrir, ao lado, a escala inteira daquele dia: os postos, as funções, os colegas e as observações, com o <strong>seu nome destacado</strong>. Com o painel aberto, o calendário rola para o lado e o dia que você escolheu continua à vista. Esse painel é só para consultar; para mudar alguma coisa, peça uma troca ou uma folga. No celular, o calendário mostra só os ícones: toque num dia para ver os horários logo abaixo e, em <strong>Ver a escala do dia</strong>, a escala completa.</p>
+              <p><strong>Os horários do dia.</strong> Clique num dia para ver, embaixo do calendário, os seus horários naquele dia, com o ícone de cada um. Ao entrar, o Início já mostra o seu próximo serviço.</p>
+              <figure class="manual-figura manual-figura--larga">
+                <img src="manual/imagens/inicio-resumo.png" alt="O resumo do dia 22 de outubro: os horários, Extra das 08h às 02h e Serviço das 02h às 08h (1), e o botão Ver a escala do dia (2)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>Os seus horários no dia</li>
+                    <li>Ver a escala do dia</li>
+                  </ol>
+                </figcaption>
+              </figure>
+              <p><strong>A escala completa do dia.</strong> O botão <strong>Ver a escala do dia</strong> abre, ao lado, a escala inteira daquele dia: os postos, as funções, os colegas e as observações, com o <strong>seu nome destacado</strong>. Esse painel é só para consultar; para mudar alguma coisa, peça uma troca ou uma folga. No celular, ele abre na tela inteira.</p>
               <figure class="manual-figura">
                 <img src="manual/imagens/inicio-painel-dia.png" alt="O painel da escala do dia aberto pelo Início, com as duas linhas do militar destacadas em escuro (1)." />
                 <figcaption>
@@ -547,7 +561,23 @@
                   </ol>
                 </figcaption>
               </figure>
-              <p><strong>Avisos e atalhos.</strong> Embaixo do calendário ficam os três comunicados mais recentes para você (a caixa só aparece quando há algum); <strong>Ver todos</strong> abre a página Avisos. No computador, ao lado do calendário, os <strong>Atalhos</strong> levam direto ao <strong>Solicitar troca</strong>, ao <strong>Solicitar folga</strong> e ao <strong>Solicitar extra</strong>, e a <strong>Escala de hoje</strong> abre a escala do dia de hoje.</p>
+              <p><strong>Avisos.</strong> Ao lado do calendário ficam os comunicados mais recentes para você (a caixa só aparece quando há algum). Quando nem todos cabem na tela, o botão <strong>Ver todos</strong> abre a página Avisos.</p>
+              <p><strong>Pendências.</strong> Embaixo dos avisos, a caixa <strong>Pendências</strong> mostra o que é seu, cada item com um selo que diz em que pé ele está: primeiro o que <strong>espera você</strong>, como a troca que um colega pediu a você (1); depois os seus <strong>prazos</strong>, como o da extra do mês seguinte; os seus <strong>pedidos em andamento</strong>, esperando a aprovação (2); e os seus pedidos <strong>resolvidos nos últimos 30 dias</strong>, aprovados, recusados ou cancelados (3). Clicar no que espera você abre o pedido ao lado, para responder ali mesmo; clicar num pedido seu leva à página dele, Trocas ou Folgas. Quando não há nada, a caixa não aparece; quando nem tudo cabe na tela, o <strong>Ver todos</strong> abre a página Pendências.</p>
+              <figure class="manual-figura manual-figura--larga">
+                <img src="manual/imagens/inicio-pendencias.png" alt="A caixa Pendências: a troca que um colega pediu a você, com o selo Aguardando você (1), o seu pedido de troca, Aguardando aprovação (2), e a sua folga Aprovada (3)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>O que espera você</li>
+                    <li>Um pedido seu em andamento</li>
+                    <li>Um pedido seu resolvido</li>
+                  </ol>
+                </figcaption>
+              </figure>
+              <div class="manual-bloco-admin manual-admin">
+                <span class="manual-selo-admin">Apenas administradores</span>
+                <p>Para o administrador, a caixa Pendências tem duas abas: <strong>Para mim</strong> (o que é seu, como acima) e <strong>Administração</strong> (os pedidos da sua área para decidir e o que precisa ser corrigido, como militares fora da escala). O número de cada aba conta só o que depende de você. Clicar num pedido para decidir abre a decisão ao lado, a mesma da página Pendências.</p>
+              </div>
+              <p><strong>Atalhos.</strong> No computador, à direita, os <strong>Atalhos</strong> levam direto ao <strong>Solicitar troca</strong>, ao <strong>Solicitar folga</strong> e ao <strong>Solicitar extra</strong>, e a <strong>Escala de hoje</strong> abre a escala do dia de hoje. Quando um painel abre, ele ocupa o lugar dos Atalhos, e o resto da tela não sai do lugar. Numa tela menor, como a de um notebook, os avisos e as pendências ficam embaixo do calendário.</p>
 
               <p><strong>A Escala (visão completa).</strong> A página Escala mostra a escala da unidade, dia a dia. Para achar alguém rápido, use a busca <strong>Pesquisar militar</strong> e digite um nome (também vale CPF ou RG). A busca tem dois modos, no botão ao lado do campo: <strong>Marcar</strong> (o padrão), que realça o militar na grade mantendo os demais visíveis, e <strong>Filtrar</strong>, que mostra só quem você procurou.</p>
               <figure class="manual-figura">

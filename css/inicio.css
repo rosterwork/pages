@@ -1,30 +1,77 @@
 /* ============================================================
-   INÍCIO — o calendário do militar e os avisos
-   Computador: o calendário e os avisos à esquerda, na mesma
-   largura, e os atalhos numa coluna ao lado. O calendário é o mês
-   em miniatura (geral-mini-calendario) em tamanho grande, com as
-   linhas da Escala dentro de cada dia e a largura mínima dos dias
-   (rola para o lado, como a grade de mês da Escala). Celular: uma
-   coluna, só os ícones no dia, a caixa do dia tocado e os avisos
-   embaixo.
+   INÍCIO — o calendário do militar, os avisos e as pendências
+   Computador: à esquerda o calendário quadrado (o mês em miniatura,
+   geral-mini-calendario, como no celular) e o resumo do dia embaixo,
+   na mesma largura; ao lado, os avisos e as pendências dividindo a
+   altura da tela; à direita, a faixa da largura do painel, com os
+   Atalhos: o painel abre no lugar deles e nada mais muda de lugar.
+   Quando os avisos não cabem ao lado (tela estreita), descem para
+   baixo do calendário. A página nunca rola para o lado.
+   Celular: uma coluna, sem os Atalhos.
    Cores/medidas do tema.
    ============================================================ */
 
+/* a área (calendário e resumo | avisos e pendências) e a faixa do painel */
 .inicio-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 280px;
-  gap: 24px;
-  align-items: start;
+  grid-template-columns: minmax(0, 1fr) var(--painel-largura);
+  min-height: 100%;
 }
 
-.inicio-principal {
+/* com o painel aberto, ele ocupa a faixa: os Atalhos saem e a área continua do mesmo tamanho */
+.conteudo:has(> .painel-lateral--aberto) .inicio-layout {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.conteudo:has(> .painel-lateral--aberto) .inicio-atalhos {
+  display: none;
+}
+
+/* a barra do mês reserva a mesma faixa: a Legenda não anda quando o painel abre */
+.conteudo:not(:has(> .painel-lateral--aberto)) .inicio-barra {
+  padding-right: calc(var(--respiro-pagina) + var(--painel-largura));
+}
+
+.inicio-area {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 24px;
   min-width: 0;
 }
 
-/* caixa com borda (dia tocado, avisos, atalhos) */
+/* 7 dias de 76px + 6 vãos de 8px */
+.inicio-esquerda {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  flex: 0 0 auto;
+  width: 580px;
+}
+
+/* abaixo de 440px os avisos não cabem ao lado: a coluna desce para baixo do calendário */
+.inicio-meio {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  flex: 1 1 440px;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* ao lado do calendário, as caixas dividem a altura da tela e cada lista mostra o que cabe (o JS esconde o resto) */
+.inicio-meio--lado .inicio-caixa {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.inicio-meio--lado .inicio-avisos,
+.inicio-meio--lado .inicio-pend-lista {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* caixa com borda (resumo do dia, avisos, pendências, atalhos) */
 .inicio-caixa {
   display: flex;
   flex-direction: column;
@@ -41,23 +88,16 @@
   gap: 8px;
 }
 
-/* ---------- calendário ---------- */
-/* como a grade de mês da Escala: cada dia tem largura mínima e, quando os 7 não cabem (o painel aberto
-   ao lado ou a tela estreita), o calendário rola para o lado em vez de encolher os dias. 180px = a largura
-   que cabe no monitor de 1920px sem o painel. A folga de 2px deixa o anel de foco da borda à vista */
-.inicio-calendario {
-  overflow-x: auto;
-  padding: 2px;
-}
-
+/* ---------- calendário: o mês em miniatura com dias quadrados ---------- */
 .inicio-calendario .mini-calendario {
-  grid-template-columns: repeat(7, minmax(180px, 1fr));
+  grid-template-columns: repeat(7, 76px);
   gap: 8px;
 }
 
 .inicio-calendario .mini-calendario-dia {
-  min-height: 96px;
-  gap: 4px;
+  align-items: center;
+  min-height: 76px;
+  padding: 4px;
 }
 
 /* o número de todos os dias no mesmo lugar de 24px: o círculo de hoje não o desloca */
@@ -70,12 +110,25 @@
   min-height: 24px;
 }
 
-/* as linhas da Escala dentro do dia, sem a moldura da célula da grade */
-.inicio-calendario-linhas,
-.inicio-calendario-linhas:hover {
-  border-radius: 0;
-  background-color: transparent;
-  box-shadow: none;
+/* os ícones do dia (os mesmos da Escala), embaixo e no meio */
+.inicio-calendario .mini-calendario-texto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 20px;
+  color: var(--texto-forte);
+}
+
+.inicio-calendario .mini-calendario-texto .icone {
+  width: 18px;
+  height: 18px;
+}
+
+.inicio-calendario .mini-calendario-dia--afastado .mini-calendario-texto {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-suave);
 }
 
 /* ícone da linha que saiu do serviço (folga, troca), apagado como o nome riscado */
@@ -83,11 +136,7 @@
   color: var(--texto-debil);
 }
 
-/* ---------- dia tocado (só no celular) ---------- */
-.inicio-dia {
-  display: none;
-}
-
+/* ---------- resumo do dia escolhido ---------- */
 .inicio-dia-titulo {
   font-size: 13px;
   font-weight: 600;
@@ -174,7 +223,34 @@
   color: var(--texto-suave);
 }
 
-/* ---------- atalhos (só no computador) ---------- */
+/* ---------- pendências: o título (militar) ou as abas (administrador) e os cartões da Pendências ---------- */
+.inicio-pend-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+}
+
+.inicio-pend-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inicio-pend-lista .pedido-lista {
+  gap: 8px;
+}
+
+.inicio-pend-lista .pedido--linha {
+  padding: 8px 12px;
+}
+
+/* ---------- atalhos (só no computador, na faixa do painel) ---------- */
+.inicio-atalhos {
+  align-self: start;
+  margin-left: 24px;
+}
+
 .inicio-atalhos-linhas {
   display: flex;
   flex-direction: column;
@@ -208,28 +284,44 @@
 
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
-   Uma coluna; no dia, só os ícones (o toque mostra o dia na caixa
-   embaixo); sem os atalhos (a barra de baixo já leva às telas). O
-   X do comunicado toca numa folga invisível até a altura do toque.
-   (A barra numa linha só é a variação --uma-linha do componente.)
+   Uma coluna (sem a faixa do painel, que lá cobre a tela inteira),
+   os 7 dias na largura da tela, sem os Atalhos (a barra de baixo já
+   leva às telas). O X do comunicado toca numa folga invisível até a
+   altura do toque; o "Ver todos" que não cabe no cabeçalho da caixa
+   desce para a linha de baixo. (A barra numa linha só é a variação
+   --uma-linha do componente.)
    ============================================================ */
 @media (max-width: 767px) {
   html[data-celular] .inicio-layout {
     grid-template-columns: minmax(0, 1fr);
   }
 
+  html[data-celular] .conteudo .inicio-barra {
+    padding-right: var(--respiro-pagina);
+  }
+
   html[data-celular] .inicio-atalhos {
     display: none;
   }
 
-  html[data-celular] .inicio-dia {
-    display: flex;
+  html[data-celular] .inicio-esquerda {
+    flex: 1 1 100%;
+    width: auto;
   }
 
-  /* no celular os 7 dias cabem na largura (o painel abre por cima, em tela cheia): sem rolar para o lado */
-  html[data-celular] .inicio-calendario {
-    overflow-x: visible;
-    padding: 0;
+  html[data-celular] .inicio-meio {
+    flex: 1 1 100%;
+  }
+
+  /* o que não cabe no cabeçalho (o "Ver todos") desce para a linha de baixo, à direita */
+  html[data-celular] .inicio-caixa-cabecalho,
+  html[data-celular] .inicio-pend-cabecalho {
+    flex-wrap: wrap;
+  }
+
+  html[data-celular] #inicio-avisos-todos,
+  html[data-celular] #inicio-pend-todos {
+    margin-left: auto;
   }
 
   html[data-celular] .inicio-calendario .mini-calendario {
@@ -238,29 +330,13 @@
   }
 
   html[data-celular] .inicio-calendario .mini-calendario-dia {
-    align-items: center;
     min-height: 56px;
     padding: 2px;
-  }
-
-  html[data-celular] .inicio-calendario .mini-calendario-texto {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    min-height: 20px;
-    color: var(--texto-forte);
   }
 
   html[data-celular] .inicio-calendario .mini-calendario-texto .icone {
     width: 16px;
     height: 16px;
-  }
-
-  html[data-celular] .inicio-calendario .mini-calendario-dia--afastado .mini-calendario-texto {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--texto-suave);
   }
 
   html[data-celular] .inicio-aviso-remover {

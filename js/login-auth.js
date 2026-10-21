@@ -58,19 +58,8 @@
       return;
     }
 
-    var botaoLinks = document.querySelectorAll('.login-links .botao');
-
-    if (btnEntrar) window.RosterWork.iniciarCarregando(btnEntrar);
-    if (inputId) inputId.disabled = true;
-    if (inputSenha) inputSenha.disabled = true;
-    botaoLinks.forEach(function (b) { b.disabled = true; });
-
-    function desbloquear() {
-      if (btnEntrar) window.RosterWork.pararCarregando(btnEntrar);
-      if (inputId) inputId.disabled = false;
-      if (inputSenha) inputSenha.disabled = false;
-      botaoLinks.forEach(function (b) { b.disabled = false; });
-    }
+    travarFormulario(true);
+    function desbloquear() { travarFormulario(false); }
 
     try {
       var respLookup = await fetch(SUPABASE_URL + '/rest/v1/rpc/fn_login_buscar_email', {
@@ -119,82 +108,16 @@
       }
 
       var authData = await respAuth.json();
-      sessionStorage.setItem('rosterwork_session', JSON.stringify({
-        access_token: authData.access_token,
-        refresh_token: authData.refresh_token
-      }));
 
-      var perfil = null;
-      try {
-        var respPerfil = await fetch(SUPABASE_URL + '/rest/v1/rpc/fn_perfil_usuario', {
-          method: 'POST',
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': 'Bearer ' + authData.access_token,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ p_email: resultado.email })
-        });
-        if (respPerfil.ok) {
-          perfil = await respPerfil.json();
-          if (perfil.ok) {
-            /* marca se é programador (vê a seção Programador › Mensagens) */
-            try {
-              var respProg = await fetch(SUPABASE_URL + '/rest/v1/rpc/fn_sou_programador', {
-                method: 'POST',
-                headers: {
-                  'apikey': SUPABASE_KEY,
-                  'Authorization': 'Bearer ' + authData.access_token,
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({})
-              });
-              if (respProg.ok) perfil.is_programador = (await respProg.json()) === true;
-            } catch (e) {}
-            sessionStorage.setItem('rosterwork_user', JSON.stringify(perfil));
-          }
-        }
-      } catch (e) {}
+      /* Manter-me conectado: marcada, o aparelho lembra o login; desmarcada, esquece o que houver */
+      var caixaConectado = document.getElementById('login-conectado');
+      if (caixaConectado && caixaConectado.getAttribute('aria-checked') === 'true') {
+        window.RosterWork.conectado.lembrar(authData.access_token, authData.refresh_token);
+      } else {
+        window.RosterWork.conectado.esquecer();
+      }
 
-      try {
-        var respPrefs = await fetch(SUPABASE_URL + '/rest/v1/rpc/fn_preferencias_carregar', {
-          method: 'POST',
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': 'Bearer ' + authData.access_token,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({})
-        });
-        if (respPrefs.ok) {
-          var prefs = await respPrefs.json();
-          /* tema e menu vêm do banco (lembrados entre logins por CPF);
-             a seleção de unidades NÃO persiste: começa no PADRÃO AMPLO da lotação
-             (CIA/CIBM + pelotões p/ staff; CIA + o próprio pelotão p/ quem é de pelotão),
-             é mantida só na sessão e esquecida no logout */
-          var padrao = (perfil && perfil.lotacao_id) ? [perfil.lotacao_id] : [];   // fallback: a própria lotação
-          try {
-            var respPadrao = await fetch(SUPABASE_URL + '/rest/v1/rpc/fn_unidades_padrao', {
-              method: 'POST',
-              headers: {
-                'apikey': SUPABASE_KEY,
-                'Authorization': 'Bearer ' + authData.access_token,
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({})
-            });
-            if (respPadrao.ok) {
-              var dadosPadrao = await respPadrao.json();
-              if (dadosPadrao && dadosPadrao.ok && Array.isArray(dadosPadrao.unidades) && dadosPadrao.unidades.length) {
-                padrao = dadosPadrao.unidades;
-              }
-            }
-          } catch (e) {}
-          prefs.unidades_selecionadas = padrao;
-          sessionStorage.setItem('rosterwork_preferencias', JSON.stringify(prefs));
-        }
-      } catch (e) {}
-
+      await concluirEntrada(authData, resultado.email);
       window.location.href = 'index.html';
 
     } catch (e) {
@@ -203,10 +126,146 @@
     }
   }
 
+  /* trava (ou libera) o formulário enquanto entra: o Entrar gira; campos, caixa e links travam */
+  function travarFormulario(travar) {
+    var btnEntrar = document.getElementById('btn-entrar');
+    if (btnEntrar) {
+      if (travar) window.RosterWork.iniciarCarregando(btnEntrar);
+      else window.RosterWork.pararCarregando(btnEntrar);
+    }
+    ['entrada-identificador', 'entrada-senha', 'login-conectado'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.disabled = travar;
+    });
+    document.querySelectorAll('.login-links .botao').forEach(function (b) { b.disabled = travar; });
+  }
+
+  /* depois da senha (ou do login lembrado): guarda a sessão, busca o perfil e as preferências
+     e abre o sistema */
+  async function concluirEntrada(authData, email) {
+    sessionStorage.setItem('rosterwork_session', JSON.stringify({
+      access_token: authData.access_token,
+      refresh_token: authData.refresh_token
+    }));
+
+    var perfil = null;
+    try {
+      var respPerfil = await fetch(SUPABASE_URL + '/rest/v1/rpc/fn_perfil_usuario', {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + authData.access_token,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ p_email: email })
+      });
+      if (respPerfil.ok) {
+        perfil = await respPerfil.json();
+        if (perfil.ok) {
+          /* marca se é programador (vê a seção Programador › Mensagens) */
+          try {
+            var respProg = await fetch(SUPABASE_URL + '/rest/v1/rpc/fn_sou_programador', {
+              method: 'POST',
+              headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': 'Bearer ' + authData.access_token,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({})
+            });
+            if (respProg.ok) perfil.is_programador = (await respProg.json()) === true;
+          } catch (e) {}
+          sessionStorage.setItem('rosterwork_user', JSON.stringify(perfil));
+        }
+      }
+    } catch (e) {}
+
+    try {
+      var respPrefs = await fetch(SUPABASE_URL + '/rest/v1/rpc/fn_preferencias_carregar', {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + authData.access_token,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
+      });
+      if (respPrefs.ok) {
+        var prefs = await respPrefs.json();
+        /* tema e menu vêm do banco (lembrados entre logins por CPF);
+           a seleção de unidades NÃO persiste: começa no PADRÃO AMPLO da lotação
+           (CIA/CIBM + pelotões p/ staff; CIA + o próprio pelotão p/ quem é de pelotão),
+           é mantida só na sessão e esquecida no logout */
+        var padrao = (perfil && perfil.lotacao_id) ? [perfil.lotacao_id] : [];   // fallback: a própria lotação
+        try {
+          var respPadrao = await fetch(SUPABASE_URL + '/rest/v1/rpc/fn_unidades_padrao', {
+            method: 'POST',
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': 'Bearer ' + authData.access_token,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+          });
+          if (respPadrao.ok) {
+            var dadosPadrao = await respPadrao.json();
+            if (dadosPadrao && dadosPadrao.ok && Array.isArray(dadosPadrao.unidades) && dadosPadrao.unidades.length) {
+              padrao = dadosPadrao.unidades;
+            }
+          }
+        } catch (e) {}
+        prefs.unidades_selecionadas = padrao;
+        sessionStorage.setItem('rosterwork_preferencias', JSON.stringify(prefs));
+      }
+    } catch (e) {}
+
+    return !!(perfil && perfil.ok);
+  }
+
+  /* login lembrado neste aparelho (Manter-me conectado): a tela mostra o Entrar girando e entra
+     sozinha. Recusado pelo servidor (saiu de todos os aparelhos, conta encerrada), esquece e mostra
+     o login; sem conexão, mantém o lembrado para a próxima vez */
+  async function entrarLembrado() {
+    var lembrado = window.RosterWork.conectado.lembrado();
+    if (!lembrado) return;
+
+    var inputId = document.getElementById('entrada-identificador');
+    travarFormulario(true);
+
+    var resp = null;
+    try {
+      resp = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=refresh_token', {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: lembrado.refresh_token })
+      });
+    } catch (e) {}
+
+    var recusado = resp && resp.status >= 400 && resp.status < 500 && resp.status !== 429;
+    var authData = resp && resp.ok ? await resp.json().catch(function () { return null; }) : null;
+
+    if (!authData || !authData.access_token) {
+      if (recusado) window.RosterWork.conectado.esquecer();
+      else mostrarErroCampo(inputId, window.RosterWork.mensagens.login.erroConexao);
+      travarFormulario(false);
+      return;
+    }
+
+    window.RosterWork.conectado.atualizar(authData.access_token, authData.refresh_token);
+    var entrou = await concluirEntrada(authData, authData.user ? authData.user.email : '');
+    if (entrou) {
+      window.location.href = 'index.html';
+      return;
+    }
+    sessionStorage.clear();
+    travarFormulario(false);
+  }
+
   window.RosterWork = window.RosterWork || {};
   window.RosterWork.mascaraCpfRg = mascaraCpfRg;
   window.RosterWork.mostrarErroCampo = mostrarErroCampo;
   window.RosterWork.esconderErroCampo = esconderErroCampo;
   window.RosterWork.fazerLogin = fazerLogin;
+  window.RosterWork.entrarLembrado = entrarLembrado;
 
 })();
