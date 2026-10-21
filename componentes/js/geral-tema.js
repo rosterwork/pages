@@ -8,7 +8,8 @@
    acompanha a troca do aparelho na hora. Ao imprimir, o papel
    sai sempre claro.
    API: RosterWork.tema.escolha() / .escuro() / .escolher(valor)
-   Cada mudança avisa pelo evento rosterwork_tema (window).
+   Cada mudança avisa pelo evento rosterwork_tema (window) e pinta
+   a faixa do Android no app instalado (<meta name="theme-color">).
    ============================================================ */
 (function () {
   'use strict';
@@ -32,11 +33,22 @@
     return document.documentElement.getAttribute('data-tema') === 'escuro';
   }
 
+  /* app no celular: a faixa do Android (relógio, bateria) com o fundo do tema em uso, pela etiqueta
+     theme-color do <head>. A cor vem do papel --fundo-pagina (o manifesto só tem a do tema claro);
+     antes de o CSS carregar ela ainda não existe, e a faixa é pintada no DOMContentLoaded */
+  function pintarFaixa() {
+    var etiqueta = document.querySelector('meta[name="theme-color"]');
+    if (!etiqueta) return;
+    var cor = getComputedStyle(document.documentElement).getPropertyValue('--fundo-pagina').trim();
+    if (cor) etiqueta.setAttribute('content', cor);
+  }
+
   function aplicar() {
     var atual = escolha();
     var ficaEscuro = !imprimindo && (atual === 'escuro' || (atual === 'automatico' && !!aparelhoEscuro && aparelhoEscuro.matches));
     if (ficaEscuro) document.documentElement.setAttribute('data-tema', 'escuro');
     else document.documentElement.removeAttribute('data-tema');
+    pintarFaixa();
     window.dispatchEvent(new CustomEvent('rosterwork_tema'));
   }
 
@@ -56,6 +68,7 @@
   }
 
   aplicar();
+  document.addEventListener('DOMContentLoaded', pintarFaixa);
 
   /* no Automático, a tela acompanha o aparelho quando ele troca de claro para escuro */
   if (aparelhoEscuro) {
