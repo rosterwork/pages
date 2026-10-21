@@ -73,8 +73,12 @@
       if (window.RosterWork.voltar) window.RosterWork.voltar.empilhar(fechar);
     }
 
-    /* fecha deslizando para baixo (na hora, com "menos movimento" no aparelho) */
-    function fechar() {
+    /* fecha deslizando para baixo; na hora com "menos movimento" no aparelho e ao escolher uma tela (o
+       carregando da tela nova aparece na hora, numa camada acima da folha) */
+    function fechar() { fecharFolha(false); }
+    function fecharNaHora() { fecharFolha(true); }
+
+    function fecharFolha(naHora) {
       if (!aberta() || fechando) return;
       if (window.RosterWork.voltar) window.RosterWork.voltar.desempilhar(fechar);   /* fechou de outro jeito: tira a entrada do voltar */
       botaoMais.setAttribute('aria-expanded', 'false');
@@ -83,7 +87,7 @@
         limparArrasto();
         casca.classList.remove('casca--mais-aberto');
       }
-      if (menosMovimento && menosMovimento.matches) { concluir(); return; }
+      if (naHora || (menosMovimento && menosMovimento.matches)) { concluir(); return; }
       fechando = true;
       casca.classList.add('casca--mais-soltando', 'casca--mais-fechando');
       fimDoDeslize = setTimeout(concluir, FOLHA_DESLIZE + 20);
@@ -153,7 +157,7 @@
     });
     if (veu) veu.addEventListener('click', fechar);
     menu.addEventListener('click', function (evento) {
-      if (evento.target.closest('.menu-item')) fechar();
+      if (evento.target.closest('.menu-item')) fecharNaHora();
     });
     document.addEventListener('keydown', function (evento) {
       if (evento.key === 'Escape') fechar();

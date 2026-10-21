@@ -23,13 +23,15 @@
    riscado na função de onde saiu, quem entra pelo pedido com o "Novo"
    e quem o sistema remanejou só com a barra cinza (as marcas vêm do
    banco, pedido_escala_comparar).
+   Pelo Início (opção destacar): só de leitura, com a linha do militar
+   no realce do "Marcar" da busca da Escala.
    ============================================================ */
 (function () {
   'use strict';
 
   window.RosterWork = window.RosterWork || {};
 
-  var ctx = null;       // { corpo, rodape, unidadeId, iso, admin, comparar, dados, dadosAntes, chaveDados, emSub, comHistorico, salvando }
+  var ctx = null;       // { corpo, rodape, unidadeId, iso, admin, comparar, destacar, dados, dadosAntes, chaveDados, emSub, comHistorico, salvando }
   var base = null;      // o dia gravado (a última leitura): { dados, ajustes, pontuais }
   var rasc = null;      // a mudança em andamento, sobre o dia gravado
   var foto = null;      // rascunho ao abrir uma sub-tela (o Cancelar volta a ele)
@@ -620,6 +622,7 @@
     (m.periodos || []).forEach(function (per) { var h = p.hora(per); if (h) horas.appendChild(h); });
     if (op.ghost) linha.classList.add('escala-edicao-linha--original');
     if (op.folga) linha.classList.add('escala-edicao-linha--folga');
+    if (ctx.destacar && m.cpf === ctx.destacar && !op.ghost) linha.classList.add('escala-distribuicao-escalado--busca');
     if (!op.ghost && !op.folga) {
       p.marcarConflito(linha, m, null, null);
       p.marcarAviso(linha, m);
@@ -850,7 +853,7 @@
   /* lê o dia de novo e zera o desfazer/refazer */
   function recarregar() {
     if (!ctx) return;
-    montar(ctx.corpo, ctx.rodape, ctx.unidadeId, ctx.iso, { admin: ctx.admin, adminPosto: ctx.adminPosto });
+    montar(ctx.corpo, ctx.rodape, ctx.unidadeId, ctx.iso, { admin: ctx.admin, adminPosto: ctx.adminPosto, destacar: ctx.destacar });
   }
 
   /* relê o dia sem zerar o desfazer/refazer (o Editar posto grava fora do rascunho do dia) */
@@ -915,13 +918,14 @@
 
   /* ---------- ciclo de vida ---------- */
 
-  /* opcoes = { admin, adminPosto, dados, semAvisos }: o admin edita o dia; adminPosto (quem administra a
+  /* opcoes = { admin, adminPosto, dados, semAvisos, destacar }: o admin edita o dia; adminPosto (quem administra a
      unidade) tem o Editar posto; os outros só leem. dados = o dia já lido (não busca no banco); semAvisos = sem a
-     lista de avisos do topo (a página tem a sua). Sem rodape, o rodapé não é usado */
+     lista de avisos do topo (a página tem a sua); destacar = o CPF cuja linha vem realçada. Sem rodape, o rodapé
+     não é usado */
   function montar(corpo, rodape, unidadeId, iso, opcoes) {
     opcoes = opcoes || {};
     ctx = { corpo: corpo, rodape: rodape, unidadeId: unidadeId, iso: iso, admin: !!opcoes.admin, adminPosto: !!opcoes.adminPosto,
-      comparar: !!opcoes.comparar,
+      comparar: !!opcoes.comparar, destacar: opcoes.destacar || null,
       dadosProntos: opcoes.dados || null, semAvisos: !!opcoes.semAvisos,
       dados: null, dadosAntes: null, chaveDados: null, emSub: false, comHistorico: false, salvando: false };
     rasc = null; base = null; foto = null; pilhaDesfazer = []; pilhaRefazer = [];

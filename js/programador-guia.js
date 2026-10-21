@@ -289,13 +289,14 @@
     },
     'mini-calendario': function (lugar) {
       if (!RosterWork.miniCalendario) return;
-      var estados = ['quer', 'nao', 'ocupado'];
+      var estados = ['quer', 'nao', 'ocupado', 'hoje', 'selecionado', 'afastado'];
       RosterWork.miniCalendario.renderizar(lugar, {
         aoDia: function (botao, iso, data) {
           estados.forEach(function (estado) {
             if (numeros(lugar.getAttribute('data-' + estado)).indexOf(data.getDate()) < 0) return;
             botao.classList.add('mini-calendario-dia--' + estado);
-            botao.querySelector('.mini-calendario-texto').textContent = lugar.getAttribute('data-texto-' + estado) || '';
+            var texto = lugar.getAttribute('data-texto-' + estado);
+            if (texto != null) botao.querySelector('.mini-calendario-texto').textContent = texto;
           });
         }
       });

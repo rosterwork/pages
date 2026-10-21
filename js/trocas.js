@@ -254,6 +254,9 @@
 
     mostrarVista('todas');
     montarArvoreTodas();
+
+    /* o atalho do Início chega pedindo o Solicitar troca aberto */
+    if (RW.referenciaPedida && RW.referenciaPedida('trocas') === 'solicitar') abrirSolicitar();
   }
 
   RW.paginas.trocas = { iniciar: iniciar };

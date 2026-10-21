@@ -226,6 +226,11 @@
     flex-basis: 100%;
   }
 
+  /* barra de uma linha só (só o período e os ícones, sem ação nem seletor; ex.: o Início): sem essa quebra */
+  html[data-celular] .pagina-subcabecalho--uma-linha::after {
+    display: none;
+  }
+
   /* o espaçador sai: o alinhamento à direita vem da barra */
   html[data-celular] .pagina-subcabecalho > .espacador-flex {
     display: none;

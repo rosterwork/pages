@@ -48,20 +48,15 @@
       falhaTrocaSenha: 'Não foi possível trocar a senha. Tente de novo.'
     },
 
-    /* início (comunicados: criar e remover — admin) */
+    /* início (o calendário do militar; comunicados: criar e remover — admin) */
     inicio: {
-      carregando: 'Carregando…',
       falhaCarregar: 'Não foi possível carregar.',
-      nadaPendente: 'Nada pendente.',
       confirmarRemoverAviso: 'Remover este comunicado? Ele deixa de aparecer para quem o recebeu.',
       descartarAviso: 'Descartar este comunicado não publicado?',
       falhaSalvarAviso: 'Não foi possível publicar o comunicado. Tente de novo.',
       falhaRemoverAviso: 'Não foi possível remover o comunicado. Tente de novo.',
-      /* as linhas do cartão de pendências de administração */
-      pendTrocas: 'Trocas a aprovar',
-      pendFolgas: 'Folgas a aprovar',
-      pendCorrecoes: 'Correções de dados',
-      pendForaEscala: 'Militares fora da escala'
+      /* o nome de cada linha do dia no calendário */
+      rotulos: { servico: 'Serviço', extra: 'Extra', troca: 'Troca' }
     },
 
     /* Pendências › correção de dados (as alterações que o militar pediu na ficha) */
