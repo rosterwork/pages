@@ -3,33 +3,39 @@
    Computador: à esquerda o calendário quadrado (o mês em miniatura,
    geral-mini-calendario, como no celular) e o resumo do dia embaixo,
    na mesma largura; ao lado, os avisos e as pendências dividindo a
-   altura da tela; à direita, a faixa da largura do painel, com os
-   Atalhos: o painel abre no lugar deles e nada mais muda de lugar.
-   Quando os avisos não cabem ao lado (tela estreita), descem para
-   baixo do calendário. A página nunca rola para o lado.
+   altura da tela; à direita, a faixa estreita dos Atalhos. O painel
+   abre por cima da direita da página (os Atalhos e a direita dos
+   avisos e das pendências) e nada muda de lugar. O calendário
+   encolhe (dias de 76 a 60px) para os avisos caberem ao lado e para
+   a coluna caber na altura da tela. A página nunca rola para o lado.
    Celular: uma coluna, sem os Atalhos.
    Cores/medidas do tema.
    ============================================================ */
 
-/* a área (calendário e resumo | avisos e pendências) e a faixa do painel */
+/* a largura da faixa dos Atalhos (a grade da página e a barra do mês usam a mesma) */
+.conteudo:has(.inicio-layout) {
+  --inicio-atalhos-largura: 216px;
+}
+
+/* o painel abre POR CIMA da direita da página, sem empurrar nada (nas outras páginas ele empurra) */
+.conteudo:has(.inicio-layout) > .painel-lateral {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  box-shadow: var(--sombra-flutuante);
+}
+
+/* a área (calendário e resumo | avisos e pendências) e a faixa dos Atalhos */
 .inicio-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--painel-largura);
+  grid-template-columns: minmax(0, 1fr) var(--inicio-atalhos-largura);
   min-height: 100%;
 }
 
-/* com o painel aberto, ele ocupa a faixa: os Atalhos saem e a área continua do mesmo tamanho */
-.conteudo:has(> .painel-lateral--aberto) .inicio-layout {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.conteudo:has(> .painel-lateral--aberto) .inicio-atalhos {
-  display: none;
-}
-
-/* a barra do mês reserva a mesma faixa: a Legenda não anda quando o painel abre */
-.conteudo:not(:has(> .painel-lateral--aberto)) .inicio-barra {
-  padding-right: calc(var(--respiro-pagina) + var(--painel-largura));
+/* a barra do mês reserva a mesma faixa: a Legenda alinha com o fim da coluna dos avisos */
+.pagina-subcabecalho.inicio-barra {
+  padding-right: calc(var(--respiro-pagina) + var(--inicio-atalhos-largura));
 }
 
 .inicio-area {
@@ -39,21 +45,23 @@
   min-width: 0;
 }
 
-/* 7 dias de 76px + 6 vãos de 8px */
+/* o calendário elástico: de 468px (dias de 60px) a 580px (dias de 76px; 7 dias + 6 vãos de 8px), pelo menor
+   entre o que cabe na largura (com a coluna dos avisos ao lado) e o que cabe na altura da tela: a coluna (5
+   semanas de dias e o resumo) tem 397px fora os dias, e a largura é 1,4 vez a altura que sobra */
 .inicio-esquerda {
   display: flex;
   flex-direction: column;
   gap: 24px;
-  flex: 0 0 auto;
-  width: 580px;
+  flex: 1 0 468px;
+  max-width: max(468px, min(580px, calc((100vh - 397px) * 1.4)));
 }
 
-/* abaixo de 440px os avisos não cabem ao lado: a coluna desce para baixo do calendário */
+/* abaixo de 330px os avisos não cabem ao lado: a coluna desce para baixo do calendário */
 .inicio-meio {
   display: flex;
   flex-direction: column;
   gap: 24px;
-  flex: 1 1 440px;
+  flex: 1 1 330px;
   min-width: 0;
   min-height: 0;
 }
@@ -82,21 +90,28 @@
   background-color: var(--fundo-superficie);
 }
 
+/* o que não cabe no cabeçalho da caixa (o "Ver todos") desce para a linha de baixo, à direita */
 .inicio-caixa-cabecalho {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }
 
+#inicio-avisos-todos,
+#inicio-pend-todos {
+  margin-left: auto;
+}
+
 /* ---------- calendário: o mês em miniatura com dias quadrados ---------- */
 .inicio-calendario .mini-calendario {
-  grid-template-columns: repeat(7, 76px);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 8px;
 }
 
 .inicio-calendario .mini-calendario-dia {
   align-items: center;
-  min-height: 76px;
+  aspect-ratio: 1 / 1;
   padding: 4px;
 }
 
@@ -226,6 +241,7 @@
 /* ---------- pendências: o título (militar) ou as abas (administrador) e os cartões da Pendências ---------- */
 .inicio-pend-cabecalho {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   min-height: 32px;
@@ -241,8 +257,50 @@
   gap: 8px;
 }
 
+/* o cartão com o selo embaixo do texto, em qualquer tela (o mesmo arranjo do celular, geral-pedido): a coluna
+   ao lado do calendário é estreita no notebook */
 .inicio-pend-lista .pedido--linha {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "icone pelotao textos seta"
+    "icone pelotao selo seta";
+  align-items: center;
+  gap: 4px 0;
   padding: 8px 12px;
+}
+
+/* sem selo, uma linha só */
+.inicio-pend-lista .pedido--linha:has(> .pedido-linha-selo.oculto) {
+  grid-template-areas: "icone pelotao textos seta";
+}
+
+.inicio-pend-lista .pedido--linha > .espacador-flex {
+  display: none;
+}
+
+.inicio-pend-lista .pedido-linha-icone {
+  grid-area: icone;
+  margin-right: 12px;
+}
+
+.inicio-pend-lista .pedido-linha-pelotao {
+  grid-area: pelotao;
+  margin-right: 12px;
+}
+
+.inicio-pend-lista .pedido--linha > .pedido-textos {
+  grid-area: textos;
+}
+
+.inicio-pend-lista .pedido-linha-selo {
+  grid-area: selo;
+  justify-self: start;
+}
+
+.inicio-pend-lista .pedido-linha-seta {
+  grid-area: seta;
+  margin-left: 12px;
 }
 
 /* ---------- atalhos (só no computador, na faixa do painel) ---------- */
@@ -284,12 +342,11 @@
 
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
-   Uma coluna (sem a faixa do painel, que lá cobre a tela inteira),
-   os 7 dias na largura da tela, sem os Atalhos (a barra de baixo já
-   leva às telas). O X do comunicado toca numa folga invisível até a
-   altura do toque; o "Ver todos" que não cabe no cabeçalho da caixa
-   desce para a linha de baixo. (A barra numa linha só é a variação
-   --uma-linha do componente.)
+   Uma coluna, sem os Atalhos (a barra de baixo já leva às telas),
+   e o painel na tela inteira, como nas outras páginas; os 7 dias
+   na largura da tela, com 56px de altura. O X do comunicado toca
+   numa folga invisível até a altura do toque. (A barra numa linha
+   só é a variação --uma-linha do componente.)
    ============================================================ */
 @media (max-width: 767px) {
   html[data-celular] .inicio-layout {
@@ -304,32 +361,27 @@
     display: none;
   }
 
+  /* o painel cobre a tela inteira, como em todas as páginas (sem a sombra do computador) */
+  html[data-celular] .conteudo:has(.inicio-layout) > .painel-lateral {
+    position: fixed;
+    box-shadow: none;
+  }
+
   html[data-celular] .inicio-esquerda {
     flex: 1 1 100%;
-    width: auto;
+    max-width: none;
   }
 
   html[data-celular] .inicio-meio {
     flex: 1 1 100%;
   }
 
-  /* o que não cabe no cabeçalho (o "Ver todos") desce para a linha de baixo, à direita */
-  html[data-celular] .inicio-caixa-cabecalho,
-  html[data-celular] .inicio-pend-cabecalho {
-    flex-wrap: wrap;
-  }
-
-  html[data-celular] #inicio-avisos-todos,
-  html[data-celular] #inicio-pend-todos {
-    margin-left: auto;
-  }
-
   html[data-celular] .inicio-calendario .mini-calendario {
-    grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 4px;
   }
 
   html[data-celular] .inicio-calendario .mini-calendario-dia {
+    aspect-ratio: auto;
     min-height: 56px;
     padding: 2px;
   }

@@ -5,10 +5,20 @@
     </div>
   </div>
 
-  <!-- o mês do calendário: ‹ nome › (o nome abre a escolha do mês) e o Hoje fora do mês atual; à direita,
-       a Legenda, antes da faixa do painel (não anda quando ele abre). No celular, os dois ficam na mesma
-       linha (--uma-linha) -->
+  <!-- à esquerda, o grupo Administração (só admin: o Novo comunicado); o mês do calendário: ‹ nome › (o nome
+       abre a escolha do mês) e o Hoje fora do mês atual; à direita, a Legenda, antes da faixa dos Atalhos.
+       No celular, o mês e a Legenda ficam na mesma linha (--uma-linha) -->
   <div class="pagina-subcabecalho pagina-subcabecalho--uma-linha inicio-barra">
+    <div class="dropdown acoes-admin oculto">
+      <button type="button" class="botao acoes-admin-gatilho">
+        <span>Administração</span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu acoes-admin-menu">
+        <span class="rotulo-secao acoes-admin-rotulo">Administração</span>
+        <button type="button" class="botao" id="btn-novo-aviso">Novo comunicado</button>
+      </div>
+    </div>
     <div class="geral-periodo">
       <button type="button" class="botao botao--icone" id="inicio-mes-anterior" aria-label="Mês anterior">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-esquerda.svg#icone-seta-esquerda"/></svg>
@@ -39,22 +49,11 @@
         </div>
 
         <div class="inicio-meio">
-          <!-- só aparece com comunicado ou para o administrador (que cria por aqui) -->
+          <!-- só aparece quando há comunicado -->
           <section class="inicio-caixa oculto" id="inicio-avisos-caixa">
             <div class="inicio-caixa-cabecalho">
               <span class="rotulo-secao">Avisos</span>
               <span class="espacador-flex"></span>
-              <!-- grupo Administração (só admin): o comunicado se cria também daqui -->
-              <div class="dropdown acoes-admin oculto">
-                <button type="button" class="botao acoes-admin-gatilho">
-                  <span>Administração</span>
-                  <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
-                </button>
-                <div class="dropdown-menu acoes-admin-menu">
-                  <span class="rotulo-secao acoes-admin-rotulo">Administração</span>
-                  <button type="button" class="botao" id="btn-novo-aviso">Novo comunicado</button>
-                </div>
-              </div>
               <button type="button" class="botao oculto" id="inicio-avisos-todos"><span>Ver todos (<span id="inicio-avisos-total"></span>)</span></button>
             </div>
             <div class="inicio-avisos" id="inicio-avisos"></div>
@@ -94,7 +93,7 @@
         </div>
       </div>
 
-      <!-- computador: os atalhos na faixa do painel (o painel abre no lugar deles) -->
+      <!-- computador: os atalhos na faixa da direita (o painel abre por cima dela e da direita dos avisos) -->
       <aside class="inicio-caixa inicio-atalhos">
         <span class="rotulo-secao">Atalhos</span>
         <div class="inicio-atalhos-linhas">

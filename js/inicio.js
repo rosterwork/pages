@@ -305,13 +305,11 @@
     return [autor, data].filter(Boolean).join(' · ');
   }
 
-  /* a caixa só aparece com comunicado ou para o admin; o Ver todos (N) aparece quando algum não cabe */
+  /* a caixa só aparece com comunicado; o Ver todos (N) aparece quando algum não cabe */
   function montarAvisos(avisos) {
-    var admin = !!(RW.inicioAviso && RW.inicioAviso.ehAdmin());
-    el.avisosCaixa.classList.toggle('oculto', !avisos.length && !admin);
+    el.avisosCaixa.classList.toggle('oculto', !avisos.length);
     el.avisosTotal.textContent = String(avisos.length);
     el.avisosTodos.classList.add('oculto');
-    if (!avisos.length) { vazio(el.avisos, RW.mensagens.avisos.semComunicados); encaixar(); return; }
     el.avisos.textContent = '';
     avisos.forEach(function (a) {
       var cartao = RW.tpl('tpl-inicio-aviso');
@@ -556,10 +554,10 @@
     el.diaEscala.addEventListener('click', function () { abrirPainel(el.diaEscala); });
     var mes = carregarMes();
 
-    /* os avisos: Ver todos leva aos Comunicados; o grupo Administração (Novo comunicado) só para o admin,
-       e no celular é um menu (fecha antes de abrir o painel) */
+    /* os avisos: Ver todos leva aos Comunicados; o grupo Administração da barra (Novo comunicado) só para o
+       admin, e no celular é um menu (fecha antes de abrir o painel) */
     el.avisosTodos.addEventListener('click', function () { irPara('avisos', 'comunicados'); });
-    var grupoAdmin = document.querySelector('#inicio-avisos-caixa .acoes-admin');
+    var grupoAdmin = document.querySelector('.inicio-barra .acoes-admin');
     var btnNovoAviso = porId('btn-novo-aviso');
     if (grupoAdmin && btnNovoAviso && RW.inicioAviso && RW.inicioAviso.ehAdmin()) {
       grupoAdmin.classList.remove('oculto');
