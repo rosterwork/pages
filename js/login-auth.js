@@ -120,7 +120,7 @@
       }
 
       await concluirEntrada(authData, resultado.email);
-      window.location.href = 'index.html';
+      window.RosterWork.aplicativo.irPara('index.html');   /* com versão nova do app esperando, entra já nela */
 
     } catch (e) {
       desbloquear();
@@ -256,7 +256,7 @@
     var entrou = await concluirEntrada(authData, authData.user ? authData.user.email : '', controle.signal);
     if (!entrou || controle.signal.aborted) { falhou(M.entrandoTenteDepois); return; }
     clearTimeout(limite);
-    window.location.href = 'index.html';
+    window.RosterWork.aplicativo.irPara('index.html');   /* com versão nova do app esperando, entra já nela */
   }
 
   window.RosterWork = window.RosterWork || {};

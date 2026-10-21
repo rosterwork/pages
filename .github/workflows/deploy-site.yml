@@ -24,7 +24,34 @@ jobs:
       
     - name: Setup Pages
       uses: actions/configure-pages@v4
-      
+
+    # Armazém do app (service worker): carimba a versão desta publicação e a lista dos arquivos
+    # que o aparelho guarda, cada um com a impressão digital (o que mudou é baixado de novo).
+    # Fora da lista: as imagens do manual (guardadas ao usar) e os logos de acervo.
+    - name: Carimbar o armazém do app
+      run: |
+        node - <<'FIM'
+        const fs = require('fs');
+        const crypto = require('crypto');
+        const { execSync } = require('child_process');
+        const tipos = /\.(html|css|js|svg|woff2?|webmanifest)$/;
+        const fora = /^(\.github\/|manual\/imagens\/|logos\/(?!aplicativo-))/;
+        const arquivos = {};
+        execSync('git ls-files', { encoding: 'utf8' }).split('\n').filter(Boolean).forEach((caminho) => {
+          const icone = /^logos\/aplicativo-[^/]+\.png$/.test(caminho);
+          if (caminho === 'aplicativo-armazem.js' || fora.test(caminho) || !(tipos.test(caminho) || icone)) return;
+          arquivos[caminho] = crypto.createHash('sha1').update(fs.readFileSync(caminho)).digest('hex').slice(0, 12);
+        });
+        const versao = process.env.GITHUB_SHA.slice(0, 8) + '-' + process.env.GITHUB_RUN_NUMBER;
+        const arquivo = 'aplicativo-armazem.js';
+        const original = fs.readFileSync(arquivo, 'utf8');
+        const carimbado = original
+          .replace("'__VERSAO__'", () => JSON.stringify(versao))
+          .replace('{/*__ARQUIVOS__*/}', () => JSON.stringify(arquivos));
+        fs.writeFileSync(arquivo, carimbado);
+        console.log(carimbado === original ? 'armazém sem carimbo (desligado)' : 'armazém ' + versao + ': ' + Object.keys(arquivos).length + ' arquivos');
+        FIM
+
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:

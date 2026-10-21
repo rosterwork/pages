@@ -121,6 +121,16 @@
     var def = manifesto[pagina];
     if (!def) return;
 
+    /* versão nova do app esperando (geral-aplicativo.js): a troca de tela recarrega já na versão
+       nova, sem misturar a velha com a nova; com aba ou registro pedido, ou edição não salva,
+       fica para a próxima troca */
+    var app = window.RosterWork.aplicativo;
+    var guarda = window.RosterWork.guardaSaida;
+    if (app && app.temVersaoNova() && !abaPedida && !referenciaPedida && !(guarda && guarda.temPendencia())) {
+      app.irPara('index.html?pagina=' + encodeURIComponent(pagina));
+      return;
+    }
+
     var meu = ++navToken;   /* esta navegação assume; qualquer anterior fica obsoleta */
     /* cancela o download da navegação anterior que ainda esteja no ar */
     if (navAbort) navAbort.abort();
