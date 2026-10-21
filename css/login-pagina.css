@@ -78,6 +78,50 @@
   margin-left: 24px;
 }
 
+/* a frase de quando o login lembrado deixou de valer, acima dos campos */
+.login-aviso {
+  margin: 0;
+  font-size: var(--fonte-padrao);
+  color: var(--texto);
+}
+
+/* entrando pelo login lembrado (html[data-entrando], posto pelo login-sessao.js): o cartão perde
+   a moldura e fica só a logo com o giratório embaixo, como a tela de chegada do sistema
+   (geral-carregando); o formulário some. Na falha, a frase e o Tentar de novo no lugar do giratório */
+.login-entrando {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+html[data-entrando] .login-entrando {
+  display: flex;
+}
+
+html[data-entrando] .login-formulario {
+  display: none;
+}
+
+html[data-entrando] .login-card {
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.login-entrando-mensagem {
+  margin: 0;
+  font-size: var(--fonte-padrao);
+  color: var(--texto);
+  text-align: center;
+}
+
+.login-entrando:not(.login-entrando--falhou) .login-entrando-mensagem,
+.login-entrando:not(.login-entrando--falhou) .botao,
+.login-entrando--falhou .giratorio {
+  display: none;
+}
+
 .login-links {
   display: flex;
   flex-direction: column;

@@ -121,7 +121,11 @@
       senhaVazia: 'Digite sua senha',
       erroConexao: 'Erro de conexão',
       naoEncontrado: 'CPF ou RG não encontrado',
-      senhaIncorreta: 'Senha incorreta'
+      senhaIncorreta: 'Senha incorreta',
+      /* entrada pelo login lembrado (Manter-me conectado) */
+      entrandoSemInternet: 'Sem conexão com a internet. Confira e tente de novo.',
+      entrandoTenteDepois: 'Não foi possível entrar agora. Tente de novo em alguns minutos.',
+      sessaoTerminou: 'Sua sessão terminou. Entre de novo com o seu CPF e a sua senha.'
     },
 
     /* nova senha (página standalone, aberta pelo link de nova senha que o administrador gera) */

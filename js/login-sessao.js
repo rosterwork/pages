@@ -15,7 +15,13 @@
       var payload = JSON.parse(atob(sessao.access_token.split('.')[1]));
       if (payload.exp && payload.exp * 1000 > Date.now()) {
         window.location.replace('index.html');
+        return;
       }
     } catch (e) {}
   }
+
+  /* login lembrado no aparelho (Manter-me conectado): a tela já nasce "entrando", só com a logo e o
+     giratório, sem o formulário piscar; o login-auth.js entra ou mostra o que houve */
+  var conectado = window.RosterWork && window.RosterWork.conectado;
+  if (conectado && conectado.lembrado()) document.documentElement.setAttribute('data-entrando', '');
 })();

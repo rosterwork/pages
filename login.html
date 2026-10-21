@@ -40,7 +40,17 @@
         </svg>
       </div>
 
+      <!-- entrando pelo login lembrado (html[data-entrando]): o giratório; se falhar, a frase e o Tentar de novo -->
+      <div class="login-entrando" role="status">
+        <div class="giratorio" aria-hidden="true"></div>
+        <p class="login-entrando-mensagem"></p>
+        <button class="botao botao--primario" type="button" id="login-tentar">Tentar de novo</button>
+      </div>
+
       <div class="login-formulario">
+        <!-- o login lembrado deixou de valer (saiu de todos os aparelhos, baixa, senha trocada) -->
+        <p class="login-aviso oculto" id="login-aviso" role="alert"></p>
+
         <div class="login-campos">
 
           <div class="campo">

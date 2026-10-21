@@ -3,6 +3,7 @@
 
   var SUPABASE_URL = 'https://oadzjrekpuddagfydfzn.supabase.co';
   var SUPABASE_KEY = 'sb_publishable_NKSki2dWOD6k6_jle3Ha7w_uq1nYcXx';
+  var LIMITE_ENTRADA_MS = 15000;   /* a entrada pelo login lembrado desiste depois disto (o app nunca trava) */
 
   function mascaraCpfRg(nums) {
     if (nums.length <= 9) {
@@ -36,8 +37,9 @@
     var inputSenha = document.getElementById('entrada-senha');
     var btnEntrar = document.getElementById('btn-entrar');
 
-    // evita duplo envio se já está carregando
+    // evita duplo envio se já está carregando; com a tela "entrando", o formulário nem aparece
     if (btnEntrar && btnEntrar.disabled) return;
+    if (document.documentElement.hasAttribute('data-entrando')) return;
 
     if (inputId) esconderErroCampo(inputId);
     if (inputSenha) esconderErroCampo(inputSenha);
@@ -140,9 +142,10 @@
     document.querySelectorAll('.login-links .botao').forEach(function (b) { b.disabled = travar; });
   }
 
-  /* depois da senha (ou do login lembrado): guarda a sessão, busca o perfil e as preferências
-     e abre o sistema */
-  async function concluirEntrada(authData, email) {
+  /* depois da senha (ou do login lembrado): guarda a sessão e busca o perfil e as preferências;
+     marca a chegada para o sistema abrir coberto pela tela de chegada (index-sessao.js).
+     sinal: o limite da entrada pelo login lembrado (cancela as chamadas) */
+  async function concluirEntrada(authData, email, sinal) {
     sessionStorage.setItem('rosterwork_session', JSON.stringify({
       access_token: authData.access_token,
       refresh_token: authData.refresh_token
@@ -157,7 +160,8 @@
           'Authorization': 'Bearer ' + authData.access_token,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ p_email: email })
+        body: JSON.stringify({ p_email: email }),
+        signal: sinal
       });
       if (respPerfil.ok) {
         perfil = await respPerfil.json();
@@ -171,7 +175,8 @@
                 'Authorization': 'Bearer ' + authData.access_token,
                 'Content-Type': 'application/json'
               },
-              body: JSON.stringify({})
+              body: JSON.stringify({}),
+              signal: sinal
             });
             if (respProg.ok) perfil.is_programador = (await respProg.json()) === true;
           } catch (e) {}
@@ -188,7 +193,8 @@
           'Authorization': 'Bearer ' + authData.access_token,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({})
+        body: JSON.stringify({}),
+        signal: sinal
       });
       if (respPrefs.ok) {
         var prefs = await respPrefs.json();
@@ -205,7 +211,8 @@
               'Authorization': 'Bearer ' + authData.access_token,
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify({})
+            body: JSON.stringify({}),
+            signal: sinal
           });
           if (respPadrao.ok) {
             var dadosPadrao = await respPadrao.json();
@@ -219,46 +226,72 @@
       }
     } catch (e) {}
 
+    sessionStorage.setItem('rosterwork_chegada', '1');
     return !!(perfil && perfil.ok);
   }
 
-  /* login lembrado neste aparelho (Manter-me conectado): a tela mostra o Entrar girando e entra
-     sozinha. Recusado pelo servidor (saiu de todos os aparelhos, conta encerrada), esquece e mostra
-     o login; sem conexão, mantém o lembrado para a próxima vez */
+  /* a tela "entrando" (html[data-entrando]): o giratório, ou a falha com a frase e o Tentar de novo */
+  function mostrarEntrando(mensagem) {
+    var bloco = document.querySelector('.login-entrando');
+    if (!bloco) return;
+    bloco.classList.toggle('login-entrando--falhou', !!mensagem);
+    bloco.querySelector('.login-entrando-mensagem').textContent = mensagem || '';
+  }
+
+  /* volta ao formulário de login, com a frase do que houve (ou nenhuma) */
+  function mostrarFormulario(aviso) {
+    document.documentElement.removeAttribute('data-entrando');
+    var linha = document.getElementById('login-aviso');
+    if (!linha) return;
+    linha.textContent = aviso || '';
+    linha.classList.toggle('oculto', !aviso);
+  }
+
+  /* login lembrado neste aparelho (Manter-me conectado): a tela fica "entrando" (só a logo e o
+     giratório) até o sistema abrir. Sem internet, servidor fora ou passou do limite: a frase e o
+     Tentar de novo, e o aparelho continua lembrando. Recusado pelo servidor (saiu de todos os
+     aparelhos, baixa, senha trocada): esquece e mostra o formulário com o aviso */
   async function entrarLembrado() {
+    var M = window.RosterWork.mensagens.login;
     var lembrado = window.RosterWork.conectado.lembrado();
-    if (!lembrado) return;
+    if (!lembrado) { mostrarFormulario(''); return; }
+    mostrarEntrando('');
 
-    var inputId = document.getElementById('entrada-identificador');
-    travarFormulario(true);
+    var controle = new AbortController();
+    var limite = setTimeout(function () { controle.abort(); }, LIMITE_ENTRADA_MS);
+    function falhou(mensagem) {
+      clearTimeout(limite);
+      sessionStorage.clear();
+      mostrarEntrando(mensagem);
+    }
 
-    var resp = null;
+    var resp;
     try {
       resp = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=refresh_token', {
         method: 'POST',
         headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refresh_token: lembrado.refresh_token })
+        body: JSON.stringify({ refresh_token: lembrado.refresh_token }),
+        signal: controle.signal
       });
-    } catch (e) {}
-
-    var recusado = resp && resp.status >= 400 && resp.status < 500 && resp.status !== 429;
-    var authData = resp && resp.ok ? await resp.json().catch(function () { return null; }) : null;
-
-    if (!authData || !authData.access_token) {
-      if (recusado) window.RosterWork.conectado.esquecer();
-      else mostrarErroCampo(inputId, window.RosterWork.mensagens.login.erroConexao);
-      travarFormulario(false);
+    } catch (e) {
+      falhou(controle.signal.aborted ? M.entrandoTenteDepois : M.entrandoSemInternet);
       return;
     }
+
+    if (resp.status >= 400 && resp.status < 500 && resp.status !== 429) {
+      clearTimeout(limite);
+      window.RosterWork.conectado.esquecer();
+      mostrarFormulario(M.sessaoTerminou);
+      return;
+    }
+    var authData = resp.ok ? await resp.json().catch(function () { return null; }) : null;
+    if (!authData || !authData.access_token) { falhou(M.entrandoTenteDepois); return; }
 
     window.RosterWork.conectado.atualizar(authData.access_token, authData.refresh_token);
-    var entrou = await concluirEntrada(authData, authData.user ? authData.user.email : '');
-    if (entrou) {
-      window.location.href = 'index.html';
-      return;
-    }
-    sessionStorage.clear();
-    travarFormulario(false);
+    var entrou = await concluirEntrada(authData, authData.user ? authData.user.email : '', controle.signal);
+    if (!entrou || controle.signal.aborted) { falhou(M.entrandoTenteDepois); return; }
+    clearTimeout(limite);
+    window.location.href = 'index.html';
   }
 
   window.RosterWork = window.RosterWork || {};

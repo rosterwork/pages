@@ -56,7 +56,9 @@
       if (window.RosterWork.aplicativo.noCelularInstalado()) marcarConectado(true);
     }
 
-    /* login lembrado neste aparelho: entra sozinho */
+    /* login lembrado neste aparelho: entra sozinho; na falha, o Tentar de novo refaz a entrada */
+    var btnTentar = document.getElementById('login-tentar');
+    if (btnTentar) btnTentar.addEventListener('click', window.RosterWork.entrarLembrado);
     window.RosterWork.entrarLembrado();
   });
 
