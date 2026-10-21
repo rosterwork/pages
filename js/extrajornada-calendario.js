@@ -8,7 +8,7 @@
    bloco por unidade em cada dia e a unidade sem ninguém guardando o
    lugar (invisível), para as unidades ficarem alinhadas na linha. A
    grade abre rolada em hoje; no celular, uma unidade por tela, trocada
-   pela faixa de unidades (RosterWork.extrajornadaGrade, no orquestrador).
+   pelo seletor de unidade (RosterWork.extrajornadaGrade, no orquestrador).
    A célula mostra quem tira extra e o horário. Mostra o que foi LANÇADO na escala; depois que o
    mês começa, compara com o que está agora: quem saiu fica riscado
    ("foi para 24/11", "horário mudou") e quem entrou diz de onde veio
@@ -207,7 +207,7 @@
     }
     var sel = RW.extrajornadaUnidades.selecionadas();
     var unidades = (r.unidades || []).filter(function (u) { return sel.indexOf(String(u.unidade_id)) >= 0; });
-    RW.extrajornadaGrade.faixa(unidades.map(function (u) { return { id: u.unidade_id, nome: u.nome }; }));
+    RW.extrajornadaGrade.unidades(unidades.map(function (u) { return { id: u.unidade_id, nome: u.nome }; }));
     if (!unidades.length) { estado(RW.mensagens.escala.selecioneUnidade); return; }
     var dias = comparar(r.base || [], r.atual || []);
     var contexto = unidades[0] || null;
@@ -301,7 +301,7 @@
     if (el.solicitar) el.solicitar.classList.add('oculto');
     if (el.selo) el.selo.classList.add('oculto');
     if (buscaCtrl) buscaCtrl.limpar();
-    /* a grade sai com a aba (a faixa de unidades acha a grade pela página; ativar() recarrega) */
+    /* a grade sai com a aba (o seletor de unidade acha a grade pela página; ativar() recarrega) */
     if (el.grade) el.grade.textContent = '';
   }
   /* o orquestrador trocou o mês */

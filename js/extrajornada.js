@@ -7,8 +7,8 @@
    aparece só fora do mês atual e volta para ele. Também é o dono do
    seletor Agenda | Calendário, um só para as abas Calendário e
    Distribuição: trocar redesenha a aba ativa (aoMudarModo). No celular,
-   liga a faixa de unidades (geral-faixa-unidades.js), que as grades do
-   Calendário e da Distribuição mostram e as outras abas escondem. Todos
+   liga o seletor de unidade (geral-seletor-unidade.js), que a Agenda do
+   Calendário e da Distribuição mostra e o resto esconde. Todos
    veem Calendário e Voluntários; Distribuição e Relatórios são só do
    administrador (sem elas, os dois grupos de abas viram um só, sem o
    traço). Clicar num dia (Calendário ou Distribuição) abre o painel do
@@ -66,13 +66,18 @@
     }
   };
 
-  /* as grades do mês (Calendário e Distribuição): a faixa de unidades do celular e o abrir em hoje */
+  /* as grades do mês (Calendário e Distribuição): o seletor de unidade do celular e o abrir em hoje */
   function noCelular() { return !!(RW.celular && RW.celular()); }
+  function agendaNoCelular() {
+    var modo = el.modos && el.modos.querySelector('.aba--ativa');
+    return noCelular() && (!modo || modo.getAttribute('data-modo') !== 'calendario');
+  }
   RW.extrajornadaGrade = {
-    /* antes de cada desenho: as unidades da grade, na ordem dela ([{ id, nome }]); no computador, sem faixa */
-    faixa: function (lista) { if (RW.faixaUnidades) RW.faixaUnidades.mostrar(noCelular() ? lista : null); },
-    /* depois de montar e antes de pintar: no celular, uma unidade por tela */
-    aplicar: function (wrap) { if (RW.faixaUnidades && noCelular()) RW.faixaUnidades.aplicar(wrap); },
+    /* antes de cada desenho: as unidades da grade, na ordem dela ([{ id, nome }]); só na Agenda do celular
+       (o Calendário mostra todas as unidades no dia, como no computador) */
+    unidades: function (lista) { if (RW.seletorUnidade) RW.seletorUnidade.mostrar(agendaNoCelular() ? lista : null); },
+    /* depois de montar e antes de pintar: na Agenda do celular, uma unidade por tela */
+    aplicar: function (wrap) { if (RW.seletorUnidade && agendaNoCelular()) RW.seletorUnidade.aplicar(wrap); },
     /* a grade abre rolada em hoje (quando o mês contém hoje), com o dia ou a semana anterior à vista (geral-periodo.js);
        no Calendário, quando os dias não cabem na largura (celular), o dia anterior à esquerda */
     abrirEmHoje: function (wrap) {
@@ -175,8 +180,8 @@
     if (anterior !== abaAtual && RW.painel && RW.painel.estaAberto()) RW.painel.fechar();
     ABAS.forEach(function (n) { painelVisivel(conteudo, n, n === abaAtual); });
     if (el.modos) el.modos.classList.toggle('oculto', !COM_MODO[abaAtual]);
-    /* a faixa de unidades do celular some ao trocar de aba; a grade do Calendário e a da Distribuição a mostram ao desenhar */
-    if (RW.faixaUnidades) RW.faixaUnidades.mostrar(null);
+    /* o seletor de unidade do celular some ao trocar de aba; a Agenda do Calendário e a da Distribuição o mostram ao desenhar */
+    if (RW.seletorUnidade) RW.seletorUnidade.mostrar(null);
     atualizarLegenda();
     /* desliga primeiro quem sai e depois liga quem entra (as buscas e os seletores da barra não se cruzam) */
     ABAS.forEach(function (n) { if (n !== abaAtual) modulosDa(n).forEach(function (m) { if (m && m.desativar) m.desativar(); }); });
@@ -231,8 +236,8 @@
     if (el.prox) el.prox.addEventListener('click', function () { if (navProx) irParaMes(navProx); });
     /* "Hoje": volta ao mês atual; as grades abrem roladas em hoje */
     if (el.hoje) el.hoje.addEventListener('click', function () { irParaMes(mesInicial()); });
-    /* celular: a faixa de unidades das grades (Agenda e Calendário), antes do corpo da página */
-    if (RW.faixaUnidades) RW.faixaUnidades.iniciar(conteudo, { pecaCalendario: '.extra-calendario-unidade' });
+    /* celular: o seletor de unidade da Agenda, na barra da página */
+    if (RW.seletorUnidade) RW.seletorUnidade.iniciar(conteudo);
     /* Agenda | Calendário: a aba ativa redesenha no modo escolhido (no celular, o menu "Agenda ▾") */
     el.modos = conteudo.querySelector('#extra-escala-modos');
     if (el.modos && RW.abas && !el.modos.dataset.ligado) {

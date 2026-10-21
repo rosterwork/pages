@@ -1,0 +1,30 @@
+/* ============================================================
+   SELETOR DE UNIDADE — componente compartilhado do celular
+   Na Agenda (Escala e Extrajornada) com mais de uma unidade: uma
+   unidade por tela. O seletor (.abas--seletor) fica sempre escondido;
+   no celular aparece o menu dele, "2ºPEL ▾" (geral-abas.js), de
+   largura fixa, na linha dos ícones da barra, à esquerda. No
+   computador não existe. Molde #tpl-seletor-unidade (index.html) ·
+   lógica: componentes/js/geral-seletor-unidade.js. As células da
+   Agenda que somem ficam no escalas-mes.css (a grade é dele).
+   ============================================================ */
+
+.seletor-unidade {
+  display: none;
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   ============================================================ */
+@media (max-width: 767px) {
+  /* o menu na linha dos ícones (geral-pagina-cabecalho.css), à esquerda deles */
+  html[data-celular] .pagina-subcabecalho > .seletor-unidade + .dropdown.seletor-menu {
+    order: 4;
+    margin-right: auto;
+  }
+
+  /* largura fixa: o botão não muda de tamanho ao trocar de unidade; o nome maior termina em "…" */
+  html[data-celular] .seletor-unidade + .dropdown.seletor-menu > .seletor {
+    width: var(--seletor-unidade-largura-celular);
+  }
+}

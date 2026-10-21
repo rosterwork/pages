@@ -350,8 +350,8 @@
    de uma unidade, a faixa acima da grade troca a unidade: as células
    das outras somem e o cabeçalho com o nome sai (a faixa já mostra
    o nome); o dedo que desliza para o lado troca a unidade, então a
-   grade só rola na vertical. As classes vêm da faixa de unidades
-   (componentes/js/geral-faixa-unidades.js), de cada página que a usa.
+   grade só rola na vertical. As classes vêm do seletor de unidade
+   (componentes/js/geral-seletor-unidade.js), de cada página que o usa.
    ============================================================ */
 @media (max-width: 767px) {
   html[data-celular] .escala-mes-grade--uma-unidade {
@@ -359,12 +359,12 @@
     align-items: stretch;
   }
 
-  html[data-celular] .escala-mes-grade--com-faixa {
+  html[data-celular] .escala-mes-grade--com-seletor {
     touch-action: pan-y pinch-zoom;
   }
 
-  html[data-celular] .escala-mes-grade--com-faixa .escala-mes-cabecalho,
-  html[data-celular] .escala-mes-grade--com-faixa .escala-mes-celula--outra-unidade {
+  html[data-celular] .escala-mes-grade--com-seletor .escala-mes-cabecalho,
+  html[data-celular] .escala-mes-grade--com-seletor .escala-mes-celula--outra-unidade {
     display: none;
   }
 }

@@ -67,9 +67,9 @@
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    A Escala fica só com o Dia e o Mês (Agenda e Calendário): as abas
-   Militares, Semana e Colunas somem. No Mês com mais de uma unidade,
-   a faixa de unidades (componente geral-faixa-unidades) fica entre a
-   barra e a grade.
+   Militares, Semana e Colunas somem. Na Agenda com mais de uma
+   unidade, o seletor de unidade (componente geral-seletor-unidade)
+   fica na linha dos ícones da barra.
    ============================================================ */
 @media (max-width: 767px) {
   html[data-celular] .escala-so-computador {

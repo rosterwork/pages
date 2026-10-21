@@ -277,17 +277,17 @@
     var ehDia = modoAtual() === 'dia';
     corpo.classList.toggle('pagina-corpo--camada', ehDia);
     corpo.classList.toggle('pagina-corpo--colado', !ehDia);
-    /* celular, Mês (Agenda e Calendário): uma unidade por tela, trocada pela faixa (geral-faixa-unidades.js);
-       fora disso a faixa some */
-    var mesNoCelular = !!(RosterWork.celular && RosterWork.celular()) && modoAtual() === 'mes';
-    if (RosterWork.faixaUnidades) RosterWork.faixaUnidades.mostrar(mesNoCelular ? unidadesColuna() : null);
-    var aplicarFaixa = (mesNoCelular && RosterWork.faixaUnidades) ? RosterWork.faixaUnidades.aplicar : null;
+    /* celular, Mês › Agenda: uma unidade por tela, trocada pelo seletor de unidade (geral-seletor-unidade.js);
+       fora disso o seletor some (o Calendário mostra todas as unidades no dia, como no computador) */
+    var agendaNoCelular = !!(RosterWork.celular && RosterWork.celular()) && modoAtual() === 'mes' && subMesAtual() !== 'calendario';
+    if (RosterWork.seletorUnidade) RosterWork.seletorUnidade.mostrar(agendaNoCelular ? unidadesColuna() : null);
+    var aplicarSeletor = (agendaNoCelular && RosterWork.seletorUnidade) ? RosterWork.seletorUnidade.aplicar : null;
     /* as grades abrem roladas em hoje quando o período contém hoje (rolarHoje; geral-periodo.js) */
     /* Mês → Calendário: escala do mês em cada dia do calendário (mesma célula do Mês → Agenda) */
     if (modoAtual() === 'mes' && subMesAtual() === 'calendario') {
       if (!window.RosterWork.escalasCalendario) { mostrarEstado(corpo, 'Em construção.'); return; }
       if (!unidades && idsAplicados().length) { mostrarCarregando(corpo); return; }
-      window.RosterWork.escalasCalendario.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData, vigente: vigente, rolarHoje: true, aoTerminar: aplicarFaixa });
+      window.RosterWork.escalasCalendario.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData, vigente: vigente, rolarHoje: true });
       return;
     }
     /* modo Militares: grade militares × dias da quinzena (navegação por semana, ±7) */
@@ -332,7 +332,7 @@
       mostrarCarregando(corpo);
       return;
     }
-    window.RosterWork.escalasMes.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData, vigente: vigente, rolarHoje: true, aoTerminar: aplicarFaixa });
+    window.RosterWork.escalasMes.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData, vigente: vigente, rolarHoje: true, aoTerminar: aplicarSeletor });
   }
 
   /* ---------- navegação de período (datas reais; semana de domingo a sábado) ---------- */
@@ -516,8 +516,8 @@
     /* clicar numa célula da grade abre a gaveta de detalhes */
     if (window.RosterWork.escalasPainel) RosterWork.escalasPainel.ligar(conteudo);
 
-    /* celular: a faixa de unidades do Mês (componente geral-faixa-unidades.js) */
-    if (window.RosterWork.faixaUnidades) RosterWork.faixaUnidades.iniciar(conteudo, { pecaCalendario: '.escala-calendario-unidade' });
+    /* celular: o seletor de unidade da Agenda (componente geral-seletor-unidade.js) */
+    if (window.RosterWork.seletorUnidade) RosterWork.seletorUnidade.iniciar(conteudo);
 
     /* busca do modo Militares; filtros e busca da grade (escalas-filtros.js); o botão Legenda (molde geral) */
     ligarBuscaMilitares();

@@ -121,7 +121,7 @@
       });
 
       var wrap = corpo.querySelector('.geral-calendario-mes');
-      /* gancho: quem usa ajusta antes de pintar (a Escala no celular, a unidade da faixa) */
+      /* gancho: quem usa ajusta antes de pintar */
       if (wrap && opcoes.aoTerminar) opcoes.aoTerminar(wrap);
       if (wrap && RosterWork.escalasCelula) RosterWork.escalasCelula.ativarGraficos(wrap);
       if (wrap && RosterWork.gradeTeclado) RosterWork.gradeTeclado.ativar(wrap, { celula: '.escala-mes-celula', matriz: matrizTeclado });

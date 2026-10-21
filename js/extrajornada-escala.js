@@ -89,11 +89,11 @@
     var at = el.modos && el.modos.querySelector('.aba--ativa');
     return (at && at.getAttribute('data-modo')) || 'agenda';
   }
-  /* depois de montar e antes de pintar: no celular, uma unidade por tela (a faixa); a escala das barras, a busca e a pintura */
+  /* depois de montar e antes de pintar: na Agenda do celular, uma unidade por tela; a escala das barras, a busca e a pintura */
   function depoisDoRender(wrap) { RW.extrajornadaGrade.aplicar(wrap); aplicarEscala(escalaPorUnidade()); aplicarBuscaGrade(); pintarSelecionado(); }
-  /* as duas grades abrem roladas em hoje; no celular, a faixa de unidades acima da grade */
+  /* as duas grades abrem roladas em hoje; na Agenda do celular, o seletor de unidade na barra */
   function renderGrade() {
-    RW.extrajornadaGrade.faixa(colunasSelecionadas());
+    RW.extrajornadaGrade.unidades(colunasSelecionadas());
     if (subModoAtual() === 'calendario') { renderGradeCalendario(); return; }
     if (!el.cal || !RW.escalasMes) return;
     coberturas = {}; ensaio = {}; escalaAplicada = {};

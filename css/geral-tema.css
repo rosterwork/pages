@@ -160,6 +160,7 @@
   --busca-largura-celular:           100%;
   --seletor-largura-celular:         100%;
   --periodo-nome-largura-celular:   124px;   /* o mês mais comprido ("novembro 2026") na letra do celular */
+  --seletor-unidade-largura-celular: 120px;  /* o seletor de unidade da Agenda: a sigla mais comprida ("2ºCIBM") e a seta */
   --menu-altura-celular:             64px;   /* barra de baixo (o menu no celular) */
   --toque-altura-celular:            44px;   /* área de toque: o botão de 36px toca numa folga invisível até 44px */
 

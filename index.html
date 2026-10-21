@@ -38,7 +38,7 @@
   <link rel="stylesheet" href="componentes/css/geral-calendario-mes.css" />
   <link rel="stylesheet" href="componentes/css/geral-mini-calendario.css" />
   <link rel="stylesheet" href="componentes/css/geral-periodo.css" />
-  <link rel="stylesheet" href="componentes/css/geral-faixa-unidades.css" />
+  <link rel="stylesheet" href="componentes/css/geral-seletor-unidade.css" />
   <link rel="stylesheet" href="componentes/css/geral-anteriores.css" />
   <link rel="stylesheet" href="componentes/css/geral-posto-editar.css" />
   <link rel="stylesheet" href="componentes/css/geral-layout-lateral.css" />
@@ -623,7 +623,7 @@
   <script src="componentes/js/geral-calendario.js"></script>
   <script src="componentes/js/geral-calendario-mes.js"></script>
   <script src="componentes/js/geral-periodo.js"></script>
-  <script src="componentes/js/geral-faixa-unidades.js"></script>
+  <script src="componentes/js/geral-seletor-unidade.js"></script>
   <script src="componentes/js/geral-mini-calendario.js"></script>
   <script src="componentes/js/geral-abas.js"></script>
   <script src="componentes/js/geral-painel.js"></script>
@@ -886,21 +886,16 @@
     </div>
   </template>
 
-  <!-- MOLDE: faixa de unidades do celular (componentes/js/geral-faixa-unidades.js), entre a barra e a grade
-       do mês (Escala e Extrajornada, Agenda e Calendário) com mais de uma unidade: uma unidade por tela. O
-       seletor, rolando para os lados, deixa a escolhida no meio; tocar num nome troca a unidade, e na Agenda
-       deslizar também -->
-  <template id="tpl-faixa-unidades">
-    <div class="faixa-unidades oculto">
-      <div class="faixa-unidades-trilho">
-        <div class="abas abas--seletor faixa-unidades-abas"></div>
-      </div>
-      <span class="campo-ajuda"><span class="faixa-unidades-posicao"></span> de <span class="faixa-unidades-total"></span> · deslize para trocar de unidade</span>
-    </div>
+  <!-- MOLDE: seletor de unidade do celular (componentes/js/geral-seletor-unidade.js), na Agenda (Escala e
+       Extrajornada) com mais de uma unidade: uma unidade por tela. Entra no começo da barra da página; no
+       celular vira o menu "2ºPEL ▾" (geral-abas.js), na linha dos ícones, à esquerda; deslizar a grade para o
+       lado também troca -->
+  <template id="tpl-seletor-unidade">
+    <div class="abas abas--seletor seletor-unidade oculto" aria-label="Unidade"></div>
   </template>
 
-  <!-- uma unidade na faixa -->
-  <template id="tpl-faixa-unidades-aba">
+  <!-- uma unidade no seletor -->
+  <template id="tpl-seletor-unidade-aba">
     <button type="button" class="aba" role="tab"></button>
   </template>
 

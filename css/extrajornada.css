@@ -826,6 +826,13 @@
    Os rodapés quebram: o texto em cima e os botões dividindo a largura.
    ============================================================ */
 @media (max-width: 767px) {
+  /* ---------- barra: o selo (prazo, etapa) desce para depois dos ícones, à esquerda; a linha dos ícones
+     fica com o seletor de unidade da Agenda ---------- */
+  html[data-celular] .pagina-subcabecalho > .extra-barra-selo {
+    order: 6;
+    margin-right: auto;
+  }
+
   /* ---------- Voluntários ---------- */
   html[data-celular] .extra-vol {
     overflow-y: auto;
@@ -933,12 +940,6 @@
   html[data-celular] .extra-escalar:not(.extra-escalar--aberto) .geral-painel-esquerdo-lista,
   html[data-celular] .extra-escalar-nota,
   html[data-celular] .extra-pincel-ajuda {
-    display: none;
-  }
-
-  /* ---------- Calendário e Distribuição, modo Calendário com a faixa de unidades: o bloco do dia é só da
-     unidade escolhida, e a faixa já diz qual é (geral-faixa-unidades) ---------- */
-  html[data-celular] .faixa-unidades-calendario .extra-calendario-unidade-nome {
     display: none;
   }
 
