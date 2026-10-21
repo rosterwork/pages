@@ -291,21 +291,4 @@ button.aviso-item:hover {
   html[data-celular] .cabecalho-usuario + .dropdown-menu .dropdown-item {
     min-height: var(--toque-altura-celular);
   }
-
-  /* topo que some ao rolar (geral-recolher-topo.js): a barra do sistema sobe e sai, e a página ocupa o
-     lugar dela. Exceção da regra de transição: a margem do topo do celular anda em 0,3s (Guia visual) */
-  html[data-celular] .casca > .cabecalho {
-    transition: margin-top 0.3s ease;
-  }
-
-  html[data-celular][data-topo-recolhido] .casca > .cabecalho {
-    margin-top: calc(-1 * var(--topo-app-altura, 0px));
-  }
-
-  /* quem pede menos movimento no aparelho: o topo some e volta na hora */
-  @media (prefers-reduced-motion: reduce) {
-    html[data-celular] .casca > .cabecalho {
-      transition: none;
-    }
-  }
 }

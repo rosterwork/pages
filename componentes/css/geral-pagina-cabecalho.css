@@ -291,22 +291,4 @@
   html[data-celular] .acoes-admin-menu .botao:hover {
     background-color: var(--fundo-medio);
   }
-
-  /* topo que some ao rolar (geral-recolher-topo.js): o título, as abas e a barra sobem e saem (o .conteudo
-     corta o que passa da borda) e o corpo ocupa o lugar deles. Exceção da regra de transição: a margem do
-     topo do celular anda em 0,3s (Guia visual) */
-  html[data-celular] .pagina > :first-child {
-    transition: margin-top 0.3s ease;
-  }
-
-  html[data-celular][data-topo-recolhido] .pagina > :first-child {
-    margin-top: calc(-1 * var(--topo-pagina-altura, 0px));
-  }
-
-  /* quem pede menos movimento no aparelho: o topo some e volta na hora */
-  @media (prefers-reduced-motion: reduce) {
-    html[data-celular] .pagina > :first-child {
-      transition: none;
-    }
-  }
 }

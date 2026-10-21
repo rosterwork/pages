@@ -5,19 +5,22 @@
    aprovação). Registrar (só admin): escolhe o solicitante,
    aceita dias de até 7 dias atrás e grava a troca já aprovada,
    depois da análise de impacto (a mesma do Aprovar).
-   Nos dois: o E-protocolo (Parte e Ano, obrigatórios), o dia e
+   Nos dois: o E-protocolo (Parte opcional; com ela, o Ano), o dia e
    o período do serviço, o solicitado e a devolução (Pendência
    ou Marcar dia). Os campos ficam em trocas-solicitar-campos.js;
    aqui ficam a abertura, os modos, o E-protocolo, a análise, a
    validação e o envio. Ações no rodapé do painel; o X/Esc
    confirmam o descarte quando há dados.
-   Expõe RosterWork.trocasSolicitar.{ ligar, abrir }.
+   Expõe RosterWork.trocasSolicitar.{ ligar, abrir, formulario }.
      ligar({ aoSolicitar, aoMudar }) — guarda os callbacks (1x)
      abrir(opcoes) — abre o painel e monta o formulário:
        {} = Solicitar · { registrar: true } = Registrar ·
        { cobrar: { cpf, nome, grau, minutos } } = Solicitar em
        modo cobrança (o devedor entra como parceiro e o período
        já nasce com as horas da dívida)
+     formulario — as peças que o Editar troca (trocas-editar.js)
+       usa no mesmo molde: mostrarModo, ligarSoNumeros, parteNumero,
+       parteAno, validarParte, ligarLimpezaErros
    ============================================================ */
 (function () {
   'use strict';
@@ -35,13 +38,28 @@
   function perfilLotacao() { var u = RosterWork.sessao.perfil(); return u ? u.lotacao_id : null; }
   function q(sel) { return ctx && ctx.raiz ? ctx.raiz.querySelector(sel) : null; }
 
-  /* ---------- E-protocolo ---------- */
+  /* ---------- o formulário: os modos e o E-protocolo (o Editar troca usa os mesmos) ---------- */
+  /* mostra só o que é do modo (data-modo traz os modos em que o campo aparece, separados por espaço) */
+  function mostrarModo(raiz, modo) {
+    Array.prototype.forEach.call(raiz.querySelectorAll('[data-modo]'), function (el) {
+      el.classList.toggle('oculto', el.getAttribute('data-modo').split(' ').indexOf(modo) < 0);
+    });
+  }
   function ligarSoNumeros(inp) {
     if (!inp) return;
     inp.addEventListener('input', function () { var v = inp.value.replace(/\D/g, ''); if (v !== inp.value) inp.value = v; });
   }
-  function parteNumero() { var v = (q('#ts-parte') || {}).value || ''; return /^\d{1,7}$/.test(v) && Number(v) > 0 ? Number(v) : null; }
-  function parteAno() { var v = (q('#ts-parte-ano') || {}).value || ''; return /^\d{4}$/.test(v) ? Number(v) : null; }
+  function valorDe(raiz, sel) { var el = raiz ? raiz.querySelector(sel) : null; return el ? el.value || '' : ''; }
+  function parteDigitada(raiz) { return valorDe(raiz, '#ts-parte').trim() !== ''; }
+  function parteNumero(raiz) { var v = valorDe(raiz, '#ts-parte'); return /^\d{1,7}$/.test(v) && Number(v) > 0 ? Number(v) : null; }
+  function parteAno(raiz) { var v = valorDe(raiz, '#ts-parte-ano'); return /^\d{4}$/.test(v) ? Number(v) : null; }
+  /* a Parte é opcional; preenchida, precisa ser válida e levar o Ano */
+  function validarParte(raiz) {
+    var ok = true;
+    if (parteDigitada(raiz) && !parteNumero(raiz)) { C().marcarErro(raiz.querySelector('#ts-parte'), txt('novaParte')); ok = false; }
+    if (parteDigitada(raiz) && !parteAno(raiz)) { C().marcarErro(raiz.querySelector('#ts-parte-ano'), txt('novaAno')); ok = false; }
+    return ok;
+  }
 
   /* ---------- unidades (do grupo da lotação de quem está logado) ---------- */
   function carregarUnidades() {
@@ -118,16 +136,14 @@
       p_data_servico_parceiro: ctx.devDia || null,
       p_devolucao_horario_inicio: (ctx.devDia && !devTotal) ? ctx.devSel.hi : null,
       p_devolucao_horario_fim: (ctx.devDia && !devTotal) ? ctx.devSel.hf : null,
-      p_parte_numero: parteNumero(),
-      p_parte_ano: parteAno()
+      p_parte_numero: parteNumero(ctx.raiz),
+      p_parte_ano: parteNumero(ctx.raiz) ? parteAno(ctx.raiz) : null   // sem a Parte, o Ano não vai
     };
     if (ctx.registrar) corpo.p_solicitante_cpf = ctx.solicitanteSel.cpf;
     return corpo;
   }
   function validar() {
-    var ok = true, erro = C().marcarErro;
-    if (!parteNumero()) { erro(q('#ts-parte'), txt('novaParte')); ok = false; }
-    if (!parteAno()) { erro(q('#ts-parte-ano'), txt('novaAno')); ok = false; }
+    var ok = validarParte(ctx.raiz), erro = C().marcarErro;
     if (ctx.registrar && !ctx.solicitanteSel) { erro(q('#ts-solicitante'), txt('novaSolicitante')); ok = false; }
     if (!ctx.servicoDia) { erro(q('#ts-data'), ctx.registrar ? txt('novaDataRegistrar') : txt('novaData')); ok = false; }
     else if (!ctx.servicoSel || ctx.servicoSel.minutos <= 0) { erro(q('#ts-data'), txt('novaServicoVazio')); ok = false; }
@@ -246,10 +262,7 @@
     var molde = document.getElementById('tpl-troca-solicitar');
     if (molde) corpo.appendChild(molde.content.cloneNode(true));
     /* mostra só o que é do modo (Solicitar: o logado em leitura; Registrar: escolher o solicitante) */
-    var modo = registrar ? 'registrar' : 'solicitar';
-    Array.prototype.forEach.call(corpo.querySelectorAll('[data-modo]'), function (el) {
-      el.classList.toggle('oculto', el.getAttribute('data-modo') !== modo);
-    });
+    mostrarModo(corpo, registrar ? 'registrar' : 'solicitar');
 
     ctx = {
       raiz: corpo, registrar: registrar, aoSolicitar: cbs.aoSolicitar, aoMudar: cbs.aoMudar,
@@ -343,5 +356,9 @@
     }
   }
 
-  RW.trocasSolicitar = { ligar: ligar, abrir: abrir };
+  RW.trocasSolicitar = {
+    ligar: ligar, abrir: abrir,
+    formulario: { mostrarModo: mostrarModo, ligarSoNumeros: ligarSoNumeros, parteNumero: parteNumero, parteAno: parteAno,
+                  validarParte: validarParte, ligarLimpezaErros: ligarLimpezaErros }
+  };
 })();

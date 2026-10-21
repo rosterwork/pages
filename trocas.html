@@ -71,15 +71,16 @@
   </div>
 </div>
 
-<!-- molde: formulário Solicitar troca / Registrar troca (montado no painel lateral).
-     data-modo: o que só aparece num dos dois (solicitar = o logado pede; registrar = o admin escolhe o solicitante) -->
+<!-- molde: formulário Solicitar troca / Registrar troca / Editar troca (montado no painel lateral).
+     data-modo: os modos em que o campo aparece (solicitar = o logado pede; registrar = o admin escolhe o solicitante;
+     editar = os dois militares da troca só em leitura) -->
 <template id="tpl-troca-solicitar">
   <div class="troca-solicitar-form">
     <div class="grupo-caixa trocas-cartao">
       <span class="rotulo-secao">E-protocolo</span>
       <div class="trocas-protocolo">
         <label class="campo">
-          <span class="campo-rotulo">Parte</span>
+          <span class="campo-rotulo">Parte (opcional)</span>
           <input type="text" class="campo-entrada" id="ts-parte" inputmode="numeric" maxlength="7" autocomplete="off" />
           <span class="campo-erro-texto"></span>
         </label>
@@ -97,7 +98,7 @@
         <span class="campo-rotulo">Unidade</span>
         <div class="campo-entrada campo-entrada--leitura" id="ts-minha-unidade"></div>
       </div>
-      <div class="campo" data-modo="solicitar">
+      <div class="campo" data-modo="solicitar editar">
         <span class="campo-rotulo">Militar</span>
         <div class="campo-entrada campo-entrada--leitura" id="ts-meu-nome"></div>
       </div>
@@ -132,7 +133,11 @@
 
     <div class="grupo-caixa trocas-cartao">
       <span class="rotulo-secao">Solicitado</span>
-      <div class="campo">
+      <div class="campo oculto" data-modo="editar">
+        <span class="campo-rotulo">Militar</span>
+        <div class="campo-entrada campo-entrada--leitura" id="ts-parceiro-nome"></div>
+      </div>
+      <div class="campo" data-modo="solicitar registrar">
         <span class="campo-rotulo">Unidade</span>
         <div class="dropdown" id="ts-unidade-dropdown">
           <button type="button" class="campo-entrada campo-selecao" id="ts-unidade" aria-label="Unidade">
@@ -142,7 +147,7 @@
           <div class="dropdown-menu" id="ts-unidade-menu"></div>
         </div>
       </div>
-      <div class="campo">
+      <div class="campo" data-modo="solicitar registrar">
         <span class="campo-rotulo">Militar</span>
         <div class="dropdown" id="ts-parceiro-dropdown">
           <input class="campo-entrada" id="ts-parceiro" type="text" maxlength="100" placeholder="Escolha o dia antes" autocomplete="off" aria-label="Militar" disabled />
@@ -176,7 +181,7 @@
       </div>
     </div>
 
-    <!-- análise de impacto (só no Registrar): a mesma do Aprovar, desenhada pelo geral-impacto -->
+    <!-- análise de impacto (no Registrar e no Editar do administrador): a mesma do Aprovar, desenhada pelo geral-impacto -->
     <div class="decisao-analise-secao oculto" id="ts-analise">
       <div class="decisao-analise-cabecalho">
         <span class="rotulo-secao">Análise</span>
@@ -197,6 +202,12 @@
 <template id="tpl-troca-registrar-acoes">
   <button type="button" class="botao" data-acao="cancelar">Cancelar</button>
   <button type="button" class="botao botao--primario" data-acao="solicitar">Registrar troca</button>
+</template>
+
+<!-- molde: ações do rodapé do Editar troca (Cancelar volta à leitura do painel) -->
+<template id="tpl-troca-editar-acoes">
+  <button type="button" class="botao" data-acao="cancelar">Cancelar</button>
+  <button type="button" class="botao botao--primario" data-acao="salvar">Salvar</button>
 </template>
 
 <!-- molde: linha de uma troca na lista -->

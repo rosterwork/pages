@@ -51,7 +51,7 @@
     item.querySelector('.troca-item-b').textContent = fmt().nomeMilitar(troca.parceiro_grau, troca.parceiro_nome);
     item.querySelector('.troca-item-meta').textContent = fmt().metaLista(troca);
     var selo = item.querySelector('.troca-item-situacao');
-    var info = fmt().situacao(troca.status);
+    var info = fmt().situacao(troca.status, !!troca.substitui_troca_id);
     selo.textContent = info.texto;
     selo.classList.add(info.classe);
     item.addEventListener('click', function () { abrirTroca(item, troca); });

@@ -1,5 +1,6 @@
 /* ============================================================
-   AFASTAMENTOS / ATESTADOS — lista (na árvore) e indicador de fluxo
+   AFASTAMENTOS / ATESTADOS — lista (na árvore), indicador de fluxo
+   e os períodos do painel Férias
    ============================================================ */
 
 /* lista de uma unidade marcada: o bloquinho branco da árvore (geral-arvore-unidades), uma linha por militar */
@@ -41,6 +42,40 @@
 .atestado-detalhe {
   font-size: 11px;
   color: var(--texto-suave);
+}
+
+/* férias: a linha de quem administra a unidade abre o painel Férias do militar; as linhas dele ficam marcadas enquanto o painel está aberto */
+.atestado-item--clicavel {
+  border-radius: var(--raio-pequeno);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.atestado-item--clicavel:hover {
+  background-color: var(--fundo-suave);
+}
+
+.atestado-item--aberto,
+.atestado-item--aberto:hover {
+  background-color: var(--fundo-medio);
+}
+
+/* painel Férias: os períodos do militar, um por linha (o molde do horário, com dois campos de data) */
+.ferias-periodos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ferias-periodo .horario-par {
+  min-width: 0;
+}
+
+.ferias-periodo .campo-entrada {
+  flex: 0 1 112px;
+  width: 112px;
+  min-width: 0;
+  text-align: center;
 }
 
 /* indicador de fluxo: ≤15 dias segue / ≥16 sai */
@@ -100,7 +135,9 @@
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    Cada item da lista em linhas: o militar, o tipo e o período na
-   largura toda e, embaixo, os selos (os dias e o fluxo).
+   largura toda e, embaixo, os selos (os dias e o fluxo). No painel
+   Férias, as duas datas ocupam a linha e, embaixo, os dias, o ✕ e
+   o Adicionar período.
    ============================================================ */
 @media (max-width: 767px) {
   html[data-celular] .atestados-lista {
@@ -118,5 +155,19 @@
 
   html[data-celular] .atestado-item > .espacador-flex {
     display: none;
+  }
+
+  html[data-celular] .ferias-periodo {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+
+  html[data-celular] .ferias-periodo .horario-par {
+    flex: 1 1 100%;
+  }
+
+  html[data-celular] .ferias-periodo .campo-entrada {
+    flex: 1 1 0;
+    width: auto;
   }
 }

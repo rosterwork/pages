@@ -68,10 +68,11 @@
 <template id="tpl-ferias-militar-opcao">
   <button type="button" class="dropdown-item"></button>
 </template>
-<template id="tpl-ferias-novo">
-  <div class="painel-secao">
+<!-- painel Férias: Militar (só no "Novas férias") e Períodos (os do militar, um por linha) -->
+<template id="tpl-ferias-painel">
+  <div class="painel-secao" id="fer-secao-militar">
     <button type="button" class="painel-secao-cabecalho" aria-expanded="true">
-      <span class="rotulo-secao">Militar e período</span>
+      <span class="rotulo-secao">Militar</span>
       <svg class="icone painel-secao-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
     </button>
     <div class="painel-secao-corpo">
@@ -101,20 +102,41 @@
         </div>
         <span class="campo-erro-texto"></span>
       </div>
-      <label class="campo">
-        <span class="campo-rotulo">Data de início</span>
-        <input class="campo-entrada" id="fer-inicio" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" />
-        <span class="campo-erro-texto"></span>
-      </label>
-      <label class="campo">
-        <span class="campo-rotulo">Data de fim</span>
-        <input class="campo-entrada" id="fer-fim" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" />
-        <span class="campo-erro-texto"></span>
-      </label>
+    </div>
+  </div>
+  <div class="painel-secao oculto" id="fer-secao-periodos">
+    <button type="button" class="painel-secao-cabecalho" aria-expanded="true">
+      <span class="rotulo-secao">Períodos</span>
+      <svg class="icone painel-secao-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+    </button>
+    <div class="painel-secao-corpo">
+      <div class="ferias-periodos" id="fer-periodos"></div>
+      <div class="nota nota--erro oculto" id="fer-periodos-nota">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+        <span class="nota-texto"></span>
+      </div>
     </div>
   </div>
 </template>
-<template id="tpl-ferias-novo-acoes">
+<!-- um período: início → fim, os dias, o ✕ e (só na 1ª linha) o Adicionar período -->
+<template id="tpl-ferias-periodo">
+  <span class="horario ferias-periodo">
+    <span class="horario-par">
+      <input class="campo-entrada ferias-periodo-inicio" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" aria-label="Data de início" />
+      <svg class="icone horario-seta" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+      <input class="campo-entrada ferias-periodo-fim" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" aria-label="Data de fim" />
+    </span>
+    <span class="selo ferias-periodo-dias oculto"></span>
+    <span class="espacador-flex"></span>
+    <button type="button" class="botao-discreto horario-remover" aria-label="Remover este período" data-dica="Remover este período">
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+    </button>
+    <button type="button" class="botao-discreto horario-adicionar" aria-label="Adicionar período" data-dica="Adicionar período">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-calendario-mais.svg#icone-calendario-mais"/></svg>
+    </button>
+  </span>
+</template>
+<template id="tpl-ferias-acoes">
   <button type="button" class="botao" id="fer-cancelar">Cancelar</button>
   <button type="button" class="botao botao--primario" id="fer-salvar" disabled>Salvar</button>
 </template>

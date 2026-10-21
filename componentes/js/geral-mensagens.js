@@ -274,7 +274,17 @@
       falhaSalvarLicenca: 'Não foi possível salvar a licença. Tente de novo.',
       falhaSalvarDispensa: 'Não foi possível salvar a dispensa. Tente de novo.',
       /* aviso ao lançar afastamento sobre um dia coberto por troca aprovada; datas = lista já formatada */
-      confirmarTroca: function (datas) { return 'Este militar cobre serviço por troca em ' + datas + '. Se você lançar o afastamento, ele deixa de assumir esse serviço, e a escala vai marcá-lo em amarelo. Continuar?'; }
+      confirmarTroca: function (datas) { return 'Este militar cobre serviço por troca em ' + datas + '. Se você lançar o afastamento, ele deixa de assumir esse serviço, e a escala vai marcá-lo em amarelo. Continuar?'; },
+      /* painel Férias: o problema de um período (vai para a nota embaixo da lista) */
+      feriasFimAntes: 'A data de fim deve ser igual ou depois do início.',
+      feriasCruza: function (periodo) { return 'Este período cruza com as férias de ' + periodo + '.'; },
+      feriasLimite: function (data) { return 'Só dá para mudar as férias a partir de ' + data + '.'; },
+      /* aviso antes de gravar: o que o militar já tem nos dias que entram nas férias */
+      feriasConfirmar: 'Nos dias novos das férias, este militar já tem:',
+      feriasTroca: function (dia, com) { return 'Cobre o serviço ' + (com ? 'de ' + com + ' ' : '') + 'em ' + dia + '.'; },
+      feriasExtra: function (dia, unidade) { return 'Em ' + dia + (unidade ? ', n' + artigo(unidade) + ' ' + unidade : '') + '.'; },
+      feriasFolga: function (dia, situacao) { return 'Em ' + dia + (situacao ? ' (' + situacao + ')' : '') + '.'; },
+      feriasNotaConfirmar: 'Se você continuar, nada disso é desfeito: o serviço fica em amarelo na escala e a folga continua marcada.'
     },
 
     /* ajustes — painel do ritmo da unidade (o Salvar pergunta a data a partir da qual o ritmo vale) */
@@ -511,14 +521,14 @@
           return quem(o.grad, o.nome) + ' está de folga das ' + hh(o.hi) + ' às ' + hh(o.hf) + '.';
         }
         /* troca: quem cumpre a escala de quem, os períodos (serviço inteiro: sem período), a parte do E-protocolo
-           e a devolução; no dia da devolução, a frase invertida com a data da troca de origem */
+           (só quando a troca tem o número) e a devolução; no dia da devolução, a frase invertida com a data da troca de origem */
         var todos = o.periodos || [];
         var comHora = todos.filter(function (p) { return p.hi && p.hf; });
         var inteiro = !comHora.length || comHora.length < todos.length;
         var frase = quem(o.cobre_grad, o.cobre_nome) + ' cumpre a escala de serviço do ' + quem(o.saiu_grad, o.saiu_nome)
                   + (inteiro ? '' : ', no período ' + periodos(comHora))
                   + (o.tipo === 'devolucao' ? ', como devolução da troca de ' + (o.orig_data || '') : '')
-                  + ', conforme a Parte nº ' + o.parte_numero + '/' + o.parte_ano + '.';
+                  + (o.parte_numero ? ', conforme a Parte nº ' + o.parte_numero + '/' + o.parte_ano : '') + '.';
         if (o.tipo === 'devolucao') return frase;
         if (o.dev_pendente) return frase + ' A devolução será definida posteriormente.';
         if (!o.dev_hi || !o.dev_hf) return frase + ' A devolução ocorrerá no serviço de ' + (o.dev_data || '') + '.';
@@ -704,6 +714,9 @@
       /* o cartão de cada pedido: quem e o quê, e a linha de apoio */
       trocaAdmin: function (sol, par) { return sol + ' troca com ' + par; },
       trocaMinha: function (sol) { return sol + ' quer trocar com você'; },
+      /* a alteração de uma troca aprovada (quem pediu pode ser o solicitado) */
+      trocaAdminAlteracao: function (sol, par) { return 'Alteração da troca de ' + sol + ' com ' + par; },
+      trocaMinhaAlteracao: function (quemPediu) { return quemPediu + ' quer alterar uma troca com você'; },
       folga: function (nome) { return nome + ' pediu folga'; },
       dados: function (nome) { return nome + ' pediu correção de dados'; },
       metaServico: function (data, trecho) { return 'Serviço de ' + data + ' · ' + trecho; },
@@ -762,7 +775,16 @@
         aprovada: 'Aprovada',
         rejeitada_parceiro: 'Recusada',
         rejeitada_admin: 'Recusada pela administração',
-        cancelada: 'Cancelada'
+        cancelada: 'Cancelada',
+        substituida: 'Substituída'
+      },
+      /* selo da alteração de uma troca aprovada (a aprovada vira a troca; a de antes fica "Substituída") */
+      situacaoAlteracao: {
+        pendente_confirmacao: 'Alteração aguardando confirmação',
+        pendente_aprovacao: 'Alteração aguardando aprovação',
+        rejeitada_parceiro: 'Alteração recusada',
+        rejeitada_admin: 'Alteração recusada pela administração',
+        cancelada: 'Alteração cancelada'
       },
       /* painel da troca (componente geral-decisao) */
       painelTitulo: 'Troca de serviço',
@@ -770,7 +792,12 @@
       caixaDevolucao: 'Devolução',
       fraseNoLugar: function (quemTrabalha, quemFolga) { return quemTrabalha + ' trabalha no lugar do ' + quemFolga + '.'; },
       devolucaoNaoMarcada: 'Ainda não marcada.',
-      /* a parte do E-protocolo que formaliza a troca (caixa Serviço do painel) */
+      /* a alteração: a caixa com a troca de antes, e o aviso na troca que tem uma alteração esperando */
+      caixaAntes: 'Antes',
+      antesDevolucao: function (dia, trecho) { return 'Devolução em ' + dia + ', ' + trecho + '.'; },
+      antesDevolucaoPendente: 'Devolução pendente.',
+      alteracaoAguardando: 'Esta troca tem uma alteração aguardando. Até ela ser aprovada, a troca continua como está.',
+      /* a parte do E-protocolo que formaliza a troca (caixa Serviço do painel; sem número, a linha não aparece) */
       parteNumero: function (numero, ano) { return 'Parte nº ' + numero + '/' + ano; },
       /* meta da linha na lista */
       metaServico: function (dataCurta) { return 'Serviço ' + dataCurta; },
@@ -787,12 +814,17 @@
       confirmarAprovarComProblema: 'A análise apontou problemas que podem quebrar a escala. Aprovar mesmo assim?',
       confirmarForcar: 'Aprovar sem a confirmação do solicitado? A troca é aplicada na escala na hora.',
       confirmarCancelar: 'Cancelar esta troca?',
+      confirmarCancelarAlteracao: 'Cancelar esta alteração? A troca continua como está.',
+      confirmarAprovarAlteracao: 'Aprovar esta alteração? Ela entra no lugar da troca de antes e a escala é atualizada na hora.',
+      confirmarEditar: 'Salvar a alteração? Ela entra no lugar da troca de antes e a escala é atualizada na hora.',
+      confirmarEditarComProblema: 'A análise apontou problemas que podem quebrar a escala. Salvar mesmo assim?',
       confirmarRegistrar: 'Registrar esta troca? Ela já entra aprovada e a escala é atualizada na hora.',
       confirmarRegistrarComProblema: 'A análise apontou problemas que podem quebrar a escala. Registrar mesmo assim?',
       falhaAcao: 'Não foi possível concluir. Tente de novo.',
       /* título do painel lateral de solicitar e de registrar (só admin) */
       tituloPainel: 'Solicitar troca',
       tituloRegistrar: 'Registrar troca',
+      tituloEditar: 'Editar troca',
       /* Nova troca — validações */
       novaParte: 'Informe o número da parte.',
       novaAno: 'Informe o ano com 4 números.',

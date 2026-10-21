@@ -5,9 +5,10 @@
    geral-arvore-unidades é única por página, a árvore da aba ativa é
    (re)montada na troca de aba. Os botões "Novas férias / Nova licença
    / Nova dispensa" (grupo Administração, só admin, em todas as abas)
-   levam à aba deles e abrem o painel de criação. Trocar de aba ou abrir
-   outro "Novo" com o painel aberto fecha o painel (com aviso se houver
-   dados).
+   levam à aba deles e abrem o painel de criação. Na aba Férias, quem
+   administra a unidade clica no militar e abre o painel Férias dele.
+   Trocar de aba ou abrir outro painel com um aberto fecha o anterior
+   (com aviso se houver dados).
    ============================================================ */
 (function () {
   'use strict';
@@ -34,7 +35,15 @@
     else { selo.textContent = 'Segue no fluxo'; selo.classList.add('selo--sucesso'); }
   }
 
-  /* ---------- Férias: lista + contagem ---------- */
+  /* ---------- Férias: lista + contagem; quem administra a unidade abre o militar no painel Férias ---------- */
+  function abrirFeriasDoMilitar(f, unidade, ferias) {
+    fecharPainelESeguir(function () {
+      RosterWork.ferias.abrirMilitar(
+        { usuario_id: f.usuario_id, grau: f.grau_abreviacao, nome: f.nome_de_guerra, unidade: unidade.nome },
+        ferias.filter(function (o) { return o.usuario_id === f.usuario_id; }));
+    });
+  }
+
   function renderFerias(container, unidade, ferias) {
     if (!ferias || ferias.length === 0) {
       var tplVazio = document.getElementById('tpl-ferias-vazio');
@@ -45,12 +54,25 @@
     var tplItem = document.getElementById('tpl-ferias-item');
     if (!tplLista || !tplItem) return;
     var lista = tplLista.content.cloneNode(true).firstElementChild;
+    var mexe = !!RosterWork.ferias && RosterWork.sessao.podeAdministrar('pelotao', unidade.unidade_id);
     ferias.forEach(function (f) {
       var item = tplItem.content.cloneNode(true).firstElementChild;
       item.querySelector('.atestado-grad').textContent = f.grau_abreviacao || '';
       item.querySelector('.atestado-nome').textContent = f.nome_de_guerra || '';
       item.querySelector('.atestado-detalhe').textContent = formatarDataCurta(f.data_inicio) + ' a ' + formatarDataCurta(f.data_fim);
       item.querySelector('.atestado-dias').textContent = f.dias + (f.dias === 1 ? ' dia' : ' dias');
+      item.setAttribute('data-militar', f.usuario_id);
+      if (mexe) {
+        item.classList.add('atestado-item--clicavel');
+        item.setAttribute('role', 'button');
+        item.setAttribute('tabindex', '0');
+        item.addEventListener('click', function () { abrirFeriasDoMilitar(f, unidade, ferias); });
+        item.addEventListener('keydown', function (evento) {
+          if (evento.key !== 'Enter' && evento.key !== ' ') return;
+          evento.preventDefault();
+          abrirFeriasDoMilitar(f, unidade, ferias);
+        });
+      }
       lista.appendChild(item);
     });
     container.appendChild(lista);

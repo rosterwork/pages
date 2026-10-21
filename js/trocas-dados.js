@@ -16,9 +16,12 @@
     analisar: function (trocaId) { return RosterWork.rpc('fn_trocas_analisar_impacto', { p_troca_id: trocaId }); },
     pendencias: function () { return RosterWork.rpc('fn_trocas_pendencias_listar', {}); },
     militares: function (unidadeId, dia, hi, hf) { return RosterWork.rpc('fn_trocas_listar_militares', { p_unidade_id: unidadeId, p_data: dia || null, p_hi: hi || null, p_hf: hf || null }); },
-    /* ultimos7Dias (só admin, no Registrar): inclui os serviços de até 7 dias atrás */
-    meusServicos: function (cpf, contextoId, ultimos7Dias) { return RosterWork.rpc('fn_trocas_meus_servicos', { p_cpf: cpf, p_contexto_id: contextoId, p_ultimos_7_dias: !!ultimos7Dias }); },
+    /* ultimos7Dias (só admin, no Registrar): inclui os serviços de até 7 dias atrás;
+       trocaId (Editar): os serviços como se essa troca não existisse */
+    meusServicos: function (cpf, contextoId, ultimos7Dias, trocaId) { return RosterWork.rpc('fn_trocas_meus_servicos', { p_cpf: cpf, p_contexto_id: contextoId, p_ultimos_7_dias: !!ultimos7Dias, p_troca_id: trocaId || null }); },
     solicitar: function (corpo) { return RosterWork.rpc('fn_trocas_solicitar', corpo); },
+    /* Editar: muda o dia, o período, a devolução e a parte; com corpo.p_ensaio = true só devolve a análise de impacto */
+    editar: function (corpo) { return RosterWork.rpc('fn_trocas_editar', corpo); },
     /* Registrar (só admin): grava já aprovada; com corpo.p_ensaio = true só devolve a análise de impacto */
     registrar: function (corpo) { return RosterWork.rpc('fn_trocas_registrar', corpo); },
     confirmar: function (trocaId, aceitar, motivo) { return RosterWork.rpc('fn_trocas_confirmar', { p_troca_id: trocaId, p_aceitar: aceitar, p_motivo: motivo || null }); },
@@ -79,12 +82,15 @@
     aprovada: 'selo--sucesso',
     rejeitada_parceiro: 'selo--erro',
     rejeitada_admin: 'selo--erro',
-    cancelada: 'selo--escuro'
+    cancelada: 'selo--escuro',
+    substituida: 'selo--escuro'
   };
 
-  function situacao(status) {
-    var textos = RW.mensagens.trocas.situacao;
-    return { texto: (textos && textos[status]) || status || '', classe: CLASSE_SITUACAO[status] || 'selo--escuro' };
+  /* alteracao = a troca é a alteração de outra (substitui_troca_id): o selo diz que é alteração */
+  function situacao(status, alteracao) {
+    var m = RW.mensagens.trocas;
+    var texto = (alteracao && m.situacaoAlteracao[status]) || (m.situacao && m.situacao[status]) || status || '';
+    return { texto: texto, classe: CLASSE_SITUACAO[status] || 'selo--escuro' };
   }
 
   RW.trocasFormato = {

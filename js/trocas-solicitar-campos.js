@@ -229,7 +229,7 @@
   /* ---------- solicitado (ocupados no dia/horário ficam apagados) ---------- */
   function agendarParceiros() { if (timerParceiros) clearTimeout(timerParceiros); timerParceiros = setTimeout(carregarParceiros, 350); }
   function carregarParceiros() {
-    var combo = f.comboParceiro;
+    var combo = f.comboParceiro; if (!combo) return;   // o Editar troca não escolhe o solicitado
     if (!f.unidadeSel) { combo.habilitar(false); combo.definir(txt('modalUnidadeAntes'), true); return; }
     if (!f.servicoDia || !f.servicoSel) { combo.habilitar(false); combo.definir(txt('modalDiaAntes'), true); return; }
     combo.habilitar(false);

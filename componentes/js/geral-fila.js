@@ -97,8 +97,12 @@
     var m = msg(), d = p.dado;
     if (p.tipo === 'troca') {
       var sol = nome(d.solicitante_grau, d.solicitante_nome), par = nome(d.parceiro_grau, d.parceiro_nome);
+      /* quem pediu: o solicitante, ou o solicitado quando é ele quem alterou (aí quem aceita é o solicitante) */
+      var pediu = d.confirma_cpf && d.confirma_cpf === d.solicitante_cpf ? par : sol;
+      var alteracao = !!d.substitui_troca_id;
       return {
-        quem: p.minha ? m.trocaMinha(sol) : m.trocaAdmin(sol, par),
+        quem: p.minha ? (alteracao ? m.trocaMinhaAlteracao(pediu) : m.trocaMinha(pediu))
+                      : (alteracao ? m.trocaAdminAlteracao(sol, par) : m.trocaAdmin(sol, par)),
         meta: m.metaServico(RW.data.comDiaCurto(d.data_servico_solicitante), trechoTexto(d.horario_inicio, d.horario_fim)),
         selo: RW.impacto.selo({ veredito: d.veredito, problemas: d.veredito_problemas, alertas: d.veredito_alertas })
       };

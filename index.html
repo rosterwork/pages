@@ -39,6 +39,7 @@
   <link rel="stylesheet" href="componentes/css/geral-mini-calendario.css" />
   <link rel="stylesheet" href="componentes/css/geral-periodo.css" />
   <link rel="stylesheet" href="componentes/css/geral-seletor-unidade.css" />
+  <link rel="stylesheet" href="componentes/css/geral-recolher-topo.css" />
   <link rel="stylesheet" href="componentes/css/geral-anteriores.css" />
   <link rel="stylesheet" href="componentes/css/geral-posto-editar.css" />
   <link rel="stylesheet" href="componentes/css/geral-layout-lateral.css" />
@@ -885,6 +886,14 @@
       </div>
       <div class="arvore-filhos"></div>
     </div>
+  </template>
+
+  <!-- MOLDE: a abinha do topo recolhido (componentes/js/geral-recolher-topo.js): no celular, com o topo
+       recolhido ao rolar a lista, fica no alto da tela; tocar ou puxar para baixo traz o topo de volta -->
+  <template id="tpl-topo-abinha">
+    <button type="button" class="topo-abinha" aria-label="Mostrar o topo">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+    </button>
   </template>
 
   <!-- MOLDE: seletor de unidade do celular (componentes/js/geral-seletor-unidade.js), na Agenda (Escala e
@@ -2054,14 +2063,23 @@
     <button type="button" class="botao botao--perigo" data-acao="confirmar-recusa">Confirmar recusa</button>
   </template>
   <!-- o rodapé do painel da troca (o JS deixa só as ações do papel e do estado de quem olha):
-       Recusar = o militar chamado para a troca; Recusar (admin) = a administração -->
+       Recusar = o militar chamado para a troca; Recusar (admin) = a administração;
+       Cancelar alteração = quem pediu a alteração de uma troca aprovada (a troca continua) -->
   <template id="tpl-troca-acoes">
     <button type="button" class="botao" data-acao="cancelar">Cancelar troca</button>
+    <button type="button" class="botao" data-acao="cancelar-alteracao">Cancelar alteração</button>
     <button type="button" class="botao botao--perigo" data-acao="recusar">Recusar</button>
     <button type="button" class="botao botao--primario" data-acao="aceitar">Aceitar</button>
     <button type="button" class="botao" data-acao="aprovar-forcar">Aprovar sem confirmação</button>
     <button type="button" class="botao botao--perigo" data-acao="recusar-admin">Recusar</button>
     <button type="button" class="botao botao--primario" data-acao="aprovar">Aprovar</button>
+  </template>
+  <!-- o aviso no topo do painel da troca (ex.: a troca tem uma alteração aguardando); o texto vem do JS -->
+  <template id="tpl-troca-nota">
+    <div class="nota nota--alerta">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+      <span class="nota-texto"></span>
+    </div>
   </template>
   <!-- o rodapé Recusar / Aprovar (folga e correção de dados) -->
   <template id="tpl-decisao-acoes">
