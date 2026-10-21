@@ -81,9 +81,17 @@
       });
     }
 
+    /* limpar pedido pela página (ex.: ao sair da aba): zera sem pôr o cursor no campo e sem a
+       pesquisa digitada antes voltar depois; vazia, a busca da barra fica recolhida no celular */
     return {
       modo: function () { return modo; },
-      limpar: function () { if (limpar) limpar.click(); else { entrada.value = ''; termo = ''; caixa.classList.remove('busca--com-texto'); avisar(); } }
+      limpar: function () {
+        clearTimeout(timer);
+        entrada.value = '';
+        termo = '';
+        caixa.classList.remove('busca--com-texto', 'busca--aberta');
+        avisar();
+      }
     };
   }
 
@@ -117,8 +125,10 @@
     return !!(window.RosterWork.celular && window.RosterWork.celular());
   }
 
-  /* o toque na busca recolhida só abre: não troca o modo marcar/filtrar */
+  /* o toque na busca recolhida só abre: não troca o modo marcar/filtrar. Só o toque (ou clique)
+     de verdade abre: clique feito por código não abre a busca */
   document.addEventListener('click', function (evento) {
+    if (!evento.isTrusted) return;
     var caixa = buscaDaBarra(evento.target);
     if (!caixa || !noCelular() || caixa.classList.contains('busca--aberta')) return;
     evento.preventDefault();
