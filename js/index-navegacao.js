@@ -127,11 +127,7 @@
     navAbort = ('AbortController' in window) ? new AbortController() : null;
     paginaAtual = pagina;
 
-    /* a tela pronta (ou desistida) também tira a tela de chegada do login (index-sessao.js) */
-    function esconderVeu() {
-      if (window.RosterWork.esconderVeu) window.RosterWork.esconderVeu(conteudo);
-      document.documentElement.removeAttribute('data-chegando');
-    }
+    function esconderVeu() { if (window.RosterWork.esconderVeu) window.RosterWork.esconderVeu(conteudo); }
 
     /* a camada aberta (o painel ou a folha "Mais", no celular) sai junto com a página: a entrada
        dela no histórico vira a da página nova, sem voltar antes */

@@ -142,8 +142,8 @@
     document.querySelectorAll('.login-links .botao').forEach(function (b) { b.disabled = travar; });
   }
 
-  /* depois da senha (ou do login lembrado): guarda a sessão e busca o perfil e as preferências;
-     marca a chegada para o sistema abrir coberto pela tela de chegada (index-sessao.js).
+  /* depois da senha (ou do login lembrado): guarda a sessão e busca, ao mesmo tempo, o perfil,
+     se é programador, as preferências e as unidades padrão (uma ida e volta só, não quatro).
      sinal: o limite da entrada pelo login lembrado (cancela as chamadas) */
   async function concluirEntrada(authData, email, sinal) {
     sessionStorage.setItem('rosterwork_session', JSON.stringify({
@@ -151,91 +151,56 @@
       refresh_token: authData.refresh_token
     }));
 
-    var perfil = null;
-    try {
-      var respPerfil = await fetch(SUPABASE_URL + '/rest/v1/rpc/fn_perfil_usuario', {
+    /* uma chamada de RPC com a sessão nova; a falha (rede, resposta ruim) vira null */
+    function chamar(nome, corpo) {
+      return fetch(SUPABASE_URL + '/rest/v1/rpc/' + nome, {
         method: 'POST',
         headers: {
           'apikey': SUPABASE_KEY,
           'Authorization': 'Bearer ' + authData.access_token,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ p_email: email }),
+        body: JSON.stringify(corpo || {}),
         signal: sinal
-      });
-      if (respPerfil.ok) {
-        perfil = await respPerfil.json();
-        if (perfil.ok) {
-          /* marca se é programador (vê a seção Programador › Mensagens) */
-          try {
-            var respProg = await fetch(SUPABASE_URL + '/rest/v1/rpc/fn_sou_programador', {
-              method: 'POST',
-              headers: {
-                'apikey': SUPABASE_KEY,
-                'Authorization': 'Bearer ' + authData.access_token,
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({}),
-              signal: sinal
-            });
-            if (respProg.ok) perfil.is_programador = (await respProg.json()) === true;
-          } catch (e) {}
-          sessionStorage.setItem('rosterwork_user', JSON.stringify(perfil));
-        }
-      }
-    } catch (e) {}
+      }).then(function (resp) { return resp.ok ? resp.json() : null; }).catch(function () { return null; });
+    }
 
-    try {
-      var respPrefs = await fetch(SUPABASE_URL + '/rest/v1/rpc/fn_preferencias_carregar', {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': 'Bearer ' + authData.access_token,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({}),
-        signal: sinal
-      });
-      if (respPrefs.ok) {
-        var prefs = await respPrefs.json();
-        /* tema e menu vêm do banco (lembrados entre logins por CPF);
-           a seleção de unidades NÃO persiste: começa no PADRÃO AMPLO da lotação
-           (CIA/CIBM + pelotões p/ staff; CIA + o próprio pelotão p/ quem é de pelotão),
-           é mantida só na sessão e esquecida no logout */
-        var padrao = (perfil && perfil.lotacao_id) ? [perfil.lotacao_id] : [];   // fallback: a própria lotação
-        try {
-          var respPadrao = await fetch(SUPABASE_URL + '/rest/v1/rpc/fn_unidades_padrao', {
-            method: 'POST',
-            headers: {
-              'apikey': SUPABASE_KEY,
-              'Authorization': 'Bearer ' + authData.access_token,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({}),
-            signal: sinal
-          });
-          if (respPadrao.ok) {
-            var dadosPadrao = await respPadrao.json();
-            if (dadosPadrao && dadosPadrao.ok && Array.isArray(dadosPadrao.unidades) && dadosPadrao.unidades.length) {
-              padrao = dadosPadrao.unidades;
-            }
-          }
-        } catch (e) {}
-        prefs.unidades_selecionadas = padrao;
-        sessionStorage.setItem('rosterwork_preferencias', JSON.stringify(prefs));
-      }
-    } catch (e) {}
+    var respostas = await Promise.all([
+      chamar('fn_perfil_usuario', { p_email: email }),
+      chamar('fn_sou_programador'),
+      chamar('fn_preferencias_carregar'),
+      chamar('fn_unidades_padrao')
+    ]);
+    var perfil = respostas[0], programador = respostas[1], prefs = respostas[2], dadosPadrao = respostas[3];
 
-    sessionStorage.setItem('rosterwork_chegada', '1');
+    if (perfil && perfil.ok) {
+      /* marca se é programador (vê a seção Programador › Mensagens) */
+      perfil.is_programador = programador === true;
+      sessionStorage.setItem('rosterwork_user', JSON.stringify(perfil));
+    }
+
+    if (prefs) {
+      /* tema e menu vêm do banco (lembrados entre logins por CPF);
+         a seleção de unidades NÃO persiste: começa no PADRÃO AMPLO da lotação
+         (CIA/CIBM + pelotões p/ staff; CIA + o próprio pelotão p/ quem é de pelotão),
+         é mantida só na sessão e esquecida no logout */
+      var padrao = (perfil && perfil.lotacao_id) ? [perfil.lotacao_id] : [];   // fallback: a própria lotação
+      if (dadosPadrao && dadosPadrao.ok && Array.isArray(dadosPadrao.unidades) && dadosPadrao.unidades.length) {
+        padrao = dadosPadrao.unidades;
+      }
+      prefs.unidades_selecionadas = padrao;
+      sessionStorage.setItem('rosterwork_preferencias', JSON.stringify(prefs));
+    }
+
     return !!(perfil && perfil.ok);
   }
 
-  /* a tela "entrando" (html[data-entrando]): o giratório, ou a falha com a frase e o Tentar de novo */
+  /* a tela "entrando" (html[data-entrando]): só o giratório, ou a falha (data-entrando="falhou")
+     com a logo, a frase e o Tentar de novo */
   function mostrarEntrando(mensagem) {
-    var bloco = document.querySelector('.login-entrando');
-    if (!bloco) return;
-    bloco.classList.toggle('login-entrando--falhou', !!mensagem);
-    bloco.querySelector('.login-entrando-mensagem').textContent = mensagem || '';
+    document.documentElement.setAttribute('data-entrando', mensagem ? 'falhou' : '');
+    var frase = document.querySelector('.login-entrando-mensagem');
+    if (frase) frase.textContent = mensagem || '';
   }
 
   /* volta ao formulário de login, com a frase do que houve (ou nenhuma) */

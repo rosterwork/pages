@@ -16,19 +16,6 @@
     } catch (e) {}
   }
 
-  /* chegada depois do login (a marca vem do login-auth.js): a tela de chegada (logo e giratório)
-     cobre o sistema até a primeira tela ficar pronta, tirada pelo index-navegacao.js, ou até o
-     limite, para nunca travar */
-  var LIMITE_CHEGADA_MS = 15000;
-  function marcarChegada() {
-    try {
-      if (!sessionStorage.getItem('rosterwork_chegada')) return;
-      sessionStorage.removeItem('rosterwork_chegada');
-      document.documentElement.setAttribute('data-chegando', '');
-      setTimeout(function () { document.documentElement.removeAttribute('data-chegando'); }, LIMITE_CHEGADA_MS);
-    } catch (e) {}
-  }
-
   var sessao = null;
   try { sessao = JSON.parse(sessionStorage.getItem('rosterwork_session')); } catch (e) {}
 
@@ -37,7 +24,6 @@
       var payload = JSON.parse(atob(sessao.access_token.split('.')[1]));
       if (payload.exp && payload.exp * 1000 > Date.now()) {
         ligarCelular();
-        marcarChegada();
         return;
       }
     } catch (e) {}

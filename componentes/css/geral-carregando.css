@@ -57,29 +57,3 @@
   visibility: visible;
   transition: none;
 }
-
-/* ---------- TELA DE CHEGADA ---------- */
-/* depois do login, cobre o sistema inteiro com a logo e o giratório até a primeira tela ficar
-   pronta com os dados (html[data-chegando]: posto pelo index-sessao.js, tirado pelo
-   index-navegacao.js ou pelo limite de tempo). Continua a tela "entrando" do login, no mesmo
-   lugar: a logo de 72px e o giratório 24px abaixo, no meio da tela */
-.carregando-chegada {
-  position: fixed;
-  inset: 0;
-  z-index: 30;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 24px;
-  background-color: var(--fundo-pagina);
-}
-
-html[data-chegando] .carregando-chegada {
-  display: flex;
-}
-
-.carregando-chegada-logo {
-  height: 72px;
-  width: auto;
-}
