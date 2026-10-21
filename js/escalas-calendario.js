@@ -121,8 +121,19 @@
       });
 
       var wrap = corpo.querySelector('.geral-calendario-mes');
+      /* gancho: quem usa ajusta antes de pintar (a Escala no celular, a unidade da faixa) */
+      if (wrap && opcoes.aoTerminar) opcoes.aoTerminar(wrap);
       if (wrap && RosterWork.escalasCelula) RosterWork.escalasCelula.ativarGraficos(wrap);
       if (wrap && RosterWork.gradeTeclado) RosterWork.gradeTeclado.ativar(wrap, { celula: '.escala-mes-celula', matriz: matrizTeclado });
+      /* rolarHoje: abre em hoje, com a linha anterior (a semana, ou os N dias do Colunas) à vista acima e,
+         quando os dias não cabem na largura (celular), o dia anterior à esquerda (geral-periodo.js);
+         hoje num dia de outro mês não conta */
+      var diaHoje = (opcoes.rolarHoje && wrap) ? wrap.querySelector('.geral-calendario-mes-dia--hoje:not(.geral-calendario-mes-dia--fora)') : null;
+      if (diaHoje && RosterWork.periodo) {
+        var linhaHoje = diaHoje.closest('.geral-calendario-mes-semana');
+        RosterWork.periodo.rolarAteHoje(wrap, linhaHoje, linhaHoje.previousElementSibling, { fixo: wrap.querySelector('.geral-calendario-mes-cabecalho') });
+        RosterWork.periodo.rolarAteHoje(wrap, diaHoje, diaHoje.previousElementSibling, { horizontal: true });
+      }
     }, function () {
       if (document.contains(corpo) && req === reqSeq && (!opcoes.vigente || opcoes.vigente())) mostrarEstado(corpo, window.RosterWork.mensagens.escala.falhaCarregarMes);
     });

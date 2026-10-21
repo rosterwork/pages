@@ -133,6 +133,14 @@
       corpo.appendChild(wrap);
       if (RosterWork.escalasCelula) RosterWork.escalasCelula.ativarGraficos(wrap);
       if (RosterWork.gradeTeclado) RosterWork.gradeTeclado.ativar(grade, { celula: '.escala-mes-celula', linha: '.escala-semana-linha' });
+      /* rolarHoje: quando a semana não cabe na largura, abre com hoje à vista e o dia anterior à esquerda
+         (geral-periodo.js) */
+      var diaHoje = opcoes.rolarHoje ? cab.querySelector('.escala-semana-dia--hoje') : null;
+      if (diaHoje && RosterWork.periodo) {
+        var diaAnterior = diaHoje.previousElementSibling;
+        if (diaAnterior && !diaAnterior.classList.contains('escala-semana-dia')) diaAnterior = null;
+        RosterWork.periodo.rolarAteHoje(wrap, diaHoje, diaAnterior, { horizontal: true, fixo: cab.querySelector('.escala-semana-canto') });
+      }
     }, function () {
       if (document.contains(corpo) && req === reqSeq && (!opcoes.vigente || opcoes.vigente())) mostrarEstado(corpo, window.RosterWork.mensagens.escala.falhaCarregarMes);
     });

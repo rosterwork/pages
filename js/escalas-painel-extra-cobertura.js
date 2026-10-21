@@ -38,22 +38,12 @@
     return d.lancado ? msg().lancadoAntes(d.lancado_em) : msg().naoLancado(mes);
   }
 
-  /* ---------- avisos (o mesmo texto da grade) ---------- */
-  function textoAviso(a) {
-    var rot = (RW.mensagens.extrajornada && RW.mensagens.extrajornada.avisosGrade) || {};
-    if (a.tipo === 'sem_funcao') {
-      var n = a.quantidade || 1;
-      return n === 1 ? (rot.sem_funcao || '') : String(rot.sem_funcao_plural || '').replace('{n}', n);
-    }
-    return rot[a.tipo] || a.tipo;
-  }
-  function chaveAviso(a) { return a.tipo + '|' + (a.onde || ''); }
-  function linhaAviso(negrito, resto, ok) {
+  /* ---------- avisos (os mesmos do painel do dia) ---------- */
+  /* o que a extra resolve, em verde: a frase do aviso do painel do dia + ", resolvido pela extra." */
+  function linhaResolvida(negrito, resto) {
     var l = RW.tpl('tpl-escala-extra-aviso');
     if (!l) return null;
-    l.classList.add(ok ? 'escala-extra-aviso--ok' : 'escala-extra-aviso--alerta');
-    var pecas = RW.escalasPainel && RW.escalasPainel.pecas;
-    if (pecas && !ok) pecas.definirIcone(l.querySelector('.escala-extra-aviso-icone'), 'icone-alerta');
+    l.classList.add('escala-extra-aviso--ok');
     l.querySelector('.escala-extra-aviso-nome').textContent = negrito || '';
     l.querySelector('.escala-extra-aviso-resto').textContent = resto || '';
     return l;
@@ -78,18 +68,19 @@
     grafico(cob.querySelector('.escala-extra-cob-sem'), d.sem, max);
     grafico(cob.querySelector('.escala-extra-cob-com'), d.com, max);
     caixa.appendChild(cob);
-    var antes = (d.sem && d.sem.avisos) || [], depois = (d.com && d.com.avisos) || [];
-    var noDepois = {};
-    depois.forEach(function (a) { noDepois[chaveAviso(a)] = true; });
+    var pecas = RW.escalasPainel && RW.escalasPainel.pecas;
+    var sem = d.sem || {}, com = d.com || {};
     var rascunhoHoje = R() && R().doDia(c.iso).length > 0;
-    antes.filter(function (a) { return !noDepois[chaveAviso(a)]; }).forEach(function (a) {
-      var l = linhaAviso(textoAviso(a), (a.onde ? ': ' + a.onde : '') + ', ' + (rascunhoHoje ? msg().resolvidoRascunho : msg().resolvido) + '.', true);
-      if (l) caixa.appendChild(l);
-    });
-    depois.forEach(function (a) {
-      var l = linhaAviso(textoAviso(a), a.onde ? ': ' + a.onde + '.' : '.', false);
-      if (l) caixa.appendChild(l);
-    });
+    if (pecas) {
+      /* o que a extra resolve (o banco decide): a mesma frase do painel do dia, em verde */
+      pecas.linhasDoAviso(d.resolvidos, null, sem.faltam_modelos, sem.modelos_com_erro).forEach(function (a) {
+        var l = linhaResolvida(a.texto, ', ' + (rascunhoHoje ? msg().resolvidoRascunho : msg().resolvido) + '.');
+        if (l) caixa.appendChild(l);
+      });
+      /* o que fica com a extra: a mesma caixa de avisos do alto da aba Dia */
+      var aviso = pecas.montarAvisoProblemas(com.problemas, null, com.faltam_modelos, com.modelos_com_erro);
+      if (aviso) caixa.appendChild(aviso);
+    }
     alvo.appendChild(caixa);
     if (RW.escalasCelula) RW.escalasCelula.desenharGraficos(caixa);
     desenharAjustes(c);

@@ -58,7 +58,7 @@
   min-width: 0;
 }
 .folga-extrato-data {
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   color: var(--texto);
 }
 .folga-extrato-motivo {
@@ -66,7 +66,7 @@
   color: var(--texto-suave);
 }
 .folga-extrato-valor {
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   font-weight: 500;
   flex-shrink: 0;
 }
@@ -108,7 +108,7 @@
   gap: 4px;
   min-height: 32px;
   padding: 0 8px;
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   text-align: left;
   color: var(--texto);
 }
@@ -120,4 +120,14 @@
   padding: 8px;
   font-size: 12px;
   color: var(--texto-fraco);
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   ============================================================ */
+@media (max-width: 767px) {
+  /* Dar folga › Quem: cada militar é uma linha na altura do toque */
+  html[data-celular] .folga-form-militar {
+    min-height: var(--toque-altura-celular);
+  }
 }

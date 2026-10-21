@@ -110,3 +110,15 @@ textarea.campo-entrada {
 .campo-selecao-texto--vazio {
   color: var(--texto-fraco);
 }
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   O campo baixo fica do tamanho dos outros campos do celular
+   (altura e letra do tema): no dedo não existe campo compacto.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .campo-entrada--pequeno {
+    min-height: var(--campo-altura);
+    font-size: var(--campo-fonte);
+  }
+}

@@ -68,9 +68,16 @@
    (o quadrado da lupa, como o Filtros), com a altura e a folga de
    toque dos botões. Tocar abre o campo numa linha só dela, no fim
    da barra (geral-busca.js põe .busca--aberta), na altura dos
-   campos; sem texto, ela recolhe ao sair do campo.
+   campos; sem texto, ela recolhe ao sair do campo. O modo e o X
+   tocam na altura do campo e na largura do toque.
    ============================================================ */
 @media (max-width: 767px) {
+  html[data-celular] .busca-modo,
+  html[data-celular] .busca-limpar {
+    align-self: stretch;
+    min-width: var(--toque-altura-celular);
+  }
+
   html[data-celular] .pagina-subcabecalho .busca:not(.busca--aberta) {
     position: relative;
     justify-content: center;
@@ -105,7 +112,10 @@
     display: none;
   }
 
+  /* recolhida, o modo é só o ícone no meio do quadrado da lupa (o toque é da busca inteira) */
   html[data-celular] .pagina-subcabecalho .busca:not(.busca--aberta) .busca-modo {
+    align-self: auto;
+    min-width: 0;
     color: var(--texto);
   }
 

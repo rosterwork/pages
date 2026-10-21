@@ -15,8 +15,8 @@
   var emEdicaoId = null; /* modelo aberto no Editar (o lápis dele fica inativo) */
   var seqCarregar = 0;   /* token da lista: ignora resposta antiga ao trocar de unidade rápido */
 
-  /* a Distribuição é da companhia: edita o admin de companhia (ou o geral) cuja área tem a companhia do grupo */
-  function podeEditar() { return !!(grupo && grupo.cia) && RosterWork.sessao.podeAdministrar('companhia', grupo.cia.unidade_id); }
+  /* a Distribuição é por unidade: edita quem tem a unidade do filtro (a dos modelos da lista) na área do papel */
+  function podeEditar() { return unidadeSel != null && RosterWork.sessao.podeAdministrar('pelotao', unidadeSel); }
 
 
   /* RASCUNHO: um modelo recém-criado que ainda NÃO foi confirmado com Salvar. Fica marcado na sessão
@@ -671,14 +671,16 @@
     if (RosterWork.distribuicaoEditar && RosterWork.distribuicaoEditar.descartar) RosterWork.distribuicaoEditar.descartar();
     limparCorpo();
     var btnNovo = document.getElementById('distribuicao-novo-modelo');
+    var grupoAdmin = document.getElementById('distribuicao-acoes-admin');
     if (btnNovo) {
-      btnNovo.classList.toggle('oculto', !podeEditar());   // só o admin de companhia da área cria modelo
+      if (grupoAdmin) grupoAdmin.classList.toggle('oculto', !podeEditar());   // só quem administra a unidade do filtro cria modelo
       if (podeEditar()) {
         btnNovo.disabled = false;
         if (!btnNovo._ligado) {
           btnNovo._ligado = true;
-          /* o modelo novo é da unidade do filtro; com edição aberta, confirma antes */
+          /* o modelo novo é da unidade do filtro; com edição aberta, confirma antes (o grupo é um menu: fecha antes) */
           btnNovo.addEventListener('click', function () {
+            if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
             pedirSaida(function () { if (RosterWork.distribuicaoCriar) RosterWork.distribuicaoCriar.novo(grupo, unidadeSel); });
           });
         }

@@ -316,8 +316,8 @@
         abaixoMinimo:        { texto: 'Efetivo abaixo do mínimo: {posto} ({pessoas} de {minimo}){faixas}', faixa: 'das {hi} às {hf}', icone: 'icone-alerta', nivel: 'erro' },
         abaixoIdeal:         { texto: 'Efetivo abaixo do ideal: {posto} ({pessoas} de {ideal}){faixas}', faixa: 'das {hi} às {hf}', icone: 'icone-alerta', nivel: 'alerta' },
         acimaMaximo:         { texto: 'Efetivo acima do máximo: {posto} ({pessoas} de {maximo})', icone: 'icone-alerta', nivel: 'erro' },
-        /* militar de serviço sem função ({n} = quantidade; o painel escolhe singular ou plural) */
-        semFuncao:           { texto: 'Militar sem função definida', textoPlural: '{n} militares sem função definida', icone: 'icone-alerta', nivel: 'erro' },
+        /* militar de serviço sem função com modelo válido (o painel escolhe singular ou plural; o mesmo texto da análise de Trocas e Folgas) */
+        semFuncao:           { texto: 'Existe militar sem função', textoPlural: 'Existem militares sem função', icone: 'icone-alerta', nivel: 'erro' },
         /* regras e habilitação, conferidas em toda colocação (automática ou manual); {militar} = grad + nome */
         cnhIncompativel:     { texto: 'Condutor sem a CNH exigida: {militar} em {posto}', icone: 'icone-alerta', nivel: 'erro' },
         regraProibida:       { texto: 'Função proibida pela regra: {militar} em {funcao}', icone: 'icone-alerta', nivel: 'erro' },
@@ -904,19 +904,6 @@
       cotaMenor: 'O número de cotas ficou menor do que o que já foi colocado no calendário. Tire alguns extras antes de reduzir o total.',
       cotaEstourada: 'Você distribuiu mais cotas do que o total permite. Reduza o Concedido do grupo em vermelho antes de salvar.',
       escopoTrocar: 'Mudar a forma de repartir altera a distribuição das cotas quando você salvar.',
-      /* rótulos curtos dos avisos da escala que uma extra pode resolver (grade da aba Escala);
-         o front acrescenta o local, ex.: "Rodízio repetido: Almoxarife" */
-      avisosGrade: {
-        sem_condutor: 'Sem condutor',
-        chefe_condutor: 'Chefe conduzindo',
-        efetivo_vazio: 'Cadeira vazia',
-        resolva_escala: 'Sem solução automática',
-        grau_por_falta: 'Grau rebaixado',
-        rodizio_quebrado: 'Rodízio repetido',
-        sem_modelo: 'Falta de distribuição',
-        sem_funcao: 'Militar sem função definida',
-        sem_funcao_plural: '{n} militares sem função definida'
-      },
       /* aba Calendário: quem tira extra em cada dia e os ajustes do mês */
       calendario: {
         emDistribuicao: function (mes) { return mes.charAt(0).toUpperCase() + mes.slice(1) + ' em distribuição.'; },

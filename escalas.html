@@ -5,16 +5,17 @@
     </div>
     <!-- modos: o Dia (a escala principal, impressa e exibida na passagem de serviço) num grupo próprio,
          à frente das outras visões; os dois grupos valem como uma escolha só (escalas.js),
-         com um traço só (data-abas-grupo) -->
+         com um traço só (data-abas-grupo). No celular ficam só o Dia e o Mês (Agenda e Calendário):
+         o que tem .escala-so-computador some lá (escalas-controles.css) -->
     <div class="escala-modos" id="escala-modos" data-abas-grupo>
       <div class="abas" id="escala-modo-principal">
         <button type="button" class="aba aba--ativa" data-modo="dia">Dia</button>
       </div>
       <div class="abas" id="escala-modo-visoes">
-        <button type="button" class="aba" data-modo="militares">Militares</button>
+        <button type="button" class="aba escala-so-computador" data-modo="militares">Militares</button>
         <button type="button" class="aba" data-modo="mes">Mês</button>
-        <button type="button" class="aba" data-modo="semana">Semana</button>
-        <button type="button" class="aba" data-modo="colunas">Colunas</button>
+        <button type="button" class="aba escala-so-computador" data-modo="semana">Semana</button>
+        <button type="button" class="aba escala-so-computador" data-modo="colunas">Colunas</button>
       </div>
     </div>
   </div>
@@ -28,6 +29,8 @@
       <button type="button" class="botao botao--icone" id="escala-periodo-proximo" aria-label="Próximo período">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
       </button>
+      <!-- só quando o período da tela não contém hoje: volta ao período atual (escalas.js) -->
+      <button type="button" class="botao geral-periodo-hoje oculto" id="escala-periodo-hoje">Hoje</button>
     </div>
 
     <div class="abas abas--seletor oculto" id="escala-sub-mes">
@@ -99,6 +102,7 @@
   <div class="pagina-corpo pagina-corpo--colado"></div>
 </div>
 
+<!-- uma aba de unidade: o seletor do Colunas › Unidades -->
 <template id="tpl-escala-aba-unidade">
   <button type="button" class="aba"></button>
 </template>

@@ -33,7 +33,7 @@
 }
 
 .atestado-nome {
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   font-weight: 600;
   color: var(--texto-forte);
 }
@@ -95,4 +95,28 @@
 .atestado-fluxo-rotulo {
   font-size: 12px;
   color: var(--texto-suave);
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   Cada item da lista em linhas: o militar, o tipo e o período na
+   largura toda e, embaixo, os selos (os dias e o fluxo).
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .atestados-lista {
+    gap: 8px;
+  }
+
+  html[data-celular] .atestado-item {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+
+  html[data-celular] .atestado-textos {
+    flex-basis: 100%;
+  }
+
+  html[data-celular] .atestado-item > .espacador-flex {
+    display: none;
+  }
 }

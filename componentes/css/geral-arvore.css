@@ -204,4 +204,15 @@
     position: absolute;
     inset: calc((var(--botao-altura) - var(--toque-altura-celular)) / 2 - 1px);
   }
+
+  /* a linha da árvore na altura do dedo; a seta de abrir ocupa a altura toda e a largura do toque */
+  html[data-celular] .arvore-linha {
+    min-height: var(--toque-altura-celular);
+  }
+
+  html[data-celular] .arvore-seta {
+    align-self: stretch;
+    min-width: var(--toque-altura-celular);
+    margin-left: -8px;
+  }
 }

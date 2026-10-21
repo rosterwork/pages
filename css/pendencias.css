@@ -32,7 +32,7 @@ button.pendencias-corrigir:hover {
 }
 
 .pendencias-corrigir-texto {
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   color: var(--texto-forte);
 }
 
@@ -89,7 +89,7 @@ button.pendencias-corrigir:hover {
 }
 
 .pendencias-corrigir-nome {
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   font-weight: 500;
   color: var(--texto-forte);
 }
@@ -103,4 +103,29 @@ button.pendencias-corrigir:hover {
   margin-left: auto;
   font-size: 11px;
   color: var(--texto-suave);
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   A barra só tem o seletor do tipo de pedido, que existe só na
+   aba Administração: na Para mim ela some (sem faixa vazia). Na
+   lista de nomes do "Para corrigir", o motivo e a volta descem
+   para a linha de baixo do nome.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .pendencias-barra:has(> .abas--seletor.oculto) {
+    display: none;
+  }
+
+  html[data-celular] .pendencias-corrigir-item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    column-gap: 8px;
+    align-items: baseline;
+  }
+
+  html[data-celular] .pendencias-corrigir-volta {
+    grid-column: 2;
+    grid-row: 2;
+  }
 }

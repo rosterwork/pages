@@ -225,7 +225,8 @@
     estado.aba = 'todas';
     arvoreMontada = false;
     itemSelecionado = null;
-    contexto = { cpf: RosterWork.sessao.cpf(), ehAdmin: RosterWork.sessao.ehAdmin(), aoMudar: recarregar, aoFechar: limparSelecao };
+    /* ehAdmin: tem algum papel (aprovar e registrar); cada troca ainda confere a área no painel e no banco */
+    contexto = { cpf: RosterWork.sessao.cpf(), ehAdmin: RosterWork.sessao.temPapel('pelotao'), aoMudar: recarregar, aoFechar: limparSelecao };
 
     var abas = conteudo.querySelector('#trocas-abas');
     if (RW.abas && abas) RW.abas.ligar(abas, aoTrocarAba);

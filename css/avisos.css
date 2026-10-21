@@ -25,6 +25,11 @@
   gap: 8px;
 }
 
+/* "Marcar todas como lidas": o rótulo curto só aparece no celular */
+.avisos-rotulo-celular {
+  display: none;
+}
+
 /* "Mostrar mais antigos" no fim do Histórico: do tamanho do rótulo, sem esticar na coluna */
 .avisos-mais-antigos {
   align-self: flex-start;
@@ -40,16 +45,18 @@
   background-color: var(--fundo-suave);
 }
 
+/* palavra que não cabe na linha (um link comprido) quebra em qualquer ponto, sem passar da borda */
 .aviso-cartao-conteudo {
   display: flex;
   flex-direction: column;
   gap: 4px;
   min-width: 0;
   flex: 1;
+  overflow-wrap: anywhere;
 }
 
 .aviso-cartao-titulo {
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   font-weight: 600;
   color: var(--texto-forte);
 }
@@ -84,7 +91,7 @@
 .avisos-vazio {
   padding: 32px 16px;
   text-align: center;
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   color: var(--texto-suave);
   border: 1px solid var(--borda);
   border-radius: var(--raio-medio);
@@ -153,10 +160,11 @@
   flex-direction: column;
   gap: 2px;
   min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .avisos-notificacao-titulo {
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   color: var(--texto-forte);
 }
 
@@ -169,4 +177,31 @@
   flex-shrink: 0;
   font-size: 11px;
   color: var(--texto-fraco);
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   O "Marcar todas como lidas" mostra o rótulo curto, que cabe
+   numa linha ao lado do "Administração ▾"; o X do comunicado
+   ganha a área de toque de 44px.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .avisos-rotulo-computador {
+    display: none;
+  }
+
+  html[data-celular] .avisos-rotulo-celular {
+    display: inline;
+  }
+
+  /* o X segue com 18px à vista; o toque vale numa folga invisível em volta, até 44px */
+  html[data-celular] .aviso-cartao-remover {
+    position: relative;
+  }
+
+  html[data-celular] .aviso-cartao-remover::before {
+    content: '';
+    position: absolute;
+    inset: calc((100% - var(--toque-altura-celular)) / 2);
+  }
 }

@@ -45,10 +45,18 @@
           <div class="abas abas--seletor" id="distribuicao-unidades" role="tablist" aria-label="Unidade"></div>
         </div>
         <div class="geral-painel-esquerdo-lista" id="distribuicao-lista-modelos"></div>
+        <!-- grupo Administração (só admin): o Novo modelo, no pé da lista -->
         <div class="geral-painel-esquerdo-rodape">
-          <button type="button" class="botao distribuicao-novo-modelo" id="distribuicao-novo-modelo" disabled>
-            Novo modelo
-          </button>
+          <div class="dropdown acoes-admin oculto" id="distribuicao-acoes-admin">
+            <button type="button" class="botao acoes-admin-gatilho">
+              <span>Administração</span>
+              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+            </button>
+            <div class="dropdown-menu acoes-admin-menu">
+              <span class="rotulo-secao acoes-admin-rotulo">Administração</span>
+              <button type="button" class="botao" id="distribuicao-novo-modelo" disabled>Novo modelo</button>
+            </div>
+          </div>
         </div>
       </aside>
 

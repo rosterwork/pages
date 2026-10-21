@@ -150,6 +150,14 @@
       corpo.appendChild(wrap);
       if (RosterWork.escalasCelula) RosterWork.escalasCelula.ativarGraficos(wrap);
       if (RosterWork.gradeTeclado) RosterWork.gradeTeclado.ativar(grade, { celula: '.escala-mes-celula', linha: '.escala-colunas-linha' });
+      /* rolarHoje: abre em hoje, com o dia anterior à vista acima (geral-periodo.js) */
+      var rotuloHoje = opcoes.rolarHoje ? grade.querySelector('.escala-colunas-rotulo--hoje') : null;
+      if (rotuloHoje && RosterWork.periodo) {
+        var linhaHoje = rotuloHoje.closest('.escala-colunas-linha');
+        var diaAnterior = linhaHoje.previousElementSibling;
+        if (diaAnterior === cabecalho) diaAnterior = null;
+        RosterWork.periodo.rolarAteHoje(wrap, linhaHoje, diaAnterior, { fixo: cabecalho });
+      }
     }, function () {
       if (document.contains(corpo) && req === reqSeq && (!opcoes.vigente || opcoes.vigente())) mostrarEstado(corpo, window.RosterWork.mensagens.escala.falhaCarregarMes);
     });

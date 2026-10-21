@@ -1,8 +1,11 @@
 /* ============================================================
-   COMPONENTE geral-periodo — navegação de período ‹ rótulo ›
+   COMPONENTE geral-periodo — navegação de período ‹ rótulo › Hoje
    Setas nas pontas + rótulo clicável no meio (abre o componente
-   geral-calendario). O comportamento (navegar, abrir o calendário)
-   é ligado por cada página; aqui fica só o visual.
+   geral-calendario) + o botão "Hoje", depois da seta da direita
+   (as setas não andam quando ele aparece), que a página mostra só
+   quando o período da tela não contém hoje. O comportamento
+   (navegar, abrir o calendário, voltar a hoje) é ligado por cada
+   página; a regra de abrir rolado em hoje mora no geral-periodo.js.
    Componente compartilhado (Escala e Extrajornada).
    ============================================================ */
 
@@ -25,6 +28,11 @@
   font-weight: 600;
   color: var(--texto-forte);
   user-select: none;
+}
+
+/* "Hoje": o botão branco de sempre, um pouco afastado da seta */
+.geral-periodo-hoje {
+  margin-left: 4px;
 }
 
 /* ============================================================

@@ -7,7 +7,9 @@
    dele e põe a vaga dele nos dias livres; em cima da grade, a barra
    "Escalando ...: 2 de 4 cotas". Clicar de novo, numa área vazia ou no
    Soltar da barra tira a seleção. As cotas se repartem na aba
-   Voluntários (extra_cotas_carregar, o que está salvo).
+   Voluntários (extra_cotas_carregar, o que está salvo). No celular a
+   lista fica em cima da grade, recolhida: a seta do cabeçalho abre e
+   fecha, e escolher um militar fecha.
    Não cria HTML (clona moldes) nem escreve estilo (só classList,
    textContent e a custom property --fill).
    RosterWork.extrajornadaEscalar.
@@ -43,6 +45,13 @@
     marcar();
     atualizarPincel();
     avisarGrade();
+    abrirLista(false);
+  }
+  /* no celular o A escalar fica recolhido em cima da grade: a seta abre e fecha a lista (no computador ela está sempre à vista) */
+  function abrirLista(abrir) {
+    if (!el.painel || !el.alternar) return;
+    el.painel.classList.toggle('extra-escalar--aberto', abrir);
+    el.alternar.setAttribute('aria-expanded', abrir ? 'true' : 'false');
   }
 
   /* as cotas na grade de cada militar com o rascunho por cima (o que ele ganhou ou perdeu sem salvar) */
@@ -141,6 +150,11 @@
     el.pincelTitulo = cont.querySelector('#extra-pincel-titulo');
     var soltarBtn = cont.querySelector('#extra-pincel-soltar');
     if (soltarBtn) soltarBtn.addEventListener('click', soltar);
+    el.painel = cont.querySelector('#extra-escalar');
+    el.alternar = cont.querySelector('#extra-escalar-alternar');
+    if (el.alternar) el.alternar.addEventListener('click', function () {
+      abrirLista(!el.painel.classList.contains('extra-escalar--aberto'));
+    });
     if (!ouvinteLigado) {
       ouvinteLigado = true;
       window.addEventListener('rosterwork_extra_rascunho', function () { if (ativo()) atualizarContas(); });

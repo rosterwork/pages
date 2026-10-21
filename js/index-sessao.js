@@ -3,14 +3,13 @@
 
   /* o tema é aplicado antes, pelo componentes/js/geral-tema.js (também síncrono no <head>) */
 
-  /* celular (por enquanto só para o programador): troca a largura da página para a do
-     aparelho e marca o <html> com data-celular, que liga o bloco do celular nos CSS
-     (@media até 767px). Roda antes da primeira pintura, como o tema; no computador a
-     etiqueta viewport não muda nada */
+  /* celular (para todos): no aparelho de tela pequena (o lado menor abaixo de 768px),
+     troca a largura da página para a do aparelho e marca o <html> com data-celular,
+     que liga o bloco do celular nos CSS (@media até 767px). Tablet e computador seguem
+     com a página de 1920px. Roda antes da primeira pintura, como o tema */
   function ligarCelular() {
     try {
-      var usuario = JSON.parse(sessionStorage.getItem('rosterwork_user'));
-      if (!usuario || !usuario.is_programador) return;
+      if (Math.min(screen.width, screen.height) >= 768) return;
       var viewport = document.querySelector('meta[name="viewport"]');
       if (viewport) viewport.setAttribute('content', 'width=device-width, initial-scale=1');
       document.documentElement.setAttribute('data-celular', '');

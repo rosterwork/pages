@@ -10,29 +10,31 @@
   gap: var(--gap-formulario);
 }
 
+/* no meio, embaixo do logo, como o título do Criar conta */
 .nova-senha-titulo {
   margin: 0;
   font-size: 18px;
   color: var(--texto-forte);
+  text-align: center;
 }
 
 /* a orientação de cada passo e a espera da conferência do link */
 .nova-senha-intro {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   color: var(--texto-fraco);
 }
 
 /* senha redefinida com sucesso */
 .nova-senha-sucesso {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   color: var(--sucesso);
 }
 
 /* link inválido, vencido ou já usado */
 .nova-senha-invalido {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   color: var(--erro);
 }

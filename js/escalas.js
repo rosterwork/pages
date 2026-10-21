@@ -91,6 +91,16 @@
     marcarAba('#escala-sub-mes', 'data-mes', visao.mes);
     marcarAba('#escala-colunas-tipo', 'data-colunas-tipo', visao.colunas_tipo);
     marcarAba('#escala-colunas-qtd', 'data-colunas', visao.colunas_qtd);
+    caberNoCelular();
+  }
+
+  /* no celular só existem o Dia e o Mês (Agenda e Calendário): a visão que só existe no computador
+     (Militares, Semana, Colunas) cai no Mês, a visão de vários dias que fica */
+  function caberNoCelular() {
+    if (!(RosterWork.celular && RosterWork.celular())) return;
+    var modo = modoAtual();
+    if (modo === 'dia' || modo === 'mes') return;
+    marcarAba('#escala-modos', 'data-modo', 'mes');
   }
 
   /* guarda a visão atual na sessão e no banco (só quando a pessoa troca; vale em qualquer computador) */
@@ -267,25 +277,31 @@
     var ehDia = modoAtual() === 'dia';
     corpo.classList.toggle('pagina-corpo--camada', ehDia);
     corpo.classList.toggle('pagina-corpo--colado', !ehDia);
+    /* celular, Mês (Agenda e Calendário): uma unidade por tela, trocada pela faixa (geral-faixa-unidades.js);
+       fora disso a faixa some */
+    var mesNoCelular = !!(RosterWork.celular && RosterWork.celular()) && modoAtual() === 'mes';
+    if (RosterWork.faixaUnidades) RosterWork.faixaUnidades.mostrar(mesNoCelular ? unidadesColuna() : null);
+    var aplicarFaixa = (mesNoCelular && RosterWork.faixaUnidades) ? RosterWork.faixaUnidades.aplicar : null;
+    /* as grades abrem roladas em hoje quando o período contém hoje (rolarHoje; geral-periodo.js) */
     /* Mês → Calendário: escala do mês em cada dia do calendário (mesma célula do Mês → Agenda) */
     if (modoAtual() === 'mes' && subMesAtual() === 'calendario') {
       if (!window.RosterWork.escalasCalendario) { mostrarEstado(corpo, 'Em construção.'); return; }
       if (!unidades && idsAplicados().length) { mostrarCarregando(corpo); return; }
-      window.RosterWork.escalasCalendario.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData, vigente: vigente });
+      window.RosterWork.escalasCalendario.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData, vigente: vigente, rolarHoje: true, aoTerminar: aplicarFaixa });
       return;
     }
     /* modo Militares: grade militares × dias da quinzena (navegação por semana, ±7) */
     if (modoAtual() === 'militares') {
       if (!window.RosterWork.escalasMilitares) { mostrarEstado(corpo, 'Em construção.'); return; }
       if (!unidades && idsAplicados().length) { mostrarCarregando(corpo); return; }
-      window.RosterWork.escalasMilitares.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData, vigente: vigente });
+      window.RosterWork.escalasMilitares.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData, vigente: vigente, rolarHoje: true });
       return;
     }
     /* modo Semana: grade unidades × 7 dias (visão por unidade) */
     if (modoAtual() === 'semana') {
       if (!window.RosterWork.escalasSemana) { mostrarEstado(corpo, 'Em construção.'); return; }
       if (!unidades && idsAplicados().length) { mostrarCarregando(corpo); return; }
-      window.RosterWork.escalasSemana.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData, vigente: vigente });
+      window.RosterWork.escalasSemana.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData, vigente: vigente, rolarHoje: true });
       return;
     }
     /* modo Dia: árvore de unidades com a distribuição por posto/função */
@@ -300,10 +316,10 @@
       if (!unidades && idsAplicados().length) { mostrarCarregando(corpo); return; }
       if (tipoColunasAtual() === 'unidades') {
         if (!window.RosterWork.escalasColunas) { mostrarEstado(corpo, 'Em construção.'); return; }
-        window.RosterWork.escalasColunas.renderizar(corpo, { colunas: colunasUnidadesLigadas(), dataRef: refData, vigente: vigente });
+        window.RosterWork.escalasColunas.renderizar(corpo, { colunas: colunasUnidadesLigadas(), dataRef: refData, vigente: vigente, rolarHoje: true });
       } else {
         if (!window.RosterWork.escalasCalendario) { mostrarEstado(corpo, 'Em construção.'); return; }
-        window.RosterWork.escalasCalendario.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData, diasPorLinha: quantidadeColunas(), vigente: vigente });
+        window.RosterWork.escalasCalendario.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData, diasPorLinha: quantidadeColunas(), vigente: vigente, rolarHoje: true });
       }
       return;
     }
@@ -316,7 +332,7 @@
       mostrarCarregando(corpo);
       return;
     }
-    window.RosterWork.escalasMes.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData, vigente: vigente });
+    window.RosterWork.escalasMes.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData, vigente: vigente, rolarHoje: true, aoTerminar: aplicarFaixa });
   }
 
   /* ---------- navegação de período (datas reais; semana de domingo a sábado) ---------- */
@@ -363,29 +379,53 @@
     return formatarIntervalo(dom, sab);
   }
 
+  /* os dias que a tela mostra (sem a hora): no Dia, o dia; no Mês e no Colunas → Dias, o mês; no Militares,
+     a quinzena; na Semana e no Colunas → Unidades, a semana de domingo a sábado */
+  function intervaloExibido() {
+    var modo = modoAtual();
+    if (modo === 'dia') {
+      var dia = new Date(refData.getFullYear(), refData.getMonth(), refData.getDate());
+      return { inicio: dia, fim: dia };
+    }
+    if (periodoMensal()) {
+      return { inicio: new Date(refData.getFullYear(), refData.getMonth(), 1), fim: new Date(refData.getFullYear(), refData.getMonth() + 1, 0) };
+    }
+    var dom = inicioSemana(refData);
+    var inicio = new Date(dom.getFullYear(), dom.getMonth(), dom.getDate());
+    var fim = new Date(inicio);
+    fim.setDate(fim.getDate() + (modo === 'militares' ? 13 : 6));
+    return { inicio: inicio, fim: fim };
+  }
+
+  function hojeSemHora() {
+    var agora = new Date();
+    return new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+  }
+
+  function periodoContemHoje() {
+    var periodo = intervaloExibido();
+    var hoje = hojeSemHora();
+    return hoje >= periodo.inicio && hoje <= periodo.fim;
+  }
+
   /* data padrão da impressão: no Dia, o dia exibido; nos outros modos, hoje se aparece na tela,
      senão o primeiro dia exibido */
   function dataPadraoImpressao() {
-    var modo = modoAtual();
-    if (modo === 'dia') return new Date(refData.getFullYear(), refData.getMonth(), refData.getDate());
-    var ini, fim;
-    if (periodoMensal()) {
-      ini = new Date(refData.getFullYear(), refData.getMonth(), 1);
-      fim = new Date(refData.getFullYear(), refData.getMonth() + 1, 0);
-    } else {
-      var dom = inicioSemana(refData);
-      ini = new Date(dom.getFullYear(), dom.getMonth(), dom.getDate());
-      fim = new Date(ini);
-      fim.setDate(fim.getDate() + (modo === 'militares' ? 13 : 6));
-    }
-    var agora = new Date();
-    var hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
-    return (hoje >= ini && hoje <= fim) ? hoje : ini;
+    return periodoContemHoje() ? hojeSemHora() : intervaloExibido().inicio;
   }
 
+  /* o rótulo do período e o "Hoje", que só aparece quando o período da tela não contém hoje */
   function atualizarPeriodo() {
     var el = conteudo.querySelector('#escala-periodo-nome');
     if (el) el.textContent = textoPeriodo();
+    mostrar('#escala-periodo-hoje', !periodoContemHoje());
+  }
+
+  /* "Hoje": volta ao período atual; a grade abre rolada em hoje */
+  function voltarParaHoje() {
+    refData = new Date();
+    atualizarPeriodo();
+    renderizarCorpo();
   }
 
   function navegar(direcao) {
@@ -476,6 +516,9 @@
     /* clicar numa célula da grade abre a gaveta de detalhes */
     if (window.RosterWork.escalasPainel) RosterWork.escalasPainel.ligar(conteudo);
 
+    /* celular: a faixa de unidades do Mês (componente geral-faixa-unidades.js) */
+    if (window.RosterWork.faixaUnidades) RosterWork.faixaUnidades.iniciar(conteudo, { pecaCalendario: '.escala-calendario-unidade' });
+
     /* busca do modo Militares; filtros e busca da grade (escalas-filtros.js); o botão Legenda (molde geral) */
     ligarBuscaMilitares();
     if (window.RosterWork.escalasFiltros) RosterWork.escalasFiltros.iniciar(conteudo, modoAtual);
@@ -483,8 +526,19 @@
 
     var btnAnterior = conteudo.querySelector('#escala-periodo-anterior');
     var btnProximo = conteudo.querySelector('#escala-periodo-proximo');
+    var btnHoje = conteudo.querySelector('#escala-periodo-hoje');
     if (btnAnterior) btnAnterior.addEventListener('click', function () { navegar(-1); });
     if (btnProximo) btnProximo.addEventListener('click', function () { navegar(1); });
+    if (btnHoje) {
+      btnHoje.addEventListener('click', function () {
+        voltarParaHoje();
+        /* o botão some: o foco continua no período (quem usa o teclado não volta ao começo da página) */
+        if (document.activeElement === btnHoje) {
+          var nome = conteudo.querySelector('#escala-periodo-nome');
+          if (nome) nome.focus();
+        }
+      });
+    }
 
     /* Imprimir: abre o painel "Imprimir escala" com a data padrão do que está na tela */
     var btnImprimir = conteudo.querySelector('#escala-imprimir');
@@ -529,6 +583,16 @@
       });
       /* mudança de ciclo (Contínuos) afeta muitos dias → re-renderiza a grade inteira */
       window.addEventListener('rosterwork_escala_recarregar', function () { renderizarCorpo(); });
+      /* o celular girou e passou do corte (ou voltou): a visão e a faixa se refazem para a largura nova */
+      var eraCelular = !!(RosterWork.celular && RosterWork.celular());
+      window.addEventListener('resize', function () {
+        var ehCelular = !!(RosterWork.celular && RosterWork.celular());
+        if (ehCelular === eraCelular) return;
+        eraCelular = ehCelular;
+        if (!conteudo || !document.contains(conteudo)) return;
+        caberNoCelular();
+        aplicarModo();
+      });
     }
 
     /* Escala sempre fresca para QUALQUER pessoa: ao entrar, completa no servidor

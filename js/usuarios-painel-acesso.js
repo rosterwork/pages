@@ -168,8 +168,8 @@
 
   function montar(corpo, ficha, pessoa) {
     ctx = null;
-    /* o acesso é da ficha: só o admin de companhia (ou o geral) da área do militar */
-    if (!ficha || !pessoa || !RosterWork.sessao.podeAdministrar('companhia', pessoa.lotacao_atual)) return;
+    /* o acesso é da ficha: só quem administra o militar */
+    if (!ficha || !pessoa || !RosterWork.sessao.podeAdministrar('pelotao', pessoa.lotacao_atual)) return;
     if (pessoa.situacao === 'Inativo' || !RosterWork.usuariosPainelLeitura) return;
     var bloco = RosterWork.usuariosPainelLeitura.bloco('Acesso ao sistema');
     if (!bloco) return;

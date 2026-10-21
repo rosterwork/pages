@@ -187,7 +187,7 @@
   border: none;
   border-radius: var(--raio-pequeno);
   background: none;
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   text-align: left;
   color: var(--texto);
   cursor: pointer;
@@ -306,7 +306,7 @@
 }
 
 .escala-militar-funcao-titulo {
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   font-weight: 600;
   color: var(--texto-forte);
 }
@@ -372,7 +372,7 @@
 }
 
 .escala-militar-sem-funcao-nome {
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   color: var(--texto-suave);
 }
 

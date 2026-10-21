@@ -14,7 +14,7 @@
   align-items: center;
   justify-content: center;
   color: var(--texto-fraco);
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
 }
 
 /* ---------- aba Calendário (o padrão do calendário da Escala) ---------- */
@@ -58,7 +58,7 @@
 }
 
 .extra-sol-rotulo {
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   color: var(--texto);
 }
 
@@ -75,7 +75,7 @@
   display: flex;
   align-items: baseline;
   gap: 16px;
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
 }
 
 .extra-sol-conta {
@@ -122,7 +122,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   color: var(--texto);
 }
 .extra-vol-total {
@@ -178,7 +178,7 @@
   gap: 8px;
   min-height: 36px;
   padding: 4px 12px;
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   color: var(--texto);
 }
 .extra-vol--comum .extra-vol-linha {
@@ -304,6 +304,10 @@
   font-size: 12px;
   color: var(--texto-suave);
 }
+/* o nome de cada número na linha do voluntário: só no celular (no computador, o cabeçalho das colunas) */
+.extra-vol-rotulo {
+  display: none;
+}
 
 /* painel do militar: caixas e frases (sem linhas rótulo/valor) */
 .extra-vol-painel {
@@ -312,7 +316,7 @@
   gap: 12px;
 }
 .extra-vol-frase {
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   color: var(--texto);
 }
 .extra-vol-ajuda {
@@ -336,7 +340,7 @@
   padding: 0;
   border: none;
   background: none;
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   color: var(--texto);
   text-align: left;
   cursor: pointer;
@@ -349,6 +353,10 @@
   margin-left: auto;
   font-size: 12px;
   color: var(--texto-suave);
+}
+/* a seta que abre e fecha a lista: só no celular (no computador a lista está sempre à vista) */
+.extra-escalar-alternar {
+  display: none;
 }
 .extra-escalar-grupo-cidade {
   font-size: 11px;
@@ -734,7 +742,7 @@
 .extra-rel-tabela {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   color: var(--texto);
 }
 
@@ -791,7 +799,7 @@
 .extra-rel-vazio {
   margin: 0;
   padding: 16px 12px;
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   color: var(--texto-fraco);
 }
 
@@ -803,6 +811,173 @@
 }
 
 .extra-rel-cotas-texto {
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   color: var(--texto);
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   Voluntários: a aba rola inteira (os números do mês, a nota e a
+   lista), com o rodapé preso embaixo; cada voluntário vira um bloco
+   de linhas, o militar em cima e os números embaixo, cada um com o
+   nome dele (sem o cabeçalho das colunas). Distribuição: o A escalar
+   fica em cima da grade, recolhido (a seta abre a lista; escolher
+   alguém fecha). Relatórios: as etapas em cima e a prévia embaixo.
+   Os rodapés quebram: o texto em cima e os botões dividindo a largura.
+   ============================================================ */
+@media (max-width: 767px) {
+  /* ---------- Voluntários ---------- */
+  html[data-celular] .extra-vol {
+    overflow-y: auto;
+  }
+
+  html[data-celular] .extra-vol-banda {
+    gap: 12px 16px;
+    padding: 12px var(--respiro-pagina);
+  }
+
+  html[data-celular] .extra-vol-banda-item,
+  html[data-celular] .extra-vol-numero {
+    white-space: nowrap;
+  }
+
+  html[data-celular] .extra-vol-contagem {
+    margin: 0 var(--respiro-pagina) 12px;
+  }
+
+  html[data-celular] .extra-vol-rolagem {
+    flex: none;
+    overflow-y: visible;
+    padding: 0 var(--respiro-pagina) 16px;
+  }
+
+  html[data-celular] .extra-vol-linha:not(.extra-vol-linha--resposta) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 12px;
+    padding: 8px 12px;
+  }
+
+  /* o cabeçalho das colunas sai da lista de voluntários (cada número leva o nome); fica nas listas de resposta */
+  html[data-celular] .extra-vol-cab:not(.extra-vol-linha--resposta) {
+    display: none;
+  }
+
+  /* o militar ocupa a primeira linha (no admin, com a caixa do Termo à frente); os números descem */
+  html[data-celular] .extra-vol-linha:not(.extra-vol-linha--resposta) > .extra-vol-militar {
+    flex: 1 1 calc(100% - 32px);
+    flex-wrap: wrap;
+  }
+
+  html[data-celular] .extra-vol-par,
+  html[data-celular] .extra-vol-concedido {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  html[data-celular] .extra-vol-rotulo {
+    display: inline;
+    color: var(--texto-suave);
+  }
+
+  /* comum: o Na escala vazio (sem termo) não mostra o nome sozinho */
+  html[data-celular] .extra-vol-par:has(> .extra-vol-na-escala:empty) {
+    display: none;
+  }
+
+  html[data-celular] .extra-vol-linha--resposta,
+  html[data-celular] .extra-vol--comum .extra-vol-linha--resposta {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  /* o rodapé fica preso embaixo enquanto a aba rola */
+  html[data-celular] .extra-vol > .rodape {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;   /* empilhamento interno do sticky (Guia visual › Camadas, movimento e foco; faixa 1-9) */
+  }
+
+  /* ---------- Distribuição: o A escalar em cima da grade, recolhido ---------- */
+  html[data-celular] .extra-montagem {
+    flex-direction: column;
+  }
+
+  html[data-celular] .extra-escalar {
+    flex: none;
+    width: auto;
+    max-height: 50%;
+    border-right: none;
+    border-bottom: 1px solid var(--borda);
+  }
+
+  html[data-celular] .extra-escalar .geral-painel-esquerdo-cabecalho {
+    gap: 8px;
+    padding-right: 4px;
+  }
+
+  html[data-celular] .extra-escalar:not(.extra-escalar--aberto) .geral-painel-esquerdo-cabecalho {
+    border-bottom: none;
+  }
+
+  html[data-celular] .extra-escalar-alternar {
+    display: inline-flex;
+  }
+
+  html[data-celular] .extra-escalar--aberto .extra-escalar-alternar .icone {
+    transform: rotate(180deg);
+  }
+
+  /* fechado, só o cabeçalho; a nota e a ajuda da barra de quem está sendo escalado saem, para sobrar tela para a grade */
+  html[data-celular] .extra-escalar:not(.extra-escalar--aberto) .geral-painel-esquerdo-lista,
+  html[data-celular] .extra-escalar-nota,
+  html[data-celular] .extra-pincel-ajuda {
+    display: none;
+  }
+
+  /* ---------- Calendário e Distribuição, modo Calendário com a faixa de unidades: o bloco do dia é só da
+     unidade escolhida, e a faixa já diz qual é (geral-faixa-unidades) ---------- */
+  html[data-celular] .faixa-unidades-calendario .extra-calendario-unidade-nome {
+    display: none;
+  }
+
+  /* ---------- rodapés (Voluntários e Distribuição): o texto em cima, os botões dividindo a largura ---------- */
+  html[data-celular] .extra-vol .rodape-linha,
+  html[data-celular] .extra-montagem .rodape-linha {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  html[data-celular] .extra-vol .rodape-linha > .espacador-flex,
+  html[data-celular] .extra-montagem .rodape-linha > .espacador-flex,
+  html[data-celular] .extra-vol-mudancas:empty,
+  html[data-celular] .extra-lancar-texto:empty {
+    display: none;
+  }
+
+  html[data-celular] .extra-vol .rodape-acoes,
+  html[data-celular] .extra-montagem .rodape-acoes {
+    flex: 1 1 100%;
+  }
+
+  html[data-celular] .extra-vol .rodape-acoes > .botao,
+  html[data-celular] .extra-montagem .rodape-acoes > .botao {
+    flex: 1 1 auto;
+    min-width: 0;
+    white-space: normal;
+  }
+
+  /* ---------- Relatórios: as etapas em cima e a prévia embaixo ---------- */
+  html[data-celular] .extra-rel {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 24px;
+    padding: 16px var(--respiro-pagina);
+  }
+
+  html[data-celular] .extra-rel-etapas,
+  html[data-celular] .extra-rel-previa {
+    flex: none;
+  }
 }

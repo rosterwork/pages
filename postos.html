@@ -23,7 +23,7 @@
   </div>
 </div>
 
-<!-- molde: fileira (flex-wrap) que recebe os cards e o botão "+" -->
+<!-- molde: fileira (flex-wrap) que recebe os cards e o grupo Administração -->
 <template id="tpl-postos-cards">
   <div class="postos-cards"></div>
 </template>
@@ -59,11 +59,19 @@
   <div class="postos-vazio">Esta unidade não possui instalações.</div>
 </template>
 
-<!-- molde: botão "+" ao lado dos cards (só admin) — card-botão com a mesma aparência -->
+<!-- molde: grupo Administração no fim da fileira de cards (só admin): Adicionar instalação.
+     No computador, o bloco cinza com o rótulo; no celular, o botão "Administração", que abre o menu -->
 <template id="tpl-posto-adicionar">
-  <button type="button" class="posto-adicionar" data-dica="Adicionar instalação" aria-label="Adicionar instalação">
-    <svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-mais.svg#icone-mais"/></svg>
-  </button>
+  <div class="dropdown acoes-admin">
+    <button type="button" class="botao acoes-admin-gatilho">
+      <span>Administração</span>
+      <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+    </button>
+    <div class="dropdown-menu acoes-admin-menu">
+      <span class="rotulo-secao acoes-admin-rotulo">Administração</span>
+      <button type="button" class="botao">Adicionar instalação</button>
+    </div>
+  </div>
 </template>
 
 <!-- molde: item do seletor de instalação (montado pelo JS com os nomes sugeridos) -->
@@ -170,11 +178,18 @@
   <div class="postos-vazio">Esta unidade não possui viaturas.</div>
 </template>
 
-<!-- molde: botão "+" ao lado dos cards de viatura (só admin) -->
+<!-- molde: grupo Administração no fim da fileira de cards de viatura (só admin): Adicionar viatura -->
 <template id="tpl-viatura-adicionar">
-  <button type="button" class="posto-adicionar" data-dica="Adicionar viatura" aria-label="Adicionar viatura">
-    <svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/icone-mais.svg#icone-mais"/></svg>
-  </button>
+  <div class="dropdown acoes-admin">
+    <button type="button" class="botao acoes-admin-gatilho">
+      <span>Administração</span>
+      <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+    </button>
+    <div class="dropdown-menu acoes-admin-menu">
+      <span class="rotulo-secao acoes-admin-rotulo">Administração</span>
+      <button type="button" class="botao">Adicionar viatura</button>
+    </div>
+  </div>
 </template>
 
 

@@ -2,7 +2,8 @@
    ESCALAS — controles da barra
    As abas de modo ficam no cabeçalho: o componente geral .abas
    (data-abas-grupo) cuida do traço único, do espaço entre os grupos
-   e da divisória. Aqui ficam os contêineres dos subgrupos da barra.
+   e da divisória. Aqui ficam os contêineres dos subgrupos da barra,
+   a caixa da Legenda e a faixa de unidades do celular.
    ============================================================ */
 
 /* seletores lado a lado na barra: Colunas (tipo + quantidade) e unidades */
@@ -17,7 +18,7 @@
    Reusa os grupos e itens da legenda do painel (.escala-legenda-*, em escalas-painel.css);
    aqui ficam a largura da caixa (a mesma do painel) e as amostras de cor/faixa. */
 .escala-legenda-menu {
-  width: 400px;
+  width: var(--painel-largura);
 }
 
 .escala-legenda-menu .dropdown-menu-rolagem {
@@ -61,4 +62,17 @@
   border-radius: var(--raio-pequeno);
   background-image: linear-gradient(to right,
     var(--fundo-medio) 0 30%, transparent 30% 70%, var(--fundo-medio) 70% 100%);
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   A Escala fica só com o Dia e o Mês (Agenda e Calendário): as abas
+   Militares, Semana e Colunas somem. No Mês com mais de uma unidade,
+   a faixa de unidades (componente geral-faixa-unidades) fica entre a
+   barra e a grade.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .escala-so-computador {
+    display: none;
+  }
 }

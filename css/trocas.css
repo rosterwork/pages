@@ -45,7 +45,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   font-weight: 500;
   color: var(--texto-forte);
 }
@@ -69,7 +69,7 @@
 .troca-vazio {
   padding: 24px 16px;
   text-align: center;
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   color: var(--texto-suave);
 }
 
@@ -78,7 +78,7 @@
 
 /* ---------- Pendentes (dívidas de devolução) ---------- */
 .trocas-pendentes-descricao {
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   line-height: 1.4;
   color: var(--texto-suave);
   margin-bottom: 16px;
@@ -137,7 +137,7 @@
 }
 
 .troca-pendente-conector {
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   color: var(--texto-suave);
 }
 
@@ -190,12 +190,12 @@
 }
 
 .troca-extrato-data {
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   color: var(--texto-suave);
 }
 
 .troca-extrato-horas {
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   font-weight: 600;
   color: var(--texto-forte);
 }
@@ -247,7 +247,7 @@
 .campo-entrada--leitura {
   display: flex;
   align-items: center;
-  min-height: 32px;
+  min-height: var(--campo-altura);
   background-color: var(--fundo-medio);
   color: var(--texto-suave);
   cursor: default;
@@ -279,4 +279,37 @@
    abre a lista do dropdown. O usuário digita para filtrar OU escolhe no menu. Ocupa a largura do campo. */
 .campo .dropdown > .campo-entrada {
   width: 100%;
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   A linha da troca vira um cartão em pé: os dois militares, a
+   linha de apoio e o selo embaixo. Os nomes do Saldos e do
+   extrato acompanham a letra padrão, que no celular é maior.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .troca-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  html[data-celular] .troca-item > .espacador-flex {
+    display: none;
+  }
+
+  /* cada nome inteiro numa linha: se os dois não cabem, o segundo desce */
+  html[data-celular] .troca-item-militares {
+    flex-wrap: wrap;
+  }
+
+  html[data-celular] .troca-item-a,
+  html[data-celular] .troca-item-b {
+    white-space: nowrap;
+  }
+
+  html[data-celular] .troca-pendente-cab,
+  html[data-celular] .troca-extrato-quem {
+    font-size: var(--fonte-padrao);
+  }
 }

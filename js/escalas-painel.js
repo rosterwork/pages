@@ -276,10 +276,21 @@
 
   /* avisos amarelos por tipo, cada um com o militar + a vaga (para a lista expansível).
      m.aviso pode ter mais de um motivo (vírgula) — cada motivo entra no seu tipo. Só entra o militar
-     que tem o aviso na lista do banco (presentes['codigo|cpf']): o amarelo que é consequência fica de fora */
-  function detalharAvisosMotor(postos, presentes) {
+     que tem o aviso na lista do banco (presentes['codigo|cpf']): o amarelo que é consequência fica de fora.
+     Sem os postos (a aba Extrajornada), o detalhe sai da própria lista do banco: o militar e a função */
+  function detalharAvisosMotor(postos, presentes, problemas) {
     var det = { grauRebaixado: [], grauExclusivo: [], rodizioRepetido: [], exclusivoCondutor: [], afastadoTroca: [] };
-    (postos || []).forEach(function (po) {
+    if (!postos) {
+      var vistos = {};
+      (problemas || []).forEach(function (p) {
+        var k = AVISO_MOTOR[p.codigo], chave = p.codigo + '|' + p.cpf + '|' + p.funcao;
+        if (!det[k] || vistos[chave]) return;
+        vistos[chave] = true;
+        det[k].push({ m: { cpf: p.cpf, grad: p.grad, nome: p.nome }, f: { nome: p.funcao } });
+      });
+      return det;
+    }
+    postos.forEach(function (po) {
       (po.funcoes || []).forEach(function (f) {
         (f.militares || []).forEach(function (m) {
           if (!m.aviso) return;
@@ -354,14 +365,13 @@
      do posto travado, o amarelo de uma colocação vermelha) fica de fora. Uma linha por tipo de problema,
      vermelho primeiro e amarelo depois; no vermelho: o modelo, quem ficou sem função, os postos e o
      militar em situação errada. faltamModelos e modelosComErro trazem a composição de cada trecho.
-     O detalhe amarelo expansível (quem + vaga + motivo) segue montado pelos dados dos postos */
-  function montarAvisoProblemas(problemas, postos, faltamModelos, modelosComErro) {
+     O detalhe amarelo expansível (quem + vaga + motivo) segue montado pelos dados dos postos (sem os
+     postos, pela própria lista). Devolve as linhas [{ def, texto }] e, no detalhe, [{ def, texto, tipo, itens }];
+     a mesma lista serve à caixa do topo e à aba Extrajornada */
+  function linhasDoAviso(problemas, postos, faltamModelos, modelosComErro) {
     var lista = problemas || [];
-    if (!lista.length) return null;
     var cat = (RosterWork.mensagens && RosterWork.mensagens.escala && RosterWork.mensagens.escala.erros) || {};
-    var aviso = RosterWork.tpl('tpl-escala-distribuicao-aviso');
-    if (!aviso) return null;
-    var alvo = aviso.querySelector('.escala-distribuicao-aviso-lista');
+    var linhas = [];
 
     var por = {}, presentes = {};
     lista.forEach(function (p) {
@@ -369,7 +379,7 @@
       presentes[p.codigo + '|' + p.cpf] = true;
     });
     function tem(codigo) { return !!(por[codigo] && por[codigo].length); }
-    function linha(def, texto) { if (def) avisoItem(alvo, def.icone, texto || def.texto, def.nivel); }
+    function linha(def, texto) { if (def) linhas.push({ def: def, texto: texto || def.texto }); }
     function militar(p) { return ((p.grad || '') + ' ' + (p.nome || '')).trim(); }
     /* uma linha por ocorrência distinta (ex.: o mesmo militar na mesma função em duas faixas vira uma linha) */
     function porOcorrencia(codigo, def, chave, dadosTexto) {
@@ -462,12 +472,26 @@
       function (p) { return { militar: militar(p), funcao: p.funcao || '' }; });
     porOcorrencia('grau_diferente', cat.grauDiferente, function (p) { return p.cpf + '|' + p.funcao; },
       function (p) { return { militar: militar(p), funcao: p.funcao || '' }; });
-    var det = detalharAvisosMotor(postos, presentes);   // quem + vaga + motivo, para o detalhe expansível
+    var det = detalharAvisosMotor(postos, presentes, lista);   // quem + vaga + motivo, para o detalhe expansível
     [['grau_por_falta', 'grauRebaixado'], ['grau_exclusivo', 'grauExclusivo'], ['rodizio_quebrado', 'rodizioRepetido'],
      ['exclusivo_condutor', 'exclusivoCondutor'], ['afastado', 'afastadoTroca']].forEach(function (par) {
-      if (tem(par[0])) montarAvisoGrupo(alvo, par[1], det[par[1]], cat[par[1]]);
+      var def = cat[par[1]], itens = det[par[1]];
+      if (tem(par[0]) && def && itens.length) linhas.push({ def: def, texto: def.texto + ' (' + itens.length + ')', tipo: par[1], itens: itens });
     });
+    return linhas;
+  }
 
+  /* a caixa de avisos do topo: cada linha de linhasDoAviso, a simples e a do detalhe amarelo expansível */
+  function montarAvisoProblemas(problemas, postos, faltamModelos, modelosComErro) {
+    var linhas = linhasDoAviso(problemas, postos, faltamModelos, modelosComErro);
+    if (!linhas.length) return null;
+    var aviso = RosterWork.tpl('tpl-escala-distribuicao-aviso');
+    if (!aviso) return null;
+    var alvo = aviso.querySelector('.escala-distribuicao-aviso-lista');
+    linhas.forEach(function (l) {
+      if (l.itens) montarAvisoGrupo(alvo, l.tipo, l.itens, l.def);
+      else avisoItem(alvo, l.def.icone, l.texto, l.def.nivel);
+    });
     if (!alvo.children.length) return null;
     return aviso;
   }
@@ -700,10 +724,11 @@
     if (secao !== 'continuos' && RosterWork.escalasPainelContinuos) RosterWork.escalasPainelContinuos.reset();
     if (secao !== 'extra' && RosterWork.escalasPainelExtra) RosterWork.escalasPainelExtra.reset();
     if (secao === 'distribuicao' && RosterWork.escalasPainelEditar) {
-      /* o Editar posto é da companhia (os postos são dela) */
+      /* o dia e o Editar posto são de quem tem a unidade na área do papel */
+      var adminDaUnidade = RosterWork.sessao.podeAdministrar('pelotao', pCtx.unidadeId);
       RosterWork.escalasPainelEditar.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso, {
-        admin: RosterWork.sessao.ehAdmin(),
-        adminPosto: RosterWork.sessao.podeAdministrar('companhia', pCtx.unidadeId)
+        admin: adminDaUnidade,
+        adminPosto: adminDaUnidade
       });
     } else if (secao === 'continuos' && RosterWork.escalasPainelContinuos) {
       RosterWork.escalasPainelContinuos.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso);
@@ -740,13 +765,15 @@
       aoTentarFechar: tentarFecharPainel       // Esc/X confirmam antes de descartar rascunho
     });
 
-    /* linha das abas de seção: todos veem Dia e Extrajornada; o Ciclo ([data-so-admin]) só o admin. O geral-abas cuida da troca visual e nos avisa a aba escolhida */
+    /* linha das abas de seção: todos veem Dia e Extrajornada; o Ciclo ([data-so-admin]) só quem tem a unidade
+       na área do papel. O geral-abas cuida da troca visual e nos avisa a aba escolhida */
     var linha = RosterWork.painel.linhaAbas();
     var tpl = document.getElementById('tpl-escala-painel-secoes');
     if (linha && tpl) {
       linha.appendChild(tpl.content.cloneNode(true));
-      if (!RosterWork.sessao.ehAdmin()) {
+      if (!RosterWork.sessao.podeAdministrar('pelotao', unidadeId)) {
         linha.querySelectorAll('[data-so-admin]').forEach(function (aba) { aba.remove(); });
+        if (inicial === 'continuos') inicial = 'distribuicao';   // sem o Ciclo, abre no Dia
       }
       linha.classList.remove('oculto');
       var trilho = linha.querySelector('.abas');
@@ -960,6 +987,7 @@
       nivelFuncao: nivelDaFuncao,
       nivelPosto: nivelDoPosto,
       montarAvisoProblemas: montarAvisoProblemas,
+      linhasDoAviso: linhasDoAviso,
       anexarProblemas: anexarProblemas,
       marcarProblemas: marcarProblemas,
       montarBusca: montarBusca,

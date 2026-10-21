@@ -20,6 +20,13 @@
   var aoFecharExterno = null;// limpeza da tela que abriu (ex.: realce do card)
   var ligado = false;
 
+  /* o admin age sobre quem ele administra (o de pelotão no pelotão dele; o de companhia e o geral na área deles).
+     Sem militar (o extrato do próprio), vale a lotação de quem está logado */
+  function administra(militar) {
+    var lotacao = militar ? militar.lotacao_atual : (RosterWork.sessao.perfil() || {}).lotacao_id;
+    return !!(ctx && ctx.admin) && RosterWork.sessao.podeAdministrar('pelotao', lotacao);
+  }
+
   function fmt() { return RW.folgasFormato; }
   function msg() { return RW.mensagens.folgas; }
   function nomeDe(m) { return ((m && m.grau_abreviacao ? m.grau_abreviacao + ' ' : '') + (m && m.nome_de_guerra || '')).trim(); }
@@ -29,10 +36,11 @@
   function marcarErro(campo, m) { if (!campo) return; campo.classList.add('campo--erro'); var ctl = campo.querySelector('input, select, textarea'); if (ctl) ctl.setAttribute('aria-invalid', 'true'); var a = campo.querySelector('.campo-erro-texto'); if (a) { a.setAttribute('role', 'alert'); a.textContent = m || ''; } }
   function limparErro(campo) { if (!campo) return; campo.classList.remove('campo--erro'); var ctl = campo.querySelector('input, select, textarea'); if (ctl) ctl.removeAttribute('aria-invalid'); var a = campo.querySelector('.campo-erro-texto'); if (a) a.textContent = ''; }
 
+  /* a unidade acima da lotação, no subtítulo do painel; no celular, a sigla (o nome inteiro não cabe) */
   function unidadePai(unidadeId) {
     if (RW.arvoreUnidades && RW.arvoreUnidades.pai) {
       var pai = RW.arvoreUnidades.pai(unidadeId);
-      if (pai) return pai.nome_completo || pai.nome || '';
+      if (pai) return (RW.celular && RW.celular() ? pai.nome : pai.nome_completo) || pai.nome || '';
     }
     return '';
   }
@@ -75,11 +83,12 @@
       vEl.textContent = fmt().valorTexto(l.sinal, l.minutos);
       vEl.classList.add(l.sinal === '-' ? 'folga-extrato-valor--negativo' : 'folga-extrato-valor--positivo');
     }
-    /* cancelar: o próprio militar cancela a SUA folga pendente; o admin cancela pendente e também já efetivada (some da escala, devolve as horas) */
+    /* cancelar: o próprio militar cancela a SUA folga pendente; o admin do militar cancela pendente e também já efetivada (some da escala, devolve as horas) */
     var ehMinha = donoCpf && ctx && donoCpf === ctx.cpf;
+    var admin = administra(detalhe && detalhe.militar);
     var podeCancelar = l.origem === 'folga' && l.id && ctx && (
-      (l.situacao === 'pendente' && (ehMinha || ctx.admin)) ||
-      ((l.situacao === 'concedida' || l.situacao === 'aprovada') && ctx.admin));
+      (l.situacao === 'pendente' && (ehMinha || admin)) ||
+      ((l.situacao === 'concedida' || l.situacao === 'aprovada') && admin));
     if (podeCancelar) {
       var bc = RosterWork.tpl('tpl-folga-cancelar');
       if (bc) { bc.addEventListener('click', function () { cancelarFolga(l.id, l.situacao); }); linha.appendChild(bc); }
@@ -120,8 +129,8 @@
       linha.textContent = '';
       var abas = RosterWork.tpl('tpl-folga-painel-subabas');
       if (abas) {
-        /* Ações só para o admin; sobre si mesmo, ele ajusta o saldo, mas não concede folga a si (o banco também trava) */
-        if (!ctx.admin) { var b = abas.querySelector('[data-sub="acoes"]'); if (b) b.remove(); }
+        /* Ações só para o admin do militar; sobre si mesmo, ele ajusta o saldo, mas não concede folga a si (o banco também trava) */
+        if (!administra(militar)) { var b = abas.querySelector('[data-sub="acoes"]'); if (b) b.remove(); }
         linha.classList.remove('oculto');
         linha.appendChild(abas);
         guardarAbas(abas);

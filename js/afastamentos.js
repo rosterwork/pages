@@ -189,9 +189,13 @@
 
   function iniciar(conteudo) {
     ligarAbas(conteudo);
-    /* o grupo Administração (os três "Novo/Nova ...") só para o admin, em todas as abas */
+    /* a barra com o grupo Administração (os três "Novo/Nova ...") para quem tem algum papel, em todas as abas
+       (o banco confere o militar); sem papel, a página só tem abas e fica sem barra */
+    var admin = RosterWork.sessao.temPapel('pelotao');
+    var barra = conteudo.querySelector('#afastamentos-barra');
+    if (barra) barra.classList.toggle('oculto', !admin);
     var grupoAdmin = conteudo.querySelector('.acoes-admin');
-    if (grupoAdmin) grupoAdmin.classList.toggle('oculto', !RosterWork.sessao.ehAdmin());
+    if (grupoAdmin) grupoAdmin.classList.toggle('oculto', !admin);
     Object.keys(ABAS).forEach(function (nome) {
       var btn = conteudo.querySelector(ABAS[nome].botao);
       if (btn) btn.addEventListener('click', function () { abrirNovo(conteudo, nome); });

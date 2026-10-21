@@ -242,11 +242,6 @@
     white-space: normal;
   }
 
-  /* linha de menu: sem moldura, a altura dela já é a área de toque (o calendário do período fica como está) */
-  html[data-celular] .pagina-subcabecalho .dropdown-menu:not(.calendario-menu) > .dropdown-item {
-    min-height: var(--toque-altura-celular);
-  }
-
   /* tela fora do celular (Distribuição, Histórico): o vazio no lugar da tela (molde #tpl-pagina-so-computador) */
   html[data-celular] .pagina-so-computador {
     padding: 32px 16px;

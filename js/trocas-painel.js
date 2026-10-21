@@ -8,7 +8,7 @@
    Recusar (do militar chamado ou da administração) pede o motivo
    opcional no próprio painel. Usado na Trocas e na Pendências.
    Expõe: RosterWork.trocasPainel.abrir(troca, ctx).
-   ctx = { cpf, ehAdmin, posicao?: { n, total }, aoMudar(), aoFechar() }
+   ctx = { cpf, ehAdmin, decidir?, posicao?: { n, total }, aoMudar(), aoFechar() }
    ============================================================ */
 (function () {
   'use strict';
@@ -154,15 +154,18 @@
 
     var souParceiro = ctx.cpf && ctx.cpf === troca.parceiro_cpf;
     var souSolicitante = ctx.cpf && ctx.cpf === troca.solicitante_cpf;
+    /* decide quem administra um dos dois militares: na Pendências (ctx.decidir) a lista já vem só com o que ele
+       decide; na página Trocas, que traz só a lotação de quem pediu, vale a área dela (o banco confere os dois) */
+    var admin = !!ctx.ehAdmin && (!!ctx.decidir || RosterWork.sessao.podeAdministrar('pelotao', troca.solicitante_lotacao));
     var usar = {};
     if (troca.status === 'pendente_confirmacao') {
       if (souParceiro) { usar.aceitar = true; usar.recusar = true; }
       if (souSolicitante) usar.cancelar = true;
-      if (ctx.ehAdmin) usar['aprovar-forcar'] = true;   /* admin aprova sem esperar o solicitado, inclusive a troca da qual participa */
+      if (admin) usar['aprovar-forcar'] = true;   /* admin aprova sem esperar o solicitado, inclusive a troca da qual participa */
     } else if (troca.status === 'pendente_aprovacao') {
-      if (ctx.ehAdmin) { usar.aprovar = true; usar['recusar-admin'] = true; }   /* o admin decide inclusive a troca da qual participa */
+      if (admin) { usar.aprovar = true; usar['recusar-admin'] = true; }   /* o admin decide inclusive a troca da qual participa */
       if (souSolicitante) usar.cancelar = true;
-    } else if (troca.status === 'aprovada' && ctx.ehAdmin) {
+    } else if (troca.status === 'aprovada' && admin) {
       usar.cancelar = true;
     }
 

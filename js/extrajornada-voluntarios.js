@@ -34,7 +34,7 @@
       base: { modo: 'grupo', totalGrupo: 0, totais: {} }, mostrarNovo: false, lista: 'voluntarios', selecionado: null };
   }
 
-  function admin() { return RosterWork.sessao.temPapel('companhia'); }   // a Extrajornada é da companhia
+  function admin() { return RosterWork.sessao.temPapel('pelotao'); }   // a Extrajornada é uma coisa só da companhia: qualquer admin dela
   function ativo() { return naAba && el.lista && el.lista.isConnected; }
   function iso(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-01'; }
   function lista() { return RW.extrajornadaVoluntariosLista; }
@@ -318,12 +318,15 @@
     el.restam = cont.querySelector('#extra-vol-restam');
     el.naEscala = cont.querySelector('#extra-vol-na-escala');
     el.sugestao = cont.querySelector('#extra-vol-sugestao');
+    el.grupoAdmin = cont.querySelector('#extra-vol-admin');
     el.rodape = cont.querySelector('#extra-vol-rodape');
     el.mudancas = cont.querySelector('#extra-vol-mudancas');
     el.salvar = cont.querySelector('#extra-vol-salvar');
     el.cancelar = cont.querySelector('#extra-vol-cancelar');
 
     if (el.aba) el.aba.classList.add(admin() ? 'extra-vol--admin' : 'extra-vol--comum');
+    /* o grupo Administração (Usar a sugestão) só para o admin; no celular é um menu (fecha antes de agir) */
+    if (el.grupoAdmin) el.grupoAdmin.classList.toggle('oculto', !admin());
     if (admin()) {
       if (el.total) el.total.addEventListener('input', function () {
         var v = el.total.value.replace(/\D/g, '');
@@ -334,7 +337,10 @@
         var m = ev.target && ev.target.getAttribute && ev.target.getAttribute('data-modo');
         if (m) acoes.escopo(m);
       });
-      if (el.sugestao) el.sugestao.addEventListener('click', usarSugestao);
+      if (el.sugestao) el.sugestao.addEventListener('click', function () {
+        if (RW.fecharDropdowns) RW.fecharDropdowns();
+        usarSugestao();
+      });
       if (el.salvar) el.salvar.addEventListener('click', salvar);
       if (el.cancelar) el.cancelar.addEventListener('click', carregar);
       if (el.filtro && RW.abas) RW.abas.ligar(el.filtro, function (aba) { acoes.lista(aba.getAttribute('data-lista')); });

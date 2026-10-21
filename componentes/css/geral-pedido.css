@@ -189,3 +189,73 @@ button.pedido-item:hover {
   font-size: var(--fonte-padrao);
   color: var(--texto-suave);
 }
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   A alteração fica em duas linhas: o dado (e o selo da situação)
+   em cima, o "de (seta) para" inteiro embaixo, quebrando o texto
+   comprido (ex.: e-mail) em vez de cortar.
+   O cartão da Pendências (.pedido--linha) também fica em duas
+   linhas: quem e o quê em cima, o selo embaixo, com o ícone, o
+   pelotão e a seta ao lado das duas.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .pedido-item {
+    flex-wrap: wrap;
+  }
+
+  html[data-celular] .pedido-item .pedido-item-valores {
+    order: 1;
+    flex-basis: 100%;
+    flex-wrap: wrap;
+  }
+
+  html[data-celular] .pedido-item .pedido-item-de,
+  html[data-celular] .pedido-item .pedido-item-para {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  html[data-celular] .pedido--linha {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "icone pelotao textos seta"
+      "icone pelotao selo seta";
+    align-items: center;
+    gap: 8px 0;
+  }
+
+  /* sem selo, uma linha só */
+  html[data-celular] .pedido--linha:has(> .pedido-linha-selo.oculto) {
+    grid-template-areas: "icone pelotao textos seta";
+  }
+
+  html[data-celular] .pedido--linha > .espacador-flex {
+    display: none;
+  }
+
+  html[data-celular] .pedido-linha-icone {
+    grid-area: icone;
+    margin-right: 12px;
+  }
+
+  html[data-celular] .pedido-linha-pelotao {
+    grid-area: pelotao;
+    margin-right: 12px;
+  }
+
+  html[data-celular] .pedido--linha > .pedido-textos {
+    grid-area: textos;
+  }
+
+  html[data-celular] .pedido-linha-selo {
+    grid-area: selo;
+    justify-self: start;
+  }
+
+  html[data-celular] .pedido-linha-seta {
+    grid-area: seta;
+    margin-left: 12px;
+  }
+}

@@ -2,8 +2,8 @@
    USUÁRIOS — painel lateral com a ficha do militar
    No padrão do painel da Escala: sem Ver/Editar. Título = graduação
    + nome de guerra, com a lotação ao lado; subtítulo = nome
-   completo; abas Dados · Carreira. Quem não é admin de companhia
-   da área do militar só lê. O admin já abre editando: o lápis de cada bloco abre a correção e, na
+   completo; abas Dados · Carreira. Quem não administra o militar
+   (a área do papel) só lê. O admin já abre editando: o lápis de cada bloco abre a correção e, na
    Carreira, a barra do painel traz Promover e Transferir (para o
    inativo, Readmitir ao efetivo) e, para quem pode mudar o papel
    deste militar, Administração; o Dar baixa fica no fim. Cada
@@ -27,11 +27,11 @@
   var secaoAtual = 'dados';   // aba ativa
   var sub = null;             // a sub-tela aberta: { textoAplicar, perigo, mudancas, podeAplicar, sujo, aplicar }
 
-  /* a ficha é da companhia: edita o admin de companhia (ou o geral) da área do militar; os demais só leem */
+  /* edita quem administra o militar (qualquer admin cuja área tem a lotação dele); os demais só leem */
   function ehAdmin() {
     var ins = (fichaAtual && fichaAtual.institucionais) || {};
     var lotacao = ins.lotacao_id || (pessoaAtual && pessoaAtual.lotacao_atual);
-    return RosterWork.sessao.podeAdministrar('companhia', lotacao);
+    return RosterWork.sessao.podeAdministrar('pelotao', lotacao);
   }
   function ehInativo() { return !!(pessoaAtual && pessoaAtual.situacao === 'Inativo'); }
 

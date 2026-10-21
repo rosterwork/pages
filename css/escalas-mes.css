@@ -339,6 +339,32 @@
   justify-content: center;
   padding: 32px;
   color: var(--texto-fraco);
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   text-align: center;
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   Na Escala, a Agenda mostra uma unidade por tela: a coluna dela
+   ocupa a largura toda (a data continua fixa à esquerda). Com mais
+   de uma unidade, a faixa acima da grade troca a unidade: as células
+   das outras somem e o cabeçalho com o nome sai (a faixa já mostra
+   o nome); o dedo que desliza para o lado troca a unidade, então a
+   grade só rola na vertical. As classes vêm da faixa de unidades
+   (componentes/js/geral-faixa-unidades.js), de cada página que a usa.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .escala-mes-grade--uma-unidade {
+    --escala-colunas: var(--col-data) minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  html[data-celular] .escala-mes-grade--com-faixa {
+    touch-action: pan-y pinch-zoom;
+  }
+
+  html[data-celular] .escala-mes-grade--com-faixa .escala-mes-cabecalho,
+  html[data-celular] .escala-mes-grade--com-faixa .escala-mes-celula--outra-unidade {
+    display: none;
+  }
 }

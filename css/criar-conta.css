@@ -1,8 +1,8 @@
 /* ============================================================
    CRIAR CONTA — a tela aberta pelo link de cadastro.
-   Casca PRÓPRIA, não a do login: lá o cartão é uma linha (logo à
-   esquerda, dois campos à direita); aqui o cartão é vertical, para
-   caber no celular, onde o link costuma ser aberto.
+   Casca PRÓPRIA, com o mesmo cartão em pé do login (400px, logo de
+   72px em cima); aqui o cartão fica no alto e a página rola, porque
+   o formulário é mais comprido.
    COLUNA ÚNICA, de cima para baixo: é o que a literatura de
    formulário recomenda (o olho não precisa saltar de lado), com os
    campos agrupados em caixas (o contato, a senha).
@@ -32,7 +32,7 @@
   box-shadow: var(--sombra-bloco);
 }
 
-/* logo em cima e centrada — no login ela fica ao lado porque lá só há dois campos */
+/* logo em cima e no meio, como no login */
 .criar-conta-logo {
   display: flex;
   justify-content: center;
@@ -95,7 +95,7 @@
 }
 
 .criar-conta-termos-rotulo {
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   color: var(--texto);
   cursor: pointer;
 }
@@ -114,4 +114,20 @@
 .criar-conta-links {
   display: flex;
   justify-content: center;
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   ============================================================ */
+@media (max-width: 767px) {
+  /* a altura da tela visível: no celular o 100vh conta a área embaixo da barra do navegador */
+  html[data-celular] .criar-conta-fundo {
+    min-height: 100%;
+  }
+
+  /* os botões de texto (Ler os termos e os links do pé) tocam na mesma área dos outros botões */
+  html[data-celular] .criar-conta-termos-ler,
+  html[data-celular] .criar-conta-links .botao {
+    min-height: var(--botao-altura);
+  }
 }

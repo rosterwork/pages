@@ -1,42 +1,48 @@
 /* ============================================================
    LOGIN-PAGINA — layout exclusivo da página de login
+   Cartão em pé, em coluna única: o logo em cima, os campos e o
+   botão embaixo e, no pé, a versão. Reusado pela tela Nova senha.
    ============================================================ */
 
+/* o cartão no meio da tela; se ele passar da altura (celular deitado), a página rola */
 .login-fundo {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
+  padding: 32px 16px;
   background-color: var(--fundo-pagina);
 }
 
+/* a mesma largura do cartão do Criar conta; no celular, a largura da tela menos o respiro */
 .login-card {
   display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 400px;
+  max-width: 100%;
+  padding: 32px;
   background-color: var(--fundo-superficie);
   border: 1px solid var(--borda);
   border-radius: var(--raio-medio);
   box-shadow: var(--sombra-bloco);
 }
 
-/* o logo fica no meio da altura do formulário */
+/* o logo em cima, no meio */
 .login-logo {
   display: flex;
-  align-items: center;
   justify-content: center;
-  padding: 32px;
 }
 
 .login-logo svg {
-  height: 112px;
+  height: 72px;
+  width: auto;
 }
 
 .login-formulario {
   display: flex;
   flex-direction: column;
   gap: var(--gap-formulario);
-  padding: 32px;
-  width: 320px;
-  border-left: 1px solid var(--borda);
 }
 
 .login-campos {
@@ -63,4 +69,19 @@
   font-size: 11px;
   color: var(--texto-fraco);
   text-align: center;
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   ============================================================ */
+@media (max-width: 767px) {
+  /* a altura da tela visível: no celular o 100vh conta a área embaixo da barra do navegador */
+  html[data-celular] .login-fundo {
+    min-height: 100%;
+  }
+
+  /* o link do pé (Ir para o login) toca na mesma área dos outros botões */
+  html[data-celular] .login-links .botao {
+    min-height: var(--botao-altura);
+  }
 }

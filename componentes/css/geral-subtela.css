@@ -49,3 +49,14 @@
 .subtela-ajuda--opcao {
   padding: 0 8px 4px 32px;
 }
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   O Voltar (botão de texto) ganha a altura dos botões, e com ela
+   a folga de toque deles (geral-botao.css).
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .subtela-voltar {
+    min-height: var(--botao-altura);
+  }
+}

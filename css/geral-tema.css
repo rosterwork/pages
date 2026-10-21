@@ -139,7 +139,7 @@
   --modal-respiro:           24px;   /* distância mínima do modal às bordas da tela */
   --busca-largura:          240px;   /* campo de busca */
   --seletor-largura:        218px;   /* seletor de unidades */
-  --periodo-nome-largura:   110px;   /* largura mínima do nome do período: as setas não andam ao trocar de mês */
+  --periodo-nome-largura:   113px;   /* largura mínima do nome do período: o mês mais comprido ("novembro 2026") cabe e as setas não andam ao trocar de mês */
 
   /* valores no celular (até 767px): o bloco do celular, no fim deste
      arquivo, troca cada papel pelo seu valor aqui. O Guia visual lê
@@ -244,8 +244,8 @@ html[data-tema="escuro"] {
 /* -------------------------------------------------------
    Celular (até 767px) — redefine apenas os papéis de tamanho,
    como o modo escuro redefine só as cores. Liga só com a marca
-   data-celular no <html> (js/index-sessao.js; por enquanto, só
-   para o programador)
+   data-celular no <html> (js/index-sessao.js, no aparelho de
+   tela pequena; no login e na nova senha, escrita no <html>)
    ------------------------------------------------------- */
 @media (max-width: 767px) {
   html[data-celular] {

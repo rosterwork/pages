@@ -276,3 +276,26 @@
   display: flex;
   justify-content: center;
 }
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   A linha do militar que abre o painel fica na altura do dedo.
+   A trilha leva uma tampa de 4px acima dela, no fundo dela: ao
+   rolar, o arredondamento dos pixels da tela deixava passar 1 a
+   2px do conteúdo por cima da trilha.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .linha-militar--clicavel {
+    min-height: var(--toque-altura-celular);
+  }
+
+  html[data-celular] .arvore-trilha::before {
+    content: '';
+    position: absolute;
+    right: 0;
+    bottom: 100%;
+    left: 0;
+    height: 4px;
+    background-color: var(--fundo-superficie);
+  }
+}

@@ -114,3 +114,18 @@
   font-size: 12px;
   color: var(--texto-fraco);
 }
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   As duas abas com o respiro da página nas laterais (como as
+   outras árvores), no lugar dos 16px e 24px do computador.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] [data-aba-painel="escala"] > .geral-corpo-lateral-rolagem {
+    padding: 8px var(--respiro-pagina) var(--respiro-pagina);
+  }
+
+  html[data-celular] .ajustes-extra {
+    padding: var(--respiro-pagina);
+  }
+}

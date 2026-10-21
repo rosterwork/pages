@@ -19,8 +19,8 @@
   var removidos = [];         // ids das regras salvas removidas localmente (só aplicam no Salvar)
   var seqCarregar = 0;        // token da carga: ignora resposta antiga ao trocar de unidade rápido
 
-  // as regras são da Distribuição (companhia): edita o admin de companhia (ou o geral) cuja área tem a companhia do grupo
-  function podeEditar() { return !!(grupoAtual && grupoAtual.cia) && RosterWork.sessao.podeAdministrar('companhia', grupoAtual.cia.unidade_id); }
+  // as regras de cada militar: edita quem tem a unidade dele na área do papel
+  function podeEditar(unidadeId) { return RosterWork.sessao.podeAdministrar('pelotao', unidadeId); }
 
   // grau + nome (não depende do módulo de Trocas, que só carrega naquela página)
   function nomeMilitar(grau, nome) { return ((grau || '') + ' ' + (nome || '')).trim(); }
@@ -148,14 +148,14 @@
         var item = RosterWork.tpl('tpl-regras-item');
         item.querySelector('.regras-item-texto').textContent = r.funcao;
         var rem = item.querySelector('.regras-item-remover');
-        if (podeEditar()) {
+        if (podeEditar(militar.unidade_id)) {
           rem.classList.remove('oculto');
           rem.addEventListener('click', function () { remover(r); });
         }
         itens.appendChild(item);
       });
     }
-    if (podeEditar()) montarAdicionar(grupo.querySelector('.regras-grupo-add'), militar, tipo);
+    if (podeEditar(militar.unidade_id)) montarAdicionar(grupo.querySelector('.regras-grupo-add'), militar, tipo);
     destino.appendChild(grupo);
   }
 
@@ -254,7 +254,7 @@
   function atualizarRodape() {
     var rod = document.getElementById('regras-rodape');
     if (!rod) return;
-    rod.classList.toggle('oculto', !podeEditar());   // rodapé de edição só para o admin de companhia da área (os demais só leem)
+    rod.classList.toggle('oculto', !RosterWork.sessao.temPapel('pelotao'));   // rodapé de edição só para o admin (os demais só leem)
     var n = contarAlteracoes();
     var bSalvar = rod.querySelector('.regras-salvar');
     var bCancelar = rod.querySelector('.regras-cancelar');

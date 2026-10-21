@@ -28,3 +28,46 @@
   font-weight: 700;
   color: var(--texto-forte);
 }
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   A linha em duas: graduação + nome e os selos em cima, o
+   identificador embaixo, na largura toda; a altura do toque (o
+   dedo abre a ficha). Sem as larguras mínimas das colunas, e o
+   nome completo quebra em vez de cortar.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .usuario-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 2px;
+    min-height: var(--toque-altura-celular);
+    padding: 4px;
+  }
+
+  html[data-celular] .usuario-item > .linha-militar-pessoa {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  html[data-celular] .usuario-item-selos {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+  }
+
+  html[data-celular] .usuario-item-cpf {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  html[data-celular] .usuario-item-nome {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}

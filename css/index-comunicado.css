@@ -43,3 +43,18 @@
   font-size: 11px;
   color: var(--texto-suave);
 }
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   Cada militar da lista fica na altura do dedo, com a letra
+   padrão do tema.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .aviso-militar {
+    min-height: var(--toque-altura-celular);
+  }
+
+  html[data-celular] .aviso-militar-nome {
+    font-size: var(--fonte-padrao);
+  }
+}

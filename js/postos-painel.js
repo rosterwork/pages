@@ -1,7 +1,7 @@
 /* ============================================================
    POSTOS — painel lateral de instalação: editar e criar (só admin)
-   Editar: clicar num card (abrir). Criar: o botão "+" (abrirNovo,
-   Adicionar instalação) — mesmo painel, sem abas, com a linha
+   Editar: clicar num card (abrir). Criar: o Adicionar instalação do grupo
+   Administração (abrirNovo) — mesmo painel, sem abas, com a linha
    "Instalação" no topo. Título = unidade; uma seção .painel-secao
    com o Estado e a caixa Efetivo (mínimo, ideal e máximo lado a
    lado, do componente geral-posto-editar, o mesmo do Editar posto
@@ -416,7 +416,6 @@
     RosterWork.painel.abrir({
       titulo: tituloUnidade(unidade),
       tituloExtra: unidade.cidade ? '- ' + unidade.cidade : '',
-      modoFixo: 'editar',
       aoFechar: aoFechar,
       aoTentarFechar: tentarFecharPainel
     });
@@ -425,8 +424,7 @@
     montarRodape();
   }
 
-  /* abre o painel em modo criação (Adicionar instalação): mesma casca, sem abas
-     Ver/Editar, com a linha "Instalação" no topo + Estado/efetivos vazios */
+  /* abre o painel em modo criação (Adicionar instalação): mesma casca, com a linha "Instalação" no topo + Estado/efetivos vazios */
   function abrirNovo(unidade) {
     if (!RosterWork.painel || !unidade) return;
     modo = 'novo';

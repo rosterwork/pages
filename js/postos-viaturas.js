@@ -5,8 +5,8 @@
    prefixo + selo de status (Ativo/Inativo; na troca de viatura com
    data, "Substituída até DD/MM") + período + a viatura que está no
    lugar ou a próxima mudança (postos-mudancas.js) + CNH exigida +
-   guarnição (efetivo mín/ideal/máx). Só admin vê o botão "+" e pode
-   clicar num card para editar (painel em postos-viaturas-painel.js).
+   guarnição (efetivo mín/ideal/máx). Só admin vê o grupo Administração
+   (Adicionar viatura) e pode clicar num card para editar (painel em postos-viaturas-painel.js).
    A árvore é singleton: postos.js remonta esta ao abrir a aba.
    ============================================================ */
 (function () {
@@ -70,12 +70,12 @@
 
   /* ---------- cards ---------- */
 
-  /* monta os cards de viatura (+ o botão "+", se admin) de uma unidade marcada.
-     Unidade sem viaturas: o admin ainda vê o "+" (para cadastrar a primeira);
-     o usuário comum vê a mensagem de vazio. Os postos são da companhia: admin aqui é
-     o de companhia (ou o geral) cuja área tem esta unidade; os demais só consultam. */
+  /* monta os cards de viatura (+ o grupo Administração, se admin) de uma unidade marcada.
+     Unidade sem viaturas: o admin ainda vê o grupo (para cadastrar a primeira);
+     o usuário comum vê a mensagem de vazio. Admin aqui é quem tem esta unidade na área
+     do papel; os demais só consultam. */
   function renderConteudo(container, unidade, viaturas) {
-    var admin = RosterWork.sessao.podeAdministrar('companhia', unidade.unidade_id);
+    var admin = RosterWork.sessao.podeAdministrar('pelotao', unidade.unidade_id);
     if ((!viaturas || viaturas.length === 0) && !admin) {
       var tplVazio = document.getElementById('tpl-viatura-vazio');
       if (tplVazio) container.appendChild(tplVazio.content.cloneNode(true));
@@ -102,15 +102,16 @@
       }
       grade.appendChild(card);
     });
-    /* o botão "+" (só admin) é o último item da fileira — encostado no último card */
+    /* o grupo Administração (só admin) é o último item da fileira, com o Adicionar viatura;
+       no celular o grupo é um menu: fecha antes de abrir o painel */
     if (admin) {
-      var tplBtn = document.getElementById('tpl-viatura-adicionar');
-      if (tplBtn) {
-        var btn = tplBtn.content.cloneNode(true).firstElementChild;
-        btn.addEventListener('click', function () {
+      var grupo = RosterWork.tpl('tpl-viatura-adicionar');
+      if (grupo) {
+        grupo.querySelector('.acoes-admin-menu .botao').addEventListener('click', function () {
+          if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
           if (window.RosterWork.postosViaturasPainel) window.RosterWork.postosViaturasPainel.abrirNovo(unidade);
         });
-        grade.appendChild(btn);
+        grade.appendChild(grupo);
       }
     }
     container.appendChild(grade);

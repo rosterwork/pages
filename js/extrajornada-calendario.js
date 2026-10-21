@@ -1,10 +1,15 @@
 /* ============================================================
    EXTRAJORNADA — aba Calendário (todos)
-   O mês no padrão do calendário da Escala (geral-calendario-mes,
-   variante --unidades): em cada dia, um bloco por unidade marcada no
-   seletor do cabeçalho com quem tira extra e o horário; a unidade sem
-   ninguém no dia guarda o lugar (invisível), para as unidades ficarem
-   alinhadas na linha. Mostra o que foi LANÇADO na escala; depois que o
+   O mês no padrão do Mês da Escala, nos dois modos do seletor Agenda |
+   Calendário da barra (o mesmo da Distribuição), com as unidades
+   marcadas no seletor do cabeçalho: a Agenda é a grade dias × unidades
+   (os moldes tpl-escala-mes-*, os da Agenda da Escala); o Calendário é
+   o mês em semanas (geral-calendario-mes, variante --unidades), com um
+   bloco por unidade em cada dia e a unidade sem ninguém guardando o
+   lugar (invisível), para as unidades ficarem alinhadas na linha. A
+   grade abre rolada em hoje; no celular, uma unidade por tela, trocada
+   pela faixa de unidades (RosterWork.extrajornadaGrade, no orquestrador).
+   A célula mostra quem tira extra e o horário. Mostra o que foi LANÇADO na escala; depois que o
    mês começa, compara com o que está agora: quem saiu fica riscado
    ("foi para 24/11", "horário mudou") e quem entrou diz de onde veio
    ("ajuste, veio de 20/11"). Antes do primeiro lançamento, mostra a
@@ -21,6 +26,7 @@
   var RW = window.RosterWork = window.RosterWork || {};
 
   var MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+  var DIAS_ABREV = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
   var INI = ['', '08', '14', '20', '02'];   // início de cada bloco (1 a 4)
   var FIM = ['', '14', '20', '02', '08'];   // fim de cada bloco
 
@@ -38,6 +44,11 @@
   function iso(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
   function ddmm(s) { var p = String(s || '').split('-'); return p.length === 3 ? p[2] + '/' + p[1] : ''; }
   function ativo() { return naAba && el.grade && el.grade.isConnected; }
+  /* o modo do seletor Agenda | Calendário da barra */
+  function modoAtual() {
+    var ativa = el.modos && el.modos.querySelector('.aba--ativa');
+    return (ativa && ativa.getAttribute('data-modo')) || 'agenda';
+  }
 
   function estado(texto) {
     el.grade.textContent = '';
@@ -104,17 +115,66 @@
     return l;
   }
 
-  function desenhar(r) {
-    ultimo = r;
-    if (el.aviso) {
-      el.aviso.classList.toggle('oculto', !!r.lancado);
-      el.avisoTitulo.textContent = r.lancado ? '' : msg().emDistribuicao(MESES[comp.getMonth()]);
+  /* a célula de uma unidade num dia: os dados do painel do dia e quem tira extra, cada um com a nota do ajuste.
+     contexto = a companhia (vem primeiro): o pelotão mostra a companhia no título do painel */
+  function preencherCelula(cel, isoDia, u, itens, contexto) {
+    cel.dataset.iso = isoDia;
+    cel.dataset.unidadeId = u.unidade_id;
+    cel.dataset.unidadeNome = (contexto && contexto.unidade_id !== u.unidade_id) ? contexto.nome + ' / ' + u.nome : u.nome;
+    cel.dataset.unidadeCidade = u.cidade || '';
+    itens.forEach(function (it) {
+      var l = linha(it);
+      if (l) cel.appendChild(l);
+      var texto = nota(it);
+      if (!texto) return;
+      var n = RW.tpl('tpl-extra-cal-nota');
+      if (!n) return;
+      n.textContent = texto;
+      if (it.estado === 'entrou') n.classList.add('extra-cal-nota--entrou');
+      cel.appendChild(n);
+    });
+  }
+
+  /* Agenda: um dia por linha e uma coluna por unidade (a grade da Agenda da Escala) */
+  function desenharAgenda(unidades, dias, contexto) {
+    var wrap = RW.tpl('tpl-escala-mes');
+    if (!wrap) return;
+    var grade = wrap.querySelector('.escala-mes-grade');
+    grade.classList.add('escala-mes-grade--' + Math.min(8, unidades.length));
+    var cabecalho = RW.tpl('tpl-escala-mes-cabecalho');
+    unidades.forEach(function (u) {
+      var titulo = RW.tpl('tpl-escala-mes-titulo');
+      titulo.textContent = u.nome;
+      cabecalho.appendChild(titulo);
+    });
+    grade.appendChild(cabecalho);
+    var ano = comp.getFullYear(), mes = comp.getMonth();
+    var ultimoDia = new Date(ano, mes + 1, 0).getDate();
+    var hojeIso = iso(new Date());
+    for (var d = 1; d <= ultimoDia; d++) {
+      var data = new Date(ano, mes, d);
+      var isoDia = iso(data);
+      var doDia = dias[isoDia] || {};
+      var linhaDia = RW.tpl('tpl-escala-mes-linha');
+      linhaDia.querySelector('.escala-mes-data-semana').textContent = DIAS_ABREV[data.getDay()];
+      linhaDia.querySelector('.escala-mes-data-numero').textContent = String(d);
+      if (data.getDay() === 0 || data.getDay() === 6) linhaDia.classList.add('escala-mes-linha--fds');
+      if (isoDia === hojeIso) linhaDia.classList.add('escala-mes-linha--hoje');
+      unidades.forEach(function (u) {
+        var cel = RW.tpl('tpl-escala-mes-celula');
+        preencherCelula(cel, isoDia, u, doDia[u.unidade_id] || [], contexto);
+        linhaDia.appendChild(cel);
+      });
+      grade.appendChild(linhaDia);
     }
-    var sel = RW.extrajornadaUnidades.selecionadas();
-    var unidades = (r.unidades || []).filter(function (u) { return sel.indexOf(String(u.unidade_id)) >= 0; });
-    if (!unidades.length) { estado(RW.mensagens.escala.selecioneUnidade); return; }
-    var dias = comparar(r.base || [], r.atual || []);
-    var contexto = unidades[0] || null;   // a companhia vem primeiro; o pelotão mostra a companhia no título do painel
+    el.grade.textContent = '';
+    el.grade.appendChild(wrap);
+    RW.extrajornadaGrade.aplicar(wrap);
+    if (RW.gradeTeclado) RW.gradeTeclado.ativar(grade, { celula: '.escala-mes-celula', linha: '.escala-mes-linha' });
+  }
+
+  /* Calendário: o mês em semanas, um bloco por unidade em cada dia; a unidade sem ninguém guarda o lugar */
+  function desenharCalendario(unidades, dias, contexto) {
     RW.geralCalendarioMes.renderizar(el.grade, {
       dataRef: comp, unidadesPorDia: Math.max(1, unidades.length),
       aoDia: function (celulaDia, data, doMes) {
@@ -131,27 +191,30 @@
           var bloco = RW.tpl('tpl-extra-calendario-unidade');
           if (!bloco) return;
           bloco.querySelector('.extra-calendario-unidade-nome').textContent = u.nome;
-          var cel = bloco.querySelector('.escala-mes-celula');
-          cel.dataset.iso = isoDia;
-          cel.dataset.unidadeId = u.unidade_id;
-          cel.dataset.unidadeNome = (contexto && contexto.unidade_id !== u.unidade_id) ? contexto.nome + ' / ' + u.nome : u.nome;
-          cel.dataset.unidadeCidade = u.cidade || '';
-          itens.forEach(function (it) {
-            var l = linha(it);
-            if (l) cel.appendChild(l);
-            var texto = nota(it);
-            if (!texto) return;
-            var n = RW.tpl('tpl-extra-cal-nota');
-            if (!n) return;
-            n.textContent = texto;
-            if (it.estado === 'entrou') n.classList.add('extra-cal-nota--entrou');
-            cel.appendChild(n);
-          });
+          preencherCelula(bloco.querySelector('.escala-mes-celula'), isoDia, u, itens, contexto);
           celulaDia.appendChild(bloco);
         });
       }
     });
+    RW.extrajornadaGrade.aplicar(el.grade.querySelector('.geral-calendario-mes'));
+  }
+
+  function desenhar(r) {
+    ultimo = r;
+    if (el.aviso) {
+      el.aviso.classList.toggle('oculto', !!r.lancado);
+      el.avisoTitulo.textContent = r.lancado ? '' : msg().emDistribuicao(MESES[comp.getMonth()]);
+    }
+    var sel = RW.extrajornadaUnidades.selecionadas();
+    var unidades = (r.unidades || []).filter(function (u) { return sel.indexOf(String(u.unidade_id)) >= 0; });
+    RW.extrajornadaGrade.faixa(unidades.map(function (u) { return { id: u.unidade_id, nome: u.nome }; }));
+    if (!unidades.length) { estado(RW.mensagens.escala.selecioneUnidade); return; }
+    var dias = comparar(r.base || [], r.atual || []);
+    var contexto = unidades[0] || null;
+    if (modoAtual() === 'calendario') desenharCalendario(unidades, dias, contexto);
+    else desenharAgenda(unidades, dias, contexto);
     aplicarBusca();
+    RW.extrajornadaGrade.abrirEmHoje(el.grade.querySelector('.escala-mes, .geral-calendario-mes'));
   }
 
   function carregar() {
@@ -210,6 +273,7 @@
     el.solicitar = cont.querySelector('#extra-solicitar');
     el.solicitarTexto = cont.querySelector('#extra-solicitar-texto');
     el.busca = cont.querySelector('#extra-cal-busca');
+    el.modos = cont.querySelector('#extra-escala-modos');   // o seletor Agenda | Calendário (o orquestrador liga e mostra)
     el.aviso = cont.querySelector('#extra-cal-aviso');
     el.avisoTitulo = cont.querySelector('#extra-cal-aviso-titulo');
     ultimo = null;
@@ -237,10 +301,14 @@
     if (el.solicitar) el.solicitar.classList.add('oculto');
     if (el.selo) el.selo.classList.add('oculto');
     if (buscaCtrl) buscaCtrl.limpar();
+    /* a grade sai com a aba (a faixa de unidades acha a grade pela página; ativar() recarrega) */
+    if (el.grade) el.grade.textContent = '';
   }
   /* o orquestrador trocou o mês */
   function renderMes() { comp = RW.extrajornadaMes.obter(); carregar(); }
+  /* o seletor Agenda | Calendário mudou: redesenha com a última resposta */
+  function aoMudarModo() { if (ativo() && ultimo && ultimo.ok) desenhar(ultimo); }
 
   RW.extrajornadaCalendario = { montar: montar, ativar: ativar, desativar: desativar, renderMes: renderMes,
-    recarregar: carregar, atualizarBarra: atualizarBarra };
+    recarregar: carregar, atualizarBarra: atualizarBarra, aoMudarModo: aoMudarModo };
 })();

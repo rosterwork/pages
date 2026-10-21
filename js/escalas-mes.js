@@ -123,10 +123,18 @@
       }
 
       corpo.appendChild(wrap);
-      /* gancho: quem reusa a grade (ex.: Extrajornada) ajusta a escala das barras ANTES de pintar (a Escala não passa) */
+      /* gancho: quem usa a grade ajusta antes de pintar (a Extrajornada, a escala das barras; a Escala no celular,
+         a unidade da faixa) */
       if (opcoes.aoTerminar) opcoes.aoTerminar(wrap);
       if (RosterWork.escalasCelula) RosterWork.escalasCelula.ativarGraficos(wrap);
       if (RosterWork.gradeTeclado) RosterWork.gradeTeclado.ativar(grade, { celula: '.escala-mes-celula', linha: '.escala-mes-linha' });
+      /* rolarHoje (a Escala): abre em hoje, com o dia anterior à vista acima (geral-periodo.js) */
+      var linhaHoje = opcoes.rolarHoje ? grade.querySelector('.escala-mes-linha--hoje') : null;
+      if (linhaHoje && RosterWork.periodo) {
+        var diaAnterior = linhaHoje.previousElementSibling;
+        if (diaAnterior === cabecalho) diaAnterior = null;
+        RosterWork.periodo.rolarAteHoje(wrap, linhaHoje, diaAnterior, { fixo: cabecalho });
+      }
     }, function () {
       if (document.contains(corpo) && req === reqSeq && (!opcoes.vigente || opcoes.vigente())) mostrarEstado(corpo, window.RosterWork.mensagens.escala.falhaCarregarMes);
     });

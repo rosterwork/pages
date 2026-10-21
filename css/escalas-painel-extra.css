@@ -53,7 +53,7 @@
   padding: 2px 0 0;
 }
 
-/* um aviso: resolvido pelo extra (marca verde) ou o que ficou (alerta) */
+/* o que a extra resolveu (marca verde); o que ficou usa a caixa de avisos da aba Dia */
 .escala-extra-aviso {
   display: flex;
   align-items: flex-start;
@@ -69,10 +69,6 @@
 
 .escala-extra-aviso--ok .escala-extra-aviso-icone {
   color: var(--sucesso);
-}
-
-.escala-extra-aviso--alerta .escala-extra-aviso-icone {
-  color: var(--alerta);
 }
 
 .escala-extra-aviso-nome {
@@ -120,7 +116,7 @@
   min-height: 32px;
   padding: 4px;
   border-radius: var(--raio-pequeno);
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   color: var(--texto);
 }
 
@@ -148,7 +144,7 @@
 }
 
 .escala-extra-quem .escala-distribuicao-nome {
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   font-weight: 600;
   color: var(--texto-forte);
 }

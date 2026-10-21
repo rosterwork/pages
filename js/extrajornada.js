@@ -3,7 +3,12 @@
    Liga as abas (Calendário | Voluntários · Distribuição · Relatórios), mostra
    o conteúdo da aba ativa e é o DONO do seletor de mês ÚNICO (compartilhado
    pelas abas): as setas andam pelo alcance vindo do banco (extra_nav_meses),
-   para trás só meses com dados, para frente para no próximo mês. Todos
+   para trás só meses com dados, para frente para no próximo mês; o "Hoje"
+   aparece só fora do mês atual e volta para ele. Também é o dono do
+   seletor Agenda | Calendário, um só para as abas Calendário e
+   Distribuição: trocar redesenha a aba ativa (aoMudarModo). No celular,
+   liga a faixa de unidades (geral-faixa-unidades.js), que as grades do
+   Calendário e da Distribuição mostram e as outras abas escondem. Todos
    veem Calendário e Voluntários; Distribuição e Relatórios são só do
    administrador (sem elas, os dois grupos de abas viram um só, sem o
    traço). Clicar num dia (Calendário ou Distribuição) abre o painel do
@@ -19,6 +24,7 @@
 
   var ABAS = ['calendario', 'voluntarios', 'montagem', 'relatorios'];
   var LEGENDA = { calendario: 'tpl-extra-legenda-calendario', montagem: 'tpl-extra-legenda-montagem' };
+  var COM_MODO = { calendario: true, montagem: true };   // abas com o seletor Agenda | Calendário
   var MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 
   var el = {};
@@ -60,6 +66,32 @@
     }
   };
 
+  /* as grades do mês (Calendário e Distribuição): a faixa de unidades do celular e o abrir em hoje */
+  function noCelular() { return !!(RW.celular && RW.celular()); }
+  RW.extrajornadaGrade = {
+    /* antes de cada desenho: as unidades da grade, na ordem dela ([{ id, nome }]); no computador, sem faixa */
+    faixa: function (lista) { if (RW.faixaUnidades) RW.faixaUnidades.mostrar(noCelular() ? lista : null); },
+    /* depois de montar e antes de pintar: no celular, uma unidade por tela */
+    aplicar: function (wrap) { if (RW.faixaUnidades && noCelular()) RW.faixaUnidades.aplicar(wrap); },
+    /* a grade abre rolada em hoje (quando o mês contém hoje), com o dia ou a semana anterior à vista (geral-periodo.js);
+       no Calendário, quando os dias não cabem na largura (celular), o dia anterior à esquerda */
+    abrirEmHoje: function (wrap) {
+      if (!wrap || !RW.periodo) return;
+      var linhaHoje = wrap.querySelector('.escala-mes-linha--hoje');
+      if (linhaHoje) {
+        var cabecalho = wrap.querySelector('.escala-mes-cabecalho');
+        var anterior = linhaHoje.previousElementSibling;
+        RW.periodo.rolarAteHoje(wrap, linhaHoje, anterior === cabecalho ? null : anterior, { fixo: cabecalho });
+        return;
+      }
+      var diaHoje = wrap.querySelector('.geral-calendario-mes-dia--hoje:not(.geral-calendario-mes-dia--fora)');
+      if (!diaHoje) return;
+      var semana = diaHoje.closest('.geral-calendario-mes-semana');
+      RW.periodo.rolarAteHoje(wrap, semana, semana.previousElementSibling, { fixo: wrap.querySelector('.geral-calendario-mes-cabecalho') });
+      RW.periodo.rolarAteHoje(wrap, diaHoje, diaHoje.previousElementSibling, { horizontal: true });
+    }
+  };
+
   function modulosDa(aba) {
     if (aba === 'voluntarios') return [RW.extrajornadaVoluntarios];
     if (aba === 'montagem') return [RW.extrajornadaEscala, RW.extrajornadaEscalar, RW.extrajornadaLancar];
@@ -72,6 +104,7 @@
   function atualizarSeletor() {
     var comp = RW.extrajornadaMes.obter();
     if (el.periodoNome) el.periodoNome.textContent = rotuloMes(comp);
+    if (el.hoje) el.hoje.classList.toggle('oculto', iso(comp) === iso(mesInicial()));
     if (el.ant) el.ant.disabled = true;
     if (el.prox) el.prox.disabled = true;
     if (!RW.extrajornadaDados) return;
@@ -141,6 +174,9 @@
     /* o painel lateral é de uma aba só (o militar em Voluntários, o dia no Calendário e na Distribuição): troca de aba, fecha */
     if (anterior !== abaAtual && RW.painel && RW.painel.estaAberto()) RW.painel.fechar();
     ABAS.forEach(function (n) { painelVisivel(conteudo, n, n === abaAtual); });
+    if (el.modos) el.modos.classList.toggle('oculto', !COM_MODO[abaAtual]);
+    /* a faixa de unidades do celular some ao trocar de aba; a grade do Calendário e a da Distribuição a mostram ao desenhar */
+    if (RW.faixaUnidades) RW.faixaUnidades.mostrar(null);
     atualizarLegenda();
     /* desliga primeiro quem sai e depois liga quem entra (as buscas e os seletores da barra não se cruzam) */
     ABAS.forEach(function (n) { if (n !== abaAtual) modulosDa(n).forEach(function (m) { if (m && m.desativar) m.desativar(); }); });
@@ -156,8 +192,8 @@
   function iniciar(conteudo) {
     if (RW.escalasExtraRascunho) RW.escalasExtraRascunho.zerar();
     var abas = conteudo.querySelector('#extrajornada-abas');
-    /* Distribuição e Relatórios são só do administrador de companhia; sem elas, os dois grupos viram um só (sem o traço entre eles) */
-    var ehAdmin = RosterWork.sessao.temPapel('companhia');
+    /* Distribuição e Relatórios são só do administrador; sem elas, os dois grupos viram um só (sem o traço entre eles) */
+    var ehAdmin = RosterWork.sessao.temPapel('pelotao');
     ['montagem', 'relatorios'].forEach(function (n) {
       var a = conteudo.querySelector('#extrajornada-abas [data-aba="' + n + '"]');
       if (a) a.classList.toggle('oculto', !ehAdmin);
@@ -190,8 +226,21 @@
     el.prox = conteudo.querySelector('#extra-periodo-proximo');
     el.legenda = RW.legenda ? RW.legenda.montar(conteudo.querySelector('#extra-legenda')) : null;
     el.legendaDivisor = conteudo.querySelector('#extra-legenda-divisor');
+    el.hoje = conteudo.querySelector('#extra-periodo-hoje');
     if (el.ant) el.ant.addEventListener('click', function () { if (navAnt) irParaMes(navAnt); });
     if (el.prox) el.prox.addEventListener('click', function () { if (navProx) irParaMes(navProx); });
+    /* "Hoje": volta ao mês atual; as grades abrem roladas em hoje */
+    if (el.hoje) el.hoje.addEventListener('click', function () { irParaMes(mesInicial()); });
+    /* celular: a faixa de unidades das grades (Agenda e Calendário), antes do corpo da página */
+    if (RW.faixaUnidades) RW.faixaUnidades.iniciar(conteudo, { pecaCalendario: '.extra-calendario-unidade' });
+    /* Agenda | Calendário: a aba ativa redesenha no modo escolhido (no celular, o menu "Agenda ▾") */
+    el.modos = conteudo.querySelector('#extra-escala-modos');
+    if (el.modos && RW.abas && !el.modos.dataset.ligado) {
+      el.modos.dataset.ligado = '1';
+      RW.abas.ligar(el.modos, function () {
+        modulosDa(abaAtual).forEach(function (m) { if (m && m.aoMudarModo) m.aoMudarModo(); });
+      });
+    }
 
     RW.extrajornadaMes.restaurar();   // ao reabrir a página, usa o mês guardado na sessão (F5); sem nada, o mês atual
     [RW.extrajornadaCalendario, RW.extrajornadaEscala, RW.extrajornadaVoluntarios, RW.extrajornadaEscalar,

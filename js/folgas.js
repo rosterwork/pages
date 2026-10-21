@@ -83,7 +83,8 @@
   function iniciar(conteudo) {
     estado.aba = 'minhas';
     estado.equipeModo = 'saldos';
-    ctx = { cpf: RosterWork.sessao.cpf(), admin: RosterWork.sessao.ehAdmin(), aoMudar: recarregarAtivo };
+    /* admin: tem algum papel (abas Equipe e Pendências); cada militar ainda confere a área no painel e no banco */
+    ctx = { cpf: RosterWork.sessao.cpf(), admin: RosterWork.sessao.temPapel('pelotao'), aoMudar: recarregarAtivo };
 
     var abas = conteudo.querySelector('#folgas-abas');
     if (RW.abas && abas) RW.abas.ligar(abas, aoTrocarAba);

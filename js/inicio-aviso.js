@@ -239,5 +239,14 @@
     });
   }
 
-  RW.inicioAviso = { ehAdmin: RosterWork.sessao.ehAdmin, abrirNovo: abrirNovo, desativar: desativar };
+  /* publica quem tem algum papel de administração (para a própria área) */
+  function ehAdmin() { return RosterWork.sessao.temPapel('pelotao'); }
+
+  /* desativa quem publicou ou o admin cuja área tem a lotação de quem publicou:
+     o fn_avisos_listar já traz a resposta em pode_desativar, pela mesma regra do fn_avisos_desativar */
+  function podeDesativar(aviso) {
+    return !!(aviso && aviso.aviso_id && aviso.pode_desativar);
+  }
+
+  RW.inicioAviso = { ehAdmin: ehAdmin, podeDesativar: podeDesativar, abrirNovo: abrirNovo, desativar: desativar };
 })();

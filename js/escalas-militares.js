@@ -299,6 +299,18 @@
       corpo.appendChild(wrap);
       aplicarFiltro(grade);   // reaplica a busca atual (persiste entre navegação/re-render)
       if (RosterWork.gradeTeclado) RosterWork.gradeTeclado.ativar(grade, { celula: '.escala-mil-celula', linha: '.escala-mil-pessoa-linha' });
+      /* rolarHoje: quando a quinzena não cabe na largura, abre com hoje à vista e os 2 dias antes à esquerda
+         (geral-periodo.js) */
+      var diaHoje = opcoes.rolarHoje ? cab.querySelector('.escala-mil-dia--hoje') : null;
+      if (diaHoje && RosterWork.periodo) {
+        var diasAntes = null;
+        var vizinho = diaHoje.previousElementSibling;
+        for (var k = 0; k < 2 && vizinho && vizinho.classList.contains('escala-mil-dia'); k++) {
+          diasAntes = vizinho;
+          vizinho = vizinho.previousElementSibling;
+        }
+        RosterWork.periodo.rolarAteHoje(wrap, diaHoje, diasAntes, { horizontal: true, fixo: cab.querySelector('.escala-mil-canto') });
+      }
     }, function () {
       if (document.contains(corpo) && req === reqSeq && (!opcoes.vigente || opcoes.vigente())) mostrarEstado(corpo, window.RosterWork.mensagens.escala.falhaCarregarMes);
     });

@@ -13,11 +13,6 @@
   flex-wrap: wrap;
 }
 
-.distribuicao-novo-modelo {
-  width: 100%;
-  justify-content: center;
-}
-
 /* linha de um modelo (casca visual em geral-lista; sem linha, a faixa agrupa) */
 .distribuicao-modelo {
   display: flex;
@@ -111,7 +106,7 @@
 .distribuicao-estado {
   padding: 24px 16px;
   text-align: center;
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   color: var(--texto-fraco);
 }
 
@@ -131,7 +126,7 @@
   background: var(--fundo-superficie);
   border-bottom: 1px solid var(--borda);
   cursor: pointer;
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   font-weight: 600;
   color: var(--texto-forte);
   position: sticky;
@@ -231,7 +226,7 @@
   align-items: center;
   gap: 4px;
   max-width: 100%;
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   font-weight: 600;
   color: var(--texto-forte);
   border-radius: var(--raio-pequeno);
@@ -552,7 +547,7 @@
   transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 .distribuicao-nm-btn:hover { background: var(--fundo-medio); border-color: var(--borda-forte); }
-.distribuicao-nm-valor { min-width: 16px; text-align: center; font-size: 13px; color: var(--texto-forte); }
+.distribuicao-nm-valor { min-width: 16px; text-align: center; font-size: var(--fonte-padrao); color: var(--texto-forte); }
 
 
 /* ---- seletor de período (subcabeçalho da aba Modelos): a lista de períodos ----

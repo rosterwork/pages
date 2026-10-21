@@ -76,3 +76,13 @@
 .termos-item strong {
   color: var(--texto-forte);
 }
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   ============================================================ */
+@media (max-width: 767px) {
+  /* a altura da tela visível: no celular o 100vh conta a área embaixo da barra do navegador */
+  html[data-celular] .termos-fundo {
+    min-height: 100%;
+  }
+}

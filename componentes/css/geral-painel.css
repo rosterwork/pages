@@ -323,6 +323,17 @@
     min-height: var(--botao-altura);
   }
 
+  /* barra do painel: como o rodapé, os botões dividem a largura e o que não cabe desce de linha */
+  html[data-celular] .painel-subcabecalho {
+    flex-wrap: wrap;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  html[data-celular] .painel-subcabecalho > .botao:not(.botao--texto):not(.botao--icone):not(.botao--quadrado) {
+    flex: 1 1 auto;
+  }
+
   /* rodapé: os botões dividem a largura; os que não cabem lado a lado descem de linha */
   html[data-celular] .painel-rodape {
     flex-wrap: wrap;

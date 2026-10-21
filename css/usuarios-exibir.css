@@ -17,7 +17,7 @@
   border: none;
   border-radius: var(--raio-pequeno);
   background: none;
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   color: var(--texto);
   text-align: left;
   cursor: pointer;
@@ -42,4 +42,14 @@
 
 .exibir-opcao--ativo .exibir-check {
   visibility: visible;
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   As opções na altura do toque, como as linhas dos outros menus.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .exibir-opcao {
+    min-height: var(--toque-altura-celular);
+  }
 }

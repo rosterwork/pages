@@ -89,7 +89,7 @@
   min-width: 20px;
   min-height: 20px;
   border-radius: 50%;
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   font-weight: 700;
   color: var(--texto-forte);
 }

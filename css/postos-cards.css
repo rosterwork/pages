@@ -12,8 +12,8 @@
   max-width: none;
 }
 
-/* fileira de cards (e o botão "+" do admin como último item): quebra linha e
-   os itens ficam colados no topo. Cards de largura fixa para o "+" encostar */
+/* fileira de cards (e o grupo Administração do admin como último item): quebra linha e
+   os itens ficam colados no topo. Cards de largura fixa para o grupo encostar */
 .postos-cards {
   display: flex;
   flex-wrap: wrap;
@@ -139,25 +139,12 @@
   border-color: var(--borda-forte);
 }
 
-/* botão "+" como último item da fileira (só admin): 42×42, encostado no
-   último card (como mais um), mesma aparência do card */
-.posto-adicionar {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 42px;
-  min-height: 42px;
-  border: 1px solid var(--borda);
-  border-radius: var(--raio-medio);
-  background-color: var(--fundo-superficie);
-  box-shadow: var(--sombra-bloco);
-  cursor: pointer;
-  color: var(--texto-suave);
-  transition: border-color 0.15s ease, color 0.15s ease;
-}
-
-.posto-adicionar:hover {
-  border-color: var(--borda-forte);
-  color: var(--texto-forte);
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   ============================================================ */
+@media (max-width: 767px) {
+  /* um card por linha, na largura do bloco; o grupo Administração desce para a linha de baixo */
+  html[data-celular] .posto-cartao {
+    width: 100%;
+  }
 }

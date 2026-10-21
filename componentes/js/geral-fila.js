@@ -183,11 +183,12 @@
       aberto = p;
       ultimo = Math.max(indice, 0);
       marcar();
-      var admin = RosterWork.sessao.ehAdmin();
+      var admin = RosterWork.sessao.temPapel('pelotao');   // cada painel ainda confere a área do pedido
       var ctx = {
         cpf: RosterWork.sessao.cpf(),
         ehAdmin: admin,
         admin: admin,
+        decidir: !p.minha,   // a lista "para aprovar" já vem só com o que este admin pode decidir (o banco filtra)
         posicao: { n: indice + 1, total: pedidos.length },
         aoMudar: depoisDeDecidir,
         aoFechar: function () {

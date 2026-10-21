@@ -128,3 +128,15 @@
 .dropdown-item--perigo:hover {
   background-color: var(--erro-fundo);
 }
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   A linha do menu fica com a altura do dedo: sem moldura, a altura
+   dela já é a área de toque. Os menus de mês e ano do calendário
+   ficam como estão.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .dropdown-menu:not(.calendario-menu) .dropdown-item {
+    min-height: var(--toque-altura-celular);
+  }
+}

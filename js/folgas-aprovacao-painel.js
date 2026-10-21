@@ -120,7 +120,8 @@
     var rodape = RW.painel.rodape(); if (!rodape) return;
     rodape.textContent = '';
     btnAprovar = null;
-    if (!ctx.admin) { rodape.classList.add('oculto'); return; }   // só o admin decide (inclusive a própria folga)
+    /* decide o admin do militar (inclusive a própria folga); o banco confere de novo */
+    if (!(ctx.admin && RosterWork.sessao.podeAdministrar('pelotao', sol.lotacao_atual))) { rodape.classList.add('oculto'); return; }
     var tpl = document.getElementById('tpl-decisao-acoes');
     if (!tpl) return;
     var frag = tpl.content.cloneNode(true);   /* fragmento inteiro (dois botões irmãos), não firstElementChild */

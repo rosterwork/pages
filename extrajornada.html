@@ -33,9 +33,12 @@
       <button type="button" class="botao botao--icone" id="extra-periodo-proximo" aria-label="Próximo mês">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
       </button>
+      <!-- só quando o mês da tela não é o atual: volta ao mês atual (extrajornada.js) -->
+      <button type="button" class="botao geral-periodo-hoje oculto" id="extra-periodo-hoje">Hoje</button>
     </div>
 
-    <!-- modo da grade (Agenda = dias × unidades · Calendário = mês): só na aba Distribuição -->
+    <!-- modo da grade (Agenda = dias × unidades · Calendário = mês): um seletor só para as abas Calendário e
+         Distribuição, como o mês (o orquestrador é o dono) -->
     <div class="abas abas--seletor oculto" id="extra-escala-modos">
       <button type="button" class="aba aba--ativa" data-modo="agenda">Agenda</button>
       <button type="button" class="aba" data-modo="calendario">Calendário</button>
@@ -110,14 +113,19 @@
       <div class="extra-escala-cal" id="extra-cal-grade" data-painel-secao="extra"></div>
     </div>
 
-    <!-- Distribuição (admin): A escalar (esquerda) + grade de mês (área principal) -->
-    <div class="geral-layout-lateral oculto" data-aba-painel="montagem">
+    <!-- Distribuição (admin): A escalar (esquerda) + grade de mês (área principal). No celular, o A escalar
+         fica em cima da grade, recolhido: a seta abre a lista -->
+    <div class="geral-layout-lateral extra-montagem oculto" data-aba-painel="montagem">
 
       <!-- painel esquerdo: quem tem cota e quanto falta colocar; clicar pinta a grade pela preferência -->
-      <aside class="geral-painel-esquerdo">
+      <aside class="geral-painel-esquerdo extra-escalar" id="extra-escalar">
         <div class="geral-painel-esquerdo-cabecalho">
           <span class="rotulo-secao">A escalar</span>
           <span class="extra-escalar-faltando" id="extra-escalar-faltando"></span>
+          <!-- só no celular: abre e fecha a lista -->
+          <button type="button" class="botao botao--icone extra-escalar-alternar" id="extra-escalar-alternar" aria-expanded="false" aria-controls="extra-escalar-lista" aria-label="Lista A escalar">
+            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+          </button>
         </div>
         <div class="geral-painel-esquerdo-lista" id="extra-escalar-lista"></div>
         <p class="extra-escalar-nota">Só aparece quem tem o termo recebido e cota concedida. A cota se reparte na aba Voluntários.</p>
@@ -125,10 +133,11 @@
 
       <!-- área principal: grade de mês (dias × unidades); clicar na célula abre o painel do dia, onde a extra se edita -->
       <section class="geral-corpo-lateral">
-        <!-- quem está sendo escalado pelo A escalar: as cotas dele e o Soltar (some sem ninguém escolhido) -->
+        <!-- quem está sendo escalado pelo A escalar: as cotas dele e o Soltar (some sem ninguém escolhido); no celular,
+             sem a ajuda (a Legenda explica as cores), para sobrar tela para a grade -->
         <div class="nota extra-pincel oculto" id="extra-pincel">
           <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-extrajornada.svg#icone-extrajornada"/></svg>
-          <span class="nota-texto"><span class="nota-titulo" id="extra-pincel-titulo"></span> Clique nos horários dele nos dias que quiser. Verde: quer o dia. Vermelho: não pode. Dia apagado: ocupado.</span>
+          <span class="nota-texto"><span class="nota-titulo" id="extra-pincel-titulo"></span><span class="extra-pincel-ajuda"> Clique nos horários dele nos dias que quiser. Verde: quer o dia. Vermelho: não pode. Dia apagado: ocupado.</span></span>
           <span class="espacador-flex"></span>
           <button type="button" class="botao" id="extra-pincel-soltar">Soltar</button>
         </div>
@@ -184,7 +193,17 @@
           <strong class="extra-vol-numero-valor" id="extra-vol-na-escala"></strong>
         </span>
         <span class="espacador-flex"></span>
-        <button type="button" class="botao extra-vol-so-admin" id="extra-vol-sugestao">Usar a sugestão</button>
+        <!-- grupo Administração (só admin) -->
+        <div class="dropdown acoes-admin oculto" id="extra-vol-admin">
+          <button type="button" class="botao acoes-admin-gatilho">
+            <span>Administração</span>
+            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+          </button>
+          <div class="dropdown-menu acoes-admin-menu">
+            <span class="rotulo-secao acoes-admin-rotulo">Administração</span>
+            <button type="button" class="botao" id="extra-vol-sugestao">Usar a sugestão</button>
+          </div>
+        </div>
         <span class="extra-vol-leitura extra-vol-so-comum">Só leitura. Quem reparte as cotas é o administrador.</span>
       </div>
       <!-- desde quando a porcentagem de atendimento é contada -->
@@ -515,10 +534,12 @@
       <span class="selo selo--alerta extra-vol-pendente oculto">Termo pendente</span>
       <span class="selo extra-vol-novo oculto">Novo</span>
     </span>
-    <span class="extra-vol-pediu"></span>
-    <span class="extra-vol-taxa"></span>
-    <span class="extra-vol-sugerido"></span>
+    <!-- os números: no celular, sem o cabeçalho das colunas, cada um vai com o nome dele (.extra-vol-rotulo) -->
+    <span class="extra-vol-par"><span class="extra-vol-rotulo">Pediu</span><span class="extra-vol-pediu"></span></span>
+    <span class="extra-vol-par"><span class="extra-vol-rotulo">Atendimento</span><span class="extra-vol-taxa"></span></span>
+    <span class="extra-vol-par"><span class="extra-vol-rotulo">Sugerido</span><span class="extra-vol-sugerido"></span></span>
     <div class="extra-vol-concedido">
+      <span class="extra-vol-rotulo">Concedido</span>
       <div class="dropdown extra-vol-conc">
         <button type="button" class="campo-entrada campo-selecao campo-entrada--pequeno extra-vol-conc-gatilho" aria-label="Concedido">
           <span class="campo-selecao-texto extra-vol-conc-texto"></span>
@@ -528,7 +549,7 @@
       </div>
       <span class="extra-vol-conc-leitura oculto"></span>
     </div>
-    <span class="extra-vol-na-escala"></span>
+    <span class="extra-vol-par"><span class="extra-vol-rotulo">Na escala</span><span class="extra-vol-na-escala"></span></span>
   </div>
 </template>
 

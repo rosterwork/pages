@@ -30,7 +30,7 @@
   min-width: 0;
 }
 .folga-linha-titulo {
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   color: var(--texto);
 }
 .folga-linha-meta {
@@ -48,7 +48,7 @@
 .folga-vazio {
   padding: 32px 16px;
   text-align: center;
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   color: var(--texto-suave);
 }
 

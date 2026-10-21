@@ -122,14 +122,13 @@
   function montarAvisos(container, avisos) {
     if (!avisos.length) { vazio(container, RW.mensagens.avisos.semComunicados); return; }
     container.textContent = '';
-    var admin = !!(RW.inicioAviso && RW.inicioAviso.ehAdmin && RW.inicioAviso.ehAdmin());
     avisos.forEach(function (a) {
       var el = RosterWork.tpl('tpl-inicio-aviso');
       if (!el) return;
       el.querySelector('.inicio-aviso-titulo').textContent = a.titulo || 'Comunicado';
       el.querySelector('.inicio-aviso-msg').textContent = a.mensagem || '';
       var remover = el.querySelector('.inicio-aviso-remover');
-      if (remover && admin && a.aviso_id) {
+      if (remover && RW.inicioAviso && RW.inicioAviso.podeDesativar(a)) {
         remover.classList.remove('oculto');
         remover.addEventListener('click', function () { RW.inicioAviso.desativar(a.aviso_id, carregarAvisos); });
       }

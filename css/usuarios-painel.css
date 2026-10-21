@@ -64,7 +64,7 @@
   align-items: baseline;
   gap: 4px;
   min-width: 0;
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   font-weight: 500;
   color: var(--texto-forte);
   overflow-wrap: anywhere;
@@ -118,7 +118,17 @@
 
 /* Promover: a hierarquia que o sistema calcula */
 .ficha-promovido {
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   font-weight: 600;
   color: var(--texto-forte);
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   O título do bloco que recolhe (o botão inteiro) na altura do toque.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .ficha-bloco-cab--recolhivel {
+    min-height: var(--toque-altura-celular);
+  }
 }

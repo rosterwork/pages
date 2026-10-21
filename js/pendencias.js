@@ -178,7 +178,7 @@
 
   function iniciar(el) {
     conteudo = el;
-    admin = RosterWork.sessao.ehAdmin();
+    admin = RosterWork.sessao.temPapel('pelotao');   // a aba Administração traz só o que este admin pode decidir (o banco filtra)
     abaAtual = 'paramim';
     filtro = 'todos';
     var m = msg();

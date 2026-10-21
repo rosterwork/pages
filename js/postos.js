@@ -36,12 +36,12 @@
 
   /* ---------- cards ---------- */
 
-  /* monta os cards de instalação (+ o botão "+", se admin) dentro de uma unidade marcada.
-     Unidade sem instalações: o admin ainda vê o "+" (para cadastrar a primeira);
-     o usuário comum vê a mensagem de vazio. Os postos são da companhia: admin aqui é
-     o de companhia (ou o geral) cuja área tem esta unidade; os demais só consultam. */
+  /* monta os cards de instalação (+ o grupo Administração, se admin) dentro de uma unidade marcada.
+     Unidade sem instalações: o admin ainda vê o grupo (para cadastrar a primeira);
+     o usuário comum vê a mensagem de vazio. Admin aqui é quem tem esta unidade na área
+     do papel; os demais só consultam. */
   function renderConteudo(container, unidade, instalacoes) {
-    var admin = RosterWork.sessao.podeAdministrar('companhia', unidade.unidade_id);
+    var admin = RosterWork.sessao.podeAdministrar('pelotao', unidade.unidade_id);
     if ((!instalacoes || instalacoes.length === 0) && !admin) {
       var tplVazio = document.getElementById('tpl-postos-vazio');
       if (tplVazio) container.appendChild(tplVazio.content.cloneNode(true));
@@ -77,15 +77,16 @@
       }
       grade.appendChild(card);
     });
-    /* o botão "+" (só admin) é o último item da fileira — encostado no último card */
+    /* o grupo Administração (só admin) é o último item da fileira, com o Adicionar instalação;
+       no celular o grupo é um menu: fecha antes de abrir o painel */
     if (admin) {
-      var tplBtn = document.getElementById('tpl-posto-adicionar');
-      if (tplBtn) {
-        var btn = tplBtn.content.cloneNode(true).firstElementChild;
-        btn.addEventListener('click', function () {
+      var grupo = RosterWork.tpl('tpl-posto-adicionar');
+      if (grupo) {
+        grupo.querySelector('.acoes-admin-menu .botao').addEventListener('click', function () {
+          if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
           if (window.RosterWork.postosPainel) window.RosterWork.postosPainel.abrirNovo(unidade);
         });
-        grade.appendChild(btn);
+        grade.appendChild(grupo);
       }
     }
     container.appendChild(grade);

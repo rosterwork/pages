@@ -720,8 +720,8 @@
     if (grupo.linhas.children.length) caixa.appendChild(grupo.el);
   }
 
-  /* o título do posto: o admin de companhia tem o Editar posto ao lado (o efetivo e, na viatura, a troca de
-     prefixo e CNH; os postos são da companhia); na troca de viatura com data, embaixo vem "No lugar da ... até ..." */
+  /* o título do posto: quem administra a unidade tem o Editar posto ao lado (o efetivo e, na viatura, a troca
+     de prefixo e CNH); na troca de viatura com data, embaixo vem "No lugar da ... até ..." */
   function montarTituloPosto(caixa, posto) {
     var rotulo = caixa.querySelector('.rotulo-secao');
     if (ctx.adminPosto && !ctx.comparar && !ctx.dadosProntos && RosterWork.escalasPainelPosto && rotulo) {
@@ -915,8 +915,8 @@
 
   /* ---------- ciclo de vida ---------- */
 
-  /* opcoes = { admin, adminPosto, dados, semAvisos }: o admin edita o dia; adminPosto (o de companhia)
-     tem o Editar posto; os outros só leem. dados = o dia já lido (não busca no banco); semAvisos = sem a
+  /* opcoes = { admin, adminPosto, dados, semAvisos }: o admin edita o dia; adminPosto (quem administra a
+     unidade) tem o Editar posto; os outros só leem. dados = o dia já lido (não busca no banco); semAvisos = sem a
      lista de avisos do topo (a página tem a sua). Sem rodape, o rodapé não é usado */
   function montar(corpo, rodape, unidadeId, iso, opcoes) {
     opcoes = opcoes || {};

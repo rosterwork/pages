@@ -46,7 +46,6 @@
   function montarComunicados(lista, avisos, recarregar) {
     if (!avisos.length) { vazio(lista, RW.mensagens.avisos.semComunicados); return; }
     lista.textContent = '';
-    var admin = RosterWork.sessao.ehAdmin();
     avisos.forEach(function (a) {
       var el = RosterWork.tpl('tpl-aviso-cartao');
       if (!el) return;
@@ -54,7 +53,7 @@
       el.querySelector('.aviso-cartao-msg').textContent = a.mensagem || '';
       el.querySelector('.aviso-cartao-meta').textContent = metaTexto(a);
       var remover = el.querySelector('.aviso-cartao-remover');
-      if (remover && admin && a.aviso_id) {
+      if (remover && RW.inicioAviso && RW.inicioAviso.podeDesativar(a)) {
         remover.classList.remove('oculto');
         remover.addEventListener('click', function () { RW.inicioAviso.desativar(a.aviso_id, recarregar, 'Avisos'); });
       }
@@ -110,8 +109,9 @@
     /* o grupo Administração (Novo comunicado) só para o admin, em todas as abas;
        no celular é um menu (fecha antes de abrir o painel) */
     var grupoAdmin = conteudo.querySelector('.acoes-admin');
-    if (grupoAdmin) grupoAdmin.classList.toggle('oculto', !RosterWork.sessao.ehAdmin());
-    if (btnNovo && RosterWork.sessao.ehAdmin()) {
+    var publica = !!(RW.inicioAviso && RW.inicioAviso.ehAdmin());   // qualquer papel publica para a própria área
+    if (grupoAdmin) grupoAdmin.classList.toggle('oculto', !publica);
+    if (btnNovo && publica) {
       btnNovo.addEventListener('click', function () {
         if (RW.fecharDropdowns) RW.fecharDropdowns();
         RW.inicioAviso.abrirNovo(carregarComunicados, 'Avisos');

@@ -108,7 +108,7 @@
   min-width: 24px;
   min-height: 24px;
   border-radius: 50%;
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   font-weight: 700;
   color: var(--texto-forte);
 }

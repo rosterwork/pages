@@ -84,7 +84,7 @@
 }
 
 .perfil-dado-valor {
-  font-size: 13px;
+  font-size: var(--fonte-padrao);
   font-weight: 500;
   color: var(--texto-forte);
   overflow-wrap: break-word;
@@ -134,4 +134,57 @@
   align-items: center;
   gap: 8px;
   max-width: 400px;
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   O cartão fica em pé, a grade de leitura passa a duas colunas
+   (o dado comprido ocupa a linha toda) e, no rodapé, a contagem
+   sobe para uma linha só e os botões dividem a largura.
+   ============================================================ */
+@media (max-width: 767px) {
+  /* graduação e nome em cima (o nome quebra), a lotação e o papel embaixo */
+  html[data-celular] .perfil-cartao {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  html[data-celular] .perfil-cartao-pessoa {
+    flex-wrap: wrap;
+  }
+
+  html[data-celular] .perfil-cartao .espacador-flex {
+    display: none;
+  }
+
+  html[data-celular] .perfil-cartao .selo {
+    margin-top: 4px;
+  }
+
+  html[data-celular] .perfil-grade {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* nome completo, e-mail e termos: textos compridos na linha toda */
+  html[data-celular] .perfil-dado--largo {
+    grid-column: 1 / -1;
+  }
+
+  html[data-celular] .perfil-acoes {
+    flex-wrap: wrap;
+  }
+
+  html[data-celular] .perfil-acoes .campo-ajuda {
+    flex-basis: 100%;
+  }
+
+  html[data-celular] .perfil-acoes .campo-ajuda:empty,
+  html[data-celular] .perfil-acoes .espacador-flex {
+    display: none;
+  }
+
+  html[data-celular] .perfil-acoes .botao {
+    flex: 1 1 0;
+  }
 }

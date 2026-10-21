@@ -89,15 +89,19 @@
     var at = el.modos && el.modos.querySelector('.aba--ativa');
     return (at && at.getAttribute('data-modo')) || 'agenda';
   }
-  function depoisDoRender() { aplicarEscala(escalaPorUnidade()); aplicarBuscaGrade(); pintarSelecionado(); }
+  /* depois de montar e antes de pintar: no celular, uma unidade por tela (a faixa); a escala das barras, a busca e a pintura */
+  function depoisDoRender(wrap) { RW.extrajornadaGrade.aplicar(wrap); aplicarEscala(escalaPorUnidade()); aplicarBuscaGrade(); pintarSelecionado(); }
+  /* as duas grades abrem roladas em hoje; no celular, a faixa de unidades acima da grade */
   function renderGrade() {
+    RW.extrajornadaGrade.faixa(colunasSelecionadas());
     if (subModoAtual() === 'calendario') { renderGradeCalendario(); return; }
     if (!el.cal || !RW.escalasMes) return;
     coberturas = {}; ensaio = {}; escalaAplicada = {};
     RW.escalasMes.renderizar(el.cal, { colunas: colunasSelecionadas(), dataRef: comp, aoCelula: sobreporCelula, semExtra: true,
-      aoTerminar: depoisDoRender });
+      rolarHoje: true, aoTerminar: depoisDoRender });
   }
-  function aplicarSubModo() { renderGrade(); analisarDiasComExtra(); }
+  /* o seletor Agenda | Calendário (do orquestrador) mudou */
+  function aplicarSubModo() { if (!ativa) return; renderGrade(); analisarDiasComExtra(); }
   function mostrarEstadoCal(texto) {
     if (!el.cal) return;
     el.cal.textContent = '';
@@ -138,9 +142,10 @@
           celulaDia.appendChild(bloco);
         });
       } });
-      depoisDoRender();
       var wrap = el.cal.querySelector('.geral-calendario-mes');
+      depoisDoRender(wrap);
       if (wrap) RW.escalasCelula.ativarGraficos(wrap);
+      RW.extrajornadaGrade.abrirEmHoje(wrap);
     }, function () { if (el.cal && el.cal.isConnected && req === calSeq) mostrarEstadoCal(RW.mensagens.escala.falhaCarregarMes); });
   }
 
@@ -272,7 +277,7 @@
 
   /* ---------- ensaio no motor real, por dia, com o rascunho do dia ---------- */
   function analisarDiaEnsaio(isoDia) {
-    if (!RosterWork.sessao.temPapel('companhia') || !RW.extrajornadaDados) return;   // o ensaio é do admin de companhia
+    if (!RosterWork.sessao.temPapel('pelotao') || !RW.extrajornadaDados) return;   // o ensaio é do admin
     if (timersEnsaio[isoDia]) clearTimeout(timersEnsaio[isoDia]);
     timersEnsaio[isoDia] = setTimeout(function () {
       delete timersEnsaio[isoDia];
@@ -335,8 +340,7 @@
     el.cal = cont.querySelector('#extra-escala-cal');   // o clique na célula abre o painel do dia (escalas-painel.js)
     el.busca = cont.querySelector('#extra-busca');
     if (el.busca && RW.busca) buscaCtrl = RW.busca.criar({ caixa: el.busca, aoBuscar: aplicarBusca });
-    el.modos = cont.querySelector('#extra-escala-modos');
-    if (el.modos && RW.abas && !el.modos.dataset.ligado) { RW.abas.ligar(el.modos, aplicarSubModo); el.modos.dataset.ligado = '1'; }
+    el.modos = cont.querySelector('#extra-escala-modos');   // o seletor Agenda | Calendário (o orquestrador liga e mostra)
     /* ouvintes de window ligados uma vez (o fragmento remonta a cada navegação; eles leem o estado atual) */
     if (ouvintesLigados) return;
     ouvintesLigados = true;
@@ -361,7 +365,6 @@
   function ativar() {
     ativa = true;
     if (el.busca) el.busca.classList.remove('oculto');
-    if (el.modos) el.modos.classList.remove('oculto');
     var alvo = RW.extrajornadaMes ? RW.extrajornadaMes.obter() : comp;
     if (!carregado) { carregado = true; comp = alvo; carregar(); }
     else if (iso(alvo) !== iso(comp)) renderMes();
@@ -370,7 +373,6 @@
   function desativar() {
     ativa = false;
     if (el.busca) el.busca.classList.add('oculto');
-    if (el.modos) el.modos.classList.add('oculto');
     if (buscaCtrl) buscaCtrl.limpar();
     if (RW.escalasMes && el.cal) RW.escalasMes.limpar(el.cal);
   }
@@ -380,5 +382,5 @@
 
   RW.extrajornadaEscala = { montar: montar, ativar: ativar, desativar: desativar, recarregar: recarregar,
     contextoNome: contextoNome, estaSujo: estaSujo, descartar: descartar, renderMes: renderMes,
-    nomeUnidade: nomeUnidade };
+    nomeUnidade: nomeUnidade, aoMudarModo: aplicarSubModo };
 })();

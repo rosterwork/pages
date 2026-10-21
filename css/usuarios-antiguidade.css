@@ -44,3 +44,26 @@
   font-size: 12px;
   color: var(--texto-suave);
 }
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   As linhas e os títulos dos postos na altura do toque; as setas
+   no tamanho dos botões do celular (a folga do .botao leva o toque
+   a 44px), afastadas para as folgas não se encostarem.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .antiguidade-linha,
+  html[data-celular] .antiguidade-posto-titulo {
+    min-height: var(--toque-altura-celular);
+  }
+
+  html[data-celular] .antiguidade-setas {
+    gap: 8px;
+    margin: 0;
+  }
+
+  html[data-celular] .antiguidade-setas .botao {
+    min-width: var(--botao-altura);
+    min-height: var(--botao-altura);
+  }
+}

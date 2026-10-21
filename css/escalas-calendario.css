@@ -66,3 +66,16 @@
 .escala-calendario-unidade .escala-mes-celula--busca {
   outline: none;
 }
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   No Mês › Calendário com mais de uma unidade, cada dia mostra só a
+   unidade escolhida na faixa de unidades (os blocos das outras somem
+   pelo geral-faixa-unidades.css) e o nome no bloco sai (a faixa já
+   mostra o nome).
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .faixa-unidades-calendario .escala-calendario-unidade-nome {
+    display: none;
+  }
+}
