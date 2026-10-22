@@ -128,6 +128,7 @@
           <button type="button" class="lista-item lista-item--clicavel guia-item" data-secao="seletor">Seletor de unidades</button>
           <button type="button" class="lista-item lista-item--clicavel guia-item" data-secao="data">Data e horário</button>
           <button type="button" class="lista-item lista-item--clicavel guia-item" data-secao="dica">Dica</button>
+          <button type="button" class="lista-item lista-item--clicavel guia-item" data-secao="ajuda">Ajuda e passo a passo</button>
           <button type="button" class="lista-item lista-item--clicavel guia-item" data-secao="cabecalho">Cabeçalho da página</button>
           <button type="button" class="lista-item lista-item--clicavel guia-item" data-secao="barra">Barra de controles</button>
           <button type="button" class="lista-item lista-item--clicavel guia-item" data-secao="painel">Painel</button>
@@ -1328,10 +1329,50 @@
             </div>
           </section>
 
+          <!-- ========== AJUDA E PASSO A PASSO ========== -->
+          <section class="guia-secao oculto" data-secao="ajuda">
+            <h2 class="guia-titulo">Ajuda e passo a passo</h2>
+            <p class="guia-texto">O botão ? no fim da linha do título abre a lista dos passo a passo da tela e o link do manual. O passo a passo escurece a tela em volta do campo e explica num balão escuro.</p>
+            <div class="guia-palco guia-palco--vitrine">
+              <div class="dropdown pagina-ajuda">
+                <button type="button" class="botao botao--icone" aria-label="Ajuda desta tela" data-dica="Ajuda"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-ajuda.svg#icone-ajuda"/></svg></button>
+              </div>
+              <div class="dropdown-menu guia-menu-parado pagina-ajuda-menu">
+                <div class="dropdown-titulo">Passo a passo desta tela</div>
+                <button type="button" class="dropdown-item"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-ajuda.svg#icone-ajuda"/></svg><span>Como pedir uma troca</span><span class="selo selo--sucesso guia-menu-visto">Visto</span></button>
+                <div class="dropdown-divisor"></div>
+                <button type="button" class="dropdown-item"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-manual.svg#icone-manual"/></svg><span>Ler sobre esta tela no manual</span></button>
+              </div>
+              <div class="guia-balao guia-balao-parado">
+                <div class="guia-balao-cabecalho"><span>Como pedir uma troca · 5 de 7</span><button type="button" class="botao botao--texto">Sair</button></div>
+                <div class="guia-balao-texto"><strong>Marcar dia</strong> já vem escolhido. Se ainda não combinaram o dia, escolha <strong>Pendência</strong>: você fica devendo as horas ao colega.</div>
+                <div class="guia-balao-rodape"><button type="button" class="botao">Próximo</button></div>
+              </div>
+              <div class="guia-balao guia-balao--dica guia-balao-parado">
+                <div class="guia-balao-texto">Dúvida? O passo a passo de cada tela fica aqui.</div>
+                <div class="guia-balao-rodape"><button type="button" class="botao">Entendi</button></div>
+              </div>
+            </div>
+            <div class="guia-bloco">
+              <span class="rotulo-secao">Regras completas</span>
+              <ul class="guia-regras">
+                <li><strong>O botão ?</strong> (<code>.pagina-ajuda</code>, um <code>.dropdown</code> com <code>botao--icone</code>, <code>aria-label="Ajuda desta tela"</code> e <code>data-dica="Ajuda"</code>) fica no fim da linha do título de toda página (menos Manual e Programador), com <code>data-manual</code> = o id da seção do manual. É o único botão da linha do título. Toda página nova ganha o seu.</li>
+                <li><strong>A lista</strong> (<code>.pagina-ajuda-menu</code>, 260px de largura mínima) é montada pelo JS ao abrir, com os moldes <code>#tpl-guia-menu</code> e <code>#tpl-guia-menu-item</code>: "Passo a passo desta tela", um item por guia (ícone do ?, o nome e o selo de sucesso "Visto" na direita, quando a pessoa já fez), o traço e "Ler sobre esta tela no manual" (ícone do manual). Página sem guia: só o link.</li>
+                <li><strong>O guia</strong> é escrito na própria página, num <code>&lt;template data-guia="id" data-titulo="Como …"&gt;</code> no fim do HTML, um <code>&lt;p&gt;</code> por passo, com o texto e os destaques em <code>&lt;strong&gt;</code>. Atributos do passo: <code>data-alvo</code> (seletores separados por vírgula), <code>data-anel="campo"</code> (envolve o campo inteiro, com o rótulo), <code>data-avanca</code> (<code>clique</code> · <code>preenchido</code> · <code>proximo</code> · <code>some</code>), <code>data-condicao</code> (o campo que precisa ter valor, ou o que precisa sair da tela) e <code>data-pular-se</code> (pula o passo quando o seletor existe). O <code>&lt;p data-fim&gt;</code> é o balão final.</li>
+                <li><strong>O destaque</strong> (<code>.guia-anel</code>): moldura de 2px <code>--texto-forte</code> (a cor do foco), raio médio, 4px de folga em volta do campo, e um contorno de 4000px na cor <code>--veu-modal</code>, que escurece o resto da tela. Não pega cliques: a pessoa usa a tela normalmente.</li>
+                <li><strong>O balão</strong> (<code>.guia-balao</code>): fundo <code>--fundo-contraste</code>, texto <code>--texto-invertido</code>, raio médio, respiro 12px, sombra de modal, a letra padrão da tela. No alto, o nome do guia e "N de M" (12px) e o Sair (botão de texto, sublinhado); embaixo, à direita, Próximo ou Concluir (botões comuns). <code>--dica</code> tem 240px.</li>
+                <li><strong>Onde o balão fica:</strong> no computador, 12px ao lado do campo (à direita; sem espaço, à esquerda; sem espaço nos lados, embaixo ou em cima), sempre dentro da tela. No celular, ocupa a largura (12px das bordas) e fica preso em cima ou embaixo, do lado oposto ao campo, para nunca cobrir o que se toca. O guia rola a área do campo até deixá-lo a 1/4 do alto.</li>
+                <li><strong>Camada 40</strong> (aviso e dica). Com menu, calendário ou modal aberto, o destaque e o balão somem até fecharem.</li>
+                <li>As posições vêm do JS nas propriedades <code>--guia-x</code>, <code>--guia-y</code>, <code>--guia-largura</code>, <code>--guia-altura</code>, <code>--guia-balao-x</code> e <code>--guia-balao-y</code> (dado da tela). Sem transição: o destaque pula de um campo para o outro.</li>
+                <li><strong>A dica da primeira vez</strong> (<code>#tpl-guia-dica</code>) aparece 6px abaixo do ?, alinhada pela direita, até a pessoa tocar em Entendi ou no próprio ?.</li>
+              </ul>
+            </div>
+          </section>
+
           <!-- ========== 19. CABEÇALHO DA PÁGINA ========== -->
           <section class="guia-secao oculto" data-secao="cabecalho">
             <h2 class="guia-titulo">Cabeçalho da página</h2>
-            <p class="guia-texto">O topo de cada página, dentro do bloco: o título (com a contagem ao lado, quando ajuda) e, embaixo, as abas. A linha do título não leva botões.</p>
+            <p class="guia-texto">O topo de cada página, dentro do bloco: o título (com a contagem ao lado, quando ajuda) e, embaixo, as abas. A linha do título leva um botão só: o ? da ajuda, no fim.</p>
             <div class="guia-pranchetas">
               <div class="guia-prancheta">
                 <span class="rotulo-secao">Computador</span>
@@ -1341,6 +1382,9 @@
                       <div class="pagina-titulos" data-cota="altura">
                         <h1>Usuários</h1>
                         <span class="pagina-titulo-contagem">61 militares</span>
+                      </div>
+                      <div class="dropdown pagina-ajuda">
+                        <button type="button" class="botao botao--icone" aria-label="Ajuda desta tela" data-dica="Ajuda"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-ajuda.svg#icone-ajuda"/></svg></button>
                       </div>
                       <div class="abas" data-cota="altura">
                         <button type="button" class="aba aba--ativa">Efetivo</button>
@@ -1358,6 +1402,9 @@
                       <div class="pagina-titulos" data-cota="altura">
                         <h1>Usuários</h1>
                         <span class="pagina-titulo-contagem">61 militares</span>
+                      </div>
+                      <div class="dropdown pagina-ajuda">
+                        <button type="button" class="botao botao--icone" aria-label="Ajuda desta tela" data-dica="Ajuda"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-ajuda.svg#icone-ajuda"/></svg></button>
                       </div>
                       <div class="abas" data-cota="altura">
                         <button type="button" class="aba aba--ativa">Efetivo</button>

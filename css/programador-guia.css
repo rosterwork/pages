@@ -190,6 +190,11 @@
   display: block;
 }
 
+/* o balão do passo a passo parado no palco (o de verdade fica fixo na tela) */
+.guia-balao-parado {
+  position: static;
+}
+
 /* um pedaço de página (cabeçalho, barra) dentro do palco; a margem da
    esquerda guarda o lugar dos números das medidas */
 .guia-pagina-exemplo {

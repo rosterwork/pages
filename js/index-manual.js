@@ -70,6 +70,28 @@
     if (ehAdmin) manual.setAttribute('data-perfil', 'admin');
     else manual.removeAttribute('data-perfil');
     ligarIndice(manual);
+    /* aberto pelo ? de uma tela (geral-guia): começa na parte daquela tela */
+    var secao = RosterWork.referenciaPedida ? RosterWork.referenciaPedida('manual') : null;
+    var alvo = secao ? document.getElementById(secao) : null;
+    if (alvo) irParaSecao(alvo, 20);
+  }
+
+  /* rola a área de leitura até a seção. O CSS da página chega depois do iniciar e as imagens de cima mudam
+     a altura enquanto carregam: confere de novo por uns 2 s, e para se a pessoa rolar por conta própria */
+  function irParaSecao(alvo, tentativas, esperado) {
+    var area = alvo.parentElement;
+    while (area && area !== document.body) {
+      var rolagem = getComputedStyle(area).overflowY;
+      if ((rolagem === 'auto' || rolagem === 'scroll') && area.scrollHeight > area.clientHeight + 1) break;
+      area = area.parentElement;
+    }
+    if (area && area !== document.body) {
+      if (esperado !== undefined && Math.abs(area.scrollTop - esperado) > 4) return;
+      var diferenca = alvo.getBoundingClientRect().top - area.getBoundingClientRect().top - 16;
+      if (Math.abs(diferenca) > 2) area.scrollTop += diferenca;
+      esperado = area.scrollTop;
+    }
+    if (tentativas > 0) setTimeout(function () { irParaSecao(alvo, tentativas - 1, esperado); }, 100);
   }
 
   /* o item "Manual" do menu do cabeçalho navega para a página */

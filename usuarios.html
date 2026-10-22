@@ -4,6 +4,13 @@
       <h1>Usuários</h1>
       <span class="pagina-titulo-contagem"></span>
     </div>
+    <!-- ajuda da tela: os passo a passo desta página e o manual (componente geral-guia) -->
+    <div class="dropdown pagina-ajuda" data-manual="usuarios">
+      <button type="button" class="botao botao--icone" aria-label="Ajuda desta tela" data-dica="Ajuda">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-ajuda.svg#icone-ajuda"/></svg>
+      </button>
+      <div class="dropdown-menu pagina-ajuda-menu"></div>
+    </div>
     <div class="abas" id="usuarios-abas">
       <button type="button" class="aba aba--ativa" data-aba="efetivo">Efetivo</button>
       <!-- a lista completa do efetivo com os afastamentos do ano de cada um (usuarios-afastamentos.js) -->

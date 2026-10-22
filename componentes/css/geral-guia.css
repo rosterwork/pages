@@ -1,0 +1,106 @@
+/* ============================================================
+   GUIA — a ajuda de cada tela (componente geral-guia)
+   O botão ? da linha do título (.pagina-ajuda, um .dropdown) abre a
+   lista dos passo a passo da página e o link do manual. No passo a
+   passo, a tela escurece em volta do campo do passo (.guia-anel: a
+   moldura clara e o contorno largo na cor do véu) e o balão explica
+   (.guia-balao--passo). A dica da primeira vez é o mesmo balão,
+   menor, apontando o ? (.guia-balao--dica). As posições vêm do JS,
+   nas propriedades --guia-* (dado da tela). Camada 40 (aviso e dica).
+   Moldes #tpl-guia-* (index.html).
+   ============================================================ */
+
+/* o ? fica no fim da linha do título; as abas descem para a linha delas */
+.pagina-ajuda {
+  margin-left: auto;
+}
+
+.pagina-ajuda-menu {
+  min-width: 260px;
+}
+
+/* o selo "Visto" encosta na direita do item */
+.guia-menu-visto {
+  margin-left: auto;
+}
+
+/* ---------- destaque do campo do passo ---------- */
+.guia-anel {
+  position: fixed;
+  z-index: 40;
+  left: var(--guia-x, 0px);
+  top: var(--guia-y, 0px);
+  width: var(--guia-largura, 0px);
+  min-height: var(--guia-altura, 0px);
+  border: 2px solid var(--texto-forte);   /* a cor do foco: escura no claro, clara no escuro */
+  border-radius: var(--raio-medio);
+  outline: 4000px solid var(--veu-modal);
+  pointer-events: none;
+}
+
+/* ---------- balão (o do passo e o da dica) ---------- */
+.guia-balao {
+  position: fixed;
+  z-index: 40;
+  left: var(--guia-balao-x, 0px);
+  top: var(--guia-balao-y, 0px);
+  width: 300px;
+  padding: 12px;
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-contraste);
+  color: var(--texto-invertido);
+  box-shadow: var(--sombra-modal);
+  font-size: var(--fonte-padrao);
+  line-height: 1.45;
+}
+
+.guia-balao--dica {
+  width: 240px;
+}
+
+.guia-balao-cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+  font-size: 12px;
+}
+
+.guia-balao-texto strong {
+  font-weight: 600;
+}
+
+.guia-balao-rodape {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+/* o Sair, sobre o escuro do balão */
+.guia-balao .botao--texto {
+  color: var(--texto-invertido);
+  text-decoration: underline;
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   O balão do passo ocupa a largura e fica preso em cima ou embaixo,
+   do lado oposto ao campo, para nunca cobrir o que a pessoa toca.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .guia-balao--passo {
+    left: 12px;
+    right: 12px;
+    width: auto;
+  }
+
+  html[data-celular] .guia-balao--cima {
+    top: 12px;
+  }
+
+  html[data-celular] .guia-balao--baixo {
+    top: auto;
+    bottom: 12px;
+  }
+}

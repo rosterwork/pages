@@ -1298,6 +1298,11 @@
       sairSemSalvar: 'Você tem alterações não salvas. Se sair agora, elas serão perdidas.'
     },
 
+    /* ajuda da tela (geral-guia): o passo em que a pessoa está no passo a passo */
+    guia: {
+      contador: function (passo, total) { return passo + ' de ' + total; }
+    },
+
     /* notificações no celular (Meu perfil › Preferências): a ajuda quando não dá para ligar */
     notificacoesCelular: {
       ajuda: {

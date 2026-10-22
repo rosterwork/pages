@@ -4,6 +4,8 @@
   <meta charset="utf-8" />
   <!-- política de segurança: o navegador só aceita código, estilo e dados do próprio site e do banco (REGRAS §3, item 11) -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://oadzjrekpuddagfydfzn.supabase.co; frame-src 'self' blob:; object-src 'self' blob:; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'" />
+  <!-- abre a conexão com o banco enquanto a página ainda carrega (a primeira consulta não espera por ela) -->
+  <link rel="preconnect" href="https://oadzjrekpuddagfydfzn.supabase.co" crossorigin />
   <meta name="viewport" content="width=1920" />
   <meta name="description" content="Roster Work — sistema de escala de serviço da corporação." />
   <link rel="icon" href="icones/logo-aba.svg" type="image/svg+xml" />
@@ -27,6 +29,7 @@
   <link rel="stylesheet" href="componentes/css/geral-flutuante.css" />
   <link rel="stylesheet" href="componentes/css/geral-dropdown.css" />
   <link rel="stylesheet" href="componentes/css/geral-dropdown-numeros.css" />
+  <link rel="stylesheet" href="componentes/css/geral-guia.css" />
   <link rel="stylesheet" href="componentes/css/geral-horario.css" />
   <link rel="stylesheet" href="componentes/css/geral-subtela.css" />
   <link rel="stylesheet" href="componentes/css/geral-nota.css" />
@@ -611,6 +614,7 @@
   <script src="componentes/js/geral-flutuante.js"></script>
   <script src="componentes/js/geral-dropdown.js"></script>
   <script src="componentes/js/geral-dropdown-numeros.js"></script>
+  <script src="componentes/js/geral-guia.js"></script>
   <script src="componentes/js/geral-horario.js"></script>
   <script src="componentes/js/geral-modal.js"></script>
   <script src="componentes/js/geral-aviso.js"></script>
@@ -1014,6 +1018,53 @@
 
   <template id="tpl-seletor-menu-item">
     <button type="button" class="dropdown-item"></button>
+  </template>
+
+  <!-- MOLDES: a ajuda da tela (componente geral-guia). A lista do ? (os passo a passo da página e o manual),
+       o destaque do campo, o balão do passo e a dica da primeira vez -->
+  <template id="tpl-guia-menu">
+    <div class="dropdown-titulo guia-menu-titulo">Passo a passo desta tela</div>
+    <div class="guia-menu-lista"></div>
+    <div class="dropdown-divisor guia-menu-divisor"></div>
+    <button type="button" class="dropdown-item guia-menu-manual">
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-manual.svg#icone-manual"/></svg>
+      <span>Ler sobre esta tela no manual</span>
+    </button>
+  </template>
+
+  <template id="tpl-guia-menu-item">
+    <button type="button" class="dropdown-item guia-menu-item">
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-ajuda.svg#icone-ajuda"/></svg>
+      <span class="guia-menu-nome"></span>
+      <span class="selo selo--sucesso guia-menu-visto oculto">Visto</span>
+    </button>
+  </template>
+
+  <template id="tpl-guia-anel">
+    <div class="guia-anel oculto" aria-hidden="true"></div>
+  </template>
+
+  <template id="tpl-guia-balao">
+    <div class="guia-balao oculto" role="status" aria-live="polite">
+      <div class="guia-balao-cabecalho">
+        <span><span class="guia-balao-titulo"></span><span class="guia-balao-separador"> · </span><span class="guia-balao-contador"></span></span>
+        <button type="button" class="botao botao--texto guia-balao-sair">Sair</button>
+      </div>
+      <div class="guia-balao-texto"></div>
+      <div class="guia-balao-rodape">
+        <button type="button" class="botao guia-balao-proximo oculto">Próximo</button>
+        <button type="button" class="botao guia-balao-concluir oculto">Concluir</button>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-guia-dica">
+    <div class="guia-balao guia-balao--dica oculto" role="status">
+      <div class="guia-balao-texto">Dúvida? O passo a passo de cada tela fica aqui.</div>
+      <div class="guia-balao-rodape">
+        <button type="button" class="botao guia-dica-entendi">Entendi</button>
+      </div>
+    </div>
   </template>
 
   <!-- MOLDES: calendário (componente compartilhado) -->

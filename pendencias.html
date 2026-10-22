@@ -4,6 +4,13 @@
       <h1>Pendências</h1>
       <span class="pagina-titulo-contagem" id="pendencias-contagem"></span>
     </div>
+    <!-- ajuda da tela: os passo a passo desta página e o manual (componente geral-guia) -->
+    <div class="dropdown pagina-ajuda" data-manual="pendencias">
+      <button type="button" class="botao botao--icone" aria-label="Ajuda desta tela" data-dica="Ajuda">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-ajuda.svg#icone-ajuda"/></svg>
+      </button>
+      <div class="dropdown-menu pagina-ajuda-menu"></div>
+    </div>
     <!-- as abas só aparecem para o administrador (o militar comum só tem "Para mim") -->
     <div class="abas oculto" id="pendencias-abas">
       <button type="button" class="aba aba--ativa" data-aba="paramim">

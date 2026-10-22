@@ -3,6 +3,13 @@
     <div class="pagina-titulos">
       <h1>Extrajornada</h1>
     </div>
+    <!-- ajuda da tela: os passo a passo desta página e o manual (componente geral-guia) -->
+    <div class="dropdown pagina-ajuda" data-manual="extrajornada">
+      <button type="button" class="botao botao--icone" aria-label="Ajuda desta tela" data-dica="Ajuda">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-ajuda.svg#icone-ajuda"/></svg>
+      </button>
+      <div class="dropdown-menu pagina-ajuda-menu"></div>
+    </div>
     <!-- abas: Calendário (todos) | Voluntários (todos veem; só o administrador edita) · Distribuição · Relatórios (só administrador).
          Sem as abas do administrador (militar comum), o traço entre os grupos some (extra-abas--comum) -->
     <div class="extra-abas" id="extrajornada-abas" data-abas-grupo>

@@ -3,6 +3,13 @@
     <div class="pagina-titulos">
       <h1>Trocas</h1>
     </div>
+    <!-- ajuda da tela: os passo a passo desta página e o manual (componente geral-guia) -->
+    <div class="dropdown pagina-ajuda" data-manual="trocas">
+      <button type="button" class="botao botao--icone" aria-label="Ajuda desta tela" data-dica="Ajuda">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-ajuda.svg#icone-ajuda"/></svg>
+      </button>
+      <div class="dropdown-menu pagina-ajuda-menu"></div>
+    </div>
     <div class="abas" id="trocas-abas">
       <button type="button" class="aba aba--ativa" data-aba="todas">Todas</button>
       <button type="button" class="aba" data-aba="minhas">Minhas</button>
@@ -387,4 +394,17 @@
     <span class="espacador-flex"></span>
     <span class="selo troca-item-situacao"></span>
   </button>
+</template>
+
+<!-- passo a passo do ? (componente geral-guia): cada <p> é um passo; data-alvo é o que fica destacado,
+     data-avanca diz como ele avança (clique · preenchido · proximo · some) e o data-fim é o balão final -->
+<template data-guia="trocas-pedir" data-titulo="Como pedir uma troca">
+  <p data-alvo="#btn-solicitar-troca" data-avanca="clique">Comece pelo botão <strong>Solicitar troca</strong>.</p>
+  <p data-alvo="#ts-parte" data-anel="campo" data-avanca="proximo">Se a troca já tem parte no eProtocolo, digite o número. Se ainda não tem, deixe em branco.</p>
+  <p data-alvo="#ts-data" data-anel="campo" data-avanca="preenchido">Escolha o dia que seu colega vai trabalhar no seu lugar.</p>
+  <p data-alvo="#ts-unidade, #ts-parceiro" data-anel="campo" data-condicao="#ts-parceiro" data-avanca="preenchido">Escolha a unidade e o colega que vai cobrir. Quem já está de serviço ou afastado aparece apagado.</p>
+  <p data-alvo="#ts-dev-toggle" data-anel="campo" data-avanca="proximo"><strong>Marcar dia</strong> já vem escolhido. Se ainda não combinaram o dia, escolha <strong>Pendência</strong>: você fica devendo as horas ao colega.</p>
+  <p data-alvo="#ts-dev-data" data-avanca="preenchido" data-pular-se="#ts-dev-toggle [data-dev='pendente'].aba--ativa">Escolha o dia que você vai trabalhar no lugar do seu colega.</p>
+  <p data-alvo=".painel-lateral--aberto [data-acao='solicitar']" data-avanca="some" data-condicao=".painel-lateral--aberto .troca-solicitar-form">Confira e envie pelo botão <strong>Solicitar troca</strong>.</p>
+  <p data-fim>Pronto. O colega recebe o pedido e aceita. Depois, o administrador aprova. Acompanhe na aba <strong>Minhas</strong>.</p>
 </template>

@@ -3,6 +3,13 @@
     <div class="pagina-titulos">
       <h1>Escala</h1>
     </div>
+    <!-- ajuda da tela: os passo a passo desta página e o manual (componente geral-guia) -->
+    <div class="dropdown pagina-ajuda" data-manual="escala">
+      <button type="button" class="botao botao--icone" aria-label="Ajuda desta tela" data-dica="Ajuda">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-ajuda.svg#icone-ajuda"/></svg>
+      </button>
+      <div class="dropdown-menu pagina-ajuda-menu"></div>
+    </div>
     <!-- modos: o Dia (a escala principal, impressa e exibida na passagem de serviço) num grupo próprio,
          à frente das outras visões; os dois grupos valem como uma escolha só (escalas.js),
          com um traço só (data-abas-grupo). No celular ficam só o Dia e o Mês (Agenda e Calendário):
