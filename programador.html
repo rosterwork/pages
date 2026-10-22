@@ -45,7 +45,7 @@
           <div class="dropdown" id="bugs-situacao-dropdown">
             <button type="button" class="seletor" id="bugs-situacao">
               <span class="seletor-texto" id="bugs-situacao-texto">Abertos</span>
-              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
             </button>
             <div class="dropdown-menu" id="bugs-situacao-menu">
               <div class="dropdown-titulo">Situação</div>
@@ -59,7 +59,7 @@
             <div class="dropdown" id="bugs-gravidade-dropdown">
               <button type="button" class="seletor" id="bugs-gravidade">
                 <span class="seletor-texto" id="bugs-gravidade-texto">Todas as gravidades</span>
-                <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+                <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
               </button>
               <div class="dropdown-menu" id="bugs-gravidade-menu">
                 <div class="dropdown-titulo">Gravidade</div>
@@ -72,7 +72,7 @@
             <div class="dropdown" id="bugs-periodo-dropdown">
               <button type="button" class="seletor" id="bugs-periodo">
                 <span class="seletor-texto" id="bugs-periodo-texto">Todo o período</span>
-                <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+                <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
               </button>
               <div class="dropdown-menu" id="bugs-periodo-menu">
                 <div class="dropdown-titulo">Aberto em</div>
@@ -566,7 +566,7 @@
             <div class="guia-bloco">
               <span class="rotulo-secao">Regras completas</span>
               <ul class="guia-regras">
-                <li><strong>Família única: Montserrat</strong> (pesos 400 a 800). Reserva: <code>'Segoe UI', sans-serif</code>. Auto-hospedada (arquivo variável <code>fontes/montserrat-latin.woff2</code>) pelo <code>@font-face</code> do <code>geral-tema.css</code>, na ordem local, Google (reserva) e sistema: privacidade e funciona sem internet, sem quebrar o teste em <code>file://</code> (aí cai para o Google). Nada de <code>&lt;link&gt;</code> do Google Fonts.</li>
+                <li><strong>Família única: Montserrat</strong> (pesos 400 a 800). Reserva: <code>'Segoe UI', sans-serif</code>. Auto-hospedada (arquivo variável <code>fontes/montserrat-latin.woff2</code>) pelo <code>@font-face</code> do <code>geral-tema.css</code>, na ordem local, Google (reserva) e sistema: privacidade e funciona sem internet, sem quebrar o teste em <code>file://</code> (aí cai para o Google). Nada de <code>&lt;link&gt;</code> do Google Fonts. O <code>index.html</code> e o <code>login.html</code> pedem a fonte junto com a página (<code>&lt;link rel="preload"&gt;</code>): ela chega antes do primeiro desenho, e a tela não é redesenhada na troca de letra; trocar a fonte muda o <code>@font-face</code> e essas duas linhas juntos.</li>
                 <li><strong>Entrelinha:</strong> 1.3 nos títulos e 1.45 no corpo de texto.</li>
                 <li><strong>Caixa alta</strong> só nos rótulos de seção pequenos (11px, peso 700, espaçamento de 0,5 a 1px) e na microetiqueta.</li>
                 <li><strong>Rótulo de seção</strong> (<code>.rotulo-secao</code>): separador visual dentro de formulários e painéis. Caixa alta, <code>var(--rotulo-secao-fonte)</code> (11px), peso 700, espaçamento <code>var(--rotulo-secao-espacamento)</code> (1px), cor <code>--texto-suave</code>. Rótulo em caixa alta reusa esta classe.</li>
@@ -698,11 +698,11 @@
             <h2 class="guia-titulo">Ícones e logotipo</h2>
             <p class="guia-texto">Ícone é sempre <strong>traço</strong>, nunca preenchido, e herda a cor do texto. A espessura do traço é um número só no tema (<code>--icone-traco</code>, hoje <span data-guia-valor="--icone-traco"></span>): mudar ali muda todos os ícones de uma vez. O logo é a exceção: preenchido e com regras próprias.</p>
             <div class="guia-palco guia-palco--vitrine">
-              <svg class="icone" width="12" height="12" aria-hidden="true" data-cota="largura"><use href="icones/icone-pesquisar.svg#icone-pesquisar"/></svg>
-              <svg class="icone" width="14" height="14" aria-hidden="true" data-cota="largura"><use href="icones/icone-pesquisar.svg#icone-pesquisar"/></svg>
-              <svg class="icone" width="16" height="16" aria-hidden="true" data-cota="largura"><use href="icones/icone-pesquisar.svg#icone-pesquisar"/></svg>
-              <svg class="icone" width="18" height="18" aria-hidden="true" data-cota="largura"><use href="icones/icone-pesquisar.svg#icone-pesquisar"/></svg>
-              <svg class="guia-logo" aria-label="Roster Work" viewBox="0 0 186.44 96.312"><use href="icones/icone-logo.svg#icone-logo"/></svg>
+              <svg class="icone" width="12" height="12" aria-hidden="true" data-cota="largura"><use href="icones/todos.svg#icone-pesquisar"/></svg>
+              <svg class="icone" width="14" height="14" aria-hidden="true" data-cota="largura"><use href="icones/todos.svg#icone-pesquisar"/></svg>
+              <svg class="icone" width="16" height="16" aria-hidden="true" data-cota="largura"><use href="icones/todos.svg#icone-pesquisar"/></svg>
+              <svg class="icone" width="18" height="18" aria-hidden="true" data-cota="largura"><use href="icones/todos.svg#icone-pesquisar"/></svg>
+              <svg class="guia-logo" aria-label="Roster Work" viewBox="0 0 186.44 96.312"><use href="icones/todos.svg#icone-logo"/></svg>
             </div>
             <table class="guia-tabela guia-tabela--larga">
               <thead><tr><th>Tamanho</th><th>Uso</th></tr></thead>
@@ -720,16 +720,16 @@
               <table class="guia-tabela guia-tabela--larga">
                 <thead><tr><th>Ícone</th><th>Arquivo</th><th>Significado (texto da Legenda)</th></tr></thead>
                 <tbody>
-                  <tr><td><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-origem-base.svg#icone-origem-base"/></svg></td><td><code>icone-origem-base</code></td><td>Entrada</td></tr>
-                  <tr><td><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-origem-sistema.svg#icone-origem-sistema"/></svg></td><td><code>icone-origem-sistema</code></td><td>Contínuo</td></tr>
-                  <tr><td><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-origem-saida.svg#icone-origem-saida"/></svg></td><td><code>icone-origem-saida</code></td><td>Saída</td></tr>
-                  <tr><td><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-origem-pontual.svg#icone-origem-pontual"/></svg></td><td><code>icone-origem-pontual</code></td><td>Pontual</td></tr>
-                  <tr><td><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-origem-troca.svg#icone-origem-troca"/></svg></td><td><code>icone-origem-troca</code></td><td>Troca</td></tr>
-                  <tr><td><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-extrajornada.svg#icone-extrajornada"/></svg></td><td><code>icone-extrajornada</code></td><td>Extrajornada</td></tr>
-                  <tr><td><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-cadeado.svg#icone-cadeado"/></svg></td><td><code>icone-cadeado</code></td><td>Função fixada (não sai no recálculo); soma a outra origem</td></tr>
-                  <tr><td><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-regra.svg#icone-regra"/></svg></td><td><code>icone-regra</code></td><td>Tem regra (exclusivo ou proibido)</td></tr>
-                  <tr><td><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-reforco.svg#icone-reforco"/></svg></td><td><code>icone-reforco</code></td><td>De outra unidade</td></tr>
-                  <tr><td><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-sucesso.svg#icone-sucesso"/></svg></td><td><code>icone-sucesso</code></td><td>confirmação: o aviso do tipo sucesso e as notas verdes da análise de impacto (<code>.nota--sucesso</code>)</td></tr>
+                  <tr><td><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-base"/></svg></td><td><code>icone-origem-base</code></td><td>Entrada</td></tr>
+                  <tr><td><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-sistema"/></svg></td><td><code>icone-origem-sistema</code></td><td>Contínuo</td></tr>
+                  <tr><td><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-saida"/></svg></td><td><code>icone-origem-saida</code></td><td>Saída</td></tr>
+                  <tr><td><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-pontual"/></svg></td><td><code>icone-origem-pontual</code></td><td>Pontual</td></tr>
+                  <tr><td><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-troca"/></svg></td><td><code>icone-origem-troca</code></td><td>Troca</td></tr>
+                  <tr><td><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-extrajornada"/></svg></td><td><code>icone-extrajornada</code></td><td>Extrajornada</td></tr>
+                  <tr><td><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-cadeado"/></svg></td><td><code>icone-cadeado</code></td><td>Função fixada (não sai no recálculo); soma a outra origem</td></tr>
+                  <tr><td><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-regra"/></svg></td><td><code>icone-regra</code></td><td>Tem regra (exclusivo ou proibido)</td></tr>
+                  <tr><td><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-reforco"/></svg></td><td><code>icone-reforco</code></td><td>De outra unidade</td></tr>
+                  <tr><td><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-sucesso"/></svg></td><td><code>icone-sucesso</code></td><td>confirmação: o aviso do tipo sucesso e as notas verdes da análise de impacto (<code>.nota--sucesso</code>)</td></tr>
                 </tbody>
               </table>
             </div>
@@ -737,12 +737,13 @@
               <span class="rotulo-secao">Regras completas</span>
               <ul class="guia-regras">
                 <li>Um arquivo por ícone: <code>icones/icone-nome.svg</code>, com um único <code>&lt;svg style="display:none"&gt;&lt;symbol id="icone-nome" viewBox="0 0 24 24"&gt;</code>. O <code>&lt;symbol&gt;</code> guarda só o desenho (os <code>&lt;path&gt;</code>), sem cor, traço ou preenchimento.</li>
-                <li>No HTML, sempre <code>&lt;svg class="icone"&gt;&lt;use href="icones/icone-nome.svg#icone-nome"/&gt;&lt;/svg&gt;</code>. A classe <code>.icone</code> é <strong>obrigatória</strong> (em <code>geral-base.css</code>): reúne <code>fill: none</code>, <code>stroke: currentColor</code>, pontas arredondadas e <code>stroke-width: var(--icone-traco)</code>. São propriedades herdadas, que atravessam o <code>&lt;use&gt;</code> e chegam ao desenho; ícone sem a classe sai sem traço.</li>
+                <li>No HTML, sempre <code>&lt;svg class="icone"&gt;&lt;use href="icones/todos.svg#icone-nome"/&gt;&lt;/svg&gt;</code>. A classe <code>.icone</code> é <strong>obrigatória</strong> (em <code>geral-base.css</code>): reúne <code>fill: none</code>, <code>stroke: currentColor</code>, pontas arredondadas e <code>stroke-width: var(--icone-traco)</code>. São propriedades herdadas, que atravessam o <code>&lt;use&gt;</code> e chegam ao desenho; ícone sem a classe sai sem traço.</li>
+                <li>As páginas usam o <code>icones/todos.svg</code>, que junta os desenhos de todos os arquivos num só: a página pede um arquivo, não um por ícone. Ele é montado a partir dos <code>icone-*.svg</code>, nunca editado: ícone novo ou alterado, remontar (o código do passo de publicação, REGRAS §6).</li>
                 <li>A cor vem do CSS por <code>color</code> (<code>currentColor</code>). Nunca pintar <code>fill</code> ou <code>stroke</code> fixo no símbolo. Proibido desenhar SVG dentro de HTML ou JS.</li>
                 <li><strong>Ícone do sistema é traço, nunca preenchimento:</strong> com a <code>.icone</code> forçando <code>fill: none</code>, um desenho preenchido sairia como contorno oco (por isso o <code>icone-sucesso</code> é um check de traço único).</li>
                 <li>Botão só de ícone leva <code>aria-label</code> e dica (<code>data-dica</code>).</li>
                 <li>Nome do símbolo: <code>icone-</code> + a função em português (<code>icone-pesquisar</code>, <code>icone-seta-baixo</code>).</li>
-                <li>Ícone com visual que muda: <code>&lt;style&gt;</code> interno no arquivo <code>.svg</code> usando <code>var(--variavel)</code>, definida pelo CSS do host no <code>&lt;svg&gt;</code> (ex.: <code>icone-menu-toggle.svg</code> com <code>--seta-toggle</code>).</li>
+                <li>Ícone com visual que muda: <code>&lt;style&gt;</code> interno no arquivo <code>.svg</code> (o montador o leva para o <code>todos.svg</code>) usando <code>var(--variavel)</code>, definida pelo CSS do host no <code>&lt;svg&gt;</code> (ex.: <code>icone-menu-toggle.svg</code> com <code>--seta-toggle</code>).</li>
                 <li>Seta entre dois valores (ex.: horário de início e fim) é o ícone <code>icone-seta-direita-longa</code>, nunca o caractere de seta.</li>
                 <li><strong>Logotipo:</strong> um círculo com uma cruz ao centro e à direita e um bonequinho (cabeça e ombros) embaixo à esquerda; esse desenho é a identidade e não muda. Versão horizontal: o símbolo + o texto "ROSTER WORK" ao lado (peso 800, espaçamento 1px). Vive em <code>icones/icone-logo.svg</code> como <code>icone-logo</code>, na cor do texto.</li>
                 <li>O logo é <strong>preenchido</strong> (<code>fill="currentColor"</code> no próprio símbolo) e <strong>nunca</strong> usa <code>.icone</code>: as regras dos ícones (traço etc.) não o afetam. Ícones preenchidos pontuais (ex.: três pontos) seguem o mesmo princípio.</li>
@@ -759,7 +760,7 @@
                 <span class="rotulo-secao">Computador</span>
                 <div class="guia-palco">
                   <div class="guia-linha">
-                    <button type="button" class="botao botao--primario" data-cota="altura respiro vao letra"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-folgas.svg#icone-folgas"/></svg><span>Solicitar folga</span></button>
+                    <button type="button" class="botao botao--primario" data-cota="altura respiro vao letra"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-folgas"/></svg><span>Solicitar folga</span></button>
                     <button type="button" class="botao">Cancelar</button>
                   </div>
                 </div>
@@ -768,7 +769,7 @@
                 <span class="rotulo-secao">Celular</span>
                 <div class="guia-palco">
                   <div class="guia-linha">
-                    <button type="button" class="botao botao--primario" data-cota="altura respiro vao letra"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-folgas.svg#icone-folgas"/></svg><span>Solicitar folga</span></button>
+                    <button type="button" class="botao botao--primario" data-cota="altura respiro vao letra"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-folgas"/></svg><span>Solicitar folga</span></button>
                     <button type="button" class="botao">Cancelar</button>
                   </div>
                 </div>
@@ -780,14 +781,14 @@
                 <span class="guia-peca"><button type="button" class="botao botao--primario">Salvar</button><span class="guia-legenda"><code>--primario</code></span></span>
                 <span class="guia-peca"><button type="button" class="botao">Cancelar</button><span class="guia-legenda">comum</span></span>
                 <span class="guia-peca"><button type="button" class="botao botao--perigo">Excluir do sistema</button><span class="guia-legenda"><code>--perigo</code></span></span>
-                <span class="guia-peca"><button type="button" class="botao botao--quadrado" aria-label="Imprimir" data-dica="Imprimir"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-imprimir.svg#icone-imprimir"/></svg></button><span class="guia-legenda"><code>--quadrado</code></span></span>
-                <span class="guia-peca"><button type="button" class="botao botao--icone" aria-label="Fechar" data-dica="Fechar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg></button><span class="guia-legenda"><code>--icone</code></span></span>
+                <span class="guia-peca"><button type="button" class="botao botao--quadrado" aria-label="Imprimir" data-dica="Imprimir"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg></button><span class="guia-legenda"><code>--quadrado</code></span></span>
+                <span class="guia-peca"><button type="button" class="botao botao--icone" aria-label="Fechar" data-dica="Fechar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg></button><span class="guia-legenda"><code>--icone</code></span></span>
                 <span class="guia-peca"><button type="button" class="botao botao--texto">Ler os termos</button><span class="guia-legenda"><code>--texto</code></span></span>
                 <span class="guia-peca"><button type="button" class="botao botao--pequeno">Escalar</button><span class="guia-legenda"><code>--pequeno</code></span></span>
-                <span class="guia-peca"><button type="button" class="botao-discreto" aria-label="Editar" data-dica="Editar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-editar.svg#icone-editar"/></svg></button><span class="guia-legenda"><code>.botao-discreto</code></span></span>
-                <span class="guia-peca"><button type="button" class="botao-discreto" aria-label="Editar posto" data-dica="Editar posto"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-ajustar.svg#icone-ajustar"/></svg></button><span class="guia-legenda">Editar posto</span></span>
+                <span class="guia-peca"><button type="button" class="botao-discreto" aria-label="Editar" data-dica="Editar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-editar"/></svg></button><span class="guia-legenda"><code>.botao-discreto</code></span></span>
+                <span class="guia-peca"><button type="button" class="botao-discreto" aria-label="Editar posto" data-dica="Editar posto"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-ajustar"/></svg></button><span class="guia-legenda">Editar posto</span></span>
                 <span class="guia-peca"><button type="button" class="botao" disabled>Aplicar</button><span class="guia-legenda">desligado</span></span>
-                <span class="guia-peca"><button type="button" class="botao botao--icone" aria-label="Próximo período" disabled><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg></button><span class="guia-legenda">ícone desligado</span></span>
+                <span class="guia-peca"><button type="button" class="botao botao--icone" aria-label="Próximo período" disabled><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button><span class="guia-legenda">ícone desligado</span></span>
               </div>
             </div>
             <div class="guia-colunas">
@@ -822,12 +823,12 @@
                 </div>
                 <div class="guia-exemplo">
                   <span class="selo selo--sucesso">Certo</span>
-                  <button type="button" class="botao"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-folgas.svg#icone-folgas"/></svg><span>Dar folga</span></button>
+                  <button type="button" class="botao"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-folgas"/></svg><span>Dar folga</span></button>
                   <span class="guia-legenda">Ícone que diz algo, ou só o texto.</span>
                 </div>
                 <div class="guia-exemplo">
                   <span class="selo selo--erro">Errado</span>
-                  <button type="button" class="botao"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-mais.svg#icone-mais"/></svg><span>Dar folga</span></button>
+                  <button type="button" class="botao"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-mais"/></svg><span>Dar folga</span></button>
                   <span class="guia-legenda">O "+" num botão com texto não diz nada.</span>
                 </div>
               </div>
@@ -898,7 +899,7 @@
                   <div class="dropdown">
                     <button type="button" class="campo-entrada campo-selecao">
                       <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
-                      <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+                      <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
                     </button>
                     <div class="dropdown-menu">
                       <button type="button" class="dropdown-item">Não tenho CNH</button>
@@ -1113,12 +1114,12 @@
             <h2 class="guia-titulo">Nota</h2>
             <p class="guia-texto">Uma caixa curta que explica, em frase, sem interromper. A cor diz o tipo: cinza informa, amarelo avisa o efeito de uma escolha, vermelho aponta um problema, verde confirma que está tudo certo.</p>
             <div class="guia-palco guia-palco--pilha">
-              <div class="nota guia-nota-exemplo"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-historico.svg#icone-historico"/></svg><span class="nota-texto">Vale só para este dia.</span></div>
-              <div class="nota nota--alerta guia-nota-exemplo"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg><span class="nota-texto">O saldo passa de 0h para -12h.</span></div>
-              <div class="nota nota--erro guia-nota-exemplo"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg><span class="nota-texto"><span class="nota-titulo">Cb. Padilha repete o rodízio.</span> Ele já tirou esta função no serviço anterior.</span></div>
-              <div class="nota nota--sucesso guia-nota-exemplo"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-sucesso.svg#icone-sucesso"/></svg><span class="nota-texto">Sem impacto na escala.</span></div>
-              <p class="perfil-nota guia-nota-exemplo"><svg class="icone perfil-nota-icone" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg><span>Nota de página: informa no topo de uma aba.</span></p>
-              <p class="perfil-nota perfil-nota--pendente guia-nota-exemplo"><svg class="icone perfil-nota-icone" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg><span>2 alterações aguardando a aprovação do administrador.</span></p>
+              <div class="nota guia-nota-exemplo"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-historico"/></svg><span class="nota-texto">Vale só para este dia.</span></div>
+              <div class="nota nota--alerta guia-nota-exemplo"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg><span class="nota-texto">O saldo passa de 0h para -12h.</span></div>
+              <div class="nota nota--erro guia-nota-exemplo"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg><span class="nota-texto"><span class="nota-titulo">Cb. Padilha repete o rodízio.</span> Ele já tirou esta função no serviço anterior.</span></div>
+              <div class="nota nota--sucesso guia-nota-exemplo"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-sucesso"/></svg><span class="nota-texto">Sem impacto na escala.</span></div>
+              <p class="perfil-nota guia-nota-exemplo"><svg class="icone perfil-nota-icone" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg><span>Nota de página: informa no topo de uma aba.</span></p>
+              <p class="perfil-nota perfil-nota--pendente guia-nota-exemplo"><svg class="icone perfil-nota-icone" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg><span>2 alterações aguardando a aprovação do administrador.</span></p>
             </div>
             <div class="guia-bloco">
               <span class="rotulo-secao">Regras completas</span>
@@ -1144,7 +1145,7 @@
                 <div class="guia-palco guia-palco--topo">
                   <div class="guia-linha guia-linha--topo">
                     <div class="dropdown">
-                      <button type="button" class="botao">Ações <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg></button>
+                      <button type="button" class="botao">Ações <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg></button>
                       <div class="dropdown-menu">
                         <div class="dropdown-titulo">Situação</div>
                         <button type="button" class="dropdown-item dropdown-item--ativo">Abertos</button>
@@ -1206,9 +1207,9 @@
                 <div class="guia-palco">
                   <div class="guia-folga">
                     <button type="button" class="seletor" data-cota="altura largura">
-                      <svg class="icone seletor-icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-mapa-pin.svg#icone-mapa-pin"/></svg>
+                      <svg class="icone seletor-icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mapa-pin"/></svg>
                       <span class="seletor-texto"><span class="seletor-trecho">...</span><span class="seletor-trecho">2ªCIBM</span><span class="seletor-trecho seletor-trecho--forte">2ºPEL</span></span>
-                      <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+                      <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
                     </button>
                   </div>
                 </div>
@@ -1218,9 +1219,9 @@
                 <div class="guia-palco">
                   <div class="guia-folga">
                     <button type="button" class="seletor" data-cota="altura largura">
-                      <svg class="icone seletor-icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-mapa-pin.svg#icone-mapa-pin"/></svg>
+                      <svg class="icone seletor-icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mapa-pin"/></svg>
                       <span class="seletor-texto"><span class="seletor-trecho">...</span><span class="seletor-trecho">2ªCIBM</span><span class="seletor-trecho seletor-trecho--forte">2ºPEL</span></span>
-                      <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+                      <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
                     </button>
                   </div>
                 </div>
@@ -1311,8 +1312,8 @@
             <h2 class="guia-titulo">Dica</h2>
             <p class="guia-texto">O balãozinho que aparece ao parar o mouse sobre um botão só de ícone. Passe o mouse nos botões abaixo.</p>
             <div class="guia-palco guia-palco--vitrine">
-              <button type="button" class="botao botao--quadrado" aria-label="Imprimir escala" data-dica="Imprimir"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-imprimir.svg#icone-imprimir"/></svg></button>
-              <button type="button" class="botao botao--quadrado" aria-label="Erros do militar" data-dica="CNH incompatível&#10;Função proibida pela regra"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg></button>
+              <button type="button" class="botao botao--quadrado" aria-label="Imprimir escala" data-dica="Imprimir"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg></button>
+              <button type="button" class="botao botao--quadrado" aria-label="Erros do militar" data-dica="CNH incompatível&#10;Função proibida pela regra"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg></button>
             </div>
             <div class="guia-bloco">
               <span class="rotulo-secao">Regras completas</span>
@@ -1336,13 +1337,13 @@
             <p class="guia-texto">O botão ? no fim da linha do título abre a lista dos passo a passo da tela e o link do manual. O passo a passo escurece a tela em volta do campo e explica num balão escuro.</p>
             <div class="guia-palco guia-palco--vitrine">
               <div class="dropdown pagina-ajuda">
-                <button type="button" class="botao botao--icone" aria-label="Ajuda desta tela" data-dica="Ajuda"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-ajuda.svg#icone-ajuda"/></svg></button>
+                <button type="button" class="botao botao--icone" aria-label="Ajuda desta tela" data-dica="Ajuda"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg></button>
               </div>
               <div class="dropdown-menu guia-menu-parado pagina-ajuda-menu">
                 <div class="dropdown-titulo">Passo a passo desta tela</div>
-                <button type="button" class="dropdown-item"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-ajuda.svg#icone-ajuda"/></svg><span>Como pedir uma troca</span><span class="selo selo--sucesso guia-menu-visto">Visto</span></button>
+                <button type="button" class="dropdown-item"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg><span>Como pedir uma troca</span><span class="selo selo--sucesso guia-menu-visto">Visto</span></button>
                 <div class="dropdown-divisor"></div>
-                <button type="button" class="dropdown-item"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-manual.svg#icone-manual"/></svg><span>Ler sobre esta tela no manual</span></button>
+                <button type="button" class="dropdown-item"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-manual"/></svg><span>Ler sobre esta tela no manual</span></button>
               </div>
               <div class="guia-balao guia-balao-parado">
                 <div class="guia-balao-cabecalho"><span>Como pedir uma troca · 5 de 7</span><button type="button" class="botao botao--texto">Sair</button></div>
@@ -1385,7 +1386,7 @@
                         <span class="pagina-titulo-contagem">61 militares</span>
                       </div>
                       <div class="dropdown pagina-ajuda">
-                        <button type="button" class="botao botao--icone" aria-label="Ajuda desta tela" data-dica="Ajuda"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-ajuda.svg#icone-ajuda"/></svg></button>
+                        <button type="button" class="botao botao--icone" aria-label="Ajuda desta tela" data-dica="Ajuda"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg></button>
                       </div>
                       <div class="abas" data-cota="altura">
                         <button type="button" class="aba aba--ativa">Efetivo</button>
@@ -1405,7 +1406,7 @@
                         <span class="pagina-titulo-contagem">61 militares</span>
                       </div>
                       <div class="dropdown pagina-ajuda">
-                        <button type="button" class="botao botao--icone" aria-label="Ajuda desta tela" data-dica="Ajuda"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-ajuda.svg#icone-ajuda"/></svg></button>
+                        <button type="button" class="botao botao--icone" aria-label="Ajuda desta tela" data-dica="Ajuda"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg></button>
                       </div>
                       <div class="abas" data-cota="altura">
                         <button type="button" class="aba aba--ativa">Efetivo</button>
@@ -1443,11 +1444,11 @@
             <div class="guia-palco guia-palco--rolavel">
               <div class="guia-pagina-exemplo">
                 <div class="pagina-subcabecalho" data-cota="altura">
-                  <button type="button" class="botao botao--primario"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg><span>Solicitar troca</span></button>
+                  <button type="button" class="botao botao--primario"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg><span>Solicitar troca</span></button>
                   <div class="dropdown acoes-admin">
                     <button type="button" class="botao acoes-admin-gatilho">
                       <span>Administração</span>
-                      <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+                      <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
                     </button>
                     <div class="dropdown-menu acoes-admin-menu">
                       <span class="rotulo-secao acoes-admin-rotulo">Administração</span>
@@ -1455,9 +1456,9 @@
                     </div>
                   </div>
                   <div class="geral-periodo">
-                    <button type="button" class="botao botao--icone" aria-label="Período anterior"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-esquerda.svg#icone-seta-esquerda"/></svg></button>
+                    <button type="button" class="botao botao--icone" aria-label="Período anterior"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg></button>
                     <button type="button" class="geral-periodo-nome">Outubro de 2026</button>
-                    <button type="button" class="botao botao--icone" aria-label="Próximo período"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg></button>
+                    <button type="button" class="botao botao--icone" aria-label="Próximo período"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
                   </div>
                   <div class="abas abas--seletor">
                     <button type="button" class="aba aba--ativa">Agenda</button>
@@ -1469,17 +1470,17 @@
                   </div>
                   <div class="busca" data-guia-exemplo="busca" data-cota="largura">
                     <button type="button" class="busca-modo" aria-label="Alternar entre marcar e filtrar" data-dica="Marcar">
-                      <svg class="icone busca-modo-marcar" width="16" height="16" aria-hidden="true"><use href="icones/icone-pesquisar.svg#icone-pesquisar"/></svg>
-                      <svg class="icone busca-modo-filtrar oculto" width="16" height="16" aria-hidden="true"><use href="icones/icone-filtrar.svg#icone-filtrar"/></svg>
+                      <svg class="icone busca-modo-marcar" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-pesquisar"/></svg>
+                      <svg class="icone busca-modo-filtrar oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-filtrar"/></svg>
                     </button>
                     <input type="text" class="busca-entrada" maxlength="100" placeholder="Pesquisar militar" aria-label="Pesquisar militar" />
-                    <button type="button" class="busca-limpar" aria-label="Limpar pesquisa"><svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg></button>
+                    <button type="button" class="busca-limpar" aria-label="Limpar pesquisa"><svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg></button>
                   </div>
                   <span class="pagina-subcabecalho-divisor" aria-hidden="true"></span>
-                  <button type="button" class="botao botao--quadrado" aria-label="Ordenar" data-dica="Ordenar"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-ordem-az.svg#icone-ordem-az"/></svg></button>
-                  <button type="button" class="botao botao--quadrado" aria-label="Exibir" data-dica="Exibir"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-exibir.svg#icone-exibir"/></svg></button>
+                  <button type="button" class="botao botao--quadrado" aria-label="Ordenar" data-dica="Ordenar"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-ordem-az"/></svg></button>
+                  <button type="button" class="botao botao--quadrado" aria-label="Exibir" data-dica="Exibir"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-exibir"/></svg></button>
                   <div data-guia-exemplo="legenda"></div>
-                  <button type="button" class="botao botao--quadrado" aria-label="Imprimir escala" data-dica="Imprimir"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-imprimir.svg#icone-imprimir"/></svg></button>
+                  <button type="button" class="botao botao--quadrado" aria-label="Imprimir escala" data-dica="Imprimir"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg></button>
                 </div>
               </div>
             </div>
@@ -1532,7 +1533,7 @@
                         <span class="painel-titulo"><span class="painel-titulo-nome">Sd. Souza</span><span class="painel-titulo-extra">- 2ºPEL</span></span>
                         <span class="painel-subtitulo">Segunda-feira, 2 de novembro de 2026</span>
                       </div>
-                      <button type="button" class="botao botao--icone" aria-label="Fechar painel"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg></button>
+                      <button type="button" class="botao botao--icone" aria-label="Fechar painel"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg></button>
                       <div class="painel-linha-abas">
                         <div class="abas">
                           <button type="button" class="aba aba--ativa">Dados</button>
@@ -1546,7 +1547,7 @@
                         <div class="linha-info"><span class="linha-info-rotulo">Função</span><span class="linha-info-valor">Condutor</span></div>
                         <div class="linha-info"><span class="linha-info-rotulo">Posto</span><span class="linha-info-valor">ABTR</span></div>
                       </div>
-                      <div class="nota"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-historico.svg#icone-historico"/></svg><span class="nota-texto">Vale só para este dia.</span></div>
+                      <div class="nota"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-historico"/></svg><span class="nota-texto">Vale só para este dia.</span></div>
                     </div>
                     <div class="painel-rodape">
                       <button type="button" class="botao">Cancelar</button>
@@ -1564,7 +1565,7 @@
                         <span class="painel-titulo"><span class="painel-titulo-nome">Sd. Souza</span><span class="painel-titulo-extra">- 2ºPEL</span></span>
                         <span class="painel-subtitulo">Segunda-feira, 2 de novembro de 2026</span>
                       </div>
-                      <button type="button" class="botao botao--icone" aria-label="Fechar painel"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg></button>
+                      <button type="button" class="botao botao--icone" aria-label="Fechar painel"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg></button>
                       <div class="painel-linha-abas">
                         <div class="abas">
                           <button type="button" class="aba aba--ativa">Dados</button>
@@ -1578,7 +1579,7 @@
                         <div class="linha-info"><span class="linha-info-rotulo">Função</span><span class="linha-info-valor">Condutor</span></div>
                         <div class="linha-info"><span class="linha-info-rotulo">Posto</span><span class="linha-info-valor">ABTR</span></div>
                       </div>
-                      <div class="nota"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-historico.svg#icone-historico"/></svg><span class="nota-texto">Vale só para este dia.</span></div>
+                      <div class="nota"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-historico"/></svg><span class="nota-texto">Vale só para este dia.</span></div>
                     </div>
                     <div class="painel-rodape">
                       <button type="button" class="botao">Cancelar</button>
@@ -1631,7 +1632,7 @@
                 <div class="guia-palco">
                   <div class="modal modal--aviso aviso--aviso" data-cota="largura">
                     <div class="modal-corpo aviso-corpo">
-                      <svg class="icone aviso-icone aviso-icone--alerta" width="32" height="32" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+                      <svg class="icone aviso-icone aviso-icone--alerta" width="32" height="32" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
                       <div class="aviso-textos"><span class="aviso-mensagem">Descartar as alterações deste dia?</span></div>
                     </div>
                     <div class="modal-rodape">
@@ -1646,7 +1647,7 @@
                 <div class="guia-palco">
                   <div class="modal modal--aviso aviso--aviso" data-cota="largura">
                     <div class="modal-corpo aviso-corpo">
-                      <svg class="icone aviso-icone aviso-icone--alerta" width="32" height="32" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+                      <svg class="icone aviso-icone aviso-icone--alerta" width="32" height="32" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
                       <div class="aviso-textos"><span class="aviso-mensagem">Descartar as alterações deste dia?</span></div>
                     </div>
                     <div class="modal-rodape">
@@ -1662,14 +1663,14 @@
               <div class="guia-palco guia-palco--vitrine">
                 <div class="modal modal--aviso aviso--sucesso">
                   <div class="modal-corpo aviso-corpo">
-                    <svg class="icone aviso-icone aviso-icone--sucesso" width="32" height="32" aria-hidden="true"><use href="icones/icone-sucesso.svg#icone-sucesso"/></svg>
+                    <svg class="icone aviso-icone aviso-icone--sucesso" width="32" height="32" aria-hidden="true"><use href="icones/todos.svg#icone-sucesso"/></svg>
                     <div class="aviso-textos"><span class="aviso-mensagem">Troca aprovada.</span></div>
                   </div>
                   <div class="modal-rodape"><button type="button" class="botao botao--primario">OK</button></div>
                 </div>
                 <div class="modal modal--aviso aviso--erro">
                   <div class="modal-corpo aviso-corpo">
-                    <svg class="icone aviso-icone aviso-icone--alerta" width="32" height="32" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+                    <svg class="icone aviso-icone aviso-icone--alerta" width="32" height="32" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
                     <div class="aviso-textos"><span class="aviso-mensagem">Não foi possível salvar. Verifique a conexão.</span></div>
                   </div>
                   <div class="modal-rodape"><button type="button" class="botao botao--primario">OK</button></div>
@@ -1725,7 +1726,7 @@
                       <div class="dropdown acoes-admin">
                         <button type="button" class="botao acoes-admin-gatilho">
                           <span>Administração</span>
-                          <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+                          <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
                         </button>
                         <div class="dropdown-menu acoes-admin-menu">
                           <span class="rotulo-secao acoes-admin-rotulo">Administração</span>
@@ -1768,20 +1769,20 @@
               <div class="coluna-leitura guia-coluna-exemplo" data-cota="largura" data-cota-lado="acima">
                 <div class="pedido-secoes">
                   <button type="button" class="pedido pedido--linha">
-                    <svg class="icone pedido-linha-icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-trocas.svg#icone-trocas"/></svg>
+                    <svg class="icone pedido-linha-icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-trocas"/></svg>
                     <span class="pedido-linha-pelotao">2ºPEL</span>
                     <span class="pedido-textos"><span class="pedido-quem">Sd. Souza com Cb. Lima</span><span class="pedido-meta">Troca de serviço · 30/10/2026</span></span>
                     <span class="espacador-flex"></span>
                     <span class="selo selo--alerta pedido-linha-selo">2 pontos de atenção</span>
-                    <svg class="icone pedido-linha-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
+                    <svg class="icone pedido-linha-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
                   </button>
                   <button type="button" class="pedido pedido--linha pedido--selecionado">
-                    <svg class="icone pedido-linha-icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-folgas.svg#icone-folgas"/></svg>
+                    <svg class="icone pedido-linha-icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-folgas"/></svg>
                     <span class="pedido-linha-pelotao">3ºPEL</span>
                     <span class="pedido-textos"><span class="pedido-quem">Cb. Raposo</span><span class="pedido-meta">Folga · 02/11/2026</span></span>
                     <span class="espacador-flex"></span>
                     <span class="selo selo--sucesso pedido-linha-selo">Sem impacto</span>
-                    <svg class="icone pedido-linha-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
+                    <svg class="icone pedido-linha-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
                   </button>
                 </div>
               </div>
@@ -1865,7 +1866,7 @@
               <div class="guia-arvore-exemplo">
                 <div class="arvore-trilha">
                   <span class="arvore-trilha-item"><span class="arvore-trilha-nome">4ºCRBM</span></span>
-                  <span class="arvore-trilha-item"><svg class="icone arvore-trilha-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg><span class="arvore-trilha-nome">2ªCIBM</span></span>
+                  <span class="arvore-trilha-item"><svg class="icone arvore-trilha-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg><span class="arvore-trilha-nome">2ªCIBM</span></span>
                 </div>
                 <section class="arvore-bloco">
                   <div class="arvore-bloco-titulo" data-cota="altura">
@@ -2336,7 +2337,7 @@
         <div class="dropdown">
           <button type="button" class="botao" id="programador-det-ligar">
             Ligar a bug existente
-            <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+            <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
           </button>
           <div class="dropdown-menu">
             <div class="dropdown-titulo">Bugs abertos e em correção</div>
@@ -2350,7 +2351,7 @@
           <span class="selo programador-bug-ligado-situacao"></span>
         </button>
         <button type="button" class="botao botao--icone" id="programador-det-desligar" aria-label="Desligar do bug" data-dica="Desligar do bug">
-          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
         </button>
       </div>
     </div>
@@ -2491,7 +2492,7 @@
   <!-- molde: uma mensagem ligada ao bug (abre na aba Mensagens) -->
   <template id="tpl-bug-mensagem">
     <button type="button" class="lista-item lista-item--clicavel programador-bug-mensagem">
-      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-mensagem.svg#icone-mensagem"/></svg>
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mensagem"/></svg>
       <span class="programador-bug-mensagem-autor"></span>
       <span class="programador-bug-mensagem-assunto"></span>
       <span class="programador-bug-mensagem-data"></span>

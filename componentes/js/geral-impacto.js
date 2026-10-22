@@ -24,7 +24,7 @@
     var el = RosterWork.tpl('tpl-geral-impacto-nota');
     if (!el) return null;
     el.classList.add('nota--' + tipo);
-    if (tipo === 'sucesso') { var uso = el.querySelector('use'); if (uso) uso.setAttribute('href', 'icones/icone-sucesso.svg#icone-sucesso'); }
+    if (tipo === 'sucesso') { var uso = el.querySelector('use'); if (uso) uso.setAttribute('href', 'icones/todos.svg#icone-sucesso'); }
     el.querySelector('.nota-titulo').textContent = titulo || '';
     el.querySelector('.impacto-nota-desc').textContent = descricao || '';
     return el;

@@ -235,7 +235,7 @@
 
   function definirIcone(svg, nomeIcone) {
     var uso = svg.querySelector('use');
-    if (uso) uso.setAttribute('href', 'icones/' + nomeIcone + '.svg#' + nomeIcone);
+    if (uso) uso.setAttribute('href', 'icones/todos.svg#' + nomeIcone);
   }
 
   /* uma linha de militar: ícone de origem (+ cadeado se fixado) + grad + nome + horário */

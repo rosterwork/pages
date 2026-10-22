@@ -6,7 +6,7 @@
     <!-- ajuda da tela: os passo a passo desta página e o manual (componente geral-guia) -->
     <div class="dropdown pagina-ajuda" data-manual="escala">
       <button type="button" class="botao botao--icone" aria-label="Ajuda desta tela" data-dica="Ajuda">
-        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-ajuda.svg#icone-ajuda"/></svg>
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg>
       </button>
       <div class="dropdown-menu pagina-ajuda-menu"></div>
     </div>
@@ -31,11 +31,11 @@
   <div class="pagina-subcabecalho">
     <div class="geral-periodo">
       <button type="button" class="botao botao--icone" id="escala-periodo-anterior" aria-label="Período anterior">
-        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-esquerda.svg#icone-seta-esquerda"/></svg>
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>
       </button>
       <button type="button" class="geral-periodo-nome" id="escala-periodo-nome"></button>
       <button type="button" class="botao botao--icone" id="escala-periodo-proximo" aria-label="Próximo período">
-        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
       </button>
       <!-- só quando o período da tela não contém hoje: volta ao período atual (escalas.js) -->
       <button type="button" class="botao geral-periodo-hoje oculto" id="escala-periodo-hoje">Hoje</button>
@@ -76,21 +76,21 @@
     <!-- busca de militar (nome/CPF/RG) nos modos de grade (Mês/Semana/Colunas/Dia); o modo Militares tem a sua própria -->
     <div class="busca oculto" id="escala-busca-geral">
       <button type="button" class="busca-modo" aria-label="Alternar entre marcar e filtrar" data-dica="Marcar">
-        <svg class="icone busca-modo-marcar" width="16" height="16" aria-hidden="true"><use href="icones/icone-pesquisar.svg#icone-pesquisar"/></svg>
-        <svg class="icone busca-modo-filtrar oculto" width="16" height="16" aria-hidden="true"><use href="icones/icone-filtrar.svg#icone-filtrar"/></svg>
+        <svg class="icone busca-modo-marcar" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-pesquisar"/></svg>
+        <svg class="icone busca-modo-filtrar oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-filtrar"/></svg>
       </button>
       <input type="text" name="busca-militar" class="busca-entrada" maxlength="100" placeholder="Pesquisar militar" aria-label="Pesquisar militar" />
       <button type="button" class="busca-limpar" aria-label="Limpar pesquisa">
-        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
       </button>
     </div>
 
     <div class="escala-sub-militares oculto" id="escala-sub-militares">
       <div class="busca" id="escala-busca-militares">
-        <svg class="icone escala-busca-lupa" width="16" height="16" aria-hidden="true"><use href="icones/icone-pesquisar.svg#icone-pesquisar"/></svg>
+        <svg class="icone escala-busca-lupa" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-pesquisar"/></svg>
         <input type="text" class="busca-entrada" id="escala-busca-entrada" maxlength="100" placeholder="Pesquisar militar" aria-label="Pesquisar militar" />
         <button type="button" class="busca-limpar" id="escala-busca-limpar" aria-label="Limpar pesquisa">
-          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
         </button>
       </div>
     </div>
@@ -103,7 +103,7 @@
 
     <!-- imprimir: abre o painel "Imprimir escala" (datas + unidades → PDF) -->
     <button type="button" class="botao botao--quadrado" id="escala-imprimir" aria-label="Imprimir escala" data-dica="Imprimir">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-imprimir.svg#icone-imprimir"/></svg>
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg>
     </button>
   </div>
 
@@ -221,7 +221,7 @@
     <span class="rotulo-secao">O que vai sair</span>
     <span class="campo-ajuda" data-impressao-resumo></span>
     <div class="impacto-aviso impacto-aviso--problema oculto" data-impressao-aviso>
-      <svg class="icone impacto-aviso-icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+      <svg class="icone impacto-aviso-icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
       <span class="impacto-aviso-textos">
         <span class="impacto-aviso-titulo"></span>
         <span class="impacto-aviso-desc"></span>
@@ -241,7 +241,7 @@
      semana da tela), o que mostrar em cada célula e a prévia (o próprio PDF, no leitor do navegador) -->
 <template id="tpl-escala-impressao-grade">
   <div class="nota">
-    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-imprimir.svg#icone-imprimir"/></svg>
+    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg>
     <span class="nota-texto"><span class="nota-titulo">Sai o que está na tela:</span> <span data-impressao-resumo></span></span>
   </div>
   <div class="grupo-caixa">
@@ -261,7 +261,7 @@
     <!-- semanas: "Mês todo" marcado = o mês inteiro, sem mais nada; desmarcado, aparecem os botões das semanas do
          mês (de marcar vários; o JS clona o tpl-escala-aba-unidade) e a frase com as datas -->
     <button type="button" class="arvore-linha escala-impressao-marcar" role="checkbox" aria-checked="true" data-impressao-so="semanas" data-impressao-mes-todo>
-      <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg></span>
+      <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
       <span class="arvore-nome">Mês todo</span>
     </button>
     <div class="abas abas--seletor oculto" data-abas-multi data-impressao-semanas></div>
@@ -271,7 +271,7 @@
       <div class="dropdown" data-impressao-dia="de">
         <button type="button" class="campo-entrada campo-selecao" aria-label="Do dia">
           <span class="campo-selecao-texto"></span>
-          <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+          <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
         </button>
         <div class="dropdown-menu"></div>
       </div>
@@ -279,7 +279,7 @@
       <div class="dropdown" data-impressao-dia="ate">
         <button type="button" class="campo-entrada campo-selecao" aria-label="Ao dia">
           <span class="campo-selecao-texto"></span>
-          <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+          <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
         </button>
         <div class="dropdown-menu"></div>
       </div>
@@ -290,15 +290,15 @@
   <div class="grupo-caixa">
     <span class="rotulo-secao"><span data-impressao-num></span>. Mostrar</span>
     <button type="button" class="arvore-linha escala-impressao-marcar" role="checkbox" aria-checked="true" data-mostrar="grafico">
-      <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg></span>
+      <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
       <span class="arvore-nome">Gráfico de cobertura</span>
     </button>
     <button type="button" class="arvore-linha escala-impressao-marcar" role="checkbox" aria-checked="true" data-mostrar="icones">
-      <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg></span>
+      <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
       <span class="arvore-nome">Ícones de origem</span>
     </button>
     <button type="button" class="arvore-linha escala-impressao-marcar" role="checkbox" aria-checked="true" data-mostrar="faixa">
-      <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg></span>
+      <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
       <span class="arvore-nome">Faixa do horário</span>
     </button>
     <span class="campo-ajuda">Igual à tela. Desmarque o que não quiser no papel.</span>
@@ -360,16 +360,16 @@
       <span class="escala-legenda-item">
         <span class="escala-mil-servico">
           <span class="linha-escalado-hora-ini">08</span>
-          <svg class="icone linha-escalado-hora-seta" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+          <svg class="icone linha-escalado-hora-seta" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
           <span class="linha-escalado-hora-fim">08</span>
         </span>
         <span>Serviço</span>
       </span>
       <span class="escala-legenda-item">
         <span class="escala-mil-servico">
-          <svg class="icone escala-mil-servico-extra" aria-hidden="true"><use href="icones/icone-extrajornada.svg#icone-extrajornada"/></svg>
+          <svg class="icone escala-mil-servico-extra" aria-hidden="true"><use href="icones/todos.svg#icone-extrajornada"/></svg>
           <span class="linha-escalado-hora-ini">08</span>
-          <svg class="icone linha-escalado-hora-seta" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+          <svg class="icone linha-escalado-hora-seta" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
           <span class="linha-escalado-hora-fim">20</span>
         </span>
         <span>Extrajornada</span>
@@ -377,7 +377,7 @@
       <span class="escala-legenda-item">
         <span class="escala-mil-servico escala-mil-servico--trocado">
           <span class="linha-escalado-hora-ini">08</span>
-          <svg class="icone linha-escalado-hora-seta" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+          <svg class="icone linha-escalado-hora-seta" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
           <span class="linha-escalado-hora-fim">08</span>
         </span>
         <span>Trocado</span>
@@ -433,7 +433,7 @@
   <div class="escala-mil-unidade">
     <div class="escala-mil-linha escala-mil-unidade-titulo">
       <button type="button" class="escala-mil-unidade-cab" aria-expanded="true">
-        <svg class="icone escala-mil-unidade-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+        <svg class="icone escala-mil-unidade-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
         <span class="escala-mil-unidade-nome"></span>
         <span class="escala-mil-unidade-cidade"></span>
       </button>
@@ -465,9 +465,9 @@
 <!-- chip de serviço numa célula: "08 →(ícone) 08" (fundo escuro, texto invertido) -->
 <template id="tpl-escala-mil-servico">
   <span class="escala-mil-servico">
-    <svg class="icone escala-mil-servico-extra oculto" aria-hidden="true"><use href="icones/icone-extrajornada.svg#icone-extrajornada"/></svg>
+    <svg class="icone escala-mil-servico-extra oculto" aria-hidden="true"><use href="icones/todos.svg#icone-extrajornada"/></svg>
     <span class="linha-escalado-hora-ini"></span>
-    <svg class="icone linha-escalado-hora-seta" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+    <svg class="icone linha-escalado-hora-seta" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
     <span class="linha-escalado-hora-fim"></span>
   </span>
 </template>

@@ -6,7 +6,7 @@
     <!-- ajuda da tela: os passo a passo desta página e o manual (componente geral-guia) -->
     <div class="dropdown pagina-ajuda" data-manual="folgas">
       <button type="button" class="botao botao--icone" aria-label="Ajuda desta tela" data-dica="Ajuda">
-        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-ajuda.svg#icone-ajuda"/></svg>
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg>
       </button>
       <div class="dropdown-menu pagina-ajuda-menu"></div>
     </div>
@@ -25,18 +25,18 @@
        o grupo Administração com Dar folga, só admin), depois os controles da Equipe; à direita a busca -->
   <div class="pagina-subcabecalho">
     <button type="button" class="botao botao--primario" id="btn-solicitar-folga">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-folgas.svg#icone-folgas"/></svg>
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-folgas"/></svg>
       <span>Solicitar folga</span>
     </button>
     <div class="dropdown acoes-admin oculto">
       <button type="button" class="botao acoes-admin-gatilho">
         <span>Administração</span>
-        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
       </button>
       <div class="dropdown-menu acoes-admin-menu">
         <span class="rotulo-secao acoes-admin-rotulo">Administração</span>
         <button type="button" class="botao" id="btn-dar-folga">
-          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-folgas.svg#icone-folgas"/></svg>
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-folgas"/></svg>
           <span>Dar folga</span>
         </button>
       </div>
@@ -51,7 +51,7 @@
       <div class="dropdown oculto" id="folgas-periodo">
         <button type="button" class="seletor" id="folgas-periodo-seletor">
           <span class="seletor-texto" id="folgas-periodo-texto">Últimos 30 dias</span>
-          <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+          <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
         </button>
         <div class="dropdown-menu">
           <div class="dropdown-titulo">Período</div>
@@ -67,11 +67,11 @@
     <!-- busca da aba Equipe, no modo Saldos -->
     <div class="busca oculto" id="busca-folgas">
       <span class="busca-modo" aria-hidden="true">
-        <svg class="icone" width="16" height="16"><use href="icones/icone-pesquisar.svg#icone-pesquisar"/></svg>
+        <svg class="icone" width="16" height="16"><use href="icones/todos.svg#icone-pesquisar"/></svg>
       </span>
       <input type="text" class="busca-entrada" id="busca-folgas-entrada" maxlength="60" placeholder="Pesquisar militar" aria-label="Pesquisar militar" />
       <button type="button" class="busca-limpar" id="busca-folgas-limpar" aria-label="Limpar pesquisa">
-        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
       </button>
     </div>
   </div>
@@ -152,7 +152,7 @@
 <template id="tpl-folga-de-para">
   <span class="folga-de-para">
     <span class="folga-de-para-de"></span>
-    <svg class="icone folga-de-para-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+    <svg class="icone folga-de-para-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
     <span class="folga-de-para-para"></span>
   </span>
 </template>
@@ -200,7 +200,7 @@
 <!-- molde: as sub-telas do painel do militar (conceder folga, ajustar saldo) voltam às ações -->
 <template id="tpl-folga-voltar">
   <button type="button" class="botao botao--texto subtela-voltar">
-    <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-esquerda.svg#icone-seta-esquerda"/></svg>
+    <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>
     <span>Voltar às ações</span>
   </button>
 </template>
@@ -218,7 +218,7 @@
       <span class="rotulo-secao"><span class="folga-form-num"></span>. Quem</span>
       <div class="busca">
         <span class="busca-modo" aria-hidden="true">
-          <svg class="icone" width="16" height="16"><use href="icones/icone-pesquisar.svg#icone-pesquisar"/></svg>
+          <svg class="icone" width="16" height="16"><use href="icones/todos.svg#icone-pesquisar"/></svg>
         </span>
         <input type="text" class="busca-entrada" id="ff-busca" maxlength="60" placeholder="Pesquisar militar" aria-label="Pesquisar militar" />
       </div>
@@ -244,7 +244,7 @@
       </label>
     </div>
     <div class="nota oculto" id="ff-consumo">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
       <span class="nota-texto"></span>
     </div>
   </div>
@@ -292,7 +292,7 @@
       </label>
     </div>
     <div class="nota oculto" id="fa-previa">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-folgas.svg#icone-folgas"/></svg>
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-folgas"/></svg>
       <span class="nota-texto"></span>
     </div>
   </div>
@@ -307,6 +307,6 @@
 <!-- molde: botão de cancelar uma folga (no extrato; só admin) -->
 <template id="tpl-folga-cancelar">
   <button type="button" class="botao botao--icone botao--pequeno folga-cancelar" aria-label="Cancelar folga">
-    <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+    <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
   </button>
 </template>

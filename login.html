@@ -6,6 +6,8 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://oadzjrekpuddagfydfzn.supabase.co; frame-src 'self' blob:; object-src 'self' blob:; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'" />
   <!-- abre a conexão com o banco enquanto a página ainda carrega (a primeira consulta não espera por ela) -->
   <link rel="preconnect" href="https://oadzjrekpuddagfydfzn.supabase.co" crossorigin />
+  <!-- pede a fonte junto com a página: ela chega antes do primeiro desenho, e a tela não é redesenhada na troca de letra -->
+  <link rel="preload" href="fontes/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin />
   <!-- a largura do aparelho + a marca data-celular no <html>: os tamanhos do celular valem para todos nesta tela -->
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Entrar no Roster Work — sistema de escala de serviço." />
@@ -41,7 +43,7 @@
 
       <div class="login-logo">
         <svg viewBox="0 0 186.44 96.312" fill="currentColor" preserveAspectRatio="xMidYMid meet">
-          <use href="icones/icone-logo.svg#icone-logo"></use>
+          <use href="icones/todos.svg#icone-logo"></use>
         </svg>
       </div>
 
@@ -67,7 +69,7 @@
           <div class="login-conectado">
             <div class="login-conectado-linha">
               <button type="button" class="caixa-selecao" id="login-conectado" role="checkbox" aria-checked="false" aria-labelledby="login-conectado-rotulo">
-                <svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg>
+                <svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
               </button>
               <span class="login-conectado-rotulo" id="login-conectado-rotulo">Manter-me conectado neste dispositivo</span>
             </div>

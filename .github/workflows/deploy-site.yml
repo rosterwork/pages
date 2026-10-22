@@ -25,6 +25,30 @@ jobs:
     - name: Setup Pages
       uses: actions/configure-pages@v4
 
+    # Ícones: o icones/todos.svg (o que as páginas usam) é montado de novo a partir dos icone-*.svg, onde cada
+    # ícone é desenhado; o publicado nunca fica diferente deles. Roda antes do carimbo, que tira a impressão
+    # digital do arquivo montado. O mesmo código remonta o todos.svg no computador quando um ícone muda.
+    - name: Montar os ícones num arquivo só
+      run: |
+        node - <<'FIM'
+        const fs = require('fs');
+        const nomes = fs.readdirSync('icones').filter((n) => /^icone-[a-z0-9-]+\.svg$/.test(n)).sort();
+        const estilos = [];
+        const simbolos = nomes.map((n) => {
+          const texto = fs.readFileSync('icones/' + n, 'utf8');
+          const estilo = texto.match(/<style>[\s\S]*?<\/style>/);
+          if (estilo) estilos.push('  ' + estilo[0].trim());
+          const simbolo = texto.match(/<symbol\b[\s\S]*?<\/symbol>/);
+          if (!simbolo) throw new Error('sem <symbol>: ' + n);
+          return '  ' + simbolo[0].trim();
+        });
+        const todos = '<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">\n'
+          + '  <!-- montado a partir dos arquivos icones/icone-*.svg, onde cada ícone é desenhado; não editar aqui -->\n'
+          + estilos.concat(simbolos).join('\n') + '\n</svg>\n';
+        fs.writeFileSync('icones/todos.svg', todos);
+        console.log('todos.svg: ' + nomes.length + ' ícones, ' + todos.length + ' bytes');
+        FIM
+
     # Armazém do app (service worker): carimba a versão desta publicação e a lista dos arquivos
     # que o aparelho guarda, cada um com a impressão digital (o que mudou é baixado de novo).
     # Sob demanda (guardadas no primeiro uso, nunca na instalação): as bibliotecas e as imagens do manual.

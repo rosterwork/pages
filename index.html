@@ -6,6 +6,8 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://oadzjrekpuddagfydfzn.supabase.co; frame-src 'self' blob:; object-src 'self' blob:; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'" />
   <!-- abre a conexão com o banco enquanto a página ainda carrega (a primeira consulta não espera por ela) -->
   <link rel="preconnect" href="https://oadzjrekpuddagfydfzn.supabase.co" crossorigin />
+  <!-- pede a fonte junto com a página: ela chega antes do primeiro desenho, e a tela não é redesenhada na troca de letra -->
+  <link rel="preload" href="fontes/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin />
   <meta name="viewport" content="width=1920" />
   <meta name="description" content="Roster Work — sistema de escala de serviço da corporação." />
   <link rel="icon" href="icones/logo-aba.svg" type="image/svg+xml" />
@@ -81,15 +83,15 @@
     <header class="cabecalho">
       <div class="cabecalho-logo">
         <svg aria-label="Roster Work" viewBox="0 0 186.44 96.312">
-          <use href="icones/icone-logo.svg#icone-logo" />
+          <use href="icones/todos.svg#icone-logo" />
         </svg>
       </div>
 
       <div class="dropdown cabecalho-unidades" id="dropdown-unidades">
         <button type="button" class="seletor">
-          <svg class="icone seletor-icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-mapa-pin.svg#icone-mapa-pin"/></svg>
+          <svg class="icone seletor-icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mapa-pin"/></svg>
           <span class="seletor-texto" id="seletor-unidades-texto">Carregando</span>
-          <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+          <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
         </button>
         <div class="dropdown-menu dropdown-menu--largo">
           <div class="dropdown-menu-rolagem">
@@ -106,13 +108,13 @@
       <div class="espacador-flex"></div>
 
       <button type="button" class="cabecalho-btn cabecalho-btn--tema" id="cabecalho-btn-tema" aria-label="Alternar tema claro ou escuro" data-dica="Tema escuro">
-        <svg class="icone" width="16" height="16" id="cabecalho-icone-lua" aria-hidden="true"><use href="icones/icone-lua.svg#icone-lua" /></svg>
-        <svg width="16" height="16" id="cabecalho-icone-sol" class="icone oculto" aria-hidden="true"><use href="icones/icone-sol.svg#icone-sol" /></svg>
+        <svg class="icone" width="16" height="16" id="cabecalho-icone-lua" aria-hidden="true"><use href="icones/todos.svg#icone-lua" /></svg>
+        <svg width="16" height="16" id="cabecalho-icone-sol" class="icone oculto" aria-hidden="true"><use href="icones/todos.svg#icone-sol" /></svg>
       </button>
 
       <div class="dropdown" id="dropdown-avisos">
         <button type="button" class="cabecalho-btn cabecalho-btn--avisos" aria-label="Avisos" data-dica="Avisos">
-          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-sino.svg#icone-sino" /></svg>
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-sino" /></svg>
           <span class="cabecalho-badge oculto" aria-hidden="true"></span>
         </button>
         <div class="dropdown-menu">
@@ -131,33 +133,33 @@
             <span class="cabecalho-usuario-nome"></span>
             <span class="cabecalho-usuario-lotacao"></span>
           </span>
-          <svg class="icone cabecalho-usuario-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo" /></svg>
+          <svg class="icone cabecalho-usuario-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo" /></svg>
         </button>
         <div class="dropdown-menu">
           <button class="dropdown-item" id="btn-meu-perfil">
-            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-perfil.svg#icone-perfil" /></svg>
+            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-perfil" /></svg>
             <span>Meu perfil</span>
           </button>
           <button class="dropdown-item" id="btn-fale-conosco">
-            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-mensagem.svg#icone-mensagem" /></svg>
+            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mensagem" /></svg>
             <span>Fale conosco</span>
           </button>
           <button type="button" class="dropdown-item" id="btn-manual">
-            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-manual.svg#icone-manual" /></svg>
+            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-manual" /></svg>
             <span>Manual</span>
           </button>
           <button type="button" class="dropdown-item" id="btn-termos">
-            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-termos.svg#icone-termos" /></svg>
+            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-termos" /></svg>
             <span>Termos e privacidade</span>
           </button>
           <!-- só no celular, fora do app instalado (geral-aplicativo.js; o toque no index-cabecalho.js) -->
           <button type="button" class="dropdown-item oculto" id="btn-instalar-app">
-            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-celular.svg#icone-celular" /></svg>
+            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-celular" /></svg>
             <span>Instalar no celular</span>
           </button>
           <div class="dropdown-divisor"></div>
           <button id="btn-sair" class="dropdown-item dropdown-item--perigo">
-            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-sair.svg#icone-sair" /></svg>
+            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-sair" /></svg>
             <span>Sair</span>
           </button>
           <!-- a versão do sistema mora só aqui (critérios: REGRAS §11) -->
@@ -185,13 +187,13 @@
         <div class="sidebar-itens">
 
           <button type="button" class="menu-item menu-item--selecionado" data-pagina="inicio" data-lugar-celular="barra" aria-label="Início">
-            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-inicio.svg#icone-inicio" /></svg>
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-inicio" /></svg>
             <span class="menu-item-label">Início</span>
           </button>
 
           <!-- o que espera decisão (para todos); o número é o que falta decidir -->
           <button type="button" class="menu-item" data-pagina="pendencias" data-lugar-celular="mais" aria-label="Pendências">
-            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-pendencias.svg#icone-pendencias" /></svg>
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-pendencias" /></svg>
             <span class="menu-item-label">Pendências</span>
             <span class="menu-item-selo oculto" aria-hidden="true"></span>
           </button>
@@ -199,58 +201,58 @@
           <div class="sidebar-divisor"></div>
 
           <button type="button" class="menu-item" data-pagina="escalas" data-lugar-celular="barra" aria-label="Escala">
-            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-escalas.svg#icone-escalas" /></svg>
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-escalas" /></svg>
             <span class="menu-item-label">Escala</span>
           </button>
 
           <button type="button" class="menu-item" data-pagina="trocas" data-lugar-celular="barra" aria-label="Trocas">
-            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-trocas.svg#icone-trocas" /></svg>
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-trocas" /></svg>
             <span class="menu-item-label">Trocas</span>
           </button>
 
           <button type="button" class="menu-item" data-pagina="folgas" data-lugar-celular="barra" aria-label="Folgas">
-            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-folgas.svg#icone-folgas" /></svg>
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-folgas" /></svg>
             <span class="menu-item-label">Folgas</span>
           </button>
 
           <button type="button" class="menu-item" data-pagina="extrajornada" data-lugar-celular="mais" aria-label="Extrajornada">
-            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-extrajornada.svg#icone-extrajornada" /></svg>
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-extrajornada" /></svg>
             <span class="menu-item-label">Extrajornada</span>
           </button>
 
           <div class="sidebar-divisor"></div>
 
           <button type="button" class="menu-item" data-pagina="postos" data-lugar-celular="mais" aria-label="Postos">
-            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-postos.svg#icone-postos" /></svg>
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-postos" /></svg>
             <span class="menu-item-label">Postos</span>
           </button>
 
           <button type="button" class="menu-item" data-pagina="distribuicao" data-lugar-celular="fora" aria-label="Distribuição">
-            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-distribuicao.svg#icone-distribuicao" /></svg>
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-distribuicao" /></svg>
             <span class="menu-item-label">Distribuição</span>
           </button>
 
           <div class="sidebar-divisor"></div>
 
           <button type="button" class="menu-item" data-pagina="usuarios" data-lugar-celular="mais" aria-label="Usuários">
-            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-usuarios.svg#icone-usuarios" /></svg>
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-usuarios" /></svg>
             <span class="menu-item-label">Usuários</span>
           </button>
 
           <button type="button" class="menu-item" data-pagina="historico" data-lugar-celular="fora" data-admin aria-label="Histórico">
-            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-historico.svg#icone-historico" /></svg>
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-historico" /></svg>
             <span class="menu-item-label">Histórico</span>
           </button>
 
           <button type="button" class="menu-item" data-pagina="ajustes" data-lugar-celular="mais" aria-label="Ajustes">
-            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-ajustes.svg#icone-ajustes" /></svg>
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-ajustes" /></svg>
             <span class="menu-item-label">Ajustes</span>
           </button>
 
           <div class="sidebar-divisor" data-programador></div>
 
           <button type="button" class="menu-item" data-pagina="programador" data-lugar-celular="mais" data-programador aria-label="Programador">
-            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-codigo.svg#icone-codigo" /></svg>
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-codigo" /></svg>
             <span class="menu-item-label">Programador</span>
             <span class="menu-item-selo oculto" aria-hidden="true"></span>
           </button>
@@ -258,7 +260,7 @@
         </div>
 
         <button type="button" class="sidebar-toggle" aria-label="Recolher menu">
-          <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/icone-menu-toggle.svg#icone-menu-toggle" /></svg>
+          <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-menu-toggle" /></svg>
           <span class="sidebar-toggle-texto">Recolher menu</span>
         </button>
       </nav>
@@ -286,7 +288,7 @@
             <!-- botão Editar (config.botaoEditar): sai da leitura para a edição; some durante a edição -->
             <button type="button" class="botao oculto" id="painel-editar">Editar</button>
             <button type="button" class="botao botao--icone" id="painel-fechar" aria-label="Fechar painel">
-              <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+              <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
             </button>
             <!-- abas de seção (a página preenche): embaixo do título, como na página -->
             <div class="painel-linha-abas oculto" id="painel-linha-abas"></div>
@@ -303,25 +305,25 @@
          como folha. Os itens são .menu-item com data-pagina: o roteador liga e marca, como no menu lateral -->
     <nav class="barra-celular">
       <button type="button" class="menu-item barra-celular-item" data-pagina="inicio">
-        <span class="barra-celular-icone"><svg class="icone" width="22" height="22" aria-hidden="true"><use href="icones/icone-inicio.svg#icone-inicio" /></svg></span>
+        <span class="barra-celular-icone"><svg class="icone" width="22" height="22" aria-hidden="true"><use href="icones/todos.svg#icone-inicio" /></svg></span>
         <span class="barra-celular-rotulo">Início</span>
       </button>
       <button type="button" class="menu-item barra-celular-item" data-pagina="escalas">
-        <span class="barra-celular-icone"><svg class="icone" width="22" height="22" aria-hidden="true"><use href="icones/icone-escalas.svg#icone-escalas" /></svg></span>
+        <span class="barra-celular-icone"><svg class="icone" width="22" height="22" aria-hidden="true"><use href="icones/todos.svg#icone-escalas" /></svg></span>
         <span class="barra-celular-rotulo">Escala</span>
       </button>
       <button type="button" class="menu-item barra-celular-item" data-pagina="trocas">
-        <span class="barra-celular-icone"><svg class="icone" width="22" height="22" aria-hidden="true"><use href="icones/icone-trocas.svg#icone-trocas" /></svg></span>
+        <span class="barra-celular-icone"><svg class="icone" width="22" height="22" aria-hidden="true"><use href="icones/todos.svg#icone-trocas" /></svg></span>
         <span class="barra-celular-rotulo">Trocas</span>
       </button>
       <button type="button" class="menu-item barra-celular-item" data-pagina="folgas">
-        <span class="barra-celular-icone"><svg class="icone" width="22" height="22" aria-hidden="true"><use href="icones/icone-folgas.svg#icone-folgas" /></svg></span>
+        <span class="barra-celular-icone"><svg class="icone" width="22" height="22" aria-hidden="true"><use href="icones/todos.svg#icone-folgas" /></svg></span>
         <span class="barra-celular-rotulo">Folgas</span>
       </button>
       <!-- o número é o mesmo do item Pendências (copiado pelo js/index-sidebar.js) -->
       <button type="button" class="barra-celular-item barra-celular-mais" aria-expanded="false" aria-controls="menu-lateral">
         <span class="barra-celular-icone">
-          <svg class="icone" width="22" height="22" aria-hidden="true"><use href="icones/icone-mais-telas.svg#icone-mais-telas" /></svg>
+          <svg class="icone" width="22" height="22" aria-hidden="true"><use href="icones/todos.svg#icone-mais-telas" /></svg>
           <span class="menu-item-selo barra-celular-selo oculto" aria-hidden="true"></span>
         </span>
         <span class="barra-celular-rotulo">Mais</span>
@@ -416,7 +418,7 @@
               <div class="dropdown">
                 <button type="button" class="campo-entrada campo-selecao" id="dados-pendentes-cnh" data-valor="">
                   <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
-                  <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+                  <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
                 </button>
                 <div class="dropdown-menu">
                   <button type="button" class="dropdown-item" data-valor="Nenhuma">Não tenho CNH</button>
@@ -514,7 +516,7 @@
           </div>
         </div>
         <p class="perfil-nota" data-modo-conferir>
-          <svg class="icone perfil-nota-icone" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+          <svg class="icone perfil-nota-icone" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
           <span>Algum dado errado? Corrija em Meus dados. A correção vai para a aprovação de um administrador.</span>
         </p>
         <button type="button" class="botao botao--texto" id="dados-pendentes-corrigir" data-modo-conferir>Corrigir em Meus dados</button>
@@ -567,8 +569,8 @@
   <div class="modal-veu" id="veu-aviso">
     <div class="modal modal--aviso" role="alertdialog" aria-modal="true" aria-labelledby="aviso-veu-mensagem">
       <div class="modal-corpo aviso-corpo">
-        <svg class="icone aviso-icone aviso-icone--sucesso oculto" width="32" height="32" aria-hidden="true"><use href="icones/icone-sucesso.svg#icone-sucesso"/></svg>
-        <svg class="icone aviso-icone aviso-icone--alerta oculto" width="32" height="32" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+        <svg class="icone aviso-icone aviso-icone--sucesso oculto" width="32" height="32" aria-hidden="true"><use href="icones/todos.svg#icone-sucesso"/></svg>
+        <svg class="icone aviso-icone aviso-icone--alerta oculto" width="32" height="32" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
         <div class="aviso-textos">
           <span class="aviso-mensagem" id="aviso-veu-mensagem"></span>
           <ul class="aviso-lista oculto"></ul>
@@ -605,7 +607,7 @@
   <div class="entrando" role="status">
     <div class="entrando-logo">
       <svg viewBox="0 0 186.44 96.312" fill="currentColor" preserveAspectRatio="xMidYMid meet">
-        <use href="icones/icone-logo.svg#icone-logo"></use>
+        <use href="icones/todos.svg#icone-logo"></use>
       </svg>
     </div>
     <div class="entrando-corpo">
@@ -621,7 +623,7 @@
   <!-- um ponto da análise: nota amarela (atenção) ou vermelha (problema); sem nenhum, a nota verde -->
   <template id="tpl-geral-impacto-nota">
     <div class="nota impacto-nota">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
       <span class="nota-texto"><span class="nota-titulo"></span> <span class="impacto-nota-desc"></span></span>
     </div>
   </template>
@@ -651,10 +653,10 @@
     <div class="arvore-grupo">
       <div class="arvore-linha">
         <button type="button" class="arvore-seta" aria-label="Expandir ou recolher" aria-expanded="false">
-          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
         </button>
         <button type="button" class="caixa-selecao" role="checkbox" aria-checked="false">
-          <svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg>
+          <svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
         </button>
         <span class="arvore-nome"></span>
         <span class="arvore-detalhe"></span>
@@ -693,7 +695,7 @@
 
   <template id="tpl-arvore-trilha-item">
     <span class="arvore-trilha-item">
-      <svg class="icone arvore-trilha-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
+      <svg class="icone arvore-trilha-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
       <span class="arvore-trilha-nome"></span>
     </span>
   </template>
@@ -755,7 +757,7 @@
         <div class="dropdown">
           <button type="button" class="campo-entrada campo-selecao" aria-label="Efetivo mínimo">
             <span class="campo-selecao-texto"></span>
-            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
           </button>
           <div class="dropdown-menu"></div>
         </div>
@@ -765,7 +767,7 @@
         <div class="dropdown">
           <button type="button" class="campo-entrada campo-selecao" aria-label="Efetivo ideal">
             <span class="campo-selecao-texto"></span>
-            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
           </button>
           <div class="dropdown-menu"></div>
         </div>
@@ -775,7 +777,7 @@
         <div class="dropdown">
           <button type="button" class="campo-entrada campo-selecao" aria-label="Efetivo máximo">
             <span class="campo-selecao-texto"></span>
-            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
           </button>
           <div class="dropdown-menu"></div>
         </div>
@@ -815,7 +817,7 @@
         <span class="campo-ajuda">Sem a data do Até, a troca é para sempre.</span>
       </div>
       <div class="nota nota--alerta oculto" data-viatura-aviso>
-        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
         <span class="nota-texto"></span>
       </div>
     </div>
@@ -855,10 +857,10 @@
     <div class="arvore-grupo">
       <div class="arvore-linha">
         <button type="button" class="arvore-seta" aria-label="Expandir ou recolher" aria-expanded="false">
-          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
         </button>
         <button type="button" class="caixa-selecao" role="checkbox" aria-checked="false">
-          <svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg>
+          <svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
         </button>
         <span class="arvore-nome"></span>
       </div>
@@ -870,7 +872,7 @@
        recolhido ao rolar a lista, fica no alto da tela; tocar ou puxar para baixo traz o topo de volta -->
   <template id="tpl-topo-abinha">
     <button type="button" class="topo-abinha" aria-label="Mostrar o topo">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
     </button>
   </template>
 
@@ -909,10 +911,10 @@
   <template id="tpl-filtros">
     <div class="dropdown filtros-botao">
       <button type="button" class="botao">
-        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-filtrar.svg#icone-filtrar"/></svg>
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-filtrar"/></svg>
         <span>Filtros</span>
         <span class="selo selo--escuro filtros-contagem oculto"></span>
-        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
       </button>
       <div class="dropdown-menu filtros-menu"></div>
     </div>
@@ -922,9 +924,9 @@
     <div class="filtro">
       <div class="dropdown-titulo"></div>
       <div class="arvore-linha filtro-todos">
-        <span class="arvore-seta arvore-seta--oculta" aria-hidden="true"><svg class="icone" width="12" height="12"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg></span>
+        <span class="arvore-seta arvore-seta--oculta" aria-hidden="true"><svg class="icone" width="12" height="12"><use href="icones/todos.svg#icone-seta-direita"/></svg></span>
         <button type="button" class="caixa-selecao" role="checkbox" aria-checked="true">
-          <svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg>
+          <svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
         </button>
         <span class="arvore-nome">Todos</span>
       </div>
@@ -946,7 +948,7 @@
       <span class="filtro-ativo-tipo"></span>
       <span class="filtro-ativo-valor"></span>
       <button type="button" class="filtro-ativo-tirar" aria-label="Tirar filtro">
-        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
       </button>
     </span>
   </template>
@@ -956,7 +958,7 @@
   <template id="tpl-legenda">
     <div class="dropdown legenda">
       <button type="button" class="botao botao--quadrado" aria-label="Legenda" data-dica="Legenda">
-        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-legenda.svg#icone-legenda"/></svg>
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-legenda"/></svg>
       </button>
       <div class="dropdown-menu dropdown-menu--largo escala-legenda-menu">
         <div class="dropdown-menu-rolagem">
@@ -972,7 +974,7 @@
     <div class="dropdown seletor-menu">
       <button type="button" class="seletor">
         <span class="seletor-texto"></span>
-        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
       </button>
       <div class="dropdown-menu"></div>
     </div>
@@ -989,14 +991,14 @@
     <div class="guia-menu-lista"></div>
     <div class="dropdown-divisor guia-menu-divisor"></div>
     <button type="button" class="dropdown-item guia-menu-manual">
-      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-manual.svg#icone-manual"/></svg>
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-manual"/></svg>
       <span>Ler sobre esta tela no manual</span>
     </button>
   </template>
 
   <template id="tpl-guia-menu-item">
     <button type="button" class="dropdown-item guia-menu-item">
-      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-ajuda.svg#icone-ajuda"/></svg>
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg>
       <span class="guia-menu-nome"></span>
       <span class="selo selo--sucesso guia-menu-visto oculto">Visto</span>
     </button>
@@ -1034,26 +1036,26 @@
     <div class="calendario">
       <div class="calendario-cabecalho">
         <button type="button" class="botao botao--icone botao--pequeno calendario-nav" data-nav="-1" aria-label="Anterior">
-          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-esquerda.svg#icone-seta-esquerda"/></svg>
+          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>
         </button>
         <div class="calendario-seletores">
           <div class="dropdown calendario-seletor" data-tipo="mes">
             <button type="button" class="calendario-seletor-gatilho">
               <span class="calendario-seletor-texto"></span>
-              <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+              <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
             </button>
             <div class="dropdown-menu calendario-menu"></div>
           </div>
           <div class="dropdown calendario-seletor" data-tipo="ano">
             <button type="button" class="calendario-seletor-gatilho">
               <span class="calendario-seletor-texto"></span>
-              <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+              <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
             </button>
             <div class="dropdown-menu calendario-menu"></div>
           </div>
         </div>
         <button type="button" class="botao botao--icone botao--pequeno calendario-nav" data-nav="1" aria-label="Próximo">
-          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
+          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
         </button>
       </div>
       <div class="calendario-corpo-dias">
@@ -1170,7 +1172,7 @@
       </div>
       <button type="button" class="pedido-item pedido-item--todos" role="checkbox" aria-checked="true">
         <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true">
-          <svg class="icone" width="10" height="10"><use href="icones/icone-check.svg#icone-check"/></svg>
+          <svg class="icone" width="10" height="10"><use href="icones/todos.svg#icone-check"/></svg>
         </span>
         <span class="pedido-item-rotulo">Selecionar tudo</span>
       </button>
@@ -1182,12 +1184,12 @@
   <template id="tpl-pedido-item">
     <button type="button" class="pedido-item" role="checkbox" aria-checked="true">
       <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true">
-        <svg class="icone" width="10" height="10"><use href="icones/icone-check.svg#icone-check"/></svg>
+        <svg class="icone" width="10" height="10"><use href="icones/todos.svg#icone-check"/></svg>
       </span>
       <span class="pedido-item-rotulo"></span>
       <span class="pedido-item-valores">
         <span class="pedido-item-de"></span>
-        <svg class="icone pedido-item-seta" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+        <svg class="icone pedido-item-seta" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
         <span class="pedido-item-para"></span>
       </span>
     </button>
@@ -1205,7 +1207,7 @@
       </span>
       <span class="espacador-flex"></span>
       <span class="selo pedido-linha-selo oculto"></span>
-      <svg class="icone pedido-linha-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
+      <svg class="icone pedido-linha-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
     </button>
   </template>
 
@@ -1231,7 +1233,7 @@
       <div class="dropdown" id="aviso-unidades-dropdown">
         <button type="button" class="campo-entrada campo-selecao" id="aviso-unidades-gatilho">
           <span class="campo-selecao-texto campo-selecao-texto--vazio" id="aviso-unidades-texto">Selecione</span>
-          <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+          <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
         </button>
         <div class="dropdown-menu dropdown-menu--largo">
           <div class="dropdown-menu-rolagem">
@@ -1250,7 +1252,7 @@
     <div class="campo oculto" data-destino="militares">
       <span class="campo-rotulo">Militares que recebem</span>
       <div class="busca">
-        <svg class="icone busca-modo-marcar" width="16" height="16" aria-hidden="true"><use href="icones/icone-pesquisar.svg#icone-pesquisar"/></svg>
+        <svg class="icone busca-modo-marcar" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-pesquisar"/></svg>
         <input type="text" class="busca-entrada" id="aviso-militares-busca" maxlength="60" placeholder="Pesquisar militar" aria-label="Pesquisar militar" />
       </div>
       <div class="aviso-militares" id="aviso-militares-lista"></div>
@@ -1273,7 +1275,7 @@
   <template id="tpl-aviso-militar">
     <button type="button" class="aviso-militar" role="checkbox" aria-checked="false">
       <span class="caixa-selecao" aria-hidden="true">
-        <svg class="icone" width="10" height="10"><use href="icones/icone-check.svg#icone-check"/></svg>
+        <svg class="icone" width="10" height="10"><use href="icones/todos.svg#icone-check"/></svg>
       </span>
       <span class="aviso-militar-nome"></span>
       <span class="espacador-flex"></span>
@@ -1291,7 +1293,7 @@
     <div class="painel-secao">
       <button type="button" class="painel-secao-cabecalho" aria-expanded="true">
         <span class="rotulo-secao"></span>
-        <svg class="icone painel-secao-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+        <svg class="icone painel-secao-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
       </button>
       <div class="painel-secao-corpo"></div>
     </div>
@@ -1304,7 +1306,7 @@
   <!-- grupo "Anteriores (N)": abre e fecha os itens que já passaram numa lista com histórico (geral-anteriores) -->
   <template id="tpl-anteriores">
     <button type="button" class="anteriores" aria-expanded="false">
-      <svg class="icone anteriores-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+      <svg class="icone anteriores-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
       <span>Anteriores</span>
       <span class="anteriores-qtd"></span>
     </button>
@@ -1338,7 +1340,7 @@
   <template id="tpl-escala-mes-hora-par">
     <span class="linha-escalado-hora-par">
       <span class="linha-escalado-hora-ini"></span>
-      <svg class="icone linha-escalado-hora-seta" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+      <svg class="icone linha-escalado-hora-seta" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
       <span class="linha-escalado-hora-fim"></span>
     </span>
   </template>
@@ -1350,7 +1352,7 @@
   </template>
 
   <template id="tpl-escala-mes-origem">
-    <svg class="icone" width="13" height="13" aria-hidden="true"><use href="icones/icone-origem-base.svg#icone-origem-base"/></svg>
+    <svg class="icone" width="13" height="13" aria-hidden="true"><use href="icones/todos.svg#icone-origem-base"/></svg>
   </template>
 
   <!-- um bloco por unidade dentro do dia (nome + a célula do Mês): Escala › Mês › Calendário,
@@ -1383,7 +1385,7 @@
   <!-- ícone de regra (exclusivo/proibido) na tira de ícones do militar; o span recebe a dica (data-dica) -->
   <template id="tpl-escala-regra-icone">
     <span class="escala-distribuicao-regra">
-      <svg class="icone" width="13" height="13" aria-hidden="true"><use href="icones/icone-regra.svg#icone-regra"/></svg>
+      <svg class="icone" width="13" height="13" aria-hidden="true"><use href="icones/todos.svg#icone-regra"/></svg>
     </span>
   </template>
 
@@ -1394,7 +1396,7 @@
       <div class="alteracoes-cabecalho">
         <span class="alteracoes-titulo">Alterações manuais <span class="alteracoes-qtd"></span></span>
         <button type="button" class="botao-discreto alteracoes-toggle" aria-label="Mostrar ou ocultar as alterações manuais" aria-expanded="false">
-          <svg class="icone alteracoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+          <svg class="icone alteracoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
         </button>
       </div>
       <div class="alteracoes-lista oculto"></div>
@@ -1415,7 +1417,7 @@
   <!-- ===== painel do dia › aba Ciclo: a frase do topo (a data vem do painel) ===== -->
   <template id="tpl-escala-ciclo-nota">
     <div class="nota">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-historico.svg#icone-historico"/></svg>
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-historico"/></svg>
       <span>As mudanças desta aba valem a partir de <span class="escala-ciclo-nota-data"></span> e seguem nos próximos dias.</span>
     </div>
   </template>
@@ -1424,7 +1426,7 @@
   <!-- subcabeçalho do admin: abre o formulário de adicionar militar -->
   <template id="tpl-escala-edicao-adicionar">
     <button type="button" class="botao botao--primario escala-edicao-adicionar">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-novo-usuario.svg#icone-novo-usuario"/></svg>
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-novo-usuario"/></svg>
       <span>Adicionar militar</span>
     </button>
   </template>
@@ -1433,10 +1435,10 @@
   <template id="tpl-escala-edicao-historico">
     <div class="escala-edicao-historico">
       <button type="button" class="botao botao--icone escala-edicao-historico-desfazer" aria-label="Desfazer" data-dica="Desfazer" disabled>
-        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-desfazer.svg#icone-desfazer"/></svg>
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-desfazer"/></svg>
       </button>
       <button type="button" class="botao botao--icone escala-edicao-historico-refazer" aria-label="Refazer" data-dica="Refazer" disabled>
-        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-refazer.svg#icone-refazer"/></svg>
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-refazer"/></svg>
       </button>
     </div>
   </template>
@@ -1444,14 +1446,14 @@
   <!-- lápis: abre o militar no dia -->
   <template id="tpl-escala-edicao-lapis">
     <button type="button" class="botao-discreto" aria-label="Editar o militar no dia">
-      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-editar.svg#icone-editar"/></svg>
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-editar"/></svg>
     </button>
   </template>
 
   <!-- volta ao automático (desfaz o ajuste manual da linha) -->
   <template id="tpl-escala-edicao-desfazer">
     <button type="button" class="botao-discreto" aria-label="Voltar ao automático">
-      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-restaurar.svg#icone-restaurar"/></svg>
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-restaurar"/></svg>
     </button>
   </template>
 
@@ -1463,7 +1465,7 @@
   <!-- aviso informativo no topo da lista (ex.: quem assume o Chefe de Socorro); o texto vem do JS -->
   <template id="tpl-escala-nota">
     <div class="nota">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
       <span class="nota-texto"></span>
     </div>
   </template>
@@ -1476,7 +1478,7 @@
   <!-- sub-telas (formulário e militar no dia): volta à lista do dia -->
   <template id="tpl-escala-sub-voltar">
     <button type="button" class="botao botao--texto subtela-voltar">
-      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-esquerda.svg#icone-seta-esquerda"/></svg>
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>
       <span>Voltar ao dia</span>
     </button>
   </template>
@@ -1494,7 +1496,7 @@
     <div class="escala-posto-cab">
       <span class="rotulo-secao"></span>
       <button type="button" class="botao-discreto escala-posto-editar" aria-label="Editar posto">
-        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-ajustar.svg#icone-ajustar"/></svg>
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-ajustar"/></svg>
       </button>
     </div>
   </template>
@@ -1517,7 +1519,7 @@
         <span class="subtela-subtitulo escala-form-subtitulo"></span>
       </div>
       <div class="nota escala-form-nota oculto">
-        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-historico.svg#icone-historico"/></svg>
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-historico"/></svg>
         <span>Vale só para este dia. Para entrar na escala dos próximos dias, use a aba Ciclo.</span>
       </div>
       <div class="grupo-caixa escala-form-secao" data-secao="quem">
@@ -1532,7 +1534,7 @@
             <div class="dropdown escala-form-unidade">
               <button type="button" class="campo-entrada campo-selecao" aria-label="Unidade">
                 <span class="campo-selecao-texto"></span>
-                <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+                <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
               </button>
               <div class="dropdown-menu dropdown-menu--largo">
                 <div class="dropdown-menu-rolagem">
@@ -1545,7 +1547,7 @@
           <div class="escala-form-lista escala-form-lista--folga"></div>
         </div>
         <div class="nota escala-form-assume oculto">
-          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
           <span class="nota-texto"></span>
         </div>
       </div>
@@ -1565,25 +1567,25 @@
           <div class="dropdown escala-form-posto">
             <button type="button" class="campo-entrada campo-selecao" aria-label="Posto">
               <span class="campo-selecao-texto campo-selecao-texto--vazio">Posto</span>
-              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
             </button>
             <div class="dropdown-menu"></div>
           </div>
           <div class="dropdown escala-form-funcao">
             <button type="button" class="campo-entrada campo-selecao" aria-label="Função">
               <span class="campo-selecao-texto campo-selecao-texto--vazio">Função</span>
-              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
             </button>
             <div class="dropdown-menu"></div>
           </div>
         </div>
       </div>
       <div class="nota escala-form-acumula oculto">
-        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
         <span class="nota-texto"></span>
       </div>
       <div class="nota nota--alerta escala-form-aviso oculto">
-        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
         <span class="nota-texto"></span>
       </div>
     </div>
@@ -1592,7 +1594,7 @@
   <!-- um militar nas listas do Quem (clicável; o escolhido fica marcado) -->
   <template id="tpl-escala-form-militar">
     <button type="button" class="escala-form-militar">
-      <svg class="icone escala-form-marca" width="14" height="14" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg>
+      <svg class="icone escala-form-marca" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
       <span class="escala-distribuicao-grad"></span>
       <span class="escala-distribuicao-nome"></span>
       <span class="escala-form-militar-extra"></span>
@@ -1629,7 +1631,7 @@
       </div>
       <div class="escala-militar-acoes">
         <button type="button" class="botao escala-militar-nova">
-          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-mover-funcao.svg#icone-mover-funcao"/></svg>
+          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mover-funcao"/></svg>
           <span>Nova função</span>
         </button>
         <button type="button" class="botao escala-secao-botao--perigo escala-militar-tirar">Tirar do dia</button>
@@ -1641,7 +1643,7 @@
   <template id="tpl-escala-militar-funcao">
     <div class="escala-militar-funcao">
       <button type="button" class="caixa-selecao" role="checkbox" aria-checked="true">
-        <svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg>
+        <svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
       </button>
       <span class="escala-militar-funcao-nome">
         <span class="escala-militar-funcao-titulo"></span>
@@ -1659,7 +1661,7 @@
   <!-- o efeito de deixar a função (o texto vem do JS) -->
   <template id="tpl-escala-militar-efeito">
     <span class="escala-militar-efeito">
-      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
       <span class="escala-militar-efeito-texto"></span>
     </span>
   </template>
@@ -1695,12 +1697,12 @@
   <template id="tpl-escala-extra-busca">
     <div class="busca escala-extra-busca">
       <button type="button" class="busca-modo" aria-label="Alternar entre marcar e filtrar" data-dica="Marcar">
-        <svg class="icone busca-modo-marcar" width="16" height="16" aria-hidden="true"><use href="icones/icone-pesquisar.svg#icone-pesquisar"/></svg>
-        <svg class="icone busca-modo-filtrar oculto" width="16" height="16" aria-hidden="true"><use href="icones/icone-filtrar.svg#icone-filtrar"/></svg>
+        <svg class="icone busca-modo-marcar" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-pesquisar"/></svg>
+        <svg class="icone busca-modo-filtrar oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-filtrar"/></svg>
       </button>
       <input type="text" name="busca-extra-dia" class="busca-entrada" maxlength="100" placeholder="Pesquisar militar" aria-label="Pesquisar militar" />
       <button type="button" class="busca-limpar" aria-label="Limpar pesquisa">
-        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
       </button>
     </div>
   </template>
@@ -1730,7 +1732,7 @@
   <!-- uma linha do que a extra resolveu (marca verde): a frase do aviso do painel do dia; o texto vem do JS -->
   <template id="tpl-escala-extra-aviso">
     <div class="escala-extra-aviso">
-      <svg class="icone escala-extra-aviso-icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg>
+      <svg class="icone escala-extra-aviso-icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
       <span class="escala-extra-aviso-texto"><strong class="escala-extra-aviso-nome"></strong><span class="escala-extra-aviso-resto"></span></span>
     </div>
   </template>
@@ -1833,10 +1835,10 @@
 
   <template id="tpl-escala-secao-busca">
     <div class="busca escala-secao-busca">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-pesquisar.svg#icone-pesquisar"/></svg>
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-pesquisar"/></svg>
       <input type="text" name="busca-militar" class="busca-entrada" maxlength="100" placeholder="Pesquisar militar" aria-label="Pesquisar militar" />
       <button type="button" class="busca-limpar" aria-label="Limpar pesquisa">
-        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
       </button>
     </div>
   </template>
@@ -1862,7 +1864,7 @@
     <div class="painel-secao">
       <button type="button" class="painel-secao-cabecalho" aria-expanded="true">
         <span class="rotulo-secao">Dados pessoais</span>
-        <svg class="icone painel-secao-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+        <svg class="icone painel-secao-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
       </button>
       <div class="painel-secao-corpo">
         <label class="campo">
@@ -1890,7 +1892,7 @@
           <div class="dropdown">
             <button type="button" class="campo-entrada campo-selecao" id="nu-cnh">
               <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
-              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
             </button>
             <div class="dropdown-menu">
               <button type="button" class="dropdown-item" data-valor="Nenhuma">Nenhuma</button>
@@ -1923,7 +1925,7 @@
     <div class="painel-secao">
       <button type="button" class="painel-secao-cabecalho" aria-expanded="true">
         <span class="rotulo-secao">Dados institucionais</span>
-        <svg class="icone painel-secao-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+        <svg class="icone painel-secao-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
       </button>
       <div class="painel-secao-corpo">
         <div class="campo">
@@ -1931,7 +1933,7 @@
           <div class="dropdown">
             <button type="button" class="campo-entrada campo-selecao" id="nu-tipo">
               <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
-              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
             </button>
             <div class="dropdown-menu" id="nu-tipo-menu"></div>
           </div>
@@ -1948,7 +1950,7 @@
           <div class="dropdown">
             <button type="button" class="campo-entrada campo-selecao" id="nu-posto" disabled>
               <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione o tipo antes</span>
-              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
             </button>
             <div class="dropdown-menu" id="nu-posto-menu"></div>
           </div>
@@ -1969,7 +1971,7 @@
           <div class="dropdown">
             <button type="button" class="campo-entrada campo-selecao" id="nu-setor">
               <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
-              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
             </button>
             <div class="dropdown-menu">
               <button type="button" class="dropdown-item" data-valor="Operacional">Operacional</button>
@@ -1984,7 +1986,7 @@
           <div class="dropdown" id="nu-lotacao-dropdown">
             <button type="button" class="campo-entrada campo-selecao" id="nu-lotacao">
               <span class="campo-selecao-texto campo-selecao-texto--vazio" id="nu-lotacao-texto">Selecione uma unidade</span>
-              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
             </button>
             <div class="dropdown-menu dropdown-menu--largo">
               <div class="dropdown-menu-rolagem">
@@ -2000,7 +2002,7 @@
     <div class="painel-secao oculto" id="nu-promocoes-secao">
       <button type="button" class="painel-secao-cabecalho" aria-expanded="true">
         <span class="rotulo-secao">Datas de promoções</span>
-        <svg class="icone painel-secao-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+        <svg class="icone painel-secao-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
       </button>
       <div class="painel-secao-corpo" id="nu-promocoes"></div>
     </div>
@@ -2009,7 +2011,7 @@
     <div class="painel-secao oculto" id="nu-promocoes-praca-secao">
       <button type="button" class="painel-secao-cabecalho" aria-expanded="false">
         <span class="rotulo-secao">Datas como praça (só registro)</span>
-        <svg class="icone painel-secao-seta" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+        <svg class="icone painel-secao-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
       </button>
       <div class="painel-secao-corpo" id="nu-promocoes-praca"></div>
     </div>
@@ -2051,7 +2053,7 @@
       <div class="dropdown">
         <button type="button" class="campo-entrada campo-selecao" id="cnh-painel-selecao" data-valor="">
           <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
-          <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+          <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
         </button>
         <div class="dropdown-menu">
           <button type="button" class="dropdown-item" data-valor="Nenhuma">Não tenho CNH</button>
@@ -2118,7 +2120,7 @@
   <!-- a nota do saldo de folgas (amarela quando ficaria negativo) -->
   <template id="tpl-decisao-saldo">
     <div class="nota">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
       <span class="nota-texto"></span>
     </div>
   </template>
@@ -2134,7 +2136,7 @@
        Imprimir registro = o PDF do registro técnico, no começo do rodapé (o espaçador leva as ações para a direita) -->
   <template id="tpl-troca-acoes">
     <button type="button" class="botao botao--quadrado" data-acao="imprimir-registro" aria-label="Imprimir registro" data-dica="Imprimir registro">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-imprimir.svg#icone-imprimir"/></svg>
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg>
     </button>
     <span class="espacador-flex" data-espacador></span>
     <button type="button" class="botao" data-acao="cancelar">Cancelar troca</button>
@@ -2159,7 +2161,7 @@
   <!-- o aviso no topo do painel da troca (ex.: a troca tem uma alteração aguardando); o texto vem do JS -->
   <template id="tpl-troca-nota">
     <div class="nota nota--alerta">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
       <span class="nota-texto"></span>
     </div>
   </template>
@@ -2175,13 +2177,13 @@
   <template id="tpl-horario">
     <span class="horario">
       <span class="horario-par">
-        <svg class="icone horario-seta" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+        <svg class="icone horario-seta" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
       </span>
       <button type="button" class="botao-discreto horario-remover" aria-label="Remover este horário" data-dica="Remover este horário">
-        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
       </button>
       <button type="button" class="botao-discreto horario-adicionar" aria-label="Adicionar horário" data-dica="Adicionar horário">
-        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-horario-mais.svg#icone-horario-mais"/></svg>
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-horario-mais"/></svg>
       </button>
     </span>
   </template>
@@ -2191,7 +2193,7 @@
   <template id="tpl-horario-leitura">
     <span class="horario-leitura">
       <span class="horario-leitura-ini"></span>
-      <svg class="icone horario-seta" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+      <svg class="icone horario-seta" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
       <span class="horario-leitura-fim"></span>
     </span>
   </template>
@@ -2275,7 +2277,7 @@
   <!-- uma linha do aviso: ícone + texto de um erro (o JS preenche a partir de RosterWork.mensagens.escala.erros) -->
   <template id="tpl-escala-distribuicao-aviso-item">
     <div class="escala-distribuicao-aviso-item">
-      <svg class="icone escala-distribuicao-aviso-icone" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+      <svg class="icone escala-distribuicao-aviso-icone" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
       <span></span>
     </div>
   </template>
@@ -2284,9 +2286,9 @@
   <template id="tpl-escala-distribuicao-aviso-grupo">
     <div class="escala-distribuicao-aviso-grupo">
       <button type="button" class="escala-distribuicao-aviso-cabecalho" aria-expanded="false">
-        <svg class="icone escala-distribuicao-aviso-icone" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+        <svg class="icone escala-distribuicao-aviso-icone" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
         <span class="escala-distribuicao-aviso-titulo"></span>
-        <svg class="icone escala-distribuicao-aviso-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+        <svg class="icone escala-distribuicao-aviso-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
       </button>
       <div class="escala-distribuicao-aviso-detalhes oculto"></div>
     </div>
@@ -2322,7 +2324,7 @@
 
   <template id="tpl-escala-vaga-vazia">
     <div class="escala-vaga-vazia">
-      <svg class="icone escala-vaga-vazia-icone" width="16" height="16"><use href="icones/icone-alerta.svg#icone-alerta"></use></svg>
+      <svg class="icone escala-vaga-vazia-icone" width="16" height="16"><use href="icones/todos.svg#icone-alerta"></use></svg>
       <span class="escala-vaga-vazia-texto"></span>
     </div>
   </template>
@@ -2340,14 +2342,14 @@
   <!-- militar de outra unidade na tira de ícones; o span recebe a dica com a unidade dele (data-dica) -->
   <template id="tpl-escala-outra-unidade-icone">
     <span class="escala-distribuicao-outra-unidade">
-      <svg class="icone" width="13" height="13" aria-hidden="true"><use href="icones/icone-reforco.svg#icone-reforco"/></svg>
+      <svg class="icone" width="13" height="13" aria-hidden="true"><use href="icones/todos.svg#icone-reforco"/></svg>
     </span>
   </template>
 
   <template id="tpl-escala-distribuicao-hora">
     <span class="escala-distribuicao-hora">
       <span class="escala-distribuicao-hora-ini"></span>
-      <svg class="icone escala-distribuicao-hora-seta" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+      <svg class="icone escala-distribuicao-hora-seta" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
       <span class="escala-distribuicao-hora-fim"></span>
     </span>
   </template>
@@ -2360,27 +2362,27 @@
       <span class="rotulo-secao">Origem do serviço</span>
       <div class="escala-legenda-grade">
         <span class="escala-legenda-item">
-          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-origem-base.svg#icone-origem-base"/></svg>
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-origem-base"/></svg>
           <span>Entrada</span>
         </span>
         <span class="escala-legenda-item">
-          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-origem-sistema.svg#icone-origem-sistema"/></svg>
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-origem-sistema"/></svg>
           <span>Contínuo</span>
         </span>
         <span class="escala-legenda-item">
-          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-origem-saida.svg#icone-origem-saida"/></svg>
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-origem-saida"/></svg>
           <span>Saída</span>
         </span>
         <span class="escala-legenda-item">
-          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-origem-pontual.svg#icone-origem-pontual"/></svg>
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-origem-pontual"/></svg>
           <span>Pontual</span>
         </span>
         <span class="escala-legenda-item">
-          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-origem-troca.svg#icone-origem-troca"/></svg>
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-origem-troca"/></svg>
           <span>Troca</span>
         </span>
         <span class="escala-legenda-item">
-          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-extrajornada.svg#icone-extrajornada"/></svg>
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-extrajornada"/></svg>
           <span>Extrajornada</span>
         </span>
       </div>
@@ -2390,11 +2392,11 @@
       <span class="rotulo-secao">Nome riscado</span>
       <div class="escala-legenda-grade">
         <span class="escala-legenda-item">
-          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-folgas.svg#icone-folgas"/></svg>
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-folgas"/></svg>
           <span>Folga</span>
         </span>
         <span class="escala-legenda-item">
-          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-origem-troca.svg#icone-origem-troca"/></svg>
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-origem-troca"/></svg>
           <span>Troca</span>
         </span>
       </div>
@@ -2404,11 +2406,11 @@
       <span class="rotulo-secao">Função</span>
       <div class="escala-legenda-grade">
         <span class="escala-legenda-item">
-          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-cadeado.svg#icone-cadeado"/></svg>
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-cadeado"/></svg>
           <span>Função fixada</span>
         </span>
         <span class="escala-legenda-item">
-          <svg class="icone escala-distribuicao-marca-aviso" width="12" height="12" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+          <svg class="icone escala-distribuicao-marca-aviso" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
           <span>Aviso</span>
         </span>
       </div>
@@ -2418,11 +2420,11 @@
       <span class="rotulo-secao">Militar</span>
       <div class="escala-legenda-grade">
         <span class="escala-legenda-item">
-          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-regra.svg#icone-regra"/></svg>
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-regra"/></svg>
           <span>Tem regra</span>
         </span>
         <span class="escala-legenda-item">
-          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-reforco.svg#icone-reforco"/></svg>
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-reforco"/></svg>
           <span>De outra unidade</span>
         </span>
       </div>
@@ -2432,7 +2434,7 @@
       <span class="rotulo-secao">Observações</span>
       <div class="escala-legenda-grade">
         <span class="escala-legenda-item">
-          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-anotacao.svg#icone-anotacao"/></svg>
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-anotacao"/></svg>
           <span>Nota do administrador</span>
         </span>
       </div>
@@ -2444,7 +2446,7 @@
   <template id="tpl-escala-observacao-grupo">
     <div class="escala-observacao-grupo">
       <div class="escala-observacao-grupo-titulo">
-        <svg class="icone escala-observacao-icone"><use href="icones/icone-anotacao.svg#icone-anotacao" /></svg>
+        <svg class="icone escala-observacao-icone"><use href="icones/todos.svg#icone-anotacao" /></svg>
         <span class="escala-observacao-grupo-nome"></span>
       </div>
       <ol class="escala-observacao-lista"></ol>
@@ -2456,7 +2458,7 @@
     <li class="escala-observacao">
       <span class="escala-observacao-texto"></span>
       <button type="button" class="escala-observacao-remover" aria-label="Excluir observação">
-        <svg class="icone"><use href="icones/icone-fechar.svg#icone-fechar" /></svg>
+        <svg class="icone"><use href="icones/todos.svg#icone-fechar" /></svg>
       </button>
     </li>
   </template>
@@ -2465,7 +2467,7 @@
   <template id="tpl-escala-observacao-adicionar">
     <div class="escala-observacao-add">
       <button type="button" class="botao botao--pequeno escala-observacao-add-botao">
-        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-anotacao.svg#icone-anotacao" /></svg>
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-anotacao" /></svg>
         <span>Adicionar observação</span>
       </button>
       <div class="escala-observacao-campo oculto">

@@ -162,7 +162,7 @@
     var t = textos(p, situacao);
     el.dataset.pedido = p.tipo + ':' + p.id;
     var uso = el.querySelector('.pedido-linha-icone use');
-    if (uso) uso.setAttribute('href', 'icones/icone-' + ICONES[p.tipo] + '.svg#icone-' + ICONES[p.tipo]);
+    if (uso) uso.setAttribute('href', 'icones/todos.svg#icone-' + ICONES[p.tipo]);
     var pel = pelotoes(p);
     var colPelotao = el.querySelector('.pedido-linha-pelotao');
     colPelotao.textContent = pel.join('\n');

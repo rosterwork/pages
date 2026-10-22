@@ -790,7 +790,7 @@
     RosterWork.distribuicaoModelos.marcar(el, 'distribuicao-posto', postosStatus && postosStatus[posto.nome || '']);
     if (posto.tipo === 'viatura') {
       var uso = el.querySelector('.distribuicao-posto-icone use');
-      if (uso) uso.setAttribute('href', 'icones/icone-viatura.svg#icone-viatura');
+      if (uso) uso.setAttribute('href', 'icones/todos.svg#icone-viatura');
       el.querySelector('.distribuicao-posto-cnh').textContent = posto.cnh ? 'CNH ' + posto.cnh : '';
     }
     /* efetivo máximo: com o posto cheio, não cabe mais ninguém (nem nova função, nem o papel especial) */

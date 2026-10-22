@@ -6,7 +6,7 @@
     <!-- ajuda da tela: os passo a passo desta página e o manual (componente geral-guia) -->
     <div class="dropdown pagina-ajuda" data-manual="extrajornada">
       <button type="button" class="botao botao--icone" aria-label="Ajuda desta tela" data-dica="Ajuda">
-        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-ajuda.svg#icone-ajuda"/></svg>
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg>
       </button>
       <div class="dropdown-menu pagina-ajuda-menu"></div>
     </div>
@@ -27,18 +27,18 @@
   <div class="pagina-subcabecalho">
     <!-- Calendário: abre a solicitação do mês em aberto no painel (depois do prazo, só para ver) -->
     <button type="button" class="botao botao--primario oculto" id="extra-solicitar">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-extrajornada.svg#icone-extrajornada"/></svg>
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-extrajornada"/></svg>
       <span id="extra-solicitar-texto">Solicitar extra</span>
     </button>
 
     <!-- seletor de mês ÚNICO, compartilhado pelas abas (o orquestrador é o dono) -->
     <div class="geral-periodo" id="extra-periodo">
       <button type="button" class="botao botao--icone" id="extra-periodo-anterior" aria-label="Mês anterior">
-        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-esquerda.svg#icone-seta-esquerda"/></svg>
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>
       </button>
       <span class="geral-periodo-nome" id="extra-periodo-nome"></span>
       <button type="button" class="botao botao--icone" id="extra-periodo-proximo" aria-label="Próximo mês">
-        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
       </button>
       <!-- só quando o mês da tela não é o atual: volta ao mês atual (extrajornada.js) -->
       <button type="button" class="botao geral-periodo-hoje oculto" id="extra-periodo-hoje">Hoje</button>
@@ -70,36 +70,36 @@
     <!-- busca de militar no Calendário: marca ou filtra as linhas -->
     <div class="busca oculto" id="extra-cal-busca">
       <button type="button" class="busca-modo" aria-label="Alternar entre marcar e filtrar" data-dica="Marcar">
-        <svg class="icone busca-modo-marcar" width="16" height="16" aria-hidden="true"><use href="icones/icone-pesquisar.svg#icone-pesquisar"/></svg>
-        <svg class="icone busca-modo-filtrar oculto" width="16" height="16" aria-hidden="true"><use href="icones/icone-filtrar.svg#icone-filtrar"/></svg>
+        <svg class="icone busca-modo-marcar" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-pesquisar"/></svg>
+        <svg class="icone busca-modo-filtrar oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-filtrar"/></svg>
       </button>
       <input type="text" name="busca-calendario" class="busca-entrada" maxlength="100" placeholder="Pesquisar militar" aria-label="Pesquisar militar" />
       <button type="button" class="busca-limpar" aria-label="Limpar pesquisa">
-        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
       </button>
     </div>
 
     <!-- busca de militar na aba Voluntários: marca ou filtra as linhas -->
     <div class="busca oculto" id="extra-vol-busca">
       <button type="button" class="busca-modo" aria-label="Alternar entre marcar e filtrar" data-dica="Marcar">
-        <svg class="icone busca-modo-marcar" width="16" height="16" aria-hidden="true"><use href="icones/icone-pesquisar.svg#icone-pesquisar"/></svg>
-        <svg class="icone busca-modo-filtrar oculto" width="16" height="16" aria-hidden="true"><use href="icones/icone-filtrar.svg#icone-filtrar"/></svg>
+        <svg class="icone busca-modo-marcar" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-pesquisar"/></svg>
+        <svg class="icone busca-modo-filtrar oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-filtrar"/></svg>
       </button>
       <input type="text" name="busca-voluntario" class="busca-entrada" maxlength="100" placeholder="Pesquisar militar" aria-label="Pesquisar militar" />
       <button type="button" class="busca-limpar" aria-label="Limpar pesquisa">
-        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
       </button>
     </div>
 
     <!-- busca de militar (nome, CPF ou RG) na aba Distribuição: acende as células onde ele tira extra -->
     <div class="busca oculto" id="extra-busca">
       <button type="button" class="busca-modo" aria-label="Alternar entre marcar e filtrar" data-dica="Marcar">
-        <svg class="icone busca-modo-marcar" width="16" height="16" aria-hidden="true"><use href="icones/icone-pesquisar.svg#icone-pesquisar"/></svg>
-        <svg class="icone busca-modo-filtrar oculto" width="16" height="16" aria-hidden="true"><use href="icones/icone-filtrar.svg#icone-filtrar"/></svg>
+        <svg class="icone busca-modo-marcar" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-pesquisar"/></svg>
+        <svg class="icone busca-modo-filtrar oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-filtrar"/></svg>
       </button>
       <input type="text" name="busca-militar" class="busca-entrada" maxlength="100" placeholder="Pesquisar militar" aria-label="Pesquisar militar" />
       <button type="button" class="busca-limpar" aria-label="Limpar pesquisa">
-        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
       </button>
     </div>
 
@@ -114,7 +114,7 @@
     <div class="extra-cal" data-aba-painel="calendario">
       <!-- antes do lançamento: o mês ainda está em distribuição e não aparece na escala de serviço -->
       <div class="nota nota--alerta extra-cal-aviso oculto" id="extra-cal-aviso">
-        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
         <span class="nota-texto"><span class="nota-titulo" id="extra-cal-aviso-titulo"></span> Ainda não foi lançado na escala, por isso não aparece na escala de serviço. As datas podem mudar até o lançamento.</span>
       </div>
       <div class="extra-escala-cal" id="extra-cal-grade" data-painel-secao="extra"></div>
@@ -131,7 +131,7 @@
           <span class="extra-escalar-faltando" id="extra-escalar-faltando"></span>
           <!-- só no celular: abre e fecha a lista -->
           <button type="button" class="botao botao--icone extra-escalar-alternar" id="extra-escalar-alternar" aria-expanded="false" aria-controls="extra-escalar-lista" aria-label="Lista A escalar">
-            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
           </button>
         </div>
         <div class="geral-painel-esquerdo-lista" id="extra-escalar-lista"></div>
@@ -143,7 +143,7 @@
         <!-- quem está sendo escalado pelo A escalar: as cotas dele e o Soltar (some sem ninguém escolhido); no celular,
              sem a ajuda (a Legenda explica as cores), para sobrar tela para a grade -->
         <div class="nota extra-pincel oculto" id="extra-pincel">
-          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-extrajornada.svg#icone-extrajornada"/></svg>
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-extrajornada"/></svg>
           <span class="nota-texto"><span class="nota-titulo" id="extra-pincel-titulo"></span><span class="extra-pincel-ajuda"> Clique nos horários dele nos dias que quiser. Verde: quer o dia. Vermelho: não pode. Dia apagado: ocupado.</span></span>
           <span class="espacador-flex"></span>
           <button type="button" class="botao" id="extra-pincel-soltar">Soltar</button>
@@ -158,7 +158,7 @@
               <button type="button" class="botao" id="extra-distribuicao-cancelar" disabled>Cancelar</button>
               <button type="button" class="botao" id="extra-distribuicao-salvar" disabled>Salvar</button>
               <button type="button" class="botao botao--primario" id="extra-lancar" disabled>
-                <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-escalas.svg#icone-escalas"/></svg>
+                <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-escalas"/></svg>
                 <span>Lançar na escala</span>
               </button>
             </div>
@@ -204,7 +204,7 @@
         <div class="dropdown acoes-admin oculto" id="extra-vol-admin">
           <button type="button" class="botao acoes-admin-gatilho">
             <span>Administração</span>
-            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
           </button>
           <div class="dropdown-menu acoes-admin-menu">
             <span class="rotulo-secao acoes-admin-rotulo">Administração</span>
@@ -215,7 +215,7 @@
       </div>
       <!-- desde quando a porcentagem de atendimento é contada -->
       <div class="nota extra-vol-contagem">
-        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-historico.svg#icone-historico"/></svg>
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-historico"/></svg>
         <span class="nota-texto">A porcentagem de atendimento começou a ser contada em nov/26.</span>
       </div>
       <div class="extra-vol-rolagem" id="extra-vol-lista"></div>
@@ -238,44 +238,44 @@
         <span class="rotulo-secao">Etapas de <span id="extra-rel-mes"></span></span>
         <ol class="extra-rel-lista">
           <li class="extra-rel-etapa" data-etapa="solicitacoes">
-            <span class="extra-rel-marca"><span class="extra-rel-numero">1</span><svg class="icone extra-rel-check" width="12" height="12" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg></span>
+            <span class="extra-rel-marca"><span class="extra-rel-numero">1</span><svg class="icone extra-rel-check" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
             <div class="extra-rel-etapa-corpo">
               <span class="extra-rel-etapa-titulo">Solicitações</span>
               <span class="extra-rel-etapa-texto" id="extra-rel-solicitacoes"></span>
             </div>
           </li>
           <li class="extra-rel-etapa" data-etapa="termos">
-            <span class="extra-rel-marca"><span class="extra-rel-numero">2</span><svg class="icone extra-rel-check" width="12" height="12" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg></span>
+            <span class="extra-rel-marca"><span class="extra-rel-numero">2</span><svg class="icone extra-rel-check" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
             <div class="extra-rel-etapa-corpo">
               <span class="extra-rel-etapa-titulo">Termos e cotas</span>
               <span class="extra-rel-etapa-texto" id="extra-rel-termos"></span>
             </div>
           </li>
           <li class="extra-rel-etapa" data-etapa="montagem">
-            <span class="extra-rel-marca"><span class="extra-rel-numero">3</span><svg class="icone extra-rel-check" width="12" height="12" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg></span>
+            <span class="extra-rel-marca"><span class="extra-rel-numero">3</span><svg class="icone extra-rel-check" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
             <div class="extra-rel-etapa-corpo">
               <span class="extra-rel-etapa-titulo">Distribuição e lançamento</span>
               <span class="extra-rel-etapa-texto" id="extra-rel-montagem"></span>
               <button type="button" class="botao extra-rel-botao" id="extra-rel-inicial" disabled>
-                <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-imprimir.svg#icone-imprimir"/></svg>
+                <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg>
                 <span>Relatório inicial</span>
               </button>
             </div>
           </li>
           <li class="extra-rel-etapa" data-etapa="ajustes">
-            <span class="extra-rel-marca"><span class="extra-rel-numero">4</span><svg class="icone extra-rel-check" width="12" height="12" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg></span>
+            <span class="extra-rel-marca"><span class="extra-rel-numero">4</span><svg class="icone extra-rel-check" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
             <div class="extra-rel-etapa-corpo">
               <span class="extra-rel-etapa-titulo">Ajustes do mês <span class="selo oculto" id="extra-rel-ajustes-qtd"></span></span>
               <span class="extra-rel-etapa-texto" id="extra-rel-ajustes"></span>
             </div>
           </li>
           <li class="extra-rel-etapa" data-etapa="relatorio">
-            <span class="extra-rel-marca"><span class="extra-rel-numero">5</span><svg class="icone extra-rel-check" width="12" height="12" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg></span>
+            <span class="extra-rel-marca"><span class="extra-rel-numero">5</span><svg class="icone extra-rel-check" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
             <div class="extra-rel-etapa-corpo">
               <span class="extra-rel-etapa-titulo">Relatório de ajustes</span>
               <span class="extra-rel-etapa-texto" id="extra-rel-relatorio"></span>
               <button type="button" class="botao extra-rel-botao" id="extra-rel-ajustes-pdf" disabled>
-                <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-imprimir.svg#icone-imprimir"/></svg>
+                <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg>
                 <span>Relatório de ajustes</span>
               </button>
             </div>
@@ -397,7 +397,7 @@
 <template id="tpl-extra-sol">
   <div class="extra-sol">
     <div class="nota">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
       <span class="nota-texto"><span class="nota-titulo extra-sol-prazo"></span><span class="extra-sol-prazo-texto"></span></span>
     </div>
     <div class="grupo-caixa">
@@ -418,7 +418,7 @@
         <div class="dropdown extra-sol-cotas">
           <button type="button" class="campo-entrada campo-selecao extra-sol-cotas-gatilho">
             <span class="campo-selecao-texto extra-sol-cotas-texto"></span>
-            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
           </button>
           <div class="dropdown-menu extra-sol-cotas-menu"></div>
         </div>
@@ -531,7 +531,7 @@
   <div class="extra-vol-linha">
     <span class="extra-vol-so-admin">
       <button type="button" class="caixa-selecao extra-vol-termo-caixa" role="checkbox" aria-checked="false" aria-label="Termo recebido">
-        <svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg>
+        <svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
       </button>
     </span>
     <span class="extra-vol-militar">
@@ -550,7 +550,7 @@
       <div class="dropdown extra-vol-conc">
         <button type="button" class="campo-entrada campo-selecao campo-entrada--pequeno extra-vol-conc-gatilho" aria-label="Concedido">
           <span class="campo-selecao-texto extra-vol-conc-texto"></span>
-          <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+          <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
         </button>
         <div class="dropdown-menu extra-vol-conc-menu"></div>
       </div>
@@ -588,7 +588,7 @@
       <span class="rotulo-secao">Termo (eProtocolo)</span>
       <button type="button" class="extra-vol-termo" role="checkbox" aria-checked="false">
         <span class="caixa-selecao">
-          <svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg>
+          <svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
         </span>
         <span>Recebi o termo e ele confere com a solicitação</span>
       </button>
@@ -653,7 +653,7 @@
       <span class="extra-vaga-linha-nome">
         <span class="extra-vaga-id"><span class="extra-vaga-grad"></span> <span class="extra-vaga-nome"></span></span>
         <button type="button" class="botao botao--icone botao--pequeno extra-vaga-tirar" aria-label="Tirar deste dia" data-dica="Tirar deste dia">
-          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/icone-fechar.svg#icone-fechar"/></svg>
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
         </button>
       </span>
       <span class="extra-vaga-linha-controles">

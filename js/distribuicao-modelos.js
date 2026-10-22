@@ -412,7 +412,7 @@
     marcar(el, 'distribuicao-posto', postosStatus && postosStatus[p.nome || '']);
     if (p.tipo === 'viatura') {
       var uso = el.querySelector('.distribuicao-posto-icone use');
-      if (uso) uso.setAttribute('href', 'icones/icone-viatura.svg#icone-viatura');
+      if (uso) uso.setAttribute('href', 'icones/todos.svg#icone-viatura');
       el.querySelector('.distribuicao-posto-cnh').textContent = p.cnh ? 'CNH ' + p.cnh : '';
     }
     /* posto sem funções distribuídas: texto no lugar da tabela de vagas */
@@ -539,7 +539,7 @@
     item.classList.add('distribuicao-status-item--' + it.nivel);
     item.querySelector('.distribuicao-status-texto').textContent = it.texto;
     var uso = item.querySelector('.distribuicao-status-icone use');
-    if (uso) uso.setAttribute('href', it.nivel === 'ok' ? 'icones/icone-check.svg#icone-check' : 'icones/icone-alerta.svg#icone-alerta');
+    if (uso) uso.setAttribute('href', it.nivel === 'ok' ? 'icones/todos.svg#icone-check' : 'icones/todos.svg#icone-alerta');
     return item;
   }
   function nivelStatus(itens) {

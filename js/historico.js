@@ -96,7 +96,7 @@
     card.querySelector('.historico-evento-aba').textContent = info.aba;
     var icone = card.querySelector('.historico-evento-icone');
     var uso = card.querySelector('.historico-evento-icone use');
-    if (info.icone && uso) uso.setAttribute('href', 'icones/' + info.icone + '.svg#' + info.icone);
+    if (info.icone && uso) uso.setAttribute('href', 'icones/todos.svg#' + info.icone);
     else if (!info.icone && icone) icone.classList.add('oculto');
 
     card.querySelector('.historico-evento-assunto').textContent = tituloEvento(ev);

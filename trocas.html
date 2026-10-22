@@ -6,7 +6,7 @@
     <!-- ajuda da tela: os passo a passo desta página e o manual (componente geral-guia) -->
     <div class="dropdown pagina-ajuda" data-manual="trocas">
       <button type="button" class="botao botao--icone" aria-label="Ajuda desta tela" data-dica="Ajuda">
-        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-ajuda.svg#icone-ajuda"/></svg>
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg>
       </button>
       <div class="dropdown-menu pagina-ajuda-menu"></div>
     </div>
@@ -26,26 +26,26 @@
        o grupo Administração, só admin); à direita a ferramenta Imprimir (o painel Imprimir trocas) -->
   <div class="pagina-subcabecalho">
     <button type="button" class="botao botao--primario" id="btn-solicitar-troca">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-trocas.svg#icone-trocas"/></svg>
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-trocas"/></svg>
       <span>Solicitar troca</span>
     </button>
     <!-- a administração registra a troca já aprovada, com a parte do E-protocolo -->
     <div class="dropdown acoes-admin oculto">
       <button type="button" class="botao acoes-admin-gatilho">
         <span>Administração</span>
-        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
       </button>
       <div class="dropdown-menu acoes-admin-menu">
         <span class="rotulo-secao acoes-admin-rotulo">Administração</span>
         <button type="button" class="botao" id="btn-registrar-troca">
-          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg>
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
           <span>Registrar troca</span>
         </button>
       </div>
     </div>
     <span class="espacador-flex"></span>
     <button type="button" class="botao botao--quadrado" id="btn-imprimir-trocas" aria-label="Imprimir trocas" data-dica="Imprimir">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-imprimir.svg#icone-imprimir"/></svg>
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg>
     </button>
   </div>
 
@@ -118,7 +118,7 @@
         <div class="dropdown" id="ts-sol-unidade-dropdown">
           <button type="button" class="campo-entrada campo-selecao" id="ts-sol-unidade" aria-label="Unidade do solicitante">
             <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
-            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
           </button>
           <div class="dropdown-menu" id="ts-sol-unidade-menu"></div>
         </div>
@@ -153,7 +153,7 @@
         <div class="dropdown" id="ts-unidade-dropdown">
           <button type="button" class="campo-entrada campo-selecao" id="ts-unidade" aria-label="Unidade">
             <span class="campo-selecao-texto campo-selecao-texto--vazio" id="ts-unidade-texto">Selecione</span>
-            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
           </button>
           <div class="dropdown-menu" id="ts-unidade-menu"></div>
         </div>
@@ -181,12 +181,12 @@
         <div id="ts-dev-periodo"></div>
       </div>
       <div class="impacto-aviso impacto-aviso--alerta trocas-aviso oculto" id="ts-saldo">
-        <svg class="icone impacto-aviso-icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+        <svg class="icone impacto-aviso-icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
         <span class="impacto-aviso-textos"><span class="impacto-aviso-titulo" id="ts-saldo-texto"></span></span>
       </div>
       <!-- o solicitado ainda não tem conta (só no Solicitar): ninguém confirma, a troca vai direto para a aprovação -->
       <div class="impacto-aviso impacto-aviso--alerta trocas-aviso oculto" id="ts-sem-conta">
-        <svg class="icone impacto-aviso-icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+        <svg class="icone impacto-aviso-icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
         <span class="impacto-aviso-textos">
           <span class="impacto-aviso-titulo">Este militar ainda não tem conta no sistema.</span>
           <span class="impacto-aviso-desc">A troca vai direto para a aprovação do administrador.</span>
@@ -229,7 +229,7 @@
     <span class="troca-item-dados">
       <span class="troca-item-militares">
         <span class="troca-item-a"></span>
-        <svg class="icone troca-item-seta" width="16" height="16" aria-hidden="true"><use href="icones/icone-trocas.svg#icone-trocas"/></svg>
+        <svg class="icone troca-item-seta" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-trocas"/></svg>
         <span class="troca-item-b"></span>
       </span>
       <span class="troca-item-meta"></span>
@@ -257,7 +257,7 @@
       </span>
       <span class="troca-pendente-resumo"></span>
     </span>
-    <svg class="icone troca-pendente-seta" width="18" height="18" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
+    <svg class="icone troca-pendente-seta" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
   </button>
 </template>
 
@@ -266,7 +266,7 @@
   <div class="troca-extrato">
     <div class="troca-extrato-legenda">
       <span class="troca-extrato-legenda-folgou">Folgou</span>
-      <svg class="icone troca-extrato-legenda-seta" width="16" height="16" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+      <svg class="icone troca-extrato-legenda-seta" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
       <span class="troca-extrato-legenda-trabalhou">Trabalhou</span>
     </div>
     <div class="troca-extrato-lista"></div>
@@ -284,7 +284,7 @@
     </div>
     <div class="troca-extrato-quem">
       <span class="troca-extrato-folgou"></span>
-      <svg class="icone troca-extrato-seta" width="16" height="16" aria-hidden="true"><use href="icones/icone-seta-direita-longa.svg#icone-seta-direita-longa"/></svg>
+      <svg class="icone troca-extrato-seta" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
       <span class="troca-extrato-trabalhou"></span>
     </div>
   </div>
@@ -331,15 +331,15 @@
     <span class="rotulo-secao">1. Trocas</span>
     <div class="geral-periodo trocas-imprimir-mes">
       <button type="button" class="botao botao--icone" aria-label="Mês anterior" data-imprimir-mes-anterior>
-        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-esquerda.svg#icone-seta-esquerda"/></svg>
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>
       </button>
       <span class="geral-periodo-nome" data-imprimir-mes></span>
       <button type="button" class="botao botao--icone" aria-label="Próximo mês" data-imprimir-mes-proximo>
-        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
       </button>
     </div>
     <button type="button" class="arvore-linha escala-impressao-marcar" role="checkbox" aria-checked="true" data-imprimir-todas>
-      <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg></span>
+      <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
       <span class="arvore-nome">Marcar todas</span>
     </button>
     <div class="trocas-imprimir-lista" data-imprimir-lista></div>
@@ -382,11 +382,11 @@
      militares, a linha de apoio e o selo da situação -->
 <template id="tpl-troca-imprimir-item">
   <button type="button" class="arvore-linha escala-impressao-marcar trocas-imprimir-item" role="checkbox" aria-checked="true">
-    <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/icone-check.svg#icone-check"/></svg></span>
+    <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
     <span class="troca-item-dados">
       <span class="troca-item-militares">
         <span class="troca-item-a"></span>
-        <svg class="icone troca-item-seta" width="16" height="16" aria-hidden="true"><use href="icones/icone-trocas.svg#icone-trocas"/></svg>
+        <svg class="icone troca-item-seta" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-trocas"/></svg>
         <span class="troca-item-b"></span>
       </span>
       <span class="troca-item-meta"></span>

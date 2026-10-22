@@ -112,7 +112,7 @@
 
   function icone(nome) {
     var svg = RW.tpl('tpl-escala-mes-origem');
-    if (svg) svg.querySelector('use').setAttribute('href', 'icones/' + nome + '.svg#' + nome);
+    if (svg) svg.querySelector('use').setAttribute('href', 'icones/todos.svg#' + nome);
     return svg;
   }
 
@@ -271,7 +271,8 @@
     if (!lista) return;
     var itens = Array.prototype.slice.call(lista.querySelectorAll('.inicio-aviso, .pedido--linha'));
     itens.forEach(function (c) { c.classList.remove('oculto'); });
-    var limite = lista.getBoundingClientRect().bottom;
+    /* só ao lado do calendário a lista é medida; embaixo dele, a conta é pela quantidade */
+    var limite = aoLado ? lista.getBoundingClientRect().bottom : 0;
     var escondidos = 0, cheio = false;
     itens.forEach(function (c, i) {
       if (!cheio) cheio = aoLado ? c.getBoundingClientRect().bottom > limite + 1 : i >= LISTA_EMPILHADA;
@@ -346,7 +347,7 @@
     var c = RW.tpl('tpl-pedido-linha');
     if (!c) return null;
     var uso = c.querySelector('.pedido-linha-icone use');
-    if (uso) uso.setAttribute('href', 'icones/icone-' + nomeIcone + '.svg#icone-' + nomeIcone);
+    if (uso) uso.setAttribute('href', 'icones/todos.svg#icone-' + nomeIcone);
     c.querySelector('.pedido-quem').textContent = quem;
     c.querySelector('.pedido-meta').textContent = meta || '';
     var s = c.querySelector('.pedido-linha-selo');

@@ -48,7 +48,7 @@
 
   function definirIcone(svg, nomeIcone) {
     var uso = svg.querySelector('use');
-    if (uso) uso.setAttribute('href', 'icones/' + nomeIcone + '.svg#' + nomeIcone);
+    if (uso) uso.setAttribute('href', 'icones/todos.svg#' + nomeIcone);
   }
 
   /* "08:00" -> "08h" (hora cheia) */
