@@ -94,7 +94,7 @@
       .catch(function () { return null; });
   }
 
-  /* Enviar para o SYSBM: a escala de um pelotão no dia, já nas linhas do SYSBM
+  /* Lançar no SYSBM: a escala de um pelotão no dia, já nas linhas do SYSBM
      ({ok, data, unidade, funcoes_roster, linhas, avisos} ou {ok:false, erro}). null = falha */
   function lerSysbm(unidadeId, iso) {
     return RosterWork.apiFetch('/rest/v1/rpc/escala_sysbm', { metodo: 'POST', corpo: { p_unidade_id: Number(unidadeId), p_data: iso } })
