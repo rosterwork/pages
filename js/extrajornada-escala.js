@@ -30,8 +30,7 @@
   var ensaio = {};           // estado pós-motor por célula { 'uid|iso': { antes, depois } } (antes = SEM extra, depois = COM extras e rascunho)
   var timersEnsaio = {};     // espera do ensaio por dia { iso: timer }
   var seqEnsaio = {};        // token do ensaio por dia (vale a última resposta)
-  var filaEnsaio = [];       // dias esperando a vez do ensaio, na ordem pedida (sem repetir)
-  var ensaiosNoAr = 0;       // ensaios rodando agora no banco
+  var filaEnsaio = [], ensaiosNoAr = 0;   // dias esperando a vez do ensaio (sem repetir) e os que rodam agora no banco
   var ENSAIOS_JUNTOS = 2;    // cada ensaio roda o motor duas vezes (segundos de processador): no máximo 2 ao mesmo tempo
   var escalaAplicada = {};   // pico aplicado às barras de cada unidade { uid: pico }
   var buscaCtrl = null;
@@ -279,26 +278,21 @@
   }
 
   /* ---------- ensaio no motor real, por dia, com o rascunho do dia ---------- */
-  /* o dia mexido espera 400 ms (mais mexidas seguidas viram um ensaio só) e entra na fila */
-  function analisarDiaEnsaio(isoDia) {
+  function analisarDiaEnsaio(isoDia) {   // espera 400 ms (mexidas seguidas viram um ensaio só) e entra na fila
     if (!RosterWork.sessao.temPapel('pelotao') || !RW.extrajornadaDados) return;   // o ensaio é do admin
     if (timersEnsaio[isoDia]) clearTimeout(timersEnsaio[isoDia]);
-    timersEnsaio[isoDia] = setTimeout(function () {
-      delete timersEnsaio[isoDia];
-      if (filaEnsaio.indexOf(isoDia) < 0) filaEnsaio.push(isoDia);
-      puxarFilaEnsaio();
-    }, 400);
+    timersEnsaio[isoDia] = setTimeout(function () { delete timersEnsaio[isoDia]; puxarFilaEnsaio(isoDia); }, 400);
   }
-  /* solta os próximos da fila enquanto houver vaga; fora da aba (ou da página), a fila é esquecida */
-  function puxarFilaEnsaio() {
-    if (!ativa || !el.cal || !el.cal.isConnected) { filaEnsaio = []; return; }
+  /* põe o dia na fila (sem repetir) e solta os próximos enquanto houver vaga */
+  function puxarFilaEnsaio(isoDia) {
+    if (isoDia && filaEnsaio.indexOf(isoDia) < 0) filaEnsaio.push(isoDia);
+    if (!ativa || !el.cal || !el.cal.isConnected) { filaEnsaio = []; return; }   // fora da aba (ou da página), a fila é esquecida
     while (ensaiosNoAr < ENSAIOS_JUNTOS && filaEnsaio.length) rodarEnsaio(filaEnsaio.shift());
   }
-  /* o rascunho do dia é lido na hora de rodar (vale o mais novo); só a última resposta do dia desenha */
   function rodarEnsaio(isoDia) {
     ensaiosNoAr++;
-    var meu = seqEnsaio[isoDia] = (seqEnsaio[isoDia] || 0) + 1;
-    var mudancas = R().doDia(isoDia).map(function (m) { return { cpf: m.cpf, data: m.data, unidade: m.unidade, blocos: m.blocos }; });
+    var meu = seqEnsaio[isoDia] = (seqEnsaio[isoDia] || 0) + 1;   // só a última resposta do dia desenha
+    var mudancas = R().doDia(isoDia).map(function (m) { return { cpf: m.cpf, data: m.data, unidade: m.unidade, blocos: m.blocos }; });   // o rascunho de agora
     function liberar() { ensaiosNoAr--; puxarFilaEnsaio(); }
     RW.extrajornadaDados.analisarDia(isoDia, mudancas).then(function (r) {
       liberar();
@@ -391,9 +385,7 @@
   function desativar() {
     ativa = false;
     /* os ensaios que ainda esperavam a vez não rodam (os que já estão no banco terminam sozinhos) */
-    Object.keys(timersEnsaio).forEach(function (d) { clearTimeout(timersEnsaio[d]); });
-    timersEnsaio = {};
-    filaEnsaio = [];
+    Object.keys(timersEnsaio).forEach(function (d) { clearTimeout(timersEnsaio[d]); }); timersEnsaio = {}; filaEnsaio = [];
     if (el.busca) el.busca.classList.add('oculto');
     if (buscaCtrl) buscaCtrl.limpar();
     if (RW.escalasMes && el.cal) RW.escalasMes.limpar(el.cal);
