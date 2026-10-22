@@ -2117,8 +2117,13 @@
   <!-- o rodapé do painel da troca (o JS deixa só as ações do papel e do estado de quem olha):
        Recusar = o militar chamado para a troca; Recusar (admin) = a administração;
        Cancelar alteração = quem pediu a alteração de uma troca aprovada (a troca continua);
-       Aceitar (aceitar-depois) = o aceite que falta no registro, que não mexe na escala -->
+       Aceitar (aceitar-depois) = o aceite que falta no registro, que não mexe na escala;
+       Imprimir registro = o PDF do registro técnico, no começo do rodapé (o espaçador leva as ações para a direita) -->
   <template id="tpl-troca-acoes">
+    <button type="button" class="botao botao--quadrado" data-acao="imprimir-registro" aria-label="Imprimir registro" data-dica="Imprimir registro">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-imprimir.svg#icone-imprimir"/></svg>
+    </button>
+    <span class="espacador-flex" data-espacador></span>
     <button type="button" class="botao" data-acao="cancelar">Cancelar troca</button>
     <button type="button" class="botao" data-acao="cancelar-alteracao">Cancelar alteração</button>
     <button type="button" class="botao botao--perigo" data-acao="recusar">Recusar</button>

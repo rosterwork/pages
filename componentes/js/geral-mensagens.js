@@ -907,6 +907,100 @@
       faltaAceiteAprovada: 'Falta você aceitar a troca. Ela já foi aprovada e vale na escala; o seu aceite fica no registro.',
       faltaAceite: 'Falta você aceitar a troca. O seu aceite fica no registro.',
       confirmarAceitarDepois: 'Aceitar esta troca? O seu aceite fica no registro e a escala não muda.',
+      /* o registro técnico (o PDF do botão Imprimir registro do rodapé do painel) */
+      falhaRegistro: 'Não foi possível gerar o registro. Tente de novo.',
+      registroPdf: {
+        titulo: 'REGISTRO ELETRÔNICO DE TROCA DE SERVIÇO',
+        rotuloRegistro: 'Registro',
+        rotuloCodigo: 'Código verificador',
+        rotuloGerado: 'Gerado em',
+        numero: function (numero, ano) { return 'RW nº ' + numero + '/' + ano; },
+        secao: function (n, titulo) { return n + '. ' + titulo; },
+        secaoIdentificacao: 'IDENTIFICAÇÃO',
+        secaoEscalas: 'ESCALAS TROCADAS',
+        secaoSaldo: 'SALDO DE HORAS',
+        secaoAcoes: 'REGISTRO DAS AÇÕES',
+        secaoObservacoes: 'OBSERVAÇÕES',
+        origem: 'Origem',
+        origens: { pedido: 'Pedido do militar', administracao: 'Registrada pela administração' },
+        situacao: 'Situação',
+        altera: 'Altera',
+        alteraRegistro: function (numero, ano) { return 'O registro RW nº ' + numero + '/' + ano; },
+        unidade: 'Unidade',
+        documentos: 'Documentos oficiais',
+        parte: function (numero, ano) { return 'Parte nº ' + numero + '/' + ano + ' (eProtocolo)'; },
+        semDocumento: 'Nenhum informado',
+        escalasAjuda: 'Em ordem de data. Cada item é uma escala cumprida por outro militar.',
+        itemDia: function (dia, semana, periodo) { return dia + ' (' + semana + '), ' + periodo; },
+        servicoInteiro: 'serviço inteiro, das 08h às 08h',
+        trecho: function (hi, hf) { return 'das ' + hi + ' às ' + hf; },
+        itemFrase: function (cumpre, noLugarDe) { return cumpre + ' cumpre a escala de serviço do(a) ' + noLugarDe + '.'; },
+        saldoFrase: function (deve, horas, a) { return deve + ' deve ' + horas + ' ao(à) ' + a + '.'; },
+        acoesAjuda: 'Em ordem cronológica. Horário de Brasília.',
+        colunas: ['Data e hora', 'Ação', 'Militar', 'CPF'],
+        acoes: { solicitacao: 'Solicitação (vale como aceite)', aceite: 'Aceite', aprovacao: 'Aprovação',
+                 registro_aprovacao: 'Registro e aprovação', recusa: 'Recusa da administração' },
+        pendente: 'Pendente',
+        observacoes: [
+          'Cada ação foi feita pelo próprio militar, com o seu acesso pessoal (CPF e senha) ao sistema Roster Work. O IP e o aparelho de cada ação ficam guardados no sistema.',
+          'A solicitação vale como aceite de quem solicitou. Cada militar envolvido aceita uma vez o registro inteiro. O aceite dado depois da aprovação é só para registro e não muda a escala.',
+          'Este registro reproduz os dados gravados no sistema e não substitui os documentos oficiais.'
+        ],
+        arquivo: function (numero, ano) { return 'Registro RW ' + numero + '-' + ano + '.pdf'; },
+        arquivoVarios: function (mes, ano) { return 'Registros de trocas ' + mes + '-' + ano + '.pdf'; }
+      },
+      /* o painel Imprimir trocas (o botão Imprimir da barra): as trocas do mês, o texto para a Parte e o PDF */
+      imprimir: {
+        titulo: 'Imprimir trocas',
+        subtitulo: 'Texto para a Parte e PDF',
+        mes: function (mes, ano) { return mes.charAt(0).toUpperCase() + mes.slice(1) + ' de ' + ano; },
+        contagem: function (marcadas, total) { return marcadas + ' de ' + total + ' ' + (total === 1 ? 'troca' : 'trocas') + ' ' + (marcadas === 1 ? 'marcada.' : 'marcadas.'); },
+        ajudaTexto: { informo: 'Informo conta o que já aconteceu (cumpriu).', solicito: 'Solicito pede autorização para o que vai acontecer (cumprirá).' },
+        ajudaFormato: { lista: 'Uma linha por troca: os dias, a Parte, os aceites e a aprovação.',
+                        registro: 'Uma folha por troca: os dados, a Parte, os aceites e a aprovação, com data e hora.' },
+        vazio: 'Nenhuma troca neste mês.',
+        nenhumaMarcada: 'Marque ao menos uma troca.',
+        copiarTexto: 'Copiar texto',
+        textoCopiado: 'Texto copiado',
+        falhaCopiar: 'Não foi possível copiar. O texto ficou selecionado: copie manualmente.',
+        falhaLista: 'Não foi possível carregar as trocas. Tente de novo.',
+        falhaPrevia: 'Não foi possível montar a prévia. Tente de novo.',
+        falhaGerar: 'Não foi possível gerar o PDF. Tente de novo.',
+        /* o texto para a Parte, na norma de correspondência: subitens "a." que terminam em ";" e o último em "." */
+        parte: {
+          informoAbertura: function (nomes) { return 'Informo a V.S.ª que ' + nomes + ' trocaram suas escalas de serviço nas seguintes datas:'; },
+          informoUma: function (frase) { return 'Informo a V.S.ª que ' + frase + '.'; },
+          solicitoAbertura: function (umaTroca) { return 'Solicito a V.S.ª autorização para ' + (umaTroca ? 'a seguinte troca de serviço:' : 'as seguintes trocas de serviço:'); },
+          solicitoUma: function (frase) { return 'Solicito a V.S.ª autorização para a seguinte troca de serviço: ' + frase + '.'; },
+          verbo: { informo: 'cumpriu', solicito: 'cumprirá' },
+          linha: function (cumpre, verbo, noLugarDe, dia, periodo) {
+            return cumpre + ' ' + verbo + ' a escala de serviço do(a) ' + noLugarDe + ' no dia ' + dia + (periodo ? ', ' + periodo : '');
+          },
+          periodo: function (hi, hf) { return 'das ' + hi + ' às ' + hf; },
+          e: ' e '
+        },
+        /* o PDF Lista (relatório): uma linha por troca, com os aceites e a aprovação */
+        pdf: {
+          titulo: 'Relatório de trocas de serviço',
+          subtitulo: function (mes, n) { return mes + ' · ' + n + (n === 1 ? ' troca' : ' trocas'); },
+          unidadeDetalhe: function (n) { return n === 1 ? '1 troca' : n + ' trocas'; },
+          colunas: ['RW nº', 'Serviço e devolução', 'Parte', 'Aceites', 'Aprovação'],
+          numero: function (numero, ano) { return numero + '/' + ano; },
+          dia: function (dia, periodo) { return dia + ' · ' + periodo; },
+          servicoInteiro: 'serviço inteiro',
+          trecho: function (hi, hf) { return hi + ' às ' + hf; },
+          noLugar: function (cumpre, noLugarDe) { return cumpre + ' no lugar do(a) ' + noLugarDe; },
+          parte: function (numero, ano) { return numero + '/' + ano; },
+          semParte: 'Sem parte',
+          quando: function (dia, hora) { return dia + ', ' + hora; },
+          pendente: 'Pendente',
+          aguardando: 'Aguardando',
+          registrou: 'Registrou a troca',
+          recusou: 'Recusou a troca',
+          nota: function (dia, hora) { return 'Gerado pelo sistema Roster Work em ' + dia + ', às ' + hora + '. Não substitui os documentos oficiais.'; },
+          arquivo: function (mes, ano) { return 'Relatório de trocas ' + mes + '-' + ano + '.pdf'; }
+        }
+      },
       /* meta da linha na lista */
       metaServico: function (dataCurta) { return 'Serviço ' + dataCurta; },
       meta24h: '24h',
@@ -1211,7 +1305,14 @@
         instalar: 'No iPhone, as notificações chegam só pelo app: no Safari, toque em Compartilhar e em Adicionar à Tela de Início, abra o app e ligue aqui.',
         indisponivel: 'Este navegador não recebe notificações.'
       },
-      falhaAtivar: 'Não foi possível ligar as notificações. Tente de novo.'
+      falhaAtivar: 'Não foi possível ligar as notificações. Tente de novo.',
+      /* administradores: a ajuda do aparelho cita os pedidos; a escolha dos avisos de administração */
+      ajudaAdmin: 'Avisa neste aparelho, mesmo com o app fechado, sobre as suas trocas, folgas, extras, os comunicados e os pedidos que esperam a sua aprovação.',
+      falhaAdmin: 'Não foi possível salvar a escolha. Tente de novo.',
+      /* a pergunta do app instalado no celular, uma vez por aparelho */
+      pergunta: 'Receber no celular os avisos das suas trocas, folgas e extras? Você pode mudar quando quiser em Meu perfil.',
+      ativar: 'Ativar',
+      agoraNao: 'Agora não'
     },
 
     /* sessão */

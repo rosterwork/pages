@@ -246,6 +246,8 @@
     if (grupoAdmin) grupoAdmin.classList.toggle('oculto', !contexto.ehAdmin);
     var btnRegistrar = conteudo.querySelector('#btn-registrar-troca');
     if (btnRegistrar) btnRegistrar.addEventListener('click', abrirRegistrar);
+    var btnImprimir = conteudo.querySelector('#btn-imprimir-trocas');
+    if (btnImprimir && RW.trocasImprimir) btnImprimir.addEventListener('click', RW.trocasImprimir.abrir);
 
     if (RW.trocasSolicitar) RW.trocasSolicitar.ligar({
       aoSolicitar: function () { irParaAba('minhas'); },

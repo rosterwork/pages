@@ -334,12 +334,17 @@
     flex: 1 1 auto;
   }
 
-  /* rodapé: os botões dividem a largura; os que não cabem lado a lado descem de linha */
+  /* rodapé: os botões dividem a largura; os que não cabem lado a lado descem de linha. O botão quadrado
+     (só o ícone, no começo) fica do tamanho dele, e o espaçador sai, para as ações ocuparem o resto */
   html[data-celular] .painel-rodape {
     flex-wrap: wrap;
   }
 
-  html[data-celular] .painel-rodape > .botao:not(.botao--texto) {
+  html[data-celular] .painel-rodape > .botao:not(.botao--texto):not(.botao--quadrado) {
     flex: 1 1 0;
+  }
+
+  html[data-celular] .painel-rodape > .espacador-flex {
+    display: none;
   }
 }

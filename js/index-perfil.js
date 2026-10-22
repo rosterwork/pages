@@ -58,17 +58,28 @@
   /* Notificações neste aparelho: o seletor mostra a situação de verdade do aparelho; nos casos
      em que não dá para ligar (bloqueado, iPhone fora do app, navegador sem notificações) fica
      desligado e a ajuda explica o caminho */
+  var ajudaPadrao = null;           /* a frase do HTML, para voltar a ela */
+  var ehAdministrador = false;      /* administrador: a ajuda cita também os pedidos que esperam a aprovação dele */
+  var situacaoAparelho = null;
+
+  function marcarAbas(trilho, valor, travado) {
+    Array.prototype.forEach.call(trilho.querySelectorAll('.aba'), function (aba) {
+      var ativa = aba.getAttribute('data-valor') === valor;
+      aba.classList.toggle('aba--ativa', ativa);
+      aba.setAttribute('aria-selected', ativa ? 'true' : 'false');
+      aba.disabled = !!travado;
+    });
+  }
+
   function marcarNotificacoes(trilho, situacao) {
     var M = RosterWork.mensagens.notificacoesCelular;
     var travado = situacao !== 'ativado' && situacao !== 'desativado';
-    Array.prototype.forEach.call(trilho.querySelectorAll('.aba'), function (aba) {
-      var ativa = aba.getAttribute('data-valor') === situacao;
-      aba.classList.toggle('aba--ativa', ativa);
-      aba.setAttribute('aria-selected', ativa ? 'true' : 'false');
-      aba.disabled = travado;
-    });
+    situacaoAparelho = situacao;
+    marcarAbas(trilho, situacao, travado);
     var ajuda = document.getElementById('perfil-notificacoes-ajuda');
-    if (ajuda && travado) ajuda.textContent = M.ajuda[situacao] || '';
+    if (!ajuda) return;
+    if (ajudaPadrao === null) ajudaPadrao = ajuda.textContent;
+    ajuda.textContent = travado ? (M.ajuda[situacao] || '') : (ehAdministrador ? M.ajudaAdmin : ajudaPadrao);
   }
 
   function ligarNotificacoes() {
@@ -86,6 +97,39 @@
         if (RosterWork.pararCarregando) RosterWork.pararCarregando(aba);
         N.situacao().then(function (s) { marcarNotificacoes(trilho, s); });
         RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.notificacoesCelular.falhaAtivar });
+      });
+    });
+  }
+
+  /* Avisos de administração no celular: só para administradores (o banco diz quem é); a escolha mora
+     no banco e vale em todos os aparelhos da pessoa */
+  function ligarAvisosAdmin() {
+    var campo = document.getElementById('perfil-avisos-admin-campo');
+    var trilho = document.getElementById('perfil-avisos-admin');
+    if (!campo || !trilho || !RosterWork.abas || !RosterWork.rpc) return;
+    ehAdministrador = false;
+    function ler() {
+      return RosterWork.rpc('notificacoes_admin_celular_ler').then(function (r) {
+        if (!r || !r.ok || !r.administrador) return;
+        ehAdministrador = true;
+        campo.classList.remove('oculto');
+        marcarAbas(trilho, r.ligado ? 'ativado' : 'desativado');
+        var aparelho = document.getElementById('perfil-notificacoes');
+        if (aparelho && situacaoAparelho) marcarNotificacoes(aparelho, situacaoAparelho);
+      }).catch(function () {});
+    }
+    ler();
+    RosterWork.abas.ligar(trilho, function (aba) {
+      var ligar = aba.getAttribute('data-valor') === 'ativado';
+      if (RosterWork.iniciarCarregando) RosterWork.iniciarCarregando(aba);
+      RosterWork.rpc('notificacoes_admin_celular_definir', { p_ligado: ligar }).then(function (r) {
+        if (RosterWork.pararCarregando) RosterWork.pararCarregando(aba);
+        if (r && r.ok) { marcarAbas(trilho, ligar ? 'ativado' : 'desativado'); return; }
+        throw new Error('não salvou');
+      }).catch(function () {
+        if (RosterWork.pararCarregando) RosterWork.pararCarregando(aba);
+        ler();
+        RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.notificacoesCelular.falhaAdmin });
       });
     });
   }
@@ -158,6 +202,7 @@
     ligarAbas();
     ligarTema();
     ligarNotificacoes();
+    ligarAvisosAdmin();
     ligarTermos();
     if (RosterWork.perfilSenha) RosterWork.perfilSenha.iniciar(usuario);
 

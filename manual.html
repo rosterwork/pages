@@ -475,7 +475,7 @@
               <p><strong>A Escala no celular.</strong> Ficam o Dia e o Mês, com a Agenda e o Calendário (Militares e Colunas, só no computador). Na <strong>Agenda</strong>, aparece uma unidade por vez, começando pela sua: escolha a unidade no botão à esquerda dos ícones, ou deslize a tela para o lado. No <strong>Calendário</strong>, todas as unidades aparecem no dia. A Agenda e o Calendário da Extrajornada funcionam do mesmo jeito.</p>
               <p><strong>Só no computador.</strong> A Distribuição não aparece no menu do celular; quem chega a ela por um aviso ou um link vê "Esta tela só funciona no computador.".</p>
               <p><strong>Instalar o app no celular.</strong> O sistema pode ficar na tela do seu celular como um app, com o ícone do Roster Work, abrindo em tela cheia, sem passar pela loja. No menu do canto (seu nome), toque em <strong>Instalar no celular</strong>. No Android, confirme na janela que o navegador abre. No iPhone, abra o sistema no Safari, toque em <strong>Compartilhar</strong> e depois em <strong>Adicionar à Tela de Início</strong>. No app, a caixa Manter-me conectado já vem marcada: ele continua conectado até ficar 30 dias sem uso. As novidades do sistema chegam sozinhas ao app. Sem internet, o app abre mesmo assim e avisa que está sem conexão; os dados aparecem quando ela volta.</p>
-              <p><strong>Notificações no celular.</strong> Em Meu perfil, em Preferências, ligue <strong>Notificações neste aparelho</strong> e aceite quando o celular perguntar. A partir daí, o celular avisa, mesmo com o app fechado, sobre o que é seu: um pedido de troca para você confirmar, a sua troca ou folga aprovada, recusada, alterada ou cancelada, a sua extra que mudou e os comunicados. Tocar na notificação abre o sistema no assunto. No iPhone, as notificações chegam só pelo app adicionado à tela de início: abra o app e ligue por lá. Sair desliga as notificações naquele aparelho.</p>
+              <p><strong>Notificações no celular.</strong> Em Meu perfil, em Preferências, ligue <strong>Notificações neste aparelho</strong> e aceite quando o celular perguntar. A partir daí, o celular avisa, mesmo com o app fechado, sobre o que é seu: um pedido de troca para você confirmar, a sua troca ou folga aprovada, recusada, alterada ou cancelada, a sua extra que mudou e os comunicados. Tocar na notificação abre o sistema no assunto. No app instalado, o celular pergunta uma vez, logo ao entrar, se você quer receber os avisos: toque em Ativar e aceite. No iPhone, as notificações chegam só pelo app adicionado à tela de início. Sair desliga as notificações naquele aparelho.</p>
               <div class="manual-bloco-admin manual-admin">
                 <span class="manual-selo-admin">Apenas administradores</span>
                 <p>O <strong>Histórico</strong> também só funciona no computador.</p>
@@ -487,6 +487,10 @@
               </figure>
 
               <p><strong>Perfil (1).</strong> Mostra o seu cartão de identificação (grau, nome de guerra, lotação e o seu papel no sistema) e os seus dados em leitura, separados em Identificação e Carreira. No fim, em Preferências, você escolhe o Tema, que muda na hora: <strong>Automático</strong> (o padrão: acompanha o claro ou escuro do seu celular ou computador e muda sozinho quando ele troca), <strong>Claro</strong> ou <strong>Escuro</strong>. Logo abaixo, <strong>Notificações neste aparelho</strong> liga ou desliga os avisos no celular (veja No celular). Em Privacidade, vê de qual versão dos Termos de uso e privacidade você está ciente e quando, com o atalho <strong>Ler os termos</strong>.</p>
+              <div class="manual-bloco-admin manual-admin">
+                <span class="manual-selo-admin">Apenas administradores</span>
+                <p>Em Preferências, <strong>Avisos de administração no celular</strong> liga ou desliga, em todos os seus aparelhos, as notificações dos pedidos de troca e de folga que esperam a sua aprovação e do militar fora da escala. Elas tocam só para o administrador mais próximo da unidade: no pelotão que tem administrador, o dele; senão, o da companhia; senão, o geral. Os outros continuam vendo no sino e na Pendências.</p>
+              </div>
 
               <p><strong>Meus dados (2).</strong> É onde você muda os seus dados. Um aviso no topo lembra a regra: e-mail e celular são salvos na hora; as demais alterações passam pela aprovação do administrador.</p>
               <figure class="manual-figura">
@@ -1086,9 +1090,45 @@
                 </figcaption>
               </figure>
 
+              <p><strong>Imprimir o registro.</strong> No começo do rodapé do painel da troca fica o botão com o desenho da impressora, <strong>Imprimir registro</strong>. Ele baixa, em PDF, o registro técnico da troca: o número RW, o código verificador e a hora em que foi gerado; a origem, a situação, a unidade e os documentos oficiais (a Parte); as escalas trocadas, uma por linha; o saldo de horas, quando a conta não fecha; e cada ação em ordem de data, com a hora, o militar e o CPF mascarado, inclusive os aceites que faltam. O botão aparece para os dois militares da troca e para o administrador da área. O registro reproduz os dados do sistema e não substitui os documentos oficiais.</p>
+              <figure class="manual-figura manual-figura--larga">
+                <img src="manual/imagens/troca-registro-pdf.png" width="700" height="834" alt="O registro técnico da troca em PDF: o número RW, o código verificador, a identificação, as escalas trocadas, o saldo de horas, o registro das ações e as observações." />
+              </figure>
+
+              <p><strong>Imprimir as trocas.</strong> No fim da barra da página Trocas, à direita, fica o botão com o desenho da impressora. Ele aparece em todas as abas e para todos.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/troca-imprimir-botao.png" width="364" height="70" alt="O fim da barra da página Trocas, à direita, com o botão de imprimir (1)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>Botão Imprimir</li>
+                  </ol>
+                </figcaption>
+              </figure>
+              <p>O botão abre o painel <strong>Imprimir trocas</strong>, para levar as trocas do mês ao E-protocolo ou guardar em PDF:</p>
+              <ul class="manual-lista">
+                <li><strong>Trocas</strong> (1): as trocas do mês, pela data do serviço, as que estão aguardando e as aprovadas. Você vê as suas; o administrador vê também as da área dele. Todas já vêm marcadas. Use as setas para mudar o mês e desmarque o que não quiser.</li>
+                <li><strong>Texto para a Parte</strong> (2): o corpo da Parte, pronto. Escolha <strong>Informo</strong> para contar o que já aconteceu ("cumpriu") ou <strong>Solicito</strong> para pedir autorização para o que vai acontecer ("cumprirá"). Cada dia de serviço trocado vira uma linha (a., b., c.), em ordem de data. Use <strong>Copiar texto</strong>, cole na Parte do E-protocolo e assine lá.</li>
+                <li><strong>PDF</strong> (3): <strong>Lista</strong>, um relatório com uma linha por troca (o número RW, os dias, a Parte, os aceites e a aprovação), ou <strong>Registro técnico</strong>, o mesmo do Imprimir registro, com uma folha por troca. A prévia mostra o arquivo como vai sair; no celular ela não aparece, mas o Gerar PDF funciona.</li>
+              </ul>
+              <p>O botão <strong>Gerar PDF</strong> (4) baixa o arquivo. O texto e os PDFs são montados na hora, com os dados do sistema, e não substituem os documentos oficiais.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/troca-imprimir.png" width="560" height="1312" alt="O painel Imprimir trocas: as trocas do mês marcadas (1), o texto para a Parte com Informo e Solicito e o botão Copiar texto (2), o PDF Lista ou Registro técnico com a prévia (3) e o botão Gerar PDF (4)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>As trocas do mês</li>
+                    <li>Texto para a Parte</li>
+                    <li>PDF e prévia</li>
+                    <li>Botão Gerar PDF</li>
+                  </ol>
+                </figcaption>
+              </figure>
+              <figure class="manual-figura manual-figura--larga">
+                <img src="manual/imagens/troca-relatorio-pdf.png" width="700" height="573" alt="O PDF Lista: o relatório de trocas de serviço do mês, um bloco por unidade e uma linha por troca, com o número RW, o serviço e a devolução, a Parte, os aceites e a aprovação." />
+              </figure>
+
               <p><strong>Cancelar a sua solicitação.</strong> Enquanto a troca está aguardando (confirmação ou aprovação), você pode abri-la e usar <strong>Cancelar troca</strong>. Depois de aprovada, apenas um administrador pode desfazê-la.</p>
               <figure class="manual-figura">
-                <img src="manual/imagens/troca-cancelar.png" width="399" height="125" alt="Rodapé do painel de uma troca, com o botão Cancelar troca em destaque." />
+                <img src="manual/imagens/troca-cancelar.png" width="400" height="119" alt="Rodapé do painel de uma troca, com o botão Cancelar troca em destaque." />
               </figure>
 
               <p><strong>A troca aprovada na escala.</strong> Depois da aprovação do administrador, a troca passa a valer na escala. No dia trocado, o militar que passou o serviço aparece <strong>riscado</strong> e quem assumiu entra no lugar, os dois com o ícone de troca. Havendo devolução, o mesmo acontece no dia dela, com os papéis invertidos. No painel do dia, o grupo <strong>Trocas</strong> das <strong>Observações</strong> escreve a troca por extenso, com a parte do E-protocolo (quando a troca tem) e a devolução, por exemplo: "Sd. Sampaio cumpre a escala de serviço do 3ºSgt. Meireles, no período das 08h às 20h, conforme a Parte nº 250/2026. A devolução será definida posteriormente.".</p>

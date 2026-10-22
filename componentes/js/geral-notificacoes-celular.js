@@ -6,6 +6,9 @@
    Quem envia é o programa notificacoes-enviar, no Supabase, chamado
    pelo banco a cada aviso pessoal; quem mostra é o armazém do app
    (aplicativo-armazem.js). Ao sair, o aparelho para de receber.
+   No app instalado no celular, vêm ligadas por padrão: ao entrar no
+   sistema, o aparelho que já permitiu liga sozinho, e o que nunca foi
+   perguntado ganha uma pergunta, uma vez só (oferecerNoApp).
    API: RosterWork.notificacoesCelular.situacao() / ativar() /
         desativar() / desligarAoSair() / desligarTodos()
    ============================================================ */
@@ -17,6 +20,8 @@
   /* a chave pública do par VAPID (a privada fica só nos segredos do Supabase e no SENHAS) */
   var CHAVE_PUBLICA = 'BDbIsSQ1mzMXHIQvc424envBXM9gkwSzAu65FDU988H04_YSKIbP7aot2tZ9bYnW3VD1RmWVAYRIdALE7k9GnKg';
   var LIMITE_SAIR_MS = 1500;   /* ao sair, não espera mais que isto para desligar */
+  var CHAVE_PERGUNTADO = 'rosterwork_notificacoes_perguntado';   /* a marca do aparelho: já perguntou (REGRAS §8.1) */
+  var ESPERA_PERGUNTA_MS = 3000;   /* a pergunta espera as janelas da entrada (termos, dados pendentes) */
 
   function suportado() {
     return window.isSecureContext && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
@@ -93,6 +98,45 @@
       .catch(function () {});
     return Promise.race([tudo, limite]);
   }
+
+  /* a marca do aparelho: só "sim", sem nenhum dado; sem acesso ao armazenamento, conta como já perguntado */
+  function jaPerguntou() {
+    try { return localStorage.getItem(CHAVE_PERGUNTADO) === 'sim'; } catch (e) { return true; }
+  }
+
+  function marcarPerguntado() {
+    try { localStorage.setItem(CHAVE_PERGUNTADO, 'sim'); } catch (e) {}
+  }
+
+  /* app instalado no celular, ao entrar no sistema: o aparelho que já permitiu liga sozinho; o que
+     nunca foi perguntado ganha a pergunta (Ativar · Agora não), uma vez só; o bloqueado, nada.
+     Com outra janela da entrada aberta, a pergunta fica para a próxima abertura. O Ativar chama a
+     pergunta do celular no próprio toque, como o iPhone exige */
+  function oferecerNoApp() {
+    var app = RW.aplicativo;
+    if (!app || !app.noCelularInstalado() || !suportado()) return;
+    situacao().then(function (s) {
+      if (s !== 'desativado') return;
+      if (Notification.permission === 'granted') { ativar().catch(function () {}); return; }
+      if (Notification.permission !== 'default' || jaPerguntou()) return;
+      setTimeout(function () {
+        if (document.querySelector('.modal-veu--aberto') || !RW.confirmar) return;
+        marcarPerguntado();
+        var M = RW.mensagens.notificacoesCelular;
+        RW.confirmar({
+          tipo: 'aviso',
+          mensagem: M.pergunta,
+          textoConfirmar: M.ativar,
+          textoCancelar: M.agoraNao,
+          aoConfirmar: function () {
+            ativar().catch(function () { RW.avisar({ tipo: 'erro', mensagem: M.falhaAtivar }); });
+          }
+        });
+      }, ESPERA_PERGUNTA_MS);
+    });
+  }
+
+  window.addEventListener('load', oferecerNoApp);
 
   RW.notificacoesCelular = {
     situacao: situacao,

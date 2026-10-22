@@ -281,6 +281,30 @@
   width: 100%;
 }
 
+/* ---------- painel Imprimir trocas ---------- */
+/* o mês e o Copiar texto ficam do tamanho deles (a caixa estica o que tem dentro) */
+.trocas-imprimir-mes,
+.trocas-imprimir-copiar {
+  align-self: flex-start;
+}
+
+.trocas-imprimir-lista {
+  display: flex;
+  flex-direction: column;
+}
+
+/* a troca: a caixa de marcar, os nomes com a linha de apoio embaixo e o selo à direita (é um <button>: o texto
+   começa à esquerda) */
+.trocas-imprimir-item {
+  padding-top: 4px;
+  padding-bottom: 4px;
+  text-align: left;
+}
+
+.trocas-imprimir-texto {
+  line-height: 1.5;
+}
+
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    A linha da troca vira um cartão em pé: os dois militares, a

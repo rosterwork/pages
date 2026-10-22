@@ -226,6 +226,8 @@
     var desfazer = alteracao ? null : { desfazer: desfazerAprovacao(troca, ctx) };
     if (acao === 'aceitar') {
       confirmarEntao(m.confirmarAceitar, false, function () { executar(d.confirmar(troca.troca_id, true), btn, ctx); });
+    } else if (acao === 'imprimir-registro') {
+      RW.trocasRegistroPdf.imprimir(troca.troca_id, btn);
     } else if (acao === 'aceitar-depois') {
       /* o aceite que falta: só entra no registro (a escala não muda) */
       confirmarEntao(m.confirmarAceitarDepois, false, function () { executar(d.aceitar(troca.troca_id), btn, ctx); });
@@ -281,8 +283,13 @@
     }
     /* o aceite de quem olha faltando no registro (inclusive na aprovada) */
     if (aceitePendente(troca, ctx.cpf)) usar['aceitar-depois'] = true;
+    /* o registro técnico: os dois militares e o administrador da área, em qualquer situação */
+    var participa = !!ctx.cpf && (ctx.cpf === troca.solicitante_cpf || ctx.cpf === troca.parceiro_cpf);
+    usar['imprimir-registro'] = !!RW.trocasRegistroPdf && (participa || admin);
+    var espacador = frag.querySelector('[data-espacador]');
+    if (espacador && !usar['imprimir-registro']) espacador.parentNode.removeChild(espacador);
 
-    ['cancelar-alteracao', 'aceitar', 'aceitar-depois', 'recusar', 'aprovar-forcar', 'aprovar', 'recusar-admin', 'cancelar'].forEach(function (acao) {
+    ['imprimir-registro', 'cancelar-alteracao', 'aceitar', 'aceitar-depois', 'recusar', 'aprovar-forcar', 'aprovar', 'recusar-admin', 'cancelar'].forEach(function (acao) {
       var btn = frag.querySelector('[data-acao="' + acao + '"]');
       if (!btn) return;
       if (!usar[acao]) { if (btn.parentNode) btn.parentNode.removeChild(btn); return; }
