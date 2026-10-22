@@ -192,6 +192,9 @@
       }
       if (t.devolucao_horario_inicio && t.devolucao_horario_fim) ctx.periodoDevolucao.definirParte(hhmm(t.devolucao_horario_inicio), hhmm(t.devolucao_horario_fim));
       ctx.devSel = ctx.periodoDevolucao.valor();
+    } else {
+      var pendente = q('#ts-dev-toggle [data-dev="pendente"]');
+      if (pendente) pendente.click();   // a troca sem devolução: o seletor em "Pendência" (o molde abre em "Marcar dia")
     }
     ctx.preenchendo = false;
     travarSalvar(false);

@@ -27,8 +27,8 @@ jobs:
 
     # Armazém do app (service worker): carimba a versão desta publicação e a lista dos arquivos
     # que o aparelho guarda, cada um com a impressão digital (o que mudou é baixado de novo).
-    # Sob demanda (guardadas no primeiro uso, nunca na instalação): as bibliotecas.
-    # Fora das listas: as imagens do manual (guardadas ao usar) e os logos de acervo.
+    # Sob demanda (guardadas no primeiro uso, nunca na instalação): as bibliotecas e as imagens do manual.
+    # Fora das listas: os logos de acervo.
     - name: Carimbar o armazém do app
       run: |
         node - <<'FIM'
@@ -36,13 +36,13 @@ jobs:
         const crypto = require('crypto');
         const { execSync } = require('child_process');
         const tipos = /\.(html|css|js|svg|woff2?|webmanifest)$/;
-        const fora = /^(\.github\/|manual\/imagens\/|logos\/(?!aplicativo-))/;
-        const sobDemanda = /^bibliotecas\//;
+        const fora = /^(\.github\/|logos\/(?!aplicativo-))/;
+        const sobDemanda = /^(bibliotecas\/.+\.js|manual\/imagens\/.+\.png)$/;
         const arquivos = {};
         const demanda = {};
         execSync('git ls-files', { encoding: 'utf8' }).split('\n').filter(Boolean).forEach((caminho) => {
           const icone = /^logos\/aplicativo-[^/]+\.png$/.test(caminho);
-          if (caminho === 'aplicativo-armazem.js' || fora.test(caminho) || !(tipos.test(caminho) || icone)) return;
+          if (caminho === 'aplicativo-armazem.js' || fora.test(caminho) || !(tipos.test(caminho) || icone || sobDemanda.test(caminho))) return;
           const impressao = crypto.createHash('sha1').update(fs.readFileSync(caminho)).digest('hex').slice(0, 12);
           (sobDemanda.test(caminho) ? demanda : arquivos)[caminho] = impressao;
         });

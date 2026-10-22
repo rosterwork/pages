@@ -307,6 +307,8 @@
     }
 
     C().ligarDevToggle();
+    /* cobrança: quem paga a dívida não ganha devolução (o seletor vai para Pendência) */
+    if (ctx.cobrar) { var pendente = q('#ts-dev-toggle [data-dev="pendente"]'); if (pendente) pendente.click(); }
     ligarLimpezaErros(corpo);
     ligarSoNumeros(q('#ts-parte'));
     ligarSoNumeros(q('#ts-parte-ano'));

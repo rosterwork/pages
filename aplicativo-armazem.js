@@ -12,9 +12,10 @@
    Versão nova: baixa só o que mudou (copia o resto da versão
    anterior) e espera o sinal "ativar" da página, que troca de
    versão sem misturar a velha com a nova (geral-aplicativo.js).
-   SOB_DEMANDA (as bibliotecas, como a do PDF): nunca baixadas na
-   instalação; guardadas no primeiro uso e levadas para a versão
-   nova enquanto a impressão digital não mudar.
+   SOB_DEMANDA (as bibliotecas, como a do PDF, e as imagens do
+   manual): nunca baixadas na instalação; guardadas no primeiro uso
+   e levadas para a versão nova enquanto a impressão digital não
+   mudar.
    Botão de emergência: REGRAS §8.1.
    ============================================================ */
 (function () {
@@ -108,8 +109,8 @@
     }).then(function () { return self.clients.claim(); }));
   });
 
-  /* arquivo do site: do aparelho; o sob demanda ainda não usado, da internet pela impressão digital
-     e guardado; fora das listas (as imagens do manual), da internet e guardado ao usar */
+  /* arquivo do site: do aparelho; o sob demanda ainda não usado (as bibliotecas e as imagens do manual),
+     da internet pela impressão digital e guardado; fora das listas (os logos de acervo), da internet */
   function responder(pedido) {
     var url = new URL(pedido.url);
     var chave = /\/$/.test(url.pathname) ? endereco('index.html') : pedido;   /* a raiz do site é o index.html */
@@ -123,10 +124,7 @@
             return resposta;
           });
         }
-        return fetch(pedido).then(function (resposta) {
-          if (resposta.ok && url.href.indexOf(endereco('manual/imagens/')) === 0) cache.put(pedido, resposta.clone());
-          return resposta;
-        });
+        return fetch(pedido);
       });
     });
   }

@@ -323,10 +323,10 @@
     RW.abas.ligar(trilho, function (aba) {
       if (aba.getAttribute('data-dev') === 'pendente') {
         f.devDia = null; f.devSel = null;
+        q('#ts-dev-data').value = '';
         q('#ts-dev-data').classList.add('oculto');
         q('#ts-periodo-devolucao').classList.add('oculto');
         limparErro(q('#ts-dev-data'));
-        atualizarSaldo();
       } else {
         q('#ts-dev-data').classList.remove('oculto');
         /* o período aparece já no modo "Marcar dia", desligado; liga quando o dia for escolhido */
@@ -334,8 +334,11 @@
         else f.periodoDevolucao.limpar();
         q('#ts-periodo-devolucao').classList.remove('oculto');
       }
+      atualizarSaldo();
       avisarMudanca();
     });
+    /* o molde já abre em "Marcar dia": o período da devolução nasce desligado, até escolher o dia */
+    if (devMarcarDia() && !f.periodoDevolucao) montarPeriodoDevolucao();
   }
   function escolherDiaDevolucao(data) {
     var iso = isoDe(data);
@@ -360,6 +363,8 @@
     var m = RW.mensagens.trocas;
     /* o aviso mostra o saldo LÍQUIDO com o parceiro, então depende dos dois: serviço e parceiro */
     if (f.registrar || !f.servicoSel || !f.parceiroSel) { elSaldo.classList.add('oculto'); return; }
+    /* no "Marcar dia", o aviso espera o dia da devolução (sem ele, diria que o serviço inteiro fica devido) */
+    if (devMarcarDia() && !f.devDia) { elSaldo.classList.add('oculto'); return; }
     /* ainda buscando o saldo já existente entre os dois: três pontinhos */
     if (f.saldoCarregando || f.saldoEntre === null || f.saldoEntre === undefined) {
       elTexto.textContent = '';

@@ -1053,7 +1053,7 @@
       modalCarregarFalha: 'Não foi possível carregar',
       modalSemServico: 'Você não tem serviço futuro para trocar',
       modalDevPendente: 'Deixar pendente',
-      modalDevAjuda: 'Escolha um dia do parceiro, ou deixe pendente.',
+      modalDevAjuda: 'Escolha um dia do parceiro, ou marque pendente.',
       /* aviso de saldo (quando as durações diferem) */
       saldoParceiroDeve: function (h) { return 'O parceiro fica devendo ' + h + 'h a você.'; },
       saldoVoceDeve: function (h) { return 'Você fica devendo ' + h + 'h ao parceiro.'; },
