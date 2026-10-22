@@ -673,16 +673,19 @@
         favorito: {
           colar: 'Cole aqui (Ctrl+V) a escala copiada no Roster:',
           naoEhEscala: 'O que foi colado não é uma escala do Roster. No Roster, clique em Copiar no pelotão e use o favorito de novo.',
-          semTela: 'Abra no SYSBM a tela de cadastro da escala (Guarnição, Gerenciar Escala, Cadastrar), pesquise o dia e use o favorito de novo.',
-          outroDia: function (roster, sysbm) {
-            return 'A escala copiada é do dia ' + roster + ', mas o SYSBM está no dia ' + sysbm + '. Pesquise o dia ' + roster + ' no SYSBM e use o favorito de novo.';
+          semMenu: 'Entre no SYSBM com o seu login e use o favorito de novo, em qualquer tela dele.',
+          demorou: 'O SYSBM não abriu a tela de cadastro da escala. Confira se você ainda está logado e use o favorito de novo.',
+          trocarDia: function (sysbm, roster) {
+            return 'A tela de cadastro do SYSBM está no dia ' + sysbm + '. Pesquisar o dia ' + roster + '? O que não foi salvo nesta tela se perde.';
           },
           semAba: function (cidade) { return 'Esta tela do SYSBM não tem a aba de ' + cidade + '.'; },
-          /* n: { adicionados, ajustados, desmarcados, iguais, semPosto: [], semMilitar: [] } */
+          pelonumero: function (roster, sysbm) { return roster + ' na ' + sysbm; },
+          /* n: { adicionados, ajustados, desmarcados, iguais, semPosto: [], semMilitar: [], pelonumero: [] } */
           resumo: function (aba, n) {
             var linhas = ['Aba ' + aba + ' preenchida.', '',
               'Adicionados: ' + n.adicionados, 'Ajustados: ' + n.ajustados,
               'Desmarcados: ' + n.desmarcados, 'Já estavam certos: ' + n.iguais];
+            if (n.pelonumero.length) linhas.push('', 'Viatura com outro prefixo no SYSBM, lançada pelo número: ' + juntarComE(n.pelonumero) + '.');
             if (n.semPosto.length) linhas.push('', 'Viatura ou seção sem par no SYSBM, lance manualmente: ' + juntarComE(n.semPosto) + '.');
             if (n.semMilitar.length) linhas.push('', 'Militar não achado no SYSBM pelo RG, lance manualmente: ' + juntarComE(n.semMilitar) + '.');
             linhas.push('', 'Confira a aba e clique em Salvar.');

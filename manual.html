@@ -48,6 +48,7 @@
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#montar-ciclo">Montar o ciclo (aba Ciclo)</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#distribuicao-dia">Ajustar o dia</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#editar-posto">Editar o posto</a></li>
+                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#enviar-sysbm">Enviar a escala para o SYSBM</a></li>
               </ul>
             </li>
             <li>
@@ -62,6 +63,7 @@
               <ul>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#solicitar-troca">Solicitar e acompanhar uma troca</a></li>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#alterar-troca">Alterar uma troca</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#varias-trocas">Solicitar várias trocas</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#aprovar-trocas">Aprovar trocas</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#registrar-troca">Registrar uma troca</a></li>
               </ul>
@@ -945,6 +947,34 @@
                     </ol>
                   </figcaption>
                 </figure>
+                <h3 id="enviar-sysbm">Enviar a escala para o SYSBM <span class="manual-selo-admin">Apenas administradores</span></h3>
+                <p>O Roster leva a escala de um pelotão para a tela de cadastro da escala do SYSBM, o sistema oficial, para você não precisar digitar tudo lá. O Roster nunca entra no SYSBM: <strong>o login e o Salvar são sempre seus</strong>.</p>
+                <p>No começo da barra da página Escala fica o grupo <strong>Administração</strong>, com o botão <strong>Enviar para o SYSBM</strong> (no celular, ele fica dentro do botão Administração). O botão abre, à direita, o painel <strong>Enviar para o SYSBM</strong>:</p>
+                <ul class="manual-lista">
+                  <li><strong>Dia</strong> (1): já vem com o dia que está na tela.</li>
+                  <li><strong>Pelotões</strong> (2): uma linha para cada pelotão que você administra, com quantas linhas vão para o SYSBM e, em amarelo, quem fica de fora e por quê. Por exemplo, o militar sem RG no cadastro fica de fora, porque o SYSBM acha o militar pelo RG. O botão <strong>Copiar</strong> leva a escala daquele pelotão.</li>
+                  <li><strong>Favorito</strong> (3): o botão <strong>Preencher no SYSBM</strong>. Uma vez só em cada navegador, arraste esse botão até a barra de favoritos (se a barra não aparece, Ctrl+Shift+B mostra). No celular, use <strong>Copiar o código do favorito</strong>, crie um favorito no navegador e cole o código no lugar do endereço.</li>
+                </ul>
+                <figure class="manual-figura">
+                  <img src="manual/imagens/escala-sysbm.png" width="399" height="521" alt="O painel Enviar para o SYSBM: o dia da escala (1), os pelotões com o botão Copiar e os avisos de quem fica de fora (2) e o botão Preencher no SYSBM para arrastar até a barra de favoritos (3)." />
+                  <figcaption>
+                    <ol class="manual-chamadas">
+                      <li>Dia da escala</li>
+                      <li>Pelotões, com o Copiar</li>
+                      <li>Favorito para arrastar</li>
+                    </ol>
+                  </figcaption>
+                </figure>
+                <p>Para lançar a escala de um pelotão:</p>
+                <ol class="manual-passos">
+                  <li>No Roster, clique em <strong>Copiar</strong> no pelotão.</li>
+                  <li>No SYSBM, entre com o seu login. Pode estar em qualquer tela dele.</li>
+                  <li>Clique no favorito <strong>Preencher no SYSBM</strong>. Na primeira vez, o navegador pergunta se o SYSBM pode ver o que foi copiado: clique em Permitir. Se você recusar, aparece uma caixa para colar com Ctrl+V.</li>
+                  <li>O favorito abre o Cadastrar da escala, pesquisa o dia e abre a aba do pelotão. Lá, ele ajusta quem já estava, desmarca quem saiu, adiciona quem falta e põe tudo na ordem do Roster. No fim, ele mostra um resumo, com o que precisa ser lançado manualmente.</li>
+                  <li>Confira a aba e clique em <strong>Salvar</strong> no SYSBM.</li>
+                </ol>
+                <p>Se a tela de cadastro já estiver aberta em outro dia, o favorito pergunta antes de pesquisar, porque o que não foi salvo nela se perde. Faça um pelotão por vez: no SYSBM, cada Salvar vale só para a aba aberta. Usar o favorito de novo no mesmo dia não repete ninguém.</p>
+                <p>Na conversão, o Oficial de Área vai em todas as abas, na viatura dele. A Central de Operações sempre leva o Oficial de Área e o Chefe de Socorro, além das viaturas deles, e, por último, quem tira extra (que também fica na viatura onde trabalha), como Voluntário Extrajornada. O Chefe de Guarnição é o mais antigo de cada período, menos na viatura em que estão o Oficial de Área ou o Chefe de Socorro, que não acumulam com Condutor. O Roster não lança Chefe de Linha: quando acha um, troca para Auxiliar de Guarnição ou, se o militar não está na escala, desmarca. Na aba, vêm primeiro as instalações, depois a viatura do Oficial de Área e depois as outras viaturas. As Observações, o Cabo de Dia, o Sobreaviso, as equipes do COBOM e o PGV continuam sendo lançados no SYSBM, como antes. A viatura com outro prefixo no SYSBM é lançada pelo número, quando só uma viatura de lá tem esse número, e o resumo avisa; sem isso, aparece para lançar manualmente.</p>
               </div>
             </section>
 
@@ -1033,7 +1063,7 @@
               <h2>Trocas</h2>
               <h3 id="solicitar-troca">Solicitar e acompanhar uma troca</h3>
               <p>Uma troca é quando você pede que outro militar cubra um serviço seu. Pode ser o <strong>turno inteiro</strong> ou apenas um <strong>período de horas</strong> dele, e você pode marcar uma <strong>devolução</strong> (um dia do colega que você cobre em retorno) ou deixar essa devolução para depois.</p>
-              <p><strong>Como pedir.</strong> A troca é formalizada pela <strong>parte</strong> no E-protocolo. Se ela já existe, tenha o número à mão; se ainda não, você pode pedir a troca sem ele. Na página <strong>Trocas</strong>, clique em <strong>Solicitar troca</strong>. Abre um painel com três blocos:</p>
+              <p><strong>Como pedir.</strong> A troca é formalizada pela <strong>parte</strong> no E-protocolo. Se ela já existe, tenha o número à mão; se ainda não, você pode pedir a troca sem ele. Na página <strong>Trocas</strong>, clique em <strong>Solicitar troca</strong>. O painel tem duas abas: <strong>Uma troca</strong>, que já vem aberta, e <strong>Várias trocas</strong>, explicada em <strong>Trocas › Solicitar várias trocas</strong>. A aba Uma troca tem três blocos:</p>
               <ul class="manual-lista">
                 <li><strong>E-protocolo</strong> (1): o número da <strong>Parte</strong> e o <strong>Ano</strong>. A Parte é opcional: deixe em branco se ela ainda não existe. Preenchida, ela vai com o ano, que já vem com o ano atual e pode ser mudado.</li>
                 <li><strong>Solicitante</strong> (você): escolha o <strong>dia do serviço</strong> (2) que quer passar e, no <strong>período</strong> (3), deixe em <strong>Serviço inteiro</strong> ou escolha <strong>Parte do serviço</strong> e marque o início e o fim, com a régua do dia mostrando o trecho.</li>
@@ -1169,6 +1199,101 @@
                 <img src="manual/imagens/troca-alteracao.png" width="400" height="346" alt="Painel de uma alteração aguardando confirmação: a caixa Antes, com a troca como era (1), e o serviço novo logo abaixo." />
               </figure>
               <p class="manual-nota">Uma alteração por vez: enquanto uma espera, a troca mostra o aviso no topo e fica sem o Editar. Só mudam os dias que ainda não chegaram. Se o serviço que a troca passou já foi trocado de novo com outra pessoa, cancele aquela troca primeiro: o sistema avisa qual é.</p>
+
+              <h3 id="varias-trocas">Solicitar várias trocas</h3>
+              <p>Quando vários militares combinam trocar serviços entre si, a aba <strong>Várias trocas</strong> do <strong>Solicitar troca</strong> junta tudo num pedido só, com um número de registro só, que todos aceitam. Ela trabalha só com o <strong>serviço inteiro</strong>; para trocar parte de um serviço, use a aba <strong>Uma troca</strong>.</p>
+              <p><strong>Como pedir.</strong> Na página <strong>Trocas</strong>, clique em <strong>Solicitar troca</strong> e escolha a aba <strong>Várias trocas</strong> (1). O painel fica mais largo, com estes blocos:</p>
+              <ul class="manual-lista">
+                <li><strong>E-protocolo</strong>: a <strong>Parte</strong> e o <strong>Ano</strong>, como na troca de uma. A Parte é opcional e vale para todas as trocas do pedido.</li>
+                <li><strong>Militares da troca</strong> (2): você já vem na lista, como quem pede. Para incluir os outros, escolha a <strong>unidade</strong> e o <strong>militar</strong> e clique em <strong>Adicionar militar</strong>. Podem entrar militares da sua companhia e dos pelotões dela. O <strong>Remover</strong> tira o militar e, junto, os dias em que ele aparece; se ele já tem dias marcados, o sistema pergunta antes.</li>
+                <li><strong>Dias da troca</strong> (3): o calendário do mês, com as setas para mudar de mês. Ficam acesos os dias, de amanhã em diante, em que um militar da troca está de serviço e outro está livre.</li>
+                <li><strong>Resumo das trocas</strong> (4): a cada dia marcado, o sistema monta sozinho como as trocas se encaixam (explicado abaixo).</li>
+              </ul>
+              <figure class="manual-figura">
+                <img src="manual/imagens/troca-varias-solicitar.png" width="560" height="1223" alt="A aba Várias trocas do Solicitar troca: as abas Uma troca e Várias trocas (1), os militares da troca com o Adicionar militar (2), o calendário de novembro com os dias marcados, quem trabalha em cima e quem folga riscado (3), e o resumo com a dupla, a roda e a nota verde de tudo fechado (4)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>As abas Uma troca e Várias trocas</li>
+                    <li>Militares da troca</li>
+                    <li>Dias da troca</li>
+                    <li>Resumo das trocas</li>
+                  </ol>
+                </figcaption>
+              </figure>
+
+              <p><strong>Marcar os dias.</strong> Clique num dia aceso. Abre um quadro com duas perguntas: <strong>Quem trabalha?</strong> (1), com os militares da troca que estão livres naquele dia, e <strong>Quem folga?</strong> (2), com os que estão de serviço. Escolha um de cada. Quando só existe uma opção para cada pergunta, o dia já fica marcado direto, sem o quadro. No calendário, o dia marcado mostra em cima quem trabalha e, embaixo, riscado, quem folga (3).</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/troca-varias-dia.png" width="480" height="306" alt="O quadro do dia 12/11 aberto no calendário, com as perguntas Quem trabalha? (1) e Quem folga? (2), e o dia 9 já marcado, com Paixão em cima e Lemos riscado embaixo (3)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>Quem trabalha?</li>
+                    <li>Quem folga?</li>
+                    <li>Dia marcado: quem trabalha em cima, quem folga riscado</li>
+                  </ol>
+                </figcaption>
+              </figure>
+              <p>Clique de novo num dia marcado para ver as trocas dele, cada uma com <strong>Tirar esta troca</strong>. Se ainda houver quem possa trabalhar e quem possa folgar naquele dia, as duas perguntas aparecem de novo, para marcar mais uma troca no mesmo dia.</p>
+
+              <p><strong>O resumo.</strong> A cada dia marcado, o sistema junta as trocas em grupos:</p>
+              <ul class="manual-lista">
+                <li><strong>Duplas</strong>: dois militares que trabalham um para o outro. Os dias casam pela ordem das datas: o dia mais cedo é o serviço e o mais tarde, a devolução. Por exemplo: "Cb. Paixão cumpre a escala de serviço do Cb. Lemos em 09/11/2026. A devolução ocorrerá no serviço de 11/11/2026."</li>
+                <li><strong>Roda</strong>: três ou mais militares, em que cada um trabalha no lugar de outro e a volta fecha no primeiro. Cada um trabalha um serviço e folga um, e ninguém fica devendo.</li>
+                <li><strong>Sem devolução</strong>: o dia que não fechou em dupla nem em roda. Quem folgou fica devendo as horas a quem trabalhou, e o resumo diz qual dia marcar para fechar a conta.</li>
+              </ul>
+              <p>No fim do resumo, a nota verde avisa quando tudo fechou e ninguém fica devendo. A nota amarela mostra o saldo de horas que sobra, por exemplo, quando um dia ficou sem devolução.</p>
+              <figure class="manual-diagrama">
+                <p class="manual-diagrama-rotulo">Dupla</p>
+                <div class="manual-fluxo-linha">
+                  <div class="manual-diagrama-bloco">
+                    <span class="manual-diagrama-titulo">Cb. Paixão</span>
+                    <span class="manual-diagrama-desc">Trabalha no dia 09, no lugar do Lemos</span>
+                  </div>
+                  <svg class="icone manual-fluxo-seta" width="22" height="22" aria-hidden="true"><use href="icones/todos.svg#icone-trocas"/></svg>
+                  <div class="manual-diagrama-bloco">
+                    <span class="manual-diagrama-titulo">Cb. Lemos</span>
+                    <span class="manual-diagrama-desc">Trabalha no dia 11, no lugar do Paixão</span>
+                  </div>
+                </div>
+                <p class="manual-diagrama-rotulo">Roda</p>
+                <div class="manual-fluxo-linha">
+                  <div class="manual-diagrama-bloco">
+                    <span class="manual-diagrama-titulo">Cb. Mendes</span>
+                    <span class="manual-diagrama-desc">Trabalha no dia 12, no lugar do Lemos</span>
+                  </div>
+                  <svg class="icone manual-fluxo-seta" width="22" height="22" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
+                  <div class="manual-diagrama-bloco">
+                    <span class="manual-diagrama-titulo">Cb. Lemos</span>
+                    <span class="manual-diagrama-desc">Trabalha no dia 14, no lugar do Paixão</span>
+                  </div>
+                  <svg class="icone manual-fluxo-seta" width="22" height="22" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
+                  <div class="manual-diagrama-bloco">
+                    <span class="manual-diagrama-titulo">Cb. Paixão</span>
+                    <span class="manual-diagrama-desc">Trabalha no dia 13, no lugar do Mendes</span>
+                  </div>
+                </div>
+                <figcaption class="manual-diagrama-legenda">Na dupla, um trabalha no lugar do outro e a conta fecha entre os dois. Na roda, a seta vai de quem trabalha para quem ele cobre, e o último cobre o primeiro, fechando a volta: cada um trabalha um serviço e folga um, e ninguém fica devendo.</figcaption>
+              </figure>
+
+              <p><strong>Pedir.</strong> Com os dias marcados, clique em <strong>Solicitar trocas</strong>, no rodapé. Nasce um registro só, com o seu número RW, e pedir já é o seu aceite.</p>
+              <p><strong>Depois do pedido.</strong> Cada militar da troca recebe o pedido nas <strong>Pendências</strong>, num cartão só, e nos seus avisos. Ele abre o painel <strong>Várias trocas</strong>: a caixa <strong>Escalas trocadas</strong> (1), com uma frase por dia, e a caixa <strong>Aceites e aprovação</strong> (2), com o aceite de cada um. Quem ainda não aceitou vê a nota "Falta você aceitar as trocas" no alto e os botões <strong>Recusar</strong> e <strong>Aceitar</strong> (3). O aceite e a recusa valem para o registro inteiro:</p>
+              <ul class="manual-lista">
+                <li>Quando todos os militares que têm conta no sistema aceitam, o pedido vai para a administração. Quem ainda não tem conta não trava o pedido.</li>
+                <li>Se um militar recusa, todas as trocas do registro são recusadas, e todos ficam sabendo.</li>
+                <li>Enquanto o pedido espera, quem pediu pode desistir com <strong>Cancelar pedido</strong>.</li>
+              </ul>
+              <figure class="manual-figura">
+                <img src="manual/imagens/troca-varias-painel.png" width="400" height="909" alt="O painel Várias trocas de quem ainda não aceitou: a nota Falta você aceitar as trocas no alto, as escalas trocadas, uma por dia (1), os aceites e a aprovação (2) e os botões Recusar e Aceitar (3)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>Escalas trocadas</li>
+                    <li>Aceites e aprovação</li>
+                    <li>Recusar e Aceitar</li>
+                  </ol>
+                </figcaption>
+              </figure>
+
+              <p><strong>Nas listas e na escala.</strong> Nas abas <strong>Todas</strong> e <strong>Minhas</strong>, o registro aparece numa linha só: "Várias trocas:" com os nomes, o número RW e quantos militares participam. O <strong>Editar</strong> do painel muda só a <strong>Parte</strong> do E-protocolo, que vale para o registro inteiro, e os outros militares recebem o aviso. O <strong>Imprimir registro</strong> funciona como na troca de uma. Aprovadas, as trocas valem na escala, com o riscado de cada dia, e quem ainda não tinha aceitado pode aceitar depois, só para o registro.</p>
+              <p><strong>Os saldos.</strong> As trocas de uma roda não geram dívida: no histórico da aba <strong>Saldos</strong>, os dias delas aparecem com a nota "Compensada na roda do RW nº…".</p>
               <div class="manual-admin manual-zona-admin">
                 <h3 id="aprovar-trocas">Aprovar trocas <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>Depois que o colega aceita, a troca fica "Aguardando aprovação" e espera um administrador. Ela aparece na página <strong>Pendências</strong> e na aba <strong>Pendências</strong> daqui; o painel de decisão, a análise e o Como fica a escala estão explicados em <strong>Pendências › Decidir os pedidos</strong>. Na caixa <strong>Serviço</strong>, a troca mostra o número do registro e a <strong>Parte nº</strong> do E-protocolo, para você conferir antes de aprovar. Quando o colega não tem conta no sistema, a troca já chega aguardando a sua aprovação, e a análise avisa que ele não confirmou.</p>
@@ -1182,6 +1307,13 @@
                 <p>Aprovada, a troca passa a valer na escala (o riscado da seção anterior) e a dívida de horas entre os dois é acertada. Se, até lá, aquele horário do serviço já tiver sido trocado com outra pessoa, a troca não pode mais ser aprovada: a análise mostra isso em vermelho.</p>
                 <p><strong>Afastamento depois da troca.</strong> Se, mais tarde, o militar que assumiu o serviço entrar de <strong>férias, licença ou dispensa</strong> naquele dia, quem lança o afastamento é avisado de que ele cobre um serviço por troca e decide se segue. Seguindo, a troca não é desfeita, mas a escala marca aquele serviço em <strong>amarelo</strong>, porque na prática ele não vai assumir.</p>
                 <p><strong>Alterações.</strong> A alteração de uma troca aprovada chega como um pedido próprio, com o selo "Alteração aguardando aprovação" e a caixa <strong>Antes</strong>, e você aprova ou recusa como qualquer troca. Aprovada, só os dias que mudam são refeitos na escala. Você também pode alterar direto uma troca da sua área da qual não participa: na página Trocas, abra a troca e use <strong>Editar</strong>. A <strong>Análise</strong> aparece antes de salvar, como no Registrar, e a mudança vale na hora, sem o aceite dos dois; o dia pode ser de até <strong>7 dias atrás</strong>.</p>
+                <p><strong>Várias trocas.</strong> O pedido de várias trocas chega nas Pendências num cartão só, e o painel <strong>Várias trocas</strong> mostra as escalas trocadas, os aceites, a <strong>Análise</strong> e o <strong>Como fica a escala</strong> do registro inteiro. A decisão vale para todas as trocas de uma vez:</p>
+                <ul class="manual-lista">
+                  <li>Enquanto alguém ainda não aceitou, fica o <strong>Aprovar sem confirmação</strong>.</li>
+                  <li>Depois que todos os que têm conta aceitam, ficam <strong>Aprovar</strong> e <strong>Recusar</strong>. O Aprovar é tudo ou nada: se um dos dias não puder mais ser aprovado, nenhum é, e o aviso diz qual serviço.</li>
+                  <li>Já aprovadas, o <strong>Cancelar trocas</strong> desfaz todas e volta a escala ao que era, em todos os dias.</li>
+                </ul>
+                <p>O <strong>Registrar troca</strong>, logo abaixo, registra uma troca por vez.</p>
                 <h3 id="registrar-troca">Registrar uma troca <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>Quando a troca chega pelo E-protocolo e não foi pedida no sistema, você mesmo a registra. Na página <strong>Trocas</strong>, clique em <strong>Registrar troca</strong>, no bloco <strong>Administração</strong>, ao lado de Solicitar troca. Abre o mesmo painel do pedido, com uma diferença no bloco <strong>Solicitante</strong> (1): em vez de você, escolha a <strong>unidade</strong> e o <strong>militar</strong> que passa o serviço. Depois preencha a <strong>parte</strong> do E-protocolo, o dia, o período, quem cobre e a devolução, como num pedido. O dia pode ser de até <strong>7 dias atrás</strong>, para registrar uma troca que já aconteceu.</p>
                 <figure class="manual-figura">
