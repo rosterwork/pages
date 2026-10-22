@@ -3,9 +3,9 @@
    O botão ? da linha do título (.pagina-ajuda, um .dropdown) abre a
    lista dos passo a passo da página e o link do manual. No passo a
    passo, a tela escurece em volta do campo do passo (.guia-anel: a
-   moldura clara e o contorno largo na cor do véu) e o balão explica
+   moldura e o contorno largo na cor --veu-guia) e o balão explica
    (.guia-balao--passo). A dica da primeira vez é o mesmo balão,
-   menor, apontando o ? (.guia-balao--dica). As posições vêm do JS,
+   menor, com o mesmo destaque em volta do ? (.guia-balao--dica). As posições vêm do JS,
    nas propriedades --guia-* (dado da tela). Camada 40 (aviso e dica).
    Moldes #tpl-guia-* (index.html).
    ============================================================ */
@@ -34,7 +34,7 @@
   min-height: var(--guia-altura, 0px);
   border: 2px solid var(--texto-forte);   /* a cor do foco: escura no claro, clara no escuro */
   border-radius: var(--raio-medio);
-  outline: 4000px solid var(--veu-modal);
+  outline: 4000px solid var(--veu-guia);
   pointer-events: none;
 }
 

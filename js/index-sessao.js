@@ -16,14 +16,17 @@
     } catch (e) {}
   }
 
+  var RW = window.RosterWork;
   var sessao = null;
   try { sessao = JSON.parse(sessionStorage.getItem('rosterwork_session')); } catch (e) {}
 
+  /* a sessão desta aba vale: o js/index-carregar.js roda o sistema na hora */
   if (sessao && sessao.access_token) {
     try {
       var payload = JSON.parse(atob(sessao.access_token.split('.')[1]));
       if (payload.exp && payload.exp * 1000 > Date.now()) {
         ligarCelular();
+        RW.sessaoPronta = Promise.resolve({ ok: true });
         return;
       }
     } catch (e) {}
@@ -38,5 +41,16 @@
     var aviso = new URLSearchParams(location.search).get('aviso');
     if (aviso) sessionStorage.setItem('rosterwork_aviso_pendente', aviso);
   } catch (e) {}
+
+  /* sem sessão nesta aba, mas com o login lembrado no aparelho (Manter-me conectado): entra direto, sem
+     passar pelo login. A tela "entrando" cobre o sistema enquanto o acesso é renovado (componentes/js/
+     geral-entrada.js), e o js/index-carregar.js roda o sistema quando a sessão fica pronta, ou mostra a falha */
+  if (RW.conectado && RW.conectado.lembrado() && RW.entrada) {
+    ligarCelular();
+    document.documentElement.setAttribute('data-entrando', '');
+    RW.sessaoPronta = RW.entrada.renovarLembrado();
+    return;
+  }
+
   window.location.replace('login.html');
 })();

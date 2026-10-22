@@ -136,7 +136,8 @@
     });
   }
 
-  window.addEventListener('load', oferecerNoApp);
+  /* depois que todo o código do sistema rodou (RosterWork.sistemaPronto, do js/index-carregar.js) */
+  (RW.sistemaPronto || Promise.resolve()).then(oferecerNoApp);
 
   RW.notificacoesCelular = {
     situacao: situacao,

@@ -654,6 +654,7 @@
 .guia-amostra[data-cor="sucesso-fundo-forte"] { background-color: var(--sucesso-fundo-forte); }
 .guia-amostra[data-cor="alerta-fundo-forte"] { background-color: var(--alerta-fundo-forte); }
 .guia-amostra[data-cor="veu-modal"] { background-color: var(--veu-modal); }
+.guia-amostra[data-cor="veu-guia"] { background-color: var(--veu-guia); }
 .guia-amostra[data-cor="anotacao"] { background-color: var(--anotacao); }
 .guia-amostra[data-cor="anotacao-texto"] { background-color: var(--anotacao-texto); }
 .guia-amostra[data-cor="impressao-texto-forte"] { background-color: var(--impressao-texto-forte); }

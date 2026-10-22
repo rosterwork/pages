@@ -1,0 +1,59 @@
+/* ============================================================
+   ENTRANDO — a tela de quando o sistema abre pelo login lembrado
+   (Manter-me conectado): cobre o sistema enquanto o acesso é
+   renovado. Aparece com html[data-entrando], posto pelo
+   js/index-sessao.js e tirado pelo js/index-carregar.js.
+   Enquanto renova, só o giratório no meio da tela, o carregando
+   padrão do sistema. Na falha (data-entrando="falhou"), a logo
+   volta com a frase e o Tentar de novo no lugar do giratório.
+   ============================================================ */
+
+.entrando {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 32px 16px;
+  background-color: var(--fundo-pagina);
+}
+
+html[data-entrando] .entrando {
+  display: flex;
+}
+
+/* a logo em cima, no meio (a mesma medida da tela de login) */
+.entrando-logo {
+  display: flex;
+  justify-content: center;
+}
+
+.entrando-logo svg {
+  height: 72px;
+  width: auto;
+}
+
+.entrando-corpo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 400px;
+}
+
+.entrando-mensagem {
+  margin: 0;
+  font-size: var(--fonte-padrao);
+  color: var(--texto);
+  text-align: center;
+}
+
+html:not([data-entrando="falhou"]) .entrando-logo,
+html:not([data-entrando="falhou"]) .entrando-mensagem,
+html:not([data-entrando="falhou"]) .entrando .botao,
+html[data-entrando="falhou"] .entrando .giratorio {
+  display: none;
+}

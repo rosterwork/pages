@@ -4,7 +4,7 @@
   "short_name": "Roster Work",
   "description": "Sistema de escala de serviço da corporação.",
   "lang": "pt-BR",
-  "start_url": "login.html",
+  "start_url": "index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#1a1a1a",

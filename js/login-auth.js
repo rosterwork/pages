@@ -1,10 +1,6 @@
 (function () {
   'use strict';
 
-  var SUPABASE_URL = 'https://oadzjrekpuddagfydfzn.supabase.co';
-  var SUPABASE_KEY = 'sb_publishable_NKSki2dWOD6k6_jle3Ha7w_uq1nYcXx';
-  var LIMITE_ENTRADA_MS = 15000;   /* a entrada pelo login lembrado desiste depois disto (o app nunca trava) */
-
   function mascaraCpfRg(nums) {
     if (nums.length <= 9) {
       if (nums.length <= 1) return nums;
@@ -36,10 +32,10 @@
     var inputId = document.getElementById('entrada-identificador');
     var inputSenha = document.getElementById('entrada-senha');
     var btnEntrar = document.getElementById('btn-entrar');
+    var banco = window.RosterWork.entrada.banco;   /* o endereço e a chave pública do banco (componentes/js/geral-entrada.js) */
 
-    // evita duplo envio se já está carregando; com a tela "entrando", o formulário nem aparece
+    // evita duplo envio se já está carregando
     if (btnEntrar && btnEntrar.disabled) return;
-    if (document.documentElement.hasAttribute('data-entrando')) return;
 
     if (inputId) esconderErroCampo(inputId);
     if (inputSenha) esconderErroCampo(inputSenha);
@@ -64,11 +60,11 @@
     function desbloquear() { travarFormulario(false); }
 
     try {
-      var respLookup = await fetch(SUPABASE_URL + '/rest/v1/rpc/fn_login_buscar_email', {
+      var respLookup = await fetch(banco.url + '/rest/v1/rpc/fn_login_buscar_email', {
         method: 'POST',
         headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'apikey': banco.chave,
+          'Authorization': 'Bearer ' + banco.chave,
           'Content-Type': 'application/json'
         },
         /* a senha vai junto: o banco confere a senha antes de devolver o endereço de
@@ -92,10 +88,10 @@
         return;
       }
 
-      var respAuth = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
+      var respAuth = await fetch(banco.url + '/auth/v1/token?grant_type=password', {
         method: 'POST',
         headers: {
-          'apikey': SUPABASE_KEY,
+          'apikey': banco.chave,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ email: resultado.email, password: senha })
@@ -119,7 +115,7 @@
         window.RosterWork.conectado.esquecer();
       }
 
-      await concluirEntrada(authData, resultado.email);
+      await window.RosterWork.entrada.concluir(authData, resultado.email);
       window.RosterWork.aplicativo.irPara('index.html');   /* com versão nova do app esperando, entra já nela */
 
     } catch (e) {
@@ -142,128 +138,10 @@
     document.querySelectorAll('.login-links .botao').forEach(function (b) { b.disabled = travar; });
   }
 
-  /* depois da senha (ou do login lembrado): guarda a sessão e busca, ao mesmo tempo, o perfil,
-     se é programador, as preferências e as unidades padrão (uma ida e volta só, não quatro).
-     sinal: o limite da entrada pelo login lembrado (cancela as chamadas) */
-  async function concluirEntrada(authData, email, sinal) {
-    sessionStorage.setItem('rosterwork_session', JSON.stringify({
-      access_token: authData.access_token,
-      refresh_token: authData.refresh_token
-    }));
-
-    /* uma chamada de RPC com a sessão nova; a falha (rede, resposta ruim) vira null */
-    function chamar(nome, corpo) {
-      return fetch(SUPABASE_URL + '/rest/v1/rpc/' + nome, {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': 'Bearer ' + authData.access_token,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(corpo || {}),
-        signal: sinal
-      }).then(function (resp) { return resp.ok ? resp.json() : null; }).catch(function () { return null; });
-    }
-
-    var respostas = await Promise.all([
-      chamar('fn_perfil_usuario', { p_email: email }),
-      chamar('fn_sou_programador'),
-      chamar('fn_preferencias_carregar'),
-      chamar('fn_unidades_padrao')
-    ]);
-    var perfil = respostas[0], programador = respostas[1], prefs = respostas[2], dadosPadrao = respostas[3];
-
-    if (perfil && perfil.ok) {
-      /* marca se é programador (vê a seção Programador › Mensagens) */
-      perfil.is_programador = programador === true;
-      sessionStorage.setItem('rosterwork_user', JSON.stringify(perfil));
-    }
-
-    if (prefs) {
-      /* tema e menu vêm do banco (lembrados entre logins por CPF);
-         a seleção de unidades NÃO persiste: começa no PADRÃO AMPLO da lotação
-         (CIA/CIBM + pelotões p/ staff; CIA + o próprio pelotão p/ quem é de pelotão),
-         é mantida só na sessão e esquecida no logout */
-      var padrao = (perfil && perfil.lotacao_id) ? [perfil.lotacao_id] : [];   // fallback: a própria lotação
-      if (dadosPadrao && dadosPadrao.ok && Array.isArray(dadosPadrao.unidades) && dadosPadrao.unidades.length) {
-        padrao = dadosPadrao.unidades;
-      }
-      prefs.unidades_selecionadas = padrao;
-      sessionStorage.setItem('rosterwork_preferencias', JSON.stringify(prefs));
-    }
-
-    return !!(perfil && perfil.ok);
-  }
-
-  /* a tela "entrando" (html[data-entrando]): só o giratório, ou a falha (data-entrando="falhou")
-     com a logo, a frase e o Tentar de novo */
-  function mostrarEntrando(mensagem) {
-    document.documentElement.setAttribute('data-entrando', mensagem ? 'falhou' : '');
-    var frase = document.querySelector('.login-entrando-mensagem');
-    if (frase) frase.textContent = mensagem || '';
-  }
-
-  /* volta ao formulário de login, com a frase do que houve (ou nenhuma) */
-  function mostrarFormulario(aviso) {
-    document.documentElement.removeAttribute('data-entrando');
-    var linha = document.getElementById('login-aviso');
-    if (!linha) return;
-    linha.textContent = aviso || '';
-    linha.classList.toggle('oculto', !aviso);
-  }
-
-  /* login lembrado neste aparelho (Manter-me conectado): a tela fica "entrando" (só a logo e o
-     giratório) até o sistema abrir. Sem internet, servidor fora ou passou do limite: a frase e o
-     Tentar de novo, e o aparelho continua lembrando. Recusado pelo servidor (saiu de todos os
-     aparelhos, baixa, senha trocada): esquece e mostra o formulário com o aviso */
-  async function entrarLembrado() {
-    var M = window.RosterWork.mensagens.login;
-    var lembrado = window.RosterWork.conectado.lembrado();
-    if (!lembrado) { mostrarFormulario(''); return; }
-    mostrarEntrando('');
-
-    var controle = new AbortController();
-    var limite = setTimeout(function () { controle.abort(); }, LIMITE_ENTRADA_MS);
-    function falhou(mensagem) {
-      clearTimeout(limite);
-      sessionStorage.clear();
-      mostrarEntrando(mensagem);
-    }
-
-    var resp;
-    try {
-      resp = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=refresh_token', {
-        method: 'POST',
-        headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refresh_token: lembrado.refresh_token }),
-        signal: controle.signal
-      });
-    } catch (e) {
-      falhou(controle.signal.aborted ? M.entrandoTenteDepois : M.entrandoSemInternet);
-      return;
-    }
-
-    if (resp.status >= 400 && resp.status < 500 && resp.status !== 429) {
-      clearTimeout(limite);
-      window.RosterWork.conectado.esquecer();
-      mostrarFormulario(M.sessaoTerminou);
-      return;
-    }
-    var authData = resp.ok ? await resp.json().catch(function () { return null; }) : null;
-    if (!authData || !authData.access_token) { falhou(M.entrandoTenteDepois); return; }
-
-    window.RosterWork.conectado.atualizar(authData.access_token, authData.refresh_token);
-    var entrou = await concluirEntrada(authData, authData.user ? authData.user.email : '', controle.signal);
-    if (!entrou || controle.signal.aborted) { falhou(M.entrandoTenteDepois); return; }
-    clearTimeout(limite);
-    window.RosterWork.aplicativo.irPara('index.html');   /* com versão nova do app esperando, entra já nela */
-  }
-
   window.RosterWork = window.RosterWork || {};
   window.RosterWork.mascaraCpfRg = mascaraCpfRg;
   window.RosterWork.mostrarErroCampo = mostrarErroCampo;
   window.RosterWork.esconderErroCampo = esconderErroCampo;
   window.RosterWork.fazerLogin = fazerLogin;
-  window.RosterWork.entrarLembrado = entrarLembrado;
 
 })();

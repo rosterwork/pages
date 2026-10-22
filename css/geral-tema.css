@@ -112,6 +112,10 @@
      Véu do modal
      ------------------------------------------------------- */
   --veu-modal: rgb(0 0 0 / 0.40);
+  /* véu do passo a passo (geral-guia): só o campo do passo fica aceso. Mais forte que o do modal,
+     e mais ainda no escuro, onde o fundo já é quase preto e o que apaga são os textos e as bordas
+     (o resto muda pelo menos 3 para 1 em relação à tela sem o véu) */
+  --veu-guia: rgb(0 0 0 / 0.50);
 
   /* -------------------------------------------------------
      Raios
@@ -246,6 +250,8 @@ html[data-tema="escuro"] {
   --alerta:              rgb(230, 178, 98);
   --alerta-fundo:        rgb(58,  47,  26);
   --alerta-fundo-forte:  rgb(84,  64,  30);
+
+  --veu-guia: rgb(0 0 0 / 0.72);
 }
 
 /* -------------------------------------------------------

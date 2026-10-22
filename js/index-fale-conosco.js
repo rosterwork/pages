@@ -11,7 +11,7 @@
   'use strict';
   window.RosterWork = window.RosterWork || {};
 
-  document.addEventListener('DOMContentLoaded', function () {
+  function inicializar() {
     var M = (RosterWork.mensagens && RosterWork.mensagens.faleConosco) || {};
     var btnAbrir = document.getElementById('btn-fale-conosco');
     var veu = document.getElementById('veu-fale-conosco');
@@ -149,5 +149,11 @@
     }
     RosterWork.recadosSelo = { atualizar: atualizarSelo };
     atualizarSelo();
-  });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', inicializar);
+  } else {
+    inicializar();
+  }
 })();

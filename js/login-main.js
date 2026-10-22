@@ -56,10 +56,18 @@
       if (window.RosterWork.aplicativo.noCelularInstalado()) marcarConectado(true);
     }
 
-    /* login lembrado neste aparelho: entra sozinho; na falha, o Tentar de novo refaz a entrada */
-    var btnTentar = document.getElementById('login-tentar');
-    if (btnTentar) btnTentar.addEventListener('click', window.RosterWork.entrarLembrado);
-    window.RosterWork.entrarLembrado();
+    /* o login lembrado deixou de valer (saiu de todos os aparelhos, baixa, senha trocada): o sistema
+       volta para cá com a marca rosterwork_aviso_login (js/index-carregar.js), e o aviso fica acima dos campos */
+    var aviso = null;
+    try {
+      aviso = sessionStorage.getItem('rosterwork_aviso_login');
+      sessionStorage.removeItem('rosterwork_aviso_login');
+    } catch (e) {}
+    var linhaAviso = document.getElementById('login-aviso');
+    if (aviso === 'sessao_terminou' && linhaAviso) {
+      linhaAviso.textContent = window.RosterWork.mensagens.login.sessaoTerminou;
+      linhaAviso.classList.remove('oculto');
+    }
   });
 
 })();

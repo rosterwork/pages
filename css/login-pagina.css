@@ -85,45 +85,6 @@
   color: var(--texto);
 }
 
-/* entrando pelo login lembrado (html[data-entrando], posto pelo login-sessao.js): o cartão perde
-   a moldura e fica só o giratório no meio da tela, o carregando padrão do sistema; a logo e o
-   formulário somem. Na falha (data-entrando="falhou"), a logo volta com a frase e o Tentar de
-   novo no lugar do giratório */
-.login-entrando {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-}
-
-html[data-entrando] .login-entrando {
-  display: flex;
-}
-
-html[data-entrando] .login-formulario {
-  display: none;
-}
-
-html[data-entrando] .login-card {
-  background-color: transparent;
-  border-color: transparent;
-  box-shadow: none;
-}
-
-.login-entrando-mensagem {
-  margin: 0;
-  font-size: var(--fonte-padrao);
-  color: var(--texto);
-  text-align: center;
-}
-
-html[data-entrando]:not([data-entrando="falhou"]) .login-logo,
-html:not([data-entrando="falhou"]) .login-entrando-mensagem,
-html:not([data-entrando="falhou"]) .login-entrando .botao,
-html[data-entrando="falhou"] .login-entrando .giratorio {
-  display: none;
-}
-
 .login-links {
   display: flex;
   flex-direction: column;

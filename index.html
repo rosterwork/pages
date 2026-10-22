@@ -19,12 +19,14 @@
   <script src="componentes/js/geral-tema.js"></script>
   <script src="componentes/js/geral-aplicativo.js"></script>
   <script src="componentes/js/geral-conectado.js"></script>
+  <script src="componentes/js/geral-entrada.js"></script>
   <script src="js/index-sessao.js"></script>
   <link rel="stylesheet" href="css/geral-tema.css" />
   <link rel="stylesheet" href="css/geral-base.css" />
   <link rel="stylesheet" href="componentes/css/geral-botao.css" />
   <link rel="stylesheet" href="componentes/css/geral-campo.css" />
   <link rel="stylesheet" href="componentes/css/geral-carregando.css" />
+  <link rel="stylesheet" href="componentes/css/geral-entrando.css" />
   <link rel="stylesheet" href="componentes/css/geral-dica.css" />
   <link rel="stylesheet" href="componentes/css/geral-flutuante.css" />
   <link rel="stylesheet" href="componentes/css/geral-dropdown.css" />
@@ -598,62 +600,22 @@
     </div>
   </div>
 
-  <script src="componentes/js/geral-limpar-comentarios.js"></script>
-  <script src="componentes/js/geral-carregando.js"></script>
-  <script src="componentes/js/geral-teclado.js"></script>
-  <script src="componentes/js/geral-grade-teclado.js"></script>
-  <script src="componentes/js/geral-sessao.js"></script>
-  <script src="componentes/js/geral-tpl.js"></script>
-  <script src="componentes/js/geral-celular.js"></script>
-  <script src="componentes/js/geral-recolher-topo.js"></script>
-  <script src="componentes/js/geral-tempo.js"></script>
-  <script src="componentes/js/geral-mensagens.js"></script>
-  <script src="componentes/js/geral-data.js"></script>
-  <script src="componentes/js/geral-campos.js"></script>
-  <script src="componentes/js/geral-dica.js"></script>
-  <script src="componentes/js/geral-flutuante.js"></script>
-  <script src="componentes/js/geral-dropdown.js"></script>
-  <script src="componentes/js/geral-dropdown-numeros.js"></script>
-  <script src="componentes/js/geral-guia.js"></script>
-  <script src="componentes/js/geral-horario.js"></script>
-  <script src="componentes/js/geral-modal.js"></script>
-  <script src="componentes/js/geral-aviso.js"></script>
-  <script src="componentes/js/geral-data-modal.js"></script>
-  <script src="componentes/js/geral-resumo.js"></script>
-  <script src="componentes/js/geral-alteracoes.js"></script>
-  <script src="componentes/js/geral-guarda-saida.js"></script>
-  <script src="componentes/js/geral-api.js"></script>
-  <script src="componentes/js/geral-notificacoes-celular.js"></script>
-  <script src="componentes/js/geral-recalculo.js"></script>
-  <script src="js/index-sidebar.js"></script>
-  <script src="js/index-cabecalho.js"></script>
-  <script src="js/index-avisos.js"></script>
-  <script src="js/index-perfil.js"></script>
-  <script src="js/index-manual.js"></script>
-  <script src="js/index-sessao-vigia.js"></script>
-  <script src="componentes/js/geral-seletor-unidades.js"></script>
-  <script src="componentes/js/geral-arvore-unidades.js"></script>
-  <script src="componentes/js/geral-filtro-arvore.js"></script>
-  <script src="componentes/js/geral-filtros.js"></script>
-  <script src="componentes/js/geral-legenda.js"></script>
-  <script src="componentes/js/geral-busca.js"></script>
-  <script src="componentes/js/geral-calendario.js"></script>
-  <script src="componentes/js/geral-calendario-mes.js"></script>
-  <script src="componentes/js/geral-periodo.js"></script>
-  <script src="componentes/js/geral-seletor-unidade.js"></script>
-  <script src="componentes/js/geral-mini-calendario.js"></script>
-  <script src="componentes/js/geral-abas.js"></script>
-  <script src="componentes/js/geral-painel.js"></script>
-  <script src="componentes/js/geral-anteriores.js"></script>
-  <script src="componentes/js/geral-posto-editar.js"></script>
-  <script src="componentes/js/geral-impacto.js"></script>
-  <script src="componentes/js/geral-decisao.js"></script>
-  <script src="componentes/js/geral-fila.js"></script>
-  <script src="js/index-navegacao.js"></script>
-  <script src="js/index-fale-conosco.js"></script>
-  <script src="js/index-termos.js"></script>
-  <script src="js/index-dados-pendentes.js"></script>
-  <script src="js/index-cnh-painel.js"></script>
+  <!-- entrando pelo login lembrado (html[data-entrando]): só o giratório; se falhar, a logo, a frase e o Tentar de novo.
+       Fica depois do sistema: na mesma camada do véu de carregamento do conteúdo, cobre também ele -->
+  <div class="entrando" role="status">
+    <div class="entrando-logo">
+      <svg viewBox="0 0 186.44 96.312" fill="currentColor" preserveAspectRatio="xMidYMid meet">
+        <use href="icones/icone-logo.svg#icone-logo"></use>
+      </svg>
+    </div>
+    <div class="entrando-corpo">
+      <div class="giratorio" aria-hidden="true"></div>
+      <p class="entrando-mensagem" id="entrando-mensagem"></p>
+      <button class="botao botao--primario" type="button" id="entrando-tentar">Tentar de novo</button>
+    </div>
+  </div>
+
+  <script src="js/index-carregar.js"></script>
 
   <!-- MOLDES: análise de impacto na escala (componente geral-impacto — painel de decisão de Trocas e Folgas) -->
   <!-- um ponto da análise: nota amarela (atenção) ou vermelha (problema); sem nenhum, a nota verde -->

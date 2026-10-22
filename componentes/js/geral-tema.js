@@ -81,5 +81,7 @@
   window.addEventListener('beforeprint', function () { imprimindo = true; aplicar(); });
   window.addEventListener('afterprint', function () { imprimindo = false; aplicar(); });
 
-  window.RosterWork.tema = { escolha: escolha, escuro: escuro, escolher: escolher };
+  /* aplicar: refaz o tema pelas preferências da sessão (o js/index-carregar.js chama quando elas chegam
+     depois da renovação do login lembrado) */
+  window.RosterWork.tema = { escolha: escolha, escuro: escuro, escolher: escolher, aplicar: aplicar };
 })();

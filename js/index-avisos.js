@@ -185,7 +185,8 @@
   RW.avisosSino = { recarregar: carregar, quantoSoma: quantoSoma };
 
   /* veio de uma notificação do celular (index.html?aviso=…, ou guardado pelo index-sessao.js antes
-     da entrada): abre o aviso como o clique no sino, depois que o sistema montou a primeira tela */
+     da entrada): abre o aviso como o clique no sino, depois que todo o código do sistema rodou
+     (RosterWork.sistemaPronto, do js/index-carregar.js) */
   function abrirAvisoDaNotificacao() {
     var bruto = null;
     try {
@@ -198,7 +199,7 @@
     try { aviso = JSON.parse(bruto); } catch (e) {}
     if (aviso && aviso.id) abrir(aviso);
   }
-  window.addEventListener('load', abrirAvisoDaNotificacao);
+  (RW.sistemaPronto || Promise.resolve()).then(abrirAvisoDaNotificacao);
 
   carregar();
 })();

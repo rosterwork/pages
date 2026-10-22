@@ -1,7 +1,8 @@
 /* ============================================================
    LOGIN — guarda de sessão (roda síncrono no <head>, antes do
-   corpo pintar): se já há sessão válida, redireciona para o
-   sistema na hora — sem a tela de login "piscar" antes.
+   corpo pintar): se já há sessão válida ou login lembrado,
+   redireciona para o sistema na hora — sem a tela de login
+   "piscar" antes.
    Espelha o index-sessao.js (o inverso: index → login).
    ============================================================ */
 (function () {
@@ -20,8 +21,8 @@
     } catch (e) {}
   }
 
-  /* login lembrado no aparelho (Manter-me conectado): a tela já nasce "entrando", só com a logo e o
-     giratório, sem o formulário piscar; o login-auth.js entra ou mostra o que houve */
+  /* login lembrado no aparelho (Manter-me conectado): vai direto para o sistema, que renova o acesso
+     (js/index-sessao.js); se ele deixou de valer, o sistema volta para cá com o aviso */
   var conectado = window.RosterWork && window.RosterWork.conectado;
-  if (conectado && conectado.lembrado()) document.documentElement.setAttribute('data-entrando', '');
+  if (conectado && conectado.lembrado()) window.location.replace('index.html');
 })();

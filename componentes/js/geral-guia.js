@@ -15,7 +15,8 @@
    <p data-fim> é o balão final, que espera os modais fecharem.
    Sem o alvo por 3 s (a pessoa saiu do caminho), o guia termina.
    Com menu, calendário ou modal aberto, o guia espera escondido.
-   A dica da primeira vez aponta o ? e some com Entendi ou com o
+   A dica da primeira vez acende o ? (o mesmo destaque, com o resto
+   da tela no véu) e some com Entendi ou com o
    próprio ?. O que a pessoa já viu fica em preferencias_usuario.ajuda
    ({ dica_vista, vistos }), gravado pelo fn_preferencias_salvar.
    Moldes: #tpl-guia-menu, #tpl-guia-menu-item, #tpl-guia-anel,
@@ -182,12 +183,17 @@
     texto.textContent = '';
     Array.prototype.forEach.call(p.childNodes, function (n) { texto.appendChild(n.cloneNode(true)); });
   }
-  function posicionar(els) {
-    var c = caixaDe(els);
+  /* o destaque: a moldura em volta da caixa (o resto da tela fica no véu) */
+  function destacar(c) {
     anel.style.setProperty('--guia-x', (c.x0 - MARGEM) + 'px');
     anel.style.setProperty('--guia-y', (c.y0 - MARGEM) + 'px');
     anel.style.setProperty('--guia-largura', (c.x1 - c.x0 + MARGEM * 2) + 'px');
     anel.style.setProperty('--guia-altura', (c.y1 - c.y0 + MARGEM * 2) + 'px');
+    anel.classList.remove('oculto');
+  }
+  function posicionar(els) {
+    var c = caixaDe(els);
+    destacar(c);
     if (celular()) {
       var embaixo = (c.y0 + c.y1) / 2 < window.innerHeight / 2;
       balao.classList.toggle('guia-balao--baixo', embaixo);
@@ -262,14 +268,16 @@
     if (timer && !guia && !(dica && !dica.classList.contains('oculto'))) { clearInterval(timer); timer = null; }
   }
 
-  /* ---------- a dica da primeira vez: aponta o ? da página ---------- */
+  /* ---------- a dica da primeira vez: o ? aceso, com o resto da tela no véu ---------- */
   function conferirDica() {
     if (!dica) return;
     var botao = document.querySelector(BOTAO_DA_PAGINA);
     var mostrar = visivel(botao) && !guia && !lerAjuda().dica_vista && !document.querySelector(ESPERAR);
+    var estava = !dica.classList.contains('oculto');
     dica.classList.toggle('oculto', !mostrar);
-    if (!mostrar) return;
+    if (!mostrar) { if (estava && !guia) anel.classList.add('oculto'); return; }
     var r = botao.getBoundingClientRect(), W = window.innerWidth;
+    destacar({ x0: r.left, y0: r.top, x1: r.right, y1: r.bottom });
     dica.style.setProperty('--guia-balao-x', limitar(r.right - dica.offsetWidth, DISTANCIA, W - dica.offsetWidth - DISTANCIA) + 'px');
     dica.style.setProperty('--guia-balao-y', (r.bottom + DISTANCIA / 2) + 'px');
   }
@@ -279,7 +287,7 @@
     ligarTimer();
   }
   function esconderDica(gravar) {
-    if (dica) dica.classList.add('oculto');
+    if (dica && !dica.classList.contains('oculto')) { dica.classList.add('oculto'); if (!guia) anel.classList.add('oculto'); }
     if (gravar && !lerAjuda().dica_vista) gravarAjuda(function (a) { a.dica_vista = true; });
   }
 
