@@ -527,7 +527,7 @@
 }
 
 /* ---------- painel Enviar para o SYSBM (escalas-sysbm.js) ---------- */
-/* uma linha por pelotão: a cidade, o resumo e os avisos à esquerda; o Copiar à direita */
+/* uma linha por pelotão: a cidade, o resumo e os avisos à esquerda; o Enviar à direita */
 .escala-sysbm-lista {
   display: flex;
   flex-direction: column;
@@ -571,7 +571,7 @@
   color: var(--alerta);
 }
 
-.escala-sysbm-copiar {
+.escala-sysbm-enviar {
   flex-shrink: 0;
 }
 

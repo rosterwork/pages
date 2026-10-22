@@ -13,9 +13,11 @@
      dela) e não está no Roster: desmarca (as outras ficam);
    - quem falta: entra pela linha de cima e "Adicionar Viatura";
    - as viaturas e as linhas ficam na ordem do Roster.
-   Nunca clica em Salvar: a pessoa confere e salva. Os textos vêm do
-   geral-mensagens.js do Roster, carregado junto; as janelas são as
-   do próprio navegador (alert, confirm e prompt).
+   Nunca clica em Salvar: a pessoa confere e salva. Clicado fora do
+   SYSBM (na aba do Roster, por exemplo), abre a aba do SYSBM e
+   avisa. Os textos vêm do geral-mensagens.js do Roster, carregado
+   junto; as janelas são as do próprio navegador (alert, confirm e
+   prompt).
    ============================================================ */
 (function () {
   'use strict';
@@ -25,6 +27,9 @@
   var ESPERA_MAXIMA = 20000;   // ms esperando o SYSBM abrir ou pesquisar a tela
   var PASSO_ESPERA = 200;
   var EXTRA = '40';            // Voluntário Extrajornada (DEAEV): por último na Central
+  /* a tela inicial do SYSBM e o nome da aba dele (os mesmos do escalas-sysbm.js) */
+  var ENDERECO_SYSBM = 'https://www.sysbm.bombeiros.pr.gov.br/sysbmnew/menu/';
+  var ABA_SYSBM = 'rosterwork-sysbm';
 
   function msg() { return window.RosterWork.mensagens.escala.sysbm.favorito; }
 
@@ -65,6 +70,28 @@
   }
 
   function soDigitos(texto) { return String(texto || '').replace(/\D/g, ''); }
+
+  /* ---------- fora do SYSBM (ex.: o favorito clicado na aba do Roster) ---------- */
+  /* é o SYSBM: o endereço dele, ou uma página com o menu ou a tela de cadastro (a cópia de teste) */
+  function estaNoSysbm() {
+    return location.host === new URL(ENDERECO_SYSBM).host
+      || !!document.querySelector('[item-href*="sc_apl_menu="]')
+      || !!acharQuadro(window, eCadastro);
+  }
+
+  /* a aba do SYSBM que o Roster abriu vem para a frente, sem recarregar; sem ela, uma aba nova.
+     false = o navegador bloqueou */
+  function abrirSysbm() {
+    var aba = window.open('', ABA_SYSBM);
+    if (!aba) return false;
+    try {
+      if (aba.location.href === 'about:blank') aba.location.href = ENDERECO_SYSBM;
+    } catch (e) {
+      /* já está no SYSBM: só vem para a frente */
+    }
+    aba.focus();
+    return true;
+  }
 
   /* ---------- chegar à tela de cadastro, no dia da escala ---------- */
   /* esta página ou um quadro dela que passa no teste (quadro de outro site não conta) */
@@ -336,7 +363,9 @@
 
   /* ---------- começo ---------- */
   carregarMensagens().then(function () {
-    return lerCopiado();
+    if (estaNoSysbm()) return lerCopiado();
+    window.alert(abrirSysbm() ? msg().foraDoSysbm : msg().foraDoSysbmBloqueado);
+    return null;
   }).then(function (texto) {
     if (texto === null) return null;
     var dados = interpretar(texto);

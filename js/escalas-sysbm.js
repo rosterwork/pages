@@ -4,9 +4,10 @@
    para o SYSBM": o dia (já com o dia exibido), uma linha por
    pelotão que a pessoa administra e o favorito. Cada linha lê no
    banco a escala do pelotão já convertida nas linhas do SYSBM
-   (escala_sysbm) e mostra o resumo e quem fica de fora; Copiar
-   leva essa escala à área de transferência, e o favorito
-   "Preencher no SYSBM" (escalas-sysbm-favorito.js) cola lá.
+   (escala_sysbm) e mostra o resumo e quem fica de fora; Enviar
+   leva essa escala à área de transferência e abre a aba do SYSBM,
+   onde o favorito "Preencher no SYSBM" (escalas-sysbm-favorito.js)
+   preenche.
    ============================================================ */
 (function () {
   'use strict';
@@ -14,9 +15,12 @@
   var RW = window.RosterWork = window.RosterWork || {};
 
   var ESPERA_DATA = 400;      // ms sem mexer na data antes de ler de novo
-  var TEMPO_COPIADO = 2000;   // ms com o "Copiado" no botão
+  var TEMPO_COPIADO = 2000;   // ms com o "Enviado" (ou o "Código copiado") no botão
+  /* a tela inicial do SYSBM e o nome da aba dele (os mesmos do escalas-sysbm-favorito.js) */
+  var ENDERECO_SYSBM = 'https://www.sysbm.bombeiros.pr.gov.br/sysbmnew/menu/';
+  var ABA_SYSBM = 'rosterwork-sysbm';
 
-  var form = null;            // { raiz, data, lista, vazio, linhas: [{ pelotao, el, resumo, avisos, copiar, dados }] }
+  var form = null;            // { raiz, data, lista, vazio, linhas: [{ pelotao, el, resumo, avisos, enviado, enviar, dados }] }
   var tokenLeitura = 0;       // latest-wins da leitura dos pelotões
   var esperaData = null;
 
@@ -30,7 +34,7 @@
       + "?'+Date.now();document.body.appendChild(s);})();";
   }
 
-  /* texto do botão por um instante ("Copiado"), depois o de sempre */
+  /* texto do botão por um instante ("Enviado"), depois o de sempre */
   function trocarTexto(botao, texto, deVolta) {
     botao.textContent = texto;
     setTimeout(function () { if (botao.isConnected) botao.textContent = deVolta; }, TEMPO_COPIADO);
@@ -47,6 +51,20 @@
     }).catch(function () {
       if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: msg().falhaCopiar });
     });
+  }
+
+  /* a aba do SYSBM: a que o Roster já abriu vem para a frente, sem recarregar (lá é outro site, e ler o
+     endereço dela dá erro); sem ela, uma aba nova na tela inicial do SYSBM. false = o navegador bloqueou */
+  function abrirSysbm() {
+    var aba = window.open('', ABA_SYSBM);
+    if (!aba) return false;
+    try {
+      if (aba.location.href === 'about:blank') aba.location.href = ENDERECO_SYSBM;
+    } catch (e) {
+      /* já está no SYSBM: só vem para a frente */
+    }
+    aba.focus();
+    return true;
   }
 
   /* ---------- cada pelotão ---------- */
@@ -69,7 +87,7 @@
     });
   }
 
-  /* o resultado da leitura na linha: o resumo, os avisos e o Copiar (que some sem escala) */
+  /* o resultado da leitura na linha: o resumo, os avisos e o Enviar (que some sem escala) */
   function mostrarLinha(linha, r) {
     var m = msg();
     linha.dados = (r && r.ok) ? r : null;
@@ -81,16 +99,18 @@
       linha.resumo.textContent = r.linhas.length ? m.resumo(r.linhas.length) : m.semEscala;
     }
     mostrarAvisos(linha, r && r.ok ? r.avisos : null);
-    linha.copiar.classList.toggle('oculto', !!(r && r.ok && !r.linhas.length));
+    linha.enviar.classList.toggle('oculto', !!(r && r.ok && !r.linhas.length));
   }
 
-  /* esvazia as linhas (o dia mudou): o Copiar nunca leva a escala de outro dia */
+  /* esvazia as linhas (o dia mudou): o Enviar nunca leva a escala de outro dia */
   function limparLinhas() {
     form.linhas.forEach(function (linha) {
       linha.dados = null;
       linha.resumo.textContent = '';
       linha.avisos.textContent = '';
-      linha.copiar.classList.remove('oculto');
+      linha.enviado.textContent = '';
+      linha.enviado.classList.add('oculto');
+      linha.enviar.classList.remove('oculto');
     });
   }
 
@@ -100,12 +120,12 @@
     var pedido = ++linha.pedido;
     if (!linha.carregando) {
       linha.carregando = true;
-      if (RW.iniciarCarregando) RW.iniciarCarregando(linha.copiar);
+      if (RW.iniciarCarregando) RW.iniciarCarregando(linha.enviar);
     }
     RW.escalasDados.lerSysbm(linha.pelotao.id, iso).then(function (r) {
       if (pedido !== linha.pedido) return;
       linha.carregando = false;
-      if (RW.pararCarregando) RW.pararCarregando(linha.copiar);
+      if (RW.pararCarregando) RW.pararCarregando(linha.enviar);
       if (token === tokenLeitura && form) mostrarLinha(linha, r);
     });
   }
@@ -124,16 +144,21 @@
     form.linhas.forEach(function (linha) { lerLinha(linha, iso, token); });
   }
 
-  /* Copiar: a escala do pelotão para a área de transferência, no formato que o favorito lê
-     ({data, unidade, funcoes_roster, linhas}); a linha que falhou lê de novo */
-  function copiar(linha) {
+  /* Enviar: a escala do pelotão para a área de transferência, no formato que o favorito lê
+     ({data, unidade, funcoes_roster, linhas}), e a aba do SYSBM na frente; a linha que falhou lê de novo.
+     A cópia vem antes: com a aba do SYSBM na frente, o Roster perde o foco e não copia mais */
+  function enviar(linha) {
     if (!linha.dados) { lerTodos(); return; }
+    var m = msg();
     var d = linha.dados;
     var texto = JSON.stringify({ data: d.data, unidade: d.unidade, funcoes_roster: d.funcoes_roster, linhas: d.linhas });
     copiarTexto(texto).then(function () {
-      trocarTexto(linha.copiar, msg().copiado, msg().copiar);
+      trocarTexto(linha.enviar, m.enviado, m.enviar);
+      linha.enviado.textContent = m.instrucao;
+      linha.enviado.classList.remove('oculto');
+      if (!abrirSysbm() && RW.avisar) RW.avisar({ tipo: 'aviso', mensagem: m.abaBloqueada });
     }).catch(function () {
-      if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: msg().falhaCopiar });
+      if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: m.falhaEnviar });
     });
   }
 
@@ -148,13 +173,14 @@
         el: el,
         resumo: el.querySelector('.escala-sysbm-resumo'),
         avisos: el.querySelector('.escala-sysbm-avisos'),
-        copiar: el.querySelector('[data-sysbm-copiar]'),
+        enviado: el.querySelector('[data-sysbm-enviado]'),
+        enviar: el.querySelector('[data-sysbm-enviar]'),
         dados: null,
         pedido: 0,
         carregando: false
       };
       el.querySelector('.escala-sysbm-cidade').textContent = m.nomeLinha(p.cidade, p.nome);
-      linha.copiar.addEventListener('click', function () { copiar(linha); });
+      linha.enviar.addEventListener('click', function () { enviar(linha); });
       form.lista.appendChild(el);
       form.linhas.push(linha);
     });
