@@ -526,37 +526,36 @@
   background-color: var(--fundo-superficie);
 }
 
-/* ---------- painel Enviar para o SYSBM (escalas-sysbm.js) ---------- */
-/* uma linha por pelotão: a cidade, o resumo e os avisos à esquerda; o Enviar à direita */
-.escala-sysbm-lista {
-  display: flex;
-  flex-direction: column;
-}
-
-.escala-sysbm-linha {
+/* ---------- bloco Lançar no SYSBM do painel do dia (escalas-sysbm.js) ---------- */
+/* a linha do título: o título ocupa o que sobra; o Enviar e o chevron à direita */
+.escala-sysbm-cabecalho {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 8px 0;
-  border-top: 1px solid var(--borda);
+  gap: 8px;
 }
 
-.escala-sysbm-linha:first-child {
-  padding-top: 0;
-  border-top: none;
-}
-
-.escala-sysbm-textos {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+.escala-sysbm-titulo {
+  flex: 1 1 auto;
   min-width: 0;
 }
 
-.escala-sysbm-cidade {
-  font-size: var(--fonte-padrao);
-  color: var(--texto-forte);
+.escala-sysbm-enviar {
+  flex-shrink: 0;
+}
+
+/* chevron: aponta para a direita fechado e para baixo aberto (giro instantâneo, como nas seções do painel) */
+.escala-sysbm-seta {
+  color: var(--texto-fraco);
+}
+
+.escala-sysbm-toggle[aria-expanded="false"] .escala-sysbm-seta {
+  transform: rotate(-90deg);
+}
+
+.escala-sysbm-conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .escala-sysbm-avisos {
@@ -565,51 +564,26 @@
   gap: 2px;
 }
 
-/* quem fica de fora do SYSBM e por quê */
+/* quem fica de fora do SYSBM (a linha do bloco fechado e cada motivo no aberto) */
 .escala-sysbm-aviso {
   font-size: 11px;
   color: var(--alerta);
 }
 
-.escala-sysbm-enviar {
-  flex-shrink: 0;
-}
-
-/* o favorito: no computador, o botão de arrastar até a barra de favoritos (o link do favorito, do tamanho
-   dele); o de copiar o código e a ajuda dele são do celular */
+/* o favorito: o botão de arrastar até a barra de favoritos (o link do favorito), do tamanho dele */
 .escala-sysbm-favorito {
   align-self: flex-start;
   text-decoration: none;
 }
 
-.escala-sysbm-codigo,
-.escala-sysbm-ajuda-celular {
-  display: none;
-}
-
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    O navegador do celular não mostra PDF dentro da página: o painel
-   das grades fica sem a prévia (o Gerar PDF continua). No Enviar
-   para o SYSBM, o celular não arrasta favorito: copia o código
+   das grades fica sem a prévia (o Gerar PDF continua)
    ============================================================ */
 @media (max-width: 767px) {
   html[data-celular] .escala-impressao-previa-secao {
     display: none;
-  }
-
-  html[data-celular] .escala-sysbm-favorito,
-  html[data-celular] .escala-sysbm-ajuda-computador {
-    display: none;
-  }
-
-  html[data-celular] .escala-sysbm-codigo {
-    display: inline-flex;
-    align-self: flex-start;
-  }
-
-  html[data-celular] .escala-sysbm-ajuda-celular {
-    display: block;
   }
 }
 

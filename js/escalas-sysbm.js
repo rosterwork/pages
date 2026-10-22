@@ -1,32 +1,30 @@
 /* ============================================================
-   ESCALAS — Enviar para o SYSBM (painel)
-   O botão do grupo Administração abre o painel direito "Enviar
-   para o SYSBM": o dia (já com o dia exibido), uma linha por
-   pelotão que a pessoa administra e o favorito. Cada linha lê no
-   banco a escala do pelotão já convertida nas linhas do SYSBM
-   (escala_sysbm) e mostra o resumo e quem fica de fora; Enviar
-   leva essa escala à área de transferência e abre a aba do SYSBM,
-   onde o favorito "Preencher no SYSBM" (escalas-sysbm-favorito.js)
-   preenche.
+   ESCALAS — Lançar no SYSBM (o bloco do painel do dia)
+   No fim da seção Dia do painel (escalas-painel-editar.js), para
+   quem administra o pelotão e só no computador: o bloco retrátil
+   "Lançar no SYSBM". Ele lê no banco a escala do pelotão no dia já
+   convertida nas linhas do SYSBM (escala_sysbm; na CIBM o banco
+   recusa, e o dia sem escala não tem o que lançar: nos dois casos
+   o bloco não aparece). Fechado: o Enviar e, se alguém fica de
+   fora, a linha amarela; aberto pelo chevron: o resumo, quem fica
+   de fora e por quê, a explicação e o favorito "Lançar no SYSBM"
+   para arrastar até a barra de favoritos. Enviar leva a escala à
+   área de transferência e abre a aba do SYSBM, onde o favorito
+   (escalas-sysbm-favorito.js) preenche.
    ============================================================ */
 (function () {
   'use strict';
 
   var RW = window.RosterWork = window.RosterWork || {};
 
-  var ESPERA_DATA = 400;      // ms sem mexer na data antes de ler de novo
-  var TEMPO_COPIADO = 2000;   // ms com o "Enviado" (ou o "Código copiado") no botão
+  var TEMPO_ENVIADO = 2000;   // ms com o "Enviado" no botão
   /* a tela inicial do SYSBM e o nome da aba dele (os mesmos do escalas-sysbm-favorito.js) */
   var ENDERECO_SYSBM = 'https://www.sysbm.bombeiros.pr.gov.br/sysbmnew/menu/';
   var ABA_SYSBM = 'rosterwork-sysbm';
 
-  var form = null;            // { raiz, data, lista, vazio, linhas: [{ pelotao, el, resumo, avisos, enviado, enviar, dados }] }
-  var tokenLeitura = 0;       // latest-wins da leitura dos pelotões
-  var esperaData = null;
-
   function msg() { return (RW.mensagens.escala && RW.mensagens.escala.sysbm) || {}; }
 
-  /* ---------- o favorito ---------- */
+  /* ---------- o favorito e a aba do SYSBM ---------- */
   /* o código do favorito: carrega o preenchedor deste site na página aberta (o SYSBM) */
   function codigoFavorito() {
     var endereco = new URL('js/escalas-sysbm-favorito.js', document.baseURI).href;
@@ -34,23 +32,9 @@
       + "?'+Date.now();document.body.appendChild(s);})();";
   }
 
-  /* texto do botão por um instante ("Enviado"), depois o de sempre */
-  function trocarTexto(botao, texto, deVolta) {
-    botao.textContent = texto;
-    setTimeout(function () { if (botao.isConnected) botao.textContent = deVolta; }, TEMPO_COPIADO);
-  }
-
   function copiarTexto(texto) {
     if (!navigator.clipboard || !navigator.clipboard.writeText) return Promise.reject(new Error('sem área de transferência'));
     return navigator.clipboard.writeText(texto);
-  }
-
-  function copiarCodigo(botao) {
-    copiarTexto(codigoFavorito()).then(function () {
-      trocarTexto(botao, msg().codigoCopiado, msg().copiarCodigo);
-    }).catch(function () {
-      if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: msg().falhaCopiar });
-    });
   }
 
   /* a aba do SYSBM: a que o Roster já abriu vem para a frente, sem recarregar (lá é outro site, e ler o
@@ -67,169 +51,114 @@
     return true;
   }
 
-  /* ---------- cada pelotão ---------- */
-  function mostrarAvisos(linha, avisos) {
+  /* ---------- o bloco ---------- */
+  /* quem fica de fora do SYSBM: uma frase por motivo e quantos são */
+  function avisosDe(avisos) {
     var m = msg();
-    linha.avisos.textContent = '';
-    if (!avisos) return;
-    var textos = [];
-    if ((avisos.sem_rg || []).length) textos.push(m.semRg(m.juntar(avisos.sem_rg)));
-    if ((avisos.sem_par || []).length) {
-      textos.push(m.semPar(m.juntar(avisos.sem_par.map(function (a) { return m.comFuncao(a.militar, a.funcao); }))));
+    var textos = [], quantos = 0;
+    function por(lista, frase) {
+      if (!lista || !lista.length) return;
+      quantos += lista.length;
+      textos.push(frase(m.juntar(lista)));
     }
-    if ((avisos.fora || []).length) textos.push(m.fora(m.juntar(avisos.fora)));
-    if ((avisos.sem_funcao || []).length) textos.push(m.semFuncao(m.juntar(avisos.sem_funcao)));
-    textos.forEach(function (texto) {
+    por(avisos.sem_rg, m.semRg);
+    por((avisos.sem_par || []).map(function (a) { return m.comFuncao(a.militar, a.funcao); }), m.semPar);
+    por(avisos.fora, m.fora);
+    por(avisos.sem_funcao, m.semFuncao);
+    return { textos: textos, quantos: quantos };
+  }
+
+  /* a leitura no bloco: o resumo, os motivos (aberto) e a linha amarela (sempre à vista) */
+  function preencher(partes, r) {
+    var m = msg();
+    partes.dados = r;
+    partes.situacao.classList.add('oculto');
+    partes.resumo.textContent = m.resumo(r.linhas.length);
+    var avisos = avisosDe(r.avisos || {});
+    partes.avisos.textContent = '';
+    avisos.textos.forEach(function (texto) {
       var aviso = RW.tpl('tpl-escala-sysbm-aviso');
       if (!aviso) return;
       aviso.textContent = texto;
-      linha.avisos.appendChild(aviso);
+      partes.avisos.appendChild(aviso);
+    });
+    partes.fora.textContent = avisos.quantos ? m.foraResumo(avisos.quantos) : '';
+    partes.fora.classList.toggle('oculto', !avisos.quantos);
+  }
+
+  /* a leitura falhou: o bloco aparece com o aviso, e o Enviar lê de novo */
+  function mostrarFalha(partes) {
+    partes.dados = null;
+    partes.situacao.textContent = msg().falhaLer;
+    partes.situacao.classList.remove('oculto');
+  }
+
+  /* lê a escala do pelotão no dia; o bloco que saiu da tela (o Dia foi redesenhado) não muda mais */
+  function ler(partes, unidadeId, iso) {
+    return RW.escalasDados.lerSysbm(unidadeId, iso).then(function (r) {
+      if (!partes.bloco.isConnected) return;
+      if (r && (!r.ok || !r.linhas.length)) { partes.bloco.classList.add('oculto'); return; }
+      if (r) preencher(partes, r); else mostrarFalha(partes);
+      partes.bloco.classList.remove('oculto');
     });
   }
 
-  /* o resultado da leitura na linha: o resumo, os avisos e o Enviar (que some sem escala) */
-  function mostrarLinha(linha, r) {
+  /* Enviar: a escala para a área de transferência, no formato que o favorito lê ({data, unidade,
+     funcoes_roster, linhas}), e a aba do SYSBM na frente. A cópia vem antes: com a aba do SYSBM na frente,
+     o Roster perde o foco e não copia mais. Depois de uma falha, o Enviar lê de novo */
+  function enviar(partes, unidadeId, iso) {
     var m = msg();
-    linha.dados = (r && r.ok) ? r : null;
-    if (!r) {
-      linha.resumo.textContent = m.falhaLer;
-    } else if (!r.ok) {
-      linha.resumo.textContent = r.erro || m.falhaLer;
-    } else {
-      linha.resumo.textContent = r.linhas.length ? m.resumo(r.linhas.length) : m.semEscala;
-    }
-    mostrarAvisos(linha, r && r.ok ? r.avisos : null);
-    linha.enviar.classList.toggle('oculto', !!(r && r.ok && !r.linhas.length));
-  }
-
-  /* esvazia as linhas (o dia mudou): o Enviar nunca leva a escala de outro dia */
-  function limparLinhas() {
-    form.linhas.forEach(function (linha) {
-      linha.dados = null;
-      linha.resumo.textContent = '';
-      linha.avisos.textContent = '';
-      linha.enviado.textContent = '';
-      linha.enviado.classList.add('oculto');
-      linha.enviar.classList.remove('oculto');
-    });
-  }
-
-  /* cada linha guarda o número do último pedido: só a resposta dele tira os pontinhos (cada
-     iniciarCarregando tem o seu pararCarregando, senão a tela fica travada) e, se ainda vale, mostra */
-  function lerLinha(linha, iso, token) {
-    var pedido = ++linha.pedido;
-    if (!linha.carregando) {
-      linha.carregando = true;
-      if (RW.iniciarCarregando) RW.iniciarCarregando(linha.enviar);
-    }
-    RW.escalasDados.lerSysbm(linha.pelotao.id, iso).then(function (r) {
-      if (pedido !== linha.pedido) return;
-      linha.carregando = false;
-      if (RW.pararCarregando) RW.pararCarregando(linha.enviar);
-      if (token === tokenLeitura && form) mostrarLinha(linha, r);
-    });
-  }
-
-  /* lê todos os pelotões no dia do campo (a última leitura pedida vale) */
-  function lerTodos() {
-    if (!form) return;
-    var token = ++tokenLeitura;
-    limparLinhas();
-    var data = RW.data.paraData(form.data.value);
-    if (!data) {
-      if (RW.campos) RW.campos.marcarErro(form.data, msg().dataInvalida);
+    if (!partes.dados) {
+      if (RW.iniciarCarregando) RW.iniciarCarregando(partes.enviar);
+      ler(partes, unidadeId, iso).then(function () { if (RW.pararCarregando) RW.pararCarregando(partes.enviar); });
       return;
     }
-    var iso = RW.data.paraIsoDeData(data);
-    form.linhas.forEach(function (linha) { lerLinha(linha, iso, token); });
-  }
-
-  /* Enviar: a escala do pelotão para a área de transferência, no formato que o favorito lê
-     ({data, unidade, funcoes_roster, linhas}), e a aba do SYSBM na frente; a linha que falhou lê de novo.
-     A cópia vem antes: com a aba do SYSBM na frente, o Roster perde o foco e não copia mais */
-  function enviar(linha) {
-    if (!linha.dados) { lerTodos(); return; }
-    var m = msg();
-    var d = linha.dados;
+    var d = partes.dados;
     var texto = JSON.stringify({ data: d.data, unidade: d.unidade, funcoes_roster: d.funcoes_roster, linhas: d.linhas });
     copiarTexto(texto).then(function () {
-      trocarTexto(linha.enviar, m.enviado, m.enviar);
-      linha.enviado.textContent = m.instrucao;
-      linha.enviado.classList.remove('oculto');
+      partes.enviar.textContent = m.enviado;
+      setTimeout(function () { if (partes.enviar.isConnected) partes.enviar.textContent = m.enviar; }, TEMPO_ENVIADO);
+      partes.situacao.textContent = m.instrucao;
+      partes.situacao.classList.remove('oculto');
       if (!abrirSysbm() && RW.avisar) RW.avisar({ tipo: 'aviso', mensagem: m.abaBloqueada });
     }).catch(function () {
       if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: m.falhaEnviar });
     });
   }
 
-  function montarLinhas(pelotoes) {
-    var m = msg();
-    form.linhas = [];
-    pelotoes.forEach(function (p) {
-      var el = RW.tpl('tpl-escala-sysbm-linha');
-      if (!el) return;
-      var linha = {
-        pelotao: p,
-        el: el,
-        resumo: el.querySelector('.escala-sysbm-resumo'),
-        avisos: el.querySelector('.escala-sysbm-avisos'),
-        enviado: el.querySelector('[data-sysbm-enviado]'),
-        enviar: el.querySelector('[data-sysbm-enviar]'),
-        dados: null,
-        pedido: 0,
-        carregando: false
-      };
-      el.querySelector('.escala-sysbm-cidade').textContent = m.nomeLinha(p.cidade, p.nome);
-      linha.enviar.addEventListener('click', function () { enviar(linha); });
-      form.lista.appendChild(el);
-      form.linhas.push(linha);
-    });
-    form.vazio.classList.toggle('oculto', form.linhas.length > 0);
-  }
-
-  /* ---------- abrir ---------- */
-  /* opcoes: { data } = o dia que a escala mostra; { pelotoes: [{id, nome, cidade}] } = os da Escala que a pessoa administra */
-  function abrir(opcoes) {
-    if (!RW.painel) return;
-    var m = msg();
-    RW.painel.abrir({ titulo: m.titulo, subtitulo: m.subtitulo, aoFechar: function () { form = null; tokenLeitura++; clearTimeout(esperaData); } });
-    var corpo = RW.painel.corpo();
-    var molde = document.getElementById('tpl-escala-sysbm');
-    if (!corpo || !molde) return;
-    corpo.appendChild(molde.content.cloneNode(true));
-
-    var raiz = document.getElementById('painel');
-    form = {
-      raiz: raiz,
-      data: raiz.querySelector('[data-sysbm-data]'),
-      lista: raiz.querySelector('[data-sysbm-lista]'),
-      vazio: raiz.querySelector('[data-sysbm-vazio]'),
-      linhas: []
+  /* põe o bloco no fim do corpo do Dia (escondido até a leitura chegar). Só no computador */
+  function montar(corpo, unidadeId, iso) {
+    if (RW.celular && RW.celular()) return;
+    var bloco = RW.tpl('tpl-escala-sysbm');
+    if (!bloco || !RW.escalasDados || !RW.escalasDados.lerSysbm) return;
+    bloco.classList.add('oculto');
+    var partes = {
+      bloco: bloco,
+      enviar: bloco.querySelector('[data-sysbm-enviar]'),
+      toggle: bloco.querySelector('[data-sysbm-toggle]'),
+      fora: bloco.querySelector('[data-sysbm-fora]'),
+      situacao: bloco.querySelector('[data-sysbm-situacao]'),
+      conteudo: bloco.querySelector('[data-sysbm-conteudo]'),
+      resumo: bloco.querySelector('[data-sysbm-resumo]'),
+      avisos: bloco.querySelector('[data-sysbm-avisos]'),
+      dados: null
     };
-
-    form.data.value = RW.data.paraBR((opcoes && opcoes.data) || new Date());
-    if (RW.campos) RW.campos.ligarData(form.data);
-    form.data.addEventListener('input', function () {
-      if (RW.campos) RW.campos.limparErro(form.data);
-      tokenLeitura++;
-      limparLinhas();
-      clearTimeout(esperaData);
-      esperaData = setTimeout(lerTodos, ESPERA_DATA);
+    partes.toggle.addEventListener('click', function () {
+      var abrir = partes.toggle.getAttribute('aria-expanded') !== 'true';
+      partes.toggle.setAttribute('aria-expanded', abrir ? 'true' : 'false');
+      partes.conteudo.classList.toggle('oculto', !abrir);
     });
-
-    /* o favorito: arrastar até a barra de favoritos (clicar aqui no Roster só explica) e, no celular, copiar o código */
-    var favorito = raiz.querySelector('[data-sysbm-favorito]');
+    partes.enviar.addEventListener('click', function () { enviar(partes, unidadeId, iso); });
+    /* o favorito: arrastar até a barra de favoritos; clicar nele aqui no Roster só explica */
+    var favorito = bloco.querySelector('[data-sysbm-favorito]');
     favorito.setAttribute('href', codigoFavorito());
     favorito.addEventListener('click', function (e) {
       e.preventDefault();
-      if (RW.avisar) RW.avisar({ tipo: 'aviso', mensagem: m.arrasteFavorito });
+      if (RW.avisar) RW.avisar({ tipo: 'aviso', mensagem: msg().arrasteFavorito });
     });
-    var codigo = raiz.querySelector('[data-sysbm-codigo]');
-    codigo.addEventListener('click', function () { copiarCodigo(codigo); });
-
-    montarLinhas((opcoes && opcoes.pelotoes) || []);
-    lerTodos();
+    corpo.appendChild(bloco);
+    ler(partes, unidadeId, iso);
   }
 
-  RW.escalasSysbm = { abrir: abrir };
+  RW.escalasSysbm = { montar: montar };
 })();

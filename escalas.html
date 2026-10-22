@@ -29,21 +29,6 @@
   </div>
 
   <div class="pagina-subcabecalho">
-    <!-- grupo ADMINISTRAÇÃO (só para quem administra; escalas.js): Enviar para o SYSBM abre o painel do mesmo nome -->
-    <div class="dropdown acoes-admin oculto" id="escala-acoes-admin">
-      <button type="button" class="botao acoes-admin-gatilho">
-        <span>Administração</span>
-        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
-      </button>
-      <div class="dropdown-menu acoes-admin-menu">
-        <span class="rotulo-secao acoes-admin-rotulo">Administração</span>
-        <button type="button" class="botao" id="escala-enviar-sysbm">
-          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
-          <span>Enviar para o SYSBM</span>
-        </button>
-      </div>
-    </div>
-
     <div class="geral-periodo">
       <button type="button" class="botao botao--icone" id="escala-periodo-anterior" aria-label="Período anterior">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>
@@ -249,51 +234,35 @@
   <button type="button" class="botao botao--primario" data-impressao-gerar>Gerar PDF</button>
 </template>
 
-<!-- painel "Enviar para o SYSBM" (grupo Administração da barra; escalas-sysbm.js): o dia, uma linha por pelotão
-     (Enviar leva a escala dele, já convertida pelo banco, e abre a aba do SYSBM, onde o favorito preenche) e o favorito
-     (no computador, o botão de arrastar até a barra de favoritos; no celular, o de copiar o código) -->
+<!-- bloco "Lançar no SYSBM" do painel do dia (no fim da seção Dia; só quem administra o pelotão e só no computador;
+     escalas-sysbm.js). Fechado: o título, o Enviar e o chevron; embaixo, se alguém fica de fora, a linha amarela, e
+     depois de enviar (ou se a leitura falhou), o que fazer. Aberto pelo chevron: o resumo, quem fica de fora e por quê,
+     a explicação e o favorito "Lançar no SYSBM" para arrastar até a barra de favoritos -->
 <template id="tpl-escala-sysbm">
-  <div class="grupo-caixa">
-    <span class="rotulo-secao">1. Dia</span>
-    <label class="campo">
-      <span class="campo-rotulo">Dia da escala</span>
-      <input class="campo-entrada" type="text" name="sysbm-data" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" data-sysbm-data />
-      <span class="campo-erro-texto"></span>
-    </label>
-  </div>
-  <div class="grupo-caixa">
-    <span class="rotulo-secao">2. Pelotões</span>
-    <div class="escala-sysbm-lista" data-sysbm-lista></div>
-    <span class="campo-ajuda oculto" data-sysbm-vazio>Nenhum pelotão que você administra entre as unidades da Escala. Escolha as unidades no seletor do topo.</span>
-    <span class="campo-ajuda">Envie um pelotão por vez: o Enviar abre o SYSBM. Lá, faça seu login e clique no favorito Preencher no SYSBM: ele abre o cadastro da escala desse dia e preenche a aba do pelotão. Confira e clique em Salvar lá.</span>
-  </div>
-  <div class="grupo-caixa">
-    <span class="rotulo-secao">3. Favorito</span>
-    <a class="botao escala-sysbm-favorito" href="#" data-sysbm-favorito>
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
-      <span>Preencher no SYSBM</span>
-    </a>
-    <span class="campo-ajuda escala-sysbm-ajuda-computador">Uma vez só em cada navegador: arraste este botão até a barra de favoritos. Se a barra não aparece, Ctrl+Shift+B mostra.</span>
-    <button type="button" class="botao escala-sysbm-codigo" data-sysbm-codigo>Copiar o código do favorito</button>
-    <span class="campo-ajuda escala-sysbm-ajuda-celular">Uma vez só em cada celular: copie o código, crie um favorito no navegador e cole o código no lugar do endereço. Para usar, abra o SYSBM e digite o nome do favorito na barra de endereço.</span>
-  </div>
-</template>
-
-<!-- uma linha do painel Enviar para o SYSBM: a cidade e o pelotão, o resumo (ou o vazio), os avisos, o que fazer
-     depois de enviar (aparece com o Enviar) e o Enviar -->
-<template id="tpl-escala-sysbm-linha">
-  <div class="escala-sysbm-linha">
-    <div class="escala-sysbm-textos">
-      <span class="escala-sysbm-cidade"></span>
-      <span class="campo-ajuda escala-sysbm-resumo"></span>
-      <div class="escala-sysbm-avisos"></div>
-      <span class="campo-ajuda oculto" data-sysbm-enviado></span>
+  <div class="grupo-caixa escala-sysbm">
+    <div class="escala-sysbm-cabecalho">
+      <span class="rotulo-secao escala-sysbm-titulo">Lançar no SYSBM</span>
+      <button type="button" class="botao escala-sysbm-enviar" data-sysbm-enviar>Enviar</button>
+      <button type="button" class="botao-discreto escala-sysbm-toggle" aria-label="Mostrar ou ocultar o favorito e as explicações" aria-expanded="false" data-sysbm-toggle>
+        <svg class="icone escala-sysbm-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+      </button>
     </div>
-    <button type="button" class="botao escala-sysbm-enviar" data-sysbm-enviar>Enviar</button>
+    <span class="escala-sysbm-aviso oculto" data-sysbm-fora></span>
+    <span class="campo-ajuda oculto" data-sysbm-situacao></span>
+    <div class="escala-sysbm-conteudo oculto" data-sysbm-conteudo>
+      <span class="campo-ajuda" data-sysbm-resumo></span>
+      <div class="escala-sysbm-avisos" data-sysbm-avisos></div>
+      <span class="campo-ajuda">O Enviar leva a escala deste dia e abre o SYSBM em outra aba. Lá, faça seu login e clique no favorito Lançar no SYSBM: ele abre o cadastro da escala do dia e preenche a aba do pelotão. Confira e clique em Salvar lá.</span>
+      <a class="botao escala-sysbm-favorito" href="#" data-sysbm-favorito>
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
+        <span>Lançar no SYSBM</span>
+      </a>
+      <span class="campo-ajuda">Uma vez só em cada navegador: arraste este botão até a barra de favoritos. Se a barra não aparece, Ctrl+Shift+B mostra.</span>
+    </div>
   </div>
 </template>
 
-<!-- um aviso da linha do pelotão (quem fica de fora e por quê) -->
+<!-- quem fica de fora do SYSBM e por quê (uma frase por motivo, no bloco aberto) -->
 <template id="tpl-escala-sysbm-aviso">
   <span class="escala-sysbm-aviso"></span>
 </template>

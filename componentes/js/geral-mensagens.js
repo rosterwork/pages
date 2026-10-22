@@ -648,14 +648,11 @@
           arquivo: function (nome, periodo, unidade) { return 'Escala ' + nome.toLowerCase() + ' ' + (unidade ? unidade + ' ' : '') + periodo + '.pdf'; }
         }
       },
-      /* Enviar para o SYSBM: o painel (escalas-sysbm.js) e o favorito que preenche lá (escalas-sysbm-favorito.js) */
+      /* Lançar no SYSBM: o bloco do painel do dia (escalas-sysbm.js) e o favorito que preenche lá (escalas-sysbm-favorito.js) */
       sysbm: {
-        titulo: 'Enviar para o SYSBM',
-        subtitulo: 'Um pelotão por vez',
-        dataInvalida: 'Data inválida.',
-        nomeLinha: function (cidade, unidade) { return cidade ? cidade + ' (' + unidade + ')' : unidade; },
         resumo: function (n) { return n === 1 ? '1 linha para lançar.' : n + ' linhas para lançar.'; },
-        semEscala: 'Sem escala neste dia.',
+        /* a linha amarela do bloco fechado */
+        foraResumo: function (n) { return n === 1 ? '1 militar fica de fora do SYSBM.' : n + ' militares ficam de fora do SYSBM.'; },
         falhaLer: 'Não foi possível ler a escala. Clique em Enviar para tentar de novo.',
         juntar: juntarComE,
         comFuncao: function (militar, funcao) { return militar + ' (' + funcao + ')'; },
@@ -665,21 +662,18 @@
         semFuncao: function (nomes) { return 'Sem função, fica de fora: ' + nomes + '.'; },
         enviar: 'Enviar',
         enviado: 'Enviado',
-        /* na linha do pelotão, depois do Enviar (a aba do SYSBM já está na frente) */
-        instrucao: 'Faça seu login e clique em "Preencher no SYSBM"',
+        /* no bloco, depois do Enviar (a aba do SYSBM já está na frente) */
+        instrucao: 'Faça seu login e clique em "Lançar no SYSBM"',
         falhaEnviar: 'Não foi possível enviar. Tente de novo.',
         abaBloqueada: 'O navegador não deixou abrir a aba do SYSBM. Permita janelas do Roster Work no navegador e clique em Enviar de novo.',
-        copiarCodigo: 'Copiar o código do favorito',
-        codigoCopiado: 'Código copiado',
-        falhaCopiar: 'Não foi possível copiar. Tente de novo.',
         arrasteFavorito: 'Este botão não funciona aqui: arraste-o até a barra de favoritos do navegador. Depois, use o favorito na tela do SYSBM.',
         /* o favorito, na tela do SYSBM (nas janelas do próprio navegador) */
         favorito: {
           colar: 'Cole aqui (Ctrl+V) a escala copiada no Roster:',
-          naoEhEscala: 'O que foi colado não é uma escala do Roster. No Roster, clique em Enviar no pelotão e use o favorito de novo.',
+          naoEhEscala: 'O que foi colado não é uma escala do Roster. No Roster, clique em Enviar no painel do dia e use o favorito de novo.',
           /* o favorito clicado fora do SYSBM: a aba do SYSBM abriu (ou o navegador não deixou) */
-          foraDoSysbm: 'O SYSBM está aberto em outra aba.\n\nFaça seu login e clique em "Preencher no SYSBM"',
-          foraDoSysbmBloqueado: 'Abra o SYSBM em outra aba.\n\nFaça seu login e clique em "Preencher no SYSBM"',
+          foraDoSysbm: 'O SYSBM está aberto em outra aba.\n\nFaça seu login e clique em "Lançar no SYSBM"',
+          foraDoSysbmBloqueado: 'Abra o SYSBM em outra aba.\n\nFaça seu login e clique em "Lançar no SYSBM"',
           semMenu: 'Entre no SYSBM com o seu login e use o favorito de novo, em qualquer tela dele.',
           demorou: 'O SYSBM não abriu a tela de cadastro da escala. Confira se você ainda está logado e use o favorito de novo.',
           trocarDia: function (sysbm, roster) {

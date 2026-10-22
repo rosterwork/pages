@@ -839,6 +839,9 @@
     }
     var obs = caixaObservacoes(dados);
     if (obs) corpo.appendChild(obs);
+    /* Lançar no SYSBM: o último bloco do Dia gravado (não o de dados prontos, como a prévia da Extrajornada),
+       para quem administra o pelotão (escalas-sysbm.js) */
+    if (ctx.admin && !ctx.dadosProntos && !ctx.comparar && RosterWork.escalasSysbm) RosterWork.escalasSysbm.montar(corpo, ctx.unidadeId, ctx.iso);
     atualizarRodape();
   }
 

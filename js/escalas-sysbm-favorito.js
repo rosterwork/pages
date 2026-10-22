@@ -1,8 +1,8 @@
 /* ============================================================
-   ESCALAS — Preencher no SYSBM (o favorito)
-   Roda na tela do SYSBM, não no Roster: o favorito "Preencher no
-   SYSBM" (montado no painel Enviar para o SYSBM, escalas-sysbm.js)
-   carrega este arquivo na página principal do SYSBM, que abre as
+   ESCALAS — Lançar no SYSBM (o favorito)
+   Roda na tela do SYSBM, não no Roster: o favorito "Lançar no
+   SYSBM" (montado no bloco Lançar no SYSBM do painel do dia,
+   escalas-sysbm.js) carrega este arquivo na página principal do SYSBM, que abre as
    telas num quadro (iframe) e não recarrega. Ele lê a escala que o
    painel copiou (da área de transferência ou colada na caixa), abre
    o Cadastrar da escala pelo menu, pesquisa o dia, abre a aba do
