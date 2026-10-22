@@ -51,7 +51,14 @@
     return p.trechoHoras(RW.horario.curta(String(hi).slice(0, 5)), RW.horario.curta(String(hf).slice(0, 5)));
   }
 
-  /* a alteração: como a troca era antes (o serviço com o horário, a devolução e a parte) */
+  /* "Registro RW nº 1/2026 · Parte nº 287/2026": o registro e a parte do E-protocolo, o que houver */
+  function registroEParte(numero, ano, parteNumero, parteAno) {
+    var m = msg();
+    return [numero ? m.registroCaixa(numero, ano) : '', parteNumero ? m.parteNumero(parteNumero, parteAno) : '']
+      .filter(Boolean).join(' · ');
+  }
+
+  /* a alteração: como a troca era antes (o serviço com o horário, a devolução, o registro e a parte) */
   function caixaAntes(o) {
     var m = msg(), t = trecho(o.horario_inicio, o.horario_fim);
     return RW.decisao.caixa({
@@ -61,7 +68,7 @@
       frase: o.data_servico_parceiro
         ? m.antesDevolucao(RW.data.comDiaSemana(o.data_servico_parceiro), trechoTexto(o.devolucao_horario_inicio, o.devolucao_horario_fim))
         : m.antesDevolucaoPendente,
-      extra: o.parte_numero ? m.parteNumero(o.parte_numero, o.parte_ano) : ''
+      extra: registroEParte(o.registro_numero, o.registro_ano, o.parte_numero, o.parte_ano)
     });
   }
 
@@ -71,14 +78,72 @@
     return el;
   }
 
-  /* ---------- corpo: o pedido em caixas (a parte do E-protocolo vai na caixa Serviço, para conferir) ---------- */
-  function montarCorpo(troca) {
+  /* ---------- os aceites do registro ---------- */
+  /* o aceite de quem olha está pendente (o pedido que espera a confirmação dele segue pelo Aceitar de sempre) */
+  function aceitePendente(troca, cpf) {
+    if (!cpf || ['pendente_confirmacao', 'pendente_aprovacao', 'aprovada'].indexOf(troca.status) < 0) return false;
+    if (troca.status === 'pendente_confirmacao' && cpf === quemAceita(troca)) return false;
+    return (troca.aceites || []).some(function (a) { return a.cpf === cpf && !a.aceito_em; });
+  }
+
+  /* o momento (ISO do banco) no fuso de quem olha: { dia: "07/10/2026", hora: "19h30" } */
+  function quando(iso) {
+    var d = new Date(iso);
+    function p2(n) { return ('0' + n).slice(-2); }
+    return { dia: RW.data.paraBR(d), hora: RW.horario.curta(p2(d.getHours()) + ':' + p2(d.getMinutes())) };
+  }
+
+  function linhaAceite(caixa, quem, acao, seloTexto, seloClasse) {
+    var linha = RosterWork.tpl('tpl-troca-aceite');
+    if (!linha) return;
+    linha.querySelector('.decisao-caixa-data').textContent = quem;
+    linha.querySelector('.decisao-caixa-extra').textContent = acao;
+    var selo = linha.querySelector('.selo');
+    selo.textContent = seloTexto;
+    selo.classList.add(seloClasse);
+    caixa.appendChild(linha);
+  }
+
+  /* "Aceites e aprovação": cada militar com o aceite (ou pendente) e, embaixo, a aprovação */
+  function caixaAceites(troca) {
+    var m = msg();
+    var caixa = RW.decisao.caixa({ titulo: m.caixaAceites });
+    if (!caixa) return null;
+    var nomes = {};
+    nomes[troca.solicitante_cpf] = fmt().nomeMilitar(troca.solicitante_grau, troca.solicitante_nome);
+    nomes[troca.parceiro_cpf] = fmt().nomeMilitar(troca.parceiro_grau, troca.parceiro_nome);
+    /* no pedido do militar, o aceite de quem pediu é o próprio pedido */
+    var pediu = troca.registro_origem === 'pedido' && !troca.substitui_troca_id;
+    (troca.aceites || []).forEach(function (a) {
+      var q = a.aceito_em ? quando(a.aceito_em) : null;
+      var acao = !q ? m.aceitePendente
+        : (pediu && a.papel === 'solicitante' ? m.aceiteSolicitou(q.dia, q.hora) : m.aceiteAceitou(q.dia, q.hora));
+      linhaAceite(caixa, nomes[a.cpf] || '', acao, q ? m.seloAceitou : m.seloAceitePendente, q ? 'selo--sucesso' : 'selo--alerta');
+    });
+    if ((troca.status === 'aprovada' || troca.status === 'substituida') && troca.aprovado_em) {
+      var qa = quando(troca.aprovado_em);
+      var registrou = troca.registro_origem === 'administracao' && troca.criado_em === troca.aprovado_em;
+      linhaAceite(caixa, troca.aprovado_por_titulo || m.aceiteAdministracao,
+        registrou ? m.aceiteRegistrou(qa.dia, qa.hora) : m.aceiteAprovou(qa.dia, qa.hora), m.seloAprovou, 'selo--sucesso');
+    } else if (troca.status === 'pendente_confirmacao' || troca.status === 'pendente_aprovacao') {
+      linhaAceite(caixa, m.aceiteAdministracao, m.aceiteAguardandoAprovacao, m.seloAceitePendente, 'selo--alerta');
+    }
+    return caixa;
+  }
+
+  /* ---------- corpo: o pedido em caixas (o registro e a parte do E-protocolo vão na caixa Serviço, para conferir) ---------- */
+  function montarCorpo(troca, ctx) {
     partes = RW.decisao.montar(RW.painel.corpo());
     if (!partes) return;
     var m = msg();
     var sol = fmt().nomeMilitar(troca.solicitante_grau, troca.solicitante_nome);
     var par = fmt().nomeMilitar(troca.parceiro_grau, troca.parceiro_nome);
-    var parte = troca.parte_numero ? m.parteNumero(troca.parte_numero, troca.parte_ano) : '';
+    var parte = registroEParte(troca.registro_numero, troca.registro_ano, troca.parte_numero, troca.parte_ano);
+    /* o aceite de quem olha faltando: a nota no alto (o botão Aceitar fica no rodapé) */
+    if (aceitePendente(troca, ctx.cpf)) {
+      var falta = nota(troca.status === 'aprovada' ? m.faltaAceiteAprovada : m.faltaAceite);
+      if (falta) partes.pedido.appendChild(falta);
+    }
     /* a troca com uma alteração esperando (o Editar fica fechado até ela ser decidida) */
     if (troca.alteracao_pendente_id) { var aviso = nota(m.alteracaoAguardando); if (aviso) partes.pedido.appendChild(aviso); }
     if (troca.original) { var antes = caixaAntes(troca.original); if (antes) partes.pedido.appendChild(antes); }
@@ -88,6 +153,8 @@
       ? caixaPerna(m.caixaDevolucao, troca.data_servico_parceiro, troca.devolucao_horario_inicio, troca.devolucao_horario_fim, sol, par)
       : RW.decisao.caixa({ titulo: m.caixaDevolucao, frase: m.devolucaoNaoMarcada });
     if (devolucao) partes.pedido.appendChild(devolucao);
+    var aceites = caixaAceites(troca);
+    if (aceites) partes.pedido.appendChild(aceites);
   }
 
   /* ---------- análise (o desenho fica no componente compartilhado geral-impacto) ---------- */
@@ -159,6 +226,9 @@
     var desfazer = alteracao ? null : { desfazer: desfazerAprovacao(troca, ctx) };
     if (acao === 'aceitar') {
       confirmarEntao(m.confirmarAceitar, false, function () { executar(d.confirmar(troca.troca_id, true), btn, ctx); });
+    } else if (acao === 'aceitar-depois') {
+      /* o aceite que falta: só entra no registro (a escala não muda) */
+      confirmarEntao(m.confirmarAceitarDepois, false, function () { executar(d.aceitar(troca.troca_id), btn, ctx); });
     } else if (acao === 'recusar') {
       /* o militar chamado recusa: o motivo (opcional) vai no aviso a quem pediu */
       RW.decisao.recusar(partes, function (motivo, botao) { executar(d.confirmar(troca.troca_id, false, motivo), botao, ctx); });
@@ -209,8 +279,10 @@
     } else if (troca.status === 'aprovada' && admin) {
       usar.cancelar = true;
     }
+    /* o aceite de quem olha faltando no registro (inclusive na aprovada) */
+    if (aceitePendente(troca, ctx.cpf)) usar['aceitar-depois'] = true;
 
-    ['cancelar-alteracao', 'aceitar', 'recusar', 'aprovar-forcar', 'aprovar', 'recusar-admin', 'cancelar'].forEach(function (acao) {
+    ['cancelar-alteracao', 'aceitar', 'aceitar-depois', 'recusar', 'aprovar-forcar', 'aprovar', 'recusar-admin', 'cancelar'].forEach(function (acao) {
       var btn = frag.querySelector('[data-acao="' + acao + '"]');
       if (!btn) return;
       if (!usar[acao]) { if (btn.parentNode) btn.parentNode.removeChild(btn); return; }
@@ -247,7 +319,7 @@
   /* a leitura: o pedido, as ações e, na troca em aberto, a Análise e o "Como fica a escala" */
   function desenharLeitura(troca, ctx) {
     RW.painel.definirTitulos(msg().painelTitulo, subtituloLeitura);
-    montarCorpo(troca);
+    montarCorpo(troca, ctx);
     montarAcoes(troca, ctx);
     if (RW.trocasEditar) RW.painel.liberarEditar(podeEditar(troca, ctx));
     if (troca.status === 'pendente_confirmacao' || troca.status === 'pendente_aprovacao') {

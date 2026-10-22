@@ -39,6 +39,11 @@
         <span class="rotulo-secao">Prazos</span>
         <div class="pedido-lista" id="pendencias-prazos"></div>
       </div>
+      <!-- o que falta no seu cadastro (ex.: a CNH); só aparece quando há -->
+      <div class="pedido-secao oculto" id="pendencias-secao-cadastro">
+        <span class="rotulo-secao">Seu cadastro</span>
+        <div class="pedido-lista" id="pendencias-cadastro"></div>
+      </div>
     </div>
 
     <!-- só administrador: o que espera a decisão dele e o que precisa de conserto -->
@@ -66,7 +71,7 @@
     </button>
   </template>
 
-  <!-- prazo seu: o texto, até quando embaixo e a seta (leva à tela onde se responde) -->
+  <!-- prazo seu ou o que falta no seu cadastro: o texto, o detalhe embaixo e a seta (leva aonde se responde) -->
   <template id="tpl-pendencias-prazo">
     <button type="button" class="pendencias-corrigir">
       <span class="pendencias-prazo-textos">

@@ -33,5 +33,10 @@
   sessionStorage.removeItem('rosterwork_user');
   sessionStorage.removeItem('rosterwork_preferencias');
   sessionStorage.removeItem('rosterwork_extra_mes');   // mês da Extrajornada não sobrevive a uma sessão nova
+  /* veio de uma notificação do celular (?aviso=…): guarda para abrir o assunto depois da entrada (index-avisos.js) */
+  try {
+    var aviso = new URLSearchParams(location.search).get('aviso');
+    if (aviso) sessionStorage.setItem('rosterwork_aviso_pendente', aviso);
+  } catch (e) {}
   window.location.replace('login.html');
 })();

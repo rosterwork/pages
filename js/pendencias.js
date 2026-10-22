@@ -2,8 +2,9 @@
    PENDÊNCIAS — o que espera decisão, num lugar só
    Duas abas, cada uma com um dono claro:
      · Para mim       — o que espera você como militar (a troca
-                        que pediram a você) e os seus "Prazos"
-                        (a extra do mês seguinte)
+                        que pediram a você), os seus "Prazos"
+                        (a extra do mês seguinte) e o "Seu
+                        cadastro" (a CNH, no painel da CNH)
      · Administração  — só administrador: trocas, folgas e correções
                         para aprovar (com o seletor do tipo na barra)
                         e o "Para corrigir"
@@ -24,6 +25,8 @@
   RW.paginas = RW.paginas || {};
 
   var TIPOS_DO_FILTRO = { troca: ['troca'], folga: ['folga'], usuarios: ['dados'] };
+  /* o que é do "Seu cadastro" (a fila entrega junto com os prazos) */
+  var DO_CADASTRO = { cnh: true };
 
   var conteudo = null;
   var admin = false;
@@ -103,7 +106,8 @@
     });
   }
 
-  /* ---------- "Prazos" (Para mim): o que você responde até uma data ---------- */
+  /* ---------- "Prazos" e "Seu cadastro" (Para mim): o que você responde ---------- */
+  /* o prazo leva à tela onde se responde; a CNH abre o painel dela aqui mesmo */
   function desenharPrazos(lista, prazos) {
     lista.textContent = '';
     prazos.forEach(function (g) {
@@ -111,7 +115,10 @@
       if (!el) return;
       el.querySelector('.pendencias-corrigir-texto').textContent = g.texto || '';
       el.querySelector('.pendencias-prazo-mensagem').textContent = g.mensagem || '';
-      el.addEventListener('click', function () { if (g.pagina && RW.irParaPagina) RW.irParaPagina(g.pagina, g.aba, g.referencia); });
+      el.addEventListener('click', function () {
+        if (g.tipo === 'cnh') { if (RW.cnhPainel) RW.cnhPainel.abrir({ aoSalvar: carregar }); return; }
+        if (g.pagina && RW.irParaPagina) RW.irParaPagina(g.pagina, g.aba, g.referencia);
+      });
       lista.appendChild(el);
     });
   }
@@ -130,8 +137,12 @@
     var m = msg();
     filaMinhas.definir(dados.minhas);
     filaAprovar.definir(filtrados());
-    desenharPrazos(q('#pendencias-prazos'), dados.prazos);
-    q('#pendencias-secao-prazos').classList.toggle('oculto', !dados.prazos.length);
+    var prazos = dados.prazos.filter(function (g) { return !DO_CADASTRO[g.tipo]; });
+    var cadastro = dados.prazos.filter(function (g) { return DO_CADASTRO[g.tipo]; });
+    desenharPrazos(q('#pendencias-prazos'), prazos);
+    q('#pendencias-secao-prazos').classList.toggle('oculto', !prazos.length);
+    desenharPrazos(q('#pendencias-cadastro'), cadastro);
+    q('#pendencias-secao-cadastro').classList.toggle('oculto', !cadastro.length);
     desenharCorrigir(q('#pendencias-corrigir'), dados.corrigir);
     /* o "Para corrigir" não é de nenhum tipo do seletor: só aparece em Todos */
     q('#pendencias-secao-corrigir').classList.toggle('oculto', filtro !== 'todos');
@@ -143,6 +154,7 @@
 
   function falha() {
     q('#pendencias-secao-prazos').classList.add('oculto');
+    q('#pendencias-secao-cadastro').classList.add('oculto');
     ['#pendencias-minhas', '#pendencias-aprovar', '#pendencias-corrigir'].forEach(function (sel) {
       var lista = q(sel);
       if (!lista) return;

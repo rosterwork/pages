@@ -25,6 +25,8 @@
       cadastroConferido: 'Cadastro conferido.',
       cadastroConferidoComPedido: 'Cadastro conferido. Os dados que você preencheu vão para a aprovação de um administrador.',
       demaisParaAprovacao: 'As demais alterações foram enviadas para a aprovação do administrador.',
+      /* o painel da pendência da CNH (index-cnh-painel.js) */
+      tituloCnh: 'CNH',
       aguardando: function (n) {
         return n === 1
           ? '1 alteração aguardando a aprovação do administrador.'
@@ -65,6 +67,7 @@
       dadosVoce: 'Você pediu correção de dados',
       situacaoDados: { pendente: 'Aguardando aprovação', aprovada: 'Aprovada', recusada: 'Recusada', parcial: 'Aprovada em parte' },
       seloPrazo: 'Prazo',
+      seloPreencher: 'Preencher',
       seloCorrigir: 'Corrigir',
       seloRevisar: 'Revisar',
       metaMilitares: function (n) { return n === 1 ? '1 militar' : n + ' militares'; }
@@ -800,6 +803,9 @@
       /* a alteração de uma troca aprovada (quem pediu pode ser o solicitado) */
       trocaAdminAlteracao: function (sol, par) { return 'Alteração da troca de ' + sol + ' com ' + par; },
       trocaMinhaAlteracao: function (quemPediu) { return quemPediu + ' quer alterar uma troca com você'; },
+      /* a troca com o seu aceite faltando (aprovada sem ele, registrada pela administração ou alterada direto) */
+      trocaAceitar: function (outro) { return 'Aceitar a troca com ' + outro; },
+      faltaAceitar: 'Falta aceitar',
       folga: function (nome) { return nome + ' pediu folga'; },
       dados: function (nome) { return nome + ' pediu correção de dados'; },
       metaServico: function (data, trecho) { return 'Serviço de ' + data + ' · ' + trecho; },
@@ -882,6 +888,25 @@
       alteracaoAguardando: 'Esta troca tem uma alteração aguardando. Até ela ser aprovada, a troca continua como está.',
       /* a parte do E-protocolo que formaliza a troca (caixa Serviço do painel; sem número, a linha não aparece) */
       parteNumero: function (numero, ano) { return 'Parte nº ' + numero + '/' + ano; },
+      /* o registro da troca: "RW nº 1/2026" na linha da lista e "Registro RW nº 1/2026" nas caixas do painel */
+      registroNumero: function (numero, ano) { return 'RW nº ' + numero + '/' + ano; },
+      registroCaixa: function (numero, ano) { return 'Registro RW nº ' + numero + '/' + ano; },
+      /* a caixa "Aceites e aprovação" do painel: os dois militares, cada um com o aceite ou pendente, e a aprovação */
+      caixaAceites: 'Aceites e aprovação',
+      aceiteSolicitou: function (dia, hora) { return 'Solicitou em ' + dia + ', às ' + hora; },
+      aceiteAceitou: function (dia, hora) { return 'Aceitou em ' + dia + ', às ' + hora; },
+      aceitePendente: 'Ainda não aceitou',
+      aceiteAprovou: function (dia, hora) { return 'Aprovou em ' + dia + ', às ' + hora; },
+      aceiteRegistrou: function (dia, hora) { return 'Registrou e aprovou em ' + dia + ', às ' + hora; },
+      aceiteAdministracao: 'Administração',
+      aceiteAguardandoAprovacao: 'Aguardando aprovação',
+      seloAceitou: 'Aceitou',
+      seloAceitePendente: 'Pendente',
+      seloAprovou: 'Aprovou',
+      /* quem tem o aceite pendente: a nota no alto do painel e a confirmação do Aceitar */
+      faltaAceiteAprovada: 'Falta você aceitar a troca. Ela já foi aprovada e vale na escala; o seu aceite fica no registro.',
+      faltaAceite: 'Falta você aceitar a troca. O seu aceite fica no registro.',
+      confirmarAceitarDepois: 'Aceitar esta troca? O seu aceite fica no registro e a escala não muda.',
       /* meta da linha na lista */
       metaServico: function (dataCurta) { return 'Serviço ' + dataCurta; },
       meta24h: '24h',
@@ -1177,6 +1202,16 @@
     /* edição não salva */
     edicao: {
       sairSemSalvar: 'Você tem alterações não salvas. Se sair agora, elas serão perdidas.'
+    },
+
+    /* notificações no celular (Meu perfil › Preferências): a ajuda quando não dá para ligar */
+    notificacoesCelular: {
+      ajuda: {
+        bloqueado: 'As notificações estão bloqueadas neste aparelho. Para ligar, libere as notificações do Roster Work nas configurações do navegador ou do celular.',
+        instalar: 'No iPhone, as notificações chegam só pelo app: no Safari, toque em Compartilhar e em Adicionar à Tela de Início, abra o app e ligue aqui.',
+        indisponivel: 'Este navegador não recebe notificações.'
+      },
+      falhaAtivar: 'Não foi possível ligar as notificações. Tente de novo.'
     },
 
     /* sessão */

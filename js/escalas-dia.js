@@ -123,29 +123,34 @@
     if (!container) return;
 
     chaveDesejada = isoAtual + '|' + idsAplicados().join(',');
+    /* o mesmo dia e a mesma seleção já carregados: a árvore mostra o que tem e revalida por trás.
+       Outro dia ou outra seleção: a árvore só monta, com o carregando, e a busca é uma só (a do garantirCarga) */
+    var mesmoDia = !carregandoAgora && chaveCarregada === chaveDesejada;
     var pronto = RosterWork.arvoreUnidades.montar(container, {
       rpcConteudo: 'escala_dia_arvore',
       corpoRpc: function () { return { p_unidade_ids: idsAplicados(), p_data: isoAtual }; },
       chaveUnidade: 'unidade_id',
       textoContagem: textoContagem,
-      renderConteudo: renderConteudo
+      renderConteudo: renderConteudo,
+      buscaPelaPagina: !mesmoDia
     });
-    garantirCarga();
+    if (!mesmoDia) garantirCarga();
     return pronto;
   }
 
   /* serializa as buscas: uma por vez; se a data/seleção mudar no meio, rebusca ao
-     concluir (navegar rápido pelas setas não intercala respostas fora de ordem) */
+     concluir (navegar rápido pelas setas pede ao banco só o dia em que parou) */
   function garantirCarga() {
     if (carregandoAgora || chaveCarregada === chaveDesejada) return;
+    if (!document.getElementById('arvore-escala-dia')) return;   // saiu do Dia: a árvore já é de outra tela
     carregandoAgora = true;
     var alvo = chaveDesejada;
-    function terminou() {
+    function terminou(desenhou) {
       carregandoAgora = false;
-      chaveCarregada = alvo;
+      chaveCarregada = desenhou ? alvo : null;   // descartada (veio um pedido mais novo): não conta como carregada
       garantirCarga();   // mudou enquanto carregava? busca de novo
     }
-    Promise.resolve(RosterWork.arvoreUnidades.recarregar()).then(terminou, terminou);
+    Promise.resolve(RosterWork.arvoreUnidades.recarregar()).then(function (r) { terminou(r !== false); }, function () { terminou(false); });
   }
 
   /* salvou no painel: rebusca a árvore do dia (se ela estiver na tela e for o mesmo dia) */

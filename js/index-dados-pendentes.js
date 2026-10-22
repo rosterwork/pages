@@ -1,7 +1,10 @@
 /* ============================================================
    DADOS PENDENTES — janela ao entrar (shell)
    Uma vez por login, depois da janela dos termos, que tem a vez.
-   O banco (dados_pendentes) diz o que pedir; a janela tem dois modos:
+   O banco (dados_pendentes) diz o que pedir. Ao entrar, a janela
+   abre só no modo CONFERIR; o modo PENDENTES fica pronto aqui, sem
+   abrir (a CNH que falta é lembrada na Pendências, pelo
+   index-cnh-painel.js). Os dois modos:
    - CONFERIR, enquanto o militar não conferiu a ficha que o
      administrador cadastrou: a ficha para leitura (a mesma leitura
      do Meu perfil, buscar_ficha_militar) e, em "Falta preencher",
@@ -356,18 +359,12 @@
         var r = resultado[0];
         if (!r || !r.success) return;   // falhou: tenta de novo no próximo carregamento
         marcarLembrado();
-        if (!r.conferir) {
-          if (r.pendente) abrir(r, 'pendentes');
-          return;
-        }
-        /* sem a ficha não há o que conferir: fica para a próxima entrada (o que falta ainda é pedido) */
+        if (!r.conferir) return;   // a ficha já foi conferida: a janela não abre mais
+        /* sem a ficha não há o que conferir: fica para a próxima entrada */
         lerFicha().then(function (ficha) {
-          if (ficha && ficha.pessoais) {
-            preencherFicha(ficha, r);
-            abrir(r, 'conferir');
-          } else if (r.pendente) {
-            abrir(r, 'pendentes');
-          }
+          if (!ficha || !ficha.pessoais) return;
+          preencherFicha(ficha, r);
+          abrir(r, 'conferir');
         });
       });
   }

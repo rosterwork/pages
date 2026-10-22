@@ -25,6 +25,8 @@
     /* Registrar (só admin): grava já aprovada; com corpo.p_ensaio = true só devolve a análise de impacto */
     registrar: function (corpo) { return RosterWork.rpc('fn_trocas_registrar', corpo); },
     confirmar: function (trocaId, aceitar, motivo) { return RosterWork.rpc('fn_trocas_confirmar', { p_troca_id: trocaId, p_aceitar: aceitar, p_motivo: motivo || null }); },
+    /* o aceite que falta no registro (só entra no registro, não mexe na escala) */
+    aceitar: function (trocaId) { return RosterWork.rpc('fn_trocas_aceitar', { p_troca_id: trocaId }); },
     /* forcar (só admin): aprova direto de "aguardando confirmação", sem o solicitado confirmar */
     aprovar: function (trocaId, aceitar, forcar, motivo) { return RosterWork.rpc('fn_trocas_aprovar', { p_troca_id: trocaId, p_aceitar: aceitar, p_forcar: !!forcar, p_motivo: motivo || null }); },
     cancelar: function (trocaId, desfazer) { return RosterWork.rpc('fn_trocas_cancelar', { p_troca_id: trocaId, p_desfazer: !!desfazer }); },
@@ -66,10 +68,11 @@
 
   function nomeMilitar(grau, nome) { return ((grau || '') + ' ' + (nome || '')).trim(); }
 
-  /* "Serviço 12/07 · 24h" — linha de apoio na lista */
+  /* "RW nº 1/2026 · Serviço 12/07 · 24h" — linha de apoio na lista */
   function metaLista(troca) {
     var m = RW.mensagens.trocas;
-    var partes = [m.metaServico(dataCurta(troca.data_servico_solicitante))];
+    var partes = troca.registro_numero ? [m.registroNumero(troca.registro_numero, troca.registro_ano)] : [];
+    partes.push(m.metaServico(dataCurta(troca.data_servico_solicitante)));
     partes.push(troca.horario_inicio && troca.horario_fim ? m.metaParcial : m.meta24h);
     if (troca.data_servico_parceiro) partes.push(m.metaDevolve(dataCurta(troca.data_servico_parceiro)));
     return partes.join(' · ');

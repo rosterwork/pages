@@ -178,7 +178,7 @@
     if (!filaMinhas || !RW.fila) return Promise.resolve();
     return RW.fila.ler().then(function (r) {
       if (!r || !document.contains(conteudo)) return;
-      var minhas = RW.fila.doTipo(r.minhas, ['troca']);
+      var minhas = RW.fila.doTipo(r.minhas, ['troca', 'troca_aceite']);
       var aprovar = contexto.ehAdmin ? RW.fila.doTipo(r.aprovar, ['troca']) : [];
       filaMinhas.definir(minhas);
       if (filaAprovar) filaAprovar.definir(aprovar);
@@ -236,7 +236,9 @@
     filaMinhas = RW.fila ? RW.fila.criar(conteudo.querySelector('#trocas-pendencias-minhas'), { vazio: m.vazioTrocasMinhas, recarregar: carregarPendencias }) : null;
     filaAprovar = (RW.fila && contexto.ehAdmin) ? RW.fila.criar(conteudo.querySelector('#trocas-pendencias-aprovar'), { vazio: m.vazioTrocasAprovar, recarregar: carregarPendencias }) : null;
     conteudo.querySelector('#trocas-pendencias-secao-aprovar').classList.toggle('oculto', !contexto.ehAdmin);
-    if (RW.fila) RW.fila.contar().then(function (c) { escreverSeloPendencias((c.minhas.troca || 0) + (contexto.ehAdmin ? (c.aprovar.troca || 0) : 0)); });
+    if (RW.fila) RW.fila.contar().then(function (c) {
+      escreverSeloPendencias((c.minhas.troca || 0) + (c.minhas.troca_aceite || 0) + (contexto.ehAdmin ? (c.aprovar.troca || 0) : 0));
+    });
 
     var btn = conteudo.querySelector('#btn-solicitar-troca');
     if (btn) btn.addEventListener('click', abrirSolicitar);

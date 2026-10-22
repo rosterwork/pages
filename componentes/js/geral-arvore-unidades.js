@@ -18,6 +18,7 @@
   var unidades = null;          // cache da hierarquia (lista plana)
   var conteudoPorRpc = {};      // cache do conteúdo por RPC: { 'buscar_efetivo': [...], 'listar_instalacoes': [...] }
   var carregando = false;
+  var pedidoAtual = 0;          // senha da carga (latest-wins): só a resposta do pedido mais novo entra na tela
   var houveFalha = false;       // a última carga da hierarquia falhou (rede/servidor) → mostra erro, não branco
   var containerAtual = null;    // onde a árvore é desenhada na página atual
   var opcoesAtuais = null;      // { renderConteudo, rpcConteudo, chaveUnidade, textoContagem, corpoRpc, aoRenderizar }
@@ -225,10 +226,13 @@
   }
 
   /* carrega a hierarquia de unidades e o conteúdo da página (em cache; o conteúdo por RPC).
-     silencioso=true: revalidação em 2º plano (sem giratório) — mostra o cache enquanto rebusca */
+     silencioso=true: revalidação em 2º plano (sem giratório) — mostra o cache enquanto rebusca.
+     A resposta de um pedido que um mais novo substituiu (outra página, outro dia, outro período)
+     é descartada: nunca desenha nem entra no cache. Resolve true (desenhou) ou false (descartada) */
   async function carregarDados(silencioso) {
     if (!obterToken()) return;
 
+    var meu = ++pedidoAtual;
     var rpc = rpcConteudo();
     var temCache = !!(unidades && conteudoPorRpc[rpc]);   // já há dado bom na tela
     if (!silencioso) { carregando = true; renderizar(); }
@@ -236,13 +240,15 @@
       buscarRpc('buscar_unidades_ordenadas'),
       buscarRpc(rpc, corpoConteudo())
     ]);
+    if (meu !== pedidoAtual) return false;
     if (resultados[0]) unidades = resultados[0];
     if (resultados[1]) conteudoPorRpc[rpc] = resultados[1];
     /* falha de QUALQUER uma das RPCs vira erro — mas uma revalidação de 2º plano que falha
        mantém o cache bom que já está na tela (não apaga a árvore com erro) */
     houveFalha = (!resultados[0] || !resultados[1]) && !temCache;
-    if (!silencioso) carregando = false;
+    carregando = false;   // a resposta mais nova encerra o carregando, mesmo que a dela fosse silenciosa
     renderizar();
+    return true;
   }
 
   /* ouvintes de uma vez só: nova seleção no seletor, rolagem (a trilha) e a volta da trilha à tela */
@@ -255,11 +261,19 @@
   }
 
   /* API pública: a página chama isto passando o container e (opcional)
-     { renderConteudo, rpcConteudo, chaveUnidade, textoContagem, corpoRpc, aoRenderizar } */
+     { renderConteudo, rpcConteudo, chaveUnidade, textoContagem, corpoRpc, aoRenderizar, buscaPelaPagina }.
+     buscaPelaPagina: a página busca logo em seguida (recarregar); aqui só monta, com o carregando,
+     e descarta a carga que ainda esteja no ar (ex.: o Dia da Escala ao trocar de dia) */
   function montar(container, opcoes) {
     containerAtual = container;
     opcoesAtuais = opcoes || {};
     registrarOuvintes();
+    if (opcoesAtuais.buscaPelaPagina) {
+      pedidoAtual++;
+      carregando = true;
+      renderizar();
+      return Promise.resolve();
+    }
     if (unidades && conteudoPorRpc[rpcConteudo()]) {
       renderizar();          // mostra o cache na hora (sem piscar)
       carregarDados(true);   // revalida em 2º plano; re-renderiza quando o dado fresco chega

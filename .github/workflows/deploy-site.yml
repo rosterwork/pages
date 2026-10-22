@@ -27,7 +27,8 @@ jobs:
 
     # Armazém do app (service worker): carimba a versão desta publicação e a lista dos arquivos
     # que o aparelho guarda, cada um com a impressão digital (o que mudou é baixado de novo).
-    # Fora da lista: as imagens do manual (guardadas ao usar) e os logos de acervo.
+    # Sob demanda (guardadas no primeiro uso, nunca na instalação): as bibliotecas.
+    # Fora das listas: as imagens do manual (guardadas ao usar) e os logos de acervo.
     - name: Carimbar o armazém do app
       run: |
         node - <<'FIM'
@@ -36,20 +37,24 @@ jobs:
         const { execSync } = require('child_process');
         const tipos = /\.(html|css|js|svg|woff2?|webmanifest)$/;
         const fora = /^(\.github\/|manual\/imagens\/|logos\/(?!aplicativo-))/;
+        const sobDemanda = /^bibliotecas\//;
         const arquivos = {};
+        const demanda = {};
         execSync('git ls-files', { encoding: 'utf8' }).split('\n').filter(Boolean).forEach((caminho) => {
           const icone = /^logos\/aplicativo-[^/]+\.png$/.test(caminho);
           if (caminho === 'aplicativo-armazem.js' || fora.test(caminho) || !(tipos.test(caminho) || icone)) return;
-          arquivos[caminho] = crypto.createHash('sha1').update(fs.readFileSync(caminho)).digest('hex').slice(0, 12);
+          const impressao = crypto.createHash('sha1').update(fs.readFileSync(caminho)).digest('hex').slice(0, 12);
+          (sobDemanda.test(caminho) ? demanda : arquivos)[caminho] = impressao;
         });
         const versao = process.env.GITHUB_SHA.slice(0, 8) + '-' + process.env.GITHUB_RUN_NUMBER;
         const arquivo = 'aplicativo-armazem.js';
         const original = fs.readFileSync(arquivo, 'utf8');
         const carimbado = original
           .replace("'__VERSAO__'", () => JSON.stringify(versao))
-          .replace('{/*__ARQUIVOS__*/}', () => JSON.stringify(arquivos));
+          .replace('{/*__ARQUIVOS__*/}', () => JSON.stringify(arquivos))
+          .replace('{/*__SOB_DEMANDA__*/}', () => JSON.stringify(demanda));
         fs.writeFileSync(arquivo, carimbado);
-        console.log(carimbado === original ? 'armazém sem carimbo (desligado)' : 'armazém ' + versao + ': ' + Object.keys(arquivos).length + ' arquivos');
+        console.log(carimbado === original ? 'armazém sem carimbo (desligado)' : 'armazém ' + versao + ': ' + Object.keys(arquivos).length + ' arquivos, ' + Object.keys(demanda).length + ' sob demanda');
         FIM
 
     - name: Upload artifact

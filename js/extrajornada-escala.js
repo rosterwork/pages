@@ -30,6 +30,9 @@
   var ensaio = {};           // estado pós-motor por célula { 'uid|iso': { antes, depois } } (antes = SEM extra, depois = COM extras e rascunho)
   var timersEnsaio = {};     // espera do ensaio por dia { iso: timer }
   var seqEnsaio = {};        // token do ensaio por dia (vale a última resposta)
+  var filaEnsaio = [];       // dias esperando a vez do ensaio, na ordem pedida (sem repetir)
+  var ensaiosNoAr = 0;       // ensaios rodando agora no banco
+  var ENSAIOS_JUNTOS = 2;    // cada ensaio roda o motor duas vezes (segundos de processador): no máximo 2 ao mesmo tempo
   var escalaAplicada = {};   // pico aplicado às barras de cada unidade { uid: pico }
   var buscaCtrl = null;
   var buscaTermo = '';
@@ -276,26 +279,41 @@
   }
 
   /* ---------- ensaio no motor real, por dia, com o rascunho do dia ---------- */
+  /* o dia mexido espera 400 ms (mais mexidas seguidas viram um ensaio só) e entra na fila */
   function analisarDiaEnsaio(isoDia) {
     if (!RosterWork.sessao.temPapel('pelotao') || !RW.extrajornadaDados) return;   // o ensaio é do admin
     if (timersEnsaio[isoDia]) clearTimeout(timersEnsaio[isoDia]);
     timersEnsaio[isoDia] = setTimeout(function () {
       delete timersEnsaio[isoDia];
-      var meu = seqEnsaio[isoDia] = (seqEnsaio[isoDia] || 0) + 1;
-      var mudancas = R().doDia(isoDia).map(function (m) { return { cpf: m.cpf, data: m.data, unidade: m.unidade, blocos: m.blocos }; });
-      RW.extrajornadaDados.analisarDia(isoDia, mudancas).then(function (r) {
-        if (!r || !r.ok || !el.cal || !el.cal.isConnected || meu !== seqEnsaio[isoDia]) return;
-        var ant = r.antes || {}, dep = r.depois || {};
-        unidades.forEach(function (u) { ensaio[chaveCel(u.id, isoDia)] = { antes: ant[String(u.id)] || null, depois: dep[String(u.id)] || null }; });
-        refazerDia(isoDia);
-      });
+      if (filaEnsaio.indexOf(isoDia) < 0) filaEnsaio.push(isoDia);
+      puxarFilaEnsaio();
     }, 400);
   }
-  /* cada dia com extra (salva ou no rascunho) precisa do ensaio antes × depois */
+  /* solta os próximos da fila enquanto houver vaga; fora da aba (ou da página), a fila é esquecida */
+  function puxarFilaEnsaio() {
+    if (!ativa || !el.cal || !el.cal.isConnected) { filaEnsaio = []; return; }
+    while (ensaiosNoAr < ENSAIOS_JUNTOS && filaEnsaio.length) rodarEnsaio(filaEnsaio.shift());
+  }
+  /* o rascunho do dia é lido na hora de rodar (vale o mais novo); só a última resposta do dia desenha */
+  function rodarEnsaio(isoDia) {
+    ensaiosNoAr++;
+    var meu = seqEnsaio[isoDia] = (seqEnsaio[isoDia] || 0) + 1;
+    var mudancas = R().doDia(isoDia).map(function (m) { return { cpf: m.cpf, data: m.data, unidade: m.unidade, blocos: m.blocos }; });
+    function liberar() { ensaiosNoAr--; puxarFilaEnsaio(); }
+    RW.extrajornadaDados.analisarDia(isoDia, mudancas).then(function (r) {
+      liberar();
+      if (!r || !r.ok || !el.cal || !el.cal.isConnected || meu !== seqEnsaio[isoDia]) return;
+      var ant = r.antes || {}, dep = r.depois || {};
+      unidades.forEach(function (u) { ensaio[chaveCel(u.id, isoDia)] = { antes: ant[String(u.id)] || null, depois: dep[String(u.id)] || null }; });
+      refazerDia(isoDia);
+    }, liberar);
+  }
+  /* cada dia com extra (salva ou no rascunho) precisa do ensaio antes × depois; a fila recomeça com eles */
   function analisarDiasComExtra() {
     var dias = {};
     for (var u in celulas) for (var d in celulas[u]) if ((celulas[u][d] || []).length) dias[d] = true;
     R().lista().forEach(function (m) { dias[m.data] = true; });
+    filaEnsaio = [];
     Object.keys(dias).forEach(analisarDiaEnsaio);
   }
 
@@ -372,6 +390,10 @@
   }
   function desativar() {
     ativa = false;
+    /* os ensaios que ainda esperavam a vez não rodam (os que já estão no banco terminam sozinhos) */
+    Object.keys(timersEnsaio).forEach(function (d) { clearTimeout(timersEnsaio[d]); });
+    timersEnsaio = {};
+    filaEnsaio = [];
     if (el.busca) el.busca.classList.add('oculto');
     if (buscaCtrl) buscaCtrl.limpar();
     if (RW.escalasMes && el.cal) RW.escalasMes.limpar(el.cal);

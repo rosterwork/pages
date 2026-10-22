@@ -8,7 +8,8 @@
    leitura, com o militar destacado: escalas-painel.js). "Hoje" é o
    dia de serviço (vira às 08h). Ao lado, os avisos (fn_avisos_listar)
    e as pendências: o que espera a sua decisão (a fila da Pendências,
-   geral-fila, que abre o painel de decisão), os prazos e os seus
+   geral-fila, que abre o painel de decisão), os prazos, a CNH que
+   falta (abre o painel da CNH, index-cnh-painel.js) e os seus
    pedidos em andamento e resolvidos nos últimos 30 dias
    (inicio_meus_pedidos); para o administrador, também a aba
    Administração. Cada lista mostra o que cabe na altura da tela e o
@@ -378,10 +379,15 @@
       function () { irPara('perfil'); });
   }
 
-  /* um prazo seu (ex.: a extra do mês): leva aonde se responde */
+  /* um prazo seu (ex.: a extra do mês): leva aonde se responde; a CNH que falta abre o painel dela aqui mesmo */
   function cartaoPrazo(g) {
+    var mi = RW.mensagens.inicio;
+    if (g.tipo === 'cnh') {
+      return cartaoPendencia('alerta', g.texto || '', g.mensagem || '', { texto: mi.seloPreencher, classe: 'selo--alerta' },
+        function () { if (RW.cnhPainel) RW.cnhPainel.abrir({ aoSalvar: carregarPendencias }); });
+    }
     return cartaoPendencia(g.tipo === 'extra_prazo' ? 'extrajornada' : 'alerta', g.texto || '', g.mensagem || '',
-      { texto: RW.mensagens.inicio.seloPrazo, classe: 'selo--alerta' },
+      { texto: mi.seloPrazo, classe: 'selo--alerta' },
       function () { irPara(g.pagina, g.aba, g.referencia); });
   }
 

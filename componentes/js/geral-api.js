@@ -52,23 +52,32 @@
   /* sai só deste aparelho (scope=local): o app do celular e os outros aparelhos seguem conectados */
   function sair() {
     var token = obterToken();
-    if (token) {
-      esquecerLembrado(token);
-      /* keepalive: a chamada de logout completa mesmo durante a ida ao login */
-      fetch(SUPABASE_URL + '/auth/v1/logout?scope=local', {
-        method: 'POST',
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + token },
-        keepalive: true
-      }).catch(function () {});
-    }
-    limparSessao();
-    window.location.replace('login.html');
+    var notificacoes = window.RosterWork.notificacoesCelular;
+    /* antes, o aparelho para de receber as notificações desta conta (computador compartilhado) */
+    var antes = token && notificacoes ? notificacoes.desligarAoSair() : Promise.resolve();
+    antes.then(function () {
+      if (token) {
+        esquecerLembrado(token);
+        /* keepalive: a chamada de logout completa mesmo durante a ida ao login */
+        fetch(SUPABASE_URL + '/auth/v1/logout?scope=local', {
+          method: 'POST',
+          headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + token },
+          keepalive: true
+        }).catch(function () {});
+      }
+      limparSessao();
+      window.location.replace('login.html');
+    });
   }
 
-  /* encerra a sessão em todos os aparelhos (scope=global), inclusive no app do celular.
-     Resolve false quando o servidor não confirmou (a sessão segue aberta) */
+  /* encerra a sessão em todos os aparelhos (scope=global), inclusive no app do celular, e as
+     notificações no celular de todos eles. Resolve false quando o servidor não confirmou (a sessão segue aberta) */
   function sairDeTodos() {
-    return apiFetch('/auth/v1/logout?scope=global', { metodo: 'POST' }).then(function (resp) {
+    var notificacoes = window.RosterWork.notificacoesCelular;
+    var antes = notificacoes ? notificacoes.desligarTodos() : Promise.resolve();
+    return antes.then(function () {
+      return apiFetch('/auth/v1/logout?scope=global', { metodo: 'POST' });
+    }).then(function (resp) {
       if (!resp.ok) return false;
       esquecerLembrado(obterToken());
       limparSessao();

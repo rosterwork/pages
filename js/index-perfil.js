@@ -55,6 +55,41 @@
     });
   }
 
+  /* Notificações neste aparelho: o seletor mostra a situação de verdade do aparelho; nos casos
+     em que não dá para ligar (bloqueado, iPhone fora do app, navegador sem notificações) fica
+     desligado e a ajuda explica o caminho */
+  function marcarNotificacoes(trilho, situacao) {
+    var M = RosterWork.mensagens.notificacoesCelular;
+    var travado = situacao !== 'ativado' && situacao !== 'desativado';
+    Array.prototype.forEach.call(trilho.querySelectorAll('.aba'), function (aba) {
+      var ativa = aba.getAttribute('data-valor') === situacao;
+      aba.classList.toggle('aba--ativa', ativa);
+      aba.setAttribute('aria-selected', ativa ? 'true' : 'false');
+      aba.disabled = travado;
+    });
+    var ajuda = document.getElementById('perfil-notificacoes-ajuda');
+    if (ajuda && travado) ajuda.textContent = M.ajuda[situacao] || '';
+  }
+
+  function ligarNotificacoes() {
+    var trilho = document.getElementById('perfil-notificacoes');
+    var N = RosterWork.notificacoesCelular;
+    if (!trilho || !N || !RosterWork.abas) return;
+    N.situacao().then(function (s) { marcarNotificacoes(trilho, s); });
+    RosterWork.abas.ligar(trilho, function (aba) {
+      var querLigar = aba.getAttribute('data-valor') === 'ativado';
+      if (RosterWork.iniciarCarregando) RosterWork.iniciarCarregando(aba);
+      (querLigar ? N.ativar() : N.desativar()).then(function (s) {
+        if (RosterWork.pararCarregando) RosterWork.pararCarregando(aba);
+        marcarNotificacoes(trilho, s);
+      }, function () {
+        if (RosterWork.pararCarregando) RosterWork.pararCarregando(aba);
+        N.situacao().then(function (s) { marcarNotificacoes(trilho, s); });
+        RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.notificacoesCelular.falhaAtivar });
+      });
+    });
+  }
+
   /* Privacidade: a ciência dos Termos de uso e privacidade (a leitura mora no index-termos.js) */
   function ligarTermos() {
     if (!RosterWork.termos) return;
@@ -122,6 +157,7 @@
 
     ligarAbas();
     ligarTema();
+    ligarNotificacoes();
     ligarTermos();
     if (RosterWork.perfilSenha) RosterWork.perfilSenha.iniciar(usuario);
 

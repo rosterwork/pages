@@ -50,6 +50,15 @@
   color: var(--texto-suave);
 }
 
+/* uma pessoa na caixa (ex.: os aceites da troca): o nome em cima, o que ela fez embaixo e o selo à direita */
+.decisao-caixa-pessoa {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
 /* a Análise: o título com o selo do resultado ao lado e, embaixo, as notas */
 .decisao-analise-secao {
   display: flex;

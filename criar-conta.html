@@ -2,6 +2,8 @@
 <html lang="pt-br" data-celular>
 <head>
   <meta charset="utf-8" />
+  <!-- política de segurança: o navegador só aceita código, estilo e dados do próprio site e do banco (REGRAS §3, item 11) -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://oadzjrekpuddagfydfzn.supabase.co; frame-src 'self' blob:; object-src 'self' blob:; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'" />
   <!-- a largura do aparelho + a marca data-celular no <html>: os tamanhos do celular valem para todos nesta tela -->
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Criar conta no Roster Work — sistema de escala de serviço." />

@@ -71,9 +71,9 @@
   /* o que falta fazer mora na página Pendências, com o número no item do menu. Quanto
      cada item de pendencias_listar soma nele: um pedido vale 1 (o grupo traz quantos);
      uma situação vale 1 por assunto ("fora da escala" é um problema só, com a lista de
-     militares dentro). Tipo fora das duas listas não soma */
-  var DECISAO = { troca: true, folga: true, dados: true };
-  var SITUACAO = { fora_escala: true, retorno_afastamento: true, distribuicao: true, distribuicao_erro: true, extra_prazo: true };
+     militares dentro; a CNH que falta é uma). Tipo fora das duas listas não soma */
+  var DECISAO = { troca: true, troca_aceite: true, folga: true, dados: true };
+  var SITUACAO = { fora_escala: true, retorno_afastamento: true, distribuicao: true, distribuicao_erro: true, extra_prazo: true, cnh: true };
 
   function quantoSoma(p) {
     var n = Number(p.contagem) || 0;
@@ -183,6 +183,22 @@
   /* quem mexe em aviso (a página Avisos) pede o refresco do sino; a página
      Pendências soma os selos das abas pela mesma regra do número do menu */
   RW.avisosSino = { recarregar: carregar, quantoSoma: quantoSoma };
+
+  /* veio de uma notificação do celular (index.html?aviso=…, ou guardado pelo index-sessao.js antes
+     da entrada): abre o aviso como o clique no sino, depois que o sistema montou a primeira tela */
+  function abrirAvisoDaNotificacao() {
+    var bruto = null;
+    try {
+      bruto = new URLSearchParams(location.search).get('aviso') || sessionStorage.getItem('rosterwork_aviso_pendente');
+      sessionStorage.removeItem('rosterwork_aviso_pendente');
+    } catch (e) {}
+    if (!bruto) return;
+    if (/[?&]aviso=/.test(location.search)) history.replaceState(history.state, '', location.pathname);
+    var aviso = null;
+    try { aviso = JSON.parse(bruto); } catch (e) {}
+    if (aviso && aviso.id) abrir(aviso);
+  }
+  window.addEventListener('load', abrirAvisoDaNotificacao);
 
   carregar();
 })();

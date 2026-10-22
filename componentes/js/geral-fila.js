@@ -33,8 +33,10 @@
   'use strict';
   var RW = window.RosterWork = window.RosterWork || {};
 
-  var DECISAO = ['troca', 'folga', 'dados'];
-  var ICONES = { troca: 'trocas', folga: 'folgas', dados: 'editar' };
+  /* troca_aceite: a troca com o aceite de quem olha faltando (abre o mesmo painel da troca) */
+  var DECISAO = ['troca', 'troca_aceite', 'folga', 'dados'];
+  var ICONES = { troca: 'trocas', troca_aceite: 'trocas', folga: 'folgas', dados: 'editar' };
+  function ehTroca(tipo) { return tipo === 'troca' || tipo === 'troca_aceite'; }
 
   function msg() { return RW.mensagens.pendencias; }
   function nome(grau, n) { return ((grau || '') + ' ' + (n || '')).trim(); }
@@ -55,8 +57,8 @@
 
   /* um pedido: { tipo, id, dado, data (para ordenar), minha } */
   function pedido(tipo, d, minha) {
-    var id = tipo === 'troca' ? d.troca_id : (tipo === 'dados' ? d.solicitacao_id : d.id);
-    var data = tipo === 'troca' ? d.data_servico_solicitante
+    var id = ehTroca(tipo) ? d.troca_id : (tipo === 'dados' ? d.solicitacao_id : d.id);
+    var data = ehTroca(tipo) ? d.data_servico_solicitante
       : tipo === 'folga' ? d.data_ref : d.solicitado_em;
     return { tipo: tipo, id: String(id), dado: d, data: String(data || ''), minha: minha };
   }
@@ -99,7 +101,8 @@
   /* o selo da situação (opcoes.situacao): tudo o que está na fila espera decisão */
   function seloSituacao(p) {
     var M = RW.mensagens, d = p.dado;
-    var texto = p.minha ? M.pendencias.aguardandoVoce
+    var texto = p.tipo === 'troca_aceite' ? M.pendencias.faltaAceitar
+      : p.minha ? M.pendencias.aguardandoVoce
       : p.tipo === 'troca' ? (d.substitui_troca_id ? M.trocas.situacaoAlteracao : M.trocas.situacao).pendente_aprovacao
       : p.tipo === 'folga' ? M.folgas.situacao.pendente
       : M.correcoes.painelSituacao;
@@ -113,17 +116,29 @@
     return t;
   }
 
+  /* "Serviço de 30/10/2026 (sex) · serviço inteiro · RW nº 1/2026" */
+  function metaTroca(d) {
+    var meta = msg().metaServico(RW.data.comDiaCurto(d.data_servico_solicitante), trechoTexto(d.horario_inicio, d.horario_fim));
+    return d.registro_numero ? meta + ' · ' + RW.mensagens.trocas.registroNumero(d.registro_numero, d.registro_ano) : meta;
+  }
+
   function textosAnalise(p) {
     var m = msg(), d = p.dado;
-    if (p.tipo === 'troca') {
+    if (ehTroca(p.tipo)) {
       var sol = nome(d.solicitante_grau, d.solicitante_nome), par = nome(d.parceiro_grau, d.parceiro_nome);
+      /* o aceite que falta: o nome é o do outro militar da troca */
+      if (p.tipo === 'troca_aceite') {
+        var cpf = RW.sessao && RW.sessao.cpf();
+        return { quem: m.trocaAceitar(d.solicitante_cpf === cpf ? par : sol), meta: metaTroca(d),
+                 selo: { texto: m.faltaAceitar, classe: 'selo--alerta' } };
+      }
       /* quem pediu: o solicitante, ou o solicitado quando é ele quem alterou (aí quem aceita é o solicitante) */
       var pediu = d.confirma_cpf && d.confirma_cpf === d.solicitante_cpf ? par : sol;
       var alteracao = !!d.substitui_troca_id;
       return {
         quem: p.minha ? (alteracao ? m.trocaMinhaAlteracao(pediu) : m.trocaMinha(pediu))
                       : (alteracao ? m.trocaAdminAlteracao(sol, par) : m.trocaAdmin(sol, par)),
-        meta: m.metaServico(RW.data.comDiaCurto(d.data_servico_solicitante), trechoTexto(d.horario_inicio, d.horario_fim)),
+        meta: metaTroca(d),
         selo: RW.impacto.selo({ veredito: d.veredito, problemas: d.veredito_problemas, alertas: d.veredito_alertas })
       };
     }
@@ -221,7 +236,7 @@
           marcar();
         }
       };
-      if (p.tipo === 'troca' && RW.trocasPainel) RW.trocasPainel.abrir(p.dado, ctx);
+      if (ehTroca(p.tipo) && RW.trocasPainel) RW.trocasPainel.abrir(p.dado, ctx);
       else if (p.tipo === 'folga' && RW.folgasAprovacaoPainel) RW.folgasAprovacaoPainel.abrir(p.dado, ctx);
       else if (p.tipo === 'dados' && RW.usuariosCorrecaoPainel) RW.usuariosCorrecaoPainel.abrir(p.dado, ctx);
     }

@@ -28,7 +28,7 @@
 
   var conteudo;
   var itens = [];
-  var jsCarregados = {};
+  var jsCarregados = {};   /* src → promessa da carga: quem pedir de novo enquanto baixa espera a mesma (o arquivo roda uma vez só) */
   var cssCarregados = {};
 
   /* senha de navegação (latest-wins): cada clique/rota incrementa; depois de cada
@@ -55,15 +55,19 @@
     cssCarregados[href] = true;
   }
 
+  /* async = false: os arquivos pedidos juntos baixam ao mesmo tempo e rodam na ordem em que
+     foram pedidos (a do manifesto). Falhou: esquece, para a próxima navegação tentar de novo */
   function carregarJs(src) {
-    return new Promise(function (resolver) {
-      if (jsCarregados[src]) { resolver(); return; }
+    if (jsCarregados[src]) return jsCarregados[src];
+    jsCarregados[src] = new Promise(function (resolver) {
       var script = document.createElement('script');
       script.src = src;
-      script.onload = function () { jsCarregados[src] = true; resolver(); };
-      script.onerror = function () { resolver(); };
+      script.async = false;
+      script.onload = function () { resolver(); };
+      script.onerror = function () { delete jsCarregados[src]; resolver(); };
       document.body.appendChild(script);
     });
+    return jsCarregados[src];
   }
 
   /* tira a página que sai, preservando o véu de carregamento e o painel lateral — ambos vivem no shell */
@@ -176,12 +180,10 @@
     if (meu !== navToken) return;
     inserirFragmento(html);
 
-    var i;
-    for (i = 0; i < (def.css || []).length; i++) carregarCss(def.css[i]);
-    for (i = 0; i < (def.js || []).length; i++) {
-      await carregarJs(def.js[i]);
-      if (meu !== navToken) return;               /* abandonou no meio do carregamento dos scripts */
-    }
+    for (var i = 0; i < (def.css || []).length; i++) carregarCss(def.css[i]);
+    /* os arquivos da página baixam todos juntos (cada um roda na ordem do manifesto) */
+    await Promise.all((def.js || []).map(carregarJs));
+    if (meu !== navToken) return;                 /* outra navegação assumiu enquanto os scripts carregavam */
 
     /* o véu some quando a página termina de carregar (iniciar pode ser assíncrono),
        respeitando o tempo mínimo; páginas síncronas escondem logo (pelo mínimo) */

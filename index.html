@@ -2,6 +2,8 @@
 <html lang="pt-br">
 <head>
   <meta charset="utf-8" />
+  <!-- política de segurança: o navegador só aceita código, estilo e dados do próprio site e do banco (REGRAS §3, item 11) -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://oadzjrekpuddagfydfzn.supabase.co; frame-src 'self' blob:; object-src 'self' blob:; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'" />
   <meta name="viewport" content="width=1920" />
   <meta name="description" content="Roster Work — sistema de escala de serviço da corporação." />
   <link rel="icon" href="icones/logo-aba.svg" type="image/svg+xml" />
@@ -378,8 +380,8 @@
   </div>
 
   <!-- DADOS PENDENTES: ao entrar (uma vez por login; js/index-dados-pendentes.js), em dois modos. "Conferir" enquanto
-       o militar não conferiu a ficha: a ficha para leitura e, em "Falta preencher", o que falta. "Pendentes" depois,
-       só quando falta algo: a CNH (todos) e a colocação no CFP e as datas de promoção (praças). O que é de um modo só
+       o militar não conferiu a ficha: a ficha para leitura e, em "Falta preencher", o que falta; é o único que abre.
+       "Pendentes" (a CNH, a colocação no CFP e as datas de promoção) fica pronto, sem abrir. O que é de um modo só
        leva data-modo-conferir ou data-modo-pendentes. Exceção à regra do modal (como o Fale conosco): os campos
        ficam na própria janela -->
   <div class="modal-veu" id="veu-dados-pendentes">
@@ -617,6 +619,7 @@
   <script src="componentes/js/geral-alteracoes.js"></script>
   <script src="componentes/js/geral-guarda-saida.js"></script>
   <script src="componentes/js/geral-api.js"></script>
+  <script src="componentes/js/geral-notificacoes-celular.js"></script>
   <script src="componentes/js/geral-recalculo.js"></script>
   <script src="js/index-sidebar.js"></script>
   <script src="js/index-cabecalho.js"></script>
@@ -646,6 +649,7 @@
   <script src="js/index-fale-conosco.js"></script>
   <script src="js/index-termos.js"></script>
   <script src="js/index-dados-pendentes.js"></script>
+  <script src="js/index-cnh-painel.js"></script>
 
   <!-- MOLDES: análise de impacto na escala (componente geral-impacto — painel de decisão de Trocas e Folgas) -->
   <!-- um ponto da análise: nota amarela (atenção) ou vermelha (problema); sem nenhum, a nota verde -->
@@ -2026,6 +2030,37 @@
     </div>
   </template>
 
+  <!-- PAINEL DA CNH (a pendência "Preencha a sua CNH", da Pendências e do Início; js/index-cnh-painel.js):
+       o mesmo seletor da janela ao entrar ("Não tenho CNH" = Nenhuma) -->
+  <template id="tpl-cnh-painel">
+    <div class="campo">
+      <span class="campo-rotulo">CNH</span>
+      <div class="dropdown">
+        <button type="button" class="campo-entrada campo-selecao" id="cnh-painel-selecao" data-valor="">
+          <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+          <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+        </button>
+        <div class="dropdown-menu">
+          <button type="button" class="dropdown-item" data-valor="Nenhuma">Não tenho CNH</button>
+          <button type="button" class="dropdown-item" data-valor="A">A</button>
+          <button type="button" class="dropdown-item" data-valor="B">B</button>
+          <button type="button" class="dropdown-item" data-valor="C">C</button>
+          <button type="button" class="dropdown-item" data-valor="D">D</button>
+          <button type="button" class="dropdown-item" data-valor="E">E</button>
+          <button type="button" class="dropdown-item" data-valor="AB">AB</button>
+          <button type="button" class="dropdown-item" data-valor="AC">AC</button>
+          <button type="button" class="dropdown-item" data-valor="AD">AD</button>
+          <button type="button" class="dropdown-item" data-valor="AE">AE</button>
+        </div>
+      </div>
+      <span class="campo-ajuda">A categoria vai para a aprovação de um administrador.</span>
+    </div>
+  </template>
+  <template id="tpl-cnh-painel-acoes">
+    <button type="button" class="botao" id="cnh-painel-cancelar">Cancelar</button>
+    <button type="button" class="botao botao--primario" id="cnh-painel-salvar" disabled>Salvar</button>
+  </template>
+
   <!-- ===== painel de decisão (componente geral-decisao; Trocas e Folgas, na Pendências e na página de cada assunto) ===== -->
   <!-- o corpo: o pedido em caixas, a nota do saldo, a análise, o "Como fica a escala" (fechado) e, ao recusar, o motivo -->
   <template id="tpl-decisao">
@@ -2081,15 +2116,27 @@
   </template>
   <!-- o rodapé do painel da troca (o JS deixa só as ações do papel e do estado de quem olha):
        Recusar = o militar chamado para a troca; Recusar (admin) = a administração;
-       Cancelar alteração = quem pediu a alteração de uma troca aprovada (a troca continua) -->
+       Cancelar alteração = quem pediu a alteração de uma troca aprovada (a troca continua);
+       Aceitar (aceitar-depois) = o aceite que falta no registro, que não mexe na escala -->
   <template id="tpl-troca-acoes">
     <button type="button" class="botao" data-acao="cancelar">Cancelar troca</button>
     <button type="button" class="botao" data-acao="cancelar-alteracao">Cancelar alteração</button>
     <button type="button" class="botao botao--perigo" data-acao="recusar">Recusar</button>
     <button type="button" class="botao botao--primario" data-acao="aceitar">Aceitar</button>
+    <button type="button" class="botao botao--primario" data-acao="aceitar-depois">Aceitar</button>
     <button type="button" class="botao" data-acao="aprovar-forcar">Aprovar sem confirmação</button>
     <button type="button" class="botao botao--perigo" data-acao="recusar-admin">Recusar</button>
     <button type="button" class="botao botao--primario" data-acao="aprovar">Aprovar</button>
+  </template>
+  <!-- uma linha da caixa "Aceites e aprovação" do painel da troca: quem, o que fez (ou "Ainda não aceitou") e o selo -->
+  <template id="tpl-troca-aceite">
+    <div class="decisao-caixa-dia">
+      <span class="decisao-caixa-pessoa">
+        <span class="decisao-caixa-data"></span>
+        <span class="decisao-caixa-extra"></span>
+      </span>
+      <span class="selo"></span>
+    </div>
   </template>
   <!-- o aviso no topo do painel da troca (ex.: a troca tem uma alteração aguardando); o texto vem do JS -->
   <template id="tpl-troca-nota">
