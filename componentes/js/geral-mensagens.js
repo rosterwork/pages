@@ -1064,7 +1064,24 @@
       pendenciaSubtitulo: function (devedor, horas, credor) { return devedor + ' deve ' + horas + ' a ' + credor; },
       extratoMais: 'Ver mais',
       extratoVazio: 'Sem trocas aprovadas entre vocês.',
-      extratoFalha: 'Não foi possível carregar o histórico.'
+      extratoFalha: 'Não foi possível carregar o histórico.',
+      /* aba Várias trocas do Solicitar troca (trocas-varias.js e trocas-varias-calendario.js) */
+      varias: {
+        cumpre: function (trabalha, folga, dia) { return trabalha + ' cumpre a escala de serviço do ' + folga + ' em ' + dia + '.'; },
+        devolucao: function (dia) { return ' A devolução ocorrerá no serviço de ' + dia + '.'; },
+        fechadoDuplas: 'Tudo fechado em duplas. Ninguém fica devendo horas.',
+        fechadoRodas: 'Cada um trabalha um serviço e folga um. Ninguém fica devendo horas.',
+        fechadoTudo: 'Tudo fechado em duplas e rodas. Ninguém fica devendo horas.',
+        semDevolucao: function (deve, horas, a) {
+          return 'Sem devolução, o ' + deve + ' fica devendo ' + horas + ' ao ' + a + '. Para fechar, marque um dia em que o ' + deve + ' trabalha no lugar dele.';
+        },
+        saldo: function (deve, horas, a) { return 'O ' + deve + ' fica devendo ' + horas + ' ao ' + a + '.'; },
+        noLugarDe: function (trabalha, folga) { return trabalha + ' no lugar de ' + folga; },
+        removerComDias: function (nome, n) { return 'Remover o ' + nome + ' tira também ' + (n === 1 ? '1 dia' : n + ' dias') + ' da troca.'; },
+        semDias: 'Marque pelo menos um dia no calendário.',
+        falhaDias: 'Não foi possível carregar os dias.',
+        falhaResumo: 'Não foi possível montar o resumo.'
+      }
     },
 
     /* folgas (banco de horas: placar, solicitações, lançamentos e gaveta) */

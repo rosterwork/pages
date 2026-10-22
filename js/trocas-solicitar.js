@@ -10,7 +10,9 @@
    ou Marcar dia). Os campos ficam em trocas-solicitar-campos.js;
    aqui ficam a abertura, os modos, o E-protocolo, a análise, a
    validação e o envio. Ações no rodapé do painel; o X/Esc
-   confirmam o descarte quando há dados.
+   confirmam o descarte quando há dados. No Solicitar comum (não
+   no Cobrar nem no Registrar), as abas Uma troca | Várias trocas:
+   a aba nova fica no trocas-varias.js.
    Expõe RosterWork.trocasSolicitar.{ ligar, abrir, formulario }.
      ligar({ aoSolicitar, aoMudar }) — guarda os callbacks (1x)
      abrir(opcoes) — abre o painel e monta o formulário:
@@ -216,7 +218,8 @@
   function temDados() {
     if (!aberto || !ctx) return false;
     var parte = q('#ts-parte');
-    return !!(ctx.servicoDia || ctx.parceiroSel || ctx.solicitanteSel || (parte && parte.value.trim()));
+    return !!(ctx.servicoDia || ctx.parceiroSel || ctx.solicitanteSel || (parte && parte.value.trim()))
+      || !!(RW.trocasVarias && RW.trocasVarias.temDados());   // a aba Várias trocas também conta
   }
   function confirmarDescarte() {
     RW.confirmar({
@@ -237,7 +240,7 @@
     return true;
   }
   /* o painel avisa ao fechar (X/Esc/Cancelar/sucesso): o formulário some, então marca fechado */
-  function aoFecharReset() { aberto = false; }
+  function aoFecharReset() { aberto = false; if (RW.trocasVarias) RW.trocasVarias.encerrar(); }
   /* o formulário recém-montado: tudo vazio, o Ano no ano atual (pode ser mudado) */
   function prepararCampos() {
     q('#ts-parte-ano').value = String(new Date().getFullYear());
@@ -322,6 +325,10 @@
       RW.trocasDados.meusServicos(RosterWork.sessao.cpf(), null).then(function (l) { if (ctx === meu) ctx.meusServicos = Array.isArray(l) ? l : []; }).catch(function () {});
     }
     carregarUnidades();
+    /* no Solicitar comum, as abas Uma troca | Várias trocas (a aba nova mora no trocas-varias.js) */
+    if (!registrar && !ctx.cobrar && RW.trocasVarias) {
+      RW.trocasVarias.montar({ corpo: corpo, aoSolicitar: cbs.aoSolicitar, aoMudar: cbs.aoMudar, cancelar: cancelar });
+    }
   }
 
   /* rodapé do painel: Cancelar / Solicitar troca (ou Registrar troca) */

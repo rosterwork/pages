@@ -275,6 +275,8 @@
     fechar: fechar,
     estaAberto: estaAberto,
     definirTitulos: definirTitulos,
+    /* muda a largura com o painel aberto (a aba que precisa de espaço: ex., Várias trocas do Solicitar troca) */
+    largo: function (sim) { if (painel) painel.classList.toggle('painel-lateral--largo', !!sim); },
     linhaAbas: function () { return elLinhaAbas; },
     corpo: function () { return elCorpo; },
     subcabecalho: function () { return elSubcabecalho; },

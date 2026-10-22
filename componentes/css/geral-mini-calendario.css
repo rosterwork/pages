@@ -3,8 +3,8 @@
    7 colunas (dom a sáb), só os dias do mês; cada dia é um botão
    com o número (canto de cima à esquerda), um número pequeno no
    canto de cima à direita e um texto embaixo. Os estados pintam o
-   dia: --quer (verde), --nao (vermelho) e --ocupado (cinza, sem
-   clique). Marcas de quem usa: --hoje (o número no círculo
+   dia: --quer (verde), --nao (vermelho), --ocupado (cinza, sem
+   clique) e --inativo (só o número, fraco). Marcas de quem usa: --hoje (o número no círculo
    escuro), --selecionado (a moldura escura do dia escolhido) e
    --afastado (listrado, como o afastamento da Escala).
    Usado no Solicitar extra (Extrajornada) e no calendário do Início.
@@ -99,6 +99,18 @@
 
 .mini-calendario-dia--ocupado .mini-calendario-numero,
 .mini-calendario-dia--ocupado .mini-calendario-texto {
+  color: var(--texto-debil);
+}
+
+/* nada a fazer no dia (ex.: o calendário das Várias trocas): só o número, fraco, sem moldura */
+.mini-calendario-dia--inativo,
+.mini-calendario-dia--inativo:hover {
+  border-color: transparent;
+  background-color: transparent;
+}
+
+.mini-calendario-dia--inativo .mini-calendario-numero {
+  font-weight: 400;
   color: var(--texto-debil);
 }
 

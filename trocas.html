@@ -223,6 +223,189 @@
   <button type="button" class="botao botao--primario" data-acao="salvar">Salvar</button>
 </template>
 
+<!-- molde: as abas do Solicitar troca, na linha das abas do painel (só no Solicitar comum; trocas-varias.js) -->
+<template id="tpl-troca-solicitar-abas">
+  <div class="abas" id="ts-abas">
+    <button type="button" class="aba aba--ativa" data-aba="uma">Uma troca</button>
+    <button type="button" class="aba" data-aba="varias">Várias trocas</button>
+  </div>
+</template>
+
+<!-- molde: a aba Várias trocas (trocas-varias.js): só serviços inteiros, num registro só. Os militares da troca,
+     o calendário dos dias (trocas-varias-calendario.js; em cada dia, quem trabalha e quem folga) e o resumo
+     que o banco monta (duplas, rodas e o que fica sem devolução) -->
+<template id="tpl-troca-varias">
+  <div class="trocas-varias">
+    <div class="nota">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-ajuda.svg#icone-ajuda"/></svg>
+      <span class="nota-texto">Só serviços inteiros. Todos os militares aceitam um registro só.</span>
+    </div>
+
+    <div class="grupo-caixa trocas-cartao">
+      <span class="rotulo-secao">E-protocolo</span>
+      <div class="trocas-protocolo">
+        <label class="campo">
+          <span class="campo-rotulo">Parte (opcional)</span>
+          <input type="text" class="campo-entrada" id="tv-parte" inputmode="numeric" maxlength="7" autocomplete="off" />
+          <span class="campo-erro-texto"></span>
+        </label>
+        <label class="campo">
+          <span class="campo-rotulo">Ano</span>
+          <input type="text" class="campo-entrada" id="tv-parte-ano" inputmode="numeric" maxlength="4" autocomplete="off" />
+          <span class="campo-erro-texto"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="grupo-caixa trocas-cartao">
+      <span class="rotulo-secao">Militares da troca</span>
+      <div class="trocas-varias-lista" id="tv-militares"></div>
+      <div class="trocas-varias-adicionar">
+        <div class="campo">
+          <span class="campo-rotulo">Unidade</span>
+          <div class="dropdown" id="tv-unidade-dropdown">
+            <button type="button" class="campo-entrada campo-selecao" id="tv-unidade" aria-label="Unidade do militar">
+              <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+            </button>
+            <div class="dropdown-menu" id="tv-unidade-menu"></div>
+          </div>
+        </div>
+        <div class="campo">
+          <span class="campo-rotulo">Militar</span>
+          <div class="dropdown" id="tv-militar-dropdown">
+            <input class="campo-entrada" id="tv-militar" type="text" maxlength="100" placeholder="Digite ou escolha" autocomplete="off" aria-label="Militar" />
+            <div class="dropdown-menu" id="tv-militar-menu"></div>
+          </div>
+        </div>
+        <button type="button" class="botao" id="tv-adicionar" disabled>Adicionar militar</button>
+      </div>
+    </div>
+
+    <div class="grupo-caixa trocas-cartao">
+      <span class="rotulo-secao">Dias da troca</span>
+      <div class="trocas-varias-mes">
+        <button type="button" class="botao botao--quadrado" id="tv-mes-anterior" aria-label="Mês anterior">
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-seta-esquerda.svg#icone-seta-esquerda"/></svg>
+        </button>
+        <span id="tv-mes-nome"></span>
+        <button type="button" class="botao botao--quadrado" id="tv-mes-proximo" aria-label="Próximo mês">
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
+        </button>
+      </div>
+      <span class="campo-ajuda">Acesos: os dias em que um militar da troca está de serviço e outro está livre. Em cima, quem trabalha; riscado, quem folga.</span>
+      <div class="nota" id="tv-dias-espera">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-ajuda.svg#icone-ajuda"/></svg>
+        <span class="nota-texto">Adicione pelo menos um militar para ver os dias.</span>
+      </div>
+      <div class="trocas-varias-cal" id="tv-calendario"></div>
+    </div>
+
+    <div class="grupo-caixa trocas-cartao">
+      <span class="rotulo-secao">Resumo das trocas</span>
+      <span class="trocas-varias-vazio" id="tv-resumo-vazio">Marque os dias no calendário para ver as trocas.</span>
+      <span class="trocas-varias-vazio oculto" id="tv-resumo-carregando"></span>
+      <div class="trocas-varias-grupo oculto" id="tv-duplas">
+        <span class="trocas-varias-grupo-titulo">Duplas</span>
+        <ol class="trocas-varias-grupo-lista"></ol>
+      </div>
+      <div class="trocas-varias-rodas" id="tv-rodas"></div>
+      <div class="trocas-varias-grupo oculto" id="tv-sem-devolucao">
+        <span class="trocas-varias-grupo-titulo">Sem devolução</span>
+        <ol class="trocas-varias-grupo-lista"></ol>
+      </div>
+      <div class="trocas-varias-notas" id="tv-notas"></div>
+    </div>
+  </div>
+</template>
+
+<!-- molde: um grupo de roda do resumo (cada roda é um grupo) -->
+<template id="tpl-troca-varias-roda">
+  <div class="trocas-varias-grupo">
+    <span class="trocas-varias-grupo-titulo">Roda</span>
+    <ol class="trocas-varias-grupo-lista"></ol>
+  </div>
+</template>
+
+<!-- molde: uma frase do resumo (uma troca de um dia, ou a dupla com a devolução) -->
+<template id="tpl-troca-varias-item">
+  <li></li>
+</template>
+
+<!-- molde: as notas do resumo (verde: tudo fechado; amarela: um saldo de horas) -->
+<template id="tpl-troca-varias-nota-ok">
+  <div class="nota nota--sucesso">
+    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-sucesso.svg#icone-sucesso"/></svg>
+    <span class="nota-texto"></span>
+  </div>
+</template>
+<template id="tpl-troca-varias-nota-saldo">
+  <div class="nota nota--alerta">
+    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+    <span class="nota-texto"></span>
+  </div>
+</template>
+
+<!-- molde: um militar da troca (o primeiro é quem pede: "· você" e sem Remover) -->
+<template id="tpl-troca-varias-militar">
+  <div class="trocas-varias-militar">
+    <span class="trocas-varias-militar-nome"></span>
+    <span class="trocas-varias-militar-unidade"><span class="trocas-varias-militar-lotacao"></span><span class="trocas-varias-militar-voce oculto"> · você</span></span>
+    <button type="button" class="botao botao--texto trocas-varias-remover">Remover</button>
+  </div>
+</template>
+
+<!-- molde: o dia do calendário com o quadro dele (um .dropdown: o botão do dia é o gatilho; o menu é o quadro) -->
+<template id="tpl-troca-varias-dia">
+  <div class="dropdown trocas-dia-ancora">
+    <div class="dropdown-menu trocas-dia-quadro"></div>
+  </div>
+</template>
+
+<!-- molde: um par no dia (quem trabalha em cima; quem folga embaixo, riscado) -->
+<template id="tpl-troca-varias-par">
+  <span class="trocas-dia-par"><span class="trocas-dia-trabalha"></span><span class="trocas-dia-folga"></span></span>
+</template>
+
+<!-- molde: o conteúdo do quadro do dia: os pares já marcados (cada um com Tirar) e as perguntas do par novo -->
+<template id="tpl-troca-varias-quadro">
+  <div class="trocas-dia-quadro-conteudo">
+    <div class="dropdown-titulo trocas-dia-quadro-data"></div>
+    <div class="trocas-dia-pares"></div>
+    <div class="dropdown-divisor trocas-dia-quadro-divisor"></div>
+    <div class="trocas-dia-novo">
+      <div class="trocas-dia-grupo">
+        <span class="trocas-dia-pergunta">Quem trabalha?</span>
+        <div class="trocas-dia-opcoes" data-papel="trabalha"></div>
+      </div>
+      <div class="dropdown-divisor"></div>
+      <div class="trocas-dia-grupo">
+        <span class="trocas-dia-pergunta">Quem folga?</span>
+        <div class="trocas-dia-opcoes" data-papel="folga"></div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- molde: um par já marcado, no quadro do dia -->
+<template id="tpl-troca-varias-quadro-par">
+  <div class="trocas-dia-quadro-par">
+    <span class="trocas-dia-quadro-par-texto"></span>
+    <button type="button" class="dropdown-item dropdown-item--perigo trocas-dia-tirar">Tirar esta troca</button>
+  </div>
+</template>
+
+<!-- molde: uma bolinha do quadro (quem trabalha ou quem folga) -->
+<template id="tpl-troca-varias-opcao">
+  <label class="geral-opcao"><input type="radio" /><span></span></label>
+</template>
+
+<!-- molde: ações do rodapé da aba Várias trocas -->
+<template id="tpl-troca-varias-acoes">
+  <button type="button" class="botao" data-acao="cancelar">Cancelar</button>
+  <button type="button" class="botao botao--primario" data-acao="solicitar-varias">Solicitar trocas</button>
+</template>
+
 <!-- molde: linha de uma troca na lista -->
 <template id="tpl-troca-item">
   <div class="troca-item">

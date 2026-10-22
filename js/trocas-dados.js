@@ -33,7 +33,13 @@
     /* saldo líquido de horas entre o logado e outroCpf (> 0 = o outro me deve; < 0 = eu devo) */
     saldoEntre: function (outroCpf) { return RosterWork.rpc('fn_trocas_saldo_entre', { p_outro_cpf: outroCpf }); },
     /* extrato paginado dos lançamentos (serviço/devolução) entre dois militares */
-    historicoPar: function (aCpf, bCpf, limite, deslocamento) { return RosterWork.rpc('fn_trocas_historico_par', { p_a_cpf: aCpf, p_b_cpf: bCpf, p_limite: limite, p_deslocamento: deslocamento }); }
+    historicoPar: function (aCpf, bCpf, limite, deslocamento) { return RosterWork.rpc('fn_trocas_historico_par', { p_a_cpf: aCpf, p_b_cpf: bCpf, p_limite: limite, p_deslocamento: deslocamento }); },
+    /* várias trocas: o calendário (quem pode folgar e trabalhar em cada dia), o resumo (duplas, rodas, sem devolução),
+       o pedido e o cancelamento do registro inteiro (desfazer = apaga o pedido em aberto) */
+    variasDias: function (cpfs, inicio, fim) { return RosterWork.rpc('fn_trocas_varias_dias', { p_cpfs: cpfs, p_inicio: inicio, p_fim: fim }); },
+    variasMontar: function (dias) { return RosterWork.rpc('fn_trocas_varias_montar', { p_dias: dias }); },
+    variasSolicitar: function (dias, parte, ano) { return RosterWork.rpc('fn_trocas_varias_solicitar', { p_dias: dias, p_parte_numero: parte, p_parte_ano: ano }); },
+    variasCancelar: function (registroId, desfazer) { return RosterWork.rpc('fn_trocas_varias_cancelar', { p_registro_id: registroId, p_desfazer: !!desfazer }); }
   };
 
   /* ---------- formatadores ---------- */

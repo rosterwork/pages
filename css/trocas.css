@@ -305,6 +305,169 @@
   line-height: 1.5;
 }
 
+/* ---------- Várias trocas (aba do Solicitar troca; o painel fica largo) ---------- */
+.trocas-varias {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* militares da troca: uma linha por militar (o primeiro é quem pede) */
+.trocas-varias-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.trocas-varias-militar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-suave);
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.trocas-varias-militar-nome {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.trocas-varias-militar-unidade {
+  flex: 1;
+}
+
+/* Unidade, Militar e o Adicionar militar numa linha */
+.trocas-varias-adicionar {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 8px;
+}
+
+.trocas-varias-adicionar .dropdown {
+  display: flex;
+}
+
+.trocas-varias-adicionar .dropdown > .campo-entrada {
+  flex: 1;
+  min-width: 0;
+}
+
+/* o mês do calendário: as setas nas pontas e o nome no meio */
+.trocas-varias-mes {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+/* os dias mais altos, para caberem os nomes */
+.trocas-varias-cal .mini-calendario-dia {
+  min-height: 64px;
+  gap: 4px;
+}
+
+/* o dia aceso é o gatilho do quadro dele */
+.trocas-dia-ancora {
+  display: flex;
+}
+
+.trocas-dia-ancora > .mini-calendario-dia {
+  flex: 1;
+  min-width: 0;
+}
+
+/* um par no dia: quem trabalha em cima, quem folga embaixo, riscado */
+.trocas-dia-par {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.trocas-dia-trabalha,
+.trocas-dia-folga {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trocas-dia-trabalha {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.trocas-dia-folga {
+  color: var(--texto-suave);
+  text-decoration: line-through;
+}
+
+/* o quadro do dia: os pares com Tirar e as perguntas do par novo */
+.trocas-dia-quadro {
+  min-width: 216px;
+  white-space: normal;
+}
+
+.trocas-dia-grupo,
+.trocas-dia-quadro-par {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+}
+
+.trocas-dia-pergunta,
+.trocas-dia-quadro-par-texto {
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--texto);
+}
+
+.trocas-dia-pergunta {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+/* o resumo: os grupos (Duplas, cada Roda, Sem devolução) e as notas do saldo */
+.trocas-varias-vazio {
+  font-size: 12px;
+  color: var(--texto-fraco);
+}
+
+.trocas-varias-rodas,
+.trocas-varias-notas {
+  display: contents;
+}
+
+.trocas-varias-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.trocas-varias-grupo-titulo {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.trocas-varias-grupo-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding-left: 16px;
+  font-size: 12px;
+  color: var(--texto);
+}
+
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    A linha da troca vira um cartão em pé: os dois militares, a
@@ -335,5 +498,15 @@
   html[data-celular] .troca-pendente-cab,
   html[data-celular] .troca-extrato-quem {
     font-size: var(--fonte-padrao);
+  }
+
+  /* Várias trocas: o Adicionar militar desce para uma linha só dele (o campo Militar fica inteiro) */
+  html[data-celular] .trocas-varias-adicionar {
+    grid-template-columns: 104px minmax(0, 1fr);
+  }
+
+  html[data-celular] .trocas-varias-adicionar > .botao {
+    grid-column: 1 / -1;
+    justify-self: start;
   }
 }
