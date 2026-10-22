@@ -441,6 +441,23 @@
     if (RosterWork.escalasImpressao) RosterWork.escalasImpressao.abrir({ data: dataPadraoImpressao() });
   }
 
+  /* Enviar para o SYSBM: os pelotões da Escala (aplicados no seletor ou da companhia aplicada)
+     que a pessoa administra; o dia padrão é o mesmo da impressão */
+  function pelotoesSysbm() {
+    var ids = idsAplicados();
+    return (unidades || []).filter(function (u) {
+      return u.tipo === 'PEL'
+        && (ids.indexOf(u.unidade_id) !== -1 || ids.indexOf(u.unidade_pai_id) !== -1)
+        && RosterWork.sessao.podeAdministrar('pelotao', u.unidade_id);
+    }).map(function (u) { return { id: u.unidade_id, nome: u.nome, cidade: u.cidade }; });
+  }
+
+  /* no celular o grupo Administração é um menu: fecha antes de abrir o painel */
+  function abrirSysbm() {
+    if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
+    if (RosterWork.escalasSysbm) RosterWork.escalasSysbm.abrir({ data: dataPadraoImpressao(), pelotoes: pelotoesSysbm() });
+  }
+
   /* o rótulo do período e o "Hoje", que só aparece quando o período da tela não contém hoje */
   function atualizarPeriodo() {
     var el = conteudo.querySelector('#escala-periodo-nome');
@@ -570,6 +587,12 @@
     /* Imprimir: abre o painel conforme a aba (abrirImpressao) */
     var btnImprimir = conteudo.querySelector('#escala-imprimir');
     if (btnImprimir) btnImprimir.addEventListener('click', abrirImpressao);
+
+    /* grupo Administração, só para quem administra: Enviar para o SYSBM */
+    var grupoAdmin = conteudo.querySelector('#escala-acoes-admin');
+    if (grupoAdmin) grupoAdmin.classList.toggle('oculto', !RosterWork.sessao.temPapel('pelotao'));
+    var btnSysbm = conteudo.querySelector('#escala-enviar-sysbm');
+    if (btnSysbm) btnSysbm.addEventListener('click', abrirSysbm);
 
     /* clicar no rótulo do período abre o calendário; o dia escolhido vira a referência */
     var rotuloPeriodo = conteudo.querySelector('#escala-periodo-nome');

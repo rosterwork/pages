@@ -12,7 +12,8 @@
    Editar (botão do cabeçalho, para os dois militares e o admin da
    área): o formulário do trocas-editar.js, que só vem na página
    Trocas; Salvar ou Cancelar volta à leitura.
-   Expõe: RosterWork.trocasPainel.abrir(troca, ctx).
+   O registro de várias trocas abre o painel próprio (trocas-painel-varias.js).
+   Expõe: RosterWork.trocasPainel.abrir(troca, ctx) e as peças (pecas).
    ctx = { cpf, ehAdmin, decidir?, posicao?: { n, total }, aoMudar(), aoFechar() }
    ============================================================ */
 (function () {
@@ -353,11 +354,14 @@
 
   function abrir(troca, ctx) {
     if (!RW.painel || !troca) return;
+    /* o registro de várias trocas tem o painel próprio (a decisão vale para o registro inteiro) */
+    if (troca.registro_varias && RW.trocasPainelVarias) { RW.trocasPainelVarias.abrir(troca, ctx); return; }
     ctx = ctx || {};
     var situacao = fmt().situacao(troca.status, !!troca.substitui_troca_id).texto;
     subtituloLeitura = ctx.posicao ? RW.mensagens.decisao.posicao(situacao, ctx.posicao.n, ctx.posicao.total) : situacao;
-    /* o Editar só aparece onde o formulário existe (a página Trocas) */
-    var comEditar = !!RW.trocasEditar;
+    /* o Editar só aparece onde o formulário existe (a página Trocas, com o molde do pedido);
+       o trocas-editar.js continua carregado depois de sair da página */
+    var comEditar = !!RW.trocasEditar && !!document.getElementById('tpl-troca-solicitar');
     RW.painel.abrir({
       titulo: msg().painelTitulo,
       tituloExtra: RW.mensagens.decisao.tituloPelotao(troca.pelotoes),
@@ -381,5 +385,9 @@
     desenharLeitura(troca, ctx);
   }
 
-  RW.trocasPainel = { abrir: abrir };
+  RW.trocasPainel = {
+    abrir: abrir,
+    /* as peças que o painel do registro de várias trocas (trocas-painel-varias.js) também usa */
+    pecas: { quando: quando, linhaAceite: linhaAceite, nota: nota, registroEParte: registroEParte, confirmarEntao: confirmarEntao, executar: executar }
+  };
 })();

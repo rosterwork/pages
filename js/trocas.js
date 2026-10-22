@@ -42,14 +42,32 @@
     item.classList.add('troca-item--selecionada');
   }
 
-  /* uma linha de troca (compartilhada por Todas e Minhas) */
+  /* as várias trocas de um registro viram uma linha só: a primeira troca dele (pelo dia e pelo id) */
+  function agruparRegistros(trocas) {
+    var primeira = {};
+    trocas.forEach(function (t) {
+      if (!t.registro_varias) return;
+      var p = primeira[t.registro_id];
+      if (!p || t.data_servico_solicitante < p.data_servico_solicitante || (t.data_servico_solicitante === p.data_servico_solicitante && t.troca_id < p.troca_id)) primeira[t.registro_id] = t;
+    });
+    return trocas.filter(function (t) { return !t.registro_varias || primeira[t.registro_id] === t; });
+  }
+
+  /* uma linha de troca (compartilhada por Todas e Minhas); o registro de várias trocas: os militares e o RW nº */
   function montarItemTroca(troca) {
-    var tpl = document.getElementById('tpl-troca-item');
+    var varias = !!troca.registro_varias;
+    var tpl = document.getElementById(varias ? 'tpl-troca-item-varias' : 'tpl-troca-item');
     if (!tpl) return null;
     var item = tpl.content.cloneNode(true).firstElementChild;
-    item.querySelector('.troca-item-a').textContent = fmt().nomeMilitar(troca.solicitante_grau, troca.solicitante_nome);
-    item.querySelector('.troca-item-b').textContent = fmt().nomeMilitar(troca.parceiro_grau, troca.parceiro_nome);
-    item.querySelector('.troca-item-meta').textContent = fmt().metaLista(troca);
+    if (varias) {
+      var mv = RW.mensagens.trocas.varias, nomes = (troca.aceites || []).map(function (a) { return a.titulo || ''; });
+      item.querySelector('.troca-item-a').textContent = mv.linhaMilitares(mv.nomes(nomes));
+      item.querySelector('.troca-item-meta').textContent = mv.linhaMeta(RW.mensagens.trocas.registroNumero(troca.registro_numero, troca.registro_ano), nomes.length);
+    } else {
+      item.querySelector('.troca-item-a').textContent = fmt().nomeMilitar(troca.solicitante_grau, troca.solicitante_nome);
+      item.querySelector('.troca-item-b').textContent = fmt().nomeMilitar(troca.parceiro_grau, troca.parceiro_nome);
+      item.querySelector('.troca-item-meta').textContent = fmt().metaLista(troca);
+    }
     var selo = item.querySelector('.troca-item-situacao');
     var info = fmt().situacao(troca.status, !!troca.substitui_troca_id);
     selo.textContent = info.texto;
@@ -80,7 +98,7 @@
   function renderTrocasNaUnidade(container, unidade, trocas) {
     var bloquinho = trocas.length ? RW.tpl('tpl-arvore-bloquinho') : null;
     if (!bloquinho) return;
-    trocas.forEach(function (t) { var el = montarItemTroca(t); if (el) bloquinho.appendChild(el); });
+    agruparRegistros(trocas).forEach(function (t) { var el = montarItemTroca(t); if (el) bloquinho.appendChild(el); });
     container.appendChild(bloquinho);
   }
   function contagemTrocas(trocas) { return trocas.length === 1 ? '1 troca' : trocas.length + ' trocas'; }
@@ -109,9 +127,11 @@
       if (!document.contains(lista) || req !== reqSeq) return;
       if (!Array.isArray(todas)) { mostrarVazio(lista, RW.mensagens.trocas.falhaCarregar); return; }   // null = falha (Postgres devolve [] p/ vazio)
       var cpf = RosterWork.sessao.cpf();
-      var minhas = todas.filter(function (t) {
-        return t.solicitante_cpf === cpf || t.parceiro_cpf === cpf;
-      });
+      /* as trocas em que eu entro e, nas várias trocas, os registros de que participo (uma linha por registro) */
+      var minhas = agruparRegistros(todas.filter(function (t) {
+        return t.solicitante_cpf === cpf || t.parceiro_cpf === cpf
+          || (t.registro_varias && (t.aceites || []).some(function (a) { return a.cpf === cpf; }));
+      }));
       if (!minhas.length) { mostrarVazio(lista, RW.mensagens.trocas.vazio.minhas); return; }
       lista.textContent = '';
       minhas.forEach(function (t) { var el = montarItemTroca(t); if (el) lista.appendChild(el); });

@@ -14,6 +14,9 @@
   /* o artigo da unidade pelo ordinal do nome: "o 2ºPEL", "a 2ªCIBM" */
   function artigo(unidade) { return /ª/.test(unidade || '') ? 'a' : 'o'; }
 
+  /* "A, B e C" */
+  function juntarComE(lista) { return lista.length > 1 ? lista.slice(0, -1).join(', ') + ' e ' + lista[lista.length - 1] : (lista[0] || ''); }
+
   window.RosterWork.mensagens = {
 
     /* meu perfil (e-mail e celular direto, pedido de correção do resto + troca de senha) */
@@ -644,6 +647,48 @@
           longaDemais: 'A página contínua ficou longa demais para os leitores de PDF. Escolha Folhas A4 ou um período menor.',
           arquivo: function (nome, periodo, unidade) { return 'Escala ' + nome.toLowerCase() + ' ' + (unidade ? unidade + ' ' : '') + periodo + '.pdf'; }
         }
+      },
+      /* Enviar para o SYSBM: o painel (escalas-sysbm.js) e o favorito que preenche lá (escalas-sysbm-favorito.js) */
+      sysbm: {
+        titulo: 'Enviar para o SYSBM',
+        subtitulo: 'Um pelotão por vez',
+        dataInvalida: 'Data inválida.',
+        nomeLinha: function (cidade, unidade) { return cidade ? cidade + ' (' + unidade + ')' : unidade; },
+        resumo: function (n) { return n === 1 ? '1 linha para lançar.' : n + ' linhas para lançar.'; },
+        semEscala: 'Sem escala neste dia.',
+        falhaLer: 'Não foi possível ler a escala. Clique em Copiar para tentar de novo.',
+        juntar: juntarComE,
+        comFuncao: function (militar, funcao) { return militar + ' (' + funcao + ')'; },
+        semRg: function (nomes) { return 'Sem RG no cadastro, fica de fora: ' + nomes + '.'; },
+        semPar: function (nomes) { return 'Função sem par no SYSBM, fica de fora: ' + nomes + '.'; },
+        fora: function (nomes) { return 'Da companhia só vai o Oficial de Área. Fica de fora: ' + nomes + '.'; },
+        semFuncao: function (nomes) { return 'Sem função, fica de fora: ' + nomes + '.'; },
+        copiar: 'Copiar',
+        copiado: 'Copiado',
+        copiarCodigo: 'Copiar o código do favorito',
+        codigoCopiado: 'Código copiado',
+        falhaCopiar: 'Não foi possível copiar. Tente de novo.',
+        arrasteFavorito: 'Este botão não funciona aqui: arraste-o até a barra de favoritos do navegador. Depois, use o favorito na tela do SYSBM.',
+        /* o favorito, na tela do SYSBM (nas janelas do próprio navegador) */
+        favorito: {
+          colar: 'Cole aqui (Ctrl+V) a escala copiada no Roster:',
+          naoEhEscala: 'O que foi colado não é uma escala do Roster. No Roster, clique em Copiar no pelotão e use o favorito de novo.',
+          semTela: 'Abra no SYSBM a tela de cadastro da escala (Guarnição, Gerenciar Escala, Cadastrar), pesquise o dia e use o favorito de novo.',
+          outroDia: function (roster, sysbm) {
+            return 'A escala copiada é do dia ' + roster + ', mas o SYSBM está no dia ' + sysbm + '. Pesquise o dia ' + roster + ' no SYSBM e use o favorito de novo.';
+          },
+          semAba: function (cidade) { return 'Esta tela do SYSBM não tem a aba de ' + cidade + '.'; },
+          /* n: { adicionados, ajustados, desmarcados, iguais, semPosto: [], semMilitar: [] } */
+          resumo: function (aba, n) {
+            var linhas = ['Aba ' + aba + ' preenchida.', '',
+              'Adicionados: ' + n.adicionados, 'Ajustados: ' + n.ajustados,
+              'Desmarcados: ' + n.desmarcados, 'Já estavam certos: ' + n.iguais];
+            if (n.semPosto.length) linhas.push('', 'Viatura ou seção sem par no SYSBM, lance manualmente: ' + juntarComE(n.semPosto) + '.');
+            if (n.semMilitar.length) linhas.push('', 'Militar não achado no SYSBM pelo RG, lance manualmente: ' + juntarComE(n.semMilitar) + '.');
+            linhas.push('', 'Confira a aba e clique em Salvar.');
+            return linhas.join('\n');
+          }
+        }
       }
     },
 
@@ -723,6 +768,11 @@
       trocaEmCima: function (entre, servico, devolucao, situacao) {
         return 'Entre ' + entre + ', serviço de ' + servico + (devolucao ? ' e devolução de ' + devolucao : '') +
           (situacao ? ' (' + situacao + ')' : '') + ': será cancelada junto, porque foi feita sobre um serviço que sai.';
+      },
+      /* troca de outros militares do mesmo pedido de várias trocas, ainda em aberto: cai junto com o registro */
+      trocaRegistro: function (entre, servico, devolucao, registro) {
+        return 'Entre ' + entre + ', serviço de ' + servico + (devolucao ? ' e devolução de ' + devolucao : '') +
+          ': será cancelada junto, porque faz parte do pedido de várias trocas ' + registro + ', que ainda não foi aprovado.';
       },
       folgaCancelada: function (dia, situacao, horasDeVolta) {
         return 'De ' + dia + (situacao ? ' (' + situacao + ')' : '') + ': será cancelada' +
@@ -1080,7 +1130,31 @@
         removerComDias: function (nome, n) { return 'Remover o ' + nome + ' tira também ' + (n === 1 ? '1 dia' : n + ' dias') + ' da troca.'; },
         semDias: 'Marque pelo menos um dia no calendário.',
         falhaDias: 'Não foi possível carregar os dias.',
-        falhaResumo: 'Não foi possível montar o resumo.'
+        falhaResumo: 'Não foi possível montar o resumo.',
+        /* "Cb. Paixão, Cb. Lemos e Cb. Mendes" */
+        nomes: function (lista) { return lista.length < 2 ? (lista[0] || '') : lista.slice(0, -1).join(', ') + ' e ' + lista[lista.length - 1]; },
+        /* a linha do registro nas listas Todas e Minhas */
+        linhaMilitares: function (nomes) { return 'Várias trocas: ' + nomes; },
+        linhaMeta: function (rw, n) { return rw + ' · ' + n + ' militares'; },
+        /* o painel do registro */
+        painelTitulo: 'Várias trocas',
+        caixaEscalas: 'Escalas trocadas',
+        escalaFrase: function (cumpre, noLugarDe) { return cumpre + ' cumpre a escala de serviço do(a) ' + noLugarDe + '.'; },
+        saldoRegistro: function (deve, horas, a) { return 'Saldo de horas: ' + deve + ' deve ' + horas + ' a ' + a + '.'; },
+        faltaAceite: 'Falta você aceitar as trocas. O pedido vai para a administração quando todos aceitarem.',
+        faltaAceiteAprovada: 'Falta você aceitar as trocas. Elas já foram aprovadas e valem na escala; o seu aceite fica no registro.',
+        confirmarAceitar: function (rw) { return 'Aceitar as trocas do ' + rw + '? O pedido segue para a administração quando todos aceitarem.'; },
+        confirmarAceitarDepois: function (rw) { return 'Aceitar as trocas do ' + rw + '? O seu aceite fica no registro e a escala não muda.'; },
+        confirmarAprovar: function (rw) { return 'Aprovar as trocas do ' + rw + '? A escala é atualizada na hora, em todos os dias.'; },
+        confirmarForcar: function (rw) { return 'Aprovar as trocas do ' + rw + ' sem o aceite de todos? A escala é atualizada na hora, em todos os dias.'; },
+        confirmarCancelar: function (rw) { return 'Cancelar as trocas do ' + rw + '?'; },
+        /* os cartões das Pendências */
+        filaMinha: function (quem) { return quem + ' pediu trocas de serviço com você'; },
+        filaAdmin: function (nomes) { return 'Trocas de serviço: ' + nomes; },
+        filaAceitar: function (rw) { return 'Aceitar as trocas do ' + rw; },
+        filaMeta: function (dia, n, rw) { return 'A partir de ' + dia + ' · ' + n + ' militares · ' + rw; },
+        /* o extrato dos Saldos: o dia de uma roda que se compensa */
+        rodaCompensada: function (rw) { return 'Compensada na roda do ' + rw; }
       }
     },
 
@@ -1472,6 +1546,8 @@
           .map(function (d) { return d.slice(0, 5); }).join(' e ');
         var diaParte = (t.sai === 'devolucao' ? t.devolucao : t.servico) || '';
         itens.push({ titulo: S.tituloTroca, texto: S.trocaParte(t.com, dias, t.sai, diaParte.slice(0, 5), horas(t.minutos), t.devedor, t.credor) });
+      } else if (t.acao === 'cancelar_registro') {
+        itens.push({ titulo: S.tituloTroca, texto: S.trocaRegistro(t.entre, t.servico, t.devolucao, t.registro) });
       } else if (t.acao === 'cancelar_em_cima') {
         itens.push({ titulo: S.tituloTroca, texto: S.trocaEmCima(t.entre, t.servico, t.devolucao, (M.trocas.situacao[t.status] || '').toLowerCase()) });
       } else {

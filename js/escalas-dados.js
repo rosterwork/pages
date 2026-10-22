@@ -94,6 +94,14 @@
       .catch(function () { return null; });
   }
 
+  /* Enviar para o SYSBM: a escala de um pelotão no dia, já nas linhas do SYSBM
+     ({ok, data, unidade, funcoes_roster, linhas, avisos} ou {ok:false, erro}). null = falha */
+  function lerSysbm(unidadeId, iso) {
+    return RosterWork.apiFetch('/rest/v1/rpc/escala_sysbm', { metodo: 'POST', corpo: { p_unidade_id: Number(unidadeId), p_data: iso } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; });
+  }
+
   /* prévia das sub-telas do Dia (RPC escala_dia_simular): o dia como ficaria com o rascunho
      {ajustes, pontuais?, folgas}; pontuais e folgas entram num ensaio no banco (nada é gravado) */
   function simularDia(unidadeId, iso, rascunho) {
@@ -162,7 +170,7 @@
   window.RosterWork.escalasDados = {
     carregar: carregar, carregarMilitares: carregarMilitares, lerMilitarDia: lerMilitarDia,
     lerDistribuicaoDia: lerDistribuicaoDia, lerAlteracoesDia: lerAlteracoesDia, simularDia: simularDia, salvarDia: salvarDia,
-    lerImpressao: lerImpressao, lerImpressaoErros: lerImpressaoErros,
+    lerImpressao: lerImpressao, lerImpressaoErros: lerImpressaoErros, lerSysbm: lerSysbm,
     continuosListar: continuosListar, cicloRetirarAnalisar: cicloRetirarAnalisar, cicloSalvarLote: cicloSalvarLote,
     extraPainel: extraPainel, extraLista: extraLista,
     disponiveis: disponiveis

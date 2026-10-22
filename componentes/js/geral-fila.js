@@ -122,8 +122,23 @@
     return d.registro_numero ? meta + ' · ' + RW.mensagens.trocas.registroNumero(d.registro_numero, d.registro_ano) : meta;
   }
 
+  /* o registro de várias trocas (um cartão por registro): quem pediu, os militares e o RW nº */
+  function textosVarias(p, d) {
+    var mv = RW.mensagens.trocas.varias, aceites = d.aceites || [];
+    var rw = RW.mensagens.trocas.registroNumero(d.registro_numero, d.registro_ano);
+    var pediu = aceites.filter(function (a) { return a.papel === 'pediu'; })[0];
+    var meta = mv.filaMeta(RW.data.comDiaCurto(d.data_servico_solicitante), aceites.length, rw);
+    if (p.tipo === 'troca_aceite') return { quem: mv.filaAceitar(rw), meta: meta, selo: { texto: msg().faltaAceitar, classe: 'selo--alerta' } };
+    return {
+      quem: p.minha ? mv.filaMinha(pediu ? pediu.titulo : '') : mv.filaAdmin(mv.nomes(aceites.map(function (a) { return a.titulo || ''; }))),
+      meta: meta,
+      selo: RW.impacto.selo({ veredito: d.veredito, problemas: d.veredito_problemas, alertas: d.veredito_alertas })
+    };
+  }
+
   function textosAnalise(p) {
     var m = msg(), d = p.dado;
+    if (ehTroca(p.tipo) && d.registro_varias) return textosVarias(p, d);
     if (ehTroca(p.tipo)) {
       var sol = nome(d.solicitante_grau, d.solicitante_nome), par = nome(d.parceiro_grau, d.parceiro_nome);
       /* o aceite que falta: o nome é o do outro militar da troca */

@@ -39,7 +39,12 @@
     variasDias: function (cpfs, inicio, fim) { return RosterWork.rpc('fn_trocas_varias_dias', { p_cpfs: cpfs, p_inicio: inicio, p_fim: fim }); },
     variasMontar: function (dias) { return RosterWork.rpc('fn_trocas_varias_montar', { p_dias: dias }); },
     variasSolicitar: function (dias, parte, ano) { return RosterWork.rpc('fn_trocas_varias_solicitar', { p_dias: dias, p_parte_numero: parte, p_parte_ano: ano }); },
-    variasCancelar: function (registroId, desfazer) { return RosterWork.rpc('fn_trocas_varias_cancelar', { p_registro_id: registroId, p_desfazer: !!desfazer }); }
+    variasCancelar: function (registroId, desfazer) { return RosterWork.rpc('fn_trocas_varias_cancelar', { p_registro_id: registroId, p_desfazer: !!desfazer }); },
+    /* o registro de várias trocas: a resposta de cada militar, a decisão da administração, a Parte e os dados do registro */
+    variasResponder: function (registroId, aceitar, motivo) { return RosterWork.rpc('fn_trocas_varias_responder', { p_registro_id: registroId, p_aceitar: aceitar, p_motivo: motivo || null }); },
+    variasAprovar: function (registroId, aceitar, forcar, motivo) { return RosterWork.rpc('fn_trocas_varias_aprovar', { p_registro_id: registroId, p_aceitar: aceitar, p_forcar: !!forcar, p_motivo: motivo || null }); },
+    variasParte: function (registroId, parte, ano) { return RosterWork.rpc('fn_trocas_varias_parte', { p_registro_id: registroId, p_parte_numero: parte, p_parte_ano: ano }); },
+    registro: function (trocaId) { return RosterWork.rpc('fn_trocas_registro', { p_troca_id: trocaId }); }
   };
 
   /* ---------- formatadores ---------- */

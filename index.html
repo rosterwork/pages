@@ -2158,6 +2158,31 @@
       <span class="selo"></span>
     </div>
   </template>
+  <!-- o rodapé do painel do registro de várias trocas (trocas-painel-varias.js; o JS deixa só as ações do papel e da situação):
+       Cancelar pedido = quem pediu, em aberto; Cancelar trocas = a administração, na aprovada (desfaz a escala) -->
+  <template id="tpl-troca-varias-registro-acoes">
+    <button type="button" class="botao botao--quadrado" data-acao="imprimir-registro" aria-label="Imprimir registro" data-dica="Imprimir registro">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg>
+    </button>
+    <span class="espacador-flex" data-espacador></span>
+    <button type="button" class="botao" data-acao="cancelar-pedido">Cancelar pedido</button>
+    <button type="button" class="botao" data-acao="cancelar">Cancelar trocas</button>
+    <button type="button" class="botao botao--perigo" data-acao="recusar">Recusar</button>
+    <button type="button" class="botao botao--primario" data-acao="aceitar">Aceitar</button>
+    <button type="button" class="botao botao--primario" data-acao="aceitar-depois">Aceitar</button>
+    <button type="button" class="botao" data-acao="aprovar-forcar">Aprovar sem confirmação</button>
+    <button type="button" class="botao botao--perigo" data-acao="recusar-admin">Recusar</button>
+    <button type="button" class="botao botao--primario" data-acao="aprovar">Aprovar</button>
+  </template>
+  <!-- uma linha da caixa "Escalas trocadas" do registro de várias trocas: o dia e quem cumpre a escala de quem -->
+  <template id="tpl-troca-varias-escala">
+    <div class="decisao-caixa-dia">
+      <span class="decisao-caixa-pessoa">
+        <span class="decisao-caixa-data"></span>
+        <span class="decisao-caixa-extra"></span>
+      </span>
+    </div>
+  </template>
   <!-- o aviso no topo do painel da troca (ex.: a troca tem uma alteração aguardando); o texto vem do JS -->
   <template id="tpl-troca-nota">
     <div class="nota nota--alerta">

@@ -237,7 +237,7 @@
 <template id="tpl-troca-varias">
   <div class="trocas-varias">
     <div class="nota">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-ajuda.svg#icone-ajuda"/></svg>
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg>
       <span class="nota-texto">Só serviços inteiros. Todos os militares aceitam um registro só.</span>
     </div>
 
@@ -266,7 +266,7 @@
           <div class="dropdown" id="tv-unidade-dropdown">
             <button type="button" class="campo-entrada campo-selecao" id="tv-unidade" aria-label="Unidade do militar">
               <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
-              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/icone-seta-baixo.svg#icone-seta-baixo"/></svg>
+              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
             </button>
             <div class="dropdown-menu" id="tv-unidade-menu"></div>
           </div>
@@ -286,16 +286,16 @@
       <span class="rotulo-secao">Dias da troca</span>
       <div class="trocas-varias-mes">
         <button type="button" class="botao botao--quadrado" id="tv-mes-anterior" aria-label="Mês anterior">
-          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-seta-esquerda.svg#icone-seta-esquerda"/></svg>
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>
         </button>
         <span id="tv-mes-nome"></span>
         <button type="button" class="botao botao--quadrado" id="tv-mes-proximo" aria-label="Próximo mês">
-          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-seta-direita.svg#icone-seta-direita"/></svg>
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
         </button>
       </div>
       <span class="campo-ajuda">Acesos: os dias em que um militar da troca está de serviço e outro está livre. Em cima, quem trabalha; riscado, quem folga.</span>
       <div class="nota" id="tv-dias-espera">
-        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-ajuda.svg#icone-ajuda"/></svg>
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg>
         <span class="nota-texto">Adicione pelo menos um militar para ver os dias.</span>
       </div>
       <div class="trocas-varias-cal" id="tv-calendario"></div>
@@ -335,13 +335,13 @@
 <!-- molde: as notas do resumo (verde: tudo fechado; amarela: um saldo de horas) -->
 <template id="tpl-troca-varias-nota-ok">
   <div class="nota nota--sucesso">
-    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-sucesso.svg#icone-sucesso"/></svg>
+    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-sucesso"/></svg>
     <span class="nota-texto"></span>
   </div>
 </template>
 <template id="tpl-troca-varias-nota-saldo">
   <div class="nota nota--alerta">
-    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/icone-alerta.svg#icone-alerta"/></svg>
+    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
     <span class="nota-texto"></span>
   </div>
 </template>
@@ -422,6 +422,41 @@
   </div>
 </template>
 
+<!-- molde: o registro de várias trocas nas listas Todas e Minhas (uma linha só: os militares e os dias) -->
+<template id="tpl-troca-item-varias">
+  <div class="troca-item">
+    <span class="troca-item-dados">
+      <span class="troca-item-militares">
+        <span class="troca-item-a"></span>
+      </span>
+      <span class="troca-item-meta"></span>
+    </span>
+    <span class="espacador-flex"></span>
+    <span class="selo troca-item-situacao"></span>
+  </div>
+</template>
+
+<!-- molde: o Editar do registro de várias trocas (só a Parte do E-protocolo, que vale para o registro inteiro) -->
+<template id="tpl-troca-varias-parte">
+  <div class="trocas-varias">
+    <div class="grupo-caixa trocas-cartao">
+      <span class="rotulo-secao">E-protocolo</span>
+      <div class="trocas-protocolo">
+        <label class="campo">
+          <span class="campo-rotulo">Parte (opcional)</span>
+          <input type="text" class="campo-entrada" id="tvp-parte" inputmode="numeric" maxlength="7" autocomplete="off" />
+          <span class="campo-erro-texto"></span>
+        </label>
+        <label class="campo">
+          <span class="campo-rotulo">Ano</span>
+          <input type="text" class="campo-entrada" id="tvp-parte-ano" inputmode="numeric" maxlength="4" autocomplete="off" />
+          <span class="campo-erro-texto"></span>
+        </label>
+      </div>
+    </div>
+  </div>
+</template>
+
 <!-- molde: lista vazia (texto preenchido pelo JS conforme a aba) -->
 <template id="tpl-troca-vazio">
   <div class="troca-vazio"></div>
@@ -470,6 +505,7 @@
       <svg class="icone troca-extrato-seta" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
       <span class="troca-extrato-trabalhou"></span>
     </div>
+    <span class="troca-extrato-roda oculto"></span>
   </div>
 </template>
 

@@ -42,6 +42,12 @@
     el.querySelector('.troca-extrato-horas').textContent = horasDe(l.minutos);
     el.querySelector('.troca-extrato-folgou').textContent = nome(l.folgou_grau, l.folgou_nome);
     el.querySelector('.troca-extrato-trabalhou').textContent = nome(l.trabalhou_grau, l.trabalhou_nome);
+    /* o dia de uma roda que se compensa (várias trocas): não conta no saldo além do que passa do menor serviço */
+    if (l.roda_compensada) {
+      var roda = el.querySelector('.troca-extrato-roda');
+      roda.textContent = RW.mensagens.trocas.varias.rodaCompensada(l.registro || '');
+      roda.classList.remove('oculto');
+    }
     return el;
   }
 

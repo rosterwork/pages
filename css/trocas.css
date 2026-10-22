@@ -208,6 +208,12 @@
   color: var(--texto-forte);
 }
 
+/* o dia de uma roda que se compensa (várias trocas): a nota embaixo de quem folgou e trabalhou */
+.troca-extrato-roda {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
 .troca-extrato-folgou,
 .troca-extrato-trabalhou {
   font-weight: 500;

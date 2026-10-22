@@ -29,6 +29,21 @@
   </div>
 
   <div class="pagina-subcabecalho">
+    <!-- grupo ADMINISTRAÇÃO (só para quem administra; escalas.js): Enviar para o SYSBM abre o painel do mesmo nome -->
+    <div class="dropdown acoes-admin oculto" id="escala-acoes-admin">
+      <button type="button" class="botao acoes-admin-gatilho">
+        <span>Administração</span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu acoes-admin-menu">
+        <span class="rotulo-secao acoes-admin-rotulo">Administração</span>
+        <button type="button" class="botao" id="escala-enviar-sysbm">
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
+          <span>Enviar para o SYSBM</span>
+        </button>
+      </div>
+    </div>
+
     <div class="geral-periodo">
       <button type="button" class="botao botao--icone" id="escala-periodo-anterior" aria-label="Período anterior">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>
@@ -232,6 +247,53 @@
 <template id="tpl-escala-impressao-acoes">
   <button type="button" class="botao" data-impressao-cancelar>Cancelar</button>
   <button type="button" class="botao botao--primario" data-impressao-gerar>Gerar PDF</button>
+</template>
+
+<!-- painel "Enviar para o SYSBM" (grupo Administração da barra; escalas-sysbm.js): o dia, uma linha por pelotão
+     (Copiar leva a escala dele, já convertida pelo banco, para o favorito colar no SYSBM) e o favorito
+     (no computador, o botão de arrastar até a barra de favoritos; no celular, o de copiar o código) -->
+<template id="tpl-escala-sysbm">
+  <div class="grupo-caixa">
+    <span class="rotulo-secao">1. Dia</span>
+    <label class="campo">
+      <span class="campo-rotulo">Dia da escala</span>
+      <input class="campo-entrada" type="text" name="sysbm-data" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" data-sysbm-data />
+      <span class="campo-erro-texto"></span>
+    </label>
+  </div>
+  <div class="grupo-caixa">
+    <span class="rotulo-secao">2. Pelotões</span>
+    <div class="escala-sysbm-lista" data-sysbm-lista></div>
+    <span class="campo-ajuda oculto" data-sysbm-vazio>Nenhum pelotão que você administra entre as unidades da Escala. Escolha as unidades no seletor do topo.</span>
+    <span class="campo-ajuda">Copie um pelotão por vez. No SYSBM, abra a tela de cadastro da escala desse dia e clique no favorito Preencher no SYSBM. Confira e clique em Salvar lá.</span>
+  </div>
+  <div class="grupo-caixa">
+    <span class="rotulo-secao">3. Favorito</span>
+    <a class="botao escala-sysbm-favorito" href="#" data-sysbm-favorito>
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
+      <span>Preencher no SYSBM</span>
+    </a>
+    <span class="campo-ajuda escala-sysbm-ajuda-computador">Uma vez só em cada navegador: arraste este botão até a barra de favoritos. Se a barra não aparece, Ctrl+Shift+B mostra.</span>
+    <button type="button" class="botao escala-sysbm-codigo" data-sysbm-codigo>Copiar o código do favorito</button>
+    <span class="campo-ajuda escala-sysbm-ajuda-celular">Uma vez só em cada celular: copie o código, crie um favorito no navegador e cole o código no lugar do endereço. Para usar, abra o SYSBM e digite o nome do favorito na barra de endereço.</span>
+  </div>
+</template>
+
+<!-- uma linha do painel Enviar para o SYSBM: a cidade e o pelotão, o resumo (ou o vazio), os avisos e o Copiar -->
+<template id="tpl-escala-sysbm-linha">
+  <div class="escala-sysbm-linha">
+    <div class="escala-sysbm-textos">
+      <span class="escala-sysbm-cidade"></span>
+      <span class="campo-ajuda escala-sysbm-resumo"></span>
+      <div class="escala-sysbm-avisos"></div>
+    </div>
+    <button type="button" class="botao escala-sysbm-copiar" data-sysbm-copiar>Copiar</button>
+  </div>
+</template>
+
+<!-- um aviso da linha do pelotão (quem fica de fora e por quê) -->
+<template id="tpl-escala-sysbm-aviso">
+  <span class="escala-sysbm-aviso"></span>
 </template>
 
 <!-- painel "Imprimir" das grades (Agenda, Calendário, Colunas; escalas-impressao-grade.js; o rodapé é o

@@ -526,14 +526,90 @@
   background-color: var(--fundo-superficie);
 }
 
+/* ---------- painel Enviar para o SYSBM (escalas-sysbm.js) ---------- */
+/* uma linha por pelotão: a cidade, o resumo e os avisos à esquerda; o Copiar à direita */
+.escala-sysbm-lista {
+  display: flex;
+  flex-direction: column;
+}
+
+.escala-sysbm-linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-top: 1px solid var(--borda);
+}
+
+.escala-sysbm-linha:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+.escala-sysbm-textos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.escala-sysbm-cidade {
+  font-size: var(--fonte-padrao);
+  color: var(--texto-forte);
+}
+
+.escala-sysbm-avisos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* quem fica de fora do SYSBM e por quê */
+.escala-sysbm-aviso {
+  font-size: 11px;
+  color: var(--alerta);
+}
+
+.escala-sysbm-copiar {
+  flex-shrink: 0;
+}
+
+/* o favorito: no computador, o botão de arrastar até a barra de favoritos (o link do favorito, do tamanho
+   dele); o de copiar o código e a ajuda dele são do celular */
+.escala-sysbm-favorito {
+  align-self: flex-start;
+  text-decoration: none;
+}
+
+.escala-sysbm-codigo,
+.escala-sysbm-ajuda-celular {
+  display: none;
+}
+
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    O navegador do celular não mostra PDF dentro da página: o painel
-   das grades fica sem a prévia (o Gerar PDF continua)
+   das grades fica sem a prévia (o Gerar PDF continua). No Enviar
+   para o SYSBM, o celular não arrasta favorito: copia o código
    ============================================================ */
 @media (max-width: 767px) {
   html[data-celular] .escala-impressao-previa-secao {
     display: none;
+  }
+
+  html[data-celular] .escala-sysbm-favorito,
+  html[data-celular] .escala-sysbm-ajuda-computador {
+    display: none;
+  }
+
+  html[data-celular] .escala-sysbm-codigo {
+    display: inline-flex;
+    align-self: flex-start;
+  }
+
+  html[data-celular] .escala-sysbm-ajuda-celular {
+    display: block;
   }
 }
 
