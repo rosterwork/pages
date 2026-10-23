@@ -70,6 +70,7 @@
     'componentes/js/geral-impacto.js',
     'componentes/js/geral-decisao.js',
     'componentes/js/geral-fila.js',
+    'componentes/js/geral-fila-resumo.js',
     'js/index-navegacao.js',
     'js/index-fale-conosco.js',
     'js/index-termos.js',

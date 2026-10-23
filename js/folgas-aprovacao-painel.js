@@ -8,7 +8,10 @@
    painel. Espelha o trocas-painel.js. Aprovar recalcula (véu) e
    oferece Desfazer. Abre pela fila (geral-fila) da página
    Pendências e da aba Pendências da Folgas.
-   Expõe: RosterWork.folgasAprovacaoPainel.abrir(solicitacao, ctx).
+   Expõe: RosterWork.folgasAprovacaoPainel.abrir(solicitacao, ctx) e
+   acao(nome, solicitacao, ctx, botao): as mesmas ações fora do painel
+   (o cartão que abre ali mesmo), com o Cancelar da folga pendente
+   que o próprio militar pediu.
    ctx = { cpf, admin, posicao?: { n, total }, aoMudar(), aoFechar() }
    ============================================================ */
 (function () {
@@ -113,6 +116,9 @@
           }
         }, true);   // aprovar recalcula a escala → véu
       });
+    } else if (acao === 'cancelar') {
+      /* o militar cancela a própria folga pendente (ainda fora da escala: pontos no botão) */
+      confirmarEntao(m.confirmarCancelarPendente, true, function () { executar(d.cancelar(sol.id), btn, ctx); });
     }
   }
 
@@ -154,5 +160,5 @@
     RW.decisao.escala(partes, function () { return RW.rpc('pedido_escala_comparar', { p_tipo: 'folga', p_id: sol.id }); });
   }
 
-  RW.folgasAprovacaoPainel = { abrir: abrir };
+  RW.folgasAprovacaoPainel = { abrir: abrir, acao: despachar };
 })();

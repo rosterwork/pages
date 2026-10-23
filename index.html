@@ -1243,6 +1243,107 @@
     </button>
   </template>
 
+  <!-- um pedido que abre ali mesmo (Início e Pendências): a linha é o botão que abre e fecha o resumo;
+       o resumo começa na coluna do título (os recuos têm a largura do ícone e do pelotão) -->
+  <template id="tpl-pedido-expansivel">
+    <div class="pedido pedido--expansivel">
+      <button type="button" class="pedido--linha pedido-expansivel-cabeca" aria-expanded="false">
+        <svg class="icone pedido-linha-icone" width="18" height="18" aria-hidden="true"><use href=""/></svg>
+        <span class="pedido-linha-pelotao oculto"></span>
+        <span class="pedido-textos">
+          <span class="pedido-quem"></span>
+          <span class="pedido-meta"></span>
+        </span>
+        <span class="espacador-flex"></span>
+        <span class="selo pedido-linha-selo oculto"></span>
+        <svg class="icone pedido-linha-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="pedido-resumo oculto">
+        <span class="pedido-resumo-recuo-icone"></span>
+        <span class="pedido-resumo-recuo-pelotao oculto"></span>
+        <div class="pedido-resumo-corpo"></div>
+      </div>
+    </div>
+  </template>
+
+  <!-- o resumo do pedido aberto ali mesmo: as seções do assunto (as outras ficam ocultas) e as ações -->
+  <template id="tpl-pedido-resumo">
+    <div class="pedido-resumo-conteudo">
+      <div class="pedido-resumo-secao oculto" data-secao="trocas">
+        <span class="rotulo-secao">Trocas</span>
+        <div class="pedido-resumo-lista"></div>
+      </div>
+      <div class="pedido-resumo-secao oculto" data-secao="folga">
+        <span class="rotulo-secao">Folga</span>
+        <div class="pedido-resumo-lista"></div>
+      </div>
+      <div class="pedido-resumo-secao oculto" data-secao="alteracoes">
+        <span class="rotulo-secao">Alterações</span>
+        <div class="pedido-resumo-lista"></div>
+      </div>
+      <div class="pedido-resumo-secao oculto" data-secao="analise">
+        <span class="rotulo-secao">Análise</span>
+        <div class="pedido-resumo-lista"></div>
+      </div>
+      <div class="pedido-resumo-secao oculto" data-secao="aceites">
+        <span class="rotulo-secao">Aceites</span>
+        <div class="pedido-resumo-lista"></div>
+      </div>
+      <div class="pedido-resumo-acoes">
+        <button type="button" class="botao" data-botao="detalhes">Ver detalhes</button>
+        <button type="button" class="botao oculto" data-botao="cancelar">Cancelar pedido</button>
+        <button type="button" class="botao botao--primario oculto" data-botao="aceitar">Aceitar</button>
+        <button type="button" class="botao botao--primario oculto" data-botao="aprovar">Aprovar</button>
+        <button type="button" class="botao botao--primario oculto" data-botao="aprovar-forcar">Aprovar com pendências</button>
+      </div>
+    </div>
+  </template>
+
+  <!-- um dia do resumo: a data e o texto (quem trabalha no lugar de quem, ou o horário da folga) -->
+  <template id="tpl-pedido-resumo-dia">
+    <div class="pedido-resumo-dia">
+      <span class="pedido-resumo-dia-data"></span>
+      <span class="pedido-resumo-dia-texto"></span>
+    </div>
+  </template>
+
+  <!-- uma linha com selos: o texto à esquerda e os selos alinhados à direita (análise e aceites) -->
+  <template id="tpl-pedido-resumo-linha">
+    <div class="pedido-resumo-linha">
+      <span class="pedido-resumo-linha-texto"></span>
+      <span class="pedido-resumo-selos">
+        <span class="selo oculto"></span>
+        <span class="selo oculto"></span>
+      </span>
+    </div>
+  </template>
+
+  <!-- uma alteração de dados no resumo: o dado, de (seta) para e o selo da situação -->
+  <template id="tpl-pedido-resumo-alteracao">
+    <div class="pedido-resumo-linha">
+      <span class="pedido-resumo-alteracao">
+        <span class="pedido-resumo-alteracao-rotulo"></span>
+        <span class="pedido-item-de"></span>
+        <svg class="icone pedido-item-seta" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
+        <span class="pedido-item-para"></span>
+      </span>
+      <span class="pedido-resumo-selos">
+        <span class="selo oculto"></span>
+      </span>
+    </div>
+  </template>
+
+  <!-- o selo Pendente dos aceites (lista de Trocas): abre a lista de quem participa, com quem aceitou e quem falta -->
+  <template id="tpl-aceites-pendente">
+    <div class="dropdown aceites-pendente">
+      <button type="button" class="selo selo--alerta aceites-pendente-botao" aria-label="Pendente, ver os aceites">Pendente<svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg></button>
+      <div class="dropdown-menu aceites-pendente-menu">
+        <div class="dropdown-titulo">Aceites</div>
+        <div class="aceites-pendente-lista"></div>
+      </div>
+    </div>
+  </template>
+
   <!-- lista de pedidos sem nada (o texto é preenchido pelo JS) -->
   <template id="tpl-pedido-vazio">
     <div class="pedido-vazio"></div>
@@ -2198,7 +2299,7 @@
     <button type="button" class="botao botao--perigo" data-acao="recusar">Recusar</button>
     <button type="button" class="botao botao--primario" data-acao="aceitar">Aceitar</button>
     <button type="button" class="botao botao--primario" data-acao="aceitar-depois">Aceitar</button>
-    <button type="button" class="botao" data-acao="aprovar-forcar">Aprovar sem confirmação</button>
+    <button type="button" class="botao" data-acao="aprovar-forcar">Aprovar com pendências</button>
     <button type="button" class="botao botao--perigo" data-acao="recusar-admin">Recusar</button>
     <button type="button" class="botao botao--primario" data-acao="aprovar">Aprovar</button>
   </template>
@@ -2226,7 +2327,7 @@
     <button type="button" class="botao botao--perigo" data-acao="recusar">Recusar</button>
     <button type="button" class="botao botao--primario" data-acao="aceitar">Aceitar</button>
     <button type="button" class="botao botao--primario" data-acao="aceitar-depois">Aceitar</button>
-    <button type="button" class="botao" data-acao="aprovar-forcar">Aprovar sem confirmação</button>
+    <button type="button" class="botao" data-acao="aprovar-forcar">Aprovar com pendências</button>
     <button type="button" class="botao botao--perigo" data-acao="recusar-admin">Recusar</button>
     <button type="button" class="botao botao--primario" data-acao="aprovar">Aprovar</button>
   </template>

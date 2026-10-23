@@ -875,6 +875,13 @@
       servicoInteiro: 'serviço inteiro',
       trechoHoras: function (hi, hf) { return 'das ' + hi + ' às ' + hf; },
       metaDados: function (n, data) { return (n === 1 ? '1 alteração' : n + ' alterações') + ' · pedido em ' + data; },
+      /* o resumo do cartão que abre ali mesmo: quem trabalha no lugar de quem (com o horário, quando é parte do serviço)
+         e o que passa dos dias mostrados */
+      resumoNoLugar: function (quem, deQuem, trecho) { return quem + ' no lugar de ' + deQuem + (trecho ? ', ' + trecho : ''); },
+      resumoMais: function (n) { return 'e mais ' + n + (n === 1 ? ' dia' : ' dias'); },
+      resumoFalha: 'Não foi possível carregar o resumo. Veja em Ver detalhes.',
+      /* a situação de cada alteração de dados (o resumo dos seus pedidos) */
+      situacaoAlteracao: { pendente: 'Pendente', aprovada: 'Aprovada', recusada: 'Recusada' },
       /* listas sem nada (página Pendências) */
       vazioMinhas: 'Nenhum pedido esperando a sua resposta.',
       vazioAprovar: 'Nenhum pedido para aprovar.',
@@ -965,6 +972,8 @@
       aceiteAguardandoAprovacao: 'Aguardando aprovação',
       seloAceitou: 'Aceitou',
       seloAceitePendente: 'Pendente',
+      /* o militar sem conta no sistema: o aceite dele fica pendente (não tem como aceitar) */
+      seloSemConta: 'Sem conta',
       seloAprovou: 'Aprovou',
       /* quem tem o aceite pendente: a nota no alto do painel e a confirmação do Aceitar */
       faltaAceiteAprovada: 'Falta você aceitar a troca. Ela já foi aprovada e vale na escala; o seu aceite fica no registro.',
@@ -1077,7 +1086,7 @@
       confirmarAceitar: 'Aceitar esta troca? Ela seguirá para aprovação do administrador.',
       confirmarAprovar: 'Aprovar esta troca? A escala será atualizada na hora.',
       confirmarAprovarComProblema: 'A análise apontou problemas que podem quebrar a escala. Aprovar mesmo assim?',
-      confirmarForcar: 'Aprovar sem a confirmação do solicitado? A troca é aplicada na escala na hora.',
+      confirmarForcar: 'Aprovar com pendências? O solicitado ainda não aceitou. A troca é aplicada na escala na hora, e o aceite dele continua pendente.',
       confirmarCancelar: 'Cancelar esta troca?',
       confirmarCancelarAlteracao: 'Cancelar esta alteração? A troca continua como está.',
       confirmarAprovarAlteracao: 'Aprovar esta alteração? Ela entra no lugar da troca de antes e a escala é atualizada na hora.',
@@ -1161,7 +1170,7 @@
         confirmarAceitar: function (rw) { return 'Aceitar as trocas do ' + rw + '? O pedido segue para a administração quando todos aceitarem.'; },
         confirmarAceitarDepois: function (rw) { return 'Aceitar as trocas do ' + rw + '? O seu aceite fica no registro e a escala não muda.'; },
         confirmarAprovar: function (rw) { return 'Aprovar as trocas do ' + rw + '? A escala é atualizada na hora, em todos os dias.'; },
-        confirmarForcar: function (rw) { return 'Aprovar as trocas do ' + rw + ' sem o aceite de todos? A escala é atualizada na hora, em todos os dias.'; },
+        confirmarForcar: function (rw) { return 'Aprovar as trocas do ' + rw + ' com pendências? Ainda falta o aceite de algum militar. A escala é atualizada na hora, em todos os dias, e os aceites continuam pendentes.'; },
         confirmarCancelar: function (rw) { return 'Cancelar as trocas do ' + rw + '?'; },
         /* o Registrar troca (só admin): as trocas entram já aprovadas */
         confirmarRegistrar: 'Registrar estas trocas? Elas já entram aprovadas e a escala é atualizada na hora, em todos os dias.',

@@ -1105,6 +1105,7 @@
                 <li>Selo de situação <strong>temporária sempre com a data-limite</strong>: "Férias até 14/06", nunca só "Férias".</li>
                 <li>Postos › Viaturas: Ativo = <code>--sucesso</code>, Substituída até DD/MM (troca de viatura com data) = <code>--alerta</code>, Inativo = neutro.</li>
                 <li>O selo <strong>"Novo"</strong> só existe em prévia ou edição não salva (ver Painel).</li>
+                <li><strong>Selo que abre uma lista</strong> (<code>.aceites-pendente-botao</code>, em <code>geral-pedido.css</code>; molde <code>#tpl-aceites-pendente</code>): na linha da troca aprovada com aceite faltando (Trocas › Todas e Minhas), o <strong>Pendente</strong> (<code>.selo--alerta</code>) é um <code>&lt;button&gt;</code> com a <code>icone-seta-baixo</code> de 12px, antes do selo da situação (o grupo <code>.troca-item-selos</code>, gap 4px). O clique abre o menu suspenso com o título "Aceites" e as linhas com selos à direita (ver Listas de leitura e cartões), sem abrir o painel; cursor <code>pointer</code>.</li>
                 <li><strong>Avatar:</strong> círculo (<code>border-radius: 50%</code>) de 28 por 28px, fundo <code>--fundo-medio</code>, texto <code>--texto-suave</code>, 11px peso 700, <code>flex-shrink: 0</code>; as iniciais são as duas primeiras letras do nome de guerra, em maiúsculas. É desenhado por cada lugar que o usa, com as mesmas medidas e cores: o botão do usuário (<code>.cabecalho-usuario-avatar</code>, em <code>index-cabecalho.css</code>) e a grade de Militares (<code>.escala-mil-avatar</code>). O tamanho pequeno é de 22px com letra de 9px.</li>
                 <li>A seta de menu suspenso nos gatilhos (<code>.seletor-seta</code>) usa <code>--texto-fraco</code>.</li>
               </ul>
@@ -1787,6 +1788,49 @@
                     <span class="selo selo--sucesso pedido-linha-selo">Sem impacto</span>
                     <svg class="icone pedido-linha-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
                   </button>
+                  <div class="pedido pedido--expansivel">
+                    <button type="button" class="pedido--linha pedido-expansivel-cabeca" aria-expanded="true">
+                      <svg class="icone pedido-linha-icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-trocas"/></svg>
+                      <span class="pedido-linha-pelotao">2ºPEL</span>
+                      <span class="pedido-textos"><span class="pedido-quem">Trocas de serviço: Cb. Lima, Sd. Souza e Sd. Paz</span><span class="pedido-meta">A partir de 01/11/2026 (dom) · 3 militares · RW nº 9/2026</span></span>
+                      <span class="espacador-flex"></span>
+                      <span class="selo selo--alerta pedido-linha-selo">Pendente</span>
+                      <svg class="icone pedido-linha-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+                    </button>
+                    <div class="pedido-resumo">
+                      <span class="pedido-resumo-recuo-icone"></span>
+                      <span class="pedido-resumo-recuo-pelotao"></span>
+                      <div class="pedido-resumo-corpo">
+                        <div class="pedido-resumo-conteudo">
+                          <div class="pedido-resumo-secao">
+                            <span class="rotulo-secao">Trocas</span>
+                            <div class="pedido-resumo-lista">
+                              <div class="pedido-resumo-dia"><span class="pedido-resumo-dia-data">01/11</span><span class="pedido-resumo-dia-texto">Sd. Souza no lugar de Cb. Lima</span></div>
+                              <div class="pedido-resumo-dia"><span class="pedido-resumo-dia-data">04/11</span><span class="pedido-resumo-dia-texto">Sd. Paz no lugar de Sd. Souza</span></div>
+                              <div class="pedido-resumo-dia"><span class="pedido-resumo-dia-data"></span><span class="pedido-resumo-dia-texto">e mais 2 dias</span></div>
+                            </div>
+                          </div>
+                          <div class="pedido-resumo-secao">
+                            <span class="rotulo-secao">Análise</span>
+                            <div class="pedido-resumo-lista">
+                              <div class="pedido-resumo-linha"><span class="pedido-resumo-linha-texto">Não cria problema novo na escala.</span><span class="pedido-resumo-selos"><span class="selo selo--sucesso">Sem impacto</span></span></div>
+                            </div>
+                          </div>
+                          <div class="pedido-resumo-secao">
+                            <span class="rotulo-secao">Aceites</span>
+                            <div class="pedido-resumo-lista">
+                              <div class="pedido-resumo-linha"><span class="pedido-resumo-linha-texto">Cb. Lima</span><span class="pedido-resumo-selos"><span class="selo selo--sucesso">Aceitou</span></span></div>
+                              <div class="pedido-resumo-linha"><span class="pedido-resumo-linha-texto">Sd. Paz</span><span class="pedido-resumo-selos"><span class="selo selo--alerta">Pendente</span><span class="selo">Sem conta</span></span></div>
+                            </div>
+                          </div>
+                          <div class="pedido-resumo-acoes">
+                            <button type="button" class="botao">Ver detalhes</button>
+                            <button type="button" class="botao botao--primario">Aprovar com pendências</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="guia-sino-exemplo">
@@ -1811,6 +1855,8 @@
                 <li><strong>Pendência não é notificação:</strong> pendência é estado (espera decisão ou conserto), é recalculada a cada leitura e some quando alguém resolve; nunca guardar pendência como notificação <strong>nem mostrá-la no sino</strong>. O que falta fazer mora na página Pendências (Para corrigir e Prazos), com o número no item do menu: um por pedido e um por assunto.</li>
                 <li><strong>Prazo</strong> (Pendências › Para mim › Prazos; molde <code>#tpl-pendencias-prazo</code>): a casca do Para corrigir que leva a uma tela (<code>.pendencias-corrigir</code>: borda <code>--borda</code>, <code>--raio-medio</code>, mínimo 48px, hover <code>--fundo-suave</code>), sem selo, com <code>.pendencias-prazo-textos</code> (coluna, gap 2px) = o texto (<code>.pendencias-corrigir-texto</code>, letra padrão <code>--fonte-padrao</code>, <code>--texto-forte</code>) e, embaixo, até quando (<code>.pendencias-prazo-mensagem</code>, 11px <code>--texto-suave</code>), e a seta à direita.</li>
                 <li><strong>Para corrigir</strong> (Pendências › Administração; moldes <code>#tpl-pendencias-corrigir</code>, <code>#tpl-pendencias-fora</code> e <code>#tpl-pendencias-retorno</code>): a mesma casca <code>.pendencias-corrigir</code>, com o número do assunto (<code>.selo--alerta</code>), o texto (<code>.pendencias-corrigir-texto</code>, <code>--fonte-padrao</code>) e a seta quando leva a uma tela. Fora da escala e retorno de afastamento usam a variante <code>.pendencias-corrigir--lista</code>, sem seta: a lista de nomes, cada linha com o posto (<code>-grad</code>, 11px <code>--texto-suave</code>), o nome (<code>-nome</code>, <code>--fonte-padrao</code> peso 500), o motivo e a volta (<code>-volta</code>, 11px <code>--texto-suave</code>) e a unidade à direita (<code>-unidade</code>, 11px). <strong>No celular</strong> o motivo e a volta descem para baixo do nome (a linha vira uma grade de três colunas: posto, nome, unidade), e a barra da página, que só tem o seletor do tipo de pedido, some na aba Para mim, em vez de ficar uma faixa vazia.</li>
+                <li><strong>Cartão que abre ali mesmo</strong> (<code>.pedido--expansivel</code>, em <code>geral-pedido.css</code>; moldes <code>#tpl-pedido-expansivel</code> e <code>#tpl-pedido-resumo*</code>; caixa Pendências do Início e página Pendências): o cartão sem padding; a linha <code>.pedido-expansivel-cabeca</code> é o mesmo <code>.pedido--linha</code>, como <code>&lt;button&gt;</code> com <code>aria-expanded</code>, com padding 12px e a seta <code>icone-seta-baixo</code>, que vira para cima com ele aberto. O resumo (<code>.pedido-resumo</code>) começa <strong>na coluna do título</strong>: os recuos <code>-recuo-icone</code> (18px + 12px) e <code>-recuo-pelotao</code> (48px + 12px, só quando a linha tem o pelotão) têm a largura das colunas da linha; embaixo de um traço <code>--borda</code>, as seções com o <code>.rotulo-secao</code>, gap 12px entre elas e 4px dentro. <strong>Todo o texto do resumo é 12px no cinza <code>--texto-suave</code></strong> (as datas, os nomes, as notas da análise e o valor novo da alteração); a data tem largura fixa (40px, números de largura igual) para os textos começarem na mesma coluna. As ações (<code>.pedido-resumo-acoes</code>) ficam à direita, gap 8px: o <strong>Ver detalhes</strong> (branco) e a ação de quem olha (escura). Um cartão aberto por vez. No celular, os botões dividem a largura.</li>
+                <li><strong>Linha com selos à direita</strong> (<code>.pedido-resumo-linha</code>, molde <code>#tpl-pedido-resumo-linha</code>): o texto à esquerda e os selos (<code>.pedido-resumo-selos</code>, gap 4px) encostados à direita, para todos os selos da lista ficarem numa coluna só. Na análise, o resultado vai no selo da primeira linha; nos aceites, <strong>Aceitou</strong> (verde), <strong>Pendente</strong> (amarelo) e, de quem não tem conta, também <strong>Sem conta</strong> (o selo cinza, sem modificador).</li>
                 <li>Nada de bolinha de contagem sobre o ícone de um item do menu (no menu recolhido ela cobre o ícone e rouba o clique). O <code>.menu-item-selo</code> mostra só o número do item Pendências.</li>
               </ul>
             </div>

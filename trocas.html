@@ -427,7 +427,7 @@
   <button type="button" class="botao botao--primario" data-acao="registrar-varias">Registrar trocas</button>
 </template>
 
-<!-- molde: linha de uma troca na lista -->
+<!-- molde: linha de uma troca na lista (os selos: o Pendente dos aceites, quando a aprovada tem aceite faltando, e a situação) -->
 <template id="tpl-troca-item">
   <div class="troca-item">
     <span class="troca-item-dados">
@@ -439,7 +439,9 @@
       <span class="troca-item-meta"></span>
     </span>
     <span class="espacador-flex"></span>
-    <span class="selo troca-item-situacao"></span>
+    <span class="troca-item-selos">
+      <span class="selo troca-item-situacao"></span>
+    </span>
   </div>
 </template>
 
@@ -453,7 +455,9 @@
       <span class="troca-item-meta"></span>
     </span>
     <span class="espacador-flex"></span>
-    <span class="selo troca-item-situacao"></span>
+    <span class="troca-item-selos">
+      <span class="selo troca-item-situacao"></span>
+    </span>
   </div>
 </template>
 

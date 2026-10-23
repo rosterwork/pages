@@ -8,12 +8,15 @@
    leitura, com o militar destacado: escalas-painel.js). "Hoje" é o
    dia de serviço (vira às 08h). Ao lado, os avisos (fn_avisos_listar)
    e as pendências: o que espera a sua decisão (a fila da Pendências,
-   geral-fila, que abre o painel de decisão), os prazos, a CNH que
+   geral-fila, com o cartão que abre ali mesmo: o resumo e as ações;
+   Ver detalhes abre o painel de decisão), os prazos, a CNH que
    falta (abre o painel da CNH, index-cnh-painel.js) e os seus
    pedidos em andamento e resolvidos nos últimos 30 dias
-   (inicio_meus_pedidos); para o administrador, também a aba
-   Administração. Cada lista mostra o que cabe na altura da tela e o
-   Ver todos leva ao resto. A página aparece inteira de uma vez (o véu
+   (inicio_meus_pedidos), que também abrem ali mesmo; para o
+   administrador, também a aba Administração, com as trocas que
+   esperam o aceite dos militares depois das que esperam aprovação.
+   Cada lista mostra o que cabe na altura da tela e o Ver todos leva
+   ao resto. A página aparece inteira de uma vez (o véu
    espera tudo), e a troca de mês usa o mesmo véu; no celular, puxar o
    calendário para o lado (ou tocar nas setas) troca deslizando, sem o
    véu (geral-deslizar-mes.js). Só clona moldes.
@@ -280,13 +283,15 @@
      primeiros) e esconde o resto; o Ver todos aparece quando algum ficou de fora */
   function encaixarLista(lista, botao, aoLado) {
     if (!lista) return;
-    var itens = Array.prototype.slice.call(lista.querySelectorAll('.inicio-aviso, .pedido--linha'));
+    var itens = Array.prototype.slice.call(lista.querySelectorAll('.inicio-aviso, .pedido--linha:not(.pedido-expansivel-cabeca), .pedido--expansivel'));
     itens.forEach(function (c) { c.classList.remove('oculto'); });
     /* só ao lado do calendário a lista é medida; embaixo dele, a conta é pela quantidade */
     var limite = aoLado ? lista.getBoundingClientRect().bottom : 0;
     var escondidos = 0, cheio = false;
     itens.forEach(function (c, i) {
-      if (!cheio) cheio = aoLado ? c.getBoundingClientRect().bottom > limite + 1 : i >= LISTA_EMPILHADA;
+      /* o cartão que abre ali mesmo conta pela linha dele (aberto, o resumo pode passar e a lista rola) */
+      var medir = c.querySelector('.pedido-expansivel-cabeca') || c;
+      if (!cheio) cheio = aoLado ? medir.getBoundingClientRect().bottom > limite + 1 : i >= LISTA_EMPILHADA;
       if (cheio) { c.classList.add('oculto'); escondidos++; }
     });
     if (botao) botao.classList.toggle('oculto', !escondidos);
@@ -369,26 +374,29 @@
     return c;
   }
 
-  /* um pedido seu (em andamento ou resolvido): a frase, o dia e o selo com a situação; leva à página dele */
+  /* um pedido seu (em andamento ou resolvido): a frase, o dia e o selo com a situação; abre ali mesmo com o
+     resumo e o que você pode fazer (Cancelar pedido), e o Ver detalhes leva ao painel da troca ou à página dele */
   function cartaoMeuPedido(p) {
     var M = RW.mensagens, mi = M.inicio, pe = M.pendencias;
     var outro = nomeDe(p.outro_grau, p.outro_nome);
     var resolvido = !p.andamento;
     var meta = pe.metaServico(RW.data.comDiaCurto(p.data), RW.fila.trecho(p.horario_inicio, p.horario_fim));
+    var c;
     if (p.tipo === 'troca') {
-      var quem = p.alteracao ? mi.trocaAlteracao(outro)
-        : (p.papel === 'solicitante' ? mi.trocaVoce(outro, resolvido) : mi.trocaOutro(outro, resolvido));
-      return cartaoPendencia(ICONE_PEDIDO.troca, quem, meta, RW.trocasFormato.situacao(p.situacao, p.alteracao),
-        function () { irPara('trocas', 'minhas'); });
+      c = { icone: ICONE_PEDIDO.troca, meta: meta, selo: RW.trocasFormato.situacao(p.situacao, p.alteracao),
+            quem: p.alteracao ? mi.trocaAlteracao(outro) : (p.papel === 'solicitante' ? mi.trocaVoce(outro, resolvido) : mi.trocaOutro(outro, resolvido)) };
+    } else if (p.tipo === 'folga') {
+      c = { icone: ICONE_PEDIDO.folga, quem: mi.folgaVoce, meta: meta,
+            selo: { texto: M.folgas.situacao[p.situacao] || '', classe: RW.folgasFormato.situacaoClasse(p.situacao) } };
+    } else {
+      c = { icone: ICONE_PEDIDO.dados, quem: mi.dadosVoce, meta: pe.metaDados(p.alteracoes || 0, RW.data.isoParaBR(p.data)),
+            selo: { texto: mi.situacaoDados[p.situacao] || '', classe: SELO_DADOS[p.situacao] || 'selo--escuro' } };
     }
-    if (p.tipo === 'folga') {
-      return cartaoPendencia(ICONE_PEDIDO.folga, mi.folgaVoce, meta,
-        { texto: M.folgas.situacao[p.situacao] || '', classe: RW.folgasFormato.situacaoClasse(p.situacao) },
-        function () { irPara('folgas', 'minhas'); });
-    }
-    return cartaoPendencia(ICONE_PEDIDO.dados, mi.dadosVoce, pe.metaDados(p.alteracoes || 0, RW.data.isoParaBR(p.data)),
-      { texto: mi.situacaoDados[p.situacao] || '', classe: SELO_DADOS[p.situacao] || 'selo--escuro' },
-      function () { irPara('perfil'); });
+    c.montar = function (corpo) {
+      var admin = RW.sessao.temPapel('pelotao');
+      RW.filaResumo.meuPedido(corpo, p, { cpf: RW.sessao.cpf(), ehAdmin: admin, admin: admin, aoMudar: carregarPendencias }, irPara);
+    };
+    return RW.fila.expansivel(c);
   }
 
   /* um prazo seu (ex.: a extra do mês): leva aonde se responde; a CNH que falta abre o painel dela aqui mesmo */
@@ -438,7 +446,8 @@
     var quanto = RW.avisosSino ? RW.avisosSino.quantoSoma : function () { return 0; };
     function somar(grupos) { return grupos.reduce(function (s, g) { return s + quanto(g); }, 0); }
     var temParaMim = fila.minhas.length + fila.prazos.length + meus.length > 0;
-    var temAdmin = admin && fila.aprovar.length + fila.corrigir.length > 0;
+    var acompanhar = fila.acompanhar || [];   // as trocas que esperam o aceite dos militares: na lista, sem somar no número
+    var temAdmin = admin && fila.aprovar.length + acompanhar.length + fila.corrigir.length > 0;
 
     el.pendCaixa.classList.toggle('oculto', !temParaMim && !temAdmin);
     el.pendTitulo.classList.toggle('oculto', admin);
@@ -453,7 +462,7 @@
     el.pendVazio.paramim.classList.toggle('oculto', temParaMim);
 
     if (admin) {
-      definirFila(pend.filaAprovar, el.pendAprovar, fila.aprovar);
+      definirFila(pend.filaAprovar, el.pendAprovar, fila.aprovar.concat(acompanhar));
       preencher(el.pendCorrigir, fila.corrigir, cartaoCorrigir);
       el.pendVazio.administracao.classList.toggle('oculto', temAdmin);
     }
@@ -498,8 +507,9 @@
       administracao: el.pendCaixa.querySelector('[data-pend-painel="administracao"] [data-pend-vazio]')
     };
     pend.aba = 'paramim';
-    /* as filas abrem o painel de decisão no espaço do painel; depois de decidir, as pendências se releem */
-    var opcoes = { situacao: true, recarregar: carregarPendencias };
+    /* os cartões abrem ali mesmo (o resumo e as ações; Ver detalhes abre o painel de decisão); depois de decidir,
+       as pendências se releem */
+    var opcoes = { situacao: true, expandir: true, recarregar: carregarPendencias };
     pend.filaMinhas = RW.fila ? RW.fila.criar(el.pendMinhas, opcoes) : null;
     pend.filaAprovar = (RW.fila && RW.sessao.temPapel('pelotao')) ? RW.fila.criar(el.pendAprovar, opcoes) : null;
     if (RW.abas) RW.abas.ligar(el.pendAbas, function (aba) { trocarAba(aba.getAttribute('data-pend')); });

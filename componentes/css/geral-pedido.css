@@ -190,6 +190,147 @@ button.pedido-item:hover {
   color: var(--texto-suave);
 }
 
+/* ---------- o pedido que abre ali mesmo (Início e Pendências) ----------
+   A linha (o mesmo .pedido--linha do cartão) é o botão que abre e fecha o
+   resumo; aberto, a seta vira para cima. O resumo começa na coluna do
+   título (os recuos têm a largura do ícone e do pelotão), com todo o texto
+   no mesmo cinza e os selos de cada linha alinhados à direita. */
+.pedido--expansivel {
+  padding: 0;
+  gap: 0;
+}
+
+.pedido-expansivel-cabeca {
+  display: flex;
+  padding: 12px;
+  border: none;
+  border-radius: var(--raio-medio);
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.pedido-expansivel-cabeca[aria-expanded="true"] .pedido-linha-seta {
+  transform: rotate(180deg);
+}
+
+.pedido-resumo {
+  display: flex;
+  padding: 0 12px 12px;
+}
+
+.pedido-resumo-recuo-icone {
+  flex-shrink: 0;
+  width: 18px;
+  margin-right: 12px;
+}
+
+.pedido-resumo-recuo-pelotao {
+  flex-shrink: 0;
+  width: 48px;
+  margin-right: 12px;
+}
+
+.pedido-resumo-corpo {
+  flex: 1;
+  min-width: 0;
+}
+
+.pedido-resumo-conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--borda);
+}
+
+.pedido-resumo-secao,
+.pedido-resumo-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* todo o texto do resumo no mesmo cinza e no mesmo tamanho */
+.pedido-resumo-dia,
+.pedido-resumo-linha {
+  min-height: 20px;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.pedido-resumo-dia {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* as datas com a mesma largura: os textos começam todos na mesma coluna */
+.pedido-resumo-dia-data {
+  flex-shrink: 0;
+  min-width: 40px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pedido-resumo-linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pedido-resumo-linha-texto {
+  min-width: 0;
+}
+
+.pedido-resumo-selos {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* a alteração de dados: o dado e o "de (seta) para" */
+.pedido-resumo-alteracao {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pedido-resumo-alteracao-rotulo {
+  margin-right: 4px;
+}
+
+/* no resumo, o valor novo fica no mesmo cinza do resto */
+.pedido-resumo-alteracao .pedido-item-para {
+  color: inherit;
+}
+
+.pedido-resumo-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+/* ---------- o selo Pendente que abre a lista dos aceites (lista de Trocas) ---------- */
+.aceites-pendente-botao {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.aceites-pendente-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 240px;
+  padding: 4px 8px 8px;
+}
+
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    A alteração fica em duas linhas: o dado (e o selo da situação)
@@ -197,7 +338,8 @@ button.pedido-item:hover {
    comprido (ex.: e-mail) em vez de cortar.
    O cartão da Pendências (.pedido--linha) também fica em duas
    linhas: quem e o quê em cima, o selo embaixo, com o ícone, o
-   pelotão e a seta ao lado das duas.
+   pelotão e a seta ao lado das duas. No pedido que abre ali mesmo,
+   o resumo segue a coluna do título e os botões ocupam a largura.
    ============================================================ */
 @media (max-width: 767px) {
   html[data-celular] .pedido-item {
@@ -257,5 +399,9 @@ button.pedido-item:hover {
   html[data-celular] .pedido-linha-seta {
     grid-area: seta;
     margin-left: 12px;
+  }
+
+  html[data-celular] .pedido-resumo-acoes .botao {
+    flex: 1;
   }
 }

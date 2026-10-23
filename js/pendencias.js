@@ -6,16 +6,16 @@
                         (a extra do mês seguinte) e o "Seu
                         cadastro" (a CNH, no painel da CNH)
      · Administração  — só administrador: trocas, folgas e correções
-                        para aprovar (com o seletor do tipo na barra)
-                        e o "Para corrigir"
+                        para aprovar (com o seletor do tipo na barra),
+                        as trocas "Aguardando os militares" (esperam
+                        aceite; não somam no número) e o "Para corrigir"
    Os selos das abas e o número ao lado do título somam pela mesma
    regra do número do menu (RosterWork.avisosSino.quantoSoma).
    O militar comum não vê abas nem barra. As filas são o componente
-   geral-fila (o mesmo das abas Pendências da Trocas, da Folgas e da
-   Usuários): o mesmo cartão, o mesmo painel e, depois de decidir, o
-   próximo pedido. Quem chega por um aviso abre o pedido direto (a
-   referência é o id dele). Aqui ficam o seletor, as contagens e o
-   desenho do "Para corrigir".
+   geral-fila com o cartão que abre ali mesmo (o resumo e as ações;
+   "Ver detalhes" abre o painel). Quem chega por um aviso abre o
+   pedido direto no painel (a referência é o id dele). Aqui ficam o
+   seletor, as contagens e o desenho do "Para corrigir".
    Clona moldes; não cria HTML.
    ============================================================ */
 (function () {
@@ -32,8 +32,8 @@
   var admin = false;
   var abaAtual = 'paramim';
   var filtro = 'todos';
-  var dados = { minhas: [], aprovar: [], corrigir: [], prazos: [] };
-  var filaMinhas = null, filaAprovar = null;
+  var dados = { minhas: [], aprovar: [], acompanhar: [], corrigir: [], prazos: [] };
+  var filaMinhas = null, filaAprovar = null, filaAcompanhar = null;
   var leitura = 0;     // a última leitura vence
 
   function msg() { return RW.mensagens.pendencias; }
@@ -137,6 +137,10 @@
     var m = msg();
     filaMinhas.definir(dados.minhas);
     filaAprovar.definir(filtrados());
+    /* as trocas esperando o aceite dos militares: no Todos e no Trocas; a seção some sem nenhuma */
+    var acompanhar = filtro === 'todos' || filtro === 'troca' ? dados.acompanhar || [] : [];
+    filaAcompanhar.definir(acompanhar);
+    q('#pendencias-secao-acompanhar').classList.toggle('oculto', !acompanhar.length);
     var prazos = dados.prazos.filter(function (g) { return !DO_CADASTRO[g.tipo]; });
     var cadastro = dados.prazos.filter(function (g) { return DO_CADASTRO[g.tipo]; });
     desenharPrazos(q('#pendencias-prazos'), prazos);
@@ -155,6 +159,7 @@
   function falha() {
     q('#pendencias-secao-prazos').classList.add('oculto');
     q('#pendencias-secao-cadastro').classList.add('oculto');
+    q('#pendencias-secao-acompanhar').classList.add('oculto');
     ['#pendencias-minhas', '#pendencias-aprovar', '#pendencias-corrigir'].forEach(function (sel) {
       var lista = q(sel);
       if (!lista) return;
@@ -194,11 +199,14 @@
     abaAtual = 'paramim';
     filtro = 'todos';
     var m = msg();
-    filaMinhas = RW.fila.criar(q('#pendencias-minhas'), { vazio: m.vazioMinhas, recarregar: carregar });
+    /* os cartões abrem ali mesmo (o resumo e as ações); "Ver detalhes" abre o painel */
+    filaMinhas = RW.fila.criar(q('#pendencias-minhas'), { vazio: m.vazioMinhas, recarregar: carregar, expandir: true });
     filaAprovar = RW.fila.criar(q('#pendencias-aprovar'), {
       vazio: m.vazioAprovar,
-      recarregar: carregar
+      recarregar: carregar,
+      expandir: true
     });
+    filaAcompanhar = RW.fila.criar(q('#pendencias-acompanhar'), { recarregar: carregar, expandir: true });
 
     /* o militar comum só tem "Para mim": sem abas e sem barra */
     q('#pendencias-abas').classList.toggle('oculto', !admin);
@@ -216,7 +224,8 @@
         if (RW.painel && RW.painel.estaAberto() && abaAtual === 'administracao') RW.painel.fechar();
         filaAprovar = RW.fila.criar(q('#pendencias-aprovar'), {
           vazio: filtro === 'todos' ? m.vazioAprovar : m.vazioFiltro,
-          recarregar: carregar
+          recarregar: carregar,
+          expandir: true
         });
         desenhar();
       });
@@ -232,7 +241,7 @@
          trocar de aba fecha o painel) */
       var ehMinha = dados.minhas.some(function (p) { return p.id === String(referencia); });
       if (ehMinha) { clicarAba('paramim'); filaMinhas.abrirId(referencia); }
-      else if (admin) { clicarAba('administracao'); filaAprovar.abrirId(referencia); }
+      else if (admin) { clicarAba('administracao'); if (!filaAprovar.abrirId(referencia)) filaAcompanhar.abrirId(referencia); }
     });
   }
 

@@ -6,8 +6,10 @@
    a troca que pediram a você e, para o administrador, as trocas para
    aprovar; componente geral-fila, a mesma da página Pendências).
    "Solicitar" é o botão da barra. As ações (aceitar / aprovar /
-   aprovar sem confirmação / recusar / cancelar) ficam no painel,
-   conforme o papel de quem olha.
+   aprovar com pendências / recusar / cancelar) ficam no painel,
+   conforme o papel de quem olha. Na lista, a troca aprovada com
+   aceite faltando mostra o Pendente (abre a lista dos aceites) antes
+   do Aprovada.
    Registra RosterWork.paginas.trocas = { iniciar }.
    ============================================================ */
 (function () {
@@ -72,7 +74,12 @@
     var info = fmt().situacao(troca.status, !!troca.substitui_troca_id);
     selo.textContent = info.texto;
     selo.classList.add(info.classe);
-    item.addEventListener('click', function () { abrirTroca(item, troca); });
+    /* aprovada com aceite faltando: o Pendente antes do Aprovada, que abre a lista dos aceites (o clique nele não abre o painel) */
+    if (troca.status === 'aprovada' && (troca.aceites || []).some(function (a) { return !a.aceito_em; })) {
+      var pendente = RW.filaResumo.seloAceites(troca.aceites);
+      if (pendente) selo.parentNode.insertBefore(pendente, selo);
+    }
+    item.addEventListener('click', function (e) { if (e.target.closest('.aceites-pendente')) return; abrirTroca(item, troca); });
     return item;
   }
 

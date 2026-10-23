@@ -8,7 +8,8 @@
    Análise e o "Como fica a escala" do registro inteiro, e o rodapé
    com as ações do papel e da situação de quem olha. Editar (no rodapé,
    só na página Trocas): a Parte do E-protocolo do registro inteiro.
-   Expõe RosterWork.trocasPainelVarias.abrir(troca, ctx)
+   Expõe RosterWork.trocasPainelVarias.abrir(troca, ctx) e acao(nome, troca, ctx, botao)
+   (as mesmas ações fora do painel: o cartão que abre ali mesmo)
      troca = uma troca do registro (a primeira, nas Pendências);
      ctx = o mesmo do trocas-painel ({ cpf, ehAdmin, decidir?,
      posicao?, aoMudar(), aoFechar() })
@@ -257,5 +258,5 @@
     });
   }
 
-  RW.trocasPainelVarias = { abrir: abrir };
+  RW.trocasPainelVarias = { abrir: abrir, acao: despachar };
 })();

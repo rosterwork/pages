@@ -79,6 +79,11 @@
   overflow: hidden;
 }
 
+/* o cartão de pendência aberto ali mesmo pode passar da altura: aí a lista rola por dentro */
+.inicio-meio--lado .inicio-pend-lista {
+  overflow-y: auto;
+}
+
 /* caixa com borda (resumo do dia, avisos, pendências, atalhos) */
 .inicio-caixa {
   display: flex;

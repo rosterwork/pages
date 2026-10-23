@@ -66,6 +66,14 @@
   flex-shrink: 0;
 }
 
+/* os selos da linha: o Pendente dos aceites (a aprovada com aceite faltando) e a situação */
+.troca-item-selos {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
 .troca-vazio {
   padding: 24px 16px;
   text-align: center;

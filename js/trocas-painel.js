@@ -13,7 +13,8 @@
    da área): o formulário do trocas-editar.js, que só vem na página
    Trocas; Salvar ou Cancelar volta à leitura.
    O registro de várias trocas abre o painel próprio (trocas-painel-varias.js).
-   Expõe: RosterWork.trocasPainel.abrir(troca, ctx) e as peças (pecas).
+   Expõe: RosterWork.trocasPainel.abrir(troca, ctx), acao(nome, troca, ctx, botao)
+   (as mesmas ações fora do painel: o cartão que abre ali mesmo) e as peças (pecas).
    ctx = { cpf, ehAdmin, decidir?, posicao?: { n, total }, aoMudar(), aoFechar() }
    ============================================================ */
 (function () {
@@ -22,7 +23,7 @@
 
   var trocaAtual = null;
   var partes = null;       // as partes do painel aberto (geral-decisao)
-  var btnAprovar = null;   // botão Aprovar (ou Aprovar sem confirmação) da troca aberta: travado até a análise chegar
+  var btnAprovar = null;   // botão Aprovar (ou Aprovar com pendências) da troca aberta: travado até a análise chegar
 
   function fmt() { return RW.trocasFormato; }
   function msg() { return RW.mensagens.trocas; }
@@ -243,7 +244,7 @@
         executar(d.aprovar(troca.troca_id, true), btn, ctx, desfazer, true);   // aprovar recalcula a escala → véu
       });
     } else if (acao === 'aprovar-forcar') {
-      /* sem a confirmação do solicitado; quando a análise apontou problema, o mesmo aviso do Aprovar */
+      /* com pendências: sem o aceite do solicitado; quando a análise apontou problema, o mesmo aviso do Aprovar */
       var forcarComProblema = troca._analise && troca._analise.veredito === 'problema';
       confirmarEntao(forcarComProblema ? m.confirmarAprovarComProblema : m.confirmarForcar, true, function () {
         executar(d.aprovar(troca.troca_id, true, true), btn, ctx, desfazer, true);   // força também recalcula a escala → véu
@@ -298,7 +299,7 @@
       if (!btn) return;
       if (!usar[acao]) { if (btn.parentNode) btn.parentNode.removeChild(btn); return; }
       btn.addEventListener('click', function () { despachar(acao, troca, ctx, btn); });
-      /* Aprovar (com ou sem confirmação) depende da análise (aviso "pode quebrar a escala"): trava até ela chegar */
+      /* Aprovar (e Aprovar com pendências) depende da análise (aviso "pode quebrar a escala"): trava até ela chegar */
       if (acao === 'aprovar' || acao === 'aprovar-forcar') { btnAprovar = btn; btn.disabled = true; }
     });
 
@@ -389,6 +390,7 @@
 
   RW.trocasPainel = {
     abrir: abrir,
+    acao: function (nome, troca, ctx, botao) { (troca.registro_varias ? RW.trocasPainelVarias.acao : despachar)(nome, troca, ctx || {}, botao); },
     /* as peças que o painel do registro de várias trocas (trocas-painel-varias.js) também usa */
     pecas: { quando: quando, linhaAceite: linhaAceite, nota: nota, registroEParte: registroEParte, confirmarEntao: confirmarEntao, executar: executar }
   };

@@ -53,11 +53,15 @@
       </div>
     </div>
 
-    <!-- só administrador: o que espera a decisão dele e o que precisa de conserto -->
+    <!-- só administrador: o que espera a decisão dele, as trocas que esperam o aceite dos militares e o que precisa de conserto -->
     <div class="pedido-secoes coluna-leitura oculto" data-aba-painel="administracao">
       <div class="pedido-secao">
         <span class="rotulo-secao">Para aprovar</span>
         <div class="pedido-lista" id="pendencias-aprovar"></div>
+      </div>
+      <div class="pedido-secao oculto" id="pendencias-secao-acompanhar">
+        <span class="rotulo-secao">Aguardando os militares</span>
+        <div class="pedido-lista" id="pendencias-acompanhar"></div>
       </div>
       <div class="pedido-secao" id="pendencias-secao-corrigir">
         <span class="rotulo-secao">Para corrigir</span>
