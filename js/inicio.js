@@ -382,7 +382,12 @@
     var resolvido = !p.andamento;
     var meta = pe.metaServico(RW.data.comDiaCurto(p.data), RW.fila.trecho(p.horario_inicio, p.horario_fim));
     var c;
-    if (p.tipo === 'troca') {
+    if (p.tipo === 'troca' && p.varias) {
+      /* as várias trocas: um cartão por registro, com os militares (quem pediu primeiro) e o RW nº */
+      var mv = M.trocas.varias, nomes = p.militares || [];
+      c = { icone: ICONE_PEDIDO.troca, quem: mv.linhaMilitares(mv.nomes(nomes)), selo: RW.trocasFormato.situacao(p.situacao, false),
+            meta: mv.filaMeta(RW.data.comDiaCurto(p.data), nomes.length, M.trocas.registroNumero(p.registro_numero, p.registro_ano)) };
+    } else if (p.tipo === 'troca') {
       c = { icone: ICONE_PEDIDO.troca, meta: meta, selo: RW.trocasFormato.situacao(p.situacao, p.alteracao),
             quem: p.alteracao ? mi.trocaAlteracao(outro) : (p.papel === 'solicitante' ? mi.trocaVoce(outro, resolvido) : mi.trocaOutro(outro, resolvido)) };
     } else if (p.tipo === 'folga') {
