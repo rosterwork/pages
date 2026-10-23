@@ -333,7 +333,9 @@
     cel.classList.toggle('escala-mes-celula--busca', tem && lista.some(function (m) { return RW.busca.casaMilitar(buscaTermo, m); }));
     Array.prototype.forEach.call(cel.querySelectorAll(':scope > .extra-vaga:not(.extra-vaga--fantasma)'), function (v) {
       var m = porCpf[v.dataset.cpf];
-      v.classList.toggle('oculto', tem && buscaModo === 'filtrar' && !(m && RW.busca.casaMilitar(buscaTermo, m)));
+      var casa = tem && !!m && RW.busca.casaMilitar(buscaTermo, m);
+      v.classList.toggle('busca-achado', casa);   // a vaga do militar: o que o Enter da busca percorre (geral-busca.js)
+      v.classList.toggle('oculto', tem && buscaModo === 'filtrar' && !casa);
     });
   }
   function aplicarBuscaGrade() {

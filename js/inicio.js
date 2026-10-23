@@ -14,7 +14,9 @@
    (inicio_meus_pedidos); para o administrador, também a aba
    Administração. Cada lista mostra o que cabe na altura da tela e o
    Ver todos leva ao resto. A página aparece inteira de uma vez (o véu
-   espera tudo), e a troca de mês usa o mesmo véu. Só clona moldes.
+   espera tudo), e a troca de mês usa o mesmo véu; no celular, puxar o
+   calendário para o lado (ou tocar nas setas) troca deslizando, sem o
+   véu (geral-deslizar-mes.js). Só clona moldes.
    ============================================================ */
 (function () {
   'use strict';
@@ -166,15 +168,24 @@
     el.mesHoje.classList.toggle('oculto', estado.mes.getFullYear() === hoje.getFullYear() && estado.mes.getMonth() === hoje.getMonth());
   }
 
-  /* lê e desenha o mês (embaixo do véu: o mês anterior fica até o novo chegar); só a última leitura pedida
-     desenha. A promessa sempre se cumpre, com falha também (a mensagem fica no lugar do calendário) */
+  function mesVizinho(direcao) { return new Date(estado.mes.getFullYear(), estado.mes.getMonth() + direcao, 1); }
+  function chaveMes(mes) { return 'inicio_calendario|' + iso(mes); }
+
+  function buscarMes(mes) {
+    var fim = new Date(mes.getFullYear(), mes.getMonth() + 1, 0);
+    return RW.rpc('inicio_calendario', { p_inicio: iso(mes), p_fim: iso(fim) });
+  }
+
+  /* lê e desenha o mês (embaixo do véu, ou fora da tela ao deslizar: o mês anterior fica até o novo chegar),
+     com a leitura já começada pelo deslize quando é a deste mês; só a última leitura pedida desenha. A promessa
+     sempre se cumpre, com falha também (a mensagem fica no lugar do calendário) */
   function carregarMes() {
     var pedido = ++estado.pedido;
     estado.dados = null;
     atualizarBarra();
     limparDia();
-    var fim = new Date(estado.mes.getFullYear(), estado.mes.getMonth() + 1, 0);
-    return RW.rpc('inicio_calendario', { p_inicio: iso(estado.mes), p_fim: iso(fim) }).then(function (r) {
+    var antecipada = RW.deslizarMes && RW.deslizarMes.usarAntecipada(chaveMes(estado.mes));
+    return (antecipada || buscarMes(estado.mes)).then(function (r) {
       if (pedido !== estado.pedido || !el.calendario.isConnected) return;
       if (!r || !r.dias) { estadoCalendario('tpl-escala-estado', RW.mensagens.inicio.falhaCarregar); return; }
       estado.dados = { dias: r.dias, unidades: r.unidades || {} };
@@ -544,9 +555,20 @@
     estado.mes = new Date(RW.data.diaDeServico().getFullYear(), RW.data.diaDeServico().getMonth(), 1);
     estado.selecionado = null;
 
-    /* a barra do mês: setas, Hoje e o nome, que abre a escolha do mês */
-    porId('inicio-mes-anterior').addEventListener('click', function () { irParaMes(new Date(estado.mes.getFullYear(), estado.mes.getMonth() - 1, 1)); });
-    porId('inicio-mes-proximo').addEventListener('click', function () { irParaMes(new Date(estado.mes.getFullYear(), estado.mes.getMonth() + 1, 1)); });
+    /* celular: puxar o calendário para o lado troca de mês, deslizando, sem o véu (geral-deslizar-mes.js) */
+    var deslize = RW.deslizarMes ? RW.deslizarMes.ligar(el.calendario, {
+      destino: function (direcao) { return RW.deslizarMes.nomeMes(mesVizinho(direcao), estado.mes); },
+      antecipar: function (direcao) {
+        var mes = mesVizinho(direcao);
+        RW.deslizarMes.antecipar(chaveMes(mes), function () { return buscarMes(mes); });
+      },
+      ir: function (direcao) { estado.mes = mesVizinho(direcao); return carregarMes(); }
+    }) : null;
+
+    /* a barra do mês: setas (no celular, deslizando como o dedo), Hoje e o nome, que abre a escolha do mês */
+    function irPelaSeta(direcao) { if (!deslize || !deslize.ir(direcao)) irParaMes(mesVizinho(direcao)); }
+    porId('inicio-mes-anterior').addEventListener('click', function () { irPelaSeta(-1); });
+    porId('inicio-mes-proximo').addEventListener('click', function () { irPelaSeta(1); });
     el.mesHoje.addEventListener('click', function () { irParaMes(RW.data.diaDeServico()); });
     if (RW.calendario) RW.calendario.ligar(el.mesNome, {
       ancora: el.mesNome.closest('.geral-periodo'),

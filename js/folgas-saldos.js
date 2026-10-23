@@ -53,6 +53,7 @@
       selo.textContent = fmt().saldoTexto(m.saldo_minutos);
       var classe = fmt().saldoSeloClasse(m.saldo_minutos);
       if (classe) selo.classList.add(classe);
+      if (termoBusca) item.classList.add('busca-achado');   // filtrada, a lista só tem quem casa: o que o Enter percorre (geral-busca.js)
       item.addEventListener('click', function () { abrir(item, m); });
       bloquinho.appendChild(item);
       adicionou++;
@@ -71,26 +72,16 @@
   /* a árvore avisa quais militares estão nas unidades marcadas (base do picker de "Dar folga") */
   function aoRenderizar(visiveis) { militaresVisiveis = visiveis || []; }
 
+  /* liga a busca pelo componente geral (espera da digitação, limpar e Enter); aqui ela só filtra, sem modo */
   function ligarBusca(conteudo) {
     var caixa = conteudo.querySelector('#busca-folgas');
-    var entrada = conteudo.querySelector('#busca-folgas-entrada');
-    var limpar = conteudo.querySelector('#busca-folgas-limpar');
-    if (!entrada) return;
-    var tmr = null;
-    entrada.addEventListener('input', function () {
-      var v = entrada.value.trim();
-      if (caixa) caixa.classList.toggle('busca--com-texto', v !== '');
-      clearTimeout(tmr);
-      tmr = setTimeout(function () {
-        termoBusca = v;
+    if (!caixa || !RW.busca) return;
+    RW.busca.criar({
+      caixa: caixa,
+      aoBuscar: function (termo) {
+        termoBusca = termo;
         if (RW.arvoreUnidades) RW.arvoreUnidades.atualizar();
-      }, 250);
-    });
-    if (limpar) limpar.addEventListener('click', function () {
-      entrada.value = ''; termoBusca = '';
-      if (caixa) caixa.classList.remove('busca--com-texto');
-      entrada.focus();
-      if (RW.arvoreUnidades) RW.arvoreUnidades.atualizar();
+      }
     });
   }
 

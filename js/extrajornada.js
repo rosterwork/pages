@@ -6,9 +6,12 @@
    para trás só meses com dados, para frente para no próximo mês; o "Hoje"
    aparece só fora do mês atual e volta para ele. Também é o dono do
    seletor Agenda | Calendário, um só para as abas Calendário e
-   Distribuição: trocar redesenha a aba ativa (aoMudarModo). No celular,
+   Distribuição: abre na escolha lembrada do tipo de aparelho, a mesma
+   da Escala (geral-visao-grade), e trocar redesenha a aba ativa
+   (aoMudarModo). No celular,
    liga o seletor de unidade (geral-seletor-unidade.js), que a Agenda do
-   Calendário e da Distribuição mostra e o resto esconde. Todos
+   Calendário e da Distribuição mostra e o resto esconde, e, na aba
+   Calendário, o deslize do mês (geral-deslizar-mes.js). Todos
    veem Calendário e Voluntários; Distribuição e Relatórios são só do
    administrador (sem elas, os dois grupos de abas viram um só, sem o
    traço). Clicar num dia (Calendário ou Distribuição) abre o painel do
@@ -31,6 +34,7 @@
   var abaAtual = 'calendario';
   var navAnt = null;   // Date do mês anterior alcançável (ou null = seta travada)
   var navProx = null;  // Date do próximo mês alcançável (ou null)
+  var deslize = null;  // o deslize do mês do celular (as setas usam a mesma troca)
   var ouvintesLigados = false;
 
   function iso(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-01'; }
@@ -122,14 +126,16 @@
     });
   }
 
-  /* troca o mês compartilhado (com guarda de edição não salva da aba ativa) e recarrega a aba */
+  /* troca o mês compartilhado (com guarda de edição não salva da aba ativa) e recarrega a aba; devolve o que a
+     aba devolve ao recarregar (o Calendário: a promessa do mês desenhado) ou null, quando espera a confirmação */
   function irParaMes(nova) {
     var mods = modulosDa(abaAtual);
     function aplicar() {
       if (RW.painel && RW.painel.estaAberto()) RW.painel.fechar();
       RW.extrajornadaMes.definir(nova);
       atualizarSeletor();
-      mods.forEach(function (m) { if (m && m.renderMes) m.renderMes(); });
+      var desenhos = mods.map(function (m) { return (m && m.renderMes) ? m.renderMes() : null; });
+      return desenhos[0];
     }
     var mod = mods[0];
     if (mod && mod.estaSujo && mod.estaSujo() && RW.confirmar) {
@@ -140,14 +146,53 @@
         textoCancelar: RW.mensagens.botoes.continuarEditando,
         aoConfirmar: aplicar
       });
-    } else {
-      aplicar();
+      return null;
     }
+    return aplicar();
+  }
+
+  /* o mês vizinho alcançável (null = a seta travada daquele lado) */
+  function mesVizinho(direcao) { return direcao < 0 ? navAnt : navProx; }
+
+  /* celular, aba Calendário (Agenda e Calendário): puxar a grade para o lado troca de mês, deslizando; as
+     setas também (geral-deslizar-mes.js). Sem mês alcançável para aquele lado, só o elástico */
+  function ligarDeslize(conteudo) {
+    if (!RW.deslizarMes) return null;
+    return RW.deslizarMes.ligar(conteudo.querySelector('.pagina-corpo'), {
+      area: '.escala-mes, .geral-calendario-mes',
+      ativo: function () { return noCelular() && abaAtual === 'calendario'; },
+      destino: function (direcao) {
+        var mes = mesVizinho(direcao);
+        return mes ? RW.deslizarMes.nomeMes(mes, RW.extrajornadaMes.obter()) : null;
+      },
+      antecipar: function (direcao) {
+        var mes = mesVizinho(direcao);
+        if (mes && RW.extrajornadaDados) RW.extrajornadaDados.anteciparCalendario(iso(mes));
+      },
+      ir: function (direcao) {
+        var mes = mesVizinho(direcao);
+        return mes ? Promise.resolve(irParaMes(mes)) : null;
+      }
+    });
+  }
+
+  function irPelaSeta(direcao) {
+    var mes = mesVizinho(direcao);
+    if (mes && (!deslize || !deslize.ir(direcao))) irParaMes(mes);
   }
 
   function painelVisivel(conteudo, nome, mostra) {
     var e = conteudo.querySelector('.pagina-corpo [data-aba-painel="' + nome + '"]');
     if (e) e.classList.toggle('oculto', !mostra);
+  }
+
+  /* marca Agenda ou Calendário no seletor (o menu do celular acompanha o seletor sozinho) */
+  function marcarModo(valor) {
+    Array.prototype.forEach.call(el.modos.querySelectorAll('.aba'), function (a) {
+      var ativa = a.getAttribute('data-modo') === valor;
+      a.classList.toggle('aba--ativa', ativa);
+      a.setAttribute('aria-selected', ativa ? 'true' : 'false');
+    });
   }
 
   /* as abas ficam em dois grupos que valem como uma escolha só: marca a escolhida e desmarca a do outro grupo */
@@ -232,17 +277,21 @@
     el.legenda = RW.legenda ? RW.legenda.montar(conteudo.querySelector('#extra-legenda')) : null;
     el.legendaDivisor = conteudo.querySelector('#extra-legenda-divisor');
     el.hoje = conteudo.querySelector('#extra-periodo-hoje');
-    if (el.ant) el.ant.addEventListener('click', function () { if (navAnt) irParaMes(navAnt); });
-    if (el.prox) el.prox.addEventListener('click', function () { if (navProx) irParaMes(navProx); });
+    deslize = ligarDeslize(conteudo);
+    if (el.ant) el.ant.addEventListener('click', function () { irPelaSeta(-1); });
+    if (el.prox) el.prox.addEventListener('click', function () { irPelaSeta(1); });
     /* "Hoje": volta ao mês atual; as grades abrem roladas em hoje */
     if (el.hoje) el.hoje.addEventListener('click', function () { irParaMes(mesInicial()); });
     /* celular: o seletor de unidade da Agenda, na barra da página */
     if (RW.seletorUnidade) RW.seletorUnidade.iniciar(conteudo);
-    /* Agenda | Calendário: a aba ativa redesenha no modo escolhido (no celular, o menu "Agenda ▾") */
+    /* Agenda | Calendário: abre na escolha do tipo de aparelho, a mesma da Escala, e a troca fica lembrada
+       (geral-visao-grade); a aba ativa redesenha no modo escolhido (no celular, o menu "Agenda ▾") */
     el.modos = conteudo.querySelector('#extra-escala-modos');
+    if (el.modos && RW.visaoGrade) marcarModo(RW.visaoGrade.agendaOuCalendario());
     if (el.modos && RW.abas && !el.modos.dataset.ligado) {
       el.modos.dataset.ligado = '1';
-      RW.abas.ligar(el.modos, function () {
+      RW.abas.ligar(el.modos, function (aba) {
+        if (RW.visaoGrade) RW.visaoGrade.gravar({ agendaOuCalendario: aba.getAttribute('data-modo') });
         modulosDa(abaAtual).forEach(function (m) { if (m && m.aoMudarModo) m.aoMudarModo(); });
       });
     }

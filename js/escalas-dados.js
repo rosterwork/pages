@@ -13,9 +13,23 @@
   /* grade do mês (RPC ler_escala_mes): por unidade×dia devolve militares + afastados + cobertura +
      erro (por hora, para o gráfico: 0 verde, 1 vermelho, 2 amarelo). A RPC entrega { unidade: { dia: {...} } };
      aqui só reorganizamos nas tabelas que o render consome. Os afastados (férias, licença, dispensa)
-     ficam à parte: só a Escala os mostra, com o filtro Afastamentos */
+     ficam à parte: só a Escala os mostra, com o filtro Afastamentos. Usa a leitura já começada pelo deslize
+     do mês (celular) quando é a do mesmo pedido */
   function carregar(unidadesIds, inicio, fim) {
     var ids = (unidadesIds || []).map(Number);
+    var antecipada = RosterWork.deslizarMes && RosterWork.deslizarMes.usarAntecipada(chaveMes(ids, inicio, fim));
+    return antecipada || buscarMes(ids, inicio, fim);
+  }
+
+  /* o deslize do mês (geral-deslizar-mes.js): o dedo passou do ponto, a leitura do mês vizinho já começa */
+  function antecipar(unidadesIds, inicio, fim) {
+    var ids = (unidadesIds || []).map(Number);
+    if (RosterWork.deslizarMes) RosterWork.deslizarMes.antecipar(chaveMes(ids, inicio, fim), function () { return buscarMes(ids, inicio, fim); });
+  }
+
+  function chaveMes(ids, inicio, fim) { return 'ler_escala_mes|' + ids.join(',') + '|' + inicio + '|' + fim; }
+
+  function buscarMes(ids, inicio, fim) {
     return RosterWork.apiFetch('/rest/v1/rpc/ler_escala_mes', {
       metodo: 'POST', corpo: { p_unidade_ids: ids, p_inicio: inicio, p_fim: fim }
     })
@@ -168,7 +182,7 @@
   }
 
   window.RosterWork.escalasDados = {
-    carregar: carregar, carregarMilitares: carregarMilitares, lerMilitarDia: lerMilitarDia,
+    carregar: carregar, antecipar: antecipar, carregarMilitares: carregarMilitares, lerMilitarDia: lerMilitarDia,
     lerDistribuicaoDia: lerDistribuicaoDia, lerAlteracoesDia: lerAlteracoesDia, simularDia: simularDia, salvarDia: salvarDia,
     lerImpressao: lerImpressao, lerImpressaoErros: lerImpressaoErros, lerSysbm: lerSysbm,
     continuosListar: continuosListar, cicloRetirarAnalisar: cicloRetirarAnalisar, cicloSalvarLote: cicloSalvarLote,

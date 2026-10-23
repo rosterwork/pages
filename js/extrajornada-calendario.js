@@ -217,11 +217,12 @@
     RW.extrajornadaGrade.abrirEmHoje(el.grade.querySelector('.escala-mes, .geral-calendario-mes'));
   }
 
+  /* a promessa se cumpre com o mês desenhado (ou o aviso de falha no lugar): o deslize do mês espera por ela */
   function carregar() {
-    if (!ativo() || !RW.extrajornadaDados) return;
+    if (!ativo() || !RW.extrajornadaDados) return null;
     var req = ++cargaSeq;
     carregando();
-    RW.extrajornadaDados.carregarCalendario(iso(comp)).then(function (r) {
+    return RW.extrajornadaDados.carregarCalendario(iso(comp)).then(function (r) {
       if (!ativo() || req !== cargaSeq) return;
       if (!r || !r.ok) { estado((r && r.error) || msg().falha); return; }
       desenhar(r);
@@ -237,6 +238,7 @@
     Array.prototype.forEach.call(el.grade.querySelectorAll('.linha-escalado'), function (l) {
       var casa = RW.busca.casaTexto(buscaTermo, l.getAttribute('data-busca'));
       l.classList.toggle('linha-escalado--busca', !!buscaTermo && casa && buscaModo === 'marcar');
+      l.classList.toggle('busca-achado', !!buscaTermo && casa);   // o que o Enter da busca percorre (geral-busca.js)
       l.classList.toggle('oculto', !!buscaTermo && !casa && buscaModo === 'filtrar');
       /* a nota acompanha a linha dela */
       var n = l.nextElementSibling;
@@ -305,7 +307,7 @@
     if (el.grade) el.grade.textContent = '';
   }
   /* o orquestrador trocou o mês */
-  function renderMes() { comp = RW.extrajornadaMes.obter(); carregar(); }
+  function renderMes() { comp = RW.extrajornadaMes.obter(); return carregar(); }
   /* o seletor Agenda | Calendário mudou: redesenha com a última resposta */
   function aoMudarModo() { if (ativo() && ultimo && ultimo.ok) desenhar(ultimo); }
 

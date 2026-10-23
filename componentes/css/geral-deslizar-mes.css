@@ -1,0 +1,151 @@
+/* ============================================================
+   DESLIZAR O MÊS — componente compartilhado do celular
+   Puxar a grade do mês para o lado troca de mês: o mês acompanha o
+   dedo (o palco anda pelo --deslize-deslocamento) e a etiqueta do
+   mês de destino sai da borda (--deslize-progresso, de 0 a 1) e
+   escurece no ponto (--pronta). A marca data-deslize-borda de cada
+   área escolhe o que o navegador ainda rola para o lado
+   (touch-action); o resto do dedo é do gesto. Exceção da regra de
+   transição: o transform do palco e da etiqueta (Guia visual). No
+   computador não existe. Comportamento:
+   componentes/js/geral-deslizar-mes.js. Moldes #tpl-deslize-etiqueta
+   e #tpl-deslize-carregando (index.html).
+   ============================================================ */
+
+/* os deslocamentos não passam para dentro: mudar a cada quadro refaz só o estilo do próprio elemento */
+@property --deslize-deslocamento {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --deslize-progresso {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+
+.deslize-etiqueta,
+.deslize-carregando {
+  display: none;
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   ============================================================ */
+@media (max-width: 767px) {
+  /* a área encostada numa borda (ou nas duas): o navegador rola só para o lado que ainda tem o que rolar,
+     e nunca volta a página pelo gesto de lado */
+  html[data-celular] [data-deslize-borda] {
+    overscroll-behavior-x: contain;
+  }
+
+  html[data-celular] [data-deslize-borda="ambas"] {
+    touch-action: pan-y pinch-zoom;
+  }
+
+  html[data-celular] [data-deslize-borda="inicio"] {
+    touch-action: pan-right pan-y pinch-zoom;
+  }
+
+  html[data-celular] [data-deslize-borda="fim"] {
+    touch-action: pan-left pan-y pinch-zoom;
+  }
+
+  /* o palco acompanha o dedo; o pai corta o que passa da borda (sem virar área que rola) */
+  html[data-celular] [data-deslize-movendo] {
+    transform: translateX(var(--deslize-deslocamento));
+    will-change: transform;
+  }
+
+  html[data-celular] [data-deslize-moldura] {
+    overflow: clip;
+  }
+
+  html[data-celular] [data-deslize-andando] {
+    transition: transform 0.2s ease;
+  }
+
+  html[data-celular] [data-deslize-entrando] {
+    transition: transform 0.25s ease-out;
+  }
+
+  /* a etiqueta do mês de destino: presa à tela, na altura do meio da grade, saindo da borda com o dedo */
+  html[data-celular] .deslize-etiqueta--visivel {
+    position: fixed;
+    top: var(--deslize-etiqueta-y);
+    z-index: 8;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-height: var(--botao-altura);
+    padding: 0 12px;
+    border: 1px solid var(--borda);
+    border-radius: var(--raio-total);
+    background-color: var(--fundo-superficie);
+    box-shadow: var(--sombra-flutuante);
+    font-size: var(--fonte-padrao);
+    font-weight: 600;
+    color: var(--texto-forte);
+    white-space: nowrap;
+    pointer-events: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+
+  html[data-celular] .deslize-etiqueta--anterior {
+    left: 8px;
+    transform: translate(calc((var(--deslize-progresso) - 1) * (100% + 8px)), -50%);
+  }
+
+  html[data-celular] .deslize-etiqueta--proximo {
+    right: 8px;
+    transform: translate(calc((1 - var(--deslize-progresso)) * (100% + 8px)), -50%);
+  }
+
+  /* só a seta do lado de onde o mês vem */
+  html[data-celular] .deslize-etiqueta--anterior .deslize-etiqueta-seta--proximo,
+  html[data-celular] .deslize-etiqueta--proximo .deslize-etiqueta-seta--anterior {
+    display: none;
+  }
+
+  /* passou do ponto: soltar troca */
+  html[data-celular] .deslize-etiqueta--pronta {
+    border-color: var(--fundo-contraste);
+    background-color: var(--fundo-contraste);
+    color: var(--texto-invertido);
+  }
+
+  /* desfez: volta para a borda; trocou: some no lugar */
+  html[data-celular] .deslize-etiqueta--voltando {
+    transition: transform 0.2s ease, background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+
+  html[data-celular] .deslize-etiqueta--saindo {
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+
+  /* o círculo de carregando no meio da grade, enquanto o mês novo não chega */
+  html[data-celular] .deslize-carregando {
+    position: fixed;
+    top: var(--deslize-circulo-y);
+    left: var(--deslize-circulo-x);
+    z-index: 8;
+    display: flex;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  /* quem pede menos movimento no aparelho: nada desliza; a etiqueta aparece no lugar, conforme o dedo */
+  @media (prefers-reduced-motion: reduce) {
+    html[data-celular] [data-deslize-movendo] {
+      transform: none;
+    }
+
+    html[data-celular] .deslize-etiqueta--anterior,
+    html[data-celular] .deslize-etiqueta--proximo {
+      transform: translateY(-50%);
+      opacity: var(--deslize-progresso);
+    }
+  }
+}

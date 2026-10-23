@@ -10,7 +10,6 @@
   /* busca do sub-cabeçalho */
   var termoBusca = '';
   var modoBusca = 'marcar';   /* 'marcar' (realça) | 'filtrar' (esconde quem não bate) */
-  var debounceBusca = null;
 
   /* card cuja ficha está aberta no painel (realce do selecionado) */
   var cardSelecionado = null;
@@ -208,6 +207,7 @@
     var correcao = item.querySelector('.usuario-item-correcao');
     if (correcao) correcao.classList.toggle('oculto', !(pessoa.correcao_pendente && RosterWork.sessao.podeAdministrar('pelotao', pessoa.lotacao_atual)));
     if (casa && modoBusca === 'marcar') item.classList.add('linha-militar--marcada');
+    if (casa) item.classList.add('busca-achado');   // o que o Enter da busca percorre (geral-busca.js)
     item.classList.add('linha-militar--clicavel');
     item.addEventListener('click', function () { abrirFicha(item, pessoa); });
     container.appendChild(item);
@@ -266,45 +266,18 @@
     if (total > 0) container.appendChild(bloquinho);
   }
 
-  /* liga a busca: botão de modo (marcar↔filtrar), o input (com debounce) e o limpar */
+  /* liga a busca pelo componente geral (modo marcar↔filtrar, espera da digitação, limpar e Enter) */
   function ligarBusca(conteudo) {
     var caixa = conteudo.querySelector('#busca-usuarios');
-    var entrada = conteudo.querySelector('#busca-entrada');
-    var botaoModo = conteudo.querySelector('#busca-modo');
-    var iconeMarcar = conteudo.querySelector('.busca-modo-marcar');
-    var iconeFiltrar = conteudo.querySelector('.busca-modo-filtrar');
-    var limpar = conteudo.querySelector('#busca-limpar');
-    if (!entrada) return;
-
-    if (botaoModo) {
-      botaoModo.addEventListener('click', function () {
-        modoBusca = (modoBusca === 'marcar') ? 'filtrar' : 'marcar';
-        if (iconeMarcar) iconeMarcar.classList.toggle('oculto', modoBusca !== 'marcar');
-        if (iconeFiltrar) iconeFiltrar.classList.toggle('oculto', modoBusca !== 'filtrar');
-        botaoModo.setAttribute('data-dica', modoBusca === 'marcar' ? 'Marcar' : 'Filtrar');
+    if (!caixa || !window.RosterWork.busca) return;
+    window.RosterWork.busca.criar({
+      caixa: caixa,
+      aoBuscar: function (termo, modo) {
+        termoBusca = termo;
+        modoBusca = modo;
         if (window.RosterWork.arvoreUnidades) window.RosterWork.arvoreUnidades.atualizar();
-      });
-    }
-
-    entrada.addEventListener('input', function () {
-      var valor = entrada.value.trim();
-      if (caixa) caixa.classList.toggle('busca--com-texto', valor !== '');
-      clearTimeout(debounceBusca);
-      debounceBusca = setTimeout(function () {
-        termoBusca = valor;
-        if (window.RosterWork.arvoreUnidades) window.RosterWork.arvoreUnidades.atualizar();
-      }, 250);
+      }
     });
-
-    if (limpar) {
-      limpar.addEventListener('click', function () {
-        entrada.value = '';
-        termoBusca = '';
-        if (caixa) caixa.classList.remove('busca--com-texto');
-        entrada.focus();
-        if (window.RosterWork.arvoreUnidades) window.RosterWork.arvoreUnidades.atualizar();
-      });
-    }
   }
 
   /* monta a árvore de graus (Oficiais/Praças > patentes) das pessoas visíveis,
@@ -348,9 +321,10 @@
   /* o que as abas de afastamento usam daqui: a árvore, a busca, a ordem, os graus, a ficha e a contagem */
   var emprestado = {
     atualizar: function () { if (window.RosterWork.arvoreUnidades) window.RosterWork.arvoreUnidades.atualizar(); },
+    /* 'marcar' (casa, no marcar) · 'casa' (casa, no filtrar) · 'esconder' (não casa, no filtrar) · '' (sem busca ou não casa, no marcar) */
     busca: function (pessoa) {
       if (!termoBusca) return '';
-      if (pessoaCasaBusca(pessoa)) return modoBusca === 'marcar' ? 'marcar' : '';
+      if (pessoaCasaBusca(pessoa)) return modoBusca === 'marcar' ? 'marcar' : 'casa';
       return modoBusca === 'filtrar' ? 'esconder' : '';
     },
     ordenar: function (pessoas) { return ordenarPessoas(pessoas); },

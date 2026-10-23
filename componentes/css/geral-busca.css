@@ -1,7 +1,8 @@
 /* ============================================================
    BUSCA — pílula de pesquisa (input + ícone à esquerda + limpar)
-   No usuários, o ícone à esquerda é um botão que alterna o modo
-   (marcar / filtrar). O limpar só aparece quando há texto.
+   O ícone à esquerda pode ser um botão que alterna o modo (marcar /
+   filtrar). O limpar só aparece quando há texto. Na barra, o Enter
+   traz o contador e o anel do achado da vez (geral-busca.js).
    ============================================================ */
 
 .busca {
@@ -51,6 +52,32 @@
 .busca-limpar:hover {
   background-color: var(--fundo-medio);
   color: var(--texto);
+}
+
+/* o ícone do modo segue a marca .busca--filtrando (geral-busca.js): lupa no marcar, funil no filtrar */
+.busca-modo-filtrar,
+.busca--filtrando .busca-modo-marcar {
+  display: none;
+}
+
+.busca--filtrando .busca-modo-filtrar {
+  display: inline;
+}
+
+/* o contador do Enter ("2 de 7" ou "Nenhum"), antes do limpar; entra no primeiro Enter (geral-busca.js) */
+.busca-contador {
+  flex-shrink: 0;
+  padding: 0 4px;
+  font-size: 12px;
+  color: var(--texto-suave);
+  white-space: nowrap;
+}
+
+/* o achado da vez do Enter: anel por fora, com um vão de 2px, que se distingue da marca da busca
+   (o .busca-achado sozinho não tem visual: só diz à busca o que casa) */
+.busca-achado.busca-achado--atual {
+  outline: 2px solid var(--texto-forte);
+  outline-offset: 2px;
 }
 
 /* o limpar só aparece quando há texto na busca */
@@ -108,7 +135,8 @@
     opacity: 0;
   }
 
-  html[data-celular] .pagina-subcabecalho .busca:not(.busca--aberta) .busca-limpar {
+  html[data-celular] .pagina-subcabecalho .busca:not(.busca--aberta) .busca-limpar,
+  html[data-celular] .pagina-subcabecalho .busca:not(.busca--aberta) .busca-contador {
     display: none;
   }
 
@@ -117,6 +145,15 @@
     align-self: auto;
     min-width: 0;
     color: var(--texto);
+  }
+
+  /* recolhida, o quadrado mostra sempre a lupa, mesmo no filtrar; aberta, volta o ícone do modo */
+  html[data-celular] .pagina-subcabecalho .busca--filtrando:not(.busca--aberta) .busca-modo-marcar {
+    display: inline;
+  }
+
+  html[data-celular] .pagina-subcabecalho .busca--filtrando:not(.busca--aberta) .busca-modo-filtrar {
+    display: none;
   }
 
   /* aberta: a linha toda, embaixo da linha dos ícones (a ordem das linhas está no geral-pagina-cabecalho.css) */

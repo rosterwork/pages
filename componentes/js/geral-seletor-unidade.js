@@ -5,7 +5,7 @@
    unidade, o seletor fica na barra da página e, no celular, vira o
    menu "2ºPEL ▾" (geral-abas.js), de largura fixa, na linha dos
    ícones, à esquerda (geral-seletor-unidade.css); deslizar o dedo
-   para o lado na grade também troca (para a esquerda, a próxima). As
+   para o lado na grade troca de mês (geral-deslizar-mes.js). As
    células das outras unidades somem (escalas-mes.css) sem refazer a
    grade, e a grade é rolada para o mesmo dia continuar no mesmo
    lugar. Começa na unidade do próprio militar (se estiver entre as da
@@ -13,14 +13,13 @@
    Calendário não usa o seletor: mostra todas as unidades no dia, como
    no computador. O seletor é o molde #tpl-seletor-unidade
    (index.html). Clona moldes; não cria HTML nem escreve estilo.
-   API: RosterWork.seletorUnidade.iniciar(conteudo) · mostrar(unidades) · aplicar(wrap)
+   API: RosterWork.seletorUnidade.iniciar(conteudo) · mostrar(unidades) · aplicar(wrap) e, para o Enter
+   da busca: unidadeDe(el) · ordem(id) · escolhida() · escolher(id)
    ============================================================ */
 (function () {
   'use strict';
 
   window.RosterWork = window.RosterWork || {};
-
-  var DESLIZE_MINIMO = 48;   // quanto o dedo anda para o lado (px) para contar como deslizar
 
   var conteudo = null;       // o fragmento da página atual (recriado a cada visita)
   var unidades = [];         // as unidades da Agenda, na ordem do seletor ({ id, nome })
@@ -137,33 +136,22 @@
     if (grade) esconderOutras(grade);
   }
 
-  /* na Agenda, deslizar o dedo para o lado troca para a unidade vizinha (para a esquerda, a próxima);
-     o movimento precisa ser mais para o lado que para baixo, senão é a rolagem. Ligado uma vez por corpo */
-  function ligarDeslize(corpo) {
-    if (!corpo || corpo.dataset.deslizeLigado) return;
-    corpo.dataset.deslizeLigado = '1';
-    var inicioX = null;
-    var inicioY = 0;
-    corpo.addEventListener('touchstart', function (evento) {
-      inicioX = null;
-      if (evento.touches.length !== 1 || !evento.target.closest('.escala-mes-grade--com-seletor')) return;
-      inicioX = evento.touches[0].clientX;
-      inicioY = evento.touches[0].clientY;
-    }, { passive: true });
-    corpo.addEventListener('touchcancel', function () { inicioX = null; }, { passive: true });
-    corpo.addEventListener('touchend', function (evento) {
-      if (inicioX === null) return;
-      var toque = evento.changedTouches[0];
-      var andouX = toque.clientX - inicioX;
-      var andouY = toque.clientY - inicioY;
-      inicioX = null;
-      if (Math.abs(andouX) < DESLIZE_MINIMO || Math.abs(andouX) < 2 * Math.abs(andouY)) return;
-      var vizinha = unidades[posicaoEscolhida() + (andouX < 0 ? 1 : -1)];
-      if (!vizinha) return;
-      escolher(String(vizinha.id));
-      /* o topo volta, para mostrar no seletor a unidade que entrou */
-      if (RosterWork.recolherTopo) RosterWork.recolherTopo.mostrar();
-    }, { passive: true });
+  /* para o Enter da busca da barra (geral-busca.js), que percorre as unidades: a unidade de um elemento da
+     Agenda com o seletor (null fora dela), a posição da unidade no seletor e a unidade na tela */
+  function unidadeDe(elemento) {
+    var celula = elemento.closest('.escala-mes-grade--com-seletor .escala-mes-celula');
+    return celula ? celula.dataset.unidadeId : null;
+  }
+
+  function ordem(id) {
+    for (var i = 0; i < unidades.length; i++) {
+      if (String(unidades[i].id) === id) return i;
+    }
+    return -1;
+  }
+
+  function unidadeNaTela() {
+    return (conteudo && conteudo.isConnected && gradeComSeletor()) ? escolhida : null;
   }
 
   /* a página chama isto a cada visita (o fragmento é novo): o seletor entra no começo da barra, para ficar à
@@ -180,8 +168,8 @@
     if (trilho && RosterWork.abas) {
       RosterWork.abas.ligar(trilho, function (aba) { escolher(aba.getAttribute('data-unidade')); });
     }
-    ligarDeslize(conteudo.querySelector('.pagina-corpo'));
   }
 
-  window.RosterWork.seletorUnidade = { iniciar: iniciar, mostrar: mostrar, aplicar: aplicar };
+  window.RosterWork.seletorUnidade = { iniciar: iniciar, mostrar: mostrar, aplicar: aplicar,
+    unidadeDe: unidadeDe, ordem: ordem, escolhida: unidadeNaTela, escolher: escolher };
 })();

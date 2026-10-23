@@ -216,6 +216,7 @@
         var m = pessoas[cpf].dados;
         var casa = !!termoBusca && RW.busca.casaMilitar(termoBusca, { nome: m.nome, nome_completo: m.nome_completo, cpf: cpf });
         pessoas[cpf].linha.classList.toggle('linha-militar--marcada', casa);
+        pessoas[cpf].linha.classList.toggle('busca-achado', casa);   // o que o Enter da busca percorre (geral-busca.js)
         if (casa && !primeira) primeira = pessoas[cpf].linha;
       });
     });

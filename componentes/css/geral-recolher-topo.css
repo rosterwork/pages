@@ -1,18 +1,34 @@
 /* ============================================================
    RECOLHER O TOPO — componente compartilhado do celular
-   Rolar a lista para baixo recolhe o topo (a barra do sistema, o
-   título com as abas e a barra de controles); a abinha no alto da
-   tela traz de volta. Recolhido é leiaute: a margem negativa medida
+   Rolar a lista para baixo com o dedo leva o topo (a barra do
+   sistema, o título com as abas e a barra de controles) junto; a
+   abinha no alto da tela e a etiqueta do período, à esquerda, trazem
+   de volta. Recolhido é leiaute: a margem negativa medida
    (--topo-app-altura e --topo-pagina-altura) tira o topo e o corpo
    ocupa o lugar. O movimento é só deslocamento (transform), para não
    recalcular a página a cada quadro: --topo-app-deslocamento e
-   --topo-pagina-deslocamento (dado da tela, geral-recolher-topo.js).
-   Exceção da regra de transição: o transform do topo do celular,
-   0,25s (Guia visual). No computador não existe.
-   Molde #tpl-topo-abinha (index.html).
+   --topo-pagina-deslocamento (dado da tela, geral-recolher-topo.js),
+   em cada peça que anda. Exceção da regra de transição: o transform
+   do topo do celular, 0,25s (Guia visual). No computador não existe.
+   Moldes #tpl-topo-abinha e #tpl-topo-periodo (index.html).
    ============================================================ */
 
-.topo-abinha {
+/* os deslocamentos não passam para dentro das peças: mudar a cada quadro (o topo com o dedo) refaz só o
+   estilo da própria peça, não o da página inteira */
+@property --topo-app-deslocamento {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --topo-pagina-deslocamento {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+.topo-abinha,
+.topo-periodo {
   display: none;
 }
 
@@ -30,14 +46,16 @@
     margin-top: calc(-1 * var(--topo-pagina-altura, 0px));
   }
 
-  /* em movimento: só o deslocamento anda */
+  /* em movimento: só o deslocamento anda, cada peça na sua camada */
   html[data-celular][data-topo-movendo] .casca > .cabecalho,
   html[data-celular][data-topo-movendo] .casca-corpo {
-    transform: translateY(var(--topo-app-deslocamento, 0px));
+    transform: translateY(var(--topo-app-deslocamento));
+    will-change: transform;
   }
 
   html[data-celular][data-topo-movendo] .conteudo > .pagina {
-    transform: translateY(var(--topo-pagina-deslocamento, 0px));
+    transform: translateY(var(--topo-pagina-deslocamento));
+    will-change: transform;
   }
 
   html[data-celular][data-topo-andando] .casca > .cabecalho,
@@ -74,8 +92,31 @@
     touch-action: none;
   }
 
+  /* a etiqueta do período: no mesmo desenho da abinha, no alto e à esquerda, com o nome do período da barra
+     (a página sem período não a mostra: .oculto) */
+  html[data-celular][data-topo-recolhido]:not([data-topo-movendo]) .topo-periodo {
+    position: fixed;
+    top: 0;
+    left: 8px;
+    z-index: 8;
+    display: flex;
+    align-items: center;
+    min-height: 22px;
+    padding: 0 8px;
+    border: 1px solid var(--borda);
+    border-top: none;
+    border-radius: 0 0 var(--raio-medio) var(--raio-medio);
+    background-color: var(--fundo-superficie);
+    box-shadow: var(--sombra-flutuante);
+    font-size: var(--fonte-padrao);
+    font-weight: 600;
+    color: var(--texto-forte);
+    white-space: nowrap;
+  }
+
   /* a área de toque desce até a altura do dedo, sem mudar o desenho */
-  html[data-celular] .topo-abinha::before {
+  html[data-celular] .topo-abinha::before,
+  html[data-celular] .topo-periodo::before {
     content: '';
     position: absolute;
     inset: 0 -8px calc(var(--toque-altura-celular) * -1 + 22px);

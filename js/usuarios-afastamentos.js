@@ -143,6 +143,7 @@
       var pilha = item.querySelector('.usuario-afastamento-pilha');
       lista.forEach(function (a) { montarLinha(pilha, a); });
       if (busca === 'marcar') item.classList.add('linha-militar--marcada');
+      if (busca === 'marcar' || busca === 'casa') item.classList.add('busca-achado');   // o que o Enter da busca percorre (geral-busca.js)
       item.addEventListener('click', function () { ctx.abrirFicha(item, pessoa, { secao: aba, ano: ano }); });
       bloquinho.appendChild(item);
       ctx.contar();

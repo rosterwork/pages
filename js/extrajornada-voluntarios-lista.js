@@ -295,6 +295,7 @@
     Array.prototype.forEach.call(el.lista.querySelectorAll('.extra-vol-linha:not(.extra-vol-cab)'), function (l) {
       var casa = !!termo && RW.busca.casaTexto(termo, l.dataset.busca || '');
       l.classList.toggle('extra-vol-linha--busca', casa && busca.modo === 'marcar');
+      l.classList.toggle('busca-achado', casa);   // o que o Enter da busca percorre (geral-busca.js)
       l.classList.toggle('oculto', !!termo && busca.modo === 'filtrar' && !casa);
     });
     Array.prototype.forEach.call(el.lista.querySelectorAll('.extra-vol-bloco'), function (b) {

@@ -63,9 +63,18 @@
       return RosterWork.rpc('extra_lancar', { p_competencia: competenciaISO });
     },
 
-    /* Calendário (todos): o lançado e, depois que o mês começou, o atual (para os riscados) */
+    /* Calendário (todos): o lançado e, depois que o mês começou, o atual (para os riscados); usa a leitura já
+       começada pelo deslize do mês (celular) quando é a do mesmo mês */
     carregarCalendario: function (competenciaISO) {
-      return RosterWork.rpc('extra_calendario', { p_competencia: competenciaISO });
+      var antecipada = RosterWork.deslizarMes && RosterWork.deslizarMes.usarAntecipada('extra_calendario|' + competenciaISO);
+      return antecipada || RosterWork.rpc('extra_calendario', { p_competencia: competenciaISO });
+    },
+    /* o deslize do mês (geral-deslizar-mes.js): o dedo passou do ponto, a leitura do mês vizinho já começa */
+    anteciparCalendario: function (competenciaISO) {
+      if (!RosterWork.deslizarMes) return;
+      RosterWork.deslizarMes.antecipar('extra_calendario|' + competenciaISO, function () {
+        return RosterWork.rpc('extra_calendario', { p_competencia: competenciaISO });
+      });
     },
 
     /* Relatórios (admin): as etapas do mês, o lançado e os ajustes */

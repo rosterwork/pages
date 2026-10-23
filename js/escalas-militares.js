@@ -221,6 +221,7 @@
       for (var j = 0; j < linhas.length; j++) {
         var casa = !termo || (linhas[j].getAttribute('data-busca') || '').indexOf(termo) !== -1;
         linhas[j].classList.toggle('oculto', !casa);
+        linhas[j].classList.toggle('busca-achado', !!termo && casa);   // o que o Enter da busca percorre (geral-busca.js)
         if (casa) visiveis++;
       }
       bloco.classList.toggle('oculto', !!termo && visiveis === 0);

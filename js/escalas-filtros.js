@@ -100,6 +100,7 @@
       var passa = passaFiltros(linha);
       var casa = !!buscaTermo && !!RW.busca && RW.busca.casaTexto(buscaTermo, linha.getAttribute('data-busca'));
       linha.classList.toggle('linha-escalado--busca', passa && casa && buscaModo === 'marcar');
+      linha.classList.toggle('busca-achado', passa && casa);   // o que o Enter da busca percorre (geral-busca.js)
       linha.classList.toggle('oculto', !passa || (!!buscaTermo && !casa && buscaModo === 'filtrar'));
       if (passa && casa) {
         var cel = linha.closest('.escala-mes-celula');
@@ -110,6 +111,7 @@
     Array.prototype.forEach.call(corpo.querySelectorAll('.escala-distribuicao-escalado'), function (linha) {
       var casa = !!buscaTermo && !!RW.busca && RW.busca.casaTexto(buscaTermo, linha.getAttribute('data-busca'));
       linha.classList.toggle('escala-distribuicao-escalado--busca', casa && buscaModo === 'marcar');
+      linha.classList.toggle('busca-achado', casa);
       linha.classList.toggle('oculto', !!buscaTermo && !casa && buscaModo === 'filtrar');
     });
   }

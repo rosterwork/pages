@@ -20,7 +20,9 @@
   /* rola a `area` (o contêiner que rola, ainda no começo) até `hoje` (a linha, a semana ou a coluna de
      hoje), com uma ponta da peça `anterior` à vista antes dele; sem `anterior` (hoje é o primeiro), a área fica no
      começo. opcoes.horizontal: rola para o lado (colunas); opcoes.fixo: a parte que gruda no começo da
-     área (o cabeçalho, ou a coluna da esquerda), que tapa o começo da rolagem e não conta como visível */
+     área (o cabeçalho, ou a coluna da esquerda), que tapa o começo da rolagem e não conta como visível.
+     O fixo pode ser uma lista de peças empilhadas (ex.: a trilha e os títulos da árvore, na busca): cada uma
+     tapa do começo até onde gruda (o top ou o left dela) mais o seu tamanho */
   function rolarAteHoje(area, hoje, anterior, opcoes) {
     if (!area || !hoje || !anterior) return;
     var horizontal = !!(opcoes && opcoes.horizontal);
@@ -32,10 +34,12 @@
     }
 
     var tamanhoFixo = 0;
-    if (fixo && fixo.getClientRects().length) {
-      var caixaFixo = fixo.getBoundingClientRect();
-      tamanhoFixo = horizontal ? caixaFixo.width : caixaFixo.height;
-    }
+    (Array.isArray(fixo) ? fixo : (fixo ? [fixo] : [])).forEach(function (peca) {
+      if (!peca.getClientRects().length) return;
+      var caixaFixo = peca.getBoundingClientRect();
+      var ondeGruda = parseFloat(getComputedStyle(peca)[horizontal ? 'left' : 'top']) || 0;
+      tamanhoFixo = Math.max(tamanhoFixo, ondeGruda + (horizontal ? caixaFixo.width : caixaFixo.height));
+    });
     var comecoVisivel = inicio(area) + (horizontal ? area.clientLeft : area.clientTop) + tamanhoFixo;
     var visivel = (horizontal ? area.clientWidth : area.clientHeight) - tamanhoFixo;
     var caixaHoje = hoje.getBoundingClientRect();

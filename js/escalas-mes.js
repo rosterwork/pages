@@ -36,7 +36,8 @@
     if (no) corpo.appendChild(no);
   }
 
-  /* desenha o mês de opcoes.dataRef para as colunas (unidades) recebidas */
+  /* desenha o mês de opcoes.dataRef para as colunas (unidades) recebidas; a promessa se cumpre com o mês
+     desenhado (ou o aviso de falha no lugar) */
   function renderizar(corpo, opcoes) {
     if (!corpo) return;
     if (window.RosterWork.escalasCelula) RosterWork.escalasCelula.limparObservadores();
@@ -62,7 +63,7 @@
     var ids = colunas.map(function (c) { return c.id; });
 
     var req = ++reqSeq;
-    window.RosterWork.escalasDados.carregar(ids, inicio, fim).then(function (resultado) {
+    return window.RosterWork.escalasDados.carregar(ids, inicio, fim).then(function (resultado) {
       var dados = resultado.militares;
       var afastados = resultado.afastados || {};
       var cobertura = resultado.cobertura || {};

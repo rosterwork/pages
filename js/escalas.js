@@ -83,12 +83,13 @@
   /* ---------- última visão usada (lembrada no banco por usuário, como o tema) ---------- */
 
   /* reabre a Escala na última visão (modo + escolhas do subgrupo); sem nada salvo, fica o Dia do HTML.
+     Agenda | Calendário é a escolha do tipo de aparelho, a mesma da Extrajornada (geral-visao-grade).
      A data não é lembrada: a Escala sempre abre em hoje. A Semana está oculta: quem a usava abre no Mês */
   function restaurarVisao() {
-    var visao = lerPreferencias().escala_visao;
-    if (!visao || typeof visao !== 'object') return;
+    if (!RosterWork.visaoGrade) return;
+    var visao = RosterWork.visaoGrade.ler();
     marcarAba('#escala-modos', 'data-modo', visao.modo === 'semana' ? 'mes' : visao.modo);
-    marcarAba('#escala-sub-mes', 'data-mes', visao.mes);
+    marcarAba('#escala-sub-mes', 'data-mes', RosterWork.visaoGrade.agendaOuCalendario());
     marcarAba('#escala-colunas-tipo', 'data-colunas-tipo', visao.colunas_tipo);
     marcarAba('#escala-colunas-qtd', 'data-colunas', visao.colunas_qtd);
     caberNoCelular();
@@ -103,18 +104,12 @@
     marcarAba('#escala-modos', 'data-modo', 'mes');
   }
 
-  /* guarda a visão atual na sessão e no banco (só quando a pessoa troca; vale em qualquer computador) */
+  /* guarda a visão atual na sessão e no banco (só quando a pessoa troca; vale em qualquer aparelho). A
+     Agenda | Calendário vai para a escolha do tipo de aparelho em uso (geral-visao-grade) */
   function salvarVisao() {
-    var visao = { modo: modoAtual(), mes: subMesAtual(), colunas_tipo: tipoColunasAtual(), colunas_qtd: quantidadeColunas() };
-    var prefs = lerPreferencias();
-    prefs.escala_visao = visao;
-    try { sessionStorage.setItem('rosterwork_preferencias', JSON.stringify(prefs)); } catch (e) {}
-    if (obterToken() && RosterWork.apiFetch) {
-      RosterWork.apiFetch('/rest/v1/rpc/fn_preferencias_salvar', {
-        metodo: 'POST',
-        corpo: { p_escala_visao: visao }
-      }).catch(function () {});   // falhou: só não lembra desta vez (a tela já está certa)
-    }
+    if (!RosterWork.visaoGrade) return;
+    RosterWork.visaoGrade.gravar({ modo: modoAtual(), agendaOuCalendario: subMesAtual(),
+      colunas_tipo: tipoColunasAtual(), colunas_qtd: quantidadeColunas() });
   }
 
   /* subgrupo do modo Mês: 'agenda' ou 'calendario' */
@@ -252,7 +247,8 @@
     corpo.appendChild(tpl.content.cloneNode(true));
   }
 
-  /* desenha o corpo conforme o modo ativo */
+  /* desenha o corpo conforme o modo ativo; no Mês, a promessa se cumpre com o mês desenhado (o deslize do mês
+     espera por ela) */
   function renderizarCorpo() {
     /* Escala sempre fresca: se um salvamento deixou recálculo a completar,
        esvazia a fila (1º plano) antes de mostrar, para nunca exibir dado velho */
@@ -260,10 +256,9 @@
         && window.RosterWork.drenarRecalculo) {
       var corpoEspera = conteudo && conteudo.querySelector('.pagina-corpo');
       if (corpoEspera) mostrarCarregando(corpoEspera);
-      window.RosterWork.drenarRecalculo().then(renderizarCorpoAgora);
-      return;
+      return window.RosterWork.drenarRecalculo().then(renderizarCorpoAgora);
     }
-    renderizarCorpoAgora();
+    return renderizarCorpoAgora();
   }
 
   function renderizarCorpoAgora() {
@@ -287,8 +282,7 @@
     if (modoAtual() === 'mes' && subMesAtual() === 'calendario') {
       if (!window.RosterWork.escalasCalendario) { mostrarEstado(corpo, 'Em construção.'); return; }
       if (!unidades && idsAplicados().length) { mostrarCarregando(corpo); return; }
-      window.RosterWork.escalasCalendario.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData, vigente: vigente, rolarHoje: true });
-      return;
+      return window.RosterWork.escalasCalendario.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData, vigente: vigente, rolarHoje: true });
     }
     /* modo Militares: grade militares × dias da quinzena (navegação por semana, ±7) */
     if (modoAtual() === 'militares') {
@@ -332,7 +326,7 @@
       mostrarCarregando(corpo);
       return;
     }
-    window.RosterWork.escalasMes.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData, vigente: vigente, rolarHoje: true, aoTerminar: aplicarSeletor });
+    return window.RosterWork.escalasMes.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData, vigente: vigente, rolarHoje: true, aoTerminar: aplicarSeletor });
   }
 
   /* ---------- navegação de período (datas reais; semana de domingo a sábado) ---------- */
@@ -455,6 +449,13 @@
     renderizarCorpo();
   }
 
+  /* o 1º dia do mês vizinho do da tela (o deslize do mês: o nome e a leitura antecipada) */
+  function mesVizinho(direcao) { return new Date(refData.getFullYear(), refData.getMonth() + direcao, 1); }
+
+  function dataISO(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
   function navegar(direcao) {
     var modo = modoAtual();
     if (modo === 'dia') {
@@ -470,7 +471,7 @@
       refData.setDate(refData.getDate() + direcao * 7);
     }
     atualizarPeriodo();
-    renderizarCorpo();
+    return renderizarCorpo();
   }
 
   /* ---------- dados das unidades ---------- */
@@ -499,29 +500,19 @@
     montarUnidades();
   }
 
-  /* busca do modo Militares: filtra as linhas da grade (o filtro em si vive no escalas-militares.js) */
+  /* busca do modo Militares pelo componente geral (espera da digitação, limpar e Enter): filtra as linhas da
+     grade (o filtro em si vive no escalas-militares.js) */
   function ligarBuscaMilitares() {
     var caixa = conteudo.querySelector('#escala-busca-militares');
-    var entrada = conteudo.querySelector('#escala-busca-entrada');
-    var limpar = conteudo.querySelector('#escala-busca-limpar');
     /* a caixa de busca volta vazia a cada visita: zera o filtro que persiste no módulo, senão a grade abre filtrada com a busca em branco */
     if (window.RosterWork.escalasMilitares) RosterWork.escalasMilitares.filtrar('');
-    if (!entrada) return;
-
-    entrada.addEventListener('input', function () {
-      var valor = entrada.value.trim();
-      if (caixa) caixa.classList.toggle('busca--com-texto', valor !== '');
-      if (window.RosterWork.escalasMilitares) RosterWork.escalasMilitares.filtrar(valor);
+    if (!caixa || !window.RosterWork.busca) return;
+    RosterWork.busca.criar({
+      caixa: caixa,
+      aoBuscar: function (termo) {
+        if (window.RosterWork.escalasMilitares) RosterWork.escalasMilitares.filtrar(termo);
+      }
     });
-
-    if (limpar) {
-      limpar.addEventListener('click', function () {
-        entrada.value = '';
-        if (caixa) caixa.classList.remove('busca--com-texto');
-        entrada.focus();
-        if (window.RosterWork.escalasMilitares) RosterWork.escalasMilitares.filtrar('');
-      });
-    }
   }
 
   /* a navegação chama isto toda vez que a página de escalas é exibida */
@@ -546,6 +537,21 @@
     /* celular: o seletor de unidade da Agenda (componente geral-seletor-unidade.js) */
     if (window.RosterWork.seletorUnidade) RosterWork.seletorUnidade.iniciar(conteudo);
 
+    /* celular, Mês (Agenda e Calendário): puxar a grade para o lado troca de mês, deslizando; as setas também
+       (geral-deslizar-mes.js) */
+    var deslize = window.RosterWork.deslizarMes ? RosterWork.deslizarMes.ligar(conteudo.querySelector('.pagina-corpo'), {
+      area: '.escala-mes, .geral-calendario-mes',
+      ativo: function () { return !!(RosterWork.celular && RosterWork.celular()) && modoAtual() === 'mes'; },
+      destino: function (direcao) { return RosterWork.deslizarMes.nomeMes(mesVizinho(direcao), refData); },
+      antecipar: function (direcao) {
+        var mes = mesVizinho(direcao);
+        if (RosterWork.escalasDados) RosterWork.escalasDados.antecipar(unidadesColuna().map(function (c) { return c.id; }),
+          dataISO(mes), dataISO(new Date(mes.getFullYear(), mes.getMonth() + 1, 0)));
+      },
+      ir: function (direcao) { return Promise.resolve(navegar(direcao)); }
+    }) : null;
+    function irPelaSeta(direcao) { if (!deslize || !deslize.ir(direcao)) navegar(direcao); }
+
     /* busca do modo Militares; filtros e busca da grade (escalas-filtros.js); o botão Legenda (molde geral) */
     ligarBuscaMilitares();
     if (window.RosterWork.escalasFiltros) RosterWork.escalasFiltros.iniciar(conteudo, modoAtual);
@@ -554,8 +560,8 @@
     var btnAnterior = conteudo.querySelector('#escala-periodo-anterior');
     var btnProximo = conteudo.querySelector('#escala-periodo-proximo');
     var btnHoje = conteudo.querySelector('#escala-periodo-hoje');
-    if (btnAnterior) btnAnterior.addEventListener('click', function () { navegar(-1); });
-    if (btnProximo) btnProximo.addEventListener('click', function () { navegar(1); });
+    if (btnAnterior) btnAnterior.addEventListener('click', function () { irPelaSeta(-1); });
+    if (btnProximo) btnProximo.addEventListener('click', function () { irPelaSeta(1); });
     if (btnHoje) {
       btnHoje.addEventListener('click', function () {
         voltarParaHoje();

@@ -74,7 +74,8 @@
   }
 
   /* desenha o mês de opcoes.dataRef como calendário, com a escala em cada dia
-     (opcoes.diasPorLinha: N colunas contínuas, o Colunas → Dias; ausente = semana dom→sáb) */
+     (opcoes.diasPorLinha: N colunas contínuas, o Colunas → Dias; ausente = semana dom→sáb); a promessa se
+     cumpre com o mês desenhado (ou o aviso de falha no lugar) */
   function renderizar(corpo, opcoes) {
     if (!corpo) return;
     if (window.RosterWork.escalasCelula) RosterWork.escalasCelula.limparObservadores();
@@ -98,7 +99,7 @@
     var ids = colunas.map(function (c) { return c.id; });
 
     var req = ++reqSeq;
-    window.RosterWork.escalasDados.carregar(ids, inicio, fim).then(function (resultado) {
+    return window.RosterWork.escalasDados.carregar(ids, inicio, fim).then(function (resultado) {
       if (!document.contains(corpo) || req !== reqSeq || (opcoes.vigente && !opcoes.vigente())) return;   // saiu da página, outra render começou, ou trocou de modo
       var dados = resultado.militares;
       var afastados = resultado.afastados || {};

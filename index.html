@@ -57,6 +57,7 @@
   <link rel="stylesheet" href="componentes/css/geral-periodo.css" />
   <link rel="stylesheet" href="componentes/css/geral-seletor-unidade.css" />
   <link rel="stylesheet" href="componentes/css/geral-recolher-topo.css" />
+  <link rel="stylesheet" href="componentes/css/geral-deslizar-mes.css" />
   <link rel="stylesheet" href="componentes/css/geral-anteriores.css" />
   <link rel="stylesheet" href="componentes/css/geral-posto-editar.css" />
   <link rel="stylesheet" href="componentes/css/geral-layout-lateral.css" />
@@ -876,10 +877,34 @@
     </button>
   </template>
 
+  <!-- MOLDE: a etiqueta do período com o topo recolhido (componentes/js/geral-recolher-topo.js): no alto, à
+       esquerda, o período da barra da página (o mês, a semana ou o dia); tocar traz o topo de volta -->
+  <template id="tpl-topo-periodo">
+    <button type="button" class="topo-periodo oculto" aria-label="Mostrar o topo">
+      <span class="topo-periodo-texto"></span>
+    </button>
+  </template>
+
+  <!-- MOLDES: deslizar o mês (componentes/js/geral-deslizar-mes.js), no celular. A etiqueta do mês de
+       destino, que sai da borda com o dedo (só a seta do lado de onde o mês vem aparece) -->
+  <template id="tpl-deslize-etiqueta">
+    <div class="deslize-etiqueta" aria-hidden="true">
+      <svg class="icone deslize-etiqueta-seta deslize-etiqueta-seta--anterior" width="16" height="16"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>
+      <span class="deslize-etiqueta-texto"></span>
+      <svg class="icone deslize-etiqueta-seta deslize-etiqueta-seta--proximo" width="16" height="16"><use href="icones/todos.svg#icone-seta-direita"/></svg>
+    </div>
+  </template>
+
+  <!-- o círculo de carregando no meio da grade, enquanto o mês novo não chega -->
+  <template id="tpl-deslize-carregando">
+    <div class="deslize-carregando oculto" role="status" aria-label="Carregando">
+      <div class="giratorio" aria-hidden="true"></div>
+    </div>
+  </template>
+
   <!-- MOLDE: seletor de unidade do celular (componentes/js/geral-seletor-unidade.js), na Agenda (Escala e
        Extrajornada) com mais de uma unidade: uma unidade por tela. Entra no começo da barra da página; no
-       celular vira o menu "2ºPEL ▾" (geral-abas.js), na linha dos ícones, à esquerda; deslizar a grade para o
-       lado também troca -->
+       celular vira o menu "2ºPEL ▾" (geral-abas.js), na linha dos ícones, à esquerda -->
   <template id="tpl-seletor-unidade">
     <div class="abas abas--seletor seletor-unidade oculto" aria-label="Unidade"></div>
   </template>
@@ -966,6 +991,15 @@
         </div>
       </div>
     </div>
+  </template>
+
+  <!-- MOLDE: o contador da busca da barra (componente geral-busca), que entra antes do limpar no primeiro
+       Enter: a posição do achado da vez entre os achados, ou "Nenhum" quando nada casa -->
+  <template id="tpl-busca-contador">
+    <span class="busca-contador" aria-live="polite">
+      <span class="busca-contador-achados"><span class="busca-contador-atual"></span> de <span class="busca-contador-total"></span></span>
+      <span class="busca-contador-nenhum">Nenhum</span>
+    </span>
   </template>
 
   <!-- MOLDES: no celular, o seletor da barra de controles vira este menu suspenso (geral-abas.js). O gatilho
@@ -1698,7 +1732,7 @@
     <div class="busca escala-extra-busca">
       <button type="button" class="busca-modo" aria-label="Alternar entre marcar e filtrar" data-dica="Marcar">
         <svg class="icone busca-modo-marcar" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-pesquisar"/></svg>
-        <svg class="icone busca-modo-filtrar oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-filtrar"/></svg>
+        <svg class="icone busca-modo-filtrar" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-filtrar"/></svg>
       </button>
       <input type="text" name="busca-extra-dia" class="busca-entrada" maxlength="100" placeholder="Pesquisar militar" aria-label="Pesquisar militar" />
       <button type="button" class="busca-limpar" aria-label="Limpar pesquisa">
