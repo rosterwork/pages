@@ -262,14 +262,7 @@
     linha.querySelector('.linha-escalado-grad').textContent = p.grad || '';
     linha.querySelector('.linha-escalado-nome').textContent = p.nome || '';
     if (window.RosterWork.busca) linha.setAttribute('data-busca', window.RosterWork.busca.chave(p));   // busca do sub-cabeçalho (nome/CPF/RG)
-    /* o que os filtros da barra leem: a situação e o grau (com o grupo e a ordem, para a lista de graus) */
-    linha.setAttribute('data-situacao', situacao(p));
-    if (p.grau) {
-      linha.setAttribute('data-grau', p.grau);
-      linha.setAttribute('data-grad', p.grad || '');
-      linha.setAttribute('data-quadro', p.quadro || '');
-      linha.setAttribute('data-grau-ordem', p.grau_ordem != null ? String(p.grau_ordem) : '');
-    }
+    linha.setAttribute('data-situacao', situacao(p));   // o que o filtro Situação da barra lê
     var horaWrap = linha.querySelector('.linha-escalado-hora');
     /* afastado (férias, licença ou dispensa): vem escondido (só aparece com o filtro Afastamentos)
        e, no lugar do horário, "Férias até DD/MM" */

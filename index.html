@@ -1671,6 +1671,26 @@
     </div>
   </template>
 
+  <!-- ===== folga no dia (lápis da caixa De folga; escalas-painel-militar.js) ===== -->
+  <template id="tpl-escala-folga-dia">
+    <div class="subtela escala-militar">
+      <div class="subtela-cab">
+        <span class="subtela-titulo escala-militar-nome">
+          <span class="escala-distribuicao-grad"></span>
+          <span class="escala-militar-nome-texto"></span>
+        </span>
+        <span class="subtela-subtitulo escala-folga-dia-periodo"></span>
+      </div>
+      <div class="nota">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+        <span class="nota-texto"></span>
+      </div>
+      <div class="escala-militar-acoes">
+        <button type="button" class="botao escala-secao-botao--perigo escala-folga-dia-cancelar">Cancelar folga</button>
+      </div>
+    </div>
+  </template>
+
   <!-- uma função do militar no dia: marcada ele continua, desmarcada ele deixa (o efeito aparece embaixo) -->
   <template id="tpl-escala-militar-funcao">
     <div class="escala-militar-funcao">

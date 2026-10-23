@@ -1,13 +1,12 @@
 /* ============================================================
    ESCALAS — filtros e busca da barra de controles
-   O botão Filtros (componente geral-filtros, com as colunas Graus e
-   Situação) vale nos modos de grade (Mês, Semana e Colunas); no Dia
+   O botão Filtros (componente geral-filtros, com a coluna Situação)
+   vale nos modos de grade (Mês, Semana e Colunas); no Dia
    e no Militares fica escondido. A busca (nome/CPF/RG, marcar ou filtrar) vale
    em todos os modos menos o Militares (que tem a sua própria).
    Filtro e busca se aplicam juntos nas linhas de militar já
-   desenhadas: cada linha traz o grau e a situação (escalas-celula.js).
+   desenhadas: cada linha traz a situação (escalas-celula.js).
    Os afastados vêm escondidos e só aparecem com Afastamentos marcado.
-   A lista de graus é montada com quem aparece no período.
    ============================================================ */
 (function () {
   'use strict';
@@ -37,43 +36,22 @@
 
   function filtrosValem() { return !!MODOS_COM_FILTRO[obterModo()]; }
 
-  /* graus de quem aparece no período, em Oficiais e Praças, do mais antigo ao mais moderno */
-  function montarGraus(corpo) {
-    if (!filtros) return;
-    var vistos = {};
-    var grupos = { 'Oficiais': [], 'Praças': [] };
-    Array.prototype.forEach.call(corpo.querySelectorAll('.linha-escalado[data-grau]'), function (linha) {
-      var valor = linha.getAttribute('data-grau');
-      if (!valor || vistos[valor]) return;
-      vistos[valor] = true;
-      var grupo = linha.getAttribute('data-quadro') === 'QPBM' ? 'Praças' : 'Oficiais';
-      grupos[grupo].push({ rotulo: linha.getAttribute('data-grad') || valor, valor: valor, ordem: Number(linha.getAttribute('data-grau-ordem')) || 0 });
-    });
-    var arvore = [];
-    ['Oficiais', 'Praças'].forEach(function (g) {
-      if (!grupos[g].length) return;
-      grupos[g].sort(function (a, b) { return a.ordem - b.ordem; });
-      arvore.push({ rotulo: g, filhos: grupos[g].map(function (x) { return { rotulo: x.rotulo, valor: x.valor }; }) });
-    });
-    filtros.definir('graus', arvore);
-  }
-
   /* a linha passa nos filtros? Situação: "Todos" (padrão) = todos menos os afastados;
      Afastamentos é um acréscimo ("Todos" + Afastamentos = todos e os afastados; desmarcar
      o "Todos" deixa só os afastados) — a regra mora no geral-filtro-arvore */
   function passaFiltros(linha) {
-    return passa(linha.getAttribute('data-situacao'), linha.getAttribute('data-grau'));
+    return passa(linha.getAttribute('data-situacao'));
   }
 
-  function passa(situacao, grau) {
+  function passa(situacao) {
     if (!filtros || !filtrosValem()) return situacao !== 'afastamento';
-    return filtros.passa('graus', grau) && filtros.passa('situacao', situacao);
+    return filtros.passa('situacao', situacao);
   }
 
   /* a pessoa (dado da grade) passa nos filtros da tela? O PDF das grades sai igual à tela */
   function passaPessoa(p) {
     var celula = window.RosterWork.escalasCelula;
-    return passa(celula ? celula.situacao(p) : 'prontidao', p.grau || null);
+    return passa(celula ? celula.situacao(p) : 'prontidao');
   }
 
   /* os filtros ligados, como as etiquetas da linha "Filtros:" (["Situação: Afastamentos", ...]; nenhum = []),
@@ -92,7 +70,6 @@
     var corpo = conteudo.querySelector('.pagina-corpo');
     if (!corpo) return;
     var RW = window.RosterWork;
-    if (filtrosValem()) montarGraus(corpo);
     Array.prototype.forEach.call(corpo.querySelectorAll('.escala-mes-celula--busca'), function (cel) {
       cel.classList.remove('escala-mes-celula--busca');
     });

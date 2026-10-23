@@ -498,6 +498,15 @@
       },
       semServicoNoDia: 'Sem serviço neste dia.',
       folgaSiMesmo: 'Você não pode dar folga a si mesmo.',
+      /* a folga no dia (o lápis da caixa De folga): o horário, o efeito de cancelar e a confirmação */
+      folgaNoDia: function (periodo, contabilizada) {
+        return 'De folga ' + (periodo || 'o dia todo') + ', ' + (contabilizada ? 'contabilizada' : 'não contabilizada');
+      },
+      cancelarFolgaEfeito: function (militar, contabilizada) {
+        return 'Ao cancelar, o ' + militar + ' volta ao serviço no dia e a distribuição é refeita. '
+          + (contabilizada ? 'Como a folga foi contabilizada, as horas dela voltam ao saldo.' : 'Como a folga não foi contabilizada, o saldo dele não muda.');
+      },
+      confirmarCancelarFolga: function (militar, data) { return 'Cancelar a folga do ' + militar + ' em ' + data + '?'; },
       /* modal do banco de horas (Contabilizar · Não contabilizar · Cancelar) */
       contabilizarPontual: function (militar, horas, data) {
         return 'O ' + militar + ' vai trabalhar ' + horas + ' a mais em ' + data + '. Contabilizar +' + horas + ' no banco de horas dele?';
@@ -1519,6 +1528,7 @@
       copiarMensagem: 'Copiar mensagem',
       mensagemCopiada: 'Mensagem copiada',
       cancelarLink: 'Cancelar link',
+      cancelarFolga: 'Cancelar folga',
       salvar: 'Salvar',
       /* modal do banco de horas (folga e pontual) */
       contabilizar: 'Contabilizar',

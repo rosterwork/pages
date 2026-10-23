@@ -3,7 +3,8 @@
    para todos. O admin edita nela: o Adicionar militar (à esquerda)
    e o desfazer/refazer (à direita) ficam no subcabeçalho, cada
    militar tem o lápis (abre o militar no dia) e o ↺ (volta ao
-   automático), o horário sem ninguém vira o botão vermelho "Sem
+   automático), quem está de folga tem o lápis (abre a folga no dia,
+   com o Cancelar folga), o horário sem ninguém vira o botão vermelho "Sem
    ninguém, escolher", e as observações também se editam aqui; o
    título de cada posto tem o Editar posto (escalas-painel-posto.js:
    o efetivo e a troca de viatura, gravados fora do rascunho do dia).
@@ -11,7 +12,7 @@
    Cada mudança grava na hora (escala_dia_salvar, um registro no
    histórico, sem o modal de resumo): o banco devolve o dia gravado e
    a grade atualiza a célula. Rascunho de uma mudança: { ajustes,
-   pontuais, estornar, folgas, observacoes }. O desfazer/
+   pontuais, estornar, folgas, folgas_cancelar, observacoes }. O desfazer/
    refazer grava o caminho de volta (silencioso: ninguém é avisado).
    As sub-telas (formulário e militar no dia) ficam em
    escalas-painel-formulario.js e -militar.js e usam a API daqui
@@ -107,16 +108,16 @@
     return n;
   }
 
-  /* o rascunho mudou o dia gravado? (funções, pontuais, folgas ou observações) */
+  /* o rascunho mudou o dia gravado? (funções, pontuais, folgas dadas ou canceladas, ou observações) */
   function haMudanca() {
     if (!rasc || !base) return false;
     return !mesmosAjustes(base.ajustes, rasc.ajustes) || difPontuais() > 0 || rasc.folgas.length > 0
-      || rasc.observacoes.adicionar.length > 0 || rasc.observacoes.remover.length > 0;
+      || rasc.folgas_cancelar.length > 0 || rasc.observacoes.adicionar.length > 0 || rasc.observacoes.remover.length > 0;
   }
 
   /* o rascunho recomeça do dia gravado */
   function novoRascunho() {
-    rasc = { ajustes: copiar(base.ajustes), pontuais: copiar(base.pontuais), estornar: [], folgas: [],
+    rasc = { ajustes: copiar(base.ajustes), pontuais: copiar(base.pontuais), estornar: [], folgas: [], folgas_cancelar: [],
       observacoes: { adicionar: [], remover: [] } };
   }
 
@@ -142,12 +143,13 @@
   function paraSalvar() {
     var r = paraPrevia();
     r.estornar = rasc.estornar;
+    r.folgas_cancelar = rasc.folgas_cancelar;
     r.observacoes = rasc.observacoes;
     return r;
   }
 
   /* o caminho de volta de uma mudança gravada sobre "antes": a camada manual e os pontuais como estavam, as
-     folgas e as observações que ela criou saem e as observações que ela tirou voltam.
+     folgas e as observações que ela criou saem, e as folgas que ela cancelou e as observações que ela tirou voltam.
      Só volta a ter horas no banco de horas o pontual que as perdeu na mudança (o estorno) */
   function inverso(envio, antes, criadas) {
     criadas = criadas || {};
@@ -168,13 +170,26 @@
       var o = (dados.observacoes || []).filter(function (x) { return x.id === id; })[0];
       if (o) volta.observacoes.adicionar.push(o.texto);
     });
+    /* a folga cancelada volta como era: o mesmo horário e a mesma escolha do banco de horas */
+    (envio.folgas_cancelar || []).forEach(function (id) {
+      var linhas = (dados.folgas || []).filter(function (x) { return x.lancamento_id === id; });
+      if (!linhas.length) return;
+      var f = linhas[0], pr = { hi: null, hf: null };
+      if (!f.dia_inteiro) {
+        var faixas = linhas.map(faixa);
+        pr = periodo([Math.min.apply(null, faixas.map(function (x) { return x[0]; })),
+          Math.max.apply(null, faixas.map(function (x) { return x[1]; }))]);
+      }
+      volta.folgas.push({ cpf: f.cpf, hi: pr.hi, hf: pr.hf, contabilizar: !!f.contabilizada });
+    });
     return volta;
   }
 
-  /* a ida de novo, depois de desfeita: as observações que ela tira voltaram com outro id */
+  /* a ida de novo, depois de desfeita: as observações que ela tira e as folgas que ela cancela voltaram com outro id */
   function refeito(frente, criadas) {
     var f = copiar(frente);
     if (f.observacoes && f.observacoes.remover.length) f.observacoes.remover = copiar((criadas && criadas.observacoes) || []);
+    if (f.folgas_cancelar && f.folgas_cancelar.length) f.folgas_cancelar = copiar((criadas && criadas.folgas) || []);
     return f;
   }
 
@@ -369,6 +384,11 @@
     if (outras.length) cortarAjustes(cpf, horas);
     else rasc.ajustes = rasc.ajustes.filter(function (a) { return a.cpf !== cpf; });
     if (estornar && rasc.estornar.indexOf(cpf) < 0) rasc.estornar.push(cpf);
+  }
+
+  /* Cancelar folga (a folga no dia): a folga sai e o militar volta ao serviço; o desfazer a dá de novo igual */
+  function cancelarFolga(id) {
+    if (rasc.folgas_cancelar.indexOf(id) < 0) rasc.folgas_cancelar.push(id);
   }
 
   function pontualSalvo(cpf) { return (base.pontuais || []).some(function (x) { return x.cpf === cpf; }); }
@@ -774,7 +794,7 @@
     return caixa;
   }
 
-  /* De folga: nome riscado, ícone de folga e o período */
+  /* De folga: nome riscado, ícone de folga e o período; para o admin, o lápis abre a folga no dia */
   function caixaFolgas(folgas) {
     if (!folgas.length) return null;
     var caixa = RosterWork.painel.criarCaixa(msg().deFolga);
@@ -782,8 +802,9 @@
     var grupo = novoGrupo([], null);
     if (!grupo) return caixa;
     folgas.forEach(function (f) {
+      var acoes = ctx.admin && f.lancamento_id ? [botao('tpl-escala-edicao-lapis', function () { abrirFolga(f.lancamento_id); })] : [];
       var linha = linhaMilitar({ cpf: f.cpf, grad: f.grad, nome: f.nome, periodos: [{ hi: f.hi, hf: f.hf }] },
-        { folga: true, icone: 'icone-folgas' });
+        { folga: true, icone: 'icone-folgas', acoes: acoes });
       if (linha) grupo.linhas.appendChild(linha);
     });
     caixa.appendChild(grupo.el);
@@ -871,7 +892,8 @@
   /* ---------- sub-telas (formulário e militar no dia) ---------- */
 
   /* troca a lista por uma sub-tela: "Voltar ao dia" no topo e Cancelar · Aplicar no rodapé.
-     montar(corpo) desenha o conteúdo; aoAplicar() faz a mudança e chama concluirSub() */
+     montar(corpo) desenha o conteúdo; aoAplicar() faz a mudança e chama concluirSub(). Sem textoAplicar (a folga
+     no dia, que grava pelo botão dela), a sub-tela fica sem rodapé e a saída é o Voltar ao dia */
   function abrirSub(textoAplicar, montarConteudo, aoAplicar) {
     if (!ctx || !rasc || !ctx.admin || ctx.salvando) return;
     if (!ctx.emSub) foto = copiar(rasc);   // de uma sub-tela para outra, a foto continua a do dia
@@ -888,6 +910,7 @@
     var rodape = ctx.rodape;
     if (!rodape) return;
     rodape.textContent = '';
+    if (!textoAplicar) { rodape.classList.add('oculto'); return; }
     var tpl = document.getElementById('tpl-escala-sub-acoes');
     if (tpl) rodape.appendChild(tpl.content.cloneNode(true));
     rodape.classList.remove('oculto');
@@ -918,6 +941,7 @@
 
   function abrirFormulario(cfg) { if (RosterWork.escalasPainelFormulario) RosterWork.escalasPainelFormulario.abrir(cfg); }
   function abrirMilitar(cpf) { if (RosterWork.escalasPainelMilitar) RosterWork.escalasPainelMilitar.abrir(cpf); }
+  function abrirFolga(id) { if (RosterWork.escalasPainelMilitar) RosterWork.escalasPainelMilitar.abrirFolga(id); }
 
   /* ---------- ciclo de vida ---------- */
 
@@ -975,6 +999,7 @@
       aplicarColocacao: aplicarColocacao,
       aplicarMilitar: aplicarMilitar,
       darFolga: darFolga,
+      cancelarFolga: cancelarFolga,
       tirarPontual: tirarPontual,
       pontualSalvo: pontualSalvo,
       funcoesDoMilitar: funcoesDoMilitar,
