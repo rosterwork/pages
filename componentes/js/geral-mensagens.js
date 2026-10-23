@@ -1128,7 +1128,7 @@
       extratoMais: 'Ver mais',
       extratoVazio: 'Sem trocas aprovadas entre vocês.',
       extratoFalha: 'Não foi possível carregar o histórico.',
-      /* aba Várias trocas do Solicitar troca (trocas-varias.js e trocas-varias-calendario.js) */
+      /* aba Várias trocas do Solicitar troca e do Registrar troca (trocas-varias.js, trocas-varias-calendario.js e trocas-varias-registrar.js) */
       varias: {
         cumpre: function (trabalha, folga, dia) { return trabalha + ' cumpre a escala de serviço do ' + folga + ' em ' + dia + '.'; },
         devolucao: function (dia) { return ' A devolução ocorrerá no serviço de ' + dia + '.'; },
@@ -1161,6 +1161,8 @@
         confirmarAprovar: function (rw) { return 'Aprovar as trocas do ' + rw + '? A escala é atualizada na hora, em todos os dias.'; },
         confirmarForcar: function (rw) { return 'Aprovar as trocas do ' + rw + ' sem o aceite de todos? A escala é atualizada na hora, em todos os dias.'; },
         confirmarCancelar: function (rw) { return 'Cancelar as trocas do ' + rw + '?'; },
+        /* o Registrar troca (só admin): as trocas entram já aprovadas */
+        confirmarRegistrar: 'Registrar estas trocas? Elas já entram aprovadas e a escala é atualizada na hora, em todos os dias.',
         /* os cartões das Pendências */
         filaMinha: function (quem) { return quem + ' pediu trocas de serviço com você'; },
         filaAdmin: function (nomes) { return 'Trocas de serviço: ' + nomes; },

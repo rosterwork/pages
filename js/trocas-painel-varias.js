@@ -39,8 +39,9 @@
     var a = aceiteDe(t, cpf);
     return !!a && !a.aceito_em && (emAberto(t) || t.status === 'aprovada');
   }
-  /* na Pendências (ctx.decidir) a fila já vem só com o que ele decide; na Trocas vale a área (o banco confere troca a troca) */
-  function admin(t, ctx) { return !!ctx.ehAdmin && (!!ctx.decidir || RW.sessao.podeAdministrar('pelotao', t.solicitante_lotacao)); }
+  /* na Pendências (ctx.decidir) a fila já vem só com o que ele decide; nas outras, a área de qualquer militar do registro
+     (pela unidade nos aceites; o banco confere troca a troca) */
+  function admin(t, ctx) { return !!ctx.ehAdmin && (!!ctx.decidir || RW.trocasFormato.daMinhaArea(t)); }
 
   /* ---------- o corpo ---------- */
   function caixaEscalas(t) {

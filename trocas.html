@@ -223,7 +223,7 @@
   <button type="button" class="botao botao--primario" data-acao="salvar">Salvar</button>
 </template>
 
-<!-- molde: as abas do Solicitar troca, na linha das abas do painel (só no Solicitar comum; trocas-varias.js) -->
+<!-- molde: as abas do Solicitar troca e do Registrar troca, na linha das abas do painel (não no Cobrar; trocas-varias.js) -->
 <template id="tpl-troca-solicitar-abas">
   <div class="abas" id="ts-abas">
     <button type="button" class="aba aba--ativa" data-aba="uma">Uma troca</button>
@@ -232,13 +232,15 @@
 </template>
 
 <!-- molde: a aba Várias trocas (trocas-varias.js): só serviços inteiros, num registro só. Os militares da troca,
-     o calendário dos dias (trocas-varias-calendario.js; em cada dia, quem trabalha e quem folga) e o resumo
-     que o banco monta (duplas, rodas e o que fica sem devolução) -->
+     o calendário dos dias (trocas-varias-calendario.js; em cada dia, quem trabalha e quem folga), o resumo
+     que o banco monta (duplas, rodas e o que fica sem devolução) e, no Registrar, a Análise
+     (trocas-varias-registrar.js). data-modo: o texto de cada modo (solicitar = o militar pede; registrar = o admin registra) -->
 <template id="tpl-troca-varias">
   <div class="trocas-varias">
     <div class="nota">
       <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg>
-      <span class="nota-texto">Só serviços inteiros. Todos os militares aceitam um registro só.</span>
+      <span class="nota-texto" data-modo="solicitar">Só serviços inteiros. Todos os militares aceitam um registro só.</span>
+      <span class="nota-texto oculto" data-modo="registrar">Só serviços inteiros. As trocas entram já aprovadas, e cada militar aceita depois.</span>
     </div>
 
     <div class="grupo-caixa trocas-cartao">
@@ -296,7 +298,8 @@
       <span class="campo-ajuda">Acesos: os dias em que um militar da troca está de serviço e outro está livre. Em cima, quem trabalha; riscado, quem folga.</span>
       <div class="nota" id="tv-dias-espera">
         <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg>
-        <span class="nota-texto">Adicione pelo menos um militar para ver os dias.</span>
+        <span class="nota-texto" data-modo="solicitar">Adicione pelo menos um militar para ver os dias.</span>
+        <span class="nota-texto oculto" data-modo="registrar">Adicione pelo menos dois militares para ver os dias.</span>
       </div>
       <div class="trocas-varias-cal" id="tv-calendario"></div>
     </div>
@@ -315,6 +318,15 @@
         <ol class="trocas-varias-grupo-lista"></ol>
       </div>
       <div class="trocas-varias-notas" id="tv-notas"></div>
+    </div>
+
+    <!-- análise de impacto (só no Registrar): a do registro inteiro, a mesma do Aprovar, desenhada pelo geral-impacto -->
+    <div class="decisao-analise-secao oculto" id="tv-analise">
+      <div class="decisao-analise-cabecalho">
+        <span class="rotulo-secao">Análise</span>
+        <span class="selo decisao-analise-selo oculto"></span>
+      </div>
+      <div class="impacto-analise decisao-analise"></div>
     </div>
   </div>
 </template>
@@ -404,6 +416,12 @@
 <template id="tpl-troca-varias-acoes">
   <button type="button" class="botao" data-acao="cancelar">Cancelar</button>
   <button type="button" class="botao botao--primario" data-acao="solicitar-varias">Solicitar trocas</button>
+</template>
+
+<!-- molde: ações do rodapé da aba Várias trocas no Registrar (o Registrar trocas espera a análise chegar) -->
+<template id="tpl-troca-varias-registrar-acoes">
+  <button type="button" class="botao" data-acao="cancelar">Cancelar</button>
+  <button type="button" class="botao botao--primario" data-acao="registrar-varias">Registrar trocas</button>
 </template>
 
 <!-- molde: linha de uma troca na lista -->

@@ -2,7 +2,8 @@
    TROCAS — o calendário da aba Várias trocas
    O mês em miniatura (geral-mini-calendario) com os dias da troca:
    aceso = um militar da troca de serviço e outro livre (o banco diz,
-   fn_trocas_varias_dias, de amanhã em diante); marcado = verde, com
+   fn_trocas_varias_dias, de amanhã em diante; no Registrar, de 7 dias
+   atrás em diante, e a seta volta até esse mês); marcado = verde, com
    quem trabalha em cima e quem folga embaixo, riscado.
    Clicar num dia aceso: com uma opção só em "Quem trabalha?" e em
    "Quem folga?", marca direto; senão abre o quadro do dia (um
@@ -27,6 +28,13 @@
   function militar(cpf) { return est.militares.filter(function (m) { return m.cpf === cpf; })[0] || null; }
   function paresDoDia(dia) { return est.pares.filter(function (p) { return p.data === dia; }); }
   function mesAtual() { var h = new Date(); return new Date(h.getFullYear(), h.getMonth(), 1); }
+  /* o mês mais antigo das setas: o de hoje; no Registrar, o de 7 dias atrás */
+  function mesMinimo() {
+    if (!est.registrar) return mesAtual();
+    var h = new Date();
+    var d = new Date(h.getFullYear(), h.getMonth(), h.getDate() - 7);
+    return new Date(d.getFullYear(), d.getMonth(), 1);
+  }
 
   /* quem ainda pode entrar num par novo do dia: tira quem já está num par dele (cada militar entra uma vez por dia) */
   function opcoesDoDia(dia) {
@@ -46,7 +54,7 @@
     if (espera) espera.classList.toggle('oculto', est.militares.length > 1);
     if (est.militares.length < 2) { desenhar(); return; }
     var ini = est.mes, fim = new Date(est.mes.getFullYear(), est.mes.getMonth() + 1, 0);
-    RW.trocasDados.variasDias(est.militares.map(function (m) { return m.cpf; }), iso(ini), iso(fim)).then(function (r) {
+    RW.trocasDados.variasDias(est.militares.map(function (m) { return m.cpf; }), iso(ini), iso(fim), est.registrar).then(function (r) {
       if (meu !== req || !est) return;
       if (!r || !r.ok) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: (r && r.erro) || RW.mensagens.trocas.varias.falhaDias }); }
       else (r.dias || []).forEach(function (d) { disp[String(d.data).slice(0, 10)] = d; });
@@ -62,7 +70,7 @@
   function desenhar() {
     if (!est || !q('#tv-calendario')) return;
     q('#tv-mes-nome').textContent = RW.mensagens.trocas.imprimir.mes(MESES[est.mes.getMonth()], est.mes.getFullYear());
-    q('#tv-mes-anterior').disabled = est.mes.getTime() <= mesAtual().getTime();
+    q('#tv-mes-anterior').disabled = est.mes.getTime() <= mesMinimo().getTime();
     var dias = [];
     RW.miniCalendario.renderizar(q('#tv-calendario'), {
       dataRef: est.mes,
@@ -154,10 +162,10 @@
     menu.appendChild(c);
   }
 
-  /* ---------- o mês: as setas (não volta antes do mês de hoje) ---------- */
+  /* ---------- o mês: as setas (não volta antes do mês mínimo) ---------- */
   function mudarMes(delta) {
     est.mes = new Date(est.mes.getFullYear(), est.mes.getMonth() + delta, 1);
-    if (est.mes.getTime() < mesAtual().getTime()) est.mes = mesAtual();
+    if (est.mes.getTime() < mesMinimo().getTime()) est.mes = mesMinimo();
     recarregar();
   }
 

@@ -1,15 +1,18 @@
 /* ============================================================
-   TROCAS — a aba Várias trocas do Solicitar troca
-   No Solicitar comum, o trocas-solicitar.js chama montar(): as abas
-   Uma troca | Várias trocas na linha das abas do painel; cada aba
-   guarda o que foi preenchido, o rodapé muda com ela e a Várias
+   TROCAS — a aba Várias trocas do Solicitar troca e do Registrar troca
+   No Solicitar e no Registrar, o trocas-solicitar.js chama montar():
+   as abas Uma troca | Várias trocas na linha das abas do painel; cada
+   aba guarda o que foi preenchido, o rodapé muda com ela e a Várias
    trocas abre o painel largo. Aqui ficam o E-protocolo da aba, os
-   militares da troca (o primeiro é quem pede), o resumo que o banco
-   monta (fn_trocas_varias_montar: duplas, rodas e o que fica sem
-   devolução, com as notas do saldo) e o envio (um registro só, com
-   o Desfazer no resumo). O calendário é o trocas-varias-calendario.js.
+   militares da troca (no Solicitar, o primeiro é quem pede; no
+   Registrar, a lista começa vazia e o admin não entra), o resumo que
+   o banco monta (fn_trocas_varias_montar: duplas, rodas e o que fica
+   sem devolução, com as notas do saldo) e o envio do pedido (um
+   registro só, com o Desfazer no resumo). O calendário é o
+   trocas-varias-calendario.js; a Análise e a gravação do Registrar,
+   o trocas-varias-registrar.js.
    Expõe RosterWork.trocasVarias.{ montar, temDados, encerrar }
-     montar({ corpo, aoSolicitar, aoMudar, cancelar })
+     montar({ corpo, registrar, aoSolicitar, aoMudar, cancelar })
    ============================================================ */
 (function () {
   'use strict';
@@ -22,6 +25,7 @@
   function C() { return RW.trocasCampos; }
   function M() { return RW.mensagens.trocas.varias; }
   function Cal() { return RW.trocasVariasCalendario; }
+  function Reg() { return RW.trocasVariasRegistrar; }
   function q(sel) { return est && est.raiz ? est.raiz.querySelector(sel) : null; }
 
   /* ---------- as abas: cada uma guarda os dados; o rodapé e a largura mudam com ela ---------- */
@@ -46,11 +50,12 @@
   function montarRodape() {
     var rodape = RW.painel.rodape();
     Array.prototype.forEach.call(rodape.children, function (b) { b.setAttribute('data-aba-rodape', 'uma'); });
-    var frag = document.getElementById('tpl-troca-varias-acoes').content.cloneNode(true);
+    var frag = document.getElementById(est.registrar ? 'tpl-troca-varias-registrar-acoes' : 'tpl-troca-varias-acoes').content.cloneNode(true);
     Array.prototype.forEach.call(frag.children, function (b) { b.setAttribute('data-aba-rodape', 'varias'); b.classList.add('oculto'); });
     frag.querySelector('[data-acao="cancelar"]').addEventListener('click', est.cancelar);
-    var enviarBtn = frag.querySelector('[data-acao="solicitar-varias"]');
+    var enviarBtn = frag.querySelector(est.registrar ? '[data-acao="registrar-varias"]' : '[data-acao="solicitar-varias"]');
     enviarBtn.addEventListener('click', function () { enviar(enviarBtn); });
+    if (est.registrar) Reg().iniciar(est, enviarBtn);   // a Análise trava o Registrar trocas até chegar
     rodape.appendChild(frag);
   }
 
@@ -76,7 +81,8 @@
       linha.querySelector('.trocas-varias-militar-nome').textContent = m.nome;
       linha.querySelector('.trocas-varias-militar-lotacao').textContent = m.unidade;
       var remover = linha.querySelector('.trocas-varias-remover');
-      if (i === 0) { linha.querySelector('.trocas-varias-militar-voce').classList.remove('oculto'); remover.remove(); }
+      /* no Solicitar, o primeiro é quem pede (fica sempre); no Registrar, todos podem sair */
+      if (i === 0 && !est.registrar) { linha.querySelector('.trocas-varias-militar-voce').classList.remove('oculto'); remover.remove(); }
       else remover.addEventListener('click', function () { pedirRemover(m); });
       lista.appendChild(linha);
     });
@@ -129,7 +135,7 @@
       atual: function () { return est.escolhido; },
       aoEscolher: function (mil) { est.escolhido = mil; q('#tv-adicionar').disabled = false; },
       aoPerder: function () { est.escolhido = null; q('#tv-adicionar').disabled = true; },
-      ignorar: function () { return est.militares.map(function (m) { return m.cpf; }); }   // quem já está na troca
+      ignorar: function () { return [RW.sessao.cpf()].concat(est.militares.map(function (m) { return m.cpf; })); }   // quem está logado (no Registrar, o admin não entra) e quem já está na troca
     });
     est.combo.habilitar(false);
     est.combo.definir(RW.mensagens.trocas.modalUnidadeAntes, true);
@@ -147,6 +153,7 @@
 
   /* ---------- o resumo: o banco monta (duplas, rodas, sem devolução) e diz o saldo ---------- */
   function agendarResumo() {
+    if (est.registrar) Reg().agendarAnalise();   // no Registrar, a Análise acompanha os dias
     if (timerResumo) clearTimeout(timerResumo);
     reqResumo++;
     var carregando = q('#tv-resumo-carregando');
@@ -209,9 +216,10 @@
   function enviar(btn) {
     if (!validarParte()) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.camposCorrigir }); return; }
     if (!est.pares.length) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: M().semDias }); return; }
-    var parte = parteNumero(), aoSolicitar = est.aoSolicitar, aoMudar = est.aoMudar;
+    var parte = parteNumero(), ano = parte ? parteAno() : null, aoSolicitar = est.aoSolicitar, aoMudar = est.aoMudar;
+    if (est.registrar) { Reg().registrar(parte, ano); return; }   // confirma e grava já aprovado (trocas-varias-registrar.js)
     if (RW.iniciarCarregando) RW.iniciarCarregando(btn);
-    RW.trocasDados.variasSolicitar(est.pares, parte, parte ? parteAno() : null).then(function (r) {
+    RW.trocasDados.variasSolicitar(est.pares, parte, ano).then(function (r) {
       if (RW.pararCarregando) RW.pararCarregando(btn);
       if (!r || !r.ok) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: (r && r.erro) || RW.mensagens.trocas.falhaAcao }); return; }
       RW.painel.fechar();
@@ -238,13 +246,15 @@
     if (!raiz || !RW.painel.largo) return;
     raiz.classList.add('oculto');
     opcoes.corpo.appendChild(raiz);
-    var u = RW.sessao.perfil();
+    var u = RW.sessao.perfil(), registrar = !!opcoes.registrar;
     est = {
-      raiz: raiz, corpo: opcoes.corpo, aoSolicitar: opcoes.aoSolicitar, aoMudar: opcoes.aoMudar, cancelar: opcoes.cancelar,
-      militares: [militarDe({ cpf: RW.sessao.cpf(), grau_abreviacao: u && u.grau_abreviacao, nome_de_guerra: u && u.nome_de_guerra },
-                            (u && u.lotacao_path) ? u.lotacao_path.split(' / ').pop() : '')],
+      raiz: raiz, corpo: opcoes.corpo, registrar: registrar, aoSolicitar: opcoes.aoSolicitar, aoMudar: opcoes.aoMudar, cancelar: opcoes.cancelar,
+      /* no Solicitar, quem pede já entra; no Registrar, a lista começa vazia */
+      militares: registrar ? [] : [militarDe({ cpf: RW.sessao.cpf(), grau_abreviacao: u && u.grau_abreviacao, nome_de_guerra: u && u.nome_de_guerra },
+                                             (u && u.lotacao_path) ? u.lotacao_path.split(' / ').pop() : '')],
       pares: [], combo: null, unidadeSel: null, escolhido: null, mes: null
     };
+    RW.trocasSolicitar.formulario.mostrarModo(raiz, registrar ? 'registrar' : 'solicitar');   // os textos de cada modo
     montarAbas();
     montarRodape();
     q('#tv-parte-ano').value = String(new Date().getFullYear());
@@ -258,12 +268,13 @@
   /* há algo preenchido na aba? (o X, o Esc, o Cancelar e o navegador pedem para descartar) */
   function temDados() {
     if (!est) return false;
-    return est.pares.length > 0 || est.militares.length > 1 || !!(q('#tv-parte') && q('#tv-parte').value.trim());
+    return est.pares.length > 0 || est.militares.length > (est.registrar ? 0 : 1) || !!(q('#tv-parte') && q('#tv-parte').value.trim());
   }
   function encerrar() {
     if (timerResumo) clearTimeout(timerResumo);
     reqResumo++;
     if (Cal()) Cal().encerrar();
+    if (Reg()) Reg().encerrar();
     est = null;
   }
 

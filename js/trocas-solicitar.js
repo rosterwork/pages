@@ -10,9 +10,9 @@
    ou Marcar dia). Os campos ficam em trocas-solicitar-campos.js;
    aqui ficam a abertura, os modos, o E-protocolo, a análise, a
    validação e o envio. Ações no rodapé do painel; o X/Esc
-   confirmam o descarte quando há dados. No Solicitar comum (não
-   no Cobrar nem no Registrar), as abas Uma troca | Várias trocas:
-   a aba nova fica no trocas-varias.js.
+   confirmam o descarte quando há dados. No Solicitar e no
+   Registrar (não no Cobrar), as abas Uma troca | Várias trocas:
+   a aba Várias trocas fica no trocas-varias.js.
    Expõe RosterWork.trocasSolicitar.{ ligar, abrir, formulario }.
      ligar({ aoSolicitar, aoMudar }) — guarda os callbacks (1x)
      abrir(opcoes) — abre o painel e monta o formulário:
@@ -325,9 +325,9 @@
       RW.trocasDados.meusServicos(RosterWork.sessao.cpf(), null).then(function (l) { if (ctx === meu) ctx.meusServicos = Array.isArray(l) ? l : []; }).catch(function () {});
     }
     carregarUnidades();
-    /* no Solicitar comum, as abas Uma troca | Várias trocas (a aba nova mora no trocas-varias.js) */
-    if (!registrar && !ctx.cobrar && RW.trocasVarias) {
-      RW.trocasVarias.montar({ corpo: corpo, aoSolicitar: cbs.aoSolicitar, aoMudar: cbs.aoMudar, cancelar: cancelar });
+    /* no Solicitar e no Registrar, as abas Uma troca | Várias trocas (a aba Várias trocas mora no trocas-varias.js) */
+    if (!ctx.cobrar && RW.trocasVarias) {
+      RW.trocasVarias.montar({ corpo: corpo, registrar: registrar, aoSolicitar: cbs.aoSolicitar, aoMudar: cbs.aoMudar, cancelar: cancelar });
     }
   }
 

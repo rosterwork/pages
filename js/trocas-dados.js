@@ -4,7 +4,8 @@
      RosterWork.trocasDados   — chamadas às funções do banco
      RosterWork.trocasFormato — helpers de exibição (data, nome,
                                 situação e veredito) usados pela
-                                lista e pelo painel.
+                                lista e pelo painel, e a área do
+                                administrador (daMinhaArea).
    ============================================================ */
 (function () {
   'use strict';
@@ -34,11 +35,13 @@
     saldoEntre: function (outroCpf) { return RosterWork.rpc('fn_trocas_saldo_entre', { p_outro_cpf: outroCpf }); },
     /* extrato paginado dos lançamentos (serviço/devolução) entre dois militares */
     historicoPar: function (aCpf, bCpf, limite, deslocamento) { return RosterWork.rpc('fn_trocas_historico_par', { p_a_cpf: aCpf, p_b_cpf: bCpf, p_limite: limite, p_deslocamento: deslocamento }); },
-    /* várias trocas: o calendário (quem pode folgar e trabalhar em cada dia), o resumo (duplas, rodas, sem devolução),
-       o pedido e o cancelamento do registro inteiro (desfazer = apaga o pedido em aberto) */
-    variasDias: function (cpfs, inicio, fim) { return RosterWork.rpc('fn_trocas_varias_dias', { p_cpfs: cpfs, p_inicio: inicio, p_fim: fim }); },
+    /* várias trocas: o calendário (quem pode folgar e trabalhar em cada dia; registrar = o do Registrar, de 7 dias atrás em diante),
+       o resumo (duplas, rodas, sem devolução), o pedido, o Registrar (só admin: grava já aprovado; ensaio = só a Análise)
+       e o cancelamento do registro inteiro (desfazer = apaga o pedido em aberto ou o registro feito pela administração) */
+    variasDias: function (cpfs, inicio, fim, registrar) { return RosterWork.rpc('fn_trocas_varias_dias', { p_cpfs: cpfs, p_inicio: inicio, p_fim: fim, p_registrar: !!registrar }); },
     variasMontar: function (dias) { return RosterWork.rpc('fn_trocas_varias_montar', { p_dias: dias }); },
     variasSolicitar: function (dias, parte, ano) { return RosterWork.rpc('fn_trocas_varias_solicitar', { p_dias: dias, p_parte_numero: parte, p_parte_ano: ano }); },
+    variasRegistrar: function (dias, parte, ano, ensaio) { return RosterWork.rpc('fn_trocas_varias_registrar', { p_dias: dias, p_parte_numero: parte, p_parte_ano: ano, p_ensaio: !!ensaio }); },
     variasCancelar: function (registroId, desfazer) { return RosterWork.rpc('fn_trocas_varias_cancelar', { p_registro_id: registroId, p_desfazer: !!desfazer }); },
     /* o registro de várias trocas: a resposta de cada militar, a decisão da administração, a Parte e os dados do registro */
     variasResponder: function (registroId, aceitar, motivo) { return RosterWork.rpc('fn_trocas_varias_responder', { p_registro_id: registroId, p_aceitar: aceitar, p_motivo: motivo || null }); },
@@ -107,12 +110,22 @@
     return { texto: texto, classe: CLASSE_SITUACAO[status] || 'selo--escuro' };
   }
 
+  /* quem está logado administra algum militar da troca (no registro de várias, de qualquer troca dele)?
+     os aceites trazem a unidade de cada militar; sem eles, vale a de quem pediu (o banco confere de novo) */
+  function daMinhaArea(troca) {
+    var podeAdministrar = function (lotacao) { return RW.sessao.podeAdministrar('pelotao', lotacao); };
+    var aceites = (troca && troca.aceites) || [];
+    if (!aceites.length) return podeAdministrar(troca && troca.solicitante_lotacao);
+    return aceites.some(function (a) { return podeAdministrar(a.lotacao); });
+  }
+
   RW.trocasFormato = {
     dataLonga: dataLonga,
     dataCurta: dataCurta,
     dataNumerica: dataNumerica,
     nomeMilitar: nomeMilitar,
     metaLista: metaLista,
-    situacao: situacao
+    situacao: situacao,
+    daMinhaArea: daMinhaArea
   };
 })();

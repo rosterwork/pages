@@ -312,9 +312,9 @@
   function quemAceita(troca) { return troca.confirma_cpf || troca.parceiro_cpf; }
   function quemPediu(troca) { return quemAceita(troca) === troca.solicitante_cpf ? troca.parceiro_cpf : troca.solicitante_cpf; }
   /* quem administra um dos dois militares: na Pendências (ctx.decidir) a lista já vem só com o que ele
-     decide; na página Trocas, que traz só a lotação de quem pediu, vale a área dela (o banco confere os dois) */
+     decide; nas outras, a área de qualquer um dos dois (pela unidade nos aceites; o banco confere de novo) */
   function adminDaTroca(troca, ctx) {
-    return !!ctx.ehAdmin && (!!ctx.decidir || RosterWork.sessao.podeAdministrar('pelotao', troca.solicitante_lotacao));
+    return !!ctx.ehAdmin && (!!ctx.decidir || RW.trocasFormato.daMinhaArea(troca));
   }
   /* editam os dois militares e o admin da área, na troca em aberto ou aprovada, uma alteração por vez */
   function podeEditar(troca, ctx) {

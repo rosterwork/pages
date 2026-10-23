@@ -104,7 +104,7 @@
     var mes = form.mes.getFullYear() + '-' + doisDig(form.mes.getMonth() + 1);
     return form.todas.filter(function (t) {
       if (SITUACOES.indexOf(t.status) < 0 || String(t.data_servico_solicitante).slice(0, 7) !== mes) return false;
-      return t.solicitante_cpf === cpf || t.parceiro_cpf === cpf || RW.sessao.podeAdministrar('pelotao', t.solicitante_lotacao);
+      return t.solicitante_cpf === cpf || t.parceiro_cpf === cpf || RW.trocasFormato.daMinhaArea(t);
     }).sort(function (a, b) {
       return String(a.data_servico_solicitante).localeCompare(String(b.data_servico_solicitante)) || hora(a.horario_inicio).localeCompare(hora(b.horario_inicio));
     });
