@@ -286,8 +286,6 @@
               <button type="button" class="aba aba--ativa" data-painel-modo="ver">Ver</button>
               <button type="button" class="aba" data-painel-modo="editar">Editar</button>
             </div>
-            <!-- botão Editar (config.botaoEditar): sai da leitura para a edição; some durante a edição -->
-            <button type="button" class="botao oculto" id="painel-editar">Editar</button>
             <button type="button" class="botao botao--icone" id="painel-fechar" aria-label="Fechar painel">
               <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
             </button>
@@ -2167,12 +2165,14 @@
        Recusar = o militar chamado para a troca; Recusar (admin) = a administração;
        Cancelar alteração = quem pediu a alteração de uma troca aprovada (a troca continua);
        Aceitar (aceitar-depois) = o aceite que falta no registro, que não mexe na escala;
+       Editar = os dois militares e o admin da área, só na página Trocas (troca a leitura pelo formulário);
        Imprimir registro = o PDF do registro técnico, no começo do rodapé (o espaçador leva as ações para a direita) -->
   <template id="tpl-troca-acoes">
     <button type="button" class="botao botao--quadrado" data-acao="imprimir-registro" aria-label="Imprimir registro" data-dica="Imprimir registro">
       <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg>
     </button>
     <span class="espacador-flex" data-espacador></span>
+    <button type="button" class="botao" data-acao="editar">Editar</button>
     <button type="button" class="botao" data-acao="cancelar">Cancelar troca</button>
     <button type="button" class="botao" data-acao="cancelar-alteracao">Cancelar alteração</button>
     <button type="button" class="botao botao--perigo" data-acao="recusar">Recusar</button>
@@ -2193,12 +2193,14 @@
     </div>
   </template>
   <!-- o rodapé do painel do registro de várias trocas (trocas-painel-varias.js; o JS deixa só as ações do papel e da situação):
-       Cancelar pedido = quem pediu, em aberto; Cancelar trocas = a administração, na aprovada (desfaz a escala) -->
+       Cancelar pedido = quem pediu, em aberto; Cancelar trocas = a administração, na aprovada (desfaz a escala);
+       Editar = só a Parte, na página Trocas -->
   <template id="tpl-troca-varias-registro-acoes">
     <button type="button" class="botao botao--quadrado" data-acao="imprimir-registro" aria-label="Imprimir registro" data-dica="Imprimir registro">
       <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg>
     </button>
     <span class="espacador-flex" data-espacador></span>
+    <button type="button" class="botao" data-acao="editar">Editar</button>
     <button type="button" class="botao" data-acao="cancelar-pedido">Cancelar pedido</button>
     <button type="button" class="botao" data-acao="cancelar">Cancelar trocas</button>
     <button type="button" class="botao botao--perigo" data-acao="recusar">Recusar</button>

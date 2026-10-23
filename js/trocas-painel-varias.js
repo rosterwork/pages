@@ -6,8 +6,8 @@
    uma linha por dia, lidas do fn_trocas_registro; o saldo, quando a
    conta não fecha; Aceites e aprovação: todos os militares), a
    Análise e o "Como fica a escala" do registro inteiro, e o rodapé
-   com as ações do papel e da situação de quem olha. Editar (só na
-   página Trocas): a Parte do E-protocolo do registro inteiro.
+   com as ações do papel e da situação de quem olha. Editar (no rodapé,
+   só na página Trocas): a Parte do E-protocolo do registro inteiro.
    Expõe RosterWork.trocasPainelVarias.abrir(troca, ctx)
      troca = uma troca do registro (a primeira, nas Pendências);
      ctx = o mesmo do trocas-painel ({ cpf, ehAdmin, decidir?,
@@ -22,6 +22,7 @@
   var registro = null;     // o registro lido do banco (os dias e o saldo)
   var btnAprovar = null;   // travado até a análise chegar
   var parteAntes = '';     // a Parte quando o Editar abriu (o X com mudança pede para descartar)
+  var comEditar = false;   // o Editar só na página Trocas, onde está o molde da Parte
   var guardaLigado = false;
 
   function P() { return RW.trocasPainel.pecas; }
@@ -98,7 +99,9 @@
     var d = RW.trocasDados, reg = t.registro_id, n = rw(t), executar = P().executar, confirmar = P().confirmarEntao;
     var desfazer = { desfazer: desfazerAprovacao(t, ctx) };
     var problema = t._analise && t._analise.veredito === 'problema';
-    if (acao === 'imprimir-registro') {
+    if (acao === 'editar') {
+      RW.painel.editar();   // o aoMudarModo('editar') abre a Parte no lugar da leitura
+    } else if (acao === 'imprimir-registro') {
       RW.trocasRegistroPdf.imprimir(t.troca_id, btn);
     } else if (acao === 'aceitar') {
       confirmar(mv().confirmarAceitar(n), false, function () { executar(d.variasResponder(reg, true), btn, ctx); });
@@ -139,6 +142,7 @@
       if (aceitePendente(t, eu)) usar['aceitar-depois'] = true;
     }
     usar['imprimir-registro'] = !!RW.trocasRegistroPdf && (participa(t, eu) || ehAdmin);
+    usar.editar = comEditar && ['pendente_confirmacao', 'pendente_aprovacao', 'aprovada'].indexOf(t.status) >= 0 && (participa(t, eu) || ehAdmin);
     var espacador = frag.querySelector('[data-espacador]');
     if (espacador && !usar['imprimir-registro']) espacador.parentNode.removeChild(espacador);
     Array.prototype.forEach.call(frag.querySelectorAll('[data-acao]'), function (btn) {
@@ -170,7 +174,6 @@
   function desenharLeitura(t, ctx) {
     montarCorpo(t, ctx);
     montarAcoes(t, ctx);
-    if (RW.trocasEditar && document.getElementById('tpl-troca-varias-parte')) RW.painel.liberarEditar(['pendente_confirmacao', 'pendente_aprovacao', 'aprovada'].indexOf(t.status) >= 0 && (participa(t, ctx.cpf) || admin(t, ctx)));
     if (emAberto(t)) {
       carregarAnalise(t);
       RW.decisao.escala(partes, function () { return RW.rpc('pedido_escala_comparar', { p_tipo: 'troca', p_id: t.troca_id }); });
@@ -226,13 +229,12 @@
     var situacao = RW.trocasFormato.situacao(t.status, false).texto;
     var subtitulo = ctx.posicao ? RW.mensagens.decisao.posicao(situacao, ctx.posicao.n, ctx.posicao.total) : situacao;
     /* o Editar só na página Trocas, onde está o molde da Parte (o JS da Trocas fica carregado depois de sair dela) */
-    var comEditar = !!RW.trocasEditar && !!document.getElementById('tpl-troca-varias-parte');
+    comEditar = !!RW.trocasEditar && !!document.getElementById('tpl-troca-varias-parte');
     if (!guardaLigado && RW.guardaSaida && RW.guardaSaida.registrar) { RW.guardaSaida.registrar(temDadosParte); guardaLigado = true; }
     RW.painel.abrir({
       titulo: mv().painelTitulo,
       tituloExtra: RW.mensagens.decisao.tituloPelotao(t.pelotoes),
       subtitulo: subtitulo,
-      botaoEditar: comEditar,
       aoMudarModo: function (modo) {
         if (atual !== t) return;
         if (modo === 'editar') abrirParte(t, ctx); else desenharLeitura(t, ctx);

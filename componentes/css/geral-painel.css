@@ -136,9 +136,10 @@
   gap: 12px;
 }
 
-/* rodapé: ações da página (botões), alinhadas à direita */
+/* rodapé: ações da página (botões), alinhadas à direita; as que não cabem descem para outra linha */
 .painel-rodape {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
   gap: 8px;
   flex-shrink: 0;
@@ -334,12 +335,8 @@
     flex: 1 1 auto;
   }
 
-  /* rodapé: os botões dividem a largura; os que não cabem lado a lado descem de linha. O botão quadrado
-     (só o ícone, no começo) fica do tamanho dele, e o espaçador sai, para as ações ocuparem o resto */
-  html[data-celular] .painel-rodape {
-    flex-wrap: wrap;
-  }
-
+  /* rodapé: os botões dividem a largura (os que não cabem lado a lado descem de linha, como fora do celular).
+     O botão quadrado (só o ícone, no começo) fica do tamanho dele, e o espaçador sai, para as ações ocuparem o resto */
   html[data-celular] .painel-rodape > .botao:not(.botao--texto):not(.botao--quadrado) {
     flex: 1 1 0;
   }

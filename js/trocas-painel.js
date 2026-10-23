@@ -9,8 +9,8 @@
    opcional no próprio painel. Usado na Trocas e na Pendências.
    Na alteração de uma troca aprovada, a caixa "Antes" mostra como
    ela era; a troca com uma alteração esperando traz o aviso no topo.
-   Editar (botão do cabeçalho, para os dois militares e o admin da
-   área): o formulário do trocas-editar.js, que só vem na página
+   Editar (no rodapé, junto das ações, para os dois militares e o admin
+   da área): o formulário do trocas-editar.js, que só vem na página
    Trocas; Salvar ou Cancelar volta à leitura.
    O registro de várias trocas abre o painel próprio (trocas-painel-varias.js).
    Expõe: RosterWork.trocasPainel.abrir(troca, ctx) e as peças (pecas).
@@ -225,7 +225,9 @@
     /* a alteração aprovada não tem Desfazer: desfazer seria voltar à troca de antes (aí edita-se de novo) */
     var alteracao = !!troca.substitui_troca_id;
     var desfazer = alteracao ? null : { desfazer: desfazerAprovacao(troca, ctx) };
-    if (acao === 'aceitar') {
+    if (acao === 'editar') {
+      RW.painel.editar();   // o aoMudarModo('editar') troca a leitura pelo formulário
+    } else if (acao === 'aceitar') {
       confirmarEntao(m.confirmarAceitar, false, function () { executar(d.confirmar(troca.troca_id, true), btn, ctx); });
     } else if (acao === 'imprimir-registro') {
       RW.trocasRegistroPdf.imprimir(troca.troca_id, btn);
@@ -287,10 +289,11 @@
     /* o registro técnico: os dois militares e o administrador da área, em qualquer situação */
     var participa = !!ctx.cpf && (ctx.cpf === troca.solicitante_cpf || ctx.cpf === troca.parceiro_cpf);
     usar['imprimir-registro'] = !!RW.trocasRegistroPdf && (participa || admin);
+    usar.editar = comEditar && podeEditar(troca, ctx);
     var espacador = frag.querySelector('[data-espacador]');
     if (espacador && !usar['imprimir-registro']) espacador.parentNode.removeChild(espacador);
 
-    ['imprimir-registro', 'cancelar-alteracao', 'aceitar', 'aceitar-depois', 'recusar', 'aprovar-forcar', 'aprovar', 'recusar-admin', 'cancelar'].forEach(function (acao) {
+    ['imprimir-registro', 'editar', 'cancelar-alteracao', 'aceitar', 'aceitar-depois', 'recusar', 'aprovar-forcar', 'aprovar', 'recusar-admin', 'cancelar'].forEach(function (acao) {
       var btn = frag.querySelector('[data-acao="' + acao + '"]');
       if (!btn) return;
       if (!usar[acao]) { if (btn.parentNode) btn.parentNode.removeChild(btn); return; }
@@ -323,13 +326,13 @@
 
   /* ---------- abrir ---------- */
   var subtituloLeitura = '';
+  var comEditar = false;   // o Editar só existe onde está o formulário (a página Trocas, com o molde do pedido)
 
   /* a leitura: o pedido, as ações e, na troca em aberto, a Análise e o "Como fica a escala" */
   function desenharLeitura(troca, ctx) {
     RW.painel.definirTitulos(msg().painelTitulo, subtituloLeitura);
     montarCorpo(troca, ctx);
     montarAcoes(troca, ctx);
-    if (RW.trocasEditar) RW.painel.liberarEditar(podeEditar(troca, ctx));
     if (troca.status === 'pendente_confirmacao' || troca.status === 'pendente_aprovacao') {
       carregarAnalise(troca);
       /* o dia inteiro como fica: fechado; só lê se abrirem */
@@ -361,12 +364,11 @@
     subtituloLeitura = ctx.posicao ? RW.mensagens.decisao.posicao(situacao, ctx.posicao.n, ctx.posicao.total) : situacao;
     /* o Editar só aparece onde o formulário existe (a página Trocas, com o molde do pedido);
        o trocas-editar.js continua carregado depois de sair da página */
-    var comEditar = !!RW.trocasEditar && !!document.getElementById('tpl-troca-solicitar');
+    comEditar = !!RW.trocasEditar && !!document.getElementById('tpl-troca-solicitar');
     RW.painel.abrir({
       titulo: msg().painelTitulo,
       tituloExtra: RW.mensagens.decisao.tituloPelotao(troca.pelotoes),
       subtitulo: subtituloLeitura,
-      botaoEditar: comEditar,
       aoMudarModo: function (modo) {
         if (trocaAtual !== troca) return;
         if (modo === 'editar') abrirEdicao(troca, ctx); else desenharLeitura(troca, ctx);
