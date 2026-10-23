@@ -1141,6 +1141,8 @@
         saldo: function (deve, horas, a) { return 'O ' + deve + ' fica devendo ' + horas + ' ao ' + a + '.'; },
         noLugarDe: function (trabalha, folga) { return trabalha + ' no lugar de ' + folga; },
         removerComDias: function (nome, n) { return 'Remover o ' + nome + ' tira também ' + (n === 1 ? '1 dia' : n + ' dias') + ' da troca.'; },
+        /* o aviso ao leitor de tela quando escolher o militar o põe na troca */
+        entrou: function (nome) { return nome + ' entrou na troca.'; },
         semDias: 'Marque pelo menos um dia no calendário.',
         falhaDias: 'Não foi possível carregar os dias.',
         falhaResumo: 'Não foi possível montar o resumo.',

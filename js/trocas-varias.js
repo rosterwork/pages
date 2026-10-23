@@ -87,35 +87,41 @@
       lista.appendChild(linha);
     });
   }
+  /* a lista da unidade vem do banco uma vez por unidade e fica guardada */
   function carregarMilitaresDaUnidade() {
     var combo = est.combo;
     if (!est.unidadeSel) return;
+    est.listaUnidade = null;
     combo.habilitar(false);
     combo.definir(RW.mensagens.trocas.modalCarregando, true);
     var unidade = est.unidadeSel;
     RW.trocasDados.militares(unidade.unidade_id, null, null, null).then(function (lista) {
       if (!est || est.unidadeSel !== unidade) return;
-      combo.preencher(Array.isArray(lista) ? lista : []);
+      est.listaUnidade = Array.isArray(lista) ? lista : [];
+      combo.preencher(est.listaUnidade);
     }).catch(function () {
       if (!est || est.unidadeSel !== unidade) return;
       combo.habilitar(false);
       combo.definir(RW.mensagens.trocas.modalCarregarFalha, true);
     });
   }
-  function adicionar() {
-    if (!est.escolhido) return;
-    est.militares.push(militarDe(est.escolhido, est.unidadeSel ? est.unidadeSel.nome : ''));
-    est.escolhido = null;
-    q('#tv-adicionar').disabled = true;
+  /* refaz o campo com a lista guardada, sem ir ao banco: quem está na troca fica de fora */
+  function atualizarMilitaresDaUnidade() { if (est.listaUnidade) est.combo.preencher(est.listaUnidade); }
+  /* escolher já adiciona: o campo volta para "Selecione", pronto para o próximo */
+  function adicionar(mil) {
+    var novo = militarDe(mil, est.unidadeSel ? est.unidadeSel.nome : '');
+    est.militares.push(novo);
     desenharMilitares();
-    carregarMilitaresDaUnidade();   // quem entrou sai da lista
+    atualizarMilitaresDaUnidade();   // quem entrou sai da lista
+    q('#tv-anuncio').textContent = M().entrou(novo.nome);
+    if (!(RW.celular && RW.celular())) q('#tv-militar').focus();   // no computador o cursor fica no campo; no celular a lista só fecha
     Cal().recarregar();
   }
   function remover(m) {
     est.militares = est.militares.filter(function (x) { return x.cpf !== m.cpf; });
     est.pares = est.pares.filter(function (p) { return p.trabalha !== m.cpf && p.folga !== m.cpf; });
     desenharMilitares();
-    carregarMilitaresDaUnidade();
+    atualizarMilitaresDaUnidade();
     Cal().recarregar();
     agendarResumo();
   }
@@ -132,14 +138,12 @@
   function ligarAdicionar() {
     var lotacao = RW.sessao.perfil() ? RW.sessao.perfil().lotacao_id : null;
     est.combo = C().comboMilitar(q('#tv-militar'), q('#tv-militar-menu'), {
-      atual: function () { return est.escolhido; },
-      aoEscolher: function (mil) { est.escolhido = mil; q('#tv-adicionar').disabled = false; },
-      aoPerder: function () { est.escolhido = null; q('#tv-adicionar').disabled = true; },
+      atual: function () { return null; },   // nada fica escolhido no campo: quem é escolhido entra na troca
+      aoEscolher: adicionar,
       ignorar: function () { return [RW.sessao.cpf()].concat(est.militares.map(function (m) { return m.cpf; })); }   // quem está logado (no Registrar, o admin não entra) e quem já está na troca
     });
     est.combo.habilitar(false);
     est.combo.definir(RW.mensagens.trocas.modalUnidadeAntes, true);
-    q('#tv-adicionar').addEventListener('click', adicionar);
     var meu = est;
     C().carregarGrupo(lotacao).then(function (grupo) {
       if (est !== meu) return;
@@ -252,7 +256,7 @@
       /* no Solicitar, quem pede já entra; no Registrar, a lista começa vazia */
       militares: registrar ? [] : [militarDe({ cpf: RW.sessao.cpf(), grau_abreviacao: u && u.grau_abreviacao, nome_de_guerra: u && u.nome_de_guerra },
                                              (u && u.lotacao_path) ? u.lotacao_path.split(' / ').pop() : '')],
-      pares: [], combo: null, unidadeSel: null, escolhido: null, mes: null
+      pares: [], combo: null, unidadeSel: null, listaUnidade: null, mes: null
     };
     RW.trocasSolicitar.formulario.mostrarModo(raiz, registrar ? 'registrar' : 'solicitar');   // os textos de cada modo
     montarAbas();

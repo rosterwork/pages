@@ -111,6 +111,19 @@ textarea.campo-entrada {
   color: var(--texto-fraco);
 }
 
+/* campo de digitar e escolher (combobox): o .dropdown com o campo e a seta presa à direita;
+   a seta não recebe o clique (o toque passa para o campo, que abre a lista) */
+.campo-combo > .campo-entrada {
+  padding-right: 32px;
+}
+
+.campo-combo-seta {
+  position: absolute;
+  top: calc(50% - 6px);
+  right: 12px;
+  pointer-events: none;
+}
+
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    O campo baixo fica do tamanho dos outros campos do celular

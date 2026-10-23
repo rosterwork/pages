@@ -1,14 +1,12 @@
 /* ============================================================
    TROCAS — campos do formulário Solicitar / Registrar
    As peças que o trocas-solicitar.js monta: datas e horários,
-   erros dos campos, as unidades do grupo (CIA/CIBM + PELs), o
-   campo Militar (digita para filtrar OU escolhe no menu; quem
-   está ocupado aparece apagado com o motivo; quem ainda não tem
-   conta aparece marcado e pode ser escolhido) e, ligados ao
-   formulário aberto (iniciar), o solicitante (Registrar), o
-   solicitado, o dia e o período do serviço, a devolução e os
-   avisos de saldo e de "sem conta".
-   Expõe RosterWork.trocasCampos.
+   erros dos campos, as unidades do grupo (CIA/CIBM + PELs) e,
+   ligados ao formulário aberto (iniciar), o solicitante
+   (Registrar), o solicitado, o dia e o período do serviço, a
+   devolução e os avisos de saldo e de "sem conta".
+   Expõe RosterWork.trocasCampos; o campo Militar (comboMilitar)
+   fica no trocas-solicitar-militar.js, que completa o objeto.
    ============================================================ */
 (function () {
   'use strict';
@@ -79,101 +77,6 @@
     var propria = grupo.filter(function (u) { return u.unidade_id === lotacaoId; })[0] || null;
     if (propria) definirTexto(gatilho, propria.nome, false);
     return propria;
-  }
-
-  /* ---------- campo Militar = COMBOBOX (aparência de seleção + digitação) ----------
-     O estado mostrado fica no próprio input: value = o militar escolhido; placeholder = os estados
-     ("Escolha o dia antes", "Selecione", "Carregando…"). Quem guarda a escolha é o formulário:
-     opcoes = { atual(), aoEscolher(mil), aoPerder(), ignorar() → [cpf] } */
-  function comboMilitar(inp, menu, opcoes) {
-    if (!inp || !menu) return null;
-
-    function definir(texto, vazio) { if (vazio) { inp.value = ''; inp.placeholder = texto || ''; } else { inp.value = texto || ''; } }
-    function habilitar(ligado) { inp.disabled = !ligado; }
-    function mostrarAtual() { var m = opcoes.atual(); if (m) definir(nomeMil(m), false); else definir(txt('modalSelecione'), true); }
-    function filtrar() {
-      var termo = RosterWork.busca.normalizar(inp.value.trim());
-      var visiveis = 0;
-      Array.prototype.forEach.call(menu.querySelectorAll('[data-busca]'), function (it) {
-        var casa = !termo || (it.getAttribute('data-busca') || '').indexOf(termo) !== -1;
-        it.classList.toggle('oculto', !casa);
-        if (casa) visiveis++;
-      });
-      var vazio = menu.querySelector('.troca-parceiro-vazio');   /* aviso quando o filtro não casa com ninguém */
-      if (vazio) vazio.classList.toggle('oculto', visiveis > 0);
-    }
-    function mostrarTodos() {
-      Array.prototype.forEach.call(menu.querySelectorAll('[data-busca]'), function (it) { it.classList.remove('oculto'); });
-      var vazio = menu.querySelector('.troca-parceiro-vazio');
-      if (vazio) vazio.classList.add('oculto');
-    }
-    function escolher(mil) {
-      definir(nomeMil(mil), false);
-      limparErro(inp);
-      if (RW.fecharDropdowns) RW.fecharDropdowns();
-      opcoes.aoEscolher(mil);
-    }
-
-    /* liga o input UMA vez por elemento (a marca fica no elemento) */
-    if (!inp.dataset.ligado) {
-      inp.dataset.ligado = '1';
-      /* 1º clique seleciona tudo, então digitar substitui o nome (em vez de acrescentar) */
-      inp.addEventListener('mousedown', function (e) {
-        if (!inp.disabled && document.activeElement !== inp) { e.preventDefault(); inp.focus(); }
-      });
-      inp.addEventListener('focus', function () { mostrarTodos(); inp.select(); });
-      inp.addEventListener('input', filtrar);
-      inp.addEventListener('blur', mostrarAtual);   /* saiu sem escolher: volta ao escolhido (ou ao placeholder) */
-      inp.addEventListener('keydown', function (e) {   /* Enter escolhe a 1ª opção visível */
-        if (e.key !== 'Enter') return;
-        e.preventDefault();
-        var vis = menu.querySelector('.dropdown-item:not(.dropdown-item--inativo):not(.oculto)');
-        if (vis) vis.click();
-      });
-    }
-
-    /* monta a lista; devolve quantos podem ser escolhidos. A escolha que sumiu da lista é desfeita (aoPerder) */
-    function preencher(lista) {
-      menu.textContent = '';
-      var ignorar = opcoes.ignorar ? opcoes.ignorar() : [];
-      var atual = opcoes.atual();
-      var disponiveis = 0, aindaEscolhido = false;
-      lista.forEach(function (mil) {
-        if (!mil || ignorar.indexOf(mil.cpf) >= 0) return;
-        var nome = nomeMil(mil), item;
-        if (mil.ocupado) {
-          item = document.getElementById('tpl-troca-parceiro-ocupado').content.cloneNode(true).firstElementChild;
-          item.querySelector('.troca-parceiro-nome').textContent = nome;
-          /* afastado (férias/licença/dispensa) diz o motivo; senão, já está de serviço no horário */
-          item.querySelector('.troca-parceiro-motivo').textContent =
-            (mil.afastamento && txt('parceiroAfastado')[mil.afastamento]) || txt('parceiroOcupado');
-        } else {
-          if (mil.tem_conta === false) {
-            item = document.getElementById('tpl-troca-militar-sem-conta').content.cloneNode(true).firstElementChild;
-            item.querySelector('.troca-parceiro-nome').textContent = nome;
-          } else {
-            item = document.getElementById('tpl-troca-opcao').content.cloneNode(true).firstElementChild;
-            item.textContent = nome;
-          }
-          item.addEventListener('click', function () { escolher(mil); });
-          disponiveis++;
-          if (atual && atual.cpf === mil.cpf) aindaEscolhido = true;
-        }
-        item.setAttribute('data-busca', RosterWork.busca.normalizar(nome));
-        menu.appendChild(item);
-      });
-      var tplVazio = document.getElementById('tpl-troca-parceiro-vazio');   /* aviso do filtro, oculto até zerar */
-      if (tplVazio) { var vm = tplVazio.content.cloneNode(true).firstElementChild; vm.textContent = txt('modalFiltroVazio'); vm.classList.add('oculto'); menu.appendChild(vm); }
-      if (atual && !aindaEscolhido && opcoes.aoPerder) opcoes.aoPerder();
-      if (disponiveis === 0) { habilitar(false); definir(txt('modalParceiroVazio'), true); }
-      else { habilitar(true); mostrarAtual(); }
-      return disponiveis;
-    }
-
-    return {
-      preencher: preencher, definir: definir, habilitar: habilitar, mostrarAtual: mostrarAtual,
-      esvaziar: function () { menu.textContent = ''; }
-    };
   }
 
   /* ============================================================
@@ -394,7 +297,7 @@
   RW.trocasCampos = {
     isoDe: isoDe, dataDeIso: dataDeIso, servicoDoDia: servicoDoDia, nomeMil: nomeMil,
     definirTexto: definirTexto, limparErro: limparErro, marcarErro: marcarErro,
-    carregarGrupo: carregarGrupo, preencherUnidades: preencherUnidades, comboMilitar: comboMilitar,
+    carregarGrupo: carregarGrupo, preencherUnidades: preencherUnidades,
     iniciar: iniciar, cpfSolicitante: cpfSolicitante, devMarcarDia: devMarcarDia,
     carregarSolicitantes: carregarSolicitantes, aoTrocarSolicitante: aoTrocarSolicitante,
     carregarParceiros: carregarParceiros, aoTrocarParceiro: aoTrocarParceiro,

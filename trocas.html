@@ -125,9 +125,10 @@
       </div>
       <div class="campo oculto" data-modo="registrar">
         <span class="campo-rotulo">Militar</span>
-        <div class="dropdown" id="ts-solicitante-dropdown">
-          <input class="campo-entrada" id="ts-solicitante" type="text" maxlength="100" placeholder="Selecione a unidade antes" autocomplete="off" aria-label="Militar solicitante" disabled />
-          <div class="dropdown-menu" id="ts-solicitante-menu"></div>
+        <div class="dropdown campo-combo" id="ts-solicitante-dropdown">
+          <input class="campo-entrada" id="ts-solicitante" type="text" maxlength="100" placeholder="Selecione a unidade antes" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="ts-solicitante-menu" aria-label="Militar solicitante" disabled />
+          <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+          <div class="dropdown-menu" id="ts-solicitante-menu" role="listbox" aria-label="Militares"></div>
         </div>
         <span class="campo-erro-texto"></span>
       </div>
@@ -160,9 +161,10 @@
       </div>
       <div class="campo" data-modo="solicitar registrar">
         <span class="campo-rotulo">Militar</span>
-        <div class="dropdown" id="ts-parceiro-dropdown">
-          <input class="campo-entrada" id="ts-parceiro" type="text" maxlength="100" placeholder="Escolha o dia antes" autocomplete="off" aria-label="Militar" disabled />
-          <div class="dropdown-menu" id="ts-parceiro-menu"></div>
+        <div class="dropdown campo-combo" id="ts-parceiro-dropdown">
+          <input class="campo-entrada" id="ts-parceiro" type="text" maxlength="100" placeholder="Escolha o dia antes" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="ts-parceiro-menu" aria-label="Militar" disabled />
+          <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+          <div class="dropdown-menu" id="ts-parceiro-menu" role="listbox" aria-label="Militares"></div>
         </div>
         <span class="campo-erro-texto"></span>
       </div>
@@ -262,6 +264,7 @@
     <div class="grupo-caixa trocas-cartao">
       <span class="rotulo-secao">Militares da troca</span>
       <div class="trocas-varias-lista" id="tv-militares"></div>
+      <span class="texto-leitor" id="tv-anuncio" role="status"></span>
       <div class="trocas-varias-adicionar">
         <div class="campo">
           <span class="campo-rotulo">Unidade</span>
@@ -275,12 +278,12 @@
         </div>
         <div class="campo">
           <span class="campo-rotulo">Militar</span>
-          <div class="dropdown" id="tv-militar-dropdown">
-            <input class="campo-entrada" id="tv-militar" type="text" maxlength="100" placeholder="Digite ou escolha" autocomplete="off" aria-label="Militar" />
-            <div class="dropdown-menu" id="tv-militar-menu"></div>
+          <div class="dropdown campo-combo" id="tv-militar-dropdown">
+            <input class="campo-entrada" id="tv-militar" type="text" maxlength="100" placeholder="Digite ou escolha" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="tv-militar-menu" aria-label="Militar" />
+            <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+            <div class="dropdown-menu" id="tv-militar-menu" role="listbox" aria-label="Militares"></div>
           </div>
         </div>
-        <button type="button" class="botao" id="tv-adicionar" disabled>Adicionar militar</button>
       </div>
     </div>
 
@@ -546,7 +549,7 @@
 
 <!-- molde: item de parceiro indisponível (ocupado no dia) -->
 <template id="tpl-troca-parceiro-ocupado">
-  <button type="button" class="dropdown-item dropdown-item--inativo troca-parceiro-ocupado">
+  <button type="button" class="dropdown-item dropdown-item--inativo troca-parceiro-ocupado" role="option" aria-disabled="true">
     <span class="troca-parceiro-nome"></span>
     <span class="troca-parceiro-motivo"></span>
   </button>
@@ -554,7 +557,7 @@
 
 <!-- molde: item de militar que ainda não tem conta (pode ser escolhido) -->
 <template id="tpl-troca-militar-sem-conta">
-  <button type="button" class="dropdown-item troca-parceiro-sem-conta">
+  <button type="button" class="dropdown-item troca-parceiro-sem-conta" role="option">
     <span class="troca-parceiro-nome"></span>
     <span class="troca-parceiro-motivo">sem conta no sistema</span>
   </button>

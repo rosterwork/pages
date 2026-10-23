@@ -138,6 +138,16 @@ textarea {
   display: none !important;
 }
 
+/* texto que só o leitor de tela lê (ex.: o aviso de um role="status"); fica fora da vista, sem ocupar lugar */
+.texto-leitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .espacador-flex {
   flex: 1 1 0;
 }

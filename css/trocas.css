@@ -347,10 +347,10 @@
   flex: 1;
 }
 
-/* Unidade, Militar e o Adicionar militar numa linha */
+/* Unidade e Militar numa linha (escolher o militar já o adiciona) */
 .trocas-varias-adicionar {
   display: grid;
-  grid-template-columns: 104px minmax(0, 1fr) auto;
+  grid-template-columns: 104px minmax(0, 1fr);
   align-items: end;
   gap: 8px;
 }
@@ -504,15 +504,5 @@
   html[data-celular] .troca-pendente-cab,
   html[data-celular] .troca-extrato-quem {
     font-size: var(--fonte-padrao);
-  }
-
-  /* Várias trocas: o Adicionar militar desce para uma linha só dele (o campo Militar fica inteiro) */
-  html[data-celular] .trocas-varias-adicionar {
-    grid-template-columns: 104px minmax(0, 1fr);
-  }
-
-  html[data-celular] .trocas-varias-adicionar > .botao {
-    grid-column: 1 / -1;
-    justify-self: start;
   }
 }
