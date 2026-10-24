@@ -1,10 +1,13 @@
 /* ============================================================
    NOVA DISTRIBUIÇÃO (protótipo, só programador)
    O questionário em blocos: à esquerda os blocos (lista-item do
-   geral-lista), à direita as perguntas, fechadas com a resposta
-   embaixo, que abrem as opções ao clicar. Reusa o layout lateral,
-   a bolinha (geral-opcao), o campo de seleção, o selo, a nota, o
-   rodapé e o período. Fora do celular (data-lugar-celular="fora").
+   geral-lista), à direita a unidade num bloco cinza com o título
+   dentro e as perguntas em cartões brancos, fechados com a resposta
+   embaixo, que abrem ao clicar. Reusa o layout lateral, a bolinha
+   (geral-opcao), a caixa de marcar (caixa-selecao), o campo de
+   seleção, o combobox (campo-combo), o selo, a nota, o rodapé, o
+   período e os campos do posto (geral-posto-editar). Fora do
+   celular (data-lugar-celular="fora").
    ============================================================ */
 
 /* ---- painel esquerdo: os blocos ---- */
@@ -31,11 +34,12 @@
 
 /* ---- corpo: a coluna de leitura ---- */
 .nova-distribuicao-conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   max-width: 720px;
   padding: 16px 24px 24px;
 }
-
-.nova-distribuicao-conteudo > .nota { margin-bottom: 12px; }
 
 .nova-distribuicao-erros-lista {
   display: flex;
@@ -43,83 +47,98 @@
   gap: 4px;
 }
 
-.nova-distribuicao-grupo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 0 8px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--texto-forte);
-}
-
-.nova-distribuicao-grupo--separado { margin-top: 24px; }
-
-.nova-distribuicao-grupo-proprio {
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--texto-suave);
-}
-
-.nova-distribuicao-posto { margin: 16px 0 8px; }
-
 .nova-distribuicao-ajuda {
-  margin: 0 0 12px;
+  margin: 0;
   font-size: var(--fonte-padrao);
   color: var(--texto-suave);
 }
 
-/* ---- pergunta: caixa cinza; o cabeçalho abre e fecha as opções ---- */
-.nova-distribuicao-pergunta {
-  margin-bottom: 12px;
-  padding: 12px 16px;
+/* ---- a unidade: bloco cinza com o título dentro ---- */
+.nova-distribuicao-unidade {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
   background-color: var(--fundo-suave);
   border: 1px solid var(--borda);
   border-radius: var(--raio-medio);
 }
 
-.nova-distribuicao-pergunta-cabecalho {
+.nova-distribuicao-unidade-titulo {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+}
+
+.nova-distribuicao-unidade-alcance {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.nova-distribuicao-unidade-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ---- cartão branco: o cabeçalho abre e fecha; a resposta fica embaixo ---- */
+.nova-distribuicao-cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px;
+  background-color: var(--fundo-superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+}
+
+.nova-distribuicao-cartao--erro { border-color: var(--erro); }
+
+.nova-distribuicao-cartao--tabela { padding: 8px; }
+
+.nova-distribuicao-cartao-cabecalho {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
   width: 100%;
   text-align: left;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--texto-forte);
 }
 
-.nova-distribuicao-pergunta-cabecalho:disabled { cursor: default; }
-
-.nova-distribuicao-pergunta-seta {
-  flex-shrink: 0;
-  color: var(--texto-suave);
-}
-
-.nova-distribuicao-pergunta-cabecalho[aria-expanded="true"] .nova-distribuicao-pergunta-seta { transform: rotate(180deg); }
-
-.nova-distribuicao-pergunta-titulo {
+.nova-distribuicao-cartao-titulo {
   margin: 0;
   font-size: 14px;
   font-weight: 600;
   color: var(--texto-forte);
 }
 
-.nova-distribuicao-pergunta-resposta {
-  margin: 4px 0 0;
+.nova-distribuicao-cartao-seta {
+  flex-shrink: 0;
+  color: var(--texto-suave);
+}
+
+.nova-distribuicao-cartao-cabecalho[aria-expanded="true"] .nova-distribuicao-cartao-seta { transform: rotate(180deg); }
+
+.nova-distribuicao-cartao-resposta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nova-distribuicao-resposta-linha {
+  margin: 0;
   font-size: var(--fonte-padrao);
   color: var(--texto-suave);
 }
 
-.nova-distribuicao-pergunta-resposta--vazia { color: var(--erro); }
+.nova-distribuicao-resposta-linha--falta { color: var(--erro); }
 
-.nova-distribuicao-pergunta-opcoes,
-.nova-distribuicao-pergunta-conteudo {
+.nova-distribuicao-cartao-opcoes,
+.nova-distribuicao-cartao-conteudo {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-top: 8px;
+  gap: 8px;
 }
 
 .nova-distribuicao-opcoes {
@@ -128,7 +147,21 @@
   gap: 2px;
 }
 
+/* caixa de marcar na linha da opção (a linha inteira marca) */
+.nova-distribuicao-marca {
+  width: 100%;
+  text-align: left;
+}
+
+.nova-distribuicao-marca:disabled { cursor: default; }
+
+.nova-distribuicao-marca:disabled:hover { background-color: transparent; }
+
+.nova-distribuicao-marca-texto { flex: 1; }
+
 .nova-distribuicao-rodizio { margin-top: 8px; }
+
+.nova-distribuicao-criterio-aviso { padding: 0 8px 0 32px; }
 
 /* frase com os campos de seleção no meio */
 .nova-distribuicao-frase {
@@ -151,19 +184,48 @@
   gap: 8px;
 }
 
-.nova-distribuicao-selecao-menu { min-width: 200px; }
+.nova-distribuicao-selecao-menu {
+  min-width: 200px;
+  max-height: 320px;
+  overflow-y: auto;
+}
 
-.nova-distribuicao-sempre-gravidade { margin-top: 8px; }
+/* item de função: Posto | Função, alinhados pelo posto mais comprido (subgrade do menu) */
+.nova-distribuicao-selecao-menu--funcoes {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+}
 
-/* linha de lista (viaturas, ordem, conferência) */
+.nova-distribuicao-item {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  column-gap: 12px;
+}
+
+.nova-distribuicao-item-posto { color: var(--texto-suave); }
+
+/* erro no campo */
+.nova-distribuicao-erro-campo { margin: 0; }
+
+.nova-distribuicao-espaco--erro .campo-selecao,
+.nova-distribuicao-espaco--erro > .campo-entrada { border-color: var(--erro); }
+
+.nova-distribuicao-trava {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+/* ---- listas de linhas (viaturas, substitutos, regras) ---- */
 .nova-distribuicao-linha {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   min-height: 40px;
   padding: 4px 8px;
-  background-color: var(--fundo-superficie);
   border: 1px solid var(--borda);
   border-radius: var(--raio-pequeno);
   font-size: var(--fonte-padrao);
@@ -176,30 +238,233 @@
   color: var(--texto-forte);
 }
 
-.nova-distribuicao-linha-nome {
-  flex: 1;
-  min-width: 120px;
+.nova-distribuicao-linha-nome { flex: 1; }
+
+.nova-distribuicao-linha-nome--falta { color: var(--erro); }
+
+.nova-distribuicao-adicionar { align-self: flex-start; }
+
+/* ---- posto aberto: campos e funções por nível ---- */
+.nova-distribuicao-posto-campos {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.nova-distribuicao-viatura-nome {
-  flex: 1;
-  width: auto;
-  min-width: 120px;
+.nova-distribuicao-posto-viatura .posto-editar-viatura { max-width: 320px; }
+
+.nova-distribuicao-posto-efetivo .posto-editar-linha { max-width: 320px; }
+
+.nova-distribuicao-niveis {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.nova-distribuicao-adicionar {
-  align-self: flex-start;
-  margin-top: 4px;
-}
-
-.nova-distribuicao-trava {
+.nova-distribuicao-nivel-titulo {
   display: flex;
   align-items: center;
-  gap: 4px;
-  margin: 8px 0 0;
+  gap: 8px;
+  margin: 0 0 4px;
   font-size: 12px;
   color: var(--texto-suave);
 }
+
+.nova-distribuicao-ponto {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border: 1px solid var(--borda-forte);
+  border-radius: 50%;
+}
+
+.nova-distribuicao-ponto--erro {
+  background-color: var(--erro);
+  border-color: var(--erro);
+}
+
+.nova-distribuicao-ponto--alerta {
+  background-color: var(--alerta);
+  border-color: var(--alerta);
+}
+
+.nova-distribuicao-funcao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 2px 0 2px 16px;
+  font-size: var(--fonte-padrao);
+  color: var(--texto);
+}
+
+.nova-distribuicao-funcao--vazia { color: var(--texto-suave); }
+
+/* ---- tabelas (ordem e conferir): Posto | Função, alinhadas à esquerda ---- */
+.nova-distribuicao-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fonte-padrao);
+  color: var(--texto);
+}
+
+.nova-distribuicao-tabela th,
+.nova-distribuicao-tabela td {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--borda);
+  text-align: left;
+  vertical-align: top;
+}
+
+.nova-distribuicao-tabela th {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--texto-suave);
+}
+
+.nova-distribuicao-tabela tfoot th { font-weight: 400; }
+
+.nova-distribuicao-col-n {
+  width: 32px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.nova-distribuicao-col-posto {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.nova-distribuicao-col-acoes {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.nova-distribuicao-col-numero {
+  width: 48px;
+  text-align: center;
+}
+
+.nova-distribuicao-tabela th.nova-distribuicao-col-numero,
+.nova-distribuicao-tabela td.nova-distribuicao-col-numero { text-align: center; }
+
+.nova-distribuicao-celula-linha {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+}
+
+.nova-distribuicao-tabela--conferir tbody td { vertical-align: middle; }
+
+/* ---- conferir: as marcas de cada função ---- */
+.nova-distribuicao-conferir {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.nova-distribuicao-conferir-modo { align-self: flex-start; }
+
+.nova-distribuicao-conferir-frase { padding: 4px 8px 8px; }
+
+.nova-distribuicao-estado {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.nova-distribuicao-estado--tem_gente { background-color: var(--texto-forte); }
+
+.nova-distribuicao-estado--acumula,
+.nova-distribuicao-estado--coberta,
+.nova-distribuicao-estado--companhia { color: var(--texto-forte); }
+
+.nova-distribuicao-estado--vazia { border: 1px solid var(--borda-forte); }
+
+.nova-distribuicao-estado--erro {
+  border-color: var(--erro);
+  background-color: var(--erro-fundo);
+}
+
+.nova-distribuicao-estado--alerta {
+  border-color: var(--alerta);
+  background-color: var(--alerta-fundo);
+}
+
+.nova-distribuicao-legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0;
+  padding: 8px 8px 0;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.nova-distribuicao-legenda-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nova-distribuicao-graus {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 0 8px;
+}
+
+.nova-distribuicao-grau { min-width: 72px; }
+
+.nova-distribuicao-simulacao-tabela .selo + .selo { margin-left: 4px; }
+
+/* ---- substitutos: rótulo à esquerda, o campo e o remover ---- */
+.nova-distribuicao-regra-linha {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) 32px;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--fonte-padrao);
+  color: var(--texto);
+}
+
+.nova-distribuicao-regra-rotulo { color: var(--texto-suave); }
+
+.nova-distribuicao-regra-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ---- regras por militar: Militar | Regra | Função ---- */
+.nova-distribuicao-regras-cabecalho,
+.nova-distribuicao-regra {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 160px 32px;
+  align-items: center;
+  gap: 8px;
+}
+
+.nova-distribuicao-regras-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nova-distribuicao-regra .nova-distribuicao-espaco,
+.nova-distribuicao-regra .nova-distribuicao-selecao,
+.nova-distribuicao-regra .nova-distribuicao-selecao .campo-selecao { width: 100%; }
+
+.nova-distribuicao-regra-erro { grid-column: 1 / -1; }
+
+.nova-distribuicao-militar-vazio { color: var(--texto-suave); }
 
 /* ---- vazio e carregando ---- */
 .nova-distribuicao-vazio {
@@ -227,41 +492,6 @@
   display: flex;
   justify-content: center;
   padding: 32px 16px;
-}
-
-/* ---- conferir ---- */
-.nova-distribuicao-metricas {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  margin: 12px 0;
-}
-
-.nova-distribuicao-metrica {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 8px 12px;
-  background-color: var(--fundo-suave);
-  border: 1px solid var(--borda);
-  border-radius: var(--raio-medio);
-}
-
-.nova-distribuicao-metrica-rotulo {
-  font-size: 12px;
-  color: var(--texto-suave);
-}
-
-.nova-distribuicao-metrica-valor {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--texto-forte);
-}
-
-.nova-distribuicao-conferir-lista {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
 }
 
 /* ---- barra e rodapé ---- */

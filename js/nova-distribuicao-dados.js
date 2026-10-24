@@ -18,11 +18,14 @@
     ler: function (unidadeId, periodoId) {
       return rpc('nova_distribuicao_ler', { p_unidade_id: unidadeId || null, p_periodo_id: periodoId || null });
     },
-    /* as contas, sem gravar: respostas arrumadas, cadeiras, blocos prontos, erros e a conferência */
-    calcular: function (unidadeId, respostas, efetivo) {
-      return rpc('nova_distribuicao_calcular', { p_unidade_id: unidadeId, p_respostas: respostas, p_efetivo: efetivo == null ? null : efetivo });
+    /* as contas, sem gravar: respostas arrumadas, funções, blocos prontos, erros, pendências e a
+       conferência (efetivos = [n, n+1...] para a tabela; simulacao = { grau: quantos } para simular) */
+    calcular: function (unidadeId, respostas, efetivos, simulacao) {
+      return rpc('nova_distribuicao_calcular', {
+        p_unidade_id: unidadeId, p_respostas: respostas, p_efetivos: efetivos || null, p_simulacao: simulacao || null
+      });
     },
-    /* o 1º período da unidade, com os postos e o modelo de hoje */
+    /* o 1º período da unidade, com os postos e o modelo de hoje (sem nada hoje, em branco) */
     copiarHoje: function (unidadeId) {
       return rpc('nova_distribuicao_copiar_hoje', { p_unidade_id: unidadeId });
     },

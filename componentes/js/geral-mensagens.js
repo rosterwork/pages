@@ -756,29 +756,46 @@
        {chave} = valor preenchido na hora; os textos fixos ficam em nova-distribuicao.html */
     novaDistribuicao: {
       pagina: 'Nova distribuição',
-      contagem: '{n} de 7 prontos',
+      contagem: '{n} de 8 prontos',
+      soDeste: 'Só deste pelotão',
+      compartilhado: 'Compartilhado com todos os pelotões',
+      faltaResponder: 'Falta responder',
+      nenhuma: 'Nenhuma',
+      nenhum: 'Nenhum',
+      escolha: 'Escolha',
+      rotuloFuncao: 'Função',
+      rotuloQuem: 'Quem acumula',
+      rotuloGrau: 'Grau',
+      rotuloInicio: 'Quantos de serviço',
+      /* bloco 1: postos */
       instalacoesPelotao: 'Quais instalações o pelotão tem?',
       instalacoesCompanhia: 'Quais instalações a companhia tem?',
       viaturasPelotao: 'Quais viaturas o pelotão tem?',
       viaturasCompanhia: 'Quais viaturas a companhia tem?',
-      instalacaoQuantos: {
-        'Central de Operações': 'Quantos rádio operadores a Central de Operações deve ter?',
-        'Rancho': 'Quantos rancheiros o Rancho deve ter?',
-        'Almoxarifado': 'Quantos almoxarifes o Almoxarifado deve ter?'
-      },
-      carteira: 'Qual carteira a {posto} exige?',
-      carteiraResposta: 'Carteira {cnh}',
-      efetivoViatura: 'Efetivo da {posto}',
+      semPrefixo: 'Viatura sem prefixo',
+      prefixoInvalido: 'Prefixo inválido (use LETRAS-NÚMERO, ex.: ABT-01).',
+      cnhResposta: 'CNH {cnh}',
+      cnhFalta: 'CNH: falta responder',
+      travaPapel: 'Escolhido em Funções especiais',
+      travaCompanhia: 'Vem da companhia',
+      /* bloco 2: funções especiais */
       ondeFica: 'Onde fica o {papel}?',
+      ondeFicaOficialPelotao: 'Onde fica o Oficial de Área nos postos do pelotão?',
       podeConduzir: 'O {papel} pode ser condutor?',
       semOficial: 'Sem oficial de serviço, quem faz o Oficial de Área?',
-      condutor: ['Sim, sempre é o condutor se for habilitado', 'Sim, só se não houver outro habilitado', 'Não, nunca'],
+      condutor: ['Sim, sempre é o condutor da viatura dele', 'Sim, só se não houver outro habilitado', 'Não, nunca'],
       semOficialOpcoes: ['Ninguém, fica vazio com erro vermelho', 'O praça mais antigo da companhia'],
-      ordem: 'Em que ordem as cadeiras enchem?',
-      ordemItem: '{n}º {cadeira}',
-      ordemMais: '{lista} e mais {n}',
+      mesmaPessoa: 'Nos postos marcados é a mesma pessoa: as funções acumulam (até 3 por pessoa).',
+      outraUnidade: 'Marcado em {unidade}',
+      /* bloco 3: acúmulos */
+      acumuloIncompleto: 'Escolha as duas funções.',
+      /* bloco 5: substitutos */
+      substitutoN: '{n}º substituto',
+      substitutoIncompleto: 'Escolha a função e o 1º substituto.',
+      automaticaSempre: '{funcao} é sempre de quem está em {quem}.',
+      automaticaCobre: 'Se faltar {funcao}, o substituto é {quem}.',
+      /* bloco 6: quem escolher */
       quemSenta: 'Quem senta em {funcao}?',
-      quemSentaPapel: 'Quem senta em {cadeira}?',
       papelFixo: 'Sempre o {perfil} mais antigo de serviço.',
       criterios: [
         'O {perfil} mais antigo que ainda não tem função',
@@ -787,24 +804,18 @@
         'Somente {grau}; se não houver, fica vazia'
       ],
       sentidos: ['mais antigo', 'mais moderno'],
-      comCarteira: ', com a carteira',
+      avisos: ['Sem aviso', 'Aviso amarelo', 'Erro vermelho'],
+      comAviso: '{texto} ({aviso})',
+      comCarteira: ', com a CNH',
       comRodizio: ', com rodízio',
-      sempreAutomatica: '{cadeira} é sempre de quem está em {quem}.',
-      cobreAutomatica: 'Se faltar {cadeira}, quem cobre é {quem}.',
-      trava: 'Vem da resposta do bloco Funções especiais.',
-      escolha: 'Escolha',
-      ninguem: 'Ninguém',
-      nenhuma: 'Nenhuma',
-      semResposta: 'Sem resposta',
-      novaViatura: 'Nova viatura {n}',
-      estados: {
-        tem_gente: 'Tem gente',
-        acumula: 'Mesma pessoa: {por}',
-        coberta: 'Coberta: {por}'
-      },
-      vazias: ['Vazia, erro vermelho', 'Vazia, aviso amarelo', 'Vazia'],
+      /* bloco 7: regras por militar */
+      regraIncompleta: 'Escolha o militar, a regra e a função.',
+      /* bloco 8: conferir */
+      estados: { tem_gente: 'Com gente', acumula: 'Acumulada', coberta: 'Coberta', companhia: 'Da companhia', vazia: 'Vazia' },
+      porQuem: '{estado} por {quem}',
       sobraUm: '1 militar fica sem função.',
       sobraVarios: '{n} militares ficam sem função.',
+      /* período */
       periodoDesde: 'De {inicio}, sem fim',
       periodoIntervalo: 'De {inicio} até {fim}',
       excluirPeriodo: 'Excluir o período {periodo}? Os dias dele voltam para o período anterior.',
@@ -813,7 +824,8 @@
       novoPeriodoOrigem: 'Período de origem',
       erroInicio: 'Escolha a data de início.',
       erroFim: 'Escolha a data de término ou marque Sem fim.',
-      erroOrdemDatas: 'O término precisa vir depois do início.'
+      erroOrdemDatas: 'O término precisa vir depois do início.',
+      corrigirAntes: 'Corrija os campos em vermelho antes de salvar.'
     },
 
     /* saída do militar da escala (transferência, Tirar do ciclo e baixa): a lista do aviso,
@@ -1543,7 +1555,6 @@
         preferencias: 'Preferências',
         distribuicao: 'Distribuição',
         regra: 'Regra da distribuição',
-        nova_distribuicao: 'Nova distribuição',
         folga: 'Folga',
         extra_cota: 'Cotas (extrajornada)',
         extra_alocacao: 'Extra (escala do mês)',

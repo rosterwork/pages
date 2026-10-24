@@ -1,71 +1,182 @@
 /* ============================================================
-   NOVA DISTRIBUIÇÃO — bloco 7, Conferir
-   Escolhe quantos militares estão de serviço e mostra, posto a
-   posto, o que o banco calculou para cada cadeira (conferencia do
-   nova_distribuicao_calcular): com gente, acumulada, coberta ou vazia.
+   NOVA DISTRIBUIÇÃO — bloco 8, Conferir
+   Duas formas, num seletor: Tabela (a partir de N de serviço, N e
+   os quatro seguintes, uma coluna cada, com os totais) e Simular a
+   equipe (quantos de cada graduação; quem senta em cada função e os
+   avisos de grau). As contas são do nova_distribuicao_calcular
+   (conferencia); aqui o desenho e a escolha de cada unidade (fica
+   entre as visitas), que diz ao calcular o que conferir.
    ============================================================ */
 (function () {
   'use strict';
   window.RosterWork = window.RosterWork || {};
 
-  function M() { return RosterWork.mensagens.novaDistribuicao; }
+  var COLUNAS = 5;
+  var escolha = { modo: 'tabela', inicio: {}, equipe: {} };
 
-  /* o selo de cada cadeira: verde com gente; amarelo acumulada, coberta ou vazia com aviso; vermelho vazia com erro */
-  function pintar(selo, linha) {
-    var P = RosterWork.novaDistribuicaoBlocos.pecas;
-    if (linha.estado === 'tem_gente') {
-      selo.classList.add('selo--sucesso');
-      selo.textContent = M().estados.tem_gente;
-    } else if (linha.estado === 'acumula' || linha.estado === 'coberta') {
-      selo.classList.add('selo--alerta');
-      selo.textContent = P.texto(M().estados[linha.estado], { por: linha.por || '' });
-    } else {
-      if (linha.gravidade === 0) selo.classList.add('selo--erro');
-      if (linha.gravidade === 1) selo.classList.add('selo--alerta');
-      selo.textContent = M().vazias[linha.gravidade] || M().vazias[2];
+  function M() { return RosterWork.mensagens.novaDistribuicao; }
+  function P() { return RosterWork.novaDistribuicaoPecas; }
+
+  function postoCelula(td, posto) {
+    td.textContent = P().postoCurto(posto);
+    if (P().postoCurto(posto) !== posto) td.setAttribute('data-dica', posto);
+  }
+
+  /* a marca da função numa coluna; a dica diz a situação (e quem cobre ou acumula) */
+  function marca(ctx, e, linha) {
+    var el = P().tpl('estado-' + e.estado) || P().tpl('estado-vazia');
+    var frase = M().estados[e.estado] || M().estados.vazia;
+    if (e.por) frase = P().texto(M().porQuem, { estado: frase, quem: P().completo(ctx, e.por) });
+    if (e.estado === 'vazia') {
+      el.classList.toggle('nova-distribuicao-estado--erro', linha.aviso === 2);
+      el.classList.toggle('nova-distribuicao-estado--alerta', linha.aviso === 1);
     }
+    el.setAttribute('data-dica', frase);
+    return el;
+  }
+
+  function tabela(lugar, ctx, api, conf) {
+    var t = P().tpl('conferir-tabela');
+    var efetivos = conf.modo === 'tabela' ? conf.efetivos || [] : [];
+    t.querySelector('.nova-distribuicao-conferir-pracas').classList.toggle('oculto', ctx.ehCia);
+    t.querySelector('.nova-distribuicao-conferir-oficiais').classList.toggle('oculto', !ctx.ehCia);
+    t.querySelector('[data-espaco="inicio"]').appendChild(P().numero(ctx.ehCia ? 0 : 1, 20, api.conferir.inicio(), function (v) {
+      api.conferir.definirInicio(v);
+    }, M().rotuloInicio));
+
+    var cabeca = t.querySelector('thead tr');
+    efetivos.forEach(function (n) {
+      var th = P().tpl('th');
+      th.textContent = String(n);
+      cabeca.appendChild(th);
+    });
+    var corpo = t.querySelector('tbody');
+    (conf.linhas || []).forEach(function (l) {
+      var tr = P().tpl('conferir-linha');
+      postoCelula(tr.querySelector('.nova-distribuicao-col-posto'), l.posto);
+      tr.querySelector('.nova-distribuicao-col-funcao').textContent = P().rotulo(ctx, l.nome);
+      (l.estados || []).slice(0, efetivos.length).forEach(function (e) {
+        var td = P().tpl('conferir-celula');
+        td.appendChild(marca(ctx, e, l));
+        tr.appendChild(td);
+      });
+      corpo.appendChild(tr);
+    });
+    t.querySelectorAll('tfoot tr[data-resumo]').forEach(function (tr) {
+      var chave = tr.getAttribute('data-resumo');
+      (conf.resumos || []).slice(0, efetivos.length).forEach(function (r) {
+        var td = P().tpl('conferir-total');
+        td.textContent = String(r[chave] || 0);
+        tr.appendChild(td);
+      });
+    });
+    lugar.appendChild(t);
+  }
+
+  function situacao(selo, e, linha) {
+    selo.textContent = M().estados[e.estado] || M().estados.vazia;
+    if (e.estado === 'tem_gente') selo.classList.add('selo--sucesso');
+    if (e.estado === 'coberta') selo.classList.add('selo--alerta');
+    if (e.estado === 'vazia' && linha.aviso === 2) selo.classList.add('selo--erro');
+    if (e.estado === 'vazia' && linha.aviso === 1) selo.classList.add('selo--alerta');
+  }
+
+  function simulacao(lugar, ctx, api, conf) {
+    var s = P().tpl('simulacao');
+    var graus = ((ctx.calc && ctx.calc.graus) || {})[ctx.ehCia ? 'oficial' : 'praça'] || [];
+    var equipe = api.conferir.simulacao();
+    var total = 0;
+    graus.slice().reverse().forEach(function (g) {
+      var campo = P().tpl('grau');
+      campo.querySelector('.campo-rotulo').textContent = g;
+      total += equipe[g] || 0;
+      campo.querySelector('.nova-distribuicao-espaco').appendChild(P().numero(0, 9, equipe[g] || 0, function (v) {
+        api.conferir.definirSimulacao(g, v);
+      }, g));
+      s.querySelector('.nova-distribuicao-graus').appendChild(campo);
+    });
+    s.querySelector('.nova-distribuicao-simulacao-vazia').classList.toggle('oculto', total > 0);
+    var tabelaSim = s.querySelector('.nova-distribuicao-simulacao-tabela');
+    tabelaSim.classList.toggle('oculto', !total || conf.modo !== 'simulacao');
+
+    if (total && conf.modo === 'simulacao') {
+      var corpo = tabelaSim.querySelector('tbody');
+      (conf.linhas || []).forEach(function (l) {
+        var e = (l.estados || [])[0] || { estado: 'vazia' };
+        var tr = P().tpl('simulacao-linha');
+        postoCelula(tr.querySelector('.nova-distribuicao-col-posto'), l.posto);
+        tr.querySelector('.nova-distribuicao-col-funcao').textContent = P().rotulo(ctx, l.nome);
+        tr.querySelector('.nova-distribuicao-col-quem').textContent = e.pessoa || '';
+        situacao(tr.querySelector('.nova-distribuicao-situacao'), e, l);
+        var outro = tr.querySelector('.nova-distribuicao-outro-grau');
+        outro.classList.toggle('oculto', !(e.aviso_grau > 0) || e.estado === 'vazia');
+        outro.classList.toggle('selo--alerta', e.aviso_grau === 1);
+        outro.classList.toggle('selo--erro', e.aviso_grau === 2);
+        corpo.appendChild(tr);
+      });
+      var sobra = ((conf.resumos || [])[0] || {}).sem_funcao || 0;
+      var aviso = s.querySelector('.nova-distribuicao-sobra');
+      aviso.textContent = sobra === 1 ? M().sobraUm : P().texto(M().sobraVarios, { n: sobra });
+      aviso.classList.toggle('oculto', !sobra);
+    }
+    lugar.appendChild(s);
   }
 
   function desenhar(corpo, ctx, api) {
-    var P = RosterWork.novaDistribuicaoBlocos.pecas;
-    var calc = ctx.calc || {};
-    var conf = calc.conferencia || {};
-    var caixa = P.tpl('conferir');
-    P.grupo(corpo, ctx);
-
-    caixa.querySelector('.nova-distribuicao-conferir-pracas').classList.toggle('oculto', ctx.ehCia);
-    caixa.querySelector('.nova-distribuicao-conferir-oficiais').classList.toggle('oculto', !ctx.ehCia);
-    caixa.querySelector('[data-espaco="efetivo"]').appendChild(P.numero(ctx.ehCia ? 0 : 1, ctx.ehCia ? 5 : 12, conf.efetivo || 0, function (v) {
-      api.definirEfetivo(v);
-    }, ''));
-
-    caixa.querySelectorAll('[data-metrica]').forEach(function (el) {
-      el.textContent = String(conf[el.getAttribute('data-metrica')] || 0);
+    var conf = (ctx.calc && ctx.calc.conferencia) || {};
+    var u = P().unidade(corpo, ctx);
+    var caixa = P().tpl('conferir');
+    var modo = api.conferir.modo();
+    var trilho = caixa.querySelector('.nova-distribuicao-conferir-modo');
+    trilho.querySelectorAll('.aba').forEach(function (aba) {
+      aba.classList.toggle('aba--ativa', aba.getAttribute('data-valor') === modo);
     });
-    var sobra = caixa.querySelector('.nova-distribuicao-sobra');
-    if (conf.sem_funcao) {
-      sobra.textContent = conf.sem_funcao === 1 ? M().sobraUm : P.texto(M().sobraVarios, { n: conf.sem_funcao });
-      sobra.classList.remove('oculto');
-    }
-
-    var lista = caixa.querySelector('.nova-distribuicao-conferir-lista');
-    (calc.postos || []).forEach(function (p) {
-      P.posto(lista, p.nome);
-      (conf.linhas || []).filter(function (l) { return l.posto === p.nome; }).forEach(function (l) {
-        var linha = P.tpl('conferir-linha');
-        linha.querySelector('.nova-distribuicao-linha-nome').textContent = l.funcao;
-        pintar(linha.querySelector('.nova-distribuicao-estado'), l);
-        lista.appendChild(linha);
-      });
-    });
-    corpo.appendChild(caixa);
-
-    if (!ctx.ehCia && ctx.nomeCompanhia) {
-      var nota = P.tpl('confere-companhia');
-      nota.querySelector('.nova-distribuicao-companhia').textContent = ctx.nomeCompanhia;
-      corpo.appendChild(nota);
-    }
+    RosterWork.abas.ligar(trilho, function (aba) { api.conferir.definirModo(aba.getAttribute('data-valor')); });
+    var lugar = caixa.querySelector('.nova-distribuicao-conferir-corpo');
+    if (modo === 'simulacao') simulacao(lugar, ctx, api, conf);
+    else tabela(lugar, ctx, api, conf);
+    u.appendChild(caixa);
   }
 
-  window.RosterWork.novaDistribuicaoConferir = { desenhar: desenhar };
+  /* ---------- a escolha ---------- */
+
+  /* o que pedir ao calcular: os efetivos (tabela) ou a equipe (simular); sem início ainda, nenhum */
+  function parametros(unidadeId) {
+    if (escolha.modo === 'simulacao') return { efetivos: null, simulacao: escolha.equipe[unidadeId] || {} };
+    var de = escolha.inicio[unidadeId];
+    if (de == null) return { efetivos: null, simulacao: null };
+    var lista = [];
+    for (var k = 0; k < COLUNAS; k++) lista.push(de + k);
+    return { efetivos: lista, simulacao: null };
+  }
+
+  /* a tabela começa nas funções de mínimo com pessoa própria (as que dão erro vermelho vazias);
+     devolve true quando acabou de definir e a tabela precisa ser calculada de novo */
+  function definirInicioPadrao(unidadeId, ctx, ehPelotao) {
+    if (escolha.inicio[unidadeId] != null) return false;
+    var proprias = P().proprias(ctx);
+    var n = (ctx.calc.funcoes || []).filter(function (f) { return f.nivel === 'minimo' && proprias.indexOf(f.nome) >= 0; }).length;
+    escolha.inicio[unidadeId] = Math.max(n, ehPelotao ? 1 : 0);
+    return escolha.modo === 'tabela';
+  }
+
+  /* o que os desenhos usam (api.conferir): lê e muda a escolha da unidade e recalcula */
+  function api(unidadeId, recalcular) {
+    return {
+      modo: function () { return escolha.modo; },
+      definirModo: function (m) { if (m !== escolha.modo) { escolha.modo = m; recalcular(); } },
+      inicio: function () { return escolha.inicio[unidadeId()] || 0; },
+      definirInicio: function (n) { escolha.inicio[unidadeId()] = n; recalcular(); },
+      simulacao: function () { return escolha.equipe[unidadeId()] || {}; },
+      definirSimulacao: function (grau, n) {
+        var eq = escolha.equipe[unidadeId()] = escolha.equipe[unidadeId()] || {};
+        if (n) eq[grau] = n; else delete eq[grau];
+        recalcular();
+      }
+    };
+  }
+
+  window.RosterWork.novaDistribuicaoConferir = {
+    desenhar: desenhar, parametros: parametros, definirInicioPadrao: definirInicioPadrao, api: api
+  };
 })();

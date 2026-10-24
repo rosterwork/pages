@@ -1,470 +1,243 @@
 /* ============================================================
-   NOVA DISTRIBUIÇÃO — blocos 1 a 6 do questionário
-   Monta as perguntas a partir dos moldes de nova-distribuicao.html,
-   com as respostas da unidade e o que o banco calculou (cadeiras,
-   postos, regras automáticas, graus). Toda mudança passa pelo
-   api.mudar (nova-distribuicao.js), que recalcula e redesenha.
-   As peças (pergunta, campo de seleção, número) ficam em
-   RosterWork.novaDistribuicaoBlocos.pecas para o Conferir.
+   NOVA DISTRIBUIÇÃO — blocos 3 a 6 do questionário
+   Acúmulos fixos, Ordem de importância (tabela sempre aberta, uma
+   linha por pessoa com os acúmulos dela), Substitutos (de 1 a 5,
+   em linhas) e Quem escolher (as quatro formas, o aviso e o
+   rodízio). As regras automáticas vêm do banco, travadas. Toda
+   mudança passa pelo api.mudar (nova-distribuicao.js).
    ============================================================ */
 (function () {
   'use strict';
   window.RosterWork = window.RosterWork || {};
 
   function M() { return RosterWork.mensagens.novaDistribuicao; }
+  function P() { return RosterWork.novaDistribuicaoPecas; }
 
-  /* ---------- peças ---------- */
+  function automaticas(ctx, tipo) { return (ctx.calc && ctx.calc.automaticas && ctx.calc.automaticas[tipo]) || []; }
 
-  function tpl(nome) { return RosterWork.tpl('tpl-nova-distribuicao-' + nome); }
-
-  function texto(modelo, valores) {
-    return Object.keys(valores || {}).reduce(function (t, k) { return t.split('{' + k + '}').join(valores[k]); }, modelo || '');
-  }
-
-  /* "a, b e c" */
-  function lista(itens) {
-    if (itens.length < 2) return itens[0] || '';
-    return itens.slice(0, -1).join(', ') + ' e ' + itens[itens.length - 1];
-  }
-
-  function mover(arr, i, passo) {
-    var j = i + passo;
-    if (j < 0 || j >= arr.length) return;
-    var guardado = arr[i];
-    arr[i] = arr[j];
-    arr[j] = guardado;
-  }
-
-  /* campo de seleção com opções que vêm dos dados: itens = [{ valor, texto }] */
-  function selecao(itens, atual, aoEscolher, rotulo, vazio, travado) {
-    var caixa = tpl('selecao');
-    var gatilho = caixa.querySelector('.campo-selecao');
-    var menu = caixa.querySelector('.dropdown-menu');
-    var escolhido = itens.filter(function (o) { return o.valor === atual; })[0];
-    gatilho.setAttribute('aria-label', rotulo || '');
-    gatilho.querySelector('.campo-selecao-texto').textContent = escolhido ? escolhido.texto : (vazio || '');
-    gatilho.querySelector('.campo-selecao-texto').classList.toggle('campo-selecao-texto--vazio', !escolhido);
-    gatilho.disabled = !!travado;
-    itens.forEach(function (o) {
-      var item = tpl('selecao-item');
-      item.textContent = o.texto;
-      if (o.valor === atual) item.classList.add('dropdown-item--ativo');
-      item.addEventListener('click', function () { if (o.valor !== atual) aoEscolher(o.valor); });
-      menu.appendChild(item);
-    });
-    return caixa;
-  }
-
-  /* campo de seleção com as opções escritas no molde (gravidade, praça/oficial, sentido) */
-  function selecaoFixa(nome, atual, aoEscolher, travado) {
-    var caixa = tpl(nome);
-    var gatilho = caixa.querySelector('.campo-selecao');
-    gatilho.disabled = !!travado;
-    caixa.querySelectorAll('.dropdown-item').forEach(function (item) {
-      var valor = item.getAttribute('data-valor');
-      if (valor === String(atual)) {
-        item.classList.add('dropdown-item--ativo');
-        gatilho.querySelector('.campo-selecao-texto').textContent = item.textContent;
-      }
-      item.addEventListener('click', function () { if (valor !== String(atual)) aoEscolher(valor); });
-    });
-    return caixa;
-  }
-
-  /* campo de número (componente geral-dropdown-numeros) */
-  function numero(de, ate, atual, aoEscolher, rotulo, travado) {
-    var caixa = tpl('numero');
-    var gatilho = caixa.querySelector('.campo-selecao');
-    var opcoes = [];
-    for (var n = de; n <= ate; n++) opcoes.push(n);
-    gatilho.setAttribute('aria-label', rotulo || '');
-    gatilho.querySelector('.campo-selecao-texto').textContent = String(atual);
-    gatilho.disabled = !!travado;
-    RosterWork.dropdownNumeros.preencher(caixa.querySelector('.dropdown-menu'), {
-      opcoes: opcoes, valor: atual, aoEscolher: function (v) { if (v !== atual) aoEscolher(v); }
-    });
-    return caixa;
-  }
-
-  /* bolinhas (ou quadrados) do molde: marca a atual e avisa a escolhida */
-  function marcarOpcoes(caixa, nomeGrupo, marcado, aoMudar, travado) {
-    caixa.querySelectorAll('input[data-valor]').forEach(function (inp) {
-      var valor = inp.getAttribute('data-valor');
-      if (inp.type === 'radio') inp.name = nomeGrupo;
-      inp.checked = marcado(valor);
-      inp.disabled = !!travado;
-      inp.addEventListener('change', function () { aoMudar(valor, inp.checked); });
-    });
-    return caixa;
-  }
-
-  /* pergunta fechada (resposta embaixo) que abre as opções ao clicar */
-  function pergunta(corpo, api, ctx, id, titulo, resposta, vazia, montar) {
-    var caixa = tpl('pergunta');
-    var cab = caixa.querySelector('.nova-distribuicao-pergunta-cabecalho');
-    var aberta = api.aberto() === ctx.lado + ':' + id;
-    caixa.querySelector('.nova-distribuicao-pergunta-titulo').textContent = titulo;
-    var res = caixa.querySelector('.nova-distribuicao-pergunta-resposta');
-    res.textContent = resposta;
-    res.classList.toggle('nova-distribuicao-pergunta-resposta--vazia', !!vazia);
-    cab.setAttribute('aria-expanded', aberta ? 'true' : 'false');
-    cab.addEventListener('click', function () { api.abrir(ctx.lado + ':' + id); });
-    if (aberta) {
-      var opcoes = caixa.querySelector('.nova-distribuicao-pergunta-opcoes');
-      opcoes.classList.remove('oculto');
-      res.classList.add('oculto');
-      montar(opcoes);
-    }
-    corpo.appendChild(caixa);
-    return caixa;
-  }
-
-  /* pergunta que não abre: a resposta é escolhida na própria frase */
-  function fixa(corpo, titulo, montar) {
-    var caixa = tpl('pergunta-fixa');
-    var tit = caixa.querySelector('.nova-distribuicao-pergunta-titulo');
-    if (titulo) tit.textContent = titulo; else tit.classList.add('oculto');
-    montar(caixa.querySelector('.nova-distribuicao-pergunta-conteudo'));
-    corpo.appendChild(caixa);
-    return caixa;
-  }
-
-  function grupo(corpo, ctx, separado) {
-    var g = tpl('grupo');
-    g.querySelector('.nova-distribuicao-grupo-nome').textContent = ctx.nome;
-    g.querySelector(ctx.ehCia ? '.nova-distribuicao-grupo-compartilhado' : '.nova-distribuicao-grupo-proprio').classList.remove('oculto');
-    if (separado) g.classList.add('nova-distribuicao-grupo--separado');
-    corpo.appendChild(g);
-  }
-
-  function posto(corpo, nome) {
-    var p = tpl('posto');
-    p.textContent = nome;
-    corpo.appendChild(p);
-  }
-
-  function setas(linha, indice, total, aoMover, travado) {
-    var subir = linha.querySelector('.nova-distribuicao-subir');
-    var descer = linha.querySelector('.nova-distribuicao-descer');
-    subir.disabled = !!travado || indice === 0;
-    descer.disabled = !!travado || indice === total - 1;
-    subir.addEventListener('click', function () { aoMover(-1); });
-    descer.addEventListener('click', function () { aoMover(1); });
-  }
-
-  function trava(caixa, frase) {
-    var t = tpl('trava');
-    t.querySelector('.nova-distribuicao-trava-texto').textContent = frase;
-    caixa.appendChild(t);
-  }
-
-  function gravidade(api, ctx, nome) {
-    var g = ctx.resp.gravidade || {};
-    var linha = tpl('gravidade-linha');
-    linha.querySelector('.nova-distribuicao-espaco').appendChild(selecaoFixa('gravidade', g[nome] == null ? 2 : g[nome], function (v) {
-      api.mudar(ctx.lado, function (x) { x.gravidade[nome] = Number(v); });
-    }, ctx.soLeitura));
-    return linha;
-  }
-
-  function itensDe(nomes) { return nomes.map(function (n) { return { valor: n, texto: n }; }); }
-  function papel(ctx) { return (ctx.calc && ctx.calc.papel) || ''; }
-  function proprias(ctx) { return (papel(ctx) ? [papel(ctx)] : []).concat(ctx.resp.ordem || []); }
-
-  /* ---------- 1. Postos ---------- */
-  function postos(corpo, ctx, api) {
-    var r = ctx.resp;
-    var calc = ctx.calc || {};
-    var nomesInst = (r.instalacoes || []).map(function (i) { return i.nome; });
-    grupo(corpo, ctx);
-
-    pergunta(corpo, api, ctx, 'instalacoes', ctx.ehCia ? M().instalacoesCompanhia : M().instalacoesPelotao,
-      lista(nomesInst) || M().nenhuma, false, function (caixa) {
-        caixa.appendChild(marcarOpcoes(tpl('instalacoes'), '', function (v) { return nomesInst.indexOf(v) >= 0; }, function (nome, marcado) {
-          api.mudar(ctx.lado, function (x) {
-            if (marcado) x.instalacoes.push({ nome: nome, efetivo: [1, 1, 1] });
-            else x.instalacoes = x.instalacoes.filter(function (i) { return i.nome !== nome; });
-          });
-        }, ctx.soLeitura));
-      });
-
-    pergunta(corpo, api, ctx, 'viaturas', ctx.ehCia ? M().viaturasCompanhia : M().viaturasPelotao,
-      (r.viaturas || []).map(function (v, i) { return texto(M().ordemItem, { n: i + 1, cadeira: v.nome }); }).join(' · ') || M().nenhuma,
-      !(r.viaturas || []).length, function (caixa) {
-        caixa.appendChild(tpl('nota-viaturas'));
-        r.viaturas.forEach(function (v, i) {
-          var linha = tpl('viatura');
-          var campo = linha.querySelector('.nova-distribuicao-viatura-nome');
-          linha.querySelector('.nova-distribuicao-linha-ordem').textContent = (i + 1) + 'º';
-          campo.value = v.nome;
-          campo.disabled = ctx.soLeitura;
-          campo.addEventListener('change', function () {
-            var novo = campo.value.trim();
-            if (!novo || novo === v.nome) { campo.value = v.nome; return; }
-            api.renomear(ctx.lado, v.nome, novo);
-          });
-          setas(linha, i, r.viaturas.length, function (passo) {
-            api.mudar(ctx.lado, function (x) { mover(x.viaturas, i, passo); });
-          }, ctx.soLeitura);
-          var remover = linha.querySelector('.nova-distribuicao-remover');
-          remover.disabled = ctx.soLeitura;
-          remover.addEventListener('click', function () { api.mudar(ctx.lado, function (x) { x.viaturas.splice(i, 1); }); });
-          caixa.appendChild(linha);
-        });
-        var nova = tpl('nova-viatura');
-        nova.disabled = ctx.soLeitura;
-        nova.addEventListener('click', function () {
-          api.mudar(ctx.lado, function (x) {
-            var k = 1;
-            while (x.viaturas.some(function (o) { return o.nome === texto(M().novaViatura, { n: k }); })) k++;
-            x.viaturas.push({ nome: texto(M().novaViatura, { n: k }), cnh: 'B', efetivo: [1, 1, 2] });
-          });
-        });
-        caixa.appendChild(nova);
-      });
-
-    /* o efetivo de cada posto (frase com os números) e as cadeiras que saem dele */
-    function efetivo(caixa, item, achar) {
-      var frase = tpl('efetivo');
-      [0, 1, 2].forEach(function (k) {
-        frase.querySelector('[data-espaco="' + k + '"]').appendChild(numero(k === 0 ? 0 : 1, 10, item.efetivo[k], function (v) {
-          api.mudar(ctx.lado, function (x) { var alvo = achar(x); if (alvo) alvo.efetivo[k] = v; });
-        }, '', ctx.soLeitura));
-      });
-      frase.querySelector('.nova-distribuicao-cadeiras').textContent = lista((calc.cadeiras || [])
-        .filter(function (c) { return c.posto === item.nome; }).map(function (c) { return c.funcao; }));
-      caixa.appendChild(frase);
-    }
-
-    (r.instalacoes || []).forEach(function (inst) {
-      posto(corpo, inst.nome);
-      fixa(corpo, M().instalacaoQuantos[inst.nome] || inst.nome, function (caixa) {
-        efetivo(caixa, inst, function (x) { return x.instalacoes.filter(function (o) { return o.nome === inst.nome; })[0]; });
-      });
-    });
-    (r.viaturas || []).forEach(function (v, i) {
-      posto(corpo, v.nome);
-      pergunta(corpo, api, ctx, 'carteira-' + i, texto(M().carteira, { posto: v.nome }), texto(M().carteiraResposta, { cnh: v.cnh }), false, function (caixa) {
-        caixa.appendChild(marcarOpcoes(tpl('carteira'), 'nova-distribuicao-carteira', function (c) { return c === v.cnh; }, function (c) {
-          api.mudar(ctx.lado, function (x) { x.viaturas[i].cnh = c; });
-        }, ctx.soLeitura));
-      });
-      fixa(corpo, texto(M().efetivoViatura, { posto: v.nome }), function (caixa) {
-        efetivo(caixa, v, function (x) { return x.viaturas[i]; });
-      });
-    });
-  }
-
-  /* ---------- 2. Funções especiais (no pelotão, a companhia vem junto) ---------- */
-  function funcoes(corpo, ctxs, api) {
-    corpo.appendChild(tpl('nota-funcoes'));
-    ctxs.forEach(function (ctx, n) {
-      grupo(corpo, ctx, n > 0);
-      if (ctx.semDados) {
-        var vazio = tpl('companhia-sem-respostas');
-        vazio.querySelector('.nova-distribuicao-copiar').addEventListener('click', function () { api.copiarCompanhia(); });
-        corpo.appendChild(vazio);
-        return;
-      }
-      var r = ctx.resp;
-      var lugares = (ctx.calc && ctx.calc.postos) || [];
-      var funcao = ctx.calc.papel_funcao;
-      var onde = r.papel && r.papel.posto;
-      pergunta(corpo, api, ctx, 'papel', texto(M().ondeFica, { papel: funcao }), onde || M().semResposta, !onde, function (caixa) {
-        lugares.forEach(function (p) {
-          var op = tpl('opcao');
-          var inp = op.querySelector('input');
-          inp.name = 'nova-distribuicao-papel-' + ctx.lado;
-          inp.checked = p.nome === onde;
-          inp.disabled = ctx.soLeitura;
-          op.querySelector('.nova-distribuicao-opcao-texto').textContent = p.nome;
-          inp.addEventListener('change', function () { api.mudar(ctx.lado, function (x) { x.papel.posto = p.nome; }); });
-          caixa.appendChild(op);
-        });
-      });
-      var ehViatura = lugares.some(function (p) { return p.nome === onde && p.tipo === 'viatura'; });
-      if (ehViatura) {
-        pergunta(corpo, api, ctx, 'condutor', texto(M().podeConduzir, { papel: funcao }), M().condutor[r.papel.condutor], false, function (caixa) {
-          caixa.appendChild(marcarOpcoes(tpl('condutor'), 'nova-distribuicao-condutor-' + ctx.lado, function (v) { return Number(v) === r.papel.condutor; }, function (v) {
-            api.mudar(ctx.lado, function (x) { x.papel.condutor = Number(v); });
-          }, ctx.soLeitura));
-        });
-      }
-      if (ctx.ehCia) {
-        var sem = r.sem_oficial;
-        pergunta(corpo, api, ctx, 'sem-oficial', M().semOficial, sem == null ? M().semResposta : M().semOficialOpcoes[sem], sem == null, function (caixa) {
-          caixa.appendChild(marcarOpcoes(tpl('sem-oficial'), 'nova-distribuicao-sem-oficial', function (v) { return Number(v) === sem; }, function (v) {
-            api.mudar(ctx.lado, function (x) { x.sem_oficial = Number(v); });
-          }, ctx.soLeitura));
-        });
-      }
-    });
-  }
-
-  /* regra automática: a frase, a trava e (no acúmulo) a gravidade */
-  function automatica(corpo, frase, extra) {
-    var caixa = tpl('automatica');
+  /* a regra automática: a frase e a trava (molde) */
+  function automatica(destino, frase) {
+    var caixa = P().tpl('automatica');
     caixa.querySelector('.nova-distribuicao-automatica-texto').textContent = frase;
-    var lugar = caixa.querySelector('.nova-distribuicao-automatica-extra');
-    if (extra) lugar.appendChild(extra);
-    trava(lugar, M().trava);
-    corpo.appendChild(caixa);
+    destino.appendChild(caixa);
+  }
+
+  function remover(caixa, ctx, fn) {
+    var botao = caixa.querySelector('.nova-distribuicao-remover');
+    botao.disabled = ctx.soLeitura;
+    botao.addEventListener('click', fn);
   }
 
   /* ---------- 3. Acúmulos fixos ---------- */
   function acumulos(corpo, ctx, api) {
-    var calc = ctx.calc || {};
-    grupo(corpo, ctx);
-    corpo.appendChild(tpl('nota-acumulos'));
-    ((calc.automaticas && calc.automaticas.sempre) || []).forEach(function (r) {
-      automatica(corpo, texto(M().sempreAutomatica, { cadeira: r[0], quem: r[1] }), gravidade(api, ctx, r[0]));
+    corpo.appendChild(P().tpl('nota-acumulos'));
+    var u = P().unidade(corpo, ctx);
+    var autos = automaticas(ctx, 'sempre');
+    autos.forEach(function (a) {
+      automatica(u, P().texto(M().automaticaSempre, { funcao: P().completo(ctx, a[0]), quem: P().completo(ctx, a[1]) }));
     });
-    var cadeiras = (calc.cadeiras || []).map(function (c) { return c.nome; }).filter(function (n) { return n !== papel(ctx); });
-    (ctx.resp.sempre || []).forEach(function (r, i) {
-      var caixa = tpl('sempre');
-      caixa.querySelector('[data-espaco="cadeira"]').appendChild(selecao(itensDe(cadeiras), r[0], function (v) {
+    var travadas = autos.map(function (a) { return a[0]; });
+    var podem = ((ctx.calc && ctx.calc.funcoes) || []).filter(function (f) {
+      return !f.papel && travadas.indexOf(f.nome) < 0;
+    }).map(function (f) { return f.nome; });
+
+    (ctx.resp.sempre || []).forEach(function (s, i) {
+      var caixa = P().tpl('acumulo');
+      var falta = P().pendente(ctx, 'sempre:' + i);
+      caixa.querySelector('[data-espaco="funcao"]').appendChild(P().selecaoFuncoes(ctx, podem, s[0], function (v) {
         api.mudar(ctx.lado, function (x) { x.sempre[i][0] = v; });
-      }, '', M().escolha, ctx.soLeitura));
-      caixa.querySelector('[data-espaco="quem"]').appendChild(selecao(itensDe(proprias(ctx).filter(function (n) { return n !== r[0]; })), r[1], function (v) {
+      }, { rotulo: M().rotuloFuncao, travado: ctx.soLeitura, erro: falta && !s[0] }));
+      caixa.querySelector('[data-espaco="quem"]').appendChild(P().selecaoFuncoes(ctx, P().proprias(ctx).filter(function (n) { return n !== s[0]; }), s[1], function (v) {
         api.mudar(ctx.lado, function (x) { x.sempre[i][1] = v; });
-      }, '', M().escolha, ctx.soLeitura));
-      var remover = caixa.querySelector('.nova-distribuicao-remover');
-      remover.disabled = ctx.soLeitura;
-      remover.addEventListener('click', function () { api.mudar(ctx.lado, function (x) { x.sempre.splice(i, 1); }); });
-      if (r[0]) caixa.querySelector('.nova-distribuicao-sempre-gravidade').appendChild(gravidade(api, ctx, r[0]));
-      caixa.querySelector('.nova-distribuicao-incompleto').classList.toggle('oculto', !!(r[0] && r[1]));
-      corpo.appendChild(caixa);
+      }, { rotulo: M().rotuloQuem, travado: ctx.soLeitura, erro: falta && !s[1] }));
+      remover(caixa, ctx, function () { api.mudar(ctx.lado, function (x) { x.sempre.splice(i, 1); }); });
+      var errosAqui = P().erros(ctx, 'sempre:' + i);
+      if (falta) errosAqui.unshift(M().acumuloIncompleto);
+      errosAqui.forEach(function (e) { P().erroCampo(caixa, e); });
+      caixa.classList.toggle('nova-distribuicao-cartao--erro', errosAqui.length > 0);
+      u.appendChild(caixa);
     });
-    var novo = tpl('novo-sempre');
+    P().erros(ctx, 'sempre').forEach(function (e) { P().erroCampo(u, e); });
+
+    var novo = P().tpl('novo-acumulo');
     novo.disabled = ctx.soLeitura;
     novo.addEventListener('click', function () { api.mudar(ctx.lado, function (x) { x.sempre.push(['', '']); }); });
-    corpo.appendChild(novo);
+    u.appendChild(novo);
   }
 
   /* ---------- 4. Ordem de importância ---------- */
-  function ordem(corpo, ctx, api) {
-    var todas = proprias(ctx);
-    var resumo = todas.slice(0, 3).map(function (n, i) { return texto(M().ordemItem, { n: i + 1, cadeira: n }); }).join(', ');
-    if (todas.length > 3) resumo = texto(M().ordemMais, { lista: resumo, n: todas.length - 3 });
-    grupo(corpo, ctx);
-    corpo.appendChild(tpl('nota-ordem'));
-    pergunta(corpo, api, ctx, 'ordem', M().ordem, resumo || M().nenhuma, !todas.length, function (caixa) {
-      if (papel(ctx)) {
-        var linhaPapel = tpl('ordem-papel');
-        linhaPapel.querySelector('.nova-distribuicao-linha-nome').textContent = papel(ctx);
-        caixa.appendChild(linhaPapel);
-      }
-      var lista = ctx.resp.ordem || [];
-      lista.forEach(function (nome, i) {
-        var linha = tpl('ordem');
-        linha.querySelector('.nova-distribuicao-linha-ordem').textContent = (i + (papel(ctx) ? 2 : 1)) + 'º';
-        linha.querySelector('.nova-distribuicao-linha-nome').textContent = nome;
-        var g = ctx.resp.gravidade || {};
-        linha.querySelector('.nova-distribuicao-espaco').appendChild(selecaoFixa('gravidade', g[nome] == null ? 2 : g[nome], function (v) {
-          api.mudar(ctx.lado, function (x) { x.gravidade[nome] = Number(v); });
-        }, ctx.soLeitura));
-        setas(linha, i, lista.length, function (passo) {
-          api.mudar(ctx.lado, function (x) { mover(x.ordem, i, passo); });
-        }, ctx.soLeitura);
-        caixa.appendChild(linha);
-      });
+
+  /* as funções de quem está na linha: a própria e as que acumulam com ela */
+  function daPessoa(ctx, nome) {
+    var lista = [nome];
+    automaticas(ctx, 'sempre').concat(ctx.resp.sempre || []).forEach(function (s) {
+      if (s[1] === nome && s[0] && lista.indexOf(s[0]) < 0) lista.push(s[0]);
+    });
+    return lista;
+  }
+
+  function celulas(linha, ctx, nomes, primeiroExtra) {
+    var postos = linha.querySelector('.nova-distribuicao-col-posto');
+    var funcoes = linha.querySelector('.nova-distribuicao-col-funcao');
+    nomes.forEach(function (nome, k) {
+      var p = P().partes(nome);
+      var lp = P().tpl('celula-linha');
+      lp.textContent = P().postoCurto(p.posto);
+      if (P().postoCurto(p.posto) !== p.posto) lp.setAttribute('data-dica', p.posto);
+      postos.appendChild(lp);
+      var lf = P().tpl('celula-linha');
+      lf.textContent = P().rotulo(ctx, nome);
+      if (k === 0 && primeiroExtra) lf.appendChild(primeiroExtra);
+      funcoes.appendChild(lf);
     });
   }
 
-  /* ---------- 5. Quando faltar gente ---------- */
-  function faltar(corpo, ctx, api) {
-    var calc = ctx.calc || {};
-    grupo(corpo, ctx);
-    corpo.appendChild(tpl('nota-faltar'));
-    ((calc.automaticas && calc.automaticas.cobre) || []).forEach(function (r) {
-      automatica(corpo, texto(M().cobreAutomatica, { cadeira: r[0], quem: r[1] }));
+  function ordem(corpo, ctx, api) {
+    corpo.appendChild(P().tpl('nota-ordem'));
+    var u = P().unidade(corpo, ctx);
+    var tabela = P().tpl('ordem');
+    var corpoTabela = tabela.querySelector('tbody');
+    var papel = P().papel(ctx);
+    var n = 0;
+    if (papel) {
+      var lp = P().tpl('ordem-linha');
+      lp.querySelector('.nova-distribuicao-col-n').textContent = (++n) + 'º';
+      celulas(lp, ctx, daPessoa(ctx, papel), P().tpl('ordem-papel'));
+      lp.querySelector('.nova-distribuicao-col-acoes').textContent = '';
+      corpoTabela.appendChild(lp);
+    }
+    var lista = ctx.resp.ordem || [];
+    lista.forEach(function (nome, i) {
+      var linha = P().tpl('ordem-linha');
+      linha.querySelector('.nova-distribuicao-col-n').textContent = (++n) + 'º';
+      celulas(linha, ctx, daPessoa(ctx, nome));
+      P().setas(linha, i, lista.length, function (passo) {
+        api.mudar(ctx.lado, function (x) { P().mover(x.ordem, i, passo); });
+      }, ctx.soLeitura);
+      corpoTabela.appendChild(linha);
     });
-    (ctx.resp.cobre || []).forEach(function (r, i) {
-      var caixa = tpl('cobre');
-      var quem = proprias(ctx).filter(function (n) { return n !== r[0]; });
-      caixa.querySelector('[data-espaco="cadeira"]').appendChild(selecao(itensDe(ctx.resp.ordem || []), r[0], function (v) {
+    u.appendChild(tabela);
+  }
+
+  /* ---------- 5. Substitutos ---------- */
+  function substitutos(corpo, ctx, api) {
+    corpo.appendChild(P().tpl('nota-substitutos'));
+    var u = P().unidade(corpo, ctx);
+    automaticas(ctx, 'cobre').forEach(function (c) {
+      automatica(u, P().texto(M().automaticaCobre, { funcao: P().completo(ctx, c[0]), quem: P().completo(ctx, c[1]) }));
+    });
+    (ctx.resp.cobre || []).forEach(function (regra, i) {
+      var caixa = P().tpl('substitutos');
+      var falta = P().pendente(ctx, 'cobre:' + i);
+      caixa.querySelector('[data-espaco="funcao"]').appendChild(P().selecaoFuncoes(ctx, ctx.resp.ordem || [], regra[0], function (v) {
         api.mudar(ctx.lado, function (x) { x.cobre[i][0] = v; });
-      }, '', M().escolha, ctx.soLeitura));
-      caixa.querySelector('[data-espaco="primeiro"]').appendChild(selecao(itensDe(quem), r[1], function (v) {
-        api.mudar(ctx.lado, function (x) { x.cobre[i][1] = v; });
-      }, '', M().escolha, ctx.soLeitura));
-      caixa.querySelector('[data-espaco="segundo"]').appendChild(selecao([{ valor: '', texto: M().ninguem }].concat(itensDe(quem.filter(function (n) { return n !== r[1]; }))), r[2] || '', function (v) {
-        api.mudar(ctx.lado, function (x) { x.cobre[i][2] = v; });
-      }, '', M().ninguem, ctx.soLeitura));
-      var remover = caixa.querySelector('.nova-distribuicao-remover');
-      remover.disabled = ctx.soLeitura;
-      remover.addEventListener('click', function () { api.mudar(ctx.lado, function (x) { x.cobre.splice(i, 1); }); });
-      caixa.querySelector('.nova-distribuicao-incompleto').classList.toggle('oculto', !!(r[0] && r[1]));
-      corpo.appendChild(caixa);
+      }, { rotulo: M().rotuloFuncao, travado: ctx.soLeitura, erro: falta && !regra[0] }));
+      remover(caixa, ctx, function () { api.mudar(ctx.lado, function (x) { x.cobre.splice(i, 1); }); });
+
+      var lista = caixa.querySelector('.nova-distribuicao-regra-lista');
+      var subs = regra.slice(1);
+      if (!subs.length) subs = [''];
+      subs.forEach(function (s, j) {
+        var linha = P().tpl('substituto');
+        linha.querySelector('.nova-distribuicao-regra-rotulo').textContent = P().texto(M().substitutoN, { n: j + 1 });
+        var outros = regra.filter(function (x, k) { return k !== j + 1; });
+        var podem = P().proprias(ctx).filter(function (nome) { return outros.indexOf(nome) < 0; });
+        linha.querySelector('.nova-distribuicao-espaco').appendChild(P().selecaoFuncoes(ctx, podem, s, function (v) {
+          api.mudar(ctx.lado, function (x) { x.cobre[i][j + 1] = v; });
+        }, { rotulo: P().texto(M().substitutoN, { n: j + 1 }), travado: ctx.soLeitura, erro: falta && j === 0 && !s }));
+        var tirar = linha.querySelector('.nova-distribuicao-remover');
+        tirar.disabled = ctx.soLeitura;
+        tirar.classList.toggle('oculto', subs.length < 2);
+        tirar.addEventListener('click', function () { api.mudar(ctx.lado, function (x) { x.cobre[i].splice(j + 1, 1); }); });
+        lista.appendChild(linha);
+      });
+      var mais = caixa.querySelector('.nova-distribuicao-adicionar');
+      mais.disabled = ctx.soLeitura || subs.length >= 5;
+      mais.addEventListener('click', function () {
+        api.mudar(ctx.lado, function (x) { while (x.cobre[i].length < subs.length + 1) x.cobre[i].push(''); x.cobre[i].push(''); });
+      });
+      var errosAqui = P().erros(ctx, 'cobre:' + i);
+      if (falta) errosAqui.unshift(M().substitutoIncompleto);
+      errosAqui.forEach(function (e) { P().erroCampo(caixa, e); });
+      caixa.classList.toggle('nova-distribuicao-cartao--erro', errosAqui.length > 0);
+      u.appendChild(caixa);
     });
-    var novo = tpl('novo-cobre');
+    var novo = P().tpl('novo-substitutos');
     novo.disabled = ctx.soLeitura;
-    novo.addEventListener('click', function () { api.mudar(ctx.lado, function (x) { x.cobre.push(['', '', '']); }); });
-    corpo.appendChild(novo);
+    novo.addEventListener('click', function () { api.mudar(ctx.lado, function (x) { x.cobre.push(['', '']); }); });
+    u.appendChild(novo);
   }
 
   /* ---------- 6. Quem escolher ---------- */
-  function resumoCriterio(k, nome) {
-    return texto(M().criterios[k.tipo] || M().criterios[0], { perfil: k.perfil, grau: k.grau, sentido: M().sentidos[k.sentido] || M().sentidos[0] })
-      + (nome.indexOf('Condutor') === 0 ? M().comCarteira : '') + (k.rodizio ? M().comRodizio : '');
+  function resumoCriterio(k, nome, falta) {
+    var linhas = [];
+    if (k && k.tipo != null) {
+      var t = P().texto(M().criterios[k.tipo], {
+        perfil: k.perfil || '', grau: k.grau || '', sentido: k.sentido == null ? '' : M().sentidos[k.sentido]
+      });
+      if (k.tipo >= 2 && k.aviso != null) t = P().texto(M().comAviso, { texto: t, aviso: M().avisos[k.aviso].toLowerCase() });
+      linhas.push(t + (P().partes(nome).funcao === 'Condutor' ? M().comCarteira : '') + (k.rodizio ? M().comRodizio : ''));
+    }
+    if (falta) linhas.push({ texto: M().faltaResponder, falta: true });
+    return linhas;
+  }
+
+  function opcoesCriterio(lugar, ctx, api, nome, k) {
+    var graus = (ctx.calc && ctx.calc.graus) || {};
+    var listaGraus = ctx.ehCia ? (graus['praça'] || []).concat(graus.oficial || []) : (graus['praça'] || []);
+    var falta = P().pendente(ctx, 'criterio:' + nome);
+    function mudar(fn) { api.mudar(ctx.lado, function (x) { x.criterios[nome] = x.criterios[nome] || {}; fn(x.criterios[nome]); }); }
+
+    var opcoes = P().bolinhas(P().tpl('criterio'), 'nova-distribuicao-criterio', function (v) { return Number(v) === k.tipo; }, function (v) {
+      mudar(function (c) {
+        c.tipo = Number(v);
+        if (c.tipo <= 1 && !c.perfil && !ctx.ehCia) c.perfil = 'praça';
+      });
+    }, ctx.soLeitura);
+    opcoes.querySelectorAll('[data-espaco="perfil"]').forEach(function (lugarPerfil) {
+      lugarPerfil.appendChild(P().selecaoFixa('perfil', k.perfil, function (v) { mudar(function (c) { c.perfil = v; }); },
+        ctx.soLeitura, falta && k.tipo <= 1 && !k.perfil));
+    });
+    opcoes.querySelectorAll('[data-espaco="grau"]').forEach(function (lugarGrau) {
+      lugarGrau.appendChild(P().selecao(listaGraus.map(function (g) { return { valor: g, texto: g }; }), k.grau, function (v) {
+        mudar(function (c) { c.grau = v; c.perfil = (graus.oficial || []).indexOf(v) >= 0 ? 'oficial' : 'praça'; });
+      }, { rotulo: M().rotuloGrau, travado: ctx.soLeitura, erro: falta && k.tipo >= 2 && !k.grau }));
+    });
+    opcoes.querySelector('[data-espaco="sentido"]').appendChild(P().selecaoFixa('sentido', k.sentido, function (v) {
+      mudar(function (c) { c.sentido = Number(v); });
+    }, ctx.soLeitura, falta && k.tipo === 2 && k.sentido == null));
+    var linhaAviso = opcoes.querySelector('.nova-distribuicao-criterio-aviso');
+    linhaAviso.classList.toggle('oculto', !(k.tipo >= 2));
+    linhaAviso.querySelector('[data-espaco="aviso"]').appendChild(P().selecaoFixa('aviso', k.aviso, function (v) {
+      mudar(function (c) { c.aviso = Number(v); });
+    }, ctx.soLeitura, falta && k.tipo >= 2 && k.aviso == null));
+    P().marcar(opcoes.querySelector('.nova-distribuicao-rodizio'), !!k.rodizio, function (marcado) {
+      mudar(function (c) { c.rodizio = marcado; });
+    }, ctx.soLeitura);
+    lugar.appendChild(opcoes);
   }
 
   function escolher(corpo, ctx, api) {
-    var calc = ctx.calc || {};
-    var graus = calc.graus || {};
-    grupo(corpo, ctx);
-    corpo.appendChild(tpl('nota-escolher'));
-    if (papel(ctx)) {
-      fixa(corpo, texto(M().quemSentaPapel, { cadeira: papel(ctx) }), function (caixa) {
-        trava(caixa, texto(M().papelFixo, { perfil: ctx.ehCia ? 'oficial' : 'praça' }));
+    corpo.appendChild(P().tpl('nota-escolher'));
+    var u = P().unidade(corpo, ctx);
+    var papel = P().papel(ctx);
+    if (papel) {
+      P().fixo(u, P().texto(M().quemSenta, { funcao: P().completo(ctx, papel) }), function (lugar) {
+        P().trava(lugar, P().texto(M().papelFixo, { perfil: ctx.ehCia ? 'oficial' : 'praça' }));
       });
     }
-    (calc.postos || []).forEach(function (p) {
-      var daqui = (ctx.resp.ordem || []).filter(function (n) { return n.slice(-(p.nome.length + 3)) === ' · ' + p.nome; });
-      if (!daqui.length) return;
-      posto(corpo, p.nome);
-      daqui.forEach(function (nome) {
-        var k = (ctx.resp.criterios || {})[nome];
-        if (!k) return;
-        pergunta(corpo, api, ctx, 'criterio-' + nome, texto(M().quemSenta, { funcao: nome.split(' · ')[0] }), resumoCriterio(k, nome), false, function (caixa) {
-          var mudar = function (fn) { api.mudar(ctx.lado, function (x) { fn(x.criterios[nome]); }); };
-          var opcoes = marcarOpcoes(tpl('criterio'), 'nova-distribuicao-criterio', function (v) { return Number(v) === k.tipo; }, function (v) {
-            mudar(function (c) { c.tipo = Number(v); });
-          }, ctx.soLeitura);
-          opcoes.querySelectorAll('[data-espaco="perfil"]').forEach(function (lugar) {
-            lugar.appendChild(selecaoFixa('perfil', k.perfil, function (v) {
-              mudar(function (c) { c.perfil = v; c.grau = (graus[v] || [])[0] || c.grau; });
-            }, ctx.soLeitura));
-          });
-          opcoes.querySelectorAll('[data-espaco="grau"]').forEach(function (lugar) {
-            lugar.appendChild(selecao(itensDe(graus[k.perfil] || []), k.grau, function (v) {
-              mudar(function (c) { c.grau = v; });
-            }, '', '', ctx.soLeitura));
-          });
-          opcoes.querySelector('[data-espaco="sentido"]').appendChild(selecaoFixa('sentido', k.sentido, function (v) {
-            mudar(function (c) { c.sentido = Number(v); });
-          }, ctx.soLeitura));
-          var rodizio = opcoes.querySelector('.nova-distribuicao-rodizio input');
-          rodizio.checked = !!k.rodizio;
-          rodizio.disabled = ctx.soLeitura;
-          rodizio.addEventListener('change', function () { mudar(function (c) { c.rodizio = rodizio.checked; }); });
-          caixa.appendChild(opcoes);
-        });
+    var lista = ctx.resp.ordem || [];
+    ((ctx.calc && ctx.calc.postos) || []).forEach(function (p) {
+      lista.filter(function (nome) { return P().partes(nome).posto === p.nome; }).forEach(function (nome) {
+        var k = (ctx.resp.criterios || {})[nome] || {};
+        var falta = P().pendente(ctx, 'criterio:' + nome);
+        P().cartao(u, api, ctx, 'criterio-' + nome, P().texto(M().quemSenta, { funcao: P().completo(ctx, nome) }),
+          resumoCriterio(k, nome, falta), function (lugar) { opcoesCriterio(lugar, ctx, api, nome, k); }, falta);
       });
     });
   }
 
   window.RosterWork.novaDistribuicaoBlocos = {
-    /* bloco 0 a 5; o 1 (funções especiais) recebe a companhia e o pelotão juntos */
-    desenhar: function (bloco, corpo, ctxs, api) {
-      var ctx = ctxs[ctxs.length - 1];
-      if (bloco === 0) postos(corpo, ctx, api);
-      else if (bloco === 1) funcoes(corpo, ctxs, api);
-      else if (bloco === 2) acumulos(corpo, ctx, api);
-      else if (bloco === 3) ordem(corpo, ctx, api);
-      else if (bloco === 4) faltar(corpo, ctx, api);
-      else if (bloco === 5) escolher(corpo, ctx, api);
-    },
-    pecas: { tpl: tpl, texto: texto, grupo: grupo, posto: posto, numero: numero, selecao: selecao }
+    acumulos: acumulos, ordem: ordem, substitutos: substitutos, escolher: escolher
   };
 })();

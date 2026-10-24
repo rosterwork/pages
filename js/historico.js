@@ -66,7 +66,6 @@
     escala: { aba: 'Escala', icone: 'icone-escalas' },
     distribuicao: { aba: 'Distribuição', icone: 'icone-distribuicao' },
     regra: { aba: 'Distribuição', icone: 'icone-distribuicao' },
-    nova_distribuicao: { aba: 'Nova distribuição', icone: 'icone-distribuicao' },
     folga: { aba: 'Folgas', icone: 'icone-folgas' },
     extra_cota: { aba: 'Extrajornada', icone: 'icone-extrajornada' },
     extra_alocacao: { aba: 'Extrajornada', icone: 'icone-extrajornada' },

@@ -2,10 +2,11 @@
    NOVA DISTRIBUIÇÃO — entrada da página (protótipo, só programador)
    Carrega a unidade e o período, guarda as respostas em edição,
    pede as contas ao banco a cada mudança (a resposta mais nova
-   vence) e desenha o menu de blocos, o corpo (blocos 1 a 6 em
-   nova-distribuicao-blocos.js, o 7 em nova-distribuicao-conferir.js)
-   e o rodapé. Salvar, Cancelar, a unidade, o período, o Novo período
-   (painel da direita) e o Excluir período moram aqui.
+   vence) e desenha o menu dos 8 blocos, o corpo e o rodapé. Os
+   blocos moram em -postos (1 e 2), -blocos (3 a 6), -militares (7)
+   e -conferir (8); as peças comuns em -pecas; o Novo e o Excluir
+   período em -periodo. Salvar, Cancelar, a unidade e o período
+   moram aqui. Não grava no Histórico (página de teste).
    ============================================================ */
 (function () {
   'use strict';
@@ -16,13 +17,14 @@
   var tokenCarga = 0;
   var tokenConta = 0;
   var guardaLigada = false;
-  var formPeriodo = null;   /* o Novo período aberto no painel */
+  /* prefixos digitados fora do formato: ficam só no campo, em vermelho ({ 'lado:viatura:i': texto }) */
+  var invalidos = {};
 
   function novoEstado() {
     return {
       dados: null, unidadeId: null, periodo: null, resp: null, calc: null,
       companhia: null, respCia: null, calcCia: null,
-      sujo: false, sujoCia: false, bloco: 0, aberto: null, efetivo: {}
+      sujo: false, sujoCia: false, bloco: 0, aberto: null
     };
   }
 
@@ -30,18 +32,13 @@
   function M() { return RosterWork.mensagens.novaDistribuicao; }
   function G() { return RosterWork.mensagens.geral; }
   function B() { return RosterWork.mensagens.botoes; }
-  function P() { return RosterWork.novaDistribuicaoBlocos.pecas; }
+  function P() { return RosterWork.novaDistribuicaoPecas; }
   function el(id) { return document.getElementById(id); }
   function copia(o) { return o == null ? o : JSON.parse(JSON.stringify(o)); }
   function ehPelotao() { return !!(E.dados && E.dados.unidade.tipo === 'PEL'); }
   function montada() { return !!el('nova-distribuicao-corpo'); }
 
-  function rotuloPeriodo(p) {
-    if (!p) return '';
-    var br = RosterWork.data.isoParaBR;
-    return p.fim ? P().texto(M().periodoIntervalo, { inicio: br(p.inicio), fim: br(p.fim) })
-                 : P().texto(M().periodoDesde, { inicio: br(p.inicio) });
-  }
+  function C() { return RosterWork.novaDistribuicaoConferir; }
 
   /* as falhas: o banco recusou (com a frase dele) ou não respondeu (servidor); a rede caiu (sem conexão) */
   function avisarFalha(r) { RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || G().falhaServidor }); }
@@ -53,7 +50,7 @@
     RosterWork.confirmar({
       tipo: 'aviso', mensagem: RosterWork.mensagens.edicao.sairSemSalvar,
       textoConfirmar: B().descartar, textoCancelar: B().continuarEditando,
-      aoConfirmar: seguir, aoCancelar: aoCancelar
+      aoConfirmar: function () { invalidos = {}; seguir(); }, aoCancelar: aoCancelar
     });
   }
 
@@ -61,7 +58,7 @@
     var corpo = el('nova-distribuicao-corpo');
     if (!corpo) return null;
     corpo.textContent = '';
-    var no = RosterWork.tpl('tpl-nova-distribuicao-' + molde);
+    var no = P().tpl(molde);
     if (no && frase) no.textContent = frase;
     if (no) corpo.appendChild(no);
     return no;
@@ -75,16 +72,16 @@
     return D().ler(unidadeId, periodoId).then(function (r) {
       if (meu !== tokenCarga || !montada()) return;
       if (!r || !r.success) { mostrarNoCorpo('falha', (r && r.error) || G().falhaCarregar); return; }
-      var guardado = { efetivo: E.efetivo, bloco: E.bloco };
+      var bloco = E.bloco;
       E = novoEstado();
-      E.efetivo = guardado.efetivo;
-      E.bloco = guardado.bloco;
+      E.bloco = bloco;
       E.dados = r;
       E.unidadeId = r.unidade.id;
       E.periodo = r.atual;
       E.resp = r.atual ? copia(r.atual.respostas) : null;
       E.companhia = r.companhia;
       E.respCia = r.companhia && r.companhia.periodo ? copia(r.companhia.periodo.respostas) : null;
+      invalidos = {};
       desenharBarra();
       if (!E.periodo) { desenharSemRespostas(); return; }
       return recalcular();
@@ -93,28 +90,18 @@
     });
   }
 
-  /* quantos de serviço a conferência mostra de início: as cadeiras próprias que dão erro vermelho */
-  function efetivoPadrao() {
-    var g = E.resp.gravidade || {};
-    var n = E.calc.papel ? 1 : 0;
-    (E.resp.ordem || []).forEach(function (c) { if (g[c] === 0) n++; });
-    return Math.max(n, 1);
-  }
-
   function recalcular() {
     var meu = ++tokenConta;
-    var conta = D().calcular(E.unidadeId, E.resp, E.efetivo[E.unidadeId]);
-    var contaCia = ehPelotao() && E.respCia ? D().calcular(E.companhia.unidade.id, E.respCia, null) : Promise.resolve(null);
+    var par = C().parametros(E.unidadeId);
+    var conta = D().calcular(E.unidadeId, E.resp, par.efetivos, par.simulacao);
+    var contaCia = ehPelotao() && E.respCia ? D().calcular(E.companhia.unidade.id, E.respCia, null, null) : Promise.resolve(null);
     return Promise.all([conta, contaCia]).then(function (rs) {
       if (meu !== tokenConta || !montada()) return;
       if (!rs[0] || !rs[0].success) { avisarFalha(rs[0]); return; }
       E.calc = rs[0];
       E.resp = rs[0].respostas;
       if (rs[1] && rs[1].success) { E.calcCia = rs[1]; E.respCia = rs[1].respostas; }
-      if (E.efetivo[E.unidadeId] == null) {
-        E.efetivo[E.unidadeId] = efetivoPadrao();
-        return recalcular();
-      }
+      if (C().definirInicioPadrao(E.unidadeId, { calc: E.calc, resp: E.resp }, ehPelotao())) return recalcular();
       desenhar();
     }, function () {
       if (meu === tokenConta && montada()) avisarSemConexao();
@@ -123,21 +110,27 @@
 
   /* ---------- o que os blocos pedem ---------- */
 
-  function mudar(lado, fn) {
+  /* muda as respostas de um lado (a unidade ou a companhia), marca como não salvo e recalcula;
+     abrirId abre esse cartão no redesenho */
+  function mudar(lado, fn, abrirId) {
     var alvo = lado === 'companhia' ? E.respCia : E.resp;
     if (!alvo) return;
     fn(alvo);
+    if (abrirId) E.aberto = abrirId;
     if (lado === 'companhia') E.sujoCia = true; else E.sujo = true;
     desenharRodape();
     recalcular();
   }
 
-  /* a viatura mudou de nome: as cadeiras dela (nas regras, na ordem, na gravidade e em quem escolher) vão junto */
-  function renomear(lado, velho, novo) {
+  /* a viatura mudou de prefixo: as funções dela (nos acúmulos, na ordem, nos substitutos, em quem
+     escolher e onde ficam as funções especiais) vão junto */
+  function renomear(lado, indice, velho, novo) {
     mudar(lado, function (x) {
-      var r = JSON.parse(JSON.stringify(x).split('· ' + velho + '"').join('· ' + novo + '"'));
-      r.viaturas.forEach(function (v) { if (v.nome === velho) v.nome = novo; });
-      if (r.papel && r.papel.posto === velho) r.papel.posto = novo;
+      var r = velho ? JSON.parse(JSON.stringify(x).split('· ' + velho + '"').join('· ' + novo + '"')) : x;
+      function trocar(n) { return n === velho ? novo : n; }
+      r.viaturas[indice].nome = novo;
+      if (velho && r.papel && r.papel.postos) r.papel.postos = r.papel.postos.map(trocar);
+      if (velho && r.oficial_postos) r.oficial_postos = r.oficial_postos.map(trocar);
       Object.keys(r).forEach(function (k) { x[k] = r[k]; });
     });
   }
@@ -145,10 +138,22 @@
   var api = {
     mudar: mudar,
     renomear: renomear,
+    redesenhar: function () { desenhar(); },
     abrir: function (id) { E.aberto = E.aberto === id ? null : id; desenhar(); },
     aberto: function () { return E.aberto; },
-    copiarCompanhia: function () { copiar(E.companhia.unidade.id); },
-    definirEfetivo: function (n) { E.efetivo[E.unidadeId] = n; recalcular(); }
+    dados: function () { return E.dados; },
+    copiarCompanhia: function (botao) { copiar(E.companhia.unidade.id, botao); },
+    /* com um argumento, lê o texto guardado; com dois, guarda (null apaga) */
+    invalido: function (chave, valor) {
+      if (arguments.length < 2) return invalidos.hasOwnProperty(chave) ? invalidos[chave] : null;
+      if (valor == null) delete invalidos[chave]; else invalidos[chave] = valor;
+      return null;
+    },
+    /* a lista de viaturas mudou de ordem ou de tamanho: o que foi digitado fora do formato sai */
+    esquecerInvalidos: function (lado) {
+      Object.keys(invalidos).forEach(function (k) { if (k.indexOf(lado + ':') === 0) delete invalidos[k]; });
+    },
+    conferir: RosterWork.novaDistribuicaoConferir.api(function () { return E.unidadeId; }, function () { recalcular(); })
   };
 
   /* ---------- desenhar ---------- */
@@ -156,7 +161,7 @@
   function contextos() {
     var u = {
       lado: 'unidade', ehCia: !ehPelotao(), nome: E.dados.unidade.nome, resp: E.resp, calc: E.calc,
-      soLeitura: !!E.periodo.somente_leitura, nomeCompanhia: E.companhia ? E.companhia.unidade.nome : ''
+      soLeitura: !!E.periodo.somente_leitura
     };
     if (!ehPelotao()) return [u];
     var c = E.companhia || {};
@@ -168,12 +173,13 @@
 
   /* blocos prontos; no pelotão, Funções especiais e Conferir dependem também da companhia */
   function prontos() {
-    var r = ((E.calc && E.calc.prontos) || []).slice(0, 7);
+    var r = ((E.calc && E.calc.prontos) || []).slice(0, 8);
     if (ehPelotao()) {
-      var pc = (E.calcCia && E.calcCia.prontos) || [];
-      r[1] = !!(r[1] && pc[1]);
-      r[6] = !!(r[6] && pc[6]);
+      var daCia = !!(E.calcCia && E.calcCia.prontos && E.calcCia.prontos[1]);
+      r[1] = !!(r[1] && daCia);
+      r[7] = !!(r[7] && daCia);
     }
+    if (Object.keys(invalidos).length) { r[0] = false; r[7] = false; }
     return r;
   }
 
@@ -187,29 +193,44 @@
       botao.querySelector('.nova-distribuicao-bloco-pronto').classList.toggle('oculto', !pr[n]);
       botao.querySelector('.nova-distribuicao-bloco-falta').classList.toggle('oculto', !!pr[n]);
     });
-    el('nova-distribuicao-contagem').textContent = E.periodo
-      ? P().texto(M().contagem, { n: pr.filter(Boolean).length }) : '';
+    el('nova-distribuicao-contagem').textContent = E.periodo ? P().texto(M().contagem, { n: pr.filter(Boolean).length }) : '';
+  }
+
+  /* o resumo dos erros no alto (cada um aparece também no campo dele) */
+  function resumoErros(conteudo) {
+    var erros = ((E.calc && E.calc.erros) || []).concat(ehPelotao() && E.calcCia ? E.calcCia.erros || [] : [])
+      .map(function (e) { return e.texto; });
+    if (Object.keys(invalidos).length) erros.unshift(M().prefixoInvalido);
+    if (!erros.length) return;
+    var nota = P().tpl('erros');
+    erros.forEach(function (frase) {
+      var linha = P().tpl('erro');
+      linha.textContent = frase;
+      nota.querySelector('.nova-distribuicao-erros-lista').appendChild(linha);
+    });
+    conteudo.appendChild(nota);
   }
 
   function desenharCorpo() {
     var corpo = el('nova-distribuicao-corpo');
     var rolagem = corpo.scrollTop;
     corpo.textContent = '';
-    var conteudo = RosterWork.tpl('tpl-nova-distribuicao-conteudo');
+    var conteudo = P().tpl('conteudo');
     var ctxs = contextos();
-    if (E.periodo.somente_leitura) conteudo.appendChild(RosterWork.tpl('tpl-nova-distribuicao-somente-leitura'));
-    var erros = ((E.calc && E.calc.erros) || []).concat(ehPelotao() && E.calcCia ? E.calcCia.erros || [] : []);
-    if (erros.length) {
-      var nota = RosterWork.tpl('tpl-nova-distribuicao-erros');
-      erros.forEach(function (frase) {
-        var linha = RosterWork.tpl('tpl-nova-distribuicao-erro');
-        linha.textContent = frase;
-        nota.querySelector('.nova-distribuicao-erros-lista').appendChild(linha);
-      });
-      conteudo.appendChild(nota);
-    }
-    if (E.bloco === 6) RosterWork.novaDistribuicaoConferir.desenhar(conteudo, ctxs[ctxs.length - 1], api);
-    else RosterWork.novaDistribuicaoBlocos.desenhar(E.bloco, conteudo, ctxs, api);
+    var ctx = ctxs[ctxs.length - 1];
+    if (E.periodo.somente_leitura) conteudo.appendChild(P().tpl('somente-leitura'));
+    resumoErros(conteudo);
+    var R = RosterWork;
+    [
+      function () { R.novaDistribuicaoPostos.postos(conteudo, ctx, api); },
+      function () { R.novaDistribuicaoPostos.funcoes(conteudo, ctxs, api); },
+      function () { R.novaDistribuicaoBlocos.acumulos(conteudo, ctx, api); },
+      function () { R.novaDistribuicaoBlocos.ordem(conteudo, ctx, api); },
+      function () { R.novaDistribuicaoBlocos.substitutos(conteudo, ctx, api); },
+      function () { R.novaDistribuicaoBlocos.escolher(conteudo, ctx, api); },
+      function () { R.novaDistribuicaoMilitares.regras(conteudo, ctx, api); },
+      function () { R.novaDistribuicaoConferir.desenhar(conteudo, ctx, api); }
+    ][E.bloco]();
     corpo.appendChild(conteudo);
     corpo.scrollTop = rolagem;
   }
@@ -231,10 +252,14 @@
     desenharRodape();
   }
 
+  /* sem respostas: com postos ou modelos hoje, copia; sem nada hoje, começa em branco */
   function desenharSemRespostas() {
     desenharMenu();
     desenharRodape();
     var vazio = mostrarNoCorpo('sem-respostas');
+    var hoje = !!E.dados.tem_dados_hoje;
+    vazio.querySelectorAll('.nova-distribuicao-sem-respostas-copiar').forEach(function (n) { n.classList.toggle('oculto', !hoje); });
+    vazio.querySelectorAll('.nova-distribuicao-sem-respostas-branco').forEach(function (n) { n.classList.toggle('oculto', hoje); });
     vazio.querySelector('.nova-distribuicao-copiar').addEventListener('click', function () { copiar(E.unidadeId, this); });
   }
 
@@ -244,30 +269,14 @@
     var trilho = el('nova-distribuicao-unidades');
     trilho.textContent = '';
     E.dados.unidades.forEach(function (u) {
-      var aba = RosterWork.tpl('tpl-nova-distribuicao-unidade');
+      var aba = P().tpl('unidade');
       aba.textContent = u.nome;
       aba.setAttribute('data-unidade', u.id);
       aba.classList.toggle('aba--ativa', u.id === E.unidadeId);
       trilho.appendChild(aba);
     });
 
-    var periodos = E.dados.periodos || [];
-    var i = E.periodo ? periodos.map(function (p) { return p.id; }).indexOf(E.periodo.id) : -1;
-    el('nova-distribuicao-periodo').classList.toggle('oculto', !E.periodo);
-    el('nova-distribuicao-periodo-nome').textContent = rotuloPeriodo(E.periodo);
-    el('nova-distribuicao-periodo-anterior').disabled = i <= 0;
-    el('nova-distribuicao-periodo-proximo').disabled = i < 0 || i >= periodos.length - 1;
-    var lista = el('nova-distribuicao-periodo-lista');
-    lista.textContent = '';
-    periodos.forEach(function (p) {
-      var item = RosterWork.tpl('tpl-nova-distribuicao-periodo-item');
-      item.textContent = rotuloPeriodo(p);
-      if (E.periodo && p.id === E.periodo.id) item.classList.add('dropdown-item--ativo');
-      item.addEventListener('click', function () { trocarPeriodo(p); });
-      lista.appendChild(item);
-    });
-    el('nova-distribuicao-novo-periodo').disabled = !E.periodo;
-    el('nova-distribuicao-excluir-periodo').disabled = !E.periodo || periodos.length < 2;
+    RosterWork.novaDistribuicaoPeriodo.desenharBarra(E.dados.periodos || [], E.periodo, trocarPeriodo);
   }
 
   function trocarPeriodo(p) {
@@ -298,8 +307,10 @@
     });
   }
 
+  /* grava com respostas faltando (pendências); valor errado o banco recusa */
   function salvar() {
     if (!E.periodo || (!E.sujo && !E.sujoCia)) return;
+    if (Object.keys(invalidos).length) { RosterWork.avisar({ tipo: 'erro', mensagem: M().corrigirAntes }); return; }
     var itens = [];
     if (E.sujo) itens.push({ periodo_id: E.periodo.id, respostas: E.resp });
     if (E.sujoCia && E.companhia && E.companhia.periodo) itens.push({ periodo_id: E.companhia.periodo.id, respostas: E.respCia });
@@ -322,99 +333,13 @@
     confirmarDescarte(function () { E.aberto = null; carregar(E.unidadeId, E.periodo && E.periodo.id); });
   }
 
-  function excluirPeriodo() {
-    if (!E.periodo) return;
-    confirmarDescarte(function () {
-      RosterWork.confirmar({
-        tipo: 'aviso',
-        mensagem: P().texto(M().excluirPeriodo, { periodo: rotuloPeriodo(E.periodo) }),
-        textoConfirmar: M().botaoExcluirPeriodo, textoCancelar: B().cancelar,
-        aoConfirmar: function () {
-          RosterWork.bloquearTela();
-          D().excluirPeriodo(E.periodo.id).then(function (r) {
-            RosterWork.liberarTela();
-            if (!r || !r.success) { avisarFalha(r); return; }
-            RosterWork.resumo.abrirModal(r.log, { pagina: M().pagina });
-            carregar(E.unidadeId);
-          }, function () {
-            RosterWork.liberarTela();
-            avisarSemConexao();
-          });
-        }
-      });
-    });
-  }
-
-  /* Novo período, no painel da direita: começo, fim (ou sem fim) e de qual período copiar as respostas */
-  function abrirNovoPeriodo() {
-    if (!E.periodo) return;
-    confirmarDescarte(function () {
-      var painel = RosterWork.painel;
-      var caixa = RosterWork.tpl('tpl-nova-distribuicao-novo-periodo');
-      var rodape = RosterWork.tpl('tpl-nova-distribuicao-novo-periodo-rodape');
-      var campos = {
-        inicio: caixa.querySelector('.nova-distribuicao-inicio'),
-        fim: caixa.querySelector('.nova-distribuicao-fim')
-      };
-      var semFim = caixa.querySelector('.nova-distribuicao-sem-fim');
-      var origens = E.dados.periodos.map(function (p) { return { valor: p.id, texto: rotuloPeriodo(p) }; });
-      formPeriodo = { inicio: null, fim: null, semFim: true, origem: E.periodo.id, sujo: false };
-
-      function erro(campo, frase) {
-        var c = campo.closest('.campo');
-        c.classList.toggle('campo--erro', !!frase);
-        c.querySelector('.campo-erro-texto').textContent = frase || '';
-      }
-      function ligarData(chave) {
-        RosterWork.calendario.ligar(campos[chave], {
-          obterData: function () { return formPeriodo[chave] ? new Date(formPeriodo[chave] + 'T12:00:00') : new Date(); },
-          permiteDia: function (d) { return RosterWork.data.paraIsoDeData(d) >= E.dados.limite; },
-          aoEscolher: function (d) {
-            formPeriodo[chave] = RosterWork.data.paraIsoDeData(d);
-            formPeriodo.sujo = true;
-            campos[chave].value = RosterWork.data.isoParaBR(formPeriodo[chave]);
-            erro(campos[chave], '');
-          }
-        });
-      }
-      function montarOrigem() {
-        var lugar = caixa.querySelector('[data-espaco="origem"]');
-        lugar.textContent = '';
-        lugar.appendChild(P().selecao(origens, formPeriodo.origem, function (v) { formPeriodo.origem = v; montarOrigem(); }, M().novoPeriodoOrigem));
-      }
-
-      painel.abrir({ titulo: M().novoPeriodoTitulo, subtitulo: E.dados.unidade.nome, aoFechar: function () { formPeriodo = null; } });
-      painel.corpo().appendChild(caixa);
-      painel.rodape().appendChild(rodape);
-      painel.rodape().classList.remove('oculto');
-      ligarData('inicio');
-      ligarData('fim');
-      montarOrigem();
-      semFim.addEventListener('change', function () {
-        formPeriodo.semFim = semFim.checked;
-        formPeriodo.sujo = true;
-        caixa.querySelector('.nova-distribuicao-fim-campo').classList.toggle('oculto', semFim.checked);
-      });
-      rodape.querySelector('.nova-distribuicao-painel-cancelar').addEventListener('click', function () { painel.fechar(); });
-      var criar = rodape.querySelector('.nova-distribuicao-painel-criar');
-      criar.addEventListener('click', function () {
-        var f = formPeriodo;
-        if (!f.inicio) { erro(campos.inicio, M().erroInicio); return; }
-        if (!f.semFim && !f.fim) { erro(campos.fim, M().erroFim); return; }
-        if (!f.semFim && f.fim < f.inicio) { erro(campos.fim, M().erroOrdemDatas); return; }
-        RosterWork.iniciarCarregando(criar);
-        D().criarPeriodo(E.unidadeId, f.inicio, f.semFim ? null : f.fim, f.origem).then(function (r) {
-          RosterWork.pararCarregando(criar);
-          if (!r || !r.success) { avisarFalha(r); return; }
-          painel.fechar();
-          RosterWork.resumo.abrirModal(r.log, { pagina: M().pagina });
-          carregar(E.unidadeId, r.periodo_id);
-        }, function () {
-          RosterWork.pararCarregando(criar);
-          avisarSemConexao();
-        });
-      });
-    });
+  /* o contexto que o Novo e o Excluir período usam */
+  function contextoPeriodo() {
+    return {
+      dados: E.dados, periodo: E.periodo, unidadeId: E.unidadeId,
+      aoTerminar: function (periodoId) { carregar(E.unidadeId, periodoId); },
+      falha: avisarFalha, semConexao: avisarSemConexao
+    };
   }
 
   /* ---------- ligar (o fragmento vem novo a cada visita: liga uma vez por elemento) ---------- */
@@ -426,10 +351,15 @@
   }
 
   function ligar() {
+    var periodo = RosterWork.novaDistribuicaoPeriodo;
     ligarUmaVez(el('nova-distribuicao-salvar'), 'click', salvar);
     ligarUmaVez(el('nova-distribuicao-cancelar'), 'click', cancelar);
-    ligarUmaVez(el('nova-distribuicao-novo-periodo'), 'click', abrirNovoPeriodo);
-    ligarUmaVez(el('nova-distribuicao-excluir-periodo'), 'click', excluirPeriodo);
+    ligarUmaVez(el('nova-distribuicao-novo-periodo'), 'click', function () {
+      if (E.periodo) confirmarDescarte(function () { periodo.abrirNovo(contextoPeriodo()); });
+    });
+    ligarUmaVez(el('nova-distribuicao-excluir-periodo'), 'click', function () {
+      if (E.periodo) confirmarDescarte(function () { periodo.excluir(contextoPeriodo()); });
+    });
     ligarUmaVez(el('nova-distribuicao-periodo-anterior'), 'click', function () { andarPeriodo(-1); });
     ligarUmaVez(el('nova-distribuicao-periodo-proximo'), 'click', function () { andarPeriodo(1); });
     ligarUmaVez(el('nova-distribuicao-unidades'), 'rosterwork:aba', function (ev) {
@@ -456,8 +386,7 @@
       guardaLigada = true;
       RosterWork.guardaSaida.registrar(function () {
         if (!montada()) return false;
-        var painelSujo = !!(formPeriodo && formPeriodo.sujo && RosterWork.painel.estaAberto());
-        return E.sujo || E.sujoCia || painelSujo;
+        return E.sujo || E.sujoCia || RosterWork.novaDistribuicaoPeriodo.sujo();
       });
     }
     E.aberto = null;
