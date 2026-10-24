@@ -52,37 +52,42 @@
           <button type="button" class="lista-item lista-item--clicavel nova-distribuicao-bloco" data-bloco="1">
             <svg class="icone nova-distribuicao-bloco-pronto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
             <svg class="icone nova-distribuicao-bloco-falta oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-            <span>2. Funções especiais</span>
+            <span>2. Efetivo</span>
           </button>
           <button type="button" class="lista-item lista-item--clicavel nova-distribuicao-bloco" data-bloco="2">
             <svg class="icone nova-distribuicao-bloco-pronto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
             <svg class="icone nova-distribuicao-bloco-falta oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-            <span>3. Acúmulos fixos</span>
+            <span>3. Funções especiais</span>
           </button>
           <button type="button" class="lista-item lista-item--clicavel nova-distribuicao-bloco" data-bloco="3">
             <svg class="icone nova-distribuicao-bloco-pronto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
             <svg class="icone nova-distribuicao-bloco-falta oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-            <span>4. Ordem de importância</span>
+            <span>4. Acúmulos fixos</span>
           </button>
           <button type="button" class="lista-item lista-item--clicavel nova-distribuicao-bloco" data-bloco="4">
             <svg class="icone nova-distribuicao-bloco-pronto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
             <svg class="icone nova-distribuicao-bloco-falta oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-            <span>5. Substitutos</span>
+            <span>5. Ordem de importância</span>
           </button>
           <button type="button" class="lista-item lista-item--clicavel nova-distribuicao-bloco" data-bloco="5">
             <svg class="icone nova-distribuicao-bloco-pronto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
             <svg class="icone nova-distribuicao-bloco-falta oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-            <span>6. Quem escolher</span>
+            <span>6. Substitutos</span>
           </button>
           <button type="button" class="lista-item lista-item--clicavel nova-distribuicao-bloco" data-bloco="6">
             <svg class="icone nova-distribuicao-bloco-pronto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
             <svg class="icone nova-distribuicao-bloco-falta oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-            <span>7. Regras por militar</span>
+            <span>7. Quem escolher</span>
           </button>
           <button type="button" class="lista-item lista-item--clicavel nova-distribuicao-bloco" data-bloco="7">
             <svg class="icone nova-distribuicao-bloco-pronto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
             <svg class="icone nova-distribuicao-bloco-falta oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-            <span>8. Conferir</span>
+            <span>8. Regras por militar</span>
+          </button>
+          <button type="button" class="lista-item lista-item--clicavel nova-distribuicao-bloco" data-bloco="8">
+            <svg class="icone nova-distribuicao-bloco-pronto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
+            <svg class="icone nova-distribuicao-bloco-falta oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+            <span>9. Conferir</span>
           </button>
         </div>
       </aside>
@@ -172,9 +177,23 @@
   <button type="button" class="aba" role="tab"></button>
 </template>
 
-<!-- item da lista de períodos -->
+<!-- item da lista de períodos: as datas e o que muda em relação ao anterior -->
 <template id="tpl-nova-distribuicao-periodo-item">
-  <button type="button" class="dropdown-item"></button>
+  <button type="button" class="dropdown-item nova-distribuicao-periodo-item">
+    <span class="nova-distribuicao-periodo-datas"></span>
+    <span class="nova-distribuicao-periodo-muda"></span>
+  </button>
+</template>
+
+<!-- período novo ainda não salvo -->
+<template id="tpl-nova-distribuicao-rascunho">
+  <div class="nota nota--alerta">
+    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-editar"/></svg>
+    <div>
+      <p class="nota-titulo">Período novo, ainda não salvo: <span class="nova-distribuicao-rascunho-datas"></span></p>
+      <p class="nota-texto">Mude só o que for diferente e salve. Igual ao que já vale nessas datas, ele não é criado.</p>
+    </div>
+  </div>
 </template>
 
 <!-- bloco cinza da unidade, com o título dentro; as perguntas vão em cartões brancos -->
@@ -190,7 +209,10 @@
 
 <!-- notas fixas do alto de cada bloco -->
 <template id="tpl-nova-distribuicao-nota-postos">
-  <p class="nova-distribuicao-ajuda">Cada posto diz quantas funções tem. O mínimo, o ideal e o máximo dizem o aviso quando a função fica vazia.</p>
+  <p class="nova-distribuicao-ajuda">Quais postos a unidade tem, com o prefixo e a CNH das viaturas. O efetivo de cada posto fica no bloco Efetivo.</p>
+</template>
+<template id="tpl-nova-distribuicao-nota-efetivo">
+  <p class="nova-distribuicao-ajuda">O mínimo, o ideal e o máximo dizem quantas funções o posto tem e o aviso quando alguma fica vazia. Mínimo 0 é reserva: vazia, fica fora da escala.</p>
 </template>
 <template id="tpl-nova-distribuicao-nota-funcoes">
   <p class="nova-distribuicao-ajuda">O Oficial de Área é sempre o oficial mais antigo de serviço, e o Chefe de Socorro, o praça mais antigo.</p>
@@ -211,7 +233,7 @@
   <p class="nova-distribuicao-ajuda">Regras de um militar só para este teste. As regras da página Distribuição não mudam.</p>
 </template>
 <template id="tpl-nova-distribuicao-nota-viaturas">
-  <p class="nova-distribuicao-ajuda">A ordem da lista é a ordem dos cartões e a ordem na escala.</p>
+  <p class="nova-distribuicao-ajuda">A ordem da lista é a ordem na escala. Para outra viatura entrar no lugar por alguns dias, use a troca da linha.</p>
 </template>
 
 <!-- cartão que abre ao clicar: o título e a resposta embaixo (uma por linha) -->
@@ -219,6 +241,8 @@
   <div class="nova-distribuicao-cartao">
     <button type="button" class="nova-distribuicao-cartao-cabecalho" aria-expanded="false">
       <span class="nova-distribuicao-cartao-titulo"></span>
+      <span class="selo nova-distribuicao-cartao-reserva oculto">Reserva</span>
+      <span class="nova-distribuicao-cartao-numeros"></span>
       <svg class="icone nova-distribuicao-cartao-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
     </button>
     <div class="nova-distribuicao-cartao-resposta"></div>
@@ -258,6 +282,11 @@
     <span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
     <span class="nova-distribuicao-marca-texto"></span>
   </button>
+</template>
+
+<!-- título de um grupo de opções (a unidade) -->
+<template id="tpl-nova-distribuicao-grupo-titulo">
+  <p class="rotulo-secao nova-distribuicao-grupo-titulo"></p>
 </template>
 
 <!-- lista de opções (uma por linha) -->
@@ -300,19 +329,54 @@
   </div>
 </template>
 
-<!-- linha da lista de viaturas -->
+<!-- lista de viaturas: Nº, prefixo, CNH alinhadas e as ações numa linha; as trocas e os erros embaixo -->
+<template id="tpl-nova-distribuicao-viaturas">
+  <div class="nova-distribuicao-viaturas">
+    <div class="nova-distribuicao-viaturas-cabecalho">
+      <span class="rotulo-secao">Nº</span>
+      <span class="rotulo-secao">Prefixo</span>
+      <span class="rotulo-secao">CNH</span>
+    </div>
+    <div class="nova-distribuicao-viaturas-lista"></div>
+  </div>
+</template>
 <template id="tpl-nova-distribuicao-viatura">
-  <div class="nova-distribuicao-linha">
+  <div class="nova-distribuicao-viatura">
     <span class="nova-distribuicao-linha-ordem"></span>
-    <span class="nova-distribuicao-linha-nome"></span>
-    <button type="button" class="botao botao--icone nova-distribuicao-subir" aria-label="Subir">
-      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mover-cima"/></svg>
+    <input type="text" class="campo-entrada nova-distribuicao-prefixo" maxlength="12" placeholder="Ex.: ABT-01" autocomplete="off" aria-label="Prefixo" />
+    <div class="abas abas--seletor nova-distribuicao-cnh" aria-label="CNH exigida">
+      <button type="button" class="aba" data-valor="A">A</button>
+      <button type="button" class="aba" data-valor="B">B</button>
+      <button type="button" class="aba" data-valor="C">C</button>
+      <button type="button" class="aba" data-valor="D">D</button>
+      <button type="button" class="aba" data-valor="E">E</button>
+    </div>
+    <span class="nova-distribuicao-viatura-acoes">
+      <button type="button" class="botao botao--icone nova-distribuicao-subir" aria-label="Subir">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mover-cima"/></svg>
+      </button>
+      <button type="button" class="botao botao--icone nova-distribuicao-descer" aria-label="Descer">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mover-baixo"/></svg>
+      </button>
+      <button type="button" class="botao botao--icone nova-distribuicao-trocar" aria-label="Trocar por um tempo" data-dica="Trocar por um tempo">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-trocas"/></svg>
+      </button>
+      <button type="button" class="botao botao--icone nova-distribuicao-remover" aria-label="Excluir viatura">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
+      </button>
+    </span>
+    <div class="nova-distribuicao-viatura-extra"></div>
+  </div>
+</template>
+<template id="tpl-nova-distribuicao-troca">
+  <div class="nova-distribuicao-troca">
+    <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-troca"/></svg>
+    <span class="nova-distribuicao-troca-texto"></span>
+    <button type="button" class="botao botao--icone nova-distribuicao-editar" aria-label="Editar troca">
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-editar"/></svg>
     </button>
-    <button type="button" class="botao botao--icone nova-distribuicao-descer" aria-label="Descer">
-      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mover-baixo"/></svg>
-    </button>
-    <button type="button" class="botao botao--icone nova-distribuicao-remover" aria-label="Excluir viatura">
-      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
+    <button type="button" class="botao botao--icone nova-distribuicao-remover" aria-label="Tirar troca">
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
     </button>
   </div>
 </template>
@@ -323,7 +387,6 @@
 <!-- cartão do posto aberto: prefixo e CNH (viatura) e efetivo, do componente geral-posto-editar; as funções por nível -->
 <template id="tpl-nova-distribuicao-posto-campos">
   <div class="nova-distribuicao-posto-campos">
-    <div class="nova-distribuicao-posto-viatura"></div>
     <div class="nova-distribuicao-posto-efetivo"></div>
     <div class="nova-distribuicao-niveis">
       <div class="nova-distribuicao-nivel" data-nivel="minimo">
@@ -338,14 +401,15 @@
         <p class="nova-distribuicao-nivel-titulo"><span class="nova-distribuicao-ponto"></span><span>Até o máximo: sem aviso</span></p>
         <div class="nova-distribuicao-nivel-lista"></div>
       </div>
+      <div class="nova-distribuicao-nivel" data-nivel="reserva">
+        <p class="nova-distribuicao-nivel-titulo"><span class="nova-distribuicao-ponto"></span><span>Reserva: vazia, fica fora da escala; sem aviso</span></p>
+        <div class="nova-distribuicao-nivel-lista"></div>
+      </div>
     </div>
   </div>
 </template>
 <template id="tpl-nova-distribuicao-funcao">
   <p class="nova-distribuicao-funcao"><span class="nova-distribuicao-funcao-nome"></span></p>
-</template>
-<template id="tpl-nova-distribuicao-nivel-vazio">
-  <p class="nova-distribuicao-funcao nova-distribuicao-funcao--vazia">Nenhuma a mais</p>
 </template>
 
 <!-- campo de seleção; os itens de função vêm em Posto | Função, alinhados -->
@@ -687,16 +751,60 @@
         <span class="campo-erro-texto"></span>
       </label>
     </div>
-    <div class="grupo-caixa">
-      <span class="rotulo-secao">Começar com as respostas de</span>
-      <span class="nova-distribuicao-espaco" data-espaco="origem"></span>
-    </div>
-    <p class="nova-distribuicao-ajuda">Um período no meio de outro divide o de antes: quando o novo terminar, volta o anterior.</p>
+    <p class="nova-distribuicao-ajuda">O período novo começa igual ao que vale no início dele: na página, você muda o que for diferente e salva. Um período no meio de outro divide o de antes; quando o novo terminar, volta o anterior.</p>
   </div>
 </template>
+<!-- painel da direita: troca de viatura por um tempo -->
+<template id="tpl-nova-distribuicao-troca-painel">
+  <div class="painel-secao">
+    <div class="grupo-caixa">
+      <span class="rotulo-secao">Viatura que entra no lugar</span>
+      <label class="campo">
+        <span class="campo-rotulo">Prefixo</span>
+        <input type="text" class="campo-entrada nova-distribuicao-troca-prefixo" maxlength="12" placeholder="Ex.: ABT-01" autocomplete="off" />
+        <span class="campo-erro-texto"></span>
+      </label>
+      <div class="campo">
+        <span class="campo-rotulo">CNH exigida</span>
+        <div class="abas abas--seletor nova-distribuicao-troca-cnh" aria-label="CNH exigida">
+          <button type="button" class="aba" data-valor="A">A</button>
+          <button type="button" class="aba" data-valor="B">B</button>
+          <button type="button" class="aba" data-valor="C">C</button>
+          <button type="button" class="aba" data-valor="D">D</button>
+          <button type="button" class="aba" data-valor="E">E</button>
+        </div>
+        <span class="campo-erro-texto"></span>
+      </div>
+    </div>
+    <div class="grupo-caixa">
+      <span class="rotulo-secao">Quando</span>
+      <div class="nova-distribuicao-datas">
+        <label class="campo">
+          <span class="campo-rotulo">De</span>
+          <input type="text" class="campo-entrada nova-distribuicao-troca-inicio" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" />
+          <span class="campo-erro-texto"></span>
+        </label>
+        <label class="campo">
+          <span class="campo-rotulo">Até</span>
+          <input type="text" class="campo-entrada nova-distribuicao-troca-fim" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" />
+          <span class="campo-erro-texto"></span>
+        </label>
+      </div>
+      <span class="campo-ajuda nova-distribuicao-troca-ajuda"></span>
+    </div>
+    <p class="nova-distribuicao-ajuda">Nesses dias, a escala usa a viatura que entra no lugar. As funções e a ordem do posto continuam as mesmas; depois, volta a de sempre.</p>
+  </div>
+</template>
+<template id="tpl-nova-distribuicao-troca-rodape">
+  <div class="rodape-acoes">
+    <button type="button" class="botao nova-distribuicao-painel-cancelar">Cancelar</button>
+    <button type="button" class="botao botao--primario nova-distribuicao-painel-aplicar">Aplicar</button>
+  </div>
+</template>
+
 <template id="tpl-nova-distribuicao-novo-periodo-rodape">
   <div class="rodape-acoes">
     <button type="button" class="botao nova-distribuicao-painel-cancelar">Cancelar</button>
-    <button type="button" class="botao botao--primario nova-distribuicao-painel-criar">Criar período</button>
+    <button type="button" class="botao botao--primario nova-distribuicao-painel-criar">Continuar</button>
   </div>
 </template>

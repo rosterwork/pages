@@ -74,6 +74,29 @@
     return p;
   }
 
+  /* troca o corpo da página por um molde (carregando, falha, vazio); frase = o texto dele */
+  function mostrarNoCorpo(molde, frase) {
+    var corpo = document.getElementById('nova-distribuicao-corpo');
+    if (!corpo) return null;
+    corpo.textContent = '';
+    var no = tpl(molde);
+    if (no && frase) no.textContent = frase;
+    if (no) corpo.appendChild(no);
+    return no;
+  }
+
+  /* o resumo dos erros no alto da página (frases) */
+  function resumoErros(conteudo, frases) {
+    if (!frases.length) return;
+    var nota = tpl('erros');
+    frases.forEach(function (frase) {
+      var linha = tpl('erro');
+      linha.textContent = frase;
+      nota.querySelector('.nova-distribuicao-erros-lista').appendChild(linha);
+    });
+    conteudo.appendChild(nota);
+  }
+
   /* ---------- estrutura ---------- */
 
   /* o bloco cinza da unidade, com o título dentro; devolve onde vão os cartões */
@@ -97,12 +120,15 @@
     });
   }
 
-  /* cartão fechado com a resposta embaixo; ao clicar, abre as opções (montar) */
-  function cartao(destino, api, ctx, id, titulo, linhas, montar, comErro) {
+  /* cartão fechado com a resposta embaixo; ao clicar, abre as opções (montar).
+     extra = { numeros, reserva }: os números do efetivo e o selo Reserva no cabeçalho */
+  function cartao(destino, api, ctx, id, titulo, linhas, montar, comErro, extra) {
     var caixa = tpl('cartao');
     var cab = caixa.querySelector('.nova-distribuicao-cartao-cabecalho');
     var aberto = api.aberto() === ctx.lado + ':' + id;
     caixa.querySelector('.nova-distribuicao-cartao-titulo').textContent = titulo;
+    caixa.querySelector('.nova-distribuicao-cartao-numeros').textContent = (extra && extra.numeros) || '';
+    caixa.querySelector('.nova-distribuicao-cartao-reserva').classList.toggle('oculto', !(extra && extra.reserva));
     caixa.classList.toggle('nova-distribuicao-cartao--erro', !!comErro);
     var res = caixa.querySelector('.nova-distribuicao-cartao-resposta');
     respostas(res, linhas);
@@ -254,7 +280,7 @@
     tpl: tpl, texto: texto, mover: mover,
     partes: partes, postoCurto: postoCurto, funcaoDe: funcaoDe, rotulo: rotulo, completo: completo,
     papel: papel, proprias: proprias,
-    erros: erros, pendente: pendente, erroCampo: erroCampo,
+    erros: erros, pendente: pendente, erroCampo: erroCampo, resumoErros: resumoErros, mostrarNoCorpo: mostrarNoCorpo,
     unidade: unidade, respostas: respostas, cartao: cartao, fixo: fixo, trava: trava, setas: setas,
     marcar: marcar, bolinhas: bolinhas, selecao: selecao, selecaoFuncoes: selecaoFuncoes,
     selecaoFixa: selecaoFixa, numero: numero

@@ -100,10 +100,17 @@
 .nova-distribuicao-cartao-cabecalho {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
   width: 100%;
   text-align: left;
+}
+
+/* no cabeçalho, os números do efetivo à direita, junto da seta */
+.nova-distribuicao-cartao-numeros {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--texto-suave);
+  white-space: nowrap;
 }
 
 .nova-distribuicao-cartao-titulo {
@@ -190,11 +197,11 @@
   overflow-y: auto;
 }
 
-/* item de função: Posto | Função, alinhados pelo posto mais comprido (subgrade do menu) */
-.nova-distribuicao-selecao-menu--funcoes {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-}
+/* item de função: Posto | Função, alinhados pelo posto mais comprido (subgrade do menu);
+   a grade só vale com o menu aberto (fechado, ele fica escondido como os outros) */
+.nova-distribuicao-selecao-menu--funcoes { grid-template-columns: auto minmax(0, 1fr); }
+
+.dropdown--aberto > .nova-distribuicao-selecao-menu--funcoes { display: grid; }
 
 .nova-distribuicao-item {
   display: grid;
@@ -206,10 +213,17 @@
 .nova-distribuicao-item-posto { color: var(--texto-suave); }
 
 /* erro no campo */
-.nova-distribuicao-erro-campo { margin: 0; }
+/* a frase de erro fora de um .campo (o geral só a mostra com .campo--erro) */
+.nova-distribuicao-erro-campo {
+  display: block;
+  margin: 0;
+}
 
 .nova-distribuicao-espaco--erro .campo-selecao,
-.nova-distribuicao-espaco--erro > .campo-entrada { border-color: var(--erro); }
+.nova-distribuicao-espaco--erro > .campo-entrada,
+.abas--seletor.nova-distribuicao-espaco--erro,
+.campo--erro > .abas--seletor,
+.campo-entrada.nova-distribuicao-entrada--erro { border-color: var(--erro); }
 
 .nova-distribuicao-trava {
   display: inline-flex;
@@ -250,8 +264,6 @@
   flex-direction: column;
   gap: 12px;
 }
-
-.nova-distribuicao-posto-viatura .posto-editar-viatura { max-width: 320px; }
 
 .nova-distribuicao-posto-efetivo .posto-editar-linha { max-width: 320px; }
 
@@ -465,6 +477,72 @@
 .nova-distribuicao-regra-erro { grid-column: 1 / -1; }
 
 .nova-distribuicao-militar-vazio { color: var(--texto-suave); }
+
+/* ---- lista de viaturas: Nº, prefixo, CNH alinhadas e as ações; as trocas e os erros embaixo ---- */
+.nova-distribuicao-viaturas,
+.nova-distribuicao-viaturas-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nova-distribuicao-viaturas-cabecalho,
+.nova-distribuicao-viatura {
+  display: grid;
+  grid-template-columns: 32px 160px auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.nova-distribuicao-viatura-acoes {
+  display: inline-flex;
+  justify-self: end;
+  gap: 4px;
+}
+
+.nova-distribuicao-viatura-extra {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  grid-column: 2 / -1;
+}
+
+.nova-distribuicao-troca {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.nova-distribuicao-datas {
+  display: flex;
+  gap: 8px;
+}
+
+.nova-distribuicao-datas > .campo {
+  flex: 1;
+  min-width: 0;
+}
+
+/* título de cada unidade nas opções do Oficial de Área */
+.nova-distribuicao-grupo-titulo { margin: 8px 0 0; }
+
+.nova-distribuicao-grupo-titulo:first-child { margin-top: 0; }
+
+/* ---- lista de períodos: as datas e o que muda ---- */
+.nova-distribuicao-periodo-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.nova-distribuicao-periodo-muda {
+  font-size: 11px;
+  color: var(--texto-suave);
+  white-space: normal;
+}
 
 /* ---- vazio e carregando ---- */
 .nova-distribuicao-vazio {

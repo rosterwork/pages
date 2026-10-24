@@ -1,12 +1,14 @@
 /* ============================================================
-   NOVA DISTRIBUIÇÃO — Novo período e Excluir período
-   O Novo período abre no painel da direita: começo e fim (máscara e
-   calendário do jeito padrão, ou Sem fim) e de qual período copiar as
-   respostas. O Excluir pede confirmação. As regras de datas (7 dias,
-   divisão do período de antes) moram no banco; a tela só confere o
-   preenchimento. Quem chama passa o contexto:
-   { dados, periodo, unidadeId, aoTerminar(periodoId), falha(r), semConexao() }.
-   Também desenha o período na barra (o nome, as setas e a lista).
+   NOVA DISTRIBUIÇÃO — os períodos
+   O período na barra (o nome, as setas e a lista com o que muda em
+   cada um), o primeiro período (com os dados de hoje ou em branco),
+   o Novo período e o Excluir. O Novo abre no painel da direita só
+   com as datas (máscara e calendário, ou Sem fim); o Continuar leva
+   o período novo para a tela como rascunho, e o Salvar da página o
+   cria (criar). As regras de datas (7 dias, divisão do período de
+   antes, igual ao que já vale) moram no banco. Quem chama passa o
+   contexto: { dados, periodo, unidadeId, aoTerminar(periodoId),
+   aoContinuar(inicio, fim), confirmar(seguir), falha(r), semConexao() }.
    ============================================================ */
 (function () {
   'use strict';
@@ -28,7 +30,18 @@
                  : P().texto(M().periodoDesde, { inicio: br(p.inicio) });
   }
 
-  /* o período na barra: o nome, as setas e a lista; escolher outro chama aoEscolher(p) */
+  /* o período que vale num dia (senão o último antes dele, senão o primeiro) */
+  function base(periodos, dia) {
+    return periodos.filter(function (p) { return p.inicio <= dia && (!p.fim || p.fim >= dia); })[0]
+      || periodos.filter(function (p) { return p.inicio < dia; }).pop() || periodos[0];
+  }
+
+  /* o período antes (passo −1) ou depois (+1) do atual */
+  function vizinho(periodos, atual, passo) {
+    return periodos[periodos.map(function (p) { return p.id; }).indexOf(atual && atual.id) + passo];
+  }
+
+  /* o período na barra: o nome, as setas e a lista (com o que muda); escolher outro chama aoEscolher(p) */
   function desenharBarra(periodos, atual, aoEscolher) {
     var i = atual ? periodos.map(function (p) { return p.id; }).indexOf(atual.id) : -1;
     el('nova-distribuicao-periodo').classList.toggle('oculto', !atual);
@@ -39,7 +52,9 @@
     lista.textContent = '';
     periodos.forEach(function (p) {
       var item = P().tpl('periodo-item');
-      item.textContent = rotulo(p);
+      item.querySelector('.nova-distribuicao-periodo-datas').textContent = rotulo(p);
+      item.querySelector('.nova-distribuicao-periodo-muda').textContent = (p.mudancas || []).length
+        ? P().texto(M().periodoMuda, { lista: p.mudancas.join(', ') }) : M().periodoPrimeiro;
       if (atual && p.id === atual.id) item.classList.add('dropdown-item--ativo');
       item.addEventListener('click', function () { aoEscolher(p); });
       lista.appendChild(item);
@@ -61,14 +76,8 @@
     var inicio = caixa.querySelector('.nova-distribuicao-inicio');
     var fim = caixa.querySelector('.nova-distribuicao-fim');
     var semFim = caixa.querySelector('.nova-distribuicao-sem-fim');
-    var origens = c.dados.periodos.map(function (p) { return { valor: p.id, texto: rotulo(p) }; });
-    form = { semFim: true, origem: c.periodo.id, sujo: false };
+    form = { semFim: true, sujo: false };
 
-    function montarOrigem() {
-      var lugar = caixa.querySelector('[data-espaco="origem"]');
-      lugar.textContent = '';
-      lugar.appendChild(P().selecao(origens, form.origem, function (v) { form.origem = v; form.sujo = true; montarOrigem(); }, { rotulo: M().novoPeriodoOrigem }));
-    }
     function marcarSemFim() {
       P().marcar(semFim, form.semFim, null, false);
       caixa.querySelector('.nova-distribuicao-fim-campo').classList.toggle('oculto', form.semFim);
@@ -82,31 +91,62 @@
       RosterWork.campos.ligarData(input);
       input.addEventListener('input', function () { form.sujo = true; erro(input, ''); });
     });
-    montarOrigem();
     marcarSemFim();
     semFim.addEventListener('click', function () { form.semFim = !form.semFim; form.sujo = true; marcarSemFim(); });
 
     rodape.querySelector('.nova-distribuicao-painel-cancelar').addEventListener('click', function () { painel.fechar(); });
-    var criar = rodape.querySelector('.nova-distribuicao-painel-criar');
-    criar.addEventListener('click', function () {
+    rodape.querySelector('.nova-distribuicao-painel-criar').addEventListener('click', function () {
       var de = RosterWork.data.paraISO(inicio.value);
       var ate = form.semFim ? null : RosterWork.data.paraISO(fim.value);
       if (!de) { erro(inicio, M().erroInicio); return; }
       if (!form.semFim && !ate) { erro(fim, M().erroFim); return; }
       if (ate && ate < de) { erro(fim, M().erroOrdemDatas); return; }
-      RosterWork.iniciarCarregando(criar);
-      D().criarPeriodo(c.unidadeId, de, ate, form.origem).then(function (r) {
-        RosterWork.pararCarregando(criar);
+      form = null;
+      painel.fechar();
+      c.aoContinuar(de, ate);
+    });
+  }
+
+  /* o Salvar do período novo: a parte da companhia (quando mudou) e depois o período, com as respostas da tela */
+  function criar(c, respostas, daCia, botao) {
+    RosterWork.iniciarCarregando(botao);
+    var antes = daCia ? D().salvar([daCia]) : Promise.resolve({ success: true });
+    antes.then(function (rc) {
+      if (!rc || !rc.success) { RosterWork.pararCarregando(botao); c.falha(rc); return; }
+      return D().criarPeriodo(c.unidadeId, c.periodo.inicio, c.periodo.fim, respostas).then(function (r) {
+        RosterWork.pararCarregando(botao);
         if (!r || !r.success) { c.falha(r); return; }
-        form = null;
-        painel.fechar();
         RosterWork.resumo.abrirModal(r.log, { pagina: M().pagina });
         c.aoTerminar(r.periodo_id);
+      });
+    }).catch(function () {
+      RosterWork.pararCarregando(botao);
+      c.semConexao();
+    });
+  }
+
+  /* o primeiro período da unidade: com os dados de hoje (postos e modelo) ou em branco */
+  function comecar(c, unidadeId, botao) {
+    c.confirmar(function () {
+      if (botao) RosterWork.iniciarCarregando(botao);
+      D().copiarHoje(unidadeId).then(function (r) {
+        if (botao) RosterWork.pararCarregando(botao);
+        if (!r || !r.success) { c.falha(r); return; }
+        RosterWork.resumo.abrirModal(r.log, { pagina: M().pagina });
+        c.aoTerminar(c.periodo && c.periodo.id);
       }, function () {
-        RosterWork.pararCarregando(criar);
+        if (botao) RosterWork.pararCarregando(botao);
         c.semConexao();
       });
     });
+  }
+
+  /* a unidade ainda sem respostas: o convite para começar (com os dados de hoje ou em branco) */
+  function semRespostas(c, vazio) {
+    var hoje = !!c.dados.tem_dados_hoje;
+    vazio.querySelectorAll('.nova-distribuicao-sem-respostas-copiar').forEach(function (n) { n.classList.toggle('oculto', !hoje); });
+    vazio.querySelectorAll('.nova-distribuicao-sem-respostas-branco').forEach(function (n) { n.classList.toggle('oculto', hoje); });
+    vazio.querySelector('.nova-distribuicao-copiar').addEventListener('click', function () { comecar(c, c.unidadeId, this); });
   }
 
   function excluir(c) {
@@ -131,8 +171,13 @@
 
   window.RosterWork.novaDistribuicaoPeriodo = {
     rotulo: rotulo,
+    base: base,
+    vizinho: vizinho,
     desenharBarra: desenharBarra,
     abrirNovo: abrirNovo,
+    criar: criar,
+    comecar: comecar,
+    semRespostas: semRespostas,
     excluir: excluir,
     /* o painel do Novo período tem algo digitado (para o guarda de saída) */
     sujo: function () { return !!(form && form.sujo && RosterWork.painel.estaAberto()); }

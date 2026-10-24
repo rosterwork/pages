@@ -33,9 +33,10 @@
     salvar: function (itens) {
       return rpc('nova_distribuicao_salvar', { p_itens: itens });
     },
-    criarPeriodo: function (unidadeId, inicio, fim, copiarDe) {
+    /* cria o período com as respostas da tela; o banco recusa se ficar igual ao que já vale */
+    criarPeriodo: function (unidadeId, inicio, fim, respostas) {
       return rpc('nova_distribuicao_periodo_salvar', {
-        p_unidade_id: unidadeId, p_periodo_id: null, p_inicio: inicio, p_fim: fim || null, p_copiar_de: copiarDe || null
+        p_unidade_id: unidadeId, p_periodo_id: null, p_inicio: inicio, p_fim: fim || null, p_respostas: respostas || null
       });
     },
     excluirPeriodo: function (periodoId) {
