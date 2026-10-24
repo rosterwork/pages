@@ -538,11 +538,11 @@
     if (window.RosterWork.seletorUnidade) RosterWork.seletorUnidade.iniciar(conteudo);
 
     /* celular, Mês (Agenda e Calendário): puxar a grade para o lado troca de mês, deslizando; as setas também
-       (geral-deslizar-mes.js) */
-    var deslize = window.RosterWork.deslizarMes ? RosterWork.deslizarMes.ligar(conteudo.querySelector('.pagina-corpo'), {
+       (geral-deslizar.js) */
+    var deslize = window.RosterWork.deslizar ? RosterWork.deslizar.ligar(conteudo.querySelector('.pagina-corpo'), {
       area: '.escala-mes, .geral-calendario-mes',
       ativo: function () { return !!(RosterWork.celular && RosterWork.celular()) && modoAtual() === 'mes'; },
-      destino: function (direcao) { return RosterWork.deslizarMes.nomeMes(mesVizinho(direcao), refData); },
+      destino: function (direcao) { return RosterWork.deslizar.nomeMes(mesVizinho(direcao), refData); },
       antecipar: function (direcao) {
         var mes = mesVizinho(direcao);
         if (RosterWork.escalasDados) RosterWork.escalasDados.antecipar(unidadesColuna().map(function (c) { return c.id; }),

@@ -752,6 +752,70 @@
       }
     },
 
+    /* Nova distribuição (protótipo, só programador): as frases que mudam com a unidade e as respostas.
+       {chave} = valor preenchido na hora; os textos fixos ficam em nova-distribuicao.html */
+    novaDistribuicao: {
+      pagina: 'Nova distribuição',
+      contagem: '{n} de 7 prontos',
+      instalacoesPelotao: 'Quais instalações o pelotão tem?',
+      instalacoesCompanhia: 'Quais instalações a companhia tem?',
+      viaturasPelotao: 'Quais viaturas o pelotão tem?',
+      viaturasCompanhia: 'Quais viaturas a companhia tem?',
+      instalacaoQuantos: {
+        'Central de Operações': 'Quantos rádio operadores a Central de Operações deve ter?',
+        'Rancho': 'Quantos rancheiros o Rancho deve ter?',
+        'Almoxarifado': 'Quantos almoxarifes o Almoxarifado deve ter?'
+      },
+      carteira: 'Qual carteira a {posto} exige?',
+      carteiraResposta: 'Carteira {cnh}',
+      efetivoViatura: 'Efetivo da {posto}',
+      ondeFica: 'Onde fica o {papel}?',
+      podeConduzir: 'O {papel} pode ser condutor?',
+      semOficial: 'Sem oficial de serviço, quem faz o Oficial de Área?',
+      condutor: ['Sim, sempre é o condutor se for habilitado', 'Sim, só se não houver outro habilitado', 'Não, nunca'],
+      semOficialOpcoes: ['Ninguém, fica vazio com erro vermelho', 'O praça mais antigo da companhia'],
+      ordem: 'Em que ordem as cadeiras enchem?',
+      ordemItem: '{n}º {cadeira}',
+      ordemMais: '{lista} e mais {n}',
+      quemSenta: 'Quem senta em {funcao}?',
+      quemSentaPapel: 'Quem senta em {cadeira}?',
+      papelFixo: 'Sempre o {perfil} mais antigo de serviço.',
+      criterios: [
+        'O {perfil} mais antigo que ainda não tem função',
+        'O {perfil} mais moderno que ainda não tem função',
+        'Um {grau}; se não houver, o mais próximo {sentido}',
+        'Somente {grau}; se não houver, fica vazia'
+      ],
+      sentidos: ['mais antigo', 'mais moderno'],
+      comCarteira: ', com a carteira',
+      comRodizio: ', com rodízio',
+      sempreAutomatica: '{cadeira} é sempre de quem está em {quem}.',
+      cobreAutomatica: 'Se faltar {cadeira}, quem cobre é {quem}.',
+      trava: 'Vem da resposta do bloco Funções especiais.',
+      escolha: 'Escolha',
+      ninguem: 'Ninguém',
+      nenhuma: 'Nenhuma',
+      semResposta: 'Sem resposta',
+      novaViatura: 'Nova viatura {n}',
+      estados: {
+        tem_gente: 'Tem gente',
+        acumula: 'Mesma pessoa: {por}',
+        coberta: 'Coberta: {por}'
+      },
+      vazias: ['Vazia, erro vermelho', 'Vazia, aviso amarelo', 'Vazia'],
+      sobraUm: '1 militar fica sem função.',
+      sobraVarios: '{n} militares ficam sem função.',
+      periodoDesde: 'De {inicio}, sem fim',
+      periodoIntervalo: 'De {inicio} até {fim}',
+      excluirPeriodo: 'Excluir o período {periodo}? Os dias dele voltam para o período anterior.',
+      botaoExcluirPeriodo: 'Excluir período',
+      novoPeriodoTitulo: 'Novo período',
+      novoPeriodoOrigem: 'Período de origem',
+      erroInicio: 'Escolha a data de início.',
+      erroFim: 'Escolha a data de término ou marque Sem fim.',
+      erroOrdemDatas: 'O término precisa vir depois do início.'
+    },
+
     /* saída do militar da escala (transferência, Tirar do ciclo e baixa): a lista do aviso,
        um item por troca, folga e extra que a saída cancela (montada em RosterWork.avisoSaida) */
     saida: {
@@ -1479,6 +1543,7 @@
         preferencias: 'Preferências',
         distribuicao: 'Distribuição',
         regra: 'Regra da distribuição',
+        nova_distribuicao: 'Nova distribuição',
         folga: 'Folga',
         extra_cota: 'Cotas (extrajornada)',
         extra_alocacao: 'Extra (escala do mês)',

@@ -11,7 +11,7 @@
    (aoMudarModo). No celular,
    liga o seletor de unidade (geral-seletor-unidade.js), que a Agenda do
    Calendário e da Distribuição mostra e o resto esconde, e, na aba
-   Calendário, o deslize do mês (geral-deslizar-mes.js). Todos
+   Calendário, o deslize do mês (geral-deslizar.js). Todos
    veem Calendário e Voluntários; Distribuição e Relatórios são só do
    administrador (sem elas, os dois grupos de abas viram um só, sem o
    traço). Clicar num dia (Calendário ou Distribuição) abre o painel do
@@ -155,15 +155,15 @@
   function mesVizinho(direcao) { return direcao < 0 ? navAnt : navProx; }
 
   /* celular, aba Calendário (Agenda e Calendário): puxar a grade para o lado troca de mês, deslizando; as
-     setas também (geral-deslizar-mes.js). Sem mês alcançável para aquele lado, só o elástico */
+     setas também (geral-deslizar.js). Sem mês alcançável para aquele lado, só o elástico */
   function ligarDeslize(conteudo) {
-    if (!RW.deslizarMes) return null;
-    return RW.deslizarMes.ligar(conteudo.querySelector('.pagina-corpo'), {
+    if (!RW.deslizar) return null;
+    return RW.deslizar.ligar(conteudo.querySelector('.pagina-corpo'), {
       area: '.escala-mes, .geral-calendario-mes',
       ativo: function () { return noCelular() && abaAtual === 'calendario'; },
       destino: function (direcao) {
         var mes = mesVizinho(direcao);
-        return mes ? RW.deslizarMes.nomeMes(mes, RW.extrajornadaMes.obter()) : null;
+        return mes ? RW.deslizar.nomeMes(mes, RW.extrajornadaMes.obter()) : null;
       },
       antecipar: function (direcao) {
         var mes = mesVizinho(direcao);

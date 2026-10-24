@@ -5,7 +5,7 @@
    unidade, o seletor fica na barra da página e, no celular, vira o
    menu "2ºPEL ▾" (geral-abas.js), de largura fixa, na linha dos
    ícones, à esquerda (geral-seletor-unidade.css); deslizar o dedo
-   para o lado na grade troca de mês (geral-deslizar-mes.js). As
+   para o lado na grade troca de mês (geral-deslizar.js). As
    células das outras unidades somem (escalas-mes.css) sem refazer a
    grade, e a grade é rolada para o mesmo dia continuar no mesmo
    lugar. Começa na unidade do próprio militar (se estiver entre as da

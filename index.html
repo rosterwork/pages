@@ -57,7 +57,7 @@
   <link rel="stylesheet" href="componentes/css/geral-periodo.css" />
   <link rel="stylesheet" href="componentes/css/geral-seletor-unidade.css" />
   <link rel="stylesheet" href="componentes/css/geral-recolher-topo.css" />
-  <link rel="stylesheet" href="componentes/css/geral-deslizar-mes.css" />
+  <link rel="stylesheet" href="componentes/css/geral-deslizar.css" />
   <link rel="stylesheet" href="componentes/css/geral-anteriores.css" />
   <link rel="stylesheet" href="componentes/css/geral-posto-editar.css" />
   <link rel="stylesheet" href="componentes/css/geral-layout-lateral.css" />
@@ -256,6 +256,12 @@
             <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-codigo" /></svg>
             <span class="menu-item-label">Programador</span>
             <span class="menu-item-selo oculto" aria-hidden="true"></span>
+          </button>
+
+          <!-- protótipo da distribuição em questionário (só programador; não muda a escala) -->
+          <button type="button" class="menu-item" data-pagina="nova-distribuicao" data-lugar-celular="fora" data-programador aria-label="Nova distribuição">
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-distribuicao" /></svg>
+            <span class="menu-item-label">Nova distribuição</span>
           </button>
 
         </div>
@@ -883,8 +889,9 @@
     </button>
   </template>
 
-  <!-- MOLDES: deslizar o mês (componentes/js/geral-deslizar-mes.js), no celular. A etiqueta do mês de
-       destino, que sai da borda com o dedo (só a seta do lado de onde o mês vem aparece) -->
+  <!-- MOLDES: deslizar para o lado (componentes/js/geral-deslizar.js), no celular: o mês na grade do mês e a
+       aba no painel lateral. A etiqueta do destino, que sai da borda com o dedo (só a seta do lado de onde o
+       destino vem aparece) -->
   <template id="tpl-deslize-etiqueta">
     <div class="deslize-etiqueta" aria-hidden="true">
       <svg class="icone deslize-etiqueta-seta deslize-etiqueta-seta--anterior" width="16" height="16"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>

@@ -350,7 +350,7 @@
    de uma unidade, o seletor de unidade na barra troca a unidade: as
    células das outras somem e o cabeçalho com o nome sai (o seletor
    já mostra o nome). O dedo que desliza para o lado troca o mês
-   (geral-deslizar-mes). As classes vêm do seletor de unidade
+   (geral-deslizar). As classes vêm do seletor de unidade
    (componentes/js/geral-seletor-unidade.js), de cada página que o usa.
    ============================================================ */
 @media (max-width: 767px) {

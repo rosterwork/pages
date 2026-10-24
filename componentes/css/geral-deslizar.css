@@ -1,15 +1,17 @@
 /* ============================================================
-   DESLIZAR O MÊS — componente compartilhado do celular
-   Puxar a grade do mês para o lado troca de mês: o mês acompanha o
-   dedo (o palco anda pelo --deslize-deslocamento) e a etiqueta do
-   mês de destino sai da borda (--deslize-progresso, de 0 a 1) e
-   escurece no ponto (--pronta). A marca data-deslize-borda de cada
-   área escolhe o que o navegador ainda rola para o lado
-   (touch-action); o resto do dedo é do gesto. Exceção da regra de
-   transição: o transform do palco e da etiqueta (Guia visual). No
-   computador não existe. Comportamento:
-   componentes/js/geral-deslizar-mes.js. Moldes #tpl-deslize-etiqueta
-   e #tpl-deslize-carregando (index.html).
+   DESLIZAR PARA O LADO — componente compartilhado do celular
+   Puxar a tela para o lado troca para o vizinho (o mês na grade do
+   mês, a aba no painel lateral): o conteúdo acompanha o dedo (o
+   palco anda pelo --deslize-deslocamento) e a etiqueta do destino
+   sai da borda (--deslize-progresso, de 0 a 1) e escurece no ponto
+   (--pronta). A marca data-deslize-borda de cada área escolhe o que
+   o navegador ainda rola para o lado (touch-action); o resto do dedo
+   é do gesto. A etiqueta e o círculo ficam na camada 9, a do painel
+   no celular, e vêm depois dele no HTML: ficam por cima. Exceção da
+   regra de transição: o transform do palco e da etiqueta (Guia
+   visual). No computador não existe. Comportamento:
+   componentes/js/geral-deslizar.js. Moldes #tpl-deslize-etiqueta e
+   #tpl-deslize-carregando (index.html).
    ============================================================ */
 
 /* os deslocamentos não passam para dentro: mudar a cada quadro refaz só o estilo do próprio elemento */
@@ -70,11 +72,11 @@
     transition: transform 0.25s ease-out;
   }
 
-  /* a etiqueta do mês de destino: presa à tela, na altura do meio da grade, saindo da borda com o dedo */
+  /* a etiqueta do destino: presa à tela, na altura do meio da área, saindo da borda com o dedo */
   html[data-celular] .deslize-etiqueta--visivel {
     position: fixed;
     top: var(--deslize-etiqueta-y);
-    z-index: 8;
+    z-index: 9;
     display: flex;
     align-items: center;
     gap: 4px;
@@ -125,12 +127,12 @@
     transition: opacity 0.15s ease;
   }
 
-  /* o círculo de carregando no meio da grade, enquanto o mês novo não chega */
+  /* o círculo de carregando no meio da área, enquanto o novo não chega */
   html[data-celular] .deslize-carregando {
     position: fixed;
     top: var(--deslize-circulo-y);
     left: var(--deslize-circulo-x);
-    z-index: 8;
+    z-index: 9;
     display: flex;
     transform: translate(-50%, -50%);
     pointer-events: none;

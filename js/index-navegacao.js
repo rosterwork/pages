@@ -23,7 +23,8 @@
     distribuicao: { html: 'distribuicao.html', css: ['css/distribuicao.css', 'css/distribuicao-regras.css'], js: ['js/distribuicao-modelos-dados.js', 'js/distribuicao-periodos.js', 'js/distribuicao-modelos.js', 'js/distribuicao-modelos-editar.js', 'js/distribuicao-modelos-salvar.js', 'js/distribuicao-modelos-criar.js', 'js/distribuicao-regras-dados.js', 'js/distribuicao-regras.js', 'js/distribuicao.js'] },
     historico: { html: 'historico.html', css: ['css/historico.css'], js: ['js/historico.js'] },
     ajustes: { html: 'ajustes.html', css: ['css/ajustes.css'], js: ['js/ajustes-extrajornada.js', 'js/ajustes.js'] },
-    programador: { html: 'programador.html', css: ['css/programador.css', 'css/programador-guia.css'], js: ['js/programador-bugs-formulario.js', 'js/programador-bugs.js', 'js/programador-bug-ligado.js', 'js/programador-guia.js', 'js/programador.js'] }
+    programador: { html: 'programador.html', css: ['css/programador.css', 'css/programador-guia.css'], js: ['js/programador-bugs-formulario.js', 'js/programador-bugs.js', 'js/programador-bug-ligado.js', 'js/programador-guia.js', 'js/programador.js'] },
+    'nova-distribuicao': { html: 'nova-distribuicao.html', css: ['css/nova-distribuicao.css'], js: ['js/nova-distribuicao-dados.js', 'js/nova-distribuicao-blocos.js', 'js/nova-distribuicao-conferir.js', 'js/nova-distribuicao.js'] }   /* protótipo, só programador */
   };
 
   var conteudo;

@@ -4,6 +4,8 @@
    pelo Editar que a página põe no rodapé) e entrega à
    página os pontos onde montar o conteúdo (linha das abas de seção,
    corpo, sub-cabeçalho e rodapé) e as peças prontas (seção, caixa, linha rótulo/valor).
+   No celular, puxar o corpo para o lado troca para a aba vizinha da linha das abas
+   (geral-deslizar.js), como tocar nela; nas sub-telas, não.
    Só liga/desliga classe e clona moldes — não inventa estrutura.
    Estrutura no index.html (#painel); estilos em geral-painel.css.
    ============================================================ */
@@ -201,6 +203,46 @@
     return RosterWork.tpl('tpl-painel-carregando');
   }
 
+  /* ----- celular: puxar o corpo para o lado troca para a aba vizinha (geral-deslizar.js) ----- */
+  function abasVisiveis() {
+    return Array.prototype.filter.call(elLinhaAbas.querySelectorAll('.aba'), function (aba) { return aba.getClientRects().length > 0; });
+  }
+
+  /* a aba ao lado da escolhida (direcao -1: a de antes; 1: a de depois); null na ponta */
+  function abaVizinha(direcao) {
+    var abas = abasVisiveis();
+    for (var i = 0; i < abas.length; i++) {
+      if (abas[i].classList.contains('aba--ativa')) return abas[i + direcao] || null;
+    }
+    return null;
+  }
+
+  function emSubtela() {
+    return Array.prototype.some.call(elCorpo.querySelectorAll('.subtela'), function (s) { return s.getClientRects().length > 0; });
+  }
+
+  /* vale com duas abas ou mais, fora das sub-telas. Trocar pelo dedo é tocar na aba vizinha: a pergunta de
+     descartar o rascunho, que a página põe no clique da aba, vale também; se ela segura a troca, o conteúdo volta */
+  function ligarDeslize() {
+    if (!window.RosterWork.deslizar) return;
+    window.RosterWork.deslizar.ligar(elCorpo, {
+      ativo: function () {
+        return !!(window.RosterWork.celular && window.RosterWork.celular()) && estaAberto()
+          && !elLinhaAbas.classList.contains('oculto') && abasVisiveis().length > 1 && !emSubtela();
+      },
+      destino: function (direcao) {
+        var aba = abaVizinha(direcao);
+        return aba ? aba.textContent.trim() : null;
+      },
+      ir: function (direcao) {
+        var aba = abaVizinha(direcao);
+        if (!aba) return null;
+        aba.click();
+        return aba.classList.contains('aba--ativa') ? Promise.resolve() : null;
+      }
+    });
+  }
+
   function inicializar() {
     pegarReferencias();
     if (!painel) return;
@@ -233,6 +275,8 @@
       if (document.querySelector('.modal-veu--aberto')) return;
       solicitarFechar();
     });
+
+    ligarDeslize();
   }
 
   if (document.readyState === 'loading') {

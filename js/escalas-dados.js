@@ -17,14 +17,14 @@
      do mês (celular) quando é a do mesmo pedido */
   function carregar(unidadesIds, inicio, fim) {
     var ids = (unidadesIds || []).map(Number);
-    var antecipada = RosterWork.deslizarMes && RosterWork.deslizarMes.usarAntecipada(chaveMes(ids, inicio, fim));
+    var antecipada = RosterWork.deslizar && RosterWork.deslizar.usarAntecipada(chaveMes(ids, inicio, fim));
     return antecipada || buscarMes(ids, inicio, fim);
   }
 
-  /* o deslize do mês (geral-deslizar-mes.js): o dedo passou do ponto, a leitura do mês vizinho já começa */
+  /* o deslize do mês (geral-deslizar.js): o dedo passou do ponto, a leitura do mês vizinho já começa */
   function antecipar(unidadesIds, inicio, fim) {
     var ids = (unidadesIds || []).map(Number);
-    if (RosterWork.deslizarMes) RosterWork.deslizarMes.antecipar(chaveMes(ids, inicio, fim), function () { return buscarMes(ids, inicio, fim); });
+    if (RosterWork.deslizar) RosterWork.deslizar.antecipar(chaveMes(ids, inicio, fim), function () { return buscarMes(ids, inicio, fim); });
   }
 
   function chaveMes(ids, inicio, fim) { return 'ler_escala_mes|' + ids.join(',') + '|' + inicio + '|' + fim; }

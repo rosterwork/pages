@@ -1,32 +1,35 @@
 /* ============================================================
-   DESLIZAR O MÊS — componente compartilhado do celular
-   Na grade do mês (o calendário do Início, a Agenda e o Calendário
-   da Escala e o Calendário da Extrajornada), puxar a tela para o
-   lado troca de mês. O mês acompanha o dedo, andando menos que ele
-   (como elástico), e da borda sai a etiqueta com o mês de destino
-   ("‹ Setembro"). Passou do ponto (LIMIAR), a etiqueta escurece e o
-   mês novo começa a ser lido (antecipar): soltar ali troca; soltar
-   antes, ou voltar o dedo, desfaz. Na troca, o mês sai para o lado
-   e o novo entra pelo outro; se o novo demora, o círculo de
-   carregando aparece no lugar. Sem mês para aquele lado, só o
-   elástico. Na grade que rola para o lado (o Calendário), o gesto
-   só vale começando já encostado na borda; no meio, o dedo rola a
-   grade: a marca data-deslize-borda de cada área escolhe o
-   touch-action (geral-deslizar-mes.css), e o navegador cuida só da
-   direção que ainda rola. O toque que começa na beirada da tela é
-   do celular (o voltar do Android). As setas ‹ › da página usam a
-   mesma troca (ir). Com "menos movimento", sem deslizar.
+   DESLIZAR PARA O LADO — componente compartilhado do celular
+   Puxar a tela para o lado troca para o vizinho: o mês, na grade do
+   mês (o calendário do Início, a Agenda e o Calendário da Escala e
+   o Calendário da Extrajornada), e a aba, no painel lateral
+   (geral-painel.js). O conteúdo acompanha o dedo, andando menos que
+   ele (como elástico), e da borda sai a etiqueta com o destino
+   ("‹ Setembro", "Ciclo ›"). Passou do ponto (LIMIAR), a etiqueta
+   escurece e o mês novo começa a ser lido (antecipar): soltar ali
+   troca; soltar antes, ou voltar o dedo, desfaz. Na troca, o
+   conteúdo sai para o lado e o novo entra pelo outro; se o novo
+   demora, o círculo de carregando aparece no lugar. Sem vizinho
+   para aquele lado, só o elástico. Na grade que rola para o lado
+   (o Calendário), o gesto só vale começando já encostado na borda;
+   no meio, o dedo rola a grade: a marca data-deslize-borda de cada
+   área escolhe o touch-action (geral-deslizar.css), e o navegador
+   cuida só da direção que ainda rola. O toque que começa na beirada
+   da tela é do celular (o voltar do Android), e o que começa num
+   campo de digitar é do campo. As setas ‹ › da página usam a mesma
+   troca (ir). Com "menos movimento", sem deslizar.
    Moldes #tpl-deslize-etiqueta e #tpl-deslize-carregando
    (index.html). Marcas: data-deslize-movendo, -andando e -entrando
    no que anda (o palco) e data-deslize-moldura no pai dele, que
-   corta o que sai; os deslocamentos são dado da tela.
-   API: RosterWork.deslizarMes.ligar(alvo, opcoes) -> { ir(direcao) } · ocupado()
+   corta o que sai (o pai não pode ser a área que rola); os
+   deslocamentos são dado da tela.
+   API: RosterWork.deslizar.ligar(alvo, opcoes) -> { ir(direcao) } · ocupado()
         · nomeMes(data, referencia) · antecipar(chave, buscar) · usarAntecipada(chave)
    opcoes: area (seletor da área do gesto dentro do alvo; sem ele, o
    alvo) · palco() (o que anda; sem ele, o alvo) · ativo() (sem ele,
-   no celular) · destino(direcao) (o nome do mês de destino, ou null)
-   · antecipar(direcao) · ir(direcao) (troca; a promessa se cumpre com
-   o mês novo desenhado; null = não trocou)
+   no celular) · destino(direcao) (o nome do destino, ou null) ·
+   antecipar(direcao) · ir(direcao) (troca; a promessa se cumpre com
+   o novo desenhado; null = não trocou)
    ============================================================ */
 (function () {
   'use strict';
@@ -46,8 +49,8 @@
   var VALIDADE = 10000;         // quanto tempo vale a leitura antecipada (ms)
 
   var menosMovimento = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
-  var etiqueta = null;          // a etiqueta do mês de destino (uma só, presa à tela)
-  var circulo = null;           // o carregando do mês que demora
+  var etiqueta = null;          // a etiqueta do destino (uma só, presa à tela)
+  var circulo = null;           // o carregando do novo que demora
   var sumirEtiqueta = null;     // o fim da saída da etiqueta
   var guardada = null;          // a leitura antecipada: { chave, promessa, ate }
 
@@ -168,6 +171,7 @@
       if (!zona || !alvo.contains(zona)) return;
       var toque = evento.touches[0];
       if (toque.clientX < BEIRADA || toque.clientX > window.innerWidth - BEIRADA) return;
+      if (evento.target.closest('input, textarea, select, [contenteditable]')) return;
       if (!zona.hasAttribute('data-deslize-borda')) marcarBordas();
       var borda = zona.getAttribute('data-deslize-borda');
       gesto = {
@@ -311,7 +315,7 @@
     return { ir: ir };
   }
 
-  window.RosterWork.deslizarMes = {
+  window.RosterWork.deslizar = {
     ligar: ligar,
     nomeMes: nomeMes,
     antecipar: antecipar,

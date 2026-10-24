@@ -1,0 +1,275 @@
+/* ============================================================
+   NOVA DISTRIBUIÇÃO (protótipo, só programador)
+   O questionário em blocos: à esquerda os blocos (lista-item do
+   geral-lista), à direita as perguntas, fechadas com a resposta
+   embaixo, que abrem as opções ao clicar. Reusa o layout lateral,
+   a bolinha (geral-opcao), o campo de seleção, o selo, a nota, o
+   rodapé e o período. Fora do celular (data-lugar-celular="fora").
+   ============================================================ */
+
+/* ---- painel esquerdo: os blocos ---- */
+.nova-distribuicao-contagem {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.nova-distribuicao-bloco {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 12px;
+  text-align: left;
+  font-size: var(--fonte-padrao);
+  color: var(--texto);
+}
+
+.nova-distribuicao-bloco-pronto { color: var(--sucesso); flex-shrink: 0; }
+.nova-distribuicao-bloco-falta { color: var(--erro); flex-shrink: 0; }
+
+/* ---- corpo: a coluna de leitura ---- */
+.nova-distribuicao-conteudo {
+  max-width: 720px;
+  padding: 16px 24px 24px;
+}
+
+.nova-distribuicao-conteudo > .nota { margin-bottom: 12px; }
+
+.nova-distribuicao-erros-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nova-distribuicao-grupo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.nova-distribuicao-grupo--separado { margin-top: 24px; }
+
+.nova-distribuicao-grupo-proprio {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--texto-suave);
+}
+
+.nova-distribuicao-posto { margin: 16px 0 8px; }
+
+.nova-distribuicao-ajuda {
+  margin: 0 0 12px;
+  font-size: var(--fonte-padrao);
+  color: var(--texto-suave);
+}
+
+/* ---- pergunta: caixa cinza; o cabeçalho abre e fecha as opções ---- */
+.nova-distribuicao-pergunta {
+  margin-bottom: 12px;
+  padding: 12px 16px;
+  background-color: var(--fundo-suave);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+}
+
+.nova-distribuicao-pergunta-cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.nova-distribuicao-pergunta-cabecalho:disabled { cursor: default; }
+
+.nova-distribuicao-pergunta-seta {
+  flex-shrink: 0;
+  color: var(--texto-suave);
+}
+
+.nova-distribuicao-pergunta-cabecalho[aria-expanded="true"] .nova-distribuicao-pergunta-seta { transform: rotate(180deg); }
+
+.nova-distribuicao-pergunta-titulo {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.nova-distribuicao-pergunta-resposta {
+  margin: 4px 0 0;
+  font-size: var(--fonte-padrao);
+  color: var(--texto-suave);
+}
+
+.nova-distribuicao-pergunta-resposta--vazia { color: var(--erro); }
+
+.nova-distribuicao-pergunta-opcoes,
+.nova-distribuicao-pergunta-conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.nova-distribuicao-opcoes {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nova-distribuicao-rodizio { margin-top: 8px; }
+
+/* frase com os campos de seleção no meio */
+.nova-distribuicao-frase {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: var(--fonte-padrao);
+  color: var(--texto);
+}
+
+.nova-distribuicao-espaco { display: inline-flex; }
+
+.nova-distribuicao-selecao { display: inline-flex; }
+
+.nova-distribuicao-selecao .campo-selecao {
+  width: auto;
+  min-width: 72px;
+  gap: 8px;
+}
+
+.nova-distribuicao-selecao-menu { min-width: 200px; }
+
+.nova-distribuicao-sempre-gravidade { margin-top: 8px; }
+
+/* linha de lista (viaturas, ordem, conferência) */
+.nova-distribuicao-linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 4px 8px;
+  background-color: var(--fundo-superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pequeno);
+  font-size: var(--fonte-padrao);
+  color: var(--texto);
+}
+
+.nova-distribuicao-linha-ordem {
+  min-width: 24px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.nova-distribuicao-linha-nome {
+  flex: 1;
+  min-width: 120px;
+}
+
+.nova-distribuicao-viatura-nome {
+  flex: 1;
+  width: auto;
+  min-width: 120px;
+}
+
+.nova-distribuicao-adicionar {
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
+.nova-distribuicao-trava {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+/* ---- vazio e carregando ---- */
+.nova-distribuicao-vazio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 32px 16px;
+  text-align: center;
+  font-size: var(--fonte-padrao);
+  color: var(--texto-suave);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+}
+
+.nova-distribuicao-vazio p { margin: 0; }
+
+.nova-distribuicao-vazio-titulo {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.nova-distribuicao-carregando {
+  display: flex;
+  justify-content: center;
+  padding: 32px 16px;
+}
+
+/* ---- conferir ---- */
+.nova-distribuicao-metricas {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.nova-distribuicao-metrica {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 12px;
+  background-color: var(--fundo-suave);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+}
+
+.nova-distribuicao-metrica-rotulo {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.nova-distribuicao-metrica-valor {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.nova-distribuicao-conferir-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ---- barra e rodapé ---- */
+.nova-distribuicao-periodo-menu { min-width: 240px; }
+
+.nova-distribuicao-rodape .rodape-acoes { margin-left: auto; }
+
+.nova-distribuicao-rodape-texto {
+  font-size: 12px;
+  color: var(--texto-suave);
+}

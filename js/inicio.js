@@ -19,7 +19,7 @@
    ao resto. A página aparece inteira de uma vez (o véu
    espera tudo), e a troca de mês usa o mesmo véu; no celular, puxar o
    calendário para o lado (ou tocar nas setas) troca deslizando, sem o
-   véu (geral-deslizar-mes.js). Só clona moldes.
+   véu (geral-deslizar.js). Só clona moldes.
    ============================================================ */
 (function () {
   'use strict';
@@ -187,7 +187,7 @@
     estado.dados = null;
     atualizarBarra();
     limparDia();
-    var antecipada = RW.deslizarMes && RW.deslizarMes.usarAntecipada(chaveMes(estado.mes));
+    var antecipada = RW.deslizar && RW.deslizar.usarAntecipada(chaveMes(estado.mes));
     return (antecipada || buscarMes(estado.mes)).then(function (r) {
       if (pedido !== estado.pedido || !el.calendario.isConnected) return;
       if (!r || !r.dias) { estadoCalendario('tpl-escala-estado', RW.mensagens.inicio.falhaCarregar); return; }
@@ -570,12 +570,12 @@
     estado.mes = new Date(RW.data.diaDeServico().getFullYear(), RW.data.diaDeServico().getMonth(), 1);
     estado.selecionado = null;
 
-    /* celular: puxar o calendário para o lado troca de mês, deslizando, sem o véu (geral-deslizar-mes.js) */
-    var deslize = RW.deslizarMes ? RW.deslizarMes.ligar(el.calendario, {
-      destino: function (direcao) { return RW.deslizarMes.nomeMes(mesVizinho(direcao), estado.mes); },
+    /* celular: puxar o calendário para o lado troca de mês, deslizando, sem o véu (geral-deslizar.js) */
+    var deslize = RW.deslizar ? RW.deslizar.ligar(el.calendario, {
+      destino: function (direcao) { return RW.deslizar.nomeMes(mesVizinho(direcao), estado.mes); },
       antecipar: function (direcao) {
         var mes = mesVizinho(direcao);
-        RW.deslizarMes.antecipar(chaveMes(mes), function () { return buscarMes(mes); });
+        RW.deslizar.antecipar(chaveMes(mes), function () { return buscarMes(mes); });
       },
       ir: function (direcao) { estado.mes = mesVizinho(direcao); return carregarMes(); }
     }) : null;

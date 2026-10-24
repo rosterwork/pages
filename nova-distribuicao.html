@@ -1,0 +1,517 @@
+<div class="pagina">
+  <div class="pagina-cabecalho">
+    <div class="pagina-titulos">
+      <h1>Nova distribuição</h1>
+      <span class="selo selo--alerta">Protótipo</span>
+    </div>
+  </div>
+
+  <!-- barra de controles: o grupo Administração (períodos) · o período · a unidade -->
+  <div class="pagina-subcabecalho oculto" id="nova-distribuicao-barra">
+    <div class="dropdown acoes-admin">
+      <button type="button" class="botao acoes-admin-gatilho">
+        <span>Administração</span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu acoes-admin-menu">
+        <span class="rotulo-secao acoes-admin-rotulo">Administração</span>
+        <button type="button" class="botao" id="nova-distribuicao-novo-periodo">Novo período</button>
+        <button type="button" class="botao" id="nova-distribuicao-excluir-periodo">Excluir período</button>
+      </div>
+    </div>
+    <div class="geral-periodo oculto" id="nova-distribuicao-periodo">
+      <button type="button" class="botao botao--icone" id="nova-distribuicao-periodo-anterior" aria-label="Período anterior">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>
+      </button>
+      <span class="dropdown">
+        <button type="button" class="geral-periodo-nome" id="nova-distribuicao-periodo-nome"></button>
+        <div class="dropdown-menu nova-distribuicao-periodo-menu" id="nova-distribuicao-periodo-lista"></div>
+      </span>
+      <button type="button" class="botao botao--icone" id="nova-distribuicao-periodo-proximo" aria-label="Próximo período">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
+      </button>
+    </div>
+    <div class="abas abas--seletor" id="nova-distribuicao-unidades" role="tablist" aria-label="Unidade"></div>
+  </div>
+
+  <div class="pagina-corpo pagina-corpo--colado">
+    <div class="geral-layout-lateral">
+
+      <!-- painel esquerdo: os blocos do questionário, na ordem -->
+      <aside class="geral-painel-esquerdo">
+        <div class="geral-painel-esquerdo-cabecalho">
+          <span class="rotulo-secao">Blocos</span>
+          <span class="nova-distribuicao-contagem" id="nova-distribuicao-contagem"></span>
+        </div>
+        <div class="geral-painel-esquerdo-lista" id="nova-distribuicao-blocos">
+          <button type="button" class="lista-item lista-item--clicavel nova-distribuicao-bloco" data-bloco="0">
+            <svg class="icone nova-distribuicao-bloco-pronto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
+            <svg class="icone nova-distribuicao-bloco-falta oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+            <span>1. Postos</span>
+          </button>
+          <button type="button" class="lista-item lista-item--clicavel nova-distribuicao-bloco" data-bloco="1">
+            <svg class="icone nova-distribuicao-bloco-pronto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
+            <svg class="icone nova-distribuicao-bloco-falta oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+            <span>2. Funções especiais</span>
+          </button>
+          <button type="button" class="lista-item lista-item--clicavel nova-distribuicao-bloco" data-bloco="2">
+            <svg class="icone nova-distribuicao-bloco-pronto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
+            <svg class="icone nova-distribuicao-bloco-falta oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+            <span>3. Acúmulos fixos</span>
+          </button>
+          <button type="button" class="lista-item lista-item--clicavel nova-distribuicao-bloco" data-bloco="3">
+            <svg class="icone nova-distribuicao-bloco-pronto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
+            <svg class="icone nova-distribuicao-bloco-falta oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+            <span>4. Ordem de importância</span>
+          </button>
+          <button type="button" class="lista-item lista-item--clicavel nova-distribuicao-bloco" data-bloco="4">
+            <svg class="icone nova-distribuicao-bloco-pronto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
+            <svg class="icone nova-distribuicao-bloco-falta oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+            <span>5. Quando faltar gente</span>
+          </button>
+          <button type="button" class="lista-item lista-item--clicavel nova-distribuicao-bloco" data-bloco="5">
+            <svg class="icone nova-distribuicao-bloco-pronto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
+            <svg class="icone nova-distribuicao-bloco-falta oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+            <span>6. Quem escolher</span>
+          </button>
+          <button type="button" class="lista-item lista-item--clicavel nova-distribuicao-bloco" data-bloco="6">
+            <svg class="icone nova-distribuicao-bloco-pronto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
+            <svg class="icone nova-distribuicao-bloco-falta oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+            <span>7. Conferir</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- corpo: as perguntas do bloco escolhido; rodapé: Cancelar e Salvar -->
+      <section class="geral-corpo-lateral">
+        <div class="geral-corpo-lateral-rolagem" id="nova-distribuicao-corpo"></div>
+        <div class="rodape rodape-linha nova-distribuicao-rodape oculto" id="nova-distribuicao-rodape">
+          <span class="nova-distribuicao-rodape-texto oculto" id="nova-distribuicao-pendente">Alterações não salvas.</span>
+          <div class="rodape-acoes">
+            <button type="button" class="botao" id="nova-distribuicao-cancelar">Cancelar</button>
+            <button type="button" class="botao botao--primario" id="nova-distribuicao-salvar">Salvar</button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MOLDES
+     ============================================================ -->
+
+<!-- quem não é programador -->
+<template id="tpl-nova-distribuicao-bloqueado">
+  <p class="nova-distribuicao-vazio">Página só do programador.</p>
+</template>
+
+<!-- a coluna de leitura do corpo -->
+<template id="tpl-nova-distribuicao-conteudo">
+  <div class="nova-distribuicao-conteudo"></div>
+</template>
+
+<!-- não deu para carregar -->
+<template id="tpl-nova-distribuicao-falha">
+  <p class="nova-distribuicao-vazio"></p>
+</template>
+
+<!-- carregando a área -->
+<template id="tpl-nova-distribuicao-carregando">
+  <div class="nova-distribuicao-carregando"><span class="giratorio" aria-hidden="true"></span></div>
+</template>
+
+<!-- unidade ainda sem respostas -->
+<template id="tpl-nova-distribuicao-sem-respostas">
+  <div class="nova-distribuicao-vazio">
+    <p class="nova-distribuicao-vazio-titulo">Esta unidade ainda não tem respostas.</p>
+    <p>Comece com os postos e o modelo de hoje. Depois, mude o que quiser. A escala não muda.</p>
+    <button type="button" class="botao botao--primario nova-distribuicao-copiar">Começar com os dados de hoje</button>
+  </div>
+</template>
+
+<!-- a companhia ainda sem respostas (na tela do pelotão) -->
+<template id="tpl-nova-distribuicao-companhia-sem-respostas">
+  <div class="nova-distribuicao-pergunta">
+    <p class="nova-distribuicao-ajuda">A companhia ainda não tem respostas. As perguntas dela aparecem aqui depois.</p>
+    <button type="button" class="botao nova-distribuicao-copiar">Começar a companhia com os dados de hoje</button>
+  </div>
+</template>
+
+<!-- período só para leitura -->
+<template id="tpl-nova-distribuicao-somente-leitura">
+  <div class="nota">
+    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-cadeado"/></svg>
+    <span class="nota-texto">Este período terminou há mais de uma semana e fica só para leitura.</span>
+  </div>
+</template>
+
+<!-- erros das respostas -->
+<template id="tpl-nova-distribuicao-erros">
+  <div class="nota nota--erro">
+    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+    <div class="nova-distribuicao-erros-lista"></div>
+  </div>
+</template>
+<template id="tpl-nova-distribuicao-erro">
+  <p class="nota-texto"></p>
+</template>
+
+<!-- unidade do seletor da barra -->
+<template id="tpl-nova-distribuicao-unidade">
+  <button type="button" class="aba" role="tab"></button>
+</template>
+
+<!-- item da lista de períodos -->
+<template id="tpl-nova-distribuicao-periodo-item">
+  <button type="button" class="dropdown-item"></button>
+</template>
+
+<!-- cabeçalho do grupo: a companhia (compartilhada) ou o pelotão -->
+<template id="tpl-nova-distribuicao-grupo">
+  <div class="nova-distribuicao-grupo">
+    <span class="nova-distribuicao-grupo-nome"></span>
+    <span class="selo nova-distribuicao-grupo-compartilhado oculto">Compartilhado com todos os pelotões</span>
+    <span class="nova-distribuicao-grupo-proprio oculto">Só deste pelotão</span>
+  </div>
+</template>
+
+<!-- nome do posto acima das perguntas dele -->
+<template id="tpl-nova-distribuicao-posto">
+  <p class="rotulo-secao nova-distribuicao-posto"></p>
+</template>
+
+<!-- notas fixas do alto de cada bloco -->
+<template id="tpl-nova-distribuicao-nota-funcoes">
+  <p class="nova-distribuicao-ajuda">O Oficial de Área é sempre o oficial mais antigo de serviço, e o Chefe de Socorro, o praça mais antigo.</p>
+</template>
+<template id="tpl-nova-distribuicao-nota-acumulos">
+  <p class="nova-distribuicao-ajuda">Cadeiras que são sempre da mesma pessoa. Elas não precisam de gente própria e saem da ordem de importância.</p>
+</template>
+<template id="tpl-nova-distribuicao-nota-ordem">
+  <p class="nova-distribuicao-ajuda">Com N militares de serviço, enchem as N primeiras cadeiras. Quem sobra fica sem função. Ao lado, como a escala avisa se a cadeira ficar vazia.</p>
+</template>
+<template id="tpl-nova-distribuicao-nota-faltar">
+  <p class="nova-distribuicao-ajuda">A cadeira sem regra fica vazia quando faltar gente.</p>
+</template>
+<template id="tpl-nova-distribuicao-nota-escolher">
+  <p class="nova-distribuicao-ajuda">As cadeiras escolhem na ordem de importância. Por isso, "o mais antigo que ainda não tem função" do 2º lugar é o 2º mais antigo.</p>
+</template>
+<template id="tpl-nova-distribuicao-nota-viaturas">
+  <p class="nova-distribuicao-ajuda">A ordem da lista é a ordem das perguntas e a ordem na escala.</p>
+</template>
+
+<!-- pergunta fechada, com a resposta embaixo; abre as opções ao clicar -->
+<template id="tpl-nova-distribuicao-pergunta">
+  <div class="nova-distribuicao-pergunta">
+    <button type="button" class="nova-distribuicao-pergunta-cabecalho" aria-expanded="false">
+      <span class="nova-distribuicao-pergunta-titulo"></span>
+      <svg class="icone nova-distribuicao-pergunta-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+    </button>
+    <p class="nova-distribuicao-pergunta-resposta"></p>
+    <div class="nova-distribuicao-pergunta-opcoes oculto"></div>
+  </div>
+</template>
+
+<!-- pergunta que não abre (a resposta é escolhida na própria frase) -->
+<template id="tpl-nova-distribuicao-pergunta-fixa">
+  <div class="nova-distribuicao-pergunta">
+    <p class="nova-distribuicao-pergunta-titulo"></p>
+    <div class="nova-distribuicao-pergunta-conteudo"></div>
+  </div>
+</template>
+
+<!-- trava de regra automática -->
+<template id="tpl-nova-distribuicao-trava">
+  <p class="nova-distribuicao-trava">
+    <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-cadeado"/></svg>
+    <span class="nova-distribuicao-trava-texto"></span>
+  </p>
+</template>
+
+<!-- campo de seleção dentro da frase -->
+<template id="tpl-nova-distribuicao-selecao">
+  <span class="dropdown nova-distribuicao-selecao">
+    <button type="button" class="campo-entrada campo-selecao">
+      <span class="campo-selecao-texto"></span>
+      <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+    </button>
+    <div class="dropdown-menu nova-distribuicao-selecao-menu"></div>
+  </span>
+</template>
+<template id="tpl-nova-distribuicao-selecao-item">
+  <button type="button" class="dropdown-item"></button>
+</template>
+
+<!-- opção de bolinha (uma só) e de quadrado (várias) com texto que vem dos dados -->
+<template id="tpl-nova-distribuicao-opcao">
+  <label class="geral-opcao">
+    <input type="radio" />
+    <span class="nova-distribuicao-opcao-texto"></span>
+  </label>
+</template>
+
+<!-- instalações (várias) -->
+<template id="tpl-nova-distribuicao-instalacoes">
+  <div class="nova-distribuicao-opcoes">
+    <label class="geral-opcao"><input type="checkbox" data-valor="Central de Operações" /><span>Central de Operações</span></label>
+    <label class="geral-opcao"><input type="checkbox" data-valor="Rancho" /><span>Rancho</span></label>
+    <label class="geral-opcao"><input type="checkbox" data-valor="Almoxarifado" /><span>Almoxarifado</span></label>
+  </div>
+</template>
+
+<!-- carteira da viatura (uma só) -->
+<template id="tpl-nova-distribuicao-carteira">
+  <div class="nova-distribuicao-opcoes">
+    <label class="geral-opcao"><input type="radio" data-valor="A" /><span>A</span></label>
+    <label class="geral-opcao"><input type="radio" data-valor="B" /><span>B</span></label>
+    <label class="geral-opcao"><input type="radio" data-valor="C" /><span>C</span></label>
+    <label class="geral-opcao"><input type="radio" data-valor="D" /><span>D</span></label>
+    <label class="geral-opcao"><input type="radio" data-valor="E" /><span>E</span></label>
+  </div>
+</template>
+
+<!-- pode ser condutor? (uma só) -->
+<template id="tpl-nova-distribuicao-condutor">
+  <div class="nova-distribuicao-opcoes">
+    <label class="geral-opcao"><input type="radio" data-valor="0" /><span>Sim, sempre é o condutor se for habilitado</span></label>
+    <label class="geral-opcao"><input type="radio" data-valor="1" /><span>Sim, só se não houver outro habilitado</span></label>
+    <label class="geral-opcao"><input type="radio" data-valor="2" /><span>Não, nunca</span></label>
+  </div>
+</template>
+
+<!-- sem oficial de serviço (uma só) -->
+<template id="tpl-nova-distribuicao-sem-oficial">
+  <div class="nova-distribuicao-opcoes">
+    <label class="geral-opcao"><input type="radio" data-valor="0" /><span>Ninguém, fica vazio com erro vermelho</span></label>
+    <label class="geral-opcao"><input type="radio" data-valor="1" /><span>O praça mais antigo da companhia</span></label>
+  </div>
+</template>
+
+<!-- efetivo do posto: os números escolhidos na frase, e as cadeiras que saem dele -->
+<template id="tpl-nova-distribuicao-efetivo">
+  <div>
+    <p class="nova-distribuicao-frase">
+      <span>No mínimo</span>
+      <span class="nova-distribuicao-espaco" data-espaco="0"></span>
+      <span>, o ideal é</span>
+      <span class="nova-distribuicao-espaco" data-espaco="1"></span>
+      <span>e pode ter no máximo</span>
+      <span class="nova-distribuicao-espaco" data-espaco="2"></span>
+    </p>
+    <p class="nova-distribuicao-ajuda"><span>Cadeiras:</span> <span class="nova-distribuicao-cadeiras"></span></p>
+  </div>
+</template>
+
+<!-- linha da lista de viaturas -->
+<template id="tpl-nova-distribuicao-viatura">
+  <div class="nova-distribuicao-linha">
+    <span class="nova-distribuicao-linha-ordem"></span>
+    <input type="text" class="campo-entrada nova-distribuicao-viatura-nome" maxlength="30" aria-label="Nome da viatura" />
+    <button type="button" class="botao botao--icone nova-distribuicao-subir" aria-label="Subir">
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mover-cima"/></svg>
+    </button>
+    <button type="button" class="botao botao--icone nova-distribuicao-descer" aria-label="Descer">
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mover-baixo"/></svg>
+    </button>
+    <button type="button" class="botao botao--icone nova-distribuicao-remover" aria-label="Excluir viatura">
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
+    </button>
+  </div>
+</template>
+<template id="tpl-nova-distribuicao-nova-viatura">
+  <button type="button" class="botao nova-distribuicao-adicionar">Nova viatura</button>
+</template>
+
+<!-- gravidade: como a escala avisa se a cadeira ficar vazia -->
+<template id="tpl-nova-distribuicao-gravidade">
+  <span class="dropdown nova-distribuicao-selecao">
+    <button type="button" class="campo-entrada campo-selecao" aria-label="Se ficar vazia">
+      <span class="campo-selecao-texto"></span>
+      <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+    </button>
+    <div class="dropdown-menu nova-distribuicao-selecao-menu">
+      <button type="button" class="dropdown-item" data-valor="0">Erro vermelho</button>
+      <button type="button" class="dropdown-item" data-valor="1">Aviso amarelo</button>
+      <button type="button" class="dropdown-item" data-valor="2">Nada</button>
+    </div>
+  </span>
+</template>
+<template id="tpl-nova-distribuicao-gravidade-linha">
+  <p class="nova-distribuicao-frase"><span>Se ficar vazia:</span> <span class="nova-distribuicao-espaco"></span></p>
+</template>
+
+<!-- linha da ordem de importância -->
+<template id="tpl-nova-distribuicao-ordem">
+  <div class="nova-distribuicao-linha">
+    <span class="nova-distribuicao-linha-ordem"></span>
+    <span class="nova-distribuicao-linha-nome"></span>
+    <span class="nova-distribuicao-espaco"></span>
+    <button type="button" class="botao botao--icone nova-distribuicao-subir" aria-label="Subir">
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mover-cima"/></svg>
+    </button>
+    <button type="button" class="botao botao--icone nova-distribuicao-descer" aria-label="Descer">
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mover-baixo"/></svg>
+    </button>
+  </div>
+</template>
+<template id="tpl-nova-distribuicao-ordem-papel">
+  <div class="nova-distribuicao-linha">
+    <span class="nova-distribuicao-linha-ordem">1º</span>
+    <span class="nova-distribuicao-linha-nome"></span>
+    <span class="selo">Sempre o mais antigo</span>
+  </div>
+</template>
+
+<!-- acúmulo fixo -->
+<template id="tpl-nova-distribuicao-sempre">
+  <div class="nova-distribuicao-pergunta">
+    <p class="nova-distribuicao-frase">
+      <span class="nova-distribuicao-espaco" data-espaco="cadeira"></span>
+      <span>é sempre de quem está em</span>
+      <span class="nova-distribuicao-espaco" data-espaco="quem"></span>
+      <button type="button" class="botao botao--icone nova-distribuicao-remover" aria-label="Remover acúmulo">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
+      </button>
+    </p>
+    <div class="nova-distribuicao-sempre-gravidade"></div>
+    <p class="campo-erro-texto nova-distribuicao-incompleto oculto">Escolha as duas cadeiras.</p>
+  </div>
+</template>
+<template id="tpl-nova-distribuicao-novo-sempre">
+  <button type="button" class="botao nova-distribuicao-adicionar">Adicionar acúmulo</button>
+</template>
+
+<!-- quando faltar gente -->
+<template id="tpl-nova-distribuicao-cobre">
+  <div class="nova-distribuicao-pergunta">
+    <p class="nova-distribuicao-frase">
+      <span>Se faltar</span>
+      <span class="nova-distribuicao-espaco" data-espaco="cadeira"></span>
+      <span>, quem cobre: 1º</span>
+      <span class="nova-distribuicao-espaco" data-espaco="primeiro"></span>
+      <span>2º</span>
+      <span class="nova-distribuicao-espaco" data-espaco="segundo"></span>
+      <span>; senão, fica vazia.</span>
+      <button type="button" class="botao botao--icone nova-distribuicao-remover" aria-label="Remover regra">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
+      </button>
+    </p>
+    <p class="campo-erro-texto nova-distribuicao-incompleto oculto">Escolha a cadeira e quem cobre em 1º.</p>
+  </div>
+</template>
+<template id="tpl-nova-distribuicao-novo-cobre">
+  <button type="button" class="botao nova-distribuicao-adicionar">Adicionar regra</button>
+</template>
+
+<!-- regra automática (vem das funções especiais) -->
+<template id="tpl-nova-distribuicao-automatica">
+  <div class="nova-distribuicao-pergunta">
+    <p class="nova-distribuicao-frase nova-distribuicao-automatica-texto"></p>
+    <div class="nova-distribuicao-automatica-extra"></div>
+  </div>
+</template>
+
+<!-- quem escolher: as quatro formas e o rodízio -->
+<template id="tpl-nova-distribuicao-criterio">
+  <div class="nova-distribuicao-opcoes">
+    <label class="geral-opcao"><input type="radio" data-valor="0" /><span>O</span><span class="nova-distribuicao-espaco" data-espaco="perfil"></span><span>mais antigo que ainda não tem função</span></label>
+    <label class="geral-opcao"><input type="radio" data-valor="1" /><span>O</span><span class="nova-distribuicao-espaco" data-espaco="perfil"></span><span>mais moderno que ainda não tem função</span></label>
+    <label class="geral-opcao"><input type="radio" data-valor="2" /><span>Um</span><span class="nova-distribuicao-espaco" data-espaco="grau"></span><span>; se não houver, o mais próximo</span><span class="nova-distribuicao-espaco" data-espaco="sentido"></span><span>, com aviso amarelo</span></label>
+    <label class="geral-opcao"><input type="radio" data-valor="3" /><span>Somente</span><span class="nova-distribuicao-espaco" data-espaco="grau"></span><span>; se não houver, fica vazia com aviso amarelo</span></label>
+    <label class="geral-opcao nova-distribuicao-rodizio"><input type="checkbox" /><span>Rodízio: evitar que repita a função do último serviço</span></label>
+  </div>
+</template>
+<template id="tpl-nova-distribuicao-perfil">
+  <span class="dropdown nova-distribuicao-selecao">
+    <button type="button" class="campo-entrada campo-selecao" aria-label="Praça ou oficial">
+      <span class="campo-selecao-texto"></span>
+      <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+    </button>
+    <div class="dropdown-menu nova-distribuicao-selecao-menu">
+      <button type="button" class="dropdown-item" data-valor="praça">praça</button>
+      <button type="button" class="dropdown-item" data-valor="oficial">oficial</button>
+    </div>
+  </span>
+</template>
+<template id="tpl-nova-distribuicao-sentido">
+  <span class="dropdown nova-distribuicao-selecao">
+    <button type="button" class="campo-entrada campo-selecao" aria-label="Mais antigo ou mais moderno">
+      <span class="campo-selecao-texto"></span>
+      <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+    </button>
+    <div class="dropdown-menu nova-distribuicao-selecao-menu">
+      <button type="button" class="dropdown-item" data-valor="0">mais antigo</button>
+      <button type="button" class="dropdown-item" data-valor="1">mais moderno</button>
+    </div>
+  </span>
+</template>
+
+<!-- conferir: o efetivo, os números e o resultado de cada cadeira -->
+<template id="tpl-nova-distribuicao-conferir">
+  <div class="nova-distribuicao-conferir">
+    <p class="nova-distribuicao-frase">
+      <span class="nova-distribuicao-conferir-pracas">Praças de serviço:</span>
+      <span class="nova-distribuicao-conferir-oficiais oculto">Oficiais de serviço:</span>
+      <span class="nova-distribuicao-espaco" data-espaco="efetivo"></span>
+    </p>
+    <div class="nova-distribuicao-metricas">
+      <div class="nova-distribuicao-metrica"><span class="nova-distribuicao-metrica-rotulo">Com gente própria</span><span class="nova-distribuicao-metrica-valor" data-metrica="com_gente"></span></div>
+      <div class="nova-distribuicao-metrica"><span class="nova-distribuicao-metrica-rotulo">Cobertas ou acumuladas</span><span class="nova-distribuicao-metrica-valor" data-metrica="acumuladas"></span></div>
+      <div class="nova-distribuicao-metrica"><span class="nova-distribuicao-metrica-rotulo">Vazias com erro vermelho</span><span class="nova-distribuicao-metrica-valor" data-metrica="vermelhas"></span></div>
+    </div>
+    <p class="nova-distribuicao-ajuda nova-distribuicao-sobra oculto"></p>
+    <div class="nova-distribuicao-conferir-lista"></div>
+  </div>
+</template>
+<template id="tpl-nova-distribuicao-confere-companhia">
+  <p class="nova-distribuicao-ajuda"><span>O Oficial de Área se confere na</span> <span class="nova-distribuicao-companhia"></span><span>.</span></p>
+</template>
+<template id="tpl-nova-distribuicao-conferir-linha">
+  <div class="nova-distribuicao-linha">
+    <span class="nova-distribuicao-linha-nome"></span>
+    <span class="selo nova-distribuicao-estado"></span>
+  </div>
+</template>
+<template id="tpl-nova-distribuicao-numero">
+  <span class="dropdown nova-distribuicao-selecao">
+    <button type="button" class="campo-entrada campo-selecao">
+      <span class="campo-selecao-texto"></span>
+      <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+    </button>
+    <div class="dropdown-menu"></div>
+  </span>
+</template>
+
+<!-- painel da direita: Novo período -->
+<template id="tpl-nova-distribuicao-novo-periodo">
+  <div class="painel-secao">
+    <div class="grupo-caixa">
+      <span class="rotulo-secao">Começa em</span>
+      <label class="campo">
+        <input type="text" class="campo-entrada nova-distribuicao-inicio" readonly placeholder="Escolher dia" aria-label="Começa em" />
+        <span class="campo-erro-texto"></span>
+      </label>
+    </div>
+    <div class="grupo-caixa">
+      <span class="rotulo-secao">Termina em</span>
+      <label class="geral-opcao"><input type="checkbox" class="nova-distribuicao-sem-fim" checked /><span>Sem fim</span></label>
+      <label class="campo nova-distribuicao-fim-campo oculto">
+        <input type="text" class="campo-entrada nova-distribuicao-fim" readonly placeholder="Escolher dia" aria-label="Termina em" />
+        <span class="campo-erro-texto"></span>
+      </label>
+    </div>
+    <div class="grupo-caixa">
+      <span class="rotulo-secao">Começar com as respostas de</span>
+      <span class="nova-distribuicao-espaco" data-espaco="origem"></span>
+    </div>
+    <p class="nova-distribuicao-ajuda">Um período no meio de outro divide o de antes: quando o novo terminar, volta o anterior.</p>
+  </div>
+</template>
+<template id="tpl-nova-distribuicao-novo-periodo-rodape">
+  <div class="rodape-acoes">
+    <button type="button" class="botao nova-distribuicao-painel-cancelar">Cancelar</button>
+    <button type="button" class="botao botao--primario nova-distribuicao-painel-criar">Criar período</button>
+  </div>
+</template>

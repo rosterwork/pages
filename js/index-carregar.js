@@ -25,7 +25,7 @@
     'componentes/js/geral-tpl.js',
     'componentes/js/geral-celular.js',
     'componentes/js/geral-recolher-topo.js',
-    'componentes/js/geral-deslizar-mes.js',
+    'componentes/js/geral-deslizar.js',
     'componentes/js/geral-tempo.js',
     'componentes/js/geral-mensagens.js',
     'componentes/js/geral-data.js',

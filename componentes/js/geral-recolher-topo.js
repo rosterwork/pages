@@ -13,7 +13,7 @@
    da lista (rolando até ele, ou puxando para baixo já nele), ao
    trocar de tela e quando a página pede (mostrar()). Com menu
    aberto, busca em uso, campo, painel ou folha "Mais" abertos, ou no
-   meio da troca de mês pelo dedo (geral-deslizar-mes.js), o topo não
+   meio da troca de mês pelo dedo (geral-deslizar.js), o topo não
    sai; nem quando a lista não tem o que rolar. O leiaute muda uma
    vez só, no começo do gesto, e o movimento é só deslocamento
    (geral-recolher-topo.css). Com "menos movimento" no aparelho, o
@@ -110,7 +110,7 @@
      troca de mês pelo dedo */
   function topoPreso() {
     if (document.querySelector('.dropdown--aberto, .busca--aberta, .painel-lateral--aberto, .casca--mais-aberto')) return true;
-    if (RosterWork.deslizarMes && RosterWork.deslizarMes.ocupado()) return true;
+    if (RosterWork.deslizar && RosterWork.deslizar.ocupado()) return true;
     var ativo = document.activeElement;
     return !!(ativo && ativo.matches && ativo.matches('input, textarea, select'));
   }
