@@ -21,6 +21,9 @@
   font-size: 11px;
   font-weight: 500;
   white-space: pre-line;   /* permite \n no data-dica → a dica vira lista de várias linhas */
+  /* a largura é a do texto, até 280px (sem isso, num botão pequeno a dica quebra palavra por palavra) */
+  width: max-content;
+  max-width: 280px;
   pointer-events: none;
   opacity: 0;
   visibility: hidden;

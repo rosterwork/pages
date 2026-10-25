@@ -359,13 +359,14 @@
       </div>
       <div class="modal-corpo">
         <span class="data-modal-mensagem"></span>
-        <p class="modal-texto data-modal-sugestao oculto">A escala será refeita a partir de <span class="data-modal-sugestao-data"></span>.</p>
+        <p class="modal-texto data-modal-sugestao oculto"><span class="data-modal-sugestao-antes">A escala será refeita a partir de </span><span class="data-modal-sugestao-data"></span><span class="data-modal-sugestao-depois">.</span></p>
         <button type="button" class="botao botao--texto data-modal-outra oculto">Escolher outra data</button>
         <label class="campo">
           <span class="campo-rotulo">A partir de</span>
           <input class="campo-entrada" type="text" name="recalculo-data" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" data-recalculo-data autocomplete="off" />
           <span class="campo-erro-texto"></span>
         </label>
+        <div class="data-modal-conteudo oculto"></div>
       </div>
       <div class="modal-rodape">
         <button type="button" class="botao data-modal-cancelar">Cancelar</button>

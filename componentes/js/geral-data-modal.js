@@ -1,9 +1,14 @@
 /* ============================================================
    MODAL DE DATA — pergunta "a partir de qual data recalcular"
    RosterWork.pedirData({ mensagem, textoConfirmar, confirmarPerigo, sugerida,
+                          titulo, sugestaoAntes, sugestaoDepois, data, conteudo,
                           aoConfirmar(iso), aoCancelar })
    Campo de data (máscara + calendário). Padrão = o próximo dia de
-   serviço (o dia vira às 08h; o plantão em curso não muda).
+   serviço (o dia vira às 08h; por padrão o plantão em curso não muda;
+   escolher hoje muda desde hoje). titulo e sugestaoAntes/Depois trocam
+   o título e a frase em volta da data (sem eles, os da escala); data
+   (AAAA-MM-DD) já vem escrita no campo; conteudo (um elemento) entra
+   embaixo do campo e sai ao fechar.
    sugerida: a data vem escrita numa frase e o campo só aparece em
    "Escolher outra data" (configuração sem data própria). Mínimo =
    hoje − 7 dias (permite passado recente e futuro, sem teto). Fecha
@@ -15,7 +20,9 @@
 
   window.RosterWork = window.RosterWork || {};
 
-  var veu, mensagemEl, sugestaoEl, sugestaoDataEl, btnOutra, input, campoEl, erroEl, btnConfirmar, btnCancelar;
+  var veu, tituloEl, mensagemEl, sugestaoEl, sugestaoAntesEl, sugestaoDataEl, sugestaoDepoisEl, btnOutra, input, campoEl, erroEl,
+    conteudoEl, btnConfirmar, btnCancelar;
+  var padrao = {};   /* os textos do HTML (os da escala), para voltar a eles */
   var aoConfirmar = null;
   var aoCancelar = null;
   var focoAnterior = null;
@@ -24,9 +31,14 @@
     if (veu) return true;
     veu = document.getElementById('veu-data');
     if (!veu) return false;
+    tituloEl = veu.querySelector('.modal-titulo');
     mensagemEl = veu.querySelector('.data-modal-mensagem');
     sugestaoEl = veu.querySelector('.data-modal-sugestao');
+    sugestaoAntesEl = veu.querySelector('.data-modal-sugestao-antes');
     sugestaoDataEl = veu.querySelector('.data-modal-sugestao-data');
+    sugestaoDepoisEl = veu.querySelector('.data-modal-sugestao-depois');
+    conteudoEl = veu.querySelector('.data-modal-conteudo');
+    padrao = { titulo: tituloEl.textContent, antes: sugestaoAntesEl.textContent, depois: sugestaoDepoisEl.textContent };
     btnOutra = veu.querySelector('.data-modal-outra');
     input = veu.querySelector('[data-recalculo-data]');
     campoEl = input.closest('.campo');
@@ -51,6 +63,7 @@
 
   function fechar() {
     if (veu) veu.classList.remove('modal-veu--aberto');
+    if (conteudoEl) { conteudoEl.textContent = ''; conteudoEl.classList.add('oculto'); }
     if (focoAnterior && focoAnterior.focus) focoAnterior.focus();
     focoAnterior = null;
   }
@@ -105,10 +118,16 @@
     btnConfirmar.classList.toggle('botao--perigo', !!opcoes.confirmarPerigo);
     btnConfirmar.classList.toggle('botao--primario', !opcoes.confirmarPerigo);
     limparErro();
-    /* padrão: o próximo dia de serviço (amanhã, virando às 08h) */
+    tituloEl.textContent = opcoes.titulo || padrao.titulo;
+    sugestaoAntesEl.textContent = opcoes.sugestaoAntes != null ? opcoes.sugestaoAntes : padrao.antes;
+    sugestaoDepoisEl.textContent = opcoes.sugestaoDepois != null ? opcoes.sugestaoDepois : padrao.depois;
+    conteudoEl.textContent = '';
+    if (opcoes.conteudo) conteudoEl.appendChild(opcoes.conteudo);
+    conteudoEl.classList.toggle('oculto', !opcoes.conteudo);
+    /* padrão: o próximo dia de serviço (amanhã, virando às 08h); com data, a que veio */
     var dia = RosterWork.data.diaDeServico();
     dia.setDate(dia.getDate() + 1);
-    input.value = RosterWork.data.paraBR(dia);
+    input.value = opcoes.data ? RosterWork.data.isoParaBR(opcoes.data) : RosterWork.data.paraBR(dia);
     sugestaoDataEl.textContent = input.value;
     sugestaoEl.classList.toggle('oculto', !sugerida);
     btnOutra.classList.toggle('oculto', !sugerida);
