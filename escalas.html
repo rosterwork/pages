@@ -235,7 +235,8 @@
 
 <!-- bloco "Lançar no SYSBM" do painel do dia (no fim da seção Dia; só quem administra o pelotão; escalas-sysbm.js).
      O envio é só pelo Firefox, com a extensão Roster Work. Fora do Firefox: o título e o aviso (no
-     data-sysbm-situacao). No Firefox sem a extensão: o título e o Instalar a extensão (o arquivo dela, em extensao/).
+     data-sysbm-situacao). No Firefox sem a extensão: o título e o Instalar a extensão (a página dela na loja da Mozilla, noutra aba;
+     instalada, o bloco troca sozinho para o Enviar).
      Com a extensão, fechado: o título, o Enviar e o chevron; embaixo, se alguém fica de fora, a linha amarela, e
      depois de enviar (ou se a leitura falhou), o que fazer. Aberto pelo chevron: o resumo, quem fica de fora e por quê
      e a explicação -->
@@ -244,7 +245,7 @@
     <div class="escala-sysbm-cabecalho">
       <span class="rotulo-secao escala-sysbm-titulo">Lançar no SYSBM</span>
       <button type="button" class="botao escala-sysbm-enviar" data-sysbm-enviar>Enviar</button>
-      <a class="botao escala-sysbm-instalar oculto" href="extensao/roster-work.xpi" data-sysbm-instalar>Instalar a extensão</a>
+      <a class="botao escala-sysbm-instalar oculto" href="https://addons.mozilla.org/firefox/addon/roster-work/" target="_blank" rel="noopener" data-sysbm-instalar>Instalar a extensão</a>
       <button type="button" class="botao-discreto escala-sysbm-toggle" aria-label="Mostrar ou ocultar o resumo e a explicação" aria-expanded="false" data-sysbm-toggle>
         <svg class="icone escala-sysbm-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
       </button>

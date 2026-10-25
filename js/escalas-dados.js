@@ -116,6 +116,19 @@
       .catch(function () { return null; });
   }
 
+  /* o termo do envio ao SYSBM: a situação de quem está logado ({versao_atual, versao_ciente, pendente})
+     e a ciência da versão que a tela mostrou ({success, log} ou {success:false, error}). null = falha */
+  function sysbmTermo() {
+    return RosterWork.rpc('sysbm_termo_situacao')
+      .then(function (r) { return (r && r.success) ? r : null; })
+      .catch(function () { return null; });
+  }
+
+  function sysbmDarCiencia(unidadeId, versao) {
+    return RosterWork.rpc('sysbm_dar_ciencia', { p_unidade_id: Number(unidadeId), p_versao: versao })
+      .catch(function () { return null; });
+  }
+
   /* prévia das sub-telas do Dia (RPC escala_dia_simular): o dia como ficaria com o rascunho
      {ajustes, pontuais?, folgas}; pontuais e folgas entram num ensaio no banco (nada é gravado) */
   function simularDia(unidadeId, iso, rascunho) {
@@ -185,6 +198,7 @@
     carregar: carregar, antecipar: antecipar, carregarMilitares: carregarMilitares, lerMilitarDia: lerMilitarDia,
     lerDistribuicaoDia: lerDistribuicaoDia, lerAlteracoesDia: lerAlteracoesDia, simularDia: simularDia, salvarDia: salvarDia,
     lerImpressao: lerImpressao, lerImpressaoErros: lerImpressaoErros, lerSysbm: lerSysbm,
+    sysbmTermo: sysbmTermo, sysbmDarCiencia: sysbmDarCiencia,
     continuosListar: continuosListar, cicloRetirarAnalisar: cicloRetirarAnalisar, cicloSalvarLote: cicloSalvarLote,
     extraPainel: extraPainel, extraLista: extraLista,
     disponiveis: disponiveis

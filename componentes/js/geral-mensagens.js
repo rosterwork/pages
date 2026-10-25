@@ -677,6 +677,24 @@
         falhaEnviar: 'Não foi possível enviar. Tente de novo.',
         /* no bloco, fora do Firefox (o envio é só pela extensão do Firefox) */
         soFirefox: 'Essa funcionalidade está disponível apenas no navegador Mozilla Firefox.',
+        /* no bloco, quando a extensão é instalada com o painel aberto (o Instalar vira o Enviar) */
+        extensaoInstalada: 'Extensão instalada. Já pode enviar.',
+        /* o termo de responsabilidade, na janela de confirmação antes do primeiro Enviar de cada administrador.
+           versao muda JUNTO com o texto e com _sysbm_termo_versao() do banco (todos dão ciência de novo) */
+        termo: {
+          versao: 1,
+          titulo: 'Termo de responsabilidade do envio ao SYSBM',
+          itens: [
+            'A extensão Roster Work é uma ferramenta de apoio do Roster Work. Ela não é um sistema oficial do CBMPR nem faz parte do SYSBM.',
+            'O envio é para quem administra o pelotão no Roster Work e tem permissão para cadastrar a escala no SYSBM, sempre com o próprio login.',
+            'A extensão só preenche a tela de cadastro e nunca salva. Você confere cada linha antes de clicar em Salvar e responde pelo que for salvo no SYSBM.',
+            'A escala, com nomes, RG e horários, passa do Roster Work para o SYSBM dentro do seu navegador. A extensão não guarda esses dados nem os envia a outro lugar.',
+            'Use o envio de acordo com as normas da corporação e do SYSBM. Se algo for preenchido errado, vale a sua conferência antes de salvar.'
+          ],
+          nota: 'Ao clicar em Concordo, a sua ciência fica registrada com data e hora.',
+          concordo: 'Concordo',
+          falha: 'Não foi possível registrar a sua ciência. Tente de novo.'
+        },
         /* o preenchedor da extensão, na tela do SYSBM (nas janelas do próprio navegador) */
         extensao: {
           naoEhEscala: 'A escala enviada pelo Roster não pôde ser lida. No Roster, clique em Enviar no painel do dia de novo.',
