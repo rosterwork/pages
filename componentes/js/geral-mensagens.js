@@ -792,11 +792,10 @@
       prefixoVazio: 'Digite o prefixo da viatura.',
       cnhEscolha: 'Escolha a CNH da viatura.',
       trocaTexto: 'Substituída por {prefixo} (CNH {cnh}) de {inicio} a {fim}',
-      trocaTitulo: 'Substituir por tempo determinado',
-      trocaSubtitulo: 'No lugar da {viatura}',
       trocaMesmoPrefixo: 'Use outro prefixo: este é o da própria viatura.',
       trocaEscolhaCnh: 'Escolha a CNH.',
       trocaErroFim: 'Escolha a data de fim.',
+      trocaLimite: 'Só dá para mudar a partir de {data}.',
       excluirSubstituicao: 'Excluir a substituição da {viatura}? {texto}.',
       botaoExcluir: 'Excluir',
       /* bloco 2: efetivo */

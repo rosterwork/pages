@@ -518,22 +518,71 @@
   grid-column: 2 / -1;
 }
 
-.nova-distribuicao-troca {
+/* as substituições da viatura: a linha fechada e a caixa aberta usam as colunas da viatura */
+.nova-distribuicao-viatura-substituicoes {
   display: flex;
+  flex-direction: column;
+  gap: 4px;
+  grid-column: 1 / -1;
+}
+
+.nova-distribuicao-troca,
+.nova-distribuicao-troca-caixa {
+  display: grid;
+  grid-template-columns: 32px 160px auto minmax(0, 1fr);
   align-items: center;
   gap: 8px;
+}
+
+.nova-distribuicao-troca {
   font-size: 12px;
   color: var(--texto-suave);
 }
 
-.nova-distribuicao-datas {
-  display: flex;
-  gap: 8px;
+.nova-distribuicao-troca-icone {
+  justify-self: center;
+  color: var(--texto-suave);
 }
 
-.nova-distribuicao-datas > .campo {
-  flex: 1;
+.nova-distribuicao-troca-texto {
+  grid-column: 2 / 4;
   min-width: 0;
+}
+
+/* aberta: a linha em volta fica 8px para fora, para os campos de dentro não saírem das colunas */
+.nova-distribuicao-troca-caixa {
+  position: relative;
+  margin: 8px 0;
+}
+
+.nova-distribuicao-troca-caixa::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border: 1px solid var(--borda-forte);
+  border-radius: var(--raio-medio);
+  pointer-events: none;
+}
+
+.nova-distribuicao-troca-rotulo-inicio,
+.nova-distribuicao-troca-inicio { grid-column: 2; }
+
+.nova-distribuicao-troca-data { width: 160px; }
+
+.nova-distribuicao-troca-erros {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  grid-column: 2 / -1;
+}
+
+.nova-distribuicao-troca-ajuda { grid-column: 2 / -1; }
+
+.nova-distribuicao-troca-botoes {
+  display: flex;
+  gap: 8px;
+  grid-column: 1 / -1;
+  justify-self: end;
 }
 
 /* título de cada unidade nas opções do Oficial de Área */

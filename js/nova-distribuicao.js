@@ -49,13 +49,13 @@
   function avisarFalha(r) { RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || G().falhaServidor }); }
   function avisarSemConexao() { RosterWork.avisar({ tipo: 'erro', mensagem: G().semConexao }); }
 
-  /* com edição não salva, confirma o descarte antes de seguir */
+  /* com edição não salva (também a substituição aberta), confirma o descarte antes de seguir */
   function confirmarDescarte(seguir, aoCancelar) {
-    if (!E.sujo && !E.sujoCia) { seguir(); return; }
+    if (!E.sujo && !E.sujoCia && !RosterWork.novaDistribuicaoPostos.sujo()) { seguir(); return; }
     RosterWork.confirmar({
       tipo: 'aviso', mensagem: RosterWork.mensagens.edicao.sairSemSalvar,
       textoConfirmar: B().descartar, textoCancelar: B().continuarEditando,
-      aoConfirmar: function () { invalidos = {}; seguir(); }, aoCancelar: aoCancelar
+      aoConfirmar: function () { invalidos = {}; RosterWork.novaDistribuicaoPostos.descartar(); seguir(); }, aoCancelar: aoCancelar
     });
   }
 
@@ -69,6 +69,7 @@
       if (meu !== tokenCarga || !montada()) return;
       if (!r || !r.success) { P().mostrarNoCorpo('falha', (r && r.error) || G().falhaCarregar); return; }
       var bloco = E.bloco;
+      if (r.unidade.id !== E.unidadeId) RosterWork.novaDistribuicaoPostos.descartar();   /* a substituição aberta é da outra unidade */
       E = novoEstado();
       E.bloco = bloco;
       E.dados = r;

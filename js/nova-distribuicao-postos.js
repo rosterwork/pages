@@ -1,19 +1,21 @@
 /* ============================================================
-   NOVA DISTRIBUIÇÃO — bloco 1 (Postos) e a substituição por tempo
+   NOVA DISTRIBUIÇÃO — bloco 1 (Postos) e a substituição temporária
    Postos: as instalações (caixas de marcar) e as viaturas, uma
    por linha: Nº, prefixo (vale ao sair do campo; fora do formato
    fica só no campo, em vermelho), CNH de A a E alinhadas, setas,
-   Substituir por tempo determinado e excluir; embaixo, as
-   substituições da viatura, os erros e o que muda na mudança
-   agendada. A substituição abre no painel da direita (prefixo e
-   CNH da viatura que entra, de e até) e grava na hora, com as
-   datas dela; o resto da página continua como está até o Salvar.
+   Substituir temporariamente e excluir; embaixo, os erros, o que
+   muda na mudança agendada e as substituições da viatura. A
+   substituição abre numa caixa embaixo da viatura, nas mesmas
+   colunas (prefixo e CNH da que entra, início e fim), e grava na
+   hora, com as datas dela; o resto da página continua como está
+   até o Salvar.
    ============================================================ */
 (function () {
   'use strict';
   window.RosterWork = window.RosterWork || {};
 
-  var formTroca = null;   /* a substituição aberta no painel */
+  /* a substituição aberta embaixo da viatura: { viatura, s (nulo = nova), prefixo, cnh, inicio, fim, erros, sujo } */
+  var formTroca = null;
 
   function M() { return RosterWork.mensagens.novaDistribuicao; }
   function G() { return RosterWork.mensagens.geral; }
@@ -29,77 +31,119 @@
   function falhou(r) { RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || G().falhaServidor }); }
   function semConexao() { RosterWork.avisar({ tipo: 'erro', mensagem: G().semConexao }); }
 
-  /* ---------- a substituição no painel da direita (s nulo = nova) ---------- */
+  /* ---------- a substituição aberta embaixo da viatura (s nulo = nova); grava na hora ---------- */
 
-  function erro(alvo, frase) {
-    var campo = alvo.closest('.campo');
-    campo.classList.toggle('campo--erro', !!frase);
-    campo.querySelector('.campo-erro-texto').textContent = frase || '';
-    return !!frase;
+  /* com algo digitado, confirma antes de largar a substituição aberta */
+  function largarTroca(seguir) {
+    if (!formTroca || !formTroca.sujo) { formTroca = null; seguir(); return; }
+    RosterWork.confirmar({
+      tipo: 'aviso', mensagem: RosterWork.mensagens.edicao.sairSemSalvar,
+      textoConfirmar: B().descartar, textoCancelar: B().continuarEditando,
+      aoConfirmar: function () { formTroca = null; seguir(); }
+    });
   }
 
+  /* abre uma por vez */
   function abrirTroca(api, viatura, s) {
-    var painel = RosterWork.painel;
-    var atual = s || {};
-    var caixa = P().tpl('troca-painel');
-    var rodape = P().tpl('troca-rodape');
-    var prefixo = caixa.querySelector('.nova-distribuicao-troca-prefixo');
-    var cnh = caixa.querySelector('.nova-distribuicao-troca-cnh');
-    var inicio = caixa.querySelector('.nova-distribuicao-troca-inicio');
-    var fim = caixa.querySelector('.nova-distribuicao-troca-fim');
-    formTroca = { cnh: atual.cnh || null, sujo: false };
-
-    prefixo.value = atual.prefixo || '';
-    inicio.value = atual.inicio ? br(atual.inicio) : '';
-    fim.value = atual.fim ? br(atual.fim) : '';
-    inicio.disabled = !!atual.comecou_antes;   /* a que começou antes do limite dos 7 dias só muda o fim */
-    cnh.querySelectorAll('.aba').forEach(function (aba) { aba.classList.toggle('aba--ativa', aba.getAttribute('data-valor') === formTroca.cnh); });
-
-    painel.abrir({ titulo: M().trocaTitulo, subtitulo: P().texto(M().trocaSubtitulo, { viatura: viatura }), aoFechar: function () { formTroca = null; } });
-    painel.corpo().appendChild(caixa);
-    painel.rodape().appendChild(rodape);
-    painel.rodape().classList.remove('oculto');
-
-    prefixo.addEventListener('input', function () {
-      var pos = prefixo.selectionStart;
-      prefixo.value = prefixo.value.toUpperCase();
-      try { prefixo.setSelectionRange(pos, pos); } catch (e) {}
-      formTroca.sujo = true;
-      erro(prefixo, '');
+    largarTroca(function () {
+      formTroca = {
+        viatura: viatura, s: s, prefixo: s ? s.prefixo : '', cnh: s ? s.cnh : null,
+        inicio: s ? br(s.inicio) : '', fim: s ? br(s.fim) : '', erros: {}, sujo: false
+      };
+      api.focarDepois('#nova-distribuicao-troca-prefixo');
+      api.redesenhar();
     });
-    RosterWork.abas.ligar(cnh, function (aba) { formTroca.cnh = aba.getAttribute('data-valor'); formTroca.sujo = true; erro(cnh, ''); });
-    [inicio, fim].forEach(function (input) {
-      RosterWork.campos.ligarData(input);
-      input.addEventListener('input', function () { formTroca.sujo = true; erro(input, ''); });
-    });
+  }
 
-    rodape.querySelector('.nova-distribuicao-painel-cancelar').addEventListener('click', function () { painel.fechar(); });
-    var salvar = rodape.querySelector('.nova-distribuicao-painel-aplicar');
-    salvar.addEventListener('click', function () {
-      var novo = prefixo.value.trim().toUpperCase();
-      var de = RosterWork.data.paraISO(inicio.value);
-      var ate = RosterWork.data.paraISO(fim.value);
-      var comErro = false;
-      if (!P().FORMATO_PREFIXO.test(novo)) comErro = erro(prefixo, M().prefixoInvalido) || comErro;
-      else if (novo === viatura) comErro = erro(prefixo, M().trocaMesmoPrefixo) || comErro;
-      if (!formTroca.cnh) comErro = erro(cnh, M().trocaEscolhaCnh) || comErro;
-      if (!de) comErro = erro(inicio, M().erroInicio) || comErro;
-      if (!ate) comErro = erro(fim, M().trocaErroFim) || comErro;
-      else if (de && ate < de) comErro = erro(fim, M().erroOrdemDatas) || comErro;
-      if (comErro) return;
-      RosterWork.iniciarCarregando(salvar);
-      D().substituicaoSalvar(api.unidadeId(), atual.id, viatura, novo, formTroca.cnh, de, ate).then(function (r) {
-        RosterWork.pararCarregando(salvar);
-        if (!r || !r.success) { falhou(r); return; }
-        formTroca = null;
-        painel.fechar();
-        RosterWork.resumo.abrirModal(r.log, { pagina: M().pagina });
-        api.recarregarSubstituicoes();
-      }, function () {
-        RosterWork.pararCarregando(salvar);
-        semConexao();
-      });
+  /* confere os campos (as frases ficam em formTroca.erros, por campo); edições voltam no máximo até o limite */
+  function conferirTroca(api) {
+    var f = formTroca;
+    var e = {};
+    var limite = api.dados().limite;
+    var trava = P().texto(M().trocaLimite, { data: br(limite) });
+    var de = RosterWork.data.paraISO(f.inicio);
+    var ate = RosterWork.data.paraISO(f.fim);
+    if (!P().FORMATO_PREFIXO.test(f.prefixo)) e.prefixo = f.prefixo ? M().prefixoInvalido : M().prefixoVazio;
+    else if (f.prefixo === f.viatura) e.prefixo = M().trocaMesmoPrefixo;
+    if (!f.cnh) e.cnh = M().trocaEscolhaCnh;
+    if (!de) e.inicio = M().erroInicio;
+    else if (de < limite && !(f.s && f.s.comecou_antes)) e.inicio = trava;
+    if (!ate) e.fim = M().trocaErroFim;
+    else if (de && ate < de) e.fim = M().erroOrdemDatas;
+    else if (ate < limite) e.fim = trava;
+    f.erros = e;
+    return !Object.keys(e).length;
+  }
+
+  function salvarTroca(api, botao) {
+    var f = formTroca;
+    if (!conferirTroca(api)) { api.redesenhar(); return; }
+    RosterWork.iniciarCarregando(botao);
+    D().substituicaoSalvar(api.unidadeId(), f.s && f.s.id, f.viatura, f.prefixo, f.cnh,
+      RosterWork.data.paraISO(f.inicio), RosterWork.data.paraISO(f.fim)).then(function (r) {
+      RosterWork.pararCarregando(botao);
+      if (!r || !r.success) { falhou(r); return; }
+      formTroca = null;
+      RosterWork.resumo.abrirModal(r.log, { pagina: M().pagina });
+      api.recarregarSubstituicoes();
+    }, function () {
+      RosterWork.pararCarregando(botao);
+      semConexao();
     });
+  }
+
+  /* a caixa: o prefixo e a CNH da que entra nas colunas da viatura, o início e o fim; as frases embaixo
+     (somem do campo que muda) */
+  function caixaTroca(destino, api, ctx) {
+    var f = formTroca;
+    var caixa = P().tpl('troca-caixa');
+    var campos = {
+      prefixo: caixa.querySelector('.nova-distribuicao-troca-prefixo'),
+      cnh: caixa.querySelector('.nova-distribuicao-troca-cnh'),
+      inicio: caixa.querySelector('.nova-distribuicao-troca-inicio'),
+      fim: caixa.querySelector('.nova-distribuicao-troca-fim')
+    };
+    var lista = caixa.querySelector('.nova-distribuicao-troca-erros');
+    var frases = {};
+    Object.keys(campos).forEach(function (c) {
+      campos[c].classList.toggle(c === 'cnh' ? 'nova-distribuicao-espaco--erro' : 'nova-distribuicao-entrada--erro', !!f.erros[c]);
+      if (f.erros[c]) frases[c] = P().erroCampo(lista, f.erros[c]);
+    });
+    lista.classList.toggle('oculto', !lista.children.length);
+    function mudou(c) {
+      f.sujo = true;
+      if (!f.erros[c]) return;
+      delete f.erros[c];
+      campos[c].classList.remove(c === 'cnh' ? 'nova-distribuicao-espaco--erro' : 'nova-distribuicao-entrada--erro');
+      frases[c].remove();
+      lista.classList.toggle('oculto', !lista.children.length);
+    }
+
+    campos.prefixo.value = f.prefixo;
+    campos.prefixo.addEventListener('input', function () {
+      var pos = campos.prefixo.selectionStart;
+      campos.prefixo.value = campos.prefixo.value.toUpperCase();
+      try { campos.prefixo.setSelectionRange(pos, pos); } catch (e) {}
+      f.prefixo = campos.prefixo.value.trim();
+      mudou('prefixo');
+    });
+    campos.cnh.querySelectorAll('.aba').forEach(function (aba) { aba.classList.toggle('aba--ativa', aba.getAttribute('data-valor') === f.cnh); });
+    RosterWork.abas.ligar(campos.cnh, function (aba) { f.cnh = aba.getAttribute('data-valor'); mudou('cnh'); });
+    ['inicio', 'fim'].forEach(function (c) {
+      campos[c].value = f[c];
+      RosterWork.campos.ligarData(campos[c]);
+      campos[c].addEventListener('input', function () { f[c] = campos[c].value; mudou(c); });
+    });
+    campos.inicio.disabled = !!(f.s && f.s.comecou_antes);   /* a que começou antes do limite dos 7 dias só muda o fim */
+
+    var excluir = caixa.querySelector('.nova-distribuicao-remover');
+    excluir.classList.toggle('oculto', !f.s);
+    excluir.disabled = ctx.soLeitura || !!(f.s && f.s.comecou_antes);
+    excluir.addEventListener('click', function () { excluirTroca(api, f.viatura, f.s); });
+    caixa.querySelector('.nova-distribuicao-troca-cancelar').addEventListener('click', function () { formTroca = null; api.redesenhar(); });
+    var salvar = caixa.querySelector('.nova-distribuicao-troca-salvar');
+    salvar.addEventListener('click', function () { salvarTroca(api, salvar); });
+    destino.appendChild(caixa);
   }
 
   function excluirTroca(api, viatura, s) {
@@ -112,6 +156,7 @@
         D().substituicaoExcluir(s.id).then(function (r) {
           RosterWork.liberarTela();
           if (!r || !r.success) { falhou(r); return; }
+          if (formTroca && formTroca.s && formTroca.s.id === s.id) formTroca = null;
           RosterWork.resumo.abrirModal(r.log, { pagina: M().pagina });
           api.recarregarSubstituicoes();
         }, function () {
@@ -121,6 +166,9 @@
       }
     });
   }
+
+  /* a viatura mudou de prefixo ou saiu: a substituição aberta dela fecha */
+  function fecharTrocaDe(nome) { if (formTroca && formTroca.viatura === nome) formTroca = null; }
 
   /* ---------- 1. Postos ---------- */
 
@@ -149,6 +197,7 @@
       if (novo && novo === v.nome) { api.invalido(chave, null); api.redesenhar(); return; }
       if (!P().FORMATO_PREFIXO.test(novo)) { api.invalido(chave, inp.value.trim()); api.redesenhar(); return; }
       api.invalido(chave, null);
+      fecharTrocaDe(v.nome);
       api.renomear(ctx.lado, i, v.nome, novo);
     });
     /* saiu do campo vazio sem digitar: acusa só nesta linha, sem redesenhar (o clique que tirou o foco
@@ -187,11 +236,20 @@
     remover.disabled = ctx.soLeitura;
     remover.addEventListener('click', function () {
       api.esquecerInvalidos(ctx.lado);
+      fecharTrocaDe(v.nome);
       api.mudar(ctx.lado, function (x) { x.viaturas.splice(i, 1); });
     });
 
     var extra = linha.querySelector('.nova-distribuicao-viatura-extra');
+    erros.forEach(function (e) { P().erroCampo(extra, e); });
+    if (faltaCnh) P().erroCampo(extra, M().cnhEscolha);
+    if (v.nome) P().marcarMuda(extra, ctx, 'viatura:' + v.nome);
+    extra.classList.toggle('oculto', !extra.children.length);
+
+    var subs = linha.querySelector('.nova-distribuicao-viatura-substituicoes');
+    var aberta = formTroca && formTroca.viatura === v.nome ? formTroca : null;
     api.substituicoesDe(v.nome).forEach(function (s) {
+      if (aberta && aberta.s && aberta.s.id === s.id) { caixaTroca(subs, api, ctx); return; }
       var lt = P().tpl('troca');
       lt.querySelector('.nova-distribuicao-troca-texto').textContent = textoTroca(s);
       var editar = lt.querySelector('.nova-distribuicao-editar');
@@ -200,12 +258,10 @@
       tirar.disabled = ctx.soLeitura || !gravada || s.comecou_antes;
       editar.addEventListener('click', function () { abrirTroca(api, s.viatura, s); });
       tirar.addEventListener('click', function () { excluirTroca(api, s.viatura, s); });
-      extra.appendChild(lt);
+      subs.appendChild(lt);
     });
-    erros.forEach(function (e) { P().erroCampo(extra, e); });
-    if (faltaCnh) P().erroCampo(extra, M().cnhEscolha);
-    if (v.nome) P().marcarMuda(extra, ctx, 'viatura:' + v.nome);
-    extra.classList.toggle('oculto', !extra.children.length);
+    if (aberta && !aberta.s) caixaTroca(subs, api, ctx);
+    subs.classList.toggle('oculto', !subs.children.length);
     lista.appendChild(linha);
   }
 
@@ -256,7 +312,9 @@
         return lista.concat(((par[1] && par[1].viaturas) || []).map(function (v, i) { return v.nome ? null : par[0] + ':viatura:' + i; }));
       }, []).filter(Boolean);
     },
-    /* o painel da substituição tem algo digitado (para o guarda de saída) */
-    sujo: function () { return !!(formTroca && formTroca.sujo && RosterWork.painel.estaAberto()); }
+    /* a substituição aberta tem algo digitado (o descarte e o guarda de saída) */
+    sujo: function () { return !!(formTroca && formTroca.sujo); },
+    /* larga a substituição aberta (descarte confirmado ou outra unidade) */
+    descartar: function () { formTroca = null; }
   };
 })();

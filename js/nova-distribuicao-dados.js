@@ -45,7 +45,7 @@
     agendadaCancelar: function (unidadeId) {
       return rpc('nova_distribuicao_agendada_cancelar', { p_unidade_id: unidadeId });
     },
-    /* a substituição por tempo determinado grava na hora (id nulo = nova) */
+    /* a substituição temporária grava na hora (id nulo = nova) */
     substituicaoSalvar: function (unidadeId, id, viatura, prefixo, cnh, inicio, fim) {
       return rpc('nova_distribuicao_substituicao_salvar', {
         p_unidade_id: unidadeId, p_id: id || null, p_viatura: viatura, p_prefixo: prefixo, p_cnh: cnh, p_inicio: inicio, p_fim: fim

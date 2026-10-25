@@ -375,7 +375,7 @@
       <button type="button" class="botao botao--icone nova-distribuicao-descer" aria-label="Descer">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mover-baixo"/></svg>
       </button>
-      <button type="button" class="botao botao--icone nova-distribuicao-trocar" aria-label="Substituir por tempo determinado" data-dica="Substituir por tempo determinado">
+      <button type="button" class="botao botao--icone nova-distribuicao-trocar" aria-label="Substituir temporariamente" data-dica="Substituir temporariamente">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-substituir"/></svg>
       </button>
       <button type="button" class="botao botao--icone nova-distribuicao-remover" aria-label="Excluir viatura">
@@ -383,18 +383,52 @@
       </button>
     </span>
     <div class="nova-distribuicao-viatura-extra"></div>
+    <div class="nova-distribuicao-viatura-substituicoes"></div>
   </div>
 </template>
+<!-- a substituição fechada: nas colunas da viatura, o editar embaixo do substituir e a lixeira embaixo da lixeira -->
 <template id="tpl-nova-distribuicao-troca">
   <div class="nova-distribuicao-troca">
-    <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-substituir"/></svg>
+    <svg class="icone nova-distribuicao-troca-icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-substituir"/></svg>
     <span class="nova-distribuicao-troca-texto"></span>
-    <button type="button" class="botao botao--icone nova-distribuicao-editar" aria-label="Editar substituição">
-      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-editar"/></svg>
-    </button>
-    <button type="button" class="botao botao--icone nova-distribuicao-remover" aria-label="Excluir substituição">
-      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
-    </button>
+    <span class="nova-distribuicao-viatura-acoes">
+      <button type="button" class="botao botao--icone nova-distribuicao-editar" aria-label="Editar substituição">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-editar"/></svg>
+      </button>
+      <button type="button" class="botao botao--icone nova-distribuicao-remover" aria-label="Excluir substituição">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
+      </button>
+    </span>
+  </div>
+</template>
+<!-- a substituição aberta embaixo da viatura (grava na hora): o prefixo e a CNH da que entra nas colunas da viatura,
+     o início e o fim, as frases de erro, a ajuda e os botões -->
+<template id="tpl-nova-distribuicao-troca-caixa">
+  <div class="nova-distribuicao-troca-caixa">
+    <svg class="icone nova-distribuicao-troca-icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-substituir"/></svg>
+    <input type="text" class="campo-entrada nova-distribuicao-troca-prefixo" id="nova-distribuicao-troca-prefixo" maxlength="12" placeholder="Ex.: AA-9218" autocomplete="off" aria-label="Prefixo da viatura que entra no lugar" />
+    <div class="abas abas--seletor nova-distribuicao-troca-cnh" aria-label="CNH da viatura que entra no lugar">
+      <button type="button" class="aba" data-valor="A">A</button>
+      <button type="button" class="aba" data-valor="B">B</button>
+      <button type="button" class="aba" data-valor="C">C</button>
+      <button type="button" class="aba" data-valor="D">D</button>
+      <button type="button" class="aba" data-valor="E">E</button>
+    </div>
+    <span class="nova-distribuicao-viatura-acoes">
+      <button type="button" class="botao botao--icone nova-distribuicao-remover" aria-label="Excluir substituição">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
+      </button>
+    </span>
+    <span class="rotulo-secao nova-distribuicao-troca-rotulo-inicio">Início</span>
+    <span class="rotulo-secao">Fim</span>
+    <input type="text" class="campo-entrada nova-distribuicao-troca-data nova-distribuicao-troca-inicio" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" aria-label="Início" />
+    <input type="text" class="campo-entrada nova-distribuicao-troca-data nova-distribuicao-troca-fim" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" aria-label="Fim" />
+    <div class="nova-distribuicao-troca-erros"></div>
+    <p class="nova-distribuicao-ajuda nova-distribuicao-troca-ajuda">No período, a substituta assume o posto com as mesmas funções e ordem. Depois do fim, a original volta.</p>
+    <div class="nova-distribuicao-troca-botoes">
+      <button type="button" class="botao nova-distribuicao-troca-cancelar">Cancelar</button>
+      <button type="button" class="botao botao--primario nova-distribuicao-troca-salvar">Salvar substituição</button>
+    </div>
   </div>
 </template>
 <template id="tpl-nova-distribuicao-nova-viatura">
@@ -747,51 +781,4 @@
   </tr>
 </template>
 
-<!-- painel da direita: substituir por tempo determinado (grava na hora, com as datas dela) -->
-<template id="tpl-nova-distribuicao-troca-painel">
-  <div class="painel-secao">
-    <div class="grupo-caixa">
-      <span class="rotulo-secao">Viatura que entra no lugar</span>
-      <label class="campo">
-        <span class="campo-rotulo">Prefixo</span>
-        <input type="text" class="campo-entrada nova-distribuicao-troca-prefixo" maxlength="12" placeholder="Ex.: ABT-01" autocomplete="off" />
-        <span class="campo-erro-texto"></span>
-      </label>
-      <div class="campo">
-        <span class="campo-rotulo">CNH exigida</span>
-        <div class="abas abas--seletor nova-distribuicao-troca-cnh" aria-label="CNH exigida">
-          <button type="button" class="aba" data-valor="A">A</button>
-          <button type="button" class="aba" data-valor="B">B</button>
-          <button type="button" class="aba" data-valor="C">C</button>
-          <button type="button" class="aba" data-valor="D">D</button>
-          <button type="button" class="aba" data-valor="E">E</button>
-        </div>
-        <span class="campo-erro-texto"></span>
-      </div>
-    </div>
-    <div class="grupo-caixa">
-      <span class="rotulo-secao">Quando</span>
-      <div class="nova-distribuicao-datas">
-        <label class="campo">
-          <span class="campo-rotulo">De</span>
-          <input type="text" class="campo-entrada nova-distribuicao-troca-inicio" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" />
-          <span class="campo-erro-texto"></span>
-        </label>
-        <label class="campo">
-          <span class="campo-rotulo">Até</span>
-          <input type="text" class="campo-entrada nova-distribuicao-troca-fim" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" />
-          <span class="campo-erro-texto"></span>
-        </label>
-      </div>
-      <span class="campo-ajuda">Edições voltam no máximo 7 dias.</span>
-    </div>
-    <p class="nova-distribuicao-ajuda">Nesses dias, a escala usa a viatura que entra no lugar. As funções e a ordem do posto continuam as mesmas; depois, volta a de sempre.</p>
-  </div>
-</template>
-<template id="tpl-nova-distribuicao-troca-rodape">
-  <div class="rodape-acoes">
-    <button type="button" class="botao nova-distribuicao-painel-cancelar">Cancelar</button>
-    <button type="button" class="botao botao--primario nova-distribuicao-painel-aplicar">Salvar</button>
-  </div>
-</template>
 
