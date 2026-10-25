@@ -527,7 +527,7 @@
 }
 
 /* ---------- bloco Lançar no SYSBM do painel do dia (escalas-sysbm.js) ---------- */
-/* a linha do título: o título ocupa o que sobra; o Enviar e o chevron à direita */
+/* a linha do título: o título ocupa o que sobra; o Enviar (ou o Instalar a extensão) e o chevron à direita */
 .escala-sysbm-cabecalho {
   display: flex;
   align-items: center;
@@ -539,8 +539,14 @@
   min-width: 0;
 }
 
-.escala-sysbm-enviar {
+.escala-sysbm-enviar,
+.escala-sysbm-instalar {
   flex-shrink: 0;
+}
+
+/* o Instalar a extensão é um link (o arquivo da extensão) com cara de botão: sem sublinhado */
+.escala-sysbm-instalar {
+  text-decoration: none;
 }
 
 /* chevron: aponta para a direita fechado e para baixo aberto (giro instantâneo, como nas seções do painel) */
@@ -568,12 +574,6 @@
 .escala-sysbm-aviso {
   font-size: 11px;
   color: var(--alerta);
-}
-
-/* o favorito: o botão de arrastar até a barra de favoritos (o link do favorito), do tamanho dele */
-.escala-sysbm-favorito {
-  align-self: flex-start;
-  text-decoration: none;
 }
 
 /* ============================================================

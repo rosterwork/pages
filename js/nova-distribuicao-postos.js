@@ -128,8 +128,10 @@
     var linha = P().tpl('viatura');
     var chave = ctx.lado + ':viatura:' + i;
     var digitado = api.invalido(chave);
-    var erros = digitado != null ? [M().prefixoInvalido] : P().erros(ctx, 'viatura:' + i);
-    var faltaCnh = !!v.nome && P().pendente(ctx, 'carteira:' + v.nome);
+    /* a viatura nova sem prefixo só acusa quando o campo fica vazio ao sair (ou no Salvar) */
+    var erros = digitado != null ? [digitado ? M().prefixoInvalido : M().prefixoVazio] : (v.nome ? P().erros(ctx, 'viatura:' + i) : []);
+    /* a falta da CNH é desta linha (com prefixo repetido, a outra viatura não acende) */
+    var faltaCnh = !!v.nome && !v.cnh && P().pendente(ctx, 'carteira:' + v.nome);
 
     linha.querySelector('.nova-distribuicao-linha-ordem').textContent = (i + 1) + 'º';
     var inp = linha.querySelector('.nova-distribuicao-prefixo');
@@ -144,10 +146,21 @@
     });
     inp.addEventListener('change', function () {
       var novo = inp.value.trim().toUpperCase();
-      if (novo === v.nome) { api.invalido(chave, null); api.redesenhar(); return; }
-      if (!P().FORMATO_PREFIXO.test(novo)) { api.invalido(chave, inp.value); api.redesenhar(); return; }
+      if (novo && novo === v.nome) { api.invalido(chave, null); api.redesenhar(); return; }
+      if (!P().FORMATO_PREFIXO.test(novo)) { api.invalido(chave, inp.value.trim()); api.redesenhar(); return; }
       api.invalido(chave, null);
       api.renomear(ctx.lado, i, v.nome, novo);
+    });
+    /* saiu do campo vazio sem digitar: acusa só nesta linha, sem redesenhar (o clique que tirou o foco
+       não se perde); o campo tirado da tela por um redesenho não acusa */
+    inp.addEventListener('blur', function () {
+      setTimeout(function () {
+        if (!inp.isConnected || v.nome || inp.value.trim() || api.invalido(chave) != null) return;
+        api.invalido(chave, '');
+        inp.classList.add('nova-distribuicao-entrada--erro');
+        P().erroCampo(extra, M().prefixoVazio);
+        extra.classList.remove('oculto');
+      }, 0);
     });
 
     var cnh = linha.querySelector('.nova-distribuicao-cnh');
@@ -237,6 +250,12 @@
 
   window.RosterWork.novaDistribuicaoPostos = {
     postos: postos,
+    /* as viaturas ainda sem prefixo da unidade e da companhia, na chave dos digitados ('lado:viatura:i') */
+    semPrefixo: function (resp, respCia) {
+      return [['unidade', resp], ['companhia', respCia]].reduce(function (lista, par) {
+        return lista.concat(((par[1] && par[1].viaturas) || []).map(function (v, i) { return v.nome ? null : par[0] + ':viatura:' + i; }));
+      }, []).filter(Boolean);
+    },
     /* o painel da substituição tem algo digitado (para o guarda de saída) */
     sujo: function () { return !!(formTroca && formTroca.sujo && RosterWork.painel.estaAberto()); }
   };

@@ -234,11 +234,19 @@
     el('nova-distribuicao-contagem').textContent = E.periodo ? P().texto(M().contagem, { n: pr.filter(Boolean).length }) : '';
   }
 
+  /* as viaturas novas ainda sem prefixo ('lado:viatura:i'): só acusam quando o campo fica vazio ao sair
+     ou no Salvar (então entram nos invalidos) */
+  function semPrefixo() { return RosterWork.novaDistribuicaoPostos.semPrefixo(E.resp, ehPelotao() ? E.respCia : null); }
+
   /* o resumo dos erros no alto (cada um aparece também no campo dele) */
   function resumoErros(conteudo) {
-    var erros = ((E.calc && E.calc.erros) || []).concat(ehPelotao() && E.calcCia ? E.calcCia.erros || [] : [])
-      .map(function (e) { return e.texto; });
-    if (Object.keys(invalidos).length) erros.unshift(M().prefixoInvalido);
+    var vazias = semPrefixo();
+    var erros = [['unidade', E.calc]].concat(ehPelotao() ? [['companhia', E.calcCia]] : []).reduce(function (lista, par) {
+      return lista.concat(((par[1] && par[1].erros) || []).filter(function (e) { return vazias.indexOf(par[0] + ':' + e.chave) < 0; }));
+    }, []).map(function (e) { return e.texto; });
+    var digitados = Object.keys(invalidos).map(function (k) { return invalidos[k]; });
+    if (digitados.some(Boolean)) erros.unshift(M().prefixoInvalido);
+    if (digitados.some(function (d) { return !d; })) erros.unshift(M().prefixoVazio);
     P().resumoErros(conteudo, erros);
   }
 
@@ -325,7 +333,8 @@
   /* grava com respostas faltando (pendências); valor errado o banco recusa. A data e a prévia: -versoes */
   function salvar() {
     if (!E.periodo || (!E.sujo && !E.sujoCia)) return;
-    if (Object.keys(invalidos).length) { RosterWork.avisar({ tipo: 'erro', mensagem: M().corrigirAntes }); return; }
+    semPrefixo().forEach(function (k) { if (!invalidos.hasOwnProperty(k)) invalidos[k] = ''; });
+    if (Object.keys(invalidos).length) { desenhar(); RosterWork.avisar({ tipo: 'erro', mensagem: M().corrigirAntes }); return; }
     V().salvar(contextoVersoes(), el('nova-distribuicao-salvar'));
   }
 

@@ -657,7 +657,8 @@
           arquivo: function (nome, periodo, unidade) { return 'Escala ' + nome.toLowerCase() + ' ' + (unidade ? unidade + ' ' : '') + periodo + '.pdf'; }
         }
       },
-      /* Lançar no SYSBM: o bloco do painel do dia (escalas-sysbm.js) e o favorito que preenche lá (escalas-sysbm-favorito.js) */
+      /* Lançar no SYSBM: o bloco do painel do dia (escalas-sysbm.js) e o preenchedor da extensão do Firefox, na tela
+         do SYSBM (extensao-sysbm/preencher.js, que leva uma cópia deste arquivo) */
       sysbm: {
         resumo: function (n) { return n === 1 ? '1 linha para lançar.' : n + ' linhas para lançar.'; },
         /* a linha amarela do bloco fechado */
@@ -671,22 +672,16 @@
         semFuncao: function (nomes) { return 'Sem função, fica de fora: ' + nomes + '.'; },
         enviar: 'Enviar',
         enviado: 'Enviado',
-        /* no bloco, depois do Enviar (a aba do SYSBM já está na frente) */
-        instrucao: 'Faça seu login e clique em "Lançar no SYSBM"',
-        /* no bloco, com a extensão do Firefox: ela já preenche a aba do SYSBM */
-        instrucaoExtensao: 'A aba do SYSBM abriu. Faça seu login, confira e clique em "Salvar no SYSBM"',
+        /* no bloco, depois do Enviar (a extensão abriu a aba do SYSBM e preenche depois do login) */
+        instrucao: 'A aba do SYSBM abriu. Faça seu login, se ele pedir, e a extensão preenche a tela de cadastro. Confira e clique em Salvar.',
         falhaEnviar: 'Não foi possível enviar. Tente de novo.',
-        abaBloqueada: 'O navegador não deixou abrir a aba do SYSBM. Permita janelas do Roster Work no navegador e clique em Enviar de novo.',
-        arrasteFavorito: 'Este botão não funciona aqui: arraste-o até a barra de favoritos do navegador. Depois, use o favorito na tela do SYSBM.',
-        /* o favorito, na tela do SYSBM (nas janelas do próprio navegador) */
-        favorito: {
-          colar: 'Cole aqui (Ctrl+V) a escala copiada no Roster:',
-          naoEhEscala: 'O que foi colado não é uma escala do Roster. No Roster, clique em Enviar no painel do dia e use o favorito de novo.',
-          /* o favorito clicado fora do SYSBM: a aba do SYSBM abriu (ou o navegador não deixou) */
-          foraDoSysbm: 'O SYSBM está aberto em outra aba.\n\nFaça seu login e clique em "Lançar no SYSBM"',
-          foraDoSysbmBloqueado: 'Abra o SYSBM em outra aba.\n\nFaça seu login e clique em "Lançar no SYSBM"',
-          semMenu: 'Entre no SYSBM com o seu login e use o favorito de novo, em qualquer tela dele.',
-          demorou: 'O SYSBM não abriu a tela de cadastro da escala. Confira se você ainda está logado e use o favorito de novo.',
+        /* no bloco, fora do Firefox (o envio é só pela extensão do Firefox) */
+        soFirefox: 'Essa funcionalidade está disponível apenas no navegador Mozilla Firefox.',
+        /* o preenchedor da extensão, na tela do SYSBM (nas janelas do próprio navegador) */
+        extensao: {
+          naoEhEscala: 'A escala enviada pelo Roster não pôde ser lida. No Roster, clique em Enviar no painel do dia de novo.',
+          semMenu: 'O menu do SYSBM não mostrou o Cadastrar da escala. Confira o seu login e clique em Enviar no Roster de novo.',
+          demorou: 'O SYSBM não abriu a tela de cadastro da escala. Confira se você ainda está logado e clique em Enviar no Roster de novo.',
           trocarDia: function (sysbm, roster) {
             return 'A tela de cadastro do SYSBM está no dia ' + sysbm + '. Pesquisar o dia ' + roster + '? O que não foi salvo nesta tela se perde.';
           },
@@ -776,6 +771,7 @@
       viaturasCompanhia: 'Quais viaturas a companhia tem?',
       semPrefixo: 'Viatura sem prefixo',
       prefixoInvalido: 'Prefixo inválido (use LETRAS-NÚMERO, ex.: ABT-01).',
+      prefixoVazio: 'Digite o prefixo da viatura.',
       cnhEscolha: 'Escolha a CNH da viatura.',
       trocaTexto: 'Substituída por {prefixo} (CNH {cnh}) de {inicio} a {fim}',
       trocaTitulo: 'Substituir por tempo determinado',

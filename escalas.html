@@ -233,16 +233,19 @@
   <button type="button" class="botao botao--primario" data-impressao-gerar>Gerar PDF</button>
 </template>
 
-<!-- bloco "Lançar no SYSBM" do painel do dia (no fim da seção Dia; só quem administra o pelotão e só no computador;
-     escalas-sysbm.js). Fechado: o título, o Enviar e o chevron; embaixo, se alguém fica de fora, a linha amarela, e
-     depois de enviar (ou se a leitura falhou), o que fazer. Aberto pelo chevron: o resumo, quem fica de fora e por quê,
-     a explicação e o favorito "Lançar no SYSBM" para arrastar até a barra de favoritos -->
+<!-- bloco "Lançar no SYSBM" do painel do dia (no fim da seção Dia; só quem administra o pelotão; escalas-sysbm.js).
+     O envio é só pelo Firefox, com a extensão Roster Work. Fora do Firefox: o título e o aviso (no
+     data-sysbm-situacao). No Firefox sem a extensão: o título e o Instalar a extensão (o arquivo dela, em extensao/).
+     Com a extensão, fechado: o título, o Enviar e o chevron; embaixo, se alguém fica de fora, a linha amarela, e
+     depois de enviar (ou se a leitura falhou), o que fazer. Aberto pelo chevron: o resumo, quem fica de fora e por quê
+     e a explicação -->
 <template id="tpl-escala-sysbm">
   <div class="grupo-caixa escala-sysbm">
     <div class="escala-sysbm-cabecalho">
       <span class="rotulo-secao escala-sysbm-titulo">Lançar no SYSBM</span>
       <button type="button" class="botao escala-sysbm-enviar" data-sysbm-enviar>Enviar</button>
-      <button type="button" class="botao-discreto escala-sysbm-toggle" aria-label="Mostrar ou ocultar o favorito e as explicações" aria-expanded="false" data-sysbm-toggle>
+      <a class="botao escala-sysbm-instalar oculto" href="extensao/roster-work.xpi" data-sysbm-instalar>Instalar a extensão</a>
+      <button type="button" class="botao-discreto escala-sysbm-toggle" aria-label="Mostrar ou ocultar o resumo e a explicação" aria-expanded="false" data-sysbm-toggle>
         <svg class="icone escala-sysbm-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
       </button>
     </div>
@@ -251,12 +254,7 @@
     <div class="escala-sysbm-conteudo oculto" data-sysbm-conteudo>
       <span class="campo-ajuda" data-sysbm-resumo></span>
       <div class="escala-sysbm-avisos" data-sysbm-avisos></div>
-      <span class="campo-ajuda">O Enviar leva a escala deste dia e abre o SYSBM em outra aba. Lá, faça seu login e clique no favorito Lançar no SYSBM: ele abre o cadastro da escala do dia e preenche a aba do pelotão. Confira e clique em Salvar lá.</span>
-      <a class="botao escala-sysbm-favorito" href="#" data-sysbm-favorito>
-        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
-        <span>Lançar no SYSBM</span>
-      </a>
-      <span class="campo-ajuda">Uma vez só em cada navegador: arraste este botão até a barra de favoritos. Se a barra não aparece, Ctrl+Shift+B mostra.</span>
+      <span class="campo-ajuda">O Enviar leva a escala deste dia e abre o SYSBM em outra aba. Lá, faça seu login, se ele pedir: a extensão abre o cadastro da escala do dia e preenche a aba do pelotão. Confira e clique em Salvar lá.</span>
     </div>
   </div>
 </template>

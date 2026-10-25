@@ -1,43 +1,38 @@
 /* ============================================================
    ESCALAS — Lançar no SYSBM (o bloco do painel do dia)
    No fim da seção Dia do painel (escalas-painel-editar.js), para
-   quem administra o pelotão; no celular, só com a extensão do Firefox: o bloco retrátil
-   "Lançar no SYSBM". Ele lê no banco a escala do pelotão no dia já
-   convertida nas linhas do SYSBM (escala_sysbm; na CIBM o banco
-   recusa, e o dia sem escala não tem o que lançar: nos dois casos
-   o bloco não aparece). Fechado: o Enviar e, se alguém fica de
-   fora, a linha amarela; aberto pelo chevron: o resumo, quem fica
-   de fora e por quê, a explicação e o favorito "Lançar no SYSBM"
-   para arrastar até a barra de favoritos. Enviar leva a escala à
-   área de transferência e abre a aba do SYSBM, onde o favorito
-   (escalas-sysbm-favorito.js) preenche.
+   quem administra o pelotão, no computador e no celular: o bloco
+   retrátil "Lançar no SYSBM". O envio é só pelo Firefox, com a
+   extensão Roster Work (extensao-sysbm, fora do site; o
+   arquivo dela fica em extensao/):
+   - fora do Firefox: o título e o aviso de que é só no Firefox;
+   - no Firefox sem a extensão: o título e o Instalar a extensão;
+   - com a extensão: ele lê no banco a escala do pelotão no dia já
+     convertida nas linhas do SYSBM (escala_sysbm; na CIBM o banco
+     recusa, e o dia sem escala não tem o que lançar: nos dois
+     casos o bloco não aparece). Fechado: o Enviar e, se alguém
+     fica de fora, a linha amarela; aberto pelo chevron: o resumo,
+     quem fica de fora e por quê e a explicação. Enviar leva a
+     escala à extensão, que abre a aba do SYSBM e preenche a tela
+     de cadastro depois do login.
    ============================================================ */
 (function () {
   'use strict';
 
   var RW = window.RosterWork = window.RosterWork || {};
 
-  var TEMPO_ENVIADO = 2000;   // ms com o "Enviado" no botão
-  /* a tela inicial do SYSBM e o nome da aba dele (os mesmos do escalas-sysbm-favorito.js) */
-  var ENDERECO_SYSBM = 'https://www.sysbm.bombeiros.pr.gov.br/sysbmnew/menu/';
-  var ABA_SYSBM = 'rosterwork-sysbm';
+  var TEMPO_ENVIADO = 2000;     // ms com o "Enviado" no botão
+  var ESPERA_EXTENSAO = 10000;  // ms esperando a extensão responder que abriu a aba do SYSBM
 
   function msg() { return (RW.mensagens.escala && RW.mensagens.escala.sysbm) || {}; }
 
-  /* ---------- o favorito e a aba do SYSBM ---------- */
-  /* o código do favorito: carrega o preenchedor deste site na página aberta (o SYSBM) */
-  function codigoFavorito() {
-    var endereco = new URL('js/escalas-sysbm-favorito.js', document.baseURI).href;
-    return "javascript:(function(){var s=document.createElement('script');s.src='" + endereco
-      + "?'+Date.now();document.body.appendChild(s);})();";
+  /* ---------- o navegador e a extensão ---------- */
+  /* o Firefox, no computador ou no Android (no iPhone ele se chama FxiOS e não aceita extensões) */
+  function eFirefox() {
+    return /\bFirefox\//.test(navigator.userAgent);
   }
 
-  function copiarTexto(texto) {
-    if (!navigator.clipboard || !navigator.clipboard.writeText) return Promise.reject(new Error('sem área de transferência'));
-    return navigator.clipboard.writeText(texto);
-  }
-
-  /* a extensão do Firefox (extensao-sysbm, ponte-roster.js) marca a página: ela abre e preenche o SYSBM */
+  /* a extensão (extensao-sysbm, ponte-roster.js) marca a página: ela abre e preenche o SYSBM */
   function temExtensao() {
     return document.documentElement.getAttribute('data-sysbm-extensao') === '1';
   }
@@ -56,24 +51,10 @@
       espera = setTimeout(function () {
         window.removeEventListener('message', tratar);
         rejeitar(new Error('sem resposta'));
-      }, 10000);
+      }, ESPERA_EXTENSAO);
       window.addEventListener('message', tratar);
       window.postMessage({ origem: 'rosterwork-sysbm', id: id, texto: texto }, window.location.origin);
     });
-  }
-
-  /* a aba do SYSBM: a que o Roster já abriu vem para a frente, sem recarregar (lá é outro site, e ler o
-     endereço dela dá erro); sem ela, uma aba nova na tela inicial do SYSBM. false = o navegador bloqueou */
-  function abrirSysbm() {
-    var aba = window.open('', ABA_SYSBM);
-    if (!aba) return false;
-    try {
-      if (aba.location.href === 'about:blank') aba.location.href = ENDERECO_SYSBM;
-    } catch (e) {
-      /* já está no SYSBM: só vem para a frente */
-    }
-    aba.focus();
-    return true;
   }
 
   /* ---------- o bloco ---------- */
@@ -128,9 +109,9 @@
     });
   }
 
-  /* Enviar: a escala para a área de transferência, no formato que o favorito lê ({data, unidade,
-     funcoes_roster, linhas}), e a aba do SYSBM na frente. A cópia vem antes: com a aba do SYSBM na frente,
-     o Roster perde o foco e não copia mais. Depois de uma falha, o Enviar lê de novo */
+  /* Enviar: a escala para a extensão, no formato que o preenchedor lê ({data, unidade, funcoes_roster,
+     linhas}); ela abre a aba do SYSBM e preenche depois do login. Depois de uma falha na leitura, o Enviar
+     lê de novo */
   function enviar(partes, unidadeId, iso) {
     var m = msg();
     if (!partes.dados) {
@@ -140,34 +121,25 @@
     }
     var d = partes.dados;
     var texto = JSON.stringify({ data: d.data, unidade: d.unidade, funcoes_roster: d.funcoes_roster, linhas: d.linhas });
-    function mostrarEnviado(instrucao) {
+    enviarPelaExtensao(texto).then(function () {
       partes.enviar.textContent = m.enviado;
       setTimeout(function () { if (partes.enviar.isConnected) partes.enviar.textContent = m.enviar; }, TEMPO_ENVIADO);
-      partes.situacao.textContent = instrucao;
+      partes.situacao.textContent = m.instrucao;
       partes.situacao.classList.remove('oculto');
-    }
-    function falhou() {
+    }).catch(function () {
       if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: m.falhaEnviar });
-    }
-    if (temExtensao()) {
-      enviarPelaExtensao(texto).then(function () { mostrarEnviado(m.instrucaoExtensao); }).catch(falhou);
-      return;
-    }
-    copiarTexto(texto).then(function () {
-      mostrarEnviado(m.instrucao);
-      if (!abrirSysbm() && RW.avisar) RW.avisar({ tipo: 'aviso', mensagem: m.abaBloqueada });
-    }).catch(falhou);
+    });
   }
 
-  /* põe o bloco no fim do corpo do Dia (escondido até a leitura chegar). Só no computador */
+  /* põe o bloco no fim do corpo do Dia. Fora do Firefox, o título e o aviso; no Firefox sem a extensão, o
+     título e o Instalar a extensão; com ela, o bloco inteiro, escondido até a leitura chegar */
   function montar(corpo, unidadeId, iso) {
-    if (RW.celular && RW.celular() && !temExtensao()) return;
     var bloco = RW.tpl('tpl-escala-sysbm');
     if (!bloco || !RW.escalasDados || !RW.escalasDados.lerSysbm) return;
-    bloco.classList.add('oculto');
     var partes = {
       bloco: bloco,
       enviar: bloco.querySelector('[data-sysbm-enviar]'),
+      instalar: bloco.querySelector('[data-sysbm-instalar]'),
       toggle: bloco.querySelector('[data-sysbm-toggle]'),
       fora: bloco.querySelector('[data-sysbm-fora]'),
       situacao: bloco.querySelector('[data-sysbm-situacao]'),
@@ -176,19 +148,25 @@
       avisos: bloco.querySelector('[data-sysbm-avisos]'),
       dados: null
     };
+    if (!eFirefox() || !temExtensao()) {
+      partes.enviar.classList.add('oculto');
+      partes.toggle.classList.add('oculto');
+      if (eFirefox()) {
+        partes.instalar.classList.remove('oculto');
+      } else {
+        partes.situacao.textContent = msg().soFirefox;
+        partes.situacao.classList.remove('oculto');
+      }
+      corpo.appendChild(bloco);
+      return;
+    }
+    bloco.classList.add('oculto');
     partes.toggle.addEventListener('click', function () {
       var abrir = partes.toggle.getAttribute('aria-expanded') !== 'true';
       partes.toggle.setAttribute('aria-expanded', abrir ? 'true' : 'false');
       partes.conteudo.classList.toggle('oculto', !abrir);
     });
     partes.enviar.addEventListener('click', function () { enviar(partes, unidadeId, iso); });
-    /* o favorito: arrastar até a barra de favoritos; clicar nele aqui no Roster só explica */
-    var favorito = bloco.querySelector('[data-sysbm-favorito]');
-    favorito.setAttribute('href', codigoFavorito());
-    favorito.addEventListener('click', function (e) {
-      e.preventDefault();
-      if (RW.avisar) RW.avisar({ tipo: 'aviso', mensagem: msg().arrasteFavorito });
-    });
     corpo.appendChild(bloco);
     ler(partes, unidadeId, iso);
   }

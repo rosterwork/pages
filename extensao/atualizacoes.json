@@ -1,0 +1,12 @@
+{
+  "addons": {
+    "lancar-sysbm@rosterwork.com": {
+      "updates": [
+        {
+          "version": "1.0.1",
+          "update_link": "https://www.rosterwork.com/extensao/roster-work.xpi"
+        }
+      ]
+    }
+  }
+}

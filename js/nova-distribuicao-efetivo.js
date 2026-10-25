@@ -51,7 +51,7 @@
         daqui.forEach(function (f) { linhaFuncao(nivel.querySelector('.nova-distribuicao-nivel-lista'), f); });
       });
       lugar.appendChild(campos);
-    }, erros.length > 0, {
+    }, erros.length > 0 || !completo, {
       numeros: completo ? P().texto(M().numeros, { min: ef[0], ideal: ef[1], max: ef[2] }) : M().efetivoFalta,
       reserva: reserva,
       muda: nome ? 'efetivo:' + nome : null
