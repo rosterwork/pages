@@ -1,13 +1,14 @@
 /* ============================================================
    NOVA DISTRIBUIÇÃO — entrada da página (protótipo, só programador)
-   Carrega a unidade e o período, guarda as respostas em edição,
-   pede as contas ao banco a cada mudança (a resposta mais nova
-   vence) e desenha o menu dos 9 blocos, o corpo e o rodapé. Os
-   blocos moram em -postos (1), -efetivo (2), -funcoes (3), -blocos
-   (4 a 7), -militares (8) e -conferir (9); as peças comuns em
-   -pecas; o período na barra, o Novo e o Excluir em -periodo. O
-   período novo é um rascunho na tela até o Salvar, que o cria.
-   Salvar, Cancelar e a unidade moram aqui. Não grava no Histórico.
+   Carrega a unidade (a distribuição em vigor ou a mudança agendada),
+   guarda as respostas em edição, pede as contas ao banco a cada
+   mudança (a resposta mais nova vence; com a outra versão para
+   comparar, o banco diz o que muda) e desenha o menu dos 9 blocos,
+   o corpo e o rodapé. Os blocos moram em -postos (1), -efetivo (2),
+   -funcoes (3), -blocos (4 a 7), -militares (8) e -conferir (9); as
+   peças comuns em -pecas; o aviso da mudança agendada, o Salvar com
+   a data e o começo da unidade em -versoes. Cancelar e a unidade
+   moram aqui. Não grava no Histórico.
    ============================================================ */
 (function () {
   'use strict';
@@ -26,8 +27,9 @@
       dados: null, unidadeId: null, periodo: null, resp: null, calc: null,
       companhia: null, respCia: null, calcCia: null,
       sujo: false, sujoCia: false, bloco: 0, aberto: null,
-      rascunho: null,   /* período novo ainda não salvo: { inicio, fim } */
-      focar: null       /* o campo que ganha o foco depois do redesenho */
+      vendoAgendada: false,                       /* a tela mostra a mudança agendada */
+      renomeadas: { unidade: [], companhia: [] },  /* prefixos trocados ainda não salvos: [[velho, novo]] */
+      focar: null                                  /* o campo que ganha o foco depois do redesenho */
     };
   }
 
@@ -36,12 +38,12 @@
   function G() { return RosterWork.mensagens.geral; }
   function B() { return RosterWork.mensagens.botoes; }
   function P() { return RosterWork.novaDistribuicaoPecas; }
+  function C() { return RosterWork.novaDistribuicaoConferir; }
+  function V() { return RosterWork.novaDistribuicaoVersoes; }
   function el(id) { return document.getElementById(id); }
   function copia(o) { return o == null ? o : JSON.parse(JSON.stringify(o)); }
   function ehPelotao() { return !!(E.dados && E.dados.unidade.tipo === 'PEL'); }
   function montada() { return !!el('nova-distribuicao-corpo'); }
-
-  function C() { return RosterWork.novaDistribuicaoConferir; }
 
   /* as falhas: o banco recusou (com a frase dele) ou não respondeu (servidor); a rede caiu (sem conexão) */
   function avisarFalha(r) { RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || G().falhaServidor }); }
@@ -59,10 +61,11 @@
 
   /* ---------- carregar e calcular ---------- */
 
-  function carregar(unidadeId, periodoId) {
+  /* versaoId = a mudança agendada; sem ela, a distribuição em vigor */
+  function carregar(unidadeId, versaoId) {
     var meu = ++tokenCarga;
     P().mostrarNoCorpo('carregando');
-    return D().ler(unidadeId, periodoId).then(function (r) {
+    return D().ler(unidadeId, versaoId).then(function (r) {
       if (meu !== tokenCarga || !montada()) return;
       if (!r || !r.success) { P().mostrarNoCorpo('falha', (r && r.error) || G().falhaCarregar); return; }
       var bloco = E.bloco;
@@ -71,6 +74,7 @@
       E.dados = r;
       E.unidadeId = r.unidade.id;
       E.periodo = r.atual;
+      E.vendoAgendada = !!(r.atual && r.atual.agendada);
       E.resp = r.atual ? copia(r.atual.respostas) : null;
       E.companhia = r.companhia;
       E.respCia = r.companhia && r.companhia.periodo ? copia(r.companhia.periodo.respostas) : null;
@@ -83,10 +87,16 @@
     });
   }
 
+  /* a outra versão, para o banco dizer o que muda: vendo a em vigor, a agendada; vendo a agendada, a em vigor */
+  function outraVersao() {
+    if (E.vendoAgendada) return E.dados.em_vigor ? E.dados.em_vigor.respostas : null;
+    return E.dados.agendada ? E.dados.agendada.respostas : null;
+  }
+
   function recalcular() {
     var meu = ++tokenConta;
     var par = C().parametros(E.unidadeId);
-    var conta = D().calcular(E.unidadeId, E.resp, par.efetivos, par.simulacao);
+    var conta = D().calcular(E.unidadeId, E.resp, par.efetivos, par.simulacao, outraVersao());
     var contaCia = ehPelotao() && E.respCia ? D().calcular(E.companhia.unidade.id, E.respCia, null, null) : Promise.resolve(null);
     return Promise.all([conta, contaCia]).then(function (rs) {
       if (meu !== tokenConta || !montada()) return;
@@ -116,8 +126,15 @@
   }
 
   /* a viatura mudou de prefixo: as funções dela (nos acúmulos, na ordem, nos substitutos, em quem
-     escolher e onde ficam as funções especiais) vão junto */
+     escolher e onde ficam as funções especiais) vão junto; o banco recebe a troca no Salvar (para
+     as substituições dela e a mudança agendada irem junto) */
   function renomear(lado, indice, velho, novo) {
+    if (velho) {
+      var lista = E.renomeadas[lado];
+      var antes = lista.filter(function (p) { return p[1] === velho; })[0];
+      if (antes) antes[1] = novo; else lista.push([velho, novo]);
+      E.renomeadas[lado] = lista.filter(function (p) { return p[0] !== p[1]; });
+    }
     mudar(lado, function (x) {
       var r = velho ? JSON.parse(JSON.stringify(x).split('· ' + velho + '"').join('· ' + novo + '"')) : x;
       function trocar(n) { return n === velho ? novo : n; }
@@ -132,12 +149,29 @@
     mudar: mudar,
     renomear: renomear,
     redesenhar: function () { desenhar(); },
-    periodo: function () { return { inicio: E.periodo.inicio, fim: E.periodo.fim }; },
+    unidadeId: function () { return E.unidadeId; },
     focarDepois: function (seletor) { E.focar = seletor; },
     abrir: function (id) { E.aberto = E.aberto === id ? null : id; desenhar(); },
     aberto: function () { return E.aberto; },
     dados: function () { return E.dados; },
-    copiarCompanhia: function (botao) { RosterWork.novaDistribuicaoPeriodo.comecar(contextoPeriodo(), E.companhia.unidade.id, botao); },
+    copiarCompanhia: function (botao) { V().comecar(contextoVersoes(), E.companhia.unidade.id, botao); },
+    /* a viatura está gravada com esse prefixo (a nova ou a de prefixo trocado espera o Salvar) */
+    viaturaGravada: function (nome) {
+      return !!nome && ((E.periodo.respostas && E.periodo.respostas.viaturas) || []).some(function (v) { return v.nome === nome; });
+    },
+    /* as substituições da viatura (também as do prefixo de antes, se ele foi trocado e ainda não salvo) */
+    substituicoesDe: function (nome) {
+      var nomes = [nome].concat(E.renomeadas.unidade.filter(function (p) { return p[1] === nome; }).map(function (p) { return p[0]; }));
+      return (E.dados.substituicoes || []).filter(function (s) { return nomes.indexOf(s.viatura) >= 0; });
+    },
+    /* depois de gravar uma substituição: só a lista delas é lida de novo (o que não foi salvo continua) */
+    recarregarSubstituicoes: function () {
+      D().ler(E.unidadeId, E.periodo.id).then(function (r) {
+        if (!r || !r.success || !montada()) return;
+        E.dados.substituicoes = r.substituicoes;
+        desenhar();
+      }, avisarSemConexao);
+    },
     /* com um argumento, lê o texto guardado; com dois, guarda (null apaga) */
     invalido: function (chave, valor) {
       if (arguments.length < 2) return invalidos.hasOwnProperty(chave) ? invalidos[chave] : null;
@@ -154,15 +188,17 @@
   /* ---------- desenhar ---------- */
 
   function contextos() {
+    var agenda = E.dados.agendada ? { data: RosterWork.data.isoParaBR(E.dados.agendada.inicio), vendo: E.vendoAgendada } : null;
     var u = {
       lado: 'unidade', ehCia: !ehPelotao(), nome: E.dados.unidade.nome, resp: E.resp, calc: E.calc,
-      soLeitura: !!E.periodo.somente_leitura
+      soLeitura: !!E.periodo.somente_leitura, agenda: agenda
     };
     if (!ehPelotao()) return [u];
     var c = E.companhia || {};
+    /* vendo a mudança agendada do pelotão, a parte da companhia só se lê */
     return [{
       lado: 'companhia', ehCia: true, nome: c.unidade ? c.unidade.nome : '', resp: E.respCia, calc: E.calcCia,
-      soLeitura: !!(c.periodo && c.periodo.somente_leitura), semDados: !c.periodo || !E.calcCia
+      soLeitura: E.vendoAgendada || !!(c.periodo && c.periodo.somente_leitura), semDados: !c.periodo || !E.calcCia
     }, u];
   }
 
@@ -178,15 +214,22 @@
     return r;
   }
 
+  /* o menu: o sinal de pronto ou de falta e, no bloco que muda na mudança agendada, o calendário */
   function desenharMenu() {
     var pr = prontos();
     var lista = el('nova-distribuicao-blocos');
+    var blocosMudam = ((E.calc && E.calc.diferencas) || []).map(function (d) { return d.bloco; });
+    var dica = E.dados && E.dados.agendada
+      ? (E.vendoAgendada ? M().blocoDiferente : P().texto(M().blocoMuda, { data: RosterWork.data.isoParaBR(E.dados.agendada.inicio) })) : '';
     lista.classList.toggle('oculto', !E.periodo);
     lista.querySelectorAll('.nova-distribuicao-bloco').forEach(function (botao) {
       var n = Number(botao.getAttribute('data-bloco'));
+      var muda = botao.querySelector('.nova-distribuicao-bloco-muda');
       botao.classList.toggle('lista-item--ativo', n === E.bloco);
       botao.querySelector('.nova-distribuicao-bloco-pronto').classList.toggle('oculto', !pr[n]);
       botao.querySelector('.nova-distribuicao-bloco-falta').classList.toggle('oculto', !!pr[n]);
+      muda.classList.toggle('oculto', blocosMudam.indexOf(n) < 0);
+      muda.setAttribute('data-dica', dica);
     });
     el('nova-distribuicao-contagem').textContent = E.periodo ? P().texto(M().contagem, { n: pr.filter(Boolean).length }) : '';
   }
@@ -206,12 +249,7 @@
     var conteudo = P().tpl('conteudo');
     var ctxs = contextos();
     var ctx = ctxs[ctxs.length - 1];
-    if (E.periodo.somente_leitura) conteudo.appendChild(P().tpl('somente-leitura'));
-    if (E.rascunho) {
-      var aviso = P().tpl('rascunho');
-      aviso.querySelector('.nova-distribuicao-rascunho-datas').textContent = RosterWork.novaDistribuicaoPeriodo.rotulo(E.periodo);
-      conteudo.appendChild(aviso);
-    }
+    V().aviso(conteudo, contextoVersoes());
     resumoErros(conteudo);
     var R = RosterWork;
     [
@@ -255,10 +293,10 @@
   function desenharSemRespostas() {
     desenharMenu();
     desenharRodape();
-    RosterWork.novaDistribuicaoPeriodo.semRespostas(contextoPeriodo(), P().mostrarNoCorpo('sem-respostas'));
+    V().semRespostas(contextoVersoes(), P().mostrarNoCorpo('sem-respostas'));
   }
 
-  /* a barra: a unidade (seletor), o período (setas e lista) e o grupo Administração */
+  /* a barra: a unidade (seletor) */
   function desenharBarra() {
     el('nova-distribuicao-barra').classList.remove('oculto');
     var trilho = el('nova-distribuicao-unidades');
@@ -270,75 +308,37 @@
       aba.classList.toggle('aba--ativa', u.id === E.unidadeId);
       trilho.appendChild(aba);
     });
-
-    RosterWork.novaDistribuicaoPeriodo.desenharBarra(E.dados.periodos || [], E.periodo, trocarPeriodo);
-    if (E.rascunho) {
-      el('nova-distribuicao-novo-periodo').disabled = true;
-      el('nova-distribuicao-excluir-periodo').disabled = true;
-    }
-  }
-
-  /* o período novo: abre o período que vale no início dele e o mostra como rascunho, com as respostas
-     dele, até o Salvar */
-  function abrirRascunho(inicio, fim) {
-    var base = RosterWork.novaDistribuicaoPeriodo.base(E.dados.periodos || [], inicio);
-    E.aberto = null;
-    return carregar(E.unidadeId, base && base.id).then(function () {
-      if (!E.periodo || !montada()) return;
-      E.rascunho = { inicio: inicio, fim: fim };
-      E.periodo = { id: null, inicio: inicio, fim: fim, somente_leitura: false };
-      E.sujo = true;
-      desenharBarra();
-      desenhar();
-    });
-  }
-
-  function trocarPeriodo(p) {
-    if (!p || (E.periodo && p.id === E.periodo.id)) return;
-    confirmarDescarte(function () { E.aberto = null; carregar(E.unidadeId, p.id); });
   }
 
   /* ---------- gravar ---------- */
 
-  /* grava com respostas faltando (pendências); valor errado o banco recusa */
+  /* o que vai para o banco: a unidade e, no pelotão vendo a em vigor, a parte da companhia quando mudou */
+  function itensParaSalvar() {
+    var itens = [];
+    if (E.sujo) itens.push({ periodo_id: E.periodo.id, respostas: E.resp, renomeadas: E.renomeadas.unidade });
+    if (E.sujoCia && E.companhia && E.companhia.periodo && !E.vendoAgendada) {
+      itens.push({ periodo_id: E.companhia.periodo.id, respostas: E.respCia, renomeadas: E.renomeadas.companhia });
+    }
+    return itens;
+  }
+
+  /* grava com respostas faltando (pendências); valor errado o banco recusa. A data e a prévia: -versoes */
   function salvar() {
     if (!E.periodo || (!E.sujo && !E.sujoCia)) return;
     if (Object.keys(invalidos).length) { RosterWork.avisar({ tipo: 'erro', mensagem: M().corrigirAntes }); return; }
-    var daCia = E.sujoCia && E.companhia && E.companhia.periodo ? { periodo_id: E.companhia.periodo.id, respostas: E.respCia } : null;
-    if (E.rascunho) {
-      RosterWork.novaDistribuicaoPeriodo.criar(contextoPeriodo(), E.resp, daCia, el('nova-distribuicao-salvar'));
-      return;
-    }
-    var itens = [];
-    if (E.sujo) itens.push({ periodo_id: E.periodo.id, respostas: E.resp });
-    if (daCia) itens.push(daCia);
-    var botao = el('nova-distribuicao-salvar');
-    RosterWork.iniciarCarregando(botao);
-    D().salvar(itens).then(function (r) {
-      RosterWork.pararCarregando(botao);
-      if (!r || !r.success) { avisarFalha(r); return; }
-      E.sujo = false;
-      E.sujoCia = false;
-      if (r.log) RosterWork.resumo.abrirModal(r.log, { pagina: M().pagina });
-      carregar(E.unidadeId, r.periodo_id || E.periodo.id);
-    }, function () {
-      RosterWork.pararCarregando(botao);
-      avisarSemConexao();
-    });
+    V().salvar(contextoVersoes(), el('nova-distribuicao-salvar'));
   }
 
   function cancelar() {
-    confirmarDescarte(function () { E.aberto = null; carregar(E.unidadeId, E.periodo && E.periodo.id); });
+    confirmarDescarte(function () { E.aberto = null; carregar(E.unidadeId, E.vendoAgendada ? E.periodo.id : null); });
   }
 
-  /* o contexto que o Novo e o Excluir período usam */
-  function contextoPeriodo() {
+  /* o contexto que o aviso, o Salvar e o começo da unidade usam (-versoes) */
+  function contextoVersoes() {
     return {
-      dados: E.dados, periodo: E.periodo, unidadeId: E.unidadeId,
-      aoTerminar: function (periodoId) { carregar(E.unidadeId, periodoId); },
-      aoContinuar: abrirRascunho,
-      confirmar: confirmarDescarte,
-      falha: avisarFalha, semConexao: avisarSemConexao
+      dados: E.dados, unidadeId: E.unidadeId, vendoAgendada: E.vendoAgendada, itens: itensParaSalvar,
+      carregar: function (versaoId) { E.aberto = null; carregar(E.unidadeId, versaoId); },
+      confirmar: confirmarDescarte, falha: avisarFalha, semConexao: avisarSemConexao
     };
   }
 
@@ -351,17 +351,8 @@
   }
 
   function ligar() {
-    var periodo = RosterWork.novaDistribuicaoPeriodo;
     ligarUmaVez(el('nova-distribuicao-salvar'), 'click', salvar);
     ligarUmaVez(el('nova-distribuicao-cancelar'), 'click', cancelar);
-    ligarUmaVez(el('nova-distribuicao-novo-periodo'), 'click', function () {
-      if (E.periodo && !E.rascunho) confirmarDescarte(function () { periodo.abrirNovo(contextoPeriodo()); });
-    });
-    ligarUmaVez(el('nova-distribuicao-excluir-periodo'), 'click', function () {
-      if (E.periodo && !E.rascunho) confirmarDescarte(function () { periodo.excluir(contextoPeriodo()); });
-    });
-    ligarUmaVez(el('nova-distribuicao-periodo-anterior'), 'click', function () { trocarPeriodo(periodo.vizinho(E.dados.periodos || [], E.periodo, -1)); });
-    ligarUmaVez(el('nova-distribuicao-periodo-proximo'), 'click', function () { trocarPeriodo(periodo.vizinho(E.dados.periodos || [], E.periodo, 1)); });
     ligarUmaVez(el('nova-distribuicao-unidades'), 'rosterwork:aba', function (ev) {
       var id = Number(ev.detail.aba.getAttribute('data-unidade'));
       if (id === E.unidadeId) return;
@@ -386,7 +377,7 @@
       guardaLigada = true;
       RosterWork.guardaSaida.registrar(function () {
         if (!montada()) return false;
-        return E.sujo || E.sujoCia || RosterWork.novaDistribuicaoPeriodo.sujo() || RosterWork.novaDistribuicaoPostos.sujo();
+        return E.sujo || E.sujoCia || RosterWork.novaDistribuicaoPostos.sujo();
       });
     }
     E.aberto = null;

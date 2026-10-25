@@ -36,6 +36,7 @@
     autos.forEach(function (a) {
       automatica(u, P().texto(M().automaticaSempre, { funcao: P().completo(ctx, a[0]), quem: P().completo(ctx, a[1]) }));
     });
+    P().marcarMuda(u, ctx, 'sempre');
     var travadas = autos.map(function (a) { return a[0]; });
     var podem = ((ctx.calc && ctx.calc.funcoes) || []).filter(function (f) {
       return !f.papel && travadas.indexOf(f.nome) < 0;
@@ -103,6 +104,7 @@
       var lp = P().tpl('ordem-linha');
       lp.querySelector('.nova-distribuicao-col-n').textContent = (++n) + 'º';
       celulas(lp, ctx, daPessoa(ctx, papel), P().tpl('ordem-papel'));
+      marcarLinha(lp, ctx, papel);
       lp.querySelector('.nova-distribuicao-col-acoes').textContent = '';
       corpoTabela.appendChild(lp);
     }
@@ -111,18 +113,27 @@
       var linha = P().tpl('ordem-linha');
       linha.querySelector('.nova-distribuicao-col-n').textContent = (++n) + 'º';
       celulas(linha, ctx, daPessoa(ctx, nome));
+      marcarLinha(linha, ctx, nome);
       P().setas(linha, i, lista.length, function (passo) {
         api.mudar(ctx.lado, function (x) { P().mover(x.ordem, i, passo); });
       }, ctx.soLeitura);
       corpoTabela.appendChild(linha);
     });
+    P().marcarMuda(tabela, ctx, 'ordem', tabela);
     u.appendChild(tabela);
+  }
+
+  /* a linha da ordem cuja posição muda na mudança agendada: o calendário no Nº, com a frase na dica */
+  function marcarLinha(linha, ctx, nome) {
+    var marca = P().marcaMuda(ctx, 'ordem:' + nome);
+    if (marca) linha.querySelector('.nova-distribuicao-col-n').appendChild(marca);
   }
 
   /* ---------- 5. Substitutos ---------- */
   function substitutos(corpo, ctx, api) {
     corpo.appendChild(P().tpl('nota-substitutos'));
     var u = P().unidade(corpo, ctx);
+    P().marcarMuda(u, ctx, 'cobre');
     automaticas(ctx, 'cobre').forEach(function (c) {
       automatica(u, P().texto(M().automaticaCobre, { funcao: P().completo(ctx, c[0]), quem: P().completo(ctx, c[1]) }));
     });
@@ -159,6 +170,7 @@
       var errosAqui = P().erros(ctx, 'cobre:' + i);
       if (falta) errosAqui.unshift(M().substitutoIncompleto);
       errosAqui.forEach(function (e) { P().erroCampo(caixa, e); });
+      if (regra[0]) P().marcarMuda(caixa, ctx, 'cobre:' + regra[0], caixa);
       caixa.classList.toggle('nova-distribuicao-cartao--erro', errosAqui.length > 0);
       u.appendChild(caixa);
     });
@@ -232,7 +244,7 @@
         var k = (ctx.resp.criterios || {})[nome] || {};
         var falta = P().pendente(ctx, 'criterio:' + nome);
         P().cartao(u, api, ctx, 'criterio-' + nome, P().texto(M().quemSenta, { funcao: P().completo(ctx, nome) }),
-          resumoCriterio(k, nome, falta), function (lugar) { opcoesCriterio(lugar, ctx, api, nome, k); }, falta);
+          resumoCriterio(k, nome, falta), function (lugar) { opcoesCriterio(lugar, ctx, api, nome, k); }, falta, { muda: 'criterio:' + nome });
       });
     });
   }

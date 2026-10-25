@@ -1,7 +1,7 @@
 /* ============================================================
    ESCALAS — Lançar no SYSBM (o bloco do painel do dia)
    No fim da seção Dia do painel (escalas-painel-editar.js), para
-   quem administra o pelotão e só no computador: o bloco retrátil
+   quem administra o pelotão; no celular, só com a extensão do Firefox: o bloco retrátil
    "Lançar no SYSBM". Ele lê no banco a escala do pelotão no dia já
    convertida nas linhas do SYSBM (escala_sysbm; na CIBM o banco
    recusa, e o dia sem escala não tem o que lançar: nos dois casos
@@ -35,6 +35,31 @@
   function copiarTexto(texto) {
     if (!navigator.clipboard || !navigator.clipboard.writeText) return Promise.reject(new Error('sem área de transferência'));
     return navigator.clipboard.writeText(texto);
+  }
+
+  /* a extensão do Firefox (extensao-sysbm, ponte-roster.js) marca a página: ela abre e preenche o SYSBM */
+  function temExtensao() {
+    return document.documentElement.getAttribute('data-sysbm-extensao') === '1';
+  }
+
+  /* manda a escala à extensão e espera a resposta dela (ok = a aba do SYSBM abriu) */
+  function enviarPelaExtensao(texto) {
+    return new Promise(function (resolver, rejeitar) {
+      var id = String(Date.now()) + String(Math.random());
+      var espera;
+      function tratar(e) {
+        if (e.source !== window || !e.data || e.data.origem !== 'rosterwork-sysbm-resposta' || e.data.id !== id) return;
+        clearTimeout(espera);
+        window.removeEventListener('message', tratar);
+        if (e.data.ok) resolver(); else rejeitar(new Error('extensão recusou'));
+      }
+      espera = setTimeout(function () {
+        window.removeEventListener('message', tratar);
+        rejeitar(new Error('sem resposta'));
+      }, 10000);
+      window.addEventListener('message', tratar);
+      window.postMessage({ origem: 'rosterwork-sysbm', id: id, texto: texto }, window.location.origin);
+    });
   }
 
   /* a aba do SYSBM: a que o Roster já abriu vem para a frente, sem recarregar (lá é outro site, e ler o
@@ -115,20 +140,28 @@
     }
     var d = partes.dados;
     var texto = JSON.stringify({ data: d.data, unidade: d.unidade, funcoes_roster: d.funcoes_roster, linhas: d.linhas });
-    copiarTexto(texto).then(function () {
+    function mostrarEnviado(instrucao) {
       partes.enviar.textContent = m.enviado;
       setTimeout(function () { if (partes.enviar.isConnected) partes.enviar.textContent = m.enviar; }, TEMPO_ENVIADO);
-      partes.situacao.textContent = m.instrucao;
+      partes.situacao.textContent = instrucao;
       partes.situacao.classList.remove('oculto');
-      if (!abrirSysbm() && RW.avisar) RW.avisar({ tipo: 'aviso', mensagem: m.abaBloqueada });
-    }).catch(function () {
+    }
+    function falhou() {
       if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: m.falhaEnviar });
-    });
+    }
+    if (temExtensao()) {
+      enviarPelaExtensao(texto).then(function () { mostrarEnviado(m.instrucaoExtensao); }).catch(falhou);
+      return;
+    }
+    copiarTexto(texto).then(function () {
+      mostrarEnviado(m.instrucao);
+      if (!abrirSysbm() && RW.avisar) RW.avisar({ tipo: 'aviso', mensagem: m.abaBloqueada });
+    }).catch(falhou);
   }
 
   /* põe o bloco no fim do corpo do Dia (escondido até a leitura chegar). Só no computador */
   function montar(corpo, unidadeId, iso) {
-    if (RW.celular && RW.celular()) return;
+    if (RW.celular && RW.celular() && !temExtensao()) return;
     var bloco = RW.tpl('tpl-escala-sysbm');
     if (!bloco || !RW.escalasDados || !RW.escalasDados.lerSysbm) return;
     bloco.classList.add('oculto');

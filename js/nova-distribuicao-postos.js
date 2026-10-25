@@ -1,29 +1,35 @@
 /* ============================================================
-   NOVA DISTRIBUIÇÃO — bloco 1 (Postos) e a troca de viatura
+   NOVA DISTRIBUIÇÃO — bloco 1 (Postos) e a substituição por tempo
    Postos: as instalações (caixas de marcar) e as viaturas, uma
    por linha: Nº, prefixo (vale ao sair do campo; fora do formato
    fica só no campo, em vermelho), CNH de A a E alinhadas, setas,
-   Trocar por um tempo e excluir; embaixo, as trocas da viatura.
-   A troca abre no painel da direita (prefixo e CNH da viatura que
-   entra, de e até, dentro do período) e vai para a tela com o
-   Aplicar; o Salvar da página grava. Toda mudança passa pelo
-   api.mudar (nova-distribuicao.js).
+   Substituir por tempo determinado e excluir; embaixo, as
+   substituições da viatura, os erros e o que muda na mudança
+   agendada. A substituição abre no painel da direita (prefixo e
+   CNH da viatura que entra, de e até) e grava na hora, com as
+   datas dela; o resto da página continua como está até o Salvar.
    ============================================================ */
 (function () {
   'use strict';
   window.RosterWork = window.RosterWork || {};
 
-  var formTroca = null;   /* a troca aberta no painel */
+  var formTroca = null;   /* a substituição aberta no painel */
 
   function M() { return RosterWork.mensagens.novaDistribuicao; }
+  function G() { return RosterWork.mensagens.geral; }
+  function B() { return RosterWork.mensagens.botoes; }
   function P() { return RosterWork.novaDistribuicaoPecas; }
+  function D() { return RosterWork.novaDistribuicaoDados; }
   function br(iso) { return RosterWork.data.isoParaBR(iso); }
 
-  function textoTroca(t) {
-    return P().texto(M().trocaTexto, { prefixo: t.prefixo, cnh: t.cnh || '?', inicio: br(t.inicio), fim: br(t.fim) });
+  function textoTroca(s) {
+    return P().texto(M().trocaTexto, { prefixo: s.prefixo, cnh: s.cnh || '?', inicio: br(s.inicio), fim: br(s.fim) });
   }
 
-  /* ---------- a troca no painel da direita (k nulo = nova) ---------- */
+  function falhou(r) { RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || G().falhaServidor }); }
+  function semConexao() { RosterWork.avisar({ tipo: 'erro', mensagem: G().semConexao }); }
+
+  /* ---------- a substituição no painel da direita (s nulo = nova) ---------- */
 
   function erro(alvo, frase) {
     var campo = alvo.closest('.campo');
@@ -32,11 +38,9 @@
     return !!frase;
   }
 
-  function abrirTroca(ctx, api, i, k) {
+  function abrirTroca(api, viatura, s) {
     var painel = RosterWork.painel;
-    var v = ctx.resp.viaturas[i];
-    var atual = k == null ? {} : v.trocas[k];
-    var per = api.periodo();
+    var atual = s || {};
     var caixa = P().tpl('troca-painel');
     var rodape = P().tpl('troca-rodape');
     var prefixo = caixa.querySelector('.nova-distribuicao-troca-prefixo');
@@ -48,12 +52,10 @@
     prefixo.value = atual.prefixo || '';
     inicio.value = atual.inicio ? br(atual.inicio) : '';
     fim.value = atual.fim ? br(atual.fim) : '';
+    inicio.disabled = !!atual.comecou_antes;   /* a que começou antes do limite dos 7 dias só muda o fim */
     cnh.querySelectorAll('.aba').forEach(function (aba) { aba.classList.toggle('aba--ativa', aba.getAttribute('data-valor') === formTroca.cnh); });
-    caixa.querySelector('.nova-distribuicao-troca-ajuda').textContent = per.fim
-      ? P().texto(M().trocaDentro, { inicio: br(per.inicio), fim: br(per.fim) })
-      : P().texto(M().trocaDentroSemFim, { inicio: br(per.inicio) });
 
-    painel.abrir({ titulo: M().trocaTitulo, subtitulo: P().texto(M().trocaSubtitulo, { viatura: v.nome }), aoFechar: function () { formTroca = null; } });
+    painel.abrir({ titulo: M().trocaTitulo, subtitulo: P().texto(M().trocaSubtitulo, { viatura: viatura }), aoFechar: function () { formTroca = null; } });
     painel.corpo().appendChild(caixa);
     painel.rodape().appendChild(rodape);
     painel.rodape().classList.remove('oculto');
@@ -72,26 +74,51 @@
     });
 
     rodape.querySelector('.nova-distribuicao-painel-cancelar').addEventListener('click', function () { painel.fechar(); });
-    rodape.querySelector('.nova-distribuicao-painel-aplicar').addEventListener('click', function () {
+    var salvar = rodape.querySelector('.nova-distribuicao-painel-aplicar');
+    salvar.addEventListener('click', function () {
       var novo = prefixo.value.trim().toUpperCase();
       var de = RosterWork.data.paraISO(inicio.value);
       var ate = RosterWork.data.paraISO(fim.value);
-      var falhou = false;
-      if (!P().FORMATO_PREFIXO.test(novo)) falhou = erro(prefixo, M().prefixoInvalido) || falhou;
-      else if (novo === v.nome) falhou = erro(prefixo, M().trocaMesmoPrefixo) || falhou;
-      if (!formTroca.cnh) falhou = erro(cnh, M().trocaEscolhaCnh) || falhou;
-      if (!de) falhou = erro(inicio, M().erroInicio) || falhou;
-      if (!ate) falhou = erro(fim, M().trocaErroFim) || falhou;
-      else if (de && ate < de) falhou = erro(fim, M().erroOrdemDatas) || falhou;
-      if (de && ate && (de < per.inicio || (per.fim && ate > per.fim))) falhou = erro(inicio, M().trocaForaPeriodo) || falhou;
-      if (falhou) return;
-      var troca = { prefixo: novo, cnh: formTroca.cnh, inicio: de, fim: ate };
-      formTroca = null;
-      painel.fechar();
-      api.mudar(ctx.lado, function (x) {
-        var lista = x.viaturas[i].trocas = x.viaturas[i].trocas || [];
-        if (k == null) lista.push(troca); else lista[k] = troca;
+      var comErro = false;
+      if (!P().FORMATO_PREFIXO.test(novo)) comErro = erro(prefixo, M().prefixoInvalido) || comErro;
+      else if (novo === viatura) comErro = erro(prefixo, M().trocaMesmoPrefixo) || comErro;
+      if (!formTroca.cnh) comErro = erro(cnh, M().trocaEscolhaCnh) || comErro;
+      if (!de) comErro = erro(inicio, M().erroInicio) || comErro;
+      if (!ate) comErro = erro(fim, M().trocaErroFim) || comErro;
+      else if (de && ate < de) comErro = erro(fim, M().erroOrdemDatas) || comErro;
+      if (comErro) return;
+      RosterWork.iniciarCarregando(salvar);
+      D().substituicaoSalvar(api.unidadeId(), atual.id, viatura, novo, formTroca.cnh, de, ate).then(function (r) {
+        RosterWork.pararCarregando(salvar);
+        if (!r || !r.success) { falhou(r); return; }
+        formTroca = null;
+        painel.fechar();
+        RosterWork.resumo.abrirModal(r.log, { pagina: M().pagina });
+        api.recarregarSubstituicoes();
+      }, function () {
+        RosterWork.pararCarregando(salvar);
+        semConexao();
       });
+    });
+  }
+
+  function excluirTroca(api, viatura, s) {
+    RosterWork.confirmar({
+      tipo: 'aviso',
+      mensagem: P().texto(M().excluirSubstituicao, { viatura: viatura, texto: textoTroca(s) }),
+      textoConfirmar: M().botaoExcluir, textoCancelar: B().cancelar,
+      aoConfirmar: function () {
+        RosterWork.bloquearTela();
+        D().substituicaoExcluir(s.id).then(function (r) {
+          RosterWork.liberarTela();
+          if (!r || !r.success) { falhou(r); return; }
+          RosterWork.resumo.abrirModal(r.log, { pagina: M().pagina });
+          api.recarregarSubstituicoes();
+        }, function () {
+          RosterWork.liberarTela();
+          semConexao();
+        });
+      }
     });
   }
 
@@ -138,9 +165,11 @@
       api.esquecerInvalidos(ctx.lado);
       api.mudar(ctx.lado, function (x) { P().mover(x.viaturas, i, passo); });
     }, ctx.soLeitura);
+    /* substituir: a viatura precisa estar gravada (a nova ou com o prefixo trocado espera o Salvar) */
+    var gravada = api.viaturaGravada(v.nome);
     var trocar = linha.querySelector('.nova-distribuicao-trocar');
-    trocar.disabled = ctx.soLeitura || !v.nome || digitado != null;
-    trocar.addEventListener('click', function () { abrirTroca(ctx, api, i, null); });
+    trocar.disabled = ctx.soLeitura || !gravada || digitado != null;
+    trocar.addEventListener('click', function () { abrirTroca(api, v.nome, null); });
     var remover = linha.querySelector('.nova-distribuicao-remover');
     remover.disabled = ctx.soLeitura;
     remover.addEventListener('click', function () {
@@ -149,20 +178,20 @@
     });
 
     var extra = linha.querySelector('.nova-distribuicao-viatura-extra');
-    (v.trocas || []).forEach(function (t, k) {
+    api.substituicoesDe(v.nome).forEach(function (s) {
       var lt = P().tpl('troca');
-      lt.querySelector('.nova-distribuicao-troca-texto').textContent = textoTroca(t);
+      lt.querySelector('.nova-distribuicao-troca-texto').textContent = textoTroca(s);
       var editar = lt.querySelector('.nova-distribuicao-editar');
       var tirar = lt.querySelector('.nova-distribuicao-remover');
-      editar.disabled = ctx.soLeitura;
-      tirar.disabled = ctx.soLeitura;
-      editar.addEventListener('click', function () { abrirTroca(ctx, api, i, k); });
-      tirar.addEventListener('click', function () { api.mudar(ctx.lado, function (x) { x.viaturas[i].trocas.splice(k, 1); }); });
+      editar.disabled = ctx.soLeitura || !gravada;
+      tirar.disabled = ctx.soLeitura || !gravada || s.comecou_antes;
+      editar.addEventListener('click', function () { abrirTroca(api, s.viatura, s); });
+      tirar.addEventListener('click', function () { excluirTroca(api, s.viatura, s); });
       extra.appendChild(lt);
-      P().erros(ctx, 'troca:' + i + ':' + k).forEach(function (e) { P().erroCampo(extra, e); });
     });
     erros.forEach(function (e) { P().erroCampo(extra, e); });
     if (faltaCnh) P().erroCampo(extra, M().cnhEscolha);
+    if (v.nome) P().marcarMuda(extra, ctx, 'viatura:' + v.nome);
     extra.classList.toggle('oculto', !extra.children.length);
     lista.appendChild(linha);
   }
@@ -186,7 +215,7 @@
         }, ctx.soLeitura);
       });
       lugar.appendChild(opcoes);
-    });
+    }, ctx, 'instalacoes');
 
     P().fixo(u, ctx.ehCia ? M().viaturasCompanhia : M().viaturasPelotao, function (lugar) {
       lugar.appendChild(P().tpl('nota-viaturas'));
@@ -200,15 +229,15 @@
       nova.disabled = ctx.soLeitura;
       nova.addEventListener('click', function () {
         api.focarDepois('#nova-distribuicao-prefixo-' + ctx.lado + '-' + vtrs.length);
-        api.mudar(ctx.lado, function (x) { x.viaturas.push({ nome: '', cnh: null, efetivo: [null, null, null], trocas: [] }); });
+        api.mudar(ctx.lado, function (x) { x.viaturas.push({ nome: '', cnh: null, efetivo: [null, null, null] }); });
       });
       lugar.appendChild(nova);
-    });
+    }, ctx, 'viaturas');
   }
 
   window.RosterWork.novaDistribuicaoPostos = {
     postos: postos,
-    /* o painel da troca tem algo digitado (para o guarda de saída) */
+    /* o painel da substituição tem algo digitado (para o guarda de saída) */
     sujo: function () { return !!(formTroca && formTroca.sujo && RosterWork.painel.estaAberto()); }
   };
 })();

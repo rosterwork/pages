@@ -139,6 +139,7 @@
     novo.addEventListener('click', function () {
       api.mudar(ctx.lado, function (x) { x.regras = x.regras || []; x.regras.push({ cpf: null, tipo: null, funcao: null }); });
     });
+    P().marcarMuda(caixa, ctx, 'regras', caixa);
     u.appendChild(caixa);
   }
 

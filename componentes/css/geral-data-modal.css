@@ -8,6 +8,11 @@
   width: var(--modal-largura-pequeno);
 }
 
+/* com conteúdo da página embaixo do campo (ex.: o resumo do Salvar da Nova distribuição), a largura normal */
+.modal--data-largo {
+  width: var(--modal-largura);
+}
+
 .data-modal-mensagem {
   font-size: var(--fonte-padrao);
   line-height: 1.45;

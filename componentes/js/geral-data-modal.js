@@ -124,6 +124,7 @@
     conteudoEl.textContent = '';
     if (opcoes.conteudo) conteudoEl.appendChild(opcoes.conteudo);
     conteudoEl.classList.toggle('oculto', !opcoes.conteudo);
+    veu.querySelector('.modal--data').classList.toggle('modal--data-largo', !!opcoes.conteudo);
     /* padrão: o próximo dia de serviço (amanhã, virando às 08h); com data, a que veio */
     var dia = RosterWork.data.diaDeServico();
     dia.setDate(dia.getDate() + 1);

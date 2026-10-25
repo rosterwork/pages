@@ -3,8 +3,9 @@
    Moldes de nova-distribuicao.html montados com os dados: o bloco
    cinza da unidade, o cartão que abre (resposta embaixo) e o sempre
    aberto, a caixa de marcar, a bolinha, os campos de seleção (os de
-   função em Posto | Função, alinhados), o número, as setas, a trava
-   e o erro no campo. Também os nomes: uma função é sempre
+   função em Posto | Função, alinhados), o número, as setas, a trava,
+   o erro no campo e o que muda na mudança agendada (a borda escura e
+   a frase com o calendário). Também os nomes: uma função é sempre
    "Função · Posto"; na tela vira "Posto · Função", com a Central de
    Operações curta nas listas de escolha (o nome inteiro na dica).
    ============================================================ */
@@ -74,6 +75,38 @@
     return p;
   }
 
+  /* ---------- o que muda na mudança agendada (as diferenças do banco) ---------- */
+
+  function diferenca(ctx, chave) {
+    return ((ctx.calc && ctx.calc.diferencas) || []).filter(function (d) { return d.chave === chave; })[0] || null;
+  }
+
+  /* vendo a em vigor: "Muda em 10/11/2026: ..."; vendo a mudança agendada: "Antes: ..." */
+  function fraseMuda(ctx, d) {
+    return ctx.agenda && ctx.agenda.vendo ? texto(M().antes, { texto: d.la })
+                                          : texto(M().mudaEm, { data: ctx.agenda ? ctx.agenda.data : '', texto: d.la });
+  }
+
+  /* a frase embaixo do que muda, em destino; com cartao, também a borda escura nele. Devolve se mudou */
+  function marcarMuda(destino, ctx, chave, cartao) {
+    var d = diferenca(ctx, chave);
+    if (!d) return false;
+    var linha = tpl('muda');
+    linha.querySelector('.nova-distribuicao-muda-texto').textContent = fraseMuda(ctx, d);
+    destino.appendChild(linha);
+    if (cartao) cartao.classList.add('nova-distribuicao-cartao--muda');
+    return true;
+  }
+
+  /* a marca pequena (na linha da ordem): o calendário, com a frase na dica */
+  function marcaMuda(ctx, chave) {
+    var d = diferenca(ctx, chave);
+    if (!d) return null;
+    var marca = tpl('muda-marca');
+    marca.setAttribute('data-dica', fraseMuda(ctx, d));
+    return marca;
+  }
+
   /* troca o corpo da página por um molde (carregando, falha, vazio); frase = o texto dele */
   function mostrarNoCorpo(molde, frase) {
     var corpo = document.getElementById('nova-distribuicao-corpo');
@@ -121,7 +154,8 @@
   }
 
   /* cartão fechado com a resposta embaixo; ao clicar, abre as opções (montar).
-     extra = { numeros, reserva }: os números do efetivo e o selo Reserva no cabeçalho */
+     extra = { numeros, reserva, muda }: os números do efetivo e o selo Reserva no cabeçalho; muda = a chave
+     (ou as chaves) da diferença que marca o cartão, fechado e aberto */
   function cartao(destino, api, ctx, id, titulo, linhas, montar, comErro, extra) {
     var caixa = tpl('cartao');
     var cab = caixa.querySelector('.nova-distribuicao-cartao-cabecalho');
@@ -140,16 +174,18 @@
       res.classList.add('oculto');
       montar(opcoes);
     }
+    [].concat((extra && extra.muda) || []).forEach(function (chave) { marcarMuda(caixa, ctx, chave, caixa); });
     destino.appendChild(caixa);
     return caixa;
   }
 
-  /* cartão sempre aberto */
-  function fixo(destino, titulo, montar) {
+  /* cartão sempre aberto; ctx e muda (a chave da diferença) marcam o que muda */
+  function fixo(destino, titulo, montar, ctx, muda) {
     var caixa = tpl('cartao-fixo');
     var tit = caixa.querySelector('.nova-distribuicao-cartao-titulo');
     if (titulo) tit.textContent = titulo; else tit.classList.add('oculto');
     montar(caixa.querySelector('.nova-distribuicao-cartao-conteudo'));
+    if (ctx && muda) marcarMuda(caixa, ctx, muda, caixa);
     destino.appendChild(caixa);
     return caixa;
   }
@@ -281,6 +317,7 @@
     partes: partes, postoCurto: postoCurto, funcaoDe: funcaoDe, rotulo: rotulo, completo: completo,
     papel: papel, proprias: proprias,
     erros: erros, pendente: pendente, erroCampo: erroCampo, resumoErros: resumoErros, mostrarNoCorpo: mostrarNoCorpo,
+    diferenca: diferenca, marcarMuda: marcarMuda, marcaMuda: marcaMuda,
     unidade: unidade, respostas: respostas, cartao: cartao, fixo: fixo, trava: trava, setas: setas,
     marcar: marcar, bolinhas: bolinhas, selecao: selecao, selecaoFuncoes: selecaoFuncoes,
     selecaoFixa: selecaoFixa, numero: numero

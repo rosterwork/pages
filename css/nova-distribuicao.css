@@ -32,6 +32,13 @@
 .nova-distribuicao-bloco-pronto { color: var(--sucesso); flex-shrink: 0; }
 .nova-distribuicao-bloco-falta { color: var(--erro); flex-shrink: 0; }
 
+/* o bloco que muda na mudança agendada: o calendário à direita do nome */
+.nova-distribuicao-bloco-muda {
+  display: inline-flex;
+  margin-left: auto;
+  color: var(--texto-forte);
+}
+
 /* ---- corpo: a coluna de leitura ---- */
 .nova-distribuicao-conteudo {
   display: flex;
@@ -92,6 +99,10 @@
   border: 1px solid var(--borda);
   border-radius: var(--raio-medio);
 }
+
+/* o que muda na mudança agendada: a borda escura (o mesmo destaque de "diferente do gravado" do site);
+   o erro vem depois e tem prioridade */
+.nova-distribuicao-cartao--muda { border-color: var(--texto-forte); }
 
 .nova-distribuicao-cartao--erro { border-color: var(--erro); }
 
@@ -530,16 +541,87 @@
 
 .nova-distribuicao-grupo-titulo:first-child { margin-top: 0; }
 
-/* ---- lista de períodos: as datas e o que muda ---- */
-.nova-distribuicao-periodo-item {
+/* ---- a mudança agendada: o aviso do topo, a frase do que muda e a marca pequena ---- */
+.nova-distribuicao-aviso { align-items: flex-start; }
+
+.nova-distribuicao-aviso-corpo {
   display: flex;
   flex-direction: column;
+  gap: 4px;
+}
+
+.nova-distribuicao-aviso-corpo p { margin: 0; }
+
+.nova-distribuicao-aviso-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.nova-distribuicao-muda-linha {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  font-size: 12px;
+  color: var(--texto-forte);
+}
+
+.nova-distribuicao-muda-linha .icone { flex-shrink: 0; }
+
+.nova-distribuicao-muda-marca {
+  display: inline-flex;
+  margin-left: 4px;
+  color: var(--texto-forte);
+  vertical-align: middle;
+}
+
+/* ---- o Salvar (dentro do modal de data): o que muda, o que vai e os conflitos ---- */
+.nova-distribuicao-salvar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.nova-distribuicao-salvar p { margin: 0; }
+
+.nova-distribuicao-salvar-lista,
+.nova-distribuicao-salvar-vai,
+.nova-distribuicao-salvar-vai-lista,
+.nova-distribuicao-salvar-conflitos,
+.nova-distribuicao-salvar-conflitos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nova-distribuicao-salvar-item {
+  font-size: var(--fonte-padrao);
+  color: var(--texto);
+}
+
+.nova-distribuicao-conflito {
   align-items: flex-start;
+  padding: 4px 8px;
+}
+
+.nova-distribuicao-conflito .caixa-selecao { margin-top: 2px; }
+
+.nova-distribuicao-conflito-corpo {
+  display: flex;
+  flex-direction: column;
   gap: 2px;
 }
 
-.nova-distribuicao-periodo-muda {
-  font-size: 11px;
+.nova-distribuicao-conflito-rotulo {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.nova-distribuicao-conflito-lado {
+  font-size: 12px;
   color: var(--texto-suave);
   white-space: normal;
 }
@@ -573,8 +655,6 @@
 }
 
 /* ---- barra e rodapé ---- */
-.nova-distribuicao-periodo-menu { min-width: 240px; }
-
 .nova-distribuicao-rodape .rodape-acoes { margin-left: auto; }
 
 .nova-distribuicao-rodape-texto {

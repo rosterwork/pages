@@ -53,7 +53,8 @@
       lugar.appendChild(campos);
     }, erros.length > 0, {
       numeros: completo ? P().texto(M().numeros, { min: ef[0], ideal: ef[1], max: ef[2] }) : M().efetivoFalta,
-      reserva: reserva
+      reserva: reserva,
+      muda: nome ? 'efetivo:' + nome : null
     });
   }
 

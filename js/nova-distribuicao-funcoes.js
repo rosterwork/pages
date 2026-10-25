@@ -102,7 +102,7 @@
               api.mudar(ctx.lado, function (x) { x.papel.postos = alternar(x.papel.postos, posto, marcado); });
             });
             if (marcados.length > 1) P().trava(lugar, M().mesmaPessoa);
-          }, falta);
+          }, falta, { muda: 'papel_postos' });
       }
 
       if (calc.papel_viatura) {
@@ -112,7 +112,7 @@
             lugar.appendChild(P().bolinhas(P().tpl('condutor'), 'nova-distribuicao-condutor-' + ctx.lado, function (v) { return Number(v) === cond; }, function (v) {
               api.mudar(ctx.lado, function (x) { x.papel.condutor = Number(v); });
             }, ctx.soLeitura));
-          }, P().pendente(ctx, 'papel_condutor'));
+          }, P().pendente(ctx, 'papel_condutor'), { muda: 'papel_condutor' });
       }
 
       if (ctx.ehCia) {
@@ -122,14 +122,14 @@
             lugar.appendChild(P().bolinhas(P().tpl('sem-oficial'), 'nova-distribuicao-sem-oficial', function (v) { return Number(v) === sem; }, function (v) {
               api.mudar(ctx.lado, function (x) { x.sem_oficial = Number(v); });
             }, ctx.soLeitura));
-          }, P().pendente(ctx, 'sem_oficial'));
+          }, P().pendente(ctx, 'sem_oficial'), { muda: 'sem_oficial' });
       } else {
         var oa = r.oficial_postos || [];
         P().cartao(u, api, ctx, 'oficial', P().texto(M().ondeFica, { papel: M().oficialArea }), linhasGrupos(ctx, outros, oa, false), function (lugar) {
           grupos(lugar, ctx, outros, oa, function (posto, marcado) {
             api.mudar(ctx.lado, function (x) { x.oficial_postos = alternar(x.oficial_postos, posto, marcado); });
           });
-        });
+        }, false, { muda: 'oficial_postos' });
       }
     });
   }

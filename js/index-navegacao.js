@@ -24,7 +24,7 @@
     historico: { html: 'historico.html', css: ['css/historico.css'], js: ['js/historico.js'] },
     ajustes: { html: 'ajustes.html', css: ['css/ajustes.css'], js: ['js/ajustes-extrajornada.js', 'js/ajustes.js'] },
     programador: { html: 'programador.html', css: ['css/programador.css', 'css/programador-guia.css'], js: ['js/programador-bugs-formulario.js', 'js/programador-bugs.js', 'js/programador-bug-ligado.js', 'js/programador-guia.js', 'js/programador.js'] },
-    'nova-distribuicao': { html: 'nova-distribuicao.html', css: ['css/nova-distribuicao.css'], js: ['js/nova-distribuicao-pecas.js', 'js/nova-distribuicao-dados.js', 'js/nova-distribuicao-postos.js', 'js/nova-distribuicao-efetivo.js', 'js/nova-distribuicao-funcoes.js', 'js/nova-distribuicao-blocos.js', 'js/nova-distribuicao-militares.js', 'js/nova-distribuicao-conferir.js', 'js/nova-distribuicao-periodo.js', 'js/nova-distribuicao.js'] }   /* protótipo, só programador */
+    'nova-distribuicao': { html: 'nova-distribuicao.html', css: ['css/nova-distribuicao.css'], js: ['js/nova-distribuicao-pecas.js', 'js/nova-distribuicao-dados.js', 'js/nova-distribuicao-postos.js', 'js/nova-distribuicao-efetivo.js', 'js/nova-distribuicao-funcoes.js', 'js/nova-distribuicao-blocos.js', 'js/nova-distribuicao-militares.js', 'js/nova-distribuicao-conferir.js', 'js/nova-distribuicao-versoes.js', 'js/nova-distribuicao.js'] }   /* protótipo, só programador */
   };
 
   var conteudo;
