@@ -104,7 +104,7 @@
     b24.disabled = ed.leitura;
     b24.addEventListener('click', function () {
       v.so24 = !v.so24;
-      if (v.so24 && v.cotas !== 4 && v.cotas !== 8) v.cotas = 4;
+      if (v.so24 && v.cotas !== 4 && v.cotas !== 8) v.cotas = v.cotas > 8 ? 8 : 4;   // desce para a opção de 24 h logo abaixo (abaixo de 4, fica 4)
       atualizar();
     });
     Array.prototype.forEach.call(f.querySelectorAll('[data-pincel]'), function (b) {

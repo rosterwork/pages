@@ -849,6 +849,7 @@
       numeros: 'Mín. {min} · Ideal {ideal} · Máx. {max}',
       efetivoFalta: 'Efetivo: falta responder',
       reservaFrase: 'Vazia, fica fora da escala. Nunca dá erro nem aviso de efetivo.',
+      semMinimoFrase: 'Sem gente para o mínimo, fica fora da escala.',
       semPostos: 'Marque as instalações e as viaturas no bloco Postos.',
       travaPapel: 'Escolhido em Funções especiais',
       travaCompanhia: 'Vem da companhia',
@@ -888,10 +889,12 @@
       /* bloco 7: regras por militar */
       regraIncompleta: 'Escolha o militar, a regra e a função.',
       /* bloco 8: conferir */
-      estados: { tem_gente: 'Com gente', acumula: 'Acumulada', coberta: 'Coberta', companhia: 'Da companhia', vazia: 'Vazia' },
+      estados: { tem_gente: 'Com gente', acumula: 'Acumulada', coberta: 'Coberta', companhia: 'Da companhia', vazia: 'Vazia', fora: 'Fora da escala' },
       porQuem: '{estado} por {quem}',
       sobraUm: '1 militar fica sem função.',
       sobraVarios: '{n} militares ficam sem função.',
+      foraMotivo: 'Fora da escala: não há gente para o mínimo de {min}.',
+      foraAviso: '{posto} fica fora da escala: não há gente para o mínimo de {min}.',
       /* a mudança agendada */
       avisoTitulo: 'Mudança agendada para {data}',
       avisoTexto: 'A partir desse dia, a distribuição muda em: {lista}. Os campos que mudam estão marcados com o calendário.',

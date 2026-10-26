@@ -425,6 +425,11 @@
   background-color: var(--alerta-fundo);
 }
 
+.nova-distribuicao-estado--fora {
+  color: var(--alerta);
+  background-color: var(--alerta-fundo);
+}
+
 .nova-distribuicao-legenda {
   display: flex;
   flex-wrap: wrap;

@@ -446,6 +446,13 @@
 <template id="tpl-nova-distribuicao-posto-campos">
   <div class="nova-distribuicao-posto-campos">
     <div class="nova-distribuicao-posto-efetivo"></div>
+    <div class="nova-distribuicao-sem-minimo oculto">
+      <p class="nova-distribuicao-nivel-titulo">Se não houver gente para o mínimo</p>
+      <div class="nova-distribuicao-opcoes">
+        <label class="geral-opcao"><input type="radio" data-valor="0" /><span>Sai mesmo assim, com erro vermelho nas funções vazias</span></label>
+        <label class="geral-opcao"><input type="radio" data-valor="1" /><span>Fica fora da escala, com aviso amarelo; quem estaria nele vai para as próximas funções da ordem</span></label>
+      </div>
+    </div>
     <div class="nova-distribuicao-niveis">
       <div class="nova-distribuicao-nivel" data-nivel="minimo">
         <p class="nova-distribuicao-nivel-titulo"><span class="nova-distribuicao-ponto nova-distribuicao-ponto--erro"></span><span>Mínimo: se faltar, erro vermelho</span></p>
@@ -719,6 +726,7 @@
         <tr data-resumo="vermelhas"><th colspan="2">Vazias com erro vermelho</th></tr>
         <tr data-resumo="amarelas"><th colspan="2">Vazias com aviso amarelo</th></tr>
         <tr data-resumo="sem_funcao"><th colspan="2">Sem função</th></tr>
+        <tr data-resumo="fora"><th colspan="2">Postos fora da escala</th></tr>
       </tfoot>
     </table>
     <p class="nova-distribuicao-legenda">
@@ -727,6 +735,7 @@
       <span class="nova-distribuicao-legenda-item"><span class="nova-distribuicao-estado nova-distribuicao-estado--coberta" aria-hidden="true">S</span><span>Coberta por substituto</span></span>
       <span class="nova-distribuicao-legenda-item"><span class="nova-distribuicao-estado nova-distribuicao-estado--companhia" aria-hidden="true">C</span><span>Da companhia</span></span>
       <span class="nova-distribuicao-legenda-item"><span class="nova-distribuicao-estado nova-distribuicao-estado--vazia" aria-hidden="true"></span><span>Vazia</span></span>
+      <span class="nova-distribuicao-legenda-item"><span class="nova-distribuicao-estado nova-distribuicao-estado--fora" aria-hidden="true">F</span><span>Posto fora da escala</span></span>
     </p>
   </div>
 </template>
@@ -757,6 +766,9 @@
 <template id="tpl-nova-distribuicao-estado-vazia">
   <span class="nova-distribuicao-estado nova-distribuicao-estado--vazia"></span>
 </template>
+<template id="tpl-nova-distribuicao-estado-fora">
+  <span class="nova-distribuicao-estado nova-distribuicao-estado--fora">F</span>
+</template>
 <template id="tpl-nova-distribuicao-conferir-total">
   <td class="nova-distribuicao-col-numero"></td>
 </template>
@@ -766,6 +778,10 @@
     <div class="nova-distribuicao-graus"></div>
     <p class="nova-distribuicao-ajuda">"Cb. 1" é o cabo mais antigo da equipe; "Cb. 2", o segundo.</p>
     <p class="nova-distribuicao-ajuda nova-distribuicao-simulacao-vazia oculto">Escolha quantos de cada graduação estão de serviço.</p>
+    <div class="nota nota--alerta nova-distribuicao-fora oculto">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+      <div class="nova-distribuicao-fora-lista"></div>
+    </div>
     <table class="nova-distribuicao-tabela nova-distribuicao-simulacao-tabela">
       <thead><tr><th>Posto</th><th>Função</th><th>Quem</th><th>Situação</th></tr></thead>
       <tbody></tbody>
