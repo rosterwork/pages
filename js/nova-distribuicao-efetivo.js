@@ -18,7 +18,7 @@
 
   function linhaFuncao(lista, f) {
     var p = P().tpl('funcao');
-    p.querySelector('.nova-distribuicao-funcao-nome').textContent = f.rotulo || (f.papel ? f.funcao + ' · ' + f.papel : f.funcao);
+    p.querySelector('.nova-distribuicao-funcao-nome').textContent = f.curto || f.rotulo || (f.papel ? f.funcao + ' · ' + f.papel : f.funcao);
     if (f.papel) P().trava(p, f.externa ? M().travaCompanhia : M().travaPapel);
     lista.appendChild(p);
   }
@@ -31,9 +31,11 @@
     var erros = P().erros(ctx, 'efetivo:' + nome);
     var titulo = !nome ? M().semPrefixo : (tipo === 'v' && item.cnh ? P().texto(M().tituloViatura, { nome: nome, cnh: item.cnh }) : nome);
     var completo = ef[0] != null && ef[1] != null && ef[2] != null;
-    /* sem gente para o mínimo, fica fora da escala: só com mínimo e sem função especial no posto */
-    var podeFora = ef[0] > 0 && !funcoes.some(function (f) { return f.papel; });
-    var fora = podeFora && Number(item.sem_minimo) === 1;
+    /* sem efetivo para o mínimo, fica fora da escala: só com mínimo; o posto da função especial
+       sempre entra (a pergunta aparece travada, com o motivo) */
+    var comMinimo = ef[0] > 0;
+    var especial = funcoes.filter(function (f) { return f.papel; })[0];
+    var fora = comMinimo && !especial && Number(item.sem_minimo) === 1;
     var nivelFora = item.aviso_fora == null ? 1 : Number(item.aviso_fora);
     var linhas = (reserva ? [M().reservaFrase] : []).concat(fora ? [M().semMinimoFrases[nivelFora]] : [])
       .concat(erros.map(function (e) { return { texto: e, falta: true }; }));
@@ -56,15 +58,18 @@
       erros.forEach(function (e) { P().erroCampo(lugarEfetivo, e); });
 
       var semMinimo = campos.querySelector('.nova-distribuicao-sem-minimo');
-      semMinimo.classList.toggle('oculto', !podeFora);
-      if (podeFora) {
+      semMinimo.classList.toggle('oculto', !comMinimo);
+      if (comMinimo) {
         P().bolinhas(semMinimo, 'nova-distribuicao-sem-minimo-' + ctx.lado + '-' + tipo + '-' + i, function (v) {
           return Number(v) === (fora ? 1 : 0);
         }, function (v) {
           mudarPosto(function (alvo) {
             if (v === '1') { alvo.sem_minimo = 1; alvo.aviso_fora = 1; } else { delete alvo.sem_minimo; delete alvo.aviso_fora; }
           });
-        }, ctx.soLeitura);
+        }, ctx.soLeitura || !!especial);
+        if (especial) {
+          P().trava(semMinimo.querySelector('.nova-distribuicao-nivel-titulo'), P().texto(M().travaSempreEntra, { papel: especial.papel }));
+        }
         var linhaAviso = semMinimo.querySelector('.nova-distribuicao-fora-aviso');
         linhaAviso.classList.toggle('oculto', !fora);
         linhaAviso.querySelector('[data-espaco="aviso"]').appendChild(P().selecaoFixa('aviso', nivelFora, function (v) {
@@ -80,7 +85,7 @@
       });
       lugar.appendChild(campos);
     }, erros.length > 0 || !completo, {
-      numeros: completo ? P().texto(M().numeros, { min: ef[0], ideal: ef[1], max: ef[2] }) : M().efetivoFalta,
+      numeros: completo ? ef : M().efetivoFalta,
       reserva: reserva,
       muda: nome ? 'efetivo:' + nome : null
     });

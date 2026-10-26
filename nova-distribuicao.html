@@ -239,7 +239,7 @@
   <p class="nova-distribuicao-ajuda">Funções que são sempre da mesma pessoa. Elas não precisam de gente própria e entram na linha dessa pessoa na ordem de importância.</p>
 </template>
 <template id="tpl-nova-distribuicao-nota-ordem">
-  <p class="nova-distribuicao-ajuda">Cada linha é uma pessoa. Com N militares de serviço, enchem as N primeiras linhas; quem sobra fica sem função.</p>
+  <p class="nova-distribuicao-ajuda">Cada linha é uma pessoa. Com N militares de serviço, enchem as N primeiras linhas. Quem sobra fica sem função.</p>
 </template>
 <template id="tpl-nova-distribuicao-nota-substitutos">
   <p class="nova-distribuicao-ajuda">Quando a função fica sem gente, o 1º substituto que estiver de serviço faz as duas. A função sem substituto fica vazia.</p>
@@ -266,6 +266,20 @@
     <div class="nova-distribuicao-cartao-resposta"></div>
     <div class="nova-distribuicao-cartao-opcoes oculto"></div>
   </div>
+</template>
+
+<!-- os números do efetivo no cabeçalho: cada número com a mesma largura (cabem dois dígitos), alinhados entre os postos -->
+<template id="tpl-nova-distribuicao-numeros">
+  <span class="nova-distribuicao-numeros">
+    <span>Mín.</span>
+    <span class="nova-distribuicao-numero" data-numero="0"></span>
+    <span aria-hidden="true">·</span>
+    <span>Ideal</span>
+    <span class="nova-distribuicao-numero" data-numero="1"></span>
+    <span aria-hidden="true">·</span>
+    <span>Máx.</span>
+    <span class="nova-distribuicao-numero" data-numero="2"></span>
+  </span>
 </template>
 
 <!-- cartão sempre aberto -->
@@ -447,10 +461,10 @@
   <div class="nova-distribuicao-posto-campos">
     <div class="nova-distribuicao-posto-efetivo"></div>
     <div class="nova-distribuicao-sem-minimo oculto">
-      <p class="nova-distribuicao-nivel-titulo">Se não houver gente para o mínimo</p>
+      <p class="nova-distribuicao-nivel-titulo">Sem efetivo para o mínimo</p>
       <div class="nova-distribuicao-opcoes">
-        <label class="geral-opcao"><input type="radio" data-valor="0" /><span>Sai mesmo assim, com erro vermelho nas funções vazias</span></label>
-        <label class="geral-opcao"><input type="radio" data-valor="1" /><span>Fica fora da escala; quem estaria nele vai para as próximas funções da ordem</span></label>
+        <label class="geral-opcao"><input type="radio" data-valor="0" /><span>Entra na escala incompleto</span></label>
+        <label class="geral-opcao"><input type="radio" data-valor="1" /><span>Fica fora da escala e libera o efetivo</span></label>
         <p class="nova-distribuicao-frase nova-distribuicao-fora-aviso oculto"><span>Quando ficar fora:</span><span class="nova-distribuicao-espaco" data-espaco="aviso"></span></p>
       </div>
     </div>
@@ -468,7 +482,7 @@
         <div class="nova-distribuicao-nivel-lista"></div>
       </div>
       <div class="nova-distribuicao-nivel" data-nivel="reserva">
-        <p class="nova-distribuicao-nivel-titulo"><span class="nova-distribuicao-ponto"></span><span>Reserva: vazia, fica fora da escala; sem aviso</span></p>
+        <p class="nova-distribuicao-nivel-titulo"><span class="nova-distribuicao-ponto"></span><span>Reserva: vazia, fica fora da escala, sem aviso</span></p>
         <div class="nova-distribuicao-nivel-lista"></div>
       </div>
     </div>
@@ -512,7 +526,10 @@
 <!-- regra automática (vem das funções especiais) -->
 <template id="tpl-nova-distribuicao-automatica">
   <div class="nova-distribuicao-cartao">
-    <p class="nova-distribuicao-frase nova-distribuicao-automatica-texto"></p>
+    <div class="nova-distribuicao-automatica-linhas">
+      <p class="nova-distribuicao-frase nova-distribuicao-automatica-texto"></p>
+      <p class="nova-distribuicao-frase nova-distribuicao-automatica-texto oculto"></p>
+    </div>
     <span class="nova-distribuicao-trava">
       <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-cadeado"/></svg>
       <span>Vem da resposta do bloco Funções especiais.</span>
@@ -603,8 +620,8 @@
   <div class="nova-distribuicao-opcoes">
     <label class="geral-opcao"><input type="radio" data-valor="0" /><span>O</span><span class="nova-distribuicao-espaco" data-espaco="perfil"></span><span>mais antigo que ainda não tem função</span></label>
     <label class="geral-opcao"><input type="radio" data-valor="1" /><span>O</span><span class="nova-distribuicao-espaco" data-espaco="perfil"></span><span>mais moderno que ainda não tem função</span></label>
-    <label class="geral-opcao"><input type="radio" data-valor="2" /><span>Um</span><span class="nova-distribuicao-espaco" data-espaco="grau"></span><span>; se não houver, o mais próximo</span><span class="nova-distribuicao-espaco" data-espaco="sentido"></span></label>
-    <label class="geral-opcao"><input type="radio" data-valor="3" /><span>Somente</span><span class="nova-distribuicao-espaco" data-espaco="grau"></span><span>; se não houver, fica vazia</span></label>
+    <label class="geral-opcao"><input type="radio" data-valor="2" /><span>Um</span><span class="nova-distribuicao-espaco" data-espaco="grau"></span><span>ou o mais próximo</span><span class="nova-distribuicao-espaco" data-espaco="sentido"></span></label>
+    <label class="geral-opcao"><input type="radio" data-valor="3" /><span>Somente</span><span class="nova-distribuicao-espaco" data-espaco="grau"></span><span>ou fica vazia</span></label>
     <p class="nova-distribuicao-frase nova-distribuicao-criterio-aviso oculto"><span>Quando não houver o grau:</span><span class="nova-distribuicao-espaco" data-espaco="aviso"></span></p>
     <button type="button" class="geral-opcao nova-distribuicao-marca nova-distribuicao-rodizio" role="checkbox" aria-checked="false">
       <span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
@@ -777,7 +794,7 @@
   <div class="nova-distribuicao-cartao nova-distribuicao-cartao--tabela">
     <p class="nova-distribuicao-cartao-titulo">Quem está de serviço</p>
     <div class="nova-distribuicao-graus"></div>
-    <p class="nova-distribuicao-ajuda">"Cb. 1" é o cabo mais antigo da equipe; "Cb. 2", o segundo.</p>
+    <p class="nova-distribuicao-ajuda">"Cb. 1" é o cabo mais antigo da equipe, e "Cb. 2", o segundo.</p>
     <p class="nova-distribuicao-ajuda nova-distribuicao-simulacao-vazia oculto">Escolha quantos de cada graduação estão de serviço.</p>
     <div class="nova-distribuicao-fora oculto"></div>
     <table class="nova-distribuicao-tabela nova-distribuicao-simulacao-tabela">

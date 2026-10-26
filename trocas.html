@@ -576,7 +576,7 @@
 
 <!-- painel "Imprimir trocas" (trocas-imprimir.js; painel largo), em três caixas: 1. as trocas do mês para marcar
      (o seletor do mês, Marcar todas, a lista e a contagem); 2. o texto para a Parte (Informo | Solicito, a caixa do
-     texto e o Copiar texto); 3. o PDF (Lista | Registro técnico) com a prévia, que some no celular como nas grades -->
+     texto e o Copiar texto); 3. o PDF (Lista | Registro técnico | Alterações) com a prévia, que some no celular como nas grades -->
 <template id="tpl-troca-imprimir">
   <div class="grupo-caixa">
     <span class="rotulo-secao">1. Trocas</span>
@@ -612,6 +612,7 @@
     <div class="abas abas--seletor" data-imprimir-formato>
       <button type="button" class="aba aba--ativa" data-formato="lista">Lista</button>
       <button type="button" class="aba" data-formato="registro">Registro técnico</button>
+      <button type="button" class="aba" data-formato="alteracoes">Alterações</button>
     </div>
     <span class="campo-ajuda" data-imprimir-formato-ajuda></span>
     <div class="escala-impressao-previa-secao">

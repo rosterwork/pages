@@ -45,10 +45,9 @@
     variasSolicitar: function (dias, parte, ano) { return RosterWork.rpc('fn_trocas_varias_solicitar', { p_dias: dias, p_parte_numero: parte, p_parte_ano: ano }); },
     variasRegistrar: function (dias, parte, ano, ensaio) { return RosterWork.rpc('fn_trocas_varias_registrar', { p_dias: dias, p_parte_numero: parte, p_parte_ano: ano, p_ensaio: !!ensaio }); },
     variasCancelar: function (registroId, desfazer, motivo) { return RosterWork.rpc('fn_trocas_varias_cancelar', { p_registro_id: registroId, p_desfazer: !!desfazer, p_motivo: motivo || null }); },
-    /* o registro de várias trocas: a resposta de cada militar, a decisão da administração, a Parte e os dados do registro */
+    /* o registro de várias trocas: a resposta de cada militar, a decisão da administração e os dados do registro */
     variasResponder: function (registroId, aceitar, motivo) { return RosterWork.rpc('fn_trocas_varias_responder', { p_registro_id: registroId, p_aceitar: aceitar, p_motivo: motivo || null }); },
     variasAprovar: function (registroId, aceitar, forcar, motivo) { return RosterWork.rpc('fn_trocas_varias_aprovar', { p_registro_id: registroId, p_aceitar: aceitar, p_forcar: !!forcar, p_motivo: motivo || null }); },
-    variasParte: function (registroId, parte, ano) { return RosterWork.rpc('fn_trocas_varias_parte', { p_registro_id: registroId, p_parte_numero: parte, p_parte_ano: ano }); },
     /* o Editar do registro: o plano que vale hoje (os dias, os militares e a Parte) e a gravação do plano novo
        (ensaio = só a Análise, do administrador de fora) */
     variasPlano: function (registroId) { return RosterWork.rpc('fn_trocas_varias_plano', { p_registro_id: registroId }); },

@@ -22,10 +22,14 @@
 
   function automaticas(ctx, tipo) { return (ctx.calc && ctx.calc.automaticas && ctx.calc.automaticas[tipo]) || []; }
 
-  /* a regra automática: a frase e a trava (molde) */
+  /* a regra automática: a frase (uma ou duas linhas) e a trava (molde) */
   function automatica(destino, frase) {
     var caixa = P().tpl('automatica');
-    caixa.querySelector('.nova-distribuicao-automatica-texto').textContent = frase;
+    var linhas = [].concat(frase);
+    caixa.querySelectorAll('.nova-distribuicao-automatica-texto').forEach(function (el, k) {
+      el.textContent = linhas[k] || '';
+      el.classList.toggle('oculto', !linhas[k]);
+    });
     destino.appendChild(caixa);
   }
 
@@ -95,7 +99,7 @@
       if (P().postoCurto(p.posto) !== p.posto) lp.setAttribute('data-dica', p.posto);
       postos.appendChild(lp);
       var lf = P().tpl('celula-linha');
-      lf.textContent = P().rotulo(ctx, nome);
+      lf.textContent = P().rotulo(ctx, nome, true);
       if (k === 0 && primeiroExtra) lf.appendChild(primeiroExtra);
       funcoes.appendChild(lf);
     });
@@ -167,7 +171,8 @@
     var u = P().unidade(corpo, ctx);
     P().marcarMuda(u, ctx, 'cobre');
     automaticas(ctx, 'cobre').forEach(function (c) {
-      automatica(u, P().texto(M().automaticaCobre, { funcao: P().completo(ctx, c[0]), quem: P().completo(ctx, c[1]) }));
+      var valores = { funcao: P().completo(ctx, c[0]), quem: P().completo(ctx, c[1]) };
+      automatica(u, M().automaticaCobre.map(function (t) { return P().texto(t, valores); }));
     });
     var salvos = gravadas(api, 'cobre');
     (ctx.resp.cobre || []).forEach(function (regra, i) {

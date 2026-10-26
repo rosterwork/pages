@@ -147,26 +147,30 @@
 
       <!-- passo 2: as cotas -->
       <div class="nova-extra-passo-painel oculto" data-passo-painel="2">
-        <div class="nova-extra-numeros">
-          <label class="nova-extra-caixa nova-extra-numero"><span class="rotulo-secao">Cotas recebidas do comando</span><input type="number" min="0" class="campo-entrada" id="p2-recebidas" /></label>
-          <div class="nova-extra-caixa nova-extra-numero"><span class="rotulo-secao">Repartidas</span><b id="p2-repartidas"></b></div>
-          <div class="nova-extra-caixa nova-extra-numero"><span class="rotulo-secao">Sobram</span><b id="p2-sobram"></b></div>
-          <div class="nova-extra-caixa nova-extra-numero">
-            <span class="rotulo-secao">Repartir</span>
-            <label class="geral-opcao"><input type="radio" name="p2-modo" value="grupo" />Companhia toda</label>
-            <label class="geral-opcao"><input type="radio" name="p2-modo" value="por_unidade" />Cada unidade com as suas</label>
-            <div class="nova-extra-por-unidade oculto" id="p2-unidades"></div>
-            <button type="button" class="botao" id="p2-sugestao">Usar a sugestão</button>
+        <div class="nova-extra-caixa nova-extra-cotas-topo">
+          <label class="nova-extra-numero"><span class="nova-extra-numero-rotulo">Cotas recebidas do comando</span><input type="number" min="0" class="campo-entrada" id="p2-recebidas" /></label>
+          <div class="nova-extra-numero"><span class="nova-extra-numero-rotulo">Repartidas</span><b id="p2-repartidas"></b></div>
+          <div class="nova-extra-numero"><span class="nova-extra-numero-rotulo">Sobram</span><b id="p2-sobram"></b></div>
+          <div class="nova-extra-por-unidade oculto" id="p2-unidades"></div>
+          <span class="nova-extra-espaco"></span>
+          <div class="nova-extra-numero">
+            <span class="nova-extra-numero-rotulo">Repartir</span>
+            <div class="abas abas--seletor" id="p2-modo">
+              <button type="button" class="aba" data-modo="grupo">Companhia toda</button>
+              <button type="button" class="aba" data-modo="por_unidade">Cada unidade com as suas</button>
+            </div>
           </div>
         </div>
         <div class="nova-extra-bloco">
           <div class="nova-extra-bloco-cab">
             <span class="nova-extra-bloco-titulo">Voluntários com termo</span>
-            <span class="nova-extra-ajuda">Em ordem da fila: quem foi menos atendido nos últimos 12 meses recebe primeiro.</span>
+            <span class="nova-extra-ajuda">Quem foi menos atendido nos últimos 12 meses recebe primeiro.</span>
+            <span class="nova-extra-espaco"></span>
+            <button type="button" class="botao" id="p2-sugestao">Usar a sugestão</button>
           </div>
           <div class="nova-extra-caixa">
             <table class="nova-extra-tabela">
-              <thead><tr><th>Fila</th><th>Militar</th><th>Unidade</th><th>Pediu</th><th>Atendimento (12 meses)</th><th>Sugestão</th><th>Concedido</th></tr></thead>
+              <thead><tr><th>Fila</th><th>Militar</th><th>Unidade</th><th class="nova-extra-centro">Pediu</th><th>Últimos 12 meses</th><th class="nova-extra-centro">Recebe</th></tr></thead>
               <tbody id="p2-lista"></tbody>
             </table>
             <span class="nova-extra-vazio oculto" id="p2-vazio">Nenhum voluntário com termo.</span>
@@ -179,28 +183,31 @@
         </div>
       </div>
 
-      <!-- passo 3: montar (militares × dias) e revisar (o mês por unidade) -->
+      <!-- passo 3: por dia (o calendário com um bloco por unidade; clicar abre o painel do dia) e por militar -->
       <div class="nova-extra-passo-painel oculto" data-passo-painel="3">
         <div class="nova-extra-ferramentas">
-          <div class="abas abas--seletor" id="p3-modo">
-            <button type="button" class="aba aba--ativa" data-modo="montar">Montar</button>
-            <button type="button" class="aba" data-modo="revisar">Revisar</button>
-          </div>
           <button type="button" class="botao" id="p3-sugerir">Preencher pela sugestão</button>
           <button type="button" class="botao oculto" id="p3-desfazer-sugestao">Desfazer a sugestão</button>
-          <span class="nova-extra-legenda">
-            <span><i class="nova-extra-amostra nova-extra-amostra--quer"></i>Quer o dia</span>
-            <span><i class="nova-extra-amostra nova-extra-amostra--nao"></i>Não pode</span>
-            <span><i class="nova-extra-amostra nova-extra-amostra--ocupado"></i>Ocupado</span>
-            <span><i class="nova-extra-amostra nova-extra-amostra--extra"></i>Extra (bolinhas: 08h, 14h, 20h, 02h)</span>
-            <span><i class="nova-extra-amostra nova-extra-amostra--fora"></i>Extra em outro pelotão</span>
-          </span>
+          <div class="abas abas--seletor" id="p3-vista">
+            <button type="button" class="aba aba--ativa" data-vista="dia">Por dia</button>
+            <button type="button" class="aba" data-vista="militar">Por militar</button>
+          </div>
+        </div>
+        <div class="nova-extra-resumo">
+          <span id="p3-colocadas"></span>
+          <span id="p3-dias-falta"></span>
+          <span class="nova-extra-espaco"></span>
+          <span class="nova-extra-ajuda">Clique no pelotão do dia para escolher quem tira a extra.</span>
         </div>
         <span class="nova-extra-nota-sugestao oculto" id="p3-nota"></span>
-        <div class="nova-extra-caixa nova-extra-matriz-caixa" id="p3-montar">
-          <table class="nova-extra-matriz" id="p3-matriz"></table>
+        <div class="nova-extra-dist-cal" id="p3-cal"></div>
+        <div class="nova-extra-caixa oculto" id="p3-militares">
+          <table class="nova-extra-tabela">
+            <thead><tr><th>Militar</th><th>Unidade</th><th class="nova-extra-centro">Cotas</th><th>Dias</th></tr></thead>
+            <tbody id="p3-mil-lista"></tbody>
+          </table>
+          <span class="nova-extra-vazio oculto" id="p3-mil-vazio">Ninguém com termo e cota concedida. Reparta as cotas no passo 2.</span>
         </div>
-        <div class="nova-extra-mes-cal oculto" id="p3-revisar"></div>
         <div class="nova-extra-rodape">
           <span class="nova-extra-rodape-texto" id="p3-texto"></span>
           <label class="nova-extra-motivo oculto" id="p3-motivo-campo"><span>Motivo do ajuste (opcional)</span><input type="text" maxlength="200" class="campo-entrada" id="p3-motivo" /></label>
@@ -265,12 +272,11 @@
 
 <template id="tpl-ne-p2-linha">
   <tr>
-    <td><span class="nova-extra-fila"></span></td>
+    <td class="nova-extra-fila"></td>
     <td class="nova-extra-nome"><small></small><b></b></td>
-    <td class="ne-uni"></td><td class="ne-pediu"></td>
-    <td><span class="nova-extra-atendimento"><span class="nova-extra-trilho"><i></i></span><b class="ne-taxa"></b><span class="ne-hist"></span></span></td>
-    <td class="ne-sug"></td>
-    <td><input type="number" min="0" max="10" class="campo-entrada nova-extra-conc" aria-label="Cotas concedidas" /></td>
+    <td class="ne-uni"></td><td class="nova-extra-centro ne-pediu"></td>
+    <td class="nova-extra-historico ne-hist"></td>
+    <td class="nova-extra-centro"><span class="nova-extra-recebe"><input type="number" min="0" max="10" class="campo-entrada nova-extra-conc" aria-label="Cotas que recebe" /><small class="ne-sug oculto"></small></span></td>
   </tr>
 </template>
 
@@ -278,36 +284,32 @@
   <div class="nova-extra-item"><span class="nova-extra-item-marca"></span><span class="nova-extra-item-texto"><b></b><span></span></span></div>
 </template>
 
-<template id="tpl-ne-thead"><thead></thead></template>
-<template id="tpl-ne-tbody"><tbody></tbody></template>
-<template id="tpl-ne-linha"><tr></tr></template>
-<template id="tpl-ne-th"><th></th></template>
-<template id="tpl-ne-td"><td></td></template>
 <template id="tpl-ne-sem"><span class="nova-extra-sem"></span></template>
 <template id="tpl-ne-vazio"><span></span></template>
-<template id="tpl-ne-desde"><span class="nova-extra-desde"></span></template>
-<template id="tpl-ne-selo"><span class="selo"></span></template>
-<template id="tpl-ne-td-nome">
-  <td class="ne-col-nome nova-extra-nome"><small></small><b></b> <span class="selo nova-extra-selo-mini ne-selo-24 oculto">24h</span><span class="selo nova-extra-selo-mini ne-selo-exp oculto">EXP</span></td>
-</template>
-<template id="tpl-ne-falta-cab">
-  <tr class="ne-falta-cab"><th class="ne-falta-th"><span class="ne-falta-titulo">Onde ainda falta gente</span><span class="nova-extra-ajuda">Cada dia tem os 4 horários: 08h, 14h, 20h e 02h. Vermelho: sem ninguém.</span><button type="button" class="botao botao--texto ne-falta-botao"></button></th></tr>
+<template id="tpl-ne-selo"><span class="selo nova-extra-selo-mini"></span></template>
+
+<!-- passo 3, Por dia: o bloco de uma unidade num dia (as barras antes e depois e só as extras; clicar abre o painel do dia) -->
+<template id="tpl-ne-cal-uni">
+  <div class="nova-extra-cal-uni" role="button" tabindex="0">
+    <span class="nova-extra-cal-uni-nome"></span>
+    <div class="nova-extra-cal-barras">
+      <span class="nova-extra-cal-rotulo">antes</span><div class="nova-extra-cal-barra ne-antes"></div>
+      <span class="nova-extra-cal-rotulo">depois</span><div class="nova-extra-cal-barra ne-depois"><span class="nova-extra-cal-sem">sem extra</span></div>
+    </div>
+    <div class="nova-extra-cal-extras"></div>
+  </div>
 </template>
 
-<template id="tpl-ne-th-dia">
-  <th><span class="ne-sem"></span><b class="ne-num"></b></th>
+<!-- passo 3, Por militar: uma linha (as cotas e os dias, que abrem o painel do dia) -->
+<template id="tpl-ne-pm-linha">
+  <tr>
+    <td class="nova-extra-nome"><small></small><b></b></td>
+    <td class="ne-uni"></td><td class="nova-extra-centro ne-cotas"></td>
+    <td><span class="nova-extra-pm-dias"></span></td>
+  </tr>
 </template>
-
-<template id="tpl-ne-celula">
-  <td><button type="button" class="nova-extra-cel"></button></td>
-</template>
-
-<template id="tpl-ne-chip">
-  <span class="nova-extra-chip"><span class="nova-extra-chip-texto"></span><span class="nova-extra-bolas"><i></i><i></i><i></i><i></i></span></span>
-</template>
-
-<template id="tpl-ne-f4">
-  <span class="nova-extra-f4"><i></i><i></i><i></i><i></i></span>
+<template id="tpl-ne-pm-dia">
+  <button type="button" class="selo nova-extra-pm-dia"></button>
 </template>
 
 <template id="tpl-ne-dia-cal">
@@ -322,43 +324,13 @@
   <span class="nova-extra-pessoa"><small></small><b></b><span class="ne-de"></span><span class="ne-hora"></span></span>
 </template>
 
-<!-- molde: o painel de uma casa da grade (o militar num dia) -->
-<template id="tpl-ne-casa">
-  <div class="nova-extra-pedido">
-    <div class="nova-extra-selos"></div>
-    <span class="nova-extra-nota nova-extra-nota--alerta oculto ne-aviso"></span>
-    <section class="nova-extra-sec">
-      <b class="nova-extra-pergunta">Horários</b>
-      <div class="nova-extra-horarios">
-        <button type="button" class="nova-extra-cota" data-bloco="1">08h às 14h</button>
-        <button type="button" class="nova-extra-cota" data-bloco="2">14h às 20h</button>
-        <button type="button" class="nova-extra-cota" data-bloco="3">20h às 02h</button>
-        <button type="button" class="nova-extra-cota" data-bloco="4">02h às 08h</button>
-      </div>
-    </section>
-    <section class="nova-extra-sec">
-      <b class="nova-extra-pergunta">Onde</b>
-      <div class="ne-onde"></div>
-    </section>
-    <section class="nova-extra-sec oculto ne-porque-sec">
-      <b class="nova-extra-pergunta">Por que a sugestão pôs aqui</b>
-      <div class="ne-porque"></div>
-    </section>
-    <span class="nova-extra-ajuda ne-cotas-linha"></span>
-  </div>
-</template>
-
-<template id="tpl-ne-opcao-uni">
-  <label class="geral-opcao"><input type="radio" name="ne-onde" /><span></span></label>
+<!-- painel do dia: os selos de um militar (embaixo do nome) e uma frase (o porquê da sugestão, a falta que sobra) -->
+<template id="tpl-ne-selos">
+  <span class="nova-extra-selos-linha"></span>
 </template>
 
 <template id="tpl-ne-texto">
   <span class="nova-extra-porque"></span>
-</template>
-
-<template id="tpl-ne-casa-acoes">
-  <button type="button" class="botao" id="ne-casa-tirar">Tirar do dia</button>
-  <button type="button" class="botao botao--primario" id="ne-casa-pronto">Pronto</button>
 </template>
 
 <template id="tpl-nova-extra-militar">

@@ -124,6 +124,18 @@
   white-space: nowrap;
 }
 
+/* Mín. · Ideal · Máx.: o número com largura fixa (cabe "88"), para as colunas alinharem entre os postos */
+.nova-distribuicao-numeros {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.nova-distribuicao-numero {
+  min-width: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
 .nova-distribuicao-cartao-titulo {
   margin: 0;
   font-size: 14px;
@@ -183,6 +195,13 @@
 .nova-distribuicao-fora-aviso { padding: 0 8px 0 32px; }
 
 /* frase com os campos de seleção no meio */
+/* a regra automática em duas linhas (Substitutos): juntas, como uma frase só */
+.nova-distribuicao-automatica-linhas {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .nova-distribuicao-frase {
   display: flex;
   flex-wrap: wrap;

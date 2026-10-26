@@ -3,9 +3,10 @@
    O painel direito largo, em três caixas: 1. as trocas do mês (as do
    militar e, para o administrador, também as da área dele; todas já
    marcadas), 2. o texto para a Parte (Informo, no passado, ou
-   Solicito, no futuro), pronto para copiar, e 3. o PDF (Lista ou
-   Registro técnico) com a prévia, refeita a cada mudança (a última
-   pedida vale). Os registros das marcadas vêm do banco
+   Solicito, no futuro), pronto para copiar, e 3. o PDF (Lista,
+   Registro técnico ou Alterações, que vale para todas as trocas do
+   mês: trocas-imprimir-alteracoes.js) com a prévia, refeita a cada
+   mudança (a última pedida vale). Os registros das marcadas vêm do banco
    (fn_trocas_impressao), que confere troca a troca quem pode ver.
    No celular o painel fica sem a prévia (o navegador não mostra PDF
    dentro da página). RosterWork.trocasImprimir.
@@ -220,6 +221,7 @@
   /* o PDF das marcadas, no formato escolhido: { arquivo, nome } */
   function pedirArquivo() {
     var regs = form.registros, mes = doisDig(form.mes.getMonth() + 1), ano = form.mes.getFullYear();
+    if (form.formato === 'alteracoes') return RW.trocasImprimirAlteracoes.arquivo(form.todas, form.mes, form.nomeMes.textContent);
     if (!regs.length) return Promise.reject({ nenhuma: true });
     if (form.formato === 'lista') {
       return RW.trocasRelatorioPdf.arquivo(regs, form.nomeMes.textContent).then(function (arq) { return { arquivo: arq, nome: msg().pdf.arquivo(mes, ano) }; });
@@ -229,6 +231,9 @@
       return { arquivo: arq, nome: regs.length === 1 ? t.arquivo(regs[0].registro.numero, regs[0].registro.ano) : t.arquivoVarios(mes, ano) };
     });
   }
+
+  /* o aviso do que faltou: nenhuma marcada, nenhuma alteração no mês ou a falha */
+  function textoDoErro(e, padrao) { return e && e.nenhuma ? msg().nenhumaMarcada : e && e.semAlteracoes ? msg().semAlteracoes : padrao; }
 
   function mostrarCarregando(sim) { form.carregando.classList.toggle('carregando-veu--visivel', sim); }
 
@@ -240,7 +245,11 @@
 
   function fazerPrevia(meu) {
     if (RW.celular && RW.celular()) { mostrarCarregando(false); return; }
+    /* as Alterações não dependem das marcadas: a prévia do mesmo mês fica como está */
+    var qual = form.formato === 'alteracoes' ? form.nomeMes.textContent : null;
+    if (qual && qual === form.previaDe) { mostrarCarregando(false); return; }
     var ref = form;
+    form.previaDe = null;
     form.pedido = { token: meu, promessa: pedirArquivo() };
     form.pedido.promessa.then(function (r) {
       if (form !== ref || meu !== token) return;
@@ -250,9 +259,11 @@
       form.previa.src = form.url + '#toolbar=0&navpanes=0&view=FitH';
       form.aviso.classList.add('oculto');
       mostrarCarregando(false);
+      form.previaDe = qual;
     }, function (e) {
       if (form !== ref || meu !== token) return;
-      mostrarAviso(e && e.nenhuma ? msg().nenhumaMarcada : msg().falhaPrevia);
+      if (e && e.semAlteracoes) form.previaDe = qual;
+      mostrarAviso(textoDoErro(e, msg().falhaPrevia));
     });
   }
 
@@ -264,12 +275,14 @@
   }
 
   /* ---------- gerar ---------- */
-  /* baixa o arquivo da prévia (ou monta agora, se a prévia ainda não saiu) e fecha o painel */
+  /* baixa o arquivo da prévia (ou monta agora, se a prévia ainda não saiu) e fecha o painel; as Alterações não pedem
+     trocas marcadas */
   function gerar() {
     var botao = form.gerar;
-    if (!idsMarcados().length) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: msg().nenhumaMarcada }); return; }
+    var alteracoes = form.formato === 'alteracoes';
+    if (!alteracoes && !idsMarcados().length) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: msg().nenhumaMarcada }); return; }
     var pronto = form.pedido && form.pedido.token === token;
-    var promessa = pronto ? form.pedido.promessa : RW.rpc('fn_trocas_impressao', { p_troca_ids: idsMarcados() }).then(function (r) {
+    var promessa = pronto ? form.pedido.promessa : alteracoes ? pedirArquivo() : RW.rpc('fn_trocas_impressao', { p_troca_ids: idsMarcados() }).then(function (r) {
       guardarRegistros(r);
       return pedirArquivo();
     });
@@ -281,7 +294,7 @@
       if (RW.painel) RW.painel.fechar();
     }).catch(function (e) {
       terminar();
-      if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: e && e.nenhuma ? msg().nenhumaMarcada : msg().falhaGerar });
+      if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: textoDoErro(e, msg().falhaGerar) });
     });
   }
 
@@ -290,6 +303,7 @@
     token++;
     clearTimeout(espera);
     if (form && form.url) URL.revokeObjectURL(form.url);
+    if (RW.trocasImprimirAlteracoes) RW.trocasImprimirAlteracoes.limpar();
     form = null;
   }
 
@@ -311,7 +325,7 @@
     /* as escolhas (mês, marcadas, texto, formato), os dados e as peças do painel */
     form = {
       mes: new Date(hoje.getFullYear(), hoje.getMonth(), 1), texto: 'informo', formato: 'lista',
-      todas: null, doMes: [], marcadas: {}, registros: null, militares: [], pedido: null, url: null,
+      todas: null, doMes: [], marcadas: {}, registros: null, militares: [], pedido: null, url: null, previaDe: null,
       nomeMes: peca('mes'), todasBotao: peca('todas'), lista: peca('lista'), contagem: peca('contagem'),
       ajudaTexto: peca('texto-ajuda'), caixaTexto: peca('texto-caixa'), copiar: peca('copiar'),
       ajudaFormato: peca('formato-ajuda'), previa: peca('previa'), aviso: peca('previa-aviso'),

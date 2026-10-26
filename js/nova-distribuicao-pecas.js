@@ -45,19 +45,20 @@
     return ((ctx.calc && ctx.calc.funcoes) || []).filter(function (f) { return f.nome === nome; })[0] || null;
   }
 
-  /* a função como aparece: o banco diz pelo lugar na viatura ("Efetivo 1 · Chefe de Socorro",
-     "Efetivo 2 · Condutor"); o nome guardado não muda */
-  function rotulo(ctx, nome) {
+  /* a função como aparece: o banco diz pelo lugar na viatura. Inteiro ("Efetivo 1 · Chefe de Socorro",
+     "Efetivo 2 · Condutor") só na Ordem de importância; nos demais, o curto ("Chefe de Socorro",
+     "Condutor"). O nome guardado não muda */
+  function rotulo(ctx, nome, inteiro) {
     var f = funcaoDe(ctx, nome);
-    if (f && f.rotulo) return f.rotulo;
+    if (f && f.rotulo) return inteiro ? f.rotulo : (f.curto || f.rotulo);
     var p = partes(nome);
     return f && f.papel ? p.funcao + ' · ' + f.papel : p.funcao;
   }
 
   /* "Posto · Função" (o posto curto) */
-  function completo(ctx, nome) {
+  function completo(ctx, nome, inteiro) {
     if (!nome) return '';
-    return postoCurto(partes(nome).posto) + ' · ' + rotulo(ctx, nome);
+    return postoCurto(partes(nome).posto) + ' · ' + rotulo(ctx, nome, inteiro);
   }
 
   function papel(ctx) { return (ctx.calc && ctx.calc.papel) || ''; }
@@ -156,14 +157,21 @@
   }
 
   /* cartão fechado com a resposta embaixo; ao clicar, abre as opções (montar).
-     extra = { numeros, reserva, muda }: os números do efetivo e o selo Reserva no cabeçalho; muda = a chave
+     extra = { numeros, reserva, muda }: os números do efetivo ([mín., ideal, máx.] ou uma frase) e o selo
+     Reserva no cabeçalho; muda = a chave
      (ou as chaves) da diferença que marca o cartão, fechado e aberto */
   function cartao(destino, api, ctx, id, titulo, linhas, montar, comErro, extra) {
     var caixa = tpl('cartao');
     var cab = caixa.querySelector('.nova-distribuicao-cartao-cabecalho');
     var aberto = api.aberto() === ctx.lado + ':' + id;
     caixa.querySelector('.nova-distribuicao-cartao-titulo').textContent = titulo;
-    caixa.querySelector('.nova-distribuicao-cartao-numeros').textContent = (extra && extra.numeros) || '';
+    var numeros = caixa.querySelector('.nova-distribuicao-cartao-numeros');
+    var valores = extra && extra.numeros;
+    if (Array.isArray(valores)) {
+      var colunas = tpl('numeros');
+      colunas.querySelectorAll('[data-numero]').forEach(function (el) { el.textContent = String(valores[Number(el.getAttribute('data-numero'))]); });
+      numeros.appendChild(colunas);
+    } else numeros.textContent = valores || '';
     caixa.querySelector('.nova-distribuicao-cartao-reserva').classList.toggle('oculto', !(extra && extra.reserva));
     caixa.classList.toggle('nova-distribuicao-cartao--erro', !!comErro);
     var res = caixa.querySelector('.nova-distribuicao-cartao-resposta');

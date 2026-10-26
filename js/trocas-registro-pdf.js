@@ -174,23 +174,27 @@
   }
 
   /* um ou mais registros num arquivo só (cada um começa numa folha nova). Com algum que não vale mais, desenha duas vezes:
-     a 1ª acha em que folha começa cada registro (pelo título), a 2ª põe a marca d'água nas folhas dele */
+     a 1ª acha em que folha começa cada registro (pelo título), a 2ª põe a marca d'água nas folhas dele. O conteúdo é
+     montado de novo a cada desenho (a biblioteca do PDF mexe no que recebe) */
   function arquivo(registros) {
     return P().preparar().then(function (c) {
-      var conteudo = [];
-      registros.forEach(function (r, i) {
-        var partes = conteudoDoRegistro(r, c);
-        if (i) partes[0].pageBreak = 'before';
-        conteudo = conteudo.concat(partes);
-      });
+      function conteudo() {
+        var todo = [];
+        registros.forEach(function (r, i) {
+          var partes = conteudoDoRegistro(r, c);
+          if (i) partes[0].pageBreak = 'before';
+          todo = todo.concat(partes);
+        });
+        return todo;
+      }
       var titulo = registros.length === 1 ? txt().numero(registros[0].registro.numero, registros[0].registro.ano) : txt().titulo;
       var comMarca = registros.some(function (r) { return r.encerramento && txt().encerramento.marca[r.encerramento.tipo]; });
-      if (!comMarca) return P().desenhar(documento(conteudo, titulo, c), c).then(function (d) { return d.arquivo; });
+      if (!comMarca) return P().desenhar(documento(conteudo(), titulo, c), c).then(function (d) { return d.arquivo; });
       var marcadores = registros.map(function () { return { texto: txt().titulo }; });
-      return P().desenhar(documento(conteudo, titulo, c), c, marcadores).then(function (primeiro) {
+      return P().desenhar(documento(conteudo(), titulo, c), c, marcadores).then(function (primeiro) {
         var inicios = primeiro.folhas;
         if (!inicios) return primeiro.arquivo;   // não achou onde cada registro começa: sai sem a marca
-        var doc = documento(conteudo, titulo, c);
+        var doc = documento(conteudo(), titulo, c);
         doc.background = function (folha, tamanho) {
           var i = -1;
           inicios.forEach(function (inicio, k) { if (folha >= inicio) i = k; });
