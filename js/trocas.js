@@ -286,7 +286,7 @@
     mostrarVista('todas');
     montarArvoreTodas();
 
-    /* o atalho do Início chega pedindo o Solicitar troca aberto */
+    /* quem chega pedindo o Solicitar troca (referência 'solicitar') abre com ele aberto */
     if (RW.referenciaPedida && RW.referenciaPedida('trocas') === 'solicitar') abrirSolicitar();
   }
 

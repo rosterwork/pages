@@ -76,8 +76,8 @@
   background-color: var(--borda-forte);
 }
 
-/* grupo ADMINISTRAÇÃO: as ações de administrador de uma barra (ou de um bloco, como o
-   Avisos do Início) num bloco cinza com o rótulo; a ação do militar fica fora, antes dele.
+/* grupo ADMINISTRAÇÃO: as ações de administrador de uma barra (ou de um bloco) num bloco
+   cinza com o rótulo; a ação do militar fica fora, antes dele.
    Nasce com .oculto e a página o mostra só ao admin (o servidor continua garantindo a
    permissão). É um .dropdown: no computador o menu não tem caixa (display: contents) e o
    bloco é desenhado no próprio grupo; no celular aparece só o botão "Administração", que
@@ -226,7 +226,7 @@
     flex-basis: 100%;
   }
 
-  /* barra de uma linha só (só o período e os ícones, sem ação nem seletor; ex.: o Início): sem essa quebra */
+  /* barra de uma linha só (só o período e os ícones, sem ação nem seletor): sem essa quebra */
   html[data-celular] .pagina-subcabecalho--uma-linha::after {
     display: none;
   }

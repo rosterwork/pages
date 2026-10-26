@@ -45,9 +45,11 @@
     return ((ctx.calc && ctx.calc.funcoes) || []).filter(function (f) { return f.nome === nome; })[0] || null;
   }
 
-  /* a função como aparece: "Efetivo 2 · Chefe de Socorro" quando é a da função especial */
+  /* a função como aparece: o banco diz pelo lugar na viatura ("Efetivo 1 · Chefe de Socorro",
+     "Efetivo 2 · Condutor"); o nome guardado não muda */
   function rotulo(ctx, nome) {
     var f = funcaoDe(ctx, nome);
+    if (f && f.rotulo) return f.rotulo;
     var p = partes(nome);
     return f && f.papel ? p.funcao + ' · ' + f.papel : p.funcao;
   }
@@ -197,11 +199,15 @@
     return t;
   }
 
-  function setas(linha, indice, total, aoMover, travado) {
+  /* bloqueio = { sobe, desce }: o motivo de a seta ficar inativa (vira a dica dela) */
+  function setas(linha, indice, total, aoMover, travado, bloqueio) {
     var subir = linha.querySelector('.nova-distribuicao-subir');
     var descer = linha.querySelector('.nova-distribuicao-descer');
-    subir.disabled = !!travado || indice === 0;
-    descer.disabled = !!travado || indice === total - 1;
+    var motivos = bloqueio || {};
+    subir.disabled = !!travado || indice === 0 || !!motivos.sobe;
+    descer.disabled = !!travado || indice === total - 1 || !!motivos.desce;
+    if (motivos.sobe && indice > 0) subir.setAttribute('data-dica', motivos.sobe);
+    if (motivos.desce && indice < total - 1) descer.setAttribute('data-dica', motivos.desce);
     subir.addEventListener('click', function () { aoMover(-1); });
     descer.addEventListener('click', function () { aoMover(1); });
   }

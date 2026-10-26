@@ -395,14 +395,15 @@
       <button type="button" class="botao botao--icone nova-distribuicao-editar" aria-label="Editar substituição">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-editar"/></svg>
       </button>
-      <button type="button" class="botao botao--icone nova-distribuicao-remover" aria-label="Excluir substituição">
+      <button type="button" class="botao botao--icone nova-distribuicao-remover" aria-label="Excluir substituição" data-dica="Excluir substituição">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
       </button>
     </span>
   </div>
 </template>
 <!-- a substituição aberta no lugar da viatura (vai no Salvar da página): o Nº fora da linha, a viatura como título fixo,
-     o prefixo e a CNH da que entra e o início e o fim, com os rótulos, nas colunas da viatura; as frases de erro e a ajuda -->
+     o prefixo e a CNH da que entra e o início e o fim, com os rótulos, nas colunas da viatura; as frases de erro, a ajuda,
+     Cancelar (desfaz o que foi digitado desde que abriu) e Concluir (confere e fecha) -->
 <template id="tpl-nova-distribuicao-troca-caixa">
   <div class="nova-distribuicao-troca-caixa">
     <span class="nova-distribuicao-linha-ordem"></span>
@@ -413,14 +414,6 @@
         <span class="nova-distribuicao-troca-tipo-gravada">Substituição temporária</span>
         <span class="nova-distribuicao-troca-tipo-nova">Nova substituição temporária</span>
       </span>
-    </span>
-    <span class="nova-distribuicao-viatura-acoes">
-      <button type="button" class="botao botao--icone nova-distribuicao-troca-fechar" aria-label="Fechar a substituição" aria-expanded="true">
-        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
-      </button>
-      <button type="button" class="botao botao--icone nova-distribuicao-remover" aria-label="Excluir substituição">
-        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
-      </button>
     </span>
     <span class="rotulo-secao nova-distribuicao-troca-na-coluna-prefixo">Substituta</span>
     <span class="rotulo-secao">CNH</span>
@@ -438,6 +431,10 @@
     <input type="text" class="campo-entrada nova-distribuicao-troca-data nova-distribuicao-troca-fim" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" aria-label="Fim" />
     <div class="nova-distribuicao-troca-erros"></div>
     <p class="nova-distribuicao-ajuda nova-distribuicao-troca-ajuda">No período, a substituta assume o posto com as mesmas funções e ordem. Depois do fim, a original volta.</p>
+    <div class="nova-distribuicao-troca-botoes">
+      <button type="button" class="botao nova-distribuicao-troca-cancelar">Cancelar</button>
+      <button type="button" class="botao nova-distribuicao-troca-concluir">Concluir</button>
+    </div>
   </div>
 </template>
 <template id="tpl-nova-distribuicao-nova-viatura">

@@ -7,8 +7,10 @@
    muda na mudança agendada e as substituições da viatura. A
    substituição abre numa caixa no lugar da viatura (o Nº fora da
    linha, a viatura como título fixo, os campos da substituta nas
-   mesmas colunas) e fica no rascunho, como o resto da página: vai
-   no Salvar e sai no Cancelar do rodapé.
+   mesmas colunas), com Cancelar e Concluir, e fica no rascunho,
+   como o resto da página: vai no Salvar e sai no Cancelar do
+   rodapé. Uma por viatura: enquanto uma não terminou, o Substituir
+   temporariamente dela fica inativo.
    ============================================================ */
 (function () {
   'use strict';
@@ -16,7 +18,7 @@
 
   /* as substituições mudadas e ainda não salvas (vão no Salvar da página), uma entrada por substituição:
      { chave, id (nulo = nova), unidade_id, viatura, prefixo, cnh, inicio, fim (dd/mm/aaaa), comecou_antes,
-     excluir, original (a gravada), erros } */
+     excluir, original (a gravada), antes (os campos quando a caixa abriu), concluida (a nova já concluída), erros } */
   var rascunho = [];
   var novas = 0;
   var aberta = null;   /* a chave da substituição aberta na caixa (uma por vez) */
@@ -53,22 +55,39 @@
     return P().texto(M().trocaTexto, { prefixo: e.prefixo || '?', cnh: e.cnh || '?', inicio: e.inicio || '?', fim: e.fim || '?' });
   }
 
-  /* abre uma por vez (a que estava aberta sem mudança sai do rascunho) */
+  /* abre uma por vez (a que estava aberta sem mudança sai do rascunho); guarda os campos de agora para o Cancelar */
   function abrirTroca(api, e) {
     rascunho = rascunho.filter(function (x) { return x === e || mudou(x); });
     if (rascunho.indexOf(e) < 0) rascunho.push(e);
+    e.antes = { prefixo: e.prefixo, cnh: e.cnh, inicio: e.inicio, fim: e.fim };
     aberta = e.chave;
     api.focarDepois('#nova-distribuicao-troca-prefixo');
     api.redesenhar();
   }
 
-  function fecharTroca(api) {
-    rascunho = rascunho.filter(mudou);
+  /* Cancelar: desfaz o que foi digitado desde que a caixa abriu (a nova ainda não concluída sai) e fecha */
+  function cancelarTroca(api, e) {
+    if (!e.id && !e.concluida) rascunho = rascunho.filter(function (x) { return x !== e; });
+    else Object.keys(e.antes).forEach(function (c) { e[c] = e.antes[c]; });
+    e.erros = {};
     aberta = null;
+    rascunho = rascunho.filter(mudou);
     api.redesenhar();
   }
 
-  /* a lixeira: a nova sai do rascunho; a gravada fica marcada e sai no Salvar */
+  /* Concluir: confere os campos; com erro, as frases aparecem e a caixa continua aberta; sem erro, fecha
+     (o que foi digitado fica no rascunho até o Salvar da página) */
+  function concluirTroca(api, e) {
+    e.erros = errosDe(e, api.dados().limite);
+    if (!Object.keys(e.erros).length) {
+      e.concluida = true;
+      aberta = null;
+      rascunho = rascunho.filter(mudou);
+    }
+    api.redesenhar();
+  }
+
+  /* a lixeira (só na linha fechada): a nova sai do rascunho; a gravada fica marcada e sai no Salvar */
   function excluirTroca(api, e) {
     if (e.id) entradaDe(e.original).excluir = true;
     else rascunho = rascunho.filter(function (x) { return x !== e; });
@@ -76,28 +95,29 @@
     api.redesenhar();
   }
 
-  /* antes do Salvar: confere as mudadas (as frases ficam em cada uma e a 1ª com erro abre); edições voltam no
-     máximo até o limite */
-  function conferirTrocas(dados) {
-    var limite = dados.limite;
+  /* as frases de uma substituição, por campo; edições voltam no máximo até o limite */
+  function errosDe(f, limite) {
+    var e = {};
     var trava = P().texto(M().trocaLimite, { data: br(limite) });
+    var de = RosterWork.data.paraISO(f.inicio);
+    var ate = RosterWork.data.paraISO(f.fim);
+    if (!P().FORMATO_PREFIXO.test(f.prefixo || '')) e.prefixo = f.prefixo ? M().prefixoInvalido : M().prefixoVazio;
+    else if (f.prefixo === f.viatura) e.prefixo = M().trocaMesmoPrefixo;
+    if (!f.cnh) e.cnh = M().trocaEscolhaCnh;
+    if (!de) e.inicio = M().erroInicio;
+    else if (de < limite && !f.comecou_antes) e.inicio = trava;
+    if (!ate) e.fim = M().trocaErroFim;
+    else if (de && ate < de) e.fim = M().erroOrdemDatas;
+    else if (ate < limite) e.fim = trava;
+    return e;
+  }
+
+  /* antes do Salvar: confere as mudadas (as frases ficam em cada uma e a 1ª com erro abre) */
+  function conferirTrocas(dados) {
     var primeira = null;
     rascunho.forEach(function (f) {
-      var e = {};
-      if (mudou(f) && !f.excluir) {
-        var de = RosterWork.data.paraISO(f.inicio);
-        var ate = RosterWork.data.paraISO(f.fim);
-        if (!P().FORMATO_PREFIXO.test(f.prefixo || '')) e.prefixo = f.prefixo ? M().prefixoInvalido : M().prefixoVazio;
-        else if (f.prefixo === f.viatura) e.prefixo = M().trocaMesmoPrefixo;
-        if (!f.cnh) e.cnh = M().trocaEscolhaCnh;
-        if (!de) e.inicio = M().erroInicio;
-        else if (de < limite && !f.comecou_antes) e.inicio = trava;
-        if (!ate) e.fim = M().trocaErroFim;
-        else if (de && ate < de) e.fim = M().erroOrdemDatas;
-        else if (ate < limite) e.fim = trava;
-      }
-      f.erros = e;
-      if (!primeira && Object.keys(e).length) primeira = f;
+      f.erros = mudou(f) && !f.excluir ? errosDe(f, dados.limite) : {};
+      if (!primeira && Object.keys(f.erros).length) primeira = f;
     });
     if (primeira) aberta = primeira.chave;
     return !primeira;
@@ -115,7 +135,7 @@
   }
 
   /* a caixa no lugar da viatura: o Nº, a viatura como título fixo e os campos da substituta com os rótulos;
-     as frases de erro embaixo (somem do campo que muda) */
+     as frases de erro embaixo (somem do campo que muda); Cancelar e Concluir no pé */
   function caixaTroca(destino, api, ctx, v, numero, f) {
     var caixa = P().tpl('troca-caixa');
     caixa.querySelector('.nova-distribuicao-linha-ordem').textContent = numero + 'º';
@@ -167,10 +187,11 @@
     });
     if (f.comecou_antes) campos.inicio.disabled = true;   /* a que começou antes do limite dos 7 dias só muda o fim */
 
-    caixa.querySelector('.nova-distribuicao-troca-fechar').addEventListener('click', function () { fecharTroca(api); });
-    var excluir = caixa.querySelector('.nova-distribuicao-remover');
-    excluir.disabled = ctx.soLeitura || f.comecou_antes;
-    excluir.addEventListener('click', function () { excluirTroca(api, f); });
+    var cancelar = caixa.querySelector('.nova-distribuicao-troca-cancelar');
+    var concluir = caixa.querySelector('.nova-distribuicao-troca-concluir');
+    concluir.disabled = ctx.soLeitura;
+    cancelar.addEventListener('click', function () { cancelarTroca(api, f); });
+    concluir.addEventListener('click', function () { concluirTroca(api, f); });
     destino.appendChild(caixa);
   }
 
@@ -270,6 +291,10 @@
       .concat(rascunho.filter(function (e) { return !e.id && nomes.indexOf(e.viatura) >= 0; }))
       .filter(function (e) { return !e.excluir; });
     var aberto = daViatura.filter(function (e) { return e.chave === aberta; })[0];
+    var hoje = api.dados().hoje;
+    var temAtiva = daViatura.some(function (e) { var fim = RosterWork.data.paraISO(e.fim); return !fim || fim >= hoje; });
+    trocar.disabled = trocar.disabled || temAtiva;
+    if (temAtiva) trocar.setAttribute('data-dica', P().texto(M().trocaUmaPorVez, { viatura: v.nome }));
     linha.classList.toggle('nova-distribuicao-viatura--substituindo', !!aberto);
     if (aberto) caixaTroca(subs, api, ctx, v, i + 1, aberto);
     daViatura.forEach(function (e) {

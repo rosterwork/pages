@@ -24,8 +24,8 @@
    riscado na função de onde saiu, quem entra pelo pedido com o "Novo"
    e quem o sistema remanejou só com a barra cinza (as marcas vêm do
    banco, pedido_escala_comparar).
-   Pelo Início (opção destacar): só de leitura, com a linha do militar
-   no realce do "Marcar" da busca da Escala.
+   Com a opção destacar: só de leitura, com a linha do militar no
+   realce do "Marcar" da busca da Escala.
    ============================================================ */
 (function () {
   'use strict';

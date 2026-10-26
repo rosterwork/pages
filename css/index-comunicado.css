@@ -1,9 +1,8 @@
 /* ============================================================
    NOVO COMUNICADO — o painel de criação (só administrador)
-   Mora no shell porque o módulo js/inicio-aviso.js é compartilhado
-   por Início e Avisos: o molde #tpl-inicio-aviso-form está no
-   index.html, e o estilo dele precisa estar carregado nas duas
-   telas. Só o que é exclusivo do painel; o resto vem dos
+   Da página Avisos (módulo js/avisos-comunicado.js); o molde
+   #tpl-avisos-comunicado-form fica no index.html, e o estilo, aqui
+   no shell. Só o que é exclusivo do painel; o resto vem dos
    componentes (campo, abas, caixa-selecao, busca).
    ============================================================ */
 

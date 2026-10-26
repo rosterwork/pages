@@ -10,18 +10,21 @@
       </button>
       <div class="dropdown-menu pagina-ajuda-menu"></div>
     </div>
-    <!-- modos: o Dia (a escala principal, impressa e exibida na passagem de serviço) num grupo próprio,
-         à frente das outras visões; os dois grupos valem como uma escolha só (escalas.js),
-         com um traço só (data-abas-grupo). No celular ficam só o Dia e o Mês (Agenda e Calendário):
-         o que tem .escala-so-computador some lá (escalas-controles.css). A Semana fica oculta para
-         todos (o modo continua no código) -->
+    <!-- modos: a Minha escala (o seu mês) e o Dia (a escala principal, impressa e exibida na passagem de
+         serviço), cada um num grupo próprio, à frente das outras visões; os grupos valem como uma escolha só
+         (escalas.js), com um traço só (data-abas-grupo). Sem visão guardada, abre no Mês. No celular ficam
+         a Minha escala, o Dia e o Mês (Agenda e Calendário): o que tem .escala-so-computador some lá
+         (escalas-controles.css). A Semana fica oculta para todos (o modo continua no código) -->
     <div class="escala-modos" id="escala-modos" data-abas-grupo>
+      <div class="abas" id="escala-modo-minha">
+        <button type="button" class="aba" data-modo="minha">Minha escala</button>
+      </div>
       <div class="abas" id="escala-modo-principal">
-        <button type="button" class="aba aba--ativa" data-modo="dia">Dia</button>
+        <button type="button" class="aba" data-modo="dia">Dia</button>
       </div>
       <div class="abas" id="escala-modo-visoes">
         <button type="button" class="aba escala-so-computador" data-modo="militares">Militares</button>
-        <button type="button" class="aba" data-modo="mes">Mês</button>
+        <button type="button" class="aba aba--ativa" data-modo="mes">Mês</button>
         <button type="button" class="aba escala-so-computador oculto" data-modo="semana">Semana</button>
         <button type="button" class="aba escala-so-computador" data-modo="colunas">Colunas</button>
       </div>
@@ -112,6 +115,29 @@
 <!-- uma aba solta (o texto vem do JS): as unidades do Colunas › Unidades e da faixa do celular, e as semanas do Imprimir -->
 <template id="tpl-escala-aba-unidade">
   <button type="button" class="aba"></button>
+</template>
+
+<!-- Minha escala: o seu mês no calendário (os ícones da Escala em cada dia) e, ao lado (embaixo, no celular),
+     a escala inteira da unidade no dia escolhido, só de leitura, com você realçado (o desenho do Dia).
+     O mês sem serviço diz por quê e leva à escala de todos (escalas-minha.js) -->
+<template id="tpl-escala-minha">
+  <div class="escala-minha">
+    <div class="escala-minha-esquerda">
+      <section class="escala-minha-calendario"></section>
+      <div class="nota escala-minha-sem-servico oculto">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-escalas"/></svg>
+        <span class="nota-texto escala-minha-sem-servico-texto"></span>
+        <button type="button" class="botao escala-minha-ver-todos">Ver a escala de todos</button>
+      </div>
+    </div>
+    <section class="escala-minha-dia oculto">
+      <div class="escala-minha-dia-cabeca">
+        <span class="escala-minha-dia-titulo"></span>
+        <span class="escala-minha-dia-unidade"></span>
+      </div>
+      <div class="escala-minha-dia-corpo"></div>
+    </section>
+  </div>
 </template>
 
 <!-- modo Dia: árvore de unidades com a distribuição do dia (postos → funções) -->

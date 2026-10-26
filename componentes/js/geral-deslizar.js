@@ -1,7 +1,7 @@
 /* ============================================================
    DESLIZAR PARA O LADO — componente compartilhado do celular
    Puxar a tela para o lado troca para o vizinho: o mês, na grade do
-   mês (o calendário do Início, a Agenda e o Calendário da Escala e
+   mês (a Minha escala, a Agenda e o Calendário da Escala e
    o Calendário da Extrajornada), e a aba, no painel lateral
    (geral-painel.js). O conteúdo acompanha o dedo, andando menos que
    ele (como elástico), e da borda sai a etiqueta com o destino

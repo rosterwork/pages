@@ -140,7 +140,7 @@
       ouvindo = true;
     }
 
-    /* o atalho do Início chega pedindo o Solicitar folga aberto */
+    /* quem chega pedindo o Solicitar folga (referência 'solicitar') abre com ele aberto */
     if (RW.referenciaPedida && RW.referenciaPedida('folgas') === 'solicitar' && RW.folgasMinhas) RW.folgasMinhas.solicitar();
 
     return pronto;

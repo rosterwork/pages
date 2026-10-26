@@ -1,5 +1,5 @@
 /* ============================================================
-   COMUNICADOS — criar e remover (só administrador)
+   COMUNICADOS — criar e remover (só administrador; página Avisos)
    "Novo comunicado" abre o painel direito com o DESTINATÁRIO no
    topo (Unidades · Militares · Todos), o título e a mensagem, e
    grava por fn_avisos_criar; a lixeira remove por
@@ -13,7 +13,7 @@
 
   var RW = window.RosterWork = window.RosterWork || {};
 
-  function msg() { return (RW.mensagens && RW.mensagens.inicio) || {}; }
+  function msg() { return (RW.mensagens && RW.mensagens.avisos) || {}; }
 
   var sujo = false;
   var alcance = 'unidades';
@@ -140,7 +140,7 @@
 
   /* abre o painel de criação; grava e chama onMudou no sucesso */
   function abrirNovo(onMudou, pagina) {
-    pagina = pagina || 'Início';
+    pagina = pagina || 'Avisos';
     if (!RW.painel) return;
     RW.painel.abrir({
       titulo: 'Novo comunicado',
@@ -149,8 +149,8 @@
     });
     var corpo = RW.painel.corpo();
     var rodape = RW.painel.rodape();
-    var tplForm = document.getElementById('tpl-inicio-aviso-form');
-    var tplAcoes = document.getElementById('tpl-inicio-aviso-acoes');
+    var tplForm = document.getElementById('tpl-avisos-comunicado-form');
+    var tplAcoes = document.getElementById('tpl-avisos-comunicado-acoes');
     if (corpo && tplForm) corpo.appendChild(tplForm.content.cloneNode(true));
     if (rodape && tplAcoes) { rodape.appendChild(tplAcoes.content.cloneNode(true)); rodape.classList.remove('oculto'); }
 
@@ -218,7 +218,7 @@
 
   /* remove (desativa) um comunicado, com confirmação; chama onMudou no sucesso */
   function desativar(avisoId, onMudou, pagina) {
-    pagina = pagina || 'Início';
+    pagina = pagina || 'Avisos';
     if (!RW.confirmar) return;
     RW.confirmar({
       tipo: 'aviso', mensagem: msg().confirmarRemoverAviso,
@@ -248,5 +248,5 @@
     return !!(aviso && aviso.aviso_id && aviso.pode_desativar);
   }
 
-  RW.inicioAviso = { ehAdmin: ehAdmin, podeDesativar: podeDesativar, abrirNovo: abrirNovo, desativar: desativar };
+  RW.avisosComunicado = { ehAdmin: ehAdmin, podeDesativar: podeDesativar, abrirNovo: abrirNovo, desativar: desativar };
 })();

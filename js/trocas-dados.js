@@ -37,9 +37,10 @@
     historicoPar: function (aCpf, bCpf, limite, deslocamento) { return RosterWork.rpc('fn_trocas_historico_par', { p_a_cpf: aCpf, p_b_cpf: bCpf, p_limite: limite, p_deslocamento: deslocamento }); },
     /* várias trocas: o calendário (quem pode folgar e trabalhar em cada dia; registrar = o do Registrar, de 7 dias atrás em diante),
        o resumo (duplas, rodas, sem devolução), o pedido, o Registrar (só admin: grava já aprovado; ensaio = só a Análise)
-       e o cancelamento do registro inteiro (desfazer = apaga o pedido em aberto ou o registro feito pela administração) */
-    variasDias: function (cpfs, inicio, fim, registrar) { return RosterWork.rpc('fn_trocas_varias_dias', { p_cpfs: cpfs, p_inicio: inicio, p_fim: fim, p_registrar: !!registrar }); },
-    variasMontar: function (dias) { return RosterWork.rpc('fn_trocas_varias_montar', { p_dias: dias }); },
+       e o cancelamento do registro inteiro (desfazer = apaga o pedido em aberto ou o registro feito pela administração);
+       registroId (Editar): o calendário e o resumo como se esse registro não existisse */
+    variasDias: function (cpfs, inicio, fim, registrar, registroId) { return RosterWork.rpc('fn_trocas_varias_dias', { p_cpfs: cpfs, p_inicio: inicio, p_fim: fim, p_registrar: !!registrar, p_registro_id: registroId || null }); },
+    variasMontar: function (dias, registroId) { return RosterWork.rpc('fn_trocas_varias_montar', { p_dias: dias, p_registro_id: registroId || null }); },
     variasSolicitar: function (dias, parte, ano) { return RosterWork.rpc('fn_trocas_varias_solicitar', { p_dias: dias, p_parte_numero: parte, p_parte_ano: ano }); },
     variasRegistrar: function (dias, parte, ano, ensaio) { return RosterWork.rpc('fn_trocas_varias_registrar', { p_dias: dias, p_parte_numero: parte, p_parte_ano: ano, p_ensaio: !!ensaio }); },
     variasCancelar: function (registroId, desfazer) { return RosterWork.rpc('fn_trocas_varias_cancelar', { p_registro_id: registroId, p_desfazer: !!desfazer }); },
@@ -47,6 +48,10 @@
     variasResponder: function (registroId, aceitar, motivo) { return RosterWork.rpc('fn_trocas_varias_responder', { p_registro_id: registroId, p_aceitar: aceitar, p_motivo: motivo || null }); },
     variasAprovar: function (registroId, aceitar, forcar, motivo) { return RosterWork.rpc('fn_trocas_varias_aprovar', { p_registro_id: registroId, p_aceitar: aceitar, p_forcar: !!forcar, p_motivo: motivo || null }); },
     variasParte: function (registroId, parte, ano) { return RosterWork.rpc('fn_trocas_varias_parte', { p_registro_id: registroId, p_parte_numero: parte, p_parte_ano: ano }); },
+    /* o Editar do registro: o plano que vale hoje (os dias, os militares e a Parte) e a gravação do plano novo
+       (ensaio = só a Análise, do administrador de fora) */
+    variasPlano: function (registroId) { return RosterWork.rpc('fn_trocas_varias_plano', { p_registro_id: registroId }); },
+    variasEditar: function (registroId, dias, parte, ano, ensaio) { return RosterWork.rpc('fn_trocas_varias_editar', { p_registro_id: registroId, p_dias: dias, p_parte_numero: parte, p_parte_ano: ano, p_ensaio: !!ensaio }); },
     registro: function (trocaId) { return RosterWork.rpc('fn_trocas_registro', { p_troca_id: trocaId }); }
   };
 

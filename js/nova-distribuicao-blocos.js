@@ -109,18 +109,23 @@
       corpoTabela.appendChild(lp);
     }
     var lista = ctx.resp.ordem || [];
+    /* dentro do mesmo posto a ordem segue o lugar: o banco diz que seta não anda e por quê */
+    var setasDe = {};
+    ((ctx.calc && ctx.calc.ordem_setas) || []).forEach(function (s) { setasDe[s.nome] = s; });
     lista.forEach(function (nome, i) {
       var linha = P().tpl('ordem-linha');
+      var s = setasDe[nome] || {};
       linha.querySelector('.nova-distribuicao-col-n').textContent = (++n) + 'º';
       celulas(linha, ctx, daPessoa(ctx, nome));
       marcarLinha(linha, ctx, nome);
       P().setas(linha, i, lista.length, function (passo) {
         api.mudar(ctx.lado, function (x) { P().mover(x.ordem, i, passo); });
-      }, ctx.soLeitura);
+      }, ctx.soLeitura, { sobe: s.sobe === false ? s.sobe_motivo : null, desce: s.desce === false ? s.desce_motivo : null });
       corpoTabela.appendChild(linha);
     });
     P().marcarMuda(tabela, ctx, 'ordem', tabela);
     u.appendChild(tabela);
+    P().erros(ctx, 'ordem').forEach(function (e) { P().erroCampo(u, e); });
   }
 
   /* a linha da ordem cuja posição muda na mudança agendada: o calendário no Nº, com a frase na dica */

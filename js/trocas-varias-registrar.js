@@ -1,15 +1,19 @@
 /* ============================================================
-   TROCAS — o Registrar da aba Várias trocas (só admin)
+   TROCAS — o Registrar da aba Várias trocas (só admin) e a Análise
    No Registrar troca, a aba Várias trocas (trocas-varias.js) chama
-   aqui: a Análise do registro inteiro (fn_trocas_varias_registrar
-   em ensaio), refeita a cada mudança dos dias, com o Registrar
-   trocas travado até ela chegar (igual ao Registrar de uma troca);
-   a confirmação (avisa quando a análise apontou problema), a
-   gravação já aprovada (véu global) e o resumo com o Desfazer
-   (apaga o registro inteiro e volta a escala).
-   Expõe RosterWork.trocasVariasRegistrar.{ iniciar, agendarAnalise, registrar, encerrar }
-     iniciar(est, botao) — est = o estado da aba; botao = o Registrar trocas
+   aqui: a Análise do registro inteiro, refeita a cada mudança dos
+   dias, com o Registrar trocas travado até ela chegar (igual ao
+   Registrar de uma troca); a confirmação (avisa quando a análise
+   apontou problema), a gravação já aprovada (véu global) e o resumo
+   com o Desfazer (apaga o registro inteiro e volta a escala).
+   A Análise é o ensaio que o estado da aba traz (est.ensaio): no
+   Registrar, o fn_trocas_varias_registrar; no Editar do administrador
+   de fora, o fn_trocas_varias_editar, só quando os dias mudaram, com
+   o Salvar travado até ela chegar.
+   Expõe RosterWork.trocasVariasRegistrar.{ iniciar, agendarAnalise, registrar, ultima, encerrar }
+     iniciar(est, botao) — est = o estado da aba; botao = o Registrar trocas (ou o Salvar do Editar)
      registrar(parte, ano) — confirma e grava (a aba já conferiu a Parte e os dias)
+     ultima() — a última análise que chegou (a confirmação do Editar avisa o problema)
    ============================================================ */
 (function () {
   'use strict';
@@ -28,7 +32,7 @@
   }
   function travar(sim) { if (botao) botao.disabled = sim; }
 
-  /* ---------- a Análise: roda quando há dias marcados; o Registrar trocas espera ela chegar ---------- */
+  /* ---------- a Análise: roda quando há dias marcados (no Editar, quando eles mudaram); o botão espera ela chegar ---------- */
   function agendarAnalise() {
     if (!est) return;
     if (timer) clearTimeout(timer);
@@ -36,14 +40,14 @@
     analise = null;
     var p = partes();
     if (!p) return;
-    if (!est.pares.length) { p.analiseSecao.classList.add('oculto'); travar(false); return; }
+    if (!est.pares.length || (est.editar && !RW.trocasVarias.planoMudou())) { p.analiseSecao.classList.add('oculto'); travar(false); return; }
     travar(true);
     RW.decisao.analisando(p);
     timer = setTimeout(analisar, 350);
   }
   function analisar() {
     var meu = ++req, p = partes();
-    RW.trocasDados.variasRegistrar(est.pares, null, null, true).then(function (r) {
+    est.ensaio().then(function (r) {
       if (!est || meu !== req) return;
       analise = r && r.ok ? r : null;
       RW.decisao.analise(p, analise, (r && r.erro) || M().falhaAnalise);
@@ -97,5 +101,5 @@
   function iniciar(estado, botaoRegistrar) { est = estado; botao = botaoRegistrar; analise = null; }
   function encerrar() { if (timer) clearTimeout(timer); req++; est = null; botao = null; analise = null; }
 
-  RW.trocasVariasRegistrar = { iniciar: iniciar, agendarAnalise: agendarAnalise, registrar: registrar, encerrar: encerrar };
+  RW.trocasVariasRegistrar = { iniciar: iniciar, agendarAnalise: agendarAnalise, registrar: registrar, ultima: function () { return analise; }, encerrar: encerrar };
 })();

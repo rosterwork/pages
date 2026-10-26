@@ -51,10 +51,10 @@
 
   /* ---------- abas de modo e subgrupos ---------- */
 
-  /* os modos ficam em dois grupos ([Dia] e as demais visões) dentro de #escala-modos */
+  /* os modos ficam em três grupos ([Minha escala], [Dia] e as demais visões) dentro de #escala-modos */
   function modoAtual() {
     var ativo = conteudo.querySelector('#escala-modos .aba--ativa');
-    return ativo ? ativo.getAttribute('data-modo') : 'dia';
+    return ativo ? ativo.getAttribute('data-modo') : 'mes';
   }
 
   /* marca, entre as abas de `trilhos`, a que tem `atributo` = valor (e desmarca as demais);
@@ -82,25 +82,25 @@
 
   /* ---------- última visão usada (lembrada no banco por usuário, como o tema) ---------- */
 
-  /* reabre a Escala na última visão (modo + escolhas do subgrupo); sem nada salvo, fica o Dia do HTML.
+  /* reabre a Escala na última visão (modo + escolhas do subgrupo); sem nada salvo, o Mês (Agenda).
      Agenda | Calendário é a escolha do tipo de aparelho, a mesma da Extrajornada (geral-visao-grade).
      A data não é lembrada: a Escala sempre abre em hoje. A Semana está oculta: quem a usava abre no Mês */
   function restaurarVisao() {
     if (!RosterWork.visaoGrade) return;
     var visao = RosterWork.visaoGrade.ler();
-    marcarAba('#escala-modos', 'data-modo', visao.modo === 'semana' ? 'mes' : visao.modo);
+    marcarAba('#escala-modos', 'data-modo', (!visao.modo || visao.modo === 'semana') ? 'mes' : visao.modo);
     marcarAba('#escala-sub-mes', 'data-mes', RosterWork.visaoGrade.agendaOuCalendario());
     marcarAba('#escala-colunas-tipo', 'data-colunas-tipo', visao.colunas_tipo);
     marcarAba('#escala-colunas-qtd', 'data-colunas', visao.colunas_qtd);
     caberNoCelular();
   }
 
-  /* no celular só existem o Dia e o Mês (Agenda e Calendário): a visão que só existe no computador
-     (Militares, Semana, Colunas) cai no Mês, a visão de vários dias que fica */
+  /* no celular só existem a Minha escala, o Dia e o Mês (Agenda e Calendário): a visão que só existe no
+     computador (Militares, Semana, Colunas) cai no Mês, a visão de vários dias que fica */
   function caberNoCelular() {
     if (!(RosterWork.celular && RosterWork.celular())) return;
     var modo = modoAtual();
-    if (modo === 'dia' || modo === 'mes') return;
+    if (modo === 'minha' || modo === 'dia' || modo === 'mes') return;
     marcarAba('#escala-modos', 'data-modo', 'mes');
   }
 
@@ -128,10 +128,10 @@
     return ativo ? parseInt(ativo.getAttribute('data-colunas'), 10) : 3;
   }
 
-  /* modos que mostram o mês inteiro (período = mês, setas ±1 mês): Mês e Colunas → Dias */
+  /* modos que mostram o mês inteiro (período = mês, setas ±1 mês): Minha escala, Mês e Colunas → Dias */
   function periodoMensal() {
     var modo = modoAtual();
-    return modo === 'mes' || (modo === 'colunas' && tipoColunasAtual() === 'dias');
+    return modo === 'minha' || modo === 'mes' || (modo === 'colunas' && tipoColunasAtual() === 'dias');
   }
 
   /* dentro de Colunas: "Dias" mostra a quantidade (2–5); "Unidades" mostra as unidades */
@@ -142,12 +142,15 @@
     atualizarPeriodo();
   }
 
-  /* mostra os subgrupos do modo ativo (Dia e Militares não têm subgrupo) */
+  /* mostra os subgrupos do modo ativo (Minha escala, Dia e Militares não têm subgrupo); a Minha escala não
+     tem o Imprimir nem o traço (sem busca e filtros antes dele, a Legenda fica sozinha à direita) */
   function aplicarModo() {
     var modo = modoAtual();
     mostrar('#escala-sub-mes', modo === 'mes');
     mostrar('#escala-sub-colunas', modo === 'colunas');
     mostrar('#escala-sub-militares', modo === 'militares');
+    mostrar('#escala-imprimir', modo !== 'minha');
+    mostrar('.pagina-subcabecalho-divisor', modo !== 'minha');
     /* a busca vale fora do Militares (que usa a sua própria); os filtros, só nas grades (escalas-filtros.js) */
     if (RosterWork.escalasFiltros) RosterWork.escalasFiltros.aplicarModo(modo);
     /* a legenda do sub-cabeçalho acompanha o modo */
@@ -268,15 +271,21 @@
     /* esta renderização assume a senha; o modo confere vigente() antes de pintar (latest-wins) */
     var token = ++renderToken;
     function vigente() { return token === renderToken; }
-    /* o Dia usa a árvore de unidades (corpo em camada, como Postos); os demais, o corpo colado */
-    var ehDia = modoAtual() === 'dia';
+    /* o Dia usa a árvore de unidades (corpo em camada, como Postos); a Minha escala, o corpo comum, que rola;
+       os demais, o corpo colado */
+    var ehDia = modoAtual() === 'dia', ehMinha = modoAtual() === 'minha';
     corpo.classList.toggle('pagina-corpo--camada', ehDia);
-    corpo.classList.toggle('pagina-corpo--colado', !ehDia);
+    corpo.classList.toggle('pagina-corpo--colado', !ehDia && !ehMinha);
     /* celular, Mês › Agenda: uma unidade por tela, trocada pelo seletor de unidade (geral-seletor-unidade.js);
        fora disso o seletor some (o Calendário mostra todas as unidades no dia, como no computador) */
     var agendaNoCelular = !!(RosterWork.celular && RosterWork.celular()) && modoAtual() === 'mes' && subMesAtual() !== 'calendario';
     if (RosterWork.seletorUnidade) RosterWork.seletorUnidade.mostrar(agendaNoCelular ? unidadesColuna() : null);
     var aplicarSeletor = (agendaNoCelular && RosterWork.seletorUnidade) ? RosterWork.seletorUnidade.aplicar : null;
+    /* Minha escala: o seu mês e a escala do dia escolhido (escalas-minha.js) */
+    if (ehMinha) {
+      if (!window.RosterWork.escalasMinha) { mostrarEstado(corpo, 'Em construção.'); return; }
+      return window.RosterWork.escalasMinha.renderizar(corpo, { dataRef: refData, vigente: vigente });
+    }
     /* as grades abrem roladas em hoje quando o período contém hoje (rolarHoje; geral-periodo.js) */
     /* Mês → Calendário: escala do mês em cada dia do calendário (mesma célula do Mês → Agenda) */
     if (modoAtual() === 'mes' && subMesAtual() === 'calendario') {
@@ -521,6 +530,7 @@
     refData = new Date();
     if (RosterWork.escalasExtraRascunho) RosterWork.escalasExtraRascunho.zerar();   // a extra do painel do dia começa sem rascunho
 
+    RosterWork.abas.ligar(conteudo.querySelector('#escala-modo-minha'), trocarModo);
     RosterWork.abas.ligar(conteudo.querySelector('#escala-modo-principal'), trocarModo);
     RosterWork.abas.ligar(conteudo.querySelector('#escala-modo-visoes'), trocarModo);
     RosterWork.abas.ligar(conteudo.querySelector('#escala-sub-mes'), function () { renderizarCorpo(); salvarVisao(); });
@@ -537,14 +547,18 @@
     /* celular: o seletor de unidade da Agenda (componente geral-seletor-unidade.js) */
     if (window.RosterWork.seletorUnidade) RosterWork.seletorUnidade.iniciar(conteudo);
 
-    /* celular, Mês (Agenda e Calendário): puxar a grade para o lado troca de mês, deslizando; as setas também
-       (geral-deslizar.js) */
+    /* celular, Minha escala e Mês (Agenda e Calendário): puxar o calendário ou a grade para o lado troca de mês,
+       deslizando; as setas também (geral-deslizar.js) */
     var deslize = window.RosterWork.deslizar ? RosterWork.deslizar.ligar(conteudo.querySelector('.pagina-corpo'), {
-      area: '.escala-mes, .geral-calendario-mes',
-      ativo: function () { return !!(RosterWork.celular && RosterWork.celular()) && modoAtual() === 'mes'; },
+      area: '.escala-mes, .geral-calendario-mes, .escala-minha-calendario',
+      ativo: function () { return !!(RosterWork.celular && RosterWork.celular()) && (modoAtual() === 'mes' || modoAtual() === 'minha'); },
       destino: function (direcao) { return RosterWork.deslizar.nomeMes(mesVizinho(direcao), refData); },
       antecipar: function (direcao) {
         var mes = mesVizinho(direcao);
+        if (modoAtual() === 'minha') {
+          if (RosterWork.escalasMinha) RosterWork.escalasMinha.antecipar(mes);
+          return;
+        }
         if (RosterWork.escalasDados) RosterWork.escalasDados.antecipar(unidadesColuna().map(function (c) { return c.id; }),
           dataISO(mes), dataISO(new Date(mes.getFullYear(), mes.getMonth() + 1, 0)));
       },

@@ -53,29 +53,6 @@
       falhaTrocaSenha: 'Não foi possível trocar a senha. Tente de novo.'
     },
 
-    /* início (o calendário do militar; comunicados: criar e remover — admin) */
-    inicio: {
-      falhaCarregar: 'Não foi possível carregar.',
-      confirmarRemoverAviso: 'Remover este comunicado? Ele deixa de aparecer para quem o recebeu.',
-      descartarAviso: 'Descartar este comunicado não publicado?',
-      falhaSalvarAviso: 'Não foi possível publicar o comunicado. Tente de novo.',
-      falhaRemoverAviso: 'Não foi possível remover o comunicado. Tente de novo.',
-      /* o nome de cada linha do dia no calendário */
-      rotulos: { servico: 'Serviço', extra: 'Extra', troca: 'Troca' },
-      /* as pendências: os seus pedidos (em andamento e resolvidos), os prazos e o que precisa ser corrigido */
-      trocaVoce: function (outro, resolvida) { return (resolvida ? 'Você quis trocar com ' : 'Você quer trocar com ') + outro; },
-      trocaOutro: function (outro, resolvida) { return outro + (resolvida ? ' quis trocar com você' : ' quer trocar com você'); },
-      trocaAlteracao: function (outro) { return 'Alteração da troca com ' + outro; },
-      folgaVoce: 'Você pediu folga',
-      dadosVoce: 'Você pediu correção de dados',
-      situacaoDados: { pendente: 'Aguardando aprovação', aprovada: 'Aprovada', recusada: 'Recusada', parcial: 'Aprovada em parte' },
-      seloPrazo: 'Prazo',
-      seloPreencher: 'Preencher',
-      seloCorrigir: 'Corrigir',
-      seloRevisar: 'Revisar',
-      metaMilitares: function (n) { return n === 1 ? '1 militar' : n + ' militares'; }
-    },
-
     /* Pendências › correção de dados (as alterações que o militar pediu na ficha) */
     correcoes: {
       painelTitulo: 'Correção de dados',
@@ -92,7 +69,12 @@
       grupoAdministracao: 'Administração',
       semComunicados: 'Nenhum comunicado.',
       carregando: 'Carregando…',
-      falhaCarregar: 'Não foi possível carregar.'
+      falhaCarregar: 'Não foi possível carregar.',
+      /* os comunicados: criar e remover (admin; js/avisos-comunicado.js) */
+      confirmarRemoverAviso: 'Remover este comunicado? Ele deixa de aparecer para quem o recebeu.',
+      descartarAviso: 'Descartar este comunicado não publicado?',
+      falhaSalvarAviso: 'Não foi possível publicar o comunicado. Tente de novo.',
+      falhaRemoverAviso: 'Não foi possível remover o comunicado. Tente de novo.'
     },
 
     /* links de acesso que o administrador gera (páginas standalone criar-conta e nova-senha):
@@ -349,6 +331,8 @@
     escala: {
       falhaCarregar: 'Não foi possível carregar.',
       falhaCarregarMes: 'Não foi possível carregar a escala.',
+      /* Minha escala: o mês sem serviço (o botão leva à aba Mês) */
+      minhaSemServico: function (mes) { return 'Você não tem serviço em ' + mes + '. A escala de todos fica na aba Mês.'; },
       selecioneUnidade: 'Selecione uma companhia ou pelotão no seletor de unidades.',
       descartarAlteracoes: 'Descartar as alterações não salvas desta distribuição?',
       falhaSalvar: 'Não foi possível salvar. Tente de novo.',
@@ -796,6 +780,7 @@
       trocaEscolhaCnh: 'Escolha a CNH.',
       trocaErroFim: 'Escolha a data de fim.',
       trocaLimite: 'Só dá para mudar a partir de {data}.',
+      trocaUmaPorVez: 'A {viatura} já tem uma substituição temporária.',
       /* bloco 2: efetivo */
       tituloViatura: '{nome} · CNH {cnh}',
       numeros: 'Mín. {min} · Ideal {ideal} · Máx. {max}',
@@ -978,7 +963,7 @@
       /* o cartão de cada pedido: quem e o quê, e a linha de apoio */
       trocaAdmin: function (sol, par) { return sol + ' troca com ' + par; },
       trocaMinha: function (sol) { return sol + ' quer trocar com você'; },
-      /* o selo do pedido que espera a sua decisão (o Início mostra a situação no lugar da análise) */
+      /* o selo do pedido que espera a sua decisão (quando a lista mostra a situação no lugar da análise) */
       aguardandoVoce: 'Aguardando você',
       /* a alteração de uma troca aprovada (quem pediu pode ser o solicitado) */
       trocaAdminAlteracao: function (sol, par) { return 'Alteração da troca de ' + sol + ' com ' + par; },
@@ -999,6 +984,13 @@
       resumoFalha: 'Não foi possível carregar o resumo. Veja em Ver detalhes.',
       /* a situação de cada alteração de dados (o resumo dos seus pedidos) */
       situacaoAlteracao: { pendente: 'Pendente', aprovada: 'Aprovada', recusada: 'Recusada' },
+      /* Para mim › Seus pedidos: os seus pedidos em andamento e os resolvidos nos últimos 30 dias */
+      trocaVoce: function (outro, resolvida) { return (resolvida ? 'Você quis trocar com ' : 'Você quer trocar com ') + outro; },
+      trocaOutro: function (outro, resolvida) { return outro + (resolvida ? ' quis trocar com você' : ' quer trocar com você'); },
+      trocaAlteracao: function (outro) { return 'Alteração da troca com ' + outro; },
+      folgaVoce: 'Você pediu folga',
+      dadosVoce: 'Você pediu correção de dados',
+      situacaoDados: { pendente: 'Aguardando aprovação', aprovada: 'Aprovada', recusada: 'Recusada', parcial: 'Aprovada em parte' },
       /* listas sem nada (página Pendências) */
       vazioMinhas: 'Nenhum pedido esperando a sua resposta.',
       vazioAprovar: 'Nenhum pedido para aprovar.',
@@ -1291,6 +1283,8 @@
         confirmarCancelar: function (rw) { return 'Cancelar as trocas do ' + rw + '?'; },
         /* o Registrar troca (só admin): as trocas entram já aprovadas */
         confirmarRegistrar: 'Registrar estas trocas? Elas já entram aprovadas e a escala é atualizada na hora, em todos os dias.',
+        /* o Editar do administrador de fora, nas trocas aprovadas */
+        confirmarEditar: 'Salvar a alteração? Ela entra no lugar das trocas de antes e a escala é atualizada na hora, nos dias que mudam.',
         /* os cartões das Pendências */
         filaMinha: function (quem) { return quem + ' pediu trocas de serviço com você'; },
         filaAdmin: function (nomes) { return 'Trocas de serviço: ' + nomes; },

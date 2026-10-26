@@ -11,8 +11,12 @@
    registro só, com o Desfazer no resumo). O calendário é o
    trocas-varias-calendario.js; a Análise e a gravação do Registrar,
    o trocas-varias-registrar.js.
-   Expõe RosterWork.trocasVarias.{ montar, temDados, encerrar }
-     montar({ corpo, registrar, aoSolicitar, aoMudar, cancelar })
+   No Editar de um registro (trocas-varias-editar.js), a aba abre sem
+   as abas Uma | Várias e com o plano que vale hoje (os militares, os
+   dias e a Parte); o rodapé é do Editar, que recebe o pedido conferido.
+   Expõe RosterWork.trocasVarias.{ montar, temDados, planoMudou, enviar, encerrar }
+     montar({ corpo, registrar, editar, aoSolicitar, aoMudar, cancelar })
+       editar = { registroId, plano, admin, botao, alteracao, aoEnviar(pares, parte, ano, botao) }
    ============================================================ */
 (function () {
   'use strict';
@@ -73,16 +77,23 @@
   function militarDe(m, unidade) {
     return { cpf: m.cpf, nome: C().nomeMil(m), nomeGuerra: m.nome_de_guerra || '', unidade: unidade || '' };
   }
+  /* no Editar, quem tem dia que já passou fica (o dia não muda) */
+  function temDiaTravado(cpf) {
+    return est.pares.some(function (p) { return (p.trabalha === cpf || p.folga === cpf) && Cal().travado(p.data); });
+  }
   function desenharMilitares() {
-    var lista = q('#tv-militares');
+    var lista = q('#tv-militares'), eu = RW.sessao.cpf();
     lista.textContent = '';
     est.militares.forEach(function (m, i) {
       var linha = RW.tpl('tpl-troca-varias-militar');
       linha.querySelector('.trocas-varias-militar-nome').textContent = m.nome;
       linha.querySelector('.trocas-varias-militar-lotacao').textContent = m.unidade;
       var remover = linha.querySelector('.trocas-varias-remover');
-      /* no Solicitar, o primeiro é quem pede (fica sempre); no Registrar, todos podem sair */
-      if (i === 0 && !est.registrar) { linha.querySelector('.trocas-varias-militar-voce').classList.remove('oculto'); remover.remove(); }
+      /* "· você" e sem Remover: no Solicitar, o primeiro (quem pede); no Editar, o militar que edita.
+         No Registrar, todos podem sair; no Editar, todos menos quem tem dia que já passou */
+      var voce = est.editar ? m.cpf === eu : (i === 0 && !est.registrar);
+      if (voce) linha.querySelector('.trocas-varias-militar-voce').classList.remove('oculto');
+      if (voce || temDiaTravado(m.cpf)) remover.remove();
       else remover.addEventListener('click', function () { pedirRemover(m); });
       lista.appendChild(linha);
     });
@@ -157,7 +168,7 @@
 
   /* ---------- o resumo: o banco monta (duplas, rodas, sem devolução) e diz o saldo ---------- */
   function agendarResumo() {
-    if (est.registrar) Reg().agendarAnalise();   // no Registrar, a Análise acompanha os dias
+    if (est.ensaio) Reg().agendarAnalise();   // no Registrar e no Editar do administrador de fora, a Análise acompanha os dias
     if (timerResumo) clearTimeout(timerResumo);
     reqResumo++;
     var carregando = q('#tv-resumo-carregando');
@@ -170,7 +181,7 @@
   }
   function montarResumo() {
     var meu = ++reqResumo;
-    RW.trocasDados.variasMontar(est.pares).then(function (r) {
+    RW.trocasDados.variasMontar(est.pares, est.editar ? est.editar.registroId : null).then(function (r) {
       if (!est || meu !== reqResumo) return;
       desenharResumo(r);
     }).catch(function () {
@@ -222,6 +233,7 @@
     if (!est.pares.length) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: M().semDias }); return; }
     var parte = parteNumero(), ano = parte ? parteAno() : null, aoSolicitar = est.aoSolicitar, aoMudar = est.aoMudar;
     if (est.registrar) { Reg().registrar(parte, ano); return; }   // confirma e grava já aprovado (trocas-varias-registrar.js)
+    if (est.editar) { est.editar.aoEnviar(est.pares.slice(), parte, ano, btn); return; }   // o Editar grava (trocas-varias-editar.js)
     if (RW.iniciarCarregando) RW.iniciarCarregando(btn);
     RW.trocasDados.variasSolicitar(est.pares, parte, ano).then(function (r) {
       if (RW.pararCarregando) RW.pararCarregando(btn);
@@ -244,34 +256,69 @@
     });
   }
 
+  /* ---------- o Editar: o plano que vale hoje e o que mudou desde que abriu ---------- */
+  function eu() {
+    var u = RW.sessao.perfil();
+    return militarDe({ cpf: RW.sessao.cpf(), grau_abreviacao: u && u.grau_abreviacao, nome_de_guerra: u && u.nome_de_guerra },
+                     (u && u.lotacao_path) ? u.lotacao_path.split(' / ').pop() : '');
+  }
+  /* os militares do plano; o militar que edita vem primeiro (e entra, se saiu dos dias) */
+  function militaresDoPlano(plano) {
+    var lista = (plano.militares || []).map(function (m) { return militarDe(m, m.unidade); });
+    if (!plano.participa) return lista;
+    var meu = RW.sessao.cpf();
+    var outros = lista.filter(function (m) { return m.cpf !== meu; });
+    return [lista.filter(function (m) { return m.cpf === meu; })[0] || eu()].concat(outros);
+  }
+  function chavePares() { return est.pares.map(function (p) { return p.data + '|' + p.trabalha + '|' + p.folga; }).sort().join(','); }
+  function chaveParte() { var n = q('#tv-parte').value.trim(); return n ? n + '/' + q('#tv-parte-ano').value.trim() : ''; }
+  function chaveMilitares() { return est.militares.map(function (m) { return m.cpf; }).sort().join(','); }
+  function chaveTudo() { return chavePares() + '#' + chaveParte() + '#' + chaveMilitares(); }
+  /* os dias mudaram desde que o Editar abriu (só aí a escala muda e a Análise faz sentido) */
+  function planoMudou() { return !!est && !!est.editar && chavePares() !== est.editar.paresAntes; }
+
   /* ---------- montar, dados e encerrar ---------- */
   function montar(opcoes) {
     var raiz = RW.tpl('tpl-troca-varias');
     if (!raiz || !RW.painel.largo) return;
-    raiz.classList.add('oculto');
+    var registrar = !!opcoes.registrar, ed = opcoes.editar || null;
+    if (!ed) raiz.classList.add('oculto');   // no Solicitar e no Registrar, a aba Uma troca vem primeiro
     opcoes.corpo.appendChild(raiz);
-    var u = RW.sessao.perfil(), registrar = !!opcoes.registrar;
+    var plano = ed ? ed.plano : null;
     est = {
       raiz: raiz, corpo: opcoes.corpo, registrar: registrar, aoSolicitar: opcoes.aoSolicitar, aoMudar: opcoes.aoMudar, cancelar: opcoes.cancelar,
-      /* no Solicitar, quem pede já entra; no Registrar, a lista começa vazia */
-      militares: registrar ? [] : [militarDe({ cpf: RW.sessao.cpf(), grau_abreviacao: u && u.grau_abreviacao, nome_de_guerra: u && u.nome_de_guerra },
-                                             (u && u.lotacao_path) ? u.lotacao_path.split(' / ').pop() : '')],
-      pares: [], combo: null, unidadeSel: null, listaUnidade: null, mes: null
+      /* no Solicitar, quem pede já entra; no Registrar, a lista começa vazia; no Editar, o plano de hoje */
+      militares: plano ? militaresDoPlano(plano) : (registrar ? [] : [eu()]),
+      pares: plano ? (plano.dias || []).map(function (d) { return { data: String(d.data).slice(0, 10), trabalha: d.trabalha, folga: d.folga }; }) : [],
+      combo: null, unidadeSel: null, listaUnidade: null, mes: null, ensaio: null,
+      editar: ed ? { registroId: ed.registroId, admin: !!ed.admin, aoEnviar: ed.aoEnviar, desde: String(plano.editavel_desde).slice(0, 10) } : null
     };
-    RW.trocasSolicitar.formulario.mostrarModo(raiz, registrar ? 'registrar' : 'solicitar');   // os textos de cada modo
-    montarAbas();
-    montarRodape();
-    q('#tv-parte-ano').value = String(new Date().getFullYear());
+    /* a Análise (ensaio no banco): no Registrar, do registro novo; no Editar do administrador de fora, da alteração */
+    if (registrar) est.ensaio = function () { return RW.trocasDados.variasRegistrar(est.pares, null, null, true); };
+    else if (ed && ed.admin) est.ensaio = function () { return RW.trocasDados.variasEditar(ed.registroId, est.pares, null, null, true); };
+    RW.trocasSolicitar.formulario.mostrarModo(raiz, ed ? 'editar' : (registrar ? 'registrar' : 'solicitar'));   // os textos de cada modo
+    if (ed) {
+      q('#tv-nota-alteracao').classList.toggle('oculto', !ed.alteracao);
+      if (est.ensaio) Reg().iniciar(est, ed.botao);   // a Análise trava o Salvar até chegar
+    } else {
+      montarAbas();
+      montarRodape();
+    }
+    q('#tv-parte').value = plano && plano.parte ? String(plano.parte.numero) : '';
+    q('#tv-parte-ano').value = String(plano && plano.parte ? plano.parte.ano : new Date().getFullYear());
     RW.trocasSolicitar.formulario.ligarSoNumeros(q('#tv-parte'));
     RW.trocasSolicitar.formulario.ligarSoNumeros(q('#tv-parte-ano'));
     RW.trocasSolicitar.formulario.ligarLimpezaErros(raiz);
+    if (est.editar) { est.editar.paresAntes = chavePares(); est.editar.tudoAntes = chaveTudo(); }
+    Cal().iniciar(est, agendarResumo);   // antes dos militares: o calendário diz qual dia já passou
     desenharMilitares();
     ligarAdicionar();
-    Cal().iniciar(est, agendarResumo);
+    if (est.editar) agendarResumo();   // o resumo do plano de hoje
   }
-  /* há algo preenchido na aba? (o X, o Esc, o Cancelar e o navegador pedem para descartar) */
+  /* há algo preenchido na aba? (o X, o Esc, o Cancelar e o navegador pedem para descartar); no Editar, algo mudou */
   function temDados() {
     if (!est) return false;
+    if (est.editar) return chaveTudo() !== est.editar.tudoAntes;
     return est.pares.length > 0 || est.militares.length > (est.registrar ? 0 : 1) || !!(q('#tv-parte') && q('#tv-parte').value.trim());
   }
   function encerrar() {
@@ -282,5 +329,5 @@
     est = null;
   }
 
-  RW.trocasVarias = { montar: montar, temDados: temDados, encerrar: encerrar };
+  RW.trocasVarias = { montar: montar, temDados: temDados, planoMudou: planoMudou, enviar: enviar, encerrar: encerrar };
 })();

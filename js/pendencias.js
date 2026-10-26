@@ -3,8 +3,11 @@
    Duas abas, cada uma com um dono claro:
      · Para mim       — o que espera você como militar (a troca
                         que pediram a você), os seus "Prazos"
-                        (a extra do mês seguinte) e o "Seu
-                        cadastro" (a CNH, no painel da CNH)
+                        (a extra do mês seguinte), o "Seu
+                        cadastro" (a CNH, no painel da CNH) e os
+                        "Seus pedidos" (em andamento e resolvidos
+                        nos últimos 30 dias, pendencias_meus_pedidos;
+                        não somam no número)
      · Administração  — só administrador: trocas, folgas e correções
                         para aprovar (com o seletor do tipo na barra),
                         as trocas "Aguardando os militares" (esperam
@@ -27,12 +30,16 @@
   var TIPOS_DO_FILTRO = { troca: ['troca'], folga: ['folga'], usuarios: ['dados'] };
   /* o que é do "Seu cadastro" (a fila entrega junto com os prazos) */
   var DO_CADASTRO = { cnh: true };
+  /* "Seus pedidos": o ícone de cada pedido (os mesmos da fila) e a cor do selo da correção de dados */
+  var ICONE_PEDIDO = { troca: 'trocas', folga: 'folgas', dados: 'editar' };
+  var SELO_DADOS = { pendente: 'selo--alerta', aprovada: 'selo--sucesso', recusada: 'selo--erro', parcial: 'selo--alerta' };
 
   var conteudo = null;
   var admin = false;
   var abaAtual = 'paramim';
   var filtro = 'todos';
   var dados = { minhas: [], aprovar: [], acompanhar: [], corrigir: [], prazos: [] };
+  var meus = [];       // os seus pedidos (Para mim › Seus pedidos)
   var filaMinhas = null, filaAprovar = null, filaAcompanhar = null;
   var leitura = 0;     // a última leitura vence
 
@@ -123,6 +130,46 @@
     });
   }
 
+  /* ---------- "Seus pedidos" (Para mim): os seus, em andamento e resolvidos ---------- */
+  function irPara(pagina, aba, referencia) { if (pagina && RW.irParaPagina) RW.irParaPagina(pagina, aba || null, referencia); }
+  function nomeDe(grau, nome) { return ((grau || '') + ' ' + (nome || '')).trim(); }
+
+  /* um pedido seu: a frase, o dia e o selo com a situação; abre ali mesmo com o resumo e o que você pode fazer
+     (Cancelar pedido), e o Ver detalhes leva ao painel da troca ou à página dele */
+  function cartaoMeuPedido(p) {
+    var M = RW.mensagens, pe = M.pendencias;
+    var outro = nomeDe(p.outro_grau, p.outro_nome);
+    var resolvido = !p.andamento;
+    var meta = pe.metaServico(RW.data.comDiaCurto(p.data), RW.fila.trecho(p.horario_inicio, p.horario_fim));
+    var c;
+    if (p.tipo === 'troca' && p.varias) {
+      /* as várias trocas: um cartão por registro, com os militares (quem pediu primeiro) e o RW nº */
+      var mv = M.trocas.varias, nomes = p.militares || [];
+      c = { icone: ICONE_PEDIDO.troca, quem: mv.linhaMilitares(mv.nomes(nomes)), selo: RW.trocasFormato.situacao(p.situacao, false),
+            meta: mv.filaMeta(RW.data.comDiaCurto(p.data), nomes.length, M.trocas.registroNumero(p.registro_numero, p.registro_ano)) };
+    } else if (p.tipo === 'troca') {
+      c = { icone: ICONE_PEDIDO.troca, meta: meta, selo: RW.trocasFormato.situacao(p.situacao, p.alteracao),
+            quem: p.alteracao ? pe.trocaAlteracao(outro) : (p.papel === 'solicitante' ? pe.trocaVoce(outro, resolvido) : pe.trocaOutro(outro, resolvido)) };
+    } else if (p.tipo === 'folga') {
+      c = { icone: ICONE_PEDIDO.folga, quem: pe.folgaVoce, meta: meta,
+            selo: { texto: M.folgas.situacao[p.situacao] || '', classe: RW.folgasFormato.situacaoClasse(p.situacao) } };
+    } else {
+      c = { icone: ICONE_PEDIDO.dados, quem: pe.dadosVoce, meta: pe.metaDados(p.alteracoes || 0, RW.data.isoParaBR(p.data)),
+            selo: { texto: pe.situacaoDados[p.situacao] || '', classe: SELO_DADOS[p.situacao] || 'selo--escuro' } };
+    }
+    c.montar = function (corpo) {
+      RW.filaResumo.meuPedido(corpo, p, { cpf: RW.sessao.cpf(), ehAdmin: admin, admin: admin, aoMudar: carregar }, irPara);
+    };
+    return RW.fila.expansivel(c);
+  }
+
+  function desenharMeus() {
+    var lista = q('#pendencias-meus');
+    lista.textContent = '';
+    meus.forEach(function (p) { var c = cartaoMeuPedido(p); if (c) lista.appendChild(c); });
+    q('#pendencias-secao-meus').classList.toggle('oculto', !meus.length);
+  }
+
   /* ---------- contagens (a mesma regra do número do menu) ---------- */
   function somar(grupos) {
     var quanto = RW.avisosSino ? RW.avisosSino.quantoSoma : function () { return 0; };
@@ -147,6 +194,7 @@
     q('#pendencias-secao-prazos').classList.toggle('oculto', !prazos.length);
     desenharPrazos(q('#pendencias-cadastro'), cadastro);
     q('#pendencias-secao-cadastro').classList.toggle('oculto', !cadastro.length);
+    desenharMeus();
     desenharCorrigir(q('#pendencias-corrigir'), dados.corrigir);
     /* o "Para corrigir" não é de nenhum tipo do seletor: só aparece em Todos */
     q('#pendencias-secao-corrigir').classList.toggle('oculto', filtro !== 'todos');
@@ -159,6 +207,7 @@
   function falha() {
     q('#pendencias-secao-prazos').classList.add('oculto');
     q('#pendencias-secao-cadastro').classList.add('oculto');
+    q('#pendencias-secao-meus').classList.add('oculto');
     q('#pendencias-secao-acompanhar').classList.add('oculto');
     ['#pendencias-minhas', '#pendencias-aprovar', '#pendencias-corrigir'].forEach(function (sel) {
       var lista = q(sel);
@@ -169,13 +218,17 @@
     });
   }
 
-  /* lê tudo de uma vez (a fila também chama depois de cada decisão) */
+  /* lê tudo de uma vez: a fila e os seus pedidos (a fila também chama depois de cada decisão) */
   function carregar() {
     var minha = ++leitura;
-    return RW.fila.ler().then(function (r) {
+    return Promise.all([
+      RW.fila.ler(),
+      RW.rpc('pendencias_meus_pedidos', {}).catch(function () { return null; })
+    ]).then(function (r) {
       if (minha !== leitura || !conteudo || !document.contains(conteudo)) return;
-      if (!r) { falha(); return; }
-      dados = r;
+      if (!r[0]) { falha(); return; }
+      dados = r[0];
+      meus = Array.isArray(r[1]) ? r[1] : [];
       desenhar();
     });
   }

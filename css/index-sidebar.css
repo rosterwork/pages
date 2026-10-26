@@ -261,7 +261,7 @@
     background-color: var(--fundo-medio);
   }
 
-  /* número de Pendências no "Mais": o selo do menu, no canto de cima da pílula */
+  /* número no item Pendências: o selo do menu, no canto de cima da pílula */
   html[data-celular] .barra-celular-selo {
     position: absolute;
     top: -4px;

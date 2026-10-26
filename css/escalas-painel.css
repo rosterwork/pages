@@ -63,6 +63,12 @@
   min-height: 14px;
 }
 
+/* a linha de quem está logado na escala do dia da Minha escala (escalas-filtros.js): realce claro; o escuro é da busca */
+.escala-distribuicao-escalado--voce {
+  background-color: var(--fundo-medio);
+  border-radius: var(--raio-pequeno);
+}
+
 /* realce do "marcar" da busca do sub-cabeçalho (modo Dia): inverte a linha do militar casado */
 .escala-distribuicao-escalado--busca {
   background-color: var(--fundo-contraste);

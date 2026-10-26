@@ -1,7 +1,7 @@
 /* ============================================================
    CNH — o painel da pendência "Preencha a sua CNH" (shell)
-   Aberto pela Pendências (seção Seu cadastro) e pela caixa
-   Pendências do Início, para quem está com a CNH em Nenhuma e
+   Aberto pela Pendências (seção Seu cadastro), para quem está
+   com a CNH em Nenhuma e
    ainda não respondeu (pendencias_listar, tipo 'cnh'). O seletor
    vai por perfil_solicitar, o mesmo caminho do Meus dados: a
    categoria vai para a aprovação (o aviso confirma); "Não tenho

@@ -1,6 +1,6 @@
 /* ============================================================
    RESUMO DO PEDIDO — o que aparece quando o cartão da fila abre
-   ali mesmo (geral-fila, opcoes.expandir: Início e Pendências)
+   ali mesmo (geral-fila, opcoes.expandir: Pendências e as abas Pendências)
    Um resumo curto e as ações, sem abrir o painel; "Ver detalhes"
    abre o painel completo (ou a página do assunto). As ações são as
    do painel (RosterWork.trocasPainel.acao e
@@ -15,7 +15,7 @@
    API: RosterWork.filaResumo.pedido(corpo, p, ctx, aoDetalhes)
           (um pedido da fila: { tipo, dado, minha })
         .meuPedido(corpo, p, ctx, irPara)
-          (um pedido do próprio militar no Início, de inicio_meus_pedidos)
+          (um pedido do próprio militar, os Seus pedidos da Pendências, de pendencias_meus_pedidos)
         .seloAceites(aceites) → o selo Pendente que abre a lista dos
           aceites (a troca aprovada com aceite faltando, na Trocas)
    Clona moldes; não cria HTML.
@@ -217,14 +217,14 @@
   }
 
   /* ---------- entradas ---------- */
-  /* um pedido da fila (Pendências e Início) */
+  /* um pedido da fila (Pendências e as abas Pendências) */
   function pedido(corpo, p, ctx, aoDetalhes) {
     if (p.tipo === 'folga') folga(corpo, p.dado, ctx, { aprovar: 'aprovar' }, aoDetalhes, true);
     else if (p.tipo === 'dados') dados(corpo, p.dado.itens || [], false, aoDetalhes);
     else troca(corpo, p.dado, ctx, mapaTroca(p), aoDetalhes);
   }
 
-  /* um pedido do próprio militar (Início, "Seus pedidos"): troca, folga ou correção de dados */
+  /* um pedido do próprio militar (Pendências › Seus pedidos): troca, folga ou correção de dados */
   function meuPedido(corpo, p, ctx, irPara) {
     if (p.tipo === 'troca') {
       carregando(corpo);

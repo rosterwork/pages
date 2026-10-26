@@ -23,12 +23,12 @@
                    opcoes = { vazio, recarregar() → Promise, situacao, expandir }
                    (situacao: o selo diz a situação, "Aguardando
                    você" ou "Aguardando aprovação", no lugar do da
-                   análise; o Início. expandir: o cartão abre ali mesmo,
+                   análise. expandir: o cartão abre ali mesmo,
                    com o resumo e as ações (geral-fila-resumo), e o
-                   "Ver detalhes" abre o painel; Início e Pendências)
+                   "Ver detalhes" abre o painel; Pendências e as abas Pendências)
                    devolve { definir(pedidos), abrirId(id), quantos() }
      · expansivel(c) → o cartão que abre ali mesmo, para quem monta o
-                   resumo por conta própria (os "Seus pedidos" do Início):
+                   resumo por conta própria (os "Seus pedidos" da Pendências):
                    c = { icone, pelotoes, quem, meta, selo, chave, montar(corpo) }
      · trecho(hi, hf) → "serviço inteiro" ou "das 08h às 14h"
    Os painéis: RosterWork.trocasPainel, .folgasAprovacaoPainel e
@@ -209,7 +209,7 @@
     return el;
   }
 
-  /* ---------- o cartão que abre ali mesmo (Início e Pendências) ----------
+  /* ---------- o cartão que abre ali mesmo (Pendências e as abas Pendências) ----------
      A linha é o botão que abre e fecha o resumo (aria-expanded; a seta vira com ele aberto);
      um cartão aberto por vez na tela. O resumo é montado na primeira vez que abre (c.montar). */
   var expandido = null;

@@ -1,0 +1,161 @@
+/* ============================================================
+   ESCALAS — Minha escala: o seu mês e a escala do dia
+   Computador: à esquerda o calendário quadrado (o mês em
+   miniatura, geral-mini-calendario), com dias de 76 a 60px, o
+   maior que cabe ao lado da escala do dia e na altura da tela; ao
+   lado, a escala do dia escolhido numa caixa. Celular: uma coluna
+   (o calendário na largura da tela e o dia embaixo).
+   Cores/medidas do tema.
+   ============================================================ */
+
+.escala-minha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+/* o calendário elástico: de 468px (dias de 60px) a 580px (dias de 76px; 7 dias + 6 vãos de 8px), pelo menor
+   entre o que cabe na largura (com o dia ao lado) e o que cabe na altura da tela: 5 semanas de dias e 253px
+   fora deles (o topo, o título com as abas, a barra, os nomes dos dias e os respiros); a largura é 1,4 vez a
+   altura que sobra */
+.escala-minha-esquerda {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1 0 468px;
+  max-width: max(468px, min(580px, calc((100vh - 253px) * 1.4)));
+}
+
+/* ---------- calendário: o mês em miniatura com dias quadrados ---------- */
+.escala-minha-calendario .mini-calendario {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.escala-minha-calendario .mini-calendario-dia {
+  align-items: center;
+  aspect-ratio: 1 / 1;
+  padding: 4px;
+}
+
+/* o número de todos os dias no mesmo lugar de 24px: o círculo de hoje não o desloca */
+.escala-minha-calendario .mini-calendario-numero {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 24px;
+}
+
+/* os ícones do dia (os mesmos da Escala), embaixo e no meio */
+.escala-minha-calendario .mini-calendario-texto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 20px;
+  color: var(--texto-forte);
+}
+
+.escala-minha-calendario .mini-calendario-texto .icone {
+  width: 18px;
+  height: 18px;
+}
+
+.escala-minha-calendario .mini-calendario-dia--afastado .mini-calendario-texto {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-suave);
+}
+
+/* ícone da linha que saiu do serviço (folga, troca), apagado como o nome riscado */
+.escala-minha-icone--riscado {
+  color: var(--texto-debil);
+}
+
+/* o mês sem serviço: o texto ocupa o que sobra e o botão fica à direita */
+.escala-minha-sem-servico .nota-texto {
+  flex: 1 1 auto;
+}
+
+/* ---------- a escala do dia escolhido: uma caixa ao lado do calendário ---------- */
+.escala-minha-dia {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1 1 360px;
+  min-width: 0;
+  max-width: 688px;
+  padding: 16px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-superficie);
+}
+
+.escala-minha-dia-cabeca {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.escala-minha-dia-titulo {
+  font-size: var(--fonte-padrao);
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.escala-minha-dia-unidade {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.escala-minha-dia-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   Uma coluna: o calendário na largura da tela, com os 7 dias de
+   56px de altura (os mesmos do mês em miniatura do celular), e a
+   escala do dia embaixo.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .escala-minha {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  html[data-celular] .escala-minha-esquerda,
+  html[data-celular] .escala-minha-dia {
+    flex: 0 0 auto;
+    max-width: none;
+  }
+
+  html[data-celular] .escala-minha-calendario .mini-calendario {
+    gap: 4px;
+  }
+
+  html[data-celular] .escala-minha-calendario .mini-calendario-dia {
+    aspect-ratio: auto;
+    min-height: 56px;
+    padding: 2px;
+  }
+
+  html[data-celular] .escala-minha-calendario .mini-calendario-texto .icone {
+    width: 16px;
+    height: 16px;
+  }
+
+  html[data-celular] .escala-minha-sem-servico {
+    flex-wrap: wrap;
+  }
+
+  html[data-celular] .escala-minha-dia {
+    padding: var(--respiro-pagina-celular);
+  }
+}

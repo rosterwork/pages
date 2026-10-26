@@ -312,6 +312,12 @@
   font-weight: 600;
 }
 
+/* a linha de quem está logado (escalas-filtros.js): realce claro, para se achar na grade; o escuro é da busca */
+.linha-escalado--voce {
+  background-color: var(--fundo-medio);
+  border-radius: var(--raio-pequeno);
+}
+
 /* realce do "marcar" da busca do sub-cabeçalho: inverte a linha do militar casado (igual ao card de Usuários) */
 .linha-escalado--busca {
   background-color: var(--fundo-contraste);

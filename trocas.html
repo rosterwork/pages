@@ -235,14 +235,21 @@
 
 <!-- molde: a aba Várias trocas (trocas-varias.js): só serviços inteiros, num registro só. Os militares da troca,
      o calendário dos dias (trocas-varias-calendario.js; em cada dia, quem trabalha e quem folga), o resumo
-     que o banco monta (duplas, rodas e o que fica sem devolução) e, no Registrar, a Análise
-     (trocas-varias-registrar.js). data-modo: o texto de cada modo (solicitar = o militar pede; registrar = o admin registra) -->
+     que o banco monta (duplas, rodas e o que fica sem devolução) e, no Registrar e no Editar do administrador de fora,
+     a Análise (trocas-varias-registrar.js). data-modo: o texto de cada modo (solicitar = o militar pede; registrar = o
+     admin registra; editar = o Editar do registro, trocas-varias-editar.js). A nota da alteração aparece pelo JS, quando
+     o militar muda trocas aprovadas -->
 <template id="tpl-troca-varias">
   <div class="trocas-varias">
     <div class="nota">
       <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg>
       <span class="nota-texto" data-modo="solicitar">Só serviços inteiros. Todos os militares aceitam um registro só.</span>
       <span class="nota-texto oculto" data-modo="registrar">Só serviços inteiros. As trocas entram já aprovadas, e cada militar aceita depois.</span>
+      <span class="nota-texto oculto" data-modo="editar">Só serviços inteiros. Os dias que já passaram ficam como estão.</span>
+    </div>
+    <div class="nota oculto" id="tv-nota-alteracao">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg>
+      <span class="nota-texto">As trocas de antes continuam valendo até todos aceitarem a alteração e a administração aprovar.</span>
     </div>
 
     <div class="grupo-caixa trocas-cartao">
@@ -302,7 +309,7 @@
       <div class="nota" id="tv-dias-espera">
         <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg>
         <span class="nota-texto" data-modo="solicitar">Adicione pelo menos um militar para ver os dias.</span>
-        <span class="nota-texto oculto" data-modo="registrar">Adicione pelo menos dois militares para ver os dias.</span>
+        <span class="nota-texto oculto" data-modo="registrar editar">Adicione pelo menos dois militares para ver os dias.</span>
       </div>
       <div class="trocas-varias-cal" id="tv-calendario"></div>
     </div>
@@ -323,7 +330,8 @@
       <div class="trocas-varias-notas" id="tv-notas"></div>
     </div>
 
-    <!-- análise de impacto (só no Registrar): a do registro inteiro, a mesma do Aprovar, desenhada pelo geral-impacto -->
+    <!-- análise de impacto (no Registrar e no Editar do administrador de fora): a do registro inteiro, a mesma do Aprovar,
+         desenhada pelo geral-impacto -->
     <div class="decisao-analise-secao oculto" id="tv-analise">
       <div class="decisao-analise-cabecalho">
         <span class="rotulo-secao">Análise</span>
@@ -361,7 +369,7 @@
   </div>
 </template>
 
-<!-- molde: um militar da troca (o primeiro é quem pede: "· você" e sem Remover) -->
+<!-- molde: um militar da troca ("· você" e sem Remover: no Solicitar, quem pede; no Editar, quem edita) -->
 <template id="tpl-troca-varias-militar">
   <div class="trocas-varias-militar">
     <span class="trocas-varias-militar-nome"></span>
@@ -382,12 +390,16 @@
   <span class="trocas-dia-par"><span class="trocas-dia-trabalha"></span><span class="trocas-dia-folga"></span></span>
 </template>
 
-<!-- molde: o conteúdo do quadro do dia: os pares já marcados (cada um com Tirar) e as perguntas do par novo -->
+<!-- molde: o conteúdo do quadro do dia: os pares já marcados (cada um com Tirar) e as perguntas do par novo;
+     no Editar, o dia que já passou mostra só os pares, sem Tirar, e a frase -->
 <template id="tpl-troca-varias-quadro">
   <div class="trocas-dia-quadro-conteudo">
     <div class="dropdown-titulo trocas-dia-quadro-data"></div>
     <div class="trocas-dia-pares"></div>
     <div class="dropdown-divisor trocas-dia-quadro-divisor"></div>
+    <div class="trocas-dia-grupo trocas-dia-travado oculto">
+      <span class="trocas-dia-quadro-par-texto">Este dia já passou e não muda.</span>
+    </div>
     <div class="trocas-dia-novo">
       <div class="trocas-dia-grupo">
         <span class="trocas-dia-pergunta">Quem trabalha?</span>
@@ -458,27 +470,6 @@
     <span class="troca-item-selos">
       <span class="selo troca-item-situacao"></span>
     </span>
-  </div>
-</template>
-
-<!-- molde: o Editar do registro de várias trocas (só a Parte do E-protocolo, que vale para o registro inteiro) -->
-<template id="tpl-troca-varias-parte">
-  <div class="trocas-varias">
-    <div class="grupo-caixa trocas-cartao">
-      <span class="rotulo-secao">E-protocolo</span>
-      <div class="trocas-protocolo">
-        <label class="campo">
-          <span class="campo-rotulo">Parte (opcional)</span>
-          <input type="text" class="campo-entrada" id="tvp-parte" inputmode="numeric" maxlength="7" autocomplete="off" />
-          <span class="campo-erro-texto"></span>
-        </label>
-        <label class="campo">
-          <span class="campo-rotulo">Ano</span>
-          <input type="text" class="campo-entrada" id="tvp-parte-ano" inputmode="numeric" maxlength="4" autocomplete="off" />
-          <span class="campo-erro-texto"></span>
-        </label>
-      </div>
-    </div>
   </div>
 </template>
 

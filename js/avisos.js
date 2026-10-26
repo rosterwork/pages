@@ -7,7 +7,7 @@
    Este arquivo liga as abas, cuida dos comunicados e decide quais
    botões da barra aparecem (os mesmos em todas as abas). O admin cria
    pelo "Novo comunicado" (grupo Administração) e remove pela lixeira,
-   reusando o módulo RosterWork.inicioAviso (com auditoria).
+   reusando o módulo RosterWork.avisosComunicado (com auditoria).
    Clona moldes; não cria HTML.
    ============================================================ */
 (function () {
@@ -53,9 +53,9 @@
       el.querySelector('.aviso-cartao-msg').textContent = a.mensagem || '';
       el.querySelector('.aviso-cartao-meta').textContent = metaTexto(a);
       var remover = el.querySelector('.aviso-cartao-remover');
-      if (remover && RW.inicioAviso && RW.inicioAviso.podeDesativar(a)) {
+      if (remover && RW.avisosComunicado && RW.avisosComunicado.podeDesativar(a)) {
         remover.classList.remove('oculto');
-        remover.addEventListener('click', function () { RW.inicioAviso.desativar(a.aviso_id, recarregar, 'Avisos'); });
+        remover.addEventListener('click', function () { RW.avisosComunicado.desativar(a.aviso_id, recarregar, 'Avisos'); });
       }
       lista.appendChild(el);
     });
@@ -109,12 +109,12 @@
     /* o grupo Administração (Novo comunicado) só para o admin, em todas as abas;
        no celular é um menu (fecha antes de abrir o painel) */
     var grupoAdmin = conteudo.querySelector('.acoes-admin');
-    var publica = !!(RW.inicioAviso && RW.inicioAviso.ehAdmin());   // qualquer papel publica para a própria área
+    var publica = !!(RW.avisosComunicado && RW.avisosComunicado.ehAdmin());   // qualquer papel publica para a própria área
     if (grupoAdmin) grupoAdmin.classList.toggle('oculto', !publica);
     if (btnNovo && publica) {
       btnNovo.addEventListener('click', function () {
         if (RW.fecharDropdowns) RW.fecharDropdowns();
-        RW.inicioAviso.abrirNovo(carregarComunicados, 'Avisos');
+        RW.avisosComunicado.abrirNovo(carregarComunicados, 'Avisos');
       });
     }
     if (btnLidas && RW.avisosNotificacoes) {

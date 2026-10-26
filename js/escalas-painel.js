@@ -9,8 +9,8 @@
    admin já edita nela; quem não é admin só lê. A Extrajornada
    (escalas-painel-extra.js) também é do administrador editar.
    O mesmo painel abre na página Extrajornada (Calendário e Distribuição).
-   Pelo Início, abre só de leitura para todos (opção leitura): só o
-   Dia, sem abas nem rodapé, com o militar destacado (opção destacar).
+   Com a opção leitura, abre só de leitura para todos: só o Dia, sem
+   abas nem rodapé, com o militar destacado (opção destacar).
    ============================================================ */
 (function () {
   'use strict';
@@ -726,7 +726,7 @@
     if (secao !== 'continuos' && RosterWork.escalasPainelContinuos) RosterWork.escalasPainelContinuos.reset();
     if (secao !== 'extra' && RosterWork.escalasPainelExtra) RosterWork.escalasPainelExtra.reset();
     if (secao === 'distribuicao' && RosterWork.escalasPainelEditar && pCtx.leitura) {
-      /* só de leitura (Início): ninguém edita, sem o rodapé das alterações, com o militar destacado */
+      /* só de leitura: ninguém edita, sem o rodapé das alterações, com o militar destacado */
       if (rodape) { rodape.textContent = ''; rodape.classList.add('oculto'); }
       RosterWork.escalasPainelEditar.montar(corpo, null, pCtx.unidadeId, pCtx.iso, { destacar: pCtx.destacar });
     } else if (secao === 'distribuicao' && RosterWork.escalasPainelEditar) {
@@ -748,7 +748,7 @@
 
   /* abrir outra célula com rascunho aberto: confirma o descarte antes de trocar.
      secao = a aba que abre primeiro (a Extrajornada abre na aba Extrajornada; o padrão é o Dia).
-     opcoes = { leitura, destacar }: leitura = só o Dia, sem abas nem rodapé, ninguém edita (Início);
+     opcoes = { leitura, destacar }: leitura = só o Dia, sem abas nem rodapé, ninguém edita;
      destacar = o CPF do militar cuja linha vem destacada */
   function abrirParaCelula(celula, secao, opcoes) {
     if (secaoSuja()) { confirmarDescarte(function () { abrirParaCelulaAgora(celula, secao, opcoes); }); return; }

@@ -1,12 +1,15 @@
 /* ============================================================
    ESCALAS — filtros e busca da barra de controles
    O botão Filtros (componente geral-filtros, com a coluna Situação)
-   vale nos modos de grade (Mês, Semana e Colunas); no Dia
-   e no Militares fica escondido. A busca (nome/CPF/RG, marcar ou filtrar) vale
-   em todos os modos menos o Militares (que tem a sua própria).
+   vale nos modos de grade (Mês, Semana e Colunas); no Dia, no
+   Militares e na Minha escala fica escondido. A busca (nome/CPF/RG,
+   marcar ou filtrar) vale em todos os modos menos o Militares (que
+   tem a sua própria) e a Minha escala.
    Filtro e busca se aplicam juntos nas linhas de militar já
    desenhadas: cada linha traz a situação (escalas-celula.js).
    Os afastados vêm escondidos e só aparecem com Afastamentos marcado.
+   A linha de quem está logado ganha o realce claro (--voce) nas
+   grades e na escala do dia da Minha escala.
    ============================================================ */
 (function () {
   'use strict';
@@ -63,6 +66,11 @@
     });
   }
 
+  /* a linha é de quem está logado? O data-busca traz o CPF em dígitos, separado por espaço (geral-busca, chave) */
+  function ehVoce(linha, cpf) {
+    return !!cpf && (' ' + (linha.getAttribute('data-busca') || '') + ' ').indexOf(' ' + cpf + ' ') !== -1;
+  }
+
   /* aplica filtro + busca nas linhas da grade. 'marcar' realça a linha casada e acende a célula;
      'filtrar' esconde as linhas que não casam. No modo Militares não age (busca própria) */
   function aplicar() {
@@ -70,12 +78,15 @@
     var corpo = conteudo.querySelector('.pagina-corpo');
     if (!corpo) return;
     var RW = window.RosterWork;
+    var cpf = RW.sessao ? String(RW.sessao.cpf() || '').replace(/\D/g, '') : '';
+    var minha = obterModo() === 'minha';
     Array.prototype.forEach.call(corpo.querySelectorAll('.escala-mes-celula--busca'), function (cel) {
       cel.classList.remove('escala-mes-celula--busca');
     });
     Array.prototype.forEach.call(corpo.querySelectorAll('.linha-escalado'), function (linha) {
       var passa = passaFiltros(linha);
       var casa = !!buscaTermo && !!RW.busca && RW.busca.casaTexto(buscaTermo, linha.getAttribute('data-busca'));
+      linha.classList.toggle('linha-escalado--voce', ehVoce(linha, cpf));
       linha.classList.toggle('linha-escalado--busca', passa && casa && buscaModo === 'marcar');
       linha.classList.toggle('busca-achado', passa && casa);   // o que o Enter da busca percorre (geral-busca.js)
       linha.classList.toggle('oculto', !passa || (!!buscaTermo && !casa && buscaModo === 'filtrar'));
@@ -86,7 +97,9 @@
     });
     /* modo Dia: a árvore usa a linha do painel (não há célula de grade); só a busca, que realça/esconde a linha */
     Array.prototype.forEach.call(corpo.querySelectorAll('.escala-distribuicao-escalado'), function (linha) {
-      var casa = !!buscaTermo && !!RW.busca && RW.busca.casaTexto(buscaTermo, linha.getAttribute('data-busca'));
+      /* na Minha escala não há busca: o termo que ficou de outra aba não vale */
+      var casa = !minha && !!buscaTermo && !!RW.busca && RW.busca.casaTexto(buscaTermo, linha.getAttribute('data-busca'));
+      linha.classList.toggle('escala-distribuicao-escalado--voce', minha && ehVoce(linha, cpf));
       linha.classList.toggle('escala-distribuicao-escalado--busca', casa && buscaModo === 'marcar');
       linha.classList.toggle('busca-achado', casa);
       linha.classList.toggle('oculto', !!buscaTermo && !casa && buscaModo === 'filtrar');
@@ -100,11 +113,11 @@
     requestAnimationFrame(function () { agendado = false; aplicar(); });
   }
 
-  /* o modo mudou: a busca some no Militares; os filtros só aparecem nas grades de célula */
+  /* o modo mudou: a busca some no Militares e na Minha escala; os filtros só aparecem nas grades de célula */
   function aplicarModo(modo) {
     if (!conteudo) return;
     var busca = conteudo.querySelector('#escala-busca-geral');
-    if (busca) busca.classList.toggle('oculto', modo === 'militares');
+    if (busca) busca.classList.toggle('oculto', modo === 'militares' || modo === 'minha');
     if (filtros) filtros.mostrar(!!MODOS_COM_FILTRO[modo]);
   }
 

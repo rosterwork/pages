@@ -7,7 +7,8 @@
    conta não fecha; Aceites e aprovação: todos os militares), a
    Análise e o "Como fica a escala" do registro inteiro, e o rodapé
    com as ações do papel e da situação de quem olha. Editar (no rodapé,
-   só na página Trocas): a Parte do E-protocolo do registro inteiro.
+   só na página Trocas): a aba Várias trocas em modo Editar, com o
+   plano que vale hoje (trocas-varias-editar.js), no painel largo.
    Expõe RosterWork.trocasPainelVarias.abrir(troca, ctx) e acao(nome, troca, ctx, botao)
    (as mesmas ações fora do painel: o cartão que abre ali mesmo)
      troca = uma troca do registro (a primeira, nas Pendências);
@@ -22,9 +23,7 @@
   var partes = null;       // as partes do painel (geral-decisao)
   var registro = null;     // o registro lido do banco (os dias e o saldo)
   var btnAprovar = null;   // travado até a análise chegar
-  var parteAntes = '';     // a Parte quando o Editar abriu (o X com mudança pede para descartar)
-  var comEditar = false;   // o Editar só na página Trocas, onde está o molde da Parte
-  var guardaLigado = false;
+  var comEditar = false;   // o Editar só na página Trocas, onde está o molde da aba Várias trocas
 
   function P() { return RW.trocasPainel.pecas; }
   function m() { return RW.mensagens.trocas; }
@@ -102,7 +101,7 @@
     var desfazer = { desfazer: desfazerAprovacao(t, ctx) };
     var problema = t._analise && t._analise.veredito === 'problema';
     if (acao === 'editar') {
-      RW.painel.editar();   // o aoMudarModo('editar') abre a Parte no lugar da leitura
+      RW.painel.editar();   // o aoMudarModo('editar') abre o Editar no lugar da leitura
     } else if (acao === 'imprimir-registro') {
       RW.trocasRegistroPdf.imprimir(t.troca_id, btn);
     } else if (acao === 'aceitar') {
@@ -182,47 +181,16 @@
     }
   }
 
-  /* ---------- o Editar: só a Parte do E-protocolo (vale para o registro inteiro) ---------- */
-  function q(sel) { return RW.painel.corpo().querySelector(sel); }
-  function parteDigitada() { return q('#tvp-parte') ? q('#tvp-parte').value.trim() + '/' + q('#tvp-parte-ano').value.trim() : parteAntes; }
-  function abrirParte(t, ctx) {
+  /* ---------- o Editar: a aba Várias trocas com o plano de hoje (quem participa propõe; o admin de fora altera direto) ---------- */
+  function abrirEdicao(t, ctx) {
     partes = null; btnAprovar = null;
-    var corpo = RW.painel.corpo();
-    corpo.textContent = '';
-    corpo.appendChild(RW.tpl('tpl-troca-varias-parte'));
-    q('#tvp-parte').value = t.parte_numero || '';
-    q('#tvp-parte-ano').value = String(t.parte_ano || new Date().getFullYear());
-    parteAntes = parteDigitada();
-    var f = RW.trocasSolicitar.formulario;
-    f.ligarSoNumeros(q('#tvp-parte'));
-    f.ligarSoNumeros(q('#tvp-parte-ano'));
-    f.ligarLimpezaErros(corpo);
-    var rodape = RW.painel.rodape();
-    rodape.textContent = '';
-    rodape.appendChild(document.getElementById('tpl-troca-editar-acoes').content.cloneNode(true));
-    rodape.classList.remove('oculto');
-    rodape.querySelector('[data-acao="cancelar"]').addEventListener('click', function () { RW.painel.voltarParaLeitura(); });
-    var salvar = rodape.querySelector('[data-acao="salvar"]');
-    salvar.addEventListener('click', function () { salvarParte(t, ctx, salvar); });
-  }
-  function salvarParte(t, ctx, btn) {
-    var numero = q('#tvp-parte').value.trim(), ano = q('#tvp-parte-ano').value.trim(), ok = true;
-    var parte = /^\d{1,7}$/.test(numero) && Number(numero) > 0 ? Number(numero) : null;
-    if (numero && !parte) { RW.trocasCampos.marcarErro(q('#tvp-parte'), m().novaParte); ok = false; }
-    if (numero && !/^\d{4}$/.test(ano)) { RW.trocasCampos.marcarErro(q('#tvp-parte-ano'), m().novaAno); ok = false; }
-    if (!ok) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.camposCorrigir }); return; }
-    parteAntes = parteDigitada();   // gravando: o X não pergunta mais
-    P().executar(RW.trocasDados.variasParte(t.registro_id, parte, parte ? Number(ano) : null), btn, ctx);
-  }
-  function temDadosParte() { return !!atual && RW.painel.modo() === 'editar' && !!q('#tvp-parte') && parteDigitada() !== parteAntes; }
-  function guardaFechar() {
-    if (!temDadosParte() || !RW.confirmar) return false;
-    RW.confirmar({
-      tipo: 'aviso', mensagem: RW.mensagens.edicao.sairSemSalvar,
-      textoConfirmar: RW.mensagens.botoes.descartar, textoCancelar: RW.mensagens.botoes.continuarEditando,
-      aoConfirmar: function () { RW.painel.fechar(); }
+    RW.trocasVariasEditar.abrir(t, {
+      aoSalvar: function (r) {
+        RW.painel.fechar();
+        if (ctx.aoMudar) ctx.aoMudar();
+        if (r.log && RW.resumo) RW.resumo.abrirModal(r.log, { pagina: 'Trocas' });
+      }
     });
-    return true;
   }
 
   /* ---------- abrir: lê o registro (os dias e o saldo) e desenha ---------- */
@@ -230,19 +198,25 @@
     ctx = ctx || {};
     var situacao = RW.trocasFormato.situacao(t.status, false).texto;
     var subtitulo = ctx.posicao ? RW.mensagens.decisao.posicao(situacao, ctx.posicao.n, ctx.posicao.total) : situacao;
-    /* o Editar só na página Trocas, onde está o molde da Parte (o JS da Trocas fica carregado depois de sair dela) */
-    comEditar = !!RW.trocasEditar && !!document.getElementById('tpl-troca-varias-parte');
-    if (!guardaLigado && RW.guardaSaida && RW.guardaSaida.registrar) { RW.guardaSaida.registrar(temDadosParte); guardaLigado = true; }
+    /* o Editar só na página Trocas, onde está o molde da aba Várias trocas (o JS da Trocas fica carregado depois de sair dela) */
+    comEditar = !!RW.trocasVariasEditar && !!document.getElementById('tpl-troca-varias');
     RW.painel.abrir({
       titulo: mv().painelTitulo,
       tituloExtra: RW.mensagens.decisao.tituloPelotao(t.pelotoes),
       subtitulo: subtitulo,
       aoMudarModo: function (modo) {
         if (atual !== t) return;
-        if (modo === 'editar') abrirParte(t, ctx); else desenharLeitura(t, ctx);
+        if (modo === 'editar') { abrirEdicao(t, ctx); return; }
+        RW.painel.largo(false);   // a leitura volta ao painel normal
+        desenharLeitura(t, ctx);
       },
-      aoTentarFechar: guardaFechar,
-      aoFechar: function () { atual = null; partes = null; registro = null; if (ctx.aoFechar) ctx.aoFechar(); }
+      /* o X e o Esc durante a edição: com algo mudado, confirma o descarte */
+      aoTentarFechar: function () { return comEditar && RW.painel.modo() === 'editar' && RW.trocasVariasEditar.guardaFechar(); },
+      aoFechar: function () {
+        atual = null; partes = null; registro = null;
+        if (comEditar) RW.trocasVariasEditar.encerrar();
+        if (ctx.aoFechar) ctx.aoFechar();
+      }
     });
     atual = t;
     registro = null;

@@ -57,8 +57,12 @@
     bloco.dataset.unidadeId = unidade.unidade_id;
     bloco.dataset.unidadeNome = nomePainel(unidade);
     bloco.dataset.unidadeCidade = unidade.cidade || '';
+    desenharDistribuicao(container, itens.length ? (itens[0].distribuicao || {}) : {});
+  }
 
-    var dados = itens.length ? (itens[0].distribuicao || {}) : {};
+  /* a distribuição do dia de uma unidade (o JSON do painel): os sem função, uma caixa por posto e as
+     Observações; a Minha escala usa o mesmo desenho (escalas-minha.js) */
+  function desenharDistribuicao(container, dados) {
     var postos = dados.postos || [];
     var semFuncao = dados.sem_funcao || [];
     var pecas = RosterWork.escalasPainel && RosterWork.escalasPainel.pecas;
@@ -166,5 +170,5 @@
     if (corpo) corpo.textContent = '';
   }
 
-  window.RosterWork.escalasDia = { renderizar: renderizar, atualizarCelula: atualizarCelula, limpar: limpar };
+  window.RosterWork.escalasDia = { renderizar: renderizar, atualizarCelula: atualizarCelula, limpar: limpar, desenharDistribuicao: desenharDistribuicao };
 })();

@@ -10,9 +10,15 @@
    .dropdown: o botão do dia é o gatilho), com as duas perguntas em
    bolinhas e, no dia marcado, os pares com Tirar. Cada militar
    entra uma vez por dia.
-   Expõe RosterWork.trocasVariasCalendario.{ iniciar, recarregar, desenhar }
+   No Editar, o calendário é o de quem pode mudar (o militar, de
+   amanhã em diante; o administrador de fora, de 7 dias atrás em
+   diante), como se o registro não existisse; o dia do plano que já
+   passou fica marcado, sem Tirar e sem as perguntas, e a seta volta
+   até o mês dele.
+   Expõe RosterWork.trocasVariasCalendario.{ iniciar, recarregar, desenhar, travado, encerrar }
      iniciar(est, aoMudar) — est = o estado da aba (militares, pares,
-       mes); aoMudar() avisa que os pares mudaram
+       mes, editar); aoMudar() avisa que os pares mudaram
+     travado(dia) — no Editar, o dia já passou e não muda
    ============================================================ */
 (function () {
   'use strict';
@@ -28,8 +34,13 @@
   function militar(cpf) { return est.militares.filter(function (m) { return m.cpf === cpf; })[0] || null; }
   function paresDoDia(dia) { return est.pares.filter(function (p) { return p.data === dia; }); }
   function mesAtual() { var h = new Date(); return new Date(h.getFullYear(), h.getMonth(), 1); }
-  /* o mês mais antigo das setas: o de hoje; no Registrar, o de 7 dias atrás */
+  function mesDe(dia) { var p = dia.split('-'); return new Date(Number(p[0]), Number(p[1]) - 1, 1); }
+  /* no Editar, o dia antes do primeiro que ainda muda (já passou e não muda) */
+  function travado(dia) { return !!(est && est.editar) && dia < est.editar.desde; }
+  /* o mês mais antigo das setas: o de hoje; no Registrar, o de 7 dias atrás; no Editar, o do primeiro dia
+     que ainda muda ou o do dia mais antigo do plano */
   function mesMinimo() {
+    if (est.editar) return mesDe(est.pares.map(function (p) { return p.data; }).concat(est.editar.desde).sort()[0]);
     if (!est.registrar) return mesAtual();
     var h = new Date();
     var d = new Date(h.getFullYear(), h.getMonth(), h.getDate() - 7);
@@ -54,7 +65,9 @@
     if (espera) espera.classList.toggle('oculto', est.militares.length > 1);
     if (est.militares.length < 2) { desenhar(); return; }
     var ini = est.mes, fim = new Date(est.mes.getFullYear(), est.mes.getMonth() + 1, 0);
-    RW.trocasDados.variasDias(est.militares.map(function (m) { return m.cpf; }), iso(ini), iso(fim), est.registrar).then(function (r) {
+    /* o de 7 dias atrás: no Registrar e no Editar do administrador de fora; no Editar, como se o registro não existisse */
+    var seteDias = est.registrar || !!(est.editar && est.editar.admin), registroId = est.editar ? est.editar.registroId : null;
+    RW.trocasDados.variasDias(est.militares.map(function (m) { return m.cpf; }), iso(ini), iso(fim), seteDias, registroId).then(function (r) {
       if (meu !== req || !est) return;
       if (!r || !r.ok) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: (r && r.erro) || RW.mensagens.trocas.varias.falhaDias }); }
       else (r.dias || []).forEach(function (d) { disp[String(d.data).slice(0, 10)] = d; });
@@ -76,7 +89,7 @@
       dataRef: est.mes,
       aoDia: function (botao, dia) {
         var pares = paresDoDia(dia), op = opcoesDoDia(dia);
-        var aceso = pares.length > 0 || (op.trabalha.length > 0 && op.folga.length > 0);
+        var aceso = pares.length > 0 || (!travado(dia) && op.trabalha.length > 0 && op.folga.length > 0);
         if (pares.length) botao.classList.add('mini-calendario-dia--quer');
         else if (!aceso) botao.classList.add('mini-calendario-dia--inativo');
         botao.disabled = !aceso;
@@ -122,20 +135,22 @@
   }
 
   function montarQuadro(menu, dia, pares, op) {
-    var c = RW.tpl('tpl-troca-varias-quadro');
+    var c = RW.tpl('tpl-troca-varias-quadro'), passou = travado(dia);
     c.querySelector('.trocas-dia-quadro-data').textContent = RW.data.comDiaCurto(dia);
     var lista = c.querySelector('.trocas-dia-pares');
     pares.forEach(function (p) {
       var linha = RW.tpl('tpl-troca-varias-quadro-par');
       linha.querySelector('.trocas-dia-quadro-par-texto').textContent =
         RW.mensagens.trocas.varias.noLugarDe(militar(p.trabalha) ? militar(p.trabalha).nome : '', militar(p.folga) ? militar(p.folga).nome : '');
-      linha.querySelector('.trocas-dia-tirar').addEventListener('click', function () { tirar(p); });
+      if (passou) linha.querySelector('.trocas-dia-tirar').remove();   // o dia que já passou não muda
+      else linha.querySelector('.trocas-dia-tirar').addEventListener('click', function () { tirar(p); });
       lista.appendChild(linha);
     });
-    var cabeNovo = op.trabalha.length > 0 && op.folga.length > 0;
+    var cabeNovo = !passou && op.trabalha.length > 0 && op.folga.length > 0;
     lista.classList.toggle('oculto', !pares.length);
-    c.querySelector('.trocas-dia-quadro-divisor').classList.toggle('oculto', !pares.length || !cabeNovo);
+    c.querySelector('.trocas-dia-quadro-divisor').classList.toggle('oculto', !pares.length || !(cabeNovo || passou));
     c.querySelector('.trocas-dia-novo').classList.toggle('oculto', !cabeNovo);
+    c.querySelector('.trocas-dia-travado').classList.toggle('oculto', !passou);
     if (cabeNovo) {
       var escolha = { trabalha: null, folga: null };
       var nomeGrupo = 'tv-' + dia + '-' + Date.now();
@@ -172,11 +187,14 @@
   function iniciar(estado, cb) {
     est = estado; aoMudar = cb;
     est.mes = mesAtual();
+    /* no Editar, abre no mês do primeiro dia do plano que ainda muda */
+    var proximo = est.editar ? est.pares.map(function (p) { return p.data; }).filter(function (d) { return !travado(d); }).sort()[0] : null;
+    if (proximo) est.mes = mesDe(proximo);
     q('#tv-mes-anterior').addEventListener('click', function () { mudarMes(-1); });
     q('#tv-mes-proximo').addEventListener('click', function () { mudarMes(1); });
     recarregar();
   }
   function encerrar() { est = null; aoMudar = null; disp = {}; req++; }
 
-  RW.trocasVariasCalendario = { iniciar: iniciar, recarregar: recarregar, desenhar: desenhar, encerrar: encerrar };
+  RW.trocasVariasCalendario = { iniciar: iniciar, recarregar: recarregar, desenhar: desenhar, travado: travado, encerrar: encerrar };
 })();

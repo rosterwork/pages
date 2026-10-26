@@ -164,7 +164,7 @@
     });
   }
 
-  /* o "Mais" mostra o mesmo número do item Pendências (que mora na folha): copia o
+  /* o item Pendências da barra de baixo mostra o mesmo número do item do menu: copia o
      número e se ele aparece toda vez que o selo do item muda */
   function espelharSeloPendencias() {
     var origem = document.querySelector('.sidebar .menu-item[data-pagina="pendencias"] .menu-item-selo');

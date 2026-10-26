@@ -577,7 +577,7 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  grid-column: 2 / 4;
+  grid-column: 2 / -1;
   min-width: 0;
 }
 
@@ -595,9 +595,6 @@
   color: var(--texto-suave);
 }
 
-/* a seta de fechar aponta para cima, como a do cartão aberto */
-.nova-distribuicao-troca-fechar .icone { transform: rotate(180deg); }
-
 .nova-distribuicao-troca-na-coluna-prefixo { grid-column: 2; }
 
 .nova-distribuicao-troca-data { width: 160px; }
@@ -610,6 +607,14 @@
 }
 
 .nova-distribuicao-troca-ajuda { grid-column: 2 / -1; }
+
+/* Cancelar e Concluir no pé, à direita (brancos: gravar no banco é o Salvar do rodapé) */
+.nova-distribuicao-troca-botoes {
+  display: flex;
+  gap: 8px;
+  grid-column: 2 / -1;
+  justify-self: end;
+}
 
 /* título de cada unidade nas opções do Oficial de Área */
 .nova-distribuicao-grupo-titulo { margin: 8px 0 0; }

@@ -190,7 +190,7 @@ button.pedido-item:hover {
   color: var(--texto-suave);
 }
 
-/* ---------- o pedido que abre ali mesmo (Início e Pendências) ----------
+/* ---------- o pedido que abre ali mesmo (Pendências e as abas Pendências) ----------
    A linha (o mesmo .pedido--linha do cartão) é o botão que abre e fecha o
    resumo; aberto, a seta vira para cima. O resumo começa na coluna do
    título (os recuos têm a largura do ícone e do pelotão), com todo o texto
