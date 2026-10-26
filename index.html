@@ -2287,6 +2287,16 @@
         </label>
         <span class="subtela-ajuda">O motivo vai no aviso da recusa.</span>
       </div>
+      <!-- o cancelamento da troca aprovada: o motivo é obrigatório (o título vem do JS: a troca ou as trocas) -->
+      <div class="grupo-caixa decisao-cancelamento oculto">
+        <span class="rotulo-secao decisao-cancelamento-titulo">Cancelar as trocas</span>
+        <label class="campo">
+          <span class="campo-rotulo">Motivo do cancelamento</span>
+          <textarea class="campo-entrada decisao-motivo-cancelamento" maxlength="200" placeholder="Ex.: a escala do mês foi refeita pelo comando"></textarea>
+          <span class="campo-erro-texto"></span>
+        </label>
+        <span class="subtela-ajuda">Obrigatório. Fica no registro das trocas e vai no aviso aos militares.</span>
+      </div>
     </div>
   </template>
   <!-- uma caixa do pedido: o título, o dia com o horário, a frase, a régua e um texto extra -->
@@ -2317,9 +2327,15 @@
     <button type="button" class="botao" data-acao="voltar">Voltar</button>
     <button type="button" class="botao botao--perigo" data-acao="confirmar-recusa">Confirmar recusa</button>
   </template>
+  <!-- o rodapé do cancelamento com motivo (o cancelamento da troca aprovada é do administrador) -->
+  <template id="tpl-decisao-cancelamento-acoes">
+    <button type="button" class="botao" data-acao="voltar">Voltar</button>
+    <button type="button" class="botao botao--perigo" data-acao="confirmar-cancelamento"><span class="etiqueta-adm">ADM</span>Confirmar cancelamento</button>
+  </template>
   <!-- o rodapé do painel da troca (o JS deixa só as ações do papel e do estado de quem olha):
        Recusar = o militar chamado para a troca; Recusar (admin) = a administração;
        Cancelar alteração = quem pediu a alteração de uma troca aprovada (a troca continua);
+       Cancelar troca = quem pediu, no pedido em aberto; Cancelar troca (cancelar-aprovada) = o administrador, na aprovada, com o motivo;
        Aceitar (aceitar-depois) = o aceite que falta no registro, que não mexe na escala;
        Editar = os dois militares e o admin da área, só na página Trocas (troca a leitura pelo formulário);
        Imprimir registro = o PDF do registro técnico, no começo do rodapé (o espaçador leva as ações para a direita) -->
@@ -2330,6 +2346,7 @@
     <span class="espacador-flex" data-espacador></span>
     <button type="button" class="botao" data-acao="editar">Editar</button>
     <button type="button" class="botao" data-acao="cancelar">Cancelar troca</button>
+    <button type="button" class="botao" data-acao="cancelar-aprovada"><span class="etiqueta-adm">ADM</span>Cancelar troca</button>
     <button type="button" class="botao" data-acao="cancelar-alteracao">Cancelar alteração</button>
     <button type="button" class="botao botao--perigo" data-acao="recusar">Recusar</button>
     <button type="button" class="botao botao--primario" data-acao="aceitar">Aceitar</button>
@@ -2360,7 +2377,7 @@
     <button type="button" class="botao" data-acao="editar">Editar</button>
     <button type="button" class="botao" data-acao="cancelar-pedido">Cancelar pedido</button>
     <button type="button" class="botao" data-acao="cancelar-alteracao">Cancelar alteração</button>
-    <button type="button" class="botao" data-acao="cancelar">Cancelar trocas</button>
+    <button type="button" class="botao" data-acao="cancelar"><span class="etiqueta-adm">ADM</span>Cancelar trocas</button>
     <button type="button" class="botao botao--perigo" data-acao="recusar">Recusar</button>
     <button type="button" class="botao botao--primario" data-acao="aceitar">Aceitar</button>
     <button type="button" class="botao botao--primario" data-acao="aceitar-depois">Aceitar</button>
@@ -2375,6 +2392,17 @@
         <span class="decisao-caixa-data"></span>
         <span class="decisao-caixa-extra"></span>
       </span>
+    </div>
+  </template>
+  <!-- a troca que não vale mais (substituída, cancelada ou expirada; trocas-painel-situacao.js): a nota cinza no alto
+       do painel, com o que aconteceu, quando, quem e o motivo, e, na substituída, o botão que abre a troca que vale -->
+  <template id="tpl-troca-situacao">
+    <div class="decisao-situacao">
+      <div class="nota">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-historico"/></svg>
+        <span class="nota-texto"><span class="nota-titulo"></span> <span data-situacao-texto></span></span>
+      </div>
+      <button type="button" class="botao oculto" data-acao="abrir-que-vale"></button>
     </div>
   </template>
   <!-- o aviso no topo do painel da troca (ex.: a troca tem uma alteração aguardando); o texto vem do JS -->

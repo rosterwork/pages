@@ -81,7 +81,10 @@
     var dias = (r.itens || []).map(function (it, i, todos) {
       var inteiro = hora(it.inicio) === '08:00' && hora(it.fim) === '08:00';
       var periodo = inteiro ? t.servicoInteiro : t.trecho(RW.horario.curta(hora(it.inicio)), RW.horario.curta(hora(it.fim)));
-      return { stack: [texto(t.dia(RW.trocasFormato.dataLonga(it.data), periodo), c.forte), texto(t.noLugar(it.cumpre, it.no_lugar_de), c.suave)],
+      /* o dia cancelado sozinho (as várias trocas com um dia que saiu) fica riscado */
+      var risco = it.cancelada ? { decoration: 'lineThrough' } : null;
+      return { stack: [texto(t.dia(RW.trocasFormato.dataLonga(it.data), periodo), it.cancelada ? c.suave : c.forte, risco),
+                       texto(t.noLugar(it.cumpre, it.no_lugar_de), c.suave, risco)],
         margin: [0, 0, 0, i === todos.length - 1 ? 0 : RESPIRO.entreDias] };
     });
     var acoes = r.acoes || [];

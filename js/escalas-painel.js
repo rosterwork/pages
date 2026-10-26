@@ -9,8 +9,6 @@
    admin já edita nela; quem não é admin só lê. A Extrajornada
    (escalas-painel-extra.js) também é do administrador editar.
    O mesmo painel abre na página Extrajornada (Calendário e Distribuição).
-   Com a opção leitura, abre só de leitura para todos: só o Dia, sem
-   abas nem rodapé, com o militar destacado (opção destacar).
    ============================================================ */
 (function () {
   'use strict';
@@ -21,7 +19,7 @@
   var MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 
   var celulaSelecionada = null;
-  var pCtx = null;   // contexto do painel aberto: { unidadeId, iso, secao, leitura, destacar }
+  var pCtx = null;   // contexto do painel aberto: { unidadeId, iso, secao }
 
   /* origem -> arquivo do ícone (o cadeado entra à parte, quando o militar é fixado) */
   var ICONE_ORIGEM = {
@@ -725,11 +723,7 @@
     if (secao !== 'distribuicao' && RosterWork.escalasPainelEditar) RosterWork.escalasPainelEditar.reset();
     if (secao !== 'continuos' && RosterWork.escalasPainelContinuos) RosterWork.escalasPainelContinuos.reset();
     if (secao !== 'extra' && RosterWork.escalasPainelExtra) RosterWork.escalasPainelExtra.reset();
-    if (secao === 'distribuicao' && RosterWork.escalasPainelEditar && pCtx.leitura) {
-      /* só de leitura: ninguém edita, sem o rodapé das alterações, com o militar destacado */
-      if (rodape) { rodape.textContent = ''; rodape.classList.add('oculto'); }
-      RosterWork.escalasPainelEditar.montar(corpo, null, pCtx.unidadeId, pCtx.iso, { destacar: pCtx.destacar });
-    } else if (secao === 'distribuicao' && RosterWork.escalasPainelEditar) {
+    if (secao === 'distribuicao' && RosterWork.escalasPainelEditar) {
       /* o dia e o Editar posto são de quem tem a unidade na área do papel */
       var adminDaUnidade = RosterWork.sessao.podeAdministrar('pelotao', pCtx.unidadeId);
       RosterWork.escalasPainelEditar.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso, {
@@ -747,16 +741,13 @@
   }
 
   /* abrir outra célula com rascunho aberto: confirma o descarte antes de trocar.
-     secao = a aba que abre primeiro (a Extrajornada abre na aba Extrajornada; o padrão é o Dia).
-     opcoes = { leitura, destacar }: leitura = só o Dia, sem abas nem rodapé, ninguém edita;
-     destacar = o CPF do militar cuja linha vem destacada */
-  function abrirParaCelula(celula, secao, opcoes) {
-    if (secaoSuja()) { confirmarDescarte(function () { abrirParaCelulaAgora(celula, secao, opcoes); }); return; }
-    abrirParaCelulaAgora(celula, secao, opcoes);
+     secao = a aba que abre primeiro (a Extrajornada abre na aba Extrajornada; o padrão é o Dia) */
+  function abrirParaCelula(celula, secao) {
+    if (secaoSuja()) { confirmarDescarte(function () { abrirParaCelulaAgora(celula, secao); }); return; }
+    abrirParaCelulaAgora(celula, secao);
   }
 
-  function abrirParaCelulaAgora(celula, secao, opcoes) {
-    opcoes = opcoes || {};
+  function abrirParaCelulaAgora(celula, secao) {
     desmarcar();
     celula.classList.add('escala-mes-celula--selecionada');
     celulaSelecionada = celula;
@@ -764,9 +755,8 @@
     var unidadeId = celula.dataset.unidadeId;
     var iso = celula.dataset.iso;
     var cidade = celula.dataset.unidadeCidade;
-    var leitura = !!opcoes.leitura;
-    var inicial = leitura ? 'distribuicao' : (secao || 'distribuicao');
-    pCtx = { unidadeId: unidadeId, iso: iso, secao: inicial, leitura: leitura, destacar: opcoes.destacar || null };
+    var inicial = secao || 'distribuicao';
+    pCtx = { unidadeId: unidadeId, iso: iso, secao: inicial };
     RosterWork.painel.abrir({
       titulo: celula.dataset.unidadeNome || '',
       tituloExtra: cidade ? '- ' + cidade : '',
@@ -779,7 +769,7 @@
        na área do papel. O geral-abas cuida da troca visual e nos avisa a aba escolhida */
     var linha = RosterWork.painel.linhaAbas();
     var tpl = document.getElementById('tpl-escala-painel-secoes');
-    if (linha && tpl && !leitura) {
+    if (linha && tpl) {
       linha.appendChild(tpl.content.cloneNode(true));
       if (!RosterWork.sessao.podeAdministrar('pelotao', unidadeId)) {
         linha.querySelectorAll('[data-so-admin]').forEach(function (aba) { aba.remove(); });

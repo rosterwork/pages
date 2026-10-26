@@ -207,6 +207,19 @@
   </div>
 </template>
 
+<!-- molde: o motivo da alteração, no fim do Editar das trocas aprovadas (trocas-painel-situacao.js); obrigatório quando os
+     dias mudam (só a Parte não pede) -->
+<template id="tpl-troca-motivo-alteracao">
+  <div class="grupo-caixa">
+    <span class="rotulo-secao">Motivo da alteração</span>
+    <label class="campo">
+      <textarea class="campo-entrada" rows="2" maxlength="200" aria-label="Motivo da alteração" placeholder="Ex.: o militar foi escalado para curso no dia"></textarea>
+      <span class="campo-erro-texto"></span>
+    </label>
+    <span class="campo-ajuda">Obrigatório nas trocas aprovadas quando os dias mudam. Fica no registro das trocas e vai no aviso aos militares.</span>
+  </div>
+</template>
+
 <!-- molde: ações do rodapé do Editar troca (Cancelar volta à leitura do painel) -->
 <template id="tpl-troca-editar-acoes">
   <button type="button" class="botao" data-acao="cancelar">Cancelar</button>

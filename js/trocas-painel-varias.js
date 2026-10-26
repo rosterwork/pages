@@ -85,7 +85,7 @@
         : !q ? m().aceitePendente : (a.papel === 'pediu' ? m().aceiteSolicitou(q.dia, q.hora) : m().aceiteAceitou(q.dia, q.hora));
       P().linhaAceite(caixa, a.titulo || '', acao, q ? m().seloAceitou : m().seloAceitePendente, q ? 'selo--sucesso' : 'selo--alerta');
     });
-    if (t.status === 'aprovada' && t.aprovado_em) {
+    if (['aprovada', 'substituida', 'cancelada'].indexOf(t.status) >= 0 && t.aprovado_em) {
       var qa = P().quando(t.aprovado_em);
       P().linhaAceite(caixa, t.aprovado_por_titulo || m().aceiteAdministracao, m().aceiteAprovou(qa.dia, qa.hora), m().seloAprovou, 'selo--sucesso');
     } else if (emAberto(t)) {
@@ -96,6 +96,9 @@
   function montarCorpo(t, ctx) {
     partes = RW.decisao.montar(RW.painel.corpo());
     if (!partes) return;
+    /* as trocas que não valem mais: o que aconteceu, quando, quem e o motivo (trocas-painel-situacao.js) */
+    var situacao = RW.trocasSituacao && RW.trocasSituacao.nota(t, ctx);
+    if (situacao) partes.pedido.appendChild(situacao);
     if (aceitePendente(t, ctx.cpf)) partes.pedido.appendChild(P().nota(t.status === 'aprovada' ? mv().faltaAceiteAprovada : mv().faltaAceite));
     /* as trocas com uma alteração esperando (o Editar fica fechado até ela ser decidida) */
     if (t.alteracao_pendente_id) partes.pedido.appendChild(P().nota(mv().alteracaoAguardando));
@@ -116,7 +119,7 @@
   function desfazerAprovacao(t, ctx) {
     return function () {
       if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal();
-      return RW.trocasDados.variasCancelar(t.registro_id, alteracao(t)).then(function (res) {
+      return RW.trocasDados.variasCancelar(t.registro_id, alteracao(t), alteracao(t) ? null : m().motivoDesfazer).then(function (res) {
         if (RW.esconderVeuGlobal) RW.esconderVeuGlobal();
         if (res && res.ok && ctx.aoMudar) ctx.aoMudar();
         return res;
@@ -153,7 +156,8 @@
     } else if (acao === 'cancelar-pedido') {
       confirmar(mv().confirmarCancelar(n), true, function () { executar(d.variasCancelar(reg), btn, ctx); });
     } else if (acao === 'cancelar') {
-      confirmar(mv().confirmarCancelar(n), true, function () { executar(d.variasCancelar(reg), btn, ctx, null, true); });   // desfaz a escala: véu
+      /* as trocas aprovadas: o motivo obrigatório; desfaz a escala: véu */
+      RW.decisao.cancelar(partes, function (motivo, botao) { executar(d.variasCancelar(reg, false, motivo), botao, ctx, null, true); }, { titulo: m().cancelarMotivo.tituloVarias });
     }
   }
   function montarAcoes(t, ctx) {

@@ -20,6 +20,7 @@
   var cpf = null;       // de quem é o pedido (null = o próprio)
   var estado = null;    // a resposta do nova_extra_minha
   var pedido = 0;       // latest-wins
+  var aba = 'minha';    // a aba aberta
 
   function msg() { return RW.mensagens.novaExtra; }
   function iso(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-01'; }
@@ -51,6 +52,9 @@
     el.pedir.textContent = p.estado === 'aberto' ? (ped ? msg().mudar : msg().fazer) : msg().ver;
     el.pedir.classList.toggle('oculto', p.estado !== 'aberto' && !ped);
     el.cotasTexto.textContent = ped && ped.concedidas != null ? msg().concedidas(ped.concedidas) : msg().cotasDepois(br(p.fecha));
+    el.diasTexto.textContent = r.extras && r.extras.length
+      ? r.extras.map(function (x) { return br(x.data) + ' ' + RW.novaExtraUtil.horas(x.blocos) + ' (' + x.unidade + ')'; }).join('; ') + (r.lancado ? '.' : ' ' + msg().aindaNaoLancado)
+      : msg().semDias;
   }
 
   /* ---------- TESTE: de quem é o pedido, copiar, gerar e apagar ---------- */
@@ -97,10 +101,19 @@
         if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
         RW.avisar({ tipo: 'sucesso', mensagem: msg().feito[acao](r.copiados || r.gerados || r.apagados || 0) });
         carregar();
+        RW.novaExtraOrg.recarregar();
       }, function (e) { RW.pararCarregando(botao); RW.avisar({ tipo: 'erro', mensagem: (e && e.message) || RW.mensagens.geral.semConexao }); });
     }
     if (acao !== 'apagar') { rodar(); return; }
     RW.confirmar({ tipo: 'aviso', mensagem: msg().confirmarApagar(nomeMes(comp)), textoConfirmar: msg().apagar, aoConfirmar: rodar });
+  }
+
+  /* trocar de mês: com a distribuição não salva, pergunta antes */
+  function trocarMes(n) {
+    function ir() { comp = new Date(comp.getFullYear(), comp.getMonth() + n, 1); carregar(); if (aba !== 'minha') RW.novaExtraOrg.mostrar(aba); }
+    if (!RW.novaExtraOrg.sujo()) { ir(); return; }
+    RW.confirmar({ tipo: 'aviso', mensagem: RW.mensagens.edicao.sairSemSalvar, textoConfirmar: RW.mensagens.botoes.descartar,
+      textoCancelar: RW.mensagens.botoes.continuarEditando, aoConfirmar: function () { RW.novaExtraMontar.descartar(); ir(); } });
   }
 
   /* ---------- entrada ---------- */
@@ -111,6 +124,7 @@
     el.cotasTexto = conteudo.querySelector('#nova-extra-cotas-texto');
     el.pedir = conteudo.querySelector('#nova-extra-pedir');
     el.mes = conteudo.querySelector('#nova-extra-mes');
+    el.diasTexto = conteudo.querySelector('#nova-extra-dias-texto');
     el.pedidoDe = conteudo.querySelector('#nova-extra-pedido-de-texto');
     el.militares = conteudo.querySelector('#nova-extra-militares');
     var hoje = new Date();
@@ -123,10 +137,13 @@
         Array.prototype.forEach.call(conteudo.querySelectorAll('.pagina-corpo [data-aba-painel]'), function (s) {
           s.classList.toggle('oculto', s.getAttribute('data-aba-painel') !== nome);
         });
+        aba = nome;
+        if (nome !== 'minha') RW.novaExtraOrg.mostrar(nome);
       });
     });
-    conteudo.querySelector('#nova-extra-mes-anterior').addEventListener('click', function () { comp = new Date(comp.getFullYear(), comp.getMonth() - 1, 1); carregar(); });
-    conteudo.querySelector('#nova-extra-mes-proximo').addEventListener('click', function () { comp = new Date(comp.getFullYear(), comp.getMonth() + 1, 1); carregar(); });
+    conteudo.querySelector('#nova-extra-mes-anterior').addEventListener('click', function () { trocarMes(-1); });
+    conteudo.querySelector('#nova-extra-mes-proximo').addEventListener('click', function () { trocarMes(1); });
+    RW.novaExtraOrg.montar(conteudo);
     el.pedir.addEventListener('click', function () {
       if (estado && RW.novaExtraPedido) RW.novaExtraPedido.abrir(estado, comp, cpf, carregar);
     });
@@ -138,5 +155,6 @@
     return Promise.resolve();
   }
 
+  RW.novaExtra = { comp: function () { return iso(comp); } };
   RW.paginas['nova-extra'] = { iniciar: iniciar };
 })();

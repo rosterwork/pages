@@ -16,6 +16,10 @@
      · recusar(partes, aoConfirmar) → a caixa do motivo e o rodapé
                         Voltar / Confirmar recusa; Voltar devolve o
                         rodapé de antes. aoConfirmar(motivo, botao).
+     · cancelar(partes, aoConfirmar, { titulo }) → o mesmo para o
+                        cancelamento da troca aprovada, com o motivo
+                        obrigatório (sem ele, o erro no campo) e o
+                        Confirmar cancelamento do administrador.
    O motivo escrito e não enviado fica no guarda de saída.
    Clona os moldes #tpl-decisao* do shell. RosterWork.decisao.
    ============================================================ */
@@ -40,12 +44,15 @@
       saldo: null,   // { texto, alerta }: a nota do saldo, desenhada junto com a análise
       escala: raiz.querySelector('.decisao-escala'),
       recusa: raiz.querySelector('.decisao-recusa'),
-      motivo: raiz.querySelector('.decisao-motivo')
+      motivo: raiz.querySelector('.decisao-motivo'),
+      cancelamento: raiz.querySelector('.decisao-cancelamento'),
+      motivoCancelamento: raiz.querySelector('.decisao-motivo-cancelamento')
     };
     /* motivo escrito e não enviado: o navegador avisa antes de sair */
+    function escrito(caixa, campo) { return !!caixa && document.contains(campo) && !caixa.classList.contains('oculto') && campo.value.trim() !== ''; }
     if (cancelarGuarda) cancelarGuarda();
     cancelarGuarda = RW.guardaSaida ? RW.guardaSaida.registrar(function () {
-      return document.contains(partes.motivo) && !partes.recusa.classList.contains('oculto') && partes.motivo.value.trim() !== '';
+      return escrito(partes.recusa, partes.motivo) || escrito(partes.cancelamento, partes.motivoCancelamento);
     }) : null;
     return partes;
   }
@@ -171,32 +178,57 @@
     });
   }
 
-  function recusar(partes, aoConfirmar) {
+  /* a caixa do motivo no corpo e o rodapé Voltar / Confirmar no lugar das ações; Voltar devolve o rodapé de antes.
+     obrigatorio: sem motivo, o Confirmar marca o erro no campo e não segue */
+  function pedirMotivo(caixa, campo, idAcoes, acaoConfirmar, erroObrigatorio, aoConfirmar) {
     var rodape = RW.painel && RW.painel.rodape();
-    if (!partes || !rodape) return;
-    var tpl = document.getElementById('tpl-decisao-recusa-acoes');
+    if (!caixa || !campo || !rodape) return;
+    var tpl = document.getElementById(idAcoes);
     if (!tpl) return;
     /* guarda os botões de antes (com os cliques ligados) para o Voltar */
     var antes = [].slice.call(rodape.childNodes);
     antes.forEach(function (n) { rodape.removeChild(n); });
     var frag = tpl.content.cloneNode(true);
     var voltar = frag.querySelector('[data-acao="voltar"]');
-    var confirmar = frag.querySelector('[data-acao="confirmar-recusa"]');
+    var confirmar = frag.querySelector('[data-acao="' + acaoConfirmar + '"]');
     rodape.appendChild(frag);
-    partes.motivo.value = '';
-    partes.recusa.classList.remove('oculto');
-    partes.recusa.scrollIntoView({ block: 'nearest' });
-    partes.motivo.focus();
+    campo.value = '';
+    if (RW.campos) RW.campos.limparErro(campo);
+    caixa.classList.remove('oculto');
+    caixa.scrollIntoView({ block: 'nearest' });
+    campo.focus();
     voltar.addEventListener('click', function () {
-      partes.motivo.value = '';
-      partes.recusa.classList.add('oculto');
+      campo.value = '';
+      if (RW.campos) RW.campos.limparErro(campo);
+      caixa.classList.add('oculto');
       rodape.textContent = '';
       antes.forEach(function (n) { rodape.appendChild(n); });
     });
+    campo.addEventListener('input', function () { if (RW.campos) RW.campos.limparErro(campo); });
     confirmar.addEventListener('click', function () {
-      if (aoConfirmar) aoConfirmar(partes.motivo.value.trim(), confirmar);
+      var motivo = campo.value.trim();
+      if (erroObrigatorio && !motivo) {
+        if (RW.campos) RW.campos.marcarErro(campo, erroObrigatorio);
+        campo.focus();
+        return;
+      }
+      if (aoConfirmar) aoConfirmar(motivo, confirmar);
     });
   }
 
-  RW.decisao = { montar: montar, caixa: caixa, saldo: saldo, analisando: analisando, analise: analise, escala: escala, recusar: recusar };
+  function recusar(partes, aoConfirmar) {
+    if (!partes) return;
+    pedirMotivo(partes.recusa, partes.motivo, 'tpl-decisao-recusa-acoes', 'confirmar-recusa', null, aoConfirmar);
+  }
+
+  /* o cancelamento com o motivo obrigatório (a troca aprovada); titulo = "Cancelar a troca" ou "Cancelar as trocas" */
+  function cancelar(partes, aoConfirmar, opcoes) {
+    if (!partes || !partes.cancelamento) return;
+    opcoes = opcoes || {};
+    if (opcoes.titulo) partes.cancelamento.querySelector('.decisao-cancelamento-titulo').textContent = opcoes.titulo;
+    pedirMotivo(partes.cancelamento, partes.motivoCancelamento, 'tpl-decisao-cancelamento-acoes', 'confirmar-cancelamento',
+      opcoes.erro || RW.mensagens.trocas.cancelarMotivo.erro, aoConfirmar);
+  }
+
+  RW.decisao = { montar: montar, caixa: caixa, saldo: saldo, analisando: analisando, analise: analise, escala: escala, recusar: recusar, cancelar: cancelar };
 })();

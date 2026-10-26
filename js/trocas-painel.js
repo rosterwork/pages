@@ -122,7 +122,7 @@
         : (pediu && a.papel === 'solicitante' ? m.aceiteSolicitou(q.dia, q.hora) : m.aceiteAceitou(q.dia, q.hora));
       linhaAceite(caixa, nomes[a.cpf] || '', acao, q ? m.seloAceitou : m.seloAceitePendente, q ? 'selo--sucesso' : 'selo--alerta');
     });
-    if ((troca.status === 'aprovada' || troca.status === 'substituida') && troca.aprovado_em) {
+    if (['aprovada', 'substituida', 'cancelada'].indexOf(troca.status) >= 0 && troca.aprovado_em) {
       var qa = quando(troca.aprovado_em);
       var registrou = troca.registro_origem === 'administracao' && troca.criado_em === troca.aprovado_em;
       linhaAceite(caixa, troca.aprovado_por_titulo || m.aceiteAdministracao,
@@ -141,6 +141,8 @@
     var sol = fmt().nomeMilitar(troca.solicitante_grau, troca.solicitante_nome);
     var par = fmt().nomeMilitar(troca.parceiro_grau, troca.parceiro_nome);
     var parte = registroEParte(troca.registro_numero, troca.registro_ano, troca.parte_numero, troca.parte_ano);
+    /* a troca que não vale mais: o que aconteceu, quando, quem e o motivo (trocas-painel-situacao.js) */
+    var situacao = RW.trocasSituacao && RW.trocasSituacao.nota(troca, ctx); if (situacao) partes.pedido.appendChild(situacao);
     /* o aceite de quem olha faltando: a nota no alto (o botão Aceitar fica no rodapé) */
     if (aceitePendente(troca, ctx.cpf)) {
       var falta = nota(troca.status === 'aprovada' ? m.faltaAceiteAprovada : m.faltaAceite);
@@ -213,7 +215,7 @@
     var d = RW.trocasDados;
     return function () {
       if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal();   // o desfazer cancela a troca e recalcula a escala: véu global
-      return d.cancelar(troca.troca_id, !!troca.substitui_troca_id).then(function (res) {
+      return d.cancelar(troca.troca_id, !!troca.substitui_troca_id, troca.substitui_troca_id ? null : msg().motivoDesfazer).then(function (res) {
         if (RW.esconderVeuGlobal) RW.esconderVeuGlobal();
         if (res && res.ok && ctx.aoMudar) ctx.aoMudar();
         return res;
@@ -255,8 +257,8 @@
     } else if (acao === 'recusar-admin') {
       /* a administração recusa: o motivo (opcional) vai no aviso aos dois */
       RW.decisao.recusar(partes, function (motivo, botao) { executar(d.aprovar(troca.troca_id, false, false, motivo), botao, ctx); });
-    } else if (acao === 'cancelar') {
-      confirmarEntao(m.confirmarCancelar, true, function () { executar(d.cancelar(troca.troca_id), btn, ctx, null, true); });   // cancelar reverte a escala → véu
+    } else if (acao === 'cancelar' || acao === 'cancelar-aprovada') {
+      RW.trocasSituacao.cancelar(troca, partes, ctx, btn);   // o pedido em aberto confirma; a aprovada pede o motivo
     }
   }
 
@@ -283,7 +285,7 @@
       if (admin) { usar.aprovar = true; usar['recusar-admin'] = true; }   /* o admin decide inclusive a troca da qual participa */
       if (souQuemPediu) usar[cancelarPedido] = true;
     } else if (troca.status === 'aprovada' && admin) {
-      usar.cancelar = true;
+      usar['cancelar-aprovada'] = true;
     }
     /* o aceite de quem olha faltando no registro (inclusive na aprovada) */
     if (aceitePendente(troca, ctx.cpf)) usar['aceitar-depois'] = true;
@@ -294,7 +296,7 @@
     var espacador = frag.querySelector('[data-espacador]');
     if (espacador && !usar['imprimir-registro']) espacador.parentNode.removeChild(espacador);
 
-    ['imprimir-registro', 'editar', 'cancelar-alteracao', 'aceitar', 'aceitar-depois', 'recusar', 'aprovar-forcar', 'aprovar', 'recusar-admin', 'cancelar'].forEach(function (acao) {
+    ['imprimir-registro', 'editar', 'cancelar-alteracao', 'aceitar', 'aceitar-depois', 'recusar', 'aprovar-forcar', 'aprovar', 'recusar-admin', 'cancelar', 'cancelar-aprovada'].forEach(function (acao) {
       var btn = frag.querySelector('[data-acao="' + acao + '"]');
       if (!btn) return;
       if (!usar[acao]) { if (btn.parentNode) btn.parentNode.removeChild(btn); return; }

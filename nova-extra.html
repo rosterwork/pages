@@ -51,7 +51,7 @@
           <span class="nova-extra-bloco-titulo" id="nova-extra-titulo"></span>
           <span class="selo" id="nova-extra-prazo"></span>
         </div>
-        <div class="nova-extra-caixa nova-extra-passos">
+        <div class="nova-extra-caixa nova-extra-minha-passos">
           <div class="nova-extra-passo nova-extra-passo--agora">
             <span class="nova-extra-passo-num">1</span>
             <span class="nova-extra-passo-corpo">
@@ -71,7 +71,7 @@
             <span class="nova-extra-passo-num">3</span>
             <span class="nova-extra-passo-corpo">
               <b>Os seus dias</b>
-              <span class="nova-extra-passo-texto">Os dias de extra aparecem aqui depois do lançamento na escala.</span>
+              <span class="nova-extra-passo-texto" id="nova-extra-dias-texto"></span>
             </span>
           </div>
         </div>
@@ -278,6 +278,22 @@
   <div class="nova-extra-item"><span class="nova-extra-item-marca"></span><span class="nova-extra-item-texto"><b></b><span></span></span></div>
 </template>
 
+<template id="tpl-ne-thead"><thead></thead></template>
+<template id="tpl-ne-tbody"><tbody></tbody></template>
+<template id="tpl-ne-linha"><tr></tr></template>
+<template id="tpl-ne-th"><th></th></template>
+<template id="tpl-ne-td"><td></td></template>
+<template id="tpl-ne-sem"><span class="nova-extra-sem"></span></template>
+<template id="tpl-ne-vazio"><span></span></template>
+<template id="tpl-ne-desde"><span class="nova-extra-desde"></span></template>
+<template id="tpl-ne-selo"><span class="selo"></span></template>
+<template id="tpl-ne-td-nome">
+  <td class="ne-col-nome nova-extra-nome"><small></small><b></b> <span class="selo nova-extra-selo-mini ne-selo-24 oculto">24h</span><span class="selo nova-extra-selo-mini ne-selo-exp oculto">EXP</span></td>
+</template>
+<template id="tpl-ne-falta-cab">
+  <tr class="ne-falta-cab"><th class="ne-falta-th"><span class="ne-falta-titulo">Onde ainda falta gente</span><span class="nova-extra-ajuda">Cada dia tem os 4 horários: 08h, 14h, 20h e 02h. Vermelho: sem ninguém.</span><button type="button" class="botao botao--texto ne-falta-botao"></button></th></tr>
+</template>
+
 <template id="tpl-ne-th-dia">
   <th><span class="ne-sem"></span><b class="ne-num"></b></th>
 </template>
@@ -367,7 +383,7 @@
     </section>
     <section class="nova-extra-sec" data-so-voluntario>
       <b class="nova-extra-pergunta">Quais dias?</b>
-      <span class="nova-extra-ajuda">Escolha o que marcar e toque nos dias. Toque de novo para desmarcar.</span>
+      <span class="nova-extra-ajuda" id="nova-extra-ajuda-dias">Marque pelo menos 5 dias que você quer</span>
       <div class="nova-extra-pincel">
         <button type="button" class="nova-extra-pincel-op" data-pincel="quer"><span class="nova-extra-ponto nova-extra-ponto--quer"></span>Quero</button>
         <button type="button" class="nova-extra-pincel-op" data-pincel="nao_posso"><span class="nova-extra-ponto nova-extra-ponto--nao"></span>Não posso</button>

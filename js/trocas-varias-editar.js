@@ -9,8 +9,9 @@
    outros; nas trocas aprovadas, o militar propõe uma alteração
    (aceite de todos e aprovação); o administrador de fora altera
    direto, com a Análise antes de salvar (trocas-varias-registrar.js)
-   e a confirmação. Cancelar volta à leitura; com algo mudado,
-   confirma o descarte.
+   e a confirmação. Nas trocas aprovadas, o "Motivo da alteração" no
+   fim (obrigatório quando os dias mudam; trocas-painel-situacao.js).
+   Cancelar volta à leitura; com algo mudado, confirma o descarte.
    Expõe RosterWork.trocasVariasEditar.{ abrir, guardaFechar, encerrar }
      abrir(troca, { aoSalvar(r) }) — troca = uma troca do registro
    ============================================================ */
@@ -24,11 +25,13 @@
   function M() { return RW.mensagens.trocas; }
   function V() { return RW.trocasVarias; }
 
-  function temMudanca() { return !!aberto && aberto.montado && V().temDados(); }
+  function temMudanca() { return !!aberto && aberto.montado && (V().temDados() || (!!aberto.motivo && aberto.motivo.temTexto())); }
 
   /* ---------- salvar: a aba confere a Parte e os dias e devolve o pedido aqui ---------- */
   function aoEnviar(pares, parte, ano, btn) {
     if (!aberto) return;
+    /* mudar os dias das trocas aprovadas pede o motivo */
+    if (aberto.motivo && !aberto.motivo.conferir(V().planoMudou())) return;
     /* o administrador de fora muda a escala das trocas aprovadas na hora: confirma antes, como no Registrar */
     if (aberto.admin && aberto.troca.status === 'aprovada' && V().planoMudou() && RW.confirmar) {
       var analise = RW.trocasVariasRegistrar.ultima();
@@ -48,7 +51,7 @@
     if (comVeu) { if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal(); }
     else if (btn && RW.iniciarCarregando) RW.iniciarCarregando(btn);
     function parar() { if (comVeu) { if (RW.esconderVeuGlobal) RW.esconderVeuGlobal(); } else if (btn && RW.pararCarregando) RW.pararCarregando(btn); }
-    RW.trocasDados.variasEditar(meu.troca.registro_id, pares, parte, ano, false).then(function (r) {
+    RW.trocasDados.variasEditar(meu.troca.registro_id, pares, parte, ano, false, meu.motivo ? meu.motivo.valor() : null).then(function (r) {
       parar();
       if (r && r.ok) {
         var aoSalvar = meu.aoSalvar;
@@ -108,6 +111,7 @@
         alteracao: !aberto.admin && (aberto.troca.status === 'aprovada' || !!aberto.troca.original)
       }
     });
+    aberto.motivo = RW.trocasSituacao ? RW.trocasSituacao.motivoAlteracao(corpo, aberto.troca) : null;
   }
 
   /* ---------- abrir: lê o plano que vale hoje e monta ---------- */

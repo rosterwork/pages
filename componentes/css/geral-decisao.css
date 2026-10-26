@@ -18,8 +18,21 @@
 }
 
 .decisao-caixa,
-.decisao-recusa {
+.decisao-recusa,
+.decisao-cancelamento {
   gap: 8px;
+}
+
+/* o pedido que não vale mais (substituído, cancelado ou expirado): a nota e, embaixo, o botão que leva ao que vale */
+.decisao-situacao {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.decisao-situacao > .nota {
+  align-self: stretch;
 }
 
 /* o dia à esquerda e o horário à direita */

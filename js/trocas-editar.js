@@ -10,6 +10,8 @@
    aprovada vira uma alteração (aceite do outro e aprovação); o
    administrador de fora da troca altera direto, com a Análise antes
    de salvar (como no Registrar). O dia que já passou fica como está.
+   Na troca aprovada, o "Motivo da alteração" no fim (obrigatório
+   quando os dias mudam; trocas-painel-situacao.js).
    Cancelar volta à leitura; com algo mudado, confirma o descarte.
    Expõe RosterWork.trocasEditar.{ abrir, guardaFechar, encerrar }.
      abrir(troca, { admin, aoSalvar(r) }) — admin = altera direto
@@ -43,7 +45,8 @@
       p_devolucao_horario_inicio: devDia && dev && !dev.total ? dev.hi : null,
       p_devolucao_horario_fim: devDia && dev && !dev.total ? dev.hf : null,
       p_parte_numero: parte,
-      p_parte_ano: parte ? F().parteAno(ctx.raiz) : null   // sem a Parte, o Ano não vai
+      p_parte_ano: parte ? F().parteAno(ctx.raiz) : null,   // sem a Parte, o Ano não vai
+      p_motivo: ctx.motivo ? ctx.motivo.valor() : null
     };
   }
   /* o pedido mexe no dia, no horário ou na devolução (só aí a escala muda e a Análise faz sentido) */
@@ -113,6 +116,7 @@
   /* ---------- salvar, cancelar, encerrar ---------- */
   function salvar(btn) {
     if (!validar()) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.camposCorrigir }); return; }
+    if (ctx.motivo && !ctx.motivo.conferir(mudaEscala())) return;   // mudar os dias da troca aprovada pede o motivo
     /* o administrador muda a escala da troca aprovada na hora: confirma antes, como no Registrar */
     if (ctx.admin && ctx.troca.status === 'aprovada' && mudaEscala() && RW.confirmar) {
       var temProblema = !!(ctx.analise && ctx.analise.veredito === 'problema');
@@ -219,6 +223,7 @@
       devDia: null, devSel: null, periodoDevolucao: null,
       analise: null, btnSalvar: null, preenchendo: true, mudou: false
     };
+    ctx.motivo = RW.trocasSituacao ? RW.trocasSituacao.motivoAlteracao(corpo, troca, function () { if (ctx && !ctx.preenchendo) ctx.mudou = true; }) : null;
     C().iniciar(ctx, { aoMudarPedido: aoMudar });
     montarAcoes();
     travarSalvar(true);   // até os dias de serviço chegarem e o formulário ser preenchido

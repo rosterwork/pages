@@ -144,21 +144,16 @@
     notas(r);
   }
   function nota(molde, texto) { var n = RW.tpl(molde); n.querySelector('.nota-texto').textContent = texto; q('#tv-notas').appendChild(n); }
-  /* a dívida de cada par no fim (a que já havia somada); sem dívida, a nota verde */
+  /* a dívida de cada par no fim (a que já havia somada), "O Cb. A fica devendo 12h ao Cb. B."; sem dívida, a nota verde */
   function notas(r) {
     var nome = function (cpf) { return (r.nomes && r.nomes[cpf]) || ''; };
     var finais = r.saldos_final || [], antes = r.saldos_antes || [];
-    var tinha = function (s) { return antes.some(function (a) { return (a.deve === s.deve && a.a === s.a) || (a.deve === s.a && a.a === s.deve); }); };
     if (!finais.length) {
       var duplas = (r.duplas || []).length > 0, rodas = (r.rodas || []).length > 0;
       nota('tpl-troca-varias-nota-ok', antes.length ? M().fechadoAntes : (duplas && rodas ? M().fechadoTudo : (rodas ? M().fechadoRodas : M().fechadoDuplas)));
       return;
     }
-    finais.forEach(function (s) {
-      var semDev = !tinha(s) && (r.sem_devolucao || []).some(function (d) { return d.folga === s.deve && d.trabalha === s.a; });
-      var horas = RW.tempo.horas(s.minutos);
-      nota('tpl-troca-varias-nota-saldo', semDev ? M().semDevolucao(nome(s.deve), horas, nome(s.a)) : M().saldo(nome(s.deve), horas, nome(s.a)));
-    });
+    finais.forEach(function (s) { nota('tpl-troca-varias-nota-saldo', M().saldo(nome(s.deve), RW.tempo.horas(s.minutos), nome(s.a))); });
   }
 
   /* ---------- o lápis: o horário do dia, ali mesmo ---------- */

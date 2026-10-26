@@ -28,7 +28,7 @@
     if (v.vol === false) return true;
     if (v.vol !== true || v.cotas < 1 || v.cotas > 10 || (v.so24 && v.cotas !== 4 && v.cotas !== 8)) return false;
     var q = contar('quer');
-    return q >= ed.r.min_datas && q <= 10 && contar('nao_posso') <= 10;
+    return q >= ed.r.min_datas && contar('nao_posso') <= 10;
   }
 
   function atualizar() {
@@ -61,7 +61,7 @@
       else if (t) txt.textContent = t === 'quer' ? msg().quero : msg().naoPosso;
       else txt.textContent = b.getAttribute('data-texto') || '';
     });
-    f.querySelector('#nova-extra-conta-quer').textContent = msg().contaQuer(contar('quer'), ed.r.min_datas);
+    f.querySelector('#nova-extra-conta-quer').textContent = msg().contaQuer(contar('quer'));
     f.querySelector('#nova-extra-conta-nao').textContent = msg().contaNao(contar('nao_posso'));
     if (ed.btn) ed.btn.disabled = !valido() || (!sujo() && !!ed.r.pedido);
   }
@@ -178,6 +178,9 @@
       }
       cal.appendChild(b);
     }
+    var ajudaDias = f.querySelector('#nova-extra-ajuda-dias');
+    ajudaDias.textContent = msg().ajudaDias(r.min_datas);
+    ajudaDias.classList.toggle('oculto', !r.min_datas);
     f.querySelector('#nova-extra-termo').textContent = ped && ped.termo ? msg().termoRecebido(ped.termo_em) : msg().termoPendente;
     RW.painel.corpo().appendChild(f);
 

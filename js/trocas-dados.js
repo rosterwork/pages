@@ -30,7 +30,8 @@
     aceitar: function (trocaId) { return RosterWork.rpc('fn_trocas_aceitar', { p_troca_id: trocaId }); },
     /* forcar (só admin): aprova direto de "aguardando confirmação", sem o solicitado confirmar */
     aprovar: function (trocaId, aceitar, forcar, motivo) { return RosterWork.rpc('fn_trocas_aprovar', { p_troca_id: trocaId, p_aceitar: aceitar, p_forcar: !!forcar, p_motivo: motivo || null }); },
-    cancelar: function (trocaId, desfazer) { return RosterWork.rpc('fn_trocas_cancelar', { p_troca_id: trocaId, p_desfazer: !!desfazer }); },
+    /* motivo: obrigatório para cancelar a troca aprovada (fica no livro de ocorrências do registro) */
+    cancelar: function (trocaId, desfazer, motivo) { return RosterWork.rpc('fn_trocas_cancelar', { p_troca_id: trocaId, p_desfazer: !!desfazer, p_motivo: motivo || null }); },
     /* saldo líquido de horas entre o logado e outroCpf (> 0 = o outro me deve; < 0 = eu devo) */
     saldoEntre: function (outroCpf) { return RosterWork.rpc('fn_trocas_saldo_entre', { p_outro_cpf: outroCpf }); },
     /* extrato paginado dos lançamentos (serviço/devolução) entre dois militares */
@@ -43,7 +44,7 @@
     variasMontar: function (dias, registroId) { return RosterWork.rpc('fn_trocas_varias_montar', { p_dias: dias, p_registro_id: registroId || null }); },
     variasSolicitar: function (dias, parte, ano) { return RosterWork.rpc('fn_trocas_varias_solicitar', { p_dias: dias, p_parte_numero: parte, p_parte_ano: ano }); },
     variasRegistrar: function (dias, parte, ano, ensaio) { return RosterWork.rpc('fn_trocas_varias_registrar', { p_dias: dias, p_parte_numero: parte, p_parte_ano: ano, p_ensaio: !!ensaio }); },
-    variasCancelar: function (registroId, desfazer) { return RosterWork.rpc('fn_trocas_varias_cancelar', { p_registro_id: registroId, p_desfazer: !!desfazer }); },
+    variasCancelar: function (registroId, desfazer, motivo) { return RosterWork.rpc('fn_trocas_varias_cancelar', { p_registro_id: registroId, p_desfazer: !!desfazer, p_motivo: motivo || null }); },
     /* o registro de várias trocas: a resposta de cada militar, a decisão da administração, a Parte e os dados do registro */
     variasResponder: function (registroId, aceitar, motivo) { return RosterWork.rpc('fn_trocas_varias_responder', { p_registro_id: registroId, p_aceitar: aceitar, p_motivo: motivo || null }); },
     variasAprovar: function (registroId, aceitar, forcar, motivo) { return RosterWork.rpc('fn_trocas_varias_aprovar', { p_registro_id: registroId, p_aceitar: aceitar, p_forcar: !!forcar, p_motivo: motivo || null }); },
@@ -51,7 +52,7 @@
     /* o Editar do registro: o plano que vale hoje (os dias, os militares e a Parte) e a gravação do plano novo
        (ensaio = só a Análise, do administrador de fora) */
     variasPlano: function (registroId) { return RosterWork.rpc('fn_trocas_varias_plano', { p_registro_id: registroId }); },
-    variasEditar: function (registroId, dias, parte, ano, ensaio) { return RosterWork.rpc('fn_trocas_varias_editar', { p_registro_id: registroId, p_dias: dias, p_parte_numero: parte, p_parte_ano: ano, p_ensaio: !!ensaio }); },
+    variasEditar: function (registroId, dias, parte, ano, ensaio, motivo) { return RosterWork.rpc('fn_trocas_varias_editar', { p_registro_id: registroId, p_dias: dias, p_parte_numero: parte, p_parte_ano: ano, p_ensaio: !!ensaio, p_motivo: motivo || null }); },
     registro: function (trocaId) { return RosterWork.rpc('fn_trocas_registro', { p_troca_id: trocaId }); }
   };
 

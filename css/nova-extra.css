@@ -67,6 +67,13 @@
   box-shadow: var(--sombra-bloco);
 }
 
+/* Minha extra: os 3 passos com a mesma largura */
+.nova-extra-minha-passos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
 .nova-extra-passo {
   display: grid;
   grid-template-columns: 24px 1fr;
@@ -266,6 +273,523 @@
 .nova-extra-dia--ocupado { background-color: var(--fundo-medio); }
 .nova-extra-dia--ocupado .nova-extra-dia-num { color: var(--texto-fraco); }
 
+/* ---------- Organizar o mês: os passos ---------- */
+.nova-extra-org {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.nova-extra-passos {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.nova-extra-passo-cartao {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 8px 12px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-superficie);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.nova-extra-passo-cartao:hover { border-color: var(--foco); }
+.nova-extra-passo-cartao--aberto { border-color: var(--texto-forte); box-shadow: var(--sombra-flutuante); }
+
+.nova-extra-passo-n {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--borda-forte);
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--texto-suave);
+}
+
+.nova-extra-passo-cartao--feito .nova-extra-passo-n { border-color: var(--sucesso); background-color: var(--sucesso); color: var(--texto-invertido); }
+.nova-extra-passo-cartao--agora .nova-extra-passo-n { border-color: var(--fundo-contraste); background-color: var(--fundo-contraste); color: var(--texto-invertido); }
+
+.nova-extra-passo-c {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.nova-extra-passo-c b { color: var(--texto-forte); }
+
+.nova-extra-passo-status {
+  overflow: hidden;
+  font-size: 12px;
+  color: var(--texto-fraco);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.nova-extra-passo-painel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.nova-extra-duas {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.nova-extra-duas--direita { grid-template-columns: 1fr 420px; }
+
+.nova-extra-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.nova-extra-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+}
+
+.nova-extra-campos2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.nova-extra-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.nova-extra-campo--linha {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nova-extra-campo--linha input { max-width: 96px; }
+
+.nova-extra-linha-n {
+  display: flex;
+  justify-content: space-between;
+}
+
+.nova-extra-tabela {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.nova-extra-tabela th {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--borda);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-align: left;
+  text-transform: uppercase;
+  color: var(--texto-fraco);
+}
+
+.nova-extra-tabela td {
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--fundo-medio);
+}
+
+.nova-extra-nome small { margin-right: 2px; color: var(--texto-fraco); }
+.nova-extra-nome b { font-weight: 600; color: var(--texto-forte); }
+
+.nova-extra-marcar-curto { width: auto; }
+
+.nova-extra-rodape {
+  position: sticky;
+  bottom: 0;
+  z-index: 4;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  border-top: 1px solid var(--borda);
+  background-color: var(--fundo-superficie);
+}
+
+.nova-extra-rodape-texto {
+  flex: 1;
+  color: var(--texto-suave);
+}
+
+.nova-extra-motivo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.nova-extra-motivo input { width: 260px; }
+
+.nova-extra-numeros {
+  display: grid;
+  grid-template-columns: 260px 160px 160px 1fr;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.nova-extra-numero {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+}
+
+.nova-extra-numero b {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.nova-extra-numero input { max-width: 120px; }
+.nova-extra-negativo { color: var(--erro); }
+
+.nova-extra-por-unidade {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nova-extra-fila {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: var(--fundo-medio);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-suave);
+}
+
+.nova-extra-atendimento {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.nova-extra-atendimento span:last-child { color: var(--texto-fraco); }
+
+.nova-extra-trilho {
+  overflow: hidden;
+  width: 100px;
+  height: 6px;
+  border-radius: var(--raio-total);
+  background-color: var(--fundo-medio);
+}
+
+.nova-extra-trilho i { display: block; height: 100%; background-color: var(--texto-suave); }
+.nova-extra-trilho--0 { width: 0; }
+.nova-extra-trilho--1 { width: 10%; }
+.nova-extra-trilho--2 { width: 20%; }
+.nova-extra-trilho--3 { width: 30%; }
+.nova-extra-trilho--4 { width: 40%; }
+.nova-extra-trilho--5 { width: 50%; }
+.nova-extra-trilho--6 { width: 60%; }
+.nova-extra-trilho--7 { width: 70%; }
+.nova-extra-trilho--8 { width: 80%; }
+.nova-extra-trilho--9 { width: 90%; }
+.nova-extra-trilho--10 { width: 100%; }
+
+.nova-extra-conc { max-width: 72px; }
+
+.nova-extra-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--fundo-medio);
+}
+
+.nova-extra-item:last-child { border-bottom: 0; }
+
+.nova-extra-item-marca {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  margin-top: 4px;
+  border-radius: 50%;
+  background-color: var(--alerta);
+}
+
+.nova-extra-item--ok .nova-extra-item-marca { background-color: var(--sucesso); }
+
+.nova-extra-item-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nova-extra-item-texto b { color: var(--texto-forte); }
+.nova-extra-item-texto span { font-size: 12px; color: var(--texto-fraco); }
+
+.nova-extra-aviso,
+.nova-extra-nota-sugestao {
+  padding: 8px 12px;
+  border-radius: var(--raio-medio);
+  background-color: var(--alerta-fundo);
+  font-size: 12px;
+  color: var(--alerta);
+}
+
+.nova-extra-nota-sugestao { background-color: var(--sucesso-fundo); color: var(--sucesso); }
+.nova-extra-nota--alerta { background-color: var(--alerta-fundo); color: var(--alerta); }
+
+/* ---------- passo 3: a grade militares × dias ---------- */
+.nova-extra-ferramentas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.nova-extra-legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.nova-extra-legenda span { display: inline-flex; align-items: center; gap: 4px; }
+
+.nova-extra-amostra {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pequeno);
+}
+
+.nova-extra-amostra--quer { border-color: var(--sucesso-fundo-forte); background-color: var(--sucesso-fundo); }
+.nova-extra-amostra--nao { border-color: var(--erro-fundo-forte); background-color: var(--erro-fundo); }
+.nova-extra-amostra--ocupado { background: repeating-linear-gradient(135deg, var(--fundo-medio) 0 3px, var(--fundo-superficie) 3px 6px); }
+.nova-extra-amostra--extra { border-color: var(--fundo-contraste); background-color: var(--fundo-contraste); }
+.nova-extra-amostra--fora { border-color: var(--texto-forte); background-color: var(--fundo-superficie); }
+
+.nova-extra-matriz-caixa { padding: 0 0 4px; }
+
+.nova-extra-matriz {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+}
+
+.nova-extra-matriz thead {
+  position: sticky;
+  top: calc(-1 * var(--respiro-pagina));
+  z-index: 3;
+  background-color: var(--fundo-superficie);
+}
+
+.nova-extra-matriz th,
+.nova-extra-matriz td {
+  padding: 0;
+  text-align: center;
+}
+
+.nova-extra-matriz th { font-size: 11px; font-weight: 600; color: var(--texto-fraco); }
+.nova-extra-matriz th b { display: block; font-size: 12px; color: var(--texto-forte); }
+.nova-extra-matriz .ne-fds { background-color: var(--fundo-suave); }
+.nova-extra-matriz .ne-col-nome { width: 150px; padding-left: 12px; text-align: left; }
+.nova-extra-matriz .ne-col-cota { width: 64px; font-size: 12px; font-weight: 600; }
+.nova-extra-matriz thead tr:first-child th { padding: 8px 0 4px; }
+
+.ne-falta-cab th {
+  padding: 8px 12px 4px;
+  border-top: 1px solid var(--borda);
+  text-align: left;
+}
+
+.ne-falta-titulo {
+  margin-right: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--texto-forte);
+}
+
+.ne-falta-botao { float: right; }
+.ne-falta-linha th { height: 20px; font-size: 12px; font-weight: 500; }
+.ne-falta-conta { color: var(--erro); }
+.ne-falta-ok { color: var(--sucesso); }
+
+.nova-extra-f4 { display: inline-flex; gap: 1px; }
+
+.nova-extra-f4 i {
+  width: 6px;
+  height: 12px;
+  border: 1px solid var(--erro-fundo-forte);
+  border-radius: 1px;
+}
+
+.nova-extra-f4 i.nova-extra-f4--falta { border-color: var(--erro); background-color: var(--erro); }
+.nova-extra-f4 i.nova-extra-f4--ok:not(.nova-extra-f4--falta) { border-color: var(--sucesso-fundo-forte); background-color: var(--sucesso-fundo-forte); }
+
+.ne-grupo td {
+  padding: 10px 12px 4px;
+  border-top: 1px solid var(--borda);
+  font-weight: 600;
+  text-align: left;
+  color: var(--texto-forte);
+}
+
+.nova-extra-matriz tbody td { height: 34px; border-top: 1px solid var(--fundo-medio); }
+
+.nova-extra-selo-mini { min-height: 18px; padding: 0 6px; }
+
+.nova-extra-cel {
+  position: relative;
+  display: block;
+  width: calc(100% - 2px);
+  height: 30px;
+  margin: 1px;
+  border: 1px solid transparent;
+  border-radius: var(--raio-pequeno);
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.nova-extra-cel:hover { border-color: var(--foco); }
+.nova-extra-cel:disabled { cursor: default; }
+.nova-extra-cel--quer { border-color: var(--sucesso-fundo-forte); background-color: var(--sucesso-fundo); }
+.nova-extra-cel--nao { border-color: var(--erro-fundo-forte); background-color: var(--erro-fundo); }
+.nova-extra-cel--ocupado { background: repeating-linear-gradient(135deg, var(--fundo-medio) 0 3px, var(--fundo-superficie) 3px 6px); }
+
+.nova-extra-desde {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--texto-debil);
+}
+
+.nova-extra-chip {
+  position: absolute;
+  inset: -1px;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-contraste);
+  line-height: 1;
+  color: var(--texto-invertido);
+}
+
+.nova-extra-chip-texto { font-size: 11px; font-weight: 700; }
+.nova-extra-chip--fora { border: 1px solid var(--texto-forte); background-color: var(--fundo-superficie); color: var(--texto-forte); }
+.nova-extra-chip--fora .nova-extra-chip-texto { font-size: 9px; }
+.nova-extra-chip--novo { outline: 2px solid var(--alerta); outline-offset: 1px; }
+
+.nova-extra-bolas { display: flex; gap: 2px; }
+
+.nova-extra-bolas i {
+  width: 5px;
+  height: 5px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  opacity: 0.6;
+}
+
+.nova-extra-bolas i.nova-extra-bola--on { background-color: currentColor; opacity: 1; }
+
+.ne-cota-ok { color: var(--sucesso); }
+.ne-cota-passou { color: var(--erro); }
+
+.nova-extra-horarios {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.nova-extra-selos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.nova-extra-porque { font-size: 12px; color: var(--texto-suave); }
+
+/* ---------- o mês por unidade (Revisar e a aba Calendário) ---------- */
+.nova-extra-mes-cal {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.nova-extra-dia-cal {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 96px;
+  padding: 6px;
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-pagina);
+}
+
+.nova-extra-dia-cal-num { font-size: 13px; color: var(--texto-forte); }
+
+.nova-extra-dia-uni {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 4px 6px;
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-superficie);
+}
+
+.nova-extra-dia-uni-cab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-suave);
+}
+
+.nova-extra-pessoa {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.nova-extra-pessoa small { font-size: 11px; color: var(--texto-fraco); }
+.nova-extra-pessoa b { font-weight: 600; color: var(--texto-forte); }
+.nova-extra-pessoa .ne-de { font-size: 11px; color: var(--texto-fraco); }
+.nova-extra-pessoa .ne-hora { margin-left: auto; font-size: 11px; color: var(--texto-suave); }
+
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    A barra quebra em linhas; as cotas em duas fileiras de cinco e
@@ -294,4 +818,22 @@
   html[data-celular] .nova-extra-dia {
     min-height: 52px;
   }
+
+  html[data-celular] .nova-extra-passos,
+  html[data-celular] .nova-extra-minha-passos,
+  html[data-celular] .nova-extra-duas,
+  html[data-celular] .nova-extra-numeros {
+    grid-template-columns: 1fr;
+  }
+
+  html[data-celular] .nova-extra-matriz-caixa,
+  html[data-celular] .nova-extra-mes-cal {
+    overflow-x: auto;
+  }
+
+  html[data-celular] .nova-extra-minha-passos { gap: 0; }
+  html[data-celular] .nova-extra-matriz { min-width: 1100px; }
+  html[data-celular] .nova-extra-mes-cal { grid-template-columns: repeat(7, 140px); }
+  html[data-celular] .nova-extra-legenda { margin-left: 0; }
+  html[data-celular] .nova-extra-motivo input { width: 100%; }
 }
