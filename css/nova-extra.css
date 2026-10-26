@@ -205,6 +205,28 @@
   color: var(--texto-suave);
 }
 
+/* Ver e Onde: o que o texto de cada dia mostra */
+.nova-extra-ver {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nova-extra-ver-linha {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.nova-extra-ver-rotulo {
+  min-width: 40px;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.nova-extra-dia-texto--falta { color: var(--erro); }
+
 .nova-extra-cal {
   display: grid;
   grid-template-columns: repeat(7, 1fr);

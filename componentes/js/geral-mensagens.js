@@ -386,6 +386,8 @@
       expediente: 'Expediente',
       folga: 'Folga',
       desde: function (h) { return 'desde ' + h; },
+      falta: function (n) { return (n === 1 ? 'falta ' : 'faltam ') + n; },
+      querem: function (n) { return n + (n === 1 ? ' quer' : ' querem'); },
       termoPendente: 'Termo pendente. Mande o termo pelo eProtocolo. Sem o termo recebido, você não entra na repartição das cotas.',
       termoRecebido: function (em) { return 'Termo recebido em ' + em + '.'; }
     },
@@ -849,7 +851,11 @@
       numeros: 'Mín. {min} · Ideal {ideal} · Máx. {max}',
       efetivoFalta: 'Efetivo: falta responder',
       reservaFrase: 'Vazia, fica fora da escala. Nunca dá erro nem aviso de efetivo.',
-      semMinimoFrase: 'Sem gente para o mínimo, fica fora da escala.',
+      semMinimoFrases: [
+        'Sem gente para o mínimo, fica fora da escala, sem aviso.',
+        'Sem gente para o mínimo, fica fora da escala, com aviso amarelo.',
+        'Sem gente para o mínimo, fica fora da escala, com erro vermelho.'
+      ],
       semPostos: 'Marque as instalações e as viaturas no bloco Postos.',
       travaPapel: 'Escolhido em Funções especiais',
       travaCompanhia: 'Vem da companhia',

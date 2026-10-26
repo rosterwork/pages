@@ -220,7 +220,7 @@
 
   /* põe a faixa como o primeiro elemento da página (o topo do celular a leva junto com o título) */
   function desenhar() {
-    var velha = document.querySelector('.conteudo .chamada');
+    var velha = document.querySelector('.conteudo > .pagina > .chamada');
     if (velha) velha.parentNode.removeChild(velha);
     var mil = linhaDoMilitar(), adm = linhaDoAdministrador();
     var agora = retrato(mil, adm);

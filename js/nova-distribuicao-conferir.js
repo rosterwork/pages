@@ -2,8 +2,8 @@
    NOVA DISTRIBUIÇÃO — bloco 8, Conferir
    Duas formas, num seletor: Tabela (a partir de N de serviço, N e
    os quatro seguintes, uma coluna cada, com os totais) e Simular a
-   equipe (quantos de cada graduação; quem senta em cada função e os
-   avisos de grau). As contas são do nova_distribuicao_calcular
+   equipe (quantos de cada graduação; quem senta em cada função, os
+   avisos de grau e os postos que ficam fora da escala). As contas são do nova_distribuicao_calcular
    (conferencia); aqui o desenho e a escolha de cada unidade (fica
    entre as visitas), que diz ao calcular o que conferir.
    ============================================================ */
@@ -22,15 +22,24 @@
     if (P().postoCurto(posto) !== posto) td.setAttribute('data-dica', posto);
   }
 
-  /* a marca da função numa coluna; a dica diz a situação (e quem cobre ou acumula) */
+  /* o mínimo do posto (o motivo de ficar fora da escala) e se algum posto pode ficar fora */
+  function minimoDe(ctx, posto) {
+    var item = (ctx.resp.instalacoes || []).concat(ctx.resp.viaturas || []).filter(function (x) { return x.nome === posto; })[0];
+    return item && item.efetivo && item.efetivo[0] != null ? item.efetivo[0] : '?';
+  }
+  function temFora(ctx) {
+    return (ctx.resp.instalacoes || []).concat(ctx.resp.viaturas || []).some(function (x) { return Number(x.sem_minimo) === 1; });
+  }
+
+  /* a marca da função numa coluna; a dica diz a situação (e quem cobre ou acumula, ou por que fica fora) */
   function marca(ctx, e, linha) {
     var el = P().tpl('estado-' + e.estado) || P().tpl('estado-vazia');
     var frase = M().estados[e.estado] || M().estados.vazia;
     if (e.por) frase = P().texto(M().porQuem, { estado: frase, quem: P().completo(ctx, e.por) });
-    if (e.estado === 'vazia') {
-      el.classList.toggle('nova-distribuicao-estado--erro', linha.aviso === 2);
-      el.classList.toggle('nova-distribuicao-estado--alerta', linha.aviso === 1);
-    }
+    var nivel = e.estado === 'fora' ? e.aviso : e.estado === 'vazia' ? linha.aviso : 0;
+    el.classList.toggle('nova-distribuicao-estado--erro', nivel === 2);
+    el.classList.toggle('nova-distribuicao-estado--alerta', nivel === 1);
+    if (e.estado === 'fora') frase = P().texto(M().foraMotivo, { min: minimoDe(ctx, linha.posto) });
     el.setAttribute('data-dica', frase);
     return el;
   }
@@ -62,14 +71,19 @@
       });
       corpo.appendChild(tr);
     });
+    /* os totais; "fora" é a lista dos postos fora da escala (o número, e os nomes na dica) */
     t.querySelectorAll('tfoot tr[data-resumo]').forEach(function (tr) {
       var chave = tr.getAttribute('data-resumo');
       (conf.resumos || []).slice(0, efetivos.length).forEach(function (r) {
         var td = P().tpl('conferir-total');
-        td.textContent = String(r[chave] || 0);
+        var valor = r[chave] || 0;
+        td.textContent = String(Array.isArray(valor) ? valor.length : valor);
+        if (Array.isArray(valor) && valor.length) td.setAttribute('data-dica', valor.map(function (x) { return x.posto; }).join(', '));
         tr.appendChild(td);
       });
     });
+    t.querySelector('tfoot tr[data-resumo="fora"]').classList.toggle('oculto', !temFora(ctx));
+    t.querySelector('.nova-distribuicao-legenda-fora').classList.toggle('oculto', !temFora(ctx));
     lugar.appendChild(t);
   }
 
@@ -79,6 +93,8 @@
     if (e.estado === 'coberta') selo.classList.add('selo--alerta');
     if (e.estado === 'vazia' && linha.aviso === 2) selo.classList.add('selo--erro');
     if (e.estado === 'vazia' && linha.aviso === 1) selo.classList.add('selo--alerta');
+    if (e.estado === 'fora' && e.aviso === 2) selo.classList.add('selo--erro');
+    if (e.estado === 'fora' && e.aviso === 1) selo.classList.add('selo--alerta');
   }
 
   function simulacao(lugar, ctx, api, conf) {
@@ -109,11 +125,21 @@
         tr.querySelector('.nova-distribuicao-col-quem').textContent = e.pessoa || '';
         situacao(tr.querySelector('.nova-distribuicao-situacao'), e, l);
         var outro = tr.querySelector('.nova-distribuicao-outro-grau');
-        outro.classList.toggle('oculto', !(e.aviso_grau > 0) || e.estado === 'vazia');
+        outro.classList.toggle('oculto', !(e.aviso_grau > 0) || e.estado === 'vazia' || e.estado === 'fora');
         outro.classList.toggle('selo--alerta', e.aviso_grau === 1);
         outro.classList.toggle('selo--erro', e.aviso_grau === 2);
         corpo.appendChild(tr);
       });
+      /* cada posto fora da escala com aviso: o motivo, na cor do nível */
+      var foraLista = s.querySelector('.nova-distribuicao-fora');
+      var foras = (((conf.resumos || [])[0] || {}).fora || []).filter(function (x) { return x.aviso > 0; });
+      foras.forEach(function (x) {
+        var nota = P().tpl('fora-nota');
+        nota.classList.add(x.aviso === 2 ? 'nota--erro' : 'nota--alerta');
+        nota.querySelector('.nota-texto').textContent = P().texto(M().foraAviso, { posto: x.posto, min: x.min });
+        foraLista.appendChild(nota);
+      });
+      foraLista.classList.toggle('oculto', !foras.length);
       var sobra = ((conf.resumos || [])[0] || {}).sem_funcao || 0;
       var aviso = s.querySelector('.nova-distribuicao-sobra');
       aviso.textContent = sobra === 1 ? M().sobraUm : P().texto(M().sobraVarios, { n: sobra });

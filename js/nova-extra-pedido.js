@@ -48,16 +48,29 @@
     Array.prototype.forEach.call(f.querySelectorAll('[data-pincel]'), function (b) {
       b.classList.toggle('nova-extra-pincel-op--on', b.getAttribute('data-pincel') === v.pincel);
     });
+    Array.prototype.forEach.call(f.querySelectorAll('[data-ver]'), function (b) { b.classList.toggle('aba--ativa', b.getAttribute('data-ver') === ed.ver); });
+    Array.prototype.forEach.call(f.querySelectorAll('[data-onde]'), function (b) { b.classList.toggle('aba--ativa', b.getAttribute('data-onde') === ed.onde); });
+    f.querySelector('#nova-extra-onde-linha').classList.toggle('oculto', ed.ver === 'meus');
     Array.prototype.forEach.call(f.querySelectorAll('.nova-extra-dia[data-dia]'), function (b) {
-      var t = v.dias[b.getAttribute('data-dia')];
+      var dia = b.getAttribute('data-dia'), t = v.dias[dia], txt = b.querySelector('.nova-extra-dia-texto'), n;
       b.classList.toggle('nova-extra-dia--quer', t === 'quer');
       b.classList.toggle('nova-extra-dia--nao', t === 'nao_posso');
-      if (t) b.querySelector('.nova-extra-dia-texto').textContent = t === 'quer' ? msg().quero : msg().naoPosso;
-      else b.querySelector('.nova-extra-dia-texto').textContent = b.getAttribute('data-texto') || '';
+      txt.classList.toggle('nova-extra-dia-texto--falta', ed.ver === 'falta');
+      if (ed.ver === 'falta') { n = contagem(ed.r.falta, dia); txt.textContent = n ? msg().falta(n) : ''; }
+      else if (ed.ver === 'procura') txt.textContent = msg().querem(contagem(ed.r.procura, dia));
+      else if (t) txt.textContent = t === 'quer' ? msg().quero : msg().naoPosso;
+      else txt.textContent = b.getAttribute('data-texto') || '';
     });
     f.querySelector('#nova-extra-conta-quer').textContent = msg().contaQuer(contar('quer'), ed.r.min_datas);
     f.querySelector('#nova-extra-conta-nao').textContent = msg().contaNao(contar('nao_posso'));
     if (ed.btn) ed.btn.disabled = !valido() || (!sujo() && !!ed.r.pedido);
+  }
+
+  /* a falta ou a procura do dia na unidade escolhida no "Onde" (Todos = a soma das unidades) */
+  function contagem(mapa, dia) {
+    if (!mapa) return 0;
+    if (ed.onde !== 'todos') return (mapa[ed.onde] && mapa[ed.onde][dia]) || 0;
+    return Object.keys(mapa).reduce(function (s, u) { return s + ((mapa[u] && mapa[u][dia]) || 0); }, 0);
   }
 
   /* o texto de cada dia livre do administrativo: desde que horas, ou o nome da folga do expediente */
@@ -110,6 +123,23 @@
     Array.prototype.forEach.call(f.querySelectorAll('[data-pincel]'), function (b) {
       b.disabled = ed.leitura;
       b.addEventListener('click', function () { v.pincel = b.getAttribute('data-pincel'); atualizar(); });
+    });
+
+    /* Ver (Meus dias · Falta gente · Quantos querem) e Onde (Todos e as unidades; abre na do militar) */
+    ed.ver = 'meus';
+    ed.onde = (r.unidades || []).some(function (u) { return u.id === r.militar.unidade_id; }) ? String(r.militar.unidade_id) : 'todos';
+    var onde = f.querySelector('#nova-extra-onde');
+    (r.unidades || []).forEach(function (u) {
+      var o = RW.tpl('tpl-nova-extra-onde');
+      o.textContent = u.nome;
+      o.setAttribute('data-onde', String(u.id));
+      onde.appendChild(o);
+    });
+    Array.prototype.forEach.call(f.querySelectorAll('[data-ver]'), function (b) {
+      b.addEventListener('click', function () { ed.ver = b.getAttribute('data-ver'); atualizar(); });
+    });
+    Array.prototype.forEach.call(onde.querySelectorAll('[data-onde]'), function (b) {
+      b.addEventListener('click', function () { ed.onde = b.getAttribute('data-onde'); atualizar(); });
     });
 
     var adm = r.militar.setor === 'Administrativo' && r.expediente;

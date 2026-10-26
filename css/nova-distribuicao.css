@@ -179,7 +179,8 @@
 
 .nova-distribuicao-rodizio { margin-top: 8px; }
 
-.nova-distribuicao-criterio-aviso { padding: 0 8px 0 32px; }
+.nova-distribuicao-criterio-aviso,
+.nova-distribuicao-fora-aviso { padding: 0 8px 0 32px; }
 
 /* frase com os campos de seleção no meio */
 .nova-distribuicao-frase {
@@ -425,10 +426,12 @@
   background-color: var(--alerta-fundo);
 }
 
-.nova-distribuicao-estado--fora {
-  color: var(--alerta);
-  background-color: var(--alerta-fundo);
-}
+/* posto fora da escala: a cor é o nível escolhido (sem aviso, amarelo ou vermelho) */
+.nova-distribuicao-estado--fora { color: var(--texto-suave); }
+
+.nova-distribuicao-estado--fora.nova-distribuicao-estado--alerta { color: var(--alerta); }
+
+.nova-distribuicao-estado--fora.nova-distribuicao-estado--erro { color: var(--erro); }
 
 .nova-distribuicao-legenda {
   display: flex;
@@ -456,6 +459,13 @@
 .nova-distribuicao-grau { min-width: 72px; }
 
 .nova-distribuicao-simulacao-tabela .selo + .selo { margin-left: 4px; }
+
+/* os postos que ficam fora da escala, um aviso cada */
+.nova-distribuicao-fora {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 
 /* ---- substitutos: rótulo à esquerda, o campo e o remover ---- */
 .nova-distribuicao-regra-linha {

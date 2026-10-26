@@ -30,6 +30,7 @@
       <button type="button" class="botao" data-teste="copiar">Copiar os pedidos reais</button>
       <button type="button" class="botao" data-teste="gerar">Gerar pedidos de teste</button>
       <button type="button" class="botao" data-teste="apagar">Apagar os de teste</button>
+      <button type="button" class="geral-opcao nova-extra-marcar-curto" role="checkbox" aria-checked="false" id="nova-extra-iniciado"><span class="caixa-selecao"></span>Mês já começou</button>
     </div>
     <div class="geral-periodo">
       <button type="button" class="botao botao--icone" id="nova-extra-mes-anterior" aria-label="Mês anterior">
@@ -77,14 +78,272 @@
       </div>
     </section>
 
-    <section class="nova-extra-leitura oculto" data-aba-painel="calendario">
-      <span class="nova-extra-vazio">O calendário entra numa próxima etapa.</span>
+    <!-- Calendário: quem tira extra em cada dia, por unidade -->
+    <section class="nova-extra-org oculto" data-aba-painel="calendario">
+      <span class="nova-extra-aviso oculto" id="nova-extra-cal-aviso">O mês ainda está em distribuição e não foi lançado. As datas podem mudar até o lançamento.</span>
+      <div class="nova-extra-mes-cal" id="nova-extra-cal-mes"></div>
     </section>
-    <section class="nova-extra-leitura oculto" data-aba-painel="organizar">
-      <span class="nova-extra-vazio">Organizar o mês entra nas próximas etapas.</span>
+
+    <!-- Organizar o mês: os 5 passos -->
+    <section class="nova-extra-org oculto" data-aba-painel="organizar">
+      <div class="nova-extra-passos" id="nova-extra-passos">
+        <button type="button" class="nova-extra-passo-cartao" data-passo="1"><span class="nova-extra-passo-n">1</span><span class="nova-extra-passo-c"><b>Pedidos e termos</b><span class="nova-extra-passo-status"></span></span></button>
+        <button type="button" class="nova-extra-passo-cartao" data-passo="2"><span class="nova-extra-passo-n">2</span><span class="nova-extra-passo-c"><b>Cotas</b><span class="nova-extra-passo-status"></span></span></button>
+        <button type="button" class="nova-extra-passo-cartao" data-passo="3"><span class="nova-extra-passo-n">3</span><span class="nova-extra-passo-c"><b>Distribuição</b><span class="nova-extra-passo-status"></span></span></button>
+        <button type="button" class="nova-extra-passo-cartao" data-passo="4"><span class="nova-extra-passo-n">4</span><span class="nova-extra-passo-c"><b>Lançar na escala</b><span class="nova-extra-passo-status"></span></span></button>
+        <button type="button" class="nova-extra-passo-cartao" data-passo="5"><span class="nova-extra-passo-n">5</span><span class="nova-extra-passo-c"><b>Ajustes e relatório</b><span class="nova-extra-passo-status"></span></span></button>
+      </div>
+
+      <!-- passo 1: o prazo, as respostas e o termo -->
+      <div class="nova-extra-passo-painel oculto" data-passo-painel="1">
+        <div class="nova-extra-duas">
+          <div class="nova-extra-col">
+            <div class="nova-extra-bloco">
+              <span class="nova-extra-bloco-titulo">Prazo do pedido</span>
+              <div class="nova-extra-caixa nova-extra-form">
+                <div class="nova-extra-campos2">
+                  <label class="nova-extra-campo"><span>Abre em</span><input type="date" class="campo-entrada" id="p1-abre" /></label>
+                  <label class="nova-extra-campo"><span>Fecha em</span><input type="date" class="campo-entrada" id="p1-fecha" /></label>
+                </div>
+                <label class="nova-extra-campo"><span>Avisar quem não respondeu (dias antes de fechar)</span><input type="number" min="0" max="15" class="campo-entrada" id="p1-aviso" /></label>
+                <span class="nova-extra-ajuda">O pedido fecha às 23h59 do último dia.</span>
+                <button type="button" class="botao" id="p1-salvar-prazo">Salvar prazo</button>
+              </div>
+            </div>
+            <div class="nova-extra-bloco">
+              <span class="nova-extra-bloco-titulo">Respostas</span>
+              <div class="nova-extra-caixa nova-extra-form">
+                <span id="p1-respostas"></span>
+                <span class="nova-extra-linha-n"><span>Voluntários</span><b id="p1-n-vol"></b></span>
+                <span class="nova-extra-linha-n"><span>Não querem</span><b id="p1-n-nao"></b></span>
+                <span class="nova-extra-linha-n"><span>Sem resposta</span><b id="p1-n-sem"></b></span>
+              </div>
+            </div>
+          </div>
+          <div class="nova-extra-bloco">
+            <div class="nova-extra-bloco-cab">
+              <div class="abas abas--seletor" id="p1-filtro">
+                <button type="button" class="aba aba--ativa" data-lista="vol">Voluntários</button>
+                <button type="button" class="aba" data-lista="nao">Não querem</button>
+                <button type="button" class="aba" data-lista="sem">Sem resposta</button>
+              </div>
+              <span class="nova-extra-ajuda">Termo pendente: fica fora das cotas e da distribuição.</span>
+            </div>
+            <div class="nova-extra-caixa">
+              <table class="nova-extra-tabela">
+                <thead><tr><th>Militar</th><th>Unidade</th><th>Cotas</th><th>Quer</th><th>Não pode</th><th>Pediu em</th><th>Termo</th></tr></thead>
+                <tbody id="p1-lista"></tbody>
+              </table>
+              <span class="nova-extra-vazio oculto" id="p1-vazio">Ninguém nesta lista.</span>
+            </div>
+          </div>
+        </div>
+        <div class="nova-extra-rodape">
+          <span class="nova-extra-rodape-texto" id="p1-mudancas"></span>
+          <button type="button" class="botao" id="p1-cancelar">Cancelar</button>
+          <button type="button" class="botao botao--primario" id="p1-salvar" disabled>Salvar</button>
+        </div>
+      </div>
+
+      <!-- passo 2: as cotas -->
+      <div class="nova-extra-passo-painel oculto" data-passo-painel="2">
+        <div class="nova-extra-numeros">
+          <label class="nova-extra-caixa nova-extra-numero"><span class="rotulo-secao">Cotas recebidas do comando</span><input type="number" min="0" class="campo-entrada" id="p2-recebidas" /></label>
+          <div class="nova-extra-caixa nova-extra-numero"><span class="rotulo-secao">Repartidas</span><b id="p2-repartidas"></b></div>
+          <div class="nova-extra-caixa nova-extra-numero"><span class="rotulo-secao">Sobram</span><b id="p2-sobram"></b></div>
+          <div class="nova-extra-caixa nova-extra-numero">
+            <span class="rotulo-secao">Repartir</span>
+            <label class="geral-opcao"><input type="radio" name="p2-modo" value="grupo" />Companhia toda</label>
+            <label class="geral-opcao"><input type="radio" name="p2-modo" value="por_unidade" />Cada unidade com as suas</label>
+            <div class="nova-extra-por-unidade oculto" id="p2-unidades"></div>
+            <button type="button" class="botao" id="p2-sugestao">Usar a sugestão</button>
+          </div>
+        </div>
+        <div class="nova-extra-bloco">
+          <div class="nova-extra-bloco-cab">
+            <span class="nova-extra-bloco-titulo">Voluntários com termo</span>
+            <span class="nova-extra-ajuda">Em ordem da fila: quem foi menos atendido nos últimos 12 meses recebe primeiro.</span>
+          </div>
+          <div class="nova-extra-caixa">
+            <table class="nova-extra-tabela">
+              <thead><tr><th>Fila</th><th>Militar</th><th>Unidade</th><th>Pediu</th><th>Atendimento (12 meses)</th><th>Sugestão</th><th>Concedido</th></tr></thead>
+              <tbody id="p2-lista"></tbody>
+            </table>
+            <span class="nova-extra-vazio oculto" id="p2-vazio">Nenhum voluntário com termo.</span>
+          </div>
+        </div>
+        <div class="nova-extra-rodape">
+          <span class="nova-extra-rodape-texto" id="p2-mudancas"></span>
+          <button type="button" class="botao" id="p2-cancelar">Cancelar</button>
+          <button type="button" class="botao botao--primario" id="p2-salvar" disabled>Salvar</button>
+        </div>
+      </div>
+
+      <!-- passo 3: montar (militares × dias) e revisar (o mês por unidade) -->
+      <div class="nova-extra-passo-painel oculto" data-passo-painel="3">
+        <div class="nova-extra-ferramentas">
+          <div class="abas abas--seletor" id="p3-modo">
+            <button type="button" class="aba aba--ativa" data-modo="montar">Montar</button>
+            <button type="button" class="aba" data-modo="revisar">Revisar</button>
+          </div>
+          <button type="button" class="botao" id="p3-sugerir">Preencher pela sugestão</button>
+          <button type="button" class="botao oculto" id="p3-desfazer-sugestao">Desfazer a sugestão</button>
+          <span class="nova-extra-legenda">
+            <span><i class="nova-extra-amostra nova-extra-amostra--quer"></i>Quer o dia</span>
+            <span><i class="nova-extra-amostra nova-extra-amostra--nao"></i>Não pode</span>
+            <span><i class="nova-extra-amostra nova-extra-amostra--ocupado"></i>Ocupado</span>
+            <span><i class="nova-extra-amostra nova-extra-amostra--extra"></i>Extra (bolinhas: 08h, 14h, 20h, 02h)</span>
+            <span><i class="nova-extra-amostra nova-extra-amostra--fora"></i>Extra em outro pelotão</span>
+          </span>
+        </div>
+        <span class="nova-extra-nota-sugestao oculto" id="p3-nota"></span>
+        <div class="nova-extra-caixa nova-extra-matriz-caixa" id="p3-montar">
+          <table class="nova-extra-matriz" id="p3-matriz"></table>
+        </div>
+        <div class="nova-extra-mes-cal oculto" id="p3-revisar"></div>
+        <div class="nova-extra-rodape">
+          <span class="nova-extra-rodape-texto" id="p3-texto"></span>
+          <label class="nova-extra-motivo oculto" id="p3-motivo-campo"><span>Motivo do ajuste (opcional)</span><input type="text" maxlength="200" class="campo-entrada" id="p3-motivo" /></label>
+          <button type="button" class="botao" id="p3-cancelar">Cancelar</button>
+          <button type="button" class="botao botao--primario" id="p3-salvar" disabled>Salvar</button>
+        </div>
+      </div>
+
+      <!-- passo 4: conferir e lançar (simulado: a escala não muda) -->
+      <div class="nova-extra-passo-painel oculto" data-passo-painel="4">
+        <div class="nova-extra-duas nova-extra-duas--direita">
+          <div class="nova-extra-bloco">
+            <span class="nova-extra-bloco-titulo">Conferência</span>
+            <div class="nova-extra-caixa" id="p4-conferencia"></div>
+          </div>
+          <div class="nova-extra-col">
+            <div class="nova-extra-bloco">
+              <span class="nova-extra-bloco-titulo" id="p4-titulo"></span>
+              <div class="nova-extra-caixa nova-extra-form">
+                <span class="nova-extra-ajuda" id="p4-texto"></span>
+                <div id="p4-mudancas"></div>
+                <button type="button" class="botao botao--primario" id="p4-lancar"></button>
+                <span class="nova-extra-ajuda">Teste: o lançamento guarda a foto da distribuição; a escala de verdade não muda e ninguém é avisado.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- passo 5: os ajustes do mês e os relatórios -->
+      <div class="nova-extra-passo-painel oculto" data-passo-painel="5">
+        <span class="nova-extra-ajuda">Para mudar uma extra durante o mês, use a grade do passo 3: cada mudança vira um ajuste, com o motivo.</span>
+        <div class="nova-extra-duas nova-extra-duas--direita">
+          <div class="nova-extra-bloco">
+            <span class="nova-extra-bloco-titulo">Ajustes do mês</span>
+            <div class="nova-extra-caixa" id="p5-ajustes"></div>
+          </div>
+          <div class="nova-extra-col">
+            <div class="nova-extra-bloco">
+              <span class="nova-extra-bloco-titulo">Relatório inicial</span>
+              <div class="nova-extra-caixa" id="p5-inicial"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
   </div>
 </div>
+
+<!-- moldes de Organizar o mês e do Calendário -->
+<template id="tpl-ne-p1-linha">
+  <tr>
+    <td class="nova-extra-nome"><small></small><b></b></td>
+    <td class="ne-uni"></td><td class="ne-cotas"></td><td class="ne-quer"></td><td class="ne-nao"></td><td class="ne-em"></td>
+    <td><button type="button" class="geral-opcao nova-extra-marcar-curto ne-termo" role="checkbox" aria-checked="false" aria-label="Termo recebido"><span class="caixa-selecao"></span></button></td>
+  </tr>
+</template>
+
+<template id="tpl-ne-p2-unidade">
+  <label class="nova-extra-campo nova-extra-campo--linha"><span></span><input type="number" min="0" class="campo-entrada" /></label>
+</template>
+
+<template id="tpl-ne-p2-linha">
+  <tr>
+    <td><span class="nova-extra-fila"></span></td>
+    <td class="nova-extra-nome"><small></small><b></b></td>
+    <td class="ne-uni"></td><td class="ne-pediu"></td>
+    <td><span class="nova-extra-atendimento"><span class="nova-extra-trilho"><i></i></span><b class="ne-taxa"></b><span class="ne-hist"></span></span></td>
+    <td class="ne-sug"></td>
+    <td><input type="number" min="0" max="10" class="campo-entrada nova-extra-conc" aria-label="Cotas concedidas" /></td>
+  </tr>
+</template>
+
+<template id="tpl-ne-item">
+  <div class="nova-extra-item"><span class="nova-extra-item-marca"></span><span class="nova-extra-item-texto"><b></b><span></span></span></div>
+</template>
+
+<template id="tpl-ne-th-dia">
+  <th><span class="ne-sem"></span><b class="ne-num"></b></th>
+</template>
+
+<template id="tpl-ne-celula">
+  <td><button type="button" class="nova-extra-cel"></button></td>
+</template>
+
+<template id="tpl-ne-chip">
+  <span class="nova-extra-chip"><span class="nova-extra-chip-texto"></span><span class="nova-extra-bolas"><i></i><i></i><i></i><i></i></span></span>
+</template>
+
+<template id="tpl-ne-f4">
+  <span class="nova-extra-f4"><i></i><i></i><i></i><i></i></span>
+</template>
+
+<template id="tpl-ne-dia-cal">
+  <div class="nova-extra-dia-cal"><b class="nova-extra-dia-cal-num"></b></div>
+</template>
+
+<template id="tpl-ne-dia-uni">
+  <div class="nova-extra-dia-uni"><span class="nova-extra-dia-uni-cab"><span class="ne-unome"></span></span></div>
+</template>
+
+<template id="tpl-ne-dia-pessoa">
+  <span class="nova-extra-pessoa"><small></small><b></b><span class="ne-de"></span><span class="ne-hora"></span></span>
+</template>
+
+<!-- molde: o painel de uma casa da grade (o militar num dia) -->
+<template id="tpl-ne-casa">
+  <div class="nova-extra-pedido">
+    <div class="nova-extra-selos"></div>
+    <span class="nova-extra-nota nova-extra-nota--alerta oculto ne-aviso"></span>
+    <section class="nova-extra-sec">
+      <b class="nova-extra-pergunta">Horários</b>
+      <div class="nova-extra-horarios">
+        <button type="button" class="nova-extra-cota" data-bloco="1">08h às 14h</button>
+        <button type="button" class="nova-extra-cota" data-bloco="2">14h às 20h</button>
+        <button type="button" class="nova-extra-cota" data-bloco="3">20h às 02h</button>
+        <button type="button" class="nova-extra-cota" data-bloco="4">02h às 08h</button>
+      </div>
+    </section>
+    <section class="nova-extra-sec">
+      <b class="nova-extra-pergunta">Onde</b>
+      <div class="ne-onde"></div>
+    </section>
+    <section class="nova-extra-sec oculto ne-porque-sec">
+      <b class="nova-extra-pergunta">Por que a sugestão pôs aqui</b>
+      <div class="ne-porque"></div>
+    </section>
+    <span class="nova-extra-ajuda ne-cotas-linha"></span>
+  </div>
+</template>
+
+<template id="tpl-ne-opcao-uni">
+  <label class="geral-opcao"><input type="radio" name="ne-onde" /><span></span></label>
+</template>
+
+<template id="tpl-ne-texto">
+  <span class="nova-extra-porque"></span>
+</template>
+
+<template id="tpl-ne-casa-acoes">
+  <button type="button" class="botao" id="ne-casa-tirar">Tirar do dia</button>
+  <button type="button" class="botao botao--primario" id="ne-casa-pronto">Pronto</button>
+</template>
 
 <template id="tpl-nova-extra-militar">
   <button type="button" class="dropdown-item"></button>
@@ -118,6 +377,23 @@
         <b class="nova-extra-conta-nao" id="nova-extra-conta-nao"></b>
       </span>
       <span class="nova-extra-nota oculto" id="nova-extra-nota-adm">Você é do administrativo: em dia de expediente a extra começa depois do expediente (na quarta, às 14h). Fim de semana, feriado e folga do expediente, o dia todo.</span>
+      <!-- o que cada dia mostra: os meus dias, onde falta gente ou quantos querem (por unidade) -->
+      <div class="nova-extra-ver">
+        <div class="nova-extra-ver-linha">
+          <span class="nova-extra-ver-rotulo">Ver</span>
+          <div class="abas abas--seletor" id="nova-extra-ver">
+            <button type="button" class="aba" data-ver="meus">Meus dias</button>
+            <button type="button" class="aba" data-ver="falta">Falta gente</button>
+            <button type="button" class="aba" data-ver="procura">Quantos querem</button>
+          </div>
+        </div>
+        <div class="nova-extra-ver-linha oculto" id="nova-extra-onde-linha">
+          <span class="nova-extra-ver-rotulo">Onde</span>
+          <div class="abas abas--seletor" id="nova-extra-onde">
+            <button type="button" class="aba" data-onde="todos">Todos</button>
+          </div>
+        </div>
+      </div>
       <div class="nova-extra-cal" id="nova-extra-cal">
         <span class="nova-extra-sem">D</span><span class="nova-extra-sem">S</span><span class="nova-extra-sem">T</span><span class="nova-extra-sem">Q</span><span class="nova-extra-sem">Q</span><span class="nova-extra-sem">S</span><span class="nova-extra-sem">S</span>
       </div>
@@ -128,6 +404,10 @@
       <span class="nova-extra-nota" id="nova-extra-termo"></span>
     </section>
   </div>
+</template>
+
+<template id="tpl-nova-extra-onde">
+  <button type="button" class="aba"></button>
 </template>
 
 <template id="tpl-nova-extra-cota">

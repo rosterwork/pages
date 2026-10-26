@@ -450,7 +450,8 @@
       <p class="nova-distribuicao-nivel-titulo">Se não houver gente para o mínimo</p>
       <div class="nova-distribuicao-opcoes">
         <label class="geral-opcao"><input type="radio" data-valor="0" /><span>Sai mesmo assim, com erro vermelho nas funções vazias</span></label>
-        <label class="geral-opcao"><input type="radio" data-valor="1" /><span>Fica fora da escala, com aviso amarelo; quem estaria nele vai para as próximas funções da ordem</span></label>
+        <label class="geral-opcao"><input type="radio" data-valor="1" /><span>Fica fora da escala; quem estaria nele vai para as próximas funções da ordem</span></label>
+        <p class="nova-distribuicao-frase nova-distribuicao-fora-aviso oculto"><span>Quando ficar fora:</span><span class="nova-distribuicao-espaco" data-espaco="aviso"></span></p>
       </div>
     </div>
     <div class="nova-distribuicao-niveis">
@@ -735,7 +736,7 @@
       <span class="nova-distribuicao-legenda-item"><span class="nova-distribuicao-estado nova-distribuicao-estado--coberta" aria-hidden="true">S</span><span>Coberta por substituto</span></span>
       <span class="nova-distribuicao-legenda-item"><span class="nova-distribuicao-estado nova-distribuicao-estado--companhia" aria-hidden="true">C</span><span>Da companhia</span></span>
       <span class="nova-distribuicao-legenda-item"><span class="nova-distribuicao-estado nova-distribuicao-estado--vazia" aria-hidden="true"></span><span>Vazia</span></span>
-      <span class="nova-distribuicao-legenda-item"><span class="nova-distribuicao-estado nova-distribuicao-estado--fora" aria-hidden="true">F</span><span>Posto fora da escala</span></span>
+      <span class="nova-distribuicao-legenda-item nova-distribuicao-legenda-fora"><span class="nova-distribuicao-estado nova-distribuicao-estado--fora" aria-hidden="true">F</span><span>Posto fora da escala</span></span>
     </p>
   </div>
 </template>
@@ -778,15 +779,19 @@
     <div class="nova-distribuicao-graus"></div>
     <p class="nova-distribuicao-ajuda">"Cb. 1" é o cabo mais antigo da equipe; "Cb. 2", o segundo.</p>
     <p class="nova-distribuicao-ajuda nova-distribuicao-simulacao-vazia oculto">Escolha quantos de cada graduação estão de serviço.</p>
-    <div class="nota nota--alerta nova-distribuicao-fora oculto">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-      <div class="nova-distribuicao-fora-lista"></div>
-    </div>
+    <div class="nova-distribuicao-fora oculto"></div>
     <table class="nova-distribuicao-tabela nova-distribuicao-simulacao-tabela">
       <thead><tr><th>Posto</th><th>Função</th><th>Quem</th><th>Situação</th></tr></thead>
       <tbody></tbody>
     </table>
     <p class="nova-distribuicao-ajuda nova-distribuicao-sobra oculto"></p>
+  </div>
+</template>
+<!-- simular a equipe: o posto que fica fora da escala, com o motivo (amarelo ou vermelho, o nível escolhido) -->
+<template id="tpl-nova-distribuicao-fora-nota">
+  <div class="nota">
+    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+    <p class="nota-texto"></p>
   </div>
 </template>
 <template id="tpl-nova-distribuicao-grau">
