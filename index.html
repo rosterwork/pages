@@ -67,6 +67,7 @@
   <link rel="stylesheet" href="componentes/css/geral-pedido.css" />
   <link rel="stylesheet" href="componentes/css/geral-impacto.css" />
   <link rel="stylesheet" href="componentes/css/geral-decisao.css" />
+  <link rel="stylesheet" href="componentes/css/geral-chamada.css" />
   <link rel="stylesheet" href="css/index-cabecalho.css" />
   <link rel="stylesheet" href="css/index-perfil.css" />
   <link rel="stylesheet" href="css/index-comunicado.css" />
@@ -1231,6 +1232,46 @@
     </button>
   </template>
 
+  <!-- A FAIXA "Esperando a sua resposta" (componente geral-chamada): acima do título de todas as páginas.
+       Uma linha por assunto (o pedido do militar; a do administrador, só o urgente) e o X no canto de cima -->
+  <template id="tpl-chamada">
+    <section class="chamada" aria-label="Esperando a sua resposta">
+      <button type="button" class="botao botao--icone chamada-fechar" aria-label="Ocultar" data-dica="Ocultar">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar" /></svg>
+      </button>
+    </section>
+  </template>
+
+  <!-- a linha do militar: a marca (o ícone do assunto), o texto, o selo do prazo, o Ver todos e os botões do assunto -->
+  <template id="tpl-chamada-linha">
+    <div class="chamada-linha">
+      <span class="chamada-marca"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="" /></svg></span>
+      <span class="chamada-texto"><span class="chamada-quem"></span><span class="chamada-meta"></span></span>
+      <span class="selo chamada-selo oculto"></span>
+      <span class="espacador-flex"></span>
+      <button type="button" class="botao--texto chamada-todos oculto">Ver todos (<span class="chamada-todos-total"></span>)</button>
+      <div class="chamada-botoes">
+        <button type="button" class="botao oculto" data-chamada="detalhes">Ver detalhes</button>
+        <button type="button" class="botao oculto" data-chamada="recusar">Recusar</button>
+        <button type="button" class="botao botao--primario oculto" data-chamada="aceitar">Aceitar</button>
+        <button type="button" class="botao botao--primario oculto" data-chamada="responder">Responder</button>
+      </div>
+    </div>
+  </template>
+
+  <!-- a linha do administrador: a etiqueta ADM, o texto, o selo do prazo e o Ver pedidos -->
+  <template id="tpl-chamada-linha-adm">
+    <div class="chamada-linha">
+      <span class="chamada-marca"><span class="etiqueta-adm">ADM</span></span>
+      <span class="chamada-texto"><span class="chamada-quem"></span><span class="chamada-meta"></span></span>
+      <span class="selo selo--erro chamada-selo"></span>
+      <span class="espacador-flex"></span>
+      <div class="chamada-botoes">
+        <button type="button" class="botao" data-chamada="pedidos">Ver pedidos</button>
+      </div>
+    </div>
+  </template>
+
   <!-- um pedido que abre ali mesmo (Pendências e as abas Pendências): a linha é o botão que abre e fecha o resumo;
        o resumo começa na coluna do título (os recuos têm a largura do ícone e do pelotão) -->
   <template id="tpl-pedido-expansivel">
@@ -2302,8 +2343,9 @@
     </div>
   </template>
   <!-- o rodapé do painel do registro de várias trocas (trocas-painel-varias.js; o JS deixa só as ações do papel e da situação):
-       Cancelar pedido = quem pediu, em aberto; Cancelar trocas = a administração, na aprovada (desfaz a escala);
-       Editar = só a Parte, na página Trocas -->
+       Cancelar pedido = quem pediu, em aberto; Cancelar alteração = quem propôs a alteração, em aberto (as trocas de antes
+       continuam); Cancelar trocas = a administração, na aprovada (desfaz a escala); Editar = o Editar das várias trocas,
+       na página Trocas -->
   <template id="tpl-troca-varias-registro-acoes">
     <button type="button" class="botao botao--quadrado" data-acao="imprimir-registro" aria-label="Imprimir registro" data-dica="Imprimir registro">
       <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg>
@@ -2311,6 +2353,7 @@
     <span class="espacador-flex" data-espacador></span>
     <button type="button" class="botao" data-acao="editar">Editar</button>
     <button type="button" class="botao" data-acao="cancelar-pedido">Cancelar pedido</button>
+    <button type="button" class="botao" data-acao="cancelar-alteracao">Cancelar alteração</button>
     <button type="button" class="botao" data-acao="cancelar">Cancelar trocas</button>
     <button type="button" class="botao botao--perigo" data-acao="recusar">Recusar</button>
     <button type="button" class="botao botao--primario" data-acao="aceitar">Aceitar</button>

@@ -1,0 +1,147 @@
+/* ============================================================
+   COMPONENTE geral-chamada — a faixa "Esperando a sua resposta"
+   Acima do título de todas as páginas: o que espera o militar (a
+   troca para responder, o aceite que falta ou o prazo da extra) e,
+   para o administrador, o urgente para aprovar. Uma linha por
+   assunto, no máximo duas: a marca (o ícone ou a etiqueta ADM)
+   numa coluna de largura fixa, o texto que encurta com "…", o selo
+   do prazo e os botões. O X fica sempre no canto de cima, à
+   direita, numa coluna que a faixa guarda (os botões de todas as
+   linhas terminam na mesma coluna). Amarela; vermelha quando há
+   urgente. No celular, cada linha quebra: o texto (o X ao lado), o
+   selo embaixo dele e os botões dividindo a largura. Montagem:
+   componentes/js/geral-chamada.js
+   ============================================================ */
+
+.chamada {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: var(--respiro-pagina) var(--respiro-pagina) 0;
+  padding: 4px 32px 4px 4px;
+  border-radius: var(--raio-medio);
+  background-color: var(--alerta-fundo);
+}
+
+.chamada--urgente {
+  background-color: var(--erro-fundo);
+}
+
+/* o X: no canto de cima, à direita, na coluna guardada pelo padding da faixa */
+.chamada-fechar {
+  position: absolute;
+  top: 8px;
+  right: 0;
+}
+
+.chamada-linha {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 4px 0;
+}
+
+/* a marca (o ícone do assunto ou a etiqueta ADM): largura fixa, o texto de todas as linhas começa no mesmo ponto */
+.chamada-marca {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  color: var(--alerta);
+}
+
+.chamada--urgente .chamada-marca {
+  color: var(--erro);
+}
+
+/* sem espaço, encurta o texto do meio (nunca o selo nem os botões) */
+.chamada-texto {
+  min-width: 0;
+  font-size: var(--fonte-padrao);
+  color: var(--texto-suave);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chamada-quem {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.chamada-selo,
+.chamada-todos {
+  flex-shrink: 0;
+}
+
+.chamada-botoes {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   A linha em grade: a marca e o texto (que quebra), o selo embaixo
+   do texto e os botões na largura toda, dividindo-a. O "Ver todos"
+   sai (a Pendências da barra de baixo já mostra o número).
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .chamada {
+    gap: 12px;
+    margin: var(--respiro-pagina-celular) var(--respiro-pagina-celular) 0;
+    padding: 8px 32px 8px 4px;
+  }
+
+  /* o botão de ícone do celular ganha posição própria (a folga do toque): aqui ele continua preso ao canto */
+  html[data-celular] .chamada > .chamada-fechar {
+    position: absolute;
+    top: 4px;
+    right: 0;
+  }
+
+  html[data-celular] .chamada-linha {
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr);
+    grid-template-areas:
+      "marca texto"
+      ". selo"
+      "botoes botoes";
+    align-items: start;
+    gap: 8px;
+    padding: 0;
+  }
+
+  html[data-celular] .chamada-marca {
+    grid-area: marca;
+    width: auto;
+    min-height: 24px;
+  }
+
+  html[data-celular] .chamada-texto {
+    grid-area: texto;
+    white-space: normal;
+  }
+
+  html[data-celular] .chamada-selo {
+    grid-area: selo;
+    justify-self: start;
+  }
+
+  html[data-celular] .chamada-botoes {
+    grid-area: botoes;
+  }
+
+  html[data-celular] .chamada-botoes .botao {
+    flex: 1 1 0;
+  }
+
+  html[data-celular] .chamada-linha > .espacador-flex,
+  html[data-celular] .chamada-todos {
+    display: none;
+  }
+}

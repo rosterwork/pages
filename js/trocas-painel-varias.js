@@ -6,7 +6,12 @@
    uma linha por dia, lidas do fn_trocas_registro; o saldo, quando a
    conta não fecha; Aceites e aprovação: todos os militares), a
    Análise e o "Como fica a escala" do registro inteiro, e o rodapé
-   com as ações do papel e da situação de quem olha. Editar (no rodapé,
+   com as ações do papel e da situação de quem olha. Na alteração de
+   outro registro (t.original), a caixa "Antes" (os dias e a Parte do
+   registro de antes, do fn_trocas_registro), quem sai da troca nos
+   aceites, o Cancelar alteração e o Desfazer da aprovação que volta
+   as trocas de antes; as trocas com uma alteração esperando trazem o
+   aviso no alto e ficam sem o Editar. Editar (no rodapé,
    só na página Trocas): a aba Várias trocas em modo Editar, com o
    plano que vale hoje (trocas-varias-editar.js), no painel largo.
    Expõe RosterWork.trocasPainelVarias.abrir(troca, ctx) e acao(nome, troca, ctx, botao)
@@ -35,6 +40,8 @@
   function quemPediu(t) { var a = (t.aceites || []).filter(function (x) { return x.papel === 'pediu'; })[0]; return a ? a.cpf : null; }
   function participa(t, cpf) { return !!cpf && !!aceiteDe(t, cpf); }
   function emAberto(t) { return t.status === 'pendente_confirmacao' || t.status === 'pendente_aprovacao'; }
+  /* o registro é a alteração de outro (a lista traz o registro alterado em original) */
+  function alteracao(t) { return !!t.original; }
   function aceitePendente(t, cpf) {
     var a = aceiteDe(t, cpf);
     return !!a && !a.aceito_em && (emAberto(t) || t.status === 'aprovada');
@@ -44,15 +51,26 @@
   function admin(t, ctx) { return !!ctx.ehAdmin && (!!ctx.decidir || RW.trocasFormato.daMinhaArea(t)); }
 
   /* ---------- o corpo ---------- */
+  /* uma linha por dia: quem cumpre a escala de quem */
+  function linhaEscala(caixa, i) {
+    var linha = RW.tpl('tpl-troca-varias-escala');
+    linha.querySelector('.decisao-caixa-data').textContent = RW.data.comDiaSemana(String(i.data).slice(0, 10));
+    linha.querySelector('.decisao-caixa-extra').textContent = mv().escalaFrase(i.cumpre, i.no_lugar_de);
+    caixa.appendChild(linha);
+  }
   function caixaEscalas(t) {
     var caixa = RW.decisao.caixa({ titulo: mv().caixaEscalas, extra: P().registroEParte(t.registro_numero, t.registro_ano, t.parte_numero, t.parte_ano) });
     if (!caixa) return null;
-    ((registro && registro.itens) || []).forEach(function (i) {
-      var linha = RW.tpl('tpl-troca-varias-escala');
-      linha.querySelector('.decisao-caixa-data').textContent = RW.data.comDiaSemana(String(i.data).slice(0, 10));
-      linha.querySelector('.decisao-caixa-extra').textContent = mv().escalaFrase(i.cumpre, i.no_lugar_de);
-      caixa.appendChild(linha);
-    });
+    ((registro && registro.itens) || []).forEach(function (i) { linhaEscala(caixa, i); });
+    return caixa;
+  }
+  /* na alteração: como as trocas eram antes (os dias e a Parte do registro de antes) */
+  function caixaAntes() {
+    var a = registro && registro.altera;
+    if (!a || !Array.isArray(a.itens)) return null;
+    var caixa = RW.decisao.caixa({ titulo: m().caixaAntes, extra: P().registroEParte(a.numero, a.ano, a.parte && a.parte.numero, a.parte && a.parte.ano) });
+    if (!caixa) return null;
+    a.itens.forEach(function (i) { linhaEscala(caixa, i); });
     return caixa;
   }
   function caixaAceites(t) {
@@ -60,7 +78,9 @@
     if (!caixa) return null;
     (t.aceites || []).forEach(function (a) {
       var q = a.aceito_em ? P().quando(a.aceito_em) : null;
-      var acao = !q ? m().aceitePendente : (a.papel === 'pediu' ? m().aceiteSolicitou(q.dia, q.hora) : m().aceiteAceitou(q.dia, q.hora));
+      /* na alteração, quem sai da troca também aceita (papel saiu) */
+      var acao = a.papel === 'saiu' ? (q ? mv().aceiteSaiu(q.dia, q.hora) : mv().aceiteSaiuPendente)
+        : !q ? m().aceitePendente : (a.papel === 'pediu' ? m().aceiteSolicitou(q.dia, q.hora) : m().aceiteAceitou(q.dia, q.hora));
       P().linhaAceite(caixa, a.titulo || '', acao, q ? m().seloAceitou : m().seloAceitePendente, q ? 'selo--sucesso' : 'selo--alerta');
     });
     if (t.status === 'aprovada' && t.aprovado_em) {
@@ -75,6 +95,10 @@
     partes = RW.decisao.montar(RW.painel.corpo());
     if (!partes) return;
     if (aceitePendente(t, ctx.cpf)) partes.pedido.appendChild(P().nota(t.status === 'aprovada' ? mv().faltaAceiteAprovada : mv().faltaAceite));
+    /* as trocas com uma alteração esperando (o Editar fica fechado até ela ser decidida) */
+    if (t.alteracao_pendente_id) partes.pedido.appendChild(P().nota(mv().alteracaoAguardando));
+    var antes = caixaAntes();
+    if (antes) partes.pedido.appendChild(antes);
     var escalas = caixaEscalas(t);
     if (escalas) partes.pedido.appendChild(escalas);
     /* a conta que não fecha: o saldo de horas do registro (como no registro técnico) */
@@ -86,10 +110,11 @@
   }
 
   /* ---------- as ações ---------- */
+  /* o Desfazer da aprovação: cancela as trocas e volta a escala; na alteração, voltam a valer as trocas de antes */
   function desfazerAprovacao(t, ctx) {
     return function () {
       if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal();
-      return RW.trocasDados.variasCancelar(t.registro_id).then(function (res) {
+      return RW.trocasDados.variasCancelar(t.registro_id, alteracao(t)).then(function (res) {
         if (RW.esconderVeuGlobal) RW.esconderVeuGlobal();
         if (res && res.ok && ctx.aoMudar) ctx.aoMudar();
         return res;
@@ -99,7 +124,7 @@
   function despachar(acao, t, ctx, btn) {
     var d = RW.trocasDados, reg = t.registro_id, n = rw(t), executar = P().executar, confirmar = P().confirmarEntao;
     var desfazer = { desfazer: desfazerAprovacao(t, ctx) };
-    var problema = t._analise && t._analise.veredito === 'problema';
+    var problema = t._analise && t._analise.veredito === 'problema', altera = alteracao(t);
     if (acao === 'editar') {
       RW.painel.editar();   // o aoMudarModo('editar') abre o Editar no lugar da leitura
     } else if (acao === 'imprimir-registro') {
@@ -111,13 +136,16 @@
     } else if (acao === 'aceitar-depois') {
       confirmar(mv().confirmarAceitarDepois(n), false, function () { executar(d.aceitar(t.troca_id), btn, ctx); });
     } else if (acao === 'aprovar') {
-      confirmar(problema ? m().confirmarAprovarComProblema : mv().confirmarAprovar(n), problema, function () {
+      confirmar(problema ? m().confirmarAprovarComProblema : (altera ? mv().confirmarAprovarAlteracao : mv().confirmarAprovar(n)), problema, function () {
         executar(d.variasAprovar(reg, true), btn, ctx, desfazer, true);   // aprova e refaz a escala: véu
       });
     } else if (acao === 'aprovar-forcar') {
-      confirmar(problema ? m().confirmarAprovarComProblema : mv().confirmarForcar(n), true, function () {
+      confirmar(problema ? m().confirmarAprovarComProblema : (altera ? mv().confirmarForcarAlteracao : mv().confirmarForcar(n)), true, function () {
         executar(d.variasAprovar(reg, true, true), btn, ctx, desfazer, true);
       });
+    } else if (acao === 'cancelar-alteracao') {
+      /* a alteração esperando não mexe na escala: as trocas de antes continuam */
+      confirmar(mv().confirmarCancelarAlteracao, true, function () { executar(d.variasCancelar(reg), btn, ctx); });
     } else if (acao === 'recusar-admin') {
       RW.decisao.recusar(partes, function (motivo, botao) { executar(d.variasAprovar(reg, false, false, motivo), botao, ctx); });
     } else if (acao === 'cancelar-pedido') {
@@ -130,20 +158,23 @@
     var rodape = RW.painel.rodape();
     var frag = document.getElementById('tpl-troca-varias-registro-acoes').content.cloneNode(true);
     var usar = {}, ehAdmin = admin(t, ctx), eu = ctx.cpf, pediu = !!eu && quemPediu(t) === eu;
+    var cancelarPedido = alteracao(t) ? 'cancelar-alteracao' : 'cancelar-pedido';   // quem propôs a alteração cancela só ela
     btnAprovar = null;
     if (t.status === 'pendente_confirmacao') {
       if (aceitePendente(t, eu)) { usar.aceitar = true; usar.recusar = true; }
-      if (pediu) usar['cancelar-pedido'] = true;
+      if (pediu) usar[cancelarPedido] = true;
       if (ehAdmin) usar['aprovar-forcar'] = true;
     } else if (t.status === 'pendente_aprovacao') {
       if (ehAdmin) { usar.aprovar = true; usar['recusar-admin'] = true; }
-      if (pediu) usar['cancelar-pedido'] = true;
+      if (pediu) usar[cancelarPedido] = true;
     } else if (t.status === 'aprovada') {
       if (ehAdmin) usar.cancelar = true;
       if (aceitePendente(t, eu)) usar['aceitar-depois'] = true;
     }
     usar['imprimir-registro'] = !!RW.trocasRegistroPdf && (participa(t, eu) || ehAdmin);
-    usar.editar = comEditar && ['pendente_confirmacao', 'pendente_aprovacao', 'aprovada'].indexOf(t.status) >= 0 && (participa(t, eu) || ehAdmin);
+    /* o Editar: uma alteração por vez (com uma esperando, fica fechado) */
+    usar.editar = comEditar && ['pendente_confirmacao', 'pendente_aprovacao', 'aprovada'].indexOf(t.status) >= 0
+      && !t.alteracao_pendente_id && (participa(t, eu) || ehAdmin);
     var espacador = frag.querySelector('[data-espacador]');
     if (espacador && !usar['imprimir-registro']) espacador.parentNode.removeChild(espacador);
     Array.prototype.forEach.call(frag.querySelectorAll('[data-acao]'), function (btn) {
@@ -196,7 +227,7 @@
   /* ---------- abrir: lê o registro (os dias e o saldo) e desenha ---------- */
   function abrir(t, ctx) {
     ctx = ctx || {};
-    var situacao = RW.trocasFormato.situacao(t.status, false).texto;
+    var situacao = RW.trocasFormato.situacao(t.status, alteracao(t)).texto;
     var subtitulo = ctx.posicao ? RW.mensagens.decisao.posicao(situacao, ctx.posicao.n, ctx.posicao.total) : situacao;
     /* o Editar só na página Trocas, onde está o molde da aba Várias trocas (o JS da Trocas fica carregado depois de sair dela) */
     comEditar = !!RW.trocasVariasEditar && !!document.getElementById('tpl-troca-varias');

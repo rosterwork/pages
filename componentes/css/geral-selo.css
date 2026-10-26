@@ -43,3 +43,19 @@
   border-color: var(--erro);
   color: var(--erro);
 }
+
+/* a etiqueta ADM: marca o que é de administrador, igual em todo o sistema (a linha do administrador na faixa
+   "Esperando a sua resposta", os botões de administrador das barras e dos rodapés de decisão) */
+.etiqueta-adm {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 2px 4px;
+  border-radius: var(--raio-pequeno);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: var(--rotulo-secao-espacamento);
+  line-height: 1;
+  color: var(--texto-invertido);
+  background-color: var(--texto-forte);
+}

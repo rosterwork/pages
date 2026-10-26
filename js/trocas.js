@@ -71,7 +71,8 @@
       item.querySelector('.troca-item-meta').textContent = fmt().metaLista(troca);
     }
     var selo = item.querySelector('.troca-item-situacao');
-    var info = fmt().situacao(troca.status, !!troca.substitui_troca_id);
+    /* a alteração: a da troca de uma (substitui_troca_id) ou a do registro de várias (original) */
+    var info = fmt().situacao(troca.status, !!troca.substitui_troca_id || (varias && !!troca.original));
     selo.textContent = info.texto;
     selo.classList.add(info.classe);
     /* aprovada com aceite faltando: o Pendente antes do Aprovada, que abre a lista dos aceites (o clique nele não abre o painel) */

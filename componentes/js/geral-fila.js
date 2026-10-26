@@ -116,7 +116,7 @@
     var texto = p.tipo === 'troca_aceite' ? M.pendencias.faltaAceitar
       : p.tipo === 'troca_aceites_pendentes' ? M.trocas.seloAceitePendente
       : p.minha ? M.pendencias.aguardandoVoce
-      : p.tipo === 'troca' ? (d.substitui_troca_id ? M.trocas.situacaoAlteracao : M.trocas.situacao).pendente_aprovacao
+      : p.tipo === 'troca' ? (d.substitui_troca_id || (d.registro_varias && d.original) ? M.trocas.situacaoAlteracao : M.trocas.situacao).pendente_aprovacao
       : p.tipo === 'folga' ? M.folgas.situacao.pendente
       : M.correcoes.painelSituacao;
     return { texto: texto, classe: 'selo--alerta' };
@@ -137,16 +137,20 @@
     return d.registro_numero ? meta + ' · ' + RW.mensagens.trocas.registroNumero(d.registro_numero, d.registro_ano) : meta;
   }
 
-  /* o registro de várias trocas (um cartão por registro): quem pediu, os militares e o RW nº */
+  /* o registro de várias trocas (um cartão por registro): quem pediu, os militares e o RW nº;
+     na alteração de outro registro (original), quem quer alterar as trocas do RW de antes */
   function textosVarias(p, d) {
     var mv = RW.mensagens.trocas.varias, aceites = d.aceites || [];
     var rw = RW.mensagens.trocas.registroNumero(d.registro_numero, d.registro_ano);
     var pediu = aceites.filter(function (a) { return a.papel === 'pediu'; })[0];
     var meta = mv.filaMeta(RW.data.comDiaCurto(d.data_servico_solicitante), aceites.length, rw);
+    var nomes = mv.nomes(aceites.map(function (a) { return a.titulo || ''; }));
+    var antes = d.original ? RW.mensagens.trocas.registroNumero(d.original.registro_numero, d.original.registro_ano) : null;
+    var admin = antes ? mv.filaAdminAlteracao(nomes) : mv.filaAdmin(nomes);
     if (p.tipo === 'troca_aceite') return { quem: mv.filaAceitar(rw), meta: meta, selo: { texto: msg().faltaAceitar, classe: 'selo--alerta' } };
-    if (p.tipo === 'troca_aceites_pendentes') return { quem: mv.filaAdmin(mv.nomes(aceites.map(function (a) { return a.titulo || ''; }))), meta: meta, selo: seloPendente() };
+    if (p.tipo === 'troca_aceites_pendentes') return { quem: admin, meta: meta, selo: seloPendente() };
     return {
-      quem: p.minha ? mv.filaMinha(pediu ? pediu.titulo : '') : mv.filaAdmin(mv.nomes(aceites.map(function (a) { return a.titulo || ''; }))),
+      quem: !p.minha ? admin : (antes ? mv.filaMinhaAlteracao(pediu ? pediu.titulo : '', antes) : mv.filaMinha(pediu ? pediu.titulo : '')),
       meta: meta,
       selo: RW.impacto.selo({ veredito: d.veredito, problemas: d.veredito_problemas, alertas: d.veredito_alertas })
     };

@@ -145,7 +145,7 @@
     if (p.tipo === 'troca' && p.varias) {
       /* as várias trocas: um cartão por registro, com os militares (quem pediu primeiro) e o RW nº */
       var mv = M.trocas.varias, nomes = p.militares || [];
-      c = { icone: ICONE_PEDIDO.troca, quem: mv.linhaMilitares(mv.nomes(nomes)), selo: RW.trocasFormato.situacao(p.situacao, false),
+      c = { icone: ICONE_PEDIDO.troca, quem: mv.linhaMilitares(mv.nomes(nomes)), selo: RW.trocasFormato.situacao(p.situacao, !!p.alteracao),
             meta: mv.filaMeta(RW.data.comDiaCurto(p.data), nomes.length, M.trocas.registroNumero(p.registro_numero, p.registro_ano)) };
     } else if (p.tipo === 'troca') {
       c = { icone: ICONE_PEDIDO.troca, meta: meta, selo: RW.trocasFormato.situacao(p.situacao, p.alteracao),

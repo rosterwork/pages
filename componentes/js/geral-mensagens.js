@@ -809,6 +809,7 @@
       automaticaCobre: 'Se faltar {funcao}, o substituto é {quem}.',
       /* bloco 6: quem escolher */
       quemSenta: 'Quem senta em {funcao}?',
+      ordemMovida: 'Movida para a {n}ª posição.',
       papelFixo: 'Sempre o {perfil} mais antigo de serviço.',
       criterios: [
         'O {perfil} mais antigo que ainda não tem função',
@@ -957,6 +958,25 @@
     },
 
     /* análise de impacto na escala — componente compartilhado (geral-impacto), usado por Trocas e Folgas */
+    /* a faixa "Esperando a sua resposta" (acima do título de todas as páginas; geral-chamada) */
+    chamada: {
+      /* o pedido de troca visto por quem responde: o dia que ele tira e o da devolução (o horário, quando é parte do serviço) */
+      voceTira: function (dia, trecho) { return 'você tira o serviço em ' + dia + (trecho ? ', ' + trecho : ''); },
+      devolucao: function (dia, trecho) { return ' e a devolução é em ' + dia + (trecho ? ', ' + trecho : ''); },
+      servicoEm: function (dia, trecho) { return 'o serviço é em ' + dia + (trecho ? ', ' + trecho : ''); },
+      /* as várias trocas: quantos serviços dele há no registro e o primeiro dia */
+      varias: function (n, dia) { return (n === 1 ? '1 serviço seu' : n + ' serviços seus') + ', o primeiro em ' + dia; },
+      aceitarVarias: function (quem) { return 'Aceitar as trocas com ' + quem; },
+      /* o selo do prazo */
+      faltam: function (n) { return n === 1 ? 'Falta 1 dia' : 'Faltam ' + n + ' dias'; },
+      amanha: 'Amanhã',
+      hoje: 'Hoje',
+      /* a linha do administrador: só o urgente para aprovar */
+      admPedidos: function (n) { return n === 1 ? '1 pedido urgente para aprovar' : n + ' pedidos urgentes para aprovar'; },
+      admMeta: function (dia) { return 'o mais próximo com serviço em ' + dia; },
+      naoAchou: 'Este pedido mudou enquanto você olhava. A faixa foi atualizada.'
+    },
+
     /* Pendências (o que espera decisão: Para mim · Administração) */
     pendencias: {
       contagem: function (n) { return n === 1 ? '1 esperando você' : n + ' esperando você'; },
@@ -1285,9 +1305,18 @@
         confirmarRegistrar: 'Registrar estas trocas? Elas já entram aprovadas e a escala é atualizada na hora, em todos os dias.',
         /* o Editar do administrador de fora, nas trocas aprovadas */
         confirmarEditar: 'Salvar a alteração? Ela entra no lugar das trocas de antes e a escala é atualizada na hora, nos dias que mudam.',
-        /* os cartões das Pendências */
+        /* a alteração de outro registro: o aviso nas trocas que têm uma esperando, quem sai da troca nos aceites e as confirmações */
+        alteracaoAguardando: 'Estas trocas têm uma alteração aguardando. Até ela ser aprovada, as trocas continuam como estão.',
+        aceiteSaiuPendente: 'Sai da troca. Ainda não aceitou',
+        aceiteSaiu: function (dia, hora) { return 'Sai da troca. Aceitou em ' + dia + ', às ' + hora; },
+        confirmarCancelarAlteracao: 'Cancelar esta alteração? As trocas continuam como estão.',
+        confirmarAprovarAlteracao: 'Aprovar esta alteração? Ela entra no lugar das trocas de antes e a escala é atualizada na hora, nos dias que mudam.',
+        confirmarForcarAlteracao: 'Aprovar esta alteração com pendências? Ainda falta o aceite de algum militar. Ela entra no lugar das trocas de antes e a escala é atualizada na hora, nos dias que mudam; os aceites continuam pendentes.',
+        /* os cartões das Pendências (na alteração, o RW das trocas de antes) */
         filaMinha: function (quem) { return quem + ' pediu trocas de serviço com você'; },
         filaAdmin: function (nomes) { return 'Trocas de serviço: ' + nomes; },
+        filaMinhaAlteracao: function (quem, rw) { return quem + ' quer alterar as trocas do ' + rw; },
+        filaAdminAlteracao: function (nomes) { return 'Alteração das trocas: ' + nomes; },
         filaAceitar: function (rw) { return 'Aceitar as trocas do ' + rw; },
         filaMeta: function (dia, n, rw) { return 'A partir de ' + dia + ' · ' + n + ' militares · ' + rw; },
         /* o extrato dos Saldos: o dia de uma roda que se compensa */

@@ -348,6 +348,9 @@
 
 .nova-distribuicao-tabela tfoot th { font-weight: 400; }
 
+/* a linha movida por último na ordem: o fundo de seleção do site */
+.nova-distribuicao-linha--movida td { background-color: var(--fundo-medio); }
+
 .nova-distribuicao-col-n {
   width: 32px;
   font-weight: 600;

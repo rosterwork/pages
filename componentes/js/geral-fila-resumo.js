@@ -184,7 +184,7 @@
     if (t.status !== 'pendente_confirmacao' && t.status !== 'pendente_aprovacao') return {};
     if (t.registro_varias) {
       var pediu = (t.aceites || []).filter(function (a) { return a.papel === 'pediu'; })[0];
-      return pediu && pediu.cpf === cpf ? { cancelar: 'cancelar-pedido' } : {};
+      return pediu && pediu.cpf === cpf ? { cancelar: t.original ? 'cancelar-alteracao' : 'cancelar-pedido' } : {};
     }
     var aceita = t.confirma_cpf || t.parceiro_cpf;
     var quemPediu = aceita === t.solicitante_cpf ? t.parceiro_cpf : t.solicitante_cpf;

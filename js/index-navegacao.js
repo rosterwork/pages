@@ -160,6 +160,7 @@
 
     if (foraDoCelular(pagina)) {
       mostrarSoComputador(pagina);
+      if (window.RosterWork.chamada) window.RosterWork.chamada.porNaPagina();
       esconderVeu();
       registrarEndereco();
       return;
@@ -179,6 +180,8 @@
     }
     if (meu !== navToken) return;
     inserirFragmento(html);
+    /* a faixa "Esperando a sua resposta" entra acima do título da página nova (geral-chamada.js) */
+    if (window.RosterWork.chamada) window.RosterWork.chamada.porNaPagina();
 
     for (var i = 0; i < (def.css || []).length; i++) carregarCss(def.css[i]);
     /* os arquivos da página baixam todos juntos (cada um roda na ordem do manifesto) */
@@ -271,6 +274,15 @@
     if (!inicial || !manifesto[inicial]) inicial = 'escalas';
     navegar(inicial, false);
   }
+
+  /* os arquivos de outra página, sem abrir a página (ex.: a faixa "Esperando a sua resposta" usa os painéis
+     da troca da Pendências em qualquer tela); os já carregados não baixam de novo */
+  window.RosterWork.carregarPecas = function (pagina) {
+    var def = manifesto[pagina];
+    if (!def) return Promise.resolve();
+    (def.css || []).forEach(carregarCss);
+    return Promise.all((def.js || []).map(carregarJs));
+  };
 
   /* navegação programática (ex.: "Ver todos" do sino → página de avisos) —
      respeita o guarda de saída e marca o menu; páginas sem item de menu funcionam */
