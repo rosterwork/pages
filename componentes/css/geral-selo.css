@@ -59,3 +59,10 @@
   color: var(--texto-invertido);
   background-color: var(--texto-forte);
 }
+
+/* no botão escuro (o principal) e no vermelho, a etiqueta inverte para aparecer */
+.botao--primario .etiqueta-adm,
+.botao--perigo .etiqueta-adm {
+  color: var(--texto-forte);
+  background-color: var(--texto-invertido);
+}

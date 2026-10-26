@@ -64,8 +64,10 @@
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#solicitar-troca">Solicitar e acompanhar uma troca</a></li>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#alterar-troca">Alterar uma troca</a></li>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#varias-trocas">Solicitar várias trocas</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#alterar-varias">Alterar várias trocas</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#aprovar-trocas">Aprovar trocas</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#registrar-troca">Registrar uma troca</a></li>
+                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#registrar-varias">Registrar várias trocas</a></li>
               </ul>
             </li>
             <li>
@@ -1300,8 +1302,40 @@
                 </figcaption>
               </figure>
 
-              <p><strong>Nas listas e na escala.</strong> Nas abas <strong>Todas</strong> e <strong>Minhas</strong>, o registro aparece numa linha só: "Várias trocas:" com os nomes, o número RW e quantos militares participam. O <strong>Editar</strong> do painel muda só a <strong>Parte</strong> do E-protocolo, que vale para o registro inteiro, e os outros militares recebem o aviso. O <strong>Imprimir registro</strong> funciona como na troca de uma. Aprovadas, as trocas valem na escala, com o riscado de cada dia, e quem ainda não tinha aceitado pode aceitar depois, só para o registro.</p>
+              <p><strong>Nas listas e na escala.</strong> Nas abas <strong>Todas</strong> e <strong>Minhas</strong>, o registro aparece numa linha só: "Várias trocas:" com os nomes, o número RW e quantos militares participam. Para mudar as trocas depois, o painel tem o <strong>Editar</strong> (veja <strong>Alterar várias trocas</strong>, logo abaixo). O <strong>Imprimir registro</strong> funciona como na troca de uma. Aprovadas, as trocas valem na escala, com o riscado de cada dia, e quem ainda não tinha aceitado pode aceitar depois, só para o registro.</p>
               <p><strong>Os saldos.</strong> As trocas de uma roda não geram dívida: no histórico da aba <strong>Saldos</strong>, os dias delas aparecem com a nota "Compensada na roda do RW nº…".</p>
+
+              <h3 id="alterar-varias">Alterar várias trocas</h3>
+              <p>Quando o combinado muda depois do pedido, abra o registro (na aba <strong>Minhas</strong>, por exemplo) e clique em <strong>Editar</strong>, no rodapé do painel. Abre a mesma aba <strong>Várias trocas</strong> do pedido, já com o que vale hoje: a Parte, os militares e os dias marcados. Você vem primeiro na lista, com "você". Dá para mudar a <strong>Parte</strong>, os <strong>dias</strong> (tirar a troca de um dia e marcar outros) e os <strong>militares</strong> (incluir quem entra e remover quem sai).</p>
+              <p><strong>O que não muda.</strong> As notas do alto (1) lembram que a aba trabalha só com o serviço inteiro e que os dias que já passaram ficam como estão: você muda as trocas de amanhã em diante. O dia que já passou continua marcado no calendário, e o quadro dele mostra só quem troca, sem o <strong>Tirar esta troca</strong>, com a frase "Este dia já passou e não muda." (3). Você (2) e quem tem um dia assim ficam sem o <strong>Remover</strong>.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/troca-varias-editar.png" width="560" height="1026" alt="O Editar das várias trocas: as notas do alto, só serviços inteiros e as trocas de antes valendo até a aprovação (1), o militar que edita no alto da lista, com você e sem o Remover (2), e o quadro do dia 22/10, que já passou, sem o Tirar e com a frase Este dia já passou e não muda (3)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>As notas do Editar</li>
+                    <li>Você, sem o Remover</li>
+                    <li>O dia que já passou</li>
+                  </ol>
+                </figcaption>
+              </figure>
+              <p>Clique em <strong>Salvar</strong>. O que acontece depende do momento das trocas:</p>
+              <ul class="manual-lista">
+                <li><strong>Só a Parte do E-protocolo:</strong> vale na hora, para o registro inteiro, e os outros militares recebem o aviso.</li>
+                <li><strong>Pedido ainda aguardando:</strong> as trocas mudam no mesmo registro, com o mesmo número RW, e o pedido volta para os outros militares aceitarem de novo. O seu aceite já vale.</li>
+                <li><strong>Trocas já aprovadas:</strong> a mudança vira uma <strong>alteração</strong>, um registro novo, com o número RW dele. Todos aceitam: os militares que ficam, os que entram e também quem sai da troca. Depois, a administração aprova. Até lá valem as trocas de antes, como diz a segunda nota do alto, e, se a alteração for recusada ou cancelada, nada muda. Aprovada, ela entra no lugar só nos dias que mudam, e as trocas de antes ficam na lista como <strong>Substituída</strong>.</li>
+              </ul>
+              <p><strong>O painel da alteração.</strong> Nas listas e nas Pendências, a alteração aparece com o selo "Alteração aguardando confirmação" (ou aprovação), e quem precisa aceitar recebe o cartão "Cb. Paixão quer alterar as trocas do RW nº 20/2026". O painel mostra a caixa <strong>Antes</strong> (1), com os dias e a Parte das trocas de antes, acima das <strong>Escalas trocadas</strong> novas. Quem sai da troca aparece nos aceites com "Sai da troca" (2), porque também aceita. Quem pediu a alteração pode desistir com <strong>Cancelar alteração</strong> (3), e as trocas continuam como estão.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/troca-varias-alteracao.png" width="400" height="979" alt="O painel de uma alteração de várias trocas, aguardando confirmação: a caixa Antes, com os dias e a Parte das trocas de antes (1), as escalas trocadas novas, o Cb. Mendes nos aceites com Sai da troca, ainda não aceitou (2), e o botão Cancelar alteração (3)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>Antes: as trocas como eram</li>
+                    <li>Quem sai da troca</li>
+                    <li>Cancelar alteração</li>
+                  </ol>
+                </figcaption>
+              </figure>
+              <p class="manual-nota">Uma alteração por vez: enquanto uma espera, o painel das trocas de antes mostra o aviso no alto e fica sem o Editar.</p>
               <div class="manual-admin manual-zona-admin">
                 <h3 id="aprovar-trocas">Aprovar trocas <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>Depois que o colega aceita, a troca fica "Aguardando aprovação" e espera um administrador. Ela aparece na página <strong>Pendências</strong> e na aba <strong>Pendências</strong> daqui; o painel de decisão, a análise e o Como fica a escala estão explicados em <strong>Pendências › Decidir os pedidos</strong>. Na caixa <strong>Serviço</strong>, a troca mostra o número do registro e a <strong>Parte nº</strong> do E-protocolo, para você conferir antes de aprovar. Quando o colega não tem conta no sistema, a troca já chega aguardando a sua aprovação, e a análise avisa que ele não confirmou.</p>
@@ -1314,14 +1348,16 @@
                 <p class="manual-nota">Numa troca da qual você participa, como quem pediu ou como o colega, você também vê os botões de decisão e pode aprovar ou recusar.</p>
                 <p>Aprovada, a troca passa a valer na escala (o riscado da seção anterior) e a dívida de horas entre os dois é acertada. Se, até lá, aquele horário do serviço já tiver sido trocado com outra pessoa, a troca não pode mais ser aprovada: a análise mostra isso em vermelho.</p>
                 <p><strong>Afastamento depois da troca.</strong> Se, mais tarde, o militar que assumiu o serviço entrar de <strong>férias, licença ou dispensa</strong> naquele dia, quem lança o afastamento é avisado de que ele cobre um serviço por troca e decide se segue. Seguindo, a troca não é desfeita, mas a escala marca aquele serviço em <strong>amarelo</strong>, porque na prática ele não vai assumir.</p>
-                <p><strong>Alterações.</strong> A alteração de uma troca aprovada chega como um pedido próprio, com o selo "Alteração aguardando aprovação" e a caixa <strong>Antes</strong>, e você aprova ou recusa como qualquer troca. Aprovada, só os dias que mudam são refeitos na escala. Você também pode alterar direto uma troca da sua área da qual não participa: na página Trocas, abra a troca e use <strong>Editar</strong>. A <strong>Análise</strong> aparece antes de salvar, como no Registrar, e a mudança vale na hora, sem o aceite dos dois; o dia pode ser de até <strong>7 dias atrás</strong>.</p>
+                <p><strong>Alterações.</strong> A alteração de uma troca aprovada chega como um pedido próprio, com o selo "Alteração aguardando aprovação" e a caixa <strong>Antes</strong>, e você aprova ou recusa como qualquer troca. Aprovada, só os dias que mudam são refeitos na escala. Logo depois de aprovar uma alteração, o <strong>Desfazer</strong> do resumo traz de volta a troca de antes, também refazendo só os dias que mudaram. Você também pode alterar direto uma troca da sua área da qual não participa: na página Trocas, abra a troca e use <strong>Editar</strong>. A <strong>Análise</strong> aparece antes de salvar, como no Registrar, e a mudança vale na hora, sem o aceite dos dois; o dia pode ser de até <strong>7 dias atrás</strong>.</p>
                 <p><strong>Várias trocas.</strong> O pedido de várias trocas chega nas Pendências num cartão só, e o painel <strong>Várias trocas</strong> mostra as escalas trocadas, os aceites, a <strong>Análise</strong> e o <strong>Como fica a escala</strong> do registro inteiro. A decisão vale para todas as trocas de uma vez:</p>
                 <ul class="manual-lista">
                   <li>Enquanto alguém ainda não aceitou, fica o <strong>Aprovar com pendências</strong>.</li>
                   <li>Depois que todos os que têm conta aceitam, ficam <strong>Aprovar</strong> e <strong>Recusar</strong>. O Aprovar é tudo ou nada: se um dos dias não puder mais ser aprovado, nenhum é, e o aviso diz qual serviço.</li>
-                  <li>Já aprovadas, o <strong>Cancelar trocas</strong> desfaz todas e volta a escala ao que era, em todos os dias.</li>
+                  <li>Já aprovadas, o <strong>Cancelar trocas</strong> desfaz todas e volta a escala ao que era, em todos os dias. Se elas têm uma alteração esperando, a alteração é cancelada junto.</li>
+                  <li>A <strong>alteração</strong> de várias trocas aprovadas chega nas Pendências como "Alteração das trocas: Cb. Paixão, Cb. Lemos e Cb. Mendes", e o painel mostra a caixa <strong>Antes</strong>. O Aprovar pergunta "Aprovar esta alteração? Ela entra no lugar das trocas de antes e a escala é atualizada na hora, nos dias que mudam." Logo depois, o <strong>Desfazer</strong> do resumo traz de volta as trocas de antes.</li>
                 </ul>
-                <p>O <strong>Registrar troca</strong>, logo abaixo, registra uma troca por vez.</p>
+                <p>Você também pode alterar direto as várias trocas da sua área das quais não participa: abra o registro e use <strong>Editar</strong>. Quando os dias mudam, a <strong>Análise</strong> aparece no fim da aba e o <strong>Salvar</strong> só libera quando ela chega. Nas trocas aprovadas, o sistema pede a confirmação e a mudança vale na hora, sem esperar o aceite dos militares; num pedido em aberto, as trocas mudam e o pedido continua onde estava. O dia pode ser de até <strong>7 dias atrás</strong>.</p>
+                <p>Para lançar trocas que chegaram pelo E-protocolo, veja <strong>Registrar uma troca</strong> e <strong>Registrar várias trocas</strong>, logo abaixo.</p>
                 <h3 id="registrar-troca">Registrar uma troca <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>Quando a troca chega pelo E-protocolo e não foi pedida no sistema, você mesmo a registra. Na página <strong>Trocas</strong>, clique em <strong>Registrar troca</strong>, no bloco <strong>Administração</strong>, ao lado de Solicitar troca. Abre o mesmo painel do pedido, com uma diferença no bloco <strong>Solicitante</strong> (1): em vez de você, escolha a <strong>unidade</strong> e o <strong>militar</strong> que passa o serviço. Depois preencha a <strong>parte</strong> do E-protocolo, o dia, o período, quem cobre e a devolução, como num pedido. O dia pode ser de até <strong>7 dias atrás</strong>, para registrar uma troca que já aconteceu.</p>
                 <figure class="manual-figura">
@@ -1334,6 +1370,25 @@
                 </figure>
                 <p>Com tudo preenchido, a <strong>Análise</strong> aparece no fim do painel, a mesma de quando você aprova uma troca, e o botão <strong>Registrar troca</strong> só libera quando ela chega. Ao confirmar, a troca <strong>já entra aprovada</strong>: a escala muda na hora e os dois militares recebem o aviso de troca aprovada. Os aceites dos dois ficam pendentes, e cada um aceita depois, pelas Pendências, só para o registro. Se o registro foi um engano, o <strong>Desfazer</strong> do resumo apaga a troca e volta a escala ao que era.</p>
                 <p class="manual-nota">Você não registra uma troca da qual participa: o seu nome não aparece nas listas. Se o militar já pediu a mesma troca no sistema, o registro é recusado e o aviso indica aprovar o pedido pela aba Pendências.</p>
+
+                <h3 id="registrar-varias">Registrar várias trocas <span class="manual-selo-admin">Apenas administradores</span></h3>
+                <p>Quando chegam pelo E-protocolo várias trocas combinadas entre vários militares, o <strong>Registrar troca</strong> também tem a aba <strong>Várias trocas</strong>, igual à do pedido (veja <strong>Solicitar várias trocas</strong>), com estas diferenças:</p>
+                <ul class="manual-lista">
+                  <li>A lista de <strong>militares</strong> (1) começa vazia, e você não entra nela. Inclua pelo menos dois militares, da mesma companhia e dos pelotões dela; cada dia precisa ter um militar da sua área.</li>
+                  <li>Os dias podem ser de até <strong>7 dias atrás</strong>, para registrar trocas que já aconteceram.</li>
+                  <li>A <strong>Análise</strong> (2) do registro inteiro aparece no fim da aba e é refeita a cada dia marcado. O botão <strong>Registrar trocas</strong> (3) só libera quando ela chega.</li>
+                </ul>
+                <figure class="manual-figura">
+                  <img src="manual/imagens/troca-varias-registrar.png" width="560" height="1016" alt="A aba Várias trocas do Registrar troca: os militares da troca, sem o administrador (1), o calendário com o dia 22/10, que já passou, e o 30/10 marcados, o resumo com a dupla, a Análise sem impacto na escala (2) e o botão Registrar trocas (3)." />
+                  <figcaption>
+                    <ol class="manual-chamadas">
+                      <li>Militares da troca, sem você</li>
+                      <li>Análise do registro inteiro</li>
+                      <li>Registrar trocas</li>
+                    </ol>
+                  </figcaption>
+                </figure>
+                <p>Ao confirmar ("Registrar estas trocas? Elas já entram aprovadas e a escala é atualizada na hora, em todos os dias."; quando a análise apontou um problema, o aviso é mais firme), as trocas <strong>já entram aprovadas</strong>: a escala muda na hora, em todos os dias, e cada militar recebe o aviso de trocas aprovadas. Os aceites ficam pendentes, e cada um aceita depois, pelas Pendências, só para o registro. Se o registro foi um engano, o <strong>Desfazer</strong> do resumo apaga o registro inteiro e volta a escala ao que era; o número RW fica pulado.</p>
               </div>
             </section>
 

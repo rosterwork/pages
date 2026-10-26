@@ -76,19 +76,16 @@
   background-color: var(--borda-forte);
 }
 
-/* grupo ADMINISTRAÇÃO: as ações de administrador de uma barra (ou de um bloco) num bloco
-   cinza com o rótulo; a ação do militar fica fora, antes dele.
-   Nasce com .oculto e a página o mostra só ao admin (o servidor continua garantindo a
-   permissão). É um .dropdown: no computador o menu não tem caixa (display: contents) e o
-   bloco é desenhado no próprio grupo; no celular aparece só o botão "Administração", que
-   abre o menu (geral-dropdown) com as ações em linhas */
+/* grupo ADMINISTRAÇÃO: as ações de administrador de uma barra (ou de um bloco); a ação do
+   militar fica fora, antes dele. Nasce com .oculto e a página o mostra só ao admin (o servidor
+   continua garantindo a permissão). É um .dropdown: no computador o menu não tem caixa
+   (display: contents) e os botões ficam soltos na barra, cada um com a etiqueta ADM
+   (geral-selo.css), sem bloco nem rótulo; no celular aparece só o botão "Administração", que
+   abre o menu (geral-dropdown) com o rótulo e as ações em linhas, sem a etiqueta */
 .acoes-admin {
   flex-shrink: 0;
   align-items: center;
   gap: 8px;
-  padding: 4px 4px 4px 12px;
-  border-radius: var(--raio-medio);
-  background-color: var(--fundo-medio);
 }
 
 .acoes-admin > .acoes-admin-menu {
@@ -100,6 +97,7 @@
 }
 
 .acoes-admin-rotulo {
+  display: none;
   color: var(--texto-fraco);
 }
 
@@ -274,11 +272,6 @@
     color: var(--texto-suave);
   }
 
-  html[data-celular] .acoes-admin {
-    padding: 0;
-    background-color: transparent;
-  }
-
   html[data-celular] .acoes-admin-gatilho {
     display: inline-flex;
   }
@@ -310,6 +303,11 @@
 
   html[data-celular] .acoes-admin-menu .botao::before {
     content: none;
+  }
+
+  /* o menu já diz que é da administração: sem a etiqueta em cada linha */
+  html[data-celular] .acoes-admin-menu .etiqueta-adm {
+    display: none;
   }
 
   html[data-celular] .acoes-admin-menu .botao:hover {

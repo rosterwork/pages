@@ -23,6 +23,8 @@
   }
 
   /* ---------- PONTOS (dentro de botões e linhas de texto) ---------- */
+  var conteudoOriginal = new WeakMap();   /* o que o elemento tinha (texto, ícone, etiqueta), para devolver no fim */
+
   function iniciarCarregando(elemento) {
     var template = document.getElementById('carregando-pontos');
     if (!template) return;
@@ -31,7 +33,7 @@
     elemento.style.setProperty('--carregando-largura', elemento.offsetWidth + 'px');
     elemento.style.setProperty('--carregando-altura', elemento.offsetHeight + 'px');
     elemento.classList.add('carregando-travado');
-    elemento.dataset.textoOriginal = elemento.textContent;
+    conteudoOriginal.set(elemento, Array.prototype.slice.call(elemento.childNodes));
     elemento.textContent = '';
     elemento.appendChild(template.content.cloneNode(true));
     elemento.disabled = true;
@@ -39,8 +41,10 @@
   }
 
   function pararCarregando(elemento) {
-    elemento.textContent = elemento.dataset.textoOriginal || '';
-    delete elemento.dataset.textoOriginal;
+    var filhos = conteudoOriginal.get(elemento) || [];
+    elemento.textContent = '';
+    filhos.forEach(function (n) { elemento.appendChild(n); });
+    conteudoOriginal.delete(elemento);
     elemento.classList.remove('carregando-travado');
     elemento.style.removeProperty('--carregando-largura');
     elemento.style.removeProperty('--carregando-altura');
