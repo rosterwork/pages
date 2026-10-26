@@ -549,23 +549,56 @@
   min-width: 0;
 }
 
-/* aberta: a linha em volta fica 8px para fora, para os campos de dentro não saírem das colunas */
+/* aberta: a caixa toma o lugar da viatura (a linha dela some e ela vira o título) */
+.nova-distribuicao-viatura--substituindo > :not(.nova-distribuicao-viatura-substituicoes) { display: none; }
+
 .nova-distribuicao-troca-caixa {
   position: relative;
   margin: 8px 0;
 }
 
+/* a linha em volta começa depois do Nº (32px da coluna + 8px do vão − 8px) e fica 8px para fora nos outros
+   lados, para os campos de dentro não saírem das colunas */
 .nova-distribuicao-troca-caixa::before {
   content: '';
   position: absolute;
-  inset: -8px;
+  top: -8px;
+  right: -8px;
+  bottom: -8px;
+  left: 32px;
   border: 1px solid var(--borda-forte);
   border-radius: var(--raio-medio);
   pointer-events: none;
 }
 
-.nova-distribuicao-troca-rotulo-inicio,
-.nova-distribuicao-troca-inicio { grid-column: 2; }
+.nova-distribuicao-troca-caixa > .nova-distribuicao-linha-ordem { align-self: start; }
+
+.nova-distribuicao-troca-titulo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  grid-column: 2 / 4;
+  min-width: 0;
+}
+
+.nova-distribuicao-troca-viatura {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.nova-distribuicao-troca-tipo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+/* a seta de fechar aponta para cima, como a do cartão aberto */
+.nova-distribuicao-troca-fechar .icone { transform: rotate(180deg); }
+
+.nova-distribuicao-troca-na-coluna-prefixo { grid-column: 2; }
 
 .nova-distribuicao-troca-data { width: 160px; }
 
@@ -577,13 +610,6 @@
 }
 
 .nova-distribuicao-troca-ajuda { grid-column: 2 / -1; }
-
-.nova-distribuicao-troca-botoes {
-  display: flex;
-  gap: 8px;
-  grid-column: 1 / -1;
-  justify-self: end;
-}
 
 /* título de cada unidade nas opções do Oficial de Área */
 .nova-distribuicao-grupo-titulo { margin: 8px 0 0; }

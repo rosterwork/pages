@@ -49,9 +49,9 @@
   function avisarFalha(r) { RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || G().falhaServidor }); }
   function avisarSemConexao() { RosterWork.avisar({ tipo: 'erro', mensagem: G().semConexao }); }
 
-  /* com edição não salva (também a substituição aberta), confirma o descarte antes de seguir */
+  /* com edição não salva (também as substituições), confirma o descarte antes de seguir */
   function confirmarDescarte(seguir, aoCancelar) {
-    if (!E.sujo && !E.sujoCia && !RosterWork.novaDistribuicaoPostos.sujo()) { seguir(); return; }
+    if (!E.sujo && !E.sujoCia && !RosterWork.novaDistribuicaoPostos.temRascunho()) { seguir(); return; }
     RosterWork.confirmar({
       tipo: 'aviso', mensagem: RosterWork.mensagens.edicao.sairSemSalvar,
       textoConfirmar: B().descartar, textoCancelar: B().continuarEditando,
@@ -69,7 +69,7 @@
       if (meu !== tokenCarga || !montada()) return;
       if (!r || !r.success) { P().mostrarNoCorpo('falha', (r && r.error) || G().falhaCarregar); return; }
       var bloco = E.bloco;
-      if (r.unidade.id !== E.unidadeId) RosterWork.novaDistribuicaoPostos.descartar();   /* a substituição aberta é da outra unidade */
+      RosterWork.novaDistribuicaoPostos.descartar();   /* o rascunho das substituições foi salvo ou descartado */
       E = novoEstado();
       E.bloco = bloco;
       E.dados = r;
@@ -160,19 +160,12 @@
     viaturaGravada: function (nome) {
       return !!nome && ((E.periodo.respostas && E.periodo.respostas.viaturas) || []).some(function (v) { return v.nome === nome; });
     },
-    /* as substituições da viatura (também as do prefixo de antes, se ele foi trocado e ainda não salvo) */
-    substituicoesDe: function (nome) {
-      var nomes = [nome].concat(E.renomeadas.unidade.filter(function (p) { return p[1] === nome; }).map(function (p) { return p[0]; }));
-      return (E.dados.substituicoes || []).filter(function (s) { return nomes.indexOf(s.viatura) >= 0; });
+    /* o prefixo da viatura e os de antes dela (trocados e ainda não salvos): as substituições usam o gravado */
+    nomesDe: function (nome) {
+      return [nome].concat(E.renomeadas.unidade.filter(function (p) { return p[1] === nome; }).map(function (p) { return p[0]; }));
     },
-    /* depois de gravar uma substituição: só a lista delas é lida de novo (o que não foi salvo continua) */
-    recarregarSubstituicoes: function () {
-      D().ler(E.unidadeId, E.periodo.id).then(function (r) {
-        if (!r || !r.success || !montada()) return;
-        E.dados.substituicoes = r.substituicoes;
-        desenhar();
-      }, avisarSemConexao);
-    },
+    /* mudou algo que não redesenha a página (a substituição aberta): só o rodapé */
+    atualizarRodape: function () { desenharRodape(); },
     /* com um argumento, lê o texto guardado; com dois, guarda (null apaga) */
     invalido: function (chave, valor) {
       if (arguments.length < 2) return invalidos.hasOwnProperty(chave) ? invalidos[chave] : null;
@@ -279,7 +272,7 @@
   function desenharRodape() {
     var rodape = el('nova-distribuicao-rodape');
     if (!rodape) return;
-    var sujo = E.sujo || E.sujoCia;
+    var sujo = E.sujo || E.sujoCia || RosterWork.novaDistribuicaoPostos.temRascunho();
     rodape.classList.toggle('oculto', !E.periodo);
     el('nova-distribuicao-pendente').classList.toggle('oculto', !sujo);
     el('nova-distribuicao-salvar').disabled = !sujo;
@@ -331,11 +324,13 @@
     return itens;
   }
 
-  /* grava com respostas faltando (pendências); valor errado o banco recusa. A data e a prévia: -versoes */
+  /* grava com respostas faltando (pendências); valor errado o banco recusa. As substituições vão junto,
+     conferidas antes. A data e a prévia: -versoes */
   function salvar() {
-    if (!E.periodo || (!E.sujo && !E.sujoCia)) return;
+    var Pt = RosterWork.novaDistribuicaoPostos;
+    if (!E.periodo || (!E.sujo && !E.sujoCia && !Pt.temRascunho())) return;
     semPrefixo().forEach(function (k) { if (!invalidos.hasOwnProperty(k)) invalidos[k] = ''; });
-    if (Object.keys(invalidos).length) { desenhar(); RosterWork.avisar({ tipo: 'erro', mensagem: M().corrigirAntes }); return; }
+    if (!Pt.conferir(E.dados) || Object.keys(invalidos).length) { desenhar(); RosterWork.avisar({ tipo: 'erro', mensagem: M().corrigirAntes }); return; }
     V().salvar(contextoVersoes(), el('nova-distribuicao-salvar'));
   }
 
@@ -347,6 +342,7 @@
   function contextoVersoes() {
     return {
       dados: E.dados, unidadeId: E.unidadeId, vendoAgendada: E.vendoAgendada, itens: itensParaSalvar,
+      substituicoes: RosterWork.novaDistribuicaoPostos.operacoes,
       carregar: function (versaoId) { E.aberto = null; carregar(E.unidadeId, versaoId); },
       confirmar: confirmarDescarte, falha: avisarFalha, semConexao: avisarSemConexao
     };
@@ -387,7 +383,7 @@
       guardaLigada = true;
       RosterWork.guardaSaida.registrar(function () {
         if (!montada()) return false;
-        return E.sujo || E.sujoCia || RosterWork.novaDistribuicaoPostos.sujo();
+        return E.sujo || E.sujoCia || RosterWork.novaDistribuicaoPostos.temRascunho();
       });
     }
     E.aberto = null;

@@ -5,98 +5,123 @@
    fica só no campo, em vermelho), CNH de A a E alinhadas, setas,
    Substituir temporariamente e excluir; embaixo, os erros, o que
    muda na mudança agendada e as substituições da viatura. A
-   substituição abre numa caixa embaixo da viatura, nas mesmas
-   colunas (prefixo e CNH da que entra, início e fim), e grava na
-   hora, com as datas dela; o resto da página continua como está
-   até o Salvar.
+   substituição abre numa caixa no lugar da viatura (o Nº fora da
+   linha, a viatura como título fixo, os campos da substituta nas
+   mesmas colunas) e fica no rascunho, como o resto da página: vai
+   no Salvar e sai no Cancelar do rodapé.
    ============================================================ */
 (function () {
   'use strict';
   window.RosterWork = window.RosterWork || {};
 
-  /* a substituição aberta embaixo da viatura: { viatura, s (nulo = nova), prefixo, cnh, inicio, fim, erros, sujo } */
-  var formTroca = null;
+  /* as substituições mudadas e ainda não salvas (vão no Salvar da página), uma entrada por substituição:
+     { chave, id (nulo = nova), unidade_id, viatura, prefixo, cnh, inicio, fim (dd/mm/aaaa), comecou_antes,
+     excluir, original (a gravada), erros } */
+  var rascunho = [];
+  var novas = 0;
+  var aberta = null;   /* a chave da substituição aberta na caixa (uma por vez) */
 
   function M() { return RosterWork.mensagens.novaDistribuicao; }
-  function G() { return RosterWork.mensagens.geral; }
-  function B() { return RosterWork.mensagens.botoes; }
   function P() { return RosterWork.novaDistribuicaoPecas; }
-  function D() { return RosterWork.novaDistribuicaoDados; }
   function br(iso) { return RosterWork.data.isoParaBR(iso); }
+  function vazio(x) { return x == null || x === ''; }
 
-  function textoTroca(s) {
-    return P().texto(M().trocaTexto, { prefixo: s.prefixo, cnh: s.cnh || '?', inicio: br(s.inicio), fim: br(s.fim) });
+  /* ---------- a substituição temporária, no rascunho da página ---------- */
+
+  /* a gravada como entrada (vai para o rascunho quando abre ou sai) */
+  function comoEntrada(s) {
+    return {
+      chave: s.id, id: s.id, unidade_id: null, viatura: s.viatura, prefixo: s.prefixo, cnh: s.cnh,
+      inicio: br(s.inicio), fim: br(s.fim), comecou_antes: !!s.comecou_antes, excluir: false, original: s, erros: {}
+    };
+  }
+  function entradaDe(s) {
+    var e = rascunho.filter(function (x) { return x.id === s.id; })[0];
+    if (!e) { e = comoEntrada(s); rascunho.push(e); }
+    return e;
   }
 
-  function falhou(r) { RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || G().falhaServidor }); }
-  function semConexao() { RosterWork.avisar({ tipo: 'erro', mensagem: G().semConexao }); }
-
-  /* ---------- a substituição aberta embaixo da viatura (s nulo = nova); grava na hora ---------- */
-
-  /* com algo digitado, confirma antes de largar a substituição aberta */
-  function largarTroca(seguir) {
-    if (!formTroca || !formTroca.sujo) { formTroca = null; seguir(); return; }
-    RosterWork.confirmar({
-      tipo: 'aviso', mensagem: RosterWork.mensagens.edicao.sairSemSalvar,
-      textoConfirmar: B().descartar, textoCancelar: B().continuarEditando,
-      aoConfirmar: function () { formTroca = null; seguir(); }
-    });
+  /* mudou em relação à gravada (a nova, quando tem algo digitado) */
+  function mudou(e) {
+    if (e.excluir) return true;
+    if (!e.id) return !vazio(e.prefixo) || !vazio(e.cnh) || !vazio(e.inicio) || !vazio(e.fim);
+    var o = e.original;
+    return e.prefixo !== o.prefixo || e.cnh !== o.cnh || e.inicio !== br(o.inicio) || e.fim !== br(o.fim);
   }
 
-  /* abre uma por vez */
-  function abrirTroca(api, viatura, s) {
-    largarTroca(function () {
-      formTroca = {
-        viatura: viatura, s: s, prefixo: s ? s.prefixo : '', cnh: s ? s.cnh : null,
-        inicio: s ? br(s.inicio) : '', fim: s ? br(s.fim) : '', erros: {}, sujo: false
-      };
-      api.focarDepois('#nova-distribuicao-troca-prefixo');
-      api.redesenhar();
-    });
+  function textoTroca(e) {
+    return P().texto(M().trocaTexto, { prefixo: e.prefixo || '?', cnh: e.cnh || '?', inicio: e.inicio || '?', fim: e.fim || '?' });
   }
 
-  /* confere os campos (as frases ficam em formTroca.erros, por campo); edições voltam no máximo até o limite */
-  function conferirTroca(api) {
-    var f = formTroca;
-    var e = {};
-    var limite = api.dados().limite;
+  /* abre uma por vez (a que estava aberta sem mudança sai do rascunho) */
+  function abrirTroca(api, e) {
+    rascunho = rascunho.filter(function (x) { return x === e || mudou(x); });
+    if (rascunho.indexOf(e) < 0) rascunho.push(e);
+    aberta = e.chave;
+    api.focarDepois('#nova-distribuicao-troca-prefixo');
+    api.redesenhar();
+  }
+
+  function fecharTroca(api) {
+    rascunho = rascunho.filter(mudou);
+    aberta = null;
+    api.redesenhar();
+  }
+
+  /* a lixeira: a nova sai do rascunho; a gravada fica marcada e sai no Salvar */
+  function excluirTroca(api, e) {
+    if (e.id) entradaDe(e.original).excluir = true;
+    else rascunho = rascunho.filter(function (x) { return x !== e; });
+    if (aberta === e.chave) aberta = null;
+    api.redesenhar();
+  }
+
+  /* antes do Salvar: confere as mudadas (as frases ficam em cada uma e a 1ª com erro abre); edições voltam no
+     máximo até o limite */
+  function conferirTrocas(dados) {
+    var limite = dados.limite;
     var trava = P().texto(M().trocaLimite, { data: br(limite) });
-    var de = RosterWork.data.paraISO(f.inicio);
-    var ate = RosterWork.data.paraISO(f.fim);
-    if (!P().FORMATO_PREFIXO.test(f.prefixo)) e.prefixo = f.prefixo ? M().prefixoInvalido : M().prefixoVazio;
-    else if (f.prefixo === f.viatura) e.prefixo = M().trocaMesmoPrefixo;
-    if (!f.cnh) e.cnh = M().trocaEscolhaCnh;
-    if (!de) e.inicio = M().erroInicio;
-    else if (de < limite && !(f.s && f.s.comecou_antes)) e.inicio = trava;
-    if (!ate) e.fim = M().trocaErroFim;
-    else if (de && ate < de) e.fim = M().erroOrdemDatas;
-    else if (ate < limite) e.fim = trava;
-    f.erros = e;
-    return !Object.keys(e).length;
+    var primeira = null;
+    rascunho.forEach(function (f) {
+      var e = {};
+      if (mudou(f) && !f.excluir) {
+        var de = RosterWork.data.paraISO(f.inicio);
+        var ate = RosterWork.data.paraISO(f.fim);
+        if (!P().FORMATO_PREFIXO.test(f.prefixo || '')) e.prefixo = f.prefixo ? M().prefixoInvalido : M().prefixoVazio;
+        else if (f.prefixo === f.viatura) e.prefixo = M().trocaMesmoPrefixo;
+        if (!f.cnh) e.cnh = M().trocaEscolhaCnh;
+        if (!de) e.inicio = M().erroInicio;
+        else if (de < limite && !f.comecou_antes) e.inicio = trava;
+        if (!ate) e.fim = M().trocaErroFim;
+        else if (de && ate < de) e.fim = M().erroOrdemDatas;
+        else if (ate < limite) e.fim = trava;
+      }
+      f.erros = e;
+      if (!primeira && Object.keys(e).length) primeira = f;
+    });
+    if (primeira) aberta = primeira.chave;
+    return !primeira;
   }
 
-  function salvarTroca(api, botao) {
-    var f = formTroca;
-    if (!conferirTroca(api)) { api.redesenhar(); return; }
-    RosterWork.iniciarCarregando(botao);
-    D().substituicaoSalvar(api.unidadeId(), f.s && f.s.id, f.viatura, f.prefixo, f.cnh,
-      RosterWork.data.paraISO(f.inicio), RosterWork.data.paraISO(f.fim)).then(function (r) {
-      RosterWork.pararCarregando(botao);
-      if (!r || !r.success) { falhou(r); return; }
-      formTroca = null;
-      RosterWork.resumo.abrirModal(r.log, { pagina: M().pagina });
-      api.recarregarSubstituicoes();
-    }, function () {
-      RosterWork.pararCarregando(botao);
-      semConexao();
+  /* o que vai para o banco no Salvar */
+  function operacoes() {
+    return rascunho.filter(mudou).map(function (e) {
+      if (e.excluir) return { id: e.id, excluir: true };
+      return {
+        id: e.id, unidade_id: e.unidade_id, viatura: e.viatura, prefixo: e.prefixo, cnh: e.cnh,
+        inicio: RosterWork.data.paraISO(e.inicio), fim: RosterWork.data.paraISO(e.fim)
+      };
     });
   }
 
-  /* a caixa: o prefixo e a CNH da que entra nas colunas da viatura, o início e o fim; as frases embaixo
-     (somem do campo que muda) */
-  function caixaTroca(destino, api, ctx) {
-    var f = formTroca;
+  /* a caixa no lugar da viatura: o Nº, a viatura como título fixo e os campos da substituta com os rótulos;
+     as frases de erro embaixo (somem do campo que muda) */
+  function caixaTroca(destino, api, ctx, v, numero, f) {
     var caixa = P().tpl('troca-caixa');
+    caixa.querySelector('.nova-distribuicao-linha-ordem').textContent = numero + 'º';
+    caixa.querySelector('.nova-distribuicao-troca-viatura').textContent = v.cnh ? P().texto(M().tituloViatura, { nome: v.nome, cnh: v.cnh }) : v.nome;
+    caixa.querySelector('.nova-distribuicao-troca-tipo-gravada').classList.toggle('oculto', !f.id);
+    caixa.querySelector('.nova-distribuicao-troca-tipo-nova').classList.toggle('oculto', !!f.id);
     var campos = {
       prefixo: caixa.querySelector('.nova-distribuicao-troca-prefixo'),
       cnh: caixa.querySelector('.nova-distribuicao-troca-cnh'),
@@ -110,8 +135,9 @@
       if (f.erros[c]) frases[c] = P().erroCampo(lista, f.erros[c]);
     });
     lista.classList.toggle('oculto', !lista.children.length);
-    function mudou(c) {
-      f.sujo = true;
+    /* mudou um campo: o rodapé mostra "Alterações não salvas" e a frase desse campo sai */
+    function marcar(c) {
+      api.atualizarRodape();
       if (!f.erros[c]) return;
       delete f.erros[c];
       campos[c].classList.remove(c === 'cnh' ? 'nova-distribuicao-espaco--erro' : 'nova-distribuicao-entrada--erro');
@@ -119,56 +145,41 @@
       lista.classList.toggle('oculto', !lista.children.length);
     }
 
-    campos.prefixo.value = f.prefixo;
+    campos.prefixo.value = f.prefixo || '';
+    campos.prefixo.disabled = ctx.soLeitura;
     campos.prefixo.addEventListener('input', function () {
       var pos = campos.prefixo.selectionStart;
       campos.prefixo.value = campos.prefixo.value.toUpperCase();
       try { campos.prefixo.setSelectionRange(pos, pos); } catch (e) {}
       f.prefixo = campos.prefixo.value.trim();
-      mudou('prefixo');
+      marcar('prefixo');
     });
-    campos.cnh.querySelectorAll('.aba').forEach(function (aba) { aba.classList.toggle('aba--ativa', aba.getAttribute('data-valor') === f.cnh); });
-    RosterWork.abas.ligar(campos.cnh, function (aba) { f.cnh = aba.getAttribute('data-valor'); mudou('cnh'); });
+    campos.cnh.querySelectorAll('.aba').forEach(function (aba) {
+      aba.classList.toggle('aba--ativa', aba.getAttribute('data-valor') === f.cnh);
+      aba.disabled = ctx.soLeitura;
+    });
+    RosterWork.abas.ligar(campos.cnh, function (aba) { f.cnh = aba.getAttribute('data-valor'); marcar('cnh'); });
     ['inicio', 'fim'].forEach(function (c) {
-      campos[c].value = f[c];
+      campos[c].value = f[c] || '';
+      campos[c].disabled = ctx.soLeitura;
       RosterWork.campos.ligarData(campos[c]);
-      campos[c].addEventListener('input', function () { f[c] = campos[c].value; mudou(c); });
+      campos[c].addEventListener('input', function () { f[c] = campos[c].value; marcar(c); });
     });
-    campos.inicio.disabled = !!(f.s && f.s.comecou_antes);   /* a que começou antes do limite dos 7 dias só muda o fim */
+    if (f.comecou_antes) campos.inicio.disabled = true;   /* a que começou antes do limite dos 7 dias só muda o fim */
 
+    caixa.querySelector('.nova-distribuicao-troca-fechar').addEventListener('click', function () { fecharTroca(api); });
     var excluir = caixa.querySelector('.nova-distribuicao-remover');
-    excluir.classList.toggle('oculto', !f.s);
-    excluir.disabled = ctx.soLeitura || !!(f.s && f.s.comecou_antes);
-    excluir.addEventListener('click', function () { excluirTroca(api, f.viatura, f.s); });
-    caixa.querySelector('.nova-distribuicao-troca-cancelar').addEventListener('click', function () { formTroca = null; api.redesenhar(); });
-    var salvar = caixa.querySelector('.nova-distribuicao-troca-salvar');
-    salvar.addEventListener('click', function () { salvarTroca(api, salvar); });
+    excluir.disabled = ctx.soLeitura || f.comecou_antes;
+    excluir.addEventListener('click', function () { excluirTroca(api, f); });
     destino.appendChild(caixa);
   }
 
-  function excluirTroca(api, viatura, s) {
-    RosterWork.confirmar({
-      tipo: 'aviso',
-      mensagem: P().texto(M().excluirSubstituicao, { viatura: viatura, texto: textoTroca(s) }),
-      textoConfirmar: M().botaoExcluir, textoCancelar: B().cancelar,
-      aoConfirmar: function () {
-        RosterWork.bloquearTela();
-        D().substituicaoExcluir(s.id).then(function (r) {
-          RosterWork.liberarTela();
-          if (!r || !r.success) { falhou(r); return; }
-          if (formTroca && formTroca.s && formTroca.s.id === s.id) formTroca = null;
-          RosterWork.resumo.abrirModal(r.log, { pagina: M().pagina });
-          api.recarregarSubstituicoes();
-        }, function () {
-          RosterWork.liberarTela();
-          semConexao();
-        });
-      }
-    });
+  /* a viatura mudou de prefixo ou saiu: a caixa dela fecha (e, se ela saiu, as novas dela também saem) */
+  function fecharTrocaDe(nome, saiu) {
+    var e = rascunho.filter(function (x) { return x.chave === aberta; })[0];
+    if (e && e.viatura === nome) aberta = null;
+    if (saiu) rascunho = rascunho.filter(function (x) { return x.id || x.viatura !== nome; });
   }
-
-  /* a viatura mudou de prefixo ou saiu: a substituição aberta dela fecha */
-  function fecharTrocaDe(nome) { if (formTroca && formTroca.viatura === nome) formTroca = null; }
 
   /* ---------- 1. Postos ---------- */
 
@@ -231,12 +242,17 @@
     var gravada = api.viaturaGravada(v.nome);
     var trocar = linha.querySelector('.nova-distribuicao-trocar');
     trocar.disabled = ctx.soLeitura || !gravada || digitado != null;
-    trocar.addEventListener('click', function () { abrirTroca(api, v.nome, null); });
+    trocar.addEventListener('click', function () {
+      abrirTroca(api, {
+        chave: 'nova:' + (++novas), id: null, unidade_id: api.unidadeId(), viatura: v.nome,
+        prefixo: '', cnh: null, inicio: '', fim: '', comecou_antes: false, excluir: false, erros: {}
+      });
+    });
     var remover = linha.querySelector('.nova-distribuicao-remover');
     remover.disabled = ctx.soLeitura;
     remover.addEventListener('click', function () {
       api.esquecerInvalidos(ctx.lado);
-      fecharTrocaDe(v.nome);
+      fecharTrocaDe(v.nome, true);
       api.mudar(ctx.lado, function (x) { x.viaturas.splice(i, 1); });
     });
 
@@ -247,20 +263,27 @@
     extra.classList.toggle('oculto', !extra.children.length);
 
     var subs = linha.querySelector('.nova-distribuicao-viatura-substituicoes');
-    var aberta = formTroca && formTroca.viatura === v.nome ? formTroca : null;
-    api.substituicoesDe(v.nome).forEach(function (s) {
-      if (aberta && aberta.s && aberta.s.id === s.id) { caixaTroca(subs, api, ctx); return; }
+    var nomes = api.nomesDe(v.nome);
+    var daViatura = ((api.dados() && api.dados().substituicoes) || [])
+      .filter(function (s) { return nomes.indexOf(s.viatura) >= 0; })
+      .map(function (s) { return rascunho.filter(function (e) { return e.id === s.id; })[0] || comoEntrada(s); })
+      .concat(rascunho.filter(function (e) { return !e.id && nomes.indexOf(e.viatura) >= 0; }))
+      .filter(function (e) { return !e.excluir; });
+    var aberto = daViatura.filter(function (e) { return e.chave === aberta; })[0];
+    linha.classList.toggle('nova-distribuicao-viatura--substituindo', !!aberto);
+    if (aberto) caixaTroca(subs, api, ctx, v, i + 1, aberto);
+    daViatura.forEach(function (e) {
+      if (e === aberto) return;
       var lt = P().tpl('troca');
-      lt.querySelector('.nova-distribuicao-troca-texto').textContent = textoTroca(s);
+      lt.querySelector('.nova-distribuicao-troca-texto').textContent = textoTroca(e);
       var editar = lt.querySelector('.nova-distribuicao-editar');
       var tirar = lt.querySelector('.nova-distribuicao-remover');
       editar.disabled = ctx.soLeitura || !gravada;
-      tirar.disabled = ctx.soLeitura || !gravada || s.comecou_antes;
-      editar.addEventListener('click', function () { abrirTroca(api, s.viatura, s); });
-      tirar.addEventListener('click', function () { excluirTroca(api, s.viatura, s); });
+      tirar.disabled = ctx.soLeitura || !gravada || e.comecou_antes;
+      editar.addEventListener('click', function () { abrirTroca(api, e.id ? entradaDe(e.original) : e); });
+      tirar.addEventListener('click', function () { excluirTroca(api, e); });
       subs.appendChild(lt);
     });
-    if (aberta && !aberta.s) caixaTroca(subs, api, ctx);
     subs.classList.toggle('oculto', !subs.children.length);
     lista.appendChild(linha);
   }
@@ -312,9 +335,11 @@
         return lista.concat(((par[1] && par[1].viaturas) || []).map(function (v, i) { return v.nome ? null : par[0] + ':viatura:' + i; }));
       }, []).filter(Boolean);
     },
-    /* a substituição aberta tem algo digitado (o descarte e o guarda de saída) */
-    sujo: function () { return !!(formTroca && formTroca.sujo); },
-    /* larga a substituição aberta (descarte confirmado ou outra unidade) */
-    descartar: function () { formTroca = null; }
+    /* as substituições mudadas e ainda não salvas: se há, o que vai para o banco, a conferência antes do Salvar
+       e o descarte (Salvar, Cancelar, outra unidade ou outra versão) */
+    temRascunho: function () { return rascunho.some(mudou); },
+    operacoes: operacoes,
+    conferir: conferirTrocas,
+    descartar: function () { rascunho = []; aberta = null; }
   };
 })();

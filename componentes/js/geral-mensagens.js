@@ -796,8 +796,6 @@
       trocaEscolhaCnh: 'Escolha a CNH.',
       trocaErroFim: 'Escolha a data de fim.',
       trocaLimite: 'Só dá para mudar a partir de {data}.',
-      excluirSubstituicao: 'Excluir a substituição da {viatura}? {texto}.',
-      botaoExcluir: 'Excluir',
       /* bloco 2: efetivo */
       tituloViatura: '{nome} · CNH {cnh}',
       numeros: 'Mín. {min} · Ideal {ideal} · Máx. {max}',

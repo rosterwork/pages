@@ -401,34 +401,43 @@
     </span>
   </div>
 </template>
-<!-- a substituição aberta embaixo da viatura (grava na hora): o prefixo e a CNH da que entra nas colunas da viatura,
-     o início e o fim, as frases de erro, a ajuda e os botões -->
+<!-- a substituição aberta no lugar da viatura (vai no Salvar da página): o Nº fora da linha, a viatura como título fixo,
+     o prefixo e a CNH da que entra e o início e o fim, com os rótulos, nas colunas da viatura; as frases de erro e a ajuda -->
 <template id="tpl-nova-distribuicao-troca-caixa">
   <div class="nova-distribuicao-troca-caixa">
-    <svg class="icone nova-distribuicao-troca-icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-substituir"/></svg>
-    <input type="text" class="campo-entrada nova-distribuicao-troca-prefixo" id="nova-distribuicao-troca-prefixo" maxlength="12" placeholder="Ex.: AA-9218" autocomplete="off" aria-label="Prefixo da viatura que entra no lugar" />
-    <div class="abas abas--seletor nova-distribuicao-troca-cnh" aria-label="CNH da viatura que entra no lugar">
+    <span class="nova-distribuicao-linha-ordem"></span>
+    <span class="nova-distribuicao-troca-titulo">
+      <span class="nova-distribuicao-troca-viatura"></span>
+      <span class="nova-distribuicao-troca-tipo">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-substituir"/></svg>
+        <span class="nova-distribuicao-troca-tipo-gravada">Substituição temporária</span>
+        <span class="nova-distribuicao-troca-tipo-nova">Nova substituição temporária</span>
+      </span>
+    </span>
+    <span class="nova-distribuicao-viatura-acoes">
+      <button type="button" class="botao botao--icone nova-distribuicao-troca-fechar" aria-label="Fechar a substituição" aria-expanded="true">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+      </button>
+      <button type="button" class="botao botao--icone nova-distribuicao-remover" aria-label="Excluir substituição">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
+      </button>
+    </span>
+    <span class="rotulo-secao nova-distribuicao-troca-na-coluna-prefixo">Substituta</span>
+    <span class="rotulo-secao">CNH</span>
+    <input type="text" class="campo-entrada nova-distribuicao-troca-na-coluna-prefixo nova-distribuicao-troca-prefixo" id="nova-distribuicao-troca-prefixo" maxlength="12" placeholder="Ex.: AA-9218" autocomplete="off" aria-label="Prefixo da substituta" />
+    <div class="abas abas--seletor nova-distribuicao-troca-cnh" aria-label="CNH da substituta">
       <button type="button" class="aba" data-valor="A">A</button>
       <button type="button" class="aba" data-valor="B">B</button>
       <button type="button" class="aba" data-valor="C">C</button>
       <button type="button" class="aba" data-valor="D">D</button>
       <button type="button" class="aba" data-valor="E">E</button>
     </div>
-    <span class="nova-distribuicao-viatura-acoes">
-      <button type="button" class="botao botao--icone nova-distribuicao-remover" aria-label="Excluir substituição">
-        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
-      </button>
-    </span>
-    <span class="rotulo-secao nova-distribuicao-troca-rotulo-inicio">Início</span>
+    <span class="rotulo-secao nova-distribuicao-troca-na-coluna-prefixo">Início</span>
     <span class="rotulo-secao">Fim</span>
-    <input type="text" class="campo-entrada nova-distribuicao-troca-data nova-distribuicao-troca-inicio" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" aria-label="Início" />
+    <input type="text" class="campo-entrada nova-distribuicao-troca-na-coluna-prefixo nova-distribuicao-troca-data nova-distribuicao-troca-inicio" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" aria-label="Início" />
     <input type="text" class="campo-entrada nova-distribuicao-troca-data nova-distribuicao-troca-fim" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" aria-label="Fim" />
     <div class="nova-distribuicao-troca-erros"></div>
     <p class="nova-distribuicao-ajuda nova-distribuicao-troca-ajuda">No período, a substituta assume o posto com as mesmas funções e ordem. Depois do fim, a original volta.</p>
-    <div class="nova-distribuicao-troca-botoes">
-      <button type="button" class="botao nova-distribuicao-troca-cancelar">Cancelar</button>
-      <button type="button" class="botao botao--primario nova-distribuicao-troca-salvar">Salvar substituição</button>
-    </div>
   </div>
 </template>
 <template id="tpl-nova-distribuicao-nova-viatura">

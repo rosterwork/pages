@@ -207,12 +207,13 @@
     });
   }
 
-  /* Desfazer de uma aprovação = cancelar a troca aprovada (reverte a escala e redistribui) */
+  /* Desfazer de uma aprovação = cancelar a troca aprovada (reverte a escala e redistribui);
+     na alteração, a troca de antes volta a valer (o banco refaz só os dias que mudaram) */
   function desfazerAprovacao(troca, ctx) {
     var d = RW.trocasDados;
     return function () {
       if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal();   // o desfazer cancela a troca e recalcula a escala: véu global
-      return d.cancelar(troca.troca_id).then(function (res) {
+      return d.cancelar(troca.troca_id, !!troca.substitui_troca_id).then(function (res) {
         if (RW.esconderVeuGlobal) RW.esconderVeuGlobal();
         if (res && res.ok && ctx.aoMudar) ctx.aoMudar();
         return res;
@@ -223,9 +224,8 @@
   function despachar(acao, troca, ctx, btn) {
     var d = RW.trocasDados;
     var m = msg();
-    /* a alteração aprovada não tem Desfazer: desfazer seria voltar à troca de antes (aí edita-se de novo) */
     var alteracao = !!troca.substitui_troca_id;
-    var desfazer = alteracao ? null : { desfazer: desfazerAprovacao(troca, ctx) };
+    var desfazer = { desfazer: desfazerAprovacao(troca, ctx) };
     if (acao === 'editar') {
       RW.painel.editar();   // o aoMudarModo('editar') troca a leitura pelo formulário
     } else if (acao === 'aceitar') {

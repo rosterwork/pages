@@ -33,10 +33,13 @@
       return rpc('nova_distribuicao_copiar_hoje', { p_unidade_id: unidadeId });
     },
     /* grava [{ periodo_id, respostas, renomeadas }] a partir de aPartirDe (a em vigor; a mudança agendada
-       não pede data); levar = os conflitos que vão do conserto para a agendada; previa = só mostra, não grava */
-    salvar: function (itens, aPartirDe, levar, previa) {
+       não pede data); levar = os conflitos que vão do conserto para a agendada; previa = só mostra, não grava;
+       substituicoes = as substituições temporárias mudadas ([{ id, unidade_id, viatura, prefixo, cnh, inicio,
+       fim }] ou [{ id, excluir }]), gravadas junto, tudo ou nada */
+    salvar: function (itens, aPartirDe, levar, previa, substituicoes) {
       return rpc('nova_distribuicao_salvar', {
-        p_itens: itens, p_a_partir_de: aPartirDe || null, p_levar: levar && levar.length ? levar : null, p_previa: !!previa
+        p_itens: itens, p_a_partir_de: aPartirDe || null, p_levar: levar && levar.length ? levar : null, p_previa: !!previa,
+        p_substituicoes: substituicoes && substituicoes.length ? substituicoes : null
       });
     },
     agendadaData: function (unidadeId, inicio) {
@@ -44,15 +47,6 @@
     },
     agendadaCancelar: function (unidadeId) {
       return rpc('nova_distribuicao_agendada_cancelar', { p_unidade_id: unidadeId });
-    },
-    /* a substituição temporária grava na hora (id nulo = nova) */
-    substituicaoSalvar: function (unidadeId, id, viatura, prefixo, cnh, inicio, fim) {
-      return rpc('nova_distribuicao_substituicao_salvar', {
-        p_unidade_id: unidadeId, p_id: id || null, p_viatura: viatura, p_prefixo: prefixo, p_cnh: cnh, p_inicio: inicio, p_fim: fim
-      });
-    },
-    substituicaoExcluir: function (id) {
-      return rpc('nova_distribuicao_substituicao_excluir', { p_id: id });
     }
   };
 })();

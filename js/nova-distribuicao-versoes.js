@@ -3,14 +3,15 @@
    O aviso do topo ("Mudança agendada para 10/11/2026" ou "Você está
    vendo a mudança agendada"), com Ver a mudança / Voltar para a em
    vigor, Mudar a data (o modal padrão de data, já com a data dela)
-   e Cancelar a mudança (confirma). O Salvar: na mudança agendada,
-   grava direto; na em vigor, pede a prévia ao banco (o que muda, o
-   que vai para a agendada e os conflitos), abre o modal de data com
-   esse resumo e uma caixa de marcar por conflito, e grava a partir da
-   data escolhida. E o começo da unidade (com os dados de hoje ou em
+   e Cancelar a mudança (confirma). O Salvar (as substituições vão
+   junto): na mudança agendada, ou só com substituições, grava direto;
+   na em vigor, pede a prévia ao banco (o que muda, o que vai para a
+   agendada e os conflitos), abre o modal de data com esse resumo e
+   uma caixa de marcar por conflito, e grava a partir da data
+   escolhida. E o começo da unidade (com os dados de hoje ou em
    branco). Quem chama passa o contexto: { dados, unidadeId,
-   vendoAgendada, itens(), carregar(versaoId), confirmar(seguir),
-   falha(r), semConexao() }.
+   vendoAgendada, itens(), substituicoes(), carregar(versaoId),
+   confirmar(seguir), falha(r), semConexao() }.
    ============================================================ */
 (function () {
   'use strict';
@@ -32,7 +33,7 @@
     RosterWork.liberarTela();
     if (!r || !r.success) { c.falha(r); return; }
     if (r.log) RosterWork.resumo.abrirModal(r.log, { pagina: M().pagina });
-    c.carregar(versaoId);
+    c.carregar(versaoId || (c.vendoAgendada ? c.dados.atual.id : null));   /* só substituições: fica na versão vista */
   }
   function semRede(c) { RosterWork.liberarTela(); c.semConexao(); }
 
@@ -87,9 +88,9 @@
 
   /* ---------- o Salvar ---------- */
 
-  /* o resumo dentro do modal de data: o que muda, o que vai para a agendada e os conflitos para escolher
-     (a escolha fica em escolhidos, como "versão|chave") */
-  function montarResumo(itens, escolhidos) {
+  /* o resumo dentro do modal de data: o que muda (também as substituições), o que vai para a agendada e os
+     conflitos para escolher (a escolha fica em escolhidos, como "versão|chave") */
+  function montarResumo(itens, escolhidos, substituicoes) {
     var no = P().tpl('salvar');
     var varias = itens.length > 1;
     var lista = no.querySelector('.nova-distribuicao-salvar-lista');
@@ -103,6 +104,7 @@
     }
     itens.forEach(function (it) {
       (it.mudancas || []).forEach(function (m) { linha(lista, it.unidade, m.rotulo); });
+      if (it === itens[0]) (substituicoes || []).forEach(function (frase) { linha(lista, it.unidade, frase); });
       (it.vai || []).forEach(function (frase) { linha(vaiLista, it.unidade, frase); });
       if (it.agendada) agendada = it.agendada;
       (it.conflitos || []).forEach(function (cf) {
@@ -131,26 +133,27 @@
 
   function salvar(c, botao) {
     var itens = c.itens();
-    if (!itens.length) return;
+    var subs = c.substituicoes();
+    if (!itens.length && !subs.length) return;
     RosterWork.iniciarCarregando(botao);
-    if (c.vendoAgendada) {
-      /* a mudança agendada já tem a data dela: grava direto */
-      D().salvar(itens, null).then(function (r) {
+    if (c.vendoAgendada || !itens.length) {
+      /* a mudança agendada já tem a data dela, e as substituições têm as delas: grava direto */
+      D().salvar(itens, null, null, false, subs).then(function (r) {
         RosterWork.pararCarregando(botao);
         aposGravar(c, r, r && r.periodo_id);
       }, function () { RosterWork.pararCarregando(botao); semRede(c); });
       return;
     }
-    D().salvar(itens, null, null, true).then(function (previa) {
+    D().salvar(itens, null, null, true, subs).then(function (previa) {
       RosterWork.pararCarregando(botao);
       if (!previa || !previa.success) { c.falha(previa); return; }
       var escolhidos = [];
       RosterWork.pedirData({
         sugerida: true, titulo: M().salvarTitulo, sugestaoAntes: M().salvarAntes, sugestaoDepois: M().salvarDepois,
-        textoConfirmar: M().botaoSalvar, conteudo: montarResumo(previa.itens || [], escolhidos),
+        textoConfirmar: M().botaoSalvar, conteudo: montarResumo(previa.itens || [], escolhidos, previa.substituicoes),
         aoConfirmar: function (iso) {
           RosterWork.bloquearTela();
-          D().salvar(itens, iso, escolhidos).then(function (r) { aposGravar(c, r, null); }, function () { semRede(c); });
+          D().salvar(itens, iso, escolhidos, false, subs).then(function (r) { aposGravar(c, r, null); }, function () { semRede(c); });
         }
       });
     }, function () { RosterWork.pararCarregando(botao); c.semConexao(); });
