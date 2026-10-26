@@ -324,7 +324,70 @@
 
     /* ajustes — painel do ritmo da unidade (o Salvar pergunta a data a partir da qual o ritmo vale) */
     ajustes: {
-      efeitoRitmo: 'A escala automática dos militares da unidade é regerada a partir da data que você escolher ao salvar.'
+      efeitoRitmo: 'A escala automática dos militares da unidade é regerada a partir da data que você escolher ao salvar.',
+      /* aba Expediente: o expediente dos administrativos por unidade */
+      expediente: {
+        motivos: { feriado: 'Feriado', ponto_facultativo: 'Ponto facultativo', recesso: 'Recesso', outro: 'Folga' },
+        nacional: 'NACIONAL',
+        tituloPadrao: 'Horário padrão',
+        horas: function (das, ate) { return das + ' às ' + ate; },
+        padrao: function (p, hora) {
+          return 'Horário padrão: segunda a sexta ' + hora(p.das) + ' às ' + hora(p.ate) + '; quarta ' + hora(p.quarta_das) + ' às ' + hora(p.quarta_ate)
+            + (p.proprio ? '.' : ' (o do ' + p.de_unidade + ').');
+        },
+        agora: function (texto) { return 'Agora: ' + texto + '.'; },
+        diaLongo: function (d) {
+          var s = d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' }).replace('-feira', '');
+          return s.charAt(0).toUpperCase() + s.slice(1);
+        },
+        travadoDia: function (origem) { return 'Este dia foi marcado por um administrador de nível acima do seu (' + origem + '). Só ele muda este dia.'; },
+        travadoPadrao: 'O horário padrão desta unidade foi definido por um administrador de nível acima do seu. Só ele muda.'
+      }
+    },
+
+    /* nova extra (protótipo, só programador): a Minha extra e o painel do pedido */
+    novaExtra: {
+      titulo: function (mes, quem) { return quem + ' · ' + mes; },
+      prazoAberto: function (n) { return n === 0 ? 'Último dia para pedir' : 'Faltam ' + n + (n === 1 ? ' dia' : ' dias') + ' para pedir'; },
+      prazoAntes: function (abre) { return 'Abre em ' + abre; },
+      prazoFechado: function (fecha) { return 'Fechou em ' + fecha; },
+      semPedido: function (fecha) { return 'Aberto até ' + fecha + ', às 23h59. Diga se quer tirar extra, quantas cotas e os dias.'; },
+      naoAbriu: function (abre) { return 'O pedido abre em ' + abre + '.'; },
+      naoPediu: 'Nenhum pedido feito.',
+      pediu: function (p) {
+        return 'Pedido enviado em ' + p.enviado_em + ': ' + p.cotas + (p.cotas === 1 ? ' cota' : ' cotas') + (p.so_24h ? ', só 24 h' : '')
+          + ', ' + p.quer.length + (p.quer.length === 1 ? ' dia que quer' : ' dias que quer')
+          + (p.nao_posso.length ? ', ' + p.nao_posso.length + (p.nao_posso.length === 1 ? ' que não pode' : ' que não pode') : '')
+          + '. Termo ' + (p.termo ? 'recebido em ' + p.termo_em : 'pendente') + '.';
+      },
+      naoQuer: function (em) { return 'Respondeu que não quer extra (' + em + ').'; },
+      fazer: 'Fazer o pedido',
+      mudar: 'Mudar o pedido',
+      ver: 'Ver o pedido',
+      cotasDepois: function (fecha) { return 'Depois de ' + fecha + ' o administrador reparte as cotas. Quem foi menos atendido recebe primeiro.'; },
+      concedidas: function (n) { return 'Recebeu ' + n + (n === 1 ? ' cota.' : ' cotas.'); },
+      eu: function (nome) { return 'Pedido de: eu (' + nome.trim() + ')'; },
+      militar: function (nome, setor) { return nome + (setor === 'Administrativo' ? ' · administrativo' : ''); },
+      feito: {
+        copiar: function (n) { return n + (n === 1 ? ' pedido real copiado.' : ' pedidos reais copiados.'); },
+        gerar: function (n) { return n + (n === 1 ? ' pedido de teste gerado.' : ' pedidos de teste gerados.'); },
+        apagar: function (n) { return n + (n === 1 ? ' pedido de teste apagado.' : ' pedidos de teste apagados.'); }
+      },
+      confirmarApagar: function (mes) { return 'Apagar os pedidos copiados, gerados e feitos em nome de outro militar em ' + mes + '? O seu próprio pedido fica.'; },
+      apagar: 'Apagar',
+      tituloPainel: function (mes) { return 'Pedido de extra de ' + mes; },
+      prazoPainel: function (fecha) { return 'Aberto até ' + fecha + ', às 23h59'; },
+      perguntaVol: function (mes) { return 'Quer tirar extra em ' + mes + '?'; },
+      contaQuer: function (n, min) { return 'Quero: ' + n + (n === 1 ? ' dia' : ' dias') + ' (de ' + min + ' a 10)'; },
+      contaNao: function (n) { return 'Não posso: ' + n + (n === 1 ? ' dia' : ' dias'); },
+      quero: 'Quero',
+      naoPosso: 'Não posso',
+      motivos: { servico: 'Serviço', troca: 'Troca', folga: 'Folga', ferias: 'Férias', licenca: 'Licença', dispensa: 'Dispensa' },
+      expediente: 'Expediente',
+      folga: 'Folga',
+      desde: function (h) { return 'desde ' + h; },
+      termoPendente: 'Termo pendente. Mande o termo pelo eProtocolo. Sem o termo recebido, você não entra na repartição das cotas.',
+      termoRecebido: function (em) { return 'Termo recebido em ' + em + '.'; }
     },
 
     /* escalas (painel da distribuição e grade do mês) */
@@ -819,9 +882,9 @@
       ],
       sentidos: ['mais antigo', 'mais moderno'],
       avisos: ['Sem aviso', 'Aviso amarelo', 'Erro vermelho'],
-      comAviso: '{texto} ({aviso})',
-      comCarteira: ', com a CNH',
-      comRodizio: ', com rodízio',
+      avisoLinha: ['Sem aviso', 'Com aviso amarelo', 'Com erro vermelho'],
+      comCarteira: 'Com a CNH',
+      comRodizio: 'Com rodízio',
       /* bloco 7: regras por militar */
       regraIncompleta: 'Escolha o militar, a regra e a função.',
       /* bloco 8: conferir */

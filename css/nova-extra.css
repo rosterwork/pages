@@ -1,0 +1,275 @@
+/* ============================================================
+   NOVA EXTRA (protótipo, só programador)
+   A Minha extra numa coluna de leitura, o grupo TESTE da barra e o
+   painel do pedido (perguntas em blocos, cotas, pincel e o mês).
+   Cores, sombras e raios só por token.
+   Montagem: js/nova-extra.js e js/nova-extra-pedido.js
+   ============================================================ */
+
+/* ---------- barra: o grupo TESTE ---------- */
+.nova-extra-teste {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 4px 0 12px;
+  min-height: 40px;
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-medio);
+}
+
+.nova-extra-teste-rotulo {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--texto-fraco);
+}
+
+.nova-extra-militares {
+  max-height: 360px;
+  overflow: auto;
+}
+
+/* ---------- Minha extra ---------- */
+.nova-extra-leitura {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 720px;
+  padding: 16px;
+}
+
+.nova-extra-bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-pagina);
+}
+
+.nova-extra-bloco-cab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.nova-extra-bloco-titulo {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.nova-extra-caixa {
+  padding: 4px 16px;
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-superficie);
+  box-shadow: var(--sombra-bloco);
+}
+
+.nova-extra-passo {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: 12px;
+  padding: 12px 0;
+}
+
+.nova-extra-passo-num {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--borda-forte);
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--texto-suave);
+}
+
+.nova-extra-passo--agora .nova-extra-passo-num {
+  border-color: var(--fundo-contraste);
+  background-color: var(--fundo-contraste);
+  color: var(--texto-invertido);
+}
+
+.nova-extra-passo-corpo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.nova-extra-passo-corpo b { color: var(--texto-forte); }
+
+.nova-extra-passo-texto,
+.nova-extra-vazio {
+  font-size: 12px;
+  color: var(--texto-fraco);
+}
+
+.nova-extra-pedir { margin-top: 4px; }
+
+/* ---------- o painel do pedido ---------- */
+.nova-extra-pedido {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.nova-extra-sec {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-pagina);
+}
+
+.nova-extra-pergunta {
+  font-size: 14px;
+  color: var(--texto-forte);
+}
+
+.nova-extra-ajuda {
+  font-size: 12px;
+  color: var(--texto-fraco);
+}
+
+.nova-extra-cotas {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 4px;
+}
+
+.nova-extra-cota,
+.nova-extra-pincel-op {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 32px;
+  border: 1px solid var(--borda-forte);
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-superficie);
+  font-weight: 600;
+  color: var(--texto);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.nova-extra-cota:disabled { color: var(--texto-debil); cursor: default; }
+
+.nova-extra-cota--on {
+  border-color: var(--fundo-contraste);
+  background-color: var(--fundo-contraste);
+  color: var(--texto-invertido);
+}
+
+.nova-extra-marcar {
+  width: 100%;
+  text-align: left;
+}
+
+.nova-extra-pincel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.nova-extra-pincel-op--on { border-color: var(--texto-forte); box-shadow: inset 0 0 0 1px var(--texto-forte); }
+
+.nova-extra-ponto {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.nova-extra-ponto--quer { background-color: var(--sucesso); }
+.nova-extra-ponto--nao { background-color: var(--erro); }
+
+.nova-extra-contagem {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 12px;
+}
+
+.nova-extra-conta-quer { color: var(--sucesso); }
+.nova-extra-conta-nao { color: var(--erro); }
+
+.nova-extra-nota {
+  padding: 8px 12px;
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-superficie);
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.nova-extra-cal {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.nova-extra-sem {
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--texto-fraco);
+}
+
+.nova-extra-dia {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 48px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-superficie);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.nova-extra-dia--vazio { border: 0; background-color: transparent; cursor: default; }
+.nova-extra-dia:disabled { cursor: default; }
+.nova-extra-dia-num { font-size: 13px; color: var(--texto-forte); }
+.nova-extra-dia-texto { font-size: 11px; font-weight: 600; line-height: 1.2; text-align: center; color: var(--texto-fraco); }
+
+.nova-extra-dia--quer { border-color: var(--sucesso); background-color: var(--sucesso-fundo); }
+.nova-extra-dia--quer .nova-extra-dia-texto { color: var(--sucesso); }
+.nova-extra-dia--nao { border-color: var(--erro); background-color: var(--erro-fundo); }
+.nova-extra-dia--nao .nova-extra-dia-texto { color: var(--erro); }
+.nova-extra-dia--ocupado { background-color: var(--fundo-medio); }
+.nova-extra-dia--ocupado .nova-extra-dia-num { color: var(--texto-fraco); }
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   A barra quebra em linhas; as cotas em duas fileiras de cinco e
+   os botões e os dias maiores para o dedo.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .nova-extra-teste {
+    flex-wrap: wrap;
+    padding: 4px 4px 4px 12px;
+  }
+
+  html[data-celular] .nova-extra-leitura {
+    padding: var(--respiro-pagina);
+  }
+
+  html[data-celular] .nova-extra-cotas {
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  html[data-celular] .nova-extra-cota,
+  html[data-celular] .nova-extra-pincel-op {
+    min-height: var(--toque-altura-celular);
+    font-size: var(--botao-fonte-celular);
+  }
+
+  html[data-celular] .nova-extra-dia {
+    min-height: 52px;
+  }
+}

@@ -17,6 +17,9 @@
   function M() { return RosterWork.mensagens.novaDistribuicao; }
   function P() { return RosterWork.novaDistribuicaoPecas; }
 
+  /* quantos itens da lista estão salvos: o novo (ainda não salvo) não acusa o que falta antes do Salvar */
+  function gravadas(api, chave) { return ((((api.dados() || {}).atual || {}).respostas || {})[chave] || []).length; }
+
   function automaticas(ctx, tipo) { return (ctx.calc && ctx.calc.automaticas && ctx.calc.automaticas[tipo]) || []; }
 
   /* a regra automática: a frase e a trava (molde) */
@@ -46,9 +49,10 @@
       return !f.papel && travadas.indexOf(f.nome) < 0;
     }).map(function (f) { return f.nome; });
 
+    var salvos = gravadas(api, 'sempre');
     (ctx.resp.sempre || []).forEach(function (s, i) {
       var caixa = P().tpl('acumulo');
-      var falta = P().pendente(ctx, 'sempre:' + i);
+      var falta = i < salvos && P().pendente(ctx, 'sempre:' + i);
       caixa.querySelector('[data-espaco="funcao"]').appendChild(P().selecaoFuncoes(ctx, podem, s[0], function (v) {
         api.mudar(ctx.lado, function (x) { x.sempre[i][0] = v; });
       }, { rotulo: M().rotuloFuncao, travado: ctx.soLeitura, erro: falta && !s[0] }));
@@ -165,9 +169,10 @@
     automaticas(ctx, 'cobre').forEach(function (c) {
       automatica(u, P().texto(M().automaticaCobre, { funcao: P().completo(ctx, c[0]), quem: P().completo(ctx, c[1]) }));
     });
+    var salvos = gravadas(api, 'cobre');
     (ctx.resp.cobre || []).forEach(function (regra, i) {
       var caixa = P().tpl('substitutos');
-      var falta = P().pendente(ctx, 'cobre:' + i);
+      var falta = i < salvos && P().pendente(ctx, 'cobre:' + i);
       caixa.querySelector('[data-espaco="funcao"]').appendChild(P().selecaoFuncoes(ctx, ctx.resp.ordem || [], regra[0], function (v) {
         api.mudar(ctx.lado, function (x) { x.cobre[i][0] = v; });
       }, { rotulo: M().rotuloFuncao, travado: ctx.soLeitura, erro: falta && !regra[0] }));
@@ -212,11 +217,13 @@
   function resumoCriterio(k, nome, falta) {
     var linhas = [];
     if (k && k.tipo != null) {
-      var t = P().texto(M().criterios[k.tipo], {
+      /* uma informação por linha: o critério, o aviso, a CNH (Condutor) e o rodízio */
+      linhas.push(P().texto(M().criterios[k.tipo], {
         perfil: k.perfil || '', grau: k.grau || '', sentido: k.sentido == null ? '' : M().sentidos[k.sentido]
-      });
-      if (k.tipo >= 2 && k.aviso != null) t = P().texto(M().comAviso, { texto: t, aviso: M().avisos[k.aviso].toLowerCase() });
-      linhas.push(t + (P().partes(nome).funcao === 'Condutor' ? M().comCarteira : '') + (k.rodizio ? M().comRodizio : ''));
+      }));
+      if (k.tipo >= 2 && k.aviso != null) linhas.push(M().avisoLinha[k.aviso]);
+      if (P().partes(nome).funcao === 'Condutor') linhas.push(M().comCarteira);
+      if (k.rodizio) linhas.push(M().comRodizio);
     }
     if (falta) linhas.push({ texto: M().faltaResponder, falta: true });
     return linhas;
@@ -266,14 +273,12 @@
         P().trava(lugar, P().texto(M().papelFixo, { perfil: ctx.ehCia ? 'oficial' : 'praça' }));
       });
     }
-    var lista = ctx.resp.ordem || [];
-    ((ctx.calc && ctx.calc.postos) || []).forEach(function (p) {
-      lista.filter(function (nome) { return P().partes(nome).posto === p.nome; }).forEach(function (nome) {
-        var k = (ctx.resp.criterios || {})[nome] || {};
-        var falta = P().pendente(ctx, 'criterio:' + nome);
-        P().cartao(u, api, ctx, 'criterio-' + nome, P().texto(M().quemSenta, { funcao: P().completo(ctx, nome) }),
-          resumoCriterio(k, nome, falta), function (lugar) { opcoesCriterio(lugar, ctx, api, nome, k); }, falta, { muda: 'criterio:' + nome });
-      });
+    /* na mesma sequência da Ordem de importância */
+    (ctx.resp.ordem || []).forEach(function (nome) {
+      var k = (ctx.resp.criterios || {})[nome] || {};
+      var falta = P().pendente(ctx, 'criterio:' + nome);
+      P().cartao(u, api, ctx, 'criterio-' + nome, P().texto(M().quemSenta, { funcao: P().completo(ctx, nome) }),
+        resumoCriterio(k, nome, falta), function (lugar) { opcoesCriterio(lugar, ctx, api, nome, k); }, falta, { muda: 'criterio:' + nome });
     });
   }
 

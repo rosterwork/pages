@@ -175,6 +175,7 @@
       p.classList.toggle('oculto', p.getAttribute('data-aba-painel') !== nome);
     });
     if (nome === 'extrajornada' && RosterWork.ajustesExtrajornada) RosterWork.ajustesExtrajornada.ativar();
+    if (nome === 'expediente' && RosterWork.ajustesExpediente) RosterWork.ajustesExpediente.ativar();
   }
 
   /* ---------- entrada da página ---------- */
@@ -182,6 +183,12 @@
     var abas = conteudo.querySelector('#ajustes-abas');
     if (abas && RosterWork.abas) RosterWork.abas.ligar(abas, function (aba) { trocarAba(conteudo, aba.getAttribute('data-aba')); });
     if (RosterWork.ajustesExtrajornada) RosterWork.ajustesExtrajornada.montar(conteudo);
+    /* a aba Expediente fica só para o programador enquanto é testada */
+    var abaExpediente = conteudo.querySelector('#ajustes-abas [data-aba="expediente"]');
+    if (abaExpediente && RosterWork.sessao.ehProgramador && RosterWork.sessao.ehProgramador() && RosterWork.ajustesExpediente) {
+      abaExpediente.classList.remove('oculto');
+      RosterWork.ajustesExpediente.montar(conteudo);
+    }
     var container = conteudo.querySelector('#arvore-ajustes');
     if (!container || !RosterWork.arvoreUnidades) return Promise.resolve();
     return RosterWork.arvoreUnidades.montar(container, {

@@ -14,6 +14,7 @@
     <div class="abas" id="ajustes-abas">
       <button type="button" class="aba aba--ativa" data-aba="escala">Escala</button>
       <button type="button" class="aba" data-aba="extrajornada">Extrajornada</button>
+      <button type="button" class="aba oculto" data-aba="expediente">Expediente</button>
     </div>
   </div>
 
@@ -62,8 +63,117 @@
         </div>
       </div>
     </section>
+
+    <!-- Expediente dos administrativos: o mês de cada unidade marcada no seletor (clique no dia para marcar) -->
+    <section class="ajustes-exp oculto" data-aba-painel="expediente">
+      <div class="ajustes-exp-cab">
+        <div class="geral-periodo">
+          <button type="button" class="botao botao--icone" id="exp-mes-anterior" aria-label="Mês anterior">
+            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>
+          </button>
+          <span class="geral-periodo-nome" id="exp-mes-nome"></span>
+          <button type="button" class="botao botao--icone" id="exp-mes-proximo" aria-label="Próximo mês">
+            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
+          </button>
+        </div>
+        <span class="ajustes-extra-ajuda">Clique no dia para marcar expediente ou folga. Vale para os administrativos lotados na unidade.</span>
+      </div>
+      <div class="ajustes-exp-unidades" id="exp-unidades"></div>
+    </section>
   </div>
 </div>
+
+<!-- molde: o mês de uma unidade (bloco cinza com o calendário) -->
+<template id="tpl-exp-unidade">
+  <div class="ajustes-exp-bloco">
+    <div class="ajustes-exp-bloco-cab">
+      <span class="ajustes-exp-bloco-titulo"></span>
+      <span class="ajustes-exp-bloco-cidade"></span>
+      <button type="button" class="botao botao--icone ajustes-exp-padrao-editar oculto" aria-label="Editar o horário padrão" data-dica="Horário padrão">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-editar"/></svg>
+      </button>
+    </div>
+    <span class="ajustes-exp-padrao"></span>
+    <div class="ajustes-exp-cal">
+      <span class="ajustes-exp-sem">D</span><span class="ajustes-exp-sem">S</span><span class="ajustes-exp-sem">T</span><span class="ajustes-exp-sem">Q</span><span class="ajustes-exp-sem">Q</span><span class="ajustes-exp-sem">S</span><span class="ajustes-exp-sem">S</span>
+    </div>
+  </div>
+</template>
+
+<!-- molde: um dia do calendário -->
+<template id="tpl-exp-dia">
+  <button type="button" class="ajustes-exp-dia">
+    <span class="ajustes-exp-dia-num"></span>
+    <span class="ajustes-exp-dia-texto"></span>
+    <span class="ajustes-exp-dia-origem"></span>
+  </button>
+</template>
+
+<template id="tpl-exp-dia-vazio">
+  <span class="ajustes-exp-dia ajustes-exp-dia--vazio"></span>
+</template>
+
+<!-- molde: marcar um dia ou um período (painel direito) -->
+<template id="tpl-exp-dia-form">
+  <div class="ajustes-exp-form">
+    <span class="ajustes-exp-agora"></span>
+    <div class="grupo-caixa">
+      <label class="geral-opcao"><input type="radio" name="exp-tipo" value="trabalha" />Trabalha</label>
+      <div class="ajustes-exp-horas">
+        <label class="ajustes-prazo-campo"><span class="ajustes-prazo-rotulo">Das</span><input type="time" name="exp-das" class="campo-entrada" /></label>
+        <label class="ajustes-prazo-campo"><span class="ajustes-prazo-rotulo">Às</span><input type="time" name="exp-ate" class="campo-entrada" /></label>
+      </div>
+    </div>
+    <div class="grupo-caixa">
+      <label class="geral-opcao"><input type="radio" name="exp-tipo" value="folga" />Folga</label>
+      <div class="ajustes-exp-motivos">
+        <label class="geral-opcao"><input type="radio" name="exp-motivo" value="feriado" />Feriado</label>
+        <label class="geral-opcao"><input type="radio" name="exp-motivo" value="ponto_facultativo" />Ponto facultativo</label>
+        <label class="geral-opcao"><input type="radio" name="exp-motivo" value="recesso" />Recesso</label>
+        <label class="geral-opcao"><input type="radio" name="exp-motivo" value="outro" />Outro</label>
+      </div>
+    </div>
+    <label class="ajustes-prazo-campo"><span class="ajustes-prazo-rotulo">Nome (opcional)</span><input type="text" name="exp-nome" maxlength="80" class="campo-entrada" /></label>
+    <label class="ajustes-prazo-campo"><span class="ajustes-prazo-rotulo">Até o dia</span><input type="date" name="exp-fim" class="campo-entrada" /></label>
+    <button type="button" class="geral-opcao ajustes-exp-marcar" role="checkbox" aria-checked="false" data-campo="todo_ano"><span class="caixa-selecao"></span>Repetir todo ano</button>
+    <div class="grupo-caixa">
+      <span class="rotulo-secao">Vale para</span>
+      <div class="ajustes-exp-vale"></div>
+    </div>
+    <button type="button" class="botao botao--texto ajustes-exp-voltar oculto">Voltar ao padrão</button>
+  </div>
+</template>
+
+<template id="tpl-exp-vale-item">
+  <button type="button" class="geral-opcao ajustes-exp-marcar" role="checkbox" aria-checked="false"><span class="caixa-selecao"></span><span class="ajustes-exp-vale-nome"></span></button>
+</template>
+
+<!-- molde: o horário padrão de uma unidade (painel direito) -->
+<template id="tpl-exp-padrao-form">
+  <div class="ajustes-exp-form">
+    <span class="ajustes-exp-agora"></span>
+    <div class="grupo-caixa">
+      <span class="rotulo-secao">Segunda, terça, quinta e sexta</span>
+      <div class="ajustes-exp-horas">
+        <label class="ajustes-prazo-campo"><span class="ajustes-prazo-rotulo">Das</span><input type="time" name="exp-das" class="campo-entrada" /></label>
+        <label class="ajustes-prazo-campo"><span class="ajustes-prazo-rotulo">Às</span><input type="time" name="exp-ate" class="campo-entrada" /></label>
+      </div>
+    </div>
+    <div class="grupo-caixa">
+      <span class="rotulo-secao">Quarta</span>
+      <div class="ajustes-exp-horas">
+        <label class="ajustes-prazo-campo"><span class="ajustes-prazo-rotulo">Das</span><input type="time" name="exp-qdas" class="campo-entrada" /></label>
+        <label class="ajustes-prazo-campo"><span class="ajustes-prazo-rotulo">Às</span><input type="time" name="exp-qate" class="campo-entrada" /></label>
+      </div>
+    </div>
+    <button type="button" class="geral-opcao ajustes-exp-marcar ajustes-exp-herdar" role="checkbox" aria-checked="false"><span class="caixa-selecao"></span>Usar o horário da unidade de cima</button>
+  </div>
+</template>
+
+<!-- molde: o dia ou o horário marcado por um administrador de nível acima (só leitura) -->
+<template id="tpl-exp-travado">
+  <span class="ajustes-exp-travado"></span>
+</template>
 
 <!-- molde: card do ritmo de uma unidade (admin clica para editar no painel direito) -->
 <template id="tpl-ajuste-ritmo-cartao">

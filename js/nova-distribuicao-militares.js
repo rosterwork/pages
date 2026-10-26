@@ -102,9 +102,11 @@
     caixa.querySelector('.nova-distribuicao-regras-vazio').classList.toggle('oculto', todas.length > 0);
     caixa.querySelector('.nova-distribuicao-regras-cabecalho').classList.toggle('oculto', !todas.length);
 
+    /* a regra nova (ainda não salva) não acusa o que falta antes do Salvar */
+    var gravadas = ((((api.dados() || {}).atual || {}).respostas || {}).regras || []).length;
     todas.forEach(function (r, i) {
       var linha = P().tpl('regra');
-      var falta = P().pendente(ctx, 'regra:' + i);
+      var falta = i < gravadas && P().pendente(ctx, 'regra:' + i);
       combo(linha, 'nova-distribuicao-militar-' + i, militares, r.cpf, function (cpf) {
         api.mudar(ctx.lado, function (x) { x.regras[i].cpf = cpf; });
       }, ctx.soLeitura, falta && !r.cpf);

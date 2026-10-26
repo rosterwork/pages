@@ -63,11 +63,8 @@
               <ul>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#solicitar-troca">Solicitar e acompanhar uma troca</a></li>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#alterar-troca">Alterar uma troca</a></li>
-                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#varias-trocas">Solicitar várias trocas</a></li>
-                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#alterar-varias">Alterar várias trocas</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#aprovar-trocas">Aprovar trocas</a></li>
-                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#registrar-troca">Registrar uma troca</a></li>
-                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#registrar-varias">Registrar várias trocas</a></li>
+                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#registrar-troca">Registrar troca</a></li>
               </ul>
             </li>
             <li>
@@ -1072,31 +1069,113 @@
             <section class="manual-secao" id="trocas">
               <h2>Trocas</h2>
               <h3 id="solicitar-troca">Solicitar e acompanhar uma troca</h3>
-              <p>Uma troca é quando você pede que outro militar cubra um serviço seu. Pode ser o <strong>turno inteiro</strong> ou apenas um <strong>período de horas</strong> dele, e você pode marcar uma <strong>devolução</strong> (um dia do colega que você cobre em retorno) ou deixar essa devolução para depois.</p>
-              <p><strong>Como pedir.</strong> A troca é formalizada pela <strong>parte</strong> no E-protocolo. Se ela já existe, tenha o número à mão; se ainda não, você pode pedir a troca sem ele. Na página <strong>Trocas</strong>, clique em <strong>Solicitar troca</strong>. O painel tem duas abas: <strong>Uma troca</strong>, que já vem aberta, e <strong>Várias trocas</strong>, explicada em <strong>Trocas › Solicitar várias trocas</strong>. A aba Uma troca tem três blocos:</p>
+              <p>Uma troca é quando outro militar cobre um serviço seu. Pode ser o <strong>serviço inteiro</strong> ou apenas uma <strong>parte das horas</strong> dele, e o colega pode receber de volta um serviço seu, a <strong>devolução</strong>, ou essa devolução pode ficar para depois. Num pedido só cabem uma troca entre dois militares ou várias trocas entre vários militares, com um número de registro só, que todos aceitam.</p>
+              <p><strong>Como pedir.</strong> A troca é formalizada pela <strong>parte</strong> no E-protocolo. Se ela já existe, tenha o número por perto; se ainda não, você pode pedir a troca sem ele. Na página <strong>Trocas</strong>, clique em <strong>Solicitar troca</strong>. O painel abre com estes blocos:</p>
               <ul class="manual-lista">
-                <li><strong>E-protocolo</strong> (1): o número da <strong>Parte</strong> e o <strong>Ano</strong>. A Parte é opcional: deixe em branco se ela ainda não existe. Preenchida, ela vai com o ano, que já vem com o ano atual e pode ser mudado.</li>
-                <li><strong>Solicitante</strong> (você): escolha o <strong>dia do serviço</strong> (2) que quer passar e, no <strong>período</strong> (3), deixe em <strong>Serviço inteiro</strong> ou escolha <strong>Parte do serviço</strong> e marque o início e o fim, com a régua do dia mostrando o trecho.</li>
-                <li><strong>Solicitado</strong>: escolha a <strong>unidade</strong> e o <strong>militar</strong> (4) que vai cobrir. A lista vem em ordem de antiguidade. Quem já está de serviço no horário, ou afastado no dia (férias, licença ou dispensa), aparece apagado no lugar dele, com o motivo, e não pode ser escolhido. Quem ainda não tem conta no sistema aparece com "sem conta no sistema" e pode ser escolhido normalmente. Em <strong>Devolução</strong> (5), <strong>Marcar dia</strong> já vem escolhido: aponte o dia do colega e o período que você cobre em troca. Se vocês ainda não combinaram o dia, escolha <strong>Pendência</strong> (você fica devendo o serviço, para acertar mais tarde).</li>
+                <li><strong>E-protocolo</strong> (1): o número da <strong>Parte</strong> e o <strong>Ano</strong>. A Parte é opcional: deixe em branco se ela ainda não existe. Preenchida, ela vai com o ano, que já vem com o ano atual e pode ser mudado, e vale para todas as trocas do pedido.</li>
+                <li><strong>Militares da troca</strong> (2): você já vem na lista, como quem pede. Para incluir o colega, escolha a <strong>unidade</strong> e o <strong>militar</strong>: ao escolher, ele já entra na lista, e o campo fica pronto para o próximo, se a troca tiver mais gente. A lista vem em ordem de antiguidade, e quem ainda não tem conta no sistema aparece com "sem conta no sistema" e pode ser escolhido normalmente. Podem entrar militares da sua companhia e dos pelotões dela. O <strong>Remover</strong> tira o militar e, junto, os dias em que ele aparece; se ele já tem dias marcados, o sistema pergunta antes.</li>
+                <li><strong>Dias da troca</strong> (3): o calendário do mês, com as setas para mudar de mês. Ficam acesos os dias, de amanhã em diante, em que um militar da troca está de serviço e outro está livre.</li>
+                <li><strong>Resumo das trocas</strong> (4): a cada dia marcado, o sistema monta sozinho como as trocas se encaixam, um dia por linha, com o horário de cada dia (explicado abaixo).</li>
               </ul>
               <figure class="manual-figura">
-                <img src="manual/imagens/troca-solicitar.png" width="393" height="926" alt="Painel Solicitar troca: a parte do E-protocolo, com o número e o ano (1), o dia do serviço (2), o período, serviço inteiro ou parte do serviço (3), o militar que vai cobrir (4) e a devolução, com Marcar dia, o dia do colega e o período (5)." />
+                <img src="manual/imagens/troca-solicitar.png" width="564" height="1077" alt="O painel Solicitar troca: a parte do E-protocolo, com o número e o ano (1), os militares da troca, você e o colega (2), o calendário de novembro com os dias 9 e 11 marcados, quem trabalha em cima e quem folga riscado (3), e o resumo com a dupla, um dia por linha, com o horário e o lápis, e a nota verde (4)." />
                 <figcaption>
                   <ol class="manual-chamadas">
                     <li>Parte do E-protocolo: número e ano</li>
-                    <li>Dia do serviço</li>
-                    <li>Período: serviço inteiro ou parte do serviço</li>
-                    <li>Militar que vai cobrir</li>
-                    <li>Devolução</li>
+                    <li>Militares da troca</li>
+                    <li>Dias da troca</li>
+                    <li>Resumo das trocas</li>
                   </ol>
                 </figcaption>
               </figure>
-              <p>Ao confirmar, a troca nasce como "Aguardando confirmação" e segue para o militar que você escolheu. Se ele ainda não tem conta no sistema, não tem como confirmar: o painel avisa, e a troca nasce como "Aguardando aprovação" e vai direto para o administrador.</p>
-              <p>O mesmo serviço não entra em duas trocas no mesmo horário. Se ele já tem uma troca aguardando ou aprovada, o novo pedido é recusado.</p>
 
-              <p><strong>Quando pedem uma troca a você.</strong> O pedido aparece na página <strong>Pendências</strong>, na aba <strong>Pendências</strong> daqui e nos seus avisos. Ao abri-lo, você vê o pedido, a análise e como fica a escala, e <strong>Aceita</strong> ou <strong>Recusa</strong>, podendo escrever o motivo. A parte <strong>Pendências</strong> deste manual mostra esse painel.</p>
+              <p><strong>Marcar os dias.</strong> Clique num dia aceso. Abre um quadro com duas perguntas: <strong>Quem trabalha?</strong> (1), com os militares da troca que estão livres naquele dia, e <strong>Quem folga?</strong> (2), com os que estão de serviço. Escolha um de cada. Quando só existe uma opção para cada pergunta, como na troca entre dois militares, o dia já fica marcado direto, sem o quadro. No calendário, o dia marcado mostra em cima quem trabalha e, embaixo, riscado, quem folga (3).</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/troca-varias-dia.png" width="480" height="306" alt="O quadro do dia 12/11 aberto no calendário, com as perguntas Quem trabalha? (1) e Quem folga? (2), e o dia 9 já marcado, com Paixão em cima e Lemos riscado embaixo (3)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>Quem trabalha?</li>
+                    <li>Quem folga?</li>
+                    <li>Dia marcado: quem trabalha em cima, quem folga riscado</li>
+                  </ol>
+                </figcaption>
+              </figure>
+              <p>Clique de novo num dia marcado para ver as trocas dele, cada uma com <strong>Tirar esta troca</strong>. Se ainda houver quem possa trabalhar e quem possa folgar naquele dia, as duas perguntas aparecem de novo, para marcar mais uma troca no mesmo dia. Um serviço que já está em outra troca, aguardando ou aprovada, não acende para uma troca nova.</p>
 
-              <p><strong>Acompanhar as suas trocas.</strong> A página Trocas tem quatro abas (1): <strong>Todas</strong> (as trocas da sua unidade), <strong>Minhas</strong> (as que você participa, como solicitante ou solicitado), <strong>Saldos</strong> (as dívidas de horas em aberto) e <strong>Pendências</strong> (o que espera a sua resposta). Cada troca traz um <strong>selo</strong> (2) com a situação: Aguardando confirmação, Aguardando aprovação, Aprovada, Recusada, Recusada pela administração, Cancelada ou Substituída (a troca de antes de uma alteração aprovada).</p>
+              <p><strong>O resumo.</strong> A cada dia marcado, o sistema junta as trocas em grupos, com uma linha por dia: a data e o dia da semana, quem trabalha no lugar de quem e o horário.</p>
+              <ul class="manual-lista">
+                <li><strong>Duplas</strong>: dois militares que trabalham um para o outro. Os dias casam pela ordem das datas: o dia mais cedo é o serviço e o mais tarde, a devolução, que leva o selo <strong>Devolução</strong>. Por exemplo: "09/11, Cb. Paixão no lugar de Cb. Lemos" e "11/11, Cb. Lemos no lugar de Cb. Paixão".</li>
+                <li><strong>Roda</strong>: três ou mais militares, em que cada um trabalha no lugar de outro e a volta fecha no primeiro. Cada um trabalha um serviço e folga um, e ninguém fica devendo.</li>
+                <li><strong>Sem devolução</strong>: o dia que não fechou em dupla nem em roda. Quem folgou fica devendo as horas a quem trabalhou, e o resumo diz qual dia marcar para fechar a conta.</li>
+              </ul>
+              <p>No fim do resumo, a nota verde avisa quando ninguém fica devendo. A nota amarela mostra quem fica devendo horas a quem. As notas contam também a dívida de horas que vocês já tinham, de trocas anteriores: quando o pedido acerta essa dívida, a nota verde diz "A dívida de horas que já havia fecha".</p>
+              <figure class="manual-diagrama">
+                <p class="manual-diagrama-rotulo">Dupla</p>
+                <div class="manual-fluxo-linha">
+                  <div class="manual-diagrama-bloco">
+                    <span class="manual-diagrama-titulo">Cb. Paixão</span>
+                    <span class="manual-diagrama-desc">Trabalha no dia 09, no lugar do Lemos</span>
+                  </div>
+                  <svg class="icone manual-fluxo-seta" width="22" height="22" aria-hidden="true"><use href="icones/todos.svg#icone-trocas"/></svg>
+                  <div class="manual-diagrama-bloco">
+                    <span class="manual-diagrama-titulo">Cb. Lemos</span>
+                    <span class="manual-diagrama-desc">Trabalha no dia 11, no lugar do Paixão</span>
+                  </div>
+                </div>
+                <p class="manual-diagrama-rotulo">Roda</p>
+                <div class="manual-fluxo-linha">
+                  <div class="manual-diagrama-bloco">
+                    <span class="manual-diagrama-titulo">Cb. Mendes</span>
+                    <span class="manual-diagrama-desc">Trabalha no dia 12, no lugar do Lemos</span>
+                  </div>
+                  <svg class="icone manual-fluxo-seta" width="22" height="22" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
+                  <div class="manual-diagrama-bloco">
+                    <span class="manual-diagrama-titulo">Cb. Lemos</span>
+                    <span class="manual-diagrama-desc">Trabalha no dia 14, no lugar do Paixão</span>
+                  </div>
+                  <svg class="icone manual-fluxo-seta" width="22" height="22" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
+                  <div class="manual-diagrama-bloco">
+                    <span class="manual-diagrama-titulo">Cb. Paixão</span>
+                    <span class="manual-diagrama-desc">Trabalha no dia 13, no lugar do Mendes</span>
+                  </div>
+                </div>
+                <figcaption class="manual-diagrama-legenda">Na dupla, um trabalha no lugar do outro e a conta fecha entre os dois. Na roda, a seta vai de quem trabalha para quem ele cobre, e o último cobre o primeiro, fechando a volta: cada um trabalha um serviço e folga um, e ninguém fica devendo.</figcaption>
+              </figure>
+
+
+              <p><strong>Trocar só uma parte do serviço.</strong> Todo dia entra como serviço inteiro. Para trocar só algumas horas dele, clique no <strong>lápis</strong> do dia (1). A linha abre ali mesmo, com <strong>Serviço inteiro</strong> e <strong>Parte do serviço</strong> (2): escolha Parte do serviço e marque o início e o fim, com a régua do dia mostrando o trecho. O horário fica dentro do serviço de quem folga. Enquanto você mexe, a nota do resumo já mostra como ficam as horas (4). Clique em <strong>Pronto</strong> (3), e a linha mostra a parte escolhida, por exemplo "Parte do serviço, 08:00 às 20:00 (12h)". Abre um dia por vez; para voltar ao serviço inteiro, abra o lápis de novo e escolha Serviço inteiro.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/troca-horario.png" width="561" height="459" alt="O resumo com o dia 09/11 aberto pelo lápis: a Parte do serviço das 08h às 20h, com a régua do dia (2), o botão Pronto (3), o lápis do dia 11/11 (1) e a nota amarela, O Cb. Paixão fica devendo 12h ao Cb. Lemos (4)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>O lápis do dia</li>
+                    <li>Serviço inteiro ou Parte do serviço</li>
+                    <li>Pronto</li>
+                    <li>A nota das horas</li>
+                  </ol>
+                </figcaption>
+              </figure>
+
+              <p><strong>Pedir.</strong> Com os dias marcados, clique em <strong>Solicitar troca</strong>, no rodapé. Nasce um registro só, com o seu número RW, e pedir já é o seu aceite. O pedido nasce como "Aguardando confirmação" e segue para os outros militares. Se nenhum deles tem conta no sistema, ninguém tem como confirmar: o pedido já nasce como "Aguardando aprovação" e vai direto para o administrador.</p>
+
+              <p><strong>Quando pedem uma troca a você.</strong> O pedido aparece na página <strong>Pendências</strong>, na aba <strong>Pendências</strong> daqui e nos seus avisos, num cartão só. Ao abri-lo, você vê a caixa <strong>Escalas trocadas</strong> (1), com uma frase por dia (o dia de parte do serviço traz o horário, como "das 08:00 às 20:00"), a caixa <strong>Aceites e aprovação</strong> (2), com o aceite de cada um, a análise e como fica a escala. Quem ainda não aceitou vê a nota "Falta você aceitar as trocas" no alto e os botões <strong>Recusar</strong> e <strong>Aceitar</strong> (3); na recusa, dá para escrever o motivo. O aceite e a recusa valem para o registro inteiro:</p>
+              <ul class="manual-lista">
+                <li>Quando todos os militares que têm conta no sistema aceitam, o pedido vai para a administração. Quem ainda não tem conta não trava o pedido.</li>
+                <li>Se um militar recusa, todas as trocas do registro são recusadas, e todos ficam sabendo.</li>
+                <li>Enquanto o pedido espera, quem pediu pode desistir com <strong>Cancelar pedido</strong>.</li>
+              </ul>
+              <figure class="manual-figura">
+                <img src="manual/imagens/troca-varias-painel.png" width="400" height="909" alt="O painel de quem ainda não aceitou: a nota Falta você aceitar as trocas no alto, as escalas trocadas, uma por dia (1), os aceites e a aprovação (2) e os botões Recusar e Aceitar (3)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>Escalas trocadas</li>
+                    <li>Aceites e aprovação</li>
+                    <li>Recusar e Aceitar</li>
+                  </ol>
+                </figcaption>
+              </figure>
+
+              <p><strong>Acompanhar as suas trocas.</strong> A página Trocas tem quatro abas (1): <strong>Todas</strong> (as trocas da sua unidade), <strong>Minhas</strong> (as que você participa, como solicitante ou solicitado), <strong>Saldos</strong> (as dívidas de horas em aberto) e <strong>Pendências</strong> (o que espera a sua resposta). Cada pedido fica numa linha, "Várias trocas:" com os nomes, o número RW e quantos militares participam (as trocas mais antigas, com os dois nomes e a seta), e traz um <strong>selo</strong> (2) com a situação: Aguardando confirmação, Aguardando aprovação, Aprovada, Recusada, Recusada pela administração, Cancelada ou Substituída (a troca de antes de uma alteração aprovada).</p>
               <p><strong>O número do registro.</strong> Toda troca recebe um número do sistema, como <strong>RW nº 1/2026</strong>: a contagem é do ano e segue a ordem em que as trocas nascem. Ele aparece na linha da troca, na lista, e no painel, na caixa <strong>Serviço</strong>, junto com a Parte do E-protocolo. O número não muda depois; a alteração de uma troca aprovada ganha um número próprio.</p>
               <figure class="manual-diagrama manual-fluxo">
                 <div class="manual-fluxo-linha">
@@ -1166,9 +1245,14 @@
                 <img src="manual/imagens/troca-relatorio-pdf.png" width="700" height="573" alt="O PDF Lista: o relatório de trocas de serviço do mês, um bloco por unidade e uma linha por troca, com o número RW, o serviço e a devolução, a Parte, os aceites e a aprovação." />
               </figure>
 
-              <p><strong>Cancelar a sua solicitação.</strong> Enquanto a troca está aguardando (confirmação ou aprovação), você pode abri-la e usar <strong>Cancelar troca</strong>. Depois de aprovada, apenas um administrador pode desfazê-la.</p>
+              <p><strong>Cancelar o seu pedido.</strong> Enquanto o pedido está aguardando (confirmação ou aprovação), quem pediu pode abri-lo e usar <strong>Cancelar pedido</strong> (1). Depois de aprovado, apenas um administrador pode desfazê-lo.</p>
               <figure class="manual-figura">
-                <img src="manual/imagens/troca-cancelar.png" width="400" height="119" alt="Rodapé do painel de uma troca, com o botão Cancelar troca em destaque." />
+                <img src="manual/imagens/troca-cancelar.png" width="399" height="51" alt="Rodapé do painel do pedido, com o botão de imprimir, o Editar e o Cancelar pedido (1)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>Cancelar pedido</li>
+                  </ol>
+                </figcaption>
               </figure>
 
               <p><strong>A troca aprovada na escala.</strong> Depois da aprovação do administrador, a troca passa a valer na escala. No dia trocado, o militar que passou o serviço aparece <strong>riscado</strong> e quem assumiu entra no lugar, os dois com o ícone de troca. Havendo devolução, o mesmo acontece no dia dela, com os papéis invertidos. No painel do dia, o grupo <strong>Trocas</strong> das <strong>Observações</strong> escreve a troca por extenso, com a parte do E-protocolo (quando a troca tem) e a devolução, por exemplo: "Sd. Sampaio cumpre a escala de serviço do 3ºSgt. Meireles, no período das 08h às 20h, conforme a Parte nº 250/2026. A devolução será definida posteriormente.".</p>
@@ -1176,140 +1260,21 @@
                 <img src="manual/imagens/escala-troca-riscado.png" width="580" height="125" alt="Dia 13 na grade da escala: Sd. Sampaio entra no lugar do 3ºSgt. Meireles (1), que aparece riscado no fim da lista (2)." />
               </figure>
 
-              <p><strong>Devolução e pendências.</strong> Quando você marca a devolução, com o dia e o período do colega, as duas datas ficam casadas e ninguém fica devendo. Se a devolução tiver duração diferente do serviço, ou se você a deixar em <strong>Pendência</strong>, a diferença vira uma <strong>dívida de horas</strong>: quem passou o serviço fica devendo a quem cobriu. A aba <strong>Saldos</strong> reúne essas dívidas, você vê as que envolvem você e o administrador vê todas.</p>
+              <p><strong>Devolução e pendências.</strong> Quando o pedido tem a devolução, com o dia e o horário do colega, as duas datas ficam casadas e ninguém fica devendo. Se a devolução tiver duração diferente do serviço, ou se um dia ficar sem devolução, a diferença vira uma <strong>dívida de horas</strong>: quem passou o serviço fica devendo a quem cobriu. As trocas de uma roda não geram dívida. A aba <strong>Saldos</strong> reúne essas dívidas, você vê as que envolvem você e o administrador vê todas.</p>
               <figure class="manual-figura">
                 <img src="manual/imagens/troca-pendente.png" width="454" height="89" alt="Card da aba Saldos: 3ºSgt. Meireles deve 24h a Sd. Sampaio, com a seta que abre o histórico." />
               </figure>
-              <p><strong>Ver o histórico e cobrar.</strong> Clique num card para abrir, à direita, o <strong>histórico</strong> entre vocês dois: cada troca vira uma linha com a data, <strong>quem folgou</strong> e <strong>quem trabalhou</strong> e as horas, para você ver de onde o saldo veio. Um <strong>Ver mais</strong> traz as trocas mais antigas.</p>
-              <p>Nesse painel, quem tem horas a receber usa o botão <strong>Cobrar</strong>: ele abre o <strong>Solicitar troca</strong> já apontado para quem deve, com as horas da dívida prontas no período do serviço. Você só escolhe qual dia seu o colega vai cobrir e confirma, e quando a troca é aprovada, a dívida é acertada.</p>
+              <p><strong>Ver o histórico e cobrar.</strong> Clique num card para abrir, à direita, o <strong>histórico</strong> entre vocês dois: cada troca vira uma linha com a data, <strong>quem folgou</strong> e <strong>quem trabalhou</strong> e as horas, para você ver de onde o saldo veio. Um <strong>Ver mais</strong> traz as trocas mais antigas. Os dias de uma roda aparecem com a nota "Compensada na roda do RW nº…".</p>
+              <p>Nesse painel, quem tem horas a receber usa o botão <strong>Cobrar</strong>: ele abre o <strong>Solicitar troca</strong> com quem deve já na lista de militares. Marque o dia seu que o colega vai cobrir: esse dia já vem com as horas da dívida, e a nota do resumo mostra a dívida fechando. Quando a troca é aprovada, a dívida é acertada.</p>
               <figure class="manual-figura">
                 <img src="manual/imagens/troca-extrato.png" width="400" height="270" alt="Painel da pendência: o saldo no topo, o histórico das trocas (quem folgou, quem trabalhou e as horas) e o botão Cobrar." />
               </figure>
 
               <h3 id="alterar-troca">Alterar uma troca</h3>
-              <p>Quando você e o colega combinam outro dia, outro horário ou outra devolução, ou quando a parte do E-protocolo sai depois, a troca pode ser alterada. Na página <strong>Trocas</strong>, abra a troca (na aba <strong>Minhas</strong>, por exemplo) e clique em <strong>Editar</strong>, no rodapé do painel. Abre o mesmo formulário do pedido, já preenchido, com você e o colega fixos: mude a <strong>parte</strong> (1), o <strong>dia e o período</strong> do serviço (2) ou a <strong>devolução</strong> (3) e clique em <strong>Salvar</strong>. O solicitante e o solicitado podem alterar. Para trocar com outro colega, cancele e peça uma troca nova.</p>
+              <p>Quando o combinado muda depois do pedido, ou quando a parte do E-protocolo sai depois, a troca pode ser alterada. Abra o registro (na aba <strong>Minhas</strong>, por exemplo) e clique em <strong>Editar</strong>, no rodapé do painel. Abre o mesmo formulário do pedido, já com o que vale hoje: a Parte, os militares, os dias marcados e o horário de cada dia. Você vem primeiro na lista, com "você". Dá para mudar a <strong>Parte</strong>, os <strong>dias</strong> (tirar a troca de um dia e marcar outros), o <strong>horário</strong> de cada dia, pelo lápis, e os <strong>militares</strong> (incluir quem entra e remover quem sai).</p>
+              <p><strong>O que não muda.</strong> A nota do alto (1) lembra que os dias que já passaram ficam como estão: você muda as trocas de amanhã em diante. O dia que já passou continua marcado no calendário, e o quadro dele mostra só quem troca, sem o <strong>Tirar esta troca</strong>, com a frase "Este dia já passou e não muda." (3); no resumo, ele fica sem o lápis. Você (2) e quem tem um dia assim ficam sem o <strong>Remover</strong>.</p>
               <figure class="manual-figura">
-                <img src="manual/imagens/troca-editar.png" width="400" height="852" alt="Painel Editar troca: a parte do E-protocolo (1), o dia e o período do serviço (2) e a devolução (3), com o solicitante e o solicitado fixos." />
-                <figcaption>
-                  <ol class="manual-chamadas">
-                    <li>Parte do E-protocolo</li>
-                    <li>Dia e período do serviço</li>
-                    <li>Devolução</li>
-                  </ol>
-                </figcaption>
-              </figure>
-              <p>O que acontece ao salvar depende do que mudou:</p>
-              <ul class="manual-lista">
-                <li><strong>Só a parte do E-protocolo:</strong> vale na hora, e o colega recebe um aviso.</li>
-                <li><strong>Troca ainda aguardando:</strong> ela muda e volta para o colega aceitar de novo. Se quem alterou foi o solicitado, quem aceita é o solicitante.</li>
-                <li><strong>Troca já aprovada:</strong> a mudança vira uma <strong>alteração</strong>, que o colega aceita e o administrador aprova, como um pedido novo. Até lá a troca continua valendo na escala como estava, e, se a alteração for recusada ou cancelada, nada muda. Aprovada, ela entra no lugar, e a troca de antes fica na lista como <strong>Substituída</strong>.</li>
-              </ul>
-              <p>O painel de uma alteração mostra a caixa <strong>Antes</strong> (1), com a troca como era e o número do registro dela, acima do serviço e da devolução novos. Quem pediu a alteração pode desistir com <strong>Cancelar alteração</strong>.</p>
-              <figure class="manual-figura">
-                <img src="manual/imagens/troca-alteracao.png" width="400" height="346" alt="Painel de uma alteração aguardando confirmação: a caixa Antes, com a troca como era (1), e o serviço novo logo abaixo." />
-              </figure>
-              <p class="manual-nota">Uma alteração por vez: enquanto uma espera, a troca mostra o aviso no topo e fica sem o Editar. Só mudam os dias que ainda não chegaram. Se o serviço que a troca passou já foi trocado de novo com outra pessoa, cancele aquela troca primeiro: o sistema avisa qual é.</p>
-
-              <h3 id="varias-trocas">Solicitar várias trocas</h3>
-              <p>Quando vários militares combinam trocar serviços entre si, a aba <strong>Várias trocas</strong> do <strong>Solicitar troca</strong> junta tudo num pedido só, com um número de registro só, que todos aceitam. Ela trabalha só com o <strong>serviço inteiro</strong>; para trocar parte de um serviço, use a aba <strong>Uma troca</strong>.</p>
-              <p><strong>Como pedir.</strong> Na página <strong>Trocas</strong>, clique em <strong>Solicitar troca</strong> e escolha a aba <strong>Várias trocas</strong> (1). O painel fica mais largo, com estes blocos:</p>
-              <ul class="manual-lista">
-                <li><strong>E-protocolo</strong>: a <strong>Parte</strong> e o <strong>Ano</strong>, como na troca de uma. A Parte é opcional e vale para todas as trocas do pedido.</li>
-                <li><strong>Militares da troca</strong> (2): você já vem na lista, como quem pede. Para incluir os outros, escolha a <strong>unidade</strong> e o <strong>militar</strong>: ao escolher, ele já entra na lista, e o campo fica pronto para o próximo. Podem entrar militares da sua companhia e dos pelotões dela. O <strong>Remover</strong> tira o militar e, junto, os dias em que ele aparece; se ele já tem dias marcados, o sistema pergunta antes.</li>
-                <li><strong>Dias da troca</strong> (3): o calendário do mês, com as setas para mudar de mês. Ficam acesos os dias, de amanhã em diante, em que um militar da troca está de serviço e outro está livre.</li>
-                <li><strong>Resumo das trocas</strong> (4): a cada dia marcado, o sistema monta sozinho como as trocas se encaixam (explicado abaixo).</li>
-              </ul>
-              <figure class="manual-figura">
-                <img src="manual/imagens/troca-varias-solicitar.png" width="560" height="1223" alt="A aba Várias trocas do Solicitar troca: as abas Uma troca e Várias trocas (1), os militares da troca, com a unidade e o militar para incluir mais (2), o calendário de novembro com os dias marcados, quem trabalha em cima e quem folga riscado (3), e o resumo com a dupla, a roda e a nota verde de tudo fechado (4)." />
-                <figcaption>
-                  <ol class="manual-chamadas">
-                    <li>As abas Uma troca e Várias trocas</li>
-                    <li>Militares da troca</li>
-                    <li>Dias da troca</li>
-                    <li>Resumo das trocas</li>
-                  </ol>
-                </figcaption>
-              </figure>
-
-              <p><strong>Marcar os dias.</strong> Clique num dia aceso. Abre um quadro com duas perguntas: <strong>Quem trabalha?</strong> (1), com os militares da troca que estão livres naquele dia, e <strong>Quem folga?</strong> (2), com os que estão de serviço. Escolha um de cada. Quando só existe uma opção para cada pergunta, o dia já fica marcado direto, sem o quadro. No calendário, o dia marcado mostra em cima quem trabalha e, embaixo, riscado, quem folga (3).</p>
-              <figure class="manual-figura">
-                <img src="manual/imagens/troca-varias-dia.png" width="480" height="306" alt="O quadro do dia 12/11 aberto no calendário, com as perguntas Quem trabalha? (1) e Quem folga? (2), e o dia 9 já marcado, com Paixão em cima e Lemos riscado embaixo (3)." />
-                <figcaption>
-                  <ol class="manual-chamadas">
-                    <li>Quem trabalha?</li>
-                    <li>Quem folga?</li>
-                    <li>Dia marcado: quem trabalha em cima, quem folga riscado</li>
-                  </ol>
-                </figcaption>
-              </figure>
-              <p>Clique de novo num dia marcado para ver as trocas dele, cada uma com <strong>Tirar esta troca</strong>. Se ainda houver quem possa trabalhar e quem possa folgar naquele dia, as duas perguntas aparecem de novo, para marcar mais uma troca no mesmo dia.</p>
-
-              <p><strong>O resumo.</strong> A cada dia marcado, o sistema junta as trocas em grupos:</p>
-              <ul class="manual-lista">
-                <li><strong>Duplas</strong>: dois militares que trabalham um para o outro. Os dias casam pela ordem das datas: o dia mais cedo é o serviço e o mais tarde, a devolução. Por exemplo: "Cb. Paixão cumpre a escala de serviço do Cb. Lemos em 09/11/2026. A devolução ocorrerá no serviço de 11/11/2026."</li>
-                <li><strong>Roda</strong>: três ou mais militares, em que cada um trabalha no lugar de outro e a volta fecha no primeiro. Cada um trabalha um serviço e folga um, e ninguém fica devendo.</li>
-                <li><strong>Sem devolução</strong>: o dia que não fechou em dupla nem em roda. Quem folgou fica devendo as horas a quem trabalhou, e o resumo diz qual dia marcar para fechar a conta.</li>
-              </ul>
-              <p>No fim do resumo, a nota verde avisa quando tudo fechou e ninguém fica devendo. A nota amarela mostra o saldo de horas que sobra, por exemplo, quando um dia ficou sem devolução.</p>
-              <figure class="manual-diagrama">
-                <p class="manual-diagrama-rotulo">Dupla</p>
-                <div class="manual-fluxo-linha">
-                  <div class="manual-diagrama-bloco">
-                    <span class="manual-diagrama-titulo">Cb. Paixão</span>
-                    <span class="manual-diagrama-desc">Trabalha no dia 09, no lugar do Lemos</span>
-                  </div>
-                  <svg class="icone manual-fluxo-seta" width="22" height="22" aria-hidden="true"><use href="icones/todos.svg#icone-trocas"/></svg>
-                  <div class="manual-diagrama-bloco">
-                    <span class="manual-diagrama-titulo">Cb. Lemos</span>
-                    <span class="manual-diagrama-desc">Trabalha no dia 11, no lugar do Paixão</span>
-                  </div>
-                </div>
-                <p class="manual-diagrama-rotulo">Roda</p>
-                <div class="manual-fluxo-linha">
-                  <div class="manual-diagrama-bloco">
-                    <span class="manual-diagrama-titulo">Cb. Mendes</span>
-                    <span class="manual-diagrama-desc">Trabalha no dia 12, no lugar do Lemos</span>
-                  </div>
-                  <svg class="icone manual-fluxo-seta" width="22" height="22" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
-                  <div class="manual-diagrama-bloco">
-                    <span class="manual-diagrama-titulo">Cb. Lemos</span>
-                    <span class="manual-diagrama-desc">Trabalha no dia 14, no lugar do Paixão</span>
-                  </div>
-                  <svg class="icone manual-fluxo-seta" width="22" height="22" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
-                  <div class="manual-diagrama-bloco">
-                    <span class="manual-diagrama-titulo">Cb. Paixão</span>
-                    <span class="manual-diagrama-desc">Trabalha no dia 13, no lugar do Mendes</span>
-                  </div>
-                </div>
-                <figcaption class="manual-diagrama-legenda">Na dupla, um trabalha no lugar do outro e a conta fecha entre os dois. Na roda, a seta vai de quem trabalha para quem ele cobre, e o último cobre o primeiro, fechando a volta: cada um trabalha um serviço e folga um, e ninguém fica devendo.</figcaption>
-              </figure>
-
-              <p><strong>Pedir.</strong> Com os dias marcados, clique em <strong>Solicitar trocas</strong>, no rodapé. Nasce um registro só, com o seu número RW, e pedir já é o seu aceite.</p>
-              <p><strong>Depois do pedido.</strong> Cada militar da troca recebe o pedido nas <strong>Pendências</strong>, num cartão só, e nos seus avisos. Ele abre o painel <strong>Várias trocas</strong>: a caixa <strong>Escalas trocadas</strong> (1), com uma frase por dia, e a caixa <strong>Aceites e aprovação</strong> (2), com o aceite de cada um. Quem ainda não aceitou vê a nota "Falta você aceitar as trocas" no alto e os botões <strong>Recusar</strong> e <strong>Aceitar</strong> (3). O aceite e a recusa valem para o registro inteiro:</p>
-              <ul class="manual-lista">
-                <li>Quando todos os militares que têm conta no sistema aceitam, o pedido vai para a administração. Quem ainda não tem conta não trava o pedido.</li>
-                <li>Se um militar recusa, todas as trocas do registro são recusadas, e todos ficam sabendo.</li>
-                <li>Enquanto o pedido espera, quem pediu pode desistir com <strong>Cancelar pedido</strong>.</li>
-              </ul>
-              <figure class="manual-figura">
-                <img src="manual/imagens/troca-varias-painel.png" width="400" height="909" alt="O painel Várias trocas de quem ainda não aceitou: a nota Falta você aceitar as trocas no alto, as escalas trocadas, uma por dia (1), os aceites e a aprovação (2) e os botões Recusar e Aceitar (3)." />
-                <figcaption>
-                  <ol class="manual-chamadas">
-                    <li>Escalas trocadas</li>
-                    <li>Aceites e aprovação</li>
-                    <li>Recusar e Aceitar</li>
-                  </ol>
-                </figcaption>
-              </figure>
-
-              <p><strong>Nas listas e na escala.</strong> Nas abas <strong>Todas</strong> e <strong>Minhas</strong>, o registro aparece numa linha só: "Várias trocas:" com os nomes, o número RW e quantos militares participam. Para mudar as trocas depois, o painel tem o <strong>Editar</strong> (veja <strong>Alterar várias trocas</strong>, logo abaixo). O <strong>Imprimir registro</strong> funciona como na troca de uma. Aprovadas, as trocas valem na escala, com o riscado de cada dia, e quem ainda não tinha aceitado pode aceitar depois, só para o registro.</p>
-              <p><strong>Os saldos.</strong> As trocas de uma roda não geram dívida: no histórico da aba <strong>Saldos</strong>, os dias delas aparecem com a nota "Compensada na roda do RW nº…".</p>
-
-              <h3 id="alterar-varias">Alterar várias trocas</h3>
-              <p>Quando o combinado muda depois do pedido, abra o registro (na aba <strong>Minhas</strong>, por exemplo) e clique em <strong>Editar</strong>, no rodapé do painel. Abre a mesma aba <strong>Várias trocas</strong> do pedido, já com o que vale hoje: a Parte, os militares e os dias marcados. Você vem primeiro na lista, com "você". Dá para mudar a <strong>Parte</strong>, os <strong>dias</strong> (tirar a troca de um dia e marcar outros) e os <strong>militares</strong> (incluir quem entra e remover quem sai).</p>
-              <p><strong>O que não muda.</strong> As notas do alto (1) lembram que a aba trabalha só com o serviço inteiro e que os dias que já passaram ficam como estão: você muda as trocas de amanhã em diante. O dia que já passou continua marcado no calendário, e o quadro dele mostra só quem troca, sem o <strong>Tirar esta troca</strong>, com a frase "Este dia já passou e não muda." (3). Você (2) e quem tem um dia assim ficam sem o <strong>Remover</strong>.</p>
-              <figure class="manual-figura">
-                <img src="manual/imagens/troca-varias-editar.png" width="560" height="1026" alt="O Editar das várias trocas: as notas do alto, só serviços inteiros e as trocas de antes valendo até a aprovação (1), o militar que edita no alto da lista, com você e sem o Remover (2), e o quadro do dia 22/10, que já passou, sem o Tirar e com a frase Este dia já passou e não muda (3)." />
+                <img src="manual/imagens/troca-varias-editar.png" width="559" height="998" alt="O Editar: as notas do alto, os dias que já passaram ficam como estão e as trocas de antes valem até a aprovação (1), o militar que edita no alto da lista, com você e sem o Remover (2), e o quadro do dia 22/10, que já passou, sem o Tirar e com a frase Este dia já passou e não muda (3)." />
                 <figcaption>
                   <ol class="manual-chamadas">
                     <li>As notas do Editar</li>
@@ -1326,7 +1291,7 @@
               </ul>
               <p><strong>O painel da alteração.</strong> Nas listas e nas Pendências, a alteração aparece com o selo "Alteração aguardando confirmação" (ou aprovação), e quem precisa aceitar recebe o cartão "Cb. Paixão quer alterar as trocas do RW nº 20/2026". O painel mostra a caixa <strong>Antes</strong> (1), com os dias e a Parte das trocas de antes, acima das <strong>Escalas trocadas</strong> novas. Quem sai da troca aparece nos aceites com "Sai da troca" (2), porque também aceita. Quem pediu a alteração pode desistir com <strong>Cancelar alteração</strong> (3), e as trocas continuam como estão.</p>
               <figure class="manual-figura">
-                <img src="manual/imagens/troca-varias-alteracao.png" width="400" height="979" alt="O painel de uma alteração de várias trocas, aguardando confirmação: a caixa Antes, com os dias e a Parte das trocas de antes (1), as escalas trocadas novas, o Cb. Mendes nos aceites com Sai da troca, ainda não aceitou (2), e o botão Cancelar alteração (3)." />
+                <img src="manual/imagens/troca-varias-alteracao.png" width="400" height="979" alt="O painel de uma alteração, aguardando confirmação: a caixa Antes, com os dias e a Parte das trocas de antes (1), as escalas trocadas novas, o Cb. Mendes nos aceites com Sai da troca, ainda não aceitou (2), e o botão Cancelar alteração (3)." />
                 <figcaption>
                   <ol class="manual-chamadas">
                     <li>Antes: as trocas como eram</li>
@@ -1335,7 +1300,8 @@
                   </ol>
                 </figcaption>
               </figure>
-              <p class="manual-nota">Uma alteração por vez: enquanto uma espera, o painel das trocas de antes mostra o aviso no alto e fica sem o Editar.</p>
+              <p class="manual-nota">Uma alteração por vez: enquanto uma espera, o painel das trocas de antes mostra o aviso no alto e fica sem o Editar. Se o serviço que as trocas passaram já foi trocado de novo com outra pessoa, cancele aquela troca primeiro: o sistema avisa qual é.</p>
+              <p><strong>As trocas mais antigas.</strong> As trocas pedidas antes deste formulário, entre dois militares, abrem no Editar o formulário delas, com a Parte, o dia e o período do serviço e a devolução. Ao salvar, vale o mesmo: só a Parte vale na hora; aguardando, volta para o colega aceitar; aprovada, vira uma alteração.</p>
               <div class="manual-admin manual-zona-admin">
                 <h3 id="aprovar-trocas">Aprovar trocas <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>Depois que o colega aceita, a troca fica "Aguardando aprovação" e espera um administrador. Ela aparece na página <strong>Pendências</strong> e na aba <strong>Pendências</strong> daqui; o painel de decisão, a análise e o Como fica a escala estão explicados em <strong>Pendências › Decidir os pedidos</strong>. Na caixa <strong>Serviço</strong>, a troca mostra o número do registro e a <strong>Parte nº</strong> do E-protocolo, para você conferir antes de aprovar. Quando o colega não tem conta no sistema, a troca já chega aguardando a sua aprovação, e a análise avisa que ele não confirmou.</p>
@@ -1349,46 +1315,34 @@
                 <p>Aprovada, a troca passa a valer na escala (o riscado da seção anterior) e a dívida de horas entre os dois é acertada. Se, até lá, aquele horário do serviço já tiver sido trocado com outra pessoa, a troca não pode mais ser aprovada: a análise mostra isso em vermelho.</p>
                 <p><strong>Afastamento depois da troca.</strong> Se, mais tarde, o militar que assumiu o serviço entrar de <strong>férias, licença ou dispensa</strong> naquele dia, quem lança o afastamento é avisado de que ele cobre um serviço por troca e decide se segue. Seguindo, a troca não é desfeita, mas a escala marca aquele serviço em <strong>amarelo</strong>, porque na prática ele não vai assumir.</p>
                 <p><strong>Alterações.</strong> A alteração de uma troca aprovada chega como um pedido próprio, com o selo "Alteração aguardando aprovação" e a caixa <strong>Antes</strong>, e você aprova ou recusa como qualquer troca. Aprovada, só os dias que mudam são refeitos na escala. Logo depois de aprovar uma alteração, o <strong>Desfazer</strong> do resumo traz de volta a troca de antes, também refazendo só os dias que mudaram. Você também pode alterar direto uma troca da sua área da qual não participa: na página Trocas, abra a troca e use <strong>Editar</strong>. A <strong>Análise</strong> aparece antes de salvar, como no Registrar, e a mudança vale na hora, sem o aceite dos dois; o dia pode ser de até <strong>7 dias atrás</strong>.</p>
-                <p><strong>Várias trocas.</strong> O pedido de várias trocas chega nas Pendências num cartão só, e o painel <strong>Várias trocas</strong> mostra as escalas trocadas, os aceites, a <strong>Análise</strong> e o <strong>Como fica a escala</strong> do registro inteiro. A decisão vale para todas as trocas de uma vez:</p>
+                <p><strong>Os pedidos do formulário.</strong> O pedido, de uma ou de várias trocas, chega nas Pendências num cartão só, e o painel <strong>Várias trocas</strong> mostra as escalas trocadas, os aceites, a <strong>Análise</strong> e o <strong>Como fica a escala</strong> do registro inteiro. A decisão vale para todas as trocas de uma vez:</p>
                 <ul class="manual-lista">
                   <li>Enquanto alguém ainda não aceitou, fica o <strong>Aprovar com pendências</strong>.</li>
                   <li>Depois que todos os que têm conta aceitam, ficam <strong>Aprovar</strong> e <strong>Recusar</strong>. O Aprovar é tudo ou nada: se um dos dias não puder mais ser aprovado, nenhum é, e o aviso diz qual serviço.</li>
                   <li>Já aprovadas, o <strong>Cancelar trocas</strong> desfaz todas e volta a escala ao que era, em todos os dias. Se elas têm uma alteração esperando, a alteração é cancelada junto.</li>
-                  <li>A <strong>alteração</strong> de várias trocas aprovadas chega nas Pendências como "Alteração das trocas: Cb. Paixão, Cb. Lemos e Cb. Mendes", e o painel mostra a caixa <strong>Antes</strong>. O Aprovar pergunta "Aprovar esta alteração? Ela entra no lugar das trocas de antes e a escala é atualizada na hora, nos dias que mudam." Logo depois, o <strong>Desfazer</strong> do resumo traz de volta as trocas de antes.</li>
+                  <li>A <strong>alteração</strong> de trocas aprovadas chega nas Pendências como "Alteração das trocas: Cb. Paixão, Cb. Lemos e Cb. Mendes", e o painel mostra a caixa <strong>Antes</strong>. O Aprovar pergunta "Aprovar esta alteração? Ela entra no lugar das trocas de antes e a escala é atualizada na hora, nos dias que mudam." Logo depois, o <strong>Desfazer</strong> do resumo traz de volta as trocas de antes.</li>
                 </ul>
-                <p>Você também pode alterar direto as várias trocas da sua área das quais não participa: abra o registro e use <strong>Editar</strong>. Quando os dias mudam, a <strong>Análise</strong> aparece no fim da aba e o <strong>Salvar</strong> só libera quando ela chega. Nas trocas aprovadas, o sistema pede a confirmação e a mudança vale na hora, sem esperar o aceite dos militares; num pedido em aberto, as trocas mudam e o pedido continua onde estava. O dia pode ser de até <strong>7 dias atrás</strong>.</p>
-                <p>Para lançar trocas que chegaram pelo E-protocolo, veja <strong>Registrar uma troca</strong> e <strong>Registrar várias trocas</strong>, logo abaixo.</p>
-                <h3 id="registrar-troca">Registrar uma troca <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p>Quando a troca chega pelo E-protocolo e não foi pedida no sistema, você mesmo a registra. Na página <strong>Trocas</strong>, clique em <strong>Registrar troca</strong>, no bloco <strong>Administração</strong>, ao lado de Solicitar troca. Abre o mesmo painel do pedido, com uma diferença no bloco <strong>Solicitante</strong> (1): em vez de você, escolha a <strong>unidade</strong> e o <strong>militar</strong> que passa o serviço. Depois preencha a <strong>parte</strong> do E-protocolo, o dia, o período, quem cobre e a devolução, como num pedido. O dia pode ser de até <strong>7 dias atrás</strong>, para registrar uma troca que já aconteceu.</p>
-                <figure class="manual-figura">
-                  <img src="manual/imagens/troca-registrar.png" width="393" height="383" alt="Bloco Solicitante do Registrar troca: a unidade e o militar que passa o serviço, escolhidos pelo administrador (1)." />
-                  <figcaption>
-                    <ol class="manual-chamadas">
-                      <li>Solicitante: unidade e militar</li>
-                    </ol>
-                  </figcaption>
-                </figure>
-                <p>Com tudo preenchido, a <strong>Análise</strong> aparece no fim do painel, a mesma de quando você aprova uma troca, e o botão <strong>Registrar troca</strong> só libera quando ela chega. Ao confirmar, a troca <strong>já entra aprovada</strong>: a escala muda na hora e os dois militares recebem o aviso de troca aprovada. Os aceites dos dois ficam pendentes, e cada um aceita depois, pelas Pendências, só para o registro. Se o registro foi um engano, o <strong>Desfazer</strong> do resumo apaga a troca e volta a escala ao que era.</p>
-                <p class="manual-nota">Você não registra uma troca da qual participa: o seu nome não aparece nas listas. Se o militar já pediu a mesma troca no sistema, o registro é recusado e o aviso indica aprovar o pedido pela aba Pendências.</p>
-
-                <h3 id="registrar-varias">Registrar várias trocas <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p>Quando chegam pelo E-protocolo várias trocas combinadas entre vários militares, o <strong>Registrar troca</strong> também tem a aba <strong>Várias trocas</strong>, igual à do pedido (veja <strong>Solicitar várias trocas</strong>), com estas diferenças:</p>
+                <p>Você também pode alterar direto as trocas da sua área das quais não participa: abra o registro e use <strong>Editar</strong>. Quando os dias mudam, a <strong>Análise</strong> aparece no fim da aba e o <strong>Salvar</strong> só libera quando ela chega. Nas trocas aprovadas, o sistema pede a confirmação e a mudança vale na hora, sem esperar o aceite dos militares; num pedido em aberto, as trocas mudam e o pedido continua onde estava. O dia pode ser de até <strong>7 dias atrás</strong>.</p>
+                <p>Para lançar trocas que chegaram pelo E-protocolo, veja <strong>Registrar troca</strong>, logo abaixo.</p>
+                <h3 id="registrar-troca">Registrar troca <span class="manual-selo-admin">Apenas administradores</span></h3>
+                <p>Quando as trocas chegam pelo E-protocolo e não foram pedidas no sistema, você mesmo as registra. Na página <strong>Trocas</strong>, clique em <strong>Registrar troca</strong>, no bloco <strong>Administração</strong>, ao lado de Solicitar troca. Abre o mesmo formulário do pedido (veja <strong>Solicitar e acompanhar uma troca</strong>), com a nota "As trocas entram já aprovadas, e cada militar aceita depois." no alto e estas diferenças:</p>
                 <ul class="manual-lista">
                   <li>A lista de <strong>militares</strong> (1) começa vazia, e você não entra nela. Inclua pelo menos dois militares, da mesma companhia e dos pelotões dela; cada dia precisa ter um militar da sua área.</li>
-                  <li>Os dias podem ser de até <strong>7 dias atrás</strong>, para registrar trocas que já aconteceram.</li>
-                  <li>A <strong>Análise</strong> (2) do registro inteiro aparece no fim da aba e é refeita a cada dia marcado. O botão <strong>Registrar trocas</strong> (3) só libera quando ela chega.</li>
+                  <li>Os dias podem ser de até <strong>7 dias atrás</strong>, para registrar trocas que já aconteceram. O horário de cada dia muda pelo lápis, como no pedido.</li>
+                  <li>A <strong>Análise</strong> (2) do registro inteiro aparece no fim e é refeita a cada dia marcado e a cada horário mudado. O botão <strong>Registrar troca</strong> (3) só libera quando ela chega.</li>
                 </ul>
                 <figure class="manual-figura">
-                  <img src="manual/imagens/troca-varias-registrar.png" width="560" height="1016" alt="A aba Várias trocas do Registrar troca: os militares da troca, sem o administrador (1), o calendário com o dia 22/10, que já passou, e o 30/10 marcados, o resumo com a dupla, a Análise sem impacto na escala (2) e o botão Registrar trocas (3)." />
+                  <img src="manual/imagens/troca-varias-registrar.png" width="560" height="1321" alt="O Registrar troca: a nota do alto, os militares da troca, sem o administrador (1), o calendário de novembro com os dias 9 e 10 marcados, o resumo com a dupla, a Análise sem impacto na escala (2) e o botão Registrar troca (3)." />
                   <figcaption>
                     <ol class="manual-chamadas">
                       <li>Militares da troca, sem você</li>
                       <li>Análise do registro inteiro</li>
-                      <li>Registrar trocas</li>
+                      <li>Registrar troca</li>
                     </ol>
                   </figcaption>
                 </figure>
                 <p>Ao confirmar ("Registrar estas trocas? Elas já entram aprovadas e a escala é atualizada na hora, em todos os dias."; quando a análise apontou um problema, o aviso é mais firme), as trocas <strong>já entram aprovadas</strong>: a escala muda na hora, em todos os dias, e cada militar recebe o aviso de trocas aprovadas. Os aceites ficam pendentes, e cada um aceita depois, pelas Pendências, só para o registro. Se o registro foi um engano, o <strong>Desfazer</strong> do resumo apaga o registro inteiro e volta a escala ao que era; o número RW fica pulado.</p>
+                <p class="manual-nota">Você não registra uma troca da qual participa: o seu nome não aparece nas listas.</p>
               </div>
             </section>
 

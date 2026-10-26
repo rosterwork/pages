@@ -1,0 +1,151 @@
+<div class="pagina">
+  <div class="pagina-cabecalho">
+    <div class="pagina-titulos">
+      <h1>Nova extra</h1>
+      <span class="selo selo--alerta">Protótipo</span>
+    </div>
+    <!-- abas: Minha extra · Calendário | Organizar o mês -->
+    <div class="nova-extra-abas" id="nova-extra-abas" data-abas-grupo>
+      <div class="abas">
+        <button type="button" class="aba aba--ativa" data-aba="minha">Minha extra</button>
+        <button type="button" class="aba" data-aba="calendario">Calendário</button>
+      </div>
+      <div class="abas">
+        <button type="button" class="aba" data-aba="organizar">Organizar o mês</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- barra: as ferramentas de teste e o mês -->
+  <div class="pagina-subcabecalho">
+    <div class="nova-extra-teste">
+      <span class="nova-extra-teste-rotulo">TESTE</span>
+      <div class="dropdown">
+        <button type="button" class="botao" id="nova-extra-pedido-de">
+          <span id="nova-extra-pedido-de-texto"></span>
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+        </button>
+        <div class="dropdown-menu nova-extra-militares" id="nova-extra-militares"></div>
+      </div>
+      <button type="button" class="botao" data-teste="copiar">Copiar os pedidos reais</button>
+      <button type="button" class="botao" data-teste="gerar">Gerar pedidos de teste</button>
+      <button type="button" class="botao" data-teste="apagar">Apagar os de teste</button>
+    </div>
+    <div class="geral-periodo">
+      <button type="button" class="botao botao--icone" id="nova-extra-mes-anterior" aria-label="Mês anterior">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>
+      </button>
+      <span class="geral-periodo-nome" id="nova-extra-mes"></span>
+      <button type="button" class="botao botao--icone" id="nova-extra-mes-proximo" aria-label="Próximo mês">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="pagina-corpo">
+    <!-- Minha extra: o pedido do mês e as extras do militar -->
+    <section class="nova-extra-leitura" data-aba-painel="minha">
+      <div class="nova-extra-bloco">
+        <div class="nova-extra-bloco-cab">
+          <span class="nova-extra-bloco-titulo" id="nova-extra-titulo"></span>
+          <span class="selo" id="nova-extra-prazo"></span>
+        </div>
+        <div class="nova-extra-caixa nova-extra-passos">
+          <div class="nova-extra-passo nova-extra-passo--agora">
+            <span class="nova-extra-passo-num">1</span>
+            <span class="nova-extra-passo-corpo">
+              <b>Pedido</b>
+              <span class="nova-extra-passo-texto" id="nova-extra-pedido-texto"></span>
+              <button type="button" class="botao botao--primario nova-extra-pedir" id="nova-extra-pedir"></button>
+            </span>
+          </div>
+          <div class="nova-extra-passo">
+            <span class="nova-extra-passo-num">2</span>
+            <span class="nova-extra-passo-corpo">
+              <b>Repartição das cotas</b>
+              <span class="nova-extra-passo-texto" id="nova-extra-cotas-texto"></span>
+            </span>
+          </div>
+          <div class="nova-extra-passo">
+            <span class="nova-extra-passo-num">3</span>
+            <span class="nova-extra-passo-corpo">
+              <b>Os seus dias</b>
+              <span class="nova-extra-passo-texto">Os dias de extra aparecem aqui depois do lançamento na escala.</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="nova-extra-leitura oculto" data-aba-painel="calendario">
+      <span class="nova-extra-vazio">O calendário entra numa próxima etapa.</span>
+    </section>
+    <section class="nova-extra-leitura oculto" data-aba-painel="organizar">
+      <span class="nova-extra-vazio">Organizar o mês entra nas próximas etapas.</span>
+    </section>
+  </div>
+</div>
+
+<template id="tpl-nova-extra-militar">
+  <button type="button" class="dropdown-item"></button>
+</template>
+
+<!-- molde: o pedido (painel largo) -->
+<template id="tpl-nova-extra-pedido">
+  <div class="nova-extra-pedido">
+    <section class="nova-extra-sec">
+      <b class="nova-extra-pergunta" id="nova-extra-q-vol"></b>
+      <div class="abas abas--seletor" id="nova-extra-vol">
+        <button type="button" class="aba" data-vol="sim">Sim, quero</button>
+        <button type="button" class="aba" data-vol="nao">Não quero</button>
+      </div>
+    </section>
+    <section class="nova-extra-sec" data-so-voluntario>
+      <b class="nova-extra-pergunta">Quantas cotas?</b>
+      <span class="nova-extra-ajuda">Cada cota equivale a 6 horas.</span>
+      <div class="nova-extra-cotas" id="nova-extra-cotas"></div>
+      <button type="button" class="geral-opcao nova-extra-marcar" role="checkbox" aria-checked="false" id="nova-extra-24h"><span class="caixa-selecao"></span>Só quero extras de 24 h (4 ou 8 cotas)</button>
+    </section>
+    <section class="nova-extra-sec" data-so-voluntario>
+      <b class="nova-extra-pergunta">Quais dias?</b>
+      <span class="nova-extra-ajuda">Escolha o que marcar e toque nos dias. Toque de novo para desmarcar.</span>
+      <div class="nova-extra-pincel">
+        <button type="button" class="nova-extra-pincel-op" data-pincel="quer"><span class="nova-extra-ponto nova-extra-ponto--quer"></span>Quero</button>
+        <button type="button" class="nova-extra-pincel-op" data-pincel="nao_posso"><span class="nova-extra-ponto nova-extra-ponto--nao"></span>Não posso</button>
+      </div>
+      <span class="nova-extra-contagem">
+        <b class="nova-extra-conta-quer" id="nova-extra-conta-quer"></b>
+        <b class="nova-extra-conta-nao" id="nova-extra-conta-nao"></b>
+      </span>
+      <span class="nova-extra-nota oculto" id="nova-extra-nota-adm">Você é do administrativo: em dia de expediente a extra começa depois do expediente (na quarta, às 14h). Fim de semana, feriado e folga do expediente, o dia todo.</span>
+      <div class="nova-extra-cal" id="nova-extra-cal">
+        <span class="nova-extra-sem">D</span><span class="nova-extra-sem">S</span><span class="nova-extra-sem">T</span><span class="nova-extra-sem">Q</span><span class="nova-extra-sem">Q</span><span class="nova-extra-sem">S</span><span class="nova-extra-sem">S</span>
+      </div>
+      <span class="nova-extra-ajuda">Os dias de serviço, troca, folga, férias, licença e dispensa já vêm travados.</span>
+    </section>
+    <section class="nova-extra-sec" data-so-voluntario>
+      <b class="nova-extra-pergunta">Termo</b>
+      <span class="nova-extra-nota" id="nova-extra-termo"></span>
+    </section>
+  </div>
+</template>
+
+<template id="tpl-nova-extra-cota">
+  <button type="button" class="nova-extra-cota"></button>
+</template>
+
+<template id="tpl-nova-extra-dia">
+  <button type="button" class="nova-extra-dia">
+    <b class="nova-extra-dia-num"></b>
+    <small class="nova-extra-dia-texto"></small>
+  </button>
+</template>
+
+<template id="tpl-nova-extra-dia-vazio">
+  <span class="nova-extra-dia nova-extra-dia--vazio"></span>
+</template>
+
+<template id="tpl-nova-extra-acoes">
+  <button type="button" class="botao" id="nova-extra-cancelar">Cancelar</button>
+  <button type="button" class="botao botao--primario" id="nova-extra-enviar" disabled>Enviar pedido</button>
+</template>

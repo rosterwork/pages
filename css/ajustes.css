@@ -115,6 +115,154 @@
   color: var(--texto-fraco);
 }
 
+/* ---------- aba Expediente: o mês de cada unidade ---------- */
+.ajustes-exp {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  overflow: auto;
+}
+
+.ajustes-exp-cab {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.ajustes-exp-unidades {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.ajustes-exp-bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background-color: var(--fundo-pagina);
+  border-radius: var(--raio-medio);
+}
+
+.ajustes-exp-bloco-cab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+}
+
+.ajustes-exp-bloco-titulo {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.ajustes-exp-bloco-cidade {
+  flex: 1;
+  font-size: 12px;
+  color: var(--texto-fraco);
+}
+
+.ajustes-exp-padrao {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.ajustes-exp-cal {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  padding: 8px;
+  background-color: var(--fundo-superficie);
+  border-radius: var(--raio-medio);
+}
+
+.ajustes-exp-sem {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-fraco);
+  text-align: center;
+}
+
+.ajustes-exp-dia {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-height: 48px;
+  padding: 4px;
+  border: 1px solid transparent;
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-superficie);
+  text-align: left;
+  overflow: hidden;
+}
+
+.ajustes-exp-dia--vazio { background-color: transparent; }
+.ajustes-exp-dia--folga { background-color: var(--fundo-medio); }
+.ajustes-exp-dia--clicavel { cursor: pointer; transition: border-color 0.15s ease; }
+.ajustes-exp-dia--clicavel:hover { border-color: var(--foco); }
+.ajustes-exp-dia:disabled { cursor: default; }
+
+.ajustes-exp-dia-num {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--texto-forte);
+}
+
+.ajustes-exp-dia-texto {
+  font-size: 11px;
+  line-height: 1.2;
+  color: var(--texto-suave);
+}
+
+.ajustes-exp-dia--folga .ajustes-exp-dia-texto {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.ajustes-exp-dia-origem {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--texto-fraco);
+}
+
+/* o painel do dia e do horário padrão */
+.ajustes-exp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ajustes-exp-agora,
+.ajustes-exp-travado {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.ajustes-exp-horas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.ajustes-exp-motivos,
+.ajustes-exp-vale {
+  display: flex;
+  flex-direction: column;
+}
+
+.ajustes-exp-marcar {
+  width: 100%;
+  text-align: left;
+}
+
+.ajustes-exp-voltar { align-self: flex-start; }
+
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    As duas abas com o respiro da página nas laterais (como as
@@ -125,7 +273,12 @@
     padding: 8px var(--respiro-pagina) var(--respiro-pagina);
   }
 
-  html[data-celular] .ajustes-extra {
+  html[data-celular] .ajustes-extra,
+  html[data-celular] .ajustes-exp {
     padding: var(--respiro-pagina);
+  }
+
+  html[data-celular] .ajustes-exp-unidades {
+    grid-template-columns: 1fr;
   }
 }
