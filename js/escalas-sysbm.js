@@ -139,6 +139,7 @@
           mensagem: t.titulo,
           itens: t.itens.map(function (texto, i) { return { titulo: String(i + 1), texto: texto }; }),
           nota: t.nota,
+          semIcone: true,
           textoConfirmar: t.concordo,
           aoConfirmar: function () {
             if (RW.iniciarCarregando) RW.iniciarCarregando(partes.enviar);

@@ -7,6 +7,8 @@
      (o do meio é a outra forma de confirmar, ex.: "Não contabilizar")
    + itens: [{ titulo, texto }] e nota (opcionais, no confirmar)  -> lista
      embaixo da mensagem e nota no fim; com lista, o ícone vai para o alto
+   + semIcone (opcional, no confirmar)                            -> sem o
+     ícone (ex.: o termo de responsabilidade, que é leitura, não alerta)
    tipo: 'sucesso' | 'aviso' | 'erro'. Aparece sobre qualquer modal e
    só fecha pelos botões (nunca por clique fora nem Esc). O elemento
    #veu-aviso é fixo no shell; aqui só preenchemos e mostramos/escondemos.
@@ -82,9 +84,9 @@
     caixa.classList.remove('aviso--sucesso', 'aviso--aviso', 'aviso--erro');
     caixa.classList.add('aviso--' + tipo);
 
-    /* sucesso usa a curtida; aviso e erro usam o triângulo */
-    iconeSucesso.classList.toggle('oculto', tipo !== 'sucesso');
-    iconeAlerta.classList.toggle('oculto', tipo === 'sucesso');
+    /* sucesso usa a curtida; aviso e erro usam o triângulo; semIcone, nenhum */
+    iconeSucesso.classList.toggle('oculto', !!opcoes.semIcone || tipo !== 'sucesso');
+    iconeAlerta.classList.toggle('oculto', !!opcoes.semIcone || tipo === 'sucesso');
 
     mensagemEl.textContent = opcoes.mensagem || '';
     preencherLista(opcoes.itens || [], opcoes.nota || '');
@@ -137,7 +139,8 @@
       aoCancelar: opcoes.aoCancelar,
       aoAlternativo: opcoes.aoAlternativo,
       itens: opcoes.itens,
-      nota: opcoes.nota
+      nota: opcoes.nota,
+      semIcone: opcoes.semIcone
     });
   }
 

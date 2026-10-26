@@ -1,16 +1,16 @@
 /* ============================================================
    RECOLHER O TOPO — componente compartilhado do celular
-   Rolar a lista para baixo com o dedo leva o topo (a barra do
-   sistema, o título com as abas e a barra de controles) junto; a
-   abinha no alto da tela e a etiqueta do período, à esquerda, trazem
-   de volta. Recolhido é leiaute: a margem negativa medida
-   (--topo-app-altura e --topo-pagina-altura) tira o topo e o corpo
-   ocupa o lugar. O movimento é só deslocamento (transform), para não
-   recalcular a página a cada quadro: --topo-app-deslocamento e
+   Rolar a lista para baixo com o dedo leva junto a barra do sistema
+   e, na tela com abas, a linha do título; as abas e a barra de
+   controles ficam. O topo volta no começo da lista. Recolhido é
+   leiaute: a margem negativa medida (--topo-app-altura e
+   --topo-pagina-altura) tira o topo e o corpo ocupa o lugar. O
+   movimento é só deslocamento (transform), para não recalcular a
+   página a cada quadro: --topo-app-deslocamento e
    --topo-pagina-deslocamento (dado da tela, geral-recolher-topo.js),
    em cada peça que anda. Exceção da regra de transição: o transform
-   do topo do celular, 0,25s (Guia visual). No computador não existe.
-   Moldes #tpl-topo-abinha e #tpl-topo-periodo (index.html).
+   do topo do celular, 0,25s ease-out (Guia visual). No computador
+   não existe.
    ============================================================ */
 
 /* os deslocamentos não passam para dentro das peças: mudar a cada quadro (o topo com o dedo) refaz só o
@@ -27,16 +27,11 @@
   initial-value: 0px;
 }
 
-.topo-abinha,
-.topo-periodo {
-  display: none;
-}
-
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    ============================================================ */
 @media (max-width: 767px) {
-  /* recolhido: a barra do sistema e o que fica acima do corpo da página saem pela margem (o .conteudo
+  /* recolhido: a barra do sistema e, na tela com abas, a linha do título saem pela margem (o .conteudo
      corta o que passa da borda dele) */
   html[data-celular][data-topo-recolhido] .casca > .cabecalho {
     margin-top: calc(-1 * var(--topo-app-altura, 0px));
@@ -61,7 +56,7 @@
   html[data-celular][data-topo-andando] .casca > .cabecalho,
   html[data-celular][data-topo-andando] .casca-corpo,
   html[data-celular][data-topo-andando] .conteudo > .pagina {
-    transition: transform 0.25s ease;
+    transition: transform 0.25s ease-out;
   }
 
   /* a barra de baixo fica por cima da página enquanto ela desliza */
@@ -70,55 +65,9 @@
     z-index: 1;
   }
 
-  /* a abinha: presa no alto da tela, ao centro, só com o topo recolhido e parado. Os gestos do navegador
-     ficam desligados nela (puxar não recarrega a página) */
-  html[data-celular][data-topo-recolhido]:not([data-topo-movendo]) .topo-abinha {
-    position: fixed;
-    top: 0;
-    left: 50%;
-    z-index: 8;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 64px;
-    min-height: 22px;
-    margin-left: -32px;
-    border: 1px solid var(--borda);
-    border-top: none;
-    border-radius: 0 0 var(--raio-medio) var(--raio-medio);
-    background-color: var(--fundo-superficie);
-    box-shadow: var(--sombra-flutuante);
-    color: var(--texto-suave);
-    touch-action: none;
-  }
-
-  /* a etiqueta do período: no mesmo desenho da abinha, no alto e à esquerda, com o nome do período da barra
-     (a página sem período não a mostra: .oculto) */
-  html[data-celular][data-topo-recolhido]:not([data-topo-movendo]) .topo-periodo {
-    position: fixed;
-    top: 0;
-    left: 8px;
-    z-index: 8;
-    display: flex;
-    align-items: center;
-    min-height: 22px;
-    padding: 0 8px;
-    border: 1px solid var(--borda);
-    border-top: none;
-    border-radius: 0 0 var(--raio-medio) var(--raio-medio);
-    background-color: var(--fundo-superficie);
-    box-shadow: var(--sombra-flutuante);
-    font-size: var(--fonte-padrao);
-    font-weight: 600;
-    color: var(--texto-forte);
-    white-space: nowrap;
-  }
-
-  /* a área de toque desce até a altura do dedo, sem mudar o desenho */
-  html[data-celular] .topo-abinha::before,
-  html[data-celular] .topo-periodo::before {
-    content: '';
-    position: absolute;
-    inset: 0 -8px calc(var(--toque-altura-celular) * -1 + 22px);
+  /* com o topo fora ou voltando, puxar não recarrega a página: só num toque novo, com o topo inteiro à vista
+     (data-topo-sem-recarregar, do geral-recolher-topo.js) */
+  html[data-celular][data-topo-sem-recarregar] {
+    overscroll-behavior-y: contain;
   }
 }

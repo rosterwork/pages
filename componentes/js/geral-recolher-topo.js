@@ -1,24 +1,26 @@
 /* ============================================================
    RECOLHER O TOPO — componente compartilhado do celular
-   Rolar a lista para baixo com o dedo leva o topo (a barra do
-   sistema, o título com as abas e a barra de controles) junto: o
-   topo sobe na medida do dedo, para quando o dedo para e desce
-   quando o dedo volta. Enquanto o topo anda, o gesto é dele (a lista
-   anda com ele, sem rolar por dentro); saiu inteiro, a lista rola no
-   mesmo gesto. Soltando no meio, ele termina para o lado mais perto,
-   ou para o lado do impulso do dedo. Rolar para cima no meio da
-   lista não traz o topo: ele volta pela abinha no alto da tela
-   (tocar ou puxar para baixo), pela etiqueta do período (no alto, à
-   esquerda, com o período da barra da página), ao voltar ao começo
-   da lista (rolando até ele, ou puxando para baixo já nele), ao
-   trocar de tela e quando a página pede (mostrar()). Com menu
-   aberto, busca em uso, campo, painel ou folha "Mais" abertos, ou no
-   meio da troca de mês pelo dedo (geral-deslizar.js), o topo não
-   sai; nem quando a lista não tem o que rolar. O leiaute muda uma
-   vez só, no começo do gesto, e o movimento é só deslocamento
-   (geral-recolher-topo.css). Com "menos movimento" no aparelho, o
-   fim é sem deslizar. Marcas no <html>: data-topo-recolhido,
-   -movendo e -andando; as alturas e os deslocamentos são dado da tela.
+   Rolar a lista para baixo com o dedo leva o topo junto: a barra do
+   sistema e, na tela com abas, a linha do título (o ? fica na linha
+   das abas, geral-pagina-cabecalho.css). As abas e a barra de
+   controles ficam sempre à vista. O topo sobe na medida do dedo,
+   para quando o dedo para e desce quando o dedo volta. Enquanto o
+   topo anda, o gesto é dele (a lista anda com ele, sem rolar por
+   dentro); saiu inteiro, a lista rola no mesmo gesto. Soltando no
+   meio, ele termina para o lado mais perto, ou para o lado do
+   impulso do dedo. Rolar para cima no meio da lista não traz o
+   topo: ele volta no começo da lista (chegando nele rolando, desliza;
+   puxando para baixo já nele, vem com o dedo, com a mesma regra da
+   saída), ao trocar de tela e quando a página pede (mostrar()).
+   Puxar para recarregar só vale num toque novo, com o topo inteiro à
+   vista. Com menu aberto, busca em uso, campo, painel ou folha
+   "Mais" abertos, ou no meio da troca de mês pelo dedo
+   (geral-deslizar.js), o topo não sai; nem quando a lista não tem o
+   que rolar. O leiaute muda uma vez só, no começo do gesto, e o
+   movimento é só deslocamento (geral-recolher-topo.css). Com "menos
+   movimento" no aparelho, o fim é sem deslizar. Marcas no <html>:
+   data-topo-recolhido, -movendo, -andando e -sem-recarregar; as
+   alturas e os deslocamentos são dado da tela.
    API: RosterWork.recolherTopo.mostrar()
    ============================================================ */
 (function () {
@@ -28,7 +30,6 @@
 
   var PARA_RECOLHER = 48;    // a lista precisa rolar ao menos isso (px) além do espaço que ganha, senão o topo fica
   var PERTO_DO_COMECO = 8;   // rolando para cima, a menos disso do começo da lista, o topo volta
-  var PUXAR = 24;            // quanto puxar para baixo (px) a abinha, ou a lista já no começo, para o topo voltar
   var IMPULSO = 0.3;         // o dedo soltando mais rápido que isso (px/ms) escolhe o lado, em vez do mais perto
   var PAUSA = 100;           // o dedo parado mais que isso (ms) antes de soltar não dá impulso
   var DURACAO = 250;         // o deslizar (igual à transição do CSS, ms)
@@ -41,8 +42,7 @@
   var mostrando = false;
   var alturas = null;        // o que sai: { app, pagina } (px), medido no começo do gesto
   var gesto = null;          // o toque de agora no conteúdo
-  var etiqueta = null;       // a etiqueta do período (topo recolhido)
-  var vigiaPeriodo = null;   // acompanha o nome do período enquanto o topo está fora
+  var dedoNaTela = false;    // há um toque no conteúdo agora
 
   function recolhido() { return raiz.hasAttribute('data-topo-recolhido'); }
   function noCelular() { return !!(RosterWork.celular && RosterWork.celular()); }
@@ -92,17 +92,29 @@
     return { app: Math.max(0, alturas.app - p), pagina: Math.min(alturas.pagina, alturas.app + alturas.pagina - p) };
   }
 
+  /* as alturas do que saiu, guardadas no <html> no começo do gesto que recolheu */
+  function alturasGuardadas() {
+    return {
+      app: parseFloat(raiz.style.getPropertyValue('--topo-app-altura')) || 0,
+      pagina: parseFloat(raiz.style.getPropertyValue('--topo-pagina-altura')) || 0
+    };
+  }
+
+  /* puxar para recarregar volta a valer com o topo inteiro à vista e sem dedo na tela (só num toque novo) */
+  function liberarRecarregar() {
+    if (!dedoNaTela && !recolhido() && !mostrando) raiz.removeAttribute('data-topo-sem-recarregar');
+  }
+
   function mostrar() {
     if (gesto && gesto.modo === 'topo') { var p = gesto.escondido; gesto = null; soltarTopo(false, p); return; }
     if (!recolhido() || mostrando) return;
     mostrando = true;
-    var app = parseFloat(raiz.style.getPropertyValue('--topo-app-altura')) || 0;
-    var pagina = parseFloat(raiz.style.getPropertyValue('--topo-pagina-altura')) || 0;
+    alturas = alturasGuardadas();
     ignorarAte = Date.now() + DURACAO + 150;
-    acompanharPeriodo(false);
-    mover(0, 0, app, pagina, function () {
+    mover(0, 0, alturas.app, alturas.pagina, function () {
       raiz.removeAttribute('data-topo-recolhido');
       mostrando = false;
+      liberarRecarregar();
     });
   }
 
@@ -126,15 +138,15 @@
     return null;
   }
 
-  /* mede o que sai (a barra do sistema e, na página da área, tudo o que fica acima do corpo); null quando a
-     lista não tem o que rolar além do espaço que ganha */
+  /* mede o que sai: a barra do sistema e, na página da área com abas à vista, a linha do título (tudo acima
+     das abas); null quando a lista não tem o que rolar além do espaço que ganha */
   function medir(area) {
     var cabecalho = document.querySelector('.casca > .cabecalho');
     var pagina = area.closest('.pagina');
-    var corpo = pagina && pagina.querySelector('.pagina-corpo');
-    if (!cabecalho || !corpo) return null;
+    if (!cabecalho || !pagina) return null;
     var app = cabecalho.getBoundingClientRect().height;
-    var paginaAltura = corpo.getBoundingClientRect().top - pagina.getBoundingClientRect().top;
+    var abas = pagina.querySelector(':scope > .pagina-cabecalho > .abas:not(.oculto), :scope > .pagina-cabecalho > [data-abas-grupo]:not(.oculto)');
+    var paginaAltura = abas ? abas.getBoundingClientRect().top - pagina.getBoundingClientRect().top : 0;
     if (area.scrollHeight - area.clientHeight < app + paginaAltura + PARA_RECOLHER) return null;
     return { app: app, pagina: paginaAltura };
   }
@@ -149,13 +161,21 @@
     deslocar(medidas.app, medidas.pagina);
     raiz.setAttribute('data-topo-recolhido', '');
     raiz.setAttribute('data-topo-movendo', '');
+    raiz.setAttribute('data-topo-sem-recarregar', '');
+  }
+
+  /* o começo da volta com o dedo (a lista já no começo): o topo, todo escondido, passa a andar com o dedo */
+  function comecarVolta() {
+    terminar();
+    alturas = alturasGuardadas();
+    deslocar(0, 0);
+    raiz.setAttribute('data-topo-movendo', '');
   }
 
   /* o topo saiu inteiro com o dedo: fica o leiaute recolhido, sem deslocamento */
   function acabarRecolhido() {
     terminar();
     ignorarAte = Date.now() + 150;
-    acompanharPeriodo(true);
   }
 
   /* o topo voltou inteiro com o dedo */
@@ -169,20 +189,26 @@
   function soltarTopo(esconder, p) {
     var de = posicao(p);
     ignorarAte = Date.now() + DURACAO + 150;
-    if (esconder) { mover(de.app, de.pagina, 0, 0, function () { acompanharPeriodo(true); }); return; }
+    if (esconder) { mover(de.app, de.pagina, 0, 0); return; }
     mostrando = true;
     mover(de.app, de.pagina, alturas.app, alturas.pagina, function () {
       raiz.removeAttribute('data-topo-recolhido');
       mostrando = false;
+      liberarRecarregar();
     });
   }
 
-  /* o primeiro trecho do dedo decide de quem é o gesto: do topo (para cima, com o topo à vista), da volta do
-     topo (para baixo, com ele recolhido e a lista já no começo) ou da página (o resto: para o lado, para baixo) */
+  /* o primeiro trecho do dedo decide de quem é o gesto: do topo (para cima, com ele à vista, ele sai; para
+     baixo, com ele recolhido e a lista no começo ou sem o que rolar, ele volta) ou da página (o resto) */
   function decidir(g, dx, dy) {
-    if (!g.area || Math.abs(dx) >= Math.abs(dy) || Date.now() < ignorarAte || fimDoMovimento || mostrando) return 'livre';
-    if (recolhido()) return (dy > 0 && g.area.scrollTop <= 0) ? 'puxar' : 'livre';
-    if (dy > 0 || topoPreso()) return 'livre';
+    if (Math.abs(dx) >= Math.abs(dy) || Date.now() < ignorarAte || fimDoMovimento || mostrando) return 'livre';
+    if (recolhido()) {
+      if (dy <= 0 || !g.noCorpo || (g.area && g.area.scrollTop > 0)) return 'livre';
+      comecarVolta();
+      g.escondido = alturas.app + alturas.pagina;
+      return 'topo';
+    }
+    if (!g.area || dy > 0 || topoPreso()) return 'livre';
     var medidas = medir(g.area);
     if (!medidas) return 'livre';
     comecarTopo(medidas);
@@ -191,10 +217,12 @@
 
   function aoTocar(evento) {
     gesto = null;
+    dedoNaTela = true;
     if (evento.touches.length !== 1 || !noCelular()) return;
     var toque = evento.touches[0];
-    gesto = { area: areaQueRola(evento.target), x0: toque.clientX, y0: toque.clientY, y: toque.clientY,
-      t: evento.timeStamp, velocidade: 0, modo: null, escondido: 0 };
+    var alvo = evento.target;
+    gesto = { area: areaQueRola(alvo), noCorpo: !!(alvo.closest && alvo.closest('.conteudo .pagina-corpo') && !alvo.closest('.painel-lateral')),
+      x0: toque.clientX, y0: toque.clientY, y: toque.clientY, t: evento.timeStamp, velocidade: 0, modo: null, escondido: 0 };
   }
 
   /* não passivo: enquanto o topo anda com o dedo, a lista não rola por dentro (preventDefault); no resto, o
@@ -211,10 +239,6 @@
       var dx = toque.clientX - g.x0, dy = toque.clientY - g.y0;
       if (!dx && !dy) return;
       g.modo = decidir(g, dx, dy);
-    }
-    if (g.modo === 'puxar') {
-      if (toque.clientY - g.y0 >= PUXAR) { g.modo = 'livre'; mostrar(); }
-      return;
     }
     if (g.modo !== 'topo') return;
     /* a rolagem do navegador começou (o toque não é mais do topo): ele termina sozinho */
@@ -238,8 +262,9 @@
   function aoSoltar(evento) {
     var g = gesto;
     gesto = null;
-    if (!g || g.modo !== 'topo') return;
-    aoSoltarGesto(g, evento.timeStamp - g.t <= PAUSA);
+    dedoNaTela = evento.touches.length > 0;
+    if (g && g.modo === 'topo') aoSoltarGesto(g, evento.timeStamp - g.t <= PAUSA);
+    liberarRecarregar();
   }
 
   function aoRolar(evento) {
@@ -257,55 +282,8 @@
   /* a rolagem das áreas não sobe até o document: escuta na descida */
   document.addEventListener('scroll', aoRolar, { passive: true, capture: true });
 
-  /* ---------- a etiqueta do período: o nome do período da barra da página (o mês, a semana ou o dia), à vista
-     só com o topo recolhido (geral-recolher-topo.css); acompanha a troca de período com o topo fora ---------- */
-  function nomeDoPeriodo() {
-    var nomes = document.querySelectorAll('.conteudo > .pagina .pagina-subcabecalho .geral-periodo-nome');
-    for (var i = 0; i < nomes.length; i++) {
-      if (nomes[i].getClientRects().length) return nomes[i];
-    }
-    return null;
-  }
-
-  function copiarPeriodo(nome) {
-    var texto = nome ? nome.textContent.trim() : '';
-    etiqueta.querySelector('.topo-periodo-texto').textContent = texto;
-    etiqueta.classList.toggle('oculto', !texto);
-  }
-
-  function acompanharPeriodo(ligar) {
-    if (vigiaPeriodo) { vigiaPeriodo.disconnect(); vigiaPeriodo = null; }
-    if (!etiqueta) return;
-    var nome = ligar ? nomeDoPeriodo() : null;
-    copiarPeriodo(nome);
-    if (!nome) return;
-    vigiaPeriodo = new MutationObserver(function () { copiarPeriodo(nome); });
-    vigiaPeriodo.observe(nome, { childList: true, characterData: true, subtree: true });
-  }
-
-  /* a abinha e a etiqueta ficam fora do .conteudo (o roteador troca o conteúdo e elas continuam): tocar traz o
-     topo; a abinha também se puxa */
-  function prepararPecas() {
-    var abinha = RosterWork.tpl ? RosterWork.tpl('tpl-topo-abinha') : null;
-    if (abinha) {
-      document.body.appendChild(abinha);
-      abinha.addEventListener('click', mostrar);
-      var inicioY = null;
-      abinha.addEventListener('touchstart', function (evento) { inicioY = evento.touches[0].clientY; }, { passive: true });
-      abinha.addEventListener('touchmove', function (evento) {
-        if (inicioY !== null && evento.touches[0].clientY - inicioY >= PUXAR) { inicioY = null; mostrar(); }
-      }, { passive: true });
-    }
-    etiqueta = RosterWork.tpl ? RosterWork.tpl('tpl-topo-periodo') : null;
-    if (etiqueta) {
-      document.body.appendChild(etiqueta);
-      etiqueta.addEventListener('click', mostrar);
-    }
-  }
-
   /* o toque no conteúdo (as páginas trocam por dentro; o .conteudo fica) e a troca de tela, que traz o topo */
   function iniciar() {
-    prepararPecas();
     var conteudo = document.querySelector('.conteudo');
     if (!conteudo) return;
     conteudo.addEventListener('touchstart', aoTocar, { passive: true });

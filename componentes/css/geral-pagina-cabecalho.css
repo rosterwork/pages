@@ -247,6 +247,25 @@
     white-space: normal;
   }
 
+  /* com abas à vista, o ? desce para a ponta da linha das abas e a linha do título fica só com o título e a
+     contagem: é ela que sai quando o topo recolhe (geral-recolher-topo). Sem abas, nada muda */
+  html[data-celular] .pagina-cabecalho:has(> .abas:not(.oculto), > [data-abas-grupo]:not(.oculto)) > .pagina-titulos {
+    flex-basis: 100%;
+  }
+
+  html[data-celular] .pagina-cabecalho:has(> .abas:not(.oculto), > [data-abas-grupo]:not(.oculto)) > .pagina-ajuda {
+    order: 1;
+  }
+
+  /* as abas dividem a linha com o ?: correm só até a borda esquerda do bloco */
+  html[data-celular] .pagina-cabecalho:has(> .pagina-ajuda) > .abas,
+  html[data-celular] .pagina-cabecalho:has(> .pagina-ajuda) > [data-abas-grupo] {
+    flex-basis: 0;
+    min-width: 0;
+    margin-right: 0;
+    padding-right: 0;
+  }
+
   /* tela fora do celular (Distribuição, Histórico): o vazio no lugar da tela (molde #tpl-pagina-so-computador) */
   html[data-celular] .pagina-so-computador {
     padding: 32px 16px;
