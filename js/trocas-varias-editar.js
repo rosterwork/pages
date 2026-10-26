@@ -1,8 +1,8 @@
 /* ============================================================
    TROCAS — Editar das várias trocas (no painel do registro, pelo botão Editar)
-   A aba Várias trocas (trocas-varias.js) em modo Editar, com o plano
-   que vale hoje (fn_trocas_varias_plano: os dias, os militares e a
-   Parte). O dia que já passou fica como está: o militar muda de
+   O formulário da troca (trocas-varias.js) em modo Editar, com o
+   plano que vale hoje (fn_trocas_varias_plano: os dias com o
+   horário, os militares e a Parte). O dia que já passou fica como está: o militar muda de
    amanhã em diante; o administrador de fora, até 7 dias atrás.
    O banco (fn_trocas_varias_editar) decide o caminho: só a Parte
    grava na hora; o pedido em aberto muda e volta para o aceite dos

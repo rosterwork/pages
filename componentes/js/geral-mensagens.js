@@ -1064,7 +1064,8 @@
         rejeitada_parceiro: 'Recusada',
         rejeitada_admin: 'Recusada pela administração',
         cancelada: 'Cancelada',
-        substituida: 'Substituída'
+        substituida: 'Substituída',
+        expirada: 'Expirada'
       },
       /* selo da alteração de uma troca aprovada (a aprovada vira a troca; a de antes fica "Substituída") */
       situacaoAlteracao: {
@@ -1072,7 +1073,8 @@
         pendente_aprovacao: 'Alteração aguardando aprovação',
         rejeitada_parceiro: 'Alteração recusada',
         rejeitada_admin: 'Alteração recusada pela administração',
-        cancelada: 'Alteração cancelada'
+        cancelada: 'Alteração cancelada',
+        expirada: 'Alteração expirada'
       },
       /* painel da troca (componente geral-decisao) */
       painelTitulo: 'Troca de serviço',
@@ -1266,10 +1268,16 @@
       extratoMais: 'Ver mais',
       extratoVazio: 'Sem trocas aprovadas entre vocês.',
       extratoFalha: 'Não foi possível carregar o histórico.',
-      /* aba Várias trocas do Solicitar troca e do Registrar troca (trocas-varias.js, trocas-varias-calendario.js e trocas-varias-registrar.js) */
+      /* o formulário da troca, no Solicitar troca, no Registrar troca e no Editar do registro (trocas-varias.js,
+         trocas-varias-calendario.js, trocas-varias-resumo.js e trocas-varias-registrar.js), e o registro nas listas e no painel */
       varias: {
-        cumpre: function (trabalha, folga, dia) { return trabalha + ' cumpre a escala de serviço do ' + folga + ' em ' + dia + '.'; },
-        devolucao: function (dia) { return ' A devolução ocorrerá no serviço de ' + dia + '.'; },
+        /* o resumo do formulário, dia a dia (trocas-varias-resumo.js): o horário e o lápis */
+        horarioInteiro: function (hi, hf, horas) { return 'Serviço inteiro, ' + hi + ' às ' + hf + ' (' + horas + ')'; },
+        horarioParte: function (hi, hf, horas) { return 'Parte do serviço, ' + hi + ' às ' + hf + ' (' + horas + ')'; },
+        horarioEscolha: 'Escolha o horário da troca neste dia.',
+        horarioInvalido: 'O fim do horário precisa vir depois do início, dentro do serviço.',
+        editarHorario: function (dia) { return 'Editar o horário de ' + dia; },
+        fechadoAntes: 'A dívida de horas que já havia fecha. Ninguém fica devendo horas.',
         fechadoDuplas: 'Tudo fechado em duplas. Ninguém fica devendo horas.',
         fechadoRodas: 'Cada um trabalha um serviço e folga um. Ninguém fica devendo horas.',
         fechadoTudo: 'Tudo fechado em duplas e rodas. Ninguém fica devendo horas.',
@@ -1293,6 +1301,7 @@
         painelTitulo: 'Várias trocas',
         caixaEscalas: 'Escalas trocadas',
         escalaFrase: function (cumpre, noLugarDe) { return cumpre + ' cumpre a escala de serviço do(a) ' + noLugarDe + '.'; },
+        escalaFraseHorario: function (cumpre, noLugarDe, hi, hf) { return cumpre + ' cumpre a escala de serviço do(a) ' + noLugarDe + ', das ' + hi + ' às ' + hf + '.'; },
         saldoRegistro: function (deve, horas, a) { return 'Saldo de horas: ' + deve + ' deve ' + horas + ' a ' + a + '.'; },
         faltaAceite: 'Falta você aceitar as trocas. O pedido vai para a administração quando todos aceitarem.',
         faltaAceiteAprovada: 'Falta você aceitar as trocas. Elas já foram aprovadas e valem na escala; o seu aceite fica no registro.',

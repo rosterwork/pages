@@ -51,11 +51,13 @@
   function admin(t, ctx) { return !!ctx.ehAdmin && (!!ctx.decidir || RW.trocasFormato.daMinhaArea(t)); }
 
   /* ---------- o corpo ---------- */
-  /* uma linha por dia: quem cumpre a escala de quem */
+  /* uma linha por dia: quem cumpre a escala de quem e, quando não é o dia inteiro (08:00 às 08:00), o horário */
   function linhaEscala(caixa, i) {
     var linha = RW.tpl('tpl-troca-varias-escala');
+    var hi = String(i.inicio || '08:00').slice(0, 5), hf = String(i.fim || '08:00').slice(0, 5);
     linha.querySelector('.decisao-caixa-data').textContent = RW.data.comDiaSemana(String(i.data).slice(0, 10));
-    linha.querySelector('.decisao-caixa-extra').textContent = mv().escalaFrase(i.cumpre, i.no_lugar_de);
+    linha.querySelector('.decisao-caixa-extra').textContent = hi === '08:00' && hf === '08:00'
+      ? mv().escalaFrase(i.cumpre, i.no_lugar_de) : mv().escalaFraseHorario(i.cumpre, i.no_lugar_de, hi, hf);
     caixa.appendChild(linha);
   }
   function caixaEscalas(t) {

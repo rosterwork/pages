@@ -1,66 +1,48 @@
 /* ============================================================
-   TROCAS — a aba Várias trocas do Solicitar troca e do Registrar troca
-   No Solicitar e no Registrar, o trocas-solicitar.js chama montar():
-   as abas Uma troca | Várias trocas na linha das abas do painel; cada
-   aba guarda o que foi preenchido, o rodapé muda com ela e a Várias
-   trocas abre o painel largo. Aqui ficam o E-protocolo da aba, os
-   militares da troca (no Solicitar, o primeiro é quem pede; no
-   Registrar, a lista começa vazia e o admin não entra), o resumo que
-   o banco monta (fn_trocas_varias_montar: duplas, rodas e o que fica
-   sem devolução, com as notas do saldo) e o envio do pedido (um
-   registro só, com o Desfazer no resumo). O calendário é o
-   trocas-varias-calendario.js; a Análise e a gravação do Registrar,
-   o trocas-varias-registrar.js.
-   No Editar de um registro (trocas-varias-editar.js), a aba abre sem
-   as abas Uma | Várias e com o plano que vale hoje (os militares, os
-   dias e a Parte); o rodapé é do Editar, que recebe o pedido conferido.
+   TROCAS — o formulário da troca (Solicitar troca e Registrar troca)
+   O trocas-solicitar.js abre o painel largo e chama montar(). Aqui
+   ficam o E-protocolo, os militares da troca (no Solicitar, o
+   primeiro é quem pede; no Registrar, a lista começa vazia e o admin
+   não entra), o rodapé e o envio do pedido (um registro só, com o
+   Desfazer no resumo). O calendário é o trocas-varias-calendario.js;
+   o resumo dia a dia, com o horário e o lápis, o
+   trocas-varias-resumo.js; a Análise e a gravação do Registrar, o
+   trocas-varias-registrar.js.
+   No Cobrar, o devedor entra sozinho na lista quando aparece na
+   unidade escolhida (o resumo põe as horas da dívida no dia dele).
+   No Editar de um registro (trocas-varias-editar.js), o formulário
+   abre com o plano que vale hoje (os militares, os dias com o
+   horário e a Parte); o rodapé é do Editar, que recebe o pedido
+   conferido.
    Expõe RosterWork.trocasVarias.{ montar, temDados, planoMudou, enviar, encerrar }
-     montar({ corpo, registrar, editar, aoSolicitar, aoMudar, cancelar })
+     montar({ corpo, registrar, cobrar, editar, aoSolicitar, aoMudar, cancelar })
+       cobrar = { cpf, minutos }
        editar = { registroId, plano, admin, botao, alteracao, aoEnviar(pares, parte, ano, botao) }
    ============================================================ */
 (function () {
   'use strict';
   var RW = window.RosterWork = window.RosterWork || {};
 
-  var est = null;          // o estado da aba aberta
-  var timerResumo = null;
-  var reqResumo = 0;       // token: só o resumo mais recente vale
+  var est = null;          // o estado do formulário aberto
 
   function C() { return RW.trocasCampos; }
   function M() { return RW.mensagens.trocas.varias; }
   function Cal() { return RW.trocasVariasCalendario; }
+  function Res() { return RW.trocasVariasResumo; }
   function Reg() { return RW.trocasVariasRegistrar; }
   function q(sel) { return est && est.raiz ? est.raiz.querySelector(sel) : null; }
 
-  /* ---------- as abas: cada uma guarda os dados; o rodapé e a largura mudam com ela ---------- */
-  function mostrarAba(aba) {
-    var varias = aba === 'varias';
-    est.corpo.querySelector('.troca-solicitar-form').classList.toggle('oculto', varias);
-    est.raiz.classList.toggle('oculto', !varias);
-    Array.prototype.forEach.call(RW.painel.rodape().children, function (b) {
-      b.classList.toggle('oculto', (b.getAttribute('data-aba-rodape') === 'varias') !== varias);
-    });
-    RW.painel.largo(varias);
-  }
-  function montarAbas() {
-    var linha = RW.painel.linhaAbas();
-    var abas = RW.tpl('tpl-troca-solicitar-abas');
-    if (!linha || !abas) return;
-    linha.textContent = '';
-    linha.appendChild(abas);
-    linha.classList.remove('oculto');
-    if (RW.abas) RW.abas.ligar(abas, function (aba) { mostrarAba(aba.getAttribute('data-aba')); });
-  }
+  /* ---------- o rodapé: Cancelar e Solicitar troca (ou Registrar troca) ---------- */
   function montarRodape() {
     var rodape = RW.painel.rodape();
-    Array.prototype.forEach.call(rodape.children, function (b) { b.setAttribute('data-aba-rodape', 'uma'); });
+    rodape.textContent = '';
     var frag = document.getElementById(est.registrar ? 'tpl-troca-varias-registrar-acoes' : 'tpl-troca-varias-acoes').content.cloneNode(true);
-    Array.prototype.forEach.call(frag.children, function (b) { b.setAttribute('data-aba-rodape', 'varias'); b.classList.add('oculto'); });
     frag.querySelector('[data-acao="cancelar"]').addEventListener('click', est.cancelar);
     var enviarBtn = frag.querySelector(est.registrar ? '[data-acao="registrar-varias"]' : '[data-acao="solicitar-varias"]');
     enviarBtn.addEventListener('click', function () { enviar(enviarBtn); });
-    if (est.registrar) Reg().iniciar(est, enviarBtn);   // a Análise trava o Registrar trocas até chegar
+    if (est.registrar) Reg().iniciar(est, enviarBtn);   // a Análise trava o Registrar troca até chegar
     rodape.appendChild(frag);
+    rodape.classList.remove('oculto');
   }
 
   /* ---------- o E-protocolo (as regras da Parte do pedido de uma troca) ---------- */
@@ -110,11 +92,20 @@
       if (!est || est.unidadeSel !== unidade) return;
       est.listaUnidade = Array.isArray(lista) ? lista : [];
       combo.preencher(est.listaUnidade);
+      entrarDevedor();
     }).catch(function () {
       if (!est || est.unidadeSel !== unidade) return;
       combo.habilitar(false);
       combo.definir(RW.mensagens.trocas.modalCarregarFalha, true);
     });
+  }
+  /* cobrança: o devedor entra sozinho assim que aparece na unidade escolhida (uma vez só) */
+  function entrarDevedor() {
+    if (!est.cobrar || est.cobrar.entrou) return;
+    var devedor = est.listaUnidade.filter(function (m) { return m && m.cpf === est.cobrar.cpf; })[0];
+    if (!devedor) return;
+    est.cobrar.entrou = true;
+    adicionar(devedor);
   }
   /* refaz o campo com a lista guardada, sem ir ao banco: quem está na troca fica de fora */
   function atualizarMilitaresDaUnidade() { if (est.listaUnidade) est.combo.preencher(est.listaUnidade); }
@@ -134,7 +125,7 @@
     desenharMilitares();
     atualizarMilitaresDaUnidade();
     Cal().recarregar();
-    agendarResumo();
+    Res().agendar();
   }
   /* com dias marcados, pergunta antes: os dias dele saem junto */
   function pedirRemover(m) {
@@ -163,67 +154,6 @@
         carregarMilitaresDaUnidade();
       });
       if (propria) { est.unidadeSel = propria; carregarMilitaresDaUnidade(); }
-    });
-  }
-
-  /* ---------- o resumo: o banco monta (duplas, rodas, sem devolução) e diz o saldo ---------- */
-  function agendarResumo() {
-    if (est.ensaio) Reg().agendarAnalise();   // no Registrar e no Editar do administrador de fora, a Análise acompanha os dias
-    if (timerResumo) clearTimeout(timerResumo);
-    reqResumo++;
-    var carregando = q('#tv-resumo-carregando');
-    if (!est.pares.length) { desenharResumo(null); return; }
-    limparResumo();
-    carregando.textContent = '';
-    carregando.appendChild(document.getElementById('carregando-pontos').content.cloneNode(true));
-    carregando.classList.remove('oculto');
-    timerResumo = setTimeout(montarResumo, 300);
-  }
-  function montarResumo() {
-    var meu = ++reqResumo;
-    RW.trocasDados.variasMontar(est.pares, est.editar ? est.editar.registroId : null).then(function (r) {
-      if (!est || meu !== reqResumo) return;
-      desenharResumo(r);
-    }).catch(function () {
-      if (!est || meu !== reqResumo) return;
-      desenharResumo(null);
-      if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: M().falhaResumo });
-    });
-  }
-  function limparResumo() {
-    ['#tv-duplas', '#tv-sem-devolucao'].forEach(function (s) { q(s).classList.add('oculto'); q(s + ' ol').textContent = ''; });
-    q('#tv-rodas').textContent = '';
-    q('#tv-notas').textContent = '';
-    q('#tv-resumo-vazio').classList.add('oculto');
-    q('#tv-resumo-carregando').classList.add('oculto');
-  }
-  function item(lista, texto) { var li = RW.tpl('tpl-troca-varias-item'); li.textContent = texto; lista.appendChild(li); }
-  function nota(molde, texto) { var n = RW.tpl(molde); n.querySelector('.nota-texto').textContent = texto; q('#tv-notas').appendChild(n); }
-  function desenharResumo(r) {
-    limparResumo();
-    if (!r || !est.pares.length) { q('#tv-resumo-vazio').classList.remove('oculto'); return; }
-    var nome = function (cpf) { return (r.nomes && r.nomes[cpf]) || ''; };
-    var dia = function (d) { return RW.data.isoParaBR(d.data); };
-    var frase = function (d) { return M().cumpre(nome(d.trabalha), nome(d.folga), dia(d)); };
-    (r.duplas || []).forEach(function (d) { item(q('#tv-duplas ol'), frase(d.servico) + M().devolucao(dia(d.devolucao))); });
-    q('#tv-duplas').classList.toggle('oculto', !(r.duplas || []).length);
-    (r.rodas || []).forEach(function (roda) {
-      var g = RW.tpl('tpl-troca-varias-roda');
-      roda.forEach(function (d) { item(g.querySelector('ol'), frase(d)); });
-      q('#tv-rodas').appendChild(g);
-    });
-    (r.sem_devolucao || []).forEach(function (d) { item(q('#tv-sem-devolucao ol'), frase(d)); });
-    q('#tv-sem-devolucao').classList.toggle('oculto', !(r.sem_devolucao || []).length);
-    var saldos = r.saldos || [];
-    if (!saldos.length) {
-      var duplas = (r.duplas || []).length > 0, rodas = (r.rodas || []).length > 0;
-      nota('tpl-troca-varias-nota-ok', duplas && rodas ? M().fechadoTudo : (rodas ? M().fechadoRodas : M().fechadoDuplas));
-      return;
-    }
-    saldos.forEach(function (s) {
-      var semDev = (r.sem_devolucao || []).some(function (d) { return d.folga === s.deve && d.trabalha === s.a; });
-      var horas = RW.tempo.horas(s.minutos);
-      nota('tpl-troca-varias-nota-saldo', semDev ? M().semDevolucao(nome(s.deve), horas, nome(s.a)) : M().saldo(nome(s.deve), horas, nome(s.a)));
     });
   }
 
@@ -270,7 +200,10 @@
     var outros = lista.filter(function (m) { return m.cpf !== meu; });
     return [lista.filter(function (m) { return m.cpf === meu; })[0] || eu()].concat(outros);
   }
-  function chavePares() { return est.pares.map(function (p) { return p.data + '|' + p.trabalha + '|' + p.folga; }).sort().join(','); }
+  /* cada dia com o horário (vazio = o serviço inteiro): mudar só o horário também é mudar o plano */
+  function chavePares() {
+    return est.pares.map(function (p) { return [p.data, p.trabalha, p.folga, p.inicio || '', p.fim || ''].join('|'); }).sort().join(',');
+  }
   function chaveParte() { var n = q('#tv-parte').value.trim(); return n ? n + '/' + q('#tv-parte-ano').value.trim() : ''; }
   function chaveMilitares() { return est.militares.map(function (m) { return m.cpf; }).sort().join(','); }
   function chaveTudo() { return chavePares() + '#' + chaveParte() + '#' + chaveMilitares(); }
@@ -282,15 +215,17 @@
     var raiz = RW.tpl('tpl-troca-varias');
     if (!raiz || !RW.painel.largo) return;
     var registrar = !!opcoes.registrar, ed = opcoes.editar || null;
-    if (!ed) raiz.classList.add('oculto');   // no Solicitar e no Registrar, a aba Uma troca vem primeiro
     opcoes.corpo.appendChild(raiz);
     var plano = ed ? ed.plano : null;
     est = {
       raiz: raiz, corpo: opcoes.corpo, registrar: registrar, aoSolicitar: opcoes.aoSolicitar, aoMudar: opcoes.aoMudar, cancelar: opcoes.cancelar,
       /* no Solicitar, quem pede já entra; no Registrar, a lista começa vazia; no Editar, o plano de hoje */
       militares: plano ? militaresDoPlano(plano) : (registrar ? [] : [eu()]),
-      pares: plano ? (plano.dias || []).map(function (d) { return { data: String(d.data).slice(0, 10), trabalha: d.trabalha, folga: d.folga }; }) : [],
+      pares: plano ? (plano.dias || []).map(function (d) {
+        return { data: String(d.data).slice(0, 10), trabalha: d.trabalha, folga: d.folga, inicio: d.inicio || null, fim: d.fim || null };
+      }) : [],
       combo: null, unidadeSel: null, listaUnidade: null, mes: null, ensaio: null,
+      cobrar: opcoes.cobrar ? { cpf: opcoes.cobrar.cpf, minutos: opcoes.cobrar.minutos || 0, entrou: false, aplicada: false } : null,
       editar: ed ? { registroId: ed.registroId, admin: !!ed.admin, aoEnviar: ed.aoEnviar, desde: String(plano.editavel_desde).slice(0, 10) } : null
     };
     /* a Análise (ensaio no banco): no Registrar, do registro novo; no Editar do administrador de fora, da alteração */
@@ -301,7 +236,6 @@
       q('#tv-nota-alteracao').classList.toggle('oculto', !ed.alteracao);
       if (est.ensaio) Reg().iniciar(est, ed.botao);   // a Análise trava o Salvar até chegar
     } else {
-      montarAbas();
       montarRodape();
     }
     q('#tv-parte').value = plano && plano.parte ? String(plano.parte.numero) : '';
@@ -310,20 +244,20 @@
     RW.trocasSolicitar.formulario.ligarSoNumeros(q('#tv-parte-ano'));
     RW.trocasSolicitar.formulario.ligarLimpezaErros(raiz);
     if (est.editar) { est.editar.paresAntes = chavePares(); est.editar.tudoAntes = chaveTudo(); }
-    Cal().iniciar(est, agendarResumo);   // antes dos militares: o calendário diz qual dia já passou
+    Res().iniciar(est);
+    Cal().iniciar(est, Res().agendar);   // antes dos militares: o calendário diz qual dia já passou
     desenharMilitares();
     ligarAdicionar();
-    if (est.editar) agendarResumo();   // o resumo do plano de hoje
+    if (est.editar) Res().agendar();   // o resumo do plano de hoje
   }
-  /* há algo preenchido na aba? (o X, o Esc, o Cancelar e o navegador pedem para descartar); no Editar, algo mudou */
+  /* há algo preenchido? (o X, o Esc, o Cancelar e o navegador pedem para descartar); no Editar, algo mudou */
   function temDados() {
     if (!est) return false;
     if (est.editar) return chaveTudo() !== est.editar.tudoAntes;
     return est.pares.length > 0 || est.militares.length > (est.registrar ? 0 : 1) || !!(q('#tv-parte') && q('#tv-parte').value.trim());
   }
   function encerrar() {
-    if (timerResumo) clearTimeout(timerResumo);
-    reqResumo++;
+    if (Res()) Res().encerrar();
     if (Cal()) Cal().encerrar();
     if (Reg()) Reg().encerrar();
     est = null;

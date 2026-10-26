@@ -236,8 +236,8 @@
   align-self: flex-start;
 }
 
-/* ---------- Solicitar / Registrar (formulário no painel lateral, aberto pelos botões da barra) ---------- */
-/* os cartões (E-protocolo · Solicitante · Solicitado) empilham na largura do painel */
+/* ---------- os formulários no painel lateral: o da troca (Solicitar e Registrar) e o Editar das trocas de uma ---------- */
+/* os cartões (no Editar de uma: E-protocolo · Solicitante · Solicitado) empilham na largura do painel */
 .troca-solicitar-form {
   display: flex;
   flex-direction: column;
@@ -477,16 +477,95 @@
   flex-direction: column;
   gap: 4px;
   margin: 0;
-  padding-left: 16px;
+  padding: 0;
+  list-style: none;
+}
+
+/* um dia do resumo: a data | quem no lugar de quem e o horário | o lápis; o editor do horário embaixo, na largura dos textos */
+.trocas-varias-linha {
+  display: grid;
+  grid-template-columns: 80px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 8px 8px 12px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-superficie);
+}
+
+.trocas-varias-linha--editando {
+  padding-bottom: 12px;
+  border-color: var(--texto-forte);
+  background-color: var(--fundo-suave);
+}
+
+.trocas-varias-linha-data {
+  display: flex;
+  flex-direction: column;
+  align-self: start;
+}
+
+.trocas-varias-linha-numero {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--texto-forte);
+}
+
+.trocas-varias-linha-semana {
+  font-size: 11px;
+  color: var(--texto-fraco);
+}
+
+.trocas-varias-linha-textos {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.trocas-varias-linha-quem {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
   font-size: 12px;
   color: var(--texto);
+}
+
+.trocas-varias-linha-quem strong {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.trocas-varias-linha-horario {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+/* a parte do serviço se destaca do serviço inteiro */
+.trocas-varias-linha-horario--parte {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.trocas-varias-linha-editor {
+  grid-column: 2 / 4;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.trocas-varias-linha-acoes {
+  display: flex;
+  justify-content: flex-end;
 }
 
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    A linha da troca vira um cartão em pé: os dois militares, a
    linha de apoio e o selo embaixo. Os nomes do Saldos e do
-   extrato acompanham a letra padrão, que no celular é maior.
+   extrato e os textos do dia do resumo acompanham a letra padrão,
+   que no celular é maior.
    ============================================================ */
 @media (max-width: 767px) {
   html[data-celular] .troca-item {
@@ -512,5 +591,15 @@
   html[data-celular] .troca-pendente-cab,
   html[data-celular] .troca-extrato-quem {
     font-size: var(--fonte-padrao);
+  }
+
+  /* o dia do resumo: os textos na letra padrão; o editor do horário ocupa a linha inteira */
+  html[data-celular] .trocas-varias-linha-quem,
+  html[data-celular] .trocas-varias-linha-horario {
+    font-size: var(--fonte-padrao);
+  }
+
+  html[data-celular] .trocas-varias-linha-editor {
+    grid-column: 1 / 4;
   }
 }

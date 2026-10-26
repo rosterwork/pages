@@ -1,5 +1,5 @@
 /* ============================================================
-   TROCAS — o calendário da aba Várias trocas
+   TROCAS — o calendário do formulário da troca
    O mês em miniatura (geral-mini-calendario) com os dias da troca:
    aceso = um militar da troca de serviço e outro livre (o banco diz,
    fn_trocas_varias_dias, de amanhã em diante; no Registrar, de 7 dias
@@ -16,8 +16,10 @@
    passou fica marcado, sem Tirar e sem as perguntas, e a seta volta
    até o mês dele.
    Expõe RosterWork.trocasVariasCalendario.{ iniciar, recarregar, desenhar, travado, encerrar }
-     iniciar(est, aoMudar) — est = o estado da aba (militares, pares,
-       mes, editar); aoMudar() avisa que os pares mudaram
+     iniciar(est, aoMudar) — est = o estado do formulário (militares,
+       pares, mes, editar); aoMudar() avisa que os pares mudaram (o
+       par novo vem sem horário: o serviço inteiro; tirar o par tira
+       o horário junto)
      travado(dia) — no Editar, o dia já passou e não muda
    ============================================================ */
 (function () {

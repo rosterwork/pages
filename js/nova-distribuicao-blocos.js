@@ -10,7 +10,8 @@
   'use strict';
   window.RosterWork = window.RosterWork || {};
 
-  /* a linha movida por último na ordem ({ lado, nome, passo }): marcada no desenho seguinte da ordem, depois some */
+  /* a linha movida por último na ordem ({ lado, nome, passo }): a seta clicada fica marcada no desenho seguinte
+     da ordem, depois some */
   var movida = null;
 
   function M() { return RosterWork.mensagens.novaDistribuicao; }
@@ -135,13 +136,13 @@
     P().erros(ctx, 'ordem').forEach(function (e) { P().erroCampo(u, e); });
   }
 
-  /* a linha movida: o fundo de seleção, o foco na mesma seta (se ela ficou inativa, na outra; a página rola até
-     ela) e o aviso ao leitor de tela */
+  /* a linha movida: a borda na seta clicada (fica nela mesmo se ficou inativa), o foco na mesma seta (se ela
+     ficou inativa, na outra; a página rola até ela) e o aviso ao leitor de tela */
   function mostrarMovida(linha, numero, passo, api) {
     var subir = linha.querySelector('.nova-distribuicao-subir');
     var descer = linha.querySelector('.nova-distribuicao-descer');
     var seta = passo < 0 ? (subir.disabled ? descer : subir) : (descer.disabled ? subir : descer);
-    linha.classList.add('nova-distribuicao-linha--movida');
+    (passo < 0 ? subir : descer).classList.add('nova-distribuicao-seta--clicada');
     if (!seta.disabled) {
       seta.id = 'nova-distribuicao-ordem-foco';
       api.focarDepois('#nova-distribuicao-ordem-foco');

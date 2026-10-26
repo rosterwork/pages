@@ -1,17 +1,17 @@
 /* ============================================================
-   TROCAS — o Registrar da aba Várias trocas (só admin) e a Análise
-   No Registrar troca, a aba Várias trocas (trocas-varias.js) chama
+   TROCAS — o Registrar troca (só admin) e a Análise
+   No Registrar troca, o formulário da troca (trocas-varias.js) chama
    aqui: a Análise do registro inteiro, refeita a cada mudança dos
-   dias, com o Registrar trocas travado até ela chegar (igual ao
-   Registrar de uma troca); a confirmação (avisa quando a análise
-   apontou problema), a gravação já aprovada (véu global) e o resumo
-   com o Desfazer (apaga o registro inteiro e volta a escala).
-   A Análise é o ensaio que o estado da aba traz (est.ensaio): no
-   Registrar, o fn_trocas_varias_registrar; no Editar do administrador
-   de fora, o fn_trocas_varias_editar, só quando os dias mudaram, com
-   o Salvar travado até ela chegar.
+   dias e dos horários, com o Registrar troca travado até ela chegar;
+   a confirmação (avisa quando a análise apontou problema), a gravação
+   já aprovada (véu global) e o resumo com o Desfazer (apaga o
+   registro inteiro e volta a escala).
+   A Análise é o ensaio que o estado do formulário traz (est.ensaio):
+   no Registrar, o fn_trocas_varias_registrar; no Editar do
+   administrador de fora, o fn_trocas_varias_editar, só quando os dias
+   (ou os horários) mudaram, com o Salvar travado até ela chegar.
    Expõe RosterWork.trocasVariasRegistrar.{ iniciar, agendarAnalise, registrar, ultima, encerrar }
-     iniciar(est, botao) — est = o estado da aba; botao = o Registrar trocas (ou o Salvar do Editar)
+     iniciar(est, botao) — est = o estado da aba; botao = o Registrar troca (ou o Salvar do Editar)
      registrar(parte, ano) — confirma e grava (a aba já conferiu a Parte e os dias)
      ultima() — a última análise que chegou (a confirmação do Editar avisa o problema)
    ============================================================ */
@@ -20,7 +20,7 @@
   var RW = window.RosterWork = window.RosterWork || {};
 
   var est = null;          // o estado da aba aberta
-  var botao = null;        // o Registrar trocas (travado até a análise chegar)
+  var botao = null;        // o Registrar troca (travado até a análise chegar)
   var timer = null;
   var req = 0;             // token: só a análise mais recente vale
   var analise = null;      // a última análise que chegou
@@ -51,7 +51,7 @@
       if (!est || meu !== req) return;
       analise = r && r.ok ? r : null;
       RW.decisao.analise(p, analise, (r && r.erro) || M().falhaAnalise);
-      travar(false);   // chegou: libera o Registrar trocas (o banco ainda decide)
+      travar(false);   // chegou: libera o Registrar troca (o banco ainda decide)
     }).catch(function () {
       if (!est || meu !== req) return;
       RW.decisao.analise(p, null, M().falhaAnalise);

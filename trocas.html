@@ -83,9 +83,8 @@
   </div>
 </div>
 
-<!-- molde: formulário Solicitar troca / Registrar troca / Editar troca (montado no painel lateral).
-     data-modo: os modos em que o campo aparece (solicitar = o logado pede; registrar = o admin escolhe o solicitante;
-     editar = os dois militares da troca só em leitura) -->
+<!-- molde: o Editar das trocas de uma (trocas-editar.js), as pedidas antes do formulário da troca (#tpl-troca-varias),
+     montado no painel lateral. data-modo: os modos em que o campo aparece (editar = os dois militares da troca só em leitura) -->
 <template id="tpl-troca-solicitar">
   <div class="troca-solicitar-form">
     <div class="grupo-caixa trocas-cartao">
@@ -208,45 +207,25 @@
   </div>
 </template>
 
-<!-- molde: ações do rodapé do painel Solicitar -->
-<template id="tpl-troca-solicitar-acoes">
-  <button type="button" class="botao" data-acao="cancelar">Cancelar</button>
-  <button type="button" class="botao botao--primario" data-acao="solicitar">Solicitar troca</button>
-</template>
-
-<!-- molde: ações do rodapé do painel Registrar (o Registrar espera a análise chegar) -->
-<template id="tpl-troca-registrar-acoes">
-  <button type="button" class="botao" data-acao="cancelar">Cancelar</button>
-  <button type="button" class="botao botao--primario" data-acao="solicitar">Registrar troca</button>
-</template>
-
 <!-- molde: ações do rodapé do Editar troca (Cancelar volta à leitura do painel) -->
 <template id="tpl-troca-editar-acoes">
   <button type="button" class="botao" data-acao="cancelar">Cancelar</button>
   <button type="button" class="botao botao--primario" data-acao="salvar">Salvar</button>
 </template>
 
-<!-- molde: as abas do Solicitar troca e do Registrar troca, na linha das abas do painel (não no Cobrar; trocas-varias.js) -->
-<template id="tpl-troca-solicitar-abas">
-  <div class="abas" id="ts-abas">
-    <button type="button" class="aba aba--ativa" data-aba="uma">Uma troca</button>
-    <button type="button" class="aba" data-aba="varias">Várias trocas</button>
-  </div>
-</template>
-
-<!-- molde: a aba Várias trocas (trocas-varias.js): só serviços inteiros, num registro só. Os militares da troca,
-     o calendário dos dias (trocas-varias-calendario.js; em cada dia, quem trabalha e quem folga), o resumo
-     que o banco monta (duplas, rodas e o que fica sem devolução) e, no Registrar e no Editar do administrador de fora,
-     a Análise (trocas-varias-registrar.js). data-modo: o texto de cada modo (solicitar = o militar pede; registrar = o
+<!-- molde: o formulário da troca (trocas-varias.js), no Solicitar troca, no Registrar troca e no Editar do registro;
+     num registro só. Os militares da troca, o calendário dos dias (trocas-varias-calendario.js; em cada dia, quem
+     trabalha e quem folga), o resumo que o banco monta (duplas, rodas e o que fica sem devolução), dia a dia, com o
+     horário e o lápis (trocas-varias-resumo.js) e, no Registrar e no Editar do administrador de fora, a Análise
+     (trocas-varias-registrar.js). data-modo: o texto de cada modo (solicitar = o militar pede; registrar = o
      admin registra; editar = o Editar do registro, trocas-varias-editar.js). A nota da alteração aparece pelo JS, quando
      o militar muda trocas aprovadas -->
 <template id="tpl-troca-varias">
   <div class="trocas-varias">
-    <div class="nota">
+    <div class="nota" data-modo="registrar editar">
       <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg>
-      <span class="nota-texto" data-modo="solicitar">Só serviços inteiros. Todos os militares aceitam um registro só.</span>
-      <span class="nota-texto oculto" data-modo="registrar">Só serviços inteiros. As trocas entram já aprovadas, e cada militar aceita depois.</span>
-      <span class="nota-texto oculto" data-modo="editar">Só serviços inteiros. Os dias que já passaram ficam como estão.</span>
+      <span class="nota-texto" data-modo="registrar">As trocas entram já aprovadas, e cada militar aceita depois.</span>
+      <span class="nota-texto" data-modo="editar">Os dias que já passaram ficam como estão.</span>
     </div>
     <div class="nota oculto" id="tv-nota-alteracao">
       <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg>
@@ -315,7 +294,7 @@
       <div class="trocas-varias-cal" id="tv-calendario"></div>
     </div>
 
-    <div class="grupo-caixa trocas-cartao">
+    <div class="grupo-caixa trocas-cartao" id="tv-resumo">
       <span class="rotulo-secao">Resumo das trocas</span>
       <span class="trocas-varias-vazio" id="tv-resumo-vazio">Marque os dias no calendário para ver as trocas.</span>
       <span class="trocas-varias-vazio oculto" id="tv-resumo-carregando"></span>
@@ -351,9 +330,32 @@
   </div>
 </template>
 
-<!-- molde: uma frase do resumo (uma troca de um dia, ou a dupla com a devolução) -->
-<template id="tpl-troca-varias-item">
-  <li></li>
+<!-- molde: um dia do resumo (trocas-varias-resumo.js): a data, quem trabalha no lugar de quem (o selo no dia da
+     devolução da dupla), o horário sempre à vista e o lápis, que abre ali mesmo o "Serviço inteiro / Parte do serviço"
+     (geral-horario) com o Pronto -->
+<template id="tpl-troca-varias-linha">
+  <li class="trocas-varias-linha">
+    <span class="trocas-varias-linha-data">
+      <span class="trocas-varias-linha-numero"></span>
+      <span class="trocas-varias-linha-semana"></span>
+    </span>
+    <span class="trocas-varias-linha-textos">
+      <span class="trocas-varias-linha-quem">
+        <span><strong class="trocas-varias-linha-trabalha"></strong> no lugar de <strong class="trocas-varias-linha-folga"></strong></span>
+        <span class="selo trocas-varias-linha-devolucao oculto">Devolução</span>
+      </span>
+      <span class="trocas-varias-linha-horario"></span>
+    </span>
+    <button type="button" class="botao botao--icone trocas-varias-linha-editar" aria-label="Editar horário" data-dica="Editar horário">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-editar"/></svg>
+    </button>
+    <div class="trocas-varias-linha-editor oculto">
+      <div class="trocas-varias-linha-periodo"></div>
+      <div class="trocas-varias-linha-acoes">
+        <button type="button" class="botao trocas-varias-linha-pronto">Pronto</button>
+      </div>
+    </div>
+  </li>
 </template>
 
 <!-- molde: as notas do resumo (verde: tudo fechado; amarela: um saldo de horas) -->
@@ -428,16 +430,16 @@
   <label class="geral-opcao"><input type="radio" /><span></span></label>
 </template>
 
-<!-- molde: ações do rodapé da aba Várias trocas -->
+<!-- molde: ações do rodapé do Solicitar troca -->
 <template id="tpl-troca-varias-acoes">
   <button type="button" class="botao" data-acao="cancelar">Cancelar</button>
-  <button type="button" class="botao botao--primario" data-acao="solicitar-varias">Solicitar trocas</button>
+  <button type="button" class="botao botao--primario" data-acao="solicitar-varias">Solicitar troca</button>
 </template>
 
-<!-- molde: ações do rodapé da aba Várias trocas no Registrar (o Registrar trocas espera a análise chegar) -->
+<!-- molde: ações do rodapé do Registrar troca (o Registrar troca espera a análise chegar) -->
 <template id="tpl-troca-varias-registrar-acoes">
   <button type="button" class="botao" data-acao="cancelar">Cancelar</button>
-  <button type="button" class="botao botao--primario" data-acao="registrar-varias">Registrar trocas</button>
+  <button type="button" class="botao botao--primario" data-acao="registrar-varias">Registrar troca</button>
 </template>
 
 <!-- molde: linha de uma troca na lista (os selos: o Pendente dos aceites, quando a aprovada tem aceite faltando, e a situação) -->
@@ -636,11 +638,10 @@
      data-avanca diz como ele avança (clique · preenchido · proximo · some) e o data-fim é o balão final -->
 <template data-guia="trocas-pedir" data-titulo="Como pedir uma troca">
   <p data-alvo="#btn-solicitar-troca" data-avanca="clique">Comece pelo botão <strong>Solicitar troca</strong>.</p>
-  <p data-alvo="#ts-parte" data-anel="campo" data-avanca="proximo">Se a troca já tem parte no eProtocolo, digite o número. Se ainda não tem, deixe em branco.</p>
-  <p data-alvo="#ts-data" data-anel="campo" data-avanca="preenchido">Escolha o dia que seu colega vai trabalhar no seu lugar.</p>
-  <p data-alvo="#ts-unidade, #ts-parceiro" data-anel="campo" data-condicao="#ts-parceiro" data-avanca="preenchido">Escolha a unidade e o colega que vai cobrir. Quem já está de serviço ou afastado aparece apagado.</p>
-  <p data-alvo="#ts-dev-toggle" data-anel="campo" data-avanca="proximo"><strong>Marcar dia</strong> já vem escolhido. Se ainda não combinaram o dia, escolha <strong>Pendência</strong>: você fica devendo as horas ao colega.</p>
-  <p data-alvo="#ts-dev-data" data-avanca="preenchido" data-pular-se="#ts-dev-toggle [data-dev='pendente'].aba--ativa">Escolha o dia que você vai trabalhar no lugar do seu colega.</p>
-  <p data-alvo=".painel-lateral--aberto [data-acao='solicitar']" data-avanca="some" data-condicao=".painel-lateral--aberto .troca-solicitar-form">Confira e envie pelo botão <strong>Solicitar troca</strong>.</p>
-  <p data-fim>Pronto. O colega recebe o pedido e aceita. Depois, o administrador aprova. Acompanhe na aba <strong>Minhas</strong>.</p>
+  <p data-alvo="#tv-parte" data-anel="campo" data-avanca="proximo">Se a troca já tem parte no eProtocolo, digite o número. Se ainda não tem, deixe em branco.</p>
+  <p data-alvo="#tv-unidade, #tv-militar" data-anel="campo" data-avanca="proximo">Escolha a unidade e o colega da troca. Ele entra na lista. Se a troca tem mais gente, adicione os outros.</p>
+  <p data-alvo="#tv-calendario" data-avanca="proximo">Clique no dia da troca. Em cima aparece quem trabalha e, riscado, quem folga. Se já combinaram a devolução, marque o dia dela também; se não, você fica devendo as horas.</p>
+  <p data-alvo="#tv-resumo" data-avanca="proximo">Confira o resumo. Para trocar só uma parte do serviço, clique no lápis do dia e escolha o horário.</p>
+  <p data-alvo=".painel-lateral--aberto [data-acao='solicitar-varias']" data-avanca="some" data-condicao=".painel-lateral--aberto .trocas-varias">Confira e envie pelo botão <strong>Solicitar troca</strong>.</p>
+  <p data-fim>Pronto. Os colegas recebem o pedido e aceitam. Depois, o administrador aprova. Acompanhe na aba <strong>Minhas</strong>.</p>
 </template>

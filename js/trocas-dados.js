@@ -105,7 +105,8 @@
     rejeitada_parceiro: 'selo--erro',
     rejeitada_admin: 'selo--erro',
     cancelada: 'selo--escuro',
-    substituida: 'selo--escuro'
+    substituida: 'selo--escuro',
+    expirada: 'selo--escuro'
   };
 
   /* alteracao = a troca é a alteração de outra (substitui_troca_id): o selo diz que é alteração */

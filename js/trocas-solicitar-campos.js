@@ -140,13 +140,7 @@
     var req = ++reqParceiros;
     RW.trocasDados.militares(f.unidadeSel, f.servicoDia, f.servicoSel.hi, f.servicoSel.hf).then(function (lista) {
       if (req !== reqParceiros || !q('#ts-parceiro-menu')) return;   // resposta obsoleta ou painel fechado
-      lista = Array.isArray(lista) ? lista : [];
-      var disponiveis = combo.preencher(lista);
-      /* cobrança: escolhe o devedor sozinho assim que ele aparece disponível na unidade selecionada */
-      if (disponiveis && f.cobrar && !f.parceiroSel) {
-        var alvo = lista.filter(function (m) { return m && m.cpf === f.cobrar.cpf && !m.ocupado; })[0];
-        if (alvo) { f.parceiroSel = alvo; limparErro(q('#ts-parceiro')); aoTrocarParceiro(); combo.mostrarAtual(); }
-      }
+      combo.preencher(Array.isArray(lista) ? lista : []);
     }).catch(function () {
       if (req !== reqParceiros || !q('#ts-parceiro-menu')) return;
       combo.habilitar(false);
@@ -171,12 +165,6 @@
     limparErro(q('#ts-data'));
     if (!f.periodoServico) montarPeriodoServico();
     f.periodoServico.definirServico(horarioDoServico(s));
-    /* cobrança: o período já vem com as horas da dívida, do início do turno (o turno inteiro, se ela cobre tudo) */
-    if (f.cobrar && f.cobrar.minutos > 0) {
-      var H = RosterWork.horario, turno = f.periodoServico.valor();
-      var ini = H.faixa(turno)[0];
-      if (f.cobrar.minutos < turno.minutos) f.periodoServico.definirParte(turno.hi, H.hhmm(ini + f.cobrar.minutos));
-    }
     f.servicoSel = f.periodoServico.valor();
     carregarParceiros();
     atualizarSaldo();

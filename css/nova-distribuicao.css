@@ -348,8 +348,9 @@
 
 .nova-distribuicao-tabela tfoot th { font-weight: 400; }
 
-/* a linha movida por último na ordem: o fundo de seleção do site */
-.nova-distribuicao-linha--movida td { background-color: var(--fundo-medio); }
+/* a última seta clicada na ordem: a borda escura (também se ela ficou inativa depois do movimento) */
+.nova-distribuicao-seta--clicada,
+.nova-distribuicao-seta--clicada:disabled { border-color: var(--texto-forte); }
 
 .nova-distribuicao-col-n {
   width: 32px;
