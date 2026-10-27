@@ -271,7 +271,8 @@
     return caixa;
   }
 
-  /* seleção de função: cada item em Posto | Função, alinhados pelo posto mais comprido */
+  /* seleção de função: a lista agrupada por posto, na ordem das funções do banco (os postos na ordem do
+     bloco Postos e, dentro de cada um, o lugar); o título do posto com o nome inteiro e, embaixo, as funções */
   function selecaoFuncoes(ctx, nomes, atual, aoEscolher, op) {
     op = op || {};
     var caixa = tpl('selecao');
@@ -280,13 +281,19 @@
     var gatilho = prepararGatilho(caixa, atual && nomes.indexOf(atual) >= 0 ? completo(ctx, atual) : '', op.vazio, op.rotulo, op.travado, op.erro);
     var cheio = partes(atual).posto;
     if (atual && CURTOS[cheio]) gatilho.setAttribute('data-dica', cheio);
-    nomes.forEach(function (nome) {
+    var ordem = ((ctx.calc && ctx.calc.funcoes) || []).map(function (f) { return f.nome; });
+    var lugar = function (nome) { var k = ordem.indexOf(nome); return k < 0 ? ordem.length : k; };
+    var postoAnterior = null;
+    nomes.slice().sort(function (a, b) { return lugar(a) - lugar(b); }).forEach(function (nome) {
+      var posto = partes(nome).posto;
+      if (posto !== postoAnterior) {
+        var titulo = tpl('selecao-posto');
+        titulo.textContent = posto;
+        menu.appendChild(titulo);
+        postoAnterior = posto;
+      }
       var item = tpl('selecao-funcao');
-      var p = partes(nome);
-      var posto = item.querySelector('.nova-distribuicao-item-posto');
-      posto.textContent = postoCurto(p.posto);
-      if (CURTOS[p.posto]) posto.setAttribute('data-dica', p.posto);
-      item.querySelector('.nova-distribuicao-item-funcao').textContent = rotulo(ctx, nome);
+      item.textContent = rotulo(ctx, nome);
       if (nome === atual) item.classList.add('dropdown-item--ativo');
       item.addEventListener('click', function () { if (nome !== atual) aoEscolher(nome); });
       menu.appendChild(item);

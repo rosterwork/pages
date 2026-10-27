@@ -234,20 +234,8 @@
   overflow-y: auto;
 }
 
-/* item de função: Posto | Função, alinhados pelo posto mais comprido (subgrade do menu);
-   a grade só vale com o menu aberto (fechado, ele fica escondido como os outros) */
-.nova-distribuicao-selecao-menu--funcoes { grid-template-columns: auto minmax(0, 1fr); }
-
-.dropdown--aberto > .nova-distribuicao-selecao-menu--funcoes { display: grid; }
-
-.nova-distribuicao-item {
-  display: grid;
-  grid-column: 1 / -1;
-  grid-template-columns: subgrid;
-  column-gap: 12px;
-}
-
-.nova-distribuicao-item-posto { color: var(--texto-suave); }
+/* lista de funções agrupada por posto: as funções um pouco recuadas embaixo do título do posto */
+.nova-distribuicao-selecao-menu--funcoes .nova-distribuicao-item { padding-left: 16px; }
 
 /* erro no campo */
 /* a frase de erro fora de um .campo (o geral só a mostra com .campo--erro) */
