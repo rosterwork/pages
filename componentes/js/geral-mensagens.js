@@ -800,6 +800,8 @@
         falhaEnviar: 'Não foi possível enviar. Tente de novo.',
         /* no bloco, fora do Firefox (o envio é só pela extensão do Firefox) */
         soFirefox: 'Essa funcionalidade está disponível apenas no navegador Mozilla Firefox.',
+        /* no bloco, no celular sem a extensão (até a loja da Mozilla aprovar, ela só instala no computador) */
+        soComputador: 'Disponível apenas para computadores.',
         /* no bloco, quando a extensão é instalada com o painel aberto (o Instalar vira o Enviar) */
         extensaoInstalada: 'Extensão instalada. Já pode enviar.',
         /* o termo de responsabilidade, na janela de confirmação antes do primeiro Enviar de cada administrador.
