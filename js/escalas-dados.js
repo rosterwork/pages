@@ -187,9 +187,13 @@
 
   /* quem pode entrar no dia como pontual (RPC escala_dia_disponiveis): de folga na área da unidade buscada
      (pelotão = a companhia inteira), de qualquer setor, sem serviço e sem afastamento; vem por unidade, a buscada
-     primeiro; "assume" = vira o Chefe de Socorro / Oficial de Área. null em falha */
-  function disponiveis(unidadeId, iso, unidadeBusca) {
-    return RosterWork.apiFetch('/rest/v1/rpc/escala_dia_disponiveis', { metodo: 'POST', corpo: { p_unidade_id: Number(unidadeId), p_data: iso, p_unidade_busca: Number(unidadeBusca) } })
+     primeiro; "assume" = vira o Chefe de Socorro / Oficial de Área. Com a vaga ({viatura_id, instalacao_id,
+     funcao, periodos, cpf}, o seletor do nome), também quem está de serviço, com o grupo, as funções e o
+     pode/motivo de cada um. null em falha */
+  function disponiveis(unidadeId, iso, unidadeBusca, vaga) {
+    var corpo = { p_unidade_id: Number(unidadeId), p_data: iso, p_unidade_busca: Number(unidadeBusca) };
+    if (vaga) corpo.p_vaga = vaga;
+    return RosterWork.apiFetch('/rest/v1/rpc/escala_dia_disponiveis', { metodo: 'POST', corpo: corpo })
       .then(function (r) { return r.ok ? r.json() : null; })
       .catch(function () { return null; });
   }

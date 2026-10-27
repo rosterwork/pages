@@ -99,19 +99,18 @@
     return new Promise(function (resolver) { document.addEventListener('DOMContentLoaded', resolver); });
   }
 
-  /* a sessão ficou pronta: entra (na versão nova do app, se houver uma esperando).
+  /* a sessão ficou pronta: entra (na versão nova do app, se houver uma esperando; até a 1ª tela
+     aparecer, a que chegar também entra sozinha).
      RosterWork.sistemaPronto: todo o código do sistema rodou e a página terminou de ser lida; quem age
      sobre a primeira tela (o aviso aberto pela notificação, a oferta das notificações no app) espera por ela */
   function rodarSistema(veioDaRenovacao) {
-    if (veioDaRenovacao && RW.aplicativo && RW.aplicativo.temVersaoNova()) {
-      RW.aplicativo.irPara(location.href);
-      return;
-    }
+    if (RW.aplicativo && RW.aplicativo.trocarSeChegou()) return;
     /* as preferências chegaram com a renovação: o tema da pessoa antes de o sistema aparecer */
     if (veioDaRenovacao && RW.tema) RW.tema.aplicar();
     RW.sistemaPronto = Promise.all(ARQUIVOS.map(carregar)).then(paginaLida);
     RW.sistemaPronto.then(function () {
       document.documentElement.removeAttribute('data-entrando');
+      if (RW.aplicativo) RW.aplicativo.trocarSozinho(null);   /* a 1ª tela apareceu: só numa troca de página */
     });
   }
 
@@ -127,6 +126,8 @@
 
   function esperarSessao() {
     if (!RW.sessaoPronta) return;   /* sem sessão e sem login lembrado: o index-sessao.js já mandou para o login */
+    /* na abertura, antes da 1ª tela, a versão nova que chegar entra sozinha */
+    if (RW.aplicativo) RW.aplicativo.trocarSozinho(function () { return true; });
     var veioDaRenovacao = document.documentElement.hasAttribute('data-entrando');
     Promise.resolve(RW.sessaoPronta).then(function (r) {
       if (r && r.ok) { rodarSistema(veioDaRenovacao); return; }

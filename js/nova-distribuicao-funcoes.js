@@ -107,12 +107,29 @@
 
       if (calc.papel_viatura) {
         var cond = r.papel.condutor;
-        P().cartao(u, api, ctx, 'condutor', P().texto(M().podeConduzir, { papel: nomePapel }),
-          [cond == null ? { texto: M().faltaResponder, falta: true } : M().condutor[cond]], function (lugar) {
-            lugar.appendChild(P().bolinhas(P().tpl('condutor'), 'nova-distribuicao-condutor-' + ctx.lado, function (v) { return Number(v) === cond; }, function (v) {
-              api.mudar(ctx.lado, function (x) { x.papel.condutor = Number(v); });
-            }, ctx.soLeitura));
-          }, P().pendente(ctx, 'papel_condutor'), { muda: 'papel_condutor' });
+        /* "só se não houver outro habilitado": a caixa do erro amarelo (vem marcada); "Não, nunca": o aviso do erro vermelho */
+        var comAviso = r.papel.condutor_aviso !== false;
+        var frasesCond = cond == null ? [{ texto: M().faltaResponder, falta: true }]
+          : [M().condutor[cond]].concat(cond === 1 ? [P().texto(comAviso ? M().condutorComAviso : M().condutorSemAviso, { papel: nomePapel })]
+            : cond === 2 ? [M().condutorNunca] : []);
+        P().cartao(u, api, ctx, 'condutor', P().texto(M().podeConduzir, { papel: nomePapel }), frasesCond, function (lugar) {
+          var opcoes = P().bolinhas(P().tpl('condutor'), 'nova-distribuicao-condutor-' + ctx.lado, function (v) { return Number(v) === cond; }, function (v) {
+            api.mudar(ctx.lado, function (x) {
+              x.papel.condutor = Number(v);
+              if (x.papel.condutor !== 1) delete x.papel.condutor_aviso;
+            });
+          }, ctx.soLeitura);
+          var marca = opcoes.querySelector('.nova-distribuicao-condutor-aviso');
+          marca.classList.toggle('oculto', cond !== 1);
+          marca.querySelector('.nova-distribuicao-condutor-aviso-texto').textContent = P().texto(M().condutorComAviso, { papel: nomePapel });
+          P().marcar(marca, comAviso, function (marcado) {
+            api.mudar(ctx.lado, function (x) { x.papel.condutor_aviso = marcado; });
+          }, ctx.soLeitura);
+          var nunca = opcoes.querySelector('.nova-distribuicao-condutor-nunca');
+          nunca.classList.toggle('oculto', cond !== 2);
+          nunca.querySelector('.nota-texto').textContent = M().condutorNunca;
+          lugar.appendChild(opcoes);
+        }, P().pendente(ctx, 'papel_condutor'), { muda: 'papel_condutor' });
       }
 
       if (ctx.ehCia) {

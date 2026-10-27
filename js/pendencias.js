@@ -298,5 +298,10 @@
     });
   }
 
-  RW.paginas.pendencias = { iniciar: iniciar };
+  /* um pedido decidido fora da página (a faixa "Esperando a sua resposta"): relê, se a página está na tela */
+  function recarregar() {
+    if (q('#pendencias-minhas')) carregar();
+  }
+
+  RW.paginas.pendencias = { iniciar: iniciar, recarregar: recarregar };
 })();

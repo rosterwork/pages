@@ -35,6 +35,15 @@
       btnEntrar.addEventListener('click', window.RosterWork.fazerLogin);
     }
 
+    /* versão nova do app com o login ainda vazio: a tela recarrega já nela (com algo digitado,
+       ela entra no Entrar) */
+    var inputSenha = document.getElementById('entrada-senha');
+    if (window.RosterWork.aplicativo) {
+      window.RosterWork.aplicativo.trocarSozinho(function () {
+        return !(inputId && inputId.value) && !(inputSenha && inputSenha.value);
+      });
+    }
+
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') window.RosterWork.fazerLogin();
     });

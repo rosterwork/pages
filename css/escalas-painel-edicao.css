@@ -1,7 +1,8 @@
 /* ============================================================
-   ESCALA — painel do dia: a lista do Dia, o formulário Quem ·
-   Quando · Onde e o militar no dia (escalas-painel-editar.js,
-   -formulario.js, -militar.js). A sub-tela, o horário em campos,
+   ESCALA — painel do dia: a lista do Dia, o seletor do nome, o
+   formulário Quem · Quando · Onde e o militar no dia
+   (escalas-painel-editar.js, -seletor.js, -formulario.js,
+   -militar.js). A sub-tela, o horário em campos,
    a régua e as notas são dos componentes geral-subtela,
    geral-horario e geral-nota
    ============================================================ */
@@ -108,12 +109,78 @@
   color: var(--texto-fraco);
 }
 
-/* horário sem ninguém: o botão vermelho (admin) cabe na coluna do militar */
-.escala-edicao-vazio {
-  max-width: 100%;
+/* o nome como seletor (admin; escalas-painel-seletor.js): a caixa ocupa a coluna do militar, com os ícones, a
+   graduação e o nome dentro; na vaga vazia, o texto vermelho (a borda vermelha vem do .campo--erro) */
+.escala-seletor {
+  flex: 1;
+  min-width: 0;
+}
+
+.escala-seletor-gatilho {
+  gap: 4px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.escala-seletor-gatilho .seletor-seta {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.escala-seletor-texto:empty {
+  display: none;
+}
+
+.campo--erro .escala-seletor-texto {
+  font-weight: 600;
+  color: var(--erro);
+}
+
+/* a lista: largura fixa, a busca embaixo do título, os militares na largura toda (o motivo ou o efeito ao lado,
+   cortado com reticências); quem não pode fica apagado, com o motivo em vermelho */
+.escala-seletor-menu {
+  width: 320px;
+}
+
+.escala-seletor-busca {
+  padding: 0 8px 4px;
+}
+
+.escala-seletor-busca .escala-secao-busca {
+  width: 100%;
+  margin-bottom: 0;
+}
+
+.escala-seletor-lista .escala-form-militar {
+  width: 100%;
+}
+
+.escala-seletor-lista .escala-form-marca {
+  display: none;
+}
+
+.escala-seletor-lista .escala-form-militar-extra {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.escala-form-militar--apagado {
+  cursor: default;
+}
+
+.escala-form-militar--apagado:hover {
+  background: none;
+}
+
+.escala-form-militar--apagado .escala-distribuicao-grad,
+.escala-form-militar--apagado .escala-distribuicao-nome {
+  color: var(--texto-debil);
+}
+
+.escala-form-militar--apagado .escala-form-militar-extra {
+  color: var(--erro);
 }
 
 /* horário sem ninguém, para quem só lê */
@@ -390,4 +457,15 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   As linhas da lista do seletor do nome ficam com a altura do dedo,
+   como as de todo menu (a caixa já cresce pelo campo baixo do tema)
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .escala-seletor-lista .escala-form-militar {
+    min-height: var(--toque-altura-celular);
+  }
 }

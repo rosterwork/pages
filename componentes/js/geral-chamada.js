@@ -19,7 +19,9 @@
    O roteador chama porNaPagina a cada página: trocar de página só
    redesenha, sem ler o banco. Os botões usam as ações do painel da
    troca (a mesma confirmação e o mesmo resumo); os painéis carregam
-   no primeiro clique (RosterWork.carregarPecas). Enquanto o painel
+   no primeiro clique (RosterWork.carregarPecas). Depois de decidir,
+   o sino relê e a página aberta também (RosterWork.paginas.*.recarregar,
+   na Pendências e na Trocas). Enquanto o painel
    mostra o pedido aberto pela faixa, a faixa não o repete.
    API: RosterWork.chamada.definir(grupos) · porNaPagina()
    Clona moldes; não cria HTML.
@@ -105,12 +107,22 @@
 
   /* ---------- as ações ---------- */
 
-  /* o contexto das ações do painel da troca: depois de decidir, o sino relê (e a faixa com ele) */
+  /* depois de decidir: o sino relê (e a faixa com ele) e a página aberta também, quando ela sabe se reler
+     (Pendências e Trocas; cada uma confere se está na tela) */
+  function depoisDeDecidir() {
+    if (RW.avisosSino) RW.avisosSino.recarregar();
+    var paginas = RW.paginas || {};
+    Object.keys(paginas).forEach(function (nome) {
+      if (paginas[nome] && paginas[nome].recarregar) paginas[nome].recarregar();
+    });
+  }
+
+  /* o contexto das ações do painel da troca */
   function contexto(f) {
     var admin = RW.sessao.temPapel('pelotao');
     return {
       cpf: RW.sessao.cpf(), ehAdmin: admin, admin: admin, decidir: false,
-      aoMudar: function () { if (RW.avisosSino) RW.avisosSino.recarregar(); },
+      aoMudar: depoisDeDecidir,
       aoFechar: function () { if (noPainel !== f.registro_id) return; noPainel = null; desenhar(); }
     };
   }

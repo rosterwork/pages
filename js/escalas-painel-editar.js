@@ -1,11 +1,13 @@
 /* ============================================================
    ESCALAS — o Dia do painel (aba Dia): a lista do dia, a mesma
    para todos. O admin edita nela: o Adicionar militar (à esquerda)
-   e o desfazer/refazer (à direita) ficam no subcabeçalho, cada
-   militar tem o lápis (abre o militar no dia) e o ↺ (volta ao
+   e o desfazer/refazer (à direita) ficam no subcabeçalho, o nome de
+   cada militar numa função (fora o Chefe de Socorro e o Oficial de
+   Área) é um seletor de quem senta ali (escalas-painel-seletor.js),
+   cada militar tem o lápis (abre o militar no dia) e o ↺ (volta ao
    automático), quem está de folga tem o lápis (abre a folga no dia,
-   com o Cancelar folga), o horário sem ninguém vira o botão vermelho "Sem
-   ninguém, escolher", e as observações também se editam aqui; o
+   com o Cancelar folga), o horário sem ninguém vira o seletor vermelho
+   "Sem ninguém, escolher", e as observações também se editam aqui; o
    título de cada posto tem o Editar posto (escalas-painel-posto.js:
    o efetivo e a troca de viatura, gravados fora do rascunho do dia).
    Quem não é admin só lê.
@@ -307,6 +309,17 @@
       });
       resto.forEach(function (x) { rasc.ajustes.push(colocacao(c, x, null)); });
     });
+  }
+
+  /* tira o militar de uma função num trecho (o seletor, na vaga vazia: quem entra deixa o que tinha): o trecho
+     manual é cortado; o automático ganha o "tirar" */
+  function deixarFuncao(cpf, posto, nomeFuncao, per) {
+    var x = faixa(per);
+    var alvo = acharFuncao(posto, nomeFuncao);
+    var m = ((alvo && alvo.militares) || []).filter(function (o) { return o.cpf === cpf; })[0];
+    if (m && m.fixado) { aparar(cpf, function (a) { return noLocal(a, posto, nomeFuncao); }, x); return; }
+    var pr = periodo(x);
+    rasc.ajustes.push({ acao: 'tirar', cpf: cpf, nome_funcao: nomeFuncao, viatura_id: vidPosto(posto), instalacao_id: iidPosto(posto), hi: pr.hi, hf: pr.hf });
   }
 
   /* grava no rascunho o que mudou no militar no dia. abertura e linhas =
@@ -650,23 +663,23 @@
     return linha;
   }
 
+  /* o seletor do nome (escalas-painel-seletor.js): só o admin, na lista do dia, fora o Chefe de Socorro e o
+     Oficial de Área (o mais antigo, automático) */
+  function seletorDaFuncao(nomeFuncao) {
+    return ctx.admin && !ctx.comparar && !ctx.dadosProntos && !BLOQUEADAS.test(nomeFuncao) ? RosterWork.escalasPainelSeletor : null;
+  }
+
   /* horário sem ninguém na função (dentro do que o modelo pede) ou cadeira vazia do motor: para o admin,
-     o botão vermelho que abre o formulário já preenchido; para quem só lê, o texto vermelho */
+     o seletor vermelho de quem fica ali; para quem só lê, o texto vermelho */
   function linhaVazia(posto, nomeFuncao, per, texto) {
     var p = pecas();
     var linha = novaLinha();
     if (!linha) return null;
     var pessoa = linha.querySelector('.escala-edicao-pessoa');
     pessoa.textContent = '';
-    if (ctx.admin) {
-      var b = RosterWork.tpl('tpl-escala-edicao-vazio');
-      if (b) {
-        b.textContent = texto;
-        b.addEventListener('click', function () {
-          abrirFormulario({ modo: 'preencher', posto: posto, funcao: nomeFuncao, hi: per.hi, hf: per.hf });
-        });
-        pessoa.appendChild(b);
-      }
+    var seletor = seletorDaFuncao(nomeFuncao);
+    if (seletor) {
+      seletor.encaixarVazio(linha, { posto: posto, funcao: nomeFuncao, periodos: [{ hi: per.hi, hf: per.hf }], militar: null }, texto);
     } else {
       var t = RosterWork.tpl('tpl-escala-edicao-vazio-leitura');
       if (t) { t.textContent = msg().semNinguemTexto; pessoa.appendChild(t); }
@@ -701,6 +714,7 @@
     if (!grupo) return;
     function por(linha) { if (linha) grupo.linhas.appendChild(linha); }
     var sobrepostos = cpfsSobrepostos(f);
+    var seletor = seletorDaFuncao(f.nome);
     (f.militares || []).forEach(function (m) {
       var acoes = [];
       if (ctx.admin) {
@@ -719,6 +733,7 @@
       if (linha && (sobrepostos[m.cpf] || (m.periodos || []).some(function (per) { return foraDaDisponibilidade(per, m); }))) {
         linha.classList.add('escala-edicao-linha--erro');
       }
+      if (linha && seletor) seletor.encaixar(linha, { posto: posto, funcao: f.nome, periodos: m.periodos || [], militar: m });
       por(linha);
     });
     /* riscados: na edição, o automático trocado ou tirado (só o admin vê); na comparação, quem saiu */
@@ -979,8 +994,11 @@
   window.RosterWork.escalasPainelEditar = {
     montar: montar,
     reset: reset,
-    /* para as sub-telas (escalas-painel-formulario.js, escalas-painel-militar.js e escalas-painel-posto.js) */
+    /* para as sub-telas (escalas-painel-formulario.js, escalas-painel-militar.js e escalas-painel-posto.js) e o
+       seletor do nome (escalas-painel-seletor.js: mudar grava a troca como uma mudança só) */
     sub: {
+      mudar: mudar,
+      deixarFuncao: deixarFuncao,
       dados: function () { return ctx && ctx.dados; },
       iso: function () { return ctx && ctx.iso; },
       unidadeId: function () { return ctx && ctx.unidadeId; },

@@ -10,7 +10,7 @@
    conforme o papel de quem olha. Na lista, a troca aprovada com
    aceite faltando mostra o Pendente (abre a lista dos aceites) antes
    do Aprovada.
-   Registra RosterWork.paginas.trocas = { iniciar }.
+   Registra RosterWork.paginas.trocas = { iniciar, recarregar }.
    ============================================================ */
 (function () {
   'use strict';
@@ -238,6 +238,11 @@
     carregarAba(estado.aba);
   }
 
+  /* um pedido decidido fora da página (a faixa "Esperando a sua resposta"): relê a vista atual, se a página está na tela */
+  function recarregarNaTela() {
+    if (conteudo && conteudo.querySelector('#trocas-abas')) recarregar();
+  }
+
   /* Solicitar e Registrar (só admin): os botões da barra abrem o formulário no painel lateral;
      o Registrar fica no grupo Administração, que no celular é um menu (fecha antes de abrir) */
   function abrirSolicitar() {
@@ -291,5 +296,5 @@
     if (RW.referenciaPedida && RW.referenciaPedida('trocas') === 'solicitar') abrirSolicitar();
   }
 
-  RW.paginas.trocas = { iniciar: iniciar };
+  RW.paginas.trocas = { iniciar: iniciar, recarregar: recarregarNaTela };
 })();

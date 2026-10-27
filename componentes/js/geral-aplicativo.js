@@ -70,16 +70,55 @@
   /* ---------- armazém do app (o service worker aplicativo-armazem.js) ----------
      Registra o armazém (só em endereço seguro) e acompanha a versão nova: ela baixa em segundo
      plano e só entra numa troca de página (irPara), nunca no meio de uma tela aberta, para a
-     versão velha e a nova não se misturarem. ARMAZEM_LIGADO = false é o botão de emergência
-     (REGRAS §8.1): desliga o armazém e apaga o que ele guardou */
+     versão velha e a nova não se misturarem. Nas telas sem nada em uso (o login vazio e a
+     abertura do sistema, antes da 1ª tela), ela entra sozinha assim que chega (trocarSozinho).
+     ARMAZEM_LIGADO = false é o botão de emergência (REGRAS §8.1): desliga o armazém e apaga o
+     que ele guardou */
   var ARMAZEM_LIGADO = true;
   var TROCA_LIMITE_MS = 3000;   /* sem resposta do armazém na troca de versão, segue mesmo assim */
+  var TROCA_GUARDA = 'rosterwork_troca_versao';   /* quando esta aba trocou sozinha (nunca em ciclo) */
+  var TROCA_INTERVALO_MS = 60000;
   var registro = null;
   var trocando = false;
+  var podeTrocarSozinho = null;   /* a condição da tela para a versão nova entrar sozinha */
 
-  /* há versão nova baixada, esperando a próxima troca de página? */
+  /* há versão nova baixada, esperando a próxima troca de página? Vale também na página aberta
+     pelo Ctrl+Shift+R, que o armazém não controla: a próxima página ainda viria da versão velha */
   function temVersaoNova() {
-    return !!(registro && registro.waiting && navigator.serviceWorker.controller);
+    return !!(registro && registro.waiting);
+  }
+
+  /* com versão nova esperando, recarrega a página já nela; no máximo uma vez por minuto na aba, para
+     nunca recarregar em ciclo se a troca falhar. Devolve true quando está trocando */
+  function trocarSeChegou() {
+    if (!temVersaoNova()) return false;
+    try {
+      if (Date.now() - (Number(sessionStorage.getItem(TROCA_GUARDA)) || 0) < TROCA_INTERVALO_MS) return false;
+      sessionStorage.setItem(TROCA_GUARDA, String(Date.now()));
+    } catch (e) { return false; }
+    irPara(location.href);
+    return true;
+  }
+
+  /* a versão nova chegou: entra já, se a tela deixa */
+  function versaoChegou() {
+    if (podeTrocarSozinho && podeTrocarSozinho()) trocarSeChegou();
+  }
+
+  /* a versão que já espera e a que termina de baixar com a tela aberta */
+  function acompanhar(r) {
+    versaoChegou();
+    r.addEventListener('updatefound', function () {
+      var nova = r.installing;
+      if (!nova) return;
+      nova.addEventListener('statechange', function () { if (nova.state === 'installed') versaoChegou(); });
+    });
+  }
+
+  /* a tela diz quando a versão nova pode entrar sozinha (condicao() verdadeira); null desliga */
+  function trocarSozinho(condicao) {
+    podeTrocarSozinho = condicao || null;
+    if (registro) versaoChegou();
   }
 
   function ligarArmazem() {
@@ -95,7 +134,7 @@
       }
       return;
     }
-    navigator.serviceWorker.register('aplicativo-armazem.js').then(function (r) { registro = r; }).catch(function () {});
+    navigator.serviceWorker.register('aplicativo-armazem.js').then(function (r) { registro = r; acompanhar(r); }).catch(function () {});
     /* o app voltou do fundo: confere se saiu versão nova */
     document.addEventListener('visibilitychange', function () {
       if (document.visibilityState === 'visible' && registro) registro.update().catch(function () {});
@@ -124,6 +163,8 @@
     iphone: iphone,
     pedirInstalacao: pedirInstalacao,
     temVersaoNova: temVersaoNova,
-    irPara: irPara
+    irPara: irPara,
+    trocarSeChegou: trocarSeChegou,
+    trocarSozinho: trocarSozinho
   };
 })();

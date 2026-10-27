@@ -5,8 +5,9 @@
      está de folga, de qualquer unidade e setor: a árvore começa na
      unidade do painel e a lista vem por unidade, a escolhida primeiro;
      entra como pontual, com o modal do banco de horas);
-   - preencher: o "Sem ninguém, escolher" (posto e função já escolhidos;
-     primeiro quem está sem função nesse horário, depois os de folga);
+   - preencher: o Mais opções do seletor do nome (escalas-painel-seletor.js;
+     posto, função e horários da linha já escolhidos; primeiro quem está
+     sem função nesses horários, depois os de folga);
    - nova: a "Nova função" do militar no dia (o militar já escolhido;
      primeiro "Para onde", depois o Quando).
    Quem tem só parte do dia livre (ex.: a extra das 08h às 02h) aparece
@@ -34,14 +35,17 @@
   function nomeDe(m) { return ((m.grad || '') + ' ' + (m.nome || '')).trim(); }
   function diaMes(iso) { var p = String(iso || '').split('-'); return p.length === 3 ? p[2] + '/' + p[1] : ''; }
 
-  /* cfg = { modo: 'adicionar' | 'preencher' | 'nova', posto, funcao, hi, hf, cpf } */
+  /* cfg = { modo: 'adicionar' | 'preencher' | 'nova', posto, funcao, hi, hf, periodos, cpf }: periodos (os horários
+     da linha, no preencher) vale no lugar de hi e hf */
   function abrir(cfg) {
     var api = ed(), H = api.horas;
     var dados = api.dados();
     if (!dados) return;
     var est = {
       mil: cfg.modo === 'nova' ? api.militarDoDia(cfg.cpf) : null,
-      periodos: [{ hi: cfg.hi || '08:00', hf: cfg.hf || '08:00' }],
+      periodos: (cfg.periodos && cfg.periodos.length)
+        ? cfg.periodos.map(function (p) { return { hi: p.hi, hf: p.hf }; })
+        : [{ hi: cfg.hi || '08:00', hf: cfg.hf || '08:00' }],
       onde: cfg.modo === 'adicionar' ? 'sistema' : 'funcao',
       posto: cfg.posto || null, funcao: cfg.funcao || null
     };
@@ -196,15 +200,18 @@
       itens.forEach(function (it) { it.el.classList.toggle('escala-form-militar--escolhido', !!est.mil && it.cpf === est.mil.cpf); });
     }
 
-    /* Quem: no "Sem ninguém", primeiro quem está sem função nesse horário; depois (e no Adicionar, só)
+    /* Quem: no preencher, primeiro quem está sem função nesses horários; depois (e no Adicionar, só)
        os de folga, pela árvore de unidades + a busca */
     function montarQuem(form) {
       if (cfg.modo === 'preencher') {
-        var w = H.faixa(est.periodos[0]);
+        var ws = janelasDoQuando();
         var listaServico = form.querySelector('.escala-form-lista--servico');
         var algum = false;
         (dados.sem_funcao || []).forEach(function (m) {
-          var trechos = (m.periodos || []).map(H.faixa).map(function (f) { return H.cruza(f, w); }).filter(Boolean);
+          var trechos = [];
+          (m.periodos || []).map(H.faixa).forEach(function (f) {
+            ws.forEach(function (w) { var x = H.cruza(f, w); if (x) trechos.push(x); });
+          });
           if (!trechos.length) return;
           algum = true;
           itemMilitar(listaServico, m, msg().semFuncaoDas(H.textoPeriodos(trechos.map(H.periodo))), function () {

@@ -200,6 +200,21 @@
 .nova-distribuicao-criterio-aviso,
 .nova-distribuicao-fora-aviso { padding: 0 8px 0 32px; }
 
+/* o que vem com a opção do condutor: a caixa do erro amarelo e o aviso do "Não, nunca", recuados até o texto dela */
+.nova-distribuicao-condutor-aviso { padding-left: 32px; }
+
+.nova-distribuicao-condutor-nunca { margin-left: 32px; }
+
+/* o dia real: o campo do dia e a equipe dele */
+.nova-distribuicao-dia {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 8px;
+}
+
+.nova-distribuicao-dia-campo { max-width: 160px; }
+
 /* frase com os campos de seleção no meio */
 /* a regra automática em duas linhas (Substitutos): juntas, como uma frase só */
 .nova-distribuicao-automatica-linhas {
@@ -474,8 +489,8 @@
 
 .nova-distribuicao-simulacao-tabela .selo + .selo { margin-left: 4px; }
 
-/* os postos que ficam fora da escala, um aviso cada */
-.nova-distribuicao-fora {
+/* os avisos dos postos na equipe simulada ou do dia real, um aviso cada */
+.nova-distribuicao-avisos-equipe {
   display: flex;
   flex-direction: column;
   gap: 8px;

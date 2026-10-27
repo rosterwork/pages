@@ -344,7 +344,15 @@
   <div class="nova-distribuicao-opcoes">
     <label class="geral-opcao"><input type="radio" data-valor="0" /><span>Sim, sempre é o condutor da viatura dele</span></label>
     <label class="geral-opcao"><input type="radio" data-valor="1" /><span>Sim, só se não houver outro habilitado</span></label>
+    <button type="button" class="geral-opcao nova-distribuicao-marca nova-distribuicao-condutor-aviso oculto" role="checkbox" aria-checked="false">
+      <span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
+      <span class="nova-distribuicao-condutor-aviso-texto"></span>
+    </button>
     <label class="geral-opcao"><input type="radio" data-valor="2" /><span>Não, nunca</span></label>
+    <div class="nota nota--erro nova-distribuicao-condutor-nunca oculto">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+      <span class="nota-texto"></span>
+    </div>
   </div>
 </template>
 
@@ -721,6 +729,7 @@
     <div class="abas abas--seletor nova-distribuicao-conferir-modo" aria-label="Como conferir">
       <button type="button" class="aba" data-valor="tabela">Tabela</button>
       <button type="button" class="aba" data-valor="simulacao">Simular a equipe</button>
+      <button type="button" class="aba" data-valor="dia">Um dia real</button>
     </div>
     <div class="nova-distribuicao-conferir-corpo"></div>
   </div>
@@ -737,8 +746,10 @@
       <thead><tr><th>Posto</th><th>Função</th></tr></thead>
       <tbody></tbody>
       <tfoot>
-        <tr data-resumo="vermelhas"><th colspan="2">Vazias com erro vermelho</th></tr>
-        <tr data-resumo="amarelas"><th colspan="2">Vazias com aviso amarelo</th></tr>
+        <tr data-resumo="abaixo_minimo"><th colspan="2">Postos abaixo do mínimo</th></tr>
+        <tr data-resumo="abaixo_ideal"><th colspan="2">Postos abaixo do ideal</th></tr>
+        <tr data-resumo="sem_condutor"><th colspan="2">Viaturas sem condutor</th></tr>
+        <tr data-resumo="chefe_condutor"><th colspan="2"><span class="nova-distribuicao-conferir-pracas">Chefe de Socorro dirigindo</span><span class="nova-distribuicao-conferir-oficiais oculto">Oficial de Área dirigindo</span></th></tr>
         <tr data-resumo="sem_funcao"><th colspan="2">Sem função</th></tr>
         <tr data-resumo="fora"><th colspan="2">Postos fora da escala</th></tr>
       </tfoot>
@@ -790,9 +801,18 @@
   <div class="nova-distribuicao-cartao nova-distribuicao-cartao--tabela">
     <p class="nova-distribuicao-cartao-titulo">Quem está de serviço</p>
     <div class="nova-distribuicao-graus"></div>
-    <p class="nova-distribuicao-ajuda">"Cb. 1" é o cabo mais antigo da equipe, e "Cb. 2", o segundo.</p>
+    <p class="nova-distribuicao-ajuda nova-distribuicao-graus-ajuda">"Cb. 1" é o cabo mais antigo da equipe, e "Cb. 2", o segundo.</p>
+    <div class="nova-distribuicao-dia oculto">
+      <label class="campo nova-distribuicao-dia-campo">
+        <span class="campo-rotulo">Dia</span>
+        <input type="text" class="campo-entrada nova-distribuicao-dia-data" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" />
+      </label>
+      <p class="nova-distribuicao-ajuda">Quem está de serviço às 08h nesse dia, com a CNH e as regras por militar.</p>
+      <p class="nova-distribuicao-frase nova-distribuicao-dia-equipe"></p>
+    </div>
     <p class="nova-distribuicao-ajuda nova-distribuicao-simulacao-vazia oculto">Escolha quantos de cada graduação estão de serviço.</p>
-    <div class="nova-distribuicao-fora oculto"></div>
+    <p class="nova-distribuicao-ajuda nova-distribuicao-dia-vazia oculto">Ninguém da unidade de serviço às 08h nesse dia.</p>
+    <div class="nova-distribuicao-avisos-equipe oculto"></div>
     <table class="nova-distribuicao-tabela nova-distribuicao-simulacao-tabela">
       <thead><tr><th>Posto</th><th>Função</th><th>Quem</th><th>Situação</th></tr></thead>
       <tbody></tbody>
@@ -800,8 +820,9 @@
     <p class="nova-distribuicao-ajuda nova-distribuicao-sobra oculto"></p>
   </div>
 </template>
-<!-- simular a equipe: o posto que fica fora da escala, com o motivo (amarelo ou vermelho, o nível escolhido) -->
-<template id="tpl-nova-distribuicao-fora-nota">
+<!-- simular a equipe e o dia real: o aviso de cada posto (abaixo do mínimo ou do ideal, sem condutor, o Chefe de Socorro
+     dirigindo, fora da escala), vermelho ou amarelo -->
+<template id="tpl-nova-distribuicao-nota-equipe">
   <div class="nota">
     <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
     <p class="nota-texto"></p>

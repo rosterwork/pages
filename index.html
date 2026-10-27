@@ -1625,9 +1625,24 @@
     </button>
   </template>
 
-  <!-- horário sem ninguém (admin): botão vermelho que abre o formulário já preenchido; o texto vem do JS -->
-  <template id="tpl-escala-edicao-vazio">
-    <button type="button" class="botao botao--pequeno escala-secao-botao--perigo escala-edicao-vazio"></button>
+  <!-- o nome como seletor (admin; escalas-painel-seletor.js): a caixa com a setinha e a lista de quem pode sentar
+       na função. Na linha do militar, o JS põe na caixa os ícones, a graduação e o nome da linha; na vaga vazia, o
+       texto ("Sem ninguém, escolher") vai no .escala-seletor-texto. O título e a lista vêm do JS -->
+  <template id="tpl-escala-edicao-seletor">
+    <div class="dropdown escala-seletor">
+      <button type="button" class="campo-entrada campo-entrada--pequeno campo-selecao escala-seletor-gatilho">
+        <span class="campo-selecao-texto escala-seletor-texto"></span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu dropdown-menu--largo escala-seletor-menu">
+        <span class="dropdown-titulo escala-seletor-titulo"></span>
+        <div class="escala-seletor-busca"></div>
+        <div class="dropdown-menu-rolagem escala-seletor-lista"></div>
+        <div class="dropdown-menu-rodape">
+          <button type="button" class="dropdown-item escala-seletor-mais">Mais opções</button>
+        </div>
+      </div>
+    </div>
   </template>
 
   <!-- aviso informativo no topo da lista (ex.: quem assume o Chefe de Socorro); o texto vem do JS -->
