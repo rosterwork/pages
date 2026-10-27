@@ -458,7 +458,14 @@
         horasN: function (n) { return n + 'h'; },
         pmDia: function (data, n) { return data + ' · ' + n + 'h'; },
         nenhumDia: 'Nenhum dia',
-        sobrou: function (nome, n, motivo) { return 'Sobrou ' + n + (n === 1 ? ' cota' : ' cotas') + ' de ' + nome + (motivo === 'solta' ? ' (seria um pedaço solto de 6 horas).' : ' (sem dia livre que caiba).'); },
+        sobrou: function (nome, n, motivo) {
+          return 'Sobrou ' + n + (n === 1 ? ' cota' : ' cotas') + ' de ' + nome
+            + (motivo === 'solta' ? ' (seria um pedaço solto de 6 horas).' : motivo === 'oficial' ? ' (a sugestão só põe praça).' : ' (sem dia livre com lugar na escala).');
+        },
+        ajudaTitulo: 'Como a sugestão decide',
+        ajudaSubtitulo: 'Preencher pela sugestão',
+        faltaIdealHoras: function (h) { return 'Ainda falta gente para o ideal de ' + h + '.'; },
+        chefeDirigeHoras: function (h, cnh) { return 'O chefe ainda dirige de ' + h + ' por falta de condutor' + (cnh ? ', CNH ' + cnh : '') + '.'; },
         sugestaoFeita: function (c, n24, em, fora) { return 'A sugestão colocou ' + c + ' cotas: ' + n24 + ' de 24 h, ' + em + ' emendadas com o serviço, ' + fora + ' em outro pelotão. Nada foi salvo ainda.'; },
         ajusteTexto: function (n) { return n + (n === 1 ? ' ajuste não salvo.' : ' ajustes não salvos.') + ' O mês já começou: cada mudança vira um ajuste.'; },
         alteracoes: function (n) { return n + (n === 1 ? ' alteração não salva' : ' alterações não salvas'); },
@@ -611,6 +618,8 @@
         mudouSemFuncao: function (militar, antes) { return 'O ' + militar + ' saiu ' + lista('do', antes) + ' e ficou sem função.'; },
         mudouSaiu: function (militar, antes) { return 'O ' + militar + ' saiu ' + lista('do', antes) + '.'; },
         mudouHorario: function (militar, periodos) { return 'O ' + militar + ' continua nas mesmas funções, agora ' + (periodos || 'o dia todo') + '.'; },
+        mudouDeixou: function (militar, deixou) { return 'O ' + militar + ' deixou ' + lista('o', deixou) + '.'; },
+        mudouGanhou: function (militar, ganhou) { return 'O ' + militar + ' passou a fazer também ' + lista('o', ganhou) + '.'; },
         atalho: function (militar, funcao) { return 'Pôr o ' + militar + ' no ' + funcao; },
         atalhoLugar: function (militar, outro) { return 'Pôr o ' + militar + ' no lugar que o ' + outro + ' deixou'; },
         /* Voltar o dia ao automático */

@@ -854,10 +854,14 @@
       var mesmos = antes.length === depois.length && antes.every(function (k) { return d[k]; });
       if (mesmos && antes.every(function (k) { return JSON.stringify(a[k]) === JSON.stringify(d[k]); })) return;
       var horas = uniao([].concat.apply([], depois.map(function (k) { return d[k]; }))).map(periodo);
+      /* só o que mudou: as funções que ele deixou e as que ganhou (as que continuam ficam de fora) */
+      var deixou = antes.filter(function (k) { return !d[k]; }), ganhou = depois.filter(function (k) { return !a[k]; });
       var frase = !antes.length ? L.mudouEntrou(x.nome, depois)
         : !depois.length ? (semFuncao[x.cpf] ? L.mudouSemFuncao(x.nome, antes) : L.mudouSaiu(x.nome, antes))
         : mesmos ? L.mudouHorario(x.nome, textoPeriodos(horas))
-        : L.mudouPassou(x.nome, antes, depois);
+        : !ganhou.length ? L.mudouDeixou(x.nome, deixou)
+        : !deixou.length ? L.mudouGanhou(x.nome, ganhou)
+        : L.mudouPassou(x.nome, deixou, ganhou);
       var item = RosterWork.tpl('tpl-escala-edicao-mudou-item');
       if (item) { item.textContent = frase; lista.appendChild(item); }
     });

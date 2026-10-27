@@ -8,8 +8,7 @@
      vazio veio de um Tirar desta função);
    - Chefe de Socorro e Oficial de Área: sempre o mais antigo (o Quem
      fica travado); só o De serviço no dia e o Tirar do dia;
-   - sem função: Pôr numa função (posto e função), o horário, o De
-     serviço no dia e o Tirar do dia.
+   - sem função: Pôr numa função, o horário, o De serviço e o Tirar.
    Na troca, só aquela função muda: quem entra fica fixado nela e quem
    sai fica sem função (ou continua na outra função dele). Quem entra e
    já tem função no horário sai de lá (que fica vazia) ou faz as duas.
@@ -194,19 +193,31 @@
       atualizar();
     }
 
+    /* com o De serviço no dia mudado, o horário na função acompanha (o que sobra do serviço novo) */
+    function acompanhaServico() {
+      var novos = !est.escolhido && servico ? servico.novos() : null;
+      if (!novos) return null;
+      var r = [];
+      (cfg.periodos || []).forEach(function (p) {
+        novos.forEach(function (s) { var x = H.cruza(H.faixa(p), H.faixa(s)); if (x) r.push(H.periodo(x)); });
+      });
+      return r;
+    }
+
     function montarPeriodos() {
       ui.periodos.textContent = '';
       /* as horas de quem fica na função: o serviço dele (de serviço) ou o dia todo (de folga e na vaga sem ninguém) */
       var quemFica = est.escolhido ? (est.escolhido.grupo === 'folga' ? null : api.militarDoDia(est.escolhido.cpf)) : (tipo === 'vaga' ? null : api.militarDoDia(m.cpf));
       var opc = H.opcoesHoras(quemFica && quemFica.janelas.length ? quemFica.janelas : null);
-      est.periodos.forEach(function (per, i) {
+      var acompanha = acompanhaServico(), fixo = tipo === 'papel' || !!acompanha;
+      (acompanha || est.periodos).forEach(function (per, i, todos) {
         var linha = RosterWork.horario.linha({
-          hi: per.hi, hf: per.hf, opcoes: opc, fixo: tipo === 'papel',
+          hi: per.hi, hf: per.hf, opcoes: opc, fixo: fixo,
           aoInicio: function (h) { per.hi = h; atualizar(); },
           aoFim: function (h) { per.hf = h; atualizar(); },
-          aoRemover: tipo !== 'papel' && est.periodos.length > 1 ? function () { est.periodos.splice(i, 1); atualizar(); } : null,
-          aoAdicionar: tipo !== 'papel' && i === 0 ? adicionarPeriodo : null,
-          semAcoes: tipo === 'papel'
+          aoRemover: !fixo && todos.length > 1 ? function () { est.periodos.splice(i, 1); atualizar(); } : null,
+          aoAdicionar: !fixo && i === 0 ? adicionarPeriodo : null,
+          semAcoes: fixo
         });
         if (linha) ui.periodos.appendChild(linha);
       });
@@ -222,7 +233,8 @@
       var c = est.escolhido, tirando = est.tirando;
       [ui.blocoQuem, ui.blocoHorario].forEach(function (b) { b.classList.toggle('oculto', tirando || (b === ui.blocoQuem && tipo === 'sem_funcao')); });
       ui.blocoOnde.classList.toggle('oculto', tirando || tipo !== 'sem_funcao');
-      ui.acoes.classList.toggle('oculto', tirando || !ui.acoes.querySelector('.botao:not(.oculto)'));
+      /* as ações são de quem está na linha: somem quando outro militar vai entrar */
+      ui.acoes.classList.toggle('oculto', tirando || !!est.escolhido || !ui.acoes.querySelector('.botao:not(.oculto)'));
       ui.tirar.classList.toggle('oculto', !tirando);
       ui.aplicar.textContent = tirando ? L().botaoTirarDia : msg().formBotaoAplicar;
 
@@ -367,12 +379,14 @@
       if (erro) { RosterWork.avisar({ tipo: 'erro', mensagem: erro }); return; }
       var atalho = sugestao();
       api.sugerir(atalho);
+      /* com o De serviço no dia mudado, o horário na função acompanha pelo sistema (a função não fica fixada) */
+      var mudaServico = !est.escolhido && !!servico && servico.mudou();
       api.mudar(function () {
         if (est.escolhido) trocar();
         else if (tipo === 'sem_funcao' && est.onde) {
           api.aplicarColocacao({ cpf: m.cpf, posto: est.onde.posto, funcao: est.onde.funcao, periodos: est.periodos, sistema: false, pontual: null });
-        } else if (horarioMudou && tipo === 'funcao') mudarHorario();
-        if (servico && !est.escolhido && servico.mudou()) servico.aplicar();
+        } else if (horarioMudou && tipo === 'funcao' && !mudaServico) mudarHorario();
+        if (mudaServico) servico.aplicar();
       });
     }
 

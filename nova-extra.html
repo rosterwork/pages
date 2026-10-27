@@ -187,6 +187,9 @@
       <div class="nova-extra-passo-painel oculto" data-passo-painel="3">
         <div class="nova-extra-ferramentas">
           <button type="button" class="botao" id="p3-sugerir">Preencher pela sugestão</button>
+          <button type="button" class="botao botao--icone" id="p3-ajuda" aria-label="Como a sugestão decide" data-dica="Como a sugestão decide">
+            <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg>
+          </button>
           <button type="button" class="botao oculto" id="p3-desfazer-sugestao">Desfazer a sugestão</button>
           <div class="abas abas--seletor" id="p3-vista">
             <button type="button" class="aba aba--ativa" data-vista="dia">Por dia</button>
@@ -322,6 +325,77 @@
 
 <template id="tpl-ne-dia-pessoa">
   <span class="nova-extra-pessoa"><small></small><b></b><span class="ne-de"></span><span class="ne-hora"></span></span>
+</template>
+
+<!-- passo 3: o "?" da sugestão abre no painel como ela decide e os erros da escala que a extra corrige ou não -->
+<template id="tpl-ne-ajuda">
+  <div class="nova-extra-ajuda-sugestao">
+    <div class="grupo-caixa">
+      <span class="rotulo-secao">Quem entra</span>
+      <ul class="nova-extra-ajuda-lista">
+        <li>Só praça voluntária, com o termo recebido e com cota.</li>
+        <li>Nunca em dia de serviço, folga, férias, licença, dispensa ou marcado como "Não posso".</li>
+        <li>O administrativo nunca no horário do expediente.</li>
+        <li>Ninguém passa da cota. Quem pediu só 24 h recebe só blocos de 24 h.</li>
+        <li>Só nos pelotões. Na companhia, a extra entra só se o administrador puser manualmente.</li>
+      </ul>
+    </div>
+    <div class="grupo-caixa">
+      <span class="rotulo-secao">A ordem</span>
+      <ol class="nova-extra-ajuda-lista">
+        <li>Erro vermelho no pelotão dele.</li>
+        <li>Erro vermelho em outro pelotão.</li>
+        <li>Erro amarelo no pelotão dele.</li>
+        <li>Erro amarelo em outro pelotão.</li>
+        <li>Sem erro: no pelotão dele, nos dias e horários com menos gente, para o mês ficar equilibrado. Nunca onde o pelotão já está cheio.</li>
+      </ol>
+      <span class="nova-extra-ajuda">Em cada passo, desempata o dia que ele quer, depois emendar com o serviço e depois o bloco de 24 h. Quem foi menos atendido nos últimos 12 meses escolhe primeiro.</span>
+    </div>
+    <div class="grupo-caixa nova-extra-ajuda--vermelho">
+      <span class="rotulo-secao">Erros vermelhos que a extra corrige, nesta ordem</span>
+      <ol class="nova-extra-ajuda-lista">
+        <li>Viatura sem condutor, só com quem tem a CNH da viatura.</li>
+        <li>Viatura sem condutor habilitado, só com quem tem a CNH da viatura.</li>
+        <li>Efetivo abaixo do mínimo.</li>
+        <li>Sem solução automática, precisa de ação do administrador.</li>
+      </ol>
+    </div>
+    <div class="grupo-caixa nova-extra-ajuda--vermelho">
+      <span class="rotulo-secao">Erros vermelhos que a extra não corrige</span>
+      <span class="nova-extra-ajuda">Pedem ajuste do administrador na Escala ou na Distribuição.</span>
+      <ul class="nova-extra-ajuda-lista">
+        <li>Existe militar sem função.</li>
+        <li>Falta modelo de distribuição.</li>
+        <li>Distribuição com erro.</li>
+        <li>Efetivo acima do máximo.</li>
+        <li>Funções fora da disponibilidade.</li>
+        <li>Militar sem serviço no dia.</li>
+        <li>Dois militares no mesmo horário.</li>
+        <li>Condutor sem a CNH exigida.</li>
+        <li>Função proibida pela regra.</li>
+        <li>Militar em duas unidades ao mesmo tempo.</li>
+      </ul>
+    </div>
+    <div class="grupo-caixa nova-extra-ajuda--amarelo">
+      <span class="rotulo-secao">Erros amarelos que a extra corrige, nesta ordem</span>
+      <ol class="nova-extra-ajuda-lista">
+        <li>Chefe assumiu a direção por falta de condutor, só com quem tem a CNH da viatura.</li>
+        <li>Efetivo abaixo do ideal.</li>
+      </ol>
+    </div>
+    <div class="grupo-caixa nova-extra-ajuda--amarelo">
+      <span class="rotulo-secao">Erros amarelos que a extra não corrige</span>
+      <ul class="nova-extra-ajuda-lista">
+        <li>Grau rebaixado por falta de efetivo.</li>
+        <li>Rodízio repetido por falta de opção.</li>
+        <li>Grau diferente do ideal (função exclusiva).</li>
+        <li>Condutor exclusivo indisponível.</li>
+        <li>Militar afastado.</li>
+        <li>Militar exclusivo fora da sua função.</li>
+        <li>Grau diferente do ideal.</li>
+      </ul>
+    </div>
+  </div>
 </template>
 
 <!-- painel do dia: os selos de um militar (embaixo do nome) e uma frase (o porquê da sugestão, a falta que sobra) -->

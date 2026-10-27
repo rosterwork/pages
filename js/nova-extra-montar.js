@@ -70,30 +70,40 @@
   /* a CNH que a viatura pede ('' = qualquer uma) está entre as que ele conduz (o banco diz quais) */
   function conduz(m, cnh) { return !cnh || (m.conduz || []).indexOf(cnh) >= 0; }
 
-  /* a falta de uma unidade num dia, por horário: base (a da escala), cond (condutor que sobra) e total
-     (o que sobra com as extras: cada extra cobre primeiro um condutor que ele conduz, senão um lugar de gente) */
+  /* a falta de uma unidade num dia, por horário, a vermelha e a amarela (a que começa com "a"): base (a da escala),
+     cond (condutor que sobra) e total (o que sobra com as extras). Cada extra cobre, na ordem da sugestão, um
+     condutor vermelho que ele conduz, a gente vermelha, um condutor amarelo (o chefe dirigindo) e a gente amarela */
   function faltaDoDia(uid, k, alocs) {
-    var base = (d.falta[String(uid)] || {})[k] || {};
-    var pede = ((d.falta_condutor || {})[String(uid)] || {})[k] || {};
+    function ler(mapa) { return ((mapa || {})[String(uid)] || {})[k] || {}; }
+    function tira(lista, m) { for (var i = 0; i < lista.length; i++) { if (conduz(m, lista[i])) { lista.splice(i, 1); return true; } } return false; }
+    var base = ler(d.falta), pede = ler(d.falta_condutor), abase = ler(d.falta_amarela), apede = ler(d.falta_amarela_condutor);
     var aqui = alocs.filter(function (a) { return +a.unidade === +uid && a.data === k; });
-    var r = { base: {}, cond: {}, total: {}, cnh: [] };
+    var r = { base: {}, cond: {}, total: {}, cnh: [], abase: {}, acond: {}, atotal: {}, acnh: [] };
     [1, 2, 3, 4].forEach(function (b) {
-      var conds = (pede[String(b)] || []).slice();
+      var conds = (pede[String(b)] || []).slice(), aconds = (apede[String(b)] || []).slice();
       conds.forEach(function (c) { if (c && r.cnh.indexOf(c) < 0) r.cnh.push(c); });
-      var gente = (base[String(b)] || 0) - conds.length;
+      aconds.forEach(function (c) { if (c && r.acnh.indexOf(c) < 0) r.acnh.push(c); });
+      var gente = (base[String(b)] || 0) - conds.length, agente = (abase[String(b)] || 0) - aconds.length;
       aqui.forEach(function (a) {
         if (blocos(a).indexOf(b) < 0) return;
         var m = u().militar(a.cpf) || {};
-        for (var i = 0; i < conds.length; i++) { if (conduz(m, conds[i])) { conds.splice(i, 1); return; } }
-        gente--;
+        if (tira(conds, m)) return;
+        if (gente > 0) { gente--; return; }
+        if (tira(aconds, m)) return;
+        if (agente > 0) agente--;
       });
       r.base[b] = base[String(b)] || 0;
       r.cond[b] = conds.length;
       r.total[b] = Math.max(0, gente) + conds.length;
+      r.abase[b] = abase[String(b)] || 0;
+      r.acond[b] = aconds.length;
+      r.atotal[b] = Math.max(0, agente) + aconds.length;
     });
     return r;
   }
   function somaFalta(f) { return f.total[1] + f.total[2] + f.total[3] + f.total[4]; }
+  /* as unidades que entram na conta da falta: os pelotões (na companhia, a extra entra só manualmente) */
+  function pelotoes(lista) { return (lista || d.unidades).filter(function (x) { return x.pelotao !== false; }); }
 
   /* ---------- as barras: a escala do mês (a mesma leitura da Escala) e a conta do depois ---------- */
   function carregarEscala() {
@@ -111,7 +121,7 @@
     });
   }
   function antesDe(uid, k) { var c = escala && (escala.cobertura[uid] || {})[k]; return c && c.length === 24 ? c : null; }
-  /* o depois: a escala com as extras (+1 por extra nas horas dele) e o vermelho só onde a falta sobra */
+  /* o depois: a escala com as extras (+1 por extra nas horas dele) e o vermelho e o amarelo só onde a falta sobra */
   function depoisDe(uid, k, alocs, falta) {
     var cob = antesDe(uid, k);
     if (!cob) return null;
@@ -123,6 +133,7 @@
     for (var h = 0; h < 24; h++) {
       var b = Math.floor(h / 6) + 1, v = Number(err[h]) || 0;
       if (v === 1 && falta.base[b] > 0 && falta.total[b] === 0) v = 0;
+      else if (v === 2 && falta.abase[b] > 0 && falta.atotal[b] === 0) v = 0;
       e.push(v);
     }
     return { cobertura: c, erro: e };
@@ -286,13 +297,20 @@
       if (gD) cob.querySelector('.escala-extra-cob-com').appendChild(gD);
       caixa.appendChild(cob);
     }
-    var gente = [], cond = [];
-    [1, 2, 3, 4].forEach(function (b) { if (falta.total[b] - falta.cond[b] > 0) gente.push(b); if (falta.cond[b] > 0) cond.push(b); });
-    var tinha = falta.base[1] + falta.base[2] + falta.base[3] + falta.base[4] > 0;
+    var gente = [], cond = [], ideal = [], chefe = [];
+    [1, 2, 3, 4].forEach(function (b) {
+      if (falta.total[b] - falta.cond[b] > 0) gente.push(b);
+      if (falta.cond[b] > 0) cond.push(b);
+      if (falta.atotal[b] - falta.acond[b] > 0) ideal.push(b);
+      if (falta.acond[b] > 0) chefe.push(b);
+    });
+    var tinha = [1, 2, 3, 4].some(function (b) { return falta.base[b] + falta.abase[b] > 0; });
     function frase(texto, classe) { var t = RW.tpl('tpl-ne-texto'); t.textContent = texto; t.classList.add(classe); caixa.appendChild(t); }
     if (gente.length) frase(msg().faltaGenteHoras(u().horas(gente)), 'nova-extra-falta-sobra');
     if (cond.length) frase(msg().faltaCondutorHoras(u().horas(cond), falta.cnh.join(', ')), 'nova-extra-falta-sobra');
-    if (tinha && !gente.length && !cond.length) frase(msg().faltaCoberta, 'nova-extra-falta-ok');
+    if (chefe.length) frase(msg().chefeDirigeHoras(u().horas(chefe), falta.acnh.join(', ')), 'nova-extra-falta-amarela');
+    if (ideal.length) frase(msg().faltaIdealHoras(u().horas(ideal)), 'nova-extra-falta-amarela');
+    if (tinha && !gente.length && !cond.length && !ideal.length && !chefe.length) frase(msg().faltaCoberta, 'nova-extra-falta-ok');
     if (RW.escalasCelula) setTimeout(function () { RW.escalasCelula.desenharGraficos(caixa); }, 0);
     return caixa;
   }
@@ -320,8 +338,8 @@
       selo(msg().expedienteAte(INI[livres[0] - 1]), marcados.some(function (b) { return livres.indexOf(b) < 0; }) ? 'selo--alerta' : '');
     }
     if (m.so24) selo(msg().so24);
-    var pede = ((d.falta_condutor || {})[String(uid)] || {})[k] || {};
-    if (Object.keys(pede).some(function (b) { return pede[b].some(function (c) { return conduz(m, c); }); })) selo(msg().condutor, 'selo--sucesso');
+    var pedem = [d.falta_condutor, d.falta_amarela_condutor].map(function (mapa) { return ((mapa || {})[String(uid)] || {})[k] || {}; });
+    if (pedem.some(function (pede) { return Object.keys(pede).some(function (b) { return pede[b].some(function (c) { return conduz(m, c); }); }); })) selo(msg().condutor, 'selo--sucesso');
     if (selos.children.length) quem.appendChild(selos);
     if (a && a.origem === 'sugestao' && a.porque && a.porque.length) {
       a.porque.forEach(function (p) { var t = RW.tpl('tpl-ne-texto'); t.textContent = p; quem.appendChild(t); });
@@ -392,6 +410,18 @@
     else mud[chave(m.cpf, k)] = novo;
     atualizarDia(k);
     redesenhar(true);
+  }
+
+  /* ---------- o "?" da sugestão: como ela decide e os erros que a extra corrige (o texto fica na página) ---------- */
+  var ajudaAberta = false;
+  function abrirAjuda() {
+    RW.painel.abrir({ titulo: msg().ajudaTitulo, subtitulo: msg().ajudaSubtitulo, aoFechar: function () { ajudaAberta = false; } });
+    aberto = null;
+    ajudaAberta = true;
+    marcarAberto();
+    var corpo = RW.painel.corpo();
+    corpo.textContent = '';
+    corpo.appendChild(RW.tpl('tpl-ne-ajuda'));
   }
 
   /* ---------- Por militar ---------- */
@@ -483,7 +513,7 @@
     var alocs = efetivas();
     var total = voluntarios().reduce(function (s, m) { return s + (m.concedidas || 0); }, 0);
     q('#p3-colocadas').textContent = msg().colocadas(alocs.reduce(function (s, a) { return s + a.blocos.length; }, 0), total);
-    var comFalta = diasDoMes().filter(function (k) { return d.unidades.some(function (x) { return somaFalta(faltaDoDia(x.id, k, alocs)) > 0; }); }).length;
+    var comFalta = diasDoMes().filter(function (k) { return pelotoes().some(function (x) { return somaFalta(faltaDoDia(x.id, k, alocs)) > 0; }); }).length;
     q('#p3-dias-falta').textContent = msg().diasFalta(comFalta);
     q('#p3-dias-falta').classList.toggle('nova-extra-negativo', comFalta > 0);
     Array.prototype.forEach.call(el.querySelectorAll('#p3-vista [data-vista]'), function (b) { b.classList.toggle('aba--ativa', b.getAttribute('data-vista') === vista); });
@@ -500,6 +530,7 @@
     if (ligado !== el) {
       ligado = el; mud = {}; sugeridas = []; vista = 'dia'; aberto = null; escala = null;
       q('#p3-sugerir').addEventListener('click', sugerir);
+      q('#p3-ajuda').addEventListener('click', abrirAjuda);
       q('#p3-desfazer-sugestao').addEventListener('click', desfazerSugestao);
       q('#p3-salvar').addEventListener('click', salvar);
       q('#p3-cancelar').addEventListener('click', function () {
@@ -519,7 +550,7 @@
     var guarda = d; d = dados;
     var alocs = efetivas(), lista = [];
     diasDoMes().forEach(function (k) {
-      dados.unidades.forEach(function (x) { if (somaFalta(faltaDoDia(x.id, k, alocs)) > 0) lista.push(u().br(k) + ' ' + x.nome); });
+      pelotoes(dados.unidades).forEach(function (x) { if (somaFalta(faltaDoDia(x.id, k, alocs)) > 0) lista.push(u().br(k) + ' ' + x.nome); });
     });
     d = guarda || dados;
     return lista;
@@ -530,7 +561,7 @@
     sujo: function () { return Object.keys(mud).length > 0; },
     descartar: function () { mud = {}; sugeridas = []; },
     /* o painel do dia fecha ao sair do passo 3 ou da aba */
-    fecharPainel: function () { if (aberto && RW.painel.estaAberto()) RW.painel.fechar(); aberto = null; },
+    fecharPainel: function () { if ((aberto || ajudaAberta) && RW.painel.estaAberto()) RW.painel.fechar(); aberto = null; ajudaAberta = false; },
     diasComFalta: diasComFalta
   };
 })();

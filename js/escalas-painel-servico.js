@@ -163,9 +163,15 @@
       if (fora.length) api.cortarAjustes(cpf, fora);
     }
 
+    /* os horários de serviço novos (o horário na função acompanha), ou null sem mudança */
+    function novos() {
+      if (!mudou()) return null;
+      return daqui.tipo === 'ciclo' ? est.periodos.filter(dentro).map(copiar) : est.periodos.map(copiar);
+    }
+
     lugar.appendChild(el);
     desenhar();
-    return { mudou: mudou, erro: erro, aplicar: aplicar };
+    return { mudou: mudou, novos: novos, erro: erro, aplicar: aplicar };
   }
 
   /* ---------- Tirar do dia ---------- */
