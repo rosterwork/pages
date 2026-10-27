@@ -2,7 +2,8 @@
    OPÇÃO — bolinha de escolha exclusiva (um de vários)
    Rótulo com a bolinha própria: o rádio do navegador tinha pouco
    contraste no tema escuro, então o anel é sempre visível e o
-   marcado ganha o ponto cheio, claro nos dois temas.
+   marcado ganha o ponto cheio, claro nos dois temas. Inativa
+   (travada), fica apagada e sem o fundo do passar o mouse.
    Compartilhado (Distribuição, Extrajornada).
    ============================================================ */
 
@@ -42,4 +43,22 @@
   inset: 3px;
   border-radius: 50%;
   background: var(--texto-forte);
+}
+
+.geral-opcao:has(input:disabled) {
+  color: var(--texto-fraco);
+  cursor: default;
+}
+.geral-opcao:has(input:disabled):hover {
+  background: transparent;
+}
+.geral-opcao input[type="radio"]:disabled {
+  border-color: var(--borda);
+  cursor: default;
+}
+.geral-opcao input[type="radio"]:checked:disabled {
+  border-color: var(--texto-fraco);
+}
+.geral-opcao input[type="radio"]:checked:disabled::after {
+  background: var(--texto-fraco);
 }

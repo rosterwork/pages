@@ -124,8 +124,14 @@
   white-space: nowrap;
 }
 
-/* Mín. · Ideal · Máx.: o número com largura fixa (cabe "88"), para as colunas alinharem entre os postos */
+/* Mín., Ideal e Máx.: um grupo por número e o número com largura fixa (cabe "88"), para as colunas alinharem entre os postos */
 .nova-distribuicao-numeros {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.nova-distribuicao-numeros-grupo {
   display: inline-flex;
   align-items: baseline;
   gap: 4px;
@@ -374,6 +380,7 @@
 
 .nova-distribuicao-col-n {
   width: 32px;
+  line-height: 24px;
   font-weight: 600;
   color: var(--texto-forte);
 }

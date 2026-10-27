@@ -268,17 +268,12 @@
   </div>
 </template>
 
-<!-- os números do efetivo no cabeçalho: cada número com a mesma largura (cabem dois dígitos), alinhados entre os postos -->
+<!-- os números do efetivo no cabeçalho: um grupo por número, cada número com a mesma largura (cabem dois dígitos), alinhados entre os postos -->
 <template id="tpl-nova-distribuicao-numeros">
   <span class="nova-distribuicao-numeros">
-    <span>Mín.</span>
-    <span class="nova-distribuicao-numero" data-numero="0"></span>
-    <span aria-hidden="true">·</span>
-    <span>Ideal</span>
-    <span class="nova-distribuicao-numero" data-numero="1"></span>
-    <span aria-hidden="true">·</span>
-    <span>Máx.</span>
-    <span class="nova-distribuicao-numero" data-numero="2"></span>
+    <span class="nova-distribuicao-numeros-grupo"><span>Mín.</span> <span class="nova-distribuicao-numero" data-numero="0"></span></span>
+    <span class="nova-distribuicao-numeros-grupo"><span>Ideal</span> <span class="nova-distribuicao-numero" data-numero="1"></span></span>
+    <span class="nova-distribuicao-numeros-grupo"><span>Máx.</span> <span class="nova-distribuicao-numero" data-numero="2"></span></span>
   </span>
 </template>
 
@@ -545,7 +540,7 @@
       <span>é sempre de quem está em</span>
       <span class="nova-distribuicao-espaco" data-espaco="quem"></span>
       <button type="button" class="botao botao--icone nova-distribuicao-remover" aria-label="Remover acúmulo">
-        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
       </button>
     </p>
   </div>
@@ -607,7 +602,7 @@
     <span class="nova-distribuicao-regra-rotulo"></span>
     <span class="nova-distribuicao-espaco"></span>
     <button type="button" class="botao botao--icone nova-distribuicao-remover" aria-label="Remover substituto">
-      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
     </button>
   </div>
 </template>
@@ -693,7 +688,7 @@
     </div>
     <span class="nova-distribuicao-espaco" data-espaco="funcao"></span>
     <button type="button" class="botao botao--icone nova-distribuicao-remover" aria-label="Remover regra">
-      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
     </button>
   </div>
 </template>
