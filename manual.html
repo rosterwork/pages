@@ -47,7 +47,6 @@
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#imprimir-escala">Imprimir a escala</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#montar-ciclo">Montar o ciclo (aba Ciclo)</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#distribuicao-dia">Ajustar o dia</a></li>
-                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#editar-posto">Editar o posto</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#enviar-sysbm">Lançar a escala no SYSBM</a></li>
               </ul>
             </li>
@@ -87,21 +86,17 @@
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#extra-relatorios">Relatórios</a></li>
               </ul>
             </li>
-            <li>
-              <a class="lista-item lista-item--clicavel manual-item manual-item--parte" href="#postos">Postos de serviço</a>
-              <ul>
-                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#ver-postos">Ver os postos</a></li>
-                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#config-postos">Cadastrar e configurar postos</a></li>
-              </ul>
-            </li>
-            <li>
+            <li class="manual-admin">
               <a class="lista-item lista-item--clicavel manual-item manual-item--parte" href="#distribuicao">Distribuição</a>
               <ul>
-                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#ver-modelos">Ver os modelos</a></li>
-                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#periodos-modelos">Os períodos</a></li>
-                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#as-regras">As regras por militar</a></li>
-                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#editar-modelos">Editar os modelos</a></li>
-                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#editar-regras">Criar e editar regras</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#dist-o-que-e">O que é a Distribuição</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#dist-postos">Os postos</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#dist-mudancas-data">Substituição, fora de serviço e exclusão</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#dist-efetivo">O efetivo e as funções especiais</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#dist-ordem">Quem senta em cada função</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#dist-conferir">Conferir antes de salvar</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#dist-salvar">Salvar e a mudança agendada</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#dist-na-escala">Como a escala segue a distribuição</a></li>
               </ul>
             </li>
             <li>
@@ -186,11 +181,10 @@
               </figure>
 
               <h3 class="manual-topico">O que a escala precisa por baixo</h3>
-              <p>Para o sistema montar a escala sozinho, quatro coisas precisam estar prontas antes:</p>
+              <p>Para o sistema montar a escala sozinho, três coisas precisam estar prontas antes:</p>
               <ul class="manual-lista">
                 <li><strong>O efetivo (as pessoas).</strong> Os militares cadastrados, cada um com seus dados (grau, lotação, CNH, antiguidade). Sem efetivo, não há quem escalar. Fica em <strong>Usuários</strong>.</li>
-                <li><strong>Os postos e viaturas (onde servem).</strong> Os lugares de serviço: <strong>instalações</strong> (locais fixos, como a Central de Operações) e <strong>viaturas</strong> (que exigem CNH e podem ter outra viatura servindo no lugar, por alguns dias ou para sempre). Cada posto tem um <strong>efetivo mínimo, ideal e máximo</strong> (quantos militares). Fica em <strong>Postos</strong>.</li>
-                <li><strong>Os modelos e regras (o gabarito).</strong> O administrador monta, por unidade, um <strong>modelo</strong> que diz quais funções e vagas existem no dia; a distribuição segue esse gabarito. As <strong>regras</strong> ajustam quem pode ou não ir para certas funções. Fica em <strong>Distribuição</strong>.</li>
+                <li><strong>A distribuição (os postos e como a escala se monta).</strong> Os lugares de serviço, <strong>instalações</strong> (locais fixos, como a Central de Operações) e <strong>viaturas</strong> (que exigem CNH de quem dirige), com quantos militares cada um leva, e as respostas que dizem quem senta em cada função. O administrador configura uma vez por unidade, e a escala de cada dia segue essas respostas, com qualquer número de militares de serviço.<span class="manual-admin"> Fica em <strong>Distribuição</strong>.</span></li>
                 <li><strong>O ciclo da unidade (quem está de serviço).</strong> O <strong>ritmo</strong> da unidade, em <strong>Ajustes</strong>, e a entrada de cada militar no ciclo, pelo <strong>Adicionar</strong> da aba Ciclo, no painel do dia da <strong>Escala</strong>.</li>
               </ul>
 
@@ -224,7 +218,7 @@
               <h3 class="manual-topico">Quem faz o quê</h3>
               <ul class="manual-lista">
                 <li><strong>O militar (usuário comum).</strong> Consulta a sua escala, pede <strong>trocas</strong> e <strong>folgas</strong>, pede a <strong>extrajornada</strong> e vê os seus <strong>avisos</strong>. Ele participa e solicita, não monta nem edita a escala.</li>
-                <li><strong>O administrador.</strong> Cadastra o efetivo e os postos, monta os <strong>modelos</strong> e a <strong>escala</strong>, <strong>aprova</strong> os pedidos (trocas, folgas e correções) na página <strong>Pendências</strong>, lança extrajornada, registra afastamentos e atos de carreira. Ele monta e mantém o sistema. Cada administrador tem um papel e age só na área dele: o <strong>de pelotão</strong>, no pelotão dele; o <strong>de companhia</strong>, na companhia e nos pelotões; o <strong>geral</strong>, em todas as unidades. As ações são as mesmas para todos.</li>
+                <li><strong>O administrador.</strong> Cadastra o efetivo, configura a <strong>distribuição</strong> (os postos e como a escala se monta) e monta a <strong>escala</strong>, <strong>aprova</strong> os pedidos (trocas, folgas e correções) na página <strong>Pendências</strong>, lança extrajornada, registra afastamentos e atos de carreira. Ele monta e mantém o sistema. Cada administrador tem um papel e age só na área dele: o <strong>de pelotão</strong>, no pelotão dele; o <strong>de companhia</strong>, na companhia e nos pelotões; o <strong>geral</strong>, em todas as unidades. As ações são as mesmas para todos.</li>
               </ul>
               <p>O administrador também é um militar: faz as próprias solicitações como usuário e aprova como administrador, sem trocar de modo. Ele também decide o que é seu: aprova ou recusa a troca da qual participa, decide a própria folga, a correção dos próprios dados e ajusta o próprio saldo. O Histórico registra quem decidiu. Só não concede folga a si mesmo.</p>
               <div class="manual-bloco-admin manual-admin">
@@ -259,13 +253,9 @@
                   <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/todos.svg#icone-afastamentos"/></svg></span>
                   <span class="manual-legenda-texto"><strong>Férias, licenças e dispensas.</strong> Ficam em <strong>Usuários</strong>, nas abas Férias, Licenças e Dispensas, e na ficha de cada militar. Você <strong>consulta</strong> o que cada um teve no ano; quem lança e corrige é o administrador.</span>
                 </li>
-                <li>
-                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/todos.svg#icone-postos"/></svg></span>
-                  <span class="manual-legenda-texto"><strong>Postos.</strong> Os lugares de serviço: as instalações e as viaturas. Você <strong>consulta</strong> o quadro físico da unidade.</span>
-                </li>
-                <li>
+                <li class="manual-admin">
                   <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/todos.svg#icone-distribuicao"/></svg></span>
-                  <span class="manual-legenda-texto"><strong>Distribuição.</strong> O gabarito da escala: os modelos (as funções e vagas de cada dia) e as regras. Você <strong>consulta</strong> como a escala é montada por baixo.</span>
+                  <span class="manual-legenda-texto"><strong>Distribuição.</strong> Os postos (as instalações e as viaturas) e como a escala se monta. Só o administrador vê e configura, na área dele.</span>
                 </li>
                 <li>
                   <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/todos.svg#icone-usuarios"/></svg></span>
@@ -289,14 +279,9 @@
                     <span class="manual-diagrama-desc">As pessoas</span>
                   </div>
                   <div class="manual-diagrama-bloco">
-                    <svg class="icone manual-diagrama-icone" width="22" height="22" aria-hidden="true"><use href="icones/todos.svg#icone-postos"/></svg>
-                    <span class="manual-diagrama-titulo">Postos e viaturas</span>
-                    <span class="manual-diagrama-desc">Onde servem</span>
-                  </div>
-                  <div class="manual-diagrama-bloco">
                     <svg class="icone manual-diagrama-icone" width="22" height="22" aria-hidden="true"><use href="icones/todos.svg#icone-distribuicao"/></svg>
-                    <span class="manual-diagrama-titulo">Modelos e regras</span>
-                    <span class="manual-diagrama-desc">O gabarito</span>
+                    <span class="manual-diagrama-titulo">Postos e distribuição</span>
+                    <span class="manual-diagrama-desc">Onde e como servem</span>
                   </div>
                   <div class="manual-diagrama-bloco">
                     <svg class="icone manual-diagrama-icone" width="22" height="22" aria-hidden="true"><use href="icones/todos.svg#icone-ajustes"/></svg>
@@ -516,7 +501,7 @@
               <p><strong>Aparelhos.</strong> O botão <strong>Sair de todos os aparelhos</strong> encerra a sua sessão neste e em todos os outros aparelhos, inclusive no app do celular e nos computadores em que você marcou Manter-me conectado. Use quando esquecer a caixa marcada num computador de uso coletivo ou perder o celular. O sistema pede confirmação e volta à tela de login.</p>
 
               <h3 id="a-arvore">A árvore de unidades</h3>
-              <p>Algumas telas organizam a informação pela <strong>árvore de unidades</strong>: a sua corporação em hierarquia (companhia, pelotão, e assim por diante). Você a encontra, por exemplo, em <strong>Trocas</strong> (aba Todas), <strong>Usuários</strong>, <strong>Postos</strong> e na <strong>Escala</strong> (modo Dia).</p>
+              <p>Algumas telas organizam a informação pela <strong>árvore de unidades</strong>: a sua corporação em hierarquia (companhia, pelotão, e assim por diante). Você a encontra, por exemplo, em <strong>Trocas</strong> (aba Todas), <strong>Usuários</strong> e na <strong>Escala</strong> (modo Dia).</p>
               <p><strong>Como ela se monta.</strong> Cada unidade que você marcou no <strong>seletor de unidades</strong> (no topo da tela) aparece num <strong>bloco cinza</strong>, um embaixo do outro. No título do bloco ficam o nome da unidade, a sigla e a cidade, com uma <strong>contagem</strong> ao lado, e dentro dele fica o conteúdo daquela tela (os militares, as trocas, as instalações…).</p>
               <p><strong>A trilha no alto.</strong> Acima dos blocos, a <strong>trilha</strong> mostra as siglas das unidades de cima, por exemplo CBMPR › 4ºCRBM, e situa a lista. Enquanto você rola, a trilha e o título do bloco <strong>ficam presos no topo</strong>, então você sempre sabe em qual unidade está. Quando o bloco de uma companhia termina e começa o de um pelotão dela, a companhia passa para a trilha (CBMPR › 4ºCRBM › 2ªCIBM) e o título do pelotão fica logo abaixo.</p>
               <figure class="manual-figura manual-figura--larga">
@@ -715,14 +700,11 @@
 
               <h3 id="erros-escala">Erros e ressalvas da escala</h3>
               <p>A escala usa duas cores para avisar que algo não está certo. O <strong>vermelho</strong> é um <strong>erro grave</strong>: a escala não funciona como está e precisa de correção. O <strong>amarelo</strong> é uma <strong>ressalva</strong>: a escala funciona, com um erro aceitável.</p>
-              <p>Na grade, o erro aparece só pela cor das barras do gráfico de cobertura, hora a hora. Para saber o que é, clique na célula: o painel do dia lista os avisos no alto, primeiro os vermelhos e depois os amarelos, e marca o militar envolvido. A lista traz só os <strong>erros principais</strong>: o que acontece por causa de outro erro não aparece à parte. Quando falta o modelo, por exemplo, ela mostra a falta do modelo, sem repetir quem ficou sem função e os postos vazios; quando uma viatura trava, mostra a viatura, sem repetir a tripulação; quando um posto fica abaixo do mínimo, não repete o chefe que assumiu a direção nele. Corrigido o principal, o que ainda estiver errado aparece na lista. Os vermelhos vão da causa para a consequência: primeiro o modelo, depois quem ficou sem função, os postos e, por último, o militar em situação errada. Parando o mouse sobre ele, aparece o motivo.</p>
+              <p>Na grade, o erro aparece só pela cor das barras do gráfico de cobertura, hora a hora. Para saber o que é, clique na célula: o painel do dia lista os avisos no alto, primeiro os vermelhos e depois os amarelos, e marca o militar envolvido. A lista traz só os <strong>erros principais</strong>: o que acontece por causa de outro erro não aparece à parte. Quando um posto fica abaixo do mínimo, por exemplo, ela mostra esse posto, sem repetir os postos que ficaram vazios por causa dele nem o chefe que assumiu a direção nele; quando uma viatura trava, mostra a viatura, sem repetir a tripulação. Corrigido o principal, o que ainda estiver errado aparece na lista. Os vermelhos vão da causa para a consequência: primeiro quem ficou sem função, depois os postos e, por último, o militar em situação errada. Parando o mouse sobre ele, aparece o motivo.</p>
               <p><strong>Erros graves (vermelho).</strong></p>
               <ul class="manual-lista">
-                <li><strong>Modelo de distribuição com erro:</strong> o modelo daquela composição tem erro vermelho, por exemplo sem vagas, e o sistema não distribui a unidade, só mostra quem está de serviço. O aviso diz qual modelo, como "Modelo de distribuição com erro: 2ºPEL: 3 praças, 08h às 08h". Corrija o modelo na Distribuição.</li>
-                <li><strong>Falta modelo de distribuição:</strong> não existe modelo para a composição de quem está de serviço, como "Falta modelo de distribuição: 2ºPEL: 2 praças, 08h às 08h". Crie esse modelo na Distribuição.</li>
                 <li><strong>Existe militar sem função</strong> (ou <strong>Existem militares sem função</strong>): o militar está de serviço, mas fica sem função em parte do dia. Quem é cada um aparece na caixa Sem função; parando o mouse sobre ele, aparece o motivo.</li>
                 <li><strong>Viatura sem condutor habilitado:</strong> quem acumula o Condutor não tem a CNH que a viatura pede, e ninguém do posto pode dirigir no lugar dele. O aviso diz a viatura e a CNH, como "Viatura sem condutor habilitado: ABS-0055 (CNH B)". A viatura aparece em vermelho, com as cadeiras vazias, para o administrador resolver.</li>
-                <li><strong>Sem solução automática:</strong> o Chefe de Socorro ou o Oficial de Área não pode cumprir um acúmulo por causa de uma regra, e ninguém do posto pode substituí-lo. O aviso diz o posto, como "Sem solução automática, precisa de ação do administrador: ABS-0055". O posto aparece em vermelho, com as cadeiras vazias, para o administrador resolver.</li>
                 <li><strong>Viatura sem condutor:</strong> a viatura ficou sem ninguém na direção.</li>
                 <li><strong>Efetivo abaixo do mínimo:</strong> o posto tem menos gente que o mínimo configurado.</li>
                 <li><strong>Efetivo acima do máximo:</strong> o posto tem mais gente que o máximo configurado.</li>
@@ -744,6 +726,7 @@
                 <li><strong>Efetivo abaixo do ideal:</strong> o posto tem pelo menos o mínimo, mas menos gente que o ideal configurado, por exemplo "Efetivo abaixo do ideal: ABT-01 (3 de 4)". Esse aviso aparece no painel do dia e na Distribuição, sem mudar a cor da grade. O posto reserva (mínimo 0) não avisa.</li>
                 <li><strong>Militar exclusivo fora da sua função:</strong> um militar exclusivo de uma função foi colocado em outra.</li>
               </ul>
+              <p><strong>A hierarquia dos erros.</strong> Quando um posto fica sem gente só porque os substitutos dele vinham de um posto mais importante, também abaixo do mínimo, aparece só o erro do posto mais importante. Num dia com só 2 militares no 2ºPEL, por exemplo, a lista mostra apenas "Efetivo abaixo do mínimo: ABT-14935 (2 de 3)".</p>
               <p><strong>Alterações manuais.</strong> Quando o administrador corrige um erro, a hora volta ao verde. O rastro fica no rodapé do painel do dia: as <strong>Alterações manuais</strong>, com a quantidade ao lado. Ao abrir, aparecem quem mexeu, quando e o quê, entre os ajustes da distribuição, os militares pontuais e as entradas e saídas do ciclo daquele dia. Todos podem ver. Num dia sem alteração, o rodapé não aparece.</p>
               <figure class="manual-figura">
                 <img src="manual/imagens/escala-alteracoes.png" width="405" height="371" alt="O rodapé do painel do dia com as Alterações manuais abertas: o título com a quantidade (1) e uma alteração com quem mexeu, quando e o quê (2)." />
@@ -826,10 +809,10 @@
                 <p class="manual-nota"><strong>Tirar do ciclo mexe no que dependia dele.</strong> Ao clicar em <strong>Tirar</strong>, e também ao dar baixa ou transferir, a janela de confirmação mostra a lista do que vai acontecer a partir da data: cada troca, folga e extra do militar e o que acontece com ela. O que já aconteceu não é desfeito. A troca em que nenhuma parte aconteceu é cancelada inteira; se uma parte já aconteceu, só a outra sai e fica um saldo entre os dois, em Trocas, na aba Saldos. A troca de outros dois militares feita sobre um serviço que sai também é cancelada, e aparece na lista. As trocas canceladas assim levam o motivo, como "Cb. Lemos saiu da escala.", que aparece no painel delas e no registro. As folgas que ainda não aconteceram são canceladas, e as horas descontadas voltam ao saldo. As extras saem da escala e da Extrajornada, e as horas voltam para a cota dele. Quem tinha troca ou folga cancelada recebe um aviso, e os dois militares de uma troca que perdeu uma parte recebem o aviso "Troca alterada", com o saldo. O que foi cancelado não volta, mesmo que o militar volte ao ciclo depois.</p>
                 <p><strong>Só naquele dia.</strong> Para escalar um militar só num dia, sem entrar no ciclo, use o <strong>Adicionar militar</strong> da aba Dia (veja <strong>Ajustar o dia</strong>, logo abaixo).</p>
                 <h3 id="distribuicao-dia">Ajustar o dia <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p>Na aba <strong>Dia</strong> do painel do dia, você ajusta aquele dia. Para o administrador, a aba já abre pronta para editar: a lista é a mesma que todos veem, com o botão <strong>Adicionar militar</strong> no alto do painel, o nome de cada militar numa <strong>caixa de escolha</strong>, o <strong>lápis</strong> em cada linha e, ao lado do nome de cada posto, o botão <strong>Editar posto</strong>. As mudanças valem <strong>só para aquele dia</strong> e não precisam de Salvar: cada uma grava na hora, e a escala da página já mostra o dia atualizado.</p>
+                <p>Na aba <strong>Dia</strong> do painel do dia, você ajusta aquele dia. Para o administrador, a aba já abre pronta para editar: a lista é a mesma que todos veem, com o botão <strong>Adicionar militar</strong> no alto do painel, o nome de cada militar numa <strong>caixa de escolha</strong>, e o <strong>lápis</strong> em cada linha. As mudanças valem <strong>só para aquele dia</strong> e não precisam de Salvar: cada uma grava na hora, e a escala da página já mostra o dia atualizado.</p>
                 <p><strong>Desfazer e Refazer.</strong> Os ícones no alto do painel, à direita, desfazem a última mudança e a refazem (também pelo teclado: <strong>Ctrl+Z</strong> desfaz e <strong>Ctrl+Y</strong> refaz). Valem para as mudanças feitas enquanto o painel está aberto naquele dia; ao fechar o painel ou trocar de dia, começam do zero. Desfazer não manda aviso a ninguém: se você deu folga a um militar e desfez, ele não recebe aviso de folga cancelada; se você cancelou uma folga e desfez, ela volta como era.</p>
                 <figure class="manual-figura">
-                  <img src="manual/imagens/escala-painel-admin.png" width="400" height="282" alt="O alto do painel do dia para o administrador: as abas Dia, Ciclo e Extrajornada (1), o botão Adicionar militar (2), os ícones Desfazer e Refazer (3), a caixa de escolha do Condutor (4), o lápis de uma linha (5) e o botão Editar posto (6)." />
+                  <img src="manual/imagens/escala-painel-admin.png" width="400" height="282" alt="O alto do painel do dia para o administrador: as abas Dia, Ciclo e Extrajornada (1), o botão Adicionar militar (2), os ícones Desfazer e Refazer (3), a caixa de escolha do Condutor (4) e o lápis de uma linha (5)." />
                   <figcaption>
                     <ol class="manual-chamadas">
                       <li>Abas Dia, Ciclo e Extrajornada</li>
@@ -837,7 +820,6 @@
                       <li>Desfazer e Refazer</li>
                       <li>Caixa de escolha, que troca quem está na função</li>
                       <li>Lápis, que abre o militar no dia</li>
-                      <li>Editar posto</li>
                     </ol>
                   </figcaption>
                 </figure>
@@ -913,26 +895,7 @@
                 <p>As <strong>observações</strong> do dia ficam no fim da lista, em grupos: <strong>Administração</strong>, <strong>Trocas</strong>, <strong>Folgas</strong> e <strong>De outra unidade</strong>. O botão <strong>Adicionar observação</strong> inclui uma nota no grupo Administração, e o <strong>✕</strong> exclui as suas. Elas também gravam na hora.</p>
                 <p>As regras de cada militar valem também para os seus ajustes. Colocar um condutor sem a CNH exigida pela viatura, ou um militar numa função que a regra dele proíbe, não grava: o sistema avisa o motivo e a lista fica como estava. O mesmo vale para o horário fora do serviço do militar, dois militares no mesmo horário, o militar em duas unidades ao mesmo tempo e o posto acima do efetivo máximo. Se o dia já tinha um erro em vermelho de antes, ele não impede as outras mudanças, e você o corrige quando quiser. Colocar um militar exclusivo fora da sua função, ou com grau diferente do ideal, fica em amarelo e grava normalmente.</p>
                 <p>Se outro administrador mexer no mesmo dia enquanto o seu painel está aberto, a sua próxima mudança não grava: o sistema avisa, mostra o dia atualizado e você faz a mudança de novo.</p>
-                <h3 id="editar-posto">Editar o posto <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p>O botão <strong>Editar posto</strong>, ao lado do nome de cada posto no painel do dia, abre o posto no lugar da lista. Em qualquer posto, você muda o <strong>efetivo</strong> mínimo, ideal e máximo, que vale para todos os dias. Na viatura, você também troca a <strong>viatura</strong>: o <strong>prefixo</strong> e a <strong>CNH exigida</strong>, escolhida nas letras de A a E.</p>
-                <p>Quando o prefixo ou a CNH mudam, aparecem <strong>A partir de</strong>, já com o dia do painel, e <strong>Até</strong>, que é opcional:</p>
-                <ul class="manual-lista">
-                  <li><strong>Com a data do Até:</strong> a troca vale só nesses dias. A escala mostra a viatura nova, com "No lugar da ABT-14935 até 25/10" embaixo, e no dia seguinte a viatura de sempre volta sozinha. É o caso da viatura reserva enquanto a outra está no conserto.</li>
-                  <li><strong>Sem a data do Até:</strong> a troca é para sempre. A partir da data, o prefixo novo passa a ser o nome da viatura.</li>
-                </ul>
-                <p>A guarnição continua a mesma e os modelos da Distribuição não mudam. A mudança de CNH refaz a escala dos dias da troca, porque decide quem pode dirigir. Se o prefixo digitado já está em outro posto naqueles dias, mesmo de outra unidade, um aviso amarelo diz onde, e você pode salvar assim mesmo. Para trocar para sempre, o prefixo não pode ser o de outra viatura cadastrada.</p>
-                <p>Clique em <strong>Salvar</strong>: o sistema mostra o resumo do que mudou e a lista volta já atualizada. O Desfazer do painel não desfaz o Editar posto; para voltar atrás, edite o posto de novo.</p>
-                <figure class="manual-figura">
-                  <img src="manual/imagens/escala-editar-posto.png" width="400" height="468" alt="O Editar posto de uma viatura: o efetivo mínimo, ideal e máximo (1), o prefixo e a CNH exigida (2), as datas A partir de e Até (3) e o aviso de prefixo em uso em outro posto (4)." />
-                  <figcaption>
-                    <ol class="manual-chamadas">
-                      <li>Efetivo mínimo, ideal e máximo</li>
-                      <li>Prefixo e CNH exigida</li>
-                      <li>A partir de e Até</li>
-                      <li>Aviso de prefixo em uso em outro posto</li>
-                    </ol>
-                  </figcaption>
-                </figure>
+                <p class="manual-nota">Os postos (o efetivo, a viatura, uma substituição ou um fora de serviço) mudam na <strong>Distribuição</strong>: veja <strong>Os postos</strong> e <strong>Substituição, fora de serviço e exclusão</strong>.</p>
                 <h3 id="enviar-sysbm">Lançar a escala no SYSBM <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>O Roster leva a escala de um pelotão para a tela de cadastro da escala do SYSBM, o sistema oficial, para você não precisar digitar tudo lá. O Roster nunca entra no SYSBM: <strong>o login e o Salvar são sempre seus</strong>.</p>
                 <p>O envio funciona só no navegador <strong>Mozilla Firefox</strong>, no computador ou no celular Android, com a extensão <strong>Roster Work</strong>. Em outro navegador, o bloco mostra só o aviso de que a funcionalidade está disponível apenas no Firefox.</p>
@@ -1034,7 +997,7 @@
                 <p><strong>Para corrigir (5).</strong> Embaixo do Precisa de você fica o que precisa de conserto e não é um pedido, cada item com a etiqueta ADM: os <strong>militares operacionais fora da escala</strong> (com o nome e o pelotão, para acertar pela aba Ciclo da Escala; não conta quem está de férias, licença ou dispensa, nem quem já tem a entrada no ciclo marcada para os próximos 4 dias), os <strong>retornos de afastamento sem entrada no ciclo</strong> (nos 5 dias antes da volta, quem não estará no ciclo e ainda não tem entrada marcada, com a data da volta), a <strong>Distribuição a revisar</strong> (quando uma mudança de posto abriu um período que ainda precisa de revisão) e a <strong>Distribuição com erro</strong> (quando um período atual ou futuro tem erro vermelho); estas duas levam à Distribuição. Nada aqui tem "lido": cada item some sozinho quando alguém resolve. Cada assunto soma 1 no número do menu, por mais nomes que a lista tenha: dez militares fora da escala contam como um item só. Eles não aparecem no sino, que é só dos avisos.</p>
                 <p><strong>Trocas aguardando os militares (6).</strong> No <strong>Acompanhando</strong>, junto com os seus pedidos, ficam com a etiqueta ADM as trocas que já foram pedidas, mas ainda esperam o aceite de algum militar, com o selo <strong>Pendente</strong>. Elas não contam no número do menu, porque esperam os militares e não você; quem ainda não aceitou continua vendo a troca na tela dele. Quando todos aceitam, a troca passa para o Precisa de você, para você aprovar. Se não quiser esperar, você pode aprová-la antes, pelo <strong>Aprovar com pendências</strong>: ela vale na escala na hora, e o aceite que falta fica pendente no registro.</p>
                 <p><strong>De onde vêm.</strong> Você recebe e vê os pedidos e os lembretes da área do seu papel: o administrador de pelotão, os do pelotão dele; o de companhia, os da companhia e dos pelotões dela; o geral, os de todas as unidades. Isso vale para as folgas, as correções de dados e os lembretes (militar fora da escala, retorno de afastamento e Distribuição a revisar). Uma troca aparece para quem administra qualquer um dos dois militares: numa troca entre pelotões, os administradores dos dois pelotões e os da companhia podem aprovar, e vale a decisão de quem decidir primeiro.</p>
-                <p><strong>O painel de decisão.</strong> O <strong>Ver detalhes</strong> do cartão abre o pedido completo, com o pelotão no título (1). Depois do pedido em caixas vem a <strong>Análise</strong>, com o resultado ao lado do título (2) e uma nota por ponto (3). Para montar a análise, o sistema aprova o pedido de mentira, refaz a escala do dia e compara com a de hoje, usando os mesmos avisos que a Escala mostra. Como na Escala, aparecem só os problemas principais: quando falta o modelo, por exemplo, a nota é só a da falta de modelo, sem uma para cada posto vazio. Cada nota diz quem, onde e quando:</p>
+                <p><strong>O painel de decisão.</strong> O <strong>Ver detalhes</strong> do cartão abre o pedido completo, com o pelotão no título (1). Depois do pedido em caixas vem a <strong>Análise</strong>, com o resultado ao lado do título (2) e uma nota por ponto (3). Para montar a análise, o sistema aprova o pedido de mentira, refaz a escala do dia e compara com a de hoje, usando os mesmos avisos que a Escala mostra. Como na Escala, aparecem só os problemas principais: quando um posto fica abaixo do mínimo, por exemplo, a nota é só a dele, sem uma para cada posto que ficou vazio por causa dele. Cada nota diz quem, onde e quando:</p>
                 <ul class="manual-lista">
                   <li><strong>Vermelha:</strong> um problema, como uma viatura que fica sem condutor, um posto abaixo do mínimo, ou quem vai assumir o serviço estar inativo, de férias, licença ou dispensa, já ter uma hora extra no dia ou sobrepor outro serviço.</li>
                   <li><strong>Amarela:</strong> um ponto de atenção, como um militar que <strong>repete o rodízio</strong>, um posto que <strong>fica com menos gente</strong>, um acúmulo de funções ou o <strong>saldo de horas</strong> que a troca ou a folga cria.</li>
@@ -1576,168 +1539,126 @@
               </div>
             </section>
 
-            <section class="manual-secao" id="postos">
-              <h2>Postos de serviço</h2>
-              <h3 id="ver-postos">Ver os postos (instalações e viaturas)</h3>
-              <p>Os postos de serviço são <strong>os lugares onde os militares entram na escala</strong>, de dois tipos: <strong>instalações</strong> e <strong>viaturas</strong>. Qualquer pessoa pode ver os postos da unidade: abra <strong>Postos</strong>, escolha uma companhia ou um pelotão no seletor de unidades e use as abas <strong>Instalações</strong> e <strong>Viaturas</strong>.</p>
-              <p><strong>Instalações</strong> são os lugares fixos da unidade. São de três tipos, e cada um dá origem a uma função na escala: a <strong>Central de Operações</strong> (o <strong>Rádio Operador</strong>), o <strong>Rancho</strong> (o <strong>Rancheiro</strong>) e o <strong>Almoxarifado</strong> (o <strong>Almoxarife</strong>). A unidade pode ter mais de uma instalação do mesmo tipo; a partir da segunda, o sistema as numera (Central de Operações 2, 3, e assim por diante).</p>
-              <p><strong>Viaturas</strong> são os veículos. Cada uma tem um <strong>prefixo</strong> próprio (por exemplo, ABT-01) e é <strong>única no sistema inteiro</strong>: o mesmo prefixo pertence a uma unidade só. Toda viatura tem um <strong>Condutor</strong> (quem dirige), além da guarnição, e por isso ela guarda a <strong>CNH exigida</strong> para conduzi-la: basta que o Condutor tenha uma habilitação que cubra essa categoria; o restante da guarnição segue livre disso. A viatura ainda pode ser <strong>transferida</strong> de unidade, e outra viatura pode servir no lugar dela por alguns dias ou para sempre.</p>
-              <p><strong>O efetivo do posto.</strong> Todo posto tem três números que descrevem o seu efetivo:</p>
-              <ul class="manual-lista">
-                <li><strong>Efetivo mínimo</strong> (de 0 a 10): quantas pessoas o posto precisa ter ao mesmo tempo. Com menos gente, a Distribuição e a Escala mostram um erro vermelho, e a escala continua sendo montada. Com <strong>mínimo 0</strong>, o posto é uma reserva: pode ficar sem ninguém, sem erro.</li>
-                <li><strong>Efetivo ideal</strong> (de 1 a 10): a quantidade com que o posto trabalha bem. Com menos gente, mas pelo menos o mínimo, a Distribuição e a Escala mostram um aviso amarelo. O posto reserva (mínimo 0) não avisa.</li>
-                <li><strong>Efetivo máximo</strong> (de 1 a 10): quantas pessoas o posto comporta. O sistema nunca passa desse número; com o posto cheio, ele não oferece uma função nova nesse posto ao colocar alguém no dia. Para baixar o máximo abaixo das vagas que o posto tem num modelo da Distribuição, tire as vagas lá antes.</li>
-              </ul>
-              <p><strong>O que o card mostra.</strong> Cada card traz o <strong>estado</strong>, o <strong>período</strong> e o <strong>efetivo</strong>; a viatura mostra também o <strong>prefixo</strong> e a <strong>CNH exigida</strong>. Quando há uma mudança de estado marcada para os próximos dias, ela aparece logo abaixo, como <strong>Inativo a partir de 07/10</strong>. Quando outra viatura serve no lugar por alguns dias, o card mostra o selo <strong>Substituída até 25/10</strong> e, embaixo, a que está no lugar, como <strong>ABT-12870 no lugar</strong>.</p>
-              <figure class="manual-figura">
-                <img src="manual/imagens/postos-card-instalacao.png" width="269" height="232" alt="Card de uma instalação: o estado (1), o período (2), a mudança de estado marcada (3) e o efetivo mínimo, ideal e máximo (4)." />
-                <figcaption>
-                  <ol class="manual-chamadas">
-                    <li>Estado</li>
-                    <li>Período</li>
-                    <li>Mudança de estado marcada</li>
-                    <li>Efetivo mínimo, ideal e máximo</li>
-                  </ol>
-                </figcaption>
-              </figure>
-              <figure class="manual-figura">
-                <img src="manual/imagens/postos-card-viatura.png" width="269" height="228" alt="Card de uma viatura: o estado (1), o período (2), a CNH exigida (3) e o efetivo mínimo, ideal e máximo (4)." />
-                <figcaption>
-                  <ol class="manual-chamadas">
-                    <li>Estado</li>
-                    <li>Período</li>
-                    <li>CNH exigida</li>
-                    <li>Efetivo mínimo, ideal e máximo</li>
-                  </ol>
-                </figcaption>
-              </figure>
-              <p><strong>Estado e período.</strong> O <strong>estado</strong> diz se o posto está em uso. <strong>Ativo</strong> coloca o posto na escala, e a distribuição o preenche. <strong>Inativo</strong> guarda o posto fora da escala, para você ligá-lo de novo quando quiser. Um posto reserva fica <strong>Ativo</strong> com efetivo mínimo 0: pode ficar vazio e recebe gente quando você precisar.</p>
-              <p>O <strong>período</strong> mostra o primeiro e o último dia do posto: <strong>desde</strong> o dia em que ele começou, <strong>até</strong> a véspera de uma exclusão marcada, ou os dois dias. Sem datas, o posto é <strong>Permanente</strong>.</p>
-              <div class="manual-admin manual-zona-admin">
-                <h3 id="config-postos">Cadastrar e configurar postos <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p>No fim dos cards de cada unidade fica o botão <strong>Adicionar instalação</strong> (na aba Instalações) ou <strong>Adicionar viatura</strong> (na aba Viaturas), com a etiqueta <span class="etiqueta-adm">ADM</span>, que inclui um posto (no celular, dentro do botão <strong>Administração</strong>). O clique num card abre o painel de edição, à direita.</p>
-                <p><strong>Instalação.</strong> Ao incluir, você escolhe o tipo (Central de Operações, Rancho ou Almoxarifado), e o sistema dá o nome, numerando quando a unidade já tem uma daquele tipo. No painel ficam o <strong>estado</strong> (Ativo ou Inativo), a caixa <strong>Mudanças marcadas</strong>, quando há alguma, e a caixa <strong>Efetivo</strong>, com o mínimo, o ideal e o máximo lado a lado (sempre em ordem crescente do mínimo ao máximo).</p>
-                <p>O rodapé traz o botão vermelho <strong>Excluir instalação</strong>, uma ação crítica com confirmação: a partir da data escolhida, a instalação sai das telas e da distribuição, e os dias anteriores e o histórico permanecem.</p>
-                <figure class="manual-figura">
-                  <img src="manual/imagens/postos-instalacao-painel.png" width="400" height="249" alt="Painel de edição da instalação: o estado (1), a caixa Mudanças marcadas com o botão Cancelar (2) e o efetivo mínimo, ideal e máximo (3)." />
-                  <figcaption>
-                    <ol class="manual-chamadas">
-                      <li>Estado</li>
-                      <li>Mudanças marcadas, com Cancelar</li>
-                      <li>Efetivo mínimo, ideal e máximo</li>
-                    </ol>
-                  </figcaption>
-                </figure>
-                <p><strong>Viatura.</strong> Ao incluir, você digita o <strong>prefixo</strong> (letras e número, como ABT-01) e escolhe a <strong>CNH exigida</strong> para conduzi-la, nas letras de A a E. O painel da viatura tem, de cima para baixo: a caixa <strong>Viatura</strong> (o prefixo e a CNH), o <strong>estado</strong> (Ativo ou Inativo), a caixa <strong>Efetivo</strong>, a caixa <strong>Mudanças marcadas</strong>, quando há alguma, o grupo <strong>Anteriores</strong>, com as viaturas que já serviram nesse posto e de quando a quando, e as seções <strong>Transferir</strong> (levar a viatura para outra unidade) e <strong>Excluir viatura</strong>.</p>
-                <p>Na caixa Viatura, mudar o prefixo ou a CNH é <strong>trocar a viatura</strong> do posto, do mesmo jeito que no <strong>Editar o posto</strong> da Escala: aparecem <strong>A partir de</strong> e <strong>Até</strong>, e sem o Até a troca é para sempre. A troca marcada para os próximos dias entra em Mudanças marcadas, com Cancelar.</p>
-                <p>Como a viatura é única no sistema, ao digitar um prefixo que já pertence a outra unidade o sistema oferece <strong>transferi-la</strong> a partir da data escolhida, aplicando os dados que você preencheu.</p>
-                <figure class="manual-figura">
-                  <img src="manual/imagens/postos-viatura-painel.png" width="400" height="494" alt="Painel da viatura: a caixa Viatura, com o prefixo e a CNH (1), o estado e o efetivo (2) e o grupo Anteriores, com as viaturas que já serviram no posto (3)." />
-                  <figcaption>
-                    <ol class="manual-chamadas">
-                      <li>Viatura: prefixo e CNH exigida</li>
-                      <li>Estado e efetivo</li>
-                      <li>Anteriores: as viaturas que já serviram no posto</li>
-                    </ol>
-                  </figcaption>
-                </figure>
-                <p><strong>Toda mudança tem data.</strong> Ao incluir um posto, mudar o estado, excluir ou transferir uma viatura, o sistema pergunta <strong>a partir de quando</strong> a mudança vale. A data já vem com o próximo dia de serviço e aceita até uma semana para trás. A escala é refeita dessa data em diante, e os dias anteriores continuam como estão.</p>
-                <p>Ao incluir, essa data é o <strong>primeiro dia</strong> do posto; ao excluir, o posto sai das telas quando a data chega; ao transferir, a viatura continua na unidade antiga até a véspera e passa para a nova na data. O efetivo vale na hora, sem perguntar data. A troca de viatura (prefixo e CNH) tem as datas dela, na própria caixa Viatura.</p>
-                <p>Enquanto a data não chega, a mudança fica na caixa <strong>Mudanças marcadas</strong>, e cada uma tem o botão <strong>Cancelar</strong>. O campo <strong>Estado</strong> mostra como o posto vai ficar depois das mudanças marcadas; assim você marca, por exemplo, a ida para Inativo num dia e a volta ao Ativo em outro. Uma mudança nova substitui as que estavam marcadas para depois dela.</p>
-                <p><strong>A mudança chega à Distribuição.</strong> Cada mudança de posto com data abre um período novo na <strong>Distribuição</strong> (veja <strong>Os períodos</strong>); a troca de viatura não abre, porque a guarnição é a mesma. Quando o período precisa de revisão, a mudança mostra o selo <strong>Revisar na Distribuição</strong> na caixa Mudanças marcadas. Se você cancelar uma mudança cujo período já foi revisado, o sistema avisa que esse ajuste será descartado junto.</p>
-                <figure class="manual-figura">
-                  <img src="manual/imagens/postos-mudanca-revisar.png" width="400" height="129" alt="A caixa Mudanças marcadas de uma viatura, com o selo Revisar na Distribuição embaixo da mudança (1)." />
-                  <figcaption>
-                    <ol class="manual-chamadas">
-                      <li>Selo Revisar na Distribuição</li>
-                    </ol>
-                  </figcaption>
-                </figure>
-                <p class="manual-nota">Se algum militar estiver colocado num posto que não existe naquele dia, ele aparece em <strong>sem função</strong> na Escala, para você corrigir.</p>
-                <p class="manual-nota"><strong>Ponto crítico.</strong> Viaturas e instalações são a base da <strong>distribuição da escala</strong>. Ao incluir, alterar, desativar, excluir ou transferir um posto, vale conferir os modelos na <strong>Distribuição</strong>, que é onde a escala automática decide quem senta em cada posto. Numa transferência, a unidade que recebe a viatura precisa ganhar as vagas dela nos seus modelos.</p>
-              </div>
-            </section>
-
-            <section class="manual-secao" id="distribuicao">
-              <h2>Distribuição</h2>
-              <h3 id="ver-modelos">Ver os modelos</h3>
-              <p>A Distribuição é onde fica o <strong>desenho da escala automática</strong>: quais funções cada posto tem e quem o sistema prefere colocar em cada uma. Qualquer pessoa pode abrir <strong>Distribuição</strong>, escolher uma companhia ou um pelotão no seletor de unidades e olhar como está montada. A página tem duas abas, <strong>Modelos</strong> e <strong>Regras</strong>.</p>
-              <p><strong>O que é um modelo.</strong> Um modelo é um <strong>plano pronto para um dia de serviço de uma unidade</strong>: a companhia (uma <strong>CIA</strong> ou uma <strong>CIBM</strong>) ou um dos <strong>seus pelotões</strong>. Ele lista os postos da unidade que entram e, dentro de cada posto, as funções a preencher (Condutor, Rádio Operador, Efetivo, e assim por diante). Cada unidade tem os seus modelos.</p>
-              <p><strong>Escolher a unidade.</strong> No alto da lista, à esquerda, fica o <strong>filtro de unidades</strong>, com a companhia e os pelotões dela. A página abre na unidade escolhida no seletor de unidades, e um clique em outra mostra os modelos dela.</p>
-              <p><strong>O que os números significam.</strong> Cada modelo é definido pela <strong>quantidade de militares de serviço</strong> na unidade, escrita por extenso na linha: <strong>Oficiais</strong> e <strong>Praças</strong>. Então "Oficiais: 0" e "Praças: 3" é um dia com três praças. A cada dia, a escala automática usa, em cada unidade, o modelo cujos números batem com quem está de serviço nela.</p>
-              <p>Na linha, um sinal de <strong>completo</strong> diz que o modelo dá conta daquele tamanho de equipe, e um sinal de <strong>alerta</strong> mostra que falta alguma coisa.</p>
-              <figure class="manual-figura">
-                <img src="manual/imagens/distribuicao-modelo-lista.png" width="328" height="124" alt="A lista de modelos: o filtro de unidades (1) e a linha de um modelo, com o sinal de completo e os oficiais e praças que ele atende (2)." />
-                <figcaption>
-                  <ol class="manual-chamadas">
-                    <li>Filtro de unidades</li>
-                    <li>Sinal de completo, oficiais e praças do modelo</li>
-                  </ol>
-                </figcaption>
-              </figure>
-              <h3 id="periodos-modelos">Os períodos</h3>
-              <p>Os postos mudam com o tempo: uma viatura fica inativa, é transferida para outra unidade, um posto novo começa. Por isso os modelos são guardados <strong>por período</strong>. Cada mudança de posto com data abre um período novo, e a escala de cada dia usa os modelos do período daquele dia. A troca de viatura não abre período, porque a guarnição é a mesma. O começo de uma unidade, quando ela ganha as primeiras viaturas ou instalações, também não abre período: o modelo vale em todos os dias.</p>
-              <p>No subcabeçalho da aba <strong>Modelos</strong> fica o seletor de <strong>período</strong>, igual ao da Escala. As setas passam de um período para outro, e o clique nas datas abre a lista de períodos, cada um com a sua situação (os mesmos sinais de completo e de alerta dos modelos) e o motivo, como "ABT-01: Inativo".</p>
-              <p>Os períodos que já passaram ficam agrupados em <strong>Anteriores</strong>. A página abre no período atual, e a lista de modelos e as vagas mostram sempre o período escolhido.</p>
-              <figure class="manual-figura">
-                <img src="manual/imagens/distribuicao-periodos.png" width="348" height="213" alt="O seletor de período no subcabeçalho da Distribuição (1) e a lista de períodos aberta, com a situação, as datas e o motivo de cada um (2)." />
-                <figcaption>
-                  <ol class="manual-chamadas">
-                    <li>Seletor de período</li>
-                    <li>Lista de períodos, com a situação e o motivo</li>
-                  </ol>
-                </figcaption>
-              </figure>
-              <p><strong>As vagas do modelo.</strong> Ao clicar num modelo, à direita aparecem as suas <strong>vagas</strong>, agrupadas por posto. O rodapé confirma quando está tudo certo, em verde, ou lista o que falta, em amarelo.</p>
-              <p>Cada vaga é uma linha com a <strong>função</strong> (Condutor, Rádio Operador, Efetivo, e assim por diante), o <strong>Tipo</strong> (oficial ou praça), a <strong>Antiguidade</strong> (se o sistema prefere o mais antigo ou o mais moderno para aquela vaga), o <strong>Grau</strong> (a graduação ideal) e o <strong>Rodízio</strong> (se a vaga entra no rodízio).</p>
+            <section class="manual-secao manual-admin manual-zona-admin" id="distribuicao">
+              <h2>Distribuição <span class="manual-selo-admin">Apenas administradores</span></h2>
+              <h3 id="dist-o-que-e">O que é a Distribuição</h3>
+              <p>A Distribuição diz ao sistema <strong>como montar a escala de cada dia</strong>: quais postos a unidade tem, quantas pessoas cada um leva e quem senta em cada função. Ela é um <strong>questionário</strong> respondido uma vez por unidade e vale para qualquer número de militares de serviço: com 2, com 3 ou com 5, o sistema usa as mesmas respostas.</p>
+              <p>Abra <strong>Distribuição</strong> no menu. Na barra fica a <strong>unidade</strong>: a companhia e os pelotões da sua área de administração. À esquerda ficam os <strong>9 blocos</strong>, cada um com o sinal de pronto ou de falta. À direita, as perguntas do bloco escolhido, em cartões que abrem ao clicar. No pelotão, o que é da companhia, como o Oficial de Área, aparece junto, e só o administrador da companhia muda.</p>
               <figure class="manual-figura manual-figura--cheia">
-                <img src="manual/imagens/distribuicao-vagas.png" width="760" height="188" alt="As vagas de um posto: a função de cada vaga (1) e o tipo, a antiguidade, o grau e o rodízio (2)." />
+                <img src="manual/imagens/distribuicao-pagina.png" width="0" height="0" alt="A página Distribuição: a unidade na barra (1), os 9 blocos à esquerda (2), as perguntas do bloco em cartões (3) e Cancelar e Salvar no rodapé (4)." />
                 <figcaption>
                   <ol class="manual-chamadas">
-                    <li>Função de cada vaga</li>
-                    <li>Tipo, antiguidade, grau e rodízio</li>
+                    <li>Unidade</li>
+                    <li>Os 9 blocos, com o sinal de pronto ou de falta</li>
+                    <li>As perguntas do bloco</li>
+                    <li>Cancelar e Salvar</li>
                   </ol>
                 </figcaption>
               </figure>
-              <p><strong>Como o sistema preenche.</strong> Escolhido o modelo do dia, o sistema preenche as vagas de cada posto seguindo o que a vaga pede. Algumas escolhas são automáticas e fixas: o <strong>Chefe de Socorro</strong> e o <strong>Oficial de Área</strong> são sempre os mais antigos de serviço, e o <strong>Condutor</strong> de uma viatura precisa de uma CNH que cubra o veículo.</p>
-              <p>Se faltar gente ou surgir um conflito, o sistema <strong>sinaliza</strong> o problema e mantém a escala na tela. O resultado de cada dia, com quem senta em cada posto, você acompanha na <strong>Escala</strong>. A lógica completa está no apêndice <strong>A lógica por trás</strong>.</p>
-              <h3 id="as-regras">As regras por militar</h3>
-              <p>A Distribuição tem uma segunda aba, <strong>Regras</strong>. Uma regra é uma <strong>restrição que vale para um militar específico</strong> e ajusta a escala automática: ela diz que aquele militar deve, ou não deve, exercer uma certa função. Elas atendem a casos particulares de um ou outro militar. Há dois tipos:</p>
+
+              <h3 id="dist-postos">Os postos</h3>
+              <p>O bloco <strong>Postos</strong> tem os lugares de serviço da unidade, um por linha:</p>
               <ul class="manual-lista">
-                <li><strong>Proibida:</strong> o militar nunca é colocado naquela função.</li>
-                <li><strong>Exclusiva:</strong> o militar fica dedicado só àquela função. O sistema o coloca nela antes dos outros e o mantém fora das demais. A função continua aberta para os outros militares, que também podem exercê-la.</li>
+                <li><strong>Instalações</strong> são os lugares fixos, de três tipos, cada um com a sua função na escala: a <strong>Central de Operações</strong> (o Rádio Operador), o <strong>Rancho</strong> (o Rancheiro) e o <strong>Almoxarifado</strong> (o Almoxarife). Para incluir, clique no tipo em <strong>Nova instalação</strong>. A segunda do mesmo tipo ganha o número, como <strong>Central de Operações 2</strong>.</li>
+                <li><strong>Viaturas</strong> têm o <strong>prefixo</strong> (letras, hífen e número, como ABT-01), que é único no sistema inteiro, e a <strong>CNH</strong> exigida para dirigir. Só o Condutor precisa da CNH. As setas mudam a ordem, que é a ordem em que as viaturas aparecem na escala. <strong>Nova viatura</strong> inclui uma linha.</li>
               </ul>
-              <p>As regras valem também nos acúmulos, quando a mesma pessoa cobre mais de uma função: o sistema escolhe para o acúmulo quem pode cumprir todas as funções dele. Um militar exclusivo de Condutor, por exemplo, não entra num acúmulo de Condutor com Rádio Operador.</p>
-              <p>Qualquer pessoa abre a aba Regras e vê as regras de cada militar. Criar e retirar regras é tarefa do administrador.</p>
-              <figure class="manual-figura">
-                <img src="manual/imagens/distribuicao-regras.png" width="360" height="209" alt="Aba Regras de um militar: os grupos de funções proibidas e exclusivas, com uma regra exclusiva já cadastrada (1)." />
+              <p>O posto novo passa a existir na escala a partir da data do Salvar. Trocar o prefixo ou a CNH de uma viatura também vale a partir dessa data, para sempre.</p>
+              <figure class="manual-figura manual-figura--cheia">
+                <img src="manual/imagens/distribuicao-postos.png" width="0" height="0" alt="O bloco Postos: Nova instalação, com um botão por tipo (1), o prefixo e a CNH de uma viatura (2), os botões Substituir temporariamente, Fora de serviço e Excluir (3) e uma mudança com data embaixo da viatura (4)." />
                 <figcaption>
                   <ol class="manual-chamadas">
-                    <li>Regra exclusiva cadastrada</li>
+                    <li>Nova instalação, pelo tipo</li>
+                    <li>Prefixo e CNH da viatura</li>
+                    <li>Substituir temporariamente, Fora de serviço e Excluir</li>
+                    <li>Uma mudança com data</li>
                   </ol>
                 </figcaption>
               </figure>
-              <div class="manual-admin manual-zona-admin">
-                <h3 id="editar-modelos">Editar os modelos <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p><strong>Editar um modelo.</strong> Na lista, cada modelo tem dois ícones: o <strong>lápis</strong>, que abre o modo de edição, e a <strong>lixeira</strong>, que exclui o modelo depois de uma confirmação. Num período que já terminou, os dois ficam inativos. No modo de edição, você clica nas células de <strong>Tipo</strong>, <strong>Antiguidade</strong> e <strong>Grau</strong> para escolher o valor, marca o <strong>Rodízio</strong>, usa <strong>Nova função</strong> para incluir uma vaga e o botão de remover para tirar, e <strong>Acúmulo</strong> para a mesma pessoa cobrir mais de uma função, entre os postos da própria unidade. Uma pessoa não acumula funções em unidades diferentes; para um militar de <strong>outra unidade</strong> trabalhar aqui num dia, use o <strong>Adicionar militar</strong> do painel do dia, na Escala.</p>
-                <p>Num acúmulo, as funções são de uma pessoa só e têm a mesma configuração: o <strong>Tipo</strong>, a <strong>Antiguidade</strong>, o <strong>Grau</strong> e o <strong>Rodízio</strong> aparecem iguais em todas as linhas do acúmulo, mudar numa linha muda todas, e a função que entra copia a configuração de quem já tinha. O <strong>Chefe de Socorro</strong> (ou o <strong>Oficial de Área</strong>) aparece num selo embaixo da CNH do posto onde está, e nos outros postos o selo <strong>Mover Chefe de Socorro</strong> o leva para lá.</p>
-                <p>Com o posto no efetivo máximo, o <strong>Nova função</strong> fica desativado. Um posto com menos pessoas que o efetivo mínimo fica em vermelho, como os demais erros, e a escala automática continua usando o modelo.</p>
-                <p><strong>Desfazer</strong> e <strong>Refazer</strong> ficam no canto do subcabeçalho, e também respondem a Ctrl+Z e Ctrl+Y. Ao <strong>Salvar</strong>, o sistema avisa que as escalas já montadas serão recalculadas e mostra a partir de quando: o próximo dia de serviço, para não mexer no plantão que já está rodando. Para outra data, clique em <strong>Escolher outra data</strong>. Depois de salvar, aparece um resumo do que mudou.</p>
-                <p><strong>Novo modelo.</strong> O botão <strong>Novo modelo</strong>, com a etiqueta <span class="etiqueta-adm">ADM</span>, no rodapé da lista, cria um do zero para a <strong>unidade do filtro</strong>: o espaço à direita pede quantos <strong>oficiais</strong> e <strong>praças</strong> aquele modelo atende. Se a unidade já tem um modelo com esses números, o sistema avisa e abre o que existe. O modelo novo já vem com as vagas do maior modelo da unidade que caiba nele, aparece na hora, e fica de vez quando você clica em Salvar; ao cancelar ou sair sem salvar, ele é descartado. O modelo novo vale em todos os períodos e, se você trocar de período antes de salvar, ele vai junto para o período escolhido.</p>
-                <p><strong>Editar por período.</strong> A edição vale no período escolhido no seletor. Um período que já terminou fica só para leitura. Num período que ainda vai começar, o Salvar refaz a escala a partir do início dele, sem perguntar a data.</p>
-                <p><strong>O período novo vem pronto para revisar.</strong> Quando um posto sai (fica inativo, é excluído ou é transferido), o período novo nasce como cópia do anterior, já sem as vagas desse posto. Quando o posto volta, o período nasce da cópia do último período em que ele existia. Só o pelotão afetado ganha uma cópia própria; os outros continuam iguais em todos os períodos.</p>
-                <p>Até você revisar, o modelo fica em amarelo, o pelotão aparece destacado e o rodapé mostra, por exemplo, "1ºPEL: revise este período (ABT-01: Inativo)". O aviso também aparece em Pendências, no Para corrigir. Enquanto isso, a escala funciona normalmente: quem sobrou fica sem função, em vermelho, para você colocar manualmente.</p>
-                <p>Para revisar, mova as vagas que sobraram e clique em <strong>Salvar</strong>; se a cópia já estiver certa, basta Salvar.</p>
-                <p><strong>Período com erro.</strong> Um período atual ou futuro com erro vermelho gera em Pendências, no Para corrigir, o aviso <strong>Distribuição com erro</strong>, por exemplo "Distribuição com erro a partir de 03/10/2026 (1ºPEL)". O clique leva à Distribuição, e o aviso some quando o erro é corrigido.</p>
-                <p class="manual-nota"><strong>Um período revisado fica como você deixou.</strong> Enquanto não é revisada, a cópia acompanha as mudanças feitas no período anterior. Depois de revisada, ela só muda quando você a edita, e ao salvar o período anterior o sistema avisa quais períodos seguintes não receberam a mudança.</p>
-                <h3 id="editar-regras">Criar e editar regras <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p>Na aba <strong>Regras</strong>, escolha um militar à esquerda e use <strong>Adicionar</strong>, escolhendo a função, ou o botão de remover, nos grupos <strong>Proibidas</strong> e <strong>Exclusivas</strong>. Ao <strong>Salvar</strong>, o sistema grava e já redistribui os dias futuros. Alguns pontos:</p>
-                <ul class="manual-lista">
-                  <li>No grupo <strong>Exclusivas</strong>, a função <strong>Condutor</strong> aparece só para quem tem <strong>CNH C ou maior</strong>.</li>
-                  <li>O <strong>Chefe de Socorro</strong> e o <strong>Oficial de Área</strong> ficam de fora das regras, porque são sempre os mais antigos de serviço.</li>
-                  <li>A regra de uma função vale também para as funções adicionadas dela, como <strong>Rancheiro 2</strong> ou <strong>Efetivo 3</strong>.</li>
-                </ul>
-              </div>
+
+              <h3 id="dist-mudancas-data">Substituição, fora de serviço e exclusão</h3>
+              <p>Três botões na linha do posto marcam uma <strong>mudança com data</strong>. Cada um abre uma caixa no lugar do posto: <strong>Concluir</strong> confere os campos e fecha, e <strong>Cancelar</strong> desfaz o que foi digitado. A mudança grava no <strong>Salvar</strong> da página, junto com o resto.</p>
+              <ul class="manual-lista">
+                <li><strong>Substituir temporariamente</strong> (só na viatura): outra viatura assume o posto de uma data até outra, com o prefixo e a CNH dela, as mesmas funções e a mesma ordem. Depois do fim, a original volta. Cada viatura tem uma de cada vez.</li>
+                <li><strong>Fora de serviço</strong>: o posto sai da escala de uma data até outra, como a viatura na oficina sem reserva, e volta sozinho depois do fim.</li>
+                <li><strong>Excluir</strong> (a lixeira): o posto sai da escala <strong>a partir de</strong> uma data. Até lá, ele continua na lista com o aviso "Será removida a partir de 20/11/2026"; depois, some. A viatura nova, ainda não salva, sai da lista direto.</li>
+              </ul>
+              <p>Embaixo do posto fica uma linha para cada mudança, com o lápis para mudar e a lixeira para cancelar. As datas voltam no máximo 7 dias.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/distribuicao-caixa.png" width="0" height="0" alt="A caixa do Fora de serviço aberta no lugar da viatura: o posto e o tipo da mudança (1), o início e o fim (2) e Cancelar e Concluir (3)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>O posto e o tipo da mudança</li>
+                    <li>Início e fim</li>
+                    <li>Cancelar e Concluir</li>
+                  </ol>
+                </figcaption>
+              </figure>
+
+              <h3 id="dist-efetivo">O efetivo e as funções especiais</h3>
+              <p>O bloco <strong>Efetivo</strong> tem um cartão por posto, com o <strong>mínimo</strong>, o <strong>ideal</strong> e o <strong>máximo</strong> de pessoas:</p>
+              <ul class="manual-lista">
+                <li>O <strong>máximo</strong> diz quantas funções o posto tem: na viatura, o Condutor e os Efetivos; na instalação, o Rádio Operador, o Rádio Operador 2, e assim por diante.</li>
+                <li>Abaixo do <strong>mínimo</strong>, a escala mostra um erro vermelho; abaixo do <strong>ideal</strong>, um aviso amarelo.</li>
+                <li>Com <strong>mínimo 0</strong>, o posto é uma reserva: vazio, fica fora da escala, sem erro.</li>
+                <li><strong>Sem efetivo para o mínimo</strong>, o posto entra na escala incompleto ou fica fora da escala e libera o efetivo para os próximos postos da ordem. Você escolhe, e escolhe também o aviso quando ele ficar fora: nenhum, amarelo ou vermelho.</li>
+              </ul>
+              <p>O bloco <strong>Funções especiais</strong> diz onde ficam o <strong>Chefe de Socorro</strong>, no pelotão, que é sempre o praça mais antigo de serviço, e o <strong>Oficial de Área</strong>, o oficial mais antigo. Na mesma pergunta, você diz se o Chefe de Socorro pode dirigir a viatura dele: <strong>sempre</strong>, <strong>só se não houver outro habilitado</strong> (com a caixa do aviso amarelo na escala) ou <strong>nunca</strong> (a viatura sem outro condutor fica com erro vermelho).</p>
+
+              <h3 id="dist-ordem">Quem senta em cada função</h3>
+              <p>Os blocos seguintes dizem quem senta onde:</p>
+              <ul class="manual-lista">
+                <li><strong>Acúmulos fixos</strong>: funções que são sempre da mesma pessoa, como "o Rádio Operador é sempre de quem está no Efetivo 3". Elas não precisam de gente própria.</li>
+                <li><strong>Ordem de importância</strong>: cada linha é uma pessoa, com os acúmulos dela na mesma linha. Com N militares de serviço, enchem as N primeiras linhas, e quem sobra fica sem função. A função especial é sempre a 1ª. As setas mudam a ordem; dentro do mesmo posto, a ordem segue os lugares (Efetivo 2 antes do Efetivo 3).</li>
+                <li><strong>Substitutos</strong>: quando uma função fica sem gente, o 1º substituto que estiver de serviço faz as duas. Sem substituto, a função fica vazia.</li>
+                <li><strong>Quem escolher</strong>: para cada função, na ordem de importância, quem senta nela: o mais antigo ou o mais moderno que ainda não tem função, ou uma graduação ("Um 3ºSgt. ou o mais próximo", "Somente 3ºSgt. ou fica vazia"), com o aviso quando ela faltar. O <strong>rodízio</strong> evita que o militar repita a função do último serviço. O Condutor só fica com quem tem a CNH da viatura.</li>
+                <li><strong>Regras por militar</strong>: o que um militar não pode fazer ou só pode fazer (Condutor, Rádio Operador, Efetivo, Rancheiro ou Almoxarife).</li>
+              </ul>
+              <figure class="manual-figura manual-figura--cheia">
+                <img src="manual/imagens/distribuicao-ordem.png" width="0" height="0" alt="A Ordem de importância: uma linha por pessoa, com o posto e a função (1), o acúmulo na linha da pessoa (2) e as setas que mudam a ordem (3)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>Uma linha por pessoa</li>
+                    <li>Acúmulo na linha da pessoa</li>
+                    <li>Setas que mudam a ordem</li>
+                  </ol>
+                </figcaption>
+              </figure>
+
+              <h3 id="dist-conferir">Conferir antes de salvar</h3>
+              <p>O bloco <strong>Conferir</strong> mostra o resultado das respostas, sem gravar, de três jeitos: <strong>Tabela</strong> (a partir de um número de militares de serviço, ele e os quatro seguintes, uma coluna cada), <strong>Simular a equipe</strong> (quantos de cada graduação) e <strong>Um dia real</strong> (quem está de serviço numa data, com a CNH de cada um). Os avisos dos postos aparecem em caixas, primeiro os vermelhos.</p>
+              <figure class="manual-figura manual-figura--cheia">
+                <img src="manual/imagens/distribuicao-conferir.png" width="0" height="0" alt="O Conferir na Tabela: o seletor Tabela, Simular a equipe e Um dia real (1), uma coluna para cada número de militares de serviço (2) e os totais por posto (3)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>Tabela, Simular a equipe e Um dia real</li>
+                    <li>Uma coluna para cada número de militares</li>
+                    <li>Os totais por posto</li>
+                  </ol>
+                </figcaption>
+              </figure>
+
+              <h3 id="dist-salvar">Salvar e a mudança agendada</h3>
+              <p>O que você muda fica marcado, com "Alterações não salvas" no rodapé, até o <strong>Salvar</strong>. O <strong>Cancelar</strong> desfaz tudo. O Salvar pergunta <strong>a partir de quando</strong> a mudança vale: o padrão é o próximo serviço (o dia vira às 08h), e dá para escolher outra data, até 7 dias para trás. Embaixo da data vem o resumo do que muda.</p>
+              <p>Com uma data futura, a mudança vira a <strong>mudança agendada</strong>: um aviso no alto da página mostra a data, com <strong>Ver a mudança</strong>, <strong>Mudar a data</strong> e <strong>Cancelar a mudança</strong>. Cada unidade tem a distribuição em vigor e, no máximo, uma mudança agendada.</p>
+              <p>Ao salvar, a escala da unidade é refeita a partir da data, o resumo do que mudou abre na tela e fica no <strong>Histórico</strong>.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/distribuicao-salvar.png" width="0" height="0" alt="O Salvar da Distribuição: a data a partir de quando vale (1), Escolher outra data (2) e o resumo do que muda (3)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>A partir de quando vale</li>
+                    <li>Escolher outra data</li>
+                    <li>O resumo do que muda</li>
+                  </ol>
+                </figcaption>
+              </figure>
+
+              <h3 id="dist-na-escala">Como a escala segue a distribuição</h3>
+              <ul class="manual-lista">
+                <li>Todo dia, às 08h, a distribuição começa de novo, com quem está de serviço.</li>
+                <li>Quem chega no meio do plantão vai para a próxima função livre da ordem, e quem já estava continua na função dele.</li>
+                <li>Os erros seguem uma hierarquia: o posto que ficou sem gente só porque os substitutos dele vinham de um posto mais importante, também abaixo do mínimo, não mostra erro próprio. Num dia com só 2 militares no 2ºPEL, por exemplo, aparece só "Efetivo abaixo do mínimo: ABT-14935 (2 de 3)".</li>
+              </ul>
+              <p class="manual-nota">As regras que o sistema segue, por dentro, estão no <strong>Apêndice: a lógica por trás</strong>.</p>
             </section>
 
             <section class="manual-secao" id="usuarios">
@@ -2161,17 +2082,18 @@
               <figure class="manual-diagrama manual-ordem">
                 <ol class="manual-ordem-lista">
                   <li class="manual-ordem-passo"><span class="manual-ordem-num">1</span><span class="manual-ordem-texto"><strong>Antiguidade</strong><span>O mais antigo tem preferência, e é o desempate em tudo.</span></span></li>
-                  <li class="manual-ordem-passo"><span class="manual-ordem-num">2</span><span class="manual-ordem-texto"><strong>Tipo: praça ou oficial</strong><span>Cada vaga pede um dos dois, e só entra quem é do tipo certo.</span></span></li>
-                  <li class="manual-ordem-passo"><span class="manual-ordem-num">3</span><span class="manual-ordem-texto"><strong>Chefe de Socorro e Oficial de Área</strong><span>Os mais antigos de serviço, sempre. Nenhuma regra os tira.</span></span></li>
-                  <li class="manual-ordem-passo"><span class="manual-ordem-num">4</span><span class="manual-ordem-texto"><strong>Condutor</strong><span>Só quem tem CNH compatível com a viatura.</span></span></li>
-                  <li class="manual-ordem-passo"><span class="manual-ordem-num">5</span><span class="manual-ordem-texto"><strong>Grau ideal</strong><span>A graduação mais indicada; faltando, o sistema aproxima e avisa.</span></span></li>
-                  <li class="manual-ordem-passo"><span class="manual-ordem-num">6</span><span class="manual-ordem-texto"><strong>Rodízio</strong><span>Varia quem assume cada função, para não recair sempre nas mesmas pessoas.</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">2</span><span class="manual-ordem-texto"><strong>Chefe de Socorro e Oficial de Área</strong><span>Os mais antigos de serviço. Quem assume continua na função até o fim do plantão.</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">3</span><span class="manual-ordem-texto"><strong>Ordem de importância</strong><span>Com N militares de serviço, enchem as N primeiras funções da ordem. Quem sobra fica sem função.</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">4</span><span class="manual-ordem-texto"><strong>Quem escolher</strong><span>Cada função escolhe, na ordem, o mais antigo ou o mais moderno ainda sem função, ou uma graduação.</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">5</span><span class="manual-ordem-texto"><strong>Condutor</strong><span>Só quem tem CNH compatível com a viatura.</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">6</span><span class="manual-ordem-texto"><strong>Substitutos</strong><span>Quando uma função fica sem gente, o substituto de serviço faz as duas.</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">7</span><span class="manual-ordem-texto"><strong>Rodízio</strong><span>Evita que o militar repita a função do último serviço.</span></span></li>
                 </ol>
-                <figcaption class="manual-diagrama-legenda">A ordem que o sistema segue para preencher as vagas de cada dia. Quando falta gente, entram os acúmulos (a mesma pessoa em duas funções).</figcaption>
+                <figcaption class="manual-diagrama-legenda">A ordem que o sistema segue para distribuir quem está de serviço em cada dia.</figcaption>
               </figure>
-              <p><strong>Antiguidade em primeiro lugar.</strong> Em quase toda escolha, o <strong>mais antigo</strong> tem prioridade, e a antiguidade é o <strong>desempate</strong> em tudo. Cada vaga do modelo pede <strong>praça</strong> ou <strong>oficial</strong>, e o sistema só encaixa quem é do tipo certo.</p>
-              <p><strong>Chefe de Socorro e Oficial de Área são sempre os mais antigos.</strong> O <strong>Chefe de Socorro</strong> é o <strong>praça mais antigo</strong> do pelotão; o <strong>Oficial de Área</strong>, o <strong>oficial mais antigo</strong>. Isso é absoluto: nenhuma regra (proibida ou exclusiva) tira o mais antigo desses papéis.</p>
-              <p><strong>Condutor só com CNH.</strong> A função <strong>Condutor</strong> de uma viatura só fica com quem tem <strong>CNH compatível</strong> com a categoria que a viatura exige (por exemplo, uma viatura que pede C aceita quem tem C, D ou E). Quem não tem a carteira nunca é posto como condutor.</p>
+              <p><strong>Antiguidade em primeiro lugar.</strong> Em quase toda escolha, o <strong>mais antigo</strong> tem prioridade, e a antiguidade é o <strong>desempate</strong> em tudo. Cada função diz se é de <strong>praça</strong> ou de <strong>oficial</strong>, e o sistema só encaixa quem é do tipo certo.</p>
+              <p><strong>Chefe de Socorro e Oficial de Área são os mais antigos.</strong> O <strong>Chefe de Socorro</strong> é o <strong>praça mais antigo</strong> de serviço no pelotão; o <strong>Oficial de Área</strong>, o <strong>oficial mais antigo</strong>. Quem assume a função continua nela até o fim do plantão, mesmo que chegue alguém mais antigo depois.</p>
+              <p><strong>Condutor só com CNH.</strong> A função <strong>Condutor</strong> de uma viatura só fica com quem tem <strong>CNH compatível</strong> com a categoria que a viatura exige (por exemplo, uma viatura que pede C aceita quem tem C, D ou E). Quem cobre o Condutor como substituto também precisa da carteira. Quem não tem a carteira nunca é posto como condutor.</p>
               <figure class="manual-figura">
                 <img src="manual/imagens/apendice-guarnicao.png" width="396" height="113" alt="A guarnição de uma viatura no painel do dia: o Chefe de Socorro, o praça mais antigo (1), e o Condutor, com a CNH exigida (2), além do Efetivo." />
                 <figcaption>
@@ -2181,7 +2103,7 @@
                   </ol>
                 </figcaption>
               </figure>
-              <p><strong>Acúmulos: a mesma pessoa em duas funções.</strong> Quando é preciso, a mesma pessoa cobre mais de uma função. O caso clássico: se a viatura ficaria sem condutor mas o Chefe de Socorro (ou outro tripulante) tem carteira, ele <strong>acumula o Condutor</strong>, ficando nas duas funções. Num acúmulo do modelo, o sistema escolhe quem pode cumprir todas as funções dele: quem tem a carteira da viatura, se uma delas é Condutor, e quem não tem regra que o impeça.</p>
+              <p><strong>Acúmulos: a mesma pessoa em duas funções.</strong> Quando falta gente, a mesma pessoa cobre mais de uma função: o <strong>substituto</strong> de serviço faz a dele e a que ficou vazia. O caso clássico: sem outro condutor habilitado, o <strong>Chefe de Socorro</strong> dirige a viatura dele e fica nas duas funções, quando a unidade permite. Há também os <strong>acúmulos fixos</strong>, funções que são sempre da mesma pessoa.</p>
               <p>A tela mostra numa <strong>linha só</strong>, com os dois rótulos e um nome. Como o chefe já conta como efetivo, a cadeira que ele liberou vira mais um Efetivo para o próximo da fila. O acúmulo vale só dentro da mesma unidade: um militar não fica em funções de duas unidades ao mesmo tempo.<span class="manual-admin"> Para alguém de outra unidade trabalhar aqui num dia, o administrador usa o <strong>Adicionar militar</strong> do painel do dia.</span></p>
               <figure class="manual-figura">
                 <img src="manual/imagens/apendice-acumulo.png" width="396" height="104" alt="Um acúmulo: o mesmo militar aparece com dois rótulos empilhados, Chefe de Socorro e Condutor (1), e um nome só (2)." />
@@ -2192,7 +2114,8 @@
                   </ol>
                 </figcaption>
               </figure>
-              <p><strong>Ajustes finos: grau ideal e rodízio.</strong> Cada função pode ter um <strong>grau ideal</strong> (a graduação mais indicada, exata ou "daquela para cima ou para baixo"); faltando o ideal, o sistema aproxima e avisa. E o <strong>rodízio</strong> faz o sistema variar quem assume certas funções, para não recair sempre nas mesmas pessoas.</p>
+              <p><strong>Quem chega no meio do plantão.</strong> A distribuição começa de novo todo dia, às 08h. Quem chega no meio do plantão vai para a próxima função livre da ordem, e quem já estava continua na função dele.</p>
+              <p><strong>Ajustes finos: graduação e rodízio.</strong> Cada função pode pedir uma graduação, como "Um 3ºSgt. ou o mais próximo" ou "Somente 3ºSgt. ou fica vazia", com o aviso quando ela falta. E o <strong>rodízio</strong> faz o sistema evitar que o militar repita a função do último serviço; quando não há outro, ele repete, com o aviso amarelo.</p>
             </section>
 
             <footer class="manual-rodape">

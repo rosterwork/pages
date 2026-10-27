@@ -1,23 +1,24 @@
 /* ============================================================
    ESCALAS — o Dia do painel (aba Dia): a lista do dia, a mesma
-   para todos. O admin edita nela: o Adicionar militar (à esquerda)
-   e o desfazer/refazer (à direita) ficam no subcabeçalho, o nome de
-   cada militar numa função (fora o Chefe de Socorro e o Oficial de
-   Área) é um seletor de quem senta ali (escalas-painel-seletor.js),
-   cada militar tem o lápis (abre o militar no dia) e o ↺ (volta ao
-   automático), quem está de folga tem o lápis (abre a folga no dia,
-   com o Cancelar folga), o horário sem ninguém vira o seletor vermelho
-   "Sem ninguém, escolher", e as observações também se editam aqui.
+   para todos, só de leitura. O admin edita a partir dela: o
+   Adicionar militar (à esquerda) e o desfazer/refazer (à direita)
+   ficam no subcabeçalho, a frase do topo diz que as mudanças valem
+   só para o dia, cada linha (função, horário sem ninguém, sem função)
+   tem o lápis, que abre a edição ali mesmo (escalas-painel-linha.js),
+   quem o admin fixou ganha o selo Fixado, quem está de folga tem o
+   lápis da folga no dia (com o Cancelar folga), o fim da lista tem o
+   Voltar o dia ao automático e as observações também se editam aqui.
    Quem não é admin só lê (os postos mudam na Distribuição).
    Cada mudança grava na hora (escala_dia_salvar, um registro no
    histórico, sem o modal de resumo): o banco devolve o dia gravado e
-   a grade atualiza a célula. Rascunho de uma mudança: { ajustes,
-   pontuais, estornar, folgas, folgas_cancelar, observacoes }. O desfazer/
+   o que mudou (a nota O que mudou, no topo), e a grade atualiza a
+   célula. Rascunho de uma mudança: { ajustes, pontuais, estornar,
+   folgas, folgas_cancelar, observacoes, automatico }. O desfazer/
    refazer grava o caminho de volta (silencioso: ninguém é avisado).
-   As sub-telas (formulário e militar no dia) ficam em
-   escalas-painel-formulario.js e -militar.js e usam a API daqui
-   (.sub); dentro delas a prévia vem do banco (escala_dia_simular) e
-   nada grava até o Aplicar. A aba Dia da Extrajornada usa o mesmo desenho,
+   A edição da linha, o Adicionar militar (sub-tela) e a folga no dia
+   (sub-tela) ficam em escalas-painel-linha.js, -adicionar.js e
+   -militar.js e usam a API daqui (.sub); nada grava até o Aplicar.
+   A aba Dia da Extrajornada usa o mesmo desenho,
    só de leitura, com o dia já lido (opções dados e semAvisos). O
    "Como fica a escala" do painel de decisão (Trocas e Folgas) também,
    no modo comparação (opção comparar): só leitura, com quem saiu
@@ -30,7 +31,8 @@
 
   window.RosterWork = window.RosterWork || {};
 
-  var ctx = null;       // { corpo, rodape, unidadeId, iso, admin, comparar, dados, dadosAntes, chaveDados, emSub, comHistorico, salvando }
+  var ctx = null;       // { corpo, rodape, unidadeId, iso, admin, comparar, dados, dadosAntes, chaveDados, emSub, comHistorico, salvando,
+                        //   sugestao, ultima: { mudou, sugestao } (a nota O que mudou da última gravação) }
   var base = null;      // o dia gravado (a última leitura): { dados, ajustes, pontuais }
   var rasc = null;      // a mudança em andamento, sobre o dia gravado
   var foto = null;      // rascunho ao abrir uma sub-tela (o Cancelar volta a ele)
@@ -106,10 +108,10 @@
     return n;
   }
 
-  /* o rascunho mudou o dia gravado? (funções, pontuais, folgas dadas ou canceladas, ou observações) */
+  /* o rascunho mudou o dia gravado? (funções, pontuais, folgas dadas ou canceladas, observações, ou o Voltar ao automático) */
   function haMudanca() {
     if (!rasc || !base) return false;
-    return !mesmosAjustes(base.ajustes, rasc.ajustes) || difPontuais() > 0 || rasc.folgas.length > 0
+    return !!rasc.automatico || !mesmosAjustes(base.ajustes, rasc.ajustes) || difPontuais() > 0 || rasc.folgas.length > 0
       || rasc.folgas_cancelar.length > 0 || rasc.observacoes.adicionar.length > 0 || rasc.observacoes.remover.length > 0;
   }
 
@@ -137,12 +139,13 @@
     if (difPontuais() > 0) r.pontuais = rasc.pontuais;
     return r;
   }
-  /* o que vai ao banco quando a mudança grava */
+  /* o que vai ao banco quando a mudança grava (no Voltar ao automático, o sistema distribui tudo de novo) */
   function paraSalvar() {
     var r = paraPrevia();
     r.estornar = rasc.estornar;
     r.folgas_cancelar = rasc.folgas_cancelar;
     r.observacoes = rasc.observacoes;
+    if (rasc.automatico) r.automatico = true;
     return r;
   }
 
@@ -421,27 +424,6 @@
     if (no) { no.textContent = msg().falhaCarregar; ctx.corpo.appendChild(no); }
   }
 
-  /* a prévia da sub-tela recusou (ex.: períodos que se cruzam) ou caiu: avisa e volta ao dia gravado */
-  function falhou(dados) {
-    if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: (dados && dados.erro_simulacao) || msg().falhaCarregar });
-    cancelarSub();
-  }
-
-  /* o dia como fica com o rascunho atual, dentro das sub-telas (reaproveita a última prévia se a escala do rascunho não mudou) */
-  function previa(depois) {
-    var chaveAgora = JSON.stringify(paraPrevia());
-    if (ctx.dados && chaveAgora === ctx.chaveDados) { depois(ctx.dados); return; }
-    mostrarCarregando();
-    var meu = ++pedido, c = ctx;
-    RosterWork.escalasDados.simularDia(ctx.unidadeId, ctx.iso, paraPrevia()).then(function (dados) {
-      if (ctx !== c || meu !== pedido) return;
-      if (!dados || dados.erro_simulacao) { falhou(dados); return; }
-      ctx.dados = dados;
-      ctx.chaveDados = chaveAgora;
-      depois(dados);
-    });
-  }
-
   /* (re)desenha a lista do dia: a mudança feita (na lista ou numa sub-tela) grava na hora; sem mudança, mostra o
      dia gravado. A 1ª vez lê o dia */
   function desenhar() {
@@ -482,6 +464,10 @@
     var c = ctx, uid = ctx.unidadeId, iso = ctx.iso, antes = base;
     var corpo = copiar(envio);
     corpo.antes = { ajustes: antes.ajustes, pontuais: antes.pontuais };
+    /* a nota O que mudou é só da última gravação; o atalho vale só para a mudança que o pediu */
+    var sugestao = ctx.sugestao || null;
+    ctx.sugestao = null;
+    ctx.ultima = null;
     ctx.salvando = true;
     montarSubcabecalho();
     mostrarCarregando();
@@ -516,6 +502,7 @@
         if (!dados) { mostrarFalha(); return; }
         aceitar(dados);
         ctx.dadosAntes = antes.dados;   // o aviso de quem assume o Chefe de Socorro compara com o dia antes desta mudança
+        if ((r.mudou || []).length || sugestao) ctx.ultima = { mudou: r.mudou || [], sugestao: sugestao };
         if (aoGravar) aoGravar(r, antes);
         ctx.comHistorico = false;       // o rodapé relê o histórico, já com esta mudança
         desenhar();
@@ -567,7 +554,7 @@
     var b = RosterWork.tpl('tpl-escala-edicao-adicionar');
     if (b) {
       b.disabled = !!ctx.salvando;
-      b.addEventListener('click', function () { if (ctx && !ctx.salvando) abrirFormulario({ modo: 'adicionar' }); });
+      b.addEventListener('click', function () { if (ctx && !ctx.salvando && RosterWork.escalasPainelAdicionar) RosterWork.escalasPainelAdicionar.abrir(); });
       sub.appendChild(b);
     }
     var hist = RosterWork.tpl('tpl-escala-edicao-historico');
@@ -634,14 +621,19 @@
     var icones = linha.querySelector('.escala-distribuicao-icones');
     var ic = RosterWork.tpl('tpl-escala-mes-origem');
     if (ic) { p.definirIcone(ic, op.icone || p.iconeOrigem[m.origem] || p.iconeOrigem.sistema); icones.appendChild(ic); }
-    /* o cadeado marca a colocação manual; na linha com "Novo" ele sai para caber */
-    if (m.fixado && !op.novo) {
+    /* a colocação manual: para o admin, o selo Fixado depois do nome; para quem só lê, o cadeado (na linha com
+       "Novo" ele sai para caber) */
+    if (m.fixado && !op.novo && !ctx.admin) {
       var cad = RosterWork.tpl('tpl-escala-mes-origem');
       if (cad) { p.definirIcone(cad, 'icone-cadeado'); icones.appendChild(cad); }
     }
     if (!op.ghost && !op.folga) { p.marcarRegras(linha, m); p.marcarOutraUnidade(linha, m); }
     linha.querySelector('.escala-distribuicao-grad').textContent = m.grad || '';
     linha.querySelector('.escala-distribuicao-nome').textContent = m.nome || '';
+    if (m.fixado && !op.novo && ctx.admin) {
+      var fixado = RosterWork.tpl('tpl-escala-edicao-fixado');
+      if (fixado) linha.querySelector('.escala-edicao-pessoa').appendChild(fixado);
+    }
     if (op.novo) {
       var selo = RosterWork.tpl('tpl-escala-edicao-novo');
       if (selo) linha.querySelector('.escala-edicao-pessoa').appendChild(selo);
@@ -661,29 +653,39 @@
     return linha;
   }
 
-  /* o seletor do nome (escalas-painel-seletor.js): só o admin, na lista do dia, fora o Chefe de Socorro e o
-     Oficial de Área (o mais antigo, automático) */
-  function seletorDaFuncao(nomeFuncao) {
-    return ctx.admin && !ctx.comparar && !ctx.dadosProntos && !BLOQUEADAS.test(nomeFuncao) ? RosterWork.escalasPainelSeletor : null;
+  /* a lista edita só no Dia do admin (não na prévia da Extrajornada nem na comparação) */
+  function editavel() { return ctx.admin && !ctx.comparar && !ctx.dadosProntos; }
+
+  /* o lápis da linha: abre a edição ali mesmo, embaixo da função (escalas-painel-linha.js). cfg sem ancora e lapis */
+  function lapisDaLinha(ancora, cfg) {
+    if (!editavel() || !RosterWork.escalasPainelLinha) return null;
+    var b = RosterWork.tpl('tpl-escala-edicao-lapis');
+    if (!b) return null;
+    b.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      if (!ctx || ctx.salvando) return;
+      cfg.ancora = ancora();
+      cfg.lapis = b;
+      RosterWork.escalasPainelLinha.abrir(cfg);
+    });
+    return b;
   }
 
-  /* horário sem ninguém na função (dentro do que o modelo pede) ou cadeira vazia do motor: para o admin,
-     o seletor vermelho de quem fica ali; para quem só lê, o texto vermelho */
-  function linhaVazia(posto, nomeFuncao, per, texto) {
+  /* horário sem ninguém na função (dentro do que o modelo pede) ou cadeira vazia do motor: o texto vermelho e,
+     para o admin, o lápis (quem fica ali) */
+  function linhaVazia(posto, nomeFuncao, per, ancora) {
     var p = pecas();
     var linha = novaLinha();
     if (!linha) return null;
     var pessoa = linha.querySelector('.escala-edicao-pessoa');
     pessoa.textContent = '';
-    var seletor = seletorDaFuncao(nomeFuncao);
-    if (seletor) {
-      seletor.encaixarVazio(linha, { posto: posto, funcao: nomeFuncao, periodos: [{ hi: per.hi, hf: per.hf }], militar: null }, texto);
-    } else {
-      var t = RosterWork.tpl('tpl-escala-edicao-vazio-leitura');
-      if (t) { t.textContent = msg().semNinguemTexto; pessoa.appendChild(t); }
-    }
+    var t = RosterWork.tpl('tpl-escala-edicao-vazio-leitura');
+    if (t) { t.textContent = msg().semNinguemTexto; pessoa.appendChild(t); }
     var h = p.hora(per);
     if (h) linha.querySelector('.escala-distribuicao-horas').appendChild(h);
+    var lapis = lapisDaLinha(ancora, { tipo: 'vaga', posto: posto, funcao: nomeFuncao, militar: null, periodos: [{ hi: per.hi, hf: per.hf }] });
+    var acoes = linha.querySelector('.escala-edicao-acoes');
+    if (lapis && acoes) acoes.appendChild(lapis);
     return linha;
   }
 
@@ -703,53 +705,40 @@
     return set;
   }
 
-  /* o bloco de uma função: militares, o automático trocado/tirado (riscado, só para o admin) e os horários sem
-     ninguém, com a função no meio da altura de todas as linhas */
+  /* o bloco de uma função: militares e os horários sem ninguém, com a função no meio da altura de todas as linhas
+     (na comparação, também quem saiu, riscado). O lápis de cada linha abre a edição embaixo do bloco; no Chefe de
+     Socorro com o Condutor (o mesmo militar), a edição é a do Condutor */
   function linhasFuncao(caixa, posto, f) {
     var p = pecas();
     var temVao = !!f.vazio || (f.vao || []).length > 0;
-    var grupo = novoGrupo((f.nomes && f.nomes.length) ? f.nomes : [f.nome], temVao ? 'erro' : p.nivelFuncao(f));
+    var rotulos = (f.nomes && f.nomes.length) ? f.nomes : [f.nome];
+    var grupo = novoGrupo(rotulos, temVao ? 'erro' : p.nivelFuncao(f));
     if (!grupo) return;
+    function ancora() { return grupo.el; }
     function por(linha) { if (linha) grupo.linhas.appendChild(linha); }
     var sobrepostos = cpfsSobrepostos(f);
-    var seletor = seletorDaFuncao(f.nome);
+    var condutor = rotulos.length > 1 ? rotulos[1] : null;
     (f.militares || []).forEach(function (m) {
-      var acoes = [];
-      if (ctx.admin) {
-        if (m.fixado && !m.bloqueado) {
-          acoes.push(botao('tpl-escala-edicao-desfazer', function () {
-            mudar(function () {
-              rasc.ajustes = rasc.ajustes.filter(function (a) { return !(a.acao === 'colocar' && a.cpf === m.cpf && noLocal(a, posto, f.nome)); });
-            });
-          }));
-        }
-        acoes.push(botao('tpl-escala-edicao-lapis', function () { abrirMilitar(m.cpf); }));
+      var cfg = { tipo: 'funcao', posto: posto, funcao: f.nome, militar: m, periodos: m.periodos || [] };
+      if (condutor) {
+        var fc = acharFuncao(posto, condutor);
+        var mc = ((fc && fc.militares) || []).filter(function (o) { return o.cpf === m.cpf; })[0] || m;
+        cfg = { tipo: 'funcao', posto: posto, funcao: condutor, rotulo: rotulos.join(' e '), militar: mc, periodos: mc.periodos || [] };
+      } else if (BLOQUEADAS.test(f.nome)) {
+        cfg.tipo = 'papel';
       }
       /* na comparação, as marcas vêm do banco ("Novo" = quem entra pelo pedido; só a barra = quem o
          sistema remanejou); na edição não há marca, porque cada mudança já está gravada */
-      var linha = linhaMilitar(m, { novo: !!(ctx.comparar && m.novo), alterada: ctx.comparar && !!m.mudou, acoes: acoes });
+      var linha = linhaMilitar(m, { novo: !!(ctx.comparar && m.novo), alterada: ctx.comparar && !!m.mudou, acoes: [lapisDaLinha(ancora, cfg)] });
       if (linha && (sobrepostos[m.cpf] || (m.periodos || []).some(function (per) { return foraDaDisponibilidade(per, m); }))) {
         linha.classList.add('escala-edicao-linha--erro');
       }
-      if (linha && seletor) seletor.encaixar(linha, { posto: posto, funcao: f.nome, periodos: m.periodos || [], militar: m });
       por(linha);
     });
-    /* riscados: na edição, o automático trocado ou tirado (só o admin vê); na comparação, quem saiu */
-    if (ctx.admin || ctx.comparar) {
-      (f.ghosts || []).forEach(function (g) {
-        var acoes = [];
-        if (g.motivo === 'tirar') {
-          acoes.push(botao('tpl-escala-edicao-desfazer', function () {
-            mudar(function () {
-              rasc.ajustes = rasc.ajustes.filter(function (a) { return !(a.acao === 'tirar' && a.cpf === g.cpf && noLocal(a, posto, f.nome)); });
-            });
-          }));
-        }
-        por(linhaMilitar(g, { ghost: true, acoes: acoes }));
-      });
-    }
-    if (f.vazio) por(linhaVazia(posto, f.nome, { hi: '08:00', hf: '08:00' }, msg().vazioEscolher));
-    (f.vao || []).forEach(function (v) { por(linhaVazia(posto, f.nome, v, msg().semNinguem)); });
+    /* riscados: na comparação, quem saiu */
+    if (ctx.comparar) (f.ghosts || []).forEach(function (g) { por(linhaMilitar(g, { ghost: true })); });
+    if (f.vazio) por(linhaVazia(posto, f.nome, { hi: '08:00', hf: '08:00' }, ancora));
+    (f.vao || []).forEach(function (v) { por(linhaVazia(posto, f.nome, v, ancora)); });
     if (grupo.linhas.children.length) caixa.appendChild(grupo.el);
   }
 
@@ -784,8 +773,8 @@
     var grupo = novoGrupo([], null);
     if (!grupo) return caixa;
     sem.forEach(function (m) {
-      var acoes = ctx.admin ? [botao('tpl-escala-edicao-lapis', function () { abrirMilitar(m.cpf); })] : [];
-      var l = linhaMilitar(m, { acoes: acoes });
+      var lapis = lapisDaLinha(function () { return grupo.el; }, { tipo: 'sem_funcao', militar: m, periodos: m.periodos || [] });
+      var l = linhaMilitar(m, { acoes: [lapis] });
       if (l) grupo.linhas.appendChild(l);
     });
     caixa.appendChild(grupo.el);
@@ -836,11 +825,101 @@
     });
   }
 
+  /* "Condutor da ABT-01" (o posto pelo nome, na leitura do dia) */
+  function lugarTexto(x) {
+    var po = ((ctx.dados && ctx.dados.postos) || []).filter(function (o) { return o.nome === x.posto; })[0];
+    return po ? funcaoNoPosto(x.funcao, po) : [x.funcao, x.posto].filter(Boolean).join(' ');
+  }
+
+  /* O que mudou na última gravação: uma frase por militar que mudou de lugar e, quando a troca deixou alguém sem
+     função, o atalho de pô-lo no lugar que o outro deixou */
+  function notaMudou(corpo) {
+    var u = ctx.ultima;
+    if (!u) return;
+    var nota = RosterWork.tpl('tpl-escala-edicao-mudou');
+    if (!nota) return;
+    var L = msg().linha, lista = nota.querySelector('.escala-edicao-mudou-lista');
+    var semFuncao = {};
+    ((ctx.dados && ctx.dados.sem_funcao) || []).forEach(function (m) { semFuncao[m.cpf] = true; });
+    /* cada lugar com as horas juntas (o dia cortado em trechos repete a mesma função): { "Condutor da ABT-01": [[ini, fim]] } */
+    function porLugar(lista) {
+      var r = {};
+      lista.forEach(function (x) { var k = lugarTexto(x); r[k] = (r[k] || []).concat([faixa(x)]); });
+      Object.keys(r).forEach(function (k) { r[k] = uniao(r[k]); });
+      return r;
+    }
+    u.mudou.forEach(function (x) {
+      var a = porLugar(x.antes || []), d = porLugar(x.depois || []);
+      var antes = Object.keys(a), depois = Object.keys(d);
+      var mesmos = antes.length === depois.length && antes.every(function (k) { return d[k]; });
+      if (mesmos && antes.every(function (k) { return JSON.stringify(a[k]) === JSON.stringify(d[k]); })) return;
+      var horas = uniao([].concat.apply([], depois.map(function (k) { return d[k]; }))).map(periodo);
+      var frase = !antes.length ? L.mudouEntrou(x.nome, depois)
+        : !depois.length ? (semFuncao[x.cpf] ? L.mudouSemFuncao(x.nome, antes) : L.mudouSaiu(x.nome, antes))
+        : mesmos ? L.mudouHorario(x.nome, textoPeriodos(horas))
+        : L.mudouPassou(x.nome, antes, depois);
+      var item = RosterWork.tpl('tpl-escala-edicao-mudou-item');
+      if (item) { item.textContent = frase; lista.appendChild(item); }
+    });
+    var s = u.sugestao, atalho = nota.querySelector('.escala-edicao-mudou-atalho');
+    if (s && semFuncao[s.cpf]) {
+      atalho.textContent = s.texto;
+      atalho.classList.remove('oculto');
+      atalho.addEventListener('click', function () {
+        if (!ctx || ctx.salvando) return;
+        mudar(function () {
+          s.lugares.forEach(function (l) {
+            var posto = acharPosto(vidPosto(l.posto), iidPosto(l.posto));
+            if (posto) aplicarColocacao({ cpf: s.cpf, posto: posto, funcao: l.funcao, periodos: l.periodos, sistema: false, pontual: null });
+          });
+        });
+      });
+    }
+    if (!lista.children.length && atalho.classList.contains('oculto')) return;
+    corpo.appendChild(nota);
+  }
+
+  /* os ajustes manuais que caem nos postos desta unidade (o Voltar o dia ao automático tira só esses) */
+  function ajustesDaUnidade(lista) {
+    var postos = (ctx.dados && ctx.dados.postos) || [];
+    return lista.filter(function (a) {
+      return postos.some(function (po) { return (po.tipo === 'viatura' && po.id === a.viatura_id) || (po.tipo === 'instalacao' && po.id === a.instalacao_id); });
+    });
+  }
+
+  /* Voltar o dia ao automático: confirma, tira os ajustes manuais da unidade e o sistema distribui tudo de novo */
+  function botaoAutomatico() {
+    if (!editavel() || !base || !ajustesDaUnidade(base.ajustes).length) return null;
+    var b = RosterWork.tpl('tpl-escala-edicao-automatico');
+    if (!b) return null;
+    b.addEventListener('click', function () {
+      if (!ctx || ctx.salvando) return;
+      var L = msg().linha;
+      RosterWork.confirmar({ tipo: 'aviso', mensagem: L.automaticoConfirmar(ctx.iso.split('-').reverse().slice(0, 2).join('/')),
+        textoConfirmar: L.automaticoBotao,
+        aoConfirmar: function () {
+          mudar(function () {
+            var daqui = ajustesDaUnidade(rasc.ajustes);
+            rasc.ajustes = rasc.ajustes.filter(function (a) { return daqui.indexOf(a) < 0; });
+            rasc.automatico = true;
+          });
+        } });
+    });
+    return b;
+  }
+
   function renderLista(dados) {
     var p = pecas();
     var corpo = ctx.corpo;
+    if (RosterWork.escalasPainelLinha) RosterWork.escalasPainelLinha.fechar();
     corpo.textContent = '';
     p.anexarProblemas(dados);   // CNH, regra, exclusivo e grau de cada militar (do banco)
+    /* a frase do topo: as mudanças da lista valem só para este dia */
+    if (editavel()) {
+      var ajuda = RosterWork.tpl('tpl-escala-edicao-ajuda');
+      if (ajuda) { ajuda.querySelector('.escala-edicao-ajuda-data').textContent = ctx.iso.split('-').reverse().slice(0, 2).join('/'); corpo.appendChild(ajuda); }
+    }
+    if (editavel()) notaMudou(corpo);
     if (!ctx.semAvisos) {
       var aviso = p.montarAvisoProblemas(dados.problemas, dados.postos, dados.faltam_modelos, dados.modelos_com_erro);
       if (aviso) corpo.appendChild(aviso);
@@ -856,6 +935,8 @@
       var vazio = RosterWork.tpl('tpl-escala-distribuicao-estado');
       if (vazio) { vazio.textContent = msg().semDistribuicao; corpo.appendChild(vazio); }
     }
+    var automatico = botaoAutomatico();
+    if (automatico) corpo.appendChild(automatico);
     var obs = caixaObservacoes(dados);
     if (obs) corpo.appendChild(obs);
     /* Lançar no SYSBM: o último bloco do Dia gravado (não o de dados prontos, como a prévia da Extrajornada),
@@ -878,7 +959,7 @@
     montar(ctx.corpo, ctx.rodape, ctx.unidadeId, ctx.iso, { admin: ctx.admin });
   }
 
-  /* ---------- sub-telas (formulário e militar no dia) ---------- */
+  /* ---------- sub-telas (Adicionar militar e a folga no dia) ---------- */
 
   /* troca a lista por uma sub-tela: "Voltar ao dia" no topo e Cancelar · Aplicar no rodapé.
      montar(corpo) desenha o conteúdo; aoAplicar() faz a mudança e chama concluirSub(). Sem textoAplicar (a folga
@@ -919,6 +1000,11 @@
     var aplicar = ctx.rodape && ctx.rodape.querySelector('.escala-sub-aplicar');
     if (aplicar) aplicar.disabled = ctx.aplicarTravado;
   }
+  /* o texto do botão de confirmar muda com a escolha da sub-tela (ex.: Adicionar e Continuar) */
+  function rotuloAplicar(texto) {
+    var aplicar = ctx && ctx.rodape && ctx.rodape.querySelector('.escala-sub-aplicar');
+    if (aplicar) aplicar.textContent = texto;
+  }
   /* Cancelar: volta ao dia gravado, sem gravar nada. Aplicar: a mudança grava (desenhar) */
   function cancelarSub() {
     if (!ctx || ctx.salvando) return;
@@ -928,9 +1014,10 @@
   }
   function concluirSub() { if (!ctx) return; desenhar(); }
 
-  function abrirFormulario(cfg) { if (RosterWork.escalasPainelFormulario) RosterWork.escalasPainelFormulario.abrir(cfg); }
-  function abrirMilitar(cpf) { if (RosterWork.escalasPainelMilitar) RosterWork.escalasPainelMilitar.abrir(cpf); }
   function abrirFolga(id) { if (RosterWork.escalasPainelMilitar) RosterWork.escalasPainelMilitar.abrirFolga(id); }
+
+  /* o atalho que a próxima gravação mostra na nota O que mudou (a edição da linha pede antes de mudar) */
+  function sugerir(s) { if (ctx) ctx.sugestao = s || null; }
 
   /* ---------- ciclo de vida ---------- */
 
@@ -941,7 +1028,8 @@
     ctx = { corpo: corpo, rodape: rodape, unidadeId: unidadeId, iso: iso, admin: !!opcoes.admin,
       comparar: !!opcoes.comparar,
       dadosProntos: opcoes.dados || null, semAvisos: !!opcoes.semAvisos,
-      dados: null, dadosAntes: null, chaveDados: null, emSub: false, comHistorico: false, salvando: false };
+      dados: null, dadosAntes: null, chaveDados: null, emSub: false, comHistorico: false, salvando: false,
+      sugestao: null, ultima: null };
     rasc = null; base = null; foto = null; pilhaDesfazer = []; pilhaRefazer = [];
     if (rodape) { rodape.textContent = ''; rodape.classList.add('oculto'); }
     desenhar();
@@ -949,14 +1037,16 @@
 
   function reset() {
     if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
+    if (RosterWork.escalasPainelLinha) RosterWork.escalasPainelLinha.fechar();
     ctx = null; rasc = null; base = null; foto = null; pilhaDesfazer = []; pilhaRefazer = [];
     pedido++;
   }
 
-  /* atalhos: Ctrl+Z desfaz, Ctrl+Y ou Ctrl+Shift+Z refaz. Só na lista do Dia do admin, fora dos campos de texto
-     e sem janela de aviso aberta. O keydown vive no document (liga uma vez só) */
+  /* atalhos: Ctrl+Z desfaz, Ctrl+Y ou Ctrl+Shift+Z refaz. Só na lista do Dia do admin, sem edição de linha aberta,
+     fora dos campos de texto e sem janela de aviso aberta. O keydown vive no document (liga uma vez só) */
   document.addEventListener('keydown', function (e) {
     if (!(e.ctrlKey || e.metaKey) || !ctx || !ctx.admin || ctx.emSub) return;
+    if (RosterWork.escalasPainelLinha && RosterWork.escalasPainelLinha.aberta()) return;
     var alvo = e.target;
     if (alvo && (alvo.tagName === 'INPUT' || alvo.tagName === 'TEXTAREA' || alvo.isContentEditable)) return;
     if (document.querySelector('.modal-veu--aberto')) return;
@@ -970,21 +1060,23 @@
   window.RosterWork.escalasPainelEditar = {
     montar: montar,
     reset: reset,
-    /* para as sub-telas (escalas-painel-formulario.js e escalas-painel-militar.js) e o
-       seletor do nome (escalas-painel-seletor.js: mudar grava a troca como uma mudança só) */
+    /* para a edição da linha (escalas-painel-linha.js e -servico.js: mudar grava a mudança como um passo só) e as
+       sub-telas (escalas-painel-adicionar.js e -militar.js) */
     sub: {
       mudar: mudar,
       deixarFuncao: deixarFuncao,
+      cortarAjustes: cortarAjustes,
+      sugerir: sugerir,
+      recarregar: recarregar,
       dados: function () { return ctx && ctx.dados; },
       iso: function () { return ctx && ctx.iso; },
       unidadeId: function () { return ctx && ctx.unidadeId; },
       rascunho: function () { return rasc; },
       abrir: abrirSub,
       travarAplicar: travarAplicar,
+      rotuloAplicar: rotuloAplicar,
       concluir: concluirSub,
       cancelar: cancelarSub,
-      previa: previa,
-      abrirFormulario: abrirFormulario,
       aplicarColocacao: aplicarColocacao,
       aplicarMilitar: aplicarMilitar,
       darFolga: darFolga,

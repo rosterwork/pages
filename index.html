@@ -1586,12 +1586,51 @@
   </template>
 
   <!-- ===== painel do dia › aba Dia (escalas-painel-editar.js): a lista do dia, que o admin edita ===== -->
-  <!-- subcabeçalho do admin: abre o formulário de adicionar militar -->
+  <!-- subcabeçalho do admin: o campo que abre o Adicionar militar (escalas-painel-adicionar.js) -->
   <template id="tpl-escala-edicao-adicionar">
-    <button type="button" class="botao botao--primario escala-edicao-adicionar">
+    <button type="button" class="campo-entrada campo-selecao escala-edicao-adicionar">
       <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-novo-usuario"/></svg>
-      <span>Adicionar militar</span>
+      <span class="campo-selecao-texto">Adicionar militar</span>
+      <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
     </button>
+  </template>
+
+  <!-- a frase do topo da lista do admin: as mudanças da lista valem só para o dia aberto (a data vem do JS) -->
+  <template id="tpl-escala-edicao-ajuda">
+    <p class="escala-edicao-ajuda">As mudanças na lista valem só para <span class="escala-edicao-ajuda-data"></span>.</p>
+  </template>
+
+  <!-- selo de quem o administrador fixou na função: o sistema não mexe nele -->
+  <template id="tpl-escala-edicao-fixado">
+    <span class="selo escala-edicao-fixado">
+      <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-cadeado"/></svg>
+      <span>Fixado</span>
+    </span>
+  </template>
+
+  <!-- o fim da lista do admin: tira os ajustes manuais da unidade no dia e o sistema distribui de novo -->
+  <template id="tpl-escala-edicao-automatico">
+    <button type="button" class="botao escala-edicao-automatico">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-restaurar"/></svg>
+      <span>Voltar o dia ao automático</span>
+    </button>
+  </template>
+
+  <!-- O que mudou na última gravação: uma frase por militar (do JS) e o atalho de pôr quem ficou sem função no
+       lugar que o outro deixou (o texto do botão vem do JS) -->
+  <template id="tpl-escala-edicao-mudou">
+    <div class="nota escala-edicao-mudou">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-historico"/></svg>
+      <div class="escala-edicao-mudou-corpo">
+        <span class="escala-edicao-mudou-titulo">O que mudou</span>
+        <ul class="escala-edicao-mudou-lista"></ul>
+        <button type="button" class="botao escala-edicao-mudou-atalho oculto"></button>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-escala-edicao-mudou-item">
+    <li class="escala-edicao-mudou-item"></li>
   </template>
 
   <!-- subcabeçalho do admin, à direita: desfazer e refazer a última mudança do dia (o JS liga e desliga) -->
@@ -1606,38 +1645,11 @@
     </div>
   </template>
 
-  <!-- lápis: abre o militar no dia -->
+  <!-- lápis: abre a edição da linha ali mesmo (escalas-painel-linha.js) -->
   <template id="tpl-escala-edicao-lapis">
-    <button type="button" class="botao-discreto" aria-label="Editar o militar no dia">
+    <button type="button" class="botao-discreto escala-edicao-lapis" aria-label="Editar esta linha">
       <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-editar"/></svg>
     </button>
-  </template>
-
-  <!-- volta ao automático (desfaz o ajuste manual da linha) -->
-  <template id="tpl-escala-edicao-desfazer">
-    <button type="button" class="botao-discreto" aria-label="Voltar ao automático">
-      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-restaurar"/></svg>
-    </button>
-  </template>
-
-  <!-- o nome como seletor (admin; escalas-painel-seletor.js): a caixa com a setinha e a lista de quem pode sentar
-       na função. Na linha do militar, o JS põe na caixa os ícones, a graduação e o nome da linha; na vaga vazia, o
-       texto ("Sem ninguém, escolher") vai no .escala-seletor-texto. O título e a lista vêm do JS -->
-  <template id="tpl-escala-edicao-seletor">
-    <div class="dropdown escala-seletor">
-      <button type="button" class="campo-entrada campo-entrada--pequeno campo-selecao escala-seletor-gatilho">
-        <span class="campo-selecao-texto escala-seletor-texto"></span>
-        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
-      </button>
-      <div class="dropdown-menu dropdown-menu--largo escala-seletor-menu">
-        <span class="dropdown-titulo escala-seletor-titulo"></span>
-        <div class="escala-seletor-busca"></div>
-        <div class="dropdown-menu-rolagem escala-seletor-lista"></div>
-        <div class="dropdown-menu-rodape">
-          <button type="button" class="dropdown-item escala-seletor-mais">Mais opções</button>
-        </div>
-      </div>
-    </div>
   </template>
 
   <!-- aviso informativo no topo da lista (ex.: quem assume o Chefe de Socorro); o texto vem do JS -->
@@ -1653,7 +1665,7 @@
     <span class="escala-edicao-info"></span>
   </template>
 
-  <!-- sub-telas (formulário e militar no dia): volta à lista do dia -->
+  <!-- sub-telas (Adicionar militar e a folga no dia): volta à lista do dia -->
   <template id="tpl-escala-sub-voltar">
     <button type="button" class="botao botao--texto subtela-voltar">
       <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>
@@ -1661,136 +1673,229 @@
     </button>
   </template>
 
-  <!-- rodapé das sub-telas: Cancelar + o botão que aplica no rascunho (o texto vem do JS: Adicionar ao dia / Aplicar) -->
+  <!-- rodapé das sub-telas: Cancelar + o botão que aplica (o texto vem do JS: Adicionar / Continuar) -->
   <template id="tpl-escala-sub-acoes">
     <button type="button" class="botao escala-sub-cancelar">Cancelar</button>
     <button type="button" class="botao botao--primario escala-sub-aplicar"></button>
   </template>
 
-  <!-- ===== formulário Quem · Quando · Onde (Adicionar militar, horário sem ninguém e Nova função; escalas-painel-formulario.js) ===== -->
-  <template id="tpl-escala-form">
-    <div class="subtela escala-form">
-      <div class="subtela-cab">
-        <span class="subtela-titulo escala-form-titulo"></span>
-        <span class="subtela-subtitulo escala-form-subtitulo"></span>
+  <!-- ===== a edição de uma linha do Dia (o lápis; escalas-painel-linha.js): abre ali mesmo, embaixo da função.
+       Os blocos que não valem para a linha (ex.: o Quem do Chefe de Socorro, o Pôr numa função de quem não está
+       sem função) ficam escondidos; os nomes dos rádios e os textos que mudam vêm do JS ===== -->
+  <template id="tpl-escala-linha">
+    <div class="escala-linha">
+      <div class="escala-linha-cab">
+        <span class="escala-linha-titulo"></span>
+        <span class="escala-linha-situacao"></span>
       </div>
-      <div class="nota escala-form-nota oculto">
-        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-historico"/></svg>
-        <span>Vale só para este dia. Para entrar na escala dos próximos dias, use a aba Ciclo.</span>
+      <div class="escala-linha-bloco escala-linha-bloco--quem">
+        <span class="escala-linha-rotulo">Quem</span>
+        <span class="escala-linha-travado oculto">O mais antigo do dia, sempre escolhido pelo sistema.</span>
+        <div class="escala-linha-quem"></div>
       </div>
-      <div class="grupo-caixa escala-form-secao" data-secao="quem">
-        <span class="rotulo-secao"><span class="escala-form-num"></span>. Quem</span>
-        <div class="escala-form-grupo escala-form-grupo--servico oculto">
-          <span class="escala-form-grupo-rotulo">Sem função nesse horário</span>
-          <div class="escala-form-lista escala-form-lista--servico"></div>
-        </div>
-        <div class="escala-form-grupo">
-          <span class="escala-form-grupo-rotulo escala-form-grupo-rotulo--folga oculto">De folga</span>
-          <div class="escala-form-quem-topo">
-            <div class="dropdown escala-form-unidade">
-              <button type="button" class="campo-entrada campo-selecao" aria-label="Unidade">
-                <span class="campo-selecao-texto"></span>
-                <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
-              </button>
-              <div class="dropdown-menu dropdown-menu--largo">
-                <div class="dropdown-menu-rolagem">
-                  <div class="arvore"></div>
-                </div>
-              </div>
-            </div>
-            <div class="escala-form-busca"></div>
-          </div>
-          <div class="escala-form-lista escala-form-lista--folga"></div>
-        </div>
-        <div class="nota escala-form-assume oculto">
-          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-          <span class="nota-texto"></span>
+      <div class="escala-linha-bloco escala-linha-bloco--onde oculto">
+        <span class="escala-linha-rotulo">Pôr numa função</span>
+        <div class="escala-linha-onde"></div>
+      </div>
+      <div class="nota escala-linha-saida oculto">
+        <div class="escala-linha-nota-corpo">
+          <span class="escala-linha-saida-texto"></span>
+          <label class="geral-opcao"><input type="radio" value="sai" /><span class="escala-linha-saida-sai"></span></label>
+          <label class="geral-opcao"><input type="radio" value="duas" /><span>Faz as duas funções</span></label>
         </div>
       </div>
-      <div class="grupo-caixa escala-form-secao" data-secao="quando">
-        <span class="rotulo-secao"><span class="escala-form-num"></span>. Quando</span>
-        <div class="escala-form-periodos"></div>
-        <div class="escala-form-regua"></div>
-      </div>
-      <div class="grupo-caixa escala-form-secao" data-secao="onde">
-        <span class="rotulo-secao"><span class="escala-form-num"></span>. <span class="escala-form-onde-titulo">Onde</span><span class="escala-form-onde-titulo escala-form-onde-titulo--nova oculto">Para onde</span></span>
-        <div class="escala-form-sistema">
-          <label class="geral-opcao"><input type="radio" name="escala-form-onde" value="sistema" /><span>O sistema distribui</span></label>
-          <span class="subtela-ajuda subtela-ajuda--opcao">Entra na distribuição automática do dia.</span>
-          <label class="geral-opcao"><input type="radio" name="escala-form-onde" value="funcao" /><span>Escolher a função</span></label>
-        </div>
-        <div class="escala-form-selecoes">
-          <div class="dropdown escala-form-posto">
-            <button type="button" class="campo-entrada campo-selecao" aria-label="Posto">
-              <span class="campo-selecao-texto campo-selecao-texto--vazio">Posto</span>
-              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
-            </button>
-            <div class="dropdown-menu"></div>
-          </div>
-          <div class="dropdown escala-form-funcao">
-            <button type="button" class="campo-entrada campo-selecao" aria-label="Função">
-              <span class="campo-selecao-texto campo-selecao-texto--vazio">Função</span>
-              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
-            </button>
-            <div class="dropdown-menu"></div>
-          </div>
+      <div class="nota escala-linha-banco oculto">
+        <div class="escala-linha-nota-corpo">
+          <span class="escala-linha-banco-texto"></span>
+          <label class="geral-opcao"><input type="radio" value="sim" /><span class="escala-linha-banco-sim"></span></label>
+          <label class="geral-opcao"><input type="radio" value="nao" /><span>Não contabilizar</span></label>
         </div>
       </div>
-      <div class="nota escala-form-acumula oculto">
+      <div class="nota escala-linha-assume oculto">
         <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
         <span class="nota-texto"></span>
       </div>
-      <div class="nota nota--alerta escala-form-aviso oculto">
+      <div class="nota escala-linha-efeito oculto">
         <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
         <span class="nota-texto"></span>
+      </div>
+      <div class="escala-linha-bloco escala-linha-bloco--horario">
+        <span class="escala-linha-rotulo">Horário</span>
+        <div class="escala-linha-hora escala-linha-hora--funcao">
+          <span class="escala-linha-hora-rotulo">Nesta função</span>
+          <div class="escala-linha-periodos"></div>
+        </div>
+        <div class="escala-linha-servico"></div>
+      </div>
+      <div class="escala-linha-tirar"></div>
+      <div class="escala-linha-acoes">
+        <button type="button" class="botao escala-linha-tirar-funcao">Tirar desta função</button>
+        <button type="button" class="botao escala-linha-liberar oculto">Liberar para o sistema</button>
+        <button type="button" class="botao escala-secao-botao--perigo escala-linha-tirar-dia">Tirar do dia</button>
+      </div>
+      <div class="escala-linha-rodape">
+        <button type="button" class="botao escala-linha-cancelar">Cancelar</button>
+        <button type="button" class="botao botao--primario escala-linha-aplicar">Aplicar</button>
       </div>
     </div>
   </template>
 
-  <!-- um militar nas listas do Quem (clicável; o escolhido fica marcado) -->
-  <template id="tpl-escala-form-militar">
-    <button type="button" class="escala-form-militar">
-      <svg class="icone escala-form-marca" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
+  <!-- De serviço no dia (escalas-painel-servico.js): o horário de serviço do militar e o Mudar, que abre os campos;
+       o pedaço que sai do serviço vira folga, com a pergunta do banco de horas -->
+  <template id="tpl-escala-servico">
+    <div class="escala-servico">
+      <div class="escala-linha-hora">
+        <span class="escala-linha-hora-rotulo">De serviço no dia</span>
+        <span class="escala-servico-texto"></span>
+        <button type="button" class="botao botao--texto escala-servico-mudar">Mudar</button>
+        <div class="escala-linha-periodos escala-servico-periodos oculto"></div>
+      </div>
+      <div class="escala-servico-regua oculto"></div>
+      <div class="nota escala-servico-folga oculto">
+        <div class="escala-linha-nota-corpo">
+          <span class="escala-servico-folga-texto"></span>
+          <label class="geral-opcao"><input type="radio" value="sim" /><span class="escala-servico-folga-sim"></span></label>
+          <label class="geral-opcao"><input type="radio" value="nao" /><span>Não descontar</span></label>
+        </div>
+      </div>
+      <div class="nota nota--alerta escala-servico-refaz oculto">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+        <span>Como muda quem está de serviço, o sistema refaz o dia em volta do que está fixado, deixando cada um onde está sempre que der.</span>
+      </div>
+    </div>
+  </template>
+
+  <!-- Tirar do dia (escalas-painel-servico.js): só neste dia (folga, ou o pontual sai) ou do ciclo a partir do dia -->
+  <template id="tpl-escala-tirar">
+    <div class="escala-linha-bloco escala-tirar">
+      <span class="escala-linha-rotulo">Tirar do dia</span>
+      <div class="abas abas--seletor escala-tirar-alcance">
+        <button type="button" class="aba aba--ativa" data-alcance="dia">Só em <span class="escala-tirar-data"></span></button>
+        <button type="button" class="aba" data-alcance="ciclo">Do ciclo, a partir de <span class="escala-tirar-data"></span></button>
+      </div>
+      <div class="nota escala-tirar-banco oculto">
+        <div class="escala-linha-nota-corpo">
+          <span class="escala-tirar-banco-texto"></span>
+          <label class="geral-opcao"><input type="radio" value="sim" /><span class="escala-tirar-banco-sim"></span></label>
+          <label class="geral-opcao"><input type="radio" value="nao" /><span class="escala-tirar-banco-nao"></span></label>
+        </div>
+      </div>
+      <div class="nota escala-tirar-ciclo oculto">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-historico"/></svg>
+        <span>Ao aplicar, você vê o que acontece com as trocas, folgas e extras dele a partir desse dia, antes de confirmar.</span>
+      </div>
+    </div>
+  </template>
+
+  <!-- a lista Quem (escalas-painel-quem.js): a busca e os grupos que abrem e fecham, com o número de cada um -->
+  <template id="tpl-escala-quem">
+    <div class="escala-quem">
+      <div class="escala-quem-busca"></div>
+      <div class="escala-quem-lista"></div>
+    </div>
+  </template>
+
+  <template id="tpl-escala-quem-grupo">
+    <div class="escala-quem-grupo">
+      <button type="button" class="escala-quem-grupo-cab" aria-expanded="false">
+        <svg class="icone escala-quem-grupo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
+        <span class="escala-quem-grupo-nome"></span>
+        <span class="escala-quem-grupo-qtd"></span>
+      </button>
+      <div class="escala-quem-grupo-itens oculto"></div>
+    </div>
+  </template>
+
+  <!-- um militar da lista Quem (o escolhido fica marcado; quem não pode fica apagado, com o motivo) -->
+  <template id="tpl-escala-quem-item">
+    <button type="button" class="escala-quem-item">
+      <svg class="icone escala-quem-marca" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
       <span class="escala-distribuicao-grad"></span>
       <span class="escala-distribuicao-nome"></span>
-      <span class="escala-form-militar-extra"></span>
+      <span class="escala-quem-info"></span>
     </button>
   </template>
 
-  <!-- o título de uma unidade na lista de folga do Quem (a escolhida na árvore primeiro) -->
-  <template id="tpl-escala-form-unidade">
-    <span class="escala-form-grupo-rotulo"></span>
+  <!-- o Onde (escalas-painel-quem.js): o posto e a função, cada um numa lista -->
+  <template id="tpl-escala-onde">
+    <div class="escala-onde">
+      <div class="dropdown escala-onde-posto">
+        <button type="button" class="campo-entrada campo-selecao" aria-label="Posto">
+          <span class="campo-selecao-texto campo-selecao-texto--vazio">Posto</span>
+          <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+        </button>
+        <div class="dropdown-menu"></div>
+      </div>
+      <div class="dropdown escala-onde-funcao">
+        <button type="button" class="campo-entrada campo-selecao" aria-label="Função">
+          <span class="campo-selecao-texto campo-selecao-texto--vazio">Função</span>
+          <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+        </button>
+        <div class="dropdown-menu"></div>
+      </div>
+    </div>
   </template>
 
   <!-- um item das listas Posto e Função: o nome e, na Função, a situação dela no horário ("vazia", "Sd. Godoy sai") -->
-  <template id="tpl-escala-form-item">
-    <button type="button" class="dropdown-item escala-form-item">
-      <span class="escala-form-item-nome"></span>
-      <span class="escala-form-item-situacao"></span>
+  <template id="tpl-escala-onde-item">
+    <button type="button" class="dropdown-item escala-onde-item">
+      <span class="escala-onde-item-nome"></span>
+      <span class="escala-onde-item-situacao"></span>
     </button>
   </template>
 
-  <!-- ===== militar no dia (lápis; escalas-painel-militar.js) ===== -->
-  <template id="tpl-escala-militar">
-    <div class="subtela escala-militar">
+  <!-- ===== Adicionar militar (sub-tela; escalas-painel-adicionar.js): só neste dia ou no ciclo a partir do dia ===== -->
+  <template id="tpl-escala-adicionar">
+    <div class="subtela escala-adicionar">
       <div class="subtela-cab">
-        <span class="subtela-titulo escala-militar-nome">
-          <span class="escala-distribuicao-grad"></span>
-          <span class="escala-militar-nome-texto"></span>
-        </span>
-        <span class="subtela-subtitulo escala-militar-servico"></span>
+        <span class="subtela-titulo">Adicionar militar</span>
       </div>
-      <div class="escala-militar-regua"></div>
-      <div class="grupo-caixa">
-        <span class="rotulo-secao">Funções no dia</span>
-        <div class="escala-militar-funcoes"></div>
+      <div class="abas abas--seletor escala-adicionar-alcance">
+        <button type="button" class="aba aba--ativa" data-alcance="dia">Só em <span class="escala-adicionar-data"></span></button>
+        <button type="button" class="aba" data-alcance="ciclo">No ciclo, a partir de <span class="escala-adicionar-data"></span></button>
       </div>
-      <div class="escala-militar-acoes">
-        <button type="button" class="botao escala-militar-nova">
-          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mover-funcao"/></svg>
-          <span>Nova função</span>
-        </button>
-        <button type="button" class="botao escala-secao-botao--perigo escala-militar-tirar">Tirar do dia</button>
+      <div class="escala-adicionar-quem"></div>
+      <div class="grupo-caixa escala-adicionar-cartao oculto">
+        <div class="escala-linha-cab">
+          <span class="escala-linha-titulo escala-adicionar-nome"></span>
+          <span class="escala-linha-situacao escala-adicionar-situacao"></span>
+        </div>
+        <div class="escala-adicionar-dia">
+          <div class="nota escala-adicionar-assume oculto">
+            <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+            <span class="nota-texto"></span>
+          </div>
+          <div class="escala-linha-bloco">
+            <span class="escala-linha-rotulo">Horário</span>
+            <div class="escala-linha-periodos escala-adicionar-periodos"></div>
+            <div class="escala-adicionar-regua"></div>
+          </div>
+          <div class="escala-linha-bloco">
+            <span class="escala-linha-rotulo">Onde</span>
+            <label class="geral-opcao"><input type="radio" value="sistema" /><span>O sistema distribui, sem tirar ninguém do lugar</span></label>
+            <label class="geral-opcao"><input type="radio" value="funcao" /><span>Escolher a função</span></label>
+            <div class="escala-adicionar-onde oculto"></div>
+            <div class="nota nota--alerta escala-adicionar-efeito oculto">
+              <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+              <span class="nota-texto"></span>
+            </div>
+          </div>
+          <div class="escala-linha-bloco">
+            <span class="escala-linha-rotulo">Banco de horas</span>
+            <label class="geral-opcao"><input type="radio" value="sim" /><span class="escala-adicionar-contabilizar"></span></label>
+            <label class="geral-opcao"><input type="radio" value="nao" /><span>Não contabilizar</span></label>
+          </div>
+        </div>
+        <div class="escala-adicionar-ciclo oculto">
+          <div class="nota nota--alerta escala-adicionar-mudar oculto">
+            <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+            <span class="nota-texto"></span>
+          </div>
+          <div class="nota">
+            <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-historico"/></svg>
+            <span class="nota-texto escala-adicionar-ciclo-texto"></span>
+          </div>
+        </div>
       </div>
     </div>
   </template>
@@ -1812,43 +1917,6 @@
       <div class="escala-militar-acoes">
         <button type="button" class="botao escala-secao-botao--perigo escala-folga-dia-cancelar">Cancelar folga</button>
       </div>
-    </div>
-  </template>
-
-  <!-- uma função do militar no dia: marcada ele continua, desmarcada ele deixa (o efeito aparece embaixo) -->
-  <template id="tpl-escala-militar-funcao">
-    <div class="escala-militar-funcao">
-      <button type="button" class="caixa-selecao" role="checkbox" aria-checked="true">
-        <svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
-      </button>
-      <span class="escala-militar-funcao-nome">
-        <span class="escala-militar-funcao-titulo"></span>
-        <span class="escala-militar-funcao-posto"></span>
-      </span>
-      <span class="escala-militar-funcao-horarios"></span>
-    </div>
-  </template>
-
-  <!-- Chefe de Socorro e Oficial de Área: a explicação embaixo da função -->
-  <template id="tpl-escala-militar-funcao-auto">
-    <span class="escala-militar-funcao-auto">Automático: o mais antigo do dia fica nesta função.</span>
-  </template>
-
-  <!-- o efeito de deixar a função (o texto vem do JS) -->
-  <template id="tpl-escala-militar-efeito">
-    <span class="escala-militar-efeito">
-      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-      <span class="escala-militar-efeito-texto"></span>
-    </span>
-  </template>
-
-  <!-- um horário do serviço sem função: o horário e o Dar função -->
-  <template id="tpl-escala-militar-sem-funcao">
-    <div class="escala-militar-sem-funcao">
-      <span class="escala-militar-sem-funcao-marca" aria-hidden="true"></span>
-      <span class="escala-militar-sem-funcao-nome">Sem função</span>
-      <span class="escala-militar-sem-funcao-horas"></span>
-      <button type="button" class="botao botao--pequeno escala-militar-dar-funcao">Dar função</button>
     </div>
   </template>
 

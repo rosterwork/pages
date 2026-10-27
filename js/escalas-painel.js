@@ -759,6 +759,7 @@
       titulo: celula.dataset.unidadeNome || '',
       tituloExtra: cidade ? '- ' + cidade : '',
       subtitulo: dataPorExtenso(iso),
+      largo: true,                             // 560px: a edição da linha abre ali mesmo, com espaço para a lista Quem
       aoFechar: desmarcar,
       aoTentarFechar: tentarFecharPainel       // Esc/X confirmam antes de descartar rascunho
     });

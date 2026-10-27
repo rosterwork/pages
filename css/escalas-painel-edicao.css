@@ -1,18 +1,21 @@
 /* ============================================================
-   ESCALA — painel do dia: a lista do Dia, o seletor do nome, o
-   formulário Quem · Quando · Onde e o militar no dia
-   (escalas-painel-editar.js, -seletor.js, -formulario.js,
-   -militar.js). A sub-tela, o horário em campos,
-   a régua e as notas são dos componentes geral-subtela,
-   geral-horario e geral-nota
+   ESCALA — painel do dia: a lista do Dia, a edição da linha (o
+   lápis), a lista Quem e o Onde, o De serviço no dia e o Tirar do
+   dia, o Adicionar militar e a folga no dia
+   (escalas-painel-editar.js, -linha.js, -quem.js, -servico.js,
+   -adicionar.js e -militar.js). A sub-tela, o horário em campos, a
+   régua, as notas, o selo e as opções são dos componentes
+   geral-subtela, geral-horario, geral-nota, geral-selo e geral-opcao
    ============================================================ */
 
 /* ---------- a lista do Dia ---------- */
-/* subcabeçalho do admin: o Adicionar militar, à esquerda (as ações ficam à esquerda da barra) */
+/* subcabeçalho do admin: o campo do Adicionar militar, à esquerda (as ações ficam à esquerda da barra) */
 .escala-edicao-adicionar {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+  width: 240px;
+}
+
+.escala-edicao-adicionar .seletor-seta {
+  flex-shrink: 0;
 }
 
 /* subcabeçalho do admin: o desfazer e o refazer, à direita */
@@ -22,8 +25,53 @@
   margin-left: auto;
 }
 
-/* uma função: o rótulo à esquerda, no meio da altura de todas as linhas dela (militares, riscados e horários
-   sem ninguém), e as linhas embaixo uma da outra */
+/* a frase do topo da lista do admin: as mudanças valem só para o dia */
+.escala-edicao-ajuda {
+  margin: 0;
+  font-size: 12px;
+  color: var(--texto-fraco);
+}
+
+/* O que mudou na última gravação: o título, uma frase por militar e o atalho */
+.escala-edicao-mudou {
+  align-items: flex-start;
+}
+
+.escala-edicao-mudou-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.escala-edicao-mudou-titulo {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.escala-edicao-mudou-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding-left: 16px;
+}
+
+.escala-edicao-mudou-atalho {
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
+/* o fim da lista do admin: Voltar o dia ao automático */
+.escala-edicao-automatico {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+}
+
+/* uma função: o rótulo à esquerda, no meio da altura de todas as linhas dela (militares e horários sem
+   ninguém), e as linhas embaixo uma da outra */
 .escala-edicao-grupo {
   display: grid;
   grid-template-columns: 76px minmax(0, 1fr);
@@ -82,6 +130,12 @@
   justify-content: flex-end;
 }
 
+/* o lápis da linha aberta fica marcado */
+.escala-edicao-lapis--ativo {
+  background-color: var(--fundo-medio);
+  color: var(--texto-forte);
+}
+
 /* na comparação (Trocas e Folgas), quem entra pelo pedido ou o sistema remanejou: a barra cinza à esquerda */
 .escala-edicao-linha--alterada {
   box-shadow: inset 2px 0 0 var(--borda-forte);
@@ -93,7 +147,7 @@
   color: var(--erro);
 }
 
-/* o automático trocado ou tirado: itálico e riscado, logo abaixo */
+/* na comparação, quem saiu: itálico e riscado, logo abaixo */
 .escala-edicao-linha--original .escala-distribuicao-grad,
 .escala-edicao-linha--original .escala-distribuicao-nome,
 .escala-edicao-linha--original .escala-distribuicao-horas {
@@ -109,94 +163,7 @@
   color: var(--texto-fraco);
 }
 
-/* o nome como seletor (admin; escalas-painel-seletor.js): a caixa ocupa a coluna do militar, com os ícones, a
-   graduação e o nome dentro; na vaga vazia, o texto vermelho (a borda vermelha vem do .campo--erro) */
-.escala-seletor {
-  flex: 1;
-  min-width: 0;
-}
-
-.escala-seletor-gatilho {
-  gap: 4px;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.escala-seletor-gatilho .seletor-seta {
-  flex-shrink: 0;
-  margin-left: auto;
-}
-
-.escala-seletor-texto:empty {
-  display: none;
-}
-
-/* na vaga, o texto quebra em linhas em vez de cortar (no computador e no celular) */
-.campo--erro .escala-seletor-gatilho {
-  padding-top: 2px;
-  padding-bottom: 2px;
-}
-
-.campo--erro .escala-seletor-texto {
-  font-weight: 600;
-  color: var(--erro);
-  white-space: normal;
-}
-
-/* a lista: largura fixa, a busca embaixo do título, os militares na largura toda (o nome sempre inteiro; o motivo
-   ou o efeito ao lado quebra em linhas, sem cortar); quem não pode fica apagado, com o motivo em vermelho */
-.escala-seletor-menu {
-  width: 320px;
-}
-
-.escala-seletor-busca {
-  padding: 0 8px 4px;
-}
-
-.escala-seletor-busca .escala-secao-busca {
-  width: 100%;
-  margin-bottom: 0;
-}
-
-.escala-seletor-lista .escala-form-militar {
-  width: 100%;
-  padding: 4px 8px;
-}
-
-.escala-seletor-lista .escala-form-marca {
-  display: none;
-}
-
-.escala-seletor-lista .escala-distribuicao-grad,
-.escala-seletor-lista .escala-distribuicao-nome {
-  flex-shrink: 0;
-}
-
-.escala-seletor-lista .escala-form-militar-extra {
-  flex: 1 1 auto;
-  min-width: 0;
-  white-space: normal;
-  text-align: right;
-}
-
-.escala-form-militar--apagado {
-  cursor: default;
-}
-
-.escala-form-militar--apagado:hover {
-  background: none;
-}
-
-.escala-form-militar--apagado .escala-distribuicao-grad,
-.escala-form-militar--apagado .escala-distribuicao-nome {
-  color: var(--texto-debil);
-}
-
-.escala-form-militar--apagado .escala-form-militar-extra {
-  color: var(--erro);
-}
-
-/* horário sem ninguém, para quem só lê */
+/* horário sem ninguém: o texto vermelho */
 .escala-edicao-vazio-leitura {
   font-size: 12px;
   color: var(--erro);
@@ -210,16 +177,54 @@
   color: var(--texto-fraco);
 }
 
-/* ---------- formulário Quem · Quando · Onde ---------- */
-/* Quem: os grupos (sem função nesse horário · de folga) */
-.escala-form-grupo {
+/* ---------- a edição da linha (o lápis) ---------- */
+/* abre embaixo da função, numa caixa branca com os blocos um embaixo do outro */
+.escala-linha {
   display: flex;
   flex-direction: column;
+  gap: 12px;
+  margin: 4px 0 8px;
+  padding: 12px;
+  border: 1px solid var(--borda-forte);
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-superficie);
+  box-shadow: var(--sombra-bloco);
+}
+
+/* o título: a função e o posto (ou o militar) e, em cinza, a situação ("escolhido pelo sistema", "fixado") */
+.escala-linha-cab {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
   gap: 4px;
 }
 
-.escala-form-grupo-rotulo {
-  padding: 4px 8px 0;
+.escala-linha-titulo {
+  font-size: var(--fonte-padrao);
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.escala-linha-situacao {
+  font-size: 12px;
+  color: var(--texto-fraco);
+}
+
+.escala-linha-situacao:empty {
+  display: none;
+}
+
+.escala-linha-situacao::before {
+  content: "· ";
+}
+
+.escala-linha-bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.escala-linha-rotulo {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 1px;
@@ -227,43 +232,155 @@
   color: var(--texto-suave);
 }
 
-/* a unidade (árvore) e a busca lado a lado */
-.escala-form-quem-topo {
+/* o Quem do Chefe de Socorro e do Oficial de Área: travado, com a explicação */
+.escala-linha-travado {
+  font-size: 12px;
+  color: var(--texto-fraco);
+}
+
+/* as notas com escolha (sai de lá ou faz as duas, o banco de horas): o texto e as opções embaixo */
+.escala-linha .nota,
+.escala-adicionar .nota {
+  align-items: flex-start;
+}
+
+.escala-linha-nota-corpo {
   display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* Horário: o rótulo (Nesta função, De serviço no dia) e, ao lado, os campos ou o texto com o Mudar */
+.escala-linha-hora {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }
 
-.escala-form-unidade {
+.escala-linha-hora-rotulo {
   flex: 0 0 120px;
-  min-width: 0;
+  font-size: 12px;
+  color: var(--texto-suave);
 }
 
-.escala-form-busca {
-  flex: 1;
-  min-width: 0;
+.escala-linha-periodos {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
 }
 
-/* a pílula de busca ocupa o espaço que sobra ao lado da unidade (sem a largura fixa da busca comum) */
-.escala-form-busca .escala-secao-busca {
+.escala-servico {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.escala-servico-texto {
+  font-size: 12px;
+  color: var(--texto);
+}
+
+/* as ações da linha e o rodapé (Cancelar · Aplicar, à direita) */
+.escala-linha-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.escala-linha-rodape {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--borda);
+}
+
+/* os seletores de alcance (Só em · Do ciclo; Só em · No ciclo) ficam compactos */
+.escala-tirar-alcance,
+.escala-adicionar-alcance {
+  align-self: flex-start;
+}
+
+/* ---------- a lista Quem ---------- */
+.escala-quem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.escala-quem-busca .escala-secao-busca {
   width: 100%;
   margin-bottom: 0;
 }
 
-.escala-form-lista {
+.escala-quem-lista {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  max-height: 224px;
+  max-height: 288px;
   overflow-y: auto;
 }
 
-.escala-form-militar {
+/* o título do grupo: a setinha (gira quando abre), o nome e o número */
+.escala-quem-grupo-cab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 32px;
+  padding: 0 8px;
+  border: none;
+  border-radius: var(--raio-pequeno);
+  background: none;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  color: var(--texto-forte);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.escala-quem-grupo-cab:hover {
+  background-color: var(--fundo-medio);
+}
+
+.escala-quem-grupo-seta {
+  flex-shrink: 0;
+}
+
+.escala-quem-grupo--aberto .escala-quem-grupo-seta {
+  transform: rotate(90deg);
+}
+
+.escala-quem-grupo-qtd {
+  font-weight: 400;
+  color: var(--texto-fraco);
+}
+
+/* Não podem: o título em vermelho */
+.escala-quem-grupo--erro .escala-quem-grupo-cab {
+  color: var(--erro);
+}
+
+.escala-quem-grupo-itens {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 12px;
+}
+
+/* um militar: a marca do escolhido, a graduação e o nome (sempre inteiros) e, à direita, o que ele tem no
+   horário ou o motivo (quebra em linhas, sem cortar) */
+.escala-quem-item {
   display: flex;
   align-items: center;
   gap: 4px;
+  width: 100%;
   min-height: 32px;
-  padding: 0 8px;
+  padding: 4px 8px;
   border: none;
   border-radius: var(--raio-pequeno);
   background: none;
@@ -274,190 +391,106 @@
   transition: background-color 0.15s ease;
 }
 
-.escala-form-militar:hover,
-.escala-form-militar--escolhido {
+.escala-quem-item:hover,
+.escala-quem-item--escolhido {
   background-color: var(--fundo-medio);
 }
 
-.escala-form-marca {
+.escala-quem-marca {
+  flex-shrink: 0;
   visibility: hidden;
 }
 
-.escala-form-militar--escolhido .escala-form-marca {
+.escala-quem-item--escolhido .escala-quem-marca {
   visibility: visible;
 }
 
-.escala-form-militar-extra {
-  margin-left: auto;
+.escala-quem-item .escala-distribuicao-grad,
+.escala-quem-item .escala-distribuicao-nome {
+  flex-shrink: 0;
+}
+
+.escala-quem-info {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin-left: 8px;
   font-size: 12px;
+  text-align: right;
+  white-space: normal;
   color: var(--texto-fraco);
 }
 
-.escala-form-vazio {
+/* quem não pode: apagado, com o motivo em vermelho */
+.escala-quem-item--apagado {
+  cursor: default;
+}
+
+.escala-quem-item--apagado:hover {
+  background: none;
+}
+
+.escala-quem-item--apagado .escala-distribuicao-grad,
+.escala-quem-item--apagado .escala-distribuicao-nome {
+  color: var(--texto-debil);
+}
+
+.escala-quem-item--apagado .escala-quem-info {
+  color: var(--erro);
+}
+
+.escala-quem-vazio {
   padding: 8px;
   font-size: 12px;
   color: var(--texto-fraco);
 }
 
-/* Quando: os horários, um embaixo do outro */
-.escala-form-periodos {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: flex-start;
-}
-
-/* Onde */
-.escala-form-sistema {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.escala-form-selecoes {
+/* ---------- o Onde: o posto e a função lado a lado ---------- */
+.escala-onde {
   display: flex;
   gap: 8px;
 }
 
-.escala-form-selecoes .dropdown {
+.escala-onde .dropdown {
   flex: 1;
   min-width: 0;
 }
 
 /* item das listas Posto e Função: o nome e, embaixo, a situação da função no horário */
-.escala-form-item {
+.escala-onde-item {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
 }
 
-.escala-form-item-situacao {
+.escala-onde-item-situacao {
   font-size: 11px;
   color: var(--texto-fraco);
 }
 
-.escala-form-item-situacao:empty {
+.escala-onde-item-situacao:empty {
   display: none;
 }
 
-/* ---------- militar no dia ---------- */
+/* ---------- o Adicionar militar ---------- */
+.escala-adicionar-cartao,
+.escala-adicionar-dia,
+.escala-adicionar-ciclo {
+  gap: 12px;
+}
+
+.escala-adicionar-dia,
+.escala-adicionar-ciclo {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- a folga no dia ---------- */
 /* o nome: a graduação e o nome de guerra lado a lado (o tamanho vem do .subtela-titulo) */
 .escala-militar-nome {
   display: flex;
   align-items: baseline;
   gap: 4px;
-}
-
-.escala-militar-funcoes {
-  display: flex;
-  flex-direction: column;
-}
-
-/* uma função: caixa de marcar · nome e posto · horários (o efeito e a explicação ocupam a linha de baixo) */
-.escala-militar-funcao {
-  display: grid;
-  grid-template-columns: 16px minmax(0, 1fr) auto;
-  align-items: start;
-  column-gap: 8px;
-  row-gap: 8px;
-  padding: 8px 0;
-}
-
-.escala-militar-funcao + .escala-militar-funcao,
-.escala-militar-funcoes > .escala-militar-sem-funcao {
-  border-top: 1px solid var(--borda);
-}
-
-.escala-militar-funcao > .caixa-selecao {
-  margin-top: 8px;
-}
-
-.escala-militar-funcao > .caixa-selecao:disabled {
-  cursor: default;
-}
-
-.escala-militar-funcao-nome {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding-top: 4px;
-  min-width: 0;
-}
-
-.escala-militar-funcao-titulo {
-  font-size: var(--fonte-padrao);
-  font-weight: 600;
-  color: var(--texto-forte);
-}
-
-.escala-militar-funcao-posto {
-  font-size: 12px;
-  color: var(--texto-fraco);
-}
-
-.escala-militar-funcao-horarios {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-}
-
-/* desmarcada (ele deixa a função): nome riscado e apagado */
-.escala-militar-funcao--deixa .escala-militar-funcao-titulo,
-.escala-militar-funcao--deixa .escala-militar-funcao-posto {
-  text-decoration: line-through;
-  color: var(--texto-fraco);
-}
-
-/* Chefe de Socorro e Oficial de Área: a explicação */
-.escala-militar-funcao-auto {
-  grid-column: 2 / 4;
-  font-size: 11px;
-  color: var(--texto-fraco);
-}
-
-/* o efeito de deixar a função, em amarelo */
-.escala-militar-efeito {
-  grid-column: 2 / 4;
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 8px;
-  border-radius: var(--raio-medio);
-  background-color: var(--alerta-fundo);
-  font-size: 12px;
-  color: var(--alerta);
-}
-
-.escala-militar-efeito .icone {
-  flex-shrink: 0;
-}
-
-/* um horário do serviço sem função: hachurado, o horário e o Dar função */
-.escala-militar-sem-funcao {
-  display: grid;
-  grid-template-columns: 16px minmax(0, 1fr) auto auto;
-  align-items: center;
-  column-gap: 8px;
-  min-height: 32px;
-  padding: 8px 0;
-}
-
-.escala-militar-sem-funcao-marca {
-  width: 16px;
-  height: 16px;
-  border-radius: var(--raio-pequeno);
-  background: repeating-linear-gradient(135deg, var(--borda-forte) 0 2px, transparent 2px 5px);
-}
-
-.escala-militar-sem-funcao-nome {
-  font-size: var(--fonte-padrao);
-  color: var(--texto-suave);
-}
-
-.escala-militar-sem-funcao-horas .escala-distribuicao-hora {
-  font-size: 12px;
 }
 
 .escala-militar-acoes {
@@ -466,19 +499,25 @@
   gap: 8px;
 }
 
-.escala-militar-acoes .botao {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
-   As linhas da lista do seletor do nome ficam com a altura do dedo,
-   como as de todo menu (a caixa já cresce pelo campo baixo do tema)
+   As linhas da lista Quem ficam com a altura do dedo; o campo do
+   Adicionar militar ocupa o espaço do subcabeçalho; o rótulo do
+   horário fica em cima dos campos
    ============================================================ */
 @media (max-width: 767px) {
-  html[data-celular] .escala-seletor-lista .escala-form-militar {
+  html[data-celular] .escala-quem-item,
+  html[data-celular] .escala-quem-grupo-cab {
     min-height: var(--toque-altura-celular);
+  }
+
+  html[data-celular] .escala-edicao-adicionar {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+  }
+
+  html[data-celular] .escala-linha-hora-rotulo {
+    flex-basis: 100%;
   }
 }
