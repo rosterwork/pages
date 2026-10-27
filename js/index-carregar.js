@@ -58,6 +58,7 @@
     'componentes/js/geral-filtros.js',
     'componentes/js/geral-legenda.js',
     'componentes/js/geral-busca.js',
+    'componentes/js/geral-combo-militar.js',
     'componentes/js/geral-calendario.js',
     'componentes/js/geral-calendario-mes.js',
     'componentes/js/geral-periodo.js',

@@ -1,11 +1,11 @@
 /* ============================================================
-   ESCALAS — as escolhas do painel do dia: a lista Quem e o Onde
-   Quem: a busca e os grupos que abrem e fecham (o título com o
-   número de cada um); quem não pode fica apagado, com o motivo. Quem
-   usa monta os grupos (a edição da linha, com a lista do banco para a
-   vaga, pelo gruposDaVaga daqui; o Adicionar militar, com os de folga
-   ou com o ciclo).
-   Com texto na busca, todo grupo com alguém que casa abre sozinho.
+   ESCALAS — as escolhas do painel do dia: quem e onde
+   Quem: os itens do campo de militar (o componente geral
+   geral-combo-militar) para a vaga de uma função, vindos do banco
+   (escala_dia_disponiveis com a vaga), em grupos com títulos fixos:
+   de serviço na unidade, de serviço em outra unidade, de folga e,
+   no fim e apagados, quem não pode, com o motivo. Ao lado de cada
+   nome, o que ele faz hoje.
    Onde: o posto e a função, cada um numa lista; a função traz a
    situação dela no horário ("vazia", "Sd. Godoy sai").
    ============================================================ */
@@ -18,120 +18,27 @@
   var BLOQUEADAS = /^(chefe de socorro|oficial de área)$/i;
 
   function msg() { return RosterWork.mensagens.escala; }
+  function L() { return RosterWork.mensagens.escala.linha; }
+  function ed() { return RosterWork.escalasPainelEditar.sub; }
+  function nomeDe(m) { return ((m.grad || '') + ' ' + (m.nome || '')).trim(); }
+  function juntar(lista) { return lista.length > 1 ? lista.slice(0, -1).join(', ') + ' e ' + lista[lista.length - 1] : (lista[0] || ''); }
+  function minuscula(t) { return t ? t.charAt(0).toLowerCase() + t.slice(1) : ''; }
 
   /* ---------- Quem ---------- */
 
-  /* o grupo abre ou fecha (com busca, a busca manda) */
-  function abrirGrupo(g, aberto) {
-    g.aberto = aberto;
-    g.el.classList.toggle('escala-quem-grupo--aberto', aberto);
-    g.cab.setAttribute('aria-expanded', aberto ? 'true' : 'false');
-    g.itensEl.classList.toggle('oculto', !aberto);
-  }
-
-  function filtrar(est) {
-    var termo = est.entrada ? est.entrada.value.trim() : '';
-    if (est.pilula) est.pilula.classList.toggle('busca--com-texto', !!termo);
-    var visiveis = 0;
-    est.grupos.forEach(function (g) {
-      var casam = 0;
-      g.itens.forEach(function (it) {
-        var casa = RosterWork.busca.casaTexto(termo, it.el.getAttribute('data-busca'));
-        it.el.classList.toggle('oculto', !casa);
-        if (casa) casam++;
-      });
-      visiveis += casam;
-      g.el.classList.toggle('oculto', !casam);
-      g.itensEl.classList.toggle('oculto', termo ? !casam : !g.aberto);
-      g.qtd.textContent = '(' + casam + ')';
-    });
-    if (est.vazio) est.vazio.classList.toggle('oculto', visiveis > 0);
-  }
-
-  /* lugar = onde a lista entra; cfg = { grupos: [{ rotulo, aberto, erro, itens: [{ cpf, grad, nome, info, pode }] }],
-     aoEscolher(item), escolhido: cpf }. Devolve { marcar(cpf) } */
-  function montar(lugar, cfg) {
-    lugar.textContent = '';
-    var el = RosterWork.tpl('tpl-escala-quem');
-    if (!el) return null;
-    var est = { grupos: [], entrada: null, pilula: null, vazio: null, botoes: [] };
-    var pilula = RosterWork.tpl('tpl-escala-secao-busca');
-    if (pilula) {
-      est.pilula = pilula;
-      est.entrada = pilula.querySelector('.busca-entrada');
-      est.entrada.addEventListener('input', function () { filtrar(est); });
-      pilula.querySelector('.busca-limpar').addEventListener('click', function () { est.entrada.value = ''; est.entrada.focus(); filtrar(est); });
-      el.querySelector('.escala-quem-busca').appendChild(pilula);
-    }
-    var lista = el.querySelector('.escala-quem-lista');
-    (cfg.grupos || []).forEach(function (gr) {
-      if (!gr.itens.length) return;
-      var gEl = RosterWork.tpl('tpl-escala-quem-grupo');
-      if (!gEl) return;
-      var g = { el: gEl, cab: gEl.querySelector('.escala-quem-grupo-cab'), itensEl: gEl.querySelector('.escala-quem-grupo-itens'),
-        qtd: gEl.querySelector('.escala-quem-grupo-qtd'), itens: [], aberto: false };
-      gEl.querySelector('.escala-quem-grupo-nome').textContent = gr.rotulo;
-      if (gr.erro) gEl.classList.add('escala-quem-grupo--erro');
-      g.cab.addEventListener('click', function () { abrirGrupo(g, !g.aberto); filtrar(est); });
-      gr.itens.forEach(function (c) {
-        var item = RosterWork.tpl('tpl-escala-quem-item');
-        if (!item) return;
-        item.querySelector('.escala-distribuicao-grad').textContent = c.grad || '';
-        item.querySelector('.escala-distribuicao-nome').textContent = c.nome || '';
-        item.querySelector('.escala-quem-info').textContent = c.info || '';
-        item.setAttribute('data-busca', RosterWork.busca.chave(c) + ' ' + RosterWork.busca.normalizar(c.grad));
-        if (c.pode === false) {
-          item.disabled = true;
-          item.classList.add('escala-quem-item--apagado');
-        } else {
-          item.addEventListener('click', function () { marcar(c.cpf); if (cfg.aoEscolher) cfg.aoEscolher(c); });
-        }
-        g.itensEl.appendChild(item);
-        g.itens.push({ cpf: c.cpf, el: item });
-        est.botoes.push({ cpf: c.cpf, el: item });
-      });
-      abrirGrupo(g, !!gr.aberto);
-      lista.appendChild(gEl);
-      est.grupos.push(g);
-    });
-    var vazio = RosterWork.tpl('tpl-escala-secao-vazio');
-    if (vazio) {
-      vazio.classList.add('escala-quem-vazio');
-      vazio.textContent = msg().ninguemEncontrado;
-      lista.appendChild(vazio);
-      est.vazio = vazio;
-    }
-    function marcar(cpf) {
-      est.botoes.forEach(function (b) { b.el.classList.toggle('escala-quem-item--escolhido', !!cpf && b.cpf === cpf); });
-    }
-    lugar.appendChild(el);
-    filtrar(est);
-    marcar(cfg.escolhido || null);
-    /* no computador, a busca já recebe o foco (no celular, abriria o teclado) */
-    if (est.entrada && cfg.foco && !document.documentElement.hasAttribute('data-celular')) est.entrada.focus();
-    return { marcar: marcar };
-  }
-
-  /* ---------- os grupos da vaga (a edição da linha) ---------- */
-
-  function ed() { return RosterWork.escalasPainelEditar.sub; }
-  function L() { return RosterWork.mensagens.escala.linha; }
-  function nomeDe(m) { return ((m.grad || '') + ' ' + (m.nome || '')).trim(); }
-  function juntar(lista) { return lista.length > 1 ? lista.slice(0, -1).join(', ') + ' e ' + lista[lista.length - 1] : (lista[0] || ''); }
-
-  /* as funções de quem já está na escala, em texto: ["Efetivo 3 da ABT-01"] */
+  /* as funções de quem já está na escala aqui, em texto: ["Efetivo 3 da ABT-01"] */
   function lugares(funcoes) {
     var api = ed(), nomes = [];
     (funcoes || []).forEach(function (f) {
       var posto = api.acharPosto(f.viatura_id, f.instalacao_id);
-      var t = posto ? api.funcaoNoPosto(f.funcao, posto) : f.funcao;
+      var t = posto ? api.funcaoNoPosto(f.funcao, posto) : msg().funcaoNoPosto(f.funcao, f.posto || '', true);
       if (nomes.indexOf(t) < 0) nomes.push(t);
     });
     return nomes;
   }
 
-  /* o motivo de quem não pode, do código que o banco manda (sai = quem está na linha) */
-  function motivoTexto(c, sai) {
+  /* o motivo de quem não pode, do código que o banco manda */
+  function motivoTexto(c) {
     var mm = msg().seletorMotivo, H = ed().horas, mo = c.motivo || {};
     if (mo.codigo === 'papel') return mm.papel(mo.funcao);
     if (mo.codigo === 'horario') return mm.horario(H.textoPeriodos(mo.servico || []));
@@ -141,53 +48,45 @@
     }
     if (mo.codigo === 'regra') return mm.regra(mo.funcao);
     if (mo.codigo === 'cnh') return mm.cnh(mo.cnh);
-    if (mo.codigo === 'troca_regra') return mm.trocaRegra(sai, mo.funcao);
-    if (mo.codigo === 'troca_cnh') return mm.trocaCnh(sai, mo.cnh, mo.posto);
     return '';
   }
 
-  /* o que já ocupa o dia de quem está de folga ("Extra das 08h às 02h"), ou o dia livre */
+  /* quem está de folga: a unidade e o que já ocupa o dia dele ("1ºPEL, extra das 08h às 02h"), ou o dia livre */
   function infoFolga(c) {
     var H = ed().horas;
-    if (c.assume) return msg().seletorAssume[c.assume] || '';
     var ocupado = (c.ocupado || []).map(function (o) { return { hi: H.curta(o.hi), hf: H.curta(o.hf), tipo: o.tipo }; });
-    return ocupado.length ? msg().ocupadoNoDia(ocupado) : L().infoLivre;
+    var texto = c.assume ? msg().seletorAssume[c.assume] : ocupado.length ? msg().ocupadoNoDia(ocupado) : L().infoLivre;
+    return (c.unidade ? c.unidade + ', ' : '') + minuscula(texto || '');
   }
 
-  /* a lista do banco (escala_dia_disponiveis com a vaga) em grupos: na escala de hoje (aberto), de folga por
-     unidade e quem não pode (fechados); militar = quem está na linha (fica de fora) */
-  function gruposDaVaga(resp, militar) {
-    var naEscala = [], folgas = {}, unidades = [], naoPodem = [];
-    var sai = militar ? nomeDe(militar) : '';
+  /* de serviço em outra unidade: as funções dele lá e a unidade ("Condutor da ABS-0055, 1ºPEL") */
+  function infoOutra(c) {
+    var fs = c.funcoes || [];
+    var unidade = (fs[0] && fs[0].unidade) || c.unidade || '';
+    var texto = fs.length ? juntar(lugares(fs)) : L().infoSemFuncao;
+    return texto + (unidade ? ', ' + unidade : '');
+  }
+
+  /* a lista do banco em itens do campo de militar, com os títulos dos grupos; militar = quem está na linha (fica de
+     fora). Cada item: { cpf, grad, nome, info, inativo, c } (c = o que o banco mandou) */
+  function itensDaVaga(resp, militar, unidadeNome) {
+    var aqui = [], outra = [], folga = [], naoPodem = [];
     (resp || []).forEach(function (c) {
       if (militar && c.cpf === militar.cpf) return;
-      var item = { cpf: c.cpf, grad: c.grad, nome: c.nome, pode: !!c.pode, c: c };
-      if (!c.pode) { item.info = motivoTexto(c, sai); naoPodem.push(item); return; }
-      if (c.grupo === 'folga') {
-        item.info = infoFolga(c);
-        var u = c.unidade || '';
-        if (!folgas[u]) { folgas[u] = []; unidades.push(u); }
-        folgas[u].push(item);
-        return;
-      }
+      var item = { cpf: c.cpf, grad: c.grad, nome: c.nome, c: c };
+      if (!c.pode) { item.inativo = true; item.info = motivoTexto(c); naoPodem.push(item); return; }
+      if (c.grupo === 'folga') { item.info = infoFolga(c); folga.push(item); return; }
+      if (c.grupo === 'outro_pelotao') { item.info = infoOutra(c); outra.push(item); return; }
       item.info = c.grupo === 'sem_funcao' ? L().infoSemFuncao : juntar(lugares(c.funcoes));
-      naEscala.push(item);
+      aqui.push(item);
     });
-    return [{ rotulo: L().grupoNaEscala, aberto: true, itens: naEscala }]
-      .concat(unidades.map(function (u, i) { return { rotulo: L().grupoFolga(u), aberto: !naEscala.length && i === 0, itens: folgas[u] }; }))
-      .concat([{ rotulo: L().grupoNaoPodem, erro: true, itens: naoPodem }]);
-  }
-
-  /* enquanto lê, o giratório; se a leitura falhou, o texto */
-  function carregando(lugar) {
-    lugar.textContent = '';
-    var giro = RosterWork.tpl('tpl-escala-distribuicao-carregando');
-    if (giro) lugar.appendChild(giro);
-  }
-  function falha(lugar) {
-    lugar.textContent = '';
-    var t = RosterWork.tpl('tpl-escala-secao-vazio');
-    if (t) { t.classList.add('escala-quem-vazio'); t.textContent = msg().falhaCarregar; lugar.appendChild(t); }
+    var lista = [];
+    function grupo(titulo, itens) { if (itens.length) lista = lista.concat([{ titulo: titulo }], itens); }
+    grupo(L().grupoAqui(unidadeNome), aqui);
+    grupo(L().grupoOutra, outra);
+    grupo(L().grupoFolga, folga);
+    grupo(L().grupoNaoPodem, naoPodem);
+    return lista;
   }
 
   /* ---------- Onde ---------- */
@@ -248,5 +147,5 @@
     return { valor: function () { return { posto: est.posto, funcao: est.funcao }; } };
   }
 
-  window.RosterWork.escalasPainelQuem = { montar: montar, carregando: carregando, falha: falha, onde: onde, gruposDaVaga: gruposDaVaga, lugares: lugares };
+  window.RosterWork.escalasPainelQuem = { itensDaVaga: itensDaVaga, lugares: lugares, onde: onde, nomeDe: nomeDe };
 })();

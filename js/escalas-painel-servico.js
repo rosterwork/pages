@@ -60,12 +60,14 @@
     var original = daqui.periodos;
     var est = { aberto: false, periodos: original.map(copiar), descontar: true };
     var ui = {
-      texto: el.querySelector('.escala-servico-texto'), mudar: el.querySelector('.escala-servico-mudar'),
-      periodos: el.querySelector('.escala-servico-periodos'), regua: el.querySelector('.escala-servico-regua'),
-      folga: el.querySelector('.escala-servico-folga'), refaz: el.querySelector('.escala-servico-refaz')
+      frase: el.querySelector('.escala-servico-frase'), mudar: el.querySelector('.escala-servico-mudar'),
+      campos: el.querySelector('.escala-servico-campos'), periodos: el.querySelector('.escala-servico-periodos'),
+      regua: el.querySelector('.escala-servico-regua'), folga: el.querySelector('.escala-servico-folga'),
+      refaz: el.querySelector('.escala-servico-refaz')
     };
     var janelas = mil.janelas.slice().sort(function (a, b) { return H.emMin(a.hi) - H.emMin(b.hi); });
-    ui.texto.textContent = L().servicoTexto(janelas.map(function (j) { return { hi: H.curta(j.hi), hf: H.curta(j.hf), origem: j.origem }; }));
+    el.querySelector('.escala-servico-texto').textContent =
+      L().servicoTexto(janelas.map(function (j) { return { hi: H.curta(j.hi), hf: H.curta(j.hf), origem: j.origem }; }));
     /* só extra aqui: muda na aba Extrajornada */
     if (!original.length) { ui.mudar.remove(); ui.mudar = null; }
     else ui.mudar.addEventListener('click', function () { est.aberto = true; desenhar(); if (aoMudar) aoMudar(); });
@@ -99,9 +101,8 @@
     }
 
     function desenhar() {
-      ui.texto.classList.toggle('oculto', est.aberto);
-      if (ui.mudar) ui.mudar.classList.toggle('oculto', est.aberto);
-      ui.periodos.classList.toggle('oculto', !est.aberto);
+      ui.frase.classList.toggle('oculto', est.aberto);
+      ui.campos.classList.toggle('oculto', !est.aberto);
       ui.regua.classList.toggle('oculto', !est.aberto);
       ui.periodos.textContent = '';
       if (est.aberto) {
@@ -171,7 +172,7 @@
 
     lugar.appendChild(el);
     desenhar();
-    return { mudou: mudou, novos: novos, erro: erro, aplicar: aplicar };
+    return { mudou: mudou, novos: novos, erro: erro, aplicar: aplicar, aberto: function () { return est.aberto; } };
   }
 
   /* ---------- Tirar do dia ---------- */
@@ -201,11 +202,11 @@
   }
 
   /* a lista do que acontece com as trocas, folgas e extras a partir do dia (escala_ciclo_retirar_analisar) e a
-     confirmação; textos = { mensagem, escala, botao } */
-  function confirmarCiclo(cpf, textos, aoConfirmar) {
+     confirmação; textos = { mensagem, escala, botao }; desde = o dia de onde a lista conta (sem ele, o do painel) */
+  function confirmarCiclo(cpf, textos, aoConfirmar, desde) {
     var api = ed();
     var S = RosterWork.mensagens.saida;
-    RosterWork.escalasDados.cicloRetirarAnalisar(api.unidadeId(), cpf, api.iso()).then(function (a) {
+    RosterWork.escalasDados.cicloRetirarAnalisar(api.unidadeId(), cpf, desde || api.iso()).then(function (a) {
       if (!a || !a.success) { RosterWork.avisar({ tipo: 'erro', mensagem: (a && a.error) || S.falhaLista }); return; }
       var aviso = RosterWork.avisoSaida(a.pendencias, { tipo: 'tirar', escala: textos.escala });
       RosterWork.confirmar({ tipo: 'aviso', mensagem: textos.mensagem, itens: aviso.itens, nota: aviso.nota,
@@ -213,22 +214,24 @@
     });
   }
 
-  /* lugar = onde o bloco entra. Devolve { erro(), aplicar() } ou null */
-  function tirar(lugar, cpf) {
+  /* lugar = onde o bloco entra; aoMudar() = a edição da linha acerta o botão de confirmar. Devolve { erro(), aplicar(),
+     alcance() } ou null */
+  function tirar(lugar, cpf, aoMudar) {
     var api = ed(), H = api.horas;
     lugar.textContent = '';
     var mil = api.militarDoDia(cpf);
     var el = RosterWork.tpl('tpl-escala-tirar');
     if (!mil || !el) return null;
     var data = diaMes(api.iso());
-    [].forEach.call(el.querySelectorAll('.escala-tirar-data'), function (s) { s.textContent = data; });
-    /* do ciclo, só quem serve pelo ciclo (o pontual, a troca e a extra não) */
-    var doCiclo = !mil.pontual && mil.janelas.some(function (j) { return !j.origem || j.origem === 'base' || j.origem === 'sistema'; });
-    var trilho = el.querySelector('.escala-tirar-alcance');
-    if (!doCiclo) trilho.remove();
-    else if (RosterWork.abas) RosterWork.abas.ligar(trilho, function (aba) { est.alcance = aba.getAttribute('data-alcance'); desenhar(); });
-    var banco = el.querySelector('.escala-tirar-banco'), ciclo = el.querySelector('.escala-tirar-ciclo');
     var est = { alcance: 'dia', banco: 'sim' };
+    el.querySelector('.escala-tirar-titulo').textContent = L().tirarDia(nomeDe(mil));
+    [].forEach.call(el.querySelectorAll('.escala-tirar-data'), function (s) { s.textContent = RosterWork.data.diaMesExtenso(api.iso()); });
+    /* do ciclo, só quem serve pelo ciclo (o pontual, a troca e a extra não): sem ele, as bolinhas nem aparecem */
+    var doCiclo = !mil.pontual && mil.janelas.some(function (j) { return !j.origem || j.origem === 'base' || j.origem === 'sistema'; });
+    var alcance = el.querySelector('.escala-tirar-alcance');
+    if (!doCiclo) alcance.remove();
+    else ligarRadios(alcance, function (v) { est.alcance = v; desenhar(); if (aoMudar) aoMudar(); })('dia');
+    var banco = el.querySelector('.escala-tirar-banco'), ciclo = el.querySelector('.escala-tirar-ciclo');
     var marcar = ligarRadios(banco, function (v) { est.banco = v; });
 
     var salvo = ((api.dados() || {}).pontuais || []).filter(function (x) { return x.cpf === cpf; })[0];
@@ -281,7 +284,7 @@
 
     lugar.appendChild(el);
     desenhar();
-    return { erro: erro, aplicar: aplicar };
+    return { erro: erro, aplicar: aplicar, alcance: function () { return est.alcance; } };
   }
 
   window.RosterWork.escalasPainelServico = {

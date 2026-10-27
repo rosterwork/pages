@@ -84,6 +84,21 @@
     return DIAS_SEMANA[d.getDay()] + ', ' + br;
   }
 
+  var MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+
+  /* AAAA-MM-DD -> "28 de outubro" ('' se vazio) */
+  function diaMesExtenso(iso) {
+    var p = String(iso || '').slice(0, 10).split('-');
+    return p.length === 3 ? Number(p[2]) + ' de ' + MESES[Number(p[1]) - 1] : '';
+  }
+
+  /* AAAA-MM-DD -> "Terça-feira, 20 de outubro" ('' se vazio) */
+  function comDiaSemanaExtenso(iso) {
+    var p = String(iso || '').slice(0, 10).split('-');
+    if (p.length !== 3) return '';
+    return DIAS_SEMANA[new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2])).getDay()] + ', ' + diaMesExtenso(iso);
+  }
+
   /* o dia de serviço em curso (Date à meia-noite): ele vira às 08h, então antes disso ainda é o dia anterior */
   function diaDeServico() {
     var agora = new Date();
@@ -102,6 +117,8 @@
     isoParaBR: isoParaBR,
     comDiaSemana: comDiaSemana,
     comDiaCurto: comDiaCurto,
+    diaMesExtenso: diaMesExtenso,
+    comDiaSemanaExtenso: comDiaSemanaExtenso,
     diaDeServico: diaDeServico
   };
 })();

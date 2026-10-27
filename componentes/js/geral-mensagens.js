@@ -355,6 +355,7 @@
       semPedido: function (fecha) { return 'Aberto até ' + fecha + ', às 23h59. Diga se quer tirar extra, quantas cotas e os dias.'; },
       naoAbriu: function (abre) { return 'O pedido abre em ' + abre + '.'; },
       naoPediu: 'Nenhum pedido feito.',
+      soPraca: 'A extra é só para praças.',
       pediu: function (p) {
         return 'Pedido enviado em ' + p.enviado_em + ': ' + p.cotas + (p.cotas === 1 ? ' cota' : ' cotas') + (p.so_24h ? ', só 24 h' : '')
           + ', ' + p.quer.length + (p.quer.length === 1 ? ' dia que quer' : ' dias que quer')
@@ -433,10 +434,7 @@
         lancarTexto: function (n) { return n + (n === 1 ? ' extra entra na escala.' : ' extras entram na escala.') + ' Fica guardada a foto, que vira o relatório inicial.'; },
         confirmarLancar: 'Lançar a distribuição na escala? (Teste: a escala de verdade não muda e ninguém é avisado.)',
         lancado: function (e, d) { return e + (e === 1 ? ' extra lançada' : ' extras lançadas') + ' em ' + d + (d === 1 ? ' dia.' : ' dias.'); },
-        semAjustes: 'Nenhum ajuste.',
-        ajustesDepois: 'Os ajustes aparecem aqui depois que o mês começa.',
-        ajusteFeito: function (em, autor, motivo) { return em + (autor ? ', ' + autor : '') + (motivo ? '. Motivo: ' + motivo : ''); },
-        semLancamento: 'Ainda não houve lançamento.',
+        relAjustesPeriodo: function (ini, fim) { return ini + ' a ' + fim + '. Feitos na Distribuição, no passo 3, com o motivo.'; },
         colocadas: function (n, t) { return n + ' de ' + t + ' cotas colocadas'; },
         diasFalta: function (n) { return n ? n + (n === 1 ? ' dia com falta de gente' : ' dias com falta de gente') : 'Nenhum dia com falta de gente'; },
         cobertura: 'Cobertura do dia',
@@ -456,17 +454,23 @@
         diaOutro: function (dd) { return 'dia ' + dd; },
         diaSemana: function (dd, sem) { return 'dia ' + dd + ' · ' + sem; },
         horasN: function (n) { return n + 'h'; },
-        pmDia: function (data, n) { return data + ' · ' + n + 'h'; },
-        nenhumDia: 'Nenhum dia',
-        sobrou: function (nome, n, motivo) {
-          return 'Sobrou ' + n + (n === 1 ? ' cota' : ' cotas') + ' de ' + nome
-            + (motivo === 'solta' ? ' (seria um pedaço solto de 6 horas).' : motivo === 'oficial' ? ' (a sugestão só põe praça).' : ' (sem dia livre com lugar na escala).');
+        /* passo 2: o painel do militar */
+        cotasPainelSub: function (unidade, fila) { return unidade + ' · ' + fila + 'º na fila'; },
+        cotasPediu: function (n, so24) { return n + (n === 1 ? ' cota' : ' cotas') + (so24 ? ', só 24 h' : ''); },
+        so24Cotas: 'Só aceita 24 h: recebe as cotas em blocos de 4.',
+        /* passo 3, Por militar: a grade e a caixa do quadrado */
+        cotasSobrando: function (n) { return n + (n === 1 ? ' cota sobrando' : ' cotas sobrando'); },
+        pelCotas: function (u, t) { return u + ' de ' + t + ' cotas'; },
+        querDia: 'Quer o dia',
+        naoPodeDia: 'Não pode',
+        caixaSub: function (data, unidade, u, c) { return data + ' · ' + unidade + ' · ' + u + ' de ' + c + ' cotas'; },
+        passouCota: function (n) { return 'Passou da cota em ' + n + (n === 1 ? ' cota.' : ' cotas.'); },
+        sobraMotivo: function (n, motivo) {
+          return (n === 1 ? 'Sobrou 1 cota' : 'Sobraram ' + n + ' cotas')
+            + (motivo === 'solta' ? ': seria um pedaço solto de 6 horas.' : motivo === 'oficial' ? ': a sugestão só põe praça.' : ': sem dia livre com lugar na escala.');
         },
-        ajudaTitulo: 'Como a sugestão decide',
-        ajudaSubtitulo: 'Preencher pela sugestão',
         faltaIdealHoras: function (h) { return 'Ainda falta gente para o ideal de ' + h + '.'; },
         chefeDirigeHoras: function (h, cnh) { return 'O chefe ainda dirige de ' + h + ' por falta de condutor' + (cnh ? ', CNH ' + cnh : '') + '.'; },
-        sugestaoFeita: function (c, n24, em, fora) { return 'A sugestão colocou ' + c + ' cotas: ' + n24 + ' de 24 h, ' + em + ' emendadas com o serviço, ' + fora + ' em outro pelotão. Nada foi salvo ainda.'; },
         ajusteTexto: function (n) { return n + (n === 1 ? ' ajuste não salvo.' : ' ajustes não salvos.') + ' O mês já começou: cada mudança vira um ajuste.'; },
         alteracoes: function (n) { return n + (n === 1 ? ' alteração não salva' : ' alterações não salvas'); },
         ajusteModo: 'O mês já começou: cada mudança vira um ajuste, com o motivo.',
@@ -562,36 +566,69 @@
       semNinguemTexto: 'Sem ninguém',
       /* a lista Quem da vaga: quem é o mais antigo (assume o papel sozinho) e o motivo de quem não pode */
       seletorAssume: { chefe_socorro: 'Vai assumir o Chefe de Socorro', oficial_area: 'Vai assumir o Oficial de Área' },
-      /* a edição da linha (o lápis), o De serviço no dia, o Tirar do dia, a lista Quem, o Adicionar militar, a nota
-         O que mudou e o Voltar o dia ao automático */
+      /* a edição da linha (o lápis), o De serviço no dia, o Tirar do dia, o campo de militar, o Adicionar militar, a
+         nota O que mudou e o Voltar o dia ao automático */
       linha: {
-        diaTodo: 'o dia todo',
-        situacaoSistema: 'escolhido pelo sistema',
-        situacaoFixado: 'fixado',
-        situacaoPapel: 'o mais antigo do dia',
-        situacaoVaga: function (periodos) { return 'sem ninguém ' + periodos; },
-        situacaoSemFuncao: function (periodos) { return 'sem função ' + periodos; },
-        grupoNaEscala: 'Na escala de hoje',
-        grupoFolga: function (unidade) { return 'De folga, ' + unidade; },
+        /* o resumo da linha, em frases */
+        escolhidoSistema: 'Escolhido pelo sistema:',
+        escolhidoAdmin: 'Escolhido pelo administrador:',
+        oMaisAntigo: 'O mais antigo do dia:',
+        diaTodoDica: 'O horário já é o dia todo',
+        /* o campo de militar */
+        trocarRotulo: 'Trocar o militar desta função',
+        escolherRotulo: 'Escolher quem fica nesta função',
+        trocarPlaceholder: function (militar) { return 'Escolha quem fica no lugar do ' + militar; },
+        digiteOuEscolha: 'Digite o nome ou escolha',
+        carregando: 'Carregando…',
+        ninguemPode: 'Ninguém pode entrar nesta função',
+        ninguemDisponivel: 'Ninguém disponível',
+        grupoAqui: function (unidade) { return 'De serviço no ' + unidade; },
+        grupoOutra: 'De serviço em outra unidade',
+        grupoFolga: 'De folga',
         grupoNaoPodem: 'Não podem',
-        grupoFora: 'Fora da escala',
-        grupoNoCiclo: 'No ciclo, em outros dias',
+        grupoFora: 'Fora do ciclo',
+        grupoNoCiclo: 'Já estão no ciclo',
         infoSemFuncao: 'Sem função',
         infoLivre: 'Livre o dia todo',
-        infoUltimo: function (data) { return 'Último serviço: ' + data; },
+        infoFora: 'Fora do ciclo',
+        infoUltimo: function (data) { return 'Último serviço em ' + data; },
         infoEntraEm: function (data) { return 'Entra no ciclo em ' + data; },
-        infoServeHoje: function (data) { return 'Já está de serviço pelo ciclo em ' + data; },
+        infoServeHoje: 'De serviço pelo ciclo hoje',
         infoAfastado: function (motivo, data) { return motivo + ' até ' + data; },
-        /* quem entra já tem função no horário: sai de lá ou faz as duas */
-        saidaTexto: function (militar, lugares) { return 'O ' + militar + ' está no ' + lugares + ' nesse horário.'; },
-        saidaSai: function (funcoes) {
-          return funcoes.length > 1 ? 'Sai dessas funções, que ficam vazias' : 'Sai do ' + funcoes[0] + ', que fica vazio';
+        /* as ações, com o nome */
+        mudarRotulo: function (militar) { return 'Mudar o ' + militar + ' para outra função'; },
+        porRotulo: function (militar) { return 'Pôr o ' + militar + ' numa função'; },
+        tirarFuncao: function (militar) { return 'Tirar o ' + militar + ' desta função'; },
+        liberar: function (militar) { return 'Liberar o ' + militar + ' para o sistema'; },
+        liberarVaga: 'Devolver esta função ao sistema',
+        tirarDia: function (militar) { return 'Tirar o ' + militar + ' do dia'; },
+        /* os botões que confirmam cada escolha */
+        porNaFuncao: function (militar, funcao) { return 'Pôr o ' + militar + ' no ' + funcao; },
+        mudarPara: function (militar, funcao) { return 'Mudar o ' + militar + ' para ' + funcao; },
+        escolhaFuncao: 'Escolha a função',
+        salvarHorario: 'Salvar o horário',
+        salvarServico: 'Salvar o horário de serviço',
+        /* quem entra já tem função no horário: sai de lá ou faz as duas (de outra unidade, só sai) */
+        saidaTexto: function (militar, lugares) { return 'O ' + militar + ' está no ' + lugares + '. Ele:'; },
+        saidaOutra: function (militar, lugares, unidade) {
+          return 'O ' + militar + ' está de serviço no ' + unidade + ', no ' + lugares + '. Os administradores de lá são avisados. Ele:';
         },
-        bancoTexto: function (militar, data, horas) { return 'O ' + militar + ' está de folga e entra só em ' + data + ' (' + horas + ').'; },
-        bancoSim: function (horas) { return 'Contabilizar +' + horas + ' no banco de horas'; },
+        saidaSai: function (lugares) {
+          return lugares.length > 1 ? 'Sai dessas funções, que ficam vazias' : 'Sai do ' + lugares[0] + ', que fica vazio';
+        },
+        saidaDuas: function (funcao, outras) {
+          var todas = [funcao].concat(outras).filter(function (f, i, a) { return a.indexOf(f) === i; });
+          return (todas.length > 2 ? 'Faz todas as funções (' : 'Faz as duas funções (') + juntarComE(todas) + ')';
+        },
+        bancoTexto: function (militar, data, horas) { return 'O ' + militar + ' está de folga e entra só em ' + data + ' (' + horas + '). No banco de horas:'; },
+        bancoSim: function (horas) { return 'Contabilizar +' + horas; },
         /* o que acontece com quem sai */
-        efeitoSemFuncao: function (militar) { return 'O ' + militar + ' fica de serviço sem função. Ninguém mais muda de lugar.'; },
-        efeitoContinua: function (militar, lugares) { return 'O ' + militar + ' continua no ' + lugares + '. Ninguém mais muda de lugar.'; },
+        efeitoSemFuncao: function (militar, funcao) { return 'O ' + militar + ' sai do ' + funcao + ' e fica de serviço sem função. Ninguém mais muda de lugar.'; },
+        efeitoContinua: function (militar, funcao, lugares) {
+          return 'O ' + militar + ' sai do ' + funcao + ' e continua ' + lista('no', lugares) + '. Ninguém mais muda de lugar.';
+        },
+        ficaVazio: function (funcao) { return 'O ' + funcao + ' fica vazio.'; },
+        trocarDois: function (militar, funcao) { return 'Trocar os dois de lugar: o ' + militar + ' vai para o ' + funcao; },
         /* De serviço no dia: "das 08h às 08h, pelo ciclo"; o pedaço que sai vira folga */
         servicoTexto: function (lista) {
           var por = { pontual: ', pontual', troca: ', por troca', extra: ', de extrajornada' };
@@ -599,16 +636,15 @@
           return partes.length > 1 ? partes.slice(0, -1).join(', ') + ' e ' + partes[partes.length - 1] : (partes[0] || '');
         },
         folgaParte: function (periodos, militar, horas) {
-          return periodos.charAt(0).toUpperCase() + periodos.slice(1) + ', o ' + militar + ' fica de folga (' + horas + ').';
+          return periodos.charAt(0).toUpperCase() + periodos.slice(1) + ', o ' + militar + ' fica de folga (' + horas + '). No banco de horas:';
         },
-        descontar: function (horas) { return 'Descontar ' + horas + ' do banco de horas dele'; },
+        descontar: function (horas) { return 'Descontar ' + horas; },
         naoDescontar: 'Não descontar',
         /* Tirar do dia */
-        tirarFolga: function (militar, data, horas) { return 'O ' + militar + ' fica de folga em ' + data + ' (' + horas + ').'; },
-        tirarPontualTexto: function (militar, horas) { return 'Este pontual somou +' + horas + ' ao banco de horas do ' + militar + '.'; },
-        tirarPontualSim: function (horas) { return 'Tirar as ' + horas + ' do banco de horas'; },
-        tirarPontualNao: 'Manter as horas no banco de horas',
-        botaoTirarDia: 'Tirar do dia',
+        tirarFolga: function (militar, data, horas) { return 'O ' + militar + ' fica de folga em ' + data + ' (' + horas + '). No banco de horas:'; },
+        tirarPontualTexto: function (militar, horas) { return 'Este pontual somou +' + horas + ' ao banco de horas do ' + militar + '. No banco de horas:'; },
+        tirarPontualSim: function (horas) { return 'Tirar as ' + horas; },
+        tirarPontualNao: 'Manter as horas',
         erroPeriodos: 'Os horários se cruzam. Ajuste os horários.',
         erroOnde: 'Escolha o posto e a função.',
         erroServico: 'O horário de serviço precisa ficar dentro do serviço que ele já tem no dia.',
@@ -627,9 +663,19 @@
           return 'Voltar o dia ' + data + ' ao automático? Os ajustes manuais desta unidade no dia saem e o sistema distribui de novo.';
         },
         automaticoBotao: 'Voltar ao automático',
-        /* Adicionar militar: só neste dia ou no ciclo, a partir do dia */
-        adicionarSoEm: function (unidade, data) { return (unidade ? unidade + ' · ' : '') + 'só em ' + data; },
-        adicionarNoCiclo: function (data) { return 'no ciclo, a partir de ' + data; },
+        /* Adicionar militar: somente no dia ou no ciclo, a partir do dia */
+        adicionarNoDia: function (militar, data) { return 'Adicionar o ' + militar + ' em ' + data; },
+        ultimoRotulo: function (militar) { return 'Último serviço do ' + militar + ' no ciclo atual'; },
+        cicloServeHoje: function (militar, data) {
+          return 'O ' + militar + ' já está de serviço pelo ciclo em ' + data + ': começando nesse dia, o ciclo novo cairia nos mesmos dias do atual. Nada muda.';
+        },
+        cicloRemovido: function (militar, ultimo, saem, novo) {
+          return 'O ' + militar + ' será removido do seu ciclo atual depois do serviço de ' + ultimo + '. '
+            + (saem.length > 1 ? 'Os serviços de ' + juntarComE(saem) + ' saem da escala dele, e o ciclo novo começa em '
+              : saem.length ? 'O serviço de ' + saem[0] + ' sai da escala dele, e o ciclo novo começa em ' : 'O ciclo novo começa em ')
+            + novo + '.';
+        },
+        cicloEscalaUltimo: function (ultimo, data) { return 'O último serviço no ciclo atual é em ' + ultimo + ' e o novo começa em ' + data + '.'; },
         botaoAdicionar: 'Adicionar',
         botaoContinuar: 'Continuar',
         botaoNoCiclo: 'Pôr no ciclo',
@@ -637,7 +683,9 @@
         cicloMudar: function (desde, ultimo, novo) {
           return 'No ciclo desde ' + desde + '.' + (ultimo ? ' Último serviço nele: ' + ultimo + '.' : '') + ' O ciclo novo começa em ' + novo + '.';
         },
-        cicloMudarAviso: function (data) { return 'Ao continuar, você vê o que acontece com as trocas, folgas e extras dele a partir de ' + data + ', antes de confirmar.'; },
+        cicloMudarAviso: function (ultimo) {
+          return 'Ao continuar, você vê o que acontece com as trocas, folgas e extras dele ' + (ultimo ? 'depois de ' + ultimo : 'a partir desse dia') + ', antes de confirmar.';
+        },
         cicloEntrar: function (data) { return 'Ele entra no ciclo de serviço a partir de ' + data + ' e segue nos próximos dias.'; },
         cicloConfirmarEntrar: function (militar, data) { return 'Pôr o ' + militar + ' no ciclo de serviço a partir de ' + data + '?'; },
         cicloConfirmarMudar: function (militar, data) { return 'Mudar o ciclo do ' + militar + ' a partir de ' + data + '? O que vai acontecer:'; },
@@ -647,9 +695,7 @@
         papel: function (funcao) { return 'É o ' + funcao; },
         horario: function (periodos) { return 'De serviço só ' + periodos; },
         regra: function (funcao) { return 'Regra: não pode ser ' + funcao; },
-        cnh: function (cnh) { return 'Sem a CNH ' + cnh; },
-        trocaRegra: function (militar, funcao) { return 'Regra do ' + militar + ': não pode ser ' + funcao; },
-        trocaCnh: function (militar, cnh, posto) { return militar + ' sem a CNH ' + cnh + ' da ' + posto; }
+        cnh: function (cnh) { return 'Sem a CNH ' + cnh; }
       },
       /* dia sem ninguém de serviço na unidade */
       semDistribuicao: 'Sem distribuição neste dia.',

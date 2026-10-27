@@ -656,7 +656,7 @@
   /* a lista edita só no Dia do admin (não na prévia da Extrajornada nem na comparação) */
   function editavel() { return ctx.admin && !ctx.comparar && !ctx.dadosProntos; }
 
-  /* o lápis da linha: abre a edição ali mesmo, embaixo da função (escalas-painel-linha.js). cfg sem ancora e lapis */
+  /* o lápis da linha: abre a edição num cartão que engloba a linha (escalas-painel-linha.js). cfg sem grupo e lapis */
   function lapisDaLinha(ancora, cfg) {
     if (!editavel() || !RosterWork.escalasPainelLinha) return null;
     var b = RosterWork.tpl('tpl-escala-edicao-lapis');
@@ -664,7 +664,7 @@
     b.addEventListener('click', function (ev) {
       ev.stopPropagation();
       if (!ctx || ctx.salvando) return;
-      cfg.ancora = ancora();
+      cfg.grupo = ancora();
       cfg.lapis = b;
       RosterWork.escalasPainelLinha.abrir(cfg);
     });

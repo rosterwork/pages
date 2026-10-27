@@ -1,0 +1,59 @@
+/* ============================================================
+   COMPONENTE — o campo de militar (geral-combo-militar.js)
+   O campo é o .dropdown.campo-combo (geral-campo) com o menu do
+   geral-dropdown; aqui, a lista: o nome à esquerda (sempre inteiro)
+   e, à direita, o que ele faz hoje ou o motivo (quebra em linhas);
+   quem não pode fica apagado, com o motivo em amarelo
+   ============================================================ */
+
+/* o menu acompanha a largura do campo (a do gatilho, medida pelo geral-flutuante) e rola por dentro */
+.combo-militar-menu {
+  width: var(--flutuante-w);
+  min-width: 0;
+  max-height: 320px;
+}
+
+.combo-militar-item {
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  text-align: left;
+  white-space: normal;
+}
+
+.combo-militar-nome {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.combo-militar-grad {
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+.combo-militar-info {
+  min-width: 0;
+  font-size: 11px;
+  text-align: right;
+  color: var(--texto-fraco);
+}
+
+.combo-militar-item.dropdown-item--inativo .combo-militar-guerra,
+.combo-militar-item.dropdown-item--inativo .combo-militar-grad {
+  color: var(--texto-fraco);
+}
+
+.combo-militar-item.dropdown-item--inativo .combo-militar-info {
+  color: var(--alerta);
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   A lista fica mais baixa, para caber acima do teclado
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .combo-militar-menu {
+    max-height: 280px;
+  }
+}

@@ -1,9 +1,12 @@
 /* ============================================================
    NOVA EXTRA (protótipo, só programador)
-   A Minha extra numa coluna de leitura, o grupo TESTE da barra e o
-   painel do pedido (perguntas em blocos, cotas, pincel e o mês).
+   A Minha extra numa coluna de leitura, o grupo TESTE da barra, o
+   painel do pedido (perguntas em blocos, cotas, pincel e o mês), os
+   passos do Organizar o mês (tabelas em blocos, rodapé que gruda), o
+   passo 3 (o calendário Por dia, a grade Por militar com as bolinhas
+   e a caixa do quadrado) e a aba Calendário.
    Cores, sombras e raios só por token.
-   Montagem: js/nova-extra.js e js/nova-extra-pedido.js
+   Montagem: js/nova-extra*.js
    ============================================================ */
 
 /* ---------- barra: o grupo TESTE ---------- */
@@ -11,10 +14,6 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 4px 0 12px;
-  min-height: 40px;
-  border-radius: var(--raio-medio);
-  background-color: var(--fundo-medio);
 }
 
 .nova-extra-teste-rotulo {
@@ -413,23 +412,59 @@
   border-bottom: 1px solid var(--fundo-medio);
 }
 
+/* a lista em blocos: o fundo cinza e cada linha um bloco branco, sem traços */
+.nova-extra-blocos {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.nova-extra-blocos .nova-extra-tabela {
+  border-collapse: separate;
+  border-spacing: 0 4px;
+}
+
+.nova-extra-blocos .nova-extra-tabela th {
+  padding: 0 12px;
+  border-bottom: 0;
+}
+
+.nova-extra-blocos .nova-extra-tabela td {
+  border-bottom: 0;
+  background-color: var(--fundo-superficie);
+  transition: background-color 0.15s ease;
+}
+
+.nova-extra-blocos .nova-extra-tabela td:first-child { border-radius: var(--raio-pequeno) 0 0 var(--raio-pequeno); }
+.nova-extra-blocos .nova-extra-tabela td:last-child { border-radius: 0 var(--raio-pequeno) var(--raio-pequeno) 0; }
+
+/* a linha que abre o painel (passo 2) */
+.nova-extra-linha-clicavel { cursor: pointer; }
+.nova-extra-linha-clicavel:hover td { background-color: var(--fundo-suave); }
+
+.nova-extra-linha--aberta td,
+.nova-extra-linha--aberta:hover td { background-color: var(--fundo-medio); }
+
+.nova-extra-linha-clicavel:focus-visible {
+  outline: 2px solid var(--foco);
+  outline-offset: -2px;
+}
+
 .nova-extra-nome small { margin-right: 2px; color: var(--texto-fraco); }
 .nova-extra-nome b { font-weight: 600; color: var(--texto-forte); }
 
 .nova-extra-marcar-curto { width: auto; }
 
-/* gruda no fim da área que rola, por cima do respiro da página (nada passa por baixo dele) */
+/* o rodapé do site (.rodape .rodape-linha) grudado no fim da área que rola, de ponta a ponta,
+   por cima do respiro da página (nada passa por baixo dele) */
 .nova-extra-rodape {
   position: sticky;
   bottom: calc(-1 * var(--respiro-pagina));
   z-index: 4;
-  display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 0;
-  border-top: 1px solid var(--borda);
-  background-color: var(--fundo-superficie);
+  margin: 0 calc(-1 * var(--respiro-pagina));
 }
 
 .nova-extra-rodape-texto {
@@ -438,11 +473,9 @@
 }
 
 .nova-extra-motivo {
-  display: flex;
+  flex-direction: row;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
-  color: var(--texto-suave);
 }
 
 .nova-extra-motivo input { width: 260px; }
@@ -460,11 +493,6 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-}
-
-.nova-extra-numero-rotulo {
-  font-size: 12px;
-  color: var(--texto-suave);
 }
 
 .nova-extra-numero b {
@@ -495,7 +523,7 @@
 
 .nova-extra-historico { color: var(--texto-fraco); }
 
-/* o Recebe: o campo e, embaixo, a sugestão quando o número mudou */
+/* o Recebe: o número e, embaixo, a sugestão quando ele mudou */
 .nova-extra-recebe {
   display: inline-flex;
   flex-direction: column;
@@ -503,14 +531,21 @@
   gap: 2px;
 }
 
+.nova-extra-recebe b {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
 .nova-extra-recebe small {
   font-size: 11px;
   color: var(--texto-fraco);
 }
 
-.nova-extra-conc {
-  width: 72px;
-  text-align: center;
+/* o painel do militar no passo 2 */
+.nova-extra-cotas-painel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .nova-extra-item {
@@ -543,17 +578,13 @@
 .nova-extra-item-texto b { color: var(--texto-forte); }
 .nova-extra-item-texto span { font-size: 12px; color: var(--texto-fraco); }
 
-.nova-extra-aviso,
-.nova-extra-nota-sugestao {
+.nova-extra-aviso {
   padding: 8px 12px;
   border-radius: var(--raio-medio);
   background-color: var(--alerta-fundo);
   font-size: 12px;
   color: var(--alerta);
 }
-
-.nova-extra-nota-sugestao { background-color: var(--sucesso-fundo); color: var(--sucesso); }
-.nova-extra-nota--alerta { background-color: var(--alerta-fundo); color: var(--alerta); }
 
 /* ---------- passo 3: Por dia (o calendário) e Por militar ---------- */
 .nova-extra-ferramentas {
@@ -572,7 +603,10 @@
   color: var(--texto-forte);
 }
 
-.nova-extra-resumo .nova-extra-ajuda { font-weight: 400; }
+.nova-extra-resumo .nova-extra-ajuda,
+.nova-extra-resumo-fraco { font-weight: 400; }
+
+.nova-extra-resumo-fraco { color: var(--alerta); }
 
 /* o calendário do mês (geral-calendario-mes): rola para o lado por dentro quando não cabe */
 .nova-extra-dist-cal { min-width: 0; }
@@ -664,14 +698,245 @@
 .nova-extra-falta-ok { font-size: 12px; color: var(--sucesso); }
 .nova-extra-falta-amarela { font-size: 12px; color: var(--alerta); }
 
-/* o "?" da sugestão: a explicação em caixas, com o título dos erros na cor deles */
-.nova-extra-ajuda-sugestao {
+/* ---------- Por militar: a grade dos 31 dias ---------- */
+/* rola para o lado por dentro quando não cabe; os dias separados por linhas */
+.nova-extra-gm {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
+  min-width: 0;
 }
 
-.nova-extra-ajuda-lista {
+.nova-extra-gm-rolagem {
+  overflow-x: auto;
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-superficie);
+  box-shadow: var(--sombra-bloco);
+}
+
+.nova-extra-gm-tabela {
+  width: 100%;
+  min-width: 1132px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 12px;
+}
+
+.nova-extra-gm-tabela th,
+.nova-extra-gm-tabela td { padding: 0; }
+
+.nova-extra-gm-tabela thead th {
+  padding: 4px 0;
+  border-bottom: 1px solid var(--borda-forte);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-fraco);
+}
+
+.nova-extra-gm-tabela tbody tr { border-top: 1px solid var(--fundo-medio); }
+
+.nova-extra-gm-nome {
+  width: 200px;
+  padding: 4px 8px;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nova-extra-gm-tabela thead .nova-extra-gm-nome,
+.nova-extra-gm-tabela thead .nova-extra-gm-cota { padding: 4px 8px; }
+
+.nova-extra-gm-cota {
+  width: 64px;
+  padding: 4px 8px;
+  text-align: center;
+  white-space: nowrap;
+  color: var(--texto-suave);
+}
+
+.nova-extra-gm-cota--sobra { font-weight: 600; color: var(--alerta); }
+.nova-extra-gm-cota--cheia { color: var(--texto-forte); }
+.nova-extra-gm-cota.nova-extra-negativo { font-weight: 600; color: var(--erro); }
+
+/* a coluna de um dia: a linha à esquerda separa as datas; sábado e domingo levemente cinza */
+.nova-extra-gm-dia {
+  border-left: 1px solid var(--borda);
+  text-align: center;
+}
+
+.nova-extra-gm-dia--fds { background-color: var(--fundo-suave); }
+
+.nova-extra-gm-dia .ne-sem {
+  display: block;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--texto-fraco);
+}
+
+.nova-extra-gm-dia .ne-num {
+  display: block;
+  font-size: 11px;
+  color: var(--texto-forte);
+}
+
+/* a linha do pelotão: o nome, as cotas colocadas e as bolinhas de cada dia */
+.nova-extra-gm-pel td {
+  min-height: 24px;
+  background-color: var(--fundo-medio);
+}
+
+.nova-extra-gm-pel .nova-extra-gm-dia { padding: 4px 0; }
+
+.nova-extra-gm-pel .ne-pel-nome {
+  font-weight: 700;
+  color: var(--texto-forte);
+}
+
+.nova-extra-gm-pel .ne-pel-info {
+  margin-left: 8px;
+  font-size: 11px;
+  color: var(--texto-fraco);
+}
+
+/* o quadrado do militar no dia: clicar abre a caixa */
+.nova-extra-gm-casa {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 100%;
+  min-height: 28px;
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.nova-extra-gm-casa:hover { background-color: var(--fundo-medio); }
+
+.nova-extra-gm-casa:focus-visible {
+  outline: 2px solid var(--foco);
+  outline-offset: -2px;
+}
+
+.nova-extra-gm-casa--aberta,
+.nova-extra-gm-casa--aberta:hover {
+  outline: 2px solid var(--texto-forte);
+  outline-offset: -2px;
+  background-color: var(--fundo-medio);
+}
+
+.nova-extra-gm-sigla {
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--texto-fraco);
+}
+
+/* as 4 bolinhas de um dia (08h, 14h, 20h e 02h) */
+.nova-extra-bol {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.nova-extra-bol i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: var(--borda);
+}
+
+.nova-extra-bol .nova-extra-bol--on { background-color: var(--texto-forte); }
+.nova-extra-bol .nova-extra-bol--ok { background-color: var(--sucesso); }
+.nova-extra-bol .nova-extra-bol--falta { background-color: var(--erro); }
+.nova-extra-bol .nova-extra-bol--ideal { background-color: var(--alerta); }
+.nova-extra-bol .nova-extra-bol--sem { background-color: var(--borda); }
+
+/* a caixa do quadrado: colada a ele (geral-flutuante), com o militar no dia e os outros dias dele */
+.nova-extra-caixa-dia {
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 340px;
+  padding: 12px;
+  overflow-y: auto;
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-superficie);
+  box-shadow: var(--sombra-flutuante);
+}
+
+.nova-extra-caixa-dia-cab {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.nova-extra-caixa-dia-titulos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.nova-extra-caixa-dia-titulos b {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.nova-extra-caixa-dia-titulos span {
+  font-size: 12px;
+  color: var(--texto-fraco);
+}
+
+.nova-extra-caixa-dia-horas {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.nova-extra-caixa-dia-horas .escala-extra-horas {
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.nova-extra-caixa-dia-horas .escala-extra-horas span {
+  min-width: 16px;
+  text-align: center;
+}
+
+/* este dia em destaque (o fundo cinza dos blocos) e os outros dias embaixo */
+.nova-extra-caixa-dia-este {
+  padding: 4px 8px;
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-medio);
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.nova-extra-caixa-dia-outros {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 8px;
+}
+
+.nova-extra-caixa-dia-aviso {
+  font-size: 12px;
+  color: var(--alerta);
+}
+
+.nova-extra-caixa-dia-aviso.nova-extra-falta-sobra { color: var(--erro); }
+
+/* a Legenda da barra: as regras da sugestão em listas curtas */
+.nova-extra-legenda-lista {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -681,62 +946,210 @@
   color: var(--texto);
 }
 
-.nova-extra-ajuda--vermelho .rotulo-secao { color: var(--erro); }
-.nova-extra-ajuda--amarelo .rotulo-secao { color: var(--alerta); }
-
-/* Por militar: os dias de cada um (abrem o painel do dia) */
-.nova-extra-pm-dias {
+/* ---------- passo 5: as etapas do mês (esquerda) e a prévia dos ajustes (direita), como a aba Relatórios ---------- */
+.nova-extra-rel {
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  color: var(--texto-fraco);
+  align-items: flex-start;
+  gap: 32px;
 }
 
-.nova-extra-pm-dia {
-  font-family: inherit;
-  cursor: pointer;
-  transition: border-color 0.15s ease;
-}
-
-.nova-extra-pm-dia:hover { border-color: var(--foco); }
-
-/* ---------- o mês por unidade (a aba Calendário) ---------- */
-.nova-extra-mes-cal {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
-}
-
-.nova-extra-dia-cal {
+.nova-extra-rel-etapas {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  min-height: 96px;
-  padding: 6px;
-  border-radius: var(--raio-medio);
-  background-color: var(--fundo-pagina);
+  gap: 16px;
+  flex: 0 0 480px;
 }
 
-.nova-extra-dia-cal-num { font-size: 13px; color: var(--texto-forte); }
-
-.nova-extra-dia-uni {
+.nova-extra-rel-lista {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  padding: 4px 6px;
-  border-radius: var(--raio-pequeno);
-  background-color: var(--fundo-superficie);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.nova-extra-dia-uni-cab {
+/* uma etapa: a marca (número ou check) e, ao lado, o título, o texto e o botão; o fio liga as marcas */
+.nova-extra-rel-etapa {
+  position: relative;
   display: flex;
+  gap: 12px;
+  padding-bottom: 24px;
+}
+
+.nova-extra-rel-etapa:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  top: 28px;
+  bottom: 4px;
+  left: 13px;
+  width: 1px;
+  background-color: var(--borda);
+}
+
+.nova-extra-rel-marca {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-self: flex-start;
   align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-  font-size: 11px;
+  justify-content: center;
+  min-width: 28px;
+  min-height: 28px;
+  border: 1px solid var(--borda-forte);
+  border-radius: 50%;
+  background-color: var(--fundo-suave);
+  font-size: 12px;
   font-weight: 700;
   color: var(--texto-suave);
 }
+
+.nova-extra-rel-check { display: none; }
+
+.nova-extra-rel-etapa--feita .nova-extra-rel-marca {
+  border-color: var(--sucesso);
+  background-color: var(--sucesso);
+  color: var(--texto-invertido);
+}
+
+.nova-extra-rel-etapa--feita .nova-extra-rel-numero { display: none; }
+.nova-extra-rel-etapa--feita .nova-extra-rel-check { display: block; }
+
+.nova-extra-rel-etapa--atual .nova-extra-rel-marca {
+  border-color: var(--fundo-contraste);
+  background-color: var(--fundo-contraste);
+  color: var(--texto-invertido);
+}
+
+.nova-extra-rel-etapa-corpo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding-top: 4px;
+}
+
+.nova-extra-rel-etapa-titulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.nova-extra-rel-etapa-texto {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.nova-extra-rel-botao { margin-top: 4px; }
+
+/* a prévia: um bloco com o cabeçalho cinza, a tabela e as cotas alteradas */
+.nova-extra-rel-previa {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-width: 0;
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-superficie);
+  box-shadow: var(--sombra-bloco);
+}
+
+.nova-extra-rel-previa-cab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: var(--raio-medio) var(--raio-medio) 0 0;
+  background-color: var(--fundo-medio);
+}
+
+.nova-extra-rel-previa-comparado {
+  font-size: 12px;
+  color: var(--texto-fraco);
+}
+
+.nova-extra-rel-tabela-rolagem { overflow-x: auto; }
+
+.nova-extra-rel-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fonte-padrao);
+  color: var(--texto);
+}
+
+.nova-extra-rel-tabela th {
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-align: left;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+
+.nova-extra-rel-tabela td {
+  padding: 8px 12px;
+  vertical-align: top;
+}
+
+.nova-extra-rel-tabela tbody tr:nth-child(odd) { background-color: var(--fundo-suave); }
+
+.nova-extra-rel-militar { display: block; }
+
+.nova-extra-rel-unidade,
+.nova-extra-rel-autor,
+.nova-extra-rel-vezes {
+  display: block;
+  font-size: 12px;
+  color: var(--texto-fraco);
+}
+
+.nova-extra-rel-horario { display: block; }
+
+.nova-extra-rel-era .nova-extra-rel-horario {
+  text-decoration: line-through;
+  color: var(--texto-fraco);
+}
+
+.nova-extra-rel-ficou .nova-extra-rel-horario {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.nova-extra-rel-sem {
+  font-style: italic;
+  color: var(--texto-fraco);
+}
+
+.nova-extra-rel-vazio {
+  margin: 0;
+  padding: 16px 12px;
+  font-size: var(--fonte-padrao);
+  color: var(--texto-fraco);
+}
+
+.nova-extra-rel-cotas {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+}
+
+.nova-extra-rel-cotas-texto {
+  font-size: var(--fonte-padrao);
+  color: var(--texto);
+}
+
+/* ---------- a aba Calendário: o bloco de uma unidade só para ler (sem clique) ---------- */
+.nova-extra-cal-uni--leitura,
+.nova-extra-cal-uni--leitura:hover {
+  background-color: var(--fundo-superficie);
+  cursor: default;
+}
+
+/* a unidade sem extra no dia guarda o lugar, para as outras ficarem na mesma altura */
+.nova-extra-cal-uni--vazia { visibility: hidden; }
 
 .nova-extra-pessoa {
   display: flex;
@@ -786,13 +1199,19 @@
     grid-template-columns: 1fr;
   }
 
-  html[data-celular] .nova-extra-mes-cal {
-    overflow-x: auto;
+  html[data-celular] .nova-extra-minha-passos { gap: 0; }
+
+  /* passo 5: as etapas em cima e a prévia embaixo */
+  html[data-celular] .nova-extra-rel {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 24px;
   }
 
-  html[data-celular] .nova-extra-minha-passos { gap: 0; }
+  html[data-celular] .nova-extra-rel-etapas,
+  html[data-celular] .nova-extra-rel-previa { flex: none; }
+
   html[data-celular] .nova-extra-cotas-topo { gap: 16px; }
   html[data-celular] .nova-extra-cotas-topo .nova-extra-espaco { display: none; }
-  html[data-celular] .nova-extra-mes-cal { grid-template-columns: repeat(7, 140px); }
   html[data-celular] .nova-extra-motivo input { width: 100%; }
 }

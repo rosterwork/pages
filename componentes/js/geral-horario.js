@@ -122,8 +122,10 @@
 
   /* ---------- uma linha de horário ---------- */
 
-  /* cfg = { hi, hf, opcoes {inicios, fins}, fixo, desligado, erro, aoInicio(hora), aoFim(hora), aoRemover, aoAdicionar, semAcoes }
-     sem aoRemover / aoAdicionar, o botão guarda o lugar escondido; semAcoes tira os dois; erro = campos vermelhos */
+  /* cfg = { hi, hf, opcoes {inicios, fins}, fixo, desligado, erro, aoInicio(hora), aoFim(hora), aoRemover, aoAdicionar,
+     adicionarDesligado, semAcoes }: sem aoRemover / aoAdicionar, o botão guarda o lugar escondido; com
+     adicionarDesligado (o texto da dica), o Adicionar horário aparece apagado e a dica diz o porquê; semAcoes tira os
+     dois; erro = campos vermelhos */
   function linha(cfg) {
     var el = RosterWork.tpl('tpl-horario');
     if (!el) return null;
@@ -160,7 +162,11 @@
     if (cfg.aoRemover) remover.addEventListener('click', cfg.aoRemover);
     else remover.classList.add('horario-acao--vazia');
     if (cfg.aoAdicionar) adicionar.addEventListener('click', cfg.aoAdicionar);
-    else adicionar.classList.add('horario-acao--vazia');
+    else if (cfg.adicionarDesligado) {
+      adicionar.setAttribute('aria-disabled', 'true');
+      adicionar.setAttribute('data-dica', cfg.adicionarDesligado);
+      adicionar.classList.add('horario-acao--desligada');
+    } else adicionar.classList.add('horario-acao--vazia');
     return el;
   }
 

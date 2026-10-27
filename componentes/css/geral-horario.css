@@ -101,6 +101,14 @@
   visibility: hidden;
 }
 
+/* o Adicionar horário que não cabe (o horário já é o dia todo): apagado, e a dica diz o porquê */
+.horario-acao--desligada,
+.horario-acao--desligada:hover {
+  background: none;
+  color: var(--texto-debil);
+  cursor: default;
+}
+
 /* ---------- período dentro de um serviço: as opções, os campos da parte e a régua, um embaixo do outro ---------- */
 .periodo-servico {
   display: flex;
