@@ -221,12 +221,7 @@
 
           <div class="sidebar-divisor"></div>
 
-          <button type="button" class="menu-item" data-pagina="postos" data-lugar-celular="mais" aria-label="Postos">
-            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-postos" /></svg>
-            <span class="menu-item-label">Postos</span>
-          </button>
-
-          <button type="button" class="menu-item" data-pagina="distribuicao" data-lugar-celular="fora" aria-label="Distribuição">
+          <button type="button" class="menu-item" data-pagina="distribuicao" data-lugar-celular="fora" data-admin aria-label="Distribuição">
             <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-distribuicao" /></svg>
             <span class="menu-item-label">Distribuição</span>
           </button>
@@ -254,12 +249,6 @@
             <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-codigo" /></svg>
             <span class="menu-item-label">Programador</span>
             <span class="menu-item-selo oculto" aria-hidden="true"></span>
-          </button>
-
-          <!-- protótipo da distribuição em questionário (só programador; não muda a escala) -->
-          <button type="button" class="menu-item" data-pagina="nova-distribuicao" data-lugar-celular="fora" data-programador aria-label="Nova distribuição">
-            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-distribuicao" /></svg>
-            <span class="menu-item-label">Nova distribuição</span>
           </button>
 
           <!-- protótipo da extrajornada em etapas (só programador; tabelas próprias, não muda a escala) -->
@@ -1676,28 +1665,6 @@
   <template id="tpl-escala-sub-acoes">
     <button type="button" class="botao escala-sub-cancelar">Cancelar</button>
     <button type="button" class="botao botao--primario escala-sub-aplicar"></button>
-  </template>
-
-  <!-- ===== Editar posto (só admin; escalas-painel-posto.js): o efetivo e, na viatura, a troca de prefixo e CNH ===== -->
-
-  <!-- o título do posto no painel do dia, com o botão Editar posto à direita -->
-  <template id="tpl-escala-posto-cab">
-    <div class="escala-posto-cab">
-      <span class="rotulo-secao"></span>
-      <button type="button" class="botao-discreto escala-posto-editar" aria-label="Editar posto">
-        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-ajustar"/></svg>
-      </button>
-    </div>
-  </template>
-
-  <!-- a sub-tela: título e o nome do posto; as caixas Efetivo e Viatura vêm do componente geral-posto-editar -->
-  <template id="tpl-escala-posto-form">
-    <div class="subtela">
-      <div class="subtela-cab">
-        <span class="subtela-titulo">Editar posto</span>
-        <span class="subtela-subtitulo"></span>
-      </div>
-    </div>
   </template>
 
   <!-- ===== formulário Quem · Quando · Onde (Adicionar militar, horário sem ninguém e Nova função; escalas-painel-formulario.js) ===== -->

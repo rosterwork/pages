@@ -97,37 +97,40 @@
   color: var(--texto);
 }
 
-/* Estado recolhido — sidebar com 52px, só ícones visíveis */
-.casca--recolhida .sidebar {
+/* Estado recolhido — sidebar com 52px, só ícones visíveis. A marca data-menu-recolhido fica no <html>
+   e vem do <head> (js/index-sessao.js), antes da primeira pintura: o menu já nasce recolhido.
+   Os itens e o botão deixam a dica sair para fora (overflow visible) */
+html[data-menu-recolhido] .sidebar {
   width: var(--menu-largura-recolhido);
   min-width: var(--menu-largura-recolhido);
   overflow: visible;
 }
 
-.casca--recolhida .sidebar-itens {
+html[data-menu-recolhido] .sidebar-itens {
   overflow: visible;
 }
 
-.casca--recolhida .menu-item {
+html[data-menu-recolhido] .menu-item {
   overflow: visible;
 }
 
-.casca--recolhida .menu-item-label {
+html[data-menu-recolhido] .menu-item-label {
   display: none;
 }
 
-.casca--recolhida .sidebar-toggle {
+html[data-menu-recolhido] .sidebar-toggle {
   width: 32px;
   padding: 0;
   justify-content: center;
+  overflow: visible;
 }
 
-.casca--recolhida .sidebar-toggle-texto {
+html[data-menu-recolhido] .sidebar-toggle-texto {
   display: none;
 }
 
 /* Expandido: --seta-toggle -1 inverte > para <; recolhido: > padrão */
-.casca:not(.casca--recolhida) .sidebar-toggle svg {
+html:not([data-menu-recolhido]) .sidebar-toggle svg {
   --seta-toggle: -1;
 }
 
@@ -149,7 +152,7 @@
 }
 
 /* recolhido: vira uma bolinha no canto superior do ícone */
-.casca--recolhida .menu-item-selo {
+html[data-menu-recolhido] .menu-item-selo {
   position: absolute;
   top: 2px;
   right: 2px;

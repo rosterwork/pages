@@ -909,10 +909,10 @@
       }
     },
 
-    /* Nova distribuição (protótipo, só programador): as frases que mudam com a unidade e as respostas.
+    /* Distribuição (nova-distribuicao.html, só administrador): as frases que mudam com a unidade e as respostas.
        {chave} = valor preenchido na hora; os textos fixos ficam em nova-distribuicao.html */
     novaDistribuicao: {
-      pagina: 'Nova distribuição',
+      pagina: 'Distribuição',
       contagem: '{n} de 9 prontos',
       soDeste: 'Só deste pelotão',
       compartilhado: 'Compartilhado com todos os pelotões',
@@ -939,6 +939,10 @@
       trocaErroFim: 'Escolha a data de fim.',
       trocaLimite: 'Só dá para mudar a partir de {data}.',
       trocaUmaPorVez: 'A {viatura} já tem uma substituição temporária.',
+      foraTexto: 'Fora de serviço de {inicio} a {fim}',
+      foraSemFim: 'Fora de serviço desde {inicio}',
+      exclusaoTexto: 'Será removida a partir de {inicio}',
+      exclusaoMarcada: 'A exclusão já está marcada.',
       /* bloco 2: efetivo */
       tituloViatura: '{nome} · CNH {cnh}',
       efetivoFalta: 'Efetivo: falta responder',

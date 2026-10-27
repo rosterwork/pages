@@ -16,6 +16,16 @@
     } catch (e) {}
   }
 
+  /* menu recolhido (preferência da pessoa): marca o <html> com data-menu-recolhido antes da primeira
+     pintura, como o tema; sem isso o menu aparece aberto e fecha quando o js/index-sidebar.js roda.
+     Na entrada pelo login lembrado as preferências chegam depois, e quem marca é o index-sidebar.js */
+  function marcarMenuRecolhido() {
+    try {
+      var prefs = JSON.parse(sessionStorage.getItem('rosterwork_preferencias'));
+      if (prefs && prefs.sidebar_recolhido) document.documentElement.setAttribute('data-menu-recolhido', '');
+    } catch (e) {}
+  }
+
   var RW = window.RosterWork;
   var sessao = null;
   try { sessao = JSON.parse(sessionStorage.getItem('rosterwork_session')); } catch (e) {}
@@ -26,6 +36,7 @@
       var payload = JSON.parse(atob(sessao.access_token.split('.')[1]));
       if (payload.exp && payload.exp * 1000 > Date.now()) {
         ligarCelular();
+        marcarMenuRecolhido();
         RW.sessaoPronta = Promise.resolve({ ok: true });
         return;
       }

@@ -45,7 +45,7 @@
 }
 
 /* alinha o logo com a sidebar quando expandida (largura do menu = 8px pad + logo + 8px pad) */
-.casca:not(.casca--recolhida) .cabecalho-logo {
+html:not([data-menu-recolhido]) .cabecalho-logo {
   min-width: calc(var(--menu-largura) - 16px);
 }
 

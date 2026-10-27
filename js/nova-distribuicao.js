@@ -1,14 +1,15 @@
 /* ============================================================
-   NOVA DISTRIBUIÇÃO — entrada da página (protótipo, só programador)
+   DISTRIBUIÇÃO (nova-distribuicao) — entrada da página (só administrador)
    Carrega a unidade (a distribuição em vigor ou a mudança agendada),
    guarda as respostas em edição, pede as contas ao banco a cada
    mudança (a resposta mais nova vence; com a outra versão para
    comparar, o banco diz o que muda) e desenha o menu dos 9 blocos,
    o corpo e o rodapé. Os blocos moram em -postos (1), -efetivo (2),
    -funcoes (3), -blocos (4 a 7), -militares (8) e -conferir (9); as
-   peças comuns em -pecas; o aviso da mudança agendada, o Salvar com
-   a data e o começo da unidade em -versoes. Cancelar e a unidade
-   moram aqui. Não grava no Histórico.
+   peças comuns em -pecas; as mudanças dos postos com data em
+   -caixas; o aviso da mudança agendada, o Salvar com a data e o
+   começo da unidade em -versoes. Cancelar e a unidade moram aqui.
+   O banco grava no Histórico a cada Salvar.
    ============================================================ */
 (function () {
   'use strict';
@@ -51,11 +52,11 @@
 
   /* com edição não salva (também as substituições), confirma o descarte antes de seguir */
   function confirmarDescarte(seguir, aoCancelar) {
-    if (!E.sujo && !E.sujoCia && !RosterWork.novaDistribuicaoPostos.temRascunho()) { seguir(); return; }
+    if (!E.sujo && !E.sujoCia && !RosterWork.novaDistribuicaoCaixas.temRascunho()) { seguir(); return; }
     RosterWork.confirmar({
       tipo: 'aviso', mensagem: RosterWork.mensagens.edicao.sairSemSalvar,
       textoConfirmar: B().descartar, textoCancelar: B().continuarEditando,
-      aoConfirmar: function () { invalidos = {}; RosterWork.novaDistribuicaoPostos.descartar(); seguir(); }, aoCancelar: aoCancelar
+      aoConfirmar: function () { invalidos = {}; RosterWork.novaDistribuicaoCaixas.descartar(); seguir(); }, aoCancelar: aoCancelar
     });
   }
 
@@ -69,7 +70,7 @@
       if (meu !== tokenCarga || !montada()) return;
       if (!r || !r.success) { P().mostrarNoCorpo('falha', (r && r.error) || G().falhaCarregar); return; }
       var bloco = E.bloco;
-      RosterWork.novaDistribuicaoPostos.descartar();   /* o rascunho das substituições foi salvo ou descartado */
+      RosterWork.novaDistribuicaoCaixas.descartar();   /* o rascunho das substituições foi salvo ou descartado */
       E = novoEstado();
       E.bloco = bloco;
       E.dados = r;
@@ -156,14 +157,6 @@
     aberto: function () { return E.aberto; },
     dados: function () { return E.dados; },
     copiarCompanhia: function (botao) { V().comecar(contextoVersoes(), E.companhia.unidade.id, botao); },
-    /* a viatura está gravada com esse prefixo (a nova ou a de prefixo trocado espera o Salvar) */
-    viaturaGravada: function (nome) {
-      return !!nome && ((E.periodo.respostas && E.periodo.respostas.viaturas) || []).some(function (v) { return v.nome === nome; });
-    },
-    /* o prefixo da viatura e os de antes dela (trocados e ainda não salvos): as substituições usam o gravado */
-    nomesDe: function (nome) {
-      return [nome].concat(E.renomeadas.unidade.filter(function (p) { return p[1] === nome; }).map(function (p) { return p[0]; }));
-    },
     /* mudou algo que não redesenha a página (a substituição aberta): só o rodapé */
     atualizarRodape: function () { desenharRodape(); },
     /* com um argumento, lê o texto guardado; com dois, guarda (null apaga) */
@@ -189,10 +182,10 @@
     };
     if (!ehPelotao()) return [u];
     var c = E.companhia || {};
-    /* vendo a mudança agendada do pelotão, a parte da companhia só se lê */
+    /* vendo a mudança agendada do pelotão, ou sem ser administrador da companhia, a parte da companhia só se lê */
     return [{
       lado: 'companhia', ehCia: true, nome: c.unidade ? c.unidade.nome : '', resp: E.respCia, calc: E.calcCia,
-      soLeitura: E.vendoAgendada || !!(c.periodo && c.periodo.somente_leitura), semDados: !c.periodo || !E.calcCia
+      soLeitura: E.vendoAgendada || !E.dados.pode_companhia || !!(c.periodo && c.periodo.somente_leitura), semDados: !c.periodo || !E.calcCia
     }, u];
   }
 
@@ -272,7 +265,7 @@
   function desenharRodape() {
     var rodape = el('nova-distribuicao-rodape');
     if (!rodape) return;
-    var sujo = E.sujo || E.sujoCia || RosterWork.novaDistribuicaoPostos.temRascunho();
+    var sujo = E.sujo || E.sujoCia || RosterWork.novaDistribuicaoCaixas.temRascunho();
     rodape.classList.toggle('oculto', !E.periodo);
     el('nova-distribuicao-pendente').classList.toggle('oculto', !sujo);
     el('nova-distribuicao-salvar').disabled = !sujo;
@@ -298,12 +291,12 @@
     V().semRespostas(contextoVersoes(), P().mostrarNoCorpo('sem-respostas'));
   }
 
-  /* a barra: a unidade (seletor) */
+  /* a barra: a unidade (seletor), só as da área do administrador */
   function desenharBarra() {
     el('nova-distribuicao-barra').classList.remove('oculto');
     var trilho = el('nova-distribuicao-unidades');
     trilho.textContent = '';
-    E.dados.unidades.forEach(function (u) {
+    E.dados.unidades.filter(function (u) { return u.pode; }).forEach(function (u) {
       var aba = P().tpl('unidade');
       aba.textContent = u.nome;
       aba.setAttribute('data-unidade', u.id);
@@ -327,7 +320,7 @@
   /* grava com respostas faltando (pendências); valor errado o banco recusa. As substituições vão junto,
      conferidas antes. A data e a prévia: -versoes */
   function salvar() {
-    var Pt = RosterWork.novaDistribuicaoPostos;
+    var Pt = RosterWork.novaDistribuicaoCaixas;
     if (!E.periodo || (!E.sujo && !E.sujoCia && !Pt.temRascunho())) return;
     semPrefixo().forEach(function (k) { if (!invalidos.hasOwnProperty(k)) invalidos[k] = ''; });
     if (!Pt.conferir(E.dados) || Object.keys(invalidos).length) { desenhar(); RosterWork.avisar({ tipo: 'erro', mensagem: M().corrigirAntes }); return; }
@@ -342,7 +335,7 @@
   function contextoVersoes() {
     return {
       dados: E.dados, unidadeId: E.unidadeId, vendoAgendada: E.vendoAgendada, itens: itensParaSalvar,
-      substituicoes: RosterWork.novaDistribuicaoPostos.operacoes,
+      substituicoes: RosterWork.novaDistribuicaoCaixas.operacoes,
       carregar: function (versaoId) { E.aberto = null; carregar(E.unidadeId, versaoId); },
       confirmar: confirmarDescarte, falha: avisarFalha, semConexao: avisarSemConexao
     };
@@ -374,7 +367,8 @@
   }
 
   function iniciar() {
-    if (!(RosterWork.sessao.ehProgramador && RosterWork.sessao.ehProgramador())) {
+    var S = RosterWork.sessao;
+    if (!((S.temPapel && S.temPapel('pelotao')) || (S.ehProgramador && S.ehProgramador()))) {
       P().mostrarNoCorpo('bloqueado');
       return Promise.resolve();
     }
@@ -383,12 +377,12 @@
       guardaLigada = true;
       RosterWork.guardaSaida.registrar(function () {
         if (!montada()) return false;
-        return E.sujo || E.sujoCia || RosterWork.novaDistribuicaoPostos.temRascunho();
+        return E.sujo || E.sujoCia || RosterWork.novaDistribuicaoCaixas.temRascunho();
       });
     }
     E.aberto = null;
-    return carregar(E.unidadeId);   /* volta para a última unidade vista (na 1ª vez, a do programador) */
+    return carregar(E.unidadeId);   /* volta para a última unidade vista (na 1ª vez, a do administrador) */
   }
 
-  window.RosterWork.paginas['nova-distribuicao'] = { iniciar: iniciar };
+  window.RosterWork.paginas.distribuicao = { iniciar: iniciar };
 })();

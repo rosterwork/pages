@@ -180,6 +180,13 @@
     new MutationObserver(copiar).observe(origem, { attributes: true, attributeFilter: ['class'], childList: true, characterData: true, subtree: true });
   }
 
+  /* menu recolhido = marca data-menu-recolhido no <html> (o CSS em css/index-sidebar.css) */
+  var raiz = document.documentElement;
+
+  function menuRecolhido() {
+    return raiz.hasAttribute('data-menu-recolhido');
+  }
+
   function inicializar() {
     var casca = document.querySelector('.casca');
     var botao = document.querySelector('.sidebar-toggle');
@@ -189,34 +196,43 @@
     ligarFolhaMais(casca);
     espelharSeloPendencias();
 
-    /* lê estado inicial das preferências salvas na sessão */
+    /* estado inicial: a marca já vem do <head> (js/index-sessao.js); na entrada pelo login lembrado
+       as preferências chegam depois, e a marca é posta aqui */
     var prefs = null;
     try { prefs = JSON.parse(sessionStorage.getItem('rosterwork_preferencias')); } catch (e) {}
 
     if (prefs && prefs.sidebar_recolhido) {
-      casca.classList.add('casca--recolhida');
+      raiz.setAttribute('data-menu-recolhido', '');
     }
 
-    atualizarAria(botao, casca);
-    atualizarDicas(casca);
+    atualizarBotao(botao);
+    atualizarDicas();
     aplicarPermissoesMenu();
 
     botao.addEventListener('click', function () {
-      casca.classList.toggle('casca--recolhida');
-      var recolhido = casca.classList.contains('casca--recolhida');
-      salvarPreferenciaSidebar(recolhido);
-      atualizarAria(botao, casca);
-      atualizarDicas(casca);
+      if (menuRecolhido()) raiz.removeAttribute('data-menu-recolhido');
+      else raiz.setAttribute('data-menu-recolhido', '');
+      salvarPreferenciaSidebar(menuRecolhido());
+      atualizarBotao(botao);
+      atualizarDicas();
     });
   }
 
-  function atualizarAria(botao, casca) {
-    var recolhido = casca.classList.contains('casca--recolhida');
+  /* o nome do botão segue o estado; recolhido, o texto some e o nome vira a dica (à direita, como a dos itens) */
+  function atualizarBotao(botao) {
+    var recolhido = menuRecolhido();
     botao.setAttribute('aria-label', recolhido ? 'Expandir menu' : 'Recolher menu');
+    if (recolhido) {
+      botao.setAttribute('data-dica', 'Expandir menu');
+      botao.classList.add('dica--direita');
+    } else {
+      botao.removeAttribute('data-dica');
+      botao.classList.remove('dica--direita');
+    }
   }
 
-  function atualizarDicas(casca) {
-    var recolhido = casca.classList.contains('casca--recolhida');
+  function atualizarDicas() {
+    var recolhido = menuRecolhido();
     var itens = document.querySelectorAll('.menu-item');
     var i;
     for (i = 0; i < itens.length; i++) {

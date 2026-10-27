@@ -559,6 +559,22 @@
   gap: 4px;
 }
 
+/* a instalação: o nome nas colunas do prefixo e da CNH */
+.nova-distribuicao-instalacao-nome {
+  grid-column: 2 / 4;
+  min-width: 0;
+  font-size: 14px;
+  color: var(--texto-forte);
+}
+
+/* Nova instalação: o rótulo e um botão por tipo */
+.nova-distribuicao-nova-instalacao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
 .nova-distribuicao-viatura-extra {
   display: flex;
   flex-direction: column;

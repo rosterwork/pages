@@ -724,11 +724,9 @@
     if (secao !== 'continuos' && RosterWork.escalasPainelContinuos) RosterWork.escalasPainelContinuos.reset();
     if (secao !== 'extra' && RosterWork.escalasPainelExtra) RosterWork.escalasPainelExtra.reset();
     if (secao === 'distribuicao' && RosterWork.escalasPainelEditar) {
-      /* o dia e o Editar posto são de quem tem a unidade na área do papel */
-      var adminDaUnidade = RosterWork.sessao.podeAdministrar('pelotao', pCtx.unidadeId);
+      /* o dia é de quem tem a unidade na área do papel */
       RosterWork.escalasPainelEditar.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso, {
-        admin: adminDaUnidade,
-        adminPosto: adminDaUnidade
+        admin: RosterWork.sessao.podeAdministrar('pelotao', pCtx.unidadeId)
       });
     } else if (secao === 'continuos' && RosterWork.escalasPainelContinuos) {
       RosterWork.escalasPainelContinuos.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso);

@@ -7,10 +7,8 @@
    cada militar tem o lápis (abre o militar no dia) e o ↺ (volta ao
    automático), quem está de folga tem o lápis (abre a folga no dia,
    com o Cancelar folga), o horário sem ninguém vira o seletor vermelho
-   "Sem ninguém, escolher", e as observações também se editam aqui; o
-   título de cada posto tem o Editar posto (escalas-painel-posto.js:
-   o efetivo e a troca de viatura, gravados fora do rascunho do dia).
-   Quem não é admin só lê.
+   "Sem ninguém, escolher", e as observações também se editam aqui.
+   Quem não é admin só lê (os postos mudam na Distribuição).
    Cada mudança grava na hora (escala_dia_salvar, um registro no
    histórico, sem o modal de resumo): o banco devolve o dia gravado e
    a grade atualiza a célula. Rascunho de uma mudança: { ajustes,
@@ -755,21 +753,9 @@
     if (grupo.linhas.children.length) caixa.appendChild(grupo.el);
   }
 
-  /* o título do posto: quem administra a unidade tem o Editar posto ao lado (o efetivo e, na viatura, a troca
-     de prefixo e CNH); na troca de viatura com data, embaixo vem "No lugar da ... até ..." */
+  /* o título do posto: na troca de viatura com data, embaixo vem "No lugar da ... até ..." */
   function montarTituloPosto(caixa, posto) {
     var rotulo = caixa.querySelector('.rotulo-secao');
-    if (ctx.adminPosto && !ctx.comparar && !ctx.dadosProntos && RosterWork.escalasPainelPosto && rotulo) {
-      var cab = RosterWork.tpl('tpl-escala-posto-cab');
-      if (cab) {
-        cab.querySelector('.rotulo-secao').textContent = posto.nome || '';
-        cab.querySelector('.escala-posto-editar').addEventListener('click', function () {
-          if (ctx && !ctx.salvando) RosterWork.escalasPainelPosto.abrir(posto);
-        });
-        rotulo.replaceWith(cab);
-        rotulo = cab;
-      }
-    }
     var noLugar = pecas().noLugar ? pecas().noLugar(posto) : null;
     if (noLugar && rotulo) rotulo.insertAdjacentElement('afterend', noLugar);
   }
@@ -889,16 +875,7 @@
   /* lê o dia de novo e zera o desfazer/refazer */
   function recarregar() {
     if (!ctx) return;
-    montar(ctx.corpo, ctx.rodape, ctx.unidadeId, ctx.iso, { admin: ctx.admin, adminPosto: ctx.adminPosto });
-  }
-
-  /* relê o dia sem zerar o desfazer/refazer (o Editar posto grava fora do rascunho do dia) */
-  function reler() {
-    if (!ctx) return;
-    if (ctx.rodape) { ctx.rodape.textContent = ''; ctx.rodape.classList.add('oculto'); }
-    ctx.comHistorico = false;
-    base = null;
-    desenhar();
+    montar(ctx.corpo, ctx.rodape, ctx.unidadeId, ctx.iso, { admin: ctx.admin });
   }
 
   /* ---------- sub-telas (formulário e militar no dia) ---------- */
@@ -957,12 +934,11 @@
 
   /* ---------- ciclo de vida ---------- */
 
-  /* opcoes = { admin, adminPosto, dados, semAvisos }: o admin edita o dia; adminPosto (quem administra a
-     unidade) tem o Editar posto; os outros só leem. dados = o dia já lido (não busca no banco); semAvisos = sem a
+  /* opcoes = { admin, dados, semAvisos }: o admin edita o dia; os outros só leem. dados = o dia já lido (não busca no banco); semAvisos = sem a
      lista de avisos do topo (a página tem a sua). Sem rodape, o rodapé não é usado */
   function montar(corpo, rodape, unidadeId, iso, opcoes) {
     opcoes = opcoes || {};
-    ctx = { corpo: corpo, rodape: rodape, unidadeId: unidadeId, iso: iso, admin: !!opcoes.admin, adminPosto: !!opcoes.adminPosto,
+    ctx = { corpo: corpo, rodape: rodape, unidadeId: unidadeId, iso: iso, admin: !!opcoes.admin,
       comparar: !!opcoes.comparar,
       dadosProntos: opcoes.dados || null, semAvisos: !!opcoes.semAvisos,
       dados: null, dadosAntes: null, chaveDados: null, emSub: false, comHistorico: false, salvando: false };
@@ -994,7 +970,7 @@
   window.RosterWork.escalasPainelEditar = {
     montar: montar,
     reset: reset,
-    /* para as sub-telas (escalas-painel-formulario.js, escalas-painel-militar.js e escalas-painel-posto.js) e o
+    /* para as sub-telas (escalas-painel-formulario.js e escalas-painel-militar.js) e o
        seletor do nome (escalas-painel-seletor.js: mudar grava a troca como uma mudança só) */
     sub: {
       mudar: mudar,
@@ -1007,7 +983,6 @@
       travarAplicar: travarAplicar,
       concluir: concluirSub,
       cancelar: cancelarSub,
-      reler: reler,
       previa: previa,
       abrirFormulario: abrirFormulario,
       aplicarColocacao: aplicarColocacao,

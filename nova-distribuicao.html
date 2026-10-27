@@ -1,8 +1,7 @@
 <div class="pagina">
   <div class="pagina-cabecalho">
     <div class="pagina-titulos">
-      <h1>Nova distribuição</h1>
-      <span class="selo selo--alerta">Protótipo</span>
+      <h1>Distribuição</h1>
     </div>
   </div>
 
@@ -99,9 +98,9 @@
      MOLDES
      ============================================================ -->
 
-<!-- quem não é programador -->
+<!-- quem não é administrador -->
 <template id="tpl-nova-distribuicao-bloqueado">
-  <p class="nova-distribuicao-vazio">Página só do programador.</p>
+  <p class="nova-distribuicao-vazio">Página só do administrador.</p>
 </template>
 
 <!-- a coluna de leitura do corpo -->
@@ -248,7 +247,7 @@
   <p class="nova-distribuicao-ajuda">As funções escolhem na ordem de importância. Por isso, "o mais antigo que ainda não tem função" da 2ª linha é o 2º mais antigo.</p>
 </template>
 <template id="tpl-nova-distribuicao-nota-regras">
-  <p class="nova-distribuicao-ajuda">Regras de um militar só para este teste. As regras da página Distribuição não mudam.</p>
+  <p class="nova-distribuicao-ajuda">O que um militar não pode fazer ou só pode fazer.</p>
 </template>
 <template id="tpl-nova-distribuicao-nota-viaturas">
   <p class="nova-distribuicao-ajuda">A ordem da lista é a ordem exibida na escala.</p>
@@ -321,21 +320,33 @@
   <div class="nova-distribuicao-opcoes"></div>
 </template>
 
-<!-- instalações (várias) -->
+<!-- instalações: uma por linha, nas colunas das viaturas; embaixo, a nova pelo tipo (a segunda do mesmo tipo
+     ganha o número) -->
 <template id="tpl-nova-distribuicao-instalacoes">
-  <div class="nova-distribuicao-opcoes">
-    <button type="button" class="geral-opcao nova-distribuicao-marca" role="checkbox" aria-checked="false" data-valor="Central de Operações">
-      <span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
-      <span>Central de Operações</span>
-    </button>
-    <button type="button" class="geral-opcao nova-distribuicao-marca" role="checkbox" aria-checked="false" data-valor="Rancho">
-      <span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
-      <span>Rancho</span>
-    </button>
-    <button type="button" class="geral-opcao nova-distribuicao-marca" role="checkbox" aria-checked="false" data-valor="Almoxarifado">
-      <span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
-      <span>Almoxarifado</span>
-    </button>
+  <div class="nova-distribuicao-viaturas">
+    <div class="nova-distribuicao-viaturas-lista"></div>
+    <div class="nova-distribuicao-nova-instalacao">
+      <span class="rotulo-secao">Nova instalação</span>
+      <button type="button" class="botao" data-valor="Central de Operações">Central de Operações</button>
+      <button type="button" class="botao" data-valor="Rancho">Rancho</button>
+      <button type="button" class="botao" data-valor="Almoxarifado">Almoxarifado</button>
+    </div>
+  </div>
+</template>
+<template id="tpl-nova-distribuicao-instalacao">
+  <div class="nova-distribuicao-viatura nova-distribuicao-instalacao">
+    <span class="nova-distribuicao-linha-ordem"></span>
+    <span class="nova-distribuicao-instalacao-nome"></span>
+    <span class="nova-distribuicao-viatura-acoes">
+      <button type="button" class="botao botao--icone nova-distribuicao-fora" aria-label="Fora de serviço" data-dica="Fora de serviço">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-cadeado"/></svg>
+      </button>
+      <button type="button" class="botao botao--icone nova-distribuicao-remover" aria-label="Excluir instalação" data-dica="Excluir instalação">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
+      </button>
+    </span>
+    <div class="nova-distribuicao-viatura-extra"></div>
+    <div class="nova-distribuicao-viatura-substituicoes"></div>
   </div>
 </template>
 
@@ -396,7 +407,10 @@
       <button type="button" class="botao botao--icone nova-distribuicao-trocar" aria-label="Substituir temporariamente" data-dica="Substituir temporariamente">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-substituir"/></svg>
       </button>
-      <button type="button" class="botao botao--icone nova-distribuicao-remover" aria-label="Excluir viatura">
+      <button type="button" class="botao botao--icone nova-distribuicao-fora" aria-label="Fora de serviço" data-dica="Fora de serviço">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-cadeado"/></svg>
+      </button>
+      <button type="button" class="botao botao--icone nova-distribuicao-remover" aria-label="Excluir viatura" data-dica="Excluir viatura">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
       </button>
     </span>
@@ -404,51 +418,68 @@
     <div class="nova-distribuicao-viatura-substituicoes"></div>
   </div>
 </template>
-<!-- a substituição fechada: nas colunas da viatura, o editar embaixo do substituir e a lixeira embaixo da lixeira -->
+<!-- a mudança com data fechada (substituição, fora de serviço ou exclusão): nas colunas do posto, o editar embaixo
+     do substituir e a lixeira embaixo da lixeira -->
 <template id="tpl-nova-distribuicao-troca">
   <div class="nova-distribuicao-troca">
-    <svg class="icone nova-distribuicao-troca-icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-substituir"/></svg>
+    <svg class="icone nova-distribuicao-troca-icone" data-icone="substituicao" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-substituir"/></svg>
+    <svg class="icone nova-distribuicao-troca-icone" data-icone="fora" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-cadeado"/></svg>
+    <svg class="icone nova-distribuicao-troca-icone" data-icone="exclusao" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
     <span class="nova-distribuicao-troca-texto"></span>
     <span class="nova-distribuicao-viatura-acoes">
-      <button type="button" class="botao botao--icone nova-distribuicao-editar" aria-label="Editar substituição">
+      <button type="button" class="botao botao--icone nova-distribuicao-editar" aria-label="Editar" data-dica="Editar">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-editar"/></svg>
       </button>
-      <button type="button" class="botao botao--icone nova-distribuicao-remover" aria-label="Excluir substituição" data-dica="Excluir substituição">
+      <button type="button" class="botao botao--icone nova-distribuicao-remover" aria-label="Cancelar esta mudança" data-dica="Cancelar esta mudança">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
       </button>
     </span>
   </div>
 </template>
-<!-- a substituição aberta no lugar da viatura (vai no Salvar da página): o Nº fora da linha, a viatura como título fixo,
-     o prefixo e a CNH da que entra e o início e o fim, com os rótulos, nas colunas da viatura; as frases de erro, a ajuda,
-     Cancelar (desfaz o que foi digitado desde que abriu) e Concluir (confere e fecha) -->
+<!-- a mudança com data aberta no lugar do posto (vai no Salvar da página): o Nº fora da linha, o posto como título
+     fixo e os campos com os rótulos, nas colunas do posto (a substituição com a substituta e a CNH; a exclusão só com a
+     data); as frases de erro, a ajuda, Cancelar (desfaz o que foi digitado desde que abriu) e Concluir (confere e fecha) -->
 <template id="tpl-nova-distribuicao-troca-caixa">
   <div class="nova-distribuicao-troca-caixa">
     <span class="nova-distribuicao-linha-ordem"></span>
     <span class="nova-distribuicao-troca-titulo">
       <span class="nova-distribuicao-troca-viatura"></span>
-      <span class="nova-distribuicao-troca-tipo">
+      <span class="nova-distribuicao-troca-tipo nova-distribuicao-troca-tipo-gravada">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-substituir"/></svg>
-        <span class="nova-distribuicao-troca-tipo-gravada">Substituição temporária</span>
-        <span class="nova-distribuicao-troca-tipo-nova">Nova substituição temporária</span>
+        <span>Substituição temporária</span>
+      </span>
+      <span class="nova-distribuicao-troca-tipo nova-distribuicao-troca-tipo-nova">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-substituir"/></svg>
+        <span>Nova substituição temporária</span>
+      </span>
+      <span class="nova-distribuicao-troca-tipo nova-distribuicao-troca-tipo-fora">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-cadeado"/></svg>
+        <span>Fora de serviço</span>
+      </span>
+      <span class="nova-distribuicao-troca-tipo nova-distribuicao-troca-tipo-exclusao">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
+        <span>Exclusão</span>
       </span>
     </span>
-    <span class="rotulo-secao nova-distribuicao-troca-na-coluna-prefixo">Substituta</span>
-    <span class="rotulo-secao">CNH</span>
-    <input type="text" class="campo-entrada nova-distribuicao-troca-na-coluna-prefixo nova-distribuicao-troca-prefixo" id="nova-distribuicao-troca-prefixo" maxlength="12" placeholder="Ex.: AA-9218" autocomplete="off" aria-label="Prefixo da substituta" />
-    <div class="abas abas--seletor nova-distribuicao-troca-cnh" aria-label="CNH da substituta">
+    <span class="rotulo-secao nova-distribuicao-troca-na-coluna-prefixo nova-distribuicao-troca-so-substituicao">Substituta</span>
+    <span class="rotulo-secao nova-distribuicao-troca-so-substituicao">CNH</span>
+    <input type="text" class="campo-entrada nova-distribuicao-troca-na-coluna-prefixo nova-distribuicao-troca-prefixo nova-distribuicao-troca-so-substituicao" id="nova-distribuicao-troca-prefixo" maxlength="12" placeholder="Ex.: AA-9218" autocomplete="off" aria-label="Prefixo da substituta" />
+    <div class="abas abas--seletor nova-distribuicao-troca-cnh nova-distribuicao-troca-so-substituicao" aria-label="CNH da substituta">
       <button type="button" class="aba" data-valor="A">A</button>
       <button type="button" class="aba" data-valor="B">B</button>
       <button type="button" class="aba" data-valor="C">C</button>
       <button type="button" class="aba" data-valor="D">D</button>
       <button type="button" class="aba" data-valor="E">E</button>
     </div>
-    <span class="rotulo-secao nova-distribuicao-troca-na-coluna-prefixo">Início</span>
-    <span class="rotulo-secao">Fim</span>
+    <span class="rotulo-secao nova-distribuicao-troca-na-coluna-prefixo nova-distribuicao-troca-com-fim">Início</span>
+    <span class="rotulo-secao nova-distribuicao-troca-na-coluna-prefixo nova-distribuicao-troca-rotulo-desde">A partir de</span>
+    <span class="rotulo-secao nova-distribuicao-troca-com-fim">Fim</span>
     <input type="text" class="campo-entrada nova-distribuicao-troca-na-coluna-prefixo nova-distribuicao-troca-data nova-distribuicao-troca-inicio" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" aria-label="Início" />
-    <input type="text" class="campo-entrada nova-distribuicao-troca-data nova-distribuicao-troca-fim" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" aria-label="Fim" />
+    <input type="text" class="campo-entrada nova-distribuicao-troca-data nova-distribuicao-troca-fim nova-distribuicao-troca-com-fim" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" aria-label="Fim" />
     <div class="nova-distribuicao-troca-erros"></div>
-    <p class="nova-distribuicao-ajuda nova-distribuicao-troca-ajuda">No período, a substituta assume o posto com as mesmas funções e ordem. Depois do fim, a original volta.</p>
+    <p class="nova-distribuicao-ajuda nova-distribuicao-troca-ajuda" data-ajuda="substituicao">No período, a substituta assume o posto com as mesmas funções e ordem. Depois do fim, a original volta.</p>
+    <p class="nova-distribuicao-ajuda nova-distribuicao-troca-ajuda" data-ajuda="fora">No período, o posto fica fora da escala. Depois do fim, volta.</p>
+    <p class="nova-distribuicao-ajuda nova-distribuicao-troca-ajuda" data-ajuda="exclusao">A partir da data, o posto sai da escala. Até lá, continua nesta lista com o aviso.</p>
     <div class="nova-distribuicao-troca-botoes">
       <button type="button" class="botao nova-distribuicao-troca-cancelar">Cancelar</button>
       <button type="button" class="botao nova-distribuicao-troca-concluir">Concluir</button>

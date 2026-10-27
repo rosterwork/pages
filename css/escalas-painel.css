@@ -291,15 +291,6 @@
   font-weight: 500;
 }
 
-/* o título do posto com o Editar posto à direita (só admin) */
-.escala-posto-cab {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  min-height: 24px;
-}
-
 /* troca de viatura com data: "No lugar da ... até ...", embaixo do prefixo */
 .escala-posto-no-lugar {
   font-size: 11px;
