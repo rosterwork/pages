@@ -1,8 +1,8 @@
 /* ============================================================
-   AVISOS — a página das três abas
-     · Para mim    — "Precisa de você" (pendências suas) + histórico
-     · Administração — o que espera decisão do admin (só ele vê)
-     · Comunicados — cartões do mural (+ a lixeira do admin)
+   AVISOS — a página das duas abas
+     · Notificações — o histórico do que aconteceu com você (cada
+                      uma é o componente geral-notificacao)
+     · Comunicados  — cartões do mural (+ a lixeira do admin)
    Reusa os tokens do tema; sem cor escrita à mão.
    ============================================================ */
 
@@ -97,86 +97,14 @@
   border-radius: var(--raio-medio);
 }
 
-/* ---------- aba "Para mim": notificações ---------- */
-/* o dia que separa os blocos (Hoje · Ontem · 6 jul 2026) */
+/* ---------- aba "Notificações" ---------- */
+/* o dia que separa os blocos (Hoje · Ontem · 6 jul 2026); cada notificação é o componente geral-notificacao (.notificacao--cartao) */
 .avisos-dia {
   margin-top: 8px;
 }
 
 .avisos-dia:first-child {
   margin-top: 0;
-}
-
-.avisos-notificacao {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  width: 100%;
-  min-height: 48px;
-  padding: 8px 12px;
-  text-align: left;
-  border: 1px solid var(--borda);
-  border-radius: var(--raio-medio);
-  background-color: var(--fundo-superficie);
-  transition: background-color 0.15s ease;
-}
-
-.avisos-notificacao:hover {
-  background-color: var(--fundo-suave);
-}
-
-/* o ponto só aparece na não lida; nas demais o espaço fica reservado */
-.avisos-notificacao-ponto {
-  width: 6px;
-  height: 6px;
-  margin-top: 4px;
-  flex-shrink: 0;
-  border-radius: 50%;
-  background-color: transparent;
-}
-
-/* o assunto em ícone: dá para saber do que se trata sem ler */
-.avisos-notificacao-icone {
-  display: inline-flex;
-  flex-shrink: 0;
-  margin-top: 2px;
-  color: var(--texto-fraco);
-}
-
-.avisos-notificacao--nao-lida .avisos-notificacao-icone {
-  color: var(--texto-forte);
-}
-
-.avisos-notificacao--nao-lida .avisos-notificacao-ponto {
-  background-color: var(--texto-forte);
-}
-
-.avisos-notificacao--nao-lida .avisos-notificacao-titulo {
-  font-weight: 600;
-}
-
-.avisos-notificacao-textos {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
-.avisos-notificacao-titulo {
-  font-size: var(--fonte-padrao);
-  color: var(--texto-forte);
-}
-
-.avisos-notificacao-texto {
-  font-size: 12px;
-  color: var(--texto-suave);
-}
-
-.avisos-notificacao-hora {
-  flex-shrink: 0;
-  font-size: 11px;
-  color: var(--texto-fraco);
 }
 
 /* ============================================================

@@ -12,7 +12,8 @@
        Aceitar; sempre amarelo, a troca já vale), com o Ver todos
        quando há mais de um pedido
      · a do administrador (ADM): os pedidos urgentes para aprovar
-       e o Ver pedidos (Pendências › Administração)
+       e o Ver pedidos (a Pendências; o militar e o administrador
+       se dizem pelo campo adm do banco)
    A faixa fica vermelha quando há urgente. O X oculta até trocar
    de página ou recarregar e ela volta na hora se chegar pedido
    novo ou algum ficar urgente (nada fica guardado no navegador).
@@ -31,9 +32,9 @@
 
   var RW = window.RosterWork = window.RosterWork || {};
 
-  /* os assuntos do militar, na ordem de importância entre os de mesma urgência, e o ícone de cada um */
+  /* os assuntos do militar que entram na faixa (cada um tem os seus botões), na ordem de importância entre os de
+     mesma urgência; o ícone vem do mapa único das pendências (RosterWork.fila.icone) */
   var ORDEM = { troca: 0, extra_prazo: 1, troca_aceite: 2 };
-  var ICONE = { troca: 'icone-trocas', troca_aceite: 'icone-trocas', extra_prazo: 'icone-extrajornada' };
 
   var grupos = [];       // a última leitura leve (a do sino)
   var oculta = false;    // o X: some até trocar de página ou recarregar
@@ -61,7 +62,7 @@
 
   /* ---------- o que entra ---------- */
 
-  function daFaixa(g) { return g.minha && g.faixa && ORDEM.hasOwnProperty(g.tipo); }
+  function daFaixa(g) { return !g.adm && g.faixa && ORDEM.hasOwnProperty(g.tipo); }
   /* a troca para responder conta a urgência do banco; o prazo da extra só chega perto de fechar; o aceite que
      falta nunca é urgente (a troca já vale) */
   function urgente(g) { return g.tipo === 'extra_prazo' || (g.tipo === 'troca' && !!g.faixa.urgente); }
@@ -81,7 +82,7 @@
 
   /* a linha do administrador: os pedidos urgentes para aprovar (o banco só manda a faixa com urgente) */
   function linhaDoAdministrador() {
-    var deAdmin = grupos.filter(function (g) { return !g.minha && g.faixa && Number(g.faixa.quantos) > 0; });
+    var deAdmin = grupos.filter(function (g) { return g.adm && g.faixa && Number(g.faixa.quantos) > 0; });
     if (!deAdmin.length) return null;
     var quantos = 0, maisPerto = null;
     deAdmin.forEach(function (g) {
@@ -182,7 +183,7 @@
     var g = mil.grupo, f = g.faixa.primeiro || {}, c = M().chamada, p = M().pendencias;
     var linha = RW.tpl('tpl-chamada-linha');
     if (!linha) return null;
-    linha.querySelector('.chamada-marca use').setAttribute('href', 'icones/todos.svg#' + ICONE[g.tipo]);
+    linha.querySelector('.chamada-marca use').setAttribute('href', 'icones/todos.svg#icone-' + RW.fila.icone(g.tipo));
     var quem = nome(f.quem_grau, f.quem_nome);
     var texto, meta, selo = null;
     if (g.tipo === 'extra_prazo') {
@@ -214,7 +215,7 @@
       var todos = linha.querySelector('.chamada-todos');
       todos.querySelector('.chamada-todos-total').textContent = String(mil.total);
       todos.classList.remove('oculto');
-      todos.addEventListener('click', function () { ir('pendencias', 'paramim'); });
+      todos.addEventListener('click', function () { ir('pendencias'); });
     }
     return linha;
   }
@@ -226,7 +227,7 @@
     linha.querySelector('.chamada-quem').textContent = c.admPedidos(adm.quantos);
     linha.querySelector('.chamada-meta').textContent = ' · ' + c.admMeta(dia(adm.data));
     linha.querySelector('.chamada-selo').textContent = textoDias(adm.dias);
-    linha.querySelector('[data-chamada="pedidos"]').addEventListener('click', function () { ir('pendencias', 'administracao'); });
+    linha.querySelector('[data-chamada="pedidos"]').addEventListener('click', function () { ir('pendencias'); });
     return linha;
   }
 

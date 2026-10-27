@@ -11,66 +11,25 @@
       </button>
       <div class="dropdown-menu pagina-ajuda-menu"></div>
     </div>
-    <!-- as abas só aparecem para o administrador (o militar comum só tem "Para mim") -->
-    <div class="abas oculto" id="pendencias-abas">
-      <button type="button" class="aba aba--ativa" data-aba="paramim">
-        <span>Para mim</span>
-        <span class="selo aba-contagem oculto" id="pendencias-paramim-contagem"></span>
-      </button>
-      <button type="button" class="aba" data-aba="administracao">
-        <span>Administração</span>
-        <span class="selo aba-contagem oculto" id="pendencias-administracao-contagem"></span>
-      </button>
-    </div>
   </div>
 
-  <!-- barra de comandos (só administrador): o seletor do tipo de pedido, na aba Administração -->
-  <div class="pagina-subcabecalho pendencias-barra oculto" id="pendencias-barra">
-    <div class="abas abas--seletor oculto" id="pendencias-filtro">
-      <button type="button" class="aba aba--ativa" data-tipo="todos">Todos</button>
-      <button type="button" class="aba" data-tipo="troca">Trocas</button>
-      <button type="button" class="aba" data-tipo="folga">Folgas</button>
-      <button type="button" class="aba" data-tipo="usuarios">Usuários</button>
-    </div>
-  </div>
-
+  <!-- uma lista só: o que é seu e o que é de administração (a etiqueta ADM); o ícone de cada cartão diz o assunto -->
   <div class="pagina-corpo">
-    <!-- o que espera você como militar -->
-    <div class="pedido-secoes coluna-leitura" data-aba-painel="paramim">
+    <div class="pedido-secoes coluna-leitura">
+      <!-- o que espera você: responder, aceitar, o prazo da extra, a CNH e, do administrador, o que aprovar; pelo prazo -->
       <div class="pedido-secao">
-        <span class="rotulo-secao">Esperando sua resposta</span>
-        <div class="pedido-lista" id="pendencias-minhas"></div>
+        <span class="rotulo-secao">Precisa de você</span>
+        <div class="pedido-lista" id="pendencias-fazer"></div>
       </div>
-      <!-- o que você responde até uma data (ex.: a extra do mês seguinte); só aparece quando há -->
-      <div class="pedido-secao oculto" id="pendencias-secao-prazos">
-        <span class="rotulo-secao">Prazos</span>
-        <div class="pedido-lista" id="pendencias-prazos"></div>
-      </div>
-      <!-- o que falta no seu cadastro (ex.: a CNH); só aparece quando há -->
-      <div class="pedido-secao oculto" id="pendencias-secao-cadastro">
-        <span class="rotulo-secao">Seu cadastro</span>
-        <div class="pedido-lista" id="pendencias-cadastro"></div>
-      </div>
-      <!-- os seus pedidos: em andamento e resolvidos nos últimos 30 dias, cada um abre ali mesmo; só aparece quando há -->
-      <div class="pedido-secao oculto" id="pendencias-secao-meus">
-        <span class="rotulo-secao">Seus pedidos</span>
-        <div class="pedido-lista" id="pendencias-meus"></div>
-      </div>
-    </div>
-
-    <!-- só administrador: o que espera a decisão dele, as trocas que esperam o aceite dos militares e o que precisa de conserto -->
-    <div class="pedido-secoes coluna-leitura oculto" data-aba-painel="administracao">
-      <div class="pedido-secao">
-        <span class="rotulo-secao">Para aprovar</span>
-        <div class="pedido-lista" id="pendencias-aprovar"></div>
-      </div>
-      <div class="pedido-secao oculto" id="pendencias-secao-acompanhar">
-        <span class="rotulo-secao">Aguardando os militares</span>
-        <div class="pedido-lista" id="pendencias-acompanhar"></div>
-      </div>
-      <div class="pedido-secao" id="pendencias-secao-corrigir">
+      <!-- só administrador: o que precisa de conserto na escala -->
+      <div class="pedido-secao oculto" id="pendencias-secao-corrigir">
         <span class="rotulo-secao">Para corrigir</span>
         <div class="pedido-lista" id="pendencias-corrigir"></div>
+      </div>
+      <!-- o que espera outra pessoa: os seus pedidos e, do administrador, as trocas esperando o aceite dos militares; só aparece quando há -->
+      <div class="pedido-secao oculto" id="pendencias-secao-acompanhar">
+        <span class="rotulo-secao">Acompanhando</span>
+        <div class="pedido-lista" id="pendencias-acompanhar"></div>
       </div>
     </div>
   </div>
@@ -80,20 +39,9 @@
   <!-- "para corrigir" que leva à tela do conserto (ex.: a Distribuição a revisar) -->
   <template id="tpl-pendencias-corrigir">
     <button type="button" class="pendencias-corrigir">
+      <span class="etiqueta-adm">ADM</span>
       <span class="selo selo--alerta pendencias-corrigir-contagem"></span>
       <span class="pendencias-corrigir-texto"></span>
-      <span class="espacador-flex"></span>
-      <svg class="icone pendencias-corrigir-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
-    </button>
-  </template>
-
-  <!-- prazo seu ou o que falta no seu cadastro: o texto, o detalhe embaixo e a seta (leva aonde se responde) -->
-  <template id="tpl-pendencias-prazo">
-    <button type="button" class="pendencias-corrigir">
-      <span class="pendencias-prazo-textos">
-        <span class="pendencias-corrigir-texto"></span>
-        <span class="pendencias-prazo-mensagem"></span>
-      </span>
       <span class="espacador-flex"></span>
       <svg class="icone pendencias-corrigir-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
     </button>
@@ -103,6 +51,7 @@
   <template id="tpl-pendencias-fora">
     <div class="pendencias-corrigir pendencias-corrigir--lista">
       <div class="pendencias-corrigir-cab">
+        <span class="etiqueta-adm">ADM</span>
         <span class="selo selo--alerta pendencias-corrigir-contagem"></span>
         <span class="pendencias-corrigir-texto"></span>
       </div>
@@ -121,6 +70,7 @@
   <template id="tpl-pendencias-retorno">
     <div class="pendencias-corrigir pendencias-corrigir--lista">
       <div class="pendencias-corrigir-cab">
+        <span class="etiqueta-adm">ADM</span>
         <span class="selo selo--alerta pendencias-corrigir-contagem"></span>
         <span class="pendencias-corrigir-texto"></span>
       </div>

@@ -131,13 +131,20 @@
   display: none;
 }
 
+/* na vaga, o texto quebra em linhas em vez de cortar (no computador e no celular) */
+.campo--erro .escala-seletor-gatilho {
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
 .campo--erro .escala-seletor-texto {
   font-weight: 600;
   color: var(--erro);
+  white-space: normal;
 }
 
-/* a lista: largura fixa, a busca embaixo do título, os militares na largura toda (o motivo ou o efeito ao lado,
-   cortado com reticências); quem não pode fica apagado, com o motivo em vermelho */
+/* a lista: largura fixa, a busca embaixo do título, os militares na largura toda (o nome sempre inteiro; o motivo
+   ou o efeito ao lado quebra em linhas, sem cortar); quem não pode fica apagado, com o motivo em vermelho */
 .escala-seletor-menu {
   width: 320px;
 }
@@ -153,17 +160,23 @@
 
 .escala-seletor-lista .escala-form-militar {
   width: 100%;
+  padding: 4px 8px;
 }
 
 .escala-seletor-lista .escala-form-marca {
   display: none;
 }
 
+.escala-seletor-lista .escala-distribuicao-grad,
+.escala-seletor-lista .escala-distribuicao-nome {
+  flex-shrink: 0;
+}
+
 .escala-seletor-lista .escala-form-militar-extra {
+  flex: 1 1 auto;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  text-align: right;
 }
 
 .escala-form-militar--apagado {

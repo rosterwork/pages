@@ -45,6 +45,7 @@
     'componentes/js/geral-api.js',
     'componentes/js/geral-notificacoes-celular.js',
     'componentes/js/geral-recalculo.js',
+    'componentes/js/geral-notificacao.js',
     'js/index-sidebar.js',
     'js/index-cabecalho.js',
     'js/index-avisos.js',

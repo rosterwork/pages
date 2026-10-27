@@ -142,6 +142,8 @@ button.pedido-item:hover {
   align-items: center;
   gap: 12px;
   width: 100%;
+  /* o botão herda a fonte da página, como o cartão que abre ali mesmo (a mesma altura na lista) */
+  font: inherit;
   text-align: left;
   transition: background-color 0.15s ease;
 }

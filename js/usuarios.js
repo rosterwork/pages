@@ -350,7 +350,7 @@
     if (!fila || !window.RosterWork.fila) return Promise.resolve();
     return window.RosterWork.fila.ler().then(function (r) {
       if (!r) return;
-      var pedidos = window.RosterWork.fila.doTipo(r.aprovar, ['dados']);
+      var pedidos = window.RosterWork.fila.doTipo(r.fazer, ['dados']);
       fila.definir(pedidos);
       escreverSeloPendencias(pedidos.length);
     });
@@ -401,7 +401,7 @@
         return carregarPendencias();
       }
     }) : null;
-    if (fila) window.RosterWork.fila.contar().then(function (c) { escreverSeloPendencias(c.aprovar.dados || 0); });
+    if (fila) window.RosterWork.fila.contar().then(function (c) { escreverSeloPendencias(c.adm.dados || 0); });
   }
 
   /* a navegação chama iniciar() toda vez que a página de usuários é exibida */

@@ -12,7 +12,7 @@
       <div class="dropdown-menu pagina-ajuda-menu"></div>
     </div>
     <div class="abas" id="avisos-abas">
-      <button type="button" class="aba aba--ativa" data-aba="paramim">Para mim</button>
+      <button type="button" class="aba aba--ativa" data-aba="notificacoes">Notificações</button>
       <button type="button" class="aba" data-aba="comunicados">Comunicados</button>
     </div>
   </div>
@@ -37,8 +37,8 @@
     </div>
   </div>
   <div class="pagina-corpo">
-    <!-- o que aconteceu com você (o que espera decisão fica na página Pendências) -->
-    <div class="avisos-aba coluna-leitura" data-aba-painel="paramim">
+    <!-- as notificações: o que aconteceu com você (o que espera decisão fica na página Pendências) -->
+    <div class="avisos-aba coluna-leitura" data-aba-painel="notificacoes">
       <div class="avisos-secao">
         <span class="rotulo-secao">Histórico</span>
         <div class="avisos-lista" id="avisos-notificacoes"></div>
@@ -72,25 +72,7 @@
     <span class="rotulo-secao avisos-dia"></span>
   </template>
 
-  <!-- molde: uma notificação (a linha inteira leva à tela do assunto).
-       O ícone do assunto é escolhido pelo JS trocando o .oculto -->
-  <template id="tpl-avisos-notificacao">
-    <button type="button" class="avisos-notificacao">
-      <span class="avisos-notificacao-ponto" aria-hidden="true"></span>
-      <span class="avisos-notificacao-icone" aria-hidden="true">
-        <svg class="icone" width="16" height="16" data-tipo="troca"><use href="icones/todos.svg#icone-trocas"/></svg>
-        <svg class="icone oculto" width="16" height="16" data-tipo="folga"><use href="icones/todos.svg#icone-folgas"/></svg>
-        <svg class="icone oculto" width="16" height="16" data-tipo="dados"><use href="icones/todos.svg#icone-usuarios"/></svg>
-        <svg class="icone oculto" width="16" height="16" data-tipo="outro"><use href="icones/todos.svg#icone-sino"/></svg>
-      </span>
-      <span class="avisos-notificacao-textos">
-        <span class="avisos-notificacao-titulo"></span>
-        <span class="avisos-notificacao-texto"></span>
-      </span>
-      <span class="espacador-flex"></span>
-      <span class="avisos-notificacao-hora"></span>
-    </button>
-  </template>
+  <!-- cada notificação usa o molde do componente geral-notificacao (#tpl-notificacao, no shell) -->
 
   <template id="tpl-avisos-vazio">
     <div class="avisos-vazio"></div>

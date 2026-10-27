@@ -24,7 +24,7 @@
   var ouvindoUnidades = false;
   var arvoreMontada = false;
   var reqSeq = 0;   // token de requisição das listas (ignora resposta antiga ao trocar de aba/unidade)
-  var filaMinhas = null, filaAprovar = null;   // as filas da aba Pendências (geral-fila)
+  var filaPendencias = null;   // a fila da aba Pendências (geral-fila)
 
   function unidades() {
     try { var p = JSON.parse(sessionStorage.getItem('rosterwork_preferencias')); return p && Array.isArray(p.unidades_selecionadas) ? p.unidades_selecionadas : []; } catch (e) { return []; }
@@ -203,14 +203,13 @@
     s.classList.toggle('oculto', !n);
   }
   function carregarPendencias() {
-    if (!filaMinhas || !RW.fila) return Promise.resolve();
+    if (!filaPendencias || !RW.fila) return Promise.resolve();
     return RW.fila.ler().then(function (r) {
       if (!r || !document.contains(conteudo)) return;
-      var minhas = RW.fila.doTipo(r.minhas, ['troca', 'troca_aceite']);
-      var aprovar = contexto.ehAdmin ? RW.fila.doTipo(r.aprovar, ['troca']) : [];
-      filaMinhas.definir(minhas);
-      if (filaAprovar) filaAprovar.definir(aprovar);
-      escreverSeloPendencias(minhas.length + aprovar.length);
+      /* as suas e, do administrador, as para aprovar, juntas pelo prazo (o banco só manda as de administração ao admin) */
+      var trocas = RW.fila.doTipo(r.fazer, ['troca', 'troca_aceite']);
+      filaPendencias.definir(trocas);
+      escreverSeloPendencias(trocas.length);
     });
   }
 
@@ -266,11 +265,9 @@
 
     /* a aba Pendências: para todos a troca que pediram a você; para o administrador, também as trocas para aprovar */
     var m = RW.mensagens.pendencias;
-    filaMinhas = RW.fila ? RW.fila.criar(conteudo.querySelector('#trocas-pendencias-minhas'), { vazio: m.vazioTrocasMinhas, recarregar: carregarPendencias }) : null;
-    filaAprovar = (RW.fila && contexto.ehAdmin) ? RW.fila.criar(conteudo.querySelector('#trocas-pendencias-aprovar'), { vazio: m.vazioTrocasAprovar, recarregar: carregarPendencias }) : null;
-    conteudo.querySelector('#trocas-pendencias-secao-aprovar').classList.toggle('oculto', !contexto.ehAdmin);
+    filaPendencias = RW.fila ? RW.fila.criar(conteudo.querySelector('#trocas-pendencias'), { vazio: m.vazioTrocas, recarregar: carregarPendencias }) : null;
     if (RW.fila) RW.fila.contar().then(function (c) {
-      escreverSeloPendencias((c.minhas.troca || 0) + (c.minhas.troca_aceite || 0) + (contexto.ehAdmin ? (c.aprovar.troca || 0) : 0));
+      escreverSeloPendencias((c.meus.troca || 0) + (c.meus.troca_aceite || 0) + (contexto.ehAdmin ? (c.adm.troca || 0) : 0));
     });
 
     var btn = conteudo.querySelector('#btn-solicitar-troca');

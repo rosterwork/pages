@@ -13,7 +13,7 @@
      · dados: as alterações (de, seta, para), com a situação de cada uma
    Cada linha com selo tem o texto à esquerda e os selos à direita.
    API: RosterWork.filaResumo.pedido(corpo, p, ctx, aoDetalhes)
-          (um pedido da fila: { tipo, dado, minha })
+          (um pedido da fila: { tipo, dado, adm })
         .meuPedido(corpo, p, ctx, irPara)
           (um pedido do próprio militar, os Seus pedidos da Pendências, de pendencias_meus_pedidos)
         .seloAceites(aceites) → o selo Pendente que abre a lista dos
@@ -173,7 +173,7 @@
   /* o que cada um faz na troca da fila: o administrador aprova (com pendências, se falta aceite); o militar aceita */
   function mapaTroca(p) {
     var t = p.dado;
-    if (p.minha) return { aceitar: p.tipo === 'troca_aceite' ? 'aceitar-depois' : 'aceitar' };
+    if (!p.adm) return { aceitar: p.tipo === 'troca_aceite' ? 'aceitar-depois' : 'aceitar' };
     if (t.status === 'pendente_aprovacao') return { aprovar: 'aprovar' };
     if (t.status === 'pendente_confirmacao') return { 'aprovar-forcar': 'aprovar-forcar' };
     return {};

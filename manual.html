@@ -826,17 +826,38 @@
                 <p class="manual-nota"><strong>Tirar do ciclo mexe no que dependia dele.</strong> Ao clicar em <strong>Tirar</strong>, e também ao dar baixa ou transferir, a janela de confirmação mostra a lista do que vai acontecer a partir da data: cada troca, folga e extra do militar e o que acontece com ela. O que já aconteceu não é desfeito. A troca em que nenhuma parte aconteceu é cancelada inteira; se uma parte já aconteceu, só a outra sai e fica um saldo entre os dois, em Trocas, na aba Saldos. A troca de outros dois militares feita sobre um serviço que sai também é cancelada, e aparece na lista. As trocas canceladas assim levam o motivo, como "Cb. Lemos saiu da escala.", que aparece no painel delas e no registro. As folgas que ainda não aconteceram são canceladas, e as horas descontadas voltam ao saldo. As extras saem da escala e da Extrajornada, e as horas voltam para a cota dele. Quem tinha troca ou folga cancelada recebe um aviso, e os dois militares de uma troca que perdeu uma parte recebem o aviso "Troca alterada", com o saldo. O que foi cancelado não volta, mesmo que o militar volte ao ciclo depois.</p>
                 <p><strong>Só naquele dia.</strong> Para escalar um militar só num dia, sem entrar no ciclo, use o <strong>Adicionar militar</strong> da aba Dia (veja <strong>Ajustar o dia</strong>, logo abaixo).</p>
                 <h3 id="distribuicao-dia">Ajustar o dia <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p>Na aba <strong>Dia</strong> do painel do dia, você ajusta aquele dia. Para o administrador, a aba já abre pronta para editar: a lista é a mesma que todos veem, com o botão <strong>Adicionar militar</strong> no alto do painel, o <strong>lápis</strong> em cada linha e, ao lado do nome de cada posto, o botão <strong>Editar posto</strong>. As mudanças valem <strong>só para aquele dia</strong> e não precisam de Salvar: cada uma grava na hora, e a escala da página já mostra o dia atualizado.</p>
+                <p>Na aba <strong>Dia</strong> do painel do dia, você ajusta aquele dia. Para o administrador, a aba já abre pronta para editar: a lista é a mesma que todos veem, com o botão <strong>Adicionar militar</strong> no alto do painel, o nome de cada militar numa <strong>caixa de escolha</strong>, o <strong>lápis</strong> em cada linha e, ao lado do nome de cada posto, o botão <strong>Editar posto</strong>. As mudanças valem <strong>só para aquele dia</strong> e não precisam de Salvar: cada uma grava na hora, e a escala da página já mostra o dia atualizado.</p>
                 <p><strong>Desfazer e Refazer.</strong> Os ícones no alto do painel, à direita, desfazem a última mudança e a refazem (também pelo teclado: <strong>Ctrl+Z</strong> desfaz e <strong>Ctrl+Y</strong> refaz). Valem para as mudanças feitas enquanto o painel está aberto naquele dia; ao fechar o painel ou trocar de dia, começam do zero. Desfazer não manda aviso a ninguém: se você deu folga a um militar e desfez, ele não recebe aviso de folga cancelada; se você cancelou uma folga e desfez, ela volta como era.</p>
                 <figure class="manual-figura">
-                  <img src="manual/imagens/escala-painel-admin.png" width="400" height="282" alt="O alto do painel do dia para o administrador: as abas Dia, Ciclo e Extrajornada (1), o botão Adicionar militar (2), os ícones Desfazer e Refazer (3), o lápis de uma linha (4) e o botão Editar posto (5)." />
+                  <img src="manual/imagens/escala-painel-admin.png" width="400" height="282" alt="O alto do painel do dia para o administrador: as abas Dia, Ciclo e Extrajornada (1), o botão Adicionar militar (2), os ícones Desfazer e Refazer (3), a caixa de escolha do Condutor (4), o lápis de uma linha (5) e o botão Editar posto (6)." />
                   <figcaption>
                     <ol class="manual-chamadas">
                       <li>Abas Dia, Ciclo e Extrajornada</li>
                       <li>Adicionar militar</li>
                       <li>Desfazer e Refazer</li>
+                      <li>Caixa de escolha, que troca quem está na função</li>
                       <li>Lápis, que abre o militar no dia</li>
                       <li>Editar posto</li>
+                    </ol>
+                  </figcaption>
+                </figure>
+                <p><strong>Trocar quem está numa função.</strong> O nome de cada militar fica numa <strong>caixa de escolha</strong>, com a setinha. Para trocar, por exemplo, o Condutor do dia, clique no nome dele: logo embaixo abre a lista de quem pode sentar ali, com a função e o horário no alto e a <strong>busca</strong>. Ela vem em grupos: quem está <strong>na mesma viatura</strong>, quem está <strong>sem função</strong>, quem está <strong>em outro posto</strong> e quem está <strong>de folga</strong>, separado por unidade. Ao lado de cada nome aparece o que acontece se você escolher, como "Efetivo 3, trocam de lugar" ou "Entra só neste dia". No fim, apagados, ficam os que <strong>não podem</strong>, com o motivo: o Chefe de Socorro, quem não tem a CNH da viatura, quem tem uma regra que proíbe a função ou quem está ocupado nesse horário.</p>
+                <p>Clique no nome escolhido. A mudança grava na hora:</p>
+                <ul class="manual-lista">
+                  <li><strong>Quem já tem função nesse horário</strong> troca de lugar com quem sai: cada um fica com a função do outro.</li>
+                  <li><strong>Quem está sem função</strong> entra, e quem sai fica de serviço sem função.</li>
+                  <li><strong>Quem está de folga</strong> entra só neste dia, e o sistema pergunta se as horas entram no banco de horas dele (<strong>Contabilizar</strong> ou <strong>Não contabilizar</strong>). Se ele for o mais antigo do dia, a lista já avisa que ele vai assumir o Chefe de Socorro (ou o Oficial de Área).</li>
+                </ul>
+                <p>Para voltar atrás, use o <strong>Desfazer</strong>: a troca inteira volta de uma vez. Para trocar só uma parte do dia ou trazer alguém de folga de outra companhia, use <strong>Mais opções</strong>, no fim da lista: ele abre o mesmo formulário do Adicionar militar, já com a função e o horário. O <strong>Chefe de Socorro</strong> e o <strong>Oficial de Área</strong> não têm a caixa, porque são sempre o mais antigo de serviço.</p>
+                <figure class="manual-figura">
+                  <img src="manual/imagens/escala-trocar-lista.png" width="413" height="585" alt="A lista aberta pela caixa do Condutor: a caixa de escolha (1), a busca (2), os grupos de quem pode entrar, com o que acontece ao lado de cada nome (3), os que não podem, com o motivo em vermelho (4), e o Mais opções (5)." />
+                  <figcaption>
+                    <ol class="manual-chamadas">
+                      <li>Caixa de escolha do Condutor</li>
+                      <li>Busca</li>
+                      <li>Quem pode entrar, em grupos</li>
+                      <li>Os que não podem, com o motivo</li>
+                      <li>Mais opções</li>
                     </ol>
                   </figcaption>
                 </figure>
@@ -877,13 +898,13 @@
                   </figcaption>
                 </figure>
                 <p><strong>Cancelar uma folga.</strong> Quem está de folga no dia aparece riscado na caixa <strong>De folga</strong>, também com o <strong>lápis</strong>. Ele abre a folga daquele militar: o horário dela, se foi contabilizada no banco de horas e o que acontece ao cancelar. O botão <strong>Cancelar folga</strong> pede a confirmação; ao confirmar, o militar volta ao serviço naquele dia, a distribuição é refeita, ele recebe um aviso e, se a folga foi contabilizada, as horas voltam ao saldo dele. Vale para qualquer folga do dia: dada aqui, na página Folgas ou por um pedido aprovado. Para sair sem cancelar, use <strong>Voltar ao dia</strong>.</p>
-                <p><strong>Horário sem ninguém.</strong> Quando você tira alguém de uma função num horário, esse horário fica vermelho, com o botão <strong>Sem ninguém, escolher</strong>. Ele abre o mesmo formulário, já com a função e o horário, e mostra também quem está de serviço sem função nesse horário. A linha mexida tem ainda o ícone <strong>Voltar ao automático</strong>, que desfaz o ajuste.</p>
+                <p><strong>Horário sem ninguém.</strong> Quando você tira alguém de uma função num horário, esse horário fica vermelho, numa caixa de escolha vermelha: <strong>Sem ninguém, escolher</strong>. Ela abre a mesma lista de quem pode sentar ali (veja <strong>Trocar quem está numa função</strong>, acima). Na vaga vazia, quem já tem função nesse horário deixa a dele, que fica vazia. A linha mexida tem ainda o ícone <strong>Voltar ao automático</strong>, que desfaz o ajuste.</p>
                 <figure class="manual-figura">
-                  <img src="manual/imagens/escala-editar.png" width="391" height="162" alt="Uma função mexida no dia: a linha com o cadeado e o ícone Voltar ao automático (1) e o horário sem ninguém, com o botão Sem ninguém, escolher (2)." />
+                  <img src="manual/imagens/escala-editar.png" width="400" height="172" alt="Uma função mexida no dia: a linha com o cadeado e o ícone Voltar ao automático (1) e o horário sem ninguém, na caixa vermelha Sem ninguém, escolher (2)." />
                   <figcaption>
                     <ol class="manual-chamadas">
                       <li>Linha mexida: cadeado e Voltar ao automático</li>
-                      <li>Horário sem ninguém, com o botão Sem ninguém, escolher</li>
+                      <li>Horário sem ninguém, na caixa vermelha Sem ninguém, escolher</li>
                     </ol>
                   </figcaption>
                 </figure>

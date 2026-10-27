@@ -32,6 +32,9 @@
   function aposGravar(c, r, versaoId) {
     RosterWork.liberarTela();
     if (!r || !r.success) { c.falha(r); return; }
+    /* a unidade ligada tem a escala refeita em blocos: o resto termina em segundo plano */
+    if (RosterWork.marcarRecalculoPendente) RosterWork.marcarRecalculoPendente();
+    if (RosterWork.drenarRecalculo) RosterWork.drenarRecalculo();
     if (r.log) RosterWork.resumo.abrirModal(r.log, { pagina: M().pagina });
     c.carregar(versaoId || (c.vendoAgendada ? c.dados.atual.id : null));   /* só substituições: fica na versão vista */
   }

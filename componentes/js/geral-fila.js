@@ -3,31 +3,40 @@
    e as abas "Pendências" da Trocas, da Folgas e da Usuários)
    O mesmo pedido aparece nos dois lugares com o mesmo cartão e
    abre o mesmo painel de decisão; decidido num, some dos dois.
-     · contar()  → os números, sem o detalhe (leitura leve):
-                   { minhas: {tipo: n}, aprovar: {tipo: n} }
-     · ler()     → o que espera decisão, com o detalhe:
-                   { minhas: [], aprovar: [], acompanhar: [], corrigir: [], prazos: [] };
-                   cada pedido { tipo, id, dado, data, minha }, os de
-                   data mais próxima primeiro; acompanhar são as trocas
-                   que esperam o aceite dos militares (o administrador
-                   acompanha, sem somar no número); corrigir e prazos são
-                   os grupos que não são pedido (do administrador e seus,
-                   como o prazo da extra); null se a leitura falhou
-     · doTipo(pedidos, tipos) → só os pedidos desses tipos
+   Quem diz o bloco de cada grupo, se é de administração e quanto
+   soma no número é o banco (pendencias_listar: bloco, adm, soma).
+     · contar()  → os números do "fazer", sem o detalhe (leitura leve):
+                   { meus: {tipo: n}, adm: {tipo: n} } (o nome do banco)
+     · ler()     → as pendências com o detalhe:
+                   { fazer: [], corrigir: [], acompanhar: [], total };
+                   cada pedido { tipo, id, dado, data, adm }; o grupo que
+                   não é pedido (o prazo da extra, a CNH) vem inteiro
+                   { grupo, tipo, data, adm }; fazer e acompanhar pelo
+                   prazo, o que não tem data no fim; corrigir são os
+                   grupos do administrador; total = a soma do número;
+                   null se a leitura falhou
+     · doTipo(itens, tipos) → só os itens desses tipos
+     · porPrazo(a, b) → a ordem pelo prazo (o campo data; sem data no fim)
+     · icone(tipo) → o ícone do assunto (o único mapa das pendências)
      · criar(lista, opcoes) → uma fila na tela: desenha os cartões
-                   (geral-pedido, .pedido--linha; nas listas do
-                   administrador, com o pelotão), abre o painel do
-                   tipo com o "N de M" e, depois de decidir, pede à
+                   (geral-pedido, .pedido--linha; no pedido de
+                   administração, a etiqueta ADM e o pelotão), abre o painel
+                   do tipo com o "N de M" e, depois de decidir, pede à
                    página para reler (opcoes.recarregar) e abre o
                    pedido que tomou o lugar do decidido.
                    opcoes = { vazio, recarregar() → Promise, expandir }
                    (expandir: o cartão abre ali mesmo,
                    com o resumo e as ações (geral-fila-resumo), e o
-                   "Ver detalhes" abre o painel; Pendências e as abas Pendências)
-                   devolve { definir(pedidos), abrirId(id), quantos() }
+                   "Ver detalhes" abre o painel; Pendências)
+                   devolve { definir(itens), abrirId(id), quantos() };
+                   no meio dos pedidos, a página pode pôr linhas que ela
+                   mesma monta: { desenhar() → elemento }. Com algum
+                   pelotão na lista, todos os cartões guardam a coluna
+     · linha(c)  → o cartão simples que leva a um lugar:
+                   c = { icone, pelotoes, adm, quem, meta, selo, chave, aoClicar }
      · expansivel(c) → o cartão que abre ali mesmo, para quem monta o
                    resumo por conta própria (os "Seus pedidos" da Pendências):
-                   c = { icone, pelotoes, quem, meta, selo, chave, montar(corpo) }
+                   c = { icone, pelotoes, adm, quem, meta, selo, chave, montar(corpo) }
      · trecho(hi, hf) → "serviço inteiro" ou "das 08h às 14h"
    Os painéis: RosterWork.trocasPainel, .folgasAprovacaoPainel e
    .usuariosCorrecaoPainel (cada página carrega os do seu assunto).
@@ -38,11 +47,12 @@
   'use strict';
   var RW = window.RosterWork = window.RosterWork || {};
 
-  /* troca_aceite: a troca com o aceite de quem olha faltando (abre o mesmo painel da troca) */
-  var DECISAO = ['troca', 'troca_aceite', 'folga', 'dados'];
-  /* troca_aceites_pendentes: a troca em aberto esperando o aceite dos militares (o administrador acompanha) */
-  var ACOMPANHAR = ['troca_aceites_pendentes'];
-  var ICONES = { troca: 'trocas', troca_aceite: 'trocas', troca_aceites_pendentes: 'trocas', folga: 'folgas', dados: 'editar' };
+  /* o ícone de cada assunto das pendências (o único mapa: a fila, a página Pendências e a faixa do topo).
+     troca_aceite: a troca com o aceite de quem olha faltando (abre o mesmo painel da troca);
+     troca_aceites_pendentes: a troca em aberto esperando o aceite dos militares (o administrador acompanha) */
+  var ICONES = { troca: 'trocas', troca_aceite: 'trocas', troca_aceites_pendentes: 'trocas', folga: 'folgas', dados: 'editar',
+    extra_prazo: 'extrajornada', cnh: 'editar' };
+  function icone(tipo) { return ICONES[tipo] || 'pendencias'; }
   function ehTroca(tipo) { return tipo === 'troca' || tipo === 'troca_aceite' || tipo === 'troca_aceites_pendentes'; }
 
   function msg() { return RW.mensagens.pendencias; }
@@ -52,47 +62,49 @@
 
   function contar() {
     return RW.rpc('pendencias_listar', {}).then(function (grupos) {
-      var r = { minhas: {}, aprovar: {} };
+      var r = { meus: {}, adm: {} };
       (Array.isArray(grupos) ? grupos : []).forEach(function (g) {
-        if (DECISAO.indexOf(g.tipo) < 0) return;
-        var alvo = g.minha ? r.minhas : r.aprovar;
+        if (g.bloco !== 'fazer') return;
+        var alvo = g.adm ? r.adm : r.meus;
         alvo[g.tipo] = (alvo[g.tipo] || 0) + (Number(g.contagem) || 0);
       });
       return r;
-    }).catch(function () { return { minhas: {}, aprovar: {} }; });
+    }).catch(function () { return { meus: {}, adm: {} }; });
   }
 
-  /* um pedido: { tipo, id, dado, data (para ordenar), minha } */
-  function pedido(tipo, d, minha) {
+  /* um pedido: { tipo, id, dado, data (o prazo, para ordenar; a correção de dados não tem), adm } */
+  function pedido(tipo, d, adm) {
     var id = ehTroca(tipo) ? d.troca_id : (tipo === 'dados' ? d.solicitacao_id : d.id);
-    var data = ehTroca(tipo) ? d.data_servico_solicitante
-      : tipo === 'folga' ? d.data_ref : d.solicitado_em;
-    return { tipo: tipo, id: String(id), dado: d, data: String(data || ''), minha: minha };
+    var data = d.data_proxima || (ehTroca(tipo) ? d.data_servico_solicitante : (tipo === 'folga' ? d.data_ref : ''));
+    return { tipo: tipo, id: String(id), dado: d, data: String(data || ''), adm: adm };
+  }
+
+  /* pelo prazo: a data mais próxima primeiro; o que não tem data vai para o fim, na ordem do banco */
+  function porPrazo(a, b) {
+    if (!a.data || !b.data) return (a.data ? 0 : 1) - (b.data ? 0 : 1);
+    return a.data < b.data ? -1 : (a.data > b.data ? 1 : 0);
   }
 
   function ler() {
     return RW.rpc('pendencias_listar', { p_detalhe: true }).then(function (grupos) {
       if (!Array.isArray(grupos)) return null;
-      var r = { minhas: [], aprovar: [], acompanhar: [], corrigir: [], prazos: [] };
+      var r = { fazer: [], corrigir: [], acompanhar: [], total: 0 };
       grupos.forEach(function (g) {
-        if (ACOMPANHAR.indexOf(g.tipo) >= 0) {
-          (g.itens || []).forEach(function (d) { r.acompanhar.push(pedido(g.tipo, d, false)); });
-        } else if (DECISAO.indexOf(g.tipo) >= 0) {
-          (g.itens || []).forEach(function (d) { (g.minha ? r.minhas : r.aprovar).push(pedido(g.tipo, d, !!g.minha)); });
-        } else {
-          (g.minha ? r.prazos : r.corrigir).push(g);
-        }
+        r.total += Number(g.soma) || 0;
+        if (g.bloco === 'corrigir') { r.corrigir.push(g); return; }
+        var alvo = g.bloco === 'acompanhar' ? r.acompanhar : r.fazer;
+        /* o grupo com os pedidos um a um vira um item por pedido; o que não é pedido vai inteiro */
+        if (Array.isArray(g.itens)) g.itens.forEach(function (d) { alvo.push(pedido(g.tipo, d, !!g.adm)); });
+        else alvo.push({ grupo: g, tipo: g.tipo, data: String(g.data_proxima || ''), adm: !!g.adm });
       });
-      function porData(a, b) { return a.data < b.data ? -1 : (a.data > b.data ? 1 : 0); }
-      r.minhas.sort(porData);
-      r.aprovar.sort(porData);
-      r.acompanhar.sort(porData);
+      r.fazer.sort(porPrazo);
+      r.acompanhar.sort(porPrazo);
       return r;
     }).catch(function () { return null; });
   }
 
-  function doTipo(pedidos, tipos) {
-    return (pedidos || []).filter(function (p) { return tipos.indexOf(p.tipo) >= 0; });
+  function doTipo(itens, tipos) {
+    return (itens || []).filter(function (p) { return tipos.indexOf(p.tipo) >= 0; });
   }
 
   /* ---------- o cartão ---------- */
@@ -103,9 +115,9 @@
     return msg().trechoHoras(RW.horario.curta(String(hi).slice(0, 5)), RW.horario.curta(String(hf).slice(0, 5)));
   }
 
-  /* o pelotão do pedido, só nas listas do administrador (no "Para mim" é sempre o do próprio militar) */
+  /* o pelotão do pedido, só no de administração (no seu é sempre o do próprio militar) */
   function pelotoes(p) {
-    return !p.minha && Array.isArray(p.dado.pelotoes) ? p.dado.pelotoes.filter(Boolean) : [];
+    return p.adm && Array.isArray(p.dado.pelotoes) ? p.dado.pelotoes.filter(Boolean) : [];
   }
 
   function seloPendente() { return { texto: RW.mensagens.trocas.seloAceitePendente, classe: 'selo--alerta' }; }
@@ -130,7 +142,7 @@
     if (p.tipo === 'troca_aceite') return { quem: mv.filaAceitar(rw), meta: meta, selo: { texto: msg().faltaAceitar, classe: 'selo--alerta' } };
     if (p.tipo === 'troca_aceites_pendentes') return { quem: admin, meta: meta, selo: seloPendente() };
     return {
-      quem: !p.minha ? admin : (antes ? mv.filaMinhaAlteracao(pediu ? pediu.titulo : '', antes) : mv.filaMinha(pediu ? pediu.titulo : '')),
+      quem: p.adm ? admin : (antes ? mv.filaMinhaAlteracao(pediu ? pediu.titulo : '', antes) : mv.filaMinha(pediu ? pediu.titulo : '')),
       meta: meta,
       selo: RW.impacto.selo({ veredito: d.veredito, problemas: d.veredito_problemas, alertas: d.veredito_alertas })
     };
@@ -152,8 +164,8 @@
       var pediu = d.confirma_cpf && d.confirma_cpf === d.solicitante_cpf ? par : sol;
       var alteracao = !!d.substitui_troca_id;
       return {
-        quem: p.minha ? (alteracao ? m.trocaMinhaAlteracao(pediu) : m.trocaMinha(pediu))
-                      : (alteracao ? m.trocaAdminAlteracao(sol, par) : m.trocaAdmin(sol, par)),
+        quem: !p.adm ? (alteracao ? m.trocaMinhaAlteracao(pediu) : m.trocaMinha(pediu))
+                     : (alteracao ? m.trocaAdminAlteracao(sol, par) : m.trocaAdmin(sol, par)),
         meta: metaTroca(d),
         /* a troca esperando o aceite dos militares: Pendente (a análise aparece ao abrir) */
         selo: p.tipo === 'troca_aceites_pendentes' ? seloPendente()
@@ -174,24 +186,36 @@
     };
   }
 
-  function cartao(p, aoAbrir) {
-    var el = RosterWork.tpl('tpl-pedido-linha');
-    if (!el) return null;
-    var t = textos(p);
-    el.dataset.pedido = p.tipo + ':' + p.id;
+  /* a linha do cartão (os dois moldes): o ícone, o pelotão, a etiqueta ADM, quem e o quê, e o selo */
+  function preencher(el, c) {
     var uso = el.querySelector('.pedido-linha-icone use');
-    if (uso) uso.setAttribute('href', 'icones/todos.svg#icone-' + ICONES[p.tipo]);
-    var pel = pelotoes(p);
+    if (uso) uso.setAttribute('href', 'icones/todos.svg#icone-' + c.icone);
+    var pel = c.pelotoes || [];
     var colPelotao = el.querySelector('.pedido-linha-pelotao');
     colPelotao.textContent = pel.join('\n');
     colPelotao.classList.toggle('oculto', !pel.length);
-    el.querySelector('.pedido-quem').textContent = t.quem;
-    el.querySelector('.pedido-meta').textContent = t.meta;
+    el.querySelector('.etiqueta-adm-linha .etiqueta-adm').classList.toggle('oculto', !c.adm);
+    el.querySelector('.pedido-quem').textContent = c.quem || '';
+    el.querySelector('.pedido-meta').textContent = c.meta || '';
     var selo = el.querySelector('.pedido-linha-selo');
-    if (t.selo) { selo.textContent = t.selo.texto; selo.classList.add(t.selo.classe); }
-    selo.classList.toggle('oculto', !t.selo);
-    el.addEventListener('click', function () { aoAbrir(p); });
+    if (c.selo) { selo.textContent = c.selo.texto; selo.classList.add(c.selo.classe); }
+    selo.classList.toggle('oculto', !c.selo);
+  }
+
+  /* o cartão simples, que leva a um lugar (abre o painel do pedido, ou o que a página mandar) */
+  function linha(c) {
+    var el = RosterWork.tpl('tpl-pedido-linha');
+    if (!el) return null;
+    if (c.chave) el.dataset.pedido = c.chave;
+    preencher(el, c);
+    el.addEventListener('click', function () { if (c.aoClicar) c.aoClicar(); });
     return el;
+  }
+
+  function cartao(p, aoAbrir) {
+    var t = textos(p);
+    return linha({ icone: icone(p.tipo), pelotoes: pelotoes(p), adm: p.adm, quem: t.quem, meta: t.meta, selo: t.selo,
+      chave: p.tipo + ':' + p.id, aoClicar: function () { aoAbrir(p); } });
   }
 
   /* ---------- o cartão que abre ali mesmo (Pendências e as abas Pendências) ----------
@@ -207,18 +231,8 @@
     if (!el) return null;
     var cabeca = el.querySelector('.pedido-expansivel-cabeca'), corpo = el.querySelector('.pedido-resumo-corpo');
     if (c.chave) cabeca.dataset.pedido = c.chave;
-    var uso = el.querySelector('.pedido-linha-icone use');
-    if (uso) uso.setAttribute('href', 'icones/todos.svg#icone-' + c.icone);
-    var pel = c.pelotoes || [];
-    var colPelotao = el.querySelector('.pedido-linha-pelotao');
-    colPelotao.textContent = pel.join('\n');
-    colPelotao.classList.toggle('oculto', !pel.length);
-    el.querySelector('.pedido-resumo-recuo-pelotao').classList.toggle('oculto', !pel.length);
-    el.querySelector('.pedido-quem').textContent = c.quem || '';
-    el.querySelector('.pedido-meta').textContent = c.meta || '';
-    var selo = el.querySelector('.pedido-linha-selo');
-    if (c.selo) { selo.textContent = c.selo.texto; selo.classList.add(c.selo.classe); }
-    selo.classList.toggle('oculto', !c.selo);
+    preencher(el, c);
+    el.querySelector('.pedido-resumo-recuo-pelotao').classList.toggle('oculto', !(c.pelotoes || []).length);
     cabeca.addEventListener('click', function () {
       var abrir = cabeca.getAttribute('aria-expanded') !== 'true';
       if (expandido && expandido !== el && document.contains(expandido)) fecharCartao(expandido);
@@ -235,7 +249,8 @@
 
   function criar(lista, opcoes) {
     opcoes = opcoes || {};
-    var pedidos = [];
+    var itens = [];      // o que a lista mostra, na ordem: pedidos e as linhas da página
+    var pedidos = [];    // só os pedidos (a posição "N de M" e o abrir pelo id)
     var aberto = null;   // o pedido que está no painel agora
     var ultimo = -1;     // a posição do último aberto (para abrir o próximo depois de decidir)
 
@@ -246,29 +261,43 @@
       });
     }
 
+    /* com algum pelotão na lista, todos os cartões guardam a coluna dele (os textos ficam alinhados) */
+    function alinharPelotoes() {
+      var algum = [].some.call(lista.querySelectorAll('.pedido-linha-pelotao'), function (el) { return !!el.textContent; });
+      if (!algum) return;
+      [].forEach.call(lista.querySelectorAll('.pedido-linha-pelotao, .pedido-resumo-recuo-pelotao'), function (el) {
+        el.classList.remove('oculto');
+      });
+    }
+
     function desenhar() {
       lista.textContent = '';
-      if (!pedidos.length) {
+      if (!itens.length) {
         var v = RosterWork.tpl('tpl-pedido-vazio');
         if (v) { v.textContent = opcoes.vazio || ''; lista.appendChild(v); }
         return;
       }
-      pedidos.forEach(function (p) {
-        var el = opcoes.expandir ? cartaoExpansivel(p) : cartao(p, abrir);
+      itens.forEach(function (x) {
+        var el = x.desenhar ? x.desenhar() : (opcoes.expandir ? cartaoExpansivel(x) : cartao(x, abrir));
         if (el) lista.appendChild(el);
       });
+      alinharPelotoes();
       marcar();
     }
 
     /* o cartão que abre ali mesmo: o resumo e as ações do pedido (geral-fila-resumo); Ver detalhes abre o painel */
     function cartaoExpansivel(p) {
       var t = textos(p);
-      return expansivel({ icone: ICONES[p.tipo], pelotoes: pelotoes(p), quem: t.quem, meta: t.meta, selo: t.selo,
+      return expansivel({ icone: icone(p.tipo), pelotoes: pelotoes(p), adm: p.adm, quem: t.quem, meta: t.meta, selo: t.selo,
         chave: p.tipo + ':' + p.id,
         montar: function (corpo) { RW.filaResumo.pedido(corpo, p, contexto(p), function () { abrir(p); }); } });
     }
 
-    function definir(novos) { pedidos = novos || []; desenhar(); }
+    function definir(novos) {
+      itens = novos || [];
+      pedidos = itens.filter(function (x) { return !!x.dado; });
+      desenhar();
+    }
 
     /* depois de decidir: a página relê; se o painel ficou fechado e a fila ainda está
        na tela, abre o pedido que tomou o lugar do decidido (no fim da fila, o primeiro).
@@ -292,7 +321,7 @@
         cpf: RosterWork.sessao.cpf(),
         ehAdmin: admin,
         admin: admin,
-        decidir: !p.minha,   // a lista "para aprovar" já vem só com o que este admin pode decidir (o banco filtra)
+        decidir: p.adm,   // o pedido de administração já vem só com o que este admin pode decidir (o banco filtra)
         posicao: { n: indice + 1, total: pedidos.length },
         aoMudar: depoisDeDecidir,
         aoFechar: function () {
@@ -324,5 +353,5 @@
     return { definir: definir, abrirId: abrirId, quantos: function () { return pedidos.length; } };
   }
 
-  RW.fila = { contar: contar, ler: ler, doTipo: doTipo, criar: criar, expansivel: expansivel, trecho: trechoTexto };
+  RW.fila = { contar: contar, ler: ler, doTipo: doTipo, porPrazo: porPrazo, icone: icone, criar: criar, linha: linha, expansivel: expansivel, trecho: trechoTexto };
 })();

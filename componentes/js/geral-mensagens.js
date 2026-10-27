@@ -65,8 +65,6 @@
     avisos: {
       semNotificacoes: 'Nada novo por aqui.',
       semAbertos: 'Nenhum aviso novo.',
-      grupoPessoal: 'Para você',
-      grupoAdministracao: 'Administração',
       semComunicados: 'Nenhum comunicado.',
       carregando: 'Carregando…',
       falhaCarregar: 'Não foi possível carregar.',
@@ -1188,13 +1186,10 @@
       dadosVoce: 'Você pediu correção de dados',
       situacaoDados: { pendente: 'Aguardando aprovação', aprovada: 'Aprovada', recusada: 'Recusada', parcial: 'Aprovada em parte' },
       /* listas sem nada (página Pendências) */
-      vazioMinhas: 'Nenhum pedido esperando a sua resposta.',
-      vazioAprovar: 'Nenhum pedido para aprovar.',
-      vazioFiltro: 'Nenhum pedido deste tipo para aprovar.',
+      vazioFazer: 'Nada esperando você.',
       vazioCorrigir: 'Nada para corrigir.',
       /* listas sem nada (as abas Pendências da Trocas, da Folgas e da Usuários) */
-      vazioTrocasMinhas: 'Nenhum pedido de troca esperando a sua resposta.',
-      vazioTrocasAprovar: 'Nenhum pedido de troca para aprovar.',
+      vazioTrocas: 'Nenhum pedido de troca esperando você.',
       vazioFolgas: 'Nenhum pedido de folga para aprovar.',
       vazioUsuarios: 'Nenhum pedido de correção para aprovar.',
       falhaCarregar: 'Não foi possível carregar as pendências.'

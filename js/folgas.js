@@ -60,7 +60,7 @@
     if (!fila || !RW.fila) return Promise.resolve();
     return RW.fila.ler().then(function (r) {
       if (!r) return;
-      var folgas = RW.fila.doTipo(r.aprovar, ['folga']);
+      var folgas = RW.fila.doTipo(r.fazer, ['folga']);
       fila.definir(folgas);
       escreverSeloPendencias(folgas.length);
     });
@@ -102,7 +102,7 @@
         return carregarPendencias();
       }
     }) : null;
-    if (fila) RW.fila.contar().then(function (c) { escreverSeloPendencias(c.aprovar.folga || 0); });
+    if (fila) RW.fila.contar().then(function (c) { escreverSeloPendencias(c.adm.folga || 0); });
 
     /* as ações valem em todas as abas; o grupo Administração (Dar folga) só para o admin,
        e no celular é um menu (fecha antes de abrir o painel) */

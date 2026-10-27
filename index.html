@@ -68,6 +68,7 @@
   <link rel="stylesheet" href="componentes/css/geral-impacto.css" />
   <link rel="stylesheet" href="componentes/css/geral-decisao.css" />
   <link rel="stylesheet" href="componentes/css/geral-chamada.css" />
+  <link rel="stylesheet" href="componentes/css/geral-notificacao.css" />
   <link rel="stylesheet" href="css/index-cabecalho.css" />
   <link rel="stylesheet" href="css/index-perfil.css" />
   <link rel="stylesheet" href="css/index-comunicado.css" />
@@ -641,21 +642,26 @@
   <template id="tpl-aviso-lista-item">
     <li class="aviso-lista-item"><span class="aviso-lista-titulo"></span><span class="aviso-lista-texto"></span></li>
   </template>
-  <!-- sino: uma notificação (a linha inteira leva à tela do assunto) -->
-  <template id="dropdown-item-aviso">
-    <button type="button" class="aviso-item">
-      <span class="aviso-item-ponto" aria-hidden="true"></span>
-      <span class="aviso-item-textos">
-        <span class="aviso-item-titulo"></span>
-        <span class="aviso-item-mensagem"></span>
-        <span class="aviso-item-meta"></span>
+  <!-- NOTIFICAÇÃO (componente geral-notificacao): o sino e a página Avisos › Notificações. A linha inteira leva
+       à tela do assunto: o ponto da não lida, o ícone do assunto (o JS mostra um, trocando o .oculto), a etiqueta
+       ADM na de administração, o título, o texto, a linha de apoio (no sino: autor · data) e a hora (na página) -->
+  <template id="tpl-notificacao">
+    <button type="button" class="notificacao">
+      <span class="notificacao-ponto" aria-hidden="true"></span>
+      <span class="notificacao-icone" aria-hidden="true">
+        <svg class="icone" width="16" height="16" data-tipo="troca"><use href="icones/todos.svg#icone-trocas"/></svg>
+        <svg class="icone oculto" width="16" height="16" data-tipo="folga"><use href="icones/todos.svg#icone-folgas"/></svg>
+        <svg class="icone oculto" width="16" height="16" data-tipo="dados"><use href="icones/todos.svg#icone-usuarios"/></svg>
+        <svg class="icone oculto" width="16" height="16" data-tipo="outro"><use href="icones/todos.svg#icone-sino"/></svg>
       </span>
+      <span class="notificacao-textos">
+        <span class="etiqueta-adm-linha"><span class="etiqueta-adm oculto">ADM</span><span class="notificacao-titulo"></span></span>
+        <span class="notificacao-texto"></span>
+        <span class="notificacao-meta oculto"></span>
+      </span>
+      <span class="espacador-flex"></span>
+      <span class="notificacao-hora oculto"></span>
     </button>
-  </template>
-
-  <!-- separador dos dois blocos do sino: "Para você" e "Administração" -->
-  <template id="dropdown-grupo-aviso">
-    <div class="dropdown-titulo aviso-grupo"></div>
   </template>
 
   <template id="tpl-seletor-no">
@@ -1223,13 +1229,13 @@
   </template>
 
   <!-- um pedido numa linha, clicável (Pendências): o ícone do tipo (o JS põe o desenho),
-       quem e o quê, o selo do resultado da análise e a seta -->
+       quem e o quê (com a etiqueta ADM no pedido de administração), o selo do resultado da análise e a seta -->
   <template id="tpl-pedido-linha">
     <button type="button" class="pedido pedido--linha">
       <svg class="icone pedido-linha-icone" width="18" height="18" aria-hidden="true"><use href=""/></svg>
       <span class="pedido-linha-pelotao oculto"></span>
       <span class="pedido-textos">
-        <span class="pedido-quem"></span>
+        <span class="etiqueta-adm-linha"><span class="etiqueta-adm oculto">ADM</span><span class="pedido-quem"></span></span>
         <span class="pedido-meta"></span>
       </span>
       <span class="espacador-flex"></span>
@@ -1286,7 +1292,7 @@
         <svg class="icone pedido-linha-icone" width="18" height="18" aria-hidden="true"><use href=""/></svg>
         <span class="pedido-linha-pelotao oculto"></span>
         <span class="pedido-textos">
-          <span class="pedido-quem"></span>
+          <span class="etiqueta-adm-linha"><span class="etiqueta-adm oculto">ADM</span><span class="pedido-quem"></span></span>
           <span class="pedido-meta"></span>
         </span>
         <span class="espacador-flex"></span>

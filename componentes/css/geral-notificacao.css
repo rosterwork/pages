@@ -1,0 +1,115 @@
+/* ============================================================
+   NOTIFICAÇÃO — o que aconteceu com uma pessoa (componente)
+   O mesmo molde (#tpl-notificacao, no shell) no sino (a gaveta,
+   .notificacao--gaveta) e na página Avisos › Notificações (o
+   cartão, .notificacao--cartao). O ponto marca a não lida, o
+   ícone diz o assunto e a etiqueta ADM (.etiqueta-adm-linha, em
+   geral-selo.css) marca a de administração.
+   Guia visual › Listas de leitura e cartões.
+   ============================================================ */
+
+.notificacao {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  text-align: left;
+  transition: background-color 0.15s ease;
+}
+
+/* no sino: sem borda; o fundo marca o item sob o mouse */
+.notificacao--gaveta {
+  border-radius: var(--raio-pequeno);
+}
+
+button.notificacao--gaveta:hover {
+  background-color: var(--fundo-medio);
+}
+
+/* na página: o cartão com borda */
+.notificacao--cartao {
+  min-height: 48px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-superficie);
+}
+
+.notificacao--cartao:hover {
+  background-color: var(--fundo-suave);
+}
+
+/* o ponto só aparece na não lida; nas demais o espaço fica reservado */
+.notificacao-ponto {
+  width: 6px;
+  height: 6px;
+  margin-top: 4px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background-color: transparent;
+}
+
+.notificacao--nao-lida .notificacao-ponto {
+  background-color: var(--texto-forte);
+}
+
+/* o assunto em ícone: dá para saber do que se trata sem ler */
+.notificacao-icone {
+  display: inline-flex;
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--texto-fraco);
+}
+
+.notificacao--nao-lida .notificacao-icone {
+  color: var(--texto-forte);
+}
+
+.notificacao-textos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.notificacao-titulo {
+  font-size: var(--fonte-padrao);
+  color: var(--texto-forte);
+}
+
+.notificacao--nao-lida .notificacao-titulo {
+  font-weight: 600;
+}
+
+.notificacao-texto {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+/* a linha de apoio (no sino: autor · data) */
+.notificacao-meta {
+  font-size: 11px;
+  color: var(--texto-fraco);
+}
+
+/* a hora (na página, à direita) */
+.notificacao-hora {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--texto-fraco);
+}
+
+/* a gaveta é compacta: o título também em 12px */
+.notificacao--gaveta .notificacao-titulo {
+  font-size: 12px;
+}
+
+/* o sino sem nada: só a frase, apagada e sem ícone */
+.notificacao--vazio .notificacao-titulo {
+  color: var(--texto-fraco);
+}
+
+.notificacao--vazio .notificacao-icone {
+  display: none;
+}

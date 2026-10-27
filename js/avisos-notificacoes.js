@@ -1,9 +1,10 @@
 /* ============================================================
-   AVISOS › aba "Para mim" — o histórico dos seus avisos.
+   AVISOS › aba "Notificações" — o histórico dos seus avisos.
    O que aconteceu COMIGO: troca confirmada, folga decidida,
-   correção de dados aprovada… Cada uma sabe para onde ir ao
-   clicar, e o clique marca como lida. Não lidas em negrito, com
-   um ponto à esquerda; agrupadas por dia (Hoje · Ontem · data).
+   correção de dados aprovada… Cada uma é o componente
+   geral-notificacao (o mesmo do sino, como cartão e com a hora),
+   que sabe para onde ir e marca como lida ao clicar; agrupadas
+   por dia (Hoje · Ontem · data).
    Os últimos 90 dias, de 50 em 50: maisAntigos() traz o lote
    seguinte e continua o grupo do dia onde o anterior parou.
    Clona moldes; não cria HTML.
@@ -27,16 +28,6 @@
 
   function hora(data) {
     return String(data.getHours()).padStart(2, '0') + ':' + String(data.getMinutes()).padStart(2, '0');
-  }
-
-  /* o assunto vira ícone: os quatro moram no molde e só um fica visível */
-  var TIPOS = { troca: true, folga: true, dados: true };
-  function mostrarIcone(el, tipo) {
-    var qual = TIPOS[tipo] ? tipo : 'outro';
-    var icones = el.querySelectorAll('.avisos-notificacao-icone .icone');
-    for (var i = 0; i < icones.length; i++) {
-      icones[i].classList.toggle('oculto', icones[i].getAttribute('data-tipo') !== qual);
-    }
   }
 
   /* o histórico na tela: a lista, quem avisar ao marcar lida, o último aviso mostrado
@@ -63,34 +54,10 @@
         var titulo = RosterWork.tpl('tpl-avisos-dia');
         if (titulo) { titulo.textContent = dia; lista.appendChild(titulo); }
       }
-      var el = RosterWork.tpl('tpl-avisos-notificacao');
-      if (!el) return;
-      el.classList.toggle('avisos-notificacao--nao-lida', !n.lida);
-      mostrarIcone(el, n.tipo);
-      el.querySelector('.avisos-notificacao-titulo').textContent = n.titulo || '';
-      el.querySelector('.avisos-notificacao-texto').textContent = n.texto || '';
-      el.querySelector('.avisos-notificacao-hora').textContent = hora(data);
-      el.addEventListener('click', function () {
-        abrir(n, historico.aoMudar);
-      });
-      lista.appendChild(el);
+      var el = RW.notificacao.montar(n, { modo: 'cartao', hora: hora(data), aoMudar: historico.aoMudar });
+      if (el) lista.appendChild(el);
     });
     if (itens.length) historico.ultimo = itens[itens.length - 1];
-  }
-
-  /* marca como lida e navega para a tela do assunto */
-  function abrir(n, aoMudar) {
-    function irPara() {
-      if (n.pagina && RW.irParaPagina) RW.irParaPagina(n.pagina, n.aba, n.referencia_id);
-    }
-    if (n.lida) { irPara(); return; }
-    RW.apiFetch('/rest/v1/rpc/notificacoes_marcar_lidas', { metodo: 'POST', corpo: { p_ids: [n.id] } })
-      .then(function () {
-        if (aoMudar) aoMudar();
-        if (RW.avisosSino) RW.avisosSino.recarregar();   /* o badge do sino zera junto */
-        irPara();
-      })
-      .catch(irPara);
   }
 
   var LOTE = 50;

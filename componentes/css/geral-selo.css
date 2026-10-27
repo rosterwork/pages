@@ -45,7 +45,8 @@
 }
 
 /* a etiqueta ADM: marca o que é de administrador, igual em todo o sistema (a linha do administrador na faixa
-   "Esperando a sua resposta", os botões de administrador das barras e dos rodapés de decisão) */
+   "Esperando a sua resposta", os botões de administrador das barras e dos rodapés de decisão, e os itens de
+   administração do cartão de pedido, do sino e da página Avisos) */
 .etiqueta-adm {
   display: inline-flex;
   align-items: center;
@@ -65,4 +66,13 @@
 .botao--perigo .etiqueta-adm {
   color: var(--texto-forte);
   background-color: var(--texto-invertido);
+}
+
+/* a linha com a etiqueta ADM antes do texto (o cartão de pedido, o sino e a página Avisos): a etiqueta só no
+   item de administração, na altura da primeira linha do texto */
+.etiqueta-adm-linha {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
 }

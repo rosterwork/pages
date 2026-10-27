@@ -68,18 +68,10 @@
     <div class="trocas-pendentes" id="trocas-pendentes-lista"></div>
   </div>
 
-  <!-- Pendências: a troca que pediram a você e, para o administrador, as trocas para aprovar (componente geral-fila) -->
+  <!-- Pendências: numa lista só, pelo prazo, a troca que pediram a você, o aceite que falta e, para o
+       administrador, as trocas para aprovar (com a etiqueta ADM; componente geral-fila) -->
   <div class="pagina-corpo oculto" data-aba-painel="pendencias">
-    <div class="pedido-secoes coluna-leitura">
-      <div class="pedido-secao">
-        <span class="rotulo-secao">Esperando sua resposta</span>
-        <div class="pedido-lista" id="trocas-pendencias-minhas"></div>
-      </div>
-      <div class="pedido-secao oculto" id="trocas-pendencias-secao-aprovar">
-        <span class="rotulo-secao">Para aprovar</span>
-        <div class="pedido-lista" id="trocas-pendencias-aprovar"></div>
-      </div>
-    </div>
+    <div class="pedido-lista coluna-leitura" id="trocas-pendencias"></div>
   </div>
 </div>
 

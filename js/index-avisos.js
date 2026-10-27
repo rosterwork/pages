@@ -2,15 +2,17 @@
    SINO do cabeçalho — os AVISOS do usuário
    Um sino só: a pessoa é uma só,
    e mais um sino seria mais um lugar para esquecer de olhar. A
-   separação por papel acontece DENTRO da gaveta, em dois blocos:
-   "Para você" e "Administração".
+   gaveta é uma lista só, o mais novo em cima; o aviso de
+   administração leva a etiqueta ADM (o campo adm do banco).
    A gaveta mostra só os avisos EM ABERTO: nem lidos nem resolvidos
    (o pedido que outro administrador decidiu sai sozinho). O número
    conta esses e zera quando você lê; o que foi lido fica no
-   histórico da página Avisos.
+   histórico da página Avisos. Cada aviso é o componente
+   geral-notificacao (o mesmo da página), que também abre.
    O que falta fazer (pedidos, prazos e o que corrigir) não mora
    aqui: fica na página Pendências, e a mesma leitura escreve o
-   número do item dela no menu. Os avisos de decisão levam para lá.
+   número do item dela no menu (a soma que o banco manda em cada
+   grupo). Os avisos de decisão levam para lá.
    Estrutura e moldes vivem no index.html.
    ============================================================ */
 (function () {
@@ -49,36 +51,8 @@
   function mostrarVazio(texto) {
     if (!lista) return;
     lista.textContent = '';
-    var el = RosterWork.tpl('dropdown-item-aviso');
-    if (!el) return;
-    el.classList.add('aviso-item--vazio');
-    el.disabled = true;
-    el.querySelector('.aviso-item-titulo').textContent = texto;
-    lista.appendChild(el);
-  }
-
-  function montarItem(n) {
-    var el = RosterWork.tpl('dropdown-item-aviso');
-    if (!el) return null;
-    el.classList.toggle('aviso-item--nao-lida', !n.lida);
-    el.querySelector('.aviso-item-titulo').textContent = n.titulo || '';
-    el.querySelector('.aviso-item-mensagem').textContent = n.texto || '';
-    el.querySelector('.aviso-item-meta').textContent = metaTexto(n);
-    el.addEventListener('click', function () { abrir(n); });
-    return el;
-  }
-
-  /* o que falta fazer mora na página Pendências, com o número no item do menu. Quanto
-     cada item de pendencias_listar soma nele: um pedido vale 1 (o grupo traz quantos);
-     uma situação vale 1 por assunto ("fora da escala" é um problema só, com a lista de
-     militares dentro; a CNH que falta é uma). Tipo fora das duas listas não soma */
-  var DECISAO = { troca: true, troca_aceite: true, folga: true, dados: true };
-  var SITUACAO = { fora_escala: true, retorno_afastamento: true, distribuicao: true, distribuicao_erro: true, extra_prazo: true, cnh: true };
-
-  function quantoSoma(p) {
-    var n = Number(p.contagem) || 0;
-    if (DECISAO[p.tipo]) return n;
-    return SITUACAO[p.tipo] && n ? 1 : 0;
+    var el = RW.notificacao.vazio(texto);
+    if (el) lista.appendChild(el);
   }
 
   function atualizarMenu(quantos) {
@@ -89,17 +63,6 @@
     selo.classList.toggle('oculto', !quantos);
   }
 
-  /* um bloco com título, só quando ele tem algo */
-  function montarGrupo(titulo, itens) {
-    if (!itens.length) return;
-    var cabecalho = RosterWork.tpl('dropdown-grupo-aviso');
-    if (cabecalho) { cabecalho.textContent = titulo; lista.appendChild(cabecalho); }
-    itens.forEach(function (n) {
-      var el = montarItem(n);
-      if (el) lista.appendChild(el);
-    });
-  }
-
   function montar(caixa, pendencias) {
     /* a faixa "Esperando a sua resposta" usa a mesma leitura (geral-chamada.js) */
     if (RW.chamada) RW.chamada.definir(pendencias || []);
@@ -108,7 +71,8 @@
     var itens = (caixa && caixa.itens) || [];   /* a leitura já traz só os em aberto */
 
     atualizarBadge(abertos.total || 0);
-    atualizarMenu((pendencias || []).reduce(function (s, p) { return s + quantoSoma(p); }, 0));
+    /* quanto cada grupo soma no número do menu vem do banco (pendencias_listar: soma) */
+    atualizarMenu((pendencias || []).reduce(function (s, p) { return s + (Number(p.soma) || 0); }, 0));
 
     /* "Marcar todas como lidas" enquanto houver aviso em aberto (o pedido continua na Pendências) */
     if (btnMarcarTodas) btnMarcarTodas.classList.toggle('oculto', !abertos.total);
@@ -119,35 +83,12 @@
       return;
     }
 
-    var T = RW.mensagens.avisos;
-    var pessoais = itens.filter(function (n) { return n.escopo !== 'administracao'; });
-    var deAdmin = itens.filter(function (n) { return n.escopo === 'administracao'; });
-    /* com os dois blocos, os títulos ajudam; com um só, seriam ruído */
-    if (pessoais.length && deAdmin.length) {
-      montarGrupo(T.grupoPessoal, pessoais);
-      montarGrupo(T.grupoAdministracao, deAdmin);
-    } else {
-      itens.forEach(function (n) {
-        var el = montarItem(n);
-        if (el) lista.appendChild(el);
-      });
-    }
-  }
-
-  /* marca como lida e vai para a tela do assunto, já na aba onde se resolve.
-     O aviso de uma decisão (troca, folga, correção) leva à Pendências,
-     já com o pedido aberto; o pedido continua lá até alguém decidir. */
-  function abrir(n) {
-    function irPara() {
-      if (!RW.irParaPagina) return;
-      if (n.acao && DECISAO[n.tipo]) RW.irParaPagina('pendencias', n.escopo === 'administracao' ? 'administracao' : 'paramim', n.referencia_id);
-      else if (n.pagina) RW.irParaPagina(n.pagina, n.aba, n.referencia_id);
-    }
-    if (RW.fecharDropdowns) RW.fecharDropdowns();
-    if (n.lida) { irPara(); return; }
-    RW.apiFetch('/rest/v1/rpc/notificacoes_marcar_lidas', { metodo: 'POST', corpo: { p_ids: [n.id] } })
-      .then(function () { carregar(); irPara(); })
-      .catch(irPara);
+    /* uma lista só, na ordem do banco (o mais novo em cima); o clique marca como lida e abre
+       (o componente relê o sino depois de marcar) */
+    itens.forEach(function (n) {
+      var el = RW.notificacao.montar(n, { modo: 'gaveta', meta: metaTexto(n) });
+      if (el) lista.appendChild(el);
+    });
   }
 
   function carregar() {
@@ -182,9 +123,8 @@
     });
   }
 
-  /* quem mexe em aviso (a página Avisos) pede o refresco do sino; a página
-     Pendências soma os selos das abas pela mesma regra do número do menu */
-  RW.avisosSino = { recarregar: carregar, quantoSoma: quantoSoma };
+  /* quem mexe em aviso (a página Avisos, o componente da notificação) pede o refresco do sino */
+  RW.avisosSino = { recarregar: carregar };
 
   /* veio de uma notificação do celular (index.html?aviso=…, ou guardado pelo index-sessao.js antes
      da entrada): abre o aviso como o clique no sino, depois que todo o código do sistema rodou
@@ -199,7 +139,7 @@
     if (/[?&]aviso=/.test(location.search)) history.replaceState(history.state, '', location.pathname);
     var aviso = null;
     try { aviso = JSON.parse(bruto); } catch (e) {}
-    if (aviso && aviso.id) abrir(aviso);
+    if (aviso && aviso.id && RW.notificacao) RW.notificacao.abrir(aviso);
   }
   (RW.sistemaPronto || Promise.resolve()).then(abrirAvisoDaNotificacao);
 

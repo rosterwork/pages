@@ -1,7 +1,8 @@
 /* ============================================================
    AVISOS — duas abas, cada uma com um dono claro:
-     · Para mim    — o histórico do que aconteceu com você
-     · Comunicados — o mural; o admin publica e remove aqui
+     · Notificações — o histórico do que aconteceu com você (a de
+                      administração com a etiqueta ADM)
+     · Comunicados  — o mural; o admin publica e remove aqui
    O que PEDE DECISÃO não mora aqui: fica na página Pendências
    (Avisos é o que se lê; Pendências, o que se decide).
    Este arquivo liga as abas, cuida dos comunicados e decide quais
@@ -17,7 +18,7 @@
   RW.paginas = RW.paginas || {};
 
   var MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-  var abaAtual = 'paramim';
+  var abaAtual = 'notificacoes';
 
 
   /* timestamp ISO -> "6 jul 2026, 16:02" */
@@ -148,7 +149,7 @@
       });
     }
 
-    abaAtual = 'paramim';
+    abaAtual = 'notificacoes';
     vazio(listaComunicados, RW.mensagens.avisos.carregando);
     carregarComunicados();
     return carregarNotificacoes();

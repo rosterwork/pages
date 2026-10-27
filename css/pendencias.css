@@ -1,10 +1,10 @@
 /* ============================================================
    PENDÊNCIAS — o que espera decisão, num lugar só
-   Duas abas (Para mim · Administração), cada uma na coluna de
-   leitura (720px). As listas são a fila do componente geral-fila
-   (.pedido-lista com o cartão .pedido--linha, que abre o painel de
-   decisão; as seções são .pedido-secoes/.pedido-secao). Aqui: os
-   cartões "Para corrigir" e os "Prazos".
+   Uma lista só na coluna de leitura (720px), em três seções:
+   Precisa de você · Para corrigir · Acompanhando. As listas são a
+   fila do componente geral-fila (.pedido-lista com o cartão
+   .pedido--linha e a etiqueta ADM no de administração; as seções
+   são .pedido-secoes/.pedido-secao). Aqui: os cartões "Para corrigir".
    ============================================================ */
 
 /* ---------- "Para corrigir" ---------- */
@@ -39,18 +39,6 @@ button.pendencias-corrigir:hover {
 .pendencias-corrigir-seta {
   flex-shrink: 0;
   color: var(--texto-fraco);
-}
-
-/* prazo (Para mim): o texto e, embaixo, até quando */
-.pendencias-prazo-textos {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.pendencias-prazo-mensagem {
-  font-size: 11px;
-  color: var(--texto-suave);
 }
 
 /* fora da escala e retorno de afastamento: a contagem em cima e a lista embaixo (não navegam) */
@@ -107,16 +95,10 @@ button.pendencias-corrigir:hover {
 
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
-   A barra só tem o seletor do tipo de pedido, que existe só na
-   aba Administração: na Para mim ela some (sem faixa vazia). Na
-   lista de nomes do "Para corrigir", o motivo e a volta descem
+   Na lista de nomes do "Para corrigir", o motivo e a volta descem
    para a linha de baixo do nome.
    ============================================================ */
 @media (max-width: 767px) {
-  html[data-celular] .pendencias-barra:has(> .abas--seletor.oculto) {
-    display: none;
-  }
-
   html[data-celular] .pendencias-corrigir-item {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;

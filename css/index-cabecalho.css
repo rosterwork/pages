@@ -129,73 +129,7 @@
   overflow-y: auto;
 }
 
-/* separador dos dois blocos do sino ("Para você" / "Administração"):
-   só aparece quando há os dois — com um bloco só, o título seria ruído */
-.aviso-grupo {
-  position: sticky;
-  top: 0;
-  background-color: var(--fundo-superficie);
-}
-
-/* uma notificação no sino: ponto de não lida à esquerda + os três textos */
-.aviso-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  width: 100%;
-  padding: 8px 12px;
-  text-align: left;
-  border-radius: var(--raio-pequeno);
-  transition: background-color 0.15s ease;
-}
-
-button.aviso-item:hover {
-  background-color: var(--fundo-medio);
-}
-
-.aviso-item-textos {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-/* o ponto só aparece na não lida (reserva o espaço nas demais) */
-.aviso-item-ponto {
-  width: 6px;
-  height: 6px;
-  margin-top: 4px;
-  flex-shrink: 0;
-  border-radius: 50%;
-  background-color: transparent;
-}
-
-.aviso-item--nao-lida .aviso-item-ponto {
-  background-color: var(--texto-forte);
-}
-
-.aviso-item--nao-lida .aviso-item-titulo {
-  font-weight: 600;
-}
-
-.aviso-item-titulo {
-  font-size: 12px;
-  color: var(--texto-forte);
-}
-
-.aviso-item-mensagem {
-  font-size: 12px;
-  color: var(--texto-suave);
-}
-
-.aviso-item-meta {
-  font-size: 11px;
-  color: var(--texto-fraco);
-}
-
-.aviso-item--vazio .aviso-item-titulo {
-  color: var(--texto-fraco);
-}
+/* cada notificação do sino: o componente geral-notificacao (.notificacao--gaveta) */
 
 /* Avatar e seta do botão do usuário */
 .cabecalho-usuario-avatar {
