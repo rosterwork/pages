@@ -282,7 +282,7 @@
 
 .nova-extra-passos {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -290,6 +290,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
   min-height: 52px;
   padding: 8px 12px;
   border: 1px solid var(--borda);
@@ -439,6 +440,17 @@
 
 .nova-extra-blocos .nova-extra-tabela td:first-child { border-radius: var(--raio-pequeno) 0 0 var(--raio-pequeno); }
 .nova-extra-blocos .nova-extra-tabela td:last-child { border-radius: 0 var(--raio-pequeno) var(--raio-pequeno) 0; }
+
+/* passo 1: o aviso embaixo do militar (sem fundo de bloco, colado à linha dele) */
+.nova-extra-blocos .nova-extra-linha-aviso td {
+  padding: 0 12px 4px;
+  background-color: transparent;
+}
+
+.nova-extra-aviso-linha {
+  font-size: 12px;
+  color: var(--alerta);
+}
 
 /* a linha que abre o painel (passo 2) */
 .nova-extra-linha-clicavel { cursor: pointer; }
@@ -608,8 +620,12 @@
 
 .nova-extra-resumo-fraco { color: var(--alerta); }
 
-/* o calendário do mês (geral-calendario-mes): rola para o lado por dentro quando não cabe */
+/* o calendário do mês (geral-calendario-mes): os 7 dias encolhem juntos até 110 px, para caber também com
+   o painel largo aberto; só abaixo disso (telas menores) rola para o lado por dentro */
 .nova-extra-dist-cal { min-width: 0; }
+
+.nova-extra-dist-cal .geral-calendario-mes-cabecalho,
+.nova-extra-dist-cal .geral-calendario-mes-semana { grid-template-columns: repeat(7, minmax(110px, 1fr)); }
 
 /* o bloquinho branco de uma unidade dentro do dia (o calendário da Escala, padrão de blocos):
    o nome, as barras antes e depois (rótulo | barra) e só as extras; clicar abre o painel do dia */
@@ -675,7 +691,7 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 0 8px;
+  padding: 0 4px;
 }
 
 .nova-extra-cal-extras:empty { display: none; }
@@ -694,6 +710,13 @@
 }
 
 .nova-extra-porque { font-size: 12px; color: var(--texto-suave); }
+
+/* painel do dia: os selos e o porquê embaixo do nome, na largura toda da linha */
+.escala-extra-militar > .nova-extra-selos-linha,
+.escala-extra-militar > .nova-extra-porque {
+  grid-column: 2 / -1;
+}
+
 .nova-extra-falta-sobra { font-size: 12px; color: var(--erro); }
 .nova-extra-falta-ok { font-size: 12px; color: var(--sucesso); }
 .nova-extra-falta-amarela { font-size: 12px; color: var(--alerta); }
@@ -1151,18 +1174,46 @@
 /* a unidade sem extra no dia guarda o lugar, para as outras ficarem na mesma altura */
 .nova-extra-cal-uni--vazia { visibility: hidden; }
 
+/* a extra no bloco do dia, como no calendário antigo: o bloco cinza com o traço à esquerda, o nome,
+   a sigla de outro pelotão e as 4 bolinhas (08h, 14h, 20h e 02h) à direita, numa linha só */
 .nova-extra-pessoa {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   gap: 4px;
-  font-size: 12px;
+  min-width: 0;
+  min-height: 22px;
+  padding: 0 4px;
+  border-left: 2px solid var(--foco);
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-medio);
+  font-size: 11px;
+  white-space: nowrap;
 }
 
-.nova-extra-pessoa small { font-size: 11px; color: var(--texto-fraco); }
-.nova-extra-pessoa b { font-weight: 600; color: var(--texto-forte); }
-.nova-extra-pessoa .ne-de { font-size: 11px; color: var(--texto-fraco); }
-.nova-extra-pessoa .ne-hora { margin-left: auto; font-size: 11px; color: var(--texto-suave); }
+.nova-extra-pessoa b {
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  color: var(--texto-forte);
+}
+
+.nova-extra-pessoa .ne-de {
+  flex-shrink: 0;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--texto-fraco);
+}
+
+.nova-extra-pessoa .nova-extra-bol { flex-shrink: 0; }
+
+.nova-extra-pessoa .nova-extra-bol i {
+  width: 6px;
+  height: 6px;
+  background-color: var(--borda-forte);
+}
+
+.nova-extra-pessoa .nova-extra-bol .nova-extra-bol--on { background-color: var(--texto-forte); }
 
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)

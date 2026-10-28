@@ -184,36 +184,6 @@
     return mil.pontual || (mil.janelas.length > 0 && !mil.janelas.every(function (j) { return j.origem === 'extra'; }));
   }
 
-  /* a confirmação e a gravação pelo ciclo (o mesmo do Tirar e do Adicionar da aba Ciclo); depois, relê o dia */
-  function salvarCiclo(mudancas) {
-    var api = ed();
-    var uid = api.unidadeId(), iso = api.iso();
-    if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal();
-    RosterWork.escalasDados.cicloSalvarLote(uid, iso, mudancas).then(function (r) {
-      if (RosterWork.esconderVeuGlobal) RosterWork.esconderVeuGlobal();
-      var geral = RosterWork.mensagens.geral;
-      if (r && r._falha === 'conexao') { RosterWork.avisar({ tipo: 'erro', mensagem: geral.semConexao }); return; }
-      if (r && r._falha === 'servidor') { RosterWork.avisar({ tipo: 'erro', mensagem: geral.falhaServidor }); return; }
-      if (!r || !r.success) { RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || msg().falhaSalvar }); return; }
-      window.dispatchEvent(new CustomEvent('rosterwork_escala_recarregar'));
-      if (r.log && RosterWork.resumo) RosterWork.resumo.abrirModal(r.log, { pagina: 'Escala' });
-      api.recarregar();
-    });
-  }
-
-  /* a lista do que acontece com as trocas, folgas e extras a partir do dia (escala_ciclo_retirar_analisar) e a
-     confirmação; textos = { mensagem, escala, botao }; desde = o dia de onde a lista conta (sem ele, o do painel) */
-  function confirmarCiclo(cpf, textos, aoConfirmar, desde) {
-    var api = ed();
-    var S = RosterWork.mensagens.saida;
-    RosterWork.escalasDados.cicloRetirarAnalisar(api.unidadeId(), cpf, desde || api.iso()).then(function (a) {
-      if (!a || !a.success) { RosterWork.avisar({ tipo: 'erro', mensagem: (a && a.error) || S.falhaLista }); return; }
-      var aviso = RosterWork.avisoSaida(a.pendencias, { tipo: 'tirar', escala: textos.escala });
-      RosterWork.confirmar({ tipo: 'aviso', mensagem: textos.mensagem, itens: aviso.itens, nota: aviso.nota,
-        textoConfirmar: textos.botao, aoConfirmar: aoConfirmar });
-    });
-  }
-
   /* lugar = onde o bloco entra; aoMudar() = a edição da linha acerta o botão de confirmar. Devolve { erro(), aplicar(),
      alcance() } ou null */
   function tirar(lugar, cpf, aoMudar) {
@@ -270,10 +240,12 @@
 
     function aplicar() {
       if (est.alcance === 'ciclo') {
-        confirmarCiclo(cpf, {
-          mensagem: msg().confirmarTirar.replace('{pessoa}', nomeDe(mil)).replace('{data}', api.iso().split('-').reverse().join('/')),
+        /* do ciclo: a lista do que é cancelado e a confirmação; grava pelo ciclo (sem Desfazer) e relê o dia */
+        var C = RosterWork.escalasPainelCiclo, uid = api.unidadeId(), iso = api.iso();
+        C.confirmar(uid, iso, cpf, {
+          mensagem: msg().confirmarTirar.replace('{pessoa}', nomeDe(mil)).replace('{data}', iso.split('-').reverse().join('/')),
           escala: RosterWork.mensagens.saida.escalaTirar, botao: msg().btnTirar
-        }, function () { salvarCiclo([{ cpf: cpf, acao: 'tirar' }]); });
+        }, function () { C.salvar(uid, iso, [{ cpf: cpf, acao: 'tirar' }], { aoTerminar: api.recarregar }); });
         return;
       }
       api.mudar(function () {
@@ -287,7 +259,5 @@
     return { erro: erro, aplicar: aplicar, alcance: function () { return est.alcance; } };
   }
 
-  window.RosterWork.escalasPainelServico = {
-    servico: servico, tirar: tirar, podeTirar: podeTirar, salvarCiclo: salvarCiclo, confirmarCiclo: confirmarCiclo
-  };
+  window.RosterWork.escalasPainelServico = { servico: servico, tirar: tirar, podeTirar: podeTirar };
 })();

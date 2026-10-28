@@ -42,6 +42,18 @@
     militar: function (cpf) { return (d && d.militares.filter(function (m) { return m.cpf === cpf; })[0]) || null; },
     unidade: function (id) { return (d && d.unidades.filter(function (u) { return u.id === +id; })[0]) || null; },
     nome: function (cpf) { var m = util.militar(cpf); return m ? m.grad + ' ' + m.nome : cpf; },
+    /* a extra no bloco do dia (como no calendário antigo): o nome, a sigla quando é de outro pelotão e as 4 bolinhas */
+    pessoa: function (a, uid) {
+      var m = util.militar(a.cpf) || {};
+      var p = RW.tpl('tpl-ne-dia-pessoa');
+      p.querySelector('b').textContent = m.nome || a.cpf;
+      p.querySelector('.ne-de').textContent = m.unidade_id && m.unidade_id !== uid ? String((util.unidade(m.unidade_id) || {}).nome || '').replace('PEL', '') : '';
+      var bol = RW.tpl('tpl-ne-bol');
+      Array.prototype.forEach.call(bol.children, function (i, j) { if (a.blocos.map(Number).indexOf(j + 1) >= 0) i.classList.add('nova-extra-bol--on'); });
+      p.appendChild(bol);
+      p.setAttribute('aria-label', (m.grad ? m.grad + ' ' : '') + (m.nome || a.cpf) + ', ' + util.horas(a.blocos));
+      return p;
+    },
     br: br
   };
   RW.novaExtraUtil = util;
@@ -150,11 +162,28 @@
         });
       }
       tb.appendChild(tr);
+      /* sem termo não tira extra: embaixo dele, as extras que saem ao salvar */
+      var dias = p1.termos[m.cpf] === false ? diasDe(m.cpf) : [];
+      if (dias.length) {
+        var av = RW.tpl('tpl-ne-p1-aviso');
+        av.querySelector('.nova-extra-aviso-linha').textContent = msg().retiraTermo(dias, d.iniciado && !!d.lancamento);
+        tb.appendChild(av);
+      }
     });
     q('#p1-vazio').classList.toggle('oculto', lista.length > 0);
     var n = Object.keys(p1.termos).length;
     q('#p1-mudancas').textContent = n ? msg().termosMudados(n) : '';
     q('#p1-salvar').disabled = !n;
+  }
+
+  /* os dias de extra de um militar na distribuição salva (DD/MM) */
+  function diasDe(cpf) {
+    return d.alocacoes.filter(function (a) { return a.cpf === cpf; }).map(function (a) { return a.data; }).sort().map(br);
+  }
+
+  /* depois de salvar: o resumo padrão (o que mudou e as extras que saíram) */
+  function resumo(r) {
+    if (r && r.log && r.log.resumo && r.log.resumo.alvos && r.log.resumo.alvos.length) RW.resumo.abrirModal(r.log, { pagina: 'Nova extra' });
   }
 
   /* ---------- passo 4: conferir e lançar ---------- */
@@ -240,15 +269,7 @@
         b.querySelector('.nova-extra-cal-uni-nome').textContent = un.nome;
         var aqui = alocs.filter(function (a) { return a.data === k && +a.unidade === un.id; });
         b.classList.toggle('nova-extra-cal-uni--vazia', !aqui.length);
-        aqui.forEach(function (a) {
-          var m = util.militar(a.cpf) || {};
-          var p = RW.tpl('tpl-ne-dia-pessoa');
-          p.querySelector('small').textContent = m.grad || '';
-          p.querySelector('b').textContent = m.nome || a.cpf;
-          p.querySelector('.ne-de').textContent = m.unidade_id && m.unidade_id !== un.id ? msg().de((util.unidade(m.unidade_id) || {}).nome || '') : '';
-          p.querySelector('.ne-hora').textContent = util.horas(a.blocos);
-          b.querySelector('.nova-extra-cal-extras').appendChild(p);
-        });
+        aqui.forEach(function (a) { b.querySelector('.nova-extra-cal-extras').appendChild(util.pessoa(a, un.id)); });
         cel.appendChild(b);
       });
     } });
@@ -270,6 +291,7 @@
     q('#p1-salvar').addEventListener('click', function () {
       RW.rpc('nova_extra_termos_salvar', { p_competencia: d.competencia, p_termos: p1.termos }).then(function (r) {
         if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
+        resumo(r);
         carregar();
       });
     });
@@ -292,5 +314,5 @@
     aba = nome; carregar();
   }
 
-  RW.novaExtraOrg = { montar: montar, mostrar: mostrar, sair: function () { aba = null; sair(); }, recarregar: function () { if (aba) carregar(); }, sujo: function () { return passo === 3 && RW.novaExtraMontar && RW.novaExtraMontar.sujo(); } };
+  RW.novaExtraOrg = { resumo: resumo, montar: montar, mostrar: mostrar, sair: function () { aba = null; sair(); }, recarregar: function () { if (aba) carregar(); }, sujo: function () { return passo === 3 && RW.novaExtraMontar && RW.novaExtraMontar.sujo(); } };
 })();

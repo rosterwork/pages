@@ -68,6 +68,17 @@
   font-size: 11px;
 }
 
+/* a informação de um militar (o "Último serviço em DD/MM" dos Contínuos em outros ciclos) */
+.escala-secao-info {
+  font-size: 11px;
+  color: var(--texto-fraco);
+}
+
+/* a linha com o cartão de mudar de ciclo aberto: o cartão entra no lugar dela */
+.escala-secao-item--aberto {
+  display: none;
+}
+
 /* botão de ação de uma linha (Tirar / Adicionar / Cancelar saída) */
 .escala-secao-botao {
   min-height: 24px;

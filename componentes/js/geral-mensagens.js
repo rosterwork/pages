@@ -397,7 +397,6 @@
       aindaNaoLancado: 'Ainda não lançado na escala.',
       /* Organizar o mês, Calendário e a grade do passo 3 */
       org: {
-        de: function (nome) { return 'do ' + nome; },
         p1: function (abre, fecha, resp, total) { return abre + ' a ' + fecha + ' · ' + resp + ' de ' + total + ' responderam'; },
         p2: function (rec, rep) { return rec + ' recebidas · ' + rep + ' repartidas'; },
         p2Depois: 'Depois do pedido',
@@ -458,6 +457,18 @@
         cotasPainelSub: function (unidade, fila) { return unidade + ' · ' + fila + 'º na fila'; },
         cotasPediu: function (n, so24) { return n + (n === 1 ? ' cota' : ' cotas') + (so24 ? ', só 24 h' : ''); },
         so24Cotas: 'Só aceita 24 h: recebe as cotas em blocos de 4.',
+        /* as extras que saem ao salvar (termo desmarcado ou cota abaixo do que está na grade) */
+        listaDias: function (dias) { return dias.length > 1 ? dias.slice(0, -1).join(', ') + ' e ' + dias[dias.length - 1] : dias[0]; },
+        retiraTermo: function (dias, ajuste) {
+          return 'Tem extra em ' + this.listaDias(dias) + '. Ao salvar, ' + (dias.length === 1 ? 'essa extra sai' : 'essas extras saem') + ' da distribuição'
+            + (ajuste ? ' e ' + (dias.length === 1 ? 'entra' : 'entram') + ' como ajuste do mês.' : '.');
+        },
+        retiraCota: function (n, dias, ajuste) {
+          return 'Com ' + n + (n === 1 ? ' cota, ' : ' cotas, ') + (dias.length === 1 ? 'a extra de ' : 'as extras de ') + this.listaDias(dias)
+            + (dias.length === 1 ? ' sai' : ' saem') + ' ao salvar' + (ajuste ? ' e ' + (dias.length === 1 ? 'entra' : 'entram') + ' como ajuste do mês.' : '.');
+        },
+        naoSalvoRetira: function (k) { return 'Mudanças não salvas. As extras de ' + k + (k === 1 ? ' militar saem ao salvar.' : ' militares saem ao salvar.'); },
+        pedidoAberto: function (fecha) { return 'O pedido está aberto até ' + fecha + '. A distribuição só pode ser salva depois que ele fecha.'; },
         /* passo 3, Por militar: a grade e a caixa do quadrado */
         cotasSobrando: function (n) { return n + (n === 1 ? ' cota sobrando' : ' cotas sobrando'); },
         pelCotas: function (u, t) { return u + ' de ' + t + ' cotas'; },
@@ -545,17 +556,15 @@
       buscaVazia: 'Nenhum militar encontrado.',
       /* aba Ciclo (seção dos contínuos) do painel do dia */
       continuosNaEscala: 'Contínuos do dia',
+      continuosOutros: function (n) { return 'Contínuos em outros ciclos (' + n + ')'; },
       continuosFora: 'Fora da escala',
       continuosVazioNaEscala: 'Nenhum contínuo nesse dia.',
+      continuosVazioOutros: 'Nenhum contínuo em outros ciclos.',
       continuosVazioFora: 'Todos os militares já estão no ciclo.',
       continuosSaiEm: 'Sai em {data}',
       continuosAfastadoAte: '{motivo} até {data}',
       continuosEntraEm: 'Entra em {data}',
       continuosDeFolga: 'De folga neste dia',
-      continuosVaiEntrar: 'Vai entrar',
-      continuosVaiSair: 'Vai sair',
-      continuosVaiCancelar: 'Vai cancelar a saída',
-      continuosDesfazer: 'Desfazer',
       btnTirar: 'Tirar',
       btnAdicionar: 'Adicionar',
       btnCancelarSaida: 'Cancelar saída',
@@ -688,6 +697,9 @@
         },
         cicloEntrar: function (data) { return 'Ele entra no ciclo de serviço a partir de ' + data + ' e segue nos próximos dias.'; },
         cicloConfirmarEntrar: function (militar, data) { return 'Pôr o ' + militar + ' no ciclo de serviço a partir de ' + data + '?'; },
+        cicloConfirmarCancelarSaida: function (militar, data) {
+          return 'Cancelar a saída do ' + militar + ' marcada para ' + data + '? Ele continua no ciclo de serviço.';
+        },
         cicloConfirmarMudar: function (militar, data) { return 'Mudar o ciclo do ' + militar + ' a partir de ' + data + '? O que vai acontecer:'; },
         cicloEscalaMudar: function (data) { return 'O ciclo atual termina na véspera e o novo começa em ' + data + '.'; }
       },

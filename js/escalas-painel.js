@@ -516,11 +516,10 @@
   }
 
   /* ---------- guarda de descarte: avisa antes de perder rascunho não salvo ---------- */
-  /* seções com rascunho não salvo (o Ciclo; o Dia grava cada mudança na hora, e o rascunho da Extrajornada é do mês
+  /* seções com rascunho não salvo (o Dia e o Ciclo gravam cada mudança na hora, e o rascunho da Extrajornada é do mês
      e não se perde ao trocar de dia ou de aba) */
   function secaoSuja() {
-    return !!((RosterWork.escalasPainelContinuos && RosterWork.escalasPainelContinuos.estaSujo && RosterWork.escalasPainelContinuos.estaSujo())
-      || (RosterWork.escalasPainelExtra && RosterWork.escalasPainelExtra.estaSujo && RosterWork.escalasPainelExtra.estaSujo()));
+    return !!(RosterWork.escalasPainelExtra && RosterWork.escalasPainelExtra.estaSujo && RosterWork.escalasPainelExtra.estaSujo());
   }
   function limparSecoesSujas() {
     if (RosterWork.escalasPainelEditar) RosterWork.escalasPainelEditar.reset();

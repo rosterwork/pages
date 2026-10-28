@@ -26,6 +26,11 @@
   function vols() { return d.militares.filter(function (m) { return m.voluntario; }); }
   function comTermo() { return vols().filter(function (m) { return m.termo; }).sort(function (a, b) { return a.ordem - b.ordem; }); }
   function conc(m) { return m.cpf in p2.conc ? p2.conc[m.cpf] : (m.concedidas || 0); }
+  /* o que ele já tem na distribuição salva: as cotas e os dias (DD/MM) */
+  function naGrade(m) { return d.alocacoes.filter(function (a) { return a.cpf === m.cpf; }).reduce(function (s, a) { return s + a.blocos.length; }, 0); }
+  function diasDe(m) { return d.alocacoes.filter(function (a) { return a.cpf === m.cpf; }).map(function (a) { return a.data; }).sort().map(u().br); }
+  /* abaixo do que está na grade, as extras dele saem ao salvar */
+  function perde(m) { return conc(m) < naGrade(m); }
 
   function iniciarRascunho() {
     p2 = { recebidas: d.mes.cotas_recebidas, modo: d.mes.repartir_por || 'grupo', unidades: Object.assign({}, d.mes.cotas_unidades || {}), conc: {}, sujo: false };
@@ -78,7 +83,8 @@
       tb.appendChild(tr);
     });
     q('#p2-vazio').classList.toggle('oculto', lista.length > 0);
-    q('#p2-mudancas').textContent = p2.sujo ? msg().naoSalvo : '';
+    var perdem = lista.filter(perde).length;
+    q('#p2-mudancas').textContent = perdem ? msg().naoSalvoRetira(perdem) : (p2.sujo ? msg().naoSalvo : '');
     q('#p2-salvar').disabled = !p2.sujo;
     if (aberto) preencherPainel();
   }
@@ -112,6 +118,9 @@
     var nota = f.querySelector('.ne-cp-nota');
     nota.classList.toggle('oculto', !m.so24);
     nota.querySelector('.nota-texto').textContent = msg().so24Cotas;
+    var retira = f.querySelector('.ne-cp-retira');
+    retira.classList.toggle('oculto', !perde(m));
+    if (perde(m)) retira.querySelector('.nota-texto').textContent = msg().retiraCota(conc(m), diasDe(m), d.iniciado && !!d.lancamento);
     corpo.appendChild(f);
   }
 
@@ -123,6 +132,7 @@
       p_repartir_por: p2.modo, p_cotas_unidades: p2.modo === 'por_unidade' ? p2.unidades : null, p_concedidas: concedidas
     }).then(function (r) {
       if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
+      RW.novaExtraOrg.resumo(r);
       if (depois) depois(); else aoSalvar();
     });
   }

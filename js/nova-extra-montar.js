@@ -62,6 +62,8 @@
     return d.alocacoes.filter(function (a) { return a.cpf === cpf && a.data === data; })[0] || null;
   }
   function usadas(cpf, alocs) { return (alocs || efetivas()).filter(function (a) { return a.cpf === cpf; }).reduce(function (s, a) { return s + a.blocos.length; }, 0); }
+  /* a distribuição só é salva depois que o pedido fecha: antes disso, só dá para tirar extra */
+  function travado() { return d.mes.estado !== 'encerrado'; }
   function voluntarios() { return d.militares.filter(function (m) { return m.voluntario && m.termo && (m.concedidas || 0) > 0; }); }
   function blocos(a) { return a.blocos.map(Number); }
   /* a CNH que a viatura pede ('' = qualquer uma) está entre as que ele conduz (o banco diz quais) */
@@ -197,15 +199,7 @@
         if (gD) { b.querySelector('.nova-extra-cal-sem').classList.add('oculto'); b.querySelector('.ne-depois').appendChild(gD); }
       }
     } else b.querySelector('.nova-extra-cal-barras').classList.add('oculto');
-    aqui.forEach(function (a) {
-      var m = u().militar(a.cpf) || {};
-      var p = RW.tpl('tpl-ne-dia-pessoa');
-      p.querySelector('small').textContent = m.grad || '';
-      p.querySelector('b').textContent = m.nome || a.cpf;
-      p.querySelector('.ne-de').textContent = m.unidade_id && m.unidade_id !== un.id ? msg().de((u().unidade(m.unidade_id) || {}).nome || '') : '';
-      p.querySelector('.ne-hora').textContent = u().horas(a.blocos);
-      b.querySelector('.nova-extra-cal-extras').appendChild(p);
-    });
+    aqui.forEach(function (a) { b.querySelector('.nova-extra-cal-extras').appendChild(u().pessoa(a, un.id)); });
     b.addEventListener('click', function () { dia().abrir(un.id, k); });
     b.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); dia().abrir(un.id, k); } });
     return b;
@@ -294,6 +288,10 @@
     q('#p3-salvar').disabled = !n;
     q('#p3-cancelar').disabled = !n;
     q('#p3-desfazer-sugestao').classList.toggle('oculto', !sugeridas.length);
+    var aberto = q('#p3-aberto');
+    aberto.classList.toggle('oculto', !travado());
+    aberto.querySelector('.nota-texto').textContent = travado() ? msg().pedidoAberto(u().br(d.mes.fecha)) : '';
+    q('#p3-sugerir').disabled = travado();
     var alocs = efetivas();
     var vols = voluntarios();
     var total = vols.reduce(function (s, m) { return s + (m.concedidas || 0); }, 0);
@@ -368,6 +366,7 @@
     erroAntes: function (uid, k) { return (escala.erro[uid] || {})[k]; },
     pelotoes: pelotoes, diasDoMes: diasDoMes, dataDe: dataDe, dataLonga: dataLonga, somaDia: somaDia,
     sobra: function (cpf) { return sobras[cpf] || null; },
+    travado: travado,
     mudar: mudar, marcarAberto: marcarAberto
   };
 })();

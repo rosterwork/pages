@@ -169,6 +169,39 @@
   border-radius: var(--raio-medio);
 }
 
+/* caixa que abre e fecha: o título é um botão com a seta (para baixo aberta, para a direita fechada) */
+.grupo-caixa-cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 24px;
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.grupo-caixa-seta {
+  flex-shrink: 0;
+  color: var(--texto-fraco);
+}
+
+.grupo-caixa-cabecalho[aria-expanded="false"] .grupo-caixa-seta {
+  transform: rotate(-90deg);
+}
+
+.grupo-caixa-cabecalho[aria-expanded="false"] + .grupo-caixa-corpo {
+  display: none;
+}
+
+.grupo-caixa-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 /* variante de problema: reúne pendências / conflitos do item */
 .grupo-caixa--erro {
   background-color: var(--erro-fundo);
@@ -317,6 +350,11 @@
 
   html[data-celular] .painel-subtitulo {
     font-size: 13px;
+  }
+
+  /* o título da caixa que abre e fecha na altura do toque */
+  html[data-celular] .grupo-caixa-cabecalho {
+    min-height: var(--toque-altura-celular);
   }
 
   /* linha das abas de seção na altura do toque (as abas rolam quando não cabem, geral-abas.css) */

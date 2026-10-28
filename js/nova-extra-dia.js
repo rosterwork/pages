@@ -25,7 +25,7 @@
   function G() { return RW.novaExtraGrade; }
 
   function abrir(uid, k) {
-    RW.painel.abrir({ titulo: G().dataLonga(k), subtitulo: (u().unidade(uid) || {}).nome || '', aoFechar: function () { aberto = null; G().marcarAberto(); } });
+    RW.painel.abrir({ titulo: G().dataLonga(k), subtitulo: (u().unidade(uid) || {}).nome || '', largo: true, aoFechar: function () { aberto = null; G().marcarAberto(); } });
     aberto = { uid: uid, data: k };
     abertos = {}; gruposAbertos = {};
     G().marcarAberto();
@@ -138,11 +138,14 @@
       un.classList.remove('oculto');
     }
     var a = G().alocDe(m.cpf, k), marcados = a ? G().blocos(a) : [];
-    var quem = lin.querySelector('.escala-extra-quem');
+    /* embaixo do nome, na largura toda: os selos e o porquê da sugestão numa frase corrida */
+    var fim = lin.querySelector('.escala-extra-outros');
     var selos = selosDoDia(m, uid, k, marcados, false);
-    if (selos.children.length) quem.appendChild(selos);
+    if (selos.children.length) lin.insertBefore(selos, fim);
     if (a && a.origem === 'sugestao' && a.porque && a.porque.length) {
-      a.porque.forEach(function (p) { var t = RW.tpl('tpl-ne-texto'); t.textContent = p; quem.appendChild(t); });
+      var porque = RW.tpl('tpl-ne-texto');
+      porque.textContent = a.porque.map(function (p) { return p.replace(/\.$/, ''); }).join(' · ');
+      lin.insertBefore(porque, fim);
     }
 
     var outros = alocs.filter(function (x) { return x.cpf === m.cpf && x.data !== k; }).sort(function (x, y) { return x.data < y.data ? -1 : 1; });
@@ -182,6 +185,8 @@
       var b = +bt.getAttribute('data-bloco'), on = marcados.indexOf(b) >= 0;
       bt.classList.toggle('escala-extra-marca--on', on);
       bt.setAttribute('aria-pressed', on ? 'true' : 'false');
+      /* com o pedido aberto só dá para desmarcar */
+      bt.disabled = G().travado() && !on;
       bt.addEventListener('click', function () {
         var novo = m.so24 ? (marcados.length ? [] : [1, 2, 3, 4]) : (on ? marcados.filter(function (x) { return x !== b; }) : marcados.concat([b]));
         G().mudar(m, k, novo, uid);

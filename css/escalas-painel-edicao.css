@@ -1,7 +1,8 @@
 /* ============================================================
    ESCALA — painel do dia: a lista do Dia, a edição da linha (o
-   cartão que engloba a linha), o Onde, o De serviço no dia e o
-   Tirar do dia, o Adicionar militar e a folga no dia
+   cartão que engloba a linha, também o de mudar de ciclo da aba
+   Ciclo), o Onde, o De serviço no dia e o Tirar do dia, o
+   Adicionar militar e a folga no dia
    (escalas-painel-editar.js, -linha.js, -quem.js, -servico.js,
    -adicionar.js e -militar.js). A sub-tela, o horário em campos, a
    régua, as notas, o selo, as opções e o campo de militar são dos
@@ -304,6 +305,19 @@
   gap: 8px;
   padding-top: 12px;
   border-top: 1px solid var(--borda);
+}
+
+/* ---------- o cartão de mudar de ciclo (aba Ciclo › Contínuos em outros ciclos): o desenho do cartão da linha, com o
+   militar e o X no topo ---------- */
+.escala-linha-topo.escala-ciclo-cartao-topo {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.escala-ciclo-cartao-pessoa {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
 }
 
 /* ---------- o Onde: o posto e a função lado a lado ---------- */

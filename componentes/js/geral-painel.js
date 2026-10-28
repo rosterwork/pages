@@ -168,6 +168,17 @@
     return caixa;
   }
 
+  /* caixa que abre e fecha: o desenho da caixa, com o título num botão com a seta. A página adiciona os itens no
+     .grupo-caixa-corpo; opcoes.aberta define o estado inicial (padrão: fechada). O clique é delegado no corpo do
+     painel, como nas seções colapsáveis */
+  function criarCaixaRecolhivel(titulo, opcoes) {
+    var caixa = RosterWork.tpl('tpl-grupo-caixa-recolhivel');
+    if (!caixa) return null;
+    caixa.querySelector('.rotulo-secao').textContent = titulo || '';
+    caixa.querySelector('.grupo-caixa-cabecalho').setAttribute('aria-expanded', opcoes && opcoes.aberta ? 'true' : 'false');
+    return caixa;
+  }
+
   function criarLinha(rotulo, valor) {
     var linha = RosterWork.tpl('tpl-linha-info');
     if (!linha) return null;
@@ -249,10 +260,10 @@
 
     elFechar.addEventListener('click', solicitarFechar);
 
-    /* recolher/expandir seções colapsáveis: clique delegado no corpo cobre todas as
-       seções (.painel-secao-cabecalho), criadas por JS ou clonadas de <template> */
+    /* recolher/expandir seções colapsáveis e caixas que abrem e fecham: clique delegado no corpo cobre todas
+       (.painel-secao-cabecalho e .grupo-caixa-cabecalho), criadas por JS ou clonadas de <template> */
     elCorpo.addEventListener('click', function (evento) {
-      var cab = evento.target.closest('.painel-secao-cabecalho');
+      var cab = evento.target.closest('.painel-secao-cabecalho, .grupo-caixa-cabecalho');
       if (!cab) return;
       var abrir = cab.getAttribute('aria-expanded') !== 'true';
       cab.setAttribute('aria-expanded', abrir ? 'true' : 'false');
@@ -301,6 +312,7 @@
     voltarParaLeitura: voltarParaLeitura,
     criarSecao: criarSecao,
     criarCaixa: criarCaixa,
+    criarCaixaRecolhivel: criarCaixaRecolhivel,
     criarLinha: criarLinha,
     criarSecaoColapsavel: criarSecaoColapsavel,
     criarEstado: criarEstado,

@@ -162,11 +162,15 @@
   function cicloRetirarAnalisar(unidadeId, cpf, iso) {
     return cicloAcao('escala_ciclo_retirar_analisar', unidadeId, cpf, iso, { p_so_periodo: true });
   }
-  /* Salvar em lote das mudanças do ciclo acumuladas na tela (recalcula uma vez) */
+  /* grava as mudanças do ciclo (recalcula a escala uma vez) */
   function cicloSalvarLote(unidadeId, iso, mudancas) {
     return RosterWork.apiFetch('/rest/v1/rpc/escala_ciclo_salvar_lote', { metodo: 'POST', corpo: { p_unidade_id: Number(unidadeId), p_data: iso, p_mudancas: mudancas || [] } })
       .then(function (r) { return r.ok ? r.json() : { _falha: 'servidor' }; })
       .catch(function () { return { _falha: 'conexao' }; });
+  }
+  /* o Desfazer do resumo do ciclo (a entrada de quem estava fora ou o cancelamento da saída); logId = o log da gravação */
+  function cicloDesfazer(unidadeId, iso, cpf, acao, logId, saidaEm) {
+    return cicloAcao('escala_ciclo_desfazer', unidadeId, cpf, iso, { p_acao: acao, p_log_id: logId, p_saida_em: saidaEm || null });
   }
 
   /* ---- Extrajornada do dia (aba do painel do dia, na Escala e na Extrajornada) ---- */
@@ -203,7 +207,7 @@
     lerDistribuicaoDia: lerDistribuicaoDia, lerAlteracoesDia: lerAlteracoesDia, simularDia: simularDia, salvarDia: salvarDia,
     lerImpressao: lerImpressao, lerImpressaoErros: lerImpressaoErros, lerSysbm: lerSysbm,
     sysbmTermo: sysbmTermo, sysbmDarCiencia: sysbmDarCiencia,
-    continuosListar: continuosListar, cicloRetirarAnalisar: cicloRetirarAnalisar, cicloSalvarLote: cicloSalvarLote,
+    continuosListar: continuosListar, cicloRetirarAnalisar: cicloRetirarAnalisar, cicloSalvarLote: cicloSalvarLote, cicloDesfazer: cicloDesfazer,
     extraPainel: extraPainel, extraLista: extraLista,
     disponiveis: disponiveis
   };

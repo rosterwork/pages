@@ -200,6 +200,10 @@
             <button type="button" class="aba" data-vista="militar">Por militar</button>
           </div>
         </div>
+        <div class="nota nota--alerta oculto" id="p3-aberto">
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+          <span class="nota-texto"></span>
+        </div>
         <div class="nova-extra-resumo">
           <span id="p3-colocadas"></span>
           <span id="p3-dias-falta"></span>
@@ -336,6 +340,11 @@
   </tr>
 </template>
 
+<!-- passo 1: embaixo do militar com o termo desmarcado, as extras que saem ao salvar -->
+<template id="tpl-ne-p1-aviso">
+  <tr class="nova-extra-linha-aviso"><td colspan="7"><span class="nova-extra-aviso-linha"></span></td></tr>
+</template>
+
 <template id="tpl-ne-p2-unidade">
   <label class="nova-extra-campo nova-extra-campo--linha"><span></span><input type="number" min="0" class="campo-entrada" /></label>
 </template>
@@ -438,7 +447,7 @@
 </template>
 
 <template id="tpl-ne-dia-pessoa">
-  <span class="nova-extra-pessoa"><small></small><b></b><span class="ne-de"></span><span class="ne-hora"></span></span>
+  <span class="nova-extra-pessoa"><b></b><span class="ne-de"></span><span class="espacador-flex"></span></span>
 </template>
 
 <!-- a Legenda da barra: como a sugestão reparte as cotas (passo 2) e como distribui (passo 3) -->
@@ -496,6 +505,10 @@
       <span class="linha-info"><span class="linha-info-rotulo">Cotas</span><span class="linha-info-valor ne-cp-numero"></span></span>
     </div>
     <span class="nota ne-cp-nota oculto"><span class="nota-texto"></span></span>
+    <div class="nota nota--alerta ne-cp-retira oculto">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+      <span class="nota-texto"></span>
+    </div>
   </div>
 </template>
 

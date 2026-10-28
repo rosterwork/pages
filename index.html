@@ -1190,6 +1190,17 @@
     </div>
   </template>
 
+  <!-- a caixa que abre e fecha: o título é o botão (rótulo + seta); os itens vão no .grupo-caixa-corpo -->
+  <template id="tpl-grupo-caixa-recolhivel">
+    <div class="grupo-caixa">
+      <button type="button" class="grupo-caixa-cabecalho" aria-expanded="false">
+        <span class="rotulo-secao"></span>
+        <svg class="icone grupo-caixa-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="grupo-caixa-corpo"></div>
+    </div>
+  </template>
+
   <template id="tpl-linha-info">
     <div class="linha-info">
       <span class="linha-info-rotulo"></span>
@@ -1604,6 +1615,38 @@
     </div>
   </template>
 
+  <!-- aba Ciclo › Contínuos em outros ciclos › Adicionar (escalas-painel-continuos.js): o cartão que entra no lugar da
+       linha, com o X; o último serviço no ciclo atual em bolinhas (escalas-painel-ciclo.js), o que sai da escala dele e
+       o aviso de antes de confirmar. Os textos que mudam vêm do JS -->
+  <template id="tpl-escala-ciclo-mudar">
+    <div class="escala-linha escala-ciclo-cartao">
+      <div class="escala-linha-topo escala-ciclo-cartao-topo">
+        <span class="escala-ciclo-cartao-pessoa"><span class="escala-secao-grad"></span> <span class="escala-secao-nome"></span></span>
+        <button type="button" class="botao-discreto escala-linha-fechar" aria-label="Fechar" data-dica="Fechar">
+          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
+        </button>
+      </div>
+      <div class="escala-linha-corpo">
+        <div class="escala-linha-bloco escala-ciclo-cartao-ultimo">
+          <span class="escala-linha-rotulo-campo escala-ciclo-cartao-rotulo"></span>
+          <div class="escala-adicionar-datas escala-ciclo-cartao-datas"></div>
+        </div>
+        <div class="nota nota--alerta escala-ciclo-cartao-mudar oculto">
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+          <span class="nota-texto"></span>
+        </div>
+        <div class="nota escala-ciclo-cartao-info oculto">
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-historico"/></svg>
+          <span class="nota-texto"></span>
+        </div>
+        <div class="escala-linha-rodape">
+          <button type="button" class="botao escala-ciclo-cartao-cancelar">Cancelar</button>
+          <button type="button" class="botao botao--primario escala-ciclo-cartao-continuar">Continuar</button>
+        </div>
+      </div>
+    </div>
+  </template>
+
   <!-- ===== painel do dia › aba Dia (escalas-painel-editar.js): a lista do dia, que o admin edita ===== -->
   <!-- subcabeçalho do admin: o botão que abre o Adicionar militar (escalas-painel-adicionar.js) -->
   <template id="tpl-escala-edicao-adicionar">
@@ -1918,7 +1961,8 @@
     </div>
   </template>
 
-  <!-- uma data do último serviço no ciclo atual (Adicionar militar, no ciclo): a bolinha e a data por extenso -->
+  <!-- uma data do último serviço no ciclo atual (Adicionar militar, no ciclo, e o cartão de mudar de ciclo da aba Ciclo):
+       a bolinha e a data por extenso -->
   <template id="tpl-escala-adicionar-data">
     <label class="geral-opcao"><input type="radio" value="" /><span class="escala-adicionar-data-texto"></span></label>
   </template>
@@ -2123,6 +2167,10 @@
   <!-- Ciclo: selo "Sai em DD/MM" de um militar com saída marcada -->
   <template id="tpl-escala-secao-selo">
     <span class="selo selo--alerta escala-secao-selo"></span>
+  </template>
+  <!-- Ciclo: a informação de um militar (o "Último serviço em DD/MM" dos Contínuos em outros ciclos) -->
+  <template id="tpl-escala-secao-info">
+    <span class="escala-secao-info"></span>
   </template>
 
   <!-- ===== formulário Novo usuário (usuarios-novo-usuario.js): Usuários › Novo usuário ===== -->
