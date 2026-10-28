@@ -412,7 +412,6 @@
         fila: function (n) { return n + 'º'; },
         pediuRecebeu: function (p, r) { return 'Pediu ' + p + ', recebeu ' + r; },
         primeiraVez: 'Primeira vez',
-        sugestaoN: function (n) { return 'sugestão ' + n; },
         naoSalvo: 'Mudanças não salvas',
         c1ok: function (f) { return 'Pedidos fechados em ' + f; },
         c1aberto: function (f) { return 'O pedido ainda está aberto até ' + f; },
@@ -440,7 +439,36 @@
         faltaGenteHoras: function (h) { return 'Ainda falta gente de ' + h + '.'; },
         faltaCondutorHoras: function (h, cnh) { return 'Ainda falta condutor de ' + h + (cnh ? ', CNH ' + cnh : '') + '.'; },
         faltaCoberta: 'As extras cobrem a falta deste dia.',
-        grupos: { neste: 'Neste dia', querem: 'Querem este dia', disp: 'Disponíveis', naoQuerem: 'Não querem este dia', indisp: 'Indisponíveis' },
+        grupos: { neste: 'Neste dia', querem: 'Querem este dia', disp: 'Sem preferência', naoQuerem: 'Não podem este dia', indisp: 'Indisponíveis' },
+        /* o relatório do dia */
+        relatorioDia: 'Relatório do dia',
+        rdSistema: 'O sistema colocou',
+        rdAdmin: function (quem) { return (quem || 'O administrador') + ' colocou'; },
+        rdHoras: function (h, para) { return 'das ' + h + (para ? ', para ' + para : '') + '.'; },
+        para: { condutorGente: 'cobrir a falta de condutor e de gente', condutor: 'cobrir a falta de condutor', gente: 'cobrir a falta de gente',
+          chefe: 'liberar o chefe da direção', ideal: 'completar o efetivo ideal', menosGente: 'reforçar o horário com menos gente' },
+        pref: { quer: 'Marcou Quero neste dia.', nao: 'Marcou Não posso neste dia.', sem: 'Sem preferência neste dia.' },
+        aindaPodem: function (q, s) {
+          var partes = [];
+          if (q) partes.push(q + (q === 1 ? ' que quer o dia' : ' que querem o dia'));
+          if (s) partes.push(s + ' sem preferência');
+          return 'Ainda podem: ' + partes.join(' e ') + '.';
+        },
+        ninguemPode: function (nao, semCota, outros) {
+          var partes = [];
+          if (nao) partes.push(nao + (nao === 1 ? ' marcou Não posso' : ' marcaram Não posso'));
+          if (semCota) partes.push(semCota + (semCota === 1 ? ' está sem cota' : ' estão sem cota'));
+          if (outros) partes.push(outros + (outros === 1 ? ' está de serviço, de folga ou afastado' : ' estão de serviço, de folga ou afastados'));
+          return 'Ninguém mais pode' + (partes.length ? ': ' + (partes.length > 1 ? partes.slice(0, -1).join(', ') + ' e ' + partes[partes.length - 1] : partes[0]) : '') + '.';
+        },
+        resultadoSugestao: function (c, v, a) {
+          var partes = [];
+          if (v) partes.push(v + (v === 1 ? ' dia com vermelho' : ' dias com vermelho'));
+          if (a) partes.push(a + (v ? ' com amarelo' : (a === 1 ? ' dia com amarelo' : ' dias com amarelo')));
+          return 'A sugestão colocou ' + c + (c === 1 ? ' cota. ' : ' cotas. ') + (partes.length ? 'Ficaram ' + partes.join(' e ') + '.' : 'Não ficou dia com erro.')
+            + ' Clique no pelotão para ver o relatório do dia.';
+        },
+        sobramN: function (n) { return 'Sobram ' + n; },
         extraEm: function (nome) { return 'Extra no ' + nome; },
         expedienteDiaTodo: 'Expediente o dia todo',
         semCotas: 'Sem cotas sobrando',
@@ -453,10 +481,6 @@
         diaOutro: function (dd) { return 'dia ' + dd; },
         diaSemana: function (dd, sem) { return 'dia ' + dd + ' · ' + sem; },
         horasN: function (n) { return n + 'h'; },
-        /* passo 2: o painel do militar */
-        cotasPainelSub: function (unidade, fila) { return unidade + ' · ' + fila + 'º na fila'; },
-        cotasPediu: function (n, so24) { return n + (n === 1 ? ' cota' : ' cotas') + (so24 ? ', só 24 h' : ''); },
-        so24Cotas: 'Só aceita 24 h: recebe as cotas em blocos de 4.',
         /* as extras que saem ao salvar (termo desmarcado ou cota abaixo do que está na grade) */
         listaDias: function (dias) { return dias.length > 1 ? dias.slice(0, -1).join(', ') + ' e ' + dias[dias.length - 1] : dias[0]; },
         retiraTermo: function (dias, ajuste) {
@@ -918,10 +942,7 @@
         instrucao: 'A aba do SYSBM abriu. Faça seu login, se ele pedir, e a extensão preenche a tela de cadastro. Confira e clique em Salvar.',
         falhaEnviar: 'Não foi possível enviar. Tente de novo.',
         /* no bloco, fora do Firefox (o envio é só pela extensão do Firefox) */
-        soFirefox: 'Essa funcionalidade está disponível apenas no navegador Mozilla Firefox.',
-        /* no bloco, no celular sem a extensão (até a loja da Mozilla aprovar, ela só instala no computador) */
-        soComputador: 'Disponível apenas para computadores.',
-        /* no bloco, quando a extensão é instalada com o painel aberto (o Instalar vira o Enviar) */
+        soFirefox: 'Essa funcionalidade está disponível apenas no navegador Mozilla Firefox.',        /* no bloco, quando a extensão é instalada com o painel aberto (o Instalar vira o Enviar) */
         extensaoInstalada: 'Extensão instalada. Já pode enviar.',
         /* o termo de responsabilidade, na janela de confirmação antes do primeiro Enviar de cada administrador.
            versao muda JUNTO com o texto e com _sysbm_termo_versao() do banco (todos dão ciência de novo) */

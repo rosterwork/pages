@@ -153,11 +153,14 @@
       var lista = tabela.querySelector('.nova-distribuicao-viaturas-lista');
       if (!insts.length) P().respostas(lista, [M().nenhuma]);
       insts.forEach(function (inst, i) { linhaInstalacao(lista, ctx, api, inst, i); });
+      lugar.appendChild(tabela);
+      /* Nova instalação: o botão abre o menu dos tipos */
+      var nova = P().tpl('nova-instalacao');
+      nova.querySelector('.botao').disabled = ctx.soLeitura;
       var nomes = insts.map(function (o) { return o.nome; });
-      tabela.querySelectorAll('.nova-distribuicao-nova-instalacao [data-valor]').forEach(function (botao) {
-        botao.disabled = ctx.soLeitura;
-        botao.addEventListener('click', function () {
-          var nome = nomeNovo(botao.getAttribute('data-valor'), nomes);
+      nova.querySelectorAll('.dropdown-item[data-valor]').forEach(function (item) {
+        item.addEventListener('click', function () {
+          var nome = nomeNovo(item.getAttribute('data-valor'), nomes);
           api.mudar(ctx.lado, function (x) {
             x.instalacoes.push({ nome: nome, efetivo: [null, null, null] });
             x.instalacoes.sort(function (a, b) {
@@ -167,7 +170,7 @@
           });
         });
       });
-      lugar.appendChild(tabela);
+      lugar.appendChild(nova);
     }, ctx, 'instalacoes');
 
     P().fixo(u, ctx.ehCia ? M().viaturasCompanhia : M().viaturasPelotao, function (lugar) {

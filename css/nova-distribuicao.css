@@ -567,14 +567,6 @@
   color: var(--texto-forte);
 }
 
-/* Nova instalação: o rótulo e um botão por tipo */
-.nova-distribuicao-nova-instalacao {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-
 .nova-distribuicao-viatura-extra {
   display: flex;
   flex-direction: column;

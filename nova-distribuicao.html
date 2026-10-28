@@ -320,16 +320,20 @@
   <div class="nova-distribuicao-opcoes"></div>
 </template>
 
-<!-- instalações: uma por linha, nas colunas das viaturas; embaixo, a nova pelo tipo (a segunda do mesmo tipo
-     ganha o número) -->
+<!-- instalações: uma por linha, nas colunas das viaturas -->
 <template id="tpl-nova-distribuicao-instalacoes">
   <div class="nova-distribuicao-viaturas">
     <div class="nova-distribuicao-viaturas-lista"></div>
-    <div class="nova-distribuicao-nova-instalacao">
-      <span class="rotulo-secao">Nova instalação</span>
-      <button type="button" class="botao" data-valor="Central de Operações">Central de Operações</button>
-      <button type="button" class="botao" data-valor="Rancho">Rancho</button>
-      <button type="button" class="botao" data-valor="Almoxarifado">Almoxarifado</button>
+  </div>
+</template>
+<!-- Nova instalação: o botão igual ao Nova viatura, com o menu dos tipos (a segunda do mesmo tipo ganha o número) -->
+<template id="tpl-nova-distribuicao-nova-instalacao">
+  <div class="dropdown nova-distribuicao-adicionar">
+    <button type="button" class="botao">Nova instalação</button>
+    <div class="dropdown-menu">
+      <button type="button" class="dropdown-item" data-valor="Central de Operações">Central de Operações</button>
+      <button type="button" class="dropdown-item" data-valor="Rancho">Rancho</button>
+      <button type="button" class="dropdown-item" data-valor="Almoxarifado">Almoxarifado</button>
     </div>
   </div>
 </template>

@@ -1,11 +1,14 @@
 /* ============================================================
    NOVA EXTRA — passo 2: Cotas
-   As cotas recebidas do comando, como repartir e a lista dos
-   voluntários com termo, na ordem da fila. O número de cada um é só
-   leitura: clicar no militar abre o painel com o pedido, a sugestão e
-   o seletor de números do site (geral-dropdown-numeros). Quem ainda
-   não tem cota salva já vem com a sugestão. Tudo fica no rascunho até
-   o Salvar (nova_extra_cotas_salvar).
+   Igual à aba Voluntários da Extrajornada antiga: a banda com as
+   cotas recebidas, como repartir e os números do mês; embaixo, o
+   cabeçalho das colunas e um bloco por pelotão com os voluntários com
+   termo, na ordem da fila. O Recebe é o campo de seleção do site
+   (de 0 até o que ele pediu; quem só aceita 24 h, de 4 em 4). Quem
+   ainda não tem cota salva já vem com a sugestão. Cota abaixo do que
+   ele já tem na distribuição avisa embaixo da linha: as extras dele
+   saem ao salvar. Tudo fica no rascunho até o Salvar
+   (nova_extra_cotas_salvar), que abre o resumo.
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
    RosterWork.novaExtraCotas.
    ============================================================ */
@@ -16,7 +19,6 @@
 
   var d = null, el = null, aoSalvar = null, aoMudar = null;
   var p2 = null;           // o rascunho: { recebidas, modo, unidades, conc, sujo }
-  var aberto = null;       // o cpf do militar aberto no painel
   var ligado = null;
 
   function msg() { return RW.mensagens.novaExtra.org; }
@@ -31,6 +33,8 @@
   function diasDe(m) { return d.alocacoes.filter(function (a) { return a.cpf === m.cpf; }).map(function (a) { return a.data; }).sort().map(u().br); }
   /* abaixo do que está na grade, as extras dele saem ao salvar */
   function perde(m) { return conc(m) < naGrade(m); }
+  /* a lista do Recebe: de 0 até o que ele pediu (quem só aceita 24 h, de 4 em 4) */
+  function opcoes(m) { var l = []; for (var n = 0; n <= (m.cotas || 0); n += m.so24 ? 4 : 1) l.push(n); return l; }
 
   function iniciarRascunho() {
     p2 = { recebidas: d.mes.cotas_recebidas, modo: d.mes.repartir_por || 'grupo', unidades: Object.assign({}, d.mes.cotas_unidades || {}), conc: {}, sujo: false };
@@ -42,93 +46,82 @@
 
   function desenhar() {
     if (!p2) iniciarRascunho();
+    var porUnidade = p2.modo === 'por_unidade';
     q('#p2-recebidas').value = p2.recebidas == null ? '' : p2.recebidas;
-    q('#p2-recebidas').disabled = p2.modo === 'por_unidade';
+    q('#p2-recebidas').disabled = porUnidade;
     todos('#p2-modo [data-modo]', function (b) { b.classList.toggle('aba--ativa', b.getAttribute('data-modo') === p2.modo); });
-    var uni = q('#p2-unidades');
-    uni.classList.toggle('oculto', p2.modo !== 'por_unidade');
-    uni.textContent = '';
-    d.unidades.forEach(function (un) {
-      var c = RW.tpl('tpl-ne-p2-unidade');
-      c.querySelector('span').textContent = un.nome;
-      var inp = c.querySelector('input');
-      inp.value = p2.unidades[un.id] == null ? '' : p2.unidades[un.id];
-      inp.addEventListener('change', function () { p2.unidades[un.id] = inp.value === '' ? 0 : +inp.value; p2.sujo = true; desenhar(); });
-      uni.appendChild(c);
-    });
-    var total = p2.modo === 'por_unidade' ? Object.keys(p2.unidades).reduce(function (s, k) { return s + (+p2.unidades[k] || 0); }, 0) : (+p2.recebidas || 0);
+    var total = porUnidade ? Object.keys(p2.unidades).reduce(function (s, k) { return s + (+p2.unidades[k] || 0); }, 0) : (+p2.recebidas || 0);
     var lista = comTermo();
     var rep = lista.reduce(function (s, m) { return s + conc(m); }, 0);
     q('#p2-repartidas').textContent = rep;
     q('#p2-sobram').textContent = total - rep;
-    q('#p2-sobram').classList.toggle('nova-extra-negativo', total - rep < 0);
-    var tb = q('#p2-lista');
-    tb.textContent = '';
-    lista.forEach(function (m, i) {
-      var tr = RW.tpl('tpl-ne-p2-linha');
-      tr.querySelector('.nova-extra-fila').textContent = msg().fila(i + 1);
-      tr.querySelector('small').textContent = m.grad;
-      tr.querySelector('b').textContent = m.nome;
-      tr.querySelector('.ne-uni').textContent = (u().unidade(m.unidade_id) || {}).nome || '';
-      tr.querySelector('.ne-pediu').textContent = msg().cotas(m.cotas, m.so24);
-      tr.querySelector('.ne-hist').textContent = m.pediu12 ? msg().pediuRecebeu(m.pediu12, m.recebeu12) : msg().primeiraVez;
-      tr.querySelector('.ne-recebe').textContent = conc(m);
-      var sug = tr.querySelector('.ne-sug');
-      sug.textContent = msg().sugestaoN(m.sugerido || 0);
-      sug.classList.toggle('oculto', conc(m) === (m.sugerido || 0));
-      tr.classList.toggle('nova-extra-linha--aberta', aberto === m.cpf);
-      tr.setAttribute('aria-label', m.grad + ' ' + m.nome);
-      tr.addEventListener('click', function () { abrirPainel(m); });
-      tr.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); abrirPainel(m); } });
-      tb.appendChild(tr);
+    q('#p2-sobram').classList.toggle('extra-vol-numero-valor--erro', total - rep < 0);
+    q('#p2-na-escala').textContent = lista.reduce(function (s, m) { return s + naGrade(m); }, 0);
+
+    var alvo = q('#p2-lista');
+    alvo.textContent = '';
+    if (lista.length) alvo.appendChild(RW.tpl('tpl-ne-p2-cab'));
+    var ajuste = d.iniciado && !!d.lancamento;
+    d.unidades.forEach(function (un) {
+      var daqui = lista.filter(function (m) { return m.unidade_id === un.id; });
+      if (!daqui.length) return;
+      var bloco = RW.tpl('tpl-ne-p2-bloco');
+      bloco.querySelector('.extra-vol-bloco-nome').textContent = un.nome;
+      bloco.querySelector('.extra-vol-bloco-detalhe').textContent = un.cidade || '';
+      /* cada unidade com as suas: o total dela no título e o que sobra */
+      var cotas = bloco.querySelector('.extra-vol-bloco-cotas'), restam = bloco.querySelector('.extra-vol-bloco-restam');
+      cotas.classList.toggle('oculto', !porUnidade);
+      restam.classList.toggle('oculto', !porUnidade);
+      if (porUnidade) {
+        var inp = cotas.querySelector('input');
+        inp.value = p2.unidades[un.id] == null ? '' : p2.unidades[un.id];
+        inp.addEventListener('change', function () { p2.unidades[un.id] = inp.value === '' ? 0 : (parseInt(inp.value, 10) || 0); p2.sujo = true; desenhar(); });
+        var sobra = (+p2.unidades[un.id] || 0) - daqui.reduce(function (s, m) { return s + conc(m); }, 0);
+        restam.textContent = msg().sobramN(sobra);
+        restam.classList.toggle('extra-vol-bloco-restam--erro', sobra < 0);
+      }
+      var bloquinho = bloco.querySelector('.extra-vol-bloquinho');
+      daqui.forEach(function (m) {
+        bloquinho.appendChild(linha(m, lista.indexOf(m) + 1));
+        if (perde(m)) {
+          var av = RW.tpl('tpl-ne-p2-aviso');
+          av.textContent = msg().retiraCota(conc(m), diasDe(m), ajuste);
+          bloquinho.appendChild(av);
+        }
+      });
+      alvo.appendChild(bloco);
     });
     q('#p2-vazio').classList.toggle('oculto', lista.length > 0);
     var perdem = lista.filter(perde).length;
     q('#p2-mudancas').textContent = perdem ? msg().naoSalvoRetira(perdem) : (p2.sujo ? msg().naoSalvo : '');
     q('#p2-salvar').disabled = !p2.sujo;
-    if (aberto) preencherPainel();
   }
 
-  /* ---------- o painel do militar ---------- */
-  function abrirPainel(m) {
-    RW.painel.abrir({ titulo: m.grad + ' ' + m.nome, subtitulo: msg().cotasPainelSub((u().unidade(m.unidade_id) || {}).nome || '', m.ordem),
-      aoFechar: function () { aberto = null; marcarAberta(); } });
-    aberto = m.cpf;
-    marcarAberta();
-    preencherPainel();
-  }
-  function marcarAberta() {
-    todos('#p2-lista tr', function (tr) { tr.classList.toggle('nova-extra-linha--aberta', !!aberto && tr.getAttribute('aria-label') === nomeDe(aberto)); });
-  }
-  function nomeDe(cpf) { var m = u().militar(cpf); return m ? m.grad + ' ' + m.nome : ''; }
-
-  function preencherPainel() {
-    var m = u().militar(aberto);
-    if (!m) return;
-    var corpo = RW.painel.corpo();
-    corpo.textContent = '';
-    var f = RW.tpl('tpl-ne-cotas-painel');
-    f.querySelector('.ne-cp-pediu').textContent = msg().cotasPediu(m.cotas, m.so24);
-    f.querySelector('.ne-cp-hist').textContent = m.pediu12 ? msg().pediuRecebeu(m.pediu12, m.recebeu12) : msg().primeiraVez;
-    f.querySelector('.ne-cp-sug').textContent = m.sugerido || 0;
-    var opcoes = [];
-    for (var n = 0; n <= m.cotas; n++) if (!m.so24 || n % 4 === 0) opcoes.push(n);
-    var numero = RW.dropdownNumeros.criar({ opcoes: opcoes, valor: conc(m), aoEscolher: function (v) { p2.conc[m.cpf] = v; p2.sujo = true; desenhar(); } });
-    f.querySelector('.ne-cp-numero').appendChild(numero);
-    var nota = f.querySelector('.ne-cp-nota');
-    nota.classList.toggle('oculto', !m.so24);
-    nota.querySelector('.nota-texto').textContent = msg().so24Cotas;
-    var retira = f.querySelector('.ne-cp-retira');
-    retira.classList.toggle('oculto', !perde(m));
-    if (perde(m)) retira.querySelector('.nota-texto').textContent = msg().retiraCota(conc(m), diasDe(m), d.iniciado && !!d.lancamento);
-    corpo.appendChild(f);
+  /* um voluntário: a fila, o militar, o pedido, os 12 meses, a sugestão, o Recebe e o que já está na escala */
+  function linha(m, fila) {
+    var l = RW.tpl('tpl-ne-p2-linha');
+    l.querySelector('.nova-extra-fila').textContent = msg().fila(fila);
+    l.querySelector('.extra-vol-grad').textContent = m.grad;
+    l.querySelector('.extra-vol-nome').textContent = m.nome;
+    l.querySelector('.extra-vaga-24h').classList.toggle('oculto', !m.so24);
+    l.querySelector('.extra-vol-pediu').textContent = m.cotas;
+    l.querySelector('.ne-hist').textContent = m.pediu12 ? msg().pediuRecebeu(m.pediu12, m.recebeu12) : msg().primeiraVez;
+    l.querySelector('.extra-vol-sugerido').textContent = m.sugerido || 0;
+    l.querySelector('.extra-vol-conc-texto').textContent = conc(m);
+    l.querySelector('.extra-vol-conc').classList.toggle('extra-vol-conc--alterado', conc(m) !== (m.sugerido || 0));
+    RW.dropdownNumeros.preencher(l.querySelector('.extra-vol-conc-menu'), {
+      opcoes: opcoes(m), valor: conc(m),
+      aoEscolher: function (n) { p2.conc[m.cpf] = n; p2.sujo = true; desenhar(); }
+    });
+    l.querySelector('.extra-vol-na-escala').textContent = msg().deCotas(naGrade(m), conc(m));
+    return l;
   }
 
   function salvar(depois) {
     var concedidas = {};
     comTermo().forEach(function (m) { concedidas[m.cpf] = conc(m); });
     RW.rpc('nova_extra_cotas_salvar', {
-      p_competencia: d.competencia, p_cotas_recebidas: p2.modo === 'por_unidade' ? null : (p2.recebidas === '' ? null : +p2.recebidas),
+      p_competencia: d.competencia, p_cotas_recebidas: p2.modo === 'por_unidade' ? null : (p2.recebidas === '' || p2.recebidas == null ? null : +p2.recebidas),
       p_repartir_por: p2.modo, p_cotas_unidades: p2.modo === 'por_unidade' ? p2.unidades : null, p_concedidas: concedidas
     }).then(function (r) {
       if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
@@ -138,7 +131,10 @@
   }
 
   function ligar() {
-    q('#p2-recebidas').addEventListener('change', function () { p2.recebidas = q('#p2-recebidas').value; p2.sujo = true; desenhar(); });
+    q('#p2-recebidas').addEventListener('change', function () {
+      var v = q('#p2-recebidas').value.trim();
+      p2.recebidas = v === '' ? null : (parseInt(v, 10) || 0); p2.sujo = true; desenhar();
+    });
     todos('#p2-modo [data-modo]', function (b) {
       b.addEventListener('click', function () { if (p2.modo === b.getAttribute('data-modo')) return; p2.modo = b.getAttribute('data-modo'); p2.sujo = true; desenhar(); });
     });
@@ -167,9 +163,5 @@
     desenhar();
   }
 
-  RW.novaExtraCotas = {
-    mostrar: mostrar,
-    reiniciar: function () { p2 = null; },
-    fecharPainel: function () { if (aberto && RW.painel.estaAberto()) RW.painel.fechar(); aberto = null; }
-  };
+  RW.novaExtraCotas = { mostrar: mostrar, reiniciar: function () { p2 = null; } };
 })();

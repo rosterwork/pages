@@ -37,10 +37,12 @@
     var uid = aberto.uid, k = aberto.data, alocs = G().efetivas();
     var corpo = RW.painel.corpo();
     corpo.textContent = '';
-    corpo.appendChild(caixaCobertura(uid, k, alocs));
     var grupos = {};
     GRUPOS.forEach(function (g) { grupos[g] = []; });
     G().voluntarios().forEach(function (m) { var g = grupoDe(m, uid, k, alocs); grupos[g.nome].push({ m: m, motivo: g.motivo }); });
+    var relatorio = caixaRelatorio(uid, k, alocs, grupos);
+    if (relatorio) corpo.appendChild(relatorio);
+    corpo.appendChild(caixaCobertura(uid, k, alocs));
     GRUPOS.forEach(function (g) {
       var lista = grupos[g];
       if (!lista.length) return;
@@ -88,6 +90,33 @@
       if (gD) cob.querySelector('.escala-extra-cob-com').appendChild(gD);
       caixa.appendChild(cob);
     }
+    if (RW.escalasCelula) setTimeout(function () { RW.escalasCelula.desenharGraficos(caixa); }, 0);
+    return caixa;
+  }
+
+  /* o relatório do dia: quem o sistema e o administrador colocaram, por quê e o que o militar marcou no pedido;
+     depois, o que ainda falta e quem ainda pode (ou por que ninguém mais pode). Sem nada a dizer, não aparece */
+  function caixaRelatorio(uid, k, alocs, grupos) {
+    var caixa = RW.painel.criarCaixa(msg().relatorioDia);
+    var falta = G().faltaDoDia(uid, k, alocs), linhas = 0;
+    var aqui = alocs.filter(function (a) { return +a.unidade === uid && a.data === k; })
+      .sort(function (x, y) { return Math.min.apply(null, G().blocos(x)) - Math.min.apply(null, G().blocos(y)); });
+    var eu = RW.sessao && RW.sessao.perfil ? RW.sessao.perfil() || {} : {};
+    aqui.forEach(function (a) {
+      var m = u().militar(a.cpf) || { grad: '', nome: a.cpf }, sistema = a.origem === 'sugestao';
+      var lin = RW.tpl(sistema ? 'tpl-ne-rd-sistema' : 'tpl-ne-rd-admin');
+      lin.querySelector('.ne-rd-ini').textContent = sistema ? msg().rdSistema : msg().rdAdmin(a.por || ((eu.grau_abreviacao || '') + ' ' + (eu.nome_de_guerra || '')).trim());
+      lin.querySelector('.ne-rd-nome').textContent = m.grad + ' ' + m.nome;
+      Array.prototype.forEach.call(lin.querySelectorAll('.nova-extra-bol i'), function (i, j) { if (G().blocos(a).indexOf(j + 1) >= 0) i.classList.add('nova-extra-bol--on'); });
+      lin.querySelector('.ne-rd-fim').textContent = msg().rdHoras(u().horas(a.blocos), paraDe(falta.cobre[a.cpf] || [], sistema)) + ' ' + msg().pref[u().pref(m, k)];
+      /* o resto do porquê da sugestão (o que ela cobre e o que ele marcou já estão na frase) */
+      var mais = sistema && a.porque ? a.porque.filter(function (p) { return !/^(Cobre|Assume|Completa|É um dia que ele quer|Horário com menos gente)/.test(p); }).map(function (p) { return p.replace(/\.$/, ''); }).join(' · ') : '';
+      var pq = lin.querySelector('.ne-rd-mais');
+      pq.textContent = mais;
+      pq.classList.toggle('oculto', !mais);
+      caixa.appendChild(lin);
+      linhas++;
+    });
     var gente = [], cond = [], ideal = [], chefe = [];
     [1, 2, 3, 4].forEach(function (b) {
       if (falta.total[b] - falta.cond[b] > 0) gente.push(b);
@@ -95,15 +124,51 @@
       if (falta.atotal[b] - falta.acond[b] > 0) ideal.push(b);
       if (falta.acond[b] > 0) chefe.push(b);
     });
+    var frases = [];
+    if (gente.length) frases.push([msg().faltaGenteHoras(u().horas(gente)), 'erro']);
+    if (cond.length) frases.push([msg().faltaCondutorHoras(u().horas(cond), falta.cnh.join(', ')), 'erro']);
+    if (chefe.length) frases.push([msg().chefeDirigeHoras(u().horas(chefe), falta.acnh.join(', ')), 'alerta']);
+    if (ideal.length) frases.push([msg().faltaIdealHoras(u().horas(ideal)), 'alerta']);
+    frases.forEach(function (f, i) {
+      var lin = RW.tpl('tpl-ne-rd-falta');
+      lin.classList.add('nova-extra-rd-linha--' + f[1]);
+      lin.querySelector('.ne-rd-fim').textContent = f[0];
+      /* na primeira, quem ainda pode tirar extra no dia (ou por que ninguém mais pode) */
+      if (i === 0) {
+        var pode = lin.querySelector('.ne-rd-mais');
+        pode.textContent = quemPode(grupos);
+        pode.classList.remove('oculto');
+      }
+      caixa.appendChild(lin);
+      linhas++;
+    });
     var tinha = [1, 2, 3, 4].some(function (b) { return falta.base[b] + falta.abase[b] > 0; });
-    function frase(texto, classe) { var t = RW.tpl('tpl-ne-texto'); t.textContent = texto; t.classList.add(classe); caixa.appendChild(t); }
-    if (gente.length) frase(msg().faltaGenteHoras(u().horas(gente)), 'nova-extra-falta-sobra');
-    if (cond.length) frase(msg().faltaCondutorHoras(u().horas(cond), falta.cnh.join(', ')), 'nova-extra-falta-sobra');
-    if (chefe.length) frase(msg().chefeDirigeHoras(u().horas(chefe), falta.acnh.join(', ')), 'nova-extra-falta-amarela');
-    if (ideal.length) frase(msg().faltaIdealHoras(u().horas(ideal)), 'nova-extra-falta-amarela');
-    if (tinha && !gente.length && !cond.length && !ideal.length && !chefe.length) frase(msg().faltaCoberta, 'nova-extra-falta-ok');
-    if (RW.escalasCelula) setTimeout(function () { RW.escalasCelula.desenharGraficos(caixa); }, 0);
-    return caixa;
+    if (tinha && !frases.length) {
+      var ok = RW.tpl('tpl-ne-rd-ok');
+      ok.querySelector('.ne-rd-fim').textContent = msg().faltaCoberta;
+      caixa.appendChild(ok);
+      linhas++;
+    }
+    return linhas ? caixa : null;
+  }
+
+  /* o que a extra cobriu, numa frase: a falta de condutor e de gente (vermelho), o chefe e o ideal (amarelo) */
+  function paraDe(c, sistema) {
+    var p = msg().para, partes = [];
+    if (c.indexOf('condutor') >= 0 && c.indexOf('gente') >= 0) partes.push(p.condutorGente);
+    else if (c.indexOf('condutor') >= 0) partes.push(p.condutor);
+    else if (c.indexOf('gente') >= 0) partes.push(p.gente);
+    if (c.indexOf('chefe') >= 0) partes.push(p.chefe);
+    if (c.indexOf('ideal') >= 0) partes.push(p.ideal);
+    if (!partes.length && sistema) partes.push(p.menosGente);
+    return partes.join(' e ');
+  }
+
+  /* quem ainda pode tirar extra no dia: os que querem e os sem preferência; se ninguém, por quê */
+  function quemPode(grupos) {
+    var semCota = grupos.indisp.filter(function (x) { return x.motivo === msg().semCotas; }).length;
+    if (grupos.querem.length + grupos.disp.length) return msg().aindaPodem(grupos.querem.length, grupos.disp.length);
+    return msg().ninguemPode(grupos.naoQuerem.length, semCota, grupos.indisp.length - semCota);
   }
 
   /* os selos do militar no dia: quer o dia (comQuer; no painel o ponto verde já diz), sai e entra no serviço,

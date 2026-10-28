@@ -42,17 +42,35 @@
     militar: function (cpf) { return (d && d.militares.filter(function (m) { return m.cpf === cpf; })[0]) || null; },
     unidade: function (id) { return (d && d.unidades.filter(function (u) { return u.id === +id; })[0]) || null; },
     nome: function (cpf) { var m = util.militar(cpf); return m ? m.grad + ' ' + m.nome : cpf; },
-    /* a extra no bloco do dia (como no calendário antigo): o nome, a sigla quando é de outro pelotão e as 4 bolinhas */
-    pessoa: function (a, uid) {
-      var m = util.militar(a.cpf) || {};
-      var p = RW.tpl('tpl-ne-dia-pessoa');
-      p.querySelector('b').textContent = m.nome || a.cpf;
-      p.querySelector('.ne-de').textContent = m.unidade_id && m.unidade_id !== uid ? String((util.unidade(m.unidade_id) || {}).nome || '').replace('PEL', '') : '';
-      var bol = RW.tpl('tpl-ne-bol');
-      Array.prototype.forEach.call(bol.children, function (i, j) { if (a.blocos.map(Number).indexOf(j + 1) >= 0) i.classList.add('nova-extra-bol--on'); });
-      p.appendChild(bol);
-      p.setAttribute('aria-label', (m.grad ? m.grad + ' ' : '') + (m.nome || a.cpf) + ', ' + util.horas(a.blocos));
-      return p;
+    /* o que o militar marcou no pedido para o dia: 'quer', 'nao' (Não posso) ou 'sem' (sem preferência) */
+    pref: function (m, k) { return (m.quer || []).indexOf(k) >= 0 ? 'quer' : (m.nao_posso || []).indexOf(k) >= 0 ? 'nao' : 'sem'; },
+    /* a extra no bloco do dia, como a vaga da Extrajornada antiga: o ponto da preferência, posto e nome, o Tirar
+       deste dia, o pelotão quando é de outro, o 24h e os 4 horários. Sem op.aoMarcar é só leitura (aba Calendário);
+       op.travado (pedido aberto) só deixa desmarcar */
+    vaga: function (a, uid, op) {
+      op = op || {};
+      var m = util.militar(a.cpf) || {}, blocos = a.blocos.map(Number);
+      var v = RW.tpl('tpl-ne-vaga');
+      v.querySelector('.extra-vaga-origem').classList.add({ quer: 'extra-dia-ponto--quer', nao: 'extra-dia-ponto--nao', sem: 'extra-dia-ponto--neutro' }[util.pref(m, a.data)]);
+      v.querySelector('.extra-vaga-grad').textContent = m.grad || '';
+      v.querySelector('.extra-vaga-nome').textContent = m.nome || a.cpf;
+      if (m.unidade_id && m.unidade_id !== uid) {
+        var pel = v.querySelector('.extra-vaga-pelotao');
+        pel.textContent = (util.unidade(m.unidade_id) || {}).nome || '';
+        pel.classList.remove('oculto');
+      }
+      v.querySelector('.extra-vaga-24h').classList.toggle('oculto', blocos.length !== 4);
+      Array.prototype.forEach.call(v.querySelectorAll('.escala-extra-marca'), function (bt) {
+        var b = +bt.getAttribute('data-bloco'), on = blocos.indexOf(b) >= 0;
+        bt.classList.toggle('escala-extra-marca--on', on);
+        bt.setAttribute('aria-pressed', on ? 'true' : 'false');
+        bt.disabled = !op.aoMarcar || (op.travado && !on);
+        bt.addEventListener('click', function (ev) { ev.stopPropagation(); if (op.aoMarcar) op.aoMarcar(b); });
+      });
+      var tirar = v.querySelector('.extra-vaga-tirar');
+      tirar.classList.toggle('oculto', !op.aoTirar);
+      tirar.addEventListener('click', function (ev) { ev.stopPropagation(); if (op.aoTirar) op.aoTirar(); });
+      return v;
     },
     br: br
   };
@@ -115,7 +133,6 @@
     }
     passo = n;
     if (n !== 3 && RW.novaExtraMontar) RW.novaExtraMontar.fecharPainel();
-    if (n !== 2 && RW.novaExtraCotas) RW.novaExtraCotas.fecharPainel();
     RW.novaExtra.legenda(n === 2 ? 'tpl-ne-legenda-cotas' : n === 3 ? 'tpl-ne-legenda-dist' : null);
     todos('[data-passo-painel]', function (p) { p.classList.toggle('oculto', +p.getAttribute('data-passo-painel') !== n); });
     passosTopo();
@@ -255,7 +272,7 @@
   function passo5() { if (RW.novaExtraRelatorio) RW.novaExtraRelatorio.mostrar(d, el); }
 
   /* ---------- aba Calendário ---------- */
-  /* as unidades com extra no mês, cada uma na mesma altura em todos os dias (a vazia fica invisível) */
+  /* as unidades com extra no mês, no bloco da Escala, cada uma na mesma altura em todos os dias (a vazia fica invisível) */
   function desenharCalendario() {
     q('#nova-extra-cal-aviso').classList.toggle('oculto', !!d.lancamento);
     var alocs = d.alocacoes;
@@ -265,11 +282,12 @@
       if (!noMes) return;
       var k = comp.slice(0, 8) + String(data.getDate()).padStart(2, '0');
       unidades.forEach(function (un) {
-        var b = RW.tpl('tpl-ne-cal-leitura');
-        b.querySelector('.nova-extra-cal-uni-nome').textContent = un.nome;
+        var b = RW.tpl('tpl-escala-calendario-unidade');
+        b.classList.add('nova-extra-cal-leitura');
+        b.querySelector('.escala-calendario-unidade-nome').textContent = un.nome;
         var aqui = alocs.filter(function (a) { return a.data === k && +a.unidade === un.id; });
         b.classList.toggle('nova-extra-cal-uni--vazia', !aqui.length);
-        aqui.forEach(function (a) { b.querySelector('.nova-extra-cal-extras').appendChild(util.pessoa(a, un.id)); });
+        aqui.forEach(function (a) { b.querySelector('.escala-mes-celula').appendChild(util.vaga(a, un.id)); });
         cel.appendChild(b);
       });
     } });
@@ -305,7 +323,6 @@
   /* fora do Organizar: fecha o painel e a caixa abertos e some a Legenda */
   function sair() {
     if (RW.novaExtraMontar) RW.novaExtraMontar.fecharPainel();
-    if (RW.novaExtraCotas) RW.novaExtraCotas.fecharPainel();
     RW.novaExtra.legenda(null);
   }
 

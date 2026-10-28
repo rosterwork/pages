@@ -371,22 +371,6 @@
   gap: 8px;
 }
 
-.nova-extra-campo {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 12px;
-  color: var(--texto-suave);
-}
-
-.nova-extra-campo--linha {
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.nova-extra-campo--linha input { max-width: 96px; }
-
 .nova-extra-linha-n {
   display: flex;
   justify-content: space-between;
@@ -452,18 +436,6 @@
   color: var(--alerta);
 }
 
-/* a linha que abre o painel (passo 2) */
-.nova-extra-linha-clicavel { cursor: pointer; }
-.nova-extra-linha-clicavel:hover td { background-color: var(--fundo-suave); }
-
-.nova-extra-linha--aberta td,
-.nova-extra-linha--aberta:hover td { background-color: var(--fundo-medio); }
-
-.nova-extra-linha-clicavel:focus-visible {
-  outline: 2px solid var(--foco);
-  outline-offset: -2px;
-}
-
 .nova-extra-nome small { margin-right: 2px; color: var(--texto-fraco); }
 .nova-extra-nome b { font-weight: 600; color: var(--texto-forte); }
 
@@ -492,41 +464,7 @@
 
 .nova-extra-motivo input { width: 260px; }
 
-/* passo 2: uma linha só com as cotas recebidas, repartidas, que sobram e o Repartir */
-.nova-extra-cotas-topo {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 32px;
-  padding: 16px;
-}
-
-.nova-extra-numero {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.nova-extra-numero b {
-  min-height: 32px;
-  font-size: 22px;
-  font-weight: 600;
-  line-height: 32px;
-  color: var(--texto-forte);
-}
-
-.nova-extra-numero input { width: 120px; }
-.nova-extra-negativo { color: var(--erro); }
-
-.nova-extra-por-unidade {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
 .nova-extra-espaco { flex: 1; }
-
-.nova-extra-tabela .nova-extra-centro { text-align: center; }
 
 .nova-extra-fila {
   font-variant-numeric: tabular-nums;
@@ -535,29 +473,15 @@
 
 .nova-extra-historico { color: var(--texto-fraco); }
 
-/* o Recebe: o número e, embaixo, a sugestão quando ele mudou */
-.nova-extra-recebe {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
+/* passo 2: a banda e a lista no padrão da aba Voluntários (extrajornada.css); aqui só o que muda: sem o
+   recuo próprio (o corpo da página já tem), a fila e o aviso embaixo da linha de quem perde as extras */
+.nova-extra-cotas-banda { padding: 0; }
 
-.nova-extra-recebe b {
-  font-weight: 600;
-  color: var(--texto-forte);
-}
-
-.nova-extra-recebe small {
-  font-size: 11px;
-  color: var(--texto-fraco);
-}
-
-/* o painel do militar no passo 2 */
-.nova-extra-cotas-painel {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.nova-extra-p2-aviso {
+  display: block;
+  padding: 0 12px 8px;
+  font-size: 12px;
+  color: var(--alerta);
 }
 
 .nova-extra-item {
@@ -627,74 +551,73 @@
 .nova-extra-dist-cal .geral-calendario-mes-cabecalho,
 .nova-extra-dist-cal .geral-calendario-mes-semana { grid-template-columns: repeat(7, minmax(110px, 1fr)); }
 
-/* o bloquinho branco de uma unidade dentro do dia (o calendário da Escala, padrão de blocos):
-   o nome, as barras antes e depois (rótulo | barra) e só as extras; clicar abre o painel do dia */
-.nova-extra-cal-uni {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-  padding: 4px 0;
+/* a vaga da Extrajornada antiga numa coluna estreita: o nome corta com reticências e os horários descem de linha
+   só quando não cabem */
+.nova-extra-dist-cal .extra-vaga-id {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nova-extra-dist-cal .extra-vaga-linha-controles { flex-wrap: wrap; }
+
+/* a dica do Tirar sai para a esquerda (o X fica na ponta direita da vaga), como a dica perto da borda: sem isso,
+   a dica escondida da última coluna passa da borda e o calendário rola para o lado */
+.nova-extra-dist-cal .extra-vaga-tirar[data-dica]::after {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+/* o título do pelotão no bloco do dia (o mesmo do Calendário da Escala) com a cor do dia: verde, a sugestão
+   preencheu e não sobrou erro; vermelho ou amarelo, ainda sobra */
+.nova-extra-uni-nome {
+  align-self: flex-start;
+  margin: 0 4px 2px;
+  padding: 0 4px;
+  border-radius: var(--raio-pequeno);
+}
+
+.nova-extra-uni-nome--ok { background-color: var(--sucesso-fundo); color: var(--sucesso); }
+.nova-extra-uni-nome--erro { background-color: var(--erro-fundo); color: var(--erro); }
+.nova-extra-uni-nome--alerta { background-color: var(--alerta-fundo); color: var(--alerta); }
+
+/* painel do dia: o relatório do dia, uma linha por extra e pelo que ainda falta (como as observações da escala) */
+.nova-extra-rd-linha {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+  padding: 8px;
   border-radius: var(--raio-pequeno);
   background-color: var(--fundo-superficie);
-  box-shadow: var(--sombra-bloco);
-  cursor: pointer;
-  transition: background-color 0.15s ease;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--texto);
 }
 
-.nova-extra-cal-uni:hover { background-color: var(--fundo-suave); }
+.nova-extra-rd-linha .icone { margin-top: 2px; }
+.nova-extra-rd-linha--ok .icone { color: var(--sucesso); }
+.nova-extra-rd-linha--adm .icone,
+.nova-extra-rd-linha--alerta .icone { color: var(--alerta); }
+.nova-extra-rd-linha--erro .icone { color: var(--erro); }
+.nova-extra-rd-texto b { font-weight: 600; color: var(--texto-forte); }
 
-.nova-extra-cal-uni--aberto,
-.nova-extra-cal-uni--aberto:hover { background-color: var(--fundo-medio); }
-
-.nova-extra-cal-uni:focus-visible {
-  outline: 2px solid var(--foco);
-  outline-offset: 2px;
-}
-
-.nova-extra-cal-uni-nome {
-  padding: 0 8px;
-  overflow: hidden;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  text-overflow: ellipsis;
-  text-transform: uppercase;
-  white-space: nowrap;
-  color: var(--texto-fraco);
-}
-
-.nova-extra-cal-barras {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: 2px 4px;
-  padding: 0 4px;
-}
-
-.nova-extra-cal-rotulo {
-  font-size: 9px;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  color: var(--texto-fraco);
-}
-
-.nova-extra-cal-barra { min-width: 0; }
-
-.nova-extra-cal-sem {
-  padding-left: 4px;
+.nova-extra-rd-texto small {
+  display: block;
   font-size: 11px;
   color: var(--texto-fraco);
 }
 
-.nova-extra-cal-extras {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 0 4px;
+.nova-extra-rd-texto .nova-extra-bol { vertical-align: middle; }
+
+.nova-extra-rd-texto .nova-extra-bol i {
+  width: 6px;
+  height: 6px;
+  background-color: var(--borda-forte);
 }
 
-.nova-extra-cal-extras:empty { display: none; }
+.nova-extra-rd-texto .nova-extra-bol .nova-extra-bol--on { background-color: var(--texto-forte); }
 
 /* painel do dia: os selos embaixo do nome, o porquê da sugestão e a falta que sobra */
 .nova-extra-selos-linha {
@@ -1164,56 +1087,15 @@
   color: var(--texto);
 }
 
-/* ---------- a aba Calendário: o bloco de uma unidade só para ler (sem clique) ---------- */
-.nova-extra-cal-uni--leitura,
-.nova-extra-cal-uni--leitura:hover {
+/* ---------- a aba Calendário: o bloco da Escala só para ler (sem clique) ---------- */
+.nova-extra-cal-leitura,
+.nova-extra-cal-leitura:hover {
   background-color: var(--fundo-superficie);
   cursor: default;
 }
 
 /* a unidade sem extra no dia guarda o lugar, para as outras ficarem na mesma altura */
 .nova-extra-cal-uni--vazia { visibility: hidden; }
-
-/* a extra no bloco do dia, como no calendário antigo: o bloco cinza com o traço à esquerda, o nome,
-   a sigla de outro pelotão e as 4 bolinhas (08h, 14h, 20h e 02h) à direita, numa linha só */
-.nova-extra-pessoa {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  min-width: 0;
-  min-height: 22px;
-  padding: 0 4px;
-  border-left: 2px solid var(--foco);
-  border-radius: var(--raio-pequeno);
-  background-color: var(--fundo-medio);
-  font-size: 11px;
-  white-space: nowrap;
-}
-
-.nova-extra-pessoa b {
-  min-width: 0;
-  overflow: hidden;
-  font-weight: 600;
-  text-overflow: ellipsis;
-  color: var(--texto-forte);
-}
-
-.nova-extra-pessoa .ne-de {
-  flex-shrink: 0;
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--texto-fraco);
-}
-
-.nova-extra-pessoa .nova-extra-bol { flex-shrink: 0; }
-
-.nova-extra-pessoa .nova-extra-bol i {
-  width: 6px;
-  height: 6px;
-  background-color: var(--borda-forte);
-}
-
-.nova-extra-pessoa .nova-extra-bol .nova-extra-bol--on { background-color: var(--texto-forte); }
 
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
@@ -1262,7 +1144,5 @@
   html[data-celular] .nova-extra-rel-etapas,
   html[data-celular] .nova-extra-rel-previa { flex: none; }
 
-  html[data-celular] .nova-extra-cotas-topo { gap: 16px; }
-  html[data-celular] .nova-extra-cotas-topo .nova-extra-espaco { display: none; }
   html[data-celular] .nova-extra-motivo input { width: 100%; }
 }

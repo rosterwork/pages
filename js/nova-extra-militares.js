@@ -25,7 +25,6 @@
   function u() { return RW.novaExtraUtil; }
   function G() { return RW.novaExtraGrade; }
   function fds(k) { var s = G().dataDe(k).getDay(); return s === 0 || s === 6; }
-  function sigla(nome) { return String(nome || '').replace('PEL', ''); }
 
   /* as 4 bolinhas: cada uma recebe a classe do horário (on, ok, falta, ideal, sem) */
   function bolinhas(classes) {
@@ -104,7 +103,7 @@
         if (+a.unidade !== m.unidade_id) {
           casa.classList.add('nova-extra-gm-casa--fora');
           var s = RW.tpl('tpl-ne-gm-sigla');
-          s.textContent = sigla((u().unidade(a.unidade) || {}).nome);
+          s.textContent = (u().unidade(a.unidade) || {}).nome || '';
           casa.appendChild(s);
         }
       }

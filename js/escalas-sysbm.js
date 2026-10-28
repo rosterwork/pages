@@ -6,11 +6,9 @@
    extensão Roster Work (extensao-sysbm, fora do site; publicada
    na loja da Mozilla):
    - fora do Firefox: o título e o aviso de que é só no Firefox;
-   - no Firefox sem a extensão: o título e o Instalar a extensão (o
-     arquivo dela, extensao/roster-work.xpi, só no computador; no
-     celular, o aviso de que é só para computadores, até a loja da
-     Mozilla aprovar); instalada com o painel aberto, o bloco troca
-     sozinho para o Enviar e confirma;
+   - no Firefox sem a extensão: o título e o Instalar a extensão (a
+     página dela na loja da Mozilla, noutra aba); instalada com o
+     painel aberto, o bloco troca sozinho para o Enviar e confirma;
    - com a extensão: ele lê no banco a escala do pelotão no dia já
      convertida nas linhas do SYSBM (escala_sysbm; na CIBM o banco
      recusa, e o dia sem escala não tem o que lançar: nos dois
@@ -242,14 +240,11 @@
     if (!eFirefox() || !temExtensao()) {
       partes.enviar.classList.add('oculto');
       partes.toggle.classList.add('oculto');
-      /* no celular sem a extensão, o aviso de que é só para computadores (a instalação é pelo arquivo do site
-         até a loja da Mozilla aprovar); no computador, fora do Firefox, o aviso; no Firefox, o Instalar */
-      var aviso = (RW.celular && RW.celular()) ? msg().soComputador : (eFirefox() ? '' : msg().soFirefox);
-      if (aviso) {
-        partes.situacao.textContent = aviso;
-        partes.situacao.classList.remove('oculto');
-      } else {
+      if (eFirefox()) {
         partes.instalar.classList.remove('oculto');
+      } else {
+        partes.situacao.textContent = msg().soFirefox;
+        partes.situacao.classList.remove('oculto');
       }
       corpo.appendChild(bloco);
       if (eFirefox()) esperarExtensao(partes, unidadeId, iso);

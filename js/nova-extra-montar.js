@@ -1,13 +1,11 @@
 /* ============================================================
-   NOVA EXTRA — passo 3: Distribuição (o núcleo e o Por dia)
+   NOVA EXTRA — passo 3: Distribuição (o núcleo)
    O rascunho das extras do mês, a falta de cada pelotão (vermelha e
-   amarela, com e sem as extras), a escala do mês (a mesma leitura da
-   Escala) e o Por dia: o calendário do mês (geral-calendario-mes) com
-   um bloco por unidade em cada dia: a barra antes (sem extra), a barra
-   depois (a conta com as extras: soma 1 por extra no horário e a cor
-   sai onde a extra cobre a falta) e só as extras. Clicar no bloco abre
-   o painel do dia (nova-extra-dia.js); o Por militar é a grade dos 31
-   dias (nova-extra-militares.js). Os dois leem daqui (RosterWork.
+   amarela, com e sem as extras, e o que cada extra cobriu), a escala
+   do mês (a mesma leitura da Escala), o resumo e o resultado da
+   sugestão. O Por dia é o calendário (nova-extra-por-dia.js), o painel
+   do dia fica em nova-extra-dia.js e o Por militar é a grade dos 31
+   dias (nova-extra-militares.js). Todos leem daqui (RosterWork.
    novaExtraGrade). Tudo fica no rascunho até o Salvar
    (nova_extra_distribuicao_salvar); "Preencher pela sugestão" pede o
    rascunho ao motor (nova_extra_sugerir).
@@ -30,8 +28,6 @@
   var vista = 'dia';
   var escala = null;       // a escala do mês sem extra: { comp, cobertura, erro }
   var escalaSeq = 0;
-  var picos = {};          // a régua das barras de cada unidade no mês (antes e depois)
-  var diasCal = {};        // a célula de cada dia no calendário { data: celula }
 
   function msg() { return RW.mensagens.novaExtra.org; }
   function u() { return RW.novaExtraUtil; }
@@ -77,7 +73,9 @@
     function tira(lista, m) { for (var i = 0; i < lista.length; i++) { if (conduz(m, lista[i])) { lista.splice(i, 1); return true; } } return false; }
     var base = ler(d.falta), pede = ler(d.falta_condutor), abase = ler(d.falta_amarela), apede = ler(d.falta_amarela_condutor);
     var aqui = alocs.filter(function (a) { return +a.unidade === +uid && a.data === k; });
-    var r = { base: {}, cond: {}, total: {}, cnh: [], abase: {}, acond: {}, atotal: {}, acnh: [] };
+    var r = { base: {}, cond: {}, total: {}, cnh: [], abase: {}, acond: {}, atotal: {}, acnh: [], cobre: {} };
+    /* o que cada extra cobriu (condutor, gente, chefe, ideal), para o relatório do dia */
+    function cobriu(a, o) { var l = r.cobre[a.cpf] = r.cobre[a.cpf] || []; if (l.indexOf(o) < 0) l.push(o); }
     [1, 2, 3, 4].forEach(function (b) {
       var conds = (pede[String(b)] || []).slice(), aconds = (apede[String(b)] || []).slice();
       conds.forEach(function (c) { if (c && r.cnh.indexOf(c) < 0) r.cnh.push(c); });
@@ -86,10 +84,10 @@
       aqui.forEach(function (a) {
         if (blocos(a).indexOf(b) < 0) return;
         var m = u().militar(a.cpf) || {};
-        if (tira(conds, m)) return;
-        if (gente > 0) { gente--; return; }
-        if (tira(aconds, m)) return;
-        if (agente > 0) agente--;
+        if (tira(conds, m)) { cobriu(a, 'condutor'); return; }
+        if (gente > 0) { gente--; cobriu(a, 'gente'); return; }
+        if (tira(aconds, m)) { cobriu(a, 'chefe'); return; }
+        if (agente > 0) { agente--; cobriu(a, 'ideal'); }
       });
       r.base[b] = base[String(b)] || 0;
       r.cond[b] = conds.length;
@@ -101,6 +99,11 @@
     return r;
   }
   function somaFalta(f) { return f.total[1] + f.total[2] + f.total[3] + f.total[4]; }
+  /* a cor do dia de um pelotão: 'erro' ou 'alerta' se ainda sobra; 'ok' se tinha erro e as extras cobriram */
+  function corDe(f) {
+    function tem(o) { return [1, 2, 3, 4].some(function (b) { return o[b] > 0; }); }
+    return tem(f.total) ? 'erro' : tem(f.atotal) ? 'alerta' : (tem(f.base) || tem(f.abase)) ? 'ok' : '';
+  }
   /* as unidades que entram na conta da falta: os pelotões (na companhia, a extra entra só manualmente) */
   function pelotoes(lista) { return (lista || d.unidades).filter(function (x) { return x.pelotao !== false; }); }
 
@@ -145,88 +148,7 @@
     var f = faltaDoDia(uid, k, alocs);
     return [1, 2, 3, 4].map(function (b) { return f.total[b] > 0 ? 'falta' : f.atotal[b] > 0 ? 'ideal' : 'ok'; });
   }
-  function calcularPicos(alocs) {
-    picos = {};
-    d.unidades.forEach(function (un) {
-      var pico = 0;
-      Object.keys(escala.cobertura[un.id] || {}).forEach(function (k) {
-        (escala.cobertura[un.id][k] || []).forEach(function (n) { if (+n > pico) pico = +n; });
-      });
-      alocs.forEach(function (a) {
-        if (+a.unidade !== un.id) return;
-        var dep = depoisDe(un.id, a.data, alocs, faltaDoDia(un.id, a.data, alocs));
-        if (dep) dep.cobertura.forEach(function (n) { if (n > pico) pico = n; });
-      });
-      picos[un.id] = pico;
-    });
-  }
-  function grafico(cob, uid, erro) { return RW.escalasCelula ? RW.escalasCelula.montarGrafico(cob, picos[uid] || 1, erro) : null; }
-
-  /* ---------- Por dia: o calendário ---------- */
-  function desenharCalendario() {
-    var alvo = q('#p3-cal');
-    diasCal = {};
-    var alocs = efetivas();
-    calcularPicos(alocs);
-    RW.geralCalendarioMes.renderizar(alvo, { dataRef: dataDe(d.competencia), unidadesPorDia: d.unidades.length, aoDia: function (cel, data, noMes) {
-      if (!noMes) return;
-      var k = iso(data);
-      diasCal[k] = cel;
-      d.unidades.forEach(function (un) { cel.appendChild(blocoUnidade(un, k, alocs)); });
-    } });
-    var wrap = alvo.querySelector('.geral-calendario-mes');
-    if (wrap && RW.escalasCelula) RW.escalasCelula.ativarGraficos(wrap);
-  }
-
-  function blocoUnidade(un, k, alocs) {
-    var b = RW.tpl('tpl-ne-cal-uni');
-    var ab = dia().aberto();
-    b.setAttribute('data-uid', un.id);
-    b.setAttribute('data-dia', k);
-    b.setAttribute('aria-label', un.nome + ', ' + u().br(k));
-    b.classList.toggle('nova-extra-cal-uni--aberto', !!ab && ab.uid === un.id && ab.data === k);
-    b.querySelector('.nova-extra-cal-uni-nome').textContent = un.nome;
-    var falta = faltaDoDia(un.id, k, alocs);
-    var aqui = alocs.filter(function (a) { return +a.unidade === un.id && a.data === k; })
-      .sort(function (x, y) { return Math.min.apply(null, blocos(x)) - Math.min.apply(null, blocos(y)) || u().nome(x.cpf).localeCompare(u().nome(y.cpf)); });
-    var antes = antesDe(un.id, k);
-    if (antes) {
-      var gA = grafico(antes, un.id, (escala.erro[un.id] || {})[k]);
-      if (gA) b.querySelector('.ne-antes').appendChild(gA);
-      if (aqui.length) {
-        var dep = depoisDe(un.id, k, alocs, falta);
-        var gD = grafico(dep.cobertura, un.id, dep.erro);
-        if (gD) { b.querySelector('.nova-extra-cal-sem').classList.add('oculto'); b.querySelector('.ne-depois').appendChild(gD); }
-      }
-    } else b.querySelector('.nova-extra-cal-barras').classList.add('oculto');
-    aqui.forEach(function (a) { b.querySelector('.nova-extra-cal-extras').appendChild(u().pessoa(a, un.id)); });
-    b.addEventListener('click', function () { dia().abrir(un.id, k); });
-    b.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); dia().abrir(un.id, k); } });
-    return b;
-  }
-
-  /* refaz só os blocos de um dia (a régua das barras muda: refaz o mês) */
-  function atualizarDia(k) {
-    var cel = diasCal[k];
-    if (vista !== 'dia' || !cel || !escalaPronta()) return;
-    var alocs = efetivas(), cresceu = false;
-    d.unidades.forEach(function (un) {
-      var dep = depoisDe(un.id, k, alocs, faltaDoDia(un.id, k, alocs));
-      if (dep && dep.cobertura.some(function (n) { return n > (picos[un.id] || 0); })) cresceu = true;
-    });
-    if (cresceu) { desenharCalendario(); return; }
-    Array.prototype.forEach.call(cel.querySelectorAll('.nova-extra-cal-uni'), function (b) { b.parentNode.removeChild(b); });
-    d.unidades.forEach(function (un) { cel.appendChild(blocoUnidade(un, k, alocs)); });
-    if (RW.escalasCelula) RW.escalasCelula.desenharGraficos(cel);
-  }
-
-  /* o bloco do dia aberto no painel fica em destaque */
-  function marcarAberto() {
-    var ab = dia().aberto();
-    Array.prototype.forEach.call(el.querySelectorAll('.nova-extra-cal-uni'), function (b) {
-      b.classList.toggle('nova-extra-cal-uni--aberto', !!ab && +b.getAttribute('data-uid') === ab.uid && b.getAttribute('data-dia') === ab.data);
-    });
-  }
+  function porDia() { return RW.novaExtraPorDia; }
 
   function mudar(m, k, novos, unidade) {
     var base = d.alocacoes.filter(function (a) { return a.cpf === m.cpf && a.data === k; })[0];
@@ -234,7 +156,7 @@
     if (base && +base.unidade === novo.unidade && JSON.stringify(blocos(base).sort()) === JSON.stringify(novo.blocos)) delete mud[chave(m.cpf, k)];
     else if (!base && !novos.length) delete mud[chave(m.cpf, k)];
     else mud[chave(m.cpf, k)] = novo;
-    atualizarDia(k);
+    if (vista === 'dia' && escalaPronta()) porDia().atualizarDia(k);
     redesenhar(true);
   }
 
@@ -300,6 +222,17 @@
     var sobra = vols.reduce(function (s, m) { return s + Math.max(0, (m.concedidas || 0) - usadas(m.cpf, alocs)); }, 0);
     q('#p3-sobra').textContent = sobra ? msg().cotasSobrando(sobra) : '';
     var comFalta = escalaPronta() ? diasDoMes().filter(function (k) { return pelotoes().some(function (x) { return somaFalta(faltaDoDia(x.id, k, alocs)) > 0; }); }).length : 0;
+    /* depois do Preencher pela sugestão: quantas cotas ela pôs e os dias que ainda ficaram com vermelho ou amarelo */
+    var resultado = q('#p3-resultado');
+    resultado.classList.toggle('oculto', !sugeridas.length || !escalaPronta());
+    if (sugeridas.length && escalaPronta()) {
+      var postas = sugeridas.reduce(function (s, kk) { return s + (mud[kk] ? mud[kk].blocos.length : 0); }, 0), vermelho = 0, amarelo = 0;
+      diasDoMes().forEach(function (k) {
+        var cores = pelotoes().map(function (x) { return corDe(faltaDoDia(x.id, k, alocs)); });
+        if (cores.indexOf('erro') >= 0) vermelho++; else if (cores.indexOf('alerta') >= 0) amarelo++;
+      });
+      resultado.querySelector('.nota-texto').textContent = msg().resultadoSugestao(postas, vermelho, amarelo);
+    }
     q('#p3-dias-falta').textContent = msg().diasFalta(comFalta);
     q('#p3-dias-falta').classList.toggle('nova-extra-negativo', comFalta > 0);
     Array.prototype.forEach.call(el.querySelectorAll('#p3-vista [data-vista]'), function (b) { b.classList.toggle('aba--ativa', b.getAttribute('data-vista') === vista); });
@@ -313,7 +246,7 @@
       return;
     }
     if (vista === 'militar') RW.novaExtraMilitares.desenhar(el);
-    else if (!soCabeca) desenharCalendario();
+    else if (!soCabeca) porDia().desenhar(q('#p3-cal'));
     dia().redesenhar();
   }
 
@@ -362,11 +295,12 @@
     INI: INI, SEM_CURTA: SEM_CURTA,
     dados: function () { return d; },
     efetivas: efetivas, alocDe: alocDe, usadas: usadas, voluntarios: voluntarios, blocos: blocos, conduz: conduz,
-    faltaDoDia: faltaDoDia, situacao: situacao, antesDe: antesDe, depoisDe: depoisDe, grafico: grafico,
+    faltaDoDia: faltaDoDia, situacao: situacao, antesDe: antesDe, depoisDe: depoisDe, corDe: corDe, travado: travado,
+    grafico: function (cob, uid, erro) { return porDia().grafico(cob, uid, erro); },
+    coberturaEscala: function () { return escala.cobertura; },
     erroAntes: function (uid, k) { return (escala.erro[uid] || {})[k]; },
     pelotoes: pelotoes, diasDoMes: diasDoMes, dataDe: dataDe, dataLonga: dataLonga, somaDia: somaDia,
     sobra: function (cpf) { return sobras[cpf] || null; },
-    travado: travado,
-    mudar: mudar, marcarAberto: marcarAberto
+    mudar: mudar, marcarAberto: function () { porDia().marcarAberto(); }
   };
 })();

@@ -152,35 +152,26 @@
 
       <!-- passo 2: as cotas -->
       <div class="nova-extra-passo-painel oculto" data-passo-painel="2">
-        <div class="nova-extra-caixa nova-extra-cotas-topo">
-          <label class="campo nova-extra-numero"><span class="campo-rotulo">Cotas recebidas do comando</span><input type="number" min="0" class="campo-entrada" id="p2-recebidas" /></label>
-          <div class="nova-extra-numero"><span class="campo-rotulo">Repartidas</span><b id="p2-repartidas"></b></div>
-          <div class="nova-extra-numero"><span class="campo-rotulo">Sobram</span><b id="p2-sobram"></b></div>
-          <div class="nova-extra-por-unidade oculto" id="p2-unidades"></div>
-          <span class="nova-extra-espaco"></span>
-          <div class="nova-extra-numero">
-            <span class="campo-rotulo">Repartir</span>
+        <div class="extra-vol-banda nova-extra-cotas-banda">
+          <label class="extra-vol-banda-item">
+            <span>Cotas recebidas</span>
+            <input type="text" inputmode="numeric" maxlength="3" class="campo-entrada campo-entrada--pequeno extra-vol-total" id="p2-recebidas" />
+          </label>
+          <div class="extra-vol-banda-item">
+            <span>Repartir</span>
             <div class="abas abas--seletor" id="p2-modo">
               <button type="button" class="aba" data-modo="grupo">Companhia toda</button>
               <button type="button" class="aba" data-modo="por_unidade">Cada unidade com as suas</button>
             </div>
           </div>
+          <span class="extra-vol-numero"><span>Repartidas</span><strong class="extra-vol-numero-valor" id="p2-repartidas"></strong></span>
+          <span class="extra-vol-numero"><span>Sobram</span><strong class="extra-vol-numero-valor" id="p2-sobram"></strong></span>
+          <span class="extra-vol-numero"><span>Na escala</span><strong class="extra-vol-numero-valor" id="p2-na-escala"></strong></span>
+          <span class="espacador-flex"></span>
+          <button type="button" class="botao" id="p2-sugestao"><span class="etiqueta-adm">ADM</span>Usar a sugestão</button>
         </div>
-        <div class="nova-extra-bloco">
-          <div class="nova-extra-bloco-cab">
-            <span class="nova-extra-bloco-titulo">Voluntários com termo</span>
-            <span class="nova-extra-ajuda">Clique no militar para mudar quantas cotas ele recebe.</span>
-            <span class="nova-extra-espaco"></span>
-            <button type="button" class="botao" id="p2-sugestao"><span class="etiqueta-adm">ADM</span>Usar a sugestão</button>
-          </div>
-          <div class="nova-extra-blocos">
-            <table class="nova-extra-tabela">
-              <thead><tr><th>Fila</th><th>Militar</th><th>Unidade</th><th class="nova-extra-centro">Pediu</th><th>Últimos 12 meses</th><th class="nova-extra-centro">Recebe</th></tr></thead>
-              <tbody id="p2-lista"></tbody>
-            </table>
-            <span class="nova-extra-vazio oculto" id="p2-vazio">Nenhum voluntário com termo.</span>
-          </div>
-        </div>
+        <div class="nova-extra-cotas-lista" id="p2-lista"></div>
+        <span class="nova-extra-vazio oculto" id="p2-vazio">Nenhum voluntário com termo.</span>
         <div class="rodape rodape-linha nova-extra-rodape">
           <span class="nova-extra-rodape-texto" id="p2-mudancas"></span>
           <div class="rodape-acoes">
@@ -199,6 +190,10 @@
             <button type="button" class="aba aba--ativa" data-vista="dia">Por dia</button>
             <button type="button" class="aba" data-vista="militar">Por militar</button>
           </div>
+        </div>
+        <div class="nota oculto" id="p3-resultado">
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg>
+          <span class="nota-texto"></span>
         </div>
         <div class="nota nota--alerta oculto" id="p3-aberto">
           <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
@@ -345,18 +340,63 @@
   <tr class="nova-extra-linha-aviso"><td colspan="7"><span class="nova-extra-aviso-linha"></span></td></tr>
 </template>
 
-<template id="tpl-ne-p2-unidade">
-  <label class="nova-extra-campo nova-extra-campo--linha"><span></span><input type="number" min="0" class="campo-entrada" /></label>
+<!-- passo 2: o cabeçalho das colunas, o bloco de um pelotão (cinza, com as linhas no bloquinho branco), um
+     voluntário (a fila, o militar, o pedido, os 12 meses, a sugestão, o Recebe no campo de seleção e o que já está
+     na escala) e, embaixo dele, as extras que saem ao salvar -->
+<template id="tpl-ne-p2-cab">
+  <div class="extra-vol-linha extra-vol-cab">
+    <span>Fila</span>
+    <span>Militar</span>
+    <span>Pediu</span>
+    <span>Últimos 12 meses</span>
+    <span>Sugestão</span>
+    <span>Recebe</span>
+    <span>Na escala</span>
+  </div>
+</template>
+
+<template id="tpl-ne-p2-bloco">
+  <div class="extra-vol-bloco">
+    <div class="extra-vol-bloco-titulo">
+      <span class="extra-vol-bloco-nome"></span>
+      <span class="extra-vol-bloco-detalhe"></span>
+      <span class="espacador-flex"></span>
+      <label class="extra-vol-bloco-cotas oculto">
+        <span>Cotas</span>
+        <input type="text" inputmode="numeric" maxlength="3" class="campo-entrada campo-entrada--pequeno extra-vol-bloco-total" />
+      </label>
+      <span class="extra-vol-bloco-restam oculto"></span>
+    </div>
+    <div class="extra-vol-bloquinho"></div>
+  </div>
 </template>
 
 <template id="tpl-ne-p2-linha">
-  <tr class="nova-extra-linha-clicavel" tabindex="0">
-    <td class="nova-extra-fila"></td>
-    <td class="nova-extra-nome"><small></small><b></b></td>
-    <td class="ne-uni"></td><td class="nova-extra-centro ne-pediu"></td>
-    <td class="nova-extra-historico ne-hist"></td>
-    <td class="nova-extra-centro"><span class="nova-extra-recebe"><b class="ne-recebe"></b><small class="ne-sug oculto"></small></span></td>
-  </tr>
+  <div class="extra-vol-linha">
+    <span class="nova-extra-fila"></span>
+    <span class="extra-vol-militar">
+      <span class="extra-vol-grad"></span>
+      <span class="extra-vol-nome"></span>
+      <span class="extra-vaga-24h oculto">24h</span>
+    </span>
+    <span class="extra-vol-pediu"></span>
+    <span class="nova-extra-historico ne-hist"></span>
+    <span class="extra-vol-sugerido"></span>
+    <div class="extra-vol-concedido">
+      <div class="dropdown extra-vol-conc">
+        <button type="button" class="campo-entrada campo-selecao campo-entrada--pequeno extra-vol-conc-gatilho" aria-label="Recebe">
+          <span class="campo-selecao-texto extra-vol-conc-texto"></span>
+          <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+        </button>
+        <div class="dropdown-menu extra-vol-conc-menu"></div>
+      </div>
+    </div>
+    <span class="extra-vol-na-escala"></span>
+  </div>
+</template>
+
+<template id="tpl-ne-p2-aviso">
+  <span class="nova-extra-p2-aviso"></span>
 </template>
 
 <!-- passo 5: uma linha da prévia do relatório de ajustes e um horário (era riscado, ficou em destaque) -->
@@ -386,15 +426,39 @@
 
 <template id="tpl-ne-selo"><span class="selo nova-extra-selo-mini"></span></template>
 
-<!-- passo 3, Por dia: o bloco de uma unidade num dia (as barras antes e depois e só as extras; clicar abre o painel do dia) -->
-<template id="tpl-ne-cal-uni">
-  <div class="nova-extra-cal-uni" role="button" tabindex="0">
-    <span class="nova-extra-cal-uni-nome"></span>
-    <div class="nova-extra-cal-barras">
-      <span class="nova-extra-cal-rotulo">antes</span><div class="nova-extra-cal-barra ne-antes"></div>
-      <span class="nova-extra-cal-rotulo">depois</span><div class="nova-extra-cal-barra ne-depois"><span class="nova-extra-cal-sem">sem extra</span></div>
-    </div>
-    <div class="nova-extra-cal-extras"></div>
+<!-- passo 3, Por dia (e a aba Calendário): dentro do bloco da Escala (tpl-escala-calendario-unidade, no shell), as
+     duas barras da Extrajornada antiga (rótulo | barra, "antes" e "depois") e uma vaga por extra: o ponto da
+     preferência, o nome e o Tirar deste dia em cima; o pelotão (quando é de outro), o 24h e os 4 horários embaixo -->
+<template id="tpl-ne-cel-barras">
+  <div class="extra-cel-barras"><span class="extra-cel-rotulo">antes</span><span class="extra-cel-rotulo ne-cel-depois">depois</span></div>
+</template>
+
+<template id="tpl-ne-cel-sem-extra">
+  <span class="extra-cel-sem-extra">sem extra</span>
+</template>
+
+<template id="tpl-ne-vaga">
+  <div class="extra-vaga">
+    <span class="extra-dia-ponto extra-vaga-origem"></span>
+    <span class="extra-vaga-corpo">
+      <span class="extra-vaga-linha-nome">
+        <span class="extra-vaga-id"><span class="extra-vaga-grad"></span> <span class="extra-vaga-nome"></span></span>
+        <button type="button" class="botao botao--icone botao--pequeno extra-vaga-tirar" aria-label="Tirar deste dia" data-dica="Tirar deste dia">
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
+        </button>
+      </span>
+      <span class="extra-vaga-linha-controles">
+        <span class="extra-vaga-pelotao oculto"></span>
+        <span class="espacador-flex"></span>
+        <span class="extra-vaga-24h oculto">24h</span>
+        <span class="extra-vaga-blocos">
+          <button type="button" class="escala-extra-marca" data-bloco="1" aria-pressed="false" aria-label="08h às 14h"></button>
+          <button type="button" class="escala-extra-marca" data-bloco="2" aria-pressed="false" aria-label="14h às 20h"></button>
+          <button type="button" class="escala-extra-marca" data-bloco="3" aria-pressed="false" aria-label="20h às 02h"></button>
+          <button type="button" class="escala-extra-marca" data-bloco="4" aria-pressed="false" aria-label="02h às 08h"></button>
+        </span>
+      </span>
+    </span>
   </div>
 </template>
 
@@ -446,10 +510,6 @@
   </div>
 </template>
 
-<template id="tpl-ne-dia-pessoa">
-  <span class="nova-extra-pessoa"><b></b><span class="ne-de"></span><span class="espacador-flex"></span></span>
-</template>
-
 <!-- a Legenda da barra: como a sugestão reparte as cotas (passo 2) e como distribui (passo 3) -->
 <template id="tpl-ne-legenda-cotas">
   <div class="escala-legenda-grupo">
@@ -491,32 +551,33 @@
   </div>
 </template>
 
-<!-- passo 2: o painel do militar (o pedido, a sugestão e quantas cotas recebe) -->
-<template id="tpl-ne-cotas-painel">
-  <div class="nova-extra-cotas-painel">
-    <div class="grupo-caixa">
-      <span class="rotulo-secao">Pedido</span>
-      <span class="linha-info"><span class="linha-info-rotulo">Pediu</span><span class="linha-info-valor ne-cp-pediu"></span></span>
-      <span class="linha-info"><span class="linha-info-rotulo">Últimos 12 meses</span><span class="linha-info-valor ne-cp-hist"></span></span>
-      <span class="linha-info"><span class="linha-info-rotulo">Sugestão</span><span class="linha-info-valor ne-cp-sug"></span></span>
-    </div>
-    <div class="grupo-caixa">
-      <span class="rotulo-secao">Recebe</span>
-      <span class="linha-info"><span class="linha-info-rotulo">Cotas</span><span class="linha-info-valor ne-cp-numero"></span></span>
-    </div>
-    <span class="nota ne-cp-nota oculto"><span class="nota-texto"></span></span>
-    <div class="nota nota--alerta ne-cp-retira oculto">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-      <span class="nota-texto"></span>
-    </div>
+<!-- painel do dia: o relatório do dia, uma linha por extra (o sistema ou o administrador colocou) e pelo que ainda
+     falta; o nome e as 4 bolinhas no meio da frase; embaixo, em cinza, o resto do porquê ou quem ainda pode -->
+<template id="tpl-ne-rd-sistema">
+  <div class="nova-extra-rd-linha nova-extra-rd-linha--ok">
+    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
+    <span class="nova-extra-rd-texto"><span class="ne-rd-ini"></span> <b class="ne-rd-nome"></b> <span class="nova-extra-bol" aria-hidden="true"><i></i><i></i><i></i><i></i></span> <span class="ne-rd-fim"></span><small class="ne-rd-mais oculto"></small></span>
   </div>
 </template>
 
-<!-- aba Calendário: o bloco de uma unidade no dia, com quem tira extra (no calendário de mês do site) -->
-<template id="tpl-ne-cal-leitura">
-  <div class="nova-extra-cal-uni nova-extra-cal-uni--leitura">
-    <span class="nova-extra-cal-uni-nome"></span>
-    <div class="nova-extra-cal-extras"></div>
+<template id="tpl-ne-rd-admin">
+  <div class="nova-extra-rd-linha nova-extra-rd-linha--adm">
+    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-editar"/></svg>
+    <span class="nova-extra-rd-texto"><span class="ne-rd-ini"></span> <b class="ne-rd-nome"></b> <span class="nova-extra-bol" aria-hidden="true"><i></i><i></i><i></i><i></i></span> <span class="ne-rd-fim"></span><small class="ne-rd-mais oculto"></small></span>
+  </div>
+</template>
+
+<template id="tpl-ne-rd-ok">
+  <div class="nova-extra-rd-linha nova-extra-rd-linha--ok">
+    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
+    <span class="nova-extra-rd-texto"><span class="ne-rd-fim"></span></span>
+  </div>
+</template>
+
+<template id="tpl-ne-rd-falta">
+  <div class="nova-extra-rd-linha">
+    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+    <span class="nova-extra-rd-texto"><span class="ne-rd-fim"></span><small class="ne-rd-mais oculto"></small></span>
   </div>
 </template>
 
