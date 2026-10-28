@@ -5,7 +5,8 @@
    mudança (a resposta mais nova vence; com a outra versão para
    comparar, o banco diz o que muda) e desenha o menu dos 9 blocos,
    o corpo e o rodapé. Os blocos moram em -postos (1), -efetivo (2),
-   -funcoes (3), -blocos (4 a 7), -militares (8) e -conferir (9); as
+   -funcoes (3), -acumulos (4 e 5), -blocos (6 e 7), -militares (8) e
+   -conferir (9); as
    peças comuns em -pecas; as mudanças dos postos com data em
    -caixas; o aviso da mudança agendada, o Salvar com a data e o
    começo da unidade em -versoes. Cancelar e a unidade moram aqui.
@@ -127,7 +128,7 @@
     recalcular();
   }
 
-  /* a viatura mudou de prefixo: as funções dela (nos acúmulos, na ordem, nos substitutos, em quem
+  /* a viatura mudou de prefixo: as funções dela (nos acúmulos fixos e por falta, na ordem, em quem
      escolher e onde ficam as funções especiais) vão junto; o banco recebe a troca no Salvar (para
      as substituições dela e a mudança agendada irem junto) */
   function renomear(lado, indice, velho, novo) {
@@ -251,9 +252,9 @@
       function () { R.novaDistribuicaoPostos.postos(conteudo, ctx, api); },
       function () { R.novaDistribuicaoEfetivo.efetivo(conteudo, ctx, api); },
       function () { R.novaDistribuicaoFuncoes.funcoes(conteudo, ctxs, api); },
-      function () { R.novaDistribuicaoBlocos.acumulos(conteudo, ctx, api); },
+      function () { R.novaDistribuicaoAcumulos.acumulos(conteudo, ctx, api); },
       function () { R.novaDistribuicaoBlocos.ordem(conteudo, ctx, api); },
-      function () { R.novaDistribuicaoBlocos.substitutos(conteudo, ctx, api); },
+      function () { R.novaDistribuicaoAcumulos.porFalta(conteudo, ctx, api); },
       function () { R.novaDistribuicaoBlocos.escolher(conteudo, ctx, api); },
       function () { R.novaDistribuicaoMilitares.regras(conteudo, ctx, api); },
       function () { R.novaDistribuicaoConferir.desenhar(conteudo, ctx, api); }

@@ -214,14 +214,18 @@
     aberto.classList.toggle('oculto', !travado());
     aberto.querySelector('.nota-texto').textContent = travado() ? msg().pedidoAberto(u().br(d.mes.fecha)) : '';
     q('#p3-sugerir').disabled = travado();
+    /* o resumo da companhia: as cotas dos militares e os dias com falta nos pelotões */
     var alocs = efetivas();
-    var vols = voluntarios();
+    var sel = u().escolhidas();
+    var vols = voluntarios().filter(function (m) { return sel.indexOf(m.unidade_id) >= 0; });
     var total = vols.reduce(function (s, m) { return s + (m.concedidas || 0); }, 0);
-    var colocadas = alocs.reduce(function (s, a) { return s + a.blocos.length; }, 0);
+    var colocadas = vols.reduce(function (s, m) { return s + usadas(m.cpf, alocs); }, 0);
     q('#p3-colocadas').textContent = msg().colocadas(colocadas, total);
     var sobra = vols.reduce(function (s, m) { return s + Math.max(0, (m.concedidas || 0) - usadas(m.cpf, alocs)); }, 0);
     q('#p3-sobra').textContent = sobra ? msg().cotasSobrando(sobra) : '';
-    var comFalta = escalaPronta() ? diasDoMes().filter(function (k) { return pelotoes().some(function (x) { return somaFalta(faltaDoDia(x.id, k, alocs)) > 0; }); }).length : 0;
+    var comFalta = escalaPronta() ? diasDoMes().filter(function (k) {
+      return pelotoes().some(function (x) { return sel.indexOf(x.id) >= 0 && somaFalta(faltaDoDia(x.id, k, alocs)) > 0; });
+    }).length : 0;
     /* depois do Preencher pela sugestão: quantas cotas ela pôs e os dias que ainda ficaram com vermelho ou amarelo */
     var resultado = q('#p3-resultado');
     resultado.classList.toggle('oculto', !sugeridas.length || !escalaPronta());
@@ -236,7 +240,10 @@
     q('#p3-dias-falta').textContent = msg().diasFalta(comFalta);
     q('#p3-dias-falta').classList.toggle('nova-extra-negativo', comFalta > 0);
     Array.prototype.forEach.call(el.querySelectorAll('#p3-vista [data-vista]'), function (b) { b.classList.toggle('aba--ativa', b.getAttribute('data-vista') === vista); });
-    q('#p3-cal').classList.toggle('oculto', vista !== 'dia');
+    /* Por dia sem nenhum pelotão: o vazio no lugar do calendário */
+    var nenhuma = !u().doCalendario(alocs).length;
+    q('#p3-cal').classList.toggle('oculto', vista !== 'dia' || nenhuma);
+    q('#p3-cal-vazio').classList.toggle('oculto', vista !== 'dia' || !nenhuma);
     q('#p3-militares').classList.toggle('oculto', vista !== 'militar');
     if (!escalaPronta()) {
       var alvo = q(vista === 'dia' ? '#p3-cal' : '#p3-gm');
@@ -246,7 +253,7 @@
       return;
     }
     if (vista === 'militar') RW.novaExtraMilitares.desenhar(el);
-    else if (!soCabeca) porDia().desenhar(q('#p3-cal'));
+    else if (!soCabeca && !nenhuma) porDia().desenhar(q('#p3-cal'));
     dia().redesenhar();
   }
 

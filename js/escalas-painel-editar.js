@@ -1,11 +1,13 @@
 /* ============================================================
    ESCALAS — o Dia do painel (aba Dia): a lista do dia, a mesma
-   para todos, só de leitura. O admin edita a partir dela: o
-   Adicionar militar (à esquerda) e o desfazer/refazer (à direita)
-   ficam no subcabeçalho, a frase do topo diz que as mudanças valem
-   só para o dia, cada linha (função, horário sem ninguém, sem função)
-   tem o lápis, que abre a edição ali mesmo (escalas-painel-linha.js),
-   quem o admin fixou ganha o selo Fixado, quem está de folga tem o
+   para todos, só de leitura. O admin edita a partir dela: o menu
+   Editar o dia (Adicionar e Remover militar, Editar extrajornada e
+   Registrar troca de serviço, à esquerda) e o desfazer/refazer (à
+   direita) ficam no subcabeçalho, cada linha de função e de horário
+   sem ninguém tem o lápis, que abre a edição ali mesmo
+   (escalas-painel-linha.js), quem está sem função tem o Remover do
+   dia (escalas-painel-remover.js), quem o admin fixou ganha o selo
+   Fixado e o Liberar para o sistema, quem está de folga tem o
    lápis da folga no dia (com o Cancelar folga), o fim da lista tem o
    Voltar o dia ao automático e as observações também se editam aqui.
    Quem não é admin só lê (os postos mudam na Distribuição).
@@ -15,9 +17,10 @@
    célula. Rascunho de uma mudança: { ajustes, pontuais, estornar,
    folgas, folgas_cancelar, observacoes, automatico }. O desfazer/
    refazer grava o caminho de volta (silencioso: ninguém é avisado).
-   A edição da linha, o Adicionar militar (sub-tela) e a folga no dia
-   (sub-tela) ficam em escalas-painel-linha.js, -adicionar.js e
-   -militar.js e usam a API daqui (.sub); nada grava até o Aplicar.
+   A edição da linha, o Adicionar e o Remover militar (sub-telas) e a
+   folga no dia (sub-tela) ficam em escalas-painel-linha.js,
+   -adicionar.js, -remover.js e -militar.js e usam a API daqui
+   (.sub); nada grava até o botão que confirma.
    A aba Dia da Extrajornada usa o mesmo desenho,
    só de leitura, com o dia já lido (opções dados e semAvisos). O
    "Como fica a escala" do painel de decisão (Trocas e Folgas) também,
@@ -372,7 +375,7 @@
     rasc.ajustes = novos;
   }
 
-  /* Tirar do dia (militar do ciclo): folga do dia inteiro e as colocações dele saem. Com periodos (quem também
+  /* Remover do dia (militar do ciclo): folga do dia inteiro e as colocações dele saem. Com periodos (quem também
      serve em outra unidade no dia), a folga e o corte valem só nesses horários: o serviço de lá não muda */
   function darFolga(cpf, contabilizar, periodos) {
     rasc.folgas = rasc.folgas.filter(function (f) { return f.cpf !== cpf; });
@@ -385,7 +388,7 @@
     rasc.ajustes = rasc.ajustes.filter(function (a) { return a.cpf !== cpf; });
   }
 
-  /* Tirar do dia (pontual): sai do dia; estornar = as horas que ele somou saem do banco de horas.
+  /* Remover do dia (pontual): sai do dia; estornar = as horas que ele somou saem do banco de horas.
      Quem tem outro serviço aqui no dia (ex.: a extra) perde só os ajustes manuais das horas do pontual */
   function tirarPontual(cpf, estornar) {
     var mil = militarDoDia(cpf);
@@ -551,11 +554,21 @@
     if (!sub) return;
     sub.textContent = '';
     if (!ctx.admin || ctx.emSub) { sub.classList.add('oculto'); return; }
-    var b = RosterWork.tpl('tpl-escala-edicao-adicionar');
-    if (b) {
-      b.disabled = !!ctx.salvando;
-      b.addEventListener('click', function () { if (ctx && !ctx.salvando && RosterWork.escalasPainelAdicionar) RosterWork.escalasPainelAdicionar.abrir(); });
-      sub.appendChild(b);
+    /* o menu Editar o dia: Adicionar e Remover abrem as perguntas; Editar extrajornada vai à aba Extrajornada do painel;
+       Registrar troca de serviço leva ao Registrar troca das Trocas */
+    var menu = RosterWork.tpl('tpl-escala-edicao-acoes');
+    if (menu) {
+      menu.querySelector('.botao').disabled = !!ctx.salvando;
+      var acoes = {
+        adicionar: function () { if (RosterWork.escalasPainelAdicionar) RosterWork.escalasPainelAdicionar.abrir(); },
+        remover: function () { if (RosterWork.escalasPainelRemover) RosterWork.escalasPainelRemover.abrir(); },
+        extra: function () { if (RosterWork.escalasPainel.irParaSecao) RosterWork.escalasPainel.irParaSecao('extra'); },
+        troca: function () { if (RosterWork.irParaPagina) RosterWork.irParaPagina('trocas', null, 'registrar'); }
+      };
+      [].forEach.call(menu.querySelectorAll('[data-acao]'), function (b) {
+        b.addEventListener('click', function () { if (ctx && !ctx.salvando) acoes[b.getAttribute('data-acao')](); });
+      });
+      sub.appendChild(menu);
     }
     var hist = RosterWork.tpl('tpl-escala-edicao-historico');
     if (hist) {
@@ -671,6 +684,13 @@
     return b;
   }
 
+  /* Liberar para o sistema: na linha fixada e no vazio que veio do "Ninguém"; faz na hora, com o Desfazer */
+  function liberarDaLinha(cfg) {
+    var A = RosterWork.escalasPainelLinhaAplicar;
+    if (!editavel() || !A || !A.podeLiberar(cfg)) return null;
+    return botao('tpl-escala-edicao-liberar', function () { if (ctx && !ctx.salvando) mudar(function () { A.liberar(cfg); }); });
+  }
+
   /* horário sem ninguém na função (dentro do que o modelo pede) ou cadeira vazia do motor: o texto vermelho e,
      para o admin, o lápis (quem fica ali) */
   function linhaVazia(posto, nomeFuncao, per, ancora) {
@@ -683,9 +703,9 @@
     if (t) { t.textContent = msg().semNinguemTexto; pessoa.appendChild(t); }
     var h = p.hora(per);
     if (h) linha.querySelector('.escala-distribuicao-horas').appendChild(h);
-    var lapis = lapisDaLinha(ancora, { tipo: 'vaga', posto: posto, funcao: nomeFuncao, militar: null, periodos: [{ hi: per.hi, hf: per.hf }] });
+    var cfg = { tipo: 'vaga', posto: posto, funcao: nomeFuncao, militar: null, periodos: [{ hi: per.hi, hf: per.hf }] };
     var acoes = linha.querySelector('.escala-edicao-acoes');
-    if (lapis && acoes) acoes.appendChild(lapis);
+    if (acoes) [lapisDaLinha(ancora, cfg), liberarDaLinha(cfg)].forEach(function (b) { if (b) acoes.appendChild(b); });
     return linha;
   }
 
@@ -707,7 +727,8 @@
 
   /* o bloco de uma função: militares e os horários sem ninguém, com a função no meio da altura de todas as linhas
      (na comparação, também quem saiu, riscado). O lápis de cada linha abre a edição embaixo do bloco; no Chefe de
-     Socorro com o Condutor (o mesmo militar), a edição é a do Condutor */
+     Socorro com o Condutor (o mesmo militar), a edição é a do Condutor; o Chefe de Socorro e o Oficial de Área
+     sozinhos não têm lápis (são sempre do mais antigo do dia) */
   function linhasFuncao(caixa, posto, f) {
     var p = pecas();
     var temVao = !!f.vazio || (f.vao || []).length > 0;
@@ -729,7 +750,8 @@
       }
       /* na comparação, as marcas vêm do banco ("Novo" = quem entra pelo pedido; só a barra = quem o
          sistema remanejou); na edição não há marca, porque cada mudança já está gravada */
-      var linha = linhaMilitar(m, { novo: !!(ctx.comparar && m.novo), alterada: ctx.comparar && !!m.mudou, acoes: [lapisDaLinha(ancora, cfg)] });
+      var acoes = cfg.tipo === 'papel' ? [] : [lapisDaLinha(ancora, cfg), liberarDaLinha(cfg)];
+      var linha = linhaMilitar(m, { novo: !!(ctx.comparar && m.novo), alterada: ctx.comparar && !!m.mudou, acoes: acoes });
       if (linha && (sobrepostos[m.cpf] || (m.periodos || []).some(function (per) { return foraDaDisponibilidade(per, m); }))) {
         linha.classList.add('escala-edicao-linha--erro');
       }
@@ -764,7 +786,8 @@
     return caixa;
   }
 
-  /* Sem função: quem está de serviço sem função em algum horário (título vermelho, depois dos postos) */
+  /* Sem função: quem está de serviço sem função em algum horário (título vermelho, depois dos postos). Para o admin,
+     o Remover do dia (escalas-painel-remover.js); para pô-lo numa função, o lápis da função */
   function caixaSemFuncao(sem) {
     if (!sem.length) return null;
     var caixa = RosterWork.painel.criarCaixa(msg().semFuncaoRotulo);
@@ -773,8 +796,11 @@
     var grupo = novoGrupo([], null);
     if (!grupo) return caixa;
     sem.forEach(function (m) {
-      var lapis = lapisDaLinha(function () { return grupo.el; }, { tipo: 'sem_funcao', militar: m, periodos: m.periodos || [] });
-      var l = linhaMilitar(m, { acoes: [lapis] });
+      var l = null;
+      var remover = editavel() && RosterWork.escalasPainelRemover
+        ? botao('tpl-escala-edicao-remover', function () { if (ctx && !ctx.salvando && l) RosterWork.escalasPainelRemover.doDia(m, l); })
+        : null;
+      l = linhaMilitar(m, { acoes: [remover] });
       if (l) grupo.linhas.appendChild(l);
     });
     caixa.appendChild(grupo.el);
@@ -918,11 +944,6 @@
     if (RosterWork.escalasPainelLinha) RosterWork.escalasPainelLinha.fechar();
     corpo.textContent = '';
     p.anexarProblemas(dados);   // CNH, regra, exclusivo e grau de cada militar (do banco)
-    /* a frase do topo: as mudanças da lista valem só para este dia */
-    if (editavel()) {
-      var ajuda = RosterWork.tpl('tpl-escala-edicao-ajuda');
-      if (ajuda) { ajuda.querySelector('.escala-edicao-ajuda-data').textContent = ctx.iso.split('-').reverse().slice(0, 2).join('/'); corpo.appendChild(ajuda); }
-    }
     if (editavel()) notaMudou(corpo);
     if (!ctx.semAvisos) {
       var aviso = p.montarAvisoProblemas(dados.problemas, dados.postos, dados.faltam_modelos, dados.modelos_com_erro);
@@ -1064,8 +1085,8 @@
   window.RosterWork.escalasPainelEditar = {
     montar: montar,
     reset: reset,
-    /* para a edição da linha (escalas-painel-linha.js e -servico.js: mudar grava a mudança como um passo só) e as
-       sub-telas (escalas-painel-adicionar.js e -militar.js) */
+    /* para a edição da linha (escalas-painel-linha.js: mudar grava a mudança como um passo só), o Remover do dia e as
+       sub-telas (escalas-painel-adicionar.js, -remover.js e -militar.js) */
     sub: {
       mudar: mudar,
       deixarFuncao: deixarFuncao,
@@ -1079,6 +1100,7 @@
       abrir: abrirSub,
       travarAplicar: travarAplicar,
       rotuloAplicar: rotuloAplicar,
+      botaoAplicar: function () { return ctx && ctx.rodape && ctx.rodape.querySelector('.escala-sub-aplicar'); },
       concluir: concluirSub,
       cancelar: cancelarSub,
       aplicarColocacao: aplicarColocacao,

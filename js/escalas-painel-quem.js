@@ -8,6 +8,7 @@
    nome, o que ele faz hoje.
    Onde: o posto e a função, cada um numa lista; a função traz a
    situação dela no horário ("vazia", "Sd. Godoy sai").
+   Caixas de marcar: as respostas de várias escolhas de uma pergunta.
    ============================================================ */
 (function () {
   'use strict';
@@ -40,7 +41,6 @@
   /* o motivo de quem não pode, do código que o banco manda */
   function motivoTexto(c) {
     var mm = msg().seletorMotivo, H = ed().horas, mo = c.motivo || {};
-    if (mo.codigo === 'papel') return mm.papel(mo.funcao);
     if (mo.codigo === 'horario') return mm.horario(H.textoPeriodos(mo.servico || []));
     if (mo.codigo === 'ocupado') {
       var ocupado = (mo.ocupado || []).map(function (o) { return { hi: H.curta(o.hi), hf: H.curta(o.hf), tipo: o.tipo }; });
@@ -68,11 +68,14 @@
   }
 
   /* a lista do banco em itens do campo de militar, com os títulos dos grupos; militar = quem está na linha (fica de
-     fora). Cada item: { cpf, grad, nome, info, inativo, c } (c = o que o banco mandou) */
-  function itensDaVaga(resp, militar, unidadeNome) {
+     fora). Cada item: { cpf, grad, nome, info, inativo, c } (c = o que o banco mandou). opcoes.soDoDia = só quem está
+     de serviço aqui no dia (o lápis): sem quem está de folga e sem quem serve em outra unidade */
+  function itensDaVaga(resp, militar, unidadeNome, opcoes) {
     var aqui = [], outra = [], folga = [], naoPodem = [];
+    var soDoDia = !!(opcoes && opcoes.soDoDia);
     (resp || []).forEach(function (c) {
       if (militar && c.cpf === militar.cpf) return;
+      if (soDoDia && (c.grupo === 'folga' || c.grupo === 'outro_pelotao')) return;
       var item = { cpf: c.cpf, grad: c.grad, nome: c.nome, c: c };
       if (!c.pode) { item.inativo = true; item.info = motivoTexto(c); naoPodem.push(item); return; }
       if (c.grupo === 'folga') { item.info = infoFolga(c); folga.push(item); return; }
@@ -147,5 +150,36 @@
     return { valor: function () { return { posto: est.posto, funcao: est.funcao }; } };
   }
 
-  window.RosterWork.escalasPainelQuem = { itensDaVaga: itensDaVaga, lugares: lugares, onde: onde, nomeDe: nomeDe };
+  /* ---------- Caixas de marcar ---------- */
+
+  /* as caixas de marcar de uma pergunta (molde tpl-escala-marcar; De quais funções, os horários da extra, Quais partes
+     saem). itens = [{ texto, marcado, desligado, dica }]; aoMudar(marcados) recebe os índices marcados. Devolve
+     marcar(indices), que acerta as marcas */
+  function marcar(lugar, itens, aoMudar) {
+    lugar.textContent = '';
+    var botoes = [];
+    function pintar(b, sim) {
+      b.setAttribute('aria-checked', sim ? 'true' : 'false');
+      b.querySelector('.caixa-selecao').classList.toggle('caixa-selecao--marcada', sim);
+    }
+    function marcados() {
+      return botoes.map(function (b, i) { return b.getAttribute('aria-checked') === 'true' ? i : -1; }).filter(function (i) { return i >= 0; });
+    }
+    itens.forEach(function (it) {
+      var b = RosterWork.tpl('tpl-escala-marcar');
+      if (!b) return;
+      b.querySelector('.escala-marcar-texto').textContent = it.texto;
+      pintar(b, !!it.marcado);
+      if (it.desligado) { b.disabled = true; if (it.dica) b.setAttribute('data-dica', it.dica); }
+      b.addEventListener('click', function () {
+        pintar(b, b.getAttribute('aria-checked') !== 'true');
+        if (aoMudar) aoMudar(marcados());
+      });
+      lugar.appendChild(b);
+      botoes.push(b);
+    });
+    return function (indices) { botoes.forEach(function (b, i) { pintar(b, indices.indexOf(i) >= 0); }); };
+  }
+
+  window.RosterWork.escalasPainelQuem = { itensDaVaga: itensDaVaga, lugares: lugares, onde: onde, marcar: marcar, nomeDe: nomeDe };
 })();

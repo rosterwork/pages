@@ -198,7 +198,7 @@
       ctx.devSel = ctx.periodoDevolucao.valor();
     } else {
       var pendente = q('#ts-dev-toggle [data-dev="pendente"]');
-      if (pendente) pendente.click();   // a troca sem devolução: o seletor em "Pendência" (o molde abre em "Marcar dia")
+      if (pendente) pendente.click();   // a troca sem devolução: o seletor em "Saldo de horas" (o molde abre em "Marcar dia")
     }
     ctx.preenchendo = false;
     travarSalvar(false);

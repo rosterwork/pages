@@ -38,23 +38,26 @@
   function doDia(lista, iso) { for (var i = 0; i < lista.length; i++) if (lista[i].data === iso) return lista[i]; return null; }
   function totalCotas(lista) { return lista.reduce(function (s, e) { return s + (e.blocos || []).length; }, 0); }
 
-  /* o grupo vem do que está salvo (a linha não pula de grupo enquanto se marca; o Salvar reorganiza) */
-  function grupoDe(m) {
-    var salvoHoje = doDia(m.extras || [], ctx.iso);
-    if (salvoHoje && mesmo(salvoHoje.unidade_id, ctx.uid)) return 'neste';
+  /* o grupo vem do que está salvo (a linha não pula de grupo enquanto se marca; o Salvar reorganiza). O Adicionar e o
+     Remover militar do Dia usam os mesmos, pelo grupoNoDia e o motivoNoDia */
+  function grupoNoDia(m, iso, uid) {
+    var salvoHoje = doDia(m.extras || [], iso);
+    if (salvoHoje && mesmo(salvoHoje.unidade_id, uid)) return 'neste';
     if (salvoHoje) return 'indisponiveis';
     if (m.ocupado) return 'indisponiveis';
     if (m.pref === 'quer') return 'querem';
     if (m.pref === 'nao_quer') return 'naoQuerem';
     return 'disponiveis';
   }
-  function motivoDe(m) {
-    var salvoHoje = doDia(m.extras || [], ctx.iso);
+  function motivoNoDia(m, iso) {
+    var salvoHoje = doDia(m.extras || [], iso);
     if (salvoHoje) return msg().extraEm(salvoHoje.unidade_nome || '');
     var o = m.ocupado || {};
     var texto = msg().ocupado[o.motivo] || '';
     return o.ate ? msg().ate(texto, ddmm(o.ate)) : texto;
   }
+  function grupoDe(m) { return grupoNoDia(m, ctx.iso, ctx.uid); }
+  function motivoDe(m) { return motivoNoDia(m, ctx.iso); }
 
   /* marca ou desmarca um horário de um militar num dia (fecha 24 h: os 4 juntos) */
   function marcar(m, iso, uid, bloco) {
@@ -347,5 +350,6 @@
     return !!(R() && R().sujo()) && (!grade || !!grade.closest('.oculto'));
   }
 
-  RW.escalasPainelExtra = { montar: montar, reset: reset, estaSujo: estaSujo, fecharSujo: fecharSujo };
+  RW.escalasPainelExtra = { montar: montar, reset: reset, estaSujo: estaSujo, fecharSujo: fecharSujo,
+    grupoNoDia: grupoNoDia, motivoNoDia: motivoNoDia };
 })();

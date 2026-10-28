@@ -1,12 +1,15 @@
 /* ============================================================
-   NOVA EXTRA — Organizar o mês e o Calendário
-   Lê o mês inteiro (nova_extra_mes) e desenha os passos: 1 Pedidos
-   e termos (prazo e termo), 2 Cotas (nova-extra-cotas.js), 3
+   NOVA EXTRA — os passos do mês e o Calendário
+   Lê o mês inteiro (nova_extra_mes) e desenha a aba aberta: os passos
+   1 Pedidos (prazo e termo), 2 Cotas (nova-extra-cotas.js), 3
    Distribuição (nova-extra-montar.js), 4 Lançar (simulado) e 5
-   Ajustes e relatório (nova-extra-relatorio.js); e a aba Calendário
-   (o mês no calendário do site, as extras de cada unidade). A Legenda
-   da barra explica a sugestão do passo aberto (2 e 3). O "Mês já
-   começou" do grupo TESTE finge o início do mês.
+   Ajustes (nova-extra-relatorio.js), ou o Calendário (o mês no
+   calendário do site, as extras de cada unidade). Pinta o número de
+   cada passo nas abas (verde feito, preto o primeiro ainda não feito,
+   branco os que não começaram) e escreve a linha de resumo de cada
+   passo. Mostra sempre todas as unidades da companhia (o seletor de
+   unidades do topo não filtra esta página). A Legenda da barra
+   explica a sugestão do passo aberto (2 e 3).
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
    RosterWork.novaExtraOrg (e RosterWork.novaExtraUtil).
    ============================================================ */
@@ -18,8 +21,8 @@
 
   var el = null;          // a página
   var d = null;           // a resposta do nova_extra_mes
-  var aba = null;         // 'organizar' ou 'calendario'
-  var passo = null;       // o passo aberto
+  var aba = null;         // 'passo', 'calendario' ou null (na Minha extra)
+  var passo = null;       // o passo aberto (1 a 5)
   var pedido = 0;         // latest-wins
   var p1 = null;          // edição do passo 1
 
@@ -72,6 +75,15 @@
       tirar.addEventListener('click', function (ev) { ev.stopPropagation(); if (op.aoTirar) op.aoTirar(); });
       return v;
     },
+    /* as unidades da página: todas as da companhia (o seletor de unidades do topo não filtra a Nova extra) */
+    escolhidas: function () { return d ? d.unidades.map(function (un) { return un.id; }) : []; },
+    /* as unidades do calendário: todas; a companhia só quando tem extra (a falta é só dos pelotões) */
+    doCalendario: function (alocs) {
+      var sel = util.escolhidas();
+      return d.unidades.filter(function (un) {
+        return sel.indexOf(un.id) >= 0 && (un.pelotao !== false || alocs.some(function (a) { return +a.unidade === un.id; }));
+      });
+    },
     br: br
   };
   RW.novaExtraUtil = util;
@@ -82,63 +94,68 @@
     var comp = RW.novaExtra.comp();
     RW.rpc('nova_extra_mes', { p_competencia: comp }).then(function (r) {
       if (meu !== pedido || !el.isConnected) return;
-      if (!r || !r.ok) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
+      /* na Minha extra a leitura é só para as marcas das abas: a falha fica quieta */
+      if (!r || !r.ok) { if (aba) RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
       d = r;
       p1 = null;
       if (RW.novaExtraCotas) RW.novaExtraCotas.reiniciar();
-      var ini = q('#nova-extra-iniciado');
-      ini.setAttribute('aria-checked', d.mes.simular_inicio ? 'true' : 'false');
-      ini.querySelector('.caixa-selecao').classList.toggle('caixa-selecao--marcada', !!d.mes.simular_inicio);
-      if (aba === 'calendario') desenharCalendario();
-      else { passosTopo(); abrirPasso(passo || passoAtual()); }
-    }, function () { if (meu === pedido) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao }); });
+      desenharAba();
+    }, function () { if (meu === pedido && aba) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao }); });
+  }
+
+  /* a aba aberta (na Minha extra, só os números das abas) */
+  function desenharAba() {
+    if (aba === 'calendario') desenharCalendario();
+    else if (aba === 'passo') abrirPasso(passo);
+    passosTopo();
   }
 
   function vols() { return d.militares.filter(function (m) { return m.voluntario; }); }
   function totalConcedidas() { return vols().reduce(function (s, m) { return s + (m.concedidas || 0); }, 0); }
   function naGrade() { return d.alocacoes.reduce(function (s, a) { return s + a.blocos.length; }, 0); }
+  /* os militares da companhia */
+  function daqui() { var sel = util.escolhidas(); return d.militares.filter(function (m) { return sel.indexOf(m.unidade_id) >= 0; }); }
 
-  function passoAtual() {
-    if (d.iniciado) return 5;
-    if (d.mes.estado !== 'encerrado') return 1;
-    if (!totalConcedidas()) return 2;
-    if (naGrade() < totalConcedidas()) return 3;
-    return 4;
-  }
-
-  function passosTopo() {
-    var atual = passoAtual();
-    var resp = d.militares.filter(function (m) { return m.respondeu; }).length;
-    /* cada unidade com as suas: o recebido é a soma das unidades */
-    var uni = d.mes.cotas_unidades || {};
-    var recebidas = d.mes.cotas_recebidas || Object.keys(uni).reduce(function (s, k) { return s + (+uni[k] || 0); }, 0);
-    var textos = [
-      msg().p1(br(d.mes.abre), br(d.mes.fecha), resp, d.militares.length),
-      recebidas ? msg().p2(recebidas, totalConcedidas()) : msg().p2Depois,
-      msg().p3(naGrade(), totalConcedidas()),
-      d.lancamento ? msg().p4Lancado(d.lancamento.lancado_em) : msg().p4Nao,
-      d.iniciado ? msg().p5(d.ajustes.length) : msg().p5Depois
-    ];
-    todos('.nova-extra-passo-cartao', function (b) {
-      var n = +b.getAttribute('data-passo');
-      b.querySelector('.nova-extra-passo-status').textContent = textos[n - 1];
-      b.classList.toggle('nova-extra-passo-cartao--feito', n < atual);
-      b.classList.toggle('nova-extra-passo-cartao--agora', n === atual);
-      b.classList.toggle('nova-extra-passo-cartao--aberto', n === passo);
+  /* o que mudou na distribuição desde o lançamento (as chaves cpf|dia) */
+  function mudancasDesdeLancamento() {
+    var lanc = d.lancamento, antes = {}, agora = {};
+    if (!lanc) return [];
+    lanc.foto.forEach(function (a) { antes[chave(a)] = a; });
+    d.alocacoes.forEach(function (a) { agora[chave(a)] = a; });
+    return Object.keys(Object.assign({}, antes, agora)).filter(function (k) {
+      return JSON.stringify(antes[k] && [antes[k].unidade, antes[k].blocos]) !== JSON.stringify(agora[k] && [agora[k].unidade, agora[k].blocos]);
     });
   }
 
+  /* os números dos passos nas abas e a linha de resumo do alto de cada passo. Um passo só fica feito depois do
+     anterior: o pedido fechou; as cotas foram todas entregues (ou sobraram porque todos já receberam o que pediram);
+     as entregues estão todas na distribuição; foi lançado e nada mudou depois. Os Ajustes seguem enquanto o mês corre */
+  function passosTopo() {
+    var comTermo = vols().filter(function (m) { return m.termo; });
+    var recebido = d.mes.cotas_recebidas || 0, entregues = totalConcedidas();
+    var cotasOk = entregues > 0 && (entregues >= recebido || comTermo.every(function (m) { return (m.concedidas || 0) >= (m.cotas || 0); }));
+    var ok = [d.mes.estado === 'encerrado', cotasOk, entregues > 0 && naGrade() >= entregues, !!d.lancamento && !mudancasDesdeLancamento().length, false];
+    var feito = [], agora = -1;
+    ok.forEach(function (x, i) { feito[i] = x && (i === 0 || feito[i - 1]); if (!feito[i] && agora < 0) agora = i; });
+    todos('#nova-extra-abas [data-passo]', function (b) {
+      var i = +b.getAttribute('data-passo') - 1, num = b.querySelector('.nova-extra-aba-num');
+      num.classList.toggle('nova-extra-aba-num--feito', feito[i]);
+      num.classList.toggle('nova-extra-aba-num--agora', i === agora);
+    });
+    var lista = daqui();
+    var resp = lista.filter(function (m) { return m.respondeu; }).length;
+    var textos = {
+      1: msg().p1(br(d.mes.abre), br(d.mes.fecha), resp, lista.length),
+      4: d.lancamento ? msg().p4Lancado(d.lancamento.lancado_em) : msg().p4Nao,
+      5: d.iniciado ? msg().p5(d.ajustes.length) : msg().p5Depois
+    };
+    todos('[data-passo-resumo]', function (r) { r.textContent = textos[r.getAttribute('data-passo-resumo')]; });
+  }
+
   function abrirPasso(n) {
-    if (passo === 3 && n !== 3 && RW.novaExtraMontar && RW.novaExtraMontar.sujo()) {
-      RW.confirmar({ tipo: 'aviso', mensagem: RW.mensagens.edicao.sairSemSalvar, textoConfirmar: RW.mensagens.botoes.descartar,
-        textoCancelar: RW.mensagens.botoes.continuarEditando, aoConfirmar: function () { RW.novaExtraMontar.descartar(); abrirPasso(n); } });
-      return;
-    }
     passo = n;
     if (n !== 3 && RW.novaExtraMontar) RW.novaExtraMontar.fecharPainel();
     RW.novaExtra.legenda(n === 2 ? 'tpl-ne-legenda-cotas' : n === 3 ? 'tpl-ne-legenda-dist' : null);
-    todos('[data-passo-painel]', function (p) { p.classList.toggle('oculto', +p.getAttribute('data-passo-painel') !== n); });
-    passosTopo();
     if (n === 1) passo1();
     else if (n === 2 && RW.novaExtraCotas) RW.novaExtraCotas.mostrar(d, el, carregar, function (novo) { if (novo) d = novo; passosTopo(); });
     else if (n === 3 && RW.novaExtraMontar) RW.novaExtraMontar.mostrar(d, el, carregar);
@@ -149,14 +166,17 @@
   /* ---------- passo 1: prazo, respostas e termos ---------- */
   function passo1() {
     if (!p1) p1 = { lista: 'vol', termos: {} };
-    q('#p1-abre').value = d.mes.abre; q('#p1-fecha').value = d.mes.fecha; q('#p1-aviso').value = d.mes.aviso_dias;
-    var resp = d.militares.filter(function (m) { return m.respondeu; });
-    q('#p1-respostas').textContent = msg().responderam(resp.length, d.militares.length);
-    q('#p1-n-vol').textContent = vols().length;
-    q('#p1-n-nao').textContent = resp.length - vols().length;
-    q('#p1-n-sem').textContent = d.militares.length - resp.length;
+    q('#p1-abre').value = RW.data.isoParaBR(d.mes.abre); q('#p1-fecha').value = RW.data.isoParaBR(d.mes.fecha); q('#p1-aviso').value = d.mes.aviso_dias;
+    /* as unidades da companhia */
+    var todosDaqui = daqui();
+    var resp = todosDaqui.filter(function (m) { return m.respondeu; });
+    var nVol = todosDaqui.filter(function (m) { return m.voluntario; }).length;
+    q('#p1-respostas').textContent = msg().responderam(resp.length, todosDaqui.length);
+    q('#p1-n-vol').textContent = nVol;
+    q('#p1-n-nao').textContent = resp.length - nVol;
+    q('#p1-n-sem').textContent = todosDaqui.length - resp.length;
     todos('#p1-filtro [data-lista]', function (b) { b.classList.toggle('aba--ativa', b.getAttribute('data-lista') === p1.lista); });
-    var lista = d.militares.filter(function (m) {
+    var lista = todosDaqui.filter(function (m) {
       return p1.lista === 'vol' ? m.voluntario : p1.lista === 'nao' ? m.respondeu && !m.voluntario : !m.respondeu;
     });
     var tb = q('#p1-lista');
@@ -243,9 +263,7 @@
       var antes = {}, agora = {};
       lanc.foto.forEach(function (a) { antes[chave(a)] = a; });
       d.alocacoes.forEach(function (a) { agora[chave(a)] = a; });
-      var mudas = Object.keys(Object.assign({}, antes, agora)).filter(function (k) {
-        return JSON.stringify(antes[k] && [antes[k].unidade, antes[k].blocos]) !== JSON.stringify(agora[k] && [agora[k].unidade, agora[k].blocos]);
-      });
+      var mudas = mudancasDesdeLancamento();
       q('#p4-texto').textContent = mudas.length ? msg().mudouDesde(mudas.length) : msg().nadaMudou;
       mudas.slice(0, 12).forEach(function (k) {
         var a = antes[k], b = agora[k], x = a || b;
@@ -275,11 +293,15 @@
   function passo5() { if (RW.novaExtraRelatorio) RW.novaExtraRelatorio.mostrar(d, el); }
 
   /* ---------- aba Calendário ---------- */
-  /* as unidades com extra no mês, no bloco da Escala, cada uma na mesma altura em todos os dias (a vazia fica invisível) */
+  /* as unidades que têm extra no mês, no bloco da Escala, cada uma na mesma altura em todos os dias
+     (a vazia fica invisível); sem nenhuma, o vazio no lugar */
   function desenharCalendario() {
     q('#nova-extra-cal-aviso').classList.toggle('oculto', !!d.lancamento);
     var alocs = d.alocacoes;
-    var unidades = d.unidades.filter(function (un) { return alocs.some(function (a) { return +a.unidade === un.id; }); });
+    var unidades = util.doCalendario(alocs).filter(function (un) { return alocs.some(function (a) { return +a.unidade === un.id; }); });
+    q('#nova-extra-cal-vazio').classList.toggle('oculto', unidades.length > 0);
+    q('#nova-extra-cal-mes').classList.toggle('oculto', !unidades.length);
+    if (!unidades.length) return;
     var comp = d.competencia;
     RW.geralCalendarioMes.renderizar(q('#nova-extra-cal-mes'), { dataRef: new Date(+comp.slice(0, 4), +comp.slice(5, 7) - 1, 1), unidadesPorDia: Math.max(1, unidades.length), aoDia: function (cel, data, noMes) {
       if (!noMes) return;
@@ -299,13 +321,15 @@
   /* ---------- entrada ---------- */
   function montar(conteudo) {
     el = conteudo;
-    d = null; passo = null;
-    todos('.nova-extra-passo-cartao', function (b) { b.addEventListener('click', function () { if (d) abrirPasso(+b.getAttribute('data-passo')); }); });
+    d = null; passo = null; aba = null;
     todos('#p1-filtro [data-lista]', function (b) { b.addEventListener('click', function () { p1.lista = b.getAttribute('data-lista'); passo1(); }); });
+    /* o prazo nos campos de data do site (DD/MM/AAAA, com o calendário do site) */
+    RW.campos.ligarData(q('#p1-abre'));
+    RW.campos.ligarData(q('#p1-fecha'));
     q('#p1-salvar-prazo').addEventListener('click', function () {
-      RW.rpc('nova_extra_prazo_salvar', { p_competencia: d.competencia, p_abre: q('#p1-abre').value, p_fecha: q('#p1-fecha').value, p_aviso: +q('#p1-aviso').value }).then(function (r) {
+      RW.rpc('nova_extra_prazo_salvar', { p_competencia: d.competencia, p_abre: RW.data.paraISO(q('#p1-abre').value), p_fecha: RW.data.paraISO(q('#p1-fecha').value), p_aviso: +q('#p1-aviso').value }).then(function (r) {
         if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
-        carregar();
+        RW.novaExtra.recarregar();
       });
     });
     q('#p1-cancelar').addEventListener('click', function () { p1.termos = {}; passo1(); });
@@ -317,22 +341,28 @@
       });
     });
     q('#p4-lancar').addEventListener('click', lancar);
-    q('#nova-extra-iniciado').addEventListener('click', function () {
-      var v = q('#nova-extra-iniciado').getAttribute('aria-checked') !== 'true';
-      RW.rpc('nova_extra_simular_inicio', { p_competencia: RW.novaExtra.comp(), p_iniciado: v }).then(function () { passo = null; carregar(); });
-    });
   }
 
-  /* fora do Organizar: fecha o painel e a caixa abertos e some a Legenda */
+  /* fora do passo: fecha o painel e a caixa abertos e some a Legenda */
   function sair() {
     if (RW.novaExtraMontar) RW.novaExtraMontar.fecharPainel();
     RW.novaExtra.legenda(null);
   }
 
+  /* abre o Calendário ('calendario') ou um passo (1 a 5); o mês já lido não é lido de novo (os rascunhos ficam) */
   function mostrar(nome) {
-    if (nome !== 'organizar') sair();
-    aba = nome; carregar();
+    sair();
+    aba = nome === 'calendario' ? 'calendario' : 'passo';
+    if (aba === 'passo') passo = nome;
+    if (!d || d.competencia !== RW.novaExtra.comp()) carregar();
+    else desenharAba();
   }
 
-  RW.novaExtraOrg = { resumo: resumo, montar: montar, mostrar: mostrar, sair: function () { aba = null; sair(); }, recarregar: function () { if (aba) carregar(); }, sujo: function () { return passo === 3 && RW.novaExtraMontar && RW.novaExtraMontar.sujo(); } };
+  RW.novaExtraOrg = {
+    resumo: resumo, montar: montar, mostrar: mostrar,
+    sair: function () { aba = null; sair(); },
+    recarregar: carregar,
+    desenharAba: function () { if (d) desenharAba(); },
+    sujo: function () { return aba === 'passo' && passo === 3 && RW.novaExtraMontar && RW.novaExtraMontar.sujo(); }
+  };
 })();

@@ -144,26 +144,30 @@
     return bloco.querySelector('.nova-distribuicao-unidade-corpo');
   }
 
-  /* as linhas da resposta: textos, ou { texto, falta, dica } */
+  /* as linhas da resposta: textos, ou { texto, falta, dica, numero } (numero = o "1º" em negrito na frente) */
   function respostas(lugar, linhas) {
     lugar.textContent = '';
     linhas.forEach(function (l) {
-      var p = tpl('resposta-linha');
       var item = typeof l === 'string' ? { texto: l } : l;
-      p.textContent = item.texto;
+      var p = tpl(item.numero ? 'resposta-numerada' : 'resposta-linha');
+      if (item.numero) {
+        p.querySelector('.nova-distribuicao-linha-ordem').textContent = item.numero;
+        p.querySelector('.nova-distribuicao-resposta-texto').textContent = item.texto;
+      } else p.textContent = item.texto;
       if (item.falta) p.classList.add('nova-distribuicao-resposta-linha--falta');
       lugar.appendChild(p);
     });
   }
 
   /* cartão fechado com a resposta embaixo; ao clicar, abre as opções (montar).
-     extra = { numeros, reserva, muda }: os números do efetivo ([mín., ideal, máx.] ou uma frase) e o selo
+     extra = { numeros, reserva, muda, aberto }: os números do efetivo ([mín., ideal, máx.] ou uma frase) e o selo
      Reserva no cabeçalho; muda = a chave
-     (ou as chaves) da diferença que marca o cartão, fechado e aberto */
+     (ou as chaves) da diferença que marca o cartão, fechado e aberto; aberto = fica aberto (a caixa de uma
+     mudança com data aberta dentro dele) */
   function cartao(destino, api, ctx, id, titulo, linhas, montar, comErro, extra) {
     var caixa = tpl('cartao');
     var cab = caixa.querySelector('.nova-distribuicao-cartao-cabecalho');
-    var aberto = api.aberto() === ctx.lado + ':' + id;
+    var aberto = !!(extra && extra.aberto) || api.aberto() === ctx.lado + ':' + id;
     caixa.querySelector('.nova-distribuicao-cartao-titulo').textContent = titulo;
     var numeros = caixa.querySelector('.nova-distribuicao-cartao-numeros');
     var valores = extra && extra.numeros;

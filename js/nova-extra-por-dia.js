@@ -1,7 +1,7 @@
 /* ============================================================
    NOVA EXTRA — passo 3: Por dia (o calendário)
    O mês no calendário do site (geral-calendario-mes) com, em cada
-   dia, o bloco de cada pelotão igual ao do Calendário da Escala: o
+   dia, o bloco de cada pelotão (a companhia só quando tem extra) igual ao do Calendário da Escala: o
    nome com a cor do dia (verde, vermelho, amarelo), as barras antes
    e depois (a régua de cada unidade no mês) e as extras na vaga da
    Extrajornada antiga, que marca e tira ali mesmo. Clicar no bloco
@@ -18,6 +18,7 @@
   var alvo = null;         // o lugar do calendário (#p3-cal)
   var picos = {};          // a régua das barras de cada unidade no mês (antes e depois)
   var diasCal = {};        // a célula de cada dia no calendário { data: celula }
+  var desenhadas = '';     // as unidades do calendário desenhado (ids), para saber quando refazer o mês
 
   function u() { return RW.novaExtraUtil; }
   function G() { return RW.novaExtraGrade; }
@@ -44,14 +45,15 @@
 
   function desenhar(lugar) {
     alvo = lugar;
-    var d = G().dados(), alocs = G().efetivas();
+    var d = G().dados(), alocs = G().efetivas(), unidades = u().doCalendario(alocs);
     diasCal = {};
+    desenhadas = unidades.map(function (un) { return un.id; }).join(',');
     calcularPicos(alocs);
-    RW.geralCalendarioMes.renderizar(alvo, { dataRef: G().dataDe(d.competencia), unidadesPorDia: d.unidades.length, aoDia: function (cel, data, noMes) {
+    RW.geralCalendarioMes.renderizar(alvo, { dataRef: G().dataDe(d.competencia), unidadesPorDia: Math.max(1, unidades.length), aoDia: function (cel, data, noMes) {
       if (!noMes) return;
       var k = iso(data);
       diasCal[k] = cel;
-      d.unidades.forEach(function (un) { cel.appendChild(blocoUnidade(un, k, alocs)); });
+      unidades.forEach(function (un) { cel.appendChild(blocoUnidade(un, k, alocs)); });
     } });
     var wrap = alvo.querySelector('.geral-calendario-mes');
     if (wrap && RW.escalasCelula) RW.escalasCelula.ativarGraficos(wrap);
@@ -102,18 +104,18 @@
     return b;
   }
 
-  /* refaz só os blocos de um dia (a régua das barras muda: refaz o mês) */
+  /* refaz só os blocos de um dia (a régua das barras muda ou a companhia entra ou sai do calendário: refaz o mês) */
   function atualizarDia(k) {
     var cel = diasCal[k];
     if (!cel || !cel.isConnected) return;
-    var d = G().dados(), alocs = G().efetivas(), cresceu = false;
-    d.unidades.forEach(function (un) {
+    var alocs = G().efetivas(), unidades = u().doCalendario(alocs), cresceu = false;
+    unidades.forEach(function (un) {
       var dep = G().depoisDe(un.id, k, alocs, G().faltaDoDia(un.id, k, alocs));
       if (dep && dep.cobertura.some(function (n) { return n > (picos[un.id] || 0); })) cresceu = true;
     });
-    if (cresceu) { desenhar(alvo); return; }
+    if (cresceu || unidades.map(function (un) { return un.id; }).join(',') !== desenhadas) { desenhar(alvo); return; }
     Array.prototype.forEach.call(cel.querySelectorAll('[data-uid]'), function (b) { b.parentNode.removeChild(b); });
-    d.unidades.forEach(function (un) { cel.appendChild(blocoUnidade(un, k, alocs)); });
+    unidades.forEach(function (un) { cel.appendChild(blocoUnidade(un, k, alocs)); });
     if (RW.escalasCelula) RW.escalasCelula.desenharGraficos(cel);
   }
 

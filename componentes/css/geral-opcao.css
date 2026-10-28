@@ -3,7 +3,9 @@
    Rótulo com a bolinha própria: o rádio do navegador tinha pouco
    contraste no tema escuro, então o anel é sempre visível e o
    marcado ganha o ponto cheio, claro nos dois temas. Inativa
-   (travada), fica apagada e sem o fundo do passar o mouse.
+   (travada), fica apagada e sem o fundo do passar o mouse. A mesma
+   linha serve à caixa de marcar (um botão role="checkbox" com a
+   .caixa-selecao), que desligada também fica apagada.
    Compartilhado (Distribuição, Extrajornada).
    ============================================================ */
 
@@ -43,6 +45,19 @@
   inset: 3px;
   border-radius: 50%;
   background: var(--texto-forte);
+}
+
+/* a caixa de marcar (o .geral-opcao num botão com role="checkbox" e a .caixa-selecao) desligada */
+.geral-opcao:disabled {
+  color: var(--texto-fraco);
+  cursor: default;
+}
+.geral-opcao:disabled:hover {
+  background: transparent;
+}
+.geral-opcao:disabled .caixa-selecao {
+  border-color: var(--borda);
+  cursor: default;
 }
 
 .geral-opcao:has(input:disabled) {

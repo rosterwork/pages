@@ -74,17 +74,12 @@
   color: var(--texto-fraco);
 }
 
-/* a linha com o cartão de mudar de ciclo aberto: o cartão entra no lugar dela */
-.escala-secao-item--aberto {
-  display: none;
-}
-
-/* botão de ação de uma linha (Tirar / Adicionar / Cancelar saída) */
+/* botão de ação de uma linha (Remover / Adicionar / Cancelar saída) */
 .escala-secao-botao {
   min-height: 24px;
 }
 
-/* variante de perigo do botão Tirar e do Tirar do dia (borda/rótulo em tom de erro) */
+/* variante de perigo do botão Remover (borda/rótulo em tom de erro) */
 .escala-secao-botao--perigo {
   color: var(--erro);
   border-color: var(--erro);

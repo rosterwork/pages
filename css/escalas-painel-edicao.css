@@ -1,29 +1,23 @@
 /* ============================================================
    ESCALA — painel do dia: a lista do Dia, a edição da linha (o
-   cartão que engloba a linha, também o de mudar de ciclo da aba
-   Ciclo), o Onde, o De serviço no dia e o Tirar do dia, o
-   Adicionar militar e a folga no dia
-   (escalas-painel-editar.js, -linha.js, -quem.js, -servico.js,
-   -adicionar.js e -militar.js). A sub-tela, o horário em campos, a
-   régua, as notas, o selo, as opções e o campo de militar são dos
-   componentes geral-subtela, geral-horario, geral-nota, geral-selo,
-   geral-opcao e geral-combo-militar
+   cartão que engloba a linha), o Onde, o Adicionar e o Remover
+   militar, a pergunta de mudar de ciclo da aba Ciclo e a folga no
+   dia (escalas-painel-editar.js, -linha.js, -quem.js,
+   -adicionar.js, -remover.js, -continuos.js e -militar.js). A
+   sub-tela e as caixas de pergunta, a pergunta embaixo da linha, o
+   horário em campos, a régua, as notas, o selo, as opções e o campo
+   de militar são dos componentes geral-subtela, geral-painel,
+   geral-horario, geral-nota, geral-selo, geral-opcao e
+   geral-combo-militar
    ============================================================ */
 
 /* ---------- a lista do Dia ---------- */
-/* subcabeçalho do admin: o botão Adicionar militar (geral-botao, com a etiqueta ADM) à esquerda; o desfazer e o
-   refazer, à direita */
+/* subcabeçalho do admin: o menu Editar o dia (geral-botao + geral-dropdown) à esquerda; o desfazer e o refazer, à
+   direita */
 .escala-edicao-historico {
   display: flex;
   gap: 4px;
   margin-left: auto;
-}
-
-/* a frase do topo da lista do admin: as mudanças valem só para o dia */
-.escala-edicao-ajuda {
-  margin: 0;
-  font-size: 12px;
-  color: var(--texto-fraco);
 }
 
 /* O que mudou na última gravação: o título, uma frase por militar e o atalho */
@@ -209,65 +203,24 @@
   border-top: 1px solid var(--borda);
 }
 
-/* o resumo: como está hoje, em frases, cada horário com o seu Mudar */
-.escala-linha-resumo {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.escala-linha-frase {
-  margin: 0;
-  font-size: 12px;
-  color: var(--texto);
-}
-
-.escala-linha-frase b {
-  font-weight: 700;
-  color: var(--texto-forte);
-}
-
-.escala-linha-frase .botao {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-left: 4px;
-  vertical-align: middle;
-}
-
 .escala-linha-bloco {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-/* o rótulo de um campo ou a pergunta das bolinhas */
+/* o rótulo de um campo (Militar, Horário) */
 .escala-linha-rotulo-campo {
   font-size: 12px;
   font-weight: 600;
   color: var(--texto-forte);
 }
 
-.escala-linha-ajuda {
-  font-size: 11px;
-  color: var(--texto-fraco);
-}
-
-/* as notas com texto e botão: o texto e o atalho embaixo */
+/* as notas de várias linhas: o ícone no alto */
 .escala-linha .nota,
-.escala-adicionar .nota {
+.escala-adicionar .nota,
+.escala-remover .nota {
   align-items: flex-start;
-}
-
-.escala-linha-nota-corpo {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-width: 0;
-}
-
-.escala-linha-atalho {
-  align-self: flex-start;
 }
 
 .escala-linha-periodos {
@@ -277,27 +230,7 @@
   gap: 8px;
 }
 
-.escala-servico {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* as ações, uma embaixo da outra, com o nome; o texto começa à esquerda */
-.escala-linha-acoes {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.escala-linha-acoes .botao {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
-}
-
-/* o rodapé dos modos: o botão que diz o que faz e o Cancelar, à direita */
+/* o rodapé: o Cancelar e o botão que diz o que faz, à direita */
 .escala-linha-rodape {
   display: flex;
   flex-wrap: wrap;
@@ -307,17 +240,12 @@
   border-top: 1px solid var(--borda);
 }
 
-/* ---------- o cartão de mudar de ciclo (aba Ciclo › Contínuos em outros ciclos): o desenho do cartão da linha, com o
-   militar e o X no topo ---------- */
-.escala-linha-topo.escala-ciclo-cartao-topo {
-  grid-template-columns: minmax(0, 1fr) auto;
-}
-
-.escala-ciclo-cartao-pessoa {
+/* ---------- a pergunta de mudar de ciclo (aba Ciclo › Contínuos em outros ciclos): o assunto, a frase e as datas
+   juntos, para sumirem juntos quando ele não tem serviço no ciclo atual ---------- */
+.escala-ciclo-cartao-ultimo {
   display: flex;
-  align-items: baseline;
+  flex-direction: column;
   gap: 4px;
-  min-width: 0;
 }
 
 /* ---------- o Onde: o posto e a função lado a lado ---------- */
@@ -348,18 +276,64 @@
   display: none;
 }
 
-/* ---------- o Adicionar militar ---------- */
-.escala-adicionar-dia,
-.escala-adicionar-ciclo {
+/* ---------- o Adicionar e o Remover militar (as caixas de pergunta são do geral-subtela) ---------- */
+/* as bolinhas e as caixas de marcar de uma pergunta e a pergunta que abre dentro da caixa (Quem sai e De quais funções),
+   uma embaixo da outra */
+.escala-marcar-lista,
+.escala-adicionar-onde-opcoes,
+.escala-adicionar-lugar {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 4px;
 }
 
 .escala-adicionar-datas {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+/* ---------- Remover militar › por troca ---------- */
+/* as caixas da troca entram na sub-tela como as outras (o espaço e a numeração são do geral-subtela) */
+.escala-remover-troca {
+  display: contents;
+}
+
+/* o documento: o RW e, embaixo, os dias dele ("01/11, 24 horas" e quem cumpre no lugar de quem) */
+.escala-remover-troca-dias {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.escala-remover-troca-dia {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--texto-fraco);
+}
+
+.escala-remover-troca-dia-texto {
+  color: var(--texto);
+}
+
+/* o dia do painel */
+.escala-remover-troca-dia--este .escala-remover-troca-dia-texto {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+/* os documentos alterados: um por linha ("RW nº 14/2026, Parte nº 957/2026") */
+.escala-remover-troca-docs-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.escala-remover-troca-doc-linha {
+  font-size: 12px;
+  color: var(--texto);
 }
 
 /* ---------- a folga no dia ---------- */

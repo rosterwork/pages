@@ -1,5 +1,6 @@
 /* ============================================================
    NOVA DISTRIBUIÇÃO — bloco 1 (Postos)
+   Dois cartões que abrem para editar (fechados, a lista em texto).
    As instalações, uma por linha (o nome; a segunda do mesmo tipo
    com o número, "Central de Operações 2"), com Nova instalação
    pelo tipo; e as viaturas, uma por linha: Nº (a contagem começa
@@ -64,15 +65,58 @@
     lista.appendChild(linha);
   }
 
+  /* o que a viatura acusa: o prefixo digitado fora do formato ou vazio (a nova sem prefixo só acusa quando o campo
+     fica vazio ao sair, ou no Salvar), os erros do banco e a falta da CNH (desta linha: com prefixo repetido, a
+     outra viatura não acende) */
+  function avisosViatura(ctx, api, v, i) {
+    var digitado = api.invalido(ctx.lado + ':viatura:' + i);
+    return {
+      digitado: digitado,
+      erros: digitado != null ? [digitado ? M().prefixoInvalido : M().prefixoVazio] : (v.nome ? P().erros(ctx, 'viatura:' + i) : []),
+      faltaCnh: !!v.nome && !v.cnh && P().pendente(ctx, 'carteira:' + v.nome)
+    };
+  }
+
+  /* as mudanças com data do posto gravado, em frases (só no lado da unidade) */
+  function mudancasDe(ctx, api, id) { return id && ctx.lado === 'unidade' ? K().frases(api, { id: id }) : []; }
+
+  /* os cartões fechados: um posto por linha ("1º Central de Operações", "3º ABT-14935 · CNH C") e, embaixo dele,
+     as mudanças com data e os erros */
+  function resumoInstalacoes(ctx, api, insts) {
+    if (!insts.length) return [M().nenhuma];
+    var linhas = [];
+    insts.forEach(function (inst, i) {
+      linhas.push({ numero: (i + 1) + 'º', texto: inst.nome });
+      mudancasDe(ctx, api, inst.id).forEach(function (f) { linhas.push(f); });
+      P().erros(ctx, 'instalacao:' + i).forEach(function (e) { linhas.push({ texto: e, falta: true }); });
+    });
+    return linhas;
+  }
+
+  function resumoViaturas(ctx, api, vtrs, base) {
+    if (!vtrs.length) return [M().nenhuma];
+    var linhas = [];
+    vtrs.forEach(function (v, i) {
+      var a = avisosViatura(ctx, api, v, i);
+      var nome = !v.nome ? M().semPrefixo
+        : P().texto(v.cnh ? M().tituloViatura : M().viaturaSemCnh, { nome: v.nome, cnh: v.cnh });
+      linhas.push({ numero: (base + i + 1) + 'º', texto: nome, falta: !v.nome || !v.cnh });
+      mudancasDe(ctx, api, v.id).forEach(function (f) { linhas.push(f); });
+      a.erros.forEach(function (e) { linhas.push({ texto: e, falta: true }); });
+    });
+    return linhas;
+  }
+
+  function comFalta(linhas) { return linhas.some(function (l) { return l && l.falta; }); }
+
   /* base = quantas instalações vêm antes (o Nº da viatura continua a contagem delas) */
   function linhaViatura(lista, ctx, api, v, i, total, base) {
     var linha = P().tpl('viatura');
     var chave = ctx.lado + ':viatura:' + i;
-    var digitado = api.invalido(chave);
-    /* a viatura nova sem prefixo só acusa quando o campo fica vazio ao sair (ou no Salvar) */
-    var erros = digitado != null ? [digitado ? M().prefixoInvalido : M().prefixoVazio] : (v.nome ? P().erros(ctx, 'viatura:' + i) : []);
-    /* a falta da CNH é desta linha (com prefixo repetido, a outra viatura não acende) */
-    var faltaCnh = !!v.nome && !v.cnh && P().pendente(ctx, 'carteira:' + v.nome);
+    var avisos = avisosViatura(ctx, api, v, i);
+    var digitado = avisos.digitado;
+    var erros = avisos.erros;
+    var faltaCnh = avisos.faltaCnh;
 
     linha.querySelector('.nova-distribuicao-linha-ordem').textContent = (base + i + 1) + 'º';
     var inp = linha.querySelector('.nova-distribuicao-prefixo');
@@ -150,8 +194,12 @@
     var vtrs = r.viaturas || [];
     corpo.appendChild(P().tpl('nota-postos'));
     var u = P().unidade(corpo, ctx);
+    /* a caixa de uma mudança com data aberta deixa o cartão do posto dela aberto */
+    var postoCaixa = ctx.lado === 'unidade' ? K().postoAberto() : null;
+    var temCaixa = function (lista) { return !!postoCaixa && lista.some(function (p) { return p.id === postoCaixa; }); };
 
-    P().fixo(u, ctx.ehCia ? M().instalacoesCompanhia : M().instalacoesPelotao, function (lugar) {
+    var linhasInst = resumoInstalacoes(ctx, api, insts);
+    P().cartao(u, api, ctx, 'instalacoes', ctx.ehCia ? M().instalacoesCompanhia : M().instalacoesPelotao, linhasInst, function (lugar) {
       /* a frase da ordem fica uma vez só, em cima: vale para a lista inteira (instalações e depois viaturas) */
       lugar.appendChild(P().tpl('nota-ordem-postos'));
       var tabela = P().tpl('instalacoes');
@@ -177,9 +225,10 @@
         });
       });
       lugar.appendChild(nova);
-    }, ctx, 'instalacoes');
+    }, comFalta(linhasInst), { muda: 'instalacoes', aberto: temCaixa(insts) });
 
-    P().fixo(u, ctx.ehCia ? M().viaturasCompanhia : M().viaturasPelotao, function (lugar) {
+    var linhasVtr = resumoViaturas(ctx, api, vtrs, insts.length);
+    P().cartao(u, api, ctx, 'viaturas', ctx.ehCia ? M().viaturasCompanhia : M().viaturasPelotao, linhasVtr, function (lugar) {
       var tabela = P().tpl('viaturas');
       var lista = tabela.querySelector('.nova-distribuicao-viaturas-lista');
       tabela.querySelector('.nova-distribuicao-viaturas-cabecalho').classList.toggle('oculto', !vtrs.length);
@@ -193,7 +242,7 @@
         api.mudar(ctx.lado, function (x) { x.viaturas.push({ nome: '', cnh: null, efetivo: [null, null, null] }); });
       });
       lugar.appendChild(nova);
-    }, ctx, 'viaturas');
+    }, comFalta(linhasVtr), { muda: 'viaturas', aberto: temCaixa(vtrs) });
   }
 
   window.RosterWork.novaDistribuicaoPostos = {

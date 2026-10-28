@@ -50,17 +50,23 @@
     var corpo = tabela.querySelector('tbody');
     var vols = G().voluntarios();
     var ordem = d.unidades.map(function (x) { return x.id; });
+    /* as unidades da companhia */
+    var sel = u().escolhidas(), mostrados = 0;
     d.unidades.forEach(function (un) {
+      if (sel.indexOf(un.id) < 0) return;
       var daqui = vols.filter(function (m) { return m.unidade_id === un.id; }).sort(function (x, y) { return (x.ordem || 0) - (y.ordem || 0); });
       if (!daqui.length && un.pelotao === false) return;
       corpo.appendChild(linhaPelotao(un, dias, alocs, daqui));
       daqui.forEach(function (m) { corpo.appendChild(linhaMilitar(m, dias, alocs)); });
+      mostrados += daqui.length;
     });
     /* quem é de uma unidade fora da lista (ex.: transferido) vai no fim, sem bloco */
-    vols.filter(function (m) { return ordem.indexOf(m.unidade_id) < 0; }).forEach(function (m) { corpo.appendChild(linhaMilitar(m, dias, alocs)); });
+    if (d.unidades.some(function (x) { return x.pelotao === false && sel.indexOf(x.id) >= 0; })) {
+      vols.filter(function (m) { return ordem.indexOf(m.unidade_id) < 0; }).forEach(function (m) { corpo.appendChild(linhaMilitar(m, dias, alocs)); mostrados++; });
+    }
     alvo.appendChild(tabela);
-    el.querySelector('#p3-mil-vazio').classList.toggle('oculto', vols.length > 0);
-    tabela.classList.toggle('oculto', !vols.length);
+    el.querySelector('#p3-mil-vazio').classList.toggle('oculto', mostrados > 0);
+    tabela.classList.toggle('oculto', !mostrados);
     if (caixa) reabrirCaixa();
   }
 

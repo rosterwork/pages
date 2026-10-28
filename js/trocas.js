@@ -289,8 +289,11 @@
     mostrarVista('todas');
     montarArvoreTodas();
 
-    /* quem chega pedindo o Solicitar troca (referência 'solicitar') abre com ele aberto */
-    if (RW.referenciaPedida && RW.referenciaPedida('trocas') === 'solicitar') abrirSolicitar();
+    /* quem chega pedindo o Solicitar troca (referência 'solicitar') ou, o administrador, o Registrar troca ('registrar':
+       o Trocar do painel do dia da Escala) abre com ele aberto */
+    var pedida = RW.referenciaPedida ? RW.referenciaPedida('trocas') : null;
+    if (pedida === 'solicitar') abrirSolicitar();
+    else if (pedida === 'registrar' && RW.sessao.temPapel('pelotao')) abrirRegistrar();
   }
 
   RW.paginas.trocas = { iniciar: iniciar, recarregar: recarregarNaTela };

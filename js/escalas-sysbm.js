@@ -65,8 +65,9 @@
         rejeitar(new Error('sem resposta'));
       }, ESPERA_EXTENSAO);
       window.addEventListener('message', tratar);
-      /* no celular, a extensão leva esta mesma aba para o SYSBM (sem aba nova; lá, o Salvar vira "Voltar para RW") */
-      var mesmaTela = !!(RW.celular && RW.celular());
+      /* no celular (o aparelho, em pé ou deitado), a extensão leva esta mesma aba para o SYSBM (sem aba nova; lá, o
+         Salvar vira "Voltar para RW") */
+      var mesmaTela = !!(RW.aplicativo && RW.aplicativo.celular());
       window.postMessage({ origem: 'rosterwork-sysbm', id: id, texto: texto, mesmaTela: mesmaTela }, window.location.origin);
     });
   }

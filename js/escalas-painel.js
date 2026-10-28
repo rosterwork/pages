@@ -737,6 +737,14 @@
     }
   }
 
+  /* troca de aba como o clique na aba (com a pergunta de descartar o que não foi salvo): o Editar extrajornada do menu
+     Editar o dia */
+  function irParaSecao(secao) {
+    var linha = RosterWork.painel.linhaAbas();
+    var aba = linha && linha.querySelector('.aba[data-secao="' + secao + '"]');
+    if (aba) aba.click();
+  }
+
   /* abrir outra célula com rascunho aberto: confirma o descarte antes de trocar.
      secao = a aba que abre primeiro (a Extrajornada abre na aba Extrajornada; o padrão é o Dia) */
   function abrirParaCelula(celula, secao) {
@@ -964,6 +972,7 @@
   window.RosterWork.escalasPainel = {
     ligar: ligar,
     abrir: abrirParaCelula,
+    irParaSecao: irParaSecao,
     /* peças de montagem reaproveitadas pelo Dia (escalas-painel-editar/-formulario/-militar)
        e pela gaveta da Extrajornada */
     pecas: {

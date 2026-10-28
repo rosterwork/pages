@@ -212,6 +212,25 @@
   color: var(--erro);
 }
 
+/* a pergunta única embaixo da linha que a chamou (Guia visual › Ações e perguntas): o assunto, a frase, a resposta e,
+   à direita, Cancelar + o botão da ação */
+.pergunta-linha {
+  margin: 4px 0 8px;
+}
+
+/* dentro de uma caixa colorida pelo nível (ex.: Sem função, em vermelho), o assunto da pergunta fica na cor comum */
+.grupo-caixa.pergunta-linha > .rotulo-secao {
+  color: var(--texto-suave);
+}
+
+.pergunta-linha-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 4px;
+}
+
 /* item — linha "rótulo: valor" (rótulo à esquerda, valor à direita) */
 .linha-info {
   display: flex;

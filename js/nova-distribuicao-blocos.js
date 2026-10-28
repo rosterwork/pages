@@ -1,10 +1,9 @@
 /* ============================================================
-   NOVA DISTRIBUIÇÃO — blocos 3 a 6 do questionário
-   Acúmulos fixos, Ordem de importância (tabela sempre aberta, uma
-   linha por pessoa com os acúmulos dela), Substitutos (de 1 a 5,
-   em linhas) e Quem escolher (as quatro formas, o aviso e o
-   rodízio). As regras automáticas vêm do banco, travadas. Toda
-   mudança passa pelo api.mudar (nova-distribuicao.js).
+   NOVA DISTRIBUIÇÃO — blocos 6 e 7 do questionário
+   Ordem de importância (tabela sempre aberta, uma linha por pessoa
+   com os acúmulos dela) e Quem escolher (as quatro formas, o aviso
+   e o rodízio). Os acúmulos moram em nova-distribuicao-acumulos.js.
+   Toda mudança passa pelo api.mudar (nova-distribuicao.js).
    ============================================================ */
 (function () {
   'use strict';
@@ -16,74 +15,14 @@
 
   function M() { return RosterWork.mensagens.novaDistribuicao; }
   function P() { return RosterWork.novaDistribuicaoPecas; }
+  function A() { return RosterWork.novaDistribuicaoAcumulos; }
 
-  /* quantos itens da lista estão salvos: o novo (ainda não salvo) não acusa o que falta antes do Salvar */
-  function gravadas(api, chave) { return ((((api.dados() || {}).atual || {}).respostas || {})[chave] || []).length; }
-
-  function automaticas(ctx, tipo) { return (ctx.calc && ctx.calc.automaticas && ctx.calc.automaticas[tipo]) || []; }
-
-  /* a regra automática: a frase (uma ou duas linhas) e a trava (molde) */
-  function automatica(destino, frase) {
-    var caixa = P().tpl('automatica');
-    var linhas = [].concat(frase);
-    caixa.querySelectorAll('.nova-distribuicao-automatica-texto').forEach(function (el, k) {
-      el.textContent = linhas[k] || '';
-      el.classList.toggle('oculto', !linhas[k]);
-    });
-    destino.appendChild(caixa);
-  }
-
-  function remover(caixa, ctx, fn) {
-    var botao = caixa.querySelector('.nova-distribuicao-remover');
-    botao.disabled = ctx.soLeitura;
-    botao.addEventListener('click', fn);
-  }
-
-  /* ---------- 3. Acúmulos fixos ---------- */
-  function acumulos(corpo, ctx, api) {
-    corpo.appendChild(P().tpl('nota-acumulos'));
-    var u = P().unidade(corpo, ctx);
-    var autos = automaticas(ctx, 'sempre');
-    autos.forEach(function (a) {
-      automatica(u, P().texto(M().automaticaSempre, { funcao: P().completo(ctx, a[0]), quem: P().completo(ctx, a[1]) }));
-    });
-    P().marcarMuda(u, ctx, 'sempre');
-    var travadas = autos.map(function (a) { return a[0]; });
-    var podem = ((ctx.calc && ctx.calc.funcoes) || []).filter(function (f) {
-      return !f.papel && travadas.indexOf(f.nome) < 0;
-    }).map(function (f) { return f.nome; });
-
-    var salvos = gravadas(api, 'sempre');
-    (ctx.resp.sempre || []).forEach(function (s, i) {
-      var caixa = P().tpl('acumulo');
-      var falta = i < salvos && P().pendente(ctx, 'sempre:' + i);
-      caixa.querySelector('[data-espaco="funcao"]').appendChild(P().selecaoFuncoes(ctx, podem, s[0], function (v) {
-        api.mudar(ctx.lado, function (x) { x.sempre[i][0] = v; });
-      }, { rotulo: M().rotuloFuncao, travado: ctx.soLeitura, erro: falta && !s[0] }));
-      caixa.querySelector('[data-espaco="quem"]').appendChild(P().selecaoFuncoes(ctx, P().proprias(ctx).filter(function (n) { return n !== s[0]; }), s[1], function (v) {
-        api.mudar(ctx.lado, function (x) { x.sempre[i][1] = v; });
-      }, { rotulo: M().rotuloQuem, travado: ctx.soLeitura, erro: falta && !s[1] }));
-      remover(caixa, ctx, function () { api.mudar(ctx.lado, function (x) { x.sempre.splice(i, 1); }); });
-      var errosAqui = P().erros(ctx, 'sempre:' + i);
-      if (falta) errosAqui.unshift(M().acumuloIncompleto);
-      errosAqui.forEach(function (e) { P().erroCampo(caixa, e); });
-      caixa.classList.toggle('nova-distribuicao-cartao--erro', errosAqui.length > 0);
-      u.appendChild(caixa);
-    });
-    P().erros(ctx, 'sempre').forEach(function (e) { P().erroCampo(u, e); });
-
-    var novo = P().tpl('novo-acumulo');
-    novo.disabled = ctx.soLeitura;
-    novo.addEventListener('click', function () { api.mudar(ctx.lado, function (x) { x.sempre.push(['', '']); }); });
-    u.appendChild(novo);
-  }
-
-  /* ---------- 4. Ordem de importância ---------- */
+  /* ---------- 6. Ordem de importância ---------- */
 
   /* as funções de quem está na linha: a própria e as que acumulam com ela */
   function daPessoa(ctx, nome) {
     var lista = [nome];
-    automaticas(ctx, 'sempre').concat(ctx.resp.sempre || []).forEach(function (s) {
+    A().automaticas(ctx, 'sempre').concat(ctx.resp.sempre || []).forEach(function (s) {
       if (s[1] === nome && s[0] && lista.indexOf(s[0]) < 0) lista.push(s[0]);
     });
     return lista;
@@ -165,60 +104,7 @@
     if (marca) linha.querySelector('.nova-distribuicao-col-n').appendChild(marca);
   }
 
-  /* ---------- 5. Substitutos ---------- */
-  function substitutos(corpo, ctx, api) {
-    corpo.appendChild(P().tpl('nota-substitutos'));
-    var u = P().unidade(corpo, ctx);
-    P().marcarMuda(u, ctx, 'cobre');
-    automaticas(ctx, 'cobre').forEach(function (c) {
-      var valores = { funcao: P().completo(ctx, c[0]), quem: P().completo(ctx, c[1]) };
-      automatica(u, M().automaticaCobre.map(function (t) { return P().texto(t, valores); }));
-    });
-    var salvos = gravadas(api, 'cobre');
-    (ctx.resp.cobre || []).forEach(function (regra, i) {
-      var caixa = P().tpl('substitutos');
-      var falta = i < salvos && P().pendente(ctx, 'cobre:' + i);
-      caixa.querySelector('[data-espaco="funcao"]').appendChild(P().selecaoFuncoes(ctx, ctx.resp.ordem || [], regra[0], function (v) {
-        api.mudar(ctx.lado, function (x) { x.cobre[i][0] = v; });
-      }, { rotulo: M().rotuloFuncao, travado: ctx.soLeitura, erro: falta && !regra[0] }));
-      remover(caixa, ctx, function () { api.mudar(ctx.lado, function (x) { x.cobre.splice(i, 1); }); });
-
-      var lista = caixa.querySelector('.nova-distribuicao-regra-lista');
-      var subs = regra.slice(1);
-      if (!subs.length) subs = [''];
-      subs.forEach(function (s, j) {
-        var linha = P().tpl('substituto');
-        linha.querySelector('.nova-distribuicao-regra-rotulo').textContent = P().texto(M().substitutoN, { n: j + 1 });
-        var outros = regra.filter(function (x, k) { return k !== j + 1; });
-        var podem = P().proprias(ctx).filter(function (nome) { return outros.indexOf(nome) < 0; });
-        linha.querySelector('.nova-distribuicao-espaco').appendChild(P().selecaoFuncoes(ctx, podem, s, function (v) {
-          api.mudar(ctx.lado, function (x) { x.cobre[i][j + 1] = v; });
-        }, { rotulo: P().texto(M().substitutoN, { n: j + 1 }), travado: ctx.soLeitura, erro: falta && j === 0 && !s }));
-        var tirar = linha.querySelector('.nova-distribuicao-remover');
-        tirar.disabled = ctx.soLeitura;
-        tirar.classList.toggle('oculto', subs.length < 2);
-        tirar.addEventListener('click', function () { api.mudar(ctx.lado, function (x) { x.cobre[i].splice(j + 1, 1); }); });
-        lista.appendChild(linha);
-      });
-      var mais = caixa.querySelector('.nova-distribuicao-adicionar');
-      mais.disabled = ctx.soLeitura || subs.length >= 5;
-      mais.addEventListener('click', function () {
-        api.mudar(ctx.lado, function (x) { while (x.cobre[i].length < subs.length + 1) x.cobre[i].push(''); x.cobre[i].push(''); });
-      });
-      var errosAqui = P().erros(ctx, 'cobre:' + i);
-      if (falta) errosAqui.unshift(M().substitutoIncompleto);
-      errosAqui.forEach(function (e) { P().erroCampo(caixa, e); });
-      if (regra[0]) P().marcarMuda(caixa, ctx, 'cobre:' + regra[0], caixa);
-      caixa.classList.toggle('nova-distribuicao-cartao--erro', errosAqui.length > 0);
-      u.appendChild(caixa);
-    });
-    var novo = P().tpl('novo-substitutos');
-    novo.disabled = ctx.soLeitura;
-    novo.addEventListener('click', function () { api.mudar(ctx.lado, function (x) { x.cobre.push(['', '']); }); });
-    u.appendChild(novo);
-  }
-
-  /* ---------- 6. Quem escolher ---------- */
+  /* ---------- 7. Quem escolher ---------- */
   function resumoCriterio(k, nome, falta) {
     var linhas = [];
     if (k && k.tipo != null) {
@@ -288,6 +174,6 @@
   }
 
   window.RosterWork.novaDistribuicaoBlocos = {
-    acumulos: acumulos, ordem: ordem, substitutos: substitutos, escolher: escolher
+    ordem: ordem, escolher: escolher
   };
 })();

@@ -261,9 +261,21 @@
     });
   }
 
+  /* as frases das mudanças do posto, para o cartão fechado (sem as que vão sair no Salvar) */
+  function frases(api, posto) {
+    return gravadas(api.dados(), posto.id).concat(rascunho.filter(function (e) { return !e.id && e.posto_id === posto.id; }))
+      .filter(function (e) { return !e.excluir; }).map(texto);
+  }
+
   window.RosterWork.novaDistribuicaoCaixas = {
     listar: listar,
     nova: nova,
+    frases: frases,
+    /* o posto (id) da mudança aberta na caixa, ou nulo: o cartão dele fica aberto */
+    postoAberto: function () {
+      var e = rascunho.filter(function (x) { return x.chave === aberta; })[0];
+      return e ? e.posto_id : null;
+    },
     /* as mudanças ainda não salvas: se há, o que vai para o banco, a conferência antes do Salvar e o descarte
        (Salvar, Cancelar, outra unidade ou outra versão) */
     temRascunho: function () { return rascunho.some(mudou); },

@@ -1,31 +1,73 @@
 /* ============================================================
    NOVA EXTRA (protótipo, só programador)
-   A Minha extra numa coluna de leitura, o grupo TESTE da barra, o
-   painel do pedido (perguntas em blocos, cotas, pincel e o mês), os
-   passos do Organizar o mês (tabelas em blocos, rodapé que gruda), o
-   passo 3 (o calendário Por dia, a grade Por militar com as bolinhas
-   e a caixa do quadrado) e a aba Calendário.
+   A moldura (cada aba ocupa o corpo: o resumo parado em cima, o
+   conteúdo rolando por dentro e o rodapé parado embaixo), o número
+   do passo na aba, a Minha extra numa coluna de leitura, a grade das
+   Cotas, o painel do pedido (perguntas em blocos, cotas, pincel e o
+   mês), os passos (tabelas em blocos), a Distribuição (o calendário
+   Por dia, a grade Por militar com as bolinhas e a caixa do quadrado)
+   e a aba Calendário.
    Cores, sombras e raios só por token.
    Montagem: js/nova-extra*.js
    ============================================================ */
 
-/* ---------- barra: o grupo TESTE ---------- */
-.nova-extra-teste {
+/* ---------- a moldura ---------- */
+/* a área de uma aba: ocupa o corpo inteiro (o corpo é colado) */
+.nova-extra-area {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
 }
 
-.nova-extra-teste-rotulo {
+/* o conteúdo da aba rola por dentro; a barra, o resumo e o rodapé ficam parados */
+.nova-extra-rolagem {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--respiro-pagina);
+}
+
+/* o topo parado do passo: as notas e a linha de resumo */
+.nova-extra-passo-topo {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 8px;
+  padding: 12px var(--respiro-pagina);
+}
+
+.nova-extra-passo-topo + .nova-extra-rolagem { padding-top: 0; }
+
+/* o vazio que fica no lugar da área inteira */
+.nova-extra-vazio--area { padding: 16px var(--respiro-pagina); }
+
+/* o número do passo, antes do nome da aba: branco (não começou), verde (feito) e preto (o primeiro ainda não feito) */
+.nova-extra-aba-num {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  border: 1px solid var(--borda-forte);
+  border-radius: 50%;
+  background-color: var(--fundo-superficie);
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 1px;
-  color: var(--texto-fraco);
+  line-height: 1;
+  color: var(--texto-suave);
 }
 
-.nova-extra-militares {
-  max-height: 360px;
-  overflow: auto;
+.nova-extra-aba-num--feito {
+  border-color: var(--sucesso);
+  background-color: var(--sucesso);
+  color: var(--texto-invertido);
+}
+
+.nova-extra-aba-num--agora {
+  border-color: var(--fundo-contraste);
+  background-color: var(--fundo-contraste);
+  color: var(--texto-invertido);
 }
 
 /* ---------- Minha extra ---------- */
@@ -34,7 +76,6 @@
   flex-direction: column;
   gap: 16px;
   max-width: 720px;
-  padding: 16px;
 }
 
 .nova-extra-bloco {
@@ -113,8 +154,6 @@
   font-size: 12px;
   color: var(--texto-fraco);
 }
-
-.nova-extra-pedir { margin-top: 4px; }
 
 /* ---------- o painel do pedido ---------- */
 .nova-extra-pedido {
@@ -273,76 +312,7 @@
 .nova-extra-dia--ocupado { background-color: var(--fundo-medio); }
 .nova-extra-dia--ocupado .nova-extra-dia-num { color: var(--texto-fraco); }
 
-/* ---------- Organizar o mês: os passos ---------- */
-.nova-extra-org {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.nova-extra-passos {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.nova-extra-passo-cartao {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-  min-height: 52px;
-  padding: 8px 12px;
-  border: 1px solid var(--borda);
-  border-radius: var(--raio-medio);
-  background-color: var(--fundo-superficie);
-  text-align: left;
-  cursor: pointer;
-  transition: border-color 0.15s ease;
-}
-
-.nova-extra-passo-cartao:hover { border-color: var(--foco); }
-.nova-extra-passo-cartao--aberto { border-color: var(--texto-forte); box-shadow: var(--sombra-flutuante); }
-
-.nova-extra-passo-n {
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  width: 24px;
-  height: 24px;
-  border: 1px solid var(--borda-forte);
-  border-radius: 50%;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--texto-suave);
-}
-
-.nova-extra-passo-cartao--feito .nova-extra-passo-n { border-color: var(--sucesso); background-color: var(--sucesso); color: var(--texto-invertido); }
-.nova-extra-passo-cartao--agora .nova-extra-passo-n { border-color: var(--fundo-contraste); background-color: var(--fundo-contraste); color: var(--texto-invertido); }
-
-.nova-extra-passo-c {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.nova-extra-passo-c b { color: var(--texto-forte); }
-
-.nova-extra-passo-status {
-  overflow: hidden;
-  font-size: 12px;
-  color: var(--texto-fraco);
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.nova-extra-passo-painel {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
+/* ---------- os passos ---------- */
 .nova-extra-duas {
   display: grid;
   grid-template-columns: 340px 1fr;
@@ -403,7 +373,6 @@
   flex-direction: column;
   gap: 4px;
   min-width: 0;
-  overflow-x: auto;
 }
 
 .nova-extra-blocos .nova-extra-tabela {
@@ -411,9 +380,14 @@
   border-spacing: 0 4px;
 }
 
+/* o cabeçalho das colunas fica parado no alto ao rolar, no cinza do bloco */
 .nova-extra-blocos .nova-extra-tabela th {
+  position: sticky;
+  top: 0;
+  z-index: 1;   /* empilhamento interno do sticky (Guia visual › Camadas, movimento e foco; faixa 1-9) */
   padding: 0 12px;
   border-bottom: 0;
+  background-color: var(--fundo-pagina);
 }
 
 .nova-extra-blocos .nova-extra-tabela td {
@@ -441,15 +415,8 @@
 
 .nova-extra-marcar-curto { width: auto; }
 
-/* o rodapé do site (.rodape .rodape-linha) grudado no fim da área que rola, de ponta a ponta,
-   por cima do respiro da página (nada passa por baixo dele) */
-.nova-extra-rodape {
-  position: sticky;
-  bottom: calc(-1 * var(--respiro-pagina));
-  z-index: 4;
-  flex-wrap: wrap;
-  margin: 0 calc(-1 * var(--respiro-pagina));
-}
+/* o rodapé do site (.rodape .rodape-linha), parado embaixo da área da aba */
+.nova-extra-rodape { flex-wrap: wrap; }
 
 .nova-extra-rodape-texto {
   flex: 1;
@@ -473,10 +440,93 @@
 
 .nova-extra-historico { color: var(--texto-fraco); }
 
-/* passo 2: a banda e a lista no padrão da aba Voluntários (extrajornada.css); aqui só o que muda: sem o
-   recuo próprio (o corpo da página já tem), a fila e o aviso embaixo da linha de quem perde as extras */
-.nova-extra-cotas-banda { padding: 0; }
+/* passo 2: a área, a faixa e os blocos no padrão da aba Voluntários (extrajornada.css). A grade usa a largura toda:
+   cada coluna fica com uma parte proporcional da sobra, com a largura mínima do conteúdo; quando não cabe, rola por
+   dentro (o bloco cresce com o conteúdo). O título do bloco usa as mesmas colunas, com os números da unidade
+   terminando junto com a coluna Na escala */
+.nova-extra-grade .extra-vol-linha,
+.nova-extra-grade .extra-vol-bloco-titulo {
+  grid-template-columns: minmax(48px, 0.6fr) minmax(220px, 3fr) minmax(56px, 1fr) minmax(176px, 1.6fr) minmax(72px, 1fr) minmax(104px, 1fr) minmax(80px, 1fr);
+  gap: 16px;
+}
 
+.nova-extra-grade .extra-vol-bloco-titulo {
+  display: grid;
+  padding: 0 12px;
+}
+
+.nova-extra-grade .extra-vol-bloco,
+.nova-extra-grade .extra-vol-cab { min-width: max-content; }
+
+.nova-extra-titulo-nome {
+  grid-column: 1 / 3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.nova-extra-titulo-totais {
+  grid-column: 3 / -1;
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nova-extra-dir {
+  justify-self: end;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.nova-extra-sug { color: var(--texto-suave); }
+
+/* o Recebeu da unidade no "Entre todos": texto, sem borda */
+.nova-extra-bloco-recebeu {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.nova-extra-atendido b {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.nova-extra-atendido small {
+  margin-left: 4px;
+  font-size: 12px;
+  color: var(--texto-fraco);
+}
+
+/* os números do título do bloco (Entregues e Sobram) */
+.nova-extra-bloco-num {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--texto-suave);
+}
+
+.nova-extra-bloco-num b {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+/* o Entregues: amarelo ainda há cota e voluntário que pediu mais; vermelho passou do recebido */
+.extra-vol-numero-valor.nova-extra-cor--alerta,
+.nova-extra-bloco-num b.nova-extra-cor--alerta { color: var(--alerta); }
+
+.extra-vol-numero-valor.nova-extra-cor--erro,
+.nova-extra-bloco-num b.nova-extra-cor--erro { color: var(--erro); }
+
+/* Repartir por (o campo de seleção) e as cotas da companhia em texto, quando são a soma das unidades */
+.nova-extra-reparticao .campo-selecao { min-width: 160px; }
+
+.nova-extra-banda-texto {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+/* o aviso embaixo da linha de quem perde as extras */
 .nova-extra-p2-aviso {
   display: block;
   padding: 0 12px 8px;
@@ -514,22 +564,7 @@
 .nova-extra-item-texto b { color: var(--texto-forte); }
 .nova-extra-item-texto span { font-size: 12px; color: var(--texto-fraco); }
 
-.nova-extra-aviso {
-  padding: 8px 12px;
-  border-radius: var(--raio-medio);
-  background-color: var(--alerta-fundo);
-  font-size: 12px;
-  color: var(--alerta);
-}
-
 /* ---------- passo 3: Por dia (o calendário) e Por militar ---------- */
-.nova-extra-ferramentas {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-
 .nova-extra-resumo {
   display: flex;
   flex-wrap: wrap;
@@ -544,9 +579,16 @@
 
 .nova-extra-resumo-fraco { color: var(--alerta); }
 
-/* o calendário do mês (geral-calendario-mes): os 7 dias encolhem juntos até 110 px, para caber também com
-   o painel largo aberto; só abaixo disso (telas menores) rola para o lado por dentro */
-.nova-extra-dist-cal { min-width: 0; }
+/* o calendário do mês (geral-calendario-mes, que rola por dentro com os dias da semana parados no alto): ocupa
+   a área da aba; os 7 dias encolhem juntos até 110 px, para caber também com o painel largo aberto; só abaixo
+   disso (telas menores) rola para o lado por dentro */
+.nova-extra-dist-cal {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+}
 
 .nova-extra-dist-cal .geral-calendario-mes-cabecalho,
 .nova-extra-dist-cal .geral-calendario-mes-semana { grid-template-columns: repeat(7, minmax(110px, 1fr)); }
@@ -645,16 +687,22 @@
 .nova-extra-falta-amarela { font-size: 12px; color: var(--alerta); }
 
 /* ---------- Por militar: a grade dos 31 dias ---------- */
-/* rola para o lado por dentro quando não cabe; os dias separados por linhas */
+/* ocupa a área da aba e rola por dentro nas duas direções, com a linha das datas parada no alto; os dias
+   separados por linhas */
 .nova-extra-gm {
   display: flex;
   flex-direction: column;
+  flex: 1 1 0;
   gap: 8px;
   min-width: 0;
+  min-height: 0;
+  padding: 0 var(--respiro-pagina) var(--respiro-pagina);
 }
 
 .nova-extra-gm-rolagem {
-  overflow-x: auto;
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow: auto;
   border-radius: var(--raio-medio);
   background-color: var(--fundo-superficie);
   box-shadow: var(--sombra-bloco);
@@ -663,7 +711,8 @@
 .nova-extra-gm-tabela {
   width: 100%;
   min-width: 1132px;
-  border-collapse: collapse;
+  border-collapse: separate;   /* separado: a linha de baixo das datas acompanha o cabeçalho parado */
+  border-spacing: 0;
   table-layout: fixed;
   font-size: 12px;
 }
@@ -672,14 +721,20 @@
 .nova-extra-gm-tabela td { padding: 0; }
 
 .nova-extra-gm-tabela thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;   /* empilhamento interno do sticky (Guia visual › Camadas, movimento e foco; faixa 1-9) */
   padding: 4px 0;
   border-bottom: 1px solid var(--borda-forte);
+  background-color: var(--fundo-superficie);
   font-size: 11px;
   font-weight: 700;
   color: var(--texto-fraco);
 }
 
-.nova-extra-gm-tabela tbody tr { border-top: 1px solid var(--fundo-medio); }
+.nova-extra-gm-tabela thead .nova-extra-gm-dia--fds { background-color: var(--fundo-suave); }
+
+.nova-extra-gm-tabela tbody td { border-top: 1px solid var(--fundo-medio); }
 
 .nova-extra-gm-nome {
   width: 200px;
@@ -890,6 +945,7 @@
   padding-left: 16px;
   font-size: 12px;
   color: var(--texto);
+  white-space: normal;   /* o menu da Legenda não quebra linha por padrão: sem isso, a frase sai da tela */
 }
 
 /* ---------- passo 5: as etapas do mês (esquerda) e a prévia dos ajustes (direita), como a aba Relatórios ---------- */
@@ -1099,18 +1155,12 @@
 
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
-   A barra quebra em linhas; as cotas em duas fileiras de cinco e
-   os botões e os dias maiores para o dedo.
+   Só as abas Minha extra e Calendário (os passos somem); as cotas
+   em duas fileiras de cinco, os botões e os dias maiores para o
+   dedo e as colunas dos passos uma embaixo da outra.
    ============================================================ */
 @media (max-width: 767px) {
-  html[data-celular] .nova-extra-teste {
-    flex-wrap: wrap;
-    padding: 4px 4px 4px 12px;
-  }
-
-  html[data-celular] .nova-extra-leitura {
-    padding: var(--respiro-pagina);
-  }
+  html[data-celular] #nova-extra-abas > .abas + .abas { display: none; }
 
   html[data-celular] .nova-extra-cotas {
     grid-template-columns: repeat(5, 1fr);
@@ -1126,7 +1176,6 @@
     min-height: 52px;
   }
 
-  html[data-celular] .nova-extra-passos,
   html[data-celular] .nova-extra-minha-passos,
   html[data-celular] .nova-extra-duas {
     grid-template-columns: 1fr;

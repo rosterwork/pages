@@ -216,7 +216,7 @@
 .nova-distribuicao-dia-campo { max-width: 160px; }
 
 /* frase com os campos de seleção no meio */
-/* a regra automática em duas linhas (Substitutos): juntas, como uma frase só */
+/* a regra automática em uma ou duas linhas: juntas, como uma frase só */
 .nova-distribuicao-automatica-linhas {
   display: flex;
   flex-direction: column;
@@ -273,7 +273,7 @@
   color: var(--texto-suave);
 }
 
-/* ---- listas de linhas (viaturas, substitutos, regras) ---- */
+/* ---- listas de linhas (viaturas, opções dos acúmulos, regras) ---- */
 .nova-distribuicao-linha {
   display: flex;
   align-items: center;
@@ -496,7 +496,7 @@
   gap: 8px;
 }
 
-/* ---- substitutos: rótulo à esquerda, o campo e o remover ---- */
+/* ---- opções dos acúmulos: rótulo à esquerda, o campo e o remover ---- */
 .nova-distribuicao-regra-linha {
   display: grid;
   grid-template-columns: 120px minmax(0, 1fr) 32px;
@@ -508,33 +508,28 @@
 
 .nova-distribuicao-regra-rotulo { color: var(--texto-suave); }
 
+/* a opção dos acúmulos: rótulo, o campo, as setas (subir e descer) e o remover */
+.nova-distribuicao-regra-linha--opcao { grid-template-columns: 120px minmax(0, 1fr) auto 32px; }
+
+.nova-distribuicao-opcao-setas {
+  display: flex;
+  gap: 4px;
+}
+
 .nova-distribuicao-regra-lista {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-/* ---- regras por militar: Militar | Regra | Função ---- */
-.nova-distribuicao-regras-cabecalho,
-.nova-distribuicao-regra {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto 160px 32px;
-  align-items: center;
-  gap: 8px;
-}
-
-.nova-distribuicao-regras-lista {
+/* os botões embaixo do cartão aberto, lado a lado (Adicionar opção, Remover acúmulo, Remover regra) */
+.nova-distribuicao-cartao-botoes {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
-.nova-distribuicao-regra .nova-distribuicao-espaco,
-.nova-distribuicao-regra .nova-distribuicao-selecao,
-.nova-distribuicao-regra .nova-distribuicao-selecao .campo-selecao { width: 100%; }
-
-.nova-distribuicao-regra-erro { grid-column: 1 / -1; }
-
+/* ---- regras por militar ---- */
 .nova-distribuicao-militar-vazio { color: var(--texto-suave); }
 
 /* ---- lista de viaturas: Nº, prefixo, CNH alinhadas e as ações; as trocas e os erros embaixo ---- */

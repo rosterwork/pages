@@ -5,14 +5,15 @@
    - Fora da escala: com o Adicionar; o afastado no dia e quem já tem
      a entrada marcada ganham só o selo;
    - Contínuos do dia: no ciclo e de serviço (ou de folga) neste dia,
-     com o Tirar; quem tem a saída marcada ganha o selo e o Cancelar
+     com o Remover; quem tem a saída marcada ganha o selo e o Cancelar
      saída;
    - Contínuos em outros ciclos (a caixa que abre e fecha, com a
      quantidade; começa fechada, fica como o admin deixou no mesmo dia
      e abre sozinha na busca): no ciclo, mas de serviço em outros
-     dias, com o último serviço e o Adicionar, que abre um cartão no
-     lugar da linha com as três últimas datas do ciclo atual (mudar de
-     ciclo); quem tem a saída marcada ganha o selo e o Cancelar saída.
+     dias, com o último serviço e o Adicionar, que abre embaixo da
+     linha a pergunta única do último serviço no ciclo atual, entre as
+     três últimas datas (mudar de ciclo); quem tem a saída marcada
+     ganha o selo e o Cancelar saída.
    Cada ação confirma e grava na hora, com o resumo
    (escalas-painel-ciclo.js); o Adicionar de quem estava fora e o
    Cancelar saída têm o Desfazer no resumo. Só o admin vê a seção.
@@ -24,7 +25,7 @@
 
   var ctx = null;      // { corpo, unidadeId, iso }
   var mils = [];       // militares carregados do banco
-  var cartao = null;   // { el, linha }: o cartão de mudar de ciclo aberto (um por vez)
+  var cartao = null;   // a pergunta de mudar de ciclo aberta embaixo de uma linha (uma por vez)
   var outros = { chave: '', aberto: false };   // a caixa dos Contínuos em outros ciclos: aberta ou fechada, por unidade e dia
 
   function msg() { return (RosterWork.mensagens && RosterWork.mensagens.escala) || {}; }
@@ -83,11 +84,11 @@
   function aoTerminar(iso) { return function () { if (ctx && ctx.iso === iso) carregar(); }; }
 
   /* ---------- ações: cada uma confirma e grava na hora ---------- */
-  function tirar(m) {
+  function remover(m) {
     var uid = ctx.unidadeId, iso = ctx.iso;
     C().confirmar(uid, iso, m.cpf, {
-      mensagem: texto(msg().confirmarTirar, { pessoa: nomeDe(m), data: formatarData(iso) }),
-      escala: RosterWork.mensagens.saida.escalaTirar, botao: msg().btnTirar
+      mensagem: texto(msg().confirmarRemover, { pessoa: nomeDe(m), data: formatarData(iso) }),
+      escala: RosterWork.mensagens.saida.escalaTirar, botao: msg().btnRemover
     }, function () { C().salvar(uid, iso, [{ cpf: m.cpf, acao: 'tirar' }], { aoTerminar: aoTerminar(iso) }); });
   }
   function cancelarSaida(m) {
@@ -103,11 +104,9 @@
   }
   function adicionar(m) { C().entrar(ctx.unidadeId, ctx.iso, m, aoTerminar(ctx.iso)); }
 
-  /* ---------- o cartão de mudar de ciclo (Contínuos em outros ciclos › Adicionar) ---------- */
+  /* ---------- a pergunta de mudar de ciclo (Contínuos em outros ciclos › Adicionar), embaixo da linha ---------- */
   function fecharCartao() {
-    if (!cartao) return;
-    if (cartao.el.parentNode) cartao.el.remove();
-    cartao.linha.classList.remove('escala-secao-item--aberto');
+    if (cartao && cartao.parentNode) cartao.remove();
     cartao = null;
   }
   function nota(caixa, t) {
@@ -122,8 +121,6 @@
     var uid = ctx.unidadeId, iso = ctx.iso;
     var lista = m.ultimos_servicos || [];
     var ultimo = lista.length ? lista[lista.length - 1] : null;   // vem marcada a mais recente
-    q('.escala-secao-grad').textContent = m.grad || '';
-    q('.escala-secao-nome').textContent = m.nome || '';
     q('.escala-ciclo-cartao-rotulo').textContent = L().ultimoRotulo(nomeDe(m));
     q('.escala-ciclo-cartao-ultimo').classList.toggle('oculto', !lista.length);
     var marcar = C().datas(q('.escala-ciclo-cartao-datas'), lista, function (d) { ultimo = d; desenhar(); });
@@ -133,12 +130,10 @@
       nota(q('.escala-ciclo-cartao-mudar'), f.alerta);
       nota(q('.escala-ciclo-cartao-info'), f.info);
     }
-    q('.escala-linha-fechar').addEventListener('click', fecharCartao);
     q('.escala-ciclo-cartao-cancelar').addEventListener('click', fecharCartao);
     q('.escala-ciclo-cartao-continuar').addEventListener('click', function () { C().mudar(uid, iso, m, ultimo, aoTerminar(iso)); });
-    linhaEl.classList.add('escala-secao-item--aberto');
     linhaEl.insertAdjacentElement('afterend', el);
-    cartao = { el: el, linha: linhaEl };
+    cartao = el;
     desenhar();
   }
 
@@ -147,9 +142,9 @@
   function seloSaida(m) { return seloTexto(texto(msg().continuosSaiEm, { data: formatarData(m.saida_em) })); }
   function botaoCancelarSaida(m) { return botao(msg().btnCancelarSaida, null, function () { cancelarSaida(m); }); }
 
-  /* do dia: Tirar; com a saída marcada, Cancelar saída ou Tirar, que traz a saída para este dia */
+  /* do dia: Remover; com a saída marcada, Cancelar saída ou Remover, que traz a saída para este dia */
   function linhaDoDia(m) {
-    var acoes = [botao(msg().btnTirar, 'escala-secao-botao--perigo', function () { tirar(m); })];
+    var acoes = [botao(msg().btnRemover, 'escala-secao-botao--perigo', function () { remover(m); })];
     if (saidaMarcada(m)) acoes.unshift(botaoCancelarSaida(m));
     var el = linha(m, saidaMarcada(m) ? seloSaida(m) : null, acoes);
     if (el && m.folga_hoje && !m.serve_hoje) {   // é dia dele, mas está de folga: nome riscado
@@ -165,17 +160,17 @@
     var extras = [m.ultimo_servico ? infoTexto(L().infoUltimo(formatarData(m.ultimo_servico).slice(0, 5))) : null,
       saidaMarcada(m) ? seloSaida(m) : null];
     var acoes = [saidaMarcada(m) ? botaoCancelarSaida(m) : null,
-      botao(msg().btnAdicionar, 'botao--primario', function () { abrirCartao(m, el); })];
+      botao(msg().btnAdicionar, null, function () { abrirCartao(m, el); })];
     el = linha(m, extras, acoes);
     return el;
   }
-  /* fora: Adicionar; o afastado no dia e quem já tem a entrada marcada, só o selo (muda-se pelo Tirar no dia da entrada) */
+  /* fora: Adicionar; o afastado no dia e quem já tem a entrada marcada, só o selo (muda-se pelo Remover no dia da entrada) */
   function linhaFora(m) {
     if (m.afastamento) {
       return linha(m, seloTexto(texto(msg().continuosAfastadoAte, { motivo: m.afastamento.motivo, data: formatarData(m.afastamento.ate).slice(0, 5) })));
     }
     if (m.entra_em) return linha(m, seloTexto(texto(msg().continuosEntraEm, { data: formatarData(m.entra_em).slice(0, 5) })));
-    return linha(m, null, botao(msg().btnAdicionar, 'botao--primario', function () { adicionar(m); }));
+    return linha(m, null, botao(msg().btnAdicionar, null, function () { adicionar(m); }));
   }
 
   /* ---------- desenho ---------- */
