@@ -3,8 +3,9 @@
    Uma tela que abre no lugar do conteúdo, dentro do mesmo painel
    (painel do dia da Escala: formulário e militar no dia; Folgas:
    conceder, solicitar e ajustar): o Voltar no topo, o cabeçalho
-   (título + subtítulo) e as seções (.grupo-caixa, com o rótulo
-   numerado "1. Dia"). O texto do Voltar fica no molde da página.
+   (título + subtítulo) e as caixas de pergunta (.grupo-caixa
+   .subtela-pergunta: o número do rótulo vem do contador e conta só
+   as caixas à vista). O texto do Voltar fica no molde da página.
    ============================================================ */
 
 /* volta ao conteúdo de antes (botão de texto com a seta, no topo) */
@@ -20,6 +21,16 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  counter-reset: subtela-pergunta;
+}
+
+/* a caixa de pergunta: o rótulo traz o assunto e o número vem daqui (a caixa escondida não conta) */
+.subtela-pergunta {
+  counter-increment: subtela-pergunta;
+}
+
+.subtela-pergunta > .rotulo-secao::before {
+  content: counter(subtela-pergunta) ". ";
 }
 
 .subtela-cab {

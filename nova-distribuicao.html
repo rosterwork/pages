@@ -249,7 +249,7 @@
 <template id="tpl-nova-distribuicao-nota-regras">
   <p class="nova-distribuicao-ajuda">O que um militar não pode fazer ou só pode fazer.</p>
 </template>
-<template id="tpl-nova-distribuicao-nota-viaturas">
+<template id="tpl-nova-distribuicao-nota-ordem-postos">
   <p class="nova-distribuicao-ajuda">A ordem da lista é a ordem exibida na escala.</p>
 </template>
 
@@ -320,9 +320,13 @@
   <div class="nova-distribuicao-opcoes"></div>
 </template>
 
-<!-- instalações: uma por linha, nas colunas das viaturas -->
+<!-- instalações: uma por linha, nas colunas das viaturas (o Nº começa nelas e segue nas viaturas) -->
 <template id="tpl-nova-distribuicao-instalacoes">
   <div class="nova-distribuicao-viaturas">
+    <div class="nova-distribuicao-viaturas-cabecalho">
+      <span class="rotulo-secao">Nº</span>
+      <span class="rotulo-secao">Instalação</span>
+    </div>
     <div class="nova-distribuicao-viaturas-lista"></div>
   </div>
 </template>

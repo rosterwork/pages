@@ -2,7 +2,8 @@
    NOVA DISTRIBUIÇÃO — bloco 1 (Postos)
    As instalações, uma por linha (o nome; a segunda do mesmo tipo
    com o número, "Central de Operações 2"), com Nova instalação
-   pelo tipo; e as viaturas, uma por linha: Nº, prefixo (vale ao
+   pelo tipo; e as viaturas, uma por linha: Nº (a contagem começa
+   nas instalações e segue nas viaturas), prefixo (vale ao
    sair do campo; fora do formato fica só no campo, em vermelho),
    CNH de A a E alinhadas, setas, Substituir temporariamente, Fora
    de serviço e excluir. O posto gravado sai pela exclusão com data
@@ -46,10 +47,11 @@
 
   function linhaInstalacao(lista, ctx, api, inst, i) {
     var linha = P().tpl('instalacao');
+    linha.querySelector('.nova-distribuicao-linha-ordem').textContent = (i + 1) + 'º';
     linha.querySelector('.nova-distribuicao-instalacao-nome').textContent = inst.nome;
     var posto = { id: inst.id, nome: inst.nome, cnh: null };
     var subs = linha.querySelector('.nova-distribuicao-viatura-substituicoes');
-    var marcas = posto.id && ctx.lado === 'unidade' ? K().listar(subs, api, ctx, posto, 0) : {};
+    var marcas = posto.id && ctx.lado === 'unidade' ? K().listar(subs, api, ctx, posto, i + 1) : {};
     linha.classList.toggle('nova-distribuicao-viatura--substituindo', !!marcas.aberta);
     acoesPosto(linha, ctx, api, posto, marcas, function () {
       api.mudar(ctx.lado, function (x) { x.instalacoes.splice(i, 1); });
@@ -62,7 +64,8 @@
     lista.appendChild(linha);
   }
 
-  function linhaViatura(lista, ctx, api, v, i, total) {
+  /* base = quantas instalações vêm antes (o Nº da viatura continua a contagem delas) */
+  function linhaViatura(lista, ctx, api, v, i, total, base) {
     var linha = P().tpl('viatura');
     var chave = ctx.lado + ':viatura:' + i;
     var digitado = api.invalido(chave);
@@ -71,7 +74,7 @@
     /* a falta da CNH é desta linha (com prefixo repetido, a outra viatura não acende) */
     var faltaCnh = !!v.nome && !v.cnh && P().pendente(ctx, 'carteira:' + v.nome);
 
-    linha.querySelector('.nova-distribuicao-linha-ordem').textContent = (i + 1) + 'º';
+    linha.querySelector('.nova-distribuicao-linha-ordem').textContent = (base + i + 1) + 'º';
     var inp = linha.querySelector('.nova-distribuicao-prefixo');
     inp.id = 'nova-distribuicao-prefixo-' + ctx.lado + '-' + i;
     inp.value = digitado != null ? digitado : v.nome;
@@ -121,7 +124,7 @@
     var posto = { id: v.id, nome: v.nome, cnh: v.cnh };
     var gravada = !!v.id && ctx.lado === 'unidade';
     var subs = linha.querySelector('.nova-distribuicao-viatura-substituicoes');
-    var marcas = gravada ? K().listar(subs, api, ctx, posto, i + 1) : {};
+    var marcas = gravada ? K().listar(subs, api, ctx, posto, base + i + 1) : {};
     linha.classList.toggle('nova-distribuicao-viatura--substituindo', !!marcas.aberta);
     var trocar = linha.querySelector('.nova-distribuicao-trocar');
     trocar.disabled = ctx.soLeitura || !gravada || digitado != null || marcas.substituindo;
@@ -149,8 +152,11 @@
     var u = P().unidade(corpo, ctx);
 
     P().fixo(u, ctx.ehCia ? M().instalacoesCompanhia : M().instalacoesPelotao, function (lugar) {
+      /* a frase da ordem fica uma vez só, em cima: vale para a lista inteira (instalações e depois viaturas) */
+      lugar.appendChild(P().tpl('nota-ordem-postos'));
       var tabela = P().tpl('instalacoes');
       var lista = tabela.querySelector('.nova-distribuicao-viaturas-lista');
+      tabela.querySelector('.nova-distribuicao-viaturas-cabecalho').classList.toggle('oculto', !insts.length);
       if (!insts.length) P().respostas(lista, [M().nenhuma]);
       insts.forEach(function (inst, i) { linhaInstalacao(lista, ctx, api, inst, i); });
       lugar.appendChild(tabela);
@@ -174,12 +180,11 @@
     }, ctx, 'instalacoes');
 
     P().fixo(u, ctx.ehCia ? M().viaturasCompanhia : M().viaturasPelotao, function (lugar) {
-      lugar.appendChild(P().tpl('nota-viaturas'));
       var tabela = P().tpl('viaturas');
       var lista = tabela.querySelector('.nova-distribuicao-viaturas-lista');
       tabela.querySelector('.nova-distribuicao-viaturas-cabecalho').classList.toggle('oculto', !vtrs.length);
       if (!vtrs.length) P().respostas(lista, [M().nenhuma]);
-      vtrs.forEach(function (v, i) { linhaViatura(lista, ctx, api, v, i, vtrs.length); });
+      vtrs.forEach(function (v, i) { linhaViatura(lista, ctx, api, v, i, vtrs.length, insts.length); });
       lugar.appendChild(tabela);
       var nova = P().tpl('nova-viatura');
       nova.disabled = ctx.soLeitura;

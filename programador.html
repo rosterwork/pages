@@ -135,6 +135,7 @@
           <button type="button" class="lista-item lista-item--clicavel guia-item" data-secao="painel">Painel</button>
           <button type="button" class="lista-item lista-item--clicavel guia-item" data-secao="aviso">Aviso e modal</button>
           <span class="rotulo-secao guia-grupo">Padrões de tela</span>
+          <button type="button" class="lista-item lista-item--clicavel guia-item" data-secao="acoes-perguntas">Ações e perguntas</button>
           <button type="button" class="lista-item lista-item--clicavel guia-item" data-secao="lista">Lista e detalhe</button>
           <button type="button" class="lista-item lista-item--clicavel guia-item" data-secao="leitura">Listas de leitura e cartões</button>
           <button type="button" class="lista-item lista-item--clicavel guia-item" data-secao="formularios">Formulários e dados de página</button>
@@ -1685,7 +1686,7 @@
                 <li><strong>Comportamento</strong> (<code>geral-painel.js</code>): <code>abrir({ titulo, tituloExtra?, subtitulo, editavel?, modoFixo?, largo?, aoMudarModo?, aoFechar?, aoTentarFechar? })</code>, <code>fechar()</code>, <code>estaAberto()</code>, <code>definirTitulos(titulo, subtitulo, extra)</code>, <code>linhaAbas()</code>, <code>corpo()</code>, <code>subcabecalho()</code>, <code>rodape()</code>, <code>modo()</code>, <code>editar()</code>, <code>voltarParaLeitura()</code>, <code>criarCarregando()</code>. O Ver/Editar reusa o <code>geral-abas</code>; <code>modoFixo</code> (<code>'ver'</code> ou <code>'editar'</code>) mostra o seletor travado nesse modo (<code>.painel-abas--fixo</code>, <code>pointer-events: none</code>), em uso no painel de instalação.</li>
                 <li><strong>Editar no rodapé</strong> (<code>editar()</code>): painel que todos leem e só alguns editam (ex.: o painel da troca) põe o botão <strong>Editar</strong> (branco) no rodapé da leitura, logo depois do espaçador, antes das outras ações; o clique chama <code>editar()</code>, que entra na edição (<code>aoMudarModo('editar')</code>) e a página troca o corpo e o rodapé pelo formulário (Cancelar e Salvar); <code>voltarParaLeitura()</code> (Salvar ou Cancelar da página) volta à leitura e avisa a página, que redesenha o rodapé com o Editar.</li>
                 <li><strong>Esc fecha</strong> (menos com modal aberto: o modal vem primeiro); ao trocar de página, o roteador fecha o painel. Formulário no painel passa <code>aoTentarFechar</code>: o ✕ e o Esc perguntam igual ao Cancelar quando há alteração.</li>
-                <li><strong>Sub-tela</strong> (<code>geral-subtela.css</code>, só CSS; o texto do Voltar fica no molde de cada página): a tela que abre no lugar do conteúdo, dentro do mesmo painel: <code>.subtela-voltar</code> (<code>.botao--texto</code> + <code>icone-seta-esquerda</code>, no topo à esquerda), <code>.subtela</code> (coluna, gap 12px), <code>.subtela-cab</code> (<code>.subtela-titulo</code> 14px peso 600 <code>--texto-forte</code> + <code>.subtela-subtitulo</code> 12px <code>--texto-fraco</code>), seções em <code>.grupo-caixa</code> com o rótulo numerado ("1. Dia") e <code>.subtela-ajuda</code> (12px <code>--texto-fraco</code>; <code>--opcao</code> recua até o texto de um <code>geral-opcao</code>). Rodapé: Cancelar + o botão primário. Em uso no painel do dia e na Folgas (Conceder, Ajustar, Solicitar, Dar folga).</li>
+                <li><strong>Sub-tela</strong> (<code>geral-subtela.css</code>, só CSS; o texto do Voltar fica no molde de cada página): a tela que abre no lugar do conteúdo, dentro do mesmo painel: <code>.subtela-voltar</code> (<code>.botao--texto</code> + <code>icone-seta-esquerda</code>, no topo à esquerda), <code>.subtela</code> (coluna, gap 12px), <code>.subtela-cab</code> (<code>.subtela-titulo</code> 14px peso 600 <code>--texto-forte</code> + <code>.subtela-subtitulo</code> 12px <code>--texto-fraco</code>), seções nas caixas de pergunta (<code>.grupo-caixa.subtela-pergunta</code>, o número vem do CSS; ver Ações e perguntas; as telas antigas ainda escrevem o número no rótulo, "1. Dia") e <code>.subtela-ajuda</code> (12px <code>--texto-fraco</code>; <code>--opcao</code> recua até o texto de um <code>geral-opcao</code>). Rodapé: Cancelar + o botão primário. Em uso no painel do dia e na Folgas (Conceder, Ajustar, Solicitar, Dar folga).</li>
                 <li><strong>Rodapé de alterações</strong> (<code>geral-alteracoes.css</code> + <code>.js</code>, <code>RosterWork.alteracoes.montar(idMolde, lista)</code>): o bloco que recolhe, no rodapé do painel, com o que foi mudado: título + quantidade (<code>.alteracoes-titulo</code>, 11px peso 600 <code>--texto-forte</code>) e a seta num <code>.botao-discreto</code> (<code>.alteracoes-toggle</code>; aponta para cima fechado e gira para baixo aberto); <strong>sempre começa fechado</strong>. Aberto, a <code>.alteracoes-lista</code> (coluna, gap 8px, <code>max-height</code> 320px com rolagem) traz cada <code>.alteracao</code> (separadas por <code>border-top</code> <code>--borda</code> + 8px): o autor (<code>.alteracao-autor</code>, 11px peso 600), o quando (<code>.alteracao-quando</code>, 11px <code>--texto-suave</code>) e, abaixo, o resumo no formato padrão. Sem alteração, não aparece. O molde do bloco é da tela (o título muda); o de cada alteração, <code>#tpl-alteracao</code>, fica no shell. Em uso nas Alterações manuais do painel do dia e nas Alterações na ficha (Usuários).</li>
                 <li><strong>Painel de decisão</strong> (<code>geral-decisao.css</code> + <code>.js</code>; moldes <code>#tpl-decisao*</code>): o painel que aprova ou recusa um pedido, com 400px. Título com o pelotão ao lado (<code>tituloExtra</code>, "- 2ºPEL") e, no subtítulo, a situação e a posição ("Aguardando aprovação · 1 de 3"). Corpo, de cima para baixo, com 12px entre os blocos: (1) o pedido em caixas <code>.grupo-caixa.decisao-caixa</code> (o <code>.rotulo-secao</code> "SERVIÇO", "DEVOLUÇÃO" ou "FOLGA"; o dia <code>.decisao-caixa-data</code> 13px peso 600 à esquerda e o horário de leitura à direita; a frase 13px <code>--texto</code>; a régua do dia com o trecho do pedido; o texto extra 12px <code>--texto-suave</code>, ex.: o motivo), <strong>nunca</strong> as linhas rótulo/valor com traço (<code>.linha-info</code>); na troca, a última caixa é <strong>Aceites e aprovação</strong>: uma linha por pessoa (molde <code>#tpl-troca-aceite</code>), com o nome no peso 600 e, embaixo, o que ela fez em 12px <code>--texto-suave</code>, os dois em <code>.decisao-caixa-pessoa</code> (coluna com 2px entre eles), e o selo à direita (verde Aceitou/Aprovou, amarelo Pendente); (2) a Análise (<code>.decisao-analise-secao</code>, escondida até haver análise): o título "Análise" com o selo do resultado ao lado (o mesmo do cartão) e uma nota por ponto (<code>geral-nota</code>) na ordem vermelhas, amarelas, saldo, verdes; enquanto carrega, os pontinhos; (3) o "Como fica a escala" (seção que recolhe, <strong>fechada no começo</strong>; ao abrir, o círculo logo abaixo do título enquanto lê; depois, cada dia com o título 12px peso 600 "Serviço · Sexta-feira, 30/10/2026 · 2ºPEL" e o desenho do painel do dia); (4) a caixa do motivo <code>.decisao-recusa</code> (só ao recusar). Rodapé: as ações do papel (as do administrador, Aprovar, Aprovar com pendências e o Recusar dele, com a etiqueta ADM, invertida no botão escuro e no vermelho; as do militar sem ela); ao recusar, vira Voltar · Confirmar recusa (vermelho). <strong>A troca que não vale mais</strong> (substituída, cancelada ou expirada; molde <code>#tpl-troca-situacao</code>): no alto do pedido, a <code>.decisao-situacao</code> (coluna, gap 8px, alinhada à esquerda) com a <code>.nota</code> cinza na largura toda (o <code>icone-historico</code>, a <code>.nota-titulo</code> "Substituída pelo RW nº Y." e o texto com quando, quem e o motivo) e, embaixo, só na substituída, o botão branco <code>.botao</code> "Abrir o RW nº Y", do tamanho dele. <strong>O cancelamento com motivo</strong> (a troca aprovada, do administrador): a <code>.grupo-caixa.decisao-cancelamento</code> no fim do corpo, igual à caixa do Recusar (gap 8px; o <code>.rotulo-secao</code> "Cancelar a troca" ou "Cancelar as trocas", o campo "Motivo do cancelamento" com o <code>.campo-erro-texto</code>, que mostra "Informe o motivo do cancelamento." ao confirmar vazio, e a <code>.subtela-ajuda</code> "Obrigatório. …"); o rodapé troca para Voltar · <code>.botao--perigo</code> com a etiqueta ADM "Confirmar cancelamento"; Voltar devolve o rodapé de antes.</li>
                 <li><strong>Selo "Novo" e barra cinza:</strong> o selo "Novo" (<code>.selo</code>, molde <code>#tpl-escala-edicao-novo</code>) só existe em prévia ou edição não salva (o "Como fica a escala"); depois de salvar, some. A barra cinza à esquerda da linha (<code>.escala-edicao-linha--alterada</code>, a canaleta) marca a linha mexida. No "Como fica a escala": quem entra pelo pedido tem o selo e a barra; quem o sistema remanejou tem só a barra; quem saiu aparece riscado (<code>.escala-edicao-linha--original</code>) na função de onde saiu.</li>
@@ -1778,6 +1779,120 @@
                 <li><strong>No celular</strong> o modal ocupa a largura da tela menos <code>--modal-respiro</code> de cada lado (os papéis de largura viram 100%), a altura vai até a tela visível menos 96px (<code>calc(100% - 96px)</code>, não <code>100vh</code>) e os botões do rodapé (menos os de texto) dividem a largura e descem de linha quando não cabem. Aviso, data e sessão herdam isso sem regra própria.</li>
                 <li><strong>Aviso de sessão</strong> (<code>index-sessao-vigia.css</code> + <code>.js</code>): aparece nos últimos 60s antes de a sessão expirar por inatividade (2h sem ação). Reusa a casca do modal (<code>#veu-sessao</code>, <code>role="alertdialog"</code>, fecha só pelos botões); <code>.modal--sessao</code> com <code>.sessao-corpo</code> (o anel à esquerda + a mensagem), rodapé sem a linha. O anel (<code>.sessao-anel</code>, 48px) é um <code>&lt;canvas&gt;</code> pintado pelo JS (cores do tema: trilho <code>--fundo-medio</code>, progresso <code>--alerta</code>) que se completa do topo no sentido horário; a contagem (<code>.sessao-anel-tempo</code>) fica no centro (13px peso 600). Botões "Sair agora" e "Continuar conectado" (primário). Esgotado o tempo, a sessão acaba com o aviso de expiração (<code>RosterWork.expirarSessao</code>).</li>
                 <li><strong>Resumo de alterações</strong> (<code>geral-resumo.css</code> + <code>.js</code>): desenha o formato padrão de auditoria que o banco grava e devolve (<code>{ titulo, alvos: [{ onde, mudancas: [{ tipo, rotulo, de, para }] }] }</code>): o assunto + a data e a hora uma vez; um bloco por alvo (<code>onde</code> vazio = mudanças direto) com uma frase por mudança, "rótulo: de X para Y" (o antigo discreto, o novo em destaque). Tipos: <code>alteracao</code> e <code>troca</code> ("de X para Y"), <code>adicao</code> ("rótulo: Y", em verde <code>--sucesso</code>), <code>remocao</code> ("rótulo: X", riscado). <code>RosterWork.resumo.desenhar(dados, opcoes)</code> devolve o nó; <code>RosterWork.resumo.abrirModal(log, { pagina, desfazer? })</code> abre o modal de confirmação (<code>#veu-resumo</code>, corpo rolável + OK, fecha só pelo botão), <strong>exibido em todo salvar</strong>. Com <code>desfazer</code> (função que reverte e devolve uma Promise), aparece à esquerda do OK um Desfazer (<code>.botao--texto</code>; <code>.resumo-desfazer</code> só posiciona, <code>margin-right: auto</code>, e tinge o hover de <code>--erro</code>), só onde há inverso seguro (ex.: Trocas ao solicitar e aprovar). Na página Histórico, cada evento é um cartão: título = a página (ícone + nome do menu), subtítulo = o assunto, autor · verbo · data e as mudanças. Moldes <code>#tpl-resumo</code>, <code>-alvo</code>, <code>-mudanca</code> no shell.</li>
+              </ul>
+            </div>
+          </section>
+
+          <!-- ========== AÇÕES E PERGUNTAS ========== -->
+          <section class="guia-secao oculto" data-secao="acoes-perguntas">
+            <h2 class="guia-titulo">Ações e perguntas</h2>
+            <p class="guia-texto">O botão diz <strong>o que fazer</strong>; as perguntas resolvem <strong>como</strong>, e só aparecem quando há o que decidir. Ação simples, que dá para desfazer, faz na hora. Ação com escolha abre as perguntas, uma por caixa, só as que valem, e o sistema nunca pergunta o que já sabe.</p>
+            <div class="guia-pranchetas">
+              <div class="guia-prancheta">
+                <span class="rotulo-secao">Computador</span>
+                <div class="guia-palco">
+                  <aside class="painel-lateral painel-lateral--aberto guia-painel-exemplo" aria-label="Exemplo de perguntas no painel" data-cota="largura">
+                    <div class="painel-cabecalho">
+                      <div class="painel-titulos">
+                        <span class="painel-titulo"><span class="painel-titulo-nome">2ºPEL</span></span>
+                        <span class="painel-subtitulo">Quinta-feira, 29 de outubro de 2026</span>
+                      </div>
+                      <button type="button" class="botao botao--icone" aria-label="Fechar painel"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg></button>
+                    </div>
+                    <div class="painel-corpo">
+                      <button type="button" class="botao botao--texto subtela-voltar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg><span>Voltar ao dia</span></button>
+                      <div class="subtela">
+                        <div class="subtela-cab"><span class="subtela-titulo">Adicionar militar</span></div>
+                        <div class="grupo-caixa subtela-pergunta">
+                          <span class="rotulo-secao">Como entra</span>
+                          <label class="geral-opcao"><input type="radio" name="guia-pergunta-como" checked><span>Somente no dia 29/10</span></label>
+                          <label class="geral-opcao"><input type="radio" name="guia-pergunta-como"><span>Extrajornada em 29/10</span></label>
+                          <label class="geral-opcao"><input type="radio" name="guia-pergunta-como"><span>No ciclo, a partir de 29/10</span></label>
+                        </div>
+                        <div class="grupo-caixa subtela-pergunta">
+                          <span class="rotulo-secao">Quem entra</span>
+                          <button type="button" class="campo-entrada campo-selecao" aria-label="Quem entra"><span class="campo-selecao-texto">Sub.Ten. Rezende</span><svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg></button>
+                        </div>
+                        <div class="grupo-caixa subtela-pergunta">
+                          <span class="rotulo-secao">Horário</span>
+                          <div data-guia-exemplo="horario" data-hi="13:00" data-hf="20:00"></div>
+                          <span class="subtela-ajuda">Só as horas livres dele.</span>
+                        </div>
+                        <div class="grupo-caixa subtela-pergunta">
+                          <span class="rotulo-secao">Onde fica</span>
+                          <label class="geral-opcao"><input type="radio" name="guia-pergunta-onde"><span>O sistema distribui</span></label>
+                          <label class="geral-opcao"><input type="radio" name="guia-pergunta-onde"><span>Escolher a função</span></label>
+                          <label class="geral-opcao"><input type="radio" name="guia-pergunta-onde" checked><span>No lugar de outro militar</span></label>
+                          <span class="subtela-ajuda">Quem sai</span>
+                          <button type="button" class="campo-entrada campo-selecao" aria-label="Quem sai"><span class="campo-selecao-texto">Cb. Veloso</span><svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg></button>
+                          <span class="subtela-ajuda">De quais funções</span>
+                          <button type="button" class="geral-opcao" role="checkbox" aria-checked="true"><span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span><span>Efetivo 3 da ABT-14935</span></button>
+                          <button type="button" class="geral-opcao" role="checkbox" aria-checked="true"><span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span><span>Rádio Operador da Central</span></button>
+                          <div class="nota"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg><span class="nota-texto">O Cb. Veloso sai dessas funções e fica sem função das 13h às 20h.</span></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="painel-rodape">
+                      <button type="button" class="botao">Cancelar</button>
+                      <button type="button" class="botao botao--primario">Pôr o Sub.Ten. Rezende no lugar do Cb. Veloso</button>
+                    </div>
+                  </aside>
+                </div>
+              </div>
+              <div class="guia-prancheta guia-prancheta--celular">
+                <span class="rotulo-secao">Celular</span>
+                <div class="guia-palco">
+                  <aside class="painel-lateral painel-lateral--aberto guia-painel-exemplo" aria-label="Exemplo de perguntas no painel" data-cota="largura">
+                    <div class="painel-cabecalho">
+                      <div class="painel-titulos">
+                        <span class="painel-titulo"><span class="painel-titulo-nome">2ºPEL</span></span>
+                        <span class="painel-subtitulo">Quinta-feira, 29 de outubro de 2026</span>
+                      </div>
+                      <button type="button" class="botao botao--icone" aria-label="Fechar painel"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg></button>
+                    </div>
+                    <div class="painel-corpo">
+                      <button type="button" class="botao botao--texto subtela-voltar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg><span>Voltar ao dia</span></button>
+                      <div class="subtela">
+                        <div class="subtela-cab"><span class="subtela-titulo">Adicionar militar</span></div>
+                        <div class="grupo-caixa subtela-pergunta">
+                          <span class="rotulo-secao">Como entra</span>
+                          <label class="geral-opcao"><input type="radio" name="guia-pergunta-como-celular" checked><span>Somente no dia 29/10</span></label>
+                          <label class="geral-opcao"><input type="radio" name="guia-pergunta-como-celular"><span>Extrajornada em 29/10</span></label>
+                          <label class="geral-opcao"><input type="radio" name="guia-pergunta-como-celular"><span>No ciclo, a partir de 29/10</span></label>
+                        </div>
+                        <div class="grupo-caixa subtela-pergunta">
+                          <span class="rotulo-secao">Quem entra</span>
+                          <button type="button" class="campo-entrada campo-selecao" aria-label="Quem entra"><span class="campo-selecao-texto">Sub.Ten. Rezende</span><svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg></button>
+                        </div>
+                        <div class="grupo-caixa subtela-pergunta">
+                          <span class="rotulo-secao">Onde fica</span>
+                          <label class="geral-opcao"><input type="radio" name="guia-pergunta-onde-celular"><span>O sistema distribui</span></label>
+                          <label class="geral-opcao"><input type="radio" name="guia-pergunta-onde-celular" checked><span>Escolher a função</span></label>
+                          <label class="geral-opcao"><input type="radio" name="guia-pergunta-onde-celular"><span>No lugar de outro militar</span></label>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="painel-rodape">
+                      <button type="button" class="botao">Cancelar</button>
+                      <button type="button" class="botao botao--primario" disabled>Escolha a função</button>
+                    </div>
+                  </aside>
+                </div>
+              </div>
+            </div>
+            <div class="guia-bloco">
+              <span class="rotulo-secao">Regras completas</span>
+              <ul class="guia-regras">
+                <li><strong>Quando usar cada um</strong> (regra em REGRAS-DE-CODIGO §4 › Ações e perguntas): ação única, sem escolha, que dá para desfazer = botão com o verbo e o nome (ou ícone com dica), que faz na hora e oferece o Desfazer; ação sem volta = botão e a confirmação (<code>RosterWork.confirmar</code>) que diz o que se perde; ação com escolha ou consequência = o botão abre as perguntas; várias marcações de uma vez = Salvar no rodapé.</li>
+                <li><strong>Caixa de pergunta</strong> (<code>geral-subtela.css</code>): <code>.grupo-caixa.subtela-pergunta</code> dentro da <code>.subtela</code>. A <code>.subtela</code> zera o contador (<code>counter-reset: subtela-pergunta</code>) e cada caixa à vista soma um (<code>counter-increment</code>); o número sai no <code>::before</code> do <code>.rotulo-secao</code> da caixa ("1. "). A caixa escondida (<code>.oculto</code>) não conta, então a numeração nunca pula. O rótulo traz só o assunto, curto e sem número escrito: Como entra, Quem entra, Horário, Onde fica, Banco de horas.</li>
+                <li><strong>Dentro da caixa:</strong> a resposta e, quando ajuda, a frase de apoio em <code>.subtela-ajuda</code> (12px <code>--texto-fraco</code>). Sim/Não e até 5 opções curtas no seletor (<code>.abas--seletor</code>); opções que são frases nas bolinhas (<code>geral-opcao</code>); várias ao mesmo tempo nas caixas de marcar (<code>.geral-opcao</code> com <code>role="checkbox"</code> e a <code>.caixa-selecao</code>, marcada com <code>--marcada</code> e o <code>icone-check</code> de 10px); lista grande no campo de busca (<code>geral-combo-militar</code>) ou no campo de seleção (<code>.campo-selecao</code>); horário no <code>geral-horario</code>. A pergunta que depende de uma resposta abre na mesma caixa, logo abaixo (ex.: em "No lugar de outro militar", Quem sai e De quais funções). O efeito em quem está em volta vai numa <code>.nota</code> embaixo da resposta que o causa.</li>
+                <li><strong>Ordem:</strong> cada caixa aparece só depois de respondida a anterior e só se vale para as respostas dadas; as respondidas ficam à vista e podem ser trocadas; trocar uma resposta esconde e limpa as caixas que dependiam dela. O sistema não pergunta o que já sabe: o que já está na escala ou veio da entrada (o ícone da linha já diz quem) chega respondido e não vira caixa.</li>
+                <li><strong>Rodapé do painel:</strong> Cancelar + o botão primário com o verbo e o nome do que vai acontecer ("Pôr o Sub.Ten. Rezende no lugar do Cb. Veloso"); enquanto falta resposta, o botão diz o que falta ("Escolha a função") e fica desligado. Ao gravar, o resumo (<code>RosterWork.resumo</code>), com o Desfazer onde há volta segura.</li>
+                <li><strong>Pergunta única embaixo da linha</strong> (<code>geral-painel.css</code>): quando a ação tem uma pergunta só, ela abre logo abaixo da linha que a chamou, sem sub-tela: <code>.grupo-caixa.pergunta-linha</code> (4px em cima, 8px embaixo) com o <code>.rotulo-secao</code> do assunto (sem número), a frase em <code>.subtela-ajuda</code>, a resposta e <code>.pergunta-linha-acoes</code> (flex, à direita, gap 8px): Cancelar + o botão da ação (primário; <code>.botao--perigo</code> quando tira alguém). Uma aberta por vez: abrir outra fecha a aberta. Ex.: o Remover do dia da caixa Sem função, que só pergunta o banco de horas. Duas perguntas ou mais vão para a sub-tela.</li>
+                <li><strong>Edição direta na lista:</strong> trocar quem está numa função e o horário dele não abre perguntas: o lápis abre, no lugar da linha, o seletor de nome (só quem já está no dia) e o de horário, o efeito numa <code>.nota</code> e Cancelar + o botão que diz o que faz (desenho em Painel do dia da escala). Ícone de ação ao lado do lápis (ex.: Liberar para o sistema): <code>.botao-discreto</code> com ícone de 14px, <code>aria-label</code> e <code>data-dica</code>.</li>
+                <li><strong>Um caminho, várias entradas:</strong> a mesma ação aberta do botão do topo e do ícone da linha usa o mesmo código e as mesmas caixas, com as respostas que a entrada já dá preenchidas.</li>
+                <li><strong>Palavras:</strong> Adicionar (entra), Remover (sai), Mudar (muda algo dele), Pôr no lugar de (substitui), Liberar (devolve ao sistema), sempre as mesmas em todo o sistema.</li>
+                <li><strong>Telas com o número escrito no rótulo</strong> ("1. Tipo": Usuários, Folgas, Trocas e Extrajornada) já seguem a ideia; ao serem mexidas, passam para a caixa de pergunta.</li>
               </ul>
             </div>
           </section>

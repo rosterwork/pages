@@ -469,6 +469,9 @@
             + ' Clique no pelotão para ver o relatório do dia.';
         },
         sobramN: function (n) { return 'Sobram ' + n; },
+        /* o repartido acima do recebido (a mesma frase do banco) */
+        cotasPassaram: function (rep, rec) { return 'Foram repartidas ' + rep + ' cotas, mas a companhia recebeu ' + rec + '.'; },
+        cotasPassaramUnidade: function (nome, rep, rec) { return nome + ': foram repartidas ' + rep + ' cotas, mas recebeu ' + rec + '.'; },
         extraEm: function (nome) { return 'Extra no ' + nome; },
         expedienteDiaTodo: 'Expediente o dia todo',
         semCotas: 'Sem cotas sobrando',
@@ -947,12 +950,13 @@
         /* o termo de responsabilidade, na janela de confirmação antes do primeiro Enviar de cada administrador.
            versao muda JUNTO com o texto e com _sysbm_termo_versao() do banco (todos dão ciência de novo) */
         termo: {
-          versao: 1,
+          versao: 2,
           titulo: 'Termo de responsabilidade do envio ao SYSBM',
           itens: [
             'A extensão Roster Work é uma ferramenta de apoio do Roster Work. Ela não é um sistema oficial do CBMPR nem faz parte do SYSBM.',
             'O envio é para quem administra o pelotão no Roster Work e tem permissão para cadastrar a escala no SYSBM, sempre com o próprio login.',
             'A extensão só preenche a tela de cadastro e nunca salva. Você confere cada linha antes de clicar em Salvar e responde pelo que for salvo no SYSBM.',
+            'No celular, o botão Salvar do SYSBM vira Voltar para RW e, depois do Salvar e Continuar, você volta ao Roster.',
             'A escala, com nomes, RG e horários, passa do Roster Work para o SYSBM dentro do seu navegador. A extensão não guarda esses dados nem os envia a outro lugar.',
             'Use o envio de acordo com as normas da corporação e do SYSBM. Se algo for preenchido errado, vale a sua conferência antes de salvar.'
           ],
@@ -965,6 +969,9 @@
           naoEhEscala: 'A escala enviada pelo Roster não pôde ser lida. No Roster, clique em Enviar no painel do dia de novo.',
           semMenu: 'O menu do SYSBM não mostrou o Cadastrar da escala. Confira o seu login e clique em Enviar no Roster de novo.',
           demorou: 'O SYSBM não abriu a tela de cadastro da escala. Confira se você ainda está logado e clique em Enviar no Roster de novo.',
+          /* no celular (a aba do Roster foi para o SYSBM), o Salvar da tela de cadastro vira este botão */
+          voltarRw: 'Voltar para RW',
+          voltarConfirmar: 'Voltar para o Roster Work? O que não foi salvo no SYSBM se perde.',
           trocarDia: function (sysbm, roster) {
             return 'A tela de cadastro do SYSBM está no dia ' + sysbm + '. Pesquisar o dia ' + roster + '? O que não foi salvo nesta tela se perde.';
           },

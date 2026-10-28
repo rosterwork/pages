@@ -109,9 +109,12 @@
   function passosTopo() {
     var atual = passoAtual();
     var resp = d.militares.filter(function (m) { return m.respondeu; }).length;
+    /* cada unidade com as suas: o recebido é a soma das unidades */
+    var uni = d.mes.cotas_unidades || {};
+    var recebidas = d.mes.cotas_recebidas || Object.keys(uni).reduce(function (s, k) { return s + (+uni[k] || 0); }, 0);
     var textos = [
       msg().p1(br(d.mes.abre), br(d.mes.fecha), resp, d.militares.length),
-      d.mes.cotas_recebidas ? msg().p2(d.mes.cotas_recebidas, totalConcedidas()) : msg().p2Depois,
+      recebidas ? msg().p2(recebidas, totalConcedidas()) : msg().p2Depois,
       msg().p3(naGrade(), totalConcedidas()),
       d.lancamento ? msg().p4Lancado(d.lancamento.lancado_em) : msg().p4Nao,
       d.iniciado ? msg().p5(d.ajustes.length) : msg().p5Depois

@@ -16,7 +16,10 @@
      fica de fora, a linha amarela; aberto pelo chevron: o resumo,
      quem fica de fora e por quê e a explicação. Enviar leva a
      escala à extensão, que abre a aba do SYSBM e preenche a tela
-     de cadastro depois do login. No primeiro Enviar de cada
+     de cadastro depois do login (no celular, sem aba nova: a
+     própria tela vai para o SYSBM; lá, o Salvar vira "Voltar para
+     RW" e o Salvar e Continuar volta ao Roster depois de salvar).
+     No primeiro Enviar de cada
      administrador (e a cada versão nova do termo), a janela do
      termo de responsabilidade: a ciência fica gravada no banco
      (sysbm_dar_ciencia).
@@ -62,7 +65,9 @@
         rejeitar(new Error('sem resposta'));
       }, ESPERA_EXTENSAO);
       window.addEventListener('message', tratar);
-      window.postMessage({ origem: 'rosterwork-sysbm', id: id, texto: texto }, window.location.origin);
+      /* no celular, a extensão leva esta mesma aba para o SYSBM (sem aba nova; lá, o Salvar vira "Voltar para RW") */
+      var mesmaTela = !!(RW.celular && RW.celular());
+      window.postMessage({ origem: 'rosterwork-sysbm', id: id, texto: texto, mesmaTela: mesmaTela }, window.location.origin);
     });
   }
 
