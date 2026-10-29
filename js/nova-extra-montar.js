@@ -1,5 +1,5 @@
 /* ============================================================
-   NOVA EXTRA — passo 3: Distribuição (o núcleo)
+   NOVA EXTRA — passos 3 e 4: Distribuição e Ajustes (o núcleo)
    O rascunho das extras do mês, a falta de cada pelotão (vermelha e
    amarela, com e sem as extras, e o que cada extra cobriu), a escala
    do mês (a mesma leitura da Escala), o resumo e o resultado da
@@ -9,7 +9,8 @@
    novaExtraGrade). Tudo fica no rascunho até o Salvar
    (nova_extra_distribuicao_salvar); o militar sem nenhum horário
    continua no dia até lá. "Preencher pela sugestão" pede o rascunho
-   ao motor (nova_extra_sugerir).
+   ao motor (nova_extra_sugerir). Os Ajustes são a mesma tela (o modo
+   ajustes): abrem depois do lançamento, com o motivo no rodapé.
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
    RosterWork.novaExtraMontar.
    ============================================================ */
@@ -23,6 +24,7 @@
   var MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 
   var d = null, el = null, aoSalvar = null;
+  var modo = 'distribuicao';   // 'distribuicao' (passo 3) ou 'ajustes' (passo 4)
   var mud = {};            // rascunho: 'cpf|data' -> { cpf, data, unidade, blocos, origem, porque } (blocos [] = sai ao salvar)
   var sugeridas = [];      // as chaves que a última sugestão pôs
   var resultadoFechado = false;   // o resultado da sugestão fechado no X (volta no próximo Preencher)
@@ -64,6 +66,10 @@
   function usadas(cpf, alocs) { return (alocs || efetivas()).filter(function (a) { return a.cpf === cpf; }).reduce(function (s, a) { return s + a.blocos.length; }, 0); }
   /* a distribuição só é salva depois que o pedido fecha: antes disso, só dá para tirar extra */
   function travado() { return d.mes.estado !== 'encerrado'; }
+  /* lançada e não reaberta: o lançamento vale e as mudanças vão pelos Ajustes */
+  function lancada() { return !!d.lancamento && !d.lancamento.reaberto; }
+  /* a Distribuição depois do lançamento: só para ver (as bolinhas sem clique) */
+  function soLeitura() { return modo === 'distribuicao' && lancada(); }
   function voluntarios() { return d.militares.filter(function (m) { return m.voluntario && m.termo && (m.concedidas || 0) > 0; }); }
   function blocos(a) { return a.blocos.map(Number); }
   /* a CNH que a viatura pede ('' = qualquer uma) está entre as que ele conduz (o banco diz quais) */
@@ -166,6 +172,7 @@
   /* muda os horários do militar no dia (o mesmo para o calendário, a lista e o painel do dia). Quem já usou todas as
      cotas só marca depois de tirar um horário de outro dia; sem nenhum horário, ele continua no dia até o Salvar */
   function mudar(m, k, novos, unidade) {
+    if (soLeitura()) return;
     var atual = vagaDe(m.cpf, k), tem = atual ? atual.blocos.length : 0;
     if (novos.length > tem && usadas(m.cpf) - tem + novos.length > (m.concedidas || 0)) {
       var nome = (m.grad + ' ' + m.nome).trim();
@@ -182,7 +189,7 @@
 
   /* ---------- sugestão, salvar e o resto ---------- */
   function sugerir() {
-    var btn = q('#p3-sugerir');
+    var btn = q('#nova-extra-acoes > .botao');   // o item fica no menu, que fecha no clique: o carregando vai no Ações
     RW.iniciarCarregando(btn);
     RW.rpc('nova_extra_sugerir', { p_competencia: d.competencia, p_atuais: efetivas() }).then(function (r) {
       RW.pararCarregando(btn);
@@ -220,21 +227,31 @@
     }, function () { RW.pararCarregando(btn); RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao }); });
   }
 
-  /* o resumo, o rodapé, a lista e o calendário; soCabeca = o calendário já foi refeito no dia que mudou */
+  /* o resumo, o rodapé, a lista e o calendário; soCabeca = o calendário já foi refeito no dia que mudou. Nos Ajustes
+     antes do lançamento, só o aviso de que eles abrem depois */
   function redesenhar(soCabeca) {
+    var semLancamento = modo === 'ajustes' && !lancada();
+    q('#p3-sem-lancamento').classList.toggle('oculto', !semLancamento);
+    q('#p3-lateral').classList.toggle('oculto', semLancamento);
+    if (semLancamento) { q('#p3-rodape').classList.add('oculto'); return; }
     var n = alteracoes().length;
-    /* o rodapé de salvar aparece só com alteração */
+    /* o rodapé de salvar aparece só com alteração; nos Ajustes, com o motivo e o "Salvar e enviar para a escala" */
     q('#p3-rodape').classList.toggle('oculto', !n);
-    var ajuste = d.iniciado && !!d.lancamento;
-    q('#p3-texto').textContent = n ? (ajuste ? msg().ajusteTexto(n) : msg().alteracoes(n)) : (ajuste ? msg().ajusteModo : '');
+    var ajuste = modo === 'ajustes';
+    q('#p3-texto').textContent = n ? (ajuste ? msg().ajusteTexto(n) : msg().alteracoes(n)) : '';
     q('#p3-motivo-campo').classList.toggle('oculto', !ajuste);
+    q('#p3-salvar-dist').classList.toggle('oculto', ajuste);
+    q('#p3-salvar-ajuste').classList.toggle('oculto', !ajuste);
     q('#p3-salvar').disabled = !n;
     q('#p3-cancelar').disabled = !Object.keys(mud).length;
     q('#p3-desfazer-sugestao').classList.toggle('oculto', !sugeridas.length);
     var aberto = q('#p3-aberto');
     aberto.classList.toggle('oculto', !travado());
     aberto.querySelector('.nota-texto').textContent = travado() ? msg().pedidoAberto(u().br(d.mes.fecha)) : '';
-    q('#p3-sugerir').disabled = travado();
+    q('#p3-sugerir').disabled = travado() || soLeitura();
+    var lancadaNota = q('#p3-lancada');
+    lancadaNota.classList.toggle('oculto', !soLeitura());
+    lancadaNota.querySelector('.nota-texto').textContent = soLeitura() ? msg().distLancada(d.lancamento.lancado_em, d.lancamento.por || '') : '';
     /* o resumo da companhia: as cotas colocadas dos militares */
     var alocs = efetivas();
     var sel = u().escolhidas();
@@ -242,6 +259,8 @@
     var total = vols.reduce(function (s, m) { return s + (m.concedidas || 0); }, 0);
     var colocadas = vols.reduce(function (s, m) { return s + usadas(m.cpf, alocs); }, 0);
     q('#p3-colocadas').textContent = msg().colocadas(colocadas, total);
+    /* todas as cotas colocadas e salvas, com o pedido fechado e ainda sem lançar */
+    q('#p3-pronta').classList.toggle('oculto', !(modo === 'distribuicao' && !lancada() && !travado() && !n && total > 0 && colocadas >= total));
     /* depois do Preencher pela sugestão: quantas cotas ela pôs e os dias que ainda ficaram com vermelho ou amarelo */
     var resultado = q('#p3-resultado');
     resultado.classList.toggle('oculto', !sugeridas.length || !escalaPronta() || resultadoFechado);
@@ -271,8 +290,9 @@
   }
 
   var ligado = null;
-  function mostrar(dados, conteudo, recarregar) {
-    d = dados; el = conteudo; aoSalvar = recarregar;
+  /* modoNovo: 'distribuicao' (passo 3) ou 'ajustes' (passo 4), a mesma tela */
+  function mostrar(dados, conteudo, recarregar, modoNovo) {
+    d = dados; el = conteudo; aoSalvar = recarregar; modo = modoNovo || 'distribuicao';
     if (ligado !== el) {
       ligado = el; mud = {}; sugeridas = []; escala = null;
       q('#p3-sugerir').addEventListener('click', sugerir);
@@ -290,7 +310,7 @@
     redesenhar();
   }
 
-  /* os dias com falta que sobram (para a conferência do passo 4) */
+  /* os dias com falta que sobram (para a conferência do lançamento) */
   function diasComFalta(dados) {
     var guarda = d; d = dados;
     var alocs = efetivas(), lista = [];
@@ -307,7 +327,7 @@
     descartar: function () { mud = {}; sugeridas = []; },
     /* refaz o calendário (o filtro Exibir mudou) */
     redesenhar: function () { if (d && el && el.isConnected) redesenhar(); },
-    /* o painel do dia fecha ao sair do passo 3 ou da aba */
+    /* o painel do dia fecha ao sair da Distribuição, dos Ajustes ou da aba */
     fecharPainel: function () { if (dia()) dia().fechar(); },
     diasComFalta: diasComFalta
   };
@@ -318,7 +338,7 @@
     dados: function () { return d; },
     vagas: vagas, vagaDe: vagaDe, efetivas: efetivas, alocDe: alocDe, usadas: usadas, voluntarios: voluntarios, blocos: blocos,
     conduz: conduz, impedimento: impedimento,
-    faltaDoDia: faltaDoDia, situacao: situacao, antesDe: antesDe, depoisDe: depoisDe, corDe: corDe, travado: travado,
+    faltaDoDia: faltaDoDia, situacao: situacao, antesDe: antesDe, depoisDe: depoisDe, corDe: corDe, travado: travado, soLeitura: soLeitura,
     grafico: function (cob, uid, erro) { return porDia().grafico(cob, uid, erro); },
     coberturaEscala: function () { return escala.cobertura; },
     erroAntes: function (uid, k) { return (escala.erro[uid] || {})[k]; },

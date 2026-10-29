@@ -348,6 +348,63 @@
 
     /* nova extra (protótipo, só programador): a Minha extra e o painel do pedido */
     novaExtra: {
+      /* Relatórios › Imprimir: o painel Imprimir relatório (nova-extra-imprimir.js) */
+      imprimir: {
+        titulo: 'Imprimir relatório',
+        indisponivel: {
+          pedidos: 'Libera quando os pedidos fecharem.',
+          termos: 'Libera quando as cotas forem repartidas.',
+          inicial: 'Libera depois do lançamento.',
+          final: 'Libera no dia 1º do mês seguinte ao da extra.'
+        },
+        falhaPrevia: 'Não foi possível montar a prévia. Tente de novo.',
+        falhaGerar: 'Não foi possível gerar o PDF. Tente de novo.'
+      },
+      /* os quatro PDFs dos relatórios (nova-extra-relatorios-pdf.js), no padrão do registro RW das trocas */
+      relatoriosPdf: {
+        titulos: {
+          pedidos: 'RELATÓRIO DE PEDIDOS DA EXTRAJORNADA', termos: 'RELATÓRIO DE TERMOS E COTAS DA EXTRAJORNADA',
+          inicial: 'RELATÓRIO INICIAL DA EXTRAJORNADA', final: 'RELATÓRIO FINAL DA EXTRAJORNADA'
+        },
+        arquivos: { pedidos: 'extrajornada-pedidos', termos: 'extrajornada-termos-e-cotas', inicial: 'extrajornada-relatorio-inicial', final: 'extrajornada-relatorio-final' },
+        arquivo: function (prefixo, mes, ano, unidade) { return prefixo + '-' + mes + '-' + ano + (unidade ? '-' + unidade : '') + '.pdf'; },
+        rotuloMes: 'Mês', rotuloUnidade: 'Unidade', rotuloGerado: 'Gerado em', todos: 'Todos os pelotões',
+        gerado: function (data, hora) { return data + ', ' + hora; },
+        secao: function (n, titulo) { return n + '. ' + titulo; },
+        secoes: {
+          resumo: 'RESUMO', pedidos: 'PEDIDOS', termos: 'TERMOS E COTAS', lancadas: 'EXTRAS LANÇADAS',
+          comoFicou: 'COMO FICOU NO FIM DO MÊS', mudou: 'O QUE MUDOU DESDE O LANÇAMENTO', observacoes: 'OBSERVAÇÕES'
+        },
+        ajudaOrdem: 'Em ordem de antiguidade. A última linha de cada tabela é o total.',
+        ajudaMudou: 'Só quem mudou. Quem não aparece manteve as datas do lançamento.',
+        colunas: {
+          militar: 'Militar', cpf: 'CPF', pelotao: 'Pelotão', pedidoEm: 'Pedido em', cotasPedidas: 'Cotas pedidas', termo: 'Termo',
+          pediu: 'Pediu', recebeu: 'Recebeu', data: 'Data', horario: 'Horário', cotas: 'Cotas', era: 'Era', ficou: 'Ficou',
+          motivo: 'Motivo', ajustadoPor: 'Ajustado por'
+        },
+        campos: {
+          periodo: 'Período dos pedidos', voluntarios: 'Voluntários', cotasPedidas: 'Cotas pedidas', naoQuerem: 'Não querem extra',
+          naoResponderam: 'Não responderam', recebidas: 'Cotas recebidas pela companhia', repartidas: 'Cotas repartidas',
+          comTermo: 'Com termo', semTermo: 'Sem termo', lancadoEm: 'Lançado na escala em', lancadoPor: 'Lançado por',
+          comExtra: 'Voluntários com extra', lancadas: 'Cotas lançadas', noLancamento: 'Cotas no lançamento',
+          noFim: 'Cotas no fim do mês', ajustadas: 'Extras ajustadas'
+        },
+        periodo: function (abre, fecha) { return 'De ' + abre + ' a ' + fecha; },
+        cotas: function (n) { return n + (n === 1 ? ' cota' : ' cotas') + ' (' + (n * 6) + ' horas)'; },
+        militares: function (n) { return n + (n === 1 ? ' militar' : ' militares'); },
+        voluntarios: function (n) { return n + (n === 1 ? ' voluntário' : ' voluntários'); },
+        total: function (n) { return 'Total: ' + n + (n === 1 ? ' voluntário' : ' voluntários'); },
+        totalAjustadas: function (n) { return 'Total: ' + n + (n === 1 ? ' extra ajustada' : ' extras ajustadas'); },
+        horario: function (ini, fim) { return ini + ' às ' + fim; },
+        outraUnidade: function (horario, unidade) { return horario + ' (' + unidade + ')'; },
+        sim: 'Sim', nao: 'Não', extraNova: 'Extra nova', retirada: 'Retirada', semMotivo: 'Sem motivo',
+        obs: {
+          cota: 'Cada cota vale 6 horas de serviço.',
+          reproduz: 'Este relatório reproduz os dados gravados no sistema e não substitui os documentos oficiais.',
+          semTermo: 'Sem o termo entregue, o militar não recebe cota.',
+          inicial: 'O relatório inicial é a extrajornada como foi lançada na escala. As mudanças depois do lançamento ficam no relatório final.'
+        }
+      },
       titulo: function (mes, quem) { return quem + ' · ' + mes; },
       prazoAberto: function (n) { return n === 0 ? 'Último dia para pedir' : 'Faltam ' + n + (n === 1 ? ' dia' : ' dias') + ' para pedir'; },
       prazoAntes: function (abre) { return 'Abre em ' + abre; },
@@ -393,10 +450,8 @@
         p2: function (rec, rep) { return rec + ' recebidas · ' + rep + ' repartidas'; },
         p2Depois: 'Depois do pedido',
         p3: function (g, c) { return g + ' de ' + c + ' cotas colocadas'; },
-        p4Lancado: function (em) { return 'Lançado em ' + em; },
         p4Nao: 'Ainda não lançado',
         p5: function (n) { return n + (n === 1 ? ' ajuste' : ' ajustes'); },
-        p5Depois: 'Quando o mês começar',
         responderam: function (n, t) { return n + ' de ' + t + ' militares responderam.'; },
         cotas: function (n, so24) { return n + (so24 ? ' (24 h)' : ''); },
         dias: function (n) { return n ? n + (n === 1 ? ' dia' : ' dias') : 'nenhum'; },
@@ -413,17 +468,38 @@
         c4ok: 'Nenhum dia com falta de gente',
         lancadoTitulo: function (em, por) { return 'Lançado em ' + em + (por ? ', por ' + por : ''); },
         aoLancar: 'Ao lançar',
-        jaComecou: 'O mês já começou: as mudanças entram como ajuste no passo 3.',
-        lancarDeNovo: 'Lançar de novo',
-        lancar: 'Lançar na escala',
+        /* Ações › Lançar na escala e encerrar (o título do painel) e o que ainda impede um item do menu Ações */
+        lancarTitulo: 'Lançar na escala e encerrar',
+        /* Relatórios: o título da prévia do que mudou desde o lançamento */
+        relPrevia: 'Prévia do relatório final',
+        relFinal: 'Relatório final',
+        /* Pedidos › Ações › Fechar os pedidos agora */
+        confirmarFechar: 'Fechar os pedidos agora? Ninguém mais consegue fazer ou mudar o pedido.',
+        fecharPedidos: 'Fechar os pedidos',
+        fechadosEm: function (data, por) { return 'Pedidos fechados em ' + data + (por ? ' por ' + por : '') + '.'; },
+        /* Distribuição › Ações › Reabrir a distribuição e a nota da Distribuição lançada */
+        confirmarReabrir: 'Reabrir a distribuição? Ao lançar de novo, o novo lançamento vira o relatório inicial, e os ajustes feitos até aqui passam a fazer parte dele.',
+        reabrir: 'Reabrir',
+        distLancada: function (em, por) { return 'Distribuição lançada em ' + em + (por ? ' por ' + por : '') + '. As mudanças agora são feitas em Ajustes.'; },
+        acao: {
+          pedidosAbertos: 'Libera quando os pedidos fecharem.',
+          pedidosNaoAbriram: 'Os pedidos ainda não abriram.',
+          pedidosJaFechados: 'Os pedidos já estão fechados.',
+          salvarAntes: 'Salve as alterações antes.',
+          semExtras: 'Nenhuma extra na distribuição.',
+          faltamCotas: function (n) { return 'Faltam ' + n + (n === 1 ? ' cota' : ' cotas') + ' para colocar nas datas.'; },
+          mesComecou: 'O mês já começou. As mudanças agora são feitas em Ajustes.',
+          jaLancada: 'Já lançada. Para lançar de novo, reabra a distribuição.',
+          lancadaFechada: 'Lançada. As mudanças agora são feitas em Ajustes.',
+          naoLancada: 'A distribuição ainda não foi lançada.',
+          jaReaberta: 'A distribuição já está reaberta.'
+        },
         mudouDesde: function (n) { return 'Depois do lançamento, ' + n + (n === 1 ? ' mudança ainda não está na escala:' : ' mudanças ainda não estão na escala:'); },
-        nadaMudou: 'Nada mudou desde o lançamento. Até o mês começar, dá para mudar no passo 3 e lançar de novo.',
         nada: 'nada',
         tirado: 'tirado',
         lancarTexto: function (n) { return n + (n === 1 ? ' extra entra na escala.' : ' extras entram na escala.') + ' Fica guardada a foto, que vira o relatório inicial.'; },
-        confirmarLancar: 'Lançar a distribuição na escala? (Teste: a escala de verdade não muda e ninguém é avisado.)',
         lancado: function (e, d) { return e + (e === 1 ? ' extra lançada' : ' extras lançadas') + ' em ' + d + (d === 1 ? ' dia.' : ' dias.'); },
-        relAjustesPeriodo: function (ini, fim) { return ini + ' a ' + fim + '. Feitos na Distribuição, no passo 3, com o motivo.'; },
+        relAjustesPeriodo: function (ini, fim) { return ini + ' a ' + fim + '. Feitos em Ajustes, com o motivo.'; },
         colocadas: function (n, t) { return n + ' de ' + t + ' cotas colocadas'; },
         faltaGenteHoras: function (h) { return 'Ainda falta gente de ' + h + '.'; },
         faltaCondutorHoras: function (h, cnh) { return 'Ainda falta condutor de ' + h + (cnh ? ', CNH ' + cnh : '') + '.'; },
@@ -490,9 +566,8 @@
         cotaCheia24: function (nome) { return nome + ' só aceita 24 h e precisa de 4 cotas livres para este dia. Tire antes os horários de outro dia.'; },
         faltaIdealHoras: function (h) { return 'Ainda falta gente para o ideal de ' + h + '.'; },
         chefeDirigeHoras: function (h, cnh) { return 'O chefe ainda dirige de ' + h + ' por falta de condutor' + (cnh ? ', CNH ' + cnh : '') + '.'; },
-        ajusteTexto: function (n) { return n + (n === 1 ? ' ajuste não salvo.' : ' ajustes não salvos.') + ' O mês já começou: cada mudança vira um ajuste.'; },
+        ajusteTexto: function (n) { return n + (n === 1 ? ' ajuste não salvo.' : ' ajustes não salvos.'); },
         alteracoes: function (n) { return n + (n === 1 ? ' alteração não salva' : ' alterações não salvas'); },
-        ajusteModo: 'O mês já começou: cada mudança vira um ajuste, com o motivo.',
         descartarRascunho: 'Descartar as alterações não salvas da distribuição?'
       }
     },
@@ -581,6 +656,15 @@
       deFolga: 'De folga',
       semFuncaoRotulo: 'Sem função',
       semNinguemTexto: 'Sem ninguém',
+      /* Funções do posto (o ícone no título do posto, para quem edita o dia): o título do menu, o que vai ao lado da
+         função travada e o motivo da caixa desligada */
+      funcoesTitulo: function (posto) { return (/^Central/.test(posto || '') ? 'Funções da ' : 'Funções do ') + (posto || ''); },
+      funcoesMinimo: 'Mínimo',
+      funcoesDicaMinimo: 'É do mínimo do posto e fica sempre na escala.',
+      funcoesDicaOcupada: 'Para tirar quem está aqui, use o lápis da linha e escolha Ninguém.',
+      funcoesDicaAnterior: 'Marque antes a função anterior.',
+      funcoesDicaSeguinte: 'Desmarque antes a função seguinte.',
+      funcoesDicaLapis: 'Use o lápis da linha para pôr alguém nela.',
       /* a lista Quem da vaga: quem é o mais antigo (assume o papel sozinho) e o motivo de quem não pode */
       seletorAssume: { chefe_socorro: 'Vai assumir o Chefe de Socorro', oficial_area: 'Vai assumir o Oficial de Área' },
       /* a edição da linha (o lápis), o campo de militar, o Adicionar e o Remover militar, a nota O que mudou e o
@@ -834,7 +918,8 @@
       /* embaixo do prefixo, na troca de viatura com data */
       noLugarDe: 'No lugar da {prefixo} até {data}',
       /* linha da cadeira vazia (sem ninguém), no lugar do nome do militar */
-      vagaVazia: function (motivo) { return motivo === 'trava' ? 'Sem solução automática' : (motivo === 'habilitado' ? 'Vazio por falta de habilitado' : 'Vazio por falta de efetivo'); },
+      /* a cadeira vazia; 'aberta' = a função que o administrador abriu sem ninguém (em cinza, não é erro) */
+      vagaVazia: function (motivo) { return motivo === 'aberta' ? 'Vazio' : motivo === 'trava' ? 'Sem solução automática' : (motivo === 'habilitado' ? 'Vazio por falta de habilitado' : 'Vazio por falta de efetivo'); },
       /* dica do ícone do militar de outra unidade: "Do 2ºPEL" / "Da 2ªCIBM" */
       deOutraUnidade: function (nome) { return (/ª/.test(nome || '') ? 'Da ' : 'Do ') + (nome || ''); },
       /* Observações do dia (notas do admin, trocas, folgas, outra unidade) — o banco manda os dados, aqui vira texto */

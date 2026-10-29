@@ -1,5 +1,5 @@
 /* ============================================================
-   NOVA EXTRA — passo 5: Ajustes e relatório
+   NOVA EXTRA — passo 5: Relatórios
    Igual à aba Relatórios da Extrajornada: à esquerda, as ETAPAS do
    mês em ordem (Pedidos, Termos e cotas, Distribuição e lançamento
    com o Relatório inicial, Ajustes do mês e Relatório de ajustes,
@@ -7,9 +7,13 @@
    a de agora = número escuro. À direita, a PRÉVIA do relatório de
    ajustes: quem mudou desde o lançamento (era riscado, ficou, motivo
    e quem ajustou) e as cotas que mudaram.
-   Os PDFs são os da Extrajornada (extrajornada-relatorios-pdf.js):
-   aqui os dados da Nova extra viram o formato que eles leem.
-   No teste, "Mês já começou" também libera o Relatório de ajustes.
+   Cada etapa tem o seu Imprimir (pedidos, termos e cotas, relatório
+   inicial e relatório final), que abre o painel Imprimir relatório
+   (nova-extra-imprimir.js), liberado quando o relatório já pode sair.
+   A prévia usa a conta das mudanças da Extrajornada
+   (extrajornada-relatorios-pdf.js): aqui os dados da Nova extra viram o
+   formato que ela lê. No teste, "Mês já começou" também libera o
+   Relatório final.
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
    RosterWork.novaExtraRelatorio.
    ============================================================ */
@@ -23,6 +27,7 @@
   var ETAPAS = ['solicitacoes', 'termos', 'montagem', 'ajustes', 'relatorio'];
 
   var el = null, r = null, ligado = null;
+  var bruto = null;   // o mês como veio do banco (nova_extra_mes), para o painel Imprimir relatório
 
   function msg() { return RW.mensagens.extrajornada.relatorios; }
   function q(sel) { return el.querySelector(sel); }
@@ -30,21 +35,8 @@
   function iso(x) { return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'); }
   function dataDe(k) { return new Date(+k.slice(0, 4), +k.slice(5, 7) - 1, +k.slice(8, 10)); }
 
-  /* as extras { cpf, data, unidade, blocos } em trechos contínuos { cpf, data, uid, b_ini, b_fim } (o formato dos PDFs) */
-  function trechos(lista) {
-    var saida = [];
-    (lista || []).forEach(function (a) {
-      var b = (a.blocos || []).map(Number).sort(function (x, y) { return x - y; });
-      if (!b.length) return;
-      var ini = b[0], ant = b[0];
-      for (var i = 1; i <= b.length; i++) {
-        if (b[i] === ant + 1) { ant = b[i]; continue; }
-        saida.push({ cpf: a.cpf, data: a.data, uid: +a.unidade, b_ini: ini, b_fim: ant });
-        ini = b[i]; ant = b[i];
-      }
-    });
-    return saida;
-  }
+  /* as extras { cpf, data, unidade, blocos } em trechos contínuos (a mesma conta dos PDFs) */
+  function trechos(lista) { return RW.novaExtraRelatoriosPdf.trechos(lista); }
 
   /* os dados da Nova extra no formato dos relatórios da Extrajornada */
   function montarDados(d) {
@@ -114,13 +106,15 @@
     q('#p5-solicitacoes').textContent = msg().solicitacoes(ddmm(s.inicio), ddmm(s.fim), s.voluntarios, s.nao_voluntarios, s.sem_resposta);
     q('#p5-termos').textContent = msg().termos(dados.termos.recebidos, dados.termos.pendentes, dados.cotas.recebidas, dados.cotas.repartidas);
     q('#p5-montagem').textContent = l.lancado ? msg().lancado(l.em, l.por, l.reabrir_ate, dados.iniciado) : msg().naoLancado(l.reabrir_ate);
-    q('#p5-inicial').disabled = !l.lancado;
+    /* o Imprimir de cada etapa, liberado quando o relatório já pode sair */
+    Array.prototype.forEach.call(el.querySelectorAll('#p5-lista [data-relatorio]'), function (b) {
+      b.disabled = !!RW.novaExtraImprimir.motivo(b.getAttribute('data-relatorio'), bruto);
+    });
     var qtd = q('#p5-ajustes-qtd');
     qtd.textContent = msg().ajustesQtd(dados.ajustes_qtd);
     qtd.classList.toggle('oculto', !(l.lancado && dados.iniciado));
     q('#p5-ajustes').textContent = RW.mensagens.novaExtra.org.relAjustesPeriodo(ddmm(dados.competencia), ddmm(dados.mes_fim));
     q('#p5-relatorio').textContent = dados.terminou ? msg().relatorioPronto(ddmm(dados.libera_ajustes)) : msg().relatorioDisponivel(ddmm(dados.libera_ajustes));
-    q('#p5-ajustes-pdf').disabled = !((dados.terminou || dados.simular) && l.lancado);
   }
 
   /* ---------- prévia do relatório de ajustes ---------- */
@@ -136,7 +130,7 @@
   function soma(lista) { return lista.reduce(function (s, x) { return s + (x.b_fim - x.b_ini + 1); }, 0); }
 
   function desenharPrevia(dados) {
-    q('#p5-previa-titulo').textContent = dados.terminou ? msg().relatorioFinal : msg().previa;
+    q('#p5-previa-titulo').textContent = dados.terminou ? RW.mensagens.novaExtra.org.relFinal : RW.mensagens.novaExtra.org.relPrevia;
     q('#p5-comparado').textContent = dados.lancamento.lancado ? msg().comparado(String(dados.lancamento.data).slice(0, 5)) : '';
     var linhas = q('#p5-linhas');
     linhas.textContent = '';
@@ -171,22 +165,15 @@
     q('#p5-cotas').textContent = cotas.length ? cotas.join(' ') : msg().cotasIguais;
   }
 
-  function gerar(botao, qual) {
-    if (!r || !RW.extrajornadaRelatoriosPdf) return;
-    RW.iniciarCarregando(botao);
-    RW.extrajornadaRelatoriosPdf[qual](r).then(function () { RW.pararCarregando(botao); }, function () {
-      RW.pararCarregando(botao);
-      RW.avisar({ tipo: 'erro', mensagem: msg().falhaPdf });
-    });
-  }
-
   function mostrar(d, conteudo) {
     el = conteudo;
     if (ligado !== el) {
       ligado = el;
-      q('#p5-inicial').addEventListener('click', function () { gerar(q('#p5-inicial'), 'inicial'); });
-      q('#p5-ajustes-pdf').addEventListener('click', function () { gerar(q('#p5-ajustes-pdf'), 'ajustes'); });
+      Array.prototype.forEach.call(el.querySelectorAll('#p5-lista [data-relatorio]'), function (b) {
+        b.addEventListener('click', function () { RW.novaExtraImprimir.abrir(b.getAttribute('data-relatorio'), bruto, q('#nova-extra-mes').textContent); });
+      });
     }
+    bruto = d;
     r = montarDados(d);
     q('#p5-mes').textContent = MESES[dataDe(d.competencia).getMonth()];
     desenharEtapas(r, d.hoje);

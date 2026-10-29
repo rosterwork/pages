@@ -14,7 +14,7 @@
    está em foco, ele não muda de grupo. Uma escolha por vez: pôr um
    militar em foco fecha o painel do dia, e abrir um dia tira o foco
    (nova-extra-dia.js). A alça abre e fecha o painel; com o painel do
-   dia aberto e o calendário com menos de 3 dias à vista, a lista
+   dia aberto e o calendário com menos de 4 dias à vista, a lista
    recolhe sozinha e volta ao fechar o painel (só se foi o sistema que
    recolheu). A faixa de cada grupo abre e fecha a lista dela.
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
@@ -29,7 +29,7 @@
   var foco = null;         // o militar em foco no calendário: { cpf, grupo ('faltam' ou 'completos') }
   var escLigado = false;
   var recolhidaPeloPainel = false;   // a lista recolhida pelo sistema ao abrir o painel do dia (volta ao fechar)
-  var MIN_CALENDARIO = 600;          // 3 dias à vista (cada dia tem no mínimo 200px)
+  var MIN_CALENDARIO = 800;          // 4 dias à vista (cada dia tem no mínimo 200px)
 
   function msg() { return RW.mensagens.novaExtra.org; }
   function u() { return RW.novaExtraUtil; }
@@ -78,7 +78,7 @@
     pagina.querySelector('#p3-lateral').classList.toggle('geral-layout-lateral--fechado', !sim);
   }
 
-  /* com o painel do dia aberto: se o calendário ficou com menos de 3 dias à vista, a lista recolhe */
+  /* com o painel do dia aberto: se o calendário ficou com menos de 4 dias à vista, a lista recolhe */
   function recolherSeApertado() {
     if (!pagina || !pagina.isConnected || pagina.querySelector('#p3-alca').getAttribute('aria-expanded') !== 'true') return;
     if (pagina.querySelector('#p3-cal').clientWidth >= MIN_CALENDARIO) return;

@@ -224,9 +224,10 @@
     return temAlerta ? 'alerta' : '';
   }
 
-  /* nível da função: cadeira vazia = erro; sobreposição = erro; senão o pior dos militares dela */
+  /* nível da função: cadeira vazia = erro (menos a que o administrador abriu sem ninguém); sobreposição = erro; senão o
+     pior dos militares dela */
   function nivelDaFuncao(funcao) {
-    if (funcao && funcao.vazio) return 'erro';
+    if (funcao && funcao.vazio && funcao.vazio_motivo !== 'aberta') return 'erro';
     var nivel = (funcao && funcao.sobreposicao) ? 'erro' : '';
     ((funcao && funcao.militares) || []).forEach(function (m) { nivel = piorNivel(nivel, nivelDoMilitar(m)); });
     return nivel;
@@ -653,12 +654,13 @@
     });
     var lista = grupo.querySelector('.escala-distribuicao-militares');
     if (funcao.vazio) {
-      /* cadeira sem ninguém: linha vermelha explicando, no lugar do militar */
+      /* cadeira sem ninguém: linha vermelha explicando, no lugar do militar; a que o administrador abriu, em cinza */
       var vazio = RosterWork.tpl('tpl-escala-vaga-vazia');
       if (vazio) {
         var vtxt = vazio.querySelector('.escala-vaga-vazia-texto');
         var msg = RosterWork.mensagens.escala || {};
         if (vtxt) vtxt.textContent = msg.vagaVazia ? msg.vagaVazia(funcao.vazio_motivo) : 'Vazio';
+        if (funcao.vazio_motivo === 'aberta') vazio.classList.add('escala-vaga-vazia--aberta');
         lista.appendChild(vazio);
       }
     }

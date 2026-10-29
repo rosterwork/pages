@@ -151,6 +151,33 @@
   color: var(--erro);
 }
 
+/* a função aberta sem ninguém (o menu Funções do posto): o "Vazio" em cinza, que não é erro */
+.escala-edicao-vazio-leitura--aberta {
+  color: var(--texto-suave);
+}
+
+/* ---------- Funções do posto (escalas-painel-funcoes.js) ---------- */
+/* a linha do título do posto: o nome, o texto do posto sem ninguém e o ícone na ponta direita, na coluna dos lápis */
+.escala-posto-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.escala-posto-vazio {
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+.escala-posto-funcoes {
+  margin-left: auto;
+}
+
+/* o menu: o título e as caixas de marcar, uma embaixo da outra (a lista é a .escala-marcar-lista) */
+.escala-posto-funcoes-lista {
+  padding: 0 4px 4px;
+}
+
 /* rodapé do Ciclo e da Extrajornada: quantas alterações faltam salvar, à esquerda dos botões */
 .escala-edicao-info {
   margin-right: auto;
@@ -361,6 +388,12 @@
 
   html[data-celular] .escala-linha-fechar {
     min-width: var(--toque-altura-celular);
+    min-height: var(--toque-altura-celular);
+  }
+
+  /* Funções do posto: as caixas do menu na altura do toque, como as linhas dos outros menus (o ícone fica do tamanho
+     dos lápis, para o título do posto não crescer) */
+  html[data-celular] .escala-posto-funcoes-lista .geral-opcao {
     min-height: var(--toque-altura-celular);
   }
 }

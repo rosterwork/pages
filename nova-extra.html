@@ -34,17 +34,16 @@
       <button type="button" class="aba" data-passo="1"><span class="nova-extra-aba-num" aria-hidden="true">1</span>Pedidos</button>
       <button type="button" class="aba" data-passo="2"><span class="nova-extra-aba-num" aria-hidden="true">2</span>Cotas</button>
       <button type="button" class="aba" data-passo="3"><span class="nova-extra-aba-num" aria-hidden="true">3</span>Distribuição</button>
-      <button type="button" class="aba" data-passo="4"><span class="nova-extra-aba-num" aria-hidden="true">4</span>Lançar</button>
-      <button type="button" class="aba" data-passo="5"><span class="nova-extra-aba-num" aria-hidden="true">5</span>Ajustes</button>
+      <button type="button" class="aba" data-passo="4"><span class="nova-extra-aba-num" aria-hidden="true">4</span>Ajustes</button>
+      <button type="button" class="aba" data-passo="5"><span class="nova-extra-aba-num" aria-hidden="true">5</span>Relatórios</button>
     </div>
     <span class="espacador-flex"></span>
-    <!-- só na Distribuição: o filtro (só o ícone; Exibir: Escala completa; quem mostra e esconde é o
-         nova-extra-filtros.js), a pesquisa de militar (marcar ou filtrar), como na Escala, e o Preencher pela sugestão
-         (escuro: a aba é só do administrador, sem ação do militar ao lado) -->
+    <!-- na Distribuição e nos Ajustes: o filtro (só o ícone; Exibir: Escala completa; quem mostra e esconde é o
+         nova-extra-filtros.js) e a pesquisa de militar (marcar ou filtrar), como na Escala -->
     <div class="filtros filtros--icone oculto" id="p3-filtros">
       <div data-filtro="exibir" data-filtro-nome="Exibir" data-filtro-titulo="Exibir"></div>
     </div>
-    <div class="busca oculto" id="p3-busca" data-passo-barra="3">
+    <div class="busca oculto" id="p3-busca" data-passo-barra="3 4">
       <button type="button" class="busca-modo" aria-label="Alternar entre marcar e filtrar" data-dica="Marcar">
         <svg class="icone busca-modo-marcar" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-pesquisar"/></svg>
         <svg class="icone busca-modo-filtrar" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-filtrar"/></svg>
@@ -54,7 +53,32 @@
         <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
       </button>
     </div>
-    <button type="button" class="botao botao--primario oculto" id="p3-sugerir" data-passo-barra="3">Preencher pela sugestão</button>
+    <!-- as ações do passo aberto num menu só, sempre no mesmo lugar (escuro: a aba é só do administrador, sem ação do
+         militar ao lado). Cada item é de um passo (data-passo-acao); o que ainda não pode ser feito fica apagado, com o
+         motivo embaixo, em cinza -->
+    <div class="dropdown nova-extra-acoes oculto" id="nova-extra-acoes" data-passo-barra="1 2 3">
+      <button type="button" class="botao botao--primario">
+        <span>Ações</span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu">
+        <button type="button" class="dropdown-item nova-extra-acao" id="p1-fechar" data-passo-acao="1">
+          <span>Fechar os pedidos agora</span><span class="nova-extra-acao-motivo"></span>
+        </button>
+        <button type="button" class="dropdown-item nova-extra-acao" id="p2-sugestao" data-passo-acao="2">
+          <span>Preencher pela sugestão</span><span class="nova-extra-acao-motivo"></span>
+        </button>
+        <button type="button" class="dropdown-item nova-extra-acao" id="p3-sugerir" data-passo-acao="3">
+          <span>Preencher pela sugestão</span><span class="nova-extra-acao-motivo"></span>
+        </button>
+        <button type="button" class="dropdown-item nova-extra-acao" id="p3-lancar" data-passo-acao="3">
+          <span>Lançar na escala e encerrar</span><span class="nova-extra-acao-motivo"></span>
+        </button>
+        <button type="button" class="dropdown-item nova-extra-acao" id="p3-reabrir" data-passo-acao="3">
+          <span>Reabrir a distribuição</span><span class="nova-extra-acao-motivo"></span>
+        </button>
+      </div>
+    </div>
     <span class="pagina-subcabecalho-divisor oculto" id="nova-extra-legenda-divisor" aria-hidden="true"></span>
     <div class="oculto" id="nova-extra-legenda"></div>
   </div>
@@ -121,6 +145,11 @@
     <section class="nova-extra-area oculto" data-aba-painel="pedidos" data-passo-painel="1">
       <div class="nova-extra-passo-topo">
         <div class="nova-extra-resumo"><span data-passo-resumo="1"></span></div>
+        <!-- os pedidos fechados pelo Ações › Fechar os pedidos agora: quando e quem -->
+        <div class="nota oculto" id="p1-fechados">
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
+          <span class="nota-texto"></span>
+        </div>
       </div>
       <div class="nova-extra-rolagem">
         <div class="nova-extra-duas">
@@ -157,7 +186,7 @@
               <span class="nova-extra-ajuda">Termo pendente: fica fora das cotas e da distribuição.</span>
             </div>
             <div class="nova-extra-blocos">
-              <table class="nova-extra-tabela">
+              <table class="nova-extra-tabela nova-extra-tabela--centro">
                 <thead><tr><th>Militar</th><th>Unidade</th><th>Cotas</th><th>Quer</th><th>Não quer</th><th>Pediu em</th><th>Termo</th></tr></thead>
                 <tbody id="p1-lista"></tbody>
               </table>
@@ -177,10 +206,16 @@
     </section>
 
     <!-- passo 2, Cotas: a faixa (Repartir por; as cotas da companhia, campo no "Entre todos" e a soma das unidades no
-         "Unidades"; Entregues, Sobram e Na escala; no fim, o Preencher pela sugestão) e a grade: um bloco por unidade nos
+         "Unidades"; Entregues, Sobram e Na escala; o Preencher pela sugestão fica no menu Ações) e a grade: um bloco por unidade nos
          dois jeitos, com o Recebeu, o Entregues e o Sobram no título; no "Entre todos" a fila é a da companhia, no
-         "Unidades" cada unidade tem a sua -->
+         "Unidades" cada unidade tem a sua. Com os pedidos abertos, o aviso no alto e tudo travado -->
     <section class="nova-extra-area extra-vol oculto" data-aba-painel="cotas" data-passo-painel="2">
+      <div class="nova-extra-passo-topo oculto" id="p2-topo">
+        <div class="nota nota--alerta">
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+          <span class="nota-texto">Feche os pedidos antes de repartir as cotas.</span>
+        </div>
+      </div>
       <div class="extra-vol-banda">
         <div class="extra-vol-banda-item">
           <span>Repartir por</span>
@@ -203,8 +238,6 @@
         <span class="extra-vol-numero"><span>Entregues</span><strong class="extra-vol-numero-valor" id="p2-entregues"></strong></span>
         <span class="extra-vol-numero"><span>Sobram</span><strong class="extra-vol-numero-valor" id="p2-sobram"></strong></span>
         <span class="extra-vol-numero"><span>Na escala</span><strong class="extra-vol-numero-valor" id="p2-na-escala"></strong></span>
-        <span class="espacador-flex"></span>
-        <button type="button" class="botao" id="p2-sugestao">Preencher pela sugestão</button>
       </div>
       <span class="nova-extra-vazio nova-extra-vazio--area oculto" id="p2-vazio">Nenhum voluntário com termo.</span>
       <div class="extra-vol-rolagem nova-extra-grade" id="p2-lista"></div>
@@ -219,9 +252,12 @@
       </div>
     </section>
 
-    <!-- passo 3, Distribuição: a lista dos voluntários no painel esquerdo, que abre e fecha pela alça, e o
-         calendário com um bloco por pelotão em cada dia (clicar no bloco abre o painel do dia) -->
-    <section class="nova-extra-area oculto" data-aba-painel="distribuicao" data-passo-painel="3">
+    <!-- passos 3 e 4, Distribuição e Ajustes (a mesma tela): a lista dos voluntários no painel esquerdo, que abre e
+         fecha pela alça, e o calendário com um bloco por pelotão em cada dia (clicar no bloco abre o painel do dia).
+         Depois do lançamento, a Distribuição fica só para ver e as mudanças vão pelos Ajustes; antes do lançamento (ou
+         com ele reaberto), os Ajustes mostram só o aviso -->
+    <section class="nova-extra-area oculto" data-aba-painel="distribuicao" data-passo-painel="3 4">
+      <span class="nova-extra-vazio nova-extra-vazio--area oculto" id="p3-sem-lancamento">Os ajustes abrem depois do lançamento.</span>
       <div class="geral-layout-lateral nova-extra-dist" id="p3-lateral">
         <!-- painel esquerdo: as cotas colocadas no alto e os voluntários na ordem da fila, os que faltam em cima e os
              completos embaixo; a faixa de cada grupo abre e fecha pela seta; clicar no nome põe o militar em foco no
@@ -278,6 +314,16 @@
               <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
               <span class="nota-texto"></span>
             </div>
+            <!-- lançada (e não reaberta): a Distribuição fica só para ver; quando e quem lançou -->
+            <div class="nota oculto" id="p3-lancada">
+              <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
+              <span class="nota-texto"></span>
+            </div>
+            <!-- todas as cotas colocadas e salvas, ainda sem lançar -->
+            <div class="nota oculto" id="p3-pronta">
+              <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
+              <span class="nota-texto">Distribuição pronta para lançar. Use Ações › Lançar na escala e encerrar.</span>
+            </div>
           </div>
           <span class="nova-extra-vazio nova-extra-vazio--area oculto" id="p3-cal-vazio">Nenhum pelotão nesta companhia.</span>
           <div class="nova-extra-dist-cal" id="p3-cal"></div>
@@ -290,38 +336,12 @@
         <div class="rodape-acoes">
           <button type="button" class="botao oculto" id="p3-desfazer-sugestao">Desfazer a sugestão</button>
           <button type="button" class="botao" id="p3-cancelar">Cancelar</button>
-          <button type="button" class="botao botao--primario" id="p3-salvar" disabled>Salvar</button>
+          <button type="button" class="botao botao--primario" id="p3-salvar" disabled><span id="p3-salvar-dist">Salvar</span><span class="oculto" id="p3-salvar-ajuste">Salvar e enviar para a escala</span></button>
         </div>
       </div>
     </section>
 
-    <!-- passo 4, Lançar: conferir e lançar (simulado: a escala não muda) -->
-    <section class="nova-extra-area oculto" data-aba-painel="lancar" data-passo-painel="4">
-      <div class="nova-extra-passo-topo">
-        <div class="nova-extra-resumo"><span data-passo-resumo="4"></span></div>
-      </div>
-      <div class="nova-extra-rolagem">
-        <div class="nova-extra-duas nova-extra-duas--direita">
-          <div class="nova-extra-bloco">
-            <span class="nova-extra-bloco-titulo">Conferência</span>
-            <div class="nova-extra-caixa" id="p4-conferencia"></div>
-          </div>
-          <div class="nova-extra-col">
-            <div class="nova-extra-bloco">
-              <span class="nova-extra-bloco-titulo" id="p4-titulo"></span>
-              <div class="nova-extra-caixa nova-extra-form">
-                <span class="nova-extra-ajuda" id="p4-texto"></span>
-                <div id="p4-mudancas"></div>
-                <button type="button" class="botao botao--primario" id="p4-lancar"></button>
-                <span class="nova-extra-ajuda">Teste: o lançamento guarda a foto da distribuição; a escala de verdade não muda e ninguém é avisado.</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- passo 5, Ajustes: os ajustes do mês e os relatórios -->
+    <!-- passo 5, Relatórios: as etapas do mês e os relatórios -->
     <section class="nova-extra-area oculto" data-aba-painel="ajustes" data-passo-painel="5">
       <div class="nova-extra-passo-topo">
         <div class="nova-extra-resumo"><span data-passo-resumo="5"></span></div>
@@ -337,6 +357,10 @@
                 <div class="nova-extra-rel-etapa-corpo">
                   <span class="nova-extra-rel-etapa-titulo">Pedidos</span>
                   <span class="nova-extra-rel-etapa-texto" id="p5-solicitacoes"></span>
+                  <button type="button" class="botao nova-extra-rel-botao" id="p5-pedidos" data-relatorio="pedidos" disabled>
+                    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg>
+                    <span>Imprimir pedidos</span>
+                  </button>
                 </div>
               </li>
               <li class="nova-extra-rel-etapa" data-etapa="termos">
@@ -344,6 +368,10 @@
                 <div class="nova-extra-rel-etapa-corpo">
                   <span class="nova-extra-rel-etapa-titulo">Termos e cotas</span>
                   <span class="nova-extra-rel-etapa-texto" id="p5-termos"></span>
+                  <button type="button" class="botao nova-extra-rel-botao" id="p5-termos-pdf" data-relatorio="termos" disabled>
+                    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg>
+                    <span>Imprimir termos e cotas</span>
+                  </button>
                 </div>
               </li>
               <li class="nova-extra-rel-etapa" data-etapa="montagem">
@@ -351,9 +379,9 @@
                 <div class="nova-extra-rel-etapa-corpo">
                   <span class="nova-extra-rel-etapa-titulo">Distribuição e lançamento</span>
                   <span class="nova-extra-rel-etapa-texto" id="p5-montagem"></span>
-                  <button type="button" class="botao nova-extra-rel-botao" id="p5-inicial" disabled>
+                  <button type="button" class="botao nova-extra-rel-botao" id="p5-inicial" data-relatorio="inicial" disabled>
                     <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg>
-                    <span>Relatório inicial</span>
+                    <span>Imprimir relatório inicial</span>
                   </button>
                 </div>
               </li>
@@ -367,11 +395,11 @@
               <li class="nova-extra-rel-etapa" data-etapa="relatorio">
                 <span class="nova-extra-rel-marca"><span class="nova-extra-rel-numero">5</span><svg class="icone nova-extra-rel-check" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
                 <div class="nova-extra-rel-etapa-corpo">
-                  <span class="nova-extra-rel-etapa-titulo">Relatório de ajustes</span>
+                  <span class="nova-extra-rel-etapa-titulo">Relatório final</span>
                   <span class="nova-extra-rel-etapa-texto" id="p5-relatorio"></span>
-                  <button type="button" class="botao nova-extra-rel-botao" id="p5-ajustes-pdf" disabled>
+                  <button type="button" class="botao nova-extra-rel-botao" id="p5-final" data-relatorio="final" disabled>
                     <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg>
-                    <span>Relatório de ajustes</span>
+                    <span>Imprimir relatório final</span>
                   </button>
                 </div>
               </li>
@@ -431,11 +459,11 @@
   <div class="extra-vol-linha extra-vol-cab">
     <span>Fila</span>
     <span>Militar</span>
-    <span class="nova-extra-dir">Pediu</span>
-    <span class="nova-extra-dir">Atendido em 12 meses</span>
-    <span class="nova-extra-dir">Sugestão</span>
-    <span>Recebe</span>
-    <span class="nova-extra-dir">Na escala</span>
+    <span class="nova-extra-centro">Pediu</span>
+    <span class="nova-extra-centro">Atendido em 12 meses</span>
+    <span class="nova-extra-centro">Sugestão</span>
+    <span class="nova-extra-centro">Recebe</span>
+    <span class="nova-extra-centro">Na escala</span>
   </div>
 </template>
 
@@ -465,10 +493,10 @@
       <span class="extra-vol-nome"></span>
       <span class="extra-vaga-24h oculto">24h</span>
     </span>
-    <span class="extra-vol-pediu nova-extra-dir"></span>
-    <span class="nova-extra-dir nova-extra-atendido"><b class="ne-pct"></b><small class="ne-de"></small><span class="nova-extra-historico ne-primeira oculto">Primeira vez</span></span>
-    <span class="nova-extra-dir nova-extra-sug"></span>
-    <div class="extra-vol-concedido">
+    <span class="extra-vol-pediu nova-extra-centro"></span>
+    <span class="nova-extra-centro nova-extra-atendido"><b class="ne-pct"></b><small class="ne-de"></small><span class="nova-extra-historico ne-primeira oculto">Primeira vez</span></span>
+    <span class="nova-extra-centro nova-extra-sug"></span>
+    <div class="extra-vol-concedido nova-extra-centro">
       <div class="dropdown extra-vol-conc">
         <button type="button" class="campo-entrada campo-selecao campo-entrada--pequeno extra-vol-conc-gatilho" aria-label="Recebe">
           <span class="campo-selecao-texto extra-vol-conc-texto"></span>
@@ -477,7 +505,7 @@
         <div class="dropdown-menu extra-vol-conc-menu"></div>
       </div>
     </div>
-    <span class="extra-vol-na-escala nova-extra-dir"></span>
+    <span class="extra-vol-na-escala nova-extra-centro"></span>
   </div>
 </template>
 
@@ -504,6 +532,75 @@
 
 <template id="tpl-ne-rel-horario">
   <span class="nova-extra-rel-horario"></span>
+</template>
+
+<!-- Ações › Lançar na escala e encerrar, no painel direito: a conferência e, embaixo, o que entra na escala (simulado:
+     a escala não muda) -->
+<template id="tpl-ne-lancar">
+  <div class="nova-extra-lancar">
+    <div class="nova-extra-bloco">
+      <span class="nova-extra-bloco-titulo">Conferência</span>
+      <div class="nova-extra-caixa" id="p4-conferencia"></div>
+    </div>
+    <div class="nova-extra-bloco">
+      <span class="nova-extra-bloco-titulo" id="p4-titulo"></span>
+      <div class="nova-extra-caixa nova-extra-form">
+        <span class="nova-extra-ajuda" id="p4-texto"></span>
+        <div id="p4-mudancas"></div>
+        <span class="nova-extra-ajuda">Teste: o lançamento guarda a foto da distribuição; a escala de verdade não muda e ninguém é avisado.</span>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-ne-lancar-acoes">
+  <button type="button" class="botao" id="p4-cancelar">Cancelar</button>
+  <button type="button" class="botao botao--primario" id="p4-lancar">Lançar e encerrar</button>
+</template>
+
+<!-- Relatórios › Imprimir: o painel Imprimir relatório, com as perguntas em caixas numeradas (1. o relatório, já marcado
+     o do botão, e os que ainda não liberaram apagados, com o motivo na dica; 2. o pelotão, entre os da área de quem
+     imprime, que some com um só; 3. com todos, separar por pelotão ou a lista única) e a prévia do PDF (no celular,
+     sem a prévia) -->
+<template id="tpl-ne-imprimir">
+  <div class="grupo-caixa">
+    <span class="rotulo-secao">1. Relatório</span>
+    <div class="abas abas--seletor" data-imprimir-relatorio>
+      <button type="button" class="aba" data-relatorio="pedidos">Pedidos</button>
+      <button type="button" class="aba" data-relatorio="termos">Termos e cotas</button>
+      <button type="button" class="aba" data-relatorio="inicial">Inicial</button>
+      <button type="button" class="aba" data-relatorio="final">Final</button>
+    </div>
+  </div>
+  <div class="grupo-caixa" data-imprimir-unidade-caixa>
+    <span class="rotulo-secao">2. Pelotão</span>
+    <div class="abas abas--seletor" data-imprimir-unidade>
+      <button type="button" class="aba aba--ativa" data-unidade="">Todos</button>
+    </div>
+  </div>
+  <div class="grupo-caixa" data-imprimir-modo-caixa>
+    <span class="rotulo-secao">3. Como organizar</span>
+    <div class="abas abas--seletor" data-imprimir-modo>
+      <button type="button" class="aba aba--ativa" data-modo="separar">Separar por pelotão</button>
+      <button type="button" class="aba" data-modo="unica">Lista única</button>
+    </div>
+  </div>
+  <div class="escala-impressao-previa-secao">
+    <div class="escala-impressao-previa">
+      <iframe class="escala-impressao-previa-quadro" title="Prévia do PDF" data-imprimir-previa></iframe>
+      <span class="painel-estado escala-impressao-previa-aviso oculto" data-imprimir-previa-aviso></span>
+      <div class="carregando-veu" data-imprimir-previa-carregando>
+        <div class="giratorio" aria-label="Carregando" role="status"></div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-ne-imprimir-unidade"><button type="button" class="aba" data-unidade=""></button></template>
+
+<template id="tpl-ne-imprimir-acoes">
+  <button type="button" class="botao" data-imprimir-cancelar>Cancelar</button>
+  <button type="button" class="botao botao--primario" data-imprimir-gerar>Baixar PDF</button>
 </template>
 
 <template id="tpl-ne-item">
@@ -591,60 +688,83 @@
   </div>
 </template>
 
-<!-- a Legenda da barra: como a sugestão reparte as cotas (passo 2) e como distribui (passo 3) -->
-<template id="tpl-ne-legenda-cotas">
+<!-- a Legenda da barra em cada etapa (menos Relatórios): as regras gerais, em itens, e as do Preencher pela sugestão,
+     na ordem em que o sistema as segue -->
+<template id="tpl-ne-legenda-pedidos">
   <div class="escala-legenda-grupo">
-    <span class="rotulo-secao">A fila</span>
+    <span class="rotulo-secao">Regras gerais</span>
     <ul class="nova-extra-legenda-lista">
-      <li>A ordem de quem recebe primeiro: a menor porcentagem atendida nos últimos 12 meses e, no empate, o mais antigo. Quem pede pela primeira vez conta como 100%.</li>
-      <li>Entre todos, a fila é uma só, da companhia, e por isso os números pulam dentro de cada unidade. Por unidades, cada unidade tem a sua.</li>
-      <li>O Recebeu da unidade: por unidades, é o número dado a ela; entre todos, é a parte que a fila da companhia dá a ela. O Entregues é o que os militares dela recebem.</li>
-    </ul>
-  </div>
-  <div class="escala-legenda-grupo">
-    <span class="rotulo-secao">As cores do Entregues</span>
-    <ul class="nova-extra-legenda-lista">
-      <li>Amarelo: ainda há cota para entregar e voluntário que pediu mais.</li>
-      <li>Vermelho: foi entregue mais do que foi recebido. O Salvar fica travado.</li>
-      <li>Sem cor: tudo entregue, ou sobrou porque todos já receberam o que pediram.</li>
-    </ul>
-  </div>
-  <div class="escala-legenda-grupo">
-    <span class="rotulo-secao">Como a sugestão reparte</span>
-    <ul class="nova-extra-legenda-lista">
-      <li>Todos recebem o mesmo número, com diferença de no máximo 1.</li>
-      <li>Ninguém recebe mais do que pediu.</li>
-      <li>A cota a mais vai para quem recebeu menos nos últimos 12 meses. No empate, para o mais antigo.</li>
-      <li>Quem só aceita 24 h recebe em blocos de 4, sem passar dos outros.</li>
+      <li>Só praça pede extra.</li>
+      <li>O pedido vale do "Abre em" até o "Fecha em", ou até o "Fechar os pedidos agora".</li>
+      <li>Cada militar pede de 1 a 10 cotas. Uma cota são 6 horas.</li>
+      <li>Quem só aceita 24 horas pede 4 ou 8 cotas.</li>
+      <li>Marca pelo menos 5 dias que quer (ou todos os livres, se forem menos) e até 10 dias que não quer.</li>
+      <li>Sem o termo entregue, o militar fica fora das cotas e da distribuição.</li>
     </ul>
   </div>
 </template>
-<template id="tpl-ne-legenda-dist">
+
+<template id="tpl-ne-legenda-cotas">
   <div class="escala-legenda-grupo">
-    <span class="rotulo-secao">Como a sugestão distribui</span>
+    <span class="rotulo-secao">Regras gerais</span>
     <ul class="nova-extra-legenda-lista">
-      <li>Só praças voluntárias, com termo e cota, e só nos pelotões.</li>
-    </ul>
-    <ol class="nova-extra-legenda-lista">
-      <li>Erro vermelho no pelotão dele.</li>
-      <li>Vermelho em outro pelotão.</li>
-      <li>Amarelo no dele.</li>
-      <li>Amarelo em outro.</li>
-      <li>Sem erro: os dias com menos gente.</li>
-    </ol>
-    <ul class="nova-extra-legenda-lista">
-      <li>Desempate: o dia que ele quer, emendar com o serviço, 24 h.</li>
-      <li>Corrige: viatura sem condutor (só com CNH), abaixo do mínimo, sem solução automática, chefe dirigindo (só com CNH) e abaixo do ideal. Os outros erros pedem ajuste do administrador.</li>
-      <li>Nunca: dia de serviço, folga, férias, "Não quero", expediente, acima da cota, pelotão cheio.</li>
+      <li>As cotas só são repartidas depois que os pedidos fecham.</li>
+      <li>Só recebe quem entregou o termo, e ninguém recebe mais do que pediu.</li>
+      <li>O total entregue não pode passar do recebido. Se passar, o número fica vermelho e o Salvar trava.</li>
+      <li>Entregues em amarelo: ainda sobra cota e há voluntário que pediu mais.</li>
+      <li>Em "Entre todos", a fila é uma só, da companhia. Em "Unidades", cada uma tem a sua fila e o seu total.</li>
+      <li>Diminuir a cota de quem já tem extra colocada tira as extras que passam.</li>
     </ul>
   </div>
   <div class="escala-legenda-grupo">
-    <span class="rotulo-secao">As bolinhas</span>
+    <span class="rotulo-secao">Regras do Preencher pela sugestão</span>
+    <ol class="nova-extra-legenda-lista">
+      <li>A fila: primeiro quem foi menos atendido nos últimos 12 meses. Quem pede pela primeira vez conta como 100%. No empate, vai antes o mais antigo.</li>
+      <li>Todos recebem o mesmo número, com diferença de no máximo 1.</li>
+      <li>A cota que sobra vai, uma a uma, para quem está na frente da fila.</li>
+      <li>Quem só aceita 24 horas recebe 4 ou 8, sem passar dos outros.</li>
+    </ol>
+  </div>
+</template>
+
+<template id="tpl-ne-legenda-dist">
+  <div class="escala-legenda-grupo">
+    <span class="rotulo-secao">Regras gerais</span>
     <ul class="nova-extra-legenda-lista">
-      <li>Cada militar tem 4 bolinhas por dia, os horários de 08h, 14h, 20h e 02h. A escura é horário de extra. Clicar marca ou desmarca.</li>
-      <li>No calendário, as bolinhas pequenas só mostram os horários. Para marcar, clique no nome na lista dos voluntários (as bolinhas grandes dele aparecem em todos os dias) ou abra o painel do dia.</li>
-      <li>Quem já usou todas as cotas só marca um horário depois de tirar outro, de outro dia.</li>
-      <li>Sem nenhuma bolinha, o militar fica em cinza no dia até o Salvar. Ao salvar, ele sai. Para trazer de volta, marque uma bolinha.</li>
+      <li>Cada dia tem 4 horários de 6 horas: 08h, 14h, 20h e 02h. Cada bolinha é um horário, e a cheia é horário de extra.</li>
+      <li>Para marcar, clique no nome na lista ou abra o dia no calendário.</li>
+      <li>Sem nenhuma bolinha, o militar fica em cinza no dia e sai ao salvar.</li>
+      <li>Ninguém passa da própria cota. Quem já usou todas só marca depois de tirar outra.</li>
+      <li>Uma extra por dia para cada militar. Nunca em dia de serviço, folga, férias, licença ou em dia que ele não quer.</li>
+      <li>O administrativo só tira extra fora do expediente.</li>
+      <li>A companhia só recebe extra posta manualmente.</li>
+      <li>Só lança na escala com todas as cotas colocadas.</li>
+      <li>Depois de lançada, a distribuição só muda pelos Ajustes.</li>
+    </ul>
+  </div>
+  <div class="escala-legenda-grupo">
+    <span class="rotulo-secao">Regras do Preencher pela sugestão</span>
+    <ol class="nova-extra-legenda-lista">
+      <li>Blocos inteiros: a cota vai em blocos de 24 horas, e o resto num bloco só. Seis cotas viram 24 horas e mais 12 horas, nunca pedaços de 6 horas em dias diferentes.</li>
+      <li>Colado a um serviço: no dia antes do serviço, a extra termina às 08h, quando ele entra. No dia depois, começa às 08h, quando ele sai. Sem dia livre colado, vai para outro dia.</li>
+      <li>No pelotão dele, até o efetivo mínimo (falta de gente ou de condutor).</li>
+      <li>Os pelotões de outra cidade ficam só no mínimo.</li>
+      <li>Passa do mínimo só quando o bloco não encaixa nas horas que faltam.</li>
+      <li>Se outro pelotão ainda está abaixo do mínimo, vai para lá.</li>
+      <li>A sobra de todos vai para o pelotão da cidade da companhia, no dia e no horário com menos gente, até o máximo dos postos.</li>
+      <li>No empate, vale o dia que ele quer e depois a fila das Cotas. Cada um põe um bloco por vez, na ordem da fila.</li>
+    </ol>
+  </div>
+</template>
+
+<template id="tpl-ne-legenda-ajustes">
+  <div class="escala-legenda-grupo">
+    <span class="rotulo-secao">Regras gerais</span>
+    <ul class="nova-extra-legenda-lista">
+      <li>Os ajustes abrem depois do lançamento e vão até o fim do mês.</li>
+      <li>Valem as mesmas regras da Distribuição: a cota, uma extra por dia e os dias em que ele não pode.</li>
+      <li>Cada mudança salva vai para a escala e entra no relatório final, com quem fez, quando e o motivo.</li>
+      <li>O motivo é opcional, mas aparece no relatório final.</li>
     </ul>
   </div>
 </template>

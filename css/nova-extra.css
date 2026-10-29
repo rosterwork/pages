@@ -329,7 +329,6 @@
   align-items: start;
 }
 
-.nova-extra-duas--direita { grid-template-columns: 1fr 420px; }
 
 .nova-extra-col {
   display: flex;
@@ -408,6 +407,12 @@
 .nova-extra-blocos .nova-extra-tabela td:first-child { border-radius: var(--raio-pequeno) 0 0 var(--raio-pequeno); }
 .nova-extra-blocos .nova-extra-tabela td:last-child { border-radius: 0 var(--raio-pequeno) var(--raio-pequeno) 0; }
 
+/* as colunas depois do militar no centro (o Termo é um botão: em linha, para seguir o centro) */
+.nova-extra-tabela--centro th:not(:first-child),
+.nova-extra-tabela--centro td:not(:first-child) { text-align: center; }
+
+.nova-extra-tabela--centro .geral-opcao { display: inline-flex; }
+
 /* passo 1: o aviso embaixo do militar (sem fundo de bloco, colado à linha dele) */
 .nova-extra-blocos .nova-extra-linha-aviso td {
   padding: 0 12px 4px;
@@ -481,9 +486,10 @@
   gap: 16px;
 }
 
-.nova-extra-dir {
-  justify-self: end;
-  text-align: right;
+/* as colunas depois do militar no centro */
+.nova-extra-centro {
+  justify-self: center;
+  text-align: center;
   font-variant-numeric: tabular-nums;
 }
 
@@ -1271,6 +1277,38 @@
 
 /* a unidade sem extra no dia guarda o lugar, para as outras ficarem na mesma altura */
 .nova-extra-cal-uni--vazia { visibility: hidden; }
+
+/* o menu Ações da barra: cada item com o motivo embaixo, em cinza, enquanto ainda não pode ser feito (a dica não
+   cabe no menu, que corta o que passa da borda dele) */
+.nova-extra-acao {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.nova-extra-acao-motivo {
+  font-size: 11px;
+  color: var(--texto-fraco);
+}
+
+.nova-extra-acao-motivo:empty { display: none; }
+
+.nova-extra-acao:disabled {
+  color: var(--texto-fraco);
+  cursor: default;
+}
+
+.nova-extra-acao:disabled:hover { background-color: var(--fundo-flutuante); }
+
+/* Ações › Lançar na escala e encerrar: a conferência no painel direito, um bloco embaixo do outro */
+.nova-extra-lancar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)

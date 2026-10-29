@@ -307,6 +307,15 @@
   font-size: 12px;
 }
 
+/* a função que o administrador abriu sem ninguém: "Vazio" em cinza, sem o ícone de alerta (não é erro) */
+.escala-vaga-vazia--aberta {
+  color: var(--texto-suave);
+}
+
+.escala-vaga-vazia--aberta .escala-vaga-vazia-icone {
+  display: none;
+}
+
 /* ---------- Observações do dia: grupos (Administração, Trocas, Folgas, De outra unidade),
    cada um com o título (ícone + nome) e a lista numerada ---------- */
 .escala-observacao-grupo {

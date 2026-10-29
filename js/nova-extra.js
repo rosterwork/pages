@@ -4,9 +4,9 @@
    organizar.js desenha o Calendário e os passos). A Minha extra mostra
    o pedido do mês (nova_extra_minha), com o botão que abre o painel
    do pedido (nova-extra-pedido.js) no passo Pedido. A barra: o mês,
-   os passos Pedidos · Cotas · Distribuição · Lançar · Ajustes (só no
-   Organizar o mês) e a Legenda (o molde que o passo pedir,
-   RosterWork.novaExtra.legenda).
+   os passos Pedidos · Cotas · Distribuição · Ajustes · Relatórios (só
+   no Organizar o mês), o menu Ações do passo aberto e a Legenda (o
+   molde que o passo pedir, RosterWork.novaExtra.legenda).
    Para o teste, a seta do mês só anda entre dezembro de 2026 (o
    administrador) e janeiro de 2027 (o militar). Grava em tabelas
    próprias: a Extrajornada de verdade e a escala não mudam.
@@ -89,10 +89,14 @@
     });
   }
 
-  /* a área à vista: a da aba (Minha extra, Calendário) ou a do passo (Organizar o mês) */
+  /* o passo n está na lista do atributo ("3 4" = nos passos 3 e 4) */
+  function doPasso(e, atributo, n) { return (e.getAttribute(atributo) || '').split(' ').indexOf(String(n)) >= 0; }
+
+  /* a área à vista: a da aba (Minha extra, Calendário) ou a do passo (Organizar o mês; a Distribuição e os Ajustes
+     são a mesma área) */
   function mostrarArea(n) {
     Array.prototype.forEach.call(conteudoPagina.querySelectorAll('.pagina-corpo [data-aba-painel]'), function (s) {
-      var ve = aba === 'organizar' ? +s.getAttribute('data-passo-painel') === n : s.getAttribute('data-aba-painel') === aba;
+      var ve = aba === 'organizar' ? doPasso(s, 'data-passo-painel', n) : s.getAttribute('data-aba-painel') === aba;
       s.classList.toggle('oculto', !ve);
     });
   }
@@ -119,13 +123,17 @@
     mostrarArea(n);
   }
 
-  /* na barra, o que é só de um passo (data-passo-barra) aparece só nele; fora do Organizar o mês, nenhum. O filtro
-     da Distribuição (com a linha "Filtros:") mostra e esconde pelo nova-extra-filtros.js */
+  /* na barra, o que é só de alguns passos (data-passo-barra) aparece só neles e, no menu Ações, só os itens do passo
+     aberto (data-passo-acao); fora do Organizar o mês, nenhum. O filtro da Distribuição e dos Ajustes (com a linha
+     "Filtros:") mostra e esconde pelo nova-extra-filtros.js */
   function barraDoPasso(n) {
     Array.prototype.forEach.call(conteudoPagina.querySelectorAll('.pagina-subcabecalho [data-passo-barra]'), function (e) {
-      e.classList.toggle('oculto', +e.getAttribute('data-passo-barra') !== n);
+      e.classList.toggle('oculto', !doPasso(e, 'data-passo-barra', n));
     });
-    if (RW.novaExtraFiltros) RW.novaExtraFiltros.mostrar(n === 3);
+    Array.prototype.forEach.call(conteudoPagina.querySelectorAll('.pagina-subcabecalho [data-passo-acao]'), function (e) {
+      e.classList.toggle('oculto', !doPasso(e, 'data-passo-acao', n));
+    });
+    if (RW.novaExtraFiltros) RW.novaExtraFiltros.mostrar(n === 3 || n === 4);
   }
 
   /* a Legenda e o traço antes dela: aparecem com o conteúdo do molde (id) ou somem (null) */

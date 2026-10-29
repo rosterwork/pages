@@ -2,9 +2,10 @@
    NOVA EXTRA — os passos do mês e o Calendário
    Lê o mês inteiro (nova_extra_mes) e desenha a aba aberta: os passos
    1 Pedidos (prazo e termo), 2 Cotas (nova-extra-cotas.js), 3
-   Distribuição (nova-extra-montar.js), 4 Lançar (simulado) e 5
-   Ajustes (nova-extra-relatorio.js), ou o Calendário (o mês no
-   calendário do site, as extras de cada unidade). Pinta o número de
+   Distribuição e 4 Ajustes (a mesma tela, nova-extra-montar.js) e 5
+   Relatórios (nova-extra-relatorio.js), ou o Calendário (o mês no
+   calendário do site, as extras de cada unidade). O menu Ações da
+   barra fica no nova-extra-acoes.js. Pinta o número de
    cada passo nas abas (verde feito, preto o primeiro ainda não feito,
    branco os que não começaram) e escreve a linha de resumo de cada
    passo. Mostra sempre todas as unidades da companhia (o seletor de
@@ -23,6 +24,7 @@
   var d = null;           // a resposta do nova_extra_mes
   var aba = null;         // 'passo', 'calendario' ou null (na Minha extra)
   var passo = null;       // o passo aberto (1 a 5)
+  var passoAberto = null; // o passo desenhado por último (ao trocar de passo, o painel direito fecha)
   var vez = 1;            // o passo da vez (o primeiro ainda não feito)
   var pedido = 0;         // latest-wins
   var p1 = null;          // edição do passo 1
@@ -134,14 +136,16 @@
   }
 
   /* os números dos passos na barra (e o passo da vez: o primeiro ainda não feito) e a linha de resumo do alto de cada
-     passo. Um passo só fica feito depois do
-     anterior: o pedido fechou; as cotas foram todas entregues (ou sobraram porque todos já receberam o que pediram);
-     as entregues estão todas na distribuição; foi lançado e nada mudou depois. Os Ajustes seguem enquanto o mês corre */
+     passo. Um passo só fica feito depois do anterior: o pedido fechou; as cotas foram todas entregues (ou sobraram
+     porque todos já receberam o que pediram); a distribuição foi lançada (e não reaberta); o mês terminou (os Ajustes seguem do
+     lançamento ao fim do mês). Os Relatórios nunca ficam feitos */
   function passosTopo() {
     var comTermo = vols().filter(function (m) { return m.termo; });
     var recebido = d.mes.cotas_recebidas || 0, entregues = totalConcedidas();
     var cotasOk = entregues > 0 && (entregues >= recebido || comTermo.every(function (m) { return (m.concedidas || 0) >= (m.cotas || 0); }));
-    var ok = [d.mes.estado === 'encerrado', cotasOk, entregues > 0 && naGrade() >= entregues, !!d.lancamento && !mudancasDesdeLancamento().length, false];
+    var c = d.competencia, proximo = new Date(+c.slice(0, 4), +c.slice(5, 7), 1);
+    var terminou = d.hoje >= proximo.getFullYear() + '-' + String(proximo.getMonth() + 1).padStart(2, '0') + '-01';
+    var ok = [d.mes.estado === 'encerrado', cotasOk, !!d.lancamento && !d.lancamento.reaberto, terminou, false];
     var feito = [], agora = -1;
     ok.forEach(function (x, i) { feito[i] = x && (i === 0 || feito[i - 1]); if (!feito[i] && agora < 0) agora = i; });
     vez = agora + 1;
@@ -154,20 +158,22 @@
     var resp = lista.filter(function (m) { return m.respondeu; }).length;
     var textos = {
       1: msg().p1(br(d.mes.abre), br(d.mes.fecha), resp, lista.length),
-      4: d.lancamento ? msg().p4Lancado(d.lancamento.lancado_em) : msg().p4Nao,
-      5: d.iniciado ? msg().p5(d.ajustes.length) : msg().p5Depois
+      5: d.lancamento ? msg().p5(d.ajustes.length) : msg().p4Nao
     };
     todos('[data-passo-resumo]', function (r) { r.textContent = textos[r.getAttribute('data-passo-resumo')]; });
   }
 
   function abrirPasso(n) {
     passo = n;
-    if (n !== 3 && RW.novaExtraMontar) RW.novaExtraMontar.fecharPainel();
-    RW.novaExtra.legenda(n === 2 ? 'tpl-ne-legenda-cotas' : n === 3 ? 'tpl-ne-legenda-dist' : null);
+    /* ao trocar de passo, o painel direito aberto (o do dia ou o do lançamento) fecha */
+    if (n !== passoAberto && RW.painel.estaAberto()) RW.painel.fechar();
+    passoAberto = n;
+    var calendario = n === 3 || n === 4;
+    /* a Legenda de cada etapa (as regras), menos nos Relatórios */
+    RW.novaExtra.legenda({ 1: 'tpl-ne-legenda-pedidos', 2: 'tpl-ne-legenda-cotas', 3: 'tpl-ne-legenda-dist', 4: 'tpl-ne-legenda-ajustes' }[n] || null);
     if (n === 1) passo1();
     else if (n === 2 && RW.novaExtraCotas) RW.novaExtraCotas.mostrar(d, el, carregar, function (novo) { if (novo) d = novo; passosTopo(); });
-    else if (n === 3 && RW.novaExtraMontar) RW.novaExtraMontar.mostrar(d, el, carregar);
-    else if (n === 4) passo4();
+    else if (calendario && RW.novaExtraMontar) RW.novaExtraMontar.mostrar(d, el, carregar, n === 4 ? 'ajustes' : 'distribuicao');
     else passo5();
   }
 
@@ -180,6 +186,9 @@
     var resp = todosDaqui.filter(function (m) { return m.respondeu; });
     var nVol = todosDaqui.filter(function (m) { return m.voluntario; }).length;
     q('#p1-respostas').textContent = msg().responderam(resp.length, todosDaqui.length);
+    /* fechados pelo Ações › Fechar os pedidos agora: quando e quem */
+    q('#p1-fechados').classList.toggle('oculto', !d.mes.fechado_em);
+    q('#p1-fechados .nota-texto').textContent = d.mes.fechado_em ? msg().fechadosEm(d.mes.fechado_em, d.mes.fechado_por || '') : '';
     q('#p1-n-vol').textContent = nVol;
     q('#p1-n-nao').textContent = resp.length - nVol;
     q('#p1-n-sem').textContent = todosDaqui.length - resp.length;
@@ -236,68 +245,7 @@
     if (r && r.log && r.log.resumo && r.log.resumo.alvos && r.log.resumo.alvos.length) RW.resumo.abrirModal(r.log, { pagina: 'Nova extra' });
   }
 
-  /* ---------- passo 4: conferir e lançar ---------- */
-  function item(cont, ok, titulo, texto) {
-    var it = RW.tpl('tpl-ne-item');
-    it.classList.add(ok ? 'nova-extra-item--ok' : 'nova-extra-item--alerta');
-    it.querySelector('b').textContent = titulo;
-    it.querySelector('.nova-extra-item-texto span').textContent = texto || '';
-    cont.appendChild(it);
-  }
-
   function chave(a) { return a.cpf + '|' + a.data; }
-
-  function passo4() {
-    var conf = q('#p4-conferencia');
-    conf.textContent = '';
-    var v = vols(), termos = v.filter(function (m) { return m.termo; }).length;
-    item(conf, d.mes.estado === 'encerrado', d.mes.estado === 'encerrado' ? msg().c1ok(br(d.mes.fecha)) : msg().c1aberto(br(d.mes.fecha)), msg().c1texto(v.length, termos));
-    item(conf, totalConcedidas() > 0, msg().c2(totalConcedidas(), d.mes.cotas_recebidas || 0), '');
-    item(conf, naGrade() >= totalConcedidas() && totalConcedidas() > 0, msg().c3(naGrade(), totalConcedidas()), '');
-    var falta = RW.novaExtraMontar ? RW.novaExtraMontar.diasComFalta(d) : [];
-    item(conf, !falta.length, falta.length ? msg().c4(falta.length) : msg().c4ok, falta.slice(0, 6).join(', ') + (falta.length > 6 ? '…' : ''));
-
-    var lanc = d.lancamento;
-    q('#p4-titulo').textContent = lanc ? msg().lancadoTitulo(lanc.lancado_em, lanc.por || '') : msg().aoLancar;
-    var btn = q('#p4-lancar');
-    var mud = q('#p4-mudancas');
-    mud.textContent = '';
-    if (d.iniciado) {
-      q('#p4-texto').textContent = msg().jaComecou;
-      btn.classList.add('oculto');
-      return;
-    }
-    btn.classList.remove('oculto');
-    btn.textContent = lanc ? msg().lancarDeNovo : msg().lancar;
-    if (lanc) {
-      var antes = {}, agora = {};
-      lanc.foto.forEach(function (a) { antes[chave(a)] = a; });
-      d.alocacoes.forEach(function (a) { agora[chave(a)] = a; });
-      var mudas = mudancasDesdeLancamento();
-      q('#p4-texto').textContent = mudas.length ? msg().mudouDesde(mudas.length) : msg().nadaMudou;
-      mudas.slice(0, 12).forEach(function (k) {
-        var a = antes[k], b = agora[k], x = a || b;
-        item(mud, false, util.nome(x.cpf) + ', ' + br(x.data), (a ? util.horas(a.blocos) : msg().nada) + ' para ' + (b ? util.horas(b.blocos) : msg().tirado));
-      });
-      btn.disabled = !mudas.length;
-    } else {
-      q('#p4-texto').textContent = msg().lancarTexto(d.alocacoes.length);
-      btn.disabled = !d.alocacoes.length;
-    }
-  }
-
-  function lancar() {
-    RW.confirmar({
-      tipo: 'aviso', mensagem: msg().confirmarLancar, textoConfirmar: msg().lancar,
-      aoConfirmar: function () {
-        RW.rpc('nova_extra_lancar', { p_competencia: d.competencia }).then(function (r) {
-          if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
-          RW.avisar({ tipo: 'sucesso', mensagem: msg().lancado(r.extras, r.dias) });
-          carregar();
-        });
-      }
-    });
-  }
 
   /* ---------- passo 5: as etapas do mês e a prévia (nova-extra-relatorio.js) ---------- */
   function passo5() { if (RW.novaExtraRelatorio) RW.novaExtraRelatorio.mostrar(d, el); }
@@ -331,7 +279,7 @@
   /* ---------- entrada ---------- */
   function montar(conteudo) {
     el = conteudo;
-    d = null; passo = null; aba = null;
+    d = null; passo = null; passoAberto = null; aba = null;
     todos('#p1-filtro [data-lista]', function (b) { b.addEventListener('click', function () { p1.lista = b.getAttribute('data-lista'); passo1(); }); });
     /* o prazo nos campos de data do site (DD/MM/AAAA, com o calendário do site) */
     RW.campos.ligarData(q('#p1-abre'));
@@ -350,7 +298,7 @@
         carregar();
       });
     });
-    q('#p4-lancar').addEventListener('click', lancar);
+    RW.novaExtraAcoes.ligar(el);
   }
 
   /* fora do passo: fecha o painel e a caixa abertos e some a Legenda */
@@ -371,9 +319,12 @@
 
   RW.novaExtraOrg = {
     resumo: resumo, montar: montar, mostrar: mostrar,
+    /* o que o menu Ações (nova-extra-acoes.js) lê do mês */
+    dados: function () { return d; },
+    vols: vols, totalConcedidas: totalConcedidas, naGrade: naGrade, mudancasDesdeLancamento: mudancasDesdeLancamento,
     sair: function () { aba = null; sair(); },
     recarregar: carregar,
     desenharAba: function () { if (d) desenharAba(); },
-    sujo: function () { return aba === 'passo' && passo === 3 && RW.novaExtraMontar && RW.novaExtraMontar.sujo(); }
+    sujo: function () { return aba === 'passo' && (passo === 3 || passo === 4) && RW.novaExtraMontar && RW.novaExtraMontar.sujo(); }
   };
 })();

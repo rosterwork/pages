@@ -169,6 +169,10 @@
     q('#p2-mudancas').classList.toggle('nova-extra-negativo', !!erro);
     q('#p2-salvar').disabled = !p2.sujo || !!erro;
     q('#p2-desfazer').classList.toggle('oculto', !p2.antes);
+    /* com os pedidos abertos, o aviso no alto e os campos travados (o banco também recusa) */
+    var aberto = d.mes.estado !== 'encerrado';
+    q('#p2-topo').classList.toggle('oculto', !aberto);
+    todos('[data-aba-painel="cotas"] input, #p2-modo > button, .extra-vol-conc-gatilho', function (e) { e.disabled = aberto; });
   }
 
   /* um voluntário: a fila, o militar, o pedido, o atendido em 12 meses, a sugestão, o Recebe e o que já está na escala */

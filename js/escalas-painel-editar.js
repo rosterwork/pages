@@ -115,13 +115,14 @@
   function haMudanca() {
     if (!rasc || !base) return false;
     return !!rasc.automatico || !mesmosAjustes(base.ajustes, rasc.ajustes) || difPontuais() > 0 || rasc.folgas.length > 0
-      || rasc.folgas_cancelar.length > 0 || rasc.observacoes.adicionar.length > 0 || rasc.observacoes.remover.length > 0;
+      || rasc.folgas_cancelar.length > 0 || rasc.observacoes.adicionar.length > 0 || rasc.observacoes.remover.length > 0
+      || rasc.abertas.abrir.length > 0 || rasc.abertas.fechar.length > 0;
   }
 
   /* o rascunho recomeça do dia gravado */
   function novoRascunho() {
     rasc = { ajustes: copiar(base.ajustes), pontuais: copiar(base.pontuais), estornar: [], folgas: [], folgas_cancelar: [],
-      observacoes: { adicionar: [], remover: [] } };
+      observacoes: { adicionar: [], remover: [] }, abertas: { abrir: [], fechar: [] } };
   }
 
   /* o dia gravado (a leitura, ou o que o banco devolve ao gravar) vira a base */
@@ -148,6 +149,7 @@
     r.estornar = rasc.estornar;
     r.folgas_cancelar = rasc.folgas_cancelar;
     r.observacoes = rasc.observacoes;
+    r.abertas = rasc.abertas;
     if (rasc.automatico) r.automatico = true;
     return r;
   }
@@ -160,6 +162,8 @@
     var dados = antes.dados || {};
     var volta = { ajustes: copiar(antes.ajustes), estornar: [], folgas: [], folgas_cancelar: copiar(criadas.folgas || []),
       observacoes: { adicionar: [], remover: copiar(criadas.observacoes || []) } };
+    /* a função aberta volta fechada, e a fechada volta aberta */
+    if (envio.abertas) volta.abertas = { abrir: copiar(envio.abertas.fechar || []), fechar: copiar(envio.abertas.abrir || []) };
     if (envio.pontuais) {
       var contou = {}, eram = {};
       (dados.pontuais || []).forEach(function (x) { contou[x.cpf] = !!x.contabilizado; });
@@ -692,15 +696,19 @@
   }
 
   /* horário sem ninguém na função (dentro do que o modelo pede) ou cadeira vazia do motor: o texto vermelho e,
-     para o admin, o lápis (quem fica ali) */
-  function linhaVazia(posto, nomeFuncao, per, ancora) {
+     para o admin, o lápis (quem fica ali). A função aberta sem ninguém (Funções do posto): "Vazio", em cinza */
+  function linhaVazia(posto, nomeFuncao, per, ancora, aberta) {
     var p = pecas();
     var linha = novaLinha();
     if (!linha) return null;
     var pessoa = linha.querySelector('.escala-edicao-pessoa');
     pessoa.textContent = '';
     var t = RosterWork.tpl('tpl-escala-edicao-vazio-leitura');
-    if (t) { t.textContent = msg().semNinguemTexto; pessoa.appendChild(t); }
+    if (t) {
+      t.textContent = aberta ? msg().vagaVazia('aberta') : msg().semNinguemTexto;
+      if (aberta) t.classList.add('escala-edicao-vazio-leitura--aberta');
+      pessoa.appendChild(t);
+    }
     var h = p.hora(per);
     if (h) linha.querySelector('.escala-distribuicao-horas').appendChild(h);
     var cfg = { tipo: 'vaga', posto: posto, funcao: nomeFuncao, militar: null, periodos: [{ hi: per.hi, hf: per.hf }] };
@@ -731,7 +739,8 @@
      sozinhos não têm lápis (são sempre do mais antigo do dia) */
   function linhasFuncao(caixa, posto, f) {
     var p = pecas();
-    var temVao = !!f.vazio || (f.vao || []).length > 0;
+    var aberta = f.vazio_motivo === 'aberta';
+    var temVao = (!!f.vazio && !aberta) || (f.vao || []).length > 0;
     var rotulos = (f.nomes && f.nomes.length) ? f.nomes : [f.nome];
     var grupo = novoGrupo(rotulos, temVao ? 'erro' : p.nivelFuncao(f));
     if (!grupo) return;
@@ -759,28 +768,53 @@
     });
     /* riscados: na comparação, quem saiu */
     if (ctx.comparar) (f.ghosts || []).forEach(function (g) { por(linhaMilitar(g, { ghost: true })); });
-    if (f.vazio) por(linhaVazia(posto, f.nome, { hi: '08:00', hf: '08:00' }, ancora));
+    if (f.vazio) por(linhaVazia(posto, f.nome, { hi: '08:00', hf: '08:00' }, ancora, aberta));
     (f.vao || []).forEach(function (v) { por(linhaVazia(posto, f.nome, v, ancora)); });
     if (grupo.linhas.children.length) caixa.appendChild(grupo.el);
   }
 
-  /* o título do posto: na troca de viatura com data, embaixo vem "No lugar da ... até ..." */
+  /* o título do posto: para quem edita o dia, a linha com o ícone Funções do posto (escalas-painel-funcoes.js); na troca
+     de viatura com data, embaixo vem "No lugar da ... até ..." */
   function montarTituloPosto(caixa, posto) {
-    var rotulo = caixa.querySelector('.rotulo-secao');
+    var ancora = caixa.querySelector('.rotulo-secao');
+    var F = editavel() && RosterWork.escalasPainelFuncoes;
+    if (F) {
+      var menu = F.titulo(caixa, posto, mudarFuncao);
+      if (menu) {
+        ancora = caixa.querySelector('.escala-posto-titulo');
+        /* depois de gravar a mudança do menu, ele volta aberto no mesmo posto */
+        if (ctx.funcoesMenu === posto.tipo + ':' + posto.id) ctx.reabrirMenu = menu;
+      }
+    }
     var noLugar = pecas().noLugar ? pecas().noLugar(posto) : null;
-    if (noLugar && rotulo) rotulo.insertAdjacentElement('afterend', noLugar);
+    if (noLugar && ancora) ancora.insertAdjacentElement('afterend', noLugar);
+  }
+
+  /* o clique numa caixa do menu Funções do posto: abre a função sem ninguém ou fecha a aberta, na hora, com o Desfazer */
+  function mudarFuncao(posto, mudanca) {
+    if (!ctx || ctx.salvando) return;
+    ctx.funcoesMenu = posto.tipo + ':' + posto.id;
+    mudar(function () {
+      rasc.abertas[mudanca.abrir ? 'abrir' : 'fechar'].push({ viatura_id: vidPosto(posto), instalacao_id: iidPosto(posto),
+        nome_funcao: mudanca.abrir || mudanca.fechar });
+    });
   }
 
   function caixaPosto(posto) {
     var p = pecas();
-    /* posto sem nenhuma função no dia (reserva sem ninguém) não aparece; o Adicionar militar chega nele pelo Onde */
-    if (!(posto.funcoes || []).length) return null;
+    /* posto sem nenhuma função no dia (a reserva sem ninguém, o que fica fora da escala): só quem edita o dia vê, numa
+       linha só, com o ícone Funções do posto; o Adicionar militar também chega nele pelo Onde */
+    if (!(posto.funcoes || []).length && !editavel()) return null;
     var caixa = RosterWork.painel.criarCaixa(posto.nome);
     if (!caixa) return null;
     montarTituloPosto(caixa, posto);
-    /* o vermelho (cadeira vazia ou horário sem ninguém) vence o amarelo */
+    /* o posto sem ninguém fica sem cor (o que falta nele vai no aviso do topo do dia) */
+    if (!(posto.funcoes || []).length) return caixa;
+    /* o vermelho (cadeira vazia ou horário sem ninguém) vence o amarelo; a função aberta sem ninguém não é erro */
     var np = p.nivelPosto(posto);
-    if (np !== 'erro' && (posto.funcoes || []).some(function (f) { return f.vazio || (f.vao || []).length; })) np = 'erro';
+    if (np !== 'erro' && (posto.funcoes || []).some(function (f) {
+      return (f.vazio && f.vazio_motivo !== 'aberta') || (f.vao || []).length;
+    })) np = 'erro';
     if (np) caixa.classList.add('grupo-caixa--posto-' + np);
     p.mesclarFuncoes(posto).forEach(function (f) { linhasFuncao(caixa, posto, f); });
     return caixa;
@@ -952,7 +986,13 @@
     if (ctx.admin) notasPapeis(corpo, dados);
     var alguem = false;
     function por(caixa) { if (caixa) { corpo.appendChild(caixa); alguem = true; } }
-    (dados.postos || []).forEach(function (posto) { por(caixaPosto(posto)); });
+    /* o posto sem ninguém (só para quem edita) entra na lista, mas não tira o "Sem distribuição" do dia vazio */
+    ctx.reabrirMenu = null;
+    (dados.postos || []).forEach(function (posto) {
+      var caixa = caixaPosto(posto);
+      if (caixa && !(posto.funcoes || []).length) corpo.appendChild(caixa);
+      else por(caixa);
+    });
     por(caixaSemFuncao(dados.sem_funcao || []));
     por(caixaFolgas(dados.folgas || []));
     /* dia sem ninguém: o estado vazio, nunca a tela em branco */
@@ -968,6 +1008,10 @@
        para quem administra o pelotão (escalas-sysbm.js) */
     if (ctx.admin && !ctx.dadosProntos && !ctx.comparar && RosterWork.escalasSysbm) RosterWork.escalasSysbm.montar(corpo, ctx.unidadeId, ctx.iso);
     atualizarRodape();
+    /* o menu Funções do posto que gravou uma mudança volta aberto */
+    ctx.funcoesMenu = null;
+    if (ctx.reabrirMenu && RosterWork.abrirDropdown) RosterWork.abrirDropdown(ctx.reabrirMenu);
+    ctx.reabrirMenu = null;
   }
 
   /* ---------- rodapé do dia: quem já mexeu no dia (relido depois de cada mudança) ---------- */

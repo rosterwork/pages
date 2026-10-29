@@ -290,8 +290,8 @@
       var b = +bt.getAttribute('data-bloco'), on = marcados.indexOf(b) >= 0;
       bt.classList.toggle('escala-extra-marca--on', on);
       bt.setAttribute('aria-pressed', on ? 'true' : 'false');
-      /* com o pedido aberto só dá para desmarcar */
-      bt.disabled = G().travado() && !on;
+      /* com o pedido aberto só dá para desmarcar; na Distribuição já lançada, nada (as mudanças vão pelos Ajustes) */
+      bt.disabled = G().soLeitura() || (G().travado() && !on);
       bt.addEventListener('click', function (ev) {
         ev.stopPropagation();   // no calendário, a bolinha não abre o painel do dia
         var novo = m.so24 ? (marcados.length ? [] : [1, 2, 3, 4]) : (on ? marcados.filter(function (x) { return x !== b; }) : marcados.concat([b]));

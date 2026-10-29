@@ -2795,6 +2795,24 @@
     <span class="escala-posto-no-lugar"></span>
   </template>
 
+  <!-- a linha do título do posto, para quem edita o dia (escalas-painel-funcoes.js): o nome (o .rotulo-secao da caixa,
+       posto aqui pelo JS), o texto do posto sem ninguém e, na ponta direita, o ícone Funções do posto, com o menu das
+       caixas de marcar (o título e as caixas vêm do JS) -->
+  <template id="tpl-escala-posto-titulo">
+    <div class="escala-posto-titulo">
+      <span class="escala-posto-vazio oculto">Vazio, fora da escala</span>
+      <div class="dropdown escala-posto-funcoes">
+        <button type="button" class="botao-discreto escala-posto-funcoes-botao" aria-label="Funções do posto" data-dica="Funções">
+          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lista"/></svg>
+        </button>
+        <div class="dropdown-menu escala-posto-funcoes-menu">
+          <div class="dropdown-titulo"></div>
+          <div class="escala-marcar-lista escala-posto-funcoes-lista"></div>
+        </div>
+      </div>
+    </div>
+  </template>
+
   <template id="tpl-escala-vaga-vazia">
     <div class="escala-vaga-vazia">
       <svg class="icone escala-vaga-vazia-icone" width="16" height="16"><use href="icones/todos.svg#icone-alerta"></use></svg>
