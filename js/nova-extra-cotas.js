@@ -161,8 +161,10 @@
       alvo.appendChild(bloco);
     });
     q('#p2-vazio').classList.toggle('oculto', visiveis.length > 0);
-    /* o rodapé: repartido acima do recebido diz onde, e o Salvar fica desligado; o Desfazer depois do Preencher */
+    /* o rodapé, que aparece só com alteração (ou com o repartido acima do recebido): o repartido acima do recebido diz
+       onde, e o Salvar fica desligado; o Desfazer depois do Preencher */
     var perdem = lista.filter(perde).length, erro = passou();
+    q('#p2-rodape').classList.toggle('oculto', !p2.sujo && !erro);
     q('#p2-mudancas').textContent = erro || (perdem ? msg().naoSalvoRetira(perdem) : (p2.sujo ? msg().naoSalvo : ''));
     q('#p2-mudancas').classList.toggle('nova-extra-negativo', !!erro);
     q('#p2-salvar').disabled = !p2.sujo || !!erro;

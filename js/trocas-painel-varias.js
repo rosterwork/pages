@@ -13,7 +13,7 @@
    as trocas de antes; as trocas com uma alteração esperando trazem o
    aviso no alto e ficam sem o Editar. Editar (no rodapé,
    só na página Trocas): a aba Várias trocas em modo Editar, com o
-   plano que vale hoje (trocas-varias-editar.js), no painel largo.
+   plano que vale hoje (trocas-varias-editar.js), no mesmo painel.
    Expõe RosterWork.trocasPainelVarias.abrir(troca, ctx) e acao(nome, troca, ctx, botao)
    (as mesmas ações fora do painel: o cartão que abre ali mesmo)
      troca = uma troca do registro (a primeira, nas Pendências);
@@ -244,7 +244,6 @@
       aoMudarModo: function (modo) {
         if (atual !== t) return;
         if (modo === 'editar') { abrirEdicao(t, ctx); return; }
-        RW.painel.largo(false);   // a leitura volta ao painel normal
         desenharLeitura(t, ctx);
       },
       /* o X e o Esc durante a edição: com algo mudado, confirma o descarte */

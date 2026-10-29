@@ -1,6 +1,6 @@
 /* ============================================================
    TROCAS — o formulário da troca (Solicitar troca e Registrar troca)
-   O trocas-solicitar.js abre o painel largo e chama montar(). Aqui
+   O trocas-solicitar.js abre o painel e chama montar(). Aqui
    ficam o E-protocolo, os militares da troca (no Solicitar, o
    primeiro é quem pede; no Registrar, a lista começa vazia e o admin
    não entra), o rodapé e o envio do pedido (um registro só, com o
@@ -213,7 +213,7 @@
   /* ---------- montar, dados e encerrar ---------- */
   function montar(opcoes) {
     var raiz = RW.tpl('tpl-troca-varias');
-    if (!raiz || !RW.painel.largo) return;
+    if (!raiz) return;
     var registrar = !!opcoes.registrar, ed = opcoes.editar || null;
     opcoes.corpo.appendChild(raiz);
     var plano = ed ? ed.plano : null;

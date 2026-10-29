@@ -717,6 +717,7 @@
 .guia-forma--sombra-flutuante { border-radius: var(--raio-medio); box-shadow: var(--sombra-flutuante); }
 .guia-forma--sombra-modal { border-radius: var(--raio-medio); box-shadow: var(--sombra-modal); }
 .guia-forma--sombra-painel { border-radius: var(--raio-medio); box-shadow: var(--sombra-painel); }
+.guia-forma--sombra-rodape { border-radius: var(--raio-medio); box-shadow: var(--sombra-rodape); }
 
 /* exceções documentadas: a canaleta do que foi mexido e o anel de 2px da célula escolhida */
 .guia-forma--canaleta { border-radius: var(--raio-pequeno); box-shadow: inset 2px 0 0 var(--borda-forte); }

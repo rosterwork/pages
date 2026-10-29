@@ -42,7 +42,7 @@
   color: var(--texto-suave);
 }
 
-/* ---------- painel Solicitar extra (largo) ---------- */
+/* ---------- painel Solicitar extra ---------- */
 .extra-sol {
   display: flex;
   flex-direction: column;
@@ -299,10 +299,6 @@
 .extra-vol-respondeu {
   font-size: 12px;
   color: var(--texto-fraco);
-}
-.extra-vol-mudancas {
-  font-size: 12px;
-  color: var(--texto-suave);
 }
 /* o nome de cada número na linha do voluntário: só no celular (no computador, o cabeçalho das colunas) */
 .extra-vol-rotulo {
@@ -590,12 +586,6 @@
 
 /* etiqueta "24h" do fecha 24 h: contornada e com texto forte, p/ marcar o turno fixo (visível, não só na dica) */
 .extra-vaga-24h { font-size: 11px; color: var(--texto-forte); border: 1px solid var(--borda-forte); border-radius: var(--raio-pequeno); padding: 0 4px; }
-
-/* ---------- aba Distribuição: o rodapé (Salvar e Lançar na escala) ---------- */
-.extra-lancar-texto {
-  font-size: 12px;
-  color: var(--texto-fraco);
-}
 
 /* ============================================================
    ABA RELATÓRIOS: as etapas do mês (esquerda) e a prévia dos ajustes (direita)
@@ -941,32 +931,6 @@
   html[data-celular] .extra-escalar-nota,
   html[data-celular] .extra-pincel-ajuda {
     display: none;
-  }
-
-  /* ---------- rodapés (Voluntários e Distribuição): o texto em cima, os botões dividindo a largura ---------- */
-  html[data-celular] .extra-vol .rodape-linha,
-  html[data-celular] .extra-montagem .rodape-linha {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  html[data-celular] .extra-vol .rodape-linha > .espacador-flex,
-  html[data-celular] .extra-montagem .rodape-linha > .espacador-flex,
-  html[data-celular] .extra-vol-mudancas:empty,
-  html[data-celular] .extra-lancar-texto:empty {
-    display: none;
-  }
-
-  html[data-celular] .extra-vol .rodape-acoes,
-  html[data-celular] .extra-montagem .rodape-acoes {
-    flex: 1 1 100%;
-  }
-
-  html[data-celular] .extra-vol .rodape-acoes > .botao,
-  html[data-celular] .extra-montagem .rodape-acoes > .botao {
-    flex: 1 1 auto;
-    min-width: 0;
-    white-space: normal;
   }
 
   /* ---------- Relatórios: as etapas em cima e a prévia embaixo ---------- */

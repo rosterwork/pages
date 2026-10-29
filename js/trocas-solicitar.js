@@ -1,6 +1,6 @@
 /* ============================================================
    TROCAS — o painel Solicitar troca / Registrar troca
-   Abre o painel largo com o formulário da troca (trocas-varias.js:
+   Abre o painel com o formulário da troca (trocas-varias.js:
    os militares, os dias no calendário e o resumo com o horário de
    cada dia, num registro só). Solicitar: o logado pede (é o
    primeiro militar). Registrar (só admin): grava já aprovado, com a
@@ -85,12 +85,12 @@
   /* o painel avisa ao fechar (X/Esc/Cancelar/sucesso): o formulário some, então marca fechado */
   function aoFecharReset() { aberto = false; if (RW.trocasVarias) RW.trocasVarias.encerrar(); }
 
-  /* ---------- abrir: o painel largo com o formulário da troca ---------- */
+  /* ---------- abrir: o painel com o formulário da troca ---------- */
   function abrir(opcoes) {
     if (!RW.painel || !RW.trocasVarias) return;
     opcoes = opcoes || {};
     var registrar = !!opcoes.registrar;
-    RW.painel.abrir({ titulo: registrar ? txt('tituloRegistrar') : txt('tituloPainel'), largo: true, aoFechar: aoFecharReset, aoTentarFechar: guardaFechar });
+    RW.painel.abrir({ titulo: registrar ? txt('tituloRegistrar') : txt('tituloPainel'), aoFechar: aoFecharReset, aoTentarFechar: guardaFechar });
     var corpo = RW.painel.corpo();
     corpo.textContent = '';
     aberto = true;

@@ -30,6 +30,11 @@
     if (!botao || !RosterWork.filtroArvore) return null;
     var menu = botao.querySelector('.filtros-menu');
     var contagem = botao.querySelector('.filtros-contagem');
+    /* só com o ícone (.filtros--icone): o nome do botão vira a dica */
+    if (caixa.classList.contains('filtros--icone')) {
+      var nome = botao.querySelector('.botao > span:not(.filtros-contagem)');
+      botao.querySelector('.botao').setAttribute('data-dica', nome ? nome.textContent : '');
+    }
 
     /* as etiquetas da linha "Filtros:" e o número no botão; a linha some sem filtro ligado
        (ou com os filtros escondidos) */

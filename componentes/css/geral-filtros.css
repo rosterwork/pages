@@ -21,6 +21,32 @@
   padding: 8px;
 }
 
+/* variante só com o ícone (.filtros--icone, também no computador): o nome segue para o leitor de tela e vira a dica,
+   sem a seta; o número de filtros ligados no canto, como no celular */
+.filtros--icone .filtros-botao > .botao {
+  position: relative;
+  min-width: var(--botao-altura);
+  padding: 0;
+  gap: 0;
+}
+
+.filtros--icone .filtros-botao > .botao > span:not(.filtros-contagem) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.filtros--icone .filtros-botao > .botao > .seletor-seta { display: none; }
+
+.filtros--icone .filtros-contagem {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+}
+
 /* ---------- linha "Filtros:" embaixo da barra (só aparece com filtro ligado) ---------- */
 .filtros-ativos {
   display: flex;

@@ -359,13 +359,14 @@
       pediu: function (p) {
         return 'Pedido enviado em ' + p.enviado_em + ': ' + p.cotas + (p.cotas === 1 ? ' cota' : ' cotas') + (p.so_24h ? ', só 24 h' : '')
           + ', ' + p.quer.length + (p.quer.length === 1 ? ' dia que quer' : ' dias que quer')
-          + (p.nao_posso.length ? ', ' + p.nao_posso.length + (p.nao_posso.length === 1 ? ' que não pode' : ' que não pode') : '')
+          + (p.nao_posso.length ? ', ' + p.nao_posso.length + (p.nao_posso.length === 1 ? ' que não quer' : ' que não quer') : '')
           + '. Termo ' + (p.termo ? 'recebido em ' + p.termo_em : 'pendente') + '.';
       },
       naoQuer: function (em) { return 'Respondeu que não quer extra (' + em + ').'; },
       fazer: 'Fazer o pedido',
       mudar: 'Mudar o pedido',
       ver: 'Ver o pedido',
+      fechadoEm: function (fecha) { return 'Fechado em ' + fecha; },
       cotasDepois: function (fecha) { return 'Depois de ' + fecha + ' o administrador reparte as cotas. Quem foi menos atendido recebe primeiro.'; },
       concedidas: function (n) { return 'Recebeu ' + n + (n === 1 ? ' cota.' : ' cotas.'); },
       tituloPainel: function (mes) { return 'Pedido de extra de ' + mes; },
@@ -373,9 +374,9 @@
       perguntaVol: function (mes) { return 'Quer tirar extra em ' + mes + '?'; },
       contaQuer: function (n) { return 'Quero: ' + n + (n === 1 ? ' dia' : ' dias'); },
       ajudaDias: function (min) { return 'Marque pelo menos ' + min + (min === 1 ? ' dia que você quer' : ' dias que você quer'); },
-      contaNao: function (n) { return 'Não posso: ' + n + (n === 1 ? ' dia' : ' dias'); },
+      contaNao: function (n) { return 'Não quero: ' + n + (n === 1 ? ' dia' : ' dias'); },
       quero: 'Quero',
-      naoPosso: 'Não posso',
+      naoQuero: 'Não quero',
       motivos: { servico: 'Serviço', troca: 'Troca', folga: 'Folga', ferias: 'Férias', licenca: 'Licença', dispensa: 'Dispensa' },
       expediente: 'Expediente',
       folga: 'Folga',
@@ -424,20 +425,17 @@
         lancado: function (e, d) { return e + (e === 1 ? ' extra lançada' : ' extras lançadas') + ' em ' + d + (d === 1 ? ' dia.' : ' dias.'); },
         relAjustesPeriodo: function (ini, fim) { return ini + ' a ' + fim + '. Feitos na Distribuição, no passo 3, com o motivo.'; },
         colocadas: function (n, t) { return n + ' de ' + t + ' cotas colocadas'; },
-        diasFalta: function (n) { return n ? n + (n === 1 ? ' dia com falta de gente' : ' dias com falta de gente') : 'Nenhum dia com falta de gente'; },
-        cobertura: 'Cobertura do dia',
         faltaGenteHoras: function (h) { return 'Ainda falta gente de ' + h + '.'; },
         faltaCondutorHoras: function (h, cnh) { return 'Ainda falta condutor de ' + h + (cnh ? ', CNH ' + cnh : '') + '.'; },
         faltaCoberta: 'As extras cobrem a falta deste dia.',
-        grupos: { neste: 'Neste dia', querem: 'Querem este dia', disp: 'Sem preferência', naoQuerem: 'Não podem este dia', indisp: 'Indisponíveis' },
+        grupos: { neste: 'Neste dia', querem: 'Querem este dia', disp: 'Sem preferência', naoQuerem: 'Não querem este dia', indisp: 'Indisponíveis' },
         /* o relatório do dia */
-        relatorioDia: 'Relatório do dia',
         rdSistema: 'O sistema colocou',
         rdAdmin: function (quem) { return (quem || 'O administrador') + ' colocou'; },
         rdHoras: function (h, para) { return 'das ' + h + (para ? ', para ' + para : '') + '.'; },
         para: { condutorGente: 'cobrir a falta de condutor e de gente', condutor: 'cobrir a falta de condutor', gente: 'cobrir a falta de gente',
           chefe: 'liberar o chefe da direção', ideal: 'completar o efetivo ideal', menosGente: 'reforçar o horário com menos gente' },
-        pref: { quer: 'Marcou Quero neste dia.', nao: 'Marcou Não posso neste dia.', sem: 'Sem preferência neste dia.' },
+        pref: { quer: 'Marcou Quero neste dia.', nao: 'Marcou Não quero neste dia.', sem: 'Sem preferência neste dia.' },
         aindaPodem: function (q, s) {
           var partes = [];
           if (q) partes.push(q + (q === 1 ? ' que quer o dia' : ' que querem o dia'));
@@ -446,7 +444,7 @@
         },
         ninguemPode: function (nao, semCota, outros) {
           var partes = [];
-          if (nao) partes.push(nao + (nao === 1 ? ' marcou Não posso' : ' marcaram Não posso'));
+          if (nao) partes.push(nao + (nao === 1 ? ' marcou Não quero' : ' marcaram Não quero'));
           if (semCota) partes.push(semCota + (semCota === 1 ? ' está sem cota' : ' estão sem cota'));
           if (outros) partes.push(outros + (outros === 1 ? ' está de serviço, de folga ou afastado' : ' estão de serviço, de folga ou afastados'));
           return 'Ninguém mais pode' + (partes.length ? ': ' + (partes.length > 1 ? partes.slice(0, -1).join(', ') + ' e ' + partes[partes.length - 1] : partes[0]) : '') + '.';
@@ -466,11 +464,8 @@
         expedienteDiaTodo: 'Expediente o dia todo',
         semCotas: 'Sem cotas sobrando',
         deCotas: function (u, c) { return u + ' de ' + c; },
-        expedienteAte: function (h) { return 'Expediente até ' + h; },
         so24: 'Só 24 h',
         condutor: 'Condutor',
-        diaOutro: function (dd) { return 'dia ' + dd; },
-        diaSemana: function (dd, sem) { return 'dia ' + dd + ' · ' + sem; },
         horasN: function (n) { return n + 'h'; },
         /* as extras que saem ao salvar (termo desmarcado ou cota abaixo do que está na grade) */
         listaDias: function (dias) { return dias.length > 1 ? dias.slice(0, -1).join(', ') + ' e ' + dias[dias.length - 1] : dias[0]; },
@@ -484,9 +479,11 @@
         },
         naoSalvoRetira: function (k) { return 'Mudanças não salvas. As extras de ' + k + (k === 1 ? ' militar saem ao salvar.' : ' militares saem ao salvar.'); },
         pedidoAberto: function (fecha) { return 'O pedido está aberto até ' + fecha + '. A distribuição só pode ser salva depois que ele fecha.'; },
-        /* passo 3: o resumo, a lista dos voluntários e a trava das cotas (calendário, lista e painel do dia) */
-        cotasSobrando: function (n) { return n + (n === 1 ? ' cota sobrando' : ' cotas sobrando'); },
+        /* passo 3: a lista dos voluntários e a trava das cotas (calendário, lista e painel do dia) */
         diaData: function (sem, dm) { return sem + ' ' + dm; },
+        jaEmOutro: function (pel) { return 'Já está de extra no ' + pel + ' neste dia. Para pôr aqui, tire de lá antes.'; },
+        focoTexto: function (nome, u, c) { return 'Mostrando os dias de ' + nome + ' · ' + u + ' de ' + c + (c === 1 ? ' cota' : ' cotas'); },
+        saiAoSalvar: 'Sai ao salvar',
         cotaCheia: function (nome, n) {
           return nome + (n === 1 ? ' já usou a única cota.' : ' já usou as ' + n + ' cotas.') + ' Para marcar este horário, tire antes um horário de outro dia.';
         },
@@ -1961,6 +1958,8 @@
 
     /* app no celular: o passo a passo quando o navegador não abre a janela de instalação */
     aplicativo: {
+      telaCheia: 'Tela cheia',
+      sairTelaCheia: 'Sair da tela cheia',
       instalarIphone: 'Para instalar no iPhone, abra o sistema no Safari, toque em Compartilhar e depois em Adicionar à Tela de Início.',
       instalarAndroid: 'Para instalar, toque no menu do navegador (os três pontos) e depois em Instalar app ou Adicionar à tela inicial. Se o app já estiver instalado, abra pelo ícone Roster Work na tela do celular.'
     },

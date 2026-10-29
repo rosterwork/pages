@@ -132,8 +132,9 @@
   --sombra-bloco:     0 1px 3px rgb(0 0 0 / 0.06), 0 1px 2px rgb(0 0 0 / 0.04);
   --sombra-flutuante: 0 1px 2px rgb(0 0 0 / 0.06), 0 4px 8px -2px rgb(0 0 0 / 0.10), 0 12px 24px -4px rgb(0 0 0 / 0.16);
   --sombra-modal:     0 20px 32px -8px rgb(0 0 0 / 0.16), 0 8px 16px -4px rgb(0 0 0 / 0.10);
-  /* a do painel lateral cai só para a esquerda, sobre a página */
+  /* a do painel lateral cai só para a esquerda, sobre a página; a do rodapé sobe, sobre a lista */
   --sombra-painel:    -1px 0 3px rgb(0 0 0 / 0.06), -16px 0 32px -12px rgb(0 0 0 / 0.22);
+  --sombra-rodape:    0 -1px 3px rgb(0 0 0 / 0.06), 0 -16px 32px -12px rgb(0 0 0 / 0.22);
 
   /* -------------------------------------------------------
      Tamanhos da tela — medidas que mudam conforme o aparelho
@@ -146,8 +147,7 @@
   --respiro-pagina:          16px;   /* respiro do cabeçalho, da barra e do corpo da página */
   --menu-largura:           180px;   /* menu lateral aberto */
   --menu-largura-recolhido:  52px;   /* menu lateral recolhido (só ícones) */
-  --painel-largura:         400px;   /* painel lateral */
-  --painel-largura-largo:   560px;   /* painel lateral largo (config.largo) */
+  --painel-largura:         480px;   /* painel lateral (uma largura só, em todas as telas) */
   --modal-largura:          480px;   /* modal */
   --modal-largura-pequeno:  380px;   /* aviso, data e sessão */
   --modal-respiro:           24px;   /* distância mínima do modal às bordas da tela */
@@ -168,7 +168,6 @@
   --rotulo-secao-fonte-celular:      12px;
   --modal-respiro-celular:           16px;
   --painel-largura-celular:          100%;   /* o painel cobre a tela */
-  --painel-largura-largo-celular:    100%;
   --modal-largura-celular:           100%;   /* na largura da tela, menos o respiro */
   --modal-largura-pequeno-celular:   100%;
   --busca-largura-celular:           100%;
@@ -262,6 +261,7 @@ html[data-tema="escuro"] {
   /* no fundo escuro a sombra precisa ser bem mais forte para aparecer */
   --sombra-flutuante: 0 1px 2px rgb(0 0 0 / 0.40), 0 4px 8px -2px rgb(0 0 0 / 0.45), 0 12px 24px -4px rgb(0 0 0 / 0.60);
   --sombra-painel:    -1px 0 3px rgb(0 0 0 / 0.50), -16px 0 32px -12px rgb(0 0 0 / 0.90);
+  --sombra-rodape:    0 -1px 3px rgb(0 0 0 / 0.50), 0 -16px 32px -12px rgb(0 0 0 / 0.90);
 }
 
 /* -------------------------------------------------------
@@ -282,7 +282,6 @@ html[data-tema="escuro"] {
     --rotulo-secao-fonte:     var(--rotulo-secao-fonte-celular);
     --modal-respiro:          var(--modal-respiro-celular);
     --painel-largura:         var(--painel-largura-celular);
-    --painel-largura-largo:   var(--painel-largura-largo-celular);
     --modal-largura:          var(--modal-largura-celular);
     --modal-largura-pequeno:  var(--modal-largura-pequeno-celular);
     --busca-largura:          var(--busca-largura-celular);

@@ -191,8 +191,10 @@ html:not([data-menu-recolhido]) .cabecalho-logo {
     text-overflow: ellipsis;
   }
 
-  /* o tema fica no Meu perfil; o espaçador sai porque o seletor já ocupa o espaço livre */
+  /* o tema fica no Meu perfil e a tela cheia é só do computador; o espaçador sai porque o seletor já ocupa o
+     espaço livre */
   html[data-celular] .cabecalho > .espacador-flex,
+  html[data-celular] .cabecalho-btn--tela-cheia,
   html[data-celular] .cabecalho-btn--tema,
   html[data-celular] .cabecalho-usuario-textos,
   html[data-celular] .cabecalho-usuario-seta {

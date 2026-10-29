@@ -319,7 +319,7 @@
   line-height: 1.5;
 }
 
-/* ---------- Várias trocas (aba do Solicitar troca; o painel fica largo) ---------- */
+/* ---------- Várias trocas (aba do Solicitar troca) ---------- */
 .trocas-varias {
   display: flex;
   flex-direction: column;

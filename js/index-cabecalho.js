@@ -23,6 +23,30 @@
     });
   }
 
+  /* tela cheia (só no computador; no celular o CSS esconde): tira as barras do navegador e do sistema do
+     aparelho. O ícone e a dica acompanham a troca venha de onde vier (o botão, o Esc, o navegador) */
+  var btnTelaCheia = document.getElementById('cabecalho-btn-tela-cheia');
+  var iconeTelaCheia = document.getElementById('cabecalho-icone-tela-cheia');
+  var iconeTelaCheiaSair = document.getElementById('cabecalho-icone-tela-cheia-sair');
+
+  function atualizarTelaCheia() {
+    var cheia = !!document.fullscreenElement;
+    var textos = RosterWork.mensagens.aplicativo;
+    iconeTelaCheia.classList.toggle('oculto', cheia);
+    iconeTelaCheiaSair.classList.toggle('oculto', !cheia);
+    btnTelaCheia.setAttribute('aria-pressed', cheia ? 'true' : 'false');
+    btnTelaCheia.setAttribute('data-dica', cheia ? textos.sairTelaCheia : textos.telaCheia);
+  }
+
+  if (btnTelaCheia) {
+    btnTelaCheia.classList.toggle('oculto', !document.fullscreenEnabled);
+    document.addEventListener('fullscreenchange', atualizarTelaCheia);
+    btnTelaCheia.addEventListener('click', function () {
+      var pedido = document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+      if (pedido && pedido.catch) pedido.catch(function () {});   // recusado pelo navegador: fica como está
+    });
+  }
+
   var btnSair = document.getElementById('btn-sair');
   if (btnSair) {
     btnSair.addEventListener('click', function () {

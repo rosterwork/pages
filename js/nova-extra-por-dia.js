@@ -22,6 +22,7 @@
   var diasCal = {};        // a célula de cada dia no calendário { data: celula }
   var desenhadas = '';     // as unidades do calendário desenhado (ids), para saber quando refazer o mês
 
+  function msg() { return RW.mensagens.novaExtra.org; }
   function u() { return RW.novaExtraUtil; }
   function G() { return RW.novaExtraGrade; }
   function dia() { return RW.novaExtraDia; }
@@ -45,9 +46,17 @@
   }
   function grafico(cob, uid, erro) { return RW.escalasCelula ? RW.escalasCelula.montarGrafico(cob, picos[uid] || 1, erro) : null; }
 
+  /* as unidades do calendário: as do dia a dia e a do militar em foco (para as bolinhas dele) */
+  function unidadesDoCalendario() {
+    var cpf = RW.novaExtraLista.foco(), m = cpf ? u().militar(cpf) : null;
+    return u().doCalendario(G().vagas().concat(m ? [{ unidade: m.unidade_id }] : []));
+  }
+
   function desenhar(lugar) {
     alvo = lugar;
-    var d = G().dados(), alocs = G().efetivas(), unidades = u().doCalendario(G().vagas());
+    var d = G().dados(), alocs = G().efetivas(), unidades = unidadesDoCalendario();
+    /* com um militar em foco, os outros nomes somem (as vagas e a escala) */
+    alvo.classList.toggle('nova-extra-dist-cal--foco', !!RW.novaExtraLista.foco());
     diasCal = {};
     desenhadas = unidades.map(function (un) { return un.id; }).join(',');
     calcularPicos(alocs);
@@ -83,23 +92,60 @@
     var aqui = G().vagas().filter(function (a) { return +a.unidade === un.id && a.data === k; })
       .sort(function (x, y) { return Math.min.apply(null, G().blocos(x)) - Math.min.apply(null, G().blocos(y)) || u().nome(x.cpf).localeCompare(u().nome(y.cpf)); });
     var comExtra = aqui.some(function (a) { return a.blocos.length; });
-    var antes = G().antesDe(un.id, k);
+    /* o gráfico (com as extras) e, com o filtro Escala completa, quem está de serviço no dia, em cima das extras */
+    var antes = G().antesDe(un.id, k), F = RW.novaExtraFiltros;
     if (antes) {
       var dep = comExtra ? G().depoisDe(un.id, k, alocs, falta) : null;
-      var g = dep ? grafico(dep.cobertura, un.id, dep.erro) : grafico(antes, un.id, G().erroAntes(un.id, k));
-      if (g) cel.appendChild(g);
+      var cob = dep ? dep.cobertura : antes, erro = dep ? dep.erro : G().erroAntes(un.id, k);
+      if (F.escalaCompleta() && RW.escalasCelula) RW.escalasCelula.preencherCelula(cel, cob, erro, G().deServico(un.id, k), picos[un.id] || 1);
+      else {
+        var g = grafico(cob, un.id, erro);
+        if (g) cel.appendChild(g);
+      }
     }
-    aqui.forEach(function (a) { cel.appendChild(u().vaga(a, un.id)); });
+    var foco = RW.novaExtraLista.foco();
+    aqui.forEach(function (a) {
+      var vg = u().vaga(a, un.id);
+      if (a.cpf === foco) vg.classList.add('nova-extra-foco');
+      cel.appendChild(vg);
+    });
+    if (foco) focoNoBloco(cel, un.id, k, foco);
     b.addEventListener('click', function () { dia().abrir(un.id, k); });
     b.addEventListener('keydown', function (ev) { if (ev.target === b && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); dia().abrir(un.id, k); } });
     return b;
+  }
+
+  /* o militar em foco no bloco de cada pelotão, em todos os dias: as bolinhas grandes numa linha só delas, embaixo do
+     nome quando ele já está ali, na cor do que ele marcou no pedido; no dia em que não pode, o motivo (serviço, folga,
+     férias e afins). Já de extra em outro pelotão no dia, as bolinhas daqui ficam apagadas e a dica diz para tirar de lá
+     antes (é uma extra por dia). As bolinhas seguem a trava das cotas (RosterWork.novaExtraGrade.mudar) */
+  function focoNoBloco(cel, uid, k, cpf) {
+    var m = u().militar(cpf), v = G().vagaDe(cpf, k);
+    if (!m) return;
+    var impede = v ? null : G().impedimento(m, k);
+    if (impede) {
+      var selo = RW.tpl('tpl-ne-foco-selo');
+      selo.querySelector('.selo').textContent = impede;
+      cel.appendChild(selo);
+      return;
+    }
+    var linha = RW.tpl('tpl-ne-foco-marcas'), outro = !!v && +v.unidade !== uid;
+    linha.classList.add('nova-extra-foco-linha--' + u().pref(m, k));
+    var marcas = linha.querySelector('.escala-extra-marcas');
+    RW.novaExtraDia.ligarMarcas(marcas, m, k, v && !outro ? G().blocos(v) : [], uid);
+    if (outro) {
+      linha.classList.add('nova-extra-foco-linha--outro');
+      linha.setAttribute('data-dica', msg().jaEmOutro((u().unidade(v.unidade) || {}).nome || ''));
+      Array.prototype.forEach.call(marcas.querySelectorAll('.escala-extra-marca'), function (bt) { bt.disabled = true; });
+    }
+    cel.appendChild(linha);
   }
 
   /* refaz só os blocos de um dia (a régua das barras muda ou a companhia entra ou sai do calendário: refaz o mês) */
   function atualizarDia(k) {
     var cel = diasCal[k];
     if (!cel || !cel.isConnected) return;
-    var alocs = G().efetivas(), unidades = u().doCalendario(G().vagas()), cresceu = false;
+    var alocs = G().efetivas(), unidades = unidadesDoCalendario(), cresceu = false;
     unidades.forEach(function (un) {
       var dep = G().depoisDe(un.id, k, alocs, G().faltaDoDia(un.id, k, alocs));
       if (dep && dep.cobertura.some(function (n) { return n > (picos[un.id] || 0); })) cresceu = true;

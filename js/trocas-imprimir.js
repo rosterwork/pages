@@ -1,6 +1,6 @@
 /* ============================================================
    TROCAS — Imprimir trocas (o botão Imprimir da barra → painel)
-   O painel direito largo, em três caixas: 1. as trocas do mês (as do
+   O painel direito, em três caixas: 1. as trocas do mês (as do
    militar e, para o administrador, também as da área dele; todas já
    marcadas), 2. o texto para a Parte (Informo, no passado, ou
    Solicito, no futuro), pronto para copiar, e 3. o PDF (Lista,
@@ -310,7 +310,7 @@
   function abrir() {
     if (!RW.painel) return;
     fecharLimpo();
-    RW.painel.abrir({ titulo: msg().titulo, subtitulo: msg().subtitulo, largo: true, aoFechar: fecharLimpo });
+    RW.painel.abrir({ titulo: msg().titulo, subtitulo: msg().subtitulo, aoFechar: fecharLimpo });
     var corpo = RW.painel.corpo();
     var rodape = RW.painel.rodape();
     var molde = document.getElementById('tpl-troca-imprimir');

@@ -68,7 +68,7 @@
     elRodape.classList.add('oculto');
   }
 
-  /* abre o painel. config = { titulo, tituloExtra?, subtitulo, editavel?, modoFixo?, largo?, aoMudarModo?(modo), aoFechar?(), aoTentarFechar?()->bool }
+  /* abre o painel. config = { titulo, tituloExtra?, subtitulo, editavel?, modoFixo?, aoMudarModo?(modo), aoFechar?(), aoTentarFechar?()->bool }
      a linha das abas/corpo/sub-cabeçalho/rodapé nascem vazios; a página preenche pelos getters abaixo */
   function abrir(config) {
     if (!painel) return;
@@ -101,7 +101,6 @@
     limparConteudo();
     aoFecharAtual = config.aoFechar || null;
     aoTentarFecharAtual = config.aoTentarFechar || null;
-    painel.classList.toggle('painel-lateral--largo', !!config.largo);  // 400px (padrão) ou 560px
     painel.classList.add('painel-lateral--aberto');
     if (window.RosterWork.voltar && window.RosterWork.celular && window.RosterWork.celular()) {
       window.RosterWork.voltar.empilhar(aoVoltar);
@@ -125,7 +124,6 @@
     if (!estaAberto()) return;
     if (window.RosterWork.voltar) window.RosterWork.voltar.desempilhar(aoVoltar);   /* fechou pelo X, Salvar etc.: tira a entrada do voltar */
     painel.classList.remove('painel-lateral--aberto');
-    painel.classList.remove('painel-lateral--largo');
     limparConteudo();
     var cb = aoFecharAtual;
     aoFecharAtual = null;
@@ -301,8 +299,6 @@
     fechar: fechar,
     estaAberto: estaAberto,
     definirTitulos: definirTitulos,
-    /* muda a largura com o painel aberto (a aba que precisa de espaço: ex., Várias trocas do Solicitar troca) */
-    largo: function (sim) { if (painel) painel.classList.toggle('painel-lateral--largo', !!sim); },
     linhaAbas: function () { return elLinhaAbas; },
     corpo: function () { return elCorpo; },
     subcabecalho: function () { return elSubcabecalho; },

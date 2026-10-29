@@ -23,6 +23,7 @@
   var d = null;           // a resposta do nova_extra_mes
   var aba = null;         // 'passo', 'calendario' ou null (na Minha extra)
   var passo = null;       // o passo aberto (1 a 5)
+  var vez = 1;            // o passo da vez (o primeiro ainda não feito)
   var pedido = 0;         // latest-wins
   var p1 = null;          // edição do passo 1
 
@@ -45,31 +46,35 @@
     militar: function (cpf) { return (d && d.militares.filter(function (m) { return m.cpf === cpf; })[0]) || null; },
     unidade: function (id) { return (d && d.unidades.filter(function (u) { return u.id === +id; })[0]) || null; },
     nome: function (cpf) { var m = util.militar(cpf); return m ? m.grad + ' ' + m.nome : cpf; },
-    /* o que o militar marcou no pedido para o dia: 'quer', 'nao' (Não posso) ou 'sem' (sem preferência) */
+    /* o que o militar marcou no pedido para o dia: 'quer', 'nao' (Não quero) ou 'sem' (sem preferência) */
     pref: function (m, k) { return (m.quer || []).indexOf(k) >= 0 ? 'quer' : (m.nao_posso || []).indexOf(k) >= 0 ? 'nao' : 'sem'; },
-    /* a extra no bloco do dia, só para ler (as bolinhas ficam no painel do dia e na lista): o ponto da preferência,
-       posto e nome (inteiro na dica) e o horário escrito (24h, um pedaço ou "sem horário"); embaixo, o pelotão quando
-       é de outro e o horário em dois pedaços, que não cabe na linha do nome */
+    /* a extra no bloco do dia, só para ler (marcar é no painel do dia e na lista): o posto e o nome e as 4 bolinhas
+       pequenas dos horários, sem clique, na cor do que ele marcou no pedido; na dica, o nome inteiro e o horário
+       escrito; embaixo, o pelotão quando é de outro */
     vaga: function (a, uid) {
       var m = util.militar(a.cpf) || {}, blocos = a.blocos.map(Number);
       var v = RW.tpl('tpl-ne-vaga');
-      v.querySelector('.extra-vaga-origem').classList.add({ quer: 'extra-dia-ponto--quer', nao: 'extra-dia-ponto--nao', sem: 'extra-dia-ponto--neutro' }[util.pref(m, a.data)]);
       v.querySelector('.extra-vaga-grad').textContent = m.grad || '';
       v.querySelector('.extra-vaga-nome').textContent = m.nome || a.cpf;
-      v.setAttribute('data-dica', ((m.grad || '') + ' ' + (m.nome || a.cpf)).trim());
+      var horas = blocos.length === 4 ? msg().horasN(24) : blocos.length ? util.horas(blocos) : '';
+      /* sem nenhum horário: em cinza até o Salvar (marcar uma bolinha traz de volta) */
+      v.classList.toggle('nova-extra-vaga--sai', !blocos.length);
+      v.setAttribute('data-dica', ((m.grad || '') + ' ' + (m.nome || a.cpf)).trim() + (horas ? ', ' + horas : ' · ' + msg().saiAoSalvar));
+      v.setAttribute('data-busca', RW.busca ? RW.busca.chave(m) : '');
       var outro = !!m.unidade_id && m.unidade_id !== uid;
       if (outro) {
         var pel = v.querySelector('.extra-vaga-pelotao');
         pel.textContent = (util.unidade(m.unidade_id) || {}).nome || '';
         pel.classList.remove('oculto');
       }
-      var horas = v.querySelector('.nova-extra-vaga-horas'), baixo = v.querySelector('.nova-extra-vaga-baixo');
-      horas.textContent = blocos.length === 4 ? msg().horasN(24) : blocos.length ? util.horas(blocos) : '';
-      horas.classList.toggle('oculto', !blocos.length);
-      v.querySelector('.nova-extra-vaga-sem').classList.toggle('oculto', blocos.length > 0);
-      var partido = blocos.length > 1 && blocos.length < 4 && util.horas(blocos).indexOf(' e ') >= 0;
-      if (partido) baixo.appendChild(horas);
-      baixo.classList.toggle('oculto', !outro && !partido);
+      /* a cor das marcadas é a do que ele marcou no pedido para o dia: verde quer, vermelho não quer, neutra sem preferência */
+      var bol = v.querySelector('.nova-extra-vaga-bol'), pref = util.pref(m, a.data);
+      bol.classList.toggle('nova-extra-vaga-bol--quer', pref === 'quer');
+      bol.classList.toggle('nova-extra-vaga-bol--nao', pref === 'nao');
+      Array.prototype.forEach.call(bol.children, function (b, i) {
+        b.classList.toggle('nova-extra-vaga-bol--on', blocos.indexOf(i + 1) >= 0);
+      });
+      v.querySelector('.nova-extra-vaga-baixo').classList.toggle('oculto', !outro);
       return v;
     },
     /* as unidades da página: todas as da companhia (o seletor de unidades do topo não filtra a Nova extra) */
@@ -100,11 +105,15 @@
     }, function () { if (meu === pedido && aba) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao }); });
   }
 
-  /* a aba aberta (na Minha extra, só os números das abas) */
+  /* a aba aberta (na Minha extra, só os números dos passos); no Organizar o mês sem passo escolhido, abre o da vez */
   function desenharAba() {
-    if (aba === 'calendario') desenharCalendario();
-    else if (aba === 'passo') abrirPasso(passo);
     passosTopo();
+    if (aba === 'calendario') desenharCalendario();
+    else if (aba === 'passo') {
+      if (!passo) passo = vez;
+      RW.novaExtra.passo(passo);
+      abrirPasso(passo);
+    }
   }
 
   function vols() { return d.militares.filter(function (m) { return m.voluntario; }); }
@@ -124,7 +133,8 @@
     });
   }
 
-  /* os números dos passos nas abas e a linha de resumo do alto de cada passo. Um passo só fica feito depois do
+  /* os números dos passos na barra (e o passo da vez: o primeiro ainda não feito) e a linha de resumo do alto de cada
+     passo. Um passo só fica feito depois do
      anterior: o pedido fechou; as cotas foram todas entregues (ou sobraram porque todos já receberam o que pediram);
      as entregues estão todas na distribuição; foi lançado e nada mudou depois. Os Ajustes seguem enquanto o mês corre */
   function passosTopo() {
@@ -134,7 +144,8 @@
     var ok = [d.mes.estado === 'encerrado', cotasOk, entregues > 0 && naGrade() >= entregues, !!d.lancamento && !mudancasDesdeLancamento().length, false];
     var feito = [], agora = -1;
     ok.forEach(function (x, i) { feito[i] = x && (i === 0 || feito[i - 1]); if (!feito[i] && agora < 0) agora = i; });
-    todos('#nova-extra-abas [data-passo]', function (b) {
+    vez = agora + 1;
+    todos('#nova-extra-passos [data-passo]', function (b) {
       var i = +b.getAttribute('data-passo') - 1, num = b.querySelector('.nova-extra-aba-num');
       num.classList.toggle('nova-extra-aba-num--feito', feito[i]);
       num.classList.toggle('nova-extra-aba-num--agora', i === agora);
@@ -209,6 +220,8 @@
     });
     q('#p1-vazio').classList.toggle('oculto', lista.length > 0);
     var n = Object.keys(p1.termos).length;
+    /* o rodapé de salvar aparece só com alteração */
+    q('#p1-rodape').classList.toggle('oculto', !n);
     q('#p1-mudancas').textContent = n ? msg().termosMudados(n) : '';
     q('#p1-salvar').disabled = !n;
   }
@@ -346,11 +359,12 @@
     RW.novaExtra.legenda(null);
   }
 
-  /* abre o Calendário ('calendario') ou um passo (1 a 5); o mês já lido não é lido de novo (os rascunhos ficam) */
+  /* abre o Calendário ('calendario'), um passo (1 a 5) ou o Organizar o mês (null: o passo escolhido antes ou, na
+     primeira vez, o da vez); o mês já lido não é lido de novo (os rascunhos ficam) */
   function mostrar(nome) {
     sair();
     aba = nome === 'calendario' ? 'calendario' : 'passo';
-    if (aba === 'passo') passo = nome;
+    if (typeof nome === 'number') passo = nome;
     if (!d || d.competencia !== RW.novaExtra.comp()) carregar();
     else desenharAba();
   }

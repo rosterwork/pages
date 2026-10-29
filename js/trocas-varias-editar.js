@@ -125,7 +125,6 @@
     if (carregando) corpo.appendChild(carregando);
     rodape.textContent = '';
     rodape.classList.add('oculto');
-    RW.painel.largo(true);
     var meu = aberto = { troca: troca, admin: false, aoSalvar: opcoes.aoSalvar, montado: false };
     RW.trocasDados.variasPlano(troca.registro_id).then(function (r) {
       if (aberto !== meu) return;

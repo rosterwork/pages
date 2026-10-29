@@ -274,13 +274,6 @@
         </div>
       </div>
 
-      <div class="perfil-acoes">
-        <span class="campo-ajuda" id="perfil-contagem"></span>
-        <span class="espacador-flex"></span>
-        <button type="button" class="botao" id="perfil-desfazer" disabled>Desfazer</button>
-        <button type="button" class="botao botao--primario" id="perfil-enviar" disabled>Salvar alterações</button>
-      </div>
-
       <div class="perfil-secao">
         <span class="rotulo-secao">Minhas solicitações</span>
         <div class="pedido-lista" id="perfil-minhas"></div>
@@ -322,6 +315,18 @@
       </div>
     </div>
 
+  </div>
+
+  <!-- rodapé de salvar da aba Meus dados (aparece com a aba, pelo data-aba-painel); o formulário rola acima dele -->
+  <div class="rodape rodape-pilha oculto" data-aba-painel="dados">
+    <div class="rodape-linha">
+      <span class="rodape-texto" id="perfil-contagem"></span>
+      <span class="espacador-flex"></span>
+      <div class="rodape-acoes">
+        <button type="button" class="botao" id="perfil-desfazer" disabled>Cancelar</button>
+        <button type="button" class="botao botao--primario" id="perfil-enviar" disabled>Salvar</button>
+      </div>
+    </div>
   </div>
 </div>
 

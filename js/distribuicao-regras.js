@@ -261,7 +261,7 @@
     if (bSalvar) bSalvar.disabled = (n === 0);
     if (bCancelar) bCancelar.disabled = (n === 0);
     var info = rod.querySelector('.regras-rodape-info');
-    if (info) info.textContent = n === 1 ? '1 alteração não salva' : (n ? n + ' alterações não salvas' : '');
+    if (info) info.textContent = n ? RosterWork.mensagens.escala.alteracoesNaoSalvas(n) : '';
   }
   function ligarRodape() {
     var bSalvar = document.querySelector('.regras-salvar');

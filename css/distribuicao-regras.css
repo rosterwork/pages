@@ -145,6 +145,3 @@
 .regras-item-remover:hover { color: var(--texto-forte); }
 
 .regras-grupo-add { margin-top: 2px; }
-
-/* rodapé Salvar/Cancelar (aparece só com alterações não salvas) */
-.regras-rodape-info { flex: 1; min-width: 0; font-size: 12px; color: var(--texto-fraco); }

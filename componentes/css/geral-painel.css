@@ -3,8 +3,8 @@
    Vive DENTRO do bloco de conteúdo, ao lado da página: não cobre
    o cabeçalho nem o menu — EMPURRA a página, que encolhe ao abrir
    (o `.conteudo` é uma linha; ver index-sidebar.css). Sem animação
-   de posição (aparece/some por classe — Guia visual › Camadas, movimento e foco). Largura 400px (larga: 560px),
-   pelos papéis --painel-largura e --painel-largura-largo do tema.
+   de posição (aparece/some por classe — Guia visual › Camadas, movimento e foco). Largura única de 480px,
+   pelo papel --painel-largura do tema (no celular, a tela inteira).
    Casca compartilhada (igual em todas as páginas); o conteúdo é
    montado por cada página com as peças do fim deste arquivo.
    Comportamento: componentes/js/geral-painel.js
@@ -17,13 +17,14 @@
   width: var(--painel-largura);
   flex-shrink: 0;
   min-height: 0;
-  /* z-index 9 (o topo da faixa 1–9, Guia visual › Camadas, movimento e foco), como no celular: o painel
-     pinta acima de tudo o que a página posiciona — as linhas grudadas das grades (sticky) e o conteúdo
-     que vaze por baixo dele (ex.: um botão com data-dica ganha position:relative, geral-dica) —, e
-     assim a sombra da esquerda aparece inteira sobre a página. Isto NÃO muda o "empurra, não
-     sobrepõe" (o painel segue no fluxo, flex). Dropdown/modal/véu/dica (10/20/30/40) continuam acima. */
+  /* z-index 8 (faixa 1–9, Guia visual › Camadas, movimento e foco): o painel pinta acima de tudo o que a
+     página posiciona — as linhas grudadas das grades (sticky, até 6) e o conteúdo que vaze por baixo
+     dele (ex.: um botão com data-dica ganha position:relative, geral-dica) —, e assim a sombra da
+     esquerda aparece inteira sobre a página. Fica logo abaixo do rodapé (9, geral-rodape), cuja sombra
+     passa por cima dele no rodapé largo. Isto NÃO muda o "empurra, não sobrepõe" (o painel segue no
+     fluxo, flex). No celular vai para a 9 (bloco do fim). Dropdown/modal/véu/dica (10/20/30/40) acima. */
   position: relative;
-  z-index: 9;
+  z-index: 8;
   border-left: 1px solid var(--borda);
   background-color: var(--fundo-superficie);
   box-shadow: var(--sombra-painel);
@@ -31,11 +32,6 @@
 
 .painel-lateral--aberto {
   display: flex;
-}
-
-/* tamanho largo — conteúdo que precisa de mais espaço (ligado por config.largo) */
-.painel-lateral--largo {
-  width: var(--painel-largura-largo);
 }
 
 /* cabeçalho, em duas linhas como o da página: a do título (48px; Ver/Editar ou
@@ -137,15 +133,14 @@
   gap: 12px;
 }
 
-/* rodapé: ações da página (botões), alinhadas à direita; as que não cabem descem para outra linha */
+/* rodapé: é o rodapé geral (.rodape, geral-rodape: fundo, linha de cima, sombra e camada); aqui só o que é
+   do painel: as ações da página (botões) alinhadas à direita, as que não cabem descem para outra linha */
 .painel-rodape {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 8px;
-  flex-shrink: 0;
   padding: 8px 12px;
-  border-top: 1px solid var(--borda);
 }
 
 /* ---------- as peças reutilizáveis do corpo ----------

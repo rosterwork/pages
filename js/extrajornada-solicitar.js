@@ -1,7 +1,7 @@
 /* ============================================================
    EXTRAJORNADA — painel Solicitar extra (o mês em aberto)
    O botão da aba Calendário abre SEMPRE o mês em aberto (o próximo
-   mês) no painel largo: 1. voluntário (sim ou não), 2. cotas e o
+   mês) no painel: 1. voluntário (sim ou não), 2. cotas e o
    fechar 24 h, 3. datas (mini calendário: quero / não posso, com
    quantos querem cada dia no canto, no Total ou na unidade dele) e
    4. o termo do eProtocolo (o administrador marca). Até o prazo da
@@ -152,7 +152,6 @@
     RW.painel.abrir({
       titulo: ed ? msg().titulo(mes) : msg().tituloLeitura(mes),
       subtitulo: ((r.grad || '') + ' ' + (r.nome || '')).trim() + (r.unidade ? ' · ' + r.unidade : ''),
-      largo: true,
       aoFechar: fechou,
       aoTentarFechar: tentarFechar
     });

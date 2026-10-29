@@ -39,12 +39,6 @@
   display: flex;
 }
 
-/* rodapé: o texto das mudanças (como em Extrajornada › Voluntários) */
-.antiguidade-mudancas {
-  font-size: 12px;
-  color: var(--texto-suave);
-}
-
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    As linhas e os títulos dos postos na altura do toque; as setas

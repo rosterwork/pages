@@ -1,7 +1,7 @@
 /* ============================================================
-   NOVA EXTRA — o painel do pedido (largo)
+   NOVA EXTRA — o painel do pedido
    Sim ou Não; de 1 a 10 cotas (só 24 h = 4 ou 8); os dias pelo
-   "pincel" Quero / Não posso (toque de novo desmarca); os dias
+   "pincel" Quero / Não quero (toque de novo desmarca); os dias
    ocupados travados com o motivo; para o administrativo, o horário
    em que a extra pode começar em cada dia (o expediente da unidade
    dele) e as folgas do expediente. Enviar = nova_extra_pedido_salvar
@@ -58,7 +58,7 @@
       txt.classList.toggle('nova-extra-dia-texto--falta', ed.ver === 'falta');
       if (ed.ver === 'falta') { n = contagem(ed.r.falta, dia); txt.textContent = n ? msg().falta(n) : ''; }
       else if (ed.ver === 'procura') txt.textContent = msg().querem(contagem(ed.r.procura, dia));
-      else if (t) txt.textContent = t === 'quer' ? msg().quero : msg().naoPosso;
+      else if (t) txt.textContent = t === 'quer' ? msg().quero : msg().naoQuero;
       else txt.textContent = b.getAttribute('data-texto') || '';
     });
     f.querySelector('#nova-extra-conta-quer').textContent = msg().contaQuer(contar('quer'));
@@ -93,7 +93,6 @@
     RW.painel.abrir({
       titulo: msg().tituloPainel(mes),
       subtitulo: r.em_nome ? r.militar.grad + ' ' + r.militar.nome : msg().prazoPainel(r.prazo.fecha.slice(8, 10) + '/' + r.prazo.fecha.slice(5, 7)),
-      largo: true,
       aoFechar: function () { ed = null; },
       aoTentarFechar: function () { if (!sujo()) return false; tentarFechar(); return true; }
     });

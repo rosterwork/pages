@@ -1,14 +1,25 @@
 /* ============================================================
    RODAPÉ — barra inferior compartilhada
    Fica na base de um corpo/seção (borda no topo + fundo suave),
-   sem rolar com o conteúdo. O conteúdo é de cada tela: ações à
-   direita (.rodape-acoes), status, desfazer/refazer, etc.
-   Em uso: Distribuição (rodapé de status/edição).
+   sem rolar com o conteúdo. Estrutura única dos rodapés de salvar:
+   .rodape.rodape-pilha > .rodape-linha > .rodape-texto (a situação,
+   ex.: "1 alteração não salva") + .espacador-flex + .rodape-acoes
+   (Cancelar + Salvar). O rodapé do painel lateral é este mesmo
+   (#painel-rodape: .rodape + .painel-rodape, em geral-painel.css).
+   A sombra sobe sobre a lista que rola acima dele. Camada 9 (o topo
+   da faixa 1–9, Guia visual › Camadas, movimento e foco): acima das
+   linhas grudadas da lista e do painel lateral (8), para a sombra
+   aparecer inteira também sobre o painel, no rodapé largo.
+   Em uso: Distribuição, Extrajornada, Usuários, Nova distribuição,
+   Nova extra, Meu perfil e o painel lateral.
    ============================================================ */
 .rodape {
   flex-shrink: 0;
+  position: relative;
+  z-index: 9;
   border-top: 1px solid var(--borda);
   background-color: var(--fundo-suave);
+  box-shadow: var(--sombra-rodape);
   padding: 8px var(--respiro-pagina);
 }
 
@@ -18,6 +29,20 @@
   justify-content: flex-end;
   gap: 8px;
 }
+
+/* rodapé largo: na largura toda do conteúdo, passando também por baixo do painel direito. Fica preso no fundo do
+   .conteudo (posição absoluta: nenhum pai até ele pode ter position) e, enquanto aparece, a área de quem o contém e o
+   painel param em cima dele. Sempre numa linha; 49px é a altura dele (a borda de 1px, 8px, o botão de 32px e 8px) */
+.rodape--largo {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  flex-wrap: nowrap;
+}
+
+.pagina-corpo--colado > :has(> .rodape--largo:not(.oculto)) { padding-bottom: 49px; }
+.conteudo:has(.rodape--largo:not(.oculto)) > .painel-lateral { margin-bottom: 49px; }
 
 /* rodapé em linha: conteúdo à esquerda (que cresce) + ações à direita (.rodape-acoes).
    Usado onde o rodapé mostra status/legenda ao lado das ações (Distribuição, Extrajornada). */
@@ -32,4 +57,37 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+/* a situação, à esquerda das ações (ex.: "1 alteração não salva"); a frase vem de RosterWork.mensagens */
+.rodape-texto {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   O texto em cima e os botões dividindo a largura, numa linha só
+   embaixo dele; sem texto, só os botões.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .rodape-linha {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  html[data-celular] .rodape-linha > .espacador-flex,
+  html[data-celular] .rodape-texto:empty {
+    display: none;
+  }
+
+  html[data-celular] .rodape-acoes {
+    flex: 1 1 100%;
+  }
+
+  html[data-celular] .rodape-acoes > .botao {
+    flex: 1 1 auto;
+    min-width: 0;
+    white-space: normal;
+  }
 }

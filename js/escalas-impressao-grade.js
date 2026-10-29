@@ -1,7 +1,7 @@
 /* ============================================================
    ESCALAS — Imprimir as grades (painel → PDF)
    Nas grades (Agenda, Calendário, Colunas), o botão Imprimir abre o
-   painel direito largo, e sai o que está na tela: a grade, o mês (no
+   painel direito, e sai o que está na tela: a grade, o mês (no
    Colunas › Unidades, a semana), as unidades e os filtros, resumidos
    na nota do alto. Nas caixas numeradas: o formato (Folhas A4 ou
    Página contínua), o período (no Calendário, o "Mês todo" ou as
@@ -303,7 +303,7 @@
     if (!RW.painel || !FORMATOS[opcoes.formato]) return;
     fecharLimpo();
     var formato = opcoes.formato;
-    RW.painel.abrir({ titulo: msg().titulos[formato], subtitulo: msg().subtitulo(FORMATOS[formato].paisagem, false), largo: true, aoFechar: fecharLimpo });
+    RW.painel.abrir({ titulo: msg().titulos[formato], subtitulo: msg().subtitulo(FORMATOS[formato].paisagem, false), aoFechar: fecharLimpo });
     var corpo = RW.painel.corpo();
     var rodape = RW.painel.rodape();
     var molde = document.getElementById('tpl-escala-impressao-grade');

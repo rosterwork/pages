@@ -128,7 +128,8 @@
   color: var(--alerta);
 }
 
-/* rodapé de ações do formulário */
+/* linha de ação de uma seção da Segurança (Trocar senha, Sair de todos os aparelhos);
+   o salvar dos Meus dados fica no rodapé da página (geral-rodape) */
 .perfil-acoes {
   display: flex;
   align-items: center;
@@ -139,8 +140,8 @@
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    O cartão fica em pé, a grade de leitura passa a duas colunas
-   (o dado comprido ocupa a linha toda) e, no rodapé, a contagem
-   sobe para uma linha só e os botões dividem a largura.
+   (o dado comprido ocupa a linha toda) e o botão de cada seção da
+   Segurança ocupa a largura.
    ============================================================ */
 @media (max-width: 767px) {
   /* graduação e nome em cima (o nome quebra), a lotação e o papel embaixo */
@@ -175,11 +176,6 @@
     flex-wrap: wrap;
   }
 
-  html[data-celular] .perfil-acoes .campo-ajuda {
-    flex-basis: 100%;
-  }
-
-  html[data-celular] .perfil-acoes .campo-ajuda:empty,
   html[data-celular] .perfil-acoes .espacador-flex {
     display: none;
   }

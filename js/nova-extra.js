@@ -1,11 +1,11 @@
 /* ============================================================
    NOVA EXTRA — protótipo da extrajornada em etapas (só programador)
-   Abas Minha extra · Calendário | Pedidos · Cotas · Distribuição ·
-   Lançar · Ajustes, num grupo de traço único (nova-extra-organizar.js
-   desenha o Calendário e os passos). A Minha extra mostra o pedido
-   do mês (nova_extra_minha) e a barra abre o painel do pedido
-   (nova-extra-pedido.js). A barra é igual em todas as abas: a ação
-   do militar, o mês e a Legenda (o molde que o passo pedir,
+   Abas Minha extra · Calendário · Organizar o mês (nova-extra-
+   organizar.js desenha o Calendário e os passos). A Minha extra mostra
+   o pedido do mês (nova_extra_minha), com o botão que abre o painel
+   do pedido (nova-extra-pedido.js) no passo Pedido. A barra: o mês,
+   os passos Pedidos · Cotas · Distribuição · Lançar · Ajustes (só no
+   Organizar o mês) e a Legenda (o molde que o passo pedir,
    RosterWork.novaExtra.legenda).
    Para o teste, a seta do mês só anda entre dezembro de 2026 (o
    administrador) e janeiro de 2027 (o militar). Grava em tabelas
@@ -58,25 +58,29 @@
     el.prazo.classList.toggle('selo--alerta', p.estado === 'aberto');
     if (ped) el.pedidoTexto.textContent = ped.voluntario ? msg().pediu(ped) : msg().naoQuer(ped.enviado_em);
     else el.pedidoTexto.textContent = p.estado === 'aberto' ? msg().semPedido(br(p.fecha)) : p.estado === 'antes' ? msg().naoAbriu(br(p.abre)) : msg().naoPediu;
-    el.pedir.textContent = p.estado === 'aberto' ? (ped ? msg().mudar : msg().fazer) : msg().ver;
     /* a extra é só para praças: o oficial vê o aviso no lugar do pedido */
     if (r.militar && r.militar.praca === false) el.pedidoTexto.textContent = msg().soPraca;
-    atualizarBarra();
+    botaoPedido();
     el.cotasTexto.textContent = ped && ped.concedidas != null ? msg().concedidas(ped.concedidas) : msg().cotasDepois(br(p.fecha));
     el.diasTexto.textContent = r.extras && r.extras.length
       ? r.extras.map(function (x) { return br(x.data) + ' ' + RW.novaExtraUtil.horas(x.blocos) + ' (' + x.unidade + ')'; }).join('; ') + (r.lancado ? '.' : ' ' + msg().aindaNaoLancado)
       : msg().semDias;
   }
 
-  /* ---------- a barra: igual em todas as abas ---------- */
-  /* o pedido (a ação do militar) aparece com o pedido aberto ou já feito, e só para praças */
-  function atualizarBarra() {
-    var r = estado, pode = !!r && !(r.militar && r.militar.praca === false) && (r.prazo.estado === 'aberto' || !!r.pedido);
+  /* o botão do pedido (a ação do militar), no passo Pedido: aparece com o pedido aberto ou já feito, e só para praças.
+     Aberto, Fazer ou Mudar o pedido (escuro); fechado, Ver o pedido (branco) com a data em que fechou ao lado */
+  function botaoPedido() {
+    var r = estado, p = r.prazo, aberto = p.estado === 'aberto', fechado = !aberto && p.estado !== 'antes';
+    var pode = !(r.militar && r.militar.praca === false) && (aberto || !!r.pedido);
     el.pedir.classList.toggle('oculto', !pode);
+    el.pedir.classList.toggle('botao--primario', aberto);
+    el.pedir.textContent = aberto ? (r.pedido ? msg().mudar : msg().fazer) : msg().ver;
+    el.fechado.textContent = fechado ? msg().fechadoEm(br(p.fecha)) : '';
+    el.fechado.classList.toggle('oculto', !pode || !fechado);
   }
 
-  /* ---------- as abas: dois grupos que valem como uma escolha só ---------- */
-  /* marca a escolhida e desmarca a do outro grupo (o traço único vai para ela) */
+  /* ---------- as abas e os passos da barra ---------- */
+  /* marca a aba escolhida e desmarca as outras, nos dois grupos (o traço único vai para ela) */
   function marcarAba(nome) {
     Array.prototype.forEach.call(el.abas.querySelectorAll('.aba'), function (a) {
       var ativa = a.getAttribute('data-aba') === nome;
@@ -85,15 +89,43 @@
     });
   }
 
+  /* a área à vista: a da aba (Minha extra, Calendário) ou a do passo (Organizar o mês) */
+  function mostrarArea(n) {
+    Array.prototype.forEach.call(conteudoPagina.querySelectorAll('.pagina-corpo [data-aba-painel]'), function (s) {
+      var ve = aba === 'organizar' ? +s.getAttribute('data-passo-painel') === n : s.getAttribute('data-aba-painel') === aba;
+      s.classList.toggle('oculto', !ve);
+    });
+  }
+
+  /* o Organizar o mês abre o passo escolhido antes ou, na primeira vez, o da vez (quem escolhe é o novaExtraOrg,
+     que chama RosterWork.novaExtra.passo) */
   function aoTrocarAba(botao) {
     aba = botao.getAttribute('data-aba');
     marcarAba(aba);
-    Array.prototype.forEach.call(conteudoPagina.querySelectorAll('.pagina-corpo [data-aba-painel]'), function (s) {
-      s.classList.toggle('oculto', s.getAttribute('data-aba-painel') !== aba);
-    });
-    atualizarBarra();
+    el.passos.classList.toggle('oculto', aba !== 'organizar');
+    barraDoPasso(null);
+    if (aba === 'organizar') { mostrarArea(null); RW.novaExtraOrg.mostrar(null); return; }
+    mostrarArea();
     if (aba === 'minha') RW.novaExtraOrg.sair();
-    else RW.novaExtraOrg.mostrar(aba === 'calendario' ? 'calendario' : +botao.getAttribute('data-passo'));
+    else RW.novaExtraOrg.mostrar('calendario');
+  }
+
+  /* o passo aberto: o botão dele marcado na barra, o que é só dele na barra e a área dele */
+  function mostrarPasso(n) {
+    Array.prototype.forEach.call(el.passos.querySelectorAll('[data-passo]'), function (b) {
+      b.classList.toggle('aba--ativa', +b.getAttribute('data-passo') === n);
+    });
+    barraDoPasso(n);
+    mostrarArea(n);
+  }
+
+  /* na barra, o que é só de um passo (data-passo-barra) aparece só nele; fora do Organizar o mês, nenhum. O filtro
+     da Distribuição (com a linha "Filtros:") mostra e esconde pelo nova-extra-filtros.js */
+  function barraDoPasso(n) {
+    Array.prototype.forEach.call(conteudoPagina.querySelectorAll('.pagina-subcabecalho [data-passo-barra]'), function (e) {
+      e.classList.toggle('oculto', +e.getAttribute('data-passo-barra') !== n);
+    });
+    if (RW.novaExtraFiltros) RW.novaExtraFiltros.mostrar(n === 3);
   }
 
   /* a Legenda e o traço antes dela: aparecem com o conteúdo do molde (id) ou somem (null) */
@@ -128,6 +160,8 @@
     el.pedidoTexto = conteudo.querySelector('#nova-extra-pedido-texto');
     el.cotasTexto = conteudo.querySelector('#nova-extra-cotas-texto');
     el.pedir = conteudo.querySelector('#nova-extra-pedir');
+    el.fechado = conteudo.querySelector('#nova-extra-fechado');
+    el.passos = conteudo.querySelector('#nova-extra-passos');
     el.mes = conteudo.querySelector('#nova-extra-mes');
     el.anterior = conteudo.querySelector('#nova-extra-mes-anterior');
     el.proximo = conteudo.querySelector('#nova-extra-mes-proximo');
@@ -136,17 +170,20 @@
     el.legendaDivisor = conteudo.querySelector('#nova-extra-legenda-divisor');
     comp = new Date(ULTIMO);
 
-    /* sair da Distribuição com mudanças não salvas: confirma o descarte antes de trocar.
-       Captura: roda antes de o geral-abas trocar. */
-    el.abas.addEventListener('click', function (e) {
-      var b = e.target.closest('.aba');
-      if (!b || b.getAttribute('data-aba') === aba || !RW.novaExtraOrg.sujo()) return;
-      e.preventDefault();
-      e.stopPropagation();
-      RW.confirmar({ tipo: 'aviso', mensagem: RW.mensagens.edicao.sairSemSalvar, textoConfirmar: RW.mensagens.botoes.descartar,
-        textoCancelar: RW.mensagens.botoes.continuarEditando, aoConfirmar: function () { RW.novaExtraMontar.descartar(); b.click(); } });
-    }, true);
+    /* sair da Distribuição com mudanças não salvas (pelas abas ou pelos passos da barra): confirma o descarte antes de
+       trocar. Captura: roda antes de o geral-abas trocar. */
+    [el.abas, el.passos].forEach(function (grupo) {
+      grupo.addEventListener('click', function (e) {
+        var b = e.target.closest('.aba');
+        if (!b || b.classList.contains('aba--ativa') || !RW.novaExtraOrg.sujo()) return;
+        e.preventDefault();
+        e.stopPropagation();
+        RW.confirmar({ tipo: 'aviso', mensagem: RW.mensagens.edicao.sairSemSalvar, textoConfirmar: RW.mensagens.botoes.descartar,
+          textoCancelar: RW.mensagens.botoes.continuarEditando, aoConfirmar: function () { RW.novaExtraMontar.descartar(); b.click(); } });
+      }, true);
+    });
     Array.prototype.forEach.call(el.abas.querySelectorAll('.abas'), function (trilho) { RW.abas.ligar(trilho, aoTrocarAba); });
+    RW.abas.ligar(el.passos, function (b) { RW.novaExtraOrg.mostrar(+b.getAttribute('data-passo')); });
     el.anterior.addEventListener('click', function () { trocarMes(-1); });
     el.proximo.addEventListener('click', function () { trocarMes(1); });
     RW.novaExtraOrg.montar(conteudo);
@@ -158,6 +195,6 @@
     return Promise.resolve();
   }
 
-  RW.novaExtra = { comp: function () { return iso(comp); }, legenda: legenda, recarregar: function () { carregar(); } };
+  RW.novaExtra = { comp: function () { return iso(comp); }, legenda: legenda, passo: mostrarPasso, recarregar: function () { carregar(); } };
   RW.paginas['nova-extra'] = { iniciar: iniciar };
 })();

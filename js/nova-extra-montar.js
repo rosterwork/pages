@@ -25,6 +25,7 @@
   var d = null, el = null, aoSalvar = null;
   var mud = {};            // rascunho: 'cpf|data' -> { cpf, data, unidade, blocos, origem, porque } (blocos [] = sai ao salvar)
   var sugeridas = [];      // as chaves que a última sugestão pôs
+  var resultadoFechado = false;   // o resultado da sugestão fechado no X (volta no próximo Preencher)
   var escala = null;       // a escala do mês sem extra: { comp, cobertura, erro }
   var escalaSeq = 0;
 
@@ -123,14 +124,14 @@
   function carregarEscala() {
     var ids = d.unidades.map(function (x) { return x.id; });
     var comp = d.competencia, req = ++escalaSeq;
-    if (!RW.escalasDados) { escala = { comp: comp, cobertura: {}, erro: {} }; redesenhar(); return; }
+    if (!RW.escalasDados) { escala = { comp: comp, cobertura: {}, erro: {}, militares: {} }; redesenhar(); return; }
     RW.escalasDados.carregar(ids, comp, ultimoDia()).then(function (r) {
       if (req !== escalaSeq || !el || !el.isConnected) return;
-      escala = { comp: comp, cobertura: (r && r.cobertura) || {}, erro: (r && r.erro) || {} };
+      escala = { comp: comp, cobertura: (r && r.cobertura) || {}, erro: (r && r.erro) || {}, militares: (r && r.militares) || {} };
       redesenhar();
     }, function () {
       if (req !== escalaSeq) return;
-      escala = { comp: comp, cobertura: {}, erro: {} };
+      escala = { comp: comp, cobertura: {}, erro: {}, militares: {} };
       redesenhar();
     });
   }
@@ -187,6 +188,7 @@
       RW.pararCarregando(btn);
       if (!r || !r.ok) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
       sugeridas = [];
+      resultadoFechado = false;
       r.propostas.forEach(function (p) {
         var k = chave(p.cpf, p.data);
         mud[k] = { cpf: p.cpf, data: p.data, unidade: p.unidade, blocos: p.blocos, origem: 'sugestao', porque: p.porque };
@@ -221,6 +223,8 @@
   /* o resumo, o rodapé, a lista e o calendário; soCabeca = o calendário já foi refeito no dia que mudou */
   function redesenhar(soCabeca) {
     var n = alteracoes().length;
+    /* o rodapé de salvar aparece só com alteração */
+    q('#p3-rodape').classList.toggle('oculto', !n);
     var ajuste = d.iniciado && !!d.lancamento;
     q('#p3-texto').textContent = n ? (ajuste ? msg().ajusteTexto(n) : msg().alteracoes(n)) : (ajuste ? msg().ajusteModo : '');
     q('#p3-motivo-campo').classList.toggle('oculto', !ajuste);
@@ -231,21 +235,16 @@
     aberto.classList.toggle('oculto', !travado());
     aberto.querySelector('.nota-texto').textContent = travado() ? msg().pedidoAberto(u().br(d.mes.fecha)) : '';
     q('#p3-sugerir').disabled = travado();
-    /* o resumo da companhia: as cotas dos militares e os dias com falta nos pelotões */
+    /* o resumo da companhia: as cotas colocadas dos militares */
     var alocs = efetivas();
     var sel = u().escolhidas();
     var vols = voluntarios().filter(function (m) { return sel.indexOf(m.unidade_id) >= 0; });
     var total = vols.reduce(function (s, m) { return s + (m.concedidas || 0); }, 0);
     var colocadas = vols.reduce(function (s, m) { return s + usadas(m.cpf, alocs); }, 0);
     q('#p3-colocadas').textContent = msg().colocadas(colocadas, total);
-    var sobra = vols.reduce(function (s, m) { return s + Math.max(0, (m.concedidas || 0) - usadas(m.cpf, alocs)); }, 0);
-    q('#p3-sobra').textContent = sobra ? msg().cotasSobrando(sobra) : '';
-    var comFalta = escalaPronta() ? diasDoMes().filter(function (k) {
-      return pelotoes().some(function (x) { return sel.indexOf(x.id) >= 0 && somaFalta(faltaDoDia(x.id, k, alocs)) > 0; });
-    }).length : 0;
     /* depois do Preencher pela sugestão: quantas cotas ela pôs e os dias que ainda ficaram com vermelho ou amarelo */
     var resultado = q('#p3-resultado');
-    resultado.classList.toggle('oculto', !sugeridas.length || !escalaPronta());
+    resultado.classList.toggle('oculto', !sugeridas.length || !escalaPronta() || resultadoFechado);
     if (sugeridas.length && escalaPronta()) {
       var postas = sugeridas.reduce(function (s, kk) { return s + (mud[kk] ? mud[kk].blocos.length : 0); }, 0), vermelho = 0, amarelo = 0;
       diasDoMes().forEach(function (k) {
@@ -254,8 +253,6 @@
       });
       resultado.querySelector('.nota-texto').textContent = msg().resultadoSugestao(postas, vermelho, amarelo);
     }
-    q('#p3-dias-falta').textContent = msg().diasFalta(comFalta);
-    q('#p3-dias-falta').classList.toggle('nova-extra-negativo', comFalta > 0);
     RW.novaExtraLista.desenhar(el);
     /* sem nenhum pelotão: o vazio no lugar do calendário */
     var nenhuma = !u().doCalendario(alocs).length;
@@ -270,6 +267,7 @@
     }
     if (!soCabeca && !nenhuma) porDia().desenhar(q('#p3-cal'));
     dia().redesenhar();
+    RW.novaExtraFiltros.aplicar();
   }
 
   var ligado = null;
@@ -278,6 +276,7 @@
     if (ligado !== el) {
       ligado = el; mud = {}; sugeridas = []; escala = null;
       q('#p3-sugerir').addEventListener('click', sugerir);
+      q('#p3-resultado-fechar').addEventListener('click', function () { resultadoFechado = true; q('#p3-resultado').classList.add('oculto'); });
       q('#p3-desfazer-sugestao').addEventListener('click', desfazerSugestao);
       q('#p3-salvar').addEventListener('click', salvar);
       q('#p3-cancelar').addEventListener('click', function () {
@@ -285,6 +284,7 @@
           aoConfirmar: function () { mud = {}; sugeridas = []; redesenhar(); } });
       });
       RW.novaExtraLista.ligar(el);
+      RW.novaExtraFiltros.ligar(el);
       if (RW.guardaSaida) RW.guardaSaida.registrar(function () { return el && el.isConnected && alteracoes().length > 0; });
     }
     redesenhar();
@@ -305,6 +305,8 @@
     mostrar: mostrar,
     sujo: function () { return !!d && alteracoes().length > 0; },
     descartar: function () { mud = {}; sugeridas = []; },
+    /* refaz o calendário (o filtro Exibir mudou) */
+    redesenhar: function () { if (d && el && el.isConnected) redesenhar(); },
     /* o painel do dia fecha ao sair do passo 3 ou da aba */
     fecharPainel: function () { if (dia()) dia().fechar(); },
     diasComFalta: diasComFalta
@@ -320,6 +322,8 @@
     grafico: function (cob, uid, erro) { return porDia().grafico(cob, uid, erro); },
     coberturaEscala: function () { return escala.cobertura; },
     erroAntes: function (uid, k) { return (escala.erro[uid] || {})[k]; },
+    /* quem está de serviço no dia, na escala (sem as extras já lançadas, que aparecem nas vagas) */
+    deServico: function (uid, k) { return ((escala.militares[uid] || {})[k] || []).filter(function (p) { return p.origem !== 'extra'; }); },
     pelotoes: pelotoes, diasDoMes: diasDoMes, dataDe: dataDe, dataLonga: dataLonga, somaDia: somaDia,
     mudar: mudar, marcarAberto: function () { porDia().marcarAberto(); }
   };

@@ -92,12 +92,15 @@
       </aside>
       <section class="geral-corpo-lateral">
         <div class="geral-corpo-lateral-rolagem" id="regras-corpo"></div>
-        <!-- rodapé de Salvar/Cancelar: só aparece quando há alterações não salvas (igual à aba Modelos) -->
-        <div class="rodape rodape-linha" id="regras-rodape">
-          <span class="regras-rodape-info"></span>
-          <div class="rodape-acoes">
-            <button type="button" class="botao regras-cancelar">Cancelar</button>
-            <button type="button" class="botao botao--primario regras-salvar">Salvar</button>
+        <!-- rodapé de Salvar/Cancelar: à mostra para o administrador; os botões ligam com a primeira alteração -->
+        <div class="rodape rodape-pilha" id="regras-rodape">
+          <div class="rodape-linha">
+            <span class="rodape-texto regras-rodape-info"></span>
+            <span class="espacador-flex"></span>
+            <div class="rodape-acoes">
+              <button type="button" class="botao regras-cancelar">Cancelar</button>
+              <button type="button" class="botao botao--primario regras-salvar">Salvar</button>
+            </div>
           </div>
         </div>
       </section>
