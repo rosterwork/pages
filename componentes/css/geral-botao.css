@@ -10,6 +10,7 @@
   border: 1px solid var(--borda-forte);
   border-radius: var(--raio-medio);
   background-color: var(--fundo-superficie);
+  box-shadow: var(--sombra-bloco);   /* relevo mínimo do botão com moldura */
   color: var(--texto);
   font-size: var(--botao-fonte);
   font-weight: 500;
@@ -25,6 +26,7 @@
 .botao:disabled {
   background-color: var(--fundo-medio);
   border-color: var(--borda);
+  box-shadow: none;
   color: var(--texto-fraco);
   cursor: default;
 }
@@ -75,6 +77,7 @@
   gap: 0;
   border-color: transparent;
   background-color: transparent;
+  box-shadow: none;
   color: var(--texto-suave);
 }
 
@@ -113,6 +116,7 @@
   padding: 0;
   border: none;
   background: none;
+  box-shadow: none;
   color: var(--texto-suave);
   font-size: var(--botao-fonte-pequeno);
   font-weight: 400;

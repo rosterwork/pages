@@ -5,8 +5,8 @@
    desenha o Calendário e os passos). A Minha extra mostra o pedido
    do mês (nova_extra_minha) e a barra abre o painel do pedido
    (nova-extra-pedido.js). A barra é igual em todas as abas: a ação
-   do militar, o mês, o Por dia | Por militar (só na Distribuição) e
-   a Legenda (o molde que o passo pedir, RosterWork.novaExtra.legenda).
+   do militar, o mês e a Legenda (o molde que o passo pedir,
+   RosterWork.novaExtra.legenda).
    Para o teste, a seta do mês só anda entre dezembro de 2026 (o
    administrador) e janeiro de 2027 (o militar). Grava em tabelas
    próprias: a Extrajornada de verdade e a escala não mudam.
@@ -69,14 +69,10 @@
   }
 
   /* ---------- a barra: igual em todas as abas ---------- */
-  /* o pedido (a ação do militar) aparece com o pedido aberto ou já feito, e só para praças; o Por dia | Por militar
-     (data-barra) só na Distribuição */
+  /* o pedido (a ação do militar) aparece com o pedido aberto ou já feito, e só para praças */
   function atualizarBarra() {
     var r = estado, pode = !!r && !(r.militar && r.militar.praca === false) && (r.prazo.estado === 'aberto' || !!r.pedido);
     el.pedir.classList.toggle('oculto', !pode);
-    Array.prototype.forEach.call(conteudoPagina.querySelectorAll('.pagina-subcabecalho [data-barra]'), function (p) {
-      p.classList.toggle('oculto', p.getAttribute('data-barra') !== aba);
-    });
   }
 
   /* ---------- as abas: dois grupos que valem como uma escolha só ---------- */

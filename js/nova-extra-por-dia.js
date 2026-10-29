@@ -1,12 +1,14 @@
 /* ============================================================
-   NOVA EXTRA — passo 3: Por dia (o calendário)
-   O mês no calendário do site (geral-calendario-mes) com, em cada
-   dia, o bloco de cada pelotão (a companhia só quando tem extra) igual ao do Calendário da Escala: o
-   nome com a cor do dia (verde, vermelho, amarelo), as barras antes
-   e depois (a régua de cada unidade no mês) e as extras na vaga da
-   Extrajornada antiga, que marca e tira ali mesmo. Clicar no bloco
-   abre o painel do dia. Lê e muda o rascunho por
-   RosterWork.novaExtraGrade.
+   NOVA EXTRA — passo 3: o calendário
+   O mês no calendário do site (geral-calendario-mes, o mesmo da
+   Escala) com, em cada dia, o bloco de cada pelotão (a companhia só
+   quando tem extra) igual ao do Calendário da Escala: o nome com a
+   cor do dia (verde, vermelho, amarelo), o gráfico do dia já com as
+   extras (a régua de cada unidade no mês; o painel do dia mostra o sem
+   e o com) e uma vaga por militar, com o horário
+   escrito (sem nenhum, ele fica no dia até o Salvar). As bolinhas ficam
+   no painel do dia, que abre ao clicar no bloco, e na lista dos
+   voluntários. Lê o rascunho por RosterWork.novaExtraGrade.
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
    RosterWork.novaExtraPorDia.
    ============================================================ */
@@ -45,7 +47,7 @@
 
   function desenhar(lugar) {
     alvo = lugar;
-    var d = G().dados(), alocs = G().efetivas(), unidades = u().doCalendario(alocs);
+    var d = G().dados(), alocs = G().efetivas(), unidades = u().doCalendario(G().vagas());
     diasCal = {};
     desenhadas = unidades.map(function (un) { return un.id; }).join(',');
     calcularPicos(alocs);
@@ -59,8 +61,9 @@
     if (wrap && RW.escalasCelula) RW.escalasCelula.ativarGraficos(wrap);
   }
 
-  /* o bloco do pelotão no dia, o mesmo do Calendário da Escala: o nome com a cor do dia, as barras antes e depois
-     e as extras na vaga da Extrajornada antiga (marcar e tirar ali mesmo); clicar no bloco abre o painel do dia */
+  /* o bloco do pelotão no dia, o mesmo do Calendário da Escala: o nome com a cor do dia, o gráfico do dia com as
+     extras (sem extra, a escala como está) e uma vaga por militar com o horário escrito; clicar no bloco abre o painel
+     do dia */
   function blocoUnidade(un, k, alocs) {
     var b = RW.tpl('tpl-escala-calendario-unidade');
     var ab = dia().aberto();
@@ -76,29 +79,17 @@
     nome.textContent = un.nome;
     var cor = G().corDe(falta);
     if (cor) nome.classList.add('nova-extra-uni-nome', 'nova-extra-uni-nome--' + cor);
-    var aqui = alocs.filter(function (a) { return +a.unidade === un.id && a.data === k; })
+    /* as vagas do dia, inclusive as sem horário (vão para o fim), na ordem do primeiro horário */
+    var aqui = G().vagas().filter(function (a) { return +a.unidade === un.id && a.data === k; })
       .sort(function (x, y) { return Math.min.apply(null, G().blocos(x)) - Math.min.apply(null, G().blocos(y)) || u().nome(x.cpf).localeCompare(u().nome(y.cpf)); });
+    var comExtra = aqui.some(function (a) { return a.blocos.length; });
     var antes = G().antesDe(un.id, k);
     if (antes) {
-      var caixa = RW.tpl('tpl-ne-cel-barras');
-      var gA = grafico(antes, un.id, G().erroAntes(un.id, k));
-      if (gA) caixa.insertBefore(gA, caixa.querySelector('.ne-cel-depois'));
-      var gD = null;
-      if (aqui.length) { var dep = G().depoisDe(un.id, k, alocs, falta); gD = grafico(dep.cobertura, un.id, dep.erro); }
-      caixa.appendChild(gD || RW.tpl('tpl-ne-cel-sem-extra'));
-      cel.appendChild(caixa);
+      var dep = comExtra ? G().depoisDe(un.id, k, alocs, falta) : null;
+      var g = dep ? grafico(dep.cobertura, un.id, dep.erro) : grafico(antes, un.id, G().erroAntes(un.id, k));
+      if (g) cel.appendChild(g);
     }
-    aqui.forEach(function (a) {
-      var m = u().militar(a.cpf) || { cpf: a.cpf };
-      cel.appendChild(u().vaga(a, un.id, {
-        travado: G().travado(),
-        aoMarcar: function (bl) {
-          var tem = G().blocos(a), novos = m.so24 ? (tem.length ? [] : [1, 2, 3, 4]) : (tem.indexOf(bl) >= 0 ? tem.filter(function (x) { return x !== bl; }) : tem.concat([bl]));
-          G().mudar(m, k, novos, un.id);
-        },
-        aoTirar: function () { G().mudar(m, k, [], un.id); }
-      }));
-    });
+    aqui.forEach(function (a) { cel.appendChild(u().vaga(a, un.id)); });
     b.addEventListener('click', function () { dia().abrir(un.id, k); });
     b.addEventListener('keydown', function (ev) { if (ev.target === b && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); dia().abrir(un.id, k); } });
     return b;
@@ -108,7 +99,7 @@
   function atualizarDia(k) {
     var cel = diasCal[k];
     if (!cel || !cel.isConnected) return;
-    var alocs = G().efetivas(), unidades = u().doCalendario(alocs), cresceu = false;
+    var alocs = G().efetivas(), unidades = u().doCalendario(G().vagas()), cresceu = false;
     unidades.forEach(function (un) {
       var dep = G().depoisDe(un.id, k, alocs, G().faltaDoDia(un.id, k, alocs));
       if (dep && dep.cobertura.some(function (n) { return n > (picos[un.id] || 0); })) cresceu = true;

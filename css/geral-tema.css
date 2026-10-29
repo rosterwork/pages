@@ -58,6 +58,7 @@
   --fundo-medio:           var(--cinza-200);
   --fundo-contraste:       var(--cinza-900);
   --fundo-contraste-hover: var(--cinza-820);
+  --fundo-flutuante:       var(--cinza-0);
 
   /* -------------------------------------------------------
      Papéis de texto
@@ -72,9 +73,10 @@
   /* -------------------------------------------------------
      Bordas e foco
      ------------------------------------------------------- */
-  --borda:       var(--cinza-300);
-  --borda-forte: var(--cinza-400);
-  --foco:        var(--cinza-650);
+  --borda:           var(--cinza-300);
+  --borda-forte:     var(--cinza-400);
+  --borda-flutuante: var(--cinza-300);
+  --foco:            var(--cinza-650);
 
   /* -------------------------------------------------------
      Cores de significado — únicas que usam rgb() direto
@@ -128,8 +130,10 @@
      Sombras
      ------------------------------------------------------- */
   --sombra-bloco:     0 1px 3px rgb(0 0 0 / 0.06), 0 1px 2px rgb(0 0 0 / 0.04);
-  --sombra-flutuante: 0 4px 6px -1px rgb(0 0 0 / 0.10), 0 2px 4px -1px rgb(0 0 0 / 0.06);
+  --sombra-flutuante: 0 1px 2px rgb(0 0 0 / 0.06), 0 4px 8px -2px rgb(0 0 0 / 0.10), 0 12px 24px -4px rgb(0 0 0 / 0.16);
   --sombra-modal:     0 20px 32px -8px rgb(0 0 0 / 0.16), 0 8px 16px -4px rgb(0 0 0 / 0.10);
+  /* a do painel lateral cai só para a esquerda, sobre a página */
+  --sombra-painel:    -1px 0 3px rgb(0 0 0 / 0.06), -16px 0 32px -12px rgb(0 0 0 / 0.22);
 
   /* -------------------------------------------------------
      Tamanhos da tela — medidas que mudam conforme o aparelho
@@ -228,6 +232,7 @@ html[data-tema="escuro"] {
   --fundo-medio:           var(--cinza-850);
   --fundo-contraste:       var(--cinza-200);
   --fundo-contraste-hover: var(--cinza-400);
+  --fundo-flutuante:       var(--cinza-900);
 
   --texto-forte:     var(--cinza-100);
   --texto:           var(--cinza-250);
@@ -236,9 +241,10 @@ html[data-tema="escuro"] {
   --texto-debil:     var(--cinza-700);
   --texto-invertido: var(--cinza-950);
 
-  --borda:       var(--cinza-800);
-  --borda-forte: var(--cinza-700);
-  --foco:        var(--cinza-500);
+  --borda:           var(--cinza-800);
+  --borda-forte:     var(--cinza-700);
+  --borda-flutuante: var(--cinza-750);
+  --foco:            var(--cinza-500);
 
   --erro:                rgb(238, 136, 136);
   --erro-hover:          rgb(220, 112, 112);
@@ -252,6 +258,10 @@ html[data-tema="escuro"] {
   --alerta-fundo-forte:  rgb(84,  64,  30);
 
   --veu-guia: rgb(0 0 0 / 0.72);
+
+  /* no fundo escuro a sombra precisa ser bem mais forte para aparecer */
+  --sombra-flutuante: 0 1px 2px rgb(0 0 0 / 0.40), 0 4px 8px -2px rgb(0 0 0 / 0.45), 0 12px 24px -4px rgb(0 0 0 / 0.60);
+  --sombra-painel:    -1px 0 3px rgb(0 0 0 / 0.50), -16px 0 32px -12px rgb(0 0 0 / 0.90);
 }
 
 /* -------------------------------------------------------

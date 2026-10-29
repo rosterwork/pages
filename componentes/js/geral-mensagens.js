@@ -466,8 +466,6 @@
         expedienteDiaTodo: 'Expediente o dia todo',
         semCotas: 'Sem cotas sobrando',
         deCotas: function (u, c) { return u + ' de ' + c; },
-        saiServico: 'Sai do serviço às 08h',
-        entraServico: 'Entra no serviço às 08h',
         expedienteAte: function (h) { return 'Expediente até ' + h; },
         so24: 'Só 24 h',
         condutor: 'Condutor',
@@ -486,17 +484,13 @@
         },
         naoSalvoRetira: function (k) { return 'Mudanças não salvas. As extras de ' + k + (k === 1 ? ' militar saem ao salvar.' : ' militares saem ao salvar.'); },
         pedidoAberto: function (fecha) { return 'O pedido está aberto até ' + fecha + '. A distribuição só pode ser salva depois que ele fecha.'; },
-        /* passo 3, Por militar: a grade e a caixa do quadrado */
+        /* passo 3: o resumo, a lista dos voluntários e a trava das cotas (calendário, lista e painel do dia) */
         cotasSobrando: function (n) { return n + (n === 1 ? ' cota sobrando' : ' cotas sobrando'); },
-        pelCotas: function (u, t) { return u + ' de ' + t + ' cotas'; },
-        querDia: 'Quer o dia',
-        naoPodeDia: 'Não pode',
-        caixaSub: function (data, unidade, u, c) { return data + ' · ' + unidade + ' · ' + u + ' de ' + c + ' cotas'; },
-        passouCota: function (n) { return 'Passou da cota em ' + n + (n === 1 ? ' cota.' : ' cotas.'); },
-        sobraMotivo: function (n, motivo) {
-          return (n === 1 ? 'Sobrou 1 cota' : 'Sobraram ' + n + ' cotas')
-            + (motivo === 'solta' ? ': seria um pedaço solto de 6 horas.' : motivo === 'oficial' ? ': a sugestão só põe praça.' : ': sem dia livre com lugar na escala.');
+        diaData: function (sem, dm) { return sem + ' ' + dm; },
+        cotaCheia: function (nome, n) {
+          return nome + (n === 1 ? ' já usou a única cota.' : ' já usou as ' + n + ' cotas.') + ' Para marcar este horário, tire antes um horário de outro dia.';
         },
+        cotaCheia24: function (nome) { return nome + ' só aceita 24 h e precisa de 4 cotas livres para este dia. Tire antes os horários de outro dia.'; },
         faltaIdealHoras: function (h) { return 'Ainda falta gente para o ideal de ' + h + '.'; },
         chefeDirigeHoras: function (h, cnh) { return 'O chefe ainda dirige de ' + h + ' por falta de condutor' + (cnh ? ', CNH ' + cnh : '') + '.'; },
         ajusteTexto: function (n) { return n + (n === 1 ? ' ajuste não salvo.' : ' ajustes não salvos.') + ' O mês já começou: cada mudança vira um ajuste.'; },

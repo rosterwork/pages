@@ -12,8 +12,8 @@
   width: 254px;   /* largura fixa = grade (236) + padding (16) + borda (2); a posição vem do geral-flutuante. Nunca usar transform aqui: os dropdowns de mês/ano são fixed e um transform no painel os jogaria para longe */
   z-index: 10;
   padding: 8px;
-  background-color: var(--fundo-superficie);
-  border: 1px solid var(--borda);
+  background-color: var(--fundo-flutuante);
+  border: 1px solid var(--borda-flutuante);
   border-radius: var(--raio-medio);
   box-shadow: var(--sombra-flutuante);
 }

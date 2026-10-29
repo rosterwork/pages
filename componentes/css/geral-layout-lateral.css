@@ -47,6 +47,55 @@
   background: var(--fundo-superficie);
 }
 
+/* ---- a alça (opcional): a aba com um ícone que abre e fecha o painel esquerdo, presa na borda esquerda da área
+   principal, no alto, por cima: não empurra o conteúdo (a página deixa o espaço dela no topo da área). Vai dentro da
+   .geral-corpo-lateral--alca; com .geral-layout-lateral--fechado o painel some e fica só a alça. A página troca a
+   classe e o aria-expanded ---- */
+.geral-corpo-lateral--alca { position: relative; }
+
+.geral-painel-esquerdo-alca {
+  position: absolute;
+  top: 8px;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  min-height: 48px;
+  padding: 0;
+  border: 1px solid var(--borda);
+  border-left: none;
+  border-radius: 0 var(--raio-medio) var(--raio-medio) 0;
+  background-color: var(--fundo-suave);
+  color: var(--texto-suave);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.geral-painel-esquerdo-alca:hover {
+  background-color: var(--fundo-medio);
+  color: var(--texto-forte);
+}
+
+/* fechado: com o mouse em cima, a alça espera 0,3 s e abre 8px com a sombra, como se o painel começasse a sair (só
+   quando o clique abre); ao sair, volta na hora. Exceção de movimento da alça (Guia visual › Camadas, movimento e
+   foco), parada com "reduzir movimento" */
+.geral-layout-lateral--fechado .geral-painel-esquerdo-alca {
+  transition: background-color 0.15s ease, color 0.15s ease, width 0.15s ease, box-shadow 0.15s ease;
+}
+
+.geral-layout-lateral--fechado .geral-painel-esquerdo-alca:hover {
+  width: 32px;
+  box-shadow: var(--sombra-flutuante);
+  transition-delay: 0s, 0s, 0.3s, 0.3s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .geral-layout-lateral--fechado .geral-painel-esquerdo-alca:hover { width: 24px; }
+}
+
+.geral-layout-lateral--fechado .geral-painel-esquerdo { display: none; }
+
 /* ---- área principal (à direita): corpo rolável + rodapé ---- */
 .geral-corpo-lateral {
   flex: 1;

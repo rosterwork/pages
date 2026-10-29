@@ -294,6 +294,7 @@
     border-color: transparent;
     border-radius: var(--raio-pequeno);
     background-color: transparent;
+    box-shadow: none;
   }
 
   html[data-celular] .acoes-admin-menu .botao::before {

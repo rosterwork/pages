@@ -17,15 +17,16 @@
   width: var(--painel-largura);
   flex-shrink: 0;
   min-height: 0;
-  /* z-index 1 (faixa 1–9, Guia visual › Camadas, movimento e foco): o painel precisa COBRIR conteúdo posicionado da
-     página que vaze por baixo dele — ex.: um botão com data-dica ganha position:relative
-     (geral-dica) e, sendo posicionado, pintaria ACIMA do painel estático. Isto NÃO muda o
-     "empurra, não sobrepõe" (o painel segue no fluxo, flex); só garante a cobertura.
-     Dropdown/modal/véu/dica (10/20/30/40) continuam acima do painel. */
+  /* z-index 9 (o topo da faixa 1–9, Guia visual › Camadas, movimento e foco), como no celular: o painel
+     pinta acima de tudo o que a página posiciona — as linhas grudadas das grades (sticky) e o conteúdo
+     que vaze por baixo dele (ex.: um botão com data-dica ganha position:relative, geral-dica) —, e
+     assim a sombra da esquerda aparece inteira sobre a página. Isto NÃO muda o "empurra, não
+     sobrepõe" (o painel segue no fluxo, flex). Dropdown/modal/véu/dica (10/20/30/40) continuam acima. */
   position: relative;
-  z-index: 1;
+  z-index: 9;
   border-left: 1px solid var(--borda);
   background-color: var(--fundo-superficie);
+  box-shadow: var(--sombra-painel);
 }
 
 .painel-lateral--aberto {

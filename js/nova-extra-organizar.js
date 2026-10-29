@@ -47,32 +47,29 @@
     nome: function (cpf) { var m = util.militar(cpf); return m ? m.grad + ' ' + m.nome : cpf; },
     /* o que o militar marcou no pedido para o dia: 'quer', 'nao' (Não posso) ou 'sem' (sem preferência) */
     pref: function (m, k) { return (m.quer || []).indexOf(k) >= 0 ? 'quer' : (m.nao_posso || []).indexOf(k) >= 0 ? 'nao' : 'sem'; },
-    /* a extra no bloco do dia, como a vaga da Extrajornada antiga: o ponto da preferência, posto e nome, o Tirar
-       deste dia, o pelotão quando é de outro, o 24h e os 4 horários. Sem op.aoMarcar é só leitura (aba Calendário);
-       op.travado (pedido aberto) só deixa desmarcar */
-    vaga: function (a, uid, op) {
-      op = op || {};
+    /* a extra no bloco do dia, só para ler (as bolinhas ficam no painel do dia e na lista): o ponto da preferência,
+       posto e nome (inteiro na dica) e o horário escrito (24h, um pedaço ou "sem horário"); embaixo, o pelotão quando
+       é de outro e o horário em dois pedaços, que não cabe na linha do nome */
+    vaga: function (a, uid) {
       var m = util.militar(a.cpf) || {}, blocos = a.blocos.map(Number);
       var v = RW.tpl('tpl-ne-vaga');
       v.querySelector('.extra-vaga-origem').classList.add({ quer: 'extra-dia-ponto--quer', nao: 'extra-dia-ponto--nao', sem: 'extra-dia-ponto--neutro' }[util.pref(m, a.data)]);
       v.querySelector('.extra-vaga-grad').textContent = m.grad || '';
       v.querySelector('.extra-vaga-nome').textContent = m.nome || a.cpf;
-      if (m.unidade_id && m.unidade_id !== uid) {
+      v.setAttribute('data-dica', ((m.grad || '') + ' ' + (m.nome || a.cpf)).trim());
+      var outro = !!m.unidade_id && m.unidade_id !== uid;
+      if (outro) {
         var pel = v.querySelector('.extra-vaga-pelotao');
         pel.textContent = (util.unidade(m.unidade_id) || {}).nome || '';
         pel.classList.remove('oculto');
       }
-      v.querySelector('.extra-vaga-24h').classList.toggle('oculto', blocos.length !== 4);
-      Array.prototype.forEach.call(v.querySelectorAll('.escala-extra-marca'), function (bt) {
-        var b = +bt.getAttribute('data-bloco'), on = blocos.indexOf(b) >= 0;
-        bt.classList.toggle('escala-extra-marca--on', on);
-        bt.setAttribute('aria-pressed', on ? 'true' : 'false');
-        bt.disabled = !op.aoMarcar || (op.travado && !on);
-        bt.addEventListener('click', function (ev) { ev.stopPropagation(); if (op.aoMarcar) op.aoMarcar(b); });
-      });
-      var tirar = v.querySelector('.extra-vaga-tirar');
-      tirar.classList.toggle('oculto', !op.aoTirar);
-      tirar.addEventListener('click', function (ev) { ev.stopPropagation(); if (op.aoTirar) op.aoTirar(); });
+      var horas = v.querySelector('.nova-extra-vaga-horas'), baixo = v.querySelector('.nova-extra-vaga-baixo');
+      horas.textContent = blocos.length === 4 ? msg().horasN(24) : blocos.length ? util.horas(blocos) : '';
+      horas.classList.toggle('oculto', !blocos.length);
+      v.querySelector('.nova-extra-vaga-sem').classList.toggle('oculto', blocos.length > 0);
+      var partido = blocos.length > 1 && blocos.length < 4 && util.horas(blocos).indexOf(' e ') >= 0;
+      if (partido) baixo.appendChild(horas);
+      baixo.classList.toggle('oculto', !outro && !partido);
       return v;
     },
     /* as unidades da página: todas as da companhia (o seletor de unidades do topo não filtra a Nova extra) */

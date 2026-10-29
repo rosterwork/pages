@@ -22,8 +22,7 @@
     </div>
   </div>
 
-  <!-- barra: igual em todas as abas: a ação do militar (escura) · o mês · Por dia | Por militar (só na Distribuição)
-       ··· | Legenda (só onde há o que explicar) -->
+  <!-- barra: igual em todas as abas: a ação do militar (escura) · o mês ··· | Legenda (só onde há o que explicar) -->
   <div class="pagina-subcabecalho">
     <button type="button" class="botao botao--primario oculto" id="nova-extra-pedir"></button>
     <div class="geral-periodo">
@@ -34,10 +33,6 @@
       <button type="button" class="botao botao--icone" id="nova-extra-mes-proximo" aria-label="Próximo mês">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
       </button>
-    </div>
-    <div class="abas abas--seletor oculto" id="p3-vista" data-barra="distribuicao">
-      <button type="button" class="aba aba--ativa" data-vista="dia">Por dia</button>
-      <button type="button" class="aba" data-vista="militar">Por militar</button>
     </div>
     <span class="espacador-flex"></span>
     <span class="pagina-subcabecalho-divisor oculto" id="nova-extra-legenda-divisor" aria-hidden="true"></span>
@@ -196,40 +191,70 @@
       </div>
     </section>
 
-    <!-- passo 3, Distribuição: Por dia (o calendário com um bloco por unidade; clicar abre o painel do dia) e Por
-         militar (a grade dos dias) -->
+    <!-- passo 3, Distribuição: a lista dos voluntários no painel esquerdo, que abre e fecha pela alça, e o
+         calendário com um bloco por pelotão em cada dia (clicar no bloco abre o painel do dia) -->
     <section class="nova-extra-area oculto" data-aba-painel="distribuicao" data-passo-painel="3">
-      <div class="nova-extra-passo-topo">
-        <div class="nota oculto" id="p3-resultado">
-          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg>
-          <span class="nota-texto"></span>
-        </div>
-        <div class="nota nota--alerta oculto" id="p3-aberto">
-          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-          <span class="nota-texto"></span>
-        </div>
-        <div class="nova-extra-resumo">
-          <span id="p3-colocadas"></span>
-          <span id="p3-dias-falta"></span>
-          <span class="nova-extra-resumo-fraco" id="p3-sobra"></span>
-          <span class="nova-extra-espaco"></span>
-          <span class="nova-extra-ajuda">Clique no dia para escolher quem tira a extra.</span>
-          <button type="button" class="botao" id="p3-sugerir">Preencher pela sugestão</button>
-        </div>
-      </div>
-      <span class="nova-extra-vazio nova-extra-vazio--area oculto" id="p3-cal-vazio">Nenhum pelotão nesta companhia.</span>
-      <div class="nova-extra-dist-cal" id="p3-cal"></div>
-      <div class="nova-extra-gm oculto" id="p3-militares">
-        <div class="nova-extra-gm-rolagem" id="p3-gm"></div>
-        <span class="nova-extra-vazio oculto" id="p3-mil-vazio">Ninguém com termo e cota concedida.</span>
-      </div>
-      <div class="rodape rodape-linha nova-extra-rodape">
-        <span class="nova-extra-rodape-texto" id="p3-texto"></span>
-        <label class="campo nova-extra-motivo oculto" id="p3-motivo-campo"><span class="campo-rotulo">Motivo do ajuste (opcional)</span><input type="text" maxlength="200" class="campo-entrada" id="p3-motivo" /></label>
-        <div class="rodape-acoes">
-          <button type="button" class="botao oculto" id="p3-desfazer-sugestao">Desfazer a sugestão</button>
-          <button type="button" class="botao" id="p3-cancelar">Cancelar</button>
-          <button type="button" class="botao botao--primario" id="p3-salvar" disabled>Salvar</button>
+      <div class="geral-layout-lateral nova-extra-dist" id="p3-lateral">
+        <!-- painel esquerdo: os voluntários na ordem da fila, os que faltam em cima e os completos embaixo; a faixa de
+             cada grupo abre e fecha pela seta; clicar no nome abre as datas dele embaixo -->
+        <aside class="geral-painel-esquerdo" id="p3-esq">
+          <div class="geral-painel-esquerdo-lista">
+            <div class="nova-extra-esq-bloco">
+              <button type="button" class="faixa nova-extra-esq-faixa" aria-expanded="true" aria-controls="p3-faltam-corpo">
+                <svg class="icone nova-extra-esq-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+                <span class="rotulo-secao">Faltam</span><span class="nova-extra-esq-conta" id="p3-faltam-conta"></span>
+              </button>
+              <div class="nova-extra-esq-corpo" id="p3-faltam-corpo">
+                <div class="nova-extra-esq-grupo" id="p3-faltam"></div>
+                <span class="nova-extra-esq-vazio oculto" id="p3-faltam-vazio">Ninguém com cota faltando.</span>
+              </div>
+            </div>
+            <div class="nova-extra-esq-bloco">
+              <button type="button" class="faixa nova-extra-esq-faixa" aria-expanded="true" aria-controls="p3-completos-corpo">
+                <svg class="icone nova-extra-esq-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+                <span class="rotulo-secao">Completos</span><span class="nova-extra-esq-conta" id="p3-completos-conta"></span>
+              </button>
+              <div class="nova-extra-esq-corpo" id="p3-completos-corpo">
+                <div class="nova-extra-esq-grupo" id="p3-completos"></div>
+                <span class="nova-extra-esq-vazio oculto" id="p3-completos-vazio">Ninguém completou as cotas.</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+        <div class="geral-corpo-lateral geral-corpo-lateral--alca">
+          <!-- a alça que abre e fecha o painel esquerdo: por cima, no alto da área; só o topo se afasta dela -->
+          <button type="button" class="geral-painel-esquerdo-alca dica--direita" id="p3-alca" aria-expanded="true" aria-controls="p3-esq" aria-label="Lista dos voluntários" data-dica="Lista dos voluntários">
+            <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-usuarios"/></svg>
+          </button>
+          <div class="nova-extra-passo-topo">
+            <div class="nota oculto" id="p3-resultado">
+              <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg>
+              <span class="nota-texto"></span>
+            </div>
+            <div class="nota nota--alerta oculto" id="p3-aberto">
+              <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+              <span class="nota-texto"></span>
+            </div>
+            <div class="nova-extra-resumo">
+              <span id="p3-colocadas"></span>
+              <span id="p3-dias-falta"></span>
+              <span class="nova-extra-resumo-fraco" id="p3-sobra"></span>
+              <span class="nova-extra-espaco"></span>
+              <span class="nova-extra-ajuda">Clique no dia para escolher quem tira a extra.</span>
+              <button type="button" class="botao" id="p3-sugerir">Preencher pela sugestão</button>
+            </div>
+          </div>
+          <span class="nova-extra-vazio nova-extra-vazio--area oculto" id="p3-cal-vazio">Nenhum pelotão nesta companhia.</span>
+          <div class="nova-extra-dist-cal" id="p3-cal"></div>
+          <div class="rodape rodape-linha nova-extra-rodape">
+            <span class="nova-extra-rodape-texto" id="p3-texto"></span>
+            <label class="campo nova-extra-motivo oculto" id="p3-motivo-campo"><span class="campo-rotulo">Motivo do ajuste (opcional)</span><input type="text" maxlength="200" class="campo-entrada" id="p3-motivo" /></label>
+            <div class="rodape-acoes">
+              <button type="button" class="botao oculto" id="p3-desfazer-sugestao">Desfazer a sugestão</button>
+              <button type="button" class="botao" id="p3-cancelar">Cancelar</button>
+              <button type="button" class="botao botao--primario" id="p3-salvar" disabled>Salvar</button>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -451,87 +476,66 @@
 
 <template id="tpl-ne-selo"><span class="selo nova-extra-selo-mini"></span></template>
 
-<!-- passo 3, Por dia (e a aba Calendário): dentro do bloco da Escala (tpl-escala-calendario-unidade, no shell), as
-     duas barras da Extrajornada antiga (rótulo | barra, "antes" e "depois") e uma vaga por extra: o ponto da
-     preferência, o nome e o Tirar deste dia em cima; o pelotão (quando é de outro), o 24h e os 4 horários embaixo -->
-<template id="tpl-ne-cel-barras">
-  <div class="extra-cel-barras"><span class="extra-cel-rotulo">antes</span><span class="extra-cel-rotulo ne-cel-depois">depois</span></div>
-</template>
-
-<template id="tpl-ne-cel-sem-extra">
-  <span class="extra-cel-sem-extra">sem extra</span>
-</template>
-
+<!-- passo 3 (e a aba Calendário): dentro do bloco da Escala (tpl-escala-calendario-unidade, no shell), o gráfico do
+     dia com as extras (o painel do dia mostra o sem e o com) e uma vaga por extra, só para ler: o ponto da
+     preferência, o posto e o nome (inteiro na dica) e o horário escrito à direita ("sem horário" para quem ficou sem
+     nenhum até o Salvar); embaixo, o pelotão quando é de outro e o horário em dois pedaços, que não cabe em cima -->
 <template id="tpl-ne-vaga">
-  <div class="extra-vaga">
+  <div class="extra-vaga nova-extra-vaga">
     <span class="extra-dia-ponto extra-vaga-origem"></span>
-    <span class="extra-vaga-corpo">
-      <span class="extra-vaga-linha-nome">
-        <span class="extra-vaga-id"><span class="extra-vaga-grad"></span> <span class="extra-vaga-nome"></span></span>
-        <button type="button" class="botao botao--icone botao--pequeno extra-vaga-tirar" aria-label="Tirar deste dia" data-dica="Tirar deste dia">
-          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
-        </button>
-      </span>
-      <span class="extra-vaga-linha-controles">
-        <span class="extra-vaga-pelotao oculto"></span>
-        <span class="espacador-flex"></span>
-        <span class="extra-vaga-24h oculto">24h</span>
-        <span class="extra-vaga-blocos">
-          <button type="button" class="escala-extra-marca" data-bloco="1" aria-pressed="false" aria-label="08h às 14h"></button>
-          <button type="button" class="escala-extra-marca" data-bloco="2" aria-pressed="false" aria-label="14h às 20h"></button>
-          <button type="button" class="escala-extra-marca" data-bloco="3" aria-pressed="false" aria-label="20h às 02h"></button>
-          <button type="button" class="escala-extra-marca" data-bloco="4" aria-pressed="false" aria-label="02h às 08h"></button>
-        </span>
-      </span>
+    <span class="extra-vaga-id"><span class="extra-vaga-grad"></span> <span class="extra-vaga-nome"></span></span>
+    <span class="nova-extra-vaga-horas"></span>
+    <span class="nova-extra-vaga-sem oculto">sem horário</span>
+    <span class="nova-extra-vaga-baixo oculto"><span class="extra-vaga-pelotao oculto"></span></span>
+  </div>
+</template>
+
+<!-- passo 3, o painel esquerdo: um voluntário (posto e nome, o pelotão e as cotas colocadas de recebidas); clicar
+     abre embaixo as datas dele -->
+<template id="tpl-ne-esq-item">
+  <button type="button" class="lista-item lista-item--clicavel nova-extra-esq-item" aria-expanded="false">
+    <span class="nova-extra-esq-quem"><span class="nova-extra-esq-grad"></span> <span class="nova-extra-esq-nome"></span></span>
+    <span class="nova-extra-esq-pel"></span>
+    <span class="nova-extra-esq-cotas"></span>
+  </button>
+</template>
+
+<!-- as datas dele: uma linha por data, o Nova data e o calendário pequeno do mês para escolher o dia -->
+<template id="tpl-ne-esq-aberto">
+  <div class="nova-extra-esq-aberto">
+    <div class="nova-extra-esq-datas"></div>
+    <span class="nova-extra-esq-sem oculto">Nenhuma data ainda.</span>
+    <button type="button" class="botao nova-extra-esq-nova" aria-expanded="false">Nova data</button>
+    <div class="nova-extra-esq-cal oculto"></div>
+  </div>
+</template>
+
+<!-- uma data dele: o dia, o pelotão quando é de outro e os 4 horários -->
+<template id="tpl-ne-esq-data">
+  <div class="nova-extra-esq-data">
+    <span class="nova-extra-esq-dia"></span>
+    <span class="nova-extra-esq-data-pel"></span>
+    <span class="nova-extra-marcas">
+      <button type="button" class="escala-extra-marca" data-bloco="1" aria-pressed="false" aria-label="08h às 14h"></button>
+      <button type="button" class="escala-extra-marca" data-bloco="2" aria-pressed="false" aria-label="14h às 20h"></button>
+      <button type="button" class="escala-extra-marca" data-bloco="3" aria-pressed="false" aria-label="20h às 02h"></button>
+      <button type="button" class="escala-extra-marca" data-bloco="4" aria-pressed="false" aria-label="02h às 08h"></button>
     </span>
   </div>
 </template>
 
-<!-- passo 3, Por militar: a grade dos 31 dias (os dias no cabeçalho, a linha de cada pelotão e a de cada militar) -->
-<template id="tpl-ne-gm-tabela">
-  <table class="nova-extra-gm-tabela">
-    <thead><tr class="ne-gm-cab"><th class="nova-extra-gm-nome">Militar</th><th class="nova-extra-gm-cota">Cotas</th></tr></thead>
-    <tbody></tbody>
-  </table>
-</template>
-<template id="tpl-ne-gm-th">
-  <th class="nova-extra-gm-dia"><span class="ne-sem"></span><b class="ne-num"></b></th>
-</template>
-<template id="tpl-ne-gm-pel">
-  <tr class="nova-extra-gm-pel"><td class="nova-extra-gm-nome" colspan="2"><b class="ne-pel-nome"></b><span class="ne-pel-info"></span></td></tr>
-</template>
-<template id="tpl-ne-gm-linha">
-  <tr class="nova-extra-gm-linha"><td class="nova-extra-gm-nome nova-extra-nome"><small></small> <b></b></td><td class="nova-extra-gm-cota ne-gm-cota"></td></tr>
-</template>
-<template id="tpl-ne-gm-td">
-  <td class="nova-extra-gm-dia"></td>
-</template>
-<template id="tpl-ne-gm-cel">
-  <td class="nova-extra-gm-dia"><button type="button" class="nova-extra-gm-casa"></button></td>
-</template>
-<template id="tpl-ne-gm-sigla">
-  <small class="nova-extra-gm-sigla"></small>
-</template>
-<!-- as 4 bolinhas de um dia: os horários de 08h, 14h, 20h e 02h -->
-<template id="tpl-ne-bol">
-  <span class="nova-extra-bol" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-</template>
-
-<!-- a caixa do quadrado: o militar no dia, os 4 horários deste dia e os outros dias dele -->
-<template id="tpl-ne-caixa-dia">
-  <div class="nova-extra-caixa-dia" role="dialog" aria-label="Extra do militar no dia">
-    <div class="nova-extra-caixa-dia-cab">
-      <span class="nova-extra-caixa-dia-titulos"><b class="ne-cx-nome"></b><span class="ne-cx-sub"></span></span>
-      <button type="button" class="botao botao--icone ne-cx-fechar" aria-label="Fechar" data-dica="Fechar">
-        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
-      </button>
+<!-- painel do dia: um grupo (Neste dia, Querem este dia...) que abre e fecha pelo título, com os horários em cima
+     das bolinhas -->
+<template id="tpl-ne-grupo">
+  <div class="grupo-caixa escala-extra-grupo nova-extra-grupo">
+    <button type="button" class="grupo-caixa-cabecalho" aria-expanded="true">
+      <span class="rotulo-secao"><span class="ne-grupo-nome"></span> (<span class="ne-grupo-conta"></span>)</span>
+      <svg class="icone grupo-caixa-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+    </button>
+    <div class="grupo-caixa-corpo">
+      <span class="escala-extra-horas nova-extra-horas" aria-hidden="true"><span>08</span><span>14</span><span>20</span><span>02</span></span>
+      <div class="escala-extra-grupo-linhas"></div>
     </div>
-    <div class="ne-cx-selos"></div>
-    <span class="nova-extra-caixa-dia-horas"><span class="rotulo-secao">Este dia</span><span class="escala-extra-horas" aria-hidden="true"><span>08</span><span>14</span><span>20</span><span>02</span></span></span>
-    <div class="ne-cx-este"></div>
-    <span class="rotulo-secao ne-cx-outros-titulo">Os outros dias dele</span>
-    <div class="nova-extra-caixa-dia-outros ne-cx-outros"></div>
-    <span class="nova-extra-caixa-dia-aviso ne-cx-aviso oculto"></span>
   </div>
 </template>
 
@@ -585,9 +589,10 @@
   <div class="escala-legenda-grupo">
     <span class="rotulo-secao">As bolinhas</span>
     <ul class="nova-extra-legenda-lista">
-      <li>Cada dia tem 4 bolinhas, os horários de 08h, 14h, 20h e 02h.</li>
-      <li>No militar, a bolinha escura é horário de extra. A sigla embaixo diz o pelotão quando a extra é em outro.</li>
-      <li>No pelotão: verde coberto, vermelho ainda falta gente, amarelo abaixo do ideal, cinza sem escala.</li>
+      <li>Cada militar tem 4 bolinhas por dia, os horários de 08h, 14h, 20h e 02h. A escura é horário de extra. Clicar marca ou desmarca.</li>
+      <li>No calendário, o horário aparece escrito. As bolinhas ficam na lista e no painel do dia.</li>
+      <li>Quem já usou todas as cotas só marca um horário depois de tirar outro, de outro dia.</li>
+      <li>Sem nenhuma bolinha, o militar continua no dia até o Salvar. Ao salvar, ele sai.</li>
     </ul>
   </div>
 </template>

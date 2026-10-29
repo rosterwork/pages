@@ -116,6 +116,7 @@
   border: 1px solid var(--borda-forte);
   border-radius: var(--raio-medio);
   background-color: var(--fundo-superficie);
+  box-shadow: var(--sombra-bloco);   /* o mesmo relevo dos botões da barra */
 }
 
 .abas--seletor::after {

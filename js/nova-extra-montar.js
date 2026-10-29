@@ -3,12 +3,13 @@
    O rascunho das extras do mês, a falta de cada pelotão (vermelha e
    amarela, com e sem as extras, e o que cada extra cobriu), a escala
    do mês (a mesma leitura da Escala), o resumo e o resultado da
-   sugestão. O Por dia é o calendário (nova-extra-por-dia.js), o painel
-   do dia fica em nova-extra-dia.js e o Por militar é a grade dos 31
-   dias (nova-extra-militares.js). Todos leem daqui (RosterWork.
+   sugestão. O calendário fica em nova-extra-por-dia.js, o painel do
+   dia em nova-extra-dia.js e a lista dos voluntários (o painel
+   esquerdo) em nova-extra-lista.js. Todos leem daqui (RosterWork.
    novaExtraGrade). Tudo fica no rascunho até o Salvar
-   (nova_extra_distribuicao_salvar); "Preencher pela sugestão" pede o
-   rascunho ao motor (nova_extra_sugerir).
+   (nova_extra_distribuicao_salvar); o militar sem nenhum horário
+   continua no dia até lá. "Preencher pela sugestão" pede o rascunho
+   ao motor (nova_extra_sugerir).
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
    RosterWork.novaExtraMontar.
    ============================================================ */
@@ -22,10 +23,8 @@
   var MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 
   var d = null, el = null, aoSalvar = null;
-  var mud = {};            // rascunho: 'cpf|data' -> { cpf, data, unidade, blocos, origem, porque } (blocos [] = tira)
+  var mud = {};            // rascunho: 'cpf|data' -> { cpf, data, unidade, blocos, origem, porque } (blocos [] = sai ao salvar)
   var sugeridas = [];      // as chaves que a última sugestão pôs
-  var sobras = {};         // o que a última sugestão não conseguiu pôr { cpf: { faltam, motivo } }
-  var vista = 'dia';
   var escala = null;       // a escala do mês sem extra: { comp, cobertura, erro }
   var escalaSeq = 0;
 
@@ -45,17 +44,21 @@
   }
   function dataLonga(k) { var x = dataDe(k); return SEMANA[x.getDay()] + ', ' + x.getDate() + ' de ' + MESES[x.getMonth()]; }
 
-  /* as alocações como ficam com o rascunho */
-  function efetivas() {
+  /* as vagas como ficam com o rascunho, inclusive as sem nenhum horário (o militar fica no dia até o Salvar) */
+  function vagas() {
     var mapa = {};
     d.alocacoes.forEach(function (a) { mapa[chave(a.cpf, a.data)] = a; });
     Object.keys(mud).forEach(function (k) { mapa[k] = mud[k]; });
-    return Object.keys(mapa).map(function (k) { return mapa[k]; }).filter(function (a) { return a.blocos && a.blocos.length; });
+    return Object.keys(mapa).map(function (k) { return mapa[k]; });
   }
-  function alocDe(cpf, data) {
-    var k = chave(cpf, data);
-    if (k in mud) return mud[k].blocos.length ? mud[k] : null;
-    return d.alocacoes.filter(function (a) { return a.cpf === cpf && a.data === data; })[0] || null;
+  /* as alocações como ficam com o rascunho: só as que têm horário */
+  function efetivas() { return vagas().filter(function (a) { return a.blocos && a.blocos.length; }); }
+  function base(cpf, data) { return d.alocacoes.filter(function (a) { return a.cpf === cpf && a.data === data; })[0] || null; }
+  function vagaDe(cpf, data) { var k = chave(cpf, data); return k in mud ? mud[k] : base(cpf, data); }
+  function alocDe(cpf, data) { var v = vagaDe(cpf, data); return v && v.blocos.length ? v : null; }
+  /* as mudanças do rascunho que mexem na escala (a data nova ainda sem horário não mexe) */
+  function alteracoes() {
+    return Object.keys(mud).filter(function (k) { return mud[k].blocos.length || !!base(mud[k].cpf, mud[k].data); });
   }
   function usadas(cpf, alocs) { return (alocs || efetivas()).filter(function (a) { return a.cpf === cpf; }).reduce(function (s, a) { return s + a.blocos.length; }, 0); }
   /* a distribuição só é salva depois que o pedido fecha: antes disso, só dá para tirar extra */
@@ -64,6 +67,15 @@
   function blocos(a) { return a.blocos.map(Number); }
   /* a CNH que a viatura pede ('' = qualquer uma) está entre as que ele conduz (o banco diz quais) */
   function conduz(m, cnh) { return !cnh || (m.conduz || []).indexOf(cnh) >= 0; }
+  /* o que impede o militar de tirar extra no dia pela escala dele (serviço, folga, afastamento ou expediente o dia
+     todo); null se nada impede */
+  function impedimento(m, k) {
+    var oc = (m.ocupado || {})[k];
+    if (oc) return RW.mensagens.novaExtra.motivos[oc] || oc;
+    var livres = ((d.livres_adm || {})[m.cpf] || {})[k];
+    if (livres && !livres.length) return msg().expedienteDiaTodo;
+    return null;
+  }
 
   /* a falta de uma unidade num dia, por horário, a vermelha e a amarela (a que começa com "a"): base (a da escala),
      cond (condutor que sobra) e total (o que sobra com as extras). Cada extra cobre, na ordem da sugestão, um
@@ -150,13 +162,20 @@
   }
   function porDia() { return RW.novaExtraPorDia; }
 
+  /* muda os horários do militar no dia (o mesmo para o calendário, a lista e o painel do dia). Quem já usou todas as
+     cotas só marca depois de tirar um horário de outro dia; sem nenhum horário, ele continua no dia até o Salvar */
   function mudar(m, k, novos, unidade) {
-    var base = d.alocacoes.filter(function (a) { return a.cpf === m.cpf && a.data === k; })[0];
+    var atual = vagaDe(m.cpf, k), tem = atual ? atual.blocos.length : 0;
+    if (novos.length > tem && usadas(m.cpf) - tem + novos.length > (m.concedidas || 0)) {
+      var nome = (m.grad + ' ' + m.nome).trim();
+      RW.avisar({ tipo: 'aviso', mensagem: m.so24 ? msg().cotaCheia24(nome) : msg().cotaCheia(nome, m.concedidas || 0) });
+      return;
+    }
+    var antes = base(m.cpf, k);
     var novo = { cpf: m.cpf, data: k, unidade: +unidade, blocos: novos.slice().sort(), origem: 'admin', porque: null };
-    if (base && +base.unidade === novo.unidade && JSON.stringify(blocos(base).sort()) === JSON.stringify(novo.blocos)) delete mud[chave(m.cpf, k)];
-    else if (!base && !novos.length) delete mud[chave(m.cpf, k)];
+    if (antes && +antes.unidade === novo.unidade && JSON.stringify(blocos(antes).sort()) === JSON.stringify(novo.blocos)) delete mud[chave(m.cpf, k)];
     else mud[chave(m.cpf, k)] = novo;
-    if (vista === 'dia' && escalaPronta()) porDia().atualizarDia(k);
+    if (escalaPronta()) porDia().atualizarDia(k);
     redesenhar(true);
   }
 
@@ -173,15 +192,13 @@
         mud[k] = { cpf: p.cpf, data: p.data, unidade: p.unidade, blocos: p.blocos, origem: 'sugestao', porque: p.porque };
         sugeridas.push(k);
       });
-      sobras = {};
-      r.nao_coube.forEach(function (x) { sobras[x.cpf] = { faltam: x.faltam, motivo: x.motivo }; });
       redesenhar();
     }, function () { RW.pararCarregando(btn); RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao }); });
   }
 
   function desfazerSugestao() {
     sugeridas.forEach(function (k) { if (mud[k] && mud[k].origem === 'sugestao') delete mud[k]; });
-    sugeridas = []; sobras = {};
+    sugeridas = [];
     redesenhar();
   }
 
@@ -190,25 +207,25 @@
     RW.iniciarCarregando(btn);
     RW.rpc('nova_extra_distribuicao_salvar', {
       p_competencia: d.competencia,
-      p_mudancas: Object.keys(mud).map(function (k) { return mud[k]; }),
+      p_mudancas: alteracoes().map(function (k) { return mud[k]; }),
       p_motivo: q('#p3-motivo').value || null
     }).then(function (r) {
       RW.pararCarregando(btn);
       if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
-      mud = {}; sugeridas = []; sobras = {};
+      mud = {}; sugeridas = [];
       q('#p3-motivo').value = '';
       aoSalvar();
     }, function () { RW.pararCarregando(btn); RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao }); });
   }
 
-  /* o resumo, o rodapé e a vista; soCabeca = o calendário já foi refeito no dia que mudou */
+  /* o resumo, o rodapé, a lista e o calendário; soCabeca = o calendário já foi refeito no dia que mudou */
   function redesenhar(soCabeca) {
-    var n = Object.keys(mud).length;
+    var n = alteracoes().length;
     var ajuste = d.iniciado && !!d.lancamento;
     q('#p3-texto').textContent = n ? (ajuste ? msg().ajusteTexto(n) : msg().alteracoes(n)) : (ajuste ? msg().ajusteModo : '');
     q('#p3-motivo-campo').classList.toggle('oculto', !ajuste);
     q('#p3-salvar').disabled = !n;
-    q('#p3-cancelar').disabled = !n;
+    q('#p3-cancelar').disabled = !Object.keys(mud).length;
     q('#p3-desfazer-sugestao').classList.toggle('oculto', !sugeridas.length);
     var aberto = q('#p3-aberto');
     aberto.classList.toggle('oculto', !travado());
@@ -239,21 +256,19 @@
     }
     q('#p3-dias-falta').textContent = msg().diasFalta(comFalta);
     q('#p3-dias-falta').classList.toggle('nova-extra-negativo', comFalta > 0);
-    Array.prototype.forEach.call(el.querySelectorAll('#p3-vista [data-vista]'), function (b) { b.classList.toggle('aba--ativa', b.getAttribute('data-vista') === vista); });
-    /* Por dia sem nenhum pelotão: o vazio no lugar do calendário */
+    RW.novaExtraLista.desenhar(el);
+    /* sem nenhum pelotão: o vazio no lugar do calendário */
     var nenhuma = !u().doCalendario(alocs).length;
-    q('#p3-cal').classList.toggle('oculto', vista !== 'dia' || nenhuma);
-    q('#p3-cal-vazio').classList.toggle('oculto', vista !== 'dia' || !nenhuma);
-    q('#p3-militares').classList.toggle('oculto', vista !== 'militar');
+    q('#p3-cal').classList.toggle('oculto', nenhuma);
+    q('#p3-cal-vazio').classList.toggle('oculto', !nenhuma);
     if (!escalaPronta()) {
-      var alvo = q(vista === 'dia' ? '#p3-cal' : '#p3-gm');
+      var alvo = q('#p3-cal');
       alvo.textContent = '';
       var car = RW.tpl('tpl-escala-carregando'); if (car) alvo.appendChild(car);
       carregarEscala();
       return;
     }
-    if (vista === 'militar') RW.novaExtraMilitares.desenhar(el);
-    else if (!soCabeca && !nenhuma) porDia().desenhar(q('#p3-cal'));
+    if (!soCabeca && !nenhuma) porDia().desenhar(q('#p3-cal'));
     dia().redesenhar();
   }
 
@@ -261,18 +276,16 @@
   function mostrar(dados, conteudo, recarregar) {
     d = dados; el = conteudo; aoSalvar = recarregar;
     if (ligado !== el) {
-      ligado = el; mud = {}; sugeridas = []; sobras = {}; vista = 'dia'; escala = null;
+      ligado = el; mud = {}; sugeridas = []; escala = null;
       q('#p3-sugerir').addEventListener('click', sugerir);
       q('#p3-desfazer-sugestao').addEventListener('click', desfazerSugestao);
       q('#p3-salvar').addEventListener('click', salvar);
       q('#p3-cancelar').addEventListener('click', function () {
         RW.confirmar({ tipo: 'aviso', mensagem: msg().descartarRascunho, textoConfirmar: RW.mensagens.botoes.descartar,
-          aoConfirmar: function () { mud = {}; sugeridas = []; sobras = {}; redesenhar(); } });
+          aoConfirmar: function () { mud = {}; sugeridas = []; redesenhar(); } });
       });
-      Array.prototype.forEach.call(el.querySelectorAll('#p3-vista [data-vista]'), function (b) {
-        b.addEventListener('click', function () { RW.novaExtraMilitares.fecharCaixa(); vista = b.getAttribute('data-vista'); redesenhar(); });
-      });
-      if (RW.guardaSaida) RW.guardaSaida.registrar(function () { return el && el.isConnected && Object.keys(mud).length > 0; });
+      RW.novaExtraLista.ligar(el);
+      if (RW.guardaSaida) RW.guardaSaida.registrar(function () { return el && el.isConnected && alteracoes().length > 0; });
     }
     redesenhar();
   }
@@ -290,24 +303,24 @@
 
   RW.novaExtraMontar = {
     mostrar: mostrar,
-    sujo: function () { return Object.keys(mud).length > 0; },
-    descartar: function () { mud = {}; sugeridas = []; sobras = {}; },
-    /* o painel do dia e a caixa do quadrado fecham ao sair do passo 3 ou da aba */
-    fecharPainel: function () { if (RW.novaExtraMilitares) RW.novaExtraMilitares.fecharCaixa(); if (dia()) dia().fechar(); },
+    sujo: function () { return !!d && alteracoes().length > 0; },
+    descartar: function () { mud = {}; sugeridas = []; },
+    /* o painel do dia fecha ao sair do passo 3 ou da aba */
+    fecharPainel: function () { if (dia()) dia().fechar(); },
     diasComFalta: diasComFalta
   };
 
-  /* o que o painel do dia e o Por militar leem e mudam */
+  /* o que o calendário, o painel do dia e a lista leem e mudam */
   RW.novaExtraGrade = {
     INI: INI, SEM_CURTA: SEM_CURTA,
     dados: function () { return d; },
-    efetivas: efetivas, alocDe: alocDe, usadas: usadas, voluntarios: voluntarios, blocos: blocos, conduz: conduz,
+    vagas: vagas, vagaDe: vagaDe, efetivas: efetivas, alocDe: alocDe, usadas: usadas, voluntarios: voluntarios, blocos: blocos,
+    conduz: conduz, impedimento: impedimento,
     faltaDoDia: faltaDoDia, situacao: situacao, antesDe: antesDe, depoisDe: depoisDe, corDe: corDe, travado: travado,
     grafico: function (cob, uid, erro) { return porDia().grafico(cob, uid, erro); },
     coberturaEscala: function () { return escala.cobertura; },
     erroAntes: function (uid, k) { return (escala.erro[uid] || {})[k]; },
     pelotoes: pelotoes, diasDoMes: diasDoMes, dataDe: dataDe, dataLonga: dataLonga, somaDia: somaDia,
-    sobra: function (cpf) { return sobras[cpf] || null; },
     mudar: mudar, marcarAberto: function () { porDia().marcarAberto(); }
   };
 })();
