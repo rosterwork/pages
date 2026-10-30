@@ -1,16 +1,15 @@
 /* ============================================================
    ESCALAS — Imprimir as grades (painel → PDF)
    Nas grades (Agenda, Calendário, Colunas), o botão Imprimir abre o
-   painel direito, e sai o que está na tela: a grade, o mês (no
-   Colunas › Unidades, a semana), as unidades e os filtros, resumidos
-   na nota do alto. Nas caixas numeradas: o formato (Folhas A4 ou
-   Página contínua), o período (no Calendário, o "Mês todo" ou as
-   semanas escolhidas; na Agenda e no Colunas › Dias, do dia ao dia),
-   o que mostrar em cada célula e a prévia (o próprio PDF, no leitor do
-   navegador), refeita a cada mudança (a última pedida vale). O Gerar
-   PDF baixa o mesmo arquivo; o desenho fica no escalas-impressao-grade-pdf.js.
-   No celular o painel fica sem a prévia (o navegador não mostra PDF
-   dentro da página).
+   painel de impressão comum (escalas-impressao-painel.js), com o que
+   é desta impressão: a grade e o mês da tela (no Colunas › Unidades,
+   a semana) e os filtros ligados, no resumo da nota do alto; o
+   período (no Calendário, o "Mês todo" ou as semanas escolhidas; na
+   Agenda e no Colunas › Dias, do dia ao dia); o formato (Folhas A4
+   ou Página contínua) e o arquivo, desenhado no
+   escalas-impressao-grade-pdf.js. As unidades começam marcadas com as
+   da tela (e a companhia de cada pelotão); o Mostrar (gráfico,
+   ícones, faixa), a prévia e o Gerar PDF são do painel comum.
    ============================================================ */
 (function () {
   'use strict';
@@ -18,7 +17,6 @@
   var RW = window.RosterWork = window.RosterWork || {};
 
   var MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
-  var ESPERA_PREVIA = 400;   // ms sem mexer antes de refazer a prévia
   /* o período de cada grade (semanas, dias ou a semana da tela) e a folha (paisagem ou retrato) */
   var FORMATOS = {
     agenda: { periodo: 'dias', paisagem: false },
@@ -27,9 +25,7 @@
     'colunas-unidades': { periodo: 'semana', paisagem: false }
   };
 
-  var form = null;          // o painel aberto: escolhas e peças
-  var tokenPrevia = 0;      // latest-wins da prévia
-  var esperaPrevia = null;
+  var form = null;          // o painel aberto: as escolhas desta impressão (formato e período) e as peças delas
   var cacheDados = null;    // { chave, promessa }: mudar o formato, o Mostrar ou o período não busca de novo
 
   function msg() { return RW.mensagens.escala.impressao.grade; }
@@ -169,12 +165,12 @@
     });
   }
 
-  /* ---------- prévia ---------- */
+  /* ---------- o período mudou: a frase das datas e o painel (o resumo, a prévia) ---------- */
   function mudou() {
     var p = periodoEscolhido();
     form.periodo.textContent = p.frase;
     form.periodo.classList.toggle('oculto', !p.frase);
-    agendarPrevia();
+    RW.escalasImpressaoPainel.atualizar();
   }
 
   /* os dados da tela (ler_escala_mes) do mês ou da semana; o mesmo pedido não busca de novo */
@@ -187,183 +183,86 @@
     return promessa;
   }
 
-  /* monta o PDF das escolhas atuais: { arquivo, folhas, nome } */
-  function pedirArquivo() {
-    if (!form.unidades.length) return Promise.reject({ semUnidade: true });
-    var p = periodoEscolhido();
-    var ids = form.unidades.map(function (u) { return u.unidade_id; });
-    return carregarDados(ids, RW.data.paraIsoDeData(p.busca.inicio), RW.data.paraIsoDeData(p.busca.fim)).then(function (dados) {
-      return RW.escalasImpressaoGradePdf.gerar({
-        formato: form.formato,
-        paisagem: FORMATOS[form.formato].paisagem,
-        continua: form.continua,
-        mostrar: form.mostrar,
-        diasPorLinha: form.diasPorLinha,
-        unidades: form.unidades,
-        dias: p.dias,
-        texto: p.texto,
-        dados: dados
-      });
-    });
-  }
-
-  function mostrarCarregando(sim) {
-    form.carregando.classList.toggle('carregando-veu--visivel', sim);
-  }
-
-  function avisoDaFalha(e) {
-    if (e && e.semUnidade) return (RW.mensagens.distribuicao && RW.mensagens.distribuicao.selecioneUnidade) || '';
-    if (e && e.longaDemais) return msg().longaDemais;
-    return msg().falhaPrevia;
-  }
-
-  /* a prévia é refeita depois de uma pausa sem mexer; a última pedida vale */
-  function agendarPrevia() {
-    var token = ++tokenPrevia;
-    form.pedido = null;
-    clearTimeout(esperaPrevia);
-    if (RW.celular && RW.celular()) return;
-    mostrarCarregando(true);
-    esperaPrevia = setTimeout(function () { fazerPrevia(token); }, ESPERA_PREVIA);
-  }
-
-  function fazerPrevia(token) {
-    if (!form || token !== tokenPrevia) return;
-    var ref = form;
-    form.pedido = { token: token, promessa: pedirArquivo() };
-    form.pedido.promessa.then(function (r) {
-      if (form !== ref || token !== tokenPrevia) return;
-      if (form.url) URL.revokeObjectURL(form.url);
-      form.url = URL.createObjectURL(r.arquivo);
-      /* o leitor do navegador sem a barra dele, na largura do quadro */
-      form.previa.src = form.url + '#toolbar=0&navpanes=0&view=FitH';
-      form.aviso.classList.add('oculto');
-      form.folhas.textContent = msg().folhas(r.folhas, form.continua, FORMATOS[form.formato].paisagem);
-      mostrarCarregando(false);
-    }, function (e) {
-      if (form !== ref || token !== tokenPrevia) return;
-      form.aviso.textContent = avisoDaFalha(e);
-      form.aviso.classList.remove('oculto');
-      form.folhas.textContent = '';
-      mostrarCarregando(false);
-    });
-  }
-
-  /* ---------- gerar ---------- */
-  /* baixa o arquivo da prévia (ou monta agora, se a prévia ainda não saiu) e fecha o painel */
-  function gerar() {
-    var botao = form.gerar;
-    var promessa = (form.pedido && form.pedido.token === tokenPrevia) ? form.pedido.promessa : pedirArquivo();
-    if (RW.iniciarCarregando) RW.iniciarCarregando(botao);
-    function terminar() { if (RW.pararCarregando && botao.isConnected) RW.pararCarregando(botao); }
-    promessa.then(function (r) {
-      terminar();
-      RW.escalasImpressaoPdf.baixar(r.arquivo, r.nome);
-      if (RW.painel) RW.painel.fechar();
-    }).catch(function (e) {
-      terminar();
-      var mensagem = (e && (e.semUnidade || e.longaDemais)) ? avisoDaFalha(e) : RW.mensagens.escala.impressao.falhaGerar;
-      if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: mensagem });
-    });
-  }
-
-  /* ---------- abrir ---------- */
-  function fecharLimpo() {
-    tokenPrevia++;
-    clearTimeout(esperaPrevia);
-    if (form && form.url) URL.revokeObjectURL(form.url);
-    form = null;
-    cacheDados = null;
-  }
-
-  function subtitulo() { return msg().subtitulo(FORMATOS[form.formato].paisagem, form.continua); }
-
-  /* a nota do alto: "Calendário de outubro de 2026, 2ªCIBM, 1ºPEL e 2ºPEL, sem filtros." */
-  function resumoDaTela() {
+  /* a nota do alto: "Calendário de outubro de 2026, 2ªCIBM e 2ºPEL, sem filtros." */
+  function resumo(unidades) {
     var periodo = FORMATOS[form.formato].periodo === 'semana'
       ? msg().daSemana(periodoEscolhido().texto)
       : msg().doMesDaTela(msg().comAno(MESES[form.mes.getMonth()], form.mes.getFullYear()));
-    var unidades = msg().juntar(form.unidades.map(function (u) { return u.nome; }));
-    return msg().resumo(msg().nomes[form.formato], periodo, unidades, form.filtros);
+    return msg().resumo(msg().nomes[form.formato], periodo, msg().juntar(unidades.map(function (u) { return u.nome; })), form.filtros);
   }
 
-  /* as caixas visíveis, numeradas em ordem (o Colunas › Unidades não tem a do período) */
-  function numerarCaixas() {
-    var n = 0;
-    Array.prototype.forEach.call(form.raiz.querySelectorAll('.painel-corpo > .grupo-caixa'), function (caixa) {
-      if (caixa.classList.contains('oculto')) return;
-      n++;
-      Array.prototype.forEach.call(caixa.querySelectorAll('[data-impressao-num]'), function (el) { el.textContent = String(n); });
-    });
+  /* o estado das escolhas para o painel comum: o resumo, o período (para o erro grave) e o arquivo */
+  function estado(escolhas) {
+    var p = periodoEscolhido();
+    var dentro = p.dias.filter(function (d) { return !d.fora; });
+    var iso = RW.data.paraIsoDeData;
+    var formato = form.formato, continua = form.continua, paisagem = FORMATOS[formato].paisagem, diasPorLinha = form.diasPorLinha;
+    var unidades = escolhas.unidades.map(function (u) { return { unidade_id: u.unidade_id, nome: u.nome }; });
+    var mostrar = escolhas.mostrar;
+    return {
+      resumo: resumo(escolhas.unidades),
+      inicio: iso(dentro[0].data),
+      fim: iso(dentro[dentro.length - 1].data),
+      chave: [escolhas.ids.join(','), formato, continua, mostrar.grafico, mostrar.icones, mostrar.faixa, p.dias.length,
+        iso(p.dias[0].data), iso(p.dias[p.dias.length - 1].data), p.texto].join('|'),
+      montar: function () {
+        return carregarDados(escolhas.ids, iso(p.busca.inicio), iso(p.busca.fim)).then(function (dados) {
+          return RW.escalasImpressaoGradePdf.gerar({ formato: formato, paisagem: paisagem, continua: continua, mostrar: mostrar,
+            diasPorLinha: diasPorLinha, unidades: unidades, dias: p.dias, texto: p.texto, dados: dados });
+        }).then(function (r) {
+          return { arquivo: r.arquivo, nome: r.nome, folhas: msg().folhas(r.folhas, continua, paisagem) };
+        }, function (e) {
+          throw { mensagem: e && e.longaDemais ? msg().longaDemais : null };
+        });
+      }
+    };
   }
 
-  /* opcoes: { formato, data (a da tela), unidades ([{ unidade_id, nome }] da tela, na ordem dela), diasPorLinha,
+  /* ---------- abrir ---------- */
+  function subtitulo() { return msg().subtitulo(FORMATOS[form.formato].paisagem, form.continua); }
+
+  /* opcoes: { formato, data (a da tela), unidades ([{ unidade_id, nome }] da tela: as marcadas no começo), diasPorLinha,
      filtros (os ligados na tela, em texto) } */
   function abrir(opcoes) {
-    if (!RW.painel || !FORMATOS[opcoes.formato]) return;
-    fecharLimpo();
+    if (!RW.painel || !RW.escalasImpressaoPainel || !FORMATOS[opcoes.formato]) return;
     var formato = opcoes.formato;
-    RW.painel.abrir({ titulo: msg().titulos[formato], subtitulo: msg().subtitulo(FORMATOS[formato].paisagem, false), aoFechar: fecharLimpo });
-    var corpo = RW.painel.corpo();
-    var rodape = RW.painel.rodape();
-    var molde = document.getElementById('tpl-escala-impressao-grade');
-    var acoes = document.getElementById('tpl-escala-impressao-acoes');
-    if (!corpo || !molde) return;
-    corpo.appendChild(molde.content.cloneNode(true));
-    if (rodape && acoes) { rodape.appendChild(acoes.content.cloneNode(true)); rodape.classList.remove('oculto'); }
-
-    var raiz = document.getElementById('painel');
-    var data = opcoes.data || new Date();
-    function peca(nome) { return raiz.querySelector('[data-impressao-' + nome + ']'); }
-    /* as escolhas (formato, Mostrar, semanas, dias), o que vem da tela e as peças do painel */
-    form = {
-      raiz: raiz, formato: formato, continua: false, mostrar: { grafico: true, icones: true, faixa: true },
-      diasPorLinha: opcoes.diasPorLinha || 3, unidades: opcoes.unidades || [], filtros: opcoes.filtros || [],
-      data: new Date(data.getFullYear(), data.getMonth(), data.getDate()), mes: new Date(data.getFullYear(), data.getMonth(), 1),
-      mesTodo: true, semanas: [], de: 1, ate: 1,
-      mesTodoBotao: peca('mes-todo'), lista: peca('semanas'), periodo: peca('periodo'), previa: peca('previa'),
-      aviso: peca('previa-aviso'), carregando: peca('previa-carregando'), folhas: peca('folhas'), gerar: peca('gerar'),
-      pedido: null, url: null
-    };
-
-    /* só as peças do período desta grade (semanas ou dias); o Colunas › Unidades fica sem a caixa */
     var periodo = FORMATOS[formato].periodo;
-    peca('periodo-caixa').classList.toggle('oculto', periodo === 'semana');
-    Array.prototype.forEach.call(raiz.querySelectorAll('[data-impressao-so]'), function (el) {
-      el.classList.toggle('oculto', el.getAttribute('data-impressao-so') !== periodo);
+    var data = opcoes.data || new Date();
+    cacheDados = null;
+    RW.painel.abrir({ titulo: msg().titulos[formato], subtitulo: msg().subtitulo(FORMATOS[formato].paisagem, false),
+      aoFechar: function () { RW.escalasImpressaoPainel.esquecer(); form = null; cacheDados = null; } });
+    /* as escolhas desta impressão (o formato e o período) e o que vem da tela */
+    form = {
+      formato: formato, continua: false, diasPorLinha: opcoes.diasPorLinha || 3, filtros: opcoes.filtros || [],
+      data: new Date(data.getFullYear(), data.getMonth(), data.getDate()), mes: new Date(data.getFullYear(), data.getMonth(), 1),
+      mesTodo: true, semanas: [], de: 1, ate: 1
+    };
+    var meu = form;
+    RW.escalasImpressaoPainel.montar(RW.painel.corpo(), RW.painel.rodape(), {
+      marcas: ['grade', periodo],
+      ids: (opcoes.unidades || []).map(function (u) { return u.unidade_id; }),
+      mostrar: { grafico: true, icones: true, faixa: true },
+      aoSair: function () { RW.painel.fechar(); },
+      ligar: function (peca) {
+        form.raiz = RW.painel.corpo();
+        form.mesTodoBotao = peca('mes-todo');
+        form.lista = peca('semanas');
+        form.periodo = peca('periodo');
+        /* formato: Folhas A4 ou Página contínua */
+        RW.abas.ligar(peca('formato'), function (aba) {
+          form.continua = aba.getAttribute('data-formato') === 'continua';
+          RW.painel.definirTitulos(null, subtitulo());
+          RW.escalasImpressaoPainel.atualizar();
+        });
+        /* semanas: o Mês todo (caixa de marcar) e, quando desmarcado, os botões de cada semana */
+        form.mesTodoBotao.addEventListener('click', function () { marcarMesTodo(!form.mesTodo); mudou(); });
+        RW.abas.ligar(form.lista, function () { pintarSemanas(); mudou(); });
+        /* o período começa no mês todo da tela (semanas: o Mês todo marcado; dias: do 1º ao último) */
+        form.ate = ultimoDia(form.mes);
+        if (periodo === 'dias') montarDias();
+      },
+      estado: function (escolhas) { return form === meu ? estado(escolhas) : { erro: ' ' }; }
     });
-    numerarCaixas();
-    peca('resumo').textContent = resumoDaTela();
-
-    /* formato: Folhas A4 ou Página contínua */
-    RW.abas.ligar(raiz.querySelector('[data-impressao-formato]'), function (aba) {
-      form.continua = aba.getAttribute('data-formato') === 'continua';
-      RW.painel.definirTitulos(null, subtitulo());
-      agendarPrevia();
-    });
-
-    /* semanas: o Mês todo (caixa de marcar) e, quando desmarcado, os botões de cada semana */
-    form.mesTodoBotao.addEventListener('click', function () { marcarMesTodo(!form.mesTodo); mudou(); });
-    RW.abas.ligar(form.lista, function () { pintarSemanas(); mudou(); });
-
-    /* Mostrar: cada caixa liga ou desliga a sua peça da célula */
-    Array.prototype.forEach.call(raiz.querySelectorAll('[data-mostrar]'), function (opcao) {
-      opcao.addEventListener('click', function () {
-        var chave = opcao.getAttribute('data-mostrar');
-        form.mostrar[chave] = !form.mostrar[chave];
-        opcao.setAttribute('aria-checked', form.mostrar[chave] ? 'true' : 'false');
-        opcao.querySelector('.caixa-selecao').classList.toggle('caixa-selecao--marcada', form.mostrar[chave]);
-        agendarPrevia();
-      });
-    });
-
-    raiz.querySelector('[data-impressao-cancelar]').addEventListener('click', function () { RW.painel.fechar(); });
-    form.gerar.addEventListener('click', gerar);
-
-    /* o período começa no mês todo da tela (semanas: o Mês todo marcado; dias: do 1º ao último) */
-    form.ate = ultimoDia(form.mes);
-    if (periodo === 'dias') montarDias();
-    mudou();
   }
 
   RW.escalasImpressaoGrade = { abrir: abrir };

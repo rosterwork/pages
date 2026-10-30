@@ -166,6 +166,11 @@
   color: var(--texto-suave);
 }
 
+/* o Cabo de Dia sem ninguém na Central (só para quem administra): o texto amarelo */
+.escala-edicao-vazio-leitura--alerta {
+  color: var(--alerta);
+}
+
 /* ---------- Funções do posto (escalas-painel-funcoes.js) ---------- */
 /* a linha do título do posto: o nome, o texto do posto sem ninguém e o ícone na ponta direita, na coluna dos lápis */
 .escala-posto-titulo {

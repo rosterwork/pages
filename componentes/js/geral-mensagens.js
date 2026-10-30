@@ -527,6 +527,13 @@
           if (outros) partes.push(outros + (outros === 1 ? ' está de serviço, de folga ou afastado' : ' estão de serviço, de folga ou afastados'));
           return 'Ninguém mais pode' + (partes.length ? ': ' + (partes.length > 1 ? partes.slice(0, -1).join(', ') + ' e ' + partes[partes.length - 1] : partes[0]) : '') + '.';
         },
+        /* o Preencher pela sugestão: quando o cálculo completo não termina, e por que alguém ficou com cota */
+        reservaUsada: 'O cálculo completo não terminou a tempo. A sugestão usou o cálculo simples.',
+        /* a leitura que falhou (a mensagem técnica do banco fica no console) */
+        falhaMes: 'Não foi possível ler o mês.',
+        falhaEscala: 'Não foi possível ler a escala.',
+        falhaSugestao: 'Não foi possível calcular a sugestão.',
+        foraMotivo: { solta: 'Sobrou 1 cota sozinha.', nao_quero: 'Só sobrou dia que ele não quer.', sem_dia: 'Sem dia livre com falta ou vaga.' },
         resultadoSugestao: function (c, v, a) {
           var partes = [];
           if (v) partes.push(v + (v === 1 ? ' dia com vermelho' : ' dias com vermelho'));
@@ -604,6 +611,8 @@
         exclusivoCondutor:   { texto: 'Condutor exclusivo indisponível, motorista substituído', icone: 'icone-alerta', nivel: 'alerta' },
         chefeCondutor:       { texto: 'Chefe assumiu a direção por falta de condutor', icone: 'icone-alerta', nivel: 'alerta' },
         afastadoTroca:       { texto: 'Militar afastado, não vai assumir o serviço', icone: 'icone-alerta', nivel: 'alerta' },
+        /* a Central sem Cabo de Dia (só para quem administra; a Distribuição escolhe se dá o erro amarelo) */
+        semCaboDia:          { texto: 'Central sem Cabo de Dia: nenhum cabo ou soldado de serviço{faixas}', faixa: 'das {hi} às {hf}', icone: 'icone-alerta', nivel: 'alerta' },
         semCondutor:         { texto: 'Viatura sem condutor', icone: 'icone-alerta', nivel: 'erro' },
         /* efetivo da unidade abaixo do mínimo (uma linha só) e o posto que fica fora da escala sem gente para o mínimo
            (uma por posto); a cor vem do banco, pelo aviso escolhido na Distribuição */
@@ -662,6 +671,8 @@
       deFolga: 'De folga',
       semFuncaoRotulo: 'Sem função',
       semNinguemTexto: 'Sem ninguém',
+      /* o Cabo de Dia sem ninguém na Central (só para quem administra) */
+      semCaboDia: 'Sem cabo ou soldado de serviço',
       /* Funções do posto (o ícone no título do posto, para quem edita o dia): o título do menu, o que vai ao lado da
          função travada e o motivo da caixa desligada */
       funcoesTitulo: function (posto) { return (/^Central/.test(posto || '') ? 'Funções da ' : 'Funções do ') + (posto || ''); },
@@ -952,6 +963,9 @@
       remanejadoDe: function (nome) { return 'Remanejado d' + artigo(nome) + ' ' + (nome || '') + ', só neste dia'; },
       /* Observações do dia (notas do admin, trocas, folgas, outra unidade, remanejados) — o banco manda os dados, aqui vira texto */
       observacoesTitulo: 'Observações',
+      /* o Copiar do título da caixa: a dica depois de copiar e o aviso quando o navegador não deixa */
+      observacoesCopiado: 'Copiado',
+      observacoesFalhaCopiar: 'Não foi possível copiar. Tente de novo.',
       /* os grupos, na ordem fixa em que aparecem */
       observacoesGrupos: { admin: 'Administração', troca: 'Trocas', folga: 'Folgas', outra_unidade: 'De outra unidade', remanejado: 'Remanejados' },
       observacaoLimite: 200,
@@ -1000,12 +1014,16 @@
       /* Imprimir escala (painel → PDF; escalas-impressao.js e escalas-impressao-pdf.js) */
       impressao: {
         titulo: 'Imprimir escala',
-        subtitulo: 'Arquivo em PDF',
+        subtitulo: 'Arquivo em PDF, A4 retrato',
         dataInvalida: 'Data inválida.',
         fimAntesInicio: 'A data final não pode ser antes da inicial.',
         limiteDias: 'Escolha até 31 dias por arquivo.',
-        resumo: function (dias, unidades) {
-          return dias + (dias === 1 ? ' dia' : ' dias') + ' · ' + unidades + (unidades === 1 ? ' unidade' : ' unidades');
+        /* a nota do alto ("Será impresso:"): "Escala de 21/10/2026, 2ªCIBM e 2ºPEL." */
+        resumo: function (periodo, unidades) { return 'Escala de ' + periodo + ', ' + unidades + '.'; },
+        /* "21/10/2026", "21/10 a 27/10/2026" ou, entre dois anos, "28/12/2026 a 03/01/2027" (de e ate em dd/mm/aaaa) */
+        periodo: function (de, ate) {
+          if (de === ate) return de;
+          return de.slice(6) === ate.slice(6) ? de.slice(0, 5) + ' a ' + ate : de + ' a ' + ate;
         },
         /* aviso do painel quando algum dia do período tem erro grave (vermelho) */
         avisoTitulo: function (n) { return n === 1 ? 'Erro grave em 1 dia do período' : 'Erro grave em ' + n + ' dias do período'; },
@@ -1046,17 +1064,17 @@
           },
           semanaRotulo: function (n, datas) { return 'Semana ' + n + ', ' + datas; },
           dias: function (n, datas) { return n + (n === 1 ? ' dia: ' : ' dias: ') + datas + '.'; },
-          /* a nota do alto: "Calendário de outubro de 2026, 2ªCIBM, 1ºPEL e 2ºPEL, sem filtros." */
+          /* a nota do alto ("Será impresso:"): "Calendário de outubro de 2026, 2ªCIBM, 1ºPEL e 2ºPEL, sem filtros." */
           doMesDaTela: function (texto) { return 'de ' + texto; },
           daSemana: function (texto) { return 'da semana de ' + texto; },
           resumo: function (grade, periodo, unidades, filtros) {
             var comFiltros = filtros.length ? (filtros.length > 1 ? 'com os filtros ' : 'com o filtro ') + filtros.join('; ') : 'sem filtros';
             return grade + ' ' + periodo + ', ' + unidades + ', ' + comFiltros + '.';
           },
+          /* embaixo da prévia (também a do dia, em A4 retrato) */
           folhas: function (n, continua, paisagem) {
             return continua ? 'Uma página contínua.' : (n === 1 ? '1 folha' : n + ' folhas') + ', A4 ' + (paisagem ? 'paisagem' : 'retrato') + '.';
           },
-          falhaPrevia: 'Não foi possível montar a prévia. Tente de novo.',
           longaDemais: 'A página contínua ficou longa demais para os leitores de PDF. Escolha Folhas A4 ou um período menor.',
           arquivo: function (nome, periodo, unidade) { return 'Escala ' + nome.toLowerCase() + ' ' + (unidade ? unidade + ' ' : '') + periodo + '.pdf'; }
         }
@@ -1237,6 +1255,12 @@
       travaOutra: 'Muda em {unidade}',
       grupoLinha: '{unidade}: {postos}',
       ciaFalta: 'Falta responder onde fica o Oficial de Área na {unidade}: escolha a {unidade} no seletor da barra.',
+      /* a Central de Operações do pelotão: quem ela exibe, só para ver (a resposta fechada: os nomes e o erro do Cabo de Dia) */
+      centralTitulo: 'Exibir na Central de Operações',
+      centralNomes: { oficial: 'Oficial de Área', chefe: 'Chefe de Socorro', cabo: 'Cabo de Dia', extra: 'Extrajornada' },
+      centralLinha: function (nomes) { return nomes.length ? juntarComE(nomes) : 'Nenhum'; },
+      centralCaboComAviso: 'Erro amarelo na escala quando não houver cabo ou soldado de serviço',
+      centralCaboSemAviso: 'Sem erro amarelo quando não houver cabo ou soldado de serviço',
       /* blocos 3 e 5: acúmulos fixos e por falta */
       opcaoN: '{n}ª opção',
       opcaoLinha: '{n}ª opção {quem}',

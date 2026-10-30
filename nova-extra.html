@@ -257,6 +257,14 @@
          Depois do lançamento, a Distribuição fica só para ver e as mudanças vão pelos Ajustes; antes do lançamento (ou
          com ele reaberto), os Ajustes mostram só o aviso -->
     <section class="nova-extra-area oculto" data-aba-painel="distribuicao" data-passo-painel="3 4">
+      <!-- o véu do cálculo do Preencher pela sugestão: cobre a tela inteira, com o texto e o Cancelar
+           (nova-extra-otimizador.js liga e desliga). Classe própria: o roteador esconde o primeiro .carregando-veu
+           do conteúdo, que tem de ser o do site -->
+      <div class="nova-extra-calculo oculto" id="p3-calculo" role="status" aria-live="polite">
+        <div class="giratorio" aria-hidden="true"></div>
+        <p class="nova-extra-calculo-texto">Calculando a melhor distribuição. Isso pode levar até 1 minuto. Não feche esta página.</p>
+        <button type="button" class="botao" id="p3-calculo-cancelar">Cancelar</button>
+      </div>
       <span class="nova-extra-vazio nova-extra-vazio--area oculto" id="p3-sem-lancamento">Os ajustes abrem depois do lançamento.</span>
       <div class="geral-layout-lateral nova-extra-dist" id="p3-lateral">
         <!-- painel esquerdo: as cotas colocadas no alto e os voluntários na ordem da fila, os que faltam em cima e os
@@ -629,6 +637,7 @@
     <span class="nova-extra-esq-quem"><span class="nova-extra-esq-grad"></span> <span class="nova-extra-esq-nome"></span></span>
     <span class="nova-extra-esq-pel"></span>
     <span class="nova-extra-esq-cotas"></span>
+    <span class="nova-extra-esq-motivo"></span>
   </button>
 </template>
 
@@ -739,6 +748,7 @@
       <li>O administrativo só tira extra fora do expediente.</li>
       <li>A companhia só recebe extra posta manualmente.</li>
       <li>O Preencher pela sugestão só funciona com tudo salvo. Ele refaz as extras que o sistema pôs e mantém as que o administrador pôs ou mudou.</li>
+      <li>O Preencher pela sugestão calcula a melhor combinação. Se o cálculo não terminar em 1 minuto, ele usa o cálculo simples.</li>
       <li>Só lança na escala com todas as cotas colocadas.</li>
       <li>Depois de lançada, a distribuição só muda pelos Ajustes.</li>
     </ul>
@@ -746,14 +756,14 @@
   <div class="escala-legenda-grupo">
     <span class="rotulo-secao">Regras do Preencher pela sugestão</span>
     <ol class="nova-extra-legenda-lista">
-      <li>Blocos inteiros: a cota vai em blocos de 24 horas, e o resto num bloco só. Seis cotas viram 24 horas e mais 12 horas, nunca pedaços de 6 horas em dias diferentes.</li>
-      <li>Colado a um serviço: no dia antes do serviço, a extra termina às 08h, quando ele entra. No dia depois, começa às 08h, quando ele sai. Sem dia livre colado, vai para outro dia.</li>
-      <li>No pelotão dele, até o efetivo mínimo (falta de gente ou de condutor).</li>
-      <li>Os pelotões de outra cidade ficam só no mínimo.</li>
-      <li>Passa do mínimo só quando o bloco não encaixa nas horas que faltam.</li>
-      <li>Se outro pelotão ainda está abaixo do mínimo, vai para lá.</li>
-      <li>A sobra de todos vai para o pelotão da cidade da companhia, no dia e no horário com menos gente, até o máximo dos postos.</li>
-      <li>No empate, vale o dia que ele quer e depois a fila das Cotas. Cada um põe um bloco por vez, na ordem da fila.</li>
+      <li>Corrige primeiro o vermelho dos pelotões de fora da cidade da companhia, depois o da cidade da companhia e depois o amarelo, na mesma ordem.</li>
+      <li>Cada um fica no pelotão dele. Só vai para outro pelotão para corrigir o que os de lá não conseguem.</li>
+      <li>Passar do necessário, com duas extras que se cruzam, só em último caso.</li>
+      <li>Quando não dá para todos, fica de fora quem está no fim da fila das Cotas.</li>
+      <li>Blocos inteiros: 24 horas, e o resto num bloco só. Nunca 1 cota sozinha.</li>
+      <li>Colado a um serviço: a extra termina às 08h, quando ele entra, ou começa às 08h, quando ele sai.</li>
+      <li>O dia que ele quer vem antes do dia sem preferência. Nunca no dia que ele não quer: se for o único, a cota fica para o administrador.</li>
+      <li>Sem falta para corrigir, a sobra vai para o pelotão da cidade da companhia, até o máximo dos postos, no dia com menos gente da graduação dele.</li>
     </ol>
   </div>
 </template>

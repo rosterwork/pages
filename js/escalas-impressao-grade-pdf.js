@@ -2,7 +2,8 @@
    ESCALAS — PDF das grades (Agenda, Calendário, Colunas)
    Monta o PDF que o painel das grades pede (escalas-impressao-grade.js),
    no formato da tela e no padrão de blocos do PDF do Dia: a logo, o
-   título e o período no alto; o site e "Página X de Y" no pé.
+   título e o período no alto; o site e "Página X de Y" no pé (com os
+   ícones, a legenda deles logo acima: escalas-impressao-legenda.js).
    - Calendário e Colunas › Dias (A4 paisagem): uma linha por semana
      (ou de N dias), cada dia um bloco cinza com o número e, embaixo,
      uma célula por unidade. A linha nunca se parte: a que não cabe vai
@@ -53,14 +54,7 @@
   function semLinha() { return 0; }
   function iso(d) { return RW.data.paraIsoDeData(d); }
 
-  /* ---------- o que vai em cada célula ---------- */
-  /* quem aparece no dia (de serviço e, com o filtro Afastamentos, os afastados), pelos filtros da tela */
-  function pessoasDoDia(dados, uid, dia) {
-    var passa = RW.escalasFiltros ? RW.escalasFiltros.passaPessoa : function (p) { return p.origem !== 'afastamento'; };
-    var lista = ((dados.militares[uid] || {})[dia] || []).concat((dados.afastados[uid] || {})[dia] || []);
-    return lista.filter(passa);
-  }
-
+  /* ---------- o que vai em cada célula (quem aparece no dia: escalas-impressao-grade-celula.js) ---------- */
   function blocoDoDia(cfg, c, u, dia, largura, preencher, comNome) {
     var uid = u.unidade_id;
     return celula().bloco({
@@ -69,7 +63,7 @@
       cobertura: (cfg.dados.cobertura[uid] || {})[dia] || null,
       erro: (cfg.dados.erro[uid] || {})[dia] || null,
       max: cfg.max[uid],
-      pessoas: pessoasDoDia(cfg.dados, uid, dia),
+      pessoas: celula().pessoasDoDia(cfg.dados, uid, dia),
       mostrar: cfg.mostrar,
       c: c,
       preencher: preencher
@@ -284,26 +278,30 @@
       defaultStyle: { font: 'Montserrat', fontSize: 9, color: c.texto },
       info: { title: txt().titulo + ' · ' + msg().nomes[cfg.formato] + ' · ' + cfg.texto, author: 'Roster Work', creator: 'Roster Work', producer: 'Roster Work' }
     };
+    /* com os ícones, a legenda deles (escalas-impressao-legenda.js), montada a cada uso (a biblioteca anota medidas) */
+    var rodape = RW.escalasImpressaoPdf.medidas.FONTE.rodape;
+    function legenda() { return c.legendaUsados && RW.escalasImpressaoLegenda ? RW.escalasImpressaoLegenda.peca(c, c.legendaUsados) : null; }
     if (cfg.continua) {
       doc.pageSize = { width: geo.paginaLargura, height: 'auto' };
       doc.pageMargins = [LADO, CONTINUA.topo, LADO, CONTINUA.base];
       var topo = [cabecalho(cfg, c)];
       topo[0].margin = [0, 0, 0, 12];
       if (comDias) topo.push(linhaDosDias(c, geo));
-      doc.content = topo.concat(conteudo, [{ text: txt().site, fontSize: RW.escalasImpressaoPdf.medidas.FONTE.rodape, color: c.suave, margin: [0, 8, 0, 0] }]);
+      var fim = (legenda() ? [legenda()] : []).concat([{ text: txt().site }]);
+      doc.content = topo.concat(conteudo, [{ stack: fim, fontSize: rodape, color: c.suave, margin: [0, 8, 0, 0] }]);
     } else {
       doc.pageSize = 'A4';
       doc.pageOrientation = cfg.paisagem ? 'landscape' : 'portrait';
       var margemTopo = comDias ? TOPO_COM_DIAS : TOPO;
-      doc.pageMargins = [LADO, margemTopo, LADO, BASE];
+      doc.pageMargins = [LADO, margemTopo, LADO, BASE + (c.legendaAltura || 0)];
       doc.header = function () {
         var topoFolha = cabecalho(cfg, c);
         if (!comDias) { topoFolha.margin = [LADO, CABECALHO.topo, LADO, 0]; return topoFolha; }
         return { stack: [topoFolha, linhaDosDias(c, geo)], margin: [LADO, CABECALHO.topo, LADO, 0] };
       };
       doc.footer = function (pagina, total) {
-        return { columns: [{ text: txt().site }, { text: txt().pagina(pagina, total), alignment: 'right' }],
-          fontSize: RW.escalasImpressaoPdf.medidas.FONTE.rodape, color: c.suave, margin: [LADO, 14, LADO, 0] };
+        var linha = { columns: [{ text: txt().site }, { text: txt().pagina(pagina, total), alignment: 'right' }] };
+        return { stack: (legenda() ? [legenda()] : []).concat([linha]), fontSize: rodape, color: c.suave, margin: [LADO, 14, LADO, 0] };
       };
       doc.content = conteudo;
     }
@@ -383,6 +381,11 @@
     return RW.escalasImpressaoPdf.preparar().then(function (c) {
       return celula().preparar(c);
     }).then(function (c) {
+      /* com os ícones, a legenda no pé da folha: os que saem no arquivo e o espaço que ela pede */
+      if (cfg.mostrar.icones && RW.escalasImpressaoLegenda) {
+        c.legendaUsados = celula().iconesDoArquivo(cfg);
+        c.legendaAltura = RW.escalasImpressaoLegenda.altura(c.legendaUsados);
+      }
       return desenharArquivo(cfg, c);
     }).then(function (d) {
       return {

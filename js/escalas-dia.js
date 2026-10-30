@@ -99,7 +99,9 @@
       var np = pecas.nivelPosto ? pecas.nivelPosto(posto) : '';
       if (np) caixa.classList.add('grupo-caixa--posto-' + np);
       var funcoes = pecas.mesclarFuncoes ? pecas.mesclarFuncoes(posto) : (posto.funcoes || []);
-      funcoes.forEach(function (funcao) {
+      /* o que a Central exibe, só para ver, antes e depois das funções dela */
+      var exib = pecas.exibidas ? pecas.exibidas(posto, false) : { antes: [], depois: [] };
+      exib.antes.concat(funcoes, exib.depois).forEach(function (funcao) {
         var grupo = pecas.grupo(funcao);
         if (grupo) caixa.appendChild(grupo);
       });

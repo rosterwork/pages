@@ -97,19 +97,23 @@
     if (!m.fixado) (m.periodos || []).forEach(function (per) {
       abertura.push({ posto: cfg.posto, funcao: cfg.funcao, hi: per.hi, hf: per.hf, manual: false, subst: m.cpf, acumula: true, intacta: true });
     });
-    var subst = abertura.length && abertura[0].manual ? abertura[0].subst : m.cpf;
+    /* ele em outra linha desta função (outro horário, com alguém no meio): as colocações de lá ficam como estão */
+    var outras = abertura.filter(function (l) { return l.manual && !cruzaAlgum(l, m.periodos || []); });
+    var daLinha = abertura.filter(function (l) { return outras.indexOf(l) < 0; });
+    var subst = daLinha.length && daLinha[0].manual ? daLinha[0].subst : m.cpf;
     api.aplicarMilitar(m.cpf, abertura, periodos.map(function (p) {
       return { posto: cfg.posto, funcao: cfg.funcao, hi: p.hi, hf: p.hf, manual: true, subst: subst, acumula: true, intacta: false };
-    }));
+    }).concat(outras));
     ocupantes(cfg.posto, cfg.funcao, periodos, m.cpf).forEach(function (o) { api.deixarFuncao(o.m.cpf, cfg.posto, cfg.funcao, H.periodo(o.x)); });
   }
 
-  /* Liberar para o sistema: o fixado (ou o tirar que deixou a função vazia) sai; o sistema refaz o dia mexendo o mínimo */
+  /* Liberar para o sistema: o fixado nos horários da linha (ou o tirar que deixou a função vazia) sai; o sistema refaz
+     o dia mexendo o mínimo */
   function liberar(cfg) {
     var api = ed(), r = api.rascunho(), m = cfg.militar;
     r.ajustes = r.ajustes.filter(function (a) {
       if (!api.noLocal(a, cfg.posto, cfg.funcao)) return true;
-      if (cfg.tipo === 'funcao') return !(a.acao === 'colocar' && a.cpf === m.cpf);
+      if (cfg.tipo === 'funcao') return !(a.acao === 'colocar' && a.cpf === m.cpf && cruzaAlgum(a, cfg.periodos));
       return !(a.acao === 'tirar' && cruzaAlgum(a, cfg.periodos));
     });
   }

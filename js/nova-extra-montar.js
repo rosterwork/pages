@@ -31,9 +31,12 @@
   var mud = {};            // rascunho: 'cpf|data' -> { cpf, data, unidade, blocos, origem, porque } (blocos [] = sai ao salvar)
   var sugeridas = [];      // as chaves que a última sugestão mudou (as extras novas, as refeitas e as que saem)
   var postas = null;       // as cotas que a última sugestão pôs no mês (a nota do resultado); null = sem sugestão
+  var foraSug = {};        // quem ficou com cota na última sugestão: cpf -> motivo (o grupo Faltam da lista mostra)
+  var reserva = false;     // a última sugestão usou o cálculo simples do banco
   var resultadoFechado = false;   // o resultado da sugestão fechado no X (volta no próximo Preencher)
   var escala = null;       // a escala do mês sem extra: { comp, cobertura, erro }
   var escalaSeq = 0;
+  var esperaEscala = null; // a leitura da escala no ar (promessa)
 
   function msg() { return RW.mensagens.novaExtra.org; }
   function u() { return RW.novaExtraUtil; }
@@ -143,16 +146,24 @@
   function pelotoes(lista) { return (lista || d.unidades).filter(function (x) { return x.pelotao !== false; }); }
 
   /* ---------- as barras: a escala do mês (a mesma leitura da Escala) e a conta do depois ---------- */
+  /* a leitura da escala no ar fica guardada: a troca de mês espera por ela antes de tirar o véu. Se falhar, avisa e
+     anota no console */
   function carregarEscala() {
     var ids = d.unidades.map(function (x) { return x.id; });
     var comp = d.competencia, req = ++escalaSeq;
     if (!RW.escalasDados) { escala = { comp: comp, cobertura: {}, erro: {}, militares: {} }; redesenhar(); return; }
-    RW.escalasDados.carregar(ids, comp, ultimoDia()).then(function (r) {
+    function falhou(e) {
+      console.error('[Nova extra] ler_escala_mes falhou' + (e && e.message ? ': ' + e.message : ''));
+      RW.avisar({ tipo: 'erro', mensagem: msg().falhaEscala });
+    }
+    esperaEscala = RW.escalasDados.carregar(ids, comp, ultimoDia()).then(function (r) {
       if (req !== escalaSeq || !el || !el.isConnected) return;
+      if (!r) falhou();
       escala = { comp: comp, cobertura: (r && r.cobertura) || {}, erro: (r && r.erro) || {}, militares: (r && r.militares) || {} };
       redesenhar();
-    }, function () {
+    }, function (e) {
       if (req !== escalaSeq) return;
+      falhou(e);
       escala = { comp: comp, cobertura: {}, erro: {}, militares: {} };
       redesenhar();
     });
@@ -205,15 +216,12 @@
 
   /* ---------- sugestão, salvar e o resto ---------- */
   /* Preencher pela sugestão, só com tudo salvo: as extras que o administrador pôs ou mudou ficam; as que o sistema
-     salvou saem e o motor refaz tudo com as cotas que sobram. A extra refeita igual à salva não é mudança */
+     salvou saem e o otimizador (nova-extra-otimizador.js, com o véu e o cálculo simples de reserva) refaz tudo com as
+     cotas que sobram. A extra refeita igual à salva não é mudança */
   function sugerir() {
-    if (alteracoes().length) return;
-    var btn = q('#nova-extra-acoes > .botao');   // o item fica no menu, que fecha no clique: o carregando vai no Ações
+    if (alteracoes().length || RW.novaExtraOtimizador.calculando()) return;
     var fixas = d.alocacoes.filter(function (a) { return a.origem !== 'sugestao'; });
-    RW.iniciarCarregando(btn);
-    RW.rpc('nova_extra_sugerir', { p_competencia: d.competencia, p_atuais: fixas }).then(function (r) {
-      RW.pararCarregando(btn);
-      if (!r || !r.ok) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
+    RW.novaExtraOtimizador.preencher(d.competencia, fixas, q('#p3-calculo'), function (r, usouReserva) {
       mud = {};
       resultadoFechado = false;
       d.alocacoes.forEach(function (a) {
@@ -226,9 +234,12 @@
         if (antes && antes.origem === 'sugestao' && +antes.unidade === +p.unidade && mesmosBlocos(antes, p)) delete mud[k];
         else mud[k] = { cpf: p.cpf, data: p.data, unidade: p.unidade, blocos: p.blocos, origem: 'sugestao', porque: p.porque };
       });
+      foraSug = {};
+      (r.nao_coube || []).forEach(function (n) { foraSug[n.cpf] = n.motivo; });
+      reserva = usouReserva;
       sugeridas = Object.keys(mud);
       redesenhar();
-    }, function () { RW.pararCarregando(btn); RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao }); });
+    });
   }
 
   /* o Desfazer da sugestão volta ao salvo: as extras do sistema que saíram voltam (as mudanças do administrador ficam) */
@@ -298,7 +309,7 @@
         var cores = pelotoes().map(function (x) { return corDe(faltaDoDia(x.id, k, alocs)); });
         if (cores.indexOf('erro') >= 0) vermelho++; else if (cores.indexOf('alerta') >= 0) amarelo++;
       });
-      resultado.querySelector('.nota-texto').textContent = msg().resultadoSugestao(postas, vermelho, amarelo);
+      resultado.querySelector('.nota-texto').textContent = (reserva ? msg().reservaUsada + ' ' : '') + msg().resultadoSugestao(postas, vermelho, amarelo);
     }
     RW.novaExtraLista.desenhar(el);
     /* sem nenhum pelotão: o vazio no lugar do calendário */
@@ -333,7 +344,8 @@
       });
       RW.novaExtraLista.ligar(el);
       RW.novaExtraFiltros.ligar(el);
-      if (RW.guardaSaida) RW.guardaSaida.registrar(function () { return el && el.isConnected && alteracoes().length > 0; });
+      /* com mudança não salva ou no meio do cálculo da sugestão, o navegador avisa ao fechar ou recarregar */
+      if (RW.guardaSaida) RW.guardaSaida.registrar(function () { return el && el.isConnected && (alteracoes().length > 0 || RW.novaExtraOtimizador.calculando()); });
     }
     redesenhar();
   }
@@ -353,6 +365,8 @@
     mostrar: mostrar,
     sujo: function () { return !!d && alteracoes().length > 0; },
     descartar: function () { mud = {}; sugeridas = []; postas = null; },
+    /* a leitura da escala no ar (ou já terminada): a troca de mês tira o véu quando ela chega */
+    esperarEscala: function () { return esperaEscala || Promise.resolve(); },
     /* refaz o calendário (o filtro Exibir mudou) */
     redesenhar: function () { if (d && el && el.isConnected) redesenhar(); },
     /* o painel do dia fecha ao sair da Distribuição, dos Ajustes ou da aba */
@@ -365,6 +379,8 @@
     INI: INI, SEM_CURTA: SEM_CURTA,
     dados: function () { return d; },
     vagas: vagas, vagaDe: vagaDe, efetivas: efetivas, alocDe: alocDe, usadas: usadas, voluntarios: voluntarios, blocos: blocos, naoSalvos: naoSalvos,
+    /* por que o militar ficou com cota na última sugestão (enquanto ela está na tela): 'solta', 'nao_quero', 'sem_dia' */
+    foraDaSugestao: function (cpf) { return postas !== null ? foraSug[cpf] || null : null; },
     conduz: conduz, impedimento: impedimento,
     faltaDoDia: faltaDoDia, situacao: situacao, antesDe: antesDe, depoisDe: depoisDe, corDe: corDe, travado: travado, soLeitura: soLeitura,
     grafico: function (cob, uid, erro) { return porDia().grafico(cob, uid, erro); },

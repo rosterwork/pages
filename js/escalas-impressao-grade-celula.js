@@ -7,7 +7,9 @@
    do horário (cinza fora do turno). O "Mostrar" do painel liga e
    desliga o gráfico, os ícones e a faixa. As origens, a situação, a
    hora e os trechos do turno vêm do escalas-celula.js (a mesma fonte
-   da tela). Desenhado com a biblioteca do PDF (exceção REGRAS §3/§4):
+   da tela). Também diz quem aparece no dia (pelos filtros da tela) e
+   que ícones saem no arquivo (para a legenda do pé da folha).
+   Desenhado com a biblioteca do PDF (exceção REGRAS §3/§4):
    medidas em pontos nas constantes abaixo, cores --impressao-* do tema.
    ============================================================ */
 (function () {
@@ -106,17 +108,45 @@
     };
   }
 
+  /* os ícones de uma pessoa na célula: a origem de base (por baixo de uma troca), a origem, o cadeado e o remanejado */
+  function iconesDaPessoa(p) {
+    var nomes = [];
+    if (p.origem_base) nomes.push(escalasCelula().iconeDaOrigem(p.origem_base));
+    nomes.push(escalasCelula().iconeDaOrigem(p.origem));
+    if (p.fixado) nomes.push('icone-cadeado');
+    if (p.remanejado) nomes.push('icone-remanejado');
+    return nomes;
+  }
+
+  /* quem aparece no dia (de serviço e, com o filtro Afastamentos, os afastados), pelos filtros da tela */
+  function pessoasDoDia(dados, uid, dia) {
+    var passa = RW.escalasFiltros ? RW.escalasFiltros.passaPessoa : function (p) { return p.origem !== 'afastamento'; };
+    var lista = ((dados.militares[uid] || {})[dia] || []).concat((dados.afastados[uid] || {})[dia] || []);
+    return lista.filter(passa);
+  }
+
+  /* os ícones que aparecem no arquivo ({ icone: true }), para a legenda do pé da folha: as pessoas dos dias do período
+     (os de fora do mês saem vazios), em cada unidade. cfg: o do escalas-impressao-grade-pdf.js */
+  function iconesDoArquivo(cfg) {
+    var usados = {};
+    cfg.dias.forEach(function (d) {
+      if (d.fora) return;
+      var dia = RW.data.paraIsoDeData(d.data);
+      cfg.unidades.forEach(function (u) {
+        pessoasDoDia(cfg.dados, u.unidade_id, dia).forEach(function (p) {
+          iconesDaPessoa(p).forEach(function (n) { usados[n] = true; });
+        });
+      });
+    });
+    return usados;
+  }
+
   /* uma linha de militar: ícones · graduação e nome · horário (a faixa por trás) */
   function linha(p, largura, mostrar, c) {
     var riscada = p.origem === 'folga' || p.origem === 'troca_saida' || p.origem === 'remanejado_saida';
     var colunas = [];
     if (mostrar.icones) {
-      var nomes = [];
-      if (p.origem_base) nomes.push(escalasCelula().iconeDaOrigem(p.origem_base));
-      nomes.push(escalasCelula().iconeDaOrigem(p.origem));
-      if (p.fixado) nomes.push('icone-cadeado');
-      if (p.remanejado) nomes.push('icone-remanejado');
-      colunas.push({ columns: nomes.map(function (n) { return { svg: c.icones[n], width: ICONE, height: ICONE }; }), columnGap: 1, width: 'auto', margin: MARGEM.icone });
+      colunas.push({ columns: iconesDaPessoa(p).map(function (n) { return { svg: c.icones[n], width: ICONE, height: ICONE }; }), columnGap: 1, width: 'auto', margin: MARGEM.icone });
     }
     colunas.push({ text: [
       { text: (p.grad || '') + ' ', fontSize: FONTE.grad, color: c.suave },
@@ -156,5 +186,5 @@
     return { table: { widths: [interna], body: corpo, dontBreakRows: true }, layout: layoutBloquinho(o.c, o.preencher) };
   }
 
-  RW.escalasImpressaoGradeCelula = { preparar: preparar, bloco: bloco };
+  RW.escalasImpressaoGradeCelula = { preparar: preparar, bloco: bloco, pessoasDoDia: pessoasDoDia, iconesDoArquivo: iconesDoArquivo };
 })();

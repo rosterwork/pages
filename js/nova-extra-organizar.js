@@ -81,6 +81,17 @@
     },
     /* as unidades da página: todas as da companhia (o seletor de unidades do topo não filtra a Nova extra) */
     escolhidas: function () { return d ? d.unidades.map(function (un) { return un.id; }) : []; },
+    /* uma leitura do banco (RPC): devolve o JSON ou, se o banco recusar, null, com a mensagem técnica (o código, o texto
+       e o lugar do erro) anotada no console para achar a causa */
+    chamar: function (nome, corpo) {
+      return RW.apiFetch('/rest/v1/rpc/' + nome, { metodo: 'POST', corpo: corpo || {} }).then(function (resp) {
+        if (resp.ok) return resp.json();
+        return resp.text().then(function (texto) {
+          console.error('[Nova extra] ' + nome + ' falhou (' + resp.status + '): ' + texto);
+          return null;
+        });
+      });
+    },
     /* as unidades do calendário: todas; a companhia só quando tem extra (a falta é só dos pelotões) */
     doCalendario: function (alocs) {
       var sel = util.escolhidas();
@@ -93,17 +104,26 @@
   RW.novaExtraUtil = util;
 
   /* ---------- carregar ---------- */
+  /* devolve a promessa da leitura: termina com o mês desenhado e, na Distribuição e nos Ajustes, com a escala lida */
   function carregar() {
     var meu = ++pedido;
     var comp = RW.novaExtra.comp();
-    RW.rpc('nova_extra_mes', { p_competencia: comp }).then(function (r) {
+    var naDistribuicao = function () { return aba === 'passo' && (passo === 3 || passo === 4); };
+    /* na Distribuição e nos Ajustes, a escala do mês começa a ser lida junto com o mês (as mesmas unidades) */
+    if (d && naDistribuicao() && RW.escalasDados && RW.escalasDados.antecipar) {
+      var fim = new Date(+comp.slice(0, 4), +comp.slice(5, 7), 0);
+      RW.escalasDados.antecipar(d.unidades.map(function (x) { return x.id; }), comp,
+        fim.getFullYear() + '-' + String(fim.getMonth() + 1).padStart(2, '0') + '-' + String(fim.getDate()).padStart(2, '0'));
+    }
+    return util.chamar('nova_extra_mes', { p_competencia: comp }).then(function (r) {
       if (meu !== pedido || !el.isConnected) return;
       /* na Minha extra a leitura é só para as marcas das abas: a falha fica quieta */
-      if (!r || !r.ok) { if (aba) RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
+      if (!r || !r.ok) { if (aba) RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || msg().falhaMes }); return; }
       d = r;
       p1 = null;
       if (RW.novaExtraCotas) RW.novaExtraCotas.reiniciar();
       desenharAba();
+      if (naDistribuicao() && RW.novaExtraMontar) return RW.novaExtraMontar.esperarEscala();
     }, function () { if (meu === pedido && aba) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao }); });
   }
 

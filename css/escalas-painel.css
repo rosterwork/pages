@@ -318,6 +318,17 @@
 
 /* ---------- Observações do dia: grupos (Administração, Trocas, Folgas, De outra unidade),
    cada um com o título (ícone + nome) e a lista numerada ---------- */
+/* a linha do título da caixa: o nome e o Copiar na ponta direita (o desenho do ícone Funções do título dos postos) */
+.escala-observacoes-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.escala-observacoes-copiar {
+  margin-left: auto;
+}
+
 .escala-observacao-grupo {
   display: flex;
   flex-direction: column;

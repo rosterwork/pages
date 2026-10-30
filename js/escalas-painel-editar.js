@@ -233,7 +233,11 @@
         if (!BLOQUEADAS.test(f.nome)) return;
         var k = po.id + '|' + f.nome;
         r[k] = r[k] || { posto: po, funcao: f.nome, por: {} };
-        (f.militares || []).forEach(function (m) { r[k].por[m.cpf] = { nome: nomeDe(m), periodos: m.periodos || [] }; });
+        /* o mesmo militar em mais de uma linha (outro no meio): os horários de todas */
+        (f.militares || []).forEach(function (m) {
+          var ja = r[k].por[m.cpf];
+          r[k].por[m.cpf] = { nome: nomeDe(m), periodos: (ja ? ja.periodos : []).concat(m.periodos || []) };
+        });
       });
     });
     return r;
@@ -820,9 +824,12 @@
 
   function caixaPosto(posto) {
     var p = pecas();
+    /* o que a Central exibe, só para ver: antes e depois das funções dela */
+    var exib = p.exibidas(posto, ctx.admin);
+    var exibe = exib.antes.concat(exib.depois);
     /* posto sem nenhuma função no dia (a reserva sem ninguém, o que fica fora da escala): só quem edita o dia vê, numa
        linha só, com o ícone Funções do posto; o Adicionar militar também chega nele pelo Onde */
-    if (!(posto.funcoes || []).length && !editavel()) return null;
+    if (!(posto.funcoes || []).length && !exibe.length && !editavel()) return null;
     var caixa = RosterWork.painel.criarCaixa(posto.nome);
     if (!caixa) return null;
     montarTituloPosto(caixa, posto);
@@ -831,6 +838,7 @@
     var np = p.nivelPosto(posto);
     if (!(posto.funcoes || []).length) {
       if (np) caixa.classList.add('grupo-caixa--posto-' + np);
+      exibe.forEach(function (f) { linhasExibida(caixa, f); });
       return caixa;
     }
     /* o vermelho (cadeira vazia ou horário sem ninguém) vence o amarelo; a função aberta sem ninguém não é erro */
@@ -838,8 +846,37 @@
       return (f.vazio && f.vazio_motivo !== 'aberta') || (f.vao || []).length;
     })) np = 'erro';
     if (np) caixa.classList.add('grupo-caixa--posto-' + np);
+    exib.antes.forEach(function (f) { linhasExibida(caixa, f); });
     p.mesclarFuncoes(posto).forEach(function (f) { linhasFuncao(caixa, posto, f); });
+    exib.depois.forEach(function (f) { linhasExibida(caixa, f); });
     return caixa;
+  }
+
+  /* uma função que a Central só exibe (o Oficial de Área, o Chefe de Socorro, o Cabo de Dia, a Extrajornada): as linhas
+     sem ações, porque a pessoa está no posto dela; o Cabo de Dia sem ninguém, só para quem administra, em amarelo */
+  function linhasExibida(caixa, f) {
+    var grupo = novoGrupo([f.nome], f.semNinguem.length ? 'alerta' : null);
+    if (!grupo) return;
+    f.militares.forEach(function (m) {
+      var linha = linhaMilitar(m, {});
+      if (linha) grupo.linhas.appendChild(linha);
+    });
+    f.semNinguem.forEach(function (per) {
+      var linha = novaLinha();
+      if (!linha) return;
+      var pessoa = linha.querySelector('.escala-edicao-pessoa');
+      pessoa.textContent = '';
+      var t = RosterWork.tpl('tpl-escala-edicao-vazio-leitura');
+      if (t) {
+        t.textContent = msg().semCaboDia;
+        t.classList.add('escala-edicao-vazio-leitura--alerta');
+        pessoa.appendChild(t);
+      }
+      var h = pecas().hora(per);
+      if (h) linha.querySelector('.escala-distribuicao-horas').appendChild(h);
+      grupo.linhas.appendChild(linha);
+    });
+    if (grupo.linhas.children.length) caixa.appendChild(grupo.el);
   }
 
   /* Sem função: quem está de serviço sem função em algum horário (título vermelho, depois dos postos). Para o admin,
@@ -1020,7 +1057,7 @@
     p.anexarProblemas(dados);   // CNH, regra, exclusivo e grau de cada militar (do banco)
     if (editavel()) notaMudou(corpo);
     if (!ctx.semAvisos) {
-      var aviso = p.montarAvisoProblemas(dados.problemas, dados.postos, dados.faltam_modelos, dados.modelos_com_erro);
+      var aviso = p.montarAvisoProblemas(dados.problemas, dados.postos, dados.faltam_modelos, dados.modelos_com_erro, ctx.admin);
       if (aviso) corpo.appendChild(aviso);
     }
     if (ctx.admin) notasPapeis(corpo, dados);

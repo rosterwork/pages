@@ -731,7 +731,7 @@
                 <li><strong>Efetivo abaixo do ideal:</strong> o posto tem pelo menos o mínimo, mas menos gente que o ideal configurado, por exemplo "Efetivo abaixo do ideal: ABT-01 (3 de 4)". Esse aviso aparece no painel do dia e na Distribuição, sem mudar a cor da grade. O posto reserva (mínimo 0) não avisa.</li>
                 <li><strong>Militar exclusivo fora da sua função:</strong> um militar exclusivo de uma função foi colocado em outra.</li>
               </ul>
-              <p><strong>A hierarquia dos erros.</strong> Quando a unidade tem menos gente que o mínimo dela, aparece só "Efetivo da unidade abaixo do mínimo": os postos que ficaram abaixo do mínimo ou fora da escala por causa disso não aparecem à parte, e o cartão de cada um fica na cor do erro. Num dia com 5 militares no 1ºPEL, por exemplo, a lista mostra apenas "Efetivo da unidade abaixo do mínimo: 5 de 6", e o cartão da AA-0020, que ficou fora da escala, fica vermelho. O posto fora da escala também não repete o mínimo nem o condutor dele. Quando um posto fica sem gente só porque os substitutos dele vinham de um posto mais importante, também abaixo do mínimo, aparece só o erro do posto mais importante. A falta de condutor por CNH é outra causa e aparece sempre.</p>
+              <p><strong>A hierarquia dos erros.</strong> Quando a unidade tem menos gente que o mínimo dela, aparece só "Efetivo da unidade abaixo do mínimo": os postos que ficaram abaixo do mínimo ou fora da escala por causa disso não aparecem à parte, e o cartão de cada um fica na cor do erro. Num dia com 5 militares no 1ºPEL, por exemplo, a lista mostra apenas "Efetivo da unidade abaixo do mínimo: 5 de 6", e o cartão da AA-0020, que ficou fora da escala, fica vermelho. O posto fora da escala também não repete o mínimo nem o condutor dele. Quando um posto fica sem gente só porque os acúmulos por falta dele vinham de um posto mais importante, também abaixo do mínimo, aparece só o erro do posto mais importante. A falta de condutor por CNH é outra causa e aparece sempre.</p>
               <p><strong>Alterações manuais.</strong> Quando o administrador corrige um erro, a hora volta ao verde. O rastro fica no rodapé do painel do dia: as <strong>Alterações manuais</strong>, com a quantidade ao lado. Ao abrir, aparecem quem mexeu, quando e o quê, entre os ajustes da distribuição, os militares pontuais e as entradas e saídas do ciclo daquele dia. Todos podem ver. Num dia sem alteração, o rodapé não aparece.</p>
               <figure class="manual-figura">
                 <img src="manual/imagens/escala-alteracoes.png" width="405" height="371" alt="O rodapé do painel do dia com as Alterações manuais abertas: o título com a quantidade (1) e uma alteração com quem mexeu, quando e o quê (2)." />
@@ -851,7 +851,7 @@
                 <ul class="manual-lista">
                   <li><strong>Quem:</strong> escolha a unidade (a lista abre na unidade do painel, mas vale qualquer unidade do estado) e procure o militar pelo nome. A lista vem separada por unidade: primeiro a unidade escolhida, depois as outras unidades da companhia. Aparece qualquer militar (operacional, administrativo ou aluno) que tenha horas livres nesse dia e não esteja afastado. Quem já tem parte do dia ocupada aparece com isso ao lado do nome, por exemplo <strong>Extra das 08h às 02h</strong>: ele pode entrar nas horas que sobram, aqui ou em outra unidade. Se ele for o mais antigo do dia, o formulário avisa que ele vai assumir o Chefe de Socorro (ou o Oficial de Área).</li>
                   <li><strong>Quando:</strong> o horário de serviço dele, dentro do dia de serviço, das 08h às 08h. Ao escolher o militar, o horário já vem com as horas livres dele. Se o horário cruzar o que ele já tem no dia, os campos ficam <strong>vermelhos</strong> e o botão <strong>Adicionar ao dia</strong> fica desligado até você corrigir. Para mais de um horário no mesmo dia, por exemplo das 20h às 21h e das 00h às 08h, use o ícone <strong>Adicionar horário</strong>.</li>
-                  <li><strong>Onde:</strong> deixe em <strong>O sistema distribui</strong>, para ele entrar na distribuição automática do dia, ou escolha o posto e a função. Embaixo de cada função aparece como ela está nesse horário: vazia, ou quem sai dela.</li>
+                  <li><strong>Onde:</strong> deixe em <strong>O sistema distribui</strong>, para o sistema refazer a distribuição do dia com ele (quem foi fixado manualmente continua no lugar), ou escolha o posto e a função. Embaixo de cada função aparece como ela está nesse horário: vazia, ou quem sai dela.</li>
                 </ul>
                 <p>Ao clicar em <strong>Adicionar ao dia</strong>, o sistema pergunta se as horas entram no banco de horas do militar (<strong>Contabilizar</strong> ou <strong>Não contabilizar</strong>). Quem vem de outra unidade trabalha aqui só naquele dia; se ele for de outra companhia, os administradores da área dele recebem um aviso no sino.</p>
                 <figure class="manual-figura">
@@ -1547,7 +1547,7 @@
               <h2>Distribuição <span class="manual-selo-admin">Apenas administradores</span></h2>
               <h3 id="dist-o-que-e">O que é a Distribuição</h3>
               <p>A Distribuição diz ao sistema <strong>como montar a escala de cada dia</strong>: quais postos a unidade tem, quantas pessoas cada um leva e quem senta em cada função. Ela é um <strong>questionário</strong> respondido uma vez por unidade e vale para qualquer número de militares de serviço: com 2, com 3 ou com 5, o sistema usa as mesmas respostas.</p>
-              <p>Abra <strong>Distribuição</strong> no menu. Na barra fica a <strong>unidade</strong>: a companhia e os pelotões da sua área de administração. À esquerda ficam os <strong>9 blocos</strong>, cada um com o sinal de pronto ou de falta. À direita, as perguntas do bloco escolhido, em cartões que abrem ao clicar. No pelotão, o que é da companhia, como o Oficial de Área, aparece junto, e só o administrador da companhia muda.</p>
+              <p>Abra <strong>Distribuição</strong> no menu. Na barra fica a <strong>unidade</strong>: a companhia e os pelotões da sua área de administração. À esquerda ficam os <strong>9 blocos</strong>, cada um com o sinal de pronto ou de falta. À direita, as perguntas do bloco escolhido, em cartões fechados que mostram a resposta e abrem ao clicar no título, um por vez. No pelotão, o que é da companhia, como o Oficial de Área, aparece junto, e só o administrador da companhia muda.</p>
               <figure class="manual-figura manual-figura--cheia">
                 <img src="manual/imagens/distribuicao-pagina.png" width="686" height="532" alt="A página Distribuição: a unidade na barra (1), os 9 blocos à esquerda (2), as perguntas do bloco em cartões (3) e Cancelar e Salvar no rodapé (4)." />
                 <figcaption>
@@ -1561,17 +1561,17 @@
               </figure>
 
               <h3 id="dist-postos">Os postos</h3>
-              <p>O bloco <strong>Postos</strong> tem os lugares de serviço da unidade, um por linha:</p>
+              <p>O bloco <strong>Postos</strong> tem os lugares de serviço da unidade em dois cartões, <strong>Instalações</strong> e <strong>Viaturas</strong>. Fechados, eles mostram só a lista, numerada na ordem da escala: as instalações primeiro (<strong>1º</strong> Central de Operações) e as viaturas depois (<strong>2º</strong> ABT-14935 · CNH C). Embaixo de cada posto aparece a mudança com data, e o que falta, como a CNH, em vermelho. Para editar, clique no título do cartão, e ele abre com os postos, um por linha:</p>
               <ul class="manual-lista">
-                <li><strong>Instalações</strong> são os lugares fixos, de três tipos, cada um com a sua função na escala: a <strong>Central de Operações</strong> (o Rádio Operador), o <strong>Rancho</strong> (o Rancheiro) e o <strong>Almoxarifado</strong> (o Almoxarife). Para incluir, clique no tipo em <strong>Nova instalação</strong>. A segunda do mesmo tipo ganha o número, como <strong>Central de Operações 2</strong>.</li>
+                <li><strong>Instalações</strong> são os lugares fixos, de três tipos, cada um com a sua função na escala: a <strong>Central de Operações</strong> (o Rádio Operador), o <strong>Rancho</strong> (o Rancheiro) e o <strong>Almoxarifado</strong> (o Almoxarife). Para incluir, clique em <strong>Nova instalação</strong> e escolha o tipo. A segunda do mesmo tipo ganha o número, como <strong>Central de Operações 2</strong>.</li>
                 <li><strong>Viaturas</strong> têm o <strong>prefixo</strong> (letras, hífen e número, como ABT-01), que é único no sistema inteiro, e a <strong>CNH</strong> exigida para dirigir. Só o Condutor precisa da CNH. As setas mudam a ordem, que é a ordem em que as viaturas aparecem na escala. <strong>Nova viatura</strong> inclui uma linha.</li>
               </ul>
               <p>O posto novo passa a existir na escala a partir da data do Salvar. Trocar o prefixo ou a CNH de uma viatura também vale a partir dessa data, para sempre.</p>
               <figure class="manual-figura manual-figura--cheia">
-                <img src="manual/imagens/distribuicao-postos.png" width="680" height="492" alt="O bloco Postos: Nova instalação, com um botão por tipo (1), o prefixo e a CNH de uma viatura (2), os botões Substituir temporariamente, Fora de serviço e Excluir (3) e uma mudança com data embaixo da viatura (4)." />
+                <img src="manual/imagens/distribuicao-postos.png" width="680" height="367" alt="O bloco Postos: as instalações no cartão fechado, com a lista numerada (1), e as viaturas no cartão aberto, com o prefixo e a CNH de uma viatura (2), os botões Substituir temporariamente, Fora de serviço e Excluir (3) e uma mudança com data embaixo da viatura (4)." />
                 <figcaption>
                   <ol class="manual-chamadas">
-                    <li>Nova instalação, pelo tipo</li>
+                    <li>Cartão fechado, com a lista</li>
                     <li>Prefixo e CNH da viatura</li>
                     <li>Substituir temporariamente, Fora de serviço e Excluir</li>
                     <li>Uma mudança com data</li>
@@ -1611,12 +1611,25 @@
               <h3 id="dist-ordem">Quem senta em cada função</h3>
               <p>Os blocos seguintes dizem quem senta onde:</p>
               <ul class="manual-lista">
-                <li><strong>Acúmulos fixos</strong>: funções que são sempre da mesma pessoa, como "o Rádio Operador é sempre de quem está no Efetivo 3". Elas não precisam de gente própria.</li>
+                <li><strong>Acúmulos fixos</strong>: funções que são sempre da mesma pessoa, como "o Rádio Operador é sempre de quem está no Efetivo 3 da ABT". Elas não precisam de gente própria. Vale a 1ª opção; sem ninguém nela, a 2ª, e assim até a 5ª.</li>
+                <li><strong>Acúmulos por falta</strong>: quando uma função fica sem gente, quem está na 1ª opção faz as duas; sem ninguém nela, vale a próxima. Sem nenhuma, a função fica vazia.</li>
                 <li><strong>Ordem de importância</strong>: cada linha é uma pessoa, com os acúmulos dela na mesma linha. Com N militares de serviço, enchem as N primeiras linhas, e quem sobra fica sem função. A função especial é sempre a 1ª. As setas mudam a ordem; dentro do mesmo posto, a ordem segue os lugares (Efetivo 2 antes do Efetivo 3).</li>
-                <li><strong>Substitutos</strong>: quando uma função fica sem gente, o 1º substituto que estiver de serviço faz as duas. Sem substituto, a função fica vazia.</li>
                 <li><strong>Quem escolher</strong>: para cada função, na ordem de importância, quem senta nela: o mais antigo ou o mais moderno que ainda não tem função, ou uma graduação ("Um 3ºSgt. ou o mais próximo", "Somente 3ºSgt. ou fica vazia"), com o aviso quando ela faltar. O <strong>rodízio</strong> evita que o militar repita a função do último serviço. O Condutor só fica com quem tem a CNH da viatura.</li>
-                <li><strong>Regras por militar</strong>: o que um militar não pode fazer ou só pode fazer (Condutor, Rádio Operador, Efetivo, Rancheiro ou Almoxarife).</li>
+                <li><strong>Regras por militar</strong>: o que um militar não pode fazer ou só pode fazer (Condutor, Rádio Operador, Efetivo, Rancheiro ou Almoxarife). Cada regra é um cartão, com o militar no título.</li>
               </ul>
+              <p>Nos dois acúmulos, as opções são sempre de <strong>outro posto</strong>: dentro do mesmo posto, a Ordem de importância já distribui. Aberto o cartão, as <strong>setas</strong> mudam a ordem das opções, a lixeira tira uma opção (da 2ª em diante), <strong>Adicionar opção</strong> inclui uma linha e <strong>Remover acúmulo</strong> tira o acúmulo inteiro.</p>
+              <p>Quando o Chefe de Socorro pode dirigir a viatura dele, aparece um cartão travado do <strong>Condutor</strong>, com ele numa das opções e o cadeado. Em <strong>sempre</strong>, ele é a 1ª opção. Em <strong>só se não houver outro habilitado</strong>, você põe outras opções antes dele, como o Condutor de outra viatura, e só sem elas ele dirige.</p>
+              <figure class="manual-figura manual-figura--cheia">
+                <img src="manual/imagens/distribuicao-acumulo.png" width="658" height="309" alt="O acúmulo por falta do Condutor aberto: o Condutor da ABS-10732 na 1ª opção e o Chefe de Socorro travado na 2ª (1), as setas que mudam a ordem (2), a lixeira de uma opção (3) e Adicionar opção (4)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>O Chefe de Socorro, travado</li>
+                    <li>Setas que mudam a ordem das opções</li>
+                    <li>Lixeira, da 2ª opção em diante</li>
+                    <li>Adicionar opção</li>
+                  </ol>
+                </figcaption>
+              </figure>
               <figure class="manual-figura manual-figura--cheia">
                 <img src="manual/imagens/distribuicao-ordem.png" width="664" height="287" alt="A Ordem de importância: uma linha por pessoa, com o posto e a função (1), a função especial, sempre a 1ª (2), e as setas que mudam a ordem (3)." />
                 <figcaption>
@@ -2094,14 +2107,14 @@
                   <li class="manual-ordem-passo"><span class="manual-ordem-num">3</span><span class="manual-ordem-texto"><strong>Ordem de importância</strong><span>Com N militares de serviço, enchem as N primeiras funções da ordem. Quem sobra fica sem função.</span></span></li>
                   <li class="manual-ordem-passo"><span class="manual-ordem-num">4</span><span class="manual-ordem-texto"><strong>Quem escolher</strong><span>Cada função escolhe, na ordem, o mais antigo ou o mais moderno ainda sem função, ou uma graduação.</span></span></li>
                   <li class="manual-ordem-passo"><span class="manual-ordem-num">5</span><span class="manual-ordem-texto"><strong>Condutor</strong><span>Só quem tem CNH compatível com a viatura.</span></span></li>
-                  <li class="manual-ordem-passo"><span class="manual-ordem-num">6</span><span class="manual-ordem-texto"><strong>Substitutos</strong><span>Quando uma função fica sem gente, o substituto de serviço faz as duas.</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">6</span><span class="manual-ordem-texto"><strong>Acúmulos por falta</strong><span>Quando uma função fica sem gente, quem está na 1ª opção de serviço faz as duas; sem ninguém nela, a próxima.</span></span></li>
                   <li class="manual-ordem-passo"><span class="manual-ordem-num">7</span><span class="manual-ordem-texto"><strong>Rodízio</strong><span>Evita que o militar repita a função do último serviço.</span></span></li>
                 </ol>
                 <figcaption class="manual-diagrama-legenda">A ordem que o sistema segue para distribuir quem está de serviço em cada dia.</figcaption>
               </figure>
               <p><strong>Antiguidade em primeiro lugar.</strong> Em quase toda escolha, o <strong>mais antigo</strong> tem prioridade, e a antiguidade é o <strong>desempate</strong> em tudo. Cada função diz se é de <strong>praça</strong> ou de <strong>oficial</strong>, e o sistema só encaixa quem é do tipo certo.</p>
               <p><strong>Chefe de Socorro e Oficial de Área são os mais antigos.</strong> O <strong>Chefe de Socorro</strong> é o <strong>praça mais antigo</strong> de serviço no pelotão; o <strong>Oficial de Área</strong>, o <strong>oficial mais antigo</strong>. Quem assume a função continua nela até o fim do plantão, mesmo que chegue alguém mais antigo depois.</p>
-              <p><strong>Condutor só com CNH.</strong> A função <strong>Condutor</strong> de uma viatura só fica com quem tem <strong>CNH compatível</strong> com a categoria que a viatura exige (por exemplo, uma viatura que pede C aceita quem tem C, D ou E). Quem cobre o Condutor como substituto também precisa da carteira. Quem não tem a carteira nunca é posto como condutor.</p>
+              <p><strong>Condutor só com CNH.</strong> A função <strong>Condutor</strong> de uma viatura só fica com quem tem <strong>CNH compatível</strong> com a categoria que a viatura exige (por exemplo, uma viatura que pede C aceita quem tem C, D ou E). Quem cobre o Condutor num acúmulo por falta também precisa da carteira. Quem não tem a carteira nunca é posto como condutor.</p>
               <figure class="manual-figura">
                 <img src="manual/imagens/apendice-guarnicao.png" width="396" height="113" alt="A guarnição de uma viatura no painel do dia: o Chefe de Socorro, o praça mais antigo (1), e o Condutor, com a CNH exigida (2), além do Efetivo." />
                 <figcaption>
@@ -2111,7 +2124,7 @@
                   </ol>
                 </figcaption>
               </figure>
-              <p><strong>Acúmulos: a mesma pessoa em duas funções.</strong> Quando falta gente, a mesma pessoa cobre mais de uma função: o <strong>substituto</strong> de serviço faz a dele e a que ficou vazia. O caso clássico: sem outro condutor habilitado, o <strong>Chefe de Socorro</strong> dirige a viatura dele e fica nas duas funções, quando a unidade permite. Há também os <strong>acúmulos fixos</strong>, funções que são sempre da mesma pessoa.</p>
+              <p><strong>Acúmulos: a mesma pessoa em duas funções.</strong> Quando falta gente, a mesma pessoa cobre mais de uma função: quem está na opção do <strong>acúmulo por falta</strong> faz a dele e a que ficou vazia. O caso clássico: sem outro condutor habilitado, o <strong>Chefe de Socorro</strong> dirige a viatura dele e fica nas duas funções, quando a unidade permite. Há também os <strong>acúmulos fixos</strong>, funções que são sempre da mesma pessoa.</p>
               <p>A tela mostra numa <strong>linha só</strong>, com os dois rótulos e um nome. Como o chefe já conta como efetivo, a cadeira que ele liberou vira mais um Efetivo para o próximo da fila. O acúmulo vale só dentro da mesma unidade: um militar não fica em funções de duas unidades ao mesmo tempo.<span class="manual-admin"> Para alguém de outra unidade trabalhar aqui num dia, o administrador usa o <strong>Adicionar militar</strong> do painel do dia.</span></p>
               <figure class="manual-figura">
                 <img src="manual/imagens/apendice-acumulo.png" width="396" height="104" alt="Um acúmulo: o mesmo militar aparece com dois rótulos empilhados, Chefe de Socorro e Condutor (1), e um nome só (2)." />

@@ -270,9 +270,23 @@
     lista.appendChild(item);
   }
 
-  /* o posto tem alguém em alguma função? (no Ver, o posto sem ninguém não aparece) */
+  /* o posto tem alguém em alguma função, ou no que a Central exibe? (no Ver, o posto sem ninguém não aparece) */
   function temAlguem(posto) {
-    return ((posto && posto.funcoes) || []).some(function (f) { return (f.militares || []).length > 0; });
+    return ((posto && posto.funcoes) || []).concat((posto && posto.exibir) || [])
+      .some(function (f) { return (f.militares || []).length > 0; });
+  }
+
+  /* o que a Central de Operações do pelotão exibe, só para ver (o banco manda em posto.exibir): o Oficial de Área, o
+     Chefe de Socorro e o Cabo de Dia antes das funções dela e a Extrajornada depois, no formato das funções e marcadas
+     com exibe. O Cabo de Dia sem ninguém (semNinguem, os horários) só vai para quem administra */
+  function exibidas(posto, admin) {
+    var r = { antes: [], depois: [] };
+    ((posto && posto.exibir) || []).forEach(function (x) {
+      var semNinguem = admin ? (x.vazio || []) : [];
+      if (!(x.militares || []).length && !semNinguem.length) return;
+      (x.depois ? r.depois : r.antes).push({ nome: x.nome, militares: x.militares || [], semNinguem: semNinguem, exibe: true });
+    });
+    return r;
   }
 
   /* texto com {marcadores} preenchidos a partir de um objeto de dados */
@@ -373,8 +387,8 @@
      militar em situação errada. faltamModelos e modelosComErro trazem a composição de cada trecho.
      O detalhe amarelo expansível (quem + vaga + motivo) segue montado pelos dados dos postos (sem os
      postos, pela própria lista). Devolve as linhas [{ def, texto }] e, no detalhe, [{ def, texto, tipo, itens }];
-     a mesma lista serve à caixa do topo e à aba Extrajornada */
-  function linhasDoAviso(problemas, postos, faltamModelos, modelosComErro) {
+     a mesma lista serve à caixa do topo e à aba Extrajornada. Com admin, também a Central sem Cabo de Dia (dos postos) */
+  function linhasDoAviso(problemas, postos, faltamModelos, modelosComErro, admin) {
     var lista = problemas || [];
     var cat = (RosterWork.mensagens && RosterWork.mensagens.escala && RosterWork.mensagens.escala.erros) || {};
     var linhas = [];
@@ -482,6 +496,16 @@
     linhasEfetivoProblemas('unidade_abaixo_minimo', cat.unidadeAbaixoMinimo, 2);
     linhasEfetivoProblemas('posto_fora', cat.postoFora, 2);
     linhasEfetivoProblemas('abaixo_ideal', cat.abaixoIdeal);
+    /* a Central sem Cabo de Dia (só para quem administra): uma linha, com os horários quando não é o dia todo */
+    if (admin && cat.semCaboDia) (postos || []).forEach(function (po) {
+      exibidas(po, true).antes.forEach(function (x) {
+        var sem = x.semNinguem;
+        if (!sem.length) return;
+        var diaTodo = sem.length === 1 && sem[0].hi === '08:00' && sem[0].hf === '08:00';
+        var faixas = diaTodo ? '' : ', ' + sem.map(function (v) { return preencher(cat.semCaboDia.faixa, { hi: v.hi, hf: v.hf }); }).join(' e ');
+        linha(cat.semCaboDia, preencher(cat.semCaboDia.texto, { faixas: faixas }));
+      });
+    });
     porOcorrencia('exclusivo_fora', cat.exclusivoFora, function (p) { return p.cpf + '|' + p.funcao; },
       function (p) { return { militar: militar(p), funcao: p.funcao || '' }; });
     porOcorrencia('grau_diferente', cat.grauDiferente, function (p) { return p.cpf + '|' + p.funcao; },
@@ -496,8 +520,8 @@
   }
 
   /* a caixa de avisos do topo: cada linha de linhasDoAviso, a simples e a do detalhe amarelo expansível */
-  function montarAvisoProblemas(problemas, postos, faltamModelos, modelosComErro) {
-    var linhas = linhasDoAviso(problemas, postos, faltamModelos, modelosComErro);
+  function montarAvisoProblemas(problemas, postos, faltamModelos, modelosComErro, admin) {
+    var linhas = linhasDoAviso(problemas, postos, faltamModelos, modelosComErro, admin);
     if (!linhas.length) return null;
     var aviso = RosterWork.tpl('tpl-escala-distribuicao-aviso');
     if (!aviso) return null;
@@ -929,9 +953,46 @@
     }).filter(function (g) { return g.itens.length; });
   }
 
+  /* o texto das Observações para colar (o Copiar do título da caixa): os grupos na ordem da tela, cada um com a lista
+     numerada, e uma linha em branco entre eles */
+  function textoDasObservacoes(obs) {
+    var m = RosterWork.mensagens.escala;
+    return agruparObservacoes(obs).map(function (g) {
+      return [g.titulo].concat(g.itens.map(function (o, i) { return (i + 1) + '. ' + m.observacaoTexto(o); })).join('\n');
+    }).join('\n\n');
+  }
+
+  /* a linha do título da caixa com o Copiar: leva o texto para a área de transferência (o Ctrl+C) e mostra o visto por
+     2 s no lugar do ícone; se o navegador não deixar copiar, o aviso */
+  function ligarCopiar(caixa, obs) {
+    var m = RosterWork.mensagens.escala;
+    var linha = RosterWork.tpl('tpl-escala-observacoes-titulo');
+    var rotulo = caixa.querySelector('.rotulo-secao');
+    if (!linha || !rotulo) return;
+    caixa.insertBefore(linha, rotulo);
+    linha.insertBefore(rotulo, linha.firstChild);
+    var botao = linha.querySelector('.escala-observacoes-copiar');
+    var dica = botao.getAttribute('data-dica');
+    var espera = null;
+    function mostrarCopiado(sim) {
+      botao.querySelector('.escala-observacoes-copiar-icone').classList.toggle('oculto', sim);
+      botao.querySelector('.escala-observacoes-copiado-icone').classList.toggle('oculto', !sim);
+      botao.setAttribute('data-dica', sim ? m.observacoesCopiado : dica);
+    }
+    function falhou() { if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: m.observacoesFalhaCopiar }); }
+    botao.addEventListener('click', function () {
+      if (!navigator.clipboard || !navigator.clipboard.writeText) { falhou(); return; }
+      navigator.clipboard.writeText(textoDasObservacoes(obs)).then(function () {
+        mostrarCopiado(true);
+        clearTimeout(espera);
+        espera = setTimeout(function () { mostrarCopiado(false); }, 2000);
+      }).catch(falhou);
+    });
+  }
+
   /* seção "Observações" do dia em grupos: Administração (notas manuais do admin), Trocas, Folgas, De outra unidade e
-     Remanejados (automáticas), cada um com a sua lista numerada. Para o admin no Dia: botão para adicionar (com limite)
-     e ✕ para excluir SÓ as do admin; as duas coisas gravam na hora.
+     Remanejados (automáticas), cada um com a sua lista numerada e, com itens, o Copiar no título. Para o admin no Dia:
+     botão para adicionar (com limite) e ✕ para excluir SÓ as do admin; as duas coisas gravam na hora.
      Sem editar: só leitura. opcoes = { editar, aoAdicionar(texto), aoRemover(observacao) } */
   function montarObservacoes(obs, opcoes) {
     opcoes = opcoes || {};
@@ -941,6 +1002,7 @@
     var m = RosterWork.mensagens.escala;
     var caixa = RosterWork.painel.criarCaixa(m.observacoesTitulo);
     if (!caixa) return null;
+    if (obs.length) ligarCopiar(caixa, obs);
 
     function linhaObs(o) {
       var linha = RosterWork.tpl('tpl-escala-observacao');
@@ -1026,6 +1088,7 @@
       linha: montarLinhaEscalado,
       grupo: montarGrupoFuncao,
       mesclarFuncoes: mesclarFuncoesViatura,
+      exibidas: exibidas,
       marcarConflito: marcarConflito,
       alteracoes: montarAlteracoes,
       temAlguem: temAlguem,

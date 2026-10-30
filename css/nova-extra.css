@@ -685,6 +685,38 @@
   color: var(--texto-suave);
 }
 
+/* por que ficou com cota na última sugestão: a linha cinza embaixo do nome, na largura do item */
+.nova-extra-esq-motivo {
+  grid-column: 1 / -1;
+  font-size: 11px;
+  color: var(--texto-fraco);
+}
+
+.nova-extra-esq-motivo:empty { display: none; }
+
+/* o véu do cálculo do Preencher pela sugestão: o mesmo visual do véu de carregamento do site (.carregando-veu), mas na
+   tela inteira (o menu e as barras também ficam cobertos), com o texto e o Cancelar embaixo do círculo. Classe própria:
+   o roteador esconde o primeiro .carregando-veu do conteúdo, que tem de ser o do site */
+.nova-extra-calculo {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background-color: var(--fundo-superficie);
+}
+
+.nova-extra-calculo-texto {
+  max-width: 360px;
+  margin: 0;
+  font-size: 14px;
+  text-align: center;
+  color: var(--texto-suave);
+}
+
 /* as datas do militar em foco, num bloco branco embaixo do nome na lista; a que sai ao salvar, em cinza */
 .nova-extra-esq-aberto {
   display: flex;

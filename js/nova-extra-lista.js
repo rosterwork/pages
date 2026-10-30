@@ -136,6 +136,9 @@
     b.setAttribute('data-busca', RW.busca ? RW.busca.chave(m) : '');
     b.querySelector('.nova-extra-esq-pel').textContent = (u().unidade(m.unidade_id) || {}).nome || '';
     b.querySelector('.nova-extra-esq-cotas').textContent = msg().deCotas(G().usadas(m.cpf, alocs), m.concedidas || 0);
+    /* ficou com cota na última sugestão: o motivo embaixo do nome */
+    var fora = g === 'faltam' ? G().foraDaSugestao(m.cpf) : null;
+    b.querySelector('.nova-extra-esq-motivo').textContent = fora ? msg().foraMotivo[fora] || '' : '';
     b.classList.toggle('lista-item--ativo', emFoco);
     b.setAttribute('aria-pressed', emFoco ? 'true' : 'false');
     b.addEventListener('click', function () {

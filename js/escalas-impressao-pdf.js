@@ -2,7 +2,9 @@
    ESCALAS — PDF da escala (biblioteca pdfmake, carregada só aqui)
    Monta e baixa o PDF que o painel "Imprimir escala" pede: uma
    folha por dia, as unidades em sequência, só a logo no alto e o
-   site + "Página X de Y" no rodapé. O conteúdo é o do modo Dia
+   site + "Página X de Y" no rodapé (com os ícones de origem, que o
+   Mostrar do painel liga, a legenda deles logo acima:
+   escalas-impressao-legenda.js). O conteúdo é o do painel do dia
    (postos, funções, militares, horários, sem função, observações),
    no padrão de blocos (Guia visual › Impressão da escala): a unidade é um bloco cinza com o
    título dentro e cada posto um bloquinho branco com contorno fino.
@@ -49,6 +51,8 @@
   var COLUNAS = [110, '*', 90];           // função · militar · horário
   var SETA_LARGURA = 8;
   var SETA_MARGEM = [0, 0.5, 0, 0];      // alinha a seta ao meio do texto do horário
+  var ICONE = 7;                          // ícone de origem antes do nome (o Mostrar), no tamanho do PDF das grades
+  var ICONE_MARGEM = [0, 2.5, 0, 0];     // alinha o ícone ao meio do nome
   var LINHA_FINA = 0.5;                   // contorno do bloquinho branco
   var RAIO = { unidade: 6, posto: 3.5 };  // cantos arredondados do bloco da unidade e do bloquinho
   var ESPACAMENTO_CAIXA_ALTA = 0.6;       // entre letras do título do posto (caixa alta)
@@ -156,8 +160,35 @@
     };
   }
 
+  /* os ícones do militar, como no painel do dia: a origem do serviço e, fixado na função, o cadeado */
+  function iconesDoMilitar(m) {
+    var origem = pecas().iconeOrigem || {};
+    var nomes = [origem[m.origem] || origem.sistema || 'icone-origem-sistema'];
+    if (m.fixado) nomes.push('icone-cadeado');
+    return nomes;
+  }
+
+  /* os ícones que aparecem no arquivo ({ icone: true }), para a legenda do pé da folha */
+  function iconesDoArquivo(dados) {
+    var usados = {};
+    function marcar(m) { iconesDoMilitar(m).forEach(function (n) { usados[n] = true; }); }
+    dados.dias.forEach(function (it) {
+      (it.sem_funcao || []).forEach(marcar);
+      (it.postos || []).forEach(function (p) {
+        (p.funcoes || []).concat(p.exibir || []).forEach(function (f) { (f.militares || []).forEach(marcar); });
+      });
+    });
+    return usados;
+  }
+
+  /* graduação e nome; com os ícones ligados (c.comIcones), os ícones de origem antes */
   function celulaMilitar(m, c) {
-    return { text: [{ text: (m.grad || '') + ' ', fontSize: FONTE.grad, color: c.suave }, { text: m.nome || '', bold: true, fontSize: FONTE.nome, color: c.forte }], margin: CELULA.militar };
+    var texto = { text: [{ text: (m.grad || '') + ' ', fontSize: FONTE.grad, color: c.suave }, { text: m.nome || '', bold: true, fontSize: FONTE.nome, color: c.forte }], margin: CELULA.militar };
+    if (!c.comIcones) return texto;
+    texto.width = '*';
+    return { columns: iconesDoMilitar(m).map(function (n) {
+      return { svg: c.icones[n], width: ICONE, height: ICONE, margin: ICONE_MARGEM };
+    }).concat([texto]), columnGap: 2 };
   }
 
   function semLinha() { return 0; }
@@ -192,8 +223,10 @@
 
   function linhasDoPosto(posto, c) {
     var mesclar = pecas().mesclarFuncoes || function (p) { return p.funcoes || []; };
+    /* o que a Central exibe, só para ver, antes e depois das funções dela (o Cabo de Dia sem ninguém não sai no papel) */
+    var exib = pecas().exibidas ? pecas().exibidas(posto, false) : { antes: [], depois: [] };
     var linhas = [];
-    mesclar(posto).forEach(function (f) {
+    exib.antes.concat(mesclar(posto), exib.depois).forEach(function (f) {
       var daFuncao = [], alturas = [];
       if (f.vazio && RW.mensagens.escala.vagaVazia) {
         daFuncao.push([{ text: RW.mensagens.escala.vagaVazia(f.vazio_motivo), italics: true, fontSize: FONTE.texto, color: c.suave, margin: CELULA.militar }, { text: '' }]);
@@ -341,12 +374,20 @@
     });
     var doc = {
       pageSize: 'A4',
-      pageMargins: MARGENS,
+      /* com os ícones, a base cresce para a legenda (escalas-impressao-legenda.js) */
+      pageMargins: [MARGENS[0], MARGENS[1], MARGENS[2], MARGENS[3] + (c.legendaAltura || 0)],
       defaultStyle: { font: 'Montserrat', fontSize: FONTE.texto, color: c.texto },
       info: { title: t.titulo + ' ' + RW.data.isoParaBR(dados.inicio) + (dados.fim !== dados.inicio ? ' a ' + RW.data.isoParaBR(dados.fim) : ''), author: 'Roster Work', creator: 'Roster Work', producer: 'Roster Work' },
       header: function () { return { svg: c.logo, width: LOGO_LARGURA, margin: LOGO_MARGEM }; },
       footer: function (pagina, total) {
-        return { columns: [{ text: t.site }, { text: t.pagina(pagina, total), alignment: 'right' }], fontSize: FONTE.rodape, color: c.suave, margin: RODAPE_MARGEM };
+        var linha = { columns: [{ text: t.site }, { text: t.pagina(pagina, total), alignment: 'right' }] };
+        /* a legenda é montada a cada folha (a biblioteca anota medidas em cada peça) */
+        var legenda = c.legendaUsados && RW.escalasImpressaoLegenda ? RW.escalasImpressaoLegenda.peca(c, c.legendaUsados) : null;
+        var pe = legenda ? { stack: [legenda, linha] } : linha;
+        pe.fontSize = FONTE.rodape;
+        pe.color = c.suave;
+        pe.margin = RODAPE_MARGEM;
+        return pe;
       },
       content: conteudo
     };
@@ -471,7 +512,8 @@
     }
     function simples() { return desenharPlano({ modo: 'simples' }); }
     var candidatas = {};
-    dados.dias.forEach(function (it) { if (alturaEstimada(it) > ALTURA_UTIL) candidatas[it.data + '|' + it.unidade_id] = true; });
+    var util = ALTURA_UTIL - (c.legendaAltura || 0);   // a legenda do pé da folha toma o seu espaço
+    dados.dias.forEach(function (it) { if (alturaEstimada(it) > util) candidatas[it.data + '|' + it.unidade_id] = true; });
     var medir = Object.keys(candidatas).length ? desenhar(montarDocumento(dados, c, { modo: 'medir', so: candidatas }), c) : Promise.resolve(null);
     var escolhido = medir.then(function (m) {
       if (m && !m.folhas) return simples();
@@ -513,9 +555,10 @@
     return escolhido.then(function (e) {
       var p = e.plano;
       var plano = { modo: p.modo, so: p.so, grandes: p.grandes, cortes: p.cortes, caixas: e.desenho.caixas };
+      var folhas = (e.desenho.caixas || []).length;   // o redesenho tem as mesmas folhas
       return desenhar(montarDocumento(dados, c, plano), c).then(function (r) {
-        return r.assinatura === e.desenho.assinatura ? r.arquivo : e.desenho.arquivo;
-      }, function () { return e.desenho.arquivo; });
+        return { arquivo: r.assinatura === e.desenho.assinatura ? r.arquivo : e.desenho.arquivo, folhas: folhas };
+      }, function () { return { arquivo: e.desenho.arquivo, folhas: folhas }; });
     });
   }
 
@@ -541,18 +584,29 @@
     return txt().arquivo(periodo, dados.unidades.length === 1 ? dados.unidades[0].nome : '');
   }
 
-  /* dados: { unidades, dias, inicio, fim } (do banco, escala_impressao) → { arquivo, nome }, sem baixar (a prévia do
-     painel mostra o arquivo; o Gerar PDF baixa o mesmo) */
-  function montar(dados) {
+  /* dados: { unidades, dias, inicio, fim } (do banco, escala_impressao); opcoes: { icones } (o Mostrar: os ícones de
+     origem antes do nome e a legenda deles no pé da folha) → { arquivo, nome, folhas }, sem baixar (a prévia do painel
+     mostra o arquivo; o Gerar PDF baixa o mesmo) */
+  function montar(dados, opcoes) {
+    var comIcones = !!(opcoes && opcoes.icones && RW.escalasImpressaoLegenda);
     return carregarRecursos().then(function (icones) {
       var c = montarEstilo(icones);
+      if (!comIcones) return c;
+      var usados = iconesDoArquivo(dados);
+      return RW.escalasImpressaoLegenda.carregarIcones(c, Object.keys(usados)).then(function () {
+        c.comIcones = true;
+        c.legendaUsados = usados;
+        c.legendaAltura = RW.escalasImpressaoLegenda.altura(usados);
+        return c;
+      });
+    }).then(function (c) {
       return desenharArquivo(dados, c);
-    }).then(function (arquivo) {
-      return { arquivo: arquivo, nome: nomeArquivo(dados) };
+    }).then(function (r) {
+      return { arquivo: r.arquivo, nome: nomeArquivo(dados), folhas: r.folhas };
     });
   }
 
-  /* monta e baixa o PDF */
+  /* monta e baixa o PDF (sem os ícones) */
   function gerar(dados) {
     return montar(dados).then(function (r) { baixar(r.arquivo, r.nome); });
   }

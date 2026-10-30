@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <!-- política de segurança: o navegador só aceita código, estilo e dados do próprio site e do banco (REGRAS §3, item 11) -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://oadzjrekpuddagfydfzn.supabase.co; frame-src 'self' blob:; object-src 'self' blob:; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://oadzjrekpuddagfydfzn.supabase.co; frame-src 'self' blob:; object-src 'self' blob:; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'" />
   <!-- abre a conexão com o banco enquanto a página ainda carrega (a primeira consulta não espera por ela) -->
   <link rel="preconnect" href="https://oadzjrekpuddagfydfzn.supabase.co" crossorigin />
   <!-- pede a fonte junto com a página: ela chega antes do primeiro desenho, e a tela não é redesenhada na troca de letra -->
@@ -2996,6 +2996,18 @@
           <span>Nota do administrador</span>
         </span>
       </div>
+    </div>
+  </template>
+
+  <!-- a linha do título das Observações do dia (escalas-painel.js), quando há itens: o nome (o .rotulo-secao da caixa,
+       posto aqui pelo JS) e, na ponta direita, o Copiar, que leva o texto das observações para a área de transferência;
+       copiado, o visto aparece no lugar do ícone por 2 s (o JS troca qual dos dois fica à vista) -->
+  <template id="tpl-escala-observacoes-titulo">
+    <div class="escala-observacoes-titulo">
+      <button type="button" class="botao-discreto escala-observacoes-copiar" aria-label="Copiar observações" data-dica="Copiar">
+        <svg class="icone escala-observacoes-copiar-icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-copiar"/></svg>
+        <svg class="icone escala-observacoes-copiado-icone oculto" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
+      </button>
     </div>
   </template>
 

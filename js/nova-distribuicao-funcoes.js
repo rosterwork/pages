@@ -7,7 +7,8 @@
    unidade escolhida. Também se pode ser condutor e, na companhia,
    quem faz o Oficial de Área sem oficial de serviço. No pelotão, a
    parte da companhia vem junto, sem repetir onde fica o Oficial de
-   Área (os postos da companhia se marcam com ela no seletor).
+   Área (os postos da companhia se marcam com ela no seletor). No
+   pelotão com Central de Operações, quem ela exibe, só para ver.
    ============================================================ */
 (function () {
   'use strict';
@@ -147,6 +148,26 @@
             api.mudar(ctx.lado, function (x) { x.oficial_postos = alternar(x.oficial_postos, posto, marcado); });
           });
         }, false, { muda: 'oficial_postos' });
+      }
+
+      /* a Central de Operações do pelotão: quem ela exibe, só para ver (o banco manda a resposta só com Central no bloco
+         Postos); o erro amarelo do Cabo de Dia só aparece com ele marcado */
+      if (!ctx.ehCia && r.central) {
+        var cen = r.central;
+        var nomes = ['oficial', 'chefe', 'cabo', 'extra'].filter(function (k) { return cen[k]; }).map(function (k) { return M().centralNomes[k]; });
+        var frasesCentral = [M().centralLinha(nomes)].concat(cen.cabo ? [cen.cabo_aviso === 0 ? M().centralCaboSemAviso : M().centralCaboComAviso] : []);
+        P().cartao(u, api, ctx, 'central', M().centralTitulo, frasesCentral, function (lugar) {
+          var opcoes = P().tpl('central');
+          opcoes.querySelectorAll('[data-campo]').forEach(function (botao) {
+            var campo = botao.getAttribute('data-campo');
+            var aviso = campo === 'cabo_aviso';
+            if (aviso) botao.classList.toggle('oculto', !cen.cabo);
+            P().marcar(botao, aviso ? cen.cabo_aviso !== 0 : !!cen[campo], function (marcado) {
+              api.mudar(ctx.lado, function (x) { x.central[campo] = aviso ? (marcado ? 1 : 0) : marcado; });
+            }, ctx.soLeitura);
+          });
+          lugar.appendChild(opcoes);
+        }, false, { muda: 'central' });
       }
     });
   }

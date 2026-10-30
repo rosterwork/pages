@@ -35,19 +35,26 @@
   function br(s) { return s ? s.slice(8, 10) + '/' + s.slice(5, 7) : ''; }
 
   /* ---------- Minha extra ---------- */
-  /* relê o mês: a Minha extra e, junto, os passos e os números das abas (RosterWork.novaExtraOrg) */
-  function carregar() {
+  /* relê o mês: a Minha extra e, junto, os passos e os números das abas (RosterWork.novaExtraOrg). Na troca de mês
+     (comVeu), o véu de carregamento cobre a página e a tela fica travada até o mês novo chegar (o antigo não fica à vista) */
+  function carregar(comVeu) {
     var meu = ++pedido;
     el.mes.textContent = nomeMes(comp);
     el.anterior.disabled = comp <= PRIMEIRO;
     el.proximo.disabled = comp >= ULTIMO;
-    RW.novaExtraOrg.recarregar();
-    RW.rpc('nova_extra_minha', { p_competencia: iso(comp), p_cpf: null }).then(function (r) {
+    var conteudo = document.querySelector('.conteudo');
+    if (comVeu) { RW.mostrarVeu(conteudo); RW.bloquearTela(); }
+    var org = RW.novaExtraOrg.recarregar();
+    var minha = RW.novaExtraUtil.chamar('nova_extra_minha', { p_competencia: iso(comp), p_cpf: null }).then(function (r) {
       if (meu !== pedido || !el.titulo.isConnected) return;
-      if (!r || !r.ok) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
+      if (!r || !r.ok) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.novaExtra.org.falhaMes }); return; }
       estado = r;
       desenhar();
     }, function (e) { if (meu === pedido) RW.avisar({ tipo: 'erro', mensagem: (e && e.message) || RW.mensagens.geral.semConexao }); });
+    if (comVeu) {
+      var fim = function () { RW.esconderVeu(conteudo); RW.liberarTela(); };
+      Promise.all([org, minha]).then(fim, fim);
+    }
   }
 
   function desenhar() {
@@ -152,7 +159,7 @@
   function trocarMes(n) {
     var alvo = new Date(comp.getFullYear(), comp.getMonth() + n, 1);
     if (alvo < PRIMEIRO || alvo > ULTIMO) return;
-    function ir() { comp = alvo; carregar(); }
+    function ir() { comp = alvo; carregar(true); }
     if (!RW.novaExtraOrg.sujo()) { ir(); return; }
     RW.confirmar({ tipo: 'aviso', mensagem: RW.mensagens.edicao.sairSemSalvar, textoConfirmar: RW.mensagens.botoes.descartar,
       textoCancelar: RW.mensagens.botoes.continuarEditando, aoConfirmar: function () { RW.novaExtraMontar.descartar(); ir(); } });
