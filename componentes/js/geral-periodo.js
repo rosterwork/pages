@@ -8,7 +8,11 @@
    hoje continua à vista e o resto se lê rolando. O visual do
    período (‹ rótulo › Hoje) mora no geral-periodo.css; cada página
    liga o seu. Componente compartilhado (Escala e Extrajornada).
+   Mostrar uma peça inteira (o dia aberto no painel): a área rola o
+   mínimo, para o lado mais perto, até a peça ficar inteira à vista
+   com uma folga; já inteira, não mexe.
    API: RosterWork.periodo.rolarAteHoje(area, hoje, anterior, opcoes)
+        RosterWork.periodo.mostrarInteiro(area, alvo, opcoes)
    ============================================================ */
 (function () {
   'use strict';
@@ -16,6 +20,19 @@
   window.RosterWork = window.RosterWork || {};
 
   var PONTA_ANTERIOR = 32;   // quanto do que vem antes de hoje fica à vista (px)
+  var FOLGA = 16;            // a margem em volta da peça mostrada inteira (px)
+
+  /* quanto o fixo (a peça ou a lista de peças que grudam no começo da área) tapa do começo dela */
+  function tamanhoDoFixo(fixo, horizontal) {
+    var tamanho = 0;
+    (Array.isArray(fixo) ? fixo : (fixo ? [fixo] : [])).forEach(function (peca) {
+      if (!peca || !peca.getClientRects().length) return;
+      var caixaFixo = peca.getBoundingClientRect();
+      var ondeGruda = parseFloat(getComputedStyle(peca)[horizontal ? 'left' : 'top']) || 0;
+      tamanho = Math.max(tamanho, ondeGruda + (horizontal ? caixaFixo.width : caixaFixo.height));
+    });
+    return tamanho;
+  }
 
   /* rola a `area` (o contêiner que rola, ainda no começo) até `hoje` (a linha, a semana ou a coluna de
      hoje), com uma ponta da peça `anterior` à vista antes dele; sem `anterior` (hoje é o primeiro), a área fica no
@@ -33,13 +50,7 @@
       return horizontal ? caixa.left : caixa.top;
     }
 
-    var tamanhoFixo = 0;
-    (Array.isArray(fixo) ? fixo : (fixo ? [fixo] : [])).forEach(function (peca) {
-      if (!peca.getClientRects().length) return;
-      var caixaFixo = peca.getBoundingClientRect();
-      var ondeGruda = parseFloat(getComputedStyle(peca)[horizontal ? 'left' : 'top']) || 0;
-      tamanhoFixo = Math.max(tamanhoFixo, ondeGruda + (horizontal ? caixaFixo.width : caixaFixo.height));
-    });
+    var tamanhoFixo = tamanhoDoFixo(fixo, horizontal);
     var comecoVisivel = inicio(area) + (horizontal ? area.clientLeft : area.clientTop) + tamanhoFixo;
     var visivel = (horizontal ? area.clientWidth : area.clientHeight) - tamanhoFixo;
     var caixaHoje = hoje.getBoundingClientRect();
@@ -53,5 +64,29 @@
     else area.scrollTop += deslocamento;
   }
 
-  window.RosterWork.periodo = { rolarAteHoje: rolarAteHoje };
+  /* quanto rolar num sentido para a peça (de `ini` a `fim`) caber entre `comeco` e `final` com a folga: o mínimo, para
+     o lado mais perto; maior que o espaço, encosta no começo */
+  function deslocamento(ini, fim, comeco, final) {
+    if (fim - ini + 2 * FOLGA > final - comeco) return ini - comeco - FOLGA;
+    if (ini < comeco + FOLGA) return ini - comeco - FOLGA;
+    if (fim > final - FOLGA) return fim - final + FOLGA;
+    return 0;
+  }
+
+  /* rola a `area` o mínimo para `alvo` ficar inteiro à vista, com a FOLGA em volta, para o lado mais perto (para cima
+     ou para baixo, e para o lado); já inteiro, não mexe. opcoes.fixo: o que gruda no alto (como no rolarAteHoje);
+     opcoes.fixoLado: o que gruda na esquerda; opcoes.suave: desliza (quem pediu menos movimento no sistema vai direto) */
+  function mostrarInteiro(area, alvo, opcoes) {
+    if (!area || !alvo || !alvo.getClientRects().length) return;
+    var o = opcoes || {};
+    var caixaArea = area.getBoundingClientRect(), caixaAlvo = alvo.getBoundingClientRect();
+    var topo = caixaArea.top + area.clientTop, esquerda = caixaArea.left + area.clientLeft;
+    var y = deslocamento(caixaAlvo.top, caixaAlvo.bottom, topo + tamanhoDoFixo(o.fixo, false), topo + area.clientHeight);
+    var x = deslocamento(caixaAlvo.left, caixaAlvo.right, esquerda + tamanhoDoFixo(o.fixoLado, true), esquerda + area.clientWidth);
+    if (!y && !x) return;
+    var poucoMovimento = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    area.scrollTo({ top: area.scrollTop + y, left: area.scrollLeft + x, behavior: o.suave && !poucoMovimento ? 'smooth' : 'auto' });
+  }
+
+  window.RosterWork.periodo = { rolarAteHoje: rolarAteHoje, mostrarInteiro: mostrarInteiro };
 })();

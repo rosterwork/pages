@@ -8,9 +8,12 @@
    esquerdo) em nova-extra-lista.js. Todos leem daqui (RosterWork.
    novaExtraGrade). Tudo fica no rascunho até o Salvar
    (nova_extra_distribuicao_salvar); o militar sem nenhum horário
-   continua no dia até lá. "Preencher pela sugestão" pede o rascunho
-   ao motor (nova_extra_sugerir). Os Ajustes são a mesma tela (o modo
-   ajustes): abrem depois do lançamento, com o motivo no rodapé.
+   continua no dia até lá. "Preencher pela sugestão" (só com tudo
+   salvo) mantém as extras que o administrador pôs ou mudou e pede ao
+   motor (nova_extra_sugerir) que refaça as que o sistema pôs. O bloco
+   do pelotão no dia com mudança não salva leva a borda tracejada da Escala.
+   Os Ajustes são a mesma tela (o modo ajustes): abrem depois do
+   lançamento, com o motivo no rodapé.
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
    RosterWork.novaExtraMontar.
    ============================================================ */
@@ -26,7 +29,8 @@
   var d = null, el = null, aoSalvar = null;
   var modo = 'distribuicao';   // 'distribuicao' (passo 3) ou 'ajustes' (passo 4)
   var mud = {};            // rascunho: 'cpf|data' -> { cpf, data, unidade, blocos, origem, porque } (blocos [] = sai ao salvar)
-  var sugeridas = [];      // as chaves que a última sugestão pôs
+  var sugeridas = [];      // as chaves que a última sugestão mudou (as extras novas, as refeitas e as que saem)
+  var postas = null;       // as cotas que a última sugestão pôs no mês (a nota do resultado); null = sem sugestão
   var resultadoFechado = false;   // o resultado da sugestão fechado no X (volta no próximo Preencher)
   var escala = null;       // a escala do mês sem extra: { comp, cobertura, erro }
   var escalaSeq = 0;
@@ -63,6 +67,18 @@
   function alteracoes() {
     return Object.keys(mud).filter(function (k) { return mud[k].blocos.length || !!base(mud[k].cpf, mud[k].data); });
   }
+  /* os blocos (pelotão|dia) com mudança ainda não salva, para a borda tracejada (como na Escala): a extra nova, mudada ou
+     tirada marca o pelotão onde ela fica e o de onde ela saiu */
+  function naoSalvos() {
+    var r = {};
+    alteracoes().forEach(function (k) {
+      var v = mud[k], b = base(v.cpf, v.data);
+      r[+v.unidade + '|' + v.data] = true;
+      if (b) r[+b.unidade + '|' + b.data] = true;
+    });
+    return r;
+  }
+  function mesmosBlocos(a, b) { return blocos(a).sort().join() === blocos(b).sort().join(); }
   function usadas(cpf, alocs) { return (alocs || efetivas()).filter(function (a) { return a.cpf === cpf; }).reduce(function (s, a) { return s + a.blocos.length; }, 0); }
   /* a distribuição só é salva depois que o pedido fecha: antes disso, só dá para tirar extra */
   function travado() { return d.mes.estado !== 'encerrado'; }
@@ -188,26 +204,37 @@
   }
 
   /* ---------- sugestão, salvar e o resto ---------- */
+  /* Preencher pela sugestão, só com tudo salvo: as extras que o administrador pôs ou mudou ficam; as que o sistema
+     salvou saem e o motor refaz tudo com as cotas que sobram. A extra refeita igual à salva não é mudança */
   function sugerir() {
+    if (alteracoes().length) return;
     var btn = q('#nova-extra-acoes > .botao');   // o item fica no menu, que fecha no clique: o carregando vai no Ações
+    var fixas = d.alocacoes.filter(function (a) { return a.origem !== 'sugestao'; });
     RW.iniciarCarregando(btn);
-    RW.rpc('nova_extra_sugerir', { p_competencia: d.competencia, p_atuais: efetivas() }).then(function (r) {
+    RW.rpc('nova_extra_sugerir', { p_competencia: d.competencia, p_atuais: fixas }).then(function (r) {
       RW.pararCarregando(btn);
       if (!r || !r.ok) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
-      sugeridas = [];
+      mud = {};
       resultadoFechado = false;
-      r.propostas.forEach(function (p) {
-        var k = chave(p.cpf, p.data);
-        mud[k] = { cpf: p.cpf, data: p.data, unidade: p.unidade, blocos: p.blocos, origem: 'sugestao', porque: p.porque };
-        sugeridas.push(k);
+      d.alocacoes.forEach(function (a) {
+        if (a.origem === 'sugestao') mud[chave(a.cpf, a.data)] = { cpf: a.cpf, data: a.data, unidade: +a.unidade, blocos: [], origem: 'sugestao', porque: null };
       });
+      postas = 0;
+      r.propostas.forEach(function (p) {
+        var k = chave(p.cpf, p.data), antes = base(p.cpf, p.data);
+        postas += p.blocos.length;
+        if (antes && antes.origem === 'sugestao' && +antes.unidade === +p.unidade && mesmosBlocos(antes, p)) delete mud[k];
+        else mud[k] = { cpf: p.cpf, data: p.data, unidade: p.unidade, blocos: p.blocos, origem: 'sugestao', porque: p.porque };
+      });
+      sugeridas = Object.keys(mud);
       redesenhar();
     }, function () { RW.pararCarregando(btn); RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao }); });
   }
 
+  /* o Desfazer da sugestão volta ao salvo: as extras do sistema que saíram voltam (as mudanças do administrador ficam) */
   function desfazerSugestao() {
     sugeridas.forEach(function (k) { if (mud[k] && mud[k].origem === 'sugestao') delete mud[k]; });
-    sugeridas = [];
+    sugeridas = []; postas = null;
     redesenhar();
   }
 
@@ -221,7 +248,7 @@
     }).then(function (r) {
       RW.pararCarregando(btn);
       if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
-      mud = {}; sugeridas = [];
+      mud = {}; sugeridas = []; postas = null;
       q('#p3-motivo').value = '';
       aoSalvar();
     }, function () { RW.pararCarregando(btn); RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao }); });
@@ -248,7 +275,7 @@
     var aberto = q('#p3-aberto');
     aberto.classList.toggle('oculto', !travado());
     aberto.querySelector('.nota-texto').textContent = travado() ? msg().pedidoAberto(u().br(d.mes.fecha)) : '';
-    q('#p3-sugerir').disabled = travado() || soLeitura();
+    q('#p3-sugerir').disabled = travado() || soLeitura() || n > 0;
     var lancadaNota = q('#p3-lancada');
     lancadaNota.classList.toggle('oculto', !soLeitura());
     lancadaNota.querySelector('.nota-texto').textContent = soLeitura() ? msg().distLancada(d.lancamento.lancado_em, d.lancamento.por || '') : '';
@@ -261,11 +288,12 @@
     q('#p3-colocadas').textContent = msg().colocadas(colocadas, total);
     /* todas as cotas colocadas e salvas, com o pedido fechado e ainda sem lançar */
     q('#p3-pronta').classList.toggle('oculto', !(modo === 'distribuicao' && !lancada() && !travado() && !n && total > 0 && colocadas >= total));
-    /* depois do Preencher pela sugestão: quantas cotas ela pôs e os dias que ainda ficaram com vermelho ou amarelo */
+    /* depois do Preencher pela sugestão: quantas cotas o sistema pôs no mês e os dias que ainda ficaram com vermelho ou
+       amarelo */
     var resultado = q('#p3-resultado');
-    resultado.classList.toggle('oculto', !sugeridas.length || !escalaPronta() || resultadoFechado);
-    if (sugeridas.length && escalaPronta()) {
-      var postas = sugeridas.reduce(function (s, kk) { return s + (mud[kk] ? mud[kk].blocos.length : 0); }, 0), vermelho = 0, amarelo = 0;
+    resultado.classList.toggle('oculto', postas === null || !escalaPronta() || resultadoFechado);
+    if (postas !== null && escalaPronta()) {
+      var vermelho = 0, amarelo = 0;
       diasDoMes().forEach(function (k) {
         var cores = pelotoes().map(function (x) { return corDe(faltaDoDia(x.id, k, alocs)); });
         if (cores.indexOf('erro') >= 0) vermelho++; else if (cores.indexOf('alerta') >= 0) amarelo++;
@@ -294,14 +322,14 @@
   function mostrar(dados, conteudo, recarregar, modoNovo) {
     d = dados; el = conteudo; aoSalvar = recarregar; modo = modoNovo || 'distribuicao';
     if (ligado !== el) {
-      ligado = el; mud = {}; sugeridas = []; escala = null;
+      ligado = el; mud = {}; sugeridas = []; postas = null; escala = null;
       q('#p3-sugerir').addEventListener('click', sugerir);
       q('#p3-resultado-fechar').addEventListener('click', function () { resultadoFechado = true; q('#p3-resultado').classList.add('oculto'); });
       q('#p3-desfazer-sugestao').addEventListener('click', desfazerSugestao);
       q('#p3-salvar').addEventListener('click', salvar);
       q('#p3-cancelar').addEventListener('click', function () {
         RW.confirmar({ tipo: 'aviso', mensagem: msg().descartarRascunho, textoConfirmar: RW.mensagens.botoes.descartar,
-          aoConfirmar: function () { mud = {}; sugeridas = []; redesenhar(); } });
+          aoConfirmar: function () { mud = {}; sugeridas = []; postas = null; redesenhar(); } });
       });
       RW.novaExtraLista.ligar(el);
       RW.novaExtraFiltros.ligar(el);
@@ -324,7 +352,7 @@
   RW.novaExtraMontar = {
     mostrar: mostrar,
     sujo: function () { return !!d && alteracoes().length > 0; },
-    descartar: function () { mud = {}; sugeridas = []; },
+    descartar: function () { mud = {}; sugeridas = []; postas = null; },
     /* refaz o calendário (o filtro Exibir mudou) */
     redesenhar: function () { if (d && el && el.isConnected) redesenhar(); },
     /* o painel do dia fecha ao sair da Distribuição, dos Ajustes ou da aba */
@@ -336,7 +364,7 @@
   RW.novaExtraGrade = {
     INI: INI, SEM_CURTA: SEM_CURTA,
     dados: function () { return d; },
-    vagas: vagas, vagaDe: vagaDe, efetivas: efetivas, alocDe: alocDe, usadas: usadas, voluntarios: voluntarios, blocos: blocos,
+    vagas: vagas, vagaDe: vagaDe, efetivas: efetivas, alocDe: alocDe, usadas: usadas, voluntarios: voluntarios, blocos: blocos, naoSalvos: naoSalvos,
     conduz: conduz, impedimento: impedimento,
     faltaDoDia: faltaDoDia, situacao: situacao, antesDe: antesDe, depoisDe: depoisDe, corDe: corDe, travado: travado, soLeitura: soLeitura,
     grafico: function (cob, uid, erro) { return porDia().grafico(cob, uid, erro); },

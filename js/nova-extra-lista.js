@@ -16,7 +16,9 @@
    (nova-extra-dia.js). A alça abre e fecha o painel; com o painel do
    dia aberto e o calendário com menos de 4 dias à vista, a lista
    recolhe sozinha e volta ao fechar o painel (só se foi o sistema que
-   recolheu). A faixa de cada grupo abre e fecha a lista dela.
+   recolheu); no outro sentido, abrir a lista pela alça sem espaço para
+   4 dias fecha o painel do dia. A faixa de cada grupo abre e fecha a
+   lista dela.
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
    RosterWork.novaExtraLista.
    ============================================================ */
@@ -42,7 +44,10 @@
     var alca = el.querySelector('#p3-alca'), lateral = el.querySelector('#p3-lateral');
     alca.addEventListener('click', function () {
       recolhidaPeloPainel = false;   // quem mexe na alça decide: o sistema não devolve
-      abrirLista(alca.getAttribute('aria-expanded') !== 'true');
+      var abrir = alca.getAttribute('aria-expanded') !== 'true';
+      abrirLista(abrir);
+      /* a lista aberta deixou o calendário com menos de 4 dias à vista: o painel do dia fecha */
+      if (abrir && RW.novaExtraDia.aberto() && el.querySelector('#p3-cal').clientWidth < MIN_CALENDARIO) RW.novaExtraDia.fechar();
     });
     Array.prototype.forEach.call(el.querySelectorAll('.nova-extra-esq-faixa'), function (faixa) {
       faixa.addEventListener('click', function () {

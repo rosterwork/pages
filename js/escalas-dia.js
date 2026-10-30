@@ -34,6 +34,12 @@
     } catch (e) { return []; }
   }
 
+  /* o pedido da prévia do dia (escalas-dados.js), ou null sem mudança do painel do dia esperando o Salvar */
+  function corpoDia() {
+    var D = RosterWork.escalasDados;
+    return D && D.corpoPrevia ? D.corpoPrevia('escala_dia_arvore', { p_unidade_ids: idsAplicados(), p_data: isoAtual }) : null;
+  }
+
   /* nome do painel: o PEL mostra a companhia acima ("2ªCIBM / 1ºPEL") */
   function nomePainel(unidade) {
     if (unidade.tipo === 'PEL' && RosterWork.arvoreUnidades) {
@@ -131,8 +137,9 @@
        Outro dia ou outra seleção: a árvore só monta, com o carregando, e a busca é uma só (a do garantirCarga) */
     var mesmoDia = !carregandoAgora && chaveCarregada === chaveDesejada;
     var pronto = RosterWork.arvoreUnidades.montar(container, {
-      rpcConteudo: 'escala_dia_arvore',
-      corpoRpc: function () { return { p_unidade_ids: idsAplicados(), p_data: isoAtual }; },
+      /* com mudança do painel do dia esperando o Salvar, a prévia (o dia como vai ficar) */
+      rpcConteudo: function () { return corpoDia() ? 'escala_previa' : 'escala_dia_arvore'; },
+      corpoRpc: function () { return corpoDia() || { p_unidade_ids: idsAplicados(), p_data: isoAtual }; },
       chaveUnidade: 'unidade_id',
       textoContagem: textoContagem,
       renderConteudo: renderConteudo,

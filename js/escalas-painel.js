@@ -193,14 +193,16 @@
     icones.appendChild(el);
   }
 
-  /* militar de outra unidade (ex.: extra que tira aqui) na tira de ícones; a dica diz a unidade dele */
+  /* militar de outra unidade (ex.: extra que tira aqui) na tira de ícones; a dica diz a unidade dele. O remanejado (só
+     neste dia) leva o ícone do remanejamento no lugar */
   function marcarOutraUnidade(linha, m) {
     if (!m || !m.de_unidade) return;
     var icones = linha.querySelector('.escala-distribuicao-icones');
     if (!icones) return;
-    var el = RosterWork.tpl('tpl-escala-outra-unidade-icone');
+    var el = RosterWork.tpl(m.remanejado ? 'tpl-escala-remanejado-icone' : 'tpl-escala-outra-unidade-icone');
     if (!el) return;
-    el.setAttribute('data-dica', RosterWork.mensagens.escala.deOutraUnidade(m.de_unidade));
+    var t = RosterWork.mensagens.escala;
+    el.setAttribute('data-dica', m.remanejado ? t.remanejadoDe(m.de_unidade) : t.deOutraUnidade(m.de_unidade));
     icones.appendChild(el);
   }
 
@@ -514,25 +516,28 @@
     if (RosterWork.escalasPainelEditar) RosterWork.escalasPainelEditar.reset();
     if (RosterWork.escalasPainelContinuos) RosterWork.escalasPainelContinuos.reset();
     if (RosterWork.escalasPainelExtra) RosterWork.escalasPainelExtra.reset();
+    /* o painel fechou (já perguntou antes, se havia mudança): as mudanças do Dia e do Ciclo saem */
+    if (RosterWork.escalasPainelSalvar) RosterWork.escalasPainelSalvar.descartar();
   }
 
   /* ---------- guarda de descarte: avisa antes de perder rascunho não salvo ---------- */
-  /* seções com rascunho não salvo (o Dia e o Ciclo gravam cada mudança na hora, e o rascunho da Extrajornada é do mês
-     e não se perde ao trocar de dia ou de aba) */
+  /* mudança não salva no Dia ou no Ciclo, que são do dia aberto (escalas-painel-salvar.js); o rascunho da Extrajornada é
+     do mês e não se perde ao trocar de dia ou de aba */
   function secaoSuja() {
-    return !!(RosterWork.escalasPainelExtra && RosterWork.escalasPainelExtra.estaSujo && RosterWork.escalasPainelExtra.estaSujo());
+    return !!(RosterWork.escalasPainelSalvar && RosterWork.escalasPainelSalvar.pendente());
   }
   function limparSecoesSujas() {
     if (RosterWork.escalasPainelEditar) RosterWork.escalasPainelEditar.reset();
     if (RosterWork.escalasPainelContinuos) RosterWork.escalasPainelContinuos.reset();
     if (RosterWork.escalasPainelExtra) RosterWork.escalasPainelExtra.reset();
+    if (RosterWork.escalasPainelSalvar) RosterWork.escalasPainelSalvar.descartar();
   }
-  /* mesmo aviso do botão Cancelar (Descartar / Continuar editando) */
+  /* mesmo aviso do Cancelar do rodapé (Descartar / Continuar editando) */
   function confirmarDescarte(aoConfirmar) {
     if (!RosterWork.confirmar) { aoConfirmar(); return; }
     RosterWork.confirmar({
       tipo: 'aviso',
-      mensagem: RosterWork.mensagens.escala.descartarAlteracoes,
+      mensagem: RosterWork.mensagens.escala.painelDescartar(RosterWork.escalasPainelSalvar ? RosterWork.escalasPainelSalvar.contar() : 0),
       textoConfirmar: RosterWork.mensagens.botoes.descartar,
       textoCancelar: RosterWork.mensagens.botoes.continuarEditando,
       aoConfirmar: aoConfirmar
@@ -546,21 +551,8 @@
       return true;
     }
     if (!secaoSuja()) return false;               // nada sujo: deixa o painel fechar normalmente
-    confirmarDescarte(function () { RosterWork.painel.fechar(); });
+    confirmarDescarte(function () { limparSecoesSujas(); RosterWork.painel.fechar(); });
     return true;                                  // segura o fechamento até confirmar
-  }
-  /* guarda a troca de aba de seção: segura o clique antes de o geral-abas trocar,
-     confirma o descarte e só então repassa o clique. Sem "piscar" (intercepta na captura). */
-  function ligarGuardaAbas(trilho) {
-    if (!trilho) return;
-    trilho.addEventListener('click', function (e) {
-      if (!pCtx) return;                          // outra tela é a dona do painel: não interfere
-      var aba = e.target.closest('.aba');
-      if (!aba || aba.classList.contains('aba--ativa') || !secaoSuja()) return;
-      e.preventDefault();
-      e.stopPropagation();                        // segura o ouvinte delegado do geral-abas
-      confirmarDescarte(function () { limparSecoesSujas(); aba.click(); });
-    }, true);                                     // captura: roda antes do geral-abas
   }
 
   /* um horário: início + seta + fim (a seta some quando não há fim) */
@@ -692,7 +684,7 @@
   /* rodapé "Alterações manuais (N)": quem mexeu no dia, quando e o quê (ajustes do Dia, pontuais,
      folgas, observações e entradas/saídas do ciclo que começam no dia). Sem alterações, o rodapé não
      aparece. aindaVale() diz se o rodapé ainda é dele quando a leitura chega (o Dia pode ter mudado) */
-  function montarAlteracoes(rodape, unidadeId, iso, aindaVale) {
+  function montarAlteracoes(rodape, unidadeId, iso, aindaVale, aoMostrar) {
     rodape.textContent = '';
     rodape.classList.add('oculto');
     if (!RosterWork.escalasDados || !RosterWork.escalasDados.lerAlteracoesDia) return;
@@ -705,6 +697,7 @@
       rodape.textContent = '';
       rodape.appendChild(bloco);
       rodape.classList.remove('oculto');
+      if (aoMostrar) aoMostrar();
     });
   }
 
@@ -720,7 +713,7 @@
     /* o subcabeçalho é de cada seção (o Dia do admin põe nele o Adicionar militar) */
     var sub = RosterWork.painel.subcabecalho();
     if (sub) { sub.textContent = ''; sub.classList.add('oculto'); }
-    /* ao entrar numa seção, zera as outras (rascunhos/estado não vazam entre abas) */
+    /* ao entrar numa seção, as outras param de desenhar (os rascunhos delas ficam até o Salvar do rodapé) */
     if (secao !== 'distribuicao' && RosterWork.escalasPainelEditar) RosterWork.escalasPainelEditar.reset();
     if (secao !== 'continuos' && RosterWork.escalasPainelContinuos) RosterWork.escalasPainelContinuos.reset();
     if (secao !== 'extra' && RosterWork.escalasPainelExtra) RosterWork.escalasPainelExtra.reset();
@@ -739,8 +732,7 @@
     }
   }
 
-  /* troca de aba como o clique na aba (com a pergunta de descartar o que não foi salvo): o Editar extrajornada do menu
-     Editar o dia */
+  /* troca de aba como o clique na aba: o Editar extrajornada do menu Editar o dia */
   function irParaSecao(secao) {
     var linha = RosterWork.painel.linhaAbas();
     var aba = linha && linha.querySelector('.aba[data-secao="' + secao + '"]');
@@ -790,12 +782,32 @@
         });
       }
       if (trilho && RosterWork.abas) {
-        ligarGuardaAbas(trilho);   // confirma o descarte antes de trocar de seção com rascunho
+        /* trocar de aba não pergunta: as mudanças de cada aba ficam até o Salvar do rodapé */
         RosterWork.abas.ligar(trilho, function (aba) { mostrarSecao(aba.getAttribute('data-secao')); });
       }
     }
 
     mostrarSecao(inicial);
+    /* o painel abriu e a grade ficou mais estreita: o bloco do pelotão aberto vai à vista inteira */
+    requestAnimationFrame(function () { requestAnimationFrame(function () { mostrarDiaAberto(true); }); });
+  }
+
+  /* o bloco do pelotão do dia aberto inteiro à vista na grade (geral-periodo.js), pelo lado mais perto: no Calendário,
+     o bloco com o nome, abaixo do número do dia (que gruda no alto); nas outras grades, a caixa do pelotão no dia */
+  var AREAS_DA_GRADE = '.escala-mes, .escala-semana, .escala-colunas, .geral-calendario-mes';
+  var CABECALHOS_DA_GRADE = '.escala-grade-cabecalho, .geral-calendario-mes-cabecalho, .escala-semana-cabecalho, .escala-colunas-cabecalho';
+  var CANTOS_DA_GRADE = '.escala-mes-canto, .escala-semana-canto, .escala-colunas-canto';
+  function mostrarDiaAberto(suave) {
+    var cel = celulaSelecionada;
+    var area = cel && document.contains(cel) ? cel.closest(AREAS_DA_GRADE) : null;
+    if (!area || !RosterWork.periodo || !RosterWork.periodo.mostrarInteiro) return;
+    var bloco = cel.closest('.escala-calendario-unidade') || cel;
+    var dia = bloco.closest('.geral-calendario-mes-dia');
+    RosterWork.periodo.mostrarInteiro(area, bloco, {
+      fixo: [area.querySelector(CABECALHOS_DA_GRADE), dia && dia.querySelector('.geral-calendario-mes-dia-topo')],
+      fixoLado: area.querySelector(CANTOS_DA_GRADE),
+      suave: suave
+    });
   }
 
   /* localiza, na grade atual (qualquer modo), a célula de uma unidade+dia */
@@ -808,24 +820,25 @@
     );
   }
 
-  /* uma ação do ciclo (Contínuos) re-renderiza a grade inteira e destrói a célula marcada.
-     Enquanto o painel estiver aberto, re-aplica a marcação na célula nova assim que ela
-     aparecer (a re-renderização é assíncrona — espera alguns quadros, sem travar). */
+  /* a grade foi redesenhada (a prévia de uma mudança, o Cancelar, o Salvar, uma ação do ciclo) e destruiu a célula
+     marcada. Enquanto o painel estiver aberto, re-aplica a marcação na célula nova assim que ela aparecer e a grade, que
+     abriu em hoje, fica no dia aberto, já no mesmo quadro (a re-renderização é assíncrona: espera alguns quadros, sem
+     travar) */
   function remarcarSelecionada() {
     if (!pCtx) return;
     var tentativas = 0;
     (function tenta() {
       if (!pCtx) return;   // o painel fechou nesse meio-tempo
       var cel = encontrarCelula(pCtx.unidadeId, pCtx.iso);
-      if (cel) {
-        if (cel !== celulaSelecionada) {
-          if (celulaSelecionada) celulaSelecionada.classList.remove('escala-mes-celula--selecionada');
-          cel.classList.add('escala-mes-celula--selecionada');
-          celulaSelecionada = cel;
-        }
+      /* a célula marcada ainda na tela é a grade velha (o aviso chegou antes de ela ser refeita): espera a nova */
+      if (cel && cel !== celulaSelecionada) {
+        if (celulaSelecionada) celulaSelecionada.classList.remove('escala-mes-celula--selecionada');
+        cel.classList.add('escala-mes-celula--selecionada');
+        celulaSelecionada = cel;
+        mostrarDiaAberto(false);
         return;
       }
-      if (++tentativas < 60) requestAnimationFrame(tenta);   // ~1s no máximo
+      if (++tentativas < 600) requestAnimationFrame(tenta);   // ~10 s no máximo (a prévia com o Ciclo leva uns 5 s)
     })();
   }
 
@@ -889,10 +902,11 @@
     destino.appendChild(pilula);
   }
 
-  /* ícone por classe de observação (troca/folga/outra unidade automáticas; admin manual) */
-  var ICONE_OBS = { troca: 'icone-origem-troca', folga: 'icone-folgas', outra_unidade: 'icone-reforco', admin: 'icone-anotacao' };
+  /* ícone por classe de observação (troca/folga/outra unidade/remanejado automáticas; admin manual) */
+  var ICONE_OBS = { troca: 'icone-origem-troca', folga: 'icone-folgas', outra_unidade: 'icone-reforco', remanejado: 'icone-remanejado',
+    admin: 'icone-anotacao' };
   /* a ordem fixa dos grupos das Observações */
-  var ORDEM_OBS = ['admin', 'troca', 'folga', 'outra_unidade'];
+  var ORDEM_OBS = ['admin', 'troca', 'folga', 'outra_unidade', 'remanejado'];
 
   /* separa as observações nos grupos, na ordem fixa; dentro do grupo fica a ordem que veio (o banco já ordena
      por antiguidade; as notas novas do Editar entram no fim de Administração). Usado no painel e no PDF.
@@ -904,8 +918,8 @@
     }).filter(function (g) { return g.itens.length; });
   }
 
-  /* seção "Observações" do dia em grupos: Administração (notas manuais do admin), Trocas, Folgas e De outra unidade
-     (automáticas), cada um com a sua lista numerada. Para o admin no Dia: botão para adicionar (com limite)
+  /* seção "Observações" do dia em grupos: Administração (notas manuais do admin), Trocas, Folgas, De outra unidade e
+     Remanejados (automáticas), cada um com a sua lista numerada. Para o admin no Dia: botão para adicionar (com limite)
      e ✕ para excluir SÓ as do admin; as duas coisas gravam na hora.
      Sem editar: só leitura. opcoes = { editar, aoAdicionar(texto), aoRemover(observacao) } */
   function montarObservacoes(obs, opcoes) {
@@ -974,6 +988,18 @@
     ligar: ligar,
     abrir: abrirParaCelula,
     irParaSecao: irParaSecao,
+    /* o dia aberto ({ unidadeId, iso, secao }) e a aba aberta lida de novo (o Salvar do rodapé) */
+    contexto: function () { return pCtx ? { unidadeId: pCtx.unidadeId, iso: pCtx.iso, secao: pCtx.secao } : null; },
+    /* a grade foi redesenhada (a prévia do rascunho): o dia aberto volta a ficar selecionado */
+    remarcar: remarcarSelecionada,
+    /* outro painel vai abrir no lugar do dia (o do militar): com mudança no Dia ou no Ciclo, a mesma pergunta de trocar
+       de dia (Descartar segue com seguir(true), e as telas leem o gravado de novo; Continuar editando fica); sem
+       mudança, segue na hora com seguir(false) */
+    antesDeSair: function (seguir) {
+      if (!secaoSuja()) { seguir(false); return; }
+      confirmarDescarte(function () { limparSecoesSujas(); seguir(true); });
+    },
+    recarregarSecao: function () { if (pCtx) mostrarSecao(pCtx.secao); },
     /* peças de montagem reaproveitadas pelo Dia (escalas-painel-editar/-formulario/-militar)
        e pela gaveta da Extrajornada */
     pecas: {

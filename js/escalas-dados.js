@@ -17,6 +17,9 @@
      do mês (celular) quando é a do mesmo pedido */
   function carregar(unidadesIds, inicio, fim) {
     var ids = (unidadesIds || []).map(Number);
+    /* com mudança do painel do dia esperando o Salvar, o mês como vai ficar */
+    var previa = lerPrevia('ler_escala_mes', { p_unidade_ids: ids, p_inicio: inicio, p_fim: fim });
+    if (previa) return previa.then(function (grade) { if (!grade) throw new Error('falha'); return reorganizar(grade); });
     var antecipada = RosterWork.deslizar && RosterWork.deslizar.usarAntecipada(chaveMes(ids, inicio, fim));
     return antecipada || buscarMes(ids, inicio, fim);
   }
@@ -59,6 +62,8 @@
      A RPC entrega { unidade: { militares: [...] } } pronto para o render. */
   function carregarMilitares(unidadesIds, inicio, fim) {
     var ids = (unidadesIds || []).map(Number);
+    var previa = lerPrevia('ler_escala_militares', { p_unidade_ids: ids, p_inicio: inicio, p_fim: fim });
+    if (previa) return previa.then(function (grade) { if (!grade) throw new Error('falha'); return grade; });
     return RosterWork.apiFetch('/rest/v1/rpc/ler_escala_militares', {
       metodo: 'POST', corpo: { p_unidade_ids: ids, p_inicio: inicio, p_fim: fim }
     })
@@ -129,18 +134,32 @@
       .catch(function () { return null; });
   }
 
-  /* prévia das sub-telas do Dia (RPC escala_dia_simular): o dia como ficaria com o rascunho
-     {ajustes, pontuais?, folgas}; pontuais e folgas entram num ensaio no banco (nada é gravado) */
-  function simularDia(unidadeId, iso, rascunho) {
-    return RosterWork.apiFetch('/rest/v1/rpc/escala_dia_simular', { metodo: 'POST', corpo: { p_unidade_id: Number(unidadeId), p_data: iso, p_rascunho: rascunho || {} } })
+  /* a prévia das telas (RPC escala_previa): com mudança do painel do dia esperando o Salvar (o Dia, o Ciclo e a
+     Extrajornada; escalas-painel-salvar.js), a leitura pedida já com o rascunho (o banco roda o Salvar num ensaio e desfaz
+     tudo, nada é gravado). leitura = ler_escala_mes, ler_escala_militares, escala_dia_arvore, escala_minha_calendario ou
+     ler_distribuicao_dia (o painel do dia, com erro_simulacao e erro_parte na recusa). Sem mudança, devolve null (a tela lê
+     como sempre); a promessa resolve no mesmo que a leitura devolve, ou null em falha */
+  function lerPrevia(leitura, args) {
+    var corpo = corpoPrevia(leitura, args);
+    if (!corpo) return null;
+    return RosterWork.apiFetch('/rest/v1/rpc/escala_previa', { metodo: 'POST', corpo: corpo })
       .then(function (r) { return r.ok ? r.json() : null; })
       .catch(function () { return null; });
   }
-  /* grava uma mudança do Dia (RPC escala_dia_salvar): pontuais, folgas, funções, observações e nota num
-     salvamento só. Resolve no objeto da RPC ({success, log, criadas, dia}, ou {success:false, error,
-     desatualizado}) ou num marcador de falha: { _falha: 'conexao' } (sem rede) | { _falha: 'servidor' } (HTTP não-ok). */
-  function salvarDia(unidadeId, iso, rascunho) {
-    return RosterWork.apiFetch('/rest/v1/rpc/escala_dia_salvar', { metodo: 'POST', corpo: { p_unidade_id: Number(unidadeId), p_data: iso, p_rascunho: rascunho || {} } })
+  /* o corpo do pedido da prévia (null sem mudança): para quem chama a RPC por conta própria (a árvore do modo Dia) */
+  function corpoPrevia(leitura, args) {
+    var S = RosterWork.escalasPainelSalvar, p = S && S.paraPrevia();
+    if (!p) return null;
+    return { p_unidade_id: Number(p.unidadeId), p_data: p.iso, p_dia: p.dia, p_ciclo: p.ciclo, p_extra: p.extra,
+      p_leitura: leitura, p_args: args || {} };
+  }
+  /* o Salvar do rodapé do painel do dia (RPC escala_painel_salvar): o Dia (o rascunho, com o "antes"), o Ciclo (as
+     mudanças) e a Extrajornada ({competencia, mudancas, motivo}) de uma vez, tudo ou nada; a parte sem mudança vai
+     nula. Resolve no objeto da RPC ({success, logs, mudou, dia}, ou {success:false, error, parte, desatualizado}) ou
+     num marcador de falha: { _falha: 'conexao' } (sem rede) | { _falha: 'servidor' } (HTTP não-ok). */
+  function painelSalvar(unidadeId, iso, dia, ciclo, extra) {
+    return RosterWork.apiFetch('/rest/v1/rpc/escala_painel_salvar', { metodo: 'POST',
+      corpo: { p_unidade_id: Number(unidadeId), p_data: iso, p_dia: dia || null, p_ciclo: ciclo || null, p_extra: extra || null } })
       .then(function (r) { return r.ok ? r.json() : { _falha: 'servidor' }; })
       .catch(function () { return { _falha: 'conexao' }; });
   }
@@ -161,16 +180,6 @@
      do dia (o da próxima entrada fica) — para o aviso do modal */
   function cicloRetirarAnalisar(unidadeId, cpf, iso) {
     return cicloAcao('escala_ciclo_retirar_analisar', unidadeId, cpf, iso, { p_so_periodo: true });
-  }
-  /* grava as mudanças do ciclo (recalcula a escala uma vez) */
-  function cicloSalvarLote(unidadeId, iso, mudancas) {
-    return RosterWork.apiFetch('/rest/v1/rpc/escala_ciclo_salvar_lote', { metodo: 'POST', corpo: { p_unidade_id: Number(unidadeId), p_data: iso, p_mudancas: mudancas || [] } })
-      .then(function (r) { return r.ok ? r.json() : { _falha: 'servidor' }; })
-      .catch(function () { return { _falha: 'conexao' }; });
-  }
-  /* o Desfazer do resumo do ciclo (a entrada de quem estava fora ou o cancelamento da saída); logId = o log da gravação */
-  function cicloDesfazer(unidadeId, iso, cpf, acao, logId, saidaEm) {
-    return cicloAcao('escala_ciclo_desfazer', unidadeId, cpf, iso, { p_acao: acao, p_log_id: logId, p_saida_em: saidaEm || null });
   }
 
   /* ---- Extrajornada do dia (aba do painel do dia, na Escala e na Extrajornada) ---- */
@@ -204,10 +213,10 @@
 
   window.RosterWork.escalasDados = {
     carregar: carregar, antecipar: antecipar, carregarMilitares: carregarMilitares, lerMilitarDia: lerMilitarDia,
-    lerDistribuicaoDia: lerDistribuicaoDia, lerAlteracoesDia: lerAlteracoesDia, simularDia: simularDia, salvarDia: salvarDia,
+    lerDistribuicaoDia: lerDistribuicaoDia, lerAlteracoesDia: lerAlteracoesDia, lerPrevia: lerPrevia, corpoPrevia: corpoPrevia, painelSalvar: painelSalvar,
     lerImpressao: lerImpressao, lerImpressaoErros: lerImpressaoErros, lerSysbm: lerSysbm,
     sysbmTermo: sysbmTermo, sysbmDarCiencia: sysbmDarCiencia,
-    continuosListar: continuosListar, cicloRetirarAnalisar: cicloRetirarAnalisar, cicloSalvarLote: cicloSalvarLote, cicloDesfazer: cicloDesfazer,
+    continuosListar: continuosListar, cicloRetirarAnalisar: cicloRetirarAnalisar,
     extraPainel: extraPainel, extraLista: extraLista,
     disponiveis: disponiveis
   };

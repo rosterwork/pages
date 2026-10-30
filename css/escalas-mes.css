@@ -172,6 +172,34 @@
   background-color: var(--fundo-medio);
 }
 
+/* o dia com mudança do painel do dia ainda não salva (escalas-painel-salvar.js): a borda tracejada por dentro, sem
+   mudar o tamanho. Na caixa do pelotão no dia (Mês, Semana, Colunas, Extrajornada), no bloco inteiro do pelotão do
+   Calendário (Escala e Nova extra; a caixa de dentro fica sem), no cabeçalho do dia dos Militares e no dia da Minha
+   escala */
+.escala-celula--nao-salvo,
+.escala-calendario-unidade:has(> .escala-celula--nao-salvo),
+.escala-mil-dia--nao-salvo,
+.escala-minha-calendario .mini-calendario-dia--nao-salvo {
+  position: relative;
+}
+
+.escala-celula--nao-salvo::after,
+.escala-calendario-unidade:has(> .escala-celula--nao-salvo)::after,
+.escala-mil-dia--nao-salvo::after,
+.escala-minha-calendario .mini-calendario-dia--nao-salvo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border: 2px dashed var(--texto-forte);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.escala-calendario-unidade > .escala-celula--nao-salvo::after {
+  display: none;
+}
+
 /* mini-gráfico de cobertura no topo da célula (perfil de militares por hora) */
 .escala-mes-grafico {
   flex-shrink: 0;
@@ -283,15 +311,18 @@
   text-align: left;
 }
 
-/* folga e troca: o militar aparece, mas riscado (graduação, nome e HORÁRIO) e apagado. O horário
-   entra no risco porque é justamente o trecho que ele deixou de fazer. Quando é parcial, a linha
-   riscada traz só o trecho trocado/de folga, e o trecho que ele cumpre aparece noutra linha, sem risco. */
+/* folga, troca e remanejamento (saiu para outra unidade): o militar aparece, mas riscado (graduação, nome e
+   HORÁRIO) e apagado. O horário entra no risco porque é justamente o trecho que ele deixou de fazer. Quando é
+   parcial, a linha riscada traz só o trecho trocado/de folga, e o trecho que ele cumpre aparece noutra linha, sem risco. */
 .linha-escalado--folga .linha-escalado-grad,
 .linha-escalado--folga .linha-escalado-nome,
 .linha-escalado--folga .linha-escalado-hora,
 .linha-escalado--trocado .linha-escalado-grad,
 .linha-escalado--trocado .linha-escalado-nome,
-.linha-escalado--trocado .linha-escalado-hora {
+.linha-escalado--trocado .linha-escalado-hora,
+.linha-escalado--remanejado .linha-escalado-grad,
+.linha-escalado--remanejado .linha-escalado-nome,
+.linha-escalado--remanejado .linha-escalado-hora {
   text-decoration: line-through;
   color: var(--texto-fraco);
 }

@@ -31,6 +31,7 @@
     saida: 'icone-origem-saida',
     troca: 'icone-origem-troca',
     troca_saida: 'icone-origem-troca',
+    remanejado_saida: 'icone-remanejado',
     pontual: 'icone-origem-pontual',
     sistema: 'icone-origem-sistema',
     folga: 'icone-folgas',
@@ -244,10 +245,11 @@
     if (!linha) return null;
     if (p.origem === 'folga') linha.classList.add('linha-escalado--folga');   /* folga: nome riscado */
     if (p.origem === 'troca_saida') linha.classList.add('linha-escalado--trocado');   /* trocado: nome riscado */
+    if (p.origem === 'remanejado_saida') linha.classList.add('linha-escalado--remanejado');   /* saiu para outra unidade: riscado */
 
     var icones = linha.querySelector('.linha-escalado-icones');
-    /* linha riscada (folga/troca): o ícone da origem NÃO some. Mostra a origem do militar no dia
-       (contínuos, base ou pontual) e, ao lado, o marcador de folga/troca. */
+    /* linha riscada (folga/troca/remanejamento): o ícone da origem NÃO some. Mostra a origem do militar no dia
+       (contínuos, base ou pontual) e, ao lado, o marcador de folga/troca/remanejamento. */
     if (p.origem_base && ICONE_ORIGEM[p.origem_base]) {
       var origemCiclo = RosterWork.tpl('tpl-escala-mes-origem');
       if (origemCiclo) { definirIcone(origemCiclo, ICONE_ORIGEM[p.origem_base]); icones.appendChild(origemCiclo); }
@@ -257,6 +259,11 @@
     if (p.fixado) {
       var cadeado = RosterWork.tpl('tpl-escala-mes-origem');
       if (cadeado) { definirIcone(cadeado, 'icone-cadeado'); icones.appendChild(cadeado); }
+    }
+    /* remanejado (só neste dia): o marcador ao lado da origem */
+    if (p.remanejado) {
+      var reman = RosterWork.tpl('tpl-escala-mes-origem');
+      if (reman) { definirIcone(reman, 'icone-remanejado'); icones.appendChild(reman); }
     }
 
     linha.querySelector('.linha-escalado-grad').textContent = p.grad || '';
@@ -285,8 +292,8 @@
     });
 
     /* fundo preenchido no trecho do horário (exceção: custom property data-driven).
-       Nas linhas riscadas (folga/troca), inverte: o cinza vai no trecho de folga/troca */
-    var fundo = fundoTurno(p.periodos, p.origem === 'folga' || p.origem === 'troca_saida');
+       Nas linhas riscadas (folga/troca/remanejamento), inverte: o cinza vai no trecho que ele deixou */
+    var fundo = fundoTurno(p.periodos, p.origem === 'folga' || p.origem === 'troca_saida' || p.origem === 'remanejado_saida');
     if (fundo) linha.style.setProperty('--turno-fundo', fundo);
     return linha;
   }
@@ -298,6 +305,9 @@
      afastados (só a Escala manda): os de férias, licença ou dispensa no dia, depois dos de serviço */
   function preencherCelula(celula, cobDia, erroDia, pessoas, maxUnidade, afastados) {
     celula.textContent = '';
+    /* o dia com mudança do painel do dia ainda não salva: a borda tracejada (escalas-painel-salvar.js) */
+    var S = RosterWork.escalasPainelSalvar;
+    celula.classList.toggle('escala-celula--nao-salvo', !!(S && S.marcado(celula.dataset.unidadeId, celula.dataset.iso)));
     if (cobDia) {
       var grafico = montarGrafico(cobDia, maxUnidade, erroDia);
       if (grafico) celula.appendChild(grafico);

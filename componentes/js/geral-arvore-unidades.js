@@ -29,8 +29,13 @@
   var observadorTrilha = null;  // refaz a trilha quando ela volta a aparecer (troca de aba)
 
   /* A página escolhe a fonte de conteúdo; o padrão é o efetivo (usuários).
-     Postos passa rpcConteudo:'listar_instalacoes' e chaveUnidade:'unidade_id'. */
-  function rpcConteudo() { return (opcoesAtuais && opcoesAtuais.rpcConteudo) || 'buscar_efetivo'; }
+     Postos passa rpcConteudo:'listar_instalacoes' e chaveUnidade:'unidade_id'. Pode ser uma função, lida a cada carga
+     (o Dia da Escala: a leitura de sempre ou a prévia do rascunho), como o corpoRpc */
+  function rpcConteudo() {
+    var r = opcoesAtuais && opcoesAtuais.rpcConteudo;
+    if (typeof r === 'function') r = r();
+    return r || 'buscar_efetivo';
+  }
   function chaveUnidade() { return (opcoesAtuais && opcoesAtuais.chaveUnidade) || 'lotacao_atual'; }
   function textoContagem(itens) {
     if (opcoesAtuais && opcoesAtuais.textoContagem) return opcoesAtuais.textoContagem(itens);

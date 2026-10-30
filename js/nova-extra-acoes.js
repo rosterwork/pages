@@ -40,7 +40,11 @@
   }
   function motivoPedidosAbertos(d) { return d.mes.estado !== 'encerrado' ? msg().acao.pedidosAbertos : ''; }
   function lancada(d) { return !!d.lancamento && !d.lancamento.reaberto; }
-  function motivoSugerir(d) { return motivoPedidosAbertos(d) || (lancada(d) ? msg().acao.lancadaFechada : ''); }
+  /* o Preencher pela sugestão refaz as extras do sistema: só com tudo salvo */
+  function motivoSugerir(d) {
+    return motivoPedidosAbertos(d) || (lancada(d) ? msg().acao.lancadaFechada : '')
+      || (RW.novaExtraMontar && RW.novaExtraMontar.sujo() ? msg().acao.salvarAntes : '');
+  }
   /* as cotas recebidas (voluntários com termo) que ainda não estão em nenhuma data, pelo que já foi salvo */
   function cotasFaltando(d) {
     var usadas = {};
@@ -72,7 +76,8 @@
     var d = org().dados();
     if (!d) return;
     marcar('#p1-fechar', motivoFechar(d));
-    marcar('#p2-sugestao', motivoPedidosAbertos(d));
+    /* nas Cotas, o Preencher apagaria o Recebe mudado e não salvo */
+    marcar('#p2-sugestao', motivoPedidosAbertos(d) || (RW.novaExtraCotas && RW.novaExtraCotas.recebeMudado() ? msg().acao.salvarAntes : ''));
     marcar('#p3-sugerir', motivoSugerir(d));
     marcar('#p3-lancar', motivoLancar(d));
     marcar('#p3-reabrir', motivoReabrir(d));

@@ -46,6 +46,8 @@
     RW.novaExtraLista.recolherSeApertado();
     G().marcarAberto();
     desenhar();
+    /* o painel abriu e o calendário ficou mais estreito: o bloco do pelotão aberto vai à vista inteira */
+    requestAnimationFrame(function () { requestAnimationFrame(function () { if (RW.novaExtraPorDia) RW.novaExtraPorDia.mostrarAberto(true); }); });
   }
 
   function desenhar() {

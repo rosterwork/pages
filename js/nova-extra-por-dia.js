@@ -6,7 +6,8 @@
    cor do dia (verde, vermelho, amarelo), o gráfico do dia já com as
    extras (a régua de cada unidade no mês; o painel do dia mostra o sem
    e o com) e uma vaga por militar, com o horário
-   escrito (sem nenhum, ele fica no dia até o Salvar). As bolinhas ficam
+   escrito (sem nenhum, ele fica no dia até o Salvar). O bloco com
+   mudança ainda não salva leva a borda tracejada da Escala. As bolinhas ficam
    no painel do dia, que abre ao clicar no bloco, e na lista dos
    voluntários. Lê o rascunho por RosterWork.novaExtraGrade.
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
@@ -60,20 +61,36 @@
     diasCal = {};
     desenhadas = unidades.map(function (un) { return un.id; }).join(',');
     calcularPicos(alocs);
+    var marcados = G().naoSalvos();
     RW.geralCalendarioMes.renderizar(alvo, { dataRef: G().dataDe(d.competencia), unidadesPorDia: Math.max(1, unidades.length), aoDia: function (cel, data, noMes) {
       if (!noMes) return;
       var k = iso(data);
       diasCal[k] = cel;
-      unidades.forEach(function (un) { cel.appendChild(blocoUnidade(un, k, alocs)); });
+      unidades.forEach(function (un) { cel.appendChild(blocoUnidade(un, k, alocs, marcados)); });
     } });
     var wrap = alvo.querySelector('.geral-calendario-mes');
     if (wrap && RW.escalasCelula) RW.escalasCelula.ativarGraficos(wrap);
+    /* o calendário refeito abre no começo: com o painel do dia aberto, fica no bloco dele */
+    mostrarAberto(false);
+  }
+
+  /* o bloco do pelotão do dia aberto no painel inteiro à vista, pelo lado mais perto, abaixo do número do dia (que gruda
+     no alto) (geral-periodo.js); já inteiro, não mexe */
+  function mostrarAberto(suave) {
+    var ab = dia().aberto(), wrap = alvo && alvo.querySelector('.geral-calendario-mes');
+    var bloco = ab && wrap ? wrap.querySelector('[data-uid="' + ab.uid + '"][data-dia="' + ab.data + '"]') : null;
+    if (!bloco || !RW.periodo || !RW.periodo.mostrarInteiro) return;
+    var d = bloco.closest('.geral-calendario-mes-dia');
+    RW.periodo.mostrarInteiro(wrap, bloco, {
+      fixo: [wrap.querySelector('.geral-calendario-mes-cabecalho'), d && d.querySelector('.geral-calendario-mes-dia-topo')],
+      suave: suave
+    });
   }
 
   /* o bloco do pelotão no dia, o mesmo do Calendário da Escala: o nome com a cor do dia, o gráfico do dia com as
      extras (sem extra, a escala como está) e uma vaga por militar com o horário escrito; clicar no bloco abre o painel
-     do dia */
-  function blocoUnidade(un, k, alocs) {
+     do dia. marcados = os blocos com mudança não salva (RosterWork.novaExtraGrade.naoSalvos) */
+  function blocoUnidade(un, k, alocs, marcados) {
     var b = RW.tpl('tpl-escala-calendario-unidade');
     var ab = dia().aberto();
     var cel = b.querySelector('.escala-mes-celula');
@@ -110,6 +127,8 @@
       cel.appendChild(vg);
     });
     if (foco) focoNoBloco(cel, un.id, k, foco);
+    /* a mudança ainda não salva: a borda tracejada no bloco, a mesma da Escala */
+    if (marcados[un.id + '|' + k]) cel.classList.add('escala-celula--nao-salvo');
     b.addEventListener('click', function () { dia().abrir(un.id, k); });
     b.addEventListener('keydown', function (ev) { if (ev.target === b && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); dia().abrir(un.id, k); } });
     return b;
@@ -152,8 +171,11 @@
     });
     if (cresceu || unidades.map(function (un) { return un.id; }).join(',') !== desenhadas) { desenhar(alvo); return; }
     Array.prototype.forEach.call(cel.querySelectorAll('[data-uid]'), function (b) { b.parentNode.removeChild(b); });
-    unidades.forEach(function (un) { cel.appendChild(blocoUnidade(un, k, alocs)); });
+    var marcados = G().naoSalvos();
+    unidades.forEach(function (un) { cel.appendChild(blocoUnidade(un, k, alocs, marcados)); });
     if (RW.escalasCelula) RW.escalasCelula.desenharGraficos(cel);
+    /* o bloco mudado pode ter crescido para fora da vista */
+    mostrarAberto(true);
   }
 
   /* o bloco do dia aberto no painel fica em destaque */
@@ -165,5 +187,5 @@
     });
   }
 
-  RW.novaExtraPorDia = { desenhar: desenhar, atualizarDia: atualizarDia, marcarAberto: marcarAberto, grafico: grafico };
+  RW.novaExtraPorDia = { desenhar: desenhar, atualizarDia: atualizarDia, marcarAberto: marcarAberto, mostrarAberto: mostrarAberto, grafico: grafico };
 })();

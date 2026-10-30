@@ -14,7 +14,8 @@
    Recebe é o campo de seleção (de 0 até o que ele pediu; quem só
    aceita 24 h, de 4 em 4), com a borda forte quando difere do
    salvo. O Preencher põe a Sugestão em todos, com o Desfazer no
-   rodapé. Cota abaixo do que ele já tem na distribuição avisa
+   rodapé; com algum Recebe mudado e não salvo, ele trava (apagaria a
+   mudança). Cota abaixo do que ele já tem na distribuição avisa
    embaixo da linha: as extras dele saem ao salvar. Tudo fica no
    rascunho até o Salvar (nova_extra_cotas_salvar), que abre o resumo.
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
@@ -40,6 +41,8 @@
   /* os voluntários com termo, na fila da companhia (a menor porcentagem atendida nos 12 meses e, no empate, o mais antigo) */
   function comTermo() { return vols().filter(function (m) { return m.termo; }).sort(function (a, b) { return a.ordem - b.ordem; }); }
   function conc(m) { return m.cpf in p2.conc ? p2.conc[m.cpf] : (m.concedidas || 0); }
+  /* algum Recebe difere do salvo (o total e o Repartir por não contam: são o que a sugestão usa na conta) */
+  function recebeMudado() { return !!p2 && comTermo().some(function (m) { return conc(m) !== (m.concedidas || 0); }); }
   function sugestao(m) { return p2.sug[m.cpf] || 0; }
   /* a companhia (a unidade que não é pelotão) */
   function cia() { return d.unidades.filter(function (x) { return x.pelotao === false; })[0] || d.unidades[0] || {}; }
@@ -188,7 +191,10 @@
     l.querySelector('.ne-pct').textContent = primeira ? '' : msg().porcento(Math.round(100 * (m.recebeu12 || 0) / m.pediu12));
     l.querySelector('.ne-de').textContent = primeira ? '' : msg().deCotas(m.recebeu12 || 0, m.pediu12);
     l.querySelector('.ne-primeira').classList.toggle('oculto', !primeira);
-    l.querySelector('.nova-extra-sug').textContent = sugestao(m);
+    var sug = l.querySelector('.nova-extra-sug');
+    sug.textContent = sugestao(m);
+    /* a sugestão parou no que cabe nos dias livres dele: a dica diz quanto cabe */
+    if (m.cabem != null && m.cabem < (m.cotas || 0)) sug.setAttribute('data-dica', msg().sugCabe(m.cabem));
     l.querySelector('.extra-vol-conc-texto').textContent = conc(m);
     l.querySelector('.extra-vol-conc').classList.toggle('campo--alterado', conc(m) !== (m.concedidas || 0));
     RW.dropdownNumeros.preencher(l.querySelector('.extra-vol-conc-menu'), {
@@ -235,8 +241,10 @@
         p2.modo = modo; p2.sujo = true; desenhar(); pedirSugestao();
       });
     });
-    /* Preencher pela sugestão: a Sugestão no Recebe de todos, na hora; o Desfazer volta ao de antes */
+    /* Preencher pela sugestão: a Sugestão no Recebe de todos, na hora; o Desfazer volta ao de antes. Com algum Recebe
+       mudado e não salvo, não preenche (o menu Ações mostra o motivo) */
     q('#p2-sugestao').addEventListener('click', function () {
+      if (recebeMudado()) return;
       p2.antes = { conc: Object.assign({}, p2.conc), sujo: p2.sujo };
       comTermo().forEach(function (m) { p2.conc[m.cpf] = sugestao(m); });
       p2.sujo = true; desenhar();
@@ -259,5 +267,5 @@
     desenhar();
   }
 
-  RW.novaExtraCotas = { mostrar: mostrar, reiniciar: function () { p2 = null; } };
+  RW.novaExtraCotas = { mostrar: mostrar, reiniciar: function () { p2 = null; }, recebeMudado: recebeMudado };
 })();

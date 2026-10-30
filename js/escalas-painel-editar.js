@@ -11,16 +11,20 @@
    lápis da folga no dia (com o Cancelar folga), o fim da lista tem o
    Voltar o dia ao automático e as observações também se editam aqui.
    Quem não é admin só lê (os postos mudam na Distribuição).
-   Cada mudança grava na hora (escala_dia_salvar, um registro no
-   histórico, sem o modal de resumo): o banco devolve o dia gravado e
-   o que mudou (a nota O que mudou, no topo), e a grade atualiza a
-   célula. Rascunho de uma mudança: { ajustes, pontuais, estornar,
-   folgas, folgas_cancelar, observacoes, automatico }. O desfazer/
-   refazer grava o caminho de volta (silencioso: ninguém é avisado).
+   Cada mudança vai para o rascunho do dia, e a lista mostra o dia
+   como vai ficar (a prévia, escala_previa, já com o Ciclo e a
+   Extrajornada que esperam o Salvar), com a nota O que
+   mudou no topo; o desfazer/refazer anda no rascunho. Nada grava até
+   o Salvar do rodapé do painel (escalas-painel-salvar.js), que grava
+   junto com o Ciclo e a Extrajornada. O rascunho fica ao trocar de
+   aba (trocar de dia e fechar o painel perguntam antes). Rascunho:
+   { ajustes, pontuais, estornar, folgas, folgas_cancelar,
+   observacoes, abertas (as funções abertas sem ninguém, só na
+   prévia: salvas vazias, somem), remanejar, devolver, automatico }.
    A edição da linha, o Adicionar e o Remover militar (sub-telas) e a
    folga no dia (sub-tela) ficam em escalas-painel-linha.js,
    -adicionar.js, -remover.js e -militar.js e usam a API daqui
-   (.sub); nada grava até o botão que confirma.
+   (.sub); o botão que confirma põe a mudança no rascunho.
    A aba Dia da Extrajornada usa o mesmo desenho,
    só de leitura, com o dia já lido (opções dados e semAvisos). O
    "Como fica a escala" do painel de decisão (Trocas e Folgas) também,
@@ -39,8 +43,9 @@
   var base = null;      // o dia gravado (a última leitura): { dados, ajustes, pontuais }
   var rasc = null;      // a mudança em andamento, sobre o dia gravado
   var foto = null;      // rascunho ao abrir uma sub-tela (o Cancelar volta a ele)
-  var pilhaDesfazer = [];  // passos que dá para desfazer: { volta, frente } (os rascunhos que o banco grava)
-  var pilhaRefazer = [];   // passos desfeitos: { frente }
+  var pilhaDesfazer = [];  // os rascunhos de antes de cada mudança ainda não salva (o Desfazer volta um passo)
+  var pilhaRefazer = [];   // os rascunhos desfeitos
+  var dono = '';        // o dia do rascunho (unidade|dia): voltar de outra aba ao mesmo dia o encontra
   var pedido = 0;       // só a última leitura, prévia ou gravação pedida desenha
 
   /* Chefe de Socorro e Oficial de Área são automáticos por normativa (o mais antigo do dia) */
@@ -111,18 +116,19 @@
     return n;
   }
 
-  /* o rascunho mudou o dia gravado? (funções, pontuais, folgas dadas ou canceladas, observações, ou o Voltar ao automático) */
+  /* o rascunho mudou o dia gravado? (funções, pontuais, folgas dadas ou canceladas, observações, remanejamentos, ou o
+     Voltar ao automático) */
   function haMudanca() {
     if (!rasc || !base) return false;
     return !!rasc.automatico || !mesmosAjustes(base.ajustes, rasc.ajustes) || difPontuais() > 0 || rasc.folgas.length > 0
       || rasc.folgas_cancelar.length > 0 || rasc.observacoes.adicionar.length > 0 || rasc.observacoes.remover.length > 0
-      || rasc.abertas.abrir.length > 0 || rasc.abertas.fechar.length > 0;
+      || rasc.abertas.length > 0 || rasc.remanejar.length > 0 || rasc.devolver.length > 0;
   }
 
   /* o rascunho recomeça do dia gravado */
   function novoRascunho() {
     rasc = { ajustes: copiar(base.ajustes), pontuais: copiar(base.pontuais), estornar: [], folgas: [], folgas_cancelar: [],
-      observacoes: { adicionar: [], remover: [] }, abertas: { abrir: [], fechar: [] } };
+      observacoes: { adicionar: [], remover: [] }, abertas: [], remanejar: [], devolver: [] };
   }
 
   /* o dia gravado (a leitura, ou o que o banco devolve ao gravar) vira a base */
@@ -133,72 +139,33 @@
       pontuais: (dados.pontuais || []).map(function (x) { return { cpf: x.cpf, periodos: x.periodos || [] }; })
     };
     novoRascunho();
+    if (!ctx) return;
+    dono = ctx.unidadeId + '|' + ctx.iso;
     ctx.dados = dados;
     ctx.chaveDados = JSON.stringify(paraPrevia());
   }
 
-  /* o que vai à prévia das sub-telas (só o que muda a escala: as observações não pedem nova prévia) */
+  /* o que vai à prévia (o dia como vai ficar; as observações não mudam a escala) */
   function paraPrevia() {
     var r = { ajustes: rasc.ajustes, folgas: rasc.folgas };
     if (difPontuais() > 0) r.pontuais = rasc.pontuais;
-    return r;
-  }
-  /* o que vai ao banco quando a mudança grava (no Voltar ao automático, o sistema distribui tudo de novo) */
-  function paraSalvar() {
-    var r = paraPrevia();
-    r.estornar = rasc.estornar;
-    r.folgas_cancelar = rasc.folgas_cancelar;
-    r.observacoes = rasc.observacoes;
-    r.abertas = rasc.abertas;
+    if (rasc.folgas_cancelar.length) r.folgas_cancelar = rasc.folgas_cancelar;
+    if (rasc.abertas.length) r.abertas = rasc.abertas;
+    if (rasc.remanejar.length) r.remanejar = rasc.remanejar;
+    if (rasc.devolver.length) r.devolver = rasc.devolver;
     if (rasc.automatico) r.automatico = true;
     return r;
   }
-
-  /* o caminho de volta de uma mudança gravada sobre "antes": a camada manual e os pontuais como estavam, as
-     folgas e as observações que ela criou saem, e as folgas que ela cancelou e as observações que ela tirou voltam.
-     Só volta a ter horas no banco de horas o pontual que as perdeu na mudança (o estorno) */
-  function inverso(envio, antes, criadas) {
-    criadas = criadas || {};
-    var dados = antes.dados || {};
-    var volta = { ajustes: copiar(antes.ajustes), estornar: [], folgas: [], folgas_cancelar: copiar(criadas.folgas || []),
-      observacoes: { adicionar: [], remover: copiar(criadas.observacoes || []) } };
-    /* a função aberta volta fechada, e a fechada volta aberta */
-    if (envio.abertas) volta.abertas = { abrir: copiar(envio.abertas.fechar || []), fechar: copiar(envio.abertas.abrir || []) };
-    if (envio.pontuais) {
-      var contou = {}, eram = {};
-      (dados.pontuais || []).forEach(function (x) { contou[x.cpf] = !!x.contabilizado; });
-      antes.pontuais.forEach(function (x) { eram[x.cpf] = true; });
-      volta.pontuais = antes.pontuais.map(function (x) {
-        return { cpf: x.cpf, periodos: x.periodos, contabilizar: !!contou[x.cpf] && (envio.estornar || []).indexOf(x.cpf) >= 0 };
-      });
-      volta.estornar = envio.pontuais.filter(function (x) { return !eram[x.cpf] && x.contabilizar; })
-        .map(function (x) { return x.cpf; });
-    }
-    ((envio.observacoes && envio.observacoes.remover) || []).forEach(function (id) {
-      var o = (dados.observacoes || []).filter(function (x) { return x.id === id; })[0];
-      if (o) volta.observacoes.adicionar.push(o.texto);
-    });
-    /* a folga cancelada volta como era: o mesmo horário e a mesma escolha do banco de horas */
-    (envio.folgas_cancelar || []).forEach(function (id) {
-      var linhas = (dados.folgas || []).filter(function (x) { return x.lancamento_id === id; });
-      if (!linhas.length) return;
-      var f = linhas[0], pr = { hi: null, hf: null };
-      if (!f.dia_inteiro) {
-        var faixas = linhas.map(faixa);
-        pr = periodo([Math.min.apply(null, faixas.map(function (x) { return x[0]; })),
-          Math.max.apply(null, faixas.map(function (x) { return x[1]; }))]);
-      }
-      volta.folgas.push({ cpf: f.cpf, hi: pr.hi, hf: pr.hf, contabilizar: !!f.contabilizada });
-    });
-    return volta;
-  }
-
-  /* a ida de novo, depois de desfeita: as observações que ela tira e as folgas que ela cancela voltaram com outro id */
-  function refeito(frente, criadas) {
-    var f = copiar(frente);
-    if (f.observacoes && f.observacoes.remover.length) f.observacoes.remover = copiar((criadas && criadas.observacoes) || []);
-    if (f.folgas_cancelar && f.folgas_cancelar.length) f.folgas_cancelar = copiar((criadas && criadas.folgas) || []);
-    return f;
+  /* o que vai ao banco no Salvar (no Voltar ao automático, o sistema distribui tudo de novo); as funções abertas não vão:
+     a que ficou vazia some */
+  function paraSalvar() {
+    var r = paraPrevia();
+    delete r.abertas;
+    r.estornar = rasc.estornar;
+    r.folgas_cancelar = rasc.folgas_cancelar;
+    r.observacoes = rasc.observacoes;
+    if (rasc.automatico) r.automatico = true;
+    return r;
   }
 
   /* ---------- leitura da prévia ---------- */
@@ -231,16 +198,17 @@
     return lista;
   }
 
-  /* o militar de serviço no dia: { cpf, grad, nome, janelas, unidade, daUnidade, origem, pontual, outraUnidade }
+  /* o militar de serviço no dia: { cpf, grad, nome, janelas, unidade, daUnidade, origem, pontual, outraUnidade, remanejado }
      (null se não está de serviço). janelas = os horários de serviço dele nesta unidade, cada um com a origem;
-     outraUnidade = também serve em outra unidade no dia */
+     outraUnidade = também serve em outra unidade no dia; remanejado = { de, para, de_nome, para_nome, fica, automatico }
+     (null sem remanejamento) */
   function militarDoDia(cpf) {
     var d = (ctx && ctx.dados) || {};
     var mil = null;
     (d.picker || []).forEach(function (u) {
       (u.militares || []).forEach(function (m) {
         if (m.cpf === cpf) mil = { cpf: cpf, grad: m.grad || '', nome: m.nome || '', janelas: m.disp || [], unidade: u.unidade_nome, daUnidade: !!u.editando, deFolga: false,
-          outraUnidade: !!m.outra_unidade };
+          outraUnidade: !!m.outra_unidade, remanejado: m.remanejado || null };
       });
     });
     if (!mil) return null;
@@ -410,10 +378,46 @@
     if (rasc.folgas_cancelar.indexOf(id) < 0) rasc.folgas_cancelar.push(id);
   }
 
+  /* os ajustes manuais do militar nos postos desta unidade (aqui = true) ou nos das outras (aqui = false) saem */
+  function cortarAjustesDaUnidade(cpf, aqui) {
+    rasc.ajustes = rasc.ajustes.filter(function (a) {
+      return a.cpf !== cpf || !!acharPosto(a.viatura_id || null, a.instalacao_id || null) !== aqui;
+    });
+  }
+
+  /* Remanejar (só no dia): o serviço do dia dele vai para outra unidade da companhia; fica = continua também aqui.
+     Quem sai daqui perde as colocações manuais daqui */
+  function remanejar(cpf, destino, fica) {
+    rasc.remanejar = rasc.remanejar.filter(function (r) { return r.cpf !== cpf; })
+      .concat([{ cpf: cpf, destino: Number(destino), fica: !!fica }]);
+    if (!fica) cortarAjustesDaUnidade(cpf, true);
+  }
+
+  /* Devolver (o Remover do remanejado): ele volta só para a unidade de origem. O remanejamento ainda não salvo sai do
+     rascunho; o gravado vai no devolver. As colocações manuais dele na unidade de destino saem (no painel do destino, as
+     daqui; no da origem, as das outras) */
+  function devolverRemanejado(cpf) {
+    var mil = militarDoDia(cpf);
+    var pendente = rasc.remanejar.some(function (r) { return r.cpf === cpf; });
+    rasc.remanejar = rasc.remanejar.filter(function (r) { return r.cpf !== cpf; });
+    if (!pendente && rasc.devolver.indexOf(cpf) < 0) rasc.devolver.push(cpf);
+    var daqui = !!(mil && mil.remanejado && String(mil.remanejado.de) === String(ctx.unidadeId));
+    cortarAjustesDaUnidade(cpf, !daqui);
+  }
+
+  /* Tirar do dia o remanejado: a folga desfaz o remanejamento gravado (no banco), então o rascunho só larga o que tinha
+     dele (o remanejar ainda não salvo e o devolver) */
+  function largarRemanejado(cpf) {
+    rasc.remanejar = rasc.remanejar.filter(function (r) { return r.cpf !== cpf; });
+    rasc.devolver = rasc.devolver.filter(function (x) { return x !== cpf; });
+  }
+
   function pontualSalvo(cpf) { return (base.pontuais || []).some(function (x) { return x.cpf === cpf; }); }
 
-  /* uma mudança feita na própria lista: grava na hora */
-  function mudar(fn) { fn(); desenhar(); }
+  /* uma mudança (na lista ou numa sub-tela): o rascunho de antes entra no desfazer, o refazer zera, e a lista mostra a
+     prévia; nada grava até o Salvar do rodapé */
+  function passo(antes) { pilhaDesfazer.push(antes); pilhaRefazer = []; }
+  function mudar(fn) { if (!rasc) return; passo(copiar(rasc)); fn(); desenhar(); }
 
   /* ---------- prévia e gravação ---------- */
 
@@ -431,19 +435,19 @@
     if (no) { no.textContent = msg().falhaCarregar; ctx.corpo.appendChild(no); }
   }
 
-  /* (re)desenha a lista do dia: a mudança feita (na lista ou numa sub-tela) grava na hora; sem mudança, mostra o
-     dia gravado. A 1ª vez lê o dia */
+  /* (re)desenha a lista do dia: com mudança no rascunho, o dia como vai ficar (a prévia); sem mudança, o dia gravado.
+     A 1ª vez lê o dia */
   function desenhar() {
     if (!ctx) return;
     ctx.emSub = false;
     foto = null;
     if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
     if (base) {
-      if (haMudanca()) { gravarMudanca(); return; }
       montarSubcabecalho();
-      ctx.dados = base.dados;
-      ctx.chaveDados = JSON.stringify(paraPrevia());
-      renderLista(base.dados);
+      avisarRascunho();
+      /* com mudança em qualquer aba, o dia como vai ficar; sem nenhuma, o dia gravado */
+      if (RosterWork.escalasPainelSalvar && RosterWork.escalasPainelSalvar.paraPrevia()) { mostrarPrevia(); return; }
+      exibir(base.dados);
       return;
     }
     montarSubcabecalho();
@@ -462,93 +466,90 @@
   function comecar(dados) {
     aceitar(dados);
     ctx.dadosAntes = dados;
+    /* com mudança esperando o Salvar em outra aba (o Ciclo, a Extrajornada), o dia já como vai ficar */
+    if (editavel() && RosterWork.escalasPainelSalvar && RosterWork.escalasPainelSalvar.paraPrevia()) { mostrarPrevia(); return; }
     renderLista(dados);
   }
 
-  /* grava no banco (a mudança, ou o desfazer/refazer) sobre o dia que a tela leu; o banco devolve o dia gravado.
-     aoGravar(r, antes) guarda o passo no desfazer/refazer; aoFalhar() devolve o passo à pilha de onde saiu */
-  function gravar(envio, aoGravar, aoFalhar) {
-    var c = ctx, uid = ctx.unidadeId, iso = ctx.iso, antes = base;
-    var corpo = copiar(envio);
-    corpo.antes = { ajustes: antes.ajustes, pontuais: antes.pontuais };
-    /* a nota O que mudou é só da última gravação; o atalho vale só para a mudança que o pediu */
-    var sugestao = ctx.sugestao || null;
+  /* o rodapé do painel (escalas-painel-salvar.js) conta as mudanças das três abas */
+  function avisarRascunho() { window.dispatchEvent(new CustomEvent('rosterwork_escala_rascunho', { detail: { parte: 'dia' } })); }
+
+  /* o dia como vai ficar com os rascunhos das três abas (escala_previa: o Salvar num ensaio, nada é gravado). A mudança
+     do Dia que a gravação recusaria (ex.: efetivo acima do máximo, a folga recusada) dá o aviso, e o rascunho do Dia volta
+     um passo; a recusa do Ciclo ou da Extrajornada só avisa (desmarca-se lá) */
+  function mostrarPrevia() {
+    var c = ctx, meu = ++pedido;
+    mostrarCarregando();
+    var pedidoPrevia = RosterWork.escalasDados.lerPrevia('ler_distribuicao_dia', {});
+    if (!pedidoPrevia) { exibir(base.dados); return; }
+    pedidoPrevia.then(function (dados) {
+      if (ctx !== c || meu !== pedido) return;
+      if (!dados) { mostrarFalha(); return; }
+      if (dados.erro_simulacao) {
+        RosterWork.avisar({ tipo: 'erro', mensagem: dados.erro_simulacao });
+        if (dados.erro_parte === 'dia' && pilhaDesfazer.length) { rasc = pilhaDesfazer.pop(); desenhar(); return; }
+      }
+      exibir(dados);
+    });
+  }
+
+  /* desenha o dia (o gravado ou a prévia); a nota O que mudou compara com o que estava na tela */
+  function exibir(dados) {
+    var antes = ctx.dados, sugestao = ctx.sugestao || null;
     ctx.sugestao = null;
     ctx.ultima = null;
-    ctx.salvando = true;
-    montarSubcabecalho();
-    mostrarCarregando();
-    /* vindo de uma sub-tela, o rodapé dela (Cancelar · Aplicar) sai; o histórico volta depois de gravar */
-    if (!ctx.comHistorico && ctx.rodape) { ctx.rodape.textContent = ''; ctx.rodape.classList.add('oculto'); }
-    var meu = ++pedido;
-    RosterWork.escalasDados.salvarDia(uid, iso, corpo).then(function (r) {
-      var ok = !!(r && r.success);
-      /* a grade atualiza só a célula do dia (mesmo que o painel já esteja em outro dia) */
-      if (ok) window.dispatchEvent(new CustomEvent('rosterwork_escala_salva', { detail: { unidadeId: uid, iso: iso } }));
-      if (ctx !== c || meu !== pedido) return;
-      ctx.salvando = false;
-      if (r && r.desatualizado) {
-        /* o dia mudou depois da leitura (outro administrador ou o sistema): relê e zera o desfazer/refazer */
-        RosterWork.avisar({ tipo: 'aviso', mensagem: msg().diaDesatualizado });
-        recarregar();
-        return;
-      }
-      if (!ok) {
-        var texto = r && r._falha === 'conexao' ? RosterWork.mensagens.geral.semConexao
-          : r && r._falha === 'servidor' ? RosterWork.mensagens.geral.falhaServidor
-          : (r && r.error) || msg().falhaSalvar;
-        RosterWork.avisar({ tipo: 'erro', mensagem: texto });
-        if (aoFalhar) aoFalhar();
-        novoRascunho();
-        desenhar();
-        return;
-      }
-      var lido = r.dia ? Promise.resolve(r.dia) : RosterWork.escalasDados.lerDistribuicaoDia(uid, iso);
-      lido.then(function (dados) {
-        if (ctx !== c || meu !== pedido) return;
-        if (!dados) { mostrarFalha(); return; }
-        aceitar(dados);
-        ctx.dadosAntes = antes.dados;   // o aviso de quem assume o Chefe de Socorro compara com o dia antes desta mudança
-        if ((r.mudou || []).length || sugestao) ctx.ultima = { mudou: r.mudou || [], sugestao: sugestao };
-        if (aoGravar) aoGravar(r, antes);
-        ctx.comHistorico = false;       // o rodapé relê o histórico, já com esta mudança
-        desenhar();
+    if (antes && antes !== dados) {
+      var mudou = diferenca(antes, dados);
+      if (mudou.length || sugestao) ctx.ultima = { mudou: mudou, sugestao: sugestao };
+    }
+    ctx.dadosAntes = antes || dados;   // o aviso de quem assume o Chefe de Socorro compara com o dia antes desta mudança
+    ctx.dados = dados;
+    ctx.chaveDados = JSON.stringify(paraPrevia());
+    renderLista(dados);
+  }
+
+  /* as funções e os horários de cada militar desta unidade numa leitura do dia (quem está sem função entra sem nada) */
+  function lugaresPorMilitar(dados) {
+    var r = {};
+    ((dados && dados.postos) || []).forEach(function (po) {
+      (po.funcoes || []).forEach(function (f) {
+        (f.militares || []).forEach(function (m) {
+          var x = r[m.cpf] = r[m.cpf] || { nome: nomeDe(m), lista: [] };
+          (m.periodos || []).forEach(function (pr) { x.lista.push({ funcao: f.nome, posto: po.nome, hi: pr.hi, hf: pr.hf }); });
+        });
       });
     });
+    ((dados && dados.sem_funcao) || []).forEach(function (m) { r[m.cpf] = r[m.cpf] || { nome: nomeDe(m), lista: [] }; });
+    return r;
+  }
+  /* quem mudou de função ou de horário entre duas leituras: [{ cpf, nome, antes:[{funcao, posto, hi, hf}], depois }] */
+  function diferenca(antes, depois) {
+    var a = lugaresPorMilitar(antes), d = lugaresPorMilitar(depois), cpfs = {};
+    Object.keys(a).concat(Object.keys(d)).forEach(function (k) { cpfs[k] = true; });
+    function marca(l) { return l.map(function (x) { return [x.funcao, x.posto, x.hi, x.hf].join('|'); }).sort().join(';'); }
+    return Object.keys(cpfs).map(function (cpf) {
+      var x = a[cpf] || { lista: [] }, y = d[cpf] || { lista: [] };
+      return { cpf: cpf, nome: y.nome || x.nome || '', antes: x.lista, depois: y.lista };
+    }).filter(function (m) { return marca(m.antes) !== marca(m.depois); });
   }
 
-  /* a mudança do rascunho grava; o passo entra no desfazer e o refazer zera */
-  function gravarMudanca() {
-    var envio = copiar(paraSalvar());
-    gravar(envio, function (r, antes) {
-      pilhaDesfazer.push({ volta: inverso(envio, antes, r.criadas), frente: envio });
-      pilhaRefazer = [];
-    });
-  }
+  function podeDesfazer() { return !!ctx && ctx.admin && !ctx.emSub && !!base && pilhaDesfazer.length > 0; }
+  function podeRefazer() { return !!ctx && ctx.admin && !ctx.emSub && !!base && pilhaRefazer.length > 0; }
 
-  function podeDesfazer() { return !!ctx && ctx.admin && !ctx.emSub && !ctx.salvando && !!base && pilhaDesfazer.length > 0; }
-  function podeRefazer() { return !!ctx && ctx.admin && !ctx.emSub && !ctx.salvando && !!base && pilhaRefazer.length > 0; }
-
-  /* desfazer: grava o caminho de volta do último passo, sem avisar ninguém */
+  /* desfazer: o rascunho volta um passo (nada foi gravado) */
   function desfazerPasso() {
     if (!podeDesfazer()) return;
-    var passo = pilhaDesfazer.pop();
-    var volta = copiar(passo.volta);
-    volta.silencioso = true;
-    gravar(volta,
-      function (r) { pilhaRefazer.push({ frente: refeito(passo.frente, r.criadas) }); },
-      function () { pilhaDesfazer.push(passo); });
+    pilhaRefazer.push(copiar(rasc));
+    rasc = pilhaDesfazer.pop();
+    desenhar();
   }
 
-  /* refazer: grava de novo o passo desfeito, sem avisar ninguém */
+  /* refazer: o passo desfeito volta ao rascunho */
   function refazerPasso() {
     if (!podeRefazer()) return;
-    var passo = pilhaRefazer.pop();
-    var frente = copiar(passo.frente);
-    frente.silencioso = true;
-    gravar(frente,
-      function (r, antes) { pilhaDesfazer.push({ volta: inverso(passo.frente, antes, r.criadas), frente: passo.frente }); },
-      function () { pilhaRefazer.push(passo); });
+    pilhaDesfazer.push(copiar(rasc));
+    rasc = pilhaRefazer.pop();
+    desenhar();
   }
 
   /* subcabeçalho do Dia (só o admin, só na lista): o Adicionar militar e, à direita, o desfazer/refazer.
@@ -558,14 +559,15 @@
     if (!sub) return;
     sub.textContent = '';
     if (!ctx.admin || ctx.emSub) { sub.classList.add('oculto'); return; }
-    /* o menu Editar o dia: Adicionar e Remover abrem as perguntas; Editar extrajornada vai à aba Extrajornada do painel;
-       Registrar troca de serviço leva ao Registrar troca das Trocas */
+    /* o menu Editar o dia: Adicionar, Remover e Remanejar abrem as perguntas; Editar extrajornada vai à aba Extrajornada
+       do painel; Registrar troca de serviço leva ao Registrar troca das Trocas */
     var menu = RosterWork.tpl('tpl-escala-edicao-acoes');
     if (menu) {
       menu.querySelector('.botao').disabled = !!ctx.salvando;
       var acoes = {
         adicionar: function () { if (RosterWork.escalasPainelAdicionar) RosterWork.escalasPainelAdicionar.abrir(); },
         remover: function () { if (RosterWork.escalasPainelRemover) RosterWork.escalasPainelRemover.abrir(); },
+        remanejar: function () { if (RosterWork.escalasPainelRemanejar) RosterWork.escalasPainelRemanejar.abrir(); },
         extra: function () { if (RosterWork.escalasPainel.irParaSecao) RosterWork.escalasPainel.irParaSecao('extra'); },
         troca: function () { if (RosterWork.irParaPagina) RosterWork.irParaPagina('trocas', null, 'registrar'); }
       };
@@ -782,7 +784,7 @@
       var menu = F.titulo(caixa, posto, mudarFuncao);
       if (menu) {
         ancora = caixa.querySelector('.escala-posto-titulo');
-        /* depois de gravar a mudança do menu, ele volta aberto no mesmo posto */
+        /* depois da mudança do menu (a prévia), ele volta aberto no mesmo posto */
         if (ctx.funcoesMenu === posto.tipo + ':' + posto.id) ctx.reabrirMenu = menu;
       }
     }
@@ -790,13 +792,17 @@
     if (noLugar && ancora) ancora.insertAdjacentElement('afterend', noLugar);
   }
 
-  /* o clique numa caixa do menu Funções do posto: abre a função sem ninguém ou fecha a aberta, na hora, com o Desfazer */
+  /* o clique numa caixa do menu Funções do posto: abre a função sem ninguém ou fecha a aberta, no rascunho (com o
+     Desfazer); salva vazia, a função some */
   function mudarFuncao(posto, mudanca) {
     if (!ctx || ctx.salvando) return;
     ctx.funcoesMenu = posto.tipo + ':' + posto.id;
     mudar(function () {
-      rasc.abertas[mudanca.abrir ? 'abrir' : 'fechar'].push({ viatura_id: vidPosto(posto), instalacao_id: iidPosto(posto),
-        nome_funcao: mudanca.abrir || mudanca.fechar });
+      var alvo = { viatura_id: vidPosto(posto), instalacao_id: iidPosto(posto), nome_funcao: mudanca.abrir || mudanca.fechar };
+      rasc.abertas = rasc.abertas.filter(function (a) {
+        return !(a.nome_funcao === alvo.nome_funcao && a.viatura_id === alvo.viatura_id && a.instalacao_id === alvo.instalacao_id);
+      });
+      if (mudanca.abrir) rasc.abertas.push(alvo);
     });
   }
 
@@ -860,11 +866,29 @@
 
   /* Observações do dia: o admin escreve e tira as dele, e cada uma grava na hora */
   function caixaObservacoes(dados) {
-    return pecas().observacoes(dados.observacoes || [], {
+    /* no Dia de quem edita, as do rascunho aparecem já: as tiradas saem e as novas entram no grupo Administração */
+    var lista = dados.observacoes || [];
+    if (editavel() && rasc) {
+      lista = lista.filter(function (o) { return !(o.id && rasc.observacoes.remover.indexOf(o.id) >= 0); })
+        .concat(rasc.observacoes.adicionar.map(function (t) { return { classe: 'admin', texto: t, id: null }; }));
+    }
+    return pecas().observacoes(lista, {
       editar: ctx.admin,
       aoAdicionar: function (texto) { mudar(function () { rasc.observacoes.adicionar.push(texto); }); },
-      aoRemover: function (o) { if (o.id) mudar(function () { rasc.observacoes.remover.push(o.id); }); }
+      aoRemover: function (o) {
+        mudar(function () {
+          if (o.id) { rasc.observacoes.remover.push(o.id); return; }
+          var i = rasc.observacoes.adicionar.indexOf(o.texto);
+          if (i >= 0) rasc.observacoes.adicionar.splice(i, 1);
+        });
+      }
     });
+  }
+
+  /* há mudança deste dia ainda não salva, em qualquer aba (o Lançar no SYSBM espera o Salvar) */
+  function diaComMudanca() {
+    var C = RosterWork.escalasPainelCiclo, R = RosterWork.escalasExtraRascunho;
+    return haMudanca() || !!(C && C.doDia(ctx.unidadeId, ctx.iso).length) || !!(R && R.doDia(ctx.iso).length);
   }
 
   /* aviso quando o Chefe de Socorro ou o Oficial de Área muda por causa da última mudança */
@@ -1006,20 +1030,33 @@
     if (obs) corpo.appendChild(obs);
     /* Lançar no SYSBM: o último bloco do Dia gravado (não o de dados prontos, como a prévia da Extrajornada),
        para quem administra o pelotão (escalas-sysbm.js) */
-    if (ctx.admin && !ctx.dadosProntos && !ctx.comparar && RosterWork.escalasSysbm) RosterWork.escalasSysbm.montar(corpo, ctx.unidadeId, ctx.iso);
+    if (ctx.admin && !ctx.dadosProntos && !ctx.comparar && RosterWork.escalasSysbm) {
+      RosterWork.escalasSysbm.montar(corpo, ctx.unidadeId, ctx.iso, { desligado: diaComMudanca() });
+    }
     atualizarRodape();
-    /* o menu Funções do posto que gravou uma mudança volta aberto */
+    /* o menu Funções do posto que fez a mudança volta aberto */
     ctx.funcoesMenu = null;
     if (ctx.reabrirMenu && RosterWork.abrirDropdown) RosterWork.abrirDropdown(ctx.reabrirMenu);
     ctx.reabrirMenu = null;
   }
 
-  /* ---------- rodapé do dia: quem já mexeu no dia (relido depois de cada mudança) ---------- */
+  /* ---------- rodapé do dia: quem já mexeu no dia (relido depois de salvar; o Salvar é o rodapé largo da página,
+     escalas-painel-salvar.js) ---------- */
 
   function atualizarRodape() {
-    if (!ctx || ctx.emSub || !ctx.rodape || ctx.comHistorico) return;
+    if (!ctx || ctx.emSub || !ctx.rodape) return;
+    var vale = function () { return !!ctx && ctx.comHistorico && !ctx.emSub; };
+    var S = editavel() && RosterWork.escalasPainelSalvar;
+    if (S) {
+      if (ctx.comHistorico) return;
+      ctx.comHistorico = true;
+      var el = ctx.rodape, lugar = S.rodape(el, true);
+      if (lugar) pecas().alteracoes(lugar, ctx.unidadeId, ctx.iso, vale, function () { S.historicoMudou(el); });
+      return;
+    }
+    if (ctx.comHistorico) return;
     ctx.comHistorico = true;
-    pecas().alteracoes(ctx.rodape, ctx.unidadeId, ctx.iso, function () { return !!ctx && ctx.comHistorico && !ctx.emSub; });
+    pecas().alteracoes(ctx.rodape, ctx.unidadeId, ctx.iso, vale);
   }
 
   /* lê o dia de novo e zera o desfazer/refazer */
@@ -1074,14 +1111,14 @@
     var aplicar = ctx && ctx.rodape && ctx.rodape.querySelector('.escala-sub-aplicar');
     if (aplicar) aplicar.textContent = texto;
   }
-  /* Cancelar: volta ao dia gravado, sem gravar nada. Aplicar: a mudança grava (desenhar) */
+  /* Cancelar: volta ao rascunho de antes da sub-tela. Aplicar: a mudança fica no rascunho, como um passo do desfazer */
   function cancelarSub() {
     if (!ctx || ctx.salvando) return;
     if (foto) rasc = foto;
     else if (base) novoRascunho();
     desenhar();
   }
-  function concluirSub() { if (!ctx) return; desenhar(); }
+  function concluirSub() { if (!ctx) return; if (foto) passo(foto); desenhar(); }
 
   function abrirFolga(id) { if (RosterWork.escalasPainelMilitar) RosterWork.escalasPainelMilitar.abrirFolga(id); }
 
@@ -1099,16 +1136,61 @@
       dadosProntos: opcoes.dados || null, semAvisos: !!opcoes.semAvisos,
       dados: null, dadosAntes: null, chaveDados: null, emSub: false, comHistorico: false, salvando: false,
       sugestao: null, ultima: null };
-    rasc = null; base = null; foto = null; pilhaDesfazer = []; pilhaRefazer = [];
+    /* voltou de outra aba ao mesmo dia: o rascunho continua; outro dia, ou quem só lê, começa do dia gravado */
+    var mesmo = !!(base && rasc && dono === unidadeId + '|' + iso && haMudanca());
+    if (!(mesmo && ctx.admin && !ctx.comparar && !ctx.dadosProntos)) {
+      rasc = null; base = null; pilhaDesfazer = []; pilhaRefazer = []; dono = '';
+    }
+    foto = null;
     if (rodape) { rodape.textContent = ''; rodape.classList.add('oculto'); }
     desenhar();
   }
 
+  /* outra aba abriu (ou o painel fechou): o Dia para de desenhar; o rascunho fica até o Salvar ou o descarte */
   function reset() {
     if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
     if (RosterWork.escalasPainelLinha) RosterWork.escalasPainelLinha.fechar();
-    ctx = null; rasc = null; base = null; foto = null; pilhaDesfazer = []; pilhaRefazer = [];
+    ctx = null; foto = null;
     pedido++;
+  }
+
+  /* ---------- o Salvar do rodapé (escalas-painel-salvar.js) ---------- */
+
+  /* quantas mudanças o rascunho do dia tem (os passos; 0 = nada a salvar) */
+  function pendentes() { return haMudanca() ? Math.max(1, pilhaDesfazer.length) : 0; }
+  /* o rascunho do Dia para a prévia das telas: o da gravação e as funções abertas (só na prévia) */
+  function previaDia() {
+    var r = copiar(paraSalvar());
+    if (rasc.abertas.length) r.abertas = copiar(rasc.abertas);
+    return r;
+  }
+  /* o que vai ao banco: o rascunho e o dia como a tela leu ("antes": se mudou depois, nada é gravado) */
+  function paraGravar() {
+    var r = copiar(paraSalvar());
+    r.antes = { ajustes: base.ajustes, pontuais: base.pontuais };
+    return r;
+  }
+  /* gravou: o dia gravado vira a base, o rascunho e o desfazer recomeçam e a nota O que mudou vem do banco */
+  function aposGravar(r) {
+    pilhaDesfazer = []; pilhaRefazer = [];
+    if (!ctx || !ctx.admin || ctx.comparar || ctx.dadosProntos || !r || !r.dia) { base = null; rasc = null; dono = ''; return; }
+    var antes = ctx.dados;
+    aceitar(r.dia);
+    ctx.dadosAntes = antes || r.dia;
+    ctx.sugestao = null;
+    ctx.ultima = (r.mudou || []).length ? { mudou: r.mudou, sugestao: null } : null;
+    ctx.comHistorico = false;   // o rodapé relê o histórico, já com o que foi salvo
+    foto = null;
+    ctx.emSub = false;
+    montarSubcabecalho();
+    renderLista(r.dia);
+  }
+  /* o Cancelar do rodapé, outro dia ou o dia mudou no banco: o rascunho sai; com o Dia aberto, ele lê o dia de novo */
+  function descartar() {
+    pilhaDesfazer = []; pilhaRefazer = []; foto = null;
+    base = null; rasc = null; dono = '';
+    if (ctx && ctx.admin && !ctx.comparar && !ctx.dadosProntos) recarregar();
+    avisarRascunho();
   }
 
   /* atalhos: Ctrl+Z desfaz, Ctrl+Y ou Ctrl+Shift+Z refaz. Só na lista do Dia do admin, sem edição de linha aberta,
@@ -1129,8 +1211,14 @@
   window.RosterWork.escalasPainelEditar = {
     montar: montar,
     reset: reset,
-    /* para a edição da linha (escalas-painel-linha.js: mudar grava a mudança como um passo só), o Remover do dia e as
-       sub-telas (escalas-painel-adicionar.js, -remover.js e -militar.js) */
+    /* o Salvar do rodapé do painel (escalas-painel-salvar.js) */
+    pendentes: pendentes,
+    previaDia: previaDia,
+    paraGravar: paraGravar,
+    aposGravar: aposGravar,
+    descartar: descartar,
+    /* para a edição da linha (escalas-painel-linha.js: mudar põe a mudança no rascunho como um passo só), o Remover do
+       dia e as sub-telas (escalas-painel-adicionar.js, -remover.js, -remanejar.js e -militar.js) */
     sub: {
       mudar: mudar,
       deixarFuncao: deixarFuncao,
@@ -1147,10 +1235,15 @@
       botaoAplicar: function () { return ctx && ctx.rodape && ctx.rodape.querySelector('.escala-sub-aplicar'); },
       concluir: concluirSub,
       cancelar: cancelarSub,
+      /* volta ao dia sem mudar o rascunho do Dia (a mudança foi para o rascunho do Ciclo ou da Extrajornada) */
+      voltar: cancelarSub,
       aplicarColocacao: aplicarColocacao,
       aplicarMilitar: aplicarMilitar,
       darFolga: darFolga,
       cancelarFolga: cancelarFolga,
+      remanejar: remanejar,
+      devolverRemanejado: devolverRemanejado,
+      largarRemanejado: largarRemanejado,
       tirarPontual: tirarPontual,
       pontualSalvo: pontualSalvo,
       funcoesDoMilitar: funcoesDoMilitar,

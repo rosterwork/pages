@@ -4,17 +4,22 @@
    pelas duas entradas (REGRAS §4 › Ações e perguntas):
    - abrir(): a sub-tela em caixas de pergunta. Quem sai; a origem
      vem da escala, e só quem entrou de mais de um jeito escolhe Qual
-     parte sai. Pelo ciclo: só no dia (o horário e o banco de horas,
+     parte sai. O remanejado (escalas-painel-remanejar.js) responde
+     antes se é para Devolver à unidade de origem ou Tirar do dia
+     (aí seguem as perguntas de sempre; quem saiu daqui para outra
+     unidade, sem serviço aqui, tira o dia todo). Pelo ciclo: só no dia (o horário e o banco de horas,
      que vira folga) ou do ciclo (a lista do que é cancelado e a
-     confirmação). O pontual: o horário e, saindo todo e contado no
-     banco, as horas dele. A extra: os horários, pelo Salvar da aba
-     Extrajornada. A troca (uma parte para cada troca): cancelada
-     aqui mesmo, pelo escalas-painel-remover-troca.js.
+     confirmação, para o rascunho do ciclo). O pontual: o horário e,
+     saindo todo e contado no banco, as horas dele. A extra: os
+     horários, no rascunho do mês da aba Extrajornada. A troca (uma
+     parte para cada troca): cancelada aqui mesmo, na hora, pelo
+     escalas-painel-remover-troca.js.
    - doDia(m, linha): quem está sem função (já se sabe quem, o
      horário e a origem): pelo ciclo, a pergunta do banco de horas
      abre embaixo da linha; o pontual sai na hora, ou com a pergunta
      das horas que ele somou; o resto abre a sub-tela.
-   As mudanças do dia vão ao rascunho do Dia e gravam na hora.
+   As mudanças do dia vão ao rascunho do Dia; nada grava até o Salvar
+   do rodapé do painel (escalas-painel-salvar.js), menos a troca.
    ============================================================ */
 (function () {
   'use strict';
@@ -78,9 +83,10 @@
     return ((api.dados() || {}).pontuais || []).filter(function (x) { return x.cpf === cpf; })[0] || null;
   }
 
-  /* quem está no dia aqui (nas funções ou sem função), com o serviço dele ("das 08h às 08h, pelo ciclo") */
+  /* quem está no dia aqui (nas funções ou sem função), com o serviço dele ("das 08h às 08h, pelo ciclo"), e quem foi
+     remanejado daqui para outra unidade (sem serviço aqui no dia) */
   function itensQuem() {
-    var api = ed(), H = api.horas, d = api.dados() || {}, noDia = {}, lista = [];
+    var api = ed(), H = api.horas, d = api.dados() || {}, noDia = {}, lista = [], uid = String(api.unidadeId());
     (d.postos || []).forEach(function (po) {
       (po.funcoes || []).forEach(function (f) { (f.militares || []).forEach(function (m) { noDia[m.cpf] = true; }); });
     });
@@ -88,6 +94,14 @@
     var visto = {};
     (d.picker || []).forEach(function (u) {
       (u.militares || []).forEach(function (pm) {
+        var rm = pm.remanejado;
+        if (rm && !rm.fica && String(rm.de) === uid && !visto[pm.cpf]) {
+          var mr = api.militarDoDia(pm.cpf);
+          if (!mr) return;
+          visto[pm.cpf] = true;
+          lista.push({ cpf: pm.cpf, grad: pm.grad, nome: pm.nome, mil: mr, info: L().remanejadoPara(rm.para_nome) });
+          return;
+        }
         if (!noDia[pm.cpf] || visto[pm.cpf]) return;
         var mil = api.militarDoDia(pm.cpf);
         if (!mil || !mil.janelas.length) return;
@@ -108,15 +122,29 @@
     var api = ed(), H = api.horas, C = RosterWork.escalasPainelCiclo, D = RosterWork.data;
     if (!api.dados()) return;
     var iso = api.iso(), uid = api.unidadeId(), data = diaMes(iso);
-    var est = { item: null, mil: null, partes: [], parte: null, alcance: 'dia', periodos: [], banco: 'sim', extra: null, blocos: [] };
+    var est = { item: null, mil: null, partes: [], parte: null, alcance: 'dia', periodos: [], banco: 'sim', extra: null, blocos: [],
+      reman: null, remanFazer: null };
     var el = {}, combo = null, pedido = 0, troca = null;
 
     function escolher(item) {
       est.item = item; est.mil = item.mil;
+      est.reman = item.mil.remanejado || null;
+      est.remanFazer = null;
       est.partes = partesDe(item.mil);
       est.parte = est.partes.length === 1 ? est.partes[0] : null;
       montarPartes();
       comecarParte();
+    }
+
+    /* o remanejado que saiu daqui (sem serviço aqui): os minutos do serviço dele no dia, pela observação do remanejamento */
+    function minutosRemanejado() {
+      var mil = est.mil, d = api.dados() || {};
+      var o = (d.observacoes || []).filter(function (x) {
+        return x.classe === 'remanejado' && x.nome === mil.nome && (x.grad || '') === (mil.grad || '');
+      })[0];
+      if (!o || !o.hi || o.hi === o.hf) return 1440;
+      var f = H.faixa({ hi: o.hi, hf: o.hf });
+      return f[1] - f[0];
     }
 
     /* Qual parte sai: só quando ele entrou de mais de um jeito */
@@ -176,7 +204,8 @@
         alcance: q('.escala-remover-alcance'), horario: q('.escala-remover-horario'), periodos: q('.escala-remover-periodos'),
         blocos: q('.escala-remover-blocos'), blocosLista: q('.escala-remover-blocos-lista'), banco: q('.escala-remover-banco'),
         bancoTexto: q('.escala-remover-banco-texto'), bancoSim: q('.escala-remover-banco-sim'), bancoNao: q('.escala-remover-banco-nao'),
-        motivo: q('.escala-remover-motivo'), ciclo: q('.escala-remover-ciclo'), troca: q('.escala-remover-troca')
+        motivo: q('.escala-remover-motivo'), ciclo: q('.escala-remover-ciclo'), troca: q('.escala-remover-troca'),
+        reman: q('.escala-remover-reman'), remanTexto: q('.escala-remover-reman-texto'), remanDevolver: q('.escala-remover-reman-devolver')
       };
       var inp = el.combo.querySelector('input');
       inp.id = 'escala-remover-combo-' + (++conta);
@@ -187,6 +216,7 @@
       });
       el.marcarAlcance = ligarRadios(el.alcance, function (v) { est.alcance = v; atualizar(); });
       el.marcarBanco = ligarRadios(el.banco, function (v) { est.banco = v; });
+      el.marcarReman = ligarRadios(el.reman, function (v) { est.remanFazer = v; atualizar(); });
       el.motivo.querySelector('input').value = R() ? R().motivo() : '';
       troca = RosterWork.escalasPainelRemoverTroca.criar({ raiz: el.troca, iso: iso, pronto: pronto, aoGravar: api.recarregar });
       corpo.appendChild(tela);
@@ -231,11 +261,32 @@
 
     function atualizar() {
       if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
-      ['partes', 'alcance', 'horario', 'blocos', 'banco', 'motivo', 'ciclo'].forEach(function (k) { mostra(el[k], false); });
+      ['reman', 'partes', 'alcance', 'horario', 'blocos', 'banco', 'motivo', 'ciclo'].forEach(function (k) { mostra(el[k], false); });
       troca.esconder();
       var mil = est.mil;
       if (!mil) { pronto(L().escolhaQuemSai, false); return; }
       var nome = nomeDe(mil);
+      /* o remanejado: Devolver à unidade de origem ou Tirar do dia (aí seguem as perguntas de sempre) */
+      var rm = est.reman;
+      if (rm) {
+        mostra(el.reman, true);
+        el.remanTexto.textContent = L().remanejadoTexto(nome, rm.de_nome, rm.para_nome, rm.fica, rm.automatico);
+        el.remanDevolver.textContent = L().devolverA(rm.de_nome);
+        el.marcarReman(est.remanFazer);
+        if (!est.remanFazer) { pronto(L().escolhaFazer, false); return; }
+        if (est.remanFazer === 'devolver') { pronto(L().devolver(nome, rm.de_nome), true); return; }
+        /* saiu daqui para outra unidade (sem serviço aqui): sai do dia todo, com o banco de horas */
+        if (!est.partes.length) {
+          var horasR = H.horasTexto(minutosRemanejado());
+          mostra(el.banco, true);
+          el.bancoTexto.textContent = L().tirarFolga(nome, data, horasR);
+          el.bancoSim.textContent = L().descontar(horasR);
+          el.bancoNao.textContent = L().naoDescontar;
+          el.marcarBanco(est.banco);
+          pronto(L().removerDoDia(nome), true);
+          return;
+        }
+      }
       mostra(el.partes, est.partes.length > 1);
       var p = est.parte;
       if (!p) { pronto(L().escolhaParte, false); return; }
@@ -280,17 +331,22 @@
     /* ---------- aplicar ---------- */
 
     function aplicar() {
-      var mil = est.mil, p = est.parte;
-      if (!mil || !p) return;
+      var mil = est.mil, p = est.parte, rm = est.reman;
+      if (!mil) return;
       var cpf = mil.cpf;
-      if (p.origem === 'troca') { troca.aplicar(); return; }
+      if (rm && est.remanFazer === 'devolver') { api.devolverRemanejado(cpf); api.concluir(); return; }
+      if (rm && est.remanFazer === 'tirar' && !est.partes.length) {
+        if (cpf === RosterWork.sessao.cpf()) { RosterWork.avisar({ tipo: 'erro', mensagem: msg().folgaSiMesmo }); return; }
+        var descontarR = est.banco === 'sim';
+        api.mudar(function () { api.largarRemanejado(cpf); api.darFolga(cpf, descontarR, null); });
+        return;
+      }
+      if (!p) return;
+      if (p.origem === 'troca') { if (rm) api.largarRemanejado(cpf); troca.aplicar(); return; }
       if (p.origem === 'extra') { aplicarExtra(mil); return; }
       if (p.origem === 'ciclo' && est.alcance === 'ciclo') {
-        /* do ciclo: a lista do que é cancelado e a confirmação; grava pelo ciclo (sem Desfazer) e relê o dia */
-        C.confirmar(uid, iso, cpf, {
-          mensagem: msg().confirmarRemover.replace('{pessoa}', nomeDe(mil)).replace('{data}', iso.split('-').reverse().join('/')),
-          escala: RosterWork.mensagens.saida.escalaTirar, botao: msg().btnRemover
-        }, function () { C.salvar(uid, iso, [{ cpf: cpf, acao: 'tirar' }], { aoTerminar: api.recarregar }); });
+        /* do ciclo: a lista do que é cancelado e a confirmação; vai para o rascunho do ciclo e volta ao dia */
+        C.sair(uid, iso, mil, api.voltar);
         return;
       }
       if (!dentro()) { RosterWork.avisar({ tipo: 'erro', mensagem: L().erroRemover }); return; }
@@ -298,25 +354,27 @@
       var periodos = H.uniao(est.periodos.map(H.faixa)).map(H.periodo), toda = inteira();
       var descontar = est.banco === 'sim';
       api.mudar(function () {
+        if (rm) api.largarRemanejado(cpf);
         if (p.origem === 'ciclo') api.darFolga(cpf, descontar, toda && est.partes.length === 1 && !mil.outraUnidade ? null : periodos);
         else tirarDoPontual(cpf, periodos, toda, descontar);
       });
     }
 
-    /* a extra: o mesmo rascunho e o mesmo Salvar da aba Extrajornada; gravou, relê o dia */
+    /* a extra: o mesmo rascunho do mês da aba Extrajornada (sem mudança de outro mês); volta ao dia, e o Salvar do rodapé
+       grava */
     function aplicarExtra(mil) {
       var x = est.extra;
       if (!x || !x.hoje || !est.blocos.length || !R()) return;
-      if (R().sujo()) { RosterWork.avisar({ tipo: 'aviso', mensagem: L().extraPendente }); return; }
+      if (R().sujo() && R().competencia() && R().competencia() !== x.d.competencia) {
+        RosterWork.avisar({ tipo: 'aviso', mensagem: L().extraPendente });
+        return;
+      }
       var ficam = x.hoje.blocos.filter(function (b) { return est.blocos.indexOf(b) < 0; });
       R().mes(x.d.competencia);
       R().motivo(el.motivo.querySelector('input').value || '');
       R().definir({ cpf: mil.cpf, data: iso, unidade: uid, blocos: ficam,
         antes: { unidade: x.hoje.unidade_id, blocos: x.hoje.blocos }, militar: { grad: mil.grad, nome: mil.nome } });
-      R().salvar(api.botaoAplicar()).then(function (ok) {
-        if (ok) api.recarregar();
-        else R().limpar();
-      });
+      api.voltar();
     }
 
     api.abrir(L().escolhaQuemSai, montar, aplicar);
@@ -351,6 +409,8 @@
     fecharPergunta();
     var api = ed(), H = api.horas, mil = api.militarDoDia(m.cpf);
     if (!mil || !linha) return;
+    /* o remanejado: a sub-tela, com ele já escolhido (Devolver ou Tirar do dia) */
+    if (mil.remanejado) { abrir({ cpf: mil.cpf }); return; }
     var nome = nomeDe(mil), cpf = mil.cpf;
     var sem = (m.periodos || []).map(copiar), semF = sem.map(H.faixa);
     var partes = partesDe(mil).filter(function (p) {

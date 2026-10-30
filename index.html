@@ -1648,7 +1648,8 @@
   <!-- ===== painel do dia › aba Dia (escalas-painel-editar.js): a lista do dia, que o admin edita ===== -->
   <!-- subcabeçalho do admin: o menu Editar o dia (só o texto, sem marca: só o administrador vê; REGRAS §4, Abas e barras)
        com as ações do dia: Adicionar militar (escalas-painel-adicionar.js), Remover militar (escalas-painel-remover.js),
-       Editar extrajornada (a aba Extrajornada do painel) e Registrar troca de serviço (o Registrar troca das Trocas) -->
+       Remanejar militar (escalas-painel-remanejar.js), Editar extrajornada (a aba Extrajornada do painel) e Registrar
+       troca de serviço (o Registrar troca das Trocas) -->
   <template id="tpl-escala-edicao-acoes">
     <div class="dropdown escala-edicao-menu">
       <button type="button" class="botao">
@@ -1658,6 +1659,7 @@
       <div class="dropdown-menu">
         <button type="button" class="dropdown-item" data-acao="adicionar">Adicionar militar</button>
         <button type="button" class="dropdown-item" data-acao="remover">Remover militar</button>
+        <button type="button" class="dropdown-item" data-acao="remanejar">Remanejar militar</button>
         <div class="dropdown-divisor"></div>
         <button type="button" class="dropdown-item" data-acao="extra">Editar extrajornada</button>
         <button type="button" class="dropdown-item" data-acao="troca">Registrar troca de serviço</button>
@@ -1723,11 +1725,6 @@
       <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
       <span class="nota-texto"></span>
     </div>
-  </template>
-
-  <!-- rodapé do Ciclo e da Extrajornada: quantas alterações faltam salvar -->
-  <template id="tpl-escala-edicao-info">
-    <span class="escala-edicao-info"></span>
   </template>
 
   <!-- sub-telas (Adicionar militar e a folga no dia): volta à lista do dia -->
@@ -1958,6 +1955,13 @@
         </div>
         <span class="subtela-ajuda">Quem está de serviço no dia, com o jeito como entrou.</span>
       </div>
+      <!-- o remanejado no dia: volta só para a unidade de origem ou sai do dia (aí seguem as perguntas de sempre) -->
+      <div class="grupo-caixa subtela-pergunta escala-remover-reman oculto">
+        <span class="rotulo-secao">Remanejado</span>
+        <span class="subtela-ajuda escala-remover-reman-texto"></span>
+        <label class="geral-opcao"><input type="radio" value="devolver" /><span class="escala-remover-reman-devolver"></span></label>
+        <label class="geral-opcao"><input type="radio" value="tirar" /><span>Tirar do dia</span></label>
+      </div>
       <div class="grupo-caixa subtela-pergunta escala-remover-partes oculto">
         <span class="rotulo-secao">Qual parte sai</span>
         <div class="escala-marcar-lista escala-remover-partes-lista"></div>
@@ -2045,6 +2049,43 @@
   <!-- uma bolinha do Qual parte sai (Remover militar): o texto vem do JS ("Pelo ciclo, das 08h às 20h") -->
   <template id="tpl-escala-remover-parte">
     <label class="geral-opcao"><input type="radio" value="" /><span class="escala-remover-parte-texto"></span></label>
+  </template>
+
+  <!-- ===== Remanejar militar (sub-tela; escalas-painel-remanejar.js): as caixas de pergunta (o número vem do CSS), uma
+       depois da outra. Quem vai (de serviço nesta unidade no dia, menos quem já está remanejado); Para qual unidade (as
+       outras unidades da companhia); e se ele sai da unidade de origem ou fica nas duas. Só naquele dia ===== -->
+  <template id="tpl-escala-remanejar">
+    <div class="subtela escala-remanejar">
+      <div class="subtela-cab">
+        <span class="subtela-titulo">Remanejar militar</span>
+      </div>
+      <div class="grupo-caixa subtela-pergunta escala-remanejar-quem">
+        <span class="rotulo-secao">Quem vai</span>
+        <div class="dropdown campo-combo escala-remanejar-combo">
+          <input class="campo-entrada" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Quem vai" />
+          <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+          <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares de serviço"></div>
+        </div>
+        <span class="subtela-ajuda">Quem está de serviço nesta unidade no dia.</span>
+      </div>
+      <div class="grupo-caixa subtela-pergunta escala-remanejar-destino oculto">
+        <span class="rotulo-secao">Para qual unidade</span>
+        <div class="escala-remanejar-unidades"></div>
+        <span class="subtela-ajuda escala-remanejar-vazio oculto">A companhia não tem outra unidade para remanejar.</span>
+        <span class="subtela-ajuda">Uma unidade da mesma companhia, só neste dia.</span>
+      </div>
+      <div class="grupo-caixa subtela-pergunta escala-remanejar-sai oculto">
+        <span class="rotulo-secao">Na unidade de origem</span>
+        <span class="subtela-ajuda escala-remanejar-sai-pergunta"></span>
+        <label class="geral-opcao"><input type="radio" value="sai" /><span class="escala-remanejar-sai-sim"></span></label>
+        <label class="geral-opcao"><input type="radio" value="fica" /><span class="escala-remanejar-sai-nao"></span></label>
+      </div>
+    </div>
+  </template>
+
+  <!-- uma unidade do Para qual unidade (Remanejar militar): o nome vem do JS -->
+  <template id="tpl-escala-remanejar-unidade">
+    <label class="geral-opcao"><input type="radio" value="" /><span class="escala-remanejar-unidade-nome"></span></label>
   </template>
 
   <!-- um dia do documento da troca: "01/11, 24 horas" · "Cb. Lemos no lugar de Cb. Veloso" (o deste dia, em destaque) -->
@@ -2227,10 +2268,21 @@
     </label>
   </template>
 
-  <!-- rodapé do painel no modo Editar: Cancelar + Salvar -->
-  <template id="tpl-escala-painel-acoes">
-    <button type="button" class="botao escala-painel-cancelar">Cancelar</button>
-    <button type="button" class="botao botao--primario escala-painel-salvar" disabled>Salvar</button>
+  <!-- o lugar das alterações manuais do dia, no rodapé do Dia (o JS põe o bloco; o Salvar é o rodapé largo da página) -->
+  <template id="tpl-escala-painel-historico">
+    <div class="escala-painel-historico oculto"></div>
+  </template>
+
+  <!-- Ciclo: a linha marcada no rascunho (o que vai acontecer, escrito pelo JS) e, embaixo dela, o que acontece com as
+       trocas, folgas e extras de quem sai ou muda de ciclo (cada item: o assunto e a frase, do JS) -->
+  <template id="tpl-escala-ciclo-marcado">
+    <span class="selo escala-secao-selo"></span>
+  </template>
+  <template id="tpl-escala-ciclo-consequencias">
+    <ul class="escala-ciclo-consequencias"></ul>
+  </template>
+  <template id="tpl-escala-ciclo-consequencia">
+    <li class="escala-ciclo-consequencia"><span class="escala-ciclo-consequencia-titulo"></span> <span class="escala-ciclo-consequencia-texto"></span></li>
   </template>
 
   <!-- Ciclo: linha de militar (grad + nome + extra + ação) -->
@@ -2837,6 +2889,13 @@
     </span>
   </template>
 
+  <!-- militar remanejado (só neste dia) na tira de ícones, no lugar do de outra unidade; a dica diz de onde ele veio -->
+  <template id="tpl-escala-remanejado-icone">
+    <span class="escala-distribuicao-outra-unidade">
+      <svg class="icone" width="13" height="13" aria-hidden="true"><use href="icones/todos.svg#icone-remanejado"/></svg>
+    </span>
+  </template>
+
   <template id="tpl-escala-distribuicao-hora">
     <span class="escala-distribuicao-hora">
       <span class="escala-distribuicao-hora-ini"></span>
@@ -2890,6 +2949,10 @@
           <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-origem-troca"/></svg>
           <span>Troca</span>
         </span>
+        <span class="escala-legenda-item">
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-remanejado"/></svg>
+          <span>Remanejado</span>
+        </span>
       </div>
     </div>
     <!-- sobre a função que o militar ocupa -->
@@ -2906,7 +2969,7 @@
         </span>
       </div>
     </div>
-    <!-- sobre o militar (vale sempre, não só no dia) -->
+    <!-- sobre o militar: a regra vale sempre; de outra unidade e remanejado (vindo de outra unidade só neste dia), no dia -->
     <div class="escala-legenda-grupo" data-legenda-grupo="militar">
       <span class="rotulo-secao">Militar</span>
       <div class="escala-legenda-grade">
@@ -2917,6 +2980,10 @@
         <span class="escala-legenda-item">
           <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-reforco"/></svg>
           <span>De outra unidade</span>
+        </span>
+        <span class="escala-legenda-item">
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-remanejado"/></svg>
+          <span>Remanejado</span>
         </span>
       </div>
     </div>

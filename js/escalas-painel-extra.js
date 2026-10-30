@@ -10,7 +10,8 @@
    marca e desmarca. Clicar nos outros dias abre, embaixo do nome, os
    horários daqueles dias, para mudar de data sem sair daqui; quem
    passa da cota abre sozinho, com o aviso. As mudanças vão para o
-   rascunho do mês (escalas-extra-rascunho.js) e só gravam no Salvar.
+   rascunho do mês (escalas-extra-rascunho.js) e só gravam no Salvar do
+   rodapé do painel, junto com o Dia e o Ciclo (escalas-painel-salvar.js).
    Embaixo, o motivo (depois que o mês começa) e os ajustes do dia.
    Quem não é administrador vê só quem tira extra no dia.
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
@@ -247,22 +248,12 @@
     if (e) { e.textContent = texto; alvo.appendChild(e); }
   }
 
-  /* ---------- rodapé ---------- */
+  /* ---------- rodapé: o Salvar do painel (as mudanças das três abas; escalas-painel-salvar.js) ---------- */
   function montarRodape() {
     var rodape = ctx && ctx.rodape;
     if (!rodape) return;
-    rodape.textContent = '';
-    if (!ctx.admin) { rodape.classList.add('oculto'); return; }
-    var n = R() ? R().contar() : 0;
-    var info = RW.tpl('tpl-escala-edicao-info');
-    if (info) { info.textContent = msg().alteracoes(n, R() ? R().dias() : 0); rodape.appendChild(info); }
-    var t = document.getElementById('tpl-escala-painel-acoes');
-    if (t) rodape.appendChild(t.content.cloneNode(true));
-    rodape.classList.remove('oculto');
-    var cancelar = rodape.querySelector('.escala-painel-cancelar');
-    var salvarBtn = rodape.querySelector('.escala-painel-salvar');
-    if (cancelar) { cancelar.disabled = !n; cancelar.addEventListener('click', function () { R().cancelar(); }); }
-    if (salvarBtn) { salvarBtn.disabled = !n; salvarBtn.addEventListener('click', function () { R().salvar(salvarBtn); }); }
+    if (!ctx.admin || !RW.escalasPainelSalvar) { rodape.textContent = ''; rodape.classList.add('oculto'); return; }
+    RW.escalasPainelSalvar.rodape(rodape);
   }
 
   /* ---------- a aba ---------- */

@@ -42,6 +42,8 @@
 }
 
 .pagina-corpo--colado > :has(> .rodape--largo:not(.oculto)) { padding-bottom: 49px; }
+/* o rodapé largo irmão do corpo (a Escala e a Extrajornada, cujo corpo o JS redesenha): o corpo para em cima dele */
+.pagina-corpo--colado:has(~ .rodape--largo:not(.oculto)) { padding-bottom: 49px; }
 .conteudo:has(.rodape--largo:not(.oculto)) > .painel-lateral { margin-bottom: 49px; }
 
 /* rodapé em linha: conteúdo à esquerda (que cresce) + ações à direita (.rodape-acoes).

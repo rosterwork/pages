@@ -228,7 +228,8 @@
 
   /* põe o bloco no fim do corpo do Dia. Fora do Firefox, o título e o aviso; no Firefox sem a extensão, o
      título e o Instalar a extensão (até ela chegar); com ela, o bloco inteiro, escondido até a leitura chegar */
-  function montar(corpo, unidadeId, iso) {
+  /* opcoes.desligado: há mudança do dia ainda não salva no painel; o Enviar espera o Salvar (o SYSBM lê a escala gravada) */
+  function montar(corpo, unidadeId, iso, opcoes) {
     var bloco = RW.tpl('tpl-escala-sysbm');
     if (!bloco || !RW.escalasDados || !RW.escalasDados.lerSysbm) return;
     var partes = {
@@ -258,6 +259,10 @@
     }
     bloco.classList.add('oculto');
     ligarEnvio(partes, unidadeId, iso);
+    if (opcoes && opcoes.desligado) {
+      partes.enviar.disabled = true;
+      partes.enviar.setAttribute('data-dica', msg().salveAntes);
+    }
     corpo.appendChild(bloco);
     ler(partes, unidadeId, iso);
   }

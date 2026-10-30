@@ -8,18 +8,19 @@
      fica: o sistema distribui, a função escolhida (quem está nela
      sai daquele horário) ou no lugar de outro militar (quem sai, de
      serviço no horário, e de quais funções, todas marcadas; quem fica
-     sem nenhuma vai para Sem função); e o banco de horas. Grava pelo
-     Dia (escalas-painel-editar.js), e o sistema refaz o dia em volta
-     do que está fixado, mexendo o mínimo.
+     sem nenhuma vai para Sem função); e o banco de horas. Vai para o
+     rascunho do Dia (escalas-painel-editar.js), e a prévia refaz o
+     dia em volta do que está fixado, mexendo o mínimo.
    - Na extrajornada: os voluntários do mês sem extra no dia, os 4
      horários de 6 h (quem só tira 24 h marca os quatro) e, depois que
-     o mês começou, o motivo; grava pelo mesmo Salvar da aba
-     Extrajornada (escalas-extra-rascunho.js), que precisa estar sem
-     mudança pendente.
+     o mês começou, o motivo; vai para o rascunho do mês da aba
+     Extrajornada (escalas-extra-rascunho.js), que não pode ter
+     mudança de outro mês.
    - No ciclo: quem está fora entra; quem já está no ciclo escolhe o
      último serviço no ciclo atual entre as três últimas datas (mudar
-     de ciclo); quem já serve pelo ciclo no dia não muda. A
-     confirmação e a gravação são do escalas-painel-ciclo.js.
+     de ciclo); quem já serve pelo ciclo no dia não muda. Vai para o
+     rascunho do ciclo (escalas-painel-ciclo.js).
+   Nada grava até o Salvar do rodapé do painel (escalas-painel-salvar.js).
    Trocar uma resposta limpa as que dependiam dela. As listas de quem
    entra e de quem sai ficam em escalas-painel-adicionar-listas.js.
    ============================================================ */
@@ -56,6 +57,8 @@
     var api = ed(), H = api.horas, Q = RosterWork.escalasPainelQuem, C = RosterWork.escalasPainelCiclo, D = RosterWork.data;
     if (!api.dados()) return;
     var iso = api.iso(), uid = api.unidadeId(), data = diaMes(iso);
+    /* o rascunho da extra tem mudança de outro mês (o mês dele é outro rascunho) */
+    function outroMes() { return !!(R() && R().sujo() && R().competencia() && R().competencia() !== iso.slice(0, 8) + '01'); }
     var est = { como: 'dia', item: null, mil: null, periodos: [], onde: 'sistema', posto: null, funcao: null,
       sai: null, funcoes: [], banco: 'sim', ultimo: null, blocos: [], extra: null };
     var el = {}, pedido = 0, onde = null, combo = null, comboSai = null, chaveSai = '';
@@ -65,8 +68,8 @@
       est.item = null; est.mil = null; est.extra = null;
       combo.habilitar(false);
       combo.definir(L().carregando, true);
-      /* a extra grava pelo Salvar da aba Extrajornada: com mudança pendente lá, espera ela ser salva ou descartada */
-      if (est.como === 'extra' && R() && R().sujo()) { combo.definir(L().extraPendente, true); return; }
+      /* a extra vai para o rascunho do mês: com mudança de outro mês lá, espera ela ser salva ou descartada */
+      if (est.como === 'extra' && outroMes()) { combo.definir(L().extraPendente, true); return; }
       var leitura = est.como === 'dia'
         ? RosterWork.escalasDados.disponiveis(uid, iso, uid).then(function (r) { return r ? listas().dia(r) : null; })
         : est.como === 'extra'
@@ -370,25 +373,22 @@
       api.concluir();
     }
 
-    /* a extra: o mesmo rascunho e o mesmo Salvar da aba Extrajornada; gravou, relê o dia */
+    /* a extra: o mesmo rascunho do mês da aba Extrajornada; volta ao dia, e o Salvar do rodapé grava */
     function aplicarExtra(m) {
       if (!est.blocos.length || !est.extra || !R()) return;
-      if (R().sujo()) { RosterWork.avisar({ tipo: 'aviso', mensagem: L().extraPendente }); return; }
+      if (outroMes()) { RosterWork.avisar({ tipo: 'aviso', mensagem: L().extraPendente }); return; }
       R().mes(est.extra.competencia);
       R().motivo(el.motivo.querySelector('input').value || '');
       R().definir({ cpf: m.cpf, data: iso, unidade: uid, blocos: est.blocos, antes: null, militar: { grad: m.grad, nome: m.nome } });
-      R().salvar(api.botaoAplicar()).then(function (ok) {
-        if (ok) api.recarregar();
-        else R().limpar();
-      });
+      api.voltar();
     }
 
-    /* quem está fora entra com a confirmação (e o Desfazer no resumo); quem já está no ciclo muda de ciclo, vendo antes o
-       que acontece com as trocas, folgas e extras dele depois do último serviço escolhido */
+    /* quem está fora entra no ciclo; quem já está no ciclo muda de ciclo, vendo antes o que acontece com as trocas, folgas
+       e extras dele depois do último serviço escolhido. Vai para o rascunho do ciclo e volta ao dia */
     function aplicarCiclo(m) {
       if (m.serve_hoje) return;   // o botão já fica desligado
-      if (m.estado === 'fora') C.entrar(uid, iso, m, api.recarregar);
-      else C.mudar(uid, iso, m, est.ultimo, api.recarregar);
+      if (m.estado === 'fora') C.entrar(uid, iso, m, api.voltar);
+      else C.mudar(uid, iso, m, est.ultimo, api.voltar);
     }
 
     api.abrir(L().escolhaQuem, montar, aplicar);

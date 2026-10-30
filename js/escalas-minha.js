@@ -22,10 +22,11 @@
   /* origem da linha -> ícone (os mesmos da Escala) */
   var ICONE_ORIGEM = {
     base: 'icone-origem-base', saida: 'icone-origem-saida', troca: 'icone-origem-troca', troca_saida: 'icone-origem-troca',
-    pontual: 'icone-origem-pontual', sistema: 'icone-origem-sistema', folga: 'icone-folgas', extra: 'icone-extrajornada'
+    remanejado_saida: 'icone-remanejado', pontual: 'icone-origem-pontual', sistema: 'icone-origem-sistema', folga: 'icone-folgas',
+    extra: 'icone-extrajornada'
   };
-  /* as linhas de quem saiu do serviço (riscadas na Escala) */
-  var RISCADA = { folga: true, troca_saida: true };
+  /* as linhas de quem saiu do serviço (riscadas na Escala; o remanejado saiu da unidade dele, e o serviço segue na outra) */
+  var RISCADA = { folga: true, troca_saida: true, remanejado_saida: true };
 
   var el = {};
   var estado = { mes: null, dados: null, selecionado: null, pedidoDia: 0 };
@@ -35,9 +36,13 @@
   function hojeIso() { return iso(RW.data.diaDeServico()); }
   function chaveMes(mes) { return 'escala_minha_calendario|' + iso(mes); }
 
+  /* com mudança do painel do dia esperando o Salvar, a leitura pede a prévia (o que vai ficar; escalas-dados.js) */
+  function previa(leitura, args) { return RW.escalasDados && RW.escalasDados.lerPrevia ? RW.escalasDados.lerPrevia(leitura, args) : null; }
+
   function buscarMes(mes) {
     var fim = new Date(mes.getFullYear(), mes.getMonth() + 1, 0);
-    return RW.rpc('escala_minha_calendario', { p_inicio: iso(mes), p_fim: iso(fim) });
+    var args = { p_inicio: iso(mes), p_fim: iso(fim) };
+    return previa('escala_minha_calendario', args) || RW.rpc('escala_minha_calendario', args);
   }
 
   /* o deslize do celular pede o mês vizinho antes da troca (geral-deslizar.js) */
@@ -74,6 +79,9 @@
     var texto = botao.querySelector('.mini-calendario-texto');
     if (diaIso === hojeIso()) botao.classList.add('mini-calendario-dia--hoje');
     if (diaIso === estado.selecionado) botao.classList.add('mini-calendario-dia--selecionado');
+    /* o dia com mudança do painel do dia ainda não salva: a borda tracejada */
+    var S = RW.escalasPainelSalvar;
+    if (S && S.marcado(null, diaIso)) botao.classList.add('mini-calendario-dia--nao-salvo');
 
     var afast = linhas.filter(function (l) { return l.origem === 'afastamento'; })[0];
     if (afast) {
@@ -126,7 +134,8 @@
     el.diaTitulo.textContent = DIAS_CURTOS[d.getDay()] + ', ' + d.getDate() + ' de ' + MESES[d.getMonth()];
     el.diaUnidade.textContent = [u.nome_painel || u.nome || '', u.cidade || ''].filter(Boolean).join(' · ');
     mostrarEstado(el.diaCorpo, 'tpl-escala-carregando');
-    RW.rpc('escala_dia_arvore', { p_unidade_ids: [unidadeId], p_data: diaIso }).then(function (linhas) {
+    var args = { p_unidade_ids: [unidadeId], p_data: diaIso };
+    (previa('escala_dia_arvore', args) || RW.rpc('escala_dia_arvore', args)).then(function (linhas) {
       if (meu !== estado.pedidoDia || !el.diaCorpo.isConnected) return;
       var linha = (linhas || []).filter(function (x) { return String(x.unidade_id) === String(unidadeId); })[0];
       el.diaCorpo.textContent = '';
@@ -189,7 +198,9 @@
     var vigente = opcoes.vigente || function () { return true; };
     if (!corpo.querySelector('.escala-minha') && !montarMoldura(corpo)) return Promise.resolve();
     var mes = new Date(ref.getFullYear(), ref.getMonth(), 1);
-    var antecipada = RW.deslizar && RW.deslizar.usarAntecipada(chaveMes(mes));
+    /* a leitura antecipada pelo deslize é a do gravado: com mudança esperando o Salvar, a prévia */
+    var comRascunho = !!(RW.escalasPainelSalvar && RW.escalasPainelSalvar.paraPrevia());
+    var antecipada = !comRascunho && RW.deslizar && RW.deslizar.usarAntecipada(chaveMes(mes));
     return (antecipada || buscarMes(mes)).then(function (r) {
       if (!vigente() || !el.calendario.isConnected) return;
       if (!r || !r.dias) { mostrarEstado(el.calendario, 'tpl-escala-estado', RW.mensagens.escala.falhaCarregarMes); return; }

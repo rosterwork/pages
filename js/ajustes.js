@@ -183,9 +183,9 @@
     var abas = conteudo.querySelector('#ajustes-abas');
     if (abas && RosterWork.abas) RosterWork.abas.ligar(abas, function (aba) { trocarAba(conteudo, aba.getAttribute('data-aba')); });
     if (RosterWork.ajustesExtrajornada) RosterWork.ajustesExtrajornada.montar(conteudo);
-    /* a aba Expediente fica só para o programador enquanto é testada */
+    /* a aba Expediente: todo administrador (o banco confere a área de cada unidade ao salvar) */
     var abaExpediente = conteudo.querySelector('#ajustes-abas [data-aba="expediente"]');
-    if (abaExpediente && RosterWork.sessao.ehProgramador && RosterWork.sessao.ehProgramador() && RosterWork.ajustesExpediente) {
+    if (abaExpediente && RosterWork.sessao.temPapel('pelotao') && RosterWork.ajustesExpediente) {
       abaExpediente.classList.remove('oculto');
       RosterWork.ajustesExpediente.montar(conteudo);
     }

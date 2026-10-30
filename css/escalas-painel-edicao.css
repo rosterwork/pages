@@ -178,12 +178,10 @@
   padding: 0 4px 4px;
 }
 
-/* rodapé do Ciclo e da Extrajornada: quantas alterações faltam salvar, à esquerda dos botões */
-.escala-edicao-info {
-  margin-right: auto;
-  align-self: center;
-  font-size: 12px;
-  color: var(--texto-fraco);
+/* ---------- o rodapé do painel: as alterações manuais do dia, na largura toda (o rodapé do painel põe as peças lado a
+   lado; o Salvar é o rodapé largo da página, escalas-painel-salvar.js) ---------- */
+.escala-painel-historico {
+  flex: 1 1 100%;
 }
 
 /* ---------- a edição da linha: o cartão que engloba a linha ---------- */

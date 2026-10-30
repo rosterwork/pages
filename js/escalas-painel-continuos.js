@@ -14,9 +14,11 @@
      linha a pergunta única do último serviço no ciclo atual, entre as
      três últimas datas (mudar de ciclo); quem tem a saída marcada
      ganha o selo e o Cancelar saída.
-   Cada ação confirma e grava na hora, com o resumo
-   (escalas-painel-ciclo.js); o Adicionar de quem estava fora e o
-   Cancelar saída têm o Desfazer no resumo. Só o admin vê a seção.
+   Cada ação marca a mudança no rascunho do ciclo
+   (escalas-painel-ciclo.js; quem sai ou muda de ciclo vê antes a
+   lista do que é cancelado): a linha marcada mostra o que vai
+   acontecer, a lista e o Desmarcar, e o Salvar do rodapé do painel
+   (escalas-painel-salvar.js) grava. Só o admin vê a seção.
    ============================================================ */
 (function () {
   'use strict';
@@ -80,29 +82,37 @@
     return info;
   }
 
-  /* depois de gravar ou desfazer: relê a lista, se o painel ainda está no mesmo dia */
-  function aoTerminar(iso) { return function () { if (ctx && ctx.iso === iso) carregar(); }; }
+  /* depois de marcar ou desmarcar: redesenha, se o painel ainda está no mesmo dia (nada foi gravado) */
+  function aoMarcar(iso) { return function () { if (ctx && ctx.iso === iso) renderizar(); }; }
 
-  /* ---------- ações: cada uma confirma e grava na hora ---------- */
-  function remover(m) {
-    var uid = ctx.unidadeId, iso = ctx.iso;
-    C().confirmar(uid, iso, m.cpf, {
-      mensagem: texto(msg().confirmarRemover, { pessoa: nomeDe(m), data: formatarData(iso) }),
-      escala: RosterWork.mensagens.saida.escalaTirar, botao: msg().btnRemover
-    }, function () { C().salvar(uid, iso, [{ cpf: m.cpf, acao: 'tirar' }], { aoTerminar: aoTerminar(iso) }); });
+  /* ---------- ações: cada uma marca no rascunho do ciclo ---------- */
+  function remover(m) { C().sair(ctx.unidadeId, ctx.iso, m, aoMarcar(ctx.iso)); }
+  function cancelarSaida(m) { C().cancelarSaida(ctx.unidadeId, ctx.iso, m, aoMarcar(ctx.iso)); }
+  function adicionar(m) { C().entrar(ctx.unidadeId, ctx.iso, m, aoMarcar(ctx.iso)); }
+
+  /* a linha marcada: o selo do que vai acontecer e o Desmarcar no lugar das ações; embaixo, o que acontece com as
+     trocas, folgas e extras de quem sai ou muda de ciclo */
+  function linhaMarcada(m, mudanca, extras) {
+    var selo = RosterWork.tpl('tpl-escala-ciclo-marcado');
+    if (selo) selo.textContent = C().textoMarcado(mudanca, ctx.iso);
+    var el = linha(m, [].concat(extras || [], [selo]), botao(msg().btnDesmarcar, null, function () { C().desmarcar(m.cpf); renderizar(); }));
+    if (!el) return null;
+    el.classList.add('escala-secao-item--marcado');
+    var itens = (mudanca.itens || []).filter(function (it) { return it && it.texto; });
+    var lista = itens.length ? RosterWork.tpl('tpl-escala-ciclo-consequencias') : null;
+    if (lista) {
+      itens.forEach(function (it) {
+        var li = RosterWork.tpl('tpl-escala-ciclo-consequencia');
+        if (!li) return;
+        li.querySelector('.escala-ciclo-consequencia-titulo').textContent = it.titulo || '';
+        li.querySelector('.escala-ciclo-consequencia-texto').textContent = it.texto;
+        lista.appendChild(li);
+      });
+      el.appendChild(lista);
+    }
+    return el;
   }
-  function cancelarSaida(m) {
-    var uid = ctx.unidadeId, iso = ctx.iso;
-    RosterWork.confirmar({
-      tipo: 'aviso', mensagem: L().cicloConfirmarCancelarSaida(nomeDe(m), formatarData(m.saida_em).slice(0, 5)),
-      textoConfirmar: msg().btnCancelarSaida,
-      aoConfirmar: function () {
-        C().salvar(uid, iso, [{ cpf: m.cpf, acao: 'cancelar_saida' }],
-          { desfazer: { cpf: m.cpf, acao: 'cancelar_saida', saida_em: m.saida_em }, aoTerminar: aoTerminar(iso) });
-      }
-    });
-  }
-  function adicionar(m) { C().entrar(ctx.unidadeId, ctx.iso, m, aoTerminar(ctx.iso)); }
+  function marcadoDe(m) { return ctx ? C().marcado(ctx.unidadeId, ctx.iso, m.cpf) : null; }
 
   /* ---------- a pergunta de mudar de ciclo (Contínuos em outros ciclos › Adicionar), embaixo da linha ---------- */
   function fecharCartao() {
@@ -131,7 +141,7 @@
       nota(q('.escala-ciclo-cartao-info'), f.info);
     }
     q('.escala-ciclo-cartao-cancelar').addEventListener('click', fecharCartao);
-    q('.escala-ciclo-cartao-continuar').addEventListener('click', function () { C().mudar(uid, iso, m, ultimo, aoTerminar(iso)); });
+    q('.escala-ciclo-cartao-continuar').addEventListener('click', function () { C().mudar(uid, iso, m, ultimo, aoMarcar(iso)); });
     linhaEl.insertAdjacentElement('afterend', el);
     cartao = el;
     desenhar();
@@ -144,6 +154,8 @@
 
   /* do dia: Remover; com a saída marcada, Cancelar saída ou Remover, que traz a saída para este dia */
   function linhaDoDia(m) {
+    var mk = marcadoDe(m);
+    if (mk) return linhaMarcada(m, mk);
     var acoes = [botao(msg().btnRemover, 'escala-secao-botao--perigo', function () { remover(m); })];
     if (saidaMarcada(m)) acoes.unshift(botaoCancelarSaida(m));
     var el = linha(m, saidaMarcada(m) ? seloSaida(m) : null, acoes);
@@ -157,8 +169,10 @@
      Cancelar saída */
   function linhaOutros(m) {
     var el = null;
-    var extras = [m.ultimo_servico ? infoTexto(L().infoUltimo(formatarData(m.ultimo_servico).slice(0, 5))) : null,
-      saidaMarcada(m) ? seloSaida(m) : null];
+    var ultimo = m.ultimo_servico ? infoTexto(L().infoUltimo(formatarData(m.ultimo_servico).slice(0, 5))) : null;
+    var mk = marcadoDe(m);
+    if (mk) return linhaMarcada(m, mk, ultimo);
+    var extras = [ultimo, saidaMarcada(m) ? seloSaida(m) : null];
     var acoes = [saidaMarcada(m) ? botaoCancelarSaida(m) : null,
       botao(msg().btnAdicionar, null, function () { abrirCartao(m, el); })];
     el = linha(m, extras, acoes);
@@ -170,6 +184,8 @@
       return linha(m, seloTexto(texto(msg().continuosAfastadoAte, { motivo: m.afastamento.motivo, data: formatarData(m.afastamento.ate).slice(0, 5) })));
     }
     if (m.entra_em) return linha(m, seloTexto(texto(msg().continuosEntraEm, { data: formatarData(m.entra_em).slice(0, 5) })));
+    var mk = marcadoDe(m);
+    if (mk) return linhaMarcada(m, mk);
     return linha(m, null, botao(msg().btnAdicionar, null, function () { adicionar(m); }));
   }
 
@@ -256,14 +272,15 @@
     });
   }
 
-  /* sem rodapé: cada ação grava na hora */
+  /* o rodapé é o do Salvar do painel (as mudanças das três abas) */
   function montar(corpo, rodape, unidadeId, iso) {
     ctx = { corpo: corpo, unidadeId: unidadeId, iso: iso };
     mils = [];
     cartao = null;
     var chave = unidadeId + '|' + iso;   // outro dia (ou outra unidade): a caixa volta fechada
     if (outros.chave !== chave) outros = { chave: chave, aberto: false };
-    if (rodape) { rodape.textContent = ''; rodape.classList.add('oculto'); }
+    if (rodape && RosterWork.escalasPainelSalvar) RosterWork.escalasPainelSalvar.rodape(rodape);
+    else if (rodape) { rodape.textContent = ''; rodape.classList.add('oculto'); }
     carregar();
   }
 

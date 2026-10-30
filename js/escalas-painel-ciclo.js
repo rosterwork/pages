@@ -1,20 +1,19 @@
 /* ============================================================
    ESCALAS — o ciclo pelo painel do dia (as abas Dia e Ciclo)
-   - salvar: grava pelo ciclo (escala_ciclo_salvar_lote), com o véu
-     enquanto a escala é recalculada, e abre o resumo; com desfazer,
-     o resumo traz o Desfazer (escala_ciclo_desfazer), só para o que
-     não cancelou nada: a entrada de quem estava fora do ciclo e o
-     cancelamento da saída;
+   - o rascunho do ciclo: as mudanças do dia aberto que ainda não
+     foram salvas; marcar e desmarcar não gravam: o Salvar do rodapé
+     do painel (escalas-painel-salvar.js) grava junto com o Dia e a
+     Extrajornada (escala_ciclo_salvar_lote, pelo
+     escala_painel_salvar);
    - confirmar: a lista do que acontece com as trocas, folgas e
      extras a partir do dia (escala_ciclo_retirar_analisar) e a
-     confirmação;
+     confirmação, antes de marcar quem sai ou muda de ciclo;
    - datas: as três últimas datas de serviço no ciclo atual, em
      bolinhas, com o dia da semana (o último serviço no ciclo antigo
      de quem muda de ciclo);
-   - entrar (quem está fora do ciclo, com o Desfazer) e mudar de
-     ciclo (com a lista do que é cancelado, sem Desfazer), e as frases
-     de quem muda de ciclo: o Adicionar militar da aba Dia e a aba
-     Ciclo usam os mesmos.
+   - entrar (quem está fora do ciclo), sair, cancelar a saída e
+     mudar de ciclo, e as frases de quem muda de ciclo: o Adicionar e
+     o Remover militar da aba Dia e a aba Ciclo usam os mesmos.
    ============================================================ */
 (function () {
   'use strict';
@@ -22,6 +21,9 @@
   window.RosterWork = window.RosterWork || {};
 
   var conta = 0;   // nome único para os rádios de cada lista de datas
+  /* o rascunho do dia aberto (chave = unidade|dia): [{ cpf, acao, ultimo_servico?, tipo, itens }]; tipo = entrar, sair,
+     mudar ou cancelar_saida; itens = o que acontece com as trocas, folgas e extras (a lista da confirmação) */
+  var rascunho = { chave: '', lista: [] };
 
   function msg() { return RosterWork.mensagens.escala; }
   function L() { return RosterWork.mensagens.escala.linha; }
@@ -33,45 +35,49 @@
     return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
   }
 
-  /* opcoes = { desfazer: { cpf, acao, saida_em? } | null, aoTerminar() } */
-  function salvar(unidadeId, iso, mudancas, opcoes) {
-    opcoes = opcoes || {};
-    var geral = RosterWork.mensagens.geral;
-    if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal();   // recalcula a escala: círculo e tela travada
-    RosterWork.escalasDados.cicloSalvarLote(unidadeId, iso, mudancas).then(function (r) {
-      if (RosterWork.esconderVeuGlobal) RosterWork.esconderVeuGlobal();
-      if (r && r._falha === 'conexao') { RosterWork.avisar({ tipo: 'erro', mensagem: geral.semConexao }); return; }
-      if (r && r._falha === 'servidor') { RosterWork.avisar({ tipo: 'erro', mensagem: geral.falhaServidor }); return; }
-      if (!r || !r.success) { RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || msg().falhaSalvar }); return; }
-      window.dispatchEvent(new CustomEvent('rosterwork_escala_recarregar'));
-      if (r.log && RosterWork.resumo) {
-        var d = opcoes.desfazer;
-        RosterWork.resumo.abrirModal(r.log, { pagina: 'Escala', desfazer: d && r.log.id ? function () {
-          if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal();
-          return RosterWork.escalasDados.cicloDesfazer(unidadeId, iso, d.cpf, d.acao, r.log.id, d.saida_em).then(function (res) {
-            if (RosterWork.esconderVeuGlobal) RosterWork.esconderVeuGlobal();
-            var ok = !!(res && res.success);
-            if (ok) {
-              window.dispatchEvent(new CustomEvent('rosterwork_escala_recarregar'));
-              if (opcoes.aoTerminar) opcoes.aoTerminar();
-            }
-            /* o geral-resumo espera { ok, erro } */
-            return { ok: ok, erro: res && (res.error || (res._falha === 'conexao' ? geral.semConexao : res._falha ? geral.falhaServidor : '')) };
-          });
-        } : null });
-      }
-      if (opcoes.aoTerminar) opcoes.aoTerminar();
+  /* ---------- o rascunho ---------- */
+
+  /* o rodapé do painel conta as mudanças das três abas */
+  function avisar() { window.dispatchEvent(new CustomEvent('rosterwork_escala_rascunho', { detail: { parte: 'ciclo' } })); }
+  function doDia(unidadeId, iso) { return rascunho.chave === unidadeId + '|' + iso ? rascunho.lista : []; }
+  function marcado(unidadeId, iso, cpf) { return doDia(unidadeId, iso).filter(function (x) { return x.cpf === cpf; })[0] || null; }
+  function marcar(unidadeId, iso, mudanca) {
+    var k = unidadeId + '|' + iso;
+    if (rascunho.chave !== k) rascunho = { chave: k, lista: [] };
+    rascunho.lista = rascunho.lista.filter(function (x) { return x.cpf !== mudanca.cpf; }).concat([mudanca]);
+    avisar();
+  }
+  function desmarcar(cpf) {
+    rascunho.lista = rascunho.lista.filter(function (x) { return x.cpf !== cpf; });
+    avisar();
+  }
+  function contar() { return rascunho.lista.length; }
+  /* o que vai ao banco no Salvar */
+  function envio() {
+    return rascunho.lista.map(function (x) {
+      var m = { cpf: x.cpf, acao: x.acao };
+      if (x.ultimo_servico) m.ultimo_servico = x.ultimo_servico;
+      return m;
     });
   }
+  function limpar() {
+    if (!rascunho.chave && !rascunho.lista.length) return;
+    rascunho = { chave: '', lista: [] };
+    avisar();
+  }
+  /* "Sai do ciclo em 29/10" (o selo da linha marcada) */
+  function textoMarcado(mudanca, iso) { return L().cicloMarcado[mudanca.tipo].replace('{data}', diaMes(iso)); }
 
-  /* textos = { mensagem, escala, botao }; desde = o dia de onde a lista conta (sem ele, o iso) */
+  /* ---------- as ações: marcam no rascunho ---------- */
+
+  /* textos = { mensagem, escala, botao }; desde = o dia de onde a lista conta (sem ele, o iso); aoConfirmar(itens) */
   function confirmar(unidadeId, iso, cpf, textos, aoConfirmar, desde) {
     var S = RosterWork.mensagens.saida;
     RosterWork.escalasDados.cicloRetirarAnalisar(unidadeId, cpf, desde || iso).then(function (a) {
       if (!a || !a.success) { RosterWork.avisar({ tipo: 'erro', mensagem: (a && a.error) || S.falhaLista }); return; }
       var aviso = RosterWork.avisoSaida(a.pendencias, { tipo: 'tirar', escala: textos.escala });
       RosterWork.confirmar({ tipo: 'aviso', mensagem: textos.mensagem, itens: aviso.itens, nota: aviso.nota,
-        textoConfirmar: textos.botao, aoConfirmar: aoConfirmar });
+        textoConfirmar: textos.botao, aoConfirmar: function () { aoConfirmar(aviso.itens); } });
     });
   }
 
@@ -94,23 +100,42 @@
     };
   }
 
-  /* quem está fora do ciclo entra a partir do dia: a confirmação e a gravação, com o Desfazer no resumo */
+  /* quem está fora do ciclo entra a partir do dia (desmarca-se na aba Ciclo) */
   function entrar(unidadeId, iso, m, aoTerminar) {
-    RosterWork.confirmar({ tipo: 'aviso', mensagem: L().cicloConfirmarEntrar(nomeDe(m), diaMes(iso)), textoConfirmar: L().botaoNoCiclo,
-      aoConfirmar: function () {
-        salvar(unidadeId, iso, [{ cpf: m.cpf, acao: 'adicionar' }], { desfazer: { cpf: m.cpf, acao: 'adicionar' }, aoTerminar: aoTerminar });
-      } });
+    marcar(unidadeId, iso, { cpf: m.cpf, acao: 'adicionar', tipo: 'entrar', itens: [] });
+    if (aoTerminar) aoTerminar();
+  }
+
+  /* quem está no ciclo sai a partir do dia: a lista do que é cancelado e a confirmação */
+  function sair(unidadeId, iso, m, aoTerminar) {
+    confirmar(unidadeId, iso, m.cpf, {
+      mensagem: msg().confirmarRemover.replace('{pessoa}', nomeDe(m)).replace('{data}', iso.split('-').reverse().join('/')),
+      escala: RosterWork.mensagens.saida.escalaTirar, botao: msg().btnRemover
+    }, function (itens) {
+      marcar(unidadeId, iso, { cpf: m.cpf, acao: 'tirar', tipo: 'sair', itens: itens });
+      if (aoTerminar) aoTerminar();
+    });
+  }
+
+  /* a saída marcada mais à frente deixa de existir */
+  function cancelarSaida(unidadeId, iso, m, aoTerminar) {
+    marcar(unidadeId, iso, { cpf: m.cpf, acao: 'cancelar_saida', tipo: 'cancelar_saida', itens: [] });
+    if (aoTerminar) aoTerminar();
   }
 
   /* quem já está no ciclo muda de ciclo: a lista do que é cancelado depois do último serviço escolhido e a confirmação */
   function mudar(unidadeId, iso, m, ultimo, aoTerminar) {
-    var mudanca = { cpf: m.cpf, acao: 'adicionar' }, data = diaMes(iso);
-    if (ultimo) mudanca.ultimo_servico = ultimo;
+    var data = diaMes(iso);
     confirmar(unidadeId, iso, m.cpf, {
       mensagem: L().cicloConfirmarMudar(nomeDe(m), data),
       escala: ultimo ? L().cicloEscalaUltimo(diaMes(ultimo), data) : L().cicloEscalaMudar(data),
       botao: L().botaoMudarCiclo
-    }, function () { salvar(unidadeId, iso, [mudanca], { aoTerminar: aoTerminar }); }, ultimo ? diaSeguinte(ultimo) : iso);
+    }, function (itens) {
+      var mudanca = { cpf: m.cpf, acao: 'adicionar', tipo: 'mudar', itens: itens };
+      if (ultimo) mudanca.ultimo_servico = ultimo;
+      marcar(unidadeId, iso, mudanca);
+      if (aoTerminar) aoTerminar();
+    }, ultimo ? diaSeguinte(ultimo) : iso);
   }
 
   /* as frases de quem muda de ciclo: o que sai da escala dele (o alerta) e o aviso de antes de confirmar */
@@ -123,6 +148,7 @@
   }
 
   window.RosterWork.escalasPainelCiclo = {
-    salvar: salvar, confirmar: confirmar, datas: datas, entrar: entrar, mudar: mudar, frasesMudar: frasesMudar
+    doDia: doDia, marcado: marcado, desmarcar: desmarcar, contar: contar, envio: envio, limpar: limpar, textoMarcado: textoMarcado,
+    confirmar: confirmar, datas: datas, entrar: entrar, sair: sair, cancelarSaida: cancelarSaida, mudar: mudar, frasesMudar: frasesMudar
   };
 })();

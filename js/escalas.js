@@ -628,6 +628,14 @@
       });
       /* mudança de ciclo (Contínuos) afeta muitos dias → re-renderiza a grade inteira */
       window.addEventListener('rosterwork_escala_recarregar', function () { renderizarCorpo(); });
+      /* o rascunho do painel do dia mudou (ou foi descartado): a tela lê de novo, com a prévia enquanto há mudança */
+      window.addEventListener('rosterwork_escala_previa', function () {
+        if (!conteudo || !document.contains(conteudo)) return;
+        /* a grade nova: o dia aberto no painel volta a ficar selecionado depois de desenhada (a prévia pode demorar) */
+        Promise.resolve(renderizarCorpo()).then(function () {
+          if (RosterWork.escalasPainel && RosterWork.escalasPainel.remarcar) RosterWork.escalasPainel.remarcar();
+        });
+      });
       /* o celular girou e passou do corte (ou voltou): a visão e a faixa se refazem para a largura nova */
       var eraCelular = !!(RosterWork.celular && RosterWork.celular());
       window.addEventListener('resize', function () {

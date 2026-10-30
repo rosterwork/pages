@@ -5,7 +5,8 @@
    num dia (a unidade e os horários de 6 h; sem horário, sai do dia).
    Serve à grade da Distribuição e ao painel do dia nas duas páginas:
    trocar de dia não perde nada, e o Salvar grava tudo de uma vez
-   (extra_distribuicao_salvar). Quem desenha escuta o evento
+   (extra_distribuicao_salvar; no painel do dia, o Salvar do rodapé
+   grava junto com o Dia e o Ciclo, escala_painel_salvar). Quem desenha escuta o evento
    rosterwork_extra_rascunho. Cada página zera o rascunho ao abrir.
    RosterWork.escalasExtraRascunho.
    ============================================================ */
@@ -106,13 +107,21 @@
     });
   }
 
+  /* o Salvar do painel do dia (escalas-painel-salvar.js) grava o rascunho junto com o Dia e o Ciclo: o que vai ao banco
+     e, depois de gravar, o rascunho vazio (a página relê) */
+  function envio() {
+    return { competencia: comp, motivo: motivo || null,
+      mudancas: lista().map(function (m) { return { cpf: m.cpf, data: m.data, unidade: m.unidade, blocos: m.blocos }; }) };
+  }
+  function aposGravar() { mudancas = {}; motivo = ''; avisar({ salvou: true }); }
+
   /* fechar ou recarregar o navegador com o rascunho: o navegador avisa */
   if (RW.guardaSaida) RW.guardaSaida.registrar(sujo);
 
   RW.escalasExtraRascunho = {
     mes: mes, definir: definir, obter: obter, lista: lista, doDia: doDia, doMilitar: doMilitar,
     contar: contar, dias: dias, sujo: sujo, aplicar: aplicar, limpar: limpar, zerar: zerar,
-    cancelar: cancelar, salvar: salvar,
+    cancelar: cancelar, salvar: salvar, envio: envio, aposGravar: aposGravar,
     motivo: function (v) { if (typeof v === 'string') motivo = v; return motivo; },
     competencia: function () { return comp; }
   };

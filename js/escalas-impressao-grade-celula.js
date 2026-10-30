@@ -108,13 +108,14 @@
 
   /* uma linha de militar: ícones · graduação e nome · horário (a faixa por trás) */
   function linha(p, largura, mostrar, c) {
-    var riscada = p.origem === 'folga' || p.origem === 'troca_saida';
+    var riscada = p.origem === 'folga' || p.origem === 'troca_saida' || p.origem === 'remanejado_saida';
     var colunas = [];
     if (mostrar.icones) {
       var nomes = [];
       if (p.origem_base) nomes.push(escalasCelula().iconeDaOrigem(p.origem_base));
       nomes.push(escalasCelula().iconeDaOrigem(p.origem));
       if (p.fixado) nomes.push('icone-cadeado');
+      if (p.remanejado) nomes.push('icone-remanejado');
       colunas.push({ columns: nomes.map(function (n) { return { svg: c.icones[n], width: ICONE, height: ICONE }; }), columnGap: 1, width: 'auto', margin: MARGEM.icone });
     }
     colunas.push({ text: [

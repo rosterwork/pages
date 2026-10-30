@@ -118,6 +118,8 @@
   }
 
   var celulaSelecionada = null;
+  var abrirDepois = null;    // o militar ({ cpf, iso }) a abrir quando a grade voltar do gravado (o Descartar)
+  var abrirNaGrade = null;   // o mesmo, na grade que está sendo desenhada
 
   function desmarcarCelula() {
     if (celulaSelecionada) { celulaSelecionada.classList.remove('escala-mil-celula--selecionada'); celulaSelecionada = null; }
@@ -125,8 +127,7 @@
 
   /* clique numa célula: realça e abre o painel de detalhe do militar naquele dia */
   function ligarCelula(celula, militar, coluna, iso, estado) {
-    celula.addEventListener('click', function () {
-      if (!window.RosterWork.escalasMilitaresPainel) return;
+    function abrir() {
       desmarcarCelula();
       celula.classList.add('escala-mil-celula--selecionada');
       celulaSelecionada = celula;
@@ -135,7 +136,22 @@
         unidadeNome: coluna.nomeCompleto || coluna.nome, cidade: coluna.cidade,
         iso: iso, estado: estado, aoFechar: desmarcarCelula
       });
+    }
+    celula.addEventListener('click', function () {
+      if (!window.RosterWork.escalasMilitaresPainel) return;
+      /* com mudança esperando o Salvar no painel do dia: a mesma pergunta de trocar de dia. Descartou: a grade lê o
+         gravado de novo e o militar abre nela (esta célula ainda mostra a mudança) */
+      if (!RosterWork.escalasPainel || !RosterWork.escalasPainel.antesDeSair) { abrir(); return; }
+      RosterWork.escalasPainel.antesDeSair(function (descartou) {
+        if (descartou) abrirDepois = { cpf: militar.cpf, iso: iso };
+        else abrir();
+      });
     });
+    /* a grade voltou do gravado depois do Descartar: o militar escolhido abre */
+    if (abrirNaGrade && abrirNaGrade.cpf === militar.cpf && abrirNaGrade.iso === iso && window.RosterWork.escalasMilitaresPainel) {
+      abrirNaGrade = null;
+      abrir();
+    }
   }
 
   /* monta o bloco de uma unidade: linha-título + militares + linha de totais */
@@ -240,8 +256,10 @@
   function renderizar(corpo, opcoes) {
     if (!corpo) return;
     /* a grade vai ser refeita (nova quinzena, troca de unidades, troca de modo): fecha o painel
-       do militar para não ficar mostrando um militar/dia que a nova grade não tem mais */
-    if (window.RosterWork.painel && RosterWork.painel.estaAberto()) RosterWork.painel.fechar();
+       do militar para não ficar mostrando um militar/dia que a nova grade não tem mais. O painel
+       do dia (aberto no Mês, com o rascunho esperando o Salvar) continua aberto */
+    var painelDoDia = window.RosterWork.escalasPainel && RosterWork.escalasPainel.contexto();
+    if (window.RosterWork.painel && RosterWork.painel.estaAberto() && !painelDoDia) RosterWork.painel.fechar();
     var colunas = (opcoes && opcoes.colunas) || [];
     var dataRef = (opcoes && opcoes.dataRef) || new Date();
 
@@ -275,6 +293,8 @@
       if (!document.contains(corpo) || req !== reqSeq || (opcoes.vigente && !opcoes.vigente())) return;   // saiu da página, outra render começou, ou trocou de modo
       corpo.textContent = '';
       celulaSelecionada = null;   // a grade foi refeita; a seleção antiga não existe mais
+      abrirNaGrade = abrirDepois;
+      abrirDepois = null;
 
       var wrap = RosterWork.tpl('tpl-escala-mil');
       var grade = wrap.querySelector('.escala-mil-grade');
@@ -287,6 +307,9 @@
         cel.querySelector('.escala-mil-dia-numero').textContent = String(info.dia);
         if (info.fds) cel.classList.add('escala-mil-dia--fds');
         if (info.hoje) cel.classList.add('escala-mil-dia--hoje');
+        /* o dia com mudança do painel do dia ainda não salva, em alguma das unidades: a borda tracejada */
+        var S = RosterWork.escalasPainelSalvar;
+        if (S && colunas.some(function (c) { return S.marcado(c.id, info.iso); })) cel.classList.add('escala-mil-dia--nao-salvo');
         cab.appendChild(cel);
       });
       grade.appendChild(cab);

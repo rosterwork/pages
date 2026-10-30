@@ -1,8 +1,9 @@
 /* ============================================================
    ESCALAS — a folga no dia (o lápis da caixa De folga; só admin)
    Sub-tela do painel do dia: quem está de folga, o horário, o efeito
-   de cancelar e o Cancelar folga, que confirma e grava na hora
-   (escalas-painel-editar.js); sem rodapé, a saída é o Voltar ao dia.
+   de cancelar e o Cancelar folga, que confirma e vai para o rascunho do
+   dia (escalas-painel-editar.js; grava no Salvar do rodapé do painel);
+   sem rodapé, a saída é o Voltar ao dia.
    ============================================================ */
 (function () {
   'use strict';

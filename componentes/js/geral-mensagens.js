@@ -458,6 +458,8 @@
         termosMudados: function (n) { return n + (n === 1 ? ' termo mudado, não salvo' : ' termos mudados, não salvos'); },
         fila: function (n) { return n + 'º'; },
         porcento: function (n) { return n + '%'; },
+        /* a dica da Sugestão quando ela para no que cabe nos dias livres dele */
+        sugCabe: function (n) { return n ? 'Só cabem ' + n + (n === 1 ? ' cota' : ' cotas') + ' nos dias livres dele no mês.' : 'Sem dia livre no mês.'; },
         naoSalvo: 'Mudanças não salvas',
         c1ok: function (f) { return 'Pedidos fechados em ' + f; },
         c1aberto: function (f) { return 'O pedido ainda está aberto até ' + f; },
@@ -579,7 +581,6 @@
       /* Minha escala: o mês sem serviço (o botão leva à aba Mês) */
       minhaSemServico: function (mes) { return 'Você não tem serviço em ' + mes + '. A escala de todos fica na aba Mês.'; },
       selecioneUnidade: 'Selecione uma companhia ou pelotão no seletor de unidades.',
-      descartarAlteracoes: 'Descartar as alterações não salvas desta distribuição?',
       falhaSalvar: 'Não foi possível salvar. Tente de novo.',
       /* aba Dia: a escala do dia mudou depois que a tela leu (outro administrador ou o sistema) */
       diaDesatualizado: 'A escala deste dia foi alterada por outra pessoa ou pelo sistema. A tela foi atualizada: confira e faça a mudança de novo.',
@@ -651,6 +652,7 @@
       btnRemover: 'Remover',
       btnAdicionar: 'Adicionar',
       btnCancelarSaida: 'Cancelar saída',
+      btnDesmarcar: 'Desmarcar',
       confirmarRemover: 'Remover {pessoa} do ciclo a partir de {data}? O que vai acontecer:',
       /* o Dia (a lista, a edição da linha, o Adicionar militar e a folga no dia) */
       deFolga: 'De folga',
@@ -749,7 +751,6 @@
         },
         cicloEscalaUltimo: function (ultimo, data) { return 'O último serviço no ciclo atual é em ' + ultimo + ' e o novo começa em ' + data + '.'; },
         botaoContinuar: 'Continuar',
-        botaoNoCiclo: 'Pôr no ciclo',
         botaoMudarCiclo: 'Mudar o ciclo',
         cicloMudar: function (desde, ultimo, novo) {
           return 'No ciclo desde ' + desde + '.' + (ultimo ? ' Último serviço nele: ' + ultimo + '.' : '') + ' O ciclo novo começa em ' + novo + '.';
@@ -758,10 +759,8 @@
           return 'Ao continuar, você vê o que acontece com as trocas, folgas e extras dele ' + (ultimo ? 'depois de ' + ultimo : 'a partir desse dia') + ', antes de confirmar.';
         },
         cicloEntrar: function (data) { return 'Ele entra no ciclo de serviço a partir de ' + data + ' e segue nos próximos dias.'; },
-        cicloConfirmarEntrar: function (militar, data) { return 'Pôr o ' + militar + ' no ciclo de serviço a partir de ' + data + '?'; },
-        cicloConfirmarCancelarSaida: function (militar, data) {
-          return 'Cancelar a saída do ' + militar + ' marcada para ' + data + '? Ele continua no ciclo de serviço.';
-        },
+        /* a linha marcada no rascunho do ciclo (ainda não salva) */
+        cicloMarcado: { entrar: 'Entra no ciclo em {data}', sair: 'Sai do ciclo em {data}', mudar: 'Muda de ciclo em {data}', cancelar_saida: 'Saída cancelada' },
         cicloConfirmarMudar: function (militar, data) { return 'Mudar o ciclo do ' + militar + ' a partir de ' + data + '? O que vai acontecer:'; },
         cicloEscalaMudar: function (data) { return 'O ciclo atual termina na véspera e o novo começa em ' + data + '.'; },
         /* Adicionar militar: o botão diz o que falta ou o que vai acontecer */
@@ -800,6 +799,26 @@
         removerDoDia: function (militar) { return 'Remover o ' + militar + ' do dia'; },
         removerHorario: function (militar) { return 'Remover o ' + militar + ' nesses horários'; },
         removerExtra: function (militar) { return 'Remover a extra do ' + militar; },
+        /* Remover militar › o remanejado: volta só para a unidade de origem ou sai do dia */
+        remanejadoTexto: function (militar, origem, destino, fica, automatico) {
+          if (fica) return 'O ' + militar + ' está n' + artigo(origem) + ' ' + origem + ' e n' + artigo(destino) + ' ' + destino + ' neste dia, por remanejamento.';
+          if (automatico) {
+            return 'O ' + militar + ' foi remanejado d' + artigo(origem) + ' ' + origem + ' para ' + artigo(destino) + ' ' + destino
+              + ' pelo sistema, porque não há oficial de serviço. Ao devolver, o Oficial de Área fica vazio.';
+          }
+          return 'O ' + militar + ' foi remanejado d' + artigo(origem) + ' ' + origem + ' para ' + artigo(destino) + ' ' + destino + ' neste dia.';
+        },
+        remanejadoPara: function (destino) { return 'Remanejado para ' + artigo(destino) + ' ' + destino; },
+        devolverA: function (origem) { return 'Devolver ' + (artigo(origem) === 'a' ? 'à ' : 'ao ') + origem; },
+        devolver: function (militar, origem) { return 'Devolver o ' + militar + (artigo(origem) === 'a' ? ' à ' : ' ao ') + origem; },
+        /* Remanejar militar: as perguntas e o botão ("Remanejar o 3ºSgt. Ceranto para a 2ªCIBM") */
+        escolhaQuemVai: 'Escolha quem vai',
+        escolhaUnidade: 'Escolha a unidade',
+        escolhaSeSai: 'Escolha se ele sai da unidade de origem',
+        remanejarSai: function (militar, origem) { return 'O ' + militar + ' sai d' + artigo(origem) + ' ' + origem + ' neste dia?'; },
+        remanejarSoNa: function (destino) { return 'Sim, fica só n' + artigo(destino) + ' ' + destino; },
+        remanejarNasDuas: function (origem, destino) { return 'Não, fica n' + artigo(origem) + ' ' + origem + ' e n' + artigo(destino) + ' ' + destino; },
+        remanejar: function (militar, destino) { return 'Remanejar o ' + militar + ' para ' + artigo(destino) + ' ' + destino; },
         /* Remover militar › por troca: o documento (RW), os documentos alterados e o que acontece (Como fica) */
         trocaRw: function (numero, ano) { return numero ? 'RW nº ' + numero + '/' + ano : 'Troca'; },
         trocaNoLugar: function (cumpre, noLugarDe) { return cumpre + ' no lugar de ' + noLugarDe; },
@@ -832,6 +851,9 @@
       /* dia sem ninguém de serviço na unidade */
       semDistribuicao: 'Sem distribuição neste dia.',
       alteracoesNaoSalvas: function (n) { return n === 1 ? '1 alteração não salva' : n + ' alterações não salvas'; },
+      /* o Salvar do rodapé largo (as três abas do painel do dia de uma vez): o Cancelar e a recusa */
+      painelDescartar: function (n) { return n === 1 ? 'Descartar a alteração não salva?' : 'Descartar as ' + n + ' alterações não salvas?'; },
+      painelRecusado: function (erro) { return 'Nada foi salvo. ' + erro; },
       /* "Condutor da AA-01", "Rancheiro do Rancho" */
       funcaoNoPosto: function (funcao, posto, feminino) { return funcao + (feminino ? ' da ' : ' do ') + posto; },
       dasAs: function (hi, hf) { return 'das ' + hi + ' às ' + hf; },
@@ -922,10 +944,12 @@
       vagaVazia: function (motivo) { return motivo === 'aberta' ? 'Vazio' : motivo === 'trava' ? 'Sem solução automática' : (motivo === 'habilitado' ? 'Vazio por falta de habilitado' : 'Vazio por falta de efetivo'); },
       /* dica do ícone do militar de outra unidade: "Do 2ºPEL" / "Da 2ªCIBM" */
       deOutraUnidade: function (nome) { return (/ª/.test(nome || '') ? 'Da ' : 'Do ') + (nome || ''); },
-      /* Observações do dia (notas do admin, trocas, folgas, outra unidade) — o banco manda os dados, aqui vira texto */
+      /* dica do ícone do militar remanejado: "Remanejado do 2ºPEL, só neste dia" */
+      remanejadoDe: function (nome) { return 'Remanejado d' + artigo(nome) + ' ' + (nome || '') + ', só neste dia'; },
+      /* Observações do dia (notas do admin, trocas, folgas, outra unidade, remanejados) — o banco manda os dados, aqui vira texto */
       observacoesTitulo: 'Observações',
       /* os grupos, na ordem fixa em que aparecem */
-      observacoesGrupos: { admin: 'Administração', troca: 'Trocas', folga: 'Folgas', outra_unidade: 'De outra unidade' },
+      observacoesGrupos: { admin: 'Administração', troca: 'Trocas', folga: 'Folgas', outra_unidade: 'De outra unidade', remanejado: 'Remanejados' },
       observacaoLimite: 200,
       observacaoTexto: function (o) {
         function hh(t) { return t ? (String(t).slice(3) === '00' ? String(t).slice(0, 2) + 'h' : t) : ''; }
@@ -940,6 +964,16 @@
           var de = (/ª/.test(o.de_unidade || '') ? 'da ' : 'do ') + (o.de_unidade || '');
           if (o.hi === o.hf) return quem(o.grad, o.nome) + ' veio ' + de + '.';
           return quem(o.grad, o.nome) + ' veio ' + de + ' das ' + hh(o.hi) + ' às ' + hh(o.hf) + '.';
+        }
+        if (o.classe === 'remanejado') {
+          var noHorario = o.hi === o.hf ? '' : ', das ' + hh(o.hi) + ' às ' + hh(o.hf);
+          if (o.fica) {
+            return quem(o.grad, o.nome) + ' está n' + artigo(o.de_unidade) + ' ' + (o.de_unidade || '') + ' e n' + artigo(o.para_unidade) + ' '
+              + (o.para_unidade || '') + noHorario + ', por remanejamento.';
+          }
+          return quem(o.grad, o.nome) + ' foi remanejado d' + artigo(o.de_unidade) + ' ' + (o.de_unidade || '') + ' para '
+            + artigo(o.para_unidade) + ' ' + (o.para_unidade || '') + noHorario
+            + (o.automatico ? ' pelo sistema, porque não há oficial de serviço.' : '.');
         }
         if (o.classe === 'folga') {
           if (o.dia_inteiro || o.hi === o.hf) return quem(o.grad, o.nome) + ' está de folga o dia todo.';
@@ -1039,7 +1073,9 @@
         instrucao: 'A aba do SYSBM abriu. Faça seu login, se ele pedir, e a extensão preenche a tela de cadastro. Confira e clique em Salvar.',
         falhaEnviar: 'Não foi possível enviar. Tente de novo.',
         /* no bloco, fora do Firefox (o envio é só pela extensão do Firefox) */
-        soFirefox: 'Essa funcionalidade está disponível apenas no navegador Mozilla Firefox.',        /* no bloco, quando a extensão é instalada com o painel aberto (o Instalar vira o Enviar) */
+        soFirefox: 'Essa funcionalidade está disponível apenas no navegador Mozilla Firefox.',
+        /* o Enviar desligado: há mudança deste dia ainda não salva no painel */
+        salveAntes: 'Salve as alterações do dia antes de lançar no SYSBM.',        /* no bloco, quando a extensão é instalada com o painel aberto (o Instalar vira o Enviar) */
         extensaoInstalada: 'Extensão instalada. Já pode enviar.',
         /* o termo de responsabilidade, na janela de confirmação antes do primeiro Enviar de cada administrador.
            versao muda JUNTO com o texto e com _sysbm_termo_versao() do banco (todos dão ciência de novo) */
