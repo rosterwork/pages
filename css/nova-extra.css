@@ -1,12 +1,12 @@
 /* ============================================================
-   NOVA EXTRA (protótipo, só programador)
+   EXTRAJORNADA
    A moldura (cada aba ocupa o corpo: o resumo parado em cima, o
    conteúdo rolando por dentro e o rodapé parado embaixo), o número
    do passo na aba, a Minha extra numa coluna de leitura, a grade das
    Cotas, o painel do pedido (perguntas em blocos, cotas, pincel e o
    mês), os passos (tabelas em blocos), a Distribuição (a lista dos
    voluntários no painel esquerdo, o calendário e as bolinhas de 12px
-   na área de 24px) e a aba Calendário.
+   na área de 24px) e a aba Extras do mês.
    Cores, sombras e raios só por token.
    Montagem: js/nova-extra*.js
    ============================================================ */
@@ -452,7 +452,7 @@
 
 .nova-extra-historico { color: var(--texto-fraco); }
 
-/* passo 2: a área, a faixa e os blocos no padrão da aba Voluntários (extrajornada.css). A grade usa a largura toda:
+/* passo 2: a área, a faixa e os blocos das Cotas (nova-extra-cotas.css). A grade usa a largura toda:
    cada coluna fica com uma parte proporcional da sobra, com a largura mínima do conteúdo; quando não cabe, rola por
    dentro (o bloco cresce com o conteúdo). O título do bloco usa as mesmas colunas, com os números da unidade
    terminando junto com a coluna Na escala */
@@ -777,6 +777,26 @@
   min-height: 0;
 }
 
+/* a extra numa célula: o posto e o nome em cima e, embaixo, o pelotão quando é de outro */
+.extra-vaga {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  min-height: 24px;
+  margin: 4px 4px 0;   /* recuo lateral de 4px, alinhado ao gráfico (não colar nas bordas) */
+  padding: 2px 4px;
+  border-radius: var(--raio-pequeno);
+  border-left: 2px solid var(--foco);
+  background-color: var(--fundo-medio);
+  font-size: 11px;
+}
+.extra-vaga-id { flex: 1; min-width: 0; }
+.extra-vaga-grad { color: var(--texto-suave); }
+.extra-vaga-nome { font-weight: 600; color: var(--texto-forte); }
+.extra-vaga-pelotao { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--texto-suave); }
+/* etiqueta "24h" de quem só tira 24 h: contornada e com texto forte (visível, não só na dica) */
+.extra-vaga-24h { font-size: 11px; color: var(--texto-forte); border: 1px solid var(--borda-forte); border-radius: var(--raio-pequeno); padding: 0 4px; }
+
 /* a vaga, só para ler e sem o traço à esquerda: o posto e o nome (corta com reticências;
    inteiro na dica, com o horário escrito, que sai para a esquerda para não passar da borda do calendário) e as
    bolinhas pequenas à direita; embaixo, o pelotão quando é de outro */
@@ -788,11 +808,25 @@
   border-left: none;
 }
 
-/* quem pôs a extra (o ícone do sistema ou o cadeado do administrador): no calendário, ao lado das bolinhas; no Neste dia
-   do painel do dia, antes do nome */
+/* quem inseriu a extra (o ícone do sistema ou o do administrador): no calendário e na Agenda, ao lado das bolinhas; no
+   Neste dia do painel do dia, antes do nome. A dica dele ("Inserido pelo...") sai para a esquerda, como a da vaga, e a
+   do nome e do horário não aparece junto */
 .nova-extra-origem {
+  display: inline-flex;
+  align-items: center;
   flex-shrink: 0;
   color: var(--texto-fraco);
+}
+
+.nova-extra-origem[data-dica]::after {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+[data-dica]:has(.nova-extra-origem:hover)::after {
+  opacity: 0;
+  visibility: hidden;
 }
 
 .nova-extra-vaga > .nova-extra-origem {

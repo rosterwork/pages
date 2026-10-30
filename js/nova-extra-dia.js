@@ -55,6 +55,12 @@
     var uid = aberto.uid, k = aberto.data, alocs = G().efetivas();
     var corpo = RW.painel.corpo();
     corpo.textContent = '';
+    /* nos Ajustes, o dia de mais de 7 dias atrás fica só para ver */
+    if (G().antigo(k)) {
+      var nota = RW.tpl('tpl-escala-nota');
+      nota.querySelector('.nota-texto').textContent = msg().diaAntigo;
+      corpo.appendChild(nota);
+    }
     var grupos = {};
     GRUPOS.forEach(function (g) { grupos[g] = []; });
     G().voluntarios().forEach(function (m) {
@@ -298,7 +304,7 @@
       bt.classList.toggle('escala-extra-marca--on', on);
       bt.setAttribute('aria-pressed', on ? 'true' : 'false');
       /* com o pedido aberto só dá para desmarcar; na Distribuição já lançada, nada (as mudanças vão pelos Ajustes) */
-      bt.disabled = G().soLeitura() || (G().travado() && !on);
+      bt.disabled = G().soLeitura() || G().antigo(k) || (G().travado() && !on);
       bt.addEventListener('click', function (ev) {
         ev.stopPropagation();   // no calendário, a bolinha não abre o painel do dia
         var novo = m.so24 ? (marcados.length ? [] : [1, 2, 3, 4]) : (on ? marcados.filter(function (x) { return x !== b; }) : marcados.concat([b]));

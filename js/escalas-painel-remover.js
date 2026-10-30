@@ -10,10 +10,11 @@
      unidade, sem serviço aqui, tira o dia todo). Pelo ciclo: só no dia (o horário e o banco de horas,
      que vira folga) ou do ciclo (a lista do que é cancelado e a
      confirmação, para o rascunho do ciclo). O pontual: o horário e,
-     saindo todo e contado no banco, as horas dele. A extra: os
-     horários, no rascunho do mês da aba Extrajornada. A troca (uma
+     saindo todo e contado no banco, as horas dele. A troca (uma
      parte para cada troca): cancelada aqui mesmo, na hora, pelo
-     escalas-painel-remover-troca.js.
+     escalas-painel-remover-troca.js. A extra não sai por aqui (muda
+     na Extrajornada, em Ajustes): quem só está de extra no dia não
+     entra no Quem sai nem tem o Remover do dia (podeTirar).
    - doDia(m, linha): quem está sem função (já se sabe quem, o
      horário e a origem): pelo ciclo, a pergunta do banco de horas
      abre embaixo da linha; o pontual sai na hora, ou com a pergunta
@@ -29,13 +30,9 @@
   var conta = 0;        // nome único para os rádios e o campo de cada abertura
   var pergunta = null;  // a pergunta única aberta embaixo de uma linha (uma por vez)
 
-  /* os 4 horários de 6 h da extra */
-  var BLOCOS = [{ n: 1, hi: '08h', hf: '14h' }, { n: 2, hi: '14h', hf: '20h' }, { n: 3, hi: '20h', hf: '02h' }, { n: 4, hi: '02h', hf: '08h' }];
-
   function ed() { return RosterWork.escalasPainelEditar.sub; }
   function msg() { return RosterWork.mensagens.escala; }
   function L() { return RosterWork.mensagens.escala.linha; }
-  function R() { return RosterWork.escalasExtraRascunho; }
   function nomeDe(m) { return ((m.grad || '') + ' ' + (m.nome || '')).trim(); }
   function diaMes(iso) { var p = String(iso || '').split('-'); return p.length === 3 ? p[2] + '/' + p[1] : ''; }
   function copiar(p) { return { hi: p.hi, hf: p.hf }; }
@@ -52,8 +49,8 @@
 
   /* ---------- de onde ele veio ---------- */
 
-  /* as partes do serviço dele no dia, pela origem: [{ origem: 'ciclo' | 'pontual' | 'troca' | 'extra', periodos, trocaId }]
-     (por troca, uma parte para cada troca) */
+  /* as partes do serviço dele no dia que saem por aqui, pela origem: [{ origem: 'ciclo' | 'pontual' | 'troca', periodos,
+     trocaId }] (por troca, uma parte para cada troca; as horas da extra ficam de fora) */
   function partesDe(mil) {
     var api = ed(), H = api.horas;
     var pont = (api.rascunho().pontuais || []).filter(function (x) { return x.cpf === mil.cpf; })[0];
@@ -66,9 +63,11 @@
     por('pontual', doPontual);
     mil.janelas.forEach(function (j) { if (j.origem === 'troca' && trocas.indexOf(j.troca_id) < 0) trocas.push(j.troca_id); });
     trocas.forEach(function (id) { por('troca', janelas(function (j) { return j.origem === 'troca' && j.troca_id === id; }), id); });
-    por('extra', janelas(function (j) { return j.origem === 'extra'; }));
     return r;
   }
+
+  /* tem o que tirar por aqui: o remanejado ou alguma parte que não é extra */
+  function podeTirar(mil) { return !!mil && (!!mil.remanejado || partesDe(mil).length > 0); }
 
   /* a frase da folga: "Das 20h às 08h, o Cb. X fica de folga (12 horas)."; o dia todo (sem horário no texto), "em 29/10" */
   function textoFolga(periodos, nome, horas, data) {
@@ -104,7 +103,7 @@
         }
         if (!noDia[pm.cpf] || visto[pm.cpf]) return;
         var mil = api.militarDoDia(pm.cpf);
-        if (!mil || !mil.janelas.length) return;
+        if (!mil || !mil.janelas.length || !podeTirar(mil)) return;
         visto[pm.cpf] = true;
         var jan = mil.janelas.slice().sort(function (a, b) { return H.emMin(a.hi) - H.emMin(b.hi); });
         lista.push({ cpf: pm.cpf, grad: pm.grad, nome: pm.nome, mil: mil,
@@ -122,9 +121,9 @@
     var api = ed(), H = api.horas, C = RosterWork.escalasPainelCiclo, D = RosterWork.data;
     if (!api.dados()) return;
     var iso = api.iso(), uid = api.unidadeId(), data = diaMes(iso);
-    var est = { item: null, mil: null, partes: [], parte: null, alcance: 'dia', periodos: [], banco: 'sim', extra: null, blocos: [],
+    var est = { item: null, mil: null, partes: [], parte: null, alcance: 'dia', periodos: [], banco: 'sim',
       reman: null, remanFazer: null };
-    var el = {}, combo = null, pedido = 0, troca = null;
+    var el = {}, combo = null, troca = null;
 
     function escolher(item) {
       est.item = item; est.mil = item.mil;
@@ -164,34 +163,12 @@
       });
     }
 
-    /* a parte escolhida: o horário começa com ela toda; a extra lê os horários dela */
+    /* a parte escolhida: o horário começa com ela toda */
     function comecarParte() {
       var p = est.parte;
-      est.alcance = 'dia'; est.banco = 'sim'; est.blocos = []; est.extra = null;
+      est.alcance = 'dia'; est.banco = 'sim';
       est.periodos = p ? p.periodos.map(copiar) : [];
-      if (p && p.origem === 'extra') carregarExtra();
       atualizar();
-    }
-
-    function carregarExtra() {
-      var meu = ++pedido;
-      el.blocosLista.textContent = '';
-      RosterWork.escalasDados.extraLista(uid, iso).then(function (d) {
-        if (meu !== pedido || !el.blocosLista.isConnected) return;
-        if (!d || !d.ok) { RosterWork.avisar({ tipo: 'erro', mensagem: msg().falhaCarregar }); return; }
-        var m = (d.militares || []).filter(function (x) { return x.cpf === est.mil.cpf; })[0];
-        var hoje = m && (m.extras || []).filter(function (e) { return e.data === iso && String(e.unidade_id) === String(uid); })[0];
-        est.extra = { d: d, m: m, hoje: hoje || null };
-        est.blocos = hoje ? hoje.blocos.slice() : [];
-        RosterWork.escalasPainelQuem.marcar(el.blocosLista, BLOCOS.filter(function (b) { return hoje && hoje.blocos.indexOf(b.n) >= 0; }).map(function (b) {
-          return { texto: L().blocoExtra(b.hi, b.hf), marcado: true };
-        }), function (marcados) {
-          var deHoje = BLOCOS.filter(function (b) { return hoje && hoje.blocos.indexOf(b.n) >= 0; });
-          est.blocos = marcados.map(function (i) { return deHoje[i].n; });
-          atualizar();
-        });
-        atualizar();
-      });
     }
 
     function montar(corpo) {
@@ -202,9 +179,9 @@
       el = {
         combo: q('.escala-remover-combo'), partes: q('.escala-remover-partes'), partesLista: q('.escala-remover-partes-lista'),
         alcance: q('.escala-remover-alcance'), horario: q('.escala-remover-horario'), periodos: q('.escala-remover-periodos'),
-        blocos: q('.escala-remover-blocos'), blocosLista: q('.escala-remover-blocos-lista'), banco: q('.escala-remover-banco'),
+        banco: q('.escala-remover-banco'),
         bancoTexto: q('.escala-remover-banco-texto'), bancoSim: q('.escala-remover-banco-sim'), bancoNao: q('.escala-remover-banco-nao'),
-        motivo: q('.escala-remover-motivo'), ciclo: q('.escala-remover-ciclo'), troca: q('.escala-remover-troca'),
+        ciclo: q('.escala-remover-ciclo'), troca: q('.escala-remover-troca'),
         reman: q('.escala-remover-reman'), remanTexto: q('.escala-remover-reman-texto'), remanDevolver: q('.escala-remover-reman-devolver')
       };
       var inp = el.combo.querySelector('input');
@@ -217,7 +194,6 @@
       el.marcarAlcance = ligarRadios(el.alcance, function (v) { est.alcance = v; atualizar(); });
       el.marcarBanco = ligarRadios(el.banco, function (v) { est.banco = v; });
       el.marcarReman = ligarRadios(el.reman, function (v) { est.remanFazer = v; atualizar(); });
-      el.motivo.querySelector('input').value = R() ? R().motivo() : '';
       troca = RosterWork.escalasPainelRemoverTroca.criar({ raiz: el.troca, iso: iso, pronto: pronto, aoGravar: api.recarregar });
       corpo.appendChild(tela);
       var itens = itensQuem();
@@ -261,7 +237,7 @@
 
     function atualizar() {
       if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
-      ['reman', 'partes', 'alcance', 'horario', 'blocos', 'banco', 'motivo', 'ciclo'].forEach(function (k) { mostra(el[k], false); });
+      ['reman', 'partes', 'alcance', 'horario', 'banco', 'ciclo'].forEach(function (k) { mostra(el[k], false); });
       troca.esconder();
       var mil = est.mil;
       if (!mil) { pronto(L().escolhaQuemSai, false); return; }
@@ -292,12 +268,6 @@
       if (!p) { pronto(L().escolhaParte, false); return; }
 
       if (p.origem === 'troca') { troca.mostrar(mil, p); return; }
-      if (p.origem === 'extra') {
-        mostra(el.blocos, true);
-        mostra(el.motivo, !!(est.extra && est.extra.d.iniciado));
-        pronto(est.blocos.length ? L().removerExtra(nome) : L().marqueHorario, est.blocos.length > 0 && !!est.extra);
-        return;
-      }
       if (p.origem === 'ciclo') {
         mostra(el.alcance, true);
         el.marcarAlcance(est.alcance);
@@ -343,7 +313,6 @@
       }
       if (!p) return;
       if (p.origem === 'troca') { if (rm) api.largarRemanejado(cpf); troca.aplicar(); return; }
-      if (p.origem === 'extra') { aplicarExtra(mil); return; }
       if (p.origem === 'ciclo' && est.alcance === 'ciclo') {
         /* do ciclo: a lista do que é cancelado e a confirmação; vai para o rascunho do ciclo e volta ao dia */
         C.sair(uid, iso, mil, api.voltar);
@@ -358,23 +327,6 @@
         if (p.origem === 'ciclo') api.darFolga(cpf, descontar, toda && est.partes.length === 1 && !mil.outraUnidade ? null : periodos);
         else tirarDoPontual(cpf, periodos, toda, descontar);
       });
-    }
-
-    /* a extra: o mesmo rascunho do mês da aba Extrajornada (sem mudança de outro mês); volta ao dia, e o Salvar do rodapé
-       grava */
-    function aplicarExtra(mil) {
-      var x = est.extra;
-      if (!x || !x.hoje || !est.blocos.length || !R()) return;
-      if (R().sujo() && R().competencia() && R().competencia() !== x.d.competencia) {
-        RosterWork.avisar({ tipo: 'aviso', mensagem: L().extraPendente });
-        return;
-      }
-      var ficam = x.hoje.blocos.filter(function (b) { return est.blocos.indexOf(b) < 0; });
-      R().mes(x.d.competencia);
-      R().motivo(el.motivo.querySelector('input').value || '');
-      R().definir({ cpf: mil.cpf, data: iso, unidade: uid, blocos: ficam,
-        antes: { unidade: x.hoje.unidade_id, blocos: x.hoje.blocos }, militar: { grad: mil.grad, nome: mil.nome } });
-      api.voltar();
     }
 
     api.abrir(L().escolhaQuemSai, montar, aplicar);
@@ -416,7 +368,8 @@
     var partes = partesDe(mil).filter(function (p) {
       return p.periodos.some(function (pp) { return semF.some(function (s) { return !!H.cruza(H.faixa(pp), s); }); });
     });
-    /* mais de um jeito, extra ou troca: a sub-tela, com ele já escolhido */
+    if (!partes.length) return;   // só a extra (o botão nem aparece; ver podeTirar)
+    /* mais de um jeito, ou a troca: a sub-tela, com ele já escolhido */
     if (partes.length !== 1 || (partes[0].origem !== 'ciclo' && partes[0].origem !== 'pontual')) { abrir({ cpf: cpf }); return; }
     var p = partes[0];
     var horas = H.horasTexto(H.uniao(semF).reduce(function (s, f) { return s + f[1] - f[0]; }, 0));
@@ -455,5 +408,7 @@
     pergunta = el;
   }
 
-  window.RosterWork.escalasPainelRemover = { abrir: abrir, doDia: doDia };
+  window.RosterWork.escalasPainelRemover = { abrir: abrir, doDia: doDia,
+    /* quem está sem função tem o Remover do dia só com algo que sai por aqui (a extra muda na Extrajornada) */
+    podeTirar: function (cpf) { return podeTirar(ed().militarDoDia(cpf)); } };
 })();

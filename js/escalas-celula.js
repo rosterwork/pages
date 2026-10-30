@@ -36,7 +36,10 @@
     sistema: 'icone-origem-sistema',
     folga: 'icone-folgas',
     extra: 'icone-extrajornada',
-    afastamento: 'icone-afastamentos'
+    afastamento: 'icone-afastamentos',
+    /* quem inseriu a extra, no PDF da grade da Extrajornada (a escala nunca traz estas origens) */
+    extra_sistema: 'icone-extra-sistema',
+    extra_admin: 'icone-extra-administrador'
   };
 
   /* origem -> situação do filtro da barra (escalas-filtros.js): o ciclo é a Prontidão */

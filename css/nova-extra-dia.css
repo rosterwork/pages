@@ -1,28 +1,13 @@
 /* ============================================================
-   ESCALA — painel do dia › aba EXTRAJORNADA (Escala e Extrajornada)
+   EXTRAJORNADA — painel do dia
    A cobertura do dia (as horas em cima e as barras sem extra e com
-   extra, com o gráfico da grade), os avisos (resolvido pelo extra /
-   o que ficou), a lista do dia em grupos (cada militar numa linha:
-   a preferência, o nome, os outros dias com o selo das horas, as
-   cotas e os 4 horários de 6 h) e os ajustes já registrados.
+   extra, com o gráfico da grade) e a lista do dia em grupos (cada
+   militar numa linha: a preferência, o nome, os outros dias, as
+   cotas e os 4 horários de 6 h; quem não pode, com o motivo).
    Padrão de blocos: caixas (.grupo-caixa) e frases, sem linhas.
-   Montagem: js/escalas-painel-extra.js
+   Montagem: js/nova-extra-dia.js
    ============================================================ */
 
-/* o corpo da aba: as áreas entram direto no corpo do painel (mesmo espaçamento) */
-.escala-extra-corpo {
-  display: contents;
-}
-
-.escala-extra-area {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.escala-extra-area:empty {
-  display: none;
-}
 
 /* ---------- cobertura do dia ---------- */
 .escala-extra-cobertura {
@@ -31,83 +16,30 @@
   align-items: center;
   gap: 2px 8px;
 }
-
 .escala-extra-horas {
   display: flex;
   justify-content: space-between;
   font-size: 11px;
   color: var(--texto-fraco);
 }
-
 .escala-extra-cob-rotulo {
   font-size: 11px;
   font-weight: 600;
   color: var(--texto-suave);
 }
-
 .escala-extra-cob-barra {
   min-width: 0;
 }
-
 .escala-extra-cob-barra .escala-mes-grafico {
   padding: 2px 0 0;
 }
-
-/* o que a extra resolveu (marca verde); o que ficou usa a caixa de avisos da aba Dia */
-.escala-extra-aviso {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  font-size: 12px;
-  color: var(--texto);
-}
-
-.escala-extra-aviso-icone {
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.escala-extra-aviso--ok .escala-extra-aviso-icone {
-  color: var(--sucesso);
-}
-
-.escala-extra-aviso-nome {
-  font-weight: 600;
-  color: var(--texto-forte);
-}
-
-/* ---------- a lista do dia ---------- */
-/* o título do grupo, com as horas dos 4 horários alinhadas sobre os horários das linhas */
-.escala-extra-grupo-cab {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.escala-extra-grupo-cab .escala-extra-horas {
-  justify-content: flex-end;
-  gap: 4px;
-  padding-right: 4px;
-}
-
-.escala-extra-grupo-cab .escala-extra-horas span {
-  min-width: 16px;
-  text-align: center;
-}
-
-.escala-extra-mostrar {
-  font-family: inherit;
-  font-size: 12px;
-}
-
 .escala-extra-grupo-linhas {
   display: flex;
   flex-direction: column;
 }
 
 /* um militar: a preferência, o nome, os outros dias, as cotas e os horários; o nome fica no
-   centro da coluna dos dias (igual aos horários quebrados da escala) */
+centro da coluna dos dias (igual aos horários quebrados da escala) */
 .escala-extra-militar {
   display: grid;
   grid-template-columns: 8px minmax(0, 1fr) 80px 48px 76px;
@@ -119,36 +51,34 @@
   font-size: var(--fonte-padrao);
   color: var(--texto);
 }
-
 .escala-extra-ponto {
   width: 8px;
   min-height: 8px;
   border-radius: 50%;
   background-color: var(--texto-debil);
 }
-
-.escala-extra-ponto--quer { background-color: var(--sucesso); }
-.escala-extra-ponto--nao { background-color: var(--erro); }
-
+.escala-extra-ponto--quer {
+  background-color: var(--sucesso);
+}
+.escala-extra-ponto--nao {
+  background-color: var(--erro);
+}
 .escala-extra-quem {
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
-
 .escala-extra-quem-nome {
   display: flex;
   align-items: baseline;
   gap: 4px;
   min-width: 0;
 }
-
 .escala-extra-quem .escala-distribuicao-nome {
   font-size: var(--fonte-padrao);
   font-weight: 600;
   color: var(--texto-forte);
 }
-
 .escala-extra-quem-unidade {
   font-size: 11px;
   color: var(--texto-fraco);
@@ -168,36 +98,18 @@
   cursor: pointer;
   transition: background-color 0.15s ease;
 }
-
 .escala-extra-dias:hover:not(:disabled) {
   background-color: var(--fundo-medio);
 }
-
 .escala-extra-dias:disabled {
   cursor: default;
 }
-
-.escala-extra-dia {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  color: var(--texto-suave);
-  white-space: nowrap;
-}
-
-.escala-extra-dia-horas {
-  min-width: 36px;
-  justify-content: center;
-}
-
 .escala-extra-cota {
   font-size: 12px;
   color: var(--texto-suave);
   text-align: right;
   white-space: nowrap;
 }
-
 .escala-extra-cota--erro {
   font-weight: 600;
   color: var(--erro);
@@ -210,7 +122,6 @@
   align-items: center;
   gap: 4px;
 }
-
 .escala-extra-marca {
   display: inline-block;
   flex-shrink: 0;
@@ -223,34 +134,22 @@
   cursor: pointer;
   transition: background-color 0.15s ease, border-color 0.15s ease;
 }
-
 .escala-extra-marca:hover {
   border-color: var(--foco);
 }
-
 .escala-extra-marca--on,
 .escala-extra-marca--on:hover {
   border-color: var(--fundo-contraste);
   background-color: var(--fundo-contraste);
 }
-
 .escala-extra-marca:disabled {
   cursor: default;
 }
-
 .escala-extra-marca:disabled:hover {
   border-color: var(--borda-forte);
 }
-
 .escala-extra-marca--on:disabled:hover {
   border-color: var(--fundo-contraste);
-}
-
-/* horário que um pontual do militar ocupa: apagado e desligado (a dica diz por quê) */
-.escala-extra-marca--pontual,
-.escala-extra-marca--pontual:disabled:hover {
-  border-color: var(--borda);
-  background-color: var(--fundo-medio);
 }
 
 /* aberto embaixo do nome: o aviso de cota e os horários dos outros dias */
@@ -265,59 +164,17 @@
   background-color: var(--fundo-medio);
 }
 
-.escala-extra-outro {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  min-height: 24px;
-  font-size: 12px;
-  color: var(--texto-suave);
-}
-
 /* quem não pode no dia: o nome apagado e o motivo à direita */
 .escala-extra-militar--indisponivel {
   grid-template-columns: 8px minmax(0, 1fr) auto;
 }
-
 .escala-extra-militar--indisponivel .escala-distribuicao-grad,
 .escala-extra-militar--indisponivel .escala-distribuicao-nome {
   color: var(--texto-debil);
 }
-
 .escala-extra-motivo-texto {
   font-size: 12px;
   color: var(--texto-fraco);
   text-align: right;
   white-space: nowrap;
-}
-
-/* realce do "marcar" da busca: inverte o nome do militar casado */
-.escala-extra-militar--busca .escala-extra-quem {
-  border-radius: var(--raio-pequeno);
-  background-color: var(--fundo-contraste);
-}
-
-.escala-extra-militar--busca .escala-extra-quem .escala-distribuicao-grad,
-.escala-extra-militar--busca .escala-extra-quem .escala-distribuicao-nome,
-.escala-extra-militar--busca .escala-extra-quem-unidade {
-  color: var(--texto-invertido);
-}
-
-/* ---------- ajustes já registrados neste dia ---------- */
-.escala-extra-ajuste {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: 12px;
-  color: var(--texto);
-}
-
-.escala-extra-ajuste-cab {
-  color: var(--texto-fraco);
-}
-
-.escala-extra-ajuste-autor {
-  font-weight: 600;
-  color: var(--texto-forte);
 }

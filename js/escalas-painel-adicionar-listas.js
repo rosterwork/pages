@@ -1,9 +1,9 @@
 /* ============================================================
    ESCALAS — as listas do Adicionar militar (escalas-painel-adicionar.js)
    Os itens do campo de militar (geral-combo-militar), com os títulos
-   dos grupos: quem entra no dia (horas livres), na extrajornada (os
-   grupos da aba Extrajornada) e no ciclo; e quem sai, no "No lugar de
-   outro militar" (quem está numa função no horário escolhido).
+   dos grupos: quem entra no dia (horas livres) e no ciclo; e quem sai,
+   no "No lugar de outro militar" (quem está numa função no horário
+   escolhido).
    RosterWork.escalasPainelAdicionarListas.
    ============================================================ */
 (function () {
@@ -17,7 +17,6 @@
   function ed() { return RosterWork.escalasPainelEditar.sub; }
   function msg() { return RosterWork.mensagens.escala; }
   function L() { return RosterWork.mensagens.escala.linha; }
-  function X() { return RosterWork.mensagens.escala.extraPainel; }
   function diaMes(iso) { var p = String(iso || '').split('-'); return p.length === 3 ? p[2] + '/' + p[1] : ''; }
 
   /* no dia: quem tem horas livres, por unidade (a do painel primeiro), fora quem já entrou como pontual */
@@ -29,25 +28,6 @@
       if (m.unidade_id !== unidade) { unidade = m.unidade_id; lista.push({ titulo: m.unidade || '' }); }
       var ocupado = (m.ocupado || []).map(function (o) { return { hi: H.curta(o.hi), hf: H.curta(o.hf), tipo: o.tipo }; });
       lista.push({ cpf: m.cpf, grad: m.grad, nome: m.nome, info: ocupado.length ? msg().ocupadoNoDia(ocupado) : L().infoLivre, m: m });
-    });
-    return lista;
-  }
-
-  /* na extrajornada: os grupos da aba (querem, sem preferência, não querem) e, apagados, quem não pode no dia; quem já
-     tem extra aqui no dia fica de fora */
-  function extra(d, iso, uid) {
-    var E = RosterWork.escalasPainelExtra, por = { querem: [], disponiveis: [], naoQuerem: [], indisponiveis: [] };
-    (d.militares || []).forEach(function (m) {
-      var g = E.grupoNoDia(m, iso, uid);
-      if (g === 'neste') return;
-      var cotas = (m.extras || []).reduce(function (s, e) { return s + (e.blocos || []).length; }, 0);
-      var item = { cpf: m.cpf, grad: m.grad, nome: m.nome, m: m, info: X().cota(cotas, m.cota || 0) };
-      if (g === 'indisponiveis') { item.inativo = true; item.info = E.motivoNoDia(m, iso); }
-      por[g].push(item);
-    });
-    var lista = [];
-    ['querem', 'disponiveis', 'naoQuerem', 'indisponiveis'].forEach(function (g) {
-      if (por[g].length) lista = lista.concat([{ titulo: X().grupos[g] }], por[g]);
     });
     return lista;
   }
@@ -102,5 +82,5 @@
     });
   }
 
-  window.RosterWork.escalasPainelAdicionarListas = { dia: dia, extra: extra, ciclo: ciclo, sai: sai };
+  window.RosterWork.escalasPainelAdicionarListas = { dia: dia, ciclo: ciclo, sai: sai };
 })();

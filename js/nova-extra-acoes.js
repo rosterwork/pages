@@ -164,7 +164,7 @@
       RW.pararCarregando(btn);
       if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
       RW.painel.fechar();
-      RW.avisar({ tipo: 'sucesso', mensagem: msg().lancado(r.extras, r.dias) });
+      org().resumo(r);
       org().recarregar();
     }, function () { RW.pararCarregando(btn); RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao }); });
   }

@@ -1,0 +1,179 @@
+/* ============================================================
+   EXTRAJORNADA — os blocos das Cotas (Organizar o mês › Cotas)
+   A faixa de cima (o total recebido, a forma de repartir e os
+   números do mês), a lista que rola e os blocos: o cinza é a
+   unidade, o bloquinho branco são as linhas dela, em colunas fixas
+   que casam entre os blocos. Padrão de blocos, sem traços.
+   Montagem: js/nova-extra-cotas.js
+   ============================================================ */
+
+/* a área das Cotas: a faixa em cima, a lista rolando e o rodapé embaixo */
+.extra-vol {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  background-color: var(--fundo-superficie);
+}
+
+/* faixa de cima: total recebido, forma de repartir e os números do mês */
+.extra-vol-banda {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  padding: 12px 16px;
+}
+.extra-vol-banda-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--fonte-padrao);
+  color: var(--texto);
+}
+.extra-vol-total {
+  width: 64px;
+  text-align: center;
+}
+.extra-vol-numero {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+.extra-vol-numero-valor {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--texto-forte);
+}
+.extra-vol-numero-valor--erro {
+  color: var(--erro);
+}
+
+/* a lista rola; os blocos ficam no branco da página */
+.extra-vol-rolagem {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 16px 16px;
+}
+
+/* uma linha (cabeçalho e militares): colunas fixas que casam entre os blocos */
+.extra-vol-linha {
+  display: grid;
+  grid-template-columns: 56px minmax(240px, 2fr) 72px 112px 96px 112px minmax(96px, 1fr);
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 4px 12px;
+  font-size: var(--fonte-padrao);
+  color: var(--texto);
+}
+
+/* cabeçalho das colunas: no branco, sem linha, preso no topo ao rolar; o recuo casa com as linhas dos blocos */
+.extra-vol-cab {
+  position: sticky;
+  top: 0;
+  z-index: 1;   /* empilhamento interno do sticky (Guia visual › Camadas, movimento e foco; faixa 1-9) */
+  min-height: 32px;
+  padding: 8px 16px 4px;
+  background-color: var(--fundo-superficie);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+
+/* bloco cinza = a unidade; bloquinho branco = as linhas dela */
+.extra-vol-bloco {
+  margin-bottom: 8px;
+  padding: 4px;
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-pagina);
+}
+.extra-vol-bloco-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--texto-forte);
+}
+.extra-vol-bloco-detalhe {
+  font-weight: 400;
+  color: var(--texto-suave);
+}
+.extra-vol-bloco-cotas {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 400;
+  color: var(--texto);
+}
+.extra-vol-bloco-total {
+  width: 56px;
+  text-align: center;
+}
+.extra-vol-bloquinho {
+  padding: 4px 0;
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-superficie);
+  box-shadow: var(--sombra-bloco);
+}
+.extra-vol-militar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.extra-vol-grad {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+.extra-vol-nome {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+.extra-vol-militar .selo {
+  margin-left: 4px;
+}
+.extra-vol-conc {
+  width: 72px;
+}
+
+@media (max-width: 767px) {
+
+  /* ---------- as Cotas ---------- */
+  html[data-celular] .extra-vol {
+    overflow-y: auto;
+  }
+  html[data-celular] .extra-vol-banda {
+    gap: 12px 16px;
+    padding: 12px var(--respiro-pagina);
+  }
+  html[data-celular] .extra-vol-banda-item,
+  html[data-celular] .extra-vol-numero {
+    white-space: nowrap;
+  }
+  html[data-celular] .extra-vol-rolagem {
+    flex: none;
+    overflow-y: visible;
+    padding: 0 var(--respiro-pagina) 16px;
+  }
+  html[data-celular] .extra-vol-concedido {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* o rodapé fica preso embaixo enquanto a aba rola */
+  html[data-celular] .extra-vol > .rodape {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;   /* empilhamento interno do sticky (Guia visual › Camadas, movimento e foco; faixa 1-9) */
+  }
+}

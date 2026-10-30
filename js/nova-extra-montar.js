@@ -90,6 +90,8 @@
   function lancada() { return !!d.lancamento && !d.lancamento.reaberto; }
   /* a Distribuição depois do lançamento: só para ver (as bolinhas sem clique) */
   function soLeitura() { return modo === 'distribuicao' && lancada(); }
+  /* lançada, os Ajustes mudam a escala: o dia de mais de 7 dias atrás fica só para ver (o banco trava igual) */
+  function antigo(k) { return modo === 'ajustes' && lancada() && k < somaDia(d.hoje, -7); }
   function voluntarios() { return d.militares.filter(function (m) { return m.voluntario && m.termo && (m.concedidas || 0) > 0; }); }
   function blocos(a) { return a.blocos.map(Number); }
   /* a CNH que a viatura pede ('' = qualquer uma) está entre as que ele conduz (o banco diz quais) */
@@ -200,7 +202,7 @@
   /* muda os horários do militar no dia (o mesmo para o calendário, a lista e o painel do dia). Quem já usou todas as
      cotas só marca depois de tirar um horário de outro dia; sem nenhum horário, ele continua no dia até o Salvar */
   function mudar(m, k, novos, unidade) {
-    if (soLeitura()) return;
+    if (soLeitura() || antigo(k)) return;
     var atual = vagaDe(m.cpf, k), tem = atual ? atual.blocos.length : 0;
     if (novos.length > tem && usadas(m.cpf) - tem + novos.length > (m.concedidas || 0)) {
       var nome = (m.grad + ' ' + m.nome).trim();
@@ -262,6 +264,7 @@
       if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
       mud = {}; sugeridas = []; postas = null;
       q('#p3-motivo').value = '';
+      RW.novaExtraOrg.resumo(r);
       aoSalvar();
     }, function () { RW.pararCarregando(btn); RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao }); });
   }
@@ -384,7 +387,7 @@
     /* por que o militar ficou com cota na última sugestão (enquanto ela está na tela): 'solta', 'nao_quero', 'sem_dia' */
     foraDaSugestao: function (cpf) { return postas !== null ? foraSug[cpf] || null : null; },
     conduz: conduz, impedimento: impedimento,
-    faltaDoDia: faltaDoDia, situacao: situacao, antesDe: antesDe, depoisDe: depoisDe, corDe: corDe, travado: travado, soLeitura: soLeitura,
+    faltaDoDia: faltaDoDia, situacao: situacao, antesDe: antesDe, depoisDe: depoisDe, corDe: corDe, travado: travado, soLeitura: soLeitura, antigo: antigo,
     grafico: function (cob, uid, erro) { return porDia().grafico(cob, uid, erro); },
     coberturaEscala: function () { return escala.cobertura; },
     erroAntes: function (uid, k) { return (escala.erro[uid] || {})[k]; },

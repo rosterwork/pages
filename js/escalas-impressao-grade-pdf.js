@@ -246,7 +246,7 @@
     return { columns: [
       { svg: c.logo, width: CABECALHO.logo },
       { stack: [
-        { text: txt().titulo, bold: true, fontSize: CABECALHO.titulo, color: c.forte },
+        { text: cfg.titulo || txt().titulo, bold: true, fontSize: CABECALHO.titulo, color: c.forte },
         { text: msg().nomes[cfg.formato] + ' · ' + cfg.texto, fontSize: CABECALHO.subtitulo, color: c.suave, margin: [0, 2, 0, 0] }
       ], alignment: 'right' }
     ] };
@@ -276,7 +276,7 @@
     var conteudo = calendario ? conteudoCalendario(cfg, c, geo, plano, marcadores) : conteudoAgenda(cfg, c, geo, plano.preencher);
     var doc = {
       defaultStyle: { font: 'Montserrat', fontSize: 9, color: c.texto },
-      info: { title: txt().titulo + ' · ' + msg().nomes[cfg.formato] + ' · ' + cfg.texto, author: 'Roster Work', creator: 'Roster Work', producer: 'Roster Work' }
+      info: { title: (cfg.titulo || txt().titulo) + ' · ' + msg().nomes[cfg.formato] + ' · ' + cfg.texto, author: 'Roster Work', creator: 'Roster Work', producer: 'Roster Work' }
     };
     /* com os ícones, a legenda deles (escalas-impressao-legenda.js), montada a cada uso (a biblioteca anota medidas) */
     var rodape = RW.escalasImpressaoPdf.medidas.FONTE.rodape;
@@ -373,8 +373,8 @@
     return a.slice(0, 4) === b.slice(0, 4) ? curta(a) + ' a ' + curta(b) + '-' + b.slice(0, 4) : curta(a) + '-' + a.slice(0, 4) + ' a ' + curta(b) + '-' + b.slice(0, 4);
   }
 
-  /* cfg: { formato, paisagem, continua, mostrar, diasPorLinha, unidades, dias: [{data, fora}], texto, dados }
-     → { arquivo, folhas, nome } */
+  /* cfg: { formato, paisagem, continua, mostrar, diasPorLinha, unidades, dias: [{data, fora}], texto, dados, titulo e
+     prefixo (o título da folha e o começo do nome do arquivo; sem eles, os da escala) } → { arquivo, folhas, nome } */
   function gerar(cfg) {
     var ids = cfg.unidades.map(function (u) { return u.unidade_id; });
     cfg.max = RW.escalasCelula ? RW.escalasCelula.calcularMaxPorUnidade(cfg.dados.cobertura, ids) : {};
@@ -391,7 +391,7 @@
       return {
         arquivo: d.arquivo,
         folhas: (d.caixas || []).length,
-        nome: msg().arquivo(msg().nomes[cfg.formato], periodoDoArquivo(cfg), cfg.unidades.length === 1 ? cfg.unidades[0].nome : '')
+        nome: msg().arquivo(msg().nomes[cfg.formato], periodoDoArquivo(cfg), cfg.unidades.length === 1 ? cfg.unidades[0].nome : '', cfg.prefixo)
       };
     });
   }

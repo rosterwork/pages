@@ -11,6 +11,9 @@
    escalas-impressao-grade-pdf.js. As unidades começam marcadas com as
    da tela (e a companhia de cada pelotão); o Mostrar (gráfico,
    ícones, faixa), a prévia e o Gerar PDF são do painel comum.
+   Quem imprime outra grade (a Extrajornada) passa a leitura dela no
+   lugar da escala (dados, no mesmo formato), o título do arquivo e
+   a conferência (null: sem o aviso do erro grave da escala).
    ============================================================ */
 (function () {
   'use strict';
@@ -174,11 +177,11 @@
     RW.impressao.atualizar();
   }
 
-  /* os dados da tela (ler_escala_mes) do mês ou da semana; o mesmo pedido não busca de novo */
+  /* os dados da tela (ler_escala_mes, ou a leitura de quem abriu) do mês ou da semana; o mesmo pedido não busca de novo */
   function carregarDados(ids, inicio, fim) {
     var chave = ids.join(',') + '|' + inicio + '|' + fim;
     if (cacheDados && cacheDados.chave === chave) return cacheDados.promessa;
-    var promessa = RW.escalasDados.carregar(ids, inicio, fim);
+    var promessa = (form && form.dados ? form.dados : RW.escalasDados.carregar)(ids, inicio, fim);
     cacheDados = { chave: chave, promessa: promessa };
     promessa.catch(function () { if (cacheDados && cacheDados.promessa === promessa) cacheDados = null; });
     return promessa;
@@ -197,7 +200,7 @@
     var p = periodoEscolhido();
     var dentro = p.dias.filter(function (d) { return !d.fora; });
     var iso = RW.data.paraIsoDeData;
-    var formato = form.formato, continua = form.continua, paisagem = FORMATOS[formato].paisagem, diasPorLinha = form.diasPorLinha;
+    var formato = form.formato, continua = form.continua, paisagem = FORMATOS[formato].paisagem, diasPorLinha = form.diasPorLinha, titulo = form.titulo, prefixo = form.prefixo;
     var unidades = escolhas.unidades.map(function (u) { return { unidade_id: u.unidade_id, nome: u.nome }; });
     var mostrar = escolhas.mostrar;
     return {
@@ -209,7 +212,7 @@
       montar: function () {
         return carregarDados(escolhas.ids, iso(p.busca.inicio), iso(p.busca.fim)).then(function (dados) {
           return RW.escalasImpressaoGradePdf.gerar({ formato: formato, paisagem: paisagem, continua: continua, mostrar: mostrar,
-            diasPorLinha: diasPorLinha, unidades: unidades, dias: p.dias, texto: p.texto, dados: dados });
+            diasPorLinha: diasPorLinha, unidades: unidades, dias: p.dias, texto: p.texto, dados: dados, titulo: titulo, prefixo: prefixo });
         }).then(function (r) {
           return { arquivo: r.arquivo, nome: r.nome, folhas: RW.mensagens.impressao.folhas(r.folhas, continua, paisagem) };
         }, function (e) {
@@ -223,7 +226,9 @@
   function subtitulo() { return msg().subtitulo(FORMATOS[form.formato].paisagem, form.continua); }
 
   /* opcoes: { formato, data (a da tela), unidades ([{ unidade_id, nome }] da tela: as marcadas no começo), diasPorLinha,
-     filtros (os ligados na tela, em texto) } */
+     filtros (os ligados na tela, em texto); de outra grade: dados(ids, inicio, fim) (a promessa no formato do
+     RosterWork.escalasDados.carregar), titulo (o do alto da folha), prefixo (o começo do nome do arquivo) e conferir
+     (null: sem a conferência da escala) } */
   function abrir(opcoes) {
     if (!RW.painel || !RW.impressao || !FORMATOS[opcoes.formato]) return;
     var formato = opcoes.formato;
@@ -235,6 +240,7 @@
     /* as escolhas desta impressão (o formato e o período) e o que vem da tela */
     form = {
       formato: formato, continua: false, diasPorLinha: opcoes.diasPorLinha || 3, filtros: opcoes.filtros || [],
+      dados: opcoes.dados || null, titulo: opcoes.titulo || null, prefixo: opcoes.prefixo || null,
       data: new Date(data.getFullYear(), data.getMonth(), data.getDate()), mes: new Date(data.getFullYear(), data.getMonth(), 1),
       mesTodo: true, semanas: [], de: 1, ate: 1
     };
@@ -242,7 +248,7 @@
     RW.impressao.montar(RW.painel.corpo(), RW.painel.rodape(), {
       molde: 'tpl-escala-impressao',
       marcas: ['grade', periodo],
-      conferir: RW.escalasImpressao ? RW.escalasImpressao.conferirErros : null,
+      conferir: 'conferir' in opcoes ? opcoes.conferir : (RW.escalasImpressao ? RW.escalasImpressao.conferirErros : null),
       ids: (opcoes.unidades || []).map(function (u) { return u.unidade_id; }),
       mostrar: { grafico: true, icones: true, faixa: true },
       aoSair: function () { RW.painel.fechar(); },

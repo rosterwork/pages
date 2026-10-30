@@ -237,7 +237,7 @@
   }
 
   /* o rascunho do painel do dia mudou, ou foi salvo: o Imprimir liga ou desliga */
-  ['rosterwork_escala_rascunho', 'rosterwork_extra_rascunho', 'rosterwork_escala_salva'].forEach(function (nome) {
+  ['rosterwork_escala_rascunho', 'rosterwork_escala_salva'].forEach(function (nome) {
     window.addEventListener(nome, function () { atualizarBotaoDoDia(); });
   });
 

@@ -1,7 +1,7 @@
 /* ============================================================
    COMPONENTE geral-impressao — o painel de impressão, um só para
    todas as impressões (o Imprimir escala e o das grades da Escala,
-   o Imprimir trocas e o Imprimir relatório da Nova extra). A casca
+   o Imprimir trocas e o Imprimir relatório da Extrajornada). A casca
    é do shell (#tpl-impressao e #tpl-impressao-acoes do index.html):
    no alto, a nota "Será impresso:" com o resumo e, embaixo dela, o
    aviso (o erro grave da escala); no meio, as caixas da impressão

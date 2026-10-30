@@ -1,13 +1,13 @@
 /* ============================================================
    AJUSTES — configurações das unidades (NAVEGACAO §4/§5)
-   Abas no cabeçalho: Escala e Extrajornada. Na Escala, a árvore de
+   Abas no cabeçalho: Escala e Expediente (só administrador; sem ele,
+   a linha de abas some). Na Escala, a árvore de
    unidades com um card do RITMO (escala_config: 24/48 · 24/72 ·
    12/36) por unidade marcada. Admin clica no card → painel direito
    edita o ritmo (ajustes_ritmo_salvar: grava, REGENERA a escala
    automática dos lotados e audita → modal de resumo). Não-admin só
-   visualiza. A aba Extrajornada (os prazos) fica em
-   ajustes-extrajornada.js. As preferências pessoais (tema) moram no
-   Meu perfil (cabeçalho).
+   visualiza. A aba Expediente fica em ajustes-expediente.js. As
+   preferências pessoais (tema) moram no Meu perfil (cabeçalho).
    ============================================================ */
 (function () {
   'use strict';
@@ -168,13 +168,12 @@
     });
   }
 
-  /* ---------- abas (Escala · Extrajornada) ---------- */
+  /* ---------- abas (Escala · Expediente) ---------- */
   function trocarAba(conteudo, nome) {
     if (RosterWork.painel && RosterWork.painel.estaAberto()) RosterWork.painel.fechar();
     Array.prototype.forEach.call(conteudo.querySelectorAll('.pagina-corpo [data-aba-painel]'), function (p) {
       p.classList.toggle('oculto', p.getAttribute('data-aba-painel') !== nome);
     });
-    if (nome === 'extrajornada' && RosterWork.ajustesExtrajornada) RosterWork.ajustesExtrajornada.ativar();
     if (nome === 'expediente' && RosterWork.ajustesExpediente) RosterWork.ajustesExpediente.ativar();
   }
 
@@ -182,12 +181,14 @@
   function iniciar(conteudo) {
     var abas = conteudo.querySelector('#ajustes-abas');
     if (abas && RosterWork.abas) RosterWork.abas.ligar(abas, function (aba) { trocarAba(conteudo, aba.getAttribute('data-aba')); });
-    if (RosterWork.ajustesExtrajornada) RosterWork.ajustesExtrajornada.montar(conteudo);
-    /* a aba Expediente: todo administrador (o banco confere a área de cada unidade ao salvar) */
+    /* a aba Expediente: todo administrador (o banco confere a área de cada unidade ao salvar); sem ela, a Escala fica
+       sozinha e a linha de abas some */
     var abaExpediente = conteudo.querySelector('#ajustes-abas [data-aba="expediente"]');
     if (abaExpediente && RosterWork.sessao.temPapel('pelotao') && RosterWork.ajustesExpediente) {
       abaExpediente.classList.remove('oculto');
       RosterWork.ajustesExpediente.montar(conteudo);
+    } else if (abas) {
+      abas.classList.add('oculto');
     }
     var container = conteudo.querySelector('#arvore-ajustes');
     if (!container || !RosterWork.arvoreUnidades) return Promise.resolve();

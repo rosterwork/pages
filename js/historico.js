@@ -70,7 +70,7 @@
     extra_cota: { aba: 'Extrajornada', icone: 'icone-extrajornada' },
     extra_alocacao: { aba: 'Extrajornada', icone: 'icone-extrajornada' },
     extra_disponibilidade: { aba: 'Extrajornada', icone: 'icone-extrajornada' },
-    extra_prazos: { aba: 'Ajustes', icone: 'icone-ajustes' },
+    extra_prazos: { aba: 'Extrajornada', icone: 'icone-extrajornada' },
     atestado: { aba: 'Usuários', icone: 'icone-usuarios' },
     ferias: { aba: 'Usuários', icone: 'icone-usuarios' },
     licenca: { aba: 'Usuários', icone: 'icone-usuarios' },

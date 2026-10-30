@@ -32,7 +32,7 @@
     if (qual === 'pedidos') return fechados ? '' : m.pedidos;
     if (qual === 'termos') return fechados && repartidas > 0 ? '' : m.termos;
     if (qual === 'inicial') return d.lancamento ? '' : m.inicial;
-    return d.lancamento && (terminou || d.mes.simular_inicio) ? '' : m.final;
+    return d.lancamento && terminou ? '' : m.final;
   }
 
   /* os pelotões (e a companhia) da área de quem imprime */

@@ -1,7 +1,8 @@
 /* ============================================================
-   NOVA EXTRA — protótipo da extrajornada em etapas (só programador)
-   Abas Minha extra · Extras do mês · Organizar o mês (nova-extra-
-   organizar.js desenha as Extras do mês e os passos). A Minha extra
+   EXTRAJORNADA — a página, em etapas
+   Abas Minha extra · Extras do mês · Organizar o mês (só do
+   administrador da companhia; nova-extra-organizar.js desenha as
+   Extras do mês e os passos). A Minha extra
    mostra o pedido do mês (nova_extra_minha), com o botão que abre o
    painel do pedido (nova-extra-pedido.js) no passo Pedido. A barra: o
    mês, os passos Pedidos · Cotas · Distribuição · Ajustes · Relatórios
@@ -9,9 +10,8 @@
    do mês, na Distribuição e nos Ajustes; com o seletor de unidade na
    Agenda do celular), o menu Ações do passo aberto e a Legenda (o
    molde que o passo pedir, RosterWork.novaExtra.legenda).
-   Para o teste, a seta do mês só anda entre novembro de 2026 e
-   janeiro de 2027 (o militar). Grava em tabelas
-   próprias: a Extrajornada de verdade e a escala não mudam.
+   Abre no mês de hoje (ou no que o aviso pedir); a seta do mês anda
+   de outubro de 2026 até o mês do pedido que já abriu mais à frente.
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
    Registra RosterWork.paginas['nova-extra'].
    ============================================================ */
@@ -21,8 +21,10 @@
   var RW = window.RosterWork = window.RosterWork || {};
   RW.paginas = RW.paginas || {};
 
-  /* os meses do teste: novembro e dezembro (o administrador reparte, distribui e lança) e janeiro (o militar faz o pedido) */
-  var PRIMEIRO = new Date(2026, 10, 1), ULTIMO = new Date(2027, 0, 1);
+  /* as setas do mês: de outubro de 2026 (o começo da Extrajornada no sistema) até o mês do pedido que já abriu mais à
+     frente (o ultimo_mes do nova_extra_minha; antes de ele chegar, o mês que vem) */
+  var PRIMEIRO = new Date(2026, 9, 1);
+  var ultimo = null;
 
   var el = {};
   var comp = null;      // o mês do pedido (Date, dia 1)
@@ -49,7 +51,7 @@
     var meu = ++pedido, mes = iso(comp);
     el.mes.textContent = nomeMes(comp);
     el.anterior.disabled = comp <= PRIMEIRO;
-    el.proximo.disabled = comp >= ULTIMO;
+    el.proximo.disabled = comp >= ultimo;
     if (desenhado !== mes || leituras.minha.situacao === 'falha') leitura('minha', 'lendo');
     RW.novaExtraOrg.recarregar();
     /* a falha fica no lugar da área (a frase), com a mensagem técnica no console */
@@ -63,6 +65,10 @@
       if (!r || !r.ok) { falhou(r && r.error); return; }
       estado = r;
       desenhado = mes;
+      if (r.ultimo_mes) {
+        ultimo = new Date(+r.ultimo_mes.slice(0, 4), +r.ultimo_mes.slice(5, 7) - 1, 1);
+        el.proximo.disabled = comp >= ultimo;
+      }
       leitura('minha', 'ok');
       desenhar();
     }, function (e) { falhou(null, (e && e.message) || 'sem conexão'); });
@@ -160,11 +166,13 @@
 
   /* na barra, o que é só de alguns passos (data-passo-barra) aparece só neles e, no menu Ações, só os itens do passo
      aberto (data-passo-acao); fora do Organizar o mês, nenhum. O filtro da Distribuição e dos Ajustes (com a linha
-     "Filtros:") mostra e esconde pelo nova-extra-filtros.js. O seletor Agenda | Calendário fica nas Extras do mês, na
-     Distribuição e nos Ajustes; fora deles, o seletor de unidade do celular some */
+     "Filtros:") mostra e esconde pelo nova-extra-filtros.js. O seletor Agenda | Calendário e o Imprimir ficam nas Extras
+     do mês, na Distribuição e nos Ajustes; fora deles, o seletor de unidade do celular some */
   function barraDoPasso(n) {
     var comModos = aba === 'calendario' || n === 3 || n === 4;
     el.modos.classList.toggle('oculto', !comModos);
+    el.imprimir.classList.toggle('oculto', !comModos);
+    divisor();
     if (!comModos && RW.seletorUnidade) RW.seletorUnidade.mostrar(null);
     Array.prototype.forEach.call(conteudoPagina.querySelectorAll('.pagina-subcabecalho [data-passo-barra]'), function (e) {
       e.classList.toggle('oculto', !doPasso(e, 'data-passo-barra', n));
@@ -191,11 +199,16 @@
   /* a Agenda do celular mostra uma unidade por tela, pelo seletor de unidade; o Calendário mostra todas no dia */
   function agendaNoCelular() { return !!(RW.celular && RW.celular()) && modo() === 'agenda'; }
 
-  /* a Legenda e o traço antes dela: aparecem com o conteúdo do molde (id) ou somem (null) */
+  /* o traço antes das ferramentas (a Legenda e o Imprimir): aparece com uma delas à vista */
+  function divisor() {
+    el.legendaDivisor.classList.toggle('oculto', el.legenda.classList.contains('oculto') && el.imprimir.classList.contains('oculto'));
+  }
+
+  /* a Legenda: aparece com o conteúdo do molde (id) ou some (null) */
   function legenda(id) {
     if (!el.legenda) return;
     el.legenda.classList.toggle('oculto', !id);
-    el.legendaDivisor.classList.toggle('oculto', !id);
+    divisor();
     var alvo = el.legenda.querySelector('[data-legenda-conteudo]');
     if (!alvo) return;
     alvo.textContent = '';
@@ -203,11 +216,11 @@
     if (t) alvo.appendChild(t.content.cloneNode(true));
   }
 
-  /* trocar de mês (só entre os do teste): o painel do dia aberto é do mês antigo e fecha antes; com a distribuição não
+  /* trocar de mês (dentro das setas): o painel do dia aberto é do mês antigo e fecha antes; com a distribuição não
      salva, o aviso de sempre e o mês só muda no Descartar */
   function trocarMes(n) {
     var alvo = new Date(comp.getFullYear(), comp.getMonth() + n, 1);
-    if (alvo < PRIMEIRO || alvo > ULTIMO) return;
+    if (alvo < PRIMEIRO || alvo > ultimo) return;
     function ir() { comp = alvo; RW.novaExtraMontar.fecharPainel(); carregar(); }
     if (!RW.novaExtraOrg.sujo()) { ir(); return; }
     RW.confirmar({ tipo: 'aviso', mensagem: RW.mensagens.edicao.sairSemSalvar, textoConfirmar: RW.mensagens.botoes.descartar,
@@ -235,8 +248,19 @@
     el.estado = conteudo.querySelector('#nova-extra-estado');
     el.acoes = conteudo.querySelector('#nova-extra-acoes > .botao');
     el.modos = conteudo.querySelector('#nova-extra-modos');
-    comp = new Date(ULTIMO);
+    el.imprimir = conteudo.querySelector('#nova-extra-imprimir');
+    /* abre no mês de hoje ou no mês que o aviso pediu (o do pedido, no aviso do prazo) */
+    var hoje = new Date(), pedida = RW.referenciaPedida ? RW.referenciaPedida('nova-extra') : null;
+    ultimo = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 1);
+    comp = pedida ? new Date(+pedida.slice(0, 4), +pedida.slice(5, 7) - 1, 1) : new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+    if (comp < PRIMEIRO) comp = new Date(PRIMEIRO);
+    if (comp > ultimo) ultimo = new Date(comp);
     desenhado = null;
+    /* o Organizar o mês é do administrador da companhia (qualquer um dela, inclusive o de um pelotão): para os outros,
+       o grupo dele sai (e o traço entre os grupos junto) */
+    if (!RW.sessao.temPapel('pelotao')) {
+      Array.prototype.forEach.call(el.abas.querySelectorAll('[data-so-admin]'), function (g) { g.remove(); });
+    }
     passoVisivel = null;
     leituras = { minha: { situacao: 'ok', texto: '' }, mes: { situacao: 'ok', texto: '' } };
 
@@ -266,6 +290,8 @@
       if (aba === 'calendario') RW.novaExtraOrg.desenharAba();
       else if (aba === 'organizar') RW.novaExtraMontar.redesenhar();
     });
+    /* Imprimir: a grade da tela, no painel de impressão das grades da Escala */
+    el.imprimir.addEventListener('click', function () { RW.novaExtraImprimirGrade.abrir(aba === 'calendario', modo()); });
     RW.novaExtraOrg.montar(conteudo);
     el.pedir.addEventListener('click', function () {
       if (estado && RW.novaExtraPedido) RW.novaExtraPedido.abrir(estado, comp, null, carregar);

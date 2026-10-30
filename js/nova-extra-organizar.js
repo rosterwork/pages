@@ -82,11 +82,14 @@
       v.insertBefore(util.origem(a), bol);
       return v;
     },
-    /* quem pôs a extra: o ícone do sistema (o Preencher refaz) ou o cadeado (o administrador pôs ou mudou; o sistema nunca
-       muda) */
+    /* quem inseriu a extra: o ícone do sistema (o Preencher refaz) ou o do administrador (pôs ou mudou; o sistema nunca
+       muda), com a dica de quem inseriu */
     origem: function (a) {
-      var i = RW.tpl('tpl-ne-origem');
-      i.querySelector('use').setAttribute('href', 'icones/todos.svg#' + (a.origem === 'sugestao' ? 'icone-origem-sistema' : 'icone-cadeado'));
+      var i = RW.tpl('tpl-ne-origem'), sistema = a.origem === 'sugestao';
+      var texto = sistema ? msg().origemSistema : msg().origemAdmin;
+      i.querySelector('use').setAttribute('href', 'icones/todos.svg#' + (sistema ? 'icone-extra-sistema' : 'icone-extra-administrador'));
+      i.setAttribute('data-dica', texto);
+      i.setAttribute('aria-label', texto);
       return i;
     },
     /* as unidades da página: todas as da companhia (o seletor de unidades do topo não filtra a Nova extra) */
@@ -150,9 +153,10 @@
     }, function (e) { falha(null, (e && e.message) || 'sem conexão'); });
   }
 
-  /* a aba aberta (na Minha extra, só os números dos passos); no Organizar o mês sem passo escolhido, abre o da vez */
+  /* a aba aberta (na Minha extra, só os números dos passos); no Organizar o mês sem passo escolhido, abre o da vez.
+     Quem não administra a companhia não tem os passos (o mês dele vem só com as extras que estão na escala) */
   function desenharAba() {
-    passosTopo();
+    if (d.admin !== false) passosTopo();
     if (aba === 'calendario') desenharCalendario();
     else if (aba === 'passo') {
       if (!passo) passo = vez;
@@ -285,7 +289,7 @@
 
   /* depois de salvar: o resumo padrão (o que mudou e as extras que saíram) */
   function resumo(r) {
-    if (r && r.log && r.log.resumo && r.log.resumo.alvos && r.log.resumo.alvos.length) RW.resumo.abrirModal(r.log, { pagina: 'Nova extra' });
+    if (r && r.log && r.log.resumo && r.log.resumo.alvos && r.log.resumo.alvos.length) RW.resumo.abrirModal(r.log, { pagina: 'Extrajornada' });
   }
 
   function chave(a) { return a.cpf + '|' + a.data; }
@@ -341,6 +345,7 @@
     q('#p1-salvar-prazo').addEventListener('click', function () {
       RW.rpc('nova_extra_prazo_salvar', { p_competencia: d.competencia, p_abre: RW.data.paraISO(q('#p1-abre').value), p_fecha: RW.data.paraISO(q('#p1-fecha').value), p_aviso: +q('#p1-aviso').value }).then(function (r) {
         if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
+        resumo(r);
         RW.novaExtra.recarregar();
       });
     });

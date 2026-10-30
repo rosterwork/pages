@@ -256,5 +256,7 @@
   }
 
   RW.novaExtraPorDia = { desenhar: desenhar, atualizarDia: atualizarDia, marcarAberto: marcarAberto, mostrarAberto: mostrarAberto, grafico: grafico,
-    agenda: agenda, celulaVazia: celulaVazia };
+    agenda: agenda, celulaVazia: celulaVazia,
+    /* os pelotões da grade da tela (o Imprimir da grade começa com eles marcados) */
+    unidades: function () { return unidadesDoCalendario(); } };
 })();

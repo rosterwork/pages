@@ -2,7 +2,7 @@
    ESCALAS — Adicionar militar (o botão do subcabeçalho do Dia; só
    admin). Sub-tela do painel do dia em caixas de pergunta, uma
    depois da outra e só as que valem (Guia visual › Ações e perguntas):
-   Como entra (somente no dia, extrajornada ou no ciclo) e Quem entra
+   Como entra (somente no dia ou no ciclo) e Quem entra
    (o campo de militar, geral-combo-militar, com a lista do como).
    - No dia (pontual): o horário, já com as horas livres dele; onde
      fica: o sistema distribui (refaz o dia do zero com ele; quem está
@@ -13,11 +13,6 @@
      rascunho do Dia (escalas-painel-editar.js); na função escolhida e
      no lugar de outro, a prévia refaz o dia em volta do que está
      fixado, mexendo o mínimo.
-   - Na extrajornada: os voluntários do mês sem extra no dia, os 4
-     horários de 6 h (quem só tira 24 h marca os quatro) e, depois que
-     o mês começou, o motivo; vai para o rascunho do mês da aba
-     Extrajornada (escalas-extra-rascunho.js), que não pode ter
-     mudança de outro mês.
    - No ciclo: quem está fora entra; quem já está no ciclo escolhe o
      último serviço no ciclo atual entre as três últimas datas (mudar
      de ciclo); quem já serve pelo ciclo no dia não muda. Vai para o
@@ -33,14 +28,9 @@
 
   var conta = 0;   // nome único para os rádios e os campos de cada abertura
 
-  /* os 4 horários de 6 h da extra */
-  var BLOCOS = [{ n: 1, hi: '08h', hf: '14h' }, { n: 2, hi: '14h', hf: '20h' }, { n: 3, hi: '20h', hf: '02h' }, { n: 4, hi: '02h', hf: '08h' }];
-
   function ed() { return RosterWork.escalasPainelEditar.sub; }
   function msg() { return RosterWork.mensagens.escala; }
   function L() { return RosterWork.mensagens.escala.linha; }
-  function X() { return RosterWork.mensagens.escala.extraPainel; }
-  function R() { return RosterWork.escalasExtraRascunho; }
   function listas() { return RosterWork.escalasPainelAdicionarListas; }
   function nomeDe(m) { return ((m.grad || '') + ' ' + (m.nome || '')).trim(); }
   function diaMes(iso) { var p = String(iso || '').split('-'); return p.length === 3 ? p[2] + '/' + p[1] : ''; }
@@ -59,28 +49,18 @@
     var api = ed(), H = api.horas, Q = RosterWork.escalasPainelQuem, C = RosterWork.escalasPainelCiclo, D = RosterWork.data;
     if (!api.dados()) return;
     var iso = api.iso(), uid = api.unidadeId(), data = diaMes(iso);
-    /* o rascunho da extra tem mudança de outro mês (o mês dele é outro rascunho) */
-    function outroMes() { return !!(R() && R().sujo() && R().competencia() && R().competencia() !== iso.slice(0, 8) + '01'); }
     var est = { como: 'dia', item: null, mil: null, periodos: [], onde: 'sistema', posto: null, funcao: null,
-      sai: null, funcoes: [], banco: 'sim', ultimo: null, blocos: [], extra: null };
+      sai: null, funcoes: [], banco: 'sim', ultimo: null };
     var el = {}, pedido = 0, onde = null, combo = null, comboSai = null, chaveSai = '';
 
     function carregar() {
       var meu = ++pedido;
-      est.item = null; est.mil = null; est.extra = null;
+      est.item = null; est.mil = null;
       combo.habilitar(false);
       combo.definir(L().carregando, true);
-      /* a extra vai para o rascunho do mês: com mudança de outro mês lá, espera ela ser salva ou descartada */
-      if (est.como === 'extra' && outroMes()) { combo.definir(L().extraPendente, true); return; }
       var leitura = est.como === 'dia'
         ? RosterWork.escalasDados.disponiveis(uid, iso, uid).then(function (r) { return r ? listas().dia(r) : null; })
-        : est.como === 'extra'
-          ? RosterWork.escalasDados.extraLista(uid, iso).then(function (d) {
-            if (!d || !d.ok) return null;
-            est.extra = d;
-            return listas().extra(d, iso, uid);
-          })
-          : RosterWork.escalasDados.continuosListar(uid, iso).then(function (d) { return d && d.ok ? listas().ciclo(d.militares) : null; });
+        : RosterWork.escalasDados.continuosListar(uid, iso).then(function (d) { return d && d.ok ? listas().ciclo(d.militares) : null; });
       leitura.then(function (lista) {
         if (meu !== pedido || !el.combo.isConnected) return;
         if (!lista) { combo.definir(msg().falhaCarregar, true); return; }
@@ -94,12 +74,10 @@
       est.onde = 'sistema'; est.posto = null; est.funcao = null; est.sai = null; est.funcoes = []; est.banco = 'sim'; chaveSai = '';
       if (onde) { el.ondeLugar.textContent = ''; onde = null; }
       if (est.como === 'dia') est.periodos = (m.livres || []).length ? m.livres.map(function (l) { return { hi: l.hi, hf: l.hf }; }) : [{ hi: '08:00', hf: '08:00' }];
-      est.blocos = [];
       /* no ciclo: vem marcada a mais recente das três últimas datas */
       var datas = m.ultimos_servicos || [];
       est.ultimo = datas.length ? datas[datas.length - 1] : null;
       if (est.como === 'ciclo') montarDatas();
-      if (est.como === 'extra') montarBlocos();
       atualizar();
     }
 
@@ -130,20 +108,6 @@
     /* as três últimas datas do ciclo atual, em bolinhas, com o dia da semana */
     function montarDatas() {
       el.marcarData = C.datas(el.datas, (est.mil && est.mil.ultimos_servicos) || [], function (v) { est.ultimo = v; atualizar(); });
-    }
-
-    /* os 4 horários da extra: o que um pontual dele ocupa fica desligado; quem só tira 24 h marca os quatro juntos */
-    function montarBlocos() {
-      var m = est.mil;
-      el.marcarBlocos = Q.marcar(el.blocosLista, BLOCOS.map(function (b) {
-        var pontual = ((m && m.blocos_pontual) || []).indexOf(b.n) >= 0;
-        return { texto: L().blocoExtra(b.hi, b.hf), desligado: pontual, dica: pontual ? X().blocoPontual : '' };
-      }), function (marcados) {
-        var nums = marcados.map(function (i) { return BLOCOS[i].n; });
-        if (m && m.fecha24) nums = nums.length > est.blocos.length ? [1, 2, 3, 4] : [];
-        est.blocos = nums;
-        atualizar();
-      });
     }
 
     /* De quais funções: as funções de quem sai no horário, todas marcadas */
@@ -186,11 +150,10 @@
         quem: q('.escala-adicionar-quem'), combo: q('.escala-adicionar-combo'), assume: q('.escala-adicionar-assume'),
         ajudas: tela.querySelectorAll('.escala-adicionar-ajuda'),
         horario: q('.escala-adicionar-horario'), periodos: q('.escala-adicionar-periodos'),
-        blocos: q('.escala-adicionar-blocos'), blocosLista: q('.escala-adicionar-blocos-lista'), cota: q('.escala-adicionar-cota'),
         ondeBloco: q('.escala-adicionar-onde-bloco'), ondeLugar: q('.escala-adicionar-onde'), lugar: q('.escala-adicionar-lugar'),
         sai: q('.escala-adicionar-sai'), funcoesRotulo: q('.escala-adicionar-funcoes-rotulo'), funcoesLista: q('.escala-adicionar-funcoes'),
         efeito: q('.escala-adicionar-efeito'), banco: q('.escala-adicionar-banco'), contabilizar: q('.escala-adicionar-contabilizar'),
-        motivo: q('.escala-adicionar-motivo'), ultimo: q('.escala-adicionar-ultimo'), ultimoRotulo: q('.escala-adicionar-ultimo-rotulo'),
+        ultimo: q('.escala-adicionar-ultimo'), ultimoRotulo: q('.escala-adicionar-ultimo-rotulo'),
         datas: q('.escala-adicionar-datas'), mudar: q('.escala-adicionar-mudar'), info: q('.escala-adicionar-ciclo-info')
       };
       ligarRadios(q('.escala-adicionar-como'), function (v) {
@@ -218,8 +181,6 @@
         atualizar();
       });
       el.marcarBanco = ligarRadios(el.banco, function (v) { est.banco = v; });
-      var inpMotivo = el.motivo.querySelector('input');
-      inpMotivo.value = R() ? R().motivo() : '';
       corpo.appendChild(tela);
       carregar();
       atualizar();
@@ -238,11 +199,10 @@
       var m = est.mil, como = est.como;
       mostra(el.quem, true);
       [].forEach.call(el.ajudas, function (a) { mostra(a, a.getAttribute('data-como') === como); });
-      ['horario', 'blocos', 'ondeBloco', 'banco', 'motivo', 'ultimo', 'mudar', 'info'].forEach(function (k) { mostra(el[k], false); });
+      ['horario', 'ondeBloco', 'banco', 'ultimo', 'mudar', 'info'].forEach(function (k) { mostra(el[k], false); });
       nota(el.assume, m && m.assume ? (m.assume === 'chefe_socorro' ? msg().assumeChefe : msg().assumeOficial)(nomeDe(m), '') : '');
       if (!m) { pronto(L().escolhaQuem, false); return; }
       if (como === 'ciclo') { desenharCiclo(m); return; }
-      if (como === 'extra') { desenharExtra(m); return; }
       desenharDia(m);
     }
 
@@ -321,16 +281,6 @@
       return '';
     }
 
-    /* na extrajornada: os horários e, depois que o mês começou, o motivo */
-    function desenharExtra(m) {
-      mostra(el.blocos, true);
-      if (el.marcarBlocos) el.marcarBlocos(BLOCOS.map(function (b, i) { return est.blocos.indexOf(b.n) >= 0 ? i : -1; }).filter(function (i) { return i >= 0; }));
-      var cotas = (m.extras || []).reduce(function (s, e) { return s + (e.blocos || []).length; }, 0) + est.blocos.length;
-      el.cota.textContent = L().cotaNoMes(cotas, m.cota || 0) + (m.fecha24 ? ' ' + L().fecha24 : '');
-      mostra(el.motivo, !!(est.extra && est.extra.iniciado));
-      pronto(est.blocos.length ? L().porNaExtra(nomeDe(m), data) : L().marqueHorario, est.blocos.length > 0);
-    }
-
     /* no ciclo: quem está fora entra; quem já está escolhe o último serviço no ciclo atual; quem já serve no dia não muda */
     function desenharCiclo(m) {
       var datas = m.ultimos_servicos || [];
@@ -352,7 +302,6 @@
       var m = est.mil;
       if (!m) return;
       if (est.como === 'ciclo') { aplicarCiclo(m); return; }
-      if (est.como === 'extra') { aplicarExtra(m); return; }
       if (est.periodos.some(emConflito)) return;   // o botão já fica desligado
       var js = janelas(), soma = function (l) { return l.reduce(function (s, w) { return s + w[1] - w[0]; }, 0); };
       if (soma(H.uniao(js)) !== soma(js)) { RosterWork.avisar({ tipo: 'erro', mensagem: L().erroPeriodos }); return; }
@@ -373,16 +322,6 @@
         api.aplicarColocacao({ cpf: m.cpf, periodos: periodos, sistema: true, refazer: true, pontual: pontual });
       }
       api.concluir();
-    }
-
-    /* a extra: o mesmo rascunho do mês da aba Extrajornada; volta ao dia, e o Salvar do rodapé grava */
-    function aplicarExtra(m) {
-      if (!est.blocos.length || !est.extra || !R()) return;
-      if (outroMes()) { RosterWork.avisar({ tipo: 'aviso', mensagem: L().extraPendente }); return; }
-      R().mes(est.extra.competencia);
-      R().motivo(el.motivo.querySelector('input').value || '');
-      R().definir({ cpf: m.cpf, data: iso, unidade: uid, blocos: est.blocos, antes: null, militar: { grad: m.grad, nome: m.nome } });
-      api.voltar();
     }
 
     /* quem está fora entra no ciclo; quem já está no ciclo muda de ciclo, vendo antes o que acontece com as trocas, folgas

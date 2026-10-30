@@ -221,7 +221,7 @@
             <span class="menu-item-label">Folgas</span>
           </button>
 
-          <button type="button" class="menu-item" data-pagina="extrajornada" data-lugar-celular="mais" aria-label="Extrajornada">
+          <button type="button" class="menu-item" data-pagina="nova-extra" data-lugar-celular="mais" aria-label="Extrajornada">
             <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-extrajornada" /></svg>
             <span class="menu-item-label">Extrajornada</span>
           </button>
@@ -256,12 +256,6 @@
             <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-codigo" /></svg>
             <span class="menu-item-label">Programador</span>
             <span class="menu-item-selo oculto" aria-hidden="true"></span>
-          </button>
-
-          <!-- protótipo da extrajornada em etapas (só programador; tabelas próprias, não muda a escala) -->
-          <button type="button" class="menu-item" data-pagina="nova-extra" data-lugar-celular="mais" data-programador aria-label="Nova extra">
-            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-extrajornada" /></svg>
-            <span class="menu-item-label">Nova extra</span>
           </button>
 
         </div>
@@ -1649,8 +1643,7 @@
   <!-- ===== painel do dia › aba Dia (escalas-painel-editar.js): a lista do dia, que o admin edita ===== -->
   <!-- subcabeçalho do admin: o menu Editar o dia (só o texto, sem marca: só o administrador vê; REGRAS §4, Abas e barras)
        com as ações do dia: Adicionar militar (escalas-painel-adicionar.js), Remover militar (escalas-painel-remover.js),
-       Remanejar militar (escalas-painel-remanejar.js), Editar extrajornada (a aba Extrajornada do painel) e Registrar
-       troca de serviço (o Registrar troca das Trocas) -->
+       Remanejar militar (escalas-painel-remanejar.js) e Registrar troca de serviço (o Registrar troca das Trocas) -->
   <template id="tpl-escala-edicao-acoes">
     <div class="dropdown escala-edicao-menu">
       <button type="button" class="botao">
@@ -1662,7 +1655,6 @@
         <button type="button" class="dropdown-item" data-acao="remover">Remover militar</button>
         <button type="button" class="dropdown-item" data-acao="remanejar">Remanejar militar</button>
         <div class="dropdown-divisor"></div>
-        <button type="button" class="dropdown-item" data-acao="extra">Editar extrajornada</button>
         <button type="button" class="dropdown-item" data-acao="troca">Registrar troca de serviço</button>
       </div>
     </div>
@@ -1846,8 +1838,7 @@
   <!-- ===== Adicionar militar (sub-tela; escalas-painel-adicionar.js): as caixas de pergunta (o número vem do CSS), uma
        depois da outra e só as que valem. Como entra; Quem entra (o campo de militar, geral-combo-militar, com a lista do
        como). No dia: o horário, onde fica (o sistema, a função escolhida ou no lugar de outro militar, com quem sai e de
-       quais funções) e o banco de horas. Na extrajornada: os horários de 6 h e, depois que o mês começou, o motivo. No
-       ciclo: o último serviço no ciclo atual de quem muda de ciclo ===== -->
+       quais funções) e o banco de horas. No ciclo: o último serviço no ciclo atual de quem muda de ciclo ===== -->
   <template id="tpl-escala-adicionar">
     <div class="subtela escala-adicionar">
       <div class="subtela-cab">
@@ -1856,7 +1847,6 @@
       <div class="grupo-caixa subtela-pergunta escala-adicionar-como">
         <span class="rotulo-secao">Como entra</span>
         <label class="geral-opcao"><input type="radio" value="dia" /><span>Somente no dia <span class="escala-adicionar-data"></span></span></label>
-        <label class="geral-opcao"><input type="radio" value="extra" /><span>Extrajornada em <span class="escala-adicionar-data"></span></span></label>
         <label class="geral-opcao"><input type="radio" value="ciclo" /><span>No ciclo, a partir de <span class="escala-adicionar-data"></span></span></label>
       </div>
       <div class="grupo-caixa subtela-pergunta escala-adicionar-quem oculto">
@@ -1867,7 +1857,6 @@
           <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares"></div>
         </div>
         <span class="subtela-ajuda escala-adicionar-ajuda" data-como="dia">Quem tem horas livres no dia, de folga, de qualquer pelotão.</span>
-        <span class="subtela-ajuda escala-adicionar-ajuda" data-como="extra">Os voluntários do mês, com termo e cota, que não têm extra no dia.</span>
         <span class="subtela-ajuda escala-adicionar-ajuda" data-como="ciclo">Quem está fora do ciclo e quem já está no ciclo, para mudar de ciclo.</span>
         <div class="nota escala-adicionar-assume oculto">
           <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
@@ -1878,11 +1867,6 @@
         <span class="rotulo-secao">Horário</span>
         <div class="escala-linha-periodos escala-adicionar-periodos"></div>
         <div class="escala-adicionar-regua"></div>
-      </div>
-      <div class="grupo-caixa subtela-pergunta escala-adicionar-blocos oculto">
-        <span class="rotulo-secao">Horário</span>
-        <div class="escala-marcar-lista escala-adicionar-blocos-lista"></div>
-        <span class="subtela-ajuda escala-adicionar-cota"></span>
       </div>
       <div class="grupo-caixa subtela-pergunta escala-adicionar-onde-bloco oculto">
         <span class="rotulo-secao">Onde fica</span>
@@ -1912,10 +1896,6 @@
         <label class="geral-opcao"><input type="radio" value="sim" /><span class="escala-adicionar-contabilizar"></span></label>
         <label class="geral-opcao"><input type="radio" value="nao" /><span>Não contabilizar</span></label>
       </div>
-      <label class="grupo-caixa subtela-pergunta escala-adicionar-motivo oculto">
-        <span class="rotulo-secao">Motivo do ajuste</span>
-        <input type="text" name="motivo-adicionar-extra" class="campo-entrada" maxlength="200" placeholder="Opcional. Ex.: pedido do militar" />
-      </label>
       <div class="grupo-caixa subtela-pergunta escala-adicionar-ultimo oculto">
         <span class="rotulo-secao">Último serviço</span>
         <span class="subtela-ajuda escala-adicionar-ultimo-rotulo"></span>
@@ -1940,8 +1920,8 @@
   <!-- ===== Remover militar (sub-tela; escalas-painel-remover.js): as caixas de pergunta (o número vem do CSS), uma
        depois da outra e só as que valem. Quem sai (com o jeito como entrou no dia); Qual parte sai (só para quem entrou
        de mais de um jeito); e as perguntas da parte: pelo ciclo, até onde (só no dia, com o horário e o banco de horas,
-       ou do ciclo); o pontual (o horário e, saindo todo, o banco de horas); a extra (os horários e, depois que o mês
-       começou, o motivo); a troca (a nota: ela se desfaz nas Trocas) ===== -->
+       ou do ciclo); o pontual (o horário e, saindo todo, o banco de horas); a troca (a nota: ela se desfaz nas Trocas).
+       A extra não sai por aqui: ela muda na Extrajornada (Ajustes) ===== -->
   <template id="tpl-escala-remover">
     <div class="subtela escala-remover">
       <div class="subtela-cab">
@@ -1977,21 +1957,12 @@
         <div class="escala-linha-periodos escala-remover-periodos"></div>
         <span class="subtela-ajuda">O horário que sai do serviço dele.</span>
       </div>
-      <div class="grupo-caixa subtela-pergunta escala-remover-blocos oculto">
-        <span class="rotulo-secao">Horário</span>
-        <div class="escala-marcar-lista escala-remover-blocos-lista"></div>
-        <span class="subtela-ajuda">Os horários marcados saem.</span>
-      </div>
       <div class="grupo-caixa subtela-pergunta escala-remover-banco oculto">
         <span class="rotulo-secao">Banco de horas</span>
         <span class="subtela-ajuda escala-remover-banco-texto"></span>
         <label class="geral-opcao"><input type="radio" value="sim" /><span class="escala-remover-banco-sim"></span></label>
         <label class="geral-opcao"><input type="radio" value="nao" /><span class="escala-remover-banco-nao"></span></label>
       </div>
-      <label class="grupo-caixa subtela-pergunta escala-remover-motivo oculto">
-        <span class="rotulo-secao">Motivo do ajuste</span>
-        <input type="text" name="motivo-remover-extra" class="campo-entrada" maxlength="200" placeholder="Opcional. Ex.: pedido do militar" />
-      </label>
       <div class="nota escala-remover-ciclo oculto">
         <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-historico"/></svg>
         <span>Ao continuar, você vê o que acontece com as trocas, folgas e extras dele a partir desse dia, antes de confirmar.</span>
@@ -2135,7 +2106,6 @@
     <div class="abas">
       <button type="button" class="aba aba--ativa" data-secao="distribuicao">Dia</button>
       <button type="button" class="aba" data-secao="continuos" data-so-admin>Ciclo</button>
-      <button type="button" class="aba" data-secao="extra">Extrajornada</button>
     </div>
   </template>
 
@@ -2181,129 +2151,111 @@
     <a class="oculto" href="#" download="escala.pdf">PDF</a>
   </template>
 
-  <!-- ===== painel do dia › aba Extrajornada (escalas-painel-extra.js; Escala e Extrajornada) ===== -->
-  <!-- subcabeçalho do administrador: a busca na lista do dia -->
-  <template id="tpl-escala-extra-busca">
-    <div class="busca escala-extra-busca">
-      <button type="button" class="busca-modo" aria-label="Alternar entre marcar e filtrar" data-dica="Marcar">
-        <svg class="icone busca-modo-marcar" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-pesquisar"/></svg>
-        <svg class="icone busca-modo-filtrar" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-filtrar"/></svg>
-      </button>
-      <input type="text" name="busca-extra-dia" class="busca-entrada" maxlength="100" placeholder="Pesquisar militar" aria-label="Pesquisar militar" />
-      <button type="button" class="busca-limpar" aria-label="Limpar pesquisa">
-        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
-      </button>
-    </div>
-  </template>
-
-  <!-- o corpo da aba: a cobertura, a lista do dia, o motivo e os ajustes (o JS preenche cada área; a nota entra no topo) -->
-  <template id="tpl-escala-extra-corpo">
-    <div class="escala-extra-corpo">
-      <div class="escala-extra-area escala-extra-area-cobertura"></div>
-      <div class="escala-extra-area escala-extra-lista"></div>
-      <div class="escala-extra-area escala-extra-area-motivo"></div>
-      <div class="escala-extra-area escala-extra-area-ajustes"></div>
-    </div>
-  </template>
-
-  <!-- Cobertura do dia: as horas em cima e as duas barras, sem extra e com extra -->
-  <template id="tpl-escala-extra-cobertura">
-    <div class="escala-extra-cobertura">
-      <span></span>
-      <span class="escala-extra-horas"><span>08h</span><span>14h</span><span>20h</span><span>02h</span><span>08h</span></span>
-      <span class="escala-extra-cob-rotulo">Sem extra</span>
-      <div class="escala-extra-cob-barra escala-extra-cob-sem"></div>
-      <span class="escala-extra-cob-rotulo">Com extra</span>
-      <div class="escala-extra-cob-barra escala-extra-cob-com"></div>
-    </div>
-  </template>
-
-  <!-- uma linha do que a extra resolveu (marca verde): a frase do aviso do painel do dia; o texto vem do JS -->
-  <template id="tpl-escala-extra-aviso">
-    <div class="escala-extra-aviso">
-      <svg class="icone escala-extra-aviso-icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
-      <span class="escala-extra-aviso-texto"><strong class="escala-extra-aviso-nome"></strong><span class="escala-extra-aviso-resto"></span></span>
-    </div>
-  </template>
-
-  <!-- um ajuste já registrado neste dia: quem fez e quando + o que mudou -->
-  <template id="tpl-escala-extra-ajuste">
-    <div class="escala-extra-ajuste">
-      <span class="escala-extra-ajuste-cab"><strong class="escala-extra-ajuste-autor"></strong> <span class="escala-extra-ajuste-quando"></span></span>
-      <span class="escala-extra-ajuste-texto"></span>
-    </div>
-  </template>
-
-  <!-- um grupo da lista do dia (Neste dia, Querem este dia...): o título, as horas dos 4 horários e as linhas;
-       o grupo fechado mostra só o título e o Mostrar -->
-  <template id="tpl-escala-extra-grupo">
-    <div class="grupo-caixa escala-extra-grupo">
-      <div class="escala-extra-grupo-cab">
-        <span class="rotulo-secao"><span class="escala-extra-grupo-nome"></span> (<span class="escala-extra-grupo-conta"></span>)</span>
-        <span class="escala-extra-horas" aria-hidden="true"><span>08</span><span>14</span><span>20</span><span>02</span></span>
-        <button type="button" class="botao-discreto escala-extra-mostrar oculto">Mostrar</button>
+  <!-- as caixas das impressões da escala, no painel de impressão comum (componentes/js/geral-impressao.js, que põe a
+       nota, o aviso, a Prévia e o rodapé do index.html): o Imprimir escala (escalas-impressao.js: o painel do dia e o
+       Militares) e o das grades (escalas-impressao-grade.js: Agenda, Calendário, Colunas). O período, as unidades (a
+       árvore, marcada com as unidades e a companhia de cada pelotão; para quem é de companhia ou pelotão, começa na
+       companhia e a seta do título abre a árvore toda), o formato (só nas grades) e o que mostrar. O que é de uma
+       impressão só leva data-impressao-so com as marcas dela (dia, grade, semanas, dias); o JS mostra só o que vale -->
+  <template id="tpl-escala-impressao">
+    <!-- o período: as datas De/Até e os atalhos (dia); as semanas do mês da tela (Calendário: "Mês todo" marcado = o
+         mês inteiro; desmarcado, os botões das semanas, de marcar vários, clonados do tpl-escala-aba-unidade); os dias
+         do mês da tela (Agenda e Colunas › Dias). O Colunas › Unidades não tem a caixa: sai a semana da tela -->
+    <div class="grupo-caixa" data-impressao-so="dia semanas dias">
+      <span class="rotulo-secao" data-impressao-so="dia"><span data-impressao-num></span>. Datas</span>
+      <span class="rotulo-secao" data-impressao-so="semanas"><span data-impressao-num></span>. Semanas</span>
+      <span class="rotulo-secao" data-impressao-so="dias"><span data-impressao-num></span>. Dias</span>
+      <div class="escala-impressao-datas" data-impressao-so="dia">
+        <label class="campo">
+          <span class="campo-rotulo">De</span>
+          <input class="campo-entrada" type="text" name="impressao-inicio" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" data-impressao-inicio />
+          <span class="campo-erro-texto"></span>
+        </label>
+        <label class="campo">
+          <span class="campo-rotulo">Até</span>
+          <input class="campo-entrada" type="text" name="impressao-fim" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" data-impressao-fim />
+          <span class="campo-erro-texto"></span>
+        </label>
       </div>
-      <div class="escala-extra-grupo-linhas"></div>
+      <div class="escala-impressao-atalhos" data-impressao-so="dia">
+        <button type="button" class="botao botao--pequeno" data-impressao-atalho="dia">Só este dia</button>
+        <button type="button" class="botao botao--pequeno" data-impressao-atalho="semana">7 dias</button>
+        <button type="button" class="botao botao--pequeno" data-impressao-atalho="mes">Até o fim do mês</button>
+      </div>
+      <span class="campo-ajuda" data-impressao-so="dia">Até 31 dias por arquivo. Cada dia começa numa folha nova.</span>
+      <button type="button" class="arvore-linha impressao-marcar" role="checkbox" aria-checked="true" data-impressao-so="semanas" data-impressao-mes-todo>
+        <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
+        <span class="arvore-nome">Mês todo</span>
+      </button>
+      <div class="abas abas--seletor oculto" data-abas-multi data-impressao-semanas></div>
+      <!-- as listas só oferecem os dias que o mês tem; o "ao dia", do "Do dia" em diante -->
+      <div class="impressao-linha impressao-linha--inicio" data-impressao-so="dias">
+        <span class="impressao-rotulo">Do dia</span>
+        <div class="dropdown" data-impressao-dia="de">
+          <button type="button" class="campo-entrada campo-selecao" aria-label="Do dia">
+            <span class="campo-selecao-texto"></span>
+            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+          </button>
+          <div class="dropdown-menu"></div>
+        </div>
+        <span class="impressao-rotulo">ao dia</span>
+        <div class="dropdown" data-impressao-dia="ate">
+          <button type="button" class="campo-entrada campo-selecao" aria-label="Ao dia">
+            <span class="campo-selecao-texto"></span>
+            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+          </button>
+          <div class="dropdown-menu"></div>
+        </div>
+      </div>
+      <!-- a frase com as datas (grades): só quando não sai o mês todo -->
+      <span class="campo-ajuda oculto" data-impressao-periodo></span>
+    </div>
+    <div class="grupo-caixa">
+      <div class="impressao-cabecalho">
+        <span class="rotulo-secao impressao-titulo"><span data-impressao-num></span>. Unidades</span>
+        <button type="button" class="botao-discreto impressao-toggle oculto" aria-label="Mostrar todas as unidades ou só a companhia" aria-expanded="false" data-impressao-toggle>
+          <svg class="icone impressao-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+        </button>
+      </div>
+      <div class="campo">
+        <div class="arvore" data-impressao-arvore></div>
+        <span class="campo-erro-texto"></span>
+      </div>
+    </div>
+    <div class="grupo-caixa" data-impressao-so="grade">
+      <span class="rotulo-secao"><span data-impressao-num></span>. Formato</span>
+      <div class="impressao-linha">
+        <span class="impressao-rotulo">Arquivo</span>
+        <div class="abas abas--seletor" data-impressao-formato>
+          <button type="button" class="aba aba--ativa" data-formato="folhas">Folhas A4</button>
+          <button type="button" class="aba" data-formato="continua">Página contínua</button>
+        </div>
+      </div>
+      <span class="campo-ajuda">Folhas A4 para imprimir. Página contínua para ver na tela: uma página só, sem quebras.</span>
+    </div>
+    <!-- o que mostrar: nas grades, o gráfico, os ícones e a faixa de cada célula; no dia, os ícones. Com os ícones, o
+         pé da folha leva a legenda deles -->
+    <div class="grupo-caixa">
+      <span class="rotulo-secao"><span data-impressao-num></span>. Mostrar</span>
+      <button type="button" class="arvore-linha impressao-marcar" role="checkbox" aria-checked="true" data-impressao-so="grade" data-mostrar="grafico">
+        <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
+        <span class="arvore-nome">Gráfico de cobertura</span>
+      </button>
+      <button type="button" class="arvore-linha impressao-marcar" role="checkbox" aria-checked="true" data-mostrar="icones">
+        <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
+        <span class="arvore-nome">Ícones de origem</span>
+      </button>
+      <button type="button" class="arvore-linha impressao-marcar" role="checkbox" aria-checked="true" data-impressao-so="grade" data-mostrar="faixa">
+        <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
+        <span class="arvore-nome">Faixa do horário</span>
+      </button>
+      <span class="campo-ajuda">Igual à tela. Desmarque o que não quiser no papel.</span>
     </div>
   </template>
 
-  <!-- um militar da lista do dia: a preferência, o nome (e a unidade, se é de outra), os outros dias com as horas,
-       as cotas do mês e os 4 horários de 6 h (clicar marca ou desmarca); embaixo, os outros dias com os horários -->
-  <template id="tpl-escala-extra-militar">
-    <div class="escala-extra-militar">
-      <span class="escala-extra-ponto"></span>
-      <span class="escala-extra-quem">
-        <span class="escala-extra-quem-nome"><span class="escala-distribuicao-grad"></span> <span class="escala-distribuicao-nome"></span></span>
-        <span class="escala-extra-quem-unidade oculto"></span>
-      </span>
-      <button type="button" class="escala-extra-dias" aria-expanded="false" aria-label="Outros dias com extra"></button>
-      <span class="escala-extra-cota"></span>
-      <span class="escala-extra-marcas">
-        <button type="button" class="escala-extra-marca" data-bloco="1" aria-pressed="false" aria-label="08h às 14h"></button>
-        <button type="button" class="escala-extra-marca" data-bloco="2" aria-pressed="false" aria-label="14h às 20h"></button>
-        <button type="button" class="escala-extra-marca" data-bloco="3" aria-pressed="false" aria-label="20h às 02h"></button>
-        <button type="button" class="escala-extra-marca" data-bloco="4" aria-pressed="false" aria-label="02h às 08h"></button>
-      </span>
-      <div class="escala-extra-outros oculto"></div>
-    </div>
-  </template>
-
-  <!-- um outro dia do militar, na coluna ao lado do nome: o dia e o selo com as horas -->
-  <template id="tpl-escala-extra-dia">
-    <span class="escala-extra-dia"><span class="escala-extra-dia-texto"></span><span class="selo escala-extra-dia-horas"></span></span>
-  </template>
-
-  <!-- um outro dia do militar, aberto embaixo do nome: o dia e os 4 horários daquele dia -->
-  <template id="tpl-escala-extra-outro">
-    <div class="escala-extra-outro">
-      <span class="escala-extra-outro-dia"></span>
-      <span class="escala-extra-marcas">
-        <button type="button" class="escala-extra-marca" data-bloco="1" aria-pressed="false" aria-label="08h às 14h"></button>
-        <button type="button" class="escala-extra-marca" data-bloco="2" aria-pressed="false" aria-label="14h às 20h"></button>
-        <button type="button" class="escala-extra-marca" data-bloco="3" aria-pressed="false" aria-label="20h às 02h"></button>
-        <button type="button" class="escala-extra-marca" data-bloco="4" aria-pressed="false" aria-label="02h às 08h"></button>
-      </span>
-    </div>
-  </template>
-
-  <!-- quem não pode tirar extra no dia: o nome e o motivo ("De serviço", "Férias até 20/11") -->
-  <template id="tpl-escala-extra-indisponivel">
-    <div class="escala-extra-militar escala-extra-militar--indisponivel">
-      <span class="escala-extra-ponto"></span>
-      <span class="escala-extra-quem">
-        <span class="escala-extra-quem-nome"><span class="escala-distribuicao-grad"></span> <span class="escala-distribuicao-nome"></span></span>
-        <span class="escala-extra-quem-unidade oculto"></span>
-      </span>
-      <span class="escala-extra-motivo-texto"></span>
-    </div>
-  </template>
-
-  <!-- depois que o mês começou: o motivo do ajuste (vai junto no Salvar) -->
-  <template id="tpl-escala-extra-motivo">
-    <label class="grupo-caixa escala-extra-motivo">
-      <span class="rotulo-secao">Motivo do ajuste (opcional)</span>
-      <input type="text" name="motivo-extra" class="campo-entrada" maxlength="200" placeholder="Ex.: pedido do militar" />
-    </label>
+  <!-- uma aba solta (o texto vem do JS): as unidades do Colunas › Unidades e da faixa do celular, e as semanas do Imprimir -->
+  <template id="tpl-escala-aba-unidade">
+    <button type="button" class="aba"></button>
   </template>
 
   <!-- o lugar das alterações manuais do dia, no rodapé do Dia (o JS põe o bloco; o Salvar é o rodapé largo da página) -->

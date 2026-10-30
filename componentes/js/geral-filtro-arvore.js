@@ -20,7 +20,7 @@
      fora do "Todos", e é um ACRÉSCIMO: "Todos" + ela = tudo e mais ela. Desmarcar o "Todos"
      com uma separada marcada = só as separadas. A seleção nunca fica vazia: sem nada,
      volta ao "Todos".
-     Só com opções separadas (ex.: Escala completa, da Nova extra), o "Todos" e as divisórias somem e fica só a caixa
+     Só com opções separadas (ex.: Escala completa, da Extrajornada), o "Todos" e as divisórias somem e fica só a caixa
      de cada uma.
      Usado pelo botão Filtros (geral-filtros), uma coluna por filtro.
      config: { arvoreEl, mestreEl, colapsarTudo, onChange }

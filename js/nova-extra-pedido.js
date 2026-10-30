@@ -216,6 +216,7 @@
       if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
       ed = null;
       RW.painel.fechar();
+      if (RW.novaExtraOrg) RW.novaExtraOrg.resumo(r);
       aoSalvar();
     }, function (e) {
       RW.pararCarregando(btn);

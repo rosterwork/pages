@@ -24,7 +24,7 @@
    desenho conferido é o próprio arquivo; se algo não bate, fica o
    anterior, e no último caso o jeito simples (quebra livre).
    As peças (recursos, medidas, desenho, blocos e download) também
-   servem aos relatórios da Extrajornada (extrajornada-relatorios-pdf.js)
+   servem aos relatórios da Extrajornada (nova-extra-relatorios-pdf.js)
    e ao PDF das grades (escalas-impressao-grade-pdf.js).
    Cantos arredondados (a biblioteca não arredonda tabela): os desenhos
    acima pintam os blocos com fundo quadrado; o escolhido é redesenhado

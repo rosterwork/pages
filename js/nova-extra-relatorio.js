@@ -1,6 +1,6 @@
 /* ============================================================
-   NOVA EXTRA — passo 5: Relatórios
-   Igual à aba Relatórios da Extrajornada: à esquerda, as ETAPAS do
+   EXTRAJORNADA — passo 5: Relatórios
+   À esquerda, as ETAPAS do
    mês em ordem (Pedidos, Termos e cotas, Distribuição e lançamento
    com o Relatório inicial, Ajustes do mês e Relatório de ajustes,
    liberado a partir do dia 1º do mês seguinte); feita = marca verde,
@@ -10,10 +10,8 @@
    Cada etapa tem o seu Imprimir (pedidos, termos e cotas, relatório
    inicial e relatório final), que abre o painel Imprimir relatório
    (nova-extra-imprimir.js), liberado quando o relatório já pode sair.
-   A prévia usa a conta das mudanças da Extrajornada
-   (extrajornada-relatorios-pdf.js): aqui os dados da Nova extra viram o
-   formato que ela lê. No teste, "Mês já começou" também libera o
-   Relatório final.
+   A prévia compara os trechos da foto do lançamento com os de agora
+   (mudancas, por militar: o que saiu e o que entrou).
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
    RosterWork.novaExtraRelatorio.
    ============================================================ */
@@ -38,7 +36,18 @@
   /* as extras { cpf, data, unidade, blocos } em trechos contínuos (a mesma conta dos PDFs) */
   function trechos(lista) { return RW.novaExtraRelatoriosPdf.trechos(lista); }
 
-  /* os dados da Nova extra no formato dos relatórios da Extrajornada */
+  /* quem mudou desde o lançamento: o que saiu (era) e o que entrou (ficou), por militar, trecho a trecho */
+  function mudancas(dados) {
+    var chave = function (x) { return x.cpf + '|' + x.data + '|' + x.uid + '|' + x.b_ini + '|' + x.b_fim; };
+    var naBase = {}, noAtual = {}, por = {};
+    (dados.base || []).forEach(function (x) { naBase[chave(x)] = true; });
+    (dados.atual || []).forEach(function (x) { noAtual[chave(x)] = true; });
+    (dados.base || []).forEach(function (x) { if (!noAtual[chave(x)]) (por[x.cpf] = por[x.cpf] || { era: [], ficou: [] }).era.push(x); });
+    (dados.atual || []).forEach(function (x) { if (!naBase[chave(x)]) (por[x.cpf] = por[x.cpf] || { era: [], ficou: [] }).ficou.push(x); });
+    return por;
+  }
+
+  /* os dados do mês no formato dos relatórios (as etapas, a prévia e os PDFs) */
   function montarDados(d) {
     var comp = d.competencia, inicio = dataDe(comp);
     var fim = iso(new Date(inicio.getFullYear(), inicio.getMonth() + 1, 0));
@@ -56,7 +65,7 @@
     var l = d.lancamento;
     return {
       competencia: comp, mes_fim: fim, libera_ajustes: proximo,
-      iniciado: !!d.iniciado, terminou: d.hoje >= proximo, simular: !!d.mes.simular_inicio,
+      iniciado: !!d.iniciado, terminou: d.hoje >= proximo,
       prazos: {},
       solicitacoes: {
         inicio: d.mes.abre, fim: d.mes.fecha, voluntarios: vols.length,
@@ -136,7 +145,7 @@
     linhas.textContent = '';
     var unidades = {};
     dados.unidades.forEach(function (u) { unidades[u.unidade_id] = u.nome; });
-    var mud = RW.extrajornadaRelatoriosPdf ? RW.extrajornadaRelatoriosPdf.mudancas(dados) : {};
+    var mud = mudancas(dados);
     var ajustes = {};
     dados.ajustes.forEach(function (a) { ajustes[a.cpf] = a; });
     var cotas = [], n = 0;

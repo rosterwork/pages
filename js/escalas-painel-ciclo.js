@@ -2,9 +2,8 @@
    ESCALAS — o ciclo pelo painel do dia (as abas Dia e Ciclo)
    - o rascunho do ciclo: as mudanças do dia aberto que ainda não
      foram salvas; marcar e desmarcar não gravam: o Salvar do rodapé
-     do painel (escalas-painel-salvar.js) grava junto com o Dia e a
-     Extrajornada (escala_ciclo_salvar_lote, pelo
-     escala_painel_salvar);
+     do painel (escalas-painel-salvar.js) grava junto com o Dia
+     (escala_ciclo_salvar_lote, pelo escala_painel_salvar);
    - confirmar: a lista do que acontece com as trocas, folgas e
      extras a partir do dia (escala_ciclo_retirar_analisar) e a
      confirmação, antes de marcar quem sai ou muda de ciclo;

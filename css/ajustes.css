@@ -1,13 +1,13 @@
 /* ============================================================
    AJUSTES — configurações das unidades
-   Abas no cabeçalho (Escala · Extrajornada). Escala: a árvore de
-   unidades com o card do ritmo (geral-arvore). Extrajornada: os
-   cards dos prazos e o formulário deles no painel direito.
+   Abas no cabeçalho (Escala · Expediente). Escala: a árvore de
+   unidades com o card do ritmo (geral-arvore). Expediente: o mês de
+   cada unidade e o painel do dia e do horário padrão.
    Só o específico da página. Cores/medidas só por token.
-   Montagem: js/ajustes.js e js/ajustes-extrajornada.js
+   Montagem: js/ajustes.js e js/ajustes-expediente.js
    ============================================================ */
 
-/* ---------- card de um ajuste (o ritmo na árvore e os prazos da extrajornada) ---------- */
+/* ---------- card de um ajuste (o ritmo na árvore) ---------- */
 .ajuste-cartao {
   display: flex;
   align-items: center;
@@ -53,37 +53,10 @@
   color: var(--texto-fraco);
 }
 
-/* ---------- aba Extrajornada: os prazos ---------- */
-.ajustes-extra {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 24px;
-  overflow: auto;
-}
-
-.ajustes-extra-cab {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
+/* ---------- a frase de ajuda e os campos dos painéis (o Expediente): rótulo em cima, o campo embaixo ---------- */
 .ajustes-extra-ajuda {
   font-size: 12px;
   color: var(--texto-fraco);
-}
-
-.ajustes-extra-cartoes {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* o formulário dos prazos no painel direito: rótulo em cima, o número e o complemento ao lado */
-.ajustes-prazos-form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
 }
 
 .ajustes-prazo-campo {
@@ -96,23 +69,6 @@
   font-size: 12px;
   font-weight: 600;
   color: var(--texto-forte);
-}
-
-.ajustes-prazo-linha {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.ajustes-prazo-numero {
-  max-width: 72px;
-  text-align: center;
-}
-
-.ajustes-prazo-sufixo,
-.ajustes-prazo-ajuda {
-  font-size: 12px;
-  color: var(--texto-fraco);
 }
 
 /* ---------- aba Expediente: o mês de cada unidade ---------- */
@@ -273,7 +229,6 @@
     padding: 8px var(--respiro-pagina) var(--respiro-pagina);
   }
 
-  html[data-celular] .ajustes-extra,
   html[data-celular] .ajustes-exp {
     padding: var(--respiro-pagina);
   }

@@ -134,8 +134,8 @@
       .catch(function () { return null; });
   }
 
-  /* a prévia das telas (RPC escala_previa): com mudança do painel do dia esperando o Salvar (o Dia, o Ciclo e a
-     Extrajornada; escalas-painel-salvar.js), a leitura pedida já com o rascunho (o banco roda o Salvar num ensaio e desfaz
+  /* a prévia das telas (RPC escala_previa): com mudança do painel do dia esperando o Salvar (o Dia e o Ciclo;
+     escalas-painel-salvar.js), a leitura pedida já com o rascunho (o banco roda o Salvar num ensaio e desfaz
      tudo, nada é gravado). leitura = ler_escala_mes, ler_escala_militares, escala_dia_arvore, escala_minha_calendario ou
      ler_distribuicao_dia (o painel do dia, com erro_simulacao e erro_parte na recusa). Sem mudança, devolve null (a tela lê
      como sempre); a promessa resolve no mesmo que a leitura devolve, ou null em falha */
@@ -150,16 +150,16 @@
   function corpoPrevia(leitura, args) {
     var S = RosterWork.escalasPainelSalvar, p = S && S.paraPrevia();
     if (!p) return null;
-    return { p_unidade_id: Number(p.unidadeId), p_data: p.iso, p_dia: p.dia, p_ciclo: p.ciclo, p_extra: p.extra,
+    return { p_unidade_id: Number(p.unidadeId), p_data: p.iso, p_dia: p.dia, p_ciclo: p.ciclo,
       p_leitura: leitura, p_args: args || {} };
   }
-  /* o Salvar do rodapé do painel do dia (RPC escala_painel_salvar): o Dia (o rascunho, com o "antes"), o Ciclo (as
-     mudanças) e a Extrajornada ({competencia, mudancas, motivo}) de uma vez, tudo ou nada; a parte sem mudança vai
-     nula. Resolve no objeto da RPC ({success, logs, mudou, dia}, ou {success:false, error, parte, desatualizado}) ou
-     num marcador de falha: { _falha: 'conexao' } (sem rede) | { _falha: 'servidor' } (HTTP não-ok). */
-  function painelSalvar(unidadeId, iso, dia, ciclo, extra) {
+  /* o Salvar do rodapé do painel do dia (RPC escala_painel_salvar): o Dia (o rascunho, com o "antes") e o Ciclo (as
+     mudanças) de uma vez, tudo ou nada; a parte sem mudança vai nula. Resolve no objeto da RPC ({success, logs, mudou,
+     dia}, ou {success:false, error, parte, desatualizado}) ou num marcador de falha: { _falha: 'conexao' } (sem rede) |
+     { _falha: 'servidor' } (HTTP não-ok). */
+  function painelSalvar(unidadeId, iso, dia, ciclo) {
     return RosterWork.apiFetch('/rest/v1/rpc/escala_painel_salvar', { metodo: 'POST',
-      corpo: { p_unidade_id: Number(unidadeId), p_data: iso, p_dia: dia || null, p_ciclo: ciclo || null, p_extra: extra || null } })
+      corpo: { p_unidade_id: Number(unidadeId), p_data: iso, p_dia: dia || null, p_ciclo: ciclo || null } })
       .then(function (r) { return r.ok ? r.json() : { _falha: 'servidor' }; })
       .catch(function () { return { _falha: 'conexao' }; });
   }
@@ -182,22 +182,6 @@
     return cicloAcao('escala_ciclo_retirar_analisar', unidadeId, cpf, iso, { p_so_periodo: true });
   }
 
-  /* ---- Extrajornada do dia (aba do painel do dia, na Escala e na Extrajornada) ---- */
-  function rpcExtra(nome, corpo) {
-    return RosterWork.apiFetch('/rest/v1/rpc/' + nome, { metodo: 'POST', corpo: corpo })
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .catch(function () { return null; });
-  }
-  /* quem tira extra nesta unidade no dia, os ajustes do dia e a cobertura sem e com extra; com o
-     rascunho (ops), a cobertura e os dias mexidos já com as mudanças (ensaio no motor, nada é gravado) */
-  function extraPainel(unidadeId, iso, ops) {
-    return rpcExtra('extra_dia_painel', { p_unidade: Number(unidadeId), p_data: iso, p_ops: ops || [] });
-  }
-  /* a lista do dia: os voluntários com termo e cota, a preferência, as extras deles no mês e quem não pode (o motivo) */
-  function extraLista(unidadeId, iso) {
-    return rpcExtra('extra_dia_lista', { p_unidade: Number(unidadeId), p_data: iso });
-  }
-
   /* quem pode entrar no dia como pontual (RPC escala_dia_disponiveis): de folga na área da unidade buscada
      (pelotão = a companhia inteira), de qualquer setor, sem serviço e sem afastamento; vem por unidade, a buscada
      primeiro; "assume" = vira o Chefe de Socorro / Oficial de Área. Com a vaga ({viatura_id, instalacao_id,
@@ -217,7 +201,6 @@
     lerImpressao: lerImpressao, lerImpressaoErros: lerImpressaoErros, lerSysbm: lerSysbm,
     sysbmTermo: sysbmTermo, sysbmDarCiencia: sysbmDarCiencia,
     continuosListar: continuosListar, cicloRetirarAnalisar: cicloRetirarAnalisar,
-    extraPainel: extraPainel, extraLista: extraLista,
     disponiveis: disponiveis
   };
 })();

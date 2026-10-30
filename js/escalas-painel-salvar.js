@@ -1,13 +1,11 @@
 /* ============================================================
-   ESCALAS — o Salvar do painel do dia (as abas Dia, Ciclo e
-   Extrajornada). As mudanças de cada aba ficam no rascunho dela (o
-   Dia em escalas-painel-editar.js, o Ciclo em
-   escalas-painel-ciclo.js, a Extrajornada no rascunho do mês,
-   escalas-extra-rascunho.js); trocar de aba não perde nada. O
-   rodapé largo da página (.escala-rodape-salvar, na Escala e na
-   Extrajornada, no molde da Nova extra) mostra "N alterações não
+   ESCALAS — o Salvar do painel do dia (as abas Dia e Ciclo). As
+   mudanças de cada aba ficam no rascunho dela (o Dia em
+   escalas-painel-editar.js, o Ciclo em escalas-painel-ciclo.js);
+   trocar de aba não perde nada. O rodapé largo da página
+   (.escala-rodape-salvar) mostra "N alterações não
    salvas", o Cancelar (descarta tudo, com a confirmação) e o Salvar,
-   que grava as três de uma vez, tudo ou nada (escala_painel_salvar):
+   que grava as duas de uma vez, tudo ou nada (escala_painel_salvar):
    o véu, o resumo com o que cada parte gravou e as telas lidas de
    novo. Enquanto há mudança, as telas da Escala mostram o rascunho
    (a prévia, escala_previa, pela escalas-dados.js) e o dia mudado
@@ -20,9 +18,8 @@
    API: RosterWork.escalasPainelSalvar.rodape(rodape, comHistorico)
    monta o rodapé do painel e devolve o lugar do histórico;
    .atualizar() redesenha o rodapé da página; .contar() soma as
-   mudanças das três; .pendente() diz se há mudança no Dia ou no
-   Ciclo (a Extrajornada é do mês); .descartar() tira as do Dia e do
-   Ciclo; .paraPrevia() dá o rascunho para a prévia das telas (null
+   mudanças das duas; .pendente() diz se há mudança no Dia ou no
+   Ciclo; .descartar() tira as do Dia e do Ciclo; .paraPrevia() dá o rascunho para a prévia das telas (null
    sem mudança); .marcado(unidade, dia) diz se o dia leva a borda.
    ============================================================ */
 (function () {
@@ -37,7 +34,6 @@
   function msg() { return RW.mensagens.escala; }
   function E() { return RW.escalasPainelEditar; }
   function C() { return RW.escalasPainelCiclo; }
-  function R() { return RW.escalasExtraRascunho; }
   function contexto() { return RW.escalasPainel && RW.escalasPainel.contexto ? RW.escalasPainel.contexto() : null; }
 
   /* ---------- o que falta salvar ---------- */
@@ -46,7 +42,7 @@
   function contar() {
     var c = contexto();
     if (!c) return 0;
-    return (E() ? E().pendentes() : 0) + doCiclo(c).length + (R() ? R().contar() : 0);
+    return (E() ? E().pendentes() : 0) + doCiclo(c).length;
   }
   /* o Dia e o Ciclo são do dia aberto (trocar de dia, fechar o painel e sair da página perguntam antes) */
   function pendente() { return (E() ? E().pendentes() : 0) > 0 || doCiclo(contexto()).length > 0; }
@@ -55,25 +51,22 @@
     if (C()) C().limpar();
   }
 
-  /* o rascunho para a prévia das telas: { unidadeId, iso, dia, ciclo, extra } (cada parte nula sem mudança), ou null */
+  /* o rascunho para a prévia das telas: { unidadeId, iso, dia, ciclo } (cada parte nula sem mudança), ou null */
   function paraPrevia() {
     var c = contexto();
     if (!c || !contar()) return null;
     return {
       unidadeId: c.unidadeId, iso: c.iso,
       dia: E() && E().pendentes() ? E().previaDia() : null,
-      ciclo: doCiclo(c).length ? C().envio() : null,
-      extra: R() && R().sujo() ? R().envio() : null
+      ciclo: doCiclo(c).length ? C().envio() : null
     };
   }
-  /* a borda tracejada: o dia aberto no painel (com mudança no Dia ou no Ciclo) e os dias do rascunho da Extrajornada; sem a
-     unidade (null), em qualquer unidade (a Minha escala) */
+  /* a borda tracejada: o dia aberto no painel (com mudança no Dia ou no Ciclo); sem a unidade (null), em qualquer
+     unidade (a Minha escala) */
   function marcado(unidadeId, iso) {
     var c = contexto();
     if (!c) return false;
-    var mesma = function (u) { return unidadeId == null || String(u) === String(unidadeId); };
-    if (pendente() && mesma(c.unidadeId) && c.iso === iso) return true;
-    return !!(R() && R().doDia(iso).some(function (m) { return mesma(m.unidade); }));
+    return pendente() && (unidadeId == null || String(c.unidadeId) === String(unidadeId)) && c.iso === iso;
   }
 
   /* ---------- os rodapés ---------- */
@@ -117,12 +110,11 @@
     el.querySelector('.escala-painel-salvar').disabled = salvando;
   }
 
-  /* o que as telas mostram do rascunho (vazio sem mudança): o Dia e o Ciclo são do dia aberto; a Extrajornada é do mês
-     (trocar de dia com ela esperando não muda as telas) */
+  /* o que as telas mostram do rascunho (vazio sem mudança): o Dia e o Ciclo do dia aberto */
   function marcaDaPrevia() {
     var p = paraPrevia();
     if (!p) return '';
-    return JSON.stringify([p.dia || p.ciclo ? [p.unidadeId, p.iso, p.dia, p.ciclo] : null, p.extra]);
+    return JSON.stringify([p.unidadeId, p.iso, p.dia, p.ciclo]);
   }
 
   /* o rascunho mudou: o rodapé na hora, e as telas meio segundo depois do último clique (cada uma pede a prévia), só se
@@ -150,14 +142,13 @@
       textoCancelar: RW.mensagens.botoes.continuarEditando,
       aoConfirmar: function () {
         descartar();
-        if (R() && R().sujo()) R().limpar();
         redesenharAba();
         mudou();
       }
     });
   }
 
-  /* a aba Ciclo aberta lê a lista de novo (o Dia se redesenha sozinho, e a Extrajornada escuta o rascunho dela) */
+  /* a aba Ciclo aberta lê a lista de novo (o Dia se redesenha sozinho) */
   function redesenharAba() {
     var c = contexto();
     if (c && c.secao === 'continuos' && RW.escalasPainel.recarregarSecao) RW.escalasPainel.recarregarSecao();
@@ -178,13 +169,12 @@
     if (!c || salvando) return;
     var dia = E() && E().pendentes() ? E().paraGravar() : null;
     var ciclo = doCiclo(c).length ? C().envio() : null;
-    var extra = R() && R().sujo() ? R().envio() : null;
-    if (!dia && !ciclo && !extra) return;
+    if (!dia && !ciclo) return;
     salvando = true;
     atualizar();
     if (botao) RW.iniciarCarregando(botao);
     if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal();   // o ciclo recalcula a escala: círculo e tela travada
-    RW.escalasDados.painelSalvar(c.unidadeId, c.iso, dia, ciclo, extra).then(function (r) {
+    RW.escalasDados.painelSalvar(c.unidadeId, c.iso, dia, ciclo).then(function (r) {
       salvando = false;
       if (RW.esconderVeuGlobal) RW.esconderVeuGlobal();
       if (botao) RW.pararCarregando(botao);
@@ -205,7 +195,6 @@
       }
       if (E()) E().aposGravar(r);
       if (C()) C().limpar();
-      if (extra && R()) R().aposGravar();
       if (espera) { clearTimeout(espera); espera = null; }
       mostrado = marcaDaPrevia();   // as telas leem de novo logo abaixo, já sem o que foi gravado
       atualizar();
@@ -219,7 +208,6 @@
 
   /* qualquer aviso dos rascunhos (também o painel que abre ou fecha) redesenha o rodapé; as telas, só com mudança */
   window.addEventListener('rosterwork_escala_rascunho', mudou);
-  window.addEventListener('rosterwork_extra_rascunho', function (e) { if (!(e && e.detail && e.detail.salvou)) mudou(); });
   /* fechar ou recarregar o navegador, ou ir para outra página, com mudança no Dia ou no Ciclo: o aviso */
   if (RW.guardaSaida) RW.guardaSaida.registrar(pendente);
 

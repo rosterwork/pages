@@ -6,7 +6,8 @@
    página contínua, no fim), as linhas da legenda: cada ícone que
    aparece no arquivo e o nome dele, na ordem e com os nomes da
    Legenda da tela (o molde #tpl-escala-legenda do index.html, fonte
-   única dos nomes). Desenhada para a biblioteca do PDF, como o resto
+   única dos nomes; na Extrajornada, também o #tpl-ne-legenda-pdf, com
+   quem inseriu a extra). Desenhada para a biblioteca do PDF, como o resto
    do arquivo; as medidas em pontos nas constantes abaixo.
    API: RosterWork.escalasImpressaoLegenda.carregarIcones(c, nomes) (os
         ícones em c.icones), .altura(usados), .peca(c, usados)
@@ -16,7 +17,7 @@
 
   var RW = window.RosterWork = window.RosterWork || {};
 
-  var MOLDE = 'tpl-escala-legenda';
+  var MOLDES = ['tpl-escala-legenda', 'tpl-ne-legenda-pdf'];   // o segundo só existe na Extrajornada
   var ICONE = 7;                       // o ícone, no tamanho dos ícones de origem dos PDFs
   var ICONE_MARGEM = [0, 0.5, 0, 0];   // alinha o ícone ao meio do texto
   var POR_LINHA = 6;                   // itens por linha (cabem na A4 em pé)
@@ -26,22 +27,26 @@
   var ENTRE_ICONE_E_NOME = 3;
 
   var nomesCache = null;   // [{ icone, nome }] na ordem da Legenda da tela
+  var cacheMoldes = '';    // os moldes lidos (o da Extrajornada entra e sai com a página)
 
   /* os ícones da Legenda da tela e os nomes deles; o primeiro nome de cada ícone vale */
   function nomes() {
-    if (nomesCache) return nomesCache;
-    var molde = document.getElementById(MOLDE);
-    if (!molde) return [];
+    var moldes = MOLDES.map(function (id) { return document.getElementById(id); }).filter(Boolean);
+    var chave = moldes.map(function (m) { return m.id; }).join(',');
+    if (nomesCache && cacheMoldes === chave) return nomesCache;
     var lista = [], vistos = {};
-    Array.prototype.forEach.call(molde.content.querySelectorAll('.escala-legenda-item'), function (item) {
-      var uso = item.querySelector('use');
-      var texto = item.querySelector('span:last-child');
-      var icone = uso ? (uso.getAttribute('href') || '').split('#')[1] : '';
-      if (!icone || !texto || vistos[icone]) return;
-      vistos[icone] = true;
-      lista.push({ icone: icone, nome: texto.textContent.trim() });
+    moldes.forEach(function (molde) {
+      Array.prototype.forEach.call(molde.content.querySelectorAll('.escala-legenda-item'), function (item) {
+        var uso = item.querySelector('use');
+        var texto = item.querySelector('span:last-child');
+        var icone = uso ? (uso.getAttribute('href') || '').split('#')[1] : '';
+        if (!icone || !texto || vistos[icone]) return;
+        vistos[icone] = true;
+        lista.push({ icone: icone, nome: texto.textContent.trim() });
+      });
     });
     nomesCache = lista;
+    cacheMoldes = chave;
     return lista;
   }
 

@@ -1,17 +1,16 @@
 <div class="pagina">
   <div class="pagina-cabecalho">
     <div class="pagina-titulos">
-      <h1>Nova extra</h1>
-      <span class="selo selo--alerta">Protótipo</span>
+      <h1>Extrajornada</h1>
     </div>
-    <!-- abas: Minha extra · Extras do mês | Organizar o mês (a do administrador, separada pelo traço; os passos ficam na
-         barra), com um traço só para os dois grupos. No celular, só Minha extra e Extras do mês -->
+    <!-- abas: Minha extra · Extras do mês | Organizar o mês (só do administrador da companhia, separada pelo traço; os
+         passos ficam na barra), com um traço só para os dois grupos. No celular, só Minha extra e Extras do mês -->
     <div id="nova-extra-abas" data-abas-grupo>
       <div class="abas">
         <button type="button" class="aba aba--ativa" data-aba="minha">Minha extra</button>
         <button type="button" class="aba" data-aba="calendario">Extras do mês</button>
       </div>
-      <div class="abas">
+      <div class="abas" data-so-admin>
         <button type="button" class="aba" data-aba="organizar">Organizar o mês</button>
       </div>
     </div>
@@ -87,6 +86,11 @@
     </div>
     <span class="pagina-subcabecalho-divisor oculto" id="nova-extra-legenda-divisor" aria-hidden="true"></span>
     <div class="oculto" id="nova-extra-legenda"></div>
+    <!-- imprimir a grade da tela (Agenda ou Calendário), nas Extras do mês, na Distribuição e nos Ajustes: o painel de
+         impressão das grades da Escala, com as extras (nova-extra-imprimir-grade.js) -->
+    <button type="button" class="botao botao--quadrado oculto" id="nova-extra-imprimir" aria-label="Imprimir a grade" data-dica="Imprimir">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg>
+    </button>
   </div>
 
   <!-- cada aba ocupa o corpo inteiro: a linha de resumo parada em cima, o conteúdo rolando por dentro e o rodapé parado
@@ -564,7 +568,7 @@
       <div class="nova-extra-caixa nova-extra-form">
         <span class="nova-extra-ajuda" id="p4-texto"></span>
         <div id="p4-mudancas"></div>
-        <span class="nova-extra-ajuda">Teste: o lançamento guarda a foto da distribuição; a escala de verdade não muda e ninguém é avisado.</span>
+        <span class="nova-extra-ajuda">Ao lançar, as extras entram na escala de serviço. Só os dias que mudaram são refeitos.</span>
       </div>
     </div>
   </div>
@@ -625,10 +629,25 @@
   </div>
 </template>
 
-<!-- quem pôs a extra (ao lado das bolinhas no calendário e antes do nome no Neste dia do painel do dia): o ícone do
-     sistema (o Preencher refaz) ou o cadeado (o administrador pôs ou mudou; o sistema nunca muda) -->
+<!-- quem inseriu a extra (ao lado das bolinhas no calendário e na Agenda e antes do nome no Neste dia do painel do dia):
+     o ícone do sistema (o Preencher refaz) ou o do administrador (o sistema nunca muda), com a dica de quem inseriu -->
+<!-- os nomes dos dois ícones de quem inseriu a extra na legenda do pé da folha do Imprimir da grade
+     (escalas-impressao-legenda.js; nunca clonado na tela) -->
+<template id="tpl-ne-legenda-pdf">
+  <span class="escala-legenda-item">
+    <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-extra-sistema"/></svg>
+    <span>Inserido pelo sistema</span>
+  </span>
+  <span class="escala-legenda-item">
+    <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-extra-administrador"/></svg>
+    <span>Inserido pelo administrador</span>
+  </span>
+</template>
+
 <template id="tpl-ne-origem">
-  <svg class="icone nova-extra-origem" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-origem-sistema"/></svg>
+  <span class="nova-extra-origem" role="img" data-dica="">
+    <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-extra-sistema"/></svg>
+  </span>
 </template>
 
 <!-- passo 3, o painel esquerdo: um voluntário (posto e nome, o pelotão e as cotas colocadas de recebidas); clicar
@@ -742,11 +761,11 @@
     <span class="rotulo-secao">Quem pôs a extra</span>
     <div class="escala-legenda-grade">
       <span class="escala-legenda-item">
-        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-origem-sistema"/></svg>
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-extra-sistema"/></svg>
         <span>O sistema: o Preencher pela sugestão refaz</span>
       </span>
       <span class="escala-legenda-item">
-        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-cadeado"/></svg>
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-extra-administrador"/></svg>
         <span>O administrador: travada, o sistema não muda</span>
       </span>
     </div>
@@ -789,11 +808,11 @@
     <span class="rotulo-secao">Quem pôs a extra</span>
     <div class="escala-legenda-grade">
       <span class="escala-legenda-item">
-        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-origem-sistema"/></svg>
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-extra-sistema"/></svg>
         <span>O sistema: o Preencher pela sugestão refaz</span>
       </span>
       <span class="escala-legenda-item">
-        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-cadeado"/></svg>
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-extra-administrador"/></svg>
         <span>O administrador: travada, o sistema não muda</span>
       </span>
     </div>
@@ -952,4 +971,50 @@
 <template id="tpl-nova-extra-acoes">
   <button type="button" class="botao" id="nova-extra-cancelar">Cancelar</button>
   <button type="button" class="botao botao--primario" id="nova-extra-enviar" disabled>Enviar pedido</button>
+</template>
+
+<!-- ===== painel do dia (nova-extra-dia.js) ===== -->
+<!-- Cobertura do dia: as horas em cima e as duas barras, sem extra e com extra -->
+<template id="tpl-escala-extra-cobertura">
+  <div class="escala-extra-cobertura">
+    <span></span>
+    <span class="escala-extra-horas"><span>08h</span><span>14h</span><span>20h</span><span>02h</span><span>08h</span></span>
+    <span class="escala-extra-cob-rotulo">Sem extra</span>
+    <div class="escala-extra-cob-barra escala-extra-cob-sem"></div>
+    <span class="escala-extra-cob-rotulo">Com extra</span>
+    <div class="escala-extra-cob-barra escala-extra-cob-com"></div>
+  </div>
+</template>
+
+<!-- um militar da lista do dia: a preferência, o nome (e a unidade, se é de outra), os outros dias, as cotas do mês e
+     os 4 horários de 6 h (clicar marca ou desmarca); embaixo, os outros dias com os horários -->
+<template id="tpl-escala-extra-militar">
+  <div class="escala-extra-militar">
+    <span class="escala-extra-ponto"></span>
+    <span class="escala-extra-quem">
+      <span class="escala-extra-quem-nome"><span class="escala-distribuicao-grad"></span> <span class="escala-distribuicao-nome"></span></span>
+      <span class="escala-extra-quem-unidade oculto"></span>
+    </span>
+    <button type="button" class="escala-extra-dias" aria-expanded="false" aria-label="Outros dias com extra"></button>
+    <span class="escala-extra-cota"></span>
+    <span class="escala-extra-marcas">
+      <button type="button" class="escala-extra-marca" data-bloco="1" aria-pressed="false" aria-label="08h às 14h"></button>
+      <button type="button" class="escala-extra-marca" data-bloco="2" aria-pressed="false" aria-label="14h às 20h"></button>
+      <button type="button" class="escala-extra-marca" data-bloco="3" aria-pressed="false" aria-label="20h às 02h"></button>
+      <button type="button" class="escala-extra-marca" data-bloco="4" aria-pressed="false" aria-label="02h às 08h"></button>
+    </span>
+    <div class="escala-extra-outros oculto"></div>
+  </div>
+</template>
+
+<!-- quem não pode tirar extra no dia: o nome e o motivo ("De serviço", "Férias até 20/11") -->
+<template id="tpl-escala-extra-indisponivel">
+  <div class="escala-extra-militar escala-extra-militar--indisponivel">
+    <span class="escala-extra-ponto"></span>
+    <span class="escala-extra-quem">
+      <span class="escala-extra-quem-nome"><span class="escala-distribuicao-grad"></span> <span class="escala-distribuicao-nome"></span></span>
+      <span class="escala-extra-quem-unidade oculto"></span>
+    </span>
+    <span class="escala-extra-motivo-texto"></span>
+  </div>
 </template>
