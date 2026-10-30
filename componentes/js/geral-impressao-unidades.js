@@ -1,14 +1,16 @@
 /* ============================================================
-   ESCALAS — Imprimir escala: as unidades (escalas-impressao.js)
-   As marcas de começo: as unidades pedidas (a do painel do dia ou a
-   seleção do cabeçalho) e a companhia de cada pelotão; a companhia
-   só fica de fora se a pessoa desmarcar. Para quem é lotado em
-   companhia (CIBM ou CIA) ou pelotão, a árvore começa na companhia
-   das unidades marcadas, já aberta, e a seta do título da caixa abre
-   a árvore toda (e fecha de volta), sem perder as marcas. Quem é
-   lotado acima, ou tem unidades de mais de uma companhia, vê a
-   árvore toda, sem a seta.
-   API: RosterWork.escalasImpressaoUnidades.montar(seletor, seta, ids)
+   COMPONENTE geral-impressao-unidades — as Unidades do painel de
+   impressão (geral-impressao.js), quando o molde da impressão tem a
+   árvore. As marcas de começo: as unidades pedidas (a do painel do
+   dia, a seleção do cabeçalho ou as unidades da tela) e a companhia
+   de cada pelotão; a companhia só fica de fora se a pessoa desmarcar.
+   Para quem é lotado em companhia (CIBM ou CIA) ou pelotão, a árvore
+   começa na companhia das unidades marcadas, já aberta, e a seta do
+   título da caixa abre a árvore toda (e fecha de volta), sem perder
+   as marcas. Quem é lotado acima, ou tem unidades de mais de uma
+   companhia, vê a árvore toda, sem a seta. Só contam as unidades que
+   têm escala (CIA, CIBM, PEL); as outras marcadas são só o caminho.
+   API: RosterWork.impressaoUnidades.montar(seletor, seta, ids), .escolhidas(seletor)
    ============================================================ */
 (function () {
   'use strict';
@@ -17,6 +19,7 @@
 
   var COMPANHIAS = ['CIBM', 'CIA'];
   var LOTACOES_DO_RECORTE = ['CIBM', 'CIA', 'PEL'];
+  var TIPOS_COM_ESCALA = ['CIA', 'CIBM', 'PEL'];
 
   function achar(lista, id) {
     for (var i = 0; i < lista.length; i++) {
@@ -76,5 +79,10 @@
     });
   }
 
-  RW.escalasImpressaoUnidades = { montar: montar };
+  /* as unidades marcadas que têm escala, na ordem da árvore */
+  function escolhidas(seletor) {
+    return seletor.unidadesSelecionadas().filter(function (u) { return TIPOS_COM_ESCALA.indexOf(u.tipo) >= 0; });
+  }
+
+  RW.impressaoUnidades = { montar: montar, escolhidas: escolhidas };
 })();

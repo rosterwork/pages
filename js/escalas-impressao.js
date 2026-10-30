@@ -1,6 +1,7 @@
 /* ============================================================
    ESCALAS — Imprimir escala (as folhas do dia → PDF)
-   Usa o painel de impressão comum (escalas-impressao-painel.js), com
+   Usa o painel de impressão comum (componentes/js/geral-impressao.js,
+   com as caixas do molde #tpl-escala-impressao do escalas.html), com
    o que é desta impressão: o período (datas De/Até, já com o dia
    exibido, e os atalhos; até 31 dias por arquivo, o banco confere de
    novo), o Mostrar (os ícones de origem, com a legenda no pé da
@@ -10,9 +11,10 @@
    Imprimir do painel do dia (subcabeçalho da aba Dia, só na Escala),
    numa sub-tela no lugar da lista, marcada com o dia e a unidade do
    painel; esse botão fica desligado enquanto há alteração não salva
-   (o PDF sai do que está gravado).
+   (o PDF sai do que está gravado). Aqui também a conferência do erro
+   grave do período, o aviso do painel nas duas impressões da escala.
    API: RosterWork.escalasImpressao.abrir({ data }), .abrirNoDia(corpo, rodape, { unidadeId, iso, aoSair }),
-        .botaoDoDia(aoClicar)
+        .botaoDoDia(aoClicar), .conferirErros(escolhas, estado)
    ============================================================ */
 (function () {
   'use strict';
@@ -26,7 +28,7 @@
   var cacheDados = null;   // { chave, promessa }: ligar ou desligar os ícones não busca a escala de novo
 
   function msg() { return (RW.mensagens.escala && RW.mensagens.escala.impressao) || {}; }
-  function painel() { return RW.escalasImpressaoPainel; }
+  function painel() { return RW.impressao; }
 
   /* ---------- datas ---------- */
   function somarDias(d, n) { var x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() + n); return x; }
@@ -84,13 +86,35 @@
     return promessa;
   }
 
+  /* ---------- o erro grave do período (o aviso do painel; o dia e as grades) ---------- */
+  /* resolve em { titulo, descricao } ou null: "13/10 (2ºPEL), 14/10 (2ºPEL e 3ºPEL)", agrupado por dia */
+  function conferirErros(escolhas, estado) {
+    if (!RW.escalasDados) return null;
+    return RW.escalasDados.lerImpressaoErros(escolhas.ids, estado.inicio, estado.fim).then(function (lista) {
+      if (!Array.isArray(lista) || !lista.length) return null;
+      var porDia = {}, ordem = [];
+      lista.forEach(function (e) {
+        if (!porDia[e.data]) { porDia[e.data] = []; ordem.push(e.data); }
+        porDia[e.data].push(e.unidade);
+      });
+      var partes = ordem.map(function (iso) {
+        var nomes = porDia[iso];
+        var unidades = nomes.length > 1 ? nomes.slice(0, -1).join(', ') + ' e ' + nomes[nomes.length - 1] : nomes[0];
+        return iso.slice(8, 10) + '/' + iso.slice(5, 7) + ' (' + unidades + ')';
+      });
+      return { titulo: msg().avisoTitulo(ordem.length), descricao: msg().avisoDescricao(partes.join(', ')) };
+    });
+  }
+
   /* ---------- o formulário (o que é desta impressão) ---------- */
   /* monta o painel comum em corpo e rodape. opcoes: { data, ids, aoSair } = a data padrão, as unidades marcadas no
      começo e a saída (Cancelar e o fim do Gerar PDF) */
   function montarFormulario(corpo, rodape, opcoes) {
     var campos = {};   // De e Até
     painel().montar(corpo, rodape, {
+      molde: 'tpl-escala-impressao',
       marcas: ['dia'],
+      conferir: conferirErros,
       ids: opcoes.ids,
       mostrar: { icones: true },
       aoSair: opcoes.aoSair,
@@ -143,7 +167,7 @@
               dados.fim = RW.data.paraIsoDeData(fim);
               return RW.escalasImpressaoPdf.montar(dados, { icones: icones });
             }).then(function (r) {
-              return { arquivo: r.arquivo, nome: r.nome, folhas: m.grade.folhas(r.folhas, false, false) };
+              return { arquivo: r.arquivo, nome: r.nome, folhas: RW.mensagens.impressao.folhas(r.folhas, false, false) };
             });
           }
         };
@@ -217,5 +241,5 @@
     window.addEventListener(nome, function () { atualizarBotaoDoDia(); });
   });
 
-  RW.escalasImpressao = { abrir: abrir, botaoDoDia: botaoDoDia, abrirNoDia: abrirNoDia };
+  RW.escalasImpressao = { abrir: abrir, botaoDoDia: botaoDoDia, abrirNoDia: abrirNoDia, conferirErros: conferirErros };
 })();

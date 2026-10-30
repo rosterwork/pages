@@ -566,12 +566,13 @@
   </button>
 </template>
 
-<!-- painel "Imprimir trocas" (trocas-imprimir.js; painel largo), em três caixas: 1. as trocas do mês para marcar
-     (o seletor do mês, Marcar todas, a lista e a contagem); 2. o texto para a Parte (Informo | Solicito, a caixa do
-     texto e o Copiar texto); 3. o PDF (Lista | Registro técnico | Alterações) com a prévia, que some no celular como nas grades -->
+<!-- as caixas do "Imprimir trocas" (trocas-imprimir.js), no painel de impressão comum (componentes/js/geral-impressao.js,
+     que põe a nota "Será impresso:", a Prévia e o rodapé do index.html): as trocas do mês para marcar (o seletor do
+     mês, Marcar todas, a lista e a contagem); o texto para a Parte (Informo | Solicito, a caixa do texto e o Copiar
+     texto); o formato (Lista | Registro técnico | Alterações). O número das caixas vem do JS -->
 <template id="tpl-troca-imprimir">
   <div class="grupo-caixa">
-    <span class="rotulo-secao">1. Trocas</span>
+    <span class="rotulo-secao"><span data-impressao-num></span>. Trocas</span>
     <div class="geral-periodo trocas-imprimir-mes">
       <button type="button" class="botao botao--icone" aria-label="Mês anterior" data-imprimir-mes-anterior>
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>
@@ -581,7 +582,7 @@
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
       </button>
     </div>
-    <button type="button" class="arvore-linha escala-impressao-marcar" role="checkbox" aria-checked="true" data-imprimir-todas>
+    <button type="button" class="arvore-linha impressao-marcar" role="checkbox" aria-checked="true" data-imprimir-todas>
       <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
       <span class="arvore-nome">Marcar todas</span>
     </button>
@@ -589,7 +590,7 @@
     <span class="campo-ajuda" data-imprimir-contagem></span>
   </div>
   <div class="grupo-caixa">
-    <span class="rotulo-secao">2. Texto para a Parte</span>
+    <span class="rotulo-secao"><span data-impressao-num></span>. Texto para a Parte</span>
     <div class="abas abas--seletor" data-imprimir-texto>
       <button type="button" class="aba aba--ativa" data-texto="informo">Informo</button>
       <button type="button" class="aba" data-texto="solicito">Solicito</button>
@@ -600,32 +601,19 @@
     <button type="button" class="botao trocas-imprimir-copiar" data-imprimir-copiar>Copiar texto</button>
   </div>
   <div class="grupo-caixa">
-    <span class="rotulo-secao">3. PDF</span>
+    <span class="rotulo-secao"><span data-impressao-num></span>. Formato</span>
     <div class="abas abas--seletor" data-imprimir-formato>
       <button type="button" class="aba aba--ativa" data-formato="lista">Lista</button>
       <button type="button" class="aba" data-formato="registro">Registro técnico</button>
       <button type="button" class="aba" data-formato="alteracoes">Alterações</button>
     </div>
     <span class="campo-ajuda" data-imprimir-formato-ajuda></span>
-    <div class="escala-impressao-previa-secao">
-      <div class="escala-impressao-previa">
-        <iframe class="escala-impressao-previa-quadro" title="Prévia do PDF" data-imprimir-previa></iframe>
-        <span class="painel-estado escala-impressao-previa-aviso oculto" data-imprimir-previa-aviso></span>
-        <div class="carregando-veu" data-imprimir-previa-carregando>
-          <div class="giratorio" aria-label="Carregando" role="status"></div>
-        </div>
-      </div>
-    </div>
   </div>
-</template>
-<template id="tpl-troca-imprimir-acoes">
-  <button type="button" class="botao" data-imprimir-cancelar>Cancelar</button>
-  <button type="button" class="botao botao--primario" data-imprimir-gerar>Gerar PDF</button>
 </template>
 <!-- uma troca da lista do painel Imprimir trocas: a caixa de marcar e, como na linha da lista (tpl-troca-item), os
      militares, a linha de apoio e o selo da situação -->
 <template id="tpl-troca-imprimir-item">
-  <button type="button" class="arvore-linha escala-impressao-marcar trocas-imprimir-item" role="checkbox" aria-checked="true">
+  <button type="button" class="arvore-linha impressao-marcar trocas-imprimir-item" role="checkbox" aria-checked="true">
     <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
     <span class="troca-item-dados">
       <span class="troca-item-militares">

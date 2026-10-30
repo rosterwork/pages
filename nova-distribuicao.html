@@ -390,8 +390,8 @@
   </div>
 </template>
 
-<!-- a Central de Operações do pelotão: quem ela exibe, só para ver (várias); embaixo do Cabo de Dia, a caixa do erro amarelo
-     quando não há cabo nem soldado de serviço -->
+<!-- a Central de Operações do pelotão: quem ela exibe, só para ver (várias); embaixo do Cabo de Dia, o que fazer quando não
+     há ninguém disponível (uma só) -->
 <template id="tpl-nova-distribuicao-central">
   <div class="nova-distribuicao-opcoes">
     <button type="button" class="geral-opcao nova-distribuicao-marca" role="checkbox" aria-checked="false" data-campo="oficial">
@@ -406,10 +406,11 @@
       <span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
       <span class="nova-distribuicao-marca-texto">Cabo de Dia</span>
     </button>
-    <button type="button" class="geral-opcao nova-distribuicao-marca nova-distribuicao-central-aviso oculto" role="checkbox" aria-checked="false" data-campo="cabo_aviso">
-      <span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
-      <span class="nova-distribuicao-marca-texto">Erro amarelo na escala quando não houver cabo ou soldado de serviço</span>
-    </button>
+    <div class="nova-distribuicao-opcoes nova-distribuicao-central-aviso oculto">
+      <p class="nova-distribuicao-frase">Se não houver ninguém disponível</p>
+      <label class="geral-opcao"><input type="radio" data-valor="1" /><span>Aparece com erro amarelo</span></label>
+      <label class="geral-opcao"><input type="radio" data-valor="0" /><span>Não aparece e não exibe erro</span></label>
+    </div>
     <button type="button" class="geral-opcao nova-distribuicao-marca" role="checkbox" aria-checked="false" data-campo="extra">
       <span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
       <span class="nova-distribuicao-marca-texto">Extrajornada</span>

@@ -1,39 +1,45 @@
 /* ============================================================
-   ESCALAS — o painel de impressão, um só para as duas impressões
-   O Imprimir escala (escalas-impressao.js: o painel do dia e o
-   Militares) e o das grades (escalas-impressao-grade.js: Agenda,
-   Calendário, Colunas) usam o mesmo molde (#tpl-escala-impressao) e
-   esta parte comum: a nota "Será impresso:" com o resumo e o aviso
-   de erro grave do período; a numeração das caixas à vista; a caixa
-   Unidades (escalas-impressao-unidades.js); o Mostrar; a prévia (o
-   próprio PDF, no leitor do navegador, refeita a cada mudança; a
-   última pedida vale; no celular não aparece) e o rodapé Cancelar ·
-   Gerar PDF (baixa o arquivo da prévia). Cada impressão diz só o que
-   é dela: as marcas do molde, o período, o formato e o arquivo.
-   API: RosterWork.escalasImpressaoPainel.montar(corpo, rodape, cfg),
-        .esquecer(), .atualizar()
-   cfg = { marcas: ['dia'] ou ['grade', 'semanas' | 'dias' | 'semana'],
-           ids: as unidades marcadas no começo (a companhia de cada pelotão entra junto),
-           mostrar: o começo do Mostrar ({ icones } ou { grafico, icones, faixa }),
+   COMPONENTE geral-impressao — o painel de impressão, um só para
+   todas as impressões (o Imprimir escala e o das grades da Escala,
+   o Imprimir trocas e o Imprimir relatório da Nova extra). A casca
+   é do shell (#tpl-impressao e #tpl-impressao-acoes do index.html):
+   no alto, a nota "Será impresso:" com o resumo e, embaixo dela, o
+   aviso (o erro grave da escala); no meio, as caixas da impressão
+   (o molde da página); por último, a Prévia (o próprio PDF, no
+   leitor do navegador, refeita a cada mudança, a última pedida vale,
+   com as folhas embaixo; no celular não aparece) e o rodapé
+   Cancelar · Gerar PDF (baixa o arquivo da prévia). Aqui também: a
+   numeração das caixas à vista (refeita a cada mudança, para a
+   caixa que aparece ou some), o Mostrar (data-mostrar) e, quando o
+   molde tem a árvore ([data-impressao-arvore]), as Unidades
+   (geral-impressao-unidades.js).
+   Cada impressão diz só o que é dela.
+   API: RosterWork.impressao.montar(corpo, rodape, cfg), .esquecer(),
+        .atualizar(), .contarFolhas(arquivo)
+   cfg = { molde: o id do <template> com as caixas da impressão,
+           marcas: o que vale do molde (data-impressao-so), opcional,
+           ids: as unidades marcadas no começo (a companhia de cada pelotão entra junto), só com a árvore,
+           mostrar: o começo do Mostrar ({ icones } ou { grafico, icones, faixa }), opcional,
            aoSair: o Cancelar e o fim do Gerar PDF,
-           ligar(peca, atualizar): liga as peças da impressão (o período, o formato),
-           estado(escolhas, marcarErros): { erro } ou { resumo, inicio, fim, chave, montar } }
+           ligar(peca, atualizar): liga as peças da impressão,
+           estado(escolhas, marcarErros): { erro, avisar } ou { resumo, chave, montar, inicio, fim },
+           conferir(escolhas, estado): opcional, resolve em { titulo, descricao } (o aviso) ou null }
    escolhas = { unidades (as marcadas que têm escala, na ordem da árvore), ids, mostrar };
-   montar() resolve em { arquivo, nome, folhas (o texto da contagem) }; a falha pode trazer { mensagem }
+   montar() resolve em { arquivo, nome, folhas (o texto da contagem) }; a falha pode trazer { mensagem }.
+   estado.avisar: o erro também abre o aviso no Gerar PDF (quando não há campo para marcar)
    ============================================================ */
 (function () {
   'use strict';
 
   var RW = window.RosterWork = window.RosterWork || {};
 
-  var ESPERA = 400;                                // ms sem mexer antes da prévia e da conferência do erro grave
-  var TIPOS_COM_ESCALA = ['CIA', 'CIBM', 'PEL'];   // as outras unidades marcadas na árvore são só o caminho
+  var ESPERA = 400;   // ms sem mexer antes da prévia e da conferência
 
   var form = null;   // o painel aberto: o cfg, o corpo e o rodapé, o seletor, o Mostrar, o arquivo pedido e a url da prévia
-  var tokenAviso = 0, esperaAviso = null;     // latest-wins da conferência de erro grave
+  var tokenAviso = 0, esperaAviso = null;     // latest-wins da conferência
   var tokenPrevia = 0, esperaPrevia = null;   // latest-wins da prévia
 
-  function msg() { return RW.mensagens.escala.impressao; }
+  function msg() { return RW.mensagens.impressao; }
 
   function peca(nome) {
     var sel = '[data-impressao-' + nome + ']';
@@ -80,20 +86,18 @@
 
   /* ---------- as escolhas ---------- */
   function escolhas() {
-    var unidades = form.seletor
-      ? form.seletor.unidadesSelecionadas().filter(function (u) { return TIPOS_COM_ESCALA.indexOf(u.tipo) >= 0; })
-      : [];
+    var unidades = form.seletor && RW.impressaoUnidades ? RW.impressaoUnidades.escolhidas(form.seletor) : [];
     var mostrar = {};
     Object.keys(form.mostrar).forEach(function (k) { mostrar[k] = form.mostrar[k]; });
     return { unidades: unidades, ids: unidades.map(function (u) { return u.unidade_id; }), mostrar: mostrar };
   }
 
-  /* o estado da impressão (o período) e, sem unidade, o aviso da árvore; marcarErros marca os campos */
+  /* o estado da impressão e, com a árvore e sem unidade, o aviso dela; marcarErros marca os campos */
   function ler(marcarErros) {
     if (marcarErros && RW.campos) RW.campos.limparErros(form.corpo);
     var e = escolhas();
     var estado = form.cfg.estado(e, marcarErros) || {};
-    if (!e.unidades.length) {
+    if (form.seletor && !e.unidades.length) {
       var texto = (RW.mensagens.distribuicao && RW.mensagens.distribuicao.selecioneUnidade) || '';
       if (marcarErros && RW.campos) RW.campos.marcarErro(form.arvore, texto);
       if (!estado.erro) estado = { erro: texto };
@@ -101,9 +105,10 @@
     return { escolhas: e, estado: estado };
   }
 
-  /* a cada mudança: a nota com o resumo, a prévia e a conferência do erro grave */
+  /* a cada mudança: a numeração, a nota com o resumo, a prévia e a conferência da impressão (o aviso) */
   function atualizar() {
     if (!form) return;
+    numerarCaixas();
     var r = ler(false), est = r.estado;
     peca('nota').classList.toggle('oculto', !!est.erro);
     peca('resumo').textContent = est.erro ? '' : est.resumo;
@@ -111,32 +116,17 @@
     agendarPrevia(est);
     var token = ++tokenAviso;
     clearTimeout(esperaAviso);
-    if (est.erro || !RW.escalasDados) return;
-    var ids = r.escolhas.ids;
+    if (est.erro || !form.cfg.conferir) return;
+    var conferir = form.cfg.conferir;
     esperaAviso = setTimeout(function () {
-      RW.escalasDados.lerImpressaoErros(ids, est.inicio, est.fim).then(function (lista) {
-        if (token !== tokenAviso || !form || !Array.isArray(lista) || !lista.length) return;
-        mostrarAviso(lista);
-      });
+      Promise.resolve(conferir(r.escolhas, est)).then(function (aviso) {
+        if (token !== tokenAviso || !form || !aviso) return;
+        var el = peca('aviso');
+        el.querySelector('.impacto-aviso-titulo').textContent = aviso.titulo || '';
+        el.querySelector('.impacto-aviso-desc').textContent = aviso.descricao || '';
+        el.classList.remove('oculto');
+      }, function () {});
     }, ESPERA);
-  }
-
-  /* "13/10 (2ºPEL), 14/10 (2ºPEL e 3ºPEL)": agrupa por dia */
-  function mostrarAviso(lista) {
-    var porDia = {}, ordem = [];
-    lista.forEach(function (e) {
-      if (!porDia[e.data]) { porDia[e.data] = []; ordem.push(e.data); }
-      porDia[e.data].push(e.unidade);
-    });
-    var partes = ordem.map(function (iso) {
-      var nomes = porDia[iso];
-      var unidades = nomes.length > 1 ? nomes.slice(0, -1).join(', ') + ' e ' + nomes[nomes.length - 1] : nomes[0];
-      return iso.slice(8, 10) + '/' + iso.slice(5, 7) + ' (' + unidades + ')';
-    });
-    var aviso = peca('aviso');
-    aviso.querySelector('.impacto-aviso-titulo').textContent = msg().avisoTitulo(ordem.length);
-    aviso.querySelector('.impacto-aviso-desc').textContent = msg().avisoDescricao(partes.join(', '));
-    aviso.classList.remove('oculto');
   }
 
   /* ---------- o arquivo e a prévia ---------- */
@@ -149,6 +139,11 @@
     ref.arquivo = { chave: est.chave, promessa: promessa };
     promessa.catch(function () { if (ref.arquivo && ref.arquivo.promessa === promessa) ref.arquivo = null; });
     return promessa;
+  }
+
+  /* quantas folhas o PDF tem, contadas no próprio arquivo (para a impressão que não traz a contagem) */
+  function contarFolhas(arquivo) {
+    return arquivo.text().then(function (texto) { return (texto.match(/\/Type\s*\/Page[^s]/g) || []).length; });
   }
 
   function mostrarCarregandoPrevia(sim) {
@@ -195,7 +190,10 @@
   /* baixa o arquivo da prévia (ou monta agora, se ela ainda não saiu) */
   function gerar() {
     var r = ler(true);
-    if (r.estado.erro) return;
+    if (r.estado.erro) {
+      if (r.estado.avisar && RW.avisar) RW.avisar({ tipo: 'erro', mensagem: r.estado.erro });
+      return;
+    }
     var ref = form;
     var botao = peca('gerar');
     if (RW.iniciarCarregando) RW.iniciarCarregando(botao);
@@ -228,19 +226,21 @@
   }
 
   /* ---------- montar ---------- */
-  /* põe o molde em corpo e o rodapé em rodape, só com o que vale para a impressão (cfg: ver o topo) */
+  /* põe a casca com as caixas da impressão em corpo e o rodapé em rodape, só com o que vale (cfg: ver o topo) */
   function montar(corpo, rodape, cfg) {
-    var molde = document.getElementById('tpl-escala-impressao');
-    var acoes = document.getElementById('tpl-escala-impressao-acoes');
-    if (!corpo || !molde) return;
+    var casca = document.getElementById('tpl-impressao');
+    var molde = document.getElementById(cfg.molde);
+    var acoes = document.getElementById('tpl-impressao-acoes');
+    if (!corpo || !casca || !molde) return;
     esquecer();
-    corpo.appendChild(molde.content.cloneNode(true));
+    corpo.appendChild(casca.content.cloneNode(true));
+    corpo.querySelector('[data-impressao-caixas]').replaceWith(molde.content.cloneNode(true));
     if (rodape && acoes) { rodape.appendChild(acoes.content.cloneNode(true)); rodape.classList.remove('oculto'); }
     var mostrar = {};
     Object.keys(cfg.mostrar || {}).forEach(function (k) { mostrar[k] = cfg.mostrar[k]; });
     form = { cfg: cfg, corpo: corpo, rodape: rodape, mostrar: mostrar, seletor: null, arquivo: null, url: null };
     form.arvore = peca('arvore');
-    aplicarMarcas(cfg.marcas);
+    if (cfg.marcas) aplicarMarcas(cfg.marcas);
     numerarCaixas();
     ligarMostrar();
     peca('cancelar').addEventListener('click', sair);
@@ -248,9 +248,9 @@
     if (!(RW.celular && RW.celular())) mostrarCarregandoPrevia(true);
     cfg.ligar(peca, atualizar);
 
-    /* a árvore do seletor do cabeçalho, solta no painel: marcada com cfg.ids e a companhia de cada pelotão e, para
-       quem é de companhia ou pelotão, começando na companhia */
-    if (RW.seletorUnidades && RW.escalasImpressaoUnidades) {
+    /* com a árvore no molde: a do seletor do cabeçalho, solta no painel, marcada com cfg.ids e a companhia de cada
+       pelotão e, para quem é de companhia ou pelotão, começando na companhia */
+    if (form.arvore && RW.seletorUnidades && RW.impressaoUnidades) {
       var ref = form;
       form.seletor = RW.seletorUnidades.criar({
         modo: 'multi',
@@ -261,7 +261,7 @@
           atualizar();
         }
       });
-      RW.escalasImpressaoUnidades.montar(form.seletor, peca('toggle'), cfg.ids || []).then(function () {
+      RW.impressaoUnidades.montar(form.seletor, peca('toggle'), cfg.ids || []).then(function () {
         /* o formulário saiu ou reabriu enquanto carregava (na sub-tela, também a troca de aba do painel) */
         if (form !== ref || !ref.arvore.isConnected) return;
         atualizar();
@@ -269,5 +269,5 @@
     }
   }
 
-  RW.escalasImpressaoPainel = { montar: montar, esquecer: esquecer, atualizar: atualizar };
+  RW.impressao = { montar: montar, esquecer: esquecer, atualizar: atualizar, contarFolhas: contarFolhas };
 })();

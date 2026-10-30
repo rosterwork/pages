@@ -200,10 +200,13 @@
 .nova-distribuicao-criterio-aviso,
 .nova-distribuicao-fora-aviso { padding: 0 8px 0 32px; }
 
-/* o que vem com a opção do condutor (a caixa do erro amarelo e o aviso do "Não, nunca") e com o Cabo de Dia na Central (a
-   caixa do erro amarelo), recuados até o texto dela */
-.nova-distribuicao-condutor-aviso,
-.nova-distribuicao-central-aviso { padding-left: 32px; }
+/* o que vem com a opção do condutor: a caixa do erro amarelo e o aviso do "Não, nunca", recuados até o texto dela */
+.nova-distribuicao-condutor-aviso { padding-left: 32px; }
+
+/* com o Cabo de Dia na Central: o que fazer quando não há ninguém disponível, recuado até o texto dele */
+.nova-distribuicao-central-aviso { padding-left: 24px; }
+
+.nova-distribuicao-central-aviso .nova-distribuicao-frase { padding: 0 8px; }
 
 .nova-distribuicao-condutor-nunca { margin-left: 32px; }
 

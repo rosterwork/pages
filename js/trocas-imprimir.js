@@ -1,15 +1,16 @@
 /* ============================================================
    TROCAS — Imprimir trocas (o botão Imprimir da barra → painel)
-   O painel direito, em três caixas: 1. as trocas do mês (as do
-   militar e, para o administrador, também as da área dele; todas já
-   marcadas), 2. o texto para a Parte (Informo, no passado, ou
-   Solicito, no futuro), pronto para copiar, e 3. o PDF (Lista,
-   Registro técnico ou Alterações, que vale para todas as trocas do
-   mês: trocas-imprimir-alteracoes.js) com a prévia, refeita a cada
-   mudança (a última pedida vale). Os registros das marcadas vêm do banco
-   (fn_trocas_impressao), que confere troca a troca quem pode ver.
-   No celular o painel fica sem a prévia (o navegador não mostra PDF
-   dentro da página). RosterWork.trocasImprimir.
+   O painel de impressão comum (componentes/js/geral-impressao.js),
+   com três caixas: 1. as trocas do mês (as do militar e, para o
+   administrador, também as da área dele; todas já marcadas), 2. o
+   texto para a Parte (Informo, no passado, ou Solicito, no futuro),
+   pronto para copiar, e 3. o Formato do PDF (Lista, Registro técnico
+   ou Alterações, que vale para todas as trocas do mês:
+   trocas-imprimir-alteracoes.js). A nota, a prévia e o Gerar PDF são
+   do painel comum. Os registros das marcadas vêm do banco
+   (fn_trocas_impressao), que confere troca a troca quem pode ver;
+   são buscados uma vez por escolha e servem ao texto, à prévia e ao
+   Gerar PDF. RosterWork.trocasImprimir.
    ============================================================ */
 (function () {
   'use strict';
@@ -21,11 +22,11 @@
   var MESES_PARTE = ['jan.', 'fev.', 'mar.', 'abr.', 'maio', 'jun.', 'jul.', 'ago.', 'set.', 'out.', 'nov.', 'dez.'];
   var LETRAS = 'abcdefghijklmnopqrstuvwxyz';
   var SITUACOES = ['pendente_confirmacao', 'pendente_aprovacao', 'aprovada'];   // as trocas que entram na lista
-  var ESPERA = 300;               // ms sem mexer antes de buscar os registros e refazer a prévia
+  var ESPERA = 300;               // ms sem mexer antes de buscar os registros e escrever o texto
   var LINHAS_TEXTO = { minimo: 4, maximo: 16 };   // a caixa do texto cresce com ele até o máximo (depois rola)
 
   var form = null;          // o painel aberto: escolhas, dados e peças
-  var token = 0;            // latest-wins dos registros e da prévia
+  var token = 0;            // latest-wins do texto
   var espera = null;
 
   function msg() { return RW.mensagens.trocas.imprimir; }
@@ -35,6 +36,32 @@
 
   function unidades() {
     try { var p = JSON.parse(sessionStorage.getItem('rosterwork_preferencias')); return p && Array.isArray(p.unidades_selecionadas) ? p.unidades_selecionadas : []; } catch (e) { return []; }
+  }
+
+  /* ---------- os registros ---------- */
+  /* os registros das marcadas, buscados uma vez por escolha (o texto, a prévia e o Gerar PDF usam os mesmos); um
+     registro com várias trocas vem uma vez por troca: fica uma vez só. O que falhou é buscado de novo */
+  function registros(ids) {
+    var chave = ids.join(',');
+    if (form.registros && form.registros.chave === chave) return form.registros.promessa;
+    var ref = form;
+    var pedido = ids.length ? RW.rpc('fn_trocas_impressao', { p_troca_ids: ids }) : Promise.resolve({ ok: true, registros: [], militares: [] });
+    var promessa = pedido.then(function (r) {
+      if (!r || !r.ok) throw new Error('impressao');
+      var vistos = {};
+      return {
+        registros: (r.registros || []).filter(function (x) {
+          var numero = x.registro.numero + '/' + x.registro.ano;
+          if (vistos[numero]) return false;
+          vistos[numero] = true;
+          return true;
+        }),
+        militares: r.militares || []
+      };
+    });
+    ref.registros = { chave: chave, promessa: promessa };
+    promessa.catch(function () { if (ref.registros && ref.registros.promessa === promessa) ref.registros = null; });
+    return promessa;
   }
 
   /* ---------- o texto para a Parte ---------- */
@@ -54,34 +81,47 @@
   }
 
   /* uma linha por dia de serviço (o serviço e a devolução de cada troca), em ordem de data */
-  function itensDosRegistros() {
+  function itensDosRegistros(dados) {
     var itens = [];
-    form.registros.forEach(function (r) { itens = itens.concat(r.itens || []); });
+    dados.registros.forEach(function (r) { itens = itens.concat(r.itens || []); });
     return itens.sort(function (a, b) {
       return String(a.data).localeCompare(String(b.data)) || hora(a.inicio).localeCompare(hora(b.inicio));
     });
   }
 
   /* o corpo da Parte: uma linha só vira frase corrida; mais de uma, subitens "a." que terminam em ";" e o último em "." */
-  function textoDaParte() {
+  function textoDaParte(dados) {
     var p = msg().parte, tipo = form.texto;
-    var frases = itensDosRegistros().map(function (it) {
+    var frases = itensDosRegistros(dados).map(function (it) {
       var inteiro = hora(it.inicio) === '08:00' && hora(it.fim) === '08:00';
       return p.linha(it.cumpre, p.verbo[tipo], it.no_lugar_de, diaDaParte(it.data),
         inteiro ? '' : p.periodo(RW.horario.curta(hora(it.inicio)), RW.horario.curta(hora(it.fim))));
     });
     if (!frases.length) return '';
     if (frases.length === 1) return tipo === 'informo' ? p.informoUma(frases[0]) : p.solicitoUma(frases[0]);
-    var abertura = tipo === 'informo' ? p.informoAbertura(juntar(form.militares)) : p.solicitoAbertura(form.registros.length === 1);
+    var abertura = tipo === 'informo' ? p.informoAbertura(juntar(dados.militares)) : p.solicitoAbertura(dados.registros.length === 1);
     return [abertura].concat(frases.map(function (f, i) { return letra(i) + '. ' + f + (i === frases.length - 1 ? '.' : ';'); })).join('\n');
   }
 
-  function escreverTexto() {
-    var texto = textoDaParte();
+  function escreverTexto(dados) {
     var caixa = form.caixaTexto;
-    caixa.value = texto;
+    caixa.value = dados ? textoDaParte(dados) : '';
     caixa.rows = LINHAS_TEXTO.minimo;
     while (caixa.rows < LINHAS_TEXTO.maximo && caixa.scrollHeight > caixa.clientHeight) caixa.rows++;
+  }
+
+  /* busca os registros das marcadas depois da pausa e escreve o texto; a última pedida vale (a falha deixa o texto vazio) */
+  function agendarTexto(pausa) {
+    var meu = ++token, ref = form;
+    clearTimeout(espera);
+    espera = setTimeout(function () {
+      if (form !== ref || meu !== token) return;
+      registros(idsMarcados()).then(function (dados) {
+        if (form === ref && meu === token) escreverTexto(dados);
+      }, function () {
+        if (form === ref && meu === token) escreverTexto(null);
+      });
+    }, pausa);
   }
 
   function copiar() {
@@ -177,54 +217,18 @@
     montarMes();
   }
 
-  /* ---------- os registros, o texto e a prévia ---------- */
-  /* cada mudança espera uma pausa, busca os registros das marcadas, escreve o texto e refaz a prévia; a última pedida vale */
+  /* as marcadas mudaram: o texto (depois da pausa) e o painel (a nota e a prévia) */
   function mudou() {
-    var meu = ++token;
-    form.pedido = null;
-    clearTimeout(espera);
-    mostrarCarregando(true);
-    espera = setTimeout(function () { buscar(meu); }, ESPERA);
+    agendarTexto(ESPERA);
+    form.atualizar();
   }
 
-  /* um registro com várias trocas vem uma vez por troca: fica uma vez só */
-  function guardarRegistros(r) {
-    if (!r || !r.ok) throw new Error('impressao');
-    var vistos = {};
-    form.registros = (r.registros || []).filter(function (x) {
-      var chave = x.registro.numero + '/' + x.registro.ano;
-      if (vistos[chave]) return false;
-      vistos[chave] = true;
-      return true;
-    });
-    form.militares = r.militares || [];
-  }
-
-  function buscar(meu) {
-    if (!form || meu !== token) return;
-    var ref = form, ids = idsMarcados();
-    var promessa = ids.length ? RW.rpc('fn_trocas_impressao', { p_troca_ids: ids }) : Promise.resolve({ ok: true, registros: [], militares: [] });
-    promessa.then(function (r) {
-      if (form !== ref || meu !== token) return;
-      guardarRegistros(r);
-      escreverTexto();
-      fazerPrevia(meu);
-    }).catch(function () {
-      if (form !== ref || meu !== token) return;
-      form.registros = [];
-      form.militares = [];
-      escreverTexto();
-      mostrarAviso(msg().falhaPrevia);
-    });
-  }
-
-  /* o PDF das marcadas, no formato escolhido: { arquivo, nome } */
-  function pedirArquivo() {
-    var regs = form.registros, mes = doisDig(form.mes.getMonth() + 1), ano = form.mes.getFullYear();
-    if (form.formato === 'alteracoes') return RW.trocasImprimirAlteracoes.arquivo(form.todas, form.mes, form.nomeMes.textContent);
-    if (!regs.length) return Promise.reject({ nenhuma: true });
-    if (form.formato === 'lista') {
-      return RW.trocasRelatorioPdf.arquivo(regs, form.nomeMes.textContent).then(function (arq) { return { arquivo: arq, nome: msg().pdf.arquivo(mes, ano) }; });
+  /* ---------- o que sai ---------- */
+  /* o PDF das marcadas no formato da Lista ou do Registro técnico: { arquivo, nome } */
+  function arquivoDasMarcadas(formato, regs, mes, ano, nomeMes) {
+    if (!regs.length) return Promise.reject({ mensagem: msg().nenhumaMarcada });
+    if (formato === 'lista') {
+      return RW.trocasRelatorioPdf.arquivo(regs, nomeMes).then(function (arq) { return { arquivo: arq, nome: msg().pdf.arquivo(mes, ano) }; });
     }
     var t = RW.mensagens.trocas.registroPdf;
     return RW.trocasRegistroPdf.arquivo(regs).then(function (arq) {
@@ -232,105 +236,53 @@
     });
   }
 
-  /* o aviso do que faltou: nenhuma marcada, nenhuma alteração no mês ou a falha */
-  function textoDoErro(e, padrao) { return e && e.nenhuma ? msg().nenhumaMarcada : e && e.semAlteracoes ? msg().semAlteracoes : padrao; }
-
-  function mostrarCarregando(sim) { form.carregando.classList.toggle('carregando-veu--visivel', sim); }
-
-  function mostrarAviso(texto) {
-    form.aviso.textContent = texto;
-    form.aviso.classList.remove('oculto');
-    mostrarCarregando(false);
-  }
-
-  function fazerPrevia(meu) {
-    if (RW.celular && RW.celular()) { mostrarCarregando(false); return; }
-    /* as Alterações não dependem das marcadas: a prévia do mesmo mês fica como está */
-    var qual = form.formato === 'alteracoes' ? form.nomeMes.textContent : null;
-    if (qual && qual === form.previaDe) { mostrarCarregando(false); return; }
-    var ref = form;
-    form.previaDe = null;
-    form.pedido = { token: meu, promessa: pedirArquivo() };
-    form.pedido.promessa.then(function (r) {
-      if (form !== ref || meu !== token) return;
-      if (form.url) URL.revokeObjectURL(form.url);
-      form.url = URL.createObjectURL(r.arquivo);
-      /* o leitor do navegador sem a barra dele, na largura do quadro */
-      form.previa.src = form.url + '#toolbar=0&navpanes=0&view=FitH';
-      form.aviso.classList.add('oculto');
-      mostrarCarregando(false);
-      form.previaDe = qual;
-    }, function (e) {
-      if (form !== ref || meu !== token) return;
-      if (e && e.semAlteracoes) form.previaDe = qual;
-      mostrarAviso(textoDoErro(e, msg().falhaPrevia));
-    });
-  }
-
-  /* troca o formato sem buscar de novo (os registros são os mesmos) */
-  function trocarFormato(formato) {
-    form.formato = formato;
-    form.ajudaFormato.textContent = msg().ajudaFormato[formato];
-    if (form.registros) { var meu = ++token; mostrarCarregando(true); fazerPrevia(meu); }
-  }
-
-  /* ---------- gerar ---------- */
-  /* baixa o arquivo da prévia (ou monta agora, se a prévia ainda não saiu) e fecha o painel; as Alterações não pedem
-     trocas marcadas */
-  function gerar() {
-    var botao = form.gerar;
+  /* o estado para o painel comum: sem troca marcada, o aviso (também no Gerar PDF), salvo nas Alterações, que valem para
+     todas as trocas do mês; senão a nota, a chave do arquivo e como montá-lo, com as folhas */
+  function estado() {
+    if (form.falhou) return { erro: msg().falhaLista, avisar: true };
     var alteracoes = form.formato === 'alteracoes';
-    if (!alteracoes && !idsMarcados().length) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: msg().nenhumaMarcada }); return; }
-    var pronto = form.pedido && form.pedido.token === token;
-    var promessa = pronto ? form.pedido.promessa : alteracoes ? pedirArquivo() : RW.rpc('fn_trocas_impressao', { p_troca_ids: idsMarcados() }).then(function (r) {
-      guardarRegistros(r);
-      return pedirArquivo();
-    });
-    if (RW.iniciarCarregando) RW.iniciarCarregando(botao);
-    function terminar() { if (RW.pararCarregando && botao.isConnected) RW.pararCarregando(botao); }
-    promessa.then(function (r) {
-      terminar();
-      RW.escalasImpressaoPdf.baixar(r.arquivo, r.nome);
-      if (RW.painel) RW.painel.fechar();
-    }).catch(function (e) {
-      terminar();
-      if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: textoDoErro(e, msg().falhaGerar) });
-    });
+    var ids = idsMarcados();
+    if (!form.todas || (!alteracoes && !ids.length)) return { erro: msg().nenhumaMarcada, avisar: true };
+    var formato = form.formato, todas = form.todas, data = form.mes, nomeMes = form.nomeMes.textContent;
+    var mes = doisDig(data.getMonth() + 1), ano = data.getFullYear(), nome = MESES[data.getMonth()];
+    return {
+      resumo: alteracoes ? msg().resumo.alteracoes(nome, ano) : msg().resumo[formato](nome, ano, ids.length),
+      chave: formato + '|' + (alteracoes ? ano + '-' + mes : ids.join(',')),
+      montar: function () {
+        var pedido = alteracoes ? RW.trocasImprimirAlteracoes.arquivo(todas, data, nomeMes)
+          : registros(ids).then(function (dados) { return arquivoDasMarcadas(formato, dados.registros, mes, ano, nomeMes); });
+        return pedido.then(function (r) {
+          return RW.impressao.contarFolhas(r.arquivo).then(function (n) {
+            return { arquivo: r.arquivo, nome: r.nome, folhas: RW.mensagens.impressao.folhas(n, false, false) };
+          });
+        }, function (e) {
+          throw e && e.semAlteracoes ? { mensagem: msg().semAlteracoes } : e;
+        });
+      }
+    };
   }
 
   /* ---------- abrir ---------- */
   function fecharLimpo() {
     token++;
     clearTimeout(espera);
-    if (form && form.url) URL.revokeObjectURL(form.url);
+    if (RW.impressao) RW.impressao.esquecer();
     if (RW.trocasImprimirAlteracoes) RW.trocasImprimirAlteracoes.limpar();
     form = null;
   }
 
-  function abrir() {
-    if (!RW.painel) return;
-    fecharLimpo();
-    RW.painel.abrir({ titulo: msg().titulo, subtitulo: msg().subtitulo, aoFechar: fecharLimpo });
-    var corpo = RW.painel.corpo();
-    var rodape = RW.painel.rodape();
-    var molde = document.getElementById('tpl-troca-imprimir');
-    var acoes = document.getElementById('tpl-troca-imprimir-acoes');
-    if (!corpo || !molde) return;
-    corpo.appendChild(molde.content.cloneNode(true));
-    if (rodape && acoes) { rodape.appendChild(acoes.content.cloneNode(true)); rodape.classList.remove('oculto'); }
-
-    var raiz = document.getElementById('painel');
-    function peca(nome) { return raiz.querySelector('[data-imprimir-' + nome + ']'); }
-    var hoje = new Date();
-    /* as escolhas (mês, marcadas, texto, formato), os dados e as peças do painel */
-    form = {
-      mes: new Date(hoje.getFullYear(), hoje.getMonth(), 1), texto: 'informo', formato: 'lista',
-      todas: null, doMes: [], marcadas: {}, registros: null, militares: [], pedido: null, url: null, previaDe: null,
-      nomeMes: peca('mes'), todasBotao: peca('todas'), lista: peca('lista'), contagem: peca('contagem'),
-      ajudaTexto: peca('texto-ajuda'), caixaTexto: peca('texto-caixa'), copiar: peca('copiar'),
-      ajudaFormato: peca('formato-ajuda'), previa: peca('previa'), aviso: peca('previa-aviso'),
-      carregando: peca('previa-carregando'), gerar: peca('gerar')
-    };
+  /* as peças das três caixas e o que cada uma faz */
+  function ligar(corpo, atualizar) {
+    function peca(nome) { return corpo.querySelector('[data-imprimir-' + nome + ']'); }
+    form.atualizar = atualizar;
+    form.nomeMes = peca('mes');
+    form.todasBotao = peca('todas');
+    form.lista = peca('lista');
+    form.contagem = peca('contagem');
+    form.ajudaTexto = peca('texto-ajuda');
+    form.caixaTexto = peca('texto-caixa');
+    form.copiar = peca('copiar');
+    form.ajudaFormato = peca('formato-ajuda');
     form.nomeMes.textContent = msg().mes(MESES[form.mes.getMonth()], form.mes.getFullYear());
     form.ajudaTexto.textContent = msg().ajudaTexto.informo;
     form.ajudaFormato.textContent = msg().ajudaFormato.lista;
@@ -349,12 +301,36 @@
     RW.abas.ligar(peca('texto'), function (aba) {
       form.texto = aba.getAttribute('data-texto');
       form.ajudaTexto.textContent = msg().ajudaTexto[form.texto];
-      if (form.registros) escreverTexto();
+      if (form.todas) agendarTexto(0);
     });
     form.copiar.addEventListener('click', copiar);
-    RW.abas.ligar(peca('formato'), function (aba) { trocarFormato(aba.getAttribute('data-formato')); });
-    peca('cancelar').addEventListener('click', function () { RW.painel.fechar(); });
-    form.gerar.addEventListener('click', gerar);
+    /* o formato não busca de novo (os registros são os mesmos) */
+    RW.abas.ligar(peca('formato'), function (aba) {
+      form.formato = aba.getAttribute('data-formato');
+      form.ajudaFormato.textContent = msg().ajudaFormato[form.formato];
+      if (form.todas) form.atualizar();
+    });
+  }
+
+  function abrir() {
+    if (!RW.painel || !RW.impressao) return;
+    fecharLimpo();
+    RW.painel.abrir({ titulo: msg().titulo, subtitulo: msg().subtitulo, aoFechar: fecharLimpo });
+    var corpo = RW.painel.corpo();
+    if (!corpo) return;
+    var hoje = new Date();
+    /* as escolhas (mês, marcadas, texto, formato) e os dados */
+    form = {
+      mes: new Date(hoje.getFullYear(), hoje.getMonth(), 1), texto: 'informo', formato: 'lista',
+      todas: null, falhou: false, doMes: [], marcadas: {}, registros: null, atualizar: null
+    };
+    RW.impressao.montar(corpo, RW.painel.rodape(), {
+      molde: 'tpl-troca-imprimir',
+      aoSair: function () { RW.painel.fechar(); },
+      ligar: function (peca, atualizar) { ligar(corpo, atualizar); },
+      estado: estado
+    });
+    if (!form.lista) return;
 
     /* as trocas das unidades da tela, uma vez; o mês filtra aqui */
     var ref = form;
@@ -366,8 +342,9 @@
       montarMes();
     }).catch(function () {
       if (form !== ref) return;
+      form.falhou = true;
       mostrarNaLista('tpl-troca-vazio', msg().falhaLista);
-      mostrarAviso(msg().falhaLista);
+      form.atualizar();
     });
   }
 

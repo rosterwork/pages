@@ -64,6 +64,7 @@
   <link rel="stylesheet" href="componentes/css/geral-layout-lateral.css" />
   <link rel="stylesheet" href="componentes/css/geral-rodape.css" />
   <link rel="stylesheet" href="componentes/css/geral-painel.css" />
+  <link rel="stylesheet" href="componentes/css/geral-impressao.css" />
   <link rel="stylesheet" href="componentes/css/geral-alteracoes.css" />
   <link rel="stylesheet" href="componentes/css/geral-pedido.css" />
   <link rel="stylesheet" href="componentes/css/geral-impacto.css" />
@@ -2136,6 +2137,43 @@
       <button type="button" class="aba" data-secao="continuos" data-so-admin>Ciclo</button>
       <button type="button" class="aba" data-secao="extra">Extrajornada</button>
     </div>
+  </template>
+
+  <!-- ===== o painel de impressão, um só para todas as impressões (componentes/js/geral-impressao.js) =====
+       A casca: no alto, a nota "Será impresso:" com o resumo e, embaixo dela, o aviso de erro grave; no lugar do
+       [data-impressao-caixas] entram as caixas da impressão (o molde da página: o período, as Unidades, o Formato, o
+       Mostrar...); por último, a caixa Prévia (o próprio PDF, no leitor do navegador, e as folhas; some no celular).
+       As caixas são numeradas pelo JS (data-impressao-num), só as que estão à vista -->
+  <template id="tpl-impressao">
+    <div class="nota" data-impressao-nota>
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg>
+      <span class="nota-texto"><span class="nota-titulo">Será impresso:</span> <span data-impressao-resumo></span></span>
+    </div>
+    <div class="impacto-aviso impacto-aviso--problema oculto" data-impressao-aviso>
+      <svg class="icone impacto-aviso-icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+      <span class="impacto-aviso-textos">
+        <span class="impacto-aviso-titulo"></span>
+        <span class="impacto-aviso-desc"></span>
+      </span>
+    </div>
+    <span data-impressao-caixas></span>
+    <div class="grupo-caixa impressao-previa-secao">
+      <span class="rotulo-secao"><span data-impressao-num></span>. Prévia</span>
+      <div class="impressao-previa">
+        <iframe class="impressao-previa-quadro" title="Prévia do PDF" data-impressao-previa></iframe>
+        <span class="painel-estado impressao-previa-aviso oculto" data-impressao-previa-aviso></span>
+        <div class="carregando-veu" data-impressao-previa-carregando>
+          <div class="giratorio" aria-label="Carregando" role="status"></div>
+        </div>
+      </div>
+      <span class="campo-ajuda" data-impressao-folhas></span>
+    </div>
+  </template>
+
+  <!-- o rodapé do painel de impressão -->
+  <template id="tpl-impressao-acoes">
+    <button type="button" class="botao" data-impressao-cancelar>Cancelar</button>
+    <button type="button" class="botao botao--primario" data-impressao-gerar>Gerar PDF</button>
   </template>
 
   <!-- link escondido que baixa o PDF pronto (clicado e retirado na hora; PDF da escala e relatórios da extrajornada) -->

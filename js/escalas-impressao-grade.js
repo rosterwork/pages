@@ -1,7 +1,8 @@
 /* ============================================================
    ESCALAS — Imprimir as grades (painel → PDF)
    Nas grades (Agenda, Calendário, Colunas), o botão Imprimir abre o
-   painel de impressão comum (escalas-impressao-painel.js), com o que
+   painel de impressão comum (componentes/js/geral-impressao.js, com
+   as caixas do molde #tpl-escala-impressao do escalas.html), com o que
    é desta impressão: a grade e o mês da tela (no Colunas › Unidades,
    a semana) e os filtros ligados, no resumo da nota do alto; o
    período (no Calendário, o "Mês todo" ou as semanas escolhidas; na
@@ -170,7 +171,7 @@
     var p = periodoEscolhido();
     form.periodo.textContent = p.frase;
     form.periodo.classList.toggle('oculto', !p.frase);
-    RW.escalasImpressaoPainel.atualizar();
+    RW.impressao.atualizar();
   }
 
   /* os dados da tela (ler_escala_mes) do mês ou da semana; o mesmo pedido não busca de novo */
@@ -210,7 +211,7 @@
           return RW.escalasImpressaoGradePdf.gerar({ formato: formato, paisagem: paisagem, continua: continua, mostrar: mostrar,
             diasPorLinha: diasPorLinha, unidades: unidades, dias: p.dias, texto: p.texto, dados: dados });
         }).then(function (r) {
-          return { arquivo: r.arquivo, nome: r.nome, folhas: msg().folhas(r.folhas, continua, paisagem) };
+          return { arquivo: r.arquivo, nome: r.nome, folhas: RW.mensagens.impressao.folhas(r.folhas, continua, paisagem) };
         }, function (e) {
           throw { mensagem: e && e.longaDemais ? msg().longaDemais : null };
         });
@@ -224,13 +225,13 @@
   /* opcoes: { formato, data (a da tela), unidades ([{ unidade_id, nome }] da tela: as marcadas no começo), diasPorLinha,
      filtros (os ligados na tela, em texto) } */
   function abrir(opcoes) {
-    if (!RW.painel || !RW.escalasImpressaoPainel || !FORMATOS[opcoes.formato]) return;
+    if (!RW.painel || !RW.impressao || !FORMATOS[opcoes.formato]) return;
     var formato = opcoes.formato;
     var periodo = FORMATOS[formato].periodo;
     var data = opcoes.data || new Date();
     cacheDados = null;
     RW.painel.abrir({ titulo: msg().titulos[formato], subtitulo: msg().subtitulo(FORMATOS[formato].paisagem, false),
-      aoFechar: function () { RW.escalasImpressaoPainel.esquecer(); form = null; cacheDados = null; } });
+      aoFechar: function () { RW.impressao.esquecer(); form = null; cacheDados = null; } });
     /* as escolhas desta impressão (o formato e o período) e o que vem da tela */
     form = {
       formato: formato, continua: false, diasPorLinha: opcoes.diasPorLinha || 3, filtros: opcoes.filtros || [],
@@ -238,8 +239,10 @@
       mesTodo: true, semanas: [], de: 1, ate: 1
     };
     var meu = form;
-    RW.escalasImpressaoPainel.montar(RW.painel.corpo(), RW.painel.rodape(), {
+    RW.impressao.montar(RW.painel.corpo(), RW.painel.rodape(), {
+      molde: 'tpl-escala-impressao',
       marcas: ['grade', periodo],
+      conferir: RW.escalasImpressao ? RW.escalasImpressao.conferirErros : null,
       ids: (opcoes.unidades || []).map(function (u) { return u.unidade_id; }),
       mostrar: { grafico: true, icones: true, faixa: true },
       aoSair: function () { RW.painel.fechar(); },
@@ -252,7 +255,7 @@
         RW.abas.ligar(peca('formato'), function (aba) {
           form.continua = aba.getAttribute('data-formato') === 'continua';
           RW.painel.definirTitulos(null, subtitulo());
-          RW.escalasImpressaoPainel.atualizar();
+          RW.impressao.atualizar();
         });
         /* semanas: o Mês todo (caixa de marcar) e, quando desmarcado, os botões de cada semana */
         form.mesTodoBotao.addEventListener('click', function () { marcarMesTodo(!form.mesTodo); mudou(); });

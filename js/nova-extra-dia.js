@@ -162,7 +162,10 @@
     }
     var rel = caixa.querySelector('.nova-extra-cobertura-relatorio');
     rel.querySelector('.nova-extra-cobertura-vazio').classList.toggle('oculto', relatorio(rel, uid, k, alocs, grupos, falta) > 0);
-    if (RW.escalasCelula) setTimeout(function () { RW.escalasCelula.desenharGraficos(caixa); }, 0);
+    if (RW.escalasCelula) {
+      setTimeout(function () { RW.escalasCelula.desenharGraficos(caixa); }, 0);
+      RW.escalasCelula.ligarDica(caixa);
+    }
     return caixa;
   }
 
@@ -271,6 +274,8 @@
       linhaNome.appendChild(s24);
     }
     var a = G().vagaDe(m.cpf, k), marcados = a ? G().blocos(a) : [];
+    /* no Neste dia, quem pôs a extra, antes do nome (como a origem na Escala) */
+    if (a && +a.unidade === uid) linhaNome.insertBefore(u().origem(a), linhaNome.firstChild);
     /* embaixo do nome, na largura toda: os selos. O porquê da sugestão fica no relatório da Cobertura do dia, e os
        outros dias dele, na lista dos voluntários */
     var selos = selosDoDia(m, uid, k);

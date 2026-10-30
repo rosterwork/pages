@@ -1,0 +1,97 @@
+/* ============================================================
+   GERAL-IMPRESSAO — o painel de impressão, um só para todas as
+   impressões (a casca #tpl-impressao do index.html e as caixas de
+   cada impressão). O corpo segue o padrão dos formulários do painel:
+   a .nota no alto e as caixas numeradas (.grupo-caixa); aqui, as
+   peças próprias dele: a linha rótulo + controle, a linha de marcar,
+   o título da caixa Unidades com a seta e a prévia.
+   Comportamento: componentes/js/geral-impressao.js
+   ============================================================ */
+
+/* a linha da caixa: o rótulo à esquerda e o controle à direita; --inicio junta tudo à esquerda ("Do dia [ ] ao dia [ ]") */
+.impressao-linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 32px;
+}
+
+.impressao-linha--inicio {
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.impressao-linha .campo-selecao {
+  min-width: 80px;
+}
+
+.impressao-rotulo {
+  font-size: var(--fonte-padrao);
+  color: var(--texto);
+}
+
+/* a linha de marcar é a do botão Filtros (.arvore-linha), num <button role="checkbox">; recua o respiro dela
+   para a caixa de marcar ficar alinhada ao título e aos botões das semanas */
+.impressao-marcar {
+  margin: 0 -8px;
+}
+
+/* o título da caixa Unidades e a seta que troca a companhia pela árvore toda (o desenho da seta do Lançar no SYSBM:
+   fechada, aponta para a direita) */
+.impressao-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.impressao-titulo {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.impressao-seta {
+  color: var(--texto-fraco);
+}
+
+.impressao-toggle[aria-expanded="false"] .impressao-seta {
+  transform: rotate(-90deg);
+}
+
+/* a prévia: o próprio PDF, no leitor do navegador; o véu de carregamento e o aviso cobrem o quadro */
+.impressao-previa {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pequeno);
+  overflow: hidden;
+  background-color: var(--fundo-pagina);
+}
+
+.impressao-previa-quadro {
+  display: block;
+  width: 100%;
+  min-height: 440px;
+  border: none;
+}
+
+.impressao-previa-aviso {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--fundo-superficie);
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   O navegador do celular não mostra PDF dentro da página: o painel
+   fica sem a caixa da prévia (o Gerar PDF continua)
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .impressao-previa-secao {
+    display: none;
+  }
+}

@@ -82,7 +82,10 @@
       if (aviso) caixa.appendChild(aviso);
     }
     alvo.appendChild(caixa);
-    if (RW.escalasCelula) RW.escalasCelula.desenharGraficos(caixa);
+    if (RW.escalasCelula) {
+      RW.escalasCelula.desenharGraficos(caixa);
+      RW.escalasCelula.ligarDica(caixa);
+    }
     desenharAjustes(c);
   }
 

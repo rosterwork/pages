@@ -222,26 +222,13 @@
   </div>
 </template>
 
-<!-- o painel de impressão, um só para as duas impressões (escalas-impressao-painel.js): o Imprimir escala
-     (escalas-impressao.js: o painel do dia e o Militares) e o das grades (escalas-impressao-grade.js: Agenda,
-     Calendário, Colunas). No alto, a nota "Será impresso:" com o resumo e, embaixo dela, o aviso de erro grave. Nas
-     caixas numeradas (o número vem do JS, só nas que estão à vista): o período, as unidades (a árvore, marcada com as
-     unidades e a companhia de cada pelotão; para quem é de companhia ou pelotão, começa na companhia e a seta do
-     título abre a árvore toda), o formato (só nas grades), o que mostrar e a prévia (o próprio PDF, no leitor do
-     navegador, que some no celular). O que é de uma impressão só leva data-impressao-so com as marcas dela (dia,
-     grade, semanas, dias); o JS mostra só o que vale. O rodapé é o tpl-escala-impressao-acoes -->
+<!-- as caixas das impressões da escala, no painel de impressão comum (componentes/js/geral-impressao.js, que põe a
+     nota, o aviso, a Prévia e o rodapé do index.html): o Imprimir escala (escalas-impressao.js: o painel do dia e o
+     Militares) e o das grades (escalas-impressao-grade.js: Agenda, Calendário, Colunas). O período, as unidades (a
+     árvore, marcada com as unidades e a companhia de cada pelotão; para quem é de companhia ou pelotão, começa na
+     companhia e a seta do título abre a árvore toda), o formato (só nas grades) e o que mostrar. O que é de uma
+     impressão só leva data-impressao-so com as marcas dela (dia, grade, semanas, dias); o JS mostra só o que vale -->
 <template id="tpl-escala-impressao">
-  <div class="nota" data-impressao-nota>
-    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg>
-    <span class="nota-texto"><span class="nota-titulo">Será impresso:</span> <span data-impressao-resumo></span></span>
-  </div>
-  <div class="impacto-aviso impacto-aviso--problema oculto" data-impressao-aviso>
-    <svg class="icone impacto-aviso-icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-    <span class="impacto-aviso-textos">
-      <span class="impacto-aviso-titulo"></span>
-      <span class="impacto-aviso-desc"></span>
-    </span>
-  </div>
   <!-- o período: as datas De/Até e os atalhos (dia); as semanas do mês da tela (Calendário: "Mês todo" marcado = o
        mês inteiro; desmarcado, os botões das semanas, de marcar vários, clonados do tpl-escala-aba-unidade); os dias
        do mês da tela (Agenda e Colunas › Dias). O Colunas › Unidades não tem a caixa: sai a semana da tela -->
@@ -267,14 +254,14 @@
       <button type="button" class="botao botao--pequeno" data-impressao-atalho="mes">Até o fim do mês</button>
     </div>
     <span class="campo-ajuda" data-impressao-so="dia">Até 31 dias por arquivo. Cada dia começa numa folha nova.</span>
-    <button type="button" class="arvore-linha escala-impressao-marcar" role="checkbox" aria-checked="true" data-impressao-so="semanas" data-impressao-mes-todo>
+    <button type="button" class="arvore-linha impressao-marcar" role="checkbox" aria-checked="true" data-impressao-so="semanas" data-impressao-mes-todo>
       <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
       <span class="arvore-nome">Mês todo</span>
     </button>
     <div class="abas abas--seletor oculto" data-abas-multi data-impressao-semanas></div>
     <!-- as listas só oferecem os dias que o mês tem; o "ao dia", do "Do dia" em diante -->
-    <div class="escala-impressao-linha escala-impressao-linha--inicio" data-impressao-so="dias">
-      <span class="escala-impressao-rotulo">Do dia</span>
+    <div class="impressao-linha impressao-linha--inicio" data-impressao-so="dias">
+      <span class="impressao-rotulo">Do dia</span>
       <div class="dropdown" data-impressao-dia="de">
         <button type="button" class="campo-entrada campo-selecao" aria-label="Do dia">
           <span class="campo-selecao-texto"></span>
@@ -282,7 +269,7 @@
         </button>
         <div class="dropdown-menu"></div>
       </div>
-      <span class="escala-impressao-rotulo">ao dia</span>
+      <span class="impressao-rotulo">ao dia</span>
       <div class="dropdown" data-impressao-dia="ate">
         <button type="button" class="campo-entrada campo-selecao" aria-label="Ao dia">
           <span class="campo-selecao-texto"></span>
@@ -295,10 +282,10 @@
     <span class="campo-ajuda oculto" data-impressao-periodo></span>
   </div>
   <div class="grupo-caixa">
-    <div class="escala-impressao-cabecalho">
-      <span class="rotulo-secao escala-impressao-titulo"><span data-impressao-num></span>. Unidades</span>
-      <button type="button" class="botao-discreto escala-impressao-toggle oculto" aria-label="Mostrar todas as unidades ou só a companhia" aria-expanded="false" data-impressao-toggle>
-        <svg class="icone escala-impressao-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+    <div class="impressao-cabecalho">
+      <span class="rotulo-secao impressao-titulo"><span data-impressao-num></span>. Unidades</span>
+      <button type="button" class="botao-discreto impressao-toggle oculto" aria-label="Mostrar todas as unidades ou só a companhia" aria-expanded="false" data-impressao-toggle>
+        <svg class="icone impressao-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
       </button>
     </div>
     <div class="campo">
@@ -308,8 +295,8 @@
   </div>
   <div class="grupo-caixa" data-impressao-so="grade">
     <span class="rotulo-secao"><span data-impressao-num></span>. Formato</span>
-    <div class="escala-impressao-linha">
-      <span class="escala-impressao-rotulo">Arquivo</span>
+    <div class="impressao-linha">
+      <span class="impressao-rotulo">Arquivo</span>
       <div class="abas abas--seletor" data-impressao-formato>
         <button type="button" class="aba aba--ativa" data-formato="folhas">Folhas A4</button>
         <button type="button" class="aba" data-formato="continua">Página contínua</button>
@@ -321,35 +308,20 @@
        pé da folha leva a legenda deles -->
   <div class="grupo-caixa">
     <span class="rotulo-secao"><span data-impressao-num></span>. Mostrar</span>
-    <button type="button" class="arvore-linha escala-impressao-marcar" role="checkbox" aria-checked="true" data-impressao-so="grade" data-mostrar="grafico">
+    <button type="button" class="arvore-linha impressao-marcar" role="checkbox" aria-checked="true" data-impressao-so="grade" data-mostrar="grafico">
       <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
       <span class="arvore-nome">Gráfico de cobertura</span>
     </button>
-    <button type="button" class="arvore-linha escala-impressao-marcar" role="checkbox" aria-checked="true" data-mostrar="icones">
+    <button type="button" class="arvore-linha impressao-marcar" role="checkbox" aria-checked="true" data-mostrar="icones">
       <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
       <span class="arvore-nome">Ícones de origem</span>
     </button>
-    <button type="button" class="arvore-linha escala-impressao-marcar" role="checkbox" aria-checked="true" data-impressao-so="grade" data-mostrar="faixa">
+    <button type="button" class="arvore-linha impressao-marcar" role="checkbox" aria-checked="true" data-impressao-so="grade" data-mostrar="faixa">
       <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
       <span class="arvore-nome">Faixa do horário</span>
     </button>
     <span class="campo-ajuda">Igual à tela. Desmarque o que não quiser no papel.</span>
   </div>
-  <div class="grupo-caixa escala-impressao-previa-secao">
-    <span class="rotulo-secao"><span data-impressao-num></span>. Prévia</span>
-    <div class="escala-impressao-previa">
-      <iframe class="escala-impressao-previa-quadro" title="Prévia do PDF" data-impressao-previa></iframe>
-      <span class="painel-estado escala-impressao-previa-aviso oculto" data-impressao-previa-aviso></span>
-      <div class="carregando-veu" data-impressao-previa-carregando>
-        <div class="giratorio" aria-label="Carregando" role="status"></div>
-      </div>
-    </div>
-    <span class="campo-ajuda" data-impressao-folhas></span>
-  </div>
-</template>
-<template id="tpl-escala-impressao-acoes">
-  <button type="button" class="botao" data-impressao-cancelar>Cancelar</button>
-  <button type="button" class="botao botao--primario" data-impressao-gerar>Gerar PDF</button>
 </template>
 
 <!-- Imprimir do painel do dia (subcabeçalho da aba Dia, à direita; escalas-impressao.js): abre o mesmo formulário

@@ -1,10 +1,10 @@
 /* ============================================================
-   NOVA EXTRA — os passos do mês e o Calendário
+   NOVA EXTRA — os passos do mês e a aba Extras do mês
    Lê o mês inteiro (nova_extra_mes) e desenha a aba aberta: os passos
    1 Pedidos (prazo e termo), 2 Cotas (nova-extra-cotas.js), 3
    Distribuição e 4 Ajustes (a mesma tela, nova-extra-montar.js) e 5
-   Relatórios (nova-extra-relatorio.js), ou o Calendário (o mês no
-   calendário do site, as extras de cada unidade). O menu Ações da
+   Relatórios (nova-extra-relatorio.js), ou a aba Extras do mês (as
+   extras de cada unidade na Agenda ou no Calendário). O menu Ações da
    barra fica no nova-extra-acoes.js. Pinta o número de
    cada passo nas abas (verde feito, preto o primeiro ainda não feito,
    branco os que não começaram) e escreve a linha de resumo de cada
@@ -27,6 +27,8 @@
   var passoAberto = null; // o passo desenhado por último (ao trocar de passo, o painel direito fecha)
   var vez = 1;            // o passo da vez (o primeiro ainda não feito)
   var pedido = 0;         // latest-wins
+  var lendo = null;       // o mês com a leitura no ar (AAAA-MM-01)
+  var falhou = false;     // a última leitura falhou (abrir a aba de novo tenta outra vez)
   var p1 = null;          // edição do passo 1
 
   function msg() { return RW.mensagens.novaExtra.org; }
@@ -77,7 +79,15 @@
         b.classList.toggle('nova-extra-vaga-bol--on', blocos.indexOf(i + 1) >= 0);
       });
       v.querySelector('.nova-extra-vaga-baixo').classList.toggle('oculto', !outro);
+      v.insertBefore(util.origem(a), bol);
       return v;
+    },
+    /* quem pôs a extra: o ícone do sistema (o Preencher refaz) ou o cadeado (o administrador pôs ou mudou; o sistema nunca
+       muda) */
+    origem: function (a) {
+      var i = RW.tpl('tpl-ne-origem');
+      i.querySelector('use').setAttribute('href', 'icones/todos.svg#' + (a.origem === 'sugestao' ? 'icone-origem-sistema' : 'icone-cadeado'));
+      return i;
     },
     /* as unidades da página: todas as da companhia (o seletor de unidades do topo não filtra a Nova extra) */
     escolhidas: function () { return d ? d.unidades.map(function (un) { return un.id; }) : []; },
@@ -104,27 +114,40 @@
   RW.novaExtraUtil = util;
 
   /* ---------- carregar ---------- */
-  /* devolve a promessa da leitura: termina com o mês desenhado e, na Distribuição e nos Ajustes, com a escala lida */
+  /* lê o mês e desenha a aba aberta. Com outro mês na tela (ou depois de uma falha), a área do Calendário e do Organizar
+     o mês mostra o círculo até ele chegar e a frase se falhar (RosterWork.novaExtra.leitura; na Minha extra, nada
+     aparece); a releitura do mesmo mês deixa a tela à vista */
   function carregar() {
     var meu = ++pedido;
     var comp = RW.novaExtra.comp();
     var naDistribuicao = function () { return aba === 'passo' && (passo === 3 || passo === 4); };
+    lendo = comp;
+    if (!d || d.competencia !== comp || falhou) RW.novaExtra.leitura('mes', 'lendo');
     /* na Distribuição e nos Ajustes, a escala do mês começa a ser lida junto com o mês (as mesmas unidades) */
     if (d && naDistribuicao() && RW.escalasDados && RW.escalasDados.antecipar) {
       var fim = new Date(+comp.slice(0, 4), +comp.slice(5, 7), 0);
       RW.escalasDados.antecipar(d.unidades.map(function (x) { return x.id; }), comp,
         fim.getFullYear() + '-' + String(fim.getMonth() + 1).padStart(2, '0') + '-' + String(fim.getDate()).padStart(2, '0'));
     }
+    /* a falha fica no lugar da área (a frase), com a mensagem técnica no console */
+    function falha(texto, tecnico) {
+      if (meu !== pedido || !el.isConnected) return;
+      lendo = null;
+      falhou = true;
+      if (tecnico) console.error('[Nova extra] nova_extra_mes falhou: ' + tecnico);
+      RW.novaExtra.leitura('mes', 'falha', texto || msg().falhaMes);
+    }
     return util.chamar('nova_extra_mes', { p_competencia: comp }).then(function (r) {
       if (meu !== pedido || !el.isConnected) return;
-      /* na Minha extra a leitura é só para as marcas das abas: a falha fica quieta */
-      if (!r || !r.ok) { if (aba) RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || msg().falhaMes }); return; }
+      if (!r || !r.ok) { falha(r && r.error); return; }
+      lendo = null;
+      falhou = false;
       d = r;
       p1 = null;
       if (RW.novaExtraCotas) RW.novaExtraCotas.reiniciar();
+      RW.novaExtra.leitura('mes', 'ok');
       desenharAba();
-      if (naDistribuicao() && RW.novaExtraMontar) return RW.novaExtraMontar.esperarEscala();
-    }, function () { if (meu === pedido && aba) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao }); });
+    }, function (e) { falha(null, (e && e.message) || 'sem conexão'); });
   }
 
   /* a aba aberta (na Minha extra, só os números dos passos); no Organizar o mês sem passo escolhido, abre o da vez */
@@ -270,17 +293,28 @@
   /* ---------- passo 5: as etapas do mês e a prévia (nova-extra-relatorio.js) ---------- */
   function passo5() { if (RW.novaExtraRelatorio) RW.novaExtraRelatorio.mostrar(d, el); }
 
-  /* ---------- aba Calendário ---------- */
-  /* as unidades que têm extra no mês, no bloco da Escala, cada uma na mesma altura em todos os dias
-     (a vazia fica invisível); sem nenhuma, o vazio no lugar */
+  /* ---------- aba Extras do mês ---------- */
+  /* as unidades que têm extra no mês: na Agenda, uma coluna por unidade; no Calendário, o bloco da Escala, cada uma na
+     mesma altura em todos os dias (a vazia fica invisível); sem nenhuma, o vazio no lugar. Só para ler */
   function desenharCalendario() {
     q('#nova-extra-cal-aviso').classList.toggle('oculto', !!d.lancamento);
     var alocs = d.alocacoes;
     var unidades = util.doCalendario(alocs).filter(function (un) { return alocs.some(function (a) { return +a.unidade === un.id; }); });
     q('#nova-extra-cal-vazio').classList.toggle('oculto', unidades.length > 0);
     q('#nova-extra-cal-mes').classList.toggle('oculto', !unidades.length);
+    RW.novaExtra.grade.unidades(unidades.length ? unidades : null);
     if (!unidades.length) return;
     var comp = d.competencia;
+    if (RW.novaExtra.modo() === 'agenda') {
+      var wrap = RW.novaExtraPorDia.agenda(q('#nova-extra-cal-mes'), comp, unidades, function (un, k) {
+        var cel = RW.novaExtraPorDia.celulaVazia(un, k);
+        cel.classList.add('nova-extra-cal-leitura');
+        alocs.filter(function (a) { return a.data === k && +a.unidade === un.id; }).forEach(function (a) { cel.appendChild(util.vaga(a, un.id)); });
+        return cel;
+      });
+      RW.novaExtra.grade.aplicar(wrap);
+      return;
+    }
     RW.geralCalendarioMes.renderizar(q('#nova-extra-cal-mes'), { dataRef: new Date(+comp.slice(0, 4), +comp.slice(5, 7) - 1, 1), unidadesPorDia: Math.max(1, unidades.length), aoDia: function (cel, data, noMes) {
       if (!noMes) return;
       var k = comp.slice(0, 8) + String(data.getDate()).padStart(2, '0');
@@ -299,7 +333,7 @@
   /* ---------- entrada ---------- */
   function montar(conteudo) {
     el = conteudo;
-    d = null; passo = null; passoAberto = null; aba = null;
+    d = null; passo = null; passoAberto = null; aba = null; lendo = null; falhou = false;
     todos('#p1-filtro [data-lista]', function (b) { b.addEventListener('click', function () { p1.lista = b.getAttribute('data-lista'); passo1(); }); });
     /* o prazo nos campos de data do site (DD/MM/AAAA, com o calendário do site) */
     RW.campos.ligarData(q('#p1-abre'));
@@ -327,14 +361,16 @@
     RW.novaExtra.legenda(null);
   }
 
-  /* abre o Calendário ('calendario'), um passo (1 a 5) ou o Organizar o mês (null: o passo escolhido antes ou, na
-     primeira vez, o da vez); o mês já lido não é lido de novo (os rascunhos ficam) */
+  /* abre a aba Extras do mês ('calendario'), um passo (1 a 5) ou o Organizar o mês (null: o passo escolhido antes ou, na
+     primeira vez, o da vez); o mês já lido não é lido de novo (os rascunhos ficam), e o que já está sendo lido só
+     espera, com o círculo */
   function mostrar(nome) {
     sair();
     aba = nome === 'calendario' ? 'calendario' : 'passo';
     if (typeof nome === 'number') passo = nome;
-    if (!d || d.competencia !== RW.novaExtra.comp()) carregar();
-    else desenharAba();
+    var comp = RW.novaExtra.comp();
+    if (d && d.competencia === comp && !falhou) desenharAba();
+    else if (lendo !== comp) carregar();
   }
 
   RW.novaExtraOrg = {

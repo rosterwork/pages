@@ -36,7 +36,8 @@
   var resultadoFechado = false;   // o resultado da sugestão fechado no X (volta no próximo Preencher)
   var escala = null;       // a escala do mês sem extra: { comp, cobertura, erro }
   var escalaSeq = 0;
-  var esperaEscala = null; // a leitura da escala no ar (promessa)
+  var escalaLendo = null;  // o mês com a leitura da escala no ar
+  var escalaFalhou = null; // o mês em que a leitura da escala falhou (a frase no lugar do calendário)
 
   function msg() { return RW.mensagens.novaExtra.org; }
   function u() { return RW.novaExtraUtil; }
@@ -146,27 +147,27 @@
   function pelotoes(lista) { return (lista || d.unidades).filter(function (x) { return x.pelotao !== false; }); }
 
   /* ---------- as barras: a escala do mês (a mesma leitura da Escala) e a conta do depois ---------- */
-  /* a leitura da escala no ar fica guardada: a troca de mês espera por ela antes de tirar o véu. Se falhar, avisa e
-     anota no console */
+  /* uma leitura por vez (o calendário mostra o círculo até ela chegar). Se falhar, a frase fica no lugar do calendário,
+     como na Escala, e a mensagem técnica no console; abrir o passo de novo tenta outra vez */
   function carregarEscala() {
     var ids = d.unidades.map(function (x) { return x.id; });
     var comp = d.competencia, req = ++escalaSeq;
     if (!RW.escalasDados) { escala = { comp: comp, cobertura: {}, erro: {}, militares: {} }; redesenhar(); return; }
+    escalaLendo = comp;
     function falhou(e) {
-      console.error('[Nova extra] ler_escala_mes falhou' + (e && e.message ? ': ' + e.message : ''));
-      RW.avisar({ tipo: 'erro', mensagem: msg().falhaEscala });
-    }
-    esperaEscala = RW.escalasDados.carregar(ids, comp, ultimoDia()).then(function (r) {
-      if (req !== escalaSeq || !el || !el.isConnected) return;
-      if (!r) falhou();
-      escala = { comp: comp, cobertura: (r && r.cobertura) || {}, erro: (r && r.erro) || {}, militares: (r && r.militares) || {} };
-      redesenhar();
-    }, function (e) {
       if (req !== escalaSeq) return;
-      falhou(e);
-      escala = { comp: comp, cobertura: {}, erro: {}, militares: {} };
-      redesenhar();
-    });
+      escalaLendo = null;
+      escalaFalhou = comp;
+      console.error('[Nova extra] ler_escala_mes falhou' + (e && e.message ? ': ' + e.message : ''));
+      if (el && el.isConnected) redesenhar();
+    }
+    RW.escalasDados.carregar(ids, comp, ultimoDia()).then(function (r) {
+      if (req !== escalaSeq) return;
+      if (!r) { falhou(); return; }
+      escalaLendo = null;
+      escala = { comp: comp, cobertura: r.cobertura || {}, erro: r.erro || {}, militares: r.militares || {} };
+      if (el && el.isConnected) redesenhar();
+    }, falhou);
   }
   function escalaPronta() { return !!escala && escala.comp === d.competencia; }
   function antesDe(uid, k) { var c = escala && (escala.cobertura[uid] || {})[k]; return c && c.length === 24 ? c : null; }
@@ -317,10 +318,12 @@
     q('#p3-cal').classList.toggle('oculto', nenhuma);
     q('#p3-cal-vazio').classList.toggle('oculto', !nenhuma);
     if (!escalaPronta()) {
-      var alvo = q('#p3-cal');
+      var alvo = q('#p3-cal'), falha = escalaFalhou === d.competencia;
       alvo.textContent = '';
-      var car = RW.tpl('tpl-escala-carregando'); if (car) alvo.appendChild(car);
-      carregarEscala();
+      var no = RW.tpl(falha ? 'tpl-escala-estado' : 'tpl-escala-carregando');
+      if (no && falha) no.textContent = msg().falhaEscala;
+      if (no) alvo.appendChild(no);
+      if (!falha && escalaLendo !== d.competencia) carregarEscala();
       return;
     }
     if (!soCabeca && !nenhuma) porDia().desenhar(q('#p3-cal'));
@@ -347,6 +350,7 @@
       /* com mudança não salva ou no meio do cálculo da sugestão, o navegador avisa ao fechar ou recarregar */
       if (RW.guardaSaida) RW.guardaSaida.registrar(function () { return el && el.isConnected && (alteracoes().length > 0 || RW.novaExtraOtimizador.calculando()); });
     }
+    escalaFalhou = null;
     redesenhar();
   }
 
@@ -365,8 +369,6 @@
     mostrar: mostrar,
     sujo: function () { return !!d && alteracoes().length > 0; },
     descartar: function () { mud = {}; sugeridas = []; postas = null; },
-    /* a leitura da escala no ar (ou já terminada): a troca de mês tira o véu quando ela chega */
-    esperarEscala: function () { return esperaEscala || Promise.resolve(); },
     /* refaz o calendário (o filtro Exibir mudou) */
     redesenhar: function () { if (d && el && el.isConnected) redesenhar(); },
     /* o painel do dia fecha ao sair da Distribuição, dos Ajustes ou da aba */

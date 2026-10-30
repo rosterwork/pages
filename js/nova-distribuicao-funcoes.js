@@ -151,21 +151,24 @@
       }
 
       /* a Central de Operações do pelotão: quem ela exibe, só para ver (o banco manda a resposta só com Central no bloco
-         Postos); o erro amarelo do Cabo de Dia só aparece com ele marcado */
+         Postos); o que fazer sem ninguém disponível para Cabo de Dia só aparece com ele marcado */
       if (!ctx.ehCia && r.central) {
         var cen = r.central;
         var nomes = ['oficial', 'chefe', 'cabo', 'extra'].filter(function (k) { return cen[k]; }).map(function (k) { return M().centralNomes[k]; });
-        var frasesCentral = [M().centralLinha(nomes)].concat(cen.cabo ? [cen.cabo_aviso === 0 ? M().centralCaboSemAviso : M().centralCaboComAviso] : []);
+        var frasesCentral = [M().centralLinha(nomes)].concat(cen.cabo ? [M().centralCaboAviso[cen.cabo_aviso === 0 ? 0 : 1]] : []);
         P().cartao(u, api, ctx, 'central', M().centralTitulo, frasesCentral, function (lugar) {
           var opcoes = P().tpl('central');
           opcoes.querySelectorAll('[data-campo]').forEach(function (botao) {
             var campo = botao.getAttribute('data-campo');
-            var aviso = campo === 'cabo_aviso';
-            if (aviso) botao.classList.toggle('oculto', !cen.cabo);
-            P().marcar(botao, aviso ? cen.cabo_aviso !== 0 : !!cen[campo], function (marcado) {
-              api.mudar(ctx.lado, function (x) { x.central[campo] = aviso ? (marcado ? 1 : 0) : marcado; });
+            P().marcar(botao, !!cen[campo], function (marcado) {
+              api.mudar(ctx.lado, function (x) { x.central[campo] = marcado; });
             }, ctx.soLeitura);
           });
+          var aviso = opcoes.querySelector('.nova-distribuicao-central-aviso');
+          aviso.classList.toggle('oculto', !cen.cabo);
+          P().bolinhas(aviso, 'nova-distribuicao-central-aviso-' + ctx.lado, function (v) { return Number(v) === (cen.cabo_aviso === 0 ? 0 : 1); }, function (v) {
+            api.mudar(ctx.lado, function (x) { x.central.cabo_aviso = Number(v); });
+          }, ctx.soLeitura);
           lugar.appendChild(opcoes);
         }, false, { muda: 'central' });
       }

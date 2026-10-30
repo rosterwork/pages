@@ -357,8 +357,14 @@
           inicial: 'Libera depois do lançamento.',
           final: 'Libera no dia 1º do mês seguinte ao da extra.'
         },
-        falhaPrevia: 'Não foi possível montar a prévia. Tente de novo.',
-        falhaGerar: 'Não foi possível gerar o PDF. Tente de novo.'
+        /* a nota do alto do painel ("Será impresso:"): "Relatório inicial de outubro de 2026, todos os pelotões,
+           separados por pelotão." */
+        resumo: {
+          frase: function (relatorio, mes, unidade, modo) { return relatorio + ' de ' + mes + ', ' + unidade + (modo ? ', ' + modo : '') + '.'; },
+          relatorios: { pedidos: 'Relatório de pedidos', termos: 'Relatório de termos e cotas', inicial: 'Relatório inicial', final: 'Relatório final' },
+          todos: 'todos os pelotões',
+          modos: { separar: 'separados por pelotão', unica: 'em lista única' }
+        }
       },
       /* os quatro PDFs dos relatórios (nova-extra-relatorios-pdf.js), no padrão do registro RW das trocas */
       relatoriosPdf: {
@@ -512,7 +518,7 @@
         rdAdmin: function (quem) { return (quem || 'O administrador') + ' colocou'; },
         rdHoras: function (h, para) { return 'das ' + h + (para ? ', para ' + para : '') + '.'; },
         para: { condutorGente: 'cobrir a falta de condutor e de gente', condutor: 'cobrir a falta de condutor', gente: 'cobrir a falta de gente',
-          chefe: 'liberar o chefe da direção', ideal: 'completar o efetivo ideal', menosGente: 'reforçar o horário com menos gente' },
+          chefe: 'liberar o chefe da direção', ideal: 'completar o efetivo ideal', menosGente: 'usar a cota que sobrou' },
         pref: { quer: 'Marcou Quero neste dia.', nao: 'Marcou Não quero neste dia.', sem: 'Sem preferência neste dia.' },
         aindaPodem: function (q, s) {
           var partes = [];
@@ -1028,8 +1034,6 @@
         /* aviso do painel quando algum dia do período tem erro grave (vermelho) */
         avisoTitulo: function (n) { return n === 1 ? 'Erro grave em 1 dia do período' : 'Erro grave em ' + n + ' dias do período'; },
         avisoDescricao: function (lista) { return lista + '. O PDF sai do jeito que está na escala.'; },
-        falhaGerar: 'Não foi possível gerar o PDF. Tente de novo.',
-        falhaPrevia: 'Não foi possível montar a prévia. Tente de novo.',
         /* dica do Imprimir do painel do dia desligado: o PDF sai do que está gravado */
         salveAntes: 'Salve as alterações antes de imprimir.',
         /* textos de dentro do PDF */
@@ -1070,10 +1074,6 @@
           resumo: function (grade, periodo, unidades, filtros) {
             var comFiltros = filtros.length ? (filtros.length > 1 ? 'com os filtros ' : 'com o filtro ') + filtros.join('; ') : 'sem filtros';
             return grade + ' ' + periodo + ', ' + unidades + ', ' + comFiltros + '.';
-          },
-          /* embaixo da prévia (também a do dia, em A4 retrato) */
-          folhas: function (n, continua, paisagem) {
-            return continua ? 'Uma página contínua.' : (n === 1 ? '1 folha' : n + ' folhas') + ', A4 ' + (paisagem ? 'paisagem' : 'retrato') + '.';
           },
           longaDemais: 'A página contínua ficou longa demais para os leitores de PDF. Escolha Folhas A4 ou um período menor.',
           arquivo: function (nome, periodo, unidade) { return 'Escala ' + nome.toLowerCase() + ' ' + (unidade ? unidade + ' ' : '') + periodo + '.pdf'; }
@@ -1255,12 +1255,15 @@
       travaOutra: 'Muda em {unidade}',
       grupoLinha: '{unidade}: {postos}',
       ciaFalta: 'Falta responder onde fica o Oficial de Área na {unidade}: escolha a {unidade} no seletor da barra.',
-      /* a Central de Operações do pelotão: quem ela exibe, só para ver (a resposta fechada: os nomes e o erro do Cabo de Dia) */
+      /* a Central de Operações do pelotão: quem ela exibe, só para ver (a resposta fechada: os nomes e, com o Cabo de Dia, o
+         que fazer sem ninguém disponível, pela opção: 0 não aparece, 1 erro amarelo) */
       centralTitulo: 'Exibir na Central de Operações',
       centralNomes: { oficial: 'Oficial de Área', chefe: 'Chefe de Socorro', cabo: 'Cabo de Dia', extra: 'Extrajornada' },
       centralLinha: function (nomes) { return nomes.length ? juntarComE(nomes) : 'Nenhum'; },
-      centralCaboComAviso: 'Erro amarelo na escala quando não houver cabo ou soldado de serviço',
-      centralCaboSemAviso: 'Sem erro amarelo quando não houver cabo ou soldado de serviço',
+      centralCaboAviso: [
+        'Se não houver ninguém disponível, não aparece e não exibe erro.',
+        'Se não houver ninguém disponível, aparece com erro amarelo.'
+      ],
       /* blocos 3 e 5: acúmulos fixos e por falta */
       opcaoN: '{n}ª opção',
       opcaoLinha: '{n}ª opção {quem}',
@@ -1515,6 +1518,16 @@
       seloProblema: function (n) { return n === 1 ? '1 problema' : n + ' problemas'; }
     },
 
+    /* o painel de impressão comum (componente geral-impressao: Escala e Trocas) */
+    impressao: {
+      /* embaixo da prévia */
+      folhas: function (n, continua, paisagem) {
+        return continua ? 'Uma página contínua.' : (n === 1 ? '1 folha' : n + ' folhas') + ', A4 ' + (paisagem ? 'paisagem' : 'retrato') + '.';
+      },
+      falhaPrevia: 'Não foi possível montar a prévia. Tente de novo.',
+      falhaGerar: 'Não foi possível gerar o PDF. Tente de novo.'
+    },
+
     /* trocas (lista por abas, painel de detalhe + análise de impacto) */
     trocas: {
       falhaCarregar: 'Não foi possível carregar as trocas.',
@@ -1673,8 +1686,12 @@
         textoCopiado: 'Texto copiado',
         falhaCopiar: 'Não foi possível copiar. O texto ficou selecionado: copie manualmente.',
         falhaLista: 'Não foi possível carregar as trocas. Tente de novo.',
-        falhaPrevia: 'Não foi possível montar a prévia. Tente de novo.',
-        falhaGerar: 'Não foi possível gerar o PDF. Tente de novo.',
+        /* a nota do alto do painel ("Será impresso:"): "Lista de outubro de 2026, 5 trocas." */
+        resumo: {
+          lista: function (mes, ano, n) { return 'Lista de ' + mes + ' de ' + ano + ', ' + n + (n === 1 ? ' troca.' : ' trocas.'); },
+          registro: function (mes, ano, n) { return 'Registro técnico de ' + mes + ' de ' + ano + ', ' + n + (n === 1 ? ' troca.' : ' trocas.'); },
+          alteracoes: function (mes, ano) { return 'Alterações das trocas de ' + mes + ' de ' + ano + '.'; }
+        },
         /* o texto para a Parte, na norma de correspondência: subitens "a." que terminam em ";" e o último em "." */
         parte: {
           informoAbertura: function (nomes) { return 'Informo a V.S.ª que ' + nomes + ' trocaram suas escalas de serviço nas seguintes datas:'; },

@@ -372,6 +372,8 @@
     calcularMaxPorUnidade: calcularMaxPorUnidade,
     ativarGraficos: ativarGraficos,
     desenharGraficos: desenharGraficos,
+    /* a dica "Nh · X militares" nos gráficos de um elemento fora da grade (a cobertura dos painéis do dia) */
+    ligarDica: ligarHover,
     limparObservadores: limparObservadores,
     /* peças para o PDF das grades: a mesma origem, situação, hora e faixa da tela */
     iconeDaOrigem: iconeDaOrigem,

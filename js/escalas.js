@@ -565,7 +565,13 @@
       },
       ir: function (direcao) { return Promise.resolve(navegar(direcao)); }
     }) : null;
-    function irPelaSeta(direcao) { if (!deslize || !deslize.ir(direcao)) navegar(direcao); }
+    /* a troca de período pelas setas, pelo Hoje e pelo calendário: o painel do dia aberto é do período antigo e fecha
+       antes; com mudança não salva, o aviso de sempre e o período só muda no Descartar (escalas-painel.js) */
+    function trocarPeriodo(trocar) {
+      if (RosterWork.escalasPainel) RosterWork.escalasPainel.antesDeTrocarPeriodo(trocar);
+      else trocar();
+    }
+    function irPelaSeta(direcao) { trocarPeriodo(function () { if (!deslize || !deslize.ir(direcao)) navegar(direcao); }); }
 
     /* busca do modo Militares; filtros e busca da grade (escalas-filtros.js); o botão Legenda (molde geral) */
     ligarBuscaMilitares();
@@ -579,12 +585,14 @@
     if (btnProximo) btnProximo.addEventListener('click', function () { irPelaSeta(1); });
     if (btnHoje) {
       btnHoje.addEventListener('click', function () {
-        voltarParaHoje();
-        /* o botão some: o foco continua no período (quem usa o teclado não volta ao começo da página) */
-        if (document.activeElement === btnHoje) {
-          var nome = conteudo.querySelector('#escala-periodo-nome');
-          if (nome) nome.focus();
-        }
+        trocarPeriodo(function () {
+          voltarParaHoje();
+          /* o botão some: o foco continua no período (quem usa o teclado não volta ao começo da página) */
+          if (document.activeElement === btnHoje) {
+            var nome = conteudo.querySelector('#escala-periodo-nome');
+            if (nome) nome.focus();
+          }
+        });
       });
     }
 
@@ -605,9 +613,11 @@
         },
         obterData: function () { return refData; },
         aoEscolher: function (data) {
-          refData = data;
-          atualizarPeriodo();
-          renderizarCorpo();
+          trocarPeriodo(function () {
+            refData = data;
+            atualizarPeriodo();
+            renderizarCorpo();
+          });
         }
       });
     }

@@ -4,12 +4,12 @@
       <h1>Nova extra</h1>
       <span class="selo selo--alerta">Protótipo</span>
     </div>
-    <!-- abas: Minha extra · Calendário | Organizar o mês (a do administrador, separada pelo traço; os passos ficam na
-         barra), com um traço só para os dois grupos. No celular, só Minha extra e Calendário -->
+    <!-- abas: Minha extra · Extras do mês | Organizar o mês (a do administrador, separada pelo traço; os passos ficam na
+         barra), com um traço só para os dois grupos. No celular, só Minha extra e Extras do mês -->
     <div id="nova-extra-abas" data-abas-grupo>
       <div class="abas">
         <button type="button" class="aba aba--ativa" data-aba="minha">Minha extra</button>
-        <button type="button" class="aba" data-aba="calendario">Calendário</button>
+        <button type="button" class="aba" data-aba="calendario">Extras do mês</button>
       </div>
       <div class="abas">
         <button type="button" class="aba" data-aba="organizar">Organizar o mês</button>
@@ -36,6 +36,12 @@
       <button type="button" class="aba" data-passo="3"><span class="nova-extra-aba-num" aria-hidden="true">3</span>Distribuição</button>
       <button type="button" class="aba" data-passo="4"><span class="nova-extra-aba-num" aria-hidden="true">4</span>Ajustes</button>
       <button type="button" class="aba" data-passo="5"><span class="nova-extra-aba-num" aria-hidden="true">5</span>Relatórios</button>
+    </div>
+    <!-- Agenda | Calendário: a escolha do tipo de aparelho, a mesma da Escala e da Extrajornada (geral-visao-grade); na aba
+         Extras do mês e nos passos Distribuição e Ajustes (nova-extra.js) -->
+    <div class="abas abas--seletor oculto" id="nova-extra-modos">
+      <button type="button" class="aba aba--ativa" data-modo="agenda">Agenda</button>
+      <button type="button" class="aba" data-modo="calendario">Calendário</button>
     </div>
     <span class="espacador-flex"></span>
     <!-- na Distribuição e nos Ajustes: o filtro (só o ícone; Exibir: Escala completa; quem mostra e esconde é o
@@ -86,6 +92,9 @@
   <!-- cada aba ocupa o corpo inteiro: a linha de resumo parada em cima, o conteúdo rolando por dentro e o rodapé parado
        embaixo -->
   <div class="pagina-corpo pagina-corpo--colado">
+    <!-- a área da aba aberta enquanto a leitura dela não chega (o círculo) ou quando falhou (a frase), com os moldes da
+         Escala; a barra continua usável (nova-extra.js) -->
+    <div class="nova-extra-area oculto" id="nova-extra-estado"></div>
     <!-- Minha extra: o pedido do mês e as extras do militar -->
     <section class="nova-extra-area" data-aba-painel="minha">
       <div class="nova-extra-rolagem">
@@ -129,7 +138,7 @@
       </div>
     </section>
 
-    <!-- Calendário: quem tira extra em cada dia, nas unidades que têm extra -->
+    <!-- Extras do mês: quem tira extra em cada dia, nas unidades que têm extra (na Agenda ou no Calendário) -->
     <section class="nova-extra-area oculto" data-aba-painel="calendario">
       <div class="nova-extra-passo-topo oculto" id="nova-extra-cal-aviso">
         <div class="nota nota--alerta">
@@ -445,7 +454,7 @@
   </div>
 </div>
 
-<!-- moldes dos passos e do Calendário -->
+<!-- moldes dos passos e das Extras do mês -->
 <template id="tpl-ne-p1-linha">
   <tr>
     <td class="nova-extra-nome"><small></small><b></b></td>
@@ -566,13 +575,13 @@
   <button type="button" class="botao botao--primario" id="p4-lancar">Lançar e encerrar</button>
 </template>
 
-<!-- Relatórios › Imprimir: o painel Imprimir relatório, com as perguntas em caixas numeradas (1. o relatório, já marcado
-     o do botão, e os que ainda não liberaram apagados, com o motivo na dica; 2. o pelotão, entre os da área de quem
-     imprime, que some com um só; 3. com todos, separar por pelotão ou a lista única) e a prévia do PDF (no celular,
-     sem a prévia) -->
+<!-- Relatórios › Imprimir: as caixas do Imprimir relatório no painel de impressão comum (#tpl-impressao do index.html,
+     com a nota, a Prévia e o rodapé), numeradas pelo JS: o relatório, já marcado o do botão, e os que ainda não
+     liberaram apagados, com o motivo na dica; o pelotão, entre os da área de quem imprime, que some com um só; com
+     todos, separar por pelotão ou a lista única -->
 <template id="tpl-ne-imprimir">
   <div class="grupo-caixa">
-    <span class="rotulo-secao">1. Relatório</span>
+    <span class="rotulo-secao"><span data-impressao-num></span>. Relatório</span>
     <div class="abas abas--seletor" data-imprimir-relatorio>
       <button type="button" class="aba" data-relatorio="pedidos">Pedidos</button>
       <button type="button" class="aba" data-relatorio="termos">Termos e cotas</button>
@@ -581,35 +590,21 @@
     </div>
   </div>
   <div class="grupo-caixa" data-imprimir-unidade-caixa>
-    <span class="rotulo-secao">2. Pelotão</span>
+    <span class="rotulo-secao"><span data-impressao-num></span>. Pelotão</span>
     <div class="abas abas--seletor" data-imprimir-unidade>
       <button type="button" class="aba aba--ativa" data-unidade="">Todos</button>
     </div>
   </div>
   <div class="grupo-caixa" data-imprimir-modo-caixa>
-    <span class="rotulo-secao">3. Como organizar</span>
+    <span class="rotulo-secao"><span data-impressao-num></span>. Como organizar</span>
     <div class="abas abas--seletor" data-imprimir-modo>
       <button type="button" class="aba aba--ativa" data-modo="separar">Separar por pelotão</button>
       <button type="button" class="aba" data-modo="unica">Lista única</button>
     </div>
   </div>
-  <div class="escala-impressao-previa-secao">
-    <div class="escala-impressao-previa">
-      <iframe class="escala-impressao-previa-quadro" title="Prévia do PDF" data-imprimir-previa></iframe>
-      <span class="painel-estado escala-impressao-previa-aviso oculto" data-imprimir-previa-aviso></span>
-      <div class="carregando-veu" data-imprimir-previa-carregando>
-        <div class="giratorio" aria-label="Carregando" role="status"></div>
-      </div>
-    </div>
-  </div>
 </template>
 
 <template id="tpl-ne-imprimir-unidade"><button type="button" class="aba" data-unidade=""></button></template>
-
-<template id="tpl-ne-imprimir-acoes">
-  <button type="button" class="botao" data-imprimir-cancelar>Cancelar</button>
-  <button type="button" class="botao botao--primario" data-imprimir-gerar>Baixar PDF</button>
-</template>
 
 <template id="tpl-ne-item">
   <div class="nova-extra-item"><span class="nova-extra-item-marca"></span><span class="nova-extra-item-texto"><b></b><span></span></span></div>
@@ -617,7 +612,7 @@
 
 <template id="tpl-ne-selo"><span class="selo nova-extra-selo-mini"></span></template>
 
-<!-- passo 3 (e a aba Calendário): dentro do bloco da Escala (tpl-escala-calendario-unidade, no shell), o gráfico do
+<!-- passo 3 (e a aba Extras do mês): dentro do bloco da Escala (tpl-escala-calendario-unidade, no shell), o gráfico do
      dia com as extras (o painel do dia mostra o sem e o com) e uma vaga por extra, só para ler: o posto e o nome e,
      à direita, as 4 bolinhas pequenas dos horários na cor do que ele marcou no pedido, sem clique (todas vazias para
      quem ficou sem nenhum até o Salvar); o nome inteiro e o horário escrito na dica; embaixo, o pelotão quando é de
@@ -628,6 +623,12 @@
     <span class="nova-extra-vaga-bol" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
     <span class="nova-extra-vaga-baixo oculto"><span class="extra-vaga-pelotao oculto"></span></span>
   </div>
+</template>
+
+<!-- quem pôs a extra (ao lado das bolinhas no calendário e antes do nome no Neste dia do painel do dia): o ícone do
+     sistema (o Preencher refaz) ou o cadeado (o administrador pôs ou mudou; o sistema nunca muda) -->
+<template id="tpl-ne-origem">
+  <svg class="icone nova-extra-origem" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-origem-sistema"/></svg>
 </template>
 
 <!-- passo 3, o painel esquerdo: um voluntário (posto e nome, o pelotão e as cotas colocadas de recebidas); clicar
@@ -738,6 +739,19 @@
 
 <template id="tpl-ne-legenda-dist">
   <div class="escala-legenda-grupo">
+    <span class="rotulo-secao">Quem pôs a extra</span>
+    <div class="escala-legenda-grade">
+      <span class="escala-legenda-item">
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-origem-sistema"/></svg>
+        <span>O sistema: o Preencher pela sugestão refaz</span>
+      </span>
+      <span class="escala-legenda-item">
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-cadeado"/></svg>
+        <span>O administrador: travada, o sistema não muda</span>
+      </span>
+    </div>
+  </div>
+  <div class="escala-legenda-grupo">
     <span class="rotulo-secao">Regras gerais</span>
     <ul class="nova-extra-legenda-lista">
       <li>Cada dia tem 4 horários de 6 horas: 08h, 14h, 20h e 02h. Cada bolinha é um horário, e a cheia é horário de extra.</li>
@@ -757,18 +771,33 @@
     <span class="rotulo-secao">Regras do Preencher pela sugestão</span>
     <ol class="nova-extra-legenda-lista">
       <li>Corrige primeiro o vermelho dos pelotões de fora da cidade da companhia, depois o da cidade da companhia e depois o amarelo, na mesma ordem.</li>
-      <li>Cada um fica no pelotão dele. Só vai para outro pelotão para corrigir o que os de lá não conseguem.</li>
+      <li>Cada um fica no pelotão dele. Só vai para outro pelotão para corrigir o que os de lá não conseguem, e vai de preferência o mais moderno.</li>
       <li>Passar do necessário, com duas extras que se cruzam, só em último caso.</li>
+      <li>Nunca 1 cota sozinha: para usar a última, a extra pode passar do necessário.</li>
+      <li>Nunca 4 dias seguidos no quartel, contando serviço, troca e extra (o expediente não conta). De preferência, nem 3.</li>
       <li>Quando não dá para todos, fica de fora quem está no fim da fila das Cotas.</li>
-      <li>Blocos inteiros: 24 horas, e o resto num bloco só. Nunca 1 cota sozinha.</li>
-      <li>Colado a um serviço: a extra termina às 08h, quando ele entra, ou começa às 08h, quando ele sai.</li>
+      <li>Blocos inteiros: 24 horas, e o resto num bloco só.</li>
+      <li>Sem falta para corrigir, a sobra vai para o pelotão da cidade da companhia, até o máximo dos postos, deixando os dias com a mesma quantidade de gente (no máximo 1 de diferença, sempre que der). A graduação desempata.</li>
+      <li>Colado a um serviço: a extra termina às 08h, quando ele entra, ou começa às 08h, quando ele sai. O administrativo, logo depois do expediente.</li>
       <li>O dia que ele quer vem antes do dia sem preferência. Nunca no dia que ele não quer: se for o único, a cota fica para o administrador.</li>
-      <li>Sem falta para corrigir, a sobra vai para o pelotão da cidade da companhia, até o máximo dos postos, no dia com menos gente da graduação dele.</li>
     </ol>
   </div>
 </template>
 
 <template id="tpl-ne-legenda-ajustes">
+  <div class="escala-legenda-grupo">
+    <span class="rotulo-secao">Quem pôs a extra</span>
+    <div class="escala-legenda-grade">
+      <span class="escala-legenda-item">
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-origem-sistema"/></svg>
+        <span>O sistema: o Preencher pela sugestão refaz</span>
+      </span>
+      <span class="escala-legenda-item">
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-cadeado"/></svg>
+        <span>O administrador: travada, o sistema não muda</span>
+      </span>
+    </div>
+  </div>
   <div class="escala-legenda-grupo">
     <span class="rotulo-secao">Regras gerais</span>
     <ul class="nova-extra-legenda-lista">

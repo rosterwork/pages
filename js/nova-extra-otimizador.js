@@ -23,9 +23,12 @@
   var JANELAS = [{ ini: 1, tam: 4 }, { ini: 1, tam: 3 }, { ini: 2, tam: 3 }, { ini: 1, tam: 2 }, { ini: 2, tam: 2 }, { ini: 3, tam: 2 }];
   var GRUPOS = ['sargento', 'cabo', 'soldado'];
   /* o placar (maior vale mais): o vermelho de fora da cidade da companhia, o dela, o amarelo de fora, o dela; depois as
-     penalidades e os bônus de cada extra, na ordem das prioridades; e a equalização da sobra (graduação e gente) */
-  var P = { vermFora: 10000000, vermSede: 1000000, amarFora: 100000, amarSede: 10000, foraDoPelotao: 2000, passa: 1000,
-            hora: 200, fila: 10, bloco: 150, emenda: 80, quer: 15, grupo: 5, gente: 2 };
+     penalidades e os bônus de cada extra, na ordem das prioridades: o pelotão dele (quem sai é, de preferência, o mais
+     moderno), usar todas as cotas (a última passa do necessário, o último caso, para não sobrar 1 sozinha), usar a cota,
+     evitar 3 dias seguidos no quartel; na sobra, a gente igual entre os dias (cada pessoa a mais custa mais quanto mais
+     cheio o dia está), antes do colado ao serviço e do dia quero, com a graduação de desempate */
+  var P = { vermFora: 10000000, vermSede: 1000000, amarFora: 100000, amarSede: 10000, foraDoPelotao: 2000, completa: 1500,
+            passa: 1000, hora: 200, seguidos: 200, antigo: 150, igual: 50, fila: 10, bloco: 150, emenda: 80, quer: 15, grupo: 5 };
 
   var atual = null;        // o cálculo no ar: { cancelar }
   var pedido = 0;          // latest-wins: só vale o resultado do último Preencher
@@ -34,6 +37,20 @@
   function chave(u, d, b) { return u + '|' + d + '|' + b; }
   function blocos(x) { var l = []; for (var b = x.ini; b < x.ini + x.tam; b++) l.push(b); return l; }
   function num(v) { return Number.isInteger(v) ? String(v) : v.toFixed(3); }
+  /* os dias do mês com n dias antes e n depois (AAAA-MM-DD) */
+  function diasEmVolta(datas, n) {
+    if (!datas.length) return [];
+    var a = datas[0].split('-'), z = datas[datas.length - 1].split('-'), lista = [];
+    var d = new Date(Date.UTC(+a[0], +a[1] - 1, +a[2] - n)), fim = new Date(Date.UTC(+z[0], +z[1] - 1, +z[2] + n));
+    for (; d <= fim; d.setUTCDate(d.getUTCDate() + 1)) lista.push(d.toISOString().slice(0, 10));
+    return lista;
+  }
+  /* administrativo: a extra que começa no primeiro horário livre depois do expediente do dia (como o colado ao serviço) */
+  function depoisDoExpediente(x, w) {
+    if (!x.livres || !x.livres.length || x.livres.length >= 4) return false;
+    var expediente = [1, 2, 3, 4].filter(function (b) { return x.livres.indexOf(b) < 0; });
+    return w.ini === Math.max.apply(null, expediente) + 1;
+  }
 
   /* ---------- o modelo: as extras possíveis e o placar ---------- */
   function montarModelo(D) {
@@ -50,12 +67,17 @@
     });
     (D.cap || []).forEach(function (c) { cap[c.uid + '|' + c.data] = c.n; });
     (D.escala || []).forEach(function (e) { esc[chave(e.uid, e.data, e.b)] = e; });
+    /* o alvo de cada horário de cada pelotão: o dia mais cheio da escala + 1 (abaixo dele, a pessoa a mais é bônus) */
+    var alvo = {};
+    (D.escala || []).forEach(function (e) { var a = e.uid + '|' + e.b; alvo[a] = Math.max(alvo[a] || 0, (e.n || 0) + 1); });
     function necDe(k) { return nec[k] || (nec[k] = { vg: 0, ag: 0, vc: [], ac: [] }); }
     D.falta.forEach(function (f) { var x = necDe(chave(f.uid, f.data, f.b)); if (f.nivel === 1) x.vg += f.n; else x.ag += f.n; });
     (D.condutor || []).forEach(function (c) { var x = necDe(chave(c.uid, c.data, c.b)); (c.nivel === 1 ? x.vc : x.ac).push(c.cnh); });
     function vaga(k, u, d) { return (cap[u + '|' + d] || 0) - ((esc[k] || {}).mx || 0) - (fixas[k] || 0); }
     function conduz(m, lista) { return lista.length > 0 && (m.conduz || []).indexOf(lista[0]) >= 0; }
     var datas = Object.keys(D.dia.reduce(function (o, x) { o[x.data] = 1; return o; }, {})).sort();
+    /* a antiguidade (1 = o mais antigo): o peso de sair do pelotão cresce com ela */
+    var NA = Math.max.apply(null, D.mil.map(function (m) { return m.antig || 1; }));
 
     /* as extras possíveis: dia livre e sem extra fixa, a janela que cabe na cota (só 24 h: inteira) e no expediente, e
        cada horário com falta que ele cobre ou vaga até o máximo; fora da cidade da companhia, ao menos um com falta */
@@ -78,7 +100,8 @@
             }
             if (!util && !ehSede) return;
             var j = xs.length;
-            xs.push({ m: m, u: u, d: d, ini: w.ini, tam: w.tam, quer: !!x.quer, emenda: (x.ant && w.ini === 1) || (x.prox && w.ini + w.tam - 1 === 4) });
+            xs.push({ m: m, u: u, d: d, ini: w.ini, tam: w.tam, quer: !!x.quer,
+                      emenda: (x.ant && w.ini === 1) || (x.prox && w.ini + w.tam - 1 === 4) || depoisDoExpediente(x, w) });
             bs.forEach(function (b) { var k = chave(u, d, b); (cobre[k] = cobre[k] || []).push(j); });
           });
         });
@@ -88,11 +111,12 @@
     var obj = [], cons = [], lim = [], bins = [], c = 0;
     xs.forEach(function (x, i) {
       var v = -P.bloco + (x.emenda ? P.emenda : 0) + x.tam * (P.hora + P.fila * (N - x.m.ordem + 1) / N + (x.quer ? P.quer : 0));
-      if (x.u !== x.m.uid) v -= P.foraDoPelotao * x.tam;
+      if (x.u !== x.m.uid) v -= (P.foraDoPelotao + P.antigo * (NA - (x.m.antig || NA) + 1) / NA) * x.tam;
       obj.push(num(v) + ' x' + i); bins.push('x' + i);
     });
     /* cada horário de cada pelotão: o que as extras cobrem (condutor e gente, vermelho e amarelo) e o que passa (s), até
-       a vaga do máximo; na cidade da companhia, a equalização pela graduação e pela gente */
+       a vaga do máximo; na cidade da companhia, a gente igual entre os dias (a pessoa a mais custa mais quanto mais cheio
+       o dia está, perto do alvo) e a graduação de desempate */
     Object.keys(cobre).forEach(function (k, s) {
       var p = k.split('|'), u = +p[0], d = p[1], ehSede = sede.indexOf(u) >= 0, n = nec[k] || { vg: 0, ag: 0, vc: [], ac: [] };
       var lista = cobre[k], soma = lista.map(function (i) { return 'x' + i; }).join(' + ');
@@ -125,7 +149,10 @@
       var kt = Math.min(lista.length, teto);
       if (kt) {
         var baseT = (e.n || 0) + (fixas[k] || 0), nt = [];
-        for (var j2 = 1; j2 <= kt; j2++) { var nm = 'z' + s + '_' + j2; nt.push(nm); bins.push(nm); obj.push('-' + P.gente * (baseT + j2) + ' ' + nm); }
+        for (var j2 = 1; j2 <= kt; j2++) {
+          var nm = 'z' + s + '_' + j2;
+          nt.push(nm); bins.push(nm); obj.push(num(-P.igual * (baseT + j2 - (alvo[u + '|' + p[2]] || 0))) + ' ' + nm);
+        }
         cons.push('c' + (c++) + ': ' + soma + ' - ' + nt.join(' - ') + ' = 0');
       }
     });
@@ -136,7 +163,38 @@
       (porDia[x.m.cpf + '|' + x.d] = porDia[x.m.cpf + '|' + x.d] || []).push('x' + i);
     });
     D.mil.forEach(function (m) { if (porMil[m.cpf]) cons.push('c' + (c++) + ': ' + porMil[m.cpf].join(' + ') + ' <= ' + m.resta); });
+    /* não deixar 1 cota sozinha: usar todas as cotas (a) vale P.completa, o bastante para a última passar do necessário
+       (o último caso), mas não para tirar alguém do pelotão */
+    D.mil.forEach(function (m) {
+      if (m.so24 || m.resta < 2 || !porMil[m.cpf]) return;
+      var a = 'sa' + (c++);
+      bins.push(a); obj.push(P.completa + ' ' + a);
+      cons.push('c' + (c++) + ': ' + porMil[m.cpf].join(' + ') + ' - ' + m.resta + ' ' + a + ' >= 0');
+    });
     Object.keys(porDia).forEach(function (k) { if (porDia[k].length > 1) cons.push('c' + (c++) + ': ' + porDia[k].join(' + ') + ' <= 1'); });
+    /* os dias seguidos no quartel (serviço e troca assumida, de 3 dias antes a 3 depois do mês, a extra fixa e a nova):
+       em 4 dias seguidos, no máximo 3 (nunca 4); em 3, no máximo 2, ou paga P.seguidos */
+    var quartel = {}, dias = diasEmVolta(datas, 3), tres = 0;
+    (D.quartel || []).forEach(function (q) { quartel[q.cpf + '|' + q.data] = true; });
+    Object.keys(fixaNoDia).forEach(function (k) { quartel[k] = true; });
+    D.mil.forEach(function (m) {
+      [[4, 3], [3, 2]].forEach(function (janela) {
+        for (var i = 0; i + janela[0] <= dias.length; i++) {
+          var fixos = 0, comExtra = 0, vars = [];
+          for (var j = i; j < i + janela[0]; j++) {
+            var k = m.cpf + '|' + dias[j];
+            if (quartel[k]) fixos++;
+            else if (porDia[k]) { comExtra++; vars = vars.concat(porDia[k]); }
+          }
+          if (!comExtra || fixos + comExtra <= janela[1]) continue;
+          var teto = Math.max(0, janela[1] - fixos);
+          if (janela[0] === 4) { cons.push('c' + (c++) + ': ' + vars.join(' + ') + ' <= ' + teto); continue; }
+          var nome = 'tr' + (tres++);
+          bins.push(nome); obj.push('-' + P.seguidos + ' ' + nome);
+          cons.push('c' + (c++) + ': ' + vars.join(' + ') + ' - ' + nome + ' <= ' + teto);
+        }
+      });
+    });
     var lp = 'Maximize\n obj: ' + obj.join(' + ').replace(/\+ -/g, '- ') + '\nSubject To\n ' + cons.join('\n ') +
              '\nBounds\n ' + lim.join('\n ') + '\nBinary\n ' + bins.join(' ') + '\nEnd\n';
     return { lp: lp, xs: xs };
@@ -183,6 +241,35 @@
     });
   }
 
+  /* nunca 1 cota sozinha: quem ficaria com uma cota só ganha mais um horário colado a uma extra dele, no mesmo pelotão e
+     dia (mesmo passando do necessário, o último caso; nunca do máximo, do expediente ou de um dia que ele não quer) */
+  function completarSoltas(D, escolhas) {
+    var dia = {}, cap = {}, mx = {}, ocupa = {};
+    D.dia.forEach(function (x) { dia[x.cpf + '|' + x.data] = x; });
+    (D.cap || []).forEach(function (c) { cap[c.uid + '|' + c.data] = c.n; });
+    (D.escala || []).forEach(function (e) { mx[chave(e.uid, e.data, e.b)] = e.mx || 0; });
+    (D.fixas || []).concat(escolhas.map(function (e) { return { uid: e.unidade, data: e.data, blocos: e.blocos }; })).forEach(function (f) {
+      (f.blocos || []).forEach(function (b) { var k = chave(f.uid, f.data, b); ocupa[k] = (ocupa[k] || 0) + 1; });
+    });
+    D.mil.forEach(function (m) {
+      var minhas = escolhas.filter(function (e) { return e.cpf === m.cpf; });
+      var usadas = minhas.reduce(function (s, e) { return s + e.blocos.length; }, 0);
+      if (m.so24 || m.resta - usadas !== 1) return;
+      minhas.some(function (e) {
+        var x = dia[m.cpf + '|' + e.data] || {};
+        return [e.blocos[e.blocos.length - 1] + 1, e.blocos[0] - 1].some(function (b) {
+          var k = chave(e.unidade, e.data, b);
+          if (b < 1 || b > 4 || !x.livre || (x.livres && x.livres.indexOf(b) < 0)) return false;
+          if ((cap[e.unidade + '|' + e.data] || 0) - (mx[k] || 0) - (ocupa[k] || 0) <= 0) return false;
+          e.blocos = b > e.blocos[0] ? e.blocos.concat([b]) : [b].concat(e.blocos);
+          ocupa[k] = (ocupa[k] || 0) + 1;
+          return true;
+        });
+      });
+    });
+    return escolhas;
+  }
+
   /* as extras escolhidas pelo otimizador: [{ cpf, data, unidade, blocos }] */
   function calcular(competencia, fixas) {
     return RW.novaExtraUtil.chamar('nova_extra_sugerir', { p_competencia: competencia, p_atuais: fixas, p_so_dados: true }).then(function (D) {
@@ -191,10 +278,10 @@
       var modelo = montarModelo(D);
       if (!modelo.xs.length) return [];
       return resolver(modelo.lp).then(function (marcadas) {
-        return marcadas.map(function (nome) {
+        return completarSoltas(D, marcadas.map(function (nome) {
           var x = modelo.xs[+nome.slice(1)];
           return { cpf: x.m.cpf, data: x.d, unidade: x.u, blocos: blocos(x) };
-        });
+        }));
       });
     });
   }
@@ -254,6 +341,7 @@
     calcular: calcular,
     /* para o guarda de saída: o navegador avisa ao fechar no meio da conta */
     calculando: function () { return calculando; },
-    montarModelo: montarModelo
+    montarModelo: montarModelo,
+    completarSoltas: completarSoltas
   };
 })();

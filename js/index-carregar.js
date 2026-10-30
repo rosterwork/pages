@@ -67,6 +67,8 @@
     'componentes/js/geral-mini-calendario.js',
     'componentes/js/geral-abas.js',
     'componentes/js/geral-painel.js',
+    'componentes/js/geral-impressao-unidades.js',
+    'componentes/js/geral-impressao.js',
     'componentes/js/geral-anteriores.js',
     'componentes/js/geral-posto-editar.js',
     'componentes/js/geral-impacto.js',
