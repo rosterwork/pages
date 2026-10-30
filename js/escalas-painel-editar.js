@@ -20,7 +20,10 @@
    aba (trocar de dia e fechar o painel perguntam antes). Rascunho:
    { ajustes, pontuais, estornar, folgas, folgas_cancelar,
    observacoes, abertas (as funções abertas sem ninguém, só na
-   prévia: salvas vazias, somem), remanejar, devolver, automatico }.
+   prévia: salvas vazias, somem), remanejar, devolver, automatico (o
+   sistema decide o dia de novo, sem devolver cada um ao lugar de
+   antes: o Voltar ao automático e o Adicionar com O sistema
+   distribui) }.
    A edição da linha, o Adicionar e o Remover militar (sub-telas) e a
    folga no dia (sub-tela) ficam em escalas-painel-linha.js,
    -adicionar.js, -remover.js e -militar.js e usam a API daqui
@@ -156,7 +159,7 @@
     if (rasc.automatico) r.automatico = true;
     return r;
   }
-  /* o que vai ao banco no Salvar (no Voltar ao automático, o sistema distribui tudo de novo); as funções abertas não vão:
+  /* o que vai ao banco no Salvar (com o automatico, o sistema distribui o dia de novo); as funções abertas não vão:
      a que ficou vazia some */
   function paraSalvar() {
     var r = paraPrevia();
@@ -257,13 +260,15 @@
 
   /* põe o militar numa função nos horários escolhidos (formulário). Quem estava lá fica sem função naquele
      trecho: o automático é substituído só naquela parte; a colocação manual é cortada.
-     c = { cpf, posto, funcao, periodos, sistema, pontual: { contabilizar } | null } */
+     c = { cpf, posto, funcao, periodos, sistema, refazer (o sistema refaz o dia do zero; o fixado fica),
+     pontual: { contabilizar } | null } */
   function aplicarColocacao(c) {
     if (c.pontual) {
       rasc.pontuais = rasc.pontuais.filter(function (x) { return x.cpf !== c.cpf; })
         .concat([{ cpf: c.cpf, periodos: c.periodos, contabilizar: !!c.pontual.contabilizar }]);
       rasc.estornar = rasc.estornar.filter(function (x) { return x !== c.cpf; });
     }
+    if (c.refazer) rasc.automatico = true;
     if (c.sistema) return;
     var janelas = c.periodos.map(faixa);
     var alvo = acharFuncao(c.posto, c.funcao);

@@ -5,12 +5,14 @@
    Como entra (somente no dia, extrajornada ou no ciclo) e Quem entra
    (o campo de militar, geral-combo-militar, com a lista do como).
    - No dia (pontual): o horário, já com as horas livres dele; onde
-     fica: o sistema distribui, a função escolhida (quem está nela
-     sai daquele horário) ou no lugar de outro militar (quem sai, de
-     serviço no horário, e de quais funções, todas marcadas; quem fica
-     sem nenhuma vai para Sem função); e o banco de horas. Vai para o
-     rascunho do Dia (escalas-painel-editar.js), e a prévia refaz o
-     dia em volta do que está fixado, mexendo o mínimo.
+     fica: o sistema distribui (refaz o dia do zero com ele; quem está
+     fixado fica), a função escolhida (quem está nela sai daquele
+     horário) ou no lugar de outro militar (quem sai, de serviço no
+     horário, e de quais funções, todas marcadas; quem fica sem
+     nenhuma vai para Sem função); e o banco de horas. Vai para o
+     rascunho do Dia (escalas-painel-editar.js); na função escolhida e
+     no lugar de outro, a prévia refaz o dia em volta do que está
+     fixado, mexendo o mínimo.
    - Na extrajornada: os voluntários do mês sem extra no dia, os 4
      horários de 6 h (quem só tira 24 h marca os quatro) e, depois que
      o mês começou, o motivo; vai para o rascunho do mês da aba
@@ -368,7 +370,7 @@
           api.aplicarColocacao({ cpf: m.cpf, posto: f.posto, funcao: f.funcao, periodos: f.x.map(H.periodo), sistema: false, pontual: null });
         });
       } else {
-        api.aplicarColocacao({ cpf: m.cpf, periodos: periodos, sistema: true, pontual: pontual });
+        api.aplicarColocacao({ cpf: m.cpf, periodos: periodos, sistema: true, refazer: true, pontual: pontual });
       }
       api.concluir();
     }

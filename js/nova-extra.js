@@ -7,8 +7,8 @@
    os passos Pedidos · Cotas · Distribuição · Ajustes · Relatórios (só
    no Organizar o mês), o menu Ações do passo aberto e a Legenda (o
    molde que o passo pedir, RosterWork.novaExtra.legenda).
-   Para o teste, a seta do mês só anda entre dezembro de 2026 (o
-   administrador) e janeiro de 2027 (o militar). Grava em tabelas
+   Para o teste, a seta do mês só anda entre novembro de 2026 e
+   janeiro de 2027 (o militar). Grava em tabelas
    próprias: a Extrajornada de verdade e a escala não mudam.
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
    Registra RosterWork.paginas['nova-extra'].
@@ -19,8 +19,8 @@
   var RW = window.RosterWork = window.RosterWork || {};
   RW.paginas = RW.paginas || {};
 
-  /* os dois meses do teste: dezembro (o administrador reparte, distribui e lança) e janeiro (o militar faz o pedido) */
-  var PRIMEIRO = new Date(2026, 11, 1), ULTIMO = new Date(2027, 0, 1);
+  /* os meses do teste: novembro e dezembro (o administrador reparte, distribui e lança) e janeiro (o militar faz o pedido) */
+  var PRIMEIRO = new Date(2026, 10, 1), ULTIMO = new Date(2027, 0, 1);
 
   var el = {};
   var comp = null;      // o mês do pedido (Date, dia 1)
@@ -148,7 +148,7 @@
     if (t) alvo.appendChild(t.content.cloneNode(true));
   }
 
-  /* trocar de mês (só entre os dois do teste): com a distribuição não salva, pergunta antes */
+  /* trocar de mês (só entre os do teste): com a distribuição não salva, pergunta antes */
   function trocarMes(n) {
     var alvo = new Date(comp.getFullYear(), comp.getMonth() + n, 1);
     if (alvo < PRIMEIRO || alvo > ULTIMO) return;
