@@ -236,10 +236,13 @@
   }
 
   /* nível do posto: o pior das suas funções; viatura sem condutor é erro (não opera sem motorista);
-     efetivo abaixo do mínimo ou acima do máximo também é erro; abaixo do ideal é alerta */
+     efetivo abaixo do mínimo ou acima do máximo também é erro; abaixo do ideal é alerta. O posto fora da escala
+     (sem gente para o mínimo) fica na cor escolhida na Distribuição: aviso 2 erro, 1 alerta, 0 sem cor */
+  var NIVEL_FORA = ['', 'alerta', 'erro'];
   function nivelDoPosto(posto) {
-    var nivel = (posto && (posto.sem_condutor || posto.abaixo_minimo || posto.acima_maximo)) ? 'erro'
-      : (posto && posto.abaixo_ideal ? 'alerta' : '');
+    var fora = posto && posto.fora;
+    var nivel = (posto && (posto.sem_condutor || posto.acima_maximo || (posto.abaixo_minimo && !fora))) ? 'erro'
+      : (fora ? (NIVEL_FORA[fora.aviso] || '') : (posto && posto.abaixo_ideal ? 'alerta' : ''));
     ((posto && posto.funcoes) || []).forEach(function (f) { nivel = piorNivel(nivel, nivelDaFuncao(f)); });
     return nivel;
   }
@@ -395,11 +398,15 @@
         linha(def, preencher(def.texto, dadosTexto(p)));
       });
     }
-    /* efetivo por posto: junta as faixas do mesmo posto ("das 08h às 14h e das 20h às 08h") */
-    function linhasEfetivoProblemas(codigo, def) {
+    /* efetivo por posto: junta as faixas do mesmo posto ("das 08h às 14h e das 20h às 08h"). Com o nível (1 vermelho,
+       2 amarelo), só as ocorrências dele e na cor dele: o posto fora da escala e a unidade seguem o aviso escolhido na
+       Distribuição (a unidade, sem posto, vira uma linha só) */
+    function linhasEfetivoProblemas(codigo, def, nivel) {
       if (!def || !tem(codigo)) return;
+      if (nivel === 2) def = { texto: def.texto, faixa: def.faixa, icone: def.icone, nivel: 'alerta' };
       var postosVistos = [], porPosto = {};
       por[codigo].forEach(function (p) {
+        if (nivel && p.nivel !== nivel) return;
         if (!porPosto[p.posto_id]) { porPosto[p.posto_id] = []; postosVistos.push(p.posto_id); }
         porPosto[p.posto_id].push(p);
       });
@@ -456,6 +463,8 @@
       function (p) { return { posto: p.posto || '' }; });
     if (tem('resolva_escala')) linha(cat.resolvaEscala);
     if (tem('sem_condutor')) linha(cat.semCondutor);
+    linhasEfetivoProblemas('unidade_abaixo_minimo', cat.unidadeAbaixoMinimo, 1);
+    linhasEfetivoProblemas('posto_fora', cat.postoFora, 1);
     linhasEfetivoProblemas('abaixo_minimo', cat.abaixoMinimo);
     linhasEfetivoProblemas('acima_maximo', cat.acimaMaximo);
     /* o militar em situação errada */
@@ -470,6 +479,8 @@
 
     /* amarelo: funciona, com erro aceitável */
     if (tem('chefe_condutor')) linha(cat.chefeCondutor);
+    linhasEfetivoProblemas('unidade_abaixo_minimo', cat.unidadeAbaixoMinimo, 2);
+    linhasEfetivoProblemas('posto_fora', cat.postoFora, 2);
     linhasEfetivoProblemas('abaixo_ideal', cat.abaixoIdeal);
     porOcorrencia('exclusivo_fora', cat.exclusivoFora, function (p) { return p.cpf + '|' + p.funcao; },
       function (p) { return { militar: militar(p), funcao: p.funcao || '' }; });

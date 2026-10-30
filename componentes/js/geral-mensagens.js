@@ -605,6 +605,10 @@
         chefeCondutor:       { texto: 'Chefe assumiu a direção por falta de condutor', icone: 'icone-alerta', nivel: 'alerta' },
         afastadoTroca:       { texto: 'Militar afastado, não vai assumir o serviço', icone: 'icone-alerta', nivel: 'alerta' },
         semCondutor:         { texto: 'Viatura sem condutor', icone: 'icone-alerta', nivel: 'erro' },
+        /* efetivo da unidade abaixo do mínimo (uma linha só) e o posto que fica fora da escala sem gente para o mínimo
+           (uma por posto); a cor vem do banco, pelo aviso escolhido na Distribuição */
+        unidadeAbaixoMinimo: { texto: 'Efetivo da unidade abaixo do mínimo: {pessoas} de {minimo}{faixas}', faixa: 'das {hi} às {hf}', icone: 'icone-alerta', nivel: 'erro' },
+        postoFora:           { texto: '{posto} fora da escala: abaixo do mínimo de {minimo}{faixas}', faixa: 'das {hi} às {hf}', icone: 'icone-alerta', nivel: 'erro' },
         /* efetivo do posto fora dos limites (uma linha por posto); {faixas} = ", das 20:00 às 08:00" quando é só parte do dia */
         abaixoMinimo:        { texto: 'Efetivo abaixo do mínimo: {posto} ({pessoas} de {minimo}){faixas}', faixa: 'das {hi} às {hf}', icone: 'icone-alerta', nivel: 'erro' },
         abaixoIdeal:         { texto: 'Efetivo abaixo do ideal: {posto} ({pessoas} de {ideal}){faixas}', faixa: 'das {hi} às {hf}', icone: 'icone-alerta', nivel: 'alerta' },
@@ -1007,6 +1011,9 @@
         avisoTitulo: function (n) { return n === 1 ? 'Erro grave em 1 dia do período' : 'Erro grave em ' + n + ' dias do período'; },
         avisoDescricao: function (lista) { return lista + '. O PDF sai do jeito que está na escala.'; },
         falhaGerar: 'Não foi possível gerar o PDF. Tente de novo.',
+        falhaPrevia: 'Não foi possível montar a prévia. Tente de novo.',
+        /* dica do Imprimir do painel do dia desligado: o PDF sai do que está gravado */
+        salveAntes: 'Salve as alterações antes de imprimir.',
         /* textos de dentro do PDF */
         pdf: {
           titulo: 'Escala de serviço',

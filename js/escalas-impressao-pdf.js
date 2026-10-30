@@ -541,18 +541,25 @@
     return txt().arquivo(periodo, dados.unidades.length === 1 ? dados.unidades[0].nome : '');
   }
 
-  /* dados: { unidades, dias, inicio, fim } (do banco, escala_impressao) → baixa o PDF */
-  function gerar(dados) {
+  /* dados: { unidades, dias, inicio, fim } (do banco, escala_impressao) → { arquivo, nome }, sem baixar (a prévia do
+     painel mostra o arquivo; o Gerar PDF baixa o mesmo) */
+  function montar(dados) {
     return carregarRecursos().then(function (icones) {
       var c = montarEstilo(icones);
       return desenharArquivo(dados, c);
     }).then(function (arquivo) {
-      baixar(arquivo, nomeArquivo(dados));
+      return { arquivo: arquivo, nome: nomeArquivo(dados) };
     });
+  }
+
+  /* monta e baixa o PDF */
+  function gerar(dados) {
+    return montar(dados).then(function (r) { baixar(r.arquivo, r.nome); });
   }
 
   RW.escalasImpressaoPdf = {
     gerar: gerar,
+    montar: montar,
     /* peças para outros relatórios no mesmo formato (os da Extrajornada): as cores e ícones do tema
        (carrega a biblioteca no 1º uso), as medidas, o desenho conferido, os blocos arredondados e o download */
     preparar: function () { return carregarRecursos().then(montarEstilo); },

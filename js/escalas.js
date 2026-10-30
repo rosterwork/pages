@@ -84,23 +84,24 @@
 
   /* reabre a Escala na última visão (modo + escolhas do subgrupo); sem nada salvo, o Mês (Agenda).
      Agenda | Calendário é a escolha do tipo de aparelho, a mesma da Extrajornada (geral-visao-grade).
-     A data não é lembrada: a Escala sempre abre em hoje. A Semana está oculta: quem a usava abre no Mês */
+     A data não é lembrada: a Escala sempre abre em hoje. O Dia e a Semana estão ocultos: quem os usava abre no Mês */
   function restaurarVisao() {
     if (!RosterWork.visaoGrade) return;
     var visao = RosterWork.visaoGrade.ler();
-    marcarAba('#escala-modos', 'data-modo', (!visao.modo || visao.modo === 'semana') ? 'mes' : visao.modo);
+    var oculto = !visao.modo || visao.modo === 'dia' || visao.modo === 'semana';
+    marcarAba('#escala-modos', 'data-modo', oculto ? 'mes' : visao.modo);
     marcarAba('#escala-sub-mes', 'data-mes', RosterWork.visaoGrade.agendaOuCalendario());
     marcarAba('#escala-colunas-tipo', 'data-colunas-tipo', visao.colunas_tipo);
     marcarAba('#escala-colunas-qtd', 'data-colunas', visao.colunas_qtd);
     caberNoCelular();
   }
 
-  /* no celular só existem a Minha escala, o Dia e o Mês (Agenda e Calendário): a visão que só existe no
+  /* no celular só existem a Minha escala e o Mês (Agenda e Calendário): a visão que só existe no
      computador (Militares, Semana, Colunas) cai no Mês, a visão de vários dias que fica */
   function caberNoCelular() {
     if (!(RosterWork.celular && RosterWork.celular())) return;
     var modo = modoAtual();
-    if (modo === 'minha' || modo === 'dia' || modo === 'mes') return;
+    if (modo === 'minha' || modo === 'mes') return;
     marcarAba('#escala-modos', 'data-modo', 'mes');
   }
 

@@ -20,6 +20,16 @@
   margin-left: auto;
 }
 
+/* o Imprimir (na Escala, para todos; escalas-impressao.js): vai para a direita; para o admin, o desfazer e o refazer
+   ficam logo depois dele */
+.escala-dia-imprimir {
+  margin-left: auto;
+}
+
+.escala-dia-imprimir + .escala-edicao-historico {
+  margin-left: 0;
+}
+
 /* O que mudou na última gravação: o título, uma frase por militar e o atalho */
 .escala-edicao-mudou {
   align-items: flex-start;

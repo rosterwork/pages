@@ -4,7 +4,9 @@
      - 'multi' : caixas de seleção + botão Aplicar (filtro do cabeçalho)
      - 'unico' : clicar num item seleciona e fecha (campo de formulário)
    CSS: componentes/css/geral-arvore.css · molde: #tpl-seletor-no
-   Instâncias: RosterWork.seletorUnidades.criar(opcoes).
+   Instâncias: RosterWork.seletorUnidades.criar(opcoes); a lista plana:
+   RosterWork.seletorUnidades.buscar(). montarArvore(raizId) pode
+   começar a árvore numa unidade (o recorte do Imprimir escala).
    O init do seletor do cabeçalho (modo multi, com as preferências de
    sessão + o evento rosterwork_units_changed) fica no fim do arquivo.
    ============================================================ */
@@ -428,11 +430,15 @@
       montarResumo();
     }
 
-    /* busca (se preciso) e desenha a árvore no arvoreEl */
-    function montarArvore() {
+    /* busca (se preciso) e desenha a árvore no arvoreEl. raizId (opcional): a árvore começa nessa unidade, já aberta
+       (ex.: a companhia, no Imprimir escala); sem ele, a árvore toda. Montar de novo (com ou sem a raiz) mantém as
+       marcas */
+    function montarArvore(raizId) {
       return buscarUnidades().then(function (lista) {
         if (!lista || lista.length === 0) return;
         var raizes = construirArvore(lista);
+        var recorte = raizId == null ? null : lista.filter(function (u) { return String(u.unidade_id) === String(raizId); })[0];
+        if (recorte) raizes = [recorte];
         nos = [];
         raizesNos = [];
         mapa = {};
@@ -444,10 +450,12 @@
             if (arvoreEl) arvoreEl.appendChild(raiz.elemento);
           }
         }
-        /* na lotação (modo único), a raiz já começa expandida (e não recolhe) */
-        if (modo === 'unico') {
+        /* na lotação (modo único) e no recorte, a raiz já começa expandida (na lotação, não recolhe) */
+        if (modo === 'unico' || recorte) {
           for (var r = 0; r < raizesNos.length; r++) abrirNo(raizesNos[r]);
         }
+        /* montou de novo com marcas (troca de raiz): as caixas e o caminho aberto voltam */
+        if (contarSelecionados()) { atualizarVisual(); abrirCaminhoDosSelecionados(); }
       });
     }
 
@@ -475,10 +483,10 @@
       mostrarCarregando: mostrarCarregando,
       montarResumo: montarResumo,
       idsSelecionados: idsSelecionados,
-      /* as unidades marcadas com os dados delas (nome, tipo, cidade...) */
+      /* as unidades marcadas com os dados delas (nome, tipo, cidade...), na ordem da árvore; vale também a marcada que
+         ficou fora da raiz da árvore à vista */
       unidadesSelecionadas: function () {
-        return nos.filter(function (no) { return !!selecionados[no.definicao.unidade_id]; })
-          .map(function (no) { return no.definicao; });
+        return (unidadesCache || []).filter(function (u) { return !!selecionados[u.unidade_id]; });
       },
       aplicarSelecaoPorIds: aplicarSelecaoPorIds
     };
@@ -537,7 +545,8 @@
   }
 
   window.RosterWork = window.RosterWork || {};
-  window.RosterWork.seletorUnidades = { criar: criar };
+  /* buscar(): a lista plana das unidades (a mesma busca da árvore, em cache), para quem precisa do tipo ou do pai */
+  window.RosterWork.seletorUnidades = { criar: criar, buscar: buscarUnidades };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', inicializarCabecalho);

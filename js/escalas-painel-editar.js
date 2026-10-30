@@ -10,7 +10,10 @@
    Fixado e o Liberar para o sistema, quem está de folga tem o
    lápis da folga no dia (com o Cancelar folga), o fim da lista tem o
    Voltar o dia ao automático e as observações também se editam aqui.
-   Quem não é admin só lê (os postos mudam na Distribuição).
+   Quem não é admin só lê (os postos mudam na Distribuição). Na
+   Escala, o subcabeçalho tem para todos o Imprimir, à direita (antes
+   do desfazer/refazer), que abre a sub-tela de impressão
+   (escalas-impressao.js).
    Cada mudança vai para o rascunho do dia, e a lista mostra o dia
    como vai ficar (a prévia, escala_previa, já com o Ciclo e a
    Extrajornada que esperam o Salvar), com a nota O que
@@ -557,16 +560,19 @@
     desenhar();
   }
 
-  /* subcabeçalho do Dia (só o admin, só na lista): o Adicionar militar e, à direita, o desfazer/refazer.
-     Enquanto grava, os botões ficam desligados */
+  /* subcabeçalho do Dia (só na lista): para o admin, o menu Editar o dia e, à direita, o desfazer/refazer; para todos,
+     só na Escala (o formulário de impressão mora lá), o Imprimir, à direita, antes do desfazer/refazer. Enquanto
+     grava, os botões ficam desligados */
   function montarSubcabecalho() {
     var sub = RosterWork.painel.subcabecalho();
     if (!sub) return;
     sub.textContent = '';
-    if (!ctx.admin || ctx.emSub) { sub.classList.add('oculto'); return; }
+    var imprimir = !ctx.emSub && !ctx.comparar && RosterWork.escalasImpressao
+      ? RosterWork.escalasImpressao.botaoDoDia(abrirImpressao) : null;
+    if (ctx.emSub || (!ctx.admin && !imprimir)) { sub.classList.add('oculto'); return; }
     /* o menu Editar o dia: Adicionar, Remover e Remanejar abrem as perguntas; Editar extrajornada vai à aba Extrajornada
        do painel; Registrar troca de serviço leva ao Registrar troca das Trocas */
-    var menu = RosterWork.tpl('tpl-escala-edicao-acoes');
+    var menu = ctx.admin ? RosterWork.tpl('tpl-escala-edicao-acoes') : null;
     if (menu) {
       menu.querySelector('.botao').disabled = !!ctx.salvando;
       var acoes = {
@@ -581,7 +587,8 @@
       });
       sub.appendChild(menu);
     }
-    var hist = RosterWork.tpl('tpl-escala-edicao-historico');
+    if (imprimir) sub.appendChild(imprimir);
+    var hist = ctx.admin ? RosterWork.tpl('tpl-escala-edicao-historico') : null;
     if (hist) {
       var bDesfazer = hist.querySelector('.escala-edicao-historico-desfazer');
       var bRefazer = hist.querySelector('.escala-edicao-historico-refazer');
@@ -819,10 +826,14 @@
     var caixa = RosterWork.painel.criarCaixa(posto.nome);
     if (!caixa) return null;
     montarTituloPosto(caixa, posto);
-    /* o posto sem ninguém fica sem cor (o que falta nele vai no aviso do topo do dia) */
-    if (!(posto.funcoes || []).length) return caixa;
-    /* o vermelho (cadeira vazia ou horário sem ninguém) vence o amarelo; a função aberta sem ninguém não é erro */
+    /* o posto sem ninguém fica na cor do que falta nele (o fora da escala, na cor escolhida na Distribuição; a reserva
+       sem cor) */
     var np = p.nivelPosto(posto);
+    if (!(posto.funcoes || []).length) {
+      if (np) caixa.classList.add('grupo-caixa--posto-' + np);
+      return caixa;
+    }
+    /* o vermelho (cadeira vazia ou horário sem ninguém) vence o amarelo; a função aberta sem ninguém não é erro */
     if (np !== 'erro' && (posto.funcoes || []).some(function (f) {
       return (f.vazio && f.vazio_motivo !== 'aberta') || (f.vao || []).length;
     })) np = 'erro';
@@ -1124,6 +1135,23 @@
     desenhar();
   }
   function concluirSub() { if (!ctx) return; if (foto) passo(foto); desenhar(); }
+
+  /* o Imprimir do subcabeçalho (escalas-impressao.js): o formulário de impressão no lugar da lista, marcado com o dia e a
+     unidade; o Voltar ao dia, o Cancelar e o fim do Gerar PDF voltam à lista. O rascunho não muda (com mudança, o botão
+     fica desligado) */
+  function abrirImpressao() {
+    if (!ctx || !base || ctx.salvando || !RosterWork.escalasImpressao) return;
+    if (RosterWork.escalasPainelLinha) RosterWork.escalasPainelLinha.fechar();
+    if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
+    ctx.emSub = true;
+    ctx.comHistorico = false;
+    montarSubcabecalho();
+    var c = ctx;
+    RosterWork.escalasImpressao.abrirNoDia(ctx.corpo, ctx.rodape, {
+      unidadeId: ctx.unidadeId, iso: ctx.iso,
+      aoSair: function () { if (ctx === c) desenhar(); }
+    });
+  }
 
   function abrirFolga(id) { if (RosterWork.escalasPainelMilitar) RosterWork.escalasPainelMilitar.abrirFolga(id); }
 

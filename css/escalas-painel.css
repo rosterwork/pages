@@ -474,6 +474,27 @@
   gap: 8px;
 }
 
+/* o título da caixa Unidades e a seta que troca a companhia pela árvore toda (o desenho da seta do Lançar no SYSBM:
+   fechada, aponta para a direita) */
+.escala-impressao-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.escala-impressao-titulo {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.escala-impressao-seta {
+  color: var(--texto-fraco);
+}
+
+.escala-impressao-toggle[aria-expanded="false"] .escala-impressao-seta {
+  transform: rotate(-90deg);
+}
+
 /* ---------- painel Imprimir das grades (escalas-impressao-grade.js) ----------
    O corpo segue o padrão dos formulários do painel: uma .nota no alto e caixas numeradas (.grupo-caixa) */
 /* a linha da caixa: o rótulo à esquerda e o controle à direita; --inicio junta tudo à esquerda ("Do dia [ ] ao dia [ ]") */
@@ -584,8 +605,9 @@
 
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
-   O navegador do celular não mostra PDF dentro da página: o painel
-   das grades fica sem a prévia (o Gerar PDF continua)
+   O navegador do celular não mostra PDF dentro da página: os painéis
+   de impressão (Imprimir escala, das grades e das Trocas) ficam sem a
+   prévia (o Gerar PDF continua)
    ============================================================ */
 @media (max-width: 767px) {
   html[data-celular] .escala-impressao-previa-secao {

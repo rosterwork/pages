@@ -10,21 +10,21 @@
       </button>
       <div class="dropdown-menu pagina-ajuda-menu"></div>
     </div>
-    <!-- modos: a Minha escala (o seu mês) e o Dia (a escala principal, impressa e exibida na passagem de
-         serviço), cada um num grupo próprio, à frente das outras visões; os grupos valem como uma escolha só
-         (escalas.js), com um traço só (data-abas-grupo). Sem visão guardada, abre no Mês. No celular ficam
-         a Minha escala, o Dia e o Mês (Agenda e Calendário): o que tem .escala-so-computador some lá
-         (escalas-controles.css). A Semana fica oculta para todos (o modo continua no código) -->
+    <!-- modos: a Minha escala (o seu mês), num grupo próprio, à frente das outras visões; os grupos valem como
+         uma escolha só (escalas.js), com um traço só (data-abas-grupo). Sem visão guardada, abre no Mês. No
+         celular ficam a Minha escala e o Mês (Agenda e Calendário): o que tem .escala-so-computador some lá
+         (escalas-controles.css). O Dia (o grupo inteiro) e a Semana ficam ocultos para todos (os modos continuam
+         no código); o dia abre no painel do dia, que tem o Imprimir dele -->
     <div class="escala-modos" id="escala-modos" data-abas-grupo>
       <div class="abas" id="escala-modo-minha">
         <button type="button" class="aba" data-modo="minha">Minha escala</button>
       </div>
-      <div class="abas" id="escala-modo-principal">
+      <div class="abas oculto" id="escala-modo-principal">
         <button type="button" class="aba" data-modo="dia">Dia</button>
       </div>
       <div class="abas" id="escala-modo-visoes">
-        <button type="button" class="aba escala-so-computador" data-modo="militares">Militares</button>
         <button type="button" class="aba aba--ativa" data-modo="mes">Mês</button>
+        <button type="button" class="aba escala-so-computador" data-modo="militares">Militares</button>
         <button type="button" class="aba escala-so-computador oculto" data-modo="semana">Semana</button>
         <button type="button" class="aba escala-so-computador" data-modo="colunas">Colunas</button>
       </div>
@@ -222,11 +222,15 @@
   </div>
 </template>
 
-<!-- painel "Imprimir escala" (botão do sub-cabeçalho; escalas-impressao.js): datas De/Até (já com o dia exibido)
-     + atalhos, a árvore de unidades (já marcada com o seletor), o resumo e o aviso de erro grave -->
+<!-- painel "Imprimir escala" (botão do sub-cabeçalho; escalas-impressao.js), no padrão das impressões: caixas
+     numeradas (.grupo-caixa). 1. as datas De/Até (já com o dia exibido) e os atalhos; 2. a árvore de unidades, já
+     marcada com a unidade e a companhia dela; para quem é de companhia ou pelotão, a árvore começa na companhia e a
+     seta do título abre a árvore toda; 3. o resumo, o aviso de erro grave e a prévia (o próprio PDF, no leitor do
+     navegador), que some no celular como nas grades. O Imprimir do painel do dia abre o mesmo formulário numa
+     sub-tela -->
 <template id="tpl-escala-impressao">
-  <div class="painel-secao">
-    <span class="rotulo-secao">Datas</span>
+  <div class="grupo-caixa">
+    <span class="rotulo-secao">1. Datas</span>
     <div class="escala-impressao-datas">
       <label class="campo">
         <span class="campo-rotulo">De</span>
@@ -246,15 +250,20 @@
     </div>
     <span class="campo-ajuda">Até 31 dias por arquivo. Cada dia começa numa folha nova.</span>
   </div>
-  <div class="painel-secao">
-    <span class="rotulo-secao">Unidades</span>
+  <div class="grupo-caixa">
+    <div class="escala-impressao-cabecalho">
+      <span class="rotulo-secao escala-impressao-titulo">2. Unidades</span>
+      <button type="button" class="botao-discreto escala-impressao-toggle oculto" aria-label="Mostrar todas as unidades ou só a companhia" aria-expanded="false" data-impressao-toggle>
+        <svg class="icone escala-impressao-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+      </button>
+    </div>
     <div class="campo">
       <div class="arvore" data-impressao-arvore></div>
       <span class="campo-erro-texto"></span>
     </div>
   </div>
-  <div class="painel-secao">
-    <span class="rotulo-secao">O que vai sair</span>
+  <div class="grupo-caixa">
+    <span class="rotulo-secao">3. O que vai sair</span>
     <span class="campo-ajuda" data-impressao-resumo></span>
     <div class="impacto-aviso impacto-aviso--problema oculto" data-impressao-aviso>
       <svg class="icone impacto-aviso-icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
@@ -263,11 +272,28 @@
         <span class="impacto-aviso-desc"></span>
       </span>
     </div>
+    <div class="escala-impressao-previa-secao">
+      <div class="escala-impressao-previa">
+        <iframe class="escala-impressao-previa-quadro" title="Prévia do PDF" data-impressao-previa></iframe>
+        <span class="painel-estado escala-impressao-previa-aviso oculto" data-impressao-previa-aviso></span>
+        <div class="carregando-veu" data-impressao-previa-carregando>
+          <div class="giratorio" aria-label="Carregando" role="status"></div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 <template id="tpl-escala-impressao-acoes">
   <button type="button" class="botao" data-impressao-cancelar>Cancelar</button>
   <button type="button" class="botao botao--primario" data-impressao-gerar>Gerar PDF</button>
+</template>
+
+<!-- Imprimir do painel do dia (subcabeçalho da aba Dia, à direita; escalas-impressao.js): abre o mesmo formulário
+     numa sub-tela, já marcado com o dia e a unidade do painel. Desligado com alteração não salva (a dica diz o motivo) -->
+<template id="tpl-escala-dia-imprimir">
+  <button type="button" class="botao botao--icone escala-dia-imprimir" aria-label="Imprimir o dia" data-dica="Imprimir">
+    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg>
+  </button>
 </template>
 
 <!-- bloco "Lançar no SYSBM" do painel do dia (no fim da seção Dia; só quem administra o pelotão; escalas-sysbm.js).
