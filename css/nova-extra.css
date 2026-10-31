@@ -1352,7 +1352,7 @@
   color: var(--texto);
 }
 
-/* ---------- a aba Calendário: o bloco da Escala só para ler (sem clique) ---------- */
+/* ---------- a aba Extras do mês: o bloco da Escala só para ler (sem clique) ---------- */
 .nova-extra-cal-leitura,
 .nova-extra-cal-leitura:hover {
   background-color: var(--fundo-superficie);
@@ -1396,7 +1396,7 @@
 
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
-   Só as abas Minha extra e Calendário (os passos somem); as cotas
+   Só as abas Minha extra e Extras do mês (o Organizar o mês some); as cotas
    em duas fileiras de cinco, os botões e os dias maiores para o
    dedo e as colunas dos passos uma embaixo da outra.
    ============================================================ */
