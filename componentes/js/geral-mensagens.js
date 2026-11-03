@@ -1345,7 +1345,7 @@
       /* troca de outros militares do mesmo pedido de várias trocas, ainda em aberto: cai junto com o registro */
       trocaRegistro: function (entre, servico, devolucao, registro) {
         return 'Entre ' + entre + ', serviço de ' + servico + (devolucao ? ' e devolução de ' + devolucao : '') +
-          ': será cancelada junto, porque faz parte do pedido de várias trocas ' + registro + ', que ainda não foi aprovado.';
+          ': será cancelada junto, porque faz parte das trocas do ' + registro + ', que ainda não foram aprovadas.';
       },
       folgaCancelada: function (dia, situacao, horasDeVolta) {
         return 'De ' + dia + (situacao ? ' (' + situacao + ')' : '') + ': será cancelada' +
@@ -1803,10 +1803,10 @@
         /* "Cb. Paixão, Cb. Lemos e Cb. Mendes" */
         nomes: function (lista) { return lista.length < 2 ? (lista[0] || '') : lista.slice(0, -1).join(', ') + ' e ' + lista[lista.length - 1]; },
         /* a linha do registro nas listas Todas e Minhas */
-        linhaMilitares: function (nomes) { return 'Várias trocas: ' + nomes; },
+        linhaMilitares: function (nomes) { return 'Trocas: ' + nomes; },
         linhaMeta: function (rw, n) { return rw + ' · ' + n + ' militares'; },
         /* o painel do registro */
-        painelTitulo: 'Várias trocas',
+        painelTitulo: 'Trocas',
         caixaEscalas: 'Escalas trocadas',
         escalaFrase: function (cumpre, noLugarDe) { return cumpre + ' cumpre a escala de serviço do(a) ' + noLugarDe + '.'; },
         escalaFraseHorario: function (cumpre, noLugarDe, hi, hf) { return cumpre + ' cumpre a escala de serviço do(a) ' + noLugarDe + ', das ' + hi + ' às ' + hf + '.'; },
