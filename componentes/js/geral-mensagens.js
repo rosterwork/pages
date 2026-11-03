@@ -26,10 +26,8 @@
     perfil: {
       falhaDados: 'Não foi possível salvar. Tente de novo.',
       solicitacaoEnviada: 'Solicitação enviada para aprovação.',
-      dadosSalvos: 'Dados salvos.',
-      /* a janela ao entrar, no modo "Confira o seu cadastro" */
+      /* a janela "Confira o seu cadastro", ao entrar */
       cadastroConferido: 'Cadastro conferido.',
-      cadastroConferidoComPedido: 'Cadastro conferido. Os dados que você preencheu vão para a aprovação de um administrador.',
       demaisParaAprovacao: 'As demais alterações foram enviadas para a aprovação do administrador.',
       /* o painel da pendência da CNH (index-cnh-painel.js) */
       tituloCnh: 'CNH',

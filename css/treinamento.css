@@ -3,8 +3,9 @@
    Os blocos e os campos são o componente geral-bloco (o mesmo
    desenho dos Ajustes), na coluna de leitura. Aqui só as duas áreas
    (para todos e, depois do traço, a do administrador, com o título e
-   a chave inglesa), o traço entre elas e o campo sem chevron, que é
-   clicável inteiro (começa o treino).
+   a chave inglesa), o traço entre elas, o ícone da tela no título do
+   bloco e o campo sem chevron, que é clicável inteiro (começa o
+   treino).
    ============================================================ */
 
 .treino-area {
@@ -20,6 +21,12 @@
   font-size: 13px;
   font-weight: 600;
   color: var(--texto-forte);
+}
+
+/* o ícone da tela, o mesmo do menu, antes do nome do bloco, na cor do nome */
+.treino-bloco-icone {
+  flex-shrink: 0;
+  color: var(--texto-suave);
 }
 
 .treino-divisor {

@@ -4,10 +4,11 @@
    data-roteiro> do index.html), em grupos pelo
    RosterWork.guiaRoteiros.grupos (o mesmo agrupamento do ?): a área
    de todos e a do administrador (só para quem administra) e, em
-   cada área, um bloco por tela (o nome da tela no alto), no desenho
-   dos blocos dos Ajustes (componente geral-bloco). O nome do bloco
-   tem o chevron, que abre e fecha o bloco; um aberto por vez (abrir
-   um fecha o outro), e começa aberto o primeiro, como no ?. Cada
+   cada área, um bloco por tela (o ícone da tela, o mesmo do menu, e o
+   nome no alto), no desenho dos blocos dos Ajustes (componente
+   geral-bloco). O nome do bloco tem o chevron, que abre e fecha o
+   bloco; um aberto por vez (abrir um fecha o outro), e todos começam
+   fechados. Cada
    treino é um campo com o Visto de quem já fez; sem
    chevron, clicar começa o treino. Os roteiros do mesmo conjunto
    ficam num campo só, com chevron, que abre e fecha ali mesmo com as
@@ -43,10 +44,23 @@
     });
   }
 
+  /* o ícone da tela no título do bloco: o do item do menu da tela dos treinos do grupo */
+  function iconeDaTela(g) {
+    var paginas = [];
+    g.itens.forEach(function (it) {
+      (it.opcoes || [it]).forEach(function (o) { if (o.pagina && o.pagina !== 'qualquer') paginas.push(o.pagina); });
+    });
+    var uso = paginas.length ? document.querySelector('.sidebar .menu-item[data-pagina="' + paginas[0] + '"] .icone use') : null;
+    return uso ? uso.getAttribute('href') : null;
+  }
+
   /* o bloco da tela, na área dele: abrir um fecha os outros */
   function novoBloco(pagina, g, blocos) {
     var el = RW.tpl('tpl-treino-bloco');
     el.querySelector('.bloco-nome').textContent = g.grupo;
+    var icone = iconeDaTela(g);
+    if (icone) el.querySelector('.treino-bloco-icone use').setAttribute('href', icone);
+    else el.querySelector('.treino-bloco-icone').classList.add('oculto');
     pagina.querySelector('.treino-area[data-treino-area="' + g.area + '"]').appendChild(el);
     var bloco = { el: el, cabeca: el.querySelector('.bloco-cabecalho'), corpo: el.querySelector('.bloco-corpo') };
     ligarChevron(bloco.cabeca, bloco.corpo, function () {
@@ -86,7 +100,7 @@
     return conjunto;
   }
 
-  /* os blocos, com os campos dentro (um por roteiro, ou um por conjunto, com as opções); o primeiro bloco abre */
+  /* os blocos, com os campos dentro (um por roteiro, ou um por conjunto, com as opções); todos começam fechados */
   function montar(pagina) {
     var estado = { blocos: [], itens: [], conjuntos: [] };
     RW.guiaRoteiros.grupos(RW.guiaRoteiros.lista()).forEach(function (g) {
@@ -96,7 +110,6 @@
         else estado.itens.push(novoItem(bloco.corpo, it));
       });
     });
-    if (estado.blocos.length) abrir(estado.blocos[0].cabeca, estado.blocos[0].corpo, true);
     return estado;
   }
 
