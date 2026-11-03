@@ -624,6 +624,8 @@
         exclusivoCondutor:   { texto: 'Condutor exclusivo indisponível, motorista substituído', icone: 'icone-alerta', nivel: 'alerta' },
         chefeCondutor:       { texto: 'Chefe assumiu a direção por falta de condutor', icone: 'icone-alerta', nivel: 'alerta' },
         afastadoTroca:       { texto: 'Militar afastado, não vai assumir o serviço', icone: 'icone-alerta', nivel: 'alerta' },
+        /* a regra por graduação da Distribuição não deixa, mas não havia outro militar que pudesse */
+        regraGraduacao:      { texto: 'Função fora da regra por falta de gente', icone: 'icone-alerta', nivel: 'alerta' },
         /* a Central sem Cabo de Dia (só para quem administra; a Distribuição escolhe se dá o erro amarelo) */
         semCaboDia:          { texto: 'Central sem Cabo de Dia: nenhum cabo ou soldado de serviço{faixas}', faixa: 'das {hi} às {hf}', icone: 'icone-alerta', nivel: 'alerta' },
         semCondutor:         { texto: 'Viatura sem condutor', icone: 'icone-alerta', nivel: 'erro' },
@@ -656,7 +658,8 @@
         motivoExclusivoGrau: 'é o exclusivo dessa função (ideal {grau})',
         motivoRodizio:   'repetiu a função do último serviço',
         motivoExclusivo: 'assumiu no lugar do condutor exclusivo',
-        motivoAfastado:  'mas está afastado (férias, licença ou dispensa) e não vai assumir'
+        motivoAfastado:  'mas está afastado (férias, licença ou dispensa) e não vai assumir',
+        motivoRegraGraduacao: 'fora da regra por graduação, não havia outro militar que pudesse'
       },
       /* dica do ícone de regra na linha do militar (uma regra por linha, via \n) */
       regra: {
@@ -1161,7 +1164,7 @@
        {chave} = valor preenchido na hora; os textos fixos ficam em ajustes.html */
     novaDistribuicao: {
       pagina: 'Distribuição',
-      contagem: '{n} de 10 prontos',
+      contagem: '{n} de 11 prontos',
       soDeste: 'Só deste pelotão',
       compartilhado: 'Compartilhado com todos os pelotões',
       faltaResponder: 'Falta responder',
@@ -1260,7 +1263,11 @@
       regraIncompleta: 'Escolha o militar, a regra e a função.',
       semMilitar: 'Escolha o militar',
       regraTexto: { proibido: 'Não pode {funcao}', exclusivo: 'Só pode {funcao}' },
-      /* bloco 10: conferir */
+      /* bloco 10: regras por graduação */
+      graduacaoIncompleta: 'Escolha a graduação, a regra e a função.',
+      semGraduacao: 'Escolha a graduação',
+      graduacaoTitulo: { apenas: 'Apenas {grau}', mais_antigo: 'Igual ou mais antigo que {grau}', mais_moderno: 'Igual ou mais moderno que {grau}', entre: 'De {grau} a {ate}' },
+      /* bloco 11: conferir */
       estados: { tem_gente: 'Com gente', acumula: 'Acumulada', coberta: 'Coberta', companhia: 'Da companhia', vazia: 'Vazia', fora: 'Fora da escala' },
       porQuem: '{estado} por {quem}',
       sobraUm: '1 militar fica sem função.',

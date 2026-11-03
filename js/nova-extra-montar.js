@@ -265,8 +265,8 @@
     var ajuste = modo === 'ajustes';
     q('#p3-texto').textContent = n ? (ajuste ? msg().ajusteTexto(n) : msg().alteracoes(n)) : '';
     q('#p3-motivo-campo').classList.toggle('oculto', !ajuste);
-    q('#p3-salvar-dist').classList.toggle('oculto', ajuste);
-    q('#p3-salvar-ajuste').classList.toggle('oculto', !ajuste);
+    /* com o Salvar carregando (os textos dele saem e voltam com o pararCarregando), só o que está na tela */
+    [['#p3-salvar-dist', ajuste], ['#p3-salvar-ajuste', !ajuste]].forEach(function (t) { var s = q(t[0]); if (s) s.classList.toggle('oculto', t[1]); });
     q('#p3-salvar').disabled = !n;
     q('#p3-cancelar').disabled = !Object.keys(mud).length;
     q('#p3-desfazer-sugestao').classList.toggle('oculto', !sugeridas.length);

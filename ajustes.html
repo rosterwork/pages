@@ -102,10 +102,16 @@
             <span>9. Regras por militar</span>
             <span class="nova-distribuicao-bloco-muda oculto"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-agendado"/></svg></span>
           </button>
+          <button type="button" class="lista-item lista-item--clicavel nova-distribuicao-bloco" data-bloco="10">
+            <svg class="icone nova-distribuicao-bloco-pronto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
+            <svg class="icone nova-distribuicao-bloco-falta oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+            <span>10. Regras por graduação</span>
+            <span class="nova-distribuicao-bloco-muda oculto"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-agendado"/></svg></span>
+          </button>
           <button type="button" class="lista-item lista-item--clicavel nova-distribuicao-bloco" data-bloco="8">
             <svg class="icone nova-distribuicao-bloco-pronto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
             <svg class="icone nova-distribuicao-bloco-falta oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-            <span>10. Conferir</span>
+            <span>11. Conferir</span>
             <span class="nova-distribuicao-bloco-muda oculto"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-agendado"/></svg></span>
           </button>
         </div>
@@ -480,6 +486,9 @@
 </template>
 <template id="tpl-nova-distribuicao-nota-regras">
   <p class="nova-distribuicao-ajuda">O que um militar não pode fazer ou só pode fazer.</p>
+</template>
+<template id="tpl-nova-distribuicao-nota-graduacao">
+  <p class="nova-distribuicao-ajuda">O que uma graduação não pode fazer ou só pode fazer. A regra por militar vale mais que esta. Sem ninguém que possa, a função fica com quem estiver, com aviso amarelo.</p>
 </template>
 <template id="tpl-nova-distribuicao-nota-ordem-postos">
   <p class="nova-distribuicao-ajuda">A ordem da lista é a ordem exibida na escala.</p>
@@ -1045,6 +1054,35 @@
     </div>
   </span>
 </template>
+<!-- uma regra por graduação, o cartão aberto: a graduação (as bolinhas, como as do Quem escolher, com a graduação
+     dentro da frase), Regra e Função, e o Remover regra -->
+<template id="tpl-nova-distribuicao-regra-graduacao">
+  <div class="nova-distribuicao-cartao-conteudo">
+    <div class="nova-distribuicao-regra-linha nova-distribuicao-regra-linha--opcoes">
+      <span class="nova-distribuicao-regra-rotulo">Graduação</span>
+      <div class="nova-distribuicao-opcoes">
+        <label class="geral-opcao"><input type="radio" data-valor="apenas" /><span>Apenas</span><span class="nova-distribuicao-espaco" data-espaco="grau"></span></label>
+        <label class="geral-opcao"><input type="radio" data-valor="mais_antigo" /><span>Igual ou mais antigo que</span><span class="nova-distribuicao-espaco" data-espaco="grau"></span></label>
+        <label class="geral-opcao"><input type="radio" data-valor="mais_moderno" /><span>Igual ou mais moderno que</span><span class="nova-distribuicao-espaco" data-espaco="grau"></span></label>
+        <label class="geral-opcao"><input type="radio" data-valor="entre" /><span>De</span><span class="nova-distribuicao-espaco" data-espaco="grau"></span><span>a</span><span class="nova-distribuicao-espaco" data-espaco="ate"></span></label>
+      </div>
+    </div>
+    <div class="nova-distribuicao-regra-linha">
+      <span class="nova-distribuicao-regra-rotulo">Regra</span>
+      <div class="abas abas--seletor nova-distribuicao-regra-tipo" aria-label="Regra">
+        <button type="button" class="aba" data-valor="proibido">Não pode</button>
+        <button type="button" class="aba" data-valor="exclusivo">Só pode</button>
+      </div>
+    </div>
+    <div class="nova-distribuicao-regra-linha">
+      <span class="nova-distribuicao-regra-rotulo">Função</span>
+      <span class="nova-distribuicao-espaco" data-espaco="funcao"></span>
+    </div>
+    <div class="nova-distribuicao-cartao-botoes">
+      <button type="button" class="botao nova-distribuicao-remover-regra">Remover regra</button>
+    </div>
+  </div>
+</template>
 <template id="tpl-nova-distribuicao-militar">
   <button type="button" class="dropdown-item" role="option"></button>
 </template>
@@ -1168,6 +1206,6 @@
     <td class="nova-distribuicao-col-posto"></td>
     <td class="nova-distribuicao-col-funcao"></td>
     <td class="nova-distribuicao-col-quem"></td>
-    <td><span class="selo nova-distribuicao-situacao"></span> <span class="selo nova-distribuicao-outro-grau oculto">Outro grau</span></td>
+    <td><span class="selo nova-distribuicao-situacao"></span> <span class="selo nova-distribuicao-outro-grau oculto">Outro grau</span> <span class="selo selo--alerta nova-distribuicao-fora-regra oculto">Fora da regra</span></td>
   </tr>
 </template>

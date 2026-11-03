@@ -12,8 +12,11 @@
    conjunto é uma linha com chevron e as opções embaixo. Sem o Visto:
    o ? é a ajuda para fazer a tarefa, não o treino. Embaixo, o link
    do manual; tela sem roteiro, só o link.
+   O próximo treino (o fim do treino e o Continuar os treinos): o
+   seguinte na ordem da lista ainda sem Visto; acabou a lista, volta
+   ao começo; todos com Visto, nenhum.
    API: visto(id), marcarVisto(id), dicaVista(), marcarDica(),
-   montarMenu(ajuda). Moldes: #tpl-guia-menu, #tpl-guia-menu-item,
+   proximoTreino(id | null), montarMenu(ajuda). Moldes: #tpl-guia-menu, #tpl-guia-menu-item,
    #tpl-guia-menu-grupo, #tpl-guia-menu-conjunto.
    ============================================================ */
 (function () {
@@ -39,6 +42,13 @@
   function visto(id) { return (lerAjuda().vistos || []).indexOf(id) >= 0; }
   function dicaVista() { return !!lerAjuda().dica_vista; }
   function marcarDica() { if (!dicaVista()) gravarAjuda(function (a) { a.dica_vista = true; }); }
+
+  /* depois do treino id (null: do começo), o primeiro sem Visto; no fim da lista, volta ao começo */
+  function proximoTreino(id) {
+    var ids = RW.guiaRoteiros.ordem(), i = ids.indexOf(id);
+    var fila = ids.slice(i + 1).concat(ids.slice(0, Math.max(i, 0)));
+    return fila.filter(function (x) { return x !== id && !visto(x); })[0] || null;
+  }
 
   function clonar(id) { var t = document.getElementById(id); return t ? t.content.firstElementChild.cloneNode(true) : null; }
 
@@ -112,5 +122,5 @@
     menu.querySelector('.guia-menu-divisor').classList.toggle('oculto', sem);
   }
 
-  RW.guiaAjuda = { visto: visto, marcarVisto: marcarVisto, dicaVista: dicaVista, marcarDica: marcarDica, montarMenu: montarMenu };
+  RW.guiaAjuda = { visto: visto, marcarVisto: marcarVisto, dicaVista: dicaVista, marcarDica: marcarDica, proximoTreino: proximoTreino, montarMenu: montarMenu };
 })();

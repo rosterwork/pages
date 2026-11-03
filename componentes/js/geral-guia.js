@@ -14,8 +14,11 @@
    situação que ele pede), o balão diz por que o passo não dá ali e
    espera a situação aparecer (ex.: outro dia aberto). Com menu,
    calendário ou modal aberto sem o alvo dentro, espera escondido; o
-   menu aberto pelo alvo acende junto. No passo, só o aceso, o balão
-   e a barra do treino respondem ao clique. A dica da primeira vez
+   menu aberto pelo alvo acende junto. No passo, responde só o que é
+   do roteiro: no de olhar (Próximo), nada do aceso; no livre
+   (data-livre), o aceso inteiro; no de clique, só o que ele pede; na
+   escolha, só os caminhos; nos de preencher, o aceso inteiro. O
+   balão, a barra do treino e a rolagem sempre. A dica da primeira vez
    acende o ?. O que a pessoa já viu e a lista do ? ficam no
    geral-guia-ajuda.js. Moldes: #tpl-guia-balao e #tpl-guia-dica.
    ============================================================ */
@@ -143,12 +146,15 @@
     });
   }
 
-  /* a tela (o véu dela), a área da Extrajornada (o círculo dela) ou o painel (o carregando dele, o geral e o do dia)
-     ainda carregando */
+  /* algo ainda carregando à vista: o véu da tela, ou o círculo de uma área (a grade da Escala, a área da Extrajornada,
+     o painel aberto). O círculo do véu escondido (some pela opacidade), o do painel fechado e o do cálculo da sugestão
+     da Extrajornada (que é um passo do roteiro) não contam */
   function carregando() {
-    return !!document.querySelector('.conteudo > .carregando-veu--visivel') ||
-      visivel(document.querySelector('.conteudo #nova-extra-estado:not(.oculto) .giratorio')) ||
-      Array.prototype.some.call(document.querySelectorAll('.painel-lateral--aberto .painel-estado--carregando, .painel-lateral--aberto .escala-distribuicao-carregando'), visivel);
+    if (document.querySelector('.conteudo > .carregando-veu--visivel')) return true;
+    return Array.prototype.some.call(document.querySelectorAll('.conteudo .giratorio, .painel-lateral--aberto .painel-estado--carregando'), function (g) {
+      return visivel(g) && !g.closest('.carregando-veu, .nova-extra-calculo, .painel-lateral:not(.painel-lateral--aberto)') &&
+        getComputedStyle(g).visibility !== 'hidden';
+    });
   }
 
   /* o passo pede para ser pulado agora? */
@@ -196,6 +202,7 @@
     if (guia.fase === 'esperaFim') {
       if (document.querySelector(ESPERAR)) { esconderPecas(); return; }
       guia.fase = 'fim';
+      if (guia.treino) guia.seguinte = A().proximoTreino(guia.id);
       if (guia.fim) B().fim(guia); else encerrar();
       return;
     }
@@ -250,15 +257,31 @@
     if (gravar) A().marcarDica();
   }
 
-  /* ---------- durante um passo, só o que está aceso responde: os alvos, os menus abertos por eles, o balão e a barra
-     do treino (que tira do treino). O toque e o mouse valem pelo ponto (cai num buraco do véu?); o clique do teclado,
-     pelo elemento. Rolar a tela continua ---------- */
+  /* o que o clique do passo pede: o data-clique ou, sem ele, o alvo (na escolha, as entradas dos caminhos) */
+  function seletoresDoClique(passo) {
+    var clique = passo.p.getAttribute('data-clique');
+    return clique ? R().seletores(clique) : seletoresDo(passo);
+  }
+  function casa(el, seletores) { return seletores.some(function (s) { try { return !!el.closest(s); } catch (e) { return false; } }); }
+
+  /* ---------- durante um passo, responde só o que é do roteiro, dentro do aceso (os alvos e os menus abertos por eles):
+     no de olhar (Próximo), nada; no livre (data-livre), o aceso inteiro; no de clique e na escolha, só o que eles pedem;
+     nos de preencher (preenchido, aparece, some), o aceso inteiro. O balão e a barra do treino (que tira do treino)
+     sempre. O toque e o mouse valem pelo ponto (cai num buraco do véu?); o clique do teclado, pelo elemento. Rolar a
+     tela continua ---------- */
   function bloqueado(evento) {
     if (!guia || guia.fase !== 'passo' || !guia.mostrado || !V().visivel()) return false;
     var alvo = evento.target;
     if (!alvo.closest || alvo.closest('.guia-balao, .treino-barra')) return false;
-    if (evento.type === 'click' && evento.detail === 0) return !B().acesos().some(function (el) { return el.contains(alvo); });
-    return !V().aceso(evento.clientX, evento.clientY);
+    var noAceso = evento.type === 'click' && evento.detail === 0
+      ? B().acesos().some(function (el) { return el.contains(alvo); })
+      : V().aceso(evento.clientX, evento.clientY);
+    if (!noAceso) return true;
+    var passo = guia.passos[guia.i], p = passo.p, avanca = p.getAttribute('data-avanca');
+    if (p.hasAttribute('data-livre')) return false;
+    if (avanca === 'proximo') return true;
+    if (avanca === 'clique' || avanca === 'escolha') return !casa(alvo, seletoresDoClique(passo));
+    return false;
   }
   function segurar(evento) {
     if (!bloqueado(evento)) return false;
@@ -293,11 +316,16 @@
     if (alvo.closest('.guia-dica-entendi')) { esconderDica(true); return; }
     if (alvo.closest('.guia-balao-sair') || alvo.closest('.guia-balao-concluir')) { encerrar(); return; }
     if (alvo.closest('.guia-balao-treinos')) { encerrar(); if (RW.treino) RW.treino.voltarAosTreinos(); return; }
+    if (alvo.closest('.guia-balao-seguinte-botao')) {
+      var seguinte = guia && guia.seguinte;
+      encerrar();
+      if (seguinte && RW.treino) RW.treino.seguir(seguinte);
+      return;
+    }
     if (alvo.closest('.guia-balao-proximo')) { avancar(); return; }
     if (!guia || guia.fase !== 'passo' || !guia.mostrado) return;
     var passo = guia.passos[guia.i];
-    var clique = passo.p.getAttribute('data-clique');
-    var acertou = (clique ? R().seletores(clique) : seletoresDo(passo)).some(function (s) { try { return alvo.closest(s); } catch (e) { return false; } });
+    var acertou = casa(alvo, seletoresDoClique(passo));
     /* no treino, o clique que gravaria fica com o guia: o roteiro vai ao fim (o menu aberto fecha, como o clique faria) */
     if (acertou && guia.treino && passo.p.hasAttribute('data-segurar')) {
       evento.preventDefault();
@@ -333,7 +361,8 @@
 
   RW.guia = {
     iniciar: iniciar, encerrar: encerrar, visto: function (id) { return A().visto(id); },
-    emCurso: function () { return guia ? guia.id : null; }
+    emCurso: function () { return guia ? guia.id : null; },
+    proximo: function (id) { return A().proximoTreino(id || null); }
   };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', vigiarPaginas);

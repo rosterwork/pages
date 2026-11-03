@@ -17,7 +17,10 @@
    treino começa do
    começo, desde o menu, no modo treino (RosterWork.treino.comecar).
    No celular, os que só existem no computador (data-so-computador)
-   não aparecem.
+   não aparecem. O Continuar os treinos (no alto) começa o primeiro
+   ainda sem Visto, na ordem da lista; com todos feitos, some. Ao abrir,
+   a lista começa o próximo treino pedido pelo fim do anterior
+   (RosterWork.treino.comecarPendente).
    ============================================================ */
 (function () {
   'use strict';
@@ -132,6 +135,10 @@
       var estado = montar(pagina);
       filtrar(pagina, estado, '');
       RW.busca.criar({ caixa: pagina.querySelector('#treino-busca'), aoBuscar: function (termo) { filtrar(pagina, estado, termo); } });
+      var continuar = pagina.querySelector('#treino-continuar'), primeiro = RW.guia.proximo(null);
+      continuar.classList.toggle('oculto', !primeiro);
+      continuar.addEventListener('click', function () { var id = RW.guia.proximo(null); if (id) RW.treino.comecar(id); });
+      if (RW.treino.comecarPendente) RW.treino.comecarPendente();
     }
   };
 })();

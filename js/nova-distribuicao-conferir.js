@@ -1,11 +1,12 @@
 /* ============================================================
-   NOVA DISTRIBUIÇÃO — bloco 10, Conferir
+   NOVA DISTRIBUIÇÃO — bloco 11, Conferir
    Três formas, num seletor: Tabela (a partir de N de serviço, N e
    os quatro seguintes, uma coluna cada, com os totais por posto),
    Simular a equipe (quantos de cada graduação) e Um dia real (quem
-   está de serviço às 08h numa data, com a CNH e as regras). Nas duas
-   últimas, quem senta em cada função (pela cadeira: a mesma pessoa
-   ocupa uma só no posto), os avisos de grau e os avisos dos postos.
+   está de serviço às 08h numa data, com a CNH e as regras, o mesmo
+   da escala). Nas duas últimas, quem senta em cada função (pela
+   cadeira: a mesma pessoa ocupa uma só no posto), os avisos de grau,
+   a marca de fora da regra por graduação e os avisos dos postos.
    As contas são do nova_distribuicao_calcular (conferencia); aqui o
    desenho e a escolha de cada unidade (fica entre as visitas), que
    diz ao calcular o que conferir.
@@ -193,6 +194,8 @@
         outro.classList.toggle('oculto', !(e.aviso_grau > 0) || e.estado === 'vazia' || e.estado === 'fora');
         outro.classList.toggle('selo--alerta', e.aviso_grau === 1);
         outro.classList.toggle('selo--erro', e.aviso_grau === 2);
+        /* na função fora da regra por graduação, por não haver outro que pudesse */
+        tr.querySelector('.nova-distribuicao-fora-regra').classList.toggle('oculto', !e.regra_graduacao || e.estado === 'vazia' || e.estado === 'fora');
         corpo.appendChild(tr);
       });
       avisosEquipe(s.querySelector('.nova-distribuicao-avisos-equipe'), ctx, r);

@@ -29,16 +29,15 @@
     return itens.slice(0, -1).join(L.virgula) + L.e + itens[itens.length - 1];
   }
 
+  /* tira o véu da gravação; a unidade ligada tem a escala refeita em blocos: o resto termina em segundo plano
+     (o esconderVeuGlobal marca e esvazia a fila) */
   function aposGravar(c, r, versaoId) {
-    RosterWork.liberarTela();
+    RosterWork.esconderVeuGlobal();
     if (!r || !r.success) { c.falha(r); return; }
-    /* a unidade ligada tem a escala refeita em blocos: o resto termina em segundo plano */
-    if (RosterWork.marcarRecalculoPendente) RosterWork.marcarRecalculoPendente();
-    if (RosterWork.drenarRecalculo) RosterWork.drenarRecalculo();
     if (r.log) RosterWork.resumo.abrirModal(r.log, { pagina: M().pagina });
     c.carregar(versaoId || (c.vendoAgendada ? c.dados.atual.id : null));   /* só substituições: fica na versão vista */
   }
-  function semRede(c) { RosterWork.liberarTela(); c.semConexao(); }
+  function semRede(c) { RosterWork.esconderVeuGlobal(); c.semConexao(); }
 
   /* ---------- o aviso do topo ---------- */
 
@@ -67,7 +66,7 @@
       RosterWork.pedirData({
         titulo: M().mudarDataTitulo, mensagem: M().mudarDataMensagem, data: ag.inicio, textoConfirmar: M().botaoSalvar,
         aoConfirmar: function (iso) {
-          RosterWork.bloquearTela();
+          RosterWork.mostrarVeuGlobal();   /* refaz a escala: o círculo cobre o conteúdo e trava a tela */
           D().agendadaData(c.unidadeId, iso).then(function (r) {
             aposGravar(c, r, c.vendoAgendada && r ? r.periodo_id : null);
           }, function () { semRede(c); });
@@ -82,7 +81,7 @@
         tipo: 'aviso', mensagem: P().texto(M().cancelarConfirmar, { data: br(ag.inicio) }),
         textoConfirmar: M().botaoCancelarMudanca, textoCancelar: M().botaoManter,
         aoConfirmar: function () {
-          RosterWork.bloquearTela();
+          RosterWork.mostrarVeuGlobal();   /* refaz a escala: o círculo cobre o conteúdo e trava a tela */
           D().agendadaCancelar(c.unidadeId).then(function (r) { aposGravar(c, r, null); }, function () { semRede(c); });
         }
       });
@@ -141,15 +140,16 @@
     var subs = c.substituicoes();
     var ritmo = c.ritmo();
     if (!itens.length && !subs.length && !ritmo) return;
-    RosterWork.iniciarCarregando(botao);
     if (c.vendoAgendada || (!itens.length && !ritmo)) {
-      /* a mudança agendada já tem a data dela, e as substituições têm as delas: grava direto */
+      /* a mudança agendada já tem a data dela, e as substituições têm as delas: grava direto (refaz a escala: o véu) */
+      RosterWork.mostrarVeuGlobal();
       D().salvar(itens, null, null, false, subs).then(function (r) {
-        RosterWork.pararCarregando(botao);
         aposGravar(c, r, r && r.periodo_id);
-      }, function () { RosterWork.pararCarregando(botao); semRede(c); });
+      }, function () { semRede(c); });
       return;
     }
+    /* a prévia (o que muda e a data) é rápida: os pontinhos no botão; a gravação refaz a escala: o véu */
+    RosterWork.iniciarCarregando(botao);
     D().salvar(itens, null, null, true, subs, ritmo).then(function (previa) {
       RosterWork.pararCarregando(botao);
       if (!previa || !previa.success) { c.falha(previa); return; }
@@ -158,7 +158,7 @@
         sugerida: true, titulo: M().salvarTitulo, sugestaoAntes: M().salvarAntes, sugestaoDepois: M().salvarDepois,
         textoConfirmar: M().botaoSalvar, conteudo: montarResumo(previa.itens || [], escolhidos, previa.substituicoes, previa.ritmo),
         aoConfirmar: function (iso) {
-          RosterWork.bloquearTela();
+          RosterWork.mostrarVeuGlobal();
           D().salvar(itens, iso, escolhidos, false, subs, ritmo).then(function (r) { aposGravar(c, r, null); }, function () { semRede(c); });
         }
       });

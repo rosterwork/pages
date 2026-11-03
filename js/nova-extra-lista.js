@@ -62,10 +62,11 @@
         if (RW.painel.estaAberto() || document.querySelector('.modal-veu--aberto')) return;
         sairDoFoco();
       }, true);   // na captura: vê o painel ainda aberto antes de o Esc do painel fechá-lo
-      /* clicar fora do nome, das datas dele e das bolinhas tira o foco (o aviso da cota, que vem da bolinha, não) */
+      /* clicar fora do nome, das datas dele e das bolinhas tira o foco (o aviso da cota, que vem da bolinha, e o balão
+         do passo a passo, não) */
       document.addEventListener('click', function (ev) {
         if (!foco || !pagina || !pagina.isConnected) return;
-        if (ev.target.closest('.nova-extra-esq-item, .nova-extra-esq-aberto, .nova-extra-foco-linha, #p3-foco, .modal-veu')) return;
+        if (ev.target.closest('.nova-extra-esq-item, .nova-extra-esq-aberto, .nova-extra-foco-linha, #p3-foco, .modal-veu, .guia-balao')) return;
         sairDoFoco();
       });
     }

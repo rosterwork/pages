@@ -2,7 +2,9 @@
    GUIA › BALÃO — o balão do passo a passo (RosterWork.guiaBalao)
    O balão escuro (#tpl-guia-balao) em três jeitos: o do passo (o nome
    do roteiro, "N de M", o Sair, o texto e o Próximo), o do fim (o
-   Concluir, ou o Voltar aos treinos no treino) e o aviso de quando a
+   Concluir; no treino, o próximo treino da lista, com o Próximo treino
+   e o Voltar aos treinos como link ao lado, ou, feitos todos, a frase
+   e só o Voltar aos treinos) e o aviso de quando a
    situação do passo não está na tela (o texto e o Sair, sem o véu,
    no meio da tela). posicionar(els) acende no véu (geral-guia-veu.js)
    os alvos e os menus abertos por eles e põe o balão ao lado deles:
@@ -69,6 +71,9 @@
     q('.guia-balao-proximo').classList.toggle('oculto', !botoes.proximo);
     q('.guia-balao-concluir').classList.toggle('oculto', !botoes.concluir);
     q('.guia-balao-treinos').classList.toggle('oculto', !botoes.treinos);
+    q('.guia-balao-treinos').classList.toggle('botao--texto', !!botoes.seguinte);
+    q('.guia-balao-seguinte-botao').classList.toggle('oculto', !botoes.seguinte);
+    Array.prototype.forEach.call(peca().querySelectorAll('.guia-balao-seguinte'), function (l) { l.classList.add('oculto'); });
   }
   /* o texto do passo vem do roteiro (o <p> do molde, com os destaques em <strong>) */
   function preencherTexto(p) {
@@ -94,9 +99,12 @@
   function fim(guia) {
     V().esconder();
     acesos = [];
-    /* no treino, o fim leva de volta à lista dos treinos */
-    montar(guia, '', { concluir: !guia.treino, treinos: guia.treino });
+    /* no treino, o fim leva ao próximo treino (ou de volta à lista) */
+    var seguinte = guia.treino && guia.seguinte ? RW.guiaRoteiros.roteiro(guia.seguinte) : null;
+    montar(guia, '', { concluir: !guia.treino, treinos: guia.treino, seguinte: !!seguinte });
     preencherTexto(guia.fim);
+    if (seguinte) q('.guia-balao-seguinte-nome').textContent = seguinte.getAttribute('data-titulo');
+    if (guia.treino) q(seguinte ? '.guia-balao-seguinte:not(.guia-balao-todos)' : '.guia-balao-todos').classList.remove('oculto');
     noMeio();
   }
   /* a situação do passo não está na tela (ex.: o dia sem horário vazio): o texto que explica, sem o véu */

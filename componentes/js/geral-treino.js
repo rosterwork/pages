@@ -16,7 +16,8 @@
    (geral-treino-extra.js).
    Sai do modo: Treinos (volta à lista), Sair do treino (vai à Escala),
    o Voltar aos treinos do fim do roteiro, recarregar ou fechar (o modo
-   não fica guardado). Ao sair, a edição não salva é descartada sem
+   não fica guardado). O Próximo treino do fim do roteiro volta à lista
+   (a tela recomeça limpa) e, quando ela abre, começa o próximo. Ao sair, a edição não salva é descartada sem
    perguntar.
    Função de leitura nova chamada pelo site entra em LEITURAS (conferida
    no banco: STABLE, ou sem gravação em tabela de verdade, ou ensaio que
@@ -84,6 +85,19 @@
     if (RW.irParaPagina) RW.irParaPagina(pagina);
   }
   function voltarAosTreinos() { sairPara('treinamento'); }
+
+  /* o próximo treino começa quando a lista abrir (o treinamento.js chama comecarPendente); vale por 15 s, para a lista
+     aberta depois, por outro caminho, não começar sozinha */
+  var pendente = null;
+  function seguir(id) {
+    pendente = { id: id, em: Date.now() };
+    sairPara('treinamento');
+  }
+  function comecarPendente() {
+    var p = pendente;
+    pendente = null;
+    if (p && Date.now() - p.em < 15000) comecar(p.id);
+  }
   function sair() { sairPara('escalas'); }
 
   function resposta(status, corpo) {
@@ -127,6 +141,6 @@
 
   RW.treino = {
     ligado: function () { return ligado; },
-    comecar: comecar, sair: sair, voltarAosTreinos: voltarAosTreinos, passar: passar
+    comecar: comecar, sair: sair, voltarAosTreinos: voltarAosTreinos, seguir: seguir, comecarPendente: comecarPendente, passar: passar
   };
 })();

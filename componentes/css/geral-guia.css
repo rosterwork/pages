@@ -113,8 +113,15 @@
 
 .guia-balao-rodape {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: 12px;
   margin-top: 12px;
+}
+
+/* no fim do treino, o próximo (ou o "todos feitos"), embaixo do texto */
+.guia-balao-seguinte {
+  margin: 8px 0 0;
 }
 
 /* o Sair, sobre o escuro do balão */

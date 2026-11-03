@@ -4,13 +4,13 @@
    Carrega a unidade (a em vigor ou a mudança agendada) e o ritmo,
    guarda as respostas em edição, pede as contas ao banco a cada
    mudança (a resposta mais nova vence; com a outra versão, o banco
-   diz o que muda) e desenha o menu dos 10 blocos, o corpo e o
+   diz o que muda) e desenha o menu dos 11 blocos, o corpo e o
    rodapé. Blocos: -ritmo (1), -postos (2), -efetivo (3), -funcoes
-   (4), -acumulos (5 e 6), -blocos (7 e 8), -militares (9), -conferir
-   (10); peças comuns em -pecas; as mudanças dos postos com data em
-   -caixas; o aviso, o Salvar com a data e o começo da unidade em
-   -versoes. Cancelar e a unidade moram aqui. O banco grava no
-   Histórico a cada Salvar.
+   (4), -acumulos (5 e 6), -blocos (7 e 8), -militares (9),
+   -graduacao (10), -conferir (11); peças comuns em -pecas; as
+   mudanças dos postos com data em -caixas; o aviso, o Salvar com a
+   data e o começo da unidade em -versoes. Cancelar e a unidade
+   moram aqui. O banco grava no Histórico a cada Salvar.
    ============================================================ */
 (function () {
   'use strict';
@@ -195,10 +195,12 @@
     }, u];
   }
 
-  /* blocos prontos (o 10º, o Ritmo, sempre); no pelotão, Funções especiais e Conferir dependem também da companhia */
+  /* blocos prontos (o Ritmo, data-bloco 9, sempre; as Regras por graduação, data-bloco 10, vêm do banco depois do de
+     tudo); no pelotão, Funções especiais e Conferir dependem também da companhia */
   function prontos() {
     var r = ((E.calc && E.calc.prontos) || []).slice(0, 9);
     r[9] = true;
+    r[10] = !!(E.calc && E.calc.prontos && E.calc.prontos[9]);
     if (ehPelotao()) {
       var daCia = !!(E.calcCia && E.calcCia.prontos && E.calcCia.prontos[2]);
       r[2] = !!(r[2] && daCia);
@@ -264,7 +266,8 @@
       function () { R.novaDistribuicaoBlocos.escolher(conteudo, ctx, api); },
       function () { R.novaDistribuicaoMilitares.regras(conteudo, ctx, api); },
       function () { R.novaDistribuicaoConferir.desenhar(conteudo, ctx, api); },
-      function () { R.novaDistribuicaoRitmo.ritmo(conteudo, ctx, api); }
+      function () { R.novaDistribuicaoRitmo.ritmo(conteudo, ctx, api); },
+      function () { R.novaDistribuicaoGraduacao.regras(conteudo, ctx, api); }
     ][E.bloco]();
     corpo.appendChild(conteudo);
     corpo.scrollTop = rolagem;

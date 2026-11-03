@@ -26,11 +26,14 @@
    enviado) · escolha. Pula: data-pular-se (o seletor existe),
    data-opcional (o alvo não aparece), data-so-celular e
    data-so-computador. data-segurar, no treino: o clique que gravaria
-   não chega à tela e o roteiro vai ao fim. <p data-fim>: o balão
+   não chega à tela e o roteiro vai ao fim. data-livre: dá para mexer
+   em todo o aceso (no passo de olhar, nada responde; no de clique, só
+   o que ele pede). <p data-fim>: o balão
    final (no treino, o <p data-fim-treino>, quando há).
    API: lista() (os roteiros que a pessoa pode fazer), naPagina(p)
    (os que passam pela tela), grupos(roteiros) (a lista como a pessoa
-   vê, no Treinamento e no ?), passos(id, pagina) (do começo, ou a
+   vê, no Treinamento e no ?), ordem() (os ids nessa ordem, um a um,
+   com as opções dos conjuntos), passos(id, pagina) (do começo, ou a
    partir da tela pedida), caminho(passo, alvo) (os passos e o fim do
    caminho clicado), entradas(passo), fimDe(container, treino),
    seletores(texto), celular(), roteiro(id).
@@ -162,8 +165,17 @@
     return todos.filter(function (g) { return g.area === 'todos'; }).concat(todos.filter(function (g) { return g.area === 'admin'; }));
   }
 
+  /* os ids na ordem da lista do Treinamento: bloco a bloco e, no conjunto, opção a opção */
+  function ordem() {
+    var ids = [];
+    grupos(lista()).forEach(function (g) {
+      g.itens.forEach(function (it) { (it.opcoes || [it]).forEach(function (o) { ids.push(o.id); }); });
+    });
+    return ids;
+  }
+
   RW.guiaRoteiros = {
-    lista: lista, naPagina: naPagina, grupos: grupos, passos: passos, caminho: caminho, entradas: entradas, fimDe: fimDe,
+    lista: lista, naPagina: naPagina, grupos: grupos, ordem: ordem, passos: passos, caminho: caminho, entradas: entradas, fimDe: fimDe,
     seletores: seletores, celular: celular, roteiro: roteiro
   };
 })();
