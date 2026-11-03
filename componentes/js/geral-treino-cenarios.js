@@ -21,8 +21,8 @@
      mudar para o ciclo deste dia, depois do último serviço dele);
    - extra-<etapa>: o mês de treino da Extrajornada, montado pelo banco
      (geral-treino-extra.js);
-   - troca-<nome>: a troca de exemplo, montada pelo banco
-     (geral-treino-banco.js).
+   - troca-<nome>, folga-<nome>, cnh-falta e dados-correcao: o exemplo
+     montado pelo banco (geral-treino-banco.js).
    O que a tela manda ao banco sai sempre sem as peças de mentira (a
    prévia do painel do dia); a resposta da prévia volta com o exemplo,
    menos o que a pessoa já desfez (a folga cancelada, o ajuste tirado,
@@ -42,13 +42,13 @@
   var escolhas = {};     // a peça de cada exemplo por dia (exemplo|unidade|dia), a mesma em todas as leituras
 
   function emCurso() { return !!ativo && !!RW.guia && RW.guia.emCurso() === ativo.roteiro; }
-  /* o exemplo do roteiro; o da Extrajornada (extra-<etapa>) é o mês de treino, no geral-treino-extra.js, e o das
-     trocas (troca-<nome>) vem do banco, no geral-treino-banco.js */
+  /* o exemplo do roteiro; o da Extrajornada (extra-<etapa>) é o mês de treino, no geral-treino-extra.js, e os das
+     trocas, das folgas, da CNH e da correção de dados vêm do banco, no geral-treino-banco.js */
   function ativar(nome, roteiro) {
     ativo = nome ? { nome: nome, roteiro: roteiro } : null;
     escolhas = {};
     if (RW.treinoExtra) RW.treinoExtra.ativar(nome && nome.indexOf('extra-') === 0 ? nome.slice(6) : null);
-    if (RW.treinoBanco) RW.treinoBanco.ativar(nome && nome.indexOf('troca-') === 0 ? nome : null);
+    if (RW.treinoBanco) RW.treinoBanco.ativar(nome && /^(troca|folga|cnh|dados)-/.test(nome) ? nome : null);
   }
   function copiar(o) { return o == null ? o : JSON.parse(JSON.stringify(o)); }
   function nomeDe(m) { return ((m.grad || '') + ' ' + (m.nome || '')).trim(); }

@@ -349,6 +349,8 @@
       guia.passos = guia.passos.slice(0, guia.i + 1).concat(caminho.passos, guia.passos.slice(guia.i + 1));
       var fim = (guia.treino && caminho.fimTreino) || caminho.fim;
       if (fim) guia.fim = fim;
+      /* no treino, a entrada do caminho que já grava fica com o guia, como o clique segurado */
+      if (guia.treino && caminho.segurar) { evento.preventDefault(); evento.stopPropagation(); concluir(); return; }
       guia.mostrado = false;
       setTimeout(avancar, 0);
       return;

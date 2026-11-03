@@ -12,11 +12,15 @@
    <p data-trecho="nome"> repete os passos de um <template
    data-roteiro-trecho="nome"> (as aberturas comuns: abrir a Escala,
    a aba, o dia). Nos seletores, {unidade} vira a unidade da pessoa,
-   {hoje}, a data de hoje (aaaa-mm-dd), e {exemplo}, o id da troca do
-   exemplo que o banco monta no treino (geral-treino-banco.js; fora
-   dele, nenhum: o data-alvo-senao vale).
-   data-area="admin": só para quem administra; data-so-computador
-   (no template): fora do celular.
+   {hoje}, a data de hoje (aaaa-mm-dd), e {exemplo}, o id do exemplo
+   que o banco monta no treino (a troca, a folga ou o pedido de
+   correção; geral-treino-banco.js; fora dele, nenhum: o
+   data-alvo-senao vale).
+   data-area="admin": só para quem administra (data-papel="companhia":
+   só para quem administra a companhia, ou mais); data-so-computador
+   (no template): fora do celular. A <section data-segurar> é o caminho
+   cuja entrada já grava: no treino, o clique nela fica com o guia e o
+   roteiro vai ao fim.
    O passo: data-alvo (seletores separados por vírgula; acende todos
    os que estão na tela), data-alvo-senao (quando nenhum está),
    data-um (só o primeiro à vista), data-anel ("campo": o campo com o
@@ -68,7 +72,8 @@
 
   /* a pessoa pode fazer este roteiro aqui? */
   function pode(t) {
-    if (t.getAttribute('data-area') === 'admin' && !(RW.sessao && RW.sessao.temPapel('pelotao'))) return false;
+    var papel = t.getAttribute('data-papel') || (t.getAttribute('data-area') === 'admin' ? 'pelotao' : null);
+    if (papel && !(RW.sessao && RW.sessao.temPapel(papel))) return false;
     return !(t.hasAttribute('data-so-computador') && celular());
   }
 
@@ -125,7 +130,8 @@
     for (var c = 0; c < passo.caminhos.length; c++) {
       var secao = passo.caminhos[c];
       var acertou = seletores(secao.getAttribute('data-entrada')).some(function (s) { return alvo.closest(s); });
-      if (acertou) return { passos: passosDoCaminho(secao, passo), fim: fimDe(secao, false), fimTreino: fimDe(secao, true) };
+      if (acertou) return { passos: passosDoCaminho(secao, passo), fim: fimDe(secao, false), fimTreino: fimDe(secao, true),
+        segurar: secao.hasAttribute('data-segurar') };
     }
     return null;
   }

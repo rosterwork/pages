@@ -1581,7 +1581,7 @@
     <p data-alvo="#trocas-abas [data-aba='minhas']" data-avanca="clique" data-pular-se="#trocas-abas [data-aba='minhas'].aba--ativa">Abra a aba <strong>Minhas</strong>.</p>
     <p data-alvo="#trocas-minhas-lista" data-avanca="proximo">Aqui ficam as trocas em que você entra: as que você pediu e as que pediram a você. O selo diz em que pé está cada uma.</p>
     <p data-alvo="#trocas-abas [data-aba='todas']" data-avanca="proximo">A aba <strong>Todas</strong> mostra as trocas de todas as unidades, guardadas na unidade de quem pediu.</p>
-    <p data-alvo="#trocas-minhas-lista .troca-item[data-troca='{exemplo}']" data-alvo-senao="#trocas-minhas-lista .troca-item" data-um data-avanca="clique">Abra a troca.</p>
+    <p data-alvo="#trocas-minhas-lista .troca-item[data-troca='{exemplo}']" data-alvo-senao="#trocas-minhas-lista .troca-item" data-um data-avanca="clique" data-sem-alvo="Você ainda não está em nenhuma troca. Quando pedir uma, ou alguém pedir a você, ela aparece aqui.">Abra a troca.</p>
     <p data-alvo=".painel-lateral .decisao-pedido > .decisao-caixa:not(:has(.selo))" data-avanca="proximo">Em <strong>Escalas trocadas</strong> está cada dia: quem trabalha no lugar de quem e o horário.</p>
     <p data-alvo=".painel-lateral .decisao-pedido > .decisao-caixa:has(.selo)" data-avanca="proximo">Em <strong>Aceites e aprovação</strong> você vê quem já aceitou e o que falta.</p>
     <p data-alvo="#painel-rodape [data-acao='imprimir-registro']" data-opcional data-avanca="proximo">O botão da impressora, no rodapé, gera o registro técnico da troca em PDF.</p>
@@ -1591,7 +1591,7 @@
   <template data-roteiro="responder-troca" data-titulo="Responder a um pedido de troca" data-grupo="Trocas" data-pagina="trocas" data-cenario="troca-para-mim">
     <p data-trecho="abrir-trocas"></p>
     <p data-alvo="#trocas-abas [data-aba='pendencias']" data-avanca="clique" data-pular-se="#trocas-abas [data-aba='pendencias'].aba--ativa">Abra a aba <strong>Pendências</strong>. O número ao lado diz quantas esperam você.</p>
-    <p data-alvo="#trocas-pendencias [data-pedido='troca:{exemplo}']" data-alvo-senao="#trocas-pendencias .pedido--linha" data-um data-avanca="clique">Abra o pedido do colega.</p>
+    <p data-alvo="#trocas-pendencias [data-pedido='troca:{exemplo}']" data-alvo-senao="#trocas-pendencias .pedido--linha" data-um data-avanca="clique" data-sem-alvo="Nenhum pedido de troca espera a sua resposta agora.">Abra o pedido do colega.</p>
     <p data-alvo=".painel-lateral .decisao-pedido > .decisao-caixa:not(:has(.selo))" data-avanca="proximo">Confira os dias em <strong>Escalas trocadas</strong>.</p>
     <p data-alvo=".painel-lateral .decisao-analise-secao" data-opcional data-avanca="proximo">A <strong>Análise</strong> mostra se a troca cria algum problema na escala.</p>
     <p data-alvo=".painel-lateral .decisao-escala" data-opcional data-avanca="proximo" data-livre>Abra <strong>Como fica a escala</strong> para ver o dia já trocado.</p>
@@ -1610,7 +1610,7 @@
   <template data-roteiro="mudar-pedido" data-titulo="Mudar ou cancelar o seu pedido" data-grupo="Trocas" data-pagina="trocas" data-cenario="troca-meu-pedido">
     <p data-trecho="abrir-trocas"></p>
     <p data-alvo="#trocas-abas [data-aba='minhas']" data-avanca="clique" data-pular-se="#trocas-abas [data-aba='minhas'].aba--ativa">Abra a aba <strong>Minhas</strong>.</p>
-    <p data-alvo="#trocas-minhas-lista .troca-item[data-troca='{exemplo}']" data-alvo-senao="#trocas-minhas-lista .troca-item" data-um data-avanca="clique">Abra o seu pedido.</p>
+    <p data-alvo="#trocas-minhas-lista .troca-item[data-troca='{exemplo}']" data-alvo-senao="#trocas-minhas-lista .troca-item" data-um data-avanca="clique" data-sem-alvo="Você não tem pedido de troca em aberto.">Abra o seu pedido.</p>
     <p data-avanca="escolha">Você pode mudar o pedido ou cancelá-lo. Escolha um.</p>
     <section data-caminho="editar" data-entrada="#painel-rodape [data-acao='editar']">
       <p data-alvo="#tv-calendario, #tv-mes-anterior, #tv-mes-proximo, #tv-resumo" data-avanca="proximo" data-livre>Mude os dias no calendário ou o horário pelo lápis do dia.</p>
@@ -1626,9 +1626,9 @@
   <template data-roteiro="cobrar-saldo" data-titulo="Cobrar as horas de um saldo" data-grupo="Trocas" data-pagina="trocas" data-cenario="troca-saldo">
     <p data-trecho="abrir-trocas"></p>
     <p data-alvo="#trocas-abas [data-aba='saldos']" data-avanca="clique" data-pular-se="#trocas-abas [data-aba='saldos'].aba--ativa">Abra a aba <strong>Saldos</strong>. Aqui ficam as horas que ficaram devendo entre militares, nas trocas sem devolução.</p>
-    <p data-alvo="#trocas-pendentes-lista .troca-pendente" data-um data-avanca="clique">Abra o saldo em que o colega deve a você.</p>
+    <p data-alvo="#trocas-pendentes-lista .troca-pendente" data-um data-avanca="clique" data-sem-alvo="Ninguém deve horas a você agora.">Abra o saldo em que o colega deve a você.</p>
     <p data-alvo=".painel-lateral .troca-extrato" data-avanca="proximo">O extrato mostra as trocas que formaram o saldo.</p>
-    <p data-alvo="#painel-rodape .troca-pendente-cobrar" data-avanca="clique">Use o <strong>Cobrar</strong>.</p>
+    <p data-alvo="#painel-rodape .troca-pendente-cobrar" data-avanca="clique" data-sem-alvo="Só quem tem horas a receber cobra. Abra um saldo em que o colega deve a você.">Use o <strong>Cobrar</strong>.</p>
     <p data-alvo="#tv-calendario, #tv-mes-anterior, #tv-mes-proximo" data-avanca="proximo" data-livre>O pedido abre com o colega já na lista. Marque o dia em que ele vai trabalhar para você.</p>
     <p data-alvo="#painel-rodape [data-acao='solicitar-varias']" data-avanca="some" data-condicao=".painel-lateral--aberto .trocas-varias" data-segurar>Confira e envie pelo <strong>Solicitar troca</strong>.</p>
     <p data-fim>Pronto. O colega recebe o pedido e, aprovada a troca, o saldo diminui.</p>
@@ -1649,7 +1649,7 @@
   <template data-roteiro="aprovar-troca" data-titulo="Aprovar ou recusar uma troca" data-area="admin" data-grupo="Trocas" data-pagina="trocas" data-cenario="troca-para-aprovar">
     <p data-trecho="abrir-trocas"></p>
     <p data-alvo="#trocas-abas [data-aba='pendencias']" data-avanca="clique" data-pular-se="#trocas-abas [data-aba='pendencias'].aba--ativa">Abra a aba <strong>Pendências</strong>. As trocas para aprovar têm a etiqueta <strong>ADM</strong>.</p>
-    <p data-alvo="#trocas-pendencias [data-pedido='troca:{exemplo}']" data-alvo-senao="#trocas-pendencias .pedido--linha" data-um data-avanca="clique">Abra a troca.</p>
+    <p data-alvo="#trocas-pendencias [data-pedido='troca:{exemplo}']" data-alvo-senao="#trocas-pendencias .pedido--linha" data-um data-avanca="clique" data-sem-alvo="Nenhuma troca espera a sua aprovação agora.">Abra a troca.</p>
     <p data-alvo=".painel-lateral .decisao-pedido" data-avanca="proximo">Confira os dias e, em <strong>Aceites e aprovação</strong>, se todos aceitaram. Se ainda falta o aceite de alguém, aparece o <strong>Aprovar com pendências</strong>, que aprova sem esperar.</p>
     <p data-alvo=".painel-lateral .decisao-analise-secao" data-opcional data-avanca="proximo">A <strong>Análise</strong> aponta o que a troca pode quebrar na escala. O <strong>Aprovar</strong> só libera quando ela chega.</p>
     <p data-alvo=".painel-lateral .decisao-escala" data-opcional data-avanca="proximo" data-livre>Abra <strong>Como fica a escala</strong> para ver o dia já trocado.</p>
@@ -1668,12 +1668,100 @@
   <template data-roteiro="cancelar-troca-aprovada" data-titulo="Cancelar uma troca aprovada" data-area="admin" data-grupo="Trocas" data-pagina="trocas" data-cenario="troca-aprovada">
     <p data-trecho="abrir-trocas"></p>
     <p data-alvo="#trocas-abas [data-aba='todas']" data-avanca="clique" data-pular-se="#trocas-abas [data-aba='todas'].aba--ativa">Abra a aba <strong>Todas</strong>. As trocas ficam no bloco da unidade de quem pediu.</p>
-    <p data-alvo="#trocas-arvore .troca-item[data-troca='{exemplo}']" data-alvo-senao="#trocas-arvore .troca-item" data-um data-avanca="clique">Abra a troca.</p>
-    <p data-alvo="#painel-rodape [data-acao='cancelar']" data-avanca="clique">Use o <strong>Cancelar trocas</strong>.</p>
+    <p data-alvo="#trocas-arvore .troca-item[data-troca='{exemplo}']" data-alvo-senao="#trocas-arvore .troca-item" data-um data-avanca="clique" data-sem-alvo="Nenhuma troca aprovada nas unidades da tela.">Abra a troca.</p>
+    <p data-alvo="#painel-rodape [data-acao='cancelar']" data-avanca="clique" data-sem-alvo="Só a troca aprovada tem o Cancelar trocas. Abra uma troca aprovada.">Use o <strong>Cancelar trocas</strong>.</p>
     <p data-alvo=".painel-lateral .decisao-motivo-cancelamento" data-anel="campo" data-avanca="preenchido">Escreva o motivo do cancelamento. Ele é obrigatório.</p>
     <p data-alvo="#painel-rodape [data-acao='confirmar-cancelamento']" data-avanca="clique" data-segurar>Confirme pelo <strong>Confirmar cancelamento</strong>. Os dias voltam a ser como eram antes da troca.</p>
     <p data-fim>Pronto. A troca foi cancelada, e a escala voltou a ser como era.</p>
     <p data-fim-treino>Pronto. No treino, nada foi cancelado. No sistema, a troca seria cancelada e a escala voltaria a ser como era.</p>
+  </template>
+
+  <!-- ===== FOLGAS (folgas.html). Nos treinos com exemplo, o pedido de folga montado pelo banco (folga-<nome>;
+       geral-treino-banco.js: {exemplo} é o id dele); no ?, os dados reais ===== -->
+  <template data-roteiro-trecho="abrir-folgas">
+    <p data-pagina="qualquer" data-alvo=".sidebar .menu-item[data-pagina='folgas'], .barra-celular-item[data-pagina='folgas']" data-avanca="clique" data-pular-se=".conteudo #folgas-abas">Abra as <strong>Folgas</strong> no menu.</p>
+  </template>
+
+  <template data-roteiro="pedir-folga" data-titulo="Pedir uma folga" data-grupo="Folgas" data-pagina="folgas">
+    <p data-trecho="abrir-folgas"></p>
+    <p data-alvo="#btn-solicitar-folga" data-avanca="clique">Use o <strong>Solicitar folga</strong>.</p>
+    <p data-alvo="#ff-data" data-anel="campo" data-avanca="preenchido" data-sem-alvo="Você não tem serviço nos próximos dias para pedir folga.">Escolha o dia. Só aparecem os dias em que você está de serviço.</p>
+    <p data-alvo="#ff-periodo" data-avanca="proximo" data-livre>Escolha o serviço inteiro ou só uma parte, com o início e o fim.</p>
+    <p data-alvo="#ff-motivo" data-anel="campo" data-avanca="preenchido">Escreva o motivo.</p>
+    <p data-alvo="#ff-consumo" data-opcional data-avanca="proximo">A nota mostra quanto a folga consome do seu saldo e como ele fica.</p>
+    <p data-alvo="#painel-rodape [data-acao='confirmar']" data-avanca="clique" data-segurar>Envie pelo <strong>Confirmar</strong>.</p>
+    <p data-fim>Pronto. O pedido vai para o administrador aprovar e aparece em <strong>Meus pedidos</strong>, nas Minhas folgas.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi enviado. No sistema, o pedido iria para o administrador aprovar e apareceria em Meus pedidos, nas Minhas folgas.</p>
+  </template>
+
+  <template data-roteiro="saldo-folgas" data-titulo="Ver o seu saldo de horas" data-grupo="Folgas" data-pagina="folgas">
+    <p data-trecho="abrir-folgas"></p>
+    <p data-alvo="#folgas-minhas .folga-minhas-saldo" data-avanca="proximo">Em <strong>Minhas folgas</strong>, o <strong>Seu saldo</strong> mostra as horas a seu favor (+) ou que você deve (−).</p>
+    <p data-alvo="#folgas-minhas [data-lista='extrato']" data-avanca="proximo">O <strong>Extrato</strong> mostra o que mudou o saldo: as folgas, os ajustes e os serviços a mais.</p>
+    <p data-fim>Pronto. O saldo sobe quando o administrador conta um serviço a mais ou faz um ajuste, e desce quando você tira folga.</p>
+  </template>
+
+  <template data-roteiro="cancelar-pedido-folga" data-titulo="Cancelar um pedido de folga" data-grupo="Folgas" data-pagina="folgas" data-cenario="folga-meu-pedido">
+    <p data-trecho="abrir-folgas"></p>
+    <p data-alvo="#folgas-minhas [data-secao='pedidos']" data-avanca="proximo" data-sem-alvo="Você não tem pedido de folga esperando a aprovação.">Em <strong>Meus pedidos</strong> está o pedido que ainda espera a aprovação.</p>
+    <p data-alvo="#folgas-minhas [data-lista='pedidos'] .folga-cancelar" data-um data-avanca="clique">Use o botão de cancelar do pedido.</p>
+    <p data-alvo="#veu-aviso .modal" data-clique="#veu-aviso .aviso-confirmar" data-avanca="clique" data-segurar>Confirme no aviso.</p>
+    <p data-fim>Pronto. O pedido foi cancelado. Depois de aprovada, só o administrador cancela a folga.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi cancelado. No sistema, o pedido sairia. Depois de aprovada, só o administrador cancela a folga.</p>
+  </template>
+
+  <template data-roteiro="saldos-equipe" data-titulo="Ver os saldos da equipe" data-grupo="Folgas" data-pagina="folgas">
+    <p data-trecho="abrir-folgas"></p>
+    <p data-alvo="#folgas-abas [data-aba='equipe']" data-avanca="clique" data-pular-se="#folgas-abas [data-aba='equipe'].aba--ativa">Abra a aba <strong>Equipe</strong>.</p>
+    <p data-alvo="#arvore-folgas, #busca-folgas" data-avanca="proximo" data-livre>Em <strong>Saldos</strong>, cada unidade mostra o saldo de cada militar. A busca acha um militar.</p>
+    <p data-alvo="#folgas-equipe-modo" data-clique="#folgas-equipe-modo [data-modo='historico']" data-avanca="clique">Em <strong>Histórico</strong>, ficam todas as folgas do período escolhido.</p>
+    <p data-fim>Pronto. Clicar num militar abre o extrato dele.</p>
+  </template>
+
+  <template data-roteiro="aprovar-folga" data-titulo="Aprovar ou recusar uma folga" data-area="admin" data-grupo="Folgas" data-pagina="folgas" data-cenario="folga-para-aprovar">
+    <p data-trecho="abrir-folgas"></p>
+    <p data-alvo="#folgas-abas [data-aba='pendencias']" data-avanca="clique" data-pular-se="#folgas-abas [data-aba='pendencias'].aba--ativa">Abra a aba <strong>Pendências</strong>. Cada pedido tem a etiqueta <strong>ADM</strong>.</p>
+    <p data-alvo="#folgas-pendencias [data-pedido='folga:{exemplo}']" data-alvo-senao="#folgas-pendencias .pedido--linha" data-um data-avanca="clique" data-sem-alvo="Nenhum pedido de folga espera a sua aprovação agora.">Abra o pedido.</p>
+    <p data-alvo=".painel-lateral .decisao-pedido" data-avanca="proximo">A caixa <strong>Folga</strong> mostra o dia, o horário e o motivo.</p>
+    <p data-alvo=".painel-lateral .decisao-analise-secao" data-opcional data-avanca="proximo">A <strong>Análise</strong> mostra o que a folga muda na escala e como fica o saldo.</p>
+    <p data-alvo=".painel-lateral .decisao-escala" data-opcional data-avanca="proximo" data-livre>Abra <strong>Como fica a escala</strong> para ver o dia sem ele.</p>
+    <p data-avanca="escolha">Aprove ou recuse.</p>
+    <section data-caminho="aprovar" data-entrada="#painel-rodape [data-acao='aprovar']">
+      <p data-alvo="#veu-aviso .modal" data-clique="#veu-aviso .aviso-confirmar" data-avanca="clique" data-segurar>Confirme no aviso. A escala muda na hora.</p>
+    </section>
+    <section data-caminho="recusar" data-entrada="#painel-rodape [data-acao='recusar']">
+      <p data-alvo=".painel-lateral .decisao-recusa" data-avanca="proximo" data-livre>Se quiser, escreva o motivo. Ele vai no aviso ao militar.</p>
+      <p data-alvo="#painel-rodape [data-acao='confirmar-recusa']" data-avanca="clique" data-segurar>Confirme pelo <strong>Confirmar recusa</strong>.</p>
+    </section>
+    <p data-fim>Pronto. Aprovada, a folga já vale na escala, e o resumo tem o <strong>Desfazer</strong>. Recusada, o militar recebe o aviso.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi aprovado nem recusado. No sistema, aprovada, a folga já valeria na escala; recusada, o militar receberia o aviso.</p>
+  </template>
+
+  <template data-roteiro="dar-folga" data-titulo="Dar folga a um militar" data-area="admin" data-grupo="Folgas" data-pagina="folgas">
+    <p data-trecho="abrir-folgas"></p>
+    <p data-alvo=".acoes-admin-gatilho" data-so-celular data-avanca="clique">Use o <strong>Dar folga</strong>. No celular, ele fica no menu <strong>Administração</strong>.</p>
+    <p data-alvo="#btn-dar-folga" data-avanca="clique">Use o <strong>Dar folga</strong>. No celular, ele fica no menu <strong>Administração</strong>.</p>
+    <p data-alvo=".painel-corpo .folga-form-quem" data-clique=".painel-corpo .folga-form-militares .folga-form-militar" data-avanca="clique">Em <strong>Quem</strong>, ache o militar e escolha.</p>
+    <p data-alvo="#ff-data, #ff-periodo" data-avanca="preenchido" data-condicao="#ff-data">Escolha o dia e o período.</p>
+    <p data-alvo="#ff-motivo" data-anel="campo" data-avanca="preenchido">Escreva o motivo.</p>
+    <p data-alvo="#painel-rodape [data-acao='confirmar']" data-avanca="clique">Confirme pelo <strong>Confirmar</strong>.</p>
+    <p data-alvo="#veu-aviso .modal" data-clique="#veu-aviso .aviso-confirmar, #veu-aviso .aviso-alternativo" data-avanca="clique" data-segurar>No aviso do banco de horas, <strong>Contabilizar</strong> desconta as horas do saldo; <strong>Não contabilizar</strong> dá a folga sem mexer nele.</p>
+    <p data-fim>Pronto. A folga já vale na escala.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, a folga já valeria na escala.</p>
+  </template>
+
+  <template data-roteiro="ajustar-saldo" data-titulo="Ajustar o saldo de um militar" data-area="admin" data-grupo="Folgas" data-pagina="folgas">
+    <p data-trecho="abrir-folgas"></p>
+    <p data-alvo="#folgas-abas [data-aba='equipe']" data-avanca="clique" data-pular-se="#folgas-abas [data-aba='equipe'].aba--ativa">Abra a aba <strong>Equipe</strong> e clique no militar.</p>
+    <p data-alvo="#arvore-folgas .folga-saldo-item" data-um data-avanca="clique">Abra a aba <strong>Equipe</strong> e clique no militar.</p>
+    <p data-alvo="#folga-painel-subabas [data-sub='acoes']" data-avanca="clique" data-pular-se="#folga-painel-subabas [data-sub='acoes'].aba--ativa">Abra a aba <strong>Ações</strong> do painel e use o <strong>Ajustar saldo</strong>.</p>
+    <p data-alvo=".painel-corpo .folga-acoes-btn[data-acao='ajustar']" data-avanca="clique">Abra a aba <strong>Ações</strong> do painel e use o <strong>Ajustar saldo</strong>.</p>
+    <p data-alvo="#fa-tipo, #fa-horas" data-avanca="preenchido" data-condicao="#fa-horas" data-livre>Escolha <strong>Adicionar</strong> ou <strong>Descontar</strong> e as horas.</p>
+    <p data-alvo="#fa-motivo" data-anel="campo" data-avanca="preenchido">Escreva o motivo.</p>
+    <p data-alvo="#fa-previa" data-opcional data-avanca="proximo">A nota mostra como o saldo fica.</p>
+    <p data-alvo="#painel-rodape [data-acao='confirmar']" data-avanca="clique" data-segurar>Grave pelo <strong>Confirmar</strong>.</p>
+    <p data-fim>Pronto. O saldo mudou, e o ajuste aparece no extrato dele.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, o saldo mudaria, e o ajuste apareceria no extrato dele.</p>
   </template>
 
   <!-- ===== EXTRAJORNADA (nova-extra.html). Nos treinos, o mês de treino montado pelo banco, na etapa do data-cenario
@@ -1846,6 +1934,248 @@
     <p data-alvo=".painel-corpo [data-imprimir-unidade-caixa], .painel-corpo [data-imprimir-modo-caixa]" data-opcional data-avanca="proximo" data-livre>Escolha o pelotão (ou todos) e, com todos, se separa por pelotão ou faz uma lista única.</p>
     <p data-alvo="[data-impressao-gerar]" data-avanca="clique">Gere o PDF.</p>
     <p data-fim>Pronto. O arquivo foi baixado.</p>
+  </template>
+
+  <!-- ===== PENDÊNCIAS (pendencias.html). Nos treinos com exemplo, o pedido montado pelo banco (troca-<nome> ou cnh-falta;
+       geral-treino-banco.js: {exemplo} é o id dele); no ?, os dados reais ===== -->
+  <template data-roteiro-trecho="abrir-pendencias">
+    <p data-pagina="qualquer" data-alvo=".sidebar .menu-item[data-pagina='pendencias'], .barra-celular-item[data-pagina='pendencias']" data-avanca="clique" data-pular-se=".conteudo #pendencias-fazer">Abra as <strong>Pendências</strong> no menu.</p>
+  </template>
+
+  <template data-roteiro="ver-pendencias" data-titulo="Ver o que espera você" data-grupo="Pendências" data-pagina="pendencias" data-cenario="troca-para-mim">
+    <p data-trecho="abrir-pendencias"></p>
+    <p data-alvo="#pendencias-fazer, #pendencias-contagem" data-avanca="proximo">Em <strong>Precisa de você</strong> fica o que espera a sua resposta, pela ordem do prazo. O número no alto diz quantos são.</p>
+    <p data-alvo="#pendencias-fazer .pedido-expansivel-cabeca[data-pedido='troca:{exemplo}']" data-alvo-senao="#pendencias-fazer .pedido-expansivel-cabeca, #pendencias-fazer .pedido--linha" data-um data-avanca="clique" data-sem-alvo="Nada espera você agora.">Abra o cartão.</p>
+    <p data-alvo="#pendencias-fazer .pedido--expansivel:has(.pedido-resumo:not(.oculto))" data-avanca="proximo">O cartão mostra o resumo e os botões da sua resposta, ali mesmo.</p>
+    <p data-alvo="#pendencias-fazer .pedido-resumo:not(.oculto) [data-botao='detalhes']" data-opcional data-avanca="proximo">O <strong>Ver detalhes</strong> abre o pedido inteiro no painel.</p>
+    <p data-alvo="#pendencias-secao-acompanhar" data-opcional data-avanca="proximo">Em <strong>Acompanhando</strong> ficam os seus pedidos que esperam outra pessoa e os resolvidos nos últimos 30 dias.</p>
+    <p data-fim>Pronto. Respondido, o pedido sai do Precisa de você.</p>
+  </template>
+
+  <template data-roteiro="preencher-cnh" data-titulo="Preencher a sua CNH" data-grupo="Pendências" data-pagina="pendencias" data-cenario="cnh-falta">
+    <p data-trecho="abrir-pendencias"></p>
+    <p data-alvo="#pendencias-fazer .pedido--linha:not([data-pedido]):has(use[href$='#icone-editar'])" data-um data-avanca="clique" data-sem-alvo="A sua CNH já está respondida.">Abra o <strong>Preencha a sua CNH</strong>.</p>
+    <p data-alvo="#cnh-painel-selecao" data-anel="campo" data-avanca="aparece" data-condicao="#painel-rodape #cnh-painel-salvar:not(:disabled)" data-livre>Escolha a categoria da sua carteira, ou <strong>Não tenho CNH</strong>.</p>
+    <p data-alvo="#painel-rodape #cnh-painel-salvar" data-avanca="clique" data-segurar>Grave pelo <strong>Salvar</strong>.</p>
+    <p data-fim>Pronto. A categoria vai para a aprovação de um administrador. "Não tenho CNH" só confirma a resposta.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, a categoria iria para a aprovação de um administrador; "Não tenho CNH" só confirmaria a resposta.</p>
+  </template>
+
+  <template data-roteiro="decidir-pendencia" data-titulo="Decidir um pedido ali mesmo" data-area="admin" data-grupo="Pendências" data-pagina="pendencias" data-cenario="troca-para-aprovar">
+    <p data-trecho="abrir-pendencias"></p>
+    <p data-alvo="#pendencias-fazer" data-avanca="proximo">Os pedidos para você decidir têm a etiqueta <strong>ADM</strong>.</p>
+    <p data-alvo="#pendencias-fazer .pedido-expansivel-cabeca[data-pedido='troca:{exemplo}']" data-alvo-senao="#pendencias-fazer .pedido-expansivel-cabeca" data-um data-avanca="clique" data-sem-alvo="Nenhum pedido espera a sua decisão agora.">Abra o cartão.</p>
+    <p data-alvo="#pendencias-fazer .pedido--expansivel:has(.pedido-resumo:not(.oculto))" data-avanca="proximo">O resumo mostra os dias, a análise e quem já aceitou.</p>
+    <p data-alvo="#pendencias-fazer .pedido-resumo:not(.oculto) [data-botao='aprovar']:not(.oculto)" data-avanca="clique">Aprove pelo <strong>Aprovar</strong> do cartão.</p>
+    <p data-alvo="#veu-aviso .modal" data-clique="#veu-aviso .aviso-confirmar" data-avanca="clique" data-segurar>Confirme no aviso.</p>
+    <p data-fim>Pronto. A troca está aprovada, e o resumo tem o <strong>Desfazer</strong>. Para ver tudo antes, use o Ver detalhes.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi aprovado. No sistema, a troca estaria aprovada, com o Desfazer no resumo. Para ver tudo antes, use o Ver detalhes.</p>
+  </template>
+
+  <template data-roteiro="conserto-pendencias" data-titulo="Ver o que precisa de conserto" data-area="admin" data-grupo="Pendências" data-pagina="pendencias">
+    <p data-trecho="abrir-pendencias"></p>
+    <p data-alvo="#pendencias-secao-corrigir" data-avanca="proximo">Em <strong>Para corrigir</strong> ficam os militares operacionais fora da escala, os retornos de afastamento sem entrada no ciclo e a Distribuição com erro.</p>
+    <p data-alvo="#pendencias-secao-corrigir" data-avanca="proximo">Quem está fora da escala volta pelo <strong>Ciclo</strong> do painel do dia, na Escala. O treino <strong>Pôr um militar no ciclo</strong> mostra como.</p>
+    <p data-fim>Pronto. Cada item some sozinho quando é consertado.</p>
+  </template>
+
+  <!-- ===== USUÁRIOS (usuarios.html). Na correção de dados, o pedido montado pelo banco (dados-correcao); no ?, os dados
+       reais. No celular, os Usuários moram no Mais ===== -->
+  <template data-roteiro-trecho="abrir-usuarios">
+    <p data-pagina="qualquer" data-alvo=".barra-celular-mais" data-so-celular data-avanca="clique" data-pular-se=".conteudo #usuarios-abas, .barra-celular-mais[aria-expanded='true']">Abra o <strong>Mais</strong>.</p>
+    <p data-pagina="qualquer" data-alvo=".sidebar .menu-item[data-pagina='usuarios']" data-avanca="clique" data-pular-se=".conteudo #usuarios-abas">Abra os <strong>Usuários</strong> no menu.</p>
+  </template>
+
+  <template data-roteiro="achar-usuario" data-titulo="Achar um militar" data-grupo="Usuários" data-pagina="usuarios">
+    <p data-trecho="abrir-usuarios"></p>
+    <p data-alvo="#arvore-usuarios" data-avanca="proximo">Na aba <strong>Efetivo</strong>, cada unidade mostra os seus militares, com a situação de cada um.</p>
+    <p data-alvo="#busca-usuarios" data-avanca="proximo" data-livre>A busca marca ou filtra quem você procura.</p>
+    <p data-alvo="#usuarios-filtros" data-avanca="proximo" data-livre>Em <strong>Filtros</strong>, escolha os postos e a situação.</p>
+    <p data-alvo="#dropdown-ordem, #dropdown-exibir" data-opcional data-avanca="proximo" data-livre><strong>Ordem</strong> e <strong>Exibir</strong> mudam a ordem da lista e o que cada linha mostra.</p>
+    <p data-fim>Pronto. Clicar num militar abre a ficha dele.</p>
+  </template>
+
+  <template data-roteiro="ver-ficha" data-titulo="Ver a ficha de um militar" data-grupo="Usuários" data-pagina="usuarios">
+    <p data-trecho="abrir-usuarios"></p>
+    <p data-alvo="#arvore-usuarios .usuario-item" data-um data-avanca="clique">Clique num militar.</p>
+    <p data-alvo=".painel-lateral .abas:has([data-secao='dados'])" data-avanca="proximo" data-livre>A ficha tem as abas <strong>Dados</strong>, <strong>Carreira</strong>, <strong>Férias</strong>, <strong>Licenças</strong> e <strong>Dispensas</strong>.</p>
+    <p data-alvo=".painel-lateral [data-secao='carreira']" data-avanca="proximo" data-livre>Em <strong>Carreira</strong> ficam as promoções e as transferências.</p>
+    <p data-alvo=".painel-corpo .alteracoes" data-opcional data-avanca="proximo">No fim de cada aba, <strong>Alterações na ficha</strong> mostra o que mudou e quem mudou.</p>
+    <p data-fim>Pronto.</p>
+  </template>
+
+  <template data-roteiro="afastamentos-ano" data-titulo="Ver as férias e os afastamentos do ano" data-grupo="Usuários" data-pagina="usuarios">
+    <p data-trecho="abrir-usuarios"></p>
+    <p data-alvo="#usuarios-abas [data-aba='ferias']" data-avanca="clique" data-pular-se="#usuarios-abas [data-aba='ferias'].aba--ativa">Abra a aba <strong>Férias</strong>.</p>
+    <p data-alvo=".pagina-subcabecalho .geral-periodo" data-avanca="proximo" data-livre>O ano fica na barra, e as setas mudam o ano.</p>
+    <p data-alvo="#arvore-usuarios" data-avanca="proximo">Cada militar mostra os períodos do ano, uma linha por afastamento.</p>
+    <p data-fim>Pronto. Licenças e Dispensas funcionam do mesmo jeito.</p>
+  </template>
+
+  <template data-roteiro="cadastrar-militar" data-titulo="Cadastrar um militar" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
+    <p data-trecho="abrir-usuarios"></p>
+    <p data-alvo=".acoes-admin-gatilho" data-so-celular data-avanca="clique">Use o <strong>Novo usuário</strong>. No celular, ele fica no menu <strong>Administração</strong>.</p>
+    <p data-alvo="#btn-novo-usuario" data-avanca="clique">Use o <strong>Novo usuário</strong>. No celular, ele fica no menu <strong>Administração</strong>.</p>
+    <p data-alvo=".painel-corpo" data-avanca="proximo" data-livre>Preencha os dados pessoais e os institucionais. E-mail, celular e colocação são opcionais.</p>
+    <p data-alvo="#painel-rodape #nu-salvar" data-avanca="clique" data-segurar>Grave pelo <strong>Salvar</strong>.</p>
+    <p data-fim>Pronto. Para o militar entrar no sistema, gere o link de cadastro na ficha dele.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, para o militar entrar, você geraria o link de cadastro na ficha dele.</p>
+  </template>
+
+  <template data-roteiro="link-acesso" data-titulo="Mandar o link de acesso" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
+    <p data-trecho="abrir-usuarios"></p>
+    <p data-alvo="#arvore-usuarios .usuario-item" data-um data-avanca="clique">Clique no militar.</p>
+    <p data-alvo=".painel-corpo .ficha-acoes-fim .botao--primario" data-um data-avanca="clique" data-segurar>Use o <strong>Gerar link de cadastro</strong> (quem ainda não tem conta) ou o <strong>Gerar link de nova senha</strong>.</p>
+    <p data-fim>Pronto. A mensagem com o link aparece na ficha; mande pelo Copiar mensagem. O link vale por 24 horas.</p>
+    <p data-fim-treino>Pronto. No treino, nenhum link foi gerado. No sistema, a mensagem com o link apareceria na ficha, para mandar pelo Copiar mensagem. O link vale por 24 horas.</p>
+  </template>
+
+  <template data-roteiro="corrigir-ficha" data-titulo="Corrigir os dados de um militar" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
+    <p data-trecho="abrir-usuarios"></p>
+    <p data-alvo="#arvore-usuarios .usuario-item" data-um data-avanca="clique">Clique no militar.</p>
+    <p data-alvo=".painel-corpo [data-ficha-lapis][aria-label='Corrigir dados pessoais'], .painel-corpo [data-ficha-lapis][aria-label='Corrigir dados institucionais']" data-avanca="clique">Use o lápis de <strong>Dados pessoais</strong> ou de <strong>Dados institucionais</strong>.</p>
+    <p data-alvo=".painel-corpo .subtela" data-avanca="proximo" data-livre>Mude o que precisa.</p>
+    <p data-alvo="#painel-rodape [data-sub-aplicar]" data-avanca="clique" data-segurar>Grave pelo <strong>Salvar</strong>.</p>
+    <p data-fim>Pronto. A mudança aparece em Alterações na ficha.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, a mudança apareceria em Alterações na ficha.</p>
+  </template>
+
+  <template data-roteiro="lancar-afastamento" data-titulo="Lançar férias, licença ou dispensa" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
+    <p data-trecho="abrir-usuarios"></p>
+    <p data-alvo="#arvore-usuarios .usuario-item" data-um data-avanca="clique">Clique no militar.</p>
+    <p data-avanca="escolha">Abra a aba <strong>Férias</strong>, <strong>Licenças</strong> ou <strong>Dispensas</strong> da ficha.</p>
+    <section data-caminho="ferias" data-entrada=".painel-lateral [data-secao='ferias']"></section>
+    <section data-caminho="licencas" data-entrada=".painel-lateral [data-secao='licencas']"></section>
+    <section data-caminho="dispensas" data-entrada=".painel-lateral [data-secao='dispensas']"></section>
+    <p data-alvo=".painel-corpo [data-ficha-lapis]:not(.oculto)" data-um data-avanca="clique">Use o lápis da caixa do tipo.</p>
+    <p data-alvo=".painel-corpo [data-periodos], .painel-corpo [data-periodo-adicionar]" data-avanca="proximo" data-livre>Use o <strong>Adicionar período</strong> e escolha as datas.</p>
+    <p data-alvo="#painel-rodape [data-sub-aplicar]" data-avanca="clique" data-segurar>Grave pelo <strong>Salvar</strong>.</p>
+    <p data-fim>Pronto. O afastamento vale na escala.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, o afastamento valeria na escala.</p>
+  </template>
+
+  <template data-roteiro="carreira-militar" data-titulo="Promover, transferir ou dar baixa" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
+    <p data-trecho="abrir-usuarios"></p>
+    <p data-alvo="#arvore-usuarios .usuario-item" data-um data-avanca="clique">Clique no militar.</p>
+    <p data-alvo=".painel-lateral [data-secao='carreira']" data-avanca="clique" data-pular-se=".painel-lateral [data-secao='carreira'].aba--ativa">Abra a aba <strong>Carreira</strong>.</p>
+    <p data-avanca="escolha">Escolha o que fazer.</p>
+    <section data-caminho="promover" data-entrada=".painel-lateral [data-ficha-acao='promover']">
+      <p data-alvo=".painel-corpo .subtela" data-avanca="proximo" data-livre>Escolha o tipo, o posto e a data da promoção.</p>
+      <p data-alvo="#painel-rodape [data-sub-aplicar]" data-avanca="clique" data-segurar>Grave pelo <strong>Promover</strong>.</p>
+    </section>
+    <section data-caminho="transferir" data-entrada=".painel-lateral [data-ficha-acao='transferir']">
+      <p data-alvo=".painel-corpo .subtela" data-avanca="proximo" data-livre>Escolha a unidade e a data.</p>
+      <p data-alvo="#painel-rodape [data-sub-aplicar]" data-avanca="clique" data-segurar>Grave pelo <strong>Transferir</strong>.</p>
+    </section>
+    <section data-caminho="baixa" data-entrada=".painel-corpo .ficha-botao--perigo">
+      <p data-alvo=".painel-corpo .subtela" data-avanca="proximo" data-livre>Escolha a data.</p>
+      <p data-alvo="#painel-rodape [data-sub-aplicar]" data-avanca="clique" data-segurar>Grave pelo <strong>Dar baixa</strong>.</p>
+    </section>
+    <p data-fim>Pronto. A ficha e a escala seguem a mudança a partir da data.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, a ficha e a escala seguiriam a mudança a partir da data.</p>
+  </template>
+
+  <template data-roteiro="mudar-antiguidade" data-titulo="Mudar a antiguidade" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
+    <p data-trecho="abrir-usuarios"></p>
+    <p data-alvo="#usuarios-abas [data-aba='antiguidade']" data-avanca="clique" data-pular-se="#usuarios-abas [data-aba='antiguidade'].aba--ativa">Abra a aba <strong>Antiguidade</strong>.</p>
+    <p data-alvo="#antiguidade-lista" data-avanca="aparece" data-condicao="#antiguidade-salvar" data-livre>Clique no militar e mude o lugar dele pelas setas.</p>
+    <p data-alvo="#antiguidade-salvar" data-avanca="clique">Grave pelo <strong>Salvar</strong>.</p>
+    <p data-alvo="#veu-data .modal" data-clique="#veu-data .data-modal-confirmar" data-avanca="clique" data-segurar>Confira a data no aviso e confirme. A antiguidade decide o Chefe na escala.</p>
+    <p data-fim>Pronto. A nova ordem vale a partir da data.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, a nova ordem valeria a partir da data.</p>
+  </template>
+
+  <template data-roteiro="aprovar-correcao" data-titulo="Aprovar uma correção de dados" data-area="admin" data-grupo="Usuários" data-pagina="usuarios" data-cenario="dados-correcao">
+    <p data-trecho="abrir-usuarios"></p>
+    <p data-alvo="#usuarios-abas [data-aba='pendencias']" data-avanca="clique" data-pular-se="#usuarios-abas [data-aba='pendencias'].aba--ativa">Abra a aba <strong>Pendências</strong>.</p>
+    <p data-alvo="#usuarios-pendencias [data-pedido='dados:{exemplo}']" data-alvo-senao="#usuarios-pendencias .pedido--linha" data-um data-avanca="clique" data-sem-alvo="Nenhuma correção de dados espera a sua aprovação agora.">Abra o pedido.</p>
+    <p data-alvo=".painel-lateral .decisao-pedido" data-avanca="proximo" data-livre>Marque as alterações que você aprova.</p>
+    <p data-avanca="escolha">Aprove ou recuse.</p>
+    <section data-caminho="aprovar" data-entrada="#painel-rodape [data-acao='aprovar']" data-segurar></section>
+    <section data-caminho="recusar" data-entrada="#painel-rodape [data-acao='recusar']">
+      <p data-alvo=".painel-lateral .decisao-recusa" data-avanca="proximo" data-livre>Se quiser, escreva o motivo.</p>
+      <p data-alvo="#painel-rodape [data-acao='confirmar-recusa']" data-avanca="clique" data-segurar>Confirme pelo <strong>Confirmar recusa</strong>.</p>
+    </section>
+    <p data-fim>Pronto. As alterações aprovadas já valem na ficha. O militar recebe o aviso.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, as alterações aprovadas já valeriam na ficha, e o militar receberia o aviso.</p>
+  </template>
+
+  <!-- ===== HISTÓRICO (historico.html). Só no computador; os dados reais ===== -->
+  <template data-roteiro-trecho="abrir-historico">
+    <p data-pagina="qualquer" data-alvo=".sidebar .menu-item[data-pagina='historico']" data-avanca="clique" data-pular-se=".conteudo #arvore-historico">Abra o <strong>Histórico</strong> no menu.</p>
+  </template>
+
+  <template data-roteiro="procurar-alteracao" data-titulo="Procurar uma alteração" data-area="admin" data-grupo="Histórico" data-pagina="historico" data-so-computador>
+    <p data-trecho="abrir-historico"></p>
+    <p data-alvo="#historico-periodo" data-avanca="proximo" data-livre>Escolha o período.</p>
+    <p data-alvo="#historico-filtros" data-avanca="proximo" data-livre>Em <strong>Filtros</strong>, escolha o tipo e quem fez.</p>
+    <p data-alvo="#arvore-historico .historico-evento-cabecalho" data-um data-avanca="clique">Clique num cartão para ver o que mudou, de antes para depois.</p>
+    <p data-fim>Pronto.</p>
+  </template>
+
+  <!-- ===== AJUSTES (ajustes.html). Só no computador; os dados reais (o Salvar e o Confirmar ficam com o guia) ===== -->
+  <template data-roteiro-trecho="abrir-ajustes">
+    <p data-pagina="qualquer" data-alvo=".sidebar .menu-item[data-pagina='ajustes']" data-avanca="clique" data-pular-se=".conteudo #ajustes-abas">Abra os <strong>Ajustes</strong> no menu.</p>
+  </template>
+
+  <template data-roteiro="conferir-distribuicao" data-titulo="Conferir a distribuição de uma unidade" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
+    <p data-trecho="abrir-ajustes"></p>
+    <p data-alvo="#nova-distribuicao-unidades" data-avanca="proximo" data-livre>Escolha a unidade na barra.</p>
+    <p data-alvo="#nova-distribuicao-blocos" data-avanca="proximo">À esquerda ficam os blocos. O sinal ao lado de cada um diz se ele está pronto ou se falta algo.</p>
+    <p data-alvo=".nova-distribuicao-bloco[data-bloco='8']" data-avanca="aparece" data-condicao="#nova-distribuicao-corpo .nova-distribuicao-conferir-modo" data-livre>Abra o <strong>Conferir</strong>. A <strong>Tabela</strong> mostra a ordem das funções; o <strong>Simular a equipe</strong> mostra como fica com cada número de militares.</p>
+    <p data-fim>Pronto.</p>
+  </template>
+
+  <template data-roteiro="mudar-ritmo" data-titulo="Mudar o ritmo da escala" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
+    <p data-trecho="abrir-ajustes"></p>
+    <p data-alvo="#nova-distribuicao-unidades" data-avanca="proximo" data-livre>Escolha a unidade na barra.</p>
+    <p data-alvo="#nova-distribuicao-corpo .nova-distribuicao-cartao" data-um data-avanca="aparece" data-condicao="#nova-distribuicao-salvar" data-livre>No <strong>Ritmo</strong>, abra o cartão e escolha <strong>24/48</strong>, <strong>24/72</strong> ou <strong>12/36</strong>.</p>
+    <p data-alvo="#nova-distribuicao-salvar" data-avanca="clique">Grave pelo <strong>Salvar</strong> do rodapé.</p>
+    <p data-alvo="#veu-data .modal" data-clique="#veu-data .data-modal-confirmar" data-avanca="clique" data-segurar>Confira a data no aviso e confirme. A escala da unidade é refeita a partir dela.</p>
+    <p data-fim>Pronto. O ritmo novo vale a partir da data.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, o ritmo novo valeria a partir da data.</p>
+  </template>
+
+  <template data-roteiro="adicionar-posto" data-titulo="Adicionar um posto" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
+    <p data-trecho="abrir-ajustes"></p>
+    <p data-alvo="#nova-distribuicao-unidades" data-avanca="proximo" data-livre>Escolha a unidade na barra.</p>
+    <p data-alvo=".nova-distribuicao-bloco[data-bloco='0']" data-avanca="clique" data-pular-se=".nova-distribuicao-bloco[data-bloco='0'].lista-item--ativo">Abra o bloco <strong>Postos</strong>.</p>
+    <p data-alvo="#nova-distribuicao-corpo" data-avanca="aparece" data-condicao="#nova-distribuicao-salvar" data-livre>Em <strong>Instalações</strong>, use o <strong>Nova instalação</strong> e escolha o tipo. Em <strong>Viaturas</strong>, use o <strong>Nova viatura</strong> e preencha o prefixo e a CNH.</p>
+    <p data-alvo="#nova-distribuicao-salvar" data-avanca="clique">Grave pelo <strong>Salvar</strong> do rodapé.</p>
+    <p data-alvo="#veu-data .modal" data-clique="#veu-data .data-modal-confirmar" data-avanca="clique" data-segurar>Confira a data no aviso e confirme.</p>
+    <p data-fim>Pronto. O posto entra na escala a partir da data.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, o posto entraria na escala a partir da data.</p>
+  </template>
+
+  <template data-roteiro="mudar-efetivo" data-titulo="Mudar o efetivo de um posto" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
+    <p data-trecho="abrir-ajustes"></p>
+    <p data-alvo="#nova-distribuicao-unidades" data-avanca="proximo" data-livre>Escolha a unidade na barra.</p>
+    <p data-alvo=".nova-distribuicao-bloco[data-bloco='1']" data-avanca="clique" data-pular-se=".nova-distribuicao-bloco[data-bloco='1'].lista-item--ativo">Abra o bloco <strong>Efetivo</strong> e o cartão do posto.</p>
+    <p data-alvo="#nova-distribuicao-corpo" data-avanca="aparece" data-condicao="#nova-distribuicao-salvar" data-livre>Mude o <strong>mínimo</strong>, o <strong>ideal</strong> e o <strong>máximo</strong>.</p>
+    <p data-alvo="#nova-distribuicao-salvar" data-avanca="clique">Grave pelo <strong>Salvar</strong> do rodapé.</p>
+    <p data-alvo="#veu-data .modal" data-clique="#veu-data .data-modal-confirmar" data-avanca="clique" data-segurar>Confira a data no aviso e confirme.</p>
+    <p data-fim>Pronto. O efetivo novo vale a partir da data.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, o efetivo novo valeria a partir da data.</p>
+  </template>
+
+  <template data-roteiro="horario-expediente" data-titulo="Mudar o horário de expediente" data-area="admin" data-papel="companhia" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
+    <p data-trecho="abrir-ajustes"></p>
+    <p data-alvo="#ajustes-abas [data-aba='horario']" data-avanca="clique" data-pular-se="#ajustes-abas [data-aba='horario'].aba--ativa">Abra a aba <strong>Horário de expediente</strong>.</p>
+    <p data-alvo="#horario-semana" data-avanca="aparece" data-condicao="#horario-salvar" data-livre>Em cada dia, escolha <strong>Trabalha</strong> ou <strong>Folga</strong>, e o horário.</p>
+    <p data-alvo="#horario-salvar" data-avanca="clique" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé.</p>
+    <p data-fim>Pronto. O horário vale na hora, para os administrativos da companhia e dos pelotões.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, o horário valeria na hora, para os administrativos da companhia e dos pelotões.</p>
+  </template>
+
+  <template data-roteiro="marcar-feriado" data-titulo="Marcar um feriado" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
+    <p data-trecho="abrir-ajustes"></p>
+    <p data-alvo="#ajustes-abas [data-aba='feriados']" data-avanca="clique" data-pular-se="#ajustes-abas [data-aba='feriados'].aba--ativa">Abra a aba <strong>Feriados</strong>.</p>
+    <p data-alvo="#feriados-barra" data-avanca="proximo" data-livre>Escolha o mês e a unidade na barra.</p>
+    <p data-alvo="#feriados-calendario" data-clique="#feriados-calendario .ajustes-exp-dia" data-avanca="clique">Clique no dia.</p>
+    <p data-alvo=".painel-corpo .subtela" data-avanca="aparece" data-condicao="#feriados-salvar" data-livre>Responda: <strong>Vale para</strong>, <strong>O que é</strong>, <strong>Nome</strong> e <strong>Quanto do dia</strong>.</p>
+    <p data-alvo="#feriados-salvar" data-avanca="clique" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé.</p>
+    <p data-fim>Pronto. O dia fica marcado e encurta o expediente.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, o dia ficaria marcado e encurtaria o expediente.</p>
   </template>
 
   <!-- MOLDES: calendário (componente compartilhado) -->
