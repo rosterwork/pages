@@ -735,6 +735,8 @@
       if (aberta) t.classList.add('escala-edicao-vazio-leitura--aberta');
       pessoa.appendChild(t);
     }
+    /* a marca do horário sem ninguém (o passo a passo acha a linha por ela) */
+    if (!aberta) linha.classList.add('escala-edicao-linha--vaga');
     var h = p.hora(per);
     if (h) linha.querySelector('.escala-distribuicao-horas').appendChild(h);
     var cfg = { tipo: 'vaga', posto: posto, funcao: nomeFuncao, militar: null, periodos: [{ hi: per.hi, hf: per.hf }] };

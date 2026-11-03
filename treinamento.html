@@ -19,8 +19,9 @@
   </div>
 
   <!-- a lista dos treinos (os roteiros do passo a passo, geral-guia-roteiros.js), na coluna de leitura: para todos e,
-       depois do traço, os do administrador; cada um com o grupo (a seção), onde fica ou quantos caminhos tem e o
-       Visto. Clicar começa o treino no modo treino (geral-treino.js) -->
+       depois do traço, os do administrador; um bloco por tela (o desenho dos blocos dos Ajustes, componente geral-bloco),
+       com os treinos dela dentro. Campo sem chevron começa o treino no modo treino (geral-treino.js); com chevron, abre
+       ali mesmo com as opções -->
   <div class="pagina-corpo">
     <div class="pedido-secoes coluna-leitura">
       <div class="nota">
@@ -40,60 +41,44 @@
   </div>
 </div>
 
-<!-- uma seção da lista (Escala, Trocas): o rótulo e os treinos dela -->
-<template id="tpl-treino-secao">
-  <div class="pedido-secao">
-    <span class="rotulo-secao"></span>
-    <div class="pedido-lista"></div>
-  </div>
+<!-- um bloco por tela (Escala, Trocas): o nome da tela no alto e os treinos dela dentro -->
+<template id="tpl-treino-bloco">
+  <section class="bloco treino-bloco">
+    <p class="bloco-titulo"><span class="rotulo-secao bloco-nome"></span></p>
+    <div class="bloco-corpo"></div>
+  </section>
 </template>
 
-<!-- um treino: o ícone, o nome, onde fica (ou quantos caminhos), o Visto e a seta -->
+<!-- um treino: o campo sem chevron começa o treino; o Visto à direita -->
 <template id="tpl-treino-item">
-  <button type="button" class="pedido pedido--linha treino-item">
-    <svg class="icone pedido-linha-icone" width="18" height="18" aria-hidden="true"><use href=""/></svg>
-    <span class="pedido-textos">
-      <span class="pedido-quem treino-item-titulo"></span>
-      <span class="pedido-meta treino-item-meta"></span>
-    </span>
-    <span class="espacador-flex"></span>
-    <span class="selo selo--sucesso pedido-linha-selo treino-item-visto oculto">Visto</span>
-    <svg class="icone pedido-linha-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
-  </button>
-</template>
-
-<!-- um conjunto de treinos (ex.: Ajustar o dia e salvar): a linha abre e fecha ali mesmo, como o pedido da Pendências, com
-     as opções dentro (o rótulo e as linhas); o Visto da linha só vem com todas as opções concluídas -->
-<template id="tpl-treino-conjunto">
-  <div class="pedido pedido--expansivel treino-conjunto">
-    <button type="button" class="pedido--linha pedido-expansivel-cabeca" aria-expanded="false">
-      <svg class="icone pedido-linha-icone" width="18" height="18" aria-hidden="true"><use href=""/></svg>
-      <span class="pedido-textos">
-        <span class="pedido-quem treino-conjunto-titulo"></span>
-        <span class="pedido-meta treino-conjunto-meta"></span>
-      </span>
+  <div class="bloco-campo treino-item">
+    <button type="button" class="bloco-campo-cabecalho">
+      <span class="bloco-campo-titulo treino-item-titulo"></span>
       <span class="espacador-flex"></span>
-      <span class="selo selo--sucesso pedido-linha-selo treino-conjunto-visto oculto">Visto</span>
-      <svg class="icone pedido-linha-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+      <span class="selo selo--sucesso treino-item-visto oculto">Visto</span>
     </button>
-    <div class="pedido-resumo oculto">
-      <span class="pedido-resumo-recuo-icone"></span>
-      <div class="pedido-resumo-corpo">
-        <div class="pedido-resumo-conteudo">
-          <span class="rotulo-secao treino-conjunto-rotulo"></span>
-          <div class="pedido-resumo-lista treino-conjunto-lista"></div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
-<!-- uma opção do conjunto: o nome, o Visto e a seta; clicar começa o treino dela -->
+<!-- um conjunto de treinos (ex.: Ajustar o dia e salvar): o campo com chevron abre e fecha ali mesmo, com as opções
+     dentro; o Visto só vem com todas as opções concluídas -->
+<template id="tpl-treino-conjunto">
+  <div class="bloco-campo treino-conjunto">
+    <button type="button" class="bloco-campo-cabecalho" aria-expanded="false">
+      <span class="bloco-campo-titulo treino-conjunto-titulo"></span>
+      <span class="espacador-flex"></span>
+      <span class="selo selo--sucesso treino-conjunto-visto oculto">Visto</span>
+      <svg class="icone bloco-campo-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+    </button>
+    <div class="bloco-campo-opcoes treino-conjunto-lista oculto"></div>
+  </div>
+</template>
+
+<!-- uma opção do conjunto: o nome e o Visto; clicar começa o treino dela -->
 <template id="tpl-treino-opcao">
   <button type="button" class="dropdown-item treino-opcao">
     <span class="treino-opcao-titulo"></span>
     <span class="espacador-flex"></span>
     <span class="selo selo--sucesso treino-opcao-visto oculto">Visto</span>
-    <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
   </button>
 </template>

@@ -135,12 +135,12 @@
         <div class="nova-distribuicao-carregando" id="horario-carregando"><span class="giratorio" aria-hidden="true"></span></div>
         <div class="nova-distribuicao-conteudo oculto" id="horario-conteudo">
           <p class="nova-distribuicao-ajuda">Vale para os administrativos da companhia e de todos os pelotões.</p>
-          <section class="nova-distribuicao-unidade">
-            <p class="nova-distribuicao-unidade-titulo">
-              <span class="rotulo-secao nova-distribuicao-unidade-nome" id="horario-companhia"></span>
+          <section class="nova-distribuicao-unidade bloco">
+            <p class="nova-distribuicao-unidade-titulo bloco-titulo">
+              <span class="rotulo-secao nova-distribuicao-unidade-nome bloco-nome" id="horario-companhia"></span>
             </p>
-            <div class="nova-distribuicao-unidade-corpo">
-              <div class="nova-distribuicao-cartao ajustes-horario" id="horario-semana">
+            <div class="nova-distribuicao-unidade-corpo bloco-corpo">
+              <div class="nova-distribuicao-cartao bloco-campo ajustes-horario" id="horario-semana">
                 <div class="ajustes-horario-linha" data-dia="0">
                   <span class="ajustes-horario-dia">Domingo</span>
                   <div class="abas abas--seletor ajustes-horario-tipo" aria-label="Domingo">
@@ -230,12 +230,12 @@
       <div class="geral-corpo-lateral-rolagem">
         <div class="nova-distribuicao-conteudo">
           <p class="nova-distribuicao-ajuda">Clique no dia para marcar um feriado, um recesso ou outra folga. Vale para os administrativos lotados na unidade.</p>
-          <section class="nova-distribuicao-unidade">
-            <p class="nova-distribuicao-unidade-titulo">
-              <span class="rotulo-secao nova-distribuicao-unidade-nome" id="feriados-unidade"></span>
-              <span class="nova-distribuicao-unidade-alcance" id="feriados-cidade"></span>
+          <section class="nova-distribuicao-unidade bloco">
+            <p class="nova-distribuicao-unidade-titulo bloco-titulo">
+              <span class="rotulo-secao nova-distribuicao-unidade-nome bloco-nome" id="feriados-unidade"></span>
+              <span class="nova-distribuicao-unidade-alcance bloco-alcance" id="feriados-cidade"></span>
             </p>
-            <div class="nova-distribuicao-unidade-corpo" id="feriados-calendario"></div>
+            <div class="nova-distribuicao-unidade-corpo bloco-corpo" id="feriados-calendario"></div>
           </section>
         </div>
       </div>
@@ -362,7 +362,7 @@
 
 <!-- a companhia ainda sem respostas (na tela do pelotão) -->
 <template id="tpl-nova-distribuicao-companhia-sem-respostas">
-  <div class="nova-distribuicao-cartao">
+  <div class="nova-distribuicao-cartao bloco-campo">
     <p class="nova-distribuicao-ajuda">A companhia ainda não tem respostas. As perguntas dela aparecem aqui depois.</p>
     <button type="button" class="botao nova-distribuicao-copiar">Começar a companhia</button>
   </div>
@@ -444,12 +444,12 @@
 
 <!-- bloco cinza da unidade, com o título dentro; as perguntas vão em cartões brancos -->
 <template id="tpl-nova-distribuicao-unidade-bloco">
-  <section class="nova-distribuicao-unidade">
-    <p class="nova-distribuicao-unidade-titulo">
-      <span class="rotulo-secao nova-distribuicao-unidade-nome"></span>
-      <span class="nova-distribuicao-unidade-alcance"></span>
+  <section class="nova-distribuicao-unidade bloco">
+    <p class="nova-distribuicao-unidade-titulo bloco-titulo">
+      <span class="rotulo-secao nova-distribuicao-unidade-nome bloco-nome"></span>
+      <span class="nova-distribuicao-unidade-alcance bloco-alcance"></span>
     </p>
-    <div class="nova-distribuicao-unidade-corpo"></div>
+    <div class="nova-distribuicao-unidade-corpo bloco-corpo"></div>
   </section>
 </template>
 
@@ -487,15 +487,15 @@
 
 <!-- cartão que abre ao clicar: o título e a resposta embaixo (uma por linha) -->
 <template id="tpl-nova-distribuicao-cartao">
-  <div class="nova-distribuicao-cartao">
-    <button type="button" class="nova-distribuicao-cartao-cabecalho" aria-expanded="false">
-      <span class="nova-distribuicao-cartao-titulo"></span>
+  <div class="nova-distribuicao-cartao bloco-campo">
+    <button type="button" class="nova-distribuicao-cartao-cabecalho bloco-campo-cabecalho" aria-expanded="false">
+      <span class="nova-distribuicao-cartao-titulo bloco-campo-titulo"></span>
       <span class="selo nova-distribuicao-cartao-reserva oculto">Reserva</span>
       <span class="nova-distribuicao-cartao-numeros"></span>
-      <svg class="icone nova-distribuicao-cartao-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+      <svg class="icone nova-distribuicao-cartao-seta bloco-campo-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
     </button>
-    <div class="nova-distribuicao-cartao-resposta"></div>
-    <div class="nova-distribuicao-cartao-opcoes oculto"></div>
+    <div class="nova-distribuicao-cartao-resposta bloco-campo-resposta"></div>
+    <div class="nova-distribuicao-cartao-opcoes bloco-campo-opcoes oculto"></div>
   </div>
 </template>
 
@@ -510,19 +510,19 @@
 
 <!-- cartão sempre aberto -->
 <template id="tpl-nova-distribuicao-cartao-fixo">
-  <div class="nova-distribuicao-cartao">
-    <p class="nova-distribuicao-cartao-titulo"></p>
+  <div class="nova-distribuicao-cartao bloco-campo">
+    <p class="nova-distribuicao-cartao-titulo bloco-campo-titulo"></p>
     <div class="nova-distribuicao-cartao-conteudo"></div>
   </div>
 </template>
 
 <!-- uma linha da resposta do cartão fechado -->
 <template id="tpl-nova-distribuicao-resposta-linha">
-  <p class="nova-distribuicao-resposta-linha"></p>
+  <p class="nova-distribuicao-resposta-linha bloco-campo-linha"></p>
 </template>
 <!-- a linha com o número em negrito na frente (o Nº do posto, igual ao da tabela) -->
 <template id="tpl-nova-distribuicao-resposta-numerada">
-  <p class="nova-distribuicao-resposta-linha"><span class="nova-distribuicao-linha-ordem"></span> <span class="nova-distribuicao-resposta-texto"></span></p>
+  <p class="nova-distribuicao-resposta-linha bloco-campo-linha"><span class="nova-distribuicao-linha-ordem"></span> <span class="nova-distribuicao-resposta-texto"></span></p>
 </template>
 
 <!-- trava: a resposta vem de outro lugar -->
@@ -841,7 +841,7 @@
 
 <!-- regra automática (vem das funções especiais) -->
 <template id="tpl-nova-distribuicao-automatica">
-  <div class="nova-distribuicao-cartao">
+  <div class="nova-distribuicao-cartao bloco-campo">
     <div class="nova-distribuicao-automatica-linhas">
       <p class="nova-distribuicao-frase nova-distribuicao-automatica-texto"></p>
       <p class="nova-distribuicao-frase nova-distribuicao-automatica-texto oculto"></p>
@@ -876,7 +876,7 @@
 
 <!-- ordem de importância: tabela Nº | Posto | Função, uma linha por pessoa -->
 <template id="tpl-nova-distribuicao-ordem">
-  <div class="nova-distribuicao-cartao nova-distribuicao-cartao--tabela">
+  <div class="nova-distribuicao-cartao bloco-campo nova-distribuicao-cartao--tabela">
     <table class="nova-distribuicao-tabela">
       <thead>
         <tr><th class="nova-distribuicao-col-n">Nº</th><th>Posto</th><th>Função</th><th class="nova-distribuicao-col-acoes" aria-label="Mover"></th></tr>
@@ -1064,7 +1064,7 @@
   </div>
 </template>
 <template id="tpl-nova-distribuicao-conferir-tabela">
-  <div class="nova-distribuicao-cartao nova-distribuicao-cartao--tabela">
+  <div class="nova-distribuicao-cartao bloco-campo nova-distribuicao-cartao--tabela">
     <p class="nova-distribuicao-frase nova-distribuicao-conferir-frase">
       <span>A partir de</span>
       <span class="nova-distribuicao-espaco" data-espaco="inicio"></span>
@@ -1127,8 +1127,8 @@
   <td class="nova-distribuicao-col-numero"></td>
 </template>
 <template id="tpl-nova-distribuicao-simulacao">
-  <div class="nova-distribuicao-cartao nova-distribuicao-cartao--tabela">
-    <p class="nova-distribuicao-cartao-titulo">Quem está de serviço</p>
+  <div class="nova-distribuicao-cartao bloco-campo nova-distribuicao-cartao--tabela">
+    <p class="nova-distribuicao-cartao-titulo bloco-campo-titulo">Quem está de serviço</p>
     <div class="nova-distribuicao-graus"></div>
     <p class="nova-distribuicao-ajuda nova-distribuicao-graus-ajuda">"Cb. 1" é o cabo mais antigo da equipe, e "Cb. 2", o segundo.</p>
     <div class="nova-distribuicao-dia oculto">

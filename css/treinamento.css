@@ -1,9 +1,10 @@
 /* ============================================================
    TREINAMENTO — a lista dos treinos (treinamento.html)
-   A lista é a dos pedidos (geral-pedido: .pedido-secoes, .pedido-secao,
-   .pedido--linha) na coluna de leitura. Aqui só as duas áreas (para
-   todos e, depois do traço, a do administrador, com o título e a chave
-   inglesa) e o traço entre elas.
+   Os blocos e os campos são o componente geral-bloco (o mesmo
+   desenho dos Ajustes), na coluna de leitura. Aqui só as duas áreas
+   (para todos e, depois do traço, a do administrador, com o título e
+   a chave inglesa), o traço entre elas e o campo sem chevron, que é
+   clicável inteiro (começa o treino).
    ============================================================ */
 
 .treino-area {
@@ -23,4 +24,8 @@
 
 .treino-divisor {
   border-top: 1px solid var(--borda);
+}
+
+.treino-item {
+  cursor: pointer;
 }

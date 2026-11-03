@@ -32,7 +32,7 @@
    (os que passam pela tela), passos(id, pagina) (do começo, ou a
    partir da tela pedida), caminho(passo, alvo) (os passos e o fim do
    caminho clicado), entradas(passo), fimDe(container, treino),
-   contarCaminhos(id), seletores(texto), celular(), roteiro(id).
+   seletores(texto), celular(), roteiro(id).
    ============================================================ */
 (function () {
   'use strict';
@@ -127,15 +127,6 @@
     return passo.caminhos.reduce(function (todas, secao) { return todas.concat(seletores(secao.getAttribute('data-entrada'))); }, []);
   }
 
-  /* quantos jeitos de fazer: cada escolha soma os caminhos dela */
-  function contar(lista) {
-    return lista.reduce(function (total, passo) {
-      if (!passo.caminhos.length) return total;
-      return total * passo.caminhos.reduce(function (soma, secao) { return soma + contar(passosDoCaminho(secao, passo)); }, 0);
-    }, 1);
-  }
-  function contarCaminhos(id) { var lista = passos(id); return lista ? contar(lista) : 0; }
-
   function lista() {
     return Array.prototype.filter.call(document.querySelectorAll('template[data-roteiro]'), pode);
   }
@@ -146,6 +137,6 @@
 
   RW.guiaRoteiros = {
     lista: lista, naPagina: naPagina, passos: passos, caminho: caminho, entradas: entradas, fimDe: fimDe,
-    contarCaminhos: contarCaminhos, seletores: seletores, celular: celular, roteiro: roteiro
+    seletores: seletores, celular: celular, roteiro: roteiro
   };
 })();

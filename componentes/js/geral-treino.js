@@ -3,13 +3,15 @@
    Começar um treino (a página Treinamento) liga o modo no sistema
    inteiro: a moldura azul em volta da tela (#treino-moldura), a barra
    azul no alto (.treino-barra, acima do cabeçalho) com Treinos e Sair
-   do treino, e a marca data-treino no <html>. Nada é gravado: antes de
-   cada chamada ao banco, o geral-api.js pergunta barrar(caminho,
-   metodo, corpo), que só deixa passar o que lê (LEITURAS), os ensaios
-   (ENSAIOS, com p_ensaio) e o Visto do passo a passo. O tema e as
-   unidades valem só nesta sessão (não gravam e não avisam), como as
-   QUIETAS; o resto é recusado com o aviso "No modo treino, nada é
-   gravado.".
+   do treino, e a marca data-treino no <html>. Nada é gravado: cada
+   chamada ao banco passa por passar(caminho, metodo, corpo, buscar),
+   no geral-api.js; barrar só deixa ir o que lê (LEITURAS), os ensaios
+   (ENSAIOS, com p_ensaio), o plano e o ensaio do Desfazer a troca do
+   dia e o Visto do passo a passo. O tema e as unidades valem só nesta
+   sessão (não gravam e não avisam), como as QUIETAS; o resto é
+   recusado com o aviso "No modo treino, nada é gravado.". O que passa
+   vai pelos exemplos do treino (geral-treino-cenarios.js): o roteiro
+   com data-cenario liga o dele ao começar.
    Sai do modo: Treinos (volta à lista), Sair do treino (vai à Escala),
    o Voltar aos treinos do fim do roteiro, recarregar ou fechar (o modo
    não fica guardado). Ao sair, a edição não salva é descartada sem
@@ -64,12 +66,15 @@
 
   function comecar(id) {
     mostrar(true);
+    var t = RW.guiaRoteiros ? RW.guiaRoteiros.roteiro(id) : null;
+    if (RW.treinoCenarios) RW.treinoCenarios.ativar(t ? t.getAttribute('data-cenario') : null, id);
     if (RW.guia) RW.guia.iniciar(id, { treino: true });
   }
 
   /* desliga e vai à tela (a edição não salva fica para trás, sem perguntar) */
   function sairPara(pagina) {
     if (RW.guia) RW.guia.encerrar();
+    if (RW.treinoCenarios) RW.treinoCenarios.ativar(null);
     mostrar(false);
     if (RW.guardaSaida) RW.guardaSaida.dispensar();
     if (RW.irParaPagina) RW.irParaPagina(pagina);
@@ -81,13 +86,16 @@
     return new Response(JSON.stringify(corpo), { status: status, headers: { 'Content-Type': 'application/json' } });
   }
 
+  function nomeDa(caminho) { var achou = /^\/rest\/v1\/rpc\/([a-z_0-9]+)/.exec(caminho); return achou ? achou[1] : ''; }
+
   /* a chamada ao banco passa (null) ou fica com o treino (a resposta que a tela recebe no lugar) */
   function barrar(caminho, metodo, corpo) {
     if (!ligado || metodo === 'GET') return null;
-    var achou = /^\/rest\/v1\/rpc\/([a-z_0-9]+)/.exec(caminho);
-    var nome = achou ? achou[1] : '';
+    var nome = nomeDa(caminho);
     if (LEITURAS.indexOf(nome) >= 0) return null;
     if (ENSAIOS.indexOf(nome) >= 0 && corpo && corpo.p_ensaio === true) return null;
+    /* o Desfazer a troca do dia: sem p_acao só lê o plano; com p_ensaio desfaz tudo */
+    if (nome === 'fn_trocas_cancelar_dia' && corpo && (corpo.p_acao == null || corpo.p_ensaio === true)) return null;
     if (nome === 'fn_preferencias_salvar') {
       var chaves = Object.keys(corpo || {});
       if (chaves.length === 1 && chaves[0] === 'p_ajuda') return null;   // o Visto do passo a passo
@@ -98,6 +106,14 @@
     return resposta(403, { code: 'RW_TREINO', message: RW.mensagens.treino.naoGrava });
   }
 
+  /* a chamada no treino: a recusada recebe a resposta do treino; a que passa vai pelos exemplos, que limpam o pedido
+     e põem a situação na resposta */
+  function passar(caminho, metodo, corpo, buscar) {
+    var barrada = barrar(caminho, metodo, corpo);
+    if (barrada) return Promise.resolve(barrada);
+    return RW.treinoCenarios ? RW.treinoCenarios.passar(nomeDa(caminho), corpo, buscar) : buscar(corpo);
+  }
+
   document.addEventListener('click', function (evento) {
     if (evento.target.closest('.treino-barra-treinos')) voltarAosTreinos();
     else if (evento.target.closest('.treino-barra-sair')) sair();
@@ -105,6 +121,6 @@
 
   RW.treino = {
     ligado: function () { return ligado; },
-    comecar: comecar, sair: sair, voltarAosTreinos: voltarAosTreinos, barrar: barrar
+    comecar: comecar, sair: sair, voltarAosTreinos: voltarAosTreinos, passar: passar
   };
 })();

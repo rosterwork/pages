@@ -229,19 +229,19 @@
        ciclo, de serviço em outros dias (na caixa que abre e fecha) */
     var listaOutros = mils.filter(function (m) { return m.estado !== 'fora' && !m.serve_hoje && !m.folga_hoje; });
     var grupos = [
-      { titulo: msg().continuosFora, vazio: msg().continuosVazioFora, montar: linhaFora,
+      { titulo: msg().continuosFora, vazio: msg().continuosVazioFora, montar: linhaFora, classe: 'escala-ciclo-fora',
         lista: mils.filter(function (m) { return m.estado === 'fora'; }) },
-      { titulo: msg().continuosNaEscala, vazio: msg().continuosVazioNaEscala, montar: linhaDoDia,
+      { titulo: msg().continuosNaEscala, vazio: msg().continuosVazioNaEscala, montar: linhaDoDia, classe: 'escala-ciclo-dia',
         lista: mils.filter(function (m) { return m.estado !== 'fora' && (m.serve_hoje || m.folga_hoje); }) },
       { titulo: msg().continuosOutros(listaOutros.length), vazio: msg().continuosVazioOutros, montar: linhaOutros,
-        lista: listaOutros, recolhivel: true }
+        classe: 'escala-ciclo-outros', lista: listaOutros, recolhivel: true }
     ];
     grupos.forEach(function (g) {
       var caixa = g.recolhivel ? RosterWork.painel.criarCaixaRecolhivel(g.titulo, { aberta: outros.aberto })
         : RosterWork.painel.criarCaixa(g.titulo);
       if (!caixa) return;
-      var destino = caixa;
-      if (g.recolhivel) { caixa.classList.add('escala-ciclo-outros'); destino = caixa.querySelector('.grupo-caixa-corpo'); }
+      var destino = g.recolhivel ? caixa.querySelector('.grupo-caixa-corpo') : caixa;
+      caixa.classList.add(g.classe);
       if (!g.lista.length) caixaVazia(destino, g.vazio);
       g.lista.forEach(function (m) { var el = g.montar(m); if (el) destino.appendChild(el); });
       corpo.appendChild(caixa);

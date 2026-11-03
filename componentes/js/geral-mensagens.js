@@ -1931,8 +1931,8 @@
     /* modo treino (geral-treino.js) e a página Treinamento (treinamento.js) */
     treino: {
       naoGrava: 'No modo treino, nada é gravado.',
-      caminhos: function (n) { return n + ' caminhos'; },
-      opcoes: function (n) { return n + ' opções'; }
+      /* o dono do serviço da troca de exemplo, quando a unidade não tem quem sirva em outro dia */
+      donoDaTroca: 'outro militar'
     },
 
     /* notificações no celular (Meu perfil › Preferências): a ajuda quando não dá para ligar */

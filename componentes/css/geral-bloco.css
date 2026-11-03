@@ -1,0 +1,96 @@
+/* ============================================================
+   BLOCO — o bloco cinza com o nome dentro e os campos brancos que
+   abrem e fecham (componente compartilhado)
+   O bloco (.bloco): no alto, o nome (.bloco-titulo > .rotulo-secao
+   .bloco-nome) e, ao lado, a frase do alcance (.bloco-alcance);
+   embaixo, os campos (.bloco-corpo). O campo (.bloco-campo): o
+   cabeçalho é o botão (.bloco-campo-cabecalho, com o título
+   .bloco-campo-titulo e, na ponta, o chevron .bloco-campo-seta, que
+   vira para cima com o aria-expanded); embaixo, a resposta
+   (.bloco-campo-resposta, uma .bloco-campo-linha por linha) e as
+   opções que abrem ali mesmo (.bloco-campo-opcoes). Campo com
+   chevron abre e fecha; sem chevron, é a ação direta.
+   Em uso: Ajustes (Distribuição, Horário de expediente e Feriados) e
+   Treinamento.
+   ============================================================ */
+
+.bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background-color: var(--fundo-suave);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+}
+
+.bloco-titulo {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+}
+
+.bloco-alcance {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.bloco-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ---- o campo branco: o cabeçalho abre e fecha; a resposta e as opções ficam embaixo ---- */
+.bloco-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px;
+  background-color: var(--fundo-superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+}
+
+.bloco-campo-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+}
+
+.bloco-campo-titulo {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.bloco-campo-seta {
+  flex-shrink: 0;
+  color: var(--texto-suave);
+}
+
+.bloco-campo-cabecalho[aria-expanded="true"] .bloco-campo-seta {
+  transform: rotate(180deg);
+}
+
+.bloco-campo-resposta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bloco-campo-linha {
+  margin: 0;
+  font-size: var(--fonte-padrao);
+  color: var(--texto-suave);
+}
+
+.bloco-campo-opcoes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

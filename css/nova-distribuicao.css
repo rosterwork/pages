@@ -60,45 +60,8 @@
   color: var(--texto-suave);
 }
 
-/* ---- a unidade: bloco cinza com o título dentro ---- */
-.nova-distribuicao-unidade {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 12px;
-  background-color: var(--fundo-suave);
-  border: 1px solid var(--borda);
-  border-radius: var(--raio-medio);
-}
-
-.nova-distribuicao-unidade-titulo {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin: 0;
-}
-
-.nova-distribuicao-unidade-alcance {
-  font-size: 12px;
-  color: var(--texto-suave);
-}
-
-.nova-distribuicao-unidade-corpo {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* ---- cartão branco: o cabeçalho abre e fecha; a resposta fica embaixo ---- */
-.nova-distribuicao-cartao {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 12px 16px;
-  background-color: var(--fundo-superficie);
-  border: 1px solid var(--borda);
-  border-radius: var(--raio-medio);
-}
+/* ---- a unidade (o bloco cinza com o nome dentro) e o cartão branco que abre e fecha são o componente geral-bloco
+   (.bloco e .bloco-campo, com as partes; as peças levam as duas classes); aqui só o que é da Distribuição ---- */
 
 /* o que muda na mudança agendada: a borda escura (o mesmo destaque de "diferente do gravado" do site);
    o erro vem depois e tem prioridade */
@@ -107,14 +70,6 @@
 .nova-distribuicao-cartao--erro { border-color: var(--erro); }
 
 .nova-distribuicao-cartao--tabela { padding: 8px; }
-
-.nova-distribuicao-cartao-cabecalho {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  text-align: left;
-}
 
 /* no cabeçalho, os números do efetivo à direita, junto da seta */
 .nova-distribuicao-cartao-numeros {
@@ -142,35 +97,8 @@
   font-variant-numeric: tabular-nums;
 }
 
-.nova-distribuicao-cartao-titulo {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--texto-forte);
-}
-
-.nova-distribuicao-cartao-seta {
-  flex-shrink: 0;
-  color: var(--texto-suave);
-}
-
-.nova-distribuicao-cartao-cabecalho[aria-expanded="true"] .nova-distribuicao-cartao-seta { transform: rotate(180deg); }
-
-.nova-distribuicao-cartao-resposta {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.nova-distribuicao-resposta-linha {
-  margin: 0;
-  font-size: var(--fonte-padrao);
-  color: var(--texto-suave);
-}
-
 .nova-distribuicao-resposta-linha--falta { color: var(--erro); }
 
-.nova-distribuicao-cartao-opcoes,
 .nova-distribuicao-cartao-conteudo {
   display: flex;
   flex-direction: column;
