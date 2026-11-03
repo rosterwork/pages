@@ -6,6 +6,10 @@
    corpo, sub-cabeçalho e rodapé) e as peças prontas (seção, caixa, linha rótulo/valor).
    No celular, puxar o corpo para o lado troca para a aba vizinha da linha das abas
    (geral-deslizar.js), como tocar nela; nas sub-telas, não.
+   A tela que muda (a aba da página, o período, a unidade) passa antes por
+   antesDeMudarTela: o painel aberto é do que estava na tela e fecha antes.
+   O filtro e a busca chamam conferirTela: o painel do registro que saiu da
+   lista fecha (a página diz como saber, pelo acompanharTela).
    Só liga/desliga classe e clona moldes — não inventa estrutura.
    Estrutura no index.html (#painel); estilos em geral-painel.css.
    ============================================================ */
@@ -18,6 +22,9 @@
   var aoFecharAtual = null;       // callback da página, disparado ao fechar
   var aoTentarFecharAtual = null; // interceptador opcional do fechar por gesto (Esc/X): devolve true para segurar
   var aoMudarModoAtual = null;    // callback da página, disparado ao trocar Ver/Editar
+  var ficaNasAbasAtual = false;   // o painel fica aberto na troca de aba da página (o painel do dia da Escala)
+  var seguirAoDescartar = null;   // a mudança de tela que espera a pergunta do descarte (antesDeMudarTela)
+  var aindaNaTelaAtual = null;    // a página diz se o registro do painel ainda está na tela (acompanharTela)
   var modoAtual = 'ver';
 
   function pegarReferencias() {
@@ -68,7 +75,7 @@
     elRodape.classList.add('oculto');
   }
 
-  /* abre o painel. config = { titulo, tituloExtra?, subtitulo, editavel?, modoFixo?, aoMudarModo?(modo), aoFechar?(), aoTentarFechar?()->bool }
+  /* abre o painel. config = { titulo, tituloExtra?, subtitulo, editavel?, modoFixo?, ficaNasAbas?, aoMudarModo?(modo), aoFechar?(), aoTentarFechar?()->bool }
      a linha das abas/corpo/sub-cabeçalho/rodapé nascem vazios; a página preenche pelos getters abaixo */
   function abrir(config) {
     if (!painel) return;
@@ -101,6 +108,8 @@
     limparConteudo();
     aoFecharAtual = config.aoFechar || null;
     aoTentarFecharAtual = config.aoTentarFechar || null;
+    ficaNasAbasAtual = !!config.ficaNasAbas;
+    aindaNaTelaAtual = null;
     painel.classList.add('painel-lateral--aberto');
     if (window.RosterWork.voltar && window.RosterWork.celular && window.RosterWork.celular()) {
       window.RosterWork.voltar.empilhar(aoVoltar);
@@ -126,10 +135,43 @@
     painel.classList.remove('painel-lateral--aberto');
     limparConteudo();
     var cb = aoFecharAtual;
+    var seguir = seguirAoDescartar;
     aoFecharAtual = null;
     aoTentarFecharAtual = null;
     aoMudarModoAtual = null;
+    ficaNasAbasAtual = false;
+    seguirAoDescartar = null;
+    aindaNaTelaAtual = null;
     if (cb) cb();
+    if (seguir) seguir();
+  }
+
+  /* a página que abriu diz como saber se o registro do painel ainda está na tela (o card da lista, a célula da grade) */
+  function acompanharTela(aindaNaTela) {
+    if (estaAberto()) aindaNaTelaAtual = aindaNaTela || null;
+  }
+
+  /* o filtro, a busca ou a escolha de unidades refez a lista: o painel do registro que saiu dela fecha. Com alteração
+     não salva, fica, sem pergunta (o filtro não apaga nada, e a busca reage enquanto se digita) */
+  function conferirTela() {
+    if (!estaAberto() || !aindaNaTelaAtual || aindaNaTelaAtual()) return;
+    var guarda = window.RosterWork.guardaSaida;
+    if (guarda && guarda.temPendencia()) return;
+    fechar();
+  }
+
+  /* a tela vai mudar (a aba da página, o período, a unidade): o painel é do que estava na tela e fecha antes, e a
+     mudança segue. Com alteração não salva, a mesma pergunta do X: no Descartar o painel fecha e a mudança segue
+     (no fechar); no Continuar editando, o painel e a tela ficam como estão. opcoes.aba: é a troca de aba da página,
+     e o painel aberto com ficaNasAbas fica */
+  function antesDeMudarTela(seguir, opcoes) {
+    if (!estaAberto() || (opcoes && opcoes.aba && ficaNasAbasAtual)) { seguir(); return; }
+    if (aoTentarFecharAtual && aoTentarFecharAtual()) {
+      if (document.querySelector('.modal-veu--aberto')) seguirAoDescartar = seguir;
+      return;
+    }
+    fechar();
+    seguir();
   }
 
   /* fechar pedido por gesto do usuário (Esc / X): a página pode interceptar
@@ -299,6 +341,12 @@
       solicitarFechar();
     });
 
+    /* a pergunta do descarte foi respondida: no Descartar o painel já fechou e a mudança de tela seguiu; no
+       Continuar editando, a mudança é esquecida. Com outra pergunta aberta logo em seguida, continua esperando */
+    document.addEventListener('rosterwork:aviso-respondido', function () {
+      if (!document.querySelector('.modal-veu--aberto')) seguirAoDescartar = null;
+    });
+
     ligarDeslize();
   }
 
@@ -312,6 +360,9 @@
     abrir: abrir,
     fechar: fechar,
     estaAberto: estaAberto,
+    antesDeMudarTela: antesDeMudarTela,
+    acompanharTela: acompanharTela,
+    conferirTela: conferirTela,
     definirTitulos: definirTitulos,
     linhaAbas: function () { return elLinhaAbas; },
     corpo: function () { return elCorpo; },

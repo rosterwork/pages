@@ -11,7 +11,9 @@
    sessão (não gravam e não avisam), como as QUIETAS; o resto é
    recusado com o aviso "No modo treino, nada é gravado.". O que passa
    vai pelos exemplos do treino (geral-treino-cenarios.js): o roteiro
-   com data-cenario liga o dele ao começar.
+   com data-cenario liga o dele ao começar. No treino da Extrajornada,
+   antes de tudo, o mês de treino responde pelas chamadas dela
+   (geral-treino-extra.js).
    Sai do modo: Treinos (volta à lista), Sair do treino (vai à Escala),
    o Voltar aos treinos do fim do roteiro, recarregar ou fechar (o modo
    não fica guardado). Ao sair, a edição não salva é descartada sem
@@ -45,6 +47,8 @@
     'pendencias_listar', 'perfil_solicitacoes_minhas', 'proximos_numeros_instalacao',
     /* ensaiam e desfazem tudo (a prévia do dia e as análises de impacto) */
     'escala_previa', 'fn_folgas_analisar_impacto', 'fn_trocas_analisar_impacto', 'pedido_escala_comparar',
+    /* o mês de treino da Extrajornada (monta, aplica e lê num ensaio que desfaz tudo; geral-treino-extra.js) */
+    'nova_extra_treino',
     /* o banco em dia: marca como vencido o link que já venceu, e termina o recálculo que já estava na fila */
     'acesso_estado', 'recalculo_fila_processar'
   ];
@@ -109,9 +113,11 @@
   /* a chamada no treino: a recusada recebe a resposta do treino; a que passa vai pelos exemplos, que limpam o pedido
      e põem a situação na resposta */
   function passar(caminho, metodo, corpo, buscar) {
+    var nome = nomeDa(caminho);
+    if (RW.treinoExtra && RW.treinoExtra.cuida(nome, corpo)) return RW.treinoExtra.responder(nome, corpo);
     var barrada = barrar(caminho, metodo, corpo);
     if (barrada) return Promise.resolve(barrada);
-    return RW.treinoCenarios ? RW.treinoCenarios.passar(nomeDa(caminho), corpo, buscar) : buscar(corpo);
+    return RW.treinoCenarios ? RW.treinoCenarios.passar(nome, corpo, buscar) : buscar(corpo);
   }
 
   document.addEventListener('click', function (evento) {

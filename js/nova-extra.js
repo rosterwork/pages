@@ -12,6 +12,8 @@
    molde que o passo pedir, RosterWork.novaExtra.legenda).
    Abre no mês de hoje (ou no que o aviso pedir); a seta do mês anda
    de outubro de 2026 até o mês do pedido que já abriu mais à frente.
+   No treino da Extrajornada, abre no mês de treino, com as setas
+   paradas (geral-treino-extra.js).
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
    Registra RosterWork.paginas['nova-extra'].
    ============================================================ */
@@ -47,11 +49,13 @@
   /* relê o mês: a Minha extra e, junto, os passos e os números das abas (RosterWork.novaExtraOrg). Como na Escala, o
      nome do mês muda na hora e só a área da aba aberta espera o mês novo, com o círculo (as setas, as abas e os passos
      continuam usáveis; só o último mês pedido aparece). A releitura do mesmo mês deixa a tela à vista */
+  /* no treino da Extrajornada, as setas do mês ficam paradas no mês de treino */
+  function noTreino() { return !!(RW.treinoExtra && RW.treinoExtra.mes()); }
   function carregar() {
     var meu = ++pedido, mes = iso(comp);
     el.mes.textContent = nomeMes(comp);
-    el.anterior.disabled = comp <= PRIMEIRO;
-    el.proximo.disabled = comp >= ultimo;
+    el.anterior.disabled = noTreino() || comp <= PRIMEIRO;
+    el.proximo.disabled = noTreino() || comp >= ultimo;
     if (desenhado !== mes || leituras.minha.situacao === 'falha') leitura('minha', 'lendo');
     RW.novaExtraOrg.recarregar();
     /* a falha fica no lugar da área (a frase), com a mensagem técnica no console */
@@ -67,7 +71,7 @@
       desenhado = mes;
       if (r.ultimo_mes) {
         ultimo = new Date(+r.ultimo_mes.slice(0, 4), +r.ultimo_mes.slice(5, 7) - 1, 1);
-        el.proximo.disabled = comp >= ultimo;
+        el.proximo.disabled = noTreino() || comp >= ultimo;
       }
       leitura('minha', 'ok');
       desenhar();
@@ -216,12 +220,12 @@
     if (t) alvo.appendChild(t.content.cloneNode(true));
   }
 
-  /* trocar de mês (dentro das setas): o painel do dia aberto é do mês antigo e fecha antes; com a distribuição não
-     salva, o aviso de sempre e o mês só muda no Descartar */
+  /* trocar de mês (dentro das setas): com a distribuição não salva, o aviso de sempre e o mês só muda no Descartar;
+     o painel aberto é do mês antigo e fecha antes (com alteração não salva nele, a pergunta dele; geral-painel) */
   function trocarMes(n) {
     var alvo = new Date(comp.getFullYear(), comp.getMonth() + n, 1);
     if (alvo < PRIMEIRO || alvo > ultimo) return;
-    function ir() { comp = alvo; RW.novaExtraMontar.fecharPainel(); carregar(); }
+    function ir() { RW.painel.antesDeMudarTela(function () { comp = alvo; carregar(); }); }
     if (!RW.novaExtraOrg.sujo()) { ir(); return; }
     RW.confirmar({ tipo: 'aviso', mensagem: RW.mensagens.edicao.sairSemSalvar, textoConfirmar: RW.mensagens.botoes.descartar,
       textoCancelar: RW.mensagens.botoes.continuarEditando, aoConfirmar: function () { RW.novaExtraMontar.descartar(); ir(); } });
@@ -255,6 +259,7 @@
     comp = pedida ? new Date(+pedida.slice(0, 4), +pedida.slice(5, 7) - 1, 1) : new Date(hoje.getFullYear(), hoje.getMonth(), 1);
     if (comp < PRIMEIRO) comp = new Date(PRIMEIRO);
     if (comp > ultimo) ultimo = new Date(comp);
+    if (noTreino()) { comp = new Date(RW.treinoExtra.mes()); ultimo = new Date(comp); }
     desenhado = null;
     /* o Organizar o mês é do administrador da companhia (qualquer um dela, inclusive o de um pelotão): para os outros,
        o grupo dele sai (e o traço entre os grupos junto) */

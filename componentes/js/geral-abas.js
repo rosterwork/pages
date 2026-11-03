@@ -119,6 +119,21 @@
     agendarTraco(dono);
   }
 
+  /* a aba da página: o menu da tela, no cabeçalho, embaixo do título (nunca o seletor da barra nem as abas do painel) */
+  function ehAbaDaPagina(trilho) {
+    return ehMenu(trilho) && !!trilho.closest('.pagina-cabecalho');
+  }
+
+  /* marca a escolha no trilho e avisa quem quiser reagir (carregar o conteúdo da aba escolhida) */
+  function escolher(trilho, aba) {
+    if (trilho.hasAttribute('data-abas-multi')) {
+      alternarMulti(trilho, aba);
+    } else {
+      ativarUnica(trilho, aba);
+    }
+    trilho.dispatchEvent(new CustomEvent('rosterwork:aba', { detail: { aba: aba } }));
+  }
+
   /* um único ouvinte para as abas de todo o site (delegação no documento) —
      funciona inclusive nos fragmentos de página carregados depois */
   document.addEventListener('click', function (evento) {
@@ -128,13 +143,13 @@
     if (!trilho) return;
     prepararAria(trilho);
     prepararTraco(trilho);
-    if (trilho.hasAttribute('data-abas-multi')) {
-      alternarMulti(trilho, aba);
-    } else {
-      ativarUnica(trilho, aba);
+    /* trocar a aba da página muda a tela: o painel aberto fecha antes, e com alteração não salva a aba só troca no
+       Descartar (geral-painel) */
+    if (ehAbaDaPagina(trilho) && !aba.classList.contains('aba--ativa') && window.RosterWork.painel) {
+      window.RosterWork.painel.antesDeMudarTela(function () { escolher(trilho, aba); }, { aba: true });
+      return;
     }
-    /* avisa quem quiser reagir (carregar o conteúdo da aba escolhida) */
-    trilho.dispatchEvent(new CustomEvent('rosterwork:aba', { detail: { aba: aba } }));
+    escolher(trilho, aba);
   });
 
   /* ---------- no celular: o seletor da barra vira menu ----------

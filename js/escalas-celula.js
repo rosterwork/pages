@@ -131,14 +131,15 @@
 
   /* pinta um gráfico no seu <canvas>: 24 barras (uma por hora, altura = militares de serviço) com o
      corpo claro na cor do estado e uma linha forte no topo; a hora com o mouse em cima (horaCursor)
-     fica com o corpo forte. Trabalha em pixels físicos (devicePixelRatio) para sair nítido em qualquer tela */
-  function pintarGrafico(grafico, horaCursor) {
+     fica com o corpo forte. Trabalha em pixels físicos (devicePixelRatio) para sair nítido em qualquer tela.
+     medida = o tamanho do canvas já lido (desenharGraficos mede todos antes de pintar) */
+  function pintarGrafico(grafico, horaCursor, medida) {
     var canvas = grafico.querySelector('.escala-mes-grafico-canvas');
     if (!canvas || !canvas.getContext) return;
     var cob = (grafico.dataset.cob || '').split(',');
     var max = parseFloat(grafico.dataset.max) || 1;
     if (cob.length < 24 || max <= 0) return;
-    var rect = canvas.getBoundingClientRect();
+    var rect = medida || canvas.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
 
     var dpr = window.devicePixelRatio || 1;
@@ -189,12 +190,18 @@
     return g;
   }
 
-  /* desenha (ou redesenha) todos os gráficos; relê as cores do tema uma vez por passada */
+  /* desenha (ou redesenha) todos os gráficos; relê as cores do tema uma vez por passada. Mede todos antes de pintar:
+     mudar o tamanho de um canvas e medir o próximo obrigaria o navegador a recalcular a página a cada gráfico */
   function desenharGraficos(escalaEl) {
     var graficos = escalaEl.querySelectorAll('.escala-mes-grafico');
     if (!graficos.length) return;
     temaGrafico = lerTema();
-    for (var i = 0; i < graficos.length; i++) pintarGrafico(graficos[i], null);
+    var medidas = [], i;
+    for (i = 0; i < graficos.length; i++) {
+      var canvas = graficos[i].querySelector('.escala-mes-grafico-canvas');
+      medidas.push(canvas ? canvas.getBoundingClientRect() : null);
+    }
+    for (i = 0; i < graficos.length; i++) pintarGrafico(graficos[i], null, medidas[i]);
   }
 
   /* hora exibida no gráfico (a janela começa às 08h) */
@@ -347,8 +354,15 @@
     limparObservadores();
     ligarHover(wrap);
     desenharGraficos(wrap);
+    /* repinta quando o tamanho da grade muda (o observador também avisa ao começar, com a grade recém-pintada) */
     if (window.ResizeObserver) {
-      observerGrafico = new ResizeObserver(function () { desenharGraficos(wrap); });
+      var tamanho = wrap.clientWidth + 'x' + wrap.clientHeight;
+      observerGrafico = new ResizeObserver(function () {
+        var agora = wrap.clientWidth + 'x' + wrap.clientHeight;
+        if (agora === tamanho) return;
+        tamanho = agora;
+        desenharGraficos(wrap);
+      });
       observerGrafico.observe(wrap);
     }
     /* o canvas pinta com cores lidas do tema; repinta quando o tema (data-tema do <html>) mudar */

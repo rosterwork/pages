@@ -1932,7 +1932,8 @@
     treino: {
       naoGrava: 'No modo treino, nada é gravado.',
       /* o dono do serviço da troca de exemplo, quando a unidade não tem quem sirva em outro dia */
-      donoDaTroca: 'outro militar'
+      donoDaTroca: 'outro militar',
+      mesFalhou: 'Não foi possível montar o mês de treino agora.'
     },
 
     /* notificações no celular (Meu perfil › Preferências): a ajuda quando não dá para ligar */

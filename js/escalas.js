@@ -543,8 +543,12 @@
     RosterWork.abas.ligar(conteudo.querySelector('#escala-colunas-qtd'), function () { atualizarPeriodo(); renderizarCorpo(); salvarVisao(); });
     /* reabre na última visão usada antes de montar (sem piscar o Dia) */
     restaurarVisao();
-    /* Colunas → Unidades: ligar/desligar uma unidade muda as colunas → re-renderiza */
-    RosterWork.abas.ligar(conteudo.querySelector('#escala-unidades-abas'), renderizarCorpo);
+    /* Colunas → Unidades: ligar/desligar uma unidade muda as colunas → re-renderiza; o painel do dia da unidade
+       desligada fecha (geral-painel) */
+    RosterWork.abas.ligar(conteudo.querySelector('#escala-unidades-abas'), function () {
+      renderizarCorpo();
+      if (RosterWork.painel) RosterWork.painel.conferirTela();
+    });
 
     /* clicar numa célula da grade abre a gaveta de detalhes */
     if (window.RosterWork.escalasPainel) RosterWork.escalasPainel.ligar(conteudo);
@@ -569,10 +573,10 @@
       },
       ir: function (direcao) { return Promise.resolve(navegar(direcao)); }
     }) : null;
-    /* a troca de período pelas setas, pelo Hoje e pelo calendário: o painel do dia aberto é do período antigo e fecha
-       antes; com mudança não salva, o aviso de sempre e o período só muda no Descartar (escalas-painel.js) */
+    /* a troca de período pelas setas, pelo Hoje e pelo calendário: o painel aberto é do período antigo e fecha antes;
+       com mudança não salva, o aviso de sempre e o período só muda no Descartar (geral-painel) */
     function trocarPeriodo(trocar) {
-      if (RosterWork.escalasPainel) RosterWork.escalasPainel.antesDeTrocarPeriodo(trocar);
+      if (RosterWork.painel) RosterWork.painel.antesDeMudarTela(trocar);
       else trocar();
     }
     function irPelaSeta(direcao) { trocarPeriodo(function () { if (!deslize || !deslize.ir(direcao)) navegar(direcao); }); }

@@ -22,7 +22,7 @@
     dispensa: ['gala', 'nojo', 'comum']
   };
 
-  var ctx = null;          // o que o usuarios.js empresta: { atualizar, busca, ordenar, arvoreDeGraus, abrirFicha, contar }
+  var ctx = null;          // o que o usuarios.js empresta: { atualizar, busca, ordenar, arvoreDeGraus, abrirFicha, marcarSeAberto, contar }
   var aba = null;          // 'ferias' | 'licencas' | 'dispensas' (null = outra aba)
   var ano = anoAtual();
   var cache = {};          // 'categoria/ano' -> { usuario_id: [afastamentos do ano] }
@@ -47,8 +47,9 @@
   }
 
   /* o seletor de ano (molde #tpl-usuarios-ano), na barra e na ficha: as setas passam de ano, o ano
-     abre a lista (do próximo ano a cinco anos atrás) e o Hoje volta ao ano atual */
-  function seletorAno(valor, aoMudar) {
+     abre a lista (do próximo ano a cinco anos atrás) e o Hoje volta ao ano atual. antes (opcional) roda
+     antes de trocar e decide se a troca segue (na barra, o painel aberto fecha antes; geral-painel) */
+  function seletorAno(valor, aoMudar, antes) {
     var el = RosterWork.tpl('tpl-usuarios-ano');
     if (!el) return null;
     var nome = el.querySelector('[data-ano-nome]');
@@ -70,9 +71,12 @@
     }
     function mudar(novo) {
       if (novo === atual) return;
-      atual = novo;
-      pintar();
-      aoMudar(atual);
+      function trocar() {
+        atual = novo;
+        pintar();
+        aoMudar(atual);
+      }
+      if (antes) antes(trocar); else trocar();
     }
     el.querySelector('[data-ano-anterior]').addEventListener('click', function () { mudar(atual - 1); });
     el.querySelector('[data-ano-proximo]').addEventListener('click', function () { mudar(atual + 1); });
@@ -145,6 +149,7 @@
       if (busca === 'marcar') item.classList.add('linha-militar--marcada');
       if (busca === 'marcar' || busca === 'casa') item.classList.add('busca-achado');   // o que o Enter da busca percorre (geral-busca.js)
       item.addEventListener('click', function () { ctx.abrirFicha(item, pessoa, { secao: aba, ano: ano }); });
+      ctx.marcarSeAberto(item, pessoa);
       bloquinho.appendChild(item);
       ctx.contar();
       adicionou++;
@@ -234,7 +239,8 @@
     }) : null;
     if (filtros) filtros.mostrar(false);
     lugarTipo = caixa ? caixa.querySelector('[data-filtro="tipo"]') : null;
-    seletor = seletorAno(ano, function (a) { ano = a; if (aba) carregar(); });
+    seletor = seletorAno(ano, function (a) { ano = a; if (aba) carregar(); },
+      RosterWork.painel ? RosterWork.painel.antesDeMudarTela : null);
     var barra = conteudo.querySelector('.pagina-subcabecalho');
     if (seletor && barra) {
       seletor.el.classList.add('oculto');

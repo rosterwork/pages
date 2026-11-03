@@ -42,22 +42,18 @@
     btnConfirmar = veu.querySelector('.aviso-confirmar');
     btnCancelar = veu.querySelector('.aviso-cancelar');
     btnAlternativo = veu.querySelector('.aviso-alternativo');
-    btnAlternativo.addEventListener('click', function () {
-      var fn = aoAlternativo;
-      fechar();
-      if (fn) fn();
-    });
-    btnConfirmar.addEventListener('click', function () {
-      var fn = aoConfirmar;
-      fechar();
-      if (fn) fn();
-    });
-    btnCancelar.addEventListener('click', function () {
-      var fn = aoCancelar;
-      fechar();
-      if (fn) fn();
-    });
+    btnAlternativo.addEventListener('click', function () { responder(aoAlternativo); });
+    btnConfirmar.addEventListener('click', function () { responder(aoConfirmar); });
+    btnCancelar.addEventListener('click', function () { responder(aoCancelar); });
     return true;
+  }
+
+  /* o botão escolhido: fecha, roda a resposta e avisa quem espera a pergunta ser respondida (o painel, que segura
+     a mudança de tela até o Descartar; geral-painel) */
+  function responder(fn) {
+    fechar();
+    if (fn) fn();
+    document.dispatchEvent(new CustomEvent('rosterwork:aviso-respondido'));
   }
 
   function fechar() {

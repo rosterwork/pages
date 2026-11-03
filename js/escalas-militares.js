@@ -136,6 +136,8 @@
         unidadeNome: coluna.nomeCompleto || coluna.nome, cidade: coluna.cidade,
         iso: iso, estado: estado, aoFechar: desmarcarCelula
       });
+      /* a busca esconde a linha do militar que não casa: o painel dele fecha (geral-painel) */
+      if (RosterWork.painel) RosterWork.painel.acompanharTela(function () { return celula.isConnected && celula.getClientRects().length > 0; });
     }
     celula.addEventListener('click', function () {
       if (!window.RosterWork.escalasMilitaresPainel) return;

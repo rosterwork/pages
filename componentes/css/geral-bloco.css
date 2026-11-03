@@ -9,7 +9,10 @@
    vira para cima com o aria-expanded); embaixo, a resposta
    (.bloco-campo-resposta, uma .bloco-campo-linha por linha) e as
    opções que abrem ali mesmo (.bloco-campo-opcoes). Campo com
-   chevron abre e fecha; sem chevron, é a ação direta.
+   chevron abre e fecha; sem chevron, é a ação direta. O bloco que
+   abre e fecha tem o nome num botão (.bloco-titulo.bloco-cabecalho,
+   com o chevron .bloco-seta na ponta, que vira para cima com o
+   aria-expanded); fechado, o .bloco-corpo some.
    Em uso: Ajustes (Distribuição, Horário de expediente e Feriados) e
    Treinamento.
    ============================================================ */
@@ -29,6 +32,21 @@
   align-items: baseline;
   gap: 8px;
   margin: 0;
+}
+
+.bloco-cabecalho {
+  align-items: center;
+  width: 100%;
+  text-align: left;
+}
+
+.bloco-seta {
+  flex-shrink: 0;
+  color: var(--texto-suave);
+}
+
+.bloco-cabecalho[aria-expanded="true"] .bloco-seta {
+  transform: rotate(180deg);
 }
 
 .bloco-alcance {

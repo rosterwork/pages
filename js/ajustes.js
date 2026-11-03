@@ -26,7 +26,6 @@
 
   function mostrarAba(conteudo, nome) {
     abaAtual = nome;
-    if (RosterWork.painel && RosterWork.painel.estaAberto()) RosterWork.painel.fechar();
     Array.prototype.forEach.call(conteudo.querySelectorAll('.pagina-corpo > [data-aba-painel]'), function (p) {
       p.classList.toggle('oculto', p.getAttribute('data-aba-painel') !== nome);
     });

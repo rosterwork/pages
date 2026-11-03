@@ -64,6 +64,8 @@
       if (emLote) return;
       pintarLinha();
       aoMudar();
+      /* a lista mudou: o painel do registro que saiu dela fecha (geral-painel) */
+      if (window.RosterWork.painel) window.RosterWork.painel.conferirTela();
     }
 
     function limparTodos() {

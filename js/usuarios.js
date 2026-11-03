@@ -11,8 +11,10 @@
   var termoBusca = '';
   var modoBusca = 'marcar';   /* 'marcar' (realça) | 'filtrar' (esconde quem não bate) */
 
-  /* card cuja ficha está aberta no painel (realce do selecionado) */
+  /* card cuja ficha está aberta no painel (realce do selecionado) e o militar dele: a lista refeita pela busca ou
+     pelos filtros marca de novo o card desse militar */
   var cardSelecionado = null;
+  var cpfAberto = null;
 
   /* inativos por unidade (fonte separada buscar_inativos; só aparecem quando o
      filtro de situação inclui "Inativos") — não misturam com o efetivo ativo */
@@ -167,8 +169,23 @@
   function abrirFicha(card, pessoa, opcoes) {
     if (cardSelecionado) cardSelecionado.classList.remove('linha-militar--selecionada');
     cardSelecionado = card;
+    cpfAberto = String(pessoa.usuario_id);
     card.classList.add('linha-militar--selecionada');
     if (window.RosterWork.usuariosPainel) window.RosterWork.usuariosPainel.abrir(pessoa, limparSelecao, opcoes);
+    /* a busca e os filtros podem tirar o militar da lista: a ficha dele fecha (geral-painel) */
+    if (window.RosterWork.painel) window.RosterWork.painel.acompanharTela(cardNaTela);
+  }
+
+  /* o card da ficha aberta ainda está na lista? */
+  function cardNaTela() {
+    return !!cardSelecionado && cardSelecionado.isConnected && cardSelecionado.getClientRects().length > 0;
+  }
+
+  /* a lista refeita (busca, filtros): o card do militar da ficha aberta volta a ficar marcado */
+  function marcarSeAberto(card, pessoa) {
+    if (cpfAberto === null || String(pessoa.usuario_id) !== cpfAberto) return;
+    card.classList.add('linha-militar--selecionada');
+    cardSelecionado = card;
   }
 
   /* as abas Férias · Licenças · Dispensas desenham a lista delas (usuarios-afastamentos.js) */
@@ -183,6 +200,7 @@
       cardSelecionado.classList.remove('linha-militar--selecionada');
       cardSelecionado = null;
     }
+    cpfAberto = null;
   }
 
   /* monta um card de pessoa (aplica hierarquia e busca); devolve true se entrou */
@@ -210,6 +228,7 @@
     if (casa) item.classList.add('busca-achado');   // o que o Enter da busca percorre (geral-busca.js)
     item.classList.add('linha-militar--clicavel');
     item.addEventListener('click', function () { abrirFicha(item, pessoa); });
+    marcarSeAberto(item, pessoa);
     container.appendChild(item);
     contagemVisivel++;
     return true;
@@ -318,7 +337,7 @@
     return itens.length === 1 ? '1 militar' : itens.length + ' militares';
   }
 
-  /* o que as abas de afastamento usam daqui: a árvore, a busca, a ordem, os graus, a ficha e a contagem */
+  /* o que as abas de afastamento usam daqui: a árvore, a busca, a ordem, os graus, a ficha (e a marca dela) e a contagem */
   var emprestado = {
     atualizar: function () { if (window.RosterWork.arvoreUnidades) window.RosterWork.arvoreUnidades.atualizar(); },
     /* 'marcar' (casa, no marcar) · 'casa' (casa, no filtrar) · 'esconder' (não casa, no filtrar) · '' (sem busca ou não casa, no marcar) */
@@ -330,6 +349,7 @@
     ordenar: function (pessoas) { return ordenarPessoas(pessoas); },
     arvoreDeGraus: function (pessoas) { return arvoreDeGraus(pessoas); },
     abrirFicha: function (item, pessoa, opcoes) { abrirFicha(item, pessoa, opcoes); },
+    marcarSeAberto: function (item, pessoa) { marcarSeAberto(item, pessoa); },
     contar: function () { contagemVisivel++; }
   };
 

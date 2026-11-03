@@ -11,6 +11,7 @@
 
   var termoBusca = '';
   var cardSelecionado = null;
+  var cpfAberto = null;      // o militar aberto no painel: a lista refeita pela busca marca de novo o card dele
   var militaresVisiveis = [];
   var ctx = null;
 
@@ -28,13 +29,22 @@
 
   function limparSelecao() {
     if (cardSelecionado) { cardSelecionado.classList.remove('linha-militar--selecionada'); cardSelecionado = null; }
+    cpfAberto = null;
   }
 
   function abrir(card, militar) {
     if (cardSelecionado) cardSelecionado.classList.remove('linha-militar--selecionada');
     cardSelecionado = card;
+    cpfAberto = String(militar.usuario_id);
     card.classList.add('linha-militar--selecionada');
     if (RW.folgasPainel) RW.folgasPainel.abrirDetalhe(militar, limparSelecao);
+    /* a busca pode tirar o militar da lista: o painel dele fecha (geral-painel) */
+    if (RW.painel) RW.painel.acompanharTela(cardNaTela);
+  }
+
+  /* o card do militar aberto ainda está na lista? */
+  function cardNaTela() {
+    return !!cardSelecionado && cardSelecionado.isConnected && cardSelecionado.getClientRects().length > 0;
   }
 
   /* a árvore chama isto por unidade marcada: monta os militares com o saldo num bloquinho branco
@@ -55,6 +65,10 @@
       if (classe) selo.classList.add(classe);
       if (termoBusca) item.classList.add('busca-achado');   // filtrada, a lista só tem quem casa: o que o Enter percorre (geral-busca.js)
       item.addEventListener('click', function () { abrir(item, m); });
+      if (cpfAberto !== null && String(m.usuario_id) === cpfAberto) {
+        item.classList.add('linha-militar--selecionada');
+        cardSelecionado = item;
+      }
       bloquinho.appendChild(item);
       adicionou++;
     });
@@ -89,6 +103,7 @@
     ctx = contexto || {};
     termoBusca = '';
     cardSelecionado = null;
+    cpfAberto = null;
     militaresVisiveis = [];
     ligarBusca(conteudo);
     var container = conteudo.querySelector('#arvore-folgas');

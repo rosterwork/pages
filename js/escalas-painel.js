@@ -576,12 +576,11 @@
       aoConfirmar: aoConfirmar
     });
   }
-  /* interceptador do Esc/X (via geral-painel.aoTentarFechar) e da troca de período: segura o fechamento se houver
-     rascunho; depois (opcional) roda quando o painel fecha pelo Descartar */
-  function tentarFecharPainel(depois) {
-    var fechar = function () { RosterWork.painel.fechar(); if (typeof depois === 'function') depois(); };
+  /* interceptador do Esc/X e da troca de período (via geral-painel.aoTentarFechar): segura o fechamento se houver
+     rascunho; no Descartar, o painel fecha e a troca de período segue (geral-painel) */
+  function tentarFecharPainel() {
     if (!secaoSuja()) return false;               // nada sujo: deixa o painel fechar normalmente
-    confirmarDescarte(function () { limparSecoesSujas(); fechar(); });
+    confirmarDescarte(function () { limparSecoesSujas(); RosterWork.painel.fechar(); });
     return true;                                  // segura o fechamento até confirmar
   }
 
@@ -780,8 +779,10 @@
       tituloExtra: cidade ? '- ' + cidade : '',
       subtitulo: dataPorExtenso(iso),
       aoFechar: desmarcar,
-      aoTentarFechar: tentarFecharPainel       // Esc/X confirmam antes de descartar rascunho
+      aoTentarFechar: tentarFecharPainel,      // Esc/X confirmam antes de descartar rascunho
+      ficaNasAbas: true                        // o rascunho aparece em todas as telas da Escala: trocar de aba não fecha
     });
+    RosterWork.painel.acompanharTela(diaNaTela);
 
     /* linha das abas de seção: Dia e Ciclo para quem tem a unidade na área do papel; os outros só têm o Dia e ficam
        sem a linha. O geral-abas cuida da troca visual e nos avisa a aba escolhida */
@@ -825,6 +826,13 @@
       fixoLado: area.querySelector(CANTOS_DA_GRADE),
       suave: suave
     });
+  }
+
+  /* o dia aberto ainda está na tela? Filtro e busca escondem só as linhas dentro do dia, nunca o dia; no Colunas ›
+     Unidades, a unidade dele tem de seguir ligada nas abas (a grade é redesenhada depois, sem esperar) */
+  function diaNaTela() {
+    var abas = document.querySelector('#escala-sub-unidades:not(.oculto) #escala-unidades-abas');
+    return !pCtx || !abas || !!abas.querySelector('.aba--ativa[data-unidade="' + pCtx.unidadeId + '"]');
   }
 
   /* localiza, na grade atual (qualquer modo), a célula de uma unidade+dia */
@@ -1050,13 +1058,6 @@
       confirmarDescarte(function () { limparSecoesSujas(); seguir(true); });
     },
     recarregarSecao: function () { if (pCtx) mostrarSecao(pCtx.secao); },
-    /* a troca de período (escalas.js): o painel do dia aberto é do período antigo e fecha antes de trocar. Com mudança
-       não salva, o mesmo aviso do X (Descartar fecha e troca; Continuar editando fica no período); sem painel do dia,
-       troca na hora */
-    antesDeTrocarPeriodo: function (trocar) {
-      if (!pCtx || !RosterWork.painel.estaAberto()) { trocar(); return; }
-      if (!tentarFecharPainel(trocar)) { RosterWork.painel.fechar(); trocar(); }
-    },
     /* peças de montagem reaproveitadas pelo Dia (escalas-painel-editar/-formulario/-militar) */
     pecas: {
       definirIcone: definirIcone,

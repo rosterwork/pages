@@ -8,7 +8,7 @@
    geral-guia-roteiros.js; o balão, em geral-guia-balao.js; o véu, em
    geral-guia-veu.js. Aqui, a cada 200 ms, o passo em curso: pular,
    acender os alvos, pôr o balão e avançar. Tela ou painel
-   carregando: o balão espera (até 15 s); outra tela que não é a do
+   carregando: o balão espera (até 30 s); outra tela que não é a do
    passo, ou 5 s sem o alvo: o roteiro termina. O passo com
    data-sem-alvo não termina: sem o alvo (ou sem o data-requer, a
    situação que ele pede), o balão diz por que o passo não dá ali e
@@ -27,7 +27,7 @@
   var ESPERA_ALVO = 25;     // tiques sem o alvo até o guia terminar (5 s)
   var ESPERA_OPCIONAL = 4;  // tiques sem o alvo até pular o passo opcional
   var ESPERA_AVISO = 8;     // tiques sem o alvo até o balão dizer por que o passo não dá (data-sem-alvo)
-  var ESPERA_TELA = 75;     // tiques esperando a tela do passo carregar (15 s)
+  var ESPERA_TELA = 150;    // tiques esperando a tela do passo carregar (30 s: o mês de treino lançado da Extrajornada leva uns 15 s)
   var DISTANCIA = 12;       // distância da dica ao ? e às bordas da tela (px)
   var ESPERAR = '.dropdown--aberto, .calendario--aberto, .modal-veu--aberto';
   var BOTAO_DA_PAGINA = '.conteudo > .pagina > .pagina-cabecalho > .pagina-ajuda > .botao';   // o ? da página (não os exemplos do Guia visual)
@@ -89,9 +89,10 @@
   function avancar() { if (guia) { guia.i++; proximoPasso(); } }
   /* o passo pulado sai da fila (a contagem diminui) */
   function pular() { guia.passos.splice(guia.i, 1); proximoPasso(); }
-  /* chegou ao fim: conta como visto e espera os modais (ex.: o resumo do pedido) para o balão final */
+  /* chegou ao fim: no treino, conta como visto (o ? é ajuda, não treino); espera os modais (ex.: o resumo do pedido)
+     para o balão final */
   function concluir() {
-    A().marcarVisto(guia.id);
+    if (guia.treino) A().marcarVisto(guia.id);
     guia.fase = 'esperaFim';
     esconderPecas();
   }
@@ -142,9 +143,11 @@
     });
   }
 
-  /* a tela (o véu dela) ou o painel (o carregando dele, o geral e o do dia) ainda carregando */
+  /* a tela (o véu dela), a área da Extrajornada (o círculo dela) ou o painel (o carregando dele, o geral e o do dia)
+     ainda carregando */
   function carregando() {
     return !!document.querySelector('.conteudo > .carregando-veu--visivel') ||
+      visivel(document.querySelector('.conteudo #nova-extra-estado:not(.oculto) .giratorio')) ||
       Array.prototype.some.call(document.querySelectorAll('.painel-lateral--aberto .painel-estado--carregando, .painel-lateral--aberto .escala-distribuicao-carregando'), visivel);
   }
 

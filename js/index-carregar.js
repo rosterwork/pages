@@ -41,6 +41,7 @@
     'componentes/js/geral-guia.js',
     'componentes/js/geral-treino.js',
     'componentes/js/geral-treino-cenarios.js',
+    'componentes/js/geral-treino-extra.js',
     'componentes/js/geral-horario.js',
     'componentes/js/geral-modal.js',
     'componentes/js/geral-aviso.js',

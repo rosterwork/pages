@@ -12,8 +12,9 @@
    Versão nova: baixa só o que mudou (copia o resto da versão
    anterior) e espera o sinal "ativar" da página, que troca de
    versão sem misturar a velha com a nova (geral-aplicativo.js).
-   SOB_DEMANDA (as bibliotecas, como a do PDF, e as imagens do
-   manual): nunca baixadas na instalação; guardadas no primeiro uso
+   SOB_DEMANDA (as bibliotecas, como a do PDF e a do otimizador com
+   o highs.wasm, e as imagens do manual): nunca baixadas na
+   instalação; guardadas no primeiro uso
    e levadas para a versão nova enquanto a impressão digital não
    mudar.
    Botão de emergência: REGRAS §8.1.

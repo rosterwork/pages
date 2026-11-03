@@ -52,7 +52,11 @@
     var modo = 'marcar';   /* 'marcar' (realça) | 'filtrar' (esconde quem não casa) */
     var timer = null;
 
-    function avisar() { if (config.aoBuscar) config.aoBuscar(termo, modo); }
+    /* a página aplica a busca; depois, o painel do registro que saiu da lista fecha (geral-painel) */
+    function avisar() {
+      if (config.aoBuscar) config.aoBuscar(termo, modo);
+      if (window.RosterWork.painel) window.RosterWork.painel.conferirTela();
+    }
 
     if (botaoModo) {
       botaoModo.addEventListener('click', function () {

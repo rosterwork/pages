@@ -264,7 +264,7 @@
 .nova-extra-ver {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .nova-extra-ver-linha {
@@ -371,7 +371,7 @@
 }
 
 .nova-extra-tabela td {
-  padding: 6px 12px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--fundo-medio);
 }
 
@@ -551,7 +551,7 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  padding: 10px 12px;
+  padding: 12px;
   border-bottom: 1px solid var(--fundo-medio);
 }
 

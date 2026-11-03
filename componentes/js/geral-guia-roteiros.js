@@ -29,7 +29,8 @@
    não chega à tela e o roteiro vai ao fim. <p data-fim>: o balão
    final (no treino, o <p data-fim-treino>, quando há).
    API: lista() (os roteiros que a pessoa pode fazer), naPagina(p)
-   (os que passam pela tela), passos(id, pagina) (do começo, ou a
+   (os que passam pela tela), grupos(roteiros) (a lista como a pessoa
+   vê, no Treinamento e no ?), passos(id, pagina) (do começo, ou a
    partir da tela pedida), caminho(passo, alvo) (os passos e o fim do
    caminho clicado), entradas(passo), fimDe(container, treino),
    seletores(texto), celular(), roteiro(id).
@@ -135,8 +136,34 @@
     return lista().filter(function (t) { return !!passos(t.getAttribute('data-roteiro'), pagina); });
   }
 
+  /* a lista em grupos: primeiro a área de todos, depois a do administrador; em cada área, um grupo por tela
+     (data-grupo), na ordem em que aparecem; os roteiros do mesmo data-conjunto viram um item só, com as opções dentro (o
+     nome, a tela e a área vêm do <template data-roteiro-conjunto>).
+     [{ area, grupo, itens: [{ id, titulo, pagina } | { conjunto, titulo, opcoes: [{ id, titulo, pagina }] }] }] */
+  function grupos(roteiros) {
+    var todos = [];
+    function area(t) { return t.getAttribute('data-area') === 'admin' ? 'admin' : 'todos'; }
+    function grupoDe(t) {
+      var a = area(t), nome = t.getAttribute('data-grupo') || '';
+      var g = todos.filter(function (x) { return x.area === a && x.grupo === nome; })[0];
+      if (!g) { g = { area: a, grupo: nome, itens: [] }; todos.push(g); }
+      return g;
+    }
+    roteiros.forEach(function (t) {
+      var item = { id: t.getAttribute('data-roteiro'), titulo: t.getAttribute('data-titulo'), pagina: t.getAttribute('data-pagina') };
+      var id = t.getAttribute('data-conjunto');
+      var molde = id ? document.querySelector('template[data-roteiro-conjunto="' + id + '"]') : null;
+      if (!molde) { grupoDe(t).itens.push(item); return; }
+      var g = grupoDe(molde);
+      var c = g.itens.filter(function (x) { return x.conjunto === id; })[0];
+      if (!c) { c = { conjunto: id, titulo: molde.getAttribute('data-titulo'), opcoes: [] }; g.itens.push(c); }
+      c.opcoes.push(item);
+    });
+    return todos.filter(function (g) { return g.area === 'todos'; }).concat(todos.filter(function (g) { return g.area === 'admin'; }));
+  }
+
   RW.guiaRoteiros = {
-    lista: lista, naPagina: naPagina, passos: passos, caminho: caminho, entradas: entradas, fimDe: fimDe,
+    lista: lista, naPagina: naPagina, grupos: grupos, passos: passos, caminho: caminho, entradas: entradas, fimDe: fimDe,
     seletores: seletores, celular: celular, roteiro: roteiro
   };
 })();

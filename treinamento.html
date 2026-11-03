@@ -20,8 +20,8 @@
 
   <!-- a lista dos treinos (os roteiros do passo a passo, geral-guia-roteiros.js), na coluna de leitura: para todos e,
        depois do traço, os do administrador; um bloco por tela (o desenho dos blocos dos Ajustes, componente geral-bloco),
-       com os treinos dela dentro. Campo sem chevron começa o treino no modo treino (geral-treino.js); com chevron, abre
-       ali mesmo com as opções -->
+       que abre e fecha pelo chevron do nome (um aberto por vez), com os treinos dela dentro. Campo sem chevron começa o treino no modo treino
+       (geral-treino.js); com chevron, abre ali mesmo com as opções -->
   <div class="pagina-corpo">
     <div class="pedido-secoes coluna-leitura">
       <div class="nota">
@@ -41,11 +41,16 @@
   </div>
 </div>
 
-<!-- um bloco por tela (Escala, Trocas): o nome da tela no alto e os treinos dela dentro -->
+<!-- um bloco por tela (Escala, Trocas): o nome da tela no alto, com o chevron que abre e fecha o bloco, e os treinos
+     dela dentro (começa fechado; o JS abre o primeiro) -->
 <template id="tpl-treino-bloco">
   <section class="bloco treino-bloco">
-    <p class="bloco-titulo"><span class="rotulo-secao bloco-nome"></span></p>
-    <div class="bloco-corpo"></div>
+    <button type="button" class="bloco-titulo bloco-cabecalho" aria-expanded="false">
+      <span class="rotulo-secao bloco-nome"></span>
+      <span class="espacador-flex"></span>
+      <svg class="icone bloco-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+    </button>
+    <div class="bloco-corpo oculto"></div>
   </section>
 </template>
 

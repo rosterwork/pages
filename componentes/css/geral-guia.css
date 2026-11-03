@@ -1,7 +1,10 @@
 /* ============================================================
    GUIA — a ajuda de cada tela (componente geral-guia)
    O botão ? da linha do título (.pagina-ajuda, um .dropdown) abre a
-   lista dos passo a passo que passam pela tela e o link do manual. No
+   lista dos passo a passo que passam pela tela, em grupos como no
+   Treinamento (o nome da tela com o chevron; depois, o título
+   Administrador e os grupos dele; o conjunto, uma linha com chevron
+   e as opções embaixo, recuadas), e o link do manual. No
    passo a passo, a tela escurece (.guia-veu, na cor --veu-guia) e os
    alvos do passo ficam acesos, cada um num buraco de cantos
    arredondados, sem contorno; o balão explica (.guia-balao--passo). A
@@ -22,9 +25,47 @@
   min-width: 260px;
 }
 
-/* o selo "Visto" encosta na direita do item */
-.guia-menu-visto {
-  margin-left: auto;
+/* o grupo (a tela): o nome no jeito do título do menu, com o chevron; abre e fecha ali mesmo */
+.guia-menu-grupo-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 30px;
+  padding: 4px 8px;
+  border-radius: var(--raio-pequeno);
+  text-align: left;
+  transition: background-color 0.15s ease;
+}
+
+.guia-menu-grupo-cabecalho:hover {
+  background-color: var(--fundo-medio);
+}
+
+.guia-menu-seta {
+  flex-shrink: 0;
+  color: var(--texto-suave);
+}
+
+.guia-menu-grupo-cabecalho[aria-expanded="true"] .guia-menu-seta,
+.guia-menu-conjunto-cabecalho[aria-expanded="true"] .guia-menu-seta {
+  transform: rotate(180deg);
+}
+
+/* as opções do conjunto, recuadas embaixo da linha dele */
+.guia-menu-opcoes {
+  padding-left: 16px;
+}
+
+/* o título da parte do administrador, com a chave inglesa (como no Treinamento) */
+.guia-menu-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-forte);
 }
 
 /* ---------- o véu: a tela escura, com um buraco aceso para cada alvo (o recorte vem do geral-guia-veu.js) ---------- */
@@ -88,6 +129,11 @@
    do lado oposto ao campo, para nunca cobrir o que a pessoa toca.
    ============================================================ */
 @media (max-width: 767px) {
+  /* o nome do grupo do ? com a altura do dedo, como as linhas do menu */
+  html[data-celular] .guia-menu-grupo-cabecalho {
+    min-height: var(--toque-altura-celular);
+  }
+
   html[data-celular] .guia-balao--passo {
     left: 12px;
     right: 12px;

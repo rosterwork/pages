@@ -1,17 +1,20 @@
 /* ============================================================
    TREINAMENTO — a lista dos treinos (RosterWork.paginas.treinamento)
    Os treinos são os roteiros do passo a passo (os <template
-   data-roteiro> do index.html, lidos pelo geral-guia-roteiros.js),
-   em duas áreas, a de todos e a do administrador (só para quem
-   administra), e, em cada área, um bloco por tela (data-grupo: o
-   nome da tela no alto), no desenho dos blocos dos Ajustes
-   (componente geral-bloco). Cada treino é um campo com o Visto de
-   quem já fez; sem chevron, clicar começa o treino. Os roteiros com
-   o mesmo data-conjunto ficam num campo só (o nome vem do <template
-   data-roteiro-conjunto>), com chevron, que abre e fecha ali mesmo
-   com as opções dentro; o Visto dele só vem com todas as opções
-   concluídas. A busca filtra pelo nome do treino e da opção (o campo
-   do conjunto abre só com as opções que casam). O treino começa do
+   data-roteiro> do index.html), em grupos pelo
+   RosterWork.guiaRoteiros.grupos (o mesmo agrupamento do ?): a área
+   de todos e a do administrador (só para quem administra) e, em
+   cada área, um bloco por tela (o nome da tela no alto), no desenho
+   dos blocos dos Ajustes (componente geral-bloco). O nome do bloco
+   tem o chevron, que abre e fecha o bloco; um aberto por vez (abrir
+   um fecha o outro), e começa aberto o primeiro, como no ?. Cada
+   treino é um campo com o Visto de quem já fez; sem
+   chevron, clicar começa o treino. Os roteiros do mesmo conjunto
+   ficam num campo só, com chevron, que abre e fecha ali mesmo com as
+   opções dentro; o Visto dele só vem com todas as opções concluídas.
+   A busca filtra pelo nome do treino e da opção, e abre todos os
+   blocos e os campos do conjunto que têm o que foi procurado. O
+   treino começa do
    começo, desde o menu, no modo treino (RosterWork.treino.comecar).
    No celular, os que só existem no computador (data-so-computador)
    não aparecem.
@@ -23,70 +26,80 @@
 
   function chave(texto) { return RW.busca.normalizar(texto || ''); }
 
-  /* o bloco da tela na área (criado na primeira vez); devolve onde vão os campos */
-  function blocoDe(pagina, t) {
-    var area = pagina.querySelector('.treino-area[data-treino-area="' + (t.getAttribute('data-area') === 'admin' ? 'admin' : 'todos') + '"]');
-    var grupo = t.getAttribute('data-grupo') || '';
-    var bloco = Array.prototype.filter.call(area.querySelectorAll('.treino-bloco'), function (s) { return s.getAttribute('data-grupo') === grupo; })[0];
-    if (!bloco) {
-      bloco = RW.tpl('tpl-treino-bloco');
-      bloco.setAttribute('data-grupo', grupo);
-      bloco.querySelector('.bloco-nome').textContent = grupo;
-      area.appendChild(bloco);
-    }
-    return bloco.querySelector('.bloco-corpo');
+  /* o chevron: abre ou fecha a parte de baixo (o corpo do bloco ou as opções do conjunto) */
+  function abrir(cabeca, corpo, sim) {
+    cabeca.setAttribute('aria-expanded', sim ? 'true' : 'false');
+    corpo.classList.toggle('oculto', !sim);
+  }
+  /* aoAbrir: o que mais acontece quando abre (no bloco, os outros fecham) */
+  function ligarChevron(cabeca, corpo, aoAbrir) {
+    cabeca.addEventListener('click', function () {
+      var sim = cabeca.getAttribute('aria-expanded') !== 'true';
+      if (sim && aoAbrir) aoAbrir();
+      abrir(cabeca, corpo, sim);
+    });
+  }
+
+  /* o bloco da tela, na área dele: abrir um fecha os outros */
+  function novoBloco(pagina, g, blocos) {
+    var el = RW.tpl('tpl-treino-bloco');
+    el.querySelector('.bloco-nome').textContent = g.grupo;
+    pagina.querySelector('.treino-area[data-treino-area="' + g.area + '"]').appendChild(el);
+    var bloco = { el: el, cabeca: el.querySelector('.bloco-cabecalho'), corpo: el.querySelector('.bloco-corpo') };
+    ligarChevron(bloco.cabeca, bloco.corpo, function () {
+      blocos.forEach(function (b) { if (b !== bloco) abrir(b.cabeca, b.corpo, false); });
+    });
+    blocos.push(bloco);
+    return bloco;
+  }
+
+  /* o campo sem chevron: o campo inteiro começa o treino (o botão dentro dele leva o teclado) */
+  function novoItem(lugar, it) {
+    var el = RW.tpl('tpl-treino-item');
+    el.querySelector('.treino-item-titulo').textContent = it.titulo;
+    el.querySelector('.treino-item-visto').classList.toggle('oculto', !RW.guia.visto(it.id));
+    el.addEventListener('click', function () { RW.treino.comecar(it.id); });
+    lugar.appendChild(el);
+    return { el: el, chave: chave(it.titulo) };
   }
 
   /* o campo do conjunto: o chevron abre e fecha as opções ali mesmo */
-  function novoConjunto(pagina, c) {
+  function novoConjunto(lugar, c) {
     var el = RW.tpl('tpl-treino-conjunto');
-    el.querySelector('.treino-conjunto-titulo').textContent = c.getAttribute('data-titulo');
-    var conjunto = { el: el, chave: chave(c.getAttribute('data-titulo')), opcoes: [] };
-    var cabeca = el.querySelector('.bloco-campo-cabecalho');
-    cabeca.addEventListener('click', function () { abrir(conjunto, cabeca.getAttribute('aria-expanded') !== 'true'); });
-    blocoDe(pagina, c).appendChild(el);
+    el.querySelector('.treino-conjunto-titulo').textContent = c.titulo;
+    var conjunto = { el: el, chave: chave(c.titulo), cabeca: el.querySelector('.bloco-campo-cabecalho'),
+      corpo: el.querySelector('.treino-conjunto-lista'), opcoes: [] };
+    ligarChevron(conjunto.cabeca, conjunto.corpo);
+    c.opcoes.forEach(function (o) {
+      var op = RW.tpl('tpl-treino-opcao');
+      op.querySelector('.treino-opcao-titulo').textContent = o.titulo;
+      op.querySelector('.treino-opcao-visto').classList.toggle('oculto', !RW.guia.visto(o.id));
+      op.addEventListener('click', function () { RW.treino.comecar(o.id); });
+      conjunto.corpo.appendChild(op);
+      conjunto.opcoes.push({ el: op, chave: chave(o.titulo), visto: RW.guia.visto(o.id) });
+    });
+    el.querySelector('.treino-conjunto-visto').classList.toggle('oculto', !conjunto.opcoes.every(function (o) { return o.visto; }));
+    lugar.appendChild(el);
     return conjunto;
   }
-  function abrir(conjunto, sim) {
-    conjunto.el.querySelector('.bloco-campo-cabecalho').setAttribute('aria-expanded', sim ? 'true' : 'false');
-    conjunto.el.querySelector('.treino-conjunto-lista').classList.toggle('oculto', !sim);
-  }
 
-  /* os campos, um por roteiro (ou um por conjunto, com as opções dentro) */
+  /* os blocos, com os campos dentro (um por roteiro, ou um por conjunto, com as opções); o primeiro bloco abre */
   function montar(pagina) {
-    var itens = [], conjuntos = {};
-    RW.guiaRoteiros.lista().forEach(function (t) {
-      var id = t.getAttribute('data-roteiro');
-      var titulo = t.getAttribute('data-titulo');
-      var idConjunto = t.getAttribute('data-conjunto');
-      var molde = idConjunto ? document.querySelector('template[data-roteiro-conjunto="' + idConjunto + '"]') : null;
-      if (molde) {
-        var conjunto = conjuntos[idConjunto] = conjuntos[idConjunto] || novoConjunto(pagina, molde);
-        var opcao = RW.tpl('tpl-treino-opcao');
-        opcao.querySelector('.treino-opcao-titulo').textContent = titulo;
-        opcao.querySelector('.treino-opcao-visto').classList.toggle('oculto', !RW.guia.visto(id));
-        opcao.addEventListener('click', function () { RW.treino.comecar(id); });
-        conjunto.el.querySelector('.treino-conjunto-lista').appendChild(opcao);
-        conjunto.opcoes.push({ el: opcao, chave: chave(titulo), visto: RW.guia.visto(id) });
-        return;
-      }
-      var item = RW.tpl('tpl-treino-item');
-      item.querySelector('.treino-item-titulo').textContent = titulo;
-      item.querySelector('.treino-item-visto').classList.toggle('oculto', !RW.guia.visto(id));
-      /* o campo inteiro começa o treino (o botão dentro dele leva o teclado) */
-      item.addEventListener('click', function () { RW.treino.comecar(id); });
-      blocoDe(pagina, t).appendChild(item);
-      itens.push({ el: item, chave: chave(titulo) });
+    var estado = { blocos: [], itens: [], conjuntos: [] };
+    RW.guiaRoteiros.grupos(RW.guiaRoteiros.lista()).forEach(function (g) {
+      var bloco = novoBloco(pagina, g, estado.blocos);
+      g.itens.forEach(function (it) {
+        if (it.opcoes) estado.conjuntos.push(novoConjunto(bloco.corpo, it));
+        else estado.itens.push(novoItem(bloco.corpo, it));
+      });
     });
-    var lista = Object.keys(conjuntos).map(function (k) { return conjuntos[k]; });
-    lista.forEach(function (c) {
-      c.el.querySelector('.treino-conjunto-visto').classList.toggle('oculto', !c.opcoes.every(function (o) { return o.visto; }));
-    });
-    return { itens: itens, conjuntos: lista };
+    if (estado.blocos.length) abrir(estado.blocos[0].cabeca, estado.blocos[0].corpo, true);
+    return estado;
   }
 
   /* mostra só os treinos que casam com a busca: o campo do conjunto que casa pelo nome mostra todas as opções; pelas
-     opções, abre só com as que casam. Bloco, área e traço sem nenhum somem, e a lista vazia diz */
+     opções, abre só com as que casam. Todo bloco com resultado abre (na busca, mais de um pode ficar aberto); bloco,
+     área e traço sem nenhum somem, e a lista vazia diz */
   function filtrar(pagina, estado, termo) {
     var alvo = chave(termo);
     estado.itens.forEach(function (i) { i.el.classList.toggle('oculto', !!alvo && i.chave.indexOf(alvo) < 0); });
@@ -95,13 +108,15 @@
       var casam = c.opcoes.filter(function (o) { return peloNome || o.chave.indexOf(alvo) >= 0; });
       c.opcoes.forEach(function (o) { o.el.classList.toggle('oculto', casam.indexOf(o) < 0); });
       c.el.classList.toggle('oculto', !casam.length);
-      if (alvo && !peloNome && casam.length) abrir(c, true);
+      if (alvo && !peloNome && casam.length) abrir(c.cabeca, c.corpo, true);
     });
     function temVisivel(el, seletor) {
       return Array.prototype.some.call(el.querySelectorAll(seletor), function (x) { return !x.classList.contains('oculto'); });
     }
-    Array.prototype.forEach.call(pagina.querySelectorAll('.treino-bloco'), function (s) {
-      s.classList.toggle('oculto', !temVisivel(s, '.treino-item, .treino-conjunto'));
+    estado.blocos.forEach(function (b) {
+      var tem = temVisivel(b.corpo, '.treino-item, .treino-conjunto');
+      b.el.classList.toggle('oculto', !tem);
+      if (alvo && tem) abrir(b.cabeca, b.corpo, true);
     });
     Array.prototype.forEach.call(pagina.querySelectorAll('.treino-area'), function (a) { a.classList.toggle('oculto', !temVisivel(a, '.treino-bloco')); });
     var todos = pagina.querySelector('.treino-area[data-treino-area="todos"]');
