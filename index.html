@@ -2034,7 +2034,7 @@
     <p data-trecho="abrir-usuarios"></p>
     <p data-alvo="#arvore-usuarios .usuario-item" data-um data-avanca="clique">Clique no militar.</p>
     <p data-alvo=".painel-corpo [data-ficha-lapis][aria-label='Corrigir dados pessoais'], .painel-corpo [data-ficha-lapis][aria-label='Corrigir dados institucionais']" data-avanca="clique">Use o lápis de <strong>Dados pessoais</strong> ou de <strong>Dados institucionais</strong>.</p>
-    <p data-alvo=".painel-corpo .subtela" data-avanca="proximo" data-livre>Mude o que precisa.</p>
+    <p data-alvo=".painel-corpo .subtela" data-avanca="aparece" data-condicao="#painel-rodape [data-sub-aplicar]:not(:disabled)" data-livre>Mude o que precisa.</p>
     <p data-alvo="#painel-rodape [data-sub-aplicar]" data-avanca="clique" data-segurar>Grave pelo <strong>Salvar</strong>.</p>
     <p data-fim>Pronto. A mudança aparece em Alterações na ficha.</p>
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, a mudança apareceria em Alterações na ficha.</p>
@@ -2048,7 +2048,7 @@
     <section data-caminho="licencas" data-entrada=".painel-lateral [data-secao='licencas']"></section>
     <section data-caminho="dispensas" data-entrada=".painel-lateral [data-secao='dispensas']"></section>
     <p data-alvo=".painel-corpo [data-ficha-lapis]:not(.oculto)" data-um data-avanca="clique">Use o lápis da caixa do tipo.</p>
-    <p data-alvo=".painel-corpo [data-periodos], .painel-corpo [data-periodo-adicionar]" data-avanca="proximo" data-livre>Use o <strong>Adicionar período</strong> e escolha as datas.</p>
+    <p data-alvo=".painel-corpo [data-periodos], .painel-corpo [data-periodo-adicionar]" data-avanca="aparece" data-condicao="#painel-rodape [data-sub-aplicar]:not(:disabled)" data-livre>Use o <strong>Adicionar período</strong> e escolha as datas.</p>
     <p data-alvo="#painel-rodape [data-sub-aplicar]" data-avanca="clique" data-segurar>Grave pelo <strong>Salvar</strong>.</p>
     <p data-fim>Pronto. O afastamento vale na escala.</p>
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, o afastamento valeria na escala.</p>
@@ -2060,15 +2060,15 @@
     <p data-alvo=".painel-lateral [data-secao='carreira']" data-avanca="clique" data-pular-se=".painel-lateral [data-secao='carreira'].aba--ativa">Abra a aba <strong>Carreira</strong>.</p>
     <p data-avanca="escolha">Escolha o que fazer.</p>
     <section data-caminho="promover" data-entrada=".painel-lateral [data-ficha-acao='promover']">
-      <p data-alvo=".painel-corpo .subtela" data-avanca="proximo" data-livre>Escolha o tipo, o posto e a data da promoção.</p>
+      <p data-alvo=".painel-corpo .subtela" data-avanca="aparece" data-condicao="#painel-rodape [data-sub-aplicar]:not(:disabled)" data-livre>Escolha o tipo, o posto e a data da promoção.</p>
       <p data-alvo="#painel-rodape [data-sub-aplicar]" data-avanca="clique" data-segurar>Grave pelo <strong>Promover</strong>.</p>
     </section>
     <section data-caminho="transferir" data-entrada=".painel-lateral [data-ficha-acao='transferir']">
-      <p data-alvo=".painel-corpo .subtela" data-avanca="proximo" data-livre>Escolha a unidade e a data.</p>
+      <p data-alvo=".painel-corpo .subtela" data-avanca="aparece" data-condicao="#painel-rodape [data-sub-aplicar]:not(:disabled)" data-livre>Escolha a unidade e a data.</p>
       <p data-alvo="#painel-rodape [data-sub-aplicar]" data-avanca="clique" data-segurar>Grave pelo <strong>Transferir</strong>.</p>
     </section>
     <section data-caminho="baixa" data-entrada=".painel-corpo .ficha-botao--perigo">
-      <p data-alvo=".painel-corpo .subtela" data-avanca="proximo" data-livre>Escolha a data.</p>
+      <p data-alvo=".painel-corpo .subtela" data-avanca="aparece" data-condicao="#painel-rodape [data-sub-aplicar]:not(:disabled)" data-livre>Escolha a data.</p>
       <p data-alvo="#painel-rodape [data-sub-aplicar]" data-avanca="clique" data-segurar>Grave pelo <strong>Dar baixa</strong>.</p>
     </section>
     <p data-fim>Pronto. A ficha e a escala seguem a mudança a partir da data.</p>

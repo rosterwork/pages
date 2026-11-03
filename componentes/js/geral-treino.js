@@ -7,7 +7,8 @@
    chamada ao banco passa por passar(caminho, metodo, corpo, buscar),
    no geral-api.js; barrar só deixa ir o que lê (LEITURAS), os ensaios
    (ENSAIOS, com p_ensaio), o plano e o ensaio do Desfazer a troca do
-   dia e o Visto do passo a passo. O tema e as unidades valem só nesta
+   dia, a prévia do Salvar da Distribuição (p_previa) e o Visto do passo
+   a passo. O tema e as unidades valem só nesta
    sessão (não gravam e não avisam), como as QUIETAS; o resto é
    recusado com o aviso "No modo treino, nada é gravado.". O que passa
    vai pelos exemplos do treino (geral-treino-cenarios.js): o roteiro
@@ -118,6 +119,8 @@
     if (ENSAIOS.indexOf(nome) >= 0 && corpo && corpo.p_ensaio === true) return null;
     /* o Desfazer a troca do dia: sem p_acao só lê o plano; com p_ensaio desfaz tudo */
     if (nome === 'fn_trocas_cancelar_dia' && corpo && (corpo.p_acao == null || corpo.p_ensaio === true)) return null;
+    /* o Salvar da Distribuição: a prévia (p_previa) só mostra o que muda, e o banco desfaz as mudanças dela */
+    if (nome === 'nova_distribuicao_salvar' && corpo && corpo.p_previa === true) return null;
     if (nome === 'fn_preferencias_salvar') {
       var chaves = Object.keys(corpo || {});
       if (chaves.length === 1 && chaves[0] === 'p_ajuda') return null;   // o Visto do passo a passo
