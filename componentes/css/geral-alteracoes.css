@@ -1,7 +1,8 @@
 /* ============================================================
-   ALTERAÇÕES — o rodapé retrátil do painel com o que foi mudado
-   (quem, quando e o resumo): as Alterações manuais do dia, na
-   Escala, e as Alterações na ficha, em Usuários. Começa fechado.
+   ALTERAÇÕES — o bloco retrátil com o que foi mudado (quem, quando
+   e o resumo), o último do corpo do painel (o painel não tem rodapé
+   próprio): as Alterações manuais do dia, na Escala, e as
+   Alterações na ficha, em Usuários. Começa fechado.
    Moldes no shell (#tpl-alteracao) e em cada página (o título);
    comportamento em componentes/js/geral-alteracoes.js.
    ============================================================ */
@@ -24,10 +25,10 @@
   color: var(--texto-forte);
 }
 
-/* chevron: aponta para cima quando fechado e gira para baixo quando aberto
+/* chevron: como o da caixa que abre e fecha (.grupo-caixa-seta), para a direita fechado e para baixo aberto
    (giro instantâneo, como na árvore) */
 .alteracoes-seta {
-  transform: rotate(180deg);
+  transform: rotate(-90deg);
 }
 
 .alteracoes-toggle[aria-expanded="true"] .alteracoes-seta {

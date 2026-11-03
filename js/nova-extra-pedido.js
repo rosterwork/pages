@@ -77,7 +77,7 @@
   function textoAdm(e) {
     if (!e) return '';
     if (e.livres.length && e.livres.length < 4) return msg().desde(INICIO[e.livres[0] - 1]);
-    if (!e.trabalha && e.motivo !== 'fim_de_semana') return e.nome || msg().folga;
+    if (!e.trabalha && e.motivo !== 'sem_expediente') return e.nome || msg().folga;
     return '';
   }
 

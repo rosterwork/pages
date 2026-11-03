@@ -40,7 +40,8 @@
       .then(function (grade) { return reorganizar(grade || {}); });
   }
 
-  /* { unidade: { dia: { militares, afastados, cobertura, erro } } } -> quatro mapas por unidade/dia */
+  /* { unidade: { dia: { militares, afastados, cobertura, erro } } } -> quatro mapas por unidade/dia (também a escala que
+     vem com o mês da Extrajornada) */
   function reorganizar(grade) {
     var militares = {}, afastados = {}, cobertura = {}, erro = {};
     Object.keys(grade).forEach(function (uid) {
@@ -196,7 +197,7 @@
   }
 
   window.RosterWork.escalasDados = {
-    carregar: carregar, antecipar: antecipar, carregarMilitares: carregarMilitares, lerMilitarDia: lerMilitarDia,
+    carregar: carregar, antecipar: antecipar, reorganizar: reorganizar, carregarMilitares: carregarMilitares, lerMilitarDia: lerMilitarDia,
     lerDistribuicaoDia: lerDistribuicaoDia, lerAlteracoesDia: lerAlteracoesDia, lerPrevia: lerPrevia, corpoPrevia: corpoPrevia, painelSalvar: painelSalvar,
     lerImpressao: lerImpressao, lerImpressaoErros: lerImpressaoErros, lerSysbm: lerSysbm,
     sysbmTermo: sysbmTermo, sysbmDarCiencia: sysbmDarCiencia,

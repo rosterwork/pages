@@ -1,12 +1,15 @@
 /* ============================================================
    GUIA — a ajuda de cada tela (componente geral-guia)
    O botão ? da linha do título (.pagina-ajuda, um .dropdown) abre a
-   lista dos passo a passo da página e o link do manual. No passo a
-   passo, a tela escurece em volta do campo do passo (.guia-anel: a
-   moldura e o contorno largo na cor --veu-guia) e o balão explica
-   (.guia-balao--passo). A dica da primeira vez é o mesmo balão,
-   menor, com o mesmo destaque em volta do ? (.guia-balao--dica). As posições vêm do JS,
-   nas propriedades --guia-* (dado da tela). Camada 40 (aviso e dica).
+   lista dos passo a passo que passam pela tela e o link do manual. No
+   passo a passo, a tela escurece (.guia-veu, na cor --veu-guia) e os
+   alvos do passo ficam acesos, cada um num buraco de cantos
+   arredondados, sem contorno; o balão explica (.guia-balao--passo). A
+   dica da primeira vez é o mesmo balão, menor, com o ? aceso do mesmo
+   jeito (.guia-balao--dica). O recorte e as posições vêm do JS, nas
+   propriedades --guia-* (dado da tela). Camada 40 (aviso e dica).
+   No modo treino, o balão do celular preso em cima desce para baixo
+   da barra azul (geral-treino.css).
    Moldes #tpl-guia-* (index.html).
    ============================================================ */
 
@@ -24,17 +27,13 @@
   margin-left: auto;
 }
 
-/* ---------- destaque do campo do passo ---------- */
-.guia-anel {
+/* ---------- o véu: a tela escura, com um buraco aceso para cada alvo (o recorte vem do geral-guia-veu.js) ---------- */
+.guia-veu {
   position: fixed;
+  inset: 0;
   z-index: 40;
-  left: var(--guia-x, 0px);
-  top: var(--guia-y, 0px);
-  width: var(--guia-largura, 0px);
-  min-height: var(--guia-altura, 0px);
-  border: 2px solid var(--texto-forte);   /* a cor do foco: escura no claro, clara no escuro */
-  border-radius: var(--raio-medio);
-  outline: 4000px solid var(--veu-guia);
+  background-color: var(--veu-guia);
+  clip-path: var(--guia-recorte, none);
   pointer-events: none;
 }
 

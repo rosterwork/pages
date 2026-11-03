@@ -1,5 +1,5 @@
 /* ============================================================
-   NOVA DISTRIBUIÇÃO — bloco 7, Regras por militar
+   NOVA DISTRIBUIÇÃO — bloco 9, Regras por militar
    Um cartão por regra (fechado, o militar e a regra em texto; aberto,
    os campos): o militar (campo de digitar e escolher, no
    jeito do campo Militar das Trocas), Não pode | Só pode e a função.

@@ -19,7 +19,7 @@
 
   var campos = [];      /* [{ el, campo, formato }] — montado a cada abertura */
   var originais = {};   /* campo -> valor gravado (como aparece no controle) */
-  var enviar, desfazer, contagem, lista, formulario;
+  var enviar, desfazer, contagem, rodape, lista, formulario;
   var cpfProprio = '';  /* o RG da carteira nova é o próprio CPF */
   var grauNome = '';    /* o posto: o Sd 3ª Classe só vale para inclusão a partir de 01/11/2024 */
   var reqMinhas = 0;    /* token de "Minhas solicitações": ignora resposta antiga ao reentrar */
@@ -62,8 +62,7 @@
   function revisar() {
     var mudou = alterados();
     destacar();
-    if (enviar) enviar.disabled = !mudou.length;
-    if (desfazer) desfazer.disabled = !mudou.length;
+    if (rodape) rodape.classList.toggle('oculto', !mudou.length);   // o rodapé largo aparece só com alteração
     if (contagem) {
       contagem.textContent = !mudou.length ? '' : RosterWork.mensagens.perfil.aEnviar(mudou.length);
     }
@@ -343,6 +342,7 @@
     enviar = document.getElementById('perfil-enviar');
     desfazer = document.getElementById('perfil-desfazer');
     contagem = document.getElementById('perfil-contagem');
+    rodape = document.getElementById('perfil-rodape');
     lista = document.getElementById('perfil-minhas');
     formulario = document.querySelector('[data-aba-painel="dados"]');
     if (!formulario || !RosterWork.campos) return;

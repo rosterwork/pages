@@ -94,10 +94,19 @@
   background-color: var(--fundo-superficie);
 }
 
+/* o cabeçalho da escala do dia: a data e a unidade à esquerda; o Solicitar troca à direita */
 .escala-minha-dia-cabeca {
   display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.escala-minha-dia-textos {
+  display: flex;
   flex-direction: column;
+  flex: 1;
   gap: 2px;
+  min-width: 0;
 }
 
 .escala-minha-dia-titulo {

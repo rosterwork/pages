@@ -1,5 +1,5 @@
 /* ============================================================
-   NOVA DISTRIBUIÇÃO — bloco 1 (Postos)
+   NOVA DISTRIBUIÇÃO — bloco 2 (Postos)
    Dois cartões que abrem para editar (fechados, a lista em texto).
    As instalações, uma por linha (o nome; a segunda do mesmo tipo
    com o número, "Central de Operações 2"), com Nova instalação

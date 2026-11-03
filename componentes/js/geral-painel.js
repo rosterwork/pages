@@ -252,9 +252,23 @@
     });
   }
 
+  /* o rodapé é o único da página: no computador, fora do painel (filho do .conteudo, na largura toda); no celular, o
+     painel cobre a tela e o rodapé vai para dentro dele, no fim. Acompanha a troca do desenho (girar o aparelho) */
+  function posicionarRodape() {
+    var dentro = !!(window.RosterWork.celular && window.RosterWork.celular());
+    var lugar = dentro ? painel : painel.parentNode;
+    if (lugar && elRodape.parentNode !== lugar) lugar.appendChild(elRodape);
+  }
+
   function inicializar() {
     pegarReferencias();
     if (!painel) return;
+
+    posicionarRodape();
+    if (window.matchMedia) {
+      var tela = window.matchMedia('(max-width: 767px)');
+      if (tela.addEventListener) tela.addEventListener('change', posicionarRodape);
+    }
 
     elFechar.addEventListener('click', solicitarFechar);
 

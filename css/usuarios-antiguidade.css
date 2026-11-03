@@ -39,6 +39,16 @@
   display: flex;
 }
 
+/* o rodapé largo da Antiguidade (o rodapé único da página, irmão do corpo da aba): só na aba dela, e o corpo da aba
+   para em cima dele (49px, a altura do rodapé largo, geral-rodape) */
+.pagina:has([data-aba-painel="antiguidade"].oculto) #antiguidade-rodape {
+  display: none;
+}
+
+[data-aba-painel="antiguidade"]:has(~ #antiguidade-rodape:not(.oculto)) {
+  padding-bottom: 49px;
+}
+
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    As linhas e os títulos dos postos na altura do toque; as setas

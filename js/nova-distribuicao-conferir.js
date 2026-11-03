@@ -1,5 +1,5 @@
 /* ============================================================
-   NOVA DISTRIBUIÇÃO — bloco 9, Conferir
+   NOVA DISTRIBUIÇÃO — bloco 10, Conferir
    Três formas, num seletor: Tabela (a partir de N de serviço, N e
    os quatro seguintes, uma coluna cada, com os totais por posto),
    Simular a equipe (quantos de cada graduação) e Um dia real (quem

@@ -1,13 +1,14 @@
 /* ============================================================
    AJUSTES — configurações das unidades (NAVEGACAO §4/§5)
-   Abas no cabeçalho: Escala e Expediente (só administrador; sem ele,
-   a linha de abas some). Na Escala, a árvore de
-   unidades com um card do RITMO (escala_config: 24/48 · 24/72 ·
-   12/36) por unidade marcada. Admin clica no card → painel direito
-   edita o ritmo (ajustes_ritmo_salvar: grava, REGENERA a escala
-   automática dos lotados e audita → modal de resumo). Não-admin só
-   visualiza. A aba Expediente fica em ajustes-expediente.js. As
-   preferências pessoais (tema) moram no Meu perfil (cabeçalho).
+   Só administrador, só no computador. Abas no cabeçalho:
+   Distribuição (abre nela; o ritmo da escala é o bloco 1 dela),
+   Horário de expediente (um só para a companhia e os pelotões) e
+   Feriados (o calendário de cada unidade). Sair da Distribuição ou
+   do Horário com edição não salva pergunta antes. Quem não
+   administra fica sem as abas e vê na Distribuição "Página só do
+   administrador.". Cada aba mora no seu arquivo:
+   nova-distribuicao*.js, ajustes-horario.js e ajustes-feriados.js.
+   As preferências pessoais (tema) moram no Meu perfil (cabeçalho).
    ============================================================ */
 (function () {
   'use strict';
@@ -15,189 +16,56 @@
   window.RosterWork = window.RosterWork || {};
   window.RosterWork.paginas = window.RosterWork.paginas || {};
 
-  var OPCOES_RITMO = ['24/48', '24/72', '12/36'];
+  /* ---------- abas (Distribuição · Horário de expediente · Feriados) ---------- */
+  var abaAtual = null;   // a aba à mostra
 
-  var ctx = null;           // edição aberta: { unidade, ritmoOriginal, escolhido, btnSalvar }
-  var guardaLigada = false;
-
-
-  /* '24/48' -> '24 h de serviço · 48 h de folga' */
-  function descreverRitmo(ritmo) {
-    var p = String(ritmo || '').split('/');
-    if (p.length !== 2) return '';
-    return p[0] + ' h de serviço · ' + p[1] + ' h de folga';
+  /* o arquivo de cada aba: a Distribuição inicia com a página; Horário e Feriados, ao abrir a aba (ativar) */
+  function modulo(nome) {
+    return { distribuicao: RosterWork.novaDistribuicao, horario: RosterWork.ajustesHorario, feriados: RosterWork.ajustesFeriados }[nome] || null;
   }
 
-  /* título do painel: o PEL mostra a companhia acima ("2ªCIBM / 1ºPEL") */
-  function tituloUnidade(unidade) {
-    if (unidade.tipo === 'PEL' && RosterWork.arvoreUnidades) {
-      var pai = RosterWork.arvoreUnidades.pai(unidade.unidade_id);
-      if (pai) return pai.nome + ' / ' + unidade.nome;
-    }
-    return unidade.nome;
-  }
-
-  function sujo() { return !!(ctx && ctx.escolhido && ctx.escolhido !== ctx.ritmoOriginal); }
-
-  /* ---------- card do ritmo (conteúdo da árvore) ---------- */
-  function renderConteudo(container, unidade, itens) {
-    var ritmo = itens.length ? itens[0].ritmo : '24/48';
-    var card = RosterWork.tpl('tpl-ajuste-ritmo-cartao');
-    if (!card) return;
-    card.querySelector('.ajuste-cartao-valor').textContent = ritmo;
-    card.querySelector('.ajuste-cartao-ajuda').textContent = descreverRitmo(ritmo);
-    card.setAttribute('data-unidade-id', unidade.unidade_id);
-    /* o ritmo muda quem tem a unidade na área do papel */
-    if (RosterWork.sessao.podeAdministrar('pelotao', unidade.unidade_id)) {
-      card.classList.add('ajuste-cartao--clicavel');
-      card.addEventListener('click', function () { abrirPainel(unidade, ritmo); });
-    }
-    container.appendChild(card);
-  }
-
-  /* ---------- painel direito: editar o ritmo (só admin) ---------- */
-  function aoFechar() { ctx = null; }
-
-  function abrirPainel(unidade, ritmoAtual) {
-    if (!RosterWork.painel) return;
-    RosterWork.painel.abrir({
-      titulo: tituloUnidade(unidade),
-      tituloExtra: unidade.cidade ? '- ' + unidade.cidade : '',
-      modoFixo: 'editar',
-      aoFechar: aoFechar,
-      aoTentarFechar: function () { if (!sujo()) return false; tentarFechar(); return true; }   // X/Esc confirmam o descarte
-    });
-    ctx = { unidade: unidade, ritmoOriginal: ritmoAtual, escolhido: ritmoAtual, btnSalvar: null };
-
-    var corpo = RosterWork.painel.corpo();
-    var rodape = RosterWork.painel.rodape();
-    if (!corpo) return;
-
-    var secao = RosterWork.painel.criarSecao('Ritmo da escala');
-    var linha = RosterWork.tpl('tpl-ajuste-ritmo-editar');
-    if (secao && linha) {
-      secao.appendChild(linha);
-      secao.appendChild(RosterWork.painel.criarLinha('Efeito', RosterWork.mensagens.ajustes.efeitoRitmo));
-      corpo.appendChild(secao);
-    }
-
-    var texto = corpo.querySelector('#ajuste-ritmo-texto');
-    var menu = corpo.querySelector('#ajuste-ritmo-menu');
-    if (texto) texto.textContent = ritmoAtual;
-    if (menu) {
-      OPCOES_RITMO.forEach(function (opcao) {
-        var item = RosterWork.tpl('tpl-ajuste-ritmo-opcao');
-        if (!item) return;
-        item.textContent = opcao + ' · ' + descreverRitmo(opcao);
-        item.addEventListener('click', function () {
-          ctx.escolhido = opcao;
-          if (texto) texto.textContent = opcao;
-          atualizarSalvar();
-        });
-        menu.appendChild(item);
-      });
-    }
-
-    if (rodape) {
-      rodape.appendChild(document.getElementById('tpl-ajuste-painel-acoes').content.cloneNode(true));
-      rodape.classList.remove('oculto');
-      ctx.btnSalvar = rodape.querySelector('#ajuste-salvar');
-      var btnCancelar = rodape.querySelector('#ajuste-cancelar');
-      if (btnCancelar) btnCancelar.addEventListener('click', tentarFechar);
-      if (ctx.btnSalvar) ctx.btnSalvar.addEventListener('click', salvar);
-    }
-
-    if (!guardaLigada && RosterWork.guardaSaida) {
-      RosterWork.guardaSaida.registrar(sujo);
-      guardaLigada = true;
-    }
-  }
-
-  function atualizarSalvar() {
-    if (ctx && ctx.btnSalvar) ctx.btnSalvar.disabled = !sujo();
-  }
-
-  function tentarFechar() {
-    if (sujo() && RosterWork.confirmar) {
-      RosterWork.confirmar({
-        tipo: 'aviso',
-        mensagem: RosterWork.mensagens.edicao.sairSemSalvar,
-        textoConfirmar: RosterWork.mensagens.botoes.sairSemSalvar,
-        textoCancelar: RosterWork.mensagens.botoes.continuarEditando,
-        aoConfirmar: function () { ctx = null; RosterWork.painel.fechar(); }
-      });
-      return;
-    }
-    RosterWork.painel.fechar();
-  }
-
-  /* mudar o ritmo regenera o serviço (QUANDO) de todos e recalcula a distribuição:
-     mostra a data já sugerida (modal padrão, amanhã; "Escolher outra data" abre o campo) e manda
-     como p_recalcular_desde */
-  function salvar() {
-    if (!sujo()) return;
-    RosterWork.pedirData({
-      mensagem: RosterWork.mensagens.postos.impactoDistribuicao,
-      textoConfirmar: RosterWork.mensagens.botoes.salvar,
-      sugerida: true,
-      aoConfirmar: function (iso) {
-        if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal();   // recalcula a escala: círculo + tela travada
-        RosterWork.apiFetch('/rest/v1/rpc/ajustes_ritmo_salvar', {
-          metodo: 'POST',
-          corpo: { p_unidade_id: ctx.unidade.unidade_id, p_ritmo: ctx.escolhido, p_recalcular_desde: iso }
-        }).then(function (resp) {
-          if (!resp.ok) return { _falha: 'servidor' };
-          return resp.json();
-        }).then(function (r) {
-          if (RosterWork.esconderVeuGlobal) RosterWork.esconderVeuGlobal();
-          if (r && r._falha === 'servidor') {
-            if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.falhaServidor });
-          } else if (r && r.success) {
-            ctx = null;
-            RosterWork.painel.fechar();
-            if (RosterWork.arvoreUnidades) RosterWork.arvoreUnidades.recarregar();   // o ritmo muda card + contagem
-            if (r.log && RosterWork.resumo) RosterWork.resumo.abrirModal(r.log, { pagina: 'Ajustes' });
-          } else if (RosterWork.avisar) {
-            RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || RosterWork.mensagens.geral.falhaServidor });
-          }
-        }).catch(function () {
-          if (RosterWork.esconderVeuGlobal) RosterWork.esconderVeuGlobal();
-          if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.semConexao });
-        });
-      }
-    });
-  }
-
-  /* ---------- abas (Escala · Expediente) ---------- */
-  function trocarAba(conteudo, nome) {
+  function mostrarAba(conteudo, nome) {
+    abaAtual = nome;
     if (RosterWork.painel && RosterWork.painel.estaAberto()) RosterWork.painel.fechar();
-    Array.prototype.forEach.call(conteudo.querySelectorAll('.pagina-corpo [data-aba-painel]'), function (p) {
+    Array.prototype.forEach.call(conteudo.querySelectorAll('.pagina-corpo > [data-aba-painel]'), function (p) {
       p.classList.toggle('oculto', p.getAttribute('data-aba-painel') !== nome);
     });
-    if (nome === 'expediente' && RosterWork.ajustesExpediente) RosterWork.ajustesExpediente.ativar();
+    var m = modulo(nome);
+    if (m && m.ativar) m.ativar();
+  }
+
+  /* saindo de uma aba com edição não salva, ela pergunta: descartando, a aba troca; continuando, volta para ela */
+  function trocarAba(conteudo, aba) {
+    var nome = aba.getAttribute('data-aba');
+    if (nome === abaAtual) return;
+    var atual = modulo(abaAtual);
+    if (atual && atual.sairDaAba) {
+      var anterior = conteudo.querySelector('#ajustes-abas [data-aba="' + abaAtual + '"]');
+      atual.sairDaAba(
+        function () { mostrarAba(conteudo, nome); },
+        function () { if (anterior) anterior.click(); }
+      );
+      return;
+    }
+    mostrarAba(conteudo, nome);
   }
 
   /* ---------- entrada da página ---------- */
   function iniciar(conteudo) {
+    var S = RosterWork.sessao;
     var abas = conteudo.querySelector('#ajustes-abas');
-    if (abas && RosterWork.abas) RosterWork.abas.ligar(abas, function (aba) { trocarAba(conteudo, aba.getAttribute('data-aba')); });
-    /* a aba Expediente: todo administrador (o banco confere a área de cada unidade ao salvar); sem ela, a Escala fica
-       sozinha e a linha de abas some */
-    var abaExpediente = conteudo.querySelector('#ajustes-abas [data-aba="expediente"]');
-    if (abaExpediente && RosterWork.sessao.temPapel('pelotao') && RosterWork.ajustesExpediente) {
-      abaExpediente.classList.remove('oculto');
-      RosterWork.ajustesExpediente.montar(conteudo);
-    } else if (abas) {
-      abas.classList.add('oculto');
+    abaAtual = null;
+    if (!abas) return Promise.resolve();
+    /* administrador (ou programador); quem não é fica sem as abas */
+    var admin = !!((S.temPapel && S.temPapel('pelotao')) || (S.ehProgramador && S.ehProgramador()));
+    abas.classList.toggle('oculto', !admin);
+    if (admin) {
+      if (RosterWork.ajustesHorario) RosterWork.ajustesHorario.montar(conteudo);
+      if (RosterWork.ajustesFeriados) RosterWork.ajustesFeriados.montar(conteudo);
+      if (RosterWork.abas) RosterWork.abas.ligar(abas, function (aba) { trocarAba(conteudo, aba); });
     }
-    var container = conteudo.querySelector('#arvore-ajustes');
-    if (!container || !RosterWork.arvoreUnidades) return Promise.resolve();
-    return RosterWork.arvoreUnidades.montar(container, {
-      rpcConteudo: 'ajustes_ritmo_listar',
-      chaveUnidade: 'unidade_id',
-      textoContagem: function (itens) { return itens.length ? itens[0].ritmo : ''; },
-      renderConteudo: renderConteudo
-    });
+    abaAtual = 'distribuicao';
+    return RosterWork.novaDistribuicao ? RosterWork.novaDistribuicao.iniciar() : Promise.resolve();
   }
 
   window.RosterWork.paginas.ajustes = { iniciar: iniciar };

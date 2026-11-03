@@ -34,7 +34,7 @@
   var foraSug = {};        // quem ficou com cota na última sugestão: cpf -> motivo (o grupo Faltam da lista mostra)
   var reserva = false;     // a última sugestão usou o cálculo simples do banco
   var resultadoFechado = false;   // o resultado da sugestão fechado no X (volta no próximo Preencher)
-  var escala = null;       // a escala do mês sem extra: { comp, cobertura, erro }
+  var escala = null;       // a escala do mês, a mesma da Escala: { comp, cobertura, erro, militares }
   var escalaSeq = 0;
   var escalaLendo = null;  // o mês com a leitura da escala no ar
   var escalaFalhou = null; // o mês em que a leitura da escala falhou (a frase no lugar do calendário)
@@ -94,8 +94,8 @@
   function antigo(k) { return modo === 'ajustes' && lancada() && k < somaDia(d.hoje, -7); }
   function voluntarios() { return d.militares.filter(function (m) { return m.voluntario && m.termo && (m.concedidas || 0) > 0; }); }
   function blocos(a) { return a.blocos.map(Number); }
-  /* a CNH que a viatura pede ('' = qualquer uma) está entre as que ele conduz (o banco diz quais) */
-  function conduz(m, cnh) { return !cnh || (m.conduz || []).indexOf(cnh) >= 0; }
+  function F() { return RW.novaExtraFalta; }
+  function conduz(m, cnh) { return F().conduz(m, cnh); }
   /* o que impede o militar de tirar extra no dia pela escala dele (serviço, folga, afastamento ou expediente o dia
      todo); null se nada impede */
   function impedimento(m, k) {
@@ -106,49 +106,28 @@
     return null;
   }
 
-  /* a falta de uma unidade num dia, por horário, a vermelha e a amarela (a que começa com "a"): base (a da escala),
-     cond (condutor que sobra) e total (o que sobra com as extras). Cada extra cobre, na ordem da sugestão, um
-     condutor vermelho que ele conduz, a gente vermelha, um condutor amarelo (o chefe dirigindo) e a gente amarela */
+  /* o dia de verdade: no mês lançado, sem mudança por salvar no dia, a escala de hoje já tem as extras e diz o que sobra */
+  function real(k) { return lancada() && !!d.real && !alteracoes().some(function (c) { return mud[c].data === k; }); }
+  /* a falta de uma unidade num dia e o que as extras cobrem (nova-extra-falta.js); no dia de verdade, com a cor da escala */
   function faltaDoDia(uid, k, alocs) {
-    function ler(mapa) { return ((mapa || {})[String(uid)] || {})[k] || {}; }
-    function tira(lista, m) { for (var i = 0; i < lista.length; i++) { if (conduz(m, lista[i])) { lista.splice(i, 1); return true; } } return false; }
-    var base = ler(d.falta), pede = ler(d.falta_condutor), abase = ler(d.falta_amarela), apede = ler(d.falta_amarela_condutor);
-    var aqui = alocs.filter(function (a) { return +a.unidade === +uid && a.data === k; });
-    var r = { base: {}, cond: {}, total: {}, cnh: [], abase: {}, acond: {}, atotal: {}, acnh: [], cobre: {} };
-    /* o que cada extra cobriu (condutor, gente, chefe, ideal), para o relatório do dia */
-    function cobriu(a, o) { var l = r.cobre[a.cpf] = r.cobre[a.cpf] || []; if (l.indexOf(o) < 0) l.push(o); }
-    [1, 2, 3, 4].forEach(function (b) {
-      var conds = (pede[String(b)] || []).slice(), aconds = (apede[String(b)] || []).slice();
-      conds.forEach(function (c) { if (c && r.cnh.indexOf(c) < 0) r.cnh.push(c); });
-      aconds.forEach(function (c) { if (c && r.acnh.indexOf(c) < 0) r.acnh.push(c); });
-      var gente = (base[String(b)] || 0) - conds.length, agente = (abase[String(b)] || 0) - aconds.length;
-      aqui.forEach(function (a) {
-        if (blocos(a).indexOf(b) < 0) return;
-        var m = u().militar(a.cpf) || {};
-        if (tira(conds, m)) { cobriu(a, 'condutor'); return; }
-        if (gente > 0) { gente--; cobriu(a, 'gente'); return; }
-        if (tira(aconds, m)) { cobriu(a, 'chefe'); return; }
-        if (agente > 0) { agente--; cobriu(a, 'ideal'); }
-      });
-      r.base[b] = base[String(b)] || 0;
-      r.cond[b] = conds.length;
-      r.total[b] = Math.max(0, gente) + conds.length;
-      r.abase[b] = abase[String(b)] || 0;
-      r.acond[b] = aconds.length;
-      r.atotal[b] = Math.max(0, agente) + aconds.length;
-    });
-    return r;
+    var e = real(k) && escala && (escala.erro[uid] || {})[k];
+    return F().doDia(d, uid, k, alocs, e && e.length === 24 ? e : null);
   }
-  function somaFalta(f) { return f.total[1] + f.total[2] + f.total[3] + f.total[4]; }
-  /* a cor do dia de um pelotão: 'erro' ou 'alerta' se ainda sobra; 'ok' se tinha erro e as extras cobriram */
-  function corDe(f) {
-    function tem(o) { return [1, 2, 3, 4].some(function (b) { return o[b] > 0; }); }
-    return tem(f.total) ? 'erro' : tem(f.atotal) ? 'alerta' : (tem(f.base) || tem(f.abase)) ? 'ok' : '';
-  }
+  function somaFalta(f) { return F().soma(f); }
+  function corDe(f) { return F().cor(f); }
   /* as unidades que entram na conta da falta: os pelotões (na companhia, a extra entra só manualmente) */
   function pelotoes(lista) { return (lista || d.unidades).filter(function (x) { return x.pelotao !== false; }); }
 
   /* ---------- as barras: a escala do mês (a mesma leitura da Escala) e a conta do depois ---------- */
+  /* a escala do mês vem com o mês (nova_extra_mes, da conta guardada no banco); com mudança do painel do dia da Escala
+     esperando o Salvar, ela é lida com o rascunho (carregarEscala) */
+  function escalaDoMes() {
+    if (!d.escala || !RW.escalasDados || RW.escalasDados.corpoPrevia('ler_escala_mes', {})) return;
+    var r = RW.escalasDados.reorganizar(d.escala);
+    escalaSeq++;
+    escalaLendo = null;
+    escala = { comp: d.competencia, cobertura: r.cobertura, erro: r.erro, militares: r.militares };
+  }
   /* uma leitura por vez (o calendário mostra o círculo até ela chegar). Se falhar, a frase fica no lugar do calendário,
      como na Escala, e a mensagem técnica no console; abrir o passo de novo tenta outra vez */
   function carregarEscala() {
@@ -172,12 +151,17 @@
     }, falhou);
   }
   function escalaPronta() { return !!escala && escala.comp === d.competencia; }
-  function antesDe(uid, k) { var c = escala && (escala.cobertura[uid] || {})[k]; return c && c.length === 24 ? c : null; }
-  /* o depois: a escala com as extras (+1 por extra nas horas dele) e o vermelho e o amarelo só onde a falta sobra */
+  /* o antes: com extra na escala (mês lançado ou reaberto), a escala sem elas, do banco (sem_extra); senão, a da Escala */
+  function antesDoDia(uid, k) { return ((d.sem_extra || {})[uid] || {})[k] || { cobertura: escala && (escala.cobertura[uid] || {})[k], erro: escala && (escala.erro[uid] || {})[k] }; }
+  function antesDe(uid, k) { var c = antesDoDia(uid, k).cobertura; return c && c.length === 24 ? c : null; }
+  /* o depois: a escala com as extras (+1 por extra nas horas dele) e o vermelho e o amarelo só onde a falta sobra; no
+     dia de verdade, a barra da Escala */
   function depoisDe(uid, k, alocs, falta) {
+    var rc = real(k) && escala && (escala.cobertura[uid] || {})[k];
+    if (rc && rc.length === 24) return { cobertura: rc.map(Number), erro: ((escala.erro[uid] || {})[k] || []).map(Number) };
     var cob = antesDe(uid, k);
     if (!cob) return null;
-    var err = (escala.erro[uid] || {})[k] || [], c = cob.map(Number), e = [];
+    var err = antesDoDia(uid, k).erro || [], c = cob.map(Number), e = [];
     alocs.forEach(function (a) {
       if (+a.unidade !== +uid || a.data !== k) return;
       blocos(a).forEach(function (b) { for (var h = (b - 1) * 6; h < b * 6; h++) c[h]++; });
@@ -194,8 +178,7 @@
      (amarelo que sobra), 'ok' ou 'sem' (o dia sem escala) */
   function situacao(uid, k, alocs) {
     if (!antesDe(uid, k)) return ['sem', 'sem', 'sem', 'sem'];
-    var f = faltaDoDia(uid, k, alocs);
-    return [1, 2, 3, 4].map(function (b) { return f.total[b] > 0 ? 'falta' : f.atotal[b] > 0 ? 'ideal' : 'ok'; });
+    return F().situacao(faltaDoDia(uid, k, alocs));
   }
   function porDia() { return RW.novaExtraPorDia; }
 
@@ -262,7 +245,7 @@
     }).then(function (r) {
       RW.pararCarregando(btn);
       if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
-      mud = {}; sugeridas = []; postas = null;
+      mud = {}; sugeridas = []; postas = null; if (modo === 'ajustes') escala = null;   // o ajuste muda a escala: relida com o mês
       q('#p3-motivo').value = '';
       RW.novaExtraOrg.resumo(r);
       aoSalvar();
@@ -354,6 +337,7 @@
       if (RW.guardaSaida) RW.guardaSaida.registrar(function () { return el && el.isConnected && (alteracoes().length > 0 || RW.novaExtraOtimizador.calculando()); });
     }
     escalaFalhou = null;
+    escalaDoMes();
     redesenhar();
   }
 
@@ -389,8 +373,7 @@
     conduz: conduz, impedimento: impedimento,
     faltaDoDia: faltaDoDia, situacao: situacao, antesDe: antesDe, depoisDe: depoisDe, corDe: corDe, travado: travado, soLeitura: soLeitura, antigo: antigo,
     grafico: function (cob, uid, erro) { return porDia().grafico(cob, uid, erro); },
-    coberturaEscala: function () { return escala.cobertura; },
-    erroAntes: function (uid, k) { return (escala.erro[uid] || {})[k]; },
+    erroAntes: function (uid, k) { return antesDoDia(uid, k).erro; },
     /* quem está de serviço no dia, na escala (sem as extras já lançadas, que aparecem nas vagas) */
     deServico: function (uid, k) { return ((escala.militares[uid] || {})[k] || []).filter(function (p) { return p.origem !== 'extra'; }); },
     pelotoes: pelotoes, diasDoMes: diasDoMes, dataDe: dataDe, dataLonga: dataLonga, somaDia: somaDia,

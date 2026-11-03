@@ -6,6 +6,9 @@
    (F5) ou ir para outro endereço. O texto e os botões são do
    navegador (não dá para customizar nem trocar pelo nosso modal).
    API: RosterWork.guardaSaida.registrar(verificar) -> cancelar()
+        RosterWork.guardaSaida.dispensar(): a próxima conferência diz
+        que não há nada pendente (a saída do modo treino, onde nada
+        é gravado, troca de tela sem perguntar)
    ============================================================ */
 (function () {
   'use strict';
@@ -32,8 +35,12 @@
     };
   }
 
+  var dispensado = false;
+  function dispensar() { dispensado = true; }
+
   /* há alguma edição não salva agora? */
   function temPendencia() {
+    if (dispensado) { dispensado = false; return false; }
     for (var i = 0; i < verificadores.length; i++) {
       if (verificadores[i]()) return true;
     }
@@ -48,5 +55,5 @@
     return mensagem;
   });
 
-  window.RosterWork.guardaSaida = { registrar: registrar, temPendencia: temPendencia };
+  window.RosterWork.guardaSaida = { registrar: registrar, temPendencia: temPendencia, dispensar: dispensar };
 })();

@@ -123,15 +123,8 @@
   function carregar() {
     var meu = ++pedido;
     var comp = RW.novaExtra.comp();
-    var naDistribuicao = function () { return aba === 'passo' && (passo === 3 || passo === 4); };
     lendo = comp;
     if (!d || d.competencia !== comp || falhou) RW.novaExtra.leitura('mes', 'lendo');
-    /* na Distribuição e nos Ajustes, a escala do mês começa a ser lida junto com o mês (as mesmas unidades) */
-    if (d && naDistribuicao() && RW.escalasDados && RW.escalasDados.antecipar) {
-      var fim = new Date(+comp.slice(0, 4), +comp.slice(5, 7), 0);
-      RW.escalasDados.antecipar(d.unidades.map(function (x) { return x.id; }), comp,
-        fim.getFullYear() + '-' + String(fim.getMonth() + 1).padStart(2, '0') + '-' + String(fim.getDate()).padStart(2, '0'));
-    }
     /* a falha fica no lugar da área (a frase), com a mensagem técnica no console */
     function falha(texto, tecnico) {
       if (meu !== pedido || !el.isConnected) return;

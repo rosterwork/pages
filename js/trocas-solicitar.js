@@ -14,7 +14,8 @@
      ligar({ aoSolicitar, aoMudar }) — guarda os callbacks (1x)
      abrir(opcoes) — {} = Solicitar · { registrar: true } = Registrar ·
        { cobrar: { cpf, nome, grau, minutos } } = Solicitar em modo
-       cobrança
+       cobrança · mesInicial (um dia, aaaa-mm-dd) = o calendário abre
+       no mês dele (a Minha escala da Escala)
      formulario — mostrarModo, ligarSoNumeros, parteNumero,
        parteAno, validarParte, ligarLimpezaErros
    ============================================================ */
@@ -95,7 +96,7 @@
     corpo.textContent = '';
     aberto = true;
     RW.trocasVarias.montar({
-      corpo: corpo, registrar: registrar, cobrar: (!registrar && opcoes.cobrar) || null,
+      corpo: corpo, registrar: registrar, cobrar: (!registrar && opcoes.cobrar) || null, mesInicial: opcoes.mesInicial || null,
       aoSolicitar: cbs.aoSolicitar, aoMudar: cbs.aoMudar, cancelar: cancelar
     });
   }

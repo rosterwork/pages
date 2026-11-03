@@ -170,20 +170,23 @@
     barra.classList.remove('oculto');
   }
 
-  /* rodapé do admin, sem sub-tela: as Alterações na ficha (sem nenhuma, não aparece) */
-  function montarRodape() {
+  /* o fim da ficha, para o admin, sem sub-tela: as Alterações na ficha (sem nenhuma, não aparece). O painel não tem
+     rodapé próprio: o rodapé (o único da página, fora do painel) fica limpo e só leva o Cancelar e o botão das
+     sub-telas */
+  function limparRodape() {
     var rodape = RosterWork.painel.rodape();
     if (!rodape) return;
     rodape.textContent = '';
     rodape.classList.add('oculto');
-    if (!ehAdmin() || !RosterWork.alteracoes) return;
-    var bloco = RosterWork.alteracoes.montar('tpl-ficha-alteracoes', alteracoes);
-    if (!bloco) return;
-    rodape.appendChild(bloco);
-    rodape.classList.remove('oculto');
   }
 
-  /* desenha a ficha da aba ativa; o admin ganha os lápis, a barra e o Dar baixa */
+  function porAlteracoes(corpo) {
+    if (sub || !ehAdmin() || !RosterWork.alteracoes) return;
+    var bloco = RosterWork.alteracoes.montar('tpl-ficha-alteracoes', alteracoes);
+    if (bloco) corpo.appendChild(bloco);
+  }
+
+  /* desenha a ficha da aba ativa; o admin ganha os lápis, a barra e o Dar baixa; as Alterações na ficha por último */
   function mostrarSecao() {
     var corpo = RosterWork.painel.corpo();
     if (!corpo || !fichaAtual) return;
@@ -191,14 +194,16 @@
     resetarModulos();
     corpo.textContent = '';
     montarBarra();
-    montarRodape();
+    limparRodape();
     var L = RosterWork.usuariosPainelLeitura;
     var admin = ehAdmin(), ativo = !ehInativo();
     var afast = RosterWork.usuariosPainelAfastamentos;
     if (afast && afast.ehSecao(secaoAtual)) {
-      /* Férias · Licenças · Dispensas: o ano no subcabeçalho e uma caixa por tipo; o lápis só para quem administra o militar ativo */
+      /* Férias · Licenças · Dispensas: o ano no subcabeçalho e uma caixa por tipo; o lápis só para quem administra o militar
+         ativo; elas desenham depois de ler (e a cada troca de ano), e então põem as Alterações no fim */
       afast.montar(corpo, RosterWork.painel.subcabecalho(), {
-        secao: secaoAtual, pessoa: pessoaAtual, admin: admin && ativo, anoInicial: anoInicial, editar: abrirAfastamento
+        secao: secaoAtual, pessoa: pessoaAtual, admin: admin && ativo, anoInicial: anoInicial, editar: abrirAfastamento,
+        aoDesenhar: function () { porAlteracoes(corpo); }
       });
     } else if (secaoAtual === 'carreira') {
       if (admin && ativo && RosterWork.usuariosPainelTransferir) {
@@ -215,10 +220,12 @@
           corpo.appendChild(baixa);
         }
       }
+      porAlteracoes(corpo);
     } else {
       L.montarDados(corpo, fichaAtual, admin ? { corrigir: function () { abrirCorrecao('pessoais'); } } : null);
       /* Acesso ao sistema (só admin, militar ativo): link de cadastro ou de nova senha */
       if (RosterWork.usuariosPainelAcesso) RosterWork.usuariosPainelAcesso.montar(corpo, fichaAtual, pessoaAtual);
+      porAlteracoes(corpo);
     }
   }
 

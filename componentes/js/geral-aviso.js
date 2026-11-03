@@ -9,6 +9,9 @@
      embaixo da mensagem e nota no fim; com lista, o ícone vai para o alto
    + semIcone (opcional, no confirmar)                            -> sem o
      ícone (ex.: o termo de responsabilidade, que é leitura, não alerta)
+   + fixo (opcional, no avisar)                                   -> outro
+     avisar não o troca enquanto ele está aberto (ex.: o aviso do modo
+     treino, antes do erro que a tela mostraria pela mesma recusa)
    tipo: 'sucesso' | 'aviso' | 'erro'. Aparece sobre qualquer modal e
    só fecha pelos botões (nunca por clique fora nem Esc). O elemento
    #veu-aviso é fixo no shell; aqui só preenchemos e mostramos/escondemos.
@@ -23,6 +26,7 @@
   var aoCancelar = null;
   var aoAlternativo = null;
   var focoAnterior = null;   /* quem tinha o foco antes do aviso (para devolver) */
+  var fixo = false;          /* o aviso aberto é fixo (avisar com fixo: true) */
 
   function preparar() {
     if (veu) return true;
@@ -118,6 +122,9 @@
 
   function avisar(opcoes) {
     opcoes = opcoes || {};
+    /* o aviso fixo aberto (o do modo treino) não é trocado pelo aviso que a tela mostra logo depois, sobre a mesma falha */
+    if (fixo && veu && veu.classList.contains('modal-veu--aberto')) return;
+    fixo = !!opcoes.fixo;
     mostrar({
       tipo: opcoes.tipo || 'aviso',
       mensagem: opcoes.mensagem,
@@ -128,6 +135,7 @@
 
   function confirmar(opcoes) {
     opcoes = opcoes || {};
+    fixo = false;
     mostrar({
       tipo: opcoes.tipo || 'aviso',
       mensagem: opcoes.mensagem,

@@ -13,7 +13,11 @@
    Quem não é admin só lê (os postos mudam na Distribuição). Na
    Escala, o subcabeçalho tem para todos o Imprimir, à direita (antes
    do desfazer/refazer), que abre a sub-tela de impressão
-   (escalas-impressao.js).
+   (escalas-impressao.js), e o Solicitar troca, à esquerda (à direita
+   do menu Editar o dia, para o admin). O Solicitar troca e o
+   Registrar troca de serviço abrem ali o formulário da troca
+   (escalas-painel-troca.js); o Registrar grava na hora, fora do
+   rascunho: só sem mudança não salva.
    Cada mudança vai para o rascunho do dia, e a lista mostra o dia
    como vai ficar (a prévia, escala_previa, já com o Ciclo que
    espera o Salvar), com a nota O que
@@ -42,7 +46,8 @@
 
   window.RosterWork = window.RosterWork || {};
 
-  var ctx = null;       // { corpo, rodape, unidadeId, iso, admin, comparar, dados, dadosAntes, chaveDados, emSub, comHistorico, salvando,
+  var ctx = null;       // { corpo, rodape, unidadeId, iso, admin, comparar, dados, dadosAntes, chaveDados, emSub, comHistorico,
+                        //   historico (o bloco das Alterações manuais, no fim do corpo), salvando,
                         //   sugestao, ultima: { mudou, sugestao } (a nota O que mudou da última gravação) }
   var base = null;      // o dia gravado (a última leitura): { dados, ajustes, pontuais }
   var rasc = null;      // a mudança em andamento, sobre o dia gravado
@@ -451,6 +456,8 @@
     if (!ctx) return;
     ctx.emSub = false;
     foto = null;
+    /* de volta à lista: o rodapé da sub-tela (o Cancelar e o botão que aplica) sai, e o Salvar do rodapé largo volta */
+    if (ctx.rodape) { ctx.rodape.textContent = ''; ctx.rodape.classList.add('oculto'); }
     if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
     if (base) {
       montarSubcabecalho();
@@ -561,17 +568,18 @@
   }
 
   /* subcabeçalho do Dia (só na lista): para o admin, o menu Editar o dia e, à direita, o desfazer/refazer; para todos,
-     só na Escala (o formulário de impressão mora lá), o Imprimir, à direita, antes do desfazer/refazer. Enquanto
-     grava, os botões ficam desligados */
+     só na Escala (os moldes moram lá), o Solicitar troca, à esquerda (à direita do menu), e o Imprimir, à direita, antes
+     do desfazer/refazer. Enquanto grava, os botões ficam desligados */
   function montarSubcabecalho() {
     var sub = RosterWork.painel.subcabecalho();
     if (!sub) return;
     sub.textContent = '';
     var imprimir = !ctx.emSub && !ctx.comparar && RosterWork.escalasImpressao
       ? RosterWork.escalasImpressao.botaoDoDia(abrirImpressao) : null;
-    if (ctx.emSub || (!ctx.admin && !imprimir)) { sub.classList.add('oculto'); return; }
-    /* o menu Editar o dia: Adicionar, Remover e Remanejar abrem as perguntas; Registrar troca de serviço leva ao
-       Registrar troca das Trocas */
+    var solicitar = !ctx.emSub && !ctx.comparar && RosterWork.escalasPainelTroca ? RosterWork.tpl('tpl-escala-dia-solicitar') : null;
+    if (ctx.emSub || (!ctx.admin && !imprimir && !solicitar)) { sub.classList.add('oculto'); return; }
+    /* o menu Editar o dia: Adicionar, Remover e Remanejar abrem as perguntas; Registrar troca de serviço abre o
+       formulário da troca ali mesmo */
     var menu = ctx.admin ? RosterWork.tpl('tpl-escala-edicao-acoes') : null;
     if (menu) {
       menu.querySelector('.botao').disabled = !!ctx.salvando;
@@ -579,12 +587,17 @@
         adicionar: function () { if (RosterWork.escalasPainelAdicionar) RosterWork.escalasPainelAdicionar.abrir(); },
         remover: function () { if (RosterWork.escalasPainelRemover) RosterWork.escalasPainelRemover.abrir(); },
         remanejar: function () { if (RosterWork.escalasPainelRemanejar) RosterWork.escalasPainelRemanejar.abrir(); },
-        troca: function () { if (RosterWork.irParaPagina) RosterWork.irParaPagina('trocas', null, 'registrar'); }
+        troca: function () { abrirTroca(true); }
       };
       [].forEach.call(menu.querySelectorAll('[data-acao]'), function (b) {
         b.addEventListener('click', function () { if (ctx && !ctx.salvando) acoes[b.getAttribute('data-acao')](); });
       });
       sub.appendChild(menu);
+    }
+    if (solicitar) {
+      solicitar.disabled = !!ctx.salvando;
+      solicitar.addEventListener('click', function () { if (ctx && !ctx.salvando) abrirTroca(false); });
+      sub.appendChild(solicitar);
     }
     if (imprimir) sub.appendChild(imprimir);
     var hist = ctx.admin ? RosterWork.tpl('tpl-escala-edicao-historico') : null;
@@ -880,7 +893,7 @@
     if (!sem.length) return null;
     var caixa = RosterWork.painel.criarCaixa(msg().semFuncaoRotulo);
     if (!caixa) return null;
-    caixa.classList.add('grupo-caixa--posto-erro');
+    caixa.classList.add('grupo-caixa--posto-erro', 'escala-edicao-sem-funcao');   // a classe nomeia a caixa para o passo a passo
     var grupo = novoGrupo([], null);
     if (!grupo) return caixa;
     sem.forEach(function (m) {
@@ -900,6 +913,7 @@
     if (!folgas.length) return null;
     var caixa = RosterWork.painel.criarCaixa(msg().deFolga);
     if (!caixa) return null;
+    caixa.classList.add('escala-edicao-folgas');   // nomeia a caixa para o passo a passo
     var grupo = novoGrupo([], null);
     if (!grupo) return caixa;
     folgas.forEach(function (f) {
@@ -1078,30 +1092,26 @@
     if (ctx.admin && !ctx.comparar && RosterWork.escalasSysbm) {
       RosterWork.escalasSysbm.montar(corpo, ctx.unidadeId, ctx.iso, { desligado: diaComMudanca() });
     }
-    atualizarRodape();
+    mostrarHistorico();
     /* o menu Funções do posto que fez a mudança volta aberto */
     ctx.funcoesMenu = null;
     if (ctx.reabrirMenu && RosterWork.abrirDropdown) RosterWork.abrirDropdown(ctx.reabrirMenu);
     ctx.reabrirMenu = null;
   }
 
-  /* ---------- rodapé do dia: quem já mexeu no dia (relido depois de salvar; o Salvar é o rodapé largo da página,
-     escalas-painel-salvar.js) ---------- */
+  /* ---------- o fim do dia: quem já mexeu no dia (as Alterações manuais, relidas depois de salvar), o último bloco do
+     corpo do painel (o painel não tem rodapé próprio; o Salvar é o rodapé largo da página, escalas-painel-salvar.js).
+     O bloco é lido uma vez e volta para o fim do corpo a cada redesenho da lista ---------- */
 
-  function atualizarRodape() {
-    if (!ctx || ctx.emSub || !ctx.rodape) return;
-    var vale = function () { return !!ctx && ctx.comHistorico && !ctx.emSub; };
-    var S = editavel() && RosterWork.escalasPainelSalvar;
-    if (S) {
-      if (ctx.comHistorico) return;
+  function mostrarHistorico() {
+    if (!ctx || ctx.emSub || !ctx.rodape) return;   // sem rodapé (a prévia "Como fica a escala"), sem histórico
+    if (!ctx.comHistorico || !ctx.historico) {
       ctx.comHistorico = true;
-      var el = ctx.rodape, lugar = S.rodape(el, true);
-      if (lugar) pecas().alteracoes(lugar, ctx.unidadeId, ctx.iso, vale, function () { S.historicoMudou(el); });
-      return;
+      ctx.historico = RosterWork.tpl('tpl-escala-painel-historico');
+      var vale = function () { return !!ctx && ctx.comHistorico && !ctx.emSub; };
+      if (ctx.historico) pecas().alteracoes(ctx.historico, ctx.unidadeId, ctx.iso, vale);
     }
-    if (ctx.comHistorico) return;
-    ctx.comHistorico = true;
-    pecas().alteracoes(ctx.rodape, ctx.unidadeId, ctx.iso, vale);
+    if (ctx.historico) ctx.corpo.appendChild(ctx.historico);
   }
 
   /* lê o dia de novo e zera o desfazer/refazer */
@@ -1182,6 +1192,29 @@
     });
   }
 
+  /* o Solicitar troca e o Registrar troca de serviço (escalas-painel-troca.js): o formulário da troca no lugar da lista,
+     com o Voltar ao dia e o calendário no mês do dia. O Registrar grava na hora, fora do rascunho, então com mudança não
+     salva (Dia ou Ciclo) o aviso pede o Salvar antes; registrou, volta ao dia e lê de novo (também depois do Desfazer do
+     resumo, se o painel segue no dia). O pedido do Solicitar não muda a escala: abre com o rascunho, que fica */
+  function abrirTroca(registrar) {
+    if (!ctx || ctx.salvando || !RosterWork.escalasPainelTroca || (registrar && !base)) return;
+    if (registrar && RosterWork.escalasPainelSalvar && RosterWork.escalasPainelSalvar.contar()) {
+      RosterWork.avisar({ tipo: 'aviso', mensagem: msg().registrarSalveAntes });
+      return;
+    }
+    if (RosterWork.escalasPainelLinha) RosterWork.escalasPainelLinha.fechar();
+    if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
+    ctx.emSub = true;
+    ctx.comHistorico = false;
+    montarSubcabecalho();
+    var c = ctx, uid = ctx.unidadeId, iso = ctx.iso;
+    RosterWork.escalasPainelTroca.abrir(ctx.corpo, ctx.rodape, {
+      registrar: registrar, iso: iso,
+      aoSair: function () { if (ctx === c) desenhar(); },
+      aoRegistrar: function () { if (ctx && ctx.unidadeId === uid && ctx.iso === iso && !ctx.emSub) recarregar(); }
+    });
+  }
+
   function abrirFolga(id) { if (RosterWork.escalasPainelMilitar) RosterWork.escalasPainelMilitar.abrirFolga(id); }
 
   /* o atalho que a próxima gravação mostra na nota O que mudou (a edição da linha pede antes de mudar) */
@@ -1210,6 +1243,7 @@
   function reset() {
     if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
     if (RosterWork.escalasPainelLinha) RosterWork.escalasPainelLinha.fechar();
+    if (RosterWork.escalasPainelTroca) RosterWork.escalasPainelTroca.encerrar();
     ctx = null; foto = null;
     pedido++;
   }
@@ -1239,7 +1273,7 @@
     ctx.dadosAntes = antes || r.dia;
     ctx.sugestao = null;
     ctx.ultima = (r.mudou || []).length ? { mudou: r.mudou, sugestao: null } : null;
-    ctx.comHistorico = false;   // o rodapé relê o histórico, já com o que foi salvo
+    ctx.comHistorico = false;   // o fim do corpo relê o histórico, já com o que foi salvo
     foto = null;
     ctx.emSub = false;
     montarSubcabecalho();

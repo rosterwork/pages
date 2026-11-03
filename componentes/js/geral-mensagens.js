@@ -323,26 +323,29 @@
       notaConfirmar: 'Se você continuar, nada disso é desfeito: o serviço fica em amarelo na escala e a folga continua marcada.'
     },
 
-    /* ajustes — painel do ritmo da unidade (o Salvar pergunta a data a partir da qual o ritmo vale) */
+    /* ajustes (a Distribuição e o ritmo, bloco 1 dela, ficam em mensagens.novaDistribuicao) */
     ajustes: {
-      efeitoRitmo: 'A escala automática dos militares da unidade é regerada a partir da data que você escolher ao salvar.',
-      /* aba Expediente: o expediente dos administrativos por unidade */
+      /* abas Horário de expediente e Feriados: o expediente dos administrativos */
       expediente: {
-        motivos: { feriado: 'Feriado', ponto_facultativo: 'Ponto facultativo', recesso: 'Recesso', outro: 'Folga' },
+        motivos: { feriado: 'Feriado', recesso: 'Recesso', outro: 'Outro' },
         nacional: 'NACIONAL',
-        tituloPadrao: 'Horário padrão',
         horas: function (das, ate) { return das + ' às ' + ate; },
-        padrao: function (p, hora) {
-          return 'Horário padrão: segunda a sexta ' + hora(p.das) + ' às ' + hora(p.ate) + '; quarta ' + hora(p.quarta_das) + ' às ' + hora(p.quarta_ate)
-            + (p.proprio ? '.' : ' (o do ' + p.de_unidade + ').');
-        },
+        /* o Horário: o nome do dia nas frases (domingo primeiro) e os erros da linha */
+        dias: ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'],
+        horarioPreencha: function (dia) { return 'Preencha o início e o fim do expediente de ' + dia + '.'; },
+        horarioFimAntes: function (dia) { return 'O fim do expediente de ' + dia + ' tem que ser depois do início.'; },
         agora: function (texto) { return 'Agora: ' + texto + '.'; },
         diaLongo: function (d) {
           var s = d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' }).replace('-feira', '');
           return s.charAt(0).toUpperCase() + s.slice(1);
         },
         travadoDia: function (origem) { return 'Este dia foi marcado por um administrador de nível acima do seu (' + origem + '). Só ele muda este dia.'; },
-        travadoPadrao: 'O horário padrão desta unidade foi definido por um administrador de nível acima do seu. Só ele muda.'
+        /* os Feriados: o dia de parte do dia no calendário ("Recesso, 12h às 18h") e os erros do painel do dia */
+        parteDia: function (nome, horas) { return nome + ', ' + horas; },
+        nomeFeriado: 'Escreva o nome do feriado.',
+        nomeOutro: 'Escreva o nome.',
+        parteFimAntes: 'O fim tem que ser depois do início.',
+        parteEncostada: 'A parte do dia tem que começar no início ou terminar no fim do expediente.'
       }
     },
 
@@ -871,6 +874,8 @@
       /* o Salvar do rodapé largo (as três abas do painel do dia de uma vez): o Cancelar e a recusa */
       painelDescartar: function (n) { return n === 1 ? 'Descartar a alteração não salva?' : 'Descartar as ' + n + ' alterações não salvas?'; },
       painelRecusado: function (erro) { return 'Nada foi salvo. ' + erro; },
+      /* o Registrar troca de serviço do menu Editar o dia grava na hora: com mudança não salva, o aviso */
+      registrarSalveAntes: 'Salve as alterações antes de registrar a troca.',
       /* "Condutor da AA-01", "Rancheiro do Rancho" */
       funcaoNoPosto: function (funcao, posto, feminino) { return funcao + (feminino ? ' da ' : ' do ') + posto; },
       dasAs: function (hi, hf) { return 'das ' + hi + ' às ' + hf; },
@@ -1152,11 +1157,11 @@
       }
     },
 
-    /* Distribuição (nova-distribuicao.html, só administrador): as frases que mudam com a unidade e as respostas.
-       {chave} = valor preenchido na hora; os textos fixos ficam em nova-distribuicao.html */
+    /* Distribuição (a aba dos Ajustes, ajustes.html; só administrador): as frases que mudam com a unidade e as respostas.
+       {chave} = valor preenchido na hora; os textos fixos ficam em ajustes.html */
     novaDistribuicao: {
       pagina: 'Distribuição',
-      contagem: '{n} de 9 prontos',
+      contagem: '{n} de 10 prontos',
       soDeste: 'Só deste pelotão',
       compartilhado: 'Compartilhado com todos os pelotões',
       faltaResponder: 'Falta responder',
@@ -1166,7 +1171,11 @@
       rotuloFuncao: 'Função',
       rotuloGrau: 'Grau',
       rotuloInicio: 'Quantos de serviço',
-      /* bloco 1: postos */
+      /* bloco 1: ritmo */
+      ritmoTitulo: 'Ritmo da escala',
+      ritmoResposta: '{ritmo}, {servico} h de serviço e {folga} h de folga',
+      ritmoTrava: 'O ritmo muda na distribuição em vigor.',
+      /* bloco 2: postos */
       instalacoesPelotao: 'Quais instalações o pelotão tem?',
       instalacoesCompanhia: 'Quais instalações a companhia tem?',
       viaturasPelotao: 'Quais viaturas o pelotão tem?',
@@ -1185,7 +1194,7 @@
       foraSemFim: 'Fora de serviço desde {inicio}',
       exclusaoTexto: 'Será removida a partir de {inicio}',
       exclusaoMarcada: 'A exclusão já está marcada.',
-      /* bloco 2: efetivo */
+      /* bloco 3: efetivo */
       tituloViatura: '{nome} · CNH {cnh}',
       viaturaSemCnh: '{nome} · CNH sem resposta',
       efetivoFalta: 'Efetivo: falta responder',
@@ -1199,7 +1208,7 @@
       travaPapel: 'Escolhido em Funções especiais',
       travaCompanhia: 'Vem da companhia',
       travaSempreEntra: 'Posto do {papel}, sempre entra na escala',
-      /* bloco 2: funções especiais */
+      /* bloco 4: funções especiais */
       ondeFica: 'Onde fica o {papel}?',
       oficialArea: 'Oficial de Área',
       podeConduzir: 'O {papel} pode ser condutor?',
@@ -1232,7 +1241,7 @@
       opcoesIncompletas: 'Escolha a função e as opções.',
       opcoesVazias: 'Escolha as opções.',
       automaticaSempre: '{funcao} é sempre de quem está em {quem}.',
-      /* bloco 6: quem escolher */
+      /* bloco 8: quem escolher */
       quemSenta: 'Quem senta em {funcao}?',
       ordemMovida: 'Movida para a {n}ª posição.',
       papelFixo: 'Sempre o {perfil} mais antigo de serviço.',
@@ -1247,11 +1256,11 @@
       avisoLinha: ['Sem aviso', 'Com aviso amarelo', 'Com erro vermelho'],
       comCarteira: 'Com a CNH',
       comRodizio: 'Com rodízio',
-      /* bloco 7: regras por militar */
+      /* bloco 9: regras por militar */
       regraIncompleta: 'Escolha o militar, a regra e a função.',
       semMilitar: 'Escolha o militar',
       regraTexto: { proibido: 'Não pode {funcao}', exclusivo: 'Só pode {funcao}' },
-      /* bloco 8: conferir */
+      /* bloco 10: conferir */
       estados: { tem_gente: 'Com gente', acumula: 'Acumulada', coberta: 'Coberta', companhia: 'Da companhia', vazia: 'Vazia', fora: 'Fora da escala' },
       porQuem: '{estado} por {quem}',
       sobraUm: '1 militar fica sem função.',
@@ -1917,6 +1926,13 @@
     /* ajuda da tela (geral-guia): o passo em que a pessoa está no passo a passo */
     guia: {
       contador: function (passo, total) { return passo + ' de ' + total; }
+    },
+
+    /* modo treino (geral-treino.js) e a página Treinamento (treinamento.js) */
+    treino: {
+      naoGrava: 'No modo treino, nada é gravado.',
+      caminhos: function (n) { return n + ' caminhos'; },
+      opcoes: function (n) { return n + ' opções'; }
     },
 
     /* notificações no celular (Meu perfil › Preferências): a ajuda quando não dá para ligar */

@@ -133,15 +133,34 @@
   gap: 12px;
 }
 
-/* rodapé: é o rodapé geral (.rodape, geral-rodape: fundo, linha de cima, sombra e camada); aqui só o que é
-   do painel: as ações da página (botões) alinhadas à direita, as que não cabem descem para outra linha */
+/* rodapé: o rodapé ÚNICO da página (a página nunca tem dois; o painel não tem rodapé próprio). É o rodapé geral
+   (.rodape, geral-rodape: fundo, linha de cima, sombra e camada) com as ações que a página abre no painel, à
+   direita. Mora fora do painel (#painel-rodape, filho do .conteudo): na largura toda, preso no fundo, como o rodapé
+   largo, passando por baixo do painel e da página, numa linha só. No celular, o geral-painel.js o põe dentro do
+   painel, que cobre a tela, e as ações que não cabem descem para outra linha (bloco do fim) */
 .painel-rodape {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
+  align-items: center;
   gap: 8px;
   padding: 8px 12px;
 }
+
+.conteudo > .painel-rodape {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  flex-wrap: nowrap;
+  padding: 8px var(--respiro-pagina);
+}
+
+/* enquanto ele aparece: o painel e a página param em cima dele (49px: a borda, 8px, o botão de 32px e 8px; a página
+   que já tem rodapé largo próprio à mostra já para por ele) e o rodapé largo da página some, um rodapé só por vez */
+.conteudo:has(> .painel-rodape:not(.oculto)) > .painel-lateral { margin-bottom: 49px; }
+.conteudo:has(> .painel-rodape:not(.oculto)) > .pagina:not(:has(.rodape--largo:not(.oculto))) { padding-bottom: 49px; }
+.conteudo:has(> .painel-rodape:not(.oculto)) > .pagina .rodape--largo { display: none; }
 
 /* ---------- as peças reutilizáveis do corpo ----------
    Ambas agrupam "título (.rotulo-secao) + itens"; a página escolhe uma.

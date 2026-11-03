@@ -253,12 +253,17 @@
 
   /* desenha o corpo conforme o modo ativo; no Mês, a promessa se cumpre com o mês desenhado (o deslize do mês
      espera por ela) */
+  /* a página aberta ainda é a Escala? (o .conteudo é do shell e fica; um aviso atrasado, como a prévia do painel do dia
+     descartado ao sair, não pode desenhar a grade na página que entrou) */
+  function naEscala() { return !!conteudo && !!conteudo.querySelector('#escala-modos'); }
+
   function renderizarCorpo() {
+    if (!naEscala()) return;
     /* Escala sempre fresca: se um salvamento deixou recálculo a completar,
        esvazia a fila (1º plano) antes de mostrar, para nunca exibir dado velho */
     if (window.RosterWork.temRecalculoPendente && window.RosterWork.temRecalculoPendente()
         && window.RosterWork.drenarRecalculo) {
-      var corpoEspera = conteudo && conteudo.querySelector('.pagina-corpo');
+      var corpoEspera = conteudo.querySelector('.pagina-corpo');
       if (corpoEspera) mostrarCarregando(corpoEspera);
       return window.RosterWork.drenarRecalculo().then(renderizarCorpoAgora);
     }
@@ -266,7 +271,7 @@
   }
 
   function renderizarCorpoAgora() {
-    if (!conteudo) return;
+    if (!naEscala()) return;
     var corpo = conteudo.querySelector('.pagina-corpo');
     if (!corpo) return;
     /* esta renderização assume a senha; o modo confere vigente() antes de pintar (latest-wins) */
@@ -640,7 +645,7 @@
       window.addEventListener('rosterwork_escala_recarregar', function () { renderizarCorpo(); });
       /* o rascunho do painel do dia mudou (ou foi descartado): a tela lê de novo, com a prévia enquanto há mudança */
       window.addEventListener('rosterwork_escala_previa', function () {
-        if (!conteudo || !document.contains(conteudo)) return;
+        if (!naEscala()) return;
         /* a grade nova: o dia aberto no painel volta a ficar selecionado depois de desenhada (a prévia pode demorar) */
         Promise.resolve(renderizarCorpo()).then(function () {
           if (RosterWork.escalasPainel && RosterWork.escalasPainel.remarcar) RosterWork.escalasPainel.remarcar();
@@ -652,7 +657,7 @@
         var ehCelular = !!(RosterWork.celular && RosterWork.celular());
         if (ehCelular === eraCelular) return;
         eraCelular = ehCelular;
-        if (!conteudo || !document.contains(conteudo)) return;
+        if (!naEscala()) return;
         caberNoCelular();
         aplicarModo();
       });

@@ -6,7 +6,9 @@
    cada dia; ao lado (embaixo, no celular), a escala inteira da
    unidade no dia escolhido (escala_dia_arvore, com o desenho do
    Dia: escalas-dia.js), só de leitura, com você realçado
-   (escalas-filtros.js). Abre no próximo serviço; "hoje" é o dia
+   (escalas-filtros.js), e, no cabeçalho dela, o Solicitar troca (o
+   painel do pedido da página Trocas, trocas-solicitar.js, com o
+   calendário no mês do dia). Abre no próximo serviço; "hoje" é o dia
    de serviço (vira às 08h). O mês sem serviço diz por quê e leva
    à aba Mês. O período, as setas e o deslize do mês no celular são
    os da página (escalas.js); daqui vem a leitura antecipada do mês
@@ -178,6 +180,13 @@
     el.calendario.addEventListener('click', function (e) {
       var botao = e.target.closest('.mini-calendario-dia');
       if (botao && estado.dados) selecionar(botao.dataset.iso);
+    });
+    /* Solicitar troca: o painel do pedido, o mesmo da página Trocas (sem os retornos dela), com o calendário no mês do
+       dia escolhido */
+    raiz.querySelector('.escala-minha-solicitar').addEventListener('click', function () {
+      if (!RW.trocasSolicitar) return;
+      RW.trocasSolicitar.ligar({});
+      RW.trocasSolicitar.abrir({ mesInicial: estado.selecionado });
     });
     /* Ver a escala de todos: a aba Mês (a troca de aba é a da página) */
     raiz.querySelector('.escala-minha-ver-todos').addEventListener('click', function () {

@@ -1,6 +1,6 @@
 /* ============================================================
    NOVA DISTRIBUIÇÃO — as peças comuns dos blocos
-   Moldes de nova-distribuicao.html montados com os dados: o bloco
+   Moldes da Distribuição (ajustes.html) montados com os dados: o bloco
    cinza da unidade, o cartão que abre (resposta embaixo) e o sempre
    aberto, a caixa de marcar, a bolinha, os campos de seleção (os de
    função em Posto | Função, alinhados), o número, as setas, a trava,
@@ -135,11 +135,12 @@
 
   /* ---------- estrutura ---------- */
 
-  /* o bloco cinza da unidade, com o título dentro; devolve onde vão os cartões */
-  function unidade(corpo, ctx) {
+  /* o bloco cinza da unidade, com o título dentro; devolve onde vão os cartões. alcance = a frase ao lado do nome,
+     quando não é a de sempre (o ritmo da companhia não é compartilhado: '') */
+  function unidade(corpo, ctx, alcance) {
     var bloco = tpl('unidade-bloco');
     bloco.querySelector('.nova-distribuicao-unidade-nome').textContent = ctx.nome;
-    bloco.querySelector('.nova-distribuicao-unidade-alcance').textContent = ctx.ehCia ? M().compartilhado : M().soDeste;
+    bloco.querySelector('.nova-distribuicao-unidade-alcance').textContent = alcance != null ? alcance : (ctx.ehCia ? M().compartilhado : M().soDeste);
     corpo.appendChild(bloco);
     return bloco.querySelector('.nova-distribuicao-unidade-corpo');
   }

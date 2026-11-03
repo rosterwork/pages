@@ -13,16 +13,19 @@
     perfil: { html: 'perfil.html', css: [], js: ['js/perfil-dados-promocoes.js', 'js/perfil-dados.js', 'js/perfil-senha.js'] },   /* index-perfil.js já vem no shell (liga o botão do cabeçalho) */
     manual: { html: 'manual.html', css: ['css/manual.css'], js: [] },   /* index-manual.js já vem no shell (liga o botão + registra a página) */
     avisos: { html: 'avisos.html', css: ['css/avisos.css'], js: ['js/avisos-comunicado.js', 'js/avisos-notificacoes.js', 'js/avisos.js'] },
-    escalas: { html: 'escalas.html', css: ['css/escalas-controles.css', 'css/escalas-mes.css', 'css/escalas-semana.css', 'css/escalas-dia.css', 'css/escalas-colunas.css', 'css/escalas-calendario.css', 'css/escalas-militares.css', 'css/escalas-painel.css', 'css/escalas-painel-secoes.css', 'css/escalas-painel-edicao.css', 'css/escalas-minha.css'], js: ['js/escalas-dados.js', 'js/trocas-dados.js', 'js/escalas-celula.js', 'js/escalas-mes.js', 'js/escalas-semana.js', 'js/escalas-dia.js', 'js/escalas-minha.js', 'js/escalas-colunas.js', 'js/escalas-calendario.js', 'js/escalas-militares.js', 'js/escalas-militares-painel.js', 'js/escalas-painel.js', 'js/escalas-painel-editar.js', 'js/escalas-painel-quem.js', 'js/escalas-painel-funcoes.js', 'js/escalas-painel-ciclo.js', 'js/escalas-painel-salvar.js', 'js/escalas-painel-remover.js', 'js/escalas-painel-remover-troca.js', 'js/escalas-painel-linha-aplicar.js', 'js/escalas-painel-linha.js', 'js/escalas-painel-adicionar-listas.js', 'js/escalas-painel-adicionar.js', 'js/escalas-painel-remanejar.js', 'js/escalas-painel-militar.js', 'js/escalas-painel-continuos.js', 'js/escalas-legenda.js', 'js/escalas-impressao-pdf.js', 'js/escalas-impressao-legenda.js', 'js/escalas-impressao.js', 'js/escalas-impressao-grade-celula.js', 'js/escalas-impressao-grade-pdf.js', 'js/escalas-impressao-grade.js', 'js/escalas-sysbm.js', 'js/escalas-filtros.js', 'js/escalas.js'] },
+    escalas: { html: 'escalas.html', css: ['css/escalas-controles.css', 'css/escalas-mes.css', 'css/escalas-semana.css', 'css/escalas-dia.css', 'css/escalas-colunas.css', 'css/escalas-calendario.css', 'css/escalas-militares.css', 'css/escalas-painel.css', 'css/escalas-painel-secoes.css', 'css/escalas-painel-edicao.css', 'css/escalas-minha.css', 'css/trocas-formulario.css'], js: ['js/escalas-dados.js', 'js/trocas-dados.js', 'js/escalas-celula.js', 'js/escalas-mes.js', 'js/escalas-semana.js', 'js/escalas-dia.js', 'js/escalas-minha.js', 'js/escalas-colunas.js', 'js/escalas-calendario.js', 'js/escalas-militares.js', 'js/escalas-militares-painel.js', 'js/escalas-painel.js', 'js/escalas-painel-editar.js', 'js/escalas-painel-quem.js', 'js/escalas-painel-funcoes.js', 'js/escalas-painel-ciclo.js', 'js/escalas-painel-salvar.js', 'js/escalas-painel-remover.js', 'js/escalas-painel-remover-troca.js', 'js/escalas-painel-linha-aplicar.js', 'js/escalas-painel-linha.js', 'js/escalas-painel-adicionar-listas.js', 'js/escalas-painel-adicionar.js', 'js/escalas-painel-remanejar.js', 'js/trocas-solicitar-campos.js', 'js/trocas-solicitar-militar.js', 'js/trocas-varias-calendario.js', 'js/trocas-varias-registrar.js', 'js/trocas-varias-resumo.js', 'js/trocas-varias.js', 'js/trocas-solicitar.js', 'js/escalas-painel-troca.js', 'js/escalas-painel-militar.js', 'js/escalas-painel-continuos.js', 'js/escalas-legenda.js', 'js/escalas-impressao-pdf.js', 'js/escalas-impressao-legenda.js', 'js/escalas-impressao.js', 'js/escalas-impressao-grade-celula.js', 'js/escalas-impressao-grade-pdf.js', 'js/escalas-impressao-grade.js', 'js/escalas-sysbm.js', 'js/escalas-filtros.js', 'js/escalas.js'] },
     usuarios: { html: 'usuarios.html', css: ['css/usuarios-cards.css', 'css/usuarios-exibir.css', 'css/usuarios-antiguidade.css', 'css/usuarios-painel.css', 'css/usuarios-afastamentos.css'], js: ['js/usuarios-exibir.js', 'js/usuarios-painel.js', 'js/usuarios-painel-leitura.js', 'js/usuarios-painel-editar.js', 'js/usuarios-painel-datas.js', 'js/usuarios-painel-transferir.js', 'js/usuarios-painel-promover.js', 'js/usuarios-painel-baixa.js', 'js/usuarios-painel-acesso.js', 'js/usuarios-painel-administracao.js', 'js/usuarios-afastamentos-dados.js', 'js/usuarios-painel-afastamentos.js', 'js/usuarios-painel-afastamentos-editar.js', 'js/usuarios-novo-usuario-dados.js', 'js/usuarios-novo-usuario-envio.js', 'js/usuarios-novo-usuario.js', 'js/usuarios-correcao-painel.js', 'js/usuarios-antiguidade.js', 'js/usuarios-afastamentos.js', 'js/usuarios.js'] },
-    trocas: { html: 'trocas.html', css: ['css/trocas.css', 'css/escalas-painel.css', 'css/escalas-painel-edicao.css'], js: ['js/escalas-dados.js', 'js/escalas-painel.js', 'js/escalas-painel-editar.js', 'js/trocas-dados.js', 'js/trocas-painel-situacao.js', 'js/trocas-painel.js', 'js/trocas-painel-varias.js', 'js/escalas-impressao-pdf.js', 'js/trocas-registro-pdf.js', 'js/trocas-relatorio-pdf.js', 'js/trocas-imprimir-alteracoes.js', 'js/trocas-imprimir.js', 'js/trocas-pendencia-painel.js', 'js/trocas-solicitar-campos.js', 'js/trocas-solicitar-militar.js', 'js/trocas-varias-calendario.js', 'js/trocas-varias-registrar.js', 'js/trocas-varias-resumo.js', 'js/trocas-varias.js', 'js/trocas-varias-editar.js', 'js/trocas-solicitar.js', 'js/trocas-editar.js', 'js/trocas.js'] },
+    trocas: { html: 'trocas.html', css: ['css/trocas.css', 'css/trocas-formulario.css', 'css/escalas-painel.css', 'css/escalas-painel-edicao.css'], js: ['js/escalas-dados.js', 'js/escalas-painel.js', 'js/escalas-painel-editar.js', 'js/trocas-dados.js', 'js/trocas-painel-situacao.js', 'js/trocas-painel.js', 'js/trocas-painel-varias.js', 'js/escalas-impressao-pdf.js', 'js/trocas-registro-pdf.js', 'js/trocas-relatorio-pdf.js', 'js/trocas-imprimir-alteracoes.js', 'js/trocas-imprimir.js', 'js/trocas-pendencia-painel.js', 'js/trocas-solicitar-campos.js', 'js/trocas-solicitar-militar.js', 'js/trocas-varias-calendario.js', 'js/trocas-varias-registrar.js', 'js/trocas-varias-resumo.js', 'js/trocas-varias.js', 'js/trocas-varias-editar.js', 'js/trocas-solicitar.js', 'js/trocas-editar.js', 'js/trocas.js'] },
     folgas: { html: 'folgas.html', css: ['css/folgas.css', 'css/folgas-painel.css', 'css/escalas-painel.css', 'css/escalas-painel-edicao.css'], js: ['js/escalas-dados.js', 'js/escalas-painel.js', 'js/escalas-painel-editar.js', 'js/folgas-dados.js', 'js/folgas-minhas.js', 'js/folgas-saldos.js', 'js/folgas-listas.js', 'js/folgas-painel.js', 'js/folgas-aprovacao-painel.js', 'js/folgas.js'] },
-    /* a Distribuição (os postos, o efetivo e como a escala se monta; só administrador) */
-    distribuicao: { html: 'nova-distribuicao.html', css: ['css/nova-distribuicao.css'], js: ['js/nova-distribuicao-pecas.js', 'js/nova-distribuicao-dados.js', 'js/nova-distribuicao-caixas.js', 'js/nova-distribuicao-postos.js', 'js/nova-distribuicao-efetivo.js', 'js/nova-distribuicao-funcoes.js', 'js/nova-distribuicao-acumulos.js', 'js/nova-distribuicao-blocos.js', 'js/nova-distribuicao-militares.js', 'js/nova-distribuicao-conferir.js', 'js/nova-distribuicao-versoes.js', 'js/nova-distribuicao.js'] },
     historico: { html: 'historico.html', css: ['css/historico.css'], js: ['js/historico.js'] },
-    ajustes: { html: 'ajustes.html', css: ['css/ajustes.css'], js: ['js/ajustes-expediente.js', 'js/ajustes.js'] },
+    /* o Treinamento (para todos): a lista dos roteiros do passo a passo; o modo treino e os roteiros vêm no shell
+       (geral-treino.js, geral-guia*.js e os <template data-roteiro> do index.html) */
+    treinamento: { html: 'treinamento.html', css: ['css/treinamento.css'], js: ['js/treinamento.js'] },
+    /* os Ajustes (só administrador, só no computador): a Distribuição (o ritmo, os postos, o efetivo e como a escala se
+       monta), o Horário de expediente e os Feriados */
+    ajustes: { html: 'ajustes.html', css: ['css/nova-distribuicao.css', 'css/ajustes.css'], js: ['js/nova-distribuicao-pecas.js', 'js/nova-distribuicao-dados.js', 'js/nova-distribuicao-caixas.js', 'js/nova-distribuicao-ritmo.js', 'js/nova-distribuicao-postos.js', 'js/nova-distribuicao-efetivo.js', 'js/nova-distribuicao-funcoes.js', 'js/nova-distribuicao-acumulos.js', 'js/nova-distribuicao-blocos.js', 'js/nova-distribuicao-militares.js', 'js/nova-distribuicao-conferir.js', 'js/nova-distribuicao-versoes.js', 'js/nova-distribuicao.js', 'js/ajustes-horario.js', 'js/ajustes-feriados.js', 'js/ajustes.js'] },
     programador: { html: 'programador.html', css: ['css/programador.css', 'css/programador-guia.css'], js: ['js/programador-bugs-formulario.js', 'js/programador-bugs.js', 'js/programador-bug-ligado.js', 'js/programador-guia.js', 'js/programador.js'] },
-    'nova-extra': { html: 'nova-extra.html', css: ['css/escalas-mes.css', 'css/escalas-calendario.css', 'css/escalas-painel.css', 'css/escalas-controles.css', 'css/nova-extra-dia.css', 'css/nova-extra-cotas.css', 'css/nova-extra.css'], js: ['js/escalas-dados.js', 'js/escalas-celula.js', 'js/escalas-impressao-pdf.js', 'js/escalas-impressao-legenda.js', 'js/escalas-impressao-grade-celula.js', 'js/escalas-impressao-grade-pdf.js', 'js/escalas-impressao-grade.js', 'js/nova-extra-pedido.js', 'js/nova-extra-organizar.js', 'js/nova-extra-acoes.js', 'js/nova-extra-cotas.js', 'js/nova-extra-otimizador.js', 'js/nova-extra-montar.js', 'js/nova-extra-por-dia.js', 'js/nova-extra-dia.js', 'js/nova-extra-lista.js', 'js/nova-extra-filtros.js', 'js/nova-extra-relatorios-pdf.js', 'js/nova-extra-imprimir.js', 'js/nova-extra-imprimir-grade.js', 'js/nova-extra-relatorio.js', 'js/nova-extra.js'] }   /* a Extrajornada (o menu "Extrajornada"); as barras, o bloco do calendário, o desenho do painel do dia, a Legenda e o Imprimir da grade vêm da Escala */
+    'nova-extra': { html: 'nova-extra.html', css: ['css/escalas-mes.css', 'css/escalas-calendario.css', 'css/escalas-painel.css', 'css/escalas-controles.css', 'css/nova-extra-dia.css', 'css/nova-extra-cotas.css', 'css/nova-extra.css'], js: ['js/escalas-dados.js', 'js/escalas-celula.js', 'js/escalas-impressao-pdf.js', 'js/escalas-impressao-legenda.js', 'js/escalas-impressao-grade-celula.js', 'js/escalas-impressao-grade-pdf.js', 'js/escalas-impressao-grade.js', 'js/nova-extra-pedido.js', 'js/nova-extra-organizar.js', 'js/nova-extra-acoes.js', 'js/nova-extra-cotas.js', 'js/nova-extra-otimizador.js', 'js/nova-extra-falta.js', 'js/nova-extra-montar.js', 'js/nova-extra-por-dia.js', 'js/nova-extra-dia.js', 'js/nova-extra-lista.js', 'js/nova-extra-filtros.js', 'js/nova-extra-relatorios-pdf.js', 'js/nova-extra-imprimir.js', 'js/nova-extra-imprimir-grade.js', 'js/nova-extra-relatorio.js', 'js/nova-extra.js'] }   /* a Extrajornada (o menu "Extrajornada"); as barras, o bloco do calendário, o desenho do painel do dia, a Legenda e o Imprimir da grade vêm da Escala */
   };
 
   var conteudo;
@@ -69,12 +72,14 @@
     return jsCarregados[src];
   }
 
-  /* tira a página que sai, preservando o véu de carregamento e o painel lateral — ambos vivem no shell */
+  /* tira a página que sai, preservando o véu de carregamento, o painel lateral e o rodapé dele (o rodapé único da
+     página, fora do painel no computador) — os três vivem no shell */
   function limparConteudo() {
     var filhos = Array.prototype.slice.call(conteudo.children);
     for (var i = 0; i < filhos.length; i++) {
       if (!filhos[i].classList.contains('carregando-veu') &&
-          !filhos[i].classList.contains('painel-lateral')) conteudo.removeChild(filhos[i]);
+          !filhos[i].classList.contains('painel-lateral') &&
+          !filhos[i].classList.contains('painel-rodape')) conteudo.removeChild(filhos[i]);
     }
   }
 
@@ -270,6 +275,11 @@
       abaPedida = { pagina: 'usuarios', aba: 'licencas' };
       history.replaceState({ pagina: 'usuarios' }, '', '?pagina=usuarios');
     }
+    /* o endereço da antiga tela Distribuição abre os Ajustes (a Distribuição é a 1ª aba) */
+    if (inicial === 'distribuicao') {
+      inicial = 'ajustes';
+      history.replaceState({ pagina: 'ajustes' }, '', '?pagina=ajustes');
+    }
     if (!inicial || !manifesto[inicial]) inicial = 'escalas';
     navegar(inicial, false);
   }
@@ -320,6 +330,9 @@
       history.back();
     }
   };
+
+  /* a tela da navegação mais recente (o passo a passo segue de uma tela para outra por ela) */
+  window.RosterWork.paginaAtual = function () { return paginaAtual; };
 
   /* entrega à página a referência pedida por quem mandou navegar (vale uma vez só) */
   window.RosterWork.referenciaPedida = function (pagina) {

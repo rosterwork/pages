@@ -12,8 +12,8 @@
    ============================================================ */
 
 /* ---------- a lista do Dia ---------- */
-/* subcabeçalho do admin: o menu Editar o dia (geral-botao + geral-dropdown) à esquerda; o desfazer e o refazer, à
-   direita */
+/* subcabeçalho: à esquerda, o menu Editar o dia do admin (geral-botao + geral-dropdown) e o Solicitar troca; o
+   desfazer e o refazer do admin, à direita */
 .escala-edicao-historico {
   display: flex;
   gap: 4px;
@@ -193,8 +193,8 @@
   padding: 0 4px 4px;
 }
 
-/* ---------- o rodapé do painel: as alterações manuais do dia, na largura toda (o rodapé do painel põe as peças lado a
-   lado; o Salvar é o rodapé largo da página, escalas-painel-salvar.js) ---------- */
+/* ---------- o fim do corpo do Dia: as alterações manuais do dia, na largura toda (o painel não tem rodapé próprio; o
+   Salvar é o rodapé largo da página, escalas-painel-salvar.js) ---------- */
 .escala-painel-historico {
   flex: 1 1 100%;
 }
@@ -392,9 +392,15 @@
 
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
-   O topo e o X da edição da linha ficam com a altura do dedo
+   O topo e o X da edição da linha ficam com a altura do dedo; no
+   subcabeçalho do admin, o desfazer e o refazer, que descem de
+   linha, ficam à direita, embaixo do Imprimir
    ============================================================ */
 @media (max-width: 767px) {
+  html[data-celular] .escala-dia-imprimir + .escala-edicao-historico {
+    margin-left: auto;
+  }
+
   html[data-celular] .escala-linha-topo {
     min-height: var(--toque-altura-celular);
   }

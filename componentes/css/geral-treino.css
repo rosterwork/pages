@@ -1,0 +1,72 @@
+/* ============================================================
+   TREINO — o modo treino (componente geral-treino)
+   A barra azul no alto da casca, acima do cabeçalho (.treino-barra:
+   a frase e os botões Treinos e Sair do treino), e a moldura azul em
+   volta da tela (.treino-moldura, por cima de tudo e sem pegar o
+   clique). O azul é o --anotacao, o mesmo das marcações do manual.
+   No passo a passo, a barra e a moldura ficam acesas (o véu do
+   geral-guia deixa um buraco na barra; a moldura vem depois das
+   peças do guia). As duas são fixas no shell (index.html) e aparecem
+   com a marca data-treino no <html> (geral-treino.js).
+   ============================================================ */
+
+.treino-barra {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  min-height: var(--treino-barra-altura);
+  padding: 4px 8px 4px 16px;
+  background-color: var(--anotacao);
+  color: var(--anotacao-texto);
+  font-size: 12px;
+}
+
+.treino-barra-texto {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.treino-barra-texto strong {
+  font-weight: 600;
+}
+
+.treino-barra-acoes {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* a moldura: a borda azul em volta da tela inteira */
+.treino-moldura {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  border: 3px solid var(--anotacao);
+  pointer-events: none;
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   A barra fica só com "Modo treino" e os dois botões; o painel, que
+   no celular cobre a tela, e o balão do passo a passo preso em cima
+   começam abaixo dela.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .treino-barra {
+    padding: 4px 8px 4px 12px;
+  }
+
+  html[data-celular] .treino-barra-resto {
+    display: none;
+  }
+
+  html[data-celular][data-treino] .painel-lateral {
+    top: var(--treino-barra-altura);
+  }
+
+  html[data-celular][data-treino] .guia-balao--cima {
+    top: calc(var(--treino-barra-altura) + 12px);
+  }
+}

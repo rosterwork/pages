@@ -6,7 +6,8 @@
    com o refresh_token e refaz a chamada uma vez — falhando a
    renovação, encerra a sessão (RosterWork.expirarSessao). Também
    concentra a renovação proativa (usada pelo vigia de sessão) e a
-   saída (logout). Ver js/index-sessao-vigia.js.
+   saída (logout). Ver js/index-sessao-vigia.js. No modo treino, só
+   passa o que lê (RosterWork.treino.barrar, geral-treino.js).
    ============================================================ */
 (function () {
   'use strict';
@@ -153,6 +154,10 @@
       }
     };
     if (opcoes.corpo !== undefined) init.body = JSON.stringify(opcoes.corpo);
+    /* modo treino (geral-treino.js): só passa o que lê; o resto recebe a resposta do treino */
+    var treino = window.RosterWork.treino;
+    var barrada = treino ? treino.barrar(caminho, init.method, opcoes.corpo) : null;
+    if (barrada) return Promise.resolve(barrada);
     return fetch(SUPABASE_URL + caminho, init);
   }
 

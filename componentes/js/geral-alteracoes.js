@@ -1,5 +1,5 @@
 /* ============================================================
-   ALTERAÇÕES — o rodapé retrátil com o que foi mudado
+   ALTERAÇÕES — o bloco retrátil, no fim do corpo do painel, com o que foi mudado
    (quem, quando e o resumo no formato do modal de resumo).
    Usado nas Alterações manuais do dia (Escala) e nas Alterações
    na ficha (Usuários). Sempre começa fechado; abre e fecha pelo
@@ -17,7 +17,7 @@
     conteudo.classList.toggle('oculto', !aberto);
   }
 
-  /* devolve o bloco pronto para o rodapé (ou null, sem alterações): o título com a
+  /* devolve o bloco pronto para o fim do corpo do painel (ou null, sem alterações): o título com a
      quantidade e, aberto, cada alteração com o autor, o quando e o resumo */
   function montar(idMolde, lista) {
     if (!lista || !lista.length) return null;

@@ -125,7 +125,8 @@
 
 
 <!-- Minha escala: o seu mês no calendário (os ícones da Escala em cada dia) e, ao lado (embaixo, no celular),
-     a escala inteira da unidade no dia escolhido, só de leitura, com você realçado (o desenho do Dia).
+     a escala inteira da unidade no dia escolhido, só de leitura, com você realçado (o desenho do Dia), e, no cabeçalho
+     dela, o Solicitar troca (o painel do pedido da página Trocas, no mês do dia).
      O mês sem serviço diz por quê e leva à escala de todos (escalas-minha.js) -->
 <template id="tpl-escala-minha">
   <div class="escala-minha">
@@ -139,8 +140,14 @@
     </div>
     <section class="escala-minha-dia oculto">
       <div class="escala-minha-dia-cabeca">
-        <span class="escala-minha-dia-titulo"></span>
-        <span class="escala-minha-dia-unidade"></span>
+        <div class="escala-minha-dia-textos">
+          <span class="escala-minha-dia-titulo"></span>
+          <span class="escala-minha-dia-unidade"></span>
+        </div>
+        <button type="button" class="botao botao--primario escala-minha-solicitar">
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-trocas"/></svg>
+          <span>Solicitar troca</span>
+        </button>
       </div>
       <div class="escala-minha-dia-corpo"></div>
     </section>
@@ -224,6 +231,15 @@
 <template id="tpl-escala-dia-imprimir">
   <button type="button" class="botao botao--icone escala-dia-imprimir" aria-label="Imprimir o dia" data-dica="Imprimir">
     <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg>
+  </button>
+</template>
+
+<!-- Solicitar troca do painel do dia (subcabeçalho da aba Dia, à esquerda; para o admin, à direita do menu Editar o dia;
+     escalas-painel-troca.js): o formulário da troca no lugar da lista, o mesmo do Solicitar troca da página Trocas -->
+<template id="tpl-escala-dia-solicitar">
+  <button type="button" class="botao botao--primario escala-dia-solicitar">
+    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-trocas"/></svg>
+    <span>Solicitar troca</span>
   </button>
 </template>
 

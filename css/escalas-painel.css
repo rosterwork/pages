@@ -486,6 +486,11 @@
 }
 
 /* ---------- bloco Lançar no SYSBM do painel do dia (escalas-sysbm.js) ---------- */
+/* no modo treino (geral-treino) o bloco some: o Enviar preencheria o SYSBM de verdade, que fica fora do banco */
+html[data-treino] .escala-sysbm {
+  display: none;
+}
+
 /* a linha do título: o título ocupa o que sobra; o Enviar (ou o Instalar a extensão) e o chevron à direita */
 .escala-sysbm-cabecalho {
   display: flex;

@@ -32,15 +32,22 @@
     copiarHoje: function (unidadeId) {
       return rpc('nova_distribuicao_copiar_hoje', { p_unidade_id: unidadeId });
     },
+    /* o ritmo de cada unidade ([{ unidade_id, ritmo }]), para o bloco Ritmo */
+    ritmos: function () {
+      return rpc('ajustes_ritmo_listar', {});
+    },
     /* grava [{ periodo_id, respostas, renomeadas }] a partir de aPartirDe (a em vigor; a mudança agendada
        não pede data); levar = os conflitos que vão do conserto para a agendada; previa = só mostra, não grava;
        substituicoes = as substituições temporárias mudadas ([{ id, unidade_id, viatura, prefixo, cnh, inicio,
-       fim }] ou [{ id, excluir }]), gravadas junto, tudo ou nada */
-    salvar: function (itens, aPartirDe, levar, previa, substituicoes) {
-      return rpc('nova_distribuicao_salvar', {
+       fim }] ou [{ id, excluir }]); ritmo = o ritmo mudado ({ unidade_id, ritmo }), a partir da mesma data; tudo
+       gravado junto, tudo ou nada */
+    salvar: function (itens, aPartirDe, levar, previa, substituicoes, ritmo) {
+      var corpo = {
         p_itens: itens, p_a_partir_de: aPartirDe || null, p_levar: levar && levar.length ? levar : null, p_previa: !!previa,
         p_substituicoes: substituicoes && substituicoes.length ? substituicoes : null
-      });
+      };
+      if (ritmo) corpo.p_ritmo = ritmo;   // só com ritmo: sem ele, a chamada é a mesma de antes
+      return rpc('nova_distribuicao_salvar', corpo);
     },
     agendadaData: function (unidadeId, inicio) {
       return rpc('nova_distribuicao_agendada_data', { p_unidade_id: unidadeId, p_inicio: inicio });

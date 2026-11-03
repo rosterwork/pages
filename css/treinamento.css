@@ -1,0 +1,26 @@
+/* ============================================================
+   TREINAMENTO — a lista dos treinos (treinamento.html)
+   A lista é a dos pedidos (geral-pedido: .pedido-secoes, .pedido-secao,
+   .pedido--linha) na coluna de leitura. Aqui só as duas áreas (para
+   todos e, depois do traço, a do administrador, com o título e a chave
+   inglesa) e o traço entre elas.
+   ============================================================ */
+
+.treino-area {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.treino-area-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.treino-divisor {
+  border-top: 1px solid var(--borda);
+}

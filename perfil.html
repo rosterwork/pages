@@ -317,15 +317,14 @@
 
   </div>
 
-  <!-- rodapé de salvar da aba Meus dados (aparece com a aba, pelo data-aba-painel); o formulário rola acima dele -->
-  <div class="rodape rodape-pilha oculto" data-aba-painel="dados">
-    <div class="rodape-linha">
-      <span class="rodape-texto" id="perfil-contagem"></span>
-      <span class="espacador-flex"></span>
-      <div class="rodape-acoes">
-        <button type="button" class="botao" id="perfil-desfazer" disabled>Cancelar</button>
-        <button type="button" class="botao botao--primario" id="perfil-enviar" disabled>Salvar</button>
-      </div>
+  <!-- o rodapé de salvar da aba Meus dados, na largura toda (o rodapé único da página): aparece só com alteração e só
+       na aba dela; o formulário rola acima dele -->
+  <div class="rodape rodape-linha rodape--largo oculto" id="perfil-rodape">
+    <span class="rodape-texto" id="perfil-contagem"></span>
+    <span class="espacador-flex"></span>
+    <div class="rodape-acoes">
+      <button type="button" class="botao" id="perfil-desfazer">Cancelar</button>
+      <button type="button" class="botao botao--primario" id="perfil-enviar">Salvar</button>
     </div>
   </div>
 </div>

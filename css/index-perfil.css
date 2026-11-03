@@ -24,6 +24,16 @@
   align-self: flex-start;
 }
 
+/* o rodapé largo da aba Meus dados (o rodapé único da página, irmão do corpo): só na aba dela, e o corpo para em cima
+   dele (o respiro da página e os 49px do rodapé largo, geral-rodape) */
+.pagina:has([data-aba-painel="dados"].oculto) #perfil-rodape {
+  display: none;
+}
+
+.pagina-corpo:has(~ #perfil-rodape:not(.oculto)) {
+  padding-bottom: calc(var(--respiro-pagina) + 49px);
+}
+
 /* ---------- cartão de identificação (topo da aba Perfil) ---------- */
 .perfil-cartao {
   display: flex;

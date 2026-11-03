@@ -34,6 +34,7 @@
   <link rel="stylesheet" href="componentes/css/geral-dropdown.css" />
   <link rel="stylesheet" href="componentes/css/geral-dropdown-numeros.css" />
   <link rel="stylesheet" href="componentes/css/geral-guia.css" />
+  <link rel="stylesheet" href="componentes/css/geral-treino.css" />
   <link rel="stylesheet" href="componentes/css/geral-horario.css" />
   <link rel="stylesheet" href="componentes/css/geral-subtela.css" />
   <link rel="stylesheet" href="componentes/css/geral-nota.css" />
@@ -84,6 +85,19 @@
   </noscript>
 
   <div class="casca">
+
+    <!-- MODO TREINO (componente geral-treino): a barra azul acima do cabeçalho, só com o modo ligado. No celular fica
+         só "Modo treino" e os dois botões -->
+    <div class="treino-barra oculto" role="status">
+      <span class="treino-barra-texto">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-treinamento"/></svg>
+        <span><strong>Modo treino</strong><span class="treino-barra-resto">. Nada do que você fizer é salvo.</span></span>
+      </span>
+      <span class="treino-barra-acoes">
+        <button type="button" class="botao treino-barra-treinos">Treinos</button>
+        <button type="button" class="botao treino-barra-sair">Sair do treino</button>
+      </span>
+    </div>
 
     <header class="cabecalho">
       <div class="cabecalho-logo">
@@ -226,11 +240,13 @@
             <span class="menu-item-label">Extrajornada</span>
           </button>
 
-          <div class="sidebar-divisor"></div>
+          <!-- o motor (só administrador, só no computador): a Distribuição, o Horário de expediente e os Feriados; o traço
+               some junto com o item -->
+          <div class="sidebar-divisor" data-lugar-celular="fora" data-admin></div>
 
-          <button type="button" class="menu-item" data-pagina="distribuicao" data-lugar-celular="fora" data-admin aria-label="Distribuição">
-            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-distribuicao" /></svg>
-            <span class="menu-item-label">Distribuição</span>
+          <button type="button" class="menu-item" data-pagina="ajustes" data-lugar-celular="fora" data-admin aria-label="Ajustes">
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-ajustes" /></svg>
+            <span class="menu-item-label">Ajustes</span>
           </button>
 
           <div class="sidebar-divisor"></div>
@@ -245,17 +261,20 @@
             <span class="menu-item-label">Histórico</span>
           </button>
 
-          <button type="button" class="menu-item" data-pagina="ajustes" data-lugar-celular="mais" aria-label="Ajustes">
-            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-ajustes" /></svg>
-            <span class="menu-item-label">Ajustes</span>
-          </button>
-
           <div class="sidebar-divisor" data-programador></div>
 
           <button type="button" class="menu-item" data-pagina="programador" data-lugar-celular="mais" data-programador aria-label="Programador">
             <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-codigo" /></svg>
             <span class="menu-item-label">Programador</span>
             <span class="menu-item-selo oculto" aria-hidden="true"></span>
+          </button>
+
+          <!-- o Treinamento (para todos): o passo a passo no modo treino, em que nada é gravado; no celular, na folha do Mais -->
+          <div class="sidebar-divisor" data-lugar-celular="mais"></div>
+
+          <button type="button" class="menu-item" data-pagina="treinamento" data-lugar-celular="mais" aria-label="Treinamento">
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-treinamento" /></svg>
+            <span class="menu-item-label">Treinamento</span>
           </button>
 
         </div>
@@ -294,8 +313,12 @@
           </div>
           <div class="painel-subcabecalho oculto" id="painel-subcabecalho"></div>
           <div class="painel-corpo" id="painel-corpo"></div>
-          <div class="rodape painel-rodape oculto" id="painel-rodape"></div>
         </aside>
+
+        <!-- O RODAPÉ DO PAINEL é o rodapé único da página: fora do painel, na largura toda do conteúdo (por baixo do
+             painel e da página), preso no fundo. As ações que a página abre no painel vêm aqui; aparece com elas e some
+             quando o painel fecha. No celular, o geral-painel.js o põe dentro do painel, que cobre a tela -->
+        <div class="rodape painel-rodape oculto" id="painel-rodape"></div>
       </main>
 
     </div>
@@ -616,6 +639,10 @@
       <button class="botao botao--primario" type="button" id="entrando-tentar">Tentar de novo</button>
     </div>
   </div>
+
+  <!-- a moldura azul do modo treino (componente geral-treino): por cima de tudo, sem pegar o clique; as peças do passo a
+       passo entram antes dela -->
+  <div class="treino-moldura oculto" id="treino-moldura" aria-hidden="true"></div>
 
   <script src="js/index-carregar.js"></script>
 
@@ -1025,8 +1052,8 @@
     <button type="button" class="dropdown-item"></button>
   </template>
 
-  <!-- MOLDES: a ajuda da tela (componente geral-guia). A lista do ? (os passo a passo da página e o manual),
-       o destaque do campo, o balão do passo e a dica da primeira vez -->
+  <!-- MOLDES: a ajuda da tela (componente geral-guia). A lista do ? (os passo a passo que passam pela tela e o manual),
+       o véu que deixa os alvos acesos, o balão do passo e a dica da primeira vez -->
   <template id="tpl-guia-menu">
     <div class="dropdown-titulo guia-menu-titulo">Passo a passo desta tela</div>
     <div class="guia-menu-lista"></div>
@@ -1045,8 +1072,8 @@
     </button>
   </template>
 
-  <template id="tpl-guia-anel">
-    <div class="guia-anel oculto" aria-hidden="true"></div>
+  <template id="tpl-guia-veu">
+    <div class="guia-veu oculto" aria-hidden="true"></div>
   </template>
 
   <template id="tpl-guia-balao">
@@ -1059,6 +1086,7 @@
       <div class="guia-balao-rodape">
         <button type="button" class="botao guia-balao-proximo oculto">Próximo</button>
         <button type="button" class="botao guia-balao-concluir oculto">Concluir</button>
+        <button type="button" class="botao guia-balao-treinos oculto">Voltar aos treinos</button>
       </div>
     </div>
   </template>
@@ -1070,6 +1098,192 @@
         <button type="button" class="botao guia-dica-entendi">Entendi</button>
       </div>
     </div>
+  </template>
+
+  <!-- ===== ROTEIROS DO PASSO A PASSO (geral-guia-roteiros.js e geral-guia.js) =====
+       Um <template data-roteiro> por roteiro; aparecem no Treinamento (do começo, no modo treino) e no ? de cada tela
+       por onde passam (a partir do passo daquela tela). No template: data-titulo, data-grupo (a seção da lista),
+       data-onde (onde fica, quando há um caminho só), data-icone, data-area="admin" (só para quem administra) e
+       data-pagina (a tela dos passos; "qualquer" = o menu). Cada <p> é um passo: data-alvo é o que fica aceso,
+       data-avanca diz como ele avança (clique · preenchido · aparece · proximo · some · escolha), data-segurar é
+       o clique que gravaria (no treino ele não chega à tela). O passo com escolha tem os caminhos nas <section
+       data-caminho data-entrada> logo depois dele. O data-fim é o balão final (no treino, o data-fim-treino) -->
+
+  <!-- as aberturas comuns: abrir a Escala, a aba e o dia (cada uma é pulada quando já está feita) -->
+  <template data-roteiro-trecho="abrir-escala">
+    <p data-pagina="qualquer" data-alvo=".sidebar .menu-item[data-pagina='escalas'], .barra-celular-item[data-pagina='escalas']" data-avanca="clique" data-pular-se=".conteudo #escala-modos">Abra a <strong>Escala</strong> no menu.</p>
+  </template>
+  <template data-roteiro-trecho="aba-mes">
+    <p data-alvo="#escala-modos [data-modo='mes']" data-avanca="clique" data-pular-se="#escala-modos [data-modo='mes'].aba--ativa">Abra a aba <strong>Mês</strong>.</p>
+  </template>
+  <template data-roteiro-trecho="aba-minha">
+    <p data-alvo="#escala-modos [data-modo='minha']" data-avanca="clique" data-pular-se="#escala-modos [data-modo='minha'].aba--ativa">Abra a aba <strong>Minha escala</strong>.</p>
+  </template>
+  <template data-roteiro-trecho="abrir-dia">
+    <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}']" data-alvo-senao=".escala-mes-celula" data-avanca="clique" data-pular-se=".escala-mes-celula--selecionada">Abra um dia da sua unidade.</p>
+  </template>
+
+  <!-- para todos -->
+  <template data-roteiro="ver-meu-servico" data-titulo="Ver o meu serviço" data-grupo="Escala" data-onde="Escala · Minha escala" data-icone="icone-escalas" data-pagina="escalas">
+    <p data-trecho="abrir-escala"></p>
+    <p data-trecho="aba-minha"></p>
+    <p data-alvo=".escala-minha-calendario" data-avanca="proximo">Este é o seu mês. Cada dia com ícone é um serviço seu, e o dia de hoje fica no círculo escuro.</p>
+    <p data-alvo=".escala-minha-calendario" data-clique=".escala-minha-calendario .mini-calendario-dia" data-avanca="clique">Escolha um dia no calendário.</p>
+    <p data-alvo=".escala-minha-dia" data-avanca="proximo">Aqui está a escala inteira da sua unidade nesse dia, com o seu nome destacado.</p>
+    <p data-alvo="#escala-legenda-grade" data-avanca="proximo">A <strong>Legenda</strong> explica cada ícone.</p>
+    <p data-fim>Pronto. A Minha escala sempre abre no seu próximo serviço.</p>
+  </template>
+
+  <template data-roteiro="ler-escala-mes" data-titulo="Ler a escala do mês" data-grupo="Escala" data-onde="Escala · Mês" data-icone="icone-escalas" data-pagina="escalas">
+    <p data-trecho="abrir-escala"></p>
+    <p data-trecho="aba-mes"></p>
+    <p data-alvo="#escala-sub-mes, #escala-sub-mes + .seletor-menu" data-avanca="proximo">Aqui você escolhe ver o mês em lista, na <strong>Agenda</strong>, ou em calendário, no <strong>Calendário</strong>.</p>
+    <p data-alvo="#escala-sub-unidades" data-so-celular data-opcional data-avanca="proximo">Escolha aqui qual unidade aparece.</p>
+    <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}']" data-alvo-senao=".escala-mes-celula" data-um data-avanca="proximo">Cada dia mostra, por unidade, quem está de serviço e o horário.</p>
+    <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'] .escala-mes-grafico" data-alvo-senao=".escala-mes-grafico" data-um data-avanca="proximo">A faixa colorida em cima é a cobertura hora a hora: verde está certo, amarelo tem ressalva e vermelho tem erro.</p>
+    <p data-alvo=".pagina-subcabecalho .geral-periodo" data-avanca="proximo">As setas mudam o mês.</p>
+    <p data-alvo="#escala-legenda-grade" data-avanca="proximo">A <strong>Legenda</strong> explica as cores e os ícones.</p>
+    <p data-fim>Pronto. Para ver os postos e as funções de um dia, abra o dia na escala.</p>
+  </template>
+
+  <template data-roteiro="detalhes-dia" data-titulo="Ver os detalhes de um dia" data-grupo="Escala" data-onde="Escala · painel do dia" data-icone="icone-escalas" data-pagina="escalas">
+    <p data-trecho="abrir-escala"></p>
+    <p data-trecho="aba-mes"></p>
+    <p data-trecho="abrir-dia"></p>
+    <p data-alvo=".painel-corpo .escala-posto-titulo" data-anel="caixa" data-um data-avanca="proximo">Cada caixa é um posto: a função, quem está nela e o horário.</p>
+    <p data-alvo=".painel-corpo .escala-distribuicao-aviso" data-opcional data-avanca="proximo">No alto, os avisos do dia: vermelho é erro e amarelo é ressalva.</p>
+    <p data-alvo=".painel-corpo .escala-edicao-sem-funcao, .painel-corpo .escala-edicao-folgas, .painel-corpo .escala-observacoes-titulo, .painel-corpo .escala-observacao-add" data-anel="caixa" data-opcional data-avanca="proximo">Depois dos postos vêm <strong>Sem função</strong>, <strong>De folga</strong> e as <strong>Observações</strong>.</p>
+    <p data-alvo=".painel-corpo .alteracoes" data-opcional data-avanca="proximo">As <strong>Alterações manuais</strong> mostram quem mexeu no dia, quando e o quê.</p>
+    <p data-fim>Pronto. O X fecha o painel.</p>
+  </template>
+
+  <template data-roteiro="achar-militar" data-titulo="Achar um militar na escala" data-grupo="Escala" data-onde="Escala · busca" data-icone="icone-escalas" data-pagina="escalas">
+    <p data-trecho="abrir-escala"></p>
+    <p data-trecho="aba-mes"></p>
+    <p data-alvo="#escala-busca-geral" data-so-celular data-pular-se="#escala-busca-geral.busca--aberta" data-avanca="clique">Abra a pesquisa pela lupa.</p>
+    <p data-alvo="#escala-busca-geral" data-condicao="#escala-busca-geral .busca-entrada" data-avanca="preenchido">Digite o nome, o CPF ou o RG do militar.</p>
+    <p data-alvo="#escala-busca-geral" data-avanca="proximo">O Enter vai até ele na escala; cada Enter seguinte vai ao próximo lugar em que ele aparece.</p>
+    <p data-alvo="#escala-busca-geral .busca-modo" data-avanca="proximo">Este botão troca entre marcar, que acende onde ele aparece, e filtrar, que esconde os outros.</p>
+    <p data-alvo="#escala-busca-geral .busca-limpar" data-avanca="proximo">O X limpa a pesquisa.</p>
+    <p data-fim>Pronto.</p>
+  </template>
+
+  <template data-roteiro="imprimir-escala" data-titulo="Imprimir a escala" data-grupo="Escala" data-onde="Escala · Mês" data-icone="icone-escalas" data-pagina="escalas">
+    <p data-trecho="abrir-escala"></p>
+    <p data-trecho="aba-mes"></p>
+    <p data-avanca="escolha">Dá para imprimir de dois jeitos: um dia, abrindo o dia na escala, ou o mês, pelo botão de imprimir da barra. Escolha um.</p>
+    <section data-caminho="dia" data-entrada=".escala-mes-celula[data-unidade-id='{unidade}']">
+      <p data-alvo=".painel-lateral .escala-dia-imprimir" data-avanca="clique">Use o botão de imprimir do painel do dia.</p>
+      <p data-alvo=".painel-corpo [data-impressao-inicio]" data-anel="caixa" data-avanca="proximo">Escolha as datas: um dia só ou vários, com os atalhos.</p>
+      <p data-alvo=".painel-corpo [data-impressao-arvore]" data-anel="caixa" data-avanca="proximo">As unidades que entram na folha.</p>
+      <p data-alvo=".painel-corpo [data-mostrar]" data-anel="caixa" data-avanca="proximo">Os ícones de origem podem sair ou não no papel.</p>
+      <p data-alvo=".painel-corpo .impressao-previa-secao" data-so-computador data-avanca="proximo">A prévia mostra o PDF como vai sair.</p>
+      <p data-alvo="[data-impressao-gerar]" data-avanca="clique">Gere o PDF.</p>
+      <p data-fim>Pronto. O arquivo foi baixado, e o painel voltou ao dia.</p>
+    </section>
+    <section data-caminho="mes" data-entrada="#escala-imprimir">
+      <p data-alvo=".painel-corpo [data-impressao-nota]" data-avanca="proximo">No alto, o que será impresso: o mês da tela, com os filtros dela.</p>
+      <p data-alvo=".painel-corpo [data-impressao-semanas], .painel-corpo [data-impressao-mes-todo], .painel-corpo .impressao-linha--inicio" data-anel="caixa" data-avanca="proximo">Escolha as semanas, no Calendário, ou os dias, na Agenda.</p>
+      <p data-alvo=".painel-corpo [data-impressao-arvore]" data-anel="caixa" data-avanca="proximo">As unidades que entram.</p>
+      <p data-alvo=".painel-corpo [data-impressao-formato]" data-anel="caixa" data-avanca="proximo">O formato: folhas A4, para imprimir, ou uma página contínua, para ver na tela.</p>
+      <p data-alvo=".painel-corpo [data-mostrar]" data-anel="caixa" data-avanca="proximo">O que aparece no papel: o gráfico, os ícones e a faixa do horário.</p>
+      <p data-alvo=".painel-corpo .impressao-previa-secao" data-so-computador data-avanca="proximo">A prévia mostra o PDF como vai sair.</p>
+      <p data-alvo="[data-impressao-gerar]" data-avanca="clique">Gere o PDF.</p>
+      <p data-fim>Pronto. O arquivo foi baixado.</p>
+    </section>
+  </template>
+
+  <template data-roteiro="trocar-servico" data-titulo="Trocar um serviço" data-grupo="Trocas" data-icone="icone-trocas" data-pagina="qualquer">
+    <p data-avanca="escolha">Há dois caminhos para pedir uma troca: pela <strong>Escala</strong>, a partir do seu serviço, ou pelas <strong>Trocas</strong>, direto no pedido. Escolha um.</p>
+    <section data-caminho="escala" data-pagina="escalas" data-entrada=".sidebar .menu-item[data-pagina='escalas'], .barra-celular-item[data-pagina='escalas']">
+      <p data-avanca="escolha">Na Escala, também há dois caminhos: pela <strong>Minha escala</strong>, no seu calendário, ou pelo <strong>Mês</strong>, num dia da escala de todos. Escolha um.</p>
+      <section data-caminho="minha" data-entrada="#escala-modos [data-modo='minha']">
+        <p data-alvo=".escala-minha-calendario" data-clique=".escala-minha-calendario .mini-calendario-dia" data-avanca="clique">Escolha o dia do serviço que você quer trocar.</p>
+        <p data-alvo=".escala-minha-solicitar" data-avanca="clique">Use o botão <strong>Solicitar troca</strong>.</p>
+      </section>
+      <section data-caminho="mes" data-entrada="#escala-modos [data-modo='mes']">
+        <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}']" data-alvo-senao=".escala-mes-celula" data-avanca="clique">Abra o dia do serviço que você quer trocar.</p>
+        <p data-alvo=".painel-lateral .escala-dia-solicitar" data-avanca="clique">Use o botão <strong>Solicitar troca</strong> do painel.</p>
+      </section>
+    </section>
+    <section data-caminho="trocas" data-pagina="trocas" data-entrada=".sidebar .menu-item[data-pagina='trocas'], .barra-celular-item[data-pagina='trocas']">
+      <p data-alvo="#btn-solicitar-troca" data-avanca="clique">Comece pelo botão <strong>Solicitar troca</strong>.</p>
+    </section>
+    <p data-alvo="#tv-parte" data-anel="campo" data-avanca="proximo">Se a troca já tem parte no eProtocolo, digite o número. Se ainda não tem, deixe em branco.</p>
+    <p data-alvo="#tv-unidade, #tv-militar" data-anel="campo" data-avanca="proximo">Escolha a unidade e o colega da troca. Ele entra na lista. Se a troca tem mais gente, adicione os outros.</p>
+    <p data-alvo="#tv-calendario" data-avanca="proximo">Clique no dia da troca. Em cima aparece quem trabalha e, riscado, quem folga. Se já combinaram a devolução, marque o dia dela também; se não, você fica devendo as horas.</p>
+    <p data-alvo="#tv-resumo" data-avanca="proximo">Confira o resumo. Para trocar só uma parte do serviço, clique no lápis do dia e escolha o horário.</p>
+    <p data-alvo="#painel-rodape [data-acao='solicitar-varias']" data-avanca="some" data-condicao=".painel-lateral--aberto .trocas-varias" data-segurar>Confira e envie pelo botão <strong>Solicitar troca</strong>.</p>
+    <p data-fim>Pronto. Os colegas recebem o pedido e aceitam. Depois, o administrador aprova. Acompanhe na aba <strong>Minhas</strong>.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi enviado. No sistema, os colegas receberiam o pedido para aceitar e, depois, o administrador aprovaria. O pedido apareceria na aba Minhas, nas Trocas.</p>
+  </template>
+
+  <!-- para quem administra. Os roteiros com o mesmo data-conjunto ficam numa linha só da lista do Treinamento (o
+       <template data-roteiro-conjunto>: o nome, o rótulo das opções, o grupo e o ícone), que abre ali mesmo com eles dentro;
+       o Visto da linha só vem com todos concluídos -->
+  <template data-roteiro-conjunto="ajustar-o-dia" data-titulo="Ajustar o dia e salvar" data-rotulo="O que você quer mudar no dia" data-grupo="Escala" data-area="admin" data-icone="icone-ferramenta"></template>
+
+  <template data-roteiro="adicionar-observacao" data-titulo="Adicionar uma observação" data-conjunto="ajustar-o-dia" data-area="admin" data-grupo="Escala" data-onde="Escala · painel do dia" data-icone="icone-ferramenta" data-pagina="escalas">
+    <p data-trecho="abrir-escala"></p>
+    <p data-trecho="aba-mes"></p>
+    <p data-trecho="abrir-dia"></p>
+    <p data-alvo=".painel-lateral .escala-edicao-menu > .botao" data-avanca="proximo">No <strong>Editar o dia</strong> ficam as ações do dia: adicionar, remover, remanejar e registrar troca.</p>
+    <p data-alvo=".painel-corpo .escala-edicao-lapis" data-um data-avanca="proximo">Em cada linha, o lápis troca quem está na função ou o horário.</p>
+    <p data-alvo=".painel-corpo .escala-observacao-add-botao" data-avanca="clique">Faça uma mudança simples: use <strong>Adicionar observação</strong>.</p>
+    <p data-alvo=".painel-corpo .escala-observacao-campo" data-clique=".painel-corpo .escala-observacao-salvar" data-avanca="clique">Escreva uma nota e confirme em <strong>Adicionar</strong>.</p>
+    <p data-alvo=".escala-rodape-salvar-texto" data-avanca="proximo">A mudança ainda não foi gravada: no rodapé largo aparecem quantas alterações faltam salvar.</p>
+    <p data-alvo=".painel-lateral .escala-edicao-historico" data-avanca="proximo">O <strong>Desfazer</strong> volta a última mudança, e o <strong>Refazer</strong> a faz de novo.</p>
+    <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong>. Para desistir de tudo, use o <strong>Cancelar</strong>.</p>
+    <p data-fim>Pronto. A mudança foi gravada, e o resumo mostra o que mudou.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, a mudança seria gravada e o resumo mostraria o que mudou.</p>
+  </template>
+
+  <template data-roteiro="trocar-funcao" data-titulo="Trocar quem está numa função" data-conjunto="ajustar-o-dia" data-area="admin" data-grupo="Escala" data-onde="Escala · painel do dia" data-icone="icone-ferramenta" data-pagina="escalas">
+    <p data-trecho="abrir-escala"></p>
+    <p data-trecho="aba-mes"></p>
+    <p data-trecho="abrir-dia"></p>
+    <p data-alvo=".painel-corpo .escala-edicao-lapis" data-avanca="clique">Use o lápis da linha que você quer mudar.</p>
+    <p data-alvo=".painel-corpo .escala-linha-combo" data-condicao=".painel-corpo .escala-linha-aplicar:not(:disabled)" data-avanca="aparece">Escolha quem fica na função. Aparece só quem já está de serviço no dia; <strong>Ninguém</strong> deixa a função vazia.</p>
+    <p data-alvo=".painel-corpo .escala-linha-periodos" data-avanca="proximo">Ajuste o horário nesta função, se precisar.</p>
+    <p data-alvo=".painel-corpo .escala-linha-efeito" data-opcional data-avanca="proximo">Aqui aparece o que acontece com quem está em volta.</p>
+    <p data-alvo=".painel-corpo .escala-linha-aplicar" data-avanca="clique">Aplique pelo botão, que diz o que vai fazer.</p>
+    <p data-alvo=".painel-corpo .escala-edicao-mudou" data-opcional data-avanca="proximo">A nota <strong>O que mudou</strong> mostra a mudança, e a escala da página já mostra o dia como vai ficar.</p>
+    <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé.</p>
+    <p data-fim>Pronto. A mudança foi gravada.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi salvo.</p>
+  </template>
+
+  <template data-roteiro="escalar-no-dia" data-titulo="Escalar um militar só num dia" data-conjunto="ajustar-o-dia" data-area="admin" data-grupo="Escala" data-onde="Escala · painel do dia" data-icone="icone-ferramenta" data-pagina="escalas">
+    <p data-trecho="abrir-escala"></p>
+    <p data-trecho="aba-mes"></p>
+    <p data-trecho="abrir-dia"></p>
+    <p data-alvo=".painel-lateral .escala-edicao-menu > .botao" data-avanca="clique">Abra o menu <strong>Editar o dia</strong>.</p>
+    <p data-alvo=".painel-lateral .escala-edicao-menu [data-acao='adicionar']" data-avanca="clique">Escolha <strong>Adicionar militar</strong>.</p>
+    <p data-alvo=".painel-corpo .escala-adicionar-como" data-avanca="proximo">Escolha <strong>Somente no dia</strong>.</p>
+    <p data-alvo=".painel-corpo .escala-adicionar-quem" data-condicao=".painel-corpo .escala-adicionar-horario" data-avanca="aparece">Escolha quem entra: quem tem horas livres no dia, de qualquer pelotão.</p>
+    <p data-alvo=".painel-corpo .escala-adicionar-horario" data-avanca="proximo">O horário já vem com as horas livres dele. Ajuste, se precisar.</p>
+    <p data-alvo=".painel-corpo .escala-adicionar-onde-bloco" data-avanca="proximo">Escolha onde ele fica: o sistema distribui, uma função escolhida ou no lugar de outro militar.</p>
+    <p data-alvo=".painel-corpo .escala-adicionar-banco" data-opcional data-avanca="proximo">Diga se as horas entram no banco de horas dele.</p>
+    <p data-alvo=".escala-sub-aplicar" data-avanca="clique">Use o botão do rodapé, que diz o que vai fazer.</p>
+    <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo.</p>
+    <p data-fim>Pronto. Ele está escalado naquele dia.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, ele entraria na escala desse dia.</p>
+  </template>
+
+  <template data-roteiro="tirar-do-dia" data-titulo="Tirar um militar de um dia" data-conjunto="ajustar-o-dia" data-area="admin" data-grupo="Escala" data-onde="Escala · painel do dia" data-icone="icone-ferramenta" data-pagina="escalas">
+    <p data-trecho="abrir-escala"></p>
+    <p data-trecho="aba-mes"></p>
+    <p data-trecho="abrir-dia"></p>
+    <p data-alvo=".painel-lateral .escala-edicao-menu > .botao" data-avanca="clique">Abra o menu <strong>Editar o dia</strong>.</p>
+    <p data-alvo=".painel-lateral .escala-edicao-menu [data-acao='remover']" data-avanca="clique">Escolha <strong>Remover militar</strong>.</p>
+    <p data-alvo=".painel-corpo .escala-remover-quem" data-condicao=".painel-corpo .escala-remover-reman:not(.oculto), .painel-corpo .escala-remover-partes:not(.oculto), .painel-corpo .escala-remover-alcance:not(.oculto), .painel-corpo .escala-remover-horario:not(.oculto), .painel-corpo .escala-remover-troca:not(.oculto)" data-avanca="aparece">Escolha quem sai. Ao lado do nome, aparece como ele entrou no dia: pelo ciclo, só naquele dia ou por troca.</p>
+    <p data-alvo=".painel-corpo .escala-remover-alcance" data-opcional data-avanca="proximo">Se ele é do ciclo, escolha <strong>Só no dia</strong>.</p>
+    <p data-alvo=".painel-corpo .escala-remover-horario" data-opcional data-avanca="proximo">Ajuste o horário que sai, se não for o dia todo.</p>
+    <p data-alvo=".painel-corpo .escala-remover-banco" data-opcional data-avanca="proximo">Diga se as horas saem do banco de horas dele.</p>
+    <p data-alvo=".escala-sub-aplicar" data-avanca="clique">Use o botão do rodapé, que diz o que vai fazer.</p>
+    <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo.</p>
+    <p data-fim>Pronto. Ele saiu do dia. Quem é do ciclo fica de folga nesse dia.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, ele sairia do dia.</p>
   </template>
 
   <!-- MOLDES: calendário (componente compartilhado) -->
@@ -1641,12 +1855,14 @@
   </template>
 
   <!-- ===== painel do dia › aba Dia (escalas-painel-editar.js): a lista do dia, que o admin edita ===== -->
-  <!-- subcabeçalho do admin: o menu Editar o dia (só o texto, sem marca: só o administrador vê; REGRAS §4, Abas e barras)
-       com as ações do dia: Adicionar militar (escalas-painel-adicionar.js), Remover militar (escalas-painel-remover.js),
-       Remanejar militar (escalas-painel-remanejar.js) e Registrar troca de serviço (o Registrar troca das Trocas) -->
+  <!-- subcabeçalho do admin: o menu Editar o dia, com a chave inglesa (fica ao lado do Solicitar troca, que é do militar;
+       REGRAS §4, Abas e barras), com as ações do dia: Adicionar militar (escalas-painel-adicionar.js), Remover militar
+       (escalas-painel-remover.js), Remanejar militar (escalas-painel-remanejar.js) e Registrar troca de serviço (o
+       formulário da troca, escalas-painel-troca.js) -->
   <template id="tpl-escala-edicao-acoes">
     <div class="dropdown escala-edicao-menu">
       <button type="button" class="botao">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-ferramenta"/></svg>
         <span>Editar o dia</span>
         <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
       </button>
@@ -2684,6 +2900,263 @@
   <template id="tpl-decisao-acoes">
     <button type="button" class="botao botao--perigo" data-acao="recusar"><span class="etiqueta-adm">ADM</span>Recusar</button>
     <button type="button" class="botao botao--primario" data-acao="aprovar"><span class="etiqueta-adm">ADM</span>Aprovar</button>
+  </template>
+
+  <!-- ===== formulário da troca (trocas-varias.js): na página Trocas, o Solicitar troca, o Registrar troca e o Editar do
+       registro; na Escala, o Solicitar troca e o Registrar troca de serviço do painel do dia (escalas-painel-troca.js) ===== -->
+  <!-- molde: o formulário da troca (trocas-varias.js), no Solicitar troca, no Registrar troca e no Editar do registro;
+       num registro só. Os militares da troca, o calendário dos dias (trocas-varias-calendario.js; em cada dia, quem
+       trabalha e quem folga), o resumo que o banco monta (duplas, rodas e o que fica sem devolução), dia a dia, com o
+       horário e o lápis (trocas-varias-resumo.js) e, no Registrar e no Editar do administrador de fora, a Análise
+       (trocas-varias-registrar.js). data-modo: o texto de cada modo (solicitar = o militar pede; registrar = o
+       admin registra; editar = o Editar do registro, trocas-varias-editar.js). A nota da alteração aparece pelo JS, quando
+       o militar muda trocas aprovadas -->
+  <template id="tpl-troca-varias">
+    <div class="trocas-varias">
+      <div class="nota" data-modo="registrar editar">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg>
+        <span class="nota-texto" data-modo="registrar">As trocas entram já aprovadas, e cada militar aceita depois.</span>
+        <span class="nota-texto" data-modo="editar">Os dias que já passaram ficam como estão.</span>
+      </div>
+      <div class="nota oculto" id="tv-nota-alteracao">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg>
+        <span class="nota-texto">As trocas de antes continuam valendo até todos aceitarem a alteração e a administração aprovar.</span>
+      </div>
+
+      <div class="grupo-caixa trocas-cartao">
+        <span class="rotulo-secao">E-protocolo</span>
+        <div class="trocas-protocolo">
+          <label class="campo">
+            <span class="campo-rotulo">Parte (opcional)</span>
+            <input type="text" class="campo-entrada" id="tv-parte" inputmode="numeric" maxlength="7" autocomplete="off" />
+            <span class="campo-erro-texto"></span>
+          </label>
+          <label class="campo">
+            <span class="campo-rotulo">Ano</span>
+            <input type="text" class="campo-entrada" id="tv-parte-ano" inputmode="numeric" maxlength="4" autocomplete="off" />
+            <span class="campo-erro-texto"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="grupo-caixa trocas-cartao">
+        <span class="rotulo-secao">Militares da troca</span>
+        <div class="trocas-varias-lista" id="tv-militares"></div>
+        <span class="texto-leitor" id="tv-anuncio" role="status"></span>
+        <div class="trocas-varias-adicionar">
+          <div class="campo">
+            <span class="campo-rotulo">Unidade</span>
+            <div class="dropdown" id="tv-unidade-dropdown">
+              <button type="button" class="campo-entrada campo-selecao" id="tv-unidade" aria-label="Unidade do militar">
+                <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+                <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+              </button>
+              <div class="dropdown-menu" id="tv-unidade-menu"></div>
+            </div>
+          </div>
+          <div class="campo">
+            <span class="campo-rotulo">Militar</span>
+            <div class="dropdown campo-combo" id="tv-militar-dropdown">
+              <input class="campo-entrada" id="tv-militar" type="text" maxlength="100" placeholder="Digite ou escolha" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="tv-militar-menu" aria-label="Militar" />
+              <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+              <div class="dropdown-menu" id="tv-militar-menu" role="listbox" aria-label="Militares"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grupo-caixa trocas-cartao">
+        <span class="rotulo-secao">Dias da troca</span>
+        <div class="trocas-varias-mes">
+          <button type="button" class="botao botao--quadrado" id="tv-mes-anterior" aria-label="Mês anterior">
+            <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>
+          </button>
+          <span id="tv-mes-nome"></span>
+          <button type="button" class="botao botao--quadrado" id="tv-mes-proximo" aria-label="Próximo mês">
+            <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
+          </button>
+        </div>
+        <span class="campo-ajuda">Acesos: os dias em que um militar da troca está de serviço e outro está livre. Em cima, quem trabalha; riscado, quem folga.</span>
+        <div class="nota" id="tv-dias-espera">
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg>
+          <span class="nota-texto" data-modo="solicitar">Adicione pelo menos um militar para ver os dias.</span>
+          <span class="nota-texto oculto" data-modo="registrar editar">Adicione pelo menos dois militares para ver os dias.</span>
+        </div>
+        <div class="trocas-varias-cal" id="tv-calendario"></div>
+      </div>
+
+      <div class="grupo-caixa trocas-cartao" id="tv-resumo">
+        <span class="rotulo-secao">Resumo das trocas</span>
+        <span class="trocas-varias-vazio" id="tv-resumo-vazio">Marque os dias no calendário para ver as trocas.</span>
+        <span class="trocas-varias-vazio oculto" id="tv-resumo-carregando"></span>
+        <div class="trocas-varias-grupo oculto" id="tv-duplas">
+          <span class="trocas-varias-grupo-titulo">Duplas</span>
+          <ol class="trocas-varias-grupo-lista"></ol>
+        </div>
+        <div class="trocas-varias-rodas" id="tv-rodas"></div>
+        <div class="trocas-varias-grupo oculto" id="tv-sem-devolucao">
+          <span class="trocas-varias-grupo-titulo">Sem devolução</span>
+          <ol class="trocas-varias-grupo-lista"></ol>
+        </div>
+        <div class="trocas-varias-notas" id="tv-notas"></div>
+      </div>
+
+      <!-- análise de impacto (no Registrar e no Editar do administrador de fora): a do registro inteiro, a mesma do Aprovar,
+           desenhada pelo geral-impacto -->
+      <div class="decisao-analise-secao oculto" id="tv-analise">
+        <div class="decisao-analise-cabecalho">
+          <span class="rotulo-secao">Análise</span>
+          <span class="selo decisao-analise-selo oculto"></span>
+        </div>
+        <div class="impacto-analise decisao-analise"></div>
+      </div>
+    </div>
+  </template>
+
+  <!-- molde: um grupo de roda do resumo (cada roda é um grupo) -->
+  <template id="tpl-troca-varias-roda">
+    <div class="trocas-varias-grupo">
+      <span class="trocas-varias-grupo-titulo">Roda</span>
+      <ol class="trocas-varias-grupo-lista"></ol>
+    </div>
+  </template>
+
+  <!-- molde: um dia do resumo (trocas-varias-resumo.js): a data, quem trabalha no lugar de quem (o selo no dia da
+       devolução da dupla), o horário sempre à vista e o lápis, que abre ali mesmo o "Serviço inteiro / Parte do serviço"
+       (geral-horario) com o Pronto -->
+  <template id="tpl-troca-varias-linha">
+    <li class="trocas-varias-linha">
+      <span class="trocas-varias-linha-data">
+        <span class="trocas-varias-linha-numero"></span>
+        <span class="trocas-varias-linha-semana"></span>
+      </span>
+      <span class="trocas-varias-linha-textos">
+        <span class="trocas-varias-linha-quem">
+          <span><strong class="trocas-varias-linha-trabalha"></strong> no lugar de <strong class="trocas-varias-linha-folga"></strong></span>
+          <span class="selo trocas-varias-linha-devolucao oculto">Devolução</span>
+        </span>
+        <span class="trocas-varias-linha-horario"></span>
+      </span>
+      <button type="button" class="botao botao--icone trocas-varias-linha-editar" aria-label="Editar horário" data-dica="Editar horário">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-editar"/></svg>
+      </button>
+      <div class="trocas-varias-linha-editor oculto">
+        <div class="trocas-varias-linha-periodo"></div>
+        <div class="trocas-varias-linha-acoes">
+          <button type="button" class="botao trocas-varias-linha-pronto">Pronto</button>
+        </div>
+      </div>
+    </li>
+  </template>
+
+  <!-- molde: as notas do resumo (verde: tudo fechado; amarela: um saldo de horas) -->
+  <template id="tpl-troca-varias-nota-ok">
+    <div class="nota nota--sucesso">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-sucesso"/></svg>
+      <span class="nota-texto"></span>
+    </div>
+  </template>
+  <template id="tpl-troca-varias-nota-saldo">
+    <div class="nota nota--alerta">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+      <span class="nota-texto"></span>
+    </div>
+  </template>
+
+  <!-- molde: um militar da troca ("· você" e sem Remover: no Solicitar, quem pede; no Editar, quem edita) -->
+  <template id="tpl-troca-varias-militar">
+    <div class="trocas-varias-militar">
+      <span class="trocas-varias-militar-nome"></span>
+      <span class="trocas-varias-militar-unidade"><span class="trocas-varias-militar-lotacao"></span><span class="trocas-varias-militar-voce oculto"> · você</span></span>
+      <button type="button" class="botao botao--texto trocas-varias-remover">Remover</button>
+    </div>
+  </template>
+
+  <!-- molde: o dia do calendário com o quadro dele (um .dropdown: o botão do dia é o gatilho; o menu é o quadro) -->
+  <template id="tpl-troca-varias-dia">
+    <div class="dropdown trocas-dia-ancora">
+      <div class="dropdown-menu trocas-dia-quadro"></div>
+    </div>
+  </template>
+
+  <!-- molde: um par no dia (quem trabalha em cima; quem folga embaixo, riscado) -->
+  <template id="tpl-troca-varias-par">
+    <span class="trocas-dia-par"><span class="trocas-dia-trabalha"></span><span class="trocas-dia-folga"></span></span>
+  </template>
+
+  <!-- molde: o conteúdo do quadro do dia: os pares já marcados (cada um com Tirar) e as perguntas do par novo;
+       no Editar, o dia que já passou mostra só os pares, sem Tirar, e a frase -->
+  <template id="tpl-troca-varias-quadro">
+    <div class="trocas-dia-quadro-conteudo">
+      <div class="dropdown-titulo trocas-dia-quadro-data"></div>
+      <div class="trocas-dia-pares"></div>
+      <div class="dropdown-divisor trocas-dia-quadro-divisor"></div>
+      <div class="trocas-dia-grupo trocas-dia-travado oculto">
+        <span class="trocas-dia-quadro-par-texto">Este dia já passou e não muda.</span>
+      </div>
+      <div class="trocas-dia-novo">
+        <div class="trocas-dia-grupo">
+          <span class="trocas-dia-pergunta">Quem trabalha?</span>
+          <div class="trocas-dia-opcoes" data-papel="trabalha"></div>
+        </div>
+        <div class="dropdown-divisor"></div>
+        <div class="trocas-dia-grupo">
+          <span class="trocas-dia-pergunta">Quem folga?</span>
+          <div class="trocas-dia-opcoes" data-papel="folga"></div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- molde: um par já marcado, no quadro do dia -->
+  <template id="tpl-troca-varias-quadro-par">
+    <div class="trocas-dia-quadro-par">
+      <span class="trocas-dia-quadro-par-texto"></span>
+      <button type="button" class="dropdown-item dropdown-item--perigo trocas-dia-tirar">Tirar esta troca</button>
+    </div>
+  </template>
+
+  <!-- molde: uma bolinha do quadro (quem trabalha ou quem folga) -->
+  <template id="tpl-troca-varias-opcao">
+    <label class="geral-opcao"><input type="radio" /><span></span></label>
+  </template>
+
+  <!-- molde: ações do rodapé do Solicitar troca -->
+  <template id="tpl-troca-varias-acoes">
+    <button type="button" class="botao" data-acao="cancelar">Cancelar</button>
+    <button type="button" class="botao botao--primario" data-acao="solicitar-varias">Solicitar troca</button>
+  </template>
+
+  <!-- molde: ações do rodapé do Registrar troca (o Registrar troca espera a análise chegar) -->
+  <template id="tpl-troca-varias-registrar-acoes">
+    <button type="button" class="botao" data-acao="cancelar">Cancelar</button>
+    <button type="button" class="botao botao--primario" data-acao="registrar-varias">Registrar troca</button>
+  </template>
+
+  <!-- molde: item de dropdown (unidade / parceiro) montado pelo JS (trocas-solicitar-campos.js) -->
+  <template id="tpl-troca-opcao">
+    <button type="button" class="dropdown-item"></button>
+  </template>
+
+  <!-- molde: aviso "nenhum militar encontrado" quando o filtro do campo Militar não casa com ninguém -->
+  <template id="tpl-troca-parceiro-vazio">
+    <div class="dropdown-item dropdown-item--inativo troca-parceiro-vazio"></div>
+  </template>
+
+  <!-- molde: item de parceiro indisponível (ocupado no dia) -->
+  <template id="tpl-troca-parceiro-ocupado">
+    <button type="button" class="dropdown-item dropdown-item--inativo troca-parceiro-ocupado" role="option" aria-disabled="true">
+      <span class="troca-parceiro-nome"></span>
+      <span class="troca-parceiro-motivo"></span>
+    </button>
+  </template>
+
+  <!-- molde: item de militar que ainda não tem conta (pode ser escolhido) -->
+  <template id="tpl-troca-militar-sem-conta">
+    <button type="button" class="dropdown-item troca-parceiro-sem-conta" role="option">
+      <span class="troca-parceiro-nome"></span>
+      <span class="troca-parceiro-motivo">sem conta no sistema</span>
+    </button>
   </template>
 
   <!-- ===== horário em campos e régua do dia (componente geral-horario; Escala e Folgas) ===== -->

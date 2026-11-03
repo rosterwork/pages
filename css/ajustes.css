@@ -1,138 +1,50 @@
 /* ============================================================
-   AJUSTES — configurações das unidades
-   Abas no cabeçalho (Escala · Expediente). Escala: a árvore de
-   unidades com o card do ritmo (geral-arvore). Expediente: o mês de
-   cada unidade e o painel do dia e do horário padrão.
+   AJUSTES — configurações das unidades (só no computador)
+   Abas no cabeçalho (Distribuição · Horário de expediente ·
+   Feriados), as três no mesmo desenho: a frase, o bloco cinza da
+   unidade e o quadro branco (as peças do nova-distribuicao.css).
+   Aqui: as barras que aparecem só na aba delas, as linhas do
+   Horário, o calendário dos Feriados e o painel do dia.
    Só o específico da página. Cores/medidas só por token.
-   Montagem: js/ajustes.js e js/ajustes-expediente.js
+   Montagem: js/ajustes.js, js/ajustes-horario.js,
+   js/ajustes-feriados.js e js/nova-distribuicao*.js
    ============================================================ */
 
-/* ---------- card de um ajuste (o ritmo na árvore) ---------- */
-.ajuste-cartao {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  max-width: 560px;
-  min-height: 48px;
-  padding: 8px 16px;
-  background-color: var(--fundo-superficie);
-  border: 1px solid var(--borda);
-  border-radius: var(--raio-medio);
+/* ---------- as barras: a da Distribuição (a unidade) e a dos Feriados (o mês e a unidade) somem nas outras abas ---------- */
+.pagina:has([data-aba-painel="distribuicao"].oculto) #nova-distribuicao-barra,
+.pagina:has([data-aba-painel="feriados"].oculto) #feriados-barra {
+  display: none;
 }
 
-.ajuste-cartao--clicavel { cursor: pointer; transition: background-color 0.15s ease; }
-.ajuste-cartao--clicavel:hover { background-color: var(--fundo-suave); }
-
-/* aba Escala: a lista da árvore com as margens das outras telas (8px em cima, 16px nas laterais e embaixo) */
-[data-aba-painel="escala"] > .geral-corpo-lateral-rolagem {
-  padding: 8px 16px 16px;
-}
-
-/* o ritmo dentro do bloco da unidade (árvore): é o bloquinho branco, na largura do bloco */
-.arvore-conteudo .ajuste-cartao {
-  max-width: none;
-  border-radius: var(--raio-pequeno);
-}
-
-.ajuste-cartao-textos {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  flex: 1 1 0;
-  min-width: 0;
-}
-
-.ajuste-cartao-titulo {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--texto-forte);
-}
-
-.ajuste-cartao-ajuda {
-  font-size: 11px;
-  color: var(--texto-fraco);
-}
-
-/* ---------- a frase de ajuda e os campos dos painéis (o Expediente): rótulo em cima, o campo embaixo ---------- */
-.ajustes-extra-ajuda {
-  font-size: 12px;
-  color: var(--texto-fraco);
-}
-
-.ajustes-prazo-campo {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.ajustes-prazo-rotulo {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--texto-forte);
-}
-
-/* ---------- aba Expediente: o mês de cada unidade ---------- */
-.ajustes-exp {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 16px;
-  overflow: auto;
-}
-
-.ajustes-exp-cab {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.ajustes-exp-unidades {
+/* ---------- aba Horário de expediente: uma linha por dia (o nome, Trabalha | Folga e o horário do site; o erro embaixo) ---------- */
+.ajustes-horario-linha {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
-  gap: 16px;
-  align-items: start;
-}
-
-.ajustes-exp-bloco {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 12px;
-  background-color: var(--fundo-pagina);
-  border-radius: var(--raio-medio);
-}
-
-.ajustes-exp-bloco-cab {
-  display: flex;
+  grid-template-columns: 96px auto auto;
+  justify-content: start;
   align-items: center;
-  gap: 8px;
-  min-height: 32px;
+  column-gap: 16px;
+  min-height: 40px;
 }
 
-.ajustes-exp-bloco-titulo {
-  font-size: 15px;
+.ajustes-horario-dia {
+  font-size: var(--fonte-padrao);
   font-weight: 600;
   color: var(--texto-forte);
 }
 
-.ajustes-exp-bloco-cidade {
-  flex: 1;
-  font-size: 12px;
-  color: var(--texto-fraco);
+.ajustes-horario-erro {
+  grid-column: 1 / -1;
+  margin: 0;
 }
 
-.ajustes-exp-padrao {
-  font-size: 12px;
-  color: var(--texto-suave);
-}
-
+/* ---------- aba Feriados: o calendário do mês, o quadro branco dentro do bloco da unidade ---------- */
 .ajustes-exp-cal {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 2px;
   padding: 8px;
   background-color: var(--fundo-superficie);
+  border: 1px solid var(--borda);
   border-radius: var(--raio-medio);
 }
 
@@ -163,6 +75,22 @@
 .ajustes-exp-dia--clicavel:hover { border-color: var(--foco); }
 .ajustes-exp-dia:disabled { cursor: default; }
 
+/* o dia aberto no painel com alteração ainda não salva: a borda tracejada por dentro, sem mudar o tamanho (como o dia
+   não salvo da Escala, escalas-mes.css) */
+.ajustes-exp-dia--nao-salvo {
+  position: relative;
+}
+
+.ajustes-exp-dia--nao-salvo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border: 2px dashed var(--texto-forte);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
 .ajustes-exp-dia-num {
   font-size: 12px;
   font-weight: 700;
@@ -187,29 +115,22 @@
   color: var(--texto-fraco);
 }
 
-/* o painel do dia e do horário padrão */
-.ajustes-exp-form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
+/* o painel do dia: as caixas numeradas são as da geral-subtela; aqui, a frase de agora, as opções uma embaixo da
+   outra, o horário da parte do dia recuado até o texto da opção e o Remover */
 .ajustes-exp-agora,
 .ajustes-exp-travado {
   font-size: 12px;
   color: var(--texto-suave);
 }
 
-.ajustes-exp-horas {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
-.ajustes-exp-motivos,
+.ajustes-exp-opcoes,
 .ajustes-exp-vale {
   display: flex;
   flex-direction: column;
+}
+
+.ajustes-exp-horas {
+  padding: 4px 0 4px 24px;
 }
 
 .ajustes-exp-marcar {
@@ -217,23 +138,4 @@
   text-align: left;
 }
 
-.ajustes-exp-voltar { align-self: flex-start; }
-
-/* ============================================================
-   CELULAR (até 767px; liga só com a marca data-celular no <html>)
-   As duas abas com o respiro da página nas laterais (como as
-   outras árvores), no lugar dos 16px e 24px do computador.
-   ============================================================ */
-@media (max-width: 767px) {
-  html[data-celular] [data-aba-painel="escala"] > .geral-corpo-lateral-rolagem {
-    padding: 8px var(--respiro-pagina) var(--respiro-pagina);
-  }
-
-  html[data-celular] .ajustes-exp {
-    padding: var(--respiro-pagina);
-  }
-
-  html[data-celular] .ajustes-exp-unidades {
-    grid-template-columns: 1fr;
-  }
-}
+.ajustes-exp-remover { align-self: flex-start; }

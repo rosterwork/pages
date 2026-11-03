@@ -1,5 +1,5 @@
 /* ============================================================
-   NOVA DISTRIBUIÇÃO — bloco 3, Funções especiais
+   NOVA DISTRIBUIÇÃO — bloco 4, Funções especiais
    Onde ficam o Chefe de Socorro (pelotão) e o Oficial de Área, em
    caixas de marcar (vários postos = a mesma pessoa, que acumula).
    O Oficial de Área vem em grupos por unidade: primeiro as outras

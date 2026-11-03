@@ -1,5 +1,5 @@
 /* ============================================================
-   NOVA DISTRIBUIÇÃO — bloco 2, Efetivo
+   NOVA DISTRIBUIÇÃO — bloco 3, Efetivo
    Um cartão por posto. Fechado, o título traz o nome (e a CNH da
    viatura), os números "Mín. · Ideal · Máx." e, com mínimo 0, o
    selo Reserva com a frase do que isso quer dizer. Aberto, o

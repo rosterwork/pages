@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="icone-treinamento" viewBox="0 0 24 24">
+    <path d="M2.5 9.5L12 5L21.5 9.5L12 14Z"/>
+    <path d="M6.5 11.6V15.8C6.5 17.3 9 18.8 12 18.8C15 18.8 17.5 17.3 17.5 15.8V11.6"/>
+    <path d="M21.5 9.5V15"/>
+  </symbol>
+</svg>

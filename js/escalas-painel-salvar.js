@@ -12,11 +12,12 @@
    leva a borda tracejada; quando o rascunho muda de verdade, as telas são
    avisadas meio segundo depois do último clique
    (rosterwork_escala_previa); abrir, fechar ou trocar de dia ou de
-   aba sem mudança não as faz ler de novo. No painel, o rodapé
-   fica com as alterações manuais do dia (no Dia) e com o Cancelar e
-   o Aplicar das sub-telas.
-   API: RosterWork.escalasPainelSalvar.rodape(rodape, comHistorico)
-   monta o rodapé do painel e devolve o lugar do histórico;
+   aba sem mudança não as faz ler de novo. A página tem um rodapé só:
+   o do painel (fora dele, na largura toda) leva só o Cancelar e o
+   Aplicar das sub-telas, e enquanto aparece o da página some; as
+   alterações manuais do dia ficam no fim do corpo do Dia.
+   API: RosterWork.escalasPainelSalvar.rodape(rodape) limpa e
+   esconde o rodapé do painel ao entrar numa aba;
    .atualizar() redesenha o rodapé da página; .contar() soma as
    mudanças das duas; .pendente() diz se há mudança no Dia ou no
    Ciclo; .descartar() tira as do Dia e do Ciclo; .paraPrevia() dá o rascunho para a prévia das telas (null
@@ -71,20 +72,12 @@
 
   /* ---------- os rodapés ---------- */
 
-  /* o rodapé de uma aba do painel: limpa e põe o lugar do histórico (no Dia); aparece se algo dentro dele aparece */
-  function rodape(el, comHistorico) {
-    if (!el) return null;
-    el.textContent = '';
-    var lugar = comHistorico ? RW.tpl('tpl-escala-painel-historico') : null;
-    if (lugar) el.appendChild(lugar);
-    el.classList.toggle('oculto', !lugar);
-    return lugar;
-  }
-  /* o histórico apareceu ou sumiu: o rodapé do painel acompanha */
-  function historicoMudou(el) {
+  /* o rodapé do painel ao entrar numa aba: limpo e escondido (o painel não tem rodapé próprio; ele só leva o Cancelar e
+     o Aplicar das sub-telas, e o Salvar é o rodapé largo da página) */
+  function rodape(el) {
     if (!el) return;
-    var algum = [].some.call(el.children, function (f) { return !f.classList.contains('oculto'); });
-    el.classList.toggle('oculto', !algum);
+    el.textContent = '';
+    el.classList.add('oculto');
   }
 
   /* o rodapé largo da página (o primeiro da página aberta); os botões ligam uma vez só */
@@ -211,6 +204,6 @@
   /* fechar ou recarregar o navegador, ou ir para outra página, com mudança no Dia ou no Ciclo: o aviso */
   if (RW.guardaSaida) RW.guardaSaida.registrar(pendente);
 
-  RW.escalasPainelSalvar = { rodape: rodape, historicoMudou: historicoMudou, atualizar: atualizar, contar: contar, pendente: pendente,
+  RW.escalasPainelSalvar = { rodape: rodape, atualizar: atualizar, contar: contar, pendente: pendente,
     descartar: descartar, paraPrevia: paraPrevia, marcado: marcado };
 })();

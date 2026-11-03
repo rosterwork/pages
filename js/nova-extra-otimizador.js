@@ -124,8 +124,15 @@
       [['cv', n.vc.length, ehSede ? P.vermSede : P.vermFora], ['gv', n.vg, ehSede ? P.vermSede : P.vermFora],
        ['ca', n.ac.length, ehSede ? P.amarSede : P.amarFora], ['ga', n.ag, ehSede ? P.amarSede : P.amarFora]].forEach(function (t) {
         if (t[1] <= 0) return;
-        obj.push(t[2] + ' ' + t[0] + s); lim.push('0 <= ' + t[0] + s + ' <= ' + t[1]); partes.push(t[0] + s);
+        obj.push(t[2] + ' ' + t[0] + s); lim.push('0 <= ' + t[0] + s + ' <= ' + t[1]);
+        /* o chefe que dirige sai da direção com quem conduz a viatura, que ainda conta como uma das pessoas */
+        if (t[0] !== 'ca') partes.push(t[0] + s);
       });
+      /* quem conduz a viatura sem condutor não tira, ao mesmo tempo, o chefe da direção de outra */
+      if (n.vc.length && n.ac.length) {
+        var algum = lista.filter(function (i) { return conduz(xs[i].m, n.vc) || conduz(xs[i].m, n.ac); });
+        cons.push('c' + (c++) + ': cv' + s + ' + ca' + s + (algum.length ? ' - ' + algum.map(function (i) { return 'x' + i; }).join(' - ') : '') + ' <= 0');
+      }
       /* o condutor só com a CNH da viatura */
       [['cv', n.vc], ['ca', n.ac]].forEach(function (t) {
         if (!t[1].length) return;

@@ -37,13 +37,13 @@
     return n;
   }
 
-  /* rodapé: o texto das mudanças e o Salvar (como em Extrajornada › Voluntários) */
+  /* o rodapé largo: aparece só com alteração, com o texto das mudanças (como na Extrajornada) */
   function atualizarRodape() {
     var n = mudancas();
     var texto = el('#antiguidade-mudancas');
     if (texto) texto.textContent = n ? RW.mensagens.escala.alteracoesNaoSalvas(n) : '';
-    var salvar = el('#antiguidade-salvar');
-    if (salvar) salvar.disabled = !n;
+    var rodape = el('#antiguidade-rodape');
+    if (rodape) rodape.classList.toggle('oculto', !n);
   }
 
   /* números, canaleta e setas das pontas de um posto, depois de mexer */

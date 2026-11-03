@@ -2,11 +2,12 @@
   'use strict';
 
 
-  /* itens marcados só aparecem para o papel certo: data-admin (qualquer administrador: o Histórico,
-     que mostra a área dele), data-programador (programador — item + divisória da seção) */
+  /* itens marcados só aparecem para o papel certo: data-admin (qualquer administrador: os Ajustes e o
+     Histórico, que mostra a área dele; item + divisória da seção), data-programador (programador — item +
+     divisória da seção) */
   function aplicarPermissoesMenu() {
     if (!RosterWork.sessao.temPapel('pelotao')) {
-      var admins = document.querySelectorAll('.menu-item[data-admin]');
+      var admins = document.querySelectorAll('.sidebar [data-admin]');
       for (var i = 0; i < admins.length; i++) admins[i].classList.add('oculto');
     }
     if (!(RosterWork.sessao.ehProgramador && RosterWork.sessao.ehProgramador())) {

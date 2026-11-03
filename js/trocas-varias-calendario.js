@@ -17,7 +17,8 @@
    até o mês dele.
    Expõe RosterWork.trocasVariasCalendario.{ iniciar, recarregar, desenhar, travado, encerrar }
      iniciar(est, aoMudar) — est = o estado do formulário (militares,
-       pares, mes, editar); aoMudar() avisa que os pares mudaram (o
+       pares, mes, editar, mesInicial: o mês em que abre, se não for o
+       de hoje); aoMudar() avisa que os pares mudaram (o
        par novo vem sem horário: o serviço inteiro; tirar o par tira
        o horário junto)
      travado(dia) — no Editar, o dia já passou e não muda
@@ -189,9 +190,11 @@
   function iniciar(estado, cb) {
     est = estado; aoMudar = cb;
     est.mes = mesAtual();
-    /* no Editar, abre no mês do primeiro dia do plano que ainda muda */
+    /* no Editar, abre no mês do primeiro dia do plano que ainda muda; aberto de um dia (o painel do dia da Escala),
+       no mês dele, se as setas chegam lá */
     var proximo = est.editar ? est.pares.map(function (p) { return p.data; }).filter(function (d) { return !travado(d); }).sort()[0] : null;
     if (proximo) est.mes = mesDe(proximo);
+    else if (est.mesInicial && mesDe(est.mesInicial).getTime() >= mesMinimo().getTime()) est.mes = mesDe(est.mesInicial);
     q('#tv-mes-anterior').addEventListener('click', function () { mudarMes(-1); });
     q('#tv-mes-proximo').addEventListener('click', function () { mudarMes(1); });
     recarregar();

@@ -87,6 +87,8 @@
       var estado = RosterWork.painel.criarEstado(M().vazioAba(cat, ano));
       if (estado) corpo.appendChild(estado);
     }
+    /* o fim do corpo é da ficha (as Alterações na ficha, usuarios-painel.js) */
+    if (ctx.aoDesenhar) ctx.aoDesenhar();
   }
 
   /* o ano no subcabeçalho do painel; trocar de ano redesenha a aba (sem reler) */

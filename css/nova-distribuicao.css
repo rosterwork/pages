@@ -1,5 +1,5 @@
 /* ============================================================
-   NOVA DISTRIBUIÇÃO (protótipo, só programador)
+   DISTRIBUIÇÃO (a aba dos Ajustes, só administrador)
    O questionário em blocos: à esquerda os blocos (lista-item do
    geral-lista), à direita a unidade num bloco cinza com o título
    dentro e as perguntas em cartões brancos, fechados com a resposta
@@ -7,7 +7,7 @@
    (geral-opcao), a caixa de marcar (caixa-selecao), o campo de
    seleção, o combobox (campo-combo), o selo, a nota, o rodapé, o
    período e os campos do posto (geral-posto-editar). Fora do
-   celular (data-lugar-celular="fora").
+   celular: lá a aba Distribuição não aparece (js/ajustes.js).
    ============================================================ */
 
 /* ---- painel esquerdo: os blocos ---- */

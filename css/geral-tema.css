@@ -151,6 +151,7 @@
   --modal-largura:          480px;   /* modal */
   --modal-largura-pequeno:  380px;   /* aviso, data e sessão */
   --modal-respiro:           24px;   /* distância mínima do modal às bordas da tela */
+  --treino-barra-altura:     40px;   /* barra azul do modo treino, acima do cabeçalho */
   --busca-largura:          240px;   /* campo de busca */
   --seletor-largura:        218px;   /* seletor de unidades */
   --periodo-nome-largura:   113px;   /* largura mínima do nome do período: o mês mais comprido ("novembro 2026") cabe e as setas não andam ao trocar de mês */

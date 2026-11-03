@@ -1,21 +1,20 @@
 /* ============================================================
-   DISTRIBUIÇÃO (nova-distribuicao) — entrada da página (só administrador)
-   Carrega a unidade (a distribuição em vigor ou a mudança agendada),
+   DISTRIBUIÇÃO (nova-distribuicao) — a aba Distribuição dos Ajustes
+   (só administrador; o ajustes.js chama o iniciar e o sairDaAba)
+   Carrega a unidade (a em vigor ou a mudança agendada) e o ritmo,
    guarda as respostas em edição, pede as contas ao banco a cada
-   mudança (a resposta mais nova vence; com a outra versão para
-   comparar, o banco diz o que muda) e desenha o menu dos 9 blocos,
-   o corpo e o rodapé. Os blocos moram em -postos (1), -efetivo (2),
-   -funcoes (3), -acumulos (4 e 5), -blocos (6 e 7), -militares (8) e
-   -conferir (9); as
-   peças comuns em -pecas; as mudanças dos postos com data em
-   -caixas; o aviso da mudança agendada, o Salvar com a data e o
-   começo da unidade em -versoes. Cancelar e a unidade moram aqui.
-   O banco grava no Histórico a cada Salvar.
+   mudança (a resposta mais nova vence; com a outra versão, o banco
+   diz o que muda) e desenha o menu dos 10 blocos, o corpo e o
+   rodapé. Blocos: -ritmo (1), -postos (2), -efetivo (3), -funcoes
+   (4), -acumulos (5 e 6), -blocos (7 e 8), -militares (9), -conferir
+   (10); peças comuns em -pecas; as mudanças dos postos com data em
+   -caixas; o aviso, o Salvar com a data e o começo da unidade em
+   -versoes. Cancelar e a unidade moram aqui. O banco grava no
+   Histórico a cada Salvar.
    ============================================================ */
 (function () {
   'use strict';
   window.RosterWork = window.RosterWork || {};
-  window.RosterWork.paginas = window.RosterWork.paginas || {};
 
   var E = novoEstado();
   var tokenCarga = 0;
@@ -28,7 +27,7 @@
     return {
       dados: null, unidadeId: null, periodo: null, resp: null, calc: null,
       companhia: null, respCia: null, calcCia: null,
-      sujo: false, sujoCia: false, bloco: 0, aberto: null,
+      sujo: false, sujoCia: false, bloco: 9, aberto: null,   /* abre no 1º da lista, o Ritmo (data-bloco 9) */
       vendoAgendada: false,                       /* a tela mostra a mudança agendada */
       renomeadas: { unidade: [], companhia: [] },  /* prefixos trocados ainda não salvos: [[velho, novo]] */
       focar: null                                  /* o campo que ganha o foco depois do redesenho */
@@ -42,6 +41,7 @@
   function P() { return RosterWork.novaDistribuicaoPecas; }
   function C() { return RosterWork.novaDistribuicaoConferir; }
   function V() { return RosterWork.novaDistribuicaoVersoes; }
+  function Rt() { return RosterWork.novaDistribuicaoRitmo; }
   function el(id) { return document.getElementById(id); }
   function copia(o) { return o == null ? o : JSON.parse(JSON.stringify(o)); }
   function ehPelotao() { return !!(E.dados && E.dados.unidade.tipo === 'PEL'); }
@@ -51,27 +51,32 @@
   function avisarFalha(r) { RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || G().falhaServidor }); }
   function avisarSemConexao() { RosterWork.avisar({ tipo: 'erro', mensagem: G().semConexao }); }
 
-  /* com edição não salva (também as substituições), confirma o descarte antes de seguir */
+  /* edição não salva: as respostas da unidade, as da companhia, as substituições ou o ritmo */
+  function temEdicao() { return E.sujo || E.sujoCia || RosterWork.novaDistribuicaoCaixas.temRascunho() || Rt().mudou(); }
+
+  /* com edição não salva, confirma o descarte antes de seguir */
   function confirmarDescarte(seguir, aoCancelar) {
-    if (!E.sujo && !E.sujoCia && !RosterWork.novaDistribuicaoCaixas.temRascunho()) { seguir(); return; }
+    if (!temEdicao()) { seguir(); return; }
     RosterWork.confirmar({
       tipo: 'aviso', mensagem: RosterWork.mensagens.edicao.sairSemSalvar,
       textoConfirmar: B().descartar, textoCancelar: B().continuarEditando,
-      aoConfirmar: function () { invalidos = {}; RosterWork.novaDistribuicaoCaixas.descartar(); seguir(); }, aoCancelar: aoCancelar
+      aoConfirmar: function () { invalidos = {}; RosterWork.novaDistribuicaoCaixas.descartar(); Rt().descartar(); seguir(); }, aoCancelar: aoCancelar
     });
   }
 
   /* ---------- carregar e calcular ---------- */
 
-  /* versaoId = a mudança agendada; sem ela, a distribuição em vigor */
+  /* versaoId = a mudança agendada; sem ela, a distribuição em vigor. O ritmo vem junto (o bloco 1) */
   function carregar(unidadeId, versaoId) {
     var meu = ++tokenCarga;
     P().mostrarNoCorpo('carregando');
-    return D().ler(unidadeId, versaoId).then(function (r) {
+    return Promise.all([D().ler(unidadeId, versaoId), D().ritmos()]).then(function (rs) {
+      var r = rs[0];
       if (meu !== tokenCarga || !montada()) return;
       if (!r || !r.success) { P().mostrarNoCorpo('falha', (r && r.error) || G().falhaCarregar); return; }
       var bloco = E.bloco;
-      RosterWork.novaDistribuicaoCaixas.descartar();   /* o rascunho das substituições foi salvo ou descartado */
+      RosterWork.novaDistribuicaoCaixas.descartar();   /* o rascunho das substituições e o ritmo escolhido: salvos ou descartados */
+      Rt().iniciar(rs[1], r.unidade.id);
       E = novoEstado();
       E.bloco = bloco;
       E.dados = r;
@@ -190,9 +195,10 @@
     }, u];
   }
 
-  /* blocos prontos; no pelotão, Funções especiais e Conferir dependem também da companhia */
+  /* blocos prontos (o 10º, o Ritmo, sempre); no pelotão, Funções especiais e Conferir dependem também da companhia */
   function prontos() {
     var r = ((E.calc && E.calc.prontos) || []).slice(0, 9);
+    r[9] = true;
     if (ehPelotao()) {
       var daCia = !!(E.calcCia && E.calcCia.prontos && E.calcCia.prontos[2]);
       r[2] = !!(r[2] && daCia);
@@ -257,7 +263,8 @@
       function () { R.novaDistribuicaoAcumulos.porFalta(conteudo, ctx, api); },
       function () { R.novaDistribuicaoBlocos.escolher(conteudo, ctx, api); },
       function () { R.novaDistribuicaoMilitares.regras(conteudo, ctx, api); },
-      function () { R.novaDistribuicaoConferir.desenhar(conteudo, ctx, api); }
+      function () { R.novaDistribuicaoConferir.desenhar(conteudo, ctx, api); },
+      function () { R.novaDistribuicaoRitmo.ritmo(conteudo, ctx, api); }
     ][E.bloco]();
     corpo.appendChild(conteudo);
     corpo.scrollTop = rolagem;
@@ -266,11 +273,7 @@
   function desenharRodape() {
     var rodape = el('nova-distribuicao-rodape');
     if (!rodape) return;
-    var sujo = E.sujo || E.sujoCia || RosterWork.novaDistribuicaoCaixas.temRascunho();
-    rodape.classList.toggle('oculto', !E.periodo);
-    el('nova-distribuicao-pendente').classList.toggle('oculto', !sujo);
-    el('nova-distribuicao-salvar').disabled = !sujo;
-    el('nova-distribuicao-cancelar').disabled = !sujo;
+    rodape.classList.toggle('oculto', !E.periodo || !temEdicao());   /* o rodapé largo aparece só com alteração */
   }
 
   function desenhar() {
@@ -322,7 +325,7 @@
      conferidas antes. A data e a prévia: -versoes */
   function salvar() {
     var Pt = RosterWork.novaDistribuicaoCaixas;
-    if (!E.periodo || (!E.sujo && !E.sujoCia && !Pt.temRascunho())) return;
+    if (!E.periodo || !temEdicao()) return;
     semPrefixo().forEach(function (k) { if (!invalidos.hasOwnProperty(k)) invalidos[k] = ''; });
     if (!Pt.conferir(E.dados) || Object.keys(invalidos).length) { desenhar(); RosterWork.avisar({ tipo: 'erro', mensagem: M().corrigirAntes }); return; }
     V().salvar(contextoVersoes(), el('nova-distribuicao-salvar'));
@@ -336,7 +339,7 @@
   function contextoVersoes() {
     return {
       dados: E.dados, unidadeId: E.unidadeId, vendoAgendada: E.vendoAgendada, itens: itensParaSalvar,
-      substituicoes: RosterWork.novaDistribuicaoCaixas.operacoes,
+      substituicoes: RosterWork.novaDistribuicaoCaixas.operacoes, ritmo: Rt().paraSalvar,
       carregar: function (versaoId) { E.aberto = null; carregar(E.unidadeId, versaoId); },
       confirmar: confirmarDescarte, falha: avisarFalha, semConexao: avisarSemConexao
     };
@@ -376,14 +379,17 @@
     ligar();
     if (!guardaLigada && RosterWork.guardaSaida) {
       guardaLigada = true;
-      RosterWork.guardaSaida.registrar(function () {
-        if (!montada()) return false;
-        return E.sujo || E.sujoCia || RosterWork.novaDistribuicaoCaixas.temRascunho();
-      });
+      RosterWork.guardaSaida.registrar(function () { return montada() && temEdicao(); });
     }
     E.aberto = null;
     return carregar(E.unidadeId);   /* volta para a última unidade vista (na 1ª vez, a do administrador) */
   }
 
-  window.RosterWork.paginas.distribuicao = { iniciar: iniciar };
+  /* sair da aba: com edição não salva, pergunta; descartando, volta ao que está gravado e segue; senão, fica */
+  function sairDaAba(seguir, ficar) {
+    if (!temEdicao()) { seguir(); return; }
+    confirmarDescarte(function () { E.aberto = null; carregar(E.unidadeId, E.vendoAgendada ? E.periodo.id : null); seguir(); }, ficar);
+  }
+
+  window.RosterWork.novaDistribuicao = { iniciar: iniciar, sairDaAba: sairDaAba };
 })();

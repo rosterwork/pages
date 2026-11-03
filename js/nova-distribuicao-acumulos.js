@@ -1,5 +1,5 @@
 /* ============================================================
-   NOVA DISTRIBUIÇÃO — blocos 4 e 5 do questionário
+   NOVA DISTRIBUIÇÃO — blocos 5 e 6 do questionário
    Acúmulos fixos e Acúmulos por falta: um cartão por acúmulo
    (fechado, as opções em texto; aberto, a função, de 1 a 5 opções
    de outro posto com as setas, Adicionar opção e Remover acúmulo).

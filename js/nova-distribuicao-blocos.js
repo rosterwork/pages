@@ -1,5 +1,5 @@
 /* ============================================================
-   NOVA DISTRIBUIÇÃO — blocos 6 e 7 do questionário
+   NOVA DISTRIBUIÇÃO — blocos 7 e 8 do questionário
    Ordem de importância (tabela sempre aberta, uma linha por pessoa
    com os acúmulos dela) e Quem escolher (as quatro formas, o aviso
    e o rodízio). Os acúmulos moram em nova-distribuicao-acumulos.js.

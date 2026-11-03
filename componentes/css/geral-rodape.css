@@ -4,8 +4,11 @@
    sem rolar com o conteúdo. Estrutura única dos rodapés de salvar:
    .rodape.rodape-pilha > .rodape-linha > .rodape-texto (a situação,
    ex.: "1 alteração não salva") + .espacador-flex + .rodape-acoes
-   (Cancelar + Salvar). O rodapé do painel lateral é este mesmo
-   (#painel-rodape: .rodape + .painel-rodape, em geral-painel.css).
+   (Cancelar + Salvar). A página tem UM rodapé só: o painel lateral
+   não tem rodapé próprio; as ações que a página abre nele vão no
+   rodapé do shell (#painel-rodape: .rodape + .painel-rodape, em
+   geral-painel.css), fora do painel e na largura toda, como este
+   rodapé largo, que some enquanto aquele aparece.
    A sombra sobe sobre a lista que rola acima dele. Camada 9 (o topo
    da faixa 1–9, Guia visual › Camadas, movimento e foco): acima das
    linhas grudadas da lista e do painel lateral (8), para a sombra
@@ -70,7 +73,11 @@
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    O texto em cima e os botões dividindo a largura, numa linha só
-   embaixo dele; sem texto, só os botões.
+   embaixo dele; sem texto, só os botões. Com o painel aberto (ele
+   cobre a tela), o rodapé largo à mostra fica preso no fundo da
+   tela, numa linha só (o texto, o Cancelar e o Salvar), e o painel
+   para em cima dele; com as ações do próprio painel à mostra (o
+   rodapé dele, no fim do painel), o largo some: um rodapé só por vez.
    ============================================================ */
 @media (max-width: 767px) {
   html[data-celular] .rodape-linha {
@@ -91,5 +98,38 @@
     flex: 1 1 auto;
     min-width: 0;
     white-space: normal;
+  }
+
+  html[data-celular] .conteudo:has(> .painel-lateral--aberto) .rodape--largo:not(.oculto) {
+    position: fixed;
+    flex-wrap: nowrap;
+  }
+
+  html[data-celular] .conteudo:has(> .painel-lateral--aberto) .rodape--largo > .espacador-flex {
+    display: block;
+  }
+
+  html[data-celular] .conteudo:has(> .painel-lateral--aberto) .rodape--largo .rodape-texto {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  html[data-celular] .conteudo:has(> .painel-lateral--aberto) .rodape--largo .rodape-acoes {
+    flex: 0 0 auto;
+  }
+
+  /* a altura do rodapé largo no celular: a borda, 8px, o botão e 8px */
+  html[data-celular] .conteudo:has(.rodape--largo:not(.oculto)) > .painel-lateral {
+    margin-bottom: calc(var(--botao-altura) + 17px);
+  }
+
+  html[data-celular] .conteudo:has(.painel-lateral--aberto .painel-rodape:not(.oculto)) .rodape--largo {
+    display: none;
+  }
+
+  html[data-celular] .conteudo:has(.painel-lateral--aberto .painel-rodape:not(.oculto)) > .painel-lateral {
+    margin-bottom: 0;
   }
 }

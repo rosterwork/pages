@@ -33,12 +33,12 @@
   function iso(x) { return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'); }
 
   function calcularPicos(alocs) {
-    var d = G().dados(), cob = G().coberturaEscala();
+    var d = G().dados();
     picos = {};
     d.unidades.forEach(function (un) {
       var pico = 0;
-      Object.keys(cob[un.id] || {}).forEach(function (k) {
-        (cob[un.id][k] || []).forEach(function (n) { if (+n > pico) pico = +n; });
+      G().diasDoMes().forEach(function (k) {
+        (G().antesDe(un.id, k) || []).forEach(function (n) { if (+n > pico) pico = +n; });
       });
       alocs.forEach(function (a) {
         if (+a.unidade !== un.id) return;

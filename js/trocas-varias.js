@@ -15,7 +15,10 @@
    horário e a Parte); o rodapé é do Editar, que recebe o pedido
    conferido.
    Expõe RosterWork.trocasVarias.{ montar, temDados, planoMudou, enviar, encerrar }
-     montar({ corpo, registrar, cobrar, editar, aoSolicitar, aoMudar, cancelar })
+     montar({ corpo, registrar, cobrar, editar, aoSolicitar, aoMudar, cancelar, aoConcluir, mesInicial })
+       aoConcluir = depois de enviar ou registrar, no lugar de fechar o
+         painel (o painel do dia da Escala volta ao dia)
+       mesInicial = um dia (aaaa-mm-dd): o calendário abre no mês dele
        cobrar = { cpf, minutos }
        editar = { registroId, plano, admin, botao, alteracao, aoEnviar(pares, parte, ano, botao) }
    ============================================================ */
@@ -161,14 +164,14 @@
   function enviar(btn) {
     if (!validarParte()) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.camposCorrigir }); return; }
     if (!est.pares.length) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: M().semDias }); return; }
-    var parte = parteNumero(), ano = parte ? parteAno() : null, aoSolicitar = est.aoSolicitar, aoMudar = est.aoMudar;
+    var parte = parteNumero(), ano = parte ? parteAno() : null, aoSolicitar = est.aoSolicitar, aoMudar = est.aoMudar, aoConcluir = est.aoConcluir;
     if (est.registrar) { Reg().registrar(parte, ano); return; }   // confirma e grava já aprovado (trocas-varias-registrar.js)
     if (est.editar) { est.editar.aoEnviar(est.pares.slice(), parte, ano, btn); return; }   // o Editar grava (trocas-varias-editar.js)
     if (RW.iniciarCarregando) RW.iniciarCarregando(btn);
     RW.trocasDados.variasSolicitar(est.pares, parte, ano).then(function (r) {
       if (RW.pararCarregando) RW.pararCarregando(btn);
       if (!r || !r.ok) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: (r && r.erro) || RW.mensagens.trocas.falhaAcao }); return; }
-      RW.painel.fechar();
+      if (aoConcluir) aoConcluir(); else RW.painel.fechar();
       if (aoSolicitar) aoSolicitar();
       if (!r.log || !RW.resumo) return;
       RW.resumo.abrirModal(r.log, {
@@ -219,6 +222,7 @@
     var plano = ed ? ed.plano : null;
     est = {
       raiz: raiz, corpo: opcoes.corpo, registrar: registrar, aoSolicitar: opcoes.aoSolicitar, aoMudar: opcoes.aoMudar, cancelar: opcoes.cancelar,
+      aoConcluir: opcoes.aoConcluir || null, mesInicial: opcoes.mesInicial || null,
       /* no Solicitar, quem pede já entra; no Registrar, a lista começa vazia; no Editar, o plano de hoje */
       militares: plano ? militaresDoPlano(plano) : (registrar ? [] : [eu()]),
       pares: plano ? (plano.dias || []).map(function (d) {

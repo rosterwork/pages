@@ -553,21 +553,24 @@
   }
 
   /* ---------- guarda de descarte: avisa antes de perder rascunho não salvo ---------- */
-  /* mudança não salva no Dia ou no Ciclo, que são do dia aberto (escalas-painel-salvar.js) */
+  /* mudança não salva no Dia ou no Ciclo, que são do dia aberto (escalas-painel-salvar.js), ou o formulário da troca
+     preenchido (o Solicitar troca ou o Registrar troca de serviço, escalas-painel-troca.js) */
   function secaoSuja() {
-    return !!(RosterWork.escalasPainelSalvar && RosterWork.escalasPainelSalvar.pendente());
+    return !!(RosterWork.escalasPainelSalvar && RosterWork.escalasPainelSalvar.pendente())
+      || !!(RosterWork.escalasPainelTroca && RosterWork.escalasPainelTroca.temDados());
   }
   function limparSecoesSujas() {
     if (RosterWork.escalasPainelEditar) RosterWork.escalasPainelEditar.reset();
     if (RosterWork.escalasPainelContinuos) RosterWork.escalasPainelContinuos.reset();
     if (RosterWork.escalasPainelSalvar) RosterWork.escalasPainelSalvar.descartar();
   }
-  /* mesmo aviso do Cancelar do rodapé (Descartar / Continuar editando) */
+  /* mesmo aviso do Cancelar do rodapé (Descartar / Continuar editando); o formulário da troca, o aviso dele */
   function confirmarDescarte(aoConfirmar) {
     if (!RosterWork.confirmar) { aoConfirmar(); return; }
+    var n = RosterWork.escalasPainelSalvar ? RosterWork.escalasPainelSalvar.contar() : 0;
     RosterWork.confirmar({
       tipo: 'aviso',
-      mensagem: RosterWork.mensagens.escala.painelDescartar(RosterWork.escalasPainelSalvar ? RosterWork.escalasPainelSalvar.contar() : 0),
+      mensagem: n ? RosterWork.mensagens.escala.painelDescartar(n) : RosterWork.mensagens.edicao.sairSemSalvar,
       textoConfirmar: RosterWork.mensagens.botoes.descartar,
       textoCancelar: RosterWork.mensagens.botoes.continuarEditando,
       aoConfirmar: aoConfirmar
@@ -708,22 +711,22 @@
     return el;
   }
 
-  /* rodapé "Alterações manuais (N)": quem mexeu no dia, quando e o quê (ajustes do Dia, pontuais,
-     folgas, observações e entradas/saídas do ciclo que começam no dia). Sem alterações, o rodapé não
-     aparece. aindaVale() diz se o rodapé ainda é dele quando a leitura chega (o Dia pode ter mudado) */
-  function montarAlteracoes(rodape, unidadeId, iso, aindaVale, aoMostrar) {
-    rodape.textContent = '';
-    rodape.classList.add('oculto');
+  /* "Alterações manuais (N)", o último bloco do corpo do Dia: quem mexeu no dia, quando e o quê (ajustes do Dia,
+     pontuais, folgas, observações e entradas/saídas do ciclo que começam no dia). Sem alterações, o bloco não
+     aparece. aindaVale() diz se o bloco ainda é dele quando a leitura chega (o Dia pode ter mudado) */
+  function montarAlteracoes(lugar, unidadeId, iso, aindaVale, aoMostrar) {
+    lugar.textContent = '';
+    lugar.classList.add('oculto');
     if (!RosterWork.escalasDados || !RosterWork.escalasDados.lerAlteracoesDia) return;
     RosterWork.escalasDados.lerAlteracoesDia(unidadeId, iso).then(function (lista) {
-      /* outro dia/unidade/seção foi aberto enquanto carregava, ou o Dia ganhou alteração: não mexe no rodapé */
+      /* outro dia/unidade/seção foi aberto enquanto carregava, ou o Dia ganhou alteração: não mexe no bloco */
       if (!pCtx || pCtx.unidadeId !== unidadeId || pCtx.iso !== iso || pCtx.secao !== 'distribuicao') return;
       if (aindaVale && !aindaVale()) return;
       var bloco = RosterWork.alteracoes ? RosterWork.alteracoes.montar('tpl-escala-alteracoes', lista) : null;
       if (!bloco) return;
-      rodape.textContent = '';
-      rodape.appendChild(bloco);
-      rodape.classList.remove('oculto');
+      lugar.textContent = '';
+      lugar.appendChild(bloco);
+      lugar.classList.remove('oculto');
       if (aoMostrar) aoMostrar();
     });
   }
