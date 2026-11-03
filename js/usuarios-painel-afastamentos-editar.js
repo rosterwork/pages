@@ -11,8 +11,9 @@
    mantém o início e a decisão do fluxo e não sai. Salvar manda a
    lista inteira do tipo, de todos os anos (ferias_salvar ou
    licencas_salvar); o banco avisa antes o que o militar já tem nos
-   dias novos e quando ele continua fora da escala, e o
-   administrador decide se segue.
+   dias novos, quando ele continua fora da escala e, fora do fluxo,
+   as trocas e folgas que a saída da escala cancela (as extras
+   ficam), e o administrador decide se segue.
    ============================================================ */
 (function () {
   'use strict';
@@ -225,13 +226,18 @@
       if (est === e) e.ctl.aoMudar();
       if (r && r._falha === 'servidor') {
         RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.falhaServidor });
-      } else if (r && r.precisa_confirmar) {   // ele já tem serviço ou folga nos dias novos, ou continua fora da escala
+      } else if (r && r.precisa_confirmar) {   // ele já tem serviço ou folga nos dias novos, sai da escala ou continua fora dela
         var itens = itensConfirmar(r);
         var temServico = itens.length > 0;
+        /* fora do fluxo: a saída da escala e as trocas e folgas que ela cancela (as extras ficam) */
+        var pend = r.pendencias || {};
+        var saida = ((pend.trocas || []).length || (pend.folgas || []).length)
+          ? RosterWork.avisoSaida(pend, { tipo: 'licenca', escala: M().itemSaiDaEscala(r.sai_em) }) : null;
+        if (saida) itens = itens.concat(saida.itens);
         if (r.continua_fora) itens.push({ titulo: RosterWork.mensagens.saida.tituloEscala, texto: M().itemContinuaFora(r.continua_fora) });
         RosterWork.confirmar({
-          tipo: 'aviso', mensagem: temServico ? M().confirmarTem : M().confirmarSo, itens: itens,
-          nota: temServico ? M().notaConfirmar : '',
+          tipo: 'aviso', mensagem: temServico && !saida ? M().confirmarTem : M().confirmarSo, itens: itens,
+          nota: [temServico ? M().notaConfirmar : '', saida ? saida.nota : ''].filter(Boolean).join(' '),
           textoConfirmar: RosterWork.mensagens.botoes.continuar, textoCancelar: RosterWork.mensagens.botoes.cancelar,
           aoConfirmar: function () { salvar(true); }
         });

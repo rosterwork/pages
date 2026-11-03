@@ -177,7 +177,7 @@
       .then(function (r) { return r.ok ? r.json() : { _falha: 'servidor' }; })
       .catch(function () { return { _falha: 'conexao' }; });
   }
-  /* só leitura: o que quebra (trocas/folgas/extras) se o militar sair do ciclo na data, só no período
+  /* só leitura: o que quebra (trocas e folgas; as extras ficam) se o militar sair do ciclo na data, só no período
      do dia (o da próxima entrada fica) — para o aviso do modal */
   function cicloRetirarAnalisar(unidadeId, cpf, iso) {
     return cicloAcao('escala_ciclo_retirar_analisar', unidadeId, cpf, iso, { p_so_periodo: true });

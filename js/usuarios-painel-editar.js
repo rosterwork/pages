@@ -8,6 +8,9 @@
    promoção e transferência). O campo mudado ganha a canaleta e o
    rodapé conta as alterações. Salva pela RPC atualizar_dados_militar
    (o payload vai completo: o que não está na sub-tela vem da ficha).
+   O Setor que deixa de ser Operacional pede a data da saída da escala
+   e mostra a lista das trocas e folgas canceladas (as extras ficam),
+   pelo confirmarSaidaSetor do usuarios-correcao-painel.
    Orquestração no usuarios-painel.js.
    ============================================================ */
 (function () {
@@ -230,15 +233,33 @@
       });
       return;
     }
+    /* deixa de ser Operacional (Administrativo ou Aluno): sai da escala. A data e a lista das trocas e folgas
+       (as extras ficam) pelo mesmo código da aprovação da correção (usuarios-correcao-painel) */
+    var ins = (ctx.ficha && ctx.ficha.institucionais) || {};
+    if (ctx.secao === 'institucionais'
+        && String(ins.tipo || '').toUpperCase() === 'OPERACIONAL'
+        && String(corpo.p_tipo || '').toUpperCase() !== 'OPERACIONAL'
+        && RosterWork.pedirData && RosterWork.usuariosCorrecaoPainel) {
+      var atual = ctx;
+      RosterWork.usuariosCorrecaoPainel.confirmarSaidaSetor({
+        cpf: corpo.p_cpf,
+        unidadeId: Number(ins.lotacao_id) || null,
+        pessoa: ((ins.grau_abreviacao || '') + ' ' + (ins.nome_de_guerra || '')).trim(),
+        setor: corpo.p_tipo,
+        textoConfirmar: RosterWork.mensagens.botoes.salvar,
+        aoConfirmar: function (iso) { if (ctx !== atual) return; corpo.p_sair_desde = iso; enviar(corpo, botao); }
+      });
+      return;
+    }
     enviar(corpo, botao);
   }
 
   function enviar(corpo, botao) {
     var atual = ctx;
     if (!atual) return;
-    /* CNH mudou (p_recalcular_desde) = recalcula a escala: círculo + tela travada;
-       demais correções são rápidas: pontos no botão */
-    var recalcula = !!corpo.p_recalcular_desde;
+    /* CNH mudou (p_recalcular_desde) ou saída da escala (p_sair_desde) = recalcula a escala: círculo +
+       tela travada; demais correções são rápidas: pontos no botão */
+    var recalcula = !!corpo.p_recalcular_desde || !!corpo.p_sair_desde;
     function iniciar() { if (recalcula) { if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal(); } else if (botao && RosterWork.iniciarCarregando) RosterWork.iniciarCarregando(botao); }
     function parar() { if (recalcula) { if (RosterWork.esconderVeuGlobal) RosterWork.esconderVeuGlobal(); } else if (botao && RosterWork.pararCarregando) RosterWork.pararCarregando(botao); }
     iniciar();

@@ -5,9 +5,13 @@
    (geral-pedido: cada alteração com a caixa de seleção e o
    "Selecionar tudo"); o rodapé Recusar / Aprovar age sobre as
    marcadas (perfil_decidir). Recusar pede o motivo (opcional).
+   Aprovar o Setor que deixa de ser Operacional pede a data da saída
+   da escala e mostra a lista das trocas e folgas canceladas (as
+   extras ficam), pelo mesmo confirmarSaidaSetor da ficha.
    Abre pela fila (geral-fila) da página Pendências e da aba
    Pendências da Usuários.
-   Expõe: RosterWork.usuariosCorrecaoPainel.abrir(pedido, ctx).
+   Expõe: RosterWork.usuariosCorrecaoPainel.abrir(pedido, ctx) e
+   .confirmarSaidaSetor(o) (usado também pela ficha).
    ctx = { posicao?: { n, total }, aoMudar(), aoFechar() }
    Clona moldes; não cria HTML.
    ============================================================ */
@@ -29,12 +33,16 @@
       .map(function (l) { return l.getAttribute('data-id'); });
   }
 
-  function decidir(ids, aprovar, motivo, botao, ctx) {
+  /* sairDesde = a data da saída da escala (Setor que deixa de ser Operacional): recalcula a escala,
+     círculo + tela travada; sem ela, pontos no botão */
+  function decidir(ids, aprovar, motivo, botao, ctx, sairDesde) {
     if (!ids.length) return;
-    if (RW.iniciarCarregando) RW.iniciarCarregando(botao);
-    RW.rpc('perfil_decidir', { p_ids: ids, p_aprovar: aprovar, p_motivo: motivo || null })
+    function iniciar() { if (sairDesde) { if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal(); } else if (RW.iniciarCarregando) RW.iniciarCarregando(botao); }
+    function parar() { if (sairDesde) { if (RW.esconderVeuGlobal) RW.esconderVeuGlobal(); } else if (RW.pararCarregando) RW.pararCarregando(botao); }
+    iniciar();
+    RW.rpc('perfil_decidir', { p_ids: ids, p_aprovar: aprovar, p_motivo: motivo || null, p_sair_desde: sairDesde || null })
       .then(function (r) {
-        if (RW.pararCarregando) RW.pararCarregando(botao);
+        parar();
         if (r && r.success) {
           RW.painel.fechar();
           if (ctx.aoMudar) ctx.aoMudar();
@@ -44,9 +52,60 @@
         RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.perfil.falhaDados });
       })
       .catch(function () {
-        if (RW.pararCarregando) RW.pararCarregando(botao);
+        parar();
         RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao });
       });
+  }
+
+  /* o Setor que deixa de ser Operacional tira o militar da escala: pede a data (modal padrão) e mostra a lista
+     do que acontece com as trocas e folgas (as extras ficam); sem a lista, não segue. A ficha
+     (usuarios-painel-editar) e a aprovação da correção usam este mesmo.
+     o = { cpf, unidadeId (sem ela, a do militar no dia), pessoa, setor, textoConfirmar, aoConfirmar(iso) } */
+  function confirmarSaidaSetor(o) {
+    var M = RW.mensagens;
+    RW.pedirData({
+      mensagem: M.saida.setorData,
+      textoConfirmar: M.botoes.continuar,
+      sugerida: true,
+      aoConfirmar: function (iso) {
+        RW.rpc('escala_ciclo_retirar_analisar', { p_unidade_id: o.unidadeId || null, p_cpf: o.cpf, p_data: iso, p_extras: false })
+          .catch(function () { return null; })
+          .then(function (a) {
+            if (!a || !a.success) {
+              RW.avisar({ tipo: 'erro', mensagem: (a && a.error) || M.saida.falhaLista });
+              return;
+            }
+            var aviso = RW.avisoSaida(a.pendencias, { tipo: 'setor', escala: M.saida.escalaSetor });
+            RW.confirmar({
+              tipo: 'aviso',
+              mensagem: M.usuarios.confirmarSetor(o.pessoa, o.setor, RW.data.isoParaBR(iso)),
+              itens: aviso.itens,
+              nota: aviso.nota,
+              textoConfirmar: o.textoConfirmar,
+              textoCancelar: M.botoes.cancelar,
+              aoConfirmar: function () { o.aoConfirmar(iso); }
+            });
+          });
+      }
+    });
+  }
+
+  /* aprovar: com o Setor que deixa de ser Operacional entre as marcadas, a data e a lista antes */
+  function aprovar(pedido, ids, botao, ctx) {
+    var setor = (pedido.itens || []).filter(function (item) {
+      return item.campo === 'tipo' && ids.indexOf(String(item.id)) >= 0
+        && String(item.valor_atual || '').toUpperCase() === 'OPERACIONAL'
+        && String(item.valor_novo || '').toUpperCase() !== 'OPERACIONAL';
+    })[0];
+    if (!setor || !RW.pedirData) { decidir(ids, true, null, botao, ctx); return; }
+    confirmarSaidaSetor({
+      cpf: pedido.usuario_id,
+      unidadeId: null,
+      pessoa: ((pedido.grad || '') + ' ' + (pedido.nome || '')).trim(),
+      setor: setor.valor_novo,
+      textoConfirmar: RW.mensagens.botoes.aprovar,
+      aoConfirmar: function (iso) { decidir(ids, true, null, botao, ctx, iso); }
+    });
   }
 
   function abrir(pedido, ctx) {
@@ -108,12 +167,12 @@
       revisar();
     });
 
-    btnAprovar.addEventListener('click', function () { decidir(idsMarcados(caixa), true, null, btnAprovar, ctx); });
+    btnAprovar.addEventListener('click', function () { aprovar(pedido, idsMarcados(caixa), btnAprovar, ctx); });
     btnRecusar.addEventListener('click', function () {
       RW.decisao.recusar(partes, function (motivo, botao) { decidir(idsMarcados(caixa), false, motivo, botao, ctx); });
     });
     revisar();
   }
 
-  RW.usuariosCorrecaoPainel = { abrir: abrir };
+  RW.usuariosCorrecaoPainel = { abrir: abrir, confirmarSaidaSetor: confirmarSaidaSetor };
 })();

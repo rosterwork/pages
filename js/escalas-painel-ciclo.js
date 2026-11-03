@@ -4,9 +4,9 @@
      foram salvas; marcar e desmarcar não gravam: o Salvar do rodapé
      do painel (escalas-painel-salvar.js) grava junto com o Dia
      (escala_ciclo_salvar_lote, pelo escala_painel_salvar);
-   - confirmar: a lista do que acontece com as trocas, folgas e
-     extras a partir do dia (escala_ciclo_retirar_analisar) e a
-     confirmação, antes de marcar quem sai ou muda de ciclo;
+   - confirmar: a lista do que acontece com as trocas e folgas a
+     partir do dia (escala_ciclo_retirar_analisar; as extras ficam) e
+     a confirmação, antes de marcar quem sai ou muda de ciclo;
    - datas: as três últimas datas de serviço no ciclo atual, em
      bolinhas, com o dia da semana (o último serviço no ciclo antigo
      de quem muda de ciclo);
@@ -21,7 +21,7 @@
 
   var conta = 0;   // nome único para os rádios de cada lista de datas
   /* o rascunho do dia aberto (chave = unidade|dia): [{ cpf, acao, ultimo_servico?, tipo, itens }]; tipo = entrar, sair,
-     mudar ou cancelar_saida; itens = o que acontece com as trocas, folgas e extras (a lista da confirmação) */
+     mudar ou cancelar_saida; itens = o que acontece com as trocas e folgas (a lista da confirmação) */
   var rascunho = { chave: '', lista: [] };
 
   function msg() { return RosterWork.mensagens.escala; }

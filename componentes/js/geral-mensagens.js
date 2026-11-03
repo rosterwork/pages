@@ -318,6 +318,8 @@
       itemExtra: function (dia, unidade) { return 'Em ' + dia + (unidade ? ', n' + artigo(unidade) + ' ' + unidade : '') + '.'; },
       itemFolga: function (dia, situacao) { return 'Em ' + dia + (situacao ? ' (' + situacao + ')' : '') + '.'; },
       itemContinuaFora: function (data) { return 'Continua fora da escala desde ' + data + '. A volta é pela aba Ciclo da Escala.'; },
+      /* fora do fluxo: a saída da escala, antes das trocas e folgas que ela cancela */
+      itemSaiDaEscala: function (data) { return 'Sai da escala em ' + data + '. As extras dele continuam, e a volta é pela aba Ciclo da Escala.'; },
       notaConfirmar: 'Se você continuar, nada disso é desfeito: o serviço fica em amarelo na escala e a folga continua marcada.'
     },
 
@@ -1312,8 +1314,9 @@
       nadaMudou: 'Não há alterações para salvar.'
     },
 
-    /* saída do militar da escala (transferência, Tirar do ciclo e baixa): a lista do aviso,
-       um item por troca, folga e extra que a saída cancela (montada em RosterWork.avisoSaida) */
+    /* saída do militar da escala (transferência, Tirar do ciclo, baixa, mudança de Setor e licença
+       fora do fluxo): a lista do aviso, um item por troca, folga e extra que a saída cancela
+       (montada em RosterWork.avisoSaida); as extras saem só na transferência e na baixa */
     saida: {
       tituloEscala: 'Escala',
       tituloTroca: 'Troca',
@@ -1326,6 +1329,9 @@
       },
       escalaTirar: 'Deixa de aparecer na escala automática daqui em diante.',
       escalaBaixa: 'Fica inativo nessa data, sai da escala e pode ser readmitido depois.',
+      escalaSetor: 'Sai da escala nessa data. As extras dele continuam.',
+      /* a data da saída da escala de quem deixa de ser Operacional (modal de data) */
+      setorData: 'Deixando de ser Operacional, o militar sai da escala a partir dessa data.',
       /* "Com Sd. Sampaio, serviço de 30/10/2026 (aguardando aprovação): será cancelada." */
       trocaCancelada: function (com, servico, devolucao, situacao) {
         return 'Com ' + com + ', serviço de ' + servico + (devolucao ? ' e devolução de ' + devolucao : '') +
@@ -1357,8 +1363,10 @@
       },
       cotasBaixa: function (mesAno) { return 'Se estiver disponível para extra, sai da divisão das cotas a partir de ' + mesAno + '.'; },
       notaTransferencia: 'As trocas, folgas e extras canceladas não voltam, mesmo que a transferência seja cancelada depois.',
-      notaTirar: 'As trocas, folgas e extras canceladas não voltam, mesmo que ele volte ao ciclo depois.',
+      notaTirar: 'As trocas e folgas canceladas não voltam, mesmo que ele volte ao ciclo depois.',
       notaBaixa: 'As trocas, folgas e extras canceladas não voltam, mesmo que ele seja readmitido depois.',
+      notaSetor: 'As trocas e folgas canceladas não voltam, mesmo que ele volte a ser Operacional depois.',
+      notaLicenca: 'As trocas e folgas canceladas não voltam, mesmo que o afastamento seja desfeito depois.',
       /* a lista não carregou: sem ela, a saída não é feita */
       falhaLista: 'Não foi possível conferir as trocas, folgas e extras deste militar. Tente de novo.'
     },
@@ -1374,6 +1382,9 @@
           ' para ' + artigo(destino) + ' ' + destino + ' a partir de ' + data + '? O que vai acontecer:';
       },
       falhaTransferencia: 'Não foi possível transferir. Tente de novo.',
+      confirmarSetor: function (pessoa, setor, data) {
+        return 'Mudar o setor ' + (pessoa ? 'de ' + pessoa + ' ' : '') + 'para ' + setor + ' a partir de ' + data + '? O que vai acontecer:';
+      },
       dataFutura: 'A data não pode ser futura.',
       confirmarPromocao: 'Promover {pessoa} a {grau} em {data}?',
       promocaoDataAnterior: 'A data deve ser posterior à última promoção (ou à data de inclusão).',
@@ -2060,6 +2071,7 @@
       excluirViatura: 'Excluir viatura',
       excluirInstalacao: 'Excluir instalação',
       cancelar: 'Cancelar',
+      aprovar: 'Aprovar',
       transferir: 'Transferir',
       remover: 'Remover',
       cancelarMudanca: 'Cancelar mudança',
@@ -2082,11 +2094,12 @@
 
   };
 
-  /* o aviso da saída do militar da escala (transferência, Tirar do ciclo e baixa): a lista do que vai
-     acontecer, com o item da escala e um item por troca, folga e extra do plano que a análise
-     (escala_ciclo_retirar_analisar) devolve; a nota só quando há o que cancelar.
-     opcoes = { tipo: 'transferencia' | 'tirar' | 'baixa', escala: texto do item da escala,
-     cotas: texto do item das cotas (só na baixa) }. Devolve { itens: [{ titulo, texto }], nota } */
+  /* o aviso da saída do militar da escala (transferência, Tirar do ciclo, baixa, mudança de Setor e
+     licença fora do fluxo): a lista do que vai acontecer, com o item da escala e um item por troca,
+     folga e extra do plano que a análise (escala_ciclo_retirar_analisar, ou o licencas_salvar) devolve;
+     a nota só quando há o que cancelar.
+     opcoes = { tipo: 'transferencia' | 'tirar' | 'baixa' | 'setor' | 'licenca', escala: texto do item
+     da escala, cotas: texto do item das cotas (só na baixa) }. Devolve { itens: [{ titulo, texto }], nota } */
   window.RosterWork.avisoSaida = function (pendencias, opcoes) {
     var M = window.RosterWork.mensagens;
     var S = M.saida;
@@ -2120,7 +2133,7 @@
     });
     var cancela = itens.length > 1;
     if (opcoes.cotas) itens.push({ titulo: S.tituloCotas, texto: opcoes.cotas });
-    var notas = { transferencia: S.notaTransferencia, tirar: S.notaTirar, baixa: S.notaBaixa };
+    var notas = { transferencia: S.notaTransferencia, tirar: S.notaTirar, baixa: S.notaBaixa, setor: S.notaSetor, licenca: S.notaLicenca };
     return { itens: itens, nota: cancela ? (notas[opcoes.tipo] || '') : '' };
   };
 })();
