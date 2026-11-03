@@ -1146,7 +1146,8 @@
        data-area="admin" (só para quem administra) e data-pagina (a tela dos passos; "qualquer" = o menu). Cada <p> é um passo: data-alvo é o que fica aceso,
        data-avanca diz como ele avança (clique · preenchido · aparece · proximo · some · escolha), data-segurar é
        o clique que gravaria (no treino ele não chega à tela). Responde só o que é do roteiro: no passo de olhar (Próximo),
-       nada do aceso; com data-livre, o aceso inteiro (dá para mexer antes do Próximo); no de clique, só o que ele pede. O passo com escolha tem os caminhos nas <section
+       nada do aceso; com data-livre, o aceso inteiro (dá para mexer antes do Próximo); no de clique e no de gravar, só o
+       botão que ele pede (o Salvar, não o Cancelar ao lado). Desistir é pelo Sair do balão ou pela barra do treino. O passo com escolha tem os caminhos nas <section
        data-caminho data-entrada> logo depois dele. O data-fim é o balão final (no treino, o data-fim-treino).
        data-sem-alvo: sem o alvo (ou sem o data-requer, a situação que o passo pede), o balão diz por que não dá ali e
        espera. data-cenario (no template): no treino, o exemplo que o geral-treino-cenarios.js põe na tela (ex.: um
@@ -1174,7 +1175,7 @@
     <p data-alvo=".escala-minha-calendario" data-avanca="proximo">Este é o seu mês. Cada dia com ícone é um serviço seu, e o dia de hoje fica no círculo escuro.</p>
     <p data-alvo=".escala-minha-calendario" data-clique=".escala-minha-calendario .mini-calendario-dia" data-avanca="clique">Escolha um dia no calendário.</p>
     <p data-alvo=".escala-minha-dia" data-avanca="proximo">Aqui está a escala inteira da sua unidade nesse dia, com o seu nome destacado.</p>
-    <p data-alvo="#escala-legenda-grade" data-avanca="proximo">A <strong>Legenda</strong> explica cada ícone.</p>
+    <p data-alvo="#escala-legenda-grade" data-avanca="proximo" data-livre>A <strong>Legenda</strong> explica cada ícone.</p>
     <p data-fim>Pronto. A Minha escala sempre abre no seu próximo serviço.</p>
   </template>
 
@@ -1188,7 +1189,7 @@
     <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'] .escala-mes-grafico" data-alvo-senao=".escala-mes-grafico" data-um data-so-computador data-avanca="proximo">Passe o mouse na faixa: aparece a hora e quantos militares estão de serviço nela.</p>
     <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}']" data-alvo-senao=".escala-mes-celula" data-um data-so-computador data-avanca="proximo">Pelo teclado, o <strong>Tab</strong> entra na escala, as setas andam entre os dias e o <strong>Enter</strong> abre o dia.</p>
     <p data-alvo=".pagina-subcabecalho .geral-periodo" data-avanca="proximo">As setas mudam o mês.</p>
-    <p data-alvo="#escala-legenda-grade" data-avanca="proximo">A <strong>Legenda</strong> explica as cores e os ícones.</p>
+    <p data-alvo="#escala-legenda-grade" data-avanca="proximo" data-livre>A <strong>Legenda</strong> explica as cores e os ícones.</p>
     <p data-fim>Pronto. Para ver os postos e as funções de um dia, abra o dia na escala.</p>
   </template>
 
@@ -1330,7 +1331,7 @@
     <p data-alvo=".painel-corpo .escala-observacao-campo" data-clique=".painel-corpo .escala-observacao-salvar" data-avanca="clique" data-livre>Escreva uma nota e confirme em <strong>Adicionar</strong>.</p>
     <p data-alvo=".escala-rodape-salvar-texto" data-avanca="proximo">A mudança ainda não foi gravada: no rodapé largo aparecem quantas alterações faltam salvar.</p>
     <p data-alvo=".painel-lateral .escala-edicao-historico" data-avanca="proximo">O <strong>Desfazer</strong> volta a última mudança, e o <strong>Refazer</strong> a faz de novo.</p>
-    <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong>. Para desistir de tudo, use o <strong>Cancelar</strong>.</p>
+    <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong>.</p>
     <p data-fim>Pronto. A mudança foi gravada, e o resumo mostra o que mudou.</p>
     <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, a mudança seria gravada e o resumo mostraria o que mudou.</p>
   </template>

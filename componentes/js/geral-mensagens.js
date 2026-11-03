@@ -600,6 +600,10 @@
       falhaCarregarMes: 'Não foi possível carregar a escala.',
       /* Minha escala: o mês sem serviço (o botão leva à aba Mês) */
       minhaSemServico: function (mes) { return 'Você não tem serviço em ' + mes + '. A escala de todos fica na aba Mês.'; },
+      /* a nota do alto enquanto a fila do recálculo refaz os dias de um Salvar (os dias marcados na grade) */
+      atualizando: function (data, unidades) {
+        return 'Atualizando a escala de ' + data + ' em diante (' + juntarComE(unidades) + '). Os dias marcados se refazem sozinhos quando terminar.';
+      },
       selecioneUnidade: 'Selecione uma companhia ou pelotão no seletor de unidades.',
       falhaSalvar: 'Não foi possível salvar. Tente de novo.',
       /* aba Dia: a escala do dia mudou depois que a tela leu (outro administrador ou o sistema) */

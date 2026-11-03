@@ -16,9 +16,10 @@
    calendário ou modal aberto sem o alvo dentro, espera escondido; o
    menu aberto pelo alvo acende junto. No passo, responde só o que é
    do roteiro: no de olhar (Próximo), nada do aceso; no livre
-   (data-livre), o aceso inteiro; no de clique, só o que ele pede; na
-   escolha, só os caminhos; nos de preencher, o aceso inteiro. O
-   balão, a barra do treino e a rolagem sempre. A dica da primeira vez
+   (data-livre), o aceso inteiro; no de clique e no de gravar (some),
+   só o botão que ele pede; na escolha, só os caminhos; nos de
+   preencher, o aceso inteiro. O balão, a barra do treino e a rolagem
+   sempre: desistir é pelo Sair do balão ou pela barra do treino. A dica da primeira vez
    acende o ?. O que a pessoa já viu e a lista do ? ficam no
    geral-guia-ajuda.js. Moldes: #tpl-guia-balao e #tpl-guia-dica.
    ============================================================ */
@@ -265,8 +266,9 @@
   function casa(el, seletores) { return seletores.some(function (s) { try { return !!el.closest(s); } catch (e) { return false; } }); }
 
   /* ---------- durante um passo, responde só o que é do roteiro, dentro do aceso (os alvos e os menus abertos por eles):
-     no de olhar (Próximo), nada; no livre (data-livre), o aceso inteiro; no de clique e na escolha, só o que eles pedem;
-     nos de preencher (preenchido, aparece, some), o aceso inteiro. O balão e a barra do treino (que tira do treino)
+     no de olhar (Próximo), nada; no livre (data-livre), o aceso inteiro; no de clique, no de gravar (some: o Salvar,
+     não o Cancelar ao lado) e na escolha, só o que eles pedem; nos de preencher (preenchido, aparece), o aceso inteiro.
+     O balão e a barra do treino (que tira do treino)
      sempre. O toque e o mouse valem pelo ponto (cai num buraco do véu?); o clique do teclado, pelo elemento. Rolar a
      tela continua ---------- */
   function bloqueado(evento) {
@@ -280,7 +282,7 @@
     var passo = guia.passos[guia.i], p = passo.p, avanca = p.getAttribute('data-avanca');
     if (p.hasAttribute('data-livre')) return false;
     if (avanca === 'proximo') return true;
-    if (avanca === 'clique' || avanca === 'escolha') return !casa(alvo, seletoresDoClique(passo));
+    if (avanca === 'clique' || avanca === 'escolha' || avanca === 'some') return !casa(alvo, seletoresDoClique(passo));
     return false;
   }
   function segurar(evento) {

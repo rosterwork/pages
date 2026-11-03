@@ -50,8 +50,9 @@
     'escala_previa', 'fn_folgas_analisar_impacto', 'fn_trocas_analisar_impacto', 'pedido_escala_comparar',
     /* o mês de treino da Extrajornada (monta, aplica e lê num ensaio que desfaz tudo; geral-treino-extra.js) */
     'nova_extra_treino',
-    /* o banco em dia: marca como vencido o link que já venceu, e termina o recálculo que já estava na fila */
-    'acesso_estado', 'recalculo_fila_processar'
+    /* o banco em dia: marca como vencido o link que já venceu, e termina o recálculo que já estava na fila; a fila do
+       recálculo, só lendo */
+    'acesso_estado', 'recalculo_fila_processar', 'recalculo_fila_ler'
   ];
   /* só passam no ensaio (p_ensaio = true: gravam de mentira, leem a Análise e desfazem) */
   var ENSAIOS = ['fn_trocas_varias_registrar', 'fn_trocas_varias_editar'];
@@ -76,9 +77,10 @@
     if (RW.guia) RW.guia.iniciar(id, { treino: true });
   }
 
-  /* desliga e vai à tela (a edição não salva fica para trás, sem perguntar) */
+  /* desliga e vai à tela (a edição não salva e o aviso aberto ficam para trás, sem perguntar) */
   function sairPara(pagina) {
     if (RW.guia) RW.guia.encerrar();
+    if (RW.fecharModais) RW.fecharModais();
     if (RW.treinoCenarios) RW.treinoCenarios.ativar(null);
     mostrar(false);
     if (RW.guardaSaida) RW.guardaSaida.dispensar();

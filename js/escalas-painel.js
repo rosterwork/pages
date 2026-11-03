@@ -747,6 +747,15 @@
     /* ao entrar numa seção, as outras param de desenhar (os rascunhos delas ficam até o Salvar do rodapé) */
     if (secao !== 'distribuicao' && RosterWork.escalasPainelEditar) RosterWork.escalasPainelEditar.reset();
     if (secao !== 'continuos' && RosterWork.escalasPainelContinuos) RosterWork.escalasPainelContinuos.reset();
+    /* o dia que a fila do recálculo ainda vai refazer: o círculo até ele ficar pronto (ninguém mexe num dia que vai mudar) */
+    var atualizando = RosterWork.escalaAtualizando, esperado = pCtx;
+    if (atualizando && atualizando.pendente(pCtx.unidadeId, pCtx.iso)) {
+      corpo.textContent = '';
+      corpo.appendChild(RosterWork.painel.criarCarregando());
+      if (rodape) { rodape.textContent = ''; rodape.classList.add('oculto'); }
+      atualizando.esperar().then(function () { if (pCtx === esperado && pCtx.secao === secao) mostrarSecao(secao); });
+      return;
+    }
     if (secao === 'distribuicao' && RosterWork.escalasPainelEditar) {
       /* o dia é de quem tem a unidade na área do papel */
       RosterWork.escalasPainelEditar.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso, {

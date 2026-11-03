@@ -257,16 +257,102 @@
      descartado ao sair, não pode desenhar a grade na página que entrou) */
   function naEscala() { return !!conteudo && !!conteudo.querySelector('#escala-modos'); }
 
+  /* ---------- a fila do recálculo: a grade sai na hora e marca os dias que a fila ainda vai refazer ---------- */
+
+  var filaPendente = [];   // [{ unidades: [ids], desde: 'AAAA-MM-DD' }] enquanto a fila refaz os dias de um Salvar
+  var filaToken = 0;       // latest-wins entre as leituras da fila
+  var filaEspera = null;   // o esvaziar em curso (o painel do dia de um dia marcado espera por ele)
+  var vigia = null;        // marca as células de cada grade nova (os modos desenham depois de ler)
+
+  /* o dia da unidade ainda vai ser refeito pela fila? (só enquanto o esvaziar está em curso) */
+  function diaPendente(unidadeId, iso) {
+    if (!filaEspera) return false;
+    return filaPendente.some(function (f) { return iso >= f.desde && f.unidades.indexOf(Number(unidadeId)) >= 0; });
+  }
+
+  /* a nota do alto: a data mais cedo e as unidades da tela que a fila ainda vai refazer */
+  function mostrarNotaFila() {
+    var nota = conteudo && conteudo.querySelector('.escala-atualizando');
+    if (!nota) return;
+    var naTela = {};
+    unidadesColuna().forEach(function (c) { naTela[c.id] = c.nome; });
+    var nomes = [], desde = null;
+    filaPendente.forEach(function (f) {
+      f.unidades.forEach(function (id) {
+        if (!naTela[id]) return;
+        if (nomes.indexOf(naTela[id]) < 0) nomes.push(naTela[id]);
+        if (!desde || f.desde < desde) desde = f.desde;
+      });
+    });
+    nota.classList.toggle('oculto', !nomes.length);
+    if (nomes.length) {
+      nota.querySelector('.escala-atualizando-texto').textContent =
+        RosterWork.mensagens.escala.atualizando(RosterWork.data.isoParaBR(desde).slice(0, 5), nomes);
+    }
+  }
+
+  /* as células dos dias que a fila ainda vai refazer ficam apagadas (Agenda, Calendário, Colunas e Semana usam a mesma
+     célula); na Agenda, os pontinhos embaixo da data */
+  function marcarPendentes() {
+    var corpo = conteudo && conteudo.querySelector('.pagina-corpo');
+    if (!corpo) return;
+    corpo.querySelectorAll('.escala-mes-celula[data-iso]').forEach(function (cel) {
+      cel.classList.toggle('escala-mes-celula--atualizando', diaPendente(cel.dataset.unidadeId, cel.dataset.iso));
+    });
+    corpo.querySelectorAll('.escala-mes-linha').forEach(function (linha) {
+      var data = linha.querySelector('.escala-mes-data');
+      if (!data) return;
+      var marcado = !!linha.querySelector('.escala-mes-celula--atualizando');
+      var pontos = data.querySelector('.escala-mes-data-atualizando');
+      if (marcado && !pontos) data.appendChild(RosterWork.tpl('tpl-escala-dia-atualizando'));
+      if (!marcado && pontos) pontos.remove();
+    });
+  }
+
+  function ligarVigia() {
+    if (vigia) vigia.disconnect();
+    var corpo = conteudo && conteudo.querySelector('.pagina-corpo');
+    if (!corpo || !window.MutationObserver) return;
+    var pedido = false;
+    vigia = new MutationObserver(function () {
+      if (pedido || !filaPendente.length) return;
+      pedido = true;
+      requestAnimationFrame(function () { pedido = false; marcarPendentes(); mostrarNotaFila(); });
+    });
+    vigia.observe(corpo, { childList: true, subtree: true });
+  }
+
+  /* lê a fila (um salvamento de alguém, ou de quem fechou o navegador antes de terminar) e a esvazia em segundo plano;
+     com dias a refazer, a nota e as marcas ficam até o esvaziar terminar e a grade é desenhada de novo. Fila vazia =
+     conferência rápida, sem nada na tela */
+  function acompanharFila() {
+    if (!RosterWork.lerFilaRecalculo || !RosterWork.drenarRecalculo) return;
+    var meu = ++filaToken;
+    RosterWork.lerFilaRecalculo().then(function (fila) {
+      if (meu !== filaToken || !naEscala()) return;
+      filaPendente = (fila || []).map(function (f) { return { unidades: (f.unidades || []).map(Number), desde: f.proxima_data }; })
+        .filter(function (f) { return f.desde && f.unidades.length; });
+      /* sem a leitura (falha), o esvaziar ainda acontece e a grade é lida de novo no fim */
+      if (!filaPendente.length && fila) { RosterWork.drenarRecalculo(); return; }
+      var esvaziar = RosterWork.drenarRecalculo().then(function () {
+        if (filaEspera === esvaziar) filaEspera = null;
+        if (meu !== filaToken) return;
+        filaPendente = [];
+        if (!naEscala()) return;
+        mostrarNotaFila();
+        renderizarCorpoAgora();
+      });
+      filaEspera = esvaziar;
+      mostrarNotaFila();
+      marcarPendentes();
+    });
+  }
+
   function renderizarCorpo() {
     if (!naEscala()) return;
-    /* Escala sempre fresca: se um salvamento deixou recálculo a completar,
-       esvazia a fila (1º plano) antes de mostrar, para nunca exibir dado velho */
-    if (window.RosterWork.temRecalculoPendente && window.RosterWork.temRecalculoPendente()
-        && window.RosterWork.drenarRecalculo) {
-      var corpoEspera = conteudo.querySelector('.pagina-corpo');
-      if (corpoEspera) mostrarCarregando(corpoEspera);
-      return window.RosterWork.drenarRecalculo().then(renderizarCorpoAgora);
-    }
+    /* um salvamento deixou recálculo a completar: a grade sai na hora, com os dias que a fila ainda vai refazer marcados,
+       e se redesenha quando ela esvazia */
+    if (window.RosterWork.temRecalculoPendente && window.RosterWork.temRecalculoPendente() && !filaEspera) acompanharFila();
     return renderizarCorpoAgora();
   }
 
@@ -667,22 +753,18 @@
       });
     }
 
-    /* Escala sempre fresca para QUALQUER pessoa: ao entrar, completa no servidor
-       qualquer recálculo pendente (a fila) ANTES de montar, para nunca mostrar dado
-       velho de um salvamento feito por outro (ou de quem fechou o navegador antes de
-       terminar). Fila vazia = verificação rápida. */
-    function montarInicial() {
-      aplicarModo();        // estado inicial (a última visão usada, ou o Dia do HTML) + preenche o período
-      carregarUnidades();   // popula as abas de unidade em segundo plano
-    }
-    if (window.RosterWork.drenarRecalculo) {
-      var corpoInicial = conteudo.querySelector('.pagina-corpo');
-      if (corpoInicial) mostrarCarregando(corpoInicial);
-      window.RosterWork.drenarRecalculo().then(montarInicial, montarInicial);
-    } else {
-      montarInicial();
-    }
+    /* a Escala sai na hora para QUALQUER pessoa; a fila do recálculo que alguém deixou é esvaziada em segundo plano,
+       com os dias que ela ainda vai refazer marcados e a grade desenhada de novo quando termina (acompanharFila) */
+    ligarVigia();
+    aplicarModo();        // estado inicial (a última visão usada, ou o Dia do HTML) + preenche o período
+    carregarUnidades();   // popula as abas de unidade em segundo plano
+    acompanharFila();
   }
 
   window.RosterWork.paginas.escalas = { iniciar: iniciar };
+  /* o painel do dia: o dia marcado espera a fila (escalas-painel.js) */
+  window.RosterWork.escalaAtualizando = {
+    pendente: diaPendente,
+    esperar: function () { return filaEspera || Promise.resolve(); }
+  };
 })();

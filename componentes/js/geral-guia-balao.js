@@ -1,11 +1,12 @@
 /* ============================================================
    GUIA › BALÃO — o balão do passo a passo (RosterWork.guiaBalao)
    O balão escuro (#tpl-guia-balao) em três jeitos: o do passo (o nome
-   do roteiro, "N de M", o Sair, o texto e o Próximo), o do fim (o
+   do roteiro, "N de M", o Sair, o texto e o Próximo; no treino, sem o
+   Sair: sair é pela barra azul), o do fim (o
    Concluir; no treino, o próximo treino da lista, com o Próximo treino
    e o Voltar aos treinos como link ao lado, ou, feitos todos, a frase
    e só o Voltar aos treinos) e o aviso de quando a
-   situação do passo não está na tela (o texto e o Sair, sem o véu,
+   situação do passo não está na tela (o texto e, fora do treino, o Sair, sem o véu,
    no meio da tela). posicionar(els) acende no véu (geral-guia-veu.js)
    os alvos e os menus abertos por eles e põe o balão ao lado deles:
    no computador, à direita (senão à esquerda; sem espaço dos lados,
@@ -93,7 +94,7 @@
 
   function passo(guia) {
     var p = guia.passos[guia.i].p;
-    montar(guia, RW.mensagens.guia.contador(guia.i + 1, guia.passos.length), { sair: true, proximo: p.getAttribute('data-avanca') === 'proximo' });
+    montar(guia, RW.mensagens.guia.contador(guia.i + 1, guia.passos.length), { sair: !guia.treino, proximo: p.getAttribute('data-avanca') === 'proximo' });
     preencherTexto(p);
   }
   function fim(guia) {
@@ -111,7 +112,7 @@
   function aviso(texto, guia) {
     V().esconder();
     acesos = [];
-    montar(guia, '', { sair: true });
+    montar(guia, '', { sair: !guia.treino });
     q('.guia-balao-texto').textContent = texto;
     noMeio();
   }

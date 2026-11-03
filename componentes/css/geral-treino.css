@@ -6,8 +6,10 @@
    clique). O azul é o --anotacao, o mesmo das marcações do manual.
    No passo a passo, a barra e a moldura ficam acesas (o véu do
    geral-guia deixa um buraco na barra; a moldura vem depois das
-   peças do guia). As duas são fixas no shell (index.html) e aparecem
-   com a marca data-treino no <html> (geral-treino.js).
+   peças do guia) e, com um aviso ou uma janela aberta, o escuro
+   deles começa embaixo da barra, para os botões dela responderem
+   sempre. As duas são fixas no shell (index.html) e aparecem com a
+   marca data-treino no <html> (geral-treino.js).
    ============================================================ */
 
 .treino-barra {
@@ -36,6 +38,11 @@
   display: flex;
   gap: 8px;
   margin-left: auto;
+}
+
+/* o escuro dos avisos e das janelas começa embaixo da barra: ela fica clara e os botões dela respondem */
+html[data-treino] .modal-veu {
+  top: var(--treino-barra-altura);
 }
 
 /* a moldura: a borda azul em volta da tela inteira */

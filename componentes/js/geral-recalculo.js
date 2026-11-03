@@ -7,8 +7,9 @@
    Assim nenhuma requisição carrega a escala inteira (some o risco de
    estouro de tempo/503).
    - Ao SALVAR: o `esconderVeuGlobal` marca pendência e esvazia em 2º plano.
-   - Ao ABRIR a Escala: o `renderizarCorpo` espera o esvaziar (1º plano)
-     antes de mostrar, para NUNCA exibir dado desatualizado.
+   - Ao ABRIR a Escala: ela mostra na hora, lê a fila (`lerFilaRecalculo`),
+     marca os dias que ainda vão ser refeitos e se redesenha quando o
+     esvaziar termina (escalas.js).
    Ver BANCO.md (recalculo_fila).
    ============================================================ */
 (function () {
@@ -51,6 +52,16 @@
     return promessa;
   }
 
+  /* a fila de agora, só lendo (recalculo_fila_ler): [{ contexto_id, unidades, proxima_data }], as unidades já com o
+     grupo acoplado; [] sem fila, null em falha */
+  function lerFilaRecalculo() {
+    if (!RosterWork.apiFetch) return Promise.resolve(null);
+    return RosterWork.apiFetch('/rest/v1/rpc/recalculo_fila_ler', { metodo: 'POST', corpo: {} })
+      .then(function (resp) { return resp.ok ? resp.json() : null; })
+      .catch(function () { return null; });
+  }
+
+  window.RosterWork.lerFilaRecalculo = lerFilaRecalculo;
   window.RosterWork.marcarRecalculoPendente = marcarRecalculoPendente;
   window.RosterWork.temRecalculoPendente = temRecalculoPendente;
   window.RosterWork.drenarRecalculo = drenarRecalculo;

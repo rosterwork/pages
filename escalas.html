@@ -109,6 +109,13 @@
     </button>
   </div>
 
+  <!-- enquanto a fila do recálculo refaz os dias de um Salvar: a nota com os pontinhos (o texto, com a data e as
+       unidades, vem do escalas.js); os dias que ainda vão ser refeitos ficam marcados na grade -->
+  <div class="nota escala-atualizando oculto" role="status">
+    <span class="carregando-pontos" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span>
+    <span class="nota-texto escala-atualizando-texto"></span>
+  </div>
+
   <div class="pagina-corpo pagina-corpo--colado"></div>
 
   <!-- o Salvar das mudanças do painel do dia (as abas Dia e Ciclo; escalas-painel-salvar.js), na largura
@@ -273,6 +280,13 @@
 <!-- quem fica de fora do SYSBM e por quê (uma frase por motivo, no bloco aberto) -->
 <template id="tpl-escala-sysbm-aviso">
   <span class="escala-sysbm-aviso"></span>
+</template>
+
+<!-- o dia que a fila do recálculo ainda vai refazer, na Agenda: os pontinhos embaixo da data (escalas.js) -->
+<template id="tpl-escala-dia-atualizando">
+  <span class="escala-mes-data-atualizando" data-dica="Atualizando">
+    <span class="carregando-pontos" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span>
+  </span>
 </template>
 
 <!-- legenda da grade (Mês/Semana/Colunas/Calendário): as cores do gráfico de cobertura (vermelho = a escala

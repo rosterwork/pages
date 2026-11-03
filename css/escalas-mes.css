@@ -380,6 +380,20 @@
   text-align: center;
 }
 
+/* a fila do recálculo refazendo os dias de um Salvar (escalas.js): a nota no alto da grade e, em cada dia que ainda
+   vai ser refeito, a célula apagada (Agenda, Calendário, Colunas e Semana) e os pontinhos embaixo da data (Agenda) */
+.escala-atualizando {
+  margin: 12px 16px 0;
+}
+
+.escala-mes-celula--atualizando {
+  opacity: 0.45;
+}
+
+.escala-mes-data-atualizando {
+  color: var(--texto-fraco);
+}
+
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    Na Escala, a Agenda mostra uma unidade por tela: a coluna dela

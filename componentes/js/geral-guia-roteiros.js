@@ -27,8 +27,8 @@
    data-opcional (o alvo não aparece), data-so-celular e
    data-so-computador. data-segurar, no treino: o clique que gravaria
    não chega à tela e o roteiro vai ao fim. data-livre: dá para mexer
-   em todo o aceso (no passo de olhar, nada responde; no de clique, só
-   o que ele pede). <p data-fim>: o balão
+   em todo o aceso (no passo de olhar, nada responde; no de clique e no
+   de gravar, só o botão que ele pede). <p data-fim>: o balão
    final (no treino, o <p data-fim-treino>, quando há).
    API: lista() (os roteiros que a pessoa pode fazer), naPagina(p)
    (os que passam pela tela), grupos(roteiros) (a lista como a pessoa
