@@ -1570,6 +1570,112 @@
     <p data-fim-treino>Pronto. No treino, nada foi registrado. No sistema, a troca entraria já aprovada e valeria na escala.</p>
   </template>
 
+  <!-- ===== TROCAS (trocas.html). Nos treinos, a troca de exemplo montada pelo banco (troca-<nome>; geral-treino-banco.js:
+       {exemplo} é o id dela); no ?, os dados reais ===== -->
+  <template data-roteiro-trecho="abrir-trocas">
+    <p data-pagina="qualquer" data-alvo=".sidebar .menu-item[data-pagina='trocas'], .barra-celular-item[data-pagina='trocas']" data-avanca="clique" data-pular-se=".conteudo #trocas-abas">Abra as <strong>Trocas</strong> no menu.</p>
+  </template>
+
+  <template data-roteiro="acompanhar-trocas" data-titulo="Acompanhar as suas trocas" data-grupo="Trocas" data-pagina="trocas" data-cenario="troca-meu-pedido">
+    <p data-trecho="abrir-trocas"></p>
+    <p data-alvo="#trocas-abas [data-aba='minhas']" data-avanca="clique" data-pular-se="#trocas-abas [data-aba='minhas'].aba--ativa">Abra a aba <strong>Minhas</strong>.</p>
+    <p data-alvo="#trocas-minhas-lista" data-avanca="proximo">Aqui ficam as trocas em que você entra: as que você pediu e as que pediram a você. O selo diz em que pé está cada uma.</p>
+    <p data-alvo="#trocas-abas [data-aba='todas']" data-avanca="proximo">A aba <strong>Todas</strong> mostra as trocas de todas as unidades, guardadas na unidade de quem pediu.</p>
+    <p data-alvo="#trocas-minhas-lista .troca-item[data-troca='{exemplo}']" data-alvo-senao="#trocas-minhas-lista .troca-item" data-um data-avanca="clique">Abra a troca.</p>
+    <p data-alvo=".painel-lateral .decisao-pedido > .decisao-caixa:not(:has(.selo))" data-avanca="proximo">Em <strong>Escalas trocadas</strong> está cada dia: quem trabalha no lugar de quem e o horário.</p>
+    <p data-alvo=".painel-lateral .decisao-pedido > .decisao-caixa:has(.selo)" data-avanca="proximo">Em <strong>Aceites e aprovação</strong> você vê quem já aceitou e o que falta.</p>
+    <p data-alvo="#painel-rodape [data-acao='imprimir-registro']" data-opcional data-avanca="proximo">O botão da impressora, no rodapé, gera o registro técnico da troca em PDF.</p>
+    <p data-fim>Pronto. Quando o colega aceitar e o administrador aprovar, o selo muda e a troca vale na escala.</p>
+  </template>
+
+  <template data-roteiro="responder-troca" data-titulo="Responder a um pedido de troca" data-grupo="Trocas" data-pagina="trocas" data-cenario="troca-para-mim">
+    <p data-trecho="abrir-trocas"></p>
+    <p data-alvo="#trocas-abas [data-aba='pendencias']" data-avanca="clique" data-pular-se="#trocas-abas [data-aba='pendencias'].aba--ativa">Abra a aba <strong>Pendências</strong>. O número ao lado diz quantas esperam você.</p>
+    <p data-alvo="#trocas-pendencias [data-pedido='troca:{exemplo}']" data-alvo-senao="#trocas-pendencias .pedido--linha" data-um data-avanca="clique">Abra o pedido do colega.</p>
+    <p data-alvo=".painel-lateral .decisao-pedido > .decisao-caixa:not(:has(.selo))" data-avanca="proximo">Confira os dias em <strong>Escalas trocadas</strong>.</p>
+    <p data-alvo=".painel-lateral .decisao-analise-secao" data-opcional data-avanca="proximo">A <strong>Análise</strong> mostra se a troca cria algum problema na escala.</p>
+    <p data-alvo=".painel-lateral .decisao-escala" data-opcional data-avanca="proximo" data-livre>Abra <strong>Como fica a escala</strong> para ver o dia já trocado.</p>
+    <p data-avanca="escolha">Aceite ou recuse.</p>
+    <section data-caminho="aceitar" data-entrada="#painel-rodape [data-acao='aceitar']">
+      <p data-alvo="#veu-aviso .modal" data-clique="#veu-aviso .aviso-confirmar" data-avanca="clique" data-segurar>Confirme no aviso.</p>
+    </section>
+    <section data-caminho="recusar" data-entrada="#painel-rodape [data-acao='recusar']">
+      <p data-alvo=".painel-lateral .decisao-recusa" data-avanca="proximo" data-livre>Se quiser, escreva o motivo. Ele vai no aviso ao colega.</p>
+      <p data-alvo="#painel-rodape [data-acao='confirmar-recusa']" data-avanca="clique" data-segurar>Confirme pelo <strong>Confirmar recusa</strong>.</p>
+    </section>
+    <p data-fim>Pronto. Aceita, a troca segue para o administrador aprovar. Recusada, o colega recebe o aviso.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi enviado. No sistema, aceita, a troca seguiria para o administrador aprovar; recusada, o colega receberia o aviso.</p>
+  </template>
+
+  <template data-roteiro="mudar-pedido" data-titulo="Mudar ou cancelar o seu pedido" data-grupo="Trocas" data-pagina="trocas" data-cenario="troca-meu-pedido">
+    <p data-trecho="abrir-trocas"></p>
+    <p data-alvo="#trocas-abas [data-aba='minhas']" data-avanca="clique" data-pular-se="#trocas-abas [data-aba='minhas'].aba--ativa">Abra a aba <strong>Minhas</strong>.</p>
+    <p data-alvo="#trocas-minhas-lista .troca-item[data-troca='{exemplo}']" data-alvo-senao="#trocas-minhas-lista .troca-item" data-um data-avanca="clique">Abra o seu pedido.</p>
+    <p data-avanca="escolha">Você pode mudar o pedido ou cancelá-lo. Escolha um.</p>
+    <section data-caminho="editar" data-entrada="#painel-rodape [data-acao='editar']">
+      <p data-alvo="#tv-calendario, #tv-mes-anterior, #tv-mes-proximo, #tv-resumo" data-avanca="proximo" data-livre>Mude os dias no calendário ou o horário pelo lápis do dia.</p>
+      <p data-alvo="#painel-rodape [data-acao='salvar']" data-avanca="clique" data-segurar>Grave pelo <strong>Salvar</strong>.</p>
+    </section>
+    <section data-caminho="cancelar" data-entrada="#painel-rodape [data-acao='cancelar-pedido']">
+      <p data-alvo="#veu-aviso .modal" data-clique="#veu-aviso .aviso-confirmar" data-avanca="clique" data-segurar>Confirme no aviso.</p>
+    </section>
+    <p data-fim>Pronto. Mudado, o pedido volta ao colega para aceitar de novo. Cancelado, ele sai das listas.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi mudado. No sistema, mudado, o pedido voltaria ao colega para aceitar de novo; cancelado, sairia das listas.</p>
+  </template>
+
+  <template data-roteiro="cobrar-saldo" data-titulo="Cobrar as horas de um saldo" data-grupo="Trocas" data-pagina="trocas" data-cenario="troca-saldo">
+    <p data-trecho="abrir-trocas"></p>
+    <p data-alvo="#trocas-abas [data-aba='saldos']" data-avanca="clique" data-pular-se="#trocas-abas [data-aba='saldos'].aba--ativa">Abra a aba <strong>Saldos</strong>. Aqui ficam as horas que ficaram devendo entre militares, nas trocas sem devolução.</p>
+    <p data-alvo="#trocas-pendentes-lista .troca-pendente" data-um data-avanca="clique">Abra o saldo em que o colega deve a você.</p>
+    <p data-alvo=".painel-lateral .troca-extrato" data-avanca="proximo">O extrato mostra as trocas que formaram o saldo.</p>
+    <p data-alvo="#painel-rodape .troca-pendente-cobrar" data-avanca="clique">Use o <strong>Cobrar</strong>.</p>
+    <p data-alvo="#tv-calendario, #tv-mes-anterior, #tv-mes-proximo" data-avanca="proximo" data-livre>O pedido abre com o colega já na lista. Marque o dia em que ele vai trabalhar para você.</p>
+    <p data-alvo="#painel-rodape [data-acao='solicitar-varias']" data-avanca="some" data-condicao=".painel-lateral--aberto .trocas-varias" data-segurar>Confira e envie pelo <strong>Solicitar troca</strong>.</p>
+    <p data-fim>Pronto. O colega recebe o pedido e, aprovada a troca, o saldo diminui.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi enviado. No sistema, o colega receberia o pedido e, aprovada a troca, o saldo diminuiria.</p>
+  </template>
+
+  <template data-roteiro="imprimir-trocas" data-titulo="Imprimir as trocas do mês" data-grupo="Trocas" data-pagina="trocas" data-cenario="troca-aprovada">
+    <p data-trecho="abrir-trocas"></p>
+    <p data-alvo="#btn-imprimir-trocas" data-avanca="clique">Use o botão da impressora, no alto à direita.</p>
+    <p data-alvo=".painel-corpo .grupo-caixa:has([data-imprimir-lista])" data-avanca="proximo" data-livre>Escolha o mês e marque as trocas que entram.</p>
+    <p data-alvo=".painel-corpo .grupo-caixa:has([data-imprimir-texto])" data-avanca="proximo" data-livre>O <strong>Texto para a Parte</strong> já vem escrito. Escolha <strong>Informo</strong> ou <strong>Solicito</strong> e use o <strong>Copiar texto</strong> para colar no eProtocolo.</p>
+    <p data-alvo=".painel-corpo .grupo-caixa:has([data-imprimir-formato])" data-avanca="proximo" data-livre>Escolha o formato: <strong>Lista</strong>, <strong>Registro técnico</strong> ou <strong>Alterações</strong>.</p>
+    <p data-alvo=".painel-corpo .impressao-previa-secao" data-so-computador data-avanca="proximo">A prévia mostra o PDF como vai sair.</p>
+    <p data-alvo="[data-impressao-gerar]" data-avanca="clique">Gere o PDF.</p>
+    <p data-fim>Pronto. O arquivo foi baixado.</p>
+  </template>
+
+  <template data-roteiro="aprovar-troca" data-titulo="Aprovar ou recusar uma troca" data-area="admin" data-grupo="Trocas" data-pagina="trocas" data-cenario="troca-para-aprovar">
+    <p data-trecho="abrir-trocas"></p>
+    <p data-alvo="#trocas-abas [data-aba='pendencias']" data-avanca="clique" data-pular-se="#trocas-abas [data-aba='pendencias'].aba--ativa">Abra a aba <strong>Pendências</strong>. As trocas para aprovar têm a etiqueta <strong>ADM</strong>.</p>
+    <p data-alvo="#trocas-pendencias [data-pedido='troca:{exemplo}']" data-alvo-senao="#trocas-pendencias .pedido--linha" data-um data-avanca="clique">Abra a troca.</p>
+    <p data-alvo=".painel-lateral .decisao-pedido" data-avanca="proximo">Confira os dias e, em <strong>Aceites e aprovação</strong>, se todos aceitaram. Se ainda falta o aceite de alguém, aparece o <strong>Aprovar com pendências</strong>, que aprova sem esperar.</p>
+    <p data-alvo=".painel-lateral .decisao-analise-secao" data-opcional data-avanca="proximo">A <strong>Análise</strong> aponta o que a troca pode quebrar na escala. O <strong>Aprovar</strong> só libera quando ela chega.</p>
+    <p data-alvo=".painel-lateral .decisao-escala" data-opcional data-avanca="proximo" data-livre>Abra <strong>Como fica a escala</strong> para ver o dia já trocado.</p>
+    <p data-avanca="escolha">Aprove ou recuse.</p>
+    <section data-caminho="aprovar" data-entrada="#painel-rodape [data-acao='aprovar']">
+      <p data-alvo="#veu-aviso .modal" data-clique="#veu-aviso .aviso-confirmar" data-avanca="clique" data-segurar>Confirme no aviso. A escala muda na hora.</p>
+    </section>
+    <section data-caminho="recusar" data-entrada="#painel-rodape [data-acao='recusar-admin']">
+      <p data-alvo=".painel-lateral .decisao-recusa" data-avanca="proximo" data-livre>Se quiser, escreva o motivo. Ele vai no aviso aos militares.</p>
+      <p data-alvo="#painel-rodape [data-acao='confirmar-recusa']" data-avanca="clique" data-segurar>Confirme pelo <strong>Confirmar recusa</strong>.</p>
+    </section>
+    <p data-fim>Pronto. Aprovada, a troca já vale na escala, e o resumo tem o <strong>Desfazer</strong>. Recusada, os militares recebem o aviso.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi aprovado nem recusado. No sistema, aprovada, a troca já valeria na escala; recusada, os militares receberiam o aviso.</p>
+  </template>
+
+  <template data-roteiro="cancelar-troca-aprovada" data-titulo="Cancelar uma troca aprovada" data-area="admin" data-grupo="Trocas" data-pagina="trocas" data-cenario="troca-aprovada">
+    <p data-trecho="abrir-trocas"></p>
+    <p data-alvo="#trocas-abas [data-aba='todas']" data-avanca="clique" data-pular-se="#trocas-abas [data-aba='todas'].aba--ativa">Abra a aba <strong>Todas</strong>. As trocas ficam no bloco da unidade de quem pediu.</p>
+    <p data-alvo="#trocas-arvore .troca-item[data-troca='{exemplo}']" data-alvo-senao="#trocas-arvore .troca-item" data-um data-avanca="clique">Abra a troca.</p>
+    <p data-alvo="#painel-rodape [data-acao='cancelar']" data-avanca="clique">Use o <strong>Cancelar trocas</strong>.</p>
+    <p data-alvo=".painel-lateral .decisao-motivo-cancelamento" data-anel="campo" data-avanca="preenchido">Escreva o motivo do cancelamento. Ele é obrigatório.</p>
+    <p data-alvo="#painel-rodape [data-acao='confirmar-cancelamento']" data-avanca="clique" data-segurar>Confirme pelo <strong>Confirmar cancelamento</strong>. Os dias voltam a ser como eram antes da troca.</p>
+    <p data-fim>Pronto. A troca foi cancelada, e a escala voltou a ser como era.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi cancelado. No sistema, a troca seria cancelada e a escala voltaria a ser como era.</p>
+  </template>
+
   <!-- ===== EXTRAJORNADA (nova-extra.html). Nos treinos, o mês de treino montado pelo banco, na etapa do data-cenario
        (extra-<etapa>; geral-treino-extra.js); no ?, os dados reais. No celular, a Extrajornada mora no Mais ===== -->
   <template data-roteiro-trecho="abrir-extra">

@@ -61,6 +61,7 @@
     var tpl = document.getElementById(varias ? 'tpl-troca-item-varias' : 'tpl-troca-item');
     if (!tpl) return null;
     var item = tpl.content.cloneNode(true).firstElementChild;
+    item.dataset.troca = troca.troca_id;   // o passo a passo acha a linha pelo id (o exemplo do treino)
     if (varias) {
       var mv = RW.mensagens.trocas.varias, nomes = (troca.aceites || []).map(function (a) { return a.titulo || ''; });
       item.querySelector('.troca-item-a').textContent = mv.linhaMilitares(mv.nomes(nomes));

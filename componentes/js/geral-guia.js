@@ -147,12 +147,14 @@
     });
   }
 
-  /* algo ainda carregando à vista: o véu da tela, ou o círculo de uma área (a grade da Escala, a área da Extrajornada,
-     o painel aberto). O círculo do véu escondido (some pela opacidade), o do painel fechado e o do cálculo da sugestão
-     da Extrajornada (que é um passo do roteiro) não contam */
+  /* algo ainda carregando à vista: o véu da tela, ou o círculo ou os pontos de uma área (a grade da Escala, a área da
+     Extrajornada, uma lista, o painel aberto). O círculo do véu escondido (some pela opacidade), o do painel fechado e o
+     do cálculo da sugestão da Extrajornada (que é um passo do roteiro) não contam */
   function carregando() {
     if (document.querySelector('.conteudo > .carregando-veu--visivel')) return true;
-    return Array.prototype.some.call(document.querySelectorAll('.conteudo .giratorio, .painel-lateral--aberto .painel-estado--carregando'), function (g) {
+    var sinais = '.conteudo .giratorio, .conteudo .carregando-pontos, .painel-lateral--aberto .painel-estado--carregando, ' +
+      '.painel-lateral--aberto .carregando-pontos';
+    return Array.prototype.some.call(document.querySelectorAll(sinais), function (g) {
       return visivel(g) && !g.closest('.carregando-veu, .nova-extra-calculo, .painel-lateral:not(.painel-lateral--aberto)') &&
         getComputedStyle(g).visibility !== 'hidden';
     });
@@ -328,11 +330,13 @@
     if (!guia || guia.fase !== 'passo' || !guia.mostrado) return;
     var passo = guia.passos[guia.i];
     var acertou = casa(alvo, seletoresDoClique(passo));
-    /* no treino, o clique que gravaria fica com o guia: o roteiro vai ao fim (o menu aberto fecha, como o clique faria) */
+    /* no treino, o clique que gravaria fica com o guia: o roteiro vai ao fim (o menu e o aviso abertos fecham, como o
+       clique faria) */
     if (acertou && guia.treino && passo.p.hasAttribute('data-segurar')) {
       evento.preventDefault();
       evento.stopPropagation();
       if (RW.fecharDropdowns) RW.fecharDropdowns();
+      if (alvo.closest('.modal-veu') && RW.fecharModais) RW.fecharModais();
       concluir();
       return;
     }

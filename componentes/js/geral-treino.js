@@ -13,7 +13,8 @@
    vai pelos exemplos do treino (geral-treino-cenarios.js): o roteiro
    com data-cenario liga o dele ao começar. No treino da Extrajornada,
    antes de tudo, o mês de treino responde pelas chamadas dela
-   (geral-treino-extra.js).
+   (geral-treino-extra.js); nos das trocas com exemplo do banco, o
+   exemplo responde pelas leituras delas (geral-treino-banco.js).
    Sai do modo: Treinos (volta à lista), Sair do treino (vai à Escala),
    o Voltar aos treinos do fim do roteiro, recarregar ou fechar (o modo
    não fica guardado). O Próximo treino do fim do roteiro volta à lista
@@ -48,8 +49,9 @@
     'pendencias_listar', 'perfil_solicitacoes_minhas', 'proximos_numeros_instalacao',
     /* ensaiam e desfazem tudo (a prévia do dia e as análises de impacto) */
     'escala_previa', 'fn_folgas_analisar_impacto', 'fn_trocas_analisar_impacto', 'pedido_escala_comparar',
-    /* o mês de treino da Extrajornada (monta, aplica e lê num ensaio que desfaz tudo; geral-treino-extra.js) */
-    'nova_extra_treino',
+    /* o mês de treino da Extrajornada e os exemplos do banco (montam, aplicam e leem num ensaio que desfaz tudo;
+       geral-treino-extra.js e geral-treino-banco.js) */
+    'nova_extra_treino', 'treino_cenario',
     /* o banco em dia: marca como vencido o link que já venceu, e termina o recálculo que já estava na fila; a fila do
        recálculo, só lendo */
     'acesso_estado', 'recalculo_fila_processar', 'recalculo_fila_ler'
@@ -131,6 +133,7 @@
   function passar(caminho, metodo, corpo, buscar) {
     var nome = nomeDa(caminho);
     if (RW.treinoExtra && RW.treinoExtra.cuida(nome, corpo)) return RW.treinoExtra.responder(nome, corpo);
+    if (RW.treinoBanco && RW.treinoBanco.cuida(nome, corpo)) return RW.treinoBanco.responder(nome, corpo, buscar);
     var barrada = barrar(caminho, metodo, corpo);
     if (barrada) return Promise.resolve(barrada);
     return RW.treinoCenarios ? RW.treinoCenarios.passar(nome, corpo, buscar) : buscar(corpo);

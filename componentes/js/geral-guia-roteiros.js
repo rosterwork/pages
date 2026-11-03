@@ -11,8 +11,10 @@
    <p data-fim> de dentro da seção, quando há, é o fim daquele caminho.
    <p data-trecho="nome"> repete os passos de um <template
    data-roteiro-trecho="nome"> (as aberturas comuns: abrir a Escala,
-   a aba, o dia). Nos seletores, {unidade} vira a unidade da pessoa e
-   {hoje}, a data de hoje (aaaa-mm-dd).
+   a aba, o dia). Nos seletores, {unidade} vira a unidade da pessoa,
+   {hoje}, a data de hoje (aaaa-mm-dd), e {exemplo}, o id da troca do
+   exemplo que o banco monta no treino (geral-treino-banco.js; fora
+   dele, nenhum: o data-alvo-senao vale).
    data-area="admin": só para quem administra; data-so-computador
    (no template): fora do celular.
    O passo: data-alvo (seletores separados por vírgula; acende todos
@@ -56,8 +58,9 @@
     var u = RW.sessao ? RW.sessao.perfil() : null;
     var unidade = u && u.lotacao_id != null ? String(u.lotacao_id) : '';
     var hoje = hojeIso();
+    var exemplo = (RW.treinoBanco && RW.treinoBanco.exemplo()) || 'nenhum';
     return (texto || '').split(',').map(function (s) {
-      return s.trim().replace(/\{unidade\}/g, unidade).replace(/\{hoje\}/g, hoje);
+      return s.trim().replace(/\{unidade\}/g, unidade).replace(/\{hoje\}/g, hoje).replace(/\{exemplo\}/g, exemplo);
     }).filter(Boolean);
   }
 
