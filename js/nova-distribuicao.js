@@ -28,6 +28,7 @@
       dados: null, unidadeId: null, periodo: null, resp: null, calc: null,
       companhia: null, respCia: null, calcCia: null,
       sujo: false, sujoCia: false, bloco: 9, aberto: null,   /* abre no 1º da lista, o Ritmo (data-bloco 9) */
+      base: null, baseCia: null,   /* as respostas de abertura (as arrumadas pela 1ª conta), em texto, para saber se mudou */
       vendoAgendada: false,                       /* a tela mostra a mudança agendada */
       renomeadas: { unidade: [], companhia: [] },  /* prefixos trocados ainda não salvos: [[velho, novo]] */
       focar: null                                  /* o campo que ganha o foco depois do redesenho */
@@ -51,8 +52,28 @@
   function avisarFalha(r) { RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || G().falhaServidor }); }
   function avisarSemConexao() { RosterWork.avisar({ tipo: 'erro', mensagem: G().semConexao }); }
 
+  /* as respostas em texto, sem depender da ordem das chaves (as listas mantêm a ordem) */
+  function emTexto(v) {
+    function ordenar(x) {
+      if (Array.isArray(x)) return x.map(ordenar);
+      if (x && typeof x === 'object') return Object.keys(x).sort().reduce(function (o, k) { o[k] = ordenar(x[k]); return o; }, {});
+      return x;
+    }
+    return JSON.stringify(ordenar(v));
+  }
+
+  /* as respostas de um lado (a unidade ou a companhia) estão diferentes das de abertura? Desfazer tudo volta a "não" */
+  function mudouLado(lado) {
+    var cia = lado === 'companhia';
+    if (!(cia ? E.sujoCia : E.sujo)) return false;   /* nunca mexeu */
+    var base = cia ? E.baseCia : E.base;
+    return base == null || emTexto(cia ? E.respCia : E.resp) !== base;
+  }
+
   /* edição não salva: as respostas da unidade, as da companhia, as substituições ou o ritmo */
-  function temEdicao() { return E.sujo || E.sujoCia || RosterWork.novaDistribuicaoCaixas.temRascunho() || Rt().mudou(); }
+  function temEdicao() {
+    return mudouLado('unidade') || mudouLado('companhia') || RosterWork.novaDistribuicaoCaixas.temRascunho() || Rt().mudou();
+  }
 
   /* com edição não salva, confirma o descarte antes de seguir */
   function confirmarDescarte(seguir, aoCancelar) {
@@ -111,7 +132,12 @@
       if (!rs[0] || !rs[0].success) { avisarFalha(rs[0]); return; }
       E.calc = rs[0];
       E.resp = rs[0].respostas;
-      if (rs[1] && rs[1].success) { E.calcCia = rs[1]; E.respCia = rs[1].respostas; }
+      if (E.base == null) E.base = emTexto(E.resp);
+      if (rs[1] && rs[1].success) {
+        E.calcCia = rs[1];
+        E.respCia = rs[1].respostas;
+        if (E.baseCia == null) E.baseCia = emTexto(E.respCia);
+      }
       if (C().definirInicioPadrao(E.unidadeId, { calc: E.calc, resp: E.resp }, ehPelotao())) return recalcular();
       desenhar();
     }, function () {
@@ -314,11 +340,11 @@
 
   /* ---------- gravar ---------- */
 
-  /* o que vai para o banco: a unidade e, no pelotão vendo a em vigor, a parte da companhia quando mudou */
+  /* o que vai para o banco: a unidade e, no pelotão vendo a em vigor, a parte da companhia, cada uma só quando mudou */
   function itensParaSalvar() {
     var itens = [];
-    if (E.sujo) itens.push({ periodo_id: E.periodo.id, respostas: E.resp, renomeadas: E.renomeadas.unidade });
-    if (E.sujoCia && E.companhia && E.companhia.periodo && !E.vendoAgendada) {
+    if (mudouLado('unidade')) itens.push({ periodo_id: E.periodo.id, respostas: E.resp, renomeadas: E.renomeadas.unidade });
+    if (mudouLado('companhia') && E.companhia && E.companhia.periodo && !E.vendoAgendada) {
       itens.push({ periodo_id: E.companhia.periodo.id, respostas: E.respCia, renomeadas: E.renomeadas.companhia });
     }
     return itens;

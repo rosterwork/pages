@@ -153,6 +153,12 @@
     D().salvar(itens, null, null, true, subs, ritmo).then(function (previa) {
       RosterWork.pararCarregando(botao);
       if (!previa || !previa.success) { c.falha(previa); return; }
+      /* o banco não achou o que gravar (o que foi mexido voltou ao que estava gravado): avisa e volta ao gravado */
+      if (!(previa.itens || []).length && !(previa.substituicoes || []).length && !previa.ritmo) {
+        RosterWork.avisar({ tipo: 'aviso', mensagem: M().nadaMudou });
+        c.carregar(null);
+        return;
+      }
       var escolhidos = [];
       RosterWork.pedirData({
         sugerida: true, titulo: M().salvarTitulo, sugestaoAntes: M().salvarAntes, sugestaoDepois: M().salvarDepois,

@@ -1309,7 +1309,9 @@
       botaoSalvar: 'Salvar',
       erroInicio: 'Escolha a data de início.',
       erroOrdemDatas: 'O fim precisa vir depois do início.',
-      corrigirAntes: 'Corrija os campos em vermelho antes de salvar.'
+      corrigirAntes: 'Corrija os campos em vermelho antes de salvar.',
+      /* a prévia do banco não achou mudança (o que foi mexido voltou ao que estava gravado) */
+      nadaMudou: 'Não há alterações para salvar.'
     },
 
     /* saída do militar da escala (transferência, Tirar do ciclo e baixa): a lista do aviso,
