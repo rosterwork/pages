@@ -30,7 +30,7 @@
   var TIQUE = 200;          // ms entre as conferências do passo (o alvo, o valor e a posição)
   var ESPERA_ALVO = 25;     // tiques sem o alvo até o guia terminar (5 s)
   var ESPERA_OPCIONAL = 4;  // tiques sem o alvo até pular o passo opcional
-  var ESPERA_AVISO = 8;     // tiques sem o alvo até o balão dizer por que o passo não dá (data-sem-alvo)
+  var ESPERA_AVISO = 20;    // tiques sem o alvo até o balão dizer por que o passo não dá (data-sem-alvo; 4 s: a lista que chega devagar, sem carregamento à vista, não mostra a frase antes da hora)
   var ESPERA_TELA = 150;    // tiques esperando a tela do passo carregar (30 s: o mês de treino lançado da Extrajornada leva uns 15 s)
   var DISTANCIA = 12;       // distância da dica ao ? e às bordas da tela (px)
   var ESPERAR = '.dropdown--aberto, .calendario--aberto, .modal-veu--aberto';
