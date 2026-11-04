@@ -8,19 +8,22 @@
      antes se é para Devolver à unidade de origem ou Tirar do dia
      (aí seguem as perguntas de sempre; quem saiu daqui para outra
      unidade, sem serviço aqui, tira o dia todo). Pelo ciclo: só no dia (o horário e o banco de horas,
-     que vira folga) ou do ciclo (a lista do que é cancelado e a
-     confirmação, para o rascunho do ciclo). O pontual: o horário e,
-     saindo todo e contado no banco, as horas dele. A troca (uma
-     parte para cada troca): cancelada aqui mesmo, na hora, pelo
-     escalas-painel-remover-troca.js. A extra não sai por aqui (muda
-     na Extrajornada, em Ajustes): quem só está de extra no dia não
-     entra no Quem sai nem tem o Remover do dia (podeTirar).
+     que vira folga) ou do ciclo (com a lista do que acontece com as
+     trocas, folgas e extras dele, para o rascunho do ciclo). O
+     pontual: o horário e, saindo todo e contado no banco, as horas
+     dele. A troca (uma parte para cada troca): cancelada aqui mesmo,
+     na hora, pelo escalas-painel-remover-troca.js, com o rodapé
+     próprio da sub-tela. A extra não sai por aqui (muda na
+     Extrajornada, em Ajustes): quem só está de extra no dia não entra
+     no Quem sai nem tem o Remover do dia (podeTirar).
    - doDia(m, linha): quem está sem função (já se sabe quem, o
      horário e a origem): pelo ciclo, a pergunta do banco de horas
-     abre embaixo da linha; o pontual sai na hora, ou com a pergunta
-     das horas que ele somou; o resto abre a sub-tela.
-   As mudanças do dia vão ao rascunho do Dia; nada grava até o Salvar
-   do rodapé do painel (escalas-painel-salvar.js), menos a troca.
+     abre embaixo da linha, e a resposta já o tira do dia; o pontual
+     sai na hora, ou com a pergunta das horas que ele somou; o resto
+     abre a sub-tela.
+   Sem botão próprio: a resposta completa entra no rascunho do Dia ao
+   vivo (escalas-painel-editar.js › aoVivo); nada grava até o Salvar
+   do rodapé largo (escalas-painel-salvar.js), menos a troca.
    A lista Quem sai e a origem de cada parte do serviço ficam em
    escalas-painel-remover-listas.js.
    ============================================================ */
@@ -67,7 +70,8 @@
     var iso = api.iso(), uid = api.unidadeId(), data = diaMes(iso);
     var est = { item: null, mil: null, partes: [], parte: null, alcance: 'dia', periodos: [], banco: 'sim',
       reman: null, remanFazer: null };
-    var el = {}, combo = null, troca = null;
+    var el = {}, combo = null, troca = null, efeito = null;
+    var analise = { chave: '', aviso: null, pedido: 0 };   // o que acontece no ciclo de quem sai do ciclo (lido uma vez)
 
     function escolher(item) {
       est.item = item; est.mil = item.mil;
@@ -125,7 +129,7 @@
         alcance: q('.escala-remover-alcance'), horario: q('.escala-remover-horario'), periodos: q('.escala-remover-periodos'),
         banco: q('.escala-remover-banco'),
         bancoTexto: q('.escala-remover-banco-texto'), bancoSim: q('.escala-remover-banco-sim'), bancoNao: q('.escala-remover-banco-nao'),
-        ciclo: q('.escala-remover-ciclo'), troca: q('.escala-remover-troca'),
+        erro: q('.escala-remover-erro'), troca: q('.escala-remover-troca'),
         reman: q('.escala-remover-reman'), remanTexto: q('.escala-remover-reman-texto'), remanDevolver: q('.escala-remover-reman-devolver')
       };
       var inp = el.combo.querySelector('input');
@@ -136,9 +140,12 @@
         textos: { selecione: L().digiteOuEscolha, semNinguem: L().ninguemDeServico, filtroVazio: msg().ninguemEncontrado }
       });
       el.marcarAlcance = ligarRadios(el.alcance, function (v) { est.alcance = v; atualizar(); });
-      el.marcarBanco = ligarRadios(el.banco, function (v) { est.banco = v; });
+      el.marcarBanco = ligarRadios(el.banco, function (v) { est.banco = v; atualizar(); });
       el.marcarReman = ligarRadios(el.reman, function (v) { est.remanFazer = v; atualizar(); });
-      troca = RosterWork.escalasPainelRemoverTroca.criar({ raiz: el.troca, iso: iso, pronto: pronto, aoGravar: api.recarregar });
+      efeito = C.efeito(q('.escala-remover-efeito'));
+      /* a troca grava na hora: o rodapé próprio da sub-tela, com o botão que diz o que faz */
+      troca = RosterWork.escalasPainelRemoverTroca.criar({ raiz: el.troca, iso: iso, aoGravar: api.recarregar,
+        pronto: function (texto, ligado) { api.rodapeProprio(texto, ligado, aplicarTroca); } });
       corpo.appendChild(tela);
       var itens = itensQuem();
       combo.preencher(itens);
@@ -160,9 +167,15 @@
     }
     function inteira() { return minutos(est.periodos) >= minutos(est.parte.periodos); }
 
-    function pronto(texto, ligado) {
-      api.rotuloAplicar(texto);
-      api.travarAplicar(!ligado);
+    /* a resposta vai ao rascunho ao vivo (fn nulo: sem resposta; travado: o Salvar espera) */
+    function noRascunho(fn, travado) {
+      api.rodapeProprio('');
+      api.aoVivo(fn, travado);
+    }
+    /* o que impede a mudança, numa nota vermelha (vazio: some) */
+    function erro(texto) {
+      mostra(el.erro, !!texto);
+      el.erro.querySelector('.nota-texto').textContent = texto || '';
     }
 
     function montarHorario() {
@@ -181,11 +194,13 @@
 
     function atualizar() {
       if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
-      ['reman', 'partes', 'alcance', 'horario', 'banco', 'ciclo'].forEach(function (k) { mostra(el[k], false); });
+      ['reman', 'partes', 'alcance', 'horario', 'banco'].forEach(function (k) { mostra(el[k], false); });
+      efeito.esconder();
+      erro('');
       troca.esconder();
       var mil = est.mil;
-      if (!mil) { pronto(L().escolhaQuemSai, false); return; }
-      var nome = nomeDe(mil);
+      if (!mil) { noRascunho(null, false); return; }
+      var nome = nomeDe(mil), cpf = mil.cpf, eu = cpf === RosterWork.sessao.cpf();
       /* o remanejado: Devolver à unidade de origem ou Tirar do dia (aí seguem as perguntas de sempre) */
       var rm = est.reman;
       if (rm) {
@@ -193,8 +208,8 @@
         el.remanTexto.textContent = L().remanejadoTexto(nome, rm.de_nome, rm.para_nome, rm.fica, rm.automatico);
         el.remanDevolver.textContent = L().devolverA(rm.de_nome);
         el.marcarReman(est.remanFazer);
-        if (!est.remanFazer) { pronto(L().escolhaFazer, false); return; }
-        if (est.remanFazer === 'devolver') { pronto(L().devolver(nome, rm.de_nome), true); return; }
+        if (!est.remanFazer) { noRascunho(null, true); return; }
+        if (est.remanFazer === 'devolver') { noRascunho(function () { api.devolverRemanejado(cpf); }); return; }
         /* saiu daqui para outra unidade (sem serviço aqui): sai do dia todo, com o banco de horas */
         if (!est.partes.length) {
           var horasR = H.horasTexto(minutosRemanejado());
@@ -203,19 +218,22 @@
           el.bancoSim.textContent = L().descontar(horasR);
           el.bancoNao.textContent = L().naoDescontar;
           el.marcarBanco(est.banco);
-          pronto(L().removerDoDia(nome), true);
+          if (eu) { erro(msg().folgaSiMesmo); noRascunho(null, true); return; }
+          var descontarR = est.banco === 'sim';
+          noRascunho(function () { api.largarRemanejado(cpf); api.darFolga(cpf, descontarR, null); });
           return;
         }
       }
       mostra(el.partes, est.partes.length > 1);
       var p = est.parte;
-      if (!p) { pronto(L().escolhaParte, false); return; }
+      if (!p) { noRascunho(null, true); return; }
 
-      if (p.origem === 'troca') { troca.mostrar(mil, p); return; }
+      /* a troca grava na hora, pelo rodapé próprio: nada desta sub-tela fica no rascunho */
+      if (p.origem === 'troca') { api.aoVivo(null, false); troca.mostrar(mil, p); return; }
       if (p.origem === 'ciclo') {
         mostra(el.alcance, true);
         el.marcarAlcance(est.alcance);
-        if (est.alcance === 'ciclo') { mostra(el.ciclo, true); pronto(L().botaoContinuar, true); return; }
+        if (est.alcance === 'ciclo') { sairDoCiclo(mil); return; }
       }
       /* só no dia (pelo ciclo) ou o pontual: o horário que sai e o banco de horas */
       mostra(el.horario, true);
@@ -239,41 +257,46 @@
         }
       }
       el.marcarBanco(est.banco);
-      pronto(toda ? L().removerDoDia(nome) : L().removerHorario(nome), ok);
-    }
-
-    /* ---------- aplicar ---------- */
-
-    function aplicar() {
-      var mil = est.mil, p = est.parte, rm = est.reman;
-      if (!mil) return;
-      var cpf = mil.cpf;
-      if (rm && est.remanFazer === 'devolver') { api.devolverRemanejado(cpf); api.concluir(); return; }
-      if (rm && est.remanFazer === 'tirar' && !est.partes.length) {
-        if (cpf === RosterWork.sessao.cpf()) { RosterWork.avisar({ tipo: 'erro', mensagem: msg().folgaSiMesmo }); return; }
-        var descontarR = est.banco === 'sim';
-        api.mudar(function () { api.largarRemanejado(cpf); api.darFolga(cpf, descontarR, null); });
-        return;
-      }
-      if (!p) return;
-      if (p.origem === 'troca') { if (rm) api.largarRemanejado(cpf); troca.aplicar(); return; }
-      if (p.origem === 'ciclo' && est.alcance === 'ciclo') {
-        /* do ciclo: a lista do que é cancelado e a confirmação; vai para o rascunho do ciclo e volta ao dia */
-        C.sair(uid, iso, mil, api.voltar);
-        return;
-      }
-      if (!dentro()) { RosterWork.avisar({ tipo: 'erro', mensagem: L().erroRemover }); return; }
-      if (p.origem === 'ciclo' && cpf === RosterWork.sessao.cpf()) { RosterWork.avisar({ tipo: 'erro', mensagem: msg().folgaSiMesmo }); return; }
-      var periodos = H.uniao(est.periodos.map(H.faixa)).map(H.periodo), toda = inteira();
-      var descontar = est.banco === 'sim';
-      api.mudar(function () {
+      /* o horário fora do serviço dele (ou que se cruza) e a folga a si mesmo não entram */
+      if (!ok) { erro(L().erroRemover); noRascunho(null, true); return; }
+      if (p.origem === 'ciclo' && eu) { erro(msg().folgaSiMesmo); noRascunho(null, true); return; }
+      var periodos = H.uniao(est.periodos.map(H.faixa)).map(H.periodo), descontar = est.banco === 'sim';
+      noRascunho(function () {
         if (rm) api.largarRemanejado(cpf);
         if (p.origem === 'ciclo') api.darFolga(cpf, descontar, toda && est.partes.length === 1 && !mil.outraUnidade ? null : periodos);
         else tirarDoPontual(cpf, periodos, toda, descontar);
       });
     }
 
-    api.abrir(L().escolhaQuemSai, montar, aplicar);
+    /* do ciclo: a lista do que acontece com as trocas, folgas e extras dele (lida uma vez) e, com ela, a marca no rascunho
+       do ciclo; enquanto lê, o Salvar espera */
+    function sairDoCiclo(mil) {
+      var chave = mil.cpf;
+      if (analise.chave === chave) {
+        if (analise.aviso) { efeito.mostrar(analise.aviso); noRascunho(function () { C.marcarSair(uid, iso, mil, analise.aviso.itens); }); }
+        else noRascunho(null, true);
+        return;
+      }
+      analise.chave = chave;
+      analise.aviso = null;
+      var meu = ++analise.pedido;
+      noRascunho(null, true);
+      C.analisarSair(uid, iso, mil).then(function (aviso) {
+        if (meu !== analise.pedido || !el.combo.isConnected) return;
+        if (aviso.erro) { analise.chave = ''; RosterWork.avisar({ tipo: 'erro', mensagem: aviso.erro }); return; }
+        analise.aviso = aviso;
+        if (est.mil === mil && est.alcance === 'ciclo') atualizar();
+      });
+    }
+
+    /* o botão do rodapé próprio (a troca): grava na hora */
+    function aplicarTroca() {
+      if (!est.mil) return;
+      if (est.reman) api.largarRemanejado(est.mil.cpf);
+      troca.aplicar();
+    }
+
+    api.abrir(montar);
   }
 
   /* o pontual: todo sai (com as horas que ele somou, se o admin quis), ou só os horários dados */
@@ -327,7 +350,6 @@
     var el = RosterWork.tpl('tpl-escala-remover-dia');
     if (!el) return;
     var q = function (s) { return el.querySelector(s); };
-    var escolha = 'sim';
     if (p.origem === 'ciclo') {
       q('.escala-remover-dia-texto').textContent = textoFolga(sem, nome, horas, diaMes(api.iso()));
       q('.escala-remover-dia-sim').textContent = L().descontar(horas);
@@ -338,16 +360,20 @@
       q('.escala-remover-dia-sim').textContent = L().tirarPontualSim(hp);
       q('.escala-remover-dia-nao').textContent = L().tirarPontualNao;
     }
-    ligarRadios(el, function (v) { escolha = v; })(escolha);
-    q('.escala-remover-dia-cancelar').addEventListener('click', fecharPergunta);
-    q('.escala-remover-dia-confirmar').addEventListener('click', function () {
-      if (p.origem === 'ciclo' && cpf === RosterWork.sessao.cpf()) { RosterWork.avisar({ tipo: 'erro', mensagem: msg().folgaSiMesmo }); return; }
+    /* sem nada marcado: a resposta já o tira do dia, no rascunho (o Desfazer volta) */
+    var marcar = ligarRadios(el, function (escolha) {
+      if (p.origem === 'ciclo' && cpf === RosterWork.sessao.cpf()) {
+        marcar(null);
+        RosterWork.avisar({ tipo: 'erro', mensagem: msg().folgaSiMesmo });
+        return;
+      }
       fecharPergunta();
       api.mudar(function () {
         if (p.origem === 'ciclo') api.darFolga(cpf, escolha === 'sim', sem);
         else tirarDoPontual(cpf, sem, true, escolha === 'sim');
       });
     });
+    q('.escala-remover-dia-cancelar').addEventListener('click', fecharPergunta);
     linha.insertAdjacentElement('afterend', el);
     pergunta = el;
   }

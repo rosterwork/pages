@@ -76,6 +76,21 @@
   border: none;
 }
 
+/* a folha inteira no quadro, no formato dela (o JS marca pela 1ª folha do PDF; a página contínua fica no quadro de
+   cima): paisagem na largura da caixa; retrato com a altura do quadro de cima. A rolagem do leitor do PDF só passa
+   de uma folha para a outra */
+.impressao-previa--paisagem .impressao-previa-quadro {
+  min-height: 0;
+  aspect-ratio: 297 / 210;
+}
+
+.impressao-previa--retrato .impressao-previa-quadro {
+  align-self: center;
+  width: 312px;
+  min-height: 0;
+  aspect-ratio: 210 / 297;
+}
+
 .impressao-previa-aviso {
   position: absolute;
   inset: 0;

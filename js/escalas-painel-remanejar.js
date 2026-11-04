@@ -13,12 +13,13 @@
    sem troca e sem extra), Motivo e um Onde fica para cada militar
    que entra numa unidade (escalas-painel-onde.js), com a nota da
    distribuição. O dia da outra unidade vem da mesma leitura do
-   painel (ler_distribuicao_dia). As listas e o caminho de volta
-   ficam em escalas-painel-remanejar-listas.js. Só abre sem mudança
-   não salva (escalas-painel-editar.js); o Salvar grava na hora
-   (escalas-painel-salvar.js › gravarAgora) e o resumo traz o
-   Desfazer, que devolve os remanejados e a extra ao lugar de antes.
-   Depois, desfaz-se pelo Remover militar (Devolver).
+   painel (ler_distribuicao_dia). As listas ficam em
+   escalas-painel-remanejar-listas.js. Sem botão próprio: com tudo
+   respondido, o remanejamento entra no rascunho do Dia ao vivo
+   (escalas-painel-editar.js › aoVivo; o motivo vai junto) e as telas
+   mostram como fica; sem o motivo, o Salvar do rodapé largo fica
+   desligado. Depois de salvo, desfaz-se pelo Remover militar
+   (Devolver).
    ============================================================ */
 (function () {
   'use strict';
@@ -56,7 +57,7 @@
        outra unidade; item: quem vem ou vai; troca: 'sim' | 'nao'; itemTroca: quem faz o caminho contrário; sai: 'sai' |
        'fica' */
     var est = { fazer: null, destino: null, origem: null, outraDados: null, item: null, troca: null, itemTroca: null, sai: null };
-    var el = {}, combo = null, comboTroca = null, ondes = {}, pedido = 0, aquiNome = '', outras = [], salvando = false;
+    var el = {}, combo = null, comboTroca = null, ondes = {}, pedido = 0, aquiNome = '', outras = [];
 
     function outra() { return est.fazer === 'enviar' ? est.destino : est.fazer === 'trazer' ? est.origem : null; }
     /* a lista de Quem e a de Em troca: no Trazer, quem vem é da outra unidade; no Enviar, daqui */
@@ -225,11 +226,6 @@
       });
     }
 
-    function pronto(texto, ligado) {
-      api.rotuloAplicar(texto);
-      api.travarAplicar(!ligado || salvando);
-    }
-
     function atualizar() {
       if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
       ['quem', 'servico', 'troca', 'trocaCampo', 'sai', 'motivo', 'nota'].forEach(function (k) { mostra(el[k], false); });
@@ -238,13 +234,13 @@
       [].forEach.call(el.radiosFazer, function (r) { r.disabled = semOutras; });
       el.destino.querySelector('.campo-selecao').disabled = semOutras;
       var lista = [];
+      /* falta resposta (true) até o Onde fica; o motivo é à parte */
       var falta = (function () {
-        if (!est.fazer) return L().escolhaFazer;
-        if (est.fazer === 'enviar' && !est.destino) return L().escolhaUnidade;
+        if (!est.fazer) return true;
+        if (est.fazer === 'enviar' && !est.destino) return true;
         mostra(el.quem, true);
         mostra(el.origemCampo, est.fazer === 'trazer');
-        if (!outra()) return L().escolhaUnidade;
-        if (!est.item) return est.fazer === 'trazer' ? L().escolhaQuemVem : L().escolhaQuemVai;
+        if (!outra() || !est.item) return true;
         var deOnde = est.fazer === 'trazer' ? outra().nome : aquiNome;
         var servico = est.item.janelas.map(function (j) { return { hi: H.curta(j.hi), hf: H.curta(j.hf), origem: j.origem }; });
         el.servico.textContent = L().remanejarServico(servico, deOnde) + (R().temExtra(est.item) ? ' ' + L().remanejarExtraContinua : '');
@@ -254,9 +250,9 @@
         el.trocaPergunta.textContent = est.fazer === 'trazer'
           ? L().remanejarTrocaTrazer(aquiNome, outra().nome) : L().remanejarTrocaEnviar(outra().nome, aquiNome);
         el.marcarTroca(est.troca);
-        if (!est.troca) return L().escolhaSeTroca;
+        if (!est.troca) return true;
         mostra(el.trocaCampo, est.troca === 'sim');
-        if (est.troca === 'sim' && !est.itemTroca) return L().escolhaMilitarTroca;
+        if (est.troca === 'sim' && !est.itemTroca) return true;
         /* na unidade de origem: só no Enviar, sem troca e sem extra */
         if (est.fazer === 'enviar' && est.troca === 'nao' && !R().temExtra(est.item)) {
           var nome = nomeDe(est.item);
@@ -265,7 +261,7 @@
           el.saiSim.textContent = L().remanejarSoNa(outra().nome);
           el.saiNao.textContent = L().remanejarNasDuas(aquiNome, outra().nome);
           el.marcarSai(est.sai);
-          if (!est.sai) return L().escolhaSeSai;
+          if (!est.sai) return true;
         }
         mostra(el.motivo, true);
         lista = entradas();
@@ -273,33 +269,24 @@
           mostra(el.nota, true);
           el.nota.querySelector('.nota-texto').textContent = L().remanejarNota(aquiNome, outra().nome);
         }
-        if (!el.campoMotivo.value.trim()) return L().escrevaMotivo;
-        var faltaOnde = '';
-        lista.forEach(function (e) { faltaOnde = faltaOnde || (ondes[e.chave] ? ondes[e.chave].comp.falta() : ''); });
-        return faltaOnde;
+        return false;
       })();
       desenharOndes(lista);
-      /* a caixa nova já entra com a falta dela */
-      if (!falta) lista.forEach(function (e) { falta = falta || (ondes[e.chave] ? ondes[e.chave].comp.falta() : ''); });
-      pronto(falta || RosterWork.mensagens.botoes.salvar, !falta);
+      /* o Onde fica de cada um (a caixa nova já entra com a falta dela) */
+      if (!falta) lista.forEach(function (e) { falta = falta || (ondes[e.chave] ? ondes[e.chave].comp.falta() : false); });
+      /* tudo respondido: o remanejamento entra no rascunho (a prévia não precisa do motivo; sem ele, o Salvar espera) */
+      if (falta) { api.aoVivo(null, !!est.fazer); return; }
+      api.aoVivo(function () { noRascunho(lista); }, !el.campoMotivo.value.trim());
     }
 
-    /* ---------- salvar ---------- */
+    /* ---------- no rascunho ---------- */
 
-    function aplicar() {
-      if (salvando || !est.item || !outra()) return;   // o botão já fica desligado enquanto falta algo
-      var motivo = el.campoMotivo.value.trim();
-      if (!motivo) {
-        if (RosterWork.campos) RosterWork.campos.marcarErro(el.campoMotivo, L().escrevaMotivo);
-        el.campoMotivo.focus();
-        return;
-      }
-      var u = outra(), ent = entradas();
-      if (ent.some(function (e) { return !ondes[e.chave] || !ondes[e.chave].comp.respondido(); })) return;
-      /* os remanejamentos: quem vai ou vem e, em troca, quem faz o caminho contrário */
-      var itens = [];
+    /* os remanejamentos (quem vai ou vem e, em troca, quem faz o caminho contrário, com o motivo); quem sai perde as
+       colocações manuais de onde saiu, e cada um que entra fica onde foi escolhido */
+    function noRascunho(ent) {
+      var u = outra(), motivo = el.campoMotivo.value.trim(), itens = [];
       function item(i, origem, destino, dadosOrigem, fica) {
-        itens.push({ cpf: i.cpf, origem: Number(origem), destino: Number(destino), fica: fica, extra: R().temExtra(i), outro: R().temOutro(i), dadosOrigem: dadosOrigem });
+        itens.push({ cpf: i.cpf, origem: Number(origem), destino: Number(destino), fica: fica, dadosOrigem: dadosOrigem });
       }
       if (est.fazer === 'trazer') {
         item(est.item, u.unidade_id, uid, est.outraDados, false);
@@ -308,23 +295,12 @@
         item(est.item, uid, u.unidade_id, dados, est.troca === 'nao' && !R().temExtra(est.item) && est.sai === 'fica');
         if (est.troca === 'sim') item(est.itemTroca, u.unidade_id, uid, est.outraDados, false);
       }
-      var ajustesAntes = JSON.parse(JSON.stringify(api.rascunho().ajustes));
-      /* o dia a gravar: quem sai perde as colocações manuais de onde saiu, e cada um fica onde foi escolhido */
-      var dia = api.paraGravarCom(function (r) {
-        itens.forEach(function (i) { if (!i.fica) R().cortarNaOrigem(r, i.cpf, i.dadosOrigem); });
-        ent.forEach(function (e) { ondes[e.chave].comp.aplicar(null); });
-      });
-      dia.remanejar = itens.map(function (i) { return { cpf: i.cpf, origem: i.origem, destino: i.destino, fica: i.fica, motivo: motivo }; });
-      salvando = true;
-      api.travarAplicar(true);
-      RosterWork.escalasPainelSalvar.gravarAgora(dia, R().voltarDe(itens, ajustesAntes, motivo)).then(function (ok) {
-        salvando = false;
-        if (ok) { el.campoMotivo.value = ''; return; }   // gravou: o painel volta ao dia, já lido de novo
-        if (el.fazer.isConnected) api.travarAplicar(false);
-      });
+      itens.forEach(function (i) { if (!i.fica) R().cortarNaOrigem(api.rascunho(), i.cpf, i.dadosOrigem); });
+      ent.forEach(function (e) { ondes[e.chave].comp.aplicar(null); });
+      api.remanejar(itens.map(function (i) { return { cpf: i.cpf, origem: i.origem, destino: i.destino, fica: i.fica, motivo: motivo }; }));
     }
 
-    api.abrir(L().escolhaFazer, montar, aplicar);
+    api.abrir(montar);
   }
 
   window.RosterWork.escalasPainelRemanejar = { abrir: abrir };

@@ -6,7 +6,10 @@
      (escala_ciclo_salvar_lote, pelo escala_painel_salvar);
    - confirmar: a lista do que acontece com as trocas e folgas a
      partir do dia (escala_ciclo_retirar_analisar; as extras ficam) e
-     a confirmação, antes de marcar quem sai ou muda de ciclo;
+     a confirmação, antes de marcar quem sai ou muda de ciclo (a aba
+     Ciclo); o Adicionar e o Remover militar mostram a mesma lista na
+     própria sub-tela (analisarSair, analisarMudar e o efeito,
+     molde tpl-escala-ciclo-efeito) e marcam ao vivo;
    - datas: as três últimas datas de serviço no ciclo atual, em
      bolinhas, com o dia da semana (o último serviço no ciclo antigo
      de quem muda de ciclo);
@@ -64,20 +67,62 @@
     rascunho = { chave: '', lista: [] };
     avisar();
   }
+  /* a foto do rascunho: a sub-tela ao vivo (escalas-painel-editar.js) volta a ela a cada resposta, sem avisar */
+  function copia() { return { chave: rascunho.chave, lista: rascunho.lista.slice() }; }
+  function voltarA(c) { rascunho = { chave: c.chave, lista: c.lista.slice() }; }
   /* "Sai do ciclo em 29/10" (o selo da linha marcada) */
   function textoMarcado(mudanca, iso) { return L().cicloMarcado[mudanca.tipo].replace('{data}', diaMes(iso)); }
 
   /* ---------- as ações: marcam no rascunho ---------- */
 
+  /* o que acontece com as trocas, folgas e extras dele a partir de desde (escala = o texto do item da escala): uma
+     Promise de { itens, nota } ou { erro } */
+  function analisar(unidadeId, cpf, desde, escala) {
+    return RosterWork.escalasDados.cicloRetirarAnalisar(unidadeId, cpf, desde).then(function (a) {
+      if (!a || !a.success) return { erro: (a && a.error) || RosterWork.mensagens.saida.falhaLista };
+      return RosterWork.avisoSaida(a.pendencias, { tipo: 'tirar', escala: escala });
+    });
+  }
+  /* quem sai do ciclo a partir do dia, e quem muda de ciclo (o último serviço no ciclo atual, ou nenhum) */
+  function analisarSair(unidadeId, iso, m) { return analisar(unidadeId, m.cpf, iso, RosterWork.mensagens.saida.escalaTirar); }
+  function analisarMudar(unidadeId, iso, m, ultimo) {
+    var data = diaMes(iso);
+    return analisar(unidadeId, m.cpf, ultimo ? diaSeguinte(ultimo) : iso,
+      ultimo ? L().cicloEscalaUltimo(diaMes(ultimo), data) : L().cicloEscalaMudar(data));
+  }
+
   /* textos = { mensagem, escala, botao }; desde = o dia de onde a lista conta (sem ele, o iso); aoConfirmar(itens) */
   function confirmar(unidadeId, iso, cpf, textos, aoConfirmar, desde) {
-    var S = RosterWork.mensagens.saida;
-    RosterWork.escalasDados.cicloRetirarAnalisar(unidadeId, cpf, desde || iso).then(function (a) {
-      if (!a || !a.success) { RosterWork.avisar({ tipo: 'erro', mensagem: (a && a.error) || S.falhaLista }); return; }
-      var aviso = RosterWork.avisoSaida(a.pendencias, { tipo: 'tirar', escala: textos.escala });
+    analisar(unidadeId, cpf, desde || iso, textos.escala).then(function (aviso) {
+      if (aviso.erro) { RosterWork.avisar({ tipo: 'erro', mensagem: aviso.erro }); return; }
       RosterWork.confirmar({ tipo: 'aviso', mensagem: textos.mensagem, itens: aviso.itens, nota: aviso.nota,
         textoConfirmar: textos.botao, aoConfirmar: function () { aoConfirmar(aviso.itens); } });
     });
+  }
+
+  /* o efeito na sub-tela (o Adicionar e o Remover militar): a nota com a lista do que acontece, no lugar do marcador.
+     Devolve { mostrar(aviso), esconder() } */
+  function efeito(marcador) {
+    var el = RosterWork.tpl('tpl-escala-ciclo-efeito');
+    if (!el || !marcador) return { mostrar: function () {}, esconder: function () {} };
+    marcador.replaceWith(el);
+    var lista = el.querySelector('.escala-ciclo-efeito-lista'), nota = el.querySelector('.escala-ciclo-efeito-nota');
+    return {
+      mostrar: function (aviso) {
+        lista.textContent = '';
+        (aviso.itens || []).forEach(function (it) {
+          var li = RosterWork.tpl('tpl-escala-ciclo-efeito-item');
+          if (!li) return;
+          li.querySelector('.nota-titulo').textContent = it.titulo || '';
+          li.querySelector('.escala-ciclo-efeito-texto').textContent = it.texto || '';
+          lista.appendChild(li);
+        });
+        nota.textContent = aviso.nota || '';
+        nota.classList.toggle('oculto', !aviso.nota);
+        el.classList.remove('oculto');
+      },
+      esconder: function () { el.classList.add('oculto'); }
+    };
   }
 
   /* monta em lugar as datas (do molde tpl-escala-adicionar-data) e devolve marcar(data) */
@@ -111,9 +156,16 @@
       mensagem: msg().confirmarRemover.replace('{pessoa}', nomeDe(m)).replace('{data}', iso.split('-').reverse().join('/')),
       escala: RosterWork.mensagens.saida.escalaTirar, botao: msg().btnRemover
     }, function (itens) {
-      marcar(unidadeId, iso, { cpf: m.cpf, acao: 'tirar', tipo: 'sair', itens: itens });
+      marcarSair(unidadeId, iso, m, itens);
       if (aoTerminar) aoTerminar();
     });
+  }
+  /* as marcas sem a confirmação (a sub-tela já mostrou a lista; itens = o que acontece) */
+  function marcarSair(unidadeId, iso, m, itens) { marcar(unidadeId, iso, { cpf: m.cpf, acao: 'tirar', tipo: 'sair', itens: itens }); }
+  function marcarMudar(unidadeId, iso, m, ultimo, itens) {
+    var mudanca = { cpf: m.cpf, acao: 'adicionar', tipo: 'mudar', itens: itens };
+    if (ultimo) mudanca.ultimo_servico = ultimo;
+    marcar(unidadeId, iso, mudanca);
   }
 
   /* a saída marcada mais à frente deixa de existir */
@@ -130,9 +182,7 @@
       escala: ultimo ? L().cicloEscalaUltimo(diaMes(ultimo), data) : L().cicloEscalaMudar(data),
       botao: L().botaoMudarCiclo
     }, function (itens) {
-      var mudanca = { cpf: m.cpf, acao: 'adicionar', tipo: 'mudar', itens: itens };
-      if (ultimo) mudanca.ultimo_servico = ultimo;
-      marcar(unidadeId, iso, mudanca);
+      marcarMudar(unidadeId, iso, m, ultimo, itens);
       if (aoTerminar) aoTerminar();
     }, ultimo ? diaSeguinte(ultimo) : iso);
   }
@@ -148,6 +198,8 @@
 
   window.RosterWork.escalasPainelCiclo = {
     doDia: doDia, marcado: marcado, desmarcar: desmarcar, contar: contar, envio: envio, limpar: limpar, textoMarcado: textoMarcado,
-    confirmar: confirmar, datas: datas, entrar: entrar, sair: sair, cancelarSaida: cancelarSaida, mudar: mudar, frasesMudar: frasesMudar
+    copia: copia, voltarA: voltarA,
+    confirmar: confirmar, datas: datas, entrar: entrar, sair: sair, cancelarSaida: cancelarSaida, mudar: mudar, frasesMudar: frasesMudar,
+    analisarSair: analisarSair, analisarMudar: analisarMudar, efeito: efeito, marcarSair: marcarSair, marcarMudar: marcarMudar
   };
 })();

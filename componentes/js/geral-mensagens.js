@@ -424,7 +424,9 @@
       naoAbriu: function (abre) { return 'O pedido abre em ' + abre + '.'; },
       naoPediu: 'Nenhum pedido feito.',
       soPraca: 'A extra é só para praças.',
-      semDiaLivre: function (mes) { return 'Sem dia livre em ' + mes + ': todos os dias têm serviço, troca, folga, férias, licença ou dispensa.'; },
+      /* quem: o militar do pedido feito em nome dele (sem ele, "Você") */
+      semDiaLivre: function (mes, quem) { return (quem || 'Você') + ' não tem dia livre para extra em ' + mes + ', por isso não pode fazer o pedido.'; },
+      verCalendario: 'Ver o calendário',
       pediu: function (p) {
         return 'Pedido enviado em ' + p.enviado_em + ': ' + p.cotas + (p.cotas === 1 ? ' cota' : ' cotas') + (p.so_24h ? ', só 24 h' : '')
           + ', ' + p.quer.length + (p.quer.length === 1 ? ' dia que quer' : ' dias que quer')
@@ -727,10 +729,6 @@
         infoEntraEm: function (data) { return 'Entra no ciclo em ' + data; },
         infoServeHoje: 'De serviço pelo ciclo hoje',
         infoAfastado: function (motivo, data) { return motivo + ' até ' + data; },
-        /* os botões que confirmam cada escolha */
-        porNaFuncao: function (militar, funcao) { return 'Pôr o ' + militar + ' no ' + funcao; },
-        escolhaFuncao: 'Escolha a função',
-        salvarHorario: 'Salvar o horário',
         bancoSim: function (horas) { return 'Contabilizar +' + horas; },
         /* o que acontece com quem sai */
         efeitoSemFuncao: function (militar, funcao) { return 'O ' + militar + ' sai do ' + funcao + ' e fica de serviço sem função.'; },
@@ -752,7 +750,6 @@
         tirarPontualTexto: function (militar, horas) { return 'Este pontual somou +' + horas + ' ao banco de horas do ' + militar + '. No banco de horas:'; },
         tirarPontualSim: function (horas) { return 'Tirar as ' + horas; },
         tirarPontualNao: 'Manter as horas',
-        erroPeriodos: 'Os horários se cruzam. Ajuste os horários.',
         /* O que mudou: uma frase por militar e o atalho */
         mudouEntrou: function (militar, depois) { return 'O ' + militar + ' entrou ' + lista('no', depois) + '.'; },
         mudouPassou: function (militar, antes, depois) { return 'O ' + militar + ' passou ' + lista('do', antes) + ' para ' + lista('o', depois) + '.'; },
@@ -769,7 +766,6 @@
         },
         automaticoBotao: 'Voltar ao automático',
         /* Adicionar militar: somente no dia ou no ciclo, a partir do dia */
-        adicionarNoDia: function (militar, data) { return 'Adicionar o ' + militar + ' em ' + data; },
         ultimoRotulo: function (militar) { return 'Último serviço do ' + militar + ' no ciclo atual'; },
         cicloServeHoje: function (militar, data) {
           return 'O ' + militar + ' já está de serviço pelo ciclo em ' + data + ': começando nesse dia, o ciclo novo cairia nos mesmos dias do atual. Nada muda.';
@@ -781,7 +777,6 @@
             + novo + '.';
         },
         cicloEscalaUltimo: function (ultimo, data) { return 'O último serviço no ciclo atual é em ' + ultimo + ' e o novo começa em ' + data + '.'; },
-        botaoContinuar: 'Continuar',
         botaoMudarCiclo: 'Mudar o ciclo',
         cicloMudar: function (desde, ultimo, novo) {
           return 'No ciclo desde ' + desde + '.' + (ultimo ? ' Último serviço nele: ' + ultimo + '.' : '') + ' O ciclo novo começa em ' + novo + '.';
@@ -794,11 +789,6 @@
         cicloMarcado: { entrar: 'Entra no ciclo em {data}', sair: 'Sai do ciclo em {data}', mudar: 'Muda de ciclo em {data}', cancelar_saida: 'Saída cancelada' },
         cicloConfirmarMudar: function (militar, data) { return 'Mudar o ciclo do ' + militar + ' a partir de ' + data + '? O que vai acontecer:'; },
         cicloEscalaMudar: function (data) { return 'O ciclo atual termina na véspera e o novo começa em ' + data + '.'; },
-        /* Adicionar militar: o botão diz o que falta ou o que vai acontecer */
-        escolhaQuem: 'Escolha quem entra',
-        escolhaQuemSai: 'Escolha quem sai',
-        marqueFuncao: 'Marque uma função',
-        porNoLugar: function (entra, sai) { return 'Pôr o ' + entra + ' no lugar do ' + sai; },
         ninguemDeServico: 'Ninguém de serviço nesse horário',
         /* De quais funções: "Efetivo 3 da ABT-14935, das 13h às 20h"; e o que acontece com quem sai */
         funcaoNoHorario: function (lugar, periodos) { return lugar + (periodos ? ', ' + periodos : ''); },
@@ -809,19 +799,14 @@
         /* o lápis: só quem está no dia; "Ninguém" deixa a função vazia */
         ninguem: 'Ninguém',
         ninguemInfo: 'A função fica vazia',
-        deixarVazio: function (funcao) { return 'Deixar o ' + funcao + ' vazio'; },
         entraSaiDe: function (militar, lugares) { return 'O ' + militar + ' sai ' + lista('do', lugares) + (lugares.length > 1 ? ', que ficam vazios.' : ', que fica vazio.'); },
         ficaVazioDas: function (funcao, periodos) { return 'O ' + funcao + ' fica vazio ' + periodos + '.'; },
-        mudeAlgo: 'Mude o militar ou o horário',
-        escolhaQuemFica: 'Escolha quem fica',
-        /* Remover militar: a origem de cada parte ("Pelo ciclo, das 08h às 20h") e o botão */
+        /* Remover militar: a origem de cada parte ("Pelo ciclo, das 08h às 20h") e o botão da troca */
         parte: function (origem, periodos) {
           var nomes = { ciclo: 'Pelo ciclo', pontual: 'Pontual', troca: 'Por troca' };
           return (nomes[origem] || '') + ', ' + periodos;
         },
-        escolhaParte: 'Escolha o que sai',
         removerDoDia: function (militar) { return 'Remover o ' + militar + ' do dia'; },
-        removerHorario: function (militar) { return 'Remover o ' + militar + ' nesses horários'; },
         /* Remover militar › o remanejado: volta só para a unidade de origem ou sai do dia */
         remanejadoTexto: function (militar, origem, destino, fica, automatico) {
           if (fica) return 'O ' + militar + ' está n' + artigo(origem) + ' ' + origem + ' e n' + artigo(destino) + ' ' + destino + ' neste dia, por remanejamento.';
@@ -833,17 +818,10 @@
         },
         remanejadoPara: function (destino) { return 'Remanejado para ' + artigo(destino) + ' ' + destino; },
         devolverA: function (origem) { return 'Devolver ' + (artigo(origem) === 'a' ? 'à ' : 'ao ') + origem; },
-        devolver: function (militar, origem) { return 'Devolver o ' + militar + (artigo(origem) === 'a' ? ' à ' : ' ao ') + origem; },
-        /* Remanejar militar: Trazer para esta unidade ou Enviar para outra; o que falta responder (o botão), as perguntas,
-           o serviço de quem vai ("Pelo ciclo, das 08h às 08h.") e a nota da distribuição */
+        /* Remanejar militar: Trazer para esta unidade ou Enviar para outra; a lista de militares antes da unidade, as
+           perguntas, o serviço de quem vai ("Pelo ciclo, das 08h às 08h.") e a nota da distribuição */
         comArtigo: function (unidade) { return artigo(unidade) + ' ' + unidade; },
-        escolhaQuemVai: 'Escolha quem vai',
-        escolhaQuemVem: 'Escolha quem vem',
         escolhaUnidade: 'Escolha a unidade',
-        escolhaSeTroca: 'Escolha se é em troca',
-        escolhaMilitarTroca: 'Escolha o militar da troca',
-        escolhaSeSai: 'Escolha se ele sai da unidade de origem',
-        escrevaMotivo: 'Escreva o motivo',
         ninguemNaUnidade: 'Ninguém de serviço nessa unidade',
         remanejarServico: function (lista, unidade) {
           var nomes = { pontual: 'Pontual', troca: 'Por troca', extra: 'De extra n' + artigo(unidade) + ' ' + unidade };
@@ -901,8 +879,6 @@
       painelRecusado: function (erro) { return 'Nada foi salvo. ' + erro; },
       /* o Registrar troca de serviço do menu Editar o dia grava na hora: com mudança não salva, o aviso */
       registrarSalveAntes: 'Salve as alterações antes de registrar a troca.',
-      /* o Remanejar militar também grava na hora */
-      remanejarSalveAntes: 'Salve as alterações antes de remanejar.',
       /* "Condutor da AA-01", "Rancheiro do Rancho" */
       funcaoNoPosto: function (funcao, posto, feminino) { return funcao + (feminino ? ' da ' : ' do ') + posto; },
       dasAs: function (hi, hf) { return 'das ' + hi + ' às ' + hf; },
@@ -938,7 +914,7 @@
         return t.charAt(0).toUpperCase() + t.slice(1);
       },
       folgaSiMesmo: 'Você não pode dar folga a si mesmo.',
-      /* a folga no dia (o lápis da caixa De folga): o horário, o efeito de cancelar e a confirmação */
+      /* a folga no dia (o lápis da caixa De folga): o horário e o efeito de cancelar */
       folgaNoDia: function (periodo, contabilizada) {
         return 'De folga ' + (periodo || 'o dia todo') + ', ' + (contabilizada ? 'contabilizada' : 'não contabilizada');
       },
@@ -946,7 +922,6 @@
         return 'Ao cancelar, o ' + militar + ' volta ao serviço no dia e a distribuição é refeita. '
           + (contabilizada ? 'Como a folga foi contabilizada, as horas dela voltam ao saldo.' : 'Como a folga não foi contabilizada, o saldo dele não muda.');
       },
-      confirmarCancelarFolga: function (militar, data) { return 'Cancelar a folga do ' + militar + ' em ' + data + '?'; },
       falhaAcaoCiclo: 'Não foi possível alterar o ciclo. Tente de novo.',
       /* embaixo do prefixo, na troca de viatura com data */
       noLugarDe: 'No lugar da {prefixo} até {data}',
@@ -2102,7 +2077,6 @@
       copiarMensagem: 'Copiar mensagem',
       mensagemCopiada: 'Mensagem copiada',
       cancelarLink: 'Cancelar link',
-      cancelarFolga: 'Cancelar folga',
       salvar: 'Salvar',
       /* modal do banco de horas (folga e pontual) */
       contabilizar: 'Contabilizar',

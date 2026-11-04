@@ -14,7 +14,7 @@
    caixa é de um militar e de uma unidade (a leitura do dia dela),
    com a sua escolha.
    API: RosterWork.escalasPainelOnde.criar(caixa, cfg) devolve
-   { atualizar(), reiniciar(), estado(), respondido(), falta(),
+   { atualizar(), reiniciar(), estado(), respondido(), falta() (a escolha está pela metade),
      quem(texto), aplicar(pontual) };
    cfg = { dados() (a leitura do dia da unidade onde ele entra),
            periodos() (os horários dele), cpf() (quem entra),
@@ -131,11 +131,11 @@
       return est.onde === 'sistema' || (est.onde === 'funcao' && !!est.posto && !!est.funcao)
         || (est.onde === 'lugar' && !!est.sai && est.funcoes.some(Boolean));
     }
-    /* o que falta responder, no texto do botão ('' = respondido) */
+    /* a escolha está pela metade (a função, ou quem sai e de quais funções) */
     function falta() {
-      if (est.onde === 'funcao') return est.funcao ? '' : L().escolhaFuncao;
-      if (est.onde === 'lugar') return !est.sai ? L().escolhaQuemSai : !est.funcoes.some(Boolean) ? L().marqueFuncao : '';
-      return '';
+      if (est.onde === 'funcao') return !est.funcao;
+      if (est.onde === 'lugar') return !est.sai || !est.funcoes.some(Boolean);
+      return false;
     }
 
     /* põe a escolha no rascunho do Dia: o sistema refaz o dia (quem está fixado fica), a função escolhida ou as funções

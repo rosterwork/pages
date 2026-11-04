@@ -103,13 +103,15 @@
   }
 
   /* o botão do pedido (a ação do militar), no passo Pedido: aparece com o pedido aberto ou já feito, e só para praças.
-     Aberto, Fazer ou Mudar o pedido (escuro); fechado, Ver o pedido (branco) com a data em que fechou ao lado */
+     Aberto, Fazer ou Mudar o pedido (escuro); sem nenhum dia livre no mês, Ver o calendário (branco: não há pedido a
+     fazer); fechado, Ver o pedido (branco) com a data em que fechou ao lado */
   function botaoPedido() {
     var r = estado, p = r.prazo, aberto = p.estado === 'aberto', fechado = !aberto && p.estado !== 'antes';
+    var semDia = aberto && r.min_datas === 0;
     var pode = !(r.militar && r.militar.praca === false) && (aberto || !!r.pedido);
     el.pedir.classList.toggle('oculto', !pode);
-    el.pedir.classList.toggle('botao--primario', aberto);
-    el.pedir.textContent = aberto ? (r.pedido ? msg().mudar : msg().fazer) : msg().ver;
+    el.pedir.classList.toggle('botao--primario', aberto && !semDia);
+    el.pedir.textContent = semDia ? msg().verCalendario : aberto ? (r.pedido ? msg().mudar : msg().fazer) : msg().ver;
     el.fechado.textContent = fechado ? msg().fechadoEm(br(p.fecha)) : '';
     el.fechado.classList.toggle('oculto', !pode || !fechado);
   }

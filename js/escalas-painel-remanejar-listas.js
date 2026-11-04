@@ -2,8 +2,8 @@
    ESCALAS — as listas do Remanejar militar
    (escalas-painel-remanejar.js): as unidades da companhia que você
    administra, quem está de serviço numa unidade no dia (com o ícone
-   de origem e o horário), as colocações manuais que saem com quem
-   sai e o caminho de volta do Desfazer do resumo.
+   de origem e o horário) e as colocações manuais que saem com quem
+   sai.
    RosterWork.escalasPainelRemanejarListas.
    ============================================================ */
 (function () {
@@ -51,7 +51,6 @@
   }
 
   function temExtra(item) { return item.janelas.some(function (j) { return j.origem === 'extra'; }); }
-  function temOutro(item) { return item.janelas.some(function (j) { return j.origem !== 'extra'; }); }
 
   /* as colocações manuais de quem sai, nos postos da unidade de onde ele sai, ficam de fora */
   function cortarNaOrigem(r, cpf, dadosOrigem) {
@@ -63,24 +62,6 @@
     });
   }
 
-  /* o caminho de volta, para o Desfazer do resumo: a camada manual de antes, quem foi remanejado devolvido e a extra
-     de volta à unidade de onde saiu (o militar não é avisado; a Extrajornada avisa a volta da extra) */
-  function voltarDe(itens, ajustesAntes, motivo) {
-    return function (r) {
-      var d = (r && r.dia) || {};
-      return {
-        ajustes: ajustesAntes,
-        antes: { ajustes: d.ajustes_salvos || [], pontuais: (d.pontuais || []).map(function (x) { return { cpf: x.cpf, periodos: x.periodos || [] }; }) },
-        silencioso: true,
-        devolver: itens.filter(function (i) { return i.outro; }).map(function (i) { return i.cpf; }),
-        remanejar: itens.filter(function (i) { return i.extra; }).map(function (i) {
-          return { cpf: i.cpf, origem: i.destino, destino: i.origem, fica: false, so_extra: true, motivo: motivo };
-        })
-      };
-    };
-  }
-
   window.RosterWork.escalasPainelRemanejarListas = { lerUnidades: lerUnidades, unidadesLidas: function () { return !!unidades; },
-    outrasDe: outrasDe, deServico: deServico, temExtra: temExtra, temOutro: temOutro, cortarNaOrigem: cortarNaOrigem,
-    voltarDe: voltarDe };
+    outrasDe: outrasDe, deServico: deServico, temExtra: temExtra, cortarNaOrigem: cortarNaOrigem };
 })();

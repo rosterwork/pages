@@ -17,8 +17,7 @@
    do menu Editar o dia, para o admin). O Solicitar troca e o
    Registrar troca de serviço abrem ali o formulário da troca
    (escalas-painel-troca.js); o Registrar grava na hora, fora do
-   rascunho: só sem mudança não salva. O Remanejar militar também
-   (escalas-painel-remanejar.js).
+   rascunho: só sem mudança não salva.
    Cada mudança vai para o rascunho do dia, e a lista mostra o dia
    como vai ficar (a prévia, escala_previa, já com o Ciclo que
    espera o Salvar), com a nota O que
@@ -28,14 +27,19 @@
    aba (trocar de dia e fechar o painel perguntam antes). Rascunho:
    { ajustes, pontuais, estornar, folgas, folgas_cancelar,
    observacoes, abertas (as funções abertas sem ninguém, só na
-   prévia: salvas vazias, somem), devolver, automatico (o
+   prévia: salvas vazias, somem), remanejar, devolver, automatico (o
    sistema decide o dia de novo, sem devolver cada um ao lugar de
    antes: o Voltar ao automático e o Adicionar com O sistema
    distribui) }.
-   A edição da linha, o Adicionar e o Remover militar (sub-telas) e a
-   folga no dia (sub-tela) ficam em escalas-painel-linha.js,
-   -adicionar.js, -remover.js e -militar.js e usam a API daqui
-   (.sub); o botão que confirma põe a mudança no rascunho.
+   A edição da linha, o Adicionar, o Remover e o Remanejar militar
+   (sub-telas) e a folga no dia (sub-tela) ficam em
+   escalas-painel-linha.js, -adicionar.js, -remover.js,
+   -remanejar.js e -militar.js e usam a API daqui (.sub). Não têm
+   botão próprio: enquanto se responde, a mudança entra no rascunho
+   ao vivo (.sub.aoVivo, sobre a foto de quando a sub-tela ou o lápis
+   abriu) e as telas mostram como fica; o Voltar ao dia e o X do lápis
+   guardam o que foi respondido como um passo do desfazer, e o Salvar
+   do rodapé grava tudo.
    O "Como fica a escala" do painel de decisão (Trocas e Folgas) também,
    no modo comparação (opção comparar): só leitura, com quem saiu
    riscado na função de onde saiu, quem entra pelo pedido com o "Novo"
@@ -52,7 +56,8 @@
                         //   sugestao, ultima: { mudou, sugestao } (a nota O que mudou da última gravação) }
   var base = null;      // o dia gravado (a última leitura): { dados, ajustes, pontuais }
   var rasc = null;      // a mudança em andamento, sobre o dia gravado
-  var foto = null;      // rascunho ao abrir uma sub-tela (o Cancelar volta a ele)
+  var vivo = null;      // a sub-tela ou o lápis aberto: { foto (o rascunho do Dia quando abriu), ciclo (o do Ciclo),
+                        //   mudou (o Dia mudou ao vivo), travado (pergunta pela metade ou conflito: o Salvar desliga) }
   var pilhaDesfazer = [];  // os rascunhos de antes de cada mudança ainda não salva (o Desfazer volta um passo)
   var pilhaRefazer = [];   // os rascunhos desfeitos
   var dono = '';        // o dia do rascunho (unidade|dia): voltar de outra aba ao mesmo dia o encontra
@@ -126,19 +131,19 @@
     return n;
   }
 
-  /* o rascunho mudou o dia gravado? (funções, pontuais, folgas dadas ou canceladas, observações, remanejados devolvidos,
-     ou o Voltar ao automático) */
+  /* o rascunho mudou o dia gravado? (funções, pontuais, folgas dadas ou canceladas, observações, remanejados ou
+     devolvidos, ou o Voltar ao automático) */
   function haMudanca() {
     if (!rasc || !base) return false;
     return !!rasc.automatico || !mesmosAjustes(base.ajustes, rasc.ajustes) || difPontuais() > 0 || rasc.folgas.length > 0
       || rasc.folgas_cancelar.length > 0 || rasc.observacoes.adicionar.length > 0 || rasc.observacoes.remover.length > 0
-      || rasc.abertas.length > 0 || rasc.devolver.length > 0;
+      || rasc.abertas.length > 0 || rasc.remanejar.length > 0 || rasc.devolver.length > 0;
   }
 
   /* o rascunho recomeça do dia gravado */
   function novoRascunho() {
     rasc = { ajustes: copiar(base.ajustes), pontuais: copiar(base.pontuais), estornar: [], folgas: [], folgas_cancelar: [],
-      observacoes: { adicionar: [], remover: [] }, abertas: [], devolver: [] };
+      observacoes: { adicionar: [], remover: [] }, abertas: [], remanejar: [], devolver: [] };
   }
 
   /* o dia gravado (a leitura, ou o que o banco devolve ao gravar) vira a base */
@@ -155,21 +160,26 @@
     ctx.chaveDados = JSON.stringify(paraPrevia());
   }
 
-  /* o que vai à prévia (o dia como vai ficar; as observações não mudam a escala) */
+  /* o que vai à prévia (o dia como vai ficar; as observações e o motivo do remanejamento não mudam a escala: escrever
+     não refaz a prévia) */
   function paraPrevia() {
     var r = { ajustes: rasc.ajustes, folgas: rasc.folgas };
     if (difPontuais() > 0) r.pontuais = rasc.pontuais;
     if (rasc.folgas_cancelar.length) r.folgas_cancelar = rasc.folgas_cancelar;
     if (rasc.abertas.length) r.abertas = rasc.abertas;
+    if (rasc.remanejar.length) {
+      r.remanejar = rasc.remanejar.map(function (x) { return { cpf: x.cpf, origem: x.origem, destino: x.destino, fica: x.fica }; });
+    }
     if (rasc.devolver.length) r.devolver = rasc.devolver;
     if (rasc.automatico) r.automatico = true;
     return r;
   }
-  /* o que vai ao banco no Salvar (com o automatico, o sistema distribui o dia de novo); as funções abertas não vão:
-     a que ficou vazia some */
+  /* o que vai ao banco no Salvar (com o automatico, o sistema distribui o dia de novo; o remanejar, com o motivo); as
+     funções abertas não vão: a que ficou vazia some */
   function paraSalvar() {
     var r = paraPrevia();
     delete r.abertas;
+    if (rasc.remanejar.length) r.remanejar = copiar(rasc.remanejar);
     r.estornar = rasc.estornar;
     r.folgas_cancelar = rasc.folgas_cancelar;
     r.observacoes = rasc.observacoes;
@@ -416,34 +426,67 @@
     rasc.devolver = rasc.devolver.filter(function (x) { return x !== cpf; });
   }
 
-  /* o que vai ao banco numa mudança que grava na hora (o Remanejar): fn mexe no rascunho, a cópia sai pronta para gravar
-     (com o "antes") e o rascunho volta como estava; ele só muda depois de gravar, quando o dia é lido de novo */
-  function paraGravarCom(fn) {
-    var antes = copiar(rasc);
-    fn(rasc);
-    var r = paraGravar();
-    rasc = antes;
-    return r;
+  /* Remanejar militar: lista = [{ cpf, origem, destino, fica, motivo }] (o banco refaz as duas unidades no dia) */
+  function remanejar(lista) {
+    var cpfs = lista.map(function (x) { return x.cpf; });
+    rasc.remanejar = rasc.remanejar.filter(function (x) { return cpfs.indexOf(x.cpf) < 0; }).concat(copiar(lista));
   }
 
   function pontualSalvo(cpf) { return (base.pontuais || []).some(function (x) { return x.cpf === cpf; }); }
 
-  /* uma mudança (na lista ou numa sub-tela): o rascunho de antes entra no desfazer, o refazer zera, e a lista mostra a
-     prévia; nada grava até o Salvar do rodapé */
+  /* uma mudança da lista: o rascunho de antes entra no desfazer, o refazer zera, e a lista mostra a prévia; nada grava
+     até o Salvar do rodapé. O lápis aberto guarda a mudança dele antes (um passo próprio) */
   function passo(antes) { pilhaDesfazer.push(antes); pilhaRefazer = []; }
-  function mudar(fn) { if (!rasc) return; passo(copiar(rasc)); fn(); desenhar(); }
+  function mudar(fn) { if (!rasc) return; fecharLinha('guardar'); passo(copiar(rasc)); fn(); desenhar(); }
+
+  /* ---------- ao vivo (as sub-telas e o lápis) ---------- */
+
+  /* o lápis aberto: 'guardar' (a mudança dele fica, sem redesenhar a lista), 'largar' (depois de salvar ou descartar)
+     ou sem modo (fica e a lista mostra o dia como vai ficar) */
+  function fecharLinha(modo) { if (RosterWork.escalasPainelLinha) RosterWork.escalasPainelLinha.fechar(modo); }
+
+  /* abre a mudança ao vivo: a foto do rascunho do Dia e do Ciclo de agora */
+  function comecarVivo() {
+    if (!rasc) return;
+    var C = RosterWork.escalasPainelCiclo;
+    vivo = { foto: copiar(rasc), ciclo: C ? C.copia() : null, mudou: false, travado: false };
+  }
+  /* a resposta mudou: o rascunho volta à foto e fn põe nele a mudança de agora (fn nulo: pergunta sem resposta).
+     travado = pergunta pela metade ou conflito: o Salvar do rodapé fica desligado até resolver */
+  function aoVivo(fn, travado) {
+    if (!vivo || !rasc) return;
+    var C = RosterWork.escalasPainelCiclo;
+    rasc = copiar(vivo.foto);
+    if (C && vivo.ciclo) C.voltarA(vivo.ciclo);
+    if (fn) fn();
+    vivo.mudou = JSON.stringify(rasc) !== JSON.stringify(vivo.foto);
+    vivo.travado = !!travado;
+    avisarRascunho();
+  }
+  /* o Voltar ao dia e o X do lápis: o que foi respondido fica, como um passo do desfazer. Devolve true quando o Dia
+     mudou (a mudança do Ciclo fica no rascunho do Ciclo) */
+  function terminarVivo() {
+    if (!vivo) return false;
+    var v = vivo;
+    vivo = null;
+    if (v.mudou) passo(v.foto);
+    if (v.travado) avisarRascunho();   // o Salvar volta a ligar
+    return v.mudou;
+  }
 
   /* ---------- prévia e gravação ---------- */
 
+  /* enquanto a lista carrega, o menu Editar o dia e o Imprimir esperam (a sub-tela abriria com o dia de antes) */
   function mostrarCarregando() {
+    ctx.carregando = true;
+    var menu = document.querySelector('.painel-lateral .escala-edicao-menu > .botao');
+    if (menu) menu.disabled = true;
     ctx.corpo.textContent = '';
     var no = RosterWork.tpl('tpl-escala-distribuicao-carregando');
     if (no) ctx.corpo.appendChild(no);
-    /* enquanto a prévia carrega, o Aplicar da sub-tela fica desligado */
-    var b = ctx.rodape && ctx.rodape.querySelector('.escala-sub-aplicar');
-    if (b) b.disabled = true;
   }
   function mostrarFalha() {
+    pronta();
     ctx.corpo.textContent = '';
     var no = RosterWork.tpl('tpl-escala-distribuicao-estado');
     if (no) { no.textContent = msg().falhaCarregar; ctx.corpo.appendChild(no); }
@@ -453,9 +496,11 @@
      A 1ª vez lê o dia */
   function desenhar() {
     if (!ctx) return;
+    /* a lista é refeita: o lápis aberto e a sub-tela guardam o que já foi respondido */
+    fecharLinha('guardar');
+    terminarVivo();
     ctx.emSub = false;
-    foto = null;
-    /* de volta à lista: o rodapé da sub-tela (o Cancelar e o botão que aplica) sai, e o Salvar do rodapé largo volta */
+    /* de volta à lista: o rodapé próprio da sub-tela (o da troca) sai, e o Salvar do rodapé largo volta */
     if (ctx.rodape) { ctx.rodape.textContent = ''; ctx.rodape.classList.add('oculto'); }
     if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
     if (base) {
@@ -482,6 +527,7 @@
     ctx.dadosAntes = dados;
     /* com mudança esperando o Salvar na outra aba (o Ciclo), o dia já como vai ficar */
     if (editavel() && RosterWork.escalasPainelSalvar && RosterWork.escalasPainelSalvar.paraPrevia()) { mostrarPrevia(); return; }
+    pronta();
     renderLista(dados);
   }
 
@@ -507,8 +553,16 @@
     });
   }
 
+  /* a lista chegou: o menu Editar o dia volta a ligar */
+  function pronta() {
+    ctx.carregando = false;
+    var menu = document.querySelector('.painel-lateral .escala-edicao-menu > .botao');
+    if (menu) menu.disabled = !!ctx.salvando;
+  }
+
   /* desenha o dia (o gravado ou a prévia); a nota O que mudou compara com o que estava na tela */
   function exibir(dados) {
+    pronta();
     var antes = ctx.dados, sugestao = ctx.sugestao || null;
     ctx.sugestao = null;
     ctx.ultima = null;
@@ -553,6 +607,7 @@
   /* desfazer: o rascunho volta um passo (nada foi gravado) */
   function desfazerPasso() {
     if (!podeDesfazer()) return;
+    fecharLinha('guardar');   // a mudança do lápis aberto vira o passo que se desfaz
     pilhaRefazer.push(copiar(rasc));
     rasc = pilhaDesfazer.pop();
     desenhar();
@@ -561,6 +616,8 @@
   /* refazer: o passo desfeito volta ao rascunho */
   function refazerPasso() {
     if (!podeRefazer()) return;
+    fecharLinha('guardar');   // a mudança do lápis aberto é um passo novo: o refazer some
+    if (!pilhaRefazer.length) { desenhar(); return; }
     pilhaDesfazer.push(copiar(rasc));
     rasc = pilhaRefazer.pop();
     desenhar();
@@ -581,7 +638,7 @@
        formulário da troca ali mesmo */
     var menu = ctx.admin ? RosterWork.tpl('tpl-escala-edicao-acoes') : null;
     if (menu) {
-      menu.querySelector('.botao').disabled = !!ctx.salvando;
+      menu.querySelector('.botao').disabled = !!ctx.salvando || !!ctx.carregando;
       var acoes = {
         adicionar: function () { if (RosterWork.escalasPainelAdicionar) RosterWork.escalasPainelAdicionar.abrir(); },
         remover: function () { if (RosterWork.escalasPainelRemover) RosterWork.escalasPainelRemover.abrir(); },
@@ -589,7 +646,7 @@
         troca: function () { abrirTroca(true); }
       };
       [].forEach.call(menu.querySelectorAll('[data-acao]'), function (b) {
-        b.addEventListener('click', function () { if (ctx && !ctx.salvando) acoes[b.getAttribute('data-acao')](); });
+        b.addEventListener('click', function () { if (ctx && !ctx.salvando && !ctx.carregando) acoes[b.getAttribute('data-acao')](); });
       });
       sub.appendChild(menu);
     }
@@ -1062,7 +1119,7 @@
   function renderLista(dados) {
     var p = pecas();
     var corpo = ctx.corpo;
-    if (RosterWork.escalasPainelLinha) RosterWork.escalasPainelLinha.fechar();
+    fecharLinha('guardar');
     corpo.textContent = '';
     p.anexarProblemas(dados);   // CNH, regra, exclusivo e grau de cada militar (do banco)
     if (editavel()) notaMudou(corpo);
@@ -1121,68 +1178,58 @@
     montar(ctx.corpo, ctx.rodape, ctx.unidadeId, ctx.iso, { admin: ctx.admin });
   }
 
-  /* ---------- sub-telas (Adicionar militar e a folga no dia) ---------- */
+  /* ---------- sub-telas (Adicionar, Remover e Remanejar militar e a folga no dia) ---------- */
 
-  /* troca a lista por uma sub-tela: "Voltar ao dia" no topo e Cancelar · Aplicar no rodapé.
-     montar(corpo) desenha o conteúdo; aoAplicar() faz a mudança e chama concluirSub(). Sem textoAplicar (a folga
-     no dia, que grava pelo botão dela), a sub-tela fica sem rodapé e a saída é o Voltar ao dia */
-  function abrirSub(textoAplicar, montarConteudo, aoAplicar) {
+  /* troca a lista por uma sub-tela: "Voltar ao dia" no topo e, embaixo, só o rodapé largo da página (Cancelar e
+     Salvar). montar(corpo) desenha o conteúdo; cada resposta põe a mudança no rascunho ao vivo (aoVivo) */
+  function abrirSub(montarConteudo) {
     if (!ctx || !rasc || !ctx.admin || ctx.salvando) return;
-    if (!ctx.emSub) foto = copiar(rasc);   // de uma sub-tela para outra, a foto continua a do dia
+    fecharLinha('guardar');
+    comecarVivo();
     ctx.emSub = true;
     ctx.comHistorico = false;
-    ctx.aplicarTravado = false;
+    ctx.acaoPropria = null;
     if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
     montarSubcabecalho();
     var corpo = ctx.corpo;
     corpo.textContent = '';
     var voltar = RosterWork.tpl('tpl-escala-sub-voltar');
-    if (voltar) { voltar.addEventListener('click', cancelarSub); corpo.appendChild(voltar); }
+    if (voltar) { voltar.addEventListener('click', concluirSub); corpo.appendChild(voltar); }
+    if (ctx.rodape) { ctx.rodape.textContent = ''; ctx.rodape.classList.add('oculto'); }
     montarConteudo(corpo);
-    var rodape = ctx.rodape;
+    avisarRascunho();
+  }
+  /* o rodapé próprio da sub-tela, só para o que grava na hora (o Remover › por troca): Cancelar (volta ao dia) e o
+     botão que diz o que faz; enquanto ele aparece, o rodapé largo some. texto vazio: some */
+  function rodapeProprio(texto, ligado, aoClicar) {
+    var rodape = ctx && ctx.rodape;
     if (!rodape) return;
-    rodape.textContent = '';
-    if (!textoAplicar) { rodape.classList.add('oculto'); return; }
-    var tpl = document.getElementById('tpl-escala-sub-acoes');
-    if (tpl) rodape.appendChild(tpl.content.cloneNode(true));
-    rodape.classList.remove('oculto');
-    var cancelar = rodape.querySelector('.escala-sub-cancelar');
-    var aplicar = rodape.querySelector('.escala-sub-aplicar');
-    if (cancelar) cancelar.addEventListener('click', cancelarSub);
-    if (aplicar) {
-      aplicar.textContent = textoAplicar;
-      aplicar.disabled = ctx.aplicarTravado;
-      aplicar.addEventListener('click', function () { aoAplicar(); });
+    if (!texto) { ctx.acaoPropria = null; rodape.textContent = ''; rodape.classList.add('oculto'); return; }
+    ctx.acaoPropria = aoClicar || null;
+    var b = rodape.querySelector('.escala-sub-aplicar');
+    if (!b) {
+      rodape.textContent = '';
+      var tpl = document.getElementById('tpl-escala-sub-acoes');
+      if (tpl) rodape.appendChild(tpl.content.cloneNode(true));
+      var cancelar = rodape.querySelector('.escala-sub-cancelar');
+      b = rodape.querySelector('.escala-sub-aplicar');
+      if (cancelar) cancelar.addEventListener('click', concluirSub);
+      if (b) b.addEventListener('click', function () { if (ctx && ctx.acaoPropria) ctx.acaoPropria(); });
     }
+    if (b) { b.textContent = texto; b.disabled = !ligado; }
+    rodape.classList.remove('oculto');
   }
-  /* a sub-tela desliga o botão de confirmar enquanto há conflito (ex.: horário que cruza o que o militar já tem) */
-  function travarAplicar(travado) {
-    if (!ctx) return;
-    ctx.aplicarTravado = !!travado;
-    var aplicar = ctx.rodape && ctx.rodape.querySelector('.escala-sub-aplicar');
-    if (aplicar) aplicar.disabled = ctx.aplicarTravado;
-  }
-  /* o texto do botão de confirmar muda com a escolha da sub-tela (ex.: Adicionar e Continuar) */
-  function rotuloAplicar(texto) {
-    var aplicar = ctx && ctx.rodape && ctx.rodape.querySelector('.escala-sub-aplicar');
-    if (aplicar) aplicar.textContent = texto;
-  }
-  /* Cancelar: volta ao rascunho de antes da sub-tela. Aplicar: a mudança fica no rascunho, como um passo do desfazer */
-  function cancelarSub() {
-    if (!ctx || ctx.salvando) return;
-    if (foto) rasc = foto;
-    else if (base) novoRascunho();
-    desenhar();
-  }
-  function concluirSub() { if (!ctx) return; if (foto) passo(foto); desenhar(); }
+  /* Voltar ao dia: o que foi respondido fica no rascunho, como um passo do desfazer, e a lista mostra como fica */
+  function concluirSub() { if (!ctx || ctx.salvando) return; terminarVivo(); desenhar(); }
 
   /* o Imprimir do subcabeçalho (escalas-impressao.js): o formulário de impressão no lugar da lista, marcado com o dia e a
      unidade; o Voltar ao dia, o Cancelar e o fim do Gerar PDF voltam à lista. O rascunho não muda (com mudança, o botão
      fica desligado) */
   function abrirImpressao() {
-    if (!ctx || !base || ctx.salvando || !RosterWork.escalasImpressao) return;
-    if (RosterWork.escalasPainelLinha) RosterWork.escalasPainelLinha.fechar();
+    if (!ctx || !base || ctx.salvando || ctx.carregando || !RosterWork.escalasImpressao) return;
+    fecharLinha('guardar');
     if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
+    pedido++;   // a lista que ainda carregava não desenha por cima
     ctx.emSub = true;
     ctx.comHistorico = false;
     montarSubcabecalho();
@@ -1195,16 +1242,19 @@
 
   /* o Solicitar troca e o Registrar troca de serviço (escalas-painel-troca.js): o formulário da troca no lugar da lista,
      com o Voltar ao dia e o calendário no mês do dia. O Registrar grava na hora, fora do rascunho, então com mudança não
-     salva (Dia ou Ciclo) o aviso pede o Salvar antes; registrou, volta ao dia e lê de novo (também depois do Desfazer do
-     resumo, se o painel segue no dia). O pedido do Solicitar não muda a escala: abre com o rascunho, que fica */
+     salva (Dia ou Ciclo) o aviso pede o Salvar antes (o lápis aberto guarda a mudança dele e a lista mostra como fica);
+     registrou, volta ao dia e lê de novo (também depois do Desfazer do resumo, se o painel segue no dia). O pedido do
+     Solicitar não muda a escala: abre com o rascunho, que fica */
   function abrirTroca(registrar) {
-    if (!ctx || ctx.salvando || !RosterWork.escalasPainelTroca || (registrar && !base)) return;
+    if (!ctx || ctx.salvando || ctx.carregando || !RosterWork.escalasPainelTroca || (registrar && !base)) return;
     if (registrar && RosterWork.escalasPainelSalvar && RosterWork.escalasPainelSalvar.contar()) {
+      fecharLinha();
       RosterWork.avisar({ tipo: 'aviso', mensagem: msg().registrarSalveAntes });
       return;
     }
-    if (RosterWork.escalasPainelLinha) RosterWork.escalasPainelLinha.fechar();
+    fecharLinha('guardar');
     if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
+    pedido++;
     ctx.emSub = true;
     ctx.comHistorico = false;
     montarSubcabecalho();
@@ -1216,14 +1266,9 @@
     });
   }
 
-  /* o Remanejar militar (escalas-painel-remanejar.js) grava na hora, fora do rascunho: com mudança não salva (Dia ou
-     Ciclo), o aviso pede o Salvar antes */
+  /* o Remanejar militar (escalas-painel-remanejar.js): uma sub-tela como as outras */
   function abrirRemanejar() {
     if (!ctx || ctx.salvando || !base || !RosterWork.escalasPainelRemanejar) return;
-    if (RosterWork.escalasPainelSalvar && RosterWork.escalasPainelSalvar.contar()) {
-      RosterWork.avisar({ tipo: 'aviso', mensagem: msg().remanejarSalveAntes });
-      return;
-    }
     RosterWork.escalasPainelRemanejar.abrir();
   }
 
@@ -1246,28 +1291,34 @@
     if (!(mesmo && ctx.admin && !ctx.comparar)) {
       rasc = null; base = null; pilhaDesfazer = []; pilhaRefazer = []; dono = '';
     }
-    foto = null;
+    vivo = null;
     if (rodape) { rodape.textContent = ''; rodape.classList.add('oculto'); }
     desenhar();
   }
 
-  /* outra aba abriu (ou o painel fechou): o Dia para de desenhar; o rascunho fica até o Salvar ou o descarte */
+  /* outra aba abriu (ou o painel fechou): o Dia para de desenhar; o rascunho fica até o Salvar ou o descarte (o lápis e
+     a sub-tela abertos guardam o que já foi respondido) */
   function reset() {
     if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
-    if (RosterWork.escalasPainelLinha) RosterWork.escalasPainelLinha.fechar();
+    fecharLinha('guardar');
+    terminarVivo();
     if (RosterWork.escalasPainelTroca) RosterWork.escalasPainelTroca.encerrar();
-    ctx = null; foto = null;
+    ctx = null;
     pedido++;
   }
 
   /* ---------- o Salvar do rodapé (escalas-painel-salvar.js) ---------- */
 
-  /* quantas mudanças o rascunho do dia tem (os passos; 0 = nada a salvar) */
-  function pendentes() { return haMudanca() ? Math.max(1, pilhaDesfazer.length) : 0; }
+  /* quantas mudanças o rascunho do dia tem (os passos, com a da sub-tela ou do lápis aberto; 0 = nada a salvar) */
+  function pendentes() { return haMudanca() ? Math.max(1, pilhaDesfazer.length + (vivo && vivo.mudou ? 1 : 0)) : 0; }
+  /* a sub-tela ou o lápis com pergunta pela metade ou conflito: o Salvar do rodapé fica desligado */
+  function travado() { return !!(vivo && vivo.travado); }
   /* o rascunho do Dia para a prévia das telas: o da gravação e as funções abertas (só na prévia) */
   function previaDia() {
     var r = copiar(paraSalvar());
     if (rasc.abertas.length) r.abertas = copiar(rasc.abertas);
+    /* o motivo do remanejamento não muda a escala: fica fora (escrever não refaz a prévia) */
+    if (r.remanejar) r.remanejar.forEach(function (x) { delete x.motivo; });
     return r;
   }
   /* o que vai ao banco: o rascunho e o dia como a tela leu ("antes": se mudou depois, nada é gravado) */
@@ -1278,6 +1329,8 @@
   }
   /* gravou: o dia gravado vira a base, o rascunho e o desfazer recomeçam e a nota O que mudou vem do banco */
   function aposGravar(r) {
+    fecharLinha('largar');
+    vivo = null;
     pilhaDesfazer = []; pilhaRefazer = [];
     if (!ctx || !ctx.admin || ctx.comparar || !r || !r.dia) { base = null; rasc = null; dono = ''; return; }
     var antes = ctx.dados;
@@ -1286,16 +1339,18 @@
     ctx.sugestao = null;
     ctx.ultima = (r.mudou || []).length ? { mudou: r.mudou, sugestao: null } : null;
     ctx.comHistorico = false;   // o fim do corpo relê o histórico, já com o que foi salvo
-    foto = null;
     ctx.emSub = false;
-    /* gravou de dentro de uma sub-tela (o Remanejar): o rodapé dela sai com ela */
+    ctx.carregando = false;
+    /* gravou de dentro de uma sub-tela: ela sai, e a lista mostra o dia gravado */
     if (ctx.rodape) { ctx.rodape.textContent = ''; ctx.rodape.classList.add('oculto'); }
     montarSubcabecalho();
     renderLista(r.dia);
   }
   /* o Cancelar do rodapé, outro dia ou o dia mudou no banco: o rascunho sai; com o Dia aberto, ele lê o dia de novo */
   function descartar() {
-    pilhaDesfazer = []; pilhaRefazer = []; foto = null;
+    fecharLinha('largar');
+    vivo = null;
+    pilhaDesfazer = []; pilhaRefazer = [];
     base = null; rasc = null; dono = '';
     if (ctx && ctx.admin && !ctx.comparar) recarregar();
     avisarRascunho();
@@ -1321,14 +1376,22 @@
     reset: reset,
     /* o Salvar do rodapé do painel (escalas-painel-salvar.js) */
     pendentes: pendentes,
+    travado: travado,
     previaDia: previaDia,
     paraGravar: paraGravar,
     aposGravar: aposGravar,
     descartar: descartar,
-    /* para a edição da linha (escalas-painel-linha.js: mudar põe a mudança no rascunho como um passo só), o Remover do
-       dia e as sub-telas (escalas-painel-adicionar.js, -remover.js, -remanejar.js e -militar.js) */
+    /* para a edição da linha (escalas-painel-linha.js: ao vivo, como as sub-telas), o Remover do dia (mudar põe a
+       mudança no rascunho como um passo só) e as sub-telas (escalas-painel-adicionar.js, -remover.js, -remanejar.js e
+       -militar.js: aoVivo a cada resposta) */
     sub: {
       mudar: mudar,
+      comecarVivo: comecarVivo,
+      aoVivo: aoVivo,
+      terminarVivo: terminarVivo,
+      largarVivo: function () { vivo = null; },
+      vivoMudou: function () { return !!(vivo && vivo.mudou); },
+      redesenhar: desenhar,
       deixarFuncao: deixarFuncao,
       cortarAjustes: cortarAjustes,
       sugerir: sugerir,
@@ -1338,18 +1401,13 @@
       unidadeId: function () { return ctx && ctx.unidadeId; },
       rascunho: function () { return rasc; },
       abrir: abrirSub,
-      travarAplicar: travarAplicar,
-      rotuloAplicar: rotuloAplicar,
-      botaoAplicar: function () { return ctx && ctx.rodape && ctx.rodape.querySelector('.escala-sub-aplicar'); },
+      rodapeProprio: rodapeProprio,
       concluir: concluirSub,
-      cancelar: cancelarSub,
-      /* volta ao dia sem mudar o rascunho do Dia (a mudança foi para o rascunho do Ciclo) */
-      voltar: cancelarSub,
       aplicarColocacao: aplicarColocacao,
       aplicarMilitar: aplicarMilitar,
       darFolga: darFolga,
       cancelarFolga: cancelarFolga,
-      paraGravarCom: paraGravarCom,
+      remanejar: remanejar,
       devolverRemanejado: devolverRemanejado,
       largarRemanejado: largarRemanejado,
       tirarPontual: tirarPontual,

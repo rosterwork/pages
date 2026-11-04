@@ -6,7 +6,8 @@
    no alto, a nota "Será impresso:" com o resumo e, embaixo dela, o
    aviso (o erro grave da escala); no meio, as caixas da impressão
    (o molde da página); por último, a Prévia (o próprio PDF, no
-   leitor do navegador, refeita a cada mudança, a última pedida vale,
+   leitor do navegador, cada folha inteira num quadro do formato dela,
+   refeita a cada mudança, a última pedida vale,
    com as folhas embaixo; no celular não aparece) e o rodapé
    Cancelar · Gerar PDF (baixa o arquivo da prévia). Aqui também: a
    numeração das caixas à vista (refeita a cada mudança, para a
@@ -34,6 +35,7 @@
   var RW = window.RosterWork = window.RosterWork || {};
 
   var ESPERA = 400;   // ms sem mexer antes da prévia e da conferência
+  var A4 = 297 / 210;  // a altura da folha A4 em vezes a largura (retrato; em paisagem, o inverso)
 
   var form = null;   // o painel aberto: o cfg, o corpo e o rodapé, o seletor, o Mostrar, o arquivo pedido e a url da prévia
   var tokenAviso = 0, esperaAviso = null;     // latest-wins da conferência
@@ -146,6 +148,18 @@
     return arquivo.text().then(function (texto) { return (texto.match(/\/Type\s*\/Page[^s]/g) || []).length; });
   }
 
+  /* o formato da 1ª folha, lido no próprio PDF: 'paisagem', 'retrato' ou null (a página contínua, que não é folha A4) */
+  function formatoDaFolha(arquivo) {
+    return arquivo.text().then(function (texto) {
+      var medida = texto.match(/\/MediaBox\s*\[\s*0\s+0\s+([\d.]+)\s+([\d.]+)\s*\]/);
+      if (!medida) return null;
+      var proporcao = Number(medida[2]) / Number(medida[1]);
+      if (Math.abs(proporcao - A4) < 0.02) return 'retrato';
+      if (Math.abs(proporcao - 1 / A4) < 0.02) return 'paisagem';
+      return null;
+    }, function () { return null; });
+  }
+
   function mostrarCarregandoPrevia(sim) {
     peca('previa-carregando').classList.toggle('carregando-veu--visivel', sim);
   }
@@ -172,11 +186,17 @@
     if (!form || token !== tokenPrevia) return;
     var ref = form;
     pedirArquivo(est).then(function (a) {
+      return formatoDaFolha(a.arquivo).then(function (folha) { a.folha = folha; return a; });
+    }).then(function (a) {
       if (form !== ref || token !== tokenPrevia) return;
       if (form.url) URL.revokeObjectURL(form.url);
       form.url = URL.createObjectURL(a.arquivo);
-      /* o leitor do navegador sem a barra dele, na largura do quadro */
-      peca('previa').src = form.url + '#toolbar=0&navpanes=0&view=FitH';
+      /* o leitor do navegador sem a barra dele: a folha A4 inteira, num quadro do formato dela (view para o Chrome,
+         zoom para o Firefox); a página contínua, na largura do quadro */
+      var quadro = peca('previa');
+      quadro.parentNode.classList.toggle('impressao-previa--paisagem', a.folha === 'paisagem');
+      quadro.parentNode.classList.toggle('impressao-previa--retrato', a.folha === 'retrato');
+      quadro.src = form.url + '#toolbar=0&navpanes=0&' + (a.folha ? 'view=Fit&zoom=page-fit' : 'view=FitH');
       peca('previa-aviso').classList.add('oculto');
       peca('folhas').textContent = a.folhas || '';
       mostrarCarregandoPrevia(false);

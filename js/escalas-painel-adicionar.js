@@ -15,9 +15,14 @@
      volta do que está fixado, mexendo o mínimo.
    - No ciclo: quem está fora entra; quem já está no ciclo escolhe o
      último serviço no ciclo atual entre as três últimas datas (mudar
-     de ciclo); quem já serve pelo ciclo no dia não muda. Vai para o
-     rascunho do ciclo (escalas-painel-ciclo.js).
-   Nada grava até o Salvar do rodapé do painel (escalas-painel-salvar.js).
+     de ciclo), com o que acontece com as trocas, folgas e extras dele
+     (a mesma lista da aba Ciclo, na própria sub-tela); quem já serve
+     pelo ciclo no dia não muda. Vai para o rascunho do ciclo
+     (escalas-painel-ciclo.js).
+   Sem botão próprio: a resposta completa entra no rascunho ao vivo
+   (escalas-painel-editar.js › aoVivo) e as telas mostram como fica;
+   horário em conflito deixa o Salvar desligado. Nada grava até o
+   Salvar do rodapé largo (escalas-painel-salvar.js).
    Trocar uma resposta limpa as que dependiam dela. As listas de quem
    entra e de quem sai ficam em escalas-painel-adicionar-listas.js.
    ============================================================ */
@@ -50,7 +55,8 @@
     if (!api.dados()) return;
     var iso = api.iso(), uid = api.unidadeId(), data = diaMes(iso);
     var est = { como: 'dia', item: null, mil: null, periodos: [], banco: 'sim', ultimo: null, unidade: null };
-    var el = {}, pedido = 0, combo = null, onde = null, livres = null;
+    var el = {}, pedido = 0, combo = null, onde = null, livres = null, efeito = null;
+    var analise = { chave: '', aviso: null, pedido: 0 };   // o que acontece no ciclo de quem muda de ciclo (lido uma vez)
 
     /* a Unidade (só no dia): as unidades com alguém de horas livres; começa na do painel */
     function montarUnidades() {
@@ -175,7 +181,8 @@
       });
       el.regua = RosterWork.horario.criarRegua('afastada');
       if (el.regua) q('.escala-adicionar-regua').appendChild(el.regua);
-      el.marcarBanco = ligarRadios(el.banco, function (v) { est.banco = v; });
+      el.marcarBanco = ligarRadios(el.banco, function (v) { est.banco = v; atualizar(); });
+      efeito = C.efeito(q('.escala-adicionar-efeito'));
       corpo.appendChild(tela);
       carregar();
       atualizar();
@@ -198,27 +205,28 @@
       mostra(el.unidadeCampo, como === 'dia');
       mostra(el.militarRotulo, como === 'dia');
       ['horario', 'ondeBloco', 'banco', 'ultimo', 'mudar', 'info'].forEach(function (k) { mostra(el[k], false); });
+      efeito.esconder();
       nota(el.assume, m && m.assume ? (m.assume === 'chefe_socorro' ? msg().assumeChefe : msg().assumeOficial)(nomeDe(m), '') : '');
-      if (!m) { pronto(L().escolhaQuem, false); return; }
+      if (!m) { api.aoVivo(null, false); return; }
       if (como === 'ciclo') { desenharCiclo(m); return; }
       desenharDia(m);
     }
 
-    /* o botão do rodapé: o texto diz o que falta ou o que vai acontecer; ligado só com tudo respondido */
-    function pronto(texto, ligado) {
-      api.rotuloAplicar(texto);
-      api.travarAplicar(!ligado);
+    /* os horários escolhidos se cruzam entre si */
+    function sobrepostos() {
+      var js = janelas(), soma = function (l) { return l.reduce(function (s, w) { return s + w[1] - w[0]; }, 0); };
+      return soma(H.uniao(js)) !== soma(js);
     }
 
     function desenharDia(m) {
-      var nome = nomeDe(m);
-      /* o horário: o que cruza o que ele já tem no dia fica vermelho e desliga o botão; o dia todo apaga o + */
+      /* o horário: o que cruza o que ele já tem no dia (ou outro horário dele aqui) fica vermelho e desliga o Salvar; o
+         dia todo apaga o + */
       mostra(el.horario, true);
       el.periodos.textContent = '';
-      var diaTodo = minutos() >= 1440;
+      var diaTodo = minutos() >= 1440, sobrepoe = sobrepostos();
       est.periodos.forEach(function (per, i) {
         var linha = RosterWork.horario.linha({
-          hi: per.hi, hf: per.hf, erro: emConflito(per),
+          hi: per.hi, hf: per.hf, erro: emConflito(per) || sobrepoe,
           aoInicio: function (h) { per.hi = h; atualizar(); },
           aoFim: function (h) { per.hf = h; atualizar(); },
           aoRemover: est.periodos.length > 1 ? function () { est.periodos.splice(i, 1); atualizar(); } : null,
@@ -229,23 +237,24 @@
       });
       H.regua(el.regua, ((m.ocupado || []).map(function (o) { return { hi: o.hi, hf: o.hf }; }))
         .concat(est.periodos.map(function (p) { return { hi: p.hi, hf: p.hf, classe: 'novo' }; })));
-      var conflito = est.periodos.some(emConflito);
+      var conflito = est.periodos.some(emConflito) || sobrepoe;
 
       /* onde fica: o sistema, a função escolhida ou no lugar de outro militar (a caixa comum) */
       mostra(el.ondeBloco, true);
       onde.atualizar();
-      var o = onde.estado(), respondido = onde.respondido();
+      var respondido = onde.respondido();
       /* o banco de horas, quando onde fica está respondido */
       mostra(el.banco, respondido);
       el.contabilizar.textContent = L().bancoSim(H.horasTexto(minutos()));
       el.marcarBanco(est.banco);
 
-      if (o.onde === 'funcao') pronto(o.funcao ? L().porNaFuncao(nome, o.funcao) : onde.falta(), respondido && !conflito);
-      else if (o.onde === 'lugar') pronto(respondido ? L().porNoLugar(nome, nomeDe(o.sai)) : onde.falta(), respondido && !conflito);
-      else pronto(L().adicionarNoDia(nome, data), !conflito);
+      /* tudo respondido e sem conflito: ele entra no rascunho (no horário, onde fica e com o banco de horas) */
+      var pronto = respondido && !conflito;
+      api.aoVivo(pronto ? function () { onde.aplicar({ contabilizar: est.banco === 'sim' }); } : null, !pronto);
     }
 
-    /* no ciclo: quem está fora entra; quem já está escolhe o último serviço no ciclo atual; quem já serve no dia não muda */
+    /* no ciclo: quem está fora entra; quem já está no ciclo escolhe o último serviço no ciclo atual e vê o que acontece com
+       as trocas, folgas e extras dele depois dele; quem já serve no dia não muda. Vai para o rascunho do ciclo */
     function desenharCiclo(m) {
       var datas = m.ultimos_servicos || [];
       var mudar = m.estado !== 'fora' && !m.serve_hoje;
@@ -256,33 +265,34 @@
       }
       var frases = mudar ? C.frasesMudar(m, est.ultimo, iso) : null;
       nota(el.mudar, m.serve_hoje ? L().cicloServeHoje(nomeDe(m), data) : frases ? frases.alerta : '');
-      nota(el.info, m.serve_hoje ? '' : frases ? frases.info : L().cicloEntrar(D.diaMesExtenso(iso)));
-      pronto(L().botaoContinuar, !m.serve_hoje);
+      nota(el.info, m.estado === 'fora' && !m.serve_hoje ? L().cicloEntrar(D.diaMesExtenso(iso)) : '');
+      if (m.serve_hoje) { api.aoVivo(null, true); return; }
+      if (m.estado === 'fora') { api.aoVivo(function () { C.entrar(uid, iso, m); }); return; }
+      mudarCiclo(m, est.ultimo);
     }
 
-    /* ---------- aplicar ---------- */
-
-    function aplicar() {
-      var m = est.mil;
-      if (!m) return;
-      if (est.como === 'ciclo') { aplicarCiclo(m); return; }
-      if (est.periodos.some(emConflito)) return;   // o botão já fica desligado
-      var js = janelas(), soma = function (l) { return l.reduce(function (s, w) { return s + w[1] - w[0]; }, 0); };
-      if (soma(H.uniao(js)) !== soma(js)) { RosterWork.avisar({ tipo: 'erro', mensagem: L().erroPeriodos }); return; }
-      if (!onde.respondido()) return;   // o botão já fica desligado
-      onde.aplicar({ contabilizar: est.banco === 'sim' });
-      api.concluir();
+    /* quem muda de ciclo: a lista do que acontece (lida uma vez para cada último serviço) e, com ela, a marca no rascunho do
+       ciclo; enquanto lê, o Salvar espera */
+    function mudarCiclo(m, ultimo) {
+      var chave = m.cpf + '|' + (ultimo || '');
+      if (analise.chave === chave) {
+        if (analise.aviso) { efeito.mostrar(analise.aviso); api.aoVivo(function () { C.marcarMudar(uid, iso, m, ultimo, analise.aviso.itens); }); }
+        else api.aoVivo(null, true);
+        return;
+      }
+      analise.chave = chave;
+      analise.aviso = null;
+      var meu = ++analise.pedido;
+      api.aoVivo(null, true);
+      C.analisarMudar(uid, iso, m, ultimo).then(function (aviso) {
+        if (meu !== analise.pedido || !el.combo.isConnected) return;
+        if (aviso.erro) { analise.chave = ''; RosterWork.avisar({ tipo: 'erro', mensagem: aviso.erro }); return; }
+        analise.aviso = aviso;
+        if (est.mil === m && est.como === 'ciclo' && est.ultimo === ultimo) atualizar();
+      });
     }
 
-    /* quem está fora entra no ciclo; quem já está no ciclo muda de ciclo, vendo antes o que acontece com as trocas, folgas
-       e extras dele depois do último serviço escolhido. Vai para o rascunho do ciclo e volta ao dia */
-    function aplicarCiclo(m) {
-      if (m.serve_hoje) return;   // o botão já fica desligado
-      if (m.estado === 'fora') C.entrar(uid, iso, m, api.voltar);
-      else C.mudar(uid, iso, m, est.ultimo, api.voltar);
-    }
-
-    api.abrir(L().escolhaQuem, montar, aplicar);
+    api.abrir(montar);
   }
 
   window.RosterWork.escalasPainelAdicionar = { abrir: abrir };

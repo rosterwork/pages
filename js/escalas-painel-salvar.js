@@ -12,18 +12,19 @@
    leva a borda tracejada; quando o rascunho muda de verdade, as telas são
    avisadas meio segundo depois do último clique
    (rosterwork_escala_previa); abrir, fechar ou trocar de dia ou de
-   aba sem mudança não as faz ler de novo. A página tem um rodapé só:
-   o do painel (fora dele, na largura toda) leva só o Cancelar e o
-   Aplicar das sub-telas, e enquanto aparece o da página some; as
-   alterações manuais do dia ficam no fim do corpo do Dia.
+   aba sem mudança não as faz ler de novo. As sub-telas e o lápis põem
+   a mudança no rascunho enquanto se responde; com uma pergunta pela
+   metade ou um conflito, o Salvar fica desligado. A página tem um
+   rodapé só: o do painel (fora dele, na largura toda) só aparece no
+   que grava na hora (o Remover › por troca), e enquanto aparece o da
+   página some; as alterações manuais do dia ficam no fim do corpo do
+   Dia.
    API: RosterWork.escalasPainelSalvar.rodape(rodape) limpa e
    esconde o rodapé do painel ao entrar numa aba;
    .atualizar() redesenha o rodapé da página; .contar() soma as
    mudanças das duas; .pendente() diz se há mudança no Dia ou no
    Ciclo; .descartar() tira as do Dia e do Ciclo; .paraPrevia() dá o rascunho para a prévia das telas (null
-   sem mudança); .marcado(unidade, dia) diz se o dia leva a borda;
-   .gravarAgora(dia, voltar) grava na hora o que não passa pelo
-   rascunho (o Remanejar militar), com o Desfazer no resumo.
+   sem mudança); .marcado(unidade, dia) diz se o dia leva a borda.
    ============================================================ */
 (function () {
   'use strict';
@@ -74,8 +75,8 @@
 
   /* ---------- os rodapés ---------- */
 
-  /* o rodapé do painel ao entrar numa aba: limpo e escondido (o painel não tem rodapé próprio; ele só leva o Cancelar e
-     o Aplicar das sub-telas, e o Salvar é o rodapé largo da página) */
+  /* o rodapé do painel ao entrar numa aba: limpo e escondido (o painel não tem rodapé próprio; ele só aparece no que grava
+     na hora, e o Salvar é o rodapé largo da página) */
   function rodape(el) {
     if (!el) return;
     el.textContent = '';
@@ -102,7 +103,7 @@
     el.classList.toggle('oculto', !n);
     el.querySelector('.escala-rodape-salvar-texto').textContent = n ? msg().alteracoesNaoSalvas(n) : '';
     el.querySelector('.escala-painel-cancelar').disabled = salvando;
-    el.querySelector('.escala-painel-salvar').disabled = salvando;
+    el.querySelector('.escala-painel-salvar').disabled = salvando || !!(E() && E().travado());
   }
 
   /* o que as telas mostram do rascunho (vazio sem mudança): o Dia e o Ciclo do dia aberto */
@@ -199,7 +200,7 @@
 
   function gravar(botao) {
     var c = contexto();
-    if (!c || salvando) return;
+    if (!c || salvando || (E() && E().travado())) return;
     var dia = E() && E().pendentes() ? E().paraGravar() : null;
     var ciclo = doCiclo(c).length ? C().envio() : null;
     if (!dia && !ciclo) return;
@@ -210,34 +211,11 @@
     });
   }
 
-  /* grava na hora uma mudança do Dia que não passa pelo rascunho (o Remanejar militar, que só abre sem mudança não
-     salva), pelo mesmo caminho do Salvar. O resumo traz o Desfazer, que grava o caminho de volta: voltar(r) devolve o
-     dia a gravar, a partir do que o banco devolveu. Devolve uma Promise: true quando gravou */
-  function gravarAgora(dia, voltar) {
-    var c = contexto();
-    if (!c || salvando) return Promise.resolve(false);
-    return enviar(c, dia, null, null).then(function (res) {
-      if (!res.ok) { avisarFalha(res); return false; }
-      var log = juntarLogs(res.r.logs || []);
-      if (log && RW.resumo) {
-        RW.resumo.abrirModal(log, {
-          pagina: 'Escala',
-          desfazer: voltar ? function () {
-            var atual = contexto();
-            if (!atual || salvando) return { ok: false };
-            return enviar(atual, voltar(res.r), null, null);
-          } : null
-        });
-      }
-      return true;
-    });
-  }
-
   /* qualquer aviso dos rascunhos (também o painel que abre ou fecha) redesenha o rodapé; as telas, só com mudança */
   window.addEventListener('rosterwork_escala_rascunho', mudou);
   /* fechar ou recarregar o navegador, ou ir para outra página, com mudança no Dia ou no Ciclo: o aviso */
   if (RW.guardaSaida) RW.guardaSaida.registrar(pendente);
 
   RW.escalasPainelSalvar = { rodape: rodape, atualizar: atualizar, contar: contar, pendente: pendente,
-    descartar: descartar, paraPrevia: paraPrevia, marcado: marcado, gravarAgora: gravarAgora };
+    descartar: descartar, paraPrevia: paraPrevia, marcado: marcado };
 })();

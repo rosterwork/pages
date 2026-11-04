@@ -7,7 +7,9 @@
    escalas-impressao-legenda.js). O conteúdo é o do painel do dia
    (postos, funções, militares, horários, sem função, observações),
    no padrão de blocos (Guia visual › Impressão da escala): a unidade é um bloco cinza com o
-   título dentro e cada posto um bloquinho branco com contorno fino.
+   título dentro e cada posto um bloquinho branco com contorno fino,
+   a linha do título de uma borda à outra e a linha fina entre as
+   funções (e entre os grupos das observações), antes da borda.
    O PDF é desenhado aqui, como o canvas do gráfico (exceção REGRAS
    §3/§4): cores lidas do tema (--impressao-*), medidas em pontos
    (A4 = 595 × 842) nas constantes abaixo.
@@ -53,17 +55,20 @@
   var SETA_MARGEM = [0, 0.5, 0, 0];      // alinha a seta ao meio do texto do horário
   var ICONE = 7;                          // ícone de origem antes do nome (o Mostrar), no tamanho do PDF das grades
   var ICONE_MARGEM = [0, 2.5, 0, 0];     // alinha o ícone ao meio do nome
-  var LINHA_FINA = 0.5;                   // contorno do bloquinho branco
+  var LINHA_FINA = 0.5;                   // contorno do bloquinho branco e as linhas dentro dele
   var RAIO = { unidade: 6, posto: 3.5 };  // cantos arredondados do bloco da unidade e do bloquinho
   var ESPACAMENTO_CAIXA_ALTA = 0.6;       // entre letras do título do posto (caixa alta)
   var FONTE = { titulo: 16, data: 11, unidade: 12, detalhe: 9, posto: 8.5, funcao: 8.5, grad: 8.5, nome: 10, hora: 9, texto: 9, rodape: 8 };
   var ALTURA_LINHA = 1.22;                // altura de uma linha de texto da Montserrat, em vezes o tamanho da fonte
   /* margens dentro das células: o deslocamento no topo alinha as letras menores à linha do nome */
   var CELULA = { titulo: [3, 0, 3, 3], funcao: [0, 1.5, 0, 0], militar: [0, 0, 0, 0], hora: [0, 1, 0, 0], vazio: [3, 2, 3, 2] };
-  /* respiros dos blocos: a unidade (lado, topo, entre bloquinhos, base) e o bloquinho (lado, entre colunas, topo, entre linhas, base) */
+  /* respiros dos blocos: a unidade (lado, topo, entre bloquinhos, base) e o bloquinho (lado, entre colunas, topo, entre linhas,
+     base, em cima e embaixo da linha do título) */
   var BLOCO = { lado: 5, topo: 7, vao: 2.5, base: 5 };
-  var BLOQUINHO = { lado: 7, entreColunas: 4, topo: 6, linha: 2, base: 6 };
+  var BLOQUINHO = { lado: 7, entreColunas: 4, topo: 6, linha: 2, base: 6, titulo: 4 };
   var ESPACO = { aposData: 16, entreUnidades: 9 };
+  /* a largura de dentro do bloquinho (a folha sem as margens, o recuo do bloco cinza e o do bloquinho): a linha fina */
+  var LARGURA_DENTRO = 595 - MARGENS[0] - MARGENS[2] - 2 * BLOCO.lado - 2 * BLOQUINHO.lado;
   var A4_ALTURA = 842;
   var ALTURA_UTIL = A4_ALTURA - MARGENS[1] - MARGENS[3] - 50;   // menos o topo, o rodapé e o título do dia
   /* estimativa da altura de uma unidade (pt), com folga de 30%: só as que passam de ALTURA_UTIL são medidas */
@@ -193,18 +198,26 @@
 
   function semLinha() { return 0; }
 
-  /* bloquinho branco (posto, sem função, observações): tabela sem linhas; o fundo branco quadrado só
-     quando "preencher" (o desenho de cantos retos, que também é a medida dos blocos arredondados) */
+  /* bloquinho branco (posto, sem função, observações): tabela com uma linha só, a do título (embaixo dele, de uma borda
+     à outra); o fundo branco quadrado só quando "preencher" (o desenho de cantos retos, que também é a medida dos
+     blocos arredondados) */
   function layoutBloquinho(c, preencher) {
     return {
-      hLineWidth: semLinha,
+      hLineWidth: function (i, no) { return i === 1 && no.table.body.length > 1 ? LINHA_FINA : 0; },
+      hLineColor: function () { return c.borda; },
       vLineWidth: semLinha,
       paddingLeft: function (i) { return i === 0 ? BLOQUINHO.lado : 0; },
       paddingRight: function (i, no) { return i === no.table.widths.length - 1 ? BLOQUINHO.lado : BLOQUINHO.entreColunas; },
-      paddingTop: function (i) { return i === 0 ? BLOQUINHO.topo : BLOQUINHO.linha; },
-      paddingBottom: function (i, no) { return i === no.table.body.length - 1 ? BLOQUINHO.base : BLOQUINHO.linha; },
+      paddingTop: function (i) { return i === 0 ? BLOQUINHO.topo : i === 1 ? BLOQUINHO.titulo : BLOQUINHO.linha; },
+      paddingBottom: function (i, no) { return i === no.table.body.length - 1 ? BLOQUINHO.base : i === 0 ? BLOQUINHO.titulo : BLOQUINHO.linha; },
       fillColor: function () { return preencher ? c.papel : null; }
     };
+  }
+
+  /* a linha fina entre as funções e entre os grupos das observações: uma célula só com o traço, da largura de dentro
+     do bloquinho (para antes da borda) */
+  function linhaFina(c) {
+    return { canvas: [{ type: 'line', x1: 0, y1: 0, x2: LARGURA_DENTRO, y2: 0, lineWidth: LINHA_FINA, lineColor: c.borda }] };
   }
 
   /* título de bloquinho em caixa alta, como o rótulo da caixa na tela (o mesmo texto é o marcador da folha) */
@@ -237,6 +250,7 @@
         alturas.push(alturaLinha(m.periodos));
       });
       if (!daFuncao.length) return;
+      if (linhas.length) linhas.push([Object.assign(linhaFina(c), { colSpan: 3 }), {}, {}]);   // a linha entre as funções
       /* o rótulo da função (mescla Chefe + Condutor = dois rótulos empilhados) ocupa as linhas dela, no meio da
          altura: a biblioteca não centraliza na vertical, então a margem de cima vem da altura aproximada das linhas */
       var rotulos = (f.nomes && f.nomes.length) ? f.nomes : [f.nome];
@@ -272,12 +286,15 @@
     if (!linhas.length) linhas.push({ marcador: t.semDistribuicao, no: { text: t.semDistribuicao, fontSize: FONTE.texto, color: c.suave, margin: CELULA.vazio } });
     if ((item.observacoes || []).length) {
       var tituloObs = tituloBloquinho(t.observacoes);
-      /* os mesmos grupos da tela (Administração, Trocas, Folgas, De outra unidade), cada um com a lista numerada */
-      var gruposObs = gruposObservacoes(item.observacoes).map(function (g) {
-        return [{ stack: [
+      /* os mesmos grupos da tela (Administração, Trocas, Folgas, De outra unidade), cada um com a lista numerada, e a
+         linha fina entre eles */
+      var gruposObs = [];
+      gruposObservacoes(item.observacoes).forEach(function (g, i) {
+        if (i) gruposObs.push([linhaFina(c)]);
+        gruposObs.push([{ stack: [
           { text: g.titulo, bold: true, fontSize: FONTE.texto, color: c.forte, margin: [0, 0, 0, 2] },
           { ol: g.itens.map(RW.mensagens.escala.observacaoTexto), fontSize: FONTE.texto, color: c.texto }
-        ] }];
+        ] }]);
       });
       linhas.push({ marcador: tituloObs, no: { table: { widths: ['*'], body: [
         [{ text: tituloObs, bold: true, fontSize: FONTE.posto, characterSpacing: ESPACAMENTO_CAIXA_ALTA, color: c.forte }]

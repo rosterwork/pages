@@ -1,19 +1,21 @@
 /* ============================================================
    ESCALAS — a folga no dia (o lápis da caixa De folga; só admin)
-   Sub-tela do painel do dia: quem está de folga, o horário, o efeito
-   de cancelar e o Cancelar folga, que confirma e vai para o rascunho do
-   dia (escalas-painel-editar.js; grava no Salvar do rodapé do painel);
-   sem rodapé, a saída é o Voltar ao dia.
+   Sub-tela do painel do dia: quem está de folga, o horário e a
+   pergunta Folga (Manter a folga, já marcada, ou Cancelar a folga,
+   com o efeito embaixo). Cancelar entra no rascunho do dia ao vivo
+   (escalas-painel-editar.js › aoVivo; grava no Salvar do rodapé
+   largo); a saída é o Voltar ao dia.
    ============================================================ */
 (function () {
   'use strict';
 
   window.RosterWork = window.RosterWork || {};
 
+  var conta = 0;   // nome único para os rádios de cada abertura
+
   function ed() { return RosterWork.escalasPainelEditar.sub; }
   function msg() { return RosterWork.mensagens.escala; }
   function nomeDe(m) { return ((m.grad || '') + ' ' + (m.nome || '')).trim(); }
-  function diaMes(iso) { var p = String(iso || '').split('-'); return p.length === 3 ? p[2] + '/' + p[1] : ''; }
 
   /* id = a folga (lancamento_id); as linhas dela no dia dão o horário */
   function abrirFolga(id) {
@@ -30,19 +32,23 @@
       tela.querySelector('.escala-militar-nome-texto').textContent = f.nome || '';
       tela.querySelector('.escala-folga-dia-periodo').textContent =
         msg().folgaNoDia(f.dia_inteiro ? '' : H.textoPeriodos(linhas), contabilizada);
-      tela.querySelector('.nota-texto').textContent = msg().cancelarFolgaEfeito(nomeDe(f), contabilizada);
-      tela.querySelector('.escala-folga-dia-cancelar').addEventListener('click', cancelar);
+      var efeito = tela.querySelector('.escala-folga-dia-efeito');
+      efeito.querySelector('.nota-texto').textContent = msg().cancelarFolgaEfeito(nomeDe(f), contabilizada);
+      var nome = 'escala-folga-dia-' + (++conta);
+      [].forEach.call(tela.querySelectorAll('.escala-folga-dia-pergunta input[type="radio"]'), function (r) {
+        r.name = nome;
+        r.checked = r.value === 'manter';
+        r.addEventListener('change', function () {
+          if (!r.checked) return;
+          var cancelar = r.value === 'cancelar';
+          efeito.classList.toggle('oculto', !cancelar);
+          api.aoVivo(cancelar ? function () { api.cancelarFolga(id); } : null, false);
+        });
+      });
       corpo.appendChild(tela);
     }
 
-    function cancelar() {
-      var botoes = RosterWork.mensagens.botoes;
-      RosterWork.confirmar({ tipo: 'aviso', mensagem: msg().confirmarCancelarFolga(nomeDe(f), diaMes(api.iso())),
-        textoConfirmar: botoes.cancelarFolga, textoCancelar: botoes.manter, confirmarPerigo: true,
-        aoConfirmar: function () { api.cancelarFolga(id); api.concluir(); } });
-    }
-
-    api.abrir(null, montar, null);
+    api.abrir(montar);
   }
 
   window.RosterWork.escalasPainelMilitar = { abrirFolga: abrirFolga };

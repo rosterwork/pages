@@ -25,8 +25,9 @@
 
   function valido() {
     var v = ed.v;
+    if (ed.semDia) return false;   // sem dia livre não há pedido (nem Sim nem Não)
     if (v.vol === false) return true;
-    if (v.vol !== true || ed.semDia || v.cotas < 1 || v.cotas > 10 || (v.so24 && v.cotas !== 4 && v.cotas !== 8)) return false;
+    if (v.vol !== true || v.cotas < 1 || v.cotas > 10 || (v.so24 && v.cotas !== 4 && v.cotas !== 8)) return false;
     var q = contar('quer');
     return q >= ed.r.min_datas && contar('nao_posso') <= 10;
   }
@@ -36,7 +37,10 @@
     Array.prototype.forEach.call(f.querySelectorAll('[data-vol]'), function (b) {
       b.classList.toggle('aba--ativa', (b.getAttribute('data-vol') === 'sim') === v.vol && v.vol !== null);
     });
-    Array.prototype.forEach.call(f.querySelectorAll('[data-so-voluntario]'), function (s) { s.classList.toggle('oculto', v.vol !== true); });
+    /* as seções do voluntário; sem dia livre, só a do calendário (data-sem-dia="mostra") */
+    Array.prototype.forEach.call(f.querySelectorAll('[data-so-voluntario]'), function (s) {
+      s.classList.toggle('oculto', ed.semDia ? s.getAttribute('data-sem-dia') !== 'mostra' : v.vol !== true);
+    });
     Array.prototype.forEach.call(f.querySelectorAll('.nova-extra-cota'), function (b) {
       var n = +b.textContent;
       b.classList.toggle('nova-extra-cota--on', n === v.cotas);
@@ -89,8 +93,8 @@
       ped.nao_posso.forEach(function (d) { v.dias[d] = 'nao_posso'; });
     }
     var mes = comp.toLocaleDateString('pt-BR', { month: 'long' });
-    /* sem nenhum dia livre no mês (min_datas 0), o Sim fica apagado e só o Não vale */
-    ed = { v: v, inicial: dados(v), r: r, leitura: r.prazo.estado !== 'aberto', semDia: r.min_datas === 0, btn: null };
+    /* sem nenhum dia livre no mês (min_datas 0) não há pedido: o Sim e o Não ficam apagados, e o calendário mostra o motivo */
+    ed ={ v: v, inicial: dados(v), r: r, leitura: r.prazo.estado !== 'aberto', semDia: r.min_datas === 0, btn: null };
     RW.painel.abrir({
       titulo: msg().tituloPainel(mes),
       subtitulo: r.em_nome ? r.militar.grad + ' ' + r.militar.nome : msg().prazoPainel(r.prazo.fecha.slice(8, 10) + '/' + r.prazo.fecha.slice(5, 7)),
@@ -103,12 +107,13 @@
     ed.f = f;
     f.querySelector('#nova-extra-q-vol').textContent = msg().perguntaVol(mes);
     Array.prototype.forEach.call(f.querySelectorAll('[data-vol]'), function (b) {
-      b.disabled = ed.leitura || (ed.semDia && b.getAttribute('data-vol') === 'sim');
+      b.disabled = ed.leitura || ed.semDia;
       b.addEventListener('click', function () { v.vol = b.getAttribute('data-vol') === 'sim'; atualizar(); });
     });
     var semDia = f.querySelector('#nova-extra-sem-dia');
-    semDia.textContent = ed.semDia ? msg().semDiaLivre(mes) : '';
+    semDia.textContent = ed.semDia ? msg().semDiaLivre(mes, r.em_nome ? r.militar.grad + ' ' + r.militar.nome : null) : '';
     semDia.classList.toggle('oculto', !ed.semDia);
+    if (ed.semDia) Array.prototype.forEach.call(f.querySelectorAll('[data-sem-dia="some"]'), function (e) { e.classList.add('oculto'); });
     var cotas = f.querySelector('#nova-extra-cotas');
     for (var n = 1; n <= 10; n++) {
       var c = RW.tpl('tpl-nova-extra-cota');
@@ -146,7 +151,7 @@
     });
 
     var adm = r.militar.setor === 'Administrativo' && r.expediente;
-    f.querySelector('#nova-extra-nota-adm').classList.toggle('oculto', !adm);
+    f.querySelector('#nova-extra-nota-adm').classList.toggle('oculto', !adm || ed.semDia);
     var cal = f.querySelector('#nova-extra-cal');
     var dia1 = new Date(comp.getFullYear(), comp.getMonth(), 1);
     var ultimo = new Date(comp.getFullYear(), comp.getMonth() + 1, 0).getDate();
@@ -192,7 +197,7 @@
     rodape.classList.remove('oculto');
     rodape.querySelector('#nova-extra-cancelar').addEventListener('click', tentarFechar);
     ed.btn = rodape.querySelector('#nova-extra-enviar');
-    if (ed.leitura) ed.btn.classList.add('oculto');
+    if (ed.leitura || ed.semDia) ed.btn.classList.add('oculto');
     ed.btn.addEventListener('click', function () { enviar(comp, cpf, aoSalvar); });
     atualizar();
   }

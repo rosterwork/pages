@@ -83,6 +83,12 @@
   border-top: 1px solid var(--borda);
 }
 
+/* entre os grupos das Observações (Administração, Trocas, Folgas...): a linha fina das funções, antes da borda */
+.painel-corpo .escala-observacao-grupo + .escala-observacao-grupo {
+  padding-top: 8px;
+  border-top: 1px solid var(--borda);
+}
+
 /* a linha do título das caixas do painel do dia (postos, Sem função, De folga, Observações e Lançar no SYSBM): de uma
    borda à outra (desfaz o recuo de 8px da .grupo-caixa, geral-painel.css), só com algo embaixo do título; na troca de
    viatura com data, embaixo do "No lugar da ..." */
@@ -290,14 +296,22 @@
   gap: 8px;
 }
 
-/* o rodapé: o Cancelar e o botão que diz o que faz, à direita */
-.escala-linha-rodape {
+/* o que acontece no ciclo (o Adicionar e o Remover militar): a nota amarela com a lista, um item por linha (o título
+   curto em negrito, da .nota-titulo, e o texto), e a nota do fim */
+.escala-ciclo-efeito-corpo {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  flex-direction: column;
   gap: 8px;
-  padding-top: 12px;
-  border-top: 1px solid var(--borda);
+  min-width: 0;
+}
+
+.escala-ciclo-efeito-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 /* ---------- a pergunta de mudar de ciclo (aba Ciclo › Contínuos em outros ciclos): o assunto, a frase e as datas
@@ -424,12 +438,6 @@
   display: flex;
   align-items: baseline;
   gap: 4px;
-}
-
-.escala-militar-acoes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
 }
 
 /* ============================================================

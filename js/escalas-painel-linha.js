@@ -4,10 +4,13 @@
    que fecha (uma aberta por vez); embaixo, a edição direta (REGRAS
    §4 › Ações e perguntas): o militar desta função (só quem já está
    de serviço aqui no dia, e o "Ninguém", que deixa a função vazia)
-   e o horário nesta função, o efeito em quem está em volta e o
-   botão que diz o que faz. Quem entra e já tem outra função no
-   horário sai de lá (o lugar fica vazio; a nota O que mudou traz o
-   atalho de pôr quem saiu nesse lugar). Tipos: função e vaga (sem
+   e o horário nesta função e o efeito em quem está em volta. A
+   escolha entra no rascunho ao vivo (escalas-painel-editar.js ›
+   aoVivo) e as telas mostram como fica; o X fecha, a mudança vira um
+   passo do desfazer e a lista mostra o dia como vai ficar. Quem
+   entra e já tem outra função no horário sai de lá (o lugar fica
+   vazio; a nota O que mudou traz o atalho de pôr quem saiu nesse
+   lugar). Tipos: função e vaga (sem
    ninguém); o Chefe de Socorro e o Oficial de Área não têm lápis,
    e quem está sem função tem o Remover do dia. Trazer alguém de
    fora do dia é o Adicionar; tirar alguém do dia é o Remover.
@@ -19,7 +22,7 @@
 
   window.RosterWork = window.RosterWork || {};
 
-  var aberto = null;   // { el, esconder: [] }: o cartão aberto e o que ele esconde da lista
+  var aberto = null;   // { el, esconder: [], sugestao }: o cartão aberto, o que ele esconde da lista e o atalho da nota O que mudou
   var conta = 0;       // nome único para o campo de cada cartão
 
   /* Chefe de Socorro e Oficial de Área: a função especial vai junto com quem a tem */
@@ -32,16 +35,24 @@
   function nomeDe(m) { return ((m.grad || '') + ' ' + (m.nome || '')).trim(); }
   function copiar(p) { return { hi: p.hi, hf: p.hf }; }
 
-  function fechar() {
+  /* fecha o cartão. modo: sem modo, a mudança fica (um passo do desfazer) e a lista mostra o dia como vai ficar;
+     'guardar', fica sem redesenhar (quem chama redesenha); 'largar', some sem guardar (depois de salvar ou descartar) */
+  function fechar(modo) {
     if (!aberto) return;
-    if (aberto.el.parentNode) aberto.el.remove();
-    aberto.esconder.forEach(function (e) { e.classList.remove('oculto'); });
+    var a = aberto, api = ed();
     aberto = null;
+    if (a.el.parentNode) a.el.remove();
+    a.esconder.forEach(function (e) { e.classList.remove('oculto'); });
+    if (modo === 'largar') { api.largarVivo(); return; }
+    if (a.sugestao && api.vivoMudou()) api.sugerir(a.sugestao);
+    if (api.terminarVivo() && modo !== 'guardar') api.redesenhar();
   }
 
   /* cfg = { lapis, grupo, tipo: 'funcao' | 'vaga', posto, funcao, rotulo, militar, periodos } */
   function abrir(cfg) {
+    /* outro cartão aberto com mudança: ela fica e a lista é refeita (o lápis clicado sai com ela; clica-se de novo) */
     fechar();
+    if (!cfg.lapis || !cfg.lapis.isConnected) return;
     var api = ed(), H = api.horas;
     var el = RosterWork.tpl('tpl-escala-linha');
     var linhaLista = cfg.lapis && cfg.lapis.closest('.escala-edicao-linha');
@@ -58,8 +69,7 @@
     var pessoa = linhaLista.querySelector('.escala-edicao-pessoa'), horas = linhaLista.querySelector('.escala-distribuicao-horas');
     if (pessoa) q('.escala-linha-pessoa').appendChild(pessoa.cloneNode(true));
     if (horas) q('.escala-linha-horas').appendChild(horas.cloneNode(true));
-    q('.escala-linha-fechar').addEventListener('click', fechar);
-    q('.escala-linha-cancelar').addEventListener('click', fechar);
+    q('.escala-linha-fechar').addEventListener('click', function () { if (aberto && aberto.el === el) fechar(); });
 
     /* o militar: quem está de serviço aqui no dia (o banco diz quem pode nesta função e o motivo de quem não pode) */
     var inp = q('.escala-linha-combo input'), menu = q('.escala-linha-combo .dropdown-menu');
@@ -104,9 +114,10 @@
       var cpf = est.c ? est.c.cpf : m ? m.cpf : null;
       var mil = cpf ? api.militarDoDia(cpf) : null, opc = H.opcoesHoras(mil && mil.janelas.length ? mil.janelas : null);
       var diaTodo = H.uniao(est.periodos.map(H.faixa)).reduce(function (s, f) { return s + f[1] - f[0]; }, 0) >= 1440;
+      var sobrepoe = sobrepostos();
       est.periodos.forEach(function (per, i) {
         var linha = RosterWork.horario.linha({
-          hi: per.hi, hf: per.hf, opcoes: opc,
+          hi: per.hi, hf: per.hf, opcoes: opc, erro: sobrepoe,
           aoInicio: function (h) { per.hi = h; montarHora(); atualizar(); },
           aoFim: function (h) { per.hf = h; montarHora(); atualizar(); },
           aoRemover: est.periodos.length > 1 ? function () { est.periodos.splice(i, 1); montarHora(); atualizar(); } : null,
@@ -130,6 +141,11 @@
 
     function mudouQuem() { return !!est.item && (!m || est.item.cpf !== m.cpf); }
     function mudouHora() { return JSON.stringify(est.periodos) !== JSON.stringify(original); }
+    /* os horários escolhidos se cruzam entre si */
+    function sobrepostos() {
+      var js = est.periodos.map(H.faixa), soma = function (l) { return l.reduce(function (s, f) { return s + f[1] - f[0]; }, 0); };
+      return soma(H.uniao(js)) !== soma(js);
+    }
 
     function nota(caixa, texto) {
       caixa.classList.toggle('oculto', !texto);
@@ -139,7 +155,7 @@
     function atualizar() {
       if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
       desenharEfeito();
-      desenharRodape();
+      aplicarAoVivo();
     }
 
     /* o efeito, em frases: o que acontece com quem sai, com a função e com o lugar que quem entra deixa. O Chefe de
@@ -171,34 +187,26 @@
       nota(q('.escala-linha-assume'), c && c.assume ? (c.assume === 'chefe_socorro' ? msg().assumeChefe : msg().assumeOficial)(nomeDe(c), '') : '');
     }
 
-    /* o botão diz o que faz; sem mudança (ou na vaga sem ninguém escolhido), fica desligado */
-    function desenharRodape() {
-      var b = q('.escala-linha-aplicar'), it = est.item, texto, ligado = true;
-      if (!it) { texto = L().escolhaQuemFica; ligado = false; }
-      else if (it.ninguem) texto = L().deixarVazio(cfg.funcao);
-      else if (mudouQuem()) texto = L().porNaFuncao(nomeDe(it), cfg.funcao);
-      else if (mudouHora()) texto = L().salvarHorario;
-      else { texto = L().mudeAlgo; ligado = false; }
-      b.textContent = texto;
-      b.disabled = !ligado;
-    }
+    /* ---------- ao vivo ---------- */
 
-    /* ---------- aplicar ---------- */
-
-    function aplicar() {
-      var js = est.periodos.map(H.faixa), soma = function (l) { return l.reduce(function (s, f) { return s + f[1] - f[0]; }, 0); };
-      if (soma(H.uniao(js)) !== soma(js)) { RosterWork.avisar({ tipo: 'erro', mensagem: L().erroPeriodos }); return; }
+    /* a escolha de agora vai ao rascunho (a mesma regra de antes: o Ninguém deixa a função vazia, outro militar troca de
+       lugar com quem está, o horário muda só o dele); horários que se cruzam não entram, e o Salvar espera */
+    function aplicarAoVivo() {
+      if (!aberto || aberto.el !== el) return;
       var it = est.item, periodos = est.periodos.map(copiar);
-      if (it && it.ninguem) { api.mudar(function () { A().tirarDaFuncao(cfg, periodos); }); return; }
+      aberto.sugestao = null;
+      if (!it) { api.aoVivo(null, false); return; }
+      if (sobrepostos()) { api.aoVivo(null, true); return; }
+      if (it.ninguem) { api.aoVivo(function () { A().tirarDaFuncao(cfg, periodos); }); return; }
       if (mudouQuem() && est.c) {
         var c = est.c;
-        api.sugerir(A().sugestao(cfg, c, { um: function (f) { return L().atalho(nome, f); }, varios: L().atalhoLugar(nome, nomeDe(c)) }));
-        api.mudar(function () { A().trocar(cfg, c, periodos); });
+        aberto.sugestao = A().sugestao(cfg, c, { um: function (f) { return L().atalho(nome, f); }, varios: L().atalhoLugar(nome, nomeDe(c)) });
+        api.aoVivo(function () { A().trocar(cfg, c, periodos); });
         return;
       }
-      if (mudouHora()) api.mudar(function () { A().mudarHorario(cfg, periodos); });
+      if (mudouHora()) { api.aoVivo(function () { A().mudarHorario(cfg, periodos); }); return; }
+      api.aoVivo(null, false);
     }
-    q('.escala-linha-aplicar').addEventListener('click', aplicar);
 
     /* o cartão entra no lugar da linha: a linha (e a função, se ficou sem outra linha) some da lista */
     var esconder = [linhaLista];
@@ -206,7 +214,8 @@
     if (!outrasLinhas.length) esconder.push(cfg.grupo);
     esconder.forEach(function (e) { e.classList.add('oculto'); });
     cfg.grupo.insertAdjacentElement('afterend', el);
-    aberto = { el: el, esconder: esconder };
+    aberto = { el: el, esconder: esconder, sugestao: null };
+    api.comecarVivo();
     montarHora();
     atualizar();
   }

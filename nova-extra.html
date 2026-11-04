@@ -909,20 +909,21 @@
       <div class="nova-extra-cotas" id="nova-extra-cotas"></div>
       <button type="button" class="geral-opcao nova-extra-marcar" role="checkbox" aria-checked="false" id="nova-extra-24h"><span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>Só quero extras de 24 h (4 ou 8 cotas)</button>
     </section>
-    <section class="nova-extra-sec" data-so-voluntario>
-      <b class="nova-extra-pergunta">Quais dias?</b>
+    <!-- sem nenhum dia livre no mês, só o calendário fica (com o motivo de cada dia); o resto com data-sem-dia="some" sai -->
+    <section class="nova-extra-sec" data-so-voluntario data-sem-dia="mostra">
+      <b class="nova-extra-pergunta" data-sem-dia="some">Quais dias?</b>
       <span class="nova-extra-ajuda" id="nova-extra-ajuda-dias">Marque pelo menos 5 dias que você quer</span>
-      <div class="nova-extra-pincel">
+      <div class="nova-extra-pincel" data-sem-dia="some">
         <button type="button" class="nova-extra-pincel-op" data-pincel="quer"><span class="nova-extra-ponto nova-extra-ponto--quer"></span>Quero</button>
         <button type="button" class="nova-extra-pincel-op" data-pincel="nao_posso"><span class="nova-extra-ponto nova-extra-ponto--nao"></span>Não quero</button>
       </div>
-      <span class="nova-extra-contagem">
+      <span class="nova-extra-contagem" data-sem-dia="some">
         <b class="nova-extra-conta-quer" id="nova-extra-conta-quer"></b>
         <b class="nova-extra-conta-nao" id="nova-extra-conta-nao"></b>
       </span>
       <span class="nova-extra-nota oculto" id="nova-extra-nota-adm">Você é do administrativo: em dia de expediente a extra começa depois do expediente (na quarta, às 14h). Fim de semana, feriado e folga do expediente, o dia todo.</span>
       <!-- o que cada dia mostra: os meus dias, onde falta gente ou quantos querem (por unidade) -->
-      <div class="nova-extra-ver">
+      <div class="nova-extra-ver" data-sem-dia="some">
         <div class="nova-extra-ver-linha">
           <span class="nova-extra-ver-rotulo">Ver</span>
           <div class="abas abas--seletor" id="nova-extra-ver">
