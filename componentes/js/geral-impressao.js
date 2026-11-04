@@ -6,9 +6,9 @@
    no alto, a nota "Será impresso:" com o resumo e, embaixo dela, o
    aviso (o erro grave da escala); no meio, as caixas da impressão
    (o molde da página); por último, a Prévia (o próprio PDF, no
-   leitor do navegador, cada folha inteira num quadro do formato dela,
-   refeita a cada mudança, a última pedida vale,
-   com as folhas embaixo; no celular não aparece) e o rodapé
+   leitor do navegador, a folha A4 parada e inteira, uma por vez, num
+   quadro do formato dela, refeita a cada mudança, a última pedida vale,
+   com as folhas e as setas embaixo; no celular não aparece) e o rodapé
    Cancelar · Gerar PDF (baixa o arquivo da prévia). Aqui também: a
    numeração das caixas à vista (refeita a cada mudança, para a
    caixa que aparece ou some), o Mostrar (data-mostrar) e, quando o
@@ -143,21 +143,38 @@
     return promessa;
   }
 
+  /* quantas folhas há no texto do PDF */
+  function folhasNoTexto(texto) { return (texto.match(/\/Type\s*\/Page[^s]/g) || []).length; }
+
   /* quantas folhas o PDF tem, contadas no próprio arquivo (para a impressão que não traz a contagem) */
   function contarFolhas(arquivo) {
-    return arquivo.text().then(function (texto) { return (texto.match(/\/Type\s*\/Page[^s]/g) || []).length; });
+    return arquivo.text().then(folhasNoTexto);
   }
 
-  /* o formato da 1ª folha, lido no próprio PDF: 'paisagem', 'retrato' ou null (a página contínua, que não é folha A4) */
-  function formatoDaFolha(arquivo) {
+  /* as folhas do PDF, lidas no próprio arquivo: { formato, total }; formato 'paisagem', 'retrato' ou null (a página
+     contínua, que não é folha A4) */
+  function lerFolhas(arquivo) {
     return arquivo.text().then(function (texto) {
       var medida = texto.match(/\/MediaBox\s*\[\s*0\s+0\s+([\d.]+)\s+([\d.]+)\s*\]/);
-      if (!medida) return null;
-      var proporcao = Number(medida[2]) / Number(medida[1]);
-      if (Math.abs(proporcao - A4) < 0.02) return 'retrato';
-      if (Math.abs(proporcao - 1 / A4) < 0.02) return 'paisagem';
-      return null;
-    }, function () { return null; });
+      var proporcao = medida ? Number(medida[2]) / Number(medida[1]) : 0;
+      var formato = Math.abs(proporcao - A4) < 0.02 ? 'retrato' : Math.abs(proporcao - 1 / A4) < 0.02 ? 'paisagem' : null;
+      return { formato: formato, total: folhasNoTexto(texto) };
+    }, function () { return { formato: null, total: 0 }; });
+  }
+
+  /* a folha n na prévia: o arquivo aberto de novo, já nela (o leitor do Chrome não troca de folha só pelo fim do
+     endereço). A folha A4 inteira (view para o Chrome, zoom para o Firefox); a página contínua, na largura do quadro.
+     Com 2 folhas A4 ou mais, as setas */
+  function mostrarFolha(n) {
+    form.folhaAtual = n;
+    if (form.url) URL.revokeObjectURL(form.url);
+    form.url = URL.createObjectURL(form.arquivoPrevia);
+    peca('previa').src = form.url + '#' + (form.formatoFolha ? 'page=' + n + '&toolbar=0&navpanes=0&view=Fit&zoom=page-fit' : 'toolbar=0&navpanes=0&view=FitH');
+    peca('paginas').classList.toggle('oculto', !form.formatoFolha || form.folhasTotal < 2);
+    peca('folha-atual').textContent = String(n);
+    peca('folha-total').textContent = String(form.folhasTotal);
+    peca('folha-anterior').disabled = n <= 1;
+    peca('folha-proxima').disabled = n >= form.folhasTotal;
   }
 
   function mostrarCarregandoPrevia(sim) {
@@ -169,6 +186,7 @@
     aviso.textContent = texto;
     aviso.classList.remove('oculto');
     peca('folhas').textContent = '';
+    peca('paginas').classList.add('oculto');
     mostrarCarregandoPrevia(false);
   }
 
@@ -186,17 +204,18 @@
     if (!form || token !== tokenPrevia) return;
     var ref = form;
     pedirArquivo(est).then(function (a) {
-      return formatoDaFolha(a.arquivo).then(function (folha) { a.folha = folha; return a; });
-    }).then(function (a) {
+      return lerFolhas(a.arquivo).then(function (f) { return { a: a, f: f }; });
+    }).then(function (r) {
       if (form !== ref || token !== tokenPrevia) return;
-      if (form.url) URL.revokeObjectURL(form.url);
-      form.url = URL.createObjectURL(a.arquivo);
-      /* o leitor do navegador sem a barra dele: a folha A4 inteira, num quadro do formato dela (view para o Chrome,
-         zoom para o Firefox); a página contínua, na largura do quadro */
-      var quadro = peca('previa');
-      quadro.parentNode.classList.toggle('impressao-previa--paisagem', a.folha === 'paisagem');
-      quadro.parentNode.classList.toggle('impressao-previa--retrato', a.folha === 'retrato');
-      quadro.src = form.url + '#toolbar=0&navpanes=0&' + (a.folha ? 'view=Fit&zoom=page-fit' : 'view=FitH');
+      var a = r.a;
+      /* a caixa no formato da folha (a folha parada, uma por vez) e a prévia na folha 1 */
+      var caixa = peca('previa').parentNode;
+      caixa.classList.toggle('impressao-previa--paisagem', r.f.formato === 'paisagem');
+      caixa.classList.toggle('impressao-previa--retrato', r.f.formato === 'retrato');
+      form.arquivoPrevia = a.arquivo;
+      form.formatoFolha = r.f.formato;
+      form.folhasTotal = r.f.total;
+      mostrarFolha(1);
       peca('previa-aviso').classList.add('oculto');
       peca('folhas').textContent = a.folhas || '';
       mostrarCarregandoPrevia(false);
@@ -258,13 +277,17 @@
     if (rodape && acoes) { rodape.appendChild(acoes.content.cloneNode(true)); rodape.classList.remove('oculto'); }
     var mostrar = {};
     Object.keys(cfg.mostrar || {}).forEach(function (k) { mostrar[k] = cfg.mostrar[k]; });
-    form = { cfg: cfg, corpo: corpo, rodape: rodape, mostrar: mostrar, seletor: null, arquivo: null, url: null };
+    form = { cfg: cfg, corpo: corpo, rodape: rodape, mostrar: mostrar, seletor: null, arquivo: null, url: null,
+      arquivoPrevia: null, formatoFolha: null, folhasTotal: 0, folhaAtual: 1 };
     form.arvore = peca('arvore');
     if (cfg.marcas) aplicarMarcas(cfg.marcas);
     numerarCaixas();
     ligarMostrar();
     peca('cancelar').addEventListener('click', sair);
     peca('gerar').addEventListener('click', gerar);
+    /* as setas da prévia: a folha anterior e a próxima */
+    peca('folha-anterior').addEventListener('click', function () { if (form.folhaAtual > 1) mostrarFolha(form.folhaAtual - 1); });
+    peca('folha-proxima').addEventListener('click', function () { if (form.folhaAtual < form.folhasTotal) mostrarFolha(form.folhaAtual + 1); });
     if (!(RW.celular && RW.celular())) mostrarCarregandoPrevia(true);
     cfg.ligar(peca, atualizar);
 

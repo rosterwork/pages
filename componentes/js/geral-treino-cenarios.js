@@ -135,7 +135,7 @@
       });
     },
     'ajuste-manual': function (d, e, dia) {
-      if (dia && (dia.automatico || !(dia.ajustes || []).some(function (a) { return a.treino; }))) return;
+      if (dia && !(dia.ajustes || []).some(function (a) { return a.treino; })) return;
       var f = acharFuncao(d, e);
       var m = f && (f.militares || []).filter(function (x) { return x.cpf === e.cpf; })[0];
       if (!m) return;

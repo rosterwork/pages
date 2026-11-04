@@ -76,19 +76,43 @@
   border: none;
 }
 
-/* a folha inteira no quadro, no formato dela (o JS marca pela 1ª folha do PDF; a página contínua fica no quadro de
-   cima): paisagem na largura da caixa; retrato com a altura do quadro de cima. A rolagem do leitor do PDF só passa
-   de uma folha para a outra */
-.impressao-previa--paisagem .impressao-previa-quadro {
-  min-height: 0;
+/* a folha A4 parada, inteira, uma por vez (o JS marca pela 1ª folha do PDF; a página contínua fica no quadro de cima,
+   rolando por dentro): a caixa toma o formato da folha (paisagem na largura; retrato com a altura do quadro de cima,
+   no meio). O quadro não recebe o mouse (a rodinha rola o painel: uma barra só) e passa da borda da direita a
+   largura da barra do leitor, que a caixa corta. As setas embaixo trocam a folha */
+.impressao-previa--paisagem {
   aspect-ratio: 297 / 210;
 }
 
-.impressao-previa--retrato .impressao-previa-quadro {
+.impressao-previa--retrato {
   align-self: center;
   width: 312px;
-  min-height: 0;
   aspect-ratio: 210 / 297;
+}
+
+.impressao-previa--paisagem .impressao-previa-quadro,
+.impressao-previa--retrato .impressao-previa-quadro {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(100% + 20px);
+  height: 100%;
+  min-height: 0;
+  pointer-events: none;
+}
+
+/* embaixo da prévia: as folhas do arquivo e as setas (Folha 1 de 2) */
+.impressao-previa-pe {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.impressao-previa-paginas {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .impressao-previa-aviso {

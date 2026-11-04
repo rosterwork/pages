@@ -3285,7 +3285,8 @@
   <!-- ===== o painel de impressão, um só para todas as impressões (componentes/js/geral-impressao.js) =====
        A casca: no alto, a nota "Será impresso:" com o resumo e, embaixo dela, o aviso de erro grave; no lugar do
        [data-impressao-caixas] entram as caixas da impressão (o molde da página: o período, as Unidades, o Formato, o
-       Mostrar...); por último, a caixa Prévia (o próprio PDF, no leitor do navegador, e as folhas; some no celular).
+       Mostrar...); por último, a caixa Prévia (o próprio PDF, no leitor do navegador, uma folha parada por vez, e as
+       folhas com as setas; some no celular).
        As caixas são numeradas pelo JS (data-impressao-num), só as que estão à vista -->
   <template id="tpl-impressao">
     <div class="nota" data-impressao-nota>
@@ -3309,7 +3310,19 @@
           <div class="giratorio" aria-label="Carregando" role="status"></div>
         </div>
       </div>
-      <span class="campo-ajuda" data-impressao-folhas></span>
+      <!-- as folhas do arquivo e, com 2 folhas A4 ou mais, as setas que trocam a folha da prévia -->
+      <div class="impressao-previa-pe">
+        <span class="campo-ajuda" data-impressao-folhas></span>
+        <div class="impressao-previa-paginas oculto" data-impressao-paginas>
+          <button type="button" class="botao botao--icone" aria-label="Folha anterior" data-impressao-folha-anterior>
+            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>
+          </button>
+          <span class="campo-ajuda">Folha <span data-impressao-folha-atual></span> de <span data-impressao-folha-total></span></span>
+          <button type="button" class="botao botao--icone" aria-label="Próxima folha" data-impressao-folha-proxima>
+            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
+          </button>
+        </div>
+      </div>
     </div>
   </template>
 
