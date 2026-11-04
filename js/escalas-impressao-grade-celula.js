@@ -3,7 +3,8 @@
    O bloquinho branco de uma unidade num dia, como na tela: o nome da
    unidade (só no calendário), o gráfico de cobertura (24 barras, na
    cor do estado), e uma linha por militar com os ícones de origem, a
-   graduação, o nome (riscado na folga e na troca), o horário e a faixa
+   graduação (no calendário, o posto curto), o nome (riscado na folga e
+   na troca; sem caber, cortado com "…", como na tela), o horário e a faixa
    do horário (cinza fora do turno). O "Mostrar" do painel liga e
    desliga o gráfico, os ícones e a faixa. As origens, a situação, a
    hora e os trechos do turno vêm do escalas-celula.js (a mesma fonte
@@ -23,15 +24,59 @@
   var ESPACAMENTO_CAIXA_ALTA = 0.4;        // entre letras do nome da unidade (caixa alta)
   var BLOQUINHO = { lado: 2.5, topo: 2.5, linha: 0.6, base: 3 };
   var ICONE = 7;                           // ícone de origem
+  var ENTRE_ICONES = 1;                    // entre os ícones de uma linha
   var SETA = 4.5;                          // seta do horário (largura)
+  var ENTRE_HORA = 1.5;                    // início · seta · fim
   var ENTRE_COLUNAS = 2.5;                 // ícones · nome · horário
+  var FOLGA_CORTE = 1;                     // sobra na conta do corte do nome (a medida do canvas × a da biblioteca)
   var MARGEM = { icone: [0, 0.8, 0, 0], hora: [0, 0.9, 0, 0], seta: [0, 0.6, 0, 0] };   // alinham ao nome
   var GRAFICO = { altura: 10, vao: 0.6, linha: 1, minima: 1.2, corpo: 0.3, corpoProblema: 0.4, raio: 1 };
   var FAIXA_RAIO = 1;
 
+  var FONTE_MEDIDA = 'Montserrat PDF';     // a fonte do PDF, para medir o nome
+  var medidor = null;                      // o canvas fora da tela que mede o texto (sem ele, o nome não é cortado)
+  var fontesMedida = null;                 // a promessa da carga da fonte de medida (uma vez)
+
   function escalasCelula() { return RW.escalasCelula || {}; }
 
-  /* as cores das grades e os ícones de origem (e o cadeado), no traço do tema; uma vez por PDF */
+  /* ---------- o corte do nome com "…" ---------- */
+  /* a fonte de medida: os mesmos arquivos da fonte do PDF (já carregados pelo escalas-impressao-pdf.js), para a conta
+     sair igual à da biblioteca; sem o canvas fora da tela ou a carga, fica sem medidor */
+  function carregarFontesMedida() {
+    if (fontesMedida) return fontesMedida;
+    var pdfMake = window.pdfMake || {};
+    var familia = (pdfMake.fonts || {}).Montserrat;
+    if (!familia || !pdfMake.vfs || !window.OffscreenCanvas || !window.FontFace || !document.fonts) return Promise.resolve();
+    function carregar(arquivo, peso) {
+      var binario = atob(pdfMake.vfs[arquivo] || ''), bytes = new Uint8Array(binario.length);
+      for (var i = 0; i < binario.length; i++) bytes[i] = binario.charCodeAt(i);
+      return new FontFace(FONTE_MEDIDA, bytes.buffer, { weight: peso }).load().then(function (fonte) { document.fonts.add(fonte); });
+    }
+    fontesMedida = Promise.all([carregar(familia.normal, '400'), carregar(familia.bold, '600')]).then(function () {
+      medidor = new OffscreenCanvas(1, 1).getContext('2d');
+    }, function () { fontesMedida = null; });
+    return fontesMedida;
+  }
+
+  /* a largura (pt) do texto no tamanho da fonte do PDF (medida em 100 e proporcional) */
+  function larguraTexto(texto, tamanho, negrito) {
+    medidor.font = (negrito ? '600' : '400') + ' 100px "' + FONTE_MEDIDA + '"';
+    return medidor.measureText(texto).width * tamanho / 100;
+  }
+
+  /* o nome que cabe no espaço livre da linha depois da graduação: inteiro ou cortado com "…" (a graduação nunca) */
+  function nomeQueCabe(grad, nome, livre, negrito) {
+    if (!medidor || !nome) return nome;
+    var limite = livre - FOLGA_CORTE - larguraTexto(grad + ' ', FONTE.grad, false);
+    if (larguraTexto(nome, FONTE.nome, negrito) <= limite) return nome;
+    for (var n = nome.length - 1; n > 0; n--) {
+      var cortado = nome.slice(0, n).replace(/\s+$/, '') + '…';
+      if (larguraTexto(cortado, FONTE.nome, negrito) <= limite) return cortado;
+    }
+    return '…';
+  }
+
+  /* as cores das grades, os ícones de origem (e o cadeado), no traço do tema, e a fonte de medida; uma vez por PDF */
   function preparar(c) {
     var pdf = RW.escalasImpressaoPdf;
     c.sucesso = pdf.cor('--impressao-sucesso');
@@ -39,9 +84,9 @@
     c.erro = pdf.cor('--impressao-erro');
     c.faixa = pdf.cor('--impressao-faixa');
     var nomes = (escalasCelula().iconesDasOrigens ? escalasCelula().iconesDasOrigens() : []).concat(['icone-cadeado']);
-    return Promise.all(nomes.map(pdf.buscarIcone)).then(function (textos) {
+    return Promise.all([Promise.all(nomes.map(pdf.buscarIcone)), carregarFontesMedida()]).then(function (r) {
       c.icones = {};
-      nomes.forEach(function (nome, i) { c.icones[nome] = pdf.svgDeTraco(textos[i], c.suave); });
+      nomes.forEach(function (nome, i) { c.icones[nome] = pdf.svgDeTraco(r[0][i], c.suave); });
       return c;
     });
   }
@@ -92,20 +137,36 @@
     };
   }
 
+  function soHora(h) { return escalasCelula().soHora ? escalasCelula().soHora(h) : (h || ''); }
+  function comInicio(p) { return (p.periodos || []).filter(function (per) { return per.inicio; }); }
+
+  /* afastado (com o filtro Afastamentos): "Férias até DD/MM" no lugar do horário */
+  function textoAfastado(p) { return RW.mensagens.geral.afastadoAte(p.afastamento || '', RW.data.isoParaBR(p.ate).slice(0, 5)); }
+
   function horarios(p, c) {
-    var soHora = escalasCelula().soHora || function (h) { return h || ''; };
-    /* afastado (com o filtro Afastamentos): "Férias até DD/MM" no lugar do horário */
     if (p.origem === 'afastamento') {
-      return { text: RW.mensagens.geral.afastadoAte(p.afastamento || '', RW.data.isoParaBR(p.ate).slice(0, 5)), fontSize: FONTE.hora, color: c.texto, width: 'auto', margin: MARGEM.hora };
+      return { text: textoAfastado(p), fontSize: FONTE.hora, color: c.texto, width: 'auto', margin: MARGEM.hora };
     }
     return {
-      stack: (p.periodos || []).filter(function (per) { return per.inicio; }).map(function (per) {
+      stack: comInicio(p).map(function (per) {
         var partes = [{ text: soHora(per.inicio), width: 'auto' }];
         if (per.fim) partes.push({ svg: c.seta, width: SETA, margin: MARGEM.seta }, { text: soHora(per.fim), width: 'auto' });
-        return { columns: partes, columnGap: 1.5 };
+        return { columns: partes, columnGap: ENTRE_HORA };
       }),
       fontSize: FONTE.hora, color: c.texto, width: 'auto', margin: MARGEM.hora
     };
+  }
+
+  /* a largura (pt) da coluna do horário: o par mais largo (ou o texto do afastado) */
+  function larguraHorarios(p) {
+    if (p.origem === 'afastamento') return larguraTexto(textoAfastado(p), FONTE.hora, false);
+    var maior = 0;
+    comInicio(p).forEach(function (per) {
+      var w = larguraTexto(soHora(per.inicio), FONTE.hora, false);
+      if (per.fim) w += 2 * ENTRE_HORA + SETA + larguraTexto(soHora(per.fim), FONTE.hora, false);
+      maior = Math.max(maior, w);
+    });
+    return maior;
   }
 
   /* os ícones de uma pessoa na célula: a origem de base (por baixo de uma troca), a origem, o cadeado e o remanejado */
@@ -141,16 +202,22 @@
     return usados;
   }
 
-  /* uma linha de militar: ícones · graduação e nome · horário (a faixa por trás) */
-  function linha(p, largura, mostrar, c) {
+  /* uma linha de militar: ícones · graduação e nome · horário (a faixa por trás). curto: o posto curto (calendário);
+     o nome que não cabe no meio sai cortado com "…", numa linha só */
+  function linha(p, largura, mostrar, c, curto) {
     var riscada = p.origem === 'folga' || p.origem === 'troca_saida' || p.origem === 'remanejado_saida';
     var colunas = [];
+    var livre = largura;
     if (mostrar.icones) {
-      colunas.push({ columns: iconesDaPessoa(p).map(function (n) { return { svg: c.icones[n], width: ICONE, height: ICONE }; }), columnGap: 1, width: 'auto', margin: MARGEM.icone });
+      var icones = iconesDaPessoa(p);
+      colunas.push({ columns: icones.map(function (n) { return { svg: c.icones[n], width: ICONE, height: ICONE }; }), columnGap: ENTRE_ICONES, width: 'auto', margin: MARGEM.icone });
+      livre -= icones.length * ICONE + (icones.length - 1) * ENTRE_ICONES + ENTRE_COLUNAS;
     }
+    var grad = curto && escalasCelula().postoCurto ? escalasCelula().postoCurto(p.grad) : (p.grad || '');
+    if (medidor) livre -= larguraHorarios(p) + ENTRE_COLUNAS;
     colunas.push({ text: [
-      { text: (p.grad || '') + ' ', fontSize: FONTE.grad, color: c.suave },
-      { text: p.nome || '', fontSize: FONTE.nome, bold: !riscada, color: riscada ? c.suave : c.forte, decoration: riscada ? 'lineThrough' : undefined }
+      { text: grad + ' ', fontSize: FONTE.grad, color: c.suave },
+      { text: nomeQueCabe(grad, p.nome || '', livre, !riscada), fontSize: FONTE.nome, bold: !riscada, color: riscada ? c.suave : c.forte, decoration: riscada ? 'lineThrough' : undefined }
     ], width: '*' });
     colunas.push(horarios(p, c));
     var conteudo = { columns: colunas, columnGap: ENTRE_COLUNAS };
@@ -173,7 +240,7 @@
   }
 
   /* o bloquinho de uma unidade num dia. o = { largura, unidade (nome, só no calendário), cobertura, erro, max,
-     pessoas, mostrar, c, preencher } */
+     pessoas, postoCurto (só no calendário), mostrar, c, preencher } */
   function bloco(o) {
     var interna = o.largura - 2 * BLOQUINHO.lado;
     var corpo = [];
@@ -181,7 +248,7 @@
       corpo.push([{ text: o.unidade.toLocaleUpperCase('pt-BR'), fontSize: FONTE.unidade, bold: true, characterSpacing: ESPACAMENTO_CAIXA_ALTA, color: o.c.suave }]);
     }
     if (o.mostrar.grafico && o.cobertura && o.max > 0) corpo.push([grafico(o.cobertura, o.erro, o.max, interna, o.c)]);
-    (o.pessoas || []).forEach(function (p) { corpo.push([linha(p, interna, o.mostrar, o.c)]); });
+    (o.pessoas || []).forEach(function (p) { corpo.push([linha(p, interna, o.mostrar, o.c, o.postoCurto)]); });
     if (!corpo.length) corpo.push([{ text: ' ', fontSize: FONTE.nome }]);
     return { table: { widths: [interna], body: corpo, dontBreakRows: true }, layout: layoutBloquinho(o.c, o.preencher) };
   }

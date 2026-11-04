@@ -13,6 +13,8 @@
    aqui: fica na página Pendências, e a mesma leitura escreve o
    número do item dela no menu (a soma que o banco manda em cada
    grupo). Os avisos de decisão levam para lá.
+   A última leitura vence: a resposta atrasada de uma leitura
+   anterior é descartada (senão volta um número velho).
    Estrutura e moldes vivem no index.html.
    ============================================================ */
 (function () {
@@ -30,6 +32,7 @@
   var botao = wrap.querySelector('.cabecalho-btn');
   var badge = botao ? botao.querySelector('.cabecalho-badge') : null;
   var btnMarcarTodas = document.getElementById('avisos-marcar-todas');
+  var leitura = 0;     // a última leitura vence
 
 
   /* "3ºSgt. Meireles · 21/07/2026" (sem autor quando foi o sistema) */
@@ -93,6 +96,7 @@
 
   function carregar() {
     if (!RW.apiFetch || !RW.obterToken || !RW.obterToken()) return;
+    var minha = ++leitura;
     function corpoJson(r) { return r.ok ? r.json() : null; }
     function nulo() { return null; }
     /* uma leitura de cada fonte: os avisos em aberto (o sino) + as pendências (o número do menu) */
@@ -100,6 +104,8 @@
       RW.apiFetch('/rest/v1/rpc/notificacoes_listar', { metodo: 'POST', corpo: { p_limite: 20, p_so_abertos: true } }).then(corpoJson).catch(nulo),
       RW.apiFetch('/rest/v1/rpc/pendencias_listar', { metodo: 'POST', corpo: {} }).then(corpoJson).catch(nulo)
     ]).then(function (res) {
+      /* a resposta de uma leitura mais antiga que chega atrasada não escreve por cima da nova */
+      if (minha !== leitura) return;
       montar(res[0], Array.isArray(res[1]) ? res[1] : []);
     }).catch(function () {});
   }

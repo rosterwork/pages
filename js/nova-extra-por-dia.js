@@ -145,7 +145,7 @@
     var cor = G().corDe(falta);
     if (cor) nome.classList.add('nova-extra-uni-nome', 'nova-extra-uni-nome--' + cor);
     clicavel(b, un, k);
-    preencher(b.querySelector('.escala-mes-celula'), un, k, alocs, marcados, falta);
+    preencher(b.querySelector('.escala-mes-celula'), un, k, alocs, marcados, falta, true);
     return b;
   }
 
@@ -169,8 +169,9 @@
   }
 
   /* o miolo do pelotão no dia (o bloco do Calendário e a célula da Agenda): o gráfico do dia com as extras (sem extra, a
-     escala como está) e uma vaga por militar com o horário escrito */
-  function preencher(cel, un, k, alocs, marcados, falta) {
+     escala como está) e uma vaga por militar com o horário escrito. curto: a célula pequena do Calendário, com o posto
+     curto (RosterWork.escalasCelula.postoCurto) */
+  function preencher(cel, un, k, alocs, marcados, falta, curto) {
     var ab = dia().aberto();
     cel.classList.toggle('escala-mes-celula--selecionada', !!ab && ab.uid === un.id && ab.data === k);
     /* as vagas do dia, inclusive as sem horário (vão para o fim), na ordem do primeiro horário */
@@ -182,7 +183,7 @@
     if (antes) {
       var dep = comExtra ? G().depoisDe(un.id, k, alocs, falta) : null;
       var cob = dep ? dep.cobertura : antes, erro = dep ? dep.erro : G().erroAntes(un.id, k);
-      if (F.escalaCompleta() && RW.escalasCelula) RW.escalasCelula.preencherCelula(cel, cob, erro, G().deServico(un.id, k), picos[un.id] || 1);
+      if (F.escalaCompleta() && RW.escalasCelula) RW.escalasCelula.preencherCelula(cel, cob, erro, G().deServico(un.id, k), picos[un.id] || 1, null, { postoCurto: !!curto });
       else {
         var g = grafico(cob, un.id, erro);
         if (g) cel.appendChild(g);
@@ -190,7 +191,7 @@
     }
     var foco = RW.novaExtraLista.foco();
     aqui.forEach(function (a) {
-      var vg = u().vaga(a, un.id);
+      var vg = u().vaga(a, un.id, curto);
       if (a.cpf === foco) vg.classList.add('nova-extra-foco');
       cel.appendChild(vg);
     });

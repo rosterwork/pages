@@ -26,7 +26,7 @@
   function valido() {
     var v = ed.v;
     if (v.vol === false) return true;
-    if (v.vol !== true || v.cotas < 1 || v.cotas > 10 || (v.so24 && v.cotas !== 4 && v.cotas !== 8)) return false;
+    if (v.vol !== true || ed.semDia || v.cotas < 1 || v.cotas > 10 || (v.so24 && v.cotas !== 4 && v.cotas !== 8)) return false;
     var q = contar('quer');
     return q >= ed.r.min_datas && contar('nao_posso') <= 10;
   }
@@ -89,7 +89,8 @@
       ped.nao_posso.forEach(function (d) { v.dias[d] = 'nao_posso'; });
     }
     var mes = comp.toLocaleDateString('pt-BR', { month: 'long' });
-    ed = { v: v, inicial: dados(v), r: r, leitura: r.prazo.estado !== 'aberto', btn: null };
+    /* sem nenhum dia livre no mês (min_datas 0), o Sim fica apagado e só o Não vale */
+    ed = { v: v, inicial: dados(v), r: r, leitura: r.prazo.estado !== 'aberto', semDia: r.min_datas === 0, btn: null };
     RW.painel.abrir({
       titulo: msg().tituloPainel(mes),
       subtitulo: r.em_nome ? r.militar.grad + ' ' + r.militar.nome : msg().prazoPainel(r.prazo.fecha.slice(8, 10) + '/' + r.prazo.fecha.slice(5, 7)),
@@ -102,9 +103,12 @@
     ed.f = f;
     f.querySelector('#nova-extra-q-vol').textContent = msg().perguntaVol(mes);
     Array.prototype.forEach.call(f.querySelectorAll('[data-vol]'), function (b) {
-      b.disabled = ed.leitura;
+      b.disabled = ed.leitura || (ed.semDia && b.getAttribute('data-vol') === 'sim');
       b.addEventListener('click', function () { v.vol = b.getAttribute('data-vol') === 'sim'; atualizar(); });
     });
+    var semDia = f.querySelector('#nova-extra-sem-dia');
+    semDia.textContent = ed.semDia ? msg().semDiaLivre(mes) : '';
+    semDia.classList.toggle('oculto', !ed.semDia);
     var cotas = f.querySelector('#nova-extra-cotas');
     for (var n = 1; n <= 10; n++) {
       var c = RW.tpl('tpl-nova-extra-cota');

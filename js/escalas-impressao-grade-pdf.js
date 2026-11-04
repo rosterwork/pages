@@ -64,6 +64,7 @@
       erro: (cfg.dados.erro[uid] || {})[dia] || null,
       max: cfg.max[uid],
       pessoas: celula().pessoasDoDia(cfg.dados, uid, dia),
+      postoCurto: cfg.formato === 'calendario',   // a célula pequena do calendário, como na tela
       mostrar: cfg.mostrar,
       c: c,
       preencher: preencher

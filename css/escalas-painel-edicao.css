@@ -77,6 +77,25 @@
   padding-left: 8px;
 }
 
+/* entre as funções: a linha para no recuo de 8px da caixa, antes da borda */
+.escala-edicao-grupo + .escala-edicao-grupo {
+  padding-top: 4px;
+  border-top: 1px solid var(--borda);
+}
+
+/* a linha do título das caixas do painel do dia (postos, Sem função, De folga, Observações e Lançar no SYSBM): de uma
+   borda à outra (desfaz o recuo de 8px da .grupo-caixa, geral-painel.css), só com algo embaixo do título; na troca de
+   viatura com data, embaixo do "No lugar da ..." */
+.painel-corpo .grupo-caixa:has(> .escala-edicao-grupo) > :is(.escala-posto-titulo, .rotulo-secao):first-child:not(:has(+ .escala-posto-no-lugar)),
+.painel-corpo .grupo-caixa:has(> .escala-edicao-grupo) > .escala-posto-no-lugar,
+.painel-corpo .escala-observacoes-titulo,
+.painel-corpo .grupo-caixa > .rotulo-secao:first-child:has(+ .escala-observacao-add),
+.painel-corpo .escala-sysbm:has(> :not(.escala-sysbm-cabecalho):not(.oculto)) > .escala-sysbm-cabecalho {
+  margin: 0 -8px 4px;
+  padding: 0 8px 8px;
+  border-bottom: 1px solid var(--borda);
+}
+
 .escala-edicao-linhas {
   display: flex;
   flex-direction: column;

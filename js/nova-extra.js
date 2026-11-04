@@ -91,6 +91,7 @@
     el.prazo.textContent = p.estado === 'aberto' ? msg().prazoAberto(p.faltam_dias) : p.estado === 'antes' ? msg().prazoAntes(br(p.abre)) : msg().prazoFechado(br(p.fecha));
     el.prazo.classList.toggle('selo--alerta', p.estado === 'aberto');
     if (ped) el.pedidoTexto.textContent = ped.voluntario ? msg().pediu(ped) : msg().naoQuer(ped.enviado_em);
+    else if (p.estado === 'aberto' && r.min_datas === 0) el.pedidoTexto.textContent = msg().semDiaLivre(comp.toLocaleDateString('pt-BR', { month: 'long' }));   // sem nenhum dia livre no mês
     else el.pedidoTexto.textContent = p.estado === 'aberto' ? msg().semPedido(br(p.fecha)) : p.estado === 'antes' ? msg().naoAbriu(br(p.abre)) : msg().naoPediu;
     /* a extra é só para praças: o oficial vê o aviso no lugar do pedido */
     if (r.militar && r.militar.praca === false) el.pedidoTexto.textContent = msg().soPraca;

@@ -54,11 +54,12 @@
     pref: function (m, k) { return (m.quer || []).indexOf(k) >= 0 ? 'quer' : (m.nao_posso || []).indexOf(k) >= 0 ? 'nao' : 'sem'; },
     /* a extra no bloco do dia, só para ler (marcar é no painel do dia e na lista): o posto e o nome e as 4 bolinhas
        pequenas dos horários, sem clique, na cor do que ele marcou no pedido; na dica, o nome inteiro e o horário
-       escrito; embaixo, o pelotão quando é de outro */
-    vaga: function (a, uid) {
+       escrito; embaixo, o pelotão quando é de outro. curto: a célula pequena do Calendário, com o posto curto
+       (RosterWork.escalasCelula.postoCurto); a dica leva o posto inteiro */
+    vaga: function (a, uid, curto) {
       var m = util.militar(a.cpf) || {}, blocos = a.blocos.map(Number);
       var v = RW.tpl('tpl-ne-vaga');
-      v.querySelector('.extra-vaga-grad').textContent = m.grad || '';
+      v.querySelector('.extra-vaga-grad').textContent = curto && RW.escalasCelula ? RW.escalasCelula.postoCurto(m.grad) : (m.grad || '');
       v.querySelector('.extra-vaga-nome').textContent = m.nome || a.cpf;
       var horas = blocos.length === 4 ? msg().horasN(24) : blocos.length ? util.horas(blocos) : '';
       /* sem nenhum horário: em cinza até o Salvar (marcar uma bolinha traz de volta) */
@@ -321,7 +322,7 @@
         b.querySelector('.escala-calendario-unidade-nome').textContent = un.nome;
         var aqui = alocs.filter(function (a) { return a.data === k && +a.unidade === un.id; });
         b.classList.toggle('nova-extra-cal-uni--vazia', !aqui.length);
-        aqui.forEach(function (a) { b.querySelector('.escala-mes-celula').appendChild(util.vaga(a, un.id)); });
+        aqui.forEach(function (a) { b.querySelector('.escala-mes-celula').appendChild(util.vaga(a, un.id, true)); });
         cel.appendChild(b);
       });
     } });

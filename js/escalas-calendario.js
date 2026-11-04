@@ -15,6 +15,7 @@
   window.RosterWork = window.RosterWork || {};
 
   var maxPorUnidadeAtual = {};   // pico de cobertura de cada unidade na renderização atual (reusado no refresh de uma célula)
+  var celulaAtual = {};          // as opções da célula na renderização atual: o posto curto só no Calendário (não no Colunas › Dias)
   var reqSeq = 0;           // token de requisição: ignora resposta antiga quando outra render começou
 
 
@@ -39,7 +40,7 @@
   }
 
   /* preenche a célula de UM dia (calendário) com, por unidade, a célula do Mês */
-  function preencherDia(celulaDia, iso, colunas, dados, cobertura, erro, maxPorUnidade, afastados) {
+  function preencherDia(celulaDia, iso, colunas, dados, cobertura, erro, maxPorUnidade, afastados, opcoesCelula) {
     colunas.forEach(function (c) {
       var bloco = RosterWork.tpl('tpl-escala-calendario-unidade');
       if (!bloco) return;
@@ -52,7 +53,7 @@
       var pessoas = (dados[c.id] && dados[c.id][iso]) || [];
       var cobDia = (cobertura[c.id] && cobertura[c.id][iso]) || null;
       var erroDia = (erro[c.id] && erro[c.id][iso]) || null;
-      if (RosterWork.escalasCelula) RosterWork.escalasCelula.preencherCelula(cel, cobDia, erroDia, pessoas, maxPorUnidade[c.id], (afastados[c.id] && afastados[c.id][iso]) || []);
+      if (RosterWork.escalasCelula) RosterWork.escalasCelula.preencherCelula(cel, cobDia, erroDia, pessoas, maxPorUnidade[c.id], (afastados[c.id] && afastados[c.id][iso]) || [], opcoesCelula);
       celulaDia.appendChild(bloco);
     });
   }
@@ -108,6 +109,8 @@
       /* pico de cada unidade no mês (a régua dos gráficos da unidade) */
       var maxPorUnidade = RosterWork.escalasCelula ? RosterWork.escalasCelula.calcularMaxPorUnidade(cobertura, ids) : {};
       maxPorUnidadeAtual = maxPorUnidade;
+      var opcoesCelula = { postoCurto: !opcoes.diasPorLinha };
+      celulaAtual = opcoesCelula;
 
       /* o componente monta a grade e chama aoDia por dia; só preenchemos os dias do mês exibido
          (os de outro mês ficam só com o número apagado, como calendário tradicional) */
@@ -117,7 +120,7 @@
         unidadesPorDia: colunas.length,   // um bloco por unidade em cada dia, alinhados por linha
         aoDia: function (celulaDia, data, noMes) {
           if (!noMes) return;
-          preencherDia(celulaDia, dataISO(data), colunas, dados, cobertura, erro, maxPorUnidade, afastados);
+          preencherDia(celulaDia, dataISO(data), colunas, dados, cobertura, erro, maxPorUnidade, afastados, opcoesCelula);
         }
       });
 
@@ -153,7 +156,7 @@
       var cobDia = (r.cobertura[unidadeId] && r.cobertura[unidadeId][iso]) || null;
       var erroDia = (r.erro[unidadeId] && r.erro[unidadeId][iso]) || null;
       var pessoas = (r.militares[unidadeId] && r.militares[unidadeId][iso]) || [];
-      RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxPorUnidadeAtual[unidadeId], (r.afastados[unidadeId] && r.afastados[unidadeId][iso]) || []);
+      RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxPorUnidadeAtual[unidadeId], (r.afastados[unidadeId] && r.afastados[unidadeId][iso]) || [], celulaAtual);
       RosterWork.escalasCelula.desenharGraficos(celula);
     }).catch(function () {});   // refresh de 1 célula falhou: mantém a célula atual (o salvamento já avisou)
   }

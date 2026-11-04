@@ -424,6 +424,7 @@
       naoAbriu: function (abre) { return 'O pedido abre em ' + abre + '.'; },
       naoPediu: 'Nenhum pedido feito.',
       soPraca: 'A extra é só para praças.',
+      semDiaLivre: function (mes) { return 'Sem dia livre em ' + mes + ': todos os dias têm serviço, troca, folga, férias, licença ou dispensa.'; },
       pediu: function (p) {
         return 'Pedido enviado em ' + p.enviado_em + ': ' + p.cotas + (p.cotas === 1 ? ' cota' : ' cotas') + (p.so_24h ? ', só 24 h' : '')
           + ', ' + p.quer.length + (p.quer.length === 1 ? ' dia que quer' : ' dias que quer')
@@ -740,12 +741,7 @@
         efeitoSai: function (militar, funcao) { return 'O ' + militar + ' sai do ' + funcao + '.'; },
         papelJunto: function (militar, papel) { return 'O ' + militar + ' continua ' + papel + ', e o sistema refaz o dia em volta dele.'; },
         ficaVazio: function (funcao) { return 'O ' + funcao + ' fica vazio.'; },
-        /* o serviço no dia: "das 08h às 08h, pelo ciclo"; o pedaço que sai vira folga */
-        servicoTexto: function (lista) {
-          var por = { pontual: ', pontual', troca: ', por troca', extra: ', de extrajornada' };
-          var partes = lista.map(function (p) { return 'das ' + p.hi + ' às ' + p.hf + (por[p.origem] || ', pelo ciclo'); });
-          return partes.length > 1 ? partes.slice(0, -1).join(', ') + ' e ' + partes[partes.length - 1] : (partes[0] || '');
-        },
+        /* o pedaço que sai vira folga */
         folgaParte: function (periodos, militar, horas) {
           return periodos.charAt(0).toUpperCase() + periodos.slice(1) + ', o ' + militar + ' fica de folga (' + horas + '). No banco de horas:';
         },

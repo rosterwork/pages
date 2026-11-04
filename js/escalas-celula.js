@@ -55,8 +55,12 @@
     afastamento: 'afastamento'
   };
 
+  /* o posto curto das células pequenas (os calendários e o PDF deles); o que não está aqui sai inteiro */
+  var POSTO_CURTO = { 'Sd.1ªCl.': 'Sd.' };
 
   function soHora(t) { return t ? t.split(':')[0] + 'h' : ''; }
+
+  function postoCurto(grad) { return POSTO_CURTO[grad] || grad || ''; }
 
   /* minutos desde as 08:00 (início do dia de serviço); a janela da grade vai de 0 a 1440 */
   function minDesde8(hhmm) {
@@ -249,8 +253,8 @@
     if (uso) uso.setAttribute('href', 'icones/todos.svg#' + nomeIcone);
   }
 
-  /* uma linha de militar: ícone de origem (+ cadeado se fixado) + grad + nome + horário */
-  function montarPessoa(p) {
+  /* uma linha de militar: ícone de origem (+ cadeado se fixado) + grad + nome + horário (curto: o posto curto) */
+  function montarPessoa(p, curto) {
     var linha = RosterWork.tpl('tpl-escala-mes-pessoa');
     if (!linha) return null;
     if (p.origem === 'folga') linha.classList.add('linha-escalado--folga');   /* folga: nome riscado */
@@ -276,7 +280,7 @@
       if (reman) { definirIcone(reman, 'icone-remanejado'); icones.appendChild(reman); }
     }
 
-    linha.querySelector('.linha-escalado-grad').textContent = p.grad || '';
+    linha.querySelector('.linha-escalado-grad').textContent = curto ? postoCurto(p.grad) : (p.grad || '');
     linha.querySelector('.linha-escalado-nome').textContent = p.nome || '';
     if (window.RosterWork.busca) linha.setAttribute('data-busca', window.RosterWork.busca.chave(p));   // busca do sub-cabeçalho (nome/CPF/RG)
     linha.setAttribute('data-situacao', situacao(p));   // o que o filtro Situação da barra lê
@@ -312,8 +316,10 @@
      aparecem só na cor do gráfico (o texto fica no painel do dia, ao clicar). Reaproveitada na
      renderização e no refresh de uma célula (atualizarCelula). maxUnidade = a régua do gráfico
      (o pico da unidade da célula no período exibido; ver calcularMaxPorUnidade).
-     afastados (só a Escala manda): os de férias, licença ou dispensa no dia, depois dos de serviço */
-  function preencherCelula(celula, cobDia, erroDia, pessoas, maxUnidade, afastados) {
+     afastados (só a Escala manda): os de férias, licença ou dispensa no dia, depois dos de serviço.
+     opcoes.postoCurto: a célula pequena dos calendários, com o posto curto (postoCurto) */
+  function preencherCelula(celula, cobDia, erroDia, pessoas, maxUnidade, afastados, opcoes) {
+    var curto = !!(opcoes && opcoes.postoCurto);
     celula.textContent = '';
     /* o dia com mudança do painel do dia ainda não salva: a borda tracejada (escalas-painel-salvar.js) */
     var S = RosterWork.escalasPainelSalvar;
@@ -323,7 +329,7 @@
       if (grafico) celula.appendChild(grafico);
     }
     (pessoas || []).concat(afastados || []).forEach(function (p) {
-      var linhaP = montarPessoa(p);
+      var linhaP = montarPessoa(p, curto);
       if (linhaP) celula.appendChild(linhaP);
     });
   }
@@ -397,6 +403,8 @@
     iconesDasOrigens: iconesDasOrigens,
     situacao: situacao,
     soHora: soHora,
+    /* o posto curto das células pequenas (tela e PDF dos calendários) */
+    postoCurto: postoCurto,
     trechosTurno: trechosTurno
   };
 })();
