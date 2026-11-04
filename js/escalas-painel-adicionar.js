@@ -3,16 +3,16 @@
    admin). Sub-tela do painel do dia em caixas de pergunta, uma
    depois da outra e só as que valem (Guia visual › Ações e perguntas):
    Como entra (somente no dia ou no ciclo) e Quem entra
-   (o campo de militar, geral-combo-militar, com a lista do como).
+   (o campo de militar, geral-combo-militar, com a lista do como; no
+   dia, a Unidade ao lado, começando na do painel, com as unidades
+   que têm alguém de horas livres, e a lista só dela).
    - No dia (pontual): o horário, já com as horas livres dele; onde
-     fica: o sistema distribui (refaz o dia do zero com ele; quem está
-     fixado fica), a função escolhida (quem está nela sai daquele
-     horário) ou no lugar de outro militar (quem sai, de serviço no
-     horário, e de quais funções, todas marcadas; quem fica sem
-     nenhuma vai para Sem função); e o banco de horas. Vai para o
-     rascunho do Dia (escalas-painel-editar.js); na função escolhida e
-     no lugar de outro, a prévia refaz o dia em volta do que está
-     fixado, mexendo o mínimo.
+     fica (a caixa comum, escalas-painel-onde.js): o sistema
+     distribui (refaz o dia do zero com ele; quem está fixado fica),
+     a função escolhida ou no lugar de outro militar; e o banco de
+     horas. Vai para o rascunho do Dia (escalas-painel-editar.js); na
+     função escolhida e no lugar de outro, a prévia refaz o dia em
+     volta do que está fixado, mexendo o mínimo.
    - No ciclo: quem está fora entra; quem já está no ciclo escolhe o
      último serviço no ciclo atual entre as três últimas datas (mudar
      de ciclo); quem já serve pelo ciclo no dia não muda. Vai para o
@@ -46,33 +46,60 @@
   }
 
   function abrir() {
-    var api = ed(), H = api.horas, Q = RosterWork.escalasPainelQuem, C = RosterWork.escalasPainelCiclo, D = RosterWork.data;
+    var api = ed(), H = api.horas, C = RosterWork.escalasPainelCiclo, D = RosterWork.data;
     if (!api.dados()) return;
     var iso = api.iso(), uid = api.unidadeId(), data = diaMes(iso);
-    var est = { como: 'dia', item: null, mil: null, periodos: [], onde: 'sistema', posto: null, funcao: null,
-      sai: null, funcoes: [], banco: 'sim', ultimo: null };
-    var el = {}, pedido = 0, onde = null, combo = null, comboSai = null, chaveSai = '';
+    var est = { como: 'dia', item: null, mil: null, periodos: [], banco: 'sim', ultimo: null, unidade: null };
+    var el = {}, pedido = 0, combo = null, onde = null, livres = null;
+
+    /* a Unidade (só no dia): as unidades com alguém de horas livres; começa na do painel */
+    function montarUnidades() {
+      var menu = el.unidade.querySelector('.dropdown-menu');
+      menu.textContent = '';
+      var lista = livres ? listas().unidadesDia(livres) : [];
+      if (!lista.some(function (u) { return String(u.id) === String(est.unidade); })) {
+        est.unidade = (lista.filter(function (u) { return String(u.id) === String(uid); })[0] || lista[0] || {}).id || null;
+      }
+      lista.forEach(function (u) {
+        var it = RosterWork.tpl('tpl-escala-unidade-item');
+        if (!it) return;
+        it.textContent = u.nome;
+        it.addEventListener('click', function () { est.unidade = u.id; est.item = null; est.mil = null; preencherDia(); atualizar(); });
+        menu.appendChild(it);
+      });
+      var atual = lista.filter(function (u) { return String(u.id) === String(est.unidade); })[0];
+      var t = el.unidade.querySelector('.campo-selecao-texto');
+      t.textContent = atual ? atual.nome : el.unidadeVazio;
+      t.classList.toggle('campo-selecao-texto--vazio', !atual);
+      el.unidade.querySelector('.campo-selecao').disabled = !lista.length;
+    }
+    function preencherDia() {
+      montarUnidades();
+      combo.preencher(listas().dia(livres, est.unidade));
+    }
 
     function carregar() {
       var meu = ++pedido;
-      est.item = null; est.mil = null;
+      est.item = null; est.mil = null; livres = null;
       combo.habilitar(false);
       combo.definir(L().carregando, true);
+      if (est.como === 'dia') montarUnidades();
       var leitura = est.como === 'dia'
-        ? RosterWork.escalasDados.disponiveis(uid, iso, uid).then(function (r) { return r ? listas().dia(r) : null; })
+        ? RosterWork.escalasDados.disponiveis(uid, iso, uid)
         : RosterWork.escalasDados.continuosListar(uid, iso).then(function (d) { return d && d.ok ? listas().ciclo(d.militares) : null; });
-      leitura.then(function (lista) {
+      leitura.then(function (r) {
         if (meu !== pedido || !el.combo.isConnected) return;
-        if (!lista) { combo.definir(msg().falhaCarregar, true); return; }
-        combo.preencher(lista);
+        if (!r) { combo.definir(msg().falhaCarregar, true); return; }
+        if (est.como === 'dia') { livres = r; preencherDia(); return; }
+        combo.preencher(r);
       });
     }
 
     function escolher(item) {
       var m = item.m;
       est.item = item; est.mil = m;
-      est.onde = 'sistema'; est.posto = null; est.funcao = null; est.sai = null; est.funcoes = []; est.banco = 'sim'; chaveSai = '';
-      if (onde) { el.ondeLugar.textContent = ''; onde = null; }
+      est.banco = 'sim';
+      if (onde) onde.reiniciar();
       if (est.como === 'dia') est.periodos = (m.livres || []).length ? m.livres.map(function (l) { return { hi: l.hi, hf: l.hf }; }) : [{ hi: '08:00', hf: '08:00' }];
       /* no ciclo: vem marcada a mais recente das três últimas datas */
       var datas = m.ultimos_servicos || [];
@@ -87,12 +114,6 @@
     function ocupadoDele() { return ((est.mil && est.mil.ocupado) || []).map(H.faixa); }
     function emConflito(per) { var f = H.faixa(per); return ocupadoDele().some(function (o) { return !!H.cruza(f, o); }); }
     function minutos() { return H.uniao(janelas()).reduce(function (s, w) { return s + w[1] - w[0]; }, 0); }
-    function ocupantes(posto, nf) { return RosterWork.escalasPainelLinhaAplicar.ocupantes(posto, nf, est.periodos, est.mil && est.mil.cpf); }
-    function situacao(posto, nf) {
-      var nomes = ocupantes(posto, nf).map(function (o) { return nomeDe(o.m); });
-      nomes = nomes.filter(function (n, i) { return nomes.indexOf(n) === i; });
-      return nomes.length ? msg().itemSai(nomes) : msg().itemVazia;
-    }
 
     /* ---------- montagem ---------- */
 
@@ -110,31 +131,6 @@
       el.marcarData = C.datas(el.datas, (est.mil && est.mil.ultimos_servicos) || [], function (v) { est.ultimo = v; atualizar(); });
     }
 
-    /* De quais funções: as funções de quem sai no horário, todas marcadas */
-    function montarFuncoes() {
-      var s = est.sai && est.sai.s;
-      el.funcoesLista.textContent = '';
-      el.funcoesRotulo.classList.toggle('oculto', !s);
-      if (!s) return;
-      est.funcoes = s.funcoes.map(function () { return true; });
-      el.marcarFuncoes = Q.marcar(el.funcoesLista, s.funcoes.map(function (f) {
-        return { texto: L().funcaoNoHorario(api.funcaoNoPosto(f.funcao, f.posto), H.textoPeriodos(f.x.map(H.periodo))), marcado: true };
-      }), function (marcados) {
-        est.funcoes = s.funcoes.map(function (f, i) { return marcados.indexOf(i) >= 0; });
-        atualizar();
-      });
-    }
-
-    /* Quem sai: a lista acompanha o horário (quem não está mais de serviço nele sai da escolha) */
-    function atualizarSai() {
-      var chave = JSON.stringify(est.periodos);
-      if (chave === chaveSai) return;
-      chaveSai = chave;
-      var itens = listas().sai(est.periodos, est.mil && est.mil.cpf);
-      if (est.sai) { est.sai = itens.filter(function (i) { return i.cpf === est.sai.cpf; })[0] || null; montarFuncoes(); }
-      comboSai.preencher(itens);
-    }
-
     function criarCombo(caixa, opcoes) {
       var inp = caixa.querySelector('input');
       inp.id = 'escala-adicionar-campo-' + (++conta);
@@ -149,16 +145,26 @@
       el = {
         quem: q('.escala-adicionar-quem'), combo: q('.escala-adicionar-combo'), assume: q('.escala-adicionar-assume'),
         ajudas: tela.querySelectorAll('.escala-adicionar-ajuda'),
+        unidadeCampo: q('.escala-adicionar-unidade-campo'), unidade: q('.escala-adicionar-unidade'),
+        militarRotulo: q('.escala-adicionar-militar-rotulo'),
         horario: q('.escala-adicionar-horario'), periodos: q('.escala-adicionar-periodos'),
-        ondeBloco: q('.escala-adicionar-onde-bloco'), ondeLugar: q('.escala-adicionar-onde'), lugar: q('.escala-adicionar-lugar'),
-        sai: q('.escala-adicionar-sai'), funcoesRotulo: q('.escala-adicionar-funcoes-rotulo'), funcoesLista: q('.escala-adicionar-funcoes'),
-        efeito: q('.escala-adicionar-efeito'), banco: q('.escala-adicionar-banco'), contabilizar: q('.escala-adicionar-contabilizar'),
+        banco: q('.escala-adicionar-banco'), contabilizar: q('.escala-adicionar-contabilizar'),
         ultimo: q('.escala-adicionar-ultimo'), ultimoRotulo: q('.escala-adicionar-ultimo-rotulo'),
         datas: q('.escala-adicionar-datas'), mudar: q('.escala-adicionar-mudar'), info: q('.escala-adicionar-ciclo-info')
       };
+      el.unidadeVazio = el.unidade.querySelector('.campo-selecao-texto').textContent;
+      /* o Onde fica: a caixa comum, no lugar marcado do molde */
+      el.ondeBloco = RosterWork.tpl('tpl-escala-onde-fica');
+      q('.escala-adicionar-onde-bloco').replaceWith(el.ondeBloco);
+      onde = RosterWork.escalasPainelOnde.criar(el.ondeBloco, {
+        dados: function () { return api.dados(); },
+        periodos: function () { return est.periodos; },
+        cpf: function () { return est.mil && est.mil.cpf; },
+        aoMudar: atualizar
+      });
       ligarRadios(q('.escala-adicionar-como'), function (v) {
         est.como = v;
-        if (onde) { el.ondeLugar.textContent = ''; onde = null; }
+        onde.reiniciar();
         carregar();
         atualizar();
       })('dia');
@@ -167,19 +173,8 @@
         aoEscolher: escolher,
         textos: { selecione: L().digiteOuEscolha, semNinguem: L().ninguemDisponivel, filtroVazio: msg().ninguemEncontrado }
       });
-      comboSai = criarCombo(el.sai, {
-        atual: function () { return est.sai; },
-        aoEscolher: function (item) { est.sai = item; montarFuncoes(); atualizar(); },
-        textos: { selecione: L().digiteOuEscolha, semNinguem: L().ninguemDeServico, filtroVazio: msg().ninguemEncontrado }
-      });
       el.regua = RosterWork.horario.criarRegua('afastada');
       if (el.regua) q('.escala-adicionar-regua').appendChild(el.regua);
-      el.marcarOnde = ligarRadios(q('.escala-adicionar-onde-opcoes'), function (v) {
-        est.onde = v; est.posto = null; est.funcao = null; est.sai = null; est.funcoes = []; chaveSai = '';
-        if (onde) { el.ondeLugar.textContent = ''; onde = null; }
-        montarFuncoes();
-        atualizar();
-      });
       el.marcarBanco = ligarRadios(el.banco, function (v) { est.banco = v; });
       corpo.appendChild(tela);
       carregar();
@@ -199,6 +194,9 @@
       var m = est.mil, como = est.como;
       mostra(el.quem, true);
       [].forEach.call(el.ajudas, function (a) { mostra(a, a.getAttribute('data-como') === como); });
+      /* a Unidade e o rótulo do Militar só no dia (no ciclo, o campo fica como sempre) */
+      mostra(el.unidadeCampo, como === 'dia');
+      mostra(el.militarRotulo, como === 'dia');
       ['horario', 'ondeBloco', 'banco', 'ultimo', 'mudar', 'info'].forEach(function (k) { mostra(el[k], false); });
       nota(el.assume, m && m.assume ? (m.assume === 'chefe_socorro' ? msg().assumeChefe : msg().assumeOficial)(nomeDe(m), '') : '');
       if (!m) { pronto(L().escolhaQuem, false); return; }
@@ -233,52 +231,18 @@
         .concat(est.periodos.map(function (p) { return { hi: p.hi, hf: p.hf, classe: 'novo' }; })));
       var conflito = est.periodos.some(emConflito);
 
-      /* onde fica: o sistema, a função escolhida ou no lugar de outro militar */
+      /* onde fica: o sistema, a função escolhida ou no lugar de outro militar (a caixa comum) */
       mostra(el.ondeBloco, true);
-      el.marcarOnde(est.onde);
-      mostra(el.ondeLugar, est.onde === 'funcao');
-      if (est.onde === 'funcao' && !onde) {
-        onde = Q.onde(el.ondeLugar, { postos: api.dados().postos || [], situacao: situacao,
-          aoMudar: function (posto, funcao) { est.posto = posto; est.funcao = funcao; atualizar(); } });
-      }
-      mostra(el.lugar, est.onde === 'lugar');
-      if (est.onde === 'lugar') atualizarSai();
-      nota(el.efeito, efeitoDia(m));
-
-      var respondido = est.onde === 'sistema' || (est.onde === 'funcao' && est.posto && est.funcao)
-        || (est.onde === 'lugar' && est.sai && est.funcoes.some(Boolean));
+      onde.atualizar();
+      var o = onde.estado(), respondido = onde.respondido();
       /* o banco de horas, quando onde fica está respondido */
-      mostra(el.banco, !!respondido);
+      mostra(el.banco, respondido);
       el.contabilizar.textContent = L().bancoSim(H.horasTexto(minutos()));
       el.marcarBanco(est.banco);
 
-      if (est.onde === 'funcao') pronto(est.funcao ? L().porNaFuncao(nome, est.funcao) : L().escolhaFuncao, !!respondido && !conflito);
-      else if (est.onde === 'lugar') {
-        pronto(!est.sai ? L().escolhaQuemSai : !est.funcoes.some(Boolean) ? L().marqueFuncao : L().porNoLugar(nome, nomeDe(est.sai)),
-          !!respondido && !conflito);
-      } else pronto(L().adicionarNoDia(nome, data), !conflito);
-    }
-
-    /* o que acontece com quem está em volta: quem sai da função escolhida, ou o que sobra para quem sai */
-    function efeitoDia() {
-      if (est.onde === 'funcao' && est.posto && est.funcao) {
-        var partes = ocupantes(est.posto, est.funcao).map(function (o) {
-          var pr = H.periodo(o.x);
-          return msg().avisoSemFuncao(nomeDe(o.m), H.curta(pr.hi), H.curta(pr.hf));
-        });
-        return partes.length ? msg().avisoEfeito(partes) : '';
-      }
-      if (est.onde === 'lugar' && est.sai) {
-        var s = est.sai.s, nome = nomeDe(s.m);
-        var saem = s.funcoes.filter(function (f, i) { return est.funcoes[i]; });
-        if (!saem.length) return '';
-        var ficam = s.funcoes.filter(function (f, i) { return !est.funcoes[i]; });
-        var nomesSaem = saem.map(function (f) { return api.funcaoNoPosto(f.funcao, f.posto); });
-        return ficam.length
-          ? L().lugarSaiContinua(nome, nomesSaem, ficam.map(function (f) { return api.funcaoNoPosto(f.funcao, f.posto); }))
-          : L().lugarSaiSem(nome, nomesSaem, H.textoPeriodos(est.periodos));
-      }
-      return '';
+      if (o.onde === 'funcao') pronto(o.funcao ? L().porNaFuncao(nome, o.funcao) : onde.falta(), respondido && !conflito);
+      else if (o.onde === 'lugar') pronto(respondido ? L().porNoLugar(nome, nomeDe(o.sai)) : onde.falta(), respondido && !conflito);
+      else pronto(L().adicionarNoDia(nome, data), !conflito);
     }
 
     /* no ciclo: quem está fora entra; quem já está escolhe o último serviço no ciclo atual; quem já serve no dia não muda */
@@ -305,22 +269,8 @@
       if (est.periodos.some(emConflito)) return;   // o botão já fica desligado
       var js = janelas(), soma = function (l) { return l.reduce(function (s, w) { return s + w[1] - w[0]; }, 0); };
       if (soma(H.uniao(js)) !== soma(js)) { RosterWork.avisar({ tipo: 'erro', mensagem: L().erroPeriodos }); return; }
-      var periodos = est.periodos.map(function (p) { return { hi: p.hi, hf: p.hf }; });
-      var pontual = { contabilizar: est.banco === 'sim' };
-      if (est.onde === 'funcao') {
-        if (!est.posto || !est.funcao) return;
-        api.aplicarColocacao({ cpf: m.cpf, posto: est.posto, funcao: est.funcao, periodos: periodos, sistema: false, pontual: pontual });
-      } else if (est.onde === 'lugar') {
-        if (!est.sai) return;
-        /* entra como pontual e senta em cada função marcada de quem sai, nos trechos dela no horário */
-        api.aplicarColocacao({ cpf: m.cpf, periodos: periodos, sistema: true, pontual: pontual });
-        est.sai.s.funcoes.forEach(function (f, i) {
-          if (!est.funcoes[i]) return;
-          api.aplicarColocacao({ cpf: m.cpf, posto: f.posto, funcao: f.funcao, periodos: f.x.map(H.periodo), sistema: false, pontual: null });
-        });
-      } else {
-        api.aplicarColocacao({ cpf: m.cpf, periodos: periodos, sistema: true, refazer: true, pontual: pontual });
-      }
+      if (!onde.respondido()) return;   // o botão já fica desligado
+      onde.aplicar({ contabilizar: est.banco === 'sim' });
       api.concluir();
     }
 

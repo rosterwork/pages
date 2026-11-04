@@ -1,9 +1,10 @@
 /* ============================================================
    ESCALAS — as listas do Adicionar militar (escalas-painel-adicionar.js)
    Os itens do campo de militar (geral-combo-militar), com os títulos
-   dos grupos: quem entra no dia (horas livres) e no ciclo; e quem sai,
-   no "No lugar de outro militar" (quem está numa função no horário
-   escolhido).
+   dos grupos: quem entra no dia (horas livres, na unidade escolhida,
+   e as unidades que têm alguém) e no ciclo; e quem sai, no "No lugar
+   de outro militar" do Onde fica (quem está numa função no horário
+   escolhido, na unidade onde ele entra).
    RosterWork.escalasPainelAdicionarListas.
    ============================================================ */
 (function () {
@@ -19,13 +20,23 @@
   function L() { return RosterWork.mensagens.escala.linha; }
   function diaMes(iso) { var p = String(iso || '').split('-'); return p.length === 3 ? p[2] + '/' + p[1] : ''; }
 
-  /* no dia: quem tem horas livres, por unidade (a do painel primeiro), fora quem já entrou como pontual */
-  function dia(resp) {
-    var api = ed(), H = api.horas, ja = {}, lista = [], unidade = null;
+  /* no dia: as unidades com alguém de horas livres, na ordem do banco (a do painel primeiro): [{ id, nome }] */
+  function unidadesDia(resp) {
+    var ja = {}, lista = [];
+    (resp || []).forEach(function (m) {
+      if (ja[m.unidade_id]) return;
+      ja[m.unidade_id] = true;
+      lista.push({ id: m.unidade_id, nome: m.unidade || '' });
+    });
+    return lista;
+  }
+
+  /* no dia: quem tem horas livres na unidade escolhida, fora quem já entrou como pontual */
+  function dia(resp, unidadeId) {
+    var api = ed(), H = api.horas, ja = {}, lista = [];
     (api.rascunho().pontuais || []).forEach(function (x) { ja[x.cpf] = true; });
     (resp || []).forEach(function (m) {
-      if (ja[m.cpf]) return;
-      if (m.unidade_id !== unidade) { unidade = m.unidade_id; lista.push({ titulo: m.unidade || '' }); }
+      if (ja[m.cpf] || String(m.unidade_id) !== String(unidadeId)) return;
       var ocupado = (m.ocupado || []).map(function (o) { return { hi: H.curta(o.hi), hf: H.curta(o.hf), tipo: o.tipo }; });
       lista.push({ cpf: m.cpf, grad: m.grad, nome: m.nome, info: ocupado.length ? msg().ocupadoNoDia(ocupado) : L().infoLivre, m: m });
     });
@@ -56,11 +67,12 @@
   }
 
   /* quem sai: quem está numa função (fora o Chefe de Socorro e o Oficial de Área) nos horários dados, com o que ele faz
-     ali. cpfEntra = quem entra (fica de fora). Itens: { cpf, grad, nome, info, s: { m, funcoes: [{ posto, funcao, x }] } },
-     x = os trechos da função dentro dos horários */
-  function sai(periodos, cpfEntra) {
+     ali. cpfEntra = quem entra (fica de fora); dados = a leitura do dia da unidade onde ele entra (sem ela, a do
+     painel). Itens: { cpf, grad, nome, info, s: { m, funcoes: [{ posto, funcao, x }] } }, x = os trechos da função dentro
+     dos horários */
+  function sai(periodos, cpfEntra, dados) {
     var api = ed(), H = api.horas, janelas = periodos.map(H.faixa), por = {}, ordem = [];
-    ((api.dados() || {}).postos || []).forEach(function (po) {
+    (((dados || api.dados()) || {}).postos || []).forEach(function (po) {
       (po.funcoes || []).forEach(function (f) {
         if (BLOQUEADAS.test(f.nome)) return;
         (f.militares || []).forEach(function (m) {
@@ -82,5 +94,5 @@
     });
   }
 
-  window.RosterWork.escalasPainelAdicionarListas = { dia: dia, ciclo: ciclo, sai: sai };
+  window.RosterWork.escalasPainelAdicionarListas = { unidadesDia: unidadesDia, dia: dia, ciclo: ciclo, sai: sai };
 })();

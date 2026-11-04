@@ -1,9 +1,11 @@
 /* ============================================================
    COMPONENTE — o campo de militar (geral-combo-militar.js)
    O campo é o .dropdown.campo-combo (geral-campo) com o menu do
-   geral-dropdown; aqui, a lista: o nome à esquerda (sempre inteiro)
-   e, à direita, o que ele faz hoje ou o motivo (quebra em linhas);
-   quem não pode fica apagado, com o motivo em amarelo
+   geral-dropdown; aqui, a lista: o nome à esquerda (sempre inteiro,
+   com o ícone de origem antes, quando há) e, à direita, o que ele
+   faz hoje ou o motivo (quebra em linhas); quem não pode fica
+   apagado, com o motivo em amarelo. O campo já escolhido mostra o
+   ícone dele à esquerda (.campo-combo-icone)
    ============================================================ */
 
 /* o menu acompanha a largura do campo (a do gatilho, medida pelo geral-flutuante) e rola por dentro */
@@ -22,9 +24,32 @@
   white-space: normal;
 }
 
+/* o nome: o ícone de origem (quando o item o traz), a graduação e o nome de guerra numa linha só */
 .combo-militar-nome {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   flex-shrink: 0;
   white-space: nowrap;
+}
+
+.combo-militar-icone {
+  flex-shrink: 0;
+  margin-right: 4px;
+  color: var(--texto-suave);
+}
+
+/* o campo com o ícone de origem do escolhido, à esquerda do nome (o ícone não recebe o clique) */
+.campo-combo-icone {
+  position: absolute;
+  top: calc(50% - 7px);
+  left: 12px;
+  color: var(--texto-suave);
+  pointer-events: none;
+}
+
+.campo-combo--com-icone > .campo-entrada {
+  padding-left: 32px;
 }
 
 .combo-militar-grad {

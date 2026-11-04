@@ -22,9 +22,10 @@
     return periodos.some(function (p) { return !!H.cruza(f, H.faixa(p)); });
   }
 
-  /* quem está na função nesses horários (fora quem não conta): [{ m, x: [início, fim] }] */
-  function ocupantes(posto, nomeFuncao, periodos, fora) {
-    var api = ed(), H = api.horas, r = [], f = api.acharFuncao(posto, nomeFuncao);
+  /* quem está na função nesses horários (fora quem não conta): [{ m, x: [início, fim] }]. dados = a leitura do dia de
+     outra unidade (o Remanejar); sem ela, a do painel */
+  function ocupantes(posto, nomeFuncao, periodos, fora, dados) {
+    var api = ed(), H = api.horas, r = [], f = api.acharFuncao(posto, nomeFuncao, dados);
     ((f && f.militares) || []).forEach(function (o) {
       if (fora && o.cpf === fora) return;
       (o.periodos || []).forEach(function (per) {

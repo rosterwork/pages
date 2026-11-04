@@ -21,6 +21,8 @@
      das horas que ele somou; o resto abre a sub-tela.
    As mudanças do dia vão ao rascunho do Dia; nada grava até o Salvar
    do rodapé do painel (escalas-painel-salvar.js), menos a troca.
+   A lista Quem sai e a origem de cada parte do serviço ficam em
+   escalas-painel-remover-listas.js.
    ============================================================ */
 (function () {
   'use strict';
@@ -47,71 +49,13 @@
     return function marcar(valor) { [].forEach.call(radios, function (r) { r.checked = r.value === valor; }); };
   }
 
-  /* ---------- de onde ele veio ---------- */
-
-  /* as partes do serviço dele no dia que saem por aqui, pela origem: [{ origem: 'ciclo' | 'pontual' | 'troca', periodos,
-     trocaId }] (por troca, uma parte para cada troca; as horas da extra ficam de fora) */
-  function partesDe(mil) {
-    var api = ed(), H = api.horas;
-    var pont = (api.rascunho().pontuais || []).filter(function (x) { return x.cpf === mil.cpf; })[0];
-    var doPontual = pont ? H.uniao((pont.periodos || []).map(H.faixa)) : [];
-    function janelas(filtro) { return H.uniao(mil.janelas.filter(filtro).map(H.faixa)); }
-    var ciclo = H.menos(janelas(function (j) { return ['pontual', 'troca', 'extra'].indexOf(j.origem) < 0; }), doPontual);
-    var r = [], trocas = [];
-    function por(origem, faixas, trocaId) { if (faixas.length) r.push({ origem: origem, periodos: faixas.map(H.periodo), trocaId: trocaId || null }); }
-    por('ciclo', ciclo);
-    por('pontual', doPontual);
-    mil.janelas.forEach(function (j) { if (j.origem === 'troca' && trocas.indexOf(j.troca_id) < 0) trocas.push(j.troca_id); });
-    trocas.forEach(function (id) { por('troca', janelas(function (j) { return j.origem === 'troca' && j.troca_id === id; }), id); });
-    return r;
-  }
-
-  /* tem o que tirar por aqui: o remanejado ou alguma parte que não é extra */
-  function podeTirar(mil) { return !!mil && (!!mil.remanejado || partesDe(mil).length > 0); }
-
-  /* a frase da folga: "Das 20h às 08h, o Cb. X fica de folga (12 horas)."; o dia todo (sem horário no texto), "em 29/10" */
-  function textoFolga(periodos, nome, horas, data) {
-    var t = ed().horas.textoPeriodos(periodos);
-    return t ? L().folgaParte(t, nome, horas) : L().tirarFolga(nome, data, horas);
-  }
-
-  /* o pontual como está gravado (o banco diz se as horas dele foram contadas) */
-  function pontualSalvo(cpf) {
-    var api = ed();
-    if (!api.pontualSalvo(cpf)) return null;
-    return ((api.dados() || {}).pontuais || []).filter(function (x) { return x.cpf === cpf; })[0] || null;
-  }
-
-  /* quem está no dia aqui (nas funções ou sem função), com o serviço dele ("das 08h às 08h, pelo ciclo"), e quem foi
-     remanejado daqui para outra unidade (sem serviço aqui no dia) */
-  function itensQuem() {
-    var api = ed(), H = api.horas, d = api.dados() || {}, noDia = {}, lista = [], uid = String(api.unidadeId());
-    (d.postos || []).forEach(function (po) {
-      (po.funcoes || []).forEach(function (f) { (f.militares || []).forEach(function (m) { noDia[m.cpf] = true; }); });
-    });
-    (d.sem_funcao || []).forEach(function (m) { noDia[m.cpf] = true; });
-    var visto = {};
-    (d.picker || []).forEach(function (u) {
-      (u.militares || []).forEach(function (pm) {
-        var rm = pm.remanejado;
-        if (rm && !rm.fica && String(rm.de) === uid && !visto[pm.cpf]) {
-          var mr = api.militarDoDia(pm.cpf);
-          if (!mr) return;
-          visto[pm.cpf] = true;
-          lista.push({ cpf: pm.cpf, grad: pm.grad, nome: pm.nome, mil: mr, info: L().remanejadoPara(rm.para_nome) });
-          return;
-        }
-        if (!noDia[pm.cpf] || visto[pm.cpf]) return;
-        var mil = api.militarDoDia(pm.cpf);
-        if (!mil || !mil.janelas.length || !podeTirar(mil)) return;
-        visto[pm.cpf] = true;
-        var jan = mil.janelas.slice().sort(function (a, b) { return H.emMin(a.hi) - H.emMin(b.hi); });
-        lista.push({ cpf: pm.cpf, grad: pm.grad, nome: pm.nome, mil: mil,
-          info: L().servicoTexto(jan.map(function (j) { return { hi: H.curta(j.hi), hf: H.curta(j.hf), origem: j.origem }; })) });
-      });
-    });
-    return lista;
-  }
+  /* as listas e a origem do serviço (escalas-painel-remover-listas.js) */
+  function R() { return RosterWork.escalasPainelRemoverListas; }
+  function partesDe(mil) { return R().partesDe(mil); }
+  function podeTirar(mil) { return R().podeTirar(mil); }
+  function textoFolga(periodos, nome, horas, data) { return R().textoFolga(periodos, nome, horas, data); }
+  function pontualSalvo(cpf) { return R().pontualSalvo(cpf); }
+  function itensQuem() { return R().itensQuem(); }
 
   /* ---------- a sub-tela ---------- */
 

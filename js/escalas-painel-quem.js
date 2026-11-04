@@ -5,7 +5,8 @@
    (escala_dia_disponiveis com a vaga), em grupos com títulos fixos:
    de serviço na unidade, de serviço em outra unidade, de folga e,
    no fim e apagados, quem não pode, com o motivo. Ao lado de cada
-   nome, o que ele faz hoje.
+   nome, o que ele faz hoje. Quem está de serviço leva à esquerda o
+   ícone de origem (o lápis, o Remover e o Remanejar).
    Onde: o posto e a função, cada um numa lista; a função traz a
    situação dela no horário ("vazia", "Sd. Godoy sai").
    Caixas de marcar: as respostas de várias escolhas de uma pergunta.
@@ -67,9 +68,27 @@
     return texto + (unidade ? ', ' + unidade : '');
   }
 
+  /* o ícone de origem do serviço (o mesmo da linha do dia), pelo primeiro horário dele na unidade; sem serviço, nenhum */
+  function iconeDe(janelas) {
+    var H = ed().horas, icones = (RosterWork.escalasPainel && RosterWork.escalasPainel.pecas || {}).iconeOrigem || {};
+    var j = (janelas || []).slice().sort(function (a, b) { return H.emMin(a.hi) - H.emMin(b.hi); })[0];
+    return j ? (icones[j.origem] || icones.sistema || null) : null;
+  }
+
+  /* quem está de serviço numa unidade, no campo de militar: o ícone de origem e, à direita, só o horário
+     ("Das 08h às 08h"). pm = o militar do picker da leitura do dia (disp = os horários dele lá) */
+  function itemServico(pm) {
+    var H = ed().horas;
+    var janelas = (pm.disp || []).slice().sort(function (a, b) { return H.emMin(a.hi) - H.emMin(b.hi); });
+    var texto = janelas.map(function (j) { return msg().dasAs(H.curta(j.hi), H.curta(j.hf)); }).join(' e ');
+    return { cpf: pm.cpf, grad: pm.grad, nome: pm.nome, icone: iconeDe(janelas), janelas: janelas,
+      info: texto.charAt(0).toUpperCase() + texto.slice(1) };
+  }
+
   /* a lista do banco em itens do campo de militar, com os títulos dos grupos; militar = quem está na linha (fica de
-     fora). Cada item: { cpf, grad, nome, info, inativo, c } (c = o que o banco mandou). opcoes.soDoDia = só quem está
-     de serviço aqui no dia (o lápis): sem quem está de folga e sem quem serve em outra unidade */
+     fora). Cada item: { cpf, grad, nome, info, inativo, icone, c } (c = o que o banco mandou). opcoes.soDoDia = só quem
+     está de serviço aqui no dia (o lápis): sem quem está de folga e sem quem serve em outra unidade, cada um com o ícone
+     de origem */
   function itensDaVaga(resp, militar, unidadeNome, opcoes) {
     var aqui = [], outra = [], folga = [], naoPodem = [];
     var soDoDia = !!(opcoes && opcoes.soDoDia);
@@ -77,6 +96,7 @@
       if (militar && c.cpf === militar.cpf) return;
       if (soDoDia && (c.grupo === 'folga' || c.grupo === 'outro_pelotao')) return;
       var item = { cpf: c.cpf, grad: c.grad, nome: c.nome, c: c };
+      if (soDoDia) { var mil = ed().militarDoDia(c.cpf); item.icone = mil ? iconeDe(mil.janelas) : null; }
       if (!c.pode) { item.inativo = true; item.info = motivoTexto(c); naoPodem.push(item); return; }
       if (c.grupo === 'folga') { item.info = infoFolga(c); folga.push(item); return; }
       if (c.grupo === 'outro_pelotao') { item.info = infoOutra(c); outra.push(item); return; }
@@ -181,5 +201,6 @@
     return function (indices) { botoes.forEach(function (b, i) { pintar(b, indices.indexOf(i) >= 0); }); };
   }
 
-  window.RosterWork.escalasPainelQuem = { itensDaVaga: itensDaVaga, lugares: lugares, onde: onde, marcar: marcar, nomeDe: nomeDe };
+  window.RosterWork.escalasPainelQuem = { itensDaVaga: itensDaVaga, itemServico: itemServico, iconeDe: iconeDe, lugares: lugares,
+    onde: onde, marcar: marcar, nomeDe: nomeDe };
 })();

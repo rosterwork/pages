@@ -124,6 +124,28 @@ textarea.campo-entrada {
   pointer-events: none;
 }
 
+/* Unidade e Militar na mesma linha (as Trocas, o Remanejar e o Adicionar militar): a unidade estreita e o militar no
+   resto; com a unidade escondida, o militar ocupa a linha toda */
+.campo-unidade-militar {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+  align-items: end;
+  gap: 8px;
+}
+
+.campo-unidade-militar:has(> .oculto) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.campo-unidade-militar .dropdown {
+  display: flex;
+}
+
+.campo-unidade-militar .dropdown > .campo-entrada {
+  flex: 1;
+  min-width: 0;
+}
+
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    O campo baixo fica do tamanho dos outros campos do celular

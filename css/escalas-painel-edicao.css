@@ -259,7 +259,8 @@
 /* as notas de várias linhas: o ícone no alto */
 .escala-linha .nota,
 .escala-adicionar .nota,
-.escala-remover .nota {
+.escala-remover .nota,
+.escala-remanejar .nota {
   align-items: flex-start;
 }
 
@@ -316,12 +317,12 @@
   display: none;
 }
 
-/* ---------- o Adicionar e o Remover militar (as caixas de pergunta são do geral-subtela) ---------- */
-/* as bolinhas e as caixas de marcar de uma pergunta e a pergunta que abre dentro da caixa (Quem sai e De quais funções),
-   uma embaixo da outra */
+/* ---------- o Adicionar, o Remover e o Remanejar militar (as caixas de pergunta são do geral-subtela) ---------- */
+/* as bolinhas e as caixas de marcar de uma pergunta e a pergunta que abre dentro da caixa (no Onde fica, Quem sai e De
+   quais funções), uma embaixo da outra */
 .escala-marcar-lista,
-.escala-adicionar-onde-opcoes,
-.escala-adicionar-lugar {
+.escala-onde-fica-opcoes,
+.escala-onde-fica-lugar {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -331,6 +332,28 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+/* ---------- Remanejar militar ---------- */
+/* o Enviar para: a bolinha e, ao lado, a lista das unidades */
+.escala-remanejar-enviar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.escala-remanejar-destino {
+  width: 160px;
+}
+
+/* o militar da troca, embaixo do Sim */
+.escala-remanejar-troca-campo {
+  padding-left: 32px;
+}
+
+/* as caixas Onde fica entram na sub-tela como as outras (o espaço e a numeração são do geral-subtela) */
+.escala-remanejar-ondes {
+  display: contents;
 }
 
 /* ---------- Remover militar › por troca ---------- */
@@ -394,7 +417,8 @@
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    O topo e o X da edição da linha ficam com a altura do dedo; no
    subcabeçalho do admin, o desfazer e o refazer, que descem de
-   linha, ficam à direita, embaixo do Imprimir
+   linha, ficam à direita, embaixo do Imprimir; no Remanejar, a
+   lista do Enviar para ocupa o resto da linha
    ============================================================ */
 @media (max-width: 767px) {
   html[data-celular] .escala-dia-imprimir + .escala-edicao-historico {
@@ -414,5 +438,12 @@
      dos lápis, para o título do posto não crescer) */
   html[data-celular] .escala-posto-funcoes-lista .geral-opcao {
     min-height: var(--toque-altura-celular);
+  }
+
+  /* Remanejar › Enviar para: a lista das unidades ocupa o resto da linha */
+  html[data-celular] .escala-remanejar-destino {
+    flex: 1;
+    width: auto;
+    min-width: 0;
   }
 }

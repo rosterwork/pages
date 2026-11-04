@@ -21,7 +21,9 @@
    .atualizar() redesenha o rodapé da página; .contar() soma as
    mudanças das duas; .pendente() diz se há mudança no Dia ou no
    Ciclo; .descartar() tira as do Dia e do Ciclo; .paraPrevia() dá o rascunho para a prévia das telas (null
-   sem mudança); .marcado(unidade, dia) diz se o dia leva a borda.
+   sem mudança); .marcado(unidade, dia) diz se o dia leva a borda;
+   .gravarAgora(dia, voltar) grava na hora o que não passa pelo
+   rascunho (o Remanejar militar), com o Desfazer no resumo.
    ============================================================ */
 (function () {
   'use strict';
@@ -157,34 +159,29 @@
     return log;
   }
 
-  function gravar(botao) {
-    var c = contexto();
-    if (!c || salvando) return;
-    var dia = E() && E().pendentes() ? E().paraGravar() : null;
-    var ciclo = doCiclo(c).length ? C().envio() : null;
-    if (!dia && !ciclo) return;
+  /* grava (escala_painel_salvar) com o véu e, gravado, põe o dia gravado no painel e avisa as telas. Devolve uma
+     Promise com { ok, r } ou { ok: false, erro, desatualizado } (quem chama avisa). O dia que mudou depois da leitura
+     (outro administrador ou o sistema) tira o rascunho do Dia e lê o dia de novo */
+  function enviar(c, dia, ciclo, botao) {
     salvando = true;
     atualizar();
     if (botao) RW.iniciarCarregando(botao);
     if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal();   // o ciclo recalcula a escala: círculo e tela travada
-    RW.escalasDados.painelSalvar(c.unidadeId, c.iso, dia, ciclo).then(function (r) {
+    return RW.escalasDados.painelSalvar(c.unidadeId, c.iso, dia, ciclo).then(function (r) {
       salvando = false;
       if (RW.esconderVeuGlobal) RW.esconderVeuGlobal();
       if (botao) RW.pararCarregando(botao);
       var geral = RW.mensagens.geral;
-      if (r && r._falha) { RW.avisar({ tipo: 'erro', mensagem: r._falha === 'conexao' ? geral.semConexao : geral.falhaServidor }); atualizar(); return; }
+      if (r && r._falha) { atualizar(); return { ok: false, erro: r._falha === 'conexao' ? geral.semConexao : geral.falhaServidor }; }
       if (!r || !r.success) {
         if (r && r.desatualizado) {
-          /* o dia mudou depois da leitura (outro administrador ou o sistema): o rascunho do Dia sai e o dia é lido de novo */
-          RW.avisar({ tipo: 'aviso', mensagem: msg().diaDesatualizado });
           if (E()) E().descartar();
           redesenharAba();
           mudou();
-        } else {
-          RW.avisar({ tipo: 'erro', mensagem: msg().painelRecusado((r && r.error) || msg().falhaSalvar) });
-          atualizar();
+          return { ok: false, desatualizado: true, erro: msg().diaDesatualizado };
         }
-        return;
+        atualizar();
+        return { ok: false, erro: msg().painelRecusado((r && r.error) || msg().falhaSalvar) };
       }
       if (E()) E().aposGravar(r);
       if (C()) C().limpar();
@@ -193,9 +190,46 @@
       atualizar();
       window.dispatchEvent(new CustomEvent('rosterwork_escala_salva', { detail: { unidadeId: c.unidadeId, iso: c.iso } }));
       window.dispatchEvent(new CustomEvent('rosterwork_escala_recarregar'));
-      var log = juntarLogs(r.logs || []);
-      if (log && RW.resumo) RW.resumo.abrirModal(log, { pagina: 'Escala' });
       redesenharAba();
+      return { ok: true, r: r };
+    });
+  }
+
+  function avisarFalha(res) { RW.avisar({ tipo: res.desatualizado ? 'aviso' : 'erro', mensagem: res.erro }); }
+
+  function gravar(botao) {
+    var c = contexto();
+    if (!c || salvando) return;
+    var dia = E() && E().pendentes() ? E().paraGravar() : null;
+    var ciclo = doCiclo(c).length ? C().envio() : null;
+    if (!dia && !ciclo) return;
+    enviar(c, dia, ciclo, botao).then(function (res) {
+      if (!res.ok) { avisarFalha(res); return; }
+      var log = juntarLogs(res.r.logs || []);
+      if (log && RW.resumo) RW.resumo.abrirModal(log, { pagina: 'Escala' });
+    });
+  }
+
+  /* grava na hora uma mudança do Dia que não passa pelo rascunho (o Remanejar militar, que só abre sem mudança não
+     salva), pelo mesmo caminho do Salvar. O resumo traz o Desfazer, que grava o caminho de volta: voltar(r) devolve o
+     dia a gravar, a partir do que o banco devolveu. Devolve uma Promise: true quando gravou */
+  function gravarAgora(dia, voltar) {
+    var c = contexto();
+    if (!c || salvando) return Promise.resolve(false);
+    return enviar(c, dia, null, null).then(function (res) {
+      if (!res.ok) { avisarFalha(res); return false; }
+      var log = juntarLogs(res.r.logs || []);
+      if (log && RW.resumo) {
+        RW.resumo.abrirModal(log, {
+          pagina: 'Escala',
+          desfazer: voltar ? function () {
+            var atual = contexto();
+            if (!atual || salvando) return { ok: false };
+            return enviar(atual, voltar(res.r), null, null);
+          } : null
+        });
+      }
+      return true;
     });
   }
 
@@ -205,5 +239,5 @@
   if (RW.guardaSaida) RW.guardaSaida.registrar(pendente);
 
   RW.escalasPainelSalvar = { rodape: rodape, atualizar: atualizar, contar: contar, pendente: pendente,
-    descartar: descartar, paraPrevia: paraPrevia, marcado: marcado };
+    descartar: descartar, paraPrevia: paraPrevia, marcado: marcado, gravarAgora: gravarAgora };
 })();

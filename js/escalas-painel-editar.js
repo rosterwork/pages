@@ -17,7 +17,8 @@
    do menu Editar o dia, para o admin). O Solicitar troca e o
    Registrar troca de serviço abrem ali o formulário da troca
    (escalas-painel-troca.js); o Registrar grava na hora, fora do
-   rascunho: só sem mudança não salva.
+   rascunho: só sem mudança não salva. O Remanejar militar também
+   (escalas-painel-remanejar.js).
    Cada mudança vai para o rascunho do dia, e a lista mostra o dia
    como vai ficar (a prévia, escala_previa, já com o Ciclo que
    espera o Salvar), com a nota O que
@@ -27,7 +28,7 @@
    aba (trocar de dia e fechar o painel perguntam antes). Rascunho:
    { ajustes, pontuais, estornar, folgas, folgas_cancelar,
    observacoes, abertas (as funções abertas sem ninguém, só na
-   prévia: salvas vazias, somem), remanejar, devolver, automatico (o
+   prévia: salvas vazias, somem), devolver, automatico (o
    sistema decide o dia de novo, sem devolver cada um ao lugar de
    antes: o Voltar ao automático e o Adicionar com O sistema
    distribui) }.
@@ -125,19 +126,19 @@
     return n;
   }
 
-  /* o rascunho mudou o dia gravado? (funções, pontuais, folgas dadas ou canceladas, observações, remanejamentos, ou o
-     Voltar ao automático) */
+  /* o rascunho mudou o dia gravado? (funções, pontuais, folgas dadas ou canceladas, observações, remanejados devolvidos,
+     ou o Voltar ao automático) */
   function haMudanca() {
     if (!rasc || !base) return false;
     return !!rasc.automatico || !mesmosAjustes(base.ajustes, rasc.ajustes) || difPontuais() > 0 || rasc.folgas.length > 0
       || rasc.folgas_cancelar.length > 0 || rasc.observacoes.adicionar.length > 0 || rasc.observacoes.remover.length > 0
-      || rasc.abertas.length > 0 || rasc.remanejar.length > 0 || rasc.devolver.length > 0;
+      || rasc.abertas.length > 0 || rasc.devolver.length > 0;
   }
 
   /* o rascunho recomeça do dia gravado */
   function novoRascunho() {
     rasc = { ajustes: copiar(base.ajustes), pontuais: copiar(base.pontuais), estornar: [], folgas: [], folgas_cancelar: [],
-      observacoes: { adicionar: [], remover: [] }, abertas: [], remanejar: [], devolver: [] };
+      observacoes: { adicionar: [], remover: [] }, abertas: [], devolver: [] };
   }
 
   /* o dia gravado (a leitura, ou o que o banco devolve ao gravar) vira a base */
@@ -160,7 +161,6 @@
     if (difPontuais() > 0) r.pontuais = rasc.pontuais;
     if (rasc.folgas_cancelar.length) r.folgas_cancelar = rasc.folgas_cancelar;
     if (rasc.abertas.length) r.abertas = rasc.abertas;
-    if (rasc.remanejar.length) r.remanejar = rasc.remanejar;
     if (rasc.devolver.length) r.devolver = rasc.devolver;
     if (rasc.automatico) r.automatico = true;
     return r;
@@ -179,16 +179,17 @@
 
   /* ---------- leitura da prévia ---------- */
 
-  function acharPosto(vi, ii) {
-    var lista = (ctx && ctx.dados && ctx.dados.postos) || [];
+  /* dados = a leitura do dia de outra unidade (o Remanejar); sem ela, a do painel */
+  function acharPosto(vi, ii, dados) {
+    var lista = ((dados || (ctx && ctx.dados)) || {}).postos || [];
     for (var i = 0; i < lista.length; i++) {
       var po = lista[i];
       if ((po.tipo === 'viatura' && po.id === vi) || (po.tipo === 'instalacao' && po.id === ii)) return po;
     }
     return null;
   }
-  function acharFuncao(posto, nomeFuncao) {
-    var po = posto && acharPosto(vidPosto(posto), iidPosto(posto));
+  function acharFuncao(posto, nomeFuncao, dados) {
+    var po = posto && acharPosto(vidPosto(posto), iidPosto(posto), dados);
     var fs = (po && po.funcoes) || [];
     for (var i = 0; i < fs.length; i++) if (fs[i].nome === nomeFuncao) return fs[i];
     return null;
@@ -271,7 +272,7 @@
   /* põe o militar numa função nos horários escolhidos (formulário). Quem estava lá fica sem função naquele
      trecho: o automático é substituído só naquela parte; a colocação manual é cortada.
      c = { cpf, posto, funcao, periodos, sistema, refazer (o sistema refaz o dia do zero; o fixado fica),
-     pontual: { contabilizar } | null } */
+     pontual: { contabilizar } | null, dados (a leitura do dia da unidade do posto, quando não é a do painel) } */
   function aplicarColocacao(c) {
     if (c.pontual) {
       rasc.pontuais = rasc.pontuais.filter(function (x) { return x.cpf !== c.cpf; })
@@ -281,7 +282,7 @@
     if (c.refazer) rasc.automatico = true;
     if (c.sistema) return;
     var janelas = c.periodos.map(faixa);
-    var alvo = acharFuncao(c.posto, c.funcao);
+    var alvo = acharFuncao(c.posto, c.funcao, c.dados);
     janelas.forEach(function (w) {
       var resto = [w];
       ((alvo && alvo.militares) || []).forEach(function (m) {
@@ -400,31 +401,29 @@
     });
   }
 
-  /* Remanejar (só no dia): o serviço do dia dele vai para outra unidade da companhia; fica = continua também aqui.
-     Quem sai daqui perde as colocações manuais daqui */
-  function remanejar(cpf, destino, fica) {
-    rasc.remanejar = rasc.remanejar.filter(function (r) { return r.cpf !== cpf; })
-      .concat([{ cpf: cpf, destino: Number(destino), fica: !!fica }]);
-    if (!fica) cortarAjustesDaUnidade(cpf, true);
-  }
-
-  /* Devolver (o Remover do remanejado): ele volta só para a unidade de origem. O remanejamento ainda não salvo sai do
-     rascunho; o gravado vai no devolver. As colocações manuais dele na unidade de destino saem (no painel do destino, as
-     daqui; no da origem, as das outras) */
+  /* Devolver (o Remover do remanejado): ele volta só para a unidade de origem (vai no devolver). As colocações manuais
+     dele na unidade de destino saem (no painel do destino, as daqui; no da origem, as das outras) */
   function devolverRemanejado(cpf) {
     var mil = militarDoDia(cpf);
-    var pendente = rasc.remanejar.some(function (r) { return r.cpf === cpf; });
-    rasc.remanejar = rasc.remanejar.filter(function (r) { return r.cpf !== cpf; });
-    if (!pendente && rasc.devolver.indexOf(cpf) < 0) rasc.devolver.push(cpf);
+    if (rasc.devolver.indexOf(cpf) < 0) rasc.devolver.push(cpf);
     var daqui = !!(mil && mil.remanejado && String(mil.remanejado.de) === String(ctx.unidadeId));
     cortarAjustesDaUnidade(cpf, !daqui);
   }
 
-  /* Tirar do dia o remanejado: a folga desfaz o remanejamento gravado (no banco), então o rascunho só larga o que tinha
-     dele (o remanejar ainda não salvo e o devolver) */
+  /* Tirar do dia o remanejado: a folga desfaz o remanejamento gravado (no banco), então o rascunho só larga o devolver
+     dele */
   function largarRemanejado(cpf) {
-    rasc.remanejar = rasc.remanejar.filter(function (r) { return r.cpf !== cpf; });
     rasc.devolver = rasc.devolver.filter(function (x) { return x !== cpf; });
+  }
+
+  /* o que vai ao banco numa mudança que grava na hora (o Remanejar): fn mexe no rascunho, a cópia sai pronta para gravar
+     (com o "antes") e o rascunho volta como estava; ele só muda depois de gravar, quando o dia é lido de novo */
+  function paraGravarCom(fn) {
+    var antes = copiar(rasc);
+    fn(rasc);
+    var r = paraGravar();
+    rasc = antes;
+    return r;
   }
 
   function pontualSalvo(cpf) { return (base.pontuais || []).some(function (x) { return x.cpf === cpf; }); }
@@ -586,7 +585,7 @@
       var acoes = {
         adicionar: function () { if (RosterWork.escalasPainelAdicionar) RosterWork.escalasPainelAdicionar.abrir(); },
         remover: function () { if (RosterWork.escalasPainelRemover) RosterWork.escalasPainelRemover.abrir(); },
-        remanejar: function () { if (RosterWork.escalasPainelRemanejar) RosterWork.escalasPainelRemanejar.abrir(); },
+        remanejar: abrirRemanejar,
         troca: function () { abrirTroca(true); }
       };
       [].forEach.call(menu.querySelectorAll('[data-acao]'), function (b) {
@@ -1217,6 +1216,17 @@
     });
   }
 
+  /* o Remanejar militar (escalas-painel-remanejar.js) grava na hora, fora do rascunho: com mudança não salva (Dia ou
+     Ciclo), o aviso pede o Salvar antes */
+  function abrirRemanejar() {
+    if (!ctx || ctx.salvando || !base || !RosterWork.escalasPainelRemanejar) return;
+    if (RosterWork.escalasPainelSalvar && RosterWork.escalasPainelSalvar.contar()) {
+      RosterWork.avisar({ tipo: 'aviso', mensagem: msg().remanejarSalveAntes });
+      return;
+    }
+    RosterWork.escalasPainelRemanejar.abrir();
+  }
+
   function abrirFolga(id) { if (RosterWork.escalasPainelMilitar) RosterWork.escalasPainelMilitar.abrirFolga(id); }
 
   /* o atalho que a próxima gravação mostra na nota O que mudou (a edição da linha pede antes de mudar) */
@@ -1278,6 +1288,8 @@
     ctx.comHistorico = false;   // o fim do corpo relê o histórico, já com o que foi salvo
     foto = null;
     ctx.emSub = false;
+    /* gravou de dentro de uma sub-tela (o Remanejar): o rodapé dela sai com ela */
+    if (ctx.rodape) { ctx.rodape.textContent = ''; ctx.rodape.classList.add('oculto'); }
     montarSubcabecalho();
     renderLista(r.dia);
   }
@@ -1337,7 +1349,7 @@
       aplicarMilitar: aplicarMilitar,
       darFolga: darFolga,
       cancelarFolga: cancelarFolga,
-      remanejar: remanejar,
+      paraGravarCom: paraGravarCom,
       devolverRemanejado: devolverRemanejado,
       largarRemanejado: largarRemanejado,
       tirarPontual: tirarPontual,

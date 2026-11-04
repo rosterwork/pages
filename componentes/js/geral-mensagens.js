@@ -838,14 +838,36 @@
         remanejadoPara: function (destino) { return 'Remanejado para ' + artigo(destino) + ' ' + destino; },
         devolverA: function (origem) { return 'Devolver ' + (artigo(origem) === 'a' ? 'à ' : 'ao ') + origem; },
         devolver: function (militar, origem) { return 'Devolver o ' + militar + (artigo(origem) === 'a' ? ' à ' : ' ao ') + origem; },
-        /* Remanejar militar: as perguntas e o botão ("Remanejar o 3ºSgt. Ceranto para a 2ªCIBM") */
+        /* Remanejar militar: Trazer para esta unidade ou Enviar para outra; o que falta responder (o botão), as perguntas,
+           o serviço de quem vai ("Pelo ciclo, das 08h às 08h.") e a nota da distribuição */
+        comArtigo: function (unidade) { return artigo(unidade) + ' ' + unidade; },
         escolhaQuemVai: 'Escolha quem vai',
+        escolhaQuemVem: 'Escolha quem vem',
         escolhaUnidade: 'Escolha a unidade',
+        escolhaSeTroca: 'Escolha se é em troca',
+        escolhaMilitarTroca: 'Escolha o militar da troca',
         escolhaSeSai: 'Escolha se ele sai da unidade de origem',
+        escrevaMotivo: 'Escreva o motivo',
+        ninguemNaUnidade: 'Ninguém de serviço nessa unidade',
+        remanejarServico: function (lista, unidade) {
+          var nomes = { pontual: 'Pontual', troca: 'Por troca', extra: 'De extra n' + artigo(unidade) + ' ' + unidade };
+          return lista.map(function (p) { return (nomes[p.origem] || 'Pelo ciclo') + ', das ' + p.hi + ' às ' + p.hf + '.'; }).join(' ');
+        },
+        remanejarExtraContinua: 'A extra continua dele; só muda o lugar.',
+        remanejarTrocaTrazer: function (aqui, origem) {
+          return 'Alguém d' + artigo(aqui) + ' ' + aqui + ' vai para ' + artigo(origem) + ' ' + origem + ' no lugar dele?';
+        },
+        remanejarTrocaEnviar: function (destino, aqui) {
+          return 'Alguém d' + artigo(destino) + ' ' + destino + ' vem para ' + artigo(aqui) + ' ' + aqui + ' no lugar dele?';
+        },
         remanejarSai: function (militar, origem) { return 'O ' + militar + ' sai d' + artigo(origem) + ' ' + origem + ' neste dia?'; },
         remanejarSoNa: function (destino) { return 'Sim, fica só n' + artigo(destino) + ' ' + destino; },
         remanejarNasDuas: function (origem, destino) { return 'Não, fica n' + artigo(origem) + ' ' + origem + ' e n' + artigo(destino) + ' ' + destino; },
-        remanejar: function (militar, destino) { return 'Remanejar o ' + militar + ' para ' + artigo(destino) + ' ' + destino; },
+        ondeFicaQuem: function (militar, unidade) { return 'O ' + militar + ', n' + artigo(unidade) + ' ' + unidade + '.'; },
+        remanejarNota: function (a, b) {
+          return 'A distribuição d' + artigo(a) + ' ' + a + ' e d' + artigo(b) + ' ' + b
+            + ' é refeita neste dia e pode mudar outros militares de função. Quem foi fixado continua no lugar.';
+        },
         /* Remover militar › por troca: o documento (RW), os documentos alterados e o que acontece (Como fica) */
         trocaRw: function (numero, ano) { return numero ? 'RW nº ' + numero + '/' + ano : 'Troca'; },
         trocaNoLugar: function (cumpre, noLugarDe) { return cumpre + ' no lugar de ' + noLugarDe; },
@@ -883,6 +905,8 @@
       painelRecusado: function (erro) { return 'Nada foi salvo. ' + erro; },
       /* o Registrar troca de serviço do menu Editar o dia grava na hora: com mudança não salva, o aviso */
       registrarSalveAntes: 'Salve as alterações antes de registrar a troca.',
+      /* o Remanejar militar também grava na hora */
+      remanejarSalveAntes: 'Salve as alterações antes de remanejar.',
       /* "Condutor da AA-01", "Rancheiro do Rancho" */
       funcaoNoPosto: function (funcao, posto, feminino) { return funcao + (feminino ? ' da ' : ' do ') + posto; },
       dasAs: function (hi, hf) { return 'das ' + hi + ' às ' + hf; },

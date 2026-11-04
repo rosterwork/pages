@@ -7,7 +7,9 @@
    do grupo que o filtro esvaziou); quem não pode ser escolhido fica
    apagado no lugar dele, com o motivo. Usado nas Trocas (que
    desenham os itens delas) e no painel do dia da Escala (o molde
-   daqui: o nome e, à direita, o que ele faz hoje ou o motivo).
+   daqui: o nome e, à direita, o que ele faz hoje ou o motivo; com
+   o ícone de origem do serviço à esquerda, quando o item o traz,
+   na lista e no campo já escolhido).
    O campo é o .dropdown.campo-combo com o input e o .dropdown-menu.
    ============================================================ */
 (function () {
@@ -15,10 +17,18 @@
 
   var RW = window.RosterWork = window.RosterWork || {};
 
-  /* o item do molde geral: { cpf, grad, nome, info, inativo } */
+  /* o ícone de origem do serviço (icone = o nome do ícone; sem ele, o ícone some) */
+  function definirIcone(svg, icone) {
+    if (!svg) return;
+    svg.classList.toggle('oculto', !icone);
+    if (icone) svg.querySelector('use').setAttribute('href', 'icones/todos.svg#' + icone);
+  }
+
+  /* o item do molde geral: { cpf, grad, nome, info, inativo, icone } */
   function itemPadrao(m) {
     var el = RW.tpl('tpl-combo-militar-item');
     if (!el) return null;
+    definirIcone(el.querySelector('.combo-militar-icone'), m.icone);
     el.querySelector('.combo-militar-grad').textContent = m.grad || '';
     el.querySelector('.combo-militar-guerra').textContent = m.nome || '';
     el.querySelector('.combo-militar-info').textContent = m.info || '';
@@ -40,9 +50,19 @@
     var criarItem = opcoes.criarItem || itemPadrao;
     var escolhivel = opcoes.escolhivel || function (m) { return !m.inativo; };
 
-    function definir(texto, vazio) { if (vazio) { inp.value = ''; inp.placeholder = texto || ''; } else { inp.value = texto || ''; } }
+    /* o campo com o ícone de origem (.campo-combo-icone no molde): o do escolhido, à esquerda do nome */
+    var icone = dropdown && dropdown.querySelector('.campo-combo-icone');
+    function mostrarIcone(m) {
+      if (!icone) return;
+      var qual = m && m.icone;
+      definirIcone(icone, qual);
+      dropdown.classList.toggle('campo-combo--com-icone', !!qual);
+    }
+    function definir(texto, vazio) {
+      if (vazio) { inp.value = ''; inp.placeholder = texto || ''; mostrarIcone(null); } else { inp.value = texto || ''; }
+    }
     function habilitar(ligado) { inp.disabled = !ligado; }
-    function mostrarAtual() { var m = opcoes.atual(); if (m) definir(nome(m), false); else definir(textos.selecione, true); }
+    function mostrarAtual() { var m = opcoes.atual(); mostrarIcone(m); if (m) definir(nome(m), false); else definir(textos.selecione, true); }
     /* no celular o campo só escolhe: somente leitura, então o toque não abre o teclado */
     function ajustarAoAparelho() { inp.readOnly = !!(RW.celular && RW.celular()); }
     function aberto() { return !!dropdown && dropdown.classList.contains('dropdown--aberto'); }
@@ -99,6 +119,7 @@
     }
     function escolher(m) {
       definir(nome(m), false);
+      mostrarIcone(m);
       if (opcoes.limparErro) opcoes.limparErro(inp);
       mostrarTodos();   /* o filtro digitado não fica para a próxima vez que a lista abrir */
       if (RW.fecharDropdowns) RW.fecharDropdowns();

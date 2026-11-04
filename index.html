@@ -970,11 +970,11 @@
   </template>
 
   <!-- MOLDES: o campo de militar (componente geral-combo-militar; o painel do dia da Escala; as Trocas desenham
-       os itens delas): um militar da lista (o nome e, à direita, o que ele faz hoje ou o motivo), o título de um
-       grupo e o aviso de quando o filtro não acha ninguém -->
+       os itens delas): um militar da lista (o ícone de origem do serviço, quando há, o nome e, à direita, o que ele
+       faz hoje ou o motivo), o título de um grupo e o aviso de quando o filtro não acha ninguém -->
   <template id="tpl-combo-militar-item">
     <button type="button" class="dropdown-item combo-militar-item" role="option">
-      <span class="combo-militar-nome"><span class="combo-militar-grad"></span> <span class="combo-militar-guerra"></span></span>
+      <span class="combo-militar-nome"><svg class="icone combo-militar-icone oculto" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-base"/></svg><span class="combo-militar-grad"></span> <span class="combo-militar-guerra"></span></span>
       <span class="combo-militar-info"></span>
     </button>
   </template>
@@ -1330,15 +1330,15 @@
     <p data-alvo=".painel-lateral .escala-edicao-menu > .botao" data-avanca="clique">Abra o menu <strong>Editar o dia</strong>.</p>
     <p data-alvo=".painel-lateral .escala-edicao-menu [data-acao='adicionar']" data-avanca="clique">Escolha <strong>Adicionar militar</strong>.</p>
     <p data-alvo=".painel-corpo .escala-adicionar-como" data-avanca="proximo" data-livre>Escolha <strong>Somente no dia</strong>.</p>
-    <p data-alvo=".painel-corpo .escala-adicionar-quem" data-condicao=".painel-corpo .escala-adicionar-horario" data-avanca="aparece">Escolha quem entra: quem tem horas livres no dia, de qualquer pelotão.</p>
+    <p data-alvo=".painel-corpo .escala-adicionar-quem" data-condicao=".painel-corpo .escala-adicionar-horario" data-avanca="aparece">Escolha quem entra: a unidade e, ao lado, quem tem horas livres nela no dia.</p>
     <p data-alvo=".painel-corpo .escala-adicionar-horario" data-avanca="proximo" data-livre>O horário já vem com as horas livres dele. Ajuste, se precisar.</p>
     <p data-avanca="escolha">Escolha onde ele fica: o sistema distribui, uma função escolhida ou no lugar de outro militar.</p>
-    <section data-caminho="sistema" data-entrada=".painel-corpo .escala-adicionar-onde-opcoes > .geral-opcao:nth-child(1)"></section>
-    <section data-caminho="funcao" data-entrada=".painel-corpo .escala-adicionar-onde-opcoes > .geral-opcao:nth-child(2)">
-      <p data-alvo=".painel-corpo .escala-adicionar-onde" data-condicao=".escala-sub-aplicar:not(:disabled)" data-avanca="aparece">Escolha o posto e a função. Ao lado de cada função, a situação dela no horário.</p>
+    <section data-caminho="sistema" data-entrada=".painel-corpo .escala-adicionar .escala-onde-fica-opcoes > .geral-opcao:nth-child(1)"></section>
+    <section data-caminho="funcao" data-entrada=".painel-corpo .escala-adicionar .escala-onde-fica-opcoes > .geral-opcao:nth-child(2)">
+      <p data-alvo=".painel-corpo .escala-adicionar .escala-onde-fica-funcao" data-condicao=".escala-sub-aplicar:not(:disabled)" data-avanca="aparece">Escolha o posto e a função. Ao lado de cada função, a situação dela no horário.</p>
     </section>
-    <section data-caminho="lugar" data-entrada=".painel-corpo .escala-adicionar-onde-opcoes > .geral-opcao:nth-child(3)">
-      <p data-alvo=".painel-corpo .escala-adicionar-lugar" data-condicao=".escala-sub-aplicar:not(:disabled)" data-avanca="aparece">Escolha quem sai e de quais funções. Quem ficar sem nenhuma função vai para <strong>Sem função</strong>.</p>
+    <section data-caminho="lugar" data-entrada=".painel-corpo .escala-adicionar .escala-onde-fica-opcoes > .geral-opcao:nth-child(3)">
+      <p data-alvo=".painel-corpo .escala-adicionar .escala-onde-fica-lugar" data-condicao=".escala-sub-aplicar:not(:disabled)" data-avanca="aparece">Escolha quem sai e de quais funções. Quem ficar sem nenhuma função vai para <strong>Sem função</strong>.</p>
     </section>
     <p data-alvo=".painel-corpo .escala-adicionar-banco" data-opcional data-avanca="proximo" data-livre>Diga se as horas entram no banco de horas dele.</p>
     <p data-alvo=".escala-sub-aplicar" data-avanca="clique">Use o botão do rodapé, que diz o que vai fazer.</p>
@@ -1387,12 +1387,14 @@
     <p data-trecho="abrir-dia"></p>
     <p data-alvo=".painel-lateral .escala-edicao-menu > .botao" data-avanca="clique">Abra o menu <strong>Editar o dia</strong>.</p>
     <p data-alvo=".painel-lateral .escala-edicao-menu [data-acao='remanejar']" data-avanca="clique">Escolha <strong>Remanejar militar</strong>.</p>
-    <p data-alvo=".painel-corpo .escala-remanejar-quem" data-condicao=".painel-corpo .escala-remanejar-destino:not(.oculto)" data-avanca="aparece">Escolha quem vai: quem está de serviço nesta unidade no dia.</p>
-    <p data-alvo=".painel-corpo .escala-remanejar-destino" data-condicao=".painel-corpo .escala-remanejar-sai:not(.oculto)" data-avanca="aparece">Escolha a unidade: uma da mesma companhia, só neste dia.</p>
-    <p data-alvo=".painel-corpo .escala-remanejar-sai" data-condicao=".escala-sub-aplicar:not(:disabled)" data-avanca="aparece">Diga se ele sai desta unidade ou fica nas duas.</p>
-    <p data-alvo=".escala-sub-aplicar" data-avanca="clique">Use o botão do rodapé, que diz o que vai fazer.</p>
-    <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo.</p>
-    <p data-fim>Pronto. O serviço dele nesse dia foi para a outra unidade, com a mesma origem; não é folga nem mexe no banco de horas. Para desfazer, use <strong>Remover militar</strong>.</p>
+    <p data-alvo=".painel-corpo .escala-remanejar-fazer" data-condicao=".painel-corpo .escala-remanejar-quem:not(.oculto)" data-avanca="aparece">Escolha o que fazer: trazer alguém de outra unidade para esta, ou enviar alguém daqui para outra unidade da companhia.</p>
+    <p data-alvo=".painel-corpo .escala-remanejar-quem" data-condicao=".painel-corpo .escala-remanejar-troca:not(.oculto)" data-avanca="aparece">Escolha quem: no Trazer, a unidade e o militar; no Enviar, o militar. O ícone mostra como ele está de serviço no dia, inclusive de extra.</p>
+    <p data-alvo=".painel-corpo .escala-remanejar-troca" data-condicao=".painel-corpo .escala-remanejar-motivo:not(.oculto), .painel-corpo .escala-remanejar-sai:not(.oculto)" data-avanca="aparece">Diga se é em troca: alguém da outra unidade faz o caminho contrário.</p>
+    <p data-alvo=".painel-corpo .escala-remanejar-sai:not(.oculto)" data-condicao=".painel-corpo .escala-remanejar-motivo:not(.oculto)" data-opcional data-avanca="aparece">Diga se ele sai desta unidade ou fica nas duas.</p>
+    <p data-alvo=".painel-corpo .escala-remanejar-motivo" data-condicao=".painel-corpo .escala-remanejar-motivo textarea" data-avanca="preenchido">Escreva o motivo.</p>
+    <p data-alvo=".painel-corpo .escala-remanejar .escala-onde-fica:not(.oculto)" data-avanca="proximo" data-livre>Em cada <strong>Onde fica</strong>, escolha se o sistema distribui, uma função ou no lugar de outro militar. Cada militar tem a sua escolha.</p>
+    <p data-alvo=".escala-sub-aplicar" data-avanca="clique" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé. Isto grava na hora, e o resumo traz o Desfazer.</p>
+    <p data-fim>Pronto. O serviço dele nesse dia foi para a outra unidade, com a mesma origem; não é folga nem mexe no banco de horas, e a extra muda de lugar também na Extrajornada. Para desfazer depois, use <strong>Remover militar</strong>.</p>
     <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, o serviço dele nesse dia iria para a outra unidade, com a mesma origem.</p>
   </template>
 
@@ -2817,6 +2819,7 @@
         <div class="escala-linha-bloco">
           <span class="escala-linha-rotulo-campo">Militar</span>
           <div class="dropdown campo-combo escala-linha-combo">
+            <svg class="icone campo-combo-icone oculto" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-base"/></svg>
             <input class="campo-entrada" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Militar" />
             <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
             <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares do dia"></div>
@@ -2902,8 +2905,8 @@
 
   <!-- ===== Adicionar militar (sub-tela; escalas-painel-adicionar.js): as caixas de pergunta (o número vem do CSS), uma
        depois da outra e só as que valem. Como entra; Quem entra (o campo de militar, geral-combo-militar, com a lista do
-       como). No dia: o horário, onde fica (o sistema, a função escolhida ou no lugar de outro militar, com quem sai e de
-       quais funções) e o banco de horas. No ciclo: o último serviço no ciclo atual de quem muda de ciclo ===== -->
+       como; no dia, a Unidade e o Militar na mesma linha). No dia: o horário, onde fica (o molde comum tpl-escala-onde-fica)
+       e o banco de horas. No ciclo: o último serviço no ciclo atual de quem muda de ciclo ===== -->
   <template id="tpl-escala-adicionar">
     <div class="subtela escala-adicionar">
       <div class="subtela-cab">
@@ -2916,12 +2919,27 @@
       </div>
       <div class="grupo-caixa subtela-pergunta escala-adicionar-quem oculto">
         <span class="rotulo-secao">Quem entra</span>
-        <div class="dropdown campo-combo escala-adicionar-combo">
-          <input class="campo-entrada" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Quem entra" />
-          <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
-          <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares"></div>
+        <div class="campo-unidade-militar">
+          <div class="campo escala-adicionar-unidade-campo">
+            <span class="campo-rotulo">Unidade</span>
+            <div class="dropdown escala-adicionar-unidade">
+              <button type="button" class="campo-entrada campo-selecao" aria-label="Unidade">
+                <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+                <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+              </button>
+              <div class="dropdown-menu"></div>
+            </div>
+          </div>
+          <div class="campo">
+            <span class="campo-rotulo escala-adicionar-militar-rotulo">Militar</span>
+            <div class="dropdown campo-combo escala-adicionar-combo">
+              <input class="campo-entrada" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Quem entra" />
+              <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+              <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares"></div>
+            </div>
+          </div>
         </div>
-        <span class="subtela-ajuda escala-adicionar-ajuda" data-como="dia">Quem tem horas livres no dia, de folga, de qualquer pelotão.</span>
+        <span class="subtela-ajuda escala-adicionar-ajuda" data-como="dia">Quem tem horas livres no dia, de folga, no pelotão escolhido.</span>
         <span class="subtela-ajuda escala-adicionar-ajuda" data-como="ciclo">Quem está fora do ciclo e quem já está no ciclo, para mudar de ciclo.</span>
         <div class="nota escala-adicionar-assume oculto">
           <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
@@ -2933,29 +2951,8 @@
         <div class="escala-linha-periodos escala-adicionar-periodos"></div>
         <div class="escala-adicionar-regua"></div>
       </div>
-      <div class="grupo-caixa subtela-pergunta escala-adicionar-onde-bloco oculto">
-        <span class="rotulo-secao">Onde fica</span>
-        <div class="escala-adicionar-onde-opcoes">
-          <label class="geral-opcao"><input type="radio" value="sistema" /><span>O sistema distribui</span></label>
-          <label class="geral-opcao"><input type="radio" value="funcao" /><span>Escolher a função</span></label>
-          <label class="geral-opcao"><input type="radio" value="lugar" /><span>No lugar de outro militar</span></label>
-        </div>
-        <div class="escala-adicionar-onde oculto"></div>
-        <div class="escala-adicionar-lugar oculto">
-          <span class="subtela-ajuda">Quem sai</span>
-          <div class="dropdown campo-combo escala-adicionar-sai">
-            <input class="campo-entrada" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Quem sai" />
-            <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
-            <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares de serviço"></div>
-          </div>
-          <span class="subtela-ajuda escala-adicionar-funcoes-rotulo oculto">De quais funções</span>
-          <div class="escala-marcar-lista escala-adicionar-funcoes"></div>
-        </div>
-        <div class="nota nota--alerta escala-adicionar-efeito oculto">
-          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-          <span class="nota-texto"></span>
-        </div>
-      </div>
+      <!-- o Onde fica (molde tpl-escala-onde-fica, escalas-painel-onde.js) entra aqui -->
+      <div class="escala-adicionar-onde-bloco"></div>
       <div class="grupo-caixa subtela-pergunta escala-adicionar-banco oculto">
         <span class="rotulo-secao">Banco de horas</span>
         <label class="geral-opcao"><input type="radio" value="sim" /><span class="escala-adicionar-contabilizar"></span></label>
@@ -2972,6 +2969,36 @@
       </div>
       <div class="nota escala-adicionar-ciclo-info oculto">
         <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-historico"/></svg>
+        <span class="nota-texto"></span>
+      </div>
+    </div>
+  </template>
+
+  <!-- o Onde fica (escalas-painel-onde.js; o Adicionar e o Remanejar militar): de quem é a caixa (só no Remanejar), o
+       sistema distribui, a função escolhida ou no lugar de outro militar (quem sai e de quais funções) e o que acontece
+       com quem está em volta. Uma caixa por militar que entra numa unidade -->
+  <template id="tpl-escala-onde-fica">
+    <div class="grupo-caixa subtela-pergunta escala-onde-fica oculto">
+      <span class="rotulo-secao">Onde fica</span>
+      <span class="subtela-ajuda escala-onde-fica-quem oculto"></span>
+      <div class="escala-onde-fica-opcoes">
+        <label class="geral-opcao"><input type="radio" value="sistema" /><span>O sistema distribui</span></label>
+        <label class="geral-opcao"><input type="radio" value="funcao" /><span>Escolher a função</span></label>
+        <label class="geral-opcao"><input type="radio" value="lugar" /><span>No lugar de outro militar</span></label>
+      </div>
+      <div class="escala-onde-fica-funcao oculto"></div>
+      <div class="escala-onde-fica-lugar oculto">
+        <span class="subtela-ajuda">Quem sai</span>
+        <div class="dropdown campo-combo escala-onde-fica-sai">
+          <input class="campo-entrada" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Quem sai" />
+          <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+          <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares de serviço"></div>
+        </div>
+        <span class="subtela-ajuda escala-onde-fica-funcoes-rotulo oculto">De quais funções</span>
+        <div class="escala-marcar-lista escala-onde-fica-funcoes"></div>
+      </div>
+      <div class="nota nota--alerta escala-onde-fica-efeito oculto">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
         <span class="nota-texto"></span>
       </div>
     </div>
@@ -2995,6 +3022,7 @@
       <div class="grupo-caixa subtela-pergunta escala-remover-quem">
         <span class="rotulo-secao">Quem sai</span>
         <div class="dropdown campo-combo escala-remover-combo">
+          <svg class="icone campo-combo-icone oculto" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-base"/></svg>
           <input class="campo-entrada" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Quem sai" />
           <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
           <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares de serviço"></div>
@@ -3089,27 +3117,71 @@
   </template>
 
   <!-- ===== Remanejar militar (sub-tela; escalas-painel-remanejar.js): as caixas de pergunta (o número vem do CSS), uma
-       depois da outra. Quem vai (de serviço nesta unidade no dia, menos quem já está remanejado); Para qual unidade (as
-       outras unidades da companhia); e se ele sai da unidade de origem ou fica nas duas. Só naquele dia ===== -->
+       depois da outra e só as que valem. O que fazer (Trazer para esta unidade, ou Enviar para outra unidade da companhia,
+       escolhida ali mesmo); Quem (no Trazer, a Unidade de onde ele vem e o Militar na mesma linha; no Enviar, só o
+       Militar), com o serviço dele no dia; Em troca (alguém vai no lugar dele); Na unidade de origem (só no Enviar, sem
+       troca e sem extra: sai ou fica nas duas); o Motivo; e o Onde fica (molde tpl-escala-onde-fica), uma caixa para cada
+       militar que entra numa unidade, com a nota da distribuição uma vez só. O Salvar grava na hora, com o resumo e o
+       Desfazer. Só naquele dia ===== -->
   <template id="tpl-escala-remanejar">
     <div class="subtela escala-remanejar">
       <div class="subtela-cab">
         <span class="subtela-titulo">Remanejar militar</span>
       </div>
-      <div class="grupo-caixa subtela-pergunta escala-remanejar-quem">
-        <span class="rotulo-secao">Quem vai</span>
-        <div class="dropdown campo-combo escala-remanejar-combo">
-          <input class="campo-entrada" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Quem vai" />
-          <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
-          <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares de serviço"></div>
+      <div class="grupo-caixa subtela-pergunta escala-remanejar-fazer">
+        <span class="rotulo-secao">O que fazer</span>
+        <label class="geral-opcao"><input type="radio" value="trazer" /><span>Trazer para <span class="escala-remanejar-aqui"></span></span></label>
+        <div class="escala-remanejar-enviar">
+          <label class="geral-opcao"><input type="radio" value="enviar" /><span>Enviar para</span></label>
+          <div class="dropdown escala-remanejar-destino">
+            <button type="button" class="campo-entrada campo-entrada--pequeno campo-selecao" aria-label="Unidade de destino">
+              <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+            </button>
+            <div class="dropdown-menu"></div>
+          </div>
         </div>
-        <span class="subtela-ajuda">Quem está de serviço nesta unidade no dia.</span>
+        <span class="subtela-ajuda escala-remanejar-vazio oculto">Você não administra outra unidade desta companhia.</span>
       </div>
-      <div class="grupo-caixa subtela-pergunta escala-remanejar-destino oculto">
-        <span class="rotulo-secao">Para qual unidade</span>
-        <div class="escala-remanejar-unidades"></div>
-        <span class="subtela-ajuda escala-remanejar-vazio oculto">A companhia não tem outra unidade para remanejar.</span>
-        <span class="subtela-ajuda">Uma unidade da mesma companhia, só neste dia.</span>
+      <div class="grupo-caixa subtela-pergunta escala-remanejar-quem oculto">
+        <span class="rotulo-secao">Quem</span>
+        <div class="campo-unidade-militar">
+          <div class="campo escala-remanejar-origem-campo">
+            <span class="campo-rotulo">Unidade</span>
+            <div class="dropdown escala-remanejar-origem">
+              <button type="button" class="campo-entrada campo-selecao" aria-label="Unidade de onde ele vem">
+                <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+                <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+              </button>
+              <div class="dropdown-menu"></div>
+            </div>
+          </div>
+          <div class="campo">
+            <span class="campo-rotulo">Militar</span>
+            <div class="dropdown campo-combo escala-remanejar-combo">
+              <svg class="icone campo-combo-icone oculto" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-base"/></svg>
+              <input class="campo-entrada" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Militar" />
+              <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+              <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares de serviço"></div>
+            </div>
+          </div>
+        </div>
+        <span class="subtela-ajuda escala-remanejar-servico oculto"></span>
+      </div>
+      <div class="grupo-caixa subtela-pergunta escala-remanejar-troca oculto">
+        <span class="rotulo-secao">Em troca</span>
+        <span class="subtela-ajuda escala-remanejar-troca-pergunta"></span>
+        <label class="geral-opcao"><input type="radio" value="nao" /><span>Não</span></label>
+        <label class="geral-opcao"><input type="radio" value="sim" /><span>Sim</span></label>
+        <div class="campo escala-remanejar-troca-campo oculto">
+          <span class="campo-rotulo">Militar</span>
+          <div class="dropdown campo-combo escala-remanejar-troca-combo">
+            <svg class="icone campo-combo-icone oculto" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-base"/></svg>
+            <input class="campo-entrada" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Militar da troca" />
+            <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+            <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares de serviço"></div>
+          </div>
+        </div>
       </div>
       <div class="grupo-caixa subtela-pergunta escala-remanejar-sai oculto">
         <span class="rotulo-secao">Na unidade de origem</span>
@@ -3117,12 +3189,25 @@
         <label class="geral-opcao"><input type="radio" value="sai" /><span class="escala-remanejar-sai-sim"></span></label>
         <label class="geral-opcao"><input type="radio" value="fica" /><span class="escala-remanejar-sai-nao"></span></label>
       </div>
+      <div class="grupo-caixa subtela-pergunta escala-remanejar-motivo oculto">
+        <span class="rotulo-secao">Motivo</span>
+        <label class="campo">
+          <textarea class="campo-entrada" maxlength="200" placeholder="Escreva o motivo" aria-label="Motivo"></textarea>
+          <span class="campo-erro-texto"></span>
+        </label>
+      </div>
+      <!-- as caixas Onde fica, uma por militar que entra numa unidade -->
+      <div class="escala-remanejar-ondes"></div>
+      <div class="nota nota--alerta escala-remanejar-nota oculto">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+        <span class="nota-texto"></span>
+      </div>
     </div>
   </template>
 
-  <!-- uma unidade do Para qual unidade (Remanejar militar): o nome vem do JS -->
-  <template id="tpl-escala-remanejar-unidade">
-    <label class="geral-opcao"><input type="radio" value="" /><span class="escala-remanejar-unidade-nome"></span></label>
+  <!-- uma unidade das listas de unidade do painel do dia (o Remanejar e o Adicionar militar): o nome vem do JS -->
+  <template id="tpl-escala-unidade-item">
+    <button type="button" class="dropdown-item"></button>
   </template>
 
   <!-- um dia do documento da troca: "01/11, 24 horas" · "Cb. Lemos no lugar de Cb. Veloso" (o deste dia, em destaque) -->
@@ -3792,7 +3877,7 @@
         <span class="rotulo-secao">Militares da troca</span>
         <div class="trocas-varias-lista" id="tv-militares"></div>
         <span class="texto-leitor" id="tv-anuncio" role="status"></span>
-        <div class="trocas-varias-adicionar">
+        <div class="campo-unidade-militar">
           <div class="campo">
             <span class="campo-rotulo">Unidade</span>
             <div class="dropdown" id="tv-unidade-dropdown">

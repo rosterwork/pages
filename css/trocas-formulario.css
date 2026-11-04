@@ -102,23 +102,6 @@
   flex: 1;
 }
 
-/* Unidade e Militar numa linha (escolher o militar já o adiciona) */
-.trocas-varias-adicionar {
-  display: grid;
-  grid-template-columns: 104px minmax(0, 1fr);
-  align-items: end;
-  gap: 8px;
-}
-
-.trocas-varias-adicionar .dropdown {
-  display: flex;
-}
-
-.trocas-varias-adicionar .dropdown > .campo-entrada {
-  flex: 1;
-  min-width: 0;
-}
-
 /* o mês do calendário: as setas nas pontas e o nome no meio */
 .trocas-varias-mes {
   display: flex;
