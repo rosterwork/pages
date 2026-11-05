@@ -1942,12 +1942,16 @@
 
     /* ajuda da tela (geral-guia): o passo em que a pessoa está no passo a passo */
     guia: {
-      contador: function (passo, total) { return passo + ' de ' + total; }
+      contador: function (passo, total) { return 'Passo ' + passo + ' de ' + total; },
+      parado: 'O treino não pôde seguir neste passo. Recomece ou volte aos treinos.'
     },
 
     /* modo treino (geral-treino.js) e a página Treinamento (treinamento.js) */
     treino: {
       naoGrava: 'No modo treino, nada é gravado.',
+      /* a página do treino; o bloco do administrador tem a contagem própria */
+      pagina: function (onde) { return onde.grupo + (onde.area === 'admin' ? ', administrador' : ''); },
+      seguinte: function (onde, titulo) { return this.pagina(onde) + ' · Treino ' + onde.numero + ' de ' + onde.total + ' · ' + titulo; },
       /* o dono do serviço da troca de exemplo, quando a unidade não tem quem sirva em outro dia */
       donoDaTroca: 'outro militar',
       mesFalhou: 'Não foi possível montar o mês de treino agora.'

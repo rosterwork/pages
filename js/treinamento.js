@@ -8,8 +8,11 @@
    nome no alto), no desenho dos blocos dos Ajustes (componente
    geral-bloco). O nome do bloco tem o chevron, que abre e fecha o
    bloco; um aberto por vez (abrir um fecha o outro), e todos começam
-   fechados. Cada
-   treino é um campo com o Visto de quem já fez; sem
+   fechados; quem volta de um treino encontra a linha dele marcada e
+   no meio da tela, com o bloco e o conjunto abertos
+   (RosterWork.treino.linhaPedida). Cada
+   treino é um campo com o número no bloco (RosterWork.guiaRoteiros) e
+   o Visto de quem já fez; sem
    chevron, clicar começa o treino. Os roteiros do mesmo conjunto
    ficam num campo só, com chevron, que abre e fecha ali mesmo com as
    opções dentro; o Visto dele só vem com todas as opções concluídas.
@@ -19,7 +22,8 @@
    começo, desde o menu, no modo treino (RosterWork.treino.comecar).
    No celular, os que só existem no computador (data-so-computador)
    não aparecem. O Continuar os treinos (no alto) começa o primeiro
-   ainda sem Visto, na ordem da lista; com todos feitos, some. Ao abrir,
+   ainda sem Visto, na ordem da lista, e o A seguir diz qual é; com
+   todos feitos, os dois somem. Ao abrir,
    a lista começa o próximo treino pedido pelo fim do anterior
    (RosterWork.treino.comecarPendente).
    ============================================================ */
@@ -71,17 +75,18 @@
   }
 
   /* o campo sem chevron: o campo inteiro começa o treino (o botão dentro dele leva o teclado) */
-  function novoItem(lugar, it) {
+  function novoItem(lugar, it, ids) {
     var el = RW.tpl('tpl-treino-item');
+    el.querySelector('.treino-numero').textContent = ids.indexOf(it.id) + 1;
     el.querySelector('.treino-item-titulo').textContent = it.titulo;
     el.querySelector('.treino-item-visto').classList.toggle('oculto', !RW.guia.visto(it.id));
     el.addEventListener('click', function () { RW.treino.comecar(it.id); });
     lugar.appendChild(el);
-    return { el: el, chave: chave(it.titulo) };
+    return { el: el, chave: chave(it.titulo), id: it.id };
   }
 
-  /* o campo do conjunto: o chevron abre e fecha as opções ali mesmo */
-  function novoConjunto(lugar, c) {
+  /* o campo do conjunto: o chevron abre e fecha as opções ali mesmo; o conjunto é só a pasta, o número é de cada opção */
+  function novoConjunto(lugar, c, ids) {
     var el = RW.tpl('tpl-treino-conjunto');
     el.querySelector('.treino-conjunto-titulo').textContent = c.titulo;
     var conjunto = { el: el, chave: chave(c.titulo), cabeca: el.querySelector('.bloco-campo-cabecalho'),
@@ -89,11 +94,12 @@
     ligarChevron(conjunto.cabeca, conjunto.corpo);
     c.opcoes.forEach(function (o) {
       var op = RW.tpl('tpl-treino-opcao');
+      op.querySelector('.treino-numero').textContent = ids.indexOf(o.id) + 1;
       op.querySelector('.treino-opcao-titulo').textContent = o.titulo;
       op.querySelector('.treino-opcao-visto').classList.toggle('oculto', !RW.guia.visto(o.id));
       op.addEventListener('click', function () { RW.treino.comecar(o.id); });
       conjunto.corpo.appendChild(op);
-      conjunto.opcoes.push({ el: op, chave: chave(o.titulo), visto: RW.guia.visto(o.id) });
+      conjunto.opcoes.push({ el: op, chave: chave(o.titulo), visto: RW.guia.visto(o.id), id: o.id });
     });
     el.querySelector('.treino-conjunto-visto').classList.toggle('oculto', !conjunto.opcoes.every(function (o) { return o.visto; }));
     lugar.appendChild(el);
@@ -104,10 +110,10 @@
   function montar(pagina) {
     var estado = { blocos: [], itens: [], conjuntos: [] };
     RW.guiaRoteiros.grupos(RW.guiaRoteiros.lista()).forEach(function (g) {
-      var bloco = novoBloco(pagina, g, estado.blocos);
+      var bloco = novoBloco(pagina, g, estado.blocos), ids = RW.guiaRoteiros.idsDoGrupo(g);
       g.itens.forEach(function (it) {
-        if (it.opcoes) estado.conjuntos.push(novoConjunto(bloco.corpo, it));
-        else estado.itens.push(novoItem(bloco.corpo, it));
+        if (it.opcoes) estado.conjuntos.push(novoConjunto(bloco.corpo, it, ids));
+        else estado.itens.push(novoItem(bloco.corpo, it, ids));
       });
     });
     return estado;
@@ -141,6 +147,19 @@
     pagina.querySelector('.treino-vazio').classList.toggle('oculto', temVisivel(pagina, '.treino-item, .treino-conjunto'));
   }
 
+  /* quem volta de um treino: abre o bloco e o conjunto dele, marca a linha e a põe no meio da tela */
+  function abrirUltimo(estado, id) {
+    var alvo = null;
+    estado.itens.forEach(function (i) { if (i.id === id) alvo = i.el; });
+    estado.conjuntos.forEach(function (c) {
+      c.opcoes.forEach(function (o) { if (o.id === id) { alvo = o.el; abrir(c.cabeca, c.corpo, true); } });
+    });
+    if (!alvo) return;
+    estado.blocos.forEach(function (b) { if (b.corpo.contains(alvo)) abrir(b.cabeca, b.corpo, true); });
+    alvo.classList.add('treino--ultimo');
+    alvo.scrollIntoView({ block: 'center' });
+  }
+
   RW.paginas.treinamento = {
     iniciar: function (conteudo) {
       var pagina = conteudo.querySelector('.pagina');
@@ -151,7 +170,10 @@
       var continuar = pagina.querySelector('#treino-continuar'), primeiro = RW.guia.proximo(null);
       continuar.classList.toggle('oculto', !primeiro);
       continuar.addEventListener('click', function () { var id = RW.guia.proximo(null); if (id) RW.treino.comecar(id); });
+      pagina.querySelector('.treino-seguinte').classList.toggle('oculto', !primeiro);
+      if (primeiro) pagina.querySelector('.treino-seguinte-nome').textContent = RW.guiaRoteiros.aSeguir(primeiro);
       if (RW.treino.comecarPendente) RW.treino.comecarPendente();
+      abrirUltimo(estado, RW.treino.linhaPedida());
     }
   };
 })();

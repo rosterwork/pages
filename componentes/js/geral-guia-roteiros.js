@@ -39,7 +39,10 @@
    API: lista() (os roteiros que a pessoa pode fazer), naPagina(p)
    (os que passam pela tela), grupos(roteiros) (a lista como a pessoa
    vê, no Treinamento e no ?), ordem() (os ids nessa ordem, um a um,
-   com as opções dos conjuntos), passos(id, pagina) (do começo, ou a
+   com as opções dos conjuntos), idsDoGrupo(g) (os ids de um bloco,
+   nessa ordem: a posição é o número do treino, que recomeça em cada
+   bloco), ondeFica(id) ({ area, grupo, numero, total }), aSeguir(id)
+   (a frase do "A seguir"), passos(id, pagina) (do começo, ou a
    partir da tela pedida), caminho(passo, alvo) (os passos e o fim do
    caminho clicado), entradas(passo), fimDe(container, treino),
    seletores(texto), celular(), roteiro(id).
@@ -174,17 +177,35 @@
     return todos.filter(function (g) { return g.area === 'todos'; }).concat(todos.filter(function (g) { return g.area === 'admin'; }));
   }
 
-  /* os ids na ordem da lista do Treinamento: bloco a bloco e, no conjunto, opção a opção */
-  function ordem() {
+  /* os ids de um bloco, um a um: no conjunto, opção a opção */
+  function idsDoGrupo(g) {
     var ids = [];
-    grupos(lista()).forEach(function (g) {
-      g.itens.forEach(function (it) { (it.opcoes || [it]).forEach(function (o) { ids.push(o.id); }); });
-    });
+    g.itens.forEach(function (it) { (it.opcoes || [it]).forEach(function (o) { ids.push(o.id); }); });
     return ids;
   }
 
+  /* os ids na ordem da lista do Treinamento: bloco a bloco */
+  function ordem() {
+    return grupos(lista()).reduce(function (ids, g) { return ids.concat(idsDoGrupo(g)); }, []);
+  }
+
+  /* o bloco do treino na lista da pessoa e o número dele no bloco */
+  function ondeFica(id) {
+    var achou = null;
+    grupos(lista()).forEach(function (g) {
+      var ids = idsDoGrupo(g), i = ids.indexOf(id);
+      if (i >= 0) achou = { area: g.area, grupo: g.grupo, numero: i + 1, total: ids.length };
+    });
+    return achou;
+  }
+
+  function aSeguir(id) {
+    var onde = ondeFica(id), t = roteiro(id);
+    return (onde && t) ? RW.mensagens.treino.seguinte(onde, t.getAttribute('data-titulo')) : '';
+  }
+
   RW.guiaRoteiros = {
-    lista: lista, naPagina: naPagina, grupos: grupos, ordem: ordem, passos: passos, caminho: caminho, entradas: entradas, fimDe: fimDe,
-    seletores: seletores, celular: celular, roteiro: roteiro
+    lista: lista, naPagina: naPagina, grupos: grupos, ordem: ordem, idsDoGrupo: idsDoGrupo, ondeFica: ondeFica, aSeguir: aSeguir,
+    passos: passos, caminho: caminho, entradas: entradas, fimDe: fimDe, seletores: seletores, celular: celular, roteiro: roteiro
   };
 })();

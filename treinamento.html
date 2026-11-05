@@ -5,10 +5,11 @@
     </div>
   </div>
 
-  <!-- o Continuar os treinos (começa o primeiro ainda sem Visto; some com todos feitos) e a busca da lista: o que a
-       pessoa quer fazer (filtra pelo nome do treino) -->
+  <!-- o Continuar os treinos (começa o primeiro ainda sem Visto, que o A seguir diz qual é; os dois somem com todos feitos)
+       e a busca da lista: o que a pessoa quer fazer (filtra pelo nome do treino) -->
   <div class="pagina-subcabecalho">
     <button type="button" class="botao botao--primario oculto" id="treino-continuar">Continuar os treinos</button>
+    <span class="treino-seguinte oculto">A seguir: <strong class="treino-seguinte-nome"></strong></span>
     <div class="busca" id="treino-busca">
       <span class="busca-modo" aria-hidden="true">
         <svg class="icone" width="16" height="16"><use href="icones/todos.svg#icone-pesquisar"/></svg>
@@ -57,10 +58,11 @@
   </section>
 </template>
 
-<!-- um treino: o campo sem chevron começa o treino; o Visto à direita -->
+<!-- um treino: o campo sem chevron começa o treino; o número à esquerda e o Visto à direita -->
 <template id="tpl-treino-item">
   <div class="bloco-campo treino-item">
     <button type="button" class="bloco-campo-cabecalho">
+      <span class="treino-numero"></span>
       <span class="bloco-campo-titulo treino-item-titulo"></span>
       <span class="espacador-flex"></span>
       <span class="selo selo--sucesso treino-item-visto oculto">Visto</span>
@@ -82,9 +84,10 @@
   </div>
 </template>
 
-<!-- uma opção do conjunto: o nome e o Visto; clicar começa o treino dela -->
+<!-- uma opção do conjunto: o número, o nome e o Visto; clicar começa o treino dela -->
 <template id="tpl-treino-opcao">
   <button type="button" class="dropdown-item treino-opcao">
+    <span class="treino-numero"></span>
     <span class="treino-opcao-titulo"></span>
     <span class="espacador-flex"></span>
     <span class="selo selo--sucesso treino-opcao-visto oculto">Visto</span>

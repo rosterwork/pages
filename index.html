@@ -87,15 +87,26 @@
 
   <div class="casca">
 
-    <!-- MODO TREINO (componente geral-treino): a barra azul acima do cabeçalho, só com o modo ligado. No celular fica
-         só "Modo treino" e os dois botões -->
+    <!-- MODO TREINO (componente geral-treino): a barra azul acima do cabeçalho, só com o modo ligado: o modo, a página e
+         o treino (o número e o nome), um embaixo do outro em cada parte, e o Sair do treino. No celular fica só o treino,
+         com a página junto do número -->
     <div class="treino-barra oculto" role="status">
       <span class="treino-barra-texto">
         <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-treinamento"/></svg>
-        <span><strong>Modo treino</strong><span class="treino-barra-resto">. Nada do que você fizer é salvo.</span></span>
+        <span class="treino-barra-parte treino-barra-modo">
+          <strong>Modo treino</strong>
+          <span>Nada é salvo</span>
+        </span>
+        <span class="treino-barra-parte treino-barra-pagina">
+          <span>Página</span>
+          <strong class="treino-barra-pagina-nome"></strong>
+        </span>
+        <span class="treino-barra-parte treino-barra-treino">
+          <span class="treino-barra-rotulo"><span class="treino-barra-pagina-celular"><span class="treino-barra-pagina-nome"></span> · </span>Treino <span class="treino-barra-numero"></span> de <span class="treino-barra-total"></span></span>
+          <strong class="treino-barra-nome"></strong>
+        </span>
       </span>
       <span class="treino-barra-acoes">
-        <button type="button" class="botao treino-barra-treinos">Treinos</button>
         <button type="button" class="botao treino-barra-sair">Sair do treino</button>
       </span>
     </div>
@@ -1084,6 +1095,7 @@
         <button type="button" class="botao guia-balao-concluir oculto">Concluir</button>
         <button type="button" class="botao guia-balao-treinos oculto">Voltar aos treinos</button>
         <button type="button" class="botao guia-balao-seguinte-botao oculto">Próximo treino</button>
+        <button type="button" class="botao guia-balao-recomecar oculto">Recomeçar</button>
       </div>
     </div>
   </template>
@@ -1840,7 +1852,7 @@
     <p data-alvo="#nova-extra-passos [data-passo='3']" data-avanca="clique" data-pular-se="#nova-extra-passos [data-passo='3'].aba--ativa">Abra o passo <strong>Distribuição</strong>.</p>
     <p data-alvo="#nova-extra-acoes > .botao" data-avanca="clique">Abra o menu <strong>Ações</strong>.</p>
     <p data-alvo="#p3-sugerir" data-avanca="clique">Escolha <strong>Preencher pela sugestão</strong>.</p>
-    <p data-alvo="#p3-calculo:not(.oculto)" data-alvo-senao="#p3-resultado:not(.oculto)" data-condicao="#p3-resultado:not(.oculto)" data-avanca="aparece">O sistema calcula a melhor distribuição, o que pode levar até 1 minuto. O <strong>Cancelar</strong> desiste.</p>
+    <p data-alvo="#p3-calculo:not(.oculto)" data-alvo-senao="#p3-resultado:not(.oculto)" data-condicao="#p3-resultado:not(.oculto)" data-avanca="aparece">O sistema calcula a melhor distribuição, o que pode levar até 1 minuto.</p>
     <p data-alvo="#p3-resultado" data-avanca="proximo">No alto, o resultado: quantas cotas foram postas e quem não coube.</p>
     <p data-alvo="#p3-cal" data-avanca="proximo">Cada extra posta pelo sistema tem o ícone dele; no painel do dia, aparece o porquê.</p>
     <p data-alvo="#p3-rodape .rodape-acoes" data-clique="#p3-salvar, #p3-desfazer-sugestao" data-avanca="clique">Grave pelo <strong>Salvar</strong>, ou desista pelo <strong>Desfazer a sugestão</strong>.</p>
@@ -3285,8 +3297,7 @@
   <!-- ===== o painel de impressão, um só para todas as impressões (componentes/js/geral-impressao.js) =====
        A casca: no alto, a nota "Será impresso:" com o resumo e, embaixo dela, o aviso de erro grave; no lugar do
        [data-impressao-caixas] entram as caixas da impressão (o molde da página: o período, as Unidades, o Formato, o
-       Mostrar...); por último, a caixa Prévia (o próprio PDF, no leitor do navegador, uma folha parada por vez, e as
-       folhas com as setas; some no celular).
+       Mostrar...); por último, a caixa Prévia (o próprio PDF, no leitor do navegador, e as folhas; some no celular).
        As caixas são numeradas pelo JS (data-impressao-num), só as que estão à vista -->
   <template id="tpl-impressao">
     <div class="nota" data-impressao-nota>
@@ -3310,19 +3321,7 @@
           <div class="giratorio" aria-label="Carregando" role="status"></div>
         </div>
       </div>
-      <!-- as folhas do arquivo e, com 2 folhas A4 ou mais, as setas que trocam a folha da prévia -->
-      <div class="impressao-previa-pe">
-        <span class="campo-ajuda" data-impressao-folhas></span>
-        <div class="impressao-previa-paginas oculto" data-impressao-paginas>
-          <button type="button" class="botao botao--icone" aria-label="Folha anterior" data-impressao-folha-anterior>
-            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>
-          </button>
-          <span class="campo-ajuda">Folha <span data-impressao-folha-atual></span> de <span data-impressao-folha-total></span></span>
-          <button type="button" class="botao botao--icone" aria-label="Próxima folha" data-impressao-folha-proxima>
-            <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
-          </button>
-        </div>
-      </div>
+      <span class="campo-ajuda" data-impressao-folhas></span>
     </div>
   </template>
 

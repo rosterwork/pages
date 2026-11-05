@@ -244,6 +244,11 @@
 
     window.addEventListener('popstate', function (evento) {
       if (popsIgnorados) { popsIgnorados--; return; }    /* volta feita pelo sistema ao tirar a entrada de uma camada */
+      /* no treino, o Voltar do navegador não muda nada: a entrada de agora volta para o alto do histórico */
+      if (window.RosterWork.treino && window.RosterWork.treino.ligado()) {
+        history.pushState(camada ? { pagina: paginaAtual, camada: true } : { pagina: paginaAtual }, '', '?pagina=' + paginaAtual);
+        return;
+      }
       if (camada) {                                        /* o voltar fecha a camada aberta; a tela fica */
         var aoVoltar = camada;
         camada = null;

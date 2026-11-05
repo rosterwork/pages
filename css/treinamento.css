@@ -4,8 +4,9 @@
    desenho dos Ajustes), na coluna de leitura. Aqui só as duas áreas
    (para todos e, depois do traço, a do administrador, com o título e
    a chave inglesa), o traço entre elas, o ícone da tela no título do
-   bloco e o campo sem chevron, que é clicável inteiro (começa o
-   treino).
+   bloco, o campo sem chevron, que é clicável inteiro (começa o
+   treino), o número de cada treino, a linha do último escolhido (ao
+   sair do treino) e o A seguir, ao lado do Continuar os treinos.
    ============================================================ */
 
 .treino-area {
@@ -35,4 +36,40 @@
 
 .treino-item {
   cursor: pointer;
+}
+
+/* o número do treino no bloco, antes do nome */
+.treino-numero {
+  flex-shrink: 0;
+  min-width: 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-suave);
+}
+
+/* a linha do último treino escolhido, quando a pessoa volta do treino */
+.treino--ultimo {
+  background-color: var(--fundo-medio);
+}
+
+.treino-seguinte {
+  min-width: 0;
+  font-size: 13px;
+  color: var(--texto-suave);
+}
+
+.treino-seguinte strong {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   O A seguir divide a linha com a lupa; a frase comprida quebra ali
+   mesmo, sem mandar a lupa para baixo.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .treino-seguinte {
+    flex: 1 1 0;
+  }
 }

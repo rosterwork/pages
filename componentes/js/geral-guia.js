@@ -9,7 +9,8 @@
    geral-guia-veu.js. Aqui, a cada 200 ms, o passo em curso: pular,
    acender os alvos, pôr o balão e avançar. Tela ou painel
    carregando: o balão espera (até 30 s); outra tela que não é a do
-   passo, ou 5 s sem o alvo: o roteiro termina. O passo com
+   passo, ou 5 s sem o alvo: o roteiro termina (no treino, o balão diz
+   que ele parou, com Recomeçar e Voltar aos treinos). O passo com
    data-sem-alvo não termina: sem o alvo (ou sem o data-requer, a
    situação que ele pede), o balão diz por que o passo não dá ali e
    espera a situação aparecer (ex.: outro dia aberto). Com menu,
@@ -19,7 +20,12 @@
    (data-livre), o aceso inteiro; no de clique e no de gravar (some),
    só o botão que ele pede; na escolha, só os caminhos; nos de
    preencher, o aceso inteiro. O balão, a barra do treino e a rolagem
-   sempre: desistir é pelo Sair do balão ou pela barra do treino. A dica da primeira vez
+   sempre: desistir é pelo Sair do balão ou pela barra do treino. No
+   treino, a trava vale o tempo todo: carregando, entre um passo e
+   outro e na tela final, só o balão, a barra azul e o aviso, o menu ou
+   o calendário aberto respondem; o teclado segue a mesma regra (o Esc
+   não fecha nada e o Tab fica no que responde); e o que desiste
+   (DESISTE) só responde quando o passo pede. A dica da primeira vez
    acende o ?. O que a pessoa já viu e a lista do ? ficam no
    geral-guia-ajuda.js. Moldes: #tpl-guia-balao e #tpl-guia-dica.
    ============================================================ */
@@ -32,8 +38,16 @@
   var ESPERA_OPCIONAL = 4;  // tiques sem o alvo até pular o passo opcional
   var ESPERA_AVISO = 20;    // tiques sem o alvo até o balão dizer por que o passo não dá (data-sem-alvo; 4 s: a lista que chega devagar, sem carregamento à vista, não mostra a frase antes da hora)
   var ESPERA_TELA = 150;    // tiques esperando a tela do passo carregar (30 s: o mês de treino lançado da Extrajornada leva uns 15 s)
+  var CALMA_FIM = 3;        // tiques sem aviso e sem carregamento até o balão final do treino (a resposta do Salvar chega antes dele)
   var DISTANCIA = 12;       // distância da dica ao ? e às bordas da tela (px)
   var ESPERAR = '.dropdown--aberto, .calendario--aberto, .modal-veu--aberto';
+  /* o que responde no treino fora do passo aceso: o aviso, o calendário e o menu aberto (o botão do menu, não: ele fecharia o menu) */
+  var ABERTO_RESPONDE = '.modal-veu--aberto, .calendario--aberto, .dropdown--aberto .dropdown-menu';
+  /* no treino, o que desiste só responde quando o passo pede (data-clique): o Cancelar do cálculo, da nota, do cartão do
+     ciclo e da sub-tela, e o ✕ dos horários e dos períodos */
+  var DESISTE = '#p3-calculo-cancelar, .escala-observacao-cancelar, .escala-ciclo-cartao-cancelar, .escala-sub-cancelar, ' +
+    '.horario-remover, [data-periodo-remover]';
+  var FOCAVEIS = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
   var BOTAO_DA_PAGINA = '.conteudo > .pagina > .pagina-cabecalho > .pagina-ajuda > .botao';   // o ? da página (não os exemplos do Guia visual)
 
   var guia = null;          // o roteiro em curso: { id, titulo, passos, fim, treino, i, fase, mostrado, semAlvo, avisando, pagina }
@@ -86,6 +100,7 @@
   }
   function proximoPasso() {
     guia.mostrado = false;
+    guia.rotulo = null;
     guia.semAlvo = 0;
     esconderPecas();
     if (guia.i >= guia.passos.length) concluir();
@@ -98,7 +113,25 @@
   function concluir() {
     if (guia.treino) A().marcarVisto(guia.id);
     guia.fase = 'esperaFim';
+    guia.calma = 0;
+    guia.esperaTela = 0;
     esconderPecas();
+  }
+  /* o roteiro não pode seguir: fora do treino, só termina; no treino, a tela fica no véu e o balão oferece recomeçar */
+  function parar() {
+    if (!guia.treino) { encerrar(); return; }
+    guia.fase = 'parado';
+    guia.mostrado = false;
+    esconderPecas();
+    B().parado(guia);
+  }
+  function balaoFinal() { if (guia.fase === 'parado') B().parado(guia); else B().fim(guia); }
+  /* a tela final do treino, parada: o aviso que chega depois dela passa à frente, e o balão volta quando ele fechar */
+  function manterFinal() {
+    var aviso = !!document.querySelector('.modal-veu--aberto');
+    if (aviso && !guia.finalAtras) { guia.finalAtras = true; esconderPecas(); }
+    else if (!aviso && guia.finalAtras) { guia.finalAtras = false; balaoFinal(); }
+    else if (!aviso) V().mostrar([]);
   }
 
   function seletoresDo(passo) {
@@ -149,8 +182,10 @@
 
   /* algo ainda carregando à vista: o véu da tela, ou o círculo ou os pontos de uma área (a grade da Escala, a área da
      Extrajornada, uma lista, o painel aberto). O círculo do véu escondido (some pela opacidade), o do painel fechado e o
-     do cálculo da sugestão da Extrajornada (que é um passo do roteiro) não contam */
+     do cálculo da sugestão da Extrajornada (que é um passo do roteiro) não contam. No treino, a gravação da Extrajornada
+     no ar também conta: a resposta dela mexe na tela e abre o aviso */
   function carregando() {
+    if (guia && guia.treino && RW.treinoExtra && RW.treinoExtra.gravando()) return true;
     if (document.querySelector('.conteudo > .carregando-veu--visivel')) return true;
     var sinais = '.conteudo .giratorio, .conteudo .carregando-pontos, .painel-lateral--aberto .painel-estado--carregando, ' +
       '.painel-lateral--aberto .carregando-pontos';
@@ -179,31 +214,40 @@
       if (guia.semAlvo > ESPERA_AVISO && !guia.avisando) { B().aviso(texto, guia); guia.avisando = true; guia.mostrado = false; }
       return;
     }
-    if (guia.semAlvo > (opcional ? ESPERA_OPCIONAL : ESPERA_ALVO)) { if (opcional) pular(); else encerrar(); }
+    if (guia.semAlvo > (opcional ? ESPERA_OPCIONAL : ESPERA_ALVO)) { if (opcional) pular(); else parar(); }
   }
 
   /* a cada tique: confere a tela e o passo (pular, sumir, valor) e acompanha os alvos na tela */
   function tique() {
     conferirDica();
     if (!guia) { desligarTimerSeParado(); return; }
+    if (guia.fase === 'parado') { manterFinal(); return; }
     var passo = guia.fase === 'passo' ? guia.passos[guia.i] : null;
     var pagina = paginaAtual();
-    /* trocou de tela: segue quando o passo é da tela nova; senão, a pessoa saiu do caminho */
+    /* trocou de tela: segue quando o passo é da tela nova (ou quando o treino já chegou ao fim); senão, a pessoa saiu do
+       caminho */
     if (pagina && guia.pagina !== pagina) {
-      if (passo && naTela(passo)) guia.pagina = pagina;
-      else { encerrar(); return; }
+      if ((passo && naTela(passo)) || (guia.treino && guia.fase === 'esperaFim')) guia.pagina = pagina;
+      else { parar(); return; }
     }
-    if (guia.fase === 'fim') return;
+    if (guia.fase === 'fim') { if (guia.treino) manterFinal(); return; }
     var p = passo ? passo.p : null;
     var avanca = p ? p.getAttribute('data-avanca') : null;
     var condicao = p ? p.getAttribute('data-condicao') : null;
     /* passo "some": o formulário saiu da tela; com o resumo aberto, foi enviado; sem ele, a pessoa desistiu */
     if (avanca === 'some' && guia.mostrado && condicao && !um(condicao)) {
-      if (document.querySelector('.modal-veu--aberto')) concluir(); else encerrar();
+      if (document.querySelector('.modal-veu--aberto')) concluir(); else parar();
       return;
     }
     if (guia.fase === 'esperaFim') {
-      if (document.querySelector(ESPERAR)) { esconderPecas(); return; }
+      /* no treino, o balão final vem depois da resposta do Salvar e do aviso dela */
+      if (document.querySelector(ESPERAR) || (guia.treino && carregando())) {
+        esconderPecas();
+        guia.calma = 0;
+        if (guia.treino && ++guia.esperaTela > ESPERA_TELA) parar();
+        return;
+      }
+      if (guia.treino && ++guia.calma < CALMA_FIM) return;
       guia.fase = 'fim';
       if (guia.treino) guia.seguinte = A().proximoTreino(guia.id);
       if (guia.fim) B().fim(guia); else encerrar();
@@ -213,7 +257,7 @@
     if (!naTela(passo) || carregando()) {
       esconderPecas();
       guia.semAlvo = 0;
-      if (++guia.esperaTela > ESPERA_TELA) encerrar();
+      if (++guia.esperaTela > ESPERA_TELA) parar();
       return;
     }
     guia.esperaTela = 0;
@@ -272,16 +316,27 @@
      não o Cancelar ao lado) e na escolha, só o que eles pedem; nos de preencher (preenchido, aparece), o aceso inteiro.
      O balão e a barra do treino (que tira do treino)
      sempre. O toque e o mouse valem pelo ponto (cai num buraco do véu?); o clique do teclado, pelo elemento. Rolar a
-     tela continua ---------- */
+     tela continua. Fora do passo aceso, no treino, só o aviso, o menu ou o calendário aberto responde; com o balão
+     dizendo por que o passo não dá (data-sem-alvo), também a tela e o painel, onde a pessoa acha a situação. O clique
+     que vem do próprio sistema (isTrusted falso) passa, e o que o navegador repete do rótulo clicado para a bolinha
+     dele também ---------- */
   function bloqueado(evento) {
-    if (!guia || guia.fase !== 'passo' || !guia.mostrado || !V().visivel()) return false;
+    if (!guia) return false;
     var alvo = evento.target;
     if (!alvo.closest || alvo.closest('.guia-balao, .treino-barra')) return false;
+    /* o segundo clique de um duplo clique desfaria o primeiro */
+    if (guia.treino && evento.detail >= 2) return true;
+    if (guia.fase !== 'passo' || !guia.mostrado || !V().visivel()) {
+      if (!guia.treino || evento.isTrusted === false || alvo.closest(ABERTO_RESPONDE)) return false;
+      if (evento.type === 'click' && guia.rotulo && guia.rotulo.contains(alvo)) return false;
+      return !(guia.avisando && alvo.closest('.conteudo, .painel-lateral'));
+    }
     var noAceso = evento.type === 'click' && evento.detail === 0
       ? B().acesos().some(function (el) { return el.contains(alvo); })
       : V().aceso(evento.clientX, evento.clientY);
     if (!noAceso) return true;
-    var passo = guia.passos[guia.i], p = passo.p, avanca = p.getAttribute('data-avanca');
+    var passo = guia.passos[guia.i], p = passo.p, avanca = p.getAttribute('data-avanca'), clique = p.getAttribute('data-clique');
+    if (guia.treino && alvo.closest(DESISTE) && !(clique && casa(alvo, R().seletores(clique)))) return true;
     if (p.hasAttribute('data-livre')) return false;
     if (avanca === 'proximo') return true;
     if (avanca === 'clique' || avanca === 'escolha' || avanca === 'some') return !casa(alvo, seletoresDoClique(passo));
@@ -302,6 +357,42 @@
       if (bloqueado(ponto)) evento.stopPropagation();
     }, { capture: true, passive: true });
   });
+
+  /* ---------- o teclado no treino (na janela, antes de todos): o Esc não fecha nada; o Tab anda só pelo que responde; as
+     outras teclas valem onde o clique valeria. O aviso aberto cuida do próprio teclado. Fica de fora o que é do navegador
+     (F5, Ctrl+R, Alt+seta), menos o Ctrl+Z e o Ctrl+Y, que o sistema usa ---------- */
+  function respondeAoFoco(el) { return visivel(el) && !bloqueado({ type: 'click', detail: 0, target: el }); }
+  function moverFoco(paraTras) {
+    var caixas = B().acesos().concat(Array.prototype.slice.call(document.querySelectorAll('.dropdown--aberto, .calendario--aberto, .guia-balao:not(.oculto), .treino-barra:not(.oculto)')));
+    var lista = [];
+    caixas.forEach(function (caixa) {
+      var dentro = Array.prototype.slice.call(caixa.querySelectorAll(FOCAVEIS));
+      (caixa.matches(FOCAVEIS) ? [caixa].concat(dentro) : dentro).forEach(function (el) {
+        if (lista.indexOf(el) < 0 && respondeAoFoco(el)) lista.push(el);
+      });
+    });
+    if (!lista.length) return;
+    var i = lista.indexOf(document.activeElement);
+    lista[i < 0 ? (paraTras ? lista.length - 1 : 0) : (i + (paraTras ? -1 : 1) + lista.length) % lista.length].focus();
+  }
+  function barrarTecla(evento) {
+    evento.preventDefault();
+    evento.stopImmediatePropagation();
+  }
+  window.addEventListener('keydown', function (evento) {
+    if (!guia || !guia.treino) return;
+    var tecla = evento.key, atalho = evento.ctrlKey || evento.metaKey || evento.altKey;
+    if (tecla === 'Escape') { barrarTecla(evento); return; }
+    if (document.querySelector('.modal-veu--aberto')) return;
+    if (tecla === 'Tab') { barrarTecla(evento); moverFoco(evento.shiftKey); return; }
+    var alvo = evento.target, desfazer = (evento.ctrlKey || evento.metaKey) && /^[zy]$/i.test(tecla);
+    if (/^F\d+$/.test(tecla) || (atalho && !desfazer)) return;
+    if (!alvo || !alvo.closest || alvo === document.body || alvo === document.documentElement) {
+      if (desfazer) barrarTecla(evento);
+      return;
+    }
+    if (bloqueado({ type: 'click', detail: 0, target: alvo })) barrarTecla(evento);
+  }, true);
 
   /* ---------- cliques (na captura: o menu do ? se monta antes de o dropdown abrir, e o clique segurado do treino
      não chega à tela) ---------- */
@@ -324,6 +415,12 @@
       var seguinte = guia && guia.seguinte;
       encerrar();
       if (seguinte && RW.treino) RW.treino.seguir(seguinte);
+      return;
+    }
+    if (alvo.closest('.guia-balao-recomecar')) {
+      var deNovo = guia && guia.id;
+      encerrar();
+      if (deNovo && RW.treino) RW.treino.seguir(deNovo);
       return;
     }
     if (alvo.closest('.guia-balao-proximo')) { avancar(); return; }
@@ -352,11 +449,12 @@
       /* no treino, a entrada do caminho que já grava fica com o guia, como o clique segurado */
       if (guia.treino && caminho.segurar) { evento.preventDefault(); evento.stopPropagation(); concluir(); return; }
       guia.mostrado = false;
+      guia.rotulo = alvo.closest('label');
       setTimeout(avancar, 0);
       return;
     }
     /* passo "clique": avança depois que o clique fizer o efeito dele na página */
-    if (avanca === 'clique' && acertou) { guia.mostrado = false; setTimeout(avancar, 0); }
+    if (avanca === 'clique' && acertou) { guia.mostrado = false; guia.rotulo = alvo.closest('label'); setTimeout(avancar, 0); }
   }, true);
 
   /* a página trocou: o roteiro confere a tela nova (no tique) e a dica também */

@@ -28,7 +28,7 @@
 
   var d = null, el = null, aoSalvar = null;
   var p2 = null;           // o rascunho: { modo, recebidas, unidades, conc, sujo, sug, antes }
-  var ligado = null;
+  var guardaLigada = false;
   var pedidoSug = 0;       // latest-wins da sugestão
   var esperaSug = null;    // o intervalo antes de pedir a sugestão (enquanto digita)
 
@@ -94,7 +94,7 @@
         p_cotas_unidades: porUnidade ? uni : null, p_so_sugestao: true }).then(function (r) {
         if (meu !== pedidoSug) return;
         RW.pararCarregando(btn);
-        if (!r || !r.ok || !p2 || !el.isConnected) return;
+        if (!r || !r.ok || !p2 || !q('#p2-salvar')) return;
         p2.sug = r.sugerido || {};
         desenhar();
       }, function () { if (meu === pedidoSug) RW.pararCarregando(btn); });
@@ -259,10 +259,19 @@
 
   function mostrar(dados, conteudo, recarregar) {
     d = dados; el = conteudo; aoSalvar = recarregar;
-    if (ligado !== el) {
-      ligado = el; p2 = null; ligar();
+    /* a marca no botão vale por visita: a página nova chega sem ela, com o rascunho zerado e os botões a ligar */
+    var botaoSalvar = q('#p2-salvar');
+    if (!botaoSalvar.dataset.ligado) {
+      botaoSalvar.dataset.ligado = '1';
+      p2 = null; ligar();
       /* com cotas não salvas, o navegador avisa ao fechar ou recarregar */
-      if (RW.guardaSaida) RW.guardaSaida.registrar(function () { return !!(el && el.isConnected && p2 && p2.sujo); });
+      if (RW.guardaSaida && !guardaLigada) {
+        guardaLigada = true;
+        RW.guardaSaida.registrar(function () {
+          var botao = el && q('#p2-salvar');
+          return !!(botao && botao.dataset.ligado && p2 && p2.sujo);
+        });
+      }
     }
     desenhar();
   }

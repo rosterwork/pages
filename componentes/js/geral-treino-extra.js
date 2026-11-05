@@ -17,7 +17,7 @@
    ou a Minha extra no pedido). Com o mês lançado, as extras vêm antes
    numa chamada leve (a etapa lancar) e voltam nas outras, para nenhuma
    passar do limite de tempo do banco. Nada fica gravado.
-   API: ativar(etapa | null), mes(), cuida(nome, corpo), responder(nome, corpo).
+   API: ativar(etapa | null), mes(), cuida(nome, corpo), responder(nome, corpo), gravando().
    ============================================================ */
 (function () {
   'use strict';
@@ -27,6 +27,8 @@
   var GRAVACOES = ['nova_extra_prazo_salvar', 'nova_extra_termos_salvar', 'nova_extra_pedidos_fechar', 'nova_extra_cotas_salvar',
     'nova_extra_distribuicao_salvar', 'nova_extra_lancar', 'nova_extra_reabrir', 'nova_extra_pedido_salvar'];
   var JUNTAR = 30;   // ms esperando outras leituras, para irem numa chamada só
+  var ESPERA_AVISO = 300;   // ms depois da resposta da gravação, para o aviso dela abrir
+  var noAr = 0;      // as gravações no ar
 
   var est = null;    // { etapa, mes, acoes, extras, guardadas, fila, timer }
 
@@ -108,7 +110,10 @@
   function gravar(nome, corpo) {
     var meu = est, acao = { rpc: nome, args: corpo || {} };
     var depois = nome === 'nova_extra_pedido_salvar' ? [{ rpc: 'nova_extra_minha', args: { p_cpf: null } }] : [{ rpc: 'nova_extra_mes', args: {} }];
-    return garantirExtras(meu).then(function () {
+    noAr++;
+    /* um instante a mais depois da resposta: o aviso dela abre antes de o passo a passo seguir */
+    function pousou() { setTimeout(function () { noAr--; }, ESPERA_AVISO); }
+    var chamada = garantirExtras(meu).then(function () {
       return chamar(meu.etapa, meu.acoes.concat([acao]), depois, meu.extras);
     }).then(function (r) {
       if (!r || !r.ok) return resposta({ success: false, error: falhou(r) });
@@ -121,12 +126,16 @@
       }
       return resposta(dado);
     });
+    chamada.then(pousou, pousou);
+    return chamada;
   }
 
   function responder(nome, corpo) { return GRAVACOES.indexOf(nome) >= 0 ? gravar(nome, corpo) : ler(nome, corpo); }
 
   RW.treinoExtra = {
     ativar: ativar, cuida: cuida, responder: responder,
-    mes: function () { return est ? est.mes : null; }
+    mes: function () { return est ? est.mes : null; },
+    /* uma gravação no ar: o passo a passo espera a resposta para seguir */
+    gravando: function () { return noAr > 0; }
   };
 })();

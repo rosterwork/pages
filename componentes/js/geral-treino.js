@@ -2,8 +2,9 @@
    TREINO — o modo treino (RosterWork.treino)
    Começar um treino (a página Treinamento) liga o modo no sistema
    inteiro: a moldura azul em volta da tela (#treino-moldura), a barra
-   azul no alto (.treino-barra, acima do cabeçalho) com Treinos e Sair
-   do treino, e a marca data-treino no <html>. Nada é gravado: cada
+   azul no alto (.treino-barra, acima do cabeçalho) com a página, o
+   número e o nome do treino e o Sair do treino, e a marca data-treino
+   no <html>. Nada é gravado: cada
    chamada ao banco passa por passar(caminho, metodo, corpo, buscar),
    no geral-api.js; barrar só deixa ir o que lê (LEITURAS), os ensaios
    (ENSAIOS, com p_ensaio), o plano e o ensaio do Desfazer a troca do
@@ -16,10 +17,11 @@
    antes de tudo, o mês de treino responde pelas chamadas dela
    (geral-treino-extra.js); nos das trocas com exemplo do banco, o
    exemplo responde pelas leituras delas (geral-treino-banco.js).
-   Sai do modo: Treinos (volta à lista), Sair do treino (vai à Escala),
-   o Voltar aos treinos do fim do roteiro, recarregar ou fechar (o modo
-   não fica guardado). O Próximo treino do fim do roteiro volta à lista
-   (a tela recomeça limpa) e, quando ela abre, começa o próximo. Ao sair, a edição não salva é descartada sem
+   Sai do modo: o Sair do treino e o Voltar aos treinos do fim do
+   roteiro (voltam à lista, aberta na linha do último treino escolhido),
+   recarregar ou fechar (o modo não fica guardado). O Próximo treino do
+   fim do roteiro volta à lista (a tela recomeça limpa) e, quando ela
+   abre, começa o próximo. Ao sair, a edição não salva é descartada sem
    perguntar.
    Função de leitura nova chamada pelo site entra em LEITURAS (conferida
    no banco: STABLE, ou sem gravação em tabela de verdade, ou ensaio que
@@ -73,37 +75,62 @@
     if (moldura) moldura.classList.toggle('oculto', !sim);
   }
 
+  /* a barra diz onde o treino fica: a página, o número (o mesmo da lista) e o nome */
+  function preencherBarra(id, t) {
+    var barra = document.querySelector('.treino-barra');
+    var onde = t ? RW.guiaRoteiros.ondeFica(id) : null;
+    if (!barra || !onde) return;
+    Array.prototype.forEach.call(barra.querySelectorAll('.treino-barra-pagina-nome'), function (el) { el.textContent = RW.mensagens.treino.pagina(onde); });
+    barra.querySelector('.treino-barra-numero').textContent = onde.numero;
+    barra.querySelector('.treino-barra-total').textContent = onde.total;
+    barra.querySelector('.treino-barra-nome').textContent = t.getAttribute('data-titulo');
+  }
+
+  var ultimoEscolhido = null;
+
   function comecar(id) {
+    ultimoEscolhido = id;
     mostrar(true);
     var t = RW.guiaRoteiros ? RW.guiaRoteiros.roteiro(id) : null;
+    preencherBarra(id, t);
     if (RW.treinoCenarios) RW.treinoCenarios.ativar(t ? t.getAttribute('data-cenario') : null, id);
     if (RW.guia) RW.guia.iniciar(id, { treino: true });
   }
 
-  /* desliga e vai à tela (a edição não salva e o aviso aberto ficam para trás, sem perguntar) */
-  function sairPara(pagina) {
+  /* desliga e vai à lista (a edição não salva e o aviso aberto ficam para trás, sem perguntar) */
+  function desligar() {
     if (RW.guia) RW.guia.encerrar();
     if (RW.fecharModais) RW.fecharModais();
     if (RW.treinoCenarios) RW.treinoCenarios.ativar(null);
     mostrar(false);
     if (RW.guardaSaida) RW.guardaSaida.dispensar();
-    if (RW.irParaPagina) RW.irParaPagina(pagina);
+    if (RW.irParaPagina) RW.irParaPagina('treinamento');
   }
-  function voltarAosTreinos() { sairPara('treinamento'); }
+
+  /* quem sai volta à lista na linha do último treino escolhido; o treinamento.js pede a linha ao abrir (vale uma vez) */
+  var linhaParaAbrir = null;
+  function voltarAosTreinos() {
+    linhaParaAbrir = ultimoEscolhido;
+    desligar();
+  }
+  function linhaPedida() {
+    var id = linhaParaAbrir;
+    linhaParaAbrir = null;
+    return id;
+  }
 
   /* o próximo treino começa quando a lista abrir (o treinamento.js chama comecarPendente); vale por 15 s, para a lista
      aberta depois, por outro caminho, não começar sozinha */
   var pendente = null;
   function seguir(id) {
     pendente = { id: id, em: Date.now() };
-    sairPara('treinamento');
+    desligar();
   }
   function comecarPendente() {
     var p = pendente;
     pendente = null;
     if (p && Date.now() - p.em < 15000) comecar(p.id);
   }
-  function sair() { sairPara('escalas'); }
 
   function resposta(status, corpo) {
     return new Response(JSON.stringify(corpo), { status: status, headers: { 'Content-Type': 'application/json' } });
@@ -143,12 +170,11 @@
   }
 
   document.addEventListener('click', function (evento) {
-    if (evento.target.closest('.treino-barra-treinos')) voltarAosTreinos();
-    else if (evento.target.closest('.treino-barra-sair')) sair();
+    if (evento.target.closest('.treino-barra-sair')) voltarAosTreinos();
   });
 
   RW.treino = {
     ligado: function () { return ligado; },
-    comecar: comecar, sair: sair, voltarAosTreinos: voltarAosTreinos, seguir: seguir, comecarPendente: comecarPendente, passar: passar
+    comecar: comecar, voltarAosTreinos: voltarAosTreinos, linhaPedida: linhaPedida, seguir: seguir, comecarPendente: comecarPendente, passar: passar
   };
 })();

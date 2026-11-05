@@ -43,6 +43,8 @@
   function u() { return RW.novaExtraUtil; }
   function dia() { return RW.novaExtraDia; }
   function q(sel) { return el.querySelector(sel); }
+  /* o "conteudo" é o do shell, sempre o mesmo, e a página é nova a cada visita: quem diz se ela está na tela é o botão */
+  function naPagina() { return !!el && !!q('#p3-sugerir'); }
   function chave(cpf, data) { return cpf + '|' + data; }
   function dataDe(k) { return new Date(+k.slice(0, 4), +k.slice(5, 7) - 1, +k.slice(8, 10)); }
   function iso(x) { return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'); }
@@ -140,14 +142,14 @@
       escalaLendo = null;
       escalaFalhou = comp;
       console.error('[Nova extra] ler_escala_mes falhou' + (e && e.message ? ': ' + e.message : ''));
-      if (el && el.isConnected) redesenhar();
+      if (naPagina()) redesenhar();
     }
     RW.escalasDados.carregar(ids, comp, ultimoDia()).then(function (r) {
       if (req !== escalaSeq) return;
       if (!r) { falhou(); return; }
       escalaLendo = null;
       escala = { comp: comp, cobertura: r.cobertura || {}, erro: r.erro || {}, militares: r.militares || {} };
-      if (el && el.isConnected) redesenhar();
+      if (naPagina()) redesenhar();
     }, falhou);
   }
   function escalaPronta() { return !!escala && escala.comp === d.competencia; }
@@ -207,7 +209,10 @@
   function sugerir() {
     if (alteracoes().length || RW.novaExtraOtimizador.calculando()) return;
     var fixas = d.alocacoes.filter(function (a) { return a.origem !== 'sugestao'; });
+    var botao = q('#p3-sugerir');
     RW.novaExtraOtimizador.preencher(d.competencia, fixas, q('#p3-calculo'), function (r, usouReserva) {
+      /* a pessoa saiu da página durante o cálculo: o resultado fica para trás */
+      if (q('#p3-sugerir') !== botao) return;
       mud = {};
       resultadoFechado = false;
       d.alocacoes.forEach(function (a) {
@@ -317,13 +322,16 @@
     RW.novaExtraFiltros.aplicar();
   }
 
-  var ligado = null;
-  /* modoNovo: 'distribuicao' (passo 3) ou 'ajustes' (passo 4), a mesma tela */
+  var guardaLigada = false;
+  /* modoNovo: 'distribuicao' (passo 3) ou 'ajustes' (passo 4), a mesma tela. A marca no botão vale por visita: a página
+     nova chega sem ela, com o rascunho zerado e os botões a ligar */
   function mostrar(dados, conteudo, recarregar, modoNovo) {
     d = dados; el = conteudo; aoSalvar = recarregar; modo = modoNovo || 'distribuicao';
-    if (ligado !== el) {
-      ligado = el; mud = {}; sugeridas = []; postas = null; escala = null;
-      q('#p3-sugerir').addEventListener('click', sugerir);
+    var botaoSugerir = q('#p3-sugerir');
+    if (!botaoSugerir.dataset.ligado) {
+      botaoSugerir.dataset.ligado = '1';
+      mud = {}; sugeridas = []; postas = null; foraSug = {}; escala = null;
+      botaoSugerir.addEventListener('click', sugerir);
       q('#p3-resultado-fechar').addEventListener('click', function () { resultadoFechado = true; q('#p3-resultado').classList.add('oculto'); });
       q('#p3-desfazer-sugestao').addEventListener('click', desfazerSugestao);
       q('#p3-salvar').addEventListener('click', salvar);
@@ -334,7 +342,13 @@
       RW.novaExtraLista.ligar(el);
       RW.novaExtraFiltros.ligar(el);
       /* com mudança não salva ou no meio do cálculo da sugestão, o navegador avisa ao fechar ou recarregar */
-      if (RW.guardaSaida) RW.guardaSaida.registrar(function () { return el && el.isConnected && (alteracoes().length > 0 || RW.novaExtraOtimizador.calculando()); });
+      if (RW.guardaSaida && !guardaLigada) {
+        guardaLigada = true;
+        RW.guardaSaida.registrar(function () {
+          var botao = el && q('#p3-sugerir');
+          return !!botao && !!botao.dataset.ligado && (alteracoes().length > 0 || RW.novaExtraOtimizador.calculando());
+        });
+      }
     }
     escalaFalhou = null;
     escalaDoMes();
@@ -357,7 +371,7 @@
     sujo: function () { return !!d && alteracoes().length > 0; },
     descartar: function () { mud = {}; sugeridas = []; postas = null; },
     /* refaz o calendário (o filtro Exibir mudou) */
-    redesenhar: function () { if (d && el && el.isConnected) redesenhar(); },
+    redesenhar: function () { if (d && naPagina()) redesenhar(); },
     /* o painel do dia fecha ao sair da Distribuição, dos Ajustes ou da aba */
     fecharPainel: function () { if (dia()) dia().fechar(); },
     diasComFalta: diasComFalta

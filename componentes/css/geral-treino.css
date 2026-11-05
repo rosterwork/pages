@@ -1,9 +1,10 @@
 /* ============================================================
    TREINO — o modo treino (componente geral-treino)
    A barra azul no alto da casca, acima do cabeçalho (.treino-barra:
-   a frase e os botões Treinos e Sair do treino), e a moldura azul em
-   volta da tela (.treino-moldura, por cima de tudo e sem pegar o
-   clique). O azul é o --anotacao, o mesmo das marcações do manual.
+   o modo, a página e o treino, separados por um traço, e o botão
+   Sair do treino), e a moldura azul em volta da tela (.treino-moldura,
+   por cima de tudo e sem pegar o clique). O azul é o --anotacao, o
+   mesmo das marcações do manual.
    No passo a passo, a barra e a moldura ficam acesas (o véu do
    geral-guia deixa um buraco na barra; a moldura vem depois das
    peças do guia) e, com um aviso ou uma janela aberta, o escuro
@@ -27,15 +28,53 @@
 .treino-barra-texto {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  min-width: 0;
 }
 
-.treino-barra-texto strong {
+.treino-barra-texto .icone {
+  flex-shrink: 0;
+}
+
+/* cada parte: as duas linhas, uma embaixo da outra; o valor em negrito e o traço entre as partes */
+.treino-barra-parte {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  font-size: 11px;
+  line-height: 14px;
+  white-space: nowrap;
+}
+
+.treino-barra-parte strong {
+  font-size: 12px;
   font-weight: 600;
+}
+
+.treino-barra-parte + .treino-barra-parte {
+  padding-left: 12px;
+  border-left: 1px solid var(--anotacao-texto);
+}
+
+/* o treino é a parte que cede: sem espaço, o nome termina em "…" */
+.treino-barra-treino {
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.treino-barra-rotulo,
+.treino-barra-nome {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.treino-barra-pagina-celular {
+  display: none;
 }
 
 .treino-barra-acoes {
   display: flex;
+  flex-shrink: 0;
   gap: 8px;
   margin-left: auto;
 }
@@ -56,17 +95,27 @@ html[data-treino] .modal-veu {
 
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
-   A barra fica só com "Modo treino" e os dois botões; o painel, que
-   no celular cobre a tela, e o balão do passo a passo preso em cima
-   começam abaixo dela.
+   A barra fica só com o treino, com a página junto do número, e o
+   Sair do treino; o painel, que no celular cobre a tela, e o balão
+   do passo a passo preso em cima começam abaixo dela.
    ============================================================ */
 @media (max-width: 767px) {
   html[data-celular] .treino-barra {
     padding: 4px 8px 4px 12px;
   }
 
-  html[data-celular] .treino-barra-resto {
+  html[data-celular] .treino-barra-modo,
+  html[data-celular] .treino-barra-pagina {
     display: none;
+  }
+
+  html[data-celular] .treino-barra-pagina-celular {
+    display: inline;
+  }
+
+  html[data-celular] .treino-barra-parte + .treino-barra-parte {
+    padding-left: 0;
+    border-left: 0;
   }
 
   html[data-celular][data-treino] .painel-lateral {

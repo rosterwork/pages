@@ -36,6 +36,8 @@
   function msg() { return RW.mensagens.novaExtra.org; }
   function u() { return RW.novaExtraUtil; }
   function G() { return RW.novaExtraGrade; }
+  /* "pagina" é o conteúdo do shell, sempre o mesmo: quem diz se a Distribuição está na tela é a alça */
+  function naPagina() { return !!pagina && !!pagina.querySelector('#p3-alca'); }
 
   /* a alça abre e fecha o painel esquerdo; a faixa de cada grupo abre e fecha a lista dele (o CSS lê o aria-expanded);
      o X da nota e o Esc tiram o foco (o Esc só quando nada mais está aberto por cima: painel ou aviso) */
@@ -58,14 +60,14 @@
     if (!escLigado) {
       escLigado = true;
       document.addEventListener('keydown', function (ev) {
-        if (ev.key !== 'Escape' || !foco || !pagina || !pagina.isConnected) return;
+        if (ev.key !== 'Escape' || !foco || !naPagina()) return;
         if (RW.painel.estaAberto() || document.querySelector('.modal-veu--aberto')) return;
         sairDoFoco();
       }, true);   // na captura: vê o painel ainda aberto antes de o Esc do painel fechá-lo
       /* clicar fora do nome, das datas dele e das bolinhas tira o foco (o aviso da cota, que vem da bolinha, e o balão
          do passo a passo, não) */
       document.addEventListener('click', function (ev) {
-        if (!foco || !pagina || !pagina.isConnected) return;
+        if (!foco || !naPagina()) return;
         if (ev.target.closest('.nova-extra-esq-item, .nova-extra-esq-aberto, .nova-extra-foco-linha, #p3-foco, .modal-veu, .guia-balao')) return;
         sairDoFoco();
       });
@@ -86,7 +88,7 @@
 
   /* com o painel do dia aberto: se o calendário ficou com menos de 4 dias à vista, a lista recolhe */
   function recolherSeApertado() {
-    if (!pagina || !pagina.isConnected || pagina.querySelector('#p3-alca').getAttribute('aria-expanded') !== 'true') return;
+    if (!naPagina() || pagina.querySelector('#p3-alca').getAttribute('aria-expanded') !== 'true') return;
     if (pagina.querySelector('#p3-cal').clientWidth >= MIN_CALENDARIO) return;
     abrirLista(false);
     recolhidaPeloPainel = true;
@@ -94,7 +96,7 @@
 
   /* o painel do dia fechou: a lista volta, se foi o sistema que recolheu */
   function devolverLista() {
-    if (!recolhidaPeloPainel || !pagina || !pagina.isConnected) return;
+    if (!recolhidaPeloPainel || !naPagina()) return;
     recolhidaPeloPainel = false;
     abrirLista(true);
   }

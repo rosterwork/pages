@@ -67,7 +67,11 @@
     });
     f.querySelector('#nova-extra-conta-quer').textContent = msg().contaQuer(contar('quer'));
     f.querySelector('#nova-extra-conta-nao').textContent = msg().contaNao(contar('nao_posso'));
-    if (ed.btn) ed.btn.disabled = !valido() || (!sujo() && !!ed.r.pedido);
+    /* o rodapé aparece só com alteração (sem nada a mudar, o prazo fechado e o mês sem dia livre, ele nunca aparece) */
+    if (ed.btn) {
+      ed.btn.disabled = !valido();
+      RW.painel.rodape().classList.toggle('oculto', !sujo());
+    }
   }
 
   /* a falta ou a procura do dia na unidade escolhida no "Onde" (Todos = a soma das unidades) */
@@ -194,10 +198,8 @@
 
     var rodape = RW.painel.rodape();
     rodape.appendChild(document.getElementById('tpl-nova-extra-acoes').content.cloneNode(true));
-    rodape.classList.remove('oculto');
     rodape.querySelector('#nova-extra-cancelar').addEventListener('click', tentarFechar);
     ed.btn = rodape.querySelector('#nova-extra-enviar');
-    if (ed.leitura || ed.semDia) ed.btn.classList.add('oculto');
     ed.btn.addEventListener('click', function () { enviar(comp, cpf, aoSalvar); });
     atualizar();
   }

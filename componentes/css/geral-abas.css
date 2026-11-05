@@ -50,6 +50,15 @@
   font-weight: 600;
 }
 
+/* travada: não reage ao mouse e fica com a cor fraca; a escolhida continua marcada */
+.aba:disabled {
+  cursor: default;
+}
+
+.aba:disabled:not(.aba--ativa) {
+  color: var(--texto-fraco);
+}
+
 /* grupo de trilhos que vale como uma escolha só (ex.: a Escala): um traço só,
    no contêiner, e entre os grupos o mesmo espaço das abas (24px) */
 [data-abas-grupo] {

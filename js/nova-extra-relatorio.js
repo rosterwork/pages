@@ -24,7 +24,7 @@
   var FIM = ['', '14h', '20h', '02h', '08h'];
   var ETAPAS = ['solicitacoes', 'termos', 'montagem', 'ajustes', 'relatorio'];
 
-  var el = null, r = null, ligado = null;
+  var el = null, r = null;
   var bruto = null;   // o mês como veio do banco (nova_extra_mes), para o painel Imprimir relatório
 
   function msg() { return RW.mensagens.extrajornada.relatorios; }
@@ -176,12 +176,12 @@
 
   function mostrar(d, conteudo) {
     el = conteudo;
-    if (ligado !== el) {
-      ligado = el;
-      Array.prototype.forEach.call(el.querySelectorAll('#p5-lista [data-relatorio]'), function (b) {
-        b.addEventListener('click', function () { RW.novaExtraImprimir.abrir(b.getAttribute('data-relatorio'), bruto, q('#nova-extra-mes').textContent); });
-      });
-    }
+    /* a marca no botão vale por visita: a página nova chega sem ela */
+    Array.prototype.forEach.call(el.querySelectorAll('#p5-lista [data-relatorio]'), function (b) {
+      if (b.dataset.ligado) return;
+      b.dataset.ligado = '1';
+      b.addEventListener('click', function () { RW.novaExtraImprimir.abrir(b.getAttribute('data-relatorio'), bruto, q('#nova-extra-mes').textContent); });
+    });
     bruto = d;
     r = montarDados(d);
     q('#p5-mes').textContent = MESES[dataDe(d.competencia).getMonth()];
