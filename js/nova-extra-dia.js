@@ -134,6 +134,7 @@
       if (!lista.length && g !== 'neste') return;
       lista.sort(function (x, y) { return (x.m.unidade_id === uid ? 0 : 1) - (y.m.unidade_id === uid ? 0 : 1) || (x.m.ordem || 0) - (y.m.ordem || 0); });
       var caixa = RW.tpl('tpl-ne-grupo');
+      caixa.setAttribute('data-grupo', g);
       caixa.querySelector('.ne-grupo-nome').textContent = msg().grupos[g];
       caixa.querySelector('.ne-grupo-conta').textContent = lista.length;
       lembrar(caixa, g, lista.length > 0);

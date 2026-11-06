@@ -422,11 +422,12 @@
 
 .nova-extra-tabela {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
 }
 
 .nova-extra-tabela th {
-  padding: 8px 12px;
+  padding: 8px;
   border-bottom: 1px solid var(--borda);
   font-size: 11px;
   font-weight: 700;
@@ -438,7 +439,7 @@
 }
 
 .nova-extra-tabela td {
-  padding: 8px 12px;
+  padding: 8px;
   border-bottom: 1px solid var(--fundo-medio);
 }
 
@@ -460,7 +461,7 @@
   position: sticky;
   top: 0;
   z-index: 1;   /* empilhamento interno do sticky (Guia visual › Camadas, movimento e foco; faixa 1-9) */
-  padding: 0 12px;
+  padding: 0 8px;
   border-bottom: 0;
   background-color: var(--fundo-pagina);
 }
@@ -480,12 +481,20 @@
 
 .nova-extra-tabela--centro .geral-opcao { display: inline-flex; }
 
-/* a coluna Quer em proporção da tabela: 5 dias (o mínimo padrão) cabem em uma linha a partir de 1366px, e em 1280px a coluna encolhe sem a tabela passar da caixa */
-.nova-extra-tabela td.ne-quer { width: 21%; }
+/* as colunas de fora, com largura fixa (no col); as três de datas dividem o resto em partes iguais, em qualquer lista e tela */
+.nova-extra-col-militar { width: 134px; }
+.nova-extra-col-unidade { width: 78px; }
+.nova-extra-col-cotas { width: 60px; }
+.nova-extra-col-termo { width: 62px; }
+
+/* nas células de datas, a margem lateral menor deixa mais dias caberem em cada linha */
+.nova-extra-tabela td.ne-quer,
+.nova-extra-tabela td.ne-nao,
+.nova-extra-tabela td.ne-nao-pode { padding: 8px 4px; }
 
 /* passo 1: o aviso embaixo do militar (sem fundo de bloco, colado à linha dele) */
 .nova-extra-blocos .nova-extra-linha-aviso td {
-  padding: 0 12px 4px;
+  padding: 0 8px 4px;
   background-color: transparent;
 }
 

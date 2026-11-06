@@ -33,10 +33,8 @@
   var AVISO_MOTOR = {
     parcial_com_erro: 'distribuicaoTravada',
     grau_por_falta:   'grauRebaixado',
-    grau_exclusivo:   'grauExclusivo',
     rodizio_quebrado: 'rodizioRepetido',
     resolva_escala:   'resolvaEscala',
-    exclusivo_condutor: 'exclusivoCondutor',
     chefe_condutor:   'chefeCondutor',
     afastado:         'afastadoTroca',
     regra_graduacao:  'regraGraduacao'
@@ -298,7 +296,7 @@
      que tem o aviso na lista do banco (presentes['codigo|cpf']): o amarelo que é consequência fica de fora.
      Sem os postos, o detalhe sai da própria lista do banco: o militar e a função */
   function detalharAvisosMotor(postos, presentes, problemas) {
-    var det = { grauRebaixado: [], grauExclusivo: [], rodizioRepetido: [], exclusivoCondutor: [], afastadoTroca: [], regraGraduacao: [] };
+    var det = { grauRebaixado: [], rodizioRepetido: [], afastadoTroca: [], regraGraduacao: [] };
     if (!postos) {
       var vistos = {};
       (problemas || []).forEach(function (p) {
@@ -333,7 +331,7 @@
     return grau;
   }
 
-  /* uma linha do detalhe: "Cb. Campos está de Rádio Operador, é o exclusivo dessa função (ideal soldado)" */
+  /* uma linha do detalhe: "Cb. Campos está de Rádio Operador, repetiu a função do último serviço" */
   function textoDetalhe(tipo, it) {
     var d = (RosterWork.mensagens && RosterWork.mensagens.escala && RosterWork.mensagens.escala.avisoDetalhe) || {};
     var m = it.m, f = it.f;
@@ -342,12 +340,8 @@
     var motivo = '';
     if (tipo === 'grauRebaixado') {
       motivo = grau ? preencher(d.motivoGrau, { grau: grau }) : 'faltou militar do grau ideal';
-    } else if (tipo === 'grauExclusivo') {
-      motivo = grau ? preencher(d.motivoExclusivoGrau, { grau: grau }) : 'é o exclusivo dessa função';
     } else if (tipo === 'rodizioRepetido') {
       motivo = d.motivoRodizio || '';
-    } else if (tipo === 'exclusivoCondutor') {
-      motivo = d.motivoExclusivo || '';
     } else if (tipo === 'afastadoTroca') {
       motivo = d.motivoAfastado || '';
     } else if (tipo === 'regraGraduacao') {
@@ -512,8 +506,8 @@
     porOcorrencia('grau_diferente', cat.grauDiferente, function (p) { return p.cpf + '|' + p.funcao; },
       function (p) { return { militar: militar(p), funcao: p.funcao || '' }; });
     var det = detalharAvisosMotor(postos, presentes, lista);   // quem + vaga + motivo, para o detalhe expansível
-    [['grau_por_falta', 'grauRebaixado'], ['grau_exclusivo', 'grauExclusivo'], ['rodizio_quebrado', 'rodizioRepetido'],
-     ['exclusivo_condutor', 'exclusivoCondutor'], ['afastado', 'afastadoTroca'], ['regra_graduacao', 'regraGraduacao']].forEach(function (par) {
+    [['grau_por_falta', 'grauRebaixado'], ['rodizio_quebrado', 'rodizioRepetido'],
+     ['afastado', 'afastadoTroca'], ['regra_graduacao', 'regraGraduacao']].forEach(function (par) {
       var def = cat[par[1]], itens = det[par[1]];
       if (tem(par[0]) && def && itens.length) linhas.push({ def: def, texto: def.texto + ' (' + itens.length + ')', tipo: par[1], itens: itens });
     });

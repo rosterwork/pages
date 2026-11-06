@@ -141,6 +141,14 @@
     else passo5();
   }
 
+  /* os dias do mês em que o militar não pode tirar extra: os que vêm travados no pedido (serviço e troca ele pode marcar) */
+  function diasNaoPode(m) {
+    var ocupado = m.ocupado || {}, mes = d.competencia.slice(0, 8);
+    return Object.keys(ocupado).filter(function (k) {
+      return k.slice(0, 8) === mes && ['folga', 'ferias', 'licenca', 'dispensa'].indexOf(ocupado[k]) >= 0;
+    }).sort();
+  }
+
   /* ---------- passo 1: prazo, mínimo e termos ---------- */
   function passo1() {
     if (!p1) { p1 = { lista: 'vol', termos: {} }; RW.novaExtraMinimo.iniciar(d); }
@@ -163,7 +171,7 @@
       tr.querySelector('.ne-cotas').textContent = m.voluntario ? msg().cotas(m.cotas, m.so24) : '';
       tr.querySelector('.ne-quer').textContent = m.voluntario ? msg().diasDoMes(m.quer) : '';
       tr.querySelector('.ne-nao').textContent = m.voluntario ? msg().diasDoMes(m.nao_posso) : '';
-      tr.querySelector('.ne-em').textContent = m.sem_dia_livre ? msg().semDiaLivre : (m.enviado_em || '');
+      tr.querySelector('.ne-nao-pode').textContent = m.sem_dia_livre ? msg().semDiaLivre : m.voluntario ? msg().trechosDoMes(diasNaoPode(m)) : '';
       var t = tr.querySelector('.ne-termo');
       if (!m.voluntario) { t.classList.add('oculto'); } else {
         var marcado = m.cpf in p1.termos ? p1.termos[m.cpf] : m.termo;
@@ -279,7 +287,7 @@
     /* com alteração não salva nos Pedidos, o navegador avisa ao fechar ou recarregar */
     if (RW.guardaSaida && !guardaLigada) {
       guardaLigada = true;
-      RW.guardaSaida.registrar(function () { return !!el && el.isConnected && pedidosSujo(); });
+      RW.guardaSaida.registrar(function () { return !!el && !!q('#p1-abre') && pedidosSujo(); });
     }
     RW.novaExtraAcoes.ligar(el);
   }

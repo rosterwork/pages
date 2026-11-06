@@ -113,8 +113,10 @@
     envio: function (motivo) {
       return sujo() ? { competencia: mes.competencia, mudancas: mudancas(), motivo: motivo || null } : null;
     },
-    /* o que as telas mostram: a prévia não leva quem passou da cota, que o banco recusaria */
+    /* o que as telas mostram: a prévia não leva quem passou da cota, que o banco recusaria. No treino, o mês é de exemplo
+       e o banco não o conhece: as telas ficam como estão, só com a borda tracejada */
     paraPrevia: function () {
+      if (RW.treinoExtra && RW.treinoExtra.mes()) return null;
       return sujo() && !G().passaram().length ? { competencia: mes.competencia, mudancas: mudancas(), motivo: null } : null;
     },
     /* o rascunho inteiro, para saber se ele mudou */

@@ -226,7 +226,9 @@
             </div>
             <div class="nova-extra-blocos">
               <table class="nova-extra-tabela nova-extra-tabela--centro">
-                <thead><tr><th>Militar</th><th>Unidade</th><th>Cotas</th><th>Quer</th><th>Não quer</th><th>Pediu em</th><th>Termo</th></tr></thead>
+                <!-- as colunas de fora têm largura fixa; as três de datas, sem largura, dividem o resto em partes iguais -->
+                <colgroup><col class="nova-extra-col-militar" /><col class="nova-extra-col-unidade" /><col class="nova-extra-col-cotas" /><col /><col /><col /><col class="nova-extra-col-termo" /></colgroup>
+                <thead><tr><th>Militar</th><th>Unidade</th><th>Cotas</th><th>Quer</th><th>Não quer</th><th>Não pode</th><th>Termo</th></tr></thead>
                 <tbody id="p1-lista"></tbody>
               </table>
               <span class="nova-extra-vazio oculto" id="p1-vazio">Ninguém nesta lista.</span>
@@ -488,7 +490,7 @@
 <template id="tpl-ne-p1-linha">
   <tr>
     <td class="nova-extra-nome"><small></small><b></b></td>
-    <td class="ne-uni"></td><td class="ne-cotas"></td><td class="ne-quer"></td><td class="ne-nao"></td><td class="ne-em"></td>
+    <td class="ne-uni"></td><td class="ne-cotas"></td><td class="ne-quer"></td><td class="ne-nao"></td><td class="ne-nao-pode"></td>
     <td><button type="button" class="geral-opcao nova-extra-marcar-curto ne-termo" role="checkbox" aria-checked="false" aria-label="Termo recebido"><span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span></button></td>
   </tr>
 </template>

@@ -538,7 +538,9 @@
   /* a navegação chama isto toda vez que a página de escalas é exibida */
   function iniciar(fragmento) {
     conteudo = fragmento;
-    refData = new Date();
+    /* no treino da extra, a Escala abre no mês de treino, o mesmo da Extrajornada (geral-treino-extra.js) */
+    var mesDoTreino = RosterWork.treinoExtra && RosterWork.treinoExtra.mes();
+    refData = mesDoTreino ? new Date(mesDoTreino) : new Date();
 
     RosterWork.abas.ligar(conteudo.querySelector('#escala-modo-minha'), trocarModo);
     RosterWork.abas.ligar(conteudo.querySelector('#escala-modo-principal'), trocarModo);

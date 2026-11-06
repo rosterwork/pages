@@ -472,8 +472,23 @@
         p5: function (n) { return n + (n === 1 ? ' ajuste' : ' ajustes'); },
         cotas: function (n, so24) { return n + (so24 ? ' (24 h)' : ''); },
         dias: function (n) { return n ? n + (n === 1 ? ' dia' : ' dias') : 'nenhum'; },
-        /* os dias do mês de uma lista de datas: "3 - 15 - 21"; o espaço antes do traço não quebra, para a linha nunca começar com ele */
-        diasDoMes: function (datas) { return datas.length ? datas.map(function (d) { return +d.slice(8, 10); }).join(' - ') : 'nenhum'; },
+        /* os dias do mês de uma lista de datas: "3 - 15 - 21"; sem datas, em branco; o espaço antes do traço não quebra, para a linha nunca começar com ele */
+        diasDoMes: function (datas) { return datas.map(function (d) { return +d.slice(8, 10); }).join('\u00a0- '); },
+        /* os dias do mês em trechos: "1 a 15 - 20 - 25 a 28"; sem datas, em branco; recebe as datas em ordem, e um trecho não se parte na quebra de linha */
+        trechosDoMes: function (datas) {
+          if (!datas.length) return '';
+          var trechos = [], inicio = null, anterior = null;
+          function fecharTrecho() { trechos.push(inicio === anterior ? String(inicio) : inicio + '\u00a0a\u00a0' + anterior); }
+          datas.forEach(function (data) {
+            var dia = +data.slice(8, 10);
+            if (inicio === null) { inicio = anterior = dia; return; }
+            if (dia === anterior + 1) { anterior = dia; return; }
+            fecharTrecho();
+            inicio = anterior = dia;
+          });
+          fecharTrecho();
+          return trechos.join('\u00a0- ');
+        },
         /* o rodapé do passo Pedidos: "Prazo, mínimo e 2 termos mudados, não salvos" */
         pedidosMudados: function (prazo, minimo, termos) {
           var partes = [];
@@ -662,13 +677,11 @@
         /* lista do topo: uma linha por trecho, com a composição ("Modelo de distribuição com erro: 2ºPEL: 3 praças, 08h às 08h") */
         modeloComErro:       { texto: 'Modelo de distribuição com erro',    icone: 'icone-alerta', nivel: 'erro' },
         grauRebaixado:       { texto: 'Grau rebaixado por falta de efetivo',  icone: 'icone-alerta', nivel: 'alerta' },
-        grauExclusivo:       { texto: 'Grau diferente do ideal (função exclusiva)', icone: 'icone-alerta', nivel: 'alerta' },
         rodizioRepetido:     { texto: 'Rodízio repetido por falta de opção',   icone: 'icone-alerta', nivel: 'alerta' },
         resolvaEscala:       { texto: 'Sem solução automática, precisa de ação do administrador', icone: 'icone-alerta', nivel: 'erro' },
         /* posto travado (uma linha por posto): por regra, ou por falta de CNH para a direção */
         postoSemSolucao:     { texto: 'Sem solução automática, precisa de ação do administrador: {posto}', icone: 'icone-alerta', nivel: 'erro' },
         semCondutorHabilitado: { texto: 'Viatura sem condutor habilitado: {posto} (CNH {cnh})', icone: 'icone-alerta', nivel: 'erro' },
-        exclusivoCondutor:   { texto: 'Condutor exclusivo indisponível, motorista substituído', icone: 'icone-alerta', nivel: 'alerta' },
         chefeCondutor:       { texto: 'Chefe assumiu a direção por falta de condutor', icone: 'icone-alerta', nivel: 'alerta' },
         afastadoTroca:       { texto: 'Militar afastado, não vai assumir o serviço', icone: 'icone-alerta', nivel: 'alerta' },
         /* a regra por graduação da Distribuição não deixa, mas não havia outro militar que pudesse */
@@ -702,9 +715,7 @@
         motivoGrau:      'faltou {grau}',
         grauMaisAntigo:  '{grau} ou mais antigo',
         grauMaisModerno: '{grau} ou mais moderno',
-        motivoExclusivoGrau: 'é o exclusivo dessa função (ideal {grau})',
         motivoRodizio:   'repetiu a função do último serviço',
-        motivoExclusivo: 'assumiu no lugar do condutor exclusivo',
         motivoAfastado:  'mas está afastado (férias, licença ou dispensa) e não vai assumir',
         motivoRegraGraduacao: 'fora da regra por graduação, não havia outro militar que pudesse'
       },
