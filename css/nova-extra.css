@@ -492,6 +492,15 @@
 .nova-extra-tabela td.ne-nao,
 .nova-extra-tabela td.ne-nao-pode { padding: 8px 4px; }
 
+/* coluna Não pode: cada período numa peça só, com o motivo na dica; os 2px a mais facilitam o mouse sem mudar o espaço entre as datas */
+.nova-extra-nao-pode-dia {
+  margin: 0 -2px;
+  padding: 0 2px;
+  white-space: nowrap;
+}
+
+.nova-extra-nao-pode-item:last-child .nova-extra-nao-pode-separador { display: none; }
+
 /* passo 1: o aviso embaixo do militar (sem fundo de bloco, colado à linha dele) */
 .nova-extra-blocos .nova-extra-linha-aviso td {
   padding: 0 8px 4px;

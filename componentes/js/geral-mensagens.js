@@ -215,45 +215,13 @@
       falha: 'Não foi possível cadastrar o usuário.'
     },
 
-    /* postos (painel da instalação e da viatura: criar + editar + transferir + excluir) */
+    /* postos: a transferência do militar e o aviso ao mudar a CNH (painéis de Usuários) */
     postos: {
-      falhaAdicionar: 'Não foi possível adicionar. Tente de novo.',
-      falhaEditar: 'Não foi possível salvar. Tente de novo.',
-      descartarAlteracoes: 'Descartar as alterações não salvas desta instalação?',
-      descartarViatura: 'Descartar as alterações não salvas desta viatura?',
-      confirmarTransferirViatura: 'Transferir a viatura {prefixo} de {origem} para {destino}? Ela passa para {destino} a partir desta data. Até a véspera continua em {origem}, e os dias anteriores não mudam.',
-      confirmarExcluirViatura: 'Excluir a viatura {prefixo}? A partir desta data o posto sai da escala. Os dias anteriores continuam como estão.',
-      confirmarExcluirInstalacao: 'Excluir a instalação {nome}? A partir desta data o posto sai da escala. Os dias anteriores continuam como estão.',
-      /* estado e exclusão com data: a data do modal é a data em que a mudança vale */
-      novoEstadoVale: 'O novo estado vale a partir desta data. A escala é refeita desse dia em diante.',
-      postoComeca: 'O posto começa a valer nesta data.',
-      mudancaAPartir: '{estado} a partir de {data}',
       transferenciaAPartir: 'Transferência para {unidade} a partir de {data}',
-      /* troca de viatura marcada: para sempre ou com data de volta */
-      trocaAPartir: '{prefixo} (CNH {cnh}) a partir de {data}',
-      trocaIntervalo: '{prefixo} (CNH {cnh}) de {inicio} a {fim}',
-      /* card durante a troca com data: o selo e a viatura que está no lugar */
-      substituidaAte: 'Substituída até {data}',
-      noLugar: '{prefixo} no lugar',
-      /* as viaturas que já serviram neste posto (painel) */
-      anteriorPeriodo: '{inicio} a {fim}',
-      anteriorViatura: '{prefixo}, CNH {cnh}',
-      /* linha do período no card (primeiro e último dia reais do posto) */
-      periodoPermanente: 'Permanente',
-      periodoDesde: 'desde {data}',
-      periodoAte: 'até {data}',
-      periodoIntervalo: '{inicio} a {fim}',
       confirmarCancelarMudanca: 'Cancelar a mudança marcada ({mudanca})? A escala é refeita a partir dessa data.',
-      /* a mudança abriu um período na Distribuição que já foi revisado: cancelar a descarta */
-      descartaAjusteDistribuicao: ' O período da Distribuição que já foi revisado será descartado.',
       falhaCancelarMudanca: 'Não foi possível cancelar a mudança. Tente de novo.',
-      falhaTransferir: 'Não foi possível transferir. Tente de novo.',
-      falhaExcluir: 'Não foi possível excluir. Tente de novo.',
-      falhaExcluirInstalacao: 'Não foi possível excluir a instalação. Tente de novo.',
-      /* a viatura é única no sistema: se já existe em outra unidade, oferece a transferência */
-      viaturaEmOutraUnidade: 'A viatura {prefixo} já está cadastrada em {unidade}. Deseja transferi-la para {destino} a partir de {data}? Os dados que você digitou serão aplicados a ela.',
       /* ponto crítico: postos alimentam a distribuição da escala */
-      impactoDistribuicao: 'Este é um ponto crítico do sistema: as viaturas e instalações alimentam a distribuição da escala. Vá até a Distribuição para conferir os modelos e corrigir o que for necessário.'
+      impactoDistribuicao: 'Este é um ponto crítico do sistema: as viaturas e instalações alimentam a distribuição da escala. Vá até a Distribuição para conferir e corrigir o que for necessário.'
     },
 
     /* edição de posto (componente geral-posto-editar: painel do dia da Escala e painel de Postos) */
@@ -472,23 +440,10 @@
         p5: function (n) { return n + (n === 1 ? ' ajuste' : ' ajustes'); },
         cotas: function (n, so24) { return n + (so24 ? ' (24 h)' : ''); },
         dias: function (n) { return n ? n + (n === 1 ? ' dia' : ' dias') : 'nenhum'; },
-        /* os dias do mês de uma lista de datas: "3 - 15 - 21"; sem datas, em branco; o espaço antes do traço não quebra, para a linha nunca começar com ele */
-        diasDoMes: function (datas) { return datas.map(function (d) { return +d.slice(8, 10); }).join('\u00a0- '); },
-        /* os dias do mês em trechos: "1 a 15 - 20 - 25 a 28"; sem datas, em branco; recebe as datas em ordem, e um trecho não se parte na quebra de linha */
-        trechosDoMes: function (datas) {
-          if (!datas.length) return '';
-          var trechos = [], inicio = null, anterior = null;
-          function fecharTrecho() { trechos.push(inicio === anterior ? String(inicio) : inicio + '\u00a0a\u00a0' + anterior); }
-          datas.forEach(function (data) {
-            var dia = +data.slice(8, 10);
-            if (inicio === null) { inicio = anterior = dia; return; }
-            if (dia === anterior + 1) { anterior = dia; return; }
-            fecharTrecho();
-            inicio = anterior = dia;
-          });
-          fecharTrecho();
-          return trechos.join('\u00a0- ');
-        },
+        /* os dias do mês de uma lista de datas: "3, 15, 21"; sem datas, em branco */
+        diasDoMes: function (datas) { return datas.map(function (d) { return +d.slice(8, 10); }).join(', '); },
+        /* um período do mês: "27 a 30", ou só "2" quando é um dia */
+        periodoDoMes: function (inicio, fim) { return inicio === fim ? String(inicio) : inicio + ' a ' + fim; },
         /* o rodapé do passo Pedidos: "Prazo, mínimo e 2 termos mudados, não salvos" */
         pedidosMudados: function (prazo, minimo, termos) {
           var partes = [];
@@ -1162,51 +1117,9 @@
       }
     },
 
-    /* distribuição (aba Modelos — painel, corpo e rodapé de status) */
+    /* distribuição: a escolha de unidade no painel de impressão */
     distribuicao: {
-      selecioneUnidade: 'Selecione pelo menos uma CIA, uma CIBM ou um PEL.',
-      semModelos: 'Nenhum modelo cadastrado para esta unidade.',
-      selecioneModelo: 'Selecione um modelo à esquerda para ver as vagas.',
-      modeloVazio: 'Este modelo ainda não tem vagas.',
-      falhaCarregar: 'Não foi possível carregar os modelos.',
-      falhaCarregarRegras: 'Não foi possível carregar as regras.',
-      faltaVagas: function (unidade, n, total, tipo) { return unidade + ': ' + n + ' de ' + total + ' ' + tipo + ' distribuídos'; },
-      excessoVagas: function (unidade, vagas, total, tipo) { return unidade + ': ' + vagas + ' vagas para ' + total + ' ' + tipo + ' (vagas a mais)'; },
-      vagaSemCriterio: function (unidade, posto) { return unidade + ': preencha antiguidade ou grau em ' + posto; },
-      semPapel: function (unidade, papel) { return unidade + ' sem ' + papel + ' alocado'; },
-      tudoCerto: function (unidades) { return unidades + ' com todos os militares distribuídos corretamente'; },
-      descartar: 'Descartar as alterações não salvas deste modelo?',
-      salvarComErro: 'Este modelo ainda tem erros (em vermelho). Salvar mesmo assim?',
-      falhaSalvar: 'Não foi possível salvar. Tente de novo.',
-      composicaoVazia: 'Defina pelo menos um militar.',
-      modeloJaExiste: function (unidade) { return unidade + ' já tem um modelo com essa composição. Ele foi aberto.'; },
-      /* dicas do lápis e da lixeira da linha do modelo, quando inativos */
-      periodoSoLeitura: 'Período encerrado, só leitura.',
-      modeloEmEdicao: 'Este modelo já está em edição.',
-      excluirModelo: 'Excluir este modelo de distribuição? As vagas que ele define serão perdidas.',
-      abaixoMinimo: function (unidade, posto, pessoas, minimo) { return unidade + ': efetivo abaixo do mínimo em ' + posto + ' (' + pessoas + ' de ' + minimo + ')'; },
-      abaixoIdeal: function (unidade, posto, pessoas, ideal) { return unidade + ': efetivo abaixo do ideal em ' + posto + ' (' + pessoas + ' de ' + ideal + ')'; },
-      salvarImpacto: 'Salvar este modelo recalcula as escalas já distribuídas que usam esta composição. Continuar?',
-      /* papel especial (Chefe de Socorro / Oficial de Área): o modal que pergunta se as funções
-         acumuladas em outro posto vão junto quando o papel muda de posto */
-      moverPapelTitulo: function (papel) { return 'Mover ' + papel; },
-      moverPapelAcumulos: function (papel, origem, destino) {
-        return 'Mover o ' + papel + ' de "' + origem + '" para "' + destino + '". Ele tem funções acumuladas. Quer levá-las junto?';
-      },
-      /* lista do Acúmulo sem nenhuma função que possa entrar no grupo */
-      nenhumaFuncaoLivre: 'Nenhuma função livre',
-      /* períodos (seletor ‹ período ›): cada mudança de posto com data abre um período novo */
-      periodoTodos: 'Todos os dias',
-      periodoAte: 'até {data}',
-      periodoDesde: 'a partir de {data}',
-      periodoIntervalo: '{inicio} a {fim}',
-      periodoIntervaloFrase: 'de {inicio} a {fim}',
-      revisarPeriodo: function (unidade, motivo) { return unidade + ': revise este período' + (motivo ? ' (' + motivo + ')' : ''); },
-      /* salvou um período e a mudança não chegou aos seguintes, que já tinham sido revisados */
-      naoAtualizados: function (periodos) {
-        if (periodos.length === 1) return 'Esta mudança não vale no período ' + periodos[0] + ', que já foi revisado. Ajuste-o também, se precisar.';
-        return 'Esta mudança não vale nos períodos ' + periodos.slice(0, -1).join(', ') + ' e ' + periodos[periodos.length - 1] + ', que já foram revisados. Ajuste-os também, se precisar.';
-      }
+      selecioneUnidade: 'Selecione pelo menos uma CIA, uma CIBM ou um PEL.'
     },
 
     /* Distribuição (a aba dos Ajustes, ajustes.html; só administrador): as frases que mudam com a unidade e as respostas.

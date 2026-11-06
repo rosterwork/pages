@@ -16,7 +16,7 @@
   window.RosterWork = window.RosterWork || {};
 
   var unidades = null;          // cache da hierarquia (lista plana)
-  var conteudoPorRpc = {};      // cache do conteúdo por RPC: { 'buscar_efetivo': [...], 'listar_instalacoes': [...] }
+  var conteudoPorRpc = {};      // cache do conteúdo por RPC: { 'buscar_efetivo': [...] }
   var carregando = false;
   var pedidoAtual = 0;          // senha da carga (latest-wins): só a resposta do pedido mais novo entra na tela
   var houveFalha = false;       // a última carga da hierarquia falhou (rede/servidor) → mostra erro, não branco
@@ -29,8 +29,7 @@
   var observadorTrilha = null;  // refaz a trilha quando ela volta a aparecer (troca de aba)
 
   /* A página escolhe a fonte de conteúdo; o padrão é o efetivo (usuários).
-     Postos passa rpcConteudo:'listar_instalacoes' e chaveUnidade:'unidade_id'. Pode ser uma função, lida a cada carga
-     (o Dia da Escala: a leitura de sempre ou a prévia do rascunho), como o corpoRpc */
+     Pode ser uma função, lida a cada carga (o Dia da Escala: a leitura de sempre ou a prévia do rascunho), como o corpoRpc */
   function rpcConteudo() {
     var r = opcoesAtuais && opcoesAtuais.rpcConteudo;
     if (typeof r === 'function') r = r();

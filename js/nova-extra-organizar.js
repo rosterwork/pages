@@ -141,12 +141,17 @@
     else passo5();
   }
 
-  /* os dias do mês em que o militar não pode tirar extra: os que vêm travados no pedido (serviço e troca ele pode marcar) */
-  function diasNaoPode(m) {
-    var ocupado = m.ocupado || {}, mes = d.competencia.slice(0, 8);
-    return Object.keys(ocupado).filter(function (k) {
-      return k.slice(0, 8) === mes && ['folga', 'ferias', 'licenca', 'dispensa'].indexOf(ocupado[k]) >= 0;
-    }).sort();
+  /* os períodos do mês em que o militar não pode tirar extra: os dias que vêm travados no pedido (serviço e troca ele pode
+     marcar), juntos quando são seguidos e do mesmo motivo */
+  function periodosNaoPode(m) {
+    var ocupado = m.ocupado || {}, mes = d.competencia.slice(0, 8), periodos = [];
+    Object.keys(ocupado).sort().forEach(function (k) {
+      if (k.slice(0, 8) !== mes || ['folga', 'ferias', 'licenca', 'dispensa'].indexOf(ocupado[k]) < 0) return;
+      var dia = +k.slice(8, 10), ultimo = periodos[periodos.length - 1];
+      if (ultimo && ultimo.fim === dia - 1 && ultimo.motivo === ocupado[k]) ultimo.fim = dia;
+      else periodos.push({ inicio: dia, fim: dia, motivo: ocupado[k] });
+    });
+    return periodos;
   }
 
   /* ---------- passo 1: prazo, mínimo e termos ---------- */
@@ -171,7 +176,14 @@
       tr.querySelector('.ne-cotas').textContent = m.voluntario ? msg().cotas(m.cotas, m.so24) : '';
       tr.querySelector('.ne-quer').textContent = m.voluntario ? msg().diasDoMes(m.quer) : '';
       tr.querySelector('.ne-nao').textContent = m.voluntario ? msg().diasDoMes(m.nao_posso) : '';
-      tr.querySelector('.ne-nao-pode').textContent = m.sem_dia_livre ? msg().semDiaLivre : m.voluntario ? msg().trechosDoMes(diasNaoPode(m)) : '';
+      var naoPode = tr.querySelector('.ne-nao-pode');
+      if (m.sem_dia_livre) naoPode.textContent = msg().semDiaLivre;
+      else if (m.voluntario) periodosNaoPode(m).forEach(function (p) {
+        var item = RW.tpl('tpl-ne-nao-pode-periodo'), periodo = item.querySelector('.nova-extra-nao-pode-dia');
+        periodo.textContent = msg().periodoDoMes(p.inicio, p.fim);
+        periodo.setAttribute('data-dica', RW.mensagens.novaExtra.motivos[p.motivo]);
+        naoPode.appendChild(item);
+      });
       var t = tr.querySelector('.ne-termo');
       if (!m.voluntario) { t.classList.add('oculto'); } else {
         var marcado = m.cpf in p1.termos ? p1.termos[m.cpf] : m.termo;

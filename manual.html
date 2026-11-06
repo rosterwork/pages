@@ -47,6 +47,7 @@
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#imprimir-escala">Imprimir a escala</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#montar-ciclo">Montar o ciclo (aba Ciclo)</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#distribuicao-dia">Ajustar o dia</a></li>
+                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#escala-extra">Editar a extra pela Escala</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#enviar-sysbm">Lançar a escala no SYSBM</a></li>
               </ul>
             </li>
@@ -445,6 +446,8 @@
                 <li><strong>Sino de avisos.</strong> Mostra os seus avisos novos, como uma troca para confirmar ou uma folga decidida, e o número conta quantos você ainda não leu. Clicar num aviso leva direto à tela do assunto; o aviso que pede a sua resposta abre a página Pendências, já no pedido. A seção Avisos explica o sino em detalhe.</li>
                 <li><strong>Menu do canto (seu nome).</strong> Abre Meu perfil, Fale conosco, Manual, Termos e privacidade e Sair; no celular, também Instalar no celular. O Sair encerra a sessão só no aparelho em que você está. No rodapé do menu aparece a versão do sistema.</li>
               </ol>
+              <p class="manual-nota"><strong>Tela em manutenção.</strong> Uma faixa amarela acima do título avisa que algumas partes podem dar erro até a correção terminar; com a tela inteira parada, o aviso aparece no lugar dela, e ela abre sozinha quando terminar. O que você já salvou continua guardado.</p>
+
               <h3 id="no-celular">No celular</h3>
               <p>No celular, o sistema se ajusta à tela do aparelho. O menu vira uma <strong>barra embaixo</strong>, com Escala, Trocas, Folgas, <strong>Pendências</strong> (com o número do que espera você) e <strong>Mais</strong>. Toque em Mais para ver as outras telas (Extrajornada, Usuários e Treinamento). Para fechar o Mais, arraste a folha para baixo ou toque fora dela.</p>
               <p>No topo ficam o seletor de unidades, o sino e o seu avatar (o tema claro ou escuro muda em Meu perfil). Ao rolar a lista para baixo, o topo sobe junto com o dedo para dar mais espaço; nas telas com abas, o título da tela sobe junto. Se você soltar no meio, ele termina sozinho de subir ou de voltar. As abas, com o botão de ajuda (?) na ponta, e a barra com o mês, a visualização e os filtros ficam sempre à vista. Para trazer o topo de volta, volte ao começo da lista: chegando nele, o topo volta sozinho; se você já está no começo, puxe a lista para baixo. O puxão que traz o topo de volta não recarrega a página.</p>
@@ -831,10 +834,10 @@
                 <h3 id="distribuicao-dia">Ajustar o dia <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>Na aba <strong>Dia</strong> do painel do dia, você ajusta aquele dia. Para o administrador, a aba já abre pronta para editar: a lista é a mesma que todos veem, com o menu <strong>Editar o dia</strong> no alto do painel (Adicionar militar, Remover militar, Remanejar militar e Registrar troca de serviço), marcado com a chave inglesa por ser do administrador, e o <strong>lápis</strong> em cada linha. Ao lado do menu fica o <strong>Solicitar troca</strong>, o mesmo de todos, para você pedir uma troca sua. As mudanças valem <strong>só para aquele dia</strong>.</p>
                 <figure class="manual-figura">
-                  <img src="manual/imagens/escala-painel-admin.png" width="485" height="237" alt="O alto do painel do dia para o administrador: as abas Dia e Ciclo (1), o menu Editar o dia, com a chave inglesa (2), o Solicitar troca (3), o botão de imprimir e os ícones Desfazer e Refazer (4) e o lápis de uma linha (5)." />
+                  <img src="manual/imagens/escala-painel-admin.png" width="480" height="230" alt="O alto do painel do dia para o administrador: as abas Dia, Ciclo e Extrajornada (1), o menu Editar o dia, com a chave inglesa (2), o Solicitar troca (3), o botão de imprimir e os ícones Desfazer e Refazer (4) e o lápis de uma linha (5)." />
                   <figcaption>
                     <ol class="manual-chamadas">
-                      <li>Abas Dia e Ciclo</li>
+                      <li>Abas Dia, Ciclo e Extrajornada</li>
                       <li>Menu Editar o dia</li>
                       <li>Solicitar troca</li>
                       <li>Imprimir, Desfazer e Refazer</li>
@@ -842,7 +845,7 @@
                     </ol>
                   </figcaption>
                 </figure>
-                <p><strong>Salvar ou descartar.</strong> O que você muda no painel não grava na hora: fica esperando o <strong>Salvar</strong>. Nas perguntas e no lápis não há botão no fim: assim que as respostas ficam completas, a mudança entra, e a escala da página já mostra o dia como vai ficar, com o dia mudado marcado por uma borda tracejada. Com uma pergunta pela metade ou um horário em conflito, a mudança fica de fora e o Salvar fica desligado até resolver. De volta à lista, ela também mostra o dia como vai ficar, com a nota <strong>O que mudou</strong> no alto (uma frase por militar, como "O Cb. Paixão passou do Efetivo 3 para o Condutor."). No rodapé largo da página, embaixo da escala e do painel, aparecem quantas alterações faltam salvar, o <strong>Cancelar</strong>, que pergunta antes de descartar tudo, e o <strong>Salvar</strong>, que grava de uma vez as mudanças das abas Dia e Ciclo e mostra o resumo. Trocar de aba não perde nada; trocar de dia ou fechar o painel com mudança não salva pergunta antes. Se outro administrador mexeu no mesmo dia depois que você abriu, o Salvar não grava nada: o sistema avisa e mostra o dia atualizado, e você faz a mudança de novo.</p>
+                <p><strong>Salvar ou descartar.</strong> O que você muda no painel não grava na hora: fica esperando o <strong>Salvar</strong>. Nas perguntas e no lápis não há botão no fim: assim que as respostas ficam completas, a mudança entra, e a escala da página já mostra o dia como vai ficar, com o dia mudado marcado por uma borda tracejada. Com uma pergunta pela metade ou um horário em conflito, a mudança fica de fora e o Salvar fica desligado até resolver. De volta à lista, ela também mostra o dia como vai ficar, com a nota <strong>O que mudou</strong> no alto (uma frase por militar, como "O Cb. Paixão passou do Efetivo 3 para o Condutor."). No rodapé largo da página, embaixo da escala e do painel, aparecem quantas alterações faltam salvar, o <strong>Cancelar</strong>, que pergunta antes de descartar tudo, e o <strong>Salvar</strong>, que grava de uma vez as mudanças das abas Dia, Ciclo e Extrajornada e mostra o resumo. Trocar de aba não perde nada; trocar de dia ou fechar o painel com mudança não salva pergunta antes. Se outro administrador mexeu no mesmo dia depois que você abriu, o Salvar não grava nada: o sistema avisa e mostra o dia atualizado, e você faz a mudança de novo.</p>
                 <figure class="manual-figura">
                   <img src="manual/imagens/escala-salvar.png" width="483" height="93" alt="O rodapé largo da página, embaixo do painel do dia, com os botões Cancelar e Salvar (1)." />
                   <figcaption>
@@ -946,6 +949,21 @@
                 <p>As <strong>observações</strong> do dia ficam no fim da lista, em grupos: <strong>Administração</strong>, <strong>Trocas</strong>, <strong>Folgas</strong> e <strong>De outra unidade</strong>. O botão <strong>Adicionar observação</strong> inclui uma nota no grupo Administração, e o <strong>✕</strong> exclui as suas. Elas também esperam o Salvar.</p>
                 <p>As regras de cada militar valem também para os seus ajustes. Colocar um condutor sem a CNH exigida pela viatura, ou um militar numa função que a regra dele proíbe, não entra: o sistema avisa o motivo e a lista fica como estava. O mesmo vale para o horário fora do serviço do militar, dois militares no mesmo horário, o militar em duas unidades ao mesmo tempo e o posto acima do efetivo máximo. Se o dia já tinha um erro em vermelho de antes, ele não impede as outras mudanças, e você o corrige quando quiser. Colocar um militar exclusivo fora da sua função, ou com grau diferente do ideal, fica em amarelo e é aceito normalmente.</p>
                 <p class="manual-nota">Os postos (o efetivo, a viatura, uma substituição ou um fora de serviço) mudam na <strong>Distribuição</strong>, em Ajustes: veja <strong>Os postos</strong> e <strong>Substituição, fora de serviço e exclusão</strong>.</p>
+                <h3 id="escala-extra">Editar a extra pela Escala <span class="manual-selo-admin">Apenas administradores</span></h3>
+                <p>Na aba <strong>Extrajornada</strong> do painel do dia, você muda quem tira extra naquele dia sem sair da Escala. O painel é o mesmo dos <strong>Ajustes</strong> da página Extrajornada e funciona do mesmo jeito: veja <strong>O painel do dia</strong>, em Extrajornada. A aba fica só no computador e vale para as unidades da sua companhia; numa unidade de outra companhia, ela só avisa isso.</p>
+                <p>Ela funciona depois que a extra do mês foi lançada. Antes disso, a aba mostra só a frase de que a extrajornada daquele mês ainda não foi lançada, e a distribuição se faz na página Extrajornada.</p>
+                <figure class="manual-figura">
+                  <img src="manual/imagens/escala-aba-extra.png" width="480" height="644" alt="A aba Extrajornada do painel do dia (1): o grupo Neste dia, com quem tira extra naquele dia (2), e embaixo o grupo Querem este dia (3)." />
+                  <figcaption>
+                    <ol class="manual-chamadas">
+                      <li>Aba Extrajornada</li>
+                      <li>Quem tira extra neste dia</li>
+                      <li>Quem quer este dia; embaixo vêm os outros grupos</li>
+                    </ol>
+                  </figcaption>
+                </figure>
+                <p><strong>Salvar.</strong> O que você muda fica esperando o <strong>Salvar</strong> do rodapé largo, o mesmo do Dia e do Ciclo, que grava as três abas de uma vez: ou grava tudo, ou nada. O rodapé mostra também o <strong>Motivo do ajuste</strong>, que é opcional. Depois de salvar, a mudança entra no relatório de ajustes, e o militar recebe um aviso no sino.</p>
+                <p><strong>Trocar de dia.</strong> A mudança da extra é do mês inteiro, então trocar de dia não perde nada e não pergunta: o painel abre o outro dia na mesma aba, e você acerta vários dias no mesmo Salvar. Para abrir um dia de outro mês, salve ou cancele antes. Fechar o painel com mudança não salva pergunta antes.</p>
                 <h3 id="enviar-sysbm">Lançar a escala no SYSBM <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>O Roster leva a escala de um pelotão para a tela de cadastro da escala do SYSBM, o sistema oficial, para você não precisar digitar tudo lá. O Roster nunca entra no SYSBM: <strong>o login e o Salvar são sempre seus</strong>.</p>
                 <p>O envio funciona só no navegador <strong>Mozilla Firefox</strong>, no computador ou no celular Android, com a extensão <strong>Roster Work</strong>. Em outro navegador, o bloco mostra só o aviso de que a funcionalidade está disponível apenas no Firefox.</p>
@@ -1084,7 +1102,7 @@
                     </ol>
                   </figcaption>
                 </figure>
-                <p class="manual-nota"><strong>Também nas páginas do assunto.</strong> Os mesmos pedidos aparecem na aba <strong>Pendências</strong> da Trocas, da Folgas e da Usuários, com o mesmo cartão e o mesmo painel. Decidido num lugar, o pedido some dos dois.</p>
+                <p class="manual-nota"><strong>Também nas páginas do assunto.</strong> Os mesmos pedidos aparecem na aba <strong>Pendências</strong> da Trocas e da Folgas, com o mesmo cartão e o mesmo painel, e as correções de dados abrem também pela ficha do militar. Decidido num lugar, o pedido some dos outros.</p>
               </div>
             </section>
 
@@ -1495,7 +1513,7 @@
                 </figcaption>
               </figure>
               <p><strong>O prazo.</strong> O pedido de um mês costuma abrir no dia 1º do mês anterior e fechar no dia 25, às 23h59; o selo da Minha extra mostra as datas do mês. Até fechar, dá para mudar o pedido quantas vezes quiser; depois, o botão vira <strong>Ver o pedido</strong>, só para ver. Quem ainda não respondeu recebe nos últimos dias a contagem regressiva em <strong>Pendências</strong>, no sino e na faixa do alto da página, como "Faltam 3 dias para pedir a extra de dezembro"; um clique abre a Minha extra no mês do pedido.</p>
-              <p><strong>Depois do prazo</strong>, o administrador reparte as cotas, com prioridade para quem foi menos atendido nos últimos 12 meses, e coloca as extras nos dias. A Minha extra mostra as cotas que você recebeu e, depois que a extra entra na escala, os seus dias. Se uma extra sua mudar depois disso, você recebe um aviso no sino, como "Sua extra de novembro mudou", com o que mudou e o motivo.</p>
+              <p><strong>Depois do prazo</strong>, o administrador reparte as cotas, com prioridade para quem foi menos atendido nos últimos 12 meses, e coloca as extras nos dias. A conta do atendimento usa o que cabia nos seus dias livres: se você pediu 10 cotas, só cabiam 4 e recebeu as 4, conta como 100%. A Minha extra mostra as cotas que você recebeu e, depois que a extra entra na escala, os seus dias. Se uma extra sua mudar depois disso, você recebe um aviso no sino, como "Sua extra de novembro mudou", com o que mudou e o motivo.</p>
               <p><strong>Sem nenhum dia livre no mês</strong> (por exemplo, de férias o mês inteiro), não há pedido a fazer. A Minha extra mostra "Você não tem dia livre para extra em dezembro, por isso não pode fazer o pedido.", e o botão <strong>Ver o calendário</strong> abre o mês só para ver o motivo de cada dia; o Sim e o Não ficam apagados. Esse mês fica fora da conta de quem foi menos atendido: não ajuda nem atrapalha você na fila das cotas. A contagem regressiva do prazo também não aparece.</p>
               <p class="manual-nota">A extra é só para praças: o oficial vê esse aviso no lugar do pedido.</p>
 
@@ -1529,7 +1547,7 @@
                 <h3 id="extra-cotas">Pedidos, termos e cotas <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p><strong>1 Pedidos.</strong> A linha do alto resume o mês: o prazo, quantos responderam, quantos são voluntários, quantos não querem e quantos estão sem resposta. O <strong>Prazo do pedido</strong> tem <strong>Abre em</strong>, <strong>Fecha em</strong> e <strong>Avisar quem não respondeu</strong> (quantos dias antes de fechar), e o pedido sempre fecha antes de o mês começar.</p>
                 <p>Em <strong>Mínimo de dias "Quero"</strong>, o <strong>Exigir mínimo?</strong> diz se o mês exige um número de dias. Com <strong>Não</strong>, o resto some e cada voluntário marca quantos quiser. Com <strong>Sim</strong>, <strong>Todos os voluntários</strong> é esse número, de 1 a 5 dias. Em <strong>Exceções</strong>, que mostra quantas há e abre pela seta, <strong>Adicionar exceção</strong> dá um número diferente a um militar ou a <strong>Todo o efetivo administrativo</strong>. A exceção com o nome do militar vale antes da do efetivo administrativo, e ninguém precisa marcar mais do que os dias livres que tem. Cada mês tem o seu mínimo, e o mês novo começa com os valores do anterior. Quem já enviou o pedido não é afetado: o novo mínimo só conta se ele alterar o pedido. Com os pedidos fechados, o mínimo fica só para ler.</p>
-                <p>Ao lado ficam as três listas: <strong>Voluntários</strong>, <strong>Não querem</strong> e <strong>Sem resposta</strong>, com as cotas e os dias de cada um. Marque o <strong>Termo</strong> de quem entregou o termo pelo eProtocolo. Sem o termo, o militar fica fora das cotas e da distribuição, e as extras que ele já tinha saem. O prazo, o mínimo e os termos só valem depois do <strong>Salvar</strong> do rodapé; o <strong>Cancelar</strong> desfaz o que ainda não foi salvo. <strong>Ações › Fechar os pedidos agora</strong> fecha o pedido antes do prazo.</p>
+                <p>Ao lado ficam as três listas: <strong>Voluntários</strong>, <strong>Não querem</strong> e <strong>Sem resposta</strong>. Na lista de voluntários, cada militar mostra as cotas e os dias do mês: <strong>Quer</strong> e <strong>Não quer</strong> são os dias que ele marcou no pedido, e <strong>Não pode</strong> são os dias de folga, férias, licença ou dispensa dele. Pare o mouse em cima de uma data de <strong>Não pode</strong> para ver o motivo. Em <strong>Sem resposta</strong>, quem não tem nenhum dia livre no mês aparece com <strong>Sem dia livre</strong> na coluna <strong>Não pode</strong>: ele não tem pedido a fazer, e esse mês fica fora da fila, mas continua contado entre os sem resposta na linha do alto. Marque o <strong>Termo</strong> de quem entregou o termo pelo eProtocolo. Sem o termo, o militar fica fora das cotas e da distribuição, e as extras que ele já tinha saem. O prazo, o mínimo e os termos só valem depois do <strong>Salvar</strong> do rodapé; o <strong>Cancelar</strong> desfaz o que ainda não foi salvo. <strong>Ações › Fechar os pedidos agora</strong> fecha o pedido antes do prazo.</p>
                 <p><strong>2 Cotas.</strong> Com os pedidos fechados, digite o total de cotas que a companhia recebeu e escolha em <strong>Repartir por</strong>: <strong>Entre todos</strong> (uma fila só, da companhia) ou <strong>Unidades</strong> (cada unidade com o seu total e a sua fila). Cada unidade é um bloco, com o <strong>Recebe</strong> de cada voluntário. <strong>Ações › Preencher pela sugestão</strong> reparte de forma justa: todos recebem o mesmo número, com no máximo 1 de diferença, ninguém recebe mais do que pediu, e a cota que sobra vai para quem foi menos atendido nos últimos 12 meses (no empate, o mais antigo); quem pediu 24 horas seguidas fica com 4 ou nenhuma. O <strong>Recebe</strong> de cada um você pode mudar, de zero até o que ele pediu. Se der menos de 4 a quem pediu 24 horas seguidas, o sistema não coloca essas cotas: você as coloca na Distribuição, e o Lançar só libera com todas colocadas. O total entregue não passa do recebido: se passar, o número fica vermelho e o Salvar trava.</p>
                 <figure class="manual-figura manual-figura--cheia">
                   <img src="manual/imagens/extra-cotas.png" width="711" height="69" alt="O alto do passo Cotas: o Repartir por (1) e o total de cotas recebidas (2), com as cotas entregues, as que sobram e as que estão na escala." />
@@ -1540,6 +1558,7 @@
                     </ol>
                   </figcaption>
                 </figure>
+                <p><strong>A fila.</strong> O atendimento de cada um são as cotas recebidas sobre o que cabia: o pedido, limitado ao que cabia nos dias livres dele quando o mês foi lançado pela primeira vez. Quem pediu 10, tinha espaço para 4 e recebeu 4 fica com 100%; quem pediu 10, tinha espaço e recebeu 6 fica com 60%. O mês sem pedido, sem termo ou sem nenhum dia livre fica fora da conta, e quem pede pela primeira vez conta como 100%.</p>
                 <p class="manual-nota">Diminuir a cota de quem já tem extra colocada tira as extras que passam da cota nova.</p>
 
                 <h3 id="extra-distribuir">Distribuir a extra do mês <span class="manual-selo-admin">Apenas administradores</span></h3>
@@ -1557,15 +1576,27 @@
                 <p><strong>Ações › Preencher pela sugestão</strong> preenche o mês de uma vez. O cálculo pode levar até 1 minuto, e a tela mostra o andamento com o <strong>Cancelar</strong>. Ele nunca quebra as regras: só praça voluntária com termo, no dia em que ela está livre e não disse que não quer, sem passar da cota, sem 1 cota sozinha e sem 4 dias seguidos no quartel. Para quem pediu 24 horas seguidas, ele só põe as 24 horas inteiras. Entre o que cabe, ele cobre primeiro a falta de gente (o vermelho antes do amarelo), deixa cada um no seu pelotão, segue a fila e prefere blocos de 24 horas, a extra colada ao serviço e o dia que o militar quer. As extras que <strong>você</strong> pôs ou mudou ficam travadas: a sugestão refaz só as do sistema. <strong>Desfazer a sugestão</strong> volta ao que estava.</p>
 
                 <h3 id="extra-painel">O painel do dia <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p>Clique num dia do calendário para abrir o painel do dia à direita. No alto, o <strong>relatório do dia</strong> diz quem foi posto, por quê e o que ainda falta. A <strong>Cobertura do dia</strong> mostra as barras sem extra e com extra. Embaixo vêm os grupos: <strong>Neste dia</strong>, <strong>Querem este dia</strong>, <strong>Sem preferência</strong>, <strong>Não querem este dia</strong> e <strong>Indisponíveis</strong>, com o motivo, como "Serviço" ou "Férias". Quem está de serviço e marcou Quero naquele dia aparece como "Serviço, quer este dia": ele só pode tirar a extra depois de fazer a troca.</p>
-                <p>Cada militar é uma linha: a bolinha da preferência dele, o nome, as cotas, como "4 de 6", e os quatro horários do dia, que você marca e desmarca. Se passar da cota, o horário marca do mesmo jeito: as cotas dele ficam em vermelho, os outros dias dele abrem embaixo da linha, com a nota de quantos horários desmarcar, e o Salvar espera você acertar. Para quem pediu 24 horas seguidas, o primeiro clique no dia vazio marca os quatro de uma vez, se couberem na cota; depois, você pode tirar os que quiser. O que você muda fica na tela até o <strong>Salvar</strong> do rodapé, que grava tudo de uma vez e abre o resumo; o <strong>Cancelar</strong> volta ao que estava gravado.</p>
+                <p>Clique num dia do calendário para abrir o painel do dia à direita. No alto, a <strong>Cobertura do dia</strong> mostra as barras sem extra e com extra; pela seta, ela abre o <strong>relatório do dia</strong>, que diz quem foi posto, por quê e o que ainda falta. Embaixo vêm os grupos: <strong>Neste dia</strong>, <strong>Querem este dia</strong>, <strong>Sem preferência</strong>, <strong>Não querem este dia</strong> e <strong>Indisponíveis</strong>, com o motivo, como "Serviço" ou "Férias". Quem está de serviço e marcou Quero naquele dia aparece como "Serviço, quer este dia": ele só pode tirar a extra depois de fazer a troca.</p>
+                <p>Cada militar é uma linha: a bolinha da preferência dele, o nome, as cotas, como "4 de 6", e os quatro horários do dia, que você marca e desmarca. A linha fica parada no grupo dela até o Salvar, para não sair de baixo do mouse. Para achar alguém, use a busca no alto do painel, que abre o grupo em que ele está. Para quem pediu 24 horas seguidas, o primeiro clique no dia vazio marca os quatro de uma vez, se couberem na cota; depois, você pode tirar os que quiser. O que você muda fica na tela até o <strong>Salvar</strong> do rodapé, que grava tudo de uma vez e abre o resumo; o <strong>Cancelar</strong> volta ao que estava gravado.</p>
                 <figure class="manual-figura">
-                  <img src="manual/imagens/extra-painel-dia.png" width="495" height="377" alt="O painel do dia da extra: a Cobertura do dia (1), a linha de um militar com as cotas (2) e os quatro horários do dia para marcar (3)." />
+                  <img src="manual/imagens/extra-painel-dia.png" width="480" height="227" alt="O painel do dia da extra: a Cobertura do dia (1), a linha de um militar com as cotas (2) e os quatro horários do dia para marcar (3)." />
                   <figcaption>
                     <ol class="manual-chamadas">
                       <li>Cobertura do dia</li>
                       <li>O militar e as cotas dele</li>
                       <li>Os quatro horários do dia</li>
+                    </ol>
+                  </figcaption>
+                </figure>
+                <p><strong>Os outros dias do militar.</strong> Clique nas cotas dele: os outros dias abrem embaixo da linha, com os quatro horários de cada um, para você tirar de um dia e pôr em outro sem sair do painel. O dia que ficaria com falta de gente avisa em vermelho, e o que ficaria abaixo do ideal, em amarelo. O dia de mais de 7 dias atrás fica em cinza: ele conta nas cotas e não muda mais.</p>
+                <p><strong>Passou da cota.</strong> O horário marca do mesmo jeito: as cotas dele ficam em vermelho, os outros dias dele abrem sozinhos, com a nota de quantos horários desmarcar, e o Salvar espera você acertar, com o motivo escrito no rodapé.</p>
+                <figure class="manual-figura">
+                  <img src="manual/imagens/extra-sem-cota.png" width="480" height="194" alt="Um militar que passou da cota: as cotas em vermelho (1), a nota de quantos horários desmarcar (2) e um dia de mais de 7 dias atrás, em cinza (3)." />
+                  <figcaption>
+                    <ol class="manual-chamadas">
+                      <li>As cotas, em vermelho porque passou</li>
+                      <li>Quantos horários desmarcar</li>
+                      <li>Um dia de mais de 7 dias atrás, que não muda mais</li>
                     </ol>
                   </figcaption>
                 </figure>
@@ -1582,7 +1613,7 @@
                   </figcaption>
                 </figure>
                 <p><strong>Ações › Reabrir a distribuição</strong> volta a liberar a Distribuição, até o mês começar. Enquanto ela está reaberta, a escala continua com o que foi lançado; o novo lançamento leva o que mudou.</p>
-                <p><strong>4 Ajustes.</strong> Depois do lançamento, as mudanças se fazem nos Ajustes, na mesma tela da Distribuição. Escreva o <strong>Motivo do ajuste</strong> (opcional) e clique em <strong>Salvar e enviar para a escala</strong>: a mudança vai direto para a escala, fica registrada com o que era, o que ficou, quem fez e o motivo, e o militar recebe um aviso no sino. Os ajustes vão até 7 dias atrás: o dia mais antigo fica só para ver. Nos Ajustes, a cor de cada dia e a barra "com extra" são as da Escala de verdade; na Distribuição, antes de lançar, elas são uma previsão, que já considera a CNH de quem dirige e o ideal de cada posto.</p>
+                <p><strong>4 Ajustes.</strong> Depois do lançamento, as mudanças se fazem nos Ajustes, na mesma tela da Distribuição. Escreva o <strong>Motivo do ajuste</strong> (opcional) e clique em <strong>Salvar e enviar para a escala</strong>: a mudança vai direto para a escala, fica registrada com o que era, o que ficou, quem fez e o motivo, e o militar recebe um aviso no sino. Os ajustes vão até 7 dias atrás: o dia mais antigo fica só para ver. Nos Ajustes, a cor de cada dia e a barra "com extra" são as da Escala de verdade; na Distribuição, antes de lançar, elas são uma previsão, que já considera a CNH de quem dirige e o ideal de cada posto. Os mesmos ajustes também se fazem pela Escala: veja <strong>Editar a extra pela Escala</strong>.</p>
 
                 <h3 id="extra-relatorios">Relatórios <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p><strong>5 Relatórios.</strong> À esquerda, as etapas do mês em ordem: <strong>Pedidos</strong>, <strong>Termos e cotas</strong>, <strong>Distribuição e lançamento</strong>, <strong>Ajustes do mês</strong> e <strong>Relatório final</strong>. A etapa feita ganha a marca verde e a de agora fica escura. À direita, a prévia do relatório de ajustes mostra quem mudou desde o lançamento, o que era, o que ficou e o motivo.</p>
@@ -1859,7 +1890,7 @@
               </figure>
               <div class="manual-admin manual-zona-admin">
                 <h3 id="cadastrar-efetivo">Cadastrar o efetivo e liberar acesso <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p>Para incluir um militar, abra <strong>Usuários</strong> e clique em <strong>Novo usuário</strong>, o botão com a etiqueta <span class="etiqueta-adm">ADM</span>, no alto da página, à esquerda. O cadastro abre no painel à direita.</p>
+                <p>Para incluir um militar, abra <strong>Usuários</strong>, na aba <strong>Efetivo</strong>, e clique em <strong>Novo usuário</strong>, o botão com a etiqueta <span class="etiqueta-adm">ADM</span>, no alto da página, à esquerda. O cadastro abre no painel à direita.</p>
                 <p>Você preenche os <strong>dados pessoais</strong> (nome, CPF, RG, nascimento e CNH), os <strong>dados institucionais</strong> (tipo, data de inclusão, posto ou graduação, nome de guerra, setor e lotação) e, se tiver, a <strong>colocação</strong> e as <strong>datas de promoção</strong>. A colocação é opcional para você: o próprio militar pode informá-la no Meu perfil. O militar entra na antiguidade como o mais moderno do posto; ajuste a posição dele na aba Antiguidade (veja <strong>Ajustar a antiguidade</strong>).</p>
                 <p><strong>Celular e e-mail são opcionais</strong>: são dados do próprio militar, que ele informa ao criar a conta. A ficha pode existir só para a escala funcionar.</p>
                 <figure class="manual-figura">
@@ -1983,18 +2014,6 @@
                 </figure>
                 <p>Você pode mudar vários militares antes de salvar. O <strong>Salvar</strong> grava todos de uma vez, registra no histórico e mostra o resumo. Se um deles for recusado, nenhum fica gravado, e o aviso diz qual foi. O <strong>Cancelar</strong> desfaz o que não foi salvo.</p>
                 <p>A caixa só abre para quem você pode mudar: você dá e tira papéis até o seu nível, para os militares da sua área, inclusive outro administrador do mesmo nível. O administrador de pelotão, por exemplo, pode nomear outro administrador para o pelotão dele. Onde o papel vale, o sistema calcula pela lotação do militar: o pelotão dele, a companhia dele ou todas as unidades. Ninguém muda o próprio papel, e o militar precisa estar ativo.</p>
-                <p><strong>Pela ficha.</strong> O mesmo papel também muda na ficha do militar: na aba <strong>Carreira</strong>, clique em <strong>Administração</strong>, na barra ao lado de Promover e Transferir. O botão só aparece quando você pode mudar o papel daquele militar.</p>
-                <figure class="manual-figura">
-                  <img src="manual/imagens/usuarios-administracao.png" width="400" height="318" alt="A tela Administração: o Papel escolhido (1), onde ele vale (2) e a nota do que o papel faz (3)." />
-                  <figcaption>
-                    <ol class="manual-chamadas">
-                      <li>O papel</li>
-                      <li>Onde o papel vale</li>
-                      <li>O que o papel faz</li>
-                    </ol>
-                  </figcaption>
-                </figure>
-                <p>Em <strong>Papel</strong>, a lista traz só os papéis que você pode dar, mais <strong>Sem administração</strong>, para tirar o papel. <strong>Vale para</strong> mostra onde o papel vai valer, e o sistema calcula pela lotação do militar: o pelotão dele, a companhia dele ou todas as unidades. A nota lembra o que o papel escolhido faz. Ao <strong>Salvar</strong>, o sistema grava, registra no histórico e mostra o resumo.</p>
                 <p>Quem tem papel ganha, na aba Carreira, o bloco <strong>Administração</strong>, com o papel, onde ele vale e quem o concedeu, com a data. O bloco aparece para todos que abrem a ficha, assim qualquer militar sabe a quem recorrer.</p>
                 <p><strong>Cada um na sua área.</strong> Os botões de administração aparecem só onde o seu papel pode agir. O administrador de pelotão faz no pelotão dele tudo o que o de companhia faz na companhia: a escala do dia, o Ciclo, os postos, a Distribuição, as fichas, os afastamentos, as folgas, os avisos e o Histórico. A <strong>Antiguidade</strong> e a <strong>Extrajornada</strong> são da companhia inteira, e qualquer administrador dela mexe, inclusive o de um pelotão. A troca é aprovada por quem administra um dos dois militares. Fora da sua área, você vê as telas como qualquer militar, só para consulta.</p>
                 <p class="manual-nota"><strong>O papel termina sozinho</strong> na baixa e na transferência para fora da área dele. O administrador de companhia que muda de pelotão dentro da mesma companhia continua com o papel. Quando o seu papel muda, os botões acompanham no seu próximo login.</p>
@@ -2013,19 +2032,19 @@
                 </figure>
                 <p>Nada é gravado até você clicar em <strong>Salvar</strong>. O sistema mostra a partir de que data a escala será refeita, porque a antiguidade decide o Chefe de Socorro e a ordem das vagas: o próximo dia de serviço, ou outra data em <strong>Escolher outra data</strong>. Depois, mostra o resumo. <strong>Cancelar</strong> volta à ordem gravada. Quem é cadastrado ou promovido entra como o mais moderno do posto: ajuste a posição dele aqui.</p>
                 <h3 id="aprovacoes">Aprovar correções de dados <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p>As correções de dados que esperam a sua decisão ficam na página <strong>Pendências</strong> e na aba <strong>Pendências</strong> da página Usuários (1), com a etiqueta ADM. O número na aba conta os pedidos, e cada cartão mostra o pelotão de quem pediu.</p>
-                <figure class="manual-figura manual-figura--cheia">
-                  <img src="manual/imagens/usuarios-pendencias.png" width="1082" height="223" alt="A aba Pendências da página Usuários (1) e um pedido de correção de dados (2)." />
+                <p>As correções de dados que esperam a sua decisão ficam na página <strong>Pendências</strong>, com a etiqueta ADM. Em <strong>Usuários</strong>, na aba <strong>Efetivo</strong>, a linha de quem tem uma correção esperando ganha o selo "Correção pendente", e a ficha dele mostra uma nota amarela no alto (1). O botão <strong>Ver o pedido</strong> (2) abre a decisão ali mesmo; depois de decidir, a ficha volta.</p>
+                <figure class="manual-figura">
+                  <img src="manual/imagens/usuarios-correcao-nota.png" width="480" height="142" alt="A ficha de um militar com a nota amarela Correção de dados esperando decisão (1) e o botão Ver o pedido (2)." />
                   <figcaption>
                     <ol class="manual-chamadas">
-                      <li>A aba Pendências, com o número de pedidos</li>
-                      <li>Correção de dados</li>
+                      <li>A nota na ficha do militar</li>
+                      <li>Ver o pedido</li>
                     </ol>
                   </figcaption>
                 </figure>
-                <p><strong>Correções (mudanças de dados).</strong> São os pedidos que os militares mandam pelo <strong>Meu perfil</strong>. Cada cartão (2) é um militar com as alterações que ele enviou juntas. Clicando, o painel mostra cada linha com o <strong>campo</strong>, o <strong>valor atual</strong> e o <strong>novo</strong>, com uma caixa de seleção, mais o <strong>Selecionar tudo</strong> no topo.</p>
+                <p><strong>Correções (mudanças de dados).</strong> São os pedidos que os militares mandam pelo <strong>Meu perfil</strong>. Cada pedido é um militar com as alterações que ele enviou juntas. O painel mostra cada linha com o <strong>campo</strong>, o <strong>valor atual</strong> e o <strong>novo</strong>, com uma caixa de seleção, mais o <strong>Selecionar tudo</strong> no topo.</p>
                 <p><strong>Aprovar</strong> e <strong>Recusar</strong> valem só para o que está marcado, então você pode aceitar umas alterações e recusar outras no mesmo pedido. O Recusar também pede o motivo opcional. A correção de dados é decidida por quem administra o militar: a lista mostra os pedidos da sua área. Aprovar a mudança do setor de Operacional para Administrativo ou Aluno tira o militar da escala, como na ficha: a tela pergunta a data e mostra antes a lista do que acontece com as trocas e folgas dele.</p>
-                <p class="manual-nota">No <strong>Efetivo</strong>, a linha de quem tem uma correção esperando ganha o selo "Correção pendente", visível só para os administradores.</p>
+                <p class="manual-nota">O selo e a nota aparecem só para quem administra o militar.</p>
               </div>
             </section>
 
@@ -2046,35 +2065,27 @@
                   </ol>
                 </figcaption>
               </figure>
-              <p><strong>Na ficha.</strong> Um clique no militar abre a ficha dele já na aba e no ano que você estava vendo. Lá, cada tipo tem a sua caixa, com os períodos do ano: <strong>Em curso</strong>, <strong>Marcado</strong> ou <strong>Encerrado</strong>, as datas e os dias. O ano da ficha muda pelas setas no alto, sem mexer na lista.</p>
+              <p><strong>Na ficha.</strong> No <strong>Efetivo</strong>, a ficha do militar também tem as abas Férias, Licenças e Dispensas, só para consulta. Lá, cada tipo tem a sua caixa, com os períodos do ano: <strong>Em curso</strong>, <strong>Marcado</strong> ou <strong>Encerrado</strong>, as datas e os dias. O ano da ficha muda pelas setas no alto, sem mexer na lista.</p>
               <p class="manual-nota">Quem não é administrador só consulta. O motivo de uma licença ou dispensa fica com o administrador do militar, e as licenças de saúde (da própria saúde e de familiar) aparecem só como "Licença" para quem não administra o militar.</p>
               <div class="manual-admin manual-zona-admin">
                 <h3 id="registrar-afastamento">Lançar e corrigir um afastamento <span class="manual-selo-admin">Apenas administradores</span></h3>
-                <p>O caminho é o militar. Em <strong>Usuários</strong>, na aba do que você quer lançar, clique no militar: a ficha abre naquela aba e naquele ano, com uma caixa por tipo (Férias tem uma; Licenças, os cinco tipos; Dispensas, os três) e o <strong>lápis</strong> em cada caixa. A caixa sem nada no ano diz, por exemplo, "Nenhuma licença deste tipo em 2026.".</p>
-                <figure class="manual-figura">
-                  <img src="manual/imagens/usuarios-afastamentos-ficha.png" width="400" height="331" alt="A ficha do 3ºSgt. Meireles na aba Licenças: as abas Férias, Licenças e Dispensas (1), o ano (2) e o lápis da caixa Tratamento da própria saúde (3)." />
+                <p>O caminho é o militar. Em <strong>Usuários</strong>, na aba do que você quer lançar, clique no militar: a linha dele vira uma caixa, ali mesmo na lista, com os períodos do ano. Em Licenças e Dispensas, a caixa abre no primeiro tipo com período no ano, e você troca o tipo no alto dela (1). Só abre uma caixa por vez, e o <strong>X</strong> a fecha.</p>
+                <figure class="manual-figura manual-figura--cheia">
+                  <img src="manual/imagens/usuarios-afastamentos-caixa.png" width="740" height="541" alt="A caixa de um militar na aba Licenças: o tipo (1), a lixeira que tira o período (2), a pergunta Tirar do fluxo da escala (3), o Adicionar período (4) e o botão Salvar no rodapé (5)." />
                   <figcaption>
                     <ol class="manual-chamadas">
-                      <li>Férias, Licenças e Dispensas</li>
-                      <li>O ano</li>
-                      <li>Lápis da caixa do tipo</li>
-                    </ol>
-                  </figcaption>
-                </figure>
-                <p><strong>Os períodos de um tipo.</strong> O lápis abre, no lugar da ficha, os períodos daquele tipo no ano, cada um na sua caixa, com a data de início e a de fim lado a lado e os dias. O <strong>✕</strong> tira o período, e o <strong>Adicionar período</strong>, embaixo, abre uma caixa nova. Sem período no ano, ela já abre com uma caixa em branco. Os períodos do mesmo tipo não podem se cruzar.</p>
-                <p><strong>Dentro ou fora do fluxo da escala.</strong> Na licença e na dispensa, cada período tem a pergunta <strong>Tirar do fluxo da escala?</strong>, com Sim ou Não. Ao preencher as datas, o sistema sugere: até 15 dias, Não; de 16 em diante, Sim. Quem decide é você, e uma frase embaixo diz o que a escolha faz. Cada período tem também o <strong>Motivo</strong>, opcional; não escreva diagnóstico nem dados médicos.</p>
-                <p><strong>O que já passou fica como está.</strong> Dá para mudar até uma semana para trás, como em todo o sistema. O período que terminou antes disso aparece apagado e não muda. O que começou antes disso mantém a data de início e a escolha do fluxo e não pode ser tirado, mas a data de fim e o motivo ainda mudam, por exemplo quando o militar volta antes.</p>
-                <figure class="manual-figura">
-                  <img src="manual/imagens/usuarios-afastamentos-editar.png" width="400" height="661" alt="Os períodos de Capacitação de 2026: o período encerrado, que não muda (1), a pergunta Tirar do fluxo da escala, com Sim sugerido para um período novo de 20 dias (2), e o Adicionar período (3)." />
-                  <figcaption>
-                    <ol class="manual-chamadas">
-                      <li>Período que já passou, que não muda</li>
+                      <li>O tipo (em Férias, não aparece)</li>
+                      <li>Tirar o período</li>
                       <li>Tirar do fluxo da escala</li>
                       <li>Adicionar período</li>
+                      <li>Botão Salvar</li>
                     </ol>
                   </figcaption>
                 </figure>
-                <p><strong>Ao salvar.</strong> O sistema grava os períodos do tipo de uma vez e refaz a escala desde o primeiro dia que mudou: para o militar que está no ciclo, os dias novos saem da escala e os que deixaram de ser afastamento voltam a ser serviço. Se nos dias novos ele já tem uma <strong>troca</strong>, uma <strong>extrajornada</strong> ou uma <strong>folga</strong>, o sistema mostra a lista e pergunta se você continua. Continuando, nada disso é desfeito: o serviço fica em amarelo na escala e a folga continua marcada. Depois a ficha volta, já com a mudança, e abre o resumo. A mudança fica registrada no Histórico e nas Alterações na ficha do militar, com quem fez e quando; o motivo não entra no registro.</p>
+                <p><strong>Os períodos de um tipo.</strong> Cada período fica na sua caixa, com a data de início e a de fim lado a lado e os dias. A <strong>lixeira</strong> tira o período, e o <strong>Adicionar período</strong>, embaixo, abre uma caixa nova. Sem período no ano, ela já abre com uma caixa em branco. Os períodos do mesmo tipo não podem se cruzar.</p>
+                <p><strong>Dentro ou fora do fluxo da escala.</strong> Na licença e na dispensa, cada período tem a pergunta <strong>Tirar do fluxo da escala?</strong>, com Sim ou Não. Ao preencher as datas, o sistema sugere: até 15 dias, Não; de 16 em diante, Sim. Quem decide é você, e uma frase embaixo diz o que a escolha faz. Cada período tem também o <strong>Motivo</strong>, opcional; não escreva diagnóstico nem dados médicos.</p>
+                <p><strong>O que já passou fica como está.</strong> Dá para mudar até uma semana para trás, como em todo o sistema. O período que terminou antes disso aparece apagado e não muda. O que começou antes disso mantém a data de início e a escolha do fluxo e não pode ser tirado, mas a data de fim e o motivo ainda mudam, por exemplo quando o militar volta antes.</p>
+                <p><strong>Ao salvar.</strong> O <strong>Salvar</strong> fica no rodapé, que aparece quando há alteração, e o <strong>Cancelar</strong> fecha a caixa sem gravar. Cada Salvar vale para um militar e um tipo: com algo não salvo, trocar de militar, de tipo, de ano ou de aba pergunta antes. O sistema grava os períodos do tipo de uma vez e refaz a escala desde o primeiro dia que mudou: para o militar que está no ciclo, os dias novos saem da escala e os que deixaram de ser afastamento voltam a ser serviço. Se nos dias novos ele já tem uma <strong>troca</strong>, uma <strong>extrajornada</strong> ou uma <strong>folga</strong>, o sistema mostra a lista e pergunta se você continua. Continuando, nada disso é desfeito: o serviço fica em amarelo na escala e a folga continua marcada. Depois a lista mostra a mudança e o resumo abre. A mudança fica registrada no Histórico e nas Alterações na ficha do militar, com quem fez e quando; o motivo não entra no registro.</p>
                 <p><strong>Fora do fluxo, a volta é manual.</strong> Com Sim, o militar sai do ciclo a partir do primeiro dia e só volta quando você o incluir de novo pelo <strong>Adicionar</strong> da aba Ciclo, na Escala. Antes de salvar, o sistema mostra a data em que ele sai da escala e o que acontece com as trocas e folgas dele dali em diante, pela mesma regra do Tirar do ciclo; as extras dele continuam. Por isso, apagar, encurtar ou trocar para Não uma licença fora do fluxo <strong>não</strong> devolve o militar à escala: antes de salvar, o sistema avisa que ele continua fora da escala, e os outros administradores da área recebem esse aviso no sino. Cinco dias antes da volta, se o militar estiver fora do ciclo e ainda não tiver entrada marcada, o aviso <strong>Retorno de afastamento sem entrada no ciclo</strong> aparece em Pendências, no Para corrigir.</p>
               </div>
             </section>

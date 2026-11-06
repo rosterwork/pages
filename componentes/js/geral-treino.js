@@ -35,12 +35,11 @@
   /* só leem (STABLE no banco) */
   var LEITURAS = [
     'administradores_listar', 'afastamentos_listar', 'ajustes_ritmo_listar', 'antiguidade_listar', 'bug_relatores_listar', 'bugs_listar',
-    'buscar_graus_hierarquicos', 'dados_pendentes', 'dist_ler_modelo', 'dist_listar_modelos', 'dist_listar_periodos',
-    'dist_regras_funcoes', 'dist_regras_listar', 'dist_regras_militares', 'escala_alteracoes_dia', 'escala_dia_arvore',
+    'buscar_graus_hierarquicos', 'dados_pendentes', 'escala_alteracoes_dia', 'escala_dia_arvore',
     'escala_dias_atualizando', 'escala_dia_disponiveis', 'escala_impressao', 'escala_impressao_erros', 'escala_minha_calendario', 'escala_sysbm',
     'expediente_horario', 'expediente_mes', 'ficha_alteracoes', 'fn_sou_programador', 'fn_trocas_impressao',
     'fn_trocas_registro', 'fn_trocas_varias_dias', 'fn_trocas_varias_montar', 'fn_trocas_varias_plano', 'fn_unidades_padrao',
-    'ler_distribuicao_dia', 'ler_escala_mes', 'ler_escala_militares', 'ler_militar_dia', 'listar_instalacoes', 'listar_viaturas',
+    'ler_distribuicao_dia', 'ler_escala_mes', 'ler_escala_militares', 'ler_militar_dia',
     'manutencao_telas_listar', 'nova_distribuicao_calcular', 'nova_distribuicao_ler', 'nova_extra_minha', 'pendencias_meus_pedidos',
     'recados_contar_pendentes', 'recados_listar', 'sysbm_termo_situacao', 'termos_situacao', 'viatura_prefixo_em_uso',
     /* sem gravação em tabela de verdade (só tabela temporária) */
@@ -49,7 +48,7 @@
     'fn_trocas_listar', 'fn_trocas_listar_militares', 'fn_trocas_meus_servicos', 'fn_trocas_pendencias_listar',
     'fn_trocas_saldo_entre', 'folgas_extrato', 'folgas_listar_lancamentos', 'folgas_listar_saldos', 'folgas_servicos_militar',
     'listar_historico', 'notificacoes_admin_celular_ler', 'notificacoes_listar', 'nova_extra_mes', 'nova_extra_sugerir',
-    'pendencias_listar', 'perfil_solicitacoes_minhas', 'proximos_numeros_instalacao',
+    'pendencias_listar', 'perfil_solicitacoes_minhas',
     /* ensaiam e desfazem tudo (a prévia do dia e as análises de impacto) */
     'escala_previa', 'fn_folgas_analisar_impacto', 'fn_trocas_analisar_impacto', 'pedido_escala_comparar',
     /* o mês de treino da Extrajornada e os exemplos do banco (montam, aplicam e leem num ensaio que desfaz tudo;
