@@ -662,8 +662,6 @@
   <div class="nova-extra-item"><span class="nova-extra-item-marca"></span><span class="nova-extra-item-texto"><b></b><span></span></span></div>
 </template>
 
-<template id="tpl-ne-selo"><span class="selo nova-extra-selo-mini"></span></template>
-
 <!-- passo 3 (e a aba Extras do mês): dentro do bloco da Escala (tpl-escala-calendario-unidade, no shell), o gráfico do
      dia com as extras (o painel do dia mostra o sem e o com) e uma vaga por extra, só para ler: o posto e o nome e,
      à direita, as 4 bolinhas pequenas dos horários na cor do que ele marcou no pedido, sem clique (todas vazias para
@@ -689,12 +687,6 @@
   <span class="escala-legenda-item">
     <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-extra-administrador"/></svg>
     <span>Inserido pelo administrador</span>
-  </span>
-</template>
-
-<template id="tpl-ne-origem">
-  <span class="nova-extra-origem" role="img" data-dica="">
-    <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-extra-sistema"/></svg>
   </span>
 </template>
 
@@ -748,23 +740,6 @@
   <div class="nova-extra-foco nova-extra-foco-linha"><span class="selo nova-extra-selo-mini"></span></div>
 </template>
 
-<!-- painel do dia: um grupo (Neste dia, Querem este dia...) que abre e fecha pelo título, com os horários em cima
-     das bolinhas -->
-<template id="tpl-ne-grupo">
-  <div class="grupo-caixa escala-extra-grupo nova-extra-grupo">
-    <button type="button" class="grupo-caixa-cabecalho" aria-expanded="true">
-      <span class="rotulo-secao"><span class="ne-grupo-nome"></span> (<span class="ne-grupo-conta"></span>)</span>
-      <svg class="icone grupo-caixa-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
-    </button>
-    <div class="grupo-caixa-corpo">
-      <span class="escala-extra-horas nova-extra-horas" aria-hidden="true"><span>08</span><span>14</span><span>20</span><span>02</span></span>
-      <div class="escala-extra-grupo-linhas"></div>
-      <!-- só no Neste dia, que aparece sempre: o vazio -->
-      <span class="nova-extra-grupo-vazio oculto">Ninguém de extra neste dia.</span>
-    </div>
-  </div>
-</template>
-
 <!-- a Legenda da barra em cada etapa (menos Relatórios): as regras gerais, em itens, e as do Preencher pela sugestão,
      na ordem em que o sistema as segue -->
 <template id="tpl-ne-legenda-pedidos">
@@ -797,7 +772,7 @@
   <div class="escala-legenda-grupo">
     <span class="rotulo-secao">Regras do Preencher pela sugestão</span>
     <ol class="nova-extra-legenda-lista">
-      <li>A fila: primeiro quem foi menos atendido nos últimos 12 meses. Quem pede pela primeira vez conta como 100%. No empate, vai antes o mais antigo.</li>
+      <li>A fila: primeiro quem foi menos atendido nos últimos 12 meses. A conta usa o que cabia nos dias livres de cada um. Quem pede pela primeira vez conta como 100%. No empate, vai antes o mais antigo.</li>
       <li>Todos recebem o mesmo número, com diferença de no máximo 1, sem passar do que cabe nos dias livres dele no mês.</li>
       <li>A cota que sobra vai, uma a uma, para quem está na frente da fila.</li>
       <li>Quem pediu 24 horas seguidas recebe 4 ou nenhuma, sem passar dos outros. O administrador pode mudar o Recebe.</li>
@@ -825,7 +800,7 @@
       <li>Cada dia tem 4 horários de 6 horas: 08h, 14h, 20h e 02h. Cada bolinha é um horário, e a cheia é horário de extra.</li>
       <li>Para marcar, clique no nome na lista ou abra o dia no calendário.</li>
       <li>Sem nenhuma bolinha, o militar fica em cinza no dia e sai ao salvar.</li>
-      <li>Ninguém passa da própria cota. Quem já usou todas só marca depois de tirar outra.</li>
+      <li>Ninguém passa da própria cota. Quem já usou todas, ao marcar, mostra os outros dias dele, e o Salvar espera tirar de outro dia.</li>
       <li>Uma extra por dia para cada militar. Nunca em dia de serviço, folga, férias, licença ou em dia que ele não quer.</li>
       <li>O administrativo só tira extra fora do expediente.</li>
       <li>A companhia só recebe extra posta manualmente.</li>
@@ -875,70 +850,6 @@
       <li>O motivo é opcional, mas aparece no relatório final.</li>
     </ul>
   </div>
-</template>
-
-<!-- painel do dia: a divisão de um pelotão dentro de um grupo (Querem este dia, Sem preferência, Não querem e
-     Indisponíveis), que abre e fecha pelo título: o nome, "este pelotão" no do dia e quantos tem; aberta, os horários
-     à direita, em cima das bolinhas -->
-<template id="tpl-ne-pel">
-  <div class="nova-extra-pel">
-    <button type="button" class="nova-extra-pel-titulo" aria-expanded="true">
-      <svg class="icone nova-extra-pel-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
-      <span class="rotulo-secao"><span class="nova-extra-pel-nome"></span><span class="nova-extra-pel-este oculto"> · este pelotão</span> (<span class="nova-extra-pel-conta"></span>)</span>
-      <span class="escala-extra-horas nova-extra-horas" aria-hidden="true"><span>08</span><span>14</span><span>20</span><span>02</span></span>
-    </button>
-    <div class="nova-extra-pel-linhas"></div>
-  </div>
-</template>
-
-<!-- painel do dia: a Cobertura do dia, que abre e fecha pelo título; os dois gráficos (sem extra e com extra) ficam
-     sempre à vista e, aberta, embaixo deles, o relatório do dia sem título (ou o vazio) -->
-<template id="tpl-ne-cobertura">
-  <div class="grupo-caixa nova-extra-cobertura">
-    <button type="button" class="grupo-caixa-cabecalho" aria-expanded="true">
-      <span class="rotulo-secao">Cobertura do dia</span>
-      <svg class="icone grupo-caixa-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
-    </button>
-    <div class="nova-extra-cobertura-graficos"></div>
-    <div class="nova-extra-cobertura-relatorio">
-      <span class="nova-extra-cobertura-vazio oculto">Nenhum erro neste dia.</span>
-    </div>
-  </div>
-</template>
-
-<!-- o relatório do dia: uma linha por extra (o sistema ou o administrador colocou) e pelo que ainda falta; o nome e o
-     horário escrito no meio da frase; embaixo, em cinza, o resto do porquê ou quem ainda pode -->
-<template id="tpl-ne-rd-sistema">
-  <div class="nova-extra-rd-linha nova-extra-rd-linha--ok">
-    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
-    <span class="nova-extra-rd-texto"><span class="ne-rd-ini"></span> <b class="ne-rd-nome"></b> <span class="ne-rd-fim"></span><small class="ne-rd-mais oculto"></small></span>
-  </div>
-</template>
-
-<template id="tpl-ne-rd-admin">
-  <div class="nova-extra-rd-linha nova-extra-rd-linha--adm">
-    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-editar"/></svg>
-    <span class="nova-extra-rd-texto"><span class="ne-rd-ini"></span> <b class="ne-rd-nome"></b> <span class="ne-rd-fim"></span><small class="ne-rd-mais oculto"></small></span>
-  </div>
-</template>
-
-<template id="tpl-ne-rd-ok">
-  <div class="nova-extra-rd-linha nova-extra-rd-linha--ok">
-    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
-    <span class="nova-extra-rd-texto"><span class="ne-rd-fim"></span></span>
-  </div>
-</template>
-
-<template id="tpl-ne-rd-falta">
-  <div class="nova-extra-rd-linha">
-    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-    <span class="nova-extra-rd-texto"><span class="ne-rd-fim"></span><small class="ne-rd-mais oculto"></small></span>
-  </div>
-</template>
-
-<!-- painel do dia: os selos de um militar (embaixo do nome) -->
-<template id="tpl-ne-selos">
-  <span class="nova-extra-selos-linha"></span>
 </template>
 
 <!-- molde: o pedido (no painel) -->
@@ -996,7 +907,8 @@
       <div class="nova-extra-cal" id="nova-extra-cal">
         <span class="nova-extra-sem">D</span><span class="nova-extra-sem">S</span><span class="nova-extra-sem">T</span><span class="nova-extra-sem">Q</span><span class="nova-extra-sem">Q</span><span class="nova-extra-sem">S</span><span class="nova-extra-sem">S</span>
       </div>
-      <span class="nova-extra-ajuda">Os dias de serviço, troca, folga, férias, licença e dispensa já vêm travados.</span>
+      <span class="nova-extra-ajuda">Os dias de folga, férias, licença e dispensa já vêm travados.</span>
+      <span class="nova-extra-ajuda oculto" id="nova-extra-ajuda-servico">Em dia de serviço, o Quero só vale se você estiver livre quando a extra for distribuída.</span>
     </section>
     <section class="nova-extra-sec" data-so-voluntario>
       <b class="nova-extra-pergunta">Termo</b>
@@ -1016,6 +928,7 @@
 <template id="tpl-nova-extra-dia">
   <button type="button" class="nova-extra-dia">
     <b class="nova-extra-dia-num"></b>
+    <small class="nova-extra-dia-servico oculto"></small>
     <small class="nova-extra-dia-texto"></small>
   </button>
 </template>
@@ -1029,48 +942,3 @@
   <button type="button" class="botao botao--primario" id="nova-extra-enviar" disabled>Enviar pedido</button>
 </template>
 
-<!-- ===== painel do dia (nova-extra-dia.js) ===== -->
-<!-- Cobertura do dia: as horas em cima e as duas barras, sem extra e com extra -->
-<template id="tpl-escala-extra-cobertura">
-  <div class="escala-extra-cobertura">
-    <span></span>
-    <span class="escala-extra-horas"><span>08h</span><span>14h</span><span>20h</span><span>02h</span><span>08h</span></span>
-    <span class="escala-extra-cob-rotulo">Sem extra</span>
-    <div class="escala-extra-cob-barra escala-extra-cob-sem"></div>
-    <span class="escala-extra-cob-rotulo">Com extra</span>
-    <div class="escala-extra-cob-barra escala-extra-cob-com"></div>
-  </div>
-</template>
-
-<!-- um militar da lista do dia: a preferência, o nome (e a unidade, se é de outra), os outros dias, as cotas do mês e
-     os 4 horários de 6 h (clicar marca ou desmarca); embaixo, os outros dias com os horários -->
-<template id="tpl-escala-extra-militar">
-  <div class="escala-extra-militar">
-    <span class="escala-extra-ponto"></span>
-    <span class="escala-extra-quem">
-      <span class="escala-extra-quem-nome"><span class="escala-distribuicao-grad"></span> <span class="escala-distribuicao-nome"></span></span>
-      <span class="escala-extra-quem-unidade oculto"></span>
-    </span>
-    <button type="button" class="escala-extra-dias" aria-expanded="false" aria-label="Outros dias com extra"></button>
-    <span class="escala-extra-cota"></span>
-    <span class="escala-extra-marcas">
-      <button type="button" class="escala-extra-marca" data-bloco="1" aria-pressed="false" aria-label="08h às 14h"></button>
-      <button type="button" class="escala-extra-marca" data-bloco="2" aria-pressed="false" aria-label="14h às 20h"></button>
-      <button type="button" class="escala-extra-marca" data-bloco="3" aria-pressed="false" aria-label="20h às 02h"></button>
-      <button type="button" class="escala-extra-marca" data-bloco="4" aria-pressed="false" aria-label="02h às 08h"></button>
-    </span>
-    <div class="escala-extra-outros oculto"></div>
-  </div>
-</template>
-
-<!-- quem não pode tirar extra no dia: o nome e o motivo ("De serviço", "Férias até 20/11") -->
-<template id="tpl-escala-extra-indisponivel">
-  <div class="escala-extra-militar escala-extra-militar--indisponivel">
-    <span class="escala-extra-ponto"></span>
-    <span class="escala-extra-quem">
-      <span class="escala-extra-quem-nome"><span class="escala-distribuicao-grad"></span> <span class="escala-distribuicao-nome"></span></span>
-      <span class="escala-extra-quem-unidade oculto"></span>
-    </span>
-    <span class="escala-extra-motivo-texto"></span>
-  </div>
-</template>

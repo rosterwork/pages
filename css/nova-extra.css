@@ -308,6 +308,10 @@
 .nova-extra-dia:disabled { cursor: default; }
 .nova-extra-dia-num { font-size: 13px; color: var(--texto-forte); }
 .nova-extra-dia-texto { font-size: 11px; font-weight: 600; line-height: 1.2; text-align: center; color: var(--texto-fraco); }
+/* dia de serviço ou troca: o motivo só para ler, que continua à vista com o dia marcado; o lugar do Quero fica guardado,
+   para a casa não mudar de altura ao marcar */
+.nova-extra-dia-servico { font-size: 11px; line-height: 1.2; text-align: center; color: var(--texto-suave); }
+.nova-extra-dia--servico .nova-extra-dia-texto { min-height: 14px; }
 
 .nova-extra-dia--quer { border-color: var(--sucesso); background-color: var(--sucesso-fundo); }
 .nova-extra-dia--quer .nova-extra-dia-texto { color: var(--sucesso); }
@@ -496,14 +500,6 @@
   flex: 1;
   color: var(--texto-suave);
 }
-
-.nova-extra-motivo {
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
-}
-
-.nova-extra-motivo input { width: 260px; }
 
 .nova-extra-espaco { flex: 1; }
 
@@ -747,6 +743,11 @@
   color: var(--texto-suave);
 }
 
+.nova-extra-esq-cotas--erro {
+  font-weight: 600;
+  color: var(--erro);
+}
+
 /* por que ficou com cota na última sugestão: a linha cinza embaixo do nome, na largura do item */
 .nova-extra-esq-motivo {
   grid-column: 1 / -1;
@@ -870,33 +871,10 @@
   border-left: none;
 }
 
-/* quem inseriu a extra (o ícone do sistema ou o do administrador): no calendário e na Agenda, ao lado das bolinhas; no
-   Neste dia do painel do dia, antes do nome. A dica dele ("Inserido pelo...") sai para a esquerda, como a da vaga, e a
-   do nome e do horário não aparece junto */
-.nova-extra-origem {
-  display: inline-flex;
-  align-items: center;
-  flex-shrink: 0;
-  color: var(--texto-fraco);
-}
-
-.nova-extra-origem[data-dica]::after {
-  left: auto;
-  right: 0;
-  transform: none;
-}
-
-[data-dica]:has(.nova-extra-origem:hover)::after {
-  opacity: 0;
-  visibility: hidden;
-}
-
 .nova-extra-vaga > .nova-extra-origem {
   grid-column: 2;
   grid-row: 1 / span 2;
 }
-
-.escala-extra-quem-nome > .nova-extra-origem { align-self: center; }
 
 .nova-extra-vaga--sai .nova-extra-origem { color: var(--texto-debil); }
 
@@ -1009,65 +987,6 @@
   transform: none;
 }
 
-/* as 4 bolinhas da Nova extra (lista e painel do dia): o desenho de 12px no meio de uma área de clique de
-   24px, o mínimo de alvo da norma de acessibilidade (WCAG 2.2, critério 2.5.8) */
-.nova-extra-marcas {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: 0;
-}
-
-.nova-extra-marcas .escala-extra-marca,
-.nova-extra-marcas .escala-extra-marca:hover,
-.nova-extra-marcas .escala-extra-marca--on,
-.nova-extra-marcas .escala-extra-marca--on:hover {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  min-height: 24px;
-  border: none;
-  border-radius: 50%;
-  background-color: transparent;
-}
-
-.nova-extra-marcas .escala-extra-marca::before {
-  content: '';
-  width: 12px;
-  min-height: 12px;
-  border: 1px solid var(--borda-forte);
-  border-radius: 50%;
-  background-color: var(--fundo-superficie);
-  transition: background-color 0.15s ease, border-color 0.15s ease;
-}
-
-.nova-extra-marcas .escala-extra-marca:hover::before { border-color: var(--foco); }
-
-.nova-extra-marcas .escala-extra-marca--on::before,
-.nova-extra-marcas .escala-extra-marca--on:hover::before {
-  border-color: var(--fundo-contraste);
-  background-color: var(--fundo-contraste);
-}
-
-.nova-extra-marcas .escala-extra-marca:disabled:hover::before { border-color: var(--borda-forte); }
-.nova-extra-marcas .escala-extra-marca--on:disabled:hover::before { border-color: var(--fundo-contraste); }
-
-/* painel do dia: a coluna dos horários com as bolinhas de 24px e os horários em cima delas */
-.nova-extra-grupo .escala-extra-militar:not(.escala-extra-militar--indisponivel) {
-  grid-template-columns: 8px minmax(0, 1fr) 48px 96px;
-}
-
-.nova-extra-horas {
-  justify-content: flex-end;
-  padding-right: 4px;
-}
-
-.nova-extra-horas span {
-  min-width: 24px;
-  text-align: center;
-}
-
 /* o título do pelotão no bloco do dia (o mesmo do Calendário da Escala) com a cor do dia: verde, a sugestão
    preencheu e não sobrou erro; vermelho ou amarelo, ainda sobra */
 .nova-extra-uni-nome {
@@ -1080,128 +999,6 @@
 .nova-extra-uni-nome--ok { background-color: var(--sucesso-fundo); color: var(--sucesso); }
 .nova-extra-uni-nome--erro { background-color: var(--erro-fundo); color: var(--erro); }
 .nova-extra-uni-nome--alerta { background-color: var(--alerta-fundo); color: var(--alerta); }
-
-/* painel do dia: o relatório do dia, uma linha por extra e pelo que ainda falta (como as observações da escala) */
-.nova-extra-rd-linha {
-  display: grid;
-  grid-template-columns: 16px minmax(0, 1fr);
-  align-items: start;
-  gap: 8px;
-  padding: 8px;
-  border-radius: var(--raio-pequeno);
-  background-color: var(--fundo-superficie);
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--texto);
-}
-
-.nova-extra-rd-linha .icone { margin-top: 2px; }
-.nova-extra-rd-linha--ok .icone { color: var(--sucesso); }
-.nova-extra-rd-linha--adm .icone,
-.nova-extra-rd-linha--alerta .icone { color: var(--alerta); }
-.nova-extra-rd-linha--erro .icone { color: var(--erro); }
-.nova-extra-rd-texto b { font-weight: 600; color: var(--texto-forte); }
-
-.nova-extra-rd-texto small {
-  display: block;
-  font-size: 11px;
-  color: var(--texto-fraco);
-}
-
-/* painel do dia: a divisão de um pelotão dentro do grupo, num bloquinho branco (padrão de blocos: a separação é o
-   fundo e o espaço, sem traço); o título (o rótulo cinza com a seta, como o da árvore de unidades) abre e fecha a
-   lista dele */
-.nova-extra-pel {
-  display: flex;
-  flex-direction: column;
-  border-radius: var(--raio-pequeno);
-  background-color: var(--fundo-superficie);
-  box-shadow: var(--sombra-bloco);
-}
-
-.nova-extra-pel + .nova-extra-pel { margin-top: 8px; }
-
-.nova-extra-pel-titulo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 32px;
-  padding: 4px;
-  border: none;
-  background: none;
-  font-family: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.nova-extra-pel-seta {
-  flex-shrink: 0;
-  color: var(--texto-suave);
-}
-
-.nova-extra-pel-titulo[aria-expanded="false"] .nova-extra-pel-seta { transform: rotate(-90deg); }
-
-/* os horários no título, à direita, na mesma coluna das bolinhas das linhas (que já têm os 4px da borda); fechado o
-   pelotão, somem */
-.nova-extra-pel-titulo .nova-extra-horas {
-  margin-left: auto;
-  padding-right: 0;
-}
-
-.nova-extra-pel-titulo[aria-expanded="false"] .nova-extra-horas { display: none; }
-
-/* os horários só no primeiro pelotão aberto do grupo (fechado o primeiro, vão para o próximo aberto) */
-.nova-extra-pel:has(> .nova-extra-pel-titulo[aria-expanded="true"]) ~ .nova-extra-pel .nova-extra-horas { display: none; }
-.nova-extra-pel-titulo[aria-expanded="false"] + .nova-extra-pel-linhas { display: none; }
-
-.nova-extra-pel-linhas {
-  display: flex;
-  flex-direction: column;
-}
-
-/* painel do dia: a Cobertura do dia; fechada, só os gráficos; aberta, o relatório do dia embaixo deles */
-.nova-extra-cobertura-relatorio {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.nova-extra-cobertura > .grupo-caixa-cabecalho[aria-expanded="false"] ~ .nova-extra-cobertura-relatorio { display: none; }
-
-.nova-extra-cobertura-vazio,
-.nova-extra-grupo-vazio {
-  font-size: 12px;
-  color: var(--texto-fraco);
-}
-
-/* painel do dia: os selos embaixo do nome, o porquê da sugestão e a falta que sobra */
-.nova-extra-selos-linha {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  padding-top: 2px;
-}
-
-.nova-extra-selo-mini {
-  min-height: 18px;
-  padding: 0 4px;
-}
-
-/* o Só 24 h na linha do nome */
-.escala-extra-quem-nome > .nova-extra-selo-mini {
-  flex-shrink: 0;
-  align-self: center;
-}
-
-/* painel do dia: quem ficou sem nenhum horário, em cinza no Neste dia até o Salvar */
-.escala-extra-militar--sai .escala-distribuicao-grad,
-.escala-extra-militar--sai .escala-distribuicao-nome,
-.escala-extra-militar--sai .escala-extra-cota { color: var(--texto-debil); }
-
-/* painel do dia: os selos embaixo do nome, na largura toda da linha */
-.escala-extra-militar > .nova-extra-selos-linha {
-  grid-column: 2 / -1;
-}
 
 .nova-extra-falta-sobra { font-size: 12px; color: var(--erro); }
 .nova-extra-falta-ok { font-size: 12px; color: var(--sucesso); }

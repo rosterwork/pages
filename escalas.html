@@ -118,11 +118,13 @@
 
   <div class="pagina-corpo pagina-corpo--colado"></div>
 
-  <!-- o Salvar das mudanças do painel do dia (as abas Dia e Ciclo; escalas-painel-salvar.js), na largura
-       toda (embaixo do painel direito também): aparece só com mudança não salva (a frase vem do JS) -->
+  <!-- o Salvar das mudanças do painel do dia (as abas Dia, Ciclo e Extrajornada; escalas-painel-salvar.js), na largura
+       toda (embaixo do painel direito também): aparece só com mudança não salva (a frase vem do JS). O motivo só com
+       mudança na extra -->
   <div class="rodape rodape-linha rodape--largo escala-rodape-salvar oculto">
     <span class="rodape-texto escala-rodape-salvar-texto"></span>
     <span class="espacador-flex"></span>
+    <label class="campo nova-extra-motivo escala-rodape-motivo oculto"><span class="campo-rotulo">Motivo do ajuste (opcional)</span><input type="text" name="motivo-extra" maxlength="200" class="campo-entrada" /></label>
     <div class="rodape-acoes">
       <button type="button" class="botao escala-painel-cancelar">Cancelar</button>
       <button type="button" class="botao botao--primario escala-painel-salvar">Salvar</button>

@@ -552,8 +552,14 @@
     pCtx = null;
     if (RosterWork.escalasPainelEditar) RosterWork.escalasPainelEditar.reset();
     if (RosterWork.escalasPainelContinuos) RosterWork.escalasPainelContinuos.reset();
+    if (RosterWork.escalasPainelExtra) RosterWork.escalasPainelExtra.reset();
     /* o painel fechou (já perguntou antes, se havia mudança): as mudanças do Dia e do Ciclo saem */
     if (RosterWork.escalasPainelSalvar) RosterWork.escalasPainelSalvar.descartar();
+  }
+  /* o painel do dia fechou de verdade: o rascunho da Extrajornada, que é do mês, sai também (trocar de dia não passa aqui) */
+  function aoFecharDia() {
+    desmarcar();
+    if (RosterWork.escalasPainelExtra) RosterWork.escalasPainelExtra.descartar();
   }
 
   /* ---------- guarda de descarte: avisa antes de perder rascunho não salvo ---------- */
@@ -563,15 +569,19 @@
     return !!(RosterWork.escalasPainelSalvar && RosterWork.escalasPainelSalvar.pendente())
       || !!(RosterWork.escalasPainelTroca && RosterWork.escalasPainelTroca.temDados());
   }
+  /* a Extrajornada é do mês: trocar de dia não pergunta; fechar o painel e abrir outro no lugar, sim */
+  function extraSuja() { return !!(RosterWork.escalasPainelExtra && RosterWork.escalasPainelExtra.sujo()); }
   function limparSecoesSujas() {
     if (RosterWork.escalasPainelEditar) RosterWork.escalasPainelEditar.reset();
     if (RosterWork.escalasPainelContinuos) RosterWork.escalasPainelContinuos.reset();
     if (RosterWork.escalasPainelSalvar) RosterWork.escalasPainelSalvar.descartar();
+    if (RosterWork.escalasPainelExtra) RosterWork.escalasPainelExtra.descartar();
   }
-  /* mesmo aviso do Cancelar do rodapé (Descartar / Continuar editando); o formulário da troca, o aviso dele */
-  function confirmarDescarte(aoConfirmar) {
+  /* mesmo aviso do Cancelar do rodapé (Descartar / Continuar editando); o formulário da troca, o aviso dele.
+     quantas: quantas alterações saem (sem ela, todas) */
+  function confirmarDescarte(aoConfirmar, quantas) {
     if (!RosterWork.confirmar) { aoConfirmar(); return; }
-    var n = RosterWork.escalasPainelSalvar ? RosterWork.escalasPainelSalvar.contar() : 0;
+    var n = quantas != null ? quantas : (RosterWork.escalasPainelSalvar ? RosterWork.escalasPainelSalvar.contar() : 0);
     RosterWork.confirmar({
       tipo: 'aviso',
       mensagem: n ? RosterWork.mensagens.escala.painelDescartar(n) : RosterWork.mensagens.edicao.sairSemSalvar,
@@ -583,7 +593,7 @@
   /* interceptador do Esc/X e da troca de período (via geral-painel.aoTentarFechar): segura o fechamento se houver
      rascunho; no Descartar, o painel fecha e a troca de período segue (geral-painel) */
   function tentarFecharPainel() {
-    if (!secaoSuja()) return false;               // nada sujo: deixa o painel fechar normalmente
+    if (!secaoSuja() && !extraSuja()) return false;   // nada sujo: deixa o painel fechar normalmente
     confirmarDescarte(function () { limparSecoesSujas(); RosterWork.painel.fechar(); });
     return true;                                  // segura o fechamento até confirmar
   }
@@ -750,7 +760,7 @@
   }
 
   /* troca o conteúdo do corpo e o rodapé conforme a aba de seção: o Dia é a lista que o admin edita
-     (e os outros só leem) e o Ciclo (só admin) é sempre edição */
+     (e os outros só leem), o Ciclo (só admin) é sempre edição e a Extrajornada é a do mês lançado */
   function mostrarSecao(secao) {
     if (!pCtx) return;
     pCtx.secao = secao;
@@ -763,6 +773,7 @@
     /* ao entrar numa seção, as outras param de desenhar (os rascunhos delas ficam até o Salvar do rodapé) */
     if (secao !== 'distribuicao' && RosterWork.escalasPainelEditar) RosterWork.escalasPainelEditar.reset();
     if (secao !== 'continuos' && RosterWork.escalasPainelContinuos) RosterWork.escalasPainelContinuos.reset();
+    if (secao !== 'extra' && RosterWork.escalasPainelExtra) RosterWork.escalasPainelExtra.reset();
     /* o dia que a fila do recálculo ainda vai refazer: a mensagem com o círculo até ele ficar pronto (ninguém mexe num dia
        que vai mudar); passando do limite, o Dia abre só para consulta, com a nota, e volta ao normal quando ficar pronto */
     var atualizando = RosterWork.escalaAtualizando, esperado = pCtx;
@@ -796,20 +807,27 @@
       });
     } else if (secao === 'continuos' && RosterWork.escalasPainelContinuos) {
       RosterWork.escalasPainelContinuos.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso);
+    } else if (secao === 'extra' && RosterWork.escalasPainelExtra) {
+      RosterWork.escalasPainelExtra.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso);
     } else {
       corpo.textContent = '';
       if (rodape) { rodape.textContent = ''; rodape.classList.add('oculto'); }
     }
   }
 
-  /* abrir outra célula com rascunho aberto: confirma o descarte antes de trocar.
-     secao = a aba que abre primeiro (o padrão é o Dia) */
+  /* abrir outra célula com rascunho aberto no Dia ou no Ciclo: confirma o descarte antes de trocar (o da Extrajornada,
+     que é do mês, fica). secao = a aba que abre primeiro (o padrão é o Dia; quem está na Extrajornada continua nela) */
   function abrirParaCelula(celula, secao) {
-    if (secaoSuja()) { confirmarDescarte(function () { abrirParaCelulaAgora(celula, secao); }); return; }
+    if (secaoSuja()) {
+      var S = RosterWork.escalasPainelSalvar;
+      confirmarDescarte(function () { abrirParaCelulaAgora(celula, secao); }, S ? S.contarDoDia() : 0);
+      return;
+    }
     abrirParaCelulaAgora(celula, secao);
   }
 
   function abrirParaCelulaAgora(celula, secao) {
+    var naExtra = !!pCtx && pCtx.secao === 'extra';
     desmarcar();
     celula.classList.add('escala-mes-celula--selecionada');
     celulaSelecionada = celula;
@@ -817,7 +835,12 @@
     var unidadeId = celula.dataset.unidadeId;
     var iso = celula.dataset.iso;
     var cidade = celula.dataset.unidadeCidade;
-    var inicial = secao || 'distribuicao';
+    /* o Dia e o Ciclo para quem tem a unidade na área do papel; a Extrajornada, que é da companhia, para quem administra
+       alguma unidade (escalas-painel-extra.js confere se esta é da companhia dele), só no computador */
+    var admin = RosterWork.sessao.podeAdministrar('pelotao', unidadeId);
+    var comExtra = RosterWork.sessao.temPapel('pelotao') && !document.documentElement.hasAttribute('data-celular');
+    var inicial = secao || (naExtra ? 'extra' : 'distribuicao');
+    if ((inicial === 'continuos' && !admin) || (inicial === 'extra' && !comExtra)) inicial = 'distribuicao';
     pCtx = { unidadeId: unidadeId, iso: iso, secao: inicial };
     /* o dia já refeito abre na hora: o painel lê o dado real, e a célula fica igual a ele */
     if (RosterWork.escalaAtualizando && RosterWork.escalaAtualizando.soCopia(unidadeId, iso)) RosterWork.escalaAtualizando.corrigir(unidadeId, iso);
@@ -825,18 +848,20 @@
       titulo: celula.dataset.unidadeNome || '',
       tituloExtra: cidade ? '- ' + cidade : '',
       subtitulo: dataPorExtenso(iso),
-      aoFechar: desmarcar,
+      aoFechar: aoFecharDia,
       aoTentarFechar: tentarFecharPainel,      // Esc/X confirmam antes de descartar rascunho
       ficaNasAbas: true                        // o rascunho aparece em todas as telas da Escala: trocar de aba não fecha
     });
     RosterWork.painel.acompanharTela(diaNaTela);
 
-    /* linha das abas de seção: Dia e Ciclo para quem tem a unidade na área do papel; os outros só têm o Dia e ficam
-       sem a linha. O geral-abas cuida da troca visual e nos avisa a aba escolhida */
+    /* linha das abas de seção: quem só tem o Dia fica sem a linha. O geral-abas cuida da troca visual e nos avisa a aba
+       escolhida */
     var linha = RosterWork.painel.linhaAbas();
     var tpl = document.getElementById('tpl-escala-painel-secoes');
-    if (linha && tpl && RosterWork.sessao.podeAdministrar('pelotao', unidadeId)) {
+    if (linha && tpl && (admin || comExtra)) {
       linha.appendChild(tpl.content.cloneNode(true));
+      if (!admin) linha.querySelectorAll('[data-so-admin]').forEach(function (a) { a.remove(); });
+      if (!comExtra) linha.querySelectorAll('[data-secao="extra"]').forEach(function (a) { a.remove(); });
       linha.classList.remove('oculto');
       var trilho = linha.querySelector('.abas');
       if (trilho) {
@@ -848,11 +873,11 @@
         /* trocar de aba não pergunta: as mudanças de cada aba ficam até o Salvar do rodapé */
         RosterWork.abas.ligar(trilho, function (aba) { mostrarSecao(aba.getAttribute('data-secao')); });
       }
-    } else if (inicial === 'continuos') {
-      inicial = 'distribuicao';   // sem o Ciclo, abre no Dia
     }
 
     mostrarSecao(inicial);
+    /* o rascunho da Extrajornada veio do outro dia: o rodapé continua à vista */
+    if (RosterWork.escalasPainelSalvar) RosterWork.escalasPainelSalvar.atualizar();
     /* o painel abriu e a grade ficou mais estreita: o bloco do pelotão aberto vai à vista inteira */
     requestAnimationFrame(function () { requestAnimationFrame(function () { mostrarDiaAberto(true); }); });
   }
@@ -1101,7 +1126,7 @@
        de dia (Descartar segue com seguir(true), e as telas leem o gravado de novo; Continuar editando fica); sem
        mudança, segue na hora com seguir(false) */
     antesDeSair: function (seguir) {
-      if (!secaoSuja()) { seguir(false); return; }
+      if (!secaoSuja() && !extraSuja()) { seguir(false); return; }
       confirmarDescarte(function () { limparSecoesSujas(); seguir(true); });
     },
     recarregarSecao: function () { if (pCtx) mostrarSecao(pCtx.secao); },

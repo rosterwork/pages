@@ -2,10 +2,12 @@
    EXTRAJORNADA — painel do dia
    A cobertura do dia (as horas em cima e as barras sem extra e com
    extra, com o gráfico da grade) e a lista do dia em grupos (cada
-   militar numa linha: a preferência, o nome, os outros dias, as
-   cotas e os 4 horários de 6 h; quem não pode, com o motivo).
+   militar numa linha: a preferência, o nome, as cotas, que abrem os
+   outros dias, e os 4 horários de 6 h; quem não pode, com o motivo).
    Padrão de blocos: caixas (.grupo-caixa) e frases, sem linhas.
-   Montagem: js/nova-extra-dia.js
+   Vale na Distribuição, nos Ajustes e na aba Extrajornada do painel
+   do dia da Escala.
+   Montagem: js/nova-extra-dia.js e js/nova-extra-dia-outros.js
    ============================================================ */
 
 
@@ -38,11 +40,10 @@
   flex-direction: column;
 }
 
-/* um militar: a preferência, o nome, os outros dias, as cotas e os horários; o nome fica no
-centro da coluna dos dias (igual aos horários quebrados da escala) */
+/* um militar: a preferência, o nome, as cotas e os horários */
 .escala-extra-militar {
   display: grid;
-  grid-template-columns: 8px minmax(0, 1fr) 80px 48px 76px;
+  grid-template-columns: 8px minmax(0, 1fr) 72px 96px;
   align-items: center;
   column-gap: 8px;
   min-height: 32px;
@@ -84,25 +85,32 @@ centro da coluna dos dias (igual aos horários quebrados da escala) */
   color: var(--texto-fraco);
 }
 
-/* os outros dias: um embaixo do outro, o dia encostado no selo das horas (selo de largura fixa) */
-.escala-extra-dias {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+/* as cotas abrem os outros dias do militar */
+.escala-extra-cotas {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
   gap: 2px;
-  padding: 2px 0;
+  padding: 2px 4px;
   border: none;
   border-radius: var(--raio-pequeno);
   background: none;
   font-family: inherit;
+  color: var(--texto-suave);
   cursor: pointer;
   transition: background-color 0.15s ease;
 }
-.escala-extra-dias:hover:not(:disabled) {
+.escala-extra-cotas:hover:not(:disabled) {
   background-color: var(--fundo-medio);
 }
-.escala-extra-dias:disabled {
+.escala-extra-cotas:disabled {
   cursor: default;
+}
+.escala-extra-cotas--sem-dias .escala-extra-cotas-seta {
+  visibility: hidden;
+}
+.escala-extra-cotas[aria-expanded="true"] .escala-extra-cotas-seta {
+  transform: rotate(180deg);
 }
 .escala-extra-cota {
   font-size: 12px;
@@ -164,6 +172,75 @@ centro da coluna dos dias (igual aos horários quebrados da escala) */
   background-color: var(--fundo-medio);
 }
 
+/* um outro dia do militar: o dia (e o aviso embaixo dele) e os 4 horários */
+.escala-extra-outro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 24px;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+.escala-extra-outro-texto {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.escala-extra-outro-aviso {
+  font-size: 11px;
+  color: var(--texto-fraco);
+}
+.escala-extra-outro-aviso--erro {
+  color: var(--erro);
+}
+.escala-extra-outro-aviso--alerta {
+  color: var(--alerta);
+}
+/* o dia de mais de 7 dias atrás: as bolinhas em cinza, sem clique */
+.escala-extra-outro--antigo .nova-extra-marcas .escala-extra-marca::before,
+.escala-extra-outro--antigo .nova-extra-marcas .escala-extra-marca:disabled:hover::before {
+  border-color: var(--texto-debil);
+}
+.escala-extra-outro--antigo .nova-extra-marcas .escala-extra-marca--on::before,
+.escala-extra-outro--antigo .nova-extra-marcas .escala-extra-marca--on:disabled:hover::before {
+  border-color: var(--texto-debil);
+  background-color: var(--texto-debil);
+}
+
+/* quem casa com a busca do painel */
+.escala-extra-militar.busca-achado {
+  background-color: var(--fundo-medio);
+}
+
+/* o rodapé com quem passou da cota: o motivo de o Salvar estar desligado */
+.rodape .escala-extra-rodape-erro {
+  font-weight: 600;
+  color: var(--erro);
+}
+
+/* a aba Extrajornada do painel do dia, no mês ainda não lançado */
+.escala-extra-nao-lancada {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--texto-fraco);
+}
+.escala-extra-nao-lancada-texto {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+.escala-extra-nao-lancada-ajuda {
+  margin: 0;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
 /* quem não pode no dia: o nome apagado e o motivo à direita */
 .escala-extra-militar--indisponivel {
   grid-template-columns: 8px minmax(0, 1fr) auto;
@@ -177,4 +254,212 @@ centro da coluna dos dias (igual aos horários quebrados da escala) */
   color: var(--texto-fraco);
   text-align: right;
   white-space: nowrap;
+}
+
+.nova-extra-motivo {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.nova-extra-motivo input { width: 260px; }
+
+/* quem inseriu a extra (o ícone do sistema ou o do administrador): no calendário e na Agenda, ao lado das bolinhas; no
+   Neste dia do painel do dia, antes do nome. A dica dele ("Inserido pelo...") sai para a esquerda, como a da vaga, e a
+   do nome e do horário não aparece junto */
+.nova-extra-origem {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: var(--texto-fraco);
+}
+
+.nova-extra-origem[data-dica]::after {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+[data-dica]:has(.nova-extra-origem:hover)::after {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.escala-extra-quem-nome > .nova-extra-origem { align-self: center; }
+
+/* as 4 bolinhas da Nova extra (lista e painel do dia): o desenho de 12px no meio de uma área de clique de
+   24px, o mínimo de alvo da norma de acessibilidade (WCAG 2.2, critério 2.5.8) */
+.nova-extra-marcas {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0;
+}
+
+.nova-extra-marcas .escala-extra-marca,
+.nova-extra-marcas .escala-extra-marca:hover,
+.nova-extra-marcas .escala-extra-marca--on,
+.nova-extra-marcas .escala-extra-marca--on:hover {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  min-height: 24px;
+  border: none;
+  border-radius: 50%;
+  background-color: transparent;
+}
+
+.nova-extra-marcas .escala-extra-marca::before {
+  content: '';
+  width: 12px;
+  min-height: 12px;
+  border: 1px solid var(--borda-forte);
+  border-radius: 50%;
+  background-color: var(--fundo-superficie);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.nova-extra-marcas .escala-extra-marca:hover::before { border-color: var(--foco); }
+
+.nova-extra-marcas .escala-extra-marca--on::before,
+.nova-extra-marcas .escala-extra-marca--on:hover::before {
+  border-color: var(--fundo-contraste);
+  background-color: var(--fundo-contraste);
+}
+
+.nova-extra-marcas .escala-extra-marca:disabled:hover::before { border-color: var(--borda-forte); }
+.nova-extra-marcas .escala-extra-marca--on:disabled:hover::before { border-color: var(--fundo-contraste); }
+
+/* os horários em cima das bolinhas de 24px */
+.nova-extra-horas {
+  justify-content: flex-end;
+  padding-right: 4px;
+}
+
+.nova-extra-horas span {
+  min-width: 24px;
+  text-align: center;
+}
+
+/* painel do dia: o relatório do dia, uma linha por extra e pelo que ainda falta (como as observações da escala) */
+.nova-extra-rd-linha {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+  padding: 8px;
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-superficie);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--texto);
+}
+
+.nova-extra-rd-linha .icone { margin-top: 2px; }
+.nova-extra-rd-linha--ok .icone { color: var(--sucesso); }
+.nova-extra-rd-linha--adm .icone,
+.nova-extra-rd-linha--alerta .icone { color: var(--alerta); }
+.nova-extra-rd-linha--erro .icone { color: var(--erro); }
+.nova-extra-rd-texto b { font-weight: 600; color: var(--texto-forte); }
+
+.nova-extra-rd-texto small {
+  display: block;
+  font-size: 11px;
+  color: var(--texto-fraco);
+}
+
+/* painel do dia: a divisão de um pelotão dentro do grupo, num bloquinho branco (padrão de blocos: a separação é o
+   fundo e o espaço, sem traço); o título (o rótulo cinza com a seta, como o da árvore de unidades) abre e fecha a
+   lista dele */
+.nova-extra-pel {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-superficie);
+  box-shadow: var(--sombra-bloco);
+}
+
+.nova-extra-pel + .nova-extra-pel { margin-top: 8px; }
+
+.nova-extra-pel-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 4px;
+  border: none;
+  background: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.nova-extra-pel-seta {
+  flex-shrink: 0;
+  color: var(--texto-suave);
+}
+
+.nova-extra-pel-titulo[aria-expanded="false"] .nova-extra-pel-seta { transform: rotate(-90deg); }
+
+/* os horários no título, à direita, na mesma coluna das bolinhas das linhas (que já têm os 4px da borda); fechado o
+   pelotão, somem */
+.nova-extra-pel-titulo .nova-extra-horas {
+  margin-left: auto;
+  padding-right: 0;
+}
+
+.nova-extra-pel-titulo[aria-expanded="false"] .nova-extra-horas { display: none; }
+
+/* os horários só no primeiro pelotão aberto do grupo (fechado o primeiro, vão para o próximo aberto) */
+.nova-extra-pel:has(> .nova-extra-pel-titulo[aria-expanded="true"]) ~ .nova-extra-pel .nova-extra-horas { display: none; }
+.nova-extra-pel-titulo[aria-expanded="false"] + .nova-extra-pel-linhas { display: none; }
+
+.nova-extra-pel-linhas {
+  display: flex;
+  flex-direction: column;
+}
+
+/* painel do dia: a Cobertura do dia; fechada, só os gráficos; aberta, o relatório do dia embaixo deles */
+.nova-extra-cobertura-relatorio {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nova-extra-cobertura > .grupo-caixa-cabecalho[aria-expanded="false"] ~ .nova-extra-cobertura-relatorio { display: none; }
+
+.nova-extra-cobertura-vazio,
+.nova-extra-grupo-vazio {
+  font-size: 12px;
+  color: var(--texto-fraco);
+}
+
+/* painel do dia: os selos embaixo do nome, o porquê da sugestão e a falta que sobra */
+.nova-extra-selos-linha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding-top: 2px;
+}
+
+.nova-extra-selo-mini {
+  min-height: 18px;
+  padding: 0 4px;
+}
+
+/* o Só 24 h na linha do nome */
+.escala-extra-quem-nome > .nova-extra-selo-mini {
+  flex-shrink: 0;
+  align-self: center;
+}
+
+/* painel do dia: quem ficou sem nenhum horário, em cinza no Neste dia até o Salvar */
+.escala-extra-militar--sai .escala-distribuicao-grad,
+.escala-extra-militar--sai .escala-distribuicao-nome,
+.escala-extra-militar--sai .escala-extra-cota { color: var(--texto-debil); }
+
+/* painel do dia: os selos embaixo do nome, na largura toda da linha */
+.escala-extra-militar > .nova-extra-selos-linha {
+  grid-column: 2 / -1;
 }

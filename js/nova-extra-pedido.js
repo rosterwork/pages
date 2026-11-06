@@ -1,8 +1,9 @@
 /* ============================================================
    NOVA EXTRA — o painel do pedido
    Sim ou Não; de 1 a 10 cotas (com 4, a pergunta: 24 horas seguidas ou pode dividir); os dias pelo
-   "pincel" Quero / Não quero (toque de novo desmarca); os dias
-   ocupados travados com o motivo; para o administrativo, o horário
+   "pincel" Quero / Não quero (toque de novo desmarca); os dias de folga
+   e de afastamento travados com o motivo; os de serviço e troca
+   marcáveis, com o motivo só para ler; para o administrativo, o horário
    em que a extra pode começar em cada dia (o expediente da unidade
    dele) e as folgas do expediente. Enviar = nova_extra_pedido_salvar
    (o banco confere tudo de novo). Fora do prazo, só leitura.
@@ -170,6 +171,14 @@
         b.removeAttribute('data-dia');
         b.querySelector('.nova-extra-dia-texto').textContent = msg().motivos[oc] || '';
       } else {
+        /* dia de serviço ou troca: pode marcar, e o motivo fica à vista só para ler, mesmo com o dia marcado */
+        var servico = (r.servico || {})[k];
+        if (servico) {
+          var leitura = b.querySelector('.nova-extra-dia-servico');
+          leitura.textContent = msg().motivos[servico] || '';
+          leitura.classList.remove('oculto');
+          b.classList.add('nova-extra-dia--servico');
+        }
         var e = adm ? r.expediente[k] : null;
         if (e && !e.livres.length) {
           b.disabled = true;
@@ -191,6 +200,7 @@
     var ajudaDias = f.querySelector('#nova-extra-ajuda-dias');
     ajudaDias.textContent = msg().ajudaDias(r.min_datas);
     ajudaDias.classList.toggle('oculto', !r.min_datas);
+    f.querySelector('#nova-extra-ajuda-servico').classList.toggle('oculto', !Object.keys(r.servico || {}).length);
     f.querySelector('#nova-extra-termo').textContent = ped && ped.termo ? msg().termoRecebido(ped.termo_em) : msg().termoPendente;
     RW.painel.corpo().appendChild(f);
 

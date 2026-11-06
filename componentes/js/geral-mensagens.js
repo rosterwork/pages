@@ -460,6 +460,7 @@
       aindaNaoLancado: 'Ainda não lançado na escala.',
       /* Organizar o mês, Calendário e a grade do passo 3 */
       org: {
+        semDiaLivre: 'Sem dia livre',
         p1: function (abre, fecha, resp, total, vol, nao, sem) {
           return abre + ' a ' + fecha + ' · ' + resp + ' de ' + total + ' responderam · ' + vol + (vol === 1 ? ' voluntário' : ' voluntários') +
             ' · ' + nao + (nao === 1 ? ' não quer' : ' não querem') + ' · ' + sem + ' sem resposta';
@@ -585,8 +586,20 @@
         cotasPassaramUnidade: function (nome, rep, rec) { return nome + ': foram repartidas ' + rep + ' cotas, mas recebeu ' + rec + '.'; },
         extraEm: function (nome) { return 'Extra no ' + nome; },
         expedienteDiaTodo: 'Expediente o dia todo',
-        semCotas: 'Sem cotas sobrando',
+        querEsteDia: function (motivo) { return motivo + ', quer este dia'; },
         deCotas: function (u, c) { return u + ' de ' + c; },
+        /* a linha aberta do painel do dia: quem passou da cota e os outros dias dele */
+        passouCota: function (n) { return 'Passou ' + n + (n === 1 ? ' cota.' : ' cotas.') + ' Desmarque ' + n + (n === 1 ? ' horário' : ' horários') + ' dos outros dias aqui embaixo, ou deste dia.'; },
+        passouCotaSoDeste: function (n) { return 'Passou ' + n + (n === 1 ? ' cota.' : ' cotas.') + ' Desmarque ' + n + (n === 1 ? ' horário' : ' horários') + ' deste dia.'; },
+        passouRodape: function (nome, n) { return nome + ' passou ' + n + (n === 1 ? ' cota' : ' cotas') + '. Acerte antes de salvar.'; },
+        outroDia: function (dd, semana, unidade) { return 'dia ' + dd + ' · ' + semana + ' · ' + unidade; },
+        outroAntigo: 'Mais de 7 dias atrás, não muda mais',
+        outroFalta: 'Este dia fica com falta de gente',
+        outroIdeal: 'Este dia fica abaixo do ideal',
+        notaAjuste: 'O que mudar aqui entra na escala e no relatório de ajustes, e o militar recebe um aviso.',
+        /* a aba Extrajornada do painel do dia da Escala */
+        outraCompanhia: 'Esta unidade é de outra companhia.',
+        salvarOutroMes: function (mes) { return 'Salve ou cancele as mudanças de ' + mes + ' antes de abrir outro mês.'; },
         so24: 'Só 24 h',
         condutor: 'Condutor',
         horasN: function (n) { return n + 'h'; },
@@ -607,9 +620,6 @@
         jaEmOutro: function (pel) { return 'Já está de extra no ' + pel + ' neste dia. Para pôr aqui, tire de lá antes.'; },
         focoTexto: function (nome, u, c) { return 'Mostrando os dias de ' + nome + ' · ' + u + ' de ' + c + (c === 1 ? ' cota' : ' cotas'); },
         saiAoSalvar: 'Sai ao salvar',
-        cotaCheia: function (nome, n) {
-          return nome + (n === 1 ? ' já usou a única cota.' : ' já usou as ' + n + ' cotas.') + ' Para marcar este horário, tire antes um horário de outro dia.';
-        },
         faltaIdealHoras: function (h) { return 'Ainda falta gente para o ideal de ' + h + '.'; },
         chefeDirigeHoras: function (h, cnh) { return 'O chefe ainda dirige de ' + h + ' por falta de condutor' + (cnh ? ', CNH ' + cnh : '') + '.'; },
         ajusteTexto: function (n) { return n + (n === 1 ? ' ajuste não salvo.' : ' ajustes não salvos.'); },

@@ -1789,7 +1789,7 @@
       <p data-so-treino data-alvo=".painel-corpo #nova-extra-cotas .nova-extra-cota:not(:disabled)" data-avanca="clique"><strong>Quantas cotas?</strong> Cada cota são 6 horas. Quem escolhe 4 diz se quer as 24 horas seguidas ou se pode dividir. Escolha a acesa.</p>
       <p data-so-ajuda data-alvo=".painel-corpo .nova-extra-pincel, .painel-corpo #nova-extra-cal" data-avanca="proximo" data-livre><strong>Quais dias?</strong> Escolha <strong>Quero</strong> e clique nos dias; depois <strong>Não quero</strong>, nos dias que você não pode. Clicar de novo desmarca.</p>
       <p data-so-treino data-alvo=".painel-corpo .nova-extra-pincel, .painel-corpo #nova-extra-cal" data-condicao="#painel-rodape #nova-extra-enviar:not(:disabled)" data-treino-alvo=".painel-corpo button.nova-extra-dia[data-dia]:not(:disabled):not(.nova-extra-dia--quer)" data-avanca="aparece"><strong>Quais dias?</strong> Use <strong>Quero</strong> e clique no dia aceso. <strong>Não quero</strong> marca os dias que você não pode, e clicar de novo desmarca.</p>
-      <p data-alvo=".painel-corpo #nova-extra-cal" data-avanca="proximo" data-livre>Os dias de serviço, troca, folga, férias, licença e dispensa já vêm travados.</p>
+      <p data-alvo=".painel-corpo #nova-extra-cal" data-avanca="proximo" data-livre>Os dias de folga, férias, licença e dispensa já vêm travados. Os de serviço e troca você pode marcar.</p>
       <p data-alvo=".painel-corpo .nova-extra-ver" data-avanca="proximo" data-livre><strong>Ver</strong> muda o que cada dia mostra: os seus dias, onde falta gente ou quantos querem.</p>
       <p data-alvo=".painel-corpo #nova-extra-termo" data-opcional data-avanca="proximo">O <strong>Termo</strong> diz o que falta assinar.</p>
     </section>
@@ -1813,13 +1813,29 @@
     <p data-trecho="abrir-extra"></p>
     <p data-trecho="extra-organizar"></p>
     <p data-alvo="#nova-extra-passos [data-passo='1']" data-avanca="clique" data-pular-se="#nova-extra-passos [data-passo='1'].aba--ativa">Abra o passo <strong>Pedidos</strong>.</p>
-    <p data-alvo="#p1-abre, #p1-fecha, #p1-aviso" data-anel="campo" data-avanca="proximo" data-livre>No <strong>Prazo do pedido</strong>: quando abre, quando fecha e quantos dias antes de fechar avisar quem não respondeu.</p>
-    <p data-alvo="#p1-minimo" data-avanca="proximo" data-livre>Em <strong>Mínimo de dias "Quero"</strong>: se o mês exige um mínimo e quantos dias cada voluntário marca. Em <strong>Exceções</strong>, quem tem um número diferente: um militar ou todo o efetivo administrativo.</p>
-    <p data-alvo="#p1-rodape .rodape-acoes" data-clique="#p1-salvar" data-avanca="clique" data-pular-se="#p1-rodape.oculto, #p1-salvar:disabled">Se mudou alguma coisa, grave pelo <strong>Salvar</strong> do rodapé. O pedido fecha às 23h59 do último dia.</p>
+    <p data-alvo="#p1-abre, #p1-fecha, #p1-aviso" data-anel="campo" data-avanca="proximo" data-livre>No <strong>Prazo do pedido</strong>: quando abre, quando fecha e quantos dias antes de fechar avisar quem não respondeu. O pedido fecha às 23h59 do último dia, e o que você mudar só vale depois do <strong>Salvar</strong> do rodapé.</p>
+    <p data-alvo="#p1-rodape .rodape-acoes" data-clique="#p1-salvar" data-avanca="clique" data-pular-se="#p1-rodape.oculto, #p1-salvar:disabled">Se mudou alguma coisa, grave pelo <strong>Salvar</strong> do rodapé.</p>
     <p data-alvo="#nova-extra-acoes > .botao" data-avanca="clique">Para fechar antes do prazo, abra o menu <strong>Ações</strong>.</p>
     <p data-alvo="#p1-fechar" data-avanca="clique">Escolha <strong>Fechar os pedidos agora</strong>.</p>
     <p data-alvo="#veu-aviso .modal" data-clique="#veu-aviso .aviso-confirmar" data-avanca="clique">Confirme no aviso. Depois disso, ninguém mais faz ou muda o pedido.</p>
     <p data-fim>Pronto. Com os pedidos fechados, a vez é das <strong>Cotas</strong>.</p>
+  </template>
+
+  <template data-roteiro="extra-minimo" data-titulo="Exigir um mínimo de dias" data-conjunto="organizar-mes" data-area="admin" data-grupo="Extrajornada" data-pagina="nova-extra" data-so-computador data-cenario="extra-pedido">
+    <p data-trecho="abrir-extra"></p>
+    <p data-trecho="extra-organizar"></p>
+    <p data-alvo="#nova-extra-passos [data-passo='1']" data-avanca="clique" data-pular-se="#nova-extra-passos [data-passo='1'].aba--ativa">Abra o passo <strong>Pedidos</strong>.</p>
+    <p data-alvo="#p1-exigir:has([data-exigir]:not(:disabled))" data-avanca="proximo" data-livre data-sem-alvo="Os pedidos deste mês já fecharam: o mínimo fica só para ler.">Em <strong>Exigir mínimo?</strong>, o <strong>Sim</strong> pede um número de dias "Quero" a cada voluntário. Com o <strong>Não</strong>, cada um marca quantos quiser.</p>
+    <p data-so-ajuda data-alvo="#p1-minimo-geral" data-opcional data-avanca="proximo" data-livre>Em <strong>Todos os voluntários</strong>, escolha o número de dias, de 1 a 5.</p>
+    <p data-so-treino data-alvo="#p1-minimo-geral" data-condicao="#p1-rodape:not(.oculto)" data-avanca="aparece" data-porta="#p1-minimo-geral .campo-selecao; .dropdown--aberto .dropdown-item:not(.dropdown-item--ativo)">Em <strong>Todos os voluntários</strong>, escolha o número aceso: são os dias que cada voluntário tem de marcar.</p>
+    <p data-alvo="#p1-exc-abrir" data-opcional data-avanca="clique" data-pular-se="#p1-exc-abrir[aria-expanded='true']">Abra as <strong>Exceções</strong>.</p>
+    <p data-so-ajuda data-alvo="#p1-exc-corpo" data-opcional data-avanca="proximo" data-livre>Use <strong>Adicionar exceção</strong> para dar um número diferente a um militar ou a <strong>Todo o efetivo administrativo</strong>. Quem tem exceção com o nome dele fica com ela, mesmo sendo do efetivo administrativo.</p>
+    <p data-so-treino data-alvo="#p1-exc-adicionar" data-avanca="clique">Use <strong>Adicionar exceção</strong>.</p>
+    <p data-so-treino data-alvo=".nova-extra-excecao--nova .nova-extra-excecao-combo" data-condicao="#p1-excecoes .nova-extra-excecao:not(.nova-extra-excecao--nova)" data-avanca="aparece" data-porta="#p1-excecao-campo; .dropdown--aberto .dropdown-item[data-busca='todo o efetivo administrativo']">Escolha <strong>Todo o efetivo administrativo</strong>. A lista também traz cada militar, e quem tem exceção com o nome dele fica com ela.</p>
+    <p data-so-treino data-alvo="#p1-excecoes .nova-extra-excecao:last-child .nova-extra-minimo-numero" data-condicao="#p1-salvar:not(:disabled)" data-avanca="aparece" data-porta="#p1-excecoes .nova-extra-excecao:last-child .campo-selecao; .dropdown--aberto .dropdown-item">Escolha o número aceso: são os dias dessa exceção.</p>
+    <p data-alvo="#p1-rodape .rodape-acoes" data-clique="#p1-salvar" data-avanca="clique" data-pular-se="#p1-rodape.oculto, #p1-salvar:disabled" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé.</p>
+    <p data-fim>Pronto. O mínimo vale para quem enviar ou mudar o pedido daqui em diante. Quem já enviou continua valendo.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, o mínimo vale para quem enviar ou mudar o pedido daqui em diante, e quem já enviou continua valendo.</p>
   </template>
 
   <template data-roteiro="extra-termos" data-titulo="Conferir as respostas e o termo" data-conjunto="organizar-mes" data-area="admin" data-grupo="Extrajornada" data-pagina="nova-extra" data-so-computador data-cenario="extra-pedido">
@@ -3362,6 +3378,183 @@
     <div class="abas">
       <button type="button" class="aba aba--ativa" data-secao="distribuicao">Dia</button>
       <button type="button" class="aba" data-secao="continuos" data-so-admin>Ciclo</button>
+      <button type="button" class="aba" data-secao="extra">Extrajornada</button>
+    </div>
+  </template>
+
+  <!-- a aba Extrajornada do painel do dia, no mês ainda não lançado: só a mensagem (o JS põe o nome do mês) -->
+  <template id="tpl-escala-extra-nao-lancada">
+    <div class="escala-extra-nao-lancada">
+      <svg class="icone" width="24" height="24" aria-hidden="true"><use href="icones/todos.svg#icone-extrajornada"/></svg>
+      <p class="escala-extra-nao-lancada-texto">A extrajornada de <span class="escala-extra-nao-lancada-mes"></span> ainda não foi lançada.</p>
+      <p class="escala-extra-nao-lancada-ajuda">Depois de lançada, ela pode ser editada aqui.</p>
+    </div>
+  </template>
+
+  <!-- a busca do painel do dia da extra (no subcabeçalho) -->
+  <template id="tpl-ne-busca">
+    <div class="busca">
+      <button type="button" class="busca-modo" aria-label="Alternar entre marcar e filtrar" data-dica="Marcar">
+        <svg class="icone busca-modo-marcar" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-pesquisar"/></svg>
+        <svg class="icone busca-modo-filtrar" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-filtrar"/></svg>
+      </button>
+      <input type="text" name="busca-extra-dia" class="busca-entrada" maxlength="100" placeholder="Pesquisar militar" aria-label="Pesquisar militar" />
+      <button type="button" class="busca-limpar" aria-label="Limpar pesquisa">
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
+      </button>
+    </div>
+  </template>
+
+  <!-- um outro dia do militar, aberto embaixo da linha: o dia, o aviso e os 4 horários daquele dia (nova-extra-dia-outros.js) -->
+  <template id="tpl-escala-extra-outro">
+    <div class="escala-extra-outro">
+      <span class="escala-extra-outro-texto">
+        <span class="escala-extra-outro-dia"></span>
+        <span class="escala-extra-outro-aviso oculto"></span>
+      </span>
+      <span class="escala-extra-marcas">
+        <button type="button" class="escala-extra-marca" data-bloco="1" aria-pressed="false" aria-label="08h às 14h"></button>
+        <button type="button" class="escala-extra-marca" data-bloco="2" aria-pressed="false" aria-label="14h às 20h"></button>
+        <button type="button" class="escala-extra-marca" data-bloco="3" aria-pressed="false" aria-label="20h às 02h"></button>
+        <button type="button" class="escala-extra-marca" data-bloco="4" aria-pressed="false" aria-label="02h às 08h"></button>
+      </span>
+    </div>
+  </template>
+
+  <!-- ===== moldes do painel do dia da extra (Escala, Ajustes e Distribuição; nova-extra-dia.js) ===== -->
+  <template id="tpl-ne-selo"><span class="selo nova-extra-selo-mini"></span></template>
+
+  <template id="tpl-ne-origem">
+    <span class="nova-extra-origem" role="img" data-dica="">
+      <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-extra-sistema"/></svg>
+    </span>
+  </template>
+
+  <!-- painel do dia: um grupo (Neste dia, Querem este dia...) que abre e fecha pelo título, com os horários em cima
+       das bolinhas -->
+  <template id="tpl-ne-grupo">
+    <div class="grupo-caixa escala-extra-grupo nova-extra-grupo">
+      <button type="button" class="grupo-caixa-cabecalho" aria-expanded="true">
+        <span class="rotulo-secao"><span class="ne-grupo-nome"></span> (<span class="ne-grupo-conta"></span>)</span>
+        <svg class="icone grupo-caixa-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="grupo-caixa-corpo">
+        <span class="escala-extra-horas nova-extra-horas" aria-hidden="true"><span>08</span><span>14</span><span>20</span><span>02</span></span>
+        <div class="escala-extra-grupo-linhas"></div>
+        <!-- só no Neste dia, que aparece sempre: o vazio -->
+        <span class="nova-extra-grupo-vazio oculto">Ninguém de extra neste dia.</span>
+      </div>
+    </div>
+  </template>
+
+  <!-- painel do dia: a divisão de um pelotão dentro de um grupo (Querem este dia, Sem preferência, Não querem e
+       Indisponíveis), que abre e fecha pelo título: o nome, "este pelotão" no do dia e quantos tem; aberta, os horários
+       à direita, em cima das bolinhas -->
+  <template id="tpl-ne-pel">
+    <div class="nova-extra-pel">
+      <button type="button" class="nova-extra-pel-titulo" aria-expanded="true">
+        <svg class="icone nova-extra-pel-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+        <span class="rotulo-secao"><span class="nova-extra-pel-nome"></span><span class="nova-extra-pel-este oculto"> · este pelotão</span> (<span class="nova-extra-pel-conta"></span>)</span>
+        <span class="escala-extra-horas nova-extra-horas" aria-hidden="true"><span>08</span><span>14</span><span>20</span><span>02</span></span>
+      </button>
+      <div class="nova-extra-pel-linhas"></div>
+    </div>
+  </template>
+
+  <!-- painel do dia: a Cobertura do dia, que abre e fecha pelo título; os dois gráficos (sem extra e com extra) ficam
+       sempre à vista e, aberta, embaixo deles, o relatório do dia sem título (ou o vazio) -->
+  <template id="tpl-ne-cobertura">
+    <div class="grupo-caixa nova-extra-cobertura">
+      <button type="button" class="grupo-caixa-cabecalho" aria-expanded="true">
+        <span class="rotulo-secao">Cobertura do dia</span>
+        <svg class="icone grupo-caixa-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="nova-extra-cobertura-graficos"></div>
+      <div class="nova-extra-cobertura-relatorio">
+        <span class="nova-extra-cobertura-vazio oculto">Nenhum erro neste dia.</span>
+      </div>
+    </div>
+  </template>
+
+  <!-- o relatório do dia: uma linha por extra (o sistema ou o administrador colocou) e pelo que ainda falta; o nome e o
+       horário escrito no meio da frase; embaixo, em cinza, o resto do porquê ou quem ainda pode -->
+  <template id="tpl-ne-rd-sistema">
+    <div class="nova-extra-rd-linha nova-extra-rd-linha--ok">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
+      <span class="nova-extra-rd-texto"><span class="ne-rd-ini"></span> <b class="ne-rd-nome"></b> <span class="ne-rd-fim"></span><small class="ne-rd-mais oculto"></small></span>
+    </div>
+  </template>
+
+  <template id="tpl-ne-rd-admin">
+    <div class="nova-extra-rd-linha nova-extra-rd-linha--adm">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-editar"/></svg>
+      <span class="nova-extra-rd-texto"><span class="ne-rd-ini"></span> <b class="ne-rd-nome"></b> <span class="ne-rd-fim"></span><small class="ne-rd-mais oculto"></small></span>
+    </div>
+  </template>
+
+  <template id="tpl-ne-rd-ok">
+    <div class="nova-extra-rd-linha nova-extra-rd-linha--ok">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
+      <span class="nova-extra-rd-texto"><span class="ne-rd-fim"></span></span>
+    </div>
+  </template>
+
+  <template id="tpl-ne-rd-falta">
+    <div class="nova-extra-rd-linha">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+      <span class="nova-extra-rd-texto"><span class="ne-rd-fim"></span><small class="ne-rd-mais oculto"></small></span>
+    </div>
+  </template>
+
+  <!-- painel do dia: os selos de um militar (embaixo do nome) -->
+  <template id="tpl-ne-selos">
+    <span class="nova-extra-selos-linha"></span>
+  </template>
+
+  <!-- Cobertura do dia: as horas em cima e as duas barras, sem extra e com extra -->
+  <template id="tpl-escala-extra-cobertura">
+    <div class="escala-extra-cobertura">
+      <span></span>
+      <span class="escala-extra-horas"><span>08h</span><span>14h</span><span>20h</span><span>02h</span><span>08h</span></span>
+      <span class="escala-extra-cob-rotulo">Sem extra</span>
+      <div class="escala-extra-cob-barra escala-extra-cob-sem"></div>
+      <span class="escala-extra-cob-rotulo">Com extra</span>
+      <div class="escala-extra-cob-barra escala-extra-cob-com"></div>
+    </div>
+  </template>
+
+  <!-- um militar da lista do dia: a preferência, o nome (e a unidade, se é de outra), os outros dias, as cotas do mês e
+       os 4 horários de 6 h (clicar marca ou desmarca); embaixo, os outros dias com os horários -->
+  <template id="tpl-escala-extra-militar">
+    <div class="escala-extra-militar">
+      <span class="escala-extra-ponto"></span>
+      <span class="escala-extra-quem">
+        <span class="escala-extra-quem-nome"><span class="escala-distribuicao-grad"></span> <span class="escala-distribuicao-nome"></span></span>
+        <span class="escala-extra-quem-unidade oculto"></span>
+      </span>
+      <button type="button" class="escala-extra-cotas" aria-expanded="false" aria-label="Outros dias com extra">
+        <span class="escala-extra-cota"></span>
+        <svg class="icone escala-extra-cotas-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+      </button>
+      <span class="escala-extra-marcas">
+        <button type="button" class="escala-extra-marca" data-bloco="1" aria-pressed="false" aria-label="08h às 14h"></button>
+        <button type="button" class="escala-extra-marca" data-bloco="2" aria-pressed="false" aria-label="14h às 20h"></button>
+        <button type="button" class="escala-extra-marca" data-bloco="3" aria-pressed="false" aria-label="20h às 02h"></button>
+        <button type="button" class="escala-extra-marca" data-bloco="4" aria-pressed="false" aria-label="02h às 08h"></button>
+      </span>
+      <div class="escala-extra-outros oculto"></div>
+    </div>
+  </template>
+
+  <!-- quem não pode tirar extra no dia: o nome e o motivo ("De serviço", "Férias até 20/11") -->
+  <template id="tpl-escala-extra-indisponivel">
+    <div class="escala-extra-militar escala-extra-militar--indisponivel">
+      <span class="escala-extra-ponto"></span>
+      <span class="escala-extra-quem">
+        <span class="escala-extra-quem-nome"><span class="escala-distribuicao-grad"></span> <span class="escala-distribuicao-nome"></span></span>
+        <span class="escala-extra-quem-unidade oculto"></span>
+      </span>
+      <span class="escala-extra-motivo-texto"></span>
     </div>
   </template>
 
