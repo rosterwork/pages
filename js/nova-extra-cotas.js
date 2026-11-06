@@ -51,8 +51,8 @@
   function diasDe(m) { return d.alocacoes.filter(function (a) { return a.cpf === m.cpf; }).map(function (a) { return a.data; }).sort().map(u().br); }
   /* abaixo do que está na grade, as extras dele saem ao salvar */
   function perde(m) { return conc(m) < naGrade(m); }
-  /* a lista do Recebe: de 0 até o que ele pediu (quem só aceita 24 h, de 4 em 4) */
-  function opcoes(m) { var l = []; for (var n = 0; n <= (m.cotas || 0); n += m.so24 ? 4 : 1) l.push(n); return l; }
+  /* a lista do Recebe: de 0 até o que ele pediu */
+  function opcoes(m) { var l = []; for (var n = 0; n <= (m.cotas || 0); n++) l.push(n); return l; }
   /* por unidades, as cotas da companhia são a soma das unidades */
   function somaUnidades() { return Object.keys(p2.unidades).reduce(function (s, k) { return s + (+p2.unidades[k] || 0); }, 0); }
   function recebido() { return p2.modo === 'por_unidade' ? somaUnidades() : (+p2.recebidas || 0); }

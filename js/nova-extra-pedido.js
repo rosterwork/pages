@@ -1,6 +1,6 @@
 /* ============================================================
    NOVA EXTRA — o painel do pedido
-   Sim ou Não; de 1 a 10 cotas (só 24 h = 4 ou 8); os dias pelo
+   Sim ou Não; de 1 a 10 cotas (com 4, a pergunta: 24 horas seguidas ou pode dividir); os dias pelo
    "pincel" Quero / Não quero (toque de novo desmarca); os dias
    ocupados travados com o motivo; para o administrativo, o horário
    em que a extra pode começar em cada dia (o expediente da unidade
@@ -19,7 +19,7 @@
   var guardaLigada = false;
 
   function msg() { return RW.mensagens.novaExtra; }
-  function dados(v) { return JSON.stringify({ vol: v.vol, cotas: v.cotas, so24: v.so24, dias: v.dias }); }
+  function dados(v) { return JSON.stringify({ vol: v.vol, cotas: v.cotas, so24: v.cotas === 4 && v.so24, dias: v.dias }); }
   function sujo() { return !!(ed && !ed.leitura && dados(ed.v) !== ed.inicial); }
   function contar(tipo) { return Object.keys(ed.v.dias).filter(function (k) { return ed.v.dias[k] === tipo; }).length; }
 
@@ -27,7 +27,7 @@
     var v = ed.v;
     if (ed.semDia) return false;   // sem dia livre não há pedido (nem Sim nem Não)
     if (v.vol === false) return true;
-    if (v.vol !== true || v.cotas < 1 || v.cotas > 10 || (v.so24 && v.cotas !== 4 && v.cotas !== 8)) return false;
+    if (v.vol !== true || v.cotas < 1 || v.cotas > 10) return false;
     var q = contar('quer');
     return q >= ed.r.min_datas && contar('nao_posso') <= 10;
   }
@@ -44,11 +44,11 @@
     Array.prototype.forEach.call(f.querySelectorAll('.nova-extra-cota'), function (b) {
       var n = +b.textContent;
       b.classList.toggle('nova-extra-cota--on', n === v.cotas);
-      b.disabled = ed.leitura || (v.so24 && n !== 4 && n !== 8);
+      b.disabled = ed.leitura;
     });
-    var b24 = f.querySelector('#nova-extra-24h');
-    b24.setAttribute('aria-checked', v.so24 ? 'true' : 'false');
-    b24.querySelector('.caixa-selecao').classList.toggle('caixa-selecao--marcada', v.so24);
+    f.querySelector('#nova-extra-como-24h').classList.toggle('oculto', v.cotas !== 4);
+    f.querySelector('[data-como="seguidas"]').checked = v.so24;
+    f.querySelector('[data-como="dividir"]').checked = !v.so24;
     Array.prototype.forEach.call(f.querySelectorAll('[data-pincel]'), function (b) {
       b.classList.toggle('nova-extra-pincel-op--on', b.getAttribute('data-pincel') === v.pincel);
     });
@@ -91,7 +91,8 @@
 
   function abrir(r, comp, cpf, aoSalvar) {
     var ped = r.pedido;
-    var v = { vol: ped ? ped.voluntario : null, cotas: ped ? ped.cotas : 0, so24: ped ? ped.so_24h : false, dias: {}, pincel: 'quer' };
+    /* a pergunta das 4 cotas abre com as 24 horas seguidas marcadas; o pedido já enviado com 4 mostra o que ele escolheu */
+    var v = { vol: ped ? ped.voluntario : null, cotas: ped ? ped.cotas : 0, so24: ped && ped.cotas === 4 ? ped.so_24h : true, dias: {}, pincel: 'quer' };
     if (ped) {
       ped.quer.forEach(function (d) { v.dias[d] = 'quer'; });
       ped.nao_posso.forEach(function (d) { v.dias[d] = 'nao_posso'; });
@@ -125,12 +126,9 @@
       c.addEventListener('click', function (ev) { v.cotas = +ev.currentTarget.textContent; atualizar(); });
       cotas.appendChild(c);
     }
-    var b24 = f.querySelector('#nova-extra-24h');
-    b24.disabled = ed.leitura;
-    b24.addEventListener('click', function () {
-      v.so24 = !v.so24;
-      if (v.so24 && v.cotas !== 4 && v.cotas !== 8) v.cotas = v.cotas > 8 ? 8 : 4;   // desce para a opção de 24 h logo abaixo (abaixo de 4, fica 4)
-      atualizar();
+    Array.prototype.forEach.call(f.querySelectorAll('[data-como]'), function (r) {
+      r.disabled = ed.leitura;
+      r.addEventListener('change', function () { v.so24 = r.getAttribute('data-como') === 'seguidas'; atualizar(); });
     });
     Array.prototype.forEach.call(f.querySelectorAll('[data-pincel]'), function (b) {
       b.disabled = ed.leitura;
@@ -219,7 +217,7 @@
     var v = ed.v, btn = ed.btn;
     RW.iniciarCarregando(btn);
     RW.rpc('nova_extra_pedido_salvar', {
-      p_competencia: ed.r.competencia, p_voluntario: v.vol, p_cotas: v.vol ? v.cotas : 0, p_so_24h: !!(v.vol && v.so24),
+      p_competencia: ed.r.competencia, p_voluntario: v.vol, p_cotas: v.vol ? v.cotas : 0, p_so_24h: !!(v.vol && v.cotas === 4 && v.so24),
       p_datas: v.vol ? Object.keys(v.dias).sort().map(function (k) { return { data: k, tipo: v.dias[k] }; }) : [],
       p_cpf: cpf
     }).then(function (r) {

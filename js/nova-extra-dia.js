@@ -295,8 +295,9 @@
     return lin;
   }
 
-  /* os 4 horários (a bolinha de 12px na área de 24px): clicar marca ou desmarca (quem só quer 24 h vai com os 4
-     juntos); a mesma peça do painel do dia e da lista dos voluntários */
+  /* os 4 horários (a bolinha de 12px na área de 24px): clicar marca ou desmarca (quem pediu 24 horas seguidas: o dia
+     vazio recebe os 4 de uma vez, se couberem na cota, e depois cada um por si); a mesma peça do painel do dia e da
+     lista dos voluntários */
   function ligarMarcas(caixa, m, k, marcados, uid) {
     caixa.classList.add('nova-extra-marcas');
     Array.prototype.forEach.call(caixa.querySelectorAll('.escala-extra-marca'), function (bt) {
@@ -307,7 +308,8 @@
       bt.disabled = G().soLeitura() || G().antigo(k) || (G().travado() && !on);
       bt.addEventListener('click', function (ev) {
         ev.stopPropagation();   // no calendário, a bolinha não abre o painel do dia
-        var novo = m.so24 ? (marcados.length ? [] : [1, 2, 3, 4]) : (on ? marcados.filter(function (x) { return x !== b; }) : marcados.concat([b]));
+        var inteiro = m.so24 && !marcados.length && (m.concedidas || 0) - G().usadas(m.cpf) >= 4;
+        var novo = inteiro ? [1, 2, 3, 4] : (on ? marcados.filter(function (x) { return x !== b; }) : marcados.concat([b]));
         G().mudar(m, k, novo, uid);
       });
     });

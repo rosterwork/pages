@@ -220,11 +220,6 @@
   color: var(--texto-invertido);
 }
 
-.nova-extra-marcar {
-  width: 100%;
-  text-align: left;
-}
-
 .nova-extra-pincel {
   display: grid;
   grid-template-columns: 1fr 1fr;

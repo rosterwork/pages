@@ -726,7 +726,7 @@
       <li>Só praça pede extra.</li>
       <li>O pedido vale do "Abre em" até o "Fecha em", ou até o "Fechar os pedidos agora".</li>
       <li>Cada militar pede de 1 a 10 cotas. Uma cota são 6 horas.</li>
-      <li>Quem só aceita 24 horas pede 4 ou 8 cotas.</li>
+      <li>Quem pede 4 cotas escolhe entre 24 horas seguidas e poder dividir em vários dias.</li>
       <li>Marca pelo menos 5 dias que quer (ou todos os livres, se forem menos) e até 10 dias que não quer.</li>
       <li>Sem o termo entregue, o militar fica fora das cotas e da distribuição.</li>
     </ul>
@@ -751,7 +751,7 @@
       <li>A fila: primeiro quem foi menos atendido nos últimos 12 meses. Quem pede pela primeira vez conta como 100%. No empate, vai antes o mais antigo.</li>
       <li>Todos recebem o mesmo número, com diferença de no máximo 1, sem passar do que cabe nos dias livres dele no mês.</li>
       <li>A cota que sobra vai, uma a uma, para quem está na frente da fila.</li>
-      <li>Quem só aceita 24 horas recebe 4 ou 8, sem passar dos outros.</li>
+      <li>Quem pediu 24 horas seguidas recebe 4 ou nenhuma, sem passar dos outros. O administrador pode mudar o Recebe.</li>
     </ol>
   </div>
 </template>
@@ -907,7 +907,12 @@
       <b class="nova-extra-pergunta">Quantas cotas?</b>
       <span class="nova-extra-ajuda">Cada cota equivale a 6 horas.</span>
       <div class="nova-extra-cotas" id="nova-extra-cotas"></div>
-      <button type="button" class="geral-opcao nova-extra-marcar" role="checkbox" aria-checked="false" id="nova-extra-24h"><span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>Só quero extras de 24 h (4 ou 8 cotas)</button>
+      <!-- só para quem escolheu 4 cotas -->
+      <div class="grupo-caixa oculto" id="nova-extra-como-24h">
+        <b class="nova-extra-pergunta">Como você quer tirar as 4 cotas?</b>
+        <label class="geral-opcao"><input type="radio" name="nova-extra-como-24h" data-como="seguidas" /><span>24 horas seguidas, no mesmo dia</span></label>
+        <label class="geral-opcao"><input type="radio" name="nova-extra-como-24h" data-como="dividir" /><span>Posso dividir em vários dias ou 24 seguidas</span></label>
+      </div>
     </section>
     <!-- sem nenhum dia livre no mês, só o calendário fica (com o motivo de cada dia); o resto com data-sem-dia="some" sai -->
     <section class="nova-extra-sec" data-so-voluntario data-sem-dia="mostra">

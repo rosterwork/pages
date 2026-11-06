@@ -588,7 +588,6 @@
         cotaCheia: function (nome, n) {
           return nome + (n === 1 ? ' já usou a única cota.' : ' já usou as ' + n + ' cotas.') + ' Para marcar este horário, tire antes um horário de outro dia.';
         },
-        cotaCheia24: function (nome) { return nome + ' só aceita 24 h e precisa de 4 cotas livres para este dia. Tire antes os horários de outro dia.'; },
         faltaIdealHoras: function (h) { return 'Ainda falta gente para o ideal de ' + h + '.'; },
         chefeDirigeHoras: function (h, cnh) { return 'O chefe ainda dirige de ' + h + ' por falta de condutor' + (cnh ? ', CNH ' + cnh : '') + '.'; },
         ajusteTexto: function (n) { return n + (n === 1 ? ' ajuste não salvo.' : ' ajustes não salvos.'); },

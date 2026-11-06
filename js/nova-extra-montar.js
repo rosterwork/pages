@@ -191,7 +191,7 @@
     var atual = vagaDe(m.cpf, k), tem = atual ? atual.blocos.length : 0;
     if (novos.length > tem && usadas(m.cpf) - tem + novos.length > (m.concedidas || 0)) {
       var nome = (m.grad + ' ' + m.nome).trim();
-      RW.avisar({ tipo: 'aviso', mensagem: m.so24 ? msg().cotaCheia24(nome) : msg().cotaCheia(nome, m.concedidas || 0) });
+      RW.avisar({ tipo: 'aviso', mensagem: msg().cotaCheia(nome, m.concedidas || 0) });
       return;
     }
     var antes = base(m.cpf, k);
