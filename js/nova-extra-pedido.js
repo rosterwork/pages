@@ -98,8 +98,8 @@
       ped.nao_posso.forEach(function (d) { v.dias[d] = 'nao_posso'; });
     }
     var mes = comp.toLocaleDateString('pt-BR', { month: 'long' });
-    /* sem nenhum dia livre no mês (min_datas 0) não há pedido: o Sim e o Não ficam apagados, e o calendário mostra o motivo */
-    ed ={ v: v, inicial: dados(v), r: r, leitura: r.prazo.estado !== 'aberto', semDia: r.min_datas === 0, btn: null };
+    /* sem nenhum dia livre no mês não há pedido: o Sim e o Não ficam apagados, e o calendário mostra o motivo */
+    ed ={ v: v, inicial: dados(v), r: r, leitura: r.prazo.estado !== 'aberto', semDia: !!r.sem_dia_livre, btn: null };
     RW.painel.abrir({
       titulo: msg().tituloPainel(mes),
       subtitulo: r.em_nome ? r.militar.grad + ' ' + r.militar.nome : msg().prazoPainel(r.prazo.fecha.slice(8, 10) + '/' + r.prazo.fecha.slice(5, 7)),

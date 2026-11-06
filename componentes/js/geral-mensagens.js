@@ -460,16 +460,38 @@
       aindaNaoLancado: 'Ainda não lançado na escala.',
       /* Organizar o mês, Calendário e a grade do passo 3 */
       org: {
-        p1: function (abre, fecha, resp, total) { return abre + ' a ' + fecha + ' · ' + resp + ' de ' + total + ' responderam'; },
+        p1: function (abre, fecha, resp, total, vol, nao, sem) {
+          return abre + ' a ' + fecha + ' · ' + resp + ' de ' + total + ' responderam · ' + vol + (vol === 1 ? ' voluntário' : ' voluntários') +
+            ' · ' + nao + (nao === 1 ? ' não quer' : ' não querem') + ' · ' + sem + ' sem resposta';
+        },
         p2: function (rec, rep) { return rec + ' recebidas · ' + rep + ' repartidas'; },
         p2Depois: 'Depois do pedido',
         p3: function (g, c) { return g + ' de ' + c + ' cotas colocadas'; },
         p4Nao: 'Ainda não lançado',
         p5: function (n) { return n + (n === 1 ? ' ajuste' : ' ajustes'); },
-        responderam: function (n, t) { return n + ' de ' + t + ' militares responderam.'; },
         cotas: function (n, so24) { return n + (so24 ? ' (24 h)' : ''); },
         dias: function (n) { return n ? n + (n === 1 ? ' dia' : ' dias') : 'nenhum'; },
-        termosMudados: function (n) { return n + (n === 1 ? ' termo mudado, não salvo' : ' termos mudados, não salvos'); },
+        /* o rodapé do passo Pedidos: "Prazo, mínimo e 2 termos mudados, não salvos" */
+        pedidosMudados: function (prazo, minimo, termos) {
+          var partes = [];
+          if (prazo) partes.push('prazo');
+          if (minimo) partes.push('mínimo');
+          if (termos) partes.push(termos + (termos === 1 ? ' termo' : ' termos'));
+          var texto = partes.length > 1 ? partes.slice(0, -1).join(', ') + ' e ' + partes[partes.length - 1] : partes[0];
+          var um = (prazo ? 1 : 0) + (minimo ? 1 : 0) + termos === 1;
+          return texto.charAt(0).toUpperCase() + texto.slice(1) + (um ? ' mudado, não salvo' : ' mudados, não salvos');
+        },
+        /* o mínimo de dias Quero e as exceções */
+        efetivoAdministrativo: 'Todo o efetivo administrativo',
+        tituloGrupo: 'Grupo',
+        tituloMilitares: 'Militares',
+        escolhaQuem: 'Digite ou escolha quem',
+        ninguemEncontrado: 'Ninguém encontrado.',
+        escolhaDias: 'Dias',
+        excecoesResumo: function (prontas, metade) {
+          var texto = prontas ? prontas + (prontas === 1 ? ' exceção' : ' exceções') : (metade ? '' : 'Nenhuma');
+          return texto + (metade ? (texto ? ', ' : '') + metade + ' sem preencher' : '');
+        },
         fila: function (n) { return n + 'º'; },
         porcento: function (n) { return n + '%'; },
         /* a dica da Sugestão quando ela para no que cabe nos dias livres dele */
@@ -2029,7 +2051,7 @@
         extra_cota: 'Cotas (extrajornada)',
         extra_alocacao: 'Extra (escala do mês)',
         extra_disponibilidade: 'Pedido de extra',
-        extra_prazos: 'Prazo do pedido (extrajornada)',
+        extra_prazos: 'Pedidos da extrajornada',
         atestado: 'Atestado',
         ferias: 'Férias',
         licenca: 'Licença',

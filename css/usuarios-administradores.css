@@ -1,0 +1,100 @@
+/* ============================================================
+   USUÁRIOS — aba Administradores
+   A linha do militar é a da árvore de unidades. Aqui só o que é da
+   aba: as colunas do papel e de onde ele vale, a folga para o X (as
+   colunas não saem do lugar quando a linha vira caixa) e a caixa que
+   fica no lugar da linha, com o nome e os dados no mesmo fundo.
+   ============================================================ */
+
+.administradores-linha {
+  padding-right: 32px;
+}
+
+.administradores-papel {
+  min-width: 176px;
+}
+
+.administradores-vale {
+  min-width: 120px;
+}
+
+/* a caixa no lugar da linha */
+.administradores-caixa {
+  margin: 4px 0 8px;
+  border: 1px solid var(--borda-forte);
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-superficie);
+  box-shadow: var(--sombra-bloco);
+}
+
+.administradores-caixa-topo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+}
+
+/* a própria linha no alto da caixa, alinhada com o que vem embaixo; o realce da busca continua */
+.administradores-caixa-topo .linha-militar {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-left: 12px;
+}
+
+.administradores-caixa-topo .linha-militar:not(.linha-militar--marcada),
+.administradores-caixa-topo .linha-militar:not(.linha-militar--marcada):hover {
+  background-color: transparent;
+}
+
+.administradores-caixa-fechar {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+}
+
+.administradores-caixa-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 12px 12px;
+}
+
+/* a nota de várias linhas: o ícone no alto */
+.administradores-caixa .nota {
+  align-items: flex-start;
+}
+
+/* o corpo da aba para em cima do rodapé largo (49px, a altura dele, geral-rodape) */
+[data-aba-painel="efetivo"]:has(~ #administradores-rodape:not(.oculto)) {
+  padding-bottom: 49px;
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   A linha na altura do toque, com o papel embaixo do nome; quem não
+   tem papel fica só com o nome. As quatro opções cabem numa linha só.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .administradores-linha {
+    flex-wrap: wrap;
+    min-height: var(--toque-altura-celular);
+  }
+
+  html[data-celular] .administradores-linha .linha-militar-pessoa {
+    flex-basis: 100%;
+  }
+
+  html[data-celular] .administradores-papel,
+  html[data-celular] .administradores-vale {
+    min-width: 0;
+  }
+
+  html[data-celular] .administradores-papel:empty,
+  html[data-celular] .administradores-vale:empty {
+    display: none;
+  }
+
+  html[data-celular] .administradores-caixa .abas--seletor .aba {
+    padding: 0 8px;
+  }
+}

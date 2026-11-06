@@ -1,7 +1,7 @@
 /* ============================================================
    NOVA EXTRA — os passos do mês e a aba Extras do mês
    Lê o mês inteiro (nova_extra_mes) e desenha a aba aberta: os passos
-   1 Pedidos (prazo e termo), 2 Cotas (nova-extra-cotas.js), 3
+   1 Pedidos (termo; o prazo e o mínimo no nova-extra-minimo.js), 2 Cotas (nova-extra-cotas.js), 3
    Distribuição e 4 Ajustes (a mesma tela, nova-extra-montar.js) e 5
    Relatórios (nova-extra-relatorio.js), ou a aba Extras do mês (as
    extras de cada unidade na Agenda ou no Calendário). O menu Ações da
@@ -30,6 +30,7 @@
   var lendo = null;       // o mês com a leitura no ar (AAAA-MM-01)
   var falhou = false;     // a última leitura falhou (abrir a aba de novo tenta outra vez)
   var p1 = null;          // edição do passo 1
+  var guardaLigada = false;
 
   function msg() { return RW.mensagens.novaExtra.org; }
   function br(s) { return s ? s.slice(8, 10) + '/' + s.slice(5, 7) : ''; }
@@ -197,8 +198,9 @@
     });
     var lista = daqui();
     var resp = lista.filter(function (m) { return m.respondeu; }).length;
+    var vol = lista.filter(function (m) { return m.voluntario; }).length;
     var textos = {
-      1: msg().p1(br(d.mes.abre), br(d.mes.fecha), resp, lista.length),
+      1: msg().p1(br(d.mes.abre), br(d.mes.fecha), resp, lista.length, vol, resp - vol, lista.length - resp),
       5: d.lancamento ? msg().p5(d.ajustes.length) : msg().p4Nao
     };
     todos('[data-passo-resumo]', function (r) { r.textContent = textos[r.getAttribute('data-passo-resumo')]; });
@@ -218,21 +220,14 @@
     else passo5();
   }
 
-  /* ---------- passo 1: prazo, respostas e termos ---------- */
+  /* ---------- passo 1: prazo, mínimo e termos ---------- */
   function passo1() {
-    if (!p1) p1 = { lista: 'vol', termos: {} };
-    q('#p1-abre').value = RW.data.isoParaBR(d.mes.abre); q('#p1-fecha').value = RW.data.isoParaBR(d.mes.fecha); q('#p1-aviso').value = d.mes.aviso_dias;
+    if (!p1) { p1 = { lista: 'vol', termos: {} }; RW.novaExtraMinimo.iniciar(d); }
     /* as unidades da companhia */
     var todosDaqui = daqui();
-    var resp = todosDaqui.filter(function (m) { return m.respondeu; });
-    var nVol = todosDaqui.filter(function (m) { return m.voluntario; }).length;
-    q('#p1-respostas').textContent = msg().responderam(resp.length, todosDaqui.length);
     /* fechados pelo Ações › Fechar os pedidos agora: quando e quem */
     q('#p1-fechados').classList.toggle('oculto', !d.mes.fechado_em);
     q('#p1-fechados .nota-texto').textContent = d.mes.fechado_em ? msg().fechadosEm(d.mes.fechado_em, d.mes.fechado_por || '') : '';
-    q('#p1-n-vol').textContent = nVol;
-    q('#p1-n-nao').textContent = resp.length - nVol;
-    q('#p1-n-sem').textContent = todosDaqui.length - resp.length;
     todos('#p1-filtro [data-lista]', function (b) { b.classList.toggle('aba--ativa', b.getAttribute('data-lista') === p1.lista); });
     var lista = todosDaqui.filter(function (m) {
       return p1.lista === 'vol' ? m.voluntario : p1.lista === 'nao' ? m.respondeu && !m.voluntario : !m.respondeu;
@@ -269,11 +264,35 @@
       }
     });
     q('#p1-vazio').classList.toggle('oculto', lista.length > 0);
-    var n = Object.keys(p1.termos).length;
-    /* o rodapé de salvar aparece só com alteração */
-    q('#p1-rodape').classList.toggle('oculto', !n);
-    q('#p1-mudancas').textContent = n ? msg().termosMudados(n) : '';
-    q('#p1-salvar').disabled = !n;
+    RW.novaExtraMinimo.desenhar();
+    rodapeP1();
+  }
+
+  /* há alteração não salva nos Pedidos: no prazo, no mínimo ou nos termos */
+  function pedidosSujo() {
+    return !!p1 && (Object.keys(p1.termos).length > 0 || RW.novaExtraMinimo.prazoMudou() || RW.novaExtraMinimo.regraMudou());
+  }
+
+  /* o rodapé de salvar aparece só com alteração; com algo pela metade, o Salvar fica desligado */
+  function rodapeP1() {
+    var sujo = pedidosSujo();
+    q('#p1-rodape').classList.toggle('oculto', !sujo);
+    q('#p1-mudancas').textContent = sujo ? msg().pedidosMudados(RW.novaExtraMinimo.prazoMudou(), RW.novaExtraMinimo.regraMudou(), Object.keys(p1.termos).length) : '';
+    q('#p1-salvar').disabled = !sujo || RW.novaExtraMinimo.incompleto();
+  }
+
+  function salvarP1() {
+    var botao = q('#p1-salvar');
+    RW.iniciarCarregando(botao);
+    RW.rpc('nova_extra_pedidos_salvar', Object.assign({ p_competencia: d.competencia, p_termos: p1.termos }, RW.novaExtraMinimo.parametros())).then(function (r) {
+      RW.pararCarregando(botao);
+      if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
+      resumo(r);
+      RW.novaExtra.recarregar();
+    }, function (e) {
+      RW.pararCarregando(botao);
+      RW.avisar({ tipo: 'erro', mensagem: (e && e.message) || RW.mensagens.geral.semConexao });
+    });
   }
 
   /* os dias de extra de um militar na distribuição salva (DD/MM) */
@@ -331,26 +350,16 @@
   /* ---------- entrada ---------- */
   function montar(conteudo) {
     el = conteudo;
-    d = null; passo = null; passoAberto = null; aba = null; lendo = null; falhou = false;
+    d = null; p1 = null; passo = null; passoAberto = null; aba = null; lendo = null; falhou = false;
     todos('#p1-filtro [data-lista]', function (b) { b.addEventListener('click', function () { p1.lista = b.getAttribute('data-lista'); passo1(); }); });
-    /* o prazo nos campos de data do site (DD/MM/AAAA, com o calendário do site) */
-    RW.campos.ligarData(q('#p1-abre'));
-    RW.campos.ligarData(q('#p1-fecha'));
-    q('#p1-salvar-prazo').addEventListener('click', function () {
-      RW.rpc('nova_extra_prazo_salvar', { p_competencia: d.competencia, p_abre: RW.data.paraISO(q('#p1-abre').value), p_fecha: RW.data.paraISO(q('#p1-fecha').value), p_aviso: +q('#p1-aviso').value }).then(function (r) {
-        if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
-        resumo(r);
-        RW.novaExtra.recarregar();
-      });
-    });
-    q('#p1-cancelar').addEventListener('click', function () { p1.termos = {}; passo1(); });
-    q('#p1-salvar').addEventListener('click', function () {
-      RW.rpc('nova_extra_termos_salvar', { p_competencia: d.competencia, p_termos: p1.termos }).then(function (r) {
-        if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
-        resumo(r);
-        carregar();
-      });
-    });
+    RW.novaExtraMinimo.ligar(el, passo1, rodapeP1);
+    q('#p1-cancelar').addEventListener('click', function () { p1.termos = {}; RW.novaExtraMinimo.iniciar(d); passo1(); });
+    q('#p1-salvar').addEventListener('click', salvarP1);
+    /* com alteração não salva nos Pedidos, o navegador avisa ao fechar ou recarregar */
+    if (RW.guardaSaida && !guardaLigada) {
+      guardaLigada = true;
+      RW.guardaSaida.registrar(function () { return !!el && el.isConnected && pedidosSujo(); });
+    }
     RW.novaExtraAcoes.ligar(el);
   }
 
@@ -380,6 +389,8 @@
     sair: function () { aba = null; sair(); },
     recarregar: carregar,
     desenharAba: function () { if (d) desenharAba(); },
-    sujo: function () { return aba === 'passo' && (passo === 3 || passo === 4) && RW.novaExtraMontar && RW.novaExtraMontar.sujo(); }
+    sujo: function () { return pedidosSujo() || (aba === 'passo' && (passo === 3 || passo === 4) && RW.novaExtraMontar && RW.novaExtraMontar.sujo()); },
+    /* joga fora o rascunho dos Pedidos e o da Distribuição */
+    descartar: function () { p1 = null; if (RW.novaExtraMontar) RW.novaExtraMontar.descartar(); }
   };
 })();

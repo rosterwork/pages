@@ -1814,7 +1814,8 @@
     <p data-trecho="extra-organizar"></p>
     <p data-alvo="#nova-extra-passos [data-passo='1']" data-avanca="clique" data-pular-se="#nova-extra-passos [data-passo='1'].aba--ativa">Abra o passo <strong>Pedidos</strong>.</p>
     <p data-alvo="#p1-abre, #p1-fecha, #p1-aviso" data-anel="campo" data-avanca="proximo" data-livre>No <strong>Prazo do pedido</strong>: quando abre, quando fecha e quantos dias antes de fechar avisar quem não respondeu.</p>
-    <p data-alvo="#p1-salvar-prazo" data-avanca="clique">Grave pelo <strong>Salvar prazo</strong>. O pedido fecha às 23h59 do último dia.</p>
+    <p data-alvo="#p1-minimo" data-avanca="proximo" data-livre>Em <strong>Mínimo de dias "Quero"</strong>: se o mês exige um mínimo e quantos dias cada voluntário marca. Em <strong>Exceções</strong>, quem tem um número diferente: um militar ou todo o efetivo administrativo.</p>
+    <p data-alvo="#p1-rodape .rodape-acoes" data-clique="#p1-salvar" data-avanca="clique" data-pular-se="#p1-rodape.oculto, #p1-salvar:disabled">Se mudou alguma coisa, grave pelo <strong>Salvar</strong> do rodapé. O pedido fecha às 23h59 do último dia.</p>
     <p data-alvo="#nova-extra-acoes > .botao" data-avanca="clique">Para fechar antes do prazo, abra o menu <strong>Ações</strong>.</p>
     <p data-alvo="#p1-fechar" data-avanca="clique">Escolha <strong>Fechar os pedidos agora</strong>.</p>
     <p data-alvo="#veu-aviso .modal" data-clique="#veu-aviso .aviso-confirmar" data-avanca="clique">Confirme no aviso. Depois disso, ninguém mais faz ou muda o pedido.</p>
@@ -1825,7 +1826,7 @@
     <p data-trecho="abrir-extra"></p>
     <p data-trecho="extra-organizar"></p>
     <p data-alvo="#nova-extra-passos [data-passo='1']" data-avanca="clique" data-pular-se="#nova-extra-passos [data-passo='1'].aba--ativa">Abra o passo <strong>Pedidos</strong>.</p>
-    <p data-alvo=".nova-extra-bloco:has(#p1-n-vol)" data-alvo-senao="#p1-n-vol, #p1-n-nao, #p1-n-sem" data-avanca="proximo">Em <strong>Respostas</strong>, quantos são voluntários, quantos não querem e quantos ainda não responderam.</p>
+    <p data-alvo="[data-passo-resumo='1']" data-avanca="proximo">No alto, quantos responderam, quantos são voluntários, quantos não querem e quantos ainda não responderam.</p>
     <p data-alvo="#p1-filtro" data-avanca="proximo" data-livre>Este seletor troca a lista: <strong>Voluntários</strong>, <strong>Não querem</strong> ou <strong>Sem resposta</strong>.</p>
     <p data-alvo="#p1-lista" data-clique="#p1-lista .ne-termo" data-avanca="clique" data-treino-alvo="#p1-lista .ne-termo">Na coluna <strong>Termo</strong>, marque quem entregou o termo assinado. Sem o termo, o voluntário fica fora das cotas e da distribuição.<span data-so-treino>Na coluna <strong>Termo</strong>, marque o termo aceso: ele entregou o termo assinado. Sem o termo, o voluntário fica fora das cotas e da distribuição.</span></p>
     <p data-alvo="#p1-rodape .rodape-acoes" data-clique="#p1-salvar" data-avanca="clique">Grave pelo <strong>Salvar</strong> do rodapé.</p>

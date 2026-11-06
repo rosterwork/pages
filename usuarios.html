@@ -19,6 +19,8 @@
       <button type="button" class="aba" data-aba="dispensas">Dispensas</button>
       <!-- só administrador: a ordem de antiguidade da companhia, por posto -->
       <button type="button" class="aba oculto" data-aba="antiguidade" id="usuarios-aba-antiguidade">Antiguidade</button>
+      <!-- só administrador: quem administra o quê; o papel muda na própria lista -->
+      <button type="button" class="aba oculto" data-aba="administradores" id="usuarios-aba-administradores">Administradores</button>
       <!-- só administrador: correções de dados para aprovar (a mesma fila da página Pendências) -->
       <button type="button" class="aba oculto" data-aba="pendencias" id="usuarios-aba-pendencias">
         <span>Pendências</span>
@@ -67,6 +69,12 @@
       <div data-filtro="graus" data-filtro-nome="Grau" data-filtro-titulo="Graus"></div>
       <div data-filtro="situacao" data-filtro-nome="Situação" data-filtro-titulo="Situação"></div>
       <div data-filtro="tipo" data-filtro-nome="Tipo" data-filtro-titulo="Tipo"></div>
+    </div>
+
+    <!-- Filtros da aba Administradores: Graus e Papel -->
+    <div class="filtros oculto" id="administradores-filtros">
+      <div data-filtro="graus" data-filtro-nome="Grau" data-filtro-titulo="Graus"></div>
+      <div data-filtro="papel" data-filtro-nome="Papel" data-filtro-titulo="Papel"></div>
     </div>
 
     <div class="busca" id="busca-usuarios">
@@ -171,6 +179,17 @@
     <div class="rodape-acoes">
       <button type="button" class="botao" id="antiguidade-cancelar">Cancelar</button>
       <button type="button" class="botao botao--primario" id="antiguidade-salvar">Salvar</button>
+    </div>
+  </div>
+
+  <!-- o rodapé de salvar da aba Administradores, na largura toda (o rodapé único da página): aparece só com alteração e
+       só na aba dela; Cancelar volta aos papéis gravados -->
+  <div class="rodape rodape-linha rodape--largo oculto" id="administradores-rodape">
+    <span class="rodape-texto" id="administradores-mudancas"></span>
+    <span class="espacador-flex"></span>
+    <div class="rodape-acoes">
+      <button type="button" class="botao" id="administradores-cancelar">Cancelar</button>
+      <button type="button" class="botao botao--primario" id="administradores-salvar">Salvar</button>
     </div>
   </div>
 
@@ -284,6 +303,39 @@
 
 <template id="tpl-antiguidade-vazio">
   <div class="usuario-vazio">Nenhum militar ativo na sua companhia.</div>
+</template>
+
+<!-- molde (aba Administradores): o militar na linha da árvore, com o papel e onde ele vale; sem papel, as colunas ficam vazias -->
+<template id="tpl-administradores-linha">
+  <div class="linha-militar administradores-linha">
+    <span class="linha-militar-pessoa">
+      <span class="linha-militar-grad" data-grad></span>
+      <span class="linha-militar-nome" data-guerra></span>
+    </span>
+    <span class="linha-militar-coluna administradores-papel" data-papel-texto></span>
+    <span class="linha-militar-coluna administradores-vale" data-vale></span>
+  </div>
+</template>
+
+<!-- molde (aba Administradores): a caixa que fica no lugar da linha: a própria linha no alto, com o X, e embaixo o Papel;
+     a nota do que o papel faz vem do molde da sub-tela Administração (a mesma frase da ficha) -->
+<template id="tpl-administradores-caixa">
+  <div class="administradores-caixa">
+    <div class="administradores-caixa-topo">
+      <button type="button" class="botao-discreto administradores-caixa-fechar" aria-label="Fechar" data-dica="Fechar">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
+      </button>
+    </div>
+    <div class="administradores-caixa-corpo">
+      <span class="rotulo-secao">Papel</span>
+      <div class="abas abas--seletor">
+        <button type="button" class="aba" data-papel="nenhum">Nenhum</button>
+        <button type="button" class="aba" data-papel="pelotao">Pelotão</button>
+        <button type="button" class="aba" data-papel="companhia">Companhia</button>
+        <button type="button" class="aba" data-papel="geral">Geral</button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <!-- ===== ficha do militar (painel direito; usuarios-painel*.js), no padrão do painel da Escala ===== -->

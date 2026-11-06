@@ -154,7 +154,7 @@
       <div class="nova-extra-dist-cal" id="nova-extra-cal-mes"></div>
     </section>
 
-    <!-- passo 1, Pedidos: o prazo, as respostas e o termo -->
+    <!-- passo 1, Pedidos: o prazo, o mínimo de dias Quero e o termo; o resumo das respostas fica no alto -->
     <section class="nova-extra-area oculto" data-aba-painel="pedidos" data-passo-painel="1">
       <div class="nova-extra-passo-topo">
         <div class="nova-extra-resumo"><span data-passo-resumo="1"></span></div>
@@ -176,16 +176,42 @@
                 </div>
                 <label class="campo"><span class="campo-rotulo">Avisar quem não respondeu (dias antes de fechar)</span><input type="number" min="0" max="15" class="campo-entrada" id="p1-aviso" /></label>
                 <span class="nova-extra-ajuda">O pedido fecha às 23h59 do último dia.</span>
-                <button type="button" class="botao" id="p1-salvar-prazo">Salvar prazo</button>
               </div>
             </div>
-            <div class="nova-extra-bloco">
-              <span class="nova-extra-bloco-titulo">Respostas</span>
+            <div class="nova-extra-bloco" id="p1-minimo">
+              <span class="nova-extra-bloco-titulo">Mínimo de dias "Quero"</span>
               <div class="nova-extra-caixa nova-extra-form">
-                <span id="p1-respostas"></span>
-                <span class="nova-extra-linha-n"><span>Voluntários</span><b id="p1-n-vol"></b></span>
-                <span class="nova-extra-linha-n"><span>Não querem</span><b id="p1-n-nao"></b></span>
-                <span class="nova-extra-linha-n"><span>Sem resposta</span><b id="p1-n-sem"></b></span>
+                <div class="nova-extra-linha-n">
+                  <span>Exigir mínimo?</span>
+                  <div class="abas abas--seletor" id="p1-exigir">
+                    <button type="button" class="aba" data-exigir="sim">Sim</button>
+                    <button type="button" class="aba" data-exigir="nao">Não</button>
+                  </div>
+                </div>
+                <div class="nova-extra-linha-n" data-exigir-mostra>
+                  <span>Todos os voluntários</span>
+                  <div class="dropdown nova-extra-minimo-numero" id="p1-minimo-geral">
+                    <button type="button" class="campo-entrada campo-selecao" aria-label="Mínimo de dias de todos os voluntários">
+                      <span class="campo-selecao-texto"></span>
+                      <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+                    </button>
+                    <div class="dropdown-menu"></div>
+                  </div>
+                </div>
+                <!-- as exceções recolhidas, com o resumo de quantas há; abertas, a lista e o Adicionar -->
+                <div class="nova-extra-excecoes-grupo" data-exigir-mostra>
+                  <button type="button" class="nova-extra-excecoes-cab" id="p1-exc-abrir" aria-expanded="false" aria-controls="p1-exc-corpo">
+                    <svg class="icone nova-extra-excecoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+                    <span>Exceções</span>
+                    <span class="nova-extra-excecoes-resumo" id="p1-exc-resumo"></span>
+                  </button>
+                  <div class="nova-extra-excecoes oculto" id="p1-exc-corpo">
+                    <div class="nova-extra-excecoes" id="p1-excecoes"></div>
+                    <span class="nova-extra-ajuda oculto" id="p1-excecoes-vazio">Nenhuma exceção: o mínimo vale para todos.</span>
+                    <button type="button" class="botao" id="p1-exc-adicionar">Adicionar exceção</button>
+                  </div>
+                </div>
+                <span class="nova-extra-ajuda oculto" id="p1-minimo-leitura">Com os pedidos fechados, o mínimo não muda mais.</span>
               </div>
             </div>
           </div>
@@ -472,6 +498,28 @@
   <tr class="nova-extra-linha-aviso"><td colspan="7"><span class="nova-extra-aviso-linha"></span></td></tr>
 </template>
 
+<!-- passo 1: uma exceção do mínimo: quem (na linha nova, o campo de escolher), os dias e o Remover -->
+<template id="tpl-ne-p1-excecao">
+  <div class="nova-extra-linha-n nova-extra-excecao">
+    <span class="nova-extra-excecao-nome"></span>
+    <div class="dropdown campo-combo nova-extra-excecao-combo oculto">
+      <input class="campo-entrada" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Quem tem a exceção" />
+      <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+      <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares"></div>
+    </div>
+    <div class="dropdown nova-extra-minimo-numero">
+      <button type="button" class="campo-entrada campo-selecao" aria-label="Mínimo de dias da exceção">
+        <span class="campo-selecao-texto"></span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu"></div>
+    </div>
+    <button type="button" class="botao botao--icone nova-extra-excecao-remover" aria-label="Remover exceção">
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
+    </button>
+  </div>
+</template>
+
 <!-- passo 2: o cabeçalho das colunas; o bloco de uma unidade (no título, o Recebeu: o campo no "Unidades" e, no "Entre
      todos", o texto com a parte que a fila da companhia dá a ela; o Entregues e o Sobram); um voluntário (a fila, o
      militar, o pedido, o atendido nos 12 meses, a sugestão, o Recebe no campo de seleção e o que já está na escala) e,
@@ -727,7 +775,8 @@
       <li>O pedido vale do "Abre em" até o "Fecha em", ou até o "Fechar os pedidos agora".</li>
       <li>Cada militar pede de 1 a 10 cotas. Uma cota são 6 horas.</li>
       <li>Quem pede 4 cotas escolhe entre 24 horas seguidas e poder dividir em vários dias.</li>
-      <li>Marca pelo menos 5 dias que quer (ou todos os livres, se forem menos) e até 10 dias que não quer.</li>
+      <li>Quando o mês exige mínimo, marca pelo menos esse número de dias que quer (ou todos os livres, se forem menos).</li>
+      <li>Marca até 10 dias que não quer.</li>
       <li>Sem o termo entregue, o militar fica fora das cotas e da distribuição.</li>
     </ul>
   </div>
@@ -917,7 +966,7 @@
     <!-- sem nenhum dia livre no mês, só o calendário fica (com o motivo de cada dia); o resto com data-sem-dia="some" sai -->
     <section class="nova-extra-sec" data-so-voluntario data-sem-dia="mostra">
       <b class="nova-extra-pergunta" data-sem-dia="some">Quais dias?</b>
-      <span class="nova-extra-ajuda" id="nova-extra-ajuda-dias">Marque pelo menos 5 dias que você quer</span>
+      <span class="nova-extra-ajuda" id="nova-extra-ajuda-dias"></span>
       <div class="nova-extra-pincel" data-sem-dia="some">
         <button type="button" class="nova-extra-pincel-op" data-pincel="quer"><span class="nova-extra-ponto nova-extra-ponto--quer"></span>Quero</button>
         <button type="button" class="nova-extra-pincel-op" data-pincel="nao_posso"><span class="nova-extra-ponto nova-extra-ponto--nao"></span>Não quero</button>

@@ -34,7 +34,7 @@
 
   /* só leem (STABLE no banco) */
   var LEITURAS = [
-    'afastamentos_listar', 'ajustes_ritmo_listar', 'antiguidade_listar', 'bug_relatores_listar', 'bugs_listar',
+    'administradores_listar', 'afastamentos_listar', 'ajustes_ritmo_listar', 'antiguidade_listar', 'bug_relatores_listar', 'bugs_listar',
     'buscar_graus_hierarquicos', 'dados_pendentes', 'dist_ler_modelo', 'dist_listar_modelos', 'dist_listar_periodos',
     'dist_regras_funcoes', 'dist_regras_listar', 'dist_regras_militares', 'escala_alteracoes_dia', 'escala_dia_arvore',
     'escala_dias_atualizando', 'escala_dia_disponiveis', 'escala_impressao', 'escala_impressao_erros', 'escala_minha_calendario', 'escala_sysbm',

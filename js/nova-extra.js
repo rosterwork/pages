@@ -91,7 +91,7 @@
     el.prazo.textContent = p.estado === 'aberto' ? msg().prazoAberto(p.faltam_dias) : p.estado === 'antes' ? msg().prazoAntes(br(p.abre)) : msg().prazoFechado(br(p.fecha));
     el.prazo.classList.toggle('selo--alerta', p.estado === 'aberto');
     if (ped) el.pedidoTexto.textContent = ped.voluntario ? msg().pediu(ped) : msg().naoQuer(ped.enviado_em);
-    else if (p.estado === 'aberto' && r.min_datas === 0) el.pedidoTexto.textContent = msg().semDiaLivre(comp.toLocaleDateString('pt-BR', { month: 'long' }));   // sem nenhum dia livre no mês
+    else if (p.estado === 'aberto' && r.sem_dia_livre) el.pedidoTexto.textContent = msg().semDiaLivre(comp.toLocaleDateString('pt-BR', { month: 'long' }));   // sem nenhum dia livre no mês
     else el.pedidoTexto.textContent = p.estado === 'aberto' ? msg().semPedido(br(p.fecha)) : p.estado === 'antes' ? msg().naoAbriu(br(p.abre)) : msg().naoPediu;
     /* a extra é só para praças: o oficial vê o aviso no lugar do pedido */
     if (r.militar && r.militar.praca === false) el.pedidoTexto.textContent = msg().soPraca;
@@ -107,7 +107,7 @@
      fazer); fechado, Ver o pedido (branco) com a data em que fechou ao lado */
   function botaoPedido() {
     var r = estado, p = r.prazo, aberto = p.estado === 'aberto', fechado = !aberto && p.estado !== 'antes';
-    var semDia = aberto && r.min_datas === 0;
+    var semDia = aberto && !!r.sem_dia_livre;
     var pode = !(r.militar && r.militar.praca === false) && (aberto || !!r.pedido);
     el.pedir.classList.toggle('oculto', !pode);
     el.pedir.classList.toggle('botao--primario', aberto && !semDia);
@@ -223,7 +223,7 @@
     if (t) alvo.appendChild(t.content.cloneNode(true));
   }
 
-  /* trocar de mês (dentro das setas): com a distribuição não salva, o aviso de sempre e o mês só muda no Descartar;
+  /* trocar de mês (dentro das setas): com os Pedidos ou a distribuição sem salvar, o aviso de sempre e o mês só muda no Descartar;
      o painel aberto é do mês antigo e fecha antes (com alteração não salva nele, a pergunta dele; geral-painel) */
   function trocarMes(n) {
     var alvo = new Date(comp.getFullYear(), comp.getMonth() + n, 1);
@@ -231,7 +231,7 @@
     function ir() { RW.painel.antesDeMudarTela(function () { comp = alvo; carregar(); }); }
     if (!RW.novaExtraOrg.sujo()) { ir(); return; }
     RW.confirmar({ tipo: 'aviso', mensagem: RW.mensagens.edicao.sairSemSalvar, textoConfirmar: RW.mensagens.botoes.descartar,
-      textoCancelar: RW.mensagens.botoes.continuarEditando, aoConfirmar: function () { RW.novaExtraMontar.descartar(); ir(); } });
+      textoCancelar: RW.mensagens.botoes.continuarEditando, aoConfirmar: function () { RW.novaExtraOrg.descartar(); ir(); } });
   }
 
   /* ---------- entrada ---------- */
@@ -272,7 +272,7 @@
     passoVisivel = null;
     leituras = { minha: { situacao: 'ok', texto: '' }, mes: { situacao: 'ok', texto: '' } };
 
-    /* sair da Distribuição com mudanças não salvas (pelas abas ou pelos passos da barra): confirma o descarte antes de
+    /* sair dos Pedidos ou da Distribuição com mudanças não salvas (pelas abas ou pelos passos da barra): confirma o descarte antes de
        trocar. Captura: roda antes de o geral-abas trocar. */
     [el.abas, el.passos].forEach(function (grupo) {
       grupo.addEventListener('click', function (e) {
@@ -281,7 +281,7 @@
         e.preventDefault();
         e.stopPropagation();
         RW.confirmar({ tipo: 'aviso', mensagem: RW.mensagens.edicao.sairSemSalvar, textoConfirmar: RW.mensagens.botoes.descartar,
-          textoCancelar: RW.mensagens.botoes.continuarEditando, aoConfirmar: function () { RW.novaExtraMontar.descartar(); b.click(); } });
+          textoCancelar: RW.mensagens.botoes.continuarEditando, aoConfirmar: function () { RW.novaExtraOrg.descartar(); b.click(); } });
       }, true);
     });
     Array.prototype.forEach.call(el.abas.querySelectorAll('.abas'), function (trilho) { RW.abas.ligar(trilho, aoTrocarAba); });

@@ -24,7 +24,7 @@
 
   var RW = window.RosterWork = window.RosterWork || {};
   var LEITURAS = ['nova_extra_mes', 'nova_extra_minha', 'nova_extra_sugerir', 'ler_escala_mes'];
-  var GRAVACOES = ['nova_extra_prazo_salvar', 'nova_extra_termos_salvar', 'nova_extra_pedidos_fechar', 'nova_extra_cotas_salvar',
+  var GRAVACOES = ['nova_extra_pedidos_salvar', 'nova_extra_pedidos_fechar', 'nova_extra_cotas_salvar',
     'nova_extra_distribuicao_salvar', 'nova_extra_lancar', 'nova_extra_reabrir', 'nova_extra_pedido_salvar'];
   var JUNTAR = 30;   // ms esperando outras leituras, para irem numa chamada só
   var ESPERA_AVISO = 300;   // ms depois da resposta da gravação, para o aviso dela abrir

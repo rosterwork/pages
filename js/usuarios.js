@@ -194,6 +194,12 @@
     return m && m.ativa() ? m : null;
   }
 
+  /* a aba Administradores desenha a lista dela (usuarios-administradores.js) */
+  function administradores() {
+    var m = window.RosterWork.usuariosAdministradores;
+    return m && m.ativa() ? m : null;
+  }
+
   /* o painel chama isto ao fechar (X, Esc ou troca de página): tira o realce */
   function limparSelecao() {
     if (cardSelecionado) {
@@ -259,6 +265,7 @@
   /* monta as linhas de pessoa num bloquinho branco do bloco da unidade (ativos + inativos quando filtrado);
      unidade sem ninguém fica só com o título */
   function renderConteudo(container, unidade, pessoas) {
+    if (administradores()) { administradores().renderConteudo(container, unidade, pessoas); return; }
     if (afastamentos()) { afastamentos().renderConteudo(container, unidade, pessoas); return; }
     var tpl = document.getElementById('tpl-usuario-item');
     var bloquinho = RosterWork.tpl('tpl-arvore-bloquinho');
@@ -326,7 +333,8 @@
 
   /* o componente da árvore chama isto a cada render (ao fim da passada), com as pessoas visíveis */
   function aoRenderizarGraus(pessoasVisiveis) {
-    if (afastamentos()) afastamentos().aoRenderizar(pessoasVisiveis);
+    if (administradores()) administradores().aoRenderizar(pessoasVisiveis);
+    else if (afastamentos()) afastamentos().aoRenderizar(pessoasVisiveis);
     else if (filtros) filtros.definir('graus', arvoreDeGraus(pessoasVisiveis || []));
     atualizarSubtitulo();
   }
@@ -353,7 +361,7 @@
     contar: function () { contagemVisivel++; }
   };
 
-  /* ---------- abas da página: Efetivo · Férias · Licenças · Dispensas | Antiguidade · Pendências (só admin) ----------
+  /* ---------- abas da página: Efetivo · Férias · Licenças · Dispensas | Antiguidade · Administradores · Pendências (só admin) ----------
      A busca e a Ordem valem para as listas (Efetivo e as de afastamento, que usam a mesma
      árvore); os Filtros e o Exibir do Efetivo, só para ele. A Pendências é a fila das
      correções de dados (geral-fila), a mesma da página Pendências. */
@@ -377,8 +385,8 @@
   }
 
   function mostrarAba(conteudo, nome) {
-    /* Férias · Licenças · Dispensas usam a árvore do Efetivo, com a busca e a Ordem; o Exibir é só do Efetivo */
-    var lista = nome === 'efetivo' || nome === 'ferias' || nome === 'licencas' || nome === 'dispensas';
+    /* Férias · Licenças · Dispensas e Administradores usam a árvore do Efetivo, com a busca e a Ordem; o Exibir é só do Efetivo */
+    var lista = nome === 'efetivo' || nome === 'ferias' || nome === 'licencas' || nome === 'dispensas' || nome === 'administradores';
     var paineis = conteudo.querySelectorAll('[data-aba-painel]');
     for (var i = 0; i < paineis.length; i++) {
       paineis[i].classList.toggle('oculto', paineis[i].getAttribute('data-aba-painel') !== (lista ? 'efetivo' : nome));
@@ -390,9 +398,11 @@
     var exibirEl = conteudo.querySelector('#dropdown-exibir');
     if (exibirEl) exibirEl.classList.toggle('oculto', nome !== 'efetivo');
     if (filtros) filtros.mostrar(nome === 'efetivo');   /* o botão Filtros e a linha "Filtros:" */
+    /* a aba Administradores: os Filtros e o rodapé dela */
+    if (window.RosterWork.usuariosAdministradores) window.RosterWork.usuariosAdministradores.mostrar(nome);
     /* as abas de afastamento: o ano e os Filtros delas; a árvore redesenha as linhas da aba */
     if (window.RosterWork.usuariosAfastamentos) window.RosterWork.usuariosAfastamentos.mostrar(nome);
-    if (nome === 'efetivo') emprestado.atualizar();
+    if (nome === 'efetivo' || nome === 'administradores') emprestado.atualizar();
     /* a Antiguidade tem a própria busca (o Salvar dela fica no rodapé da aba) */
     var buscaAntiguidade = conteudo.querySelector('#antiguidade-busca');
     if (buscaAntiguidade) buscaAntiguidade.classList.toggle('oculto', nome !== 'antiguidade');
@@ -401,13 +411,16 @@
   }
 
   function ligarAbas(conteudo) {
-    var admin = RosterWork.sessao.temPapel('pelotao');   // Antiguidade e Pendências: qualquer administrador
+    var admin = RosterWork.sessao.temPapel('pelotao');   // Antiguidade, Administradores e Pendências: qualquer administrador
     var trilho = conteudo.querySelector('#usuarios-abas');
     var abaPendencias = conteudo.querySelector('#usuarios-aba-pendencias');
     if (abaPendencias) abaPendencias.classList.toggle('oculto', !admin);
     var abaAntiguidade = conteudo.querySelector('#usuarios-aba-antiguidade');
     if (abaAntiguidade) abaAntiguidade.classList.toggle('oculto', !admin);
     if (admin && window.RosterWork.usuariosAntiguidade) window.RosterWork.usuariosAntiguidade.iniciar(conteudo);
+    var abaAdministradores = conteudo.querySelector('#usuarios-aba-administradores');
+    if (abaAdministradores) abaAdministradores.classList.toggle('oculto', !admin);
+    if (admin && window.RosterWork.usuariosAdministradores) window.RosterWork.usuariosAdministradores.iniciar(conteudo, emprestado);
     if (window.RosterWork.abas && trilho) {
       window.RosterWork.abas.ligar(trilho, function (aba) {
         mostrarAba(conteudo, aba.getAttribute('data-aba'));
