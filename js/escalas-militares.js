@@ -309,6 +309,7 @@
         cel.querySelector('.escala-mil-dia-numero').textContent = String(info.dia);
         if (info.fds) cel.classList.add('escala-mil-dia--fds');
         if (info.hoje) cel.classList.add('escala-mil-dia--hoje');
+        cel.dataset.iso = info.iso;
         /* o dia com mudança do painel do dia ainda não salva, em alguma das unidades: a borda tracejada */
         var S = RosterWork.escalasPainelSalvar;
         if (S && colunas.some(function (c) { return S.marcado(c.id, info.iso); })) cel.classList.add('escala-mil-dia--nao-salvo');

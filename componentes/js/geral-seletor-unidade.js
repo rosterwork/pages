@@ -97,6 +97,7 @@
     var fracao = (caixa && caixa.top < topo && caixa.height) ? (topo - caixa.top) / caixa.height : 0;
     var distancia = caixa ? caixa.top - topo : 0;
     esconderOutras(grade);
+    window.dispatchEvent(new CustomEvent('rosterwork_seletor_unidade'));
     if (caixa) {
       var nova = linha.getBoundingClientRect();
       grade.area.scrollTop += fracao ? (nova.top + fracao * nova.height) - topo : (nova.top - topo) - distancia;

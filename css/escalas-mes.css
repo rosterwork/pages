@@ -380,18 +380,35 @@
   text-align: center;
 }
 
-/* a fila do recálculo refazendo os dias de um Salvar (escalas.js): a nota no alto da grade e, em cada dia que ainda
-   vai ser refeito, a célula apagada (Agenda, Calendário, Colunas e Semana) e os pontinhos embaixo da data (Agenda) */
+/* os dias que ainda podem mudar (escalas-atualizando.js): a nota no alto da grade e a borda amarela por dentro do dia, sem
+   mudar o tamanho (como a do dia não salvo). Na caixa do pelotão no dia, no bloco inteiro do pelotão do Calendário, no
+   cabeçalho do dia dos Militares e no dia da Minha escala */
 .escala-atualizando {
   margin: 12px 16px 0;
 }
 
-.escala-mes-celula--atualizando {
-  opacity: 0.45;
+.escala-mes-celula--atualizando,
+.escala-calendario-unidade:has(> .escala-mes-celula--atualizando),
+.escala-mil-dia--atualizando,
+.escala-minha-calendario .mini-calendario-dia--atualizando {
+  position: relative;
 }
 
-.escala-mes-data-atualizando {
-  color: var(--texto-fraco);
+.escala-mes-celula--atualizando::after,
+.escala-calendario-unidade:has(> .escala-mes-celula--atualizando)::after,
+.escala-mil-dia--atualizando::after,
+.escala-minha-calendario .mini-calendario-dia--atualizando::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border: 2px solid var(--alerta);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.escala-calendario-unidade > .escala-mes-celula--atualizando::after {
+  display: none;
 }
 
 /* ============================================================

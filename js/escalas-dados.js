@@ -15,35 +15,44 @@
      aqui só reorganizamos nas tabelas que o render consome. Os afastados (férias, licença, dispensa)
      ficam à parte: só a Escala os mostra, com o filtro Afastamentos. Usa a leitura já começada pelo deslize
      do mês (celular) quando é a do mesmo pedido */
-  function carregar(unidadesIds, inicio, fim) {
+  function carregar(unidadesIds, inicio, fim, opcoes) {
     var ids = (unidadesIds || []).map(Number);
     /* com mudança do painel do dia esperando o Salvar, o mês como vai ficar */
     var previa = lerPrevia('ler_escala_mes', { p_unidade_ids: ids, p_inicio: inicio, p_fim: fim });
     if (previa) return previa.then(function (grade) { if (!grade) throw new Error('falha'); return reorganizar(grade); });
-    var antecipada = RosterWork.deslizar && RosterWork.deslizar.usarAntecipada(chaveMes(ids, inicio, fim));
-    return antecipada || buscarMes(ids, inicio, fim);
+    /* as grades pedem com daTela: o dia que ainda vai mudar vem da cópia guardada, marcado, e a tela sai na hora; quem
+       não pede (a célula depois do Salvar, a impressão) lê o dado real */
+    var daTela = !!(opcoes && opcoes.daTela);
+    var antecipada = daTela && RosterWork.deslizar && RosterWork.deslizar.usarAntecipada(chaveMes(ids, inicio, fim));
+    return antecipada || buscarMes(ids, inicio, fim, daTela, !!(opcoes && opcoes.semAviso));
   }
 
   /* o deslize do mês (geral-deslizar.js): o dedo passou do ponto, a leitura do mês vizinho já começa */
   function antecipar(unidadesIds, inicio, fim) {
     var ids = (unidadesIds || []).map(Number);
-    if (RosterWork.deslizar) RosterWork.deslizar.antecipar(chaveMes(ids, inicio, fim), function () { return buscarMes(ids, inicio, fim); });
+    if (RosterWork.deslizar) RosterWork.deslizar.antecipar(chaveMes(ids, inicio, fim), function () { return buscarMes(ids, inicio, fim, true); });
   }
 
   function chaveMes(ids, inicio, fim) { return 'ler_escala_mes|' + ids.join(',') + '|' + inicio + '|' + fim; }
 
-  function buscarMes(ids, inicio, fim) {
-    return RosterWork.apiFetch('/rest/v1/rpc/ler_escala_mes', {
-      metodo: 'POST', corpo: { p_unidade_ids: ids, p_inicio: inicio, p_fim: fim }
-    })
+  function buscarMes(ids, inicio, fim, daTela, semAviso) {
+    var corpo = { p_unidade_ids: ids, p_inicio: inicio, p_fim: fim };
+    /* no treino, o exemplo roda num ensaio do banco e tem de aparecer: sempre o dado real */
+    if (daTela && !(RosterWork.treino && RosterWork.treino.ligado())) corpo.p_aceita_copia = true;
+    return RosterWork.apiFetch('/rest/v1/rpc/ler_escala_mes', { metodo: 'POST', corpo: corpo })
       .then(function (r) { if (!r.ok) throw new Error('falha'); return r.json(); })   // falha rejeita: o render mostra erro em vez de grade vazia falsa
-      .then(function (grade) { return reorganizar(grade || {}); });
+      .then(function (grade) {
+        var r = reorganizar(grade || {});
+        /* os dias que vieram da cópia guardada: a mesma leitura que os traz diz quais são */
+        if (daTela && !semAviso && RosterWork.escalaAtualizando) RosterWork.escalaAtualizando.receberGrade(r.atualizando);
+        return r;
+      });
   }
 
   /* { unidade: { dia: { militares, afastados, cobertura, erro } } } -> quatro mapas por unidade/dia (também a escala que
      vem com o mês da Extrajornada) */
   function reorganizar(grade) {
-    var militares = {}, afastados = {}, cobertura = {}, erro = {};
+    var militares = {}, afastados = {}, cobertura = {}, erro = {}, atualizando = [];
     Object.keys(grade).forEach(function (uid) {
       militares[uid] = {}; afastados[uid] = {}; cobertura[uid] = {}; erro[uid] = {};
       var dias = grade[uid] || {};
@@ -53,9 +62,10 @@
         afastados[uid][iso] = c.afastados || [];
         cobertura[uid][iso] = c.cobertura || [];
         erro[uid][iso] = c.erro || [];
+        if (c.atualizando) atualizando.push(uid + '|' + iso);
       });
     });
-    return { militares: militares, afastados: afastados, cobertura: cobertura, erro: erro };
+    return { militares: militares, afastados: afastados, cobertura: cobertura, erro: erro, atualizando: atualizando };
   }
 
   /* grade do modo Militares (RPC ler_escala_militares): por unidade, a lista de militares
@@ -87,6 +97,14 @@
     var corpo = { p_unidade_id: Number(unidadeId), p_data: iso };
     if (rascunho != null) corpo.p_rascunho = rascunho;
     return RosterWork.apiFetch('/rest/v1/rpc/ler_distribuicao_dia', { metodo: 'POST', corpo: corpo })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; });
+  }
+
+  /* os dias que ainda podem mudar (RPC escala_dias_atualizando): [{ unidade, data, fila }], fila = ainda vai ser refeito
+     (senão, já foi e só falta a cópia guardada); null em falha */
+  function lerDiasAtualizando(ids, inicio, fim) {
+    return RosterWork.apiFetch('/rest/v1/rpc/escala_dias_atualizando', { metodo: 'POST', corpo: { p_unidade_ids: ids, p_inicio: inicio, p_fim: fim } })
       .then(function (r) { return r.ok ? r.json() : null; })
       .catch(function () { return null; });
   }
@@ -198,7 +216,7 @@
 
   window.RosterWork.escalasDados = {
     carregar: carregar, antecipar: antecipar, reorganizar: reorganizar, carregarMilitares: carregarMilitares, lerMilitarDia: lerMilitarDia,
-    lerDistribuicaoDia: lerDistribuicaoDia, lerAlteracoesDia: lerAlteracoesDia, lerPrevia: lerPrevia, corpoPrevia: corpoPrevia, painelSalvar: painelSalvar,
+    lerDiasAtualizando: lerDiasAtualizando, lerDistribuicaoDia: lerDistribuicaoDia, lerAlteracoesDia: lerAlteracoesDia, lerPrevia: lerPrevia, corpoPrevia: corpoPrevia, painelSalvar: painelSalvar,
     lerImpressao: lerImpressao, lerImpressaoErros: lerImpressaoErros, lerSysbm: lerSysbm,
     sysbmTermo: sysbmTermo, sysbmDarCiencia: sysbmDarCiencia,
     continuosListar: continuosListar, cicloRetirarAnalisar: cicloRetirarAnalisar,

@@ -24,7 +24,7 @@
     if (icone) svg.querySelector('use').setAttribute('href', 'icones/todos.svg#' + icone);
   }
 
-  /* o item do molde geral: { cpf, grad, nome, info, inativo, icone } */
+  /* o item do molde geral: { cpf, grad, nome, info, inativo, icone, situacao } (situacao: a marca data-situacao, por onde o treino acha o exemplo) */
   function itemPadrao(m) {
     var el = RW.tpl('tpl-combo-militar-item');
     if (!el) return null;
@@ -33,6 +33,7 @@
     el.querySelector('.combo-militar-guerra').textContent = m.nome || '';
     el.querySelector('.combo-militar-info').textContent = m.info || '';
     if (m.inativo) { el.classList.add('dropdown-item--inativo'); el.setAttribute('aria-disabled', 'true'); }
+    if (m.situacao) el.setAttribute('data-situacao', m.situacao);
     return el;
   }
   function nomePadrao(m) { return ((m.grad || '') + ' ' + (m.nome || '')).trim(); }

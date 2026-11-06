@@ -141,6 +141,12 @@
       if (meu !== estado.pedidoDia || !el.diaCorpo.isConnected) return;
       var linha = (linhas || []).filter(function (x) { return String(x.unidade_id) === String(unidadeId); })[0];
       el.diaCorpo.textContent = '';
+      /* o dia que a fila ainda vai refazer: pode mudar */
+      if (RW.escalaAtualizando && RW.escalaAtualizando.naFilaNoDia(diaIso)) {
+        var nota = RW.tpl('tpl-nota-atualizando');
+        nota.querySelector('.nota-texto').textContent = RW.mensagens.escala.diaPodeMudar;
+        el.diaCorpo.appendChild(nota);
+      }
       RW.escalasDia.desenharDistribuicao(el.diaCorpo, (linha && linha.distribuicao) || {});
     }, function () {
       if (meu !== estado.pedidoDia || !el.diaCorpo.isConnected) return;

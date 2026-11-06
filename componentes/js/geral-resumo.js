@@ -8,6 +8,7 @@
      modal de confirmação (#veu-resumo) com o título de sucesso; se
      "desfazer" (função que reverte e devolve Promise) vier, mostra o
      texto "Desfazer" (última chance de reverter a ação recém-aplicada).
+     No modo treino, não abre.
    Peça reutilizável: o modal ao salvar (Postos) e a página
    de Histórico. O "quando" vem do banco (criado_em).
    Moldes #tpl-resumo / -alvo / -mudanca e #veu-resumo no shell.
@@ -148,6 +149,8 @@
 
   /* abre o modal de confirmação com o log retornado pelo banco */
   function abrirModal(log, opcoes) {
+    /* no treino, nada foi gravado, e o balão do passo a passo diz como terminou */
+    if (RosterWork.treino && RosterWork.treino.ligado()) return;
     if (!preparar() || !alvoConteudo) return;
     opcoes = opcoes || {};
     /* uma ação acabou de ser gravada: o que estava esperando decisão pode ter

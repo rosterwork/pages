@@ -52,6 +52,16 @@
 .escala-legenda-cor--fds { background-color: var(--fundo-suave); }
 .escala-legenda-cor--vazia { background-color: transparent; }
 
+/* amostra da borda amarela do dia que ainda pode mudar */
+.escala-legenda-borda-atualizando {
+  display: inline-block;
+  flex-shrink: 0;
+  min-width: 24px;
+  min-height: 12px;
+  border: 2px solid var(--alerta);
+  border-radius: var(--raio-pequeno);
+}
+
 /* amostra da faixa do horário na linha do militar: cinza fora do turno, claro no turno */
 .escala-legenda-faixa {
   display: inline-block;

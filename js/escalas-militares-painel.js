@@ -89,6 +89,13 @@
     var estado = ctx.estado;
     var deServico = estado && estado.estado === 'servico';
 
+    /* o dia que a fila ainda vai refazer: pode mudar (o painel só lê) */
+    if (RosterWork.escalaAtualizando && RosterWork.escalaAtualizando.naFilaNoDia(ctx.iso)) {
+      var nota = RosterWork.tpl('tpl-nota-atualizando');
+      nota.querySelector('.nota-texto').textContent = RosterWork.mensagens.escala.diaPodeMudar;
+      corpo.appendChild(nota);
+    }
+
     /* Situação do dia */
     var sec = RosterWork.painel.criarSecaoColapsavel('Situação');
     var c = sec.querySelector('.painel-secao-corpo');

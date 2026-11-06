@@ -78,6 +78,15 @@
   pointer-events: none;
 }
 
+/* ---------- o vidro do treino: transparente, por cima da tela inteira, com a porta recortada (geral-guia-vidro.js) ---------- */
+.guia-vidro {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  clip-path: var(--guia-recorte, none);
+  touch-action: none;
+}
+
 /* ---------- balão (o do passo e o da dica) ---------- */
 .guia-balao {
   position: fixed;
@@ -117,6 +126,21 @@
   justify-content: flex-end;
   gap: 12px;
   margin-top: 12px;
+}
+
+/* no fim do treino e no treino parado: a ação principal em cima e, embaixo, as outras como links (o Recomeçar, depois o
+   Voltar aos treinos) */
+.guia-balao-rodape--final {
+  flex-wrap: wrap;
+}
+
+.guia-balao-rodape--final > .botao:not(.botao--texto) {
+  flex-basis: 100%;
+  order: -1;
+}
+
+.guia-balao-rodape--final > .guia-balao-treinos.botao--texto {
+  order: 1;
 }
 
 /* no fim do treino, o próximo (ou o "todos feitos"), embaixo do texto */

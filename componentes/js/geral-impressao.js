@@ -126,6 +126,9 @@
         var el = peca('aviso');
         el.querySelector('.impacto-aviso-titulo').textContent = aviso.titulo || '';
         el.querySelector('.impacto-aviso-desc').textContent = aviso.descricao || '';
+        /* o que ainda pode mudar é amarelo; o erro grave segue vermelho */
+        el.classList.toggle('impacto-aviso--alerta', aviso.nivel === 'alerta');
+        el.classList.toggle('impacto-aviso--problema', aviso.nivel !== 'alerta');
         el.classList.remove('oculto');
       }, function () {});
     }, ESPERA);

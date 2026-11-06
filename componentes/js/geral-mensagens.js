@@ -603,10 +603,17 @@
       falhaCarregarMes: 'Não foi possível carregar a escala.',
       /* Minha escala: o mês sem serviço (o botão leva à aba Mês) */
       minhaSemServico: function (mes) { return 'Você não tem serviço em ' + mes + '. A escala de todos fica na aba Mês.'; },
-      /* a nota do alto enquanto a fila do recálculo refaz os dias de um Salvar (os dias marcados na grade) */
-      atualizando: function (data, unidades) {
-        return 'Atualizando a escala de ' + data + ' em diante (' + juntarComE(unidades) + '). Os dias marcados se refazem sozinhos quando terminar.';
+      /* a nota do alto, com dia à vista que ainda pode mudar (os dias com a borda amarela) */
+      atualizando: function (unidades) {
+        return 'Atualizando a escala (' + juntarComE(unidades) + '). Os dias com borda amarela ainda podem mudar e se ajustam sozinhos em instantes.';
       },
+      /* o painel do dia e o Imprimir, enquanto a fila refaz os dias */
+      diaAtualizando: 'Atualizando este dia. Ele abre sozinho assim que ficar pronto.',
+      diaConsulta: 'Este dia ainda está sendo atualizado e pode mudar. Por enquanto, ele abre só para consulta.',
+      diaPodeMudar: 'Este dia ainda está sendo atualizado e pode mudar.',
+      imprimirAtualizando: 'Atualizando a escala deste período. A impressão abre sozinha assim que ficar pronta.',
+      imprimirAindaTitulo: 'A escala deste período ainda está sendo atualizada.',
+      imprimirAindaDescricao: 'O PDF pode sair com dias que ainda vão mudar. Confira antes de usar.',
       selecioneUnidade: 'Selecione uma companhia ou pelotão no seletor de unidades.',
       falhaSalvar: 'Não foi possível salvar. Tente de novo.',
       /* aba Dia: a escala do dia mudou depois que a tela leu (outro administrador ou o sistema) */
@@ -1943,7 +1950,8 @@
     /* ajuda da tela (geral-guia): o passo em que a pessoa está no passo a passo */
     guia: {
       contador: function (passo, total) { return 'Passo ' + passo + ' de ' + total; },
-      parado: 'O treino não pôde seguir neste passo. Recomece ou volte aos treinos.'
+      parado: 'O treino não pôde seguir neste passo. Recomece ou volte aos treinos.',
+      avisoFora: 'Leia o aviso e use o botão que responde.'
     },
 
     /* modo treino (geral-treino.js) e a página Treinamento (treinamento.js) */

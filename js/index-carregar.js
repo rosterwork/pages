@@ -35,6 +35,8 @@
     'componentes/js/geral-dropdown.js',
     'componentes/js/geral-dropdown-numeros.js',
     'componentes/js/geral-guia-veu.js',
+    'componentes/js/geral-guia-alvos.js',
+    'componentes/js/geral-guia-vidro.js',
     'componentes/js/geral-guia-roteiros.js',
     'componentes/js/geral-guia-ajuda.js',
     'componentes/js/geral-guia-balao.js',

@@ -109,9 +109,9 @@
     </button>
   </div>
 
-  <!-- enquanto a fila do recálculo refaz os dias de um Salvar: a nota com os pontinhos (o texto, com a data e as
-       unidades, vem do escalas.js); os dias que ainda vão ser refeitos ficam marcados na grade -->
-  <div class="nota escala-atualizando oculto" role="status">
+  <!-- com dia à vista que ainda pode mudar: a nota amarela com os pontinhos (o texto, com as unidades, vem do
+       escalas-atualizando.js); esses dias ficam com a borda amarela -->
+  <div class="nota nota--alerta escala-atualizando oculto" role="status">
     <span class="carregando-pontos" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span>
     <span class="nota-texto escala-atualizando-texto"></span>
   </div>
@@ -282,13 +282,6 @@
   <span class="escala-sysbm-aviso"></span>
 </template>
 
-<!-- o dia que a fila do recálculo ainda vai refazer, na Agenda: os pontinhos embaixo da data (escalas.js) -->
-<template id="tpl-escala-dia-atualizando">
-  <span class="escala-mes-data-atualizando" data-dica="Atualizando">
-    <span class="carregando-pontos" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span>
-  </span>
-</template>
-
 <!-- legenda da grade (Mês/Semana/Colunas/Calendário): as cores do gráfico de cobertura (vermelho = a escala
      não funciona; amarelo = funciona com erro aceitável; o texto do erro fica no painel do dia) e a faixa do
      horário; os demais grupos vêm do molde da legenda do painel (#tpl-escala-legenda) -->
@@ -320,6 +313,10 @@
       <span class="escala-legenda-item">
         <span class="linha-escalado linha-escalado--afastamento"><span class="linha-escalado-grad">Sd.</span><span class="linha-escalado-nome">Nome</span></span>
         <span>Afastado: aparece com o filtro Afastamentos</span>
+      </span>
+      <span class="escala-legenda-item">
+        <span class="escala-legenda-borda-atualizando"></span>
+        <span>Borda amarela: o dia ainda pode mudar e se ajusta sozinho</span>
       </span>
     </div>
   </div>

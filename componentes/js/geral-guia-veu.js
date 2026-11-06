@@ -8,7 +8,8 @@
    (dado da tela), como as posições --guia-*.
    porNaTela(el): as peças do guia entram antes da moldura do treino,
    que fica por cima de tudo. aceso(x, y): o ponto cai num buraco (o
-   guia só deixa o clique passar ali).
+   guia só deixa o clique passar ali). recorteDe(caixas): o mesmo
+   recorte, para o vidro do treino (geral-guia-vidro.js).
    Molde: #tpl-guia-veu (index.html).
    ============================================================ */
 (function () {
@@ -71,12 +72,17 @@
       var b = barra.getBoundingClientRect();
       lista.push({ x0: b.left, y0: b.top, x1: b.right, y1: b.bottom, reta: true });
     }
-    var raio = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--raio-medio')) || 0;
-    var caminho = 'M0 0 H' + W + ' V' + H + ' H0 Z';
     buracos = juntar(lista);
-    buracos.forEach(function (c) { caminho += ' ' + retangulo(c, raio); });
-    el.style.setProperty('--guia-recorte', 'path(evenodd, "' + caminho + '")');
+    el.style.setProperty('--guia-recorte', recorte(buracos));
     el.classList.remove('oculto');
+  }
+
+  /* a tela inteira menos as caixas, no valor do clip-path */
+  function recorte(caixas) {
+    var raio = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--raio-medio')) || 0;
+    var caminho = 'M0 0 H' + window.innerWidth + ' V' + window.innerHeight + ' H0 Z';
+    caixas.forEach(function (c) { caminho += ' ' + retangulo(c, raio); });
+    return 'path(evenodd, "' + caminho + '")';
   }
 
   function esconder() { if (veu) veu.classList.add('oculto'); }
@@ -91,5 +97,8 @@
     return { x0: r.left, y0: r.top, x1: r.right, y1: r.bottom };
   }
 
-  RW.guiaVeu = { mostrar: mostrar, esconder: esconder, visivel: visivel, aceso: aceso, caixaDe: caixaDe, porNaTela: porNaTela };
+  RW.guiaVeu = {
+    mostrar: mostrar, esconder: esconder, visivel: visivel, aceso: aceso, caixaDe: caixaDe, porNaTela: porNaTela,
+    recorteDe: function (caixas) { return recorte(juntar(caixas)); }
+  };
 })();

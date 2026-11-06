@@ -4,19 +4,24 @@
    do roteiro, "Passo N de M", o Sair, o texto e o Próximo; no treino,
    sem o nome e sem o Sair: o nome e a saída estão na barra azul), o do fim (o
    Concluir; no treino, o próximo treino da lista, com o Próximo treino
-   e o Voltar aos treinos como link ao lado, ou, feitos todos, a frase
-   e só o Voltar aos treinos), o de quando o treino não pôde seguir (a
-   frase, o Recomeçar e o Voltar aos treinos; o fim e este, no treino, com
+   em cima e, embaixo, o Recomeçar e o Voltar aos treinos como links, ou,
+   feitos todos, a frase, o Voltar aos treinos em cima e o Recomeçar como
+   link), o de quando o treino não pôde seguir (a frase, o Recomeçar em
+   cima e o Voltar aos treinos como link; o fim e este, no treino, com
    a tela toda no véu) e o aviso de quando a
    situação do passo não está na tela (o texto e, fora do treino, o Sair, sem o véu,
-   no meio da tela). posicionar(els) acende no véu (geral-guia-veu.js)
+   no meio da tela). No treino, o <span data-so-treino> do
+   passo troca o texto, com o nome do exemplo no [data-exemplo-nome], e
+   avisoFora(guia) põe a frase da janela que o passo não pede.
+   mostrarProximo(sim): o Próximo do passo de escrever.
+   posicionar(els) acende no véu (geral-guia-veu.js)
    os alvos e os menus abertos por eles e põe o balão ao lado deles:
    no computador, à direita (senão à esquerda; sem espaço dos lados,
    embaixo ou em cima); no celular, preso em cima ou embaixo, do lado
    oposto; sempre abaixo da barra do treino. As posições vão em
    --guia-balao-x/y (dado da tela).
-   API: passo(guia), fim(guia), parado(guia), aviso(texto, guia), posicionar(els),
-   acesos(), esconder(), peca().
+   API: passo(guia), fim(guia), parado(guia), aviso(texto, guia), avisoFora(guia),
+   mostrarProximo(sim), posicionar(els), acesos(), esconder(), peca().
    ============================================================ */
 (function () {
   'use strict';
@@ -77,16 +82,27 @@
     q('.guia-balao-proximo').classList.toggle('oculto', !botoes.proximo);
     q('.guia-balao-concluir').classList.toggle('oculto', !botoes.concluir);
     q('.guia-balao-treinos').classList.toggle('oculto', !botoes.treinos);
-    q('.guia-balao-treinos').classList.toggle('botao--texto', !!botoes.seguinte || !!botoes.recomecar);
+    q('.guia-balao-treinos').classList.toggle('botao--texto', !!botoes.seguinte || !!botoes.parado);
     q('.guia-balao-seguinte-botao').classList.toggle('oculto', !botoes.seguinte);
     q('.guia-balao-recomecar').classList.toggle('oculto', !botoes.recomecar);
+    q('.guia-balao-recomecar').classList.toggle('botao--texto', !!botoes.recomecar && !botoes.parado);
+    q('.guia-balao-rodape').classList.toggle('guia-balao-rodape--final', !!botoes.recomecar);
     Array.prototype.forEach.call(peca().querySelectorAll('.guia-balao-seguinte'), function (l) { l.classList.add('oculto'); });
   }
-  /* o texto do passo vem do roteiro (o <p> do molde, com os destaques em <strong>) */
-  function preencherTexto(p) {
+  /* o texto do passo vem do roteiro (o <p> do molde, com os destaques em <strong>); no treino, o do <span data-so-treino>,
+     quando há, com o nome do exemplo */
+  function preencherTexto(p, guia) {
     var texto = q('.guia-balao-texto');
+    var doTreino = p.querySelector(':scope > [data-so-treino]');
     texto.textContent = '';
-    Array.prototype.forEach.call(p.childNodes, function (n) { texto.appendChild(n.cloneNode(true)); });
+    Array.prototype.forEach.call((doTreino && guia.treino ? doTreino : p).childNodes, function (n) {
+      if (n !== doTreino) texto.appendChild(n.cloneNode(true));
+    });
+    var nome = texto.querySelector('[data-exemplo-nome]');
+    if (nome) {
+      var exemplo = RW.guiaRoteiros.exemplo(p);
+      nome.textContent = exemplo ? exemplo.textContent.trim() : '';
+    }
   }
   /* no meio da tela (no celular, preso embaixo) */
   function noMeio() {
@@ -101,7 +117,11 @@
   function passo(guia) {
     var p = guia.passos[guia.i].p;
     montar(guia, RW.mensagens.guia.contador(guia.i + 1, guia.passos.length), { sair: !guia.treino, proximo: p.getAttribute('data-avanca') === 'proximo' });
-    preencherTexto(p);
+    preencherTexto(p, guia);
+  }
+  function mostrarProximo(sim) {
+    q('.guia-balao-rodape').classList.toggle('oculto', !sim);
+    q('.guia-balao-proximo').classList.toggle('oculto', !sim);
   }
   /* no treino, a tela final fica toda no véu, só com a barra azul acesa: nada ali responde */
   function veuDoFinal(guia) {
@@ -113,8 +133,8 @@
     veuDoFinal(guia);
     /* no treino, o fim leva ao próximo treino (ou de volta à lista) */
     var seguinte = guia.treino && guia.seguinte ? RW.guiaRoteiros.roteiro(guia.seguinte) : null;
-    montar(guia, '', { concluir: !guia.treino, treinos: guia.treino, seguinte: !!seguinte });
-    preencherTexto(guia.fim);
+    montar(guia, '', { concluir: !guia.treino, treinos: guia.treino, seguinte: !!seguinte, recomecar: guia.treino });
+    preencherTexto(guia.fim, guia);
     if (seguinte) q('.guia-balao-seguinte-nome').textContent = RW.guiaRoteiros.aSeguir(guia.seguinte);
     if (guia.treino) q(seguinte ? '.guia-balao-seguinte:not(.guia-balao-todos)' : '.guia-balao-todos').classList.remove('oculto');
     noMeio();
@@ -122,9 +142,14 @@
   /* o treino não pôde seguir no passo: a frase, o Recomeçar e o Voltar aos treinos */
   function parado(guia) {
     veuDoFinal(guia);
-    montar(guia, '', { treinos: true, recomecar: true });
-    q('.guia-balao-texto').textContent = RW.mensagens.guia.parado;
+    montar(guia, '', { treinos: true, recomecar: true, parado: true });
+    q('.guia-balao-texto').textContent = guia.frase || RW.mensagens.guia.parado;
     noMeio();
+  }
+  /* a janela que o passo não pede: a frase (ao lado dela, pelo posicionar) */
+  function avisoFora(guia) {
+    montar(guia, '', {});
+    q('.guia-balao-texto').textContent = RW.mensagens.guia.avisoFora;
   }
   /* a situação do passo não está na tela (ex.: o dia sem horário vazio): o texto que explica, sem o véu */
   function aviso(texto, guia) {
@@ -135,12 +160,19 @@
     noMeio();
   }
 
+  function cruza(r, c) { return r.left < c.x1 && r.right > c.x0 && r.top < c.y1 && r.bottom > c.y0; }
+  /* o balão ao lado do aceso; no treino, nunca por cima da porta (geral-guia-vidro.js): caindo nela, ele fica ao lado dela */
   function posicionar(els) {
     var b = peca();
     acesos = els.concat(menusAbertos(els));
     V().mostrar(acesos.map(V().caixaDe));
     b.classList.remove('oculto');
-    var c = caixaDe(acesos);
+    colocar(caixaDe(acesos));
+    var portas = RW.guiaVidro ? RW.guiaVidro.porta() : [];
+    if (portas.length && cruza(b.getBoundingClientRect(), caixaDe(portas))) colocar(caixaDe(portas));
+  }
+  function colocar(c) {
+    var b = peca();
     if (RW.guiaRoteiros.celular()) {
       var embaixo = (c.y0 + c.y1) / 2 < window.innerHeight / 2;
       b.classList.toggle('guia-balao--baixo', embaixo);
@@ -162,7 +194,8 @@
   }
 
   RW.guiaBalao = {
-    passo: passo, fim: fim, parado: parado, aviso: aviso, posicionar: posicionar, esconder: esconder, peca: peca,
+    passo: passo, fim: fim, parado: parado, aviso: aviso, avisoFora: avisoFora, mostrarProximo: mostrarProximo,
+    posicionar: posicionar, esconder: esconder, peca: peca,
     acesos: function () { return acesos; }
   };
 })();

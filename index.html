@@ -88,8 +88,8 @@
   <div class="casca">
 
     <!-- MODO TREINO (componente geral-treino): a barra azul acima do cabeçalho, só com o modo ligado: o modo, a página e
-         o treino (o número e o nome), um embaixo do outro em cada parte, e o Sair do treino. No celular fica só o treino,
-         com a página junto do número -->
+         o treino (o número e o nome), um embaixo do outro em cada parte, o Recomeçar e o Sair do treino. No celular fica só
+         o treino, com a página junto do número, e os dois botões: o Recomeçar só com o ícone e o outro só com a palavra Sair -->
     <div class="treino-barra oculto" role="status">
       <span class="treino-barra-texto">
         <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-treinamento"/></svg>
@@ -107,7 +107,11 @@
         </span>
       </span>
       <span class="treino-barra-acoes">
-        <button type="button" class="botao treino-barra-sair">Sair do treino</button>
+        <button type="button" class="botao treino-barra-recomecar" aria-label="Recomeçar">
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-refazer"/></svg>
+          <span class="treino-barra-recomecar-texto">Recomeçar</span>
+        </button>
+        <button type="button" class="botao treino-barra-sair"><span>Sair<span class="treino-barra-sair-resto"> do treino</span></span></button>
       </span>
     </div>
 
@@ -1080,6 +1084,10 @@
     <div class="guia-veu oculto" aria-hidden="true"></div>
   </template>
 
+  <template id="tpl-guia-vidro">
+    <div class="guia-vidro oculto" aria-hidden="true"></div>
+  </template>
+
   <template id="tpl-guia-balao">
     <div class="guia-balao oculto" role="status" aria-live="polite">
       <div class="guia-balao-cabecalho">
@@ -1119,7 +1127,8 @@
        botão que ele pede (o Salvar, não o Cancelar ao lado). Desistir é pelo Sair do balão ou pela barra do treino. O passo com escolha tem os caminhos nas <section
        data-caminho data-entrada> logo depois dele. O data-fim é o balão final (no treino, o data-fim-treino).
        data-sem-alvo: sem o alvo (ou sem o data-requer, a situação que o passo pede), o balão diz por que não dá ali e
-       espera. data-cenario (no template): no treino, o exemplo que o geral-treino-cenarios.js põe na tela (ex.: um
+       espera. data-escrever e, no treino, data-porta, data-treino-alvo, data-treino-entrada, data-exemplo, data-so-mouse,
+       data-sem-alvo-treino, data-so-treino e data-so-ajuda: ver o geral-guia-roteiros.js. data-cenario (no template): no treino, o exemplo que o geral-treino-cenarios.js põe na tela (ex.: um
        horário sem ninguém), para o treino nunca ficar sem a situação -->
 
   <!-- as aberturas comuns: abrir a Escala, a aba e o dia (cada uma é pulada quando já está feita) -->
@@ -1133,7 +1142,7 @@
     <p data-alvo="#escala-modos [data-modo='minha']" data-avanca="clique" data-pular-se="#escala-modos [data-modo='minha'].aba--ativa">Abra a aba <strong>Minha escala</strong>.</p>
   </template>
   <template data-roteiro-trecho="abrir-dia">
-    <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}']" data-alvo-senao=".escala-mes-celula" data-avanca="clique" data-pular-se=".escala-mes-celula--selecionada">Abra um dia da sua unidade.</p>
+    <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}']" data-alvo-senao=".escala-mes-celula" data-treino-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'], .escala-mes-celula[data-iso='{hoje}'], .escala-mes-celula[data-unidade-id='{unidade}'], .escala-mes-celula" data-avanca="clique" data-pular-se=".escala-mes-celula--selecionada">Abra um dia da sua unidade.<span data-so-treino>Abra o dia aceso, o de hoje na sua unidade.</span></p>
   </template>
 
   <!-- para todos -->
@@ -1142,7 +1151,7 @@
     <p data-trecho="aba-minha"></p>
     <p data-alvo=".escala-minha-sem-servico:not(.oculto)" data-opcional data-avanca="proximo">Neste mês você não tem serviço. <strong>Ver a escala de todos</strong> leva à escala da unidade.</p>
     <p data-alvo=".escala-minha-calendario" data-avanca="proximo">Este é o seu mês. Cada dia com ícone é um serviço seu, e o dia de hoje fica no círculo escuro.</p>
-    <p data-alvo=".escala-minha-calendario" data-clique=".escala-minha-calendario .mini-calendario-dia" data-avanca="clique">Escolha um dia no calendário.</p>
+    <p data-alvo=".escala-minha-calendario" data-clique=".escala-minha-calendario .mini-calendario-dia" data-avanca="clique" data-treino-alvo=".escala-minha-calendario .mini-calendario-dia--selecionado, .escala-minha-calendario .mini-calendario-dia:has(svg), .escala-minha-calendario .mini-calendario-dia--hoje">Escolha um dia no calendário.<span data-so-treino>Abra o dia aceso no calendário.</span></p>
     <p data-alvo=".escala-minha-dia" data-avanca="proximo">Aqui está a escala inteira da sua unidade nesse dia, com o seu nome destacado.</p>
     <p data-alvo="#escala-legenda-grade" data-avanca="proximo" data-livre>A <strong>Legenda</strong> explica cada ícone.</p>
     <p data-fim>Pronto. A Minha escala sempre abre no seu próximo serviço.</p>
@@ -1152,10 +1161,10 @@
     <p data-trecho="abrir-escala"></p>
     <p data-trecho="aba-mes"></p>
     <p data-alvo="#escala-sub-mes, #escala-sub-mes + .seletor-menu" data-avanca="proximo" data-livre>Aqui você escolhe ver o mês em lista, na <strong>Agenda</strong>, ou em calendário, no <strong>Calendário</strong>.</p>
-    <p data-alvo="#escala-sub-unidades" data-so-celular data-opcional data-avanca="proximo" data-livre>Escolha aqui qual unidade aparece.</p>
+    <p data-alvo="#escala-sub-unidades" data-so-celular data-opcional data-avanca="proximo" data-livre>Escolha aqui qual unidade aparece.<span data-so-treino>Aqui você escolhe qual unidade aparece.</span></p>
     <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}']" data-alvo-senao=".escala-mes-celula" data-um data-avanca="proximo">Cada dia mostra, por unidade, quem está de serviço e o horário.</p>
     <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'] .escala-mes-grafico" data-alvo-senao=".escala-mes-grafico" data-um data-avanca="proximo">A faixa colorida em cima é a cobertura hora a hora: verde está certo, amarelo tem ressalva e vermelho tem erro.</p>
-    <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'] .escala-mes-grafico" data-alvo-senao=".escala-mes-grafico" data-um data-so-computador data-avanca="proximo">Passe o mouse na faixa: aparece a hora e quantos militares estão de serviço nela.</p>
+    <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'] .escala-mes-grafico" data-alvo-senao=".escala-mes-grafico" data-um data-so-computador data-avanca="proximo" data-so-mouse>Passe o mouse na faixa: aparece a hora e quantos militares estão de serviço nela.</p>
     <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}']" data-alvo-senao=".escala-mes-celula" data-um data-so-computador data-avanca="proximo">Pelo teclado, o <strong>Tab</strong> entra na escala, as setas andam entre os dias e o <strong>Enter</strong> abre o dia.</p>
     <p data-alvo=".pagina-subcabecalho .geral-periodo" data-avanca="proximo">As setas mudam o mês.</p>
     <p data-alvo="#escala-legenda-grade" data-avanca="proximo" data-livre>A <strong>Legenda</strong> explica as cores e os ícones.</p>
@@ -1167,7 +1176,7 @@
     <p data-trecho="aba-mes"></p>
     <p data-trecho="abrir-dia"></p>
     <p data-alvo=".painel-corpo .escala-posto-titulo" data-anel="caixa" data-um data-avanca="proximo">Cada caixa é um posto: a função, quem está nela e o horário.</p>
-    <p data-alvo=".painel-corpo .escala-distribuicao-icones:not(:empty)" data-um data-so-computador data-opcional data-avanca="proximo">Passe o mouse nos ícones ao lado do nome: eles dizem de onde veio o serviço, se há regra, se o militar é de outra unidade e se há algum problema.</p>
+    <p data-alvo=".painel-corpo .escala-distribuicao-icones:not(:empty)" data-um data-so-computador data-opcional data-avanca="proximo" data-so-mouse>Passe o mouse nos ícones ao lado do nome: eles dizem de onde veio o serviço, se há regra, se o militar é de outra unidade e se há algum problema.</p>
     <p data-alvo=".painel-corpo .escala-distribuicao-aviso" data-opcional data-avanca="proximo">No alto, os avisos do dia: vermelho é erro e amarelo é ressalva.</p>
     <p data-alvo=".painel-corpo .escala-edicao-sem-funcao, .painel-corpo .escala-edicao-folgas, .painel-corpo .escala-observacoes-titulo, .painel-corpo .escala-observacao-add" data-anel="caixa" data-opcional data-avanca="proximo">Depois dos postos vêm <strong>Sem função</strong>, <strong>De folga</strong> e as <strong>Observações</strong>.</p>
     <p data-alvo=".painel-corpo .escala-observacoes-copiar" data-opcional data-avanca="proximo">O ícone no título das <strong>Observações</strong> copia todas, para colar numa mensagem.</p>
@@ -1179,7 +1188,7 @@
     <p data-trecho="abrir-escala"></p>
     <p data-trecho="aba-mes"></p>
     <p data-alvo="#escala-busca-geral" data-so-celular data-pular-se="#escala-busca-geral.busca--aberta" data-avanca="clique">Abra a pesquisa pela lupa.</p>
-    <p data-alvo="#escala-busca-geral" data-condicao="#escala-busca-geral .busca-entrada" data-avanca="preenchido">Digite o nome, o CPF ou o RG do militar.</p>
+    <p data-alvo="#escala-busca-geral" data-condicao="#escala-busca-geral .busca-entrada" data-escrever data-avanca="preenchido" data-porta="#escala-busca-geral .busca-entrada">Digite o nome, o CPF ou o RG do militar.</p>
     <p data-alvo="#escala-busca-geral" data-avanca="proximo" data-livre>O <strong>Enter</strong> vai até ele na escala, e cada Enter seguinte vai ao próximo lugar; o contador mostra em qual você está, como "2 de 7".</p>
     <p data-alvo="#escala-busca-geral .busca-modo" data-avanca="proximo" data-livre>Este botão troca entre marcar, que acende onde ele aparece, e filtrar, que esconde os outros.</p>
     <p data-alvo="#escala-busca-geral .busca-limpar" data-avanca="proximo" data-livre>O X limpa a pesquisa.</p>
@@ -1189,10 +1198,10 @@
   <template data-roteiro="imprimir-escala" data-titulo="Imprimir a escala" data-grupo="Escala" data-pagina="escalas">
     <p data-trecho="abrir-escala"></p>
     <p data-trecho="aba-mes"></p>
-    <p data-avanca="escolha">Dá para imprimir de dois jeitos: um dia, abrindo o dia na escala, ou o mês, pelo botão de imprimir da barra. Escolha um.</p>
-    <section data-caminho="dia" data-entrada=".escala-mes-celula[data-unidade-id='{unidade}']">
+    <p data-avanca="escolha">Dá para imprimir de dois jeitos: um dia, abrindo o dia na escala, ou o mês, pelo botão de imprimir da barra. Escolha um.<span data-so-treino>Dá para imprimir de dois jeitos: um dia, abrindo o dia aceso, ou o mês, pelo botão de imprimir da barra. Escolha um.</span></p>
+    <section data-caminho="dia" data-entrada=".escala-mes-celula[data-unidade-id='{unidade}']" data-treino-entrada=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'], .escala-mes-celula[data-iso='{hoje}'], .escala-mes-celula[data-unidade-id='{unidade}'], .escala-mes-celula">
       <p data-alvo=".painel-lateral .escala-dia-imprimir" data-avanca="clique">Use o botão de imprimir do painel do dia.</p>
-      <p data-alvo=".painel-corpo [data-impressao-inicio]" data-anel="caixa" data-avanca="proximo" data-livre>Escolha as datas: um dia só ou vários, com os atalhos.</p>
+      <p data-alvo=".painel-corpo [data-impressao-inicio]" data-anel="caixa" data-avanca="proximo" data-livre>Escolha as datas: um dia só ou vários, com os atalhos.<span data-so-treino>Aqui você escolhe as datas: um dia só ou vários, com os atalhos.</span></p>
       <p data-alvo=".painel-corpo [data-impressao-arvore]" data-anel="caixa" data-avanca="proximo" data-livre>As unidades que entram na folha.</p>
       <p data-alvo=".painel-corpo [data-mostrar]" data-anel="caixa" data-avanca="proximo" data-livre>Os ícones de origem podem sair ou não no papel.</p>
       <p data-alvo=".painel-corpo .impressao-previa-secao" data-so-computador data-avanca="proximo">A prévia mostra o PDF como vai sair.</p>
@@ -1201,7 +1210,7 @@
     </section>
     <section data-caminho="mes" data-entrada="#escala-imprimir">
       <p data-alvo=".painel-corpo [data-impressao-nota]" data-avanca="proximo">No alto, o que será impresso: o mês da tela, com os filtros dela.</p>
-      <p data-alvo=".painel-corpo [data-impressao-semanas], .painel-corpo [data-impressao-mes-todo], .painel-corpo .impressao-linha--inicio" data-anel="caixa" data-avanca="proximo" data-livre>Escolha as semanas, no Calendário, ou os dias, na Agenda.</p>
+      <p data-alvo=".painel-corpo [data-impressao-semanas], .painel-corpo [data-impressao-mes-todo], .painel-corpo .impressao-linha--inicio" data-anel="caixa" data-avanca="proximo" data-livre>Escolha as semanas, no Calendário, ou os dias, na Agenda.<span data-so-treino>Aqui você escolhe as semanas, no Calendário, ou os dias, na Agenda.</span></p>
       <p data-alvo=".painel-corpo [data-impressao-arvore]" data-anel="caixa" data-avanca="proximo" data-livre>As unidades que entram.</p>
       <p data-alvo=".painel-corpo [data-impressao-formato]" data-anel="caixa" data-avanca="proximo" data-livre>O formato: folhas A4, para imprimir, ou uma página contínua, para ver na tela.</p>
       <p data-alvo=".painel-corpo [data-mostrar]" data-anel="caixa" data-avanca="proximo" data-livre>O que aparece no papel: o gráfico, os ícones e a faixa do horário.</p>
@@ -1214,7 +1223,7 @@
   <template data-roteiro="escolher-unidades" data-titulo="Escolher as unidades que aparecem" data-grupo="Escala" data-pagina="escalas">
     <p data-trecho="abrir-escala"></p>
     <p data-alvo="#dropdown-unidades > .seletor" data-avanca="clique">Aqui você escolhe quais unidades aparecem na escala.</p>
-    <p data-alvo="#dropdown-unidades .dropdown-menu-rolagem" data-condicao="#btn-aplicar-unidades:not(:disabled)" data-avanca="aparece">Marque as unidades que você quer ver.</p>
+    <p data-alvo="#dropdown-unidades .dropdown-menu-rolagem" data-condicao="#btn-aplicar-unidades:not(:disabled)" data-avanca="aparece" data-treino-alvo="#dropdown-unidades .caixa-selecao[aria-checked='false']">Marque as unidades que você quer ver.<span data-so-treino>Marque a unidade acesa.</span></p>
     <p data-alvo="#btn-aplicar-unidades" data-avanca="clique">Confirme em <strong>Aplicar</strong>.</p>
     <p data-fim>Pronto. A escolha vale até você sair do sistema; ao entrar de novo, a escala volta a mostrar a sua unidade.</p>
   </template>
@@ -1223,8 +1232,9 @@
     <p data-trecho="abrir-escala"></p>
     <p data-trecho="aba-mes"></p>
     <p data-alvo="#escala-periodo-anterior, #escala-periodo-proximo" data-avanca="proximo" data-livre>As setas vão ao mês anterior e ao próximo.</p>
-    <p data-alvo=".conteudo .pagina-corpo" data-so-celular data-avanca="proximo" data-livre>No celular, deslize a escala para o lado para trocar de mês.</p>
+    <p data-alvo=".conteudo .pagina-corpo" data-so-celular data-avanca="proximo" data-livre>No celular, deslize a escala para o lado para trocar de mês.<span data-so-treino>No celular, deslizar a escala para o lado troca de mês.</span></p>
     <p data-alvo="#escala-periodo-nome" data-avanca="clique">Use o nome do mês para escolher uma data no calendário.</p>
+    <p data-so-treino data-alvo=".calendario--aberto .calendario-mes" data-treino-alvo=".calendario--aberto .calendario-mes--selecionado + .calendario-mes, .calendario--aberto .calendario-mes:not(.calendario-mes--selecionado)" data-avanca="clique">Escolha o mês aceso.</p>
     <p data-alvo="#escala-periodo-hoje" data-opcional data-avanca="proximo" data-livre><strong>Hoje</strong> volta ao mês atual. Ele só aparece quando o mês da tela não é o de hoje.</p>
     <p data-fim>Pronto. No mês atual, a escala abre no dia de hoje.</p>
   </template>
@@ -1233,7 +1243,8 @@
     <p data-trecho="abrir-escala"></p>
     <p data-trecho="aba-mes"></p>
     <p data-alvo="#escala-filtros .filtros-botao > .botao" data-avanca="clique">Em <strong>Filtros</strong> você escolhe o que aparece na escala.</p>
-    <p data-alvo="#escala-filtros .filtros-menu" data-avanca="proximo" data-livre>Desmarque o que você não quer ver: Prontidão, Trocas, Extrajornada, Pontual ou Folgas. <strong>Afastamentos</strong> fica à parte e começa desmarcado: marque para ver quem está afastado.</p>
+    <p data-so-ajuda data-alvo="#escala-filtros .filtros-menu" data-avanca="proximo" data-livre>Desmarque o que você não quer ver: Prontidão, Trocas, Extrajornada, Pontual ou Folgas. <strong>Afastamentos</strong> fica à parte e começa desmarcado: marque para ver quem está afastado.</p>
+    <p data-so-treino data-alvo="#escala-filtros [data-filtro-valor='trocas'] .caixa-selecao" data-avanca="clique">Desmarque <strong>Trocas</strong>. Do mesmo jeito, você tira Prontidão, Extrajornada, Pontual ou Folgas. <strong>Afastamentos</strong> fica à parte e começa desmarcado: marque para ver quem está afastado.</p>
     <p data-alvo=".conteudo .filtros-ativos:not(.oculto)" data-opcional data-avanca="proximo" data-livre>Os filtros ligados aparecem embaixo da barra. O <strong>x</strong> tira um deles, e <strong>Limpar filtros</strong> tira todos.</p>
     <p data-fim>Pronto. A busca e os filtros valem juntos.</p>
   </template>
@@ -1245,8 +1256,8 @@
     <p data-alvo="#escala-periodo-anterior, #escala-periodo-proximo" data-avanca="proximo" data-livre>As setas andam uma semana.</p>
     <p data-alvo=".escala-mil-unidade-cab" data-um data-avanca="proximo" data-livre>O nome da unidade recolhe e mostra os militares dela.</p>
     <p data-alvo=".escala-mil-total" data-um data-avanca="proximo">No fim de cada unidade, o <strong>Efetivo de serviço</strong> de cada dia.</p>
-    <p data-alvo="#escala-busca-militares" data-avanca="proximo" data-livre>Esta busca é só desta aba: digite o nome do militar.</p>
-    <p data-alvo=".escala-mil-grade" data-clique=".escala-mil-celula" data-avanca="clique">Use uma célula para ver o que o militar faz naquele dia.</p>
+    <p data-alvo="#escala-busca-militares" data-avanca="proximo" data-livre>Esta busca é só desta aba: digite o nome do militar.<span data-so-treino>Esta busca é só desta aba: ela acha o militar pelo nome.</span></p>
+    <p data-alvo=".escala-mil-grade" data-clique=".escala-mil-celula" data-avanca="clique" data-treino-alvo=".escala-mil-celula">Use uma célula para ver o que o militar faz naquele dia.<span data-so-treino>Use a célula acesa para ver o que o militar faz naquele dia.</span></p>
     <p data-alvo=".painel-lateral--aberto .painel-corpo" data-avanca="proximo">O painel mostra a situação no dia, o horário, o posto, a função e de onde veio o serviço.</p>
     <p data-fim>Pronto. O X fecha o painel.</p>
   </template>
@@ -1256,7 +1267,7 @@
     <p data-alvo="#escala-modos [data-modo='colunas']" data-avanca="clique" data-pular-se="#escala-modos [data-modo='colunas'].aba--ativa">Abra a aba <strong>Colunas</strong>.</p>
     <p data-alvo="#escala-sub-colunas" data-avanca="proximo" data-pular-se="#escala-colunas-tipo [data-colunas-tipo='unidades'].aba--ativa" data-livre>Em <strong>Dias</strong>, o mês corre em colunas seguidas; os números escolhem quantas colunas, de 2 a 5.</p>
     <p data-alvo="#escala-colunas-tipo [data-colunas-tipo='unidades']" data-avanca="clique" data-pular-se="#escala-colunas-tipo [data-colunas-tipo='unidades'].aba--ativa">Escolha <strong>Unidades</strong>.</p>
-    <p data-alvo="#escala-sub-unidades, #escala-periodo-anterior, #escala-periodo-proximo" data-avanca="proximo" data-livre>Cada coluna é uma unidade, nos 7 dias da semana. Ligue e desligue as unidades aqui; as setas andam uma semana.</p>
+    <p data-alvo="#escala-sub-unidades, #escala-periodo-anterior, #escala-periodo-proximo" data-avanca="proximo" data-livre>Cada coluna é uma unidade, nos 7 dias da semana. Ligue e desligue as unidades aqui; as setas andam uma semana.<span data-so-treino>Cada coluna é uma unidade, nos 7 dias da semana. Aqui você liga e desliga as unidades; as setas andam uma semana.</span></p>
     <p data-fim>Pronto. Como no Mês, cada dia abre o painel do dia.</p>
   </template>
 
@@ -1265,21 +1276,23 @@
     <section data-caminho="escala" data-pagina="escalas" data-entrada=".sidebar .menu-item[data-pagina='escalas'], .barra-celular-item[data-pagina='escalas']">
       <p data-avanca="escolha">Na Escala, também há dois caminhos: pela <strong>Minha escala</strong>, no seu calendário, ou pelo <strong>Mês</strong>, num dia da escala de todos. Escolha um.</p>
       <section data-caminho="minha" data-entrada="#escala-modos [data-modo='minha']">
-        <p data-alvo=".escala-minha-calendario" data-clique=".escala-minha-calendario .mini-calendario-dia" data-avanca="clique">Escolha o dia do serviço que você quer trocar.</p>
+        <p data-alvo=".escala-minha-calendario" data-clique=".escala-minha-calendario .mini-calendario-dia" data-avanca="clique" data-treino-alvo=".escala-minha-calendario .mini-calendario-dia--selecionado, .escala-minha-calendario .mini-calendario-dia:has(svg), .escala-minha-calendario .mini-calendario-dia--hoje">Escolha o dia do serviço que você quer trocar.<span data-so-treino>Abra o dia aceso: é um serviço seu.</span></p>
         <p data-alvo=".escala-minha-solicitar" data-avanca="clique">Use o botão <strong>Solicitar troca</strong>.</p>
       </section>
       <section data-caminho="mes" data-entrada="#escala-modos [data-modo='mes']">
-        <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}']" data-alvo-senao=".escala-mes-celula" data-avanca="clique">Abra o dia do serviço que você quer trocar.</p>
+        <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}']" data-alvo-senao=".escala-mes-celula" data-avanca="clique" data-treino-alvo=".escala-mes-celula[data-iso='{hoje}']:has([data-busca*='{cpf}']), .escala-mes-celula:has([data-busca*='{cpf}']), .escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'], .escala-mes-celula[data-iso='{hoje}'], .escala-mes-celula[data-unidade-id='{unidade}'], .escala-mes-celula">Abra o dia do serviço que você quer trocar.<span data-so-treino>Abra o dia aceso: é um serviço seu.</span></p>
         <p data-alvo=".painel-lateral .escala-dia-solicitar" data-avanca="clique">Use o botão <strong>Solicitar troca</strong> do painel.</p>
       </section>
     </section>
     <section data-caminho="trocas" data-pagina="trocas" data-entrada=".sidebar .menu-item[data-pagina='trocas'], .barra-celular-item[data-pagina='trocas']">
       <p data-alvo="#btn-solicitar-troca" data-avanca="clique">Comece pelo botão <strong>Solicitar troca</strong>.</p>
     </section>
-    <p data-alvo="#tv-parte, #tv-parte-ano" data-anel="campo" data-avanca="proximo" data-livre>Se a troca já tem parte no eProtocolo, digite o número. Se ainda não tem, deixe em branco.</p>
-    <p data-alvo="#tv-unidade, #tv-militar" data-anel="campo" data-avanca="proximo" data-livre>Escolha a unidade e o colega da troca. Ele entra na lista. Se a troca tem mais gente, adicione os outros.</p>
-    <p data-alvo="#tv-calendario, #tv-mes-anterior, #tv-mes-proximo" data-avanca="proximo" data-livre>Clique no dia da troca. Em cima aparece quem trabalha e, riscado, quem folga. Se já combinaram a devolução, marque o dia dela também; se não, você fica devendo as horas.</p>
-    <p data-alvo="#tv-resumo" data-avanca="proximo" data-livre>Confira o resumo. Para trocar só uma parte do serviço, clique no lápis do dia e escolha o horário.</p>
+    <p data-alvo="#tv-parte, #tv-parte-ano" data-anel="campo" data-avanca="proximo" data-livre>Se a troca já tem parte no eProtocolo, digite o número. Se ainda não tem, deixe em branco.<span data-so-treino>Se a troca já tem parte no eProtocolo, o número vai aqui. Se ainda não tem, fica em branco.</span></p>
+    <p data-so-ajuda data-alvo="#tv-unidade, #tv-militar" data-anel="campo" data-avanca="proximo" data-livre>Escolha a unidade e o colega da troca. Ele entra na lista. Se a troca tem mais gente, adicione os outros.</p>
+    <p data-so-treino data-alvo="#tv-militar" data-anel="campo" data-condicao="#tv-militares > :nth-child(2)" data-porta="#tv-militar; #tv-militar-menu .dropdown-item:not(.dropdown-item--inativo)" data-exemplo="#tv-militar-menu .dropdown-item:not(.dropdown-item--inativo)" data-avanca="aparece">Escolha <strong data-exemplo-nome></strong>, o colega da troca. Ele entra na lista. Com mais gente na troca, os outros entram do mesmo jeito.</p>
+    <p data-so-ajuda data-alvo="#tv-calendario, #tv-mes-anterior, #tv-mes-proximo" data-avanca="proximo" data-livre>Clique no dia da troca. Em cima aparece quem trabalha e, riscado, quem folga. Se já combinaram a devolução, marque o dia dela também; se não, você fica devendo as horas.</p>
+    <p data-so-treino data-alvo="#tv-calendario button.mini-calendario-dia:not(:disabled):not(.mini-calendario-dia--quer)" data-condicao="#tv-calendario .mini-calendario-dia--quer" data-porta="#tv-calendario button.mini-calendario-dia:not(:disabled):not(.mini-calendario-dia--quer); .trocas-dia-quadro .trocas-dia-opcoes label:has(input:not(:checked))" data-treino-alvo="#tv-calendario button.mini-calendario-dia:not(:disabled):not(.mini-calendario-dia--quer)" data-avanca="aparece">Clique no dia aceso. Em cima aparece quem trabalha e, riscado, quem folga. Se já combinaram a devolução, o dia dela é marcado do mesmo jeito; se não, você fica devendo as horas.</p>
+    <p data-alvo="#tv-resumo" data-avanca="proximo" data-livre>Confira o resumo. Para trocar só uma parte do serviço, clique no lápis do dia e escolha o horário.<span data-so-treino>Confira o resumo. Para trocar só uma parte do serviço, o lápis do dia escolhe o horário.</span></p>
     <p data-alvo="#painel-rodape [data-acao='solicitar-varias']" data-avanca="some" data-condicao=".painel-lateral--aberto .trocas-varias" data-segurar>Confira e envie pelo botão <strong>Solicitar troca</strong>.</p>
     <p data-fim>Pronto. Os colegas recebem o pedido e aceitam. Depois, o administrador aprova. Acompanhe na aba <strong>Minhas</strong>.</p>
     <p data-fim-treino>Pronto. No treino, nada foi enviado. No sistema, os colegas receberiam o pedido para aceitar e, depois, o administrador aprovaria. O pedido apareceria na aba Minhas, nas Trocas.</p>
@@ -1297,7 +1310,9 @@
     <p data-alvo=".painel-lateral .escala-edicao-menu > .botao" data-avanca="proximo">No <strong>Editar o dia</strong> ficam as ações do dia: adicionar, remover, remanejar e registrar troca.</p>
     <p data-alvo=".painel-corpo .escala-edicao-lapis" data-um data-avanca="proximo">Em cada linha, o lápis troca quem está na função ou o horário.</p>
     <p data-alvo=".painel-corpo .escala-observacao-add-botao" data-avanca="clique">Faça uma mudança simples: use <strong>Adicionar observação</strong>.</p>
-    <p data-alvo=".painel-corpo .escala-observacao-campo" data-clique=".painel-corpo .escala-observacao-salvar" data-avanca="clique" data-livre>Escreva uma nota e confirme em <strong>Adicionar</strong>.</p>
+    <p data-so-ajuda data-alvo=".painel-corpo .escala-observacao-campo" data-clique=".painel-corpo .escala-observacao-salvar" data-avanca="clique" data-livre>Escreva uma nota e confirme em <strong>Adicionar</strong>.</p>
+    <p data-so-treino data-alvo=".painel-corpo .escala-observacao-campo" data-condicao=".painel-corpo .escala-observacao-input" data-porta=".painel-corpo .escala-observacao-input" data-escrever data-avanca="preenchido">Escreva uma nota.</p>
+    <p data-so-treino data-alvo=".painel-corpo .escala-observacao-salvar" data-avanca="clique">Confirme em <strong>Adicionar</strong>.</p>
     <p data-alvo=".escala-rodape-salvar-texto" data-avanca="proximo">A mudança ainda não foi gravada: no rodapé largo aparecem quantas alterações faltam salvar.</p>
     <p data-alvo=".painel-lateral .escala-edicao-historico" data-avanca="proximo">O <strong>Desfazer</strong> volta a última mudança, e o <strong>Refazer</strong> a faz de novo.</p>
     <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong>.</p>
@@ -1309,9 +1324,9 @@
     <p data-trecho="abrir-escala"></p>
     <p data-trecho="aba-mes"></p>
     <p data-trecho="abrir-dia"></p>
-    <p data-alvo=".painel-corpo .escala-edicao-lapis" data-avanca="clique">Use o lápis da linha que você quer mudar.</p>
-    <p data-alvo=".painel-corpo .escala-linha-combo" data-condicao=".escala-rodape-salvar:not(.oculto)" data-avanca="aparece">Escolha quem fica na função. Aparece só quem já está de serviço no dia; <strong>Ninguém</strong> deixa a função vazia. A escala da página já mostra como fica.</p>
-    <p data-alvo=".painel-corpo .escala-linha-periodos" data-avanca="proximo" data-livre>Ajuste o horário nesta função, se precisar.</p>
+    <p data-alvo=".painel-corpo .escala-edicao-lapis" data-avanca="clique">Use o lápis da linha que você quer mudar.<span data-so-treino>Use o lápis da linha acesa.</span></p>
+    <p data-alvo=".painel-corpo .escala-linha-combo" data-condicao=".escala-rodape-salvar:not(.oculto)" data-avanca="aparece" data-porta=".painel-corpo .escala-linha-combo input; .painel-corpo .escala-linha-combo .dropdown-item:not(.dropdown-item--inativo); .painel-corpo .escala-linha-combo .dropdown-item:not(.dropdown-item--inativo):has(.combo-militar-grad:not(:empty))" data-exemplo=".painel-corpo .escala-linha-combo .dropdown-item:not(.dropdown-item--inativo):has(.combo-militar-grad:not(:empty)) .combo-militar-nome; .painel-corpo .escala-linha-combo .dropdown-item:not(.dropdown-item--inativo) .combo-militar-nome">Escolha quem fica na função. Aparece só quem já está de serviço no dia; <strong>Ninguém</strong> deixa a função vazia. A escala da página já mostra como fica.<span data-so-treino>Escolha <strong data-exemplo-nome></strong> para a função. Aparece só quem já está de serviço no dia; <strong>Ninguém</strong> deixa a função vazia. A escala da página já mostra como fica.</span></p>
+    <p data-alvo=".painel-corpo .escala-linha-periodos" data-avanca="proximo" data-livre>Ajuste o horário nesta função, se precisar.<span data-so-treino>Aqui você ajusta o horário nesta função, se precisar.</span></p>
     <p data-alvo=".painel-corpo .escala-linha-efeito" data-opcional data-avanca="proximo">Aqui aparece o que acontece com quem está em volta.</p>
     <p data-alvo=".painel-corpo .escala-linha-fechar" data-avanca="clique">Feche a edição pelo <strong>X</strong>. A mudança fica, e a lista mostra o dia como vai ficar.</p>
     <p data-alvo=".painel-corpo .escala-edicao-mudou" data-opcional data-avanca="proximo">A nota <strong>O que mudou</strong> mostra a mudança, e a escala da página já mostra o dia como vai ficar.</p>
@@ -1325,10 +1340,10 @@
   <template data-roteiro="horario-vazio" data-titulo="Pôr alguém num horário vazio" data-conjunto="ajustar-o-dia" data-area="admin" data-grupo="Escala" data-pagina="escalas" data-cenario="horario-vazio">
     <p data-trecho="abrir-escala"></p>
     <p data-trecho="aba-mes"></p>
-    <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}']" data-alvo-senao=".escala-mes-celula" data-avanca="clique" data-pular-se=".escala-mes-celula--selecionada">Abra um dia da sua unidade com um horário sem ninguém.</p>
-    <p data-alvo=".painel-corpo .escala-edicao-linha--vaga" data-clique=".painel-corpo .escala-edicao-linha--vaga .escala-edicao-lapis" data-um data-avanca="clique" data-sem-alvo="Neste dia não há horário sem ninguém. Abra outro dia.">O horário sem ninguém aparece em vermelho. Use o lápis dele.</p>
-    <p data-alvo=".painel-corpo .escala-linha-combo" data-condicao=".escala-rodape-salvar:not(.oculto)" data-avanca="aparece">Escolha quem fica nesse horário. Primeiro vêm os de serviço na unidade, depois os de outra unidade e os de folga; quem não pode vem apagado, com o motivo.</p>
-    <p data-alvo=".painel-corpo .escala-linha-periodos" data-avanca="proximo" data-livre>Ajuste o horário, se precisar.</p>
+    <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}']" data-alvo-senao=".escala-mes-celula" data-avanca="clique" data-pular-se=".escala-mes-celula--selecionada" data-treino-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'], .escala-mes-celula[data-iso='{hoje}'], .escala-mes-celula[data-unidade-id='{unidade}'], .escala-mes-celula">Abra um dia da sua unidade com um horário sem ninguém.<span data-so-treino>Abra o dia aceso. No treino, ele tem um horário sem ninguém.</span></p>
+    <p data-alvo=".painel-corpo .escala-edicao-linha--vaga" data-clique=".painel-corpo .escala-edicao-linha--vaga .escala-edicao-lapis" data-um data-avanca="clique" data-sem-alvo="Neste dia não há horário sem ninguém. Abra outro dia." data-sem-alvo-treino="Neste dia não há horário sem ninguém.">O horário sem ninguém aparece em vermelho. Use o lápis dele.</p>
+    <p data-alvo=".painel-corpo .escala-linha-combo" data-condicao=".escala-rodape-salvar:not(.oculto)" data-avanca="aparece" data-porta=".painel-corpo .escala-linha-combo input; .painel-corpo .escala-linha-combo .dropdown-item:not(.dropdown-item--inativo)" data-exemplo=".painel-corpo .escala-linha-combo .dropdown-item:not(.dropdown-item--inativo) .combo-militar-nome">Escolha quem fica nesse horário. Primeiro vêm os de serviço na unidade, depois os de outra unidade e os de folga; quem não pode vem apagado, com o motivo.<span data-so-treino>Escolha <strong data-exemplo-nome></strong> para esse horário. Primeiro vêm os de serviço na unidade, depois os de outra unidade e os de folga; quem não pode vem apagado, com o motivo.</span></p>
+    <p data-alvo=".painel-corpo .escala-linha-periodos" data-avanca="proximo" data-livre>Ajuste o horário, se precisar.<span data-so-treino>Aqui você ajusta o horário, se precisar.</span></p>
     <p data-alvo=".painel-corpo .escala-linha-fechar" data-avanca="clique">Feche a edição pelo <strong>X</strong>. A mudança fica, e a lista mostra o dia como vai ficar.</p>
     <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé.</p>
     <p data-fim>Pronto. O horário foi preenchido.</p>
@@ -1341,18 +1356,22 @@
     <p data-trecho="abrir-dia"></p>
     <p data-alvo=".painel-lateral .escala-edicao-menu > .botao" data-avanca="clique">Abra o menu <strong>Editar o dia</strong>.</p>
     <p data-alvo=".painel-lateral .escala-edicao-menu [data-acao='adicionar']" data-avanca="clique">Escolha <strong>Adicionar militar</strong>.</p>
-    <p data-alvo=".painel-corpo .escala-adicionar-como" data-avanca="proximo" data-livre>Escolha <strong>Somente no dia</strong>.</p>
-    <p data-alvo=".painel-corpo .escala-adicionar-quem" data-condicao=".painel-corpo .escala-adicionar-horario" data-avanca="aparece">Escolha quem entra: a unidade e, ao lado, quem tem horas livres nela no dia.</p>
-    <p data-alvo=".painel-corpo .escala-adicionar-horario" data-avanca="proximo" data-livre>O horário já vem com as horas livres dele. Ajuste, se precisar.</p>
+    <p data-alvo=".painel-corpo .escala-adicionar-como" data-avanca="proximo" data-livre>Escolha <strong>Somente no dia</strong>.<span data-so-treino><strong>Somente no dia</strong> já vem marcado.</span></p>
+    <p data-alvo=".painel-corpo .escala-adicionar-quem" data-condicao=".painel-corpo .escala-adicionar-horario" data-avanca="aparece" data-porta=".painel-corpo .escala-adicionar-combo input; .painel-corpo .escala-adicionar-combo .dropdown-item:not(.dropdown-item--inativo)" data-exemplo=".painel-corpo .escala-adicionar-combo .dropdown-item:not(.dropdown-item--inativo) .combo-militar-nome">Escolha quem entra: a unidade e, ao lado, quem tem horas livres nela no dia.<span data-so-treino>Escolha <strong data-exemplo-nome></strong>: ele tem horas livres no dia. A unidade fica ao lado.</span></p>
+    <p data-alvo=".painel-corpo .escala-adicionar-horario" data-avanca="proximo" data-livre>O horário já vem com as horas livres dele. Ajuste, se precisar.<span data-so-treino>O horário já vem com as horas livres dele. Aqui você ajusta, se precisar.</span></p>
     <p data-avanca="escolha">Escolha onde ele fica: o sistema distribui, uma função escolhida ou no lugar de outro militar.</p>
     <section data-caminho="sistema" data-entrada=".painel-corpo .escala-adicionar .escala-onde-fica-opcoes > .geral-opcao:nth-child(1)"></section>
     <section data-caminho="funcao" data-entrada=".painel-corpo .escala-adicionar .escala-onde-fica-opcoes > .geral-opcao:nth-child(2)">
-      <p data-alvo=".painel-corpo .escala-adicionar .escala-onde-fica-funcao" data-condicao=".escala-rodape-salvar:not(.oculto) .escala-painel-salvar:not(:disabled)" data-avanca="aparece">Escolha o posto e a função. Ao lado de cada função, a situação dela no horário.</p>
+      <p data-so-ajuda data-alvo=".painel-corpo .escala-adicionar .escala-onde-fica-funcao" data-condicao=".escala-rodape-salvar:not(.oculto) .escala-painel-salvar:not(:disabled)" data-avanca="aparece">Escolha o posto e a função. Ao lado de cada função, a situação dela no horário.</p>
+      <p data-so-treino data-alvo=".painel-corpo .escala-adicionar .escala-onde-posto" data-condicao=".painel-corpo .escala-adicionar .escala-onde-posto .campo-selecao-texto:not(.campo-selecao-texto--vazio)" data-porta=".painel-corpo .escala-adicionar .escala-onde-posto > .campo-selecao; .painel-corpo .escala-adicionar .escala-onde-posto .dropdown-item" data-avanca="aparece">Escolha o posto aceso.</p>
+      <p data-so-treino data-alvo=".painel-corpo .escala-adicionar .escala-onde-funcao" data-condicao=".escala-rodape-salvar:not(.oculto) .escala-painel-salvar:not(:disabled)" data-porta=".painel-corpo .escala-adicionar .escala-onde-funcao > .campo-selecao; .painel-corpo .escala-adicionar .escala-onde-funcao .dropdown-item" data-avanca="aparece">Escolha a função acesa. Ao lado de cada função, a situação dela no horário.</p>
     </section>
     <section data-caminho="lugar" data-entrada=".painel-corpo .escala-adicionar .escala-onde-fica-opcoes > .geral-opcao:nth-child(3)">
-      <p data-alvo=".painel-corpo .escala-adicionar .escala-onde-fica-lugar" data-condicao=".escala-rodape-salvar:not(.oculto) .escala-painel-salvar:not(:disabled)" data-avanca="aparece">Escolha quem sai e de quais funções. Quem ficar sem nenhuma função vai para <strong>Sem função</strong>.</p>
+      <p data-so-ajuda data-alvo=".painel-corpo .escala-adicionar .escala-onde-fica-lugar" data-condicao=".escala-rodape-salvar:not(.oculto) .escala-painel-salvar:not(:disabled)" data-avanca="aparece">Escolha quem sai e de quais funções. Quem ficar sem nenhuma função vai para <strong>Sem função</strong>.</p>
+      <p data-so-treino data-alvo=".painel-corpo .escala-adicionar .escala-onde-fica-sai" data-condicao=".painel-corpo .escala-adicionar .escala-onde-fica-funcoes .escala-marcar" data-avanca="aparece" data-porta=".painel-corpo .escala-adicionar .escala-onde-fica-sai input; .painel-corpo .escala-adicionar .escala-onde-fica-sai .dropdown-item:not(.dropdown-item--inativo)" data-exemplo=".painel-corpo .escala-adicionar .escala-onde-fica-sai .dropdown-item:not(.dropdown-item--inativo) .combo-militar-nome">Escolha <strong data-exemplo-nome></strong>, que sai.</p>
+      <p data-so-treino data-alvo=".painel-corpo .escala-adicionar .escala-onde-fica-funcoes .escala-marcar:not(:disabled)[aria-checked='false']" data-condicao=".escala-rodape-salvar:not(.oculto) .escala-painel-salvar:not(:disabled)" data-opcional data-avanca="aparece">Marque a função acesa. Quem ficar sem nenhuma função vai para <strong>Sem função</strong>.</p>
     </section>
-    <p data-alvo=".painel-corpo .escala-adicionar-banco" data-opcional data-avanca="proximo" data-livre>Diga se as horas entram no banco de horas dele.</p>
+    <p data-alvo=".painel-corpo .escala-adicionar-banco" data-opcional data-avanca="proximo" data-livre>Diga se as horas entram no banco de horas dele.<span data-so-treino>Aqui você diz se as horas entram no banco de horas dele.</span></p>
     <p data-alvo=".escala-mes-celula--selecionada" data-alvo-senao=".painel-lateral--aberto .painel-corpo" data-avanca="proximo">A escala já mostra o dia como vai ficar. Nada foi gravado ainda.</p>
     <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo.</p>
     <p data-fim>Pronto. Ele está escalado naquele dia.</p>
@@ -1366,14 +1385,14 @@
     <p data-avanca="escolha">Há dois jeitos de tirar alguém do dia: pelo menu <strong>Editar o dia</strong>, para qualquer um, ou pelo ícone na caixa <strong>Sem função</strong>, para quem ficou sem função.</p>
     <section data-caminho="menu" data-entrada=".painel-lateral .escala-edicao-menu > .botao">
       <p data-alvo=".painel-lateral .escala-edicao-menu [data-acao='remover']" data-avanca="clique">Escolha <strong>Remover militar</strong>.</p>
-      <p data-alvo=".painel-corpo .escala-remover-quem" data-condicao=".painel-corpo .escala-remover-reman:not(.oculto), .painel-corpo .escala-remover-partes:not(.oculto), .painel-corpo .escala-remover-alcance:not(.oculto), .painel-corpo .escala-remover-horario:not(.oculto), .painel-corpo .escala-remover-troca:not(.oculto) > .escala-remover-troca-doc" data-avanca="aparece">Escolha quem sai. Ao lado do nome, aparece como ele entrou no dia: pelo ciclo, só naquele dia ou por troca.</p>
-      <p data-alvo=".painel-corpo .escala-remover-alcance" data-opcional data-avanca="proximo" data-livre>Se ele é do ciclo, escolha <strong>Só no dia</strong>.</p>
-      <p data-alvo=".painel-corpo .escala-remover-horario" data-opcional data-avanca="proximo" data-livre>Ajuste o horário que sai, se não for o dia todo.</p>
-      <p data-alvo=".painel-corpo .escala-remover-banco" data-opcional data-avanca="proximo" data-livre>Diga se as horas saem do banco de horas dele.</p>
+      <p data-alvo=".painel-corpo .escala-remover-quem" data-condicao=".painel-corpo .escala-remover-reman:not(.oculto), .painel-corpo .escala-remover-partes:not(.oculto), .painel-corpo .escala-remover-alcance:not(.oculto), .painel-corpo .escala-remover-horario:not(.oculto), .painel-corpo .escala-remover-troca:not(.oculto) > .escala-remover-troca-doc" data-avanca="aparece" data-porta=".painel-corpo .escala-remover-combo input; .painel-corpo .escala-remover-combo .dropdown-item:not(.dropdown-item--inativo):not(:has(use[href$='icone-origem-troca'])):not(:has(use[href$='icone-remanejado']))" data-exemplo=".painel-corpo .escala-remover-combo .dropdown-item:not(.dropdown-item--inativo):not(:has(use[href$='icone-origem-troca'])):not(:has(use[href$='icone-remanejado'])) .combo-militar-nome">Escolha quem sai. Ao lado do nome, aparece como ele entrou no dia: pelo ciclo, só naquele dia ou por troca.<span data-so-treino>Escolha <strong data-exemplo-nome></strong>, que sai. Ao lado do nome, aparece como ele entrou no dia: pelo ciclo, só naquele dia ou por troca.</span></p>
+      <p data-alvo=".painel-corpo .escala-remover-alcance" data-opcional data-avanca="proximo" data-livre>Se ele é do ciclo, escolha <strong>Só no dia</strong>.<span data-so-treino>Se ele é do ciclo, <strong>Só no dia</strong> já vem marcado.</span></p>
+      <p data-alvo=".painel-corpo .escala-remover-horario" data-opcional data-avanca="proximo" data-livre>Ajuste o horário que sai, se não for o dia todo.<span data-so-treino>Aqui você ajusta o horário que sai, se não for o dia todo.</span></p>
+      <p data-alvo=".painel-corpo .escala-remover-banco" data-opcional data-avanca="proximo" data-livre>Diga se as horas saem do banco de horas dele.<span data-so-treino>Aqui você diz se as horas saem do banco de horas dele.</span></p>
       <p data-alvo=".escala-mes-celula--selecionada" data-alvo-senao=".painel-lateral--aberto .painel-corpo" data-avanca="proximo">A escala já mostra o dia como vai ficar. Nada foi gravado ainda.</p>
     </section>
     <section data-caminho="sem-funcao" data-entrada=".painel-corpo .escala-edicao-remover-dia">
-      <p data-alvo=".painel-corpo .escala-edicao-sem-funcao .pergunta-linha" data-clique=".painel-corpo .escala-edicao-sem-funcao .pergunta-linha .geral-opcao" data-opcional data-avanca="clique" data-livre>Responda a pergunta que abre embaixo da linha, se houver. A resposta já o tira do dia.</p>
+      <p data-alvo=".painel-corpo .escala-edicao-sem-funcao .pergunta-linha" data-clique=".painel-corpo .escala-edicao-sem-funcao .pergunta-linha .geral-opcao" data-opcional data-avanca="clique" data-livre data-treino-alvo=".painel-corpo .escala-edicao-sem-funcao .pergunta-linha .geral-opcao">Responda a pergunta que abre embaixo da linha, se houver. A resposta já o tira do dia.<span data-so-treino>Escolha a resposta acesa, na pergunta que abre embaixo da linha. A resposta já o tira do dia.</span></p>
     </section>
     <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo.</p>
     <p data-fim>Pronto. Ele saiu do dia. Quem é do ciclo fica de folga nesse dia.</p>
@@ -1383,8 +1402,8 @@
   <template data-roteiro="cancelar-folga" data-titulo="Cancelar uma folga no dia" data-conjunto="ajustar-o-dia" data-area="admin" data-grupo="Escala" data-pagina="escalas" data-cenario="folga">
     <p data-trecho="abrir-escala"></p>
     <p data-trecho="aba-mes"></p>
-    <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}']" data-alvo-senao=".escala-mes-celula" data-avanca="clique" data-pular-se=".escala-mes-celula--selecionada">Abra um dia da sua unidade em que alguém está de folga.</p>
-    <p data-alvo=".painel-corpo .escala-edicao-folgas" data-anel="caixa" data-requer=".painel-corpo .escala-edicao-folgas .escala-edicao-lapis" data-clique=".painel-corpo .escala-edicao-folgas .escala-edicao-lapis" data-avanca="clique" data-sem-alvo="Neste dia ninguém da sua unidade está de folga. Abra outro dia.">Na caixa <strong>De folga</strong>, use o lápis de quem está de folga.</p>
+    <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}']" data-alvo-senao=".escala-mes-celula" data-avanca="clique" data-pular-se=".escala-mes-celula--selecionada" data-treino-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'], .escala-mes-celula[data-iso='{hoje}'], .escala-mes-celula[data-unidade-id='{unidade}'], .escala-mes-celula">Abra um dia da sua unidade em que alguém está de folga.<span data-so-treino>Abra o dia aceso. No treino, alguém está de folga nele.</span></p>
+    <p data-alvo=".painel-corpo .escala-edicao-folgas" data-anel="caixa" data-requer=".painel-corpo .escala-edicao-folgas .escala-edicao-lapis" data-clique=".painel-corpo .escala-edicao-folgas .escala-edicao-lapis" data-avanca="clique" data-sem-alvo="Neste dia ninguém da sua unidade está de folga. Abra outro dia." data-sem-alvo-treino="Neste dia ninguém da sua unidade está de folga." data-treino-alvo=".painel-corpo .escala-edicao-folgas .escala-edicao-lapis">Na caixa <strong>De folga</strong>, use o lápis de quem está de folga.</p>
     <p data-alvo=".painel-corpo .escala-militar" data-avanca="proximo">Aqui estão a folga e o que acontece se ela for cancelada.</p>
     <p data-alvo=".painel-corpo .escala-folga-dia-pergunta .geral-opcao:has(input[value='cancelar'])" data-avanca="clique">Escolha <strong>Cancelar a folga</strong>.</p>
     <p data-alvo=".escala-mes-celula--selecionada" data-alvo-senao=".painel-lateral--aberto .painel-corpo" data-avanca="proximo">A escala já mostra o dia como vai ficar. Nada foi gravado ainda.</p>
@@ -1399,12 +1418,12 @@
     <p data-trecho="abrir-dia"></p>
     <p data-alvo=".painel-lateral .escala-edicao-menu > .botao" data-avanca="clique">Abra o menu <strong>Editar o dia</strong>.</p>
     <p data-alvo=".painel-lateral .escala-edicao-menu [data-acao='remanejar']" data-avanca="clique">Escolha <strong>Remanejar militar</strong>.</p>
-    <p data-alvo=".painel-corpo .escala-remanejar-fazer" data-condicao=".painel-corpo .escala-remanejar-quem:not(.oculto)" data-avanca="aparece">Escolha o que fazer: trazer alguém de outra unidade para esta, ou enviar alguém daqui para outra unidade da companhia.</p>
-    <p data-alvo=".painel-corpo .escala-remanejar-quem" data-condicao=".painel-corpo .escala-remanejar-troca:not(.oculto)" data-avanca="aparece">Escolha quem: no Trazer, a unidade e o militar; no Enviar, o militar. O ícone mostra como ele está de serviço no dia, inclusive de extra.</p>
-    <p data-alvo=".painel-corpo .escala-remanejar-troca" data-condicao=".painel-corpo .escala-remanejar-motivo:not(.oculto), .painel-corpo .escala-remanejar-sai:not(.oculto)" data-avanca="aparece">Diga se é em troca: alguém da outra unidade faz o caminho contrário.</p>
-    <p data-alvo=".painel-corpo .escala-remanejar-sai:not(.oculto)" data-condicao=".painel-corpo .escala-remanejar-motivo:not(.oculto)" data-opcional data-avanca="aparece">Diga se ele sai desta unidade ou fica nas duas.</p>
-    <p data-alvo=".painel-corpo .escala-remanejar-motivo" data-condicao=".painel-corpo .escala-remanejar-motivo textarea" data-avanca="preenchido">Escreva o motivo.</p>
-    <p data-alvo=".painel-corpo .escala-remanejar .escala-onde-fica:not(.oculto)" data-avanca="proximo" data-livre>Em cada <strong>Onde fica</strong>, escolha se o sistema distribui, uma função ou no lugar de outro militar. Cada militar tem a sua escolha.</p>
+    <p data-alvo=".painel-corpo .escala-remanejar-fazer" data-condicao=".painel-corpo .escala-remanejar-quem:not(.oculto)" data-avanca="aparece" data-porta=".painel-corpo .escala-remanejar-destino > .campo-selecao; .painel-corpo .escala-remanejar-destino .dropdown-item">Escolha o que fazer: trazer alguém de outra unidade para esta, ou enviar alguém daqui para outra unidade da companhia.<span data-so-treino>Escolha a unidade acesa em <strong>Enviar para</strong>. <strong>Trazer para</strong> é quando alguém de outra unidade vem para esta.</span></p>
+    <p data-alvo=".painel-corpo .escala-remanejar-quem" data-condicao=".painel-corpo .escala-remanejar-troca:not(.oculto)" data-avanca="aparece" data-porta=".painel-corpo .escala-remanejar-combo input; .painel-corpo .escala-remanejar-combo .dropdown-item:not(.dropdown-item--inativo)" data-exemplo=".painel-corpo .escala-remanejar-combo .dropdown-item:not(.dropdown-item--inativo) .combo-militar-nome">Escolha quem: no Trazer, a unidade e o militar; no Enviar, o militar. O ícone mostra como ele está de serviço no dia, inclusive de extra.<span data-so-treino>Escolha <strong data-exemplo-nome></strong>. O ícone mostra como ele está de serviço no dia, inclusive de extra.</span></p>
+    <p data-alvo=".painel-corpo .escala-remanejar-troca" data-condicao=".painel-corpo .escala-remanejar-motivo:not(.oculto), .painel-corpo .escala-remanejar-sai:not(.oculto)" data-avanca="aparece" data-porta=".painel-corpo .escala-remanejar-troca label:has(input[value='nao'])">Diga se é em troca: alguém da outra unidade faz o caminho contrário.<span data-so-treino>Escolha <strong>Não</strong>. <strong>Sim</strong> é quando alguém da outra unidade faz o caminho contrário.</span></p>
+    <p data-alvo=".painel-corpo .escala-remanejar-sai:not(.oculto)" data-condicao=".painel-corpo .escala-remanejar-motivo:not(.oculto)" data-opcional data-avanca="aparece" data-treino-alvo=".painel-corpo .escala-remanejar-sai:not(.oculto) label:has(input)">Diga se ele sai desta unidade ou fica nas duas.<span data-so-treino>Escolha a opção acesa. Ele sai desta unidade ou fica nas duas.</span></p>
+    <p data-alvo=".painel-corpo .escala-remanejar-motivo" data-condicao=".painel-corpo .escala-remanejar-motivo textarea" data-escrever data-avanca="preenchido" data-porta=".painel-corpo .escala-remanejar-motivo textarea">Escreva o motivo.</p>
+    <p data-alvo=".painel-corpo .escala-remanejar .escala-onde-fica:not(.oculto)" data-avanca="proximo" data-livre>Em cada <strong>Onde fica</strong>, escolha se o sistema distribui, uma função ou no lugar de outro militar. Cada militar tem a sua escolha.<span data-so-treino>Em cada <strong>Onde fica</strong>, você escolhe se o sistema distribui, uma função ou no lugar de outro militar. Cada militar tem a sua escolha.</span></p>
     <p data-alvo=".escala-mes-celula--selecionada" data-alvo-senao=".painel-lateral--aberto .painel-corpo" data-avanca="proximo">A escala já mostra o dia como vai ficar. Nada foi gravado ainda.</p>
     <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo.</p>
     <p data-fim>Pronto. O serviço dele nesse dia foi para a outra unidade, com a mesma origem; não é folga nem mexe no banco de horas, e a extra muda de lugar também na Extrajornada. Para desfazer depois, use <strong>Remover militar</strong>.</p>
@@ -1414,15 +1433,16 @@
   <template data-roteiro="desfazer-troca" data-titulo="Desfazer uma troca no dia" data-conjunto="ajustar-o-dia" data-area="admin" data-grupo="Escala" data-pagina="escalas" data-cenario="troca-no-dia">
     <p data-trecho="abrir-escala"></p>
     <p data-trecho="aba-mes"></p>
-    <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}']" data-alvo-senao=".escala-mes-celula" data-avanca="clique" data-pular-se=".escala-mes-celula--selecionada">Abra um dia em que alguém da sua unidade está de serviço por uma troca.</p>
-    <p data-alvo=".painel-lateral .escala-edicao-menu > .botao" data-requer=".painel-corpo .escala-edicao-linha [href$='icone-origem-troca']" data-avanca="clique" data-sem-alvo="Neste dia ninguém da sua unidade está de serviço por uma troca. Abra outro dia.">Abra o menu <strong>Editar o dia</strong>.</p>
+    <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}']" data-alvo-senao=".escala-mes-celula" data-avanca="clique" data-pular-se=".escala-mes-celula--selecionada" data-treino-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'], .escala-mes-celula[data-iso='{hoje}'], .escala-mes-celula[data-unidade-id='{unidade}'], .escala-mes-celula">Abra um dia em que alguém da sua unidade está de serviço por uma troca.<span data-so-treino>Abra o dia aceso. No treino, alguém está nele por uma troca.</span></p>
+    <p data-alvo=".painel-lateral .escala-edicao-menu > .botao" data-requer=".painel-corpo .escala-edicao-linha [href$='icone-origem-troca']" data-avanca="clique" data-sem-alvo="Neste dia ninguém da sua unidade está de serviço por uma troca. Abra outro dia." data-sem-alvo-treino="Neste dia ninguém da sua unidade está de serviço por uma troca.">Abra o menu <strong>Editar o dia</strong>.</p>
     <p data-alvo=".painel-lateral .escala-edicao-menu [data-acao='remover']" data-avanca="clique">Escolha <strong>Remover militar</strong>.</p>
-    <p data-alvo=".painel-corpo .escala-remover-quem" data-condicao=".painel-corpo .escala-remover-troca:not(.oculto) > .escala-remover-troca-doc" data-avanca="aparece">Escolha quem está no dia por uma troca.</p>
+    <p data-alvo=".painel-corpo .escala-remover-quem" data-condicao=".painel-corpo .escala-remover-troca:not(.oculto) > .escala-remover-troca-doc" data-avanca="aparece" data-porta=".painel-corpo .escala-remover-combo input; .painel-corpo .escala-remover-combo .dropdown-item:not(.dropdown-item--inativo):has(.combo-militar-icone:not(.oculto) use[href$='icone-origem-troca'])" data-exemplo=".painel-corpo .escala-remover-combo .dropdown-item:not(.dropdown-item--inativo):has(.combo-militar-icone:not(.oculto) use[href$='icone-origem-troca']) .combo-militar-nome">Escolha quem está no dia por uma troca.<span data-so-treino>Escolha <strong data-exemplo-nome></strong>, que está no dia por uma troca.</span></p>
     <p data-alvo=".painel-corpo .escala-remover-troca-doc" data-avanca="proximo">Aqui estão o documento da troca e os dias dele. Quem volta é o dono do serviço.</p>
-    <p data-alvo=".painel-corpo .escala-remover-troca-fazer:not(.oculto)" data-condicao=".painel-corpo .escala-remover-troca-junto:not(.oculto), .painel-corpo .escala-remover-troca-horas:not(.oculto), .painel-corpo .escala-remover-troca-motivo:not(.oculto)" data-opcional data-avanca="aparece">Escolha se cancela também uma troca futura entre os dois, para acertar as horas.</p>
-    <p data-alvo=".painel-corpo .escala-remover-troca-junto:not(.oculto)" data-opcional data-avanca="proximo" data-livre>Escolha qual troca sai junto.</p>
-    <p data-alvo=".painel-corpo .escala-remover-troca-horas:not(.oculto)" data-opcional data-avanca="proximo" data-livre>Diga para onde vão as horas: o saldo entre os dois, o banco de horas ou nenhum.</p>
-    <p data-alvo=".painel-corpo .escala-remover-troca-motivo" data-condicao=".painel-corpo .escala-remover-troca-motivo textarea" data-avanca="preenchido">Escreva o motivo.</p>
+    <p data-alvo=".painel-corpo .escala-remover-troca-fazer:not(.oculto)" data-condicao=".painel-corpo .escala-remover-troca-junto:not(.oculto), .painel-corpo .escala-remover-troca-horas:not(.oculto), .painel-corpo .escala-remover-troca-motivo:not(.oculto)" data-opcional data-avanca="aparece" data-treino-alvo=".painel-corpo .escala-remover-troca-fazer:not(.oculto) label:has(input[value='troca']:not(:disabled)), .painel-corpo .escala-remover-troca-fazer:not(.oculto) label:has(input[value='outra'])">Escolha se cancela também uma troca futura entre os dois, para acertar as horas.<span data-so-treino>Escolha a opção acesa: cancelar também uma troca futura entre os dois, para acertar as horas.</span></p>
+    <p data-so-ajuda data-alvo=".painel-corpo .escala-remover-troca-junto:not(.oculto)" data-opcional data-avanca="proximo" data-livre>Escolha qual troca sai junto.</p>
+    <p data-so-treino data-alvo=".painel-corpo .escala-remover-troca-junto:not(.oculto) .escala-remover-troca-junto-lista label" data-opcional data-avanca="clique">Marque a troca acesa: ela sai junto.</p>
+    <p data-alvo=".painel-corpo .escala-remover-troca-horas:not(.oculto)" data-opcional data-avanca="proximo" data-livre>Diga para onde vão as horas: o saldo entre os dois, o banco de horas ou nenhum.<span data-so-treino>Aqui você diz para onde vão as horas: o saldo entre os dois, o banco de horas ou nenhum.</span></p>
+    <p data-alvo=".painel-corpo .escala-remover-troca-motivo" data-condicao=".painel-corpo .escala-remover-troca-motivo textarea" data-escrever data-avanca="preenchido" data-porta=".painel-corpo .escala-remover-troca-motivo textarea">Escreva o motivo.</p>
     <p data-alvo=".painel-corpo .escala-remover-troca-docs:not(.oculto), .painel-corpo .escala-remover-troca-efeito:not(.oculto)" data-opcional data-avanca="proximo">Confira os documentos alterados e como fica.</p>
     <p data-alvo=".escala-sub-aplicar" data-avanca="clique" data-segurar>Confirme pelo botão do rodapé. Isto grava na hora, sem Desfazer.</p>
     <p data-fim>Pronto. A troca do dia foi desfeita, e o resumo mostra os documentos alterados.</p>
@@ -1434,7 +1454,7 @@
     <p data-trecho="aba-mes"></p>
     <p data-trecho="abrir-dia"></p>
     <p data-alvo=".painel-corpo .escala-posto-funcoes-botao" data-avanca="clique">No título de cada posto, este ícone abre as funções dele.</p>
-    <p data-alvo=".painel-corpo .escala-posto-funcoes.dropdown--aberto > .dropdown-menu" data-requer=".painel-corpo .escala-posto-funcoes.dropdown--aberto .escala-marcar:not(:disabled)" data-clique=".painel-corpo .escala-posto-funcoes.dropdown--aberto .escala-marcar" data-avanca="clique" data-sem-alvo="Este posto não tem lugar livre nem função aberta sem ninguém. Abra o ícone de outro posto.">Marque o primeiro lugar livre para abrir uma função, ou desmarque a última aberta sem ninguém para fechá-la. As que têm alguém ficam travadas.</p>
+    <p data-alvo=".painel-corpo .escala-posto-funcoes.dropdown--aberto > .dropdown-menu" data-requer=".painel-corpo .escala-posto-funcoes.dropdown--aberto .escala-marcar:not(:disabled)" data-clique=".painel-corpo .escala-posto-funcoes.dropdown--aberto .escala-marcar" data-avanca="clique" data-sem-alvo="Este posto não tem lugar livre nem função aberta sem ninguém. Abra o ícone de outro posto." data-sem-alvo-treino="Este posto não tem lugar livre nem função aberta sem ninguém." data-treino-alvo=".painel-corpo .escala-posto-funcoes.dropdown--aberto .escala-marcar:not(:disabled)">Marque o primeiro lugar livre para abrir uma função, ou desmarque a última aberta sem ninguém para fechá-la. As que têm alguém ficam travadas.<span data-so-treino>Marque o lugar aceso. Marcar o primeiro livre abre uma função; desmarcar a última aberta sem ninguém fecha. As que têm alguém ficam travadas.</span></p>
     <p data-alvo=".escala-rodape-salvar .rodape-acoes, .painel-corpo .escala-posto-funcoes.dropdown--aberto" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé.</p>
     <p data-fim>Pronto. A mudança foi gravada.</p>
     <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, a função seria aberta ou fechada nesse dia.</p>
@@ -1444,7 +1464,7 @@
     <p data-trecho="abrir-escala"></p>
     <p data-trecho="aba-mes"></p>
     <p data-trecho="abrir-dia"></p>
-    <p data-alvo=".painel-corpo .escala-edicao-automatico" data-avanca="clique" data-sem-alvo="Este dia não tem ajuste manual: ele já está no automático. Abra outro dia.">No fim da lista, <strong>Voltar o dia ao automático</strong> tira os ajustes manuais desta unidade no dia, e o sistema distribui de novo.</p>
+    <p data-alvo=".painel-corpo .escala-edicao-automatico" data-avanca="clique" data-sem-alvo="Este dia não tem ajuste manual: ele já está no automático. Abra outro dia." data-sem-alvo-treino="Este dia não tem ajuste manual: ele já está no automático.">No fim da lista, <strong>Voltar o dia ao automático</strong> tira os ajustes manuais desta unidade no dia, e o sistema distribui de novo.</p>
     <p data-alvo="#veu-aviso .modal" data-clique="#veu-aviso .aviso-confirmar" data-avanca="clique">Confirme no aviso.</p>
     <p data-alvo=".escala-mes-celula--selecionada" data-alvo-senao=".painel-lateral--aberto .painel-corpo" data-avanca="proximo">A escala já mostra o dia como o sistema faria.</p>
     <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo.</p>
@@ -1461,8 +1481,8 @@
     <p data-avanca="escolha">Há dois caminhos: pelo menu <strong>Editar o dia</strong> ou pela aba <strong>Ciclo</strong>, que mostra quem está no ciclo, quem está fora e quem serve em outros dias. Escolha um.</p>
     <section data-caminho="menu" data-entrada=".painel-lateral .escala-edicao-menu > .botao">
       <p data-alvo=".painel-lateral .escala-edicao-menu [data-acao='adicionar']" data-avanca="clique">Escolha <strong>Adicionar militar</strong>.</p>
-      <p data-alvo=".painel-corpo .escala-adicionar-como" data-condicao=".painel-corpo .escala-adicionar-como input[value='ciclo']" data-avanca="preenchido">Escolha <strong>No ciclo, a partir de</strong> este dia.</p>
-      <p data-alvo=".painel-corpo .escala-adicionar-quem" data-condicao=".escala-rodape-salvar:not(.oculto)" data-avanca="aparece">Escolha quem entra: quem está fora do ciclo.</p>
+      <p data-alvo=".painel-corpo .escala-adicionar-como" data-condicao=".painel-corpo .escala-adicionar-como input[value='ciclo']" data-porta=".painel-corpo .escala-adicionar-como label:has(input[value='ciclo'])" data-avanca="preenchido">Escolha <strong>No ciclo, a partir de</strong> este dia.</p>
+      <p data-alvo=".painel-corpo .escala-adicionar-quem" data-condicao=".escala-rodape-salvar:not(.oculto)" data-porta=".painel-corpo .escala-adicionar-combo input; .painel-corpo .escala-adicionar-combo .dropdown-item[data-situacao='fora']" data-exemplo=".painel-corpo .escala-adicionar-combo .dropdown-item[data-situacao='fora'] .combo-militar-nome" data-sem-alvo="Ninguém da unidade está fora do ciclo." data-avanca="aparece">Escolha quem entra: quem está fora do ciclo.<span data-so-treino>Escolha <strong data-exemplo-nome></strong>, que está fora do ciclo.</span></p>
     </section>
     <section data-caminho="aba" data-entrada=".painel-lateral .aba[data-secao='continuos']">
       <p data-alvo=".painel-corpo .escala-ciclo-fora .escala-secao-botao" data-um data-avanca="clique" data-sem-alvo="Ninguém da unidade está fora do ciclo.">Em <strong>Fora da escala</strong>, use <strong>Adicionar</strong> ao lado de quem entra.</p>
@@ -1480,15 +1500,15 @@
     <p data-avanca="escolha">Há dois caminhos: pelo menu <strong>Editar o dia</strong> ou pela aba <strong>Ciclo</strong>, que mostra quem está no ciclo, quem está fora e quem serve em outros dias. Escolha um.</p>
     <section data-caminho="menu" data-entrada=".painel-lateral .escala-edicao-menu > .botao">
       <p data-alvo=".painel-lateral .escala-edicao-menu [data-acao='adicionar']" data-avanca="clique">Escolha <strong>Adicionar militar</strong>.</p>
-      <p data-alvo=".painel-corpo .escala-adicionar-como" data-condicao=".painel-corpo .escala-adicionar-como input[value='ciclo']" data-avanca="preenchido">Escolha <strong>No ciclo, a partir de</strong> este dia.</p>
-      <p data-alvo=".painel-corpo .escala-adicionar-quem" data-condicao=".painel-corpo .escala-adicionar-ultimo:not(.oculto)" data-avanca="aparece">Escolha quem muda: alguém que já está no ciclo.</p>
-      <p data-alvo=".painel-corpo .escala-adicionar-ultimo" data-avanca="proximo" data-livre>Escolha o último serviço dele no ciclo atual, entre as três últimas datas.</p>
+      <p data-alvo=".painel-corpo .escala-adicionar-como" data-condicao=".painel-corpo .escala-adicionar-como input[value='ciclo']" data-avanca="preenchido" data-porta=".painel-corpo .escala-adicionar-como label:has(input[value='ciclo'])">Escolha <strong>No ciclo, a partir de</strong> este dia.</p>
+      <p data-alvo=".painel-corpo .escala-adicionar-quem" data-condicao=".painel-corpo .escala-adicionar-ultimo:not(.oculto)" data-avanca="aparece" data-porta=".painel-corpo .escala-adicionar-combo input; .painel-corpo .escala-adicionar-combo .dropdown-item:not(.dropdown-item--inativo)[data-situacao='outro-ciclo']" data-exemplo=".painel-corpo .escala-adicionar-combo .dropdown-item:not(.dropdown-item--inativo)[data-situacao='outro-ciclo'] .combo-militar-nome">Escolha quem muda: alguém que já está no ciclo.<span data-so-treino>Escolha <strong data-exemplo-nome></strong>, que já está no ciclo.</span></p>
+      <p data-alvo=".painel-corpo .escala-adicionar-ultimo" data-avanca="proximo" data-livre>Escolha o último serviço dele no ciclo atual, entre as três últimas datas.<span data-so-treino>O último serviço dele no ciclo atual já vem marcado. Aqui você troca entre as três últimas datas.</span></p>
       <p data-alvo=".painel-corpo .escala-ciclo-efeito:not(.oculto)" data-avanca="proximo">A lista mostra o que acontece com as trocas e as folgas dele a partir desse dia; as extras continuam.</p>
     </section>
     <section data-caminho="aba" data-entrada=".painel-lateral .aba[data-secao='continuos']">
       <p data-alvo=".painel-corpo .escala-ciclo-outros > .grupo-caixa-cabecalho" data-avanca="clique" data-pular-se=".painel-corpo .escala-ciclo-outros > .grupo-caixa-cabecalho[aria-expanded='true']">Abra <strong>Contínuos em outros ciclos</strong>: quem está no ciclo, mas serve em outros dias.</p>
       <p data-alvo=".painel-corpo .escala-ciclo-outros .escala-secao-botao:not(.escala-secao-botao--perigo)" data-um data-avanca="clique" data-sem-alvo="Ninguém da unidade está em outro ciclo.">Use <strong>Adicionar</strong> ao lado de quem muda para o ciclo deste dia.</p>
-      <p data-alvo=".painel-corpo .escala-ciclo-cartao" data-clique=".painel-corpo .escala-ciclo-cartao-continuar" data-avanca="clique" data-livre>Escolha o último serviço dele no ciclo atual, na pergunta que abre embaixo da linha.</p>
+      <p data-alvo=".painel-corpo .escala-ciclo-cartao" data-clique=".painel-corpo .escala-ciclo-cartao-continuar" data-avanca="clique" data-livre>Escolha o último serviço dele no ciclo atual, na pergunta que abre embaixo da linha.<span data-so-treino>O último serviço dele no ciclo atual já vem marcado, na pergunta que abre embaixo da linha. Siga pelo <strong>Continuar</strong>.</span></p>
       <p data-alvo="#veu-aviso .modal" data-clique="#veu-aviso .aviso-confirmar" data-avanca="clique">Confira a lista do que acontece e confirme.</p>
     </section>
     <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo. O Dia e o Ciclo gravam juntos.</p>
@@ -1503,8 +1523,8 @@
     <p data-avanca="escolha">Há dois caminhos: pelo menu <strong>Editar o dia</strong> ou pela aba <strong>Ciclo</strong>, que mostra quem está no ciclo, quem está fora e quem serve em outros dias. Escolha um.</p>
     <section data-caminho="menu" data-entrada=".painel-lateral .escala-edicao-menu > .botao">
       <p data-alvo=".painel-lateral .escala-edicao-menu [data-acao='remover']" data-avanca="clique">Escolha <strong>Remover militar</strong>.</p>
-      <p data-alvo=".painel-corpo .escala-remover-quem" data-condicao=".painel-corpo .escala-remover-alcance:not(.oculto)" data-avanca="aparece">Escolha quem sai: alguém que está no dia pelo ciclo.</p>
-      <p data-alvo=".painel-corpo .escala-remover-alcance" data-condicao=".painel-corpo .escala-remover-alcance input[value='ciclo']" data-avanca="preenchido">Escolha <strong>Do ciclo, a partir de</strong> este dia.</p>
+      <p data-alvo=".painel-corpo .escala-remover-quem" data-condicao=".painel-corpo .escala-remover-alcance:not(.oculto)" data-avanca="aparece" data-porta=".painel-corpo .escala-remover-combo input; .painel-corpo .escala-remover-combo .dropdown-item:not(.dropdown-item--inativo):not(:has(use[href$='icone-origem-troca'])):not(:has(use[href$='icone-remanejado'])):not(:has(use[href$='icone-origem-pontual']))" data-exemplo=".painel-corpo .escala-remover-combo .dropdown-item:not(.dropdown-item--inativo):not(:has(use[href$='icone-origem-troca'])):not(:has(use[href$='icone-remanejado'])):not(:has(use[href$='icone-origem-pontual'])) .combo-militar-nome">Escolha quem sai: alguém que está no dia pelo ciclo.<span data-so-treino>Escolha <strong data-exemplo-nome></strong>, que está no dia pelo ciclo.</span></p>
+      <p data-alvo=".painel-corpo .escala-remover-alcance" data-condicao=".painel-corpo .escala-remover-alcance input[value='ciclo']" data-avanca="preenchido" data-porta=".painel-corpo .escala-remover-alcance label:has(input[value='ciclo'])">Escolha <strong>Do ciclo, a partir de</strong> este dia.</p>
       <p data-alvo=".painel-corpo .escala-ciclo-efeito:not(.oculto)" data-avanca="proximo">A lista mostra o que é cancelado a partir desse dia: trocas e folgas. As extras dele continuam.</p>
     </section>
     <section data-caminho="aba" data-entrada=".painel-lateral .aba[data-secao='continuos']">
@@ -1521,7 +1541,7 @@
     <p data-avanca="escolha">Há dois caminhos: pela <strong>Escala</strong>, no dia da troca, ou pelas <strong>Trocas</strong>, no menu <strong>Administração</strong>. Escolha um.</p>
     <section data-caminho="escala" data-pagina="escalas" data-entrada=".sidebar .menu-item[data-pagina='escalas'], .barra-celular-item[data-pagina='escalas']">
       <p data-trecho="aba-mes"></p>
-      <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}']" data-alvo-senao=".escala-mes-celula" data-avanca="clique" data-pular-se=".escala-mes-celula--selecionada">Abra o dia da troca.</p>
+      <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}']" data-alvo-senao=".escala-mes-celula" data-avanca="clique" data-pular-se=".escala-mes-celula--selecionada" data-treino-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'], .escala-mes-celula[data-iso='{hoje}'], .escala-mes-celula[data-unidade-id='{unidade}'], .escala-mes-celula">Abra o dia da troca.<span data-so-treino>Abra o dia aceso.</span></p>
       <p data-alvo=".painel-lateral .escala-edicao-menu > .botao" data-avanca="clique">Abra o menu <strong>Editar o dia</strong>.</p>
       <p data-alvo=".painel-lateral .escala-edicao-menu [data-acao='troca']" data-avanca="clique">Escolha <strong>Registrar troca de serviço</strong>.</p>
     </section>
@@ -1529,9 +1549,12 @@
       <p data-alvo=".acoes-admin-gatilho" data-so-celular data-avanca="clique">Abra o menu <strong>Administração</strong>.</p>
       <p data-alvo="#btn-registrar-troca" data-avanca="clique">Escolha <strong>Registrar troca</strong>.</p>
     </section>
-    <p data-alvo="#tv-parte, #tv-parte-ano" data-anel="campo" data-avanca="proximo" data-livre>Se a troca tem parte no eProtocolo, digite o número. Se ainda não tem, deixe em branco.</p>
-    <p data-alvo="#tv-unidade, #tv-militar" data-anel="campo" data-avanca="proximo" data-livre>Escolha a unidade e os militares da troca, um de cada vez.</p>
-    <p data-alvo="#tv-calendario, #tv-mes-anterior, #tv-mes-proximo" data-avanca="proximo" data-livre>Marque os dias da troca. Dá para registrar até 7 dias para trás.</p>
+    <p data-alvo="#tv-parte, #tv-parte-ano" data-anel="campo" data-avanca="proximo" data-livre>Se a troca tem parte no eProtocolo, digite o número. Se ainda não tem, deixe em branco.<span data-so-treino>Se a troca tem parte no eProtocolo, o número vai aqui. Se ainda não tem, fica em branco.</span></p>
+    <p data-so-ajuda data-alvo="#tv-unidade, #tv-militar" data-anel="campo" data-avanca="proximo" data-livre>Escolha a unidade e os militares da troca, um de cada vez.</p>
+    <p data-so-treino data-alvo="#tv-militar" data-anel="campo" data-condicao="#tv-militares > :nth-child(1)" data-porta="#tv-militar; #tv-militar-menu .dropdown-item:not(.dropdown-item--inativo)" data-exemplo="#tv-militar-menu .dropdown-item:not(.dropdown-item--inativo)" data-avanca="aparece">Escolha <strong data-exemplo-nome></strong>, o primeiro militar da troca.</p>
+    <p data-so-treino data-alvo="#tv-militar" data-anel="campo" data-condicao="#tv-militares > :nth-child(2)" data-porta="#tv-militar; #tv-militar-menu .dropdown-item:not(.dropdown-item--inativo)" data-exemplo="#tv-militar-menu .dropdown-item:not(.dropdown-item--inativo)" data-avanca="aparece">Escolha <strong data-exemplo-nome></strong>, o segundo. Com mais gente na troca, os outros entram do mesmo jeito.</p>
+    <p data-so-ajuda data-alvo="#tv-calendario, #tv-mes-anterior, #tv-mes-proximo" data-avanca="proximo" data-livre>Marque os dias da troca. Dá para registrar até 7 dias para trás.</p>
+    <p data-so-treino data-alvo="#tv-calendario button.mini-calendario-dia:not(:disabled):not(.mini-calendario-dia--quer)" data-condicao="#tv-calendario .mini-calendario-dia--quer" data-porta="#tv-calendario button.mini-calendario-dia:not(:disabled):not(.mini-calendario-dia--quer); .trocas-dia-quadro .trocas-dia-opcoes label:has(input:not(:checked))" data-treino-alvo="#tv-calendario button.mini-calendario-dia:not(:disabled):not(.mini-calendario-dia--quer)" data-avanca="aparece">Marque o dia aceso. Dá para registrar até 7 dias para trás.</p>
     <p data-alvo="#tv-resumo" data-avanca="proximo" data-livre>Confira o resumo e o horário de cada dia.</p>
     <p data-alvo="#tv-analise" data-opcional data-avanca="proximo">A <strong>Análise</strong> mostra o que muda na escala; o botão só libera quando ela chega.</p>
     <p data-alvo="#painel-rodape [data-acao='registrar-varias']" data-avanca="some" data-condicao=".painel-lateral--aberto .trocas-varias" data-segurar>Registre pelo botão <strong>Registrar troca</strong>. A troca já entra aprovada.</p>
@@ -1563,13 +1586,13 @@
     <p data-alvo="#trocas-pendencias [data-pedido='troca:{exemplo}']" data-alvo-senao="#trocas-pendencias .pedido--linha" data-um data-avanca="clique" data-sem-alvo="Nenhum pedido de troca espera a sua resposta agora.">Abra o pedido do colega.</p>
     <p data-alvo=".painel-lateral .decisao-pedido > .decisao-caixa:not(:has(.selo))" data-avanca="proximo">Confira os dias em <strong>Escalas trocadas</strong>.</p>
     <p data-alvo=".painel-lateral .decisao-analise-secao" data-opcional data-avanca="proximo">A <strong>Análise</strong> mostra se a troca cria algum problema na escala.</p>
-    <p data-alvo=".painel-lateral .decisao-escala" data-opcional data-avanca="proximo" data-livre>Abra <strong>Como fica a escala</strong> para ver o dia já trocado.</p>
+    <p data-alvo=".painel-lateral .decisao-escala" data-opcional data-avanca="proximo" data-livre>Abra <strong>Como fica a escala</strong> para ver o dia já trocado.<span data-so-treino><strong>Como fica a escala</strong> mostra o dia já trocado.</span></p>
     <p data-avanca="escolha">Aceite ou recuse.</p>
     <section data-caminho="aceitar" data-entrada="#painel-rodape [data-acao='aceitar']">
       <p data-alvo="#veu-aviso .modal" data-clique="#veu-aviso .aviso-confirmar" data-avanca="clique" data-segurar>Confirme no aviso.</p>
     </section>
     <section data-caminho="recusar" data-entrada="#painel-rodape [data-acao='recusar']">
-      <p data-alvo=".painel-lateral .decisao-recusa" data-avanca="proximo" data-livre>Se quiser, escreva o motivo. Ele vai no aviso ao colega.</p>
+      <p data-alvo=".painel-lateral .decisao-recusa" data-avanca="proximo" data-livre>Se quiser, escreva o motivo. Ele vai no aviso ao colega.<span data-so-treino>O motivo é opcional e vai no aviso ao colega.</span></p>
       <p data-alvo="#painel-rodape [data-acao='confirmar-recusa']" data-avanca="clique" data-segurar>Confirme pelo <strong>Confirmar recusa</strong>.</p>
     </section>
     <p data-fim>Pronto. Aceita, a troca segue para o administrador aprovar. Recusada, o colega recebe o aviso.</p>
@@ -1582,7 +1605,8 @@
     <p data-alvo="#trocas-minhas-lista .troca-item[data-troca='{exemplo}']" data-alvo-senao="#trocas-minhas-lista .troca-item" data-um data-avanca="clique" data-sem-alvo="Você não tem pedido de troca em aberto.">Abra o seu pedido.</p>
     <p data-avanca="escolha">Você pode mudar o pedido ou cancelá-lo. Escolha um.</p>
     <section data-caminho="editar" data-entrada="#painel-rodape [data-acao='editar']">
-      <p data-alvo="#tv-calendario, #tv-mes-anterior, #tv-mes-proximo, #tv-resumo" data-avanca="proximo" data-livre>Mude os dias no calendário ou o horário pelo lápis do dia.</p>
+      <p data-so-ajuda data-alvo="#tv-calendario, #tv-mes-anterior, #tv-mes-proximo, #tv-resumo" data-avanca="proximo" data-livre>Mude os dias no calendário ou o horário pelo lápis do dia.</p>
+      <p data-so-treino data-alvo="#tv-calendario button.mini-calendario-dia:not(:disabled):not(.mini-calendario-dia--quer)" data-condicao="#painel-rodape [data-acao='salvar']:not(:disabled)" data-porta="#tv-calendario button.mini-calendario-dia:not(:disabled):not(.mini-calendario-dia--quer); .trocas-dia-quadro .trocas-dia-opcoes label:has(input:not(:checked))" data-treino-alvo="#tv-calendario button.mini-calendario-dia:not(:disabled):not(.mini-calendario-dia--quer)" data-avanca="aparece">Marque o dia aceso no calendário. O horário muda pelo lápis do dia.</p>
       <p data-alvo="#painel-rodape [data-acao='salvar']" data-avanca="clique" data-segurar>Grave pelo <strong>Salvar</strong>.</p>
     </section>
     <section data-caminho="cancelar" data-entrada="#painel-rodape [data-acao='cancelar-pedido']">
@@ -1597,8 +1621,9 @@
     <p data-alvo="#trocas-abas [data-aba='saldos']" data-avanca="clique" data-pular-se="#trocas-abas [data-aba='saldos'].aba--ativa">Abra a aba <strong>Saldos</strong>. Aqui ficam as horas que ficaram devendo entre militares, nas trocas sem devolução.</p>
     <p data-alvo="#trocas-pendentes-lista .troca-pendente" data-um data-avanca="clique" data-sem-alvo="Ninguém deve horas a você agora.">Abra o saldo em que o colega deve a você.</p>
     <p data-alvo=".painel-lateral .troca-extrato" data-avanca="proximo">O extrato mostra as trocas que formaram o saldo.</p>
-    <p data-alvo="#painel-rodape .troca-pendente-cobrar" data-avanca="clique" data-sem-alvo="Só quem tem horas a receber cobra. Abra um saldo em que o colega deve a você.">Use o <strong>Cobrar</strong>.</p>
-    <p data-alvo="#tv-calendario, #tv-mes-anterior, #tv-mes-proximo" data-avanca="proximo" data-livre>O pedido abre com o colega já na lista. Marque o dia em que ele vai trabalhar para você.</p>
+    <p data-alvo="#painel-rodape .troca-pendente-cobrar" data-avanca="clique" data-sem-alvo="Só quem tem horas a receber cobra. Abra um saldo em que o colega deve a você." data-sem-alvo-treino="Só quem tem horas a receber cobra.">Use o <strong>Cobrar</strong>.</p>
+    <p data-so-ajuda data-alvo="#tv-calendario, #tv-mes-anterior, #tv-mes-proximo" data-avanca="proximo" data-livre>O pedido abre com o colega já na lista. Marque o dia em que ele vai trabalhar para você.</p>
+    <p data-so-treino data-alvo="#tv-calendario button.mini-calendario-dia:not(:disabled):not(.mini-calendario-dia--quer)" data-condicao="#tv-calendario .mini-calendario-dia--quer" data-porta="#tv-calendario button.mini-calendario-dia:not(:disabled):not(.mini-calendario-dia--quer); .trocas-dia-quadro .trocas-dia-opcoes label:has(input:not(:checked))" data-treino-alvo="#tv-calendario button.mini-calendario-dia:not(:disabled):not(.mini-calendario-dia--quer)" data-avanca="aparece">O pedido abre com o colega já na lista. Marque o dia aceso: ele vai trabalhar para você.</p>
     <p data-alvo="#painel-rodape [data-acao='solicitar-varias']" data-avanca="some" data-condicao=".painel-lateral--aberto .trocas-varias" data-segurar>Confira e envie pelo <strong>Solicitar troca</strong>.</p>
     <p data-fim>Pronto. O colega recebe o pedido e, aprovada a troca, o saldo diminui.</p>
     <p data-fim-treino>Pronto. No treino, nada foi enviado. No sistema, o colega receberia o pedido e, aprovada a troca, o saldo diminuiria.</p>
@@ -1607,9 +1632,9 @@
   <template data-roteiro="imprimir-trocas" data-titulo="Imprimir as trocas do mês" data-grupo="Trocas" data-pagina="trocas" data-cenario="troca-aprovada">
     <p data-trecho="abrir-trocas"></p>
     <p data-alvo="#btn-imprimir-trocas" data-avanca="clique">Use o botão da impressora, no alto à direita.</p>
-    <p data-alvo=".painel-corpo .grupo-caixa:has([data-imprimir-lista])" data-avanca="proximo" data-livre>Escolha o mês e marque as trocas que entram.</p>
-    <p data-alvo=".painel-corpo .grupo-caixa:has([data-imprimir-texto])" data-avanca="proximo" data-livre>O <strong>Texto para a Parte</strong> já vem escrito. Escolha <strong>Informo</strong> ou <strong>Solicito</strong> e use o <strong>Copiar texto</strong> para colar no eProtocolo.</p>
-    <p data-alvo=".painel-corpo .grupo-caixa:has([data-imprimir-formato])" data-avanca="proximo" data-livre>Escolha o formato: <strong>Lista</strong>, <strong>Registro técnico</strong> ou <strong>Alterações</strong>.</p>
+    <p data-alvo=".painel-corpo .grupo-caixa:has([data-imprimir-lista])" data-avanca="proximo" data-livre>Escolha o mês e marque as trocas que entram.<span data-so-treino>Aqui você escolhe o mês e marca as trocas que entram.</span></p>
+    <p data-alvo=".painel-corpo .grupo-caixa:has([data-imprimir-texto])" data-avanca="proximo" data-livre>O <strong>Texto para a Parte</strong> já vem escrito. Escolha <strong>Informo</strong> ou <strong>Solicito</strong> e use o <strong>Copiar texto</strong> para colar no eProtocolo.<span data-so-treino>O <strong>Texto para a Parte</strong> já vem escrito. Aqui você escolhe <strong>Informo</strong> ou <strong>Solicito</strong>, e o <strong>Copiar texto</strong> copia para colar no eProtocolo.</span></p>
+    <p data-alvo=".painel-corpo .grupo-caixa:has([data-imprimir-formato])" data-avanca="proximo" data-livre>Escolha o formato: <strong>Lista</strong>, <strong>Registro técnico</strong> ou <strong>Alterações</strong>.<span data-so-treino>Aqui você escolhe o formato: <strong>Lista</strong>, <strong>Registro técnico</strong> ou <strong>Alterações</strong>.</span></p>
     <p data-alvo=".painel-corpo .impressao-previa-secao" data-so-computador data-avanca="proximo">A prévia mostra o PDF como vai sair.</p>
     <p data-alvo="[data-impressao-gerar]" data-avanca="clique">Gere o PDF.</p>
     <p data-fim>Pronto. O arquivo foi baixado.</p>
@@ -1621,13 +1646,13 @@
     <p data-alvo="#trocas-pendencias [data-pedido='troca:{exemplo}']" data-alvo-senao="#trocas-pendencias .pedido--linha" data-um data-avanca="clique" data-sem-alvo="Nenhuma troca espera a sua aprovação agora.">Abra a troca.</p>
     <p data-alvo=".painel-lateral .decisao-pedido" data-avanca="proximo">Confira os dias e, em <strong>Aceites e aprovação</strong>, se todos aceitaram. Se ainda falta o aceite de alguém, aparece o <strong>Aprovar com pendências</strong>, que aprova sem esperar.</p>
     <p data-alvo=".painel-lateral .decisao-analise-secao" data-opcional data-avanca="proximo">A <strong>Análise</strong> aponta o que a troca pode quebrar na escala. O <strong>Aprovar</strong> só libera quando ela chega.</p>
-    <p data-alvo=".painel-lateral .decisao-escala" data-opcional data-avanca="proximo" data-livre>Abra <strong>Como fica a escala</strong> para ver o dia já trocado.</p>
+    <p data-alvo=".painel-lateral .decisao-escala" data-opcional data-avanca="proximo" data-livre>Abra <strong>Como fica a escala</strong> para ver o dia já trocado.<span data-so-treino><strong>Como fica a escala</strong> mostra o dia já trocado.</span></p>
     <p data-avanca="escolha">Aprove ou recuse.</p>
     <section data-caminho="aprovar" data-entrada="#painel-rodape [data-acao='aprovar']">
       <p data-alvo="#veu-aviso .modal" data-clique="#veu-aviso .aviso-confirmar" data-avanca="clique" data-segurar>Confirme no aviso. A escala muda na hora.</p>
     </section>
     <section data-caminho="recusar" data-entrada="#painel-rodape [data-acao='recusar-admin']">
-      <p data-alvo=".painel-lateral .decisao-recusa" data-avanca="proximo" data-livre>Se quiser, escreva o motivo. Ele vai no aviso aos militares.</p>
+      <p data-alvo=".painel-lateral .decisao-recusa" data-avanca="proximo" data-livre>Se quiser, escreva o motivo. Ele vai no aviso aos militares.<span data-so-treino>O motivo é opcional e vai no aviso aos militares.</span></p>
       <p data-alvo="#painel-rodape [data-acao='confirmar-recusa']" data-avanca="clique" data-segurar>Confirme pelo <strong>Confirmar recusa</strong>.</p>
     </section>
     <p data-fim>Pronto. Aprovada, a troca já vale na escala, e o resumo tem o <strong>Desfazer</strong>. Recusada, os militares recebem o aviso.</p>
@@ -1638,8 +1663,8 @@
     <p data-trecho="abrir-trocas"></p>
     <p data-alvo="#trocas-abas [data-aba='todas']" data-avanca="clique" data-pular-se="#trocas-abas [data-aba='todas'].aba--ativa">Abra a aba <strong>Todas</strong>. As trocas ficam no bloco da unidade de quem pediu.</p>
     <p data-alvo="#trocas-arvore .troca-item[data-troca='{exemplo}']" data-alvo-senao="#trocas-arvore .troca-item" data-um data-avanca="clique" data-sem-alvo="Nenhuma troca aprovada nas unidades da tela.">Abra a troca.</p>
-    <p data-alvo="#painel-rodape [data-acao='cancelar']" data-avanca="clique" data-sem-alvo="Só a troca aprovada tem o Cancelar trocas. Abra uma troca aprovada.">Use o <strong>Cancelar trocas</strong>.</p>
-    <p data-alvo=".painel-lateral .decisao-motivo-cancelamento" data-anel="campo" data-avanca="preenchido">Escreva o motivo do cancelamento. Ele é obrigatório.</p>
+    <p data-alvo="#painel-rodape [data-acao='cancelar']" data-avanca="clique" data-sem-alvo="Só a troca aprovada tem o Cancelar trocas. Abra uma troca aprovada." data-sem-alvo-treino="Só a troca aprovada tem o Cancelar trocas.">Use o <strong>Cancelar trocas</strong>.</p>
+    <p data-alvo=".painel-lateral .decisao-motivo-cancelamento" data-anel="campo" data-escrever data-avanca="preenchido">Escreva o motivo do cancelamento. Ele é obrigatório.</p>
     <p data-alvo="#painel-rodape [data-acao='confirmar-cancelamento']" data-avanca="clique" data-segurar>Confirme pelo <strong>Confirmar cancelamento</strong>. Os dias voltam a ser como eram antes da troca.</p>
     <p data-fim>Pronto. A troca foi cancelada, e a escala voltou a ser como era.</p>
     <p data-fim-treino>Pronto. No treino, nada foi cancelado. No sistema, a troca seria cancelada e a escala voltaria a ser como era.</p>
@@ -1651,12 +1676,12 @@
     <p data-pagina="qualquer" data-alvo=".sidebar .menu-item[data-pagina='folgas'], .barra-celular-item[data-pagina='folgas']" data-avanca="clique" data-pular-se=".conteudo #folgas-abas">Abra as <strong>Folgas</strong> no menu.</p>
   </template>
 
-  <template data-roteiro="pedir-folga" data-titulo="Pedir uma folga" data-grupo="Folgas" data-pagina="folgas">
+  <template data-roteiro="pedir-folga" data-titulo="Pedir uma folga" data-grupo="Folgas" data-pagina="folgas" data-cenario="dias-de-servico">
     <p data-trecho="abrir-folgas"></p>
     <p data-alvo="#btn-solicitar-folga" data-avanca="clique">Use o <strong>Solicitar folga</strong>.</p>
-    <p data-alvo="#ff-data" data-anel="campo" data-avanca="preenchido" data-sem-alvo="Você não tem serviço nos próximos dias para pedir folga.">Escolha o dia. Só aparecem os dias em que você está de serviço.</p>
-    <p data-alvo="#ff-periodo" data-avanca="proximo" data-livre>Escolha o serviço inteiro ou só uma parte, com o início e o fim.</p>
-    <p data-alvo="#ff-motivo" data-anel="campo" data-avanca="preenchido">Escreva o motivo.</p>
+    <p data-alvo="#ff-data" data-anel="campo" data-avanca="preenchido" data-sem-alvo="Você não tem serviço nos próximos dias para pedir folga." data-treino-alvo=".calendario--aberto .calendario-dia:not(.calendario-dia--fora):not(.calendario-dia--inativo), #ff-data">Escolha o dia. Só aparecem os dias em que você está de serviço.<span data-so-treino>Escolha o dia aceso. Só aparecem os dias em que você está de serviço.</span></p>
+    <p data-alvo="#ff-periodo" data-avanca="proximo" data-livre>Escolha o serviço inteiro ou só uma parte, com o início e o fim.<span data-so-treino>Aqui você escolhe o serviço inteiro ou só uma parte, com o início e o fim.</span></p>
+    <p data-alvo="#ff-motivo" data-anel="campo" data-escrever data-avanca="preenchido">Escreva o motivo.</p>
     <p data-alvo="#ff-consumo" data-opcional data-avanca="proximo">A nota mostra quanto a folga consome do seu saldo e como ele fica.</p>
     <p data-alvo="#painel-rodape [data-acao='confirmar']" data-avanca="clique" data-segurar>Envie pelo <strong>Confirmar</strong>.</p>
     <p data-fim>Pronto. O pedido vai para o administrador aprovar e aparece em <strong>Meus pedidos</strong>, nas Minhas folgas.</p>
@@ -1693,28 +1718,28 @@
     <p data-alvo="#folgas-pendencias [data-pedido='folga:{exemplo}']" data-alvo-senao="#folgas-pendencias .pedido--linha" data-um data-avanca="clique" data-sem-alvo="Nenhum pedido de folga espera a sua aprovação agora.">Abra o pedido.</p>
     <p data-alvo=".painel-lateral .decisao-pedido" data-avanca="proximo">A caixa <strong>Folga</strong> mostra o dia, o horário e o motivo.</p>
     <p data-alvo=".painel-lateral .decisao-analise-secao" data-opcional data-avanca="proximo">A <strong>Análise</strong> mostra o que a folga muda na escala e como fica o saldo.</p>
-    <p data-alvo=".painel-lateral .decisao-escala" data-opcional data-avanca="proximo" data-livre>Abra <strong>Como fica a escala</strong> para ver o dia sem ele.</p>
+    <p data-alvo=".painel-lateral .decisao-escala" data-opcional data-avanca="proximo" data-livre>Abra <strong>Como fica a escala</strong> para ver o dia sem ele.<span data-so-treino><strong>Como fica a escala</strong> mostra o dia sem ele.</span></p>
     <p data-avanca="escolha">Aprove ou recuse.</p>
     <section data-caminho="aprovar" data-entrada="#painel-rodape [data-acao='aprovar']">
       <p data-alvo="#veu-aviso .modal" data-clique="#veu-aviso .aviso-confirmar" data-avanca="clique" data-segurar>Confirme no aviso. A escala muda na hora.</p>
     </section>
     <section data-caminho="recusar" data-entrada="#painel-rodape [data-acao='recusar']">
-      <p data-alvo=".painel-lateral .decisao-recusa" data-avanca="proximo" data-livre>Se quiser, escreva o motivo. Ele vai no aviso ao militar.</p>
+      <p data-alvo=".painel-lateral .decisao-recusa" data-avanca="proximo" data-livre>Se quiser, escreva o motivo. Ele vai no aviso ao militar.<span data-so-treino>O motivo é opcional e vai no aviso ao militar.</span></p>
       <p data-alvo="#painel-rodape [data-acao='confirmar-recusa']" data-avanca="clique" data-segurar>Confirme pelo <strong>Confirmar recusa</strong>.</p>
     </section>
     <p data-fim>Pronto. Aprovada, a folga já vale na escala, e o resumo tem o <strong>Desfazer</strong>. Recusada, o militar recebe o aviso.</p>
     <p data-fim-treino>Pronto. No treino, nada foi aprovado nem recusado. No sistema, aprovada, a folga já valeria na escala; recusada, o militar receberia o aviso.</p>
   </template>
 
-  <template data-roteiro="dar-folga" data-titulo="Dar folga a um militar" data-area="admin" data-grupo="Folgas" data-pagina="folgas">
+  <template data-roteiro="dar-folga" data-titulo="Dar folga a um militar" data-area="admin" data-grupo="Folgas" data-pagina="folgas" data-cenario="dias-de-servico">
     <p data-trecho="abrir-folgas"></p>
     <p data-alvo=".acoes-admin-gatilho" data-so-celular data-avanca="clique">Use o <strong>Dar folga</strong>. No celular, ele fica no menu <strong>Administração</strong>.</p>
     <p data-alvo="#btn-dar-folga" data-avanca="clique">Use o <strong>Dar folga</strong>. No celular, ele fica no menu <strong>Administração</strong>.</p>
-    <p data-alvo=".painel-corpo .folga-form-quem" data-clique=".painel-corpo .folga-form-militares .folga-form-militar" data-avanca="clique">Em <strong>Quem</strong>, ache o militar e escolha.</p>
-    <p data-alvo="#ff-data, #ff-periodo" data-avanca="preenchido" data-condicao="#ff-data">Escolha o dia e o período.</p>
-    <p data-alvo="#ff-motivo" data-anel="campo" data-avanca="preenchido">Escreva o motivo.</p>
+    <p data-alvo=".painel-corpo .folga-form-quem" data-clique=".painel-corpo .folga-form-militares .folga-form-militar" data-avanca="clique" data-treino-alvo=".painel-corpo .folga-form-militares .folga-form-militar" data-exemplo=".painel-corpo .folga-form-militares .folga-form-militar">Em <strong>Quem</strong>, ache o militar e escolha.<span data-so-treino>Em <strong>Quem</strong>, escolha <strong data-exemplo-nome></strong>.</span></p>
+    <p data-alvo="#ff-data, #ff-periodo" data-avanca="preenchido" data-condicao="#ff-data" data-treino-alvo=".calendario--aberto .calendario-dia:not(.calendario-dia--fora):not(.calendario-dia--inativo), #ff-data">Escolha o dia e o período.<span data-so-treino>Escolha o dia aceso. O período fica ao lado.</span></p>
+    <p data-alvo="#ff-motivo" data-anel="campo" data-escrever data-avanca="preenchido">Escreva o motivo.</p>
     <p data-alvo="#painel-rodape [data-acao='confirmar']" data-avanca="clique">Confirme pelo <strong>Confirmar</strong>.</p>
-    <p data-alvo="#veu-aviso .modal" data-clique="#veu-aviso .aviso-confirmar, #veu-aviso .aviso-alternativo" data-avanca="clique" data-segurar>No aviso do banco de horas, <strong>Contabilizar</strong> desconta as horas do saldo; <strong>Não contabilizar</strong> dá a folga sem mexer nele.</p>
+    <p data-alvo="#veu-aviso .modal" data-clique="#veu-aviso .aviso-confirmar, #veu-aviso .aviso-alternativo" data-avanca="clique" data-segurar data-porta="#veu-aviso .aviso-confirmar">No aviso do banco de horas, <strong>Contabilizar</strong> desconta as horas do saldo; <strong>Não contabilizar</strong> dá a folga sem mexer nele.<span data-so-treino>No aviso do banco de horas, use o <strong>Contabilizar</strong>: ele desconta as horas do saldo. <strong>Não contabilizar</strong> dá a folga sem mexer nele.</span></p>
     <p data-fim>Pronto. A folga já vale na escala.</p>
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, a folga já valeria na escala.</p>
   </template>
@@ -1725,8 +1750,8 @@
     <p data-alvo="#arvore-folgas .folga-saldo-item" data-um data-avanca="clique">Abra a aba <strong>Equipe</strong> e clique no militar.</p>
     <p data-alvo="#folga-painel-subabas [data-sub='acoes']" data-avanca="clique" data-pular-se="#folga-painel-subabas [data-sub='acoes'].aba--ativa">Abra a aba <strong>Ações</strong> do painel e use o <strong>Ajustar saldo</strong>.</p>
     <p data-alvo=".painel-corpo .folga-acoes-btn[data-acao='ajustar']" data-avanca="clique">Abra a aba <strong>Ações</strong> do painel e use o <strong>Ajustar saldo</strong>.</p>
-    <p data-alvo="#fa-tipo, #fa-horas" data-avanca="preenchido" data-condicao="#fa-horas" data-livre>Escolha <strong>Adicionar</strong> ou <strong>Descontar</strong> e as horas.</p>
-    <p data-alvo="#fa-motivo" data-anel="campo" data-avanca="preenchido">Escreva o motivo.</p>
+    <p data-alvo="#fa-tipo, #fa-horas" data-avanca="preenchido" data-condicao="#fa-horas" data-livre data-porta="#fa-horas" data-escrever>Escolha <strong>Adicionar</strong> ou <strong>Descontar</strong> e as horas.<span data-so-treino>Escreva as horas. <strong>Adicionar</strong> já vem marcado, e <strong>Descontar</strong> fica ao lado.</span></p>
+    <p data-alvo="#fa-motivo" data-anel="campo" data-escrever data-avanca="preenchido">Escreva o motivo.</p>
     <p data-alvo="#fa-previa" data-opcional data-avanca="proximo">A nota mostra como o saldo fica.</p>
     <p data-alvo="#painel-rodape [data-acao='confirmar']" data-avanca="clique" data-segurar>Grave pelo <strong>Confirmar</strong>.</p>
     <p data-fim>Pronto. O saldo mudou, e o ajuste aparece no extrato dele.</p>
@@ -1760,8 +1785,10 @@
     <p data-avanca="escolha">Escolha <strong>Sim, quero</strong> ou <strong>Não quero</strong>.</p>
     <section data-caminho="nao" data-entrada=".painel-corpo #nova-extra-vol [data-vol='nao']"></section>
     <section data-caminho="sim" data-entrada=".painel-corpo #nova-extra-vol [data-vol='sim']">
-      <p data-alvo=".painel-corpo #nova-extra-cotas" data-avanca="proximo" data-livre><strong>Quantas cotas?</strong> Cada cota são 6 horas.</p>
-      <p data-alvo=".painel-corpo .nova-extra-pincel, .painel-corpo #nova-extra-cal" data-avanca="proximo" data-livre><strong>Quais dias?</strong> Escolha <strong>Quero</strong> e clique nos dias; depois <strong>Não quero</strong>, nos dias que você não pode. Clicar de novo desmarca.</p>
+      <p data-so-ajuda data-alvo=".painel-corpo #nova-extra-cotas" data-avanca="proximo" data-livre><strong>Quantas cotas?</strong> Cada cota são 6 horas.</p>
+      <p data-so-treino data-alvo=".painel-corpo #nova-extra-cotas .nova-extra-cota:not(:disabled)" data-avanca="clique"><strong>Quantas cotas?</strong> Cada cota são 6 horas. Escolha a acesa.</p>
+      <p data-so-ajuda data-alvo=".painel-corpo .nova-extra-pincel, .painel-corpo #nova-extra-cal" data-avanca="proximo" data-livre><strong>Quais dias?</strong> Escolha <strong>Quero</strong> e clique nos dias; depois <strong>Não quero</strong>, nos dias que você não pode. Clicar de novo desmarca.</p>
+      <p data-so-treino data-alvo=".painel-corpo .nova-extra-pincel, .painel-corpo #nova-extra-cal" data-condicao="#painel-rodape #nova-extra-enviar:not(:disabled)" data-treino-alvo=".painel-corpo button.nova-extra-dia[data-dia]:not(:disabled):not(.nova-extra-dia--quer)" data-avanca="aparece"><strong>Quais dias?</strong> Use <strong>Quero</strong> e clique no dia aceso. <strong>Não quero</strong> marca os dias que você não pode, e clicar de novo desmarca.</p>
       <p data-alvo=".painel-corpo #nova-extra-cal" data-avanca="proximo" data-livre>Os dias de serviço, troca, folga, férias, licença e dispensa já vêm travados.</p>
       <p data-alvo=".painel-corpo .nova-extra-ver" data-avanca="proximo" data-livre><strong>Ver</strong> muda o que cada dia mostra: os seus dias, onde falta gente ou quantos querem.</p>
       <p data-alvo=".painel-corpo #nova-extra-termo" data-opcional data-avanca="proximo">O <strong>Termo</strong> diz o que falta assinar.</p>
@@ -1800,7 +1827,7 @@
     <p data-alvo="#nova-extra-passos [data-passo='1']" data-avanca="clique" data-pular-se="#nova-extra-passos [data-passo='1'].aba--ativa">Abra o passo <strong>Pedidos</strong>.</p>
     <p data-alvo=".nova-extra-bloco:has(#p1-n-vol)" data-alvo-senao="#p1-n-vol, #p1-n-nao, #p1-n-sem" data-avanca="proximo">Em <strong>Respostas</strong>, quantos são voluntários, quantos não querem e quantos ainda não responderam.</p>
     <p data-alvo="#p1-filtro" data-avanca="proximo" data-livre>Este seletor troca a lista: <strong>Voluntários</strong>, <strong>Não querem</strong> ou <strong>Sem resposta</strong>.</p>
-    <p data-alvo="#p1-lista" data-clique="#p1-lista .ne-termo" data-avanca="clique">Na coluna <strong>Termo</strong>, marque quem entregou o termo assinado. Sem o termo, o voluntário fica fora das cotas e da distribuição.</p>
+    <p data-alvo="#p1-lista" data-clique="#p1-lista .ne-termo" data-avanca="clique" data-treino-alvo="#p1-lista .ne-termo">Na coluna <strong>Termo</strong>, marque quem entregou o termo assinado. Sem o termo, o voluntário fica fora das cotas e da distribuição.<span data-so-treino>Na coluna <strong>Termo</strong>, marque o termo aceso: ele entregou o termo assinado. Sem o termo, o voluntário fica fora das cotas e da distribuição.</span></p>
     <p data-alvo="#p1-rodape .rodape-acoes" data-clique="#p1-salvar" data-avanca="clique">Grave pelo <strong>Salvar</strong> do rodapé.</p>
     <p data-fim>Pronto. Os termos foram gravados.</p>
   </template>
@@ -1809,11 +1836,11 @@
     <p data-trecho="abrir-extra"></p>
     <p data-trecho="extra-organizar"></p>
     <p data-alvo="#nova-extra-passos [data-passo='2']" data-avanca="clique" data-pular-se="#nova-extra-passos [data-passo='2'].aba--ativa">Abra o passo <strong>Cotas</strong>.</p>
-    <p data-alvo="#p2-modo" data-avanca="proximo" data-livre>Em <strong>Repartir por</strong>, escolha <strong>Entre todos</strong> (uma fila só na companhia) ou <strong>Unidades</strong> (cada unidade com a sua).</p>
+    <p data-alvo="#p2-modo" data-avanca="proximo" data-livre>Em <strong>Repartir por</strong>, escolha <strong>Entre todos</strong> (uma fila só na companhia) ou <strong>Unidades</strong> (cada unidade com a sua).<span data-so-treino>Em <strong>Repartir por</strong>, você escolhe <strong>Entre todos</strong> (uma fila só na companhia) ou <strong>Unidades</strong> (cada unidade com a sua).</span></p>
     <p data-alvo="#p2-recebidas" data-avanca="proximo" data-livre>Aqui vai o total de cotas que a companhia recebeu.</p>
     <p data-alvo=".extra-vol-numero" data-avanca="proximo"><strong>Entregues</strong>, <strong>Sobram</strong> e <strong>Na escala</strong> acompanham a repartição.</p>
     <p data-alvo="#p2-lista" data-avanca="proximo">A lista segue a fila: quem foi menos atendido nos últimos 12 meses vem antes. A <strong>Sugestão</strong> é a conta do sistema.</p>
-    <p data-alvo="#p2-lista .extra-vol-conc-gatilho" data-um data-condicao="#p2-rodape:not(.oculto)" data-avanca="aparece">No <strong>Recebe</strong>, escolha quantas cotas cada um recebe.</p>
+    <p data-alvo="#p2-lista .extra-vol-conc-gatilho" data-um data-condicao="#p2-rodape:not(.oculto)" data-avanca="aparece" data-porta="#p2-lista .extra-vol-conc-gatilho; .dropdown--aberto .dropdown-item:not(.dropdown-item--ativo)">No <strong>Recebe</strong>, escolha quantas cotas cada um recebe.<span data-so-treino>No <strong>Recebe</strong>, escolha o número aceso: é quantas cotas ele recebe.</span></p>
     <p data-alvo="#nova-extra-acoes > .botao" data-avanca="proximo">Para pôr a Sugestão em todos de uma vez: <strong>Ações</strong> › <strong>Preencher pela sugestão</strong>.</p>
     <p data-alvo="#p2-rodape .rodape-acoes" data-clique="#p2-salvar" data-avanca="clique">Grave pelo <strong>Salvar</strong> do rodapé.</p>
     <p data-fim>Pronto. Com as cotas gravadas, a vez é da <strong>Distribuição</strong>.</p>
@@ -1824,10 +1851,11 @@
     <p data-trecho="extra-organizar"></p>
     <p data-alvo="#nova-extra-passos [data-passo='3']" data-avanca="clique" data-pular-se="#nova-extra-passos [data-passo='3'].aba--ativa">Abra o passo <strong>Distribuição</strong>.</p>
     <p data-alvo="#p3-cal" data-avanca="proximo">Cada dia mostra os pelotões, na cor do dia: verde, amarelo ou vermelho.</p>
-    <p data-alvo="#p3-cal" data-clique="#p3-cal [data-uid][data-dia]" data-avanca="clique">Clique num pelotão de um dia.</p>
+    <p data-alvo="#p3-cal" data-clique="#p3-cal [data-uid][data-dia]" data-avanca="clique" data-treino-alvo="#p3-cal [data-uid][data-dia]">Clique num pelotão de um dia.<span data-so-treino>Clique no pelotão aceso.</span></p>
     <p data-alvo=".painel-corpo .escala-extra-cobertura" data-anel="caixa" data-avanca="proximo">A <strong>Cobertura do dia</strong> compara o dia sem extra e com extra.</p>
     <p data-alvo=".painel-corpo .nova-extra-grupo" data-avanca="proximo" data-livre>Os voluntários vêm em grupos: <strong>Neste dia</strong>, <strong>Querem este dia</strong>, <strong>Sem preferência</strong>, <strong>Não querem</strong> e <strong>Indisponíveis</strong>.</p>
-    <p data-alvo=".painel-corpo .nova-extra-grupo" data-clique=".painel-corpo .escala-extra-marca" data-avanca="clique" data-livre>As 4 bolinhas são os horários de 6 h: 08h, 14h, 20h e 02h. Marque para pôr a extra.</p>
+    <p data-so-ajuda data-alvo=".painel-corpo .nova-extra-grupo" data-clique=".painel-corpo .escala-extra-marca" data-avanca="clique" data-livre>As 4 bolinhas são os horários de 6 h: 08h, 14h, 20h e 02h. Marque para pôr a extra.</p>
+    <p data-so-treino data-alvo=".painel-corpo .nova-extra-grupo" data-treino-alvo=".painel-corpo .escala-extra-marca:not(:disabled), .painel-corpo .nova-extra-grupo .grupo-caixa-cabecalho[aria-expanded='false']" data-condicao="#p3-rodape:not(.oculto)" data-avanca="aparece">As 4 bolinhas são os horários de 6 h: 08h, 14h, 20h e 02h. Marque a acesa para pôr a extra.</p>
     <p data-alvo="#p3-rodape .rodape-acoes" data-clique="#p3-salvar" data-avanca="clique">Grave pelo <strong>Salvar</strong> do rodapé.</p>
     <p data-fim>Pronto. As extras foram gravadas na distribuição.</p>
   </template>
@@ -1838,9 +1866,9 @@
     <p data-alvo="#nova-extra-passos [data-passo='3']" data-avanca="clique" data-pular-se="#nova-extra-passos [data-passo='3'].aba--ativa">Abra o passo <strong>Distribuição</strong>.</p>
     <p data-alvo="#p3-alca" data-avanca="clique" data-pular-se="#p3-alca[aria-expanded='true']">A alça abre a <strong>Lista dos voluntários</strong>.</p>
     <p data-alvo="#p3-esq" data-avanca="proximo">Em cima, <strong>Faltam</strong> (quem ainda tem cota para pôr); embaixo, <strong>Completos</strong>.</p>
-    <p data-alvo="#p3-esq" data-clique="#p3-esq .nova-extra-esq-item" data-avanca="clique">Clique no nome de um voluntário.</p>
+    <p data-alvo="#p3-esq" data-clique="#p3-esq .nova-extra-esq-item" data-avanca="clique" data-treino-alvo="#p3-esq .nova-extra-esq-item">Clique no nome de um voluntário.<span data-so-treino>Clique no voluntário aceso.</span></p>
     <p data-alvo="#p3-esq .nova-extra-esq-aberto" data-avanca="proximo" data-livre>Embaixo do nome aparecem as datas dele, com os 4 horários.</p>
-    <p data-alvo="#p3-cal" data-clique="#p3-cal .nova-extra-foco .escala-extra-marca" data-avanca="clique">No calendário, em cada dia, as bolinhas grandes dele, ou o motivo de ele não poder. Marque os horários.</p>
+    <p data-alvo="#p3-cal" data-clique="#p3-cal .nova-extra-foco .escala-extra-marca" data-avanca="clique" data-treino-alvo="#p3-cal .nova-extra-foco .escala-extra-marca:not(:disabled)">No calendário, em cada dia, as bolinhas grandes dele, ou o motivo de ele não poder. Marque os horários.<span data-so-treino>No calendário, em cada dia, as bolinhas grandes dele, ou o motivo de ele não poder. Marque a bolinha acesa.</span></p>
     <p data-alvo="#p3-foco" data-avanca="proximo" data-livre>O <strong>X</strong> da nota sai do foco.</p>
     <p data-alvo="#p3-rodape .rodape-acoes" data-clique="#p3-salvar" data-avanca="clique">Grave pelo <strong>Salvar</strong> do rodapé.</p>
     <p data-fim>Pronto.</p>
@@ -1852,10 +1880,10 @@
     <p data-alvo="#nova-extra-passos [data-passo='3']" data-avanca="clique" data-pular-se="#nova-extra-passos [data-passo='3'].aba--ativa">Abra o passo <strong>Distribuição</strong>.</p>
     <p data-alvo="#nova-extra-acoes > .botao" data-avanca="clique">Abra o menu <strong>Ações</strong>.</p>
     <p data-alvo="#p3-sugerir" data-avanca="clique">Escolha <strong>Preencher pela sugestão</strong>.</p>
-    <p data-alvo="#p3-calculo:not(.oculto)" data-alvo-senao="#p3-resultado:not(.oculto)" data-condicao="#p3-resultado:not(.oculto)" data-avanca="aparece">O sistema calcula a melhor distribuição, o que pode levar até 1 minuto.</p>
+    <p data-alvo="#p3-calculo:not(.oculto)" data-alvo-senao="#p3-resultado:not(.oculto)" data-condicao="#p3-resultado:not(.oculto)" data-porta="" data-avanca="aparece">O sistema calcula a melhor distribuição, o que pode levar até 1 minuto.</p>
     <p data-alvo="#p3-resultado" data-avanca="proximo">No alto, o resultado: quantas cotas foram postas e quem não coube.</p>
     <p data-alvo="#p3-cal" data-avanca="proximo">Cada extra posta pelo sistema tem o ícone dele; no painel do dia, aparece o porquê.</p>
-    <p data-alvo="#p3-rodape .rodape-acoes" data-clique="#p3-salvar, #p3-desfazer-sugestao" data-avanca="clique">Grave pelo <strong>Salvar</strong>, ou desista pelo <strong>Desfazer a sugestão</strong>.</p>
+    <p data-alvo="#p3-rodape .rodape-acoes" data-clique="#p3-salvar, #p3-desfazer-sugestao" data-avanca="clique" data-porta="#p3-salvar">Grave pelo <strong>Salvar</strong>, ou desista pelo <strong>Desfazer a sugestão</strong>.<span data-so-treino>Grave pelo <strong>Salvar</strong>. O <strong>Desfazer a sugestão</strong> desiste.</span></p>
     <p data-fim>Pronto. A distribuição foi preenchida.</p>
   </template>
 
@@ -1886,9 +1914,9 @@
     <p data-trecho="abrir-extra"></p>
     <p data-trecho="extra-organizar"></p>
     <p data-alvo="#nova-extra-passos [data-passo='4']" data-avanca="clique" data-pular-se="#nova-extra-passos [data-passo='4'].aba--ativa">Abra o passo <strong>Ajustes</strong>.</p>
-    <p data-alvo="#p3-cal" data-clique="#p3-cal [data-uid][data-dia]:has(.nova-extra-vaga)" data-avanca="clique">Clique num pelotão de um dia com extra.</p>
-    <p data-alvo=".painel-corpo .nova-extra-grupo" data-clique=".painel-corpo .escala-extra-marca" data-avanca="clique" data-livre>Marque ou desmarque os horários, como na Distribuição.</p>
-    <p data-alvo="#p3-motivo-campo" data-avanca="proximo" data-livre>No rodapé, escreva o <strong>Motivo do ajuste</strong>, se quiser.</p>
+    <p data-alvo="#p3-cal" data-clique="#p3-cal [data-uid][data-dia]:has(.nova-extra-vaga)" data-avanca="clique" data-treino-alvo="#p3-cal [data-uid][data-dia]:has(.nova-extra-vaga)">Clique num pelotão de um dia com extra.<span data-so-treino>Clique no pelotão aceso: ele tem extra.</span></p>
+    <p data-alvo=".painel-corpo .nova-extra-grupo" data-clique=".painel-corpo .escala-extra-marca" data-avanca="clique" data-livre data-treino-alvo=".painel-corpo .escala-extra-marca:not(:disabled)">Marque ou desmarque os horários, como na Distribuição.<span data-so-treino>Marque ou desmarque a bolinha acesa, como na Distribuição.</span></p>
+    <p data-alvo="#p3-motivo-campo" data-avanca="proximo" data-livre>No rodapé, escreva o <strong>Motivo do ajuste</strong>, se quiser.<span data-so-treino>No rodapé, o <strong>Motivo do ajuste</strong> é opcional.</span></p>
     <p data-alvo="#p3-rodape .rodape-acoes" data-clique="#p3-salvar" data-avanca="clique">Grave pelo <strong>Salvar e enviar para a escala</strong>.</p>
     <p data-fim>Pronto. O ajuste entrou na escala e vai para o relatório final.</p>
   </template>
@@ -1900,7 +1928,7 @@
     <p data-alvo="#p5-lista" data-avanca="proximo">As etapas do mês em ordem: a feita leva a marca verde.</p>
     <p data-alvo="#p5-lista .nova-extra-rel-botao" data-avanca="proximo">Cada etapa tem o seu Imprimir. O <strong>Relatório final</strong> só libera depois que o mês acaba.</p>
     <p data-alvo="#p5-inicial" data-avanca="clique">Use <strong>Imprimir relatório inicial</strong>.</p>
-    <p data-alvo=".painel-corpo [data-imprimir-unidade-caixa], .painel-corpo [data-imprimir-modo-caixa]" data-opcional data-avanca="proximo" data-livre>Escolha o pelotão (ou todos) e, com todos, se separa por pelotão ou faz uma lista única.</p>
+    <p data-alvo=".painel-corpo [data-imprimir-unidade-caixa], .painel-corpo [data-imprimir-modo-caixa]" data-opcional data-avanca="proximo" data-livre>Escolha o pelotão (ou todos) e, com todos, se separa por pelotão ou faz uma lista única.<span data-so-treino>Aqui você escolhe o pelotão (ou todos) e, com todos, se separa por pelotão ou faz uma lista única.</span></p>
     <p data-alvo="[data-impressao-gerar]" data-avanca="clique">Gere o PDF.</p>
     <p data-fim>Pronto. O arquivo foi baixado.</p>
   </template>
@@ -1924,7 +1952,7 @@
   <template data-roteiro="preencher-cnh" data-titulo="Preencher a sua CNH" data-grupo="Pendências" data-pagina="pendencias" data-cenario="cnh-falta">
     <p data-trecho="abrir-pendencias"></p>
     <p data-alvo="#pendencias-fazer .pedido--linha:not([data-pedido]):has(use[href$='#icone-editar'])" data-um data-avanca="clique" data-sem-alvo="A sua CNH já está respondida.">Abra o <strong>Preencha a sua CNH</strong>.</p>
-    <p data-alvo="#cnh-painel-selecao" data-anel="campo" data-avanca="aparece" data-condicao="#painel-rodape #cnh-painel-salvar:not(:disabled)" data-livre>Escolha a categoria da sua carteira, ou <strong>Não tenho CNH</strong>.</p>
+    <p data-alvo="#cnh-painel-selecao" data-anel="campo" data-avanca="aparece" data-condicao="#painel-rodape #cnh-painel-salvar:not(:disabled)" data-livre data-porta="#cnh-painel-selecao; .dropdown--aberto .dropdown-item">Escolha a categoria da sua carteira, ou <strong>Não tenho CNH</strong>.<span data-so-treino>Escolha a categoria acesa. Quem não tem carteira escolhe <strong>Não tenho CNH</strong>.</span></p>
     <p data-alvo="#painel-rodape #cnh-painel-salvar" data-avanca="clique" data-segurar>Grave pelo <strong>Salvar</strong>.</p>
     <p data-fim>Pronto. A categoria vai para a aprovação de um administrador. "Não tenho CNH" só confirma a resposta.</p>
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, a categoria iria para a aprovação de um administrador; "Não tenho CNH" só confirmaria a resposta.</p>
@@ -1959,14 +1987,14 @@
     <p data-trecho="abrir-usuarios"></p>
     <p data-alvo="#arvore-usuarios" data-avanca="proximo">Na aba <strong>Efetivo</strong>, cada unidade mostra os seus militares, com a situação de cada um.</p>
     <p data-alvo="#busca-usuarios" data-avanca="proximo" data-livre>A busca marca ou filtra quem você procura.</p>
-    <p data-alvo="#usuarios-filtros" data-avanca="proximo" data-livre>Em <strong>Filtros</strong>, escolha os postos e a situação.</p>
+    <p data-alvo="#usuarios-filtros" data-avanca="proximo" data-livre>Em <strong>Filtros</strong>, escolha os postos e a situação.<span data-so-treino>Em <strong>Filtros</strong>, você escolhe os postos e a situação.</span></p>
     <p data-alvo="#dropdown-ordem, #dropdown-exibir" data-opcional data-avanca="proximo" data-livre><strong>Ordem</strong> e <strong>Exibir</strong> mudam a ordem da lista e o que cada linha mostra.</p>
     <p data-fim>Pronto. Clicar num militar abre a ficha dele.</p>
   </template>
 
   <template data-roteiro="ver-ficha" data-titulo="Ver a ficha de um militar" data-grupo="Usuários" data-pagina="usuarios">
     <p data-trecho="abrir-usuarios"></p>
-    <p data-alvo="#arvore-usuarios .usuario-item" data-um data-avanca="clique">Clique num militar.</p>
+    <p data-alvo="#arvore-usuarios .usuario-item" data-um data-avanca="clique">Clique num militar.<span data-so-treino>Clique no militar aceso.</span></p>
     <p data-alvo=".painel-lateral .abas:has([data-secao='dados'])" data-avanca="proximo" data-livre>A ficha tem as abas <strong>Dados</strong>, <strong>Carreira</strong>, <strong>Férias</strong>, <strong>Licenças</strong> e <strong>Dispensas</strong>.</p>
     <p data-alvo=".painel-lateral [data-secao='carreira']" data-avanca="proximo" data-livre>Em <strong>Carreira</strong> ficam as promoções e as transferências.</p>
     <p data-alvo=".painel-corpo .alteracoes" data-opcional data-avanca="proximo">No fim de cada aba, <strong>Alterações na ficha</strong> mostra o que mudou e quem mudou.</p>
@@ -1985,7 +2013,7 @@
     <p data-trecho="abrir-usuarios"></p>
     <p data-alvo=".acoes-admin-gatilho" data-so-celular data-avanca="clique">Use o <strong>Novo usuário</strong>. No celular, ele fica no menu <strong>Administração</strong>.</p>
     <p data-alvo="#btn-novo-usuario" data-avanca="clique">Use o <strong>Novo usuário</strong>. No celular, ele fica no menu <strong>Administração</strong>.</p>
-    <p data-alvo=".painel-corpo" data-avanca="proximo" data-livre>Preencha os dados pessoais e os institucionais. E-mail, celular e colocação são opcionais.</p>
+    <p data-alvo=".painel-corpo" data-avanca="proximo" data-livre>Preencha os dados pessoais e os institucionais. E-mail, celular e colocação são opcionais.<span data-so-treino>Aqui entram os dados pessoais e os institucionais. E-mail, celular e colocação são opcionais.</span></p>
     <p data-alvo="#painel-rodape #nu-salvar" data-avanca="clique" data-segurar>Grave pelo <strong>Salvar</strong>.</p>
     <p data-fim>Pronto. Para o militar entrar no sistema, gere o link de cadastro na ficha dele.</p>
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, para o militar entrar, você geraria o link de cadastro na ficha dele.</p>
@@ -1993,7 +2021,7 @@
 
   <template data-roteiro="link-acesso" data-titulo="Mandar o link de acesso" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
     <p data-trecho="abrir-usuarios"></p>
-    <p data-alvo="#arvore-usuarios .usuario-item" data-um data-avanca="clique">Clique no militar.</p>
+    <p data-alvo="#arvore-usuarios .usuario-item" data-um data-avanca="clique">Clique no militar.<span data-so-treino>Clique no militar aceso.</span></p>
     <p data-alvo=".painel-corpo .ficha-acoes-fim .botao--primario" data-um data-avanca="clique" data-segurar>Use o <strong>Gerar link de cadastro</strong> (quem ainda não tem conta) ou o <strong>Gerar link de nova senha</strong>.</p>
     <p data-fim>Pronto. A mensagem com o link aparece na ficha; mande pelo Copiar mensagem. O link vale por 24 horas.</p>
     <p data-fim-treino>Pronto. No treino, nenhum link foi gerado. No sistema, a mensagem com o link apareceria na ficha, para mandar pelo Copiar mensagem. O link vale por 24 horas.</p>
@@ -2001,9 +2029,9 @@
 
   <template data-roteiro="corrigir-ficha" data-titulo="Corrigir os dados de um militar" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
     <p data-trecho="abrir-usuarios"></p>
-    <p data-alvo="#arvore-usuarios .usuario-item" data-um data-avanca="clique">Clique no militar.</p>
-    <p data-alvo=".painel-corpo [data-ficha-lapis][aria-label='Corrigir dados pessoais'], .painel-corpo [data-ficha-lapis][aria-label='Corrigir dados institucionais']" data-avanca="clique">Use o lápis de <strong>Dados pessoais</strong> ou de <strong>Dados institucionais</strong>.</p>
-    <p data-alvo=".painel-corpo .subtela" data-avanca="aparece" data-condicao="#painel-rodape [data-sub-aplicar]:not(:disabled)" data-livre>Mude o que precisa.</p>
+    <p data-alvo="#arvore-usuarios .usuario-item" data-um data-avanca="clique">Clique no militar.<span data-so-treino>Clique no militar aceso.</span></p>
+    <p data-alvo=".painel-corpo [data-ficha-lapis][aria-label='Corrigir dados pessoais'], .painel-corpo [data-ficha-lapis][aria-label='Corrigir dados institucionais']" data-avanca="clique">Use o lápis de <strong>Dados pessoais</strong> ou de <strong>Dados institucionais</strong>.<span data-so-treino>Use o lápis de <strong>Dados pessoais</strong>. O de <strong>Dados institucionais</strong> funciona do mesmo jeito.</span></p>
+    <p data-alvo=".painel-corpo .subtela" data-avanca="aparece" data-condicao="#painel-rodape [data-sub-aplicar]:not(:disabled)" data-livre data-treino-alvo=".painel-corpo .subtela input.campo-entrada[type='text']:not([readonly])" data-porta=".painel-corpo .subtela input.campo-entrada[type='text']:not([readonly])" data-escrever>Mude o que precisa.<span data-so-treino>Mude o campo aceso.</span></p>
     <p data-alvo="#painel-rodape [data-sub-aplicar]" data-avanca="clique" data-segurar>Grave pelo <strong>Salvar</strong>.</p>
     <p data-fim>Pronto. A mudança aparece em Alterações na ficha.</p>
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, a mudança apareceria em Alterações na ficha.</p>
@@ -2011,13 +2039,15 @@
 
   <template data-roteiro="lancar-afastamento" data-titulo="Lançar férias, licença ou dispensa" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
     <p data-trecho="abrir-usuarios"></p>
-    <p data-alvo="#arvore-usuarios .usuario-item" data-um data-avanca="clique">Clique no militar.</p>
+    <p data-alvo="#arvore-usuarios .usuario-item" data-um data-avanca="clique">Clique no militar.<span data-so-treino>Clique no militar aceso.</span></p>
     <p data-avanca="escolha">Abra a aba <strong>Férias</strong>, <strong>Licenças</strong> ou <strong>Dispensas</strong> da ficha.</p>
     <section data-caminho="ferias" data-entrada=".painel-lateral [data-secao='ferias']"></section>
     <section data-caminho="licencas" data-entrada=".painel-lateral [data-secao='licencas']"></section>
     <section data-caminho="dispensas" data-entrada=".painel-lateral [data-secao='dispensas']"></section>
     <p data-alvo=".painel-corpo [data-ficha-lapis]:not(.oculto)" data-um data-avanca="clique">Use o lápis da caixa do tipo.</p>
-    <p data-alvo=".painel-corpo [data-periodos], .painel-corpo [data-periodo-adicionar]" data-avanca="aparece" data-condicao="#painel-rodape [data-sub-aplicar]:not(:disabled)" data-livre>Use o <strong>Adicionar período</strong> e escolha as datas.</p>
+    <p data-so-ajuda data-alvo=".painel-corpo [data-periodos], .painel-corpo [data-periodo-adicionar]" data-avanca="aparece" data-condicao="#painel-rodape [data-sub-aplicar]:not(:disabled)" data-livre>Use o <strong>Adicionar período</strong> e escolha as datas.</p>
+    <p data-so-treino data-alvo=".painel-corpo [data-periodo-adicionar]" data-avanca="clique">Use o <strong>Adicionar período</strong>.</p>
+    <p data-so-treino data-alvo=".painel-corpo .ficha-periodo:last-child" data-condicao="#painel-rodape [data-sub-aplicar]:not(:disabled)" data-porta=".painel-corpo .ficha-periodo:last-child .ficha-periodo-datas; .painel-corpo .ficha-periodo:last-child .ficha-periodo-fluxo:not(.oculto) [data-fora='nao']" data-escrever data-avanca="aparece">Escreva o início e o fim.</p>
     <p data-alvo="#painel-rodape [data-sub-aplicar]" data-avanca="clique" data-segurar>Grave pelo <strong>Salvar</strong>.</p>
     <p data-fim>Pronto. O afastamento vale na escala.</p>
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, o afastamento valeria na escala.</p>
@@ -2025,19 +2055,24 @@
 
   <template data-roteiro="carreira-militar" data-titulo="Promover, transferir ou dar baixa" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
     <p data-trecho="abrir-usuarios"></p>
-    <p data-alvo="#arvore-usuarios .usuario-item" data-um data-avanca="clique">Clique no militar.</p>
+    <p data-alvo="#arvore-usuarios .usuario-item" data-um data-avanca="clique">Clique no militar.<span data-so-treino>Clique no militar aceso.</span></p>
     <p data-alvo=".painel-lateral [data-secao='carreira']" data-avanca="clique" data-pular-se=".painel-lateral [data-secao='carreira'].aba--ativa">Abra a aba <strong>Carreira</strong>.</p>
     <p data-avanca="escolha">Escolha o que fazer.</p>
     <section data-caminho="promover" data-entrada=".painel-lateral [data-ficha-acao='promover']">
-      <p data-alvo=".painel-corpo .subtela" data-avanca="aparece" data-condicao="#painel-rodape [data-sub-aplicar]:not(:disabled)" data-livre>Escolha o tipo, o posto e a data da promoção.</p>
+      <p data-so-ajuda data-alvo=".painel-corpo .subtela" data-avanca="aparece" data-condicao="#painel-rodape [data-sub-aplicar]:not(:disabled)" data-livre>Escolha o tipo, o posto e a data da promoção.</p>
+      <p data-so-treino data-alvo=".painel-corpo [data-promover-tipo]" data-condicao=".painel-corpo [data-promover-tipo] .campo-selecao-texto:not(.campo-selecao-texto--vazio)" data-porta=".painel-corpo [data-promover-tipo]; .dropdown--aberto .dropdown-item" data-avanca="aparece">Escolha o tipo aceso. O posto vem dele.</p>
+      <p data-so-treino data-alvo=".painel-corpo [data-promover-data]" data-anel="campo" data-porta=".painel-corpo [data-promover-data]" data-condicao="#painel-rodape [data-sub-aplicar]:not(:disabled)" data-escrever data-avanca="aparece">Escreva a data da promoção.</p>
       <p data-alvo="#painel-rodape [data-sub-aplicar]" data-avanca="clique" data-segurar>Grave pelo <strong>Promover</strong>.</p>
     </section>
     <section data-caminho="transferir" data-entrada=".painel-lateral [data-ficha-acao='transferir']">
-      <p data-alvo=".painel-corpo .subtela" data-avanca="aparece" data-condicao="#painel-rodape [data-sub-aplicar]:not(:disabled)" data-livre>Escolha a unidade e a data.</p>
+      <p data-so-ajuda data-alvo=".painel-corpo .subtela" data-avanca="aparece" data-condicao="#painel-rodape [data-sub-aplicar]:not(:disabled)" data-livre>Escolha a unidade e a data.</p>
+      <p data-so-treino data-alvo=".painel-corpo [data-transferir-dropdown]" data-condicao=".painel-corpo [data-transferir-texto]:not(.campo-selecao-texto--vazio)" data-porta=".painel-corpo [data-transferir-dropdown] > .campo-selecao; .dropdown--aberto [data-transferir-arvore] .arvore-linha" data-avanca="aparece">Escolha a unidade acesa.</p>
+      <p data-so-treino data-alvo=".painel-corpo [data-transferir-data]" data-anel="campo" data-porta=".painel-corpo [data-transferir-data]" data-condicao="#painel-rodape [data-sub-aplicar]:not(:disabled)" data-escrever data-avanca="aparece">Escreva a data.</p>
       <p data-alvo="#painel-rodape [data-sub-aplicar]" data-avanca="clique" data-segurar>Grave pelo <strong>Transferir</strong>.</p>
     </section>
     <section data-caminho="baixa" data-entrada=".painel-corpo .ficha-botao--perigo">
-      <p data-alvo=".painel-corpo .subtela" data-avanca="aparece" data-condicao="#painel-rodape [data-sub-aplicar]:not(:disabled)" data-livre>Escolha a data.</p>
+      <p data-so-ajuda data-alvo=".painel-corpo .subtela" data-avanca="aparece" data-condicao="#painel-rodape [data-sub-aplicar]:not(:disabled)" data-livre>Escolha a data.</p>
+      <p data-so-treino data-alvo=".painel-corpo [data-vigencia-data]" data-anel="campo" data-porta=".painel-corpo [data-vigencia-data]" data-condicao="#painel-rodape [data-sub-aplicar]:not(:disabled)" data-escrever data-avanca="aparece">Escreva a data.</p>
       <p data-alvo="#painel-rodape [data-sub-aplicar]" data-avanca="clique" data-segurar>Grave pelo <strong>Dar baixa</strong>.</p>
     </section>
     <p data-fim>Pronto. A ficha e a escala seguem a mudança a partir da data.</p>
@@ -2047,7 +2082,9 @@
   <template data-roteiro="mudar-antiguidade" data-titulo="Mudar a antiguidade" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
     <p data-trecho="abrir-usuarios"></p>
     <p data-alvo="#usuarios-abas [data-aba='antiguidade']" data-avanca="clique" data-pular-se="#usuarios-abas [data-aba='antiguidade'].aba--ativa">Abra a aba <strong>Antiguidade</strong>.</p>
-    <p data-alvo="#antiguidade-lista" data-avanca="aparece" data-condicao="#antiguidade-salvar" data-livre>Clique no militar e mude o lugar dele pelas setas.</p>
+    <p data-so-ajuda data-alvo="#antiguidade-lista" data-avanca="aparece" data-condicao="#antiguidade-salvar" data-livre>Clique no militar e mude o lugar dele pelas setas.</p>
+    <p data-so-treino data-alvo="#antiguidade-lista .antiguidade-linha:nth-child(2)" data-avanca="clique">Clique no militar aceso.</p>
+    <p data-so-treino data-alvo="#antiguidade-lista [data-mover]:not(:disabled)" data-condicao="#antiguidade-salvar" data-avanca="aparece">Mude o lugar dele pela seta acesa.</p>
     <p data-alvo="#antiguidade-salvar" data-avanca="clique">Grave pelo <strong>Salvar</strong>.</p>
     <p data-alvo="#veu-data .modal" data-clique="#veu-data .data-modal-confirmar" data-avanca="clique" data-segurar>Confira a data no aviso e confirme. A antiguidade decide o Chefe na escala.</p>
     <p data-fim>Pronto. A nova ordem vale a partir da data.</p>
@@ -2058,11 +2095,11 @@
     <p data-trecho="abrir-usuarios"></p>
     <p data-alvo="#usuarios-abas [data-aba='pendencias']" data-avanca="clique" data-pular-se="#usuarios-abas [data-aba='pendencias'].aba--ativa">Abra a aba <strong>Pendências</strong>.</p>
     <p data-alvo="#usuarios-pendencias [data-pedido='dados:{exemplo}']" data-alvo-senao="#usuarios-pendencias .pedido--linha" data-um data-avanca="clique" data-sem-alvo="Nenhuma correção de dados espera a sua aprovação agora.">Abra o pedido.</p>
-    <p data-alvo=".painel-lateral .decisao-pedido" data-avanca="proximo" data-livre>Marque as alterações que você aprova.</p>
+    <p data-alvo=".painel-lateral .decisao-pedido" data-avanca="proximo" data-livre>Marque as alterações que você aprova.<span data-so-treino>Aqui você marca as alterações que aprova.</span></p>
     <p data-avanca="escolha">Aprove ou recuse.</p>
     <section data-caminho="aprovar" data-entrada="#painel-rodape [data-acao='aprovar']" data-segurar></section>
     <section data-caminho="recusar" data-entrada="#painel-rodape [data-acao='recusar']">
-      <p data-alvo=".painel-lateral .decisao-recusa" data-avanca="proximo" data-livre>Se quiser, escreva o motivo.</p>
+      <p data-alvo=".painel-lateral .decisao-recusa" data-avanca="proximo" data-livre>Se quiser, escreva o motivo.<span data-so-treino>O motivo é opcional.</span></p>
       <p data-alvo="#painel-rodape [data-acao='confirmar-recusa']" data-avanca="clique" data-segurar>Confirme pelo <strong>Confirmar recusa</strong>.</p>
     </section>
     <p data-fim>Pronto. As alterações aprovadas já valem na ficha. O militar recebe o aviso.</p>
@@ -2076,9 +2113,9 @@
 
   <template data-roteiro="procurar-alteracao" data-titulo="Procurar uma alteração" data-area="admin" data-grupo="Histórico" data-pagina="historico" data-so-computador>
     <p data-trecho="abrir-historico"></p>
-    <p data-alvo="#historico-periodo" data-avanca="proximo" data-livre>Escolha o período.</p>
-    <p data-alvo="#historico-filtros" data-avanca="proximo" data-livre>Em <strong>Filtros</strong>, escolha o tipo e quem fez.</p>
-    <p data-alvo="#arvore-historico .historico-evento-cabecalho" data-um data-avanca="clique">Clique num cartão para ver o que mudou, de antes para depois.</p>
+    <p data-alvo="#historico-periodo" data-avanca="proximo" data-livre>Escolha o período.<span data-so-treino>Aqui você escolhe o período.</span></p>
+    <p data-alvo="#historico-filtros" data-avanca="proximo" data-livre>Em <strong>Filtros</strong>, escolha o tipo e quem fez.<span data-so-treino>Em <strong>Filtros</strong>, você escolhe o tipo e quem fez.</span></p>
+    <p data-alvo="#arvore-historico .historico-evento-cabecalho" data-um data-avanca="clique">Clique num cartão para ver o que mudou, de antes para depois.<span data-so-treino>Clique no cartão aceso para ver o que mudou, de antes para depois.</span></p>
     <p data-fim>Pronto.</p>
   </template>
 
@@ -2089,7 +2126,7 @@
 
   <template data-roteiro="conferir-distribuicao" data-titulo="Conferir a distribuição de uma unidade" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
     <p data-trecho="abrir-ajustes"></p>
-    <p data-alvo="#nova-distribuicao-unidades" data-avanca="proximo" data-livre>Escolha a unidade na barra.</p>
+    <p data-alvo="#nova-distribuicao-unidades" data-avanca="proximo" data-livre>Escolha a unidade na barra.<span data-so-treino>A unidade é escolhida na barra.</span></p>
     <p data-alvo="#nova-distribuicao-blocos" data-avanca="proximo">À esquerda ficam os blocos. O sinal ao lado de cada um diz se ele está pronto ou se falta algo.</p>
     <p data-alvo=".nova-distribuicao-bloco[data-bloco='8']" data-avanca="aparece" data-condicao="#nova-distribuicao-corpo .nova-distribuicao-conferir-modo" data-livre>Abra o <strong>Conferir</strong>. A <strong>Tabela</strong> mostra a ordem das funções; o <strong>Simular a equipe</strong> mostra como fica com cada número de militares.</p>
     <p data-fim>Pronto.</p>
@@ -2097,8 +2134,10 @@
 
   <template data-roteiro="mudar-ritmo" data-titulo="Mudar o ritmo da escala" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
     <p data-trecho="abrir-ajustes"></p>
-    <p data-alvo="#nova-distribuicao-unidades" data-avanca="proximo" data-livre>Escolha a unidade na barra.</p>
-    <p data-alvo="#nova-distribuicao-corpo .nova-distribuicao-cartao" data-um data-avanca="aparece" data-condicao="#nova-distribuicao-salvar" data-livre>No <strong>Ritmo</strong>, abra o cartão e escolha <strong>24/48</strong>, <strong>24/72</strong> ou <strong>12/36</strong>.</p>
+    <p data-alvo="#nova-distribuicao-unidades" data-avanca="proximo" data-livre>Escolha a unidade na barra.<span data-so-treino>A unidade é escolhida na barra.</span></p>
+    <p data-so-ajuda data-alvo="#nova-distribuicao-corpo .nova-distribuicao-cartao" data-um data-avanca="aparece" data-condicao="#nova-distribuicao-salvar" data-livre>No <strong>Ritmo</strong>, abra o cartão e escolha <strong>24/48</strong>, <strong>24/72</strong> ou <strong>12/36</strong>.</p>
+    <p data-so-treino data-alvo="#nova-distribuicao-corpo .nova-distribuicao-cartao-cabecalho[aria-expanded='false']" data-um data-pular-se="#nova-distribuicao-corpo .nova-distribuicao-cartao-cabecalho[aria-expanded='true']" data-avanca="clique">No <strong>Ritmo</strong>, abra o cartão aceso.</p>
+    <p data-so-treino data-alvo="#nova-distribuicao-corpo label:has(input[type='radio']:not(:checked):not(:disabled))" data-condicao="#nova-distribuicao-salvar" data-avanca="aparece">Escolha a opção acesa. O ritmo pode ser <strong>24/48</strong>, <strong>24/72</strong> ou <strong>12/36</strong>.</p>
     <p data-alvo="#nova-distribuicao-salvar" data-avanca="clique">Grave pelo <strong>Salvar</strong> do rodapé.</p>
     <p data-alvo="#veu-data .modal" data-clique="#veu-data .data-modal-confirmar" data-avanca="clique" data-segurar>Confira a data no aviso e confirme. A escala da unidade é refeita a partir dela.</p>
     <p data-fim>Pronto. O ritmo novo vale a partir da data.</p>
@@ -2107,9 +2146,12 @@
 
   <template data-roteiro="adicionar-posto" data-titulo="Adicionar um posto" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
     <p data-trecho="abrir-ajustes"></p>
-    <p data-alvo="#nova-distribuicao-unidades" data-avanca="proximo" data-livre>Escolha a unidade na barra.</p>
+    <p data-alvo="#nova-distribuicao-unidades" data-avanca="proximo" data-livre>Escolha a unidade na barra.<span data-so-treino>A unidade é escolhida na barra.</span></p>
     <p data-alvo=".nova-distribuicao-bloco[data-bloco='0']" data-avanca="clique" data-pular-se=".nova-distribuicao-bloco[data-bloco='0'].lista-item--ativo">Abra o bloco <strong>Postos</strong>.</p>
-    <p data-alvo="#nova-distribuicao-corpo" data-avanca="aparece" data-condicao="#nova-distribuicao-salvar" data-livre>Em <strong>Instalações</strong>, use o <strong>Nova instalação</strong> e escolha o tipo. Em <strong>Viaturas</strong>, use o <strong>Nova viatura</strong> e preencha o prefixo e a CNH.</p>
+    <p data-so-ajuda data-alvo="#nova-distribuicao-corpo" data-avanca="aparece" data-condicao="#nova-distribuicao-salvar" data-livre>Em <strong>Instalações</strong>, use o <strong>Nova instalação</strong> e escolha o tipo. Em <strong>Viaturas</strong>, use o <strong>Nova viatura</strong> e preencha o prefixo e a CNH.</p>
+    <p data-so-treino data-alvo="#nova-distribuicao-corpo .nova-distribuicao-cartao-cabecalho[aria-expanded='false']" data-um data-pular-se="#nova-distribuicao-corpo .nova-distribuicao-cartao-cabecalho[aria-expanded='true']" data-avanca="clique">Em <strong>Instalações</strong>, abra o cartão aceso.</p>
+    <p data-so-treino data-alvo="#nova-distribuicao-corpo .dropdown.nova-distribuicao-adicionar > .botao" data-avanca="clique">Use o <strong>Nova instalação</strong>. Em <strong>Viaturas</strong>, o <strong>Nova viatura</strong> pede o prefixo e a CNH.</p>
+    <p data-so-treino data-alvo="#nova-distribuicao-corpo .dropdown.nova-distribuicao-adicionar .dropdown-item" data-condicao="#nova-distribuicao-salvar" data-avanca="aparece">Escolha o tipo aceso.</p>
     <p data-alvo="#nova-distribuicao-salvar" data-avanca="clique">Grave pelo <strong>Salvar</strong> do rodapé.</p>
     <p data-alvo="#veu-data .modal" data-clique="#veu-data .data-modal-confirmar" data-avanca="clique" data-segurar>Confira a data no aviso e confirme.</p>
     <p data-fim>Pronto. O posto entra na escala a partir da data.</p>
@@ -2118,9 +2160,13 @@
 
   <template data-roteiro="mudar-efetivo" data-titulo="Mudar o efetivo de um posto" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
     <p data-trecho="abrir-ajustes"></p>
-    <p data-alvo="#nova-distribuicao-unidades" data-avanca="proximo" data-livre>Escolha a unidade na barra.</p>
-    <p data-alvo=".nova-distribuicao-bloco[data-bloco='1']" data-avanca="clique" data-pular-se=".nova-distribuicao-bloco[data-bloco='1'].lista-item--ativo">Abra o bloco <strong>Efetivo</strong> e o cartão do posto.</p>
-    <p data-alvo="#nova-distribuicao-corpo" data-avanca="aparece" data-condicao="#nova-distribuicao-salvar" data-livre>Mude o <strong>mínimo</strong>, o <strong>ideal</strong> e o <strong>máximo</strong>.</p>
+    <p data-alvo="#nova-distribuicao-unidades" data-avanca="proximo" data-livre>Escolha a unidade na barra.<span data-so-treino>A unidade é escolhida na barra.</span></p>
+    <p data-so-ajuda data-alvo=".nova-distribuicao-bloco[data-bloco='1']" data-avanca="clique" data-pular-se=".nova-distribuicao-bloco[data-bloco='1'].lista-item--ativo">Abra o bloco <strong>Efetivo</strong> e o cartão do posto.</p>
+    <p data-so-treino data-alvo=".nova-distribuicao-bloco[data-bloco='1']" data-pular-se=".nova-distribuicao-bloco[data-bloco='1'].lista-item--ativo" data-avanca="clique">Abra o bloco <strong>Efetivo</strong>.</p>
+    <p data-so-treino data-alvo="#nova-distribuicao-corpo .nova-distribuicao-cartao-cabecalho[aria-expanded='false']" data-um data-pular-se="#nova-distribuicao-corpo .nova-distribuicao-cartao-cabecalho[aria-expanded='true']" data-avanca="clique">Abra o cartão aceso.</p>
+    <p data-so-ajuda data-alvo="#nova-distribuicao-corpo" data-avanca="aparece" data-condicao="#nova-distribuicao-salvar" data-livre>Mude o <strong>mínimo</strong>, o <strong>ideal</strong> e o <strong>máximo</strong>.</p>
+    <p data-so-treino data-alvo="#nova-distribuicao-corpo .nova-distribuicao-cartao-opcoes .dropdown > button:not(:disabled)" data-avanca="clique">Abra o número aceso.</p>
+    <p data-so-treino data-alvo=".dropdown--aberto .dropdown-item:not(.dropdown-item--ativo):not(:disabled)" data-condicao="#nova-distribuicao-salvar" data-avanca="aparece">Escolha o novo número. Do mesmo jeito mudam o <strong>mínimo</strong>, o <strong>ideal</strong> e o <strong>máximo</strong>.</p>
     <p data-alvo="#nova-distribuicao-salvar" data-avanca="clique">Grave pelo <strong>Salvar</strong> do rodapé.</p>
     <p data-alvo="#veu-data .modal" data-clique="#veu-data .data-modal-confirmar" data-avanca="clique" data-segurar>Confira a data no aviso e confirme.</p>
     <p data-fim>Pronto. O efetivo novo vale a partir da data.</p>
@@ -2130,7 +2176,7 @@
   <template data-roteiro="horario-expediente" data-titulo="Mudar o horário de expediente" data-area="admin" data-papel="companhia" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
     <p data-trecho="abrir-ajustes"></p>
     <p data-alvo="#ajustes-abas [data-aba='horario']" data-avanca="clique" data-pular-se="#ajustes-abas [data-aba='horario'].aba--ativa">Abra a aba <strong>Horário de expediente</strong>.</p>
-    <p data-alvo="#horario-semana" data-avanca="aparece" data-condicao="#horario-salvar" data-livre>Em cada dia, escolha <strong>Trabalha</strong> ou <strong>Folga</strong>, e o horário.</p>
+    <p data-alvo="#horario-semana" data-avanca="aparece" data-condicao="#horario-salvar" data-livre data-treino-alvo="#horario-semana .ajustes-horario-tipo .aba:not(.aba--ativa)">Em cada dia, escolha <strong>Trabalha</strong> ou <strong>Folga</strong>, e o horário.<span data-so-treino>Escolha a opção acesa. Em cada dia, você escolhe <strong>Trabalha</strong> ou <strong>Folga</strong>, e o horário.</span></p>
     <p data-alvo="#horario-salvar" data-avanca="clique" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé.</p>
     <p data-fim>Pronto. O horário vale na hora, para os administrativos da companhia e dos pelotões.</p>
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, o horário valeria na hora, para os administrativos da companhia e dos pelotões.</p>
@@ -2139,9 +2185,9 @@
   <template data-roteiro="marcar-feriado" data-titulo="Marcar um feriado" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
     <p data-trecho="abrir-ajustes"></p>
     <p data-alvo="#ajustes-abas [data-aba='feriados']" data-avanca="clique" data-pular-se="#ajustes-abas [data-aba='feriados'].aba--ativa">Abra a aba <strong>Feriados</strong>.</p>
-    <p data-alvo="#feriados-barra" data-avanca="proximo" data-livre>Escolha o mês e a unidade na barra.</p>
-    <p data-alvo="#feriados-calendario" data-clique="#feriados-calendario .ajustes-exp-dia" data-avanca="clique">Clique no dia.</p>
-    <p data-alvo=".painel-corpo .subtela" data-avanca="aparece" data-condicao="#feriados-salvar" data-livre>Responda: <strong>Vale para</strong>, <strong>O que é</strong>, <strong>Nome</strong> e <strong>Quanto do dia</strong>.</p>
+    <p data-alvo="#feriados-barra" data-avanca="proximo" data-livre>Escolha o mês e a unidade na barra.<span data-so-treino>O mês e a unidade são escolhidos na barra.</span></p>
+    <p data-alvo="#feriados-calendario" data-clique="#feriados-calendario .ajustes-exp-dia" data-avanca="clique" data-treino-alvo="#feriados-calendario .ajustes-exp-dia">Clique no dia.<span data-so-treino>Clique no dia aceso.</span></p>
+    <p data-alvo=".painel-corpo .subtela" data-avanca="aparece" data-condicao="#feriados-salvar" data-livre data-treino-alvo=".painel-corpo label:has(input[name='exp-tipo'][value='recesso'])">Responda: <strong>Vale para</strong>, <strong>O que é</strong>, <strong>Nome</strong> e <strong>Quanto do dia</strong>.<span data-so-treino>Em <strong>O que é</strong>, escolha <strong>Recesso</strong>. <strong>Vale para</strong>, <strong>Nome</strong> e <strong>Quanto do dia</strong> ficam como estão.</span></p>
     <p data-alvo="#feriados-salvar" data-avanca="clique" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé.</p>
     <p data-fim>Pronto. O dia fica marcado e encurta o expediente.</p>
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, o dia ficaria marcado e encurtaria o expediente.</p>
@@ -2578,6 +2624,19 @@
       <span>Anteriores</span>
       <span class="anteriores-qtd"></span>
     </button>
+  </template>
+
+  <!-- esperando algo ficar pronto, no painel: o círculo e o aviso (o texto vem do RosterWork.painel.criarAtualizando) -->
+  <template id="tpl-painel-atualizando">
+    <div class="painel-estado painel-estado--atualizando" role="status">
+      <div class="giratorio" aria-hidden="true"></div>
+      <div class="nota nota--alerta"><span class="nota-texto"></span></div>
+    </div>
+  </template>
+
+  <!-- o dia que ainda pode mudar, aberto para leitura (o texto vem de quem usa: Escala) -->
+  <template id="tpl-nota-atualizando">
+    <div class="nota nota--alerta" role="status"><span class="nota-texto"></span></div>
   </template>
 
   <!-- carregando de container (painel/página): o círculo, nunca os pontinhos -->

@@ -630,6 +630,8 @@
     var sub = RosterWork.painel.subcabecalho();
     if (!sub) return;
     sub.textContent = '';
+    /* só para consulta (o dia ainda vai mudar): nenhuma ação */
+    if (ctx.consulta) { sub.classList.add('oculto'); return; }
     var imprimir = !ctx.emSub && !ctx.comparar && RosterWork.escalasImpressao
       ? RosterWork.escalasImpressao.botaoDoDia(abrirImpressao) : null;
     var solicitar = !ctx.emSub && !ctx.comparar && RosterWork.escalasPainelTroca ? RosterWork.tpl('tpl-escala-dia-solicitar') : null;
@@ -1283,7 +1285,7 @@
   function montar(corpo, rodape, unidadeId, iso, opcoes) {
     opcoes = opcoes || {};
     ctx = { corpo: corpo, rodape: rodape, unidadeId: unidadeId, iso: iso, admin: !!opcoes.admin,
-      comparar: !!opcoes.comparar,
+      comparar: !!opcoes.comparar, consulta: !!opcoes.consulta,
       dados: null, dadosAntes: null, chaveDados: null, emSub: false, comHistorico: false, salvando: false,
       sugestao: null, ultima: null };
     /* voltou de outra aba ao mesmo dia: o rascunho continua; outro dia, ou quem só lê, começa do dia gravado */

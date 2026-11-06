@@ -100,7 +100,7 @@
     var ids = colunas.map(function (c) { return c.id; });
 
     var req = ++reqSeq;
-    return window.RosterWork.escalasDados.carregar(ids, inicio, fim).then(function (resultado) {
+    return window.RosterWork.escalasDados.carregar(ids, inicio, fim, { daTela: true }).then(function (resultado) {
       if (!document.contains(corpo) || req !== reqSeq || (opcoes.vigente && !opcoes.vigente())) return;   // saiu da página, outra render começou, ou trocou de modo
       var dados = resultado.militares;
       var afastados = resultado.afastados || {};
@@ -145,13 +145,13 @@
 
   /* refresh de uma única célula (unidade × dia) após salvar no painel — igual ao Mês/Semana,
      mas na grade do calendário; só age se o calendário estiver na tela */
-  function atualizarCelula(unidadeId, iso) {
+  function atualizarCelula(unidadeId, iso, leitura) {
     if (!window.RosterWork.escalasDados || !window.RosterWork.escalasCelula) return;
     var wrap = document.querySelector('.geral-calendario-mes');
     if (!wrap) return;
     var celula = wrap.querySelector('.escala-mes-celula[data-unidade-id="' + unidadeId + '"][data-iso="' + iso + '"]');
     if (!celula) return;
-    window.RosterWork.escalasDados.carregar([unidadeId], iso, iso).then(function (r) {
+    (leitura || window.RosterWork.escalasDados.carregar([unidadeId], iso, iso)).then(function (r) {
       if (!document.contains(celula)) return;
       var cobDia = (r.cobertura[unidadeId] && r.cobertura[unidadeId][iso]) || null;
       var erroDia = (r.erro[unidadeId] && r.erro[unidadeId][iso]) || null;

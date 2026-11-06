@@ -254,6 +254,13 @@
     return RosterWork.tpl('tpl-painel-carregando');
   }
 
+  /* esperando algo ficar pronto: o círculo e, embaixo, o aviso do que está sendo esperado */
+  function criarAtualizando(texto) {
+    var no = RosterWork.tpl('tpl-painel-atualizando');
+    no.querySelector('.nota-texto').textContent = texto;
+    return no;
+  }
+
   /* ----- celular: puxar o corpo para o lado troca para a aba vizinha (geral-deslizar.js) ----- */
   function abasVisiveis() {
     return Array.prototype.filter.call(elLinhaAbas.querySelectorAll('.aba'), function (aba) { return aba.getClientRects().length > 0; });
@@ -377,6 +384,7 @@
     criarLinha: criarLinha,
     criarSecaoColapsavel: criarSecaoColapsavel,
     criarEstado: criarEstado,
-    criarCarregando: criarCarregando
+    criarCarregando: criarCarregando,
+    criarAtualizando: criarAtualizando
   };
 })();

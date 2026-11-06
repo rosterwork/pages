@@ -353,6 +353,24 @@
   justify-content: center;
 }
 
+/* esperando algo ficar pronto (o dia, a impressão): o círculo e, embaixo, o aviso */
+.painel-estado--atualizando {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.painel-estado--atualizando .nota {
+  align-self: stretch;
+  text-align: left;
+}
+
+/* o dia aberto só para consulta: a nota entre o subcabeçalho e o corpo */
+.painel-nota-consulta {
+  margin: 8px 16px 0;
+}
+
 /* seção empurrada para o fim do corpo (ex.: "Dar baixa do sistema" na ficha):
    gruda no rodapé quando sobra espaço; com rolagem, fica no fim e rola junto */
 .painel-secao--rodape {

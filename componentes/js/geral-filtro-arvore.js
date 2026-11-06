@@ -177,6 +177,7 @@
       var linha = el.querySelector('.arvore-linha');
       var caixa = el.querySelector('.caixa-selecao');
       el.querySelector('.arvore-nome').textContent = no.rotulo;
+      if (no.valor != null) el.setAttribute('data-filtro-valor', no.valor);   // por onde o treino acha a opção
 
       if (no.filhos && no.filhos.length) {
         el.classList.add('arvore-grupo--aberto');

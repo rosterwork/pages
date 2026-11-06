@@ -675,8 +675,9 @@
                 <li><strong>Vermelho:</strong> um erro grave. A escala não funciona como está e precisa de correção.</li>
               </ul>
               <p>Parando o mouse sobre o gráfico, aparecem a hora e quantos militares estão de serviço, e a faixa de cada militar mostra em claro o trecho do turno.</p>
+              <p><strong>Dias com borda amarela.</strong> Logo depois de uma mudança na escala, alguns dias levam um instante para se atualizar. Eles aparecem com uma <strong>borda amarela</strong>, ainda com a versão anterior, e uma nota amarela avisa no alto da página. Não é erro, e você não precisa fazer nada: em até uns 2 minutos os dias se ajustam sozinhos e a borda some. Ao clicar num desses dias, o painel abre na hora ou, se o dia ainda vai ser refeito, mostra "Atualizando este dia. Ele abre sozinho assim que ficar pronto."; passando de 30 segundos, o dia abre só para consulta, até ficar pronto. A Legenda também explica a borda.</p>
               <figure class="manual-figura">
-                <img src="manual/imagens/escala-legenda-grade.png" width="416" height="430" alt="A caixa da Legenda aberta pelo botão no alto da página Escala (1), com os grupos Cobertura e Na célula, que inclui o militar afastado (2), e, abaixo, os grupos de origem, nome riscado, função, militar e observações." />
+                <img src="manual/imagens/escala-legenda-grade.png" width="494" height="455" alt="A caixa da Legenda aberta pelo botão no alto da página Escala (1), com os grupos Cobertura e Na célula, que inclui o militar afastado e a borda amarela (2), e, abaixo, os grupos de origem, nome riscado, função, militar e observações." />
                 <figcaption>
                   <ol class="manual-chamadas">
                     <li>Botão Legenda</li>
@@ -761,6 +762,7 @@
                 <span class="manual-selo-admin">Apenas administradores</span>
                 <p>Enquanto houver uma mudança no dia ainda não salva, o botão de imprimir do painel fica apagado: salve antes de imprimir, porque o PDF sai do que está gravado.</p>
               </div>
+              <p>Com a escala ainda se atualizando, o botão da barra abre o painel com "Atualizando a escala deste período. A impressão abre sozinha assim que ficar pronta." e a impressão aparece quando termina. Passando de 30 segundos, ela abre com um aviso amarelo: o PDF pode sair com dias que ainda vão mudar.</p>
               <p>Os dois botões abrem, à direita, o mesmo <strong>painel de impressão</strong>. Ele é igual em todas as impressões da escala; só muda o que sai no papel. No modo <strong>Militares</strong> e no painel do dia, sai a escala de cada dia, no painel <strong>Imprimir escala</strong>:</p>
               <ul class="manual-lista">
                 <li><strong>Será impresso:</strong> a nota do alto resume o que vai sair, como "Escala de 21/10/2026, 2ªCIBM e 2ºPEL.". Se algum dia do período tiver erro grave, um aviso logo abaixo diz quais dias e unidades; o PDF sai do jeito que está na escala.</li>
@@ -1720,7 +1722,7 @@
               <h3 id="dist-salvar">Salvar e a mudança agendada</h3>
               <p>O que você muda fica marcado, com "Alterações não salvas" no rodapé, até o <strong>Salvar</strong>. O <strong>Cancelar</strong> desfaz tudo. Se você mesmo desfizer a mudança, voltando ao que estava, o rodapé some. O Salvar pergunta <strong>a partir de quando</strong> a mudança vale: o padrão é o próximo serviço (o dia vira às 08h), e dá para escolher outra data, até 7 dias para trás. Embaixo da data vem o resumo do que muda.</p>
               <p>Com uma data futura, a mudança vira a <strong>mudança agendada</strong>: um aviso no alto da página mostra a data, com <strong>Ver a mudança</strong>, <strong>Mudar a data</strong> e <strong>Cancelar a mudança</strong>. Cada unidade tem a distribuição em vigor e, no máximo, uma mudança agendada.</p>
-              <p>Ao salvar, a escala da unidade é refeita a partir da data, o resumo do que mudou abre na tela e fica no <strong>Histórico</strong>. Os primeiros dias são refeitos na hora, com o círculo cobrindo a página; os outros, em segundo plano. Se você abrir a Escala nesse meio-tempo, ela aparece na hora, com a nota "Atualizando a escala de … em diante" no alto e os dias que ainda vão ser refeitos apagados. Quando termina, a nota some e a grade se refaz sozinha. O painel de um dia apagado abre quando ele fica pronto.</p>
+              <p>Ao salvar, a escala da unidade é refeita a partir da data, o resumo do que mudou abre na tela e fica no <strong>Histórico</strong>. Os primeiros dias são refeitos na hora, com o círculo cobrindo a página; os outros, em segundo plano, mesmo que você feche a página. Se você abrir a Escala nesse meio-tempo, ela aparece na hora, com a nota amarela no alto e os dias que ainda podem mudar com a <strong>borda amarela</strong> (veja <strong>Dias com borda amarela</strong>, na Escala). Quando termina, a nota some e os dias se ajustam sozinhos.</p>
               <figure class="manual-figura">
                 <img src="manual/imagens/distribuicao-salvar.png" width="496" height="280" alt="O Salvar da Distribuição: a data a partir de quando vale (1), Escolher outra data (2) e o resumo do que muda (3)." />
                 <figcaption>

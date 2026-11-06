@@ -3,7 +3,7 @@
    Começar um treino (a página Treinamento) liga o modo no sistema
    inteiro: a moldura azul em volta da tela (#treino-moldura), a barra
    azul no alto (.treino-barra, acima do cabeçalho) com a página, o
-   número e o nome do treino e o Sair do treino, e a marca data-treino
+   número e o nome do treino, o Recomeçar (geral-guia.js) e o Sair do treino, e a marca data-treino
    no <html>. Nada é gravado: cada
    chamada ao banco passa por passar(caminho, metodo, corpo, buscar),
    no geral-api.js; barrar só deixa ir o que lê (LEITURAS), os ensaios
@@ -37,7 +37,7 @@
     'afastamentos_listar', 'ajustes_ritmo_listar', 'antiguidade_listar', 'bug_relatores_listar', 'bugs_listar',
     'buscar_graus_hierarquicos', 'dados_pendentes', 'dist_ler_modelo', 'dist_listar_modelos', 'dist_listar_periodos',
     'dist_regras_funcoes', 'dist_regras_listar', 'dist_regras_militares', 'escala_alteracoes_dia', 'escala_dia_arvore',
-    'escala_dia_disponiveis', 'escala_impressao', 'escala_impressao_erros', 'escala_minha_calendario', 'escala_sysbm',
+    'escala_dias_atualizando', 'escala_dia_disponiveis', 'escala_impressao', 'escala_impressao_erros', 'escala_minha_calendario', 'escala_sysbm',
     'expediente_horario', 'expediente_mes', 'ficha_alteracoes', 'fn_sou_programador', 'fn_trocas_impressao',
     'fn_trocas_registro', 'fn_trocas_varias_dias', 'fn_trocas_varias_montar', 'fn_trocas_varias_plano', 'fn_unidades_padrao',
     'ler_distribuicao_dia', 'ler_escala_mes', 'ler_escala_militares', 'ler_militar_dia', 'listar_instalacoes', 'listar_viaturas',
@@ -159,8 +159,16 @@
   }
 
   /* a chamada no treino: a recusada recebe a resposta do treino; a que passa vai pelos exemplos, que limpam o pedido
-     e põem a situação na resposta */
+     e põem a situação na resposta. As que ainda não voltaram ficam contadas: o passo a passo espera por elas */
+  var noAr = 0;
   function passar(caminho, metodo, corpo, buscar) {
+    noAr++;
+    function voltou() { noAr--; }
+    var chamada = encaminhar(caminho, metodo, corpo, buscar);
+    chamada.then(voltou, voltou);
+    return chamada;
+  }
+  function encaminhar(caminho, metodo, corpo, buscar) {
     var nome = nomeDa(caminho);
     if (RW.treinoExtra && RW.treinoExtra.cuida(nome, corpo)) return RW.treinoExtra.responder(nome, corpo);
     if (RW.treinoBanco && RW.treinoBanco.cuida(nome, corpo)) return RW.treinoBanco.responder(nome, corpo, buscar);
@@ -175,6 +183,7 @@
 
   RW.treino = {
     ligado: function () { return ligado; },
+    noAr: function () { return noAr > 0; },
     comecar: comecar, voltarAosTreinos: voltarAosTreinos, linhaPedida: linhaPedida, seguir: seguir, comecarPendente: comecarPendente, passar: passar
   };
 })();

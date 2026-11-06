@@ -1,8 +1,8 @@
 /* ============================================================
    TREINO — o modo treino (componente geral-treino)
    A barra azul no alto da casca, acima do cabeçalho (.treino-barra:
-   o modo, a página e o treino, separados por um traço, e o botão
-   Sair do treino), e a moldura azul em volta da tela (.treino-moldura,
+   o modo, a página e o treino, separados por um traço, e os botões
+   Recomeçar e Sair do treino), e a moldura azul em volta da tela (.treino-moldura,
    por cima de tudo e sem pegar o clique). O azul é o --anotacao, o
    mesmo das marcações do manual.
    No passo a passo, a barra e a moldura ficam acesas (o véu do
@@ -79,6 +79,11 @@
   margin-left: auto;
 }
 
+/* o ícone do Recomeçar só aparece no celular */
+.treino-barra-recomecar .icone {
+  display: none;
+}
+
 /* o escuro dos avisos e das janelas começa embaixo da barra: ela fica clara e os botões dela respondem */
 html[data-treino] .modal-veu {
   top: var(--treino-barra-altura);
@@ -95,9 +100,11 @@ html[data-treino] .modal-veu {
 
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
-   A barra fica só com o treino, com a página junto do número, e o
-   Sair do treino; o painel, que no celular cobre a tela, e o balão
-   do passo a passo preso em cima começam abaixo dela.
+   A barra fica só com o treino, com a página junto do número, e os
+   dois botões, para o nome do treino caber: o Recomeçar só com o
+   ícone e o outro só com a palavra Sair. O painel, que no celular
+   cobre a tela, e o balão do passo a passo preso em cima começam
+   abaixo dela.
    ============================================================ */
 @media (max-width: 767px) {
   html[data-celular] .treino-barra {
@@ -116,6 +123,20 @@ html[data-treino] .modal-veu {
   html[data-celular] .treino-barra-parte + .treino-barra-parte {
     padding-left: 0;
     border-left: 0;
+  }
+
+  html[data-celular] .treino-barra-recomecar {
+    min-width: var(--botao-altura);
+    padding: 0;
+  }
+
+  html[data-celular] .treino-barra-recomecar .icone {
+    display: block;
+  }
+
+  html[data-celular] .treino-barra-recomecar-texto,
+  html[data-celular] .treino-barra-sair-resto {
+    display: none;
   }
 
   html[data-celular][data-treino] .painel-lateral {

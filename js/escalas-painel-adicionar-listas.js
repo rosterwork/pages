@@ -52,10 +52,12 @@
       if (m.estado === 'fora') {
         if (m.entra_em) { item.inativo = true; item.info = L().infoEntraEm(diaMes(m.entra_em)); naoPodem.push(item); return; }
         item.info = L().infoFora;
+        if (!m.serve_hoje) item.situacao = 'fora';
         fora.push(item);
         return;
       }
       item.info = m.serve_hoje ? L().infoServeHoje : m.ultimo_servico ? L().infoUltimo(diaMes(m.ultimo_servico)) : '';
+      if (!m.serve_hoje && m.ultimo_servico) item.situacao = 'outro-ciclo';
       noCiclo.push(item);
     });
     var lista = [];

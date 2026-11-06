@@ -544,6 +544,7 @@
   }
 
   function desmarcar() {
+    notaConsulta(false);
     if (celulaSelecionada) {
       celulaSelecionada.classList.remove('escala-mes-celula--selecionada');
       celulaSelecionada = null;
@@ -733,6 +734,21 @@
     });
   }
 
+  var ESPERA_DIA_MS = 30000;   // o dia na fila para de esperar e abre só para consulta
+
+  /* a nota do dia aberto só para consulta: entre o subcabeçalho e o corpo, que se redesenha sozinho */
+  function notaConsulta(mostrar) {
+    var corpo = RosterWork.painel && RosterWork.painel.corpo();
+    if (!corpo || !corpo.parentNode) return;
+    var atual = corpo.parentNode.querySelector('.painel-nota-consulta');
+    if (atual) atual.remove();
+    if (!mostrar) return;
+    var nota = RosterWork.tpl('tpl-nota-atualizando');
+    nota.classList.add('painel-nota-consulta');
+    nota.querySelector('.nota-texto').textContent = RosterWork.mensagens.escala.diaConsulta;
+    corpo.parentNode.insertBefore(nota, corpo);
+  }
+
   /* troca o conteúdo do corpo e o rodapé conforme a aba de seção: o Dia é a lista que o admin edita
      (e os outros só leem) e o Ciclo (só admin) é sempre edição */
   function mostrarSecao(secao) {
@@ -747,19 +763,36 @@
     /* ao entrar numa seção, as outras param de desenhar (os rascunhos delas ficam até o Salvar do rodapé) */
     if (secao !== 'distribuicao' && RosterWork.escalasPainelEditar) RosterWork.escalasPainelEditar.reset();
     if (secao !== 'continuos' && RosterWork.escalasPainelContinuos) RosterWork.escalasPainelContinuos.reset();
-    /* o dia que a fila do recálculo ainda vai refazer: o círculo até ele ficar pronto (ninguém mexe num dia que vai mudar) */
+    /* o dia que a fila do recálculo ainda vai refazer: a mensagem com o círculo até ele ficar pronto (ninguém mexe num dia
+       que vai mudar); passando do limite, o Dia abre só para consulta, com a nota, e volta ao normal quando ficar pronto */
     var atualizando = RosterWork.escalaAtualizando, esperado = pCtx;
-    if (atualizando && atualizando.pendente(pCtx.unidadeId, pCtx.iso)) {
+    notaConsulta(false);
+    var naFila = !!(atualizando && atualizando.pendente(pCtx.unidadeId, pCtx.iso));
+    if (naFila && !esperado.aguardando) {
+      esperado.aguardando = true;
+      esperado.limite = setTimeout(function () {
+        esperado.consulta = true;
+        if (pCtx === esperado) mostrarSecao(pCtx.secao);
+      }, ESPERA_DIA_MS);
+      atualizando.esperar(pCtx.unidadeId, pCtx.iso).then(function () {
+        clearTimeout(esperado.limite);
+        esperado.aguardando = false;
+        esperado.consulta = false;
+        if (pCtx === esperado) mostrarSecao(pCtx.secao);
+      });
+    }
+    if (naFila && !(esperado.consulta && secao === 'distribuicao')) {
       corpo.textContent = '';
-      corpo.appendChild(RosterWork.painel.criarCarregando());
+      corpo.appendChild(RosterWork.painel.criarAtualizando(RosterWork.mensagens.escala.diaAtualizando));
       if (rodape) { rodape.textContent = ''; rodape.classList.add('oculto'); }
-      atualizando.esperar().then(function () { if (pCtx === esperado && pCtx.secao === secao) mostrarSecao(secao); });
       return;
     }
+    if (naFila) notaConsulta(true);
     if (secao === 'distribuicao' && RosterWork.escalasPainelEditar) {
       /* o dia é de quem tem a unidade na área do papel */
       RosterWork.escalasPainelEditar.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso, {
-        admin: RosterWork.sessao.podeAdministrar('pelotao', pCtx.unidadeId)
+        admin: !naFila && RosterWork.sessao.podeAdministrar('pelotao', pCtx.unidadeId),
+        consulta: naFila
       });
     } else if (secao === 'continuos' && RosterWork.escalasPainelContinuos) {
       RosterWork.escalasPainelContinuos.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso);
@@ -786,6 +819,8 @@
     var cidade = celula.dataset.unidadeCidade;
     var inicial = secao || 'distribuicao';
     pCtx = { unidadeId: unidadeId, iso: iso, secao: inicial };
+    /* o dia já refeito abre na hora: o painel lê o dado real, e a célula fica igual a ele */
+    if (RosterWork.escalaAtualizando && RosterWork.escalaAtualizando.soCopia(unidadeId, iso)) RosterWork.escalaAtualizando.corrigir(unidadeId, iso);
     RosterWork.painel.abrir({
       titulo: celula.dataset.unidadeNome || '',
       tituloExtra: cidade ? '- ' + cidade : '',

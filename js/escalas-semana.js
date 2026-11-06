@@ -81,7 +81,7 @@
     var ids = colunas.map(function (c) { return c.id; });
 
     var req = ++reqSeq;
-    window.RosterWork.escalasDados.carregar(ids, inicio, fim).then(function (resultado) {
+    window.RosterWork.escalasDados.carregar(ids, inicio, fim, { daTela: true }).then(function (resultado) {
       var dados = resultado.militares;
       var afastados = resultado.afastados || {};
       var cobertura = resultado.cobertura || {};
@@ -148,13 +148,13 @@
 
   /* refresh de uma única célula (unidade × dia) após salvar no painel — igual ao Mês, mas na
      grade da Semana; só age se a grade da Semana estiver na tela (senão o Mês cuida) */
-  function atualizarCelula(unidadeId, iso) {
+  function atualizarCelula(unidadeId, iso, leitura) {
     if (!window.RosterWork.escalasDados || !window.RosterWork.escalasCelula) return;
     var grade = document.querySelector('.escala-semana-grade');
     if (!grade) return;
     var celula = grade.querySelector('.escala-mes-celula[data-unidade-id="' + unidadeId + '"][data-iso="' + iso + '"]');
     if (!celula) return;
-    window.RosterWork.escalasDados.carregar([unidadeId], iso, iso).then(function (r) {
+    (leitura || window.RosterWork.escalasDados.carregar([unidadeId], iso, iso)).then(function (r) {
       if (!document.contains(celula)) return;
       var cobDia = (r.cobertura[unidadeId] && r.cobertura[unidadeId][iso]) || null;
       var erroDia = (r.erro[unidadeId] && r.erro[unidadeId][iso]) || null;

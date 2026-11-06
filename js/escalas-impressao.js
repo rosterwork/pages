@@ -114,7 +114,7 @@
     painel().montar(corpo, rodape, {
       molde: 'tpl-escala-impressao',
       marcas: ['dia'],
-      conferir: conferirErros,
+      conferir: opcoes.conferir || conferirErros,
       ids: opcoes.ids,
       mostrar: { icones: true },
       aoSair: opcoes.aoSair,
@@ -185,6 +185,7 @@
     montarFormulario(RW.painel.corpo(), RW.painel.rodape(), {
       data: (opcoes && opcoes.data) || new Date(),
       ids: idsAplicados(),
+      conferir: opcoes && opcoes.conferir,
       aoSair: function () { RW.painel.fechar(); }
     });
   }

@@ -7,9 +7,9 @@
    Assim nenhuma requisição carrega a escala inteira (some o risco de
    estouro de tempo/503).
    - Ao SALVAR: o `esconderVeuGlobal` marca pendência e esvazia em 2º plano.
-   - Ao ABRIR a Escala: ela mostra na hora, lê a fila (`lerFilaRecalculo`),
-     marca os dias que ainda vão ser refeitos e se redesenha quando o
-     esvaziar termina (escalas.js).
+   - Com a Escala aberta: ela mostra na hora, com a borda amarela nos dias
+     que ainda podem mudar, e ajuda a esvaziar (escalas-atualizando.js).
+   - Sem nenhuma tela aberta: a tarefa de cada minuto do banco esvazia.
    Ver BANCO.md (recalculo_fila).
    ============================================================ */
 (function () {

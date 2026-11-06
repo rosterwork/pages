@@ -61,7 +61,7 @@
     var ids = colunas.map(function (c) { return c.id; });
 
     var req = ++reqSeq;
-    return window.RosterWork.escalasDados.carregar(ids, inicio, fim).then(function (resultado) {
+    return window.RosterWork.escalasDados.carregar(ids, inicio, fim, { daTela: true }).then(function (resultado) {
       var dados = resultado.militares;
       var afastados = resultado.afastados || {};
       var cobertura = resultado.cobertura || {};
@@ -136,13 +136,13 @@
   /* refresh de uma única célula (unidade × dia) após salvar no painel — sem re-renderizar a
      grade toda, preservando rolagem, realce e hover. Editar a distribuição não muda quem está
      de serviço (isso vem do QUANDO, intocado), então a cobertura e o pico da unidade seguem válidos. */
-  function atualizarCelula(unidadeId, iso) {
+  function atualizarCelula(unidadeId, iso, leitura) {
     if (!window.RosterWork.escalasDados || !window.RosterWork.escalasCelula) return;
     var grade = document.querySelector('.escala-mes-grade');
     if (!grade) return;
     var celula = grade.querySelector('.escala-mes-celula[data-unidade-id="' + unidadeId + '"][data-iso="' + iso + '"]');
     if (!celula) return;
-    window.RosterWork.escalasDados.carregar([unidadeId], iso, iso).then(function (r) {
+    (leitura || window.RosterWork.escalasDados.carregar([unidadeId], iso, iso)).then(function (r) {
       if (!document.contains(celula)) return;
       var cobDia = (r.cobertura[unidadeId] && r.cobertura[unidadeId][iso]) || null;
       var erroDia = (r.erro[unidadeId] && r.erro[unidadeId][iso]) || null;

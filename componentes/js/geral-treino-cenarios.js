@@ -16,9 +16,11 @@
      o dono do serviço é alguém da unidade que serve em outro dia);
    - ajuste-manual: um militar fica fixado na função (o ajuste de
      mentira em ajustes_salvos), e o dia tem o Voltar ao automático;
-   - ciclo-fora: sem ninguém de verdade fora do ciclo, um dos que
-     servem em outros dias aparece fora (Adicionar vai à prévia como
+   - ciclo-fora: sem ninguém de verdade que possa entrar no ciclo, um dos
+     que servem em outros dias aparece fora (Adicionar vai à prévia como
      mudar para o ciclo deste dia, depois do último serviço dele);
+   - dias-de-servico: sem serviço pela frente, a lista de serviços do
+     militar (o pedido e o Dar folga) ganha três dias de exemplo;
    - extra-<etapa>: o mês de treino da Extrajornada, montado pelo banco
      (geral-treino-extra.js);
    - troca-<nome>, folga-<nome>, cnh-falta e dados-correcao: o exemplo
@@ -167,12 +169,13 @@
     return donoDaTroca(uid, iso, e).then(function () { return d; });
   }
 
-  /* o ciclo da unidade no dia: sem ninguém fora do ciclo, um dos que servem em outros dias aparece fora */
+  /* o ciclo da unidade no dia: sem ninguém que possa entrar agora (fora do ciclo, sem data marcada, sem afastamento e sem
+     servir no dia), um dos que servem em outros dias aparece fora */
   function noCiclo(r, uid, iso) {
     var ms = (r && r.militares) || [];
     var k = chave(uid, iso);
     if (!(k in escolhas)) {
-      var temFora = ms.some(function (m) { return m.estado === 'fora'; });
+      var temFora = ms.some(function (m) { return m.estado === 'fora' && !m.entra_em && !m.afastamento && !m.serve_hoje; });
       var m = temFora ? null : ms.filter(function (x) { return x.estado !== 'fora' && x.estado !== 'saida_marcada' && !x.serve_hoje && !x.folga_hoje; })[0];
       var lista = m ? (m.ultimos_servicos || []) : [];
       escolhas[k] = m ? { cpf: m.cpf, ultimo: m.ultimo_servico || lista[lista.length - 1] || null } : null;
@@ -186,6 +189,13 @@
       x.entra_em = null;
     });
     return r;
+  }
+
+  /* os serviços do militar: sem nenhum pela frente, três dias de exemplo */
+  function servicosDeExemplo(lista) {
+    if (Array.isArray(lista) && lista.length) return lista;
+    var d = new Date(), hoje = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+    return [1, 4, 7].map(function (n) { return { data: maisDias(hoje, n), hi: '08:00', hf: '08:00' }; });
   }
 
   /* ---------- o pedido: sai sem as peças de mentira ---------- */
@@ -236,10 +246,12 @@
     var limpo = limparPedido(nome, corpo);
     var doDia = nome === 'ler_distribuicao_dia' || (nome === 'escala_previa' && corpo && corpo.p_leitura === 'ler_distribuicao_dia');
     var doCiclo = nome === 'escala_continuos_listar' && !!ativo && ativo.nome === 'ciclo-fora';
-    if (!emCurso() || !(doDia || doCiclo)) return buscar(limpo);
+    var dosServicos = nome === 'folgas_servicos_militar' && !!ativo && ativo.nome === 'dias-de-servico';
+    if (!emCurso() || !(doDia || doCiclo || dosServicos)) return buscar(limpo);
     return buscar(limpo).then(function (r) {
       if (!r.ok) return r;
       return r.json().then(function (dados) {
+        if (dosServicos) return resposta(servicosDeExemplo(dados));
         if (!dados || !corpo) return resposta(dados);
         var uid = corpo.p_unidade_id, iso = corpo.p_data;
         if (doCiclo) return resposta(noCiclo(dados, uid, iso));

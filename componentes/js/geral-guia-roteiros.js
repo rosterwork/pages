@@ -12,7 +12,7 @@
    <p data-trecho="nome"> repete os passos de um <template
    data-roteiro-trecho="nome"> (as aberturas comuns: abrir a Escala,
    a aba, o dia). Nos seletores, {unidade} vira a unidade da pessoa,
-   {hoje}, a data de hoje (aaaa-mm-dd), e {exemplo}, o id do exemplo
+   {hoje}, a data de hoje (aaaa-mm-dd), {cpf}, o CPF dela, e {exemplo}, o id do exemplo
    que o banco monta no treino (a troca, a folga ou o pedido de
    correção; geral-treino-banco.js; fora dele, nenhum: o
    data-alvo-senao vale).
@@ -34,8 +34,21 @@
    data-so-computador. data-segurar, no treino: o clique que gravaria
    não chega à tela e o roteiro vai ao fim. data-livre: dá para mexer
    em todo o aceso (no passo de olhar, nada responde; no de clique e no
-   de gravar, só o botão que ele pede). <p data-fim>: o balão
-   final (no treino, o <p data-fim-treino>, quando há).
+   de gravar, só o botão que ele pede). data-escrever (no treino): o
+   campo de texto; o passo anda pelo Próximo, que aparece quando há
+   texto. <p data-fim>: o balão final (no treino, o <p data-fim-treino>,
+   quando há).
+   No treino (geral-guia-vidro.js), só a porta do passo responde. No
+   passo: data-porta (os estágios, com ponto e vírgula; vale o último à
+   vista), data-treino-alvo (acende e abre só o primeiro que achar),
+   data-exemplo (o elemento do exemplo, com as opções em ponto e vírgula;
+   sem nenhuma, o passo fica sem alvo; o texto dele preenche o
+   [data-exemplo-nome]), data-so-mouse (o alvo deixa o mouse passar, e
+   o clique não responde), data-sem-alvo-treino (a frase de parada) e
+   <span data-so-treino> (o texto do passo, no lugar do de fora do
+   treino). O <p data-so-treino> só vale no treino, e o <p data-so-ajuda>,
+   só no ?. Na seção: data-treino-entrada (a entrada do caminho; acende
+   a primeira que achar). Fora do treino, nada disso vale.
    API: lista() (os roteiros que a pessoa pode fazer), naPagina(p)
    (os que passam pela tela), grupos(roteiros) (a lista como a pessoa
    vê, no Treinamento e no ?), ordem() (os ids nessa ordem, um a um,
@@ -45,7 +58,7 @@
    (a frase do "A seguir"), passos(id, pagina) (do começo, ou a
    partir da tela pedida), caminho(passo, alvo) (os passos e o fim do
    caminho clicado), entradas(passo), fimDe(container, treino),
-   seletores(texto), celular(), roteiro(id).
+   seletores(texto), celular(), roteiro(id), exemplo(p).
    ============================================================ */
 (function () {
   'use strict';
@@ -65,9 +78,10 @@
     var u = RW.sessao ? RW.sessao.perfil() : null;
     var unidade = u && u.lotacao_id != null ? String(u.lotacao_id) : '';
     var hoje = hojeIso();
+    var cpf = u && u.cpf ? String(u.cpf) : 'nenhum';
     var exemplo = (RW.treinoBanco && RW.treinoBanco.exemplo()) || 'nenhum';
     return (texto || '').split(',').map(function (s) {
-      return s.trim().replace(/\{unidade\}/g, unidade).replace(/\{hoje\}/g, hoje).replace(/\{exemplo\}/g, exemplo);
+      return s.trim().replace(/\{unidade\}/g, unidade).replace(/\{hoje\}/g, hoje).replace(/\{cpf\}/g, cpf).replace(/\{exemplo\}/g, exemplo);
     }).filter(Boolean);
   }
 
@@ -132,7 +146,8 @@
   function caminho(passo, alvo) {
     for (var c = 0; c < passo.caminhos.length; c++) {
       var secao = passo.caminhos[c];
-      var acertou = seletores(secao.getAttribute('data-entrada')).some(function (s) { return alvo.closest(s); });
+      var entradasDaSecao = seletores(secao.getAttribute('data-entrada')).concat(seletores(secao.getAttribute('data-treino-entrada')));
+      var acertou = entradasDaSecao.some(function (s) { return alvo.closest(s); });
       if (acertou) return { passos: passosDoCaminho(secao, passo), fim: fimDe(secao, false), fimTreino: fimDe(secao, true),
         segurar: secao.hasAttribute('data-segurar') };
     }
@@ -141,6 +156,16 @@
 
   function entradas(passo) {
     return passo.caminhos.reduce(function (todas, secao) { return todas.concat(seletores(secao.getAttribute('data-entrada'))); }, []);
+  }
+
+  /* o elemento do exemplo do passo: vale a primeira opção do data-exemplo que existe na tela */
+  function exemplo(p) {
+    var opcoes = (p.getAttribute('data-exemplo') || '').split(';');
+    for (var i = 0; i < opcoes.length; i++) {
+      var s = seletores(opcoes[i])[0], el = s ? document.querySelector(s) : null;
+      if (el) return el;
+    }
+    return null;
   }
 
   function lista() {
@@ -206,6 +231,7 @@
 
   RW.guiaRoteiros = {
     lista: lista, naPagina: naPagina, grupos: grupos, ordem: ordem, idsDoGrupo: idsDoGrupo, ondeFica: ondeFica, aSeguir: aSeguir,
-    passos: passos, caminho: caminho, entradas: entradas, fimDe: fimDe, seletores: seletores, celular: celular, roteiro: roteiro
+    passos: passos, caminho: caminho, entradas: entradas, fimDe: fimDe, seletores: seletores, celular: celular, roteiro: roteiro,
+    exemplo: exemplo
   };
 })();
