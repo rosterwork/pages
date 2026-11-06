@@ -920,6 +920,25 @@
     </div>
   </template>
 
+  <!-- MOLDE: o bloqueio do aviso de manutenção (geral-manutencao.js). O roteador (index-navegacao.js)
+       põe no lugar da tela, com o nome dela no título -->
+  <template id="tpl-pagina-manutencao">
+    <div class="pagina">
+      <div class="pagina-cabecalho">
+        <div class="pagina-titulos">
+          <h1></h1>
+        </div>
+      </div>
+      <div class="pagina-corpo">
+        <div class="pagina-manutencao">
+          <svg class="icone" width="24" height="24" aria-hidden="true"><use href="icones/todos.svg#icone-alerta" /></svg>
+          <h2 class="pagina-manutencao-titulo">Pedimos desculpas, esta tela está em manutenção</h2>
+          <p class="pagina-manutencao-texto">Ela abre sozinha quando a manutenção terminar. O que você já salvou continua guardado. As outras telas funcionam normalmente.</p>
+        </div>
+      </div>
+    </div>
+  </template>
+
   <!-- MOLDES: filtros da barra de controles (componente geral-filtros). A página escreve um lugar por filtro
        (<div data-filtro="..." data-filtro-nome data-filtro-titulo>) dentro da caixa .filtros; o componente põe
        ali o botão Filtros (com o número de filtros ligados) e leva cada lugar para o menu, como uma coluna
@@ -1488,7 +1507,7 @@
       <p data-alvo=".painel-corpo .escala-ciclo-fora .escala-secao-botao" data-um data-avanca="clique" data-sem-alvo="Ninguém da unidade está fora do ciclo.">Em <strong>Fora da escala</strong>, use <strong>Adicionar</strong> ao lado de quem entra.</p>
       <p data-alvo=".painel-corpo .escala-ciclo-fora .escala-secao-item:has(.escala-secao-selo:not(.selo--alerta))" data-alvo-senao=".painel-corpo .escala-ciclo-fora .escala-secao-selo:not(.selo--alerta)" data-um data-avanca="proximo">A linha mostra o que vai acontecer; <strong>Desmarcar</strong> desiste.</p>
     </section>
-    <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo. O Dia e o Ciclo gravam juntos.</p>
+    <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo. O Dia, o Ciclo e a Extrajornada gravam juntos.</p>
     <p data-fim>Pronto. Ele entra no ciclo a partir desse dia.</p>
     <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, ele entraria no ciclo a partir desse dia.</p>
   </template>
@@ -1511,7 +1530,7 @@
       <p data-alvo=".painel-corpo .escala-ciclo-cartao" data-clique=".painel-corpo .escala-ciclo-cartao-continuar" data-avanca="clique" data-livre>Escolha o último serviço dele no ciclo atual, na pergunta que abre embaixo da linha.<span data-so-treino>O último serviço dele no ciclo atual já vem marcado, na pergunta que abre embaixo da linha. Siga pelo <strong>Continuar</strong>.</span></p>
       <p data-alvo="#veu-aviso .modal" data-clique="#veu-aviso .aviso-confirmar" data-avanca="clique">Confira a lista do que acontece e confirme.</p>
     </section>
-    <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo. O Dia e o Ciclo gravam juntos.</p>
+    <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo. O Dia, o Ciclo e a Extrajornada gravam juntos.</p>
     <p data-fim>Pronto. Ele muda para o ciclo deste dia, depois do último serviço escolhido.</p>
     <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, ele mudaria para o ciclo deste dia, depois do último serviço escolhido.</p>
   </template>
@@ -1532,9 +1551,22 @@
       <p data-alvo="#veu-aviso .modal" data-clique="#veu-aviso .aviso-confirmar" data-avanca="clique">Confira a lista do que é cancelado e confirme.</p>
       <p data-alvo=".painel-corpo .escala-ciclo-dia .escala-secao-item:has(.escala-secao-selo:not(.selo--alerta))" data-alvo-senao=".painel-corpo .escala-ciclo-dia .escala-secao-selo:not(.selo--alerta)" data-um data-avanca="proximo">A linha marcada mostra o que vai acontecer; <strong>Desmarcar</strong> desiste.</p>
     </section>
-    <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo. O Dia e o Ciclo gravam juntos.</p>
+    <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo. O Dia, o Ciclo e a Extrajornada gravam juntos.</p>
     <p data-fim>Pronto. Ele sai do ciclo a partir desse dia.</p>
     <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, ele sairia do ciclo a partir desse dia.</p>
+  </template>
+
+  <template data-roteiro="extra-na-escala" data-titulo="Editar a extra pela Escala" data-area="admin" data-grupo="Escala" data-pagina="escalas" data-so-computador data-cenario="extra-lancado">
+    <p data-trecho="abrir-escala"></p>
+    <p data-trecho="aba-mes"></p>
+    <p data-alvo=".escala-mes-celula" data-treino-alvo=".escala-mes-celula:has(use[href$='icone-extrajornada'])" data-avanca="clique" data-pular-se=".escala-mes-celula--selecionada">Clique num pelotão de um dia.<span data-so-treino>Clique no pelotão aceso: ele tem extra.</span></p>
+    <p data-alvo=".painel-lateral .aba[data-secao='extra']" data-avanca="clique" data-pular-se=".painel-lateral .aba--ativa[data-secao='extra']">Abra a aba <strong>Extrajornada</strong>.</p>
+    <p data-alvo=".painel-corpo .nova-extra-grupo" data-clique=".painel-corpo .escala-extra-marca" data-avanca="clique" data-livre data-treino-alvo=".painel-corpo .nova-extra-grupo[data-grupo='querem'] .nova-extra-pel-linhas .escala-extra-marca:not(:disabled), .painel-corpo .nova-extra-grupo[data-grupo='neste'] .escala-extra-marca:not(:disabled)" data-sem-alvo="A extrajornada deste mês ainda não foi lançada.">Marque os horários de um militar em <strong>Querem este dia</strong>.<span data-so-treino>Marque a bolinha acesa.</span></p>
+    <p data-alvo=".painel-corpo .escala-extra-outros:has(.nota--erro) .escala-extra-outro:not(.escala-extra-outro--antigo) .escala-extra-marca--on" data-um data-avanca="aparece" data-condicao=".escala-rodape-salvar:not(.oculto) .escala-painel-salvar:not(:disabled)" data-pular-se=".escala-rodape-salvar:not(.oculto) .escala-painel-salvar:not(:disabled)">Se ele passar da cota, desmarque horários em outro dia, embaixo do nome dele.<span data-so-treino>Ele passou da cota: desmarque a bolinha acesa, em outro dia, embaixo do nome dele.</span></p>
+    <p data-alvo=".escala-rodape-motivo" data-avanca="proximo" data-livre>No rodapé, escreva o <strong>Motivo do ajuste</strong>, se quiser.<span data-so-treino>No rodapé, o <strong>Motivo do ajuste</strong> é opcional.</span></p>
+    <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo. O Dia, o Ciclo e a Extrajornada gravam juntos.</p>
+    <p data-fim>Pronto. A extra mudou na escala, e o militar recebe um aviso.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, a extra mudaria na escala, e o militar receberia um aviso.</p>
   </template>
 
   <template data-roteiro="registrar-troca" data-titulo="Registrar uma troca" data-area="admin" data-grupo="Trocas" data-pagina="qualquer">
@@ -2425,6 +2457,20 @@
        Uma linha por assunto (o pedido do militar; a do administrador, só o urgente) e o X no canto de cima -->
   <template id="tpl-chamada">
     <section class="chamada" aria-label="Esperando a sua resposta">
+      <button type="button" class="botao botao--icone chamada-fechar" aria-label="Ocultar" data-dica="Ocultar">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar" /></svg>
+      </button>
+    </section>
+  </template>
+
+  <!-- A FAIXA do aviso de manutenção (geral-manutencao.js): acima do título, com a tela funcionando. O JS só troca
+       "Esta tela" pela parte em manutenção, quando o aviso diz qual é -->
+  <template id="tpl-manutencao-faixa">
+    <section class="chamada chamada--manutencao" aria-label="Tela em manutenção">
+      <div class="chamada-linha">
+        <span class="chamada-marca"><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta" /></svg></span>
+        <span class="chamada-texto"><span class="chamada-quem"><span data-manutencao-parte>Esta tela</span> está em manutenção</span><span class="chamada-meta"> · algumas partes podem dar erro até terminar. O que você já salvou continua guardado.</span></span>
+      </div>
       <button type="button" class="botao botao--icone chamada-fechar" aria-label="Ocultar" data-dica="Ocultar">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar" /></svg>
       </button>

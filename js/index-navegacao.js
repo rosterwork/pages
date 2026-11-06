@@ -113,11 +113,11 @@
     return !!document.querySelector('.menu-item[data-pagina="' + pagina + '"][data-lugar-celular="fora"]');
   }
 
-  /* no celular, quem chega a uma dessas telas (por um aviso, um link ou o endereço) vê o vazio
-     "Esta tela só funciona no computador." (molde #tpl-pagina-so-computador), com o nome da tela
-     tirado do item do menu, no lugar da tela quebrada; o CSS e o JS da tela nem carregam */
-  function mostrarSoComputador(pagina) {
-    var tela = window.RosterWork.tpl ? window.RosterWork.tpl('tpl-pagina-so-computador') : null;
+  /* um aviso no lugar da tela, com o nome dela tirado do item do menu: "Esta tela só funciona no
+     computador." (molde #tpl-pagina-so-computador; no celular, quem chega a uma dessas telas por um aviso,
+     um link ou o endereço; o CSS e o JS da tela nem carregam) ou o bloqueio de manutenção (#tpl-pagina-manutencao) */
+  function mostrarNoLugarDaTela(molde, pagina) {
+    var tela = window.RosterWork.tpl ? window.RosterWork.tpl(molde) : null;
     if (!tela) return;
     var nome = document.querySelector('.menu-item[data-pagina="' + pagina + '"] .menu-item-label');
     tela.querySelector('h1').textContent = nome ? nome.textContent : '';
@@ -157,18 +157,24 @@
       else history.pushState({ pagina: pagina }, '', '?pagina=' + pagina);
     }
 
+    var manutencao = window.RosterWork.manutencao;
+    if (manutencao) manutencao.parar();
+
     marcarAtivo(pagina);
     if (window.RosterWork.fecharDropdowns) window.RosterWork.fecharDropdowns();
     if (window.RosterWork.painel) window.RosterWork.painel.fechar();   /* a gaveta é da página que sai */
     if (window.RosterWork.mostrarVeu) window.RosterWork.mostrarVeu(conteudo);
 
     if (foraDoCelular(pagina)) {
-      mostrarSoComputador(pagina);
+      mostrarNoLugarDaTela('tpl-pagina-so-computador', pagina);
       if (window.RosterWork.chamada) window.RosterWork.chamada.porNaPagina();
       esconderVeu();
       registrarEndereco();
       return;
     }
+
+    /* o aviso de manutenção é lido junto com a carga da tela, sem atrasar o download (geral-manutencao.js) */
+    var avisoLido = manutencao ? manutencao.ler(pagina) : Promise.resolve(null);
 
     /* o download pode falhar no começo (fetch) ou no meio da leitura (text): cancelado por uma
        navegação mais nova, sai quieto (a nova cuida do véu); falha de rede na vigente, some o véu */
@@ -189,8 +195,20 @@
 
     for (var i = 0; i < (def.css || []).length; i++) carregarCss(def.css[i]);
     /* os arquivos da página baixam todos juntos (cada um roda na ordem do manifesto) */
-    await Promise.all((def.js || []).map(carregarJs));
+    var carregados = await Promise.all([avisoLido].concat((def.js || []).map(carregarJs)));
     if (meu !== navToken) return;                 /* outra navegação assumiu enquanto os scripts carregavam */
+
+    /* tela em manutenção: o bloqueio entra no lugar dela, que só abre quando liberar; a faixa fica acima do título */
+    var aviso = carregados[0];
+    if (aviso && aviso.nivel === 'bloqueio') {
+      mostrarNoLugarDaTela('tpl-pagina-manutencao', pagina);
+      if (window.RosterWork.chamada) window.RosterWork.chamada.porNaPagina();
+      manutencao.vigiarBloqueio(pagina, function () { navegar(pagina, false); });
+      esconderVeu();
+      registrarEndereco();
+      return;
+    }
+    if (aviso) manutencao.porFaixa(aviso);
 
     /* o véu some quando a página termina de carregar (iniciar pode ser assíncrono),
        respeitando o tempo mínimo; páginas síncronas escondem logo (pelo mínimo) */

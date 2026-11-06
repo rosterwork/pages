@@ -144,4 +144,9 @@
   html[data-celular] .chamada-todos {
     display: none;
   }
+
+  /* a faixa do aviso de manutenção só tem o texto: a grade fica sem as linhas do selo e dos botões */
+  html[data-celular] .chamada--manutencao .chamada-linha {
+    grid-template-areas: "marca texto";
+  }
 }

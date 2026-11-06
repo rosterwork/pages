@@ -137,6 +137,36 @@
   justify-content: center;
 }
 
+/* o bloqueio do aviso de manutenção, no lugar da tela (molde #tpl-pagina-manutencao, geral-manutencao.js) */
+.pagina-manutencao {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px 16px;
+  text-align: center;
+  background-color: var(--fundo-superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+}
+
+.pagina-manutencao > .icone {
+  color: var(--alerta);
+}
+
+.pagina-manutencao-titulo {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.pagina-manutencao-texto {
+  margin: 0;
+  font-size: var(--fonte-padrao);
+  color: var(--texto-suave);
+}
+
 /* coluna de leitura: listas de cartões e textos numa página ficam numa coluna de
    até 720px, alinhada à esquerda (linha curta se lê melhor, e o selo e a seta
    ficam perto do texto, em vez de irem para o outro lado da tela) */

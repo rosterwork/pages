@@ -41,7 +41,7 @@
     'expediente_horario', 'expediente_mes', 'ficha_alteracoes', 'fn_sou_programador', 'fn_trocas_impressao',
     'fn_trocas_registro', 'fn_trocas_varias_dias', 'fn_trocas_varias_montar', 'fn_trocas_varias_plano', 'fn_unidades_padrao',
     'ler_distribuicao_dia', 'ler_escala_mes', 'ler_escala_militares', 'ler_militar_dia', 'listar_instalacoes', 'listar_viaturas',
-    'nova_distribuicao_calcular', 'nova_distribuicao_ler', 'nova_extra_minha', 'pendencias_meus_pedidos',
+    'manutencao_telas_listar', 'nova_distribuicao_calcular', 'nova_distribuicao_ler', 'nova_extra_minha', 'pendencias_meus_pedidos',
     'recados_contar_pendentes', 'recados_listar', 'sysbm_termo_situacao', 'termos_situacao', 'viatura_prefixo_em_uso',
     /* sem gravação em tabela de verdade (só tabela temporária) */
     'buscar_efetivo', 'buscar_ficha_militar', 'buscar_inativos', 'buscar_unidades_ordenadas', 'escala_ciclo_retirar_analisar',

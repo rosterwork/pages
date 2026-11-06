@@ -137,8 +137,13 @@
     navigator.serviceWorker.register('aplicativo-armazem.js').then(function (r) { registro = r; acompanhar(r); }).catch(function () {});
     /* o app voltou do fundo: confere se saiu versão nova */
     document.addEventListener('visibilitychange', function () {
-      if (document.visibilityState === 'visible' && registro) registro.update().catch(function () {});
+      if (document.visibilityState === 'visible') conferirVersao();
     });
+  }
+
+  /* pergunta agora se saiu versão nova; ela baixa em segundo plano e segue as regras de sempre */
+  function conferirVersao() {
+    if (registro) registro.update().catch(function () {});
   }
 
   /* abre um endereço do sistema; com versão nova esperando, troca de versão antes (a página
@@ -163,6 +168,7 @@
     iphone: iphone,
     pedirInstalacao: pedirInstalacao,
     temVersaoNova: temVersaoNova,
+    conferirVersao: conferirVersao,
     irPara: irPara,
     trocarSeChegou: trocarSeChegou,
     trocarSozinho: trocarSozinho

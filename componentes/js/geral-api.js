@@ -168,6 +168,10 @@
     opcoes = opcoes || {};
     var token = obterToken();
     return requisitar(caminho, token, opcoes).then(function (resp) {
+      /* o banco não reconhece mais a chamada (a função mudou e a tela aberta ficou velha): o aviso de manutenção */
+      if (resp.status === 404 && caminho.indexOf('/rest/v1/rpc/') === 0 && window.RosterWork.manutencao) {
+        window.RosterWork.manutencao.funcaoMudou();
+      }
       /* token vencido: renova com o refresh_token e refaz a chamada uma vez */
       if (resp.status === 401 && token) {
         return renovarSessao().then(function (novoToken) {
