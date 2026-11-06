@@ -2092,6 +2092,17 @@
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, a nova ordem valeria a partir da data.</p>
   </template>
 
+  <template data-roteiro="dar-administracao" data-titulo="Dar ou tirar a administração" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
+    <p data-trecho="abrir-usuarios"></p>
+    <p data-alvo="#usuarios-abas [data-aba='administradores']" data-avanca="clique" data-pular-se="#usuarios-abas [data-aba='administradores'].aba--ativa">Abra a aba <strong>Administradores</strong>.</p>
+    <p data-so-ajuda data-alvo="#arvore-usuarios" data-avanca="aparece" data-condicao="#administradores-salvar" data-livre>Clique no militar e escolha o papel dele.</p>
+    <p data-so-treino data-alvo="#arvore-usuarios .administradores-linha.linha-militar--clicavel:has([data-papel-texto]:empty)" data-alvo-senao="#arvore-usuarios .administradores-linha.linha-militar--clicavel" data-um data-avanca="clique">Clique no militar aceso.</p>
+    <p data-so-treino data-alvo=".administradores-caixa .abas--seletor .aba:not(.aba--ativa)" data-condicao="#administradores-salvar" data-avanca="aparece">Escolha um papel.</p>
+    <p data-alvo="#administradores-salvar" data-avanca="clique" data-segurar>Grave pelo <strong>Salvar</strong>.</p>
+    <p data-fim>Pronto. O papel já vale, e a mudança fica no Histórico.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, o papel já valeria, e a mudança ficaria no Histórico.</p>
+  </template>
+
   <template data-roteiro="aprovar-correcao" data-titulo="Aprovar uma correção de dados" data-area="admin" data-grupo="Usuários" data-pagina="usuarios" data-cenario="dados-correcao">
     <p data-trecho="abrir-usuarios"></p>
     <p data-alvo="#usuarios-abas [data-aba='pendencias']" data-avanca="clique" data-pular-se="#usuarios-abas [data-aba='pendencias'].aba--ativa">Abra a aba <strong>Pendências</strong>.</p>

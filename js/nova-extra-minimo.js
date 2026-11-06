@@ -44,7 +44,7 @@
   }
   /* pela metade: o Salvar fica desligado */
   function incompleto() {
-    return !regra || !regra.minimo || !regra.excecoes.every(preenchida) || !RW.data.paraISO(q('#p1-abre').value) || !RW.data.paraISO(q('#p1-fecha').value);
+    return !regra || !regra.minimo || !regra.excecoes.every(preenchida) || !RW.data.paraISO(q('#p1-abre').value) || !RW.data.paraISO(q('#p1-fecha').value) || q('#p1-aviso').value === '';
   }
 
   function parametros() {
