@@ -31,7 +31,7 @@
     </div>
   </div>
 
-  <div class="pagina-subcabecalho">
+  <div class="pagina-subcabecalho escala-barra">
     <div class="geral-periodo">
       <button type="button" class="botao botao--icone" id="escala-periodo-anterior" aria-label="Período anterior">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>
@@ -97,16 +97,18 @@
       </div>
     </div>
 
-    <!-- ferramentas, depois do traço, em todos os modos: Legenda e Imprimir -->
-    <span class="pagina-subcabecalho-divisor" aria-hidden="true"></span>
+    <!-- ferramentas, depois do traço, em todos os modos: Legenda e Imprimir; se a barra quebrar, descem juntas -->
+    <div class="escala-barra-ferramentas">
+      <span class="pagina-subcabecalho-divisor" aria-hidden="true"></span>
 
-    <!-- legenda da grade (molde geral #tpl-legenda): o que cada cor, ícone e selo quer dizer; o conteúdo acompanha o modo (escalas-legenda.js) -->
-    <div id="escala-legenda-grade"></div>
+      <!-- legenda da grade (molde geral #tpl-legenda): o que cada cor, ícone e selo quer dizer; o conteúdo acompanha o modo (escalas-legenda.js) -->
+      <div id="escala-legenda-grade"></div>
 
-    <!-- imprimir: abre o painel "Imprimir escala" (datas + unidades → PDF) -->
-    <button type="button" class="botao botao--quadrado" id="escala-imprimir" aria-label="Imprimir escala" data-dica="Imprimir">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg>
-    </button>
+      <!-- imprimir: abre o painel "Imprimir escala" (datas + unidades → PDF) -->
+      <button type="button" class="botao botao--quadrado" id="escala-imprimir" aria-label="Imprimir escala" data-dica="Imprimir">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg>
+      </button>
+    </div>
   </div>
 
   <!-- com dia à vista que ainda pode mudar: a nota amarela com os pontinhos (o texto, com as unidades, vem do

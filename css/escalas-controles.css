@@ -2,9 +2,39 @@
    ESCALAS — controles da barra
    As abas de modo ficam no cabeçalho: o componente geral .abas
    (data-abas-grupo) cuida do traço único, do espaço entre os grupos
-   e da divisória. Aqui ficam os contêineres dos subgrupos da barra,
-   a caixa da Legenda e a faixa de unidades do celular.
+   e da divisória. Aqui ficam a quebra da barra, os contêineres dos
+   subgrupos, a caixa da Legenda e a faixa de unidades do celular.
    ============================================================ */
+
+/* a barra quebra em duas linhas quando não cabe (o painel aberto tira 480px), como a da Extrajornada:
+   nada fica atrás do painel */
+.escala-barra {
+  flex-wrap: wrap;
+  row-gap: 8px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+/* a busca é a primeira a ceder: encolhe até 120px antes de a barra quebrar */
+.escala-barra > .busca {
+  flex: 999 1 120px;
+  width: auto;
+  min-width: 0;
+  max-width: var(--busca-largura);
+}
+
+.escala-barra > .busca .busca-entrada {
+  text-overflow: ellipsis;
+}
+
+/* as ferramentas ficam juntas: se a barra quebrar, descem inteiras, à direita */
+.escala-barra-ferramentas {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
 
 /* seletores lado a lado na barra: Colunas (tipo + quantidade) e unidades */
 .escala-sub-colunas,
@@ -84,5 +114,23 @@
 @media (max-width: 767px) {
   html[data-celular] .escala-so-computador {
     display: none;
+  }
+
+  html[data-celular] .escala-barra {
+    padding-top: 0;
+  }
+
+  html[data-celular] .escala-barra > .busca:not(.busca--aberta) {
+    flex: none;
+  }
+
+  /* as ferramentas voltam a ser peças soltas da barra (a ordem das linhas é a do geral-pagina-cabecalho) */
+  html[data-celular] .escala-barra-ferramentas {
+    display: contents;
+  }
+
+  html[data-celular] .escala-barra-ferramentas > * {
+    order: 4;
+    margin-top: 8px;
   }
 }

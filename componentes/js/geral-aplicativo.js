@@ -1,7 +1,7 @@
 /* ============================================================
    APLICATIVO — o site instalado no celular (fonte única)
-   Diz se o aparelho é celular (o lado menor da tela abaixo de 768px,
-   a mesma conta que liga o modo celular), se a página está aberta
+   Diz se o aparelho é celular (tela pequena e aparelho de dedo, a
+   mesma conta que liga o modo celular), se a página está aberta
    como app instalado e guarda a janela de instalação do Android,
    que o navegador oferece uma vez só e o item "Instalar no celular"
    do menu abre. Também liga o armazém do app (service worker) e
@@ -17,8 +17,15 @@
   var pedidoInstalacao = null;   /* evento beforeinstallprompt do Android, guardado até o toque no menu */
   var foiInstalado = false;      /* instalado agora, nesta aba do navegador */
 
+  /* celular é a tela pequena de um aparelho de dedo. O tamanho sozinho não basta: a escala do Windows
+     e o zoom do Firefox encolhem o que o notebook informa (1920x1080 a 150% informa 1280x720) */
   function celular() {
-    try { return Math.min(screen.width, screen.height) < 768; } catch (e) { return false; }
+    try {
+      if (Math.min(screen.width, screen.height) >= 768) return false;   /* tela grande: tablet ou computador */
+      if (/Mobi/.test(navigator.userAgent)) return true;                /* o navegador de celular se declara */
+      /* sem a declaração: tablet pequeno (só toque) ou notebook (mouse ou touchpad como principal) */
+      return navigator.maxTouchPoints > 0 && !window.matchMedia('(pointer: fine)').matches;
+    } catch (e) { return false; }
   }
 
   function instalado() {
