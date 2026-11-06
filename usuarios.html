@@ -21,16 +21,11 @@
       <button type="button" class="aba oculto" data-aba="antiguidade" id="usuarios-aba-antiguidade">Antiguidade</button>
       <!-- só administrador: quem administra o quê; o papel muda na própria lista -->
       <button type="button" class="aba oculto" data-aba="administradores" id="usuarios-aba-administradores">Administradores</button>
-      <!-- só administrador: correções de dados para aprovar (a mesma fila da página Pendências) -->
-      <button type="button" class="aba oculto" data-aba="pendencias" id="usuarios-aba-pendencias">
-        <span>Pendências</span>
-        <span class="selo aba-contagem oculto" id="usuarios-pendencias-contagem"></span>
-      </button>
     </div>
   </div>
 
   <!-- barra sempre presente (o conteúdo não "pula" ao trocar de aba): à esquerda o grupo Administração
-       (Novo usuário, só admin, em todas as abas) e, nas abas Férias · Licenças · Dispensas, o ano
+       (Novo usuário, só admin, só no Efetivo) e, nas abas Férias · Licenças · Dispensas, o ano
        (#tpl-usuarios-ano, posto pelo JS); à direita o botão Filtros da aba (componente geral-filtros),
        a busca e, depois do traço, Ordem e (só no Efetivo) Exibir -->
   <div class="pagina-subcabecalho">
@@ -193,9 +188,15 @@
     </div>
   </div>
 
-  <!-- Pendências (só administrador): correções de dados para aprovar (componente geral-fila) -->
-  <div class="pagina-corpo oculto" data-aba-painel="pendencias">
-    <div class="pedido-lista coluna-leitura" id="usuarios-pendencias"></div>
+  <!-- o rodapé de salvar das abas Férias · Licenças · Dispensas, na largura toda (o rodapé único da página): aparece só com
+       alteração na caixa aberta; Cancelar fecha a caixa -->
+  <div class="rodape rodape-linha rodape--largo oculto" id="afastamentos-rodape">
+    <span class="rodape-texto" id="afastamentos-mudancas"></span>
+    <span class="espacador-flex"></span>
+    <div class="rodape-acoes">
+      <button type="button" class="botao" id="afastamentos-cancelar">Cancelar</button>
+      <button type="button" class="botao botao--primario" id="afastamentos-salvar">Salvar</button>
+    </div>
   </div>
 
 </div>
@@ -228,7 +229,7 @@
 
 <!-- molde (abas Férias · Licenças · Dispensas): o militar e, à direita, um afastamento do ano por linha -->
 <template id="tpl-usuario-afastamento-item">
-  <div class="linha-militar linha-militar--clicavel usuario-item usuario-afastamento-item" role="button" tabindex="0">
+  <div class="linha-militar usuario-item usuario-afastamento-item">
     <span class="linha-militar-pessoa">
       <span class="linha-militar-grad usuario-item-grad"></span>
       <span class="linha-militar-nome usuario-item-nome"></span>
@@ -318,15 +319,15 @@
 </template>
 
 <!-- molde (aba Administradores): a caixa que fica no lugar da linha: a própria linha no alto, com o X, e embaixo o Papel;
-     a nota do que o papel faz vem do molde da sub-tela Administração (a mesma frase da ficha) -->
+     a nota do que o papel faz vem do molde #tpl-administradores-nota -->
 <template id="tpl-administradores-caixa">
-  <div class="administradores-caixa">
-    <div class="administradores-caixa-topo">
-      <button type="button" class="botao-discreto administradores-caixa-fechar" aria-label="Fechar" data-dica="Fechar">
+  <div class="usuarios-caixa">
+    <div class="usuarios-caixa-topo">
+      <button type="button" class="botao-discreto usuarios-caixa-fechar" aria-label="Fechar" data-dica="Fechar">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
       </button>
     </div>
-    <div class="administradores-caixa-corpo">
+    <div class="usuarios-caixa-corpo">
       <span class="rotulo-secao">Papel</span>
       <div class="abas abas--seletor">
         <button type="button" class="aba" data-papel="nenhum">Nenhum</button>
@@ -335,6 +336,65 @@
         <button type="button" class="aba" data-papel="geral">Geral</button>
       </div>
     </div>
+  </div>
+</template>
+
+<!-- molde (aba Administradores): a nota do que o papel escolhido faz -->
+<template id="tpl-administradores-nota">
+  <div class="nota oculto" data-administracao-nota>
+    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+    <span class="nota-texto oculto" data-nota-papel="pelotao">Faz todas as ações de administrador, mas só no pelotão onde está lotado, mais a Antiguidade e a Extrajornada da companhia. Termina sozinho na transferência ou na baixa.</span>
+    <span class="nota-texto oculto" data-nota-papel="companhia">Faz todas as ações de administrador na companhia e nos pelotões dela. Termina sozinho na transferência para fora da companhia ou na baixa.</span>
+    <span class="nota-texto oculto" data-nota-papel="geral">Faz todas as ações de administrador em todas as unidades. Termina sozinho na baixa.</span>
+  </div>
+</template>
+
+<!-- molde (abas Férias · Licenças · Dispensas): a caixa que fica no lugar da linha: a própria linha no alto, com o X; o Tipo
+     (some em Férias) e os períodos do tipo (usuarios-afastamentos-caixa.js) -->
+<template id="tpl-afastamentos-caixa">
+  <div class="usuarios-caixa afastamentos-caixa">
+    <div class="usuarios-caixa-topo">
+      <button type="button" class="botao-discreto usuarios-caixa-fechar" aria-label="Fechar" data-dica="Fechar">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
+      </button>
+    </div>
+    <div class="usuarios-caixa-corpo">
+      <div class="afastamentos-caixa-tipo" data-afastamento-tipo>
+        <span class="rotulo-secao">Tipo</span>
+      </div>
+      <div data-periodos-lugar></div>
+    </div>
+  </div>
+</template>
+
+<!-- molde: o Tipo em Licenças (nomes longos, no campo de seleção) -->
+<template id="tpl-afastamentos-tipo-campo">
+  <div class="campo">
+    <div class="dropdown">
+      <button type="button" class="campo-entrada campo-selecao" data-tipo-campo aria-label="Tipo">
+        <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu"></div>
+    </div>
+  </div>
+</template>
+
+<!-- moldes: o Tipo em Dispensas (nomes curtos, no seletor) -->
+<template id="tpl-afastamentos-tipo-seletor">
+  <div class="abas abas--seletor"></div>
+</template>
+
+<template id="tpl-afastamentos-tipo">
+  <button type="button" class="aba"></button>
+</template>
+
+<!-- molde (ficha): a nota de quem tem correção de dados esperando decisão; o botão abre o painel de decisão -->
+<template id="tpl-ficha-correcao">
+  <div class="nota nota--alerta">
+    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+    <span class="nota-texto">Correção de dados esperando decisão.</span>
+    <button type="button" class="botao botao--texto ficha-nota-acao" data-correcao-ver>Ver o pedido</button>
   </div>
 </template>
 
@@ -405,11 +465,10 @@
   </div>
 </template>
 
-<!-- molde: barra do painel na Carreira (admin, militar ativo); Administração só para quem pode mudar o papel deste militar -->
+<!-- molde: barra do painel na Carreira (admin, militar ativo) -->
 <template id="tpl-ficha-acoes-carreira">
   <button type="button" class="botao botao--primario" data-ficha-acao="promover">Promover</button>
   <button type="button" class="botao botao--primario" data-ficha-acao="transferir">Transferir</button>
-  <button type="button" class="botao botao--primario oculto" data-ficha-acao="administracao">Administração</button>
 </template>
 
 <!-- molde: barra do painel na Carreira (admin, militar inativo) -->
@@ -477,18 +536,6 @@
 
 <template id="tpl-ficha-voltar-carreira">
   <button type="button" class="botao botao--texto subtela-voltar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg><span>Voltar à carreira</span></button>
-</template>
-
-<template id="tpl-ficha-voltar-ferias">
-  <button type="button" class="botao botao--texto subtela-voltar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg><span>Voltar às férias</span></button>
-</template>
-
-<template id="tpl-ficha-voltar-licencas">
-  <button type="button" class="botao botao--texto subtela-voltar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg><span>Voltar às licenças</span></button>
-</template>
-
-<template id="tpl-ficha-voltar-dispensas">
-  <button type="button" class="botao botao--texto subtela-voltar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg><span>Voltar às dispensas</span></button>
 </template>
 
 <!-- molde: rodapé das sub-telas (o texto do botão de aplicar vem de RosterWork.mensagens.botoes) -->
@@ -630,46 +677,9 @@
   </div>
 </template>
 
-<!-- molde: sub-tela Administração: o papel e onde ele vale; a nota diz o que o papel escolhido faz -->
-<template id="tpl-ficha-sub-administracao">
-  <div class="subtela">
-    <div class="subtela-cab">
-      <span class="subtela-titulo">Administração</span>
-      <span class="subtela-subtitulo">Hoje: <span data-sub-valor></span></span>
-    </div>
-    <div class="grupo-caixa">
-      <span class="rotulo-secao">1. Papel</span>
-      <div class="campo">
-        <div class="dropdown">
-          <button type="button" class="campo-entrada campo-selecao" data-administracao-papel aria-label="Papel">
-            <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
-            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
-          </button>
-          <div class="dropdown-menu"></div>
-        </div>
-      </div>
-    </div>
-    <div class="grupo-caixa">
-      <span class="rotulo-secao">2. Vale para</span>
-      <span class="ficha-promovido" data-administracao-vale>-</span>
-    </div>
-    <div class="nota oculto" data-administracao-nota>
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-      <span class="nota-texto oculto" data-nota-papel="pelotao">Faz todas as ações de administrador, mas só no pelotão onde está lotado, mais a Antiguidade e a Extrajornada da companhia. Termina sozinho na transferência ou na baixa.</span>
-      <span class="nota-texto oculto" data-nota-papel="companhia">Faz todas as ações de administrador na companhia e nos pelotões dela. Termina sozinho na transferência para fora da companhia ou na baixa.</span>
-      <span class="nota-texto oculto" data-nota-papel="geral">Faz todas as ações de administrador em todas as unidades. Termina sozinho na baixa.</span>
-    </div>
-  </div>
-</template>
-
-<!-- molde: sub-tela dos períodos de um tipo de afastamento no ano (o lápis da caixa do tipo, na ficha):
-     o tipo e o ano no título, uma caixa por período e o Adicionar período (usuarios-painel-afastamentos-editar.js) -->
+<!-- molde: os períodos de um tipo de afastamento no ano, dentro da caixa da lista: uma caixa por período e o Adicionar período (usuarios-painel-afastamentos-editar.js) -->
 <template id="tpl-ficha-sub-afastamento">
   <div class="subtela">
-    <div class="subtela-cab">
-      <span class="subtela-titulo" data-sub-titulo></span>
-      <span class="subtela-subtitulo" data-sub-subtitulo></span>
-    </div>
     <div class="ficha-periodos" data-periodos></div>
     <div class="nota nota--erro oculto" data-periodos-nota>
       <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
@@ -681,7 +691,7 @@
   </div>
 </template>
 
-<!-- molde: um período na sub-tela (caixa com a situação e o ✕): início → fim e os dias; em licença e
+<!-- molde: um período (caixa com a situação e a lixeira): início → fim e os dias; em licença e
      dispensa, a decisão do fluxo (sugere Sim a partir de 16 dias) e o motivo. O que é de mais de uma
      semana atrás fica travado, com a frase que explica -->
 <template id="tpl-ficha-periodo">
@@ -689,7 +699,7 @@
     <div class="ficha-bloco-cab">
       <span class="rotulo-secao" data-periodo-situacao></span>
       <button type="button" class="botao-discreto" data-periodo-remover aria-label="Remover este período" data-dica="Remover este período">
-        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
       </button>
     </div>
     <div class="campo" data-periodo-campo>

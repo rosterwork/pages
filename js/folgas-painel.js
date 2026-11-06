@@ -129,7 +129,7 @@
       linha.textContent = '';
       var abas = RosterWork.tpl('tpl-folga-painel-subabas');
       if (abas) {
-        /* Ações só para o admin do militar; sobre si mesmo, ele ajusta o saldo, mas não concede folga a si (o banco também trava) */
+        /* Ações só para o admin do militar, inclusive sobre si mesmo */
         if (!administra(militar)) { var b = abas.querySelector('[data-sub="acoes"]'); if (b) b.remove(); }
         linha.classList.remove('oculto');
         linha.appendChild(abas);
@@ -181,7 +181,6 @@
     var raiz = RosterWork.tpl('tpl-folga-painel-acoes'); if (!raiz) return;
     var bConceder = raiz.querySelector('[data-acao="conceder"]');
     var bAjustar = raiz.querySelector('[data-acao="ajustar"]');
-    if (bConceder && detalhe.militar && detalhe.militar.usuario_id === (ctx && ctx.cpf)) { bConceder.remove(); bConceder = null; }
     if (bConceder) bConceder.addEventListener('click', function () {
       abrirFormFolga({ modo: 'conceder', militar: detalhe.militar, saldoAtual: saldoDetalhe(), aoVoltar: voltarAcoes });
     });
@@ -286,14 +285,13 @@
     }).catch(function () {});
   }
 
-  /* ---------- Quem (Dar folga): os militares das unidades do topo, menos o próprio admin ---------- */
+  /* ---------- Quem (Dar folga): os militares das unidades do topo ---------- */
   function ligarQuem(raiz) {
     var busca = raiz.querySelector('#ff-busca');
     var lista = raiz.querySelector('.folga-form-militares');
     function desenhar() {
       lista.textContent = '';
       var todos = (RW.folgasSaldos && RW.folgasSaldos.militares()) || [];
-      todos = todos.filter(function (m) { return m.usuario_id !== (ctx && ctx.cpf); });
       var termo = RosterWork.busca.normalizar(busca.value.trim());
       var achados = todos.filter(function (m) {
         return !termo || RosterWork.busca.normalizar((m.grau_abreviacao || '') + ' ' + (m.nome_de_guerra || '')).indexOf(termo) !== -1

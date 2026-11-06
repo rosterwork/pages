@@ -6,9 +6,10 @@
    data: o tipo e as datas, os dias e, em licença e dispensa, o fluxo.
    Na barra, o ano (‹ 2026 ›, a lista de anos e o Hoje) e os Filtros
    destas abas: Graus, Situação no ano e Tipo (só em Licenças e
-   Dispensas). Clicar no militar abre a ficha já na aba e no ano.
-   O usuarios.js empresta a árvore, a busca, a ordem, a ficha e a
-   contagem do título (ctx); aqui fica só o que é destas abas.
+   Dispensas). Clicar no militar que se pode mudar troca a linha pela
+   caixa dos períodos (usuarios-afastamentos-caixa.js); quem só lê
+   fica com a linha. O usuarios.js empresta a árvore, a busca, a
+   ordem e a contagem do título (ctx); aqui fica só o que é destas abas.
    ============================================================ */
 (function () {
   'use strict';
@@ -22,7 +23,7 @@
     dispensa: ['gala', 'nojo', 'comum']
   };
 
-  var ctx = null;          // o que o usuarios.js empresta: { atualizar, busca, ordenar, arvoreDeGraus, abrirFicha, marcarSeAberto, contar }
+  var ctx = null;          // o que o usuarios.js empresta: { atualizar, busca, ordenar, arvoreDeGraus, contar }
   var aba = null;          // 'ferias' | 'licencas' | 'dispensas' (null = outra aba)
   var ano = anoAtual();
   var cache = {};          // 'categoria/ano' -> { usuario_id: [afastamentos do ano] }
@@ -33,6 +34,7 @@
 
   function M() { return RosterWork.mensagens.afastamentos; }
   function D() { return RosterWork.data; }
+  function caixaDaLinha() { return RosterWork.usuariosAfastamentosCaixa; }
   function anoAtual() { return new Date().getFullYear(); }
   function categoria() { return CATEGORIA[aba]; }
   function porMilitar() { return cache[categoria() + '/' + ano] || {}; }
@@ -48,7 +50,7 @@
 
   /* o seletor de ano (molde #tpl-usuarios-ano), na barra e na ficha: as setas passam de ano, o ano
      abre a lista (do próximo ano a cinco anos atrás) e o Hoje volta ao ano atual. antes (opcional) roda
-     antes de trocar e decide se a troca segue (na barra, o painel aberto fecha antes; geral-painel) */
+     antes de trocar e decide se a troca segue (na barra, a caixa aberta fecha antes) */
   function seletorAno(valor, aoMudar, antes) {
     var el = RosterWork.tpl('tpl-usuarios-ano');
     if (!el) return null;
@@ -130,12 +132,19 @@
     pilha.appendChild(l);
   }
 
-  /* o militar à esquerda e, à direita, uma linha por afastamento do ano; o clique abre a ficha na aba e no ano */
+  /* o militar à esquerda e, à direita, uma linha por afastamento do ano; o clique abre a caixa no lugar da linha */
   function renderConteudo(container, unidade, pessoas) {
     var bloquinho = RosterWork.tpl('tpl-arvore-bloquinho');
     if (!bloquinho) return;
     var adicionou = 0;
     ctx.ordenar(pessoas).forEach(function (pessoa) {
+      /* a caixa aberta fica, com o que foi digitado, mesmo que a busca ou os filtros refaçam a lista */
+      if (caixaDaLinha() && caixaDaLinha().aberta(pessoa.usuario_id)) {
+        bloquinho.appendChild(caixaDaLinha().elemento());
+        ctx.contar();
+        adicionou++;
+        return;
+      }
       var lista = visiveis(pessoa);
       if (!passa(pessoa, lista)) return;
       var busca = ctx.busca(pessoa);
@@ -148,8 +157,13 @@
       lista.forEach(function (a) { montarLinha(pilha, a); });
       if (busca === 'marcar') item.classList.add('linha-militar--marcada');
       if (busca === 'marcar' || busca === 'casa') item.classList.add('busca-achado');   // o que o Enter da busca percorre (geral-busca.js)
-      item.addEventListener('click', function () { ctx.abrirFicha(item, pessoa, { secao: aba, ano: ano }); });
-      ctx.marcarSeAberto(item, pessoa);
+      /* só quem se pode mudar abre a caixa */
+      if (caixaDaLinha() && RosterWork.sessao.podeAdministrar('pelotao', pessoa.lotacao_atual)) {
+        item.classList.add('linha-militar--clicavel');
+        item.setAttribute('role', 'button');
+        item.setAttribute('tabindex', '0');
+        item.addEventListener('click', function () { caixaDaLinha().abrir(item, pessoa, aba, ano); });
+      }
       bloquinho.appendChild(item);
       ctx.contar();
       adicionou++;
@@ -171,6 +185,7 @@
 
   function aoRenderizar(pessoas) {
     if (filtros && ctx) filtros.definir('graus', ctx.arvoreDeGraus(pessoas || []));
+    if (caixaDaLinha()) caixaDaLinha().conferir();
   }
 
   /* ---------- carregar ---------- */
@@ -207,6 +222,7 @@
 
   /* a página trocou de aba: nesta, o ano e os Filtros dela aparecem e a lista lê a categoria */
   function mostrar(nova) {
+    if (caixaDaLinha()) caixaDaLinha().fechar();
     aba = CATEGORIA[nova] ? nova : null;
     if (seletor) seletor.el.classList.toggle('oculto', !aba);
     if (filtros) filtros.mostrar(!!aba);
@@ -220,7 +236,7 @@
     carregar();
   }
 
-  /* gravou (na ficha): esquece o que foi lido e relê a aba aberta */
+  /* gravou: esquece o que foi lido e relê a aba aberta */
   function recarregar() {
     cache = {};
     if (aba) carregar();
@@ -239,8 +255,9 @@
     }) : null;
     if (filtros) filtros.mostrar(false);
     lugarTipo = caixa ? caixa.querySelector('[data-filtro="tipo"]') : null;
+    if (caixaDaLinha()) caixaDaLinha().iniciar(conteudo);
     seletor = seletorAno(ano, function (a) { ano = a; if (aba) carregar(); },
-      RosterWork.painel ? RosterWork.painel.antesDeMudarTela : null);
+      function (seguir) { if (caixaDaLinha()) caixaDaLinha().antesDeSair(seguir); else seguir(); });
     var barra = conteudo.querySelector('.pagina-subcabecalho');
     if (seletor && barra) {
       seletor.el.classList.add('oculto');

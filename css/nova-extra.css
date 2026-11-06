@@ -433,6 +433,7 @@
   letter-spacing: 1px;
   text-align: left;
   text-transform: uppercase;
+  white-space: nowrap;
   color: var(--texto-fraco);
 }
 
@@ -478,6 +479,9 @@
 .nova-extra-tabela--centro td:not(:first-child) { text-align: center; }
 
 .nova-extra-tabela--centro .geral-opcao { display: inline-flex; }
+
+/* a coluna Quer em proporção da tabela: 5 dias (o mínimo padrão) cabem em uma linha a partir de 1366px, e em 1280px a coluna encolhe sem a tabela passar da caixa */
+.nova-extra-tabela td.ne-quer { width: 21%; }
 
 /* passo 1: o aviso embaixo do militar (sem fundo de bloco, colado à linha dele) */
 .nova-extra-blocos .nova-extra-linha-aviso td {

@@ -1785,8 +1785,11 @@
     <p data-avanca="escolha">Escolha <strong>Sim, quero</strong> ou <strong>Não quero</strong>.</p>
     <section data-caminho="nao" data-entrada=".painel-corpo #nova-extra-vol [data-vol='nao']"></section>
     <section data-caminho="sim" data-entrada=".painel-corpo #nova-extra-vol [data-vol='sim']">
-      <p data-so-ajuda data-alvo=".painel-corpo #nova-extra-cotas" data-avanca="proximo" data-livre><strong>Quantas cotas?</strong> Cada cota são 6 horas. Quem escolhe 4 diz se quer as 24 horas seguidas ou se pode dividir.</p>
-      <p data-so-treino data-alvo=".painel-corpo #nova-extra-cotas .nova-extra-cota:not(:disabled)" data-avanca="clique"><strong>Quantas cotas?</strong> Cada cota são 6 horas. Quem escolhe 4 diz se quer as 24 horas seguidas ou se pode dividir. Escolha a acesa.</p>
+      <p data-so-ajuda data-alvo=".painel-corpo #nova-extra-cotas, .painel-corpo #nova-extra-como-24h" data-avanca="proximo" data-livre><strong>Quantas cotas?</strong> Cada cota são 6 horas. Quem escolhe 4 diz se quer as 24 horas seguidas ou se pode dividir.</p>
+      <p data-so-treino data-alvo=".painel-corpo #nova-extra-cotas .nova-extra-cota:nth-child(4)" data-avanca="clique"><strong>Quantas cotas?</strong> Cada cota são 6 horas. Quem escolhe 4 diz se quer as 24 horas seguidas ou se pode dividir. Escolha a acesa.</p>
+      <p data-so-treino data-avanca="escolha">Escolha como quer tirar as 4 cotas.</p>
+      <section data-caminho="seguidas" data-entrada=".painel-corpo #nova-extra-como-24h label:has([data-como='seguidas'])"></section>
+      <section data-caminho="dividir" data-entrada=".painel-corpo #nova-extra-como-24h label:has([data-como='dividir'])"></section>
       <p data-so-ajuda data-alvo=".painel-corpo .nova-extra-pincel, .painel-corpo #nova-extra-cal" data-avanca="proximo" data-livre><strong>Quais dias?</strong> Escolha <strong>Quero</strong> e clique nos dias; depois <strong>Não quero</strong>, nos dias que você não pode. Clicar de novo desmarca.</p>
       <p data-so-treino data-alvo=".painel-corpo .nova-extra-pincel, .painel-corpo #nova-extra-cal" data-condicao="#painel-rodape #nova-extra-enviar:not(:disabled)" data-treino-alvo=".painel-corpo button.nova-extra-dia[data-dia]:not(:disabled):not(.nova-extra-dia--quer)" data-avanca="aparece"><strong>Quais dias?</strong> Use <strong>Quero</strong> e clique no dia aceso. <strong>Não quero</strong> marca os dias que você não pode, e clicar de novo desmarca.</p>
       <p data-alvo=".painel-corpo #nova-extra-cal" data-avanca="proximo" data-livre>Os dias de folga, férias, licença e dispensa já vêm travados. Os de serviço e troca você pode marcar.</p>
@@ -1988,7 +1991,7 @@
 
   <template data-roteiro="conserto-pendencias" data-titulo="Ver o que precisa de conserto" data-area="admin" data-grupo="Pendências" data-pagina="pendencias">
     <p data-trecho="abrir-pendencias"></p>
-    <p data-alvo="#pendencias-secao-corrigir" data-avanca="proximo">Em <strong>Para corrigir</strong> ficam os militares operacionais fora da escala, os retornos de afastamento sem entrada no ciclo e a Distribuição com erro.</p>
+    <p data-alvo="#pendencias-secao-corrigir" data-avanca="proximo">Em <strong>Para corrigir</strong> ficam os militares operacionais fora da escala e os retornos de afastamento sem entrada no ciclo.</p>
     <p data-alvo="#pendencias-secao-corrigir" data-avanca="proximo">Quem está fora da escala volta pelo <strong>Ciclo</strong> do painel do dia, na Escala. O treino <strong>Pôr um militar no ciclo</strong> mostra como.</p>
     <p data-fim>Pronto. Cada item some sozinho quando é consertado.</p>
   </template>
@@ -2011,6 +2014,7 @@
 
   <template data-roteiro="ver-ficha" data-titulo="Ver a ficha de um militar" data-grupo="Usuários" data-pagina="usuarios">
     <p data-trecho="abrir-usuarios"></p>
+    <p data-alvo="#usuarios-abas [data-aba='efetivo']" data-avanca="clique" data-pular-se="#usuarios-abas [data-aba='efetivo'].aba--ativa">Abra a aba <strong>Efetivo</strong>.</p>
     <p data-alvo="#arvore-usuarios .usuario-item" data-um data-avanca="clique">Clique num militar.<span data-so-treino>Clique no militar aceso.</span></p>
     <p data-alvo=".painel-lateral .abas:has([data-secao='dados'])" data-avanca="proximo" data-livre>A ficha tem as abas <strong>Dados</strong>, <strong>Carreira</strong>, <strong>Férias</strong>, <strong>Licenças</strong> e <strong>Dispensas</strong>.</p>
     <p data-alvo=".painel-lateral [data-secao='carreira']" data-avanca="proximo" data-livre>Em <strong>Carreira</strong> ficam as promoções e as transferências.</p>
@@ -2028,6 +2032,7 @@
 
   <template data-roteiro="cadastrar-militar" data-titulo="Cadastrar um militar" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
     <p data-trecho="abrir-usuarios"></p>
+    <p data-alvo="#usuarios-abas [data-aba='efetivo']" data-avanca="clique" data-pular-se="#usuarios-abas [data-aba='efetivo'].aba--ativa">Abra a aba <strong>Efetivo</strong>.</p>
     <p data-alvo=".acoes-admin-gatilho" data-so-celular data-avanca="clique">Use o <strong>Novo usuário</strong>. No celular, ele fica no menu <strong>Administração</strong>.</p>
     <p data-alvo="#btn-novo-usuario" data-avanca="clique">Use o <strong>Novo usuário</strong>. No celular, ele fica no menu <strong>Administração</strong>.</p>
     <p data-alvo=".painel-corpo" data-avanca="proximo" data-livre>Preencha os dados pessoais e os institucionais. E-mail, celular e colocação são opcionais.<span data-so-treino>Aqui entram os dados pessoais e os institucionais. E-mail, celular e colocação são opcionais.</span></p>
@@ -2038,6 +2043,7 @@
 
   <template data-roteiro="link-acesso" data-titulo="Mandar o link de acesso" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
     <p data-trecho="abrir-usuarios"></p>
+    <p data-alvo="#usuarios-abas [data-aba='efetivo']" data-avanca="clique" data-pular-se="#usuarios-abas [data-aba='efetivo'].aba--ativa">Abra a aba <strong>Efetivo</strong>.</p>
     <p data-alvo="#arvore-usuarios .usuario-item" data-um data-avanca="clique">Clique no militar.<span data-so-treino>Clique no militar aceso.</span></p>
     <p data-alvo=".painel-corpo .ficha-acoes-fim .botao--primario" data-um data-avanca="clique" data-segurar>Use o <strong>Gerar link de cadastro</strong> (quem ainda não tem conta) ou o <strong>Gerar link de nova senha</strong>.</p>
     <p data-fim>Pronto. A mensagem com o link aparece na ficha; mande pelo Copiar mensagem. O link vale por 24 horas.</p>
@@ -2046,6 +2052,7 @@
 
   <template data-roteiro="corrigir-ficha" data-titulo="Corrigir os dados de um militar" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
     <p data-trecho="abrir-usuarios"></p>
+    <p data-alvo="#usuarios-abas [data-aba='efetivo']" data-avanca="clique" data-pular-se="#usuarios-abas [data-aba='efetivo'].aba--ativa">Abra a aba <strong>Efetivo</strong>.</p>
     <p data-alvo="#arvore-usuarios .usuario-item" data-um data-avanca="clique">Clique no militar.<span data-so-treino>Clique no militar aceso.</span></p>
     <p data-alvo=".painel-corpo [data-ficha-lapis][aria-label='Corrigir dados pessoais'], .painel-corpo [data-ficha-lapis][aria-label='Corrigir dados institucionais']" data-avanca="clique">Use o lápis de <strong>Dados pessoais</strong> ou de <strong>Dados institucionais</strong>.<span data-so-treino>Use o lápis de <strong>Dados pessoais</strong>. O de <strong>Dados institucionais</strong> funciona do mesmo jeito.</span></p>
     <p data-alvo=".painel-corpo .subtela" data-avanca="aparece" data-condicao="#painel-rodape [data-sub-aplicar]:not(:disabled)" data-livre data-treino-alvo=".painel-corpo .subtela input.campo-entrada[type='text']:not([readonly])" data-porta=".painel-corpo .subtela input.campo-entrada[type='text']:not([readonly])" data-escrever>Mude o que precisa.<span data-so-treino>Mude o campo aceso.</span></p>
@@ -2056,22 +2063,23 @@
 
   <template data-roteiro="lancar-afastamento" data-titulo="Lançar férias, licença ou dispensa" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
     <p data-trecho="abrir-usuarios"></p>
-    <p data-alvo="#arvore-usuarios .usuario-item" data-um data-avanca="clique">Clique no militar.<span data-so-treino>Clique no militar aceso.</span></p>
-    <p data-avanca="escolha">Abra a aba <strong>Férias</strong>, <strong>Licenças</strong> ou <strong>Dispensas</strong> da ficha.</p>
-    <section data-caminho="ferias" data-entrada=".painel-lateral [data-secao='ferias']"></section>
-    <section data-caminho="licencas" data-entrada=".painel-lateral [data-secao='licencas']"></section>
-    <section data-caminho="dispensas" data-entrada=".painel-lateral [data-secao='dispensas']"></section>
-    <p data-alvo=".painel-corpo [data-ficha-lapis]:not(.oculto)" data-um data-avanca="clique">Use o lápis da caixa do tipo.</p>
-    <p data-so-ajuda data-alvo=".painel-corpo [data-periodos], .painel-corpo [data-periodo-adicionar]" data-avanca="aparece" data-condicao="#painel-rodape [data-sub-aplicar]:not(:disabled)" data-livre>Use o <strong>Adicionar período</strong> e escolha as datas.</p>
-    <p data-so-treino data-alvo=".painel-corpo [data-periodo-adicionar]" data-avanca="clique">Use o <strong>Adicionar período</strong>.</p>
-    <p data-so-treino data-alvo=".painel-corpo .ficha-periodo:last-child" data-condicao="#painel-rodape [data-sub-aplicar]:not(:disabled)" data-porta=".painel-corpo .ficha-periodo:last-child .ficha-periodo-datas; .painel-corpo .ficha-periodo:last-child .ficha-periodo-fluxo:not(.oculto) [data-fora='nao']" data-escrever data-avanca="aparece">Escreva o início e o fim.</p>
-    <p data-alvo="#painel-rodape [data-sub-aplicar]" data-avanca="clique" data-segurar>Grave pelo <strong>Salvar</strong>.</p>
+    <p data-avanca="escolha">Abra a aba <strong>Férias</strong>, <strong>Licenças</strong> ou <strong>Dispensas</strong>.</p>
+    <section data-caminho="ferias" data-entrada="#usuarios-abas [data-aba='ferias']"></section>
+    <section data-caminho="licencas" data-entrada="#usuarios-abas [data-aba='licencas']"></section>
+    <section data-caminho="dispensas" data-entrada="#usuarios-abas [data-aba='dispensas']"></section>
+    <p data-alvo="#arvore-usuarios .usuario-afastamento-item.linha-militar--clicavel" data-um data-avanca="clique">Clique no militar.<span data-so-treino>Clique no militar aceso.</span></p>
+    <p data-alvo=".afastamentos-caixa [data-afastamento-tipo] .campo, .afastamentos-caixa [data-afastamento-tipo] .abas--seletor" data-avanca="proximo" data-livre data-pular-se=".afastamentos-caixa:not(:has([data-afastamento-tipo]))">Escolha o tipo.</p>
+    <p data-so-ajuda data-alvo=".afastamentos-caixa [data-periodos], .afastamentos-caixa [data-periodo-adicionar]" data-avanca="aparece" data-condicao="#afastamentos-salvar:not(:disabled)" data-livre>Use o <strong>Adicionar período</strong> e escolha as datas.</p>
+    <p data-so-treino data-alvo=".afastamentos-caixa [data-periodo-adicionar]" data-avanca="clique" data-pular-se=".afastamentos-caixa .ficha-periodo:last-child [data-periodo-inicio]:placeholder-shown">Use o <strong>Adicionar período</strong>.</p>
+    <p data-so-treino data-alvo=".afastamentos-caixa .ficha-periodo:last-child" data-condicao="#afastamentos-salvar:not(:disabled)" data-porta=".afastamentos-caixa .ficha-periodo:last-child .ficha-periodo-datas; .afastamentos-caixa .ficha-periodo:last-child .ficha-periodo-fluxo:not(.oculto) [data-fora='nao']" data-escrever data-avanca="aparece">Escreva o início e o fim.</p>
+    <p data-alvo="#afastamentos-salvar" data-avanca="clique" data-segurar>Grave pelo <strong>Salvar</strong>.</p>
     <p data-fim>Pronto. O afastamento vale na escala.</p>
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, o afastamento valeria na escala.</p>
   </template>
 
   <template data-roteiro="carreira-militar" data-titulo="Promover, transferir ou dar baixa" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
     <p data-trecho="abrir-usuarios"></p>
+    <p data-alvo="#usuarios-abas [data-aba='efetivo']" data-avanca="clique" data-pular-se="#usuarios-abas [data-aba='efetivo'].aba--ativa">Abra a aba <strong>Efetivo</strong>.</p>
     <p data-alvo="#arvore-usuarios .usuario-item" data-um data-avanca="clique">Clique no militar.<span data-so-treino>Clique no militar aceso.</span></p>
     <p data-alvo=".painel-lateral [data-secao='carreira']" data-avanca="clique" data-pular-se=".painel-lateral [data-secao='carreira'].aba--ativa">Abra a aba <strong>Carreira</strong>.</p>
     <p data-avanca="escolha">Escolha o que fazer.</p>
@@ -2113,7 +2121,7 @@
     <p data-alvo="#usuarios-abas [data-aba='administradores']" data-avanca="clique" data-pular-se="#usuarios-abas [data-aba='administradores'].aba--ativa">Abra a aba <strong>Administradores</strong>.</p>
     <p data-so-ajuda data-alvo="#arvore-usuarios" data-avanca="aparece" data-condicao="#administradores-salvar" data-livre>Clique no militar e escolha o papel dele.</p>
     <p data-so-treino data-alvo="#arvore-usuarios .administradores-linha.linha-militar--clicavel:has([data-papel-texto]:empty)" data-alvo-senao="#arvore-usuarios .administradores-linha.linha-militar--clicavel" data-um data-avanca="clique">Clique no militar aceso.</p>
-    <p data-so-treino data-alvo=".administradores-caixa .abas--seletor .aba:not(.aba--ativa)" data-condicao="#administradores-salvar" data-avanca="aparece">Escolha um papel.</p>
+    <p data-so-treino data-alvo=".usuarios-caixa .abas--seletor .aba:not(.aba--ativa)" data-condicao="#administradores-salvar" data-avanca="aparece">Escolha um papel.</p>
     <p data-alvo="#administradores-salvar" data-avanca="clique" data-segurar>Grave pelo <strong>Salvar</strong>.</p>
     <p data-fim>Pronto. O papel já vale, e a mudança fica no Histórico.</p>
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, o papel já valeria, e a mudança ficaria no Histórico.</p>
@@ -2121,8 +2129,9 @@
 
   <template data-roteiro="aprovar-correcao" data-titulo="Aprovar uma correção de dados" data-area="admin" data-grupo="Usuários" data-pagina="usuarios" data-cenario="dados-correcao">
     <p data-trecho="abrir-usuarios"></p>
-    <p data-alvo="#usuarios-abas [data-aba='pendencias']" data-avanca="clique" data-pular-se="#usuarios-abas [data-aba='pendencias'].aba--ativa">Abra a aba <strong>Pendências</strong>.</p>
-    <p data-alvo="#usuarios-pendencias [data-pedido='dados:{exemplo}']" data-alvo-senao="#usuarios-pendencias .pedido--linha" data-um data-avanca="clique" data-sem-alvo="Nenhuma correção de dados espera a sua aprovação agora.">Abra o pedido.</p>
+    <p data-alvo="#usuarios-abas [data-aba='efetivo']" data-avanca="clique" data-pular-se="#usuarios-abas [data-aba='efetivo'].aba--ativa">Abra a aba <strong>Efetivo</strong>.</p>
+    <p data-alvo="#arvore-usuarios .usuario-item:has(.usuario-item-correcao:not(.oculto))" data-um data-avanca="clique" data-sem-alvo="Nenhuma correção de dados espera a sua aprovação agora.">Clique no militar com a <strong>Correção pendente</strong>.<span data-so-treino>Clique no militar aceso.</span></p>
+    <p data-alvo=".painel-corpo [data-correcao-ver]" data-avanca="clique">Use o <strong>Ver o pedido</strong>, na nota amarela.</p>
     <p data-alvo=".painel-lateral .decisao-pedido" data-avanca="proximo" data-livre>Marque as alterações que você aprova.<span data-so-treino>Aqui você marca as alterações que aprova.</span></p>
     <p data-avanca="escolha">Aprove ou recuse.</p>
     <section data-caminho="aprovar" data-entrada="#painel-rodape [data-acao='aprovar']" data-segurar></section>
@@ -3174,7 +3183,7 @@
       </div>
       <!-- o que acontece no ciclo (molde tpl-escala-ciclo-efeito) entra aqui -->
       <div class="escala-remover-efeito"></div>
-      <!-- o que impede a mudança (ex.: a folga a si mesmo) -->
+      <!-- o que impede a mudança (ex.: o horário fora do serviço dele) -->
       <div class="nota nota--erro escala-remover-erro oculto">
         <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
         <span class="nota-texto"></span>

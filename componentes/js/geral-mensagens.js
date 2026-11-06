@@ -472,6 +472,8 @@
         p5: function (n) { return n + (n === 1 ? ' ajuste' : ' ajustes'); },
         cotas: function (n, so24) { return n + (so24 ? ' (24 h)' : ''); },
         dias: function (n) { return n ? n + (n === 1 ? ' dia' : ' dias') : 'nenhum'; },
+        /* os dias do mês de uma lista de datas: "3 - 15 - 21"; o espaço antes do traço não quebra, para a linha nunca começar com ele */
+        diasDoMes: function (datas) { return datas.length ? datas.map(function (d) { return +d.slice(8, 10); }).join(' - ') : 'nenhum'; },
         /* o rodapé do passo Pedidos: "Prazo, mínimo e 2 termos mudados, não salvos" */
         pedidosMudados: function (prazo, minimo, termos) {
           var partes = [];
@@ -951,7 +953,6 @@
         var t = partes.length > 1 ? partes.slice(0, -1).join(', ') + ' e ' + partes[partes.length - 1] : partes[0];
         return t.charAt(0).toUpperCase() + t.slice(1);
       },
-      folgaSiMesmo: 'Você não pode dar folga a si mesmo.',
       /* a folga no dia (o lápis da caixa De folga): o horário e o efeito de cancelar */
       folgaNoDia: function (periodo, contabilizada) {
         return 'De folga ' + (periodo || 'o dia todo') + ', ' + (contabilizada ? 'contabilizada' : 'não contabilizada');

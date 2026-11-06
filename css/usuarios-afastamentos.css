@@ -2,16 +2,17 @@
    USUÁRIOS — abas Férias · Licenças · Dispensas e os períodos da ficha
    A linha do militar que cresce para baixo: o nome à esquerda e, à
    direita, um afastamento do ano por linha (o tipo e as datas, os
-   dias e o fluxo), alinhados pela direita. Na ficha, a sub-tela de
-   um tipo: uma caixa por período (início → fim e os dias; em
-   licença e dispensa, a decisão do fluxo e o motivo).
-   Moldes no usuarios.html; comportamento em usuarios-afastamentos.js
+   dias e o fluxo), alinhados pela direita. Na caixa que fica no lugar
+   da linha, o Tipo e uma caixa por período (início → fim e os dias;
+   em licença e dispensa, a decisão do fluxo e o motivo).
+   Moldes no usuarios.html; comportamento em usuarios-afastamentos*.js
    e usuarios-painel-afastamentos*.js.
    ============================================================ */
 
 /* a linha do militar: o nome no alto, os afastamentos empilhados à direita */
 .usuario-afastamento-item {
   align-items: flex-start;
+  padding-right: 32px;   /* a folga para o X: os afastamentos não saem do lugar quando a linha vira caixa */
 }
 
 /* o nome nunca some (a pilha é que quebra o texto) */
@@ -43,7 +44,18 @@
   text-align: right;
 }
 
-/* ---------- ficha: a sub-tela dos períodos de um tipo ---------- */
+/* ---------- a caixa: o Tipo e os períodos ---------- */
+
+.afastamentos-caixa-tipo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* o corpo da aba para em cima do rodapé largo (49px, a altura dele, geral-rodape) */
+[data-aba-painel="efetivo"]:has(~ #afastamentos-rodape:not(.oculto)) {
+  padding-bottom: 49px;
+}
 
 .ficha-periodos {
   display: flex;
@@ -85,7 +97,7 @@
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    Na lista, os afastamentos descem para baixo do nome, na largura
-   toda, alinhados pela esquerda. Na sub-tela, as duas datas ocupam
+   toda, alinhados pela esquerda. Na caixa, as duas datas ocupam
    a linha e os dias vão para baixo.
    ============================================================ */
 @media (max-width: 767px) {
@@ -102,6 +114,11 @@
 
   html[data-celular] .usuario-afastamento-texto {
     text-align: left;
+  }
+
+  /* na caixa, a linha alinhada com o que vem embaixo e com a folga para o X */
+  html[data-celular] .usuarios-caixa-topo .usuario-afastamento-item {
+    padding: 4px 32px 4px 12px;
   }
 
   html[data-celular] .ficha-periodo-datas {

@@ -164,16 +164,23 @@
     return !!(filtros && RosterWork.sessao.temPapel('pelotao') && filtros.passa('situacao', 'Inativo'));
   }
 
-  /* abre a ficha do militar no painel e realça a linha clicada (ver = todos);
-     opcoes = { secao, ano }: as abas de afastamento abrem a ficha na aba e no ano delas */
-  function abrirFicha(card, pessoa, opcoes) {
+  /* abre a ficha do militar no painel e realça a linha clicada (ver = todos) */
+  function abrirFicha(card, pessoa) {
     if (cardSelecionado) cardSelecionado.classList.remove('linha-militar--selecionada');
     cardSelecionado = card;
     cpfAberto = String(pessoa.usuario_id);
     card.classList.add('linha-militar--selecionada');
-    if (window.RosterWork.usuariosPainel) window.RosterWork.usuariosPainel.abrir(pessoa, limparSelecao, opcoes);
+    if (window.RosterWork.usuariosPainel) window.RosterWork.usuariosPainel.abrir(pessoa, limparSelecao);
     /* a busca e os filtros podem tirar o militar da lista: a ficha dele fecha (geral-painel) */
     if (window.RosterWork.painel) window.RosterWork.painel.acompanharTela(cardNaTela);
+  }
+
+  /* a ficha volta a abrir sem o clique na linha (depois do painel de decisão da correção): a lista relida marca a linha */
+  function reabrirFicha(pessoa, opcoes) {
+    cpfAberto = String(pessoa.usuario_id);
+    if (window.RosterWork.usuariosPainel) window.RosterWork.usuariosPainel.abrir(pessoa, limparSelecao, opcoes);
+    if (window.RosterWork.painel) window.RosterWork.painel.acompanharTela(cardNaTela);
+    if (window.RosterWork.arvoreUnidades) window.RosterWork.arvoreUnidades.recarregar();
   }
 
   /* o card da ficha aberta ainda está na lista? */
@@ -345,7 +352,7 @@
     return itens.length === 1 ? '1 militar' : itens.length + ' militares';
   }
 
-  /* o que as abas de afastamento usam daqui: a árvore, a busca, a ordem, os graus, a ficha (e a marca dela) e a contagem */
+  /* o que as abas de afastamento e a Administradores usam daqui: a árvore, a busca, a ordem, os graus e a contagem */
   var emprestado = {
     atualizar: function () { if (window.RosterWork.arvoreUnidades) window.RosterWork.arvoreUnidades.atualizar(); },
     /* 'marcar' (casa, no marcar) · 'casa' (casa, no filtrar) · 'esconder' (não casa, no filtrar) · '' (sem busca ou não casa, no marcar) */
@@ -356,34 +363,13 @@
     },
     ordenar: function (pessoas) { return ordenarPessoas(pessoas); },
     arvoreDeGraus: function (pessoas) { return arvoreDeGraus(pessoas); },
-    abrirFicha: function (item, pessoa, opcoes) { abrirFicha(item, pessoa, opcoes); },
-    marcarSeAberto: function (item, pessoa) { marcarSeAberto(item, pessoa); },
     contar: function () { contagemVisivel++; }
   };
 
-  /* ---------- abas da página: Efetivo · Férias · Licenças · Dispensas | Antiguidade · Administradores · Pendências (só admin) ----------
-     A busca e a Ordem valem para as listas (Efetivo e as de afastamento, que usam a mesma
-     árvore); os Filtros e o Exibir do Efetivo, só para ele. A Pendências é a fila das
-     correções de dados (geral-fila), a mesma da página Pendências. */
-  var fila = null;
-
-  function escreverSeloPendencias(n) {
-    var s = document.getElementById('usuarios-pendencias-contagem');
-    if (!s) return;
-    s.textContent = n ? String(n) : '';
-    s.classList.toggle('oculto', !n);
-  }
-
-  function carregarPendencias() {
-    if (!fila || !window.RosterWork.fila) return Promise.resolve();
-    return window.RosterWork.fila.ler().then(function (r) {
-      if (!r) return;
-      var pedidos = window.RosterWork.fila.doTipo(r.fazer, ['dados']);
-      fila.definir(pedidos);
-      escreverSeloPendencias(pedidos.length);
-    });
-  }
-
+  /* ---------- abas da página: Efetivo · Férias · Licenças · Dispensas | Antiguidade · Administradores (só admin) ----------
+     A busca e a Ordem valem para as listas (Efetivo, as de afastamento e a Administradores, que
+     usam a mesma árvore); os Filtros e o Exibir do Efetivo, só para ele. Só o Efetivo tem painel:
+     as outras abas editam na própria lista. */
   function mostrarAba(conteudo, nome) {
     /* Férias · Licenças · Dispensas e Administradores usam a árvore do Efetivo, com a busca e a Ordem; o Exibir é só do Efetivo */
     var lista = nome === 'efetivo' || nome === 'ferias' || nome === 'licencas' || nome === 'dispensas' || nome === 'administradores';
@@ -398,6 +384,9 @@
     var exibirEl = conteudo.querySelector('#dropdown-exibir');
     if (exibirEl) exibirEl.classList.toggle('oculto', nome !== 'efetivo');
     if (filtros) filtros.mostrar(nome === 'efetivo');   /* o botão Filtros e a linha "Filtros:" */
+    /* o Novo usuário fica só no Efetivo: o cadastro abre no painel */
+    var grupoAdmin = conteudo.querySelector('.acoes-admin');
+    if (grupoAdmin) grupoAdmin.classList.toggle('oculto', nome !== 'efetivo' || !RosterWork.sessao.temPapel('pelotao'));
     /* a aba Administradores: os Filtros e o rodapé dela */
     if (window.RosterWork.usuariosAdministradores) window.RosterWork.usuariosAdministradores.mostrar(nome);
     /* as abas de afastamento: o ano e os Filtros delas; a árvore redesenha as linhas da aba */
@@ -406,15 +395,12 @@
     /* a Antiguidade tem a própria busca (o Salvar dela fica no rodapé da aba) */
     var buscaAntiguidade = conteudo.querySelector('#antiguidade-busca');
     if (buscaAntiguidade) buscaAntiguidade.classList.toggle('oculto', nome !== 'antiguidade');
-    if (nome === 'pendencias') carregarPendencias();
     if (nome === 'antiguidade' && window.RosterWork.usuariosAntiguidade) window.RosterWork.usuariosAntiguidade.mostrar();
   }
 
   function ligarAbas(conteudo) {
-    var admin = RosterWork.sessao.temPapel('pelotao');   // Antiguidade, Administradores e Pendências: qualquer administrador
+    var admin = RosterWork.sessao.temPapel('pelotao');   // Antiguidade e Administradores: qualquer administrador
     var trilho = conteudo.querySelector('#usuarios-abas');
-    var abaPendencias = conteudo.querySelector('#usuarios-aba-pendencias');
-    if (abaPendencias) abaPendencias.classList.toggle('oculto', !admin);
     var abaAntiguidade = conteudo.querySelector('#usuarios-aba-antiguidade');
     if (abaAntiguidade) abaAntiguidade.classList.toggle('oculto', !admin);
     if (admin && window.RosterWork.usuariosAntiguidade) window.RosterWork.usuariosAntiguidade.iniciar(conteudo);
@@ -426,15 +412,6 @@
         mostrarAba(conteudo, aba.getAttribute('data-aba'));
       });
     }
-    fila = (admin && window.RosterWork.fila) ? window.RosterWork.fila.criar(conteudo.querySelector('#usuarios-pendencias'), {
-      vazio: RosterWork.mensagens.pendencias.vazioUsuarios,
-      /* depois de decidir: a fila e os cards do efetivo (o dado mudou) */
-      recarregar: function () {
-        if (window.RosterWork.arvoreUnidades) window.RosterWork.arvoreUnidades.recarregar();
-        return carregarPendencias();
-      }
-    }) : null;
-    if (fila) window.RosterWork.fila.contar().then(function (c) { escreverSeloPendencias(c.adm.dados || 0); });
   }
 
   /* a navegação chama iniciar() toda vez que a página de usuários é exibida */
@@ -486,7 +463,7 @@
 
     /* "Novo usuário" — abre pelo botão do grupo Administração da barra */
     if (window.RosterWork.novoUsuario) window.RosterWork.novoUsuario.ligar(conteudo);
-    /* o grupo só aparece para o admin, em todas as abas (a página Usuários é acessível a todos) */
+    /* o grupo só aparece para o admin, no Efetivo, a aba em que a página abre (a página Usuários é acessível a todos) */
     var grupoAdmin = conteudo.querySelector('.acoes-admin');
     if (grupoAdmin) grupoAdmin.classList.toggle('oculto', !RosterWork.sessao.temPapel('pelotao'));
 
@@ -522,5 +499,5 @@
     });
   }
 
-  window.RosterWork.paginas.usuarios = { iniciar: iniciar, recarregarInativos: recarregarInativos };
+  window.RosterWork.paginas.usuarios = { iniciar: iniciar, recarregarInativos: recarregarInativos, reabrirFicha: reabrirFicha };
 })();

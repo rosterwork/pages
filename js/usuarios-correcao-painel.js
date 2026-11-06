@@ -8,10 +8,11 @@
    Aprovar o Setor que deixa de ser Operacional pede a data da saída
    da escala e mostra a lista das trocas e folgas canceladas (as
    extras ficam), pelo mesmo confirmarSaidaSetor da ficha.
-   Abre pela fila (geral-fila) da página Pendências e da aba
-   Pendências da Usuários.
-   Expõe: RosterWork.usuariosCorrecaoPainel.abrir(pedido, ctx) e
-   .confirmarSaidaSetor(o) (usado também pela ficha).
+   Abre pela fila (geral-fila) da página Pendências e pela nota
+   amarela da ficha do militar.
+   Expõe: RosterWork.usuariosCorrecaoPainel.abrir(pedido, ctx),
+   .confirmarSaidaSetor(o) (usado também pela ficha) e
+   .notaNaFicha(corpo, pessoa, o).
    ctx = { posicao?: { n, total }, aoMudar(), aoFechar() }
    Clona moldes; não cria HTML.
    ============================================================ */
@@ -174,5 +175,41 @@
     revisar();
   }
 
-  RW.usuariosCorrecaoPainel = { abrir: abrir, confirmarSaidaSetor: confirmarSaidaSetor };
+  /* ---------- a nota da ficha do militar ---------- */
+
+  function pedidoDe(r, cpf) {
+    var pedidos = r ? RW.fila.doTipo(r.fazer, ['dados']) : [];
+    return pedidos.filter(function (p) { return String(p.dado.usuario_id) === String(cpf); })[0] || null;
+  }
+
+  /* o painel de decisão no lugar da ficha; ao fechar (decidiu ou não), a ficha volta, relida, se o Efetivo ainda está na tela */
+  function verPedido(pessoa, o) {
+    var secao = o.secao();
+    RW.fila.ler().then(function (r) {
+      if (!o.aberta()) return;
+      if (!r) { RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.falhaCarregar }); return; }
+      var pedido = pedidoDe(r, pessoa.usuario_id);
+      /* outro administrador já decidiu: a nota some */
+      if (!pedido) { pessoa.correcao_pendente = false; o.redesenhar(); return; }
+      abrir(pedido.dado, {
+        aoFechar: function () {
+          RW.fila.ler().then(function (r2) {
+            if (!document.querySelector('#usuarios-abas .aba--ativa[data-aba="efetivo"]')) return;
+            if (r2) pessoa.correcao_pendente = !!pedidoDe(r2, pessoa.usuario_id);
+            RW.paginas.usuarios.reabrirFicha(pessoa, { secao: secao });
+          });
+        }
+      });
+    });
+  }
+
+  /* a nota no alto da ficha, com o botão que abre o pedido. o = { secao(), aberta(), redesenhar() } */
+  function notaNaFicha(corpo, pessoa, o) {
+    var nota = RW.tpl('tpl-ficha-correcao');
+    if (!nota) return;
+    nota.querySelector('[data-correcao-ver]').addEventListener('click', function () { verPedido(pessoa, o); });
+    corpo.prepend(nota);
+  }
+
+  RW.usuariosCorrecaoPainel = { abrir: abrir, confirmarSaidaSetor: confirmarSaidaSetor, notaNaFicha: notaNaFicha };
 })();

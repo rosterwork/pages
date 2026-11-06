@@ -4,10 +4,9 @@
    O ano no subcabeçalho do painel (o mesmo seletor da página) e uma
    caixa por tipo (Férias tem uma), com os períodos daquele ano em
    ordem de data: a situação (Em curso, Marcado, Encerrado), as datas
-   e os dias (e "fora do fluxo"). Quem administra o militar vê todas
-   as caixas, cada uma com o lápis que abre a sub-tela do tipo
-   (usuarios-painel-afastamentos-editar.js); quem só lê vê as caixas
-   que têm período. Lê tudo do militar uma vez (afastamentos_listar
+   e os dias (e "fora do fluxo"). Só leitura, e só as caixas que têm
+   período: lançar e corrigir ficam nas abas da página (a caixa da
+   lista, usuarios-afastamentos-caixa.js). Lê tudo do militar uma vez (afastamentos_listar
    sem ano) e guarda enquanto a ficha está aberta: trocar de ano não
    relê; gravar esquece o que foi lido.
    ============================================================ */
@@ -53,7 +52,7 @@
     return tipos;
   }
 
-  /* uma caixa por tipo: os períodos do ano (situação · datas · dias) e, para quem administra, o lápis */
+  /* uma caixa por tipo que tem período no ano (situação · datas · dias) */
   function desenhar(corpo, ctx) {
     var cat = CATEGORIA[ctx.secao];
     var L = RosterWork.usuariosPainelLeitura;
@@ -64,17 +63,10 @@
     tiposDaAba(cat, todos).forEach(function (tipo) {
       var doTipo = function (x) { return cat === 'ferias' || x.tipo === tipo; };
       var periodos = noAno.filter(doTipo);
-      var podeEditar = ctx.admin && tipo !== 'licenca';
-      if (!periodos.length && !podeEditar) return;
+      if (!periodos.length) return;
       var titulo = M().tipos[tipo];
-      var b = L.bloco(titulo, 'Editar ' + titulo, podeEditar ? function () {
-        ctx.editar({ categoria: cat, tipo: tipo, rotulo: titulo, ano: ano, periodos: todos.filter(doTipo) });
-      } : null);
+      var b = L.bloco(titulo, null, null);
       if (!b) return;
-      if (!periodos.length) {
-        var vazio = RosterWork.tpl('tpl-ficha-ajuda');
-        if (vazio) { vazio.textContent = M().vazioTipo(cat, ano); b.appendChild(vazio); }
-      }
       periodos.forEach(function (x) {
         var extra = M().dias(x.dias) + (x.fora_do_fluxo ? ' · ' + M().extraFora : '');
         L.linha(b, situacao(x.data_inicio, x.data_fim), A().textoDatas(x.data_inicio, x.data_fim, ano), extra);
@@ -82,7 +74,7 @@
       corpo.appendChild(b);
       caixas++;
     });
-    /* quem só lê e não há nada no ano: a área sem dados */
+    /* não há nada no ano: a área sem dados */
     if (!caixas) {
       var estado = RosterWork.painel.criarEstado(M().vazioAba(cat, ano));
       if (estado) corpo.appendChild(estado);
@@ -104,7 +96,7 @@
     barra.classList.remove('oculto');
   }
 
-  /* desenha a aba da ficha. ctx = { secao, pessoa, admin, anoInicial, editar(alvo) } */
+  /* desenha a aba da ficha. ctx = { secao, pessoa, anoInicial, aoDesenhar() } */
   function montar(corpo, barra, ctx) {
     if (!corpo || !ctx || !CATEGORIA[ctx.secao]) return;
     var cat = CATEGORIA[ctx.secao];

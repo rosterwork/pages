@@ -200,7 +200,7 @@
       troca.esconder();
       var mil = est.mil;
       if (!mil) { noRascunho(null, false); return; }
-      var nome = nomeDe(mil), cpf = mil.cpf, eu = cpf === RosterWork.sessao.cpf();
+      var nome = nomeDe(mil), cpf = mil.cpf;
       /* o remanejado: Devolver à unidade de origem ou Tirar do dia (aí seguem as perguntas de sempre) */
       var rm = est.reman;
       if (rm) {
@@ -218,7 +218,6 @@
           el.bancoSim.textContent = L().descontar(horasR);
           el.bancoNao.textContent = L().naoDescontar;
           el.marcarBanco(est.banco);
-          if (eu) { erro(msg().folgaSiMesmo); noRascunho(null, true); return; }
           var descontarR = est.banco === 'sim';
           noRascunho(function () { api.largarRemanejado(cpf); api.darFolga(cpf, descontarR, null); });
           return;
@@ -257,9 +256,8 @@
         }
       }
       el.marcarBanco(est.banco);
-      /* o horário fora do serviço dele (ou que se cruza) e a folga a si mesmo não entram */
+      /* o horário fora do serviço dele (ou que se cruza) não entra */
       if (!ok) { erro(L().erroRemover); noRascunho(null, true); return; }
-      if (p.origem === 'ciclo' && eu) { erro(msg().folgaSiMesmo); noRascunho(null, true); return; }
       var periodos = H.uniao(est.periodos.map(H.faixa)).map(H.periodo), descontar = est.banco === 'sim';
       noRascunho(function () {
         if (rm) api.largarRemanejado(cpf);
@@ -361,12 +359,7 @@
       q('.escala-remover-dia-nao').textContent = L().tirarPontualNao;
     }
     /* sem nada marcado: a resposta já o tira do dia, no rascunho (o Desfazer volta) */
-    var marcar = ligarRadios(el, function (escolha) {
-      if (p.origem === 'ciclo' && cpf === RosterWork.sessao.cpf()) {
-        marcar(null);
-        RosterWork.avisar({ tipo: 'erro', mensagem: msg().folgaSiMesmo });
-        return;
-      }
+    ligarRadios(el, function (escolha) {
       fecharPergunta();
       api.mudar(function () {
         if (p.origem === 'ciclo') api.darFolga(cpf, escolha === 'sim', sem);

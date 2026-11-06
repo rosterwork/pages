@@ -1,9 +1,10 @@
 /* ============================================================
    USUÁRIOS — aba Administradores
-   A linha do militar é a da árvore de unidades. Aqui só o que é da
-   aba: as colunas do papel e de onde ele vale, a folga para o X (as
-   colunas não saem do lugar quando a linha vira caixa) e a caixa que
-   fica no lugar da linha, com o nome e os dados no mesmo fundo.
+   A linha do militar é a da árvore de unidades. Aqui: as colunas do
+   papel e de onde ele vale, a folga para o X (as colunas não saem do
+   lugar quando a linha vira caixa) e a caixa que fica no lugar da
+   linha, com o nome e os dados no mesmo fundo (.usuarios-caixa, a
+   mesma de Férias, Licenças e Dispensas).
    ============================================================ */
 
 .administradores-linha {
@@ -18,8 +19,8 @@
   min-width: 120px;
 }
 
-/* a caixa no lugar da linha */
-.administradores-caixa {
+/* a caixa no lugar da linha (Administradores, Férias, Licenças e Dispensas) */
+.usuarios-caixa {
   margin: 4px 0 8px;
   border: 1px solid var(--borda-forte);
   border-radius: var(--raio-medio);
@@ -27,7 +28,7 @@
   box-shadow: var(--sombra-bloco);
 }
 
-.administradores-caixa-topo {
+.usuarios-caixa-topo {
   position: relative;
   display: flex;
   align-items: center;
@@ -35,24 +36,24 @@
 }
 
 /* a própria linha no alto da caixa, alinhada com o que vem embaixo; o realce da busca continua */
-.administradores-caixa-topo .linha-militar {
+.usuarios-caixa-topo .linha-militar {
   flex: 1 1 auto;
   min-width: 0;
   padding-left: 12px;
 }
 
-.administradores-caixa-topo .linha-militar:not(.linha-militar--marcada),
-.administradores-caixa-topo .linha-militar:not(.linha-militar--marcada):hover {
+.usuarios-caixa-topo .linha-militar:not(.linha-militar--marcada),
+.usuarios-caixa-topo .linha-militar:not(.linha-militar--marcada):hover {
   background-color: transparent;
 }
 
-.administradores-caixa-fechar {
+.usuarios-caixa-fechar {
   position: absolute;
   top: 4px;
   right: 4px;
 }
 
-.administradores-caixa-corpo {
+.usuarios-caixa-corpo {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -60,7 +61,7 @@
 }
 
 /* a nota de várias linhas: o ícone no alto */
-.administradores-caixa .nota {
+.usuarios-caixa .nota {
   align-items: flex-start;
 }
 
@@ -94,7 +95,7 @@
     display: none;
   }
 
-  html[data-celular] .administradores-caixa .abas--seletor .aba {
+  html[data-celular] .usuarios-caixa .abas--seletor .aba {
     padding: 0 8px;
   }
 }

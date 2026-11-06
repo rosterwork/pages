@@ -161,8 +161,8 @@
       tr.querySelector('b').textContent = m.nome;
       tr.querySelector('.ne-uni').textContent = (util.unidade(m.unidade_id) || {}).nome || '';
       tr.querySelector('.ne-cotas').textContent = m.voluntario ? msg().cotas(m.cotas, m.so24) : '';
-      tr.querySelector('.ne-quer').textContent = m.voluntario ? msg().dias(m.quer.length) : '';
-      tr.querySelector('.ne-nao').textContent = m.voluntario ? msg().dias(m.nao_posso.length) : '';
+      tr.querySelector('.ne-quer').textContent = m.voluntario ? msg().diasDoMes(m.quer) : '';
+      tr.querySelector('.ne-nao').textContent = m.voluntario ? msg().diasDoMes(m.nao_posso) : '';
       tr.querySelector('.ne-em').textContent = m.sem_dia_livre ? msg().semDiaLivre : (m.enviado_em || '');
       var t = tr.querySelector('.ne-termo');
       if (!m.voluntario) { t.classList.add('oculto'); } else {

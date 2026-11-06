@@ -1,8 +1,8 @@
 /* ============================================================
-   USUÁRIOS — a ficha: os períodos de um tipo de afastamento
+   USUÁRIOS — os períodos de um tipo de afastamento
    (RosterWork.usuariosPainelAfastamentosEditar)
-   A sub-tela do lápis de cada caixa (Férias, um tipo de licença ou
-   de dispensa), no lugar da ficha: o tipo e o ano no título e uma
+   Dentro da caixa da lista (usuarios-afastamentos-caixa.js; Férias, um
+   tipo de licença ou de dispensa): uma
    caixa por período daquele ano, com início → fim e os dias; em
    licença e dispensa, o "Tirar do fluxo da escala?" (sugere Sim a
    partir de 16 dias, até o administrador escolher) e o Motivo. O
@@ -20,7 +20,7 @@
 
   window.RosterWork = window.RosterWork || {};
 
-  var est = null;   // a sub-tela aberta: { ctx, ctl, raiz, linhas, removidos, salvando, problema, incompleta }
+  var est = null;   // os períodos abertos: { ctx, ctl, raiz, linhas, removidos, salvando, problema, incompleta }
 
   function M() { return RosterWork.mensagens.afastamentos; }
   function D() { return RosterWork.data; }
@@ -254,15 +254,13 @@
     });
   }
 
-  /* ---------- a sub-tela ---------- */
+  /* ---------- os períodos ---------- */
 
-  /* ctx = { pessoa, categoria, tipo, rotulo, ano, periodos (os do tipo, de todos os anos) };
-     ctl = { aoMudar, concluir } (usuarios-painel.js). Devolve a sub-tela para o rodapé */
+  /* ctx = { pessoa, categoria, tipo, ano, periodos (os do tipo, de todos os anos) };
+     ctl = { aoMudar, concluir } (usuarios-afastamentos-caixa.js). Devolve o que o rodapé usa */
   function montarSubtela(corpo, ctx, ctl) {
     var raiz = RosterWork.tpl('tpl-ficha-sub-afastamento');
     if (!raiz) return null;
-    raiz.querySelector('[data-sub-titulo]').textContent = ctx.rotulo;
-    raiz.querySelector('[data-sub-subtitulo]').textContent = M().subtitulo(ctx.ano);
     corpo.appendChild(raiz);
     var lim = limite();
     est = { ctx: ctx, ctl: ctl, raiz: raiz, removidos: [], salvando: false, problema: '', incompleta: false,

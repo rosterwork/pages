@@ -5,17 +5,20 @@
    completo; abas Dados · Carreira · Férias · Licenças · Dispensas
    (abre na aba de onde veio o clique; as três de afastamento em
    usuarios-painel-afastamentos.js, com o ano no subcabeçalho). Quem
-   não administra o militar (a área do papel) só lê. O admin já abre
-   editando: o lápis de cada bloco abre a correção e, na
-   Carreira, a barra do painel traz Promover e Transferir (para o
-   inativo, Readmitir ao efetivo) e, para quem pode mudar o papel
-   deste militar, Administração; o Dar baixa fica no fim. Cada
+   não administra o militar (a área do papel) só lê. O que tem aba
+   própria na página (os afastamentos e a administração) a ficha só
+   mostra. O admin já abre editando o resto: o lápis de cada bloco abre
+   a correção e, na Carreira, a barra do painel traz Promover e
+   Transferir (para o inativo, Readmitir ao efetivo); o Dar baixa fica
+   no fim. Com correção de dados esperando decisão, a nota amarela no
+   alto abre o painel de decisão (usuarios-correcao-painel.js), e a
+   ficha volta depois. Cada
    ação abre uma sub-tela no lugar da ficha, com Voltar no topo e
    Cancelar + o botão de aplicar no rodapé; sem sub-tela, o rodapé
    do admin mostra as Alterações na ficha. A ficha vem de
    buscar_ficha_militar; a leitura em usuarios-painel-leitura.js;
    cada sub-tela no seu arquivo (editar, datas, promover,
-   transferir, baixa, administracao).
+   transferir, baixa).
    ============================================================ */
 (function () {
   'use strict';
@@ -125,26 +128,29 @@
       promover: function (corpo, ctl) { return RosterWork.usuariosPainelPromover.montarSubtela(corpo, fichaAtual, pessoaAtual, ctl); },
       transferir: function (corpo, ctl) { return RosterWork.usuariosPainelTransferir.montarSubtela(corpo, fichaAtual, pessoaAtual, ctl); },
       baixa: function (corpo, ctl) { return RosterWork.usuariosPainelBaixa.montarBaixa(corpo, fichaAtual, pessoaAtual, ctl); },
-      readmitir: function (corpo, ctl) { return RosterWork.usuariosPainelBaixa.montarReadmitir(corpo, fichaAtual, pessoaAtual, ctl); },
-      administracao: function (corpo, ctl) { return RosterWork.usuariosPainelAdministracao.montarSubtela(corpo, fichaAtual, pessoaAtual, ctl); }
+      readmitir: function (corpo, ctl) { return RosterWork.usuariosPainelBaixa.montarReadmitir(corpo, fichaAtual, pessoaAtual, ctl); }
     };
     if (modulos[acao]) abrirSubtela('tpl-ficha-voltar-carreira', modulos[acao]);
   }
 
-  /* o lápis de uma caixa de afastamento: os períodos daquele tipo no ano (alvo = { categoria, tipo, rotulo, ano, periodos }) */
-  function abrirAfastamento(alvo) {
-    abrirSubtela('tpl-ficha-voltar-' + secaoAtual, function (corpo, ctl) {
-      return RosterWork.usuariosPainelAfastamentosEditar.montarSubtela(corpo, {
-        pessoa: pessoaAtual, categoria: alvo.categoria, tipo: alvo.tipo, rotulo: alvo.rotulo, ano: alvo.ano, periodos: alvo.periodos
-      }, ctl);
+  /* ---------- a correção de dados esperando decisão ---------- */
+
+  /* a nota no alto da ficha, só para quem administra o militar (usuarios-correcao-painel.js) */
+  function porCorrecao(corpo) {
+    if (sub || !ehAdmin() || !pessoaAtual || !pessoaAtual.correcao_pendente || !RosterWork.usuariosCorrecaoPainel) return;
+    var pessoa = pessoaAtual;
+    RosterWork.usuariosCorrecaoPainel.notaNaFicha(corpo, pessoa, {
+      secao: function () { return secaoAtual; },
+      aberta: function () { return pessoaAtual === pessoa; },
+      redesenhar: mostrarSecao
     });
   }
 
   /* ---------- a ficha (leitura) ---------- */
 
   function resetarModulos() {
-    ['usuariosPainelEditar', 'usuariosPainelDatas', 'usuariosPainelPromover', 'usuariosPainelTransferir', 'usuariosPainelBaixa', 'usuariosPainelAcesso', 'usuariosPainelAdministracao',
-      'usuariosPainelAfastamentos', 'usuariosPainelAfastamentosEditar']
+    ['usuariosPainelEditar', 'usuariosPainelDatas', 'usuariosPainelPromover', 'usuariosPainelTransferir', 'usuariosPainelBaixa', 'usuariosPainelAcesso',
+      'usuariosPainelAfastamentos']
       .forEach(function (nome) { if (RosterWork[nome] && RosterWork[nome].reset) RosterWork[nome].reset(); });
   }
 
@@ -164,9 +170,6 @@
     /* com uma transferência marcada, outra só depois de cancelar a marcada */
     var transferir = barra.querySelector('[data-ficha-acao="transferir"]');
     if (transferir && RosterWork.usuariosPainelTransferir) transferir.disabled = RosterWork.usuariosPainelTransferir.temMarcada(fichaAtual);
-    /* Administração: o banco diz se quem está logado pode mudar o papel deste militar */
-    var administracao = barra.querySelector('[data-ficha-acao="administracao"]');
-    if (administracao) administracao.classList.toggle('oculto', !(fichaAtual.administracao && fichaAtual.administracao.pode_definir));
     barra.classList.remove('oculto');
   }
 
@@ -199,11 +202,11 @@
     var admin = ehAdmin(), ativo = !ehInativo();
     var afast = RosterWork.usuariosPainelAfastamentos;
     if (afast && afast.ehSecao(secaoAtual)) {
-      /* Férias · Licenças · Dispensas: o ano no subcabeçalho e uma caixa por tipo; o lápis só para quem administra o militar
-         ativo; elas desenham depois de ler (e a cada troca de ano), e então põem as Alterações no fim */
+      /* Férias · Licenças · Dispensas: o ano no subcabeçalho e uma caixa por tipo, só para ler; elas desenham depois de ler
+         (e a cada troca de ano), e então põem a nota e as Alterações */
       afast.montar(corpo, RosterWork.painel.subcabecalho(), {
-        secao: secaoAtual, pessoa: pessoaAtual, admin: admin && ativo, anoInicial: anoInicial, editar: abrirAfastamento,
-        aoDesenhar: function () { porAlteracoes(corpo); }
+        secao: secaoAtual, pessoa: pessoaAtual, anoInicial: anoInicial,
+        aoDesenhar: function () { porCorrecao(corpo); porAlteracoes(corpo); }
       });
     } else if (secaoAtual === 'carreira') {
       if (admin && ativo && RosterWork.usuariosPainelTransferir) {
@@ -220,11 +223,13 @@
           corpo.appendChild(baixa);
         }
       }
+      porCorrecao(corpo);
       porAlteracoes(corpo);
     } else {
       L.montarDados(corpo, fichaAtual, admin ? { corrigir: function () { abrirCorrecao('pessoais'); } } : null);
       /* Acesso ao sistema (só admin, militar ativo): link de cadastro ou de nova senha */
       if (RosterWork.usuariosPainelAcesso) RosterWork.usuariosPainelAcesso.montar(corpo, fichaAtual, pessoaAtual);
+      porCorrecao(corpo);
       porAlteracoes(corpo);
     }
   }
@@ -248,7 +253,7 @@
     return true;
   }
 
-  /* abas Dados / Carreira (a troca com rascunho pede para descartar antes, como na Escala) */
+  /* as abas da ficha (a troca com rascunho pede para descartar antes, como na Escala) */
   function montarAbas() {
     var linha = RosterWork.painel.linhaAbas();
     var tpl = document.getElementById('tpl-usuarios-painel-secoes');
@@ -346,7 +351,7 @@
   }
 
   /* abre a gaveta para a pessoa clicada. aoFechar = callback da página;
-     opcoes = { secao, ano }: as abas de afastamento da página abrem a ficha na aba e no ano delas */
+     opcoes = { secao }: a ficha que volta do painel de decisão reabre na aba em que estava */
   function abrir(pessoa, aoFechar, opcoes) {
     if (!RosterWork.painel || !pessoa) return;
     fichaAtual = null;

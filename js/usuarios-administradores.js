@@ -96,10 +96,9 @@
     fechar(mesma);
     if (mesma) return;
     var caixa = RW.tpl('tpl-administradores-caixa');
-    var molde = document.getElementById('tpl-ficha-sub-administracao');
-    if (!caixa || !molde) return;
-    var nota = molde.content.querySelector('[data-administracao-nota]').cloneNode(true);
-    caixa.querySelector('.administradores-caixa-corpo').appendChild(nota);
+    var nota = RW.tpl('tpl-administradores-nota');
+    if (!caixa || !nota) return;
+    caixa.querySelector('.usuarios-caixa-corpo').appendChild(nota);
 
     /* só as opções que quem está logado pode dar a este militar; a atual já marcada */
     var opcoes = (dados[cpf].opcoes || []).map(function (o) { return o.papel; });
@@ -112,10 +111,10 @@
     });
     RW.abas.ligar(seletor, function (aba) { escolher(linha, nota, cpf, aba.getAttribute('data-papel')); });
     pintarNota(nota, papel);
-    caixa.querySelector('.administradores-caixa-fechar').addEventListener('click', function () { fechar(true); });
+    caixa.querySelector('.usuarios-caixa-fechar').addEventListener('click', function () { fechar(true); });
 
     linha.replaceWith(caixa);
-    caixa.querySelector('.administradores-caixa-topo').prepend(linha);
+    caixa.querySelector('.usuarios-caixa-topo').prepend(linha);
     linha.focus({ preventScroll: true });
     aberta = { linha: linha, caixa: caixa };
   }
