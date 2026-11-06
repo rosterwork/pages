@@ -18,7 +18,7 @@
   function carregar(unidadesIds, inicio, fim, opcoes) {
     var ids = (unidadesIds || []).map(Number);
     /* com mudança do painel do dia esperando o Salvar, o mês como vai ficar */
-    var previa = lerPrevia('ler_escala_mes', { p_unidade_ids: ids, p_inicio: inicio, p_fim: fim });
+    var previa = lerPrevia('ler_escala_mes', { p_unidade_ids: ids, p_inicio: inicio, p_fim: fim }, !!(opcoes && opcoes.daTela && !opcoes.semAviso));
     if (previa) return previa.then(function (grade) { if (!grade) throw new Error('falha'); return reorganizar(grade); });
     /* as grades pedem com daTela: o dia que ainda vai mudar vem da cópia guardada, marcado, e a tela sai na hora; quem
        não pede (a célula depois do Salvar, a impressão) lê o dado real */
@@ -73,7 +73,7 @@
      A RPC entrega { unidade: { militares: [...] } } pronto para o render. */
   function carregarMilitares(unidadesIds, inicio, fim) {
     var ids = (unidadesIds || []).map(Number);
-    var previa = lerPrevia('ler_escala_militares', { p_unidade_ids: ids, p_inicio: inicio, p_fim: fim });
+    var previa = lerPrevia('ler_escala_militares', { p_unidade_ids: ids, p_inicio: inicio, p_fim: fim }, true);
     if (previa) return previa.then(function (grade) { if (!grade) throw new Error('falha'); return grade; });
     return RosterWork.apiFetch('/rest/v1/rpc/ler_escala_militares', {
       metodo: 'POST', corpo: { p_unidade_ids: ids, p_inicio: inicio, p_fim: fim }
@@ -157,13 +157,43 @@
      Extrajornada; escalas-painel-salvar.js), a leitura pedida já com o rascunho (o banco roda o Salvar num ensaio e desfaz
      tudo, nada é gravado). leitura = ler_escala_mes, ler_escala_militares, escala_dia_arvore, escala_minha_calendario ou
      ler_distribuicao_dia (o painel do dia, com erro_simulacao e erro_parte na recusa). Sem mudança, devolve null (a tela lê
-     como sempre); a promessa resolve no mesmo que a leitura devolve, ou null em falha */
-  function lerPrevia(leitura, args) {
+     como sempre); a promessa resolve no mesmo que a leitura devolve, ou null em falha.
+     Uma prévia por vez: cada uma segura a escala da companhia no banco até terminar, e duas juntas fariam fila lá dentro,
+     gastando o tempo-limite de cada pedido. A próxima espera aqui; o pedido igual que ainda espera dá lugar ao mais novo e
+     recebe a resposta dele. soAMaisNova: a grade da tela, em que só vale o último período pedido (quem pediu antes já
+     desistiu, pelo latest-wins). Sem resposta em LIMITE_PREVIA_MS, a fila anda */
+  var LIMITE_PREVIA_MS = 30000;
+  var previaNoAr = null;
+  var previasEsperando = [];   // { chave, corpo, avisar: [o resolver de cada pedido] }
+
+  function lerPrevia(leitura, args, soAMaisNova) {
     var corpo = corpoPrevia(leitura, args);
     if (!corpo) return null;
-    return RosterWork.apiFetch('/rest/v1/rpc/escala_previa', { metodo: 'POST', corpo: corpo })
+    var chave = soAMaisNova ? leitura : leitura + '|' + JSON.stringify(args || {});
+    return new Promise(function (resolver) {
+      var igual = previasEsperando.filter(function (x) { return x.chave === chave; })[0];
+      if (igual) { igual.corpo = corpo; igual.avisar.push(resolver); }
+      else previasEsperando.push({ chave: chave, corpo: corpo, avisar: [resolver] });
+      proximaPrevia();
+    });
+  }
+  function proximaPrevia() {
+    if (previaNoAr || !previasEsperando.length) return;
+    var vez = previaNoAr = previasEsperando.shift();
+    var limite = setTimeout(function () { liberarPrevia(vez); }, LIMITE_PREVIA_MS);
+    RosterWork.apiFetch('/rest/v1/rpc/escala_previa', { metodo: 'POST', corpo: vez.corpo })
       .then(function (r) { return r.ok ? r.json() : null; })
-      .catch(function () { return null; });
+      .catch(function () { return null; })
+      .then(function (dados) {
+        clearTimeout(limite);
+        vez.avisar.forEach(function (resolver) { resolver(dados); });
+        liberarPrevia(vez);
+      });
+  }
+  function liberarPrevia(vez) {
+    if (previaNoAr !== vez) return;
+    previaNoAr = null;
+    proximaPrevia();
   }
   /* o corpo do pedido da prévia (null sem mudança): para quem chama a RPC por conta própria (a árvore do modo Dia) */
   function corpoPrevia(leitura, args) {
