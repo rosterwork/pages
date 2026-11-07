@@ -1,5 +1,5 @@
 /* ============================================================
-   AJUSTES — configurações das unidades (só no computador)
+   AJUSTES — configurações das unidades
    Abas no cabeçalho (Distribuição · Horário de expediente ·
    Feriados), as três no mesmo desenho: a frase, o bloco cinza da
    unidade e o quadro branco (as peças do nova-distribuicao.css).
@@ -139,3 +139,100 @@
 }
 
 .ajustes-exp-remover { align-self: flex-start; }
+
+/* a lista dos dias com nome só existe no celular */
+.ajustes-exp-lista { display: none; }
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   Horário: o dia e o Trabalha | Folga numa linha, o horário embaixo.
+   Feriados: no dia, o número e um ponto quando ele tem nome; o nome
+   fica na lista embaixo do calendário, e a linha abre o dia.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .ajustes-horario-linha {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 4px;
+    padding: 4px 0;
+  }
+
+  html[data-celular] .ajustes-horario-horas {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+
+  html[data-celular] .ajustes-horario-horas:empty {
+    display: none;
+  }
+
+  html[data-celular] .ajustes-exp-cal {
+    padding: 4px;
+  }
+
+  html[data-celular] .ajustes-exp-dia {
+    align-items: center;
+    min-height: var(--toque-altura-celular);
+  }
+
+  html[data-celular] .ajustes-exp-dia-texto,
+  html[data-celular] .ajustes-exp-dia-origem {
+    display: none;
+  }
+
+  html[data-celular] .ajustes-exp-dia-num {
+    font-size: var(--fonte-padrao);
+  }
+
+  html[data-celular] .ajustes-exp-dia:has(.ajustes-exp-dia-texto:not(:empty)) .ajustes-exp-dia-num::after {
+    content: '';
+    display: block;
+    width: 6px;
+    height: 6px;
+    margin: 2px auto 0;
+    border-radius: 50%;
+    background-color: var(--texto-forte);
+  }
+
+  html[data-celular] .ajustes-exp-lista {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--fundo-superficie);
+    border: 1px solid var(--borda);
+    border-radius: var(--raio-medio);
+  }
+
+  html[data-celular] .ajustes-exp-lista:empty {
+    display: none;
+  }
+
+  html[data-celular] .ajustes-exp-lista-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: var(--toque-altura-celular);
+    padding: 8px 12px;
+    border: none;
+    border-bottom: 1px solid var(--borda);
+    background: none;
+    font-family: inherit;
+    font-size: var(--fonte-padrao);
+    text-align: left;
+    color: var(--texto);
+    cursor: pointer;
+  }
+
+  html[data-celular] .ajustes-exp-lista-item:last-child {
+    border-bottom: none;
+  }
+
+  html[data-celular] .ajustes-exp-lista-item:disabled {
+    cursor: default;
+  }
+
+  html[data-celular] .ajustes-exp-lista-dia {
+    flex-shrink: 0;
+    min-width: 24px;
+    font-weight: 700;
+    color: var(--texto-forte);
+  }
+}

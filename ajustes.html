@@ -19,8 +19,16 @@
     </div>
   </div>
 
-  <!-- barra de controles da Distribuição: a unidade (só na aba Distribuição) -->
+  <!-- barra de controles da Distribuição (só na aba Distribuição): a unidade e, só no celular, o menu dos blocos: lá, o
+       painel esquerdo inteiro mora dentro dele (nova-distribuicao.js) -->
   <div class="pagina-subcabecalho oculto" id="nova-distribuicao-barra">
+    <div class="dropdown nova-distribuicao-blocos-menu" id="nova-distribuicao-blocos-menu">
+      <button type="button" class="seletor">
+        <span class="seletor-texto" id="nova-distribuicao-bloco-atual"></span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu"></div>
+    </div>
     <div class="abas abas--seletor" id="nova-distribuicao-unidades" role="tablist" aria-label="Unidade"></div>
   </div>
 
@@ -40,14 +48,14 @@
 
   <div class="pagina-corpo pagina-corpo--colado">
     <!-- Distribuição: os blocos do questionário à esquerda; as perguntas do bloco escolhido e o rodapé à direita -->
-    <div class="geral-layout-lateral" data-aba-painel="distribuicao">
+    <div class="geral-layout-lateral" id="nova-distribuicao-layout" data-aba-painel="distribuicao">
       <!-- painel esquerdo: os blocos do questionário, na ordem -->
-      <aside class="geral-painel-esquerdo">
+      <aside class="geral-painel-esquerdo" id="nova-distribuicao-lado">
         <div class="geral-painel-esquerdo-cabecalho">
           <span class="rotulo-secao">Blocos</span>
           <span class="nova-distribuicao-contagem" id="nova-distribuicao-contagem"></span>
         </div>
-        <div class="geral-painel-esquerdo-lista" id="nova-distribuicao-blocos">
+        <div class="geral-painel-esquerdo-lista nova-distribuicao-blocos--lendo" id="nova-distribuicao-blocos">
           <button type="button" class="lista-item lista-item--clicavel nova-distribuicao-bloco" data-bloco="9">
             <svg class="icone nova-distribuicao-bloco-pronto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
             <svg class="icone nova-distribuicao-bloco-falta oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
@@ -138,7 +146,18 @@
          componente geral-horario, posto pelo JS no .ajustes-horario-horas); o rodapé grava a semana inteira -->
     <section class="geral-corpo-lateral oculto" data-aba-painel="horario">
       <div class="geral-corpo-lateral-rolagem">
-        <div class="nova-distribuicao-carregando" id="horario-carregando"><span class="giratorio" aria-hidden="true"></span></div>
+        <div class="nova-distribuicao-carregando esqueleto-painel esqueleto-conjunto" id="horario-carregando" role="status" aria-label="Carregando">
+          <div class="esqueleto-caixa">
+            <span class="esqueleto-caixa-topo"><span class="esqueleto esqueleto-caixa-titulo"></span></span>
+            <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+            <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+            <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+            <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+            <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+            <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+            <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+          </div>
+        </div>
         <div class="nova-distribuicao-conteudo oculto" id="horario-conteudo">
           <p class="nova-distribuicao-ajuda">Vale para os administrativos da companhia e de todos os pelotões.</p>
           <section class="nova-distribuicao-unidade bloco">
@@ -231,11 +250,11 @@
       </div>
     </section>
 
-    <!-- Feriados: o calendário do mês da unidade escolhida na barra (clique no dia para marcar, no painel direito) -->
+    <!-- Feriados: o calendário do mês da unidade escolhida na barra (escolher o dia marca, no painel direito) -->
     <section class="geral-corpo-lateral oculto" data-aba-painel="feriados">
       <div class="geral-corpo-lateral-rolagem">
         <div class="nova-distribuicao-conteudo">
-          <p class="nova-distribuicao-ajuda">Clique no dia para marcar um feriado, um recesso ou outra folga. Vale para os administrativos lotados na unidade.</p>
+          <p class="nova-distribuicao-ajuda">Escolha o dia para marcar um feriado, um recesso ou outra folga. Vale para os administrativos lotados na unidade.</p>
           <section class="nova-distribuicao-unidade bloco">
             <p class="nova-distribuicao-unidade-titulo bloco-titulo">
               <span class="rotulo-secao nova-distribuicao-unidade-nome bloco-nome" id="feriados-unidade"></span>
@@ -282,6 +301,18 @@
 
 <template id="tpl-exp-dia-vazio">
   <span class="ajustes-exp-dia ajustes-exp-dia--vazio"></span>
+</template>
+
+<!-- molde: os dias com nome, embaixo do calendário (só aparece no celular, onde o nome não cabe no dia) -->
+<template id="tpl-exp-lista">
+  <div class="ajustes-exp-lista"></div>
+</template>
+
+<template id="tpl-exp-lista-item">
+  <button type="button" class="ajustes-exp-lista-item">
+    <span class="ajustes-exp-lista-dia"></span>
+    <span class="ajustes-exp-lista-nome"></span>
+  </button>
 </template>
 
 <!-- molde: marcar o dia (painel direito), nas caixas numeradas das perguntas (o número vem da geral-subtela e conta só
@@ -350,7 +381,25 @@
 
 <!-- carregando a área -->
 <template id="tpl-nova-distribuicao-carregando">
-  <div class="nova-distribuicao-carregando"><span class="giratorio" aria-hidden="true"></span></div>
+  <div class="nova-distribuicao-carregando esqueleto-painel esqueleto-conjunto" role="status" aria-label="Carregando">
+    <div class="esqueleto-caixa">
+      <span class="esqueleto-caixa-topo"><span class="esqueleto esqueleto-caixa-titulo"></span></span>
+      <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+      <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+    </div>
+    <div class="esqueleto-caixa">
+      <span class="esqueleto-caixa-topo"><span class="esqueleto esqueleto-caixa-titulo"></span></span>
+      <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+      <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+      <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+      <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+    </div>
+    <div class="esqueleto-caixa">
+      <span class="esqueleto-caixa-topo"><span class="esqueleto esqueleto-caixa-titulo"></span></span>
+      <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+      <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+    </div>
+  </div>
 </template>
 
 <!-- unidade ainda sem respostas: com dados hoje, copia; sem nada hoje, começa em branco -->
@@ -1109,18 +1158,20 @@
       <span class="nova-distribuicao-conferir-pracas">praças de serviço</span>
       <span class="nova-distribuicao-conferir-oficiais oculto">oficiais de serviço</span>
     </p>
-    <table class="nova-distribuicao-tabela nova-distribuicao-tabela--conferir">
-      <thead><tr><th>Posto</th><th>Função</th></tr></thead>
-      <tbody></tbody>
-      <tfoot>
-        <tr data-resumo="abaixo_minimo"><th colspan="2">Postos abaixo do mínimo</th></tr>
-        <tr data-resumo="abaixo_ideal"><th colspan="2">Postos abaixo do ideal</th></tr>
-        <tr data-resumo="sem_condutor"><th colspan="2">Viaturas sem condutor</th></tr>
-        <tr data-resumo="chefe_condutor"><th colspan="2"><span class="nova-distribuicao-conferir-pracas">Chefe de Socorro dirigindo</span><span class="nova-distribuicao-conferir-oficiais oculto">Oficial de Área dirigindo</span></th></tr>
-        <tr data-resumo="sem_funcao"><th colspan="2">Sem função</th></tr>
-        <tr data-resumo="fora"><th colspan="2">Postos fora da escala</th></tr>
-      </tfoot>
-    </table>
+    <div class="nova-distribuicao-tabela-rolagem">
+      <table class="nova-distribuicao-tabela nova-distribuicao-tabela--conferir">
+        <thead><tr><th>Posto</th><th>Função</th></tr></thead>
+        <tbody></tbody>
+        <tfoot>
+          <tr data-resumo="abaixo_minimo"><th colspan="2">Postos abaixo do mínimo</th></tr>
+          <tr data-resumo="abaixo_ideal"><th colspan="2">Postos abaixo do ideal</th></tr>
+          <tr data-resumo="sem_condutor"><th colspan="2">Viaturas sem condutor</th></tr>
+          <tr data-resumo="chefe_condutor"><th colspan="2"><span class="nova-distribuicao-conferir-pracas">Chefe de Socorro dirigindo</span><span class="nova-distribuicao-conferir-oficiais oculto">Oficial de Área dirigindo</span></th></tr>
+          <tr data-resumo="sem_funcao"><th colspan="2">Sem função</th></tr>
+          <tr data-resumo="fora"><th colspan="2">Postos fora da escala</th></tr>
+        </tfoot>
+      </table>
+    </div>
     <p class="nova-distribuicao-legenda">
       <span class="nova-distribuicao-legenda-item"><span class="nova-distribuicao-estado nova-distribuicao-estado--tem_gente" aria-hidden="true"></span><span>Com gente</span></span>
       <span class="nova-distribuicao-legenda-item"><span class="nova-distribuicao-estado nova-distribuicao-estado--acumula" aria-hidden="true">A</span><span>Acúmulo fixo</span></span>
@@ -1180,10 +1231,12 @@
     <p class="nova-distribuicao-ajuda nova-distribuicao-simulacao-vazia oculto">Escolha quantos de cada graduação estão de serviço.</p>
     <p class="nova-distribuicao-ajuda nova-distribuicao-dia-vazia oculto">Ninguém da unidade de serviço às 08h nesse dia.</p>
     <div class="nova-distribuicao-avisos-equipe oculto"></div>
-    <table class="nova-distribuicao-tabela nova-distribuicao-simulacao-tabela">
-      <thead><tr><th>Posto</th><th>Função</th><th>Quem</th><th>Situação</th></tr></thead>
-      <tbody></tbody>
-    </table>
+    <div class="nova-distribuicao-tabela-rolagem">
+      <table class="nova-distribuicao-tabela nova-distribuicao-simulacao-tabela">
+        <thead><tr><th>Posto</th><th>Função</th><th>Quem</th><th>Situação</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
     <p class="nova-distribuicao-ajuda nova-distribuicao-sobra oculto"></p>
   </div>
 </template>

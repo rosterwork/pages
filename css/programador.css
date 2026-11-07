@@ -64,13 +64,19 @@
   text-align: right;
 }
 
-/* detalhe à direita */
+/* a barra do Voltar à lista só existe no celular (ver o bloco do celular) */
+.programador-registro-barra {
+  display: none;
+}
+
+/* detalhe à direita (em tela própria, no celular); o texto longo sem espaço, como o endereço, quebra dentro da área */
 .programador-detalhe {
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 16px;
   max-width: 640px;
+  overflow-wrap: anywhere;
 }
 
 .programador-detalhe-topo {
@@ -293,4 +299,57 @@
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   Mensagens e Bugs: a lista e o registro são duas telas
+   (programador-telas.js); a que está à vista ocupa a área toda.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .programador-esquerdo {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+    border-right: none;
+  }
+
+  html[data-celular] .programador-telas > .geral-corpo-lateral,
+  html[data-celular] .programador-telas--registro > .programador-esquerdo {
+    display: none;
+  }
+
+  html[data-celular] .programador-telas--registro > .geral-corpo-lateral {
+    display: flex;
+  }
+
+  /* o Voltar à lista fica parado no alto; o registro rola embaixo dele */
+  html[data-celular] .programador-registro-barra {
+    display: flex;
+    flex-shrink: 0;
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--borda);
+    background-color: var(--fundo-superficie);
+  }
+
+  /* o filtro que não cabe rola para o lado */
+  html[data-celular] .programador-filtro-barra {
+    overflow-x: auto;
+  }
+
+  /* os botões do registro: o que não cabe desce de linha */
+  html[data-celular] .programador-bug-ligado-acoes,
+  html[data-celular] .programador-detalhe-acoes {
+    flex-wrap: wrap;
+  }
+
+  /* o seletor das Mensagens divide a largura da linha */
+  html[data-celular] .programador-filtro-barra > .abas--seletor {
+    width: 100%;
+  }
+
+  html[data-celular] .programador-filtro-barra > .abas--seletor .aba {
+    flex: 1 1 auto;
+    padding: 0 4px;
+  }
 }

@@ -256,7 +256,7 @@
     lembrarOutros();
     corpo.textContent = '';
     cartao = null;
-    var carregando = RosterWork.tpl('tpl-escala-distribuicao-carregando');
+    var carregando = RosterWork.painel.criarCarregando();
     if (carregando) corpo.appendChild(carregando);
 
     RosterWork.escalasDados.continuosListar(ctx.unidadeId, ctx.iso).then(function (dados) {

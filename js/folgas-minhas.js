@@ -14,6 +14,9 @@
   var ctx = null;
   var ultimoSaldo = 0;   // último saldo carregado, p/ o botão "Solicitar folga" do cabeçalho
   var seqExtrato = 0;    // token do extrato: ignora resposta antiga ao recarregar rápido (troca de aba, saldo mudou)
+  var espera = null;     // a leitura do extrato na tela (geral-etapas.js)
+  var saldoNoAr = null;  // a leitura do saldo ainda não chegou: o Solicitar folga espera por ela
+  var esperando = null;  // o painel do Solicitar folga aberto, esperando o saldo
 
   function fmt() { return RW.folgasFormato; }
   function msg() { return RW.mensagens.folgas; }
@@ -22,13 +25,6 @@
     return { usuario_id: u.cpf, grau_abreviacao: u.grau_abreviacao, nome_de_guerra: u.nome_de_guerra, lotacao_atual: u.lotacao_id };
   }
   function alvo() { return raizConteudo ? raizConteudo.querySelector('#folgas-minhas') : document.getElementById('folgas-minhas'); }
-
-  function carregando(el) {
-    el.textContent = '';
-    var box = RosterWork.tpl('tpl-folga-lista-vazio');
-    var pts = document.getElementById('carregando-pontos');
-    if (box && pts) { box.appendChild(pts.content.cloneNode(true)); el.appendChild(box); }
-  }
 
   function renderizar(el, dados) {
     el.textContent = '';
@@ -72,14 +68,23 @@
     if (!el || !document.contains(el)) return;
     var u = RosterWork.sessao.perfil();
     if (!u || !u.cpf) return;
-    carregando(el);
+    /* o que está na tela fica até o novo chegar; vazia, passando de 0,3 s, a forma e, de 1 s, as etapas */
+    if (espera) espera.parar();
+    espera = RW.etapas.area(el, el.children.length ? {} : { forma: 'tpl-esqueleto-cartoes', etapas: 'folgasAbrir' });
     var req = ++seqExtrato;
-    RW.folgasDados.extrato(u.cpf).then(function (r) {
+    function chegou() {
+      if (espera) espera.parar();
+      espera = null;
+      saldoNoAr = null;
+    }
+    saldoNoAr = RW.folgasDados.extrato(u.cpf).then(function (r) {
       if (!document.contains(el) || req !== seqExtrato) return;
+      chegou();
       if (r == null) { falharExtrato(el); return; }   // null = falha (não confundir com saldo 0 real)
       renderizar(el, r);
     }).catch(function () {
       if (!document.contains(el) || req !== seqExtrato) return;
+      chegou();
       falharExtrato(el);
     });
   }
@@ -92,7 +97,16 @@
 
   /* aberto pelo botão "Solicitar folga" do cabeçalho (o militar pede a própria folga) */
   function solicitar() {
-    if (RW.folgasPainel) RW.folgasPainel.abrirFormFolga({ modo: 'solicitar', militar: meuMilitar(), saldoAtual: ultimoSaldo });
+    if (!RW.folgasPainel) return;
+    function abrir() { RW.folgasPainel.abrirFormFolga({ modo: 'solicitar', militar: meuMilitar(), saldoAtual: ultimoSaldo }); }
+    if (!saldoNoAr) { abrir(); return; }
+    /* o saldo ainda não chegou: o painel abre com a forma das caixas e o formulário entra com ele; fechou antes, nada abre */
+    RW.painel.abrir({ titulo: msg().acaoSolicitar, aoFechar: function () { esperando = null; } });
+    var corpo = RW.painel.corpo();
+    corpo.textContent = '';
+    corpo.appendChild(RW.painel.criarCarregando());
+    var meu = esperando = {};
+    saldoNoAr.then(function () { if (esperando === meu) { esperando = null; abrir(); } });
   }
 
   RW.folgasMinhas = { montar: montar, carregar: carregar, solicitar: solicitar };

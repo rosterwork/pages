@@ -180,8 +180,12 @@
     return osQuePode().filter(function (t) { return !t.hasAttribute('data-so-ajuda'); });
   }
 
+  /* o roteiro só do ? (data-so-ajuda) fica de fora no modo treino: lá, o ? começa um treino da lista */
   function naPagina(pagina) {
-    return osQuePode().filter(function (t) { return !!passos(t.getAttribute('data-roteiro'), pagina); });
+    var noTreino = !!RW.treino && RW.treino.ligado();
+    return osQuePode().filter(function (t) {
+      return !(noTreino && t.hasAttribute('data-so-ajuda')) && !!passos(t.getAttribute('data-roteiro'), pagina);
+    });
   }
 
   /* a lista em grupos: primeiro a área de todos, depois a do administrador; em cada área, um grupo por tela

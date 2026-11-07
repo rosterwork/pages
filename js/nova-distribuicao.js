@@ -18,6 +18,7 @@
 
   var E = novoEstado();
   var tokenCarga = 0;
+  var espera = null, corpoEsperando = null;   // a leitura na tela (geral-etapas.js)
   var tokenConta = 0;
   var guardaLigada = false;
   /* prefixos digitados fora do formato: ficam só no campo, em vermelho ({ 'lado:viatura:i': texto }) */
@@ -90,11 +91,19 @@
   /* versaoId = a mudança agendada; sem ela, a distribuição em vigor. O ritmo vem junto (o bloco 1) */
   function carregar(unidadeId, versaoId) {
     var meu = ++tokenCarga;
-    P().mostrarNoCorpo('carregando');
+    /* o que está na tela fica 0,3 s, sem responder; depois, a forma e, de 1 s, as etapas (geral-etapas.js) */
+    pararEspera();
+    corpoEsperando = el('nova-distribuicao-corpo');
+    corpoEsperando.inert = true;
+    el('nova-distribuicao-blocos').classList.add('nova-distribuicao-blocos--lendo');
+    espera = RosterWork.etapas.area(corpoEsperando, { forma: 'tpl-nova-distribuicao-carregando', etapas: 'ajustesAbrir', valores: { unidade: nomeDaUnidade(unidadeId) }, doServidor: 1 });
+    function terminou() { if (meu === tokenCarga) pararEspera(); }
     return Promise.all([D().ler(unidadeId, versaoId), D().ritmos()]).then(function (rs) {
       var r = rs[0];
       if (meu !== tokenCarga || !montada()) return;
-      if (!r || !r.success) { P().mostrarNoCorpo('falha', (r && r.error) || G().falhaCarregar); return; }
+      if (!r || !r.success) { pararEspera(); P().mostrarNoCorpo('falha', (r && r.error) || G().falhaCarregar); return; }
+      /* as contas de cada posto, a 2ª etapa */
+      espera.ir(1);
       var bloco = E.bloco;
       RosterWork.novaDistribuicaoCaixas.descartar();   /* o rascunho das substituições e o ritmo escolhido: salvos ou descartados */
       Rt().iniciar(rs[1], r.unidade.id);
@@ -109,11 +118,28 @@
       E.respCia = r.companhia && r.companhia.periodo ? copia(r.companhia.periodo.respostas) : null;
       invalidos = {};
       desenharBarra();
-      if (!E.periodo) { desenharSemRespostas(); return; }
+      if (!E.periodo) { pararEspera(); desenharSemRespostas(); return; }
       return recalcular();
     }, function () {
-      if (meu === tokenCarga && montada()) P().mostrarNoCorpo('falha', G().semConexao);
-    });
+      if (meu === tokenCarga && montada()) { pararEspera(); P().mostrarNoCorpo('falha', G().semConexao); }
+    }).then(terminou, terminou);
+  }
+
+  function pararEspera() {
+    if (espera) espera.parar();
+    espera = null;
+    if (corpoEsperando) corpoEsperando.inert = false;
+    corpoEsperando = null;
+  }
+
+  /* o nome da unidade nas etapas: a que já está lida ou, na 1ª vez, a do administrador */
+  function nomeDaUnidade(unidadeId) {
+    var lista = (E.dados && E.dados.unidades) || [];
+    var u = lista.filter(function (x) { return String(x.id) === String(unidadeId); })[0];
+    if (u) return u.nome;
+    if (unidadeId != null) return '';
+    var perfil = RosterWork.sessao.perfil();
+    return perfil && perfil.lotacao_path ? perfil.lotacao_path.split('/').pop().trim() : '';
   }
 
   /* a outra versão, para o banco dizer o que muda: vendo a em vigor, a agendada; vendo a agendada, a em vigor */
@@ -244,6 +270,7 @@
     var dica = E.dados && E.dados.agendada
       ? (E.vendoAgendada ? M().blocoDiferente : P().texto(M().blocoMuda, { data: RosterWork.data.isoParaBR(E.dados.agendada.inicio) })) : '';
     lista.classList.toggle('oculto', !E.periodo);
+    lista.classList.remove('nova-distribuicao-blocos--lendo');
     lista.querySelectorAll('.nova-distribuicao-bloco').forEach(function (botao) {
       var n = Number(botao.getAttribute('data-bloco'));
       var muda = botao.querySelector('.nova-distribuicao-bloco-muda');
@@ -254,6 +281,21 @@
       muda.setAttribute('data-dica', dica);
     });
     el('nova-distribuicao-contagem').textContent = E.periodo ? P().texto(M().contagem, { n: pr.filter(Boolean).length }) : '';
+    /* o botão do menu dos blocos (no celular) diz o bloco aberto */
+    var ativo = lista.querySelector('.lista-item--ativo > span');
+    el('nova-distribuicao-bloco-atual').textContent = ativo ? ativo.textContent : '';
+    el('nova-distribuicao-blocos-menu').classList.toggle('oculto', !E.periodo);
+  }
+
+  /* no celular, os blocos (o painel esquerdo inteiro) moram no menu da barra; fora dele, na lateral. O celular pode girar
+     e passar do corte: o resize chama de novo */
+  function arrumarBlocos() {
+    var lado = el('nova-distribuicao-lado');
+    if (!lado) return;   /* a página já saiu */
+    var destino = RosterWork.celular && RosterWork.celular()
+      ? el('nova-distribuicao-blocos-menu').querySelector('.dropdown-menu')
+      : el('nova-distribuicao-layout');
+    if (lado.parentElement !== destino) destino.insertBefore(lado, destino.firstChild);
   }
 
   /* as viaturas novas ainda sem prefixo ('lado:viatura:i'): só acusam quando o campo fica vazio ao sair
@@ -385,22 +427,30 @@
   function ligar() {
     ligarUmaVez(el('nova-distribuicao-salvar'), 'click', salvar);
     ligarUmaVez(el('nova-distribuicao-cancelar'), 'click', cancelar);
-    ligarUmaVez(el('nova-distribuicao-unidades'), 'rosterwork:aba', function (ev) {
-      var id = Number(ev.detail.aba.getAttribute('data-unidade'));
-      if (id === E.unidadeId) return;
-      confirmarDescarte(function () { E.aberto = null; carregar(id); }, desenharBarra);
-    });
+    /* pelo abas.ligar, a unidade vira o menu "Opção ▾" no celular (geral-abas) */
+    var unidades = el('nova-distribuicao-unidades');
+    if (!unidades.dataset.ligado) {
+      unidades.dataset.ligado = '1';
+      RosterWork.abas.ligar(unidades, function (aba) {
+        var id = Number(aba.getAttribute('data-unidade'));
+        if (id === E.unidadeId) return;
+        confirmarDescarte(function () { E.aberto = null; carregar(id); }, desenharBarra);
+      });
+    }
     document.querySelectorAll('.nova-distribuicao-bloco').forEach(function (botao) {
       ligarUmaVez(botao, 'click', function () {
+        if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns(null);   /* no celular, o bloco mora num menu */
         E.bloco = Number(botao.getAttribute('data-bloco'));
         E.aberto = null;
         desenhar();
+        el('nova-distribuicao-corpo').scrollTop = 0;   /* o bloco novo começa do alto */
       });
     });
   }
 
   function iniciar() {
     var S = RosterWork.sessao;
+    arrumarBlocos();
     if (!((S.temPapel && S.temPapel('pelotao')) || (S.ehProgramador && S.ehProgramador()))) {
       P().mostrarNoCorpo('bloqueado');
       return Promise.resolve();
@@ -419,6 +469,8 @@
     if (!temEdicao()) { seguir(); return; }
     confirmarDescarte(function () { E.aberto = null; carregar(E.unidadeId, E.vendoAgendada ? E.periodo.id : null); seguir(); }, ficar);
   }
+
+  window.addEventListener('resize', arrumarBlocos);
 
   window.RosterWork.novaDistribuicao = { iniciar: iniciar, sairDaAba: sairDaAba };
 })();

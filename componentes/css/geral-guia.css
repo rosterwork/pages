@@ -83,6 +83,11 @@
   pointer-events: none;
 }
 
+/* com o véu do passo ligado, o da janela aberta fica transparente: a tela escurece uma vez só */
+html:has(.guia-veu:not(.oculto)) .modal-veu {
+  background-color: transparent;
+}
+
 /* ---------- o vidro do treino: transparente, por cima da tela inteira, com a porta recortada (geral-guia-vidro.js) ---------- */
 .guia-vidro {
   position: fixed;

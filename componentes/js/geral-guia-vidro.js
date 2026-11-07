@@ -4,8 +4,8 @@
    fim do treino. Ela engole o clique, o
    toque, o botão direito e o arrasto; no recorte dela fica no máximo
    uma porta, o controle que o passo pede. O balão e o Sair do treino
-   ficam fora da regra e sempre respondem; o Recomeçar da barra azul
-   também, menos com uma janela aberta.
+   ficam fora da regra e sempre respondem; o Treino livre e o Recomeçar
+   da barra azul também, menos com uma janela aberta.
 
    A porta (porta()), perguntada a cada desenho e a cada clique:
    - passo de olhar, tela carregando, entre um passo e outro, tela
@@ -52,7 +52,7 @@
   var LINHA_RODINHA = 16;   // px de uma linha da rodinha do mouse
   var JANELA = '.modal-veu--aberto';
   var SEMPRE = '.guia-balao, .treino-barra-sair';
-  var RECOMECAR_DA_BARRA = '.treino-barra-recomecar';
+  var DA_BARRA_SEM_JANELA = '.treino-barra-livre, .treino-barra-recomecar';
   /* em cada janela, na ordem do HTML: o Cancelar vem antes do botão principal */
   var SAIDA_DA_JANELA = '.aviso-cancelar:not(.oculto), .data-modal-cancelar, .aviso-confirmar, .modal-rodape .botao--primario';
   var FOCAVEIS = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -124,12 +124,14 @@
     return !!topo && (el.contains(topo) || !!topo.closest('.guia-balao'));
   }
   function botoesDaBarra() {
-    var botoes = [document.querySelector('.treino-barra:not(.oculto) .treino-barra-sair')];
-    if (!janelaAberta()) botoes.push(document.querySelector('.treino-barra:not(.oculto) ' + RECOMECAR_DA_BARRA));
+    var barra = document.querySelector('.treino-barra:not(.oculto)');
+    if (!barra) return [];
+    var botoes = [barra.querySelector('.treino-barra-sair')];
+    if (!janelaAberta()) botoes = botoes.concat(Array.prototype.slice.call(barra.querySelectorAll(DA_BARRA_SEM_JANELA)));
     return botoes.filter(function (b) { return visivel(b) && porCima(b); });
   }
   /* o que responde em qualquer passo */
-  function sempreResponde(alvo) { return !!alvo.closest(SEMPRE) || (!!alvo.closest(RECOMECAR_DA_BARRA) && !janelaAberta()); }
+  function sempreResponde(alvo) { return !!alvo.closest(SEMPRE) || (!!alvo.closest(DA_BARRA_SEM_JANELA) && !janelaAberta()); }
 
   /* a porta nova entra na tela: fora dela, ou embaixo do que gruda ou do rodapé, ninguém chegaria nela (na escolha, todas) */
   function mostrarPorta(lista) {

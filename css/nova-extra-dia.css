@@ -219,6 +219,12 @@
   color: var(--erro);
 }
 
+/* o rodapé com o que o rascunho faz com as cotas: "Ao salvar, ..." (avisa, o Salvar continua ligado) */
+.rodape .escala-extra-rodape-alerta {
+  font-weight: 600;
+  color: var(--alerta);
+}
+
 /* a aba Extrajornada do painel do dia, no mês ainda não lançado */
 .escala-extra-nao-lancada {
   display: flex;
@@ -462,4 +468,69 @@
 /* painel do dia: os selos embaixo do nome, na largura toda da linha */
 .escala-extra-militar > .nova-extra-selos-linha {
   grid-column: 2 / -1;
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   As bolinhas de horário crescem para o dedo. Na aba Extrajornada
+   do painel do dia, o Motivo do ajuste ganha uma linha só dele no
+   rodapé, em cima do Cancelar e do Salvar.
+   ============================================================ */
+@media (max-width: 767px) {
+  /* a área de toque de 32 por 44 e o desenho de 16 (no computador, 24 e 12) */
+  html[data-celular] .nova-extra-marcas .escala-extra-marca,
+  html[data-celular] .nova-extra-marcas .escala-extra-marca:hover,
+  html[data-celular] .nova-extra-marcas .escala-extra-marca--on,
+  html[data-celular] .nova-extra-marcas .escala-extra-marca--on:hover {
+    width: 32px;
+    min-height: var(--toque-altura-celular);
+  }
+
+  html[data-celular] .nova-extra-marcas .escala-extra-marca::before {
+    width: 16px;
+    min-height: 16px;
+  }
+
+  html[data-celular] .nova-extra-horas span {
+    min-width: 32px;
+  }
+
+  html[data-celular] .escala-extra-militar:not(.escala-extra-militar--indisponivel) {
+    grid-template-columns: 8px minmax(0, 1fr) auto 128px;
+  }
+
+  /* o rodapé com o motivo tem uma altura só: a borda, o motivo, a frase em até duas linhas, o botão e os vãos; o painel
+     termina em cima dele (o painel com rodapé próprio esconde este, geral-rodape.css) */
+  html[data-celular] .conteudo:has(> .painel-lateral--aberto) .escala-rodape-salvar:has(.escala-rodape-motivo:not(.oculto)):not(.oculto) {
+    flex-wrap: wrap;
+    align-content: space-between;
+    min-height: calc(var(--botao-altura) + var(--campo-altura) + 65px);
+  }
+
+  html[data-celular] .escala-rodape-motivo {
+    flex: 1 1 100%;
+    order: -1;
+  }
+
+  html[data-celular] .escala-rodape-motivo input {
+    width: 100%;
+  }
+
+  html[data-celular] .conteudo:has(> .painel-lateral--aberto) .escala-rodape-salvar:has(.escala-rodape-motivo:not(.oculto)) .rodape-acoes {
+    flex: 1 1 100%;
+  }
+
+  html[data-celular] .conteudo:has(> .painel-lateral--aberto) .escala-rodape-salvar:has(.escala-rodape-motivo:not(.oculto)) .rodape-texto:not(:empty) {
+    display: -webkit-box;
+    flex: 1 1 100%;
+    overflow: hidden;
+    line-height: 16px;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  html[data-celular] .conteudo:has(.escala-rodape-salvar:not(.oculto) .escala-rodape-motivo:not(.oculto)):not(:has(.painel-rodape:not(.oculto))) > .painel-lateral {
+    margin-bottom: calc(var(--botao-altura) + var(--campo-altura) + 65px);
+  }
 }

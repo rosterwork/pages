@@ -2,9 +2,11 @@
    TREINO — o modo treino (componente geral-treino)
    A barra azul no alto da casca, acima do cabeçalho (.treino-barra:
    o modo, a página e o treino, separados por um traço, e os botões
-   Recomeçar e Sair do treino), e a moldura azul em volta da tela (.treino-moldura,
+   Treino livre, Recomeçar e Sair do treino), e a moldura azul em volta da tela (.treino-moldura,
    por cima de tudo e sem pegar o clique). O azul é o --anotacao, o
-   mesmo das marcações do manual.
+   mesmo das marcações do manual. No treino livre (a marca
+   data-treino-livre no <html>), a parte dele fica no lugar da do
+   treino, e o botão Treino livre some.
    No passo a passo, a barra e a moldura ficam acesas (o véu do
    geral-guia deixa um buraco na barra; a moldura vem depois das
    peças do guia) e, com um aviso ou uma janela aberta, o escuro
@@ -57,18 +59,40 @@
 }
 
 /* o treino é a parte que cede: sem espaço, o nome termina em "…" */
-.treino-barra-treino {
+.treino-barra-treino,
+.treino-barra-parte-livre {
   flex-shrink: 1;
   min-width: 0;
 }
 
 .treino-barra-rotulo,
-.treino-barra-nome {
+.treino-barra-nome,
+.treino-barra-livre-nome {
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.treino-barra-pagina-celular {
+.treino-barra-pagina-celular,
+.treino-barra-so-celular {
+  display: none;
+}
+
+/* o treino livre: a parte dele no lugar da do treino; o botão que leva a ele some, e o Recomeçar diz o que recomeça */
+.treino-barra-parte-livre,
+.treino-barra-recomecar-resto {
+  display: none;
+}
+
+html[data-treino-livre] .treino-barra-parte-livre {
+  display: flex;
+}
+
+html[data-treino-livre] .treino-barra-recomecar-resto {
+  display: inline;
+}
+
+html[data-treino-livre] .treino-barra-treino,
+html[data-treino-livre] .treino-barra-livre {
   display: none;
 }
 
@@ -101,14 +125,26 @@ html[data-treino] .modal-veu {
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    A barra fica só com o treino, com a página junto do número, e os
-   dois botões, para o nome do treino caber: o Recomeçar só com o
-   ícone e o outro só com a palavra Sair. O painel, que no celular
-   cobre a tela, e o balão do passo a passo preso em cima começam
-   abaixo dela.
+   botões, para o nome do treino caber: a palavra Livre, o Recomeçar
+   só com o ícone e a palavra Sair; no treino com passo a passo, o
+   capelo sai. O painel, que no celular cobre a tela, e o balão do
+   passo a passo preso em cima começam abaixo dela. O topo que sai com
+   a rolagem (geral-recolher-topo.css) passa por baixo dela.
    ============================================================ */
 @media (max-width: 767px) {
   html[data-celular] .treino-barra {
+    position: relative;
+    z-index: 2;
     padding: 4px 8px 4px 12px;
+  }
+
+  html[data-celular][data-treino]:not([data-treino-livre]) .treino-barra-texto > .icone,
+  html[data-celular] .treino-barra-so-computador {
+    display: none;
+  }
+
+  html[data-celular] .treino-barra-so-celular {
+    display: inline;
   }
 
   html[data-celular] .treino-barra-modo,

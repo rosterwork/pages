@@ -33,12 +33,6 @@
     corpo.appendChild(no);
   }
 
-  function mostrarCarregando(corpo) {
-    corpo.textContent = '';
-    var no = RosterWork.tpl('tpl-escala-carregando');
-    if (no) corpo.appendChild(no);
-  }
-
   /* preenche a célula de UM dia (calendário) com, por unidade, a célula do Mês */
   function preencherDia(celulaDia, iso, colunas, dados, cobertura, erro, maxPorUnidade, afastados, opcoesCelula) {
     colunas.forEach(function (c) {
@@ -92,16 +86,25 @@
       return;
     }
 
-    mostrarCarregando(corpo);
-
     var ano = dataRef.getFullYear(), mes = dataRef.getMonth();
     var inicio = dataISO(new Date(ano, mes, 1));
     var fim = dataISO(new Date(ano, mes + 1, 0));
     var ids = colunas.map(function (c) { return c.id; });
 
+    /* o mesmo mês lido de novo: o calendário fica até o novo chegar, na mesma rolagem (escalas-dia-na-grade.js) */
+    var Dia = window.RosterWork.escalasDiaNaGrade;
+    var chaveGrade = 'calendario|' + (opcoes.diasPorLinha || 0) + '|' + inicio + '|' + ids.join(',');
+    var rolagem = Dia ? Dia.mesmaGrade(corpo, chaveGrade) : null;
+    /* outro mês: o que está na tela fica 0,3 s; depois, a forma do novo (escalas-esqueleto.js) */
+    var Esqueleto = window.RosterWork.escalasEsqueleto;
+    if (!rolagem) {
+      Esqueleto.abrirMes(corpo, dataRef, function (lugar) { Esqueleto.calendario(lugar, colunas, dataRef, opcoes.diasPorLinha); });
+    }
+
     var req = ++reqSeq;
     return window.RosterWork.escalasDados.carregar(ids, inicio, fim, { daTela: true }).then(function (resultado) {
       if (!document.contains(corpo) || req !== reqSeq || (opcoes.vigente && !opcoes.vigente())) return;   // saiu da página, outra render começou, ou trocou de modo
+      Esqueleto.parar();
       var dados = resultado.militares;
       var afastados = resultado.afastados || {};
       var cobertura = resultado.cobertura || {};
@@ -129,17 +132,20 @@
       if (wrap && opcoes.aoTerminar) opcoes.aoTerminar(wrap);
       if (wrap && RosterWork.escalasCelula) RosterWork.escalasCelula.ativarGraficos(wrap);
       if (wrap && RosterWork.gradeTeclado) RosterWork.gradeTeclado.ativar(wrap, { celula: '.escala-mes-celula', matriz: matrizTeclado });
+      if (wrap && Dia) Dia.desenhou(corpo, chaveGrade, wrap, rolagem);
       /* rolarHoje: abre em hoje, com a linha anterior (a semana, ou os N dias do Colunas) à vista acima e,
          quando os dias não cabem na largura (celular), o dia anterior à esquerda (geral-periodo.js);
          hoje num dia de outro mês não conta */
-      var diaHoje = (opcoes.rolarHoje && wrap) ? wrap.querySelector('.geral-calendario-mes-dia--hoje:not(.geral-calendario-mes-dia--fora)') : null;
+      var diaHoje = (opcoes.rolarHoje && !rolagem && wrap) ? wrap.querySelector('.geral-calendario-mes-dia--hoje:not(.geral-calendario-mes-dia--fora)') : null;
       if (diaHoje && RosterWork.periodo) {
         var linhaHoje = diaHoje.closest('.geral-calendario-mes-semana');
         RosterWork.periodo.rolarAteHoje(wrap, linhaHoje, linhaHoje.previousElementSibling, { fixo: wrap.querySelector('.geral-calendario-mes-cabecalho') });
         RosterWork.periodo.rolarAteHoje(wrap, diaHoje, diaHoje.previousElementSibling, { horizontal: true });
       }
     }, function () {
-      if (document.contains(corpo) && req === reqSeq && (!opcoes.vigente || opcoes.vigente())) mostrarEstado(corpo, window.RosterWork.mensagens.escala.falhaCarregarMes);
+      if (!document.contains(corpo) || req !== reqSeq || (opcoes.vigente && !opcoes.vigente())) return;
+      Esqueleto.parar();
+      mostrarEstado(corpo, window.RosterWork.mensagens.escala.falhaCarregarMes);
     });
   }
 

@@ -26,12 +26,33 @@
     var rolagem = raiz.querySelector('.geral-corpo-lateral-rolagem');
     if (!rolagem) return;
     var links = Array.prototype.slice.call(raiz.querySelectorAll('.manual-indice a[href^="#"]'));
+    var botaoIndice = raiz.querySelector('.manual-indice-botao');
+
+    /* no celular, o índice abre no lugar do texto, já na seção que está à vista; o voltar do celular o fecha */
+    function fecharPeloVoltar() { mostrarIndice(false, true); }
+    function mostrarIndice(aberto, peloVoltar) {
+      if (aberto === raiz.classList.contains('manual--indice-aberto')) return;
+      if (aberto) marcar();   /* com o texto à vista: escondido, ele não tem o que medir */
+      raiz.classList.toggle('manual--indice-aberto', aberto);
+      botaoIndice.setAttribute('aria-expanded', aberto ? 'true' : 'false');
+      if (aberto) {
+        RosterWork.voltar.empilhar(fecharPeloVoltar);
+        var ativo = raiz.querySelector('.manual-indice .lista-item--ativo');
+        if (ativo) ativo.scrollIntoView({ block: 'center' });
+      } else if (!peloVoltar) {
+        RosterWork.voltar.desempilhar(fecharPeloVoltar);
+      }
+    }
+    botaoIndice.addEventListener('click', function () {
+      mostrarIndice(!raiz.classList.contains('manual--indice-aberto'));
+    });
 
     links.forEach(function (a) {
       a.addEventListener('click', function (e) {
         var alvo = document.getElementById(a.getAttribute('href').slice(1));
         if (!alvo) return;
         e.preventDefault();
+        mostrarIndice(false);
         var delta = alvo.getBoundingClientRect().top - rolagem.getBoundingClientRect().top;
         rolagem.scrollTo({ top: rolagem.scrollTop + delta - 16, behavior: reduzirMovimento ? 'auto' : 'smooth' });
       });
@@ -73,25 +94,39 @@
     /* aberto pelo ? de uma tela (geral-guia): começa na parte daquela tela */
     var secao = RosterWork.referenciaPedida ? RosterWork.referenciaPedida('manual') : null;
     var alvo = secao ? document.getElementById(secao) : null;
-    if (alvo) irParaSecao(alvo, 20);
+    if (alvo) irParaSecao(alvo);
   }
 
   /* rola a área de leitura até a seção. O CSS da página chega depois do iniciar e as imagens de cima mudam
-     a altura enquanto carregam: confere de novo por uns 2 s, e para se a pessoa rolar por conta própria */
-  function irParaSecao(alvo, tentativas, esperado) {
-    var area = alvo.parentElement;
-    while (area && area !== document.body) {
-      var rolagem = getComputedStyle(area).overflowY;
-      if ((rolagem === 'auto' || rolagem === 'scroll') && area.scrollHeight > area.clientHeight + 1) break;
-      area = area.parentElement;
+     a altura enquanto carregam: confere de novo até uns 2 s depois de o CSS chegar, e para quando a pessoa mexe
+     na tela. Vale o toque, a roda e o teclado, não a rolagem que mudou: o texto que encolhe também a move */
+  function irParaSecao(alvo) {
+    var entradas = ['pointerdown', 'wheel', 'keydown'];
+    var css = document.querySelector('link[href="css/manual.css"]');
+    var cssChegou = !css || !!css.sheet;
+    var tentativas = 20, proxima = null;
+    function parar() {
+      clearTimeout(proxima);
+      entradas.forEach(function (tipo) { document.removeEventListener(tipo, parar, true); });
     }
-    if (area && area !== document.body) {
-      if (esperado !== undefined && Math.abs(area.scrollTop - esperado) > 4) return;
-      var diferenca = alvo.getBoundingClientRect().top - area.getBoundingClientRect().top - 16;
-      if (Math.abs(diferenca) > 2) area.scrollTop += diferenca;
-      esperado = area.scrollTop;
+    function conferir() {
+      var area = alvo.parentElement;
+      while (area && area !== document.body) {
+        var rolagem = getComputedStyle(area).overflowY;
+        if ((rolagem === 'auto' || rolagem === 'scroll') && area.scrollHeight > area.clientHeight + 1) break;
+        area = area.parentElement;
+      }
+      if (area && area !== document.body) {
+        var diferenca = alvo.getBoundingClientRect().top - area.getBoundingClientRect().top - 16;
+        if (Math.abs(diferenca) > 2) area.scrollTop += diferenca;
+      }
+      if (cssChegou) tentativas--;
+      if (tentativas > 0) proxima = setTimeout(conferir, 100);
+      else parar();
     }
-    if (tentativas > 0) setTimeout(function () { irParaSecao(alvo, tentativas - 1, esperado); }, 100);
+    if (!cssChegou) ['load', 'error'].forEach(function (tipo) { css.addEventListener(tipo, function () { cssChegou = true; }); });
+    entradas.forEach(function (tipo) { document.addEventListener(tipo, parar, { capture: true, passive: true }); });
+    conferir();
   }
 
   /* o item "Manual" do menu do cabeçalho navega para a página */

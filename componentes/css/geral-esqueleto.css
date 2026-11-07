@@ -1,0 +1,319 @@
+/* ============================================================
+   ESQUELETO — a forma cinza do conteúdo enquanto os dados chegam
+   As barrinhas são .esqueleto; a animação fica no conjunto
+   (.esqueleto-conjunto), nunca em cada barrinha: uma camada só para o
+   navegador, sem pesar. Respira devagar e para para quem pediu menos
+   movimento no aparelho. A casca (.casca-pagina) é a forma de uma
+   página que ainda não chegou: o título, as abas e a barra. As outras
+   são os moldes gerais: a árvore de unidades, os cartões das listas e
+   as caixas dos painéis. Quem mostra é o componente geral-etapas.js,
+   ou a própria tela, onde a área está vazia.
+   ============================================================ */
+.esqueleto {
+  display: block;
+  background-color: var(--fundo-medio);
+  border-radius: var(--raio-pequeno);
+}
+
+.esqueleto-conjunto {
+  animation: esqueleto-respira 2s ease-in-out infinite;
+}
+
+@keyframes esqueleto-respira {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.5; }
+}
+
+/* ---------- a casca: a página que ainda não chegou ---------- */
+.casca-pagina {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--fundo-superficie);
+  border-radius: inherit;
+}
+
+.casca-topo {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  border-bottom: 1px solid var(--borda);
+}
+
+.casca-titulo {
+  width: 120px;
+  min-height: 20px;
+}
+
+.casca-abas {
+  display: flex;
+  gap: 24px;
+}
+
+.casca-aba {
+  width: 72px;
+  min-height: 12px;
+}
+
+.casca-barra {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--borda);
+}
+
+.casca-botao {
+  width: 120px;
+  min-height: 32px;
+  border-radius: var(--raio-medio);
+}
+
+.casca-botao--curto {
+  width: 72px;
+}
+
+.casca-botao--direita {
+  width: 240px;
+  margin-left: auto;
+  border-radius: var(--raio-total);
+}
+
+.casca-corpo {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+/* o cartão da abertura do sistema só aparece se ela passar de 1 s */
+.casca-cartao {
+  visibility: hidden;
+  animation: casca-cartao-aparece 0s linear 1s forwards;
+}
+
+@keyframes casca-cartao-aparece {
+  to { visibility: visible; }
+}
+
+/* ---------- as caixas dos painéis (o dia, a ficha, a folga, a troca) ---------- */
+.esqueleto-painel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.esqueleto-caixa {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-suave);
+}
+
+.esqueleto-caixa-topo {
+  display: flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--borda);
+}
+
+.esqueleto-caixa-titulo {
+  width: 120px;
+  min-height: 10px;
+}
+
+.esqueleto-fila {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 34px;
+  padding: 0 16px;
+}
+
+.esqueleto-funcao {
+  flex-shrink: 0;
+  width: 64px;
+  min-height: 10px;
+}
+
+.esqueleto-militar {
+  width: 132px;
+  min-height: 10px;
+}
+
+.esqueleto-fila:nth-child(3n) .esqueleto-militar {
+  width: 104px;
+}
+
+.esqueleto-horas {
+  flex-shrink: 0;
+  width: 60px;
+  min-height: 10px;
+  margin-left: auto;
+}
+
+/* ---------- a árvore de unidades: os blocos, com as linhas de quem vem ---------- */
+.esqueleto-arvore {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 688px;
+  max-width: 100%;
+}
+
+.esqueleto-trilha {
+  width: 180px;
+  min-height: 10px;
+}
+
+.esqueleto-bloco {
+  display: flex;
+  flex-direction: column;
+  padding: 0 8px 8px;
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-pagina);
+}
+
+.esqueleto-bloco-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 58px;
+  padding: 8px 4px 12px;
+}
+
+.esqueleto-bloco-textos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.esqueleto-bloco-nome {
+  width: 240px;
+  max-width: 100%;
+  min-height: 14px;
+}
+
+.esqueleto-bloco-detalhe {
+  width: 140px;
+  min-height: 8px;
+}
+
+.esqueleto-selo {
+  flex-shrink: 0;
+  width: 72px;
+  min-height: 18px;
+  border-radius: var(--raio-total);
+}
+
+.esqueleto-bloco-lista {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-superficie);
+  box-shadow: var(--sombra-bloco);
+}
+
+.esqueleto-linha {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 26px;
+  padding: 0 12px;
+}
+
+.esqueleto-linha-grau {
+  flex-shrink: 0;
+  width: 28px;
+  min-height: 10px;
+}
+
+.esqueleto-linha-nome {
+  width: 140px;
+  min-height: 10px;
+}
+
+.esqueleto-linha:nth-child(3n) .esqueleto-linha-nome {
+  width: 104px;
+}
+
+.esqueleto-linha:nth-child(3n + 1) .esqueleto-linha-nome {
+  width: 168px;
+}
+
+.esqueleto-linha .esqueleto-selo {
+  width: 56px;
+  min-height: 16px;
+  margin-left: auto;
+}
+
+/* ---------- os cartões das listas (Pendências, Trocas, Folgas, Avisos) ---------- */
+.esqueleto-cartoes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.esqueleto-cartao {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 62px;
+  padding: 12px 16px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-superficie);
+}
+
+.esqueleto-cartao-icone {
+  flex-shrink: 0;
+  width: 20px;
+  min-height: 20px;
+}
+
+.esqueleto-cartao-textos {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.esqueleto-cartao-titulo {
+  width: 260px;
+  max-width: 100%;
+  min-height: 10px;
+}
+
+.esqueleto-cartao:nth-child(even) .esqueleto-cartao-titulo {
+  width: 200px;
+}
+
+.esqueleto-cartao-detalhe {
+  width: 340px;
+  max-width: 100%;
+  min-height: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .esqueleto-conjunto {
+    animation: none;
+  }
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   A barra da casca cabe na largura da tela.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .casca-botao--direita {
+    width: 72px;
+  }
+}

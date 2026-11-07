@@ -8,7 +8,8 @@
                          administrador (etiqueta ADM), o que aprovar;
                          pelo prazo, o que não tem data no fim
      · Para corrigir   — só administrador: fora da escala, retorno
-                         de afastamento e a Distribuição
+                         de afastamento, a Distribuição e as cotas
+                         que faltam distribuir
      · Acompanhando    — o que espera outra pessoa: os seus pedidos
                          (pendencias_meus_pedidos, em andamento e
                          resolvidos nos últimos 30 dias) e, do
@@ -34,6 +35,7 @@
   var admin = false;
   var filaFazer = null, filaAcompanhar = null;
   var leitura = 0;     // a última leitura vence
+  var espera = null;   // a 1ª leitura na tela (geral-etapas.js)
 
   function msg() { return RW.mensagens.pendencias; }
   function q(sel) { return conteudo ? conteudo.querySelector(sel) : null; }
@@ -83,6 +85,17 @@
           li.querySelector('.pendencias-corrigir-data').textContent = x.volta || '';
           li.querySelector('.pendencias-corrigir-unidade').textContent = x.unidade || '';
         });
+      } else if (g.tipo === 'extra_cotas') {
+        /* leva aos Ajustes do mês; no celular o Organizar o mês não existe: a linha só informa */
+        if (RW.celular && RW.celular()) {
+          el = RosterWork.tpl('tpl-pendencias-fora');
+          if (!el) return;
+          el.querySelector('.pendencias-corrigir-itens').classList.add('oculto');
+        } else {
+          el = RosterWork.tpl('tpl-pendencias-corrigir');
+          if (!el) return;
+          el.addEventListener('click', function () { RW.cotasAviso.irDistribuir(g); });
+        }
       } else {
         /* leva à tela do conserto (ex.: a Distribuição a revisar) */
         el = RosterWork.tpl('tpl-pendencias-corrigir');
@@ -179,11 +192,17 @@
   /* lê tudo de uma vez: a fila e os seus pedidos (a fila também chama depois de cada decisão) */
   function carregar() {
     var minha = ++leitura;
+    /* a 1ª leitura: passando de 0,3 s, a forma dos cartões e, de 1 s, as etapas; depois, a lista fica até a nova chegar */
+    var lista = q('#pendencias-fazer');
+    if (espera) espera.parar();
+    espera = lista && !lista.children.length ? RW.etapas.area(lista, { forma: 'tpl-esqueleto-cartoes', etapas: 'pendenciasAbrir' }) : null;
     return Promise.all([
       RW.fila.ler(),
       RW.rpc('pendencias_meus_pedidos', {}).catch(function () { return null; })
     ]).then(function (r) {
       if (minha !== leitura || !conteudo || !document.contains(conteudo)) return;
+      if (espera) espera.parar();
+      espera = null;
       if (!r[0]) { falha(); return; }
       desenhar(r[0], Array.isArray(r[1]) ? r[1] : []);
     });

@@ -25,7 +25,9 @@
    ainda sem Visto, na ordem da lista, e o A seguir diz qual é; com
    todos feitos, os dois somem. Ao abrir,
    a lista começa o próximo treino pedido pelo fim do anterior
-   (RosterWork.treino.comecarPendente).
+   (RosterWork.treino.comecarPendente). O bloco do Treino livre é fixo
+   na página: a linha começa o treino livre (RosterWork.treinoLivre) e a
+   busca acha pelo nome dele.
    ============================================================ */
 (function () {
   'use strict';
@@ -120,6 +122,13 @@
     return estado;
   }
 
+  /* a linha do treino livre: fixa na página, entra na busca e na volta como as outras */
+  function ligarLivre(pagina, estado) {
+    var secao = pagina.querySelector('#treino-livre'), linha = secao.querySelector('.treino-item');
+    linha.addEventListener('click', function () { RW.treinoLivre.entrar(); });
+    estado.itens.push({ el: linha, chave: chave(secao.textContent), id: RW.treino.LINHA_LIVRE });
+  }
+
   /* mostra só os treinos que casam com a busca: o campo do conjunto que casa pelo nome mostra todas as opções; pelas
      opções, abre só com as que casam. Todo bloco com resultado abre (na busca, mais de um pode ficar aberto); bloco,
      área e traço sem nenhum somem, e a lista vazia diz */
@@ -141,6 +150,8 @@
       b.el.classList.toggle('oculto', !tem);
       if (alvo && tem) abrir(b.cabeca, b.corpo, true);
     });
+    var livre = pagina.querySelector('#treino-livre');
+    livre.classList.toggle('oculto', livre.querySelector('.treino-item').classList.contains('oculto'));
     Array.prototype.forEach.call(pagina.querySelectorAll('.treino-area'), function (a) { a.classList.toggle('oculto', !temVisivel(a, '.treino-bloco')); });
     var todos = pagina.querySelector('.treino-area[data-treino-area="todos"]');
     var admin = pagina.querySelector('.treino-area[data-treino-area="admin"]');
@@ -166,6 +177,7 @@
       var pagina = conteudo.querySelector('.pagina');
       if (!pagina) return;
       var estado = montar(pagina);
+      ligarLivre(pagina, estado);
       filtrar(pagina, estado, '');
       RW.busca.criar({ caixa: pagina.querySelector('#treino-busca'), aoBuscar: function (termo) { filtrar(pagina, estado, termo); } });
       var continuar = pagina.querySelector('#treino-continuar'), primeiro = RW.guia.proximo(null);

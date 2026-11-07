@@ -1,6 +1,6 @@
 /* ============================================================
    AJUSTES — configurações das unidades (NAVEGACAO §4/§5)
-   Só administrador, só no computador. Abas no cabeçalho:
+   Só administrador. Abas no cabeçalho:
    Distribuição (abre nela; o ritmo da escala é o bloco 1 dela),
    Horário de expediente (um só para a companhia e os pelotões) e
    Feriados (o calendário de cada unidade). Sair da Distribuição ou

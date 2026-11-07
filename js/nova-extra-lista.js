@@ -172,11 +172,20 @@
     return caixa;
   }
 
+  /* põe o militar em foco sem o clique na lista (quem veio da nota das cotas ou da linha da Pendências) */
+  function focar(cpf) {
+    var m = u().militar(cpf);
+    if (!m) return;
+    foco = { cpf: cpf, grupo: G().usadas(cpf) >= (m.concedidas || 0) ? 'completos' : 'faltam' };
+    RW.novaExtraMontar.redesenhar();
+  }
+
   RW.novaExtraLista = {
     ligar: ligar,
     desenhar: desenhar,
     /* o cpf do militar em foco (ou null) */
     foco: function () { return foco ? foco.cpf : null; },
+    focar: focar,
     sairDoFoco: sairDoFoco,
     recolherSeApertado: recolherSeApertado,
     devolverLista: devolverLista

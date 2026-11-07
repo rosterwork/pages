@@ -27,6 +27,7 @@
   var idTrilha = null;          // a unidade cujo caminho a trilha mostra agora
   var quadroPedido = false;     // uma atualização da trilha por quadro de rolagem
   var observadorTrilha = null;  // refaz a trilha quando ela volta a aparecer (troca de aba)
+  var espera = null;            // a leitura na tela: até 0,3 s nada muda; depois, a forma dos blocos e as etapas (geral-etapas.js)
 
   /* A página escolhe a fonte de conteúdo; o padrão é o efetivo (usuários).
      Pode ser uma função, lida a cada carga (o Dia da Escala: a leitura de sempre ou a prévia do rascunho), como o corpoRpc */
@@ -144,14 +145,16 @@
     return bloco;
   }
 
-  /* clona um molde de estado (carregando/vazio/erro) no container; o carregando
-     centraliza o giratório na área toda (o wrapper rolável vira flex centrado) */
+  /* clona um molde de estado (vazio/erro) no container */
   function mostrarEstado(idTemplate) {
     var tpl = document.getElementById(idTemplate);
     if (!tpl) return;
     containerAtual.appendChild(tpl.content.cloneNode(true));
-    var rolagem = containerAtual.closest('.pagina-corpo-rolagem');
-    if (rolagem) rolagem.classList.toggle('pagina-corpo-rolagem--centrado', idTemplate === 'tpl-arvore-carregando');
+  }
+
+  function pararEspera() {
+    if (espera) espera.parar();
+    espera = null;
   }
 
   /* avisa a página (se ela quiser) quais itens estão nas unidades marcadas — base de filtros próprios */
@@ -161,15 +164,17 @@
 
   function renderizar() {
     if (!containerAtual || !document.contains(containerAtual)) return;
+    /* lendo: o que está na tela fica, e a página não ouve falar de "0 militares" */
+    if (carregando) {
+      if (!espera) espera = RosterWork.etapas.area(containerAtual, { forma: 'tpl-arvore-carregando', etapas: opcoesAtuais && opcoesAtuais.etapas });
+      return;
+    }
+    pararEspera();
     containerAtual.textContent = '';
     trilhaAtual = null;
     idTrilha = null;
     if (observadorTrilha) observadorTrilha.disconnect();
-    /* volta o wrapper ao fluxo normal; só o estado de carregando o centraliza (mostrarEstado) */
-    var rolagem = containerAtual.closest('.pagina-corpo-rolagem');
-    if (rolagem) rolagem.classList.remove('pagina-corpo-rolagem--centrado');
 
-    if (carregando) { mostrarEstado('tpl-arvore-carregando'); notificarPagina([]); return; }
     if (houveFalha) { mostrarEstado('tpl-arvore-erro'); notificarPagina([]); return; }
     if (!unidades) { notificarPagina([]); return; }
 
@@ -269,6 +274,7 @@
      buscaPelaPagina: a página busca logo em seguida (recarregar); aqui só monta, com o carregando,
      e descarta a carga que ainda esteja no ar (ex.: o Dia da Escala ao trocar de dia) */
   function montar(container, opcoes) {
+    pararEspera();
     containerAtual = container;
     opcoesAtuais = opcoes || {};
     registrarOuvintes();

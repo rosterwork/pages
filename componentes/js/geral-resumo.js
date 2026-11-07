@@ -149,8 +149,10 @@
 
   /* abre o modal de confirmação com o log retornado pelo banco */
   function abrirModal(log, opcoes) {
-    /* no treino, nada foi gravado, e o balão do passo a passo diz como terminou */
-    if (RosterWork.treino && RosterWork.treino.ligado()) return;
+    /* no treino, nada foi gravado: com o passo a passo, o balão diz como terminou; no treino livre, o título diz e não há
+       o que desfazer */
+    var noLivre = !!RosterWork.treino && RosterWork.treino.livre();
+    if (RosterWork.treino && RosterWork.treino.ligado() && !noLivre) return;
     if (!preparar() || !alvoConteudo) return;
     opcoes = opcoes || {};
     /* uma ação acabou de ser gravada: o que estava esperando decisão pode ter
@@ -160,12 +162,12 @@
     /* o título segue a ação do log: exclusão não é "alterações salvas" */
     var G = (RosterWork.mensagens && RosterWork.mensagens.geral) || {};
     var modelo = (log && log.acao === 'exclusao') ? G.exclusaoConcluida : G.alteracoesSalvas;
-    var titulo = (modelo || '').replace('{pagina}', opcoes.pagina || '');
+    var titulo = noLivre ? RosterWork.mensagens.treino.resumoTitulo : (modelo || '').replace('{pagina}', opcoes.pagina || '');
     var no = desenhar(log, { titulo: titulo, mostrarQuando: true });
     if (no) alvoConteudo.appendChild(no);
     /* "Desfazer": só aparece quando o chamador passa a ação de reverter */
     desfazendo = false;
-    desfazerAtual = (typeof opcoes.desfazer === 'function') ? opcoes.desfazer : null;
+    desfazerAtual = (!noLivre && typeof opcoes.desfazer === 'function') ? opcoes.desfazer : null;
     if (btnDesfazer) {
       btnDesfazer.textContent = txtBotao('desfazer');
       btnDesfazer.classList.toggle('oculto', !desfazerAtual);

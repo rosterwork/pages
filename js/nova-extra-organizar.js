@@ -317,6 +317,8 @@
     sair();
     aba = nome === 'calendario' ? 'calendario' : 'passo';
     if (typeof nome === 'number') passo = nome;
+    /* veio da nota das cotas ou da linha da Pendências: os Ajustes, mesmo depois do fim do mês */
+    else if (nome === null && RW.cotasAviso && RW.cotasAviso.pediuAjustes()) passo = 4;
     var comp = RW.novaExtra.comp();
     if (d && d.competencia === comp && !falhou) desenharAba();
     else if (lendo !== comp) carregar();

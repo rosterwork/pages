@@ -128,15 +128,6 @@
   padding: 0 var(--respiro-pagina) var(--respiro-pagina);   /* sem padding-top: o respiro do topo é fixo no .pagina-corpo--camada (acima da rolagem) */
 }
 
-/* estado único (ex.: o giratório de carregando das árvores) centralizado na área
-   toda: o wrapper vira flex e centraliza o único filho nos dois eixos. Ligado/
-   desligado pelo componente de conteúdo (geral-arvore-unidades); fora disso, fluxo normal */
-.pagina-corpo-rolagem--centrado {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 /* o bloqueio do aviso de manutenção, no lugar da tela (molde #tpl-pagina-manutencao, geral-manutencao.js) */
 .pagina-manutencao {
   display: flex;
@@ -289,7 +280,7 @@
     padding-right: 0;
   }
 
-  /* tela fora do celular (Distribuição, Histórico): o vazio no lugar da tela (molde #tpl-pagina-so-computador) */
+  /* tela fora do celular: o vazio no lugar da tela (molde #tpl-pagina-so-computador) */
   html[data-celular] .pagina-so-computador {
     padding: 32px 16px;
     text-align: center;

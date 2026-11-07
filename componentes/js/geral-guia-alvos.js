@@ -83,15 +83,18 @@
       return !els.some(function (el) { return aberto.contains(el) || el.contains(aberto); });
     });
   }
-  /* algo ainda carregando à vista: o véu da tela, ou o círculo ou os pontos de uma área (a grade da Escala, a área da
-     Extrajornada, uma lista, o painel aberto). O círculo do véu escondido (some pela opacidade), o do painel fechado e o
-     do cálculo da sugestão da Extrajornada (que é um passo do roteiro) não contam. No treino, a gravação da Extrajornada
-     no ar também conta: a resposta dela mexe na tela e abre o aviso */
+  /* algo ainda carregando à vista: a troca de tela, o véu da tela, ou o círculo ou os pontos de uma área (a grade da Escala,
+     a área da Extrajornada, uma lista, o painel aberto), a forma cinza, a área que espera a leitura (data-lendo, ainda sem a
+     forma), a barra das etapas (o cartão, a linha, o dia sendo refeito) ou a grade que fica na tela enquanto é lida de novo.
+     O círculo do véu escondido (some pela opacidade), o do painel fechado e o do cálculo da sugestão da Extrajornada (que é
+     um passo do roteiro) não contam. No treino, a gravação da Extrajornada no ar também conta: a resposta dela mexe na tela
+     e abre o aviso */
   function carregando(guia) {
     if (guia && guia.treino && RW.treinoExtra && RW.treinoExtra.gravando()) return true;
+    if (RW.navegando && RW.navegando()) return true;
     if (document.querySelector('.conteudo > .carregando-veu--visivel')) return true;
-    var sinais = '.conteudo .giratorio, .conteudo .carregando-pontos, .painel-lateral--aberto .painel-estado--carregando, ' +
-      '.painel-lateral--aberto .carregando-pontos';
+    var sinais = '.conteudo .giratorio, .conteudo .carregando-pontos, .conteudo .esqueleto-conjunto, .conteudo [data-lendo], ' +
+      '.conteudo .cobertura-viva, .conteudo .pagina-corpo[data-relendo]';
     return Array.prototype.some.call(document.querySelectorAll(sinais), function (g) {
       return visivel(g) && !g.closest('.carregando-veu, .nova-extra-calculo, .painel-lateral:not(.painel-lateral--aberto)') &&
         getComputedStyle(g).visibility !== 'hidden';

@@ -347,12 +347,6 @@
   color: var(--texto-suave);
 }
 
-/* carregando: o círculo centralizado (container = círculo; pontinhos só em linha/botão) */
-.painel-estado--carregando {
-  display: flex;
-  justify-content: center;
-}
-
 /* esperando algo ficar pronto (o dia, a impressão): o círculo e, embaixo, o aviso */
 .painel-estado--atualizando {
   display: flex;

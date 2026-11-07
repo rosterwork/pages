@@ -387,7 +387,8 @@
   body:has(.manual) .cabecalho,
   body:has(.manual) .sidebar,
   body:has(.manual) .painel-lateral,
-  body:has(.manual) .geral-painel-esquerdo { display: none; }
+  body:has(.manual) .geral-painel-esquerdo,
+  body:has(.manual) .manual .manual-indice-botao { display: none; }
   body:has(.manual) .casca,
   body:has(.manual) .casca-corpo,
   body:has(.manual) .conteudo,
@@ -409,4 +410,46 @@
   .manual-diagrama-bloco--motor .manual-diagrama-titulo,
   .manual-diagrama-bloco--motor .manual-diagrama-desc { color: var(--texto-forte); }
   .manual-diagrama-andar--eventos { background: none; }
+}
+
+/* o botão do índice só existe no celular */
+.manual .manual-indice-botao {
+  display: none;
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   O texto ocupa a largura toda; o índice abre pelo botão Índice, no
+   lugar do texto, e fecha ao escolher a seção.
+   ============================================================ */
+@media (max-width: 767px) {
+  /* o título e o botão numa linha só, também no aparelho menor */
+  html[data-celular] .manual > .pagina-cabecalho {
+    flex-wrap: nowrap;
+    column-gap: 8px;
+  }
+
+  html[data-celular] .manual .manual-indice-botao {
+    display: inline-flex;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  html[data-celular] .manual .manual-indice-botao[aria-expanded="true"] {
+    background-color: var(--fundo-medio);
+  }
+
+  html[data-celular] .manual .geral-painel-esquerdo {
+    display: none;
+    width: 100%;
+    border-right: none;
+  }
+
+  html[data-celular] .manual--indice-aberto .geral-painel-esquerdo {
+    display: flex;
+  }
+
+  html[data-celular] .manual--indice-aberto .geral-corpo-lateral {
+    display: none;
+  }
 }

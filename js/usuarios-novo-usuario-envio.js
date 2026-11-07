@@ -140,7 +140,7 @@
     }
     if (!window.RosterWork.novoUsuarioDados) return;
 
-    var botao = raiz.querySelector('#nu-salvar');
+    var botao = document.getElementById('nu-salvar');   // no computador, o rodapé fica fora do painel
     if (botao && window.RosterWork.iniciarCarregando) window.RosterWork.iniciarCarregando(botao);
 
     window.RosterWork.novoUsuarioDados.inserir(coletar(raiz)).then(function (resp) {

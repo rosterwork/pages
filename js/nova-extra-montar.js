@@ -25,6 +25,7 @@
   var reserva = false;     // a última sugestão usou o cálculo simples do banco
   var resultadoFechado = false;   // o resultado da sugestão fechado no X (volta no próximo Preencher)
   var escalaSeq = 0;
+  var esperaDaEscala = null;   // a leitura da escala do mês (geral-etapas.js)
   var escalaLendo = null;  // o mês com a leitura da escala no ar
   var escalaFalhou = null; // o mês em que a leitura da escala falhou (a frase no lugar do calendário)
 
@@ -48,6 +49,11 @@
   }
   /* uma leitura por vez (o calendário mostra o círculo até ela chegar). Se falhar, a frase fica no lugar do calendário,
      como na Escala, e a mensagem técnica no console; abrir o passo de novo tenta outra vez */
+  function pararEsperaDaEscala() {
+    if (esperaDaEscala) esperaDaEscala.parar();
+    esperaDaEscala = null;
+  }
+
   function carregarEscala() {
     var ids = d.unidades.map(function (x) { return x.id; });
     var comp = d.competencia, req = ++escalaSeq;
@@ -142,9 +148,12 @@
        passou da cota segura o Salvar, com o motivo escrito */
     q('#p3-rodape').classList.toggle('oculto', !n);
     var passou = n ? G().passaram()[0] : null, texto = q('#p3-texto');
+    /* o que o rascunho faz com as cotas, em amarelo; quem passou da cota vem primeiro */
+    var frase = !passou && n ? G().fraseDasCotas() : '';
     texto.textContent = passou ? msg().passouRodape((passou.grad + ' ' + passou.nome).trim(), G().usadas(passou.cpf) - passou.concedidas)
-      : n ? (ajuste ? msg().ajusteTexto(n) : msg().alteracoes(n)) : '';
+      : n ? (ajuste ? msg().ajusteTexto(n) : msg().alteracoes(n)) + (frase ? ' ' + frase : '') : '';
     texto.classList.toggle('escala-extra-rodape-erro', !!passou);
+    texto.classList.toggle('escala-extra-rodape-alerta', !!frase);
     q('#p3-motivo-campo').classList.toggle('oculto', !ajuste);
     /* com o Salvar carregando (os textos dele saem e voltam com o pararCarregando), só o que está na tela */
     [['#p3-salvar-dist', ajuste], ['#p3-salvar-ajuste', !ajuste]].forEach(function (t) { var s = q(t[0]); if (s) s.classList.toggle('oculto', t[1]); });
@@ -186,13 +195,23 @@
     q('#p3-cal-vazio').classList.toggle('oculto', !nenhuma);
     if (!pronta) {
       var alvo = q('#p3-cal'), falha = escalaFalhou === d.competencia;
-      alvo.textContent = '';
-      var no = RW.tpl(falha ? 'tpl-escala-estado' : 'tpl-escala-carregando');
-      if (no && falha) no.textContent = msg().falhaEscala;
-      if (no) alvo.appendChild(no);
+      if (falha) {
+        pararEsperaDaEscala();
+        alvo.textContent = '';
+        var no = RW.tpl('tpl-escala-estado');
+        if (no) { no.textContent = msg().falhaEscala; alvo.appendChild(no); }
+      } else if (!esperaDaEscala) {
+        /* passando de 0,3 s, a forma da grade, com os dias e os pelotões de verdade (escalas-esqueleto.js) */
+        var unidades = u().doCalendario(alocs), mesDaGrade = new Date(+d.competencia.slice(0, 4), +d.competencia.slice(5, 7) - 1, 1);
+        esperaDaEscala = RW.etapas.area(alvo, { forma: function (lugar) {
+          if (RW.novaExtra.modo() === 'agenda') RW.escalasEsqueleto.agenda(lugar, unidades, mesDaGrade);
+          else RW.escalasEsqueleto.calendario(lugar, unidades, mesDaGrade);
+        } });
+      }
       if (!falha && escalaLendo !== d.competencia) carregarEscala();
       return;
     }
+    pararEsperaDaEscala();
     if (!soCabeca && !nenhuma) porDia().desenhar(q('#p3-cal'));
     dia().redesenhar();
     RW.novaExtraFiltros.aplicar();
@@ -235,7 +254,13 @@
     }
     escalaFalhou = null;
     escalaDoMes();
+    /* as cotas que faltam distribuir, no alto; nos Ajustes, com o que fazer */
+    if (RW.cotasAviso) RW.cotasAviso.ligar(q('#p3-cotas-aviso'), function () { return [d.competencia]; }, { comoFazer: modoNovo === 'ajustes' });
     redesenhar();
+    /* veio do botão da nota ou da linha da Pendências: o militar, quando é um só, já em foco. Depois do clique em curso,
+       porque o clique fora tira o foco */
+    var pedido = RW.cotasAviso && modoNovo === 'ajustes' ? RW.cotasAviso.focoPedido(d.competencia) : null;
+    if (pedido) setTimeout(function () { RW.novaExtraLista.focar(pedido); }, 0);
   }
 
   RW.novaExtraMontar = {

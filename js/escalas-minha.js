@@ -32,6 +32,7 @@
 
   var el = {};
   var estado = { mes: null, dados: null, selecionado: null, pedidoDia: 0 };
+  var esperaDoMes = null;   // a 1ª leitura do mês: a forma e as etapas (geral-etapas.js)
 
   function iso(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
   function dataDeIso(s) { var p = String(s).split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
@@ -135,7 +136,8 @@
     var u = estado.dados.unidades[unidadeId] || {};
     el.diaTitulo.textContent = DIAS_CURTOS[d.getDay()] + ', ' + d.getDate() + ' de ' + MESES[d.getMonth()];
     el.diaUnidade.textContent = [u.nome_painel || u.nome || '', u.cidade || ''].filter(Boolean).join(' · ');
-    mostrarEstado(el.diaCorpo, 'tpl-escala-carregando');
+    el.diaCorpo.textContent = '';
+    el.diaCorpo.appendChild(RW.painel.criarCarregando());
     var args = { p_unidade_ids: [unidadeId], p_data: diaIso };
     (previa('escala_dia_arvore', args) || RW.rpc('escala_dia_arvore', args)).then(function (linhas) {
       if (meu !== estado.pedidoDia || !el.diaCorpo.isConnected) return;
@@ -200,8 +202,20 @@
       var mes = pagina && pagina.querySelector('#escala-modos .aba[data-modo="mes"]');
       if (mes) mes.click();
     });
-    mostrarEstado(el.calendario, 'tpl-escala-carregando');
     return true;
+  }
+
+  /* a forma do mês: os dias de verdade, sem os serviços */
+  function formaDoMes(lugar, mes) {
+    var grade = RW.miniCalendario.renderizar(lugar, { dataRef: mes });
+    if (!grade) return;
+    grade.classList.add('esqueleto-conjunto');
+    grade.inert = true;
+  }
+
+  function pararEspera() {
+    if (esperaDoMes) esperaDoMes.parar();
+    esperaDoMes = null;
   }
 
   /* desenha o mês de opcoes.dataRef (com a leitura antecipada pelo deslize, quando é a deste mês); o mês anterior
@@ -211,13 +225,24 @@
     opcoes = opcoes || {};
     var ref = opcoes.dataRef || new Date();
     var vigente = opcoes.vigente || function () { return true; };
-    if (!corpo.querySelector('.escala-minha') && !montarMoldura(corpo)) return Promise.resolve();
+    var primeira = !corpo.querySelector('.escala-minha');
+    if (primeira && !montarMoldura(corpo)) return Promise.resolve();
     var mes = new Date(ref.getFullYear(), ref.getMonth(), 1);
+    /* sem mês na tela (a 1ª leitura, mesmo pedida de novo): passando de 0,3 s, a forma dele e, de 1 s, as etapas */
+    var semMes = primeira || !!esperaDoMes;
+    pararEspera();
+    if (semMes) {
+      esperaDoMes = RW.etapas.area(el.calendario, {
+        forma: function (lugar) { formaDoMes(lugar, mes); },
+        etapas: 'escalaMinha', valores: { mes: MESES[mes.getMonth()] }
+      });
+    }
     /* a leitura antecipada pelo deslize é a do gravado: com mudança esperando o Salvar, a prévia */
     var comRascunho = !!(RW.escalasPainelSalvar && RW.escalasPainelSalvar.paraPrevia());
     var antecipada = !comRascunho && RW.deslizar && RW.deslizar.usarAntecipada(chaveMes(mes));
     return (antecipada || buscarMes(mes)).then(function (r) {
       if (!vigente() || !el.calendario.isConnected) return;
+      pararEspera();
       if (!r || !r.dias) { mostrarEstado(el.calendario, 'tpl-escala-estado', RW.mensagens.escala.falhaCarregarMes); return; }
       estado.mes = mes;
       estado.dados = { dias: r.dias, unidades: r.unidades || {} };
@@ -228,6 +253,7 @@
       else el.dia.classList.add('oculto');
     }, function () {
       if (!vigente() || !el.calendario.isConnected) return;
+      pararEspera();
       mostrarEstado(el.calendario, 'tpl-escala-estado', RW.mensagens.escala.falhaCarregarMes);
     });
   }

@@ -59,10 +59,9 @@
     return 'Folga';
   }
 
-  /* giratório do painel (reusa o molde da Distribuição) */
+  /* a forma das caixas, enquanto a seção lê */
   function spinner() {
-    var tpl = document.getElementById('tpl-escala-distribuicao-carregando');
-    return tpl ? tpl.content.cloneNode(true).firstElementChild : null;
+    return RosterWork.painel.criarCarregando();
   }
 
   /* preenche a seção Distribuição com o que o militar exerce no dia (retorno de ler_militar_dia).

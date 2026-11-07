@@ -29,6 +29,13 @@
   min-width: 0;
 }
 
+/* a forma de um afastamento, enquanto a aba lê o ano */
+.usuario-afastamento-forma {
+  width: 160px;
+  max-width: 100%;
+  min-height: 10px;
+}
+
 .usuario-afastamento-linha {
   display: flex;
   align-items: center;

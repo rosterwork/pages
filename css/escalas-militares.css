@@ -361,3 +361,43 @@
   color: var(--texto-fraco);
   font-size: 12px;
 }
+
+/* a forma de um militar e de um serviço, enquanto os dados chegam (escalas-esqueleto.js) */
+.esqueleto-mil-avatar {
+  flex-shrink: 0;
+  width: 28px;
+  min-height: 28px;
+  border-radius: 50%;
+}
+
+.esqueleto-mil-nome {
+  width: 96px;
+  min-height: 10px;
+}
+
+.esqueleto-mil-cpf {
+  width: 72px;
+  min-height: 8px;
+}
+
+.esqueleto-mil-servico {
+  width: 100%;
+  min-height: 20px;
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   A coluna do militar fica estreita e sem o círculo das iniciais,
+   para caberem mais dias; os dias rolam para o lado e o nome fica.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .escala-mil-grade {
+    --col-militar: 112px;
+    --mil-colunas: var(--col-militar) repeat(14, minmax(56px, 1fr));
+    padding: 0 0 8px;
+  }
+
+  html[data-celular] .escala-mil-avatar {
+    display: none;
+  }
+}

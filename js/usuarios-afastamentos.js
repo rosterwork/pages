@@ -106,9 +106,13 @@
     return (porMilitar()[pessoa.usuario_id] || []).filter(function (a) { return !filtros || filtros.passa('tipo', a.tipo || ''); });
   }
 
+  /* a aba ainda não leu o ano: os nomes já aparecem, com a forma no lugar das linhas */
+  function lendo() { return !cache[categoria() + '/' + ano]; }
+
   /* o militar entra na lista? graus, tipo (com tipo escolhido, só quem teve) e situação no ano */
   function passa(pessoa, lista) {
     if (filtros && !filtros.passa('graus', pessoa.grau_nome)) return false;
+    if (lendo()) return true;
     if (filtrandoTipo() && !lista.length) return false;
     return !filtros || filtros.passa('situacao', lista.length ? 'com' : 'sem');
   }
@@ -155,6 +159,7 @@
       item.querySelector('.usuario-item-nome').textContent = pessoa.nome_de_guerra || '';
       var pilha = item.querySelector('.usuario-afastamento-pilha');
       lista.forEach(function (a) { montarLinha(pilha, a); });
+      if (lendo()) pilha.appendChild(RosterWork.tpl('tpl-esqueleto-afastamento'));
       if (busca === 'marcar') item.classList.add('linha-militar--marcada');
       if (busca === 'marcar' || busca === 'casa') item.classList.add('busca-achado');   // o que o Enter da busca percorre (geral-busca.js)
       /* só quem se pode mudar abre a caixa */
@@ -178,6 +183,7 @@
 
   /* a contagem de cada unidade: quantos tiveram afastamento no ano */
   function textoContagem(itens) {
+    if (lendo()) return '';
     var mapa = porMilitar();
     var n = itens.filter(function (p) { return (mapa[p.usuario_id] || []).length; }).length;
     return M().contagem(n, categoria());

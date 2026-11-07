@@ -200,6 +200,107 @@
   display: none;
 }
 
+/* o dia sendo refeito (escalas-dia-na-grade.js): os nomes apagados, a barra se enchendo no lugar do gráfico, e o dia
+   salvo acende verde e volta sozinho à cor de sempre (a animação só diz o começo: o fim é a cor da própria célula, também
+   a da selecionada) */
+.escala-mes-celula--refazendo {
+  position: relative;
+}
+
+.escala-mes-celula--refazendo > .linha-escalado {
+  opacity: 0.45;
+}
+
+.escala-mes-celula--refazendo > .escala-mes-grafico {
+  visibility: hidden;
+}
+
+.escala-mes-celula-viva {
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  right: 4px;
+  z-index: 1;
+}
+
+.escala-mes-celula--pronta {
+  animation: escala-mes-celula-pronta 1.8s ease-out;
+}
+
+@keyframes escala-mes-celula-pronta {
+  0%, 35% { background-color: var(--sucesso-fundo-forte); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .escala-mes-celula--pronta {
+    animation-timing-function: steps(1, end);
+  }
+}
+
+/* a forma da célula, enquanto os dados chegam (escalas-esqueleto.js): o lugar do gráfico, em 24 blocos, e as linhas dos
+   militares. A animação fica no miolo inteiro (.esqueleto-conjunto) */
+.esqueleto-celula {
+  cursor: default;
+}
+
+.esqueleto-miolo {
+  display: flex;
+  flex-direction: column;
+}
+
+.esqueleto-grafico {
+  --bloco: calc(100% / 24);
+  flex-shrink: 0;
+  min-height: 16px;
+  margin: 2px 4px 0;
+  border-radius: 0;
+  /* a máscara recorta os blocos: só a forma dela vale, a cor não aparece */
+  -webkit-mask-image: repeating-linear-gradient(90deg, var(--texto-forte) 0, var(--texto-forte) calc(var(--bloco) - 1px), transparent calc(var(--bloco) - 1px), transparent var(--bloco));
+  mask-image: repeating-linear-gradient(90deg, var(--texto-forte) 0, var(--texto-forte) calc(var(--bloco) - 1px), transparent calc(var(--bloco) - 1px), transparent var(--bloco));
+}
+
+.esqueleto-pessoa {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 18px;
+  min-width: 0;
+  padding: 0 4px;
+}
+
+.esqueleto-bola {
+  flex-shrink: 0;
+  width: 12px;
+  min-height: 12px;
+  border-radius: 50%;
+}
+
+.esqueleto-grad {
+  flex-shrink: 0;
+  width: 22px;
+  min-height: 8px;
+}
+
+.esqueleto-nome {
+  width: 72px;
+  min-height: 8px;
+}
+
+.esqueleto-pessoa:nth-child(3n) .esqueleto-nome {
+  width: 52px;
+}
+
+.esqueleto-pessoa:nth-child(3n + 1) .esqueleto-nome {
+  width: 88px;
+}
+
+.esqueleto-hora {
+  flex-shrink: 1;
+  width: 56px;
+  min-height: 8px;
+  margin-left: auto;
+}
+
 /* mini-gráfico de cobertura no topo da célula (perfil de militares por hora) */
 .escala-mes-grafico {
   flex-shrink: 0;
@@ -384,6 +485,15 @@
    mudar o tamanho (como a do dia não salvo). Na caixa do pelotão no dia, no bloco inteiro do pelotão do Calendário, no
    cabeçalho do dia dos Militares e no dia da Minha escala */
 .escala-atualizando {
+  margin: 12px 16px 0;
+}
+
+/* as cotas que faltam distribuir (geral-cotas-aviso.js): a nota de cada mês na tela, no alto da grade, como a de cima */
+.escala-cotas-aviso {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 8px;
   margin: 12px 16px 0;
 }
 

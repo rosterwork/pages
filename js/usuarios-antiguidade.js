@@ -120,8 +120,7 @@
   function carregar(manter) {
     var meu = ++token;
     lista.textContent = '';
-    var pontos = RW.tpl('carregando-pontos');
-    if (pontos) lista.appendChild(pontos);
+    lista.appendChild(RW.tpl('tpl-arvore-carregando'));
     return RW.apiFetch('/rest/v1/rpc/antiguidade_listar', { metodo: 'POST', corpo: {} })
       .then(function (resp) { return resp.ok ? resp.json() : null; })
       .then(function (dados) {

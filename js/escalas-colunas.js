@@ -55,12 +55,6 @@
     corpo.appendChild(no);
   }
 
-  function mostrarCarregando(corpo) {
-    corpo.textContent = '';
-    var no = RosterWork.tpl('tpl-escala-carregando');
-    if (no) corpo.appendChild(no);
-  }
-
   /* uma célula (unidade × dia), reusando a célula do Mês (o painel casa por .escala-mes-celula) */
   function montarCelula(unidade, iso, dados, cobertura, erro, maxPorUnidade, afastados) {
     var celula = RosterWork.tpl('tpl-escala-mes-celula');
@@ -108,19 +102,28 @@
       return;
     }
 
-    mostrarCarregando(corpo);
-
     var dias = diasDaSemana(dataRef);
     var inicio = dias[0].iso, fim = dias[dias.length - 1].iso;
     var ids = colunas.map(function (c) { return c.id; });
 
+    /* a mesma semana lida de novo: a grade fica até a nova chegar, na mesma rolagem (escalas-dia-na-grade.js) */
+    var Dia = window.RosterWork.escalasDiaNaGrade;
+    var chaveGrade = 'colunas|' + inicio + '|' + ids.join(',');
+    var rolagem = Dia ? Dia.mesmaGrade(corpo, chaveGrade) : null;
+    /* outra semana: o que está na tela fica 0,3 s; depois, a forma da nova (escalas-esqueleto.js) */
+    var Esqueleto = window.RosterWork.escalasEsqueleto;
+    if (!rolagem) {
+      Esqueleto.abrirMes(corpo, dataRef, function (lugar) { Esqueleto.colunas(lugar, colunas, dataRef); });
+    }
+
     var req = ++reqSeq;
-    window.RosterWork.escalasDados.carregar(ids, inicio, fim, { daTela: true }).then(function (resultado) {
+    return window.RosterWork.escalasDados.carregar(ids, inicio, fim, { daTela: true }).then(function (resultado) {
       var dados = resultado.militares;
       var afastados = resultado.afastados || {};
       var cobertura = resultado.cobertura || {};
       var erro = resultado.erro || {};
       if (!document.contains(corpo) || req !== reqSeq || (opcoes.vigente && !opcoes.vigente())) return;   // saiu da página, outra render começou, ou trocou de modo
+      Esqueleto.parar();
       corpo.textContent = '';
 
       var wrap = RosterWork.tpl('tpl-escala-colunas');
@@ -150,8 +153,9 @@
       corpo.appendChild(wrap);
       if (RosterWork.escalasCelula) RosterWork.escalasCelula.ativarGraficos(wrap);
       if (RosterWork.gradeTeclado) RosterWork.gradeTeclado.ativar(grade, { celula: '.escala-mes-celula', linha: '.escala-colunas-linha' });
+      if (Dia) Dia.desenhou(corpo, chaveGrade, wrap, rolagem);
       /* rolarHoje: abre em hoje, com o dia anterior à vista acima (geral-periodo.js) */
-      var rotuloHoje = opcoes.rolarHoje ? grade.querySelector('.escala-colunas-rotulo--hoje') : null;
+      var rotuloHoje = opcoes.rolarHoje && !rolagem ? grade.querySelector('.escala-colunas-rotulo--hoje') : null;
       if (rotuloHoje && RosterWork.periodo) {
         var linhaHoje = rotuloHoje.closest('.escala-colunas-linha');
         var diaAnterior = linhaHoje.previousElementSibling;
@@ -159,7 +163,9 @@
         RosterWork.periodo.rolarAteHoje(wrap, linhaHoje, diaAnterior, { fixo: cabecalho });
       }
     }, function () {
-      if (document.contains(corpo) && req === reqSeq && (!opcoes.vigente || opcoes.vigente())) mostrarEstado(corpo, window.RosterWork.mensagens.escala.falhaCarregarMes);
+      if (!document.contains(corpo) || req !== reqSeq || (opcoes.vigente && !opcoes.vigente())) return;
+      Esqueleto.parar();
+      mostrarEstado(corpo, window.RosterWork.mensagens.escala.falhaCarregarMes);
     });
   }
 
@@ -186,5 +192,9 @@
     if (corpo) corpo.textContent = '';
   }
 
-  window.RosterWork.escalasColunas = { renderizar: renderizar, atualizarCelula: atualizarCelula, limpar: limpar };
+  window.RosterWork.escalasColunas = {
+    renderizar: renderizar, atualizarCelula: atualizarCelula, limpar: limpar,
+    /* para a forma da grade (escalas-esqueleto.js) */
+    pecas: { diasDaSemana: diasDaSemana, cabecalhoUnidade: cabecalhoUnidade, rotuloDia: rotuloDia }
+  };
 })();

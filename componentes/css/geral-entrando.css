@@ -3,9 +3,9 @@
    (Manter-me conectado): cobre o sistema enquanto o acesso é
    renovado. Aparece com html[data-entrando], posto pelo
    js/index-sessao.js e tirado pelo js/index-carregar.js.
-   Enquanto renova, só o giratório no meio da tela, o carregando
-   padrão do sistema. Na falha (data-entrando="falhou"), a logo
-   volta com a frase e o Tentar de novo no lugar do giratório.
+   Enquanto renova, só o cartão das etapas no meio da tela, sem a
+   logo e sem a moldura do cartão. Na falha (data-entrando="falhou"),
+   a logo volta com a frase e o Tentar de novo no lugar dele.
    ============================================================ */
 
 .entrando {
@@ -51,9 +51,15 @@ html[data-entrando] .entrando {
   text-align: center;
 }
 
+.entrando .etapas {
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+
 html:not([data-entrando="falhou"]) .entrando-logo,
 html:not([data-entrando="falhou"]) .entrando-mensagem,
 html:not([data-entrando="falhou"]) .entrando .botao,
-html[data-entrando="falhou"] .entrando .giratorio {
+html[data-entrando="falhou"] .entrando .etapas {
   display: none;
 }

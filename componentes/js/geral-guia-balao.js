@@ -4,9 +4,9 @@
    do roteiro, "Passo N de M", o Sair, o texto e o Próximo; no treino,
    sem o nome e sem o Sair: o nome e a saída estão na barra azul), o do fim (o
    Concluir; no treino, o próximo treino da lista, com o Próximo treino
-   em cima e, embaixo, o Recomeçar e o Voltar aos treinos como links, ou,
-   feitos todos, a frase, o Voltar aos treinos em cima e o Recomeçar como
-   link), o de quando o treino não pôde seguir (a frase, o Recomeçar em
+   em cima e, embaixo, o Recomeçar, o Treino livre e o Voltar aos treinos
+   como links, ou, feitos todos, a frase, o Voltar aos treinos em cima e o
+   Recomeçar e o Treino livre como links), o de quando o treino não pôde seguir (a frase, o Recomeçar em
    cima e o Voltar aos treinos como link; o fim e este, no treino, com
    a tela toda no véu) e o aviso de quando a
    situação do passo não está na tela (o texto e, fora do treino, o Sair, sem o véu,
@@ -86,6 +86,7 @@
     q('.guia-balao-seguinte-botao').classList.toggle('oculto', !botoes.seguinte);
     q('.guia-balao-recomecar').classList.toggle('oculto', !botoes.recomecar);
     q('.guia-balao-recomecar').classList.toggle('botao--texto', !!botoes.recomecar && !botoes.parado);
+    q('.guia-balao-livre').classList.toggle('oculto', !botoes.livre);
     q('.guia-balao-rodape').classList.toggle('guia-balao-rodape--final', !!botoes.recomecar);
     Array.prototype.forEach.call(peca().querySelectorAll('.guia-balao-seguinte'), function (l) { l.classList.add('oculto'); });
   }
@@ -133,7 +134,7 @@
     veuDoFinal(guia);
     /* no treino, o fim leva ao próximo treino (ou de volta à lista) */
     var seguinte = guia.treino && guia.seguinte ? RW.guiaRoteiros.roteiro(guia.seguinte) : null;
-    montar(guia, '', { concluir: !guia.treino, treinos: guia.treino, seguinte: !!seguinte, recomecar: guia.treino });
+    montar(guia, '', { concluir: !guia.treino, treinos: guia.treino, seguinte: !!seguinte, recomecar: guia.treino, livre: guia.treino });
     preencherTexto(guia.fim, guia);
     if (seguinte) q('.guia-balao-seguinte-nome').textContent = RW.guiaRoteiros.aSeguir(guia.seguinte);
     if (guia.treino) q(seguinte ? '.guia-balao-seguinte:not(.guia-balao-todos)' : '.guia-balao-todos').classList.remove('oculto');

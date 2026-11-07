@@ -63,7 +63,7 @@
       return;
     }
     corpo.textContent = '';
-    var c = RW.tpl('tpl-escala-distribuicao-carregando');
+    var c = RW.painel.criarCarregando();
     if (c) corpo.appendChild(c);
     var meu = ++pedido;
     RW.novaExtraUtil.chamar('nova_extra_mes', { p_competencia: comp }).then(function (r) {

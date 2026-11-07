@@ -482,7 +482,8 @@
     var pronto = window.RosterWork.arvoreUnidades.montar(container, {
       renderConteudo: renderConteudo,
       aoRenderizar: aoRenderizarGraus,
-      textoContagem: textoContagem
+      textoContagem: textoContagem,
+      etapas: 'usuariosAbrir'
     });
     if (cpfPedido && /^\d{11}$/.test(cpfPedido) && window.RosterWork.usuariosPainel) {
       Promise.resolve(pronto).then(function () {

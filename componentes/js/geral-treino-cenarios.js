@@ -43,7 +43,8 @@
   var ativo = null;      // { nome, roteiro }
   var escolhas = {};     // a peça de cada exemplo por dia (exemplo|unidade|dia), a mesma em todas as leituras
 
-  function emCurso() { return !!ativo && !!RW.guia && RW.guia.emCurso() === ativo.roteiro; }
+  /* no treino livre, o exemplo do treino de onde a pessoa saiu continua até ela sair do modo */
+  function emCurso() { return !!ativo && !!RW.guia && (RW.guia.emCurso() === ativo.roteiro || (!!RW.treino && RW.treino.livre())); }
   /* o exemplo do roteiro; o da Extrajornada (extra-<etapa>) é o mês de treino, no geral-treino-extra.js, e os das
      trocas, das folgas, da CNH e da correção de dados vêm do banco, no geral-treino-banco.js */
   function ativar(nome, roteiro) {

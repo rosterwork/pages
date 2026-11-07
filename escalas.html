@@ -11,10 +11,9 @@
       <div class="dropdown-menu pagina-ajuda-menu"></div>
     </div>
     <!-- modos: a Minha escala (o seu mês), num grupo próprio, à frente das outras visões; os grupos valem como
-         uma escolha só (escalas.js), com um traço só (data-abas-grupo). Sem visão guardada, abre no Mês. No
-         celular ficam a Minha escala e o Mês (Agenda e Calendário): o que tem .escala-so-computador some lá
-         (escalas-controles.css). O Dia (o grupo inteiro) e a Semana ficam ocultos para todos (os modos continuam
-         no código); o dia abre no painel do dia, que tem o Imprimir dele -->
+         uma escolha só (escalas.js), com um traço só (data-abas-grupo). Sem visão guardada, abre no Mês. O Dia (o
+         grupo inteiro) e a Semana ficam ocultos para todos (os modos continuam no código); o dia abre no painel do
+         dia, que tem o Imprimir dele -->
     <div class="escala-modos" id="escala-modos" data-abas-grupo>
       <div class="abas" id="escala-modo-minha">
         <button type="button" class="aba" data-modo="minha">Minha escala</button>
@@ -24,9 +23,9 @@
       </div>
       <div class="abas" id="escala-modo-visoes">
         <button type="button" class="aba aba--ativa" data-modo="mes">Mês</button>
-        <button type="button" class="aba escala-so-computador" data-modo="militares">Militares</button>
-        <button type="button" class="aba escala-so-computador oculto" data-modo="semana">Semana</button>
-        <button type="button" class="aba escala-so-computador" data-modo="colunas">Colunas</button>
+        <button type="button" class="aba" data-modo="militares">Militares</button>
+        <button type="button" class="aba oculto" data-modo="semana">Semana</button>
+        <button type="button" class="aba" data-modo="colunas">Colunas</button>
       </div>
     </div>
   </div>
@@ -110,6 +109,9 @@
       </button>
     </div>
   </div>
+
+  <!-- as cotas que faltam distribuir, só para o administrador: a nota vermelha de cada mês na tela (geral-cotas-aviso.js) -->
+  <div class="escala-cotas-aviso oculto" id="escala-cotas-aviso"></div>
 
   <!-- com dia à vista que ainda pode mudar: a nota amarela com os pontinhos (o texto, com as unidades, vem do
        escalas-atualizando.js); esses dias ficam com a borda amarela -->
@@ -434,6 +436,23 @@
 
 <template id="tpl-escala-mil-celula">
   <div class="escala-mil-celula"></div>
+</template>
+
+<!-- a forma de um militar e de um serviço, enquanto os dados chegam (escalas-esqueleto.js) -->
+<template id="tpl-esqueleto-mil-pessoa">
+  <div class="escala-mil-linha escala-mil-pessoa-linha esqueleto-conjunto" aria-hidden="true">
+    <div class="escala-mil-pessoa">
+      <span class="esqueleto esqueleto-mil-avatar"></span>
+      <div class="escala-mil-pessoa-textos">
+        <span class="esqueleto esqueleto-mil-nome"></span>
+        <span class="esqueleto esqueleto-mil-cpf"></span>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-esqueleto-mil-servico">
+  <span class="esqueleto esqueleto-mil-servico"></span>
 </template>
 
 <!-- chip de serviço numa célula: "08 →(ícone) 08" (fundo escuro, texto invertido) -->

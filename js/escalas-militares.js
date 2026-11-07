@@ -61,12 +61,6 @@
     corpo.appendChild(no);
   }
 
-  function mostrarCarregando(corpo) {
-    corpo.textContent = '';
-    var no = RosterWork.tpl('tpl-escala-carregando');
-    if (no) corpo.appendChild(no);
-  }
-
   /* um chip (hora início · ícone de seta · hora fim) por período (disponibilidade
      quebrada = vários, empilhados). trocado = chip riscado (o militar saiu numa troca). */
   function montarChips(celula, periodos, trocado, extra) {
@@ -186,6 +180,7 @@
         var estadoDia = m.dias && m.dias[info.iso];
         preencherCelula(cel, estadoDia);
         if (info.fds) cel.classList.add('escala-mil-celula--fds');
+        cel.dataset.iso = info.iso;
         ligarCelula(cel, m, coluna, info.iso, estadoDia);
         linha.appendChild(cel);
       });
@@ -254,6 +249,19 @@
     aplicarFiltro(document.querySelector('.escala-mil-grade'));
   }
 
+  /* a quinzena: 14 dias a partir do domingo da semana da referência (uma coluna por dia) */
+  function diasDaQuinzena(dataRef) {
+    var domingo = inicioSemana(dataRef);
+    var hojeISO = dataISO(new Date());
+    var dias = [];
+    for (var d = 0; d < 14; d++) {
+      var dt = new Date(domingo.getFullYear(), domingo.getMonth(), domingo.getDate() + d);
+      var sem = dt.getDay();
+      dias.push({ dia: dt.getDate(), iso: dataISO(dt), semana: sem, fds: (sem === 0 || sem === 6), hoje: dataISO(dt) === hojeISO });
+    }
+    return dias;
+  }
+
   /* desenha a quinzena de opcoes.dataRef para as unidades (seções) recebidas */
   function renderizar(corpo, opcoes) {
     if (!corpo) return;
@@ -274,25 +282,29 @@
       return;
     }
 
-    mostrarCarregando(corpo);
-
     var ids = colunas.map(function (c) { return c.id; });
 
-    /* quinzena: 14 dias a partir do domingo da semana da referência (uma coluna por dia) */
-    var domingo = inicioSemana(dataRef);
-    var inicio = dataISO(domingo);
-    var fim = dataISO(new Date(domingo.getFullYear(), domingo.getMonth(), domingo.getDate() + 13));
-    var hojeISO = dataISO(new Date());
-    var dias = [];
-    for (var d = 0; d < 14; d++) {
-      var dt = new Date(domingo.getFullYear(), domingo.getMonth(), domingo.getDate() + d);
-      var sem = dt.getDay();
-      dias.push({ dia: dt.getDate(), iso: dataISO(dt), semana: sem, fds: (sem === 0 || sem === 6), hoje: dataISO(dt) === hojeISO });
+    var dias = diasDaQuinzena(dataRef);
+    var inicio = dias[0].iso;
+    var fim = dias[13].iso;
+
+    /* a mesma quinzena lida de novo: a grade fica até a nova chegar, na mesma rolagem (escalas-dia-na-grade.js) */
+    var Dia = window.RosterWork.escalasDiaNaGrade;
+    var chaveGrade = 'militares|' + inicio + '|' + ids.join(',');
+    var rolagem = Dia ? Dia.mesmaGrade(corpo, chaveGrade) : null;
+    /* outra quinzena: o que está na tela fica 0,3 s; depois, a forma da nova (escalas-esqueleto.js) */
+    var Esqueleto = window.RosterWork.escalasEsqueleto;
+    if (!rolagem) {
+      Esqueleto.comecar(corpo, {
+        forma: function (lugar) { Esqueleto.militares(lugar, colunas, dias); },
+        etapas: 'escalaMilitares'
+      });
     }
 
     var req = ++reqSeq;
-    window.RosterWork.escalasDados.carregarMilitares(ids, inicio, fim).then(function (dados) {
+    return window.RosterWork.escalasDados.carregarMilitares(ids, inicio, fim).then(function (dados) {
       if (!document.contains(corpo) || req !== reqSeq || (opcoes.vigente && !opcoes.vigente())) return;   // saiu da página, outra render começou, ou trocou de modo
+      Esqueleto.parar();
       corpo.textContent = '';
       celulaSelecionada = null;   // a grade foi refeita; a seleção antiga não existe mais
       abrirNaGrade = abrirDepois;
@@ -326,9 +338,10 @@
       corpo.appendChild(wrap);
       aplicarFiltro(grade);   // reaplica a busca atual (persiste entre navegação/re-render)
       if (RosterWork.gradeTeclado) RosterWork.gradeTeclado.ativar(grade, { celula: '.escala-mil-celula', linha: '.escala-mil-pessoa-linha' });
+      if (Dia) Dia.desenhou(corpo, chaveGrade, wrap, rolagem);
       /* rolarHoje: quando a quinzena não cabe na largura, abre com hoje à vista e os 2 dias antes à esquerda
          (geral-periodo.js) */
-      var diaHoje = opcoes.rolarHoje ? cab.querySelector('.escala-mil-dia--hoje') : null;
+      var diaHoje = opcoes.rolarHoje && !rolagem ? cab.querySelector('.escala-mil-dia--hoje') : null;
       if (diaHoje && RosterWork.periodo) {
         var diasAntes = null;
         var vizinho = diaHoje.previousElementSibling;
@@ -339,9 +352,11 @@
         RosterWork.periodo.rolarAteHoje(wrap, diaHoje, diasAntes, { horizontal: true, fixo: cab.querySelector('.escala-mil-canto') });
       }
     }, function () {
-      if (document.contains(corpo) && req === reqSeq && (!opcoes.vigente || opcoes.vigente())) mostrarEstado(corpo, window.RosterWork.mensagens.escala.falhaCarregarMes);
+      if (!document.contains(corpo) || req !== reqSeq || (opcoes.vigente && !opcoes.vigente())) return;
+      Esqueleto.parar();
+      mostrarEstado(corpo, window.RosterWork.mensagens.escala.falhaCarregarMes);
     });
   }
 
-  window.RosterWork.escalasMilitares = { renderizar: renderizar, filtrar: filtrar };
+  window.RosterWork.escalasMilitares = { renderizar: renderizar, filtrar: filtrar, diasDaQuinzena: diasDaQuinzena };
 })();

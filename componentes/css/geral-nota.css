@@ -7,7 +7,8 @@
    sem função, o saldo que fica negativo). Vermelha (.nota--erro):
    um problema (ex.: a viatura que ficaria sem condutor). Verde
    (.nota--sucesso): está tudo certo (ex.: "Sem impacto na escala").
-   Um título curto pode abrir o texto (.nota-titulo).
+   Um título curto pode abrir o texto (.nota-titulo). Com botão ao lado
+   do texto (.nota--com-acao), tudo fica centrado na linha.
    ============================================================ */
 
 .nota {
@@ -49,4 +50,23 @@
 /* o título que abre o texto (ex.: "Cria um saldo de 24h.") */
 .nota-titulo {
   font-weight: 600;
+}
+
+/* com botão ao lado do texto (ex.: as cotas que faltam distribuir): o botão não encolhe, o texto quebra */
+.nota--com-acao {
+  align-items: center;
+}
+
+.nota--com-acao .botao {
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   O texto quebra em mais linhas: o ícone e o X ficam no alto.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .nota--com-acao {
+    align-items: flex-start;
+  }
 }

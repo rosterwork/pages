@@ -9,8 +9,8 @@
    mexer na rolagem. O dia na fila faz esperar o painel do dia
    (escalas-painel.js) e o Imprimir.
    API: RosterWork.escalaAtualizando.{ ligar, conferir, receberGrade,
-   salvou, pendente, naFilaNoDia, soCopia, esperar, corrigir,
-   aoImprimir, conferirImpressao }
+   salvou, atualizarCelula, pendente, naFilaNoDia, soCopia, esperar,
+   corrigir, aoImprimir, conferirImpressao }
    ============================================================ */
 (function () {
   'use strict';
@@ -215,10 +215,14 @@
     mostrarNota();
   }
 
-  /* o Salvar do painel: a célula lê o dado real e não fica amarela enquanto a cópia dela é refeita */
-  function salvou(unidadeId, iso) {
+  /* o Salvar do painel: a célula lê o dado real (leitura, a do dia em todas as colunas) e não fica amarela enquanto a cópia
+     dela é refeita */
+  function salvou(unidadeId, iso, leitura) {
     if (ativa()) corrigidos[chave(unidadeId, iso)] = true;
-    atualizarCelula(unidadeId, iso);
+    atualizarCelula(unidadeId, iso, leitura);
+    if (!ativa()) return;
+    marcar();
+    mostrarNota();
   }
 
   /* ---------- o Imprimir ---------- */
@@ -289,7 +293,7 @@
   });
 
   window.RosterWork.escalaAtualizando = {
-    ligar: ligar, conferir: conferir, receberGrade: receberGrade, salvou: salvou,
+    ligar: ligar, conferir: conferir, receberGrade: receberGrade, salvou: salvou, atualizarCelula: atualizarCelula,
     pendente: pendente, naFilaNoDia: naFilaNoDia, soCopia: soCopia, esperar: esperar, corrigir: corrigir,
     aoImprimir: aoImprimir, conferirImpressao: conferirImpressao
   };

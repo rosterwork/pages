@@ -201,7 +201,8 @@
       corpoRpc: corpoRpc,
       textoContagem: textoContagem,
       renderConteudo: renderConteudo,
-      aoRenderizar: aoRenderizar
+      aoRenderizar: aoRenderizar,
+      etapas: 'historicoAbrir'
     });
   }
 

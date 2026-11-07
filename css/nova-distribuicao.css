@@ -6,11 +6,15 @@
    embaixo, que abrem ao clicar. Reusa o layout lateral, a bolinha
    (geral-opcao), a caixa de marcar (caixa-selecao), o campo de
    seleção, o combobox (campo-combo), o selo, a nota, o rodapé, o
-   período e os campos do posto (geral-posto-editar). Fora do
-   celular: lá a aba Distribuição não aparece (js/ajustes.js).
+   período e os campos do posto (geral-posto-editar). No celular, os
+   blocos moram num menu da barra (o bloco no fim do arquivo).
    ============================================================ */
 
-/* ---- painel esquerdo: os blocos ---- */
+/* ---- painel esquerdo: os blocos; o menu deles na barra só existe no celular ---- */
+.dropdown.nova-distribuicao-blocos-menu {
+  display: none;
+}
+
 .nova-distribuicao-contagem {
   margin-left: auto;
   font-size: 12px;
@@ -309,6 +313,9 @@
 }
 
 .nova-distribuicao-tabela tfoot th { font-weight: 400; }
+
+/* a caixa em volta da tabela (no celular, ela rola para o lado aqui dentro): sem a tabela, não deixa o vão no cartão */
+.nova-distribuicao-tabela-rolagem:has(> .oculto) { display: none; }
 
 /* a última seta clicada na ordem: a borda escura (também se ela ficou inativa depois do movimento) */
 .nova-distribuicao-seta--clicada,
@@ -717,11 +724,253 @@
   color: var(--texto-forte);
 }
 
-/* o carregando da área (a Distribuição e o Horário): o círculo no meio, nos dois eixos (ocupa a área que rola) */
+/* a forma da área (a Distribuição e o Horário), enquanto os dados chegam: no lugar do conteúdo */
 .nova-distribuicao-carregando {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100%;
-  padding: 32px 16px;
+  max-width: 720px;
+  padding: 16px 24px 24px;
+}
+
+/* os blocos da esquerda ficam à vista; a marca de pronto ou de falta espera a conta */
+.nova-distribuicao-blocos--lendo .nova-distribuicao-bloco-pronto,
+.nova-distribuicao-blocos--lendo .nova-distribuicao-bloco-falta {
+  visibility: hidden;
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   Os blocos saem da lateral e moram no menu da barra; o corpo ocupa
+   a largura toda; as linhas de muitas colunas descem em andares; as
+   tabelas do Conferir rolam para o lado por dentro do cartão.
+   ============================================================ */
+@media (max-width: 767px) {
+  /* o menu dos blocos: à esquerda da barra, ao lado da unidade; dentro dele, o painel esquerdo inteiro */
+  html[data-celular] .dropdown.nova-distribuicao-blocos-menu {
+    display: block;
+    flex: 1 1 0;
+    min-width: 0;
+    margin-right: 8px;
+  }
+
+  html[data-celular] .nova-distribuicao-blocos-menu > .seletor {
+    width: 100%;
+  }
+
+  /* o nome do bloco que não cabe corta com reticências: a seta fica dentro da moldura */
+  html[data-celular] .nova-distribuicao-blocos-menu .seletor-texto {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  html[data-celular] .nova-distribuicao-blocos-menu > .dropdown-menu {
+    padding: 0;
+    overflow-y: auto;
+  }
+
+  html[data-celular] .nova-distribuicao-blocos-menu .geral-painel-esquerdo {
+    width: 288px;
+    border-right: none;
+    background: var(--fundo-superficie);
+  }
+
+  html[data-celular] .nova-distribuicao-bloco {
+    min-height: var(--toque-altura-celular);
+  }
+
+  /* o corpo na largura toda */
+  html[data-celular] .nova-distribuicao-conteudo,
+  html[data-celular] .nova-distribuicao-carregando {
+    max-width: none;
+    padding: 12px var(--respiro-pagina) 24px;
+  }
+
+  html[data-celular] .nova-distribuicao-unidade {
+    padding: 8px;
+  }
+
+  /* o cabeçalho do cartão: os números do efetivo embaixo do nome, com a seta na ponta */
+  html[data-celular] .nova-distribuicao-cartao-cabecalho {
+    flex-wrap: wrap;
+  }
+
+  html[data-celular] .nova-distribuicao-cartao-titulo {
+    flex: 1 1 0;
+  }
+
+  html[data-celular] .nova-distribuicao-cartao-numeros:not(:empty) {
+    order: 1;
+    flex-basis: 100%;
+    margin-left: 0;
+  }
+
+  /* a opção com campos no meio da frase: o que não cabe desce de linha */
+  html[data-celular] .geral-opcao:has(> .nova-distribuicao-espaco) {
+    flex-wrap: wrap;
+  }
+
+  /* as viaturas: Nº, prefixo e CNH em cima (a CNH desce, se não couber); as ações embaixo, à direita */
+  html[data-celular] .nova-distribuicao-viaturas-cabecalho {
+    display: none;
+  }
+
+  html[data-celular] .nova-distribuicao-viatura {
+    display: flex;
+    flex-wrap: wrap;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--borda);
+  }
+
+  html[data-celular] .nova-distribuicao-prefixo {
+    flex: 1 1 96px;
+    width: auto;
+    min-width: 96px;
+  }
+
+  html[data-celular] .nova-distribuicao-viatura-acoes {
+    flex-basis: 100%;
+    justify-content: flex-end;
+  }
+
+  html[data-celular] .nova-distribuicao-instalacao-nome {
+    flex: 1 1 0;
+  }
+
+  html[data-celular] .nova-distribuicao-instalacao > .nova-distribuicao-viatura-acoes,
+  html[data-celular] .nova-distribuicao-troca > .nova-distribuicao-viatura-acoes {
+    flex-basis: auto;
+  }
+
+  html[data-celular] .nova-distribuicao-viatura-extra,
+  html[data-celular] .nova-distribuicao-viatura-substituicoes {
+    flex-basis: 100%;
+  }
+
+  /* a mudança fechada: o ícone, a frase e as ações numa linha */
+  html[data-celular] .nova-distribuicao-troca {
+    grid-template-columns: 24px minmax(0, 1fr) auto;
+  }
+
+  html[data-celular] .nova-distribuicao-troca-texto {
+    grid-column: 2;
+  }
+
+  /* a mudança aberta: uma pergunta embaixo da outra, cada rótulo em cima do campo dele */
+  html[data-celular] .nova-distribuicao-troca-caixa {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    margin: 8px;
+  }
+
+  html[data-celular] .nova-distribuicao-troca-caixa::before {
+    left: -8px;
+  }
+
+  html[data-celular] .nova-distribuicao-troca-caixa > .nova-distribuicao-linha-ordem {
+    display: none;
+  }
+
+  html[data-celular] .nova-distribuicao-troca-caixa > .rotulo-secao.nova-distribuicao-troca-so-substituicao.nova-distribuicao-troca-na-coluna-prefixo { order: 1; }
+  html[data-celular] .nova-distribuicao-troca-prefixo { order: 2; }
+  html[data-celular] .nova-distribuicao-troca-caixa > .rotulo-secao.nova-distribuicao-troca-so-substituicao:not(.nova-distribuicao-troca-na-coluna-prefixo) { order: 3; }
+  html[data-celular] .nova-distribuicao-troca-cnh { order: 4; align-self: flex-start; }
+  html[data-celular] .nova-distribuicao-troca-caixa > .rotulo-secao.nova-distribuicao-troca-com-fim.nova-distribuicao-troca-na-coluna-prefixo,
+  html[data-celular] .nova-distribuicao-troca-rotulo-desde { order: 5; }
+  html[data-celular] .nova-distribuicao-troca-inicio { order: 6; }
+  html[data-celular] .nova-distribuicao-troca-caixa > .rotulo-secao.nova-distribuicao-troca-com-fim:not(.nova-distribuicao-troca-na-coluna-prefixo) { order: 7; }
+  html[data-celular] .nova-distribuicao-troca-fim { order: 8; }
+  html[data-celular] .nova-distribuicao-troca-erros { order: 9; }
+  html[data-celular] .nova-distribuicao-troca-ajuda { order: 10; }
+  html[data-celular] .nova-distribuicao-troca-botoes { order: 11; justify-content: flex-end; }
+
+  html[data-celular] .nova-distribuicao-troca-data {
+    width: 100%;
+  }
+
+  /* as regras e as opções: o rótulo em cima; embaixo, o campo e os botões */
+  html[data-celular] .nova-distribuicao-regra-linha,
+  html[data-celular] .nova-distribuicao-regra-linha--opcao {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    row-gap: 4px;
+  }
+
+  html[data-celular] .nova-distribuicao-regra-rotulo {
+    grid-column: 1 / -1;
+  }
+
+  html[data-celular] .nova-distribuicao-regra-linha--opcoes > .nova-distribuicao-regra-rotulo {
+    padding-top: 0;
+  }
+
+  html[data-celular] .nova-distribuicao-regra-linha--opcoes > .nova-distribuicao-opcoes {
+    grid-column: 1 / -1;
+  }
+
+  /* a Ordem: em cada linha, o Nº, o posto em cima da função e as setas na ponta */
+  html[data-celular] .nova-distribuicao-tabela:has(.nova-distribuicao-col-acoes),
+  html[data-celular] .nova-distribuicao-tabela:has(.nova-distribuicao-col-acoes) tbody {
+    display: block;
+  }
+
+  html[data-celular] .nova-distribuicao-tabela thead:has(.nova-distribuicao-col-acoes) {
+    display: none;
+  }
+
+  html[data-celular] .nova-distribuicao-tabela tr:has(> .nova-distribuicao-col-acoes) {
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr) auto;
+    align-items: center;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--borda);
+  }
+
+  html[data-celular] .nova-distribuicao-tabela tr:has(> .nova-distribuicao-col-acoes) > td {
+    padding: 0 4px;
+    border-bottom: none;
+  }
+
+  html[data-celular] .nova-distribuicao-tabela tr:has(> .nova-distribuicao-col-acoes) > .nova-distribuicao-col-n {
+    grid-row: 1 / 3;
+    width: auto;
+  }
+
+  html[data-celular] .nova-distribuicao-tabela tr:has(> .nova-distribuicao-col-acoes) > .nova-distribuicao-col-posto {
+    grid-column: 2;
+    width: auto;
+    font-size: 12px;
+    color: var(--texto-suave);
+  }
+
+  html[data-celular] .nova-distribuicao-tabela tr:has(> .nova-distribuicao-col-acoes) > .nova-distribuicao-col-funcao {
+    grid-column: 2;
+  }
+
+  html[data-celular] .nova-distribuicao-tabela tr:has(> .nova-distribuicao-col-acoes) > .nova-distribuicao-col-acoes {
+    grid-column: 3;
+    grid-row: 1 / 3;
+  }
+
+  html[data-celular] .nova-distribuicao-celula-linha {
+    flex-wrap: wrap;
+  }
+
+  /* a escolha do Conferir na largura toda: as três cabem também no aparelho menor */
+  html[data-celular] .nova-distribuicao-conferir-modo {
+    align-self: stretch;
+  }
+
+  html[data-celular] .nova-distribuicao-conferir-modo .aba {
+    flex: 1 1 auto;
+    padding: 0 4px;
+  }
+
+  /* o Conferir e a equipe: a tabela rola para o lado por dentro do cartão; o que está em volta dela fica parado */
+  html[data-celular] .nova-distribuicao-tabela-rolagem {
+    overflow-x: auto;
+  }
+
+  html[data-celular] .nova-distribuicao-tabela-rolagem th,
+  html[data-celular] .nova-distribuicao-tabela-rolagem td {
+    white-space: nowrap;
+  }
 }

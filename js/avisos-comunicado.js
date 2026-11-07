@@ -117,7 +117,7 @@
   function validar(raiz) {
     var titulo = raiz.querySelector('#aviso-titulo');
     var mensagem = raiz.querySelector('#aviso-mensagem');
-    var salvar = raiz.querySelector('#aviso-salvar');
+    var salvar = document.getElementById('aviso-salvar');   // no computador, o rodapé fica fora do painel
     var ok = titulo && mensagem && titulo.value.trim() !== '' && mensagem.value.trim() !== '' && destinoPronto();
     if (salvar) salvar.disabled = !ok;
     if (titulo && titulo.value) sujo = true;
@@ -163,8 +163,8 @@
 
     var titulo = raiz.querySelector('#aviso-titulo');
     var mensagem = raiz.querySelector('#aviso-mensagem');
-    var salvar = raiz.querySelector('#aviso-salvar');
-    var cancelar = raiz.querySelector('#aviso-cancelar');
+    var salvar = rodape ? rodape.querySelector('#aviso-salvar') : null;
+    var cancelar = rodape ? rodape.querySelector('#aviso-cancelar') : null;
     var trilho = raiz.querySelector('#aviso-alcance');
 
     mostrarDestino(raiz);

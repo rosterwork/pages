@@ -70,14 +70,14 @@
   }
   function mostrarVeu() { if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal(); }
   function esconderVeu() { if (RW.esconderVeuGlobal) RW.esconderVeuGlobal(); }
-  /* grava e refaz a escala de todos os dias (véu global); o resumo traz o Desfazer, que apaga o registro inteiro.
+  /* grava e refaz a escala de todos os dias (o cartão das etapas); o resumo traz o Desfazer, que apaga o registro inteiro.
      Gravou: fecha o painel (na Escala, o aoConcluir volta ao dia) */
   function gravar(parte, ano) {
     if (!est) return;
     var aoMudar = est.aoMudar, aoConcluir = est.aoConcluir;
-    mostrarVeu();
+    var etapas = RW.etapas.acao('trocaRegistrar', null, { doServidor: 2 });
     RW.trocasDados.variasRegistrar(est.pares, parte, ano, false).then(function (r) {
-      esconderVeu();
+      etapas.parar();
       if (!r || !r.ok) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: (r && r.erro) || M().falhaAcao }); return; }
       if (aoConcluir) aoConcluir(); else RW.painel.fechar();
       if (aoMudar) aoMudar();
@@ -94,7 +94,7 @@
         }
       });
     }).catch(function () {
-      esconderVeu();
+      etapas.parar();
       if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao });
     });
   }

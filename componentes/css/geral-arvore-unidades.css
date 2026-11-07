@@ -271,12 +271,6 @@
   color: var(--texto-suave);
 }
 
-/* carregando: o círculo centralizado (container = círculo; pontinhos só em linha/botão) */
-.arvore-estado--carregando {
-  display: flex;
-  justify-content: center;
-}
-
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    A linha do militar que abre o painel fica na altura do dedo.

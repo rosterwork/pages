@@ -19,6 +19,7 @@
   var ARQUIVOS = [
     'componentes/js/geral-limpar-comentarios.js',
     'componentes/js/geral-carregando.js',
+    'componentes/js/geral-etapas.js',
     'componentes/js/geral-teclado.js',
     'componentes/js/geral-grade-teclado.js',
     'componentes/js/geral-sessao.js',
@@ -45,6 +46,7 @@
     'componentes/js/geral-treino-cenarios.js',
     'componentes/js/geral-treino-extra.js',
     'componentes/js/geral-treino-banco.js',
+    'componentes/js/geral-treino-livre.js',
     'componentes/js/geral-horario.js',
     'componentes/js/geral-modal.js',
     'componentes/js/geral-aviso.js',
@@ -56,6 +58,7 @@
     'componentes/js/geral-notificacoes-celular.js',
     'componentes/js/geral-recalculo.js',
     'componentes/js/geral-notificacao.js',
+    'componentes/js/geral-cotas-aviso.js',
     'js/index-sidebar.js',
     'js/index-cabecalho.js',
     'js/index-avisos.js',
@@ -95,6 +98,44 @@
   ];
   var MENSAGENS = 'componentes/js/geral-mensagens.js';   /* a frase da falha, antes do resto */
 
+  /* ---------- as etapas da abertura ----------
+     O mesmo cartão na tela "entrando" e na casca da página (.etapas--abertura, no index.html): a etapa de agora e a barra,
+     que acompanha os arquivos do sistema e, depois, os da primeira tela (RosterWork.abertura, pela navegação) */
+  var PARTE_DO_SISTEMA = 0.6;   // o quanto da barra é do sistema; o resto é da primeira tela
+
+  function cartoesDaAbertura() { return Array.prototype.slice.call(document.querySelectorAll('.etapas--abertura')); }
+
+  function etapaDaAbertura(n) {
+    cartoesDaAbertura().forEach(function (cartao) {
+      Array.prototype.forEach.call(cartao.querySelectorAll('.etapa'), function (etapa, i) {
+        etapa.classList.toggle('etapa--feita', i < n);
+        etapa.classList.toggle('etapa--agora', i === n);
+      });
+    });
+  }
+
+  function barraDaAbertura(progresso) {
+    cartoesDaAbertura().forEach(function (cartao) {
+      cartao.querySelector('.cobertura-viva').style.setProperty('--progresso', String(progresso));
+    });
+  }
+
+  /* a 3ª etapa diz a tela que vai abrir; o HTML já traz a Escala, a tela de quem não pediu outra */
+  function nomearTela() {
+    var rota = location.search.match(/[?&]pagina=([^&]+)/);
+    if (!rota || rota[1] === 'escalas') return;
+    var item = document.querySelector('.menu-item[data-pagina="' + decodeURIComponent(rota[1]) + '"] .menu-item-label');
+    Array.prototype.forEach.call(document.querySelectorAll('[data-abertura-tela]'), function (lugar) {
+      lugar.textContent = item ? item.textContent : lugar.getAttribute('data-tela-sem-nome');
+    });
+  }
+
+  RW.abertura = {
+    etapa: etapaDaAbertura,
+    telaChegando: function (feitos, total) { barraDaAbertura(PARTE_DO_SISTEMA + (1 - PARTE_DO_SISTEMA) * (total ? feitos / total : 1)); }
+  };
+
+  var chegaram = 0;
   var pedidos = {};   /* arquivo → promessa da carga: cada um roda uma vez só */
   function carregar(src) {
     if (pedidos[src]) return pedidos[src];
@@ -102,8 +143,13 @@
       var script = document.createElement('script');
       script.src = src;
       script.async = false;
-      script.onload = function () { resolver(); };
-      script.onerror = function () { resolver(); };
+      function chegou() {
+        chegaram++;
+        barraDaAbertura(PARTE_DO_SISTEMA * chegaram / ARQUIVOS.length);
+        resolver();
+      }
+      script.onload = chegou;
+      script.onerror = chegou;
       document.body.appendChild(script);
     });
     return pedidos[src];
@@ -145,7 +191,7 @@
     if (RW.aplicativo) RW.aplicativo.trocarSozinho(function () { return true; });
     var veioDaRenovacao = document.documentElement.hasAttribute('data-entrando');
     Promise.resolve(RW.sessaoPronta).then(function (r) {
-      if (r && r.ok) { rodarSistema(veioDaRenovacao); return; }
+      if (r && r.ok) { etapaDaAbertura(1); rodarSistema(veioDaRenovacao); return; }
       /* o login lembrado deixou de valer (saiu de todos os aparelhos, baixa, senha trocada): o login, com o aviso */
       if (r && r.falha === 'recusado') {
         try { sessionStorage.setItem('rosterwork_aviso_login', 'sessao_terminou'); } catch (e) {}
@@ -160,10 +206,12 @@
   if (tentar) {
     tentar.addEventListener('click', function () {
       document.documentElement.setAttribute('data-entrando', '');
+      etapaDaAbertura(0);
       RW.sessaoPronta = RW.entrada.renovarLembrado();
       esperarSessao();
     });
   }
 
+  nomearTela();
   esperarSessao();
 })();

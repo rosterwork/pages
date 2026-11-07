@@ -62,6 +62,7 @@
   var pilhaRefazer = [];   // os rascunhos desfeitos
   var dono = '';        // o dia do rascunho (unidade|dia): voltar de outra aba ao mesmo dia o encontra
   var pedido = 0;       // só a última leitura, prévia ou gravação pedida desenha
+  var listaApagada = null;   // a lista esperando a prévia: { corpo, caixa, frase (as etapas da linha) }
 
   /* Chefe de Socorro e Oficial de Área são automáticos por normativa (o mais antigo do dia) */
   var BLOQUEADAS = /^(chefe de socorro|oficial de área)$/i;
@@ -479,17 +480,45 @@
   /* enquanto a lista carrega, o menu Editar o dia e o Imprimir esperam (a sub-tela abriria com o dia de antes) */
   function mostrarCarregando() {
     ctx.carregando = true;
+    ctx.listaNaTela = false;
+    acenderLista();
     var menu = document.querySelector('.painel-lateral .escala-edicao-menu > .botao');
     if (menu) menu.disabled = true;
     ctx.corpo.textContent = '';
-    var no = RosterWork.tpl('tpl-escala-distribuicao-carregando');
+    var no = RosterWork.painel.criarCarregando();
     if (no) ctx.corpo.appendChild(no);
   }
   function mostrarFalha() {
     pronta();
+    ctx.listaNaTela = false;
     ctx.corpo.textContent = '';
     var no = RosterWork.tpl('tpl-escala-distribuicao-estado');
     if (no) { no.textContent = msg().falhaCarregar; ctx.corpo.appendChild(no); }
+  }
+
+  /* a lista que já está na tela espera a prévia: fica, apagada e sem responder, na mesma rolagem, com a frase por cima,
+     sem empurrar nada */
+  function apagarLista() {
+    ctx.carregando = true;
+    var menu = document.querySelector('.painel-lateral .escala-edicao-menu > .botao');
+    if (menu) menu.disabled = true;
+    if (listaApagada) return;
+    var corpo = ctx.corpo, caixa = RosterWork.tpl('tpl-painel-etapa');
+    corpo.classList.add('painel-corpo--refazendo');
+    corpo.inert = true;
+    corpo.setAttribute('aria-busy', 'true');
+    corpo.insertBefore(caixa, corpo.firstChild);
+    listaApagada = { corpo: corpo, caixa: caixa, frase: RosterWork.etapas.linha(caixa.querySelector('.painel-etapa-caixa'), 'previaDia') };
+  }
+  function acenderLista() {
+    if (!listaApagada) return;
+    var apagada = listaApagada;
+    listaApagada = null;
+    apagada.frase.parar();
+    apagada.caixa.remove();
+    apagada.corpo.classList.remove('painel-corpo--refazendo');
+    apagada.corpo.inert = false;
+    apagada.corpo.removeAttribute('aria-busy');
   }
 
   /* (re)desenha a lista do dia: com mudança no rascunho, o dia como vai ficar (a prévia); sem mudança, o dia gravado.
@@ -499,6 +528,7 @@
     /* a lista é refeita: o lápis aberto e a sub-tela guardam o que já foi respondido */
     fecharLinha('guardar');
     terminarVivo();
+    var vinhaDaSub = ctx.emSub;
     ctx.emSub = false;
     /* de volta à lista: o rodapé próprio da sub-tela (o da troca) sai, e o Salvar do rodapé largo volta */
     if (ctx.rodape) { ctx.rodape.textContent = ''; ctx.rodape.classList.add('oculto'); }
@@ -507,7 +537,7 @@
       montarSubcabecalho();
       avisarRascunho();
       /* com mudança em qualquer aba, o dia como vai ficar; sem nenhuma, o dia gravado */
-      if (RosterWork.escalasPainelSalvar && RosterWork.escalasPainelSalvar.paraPrevia()) { mostrarPrevia(); return; }
+      if (RosterWork.escalasPainelSalvar && RosterWork.escalasPainelSalvar.paraPrevia()) { mostrarPrevia(vinhaDaSub); return; }
       exibir(base.dados);
       return;
     }
@@ -536,10 +566,13 @@
 
   /* o dia como vai ficar com os rascunhos das duas abas (escala_previa: o Salvar num ensaio, nada é gravado). A mudança
      do Dia que a gravação recusaria (ex.: efetivo acima do máximo, a folga recusada) dá o aviso, e o rascunho do Dia volta
-     um passo; a recusa do Ciclo só avisa (desmarca-se lá) */
-  function mostrarPrevia() {
+     um passo; a recusa do Ciclo só avisa (desmarca-se lá). Com a lista na tela, ela fica até a prévia chegar; quem volta da
+     sub-tela vê o dia de antes até lá */
+  function mostrarPrevia(vinhaDaSub) {
     var c = ctx, meu = ++pedido;
-    mostrarCarregando();
+    if (vinhaDaSub && ctx.dados) renderLista(ctx.dados);
+    if (ctx.listaNaTela) apagarLista();
+    else mostrarCarregando();
     var pedidoPrevia = RosterWork.escalasDados.lerPrevia('ler_distribuicao_dia', {});
     if (!pedidoPrevia) { exibir(base.dados); return; }
     pedidoPrevia.then(function (dados) {
@@ -549,13 +582,16 @@
         RosterWork.avisar({ tipo: 'erro', mensagem: dados.erro_simulacao });
         if (dados.erro_parte === 'dia' && pilhaDesfazer.length) { rasc = pilhaDesfazer.pop(); desenhar(); return; }
       }
+      var rolagem = c.corpo.scrollTop;
       exibir(dados);
+      c.corpo.scrollTop = rolagem;
     });
   }
 
   /* a lista chegou: o menu Editar o dia volta a ligar */
   function pronta() {
     ctx.carregando = false;
+    acenderLista();
     var menu = document.querySelector('.painel-lateral .escala-edicao-menu > .botao');
     if (menu) menu.disabled = !!ctx.salvando;
   }
@@ -1157,6 +1193,7 @@
     ctx.funcoesMenu = null;
     if (ctx.reabrirMenu && RosterWork.abrirDropdown) RosterWork.abrirDropdown(ctx.reabrirMenu);
     ctx.reabrirMenu = null;
+    ctx.listaNaTela = true;
   }
 
   /* ---------- o fim do dia: quem já mexeu no dia (as Alterações manuais, relidas depois de salvar), o último bloco do
@@ -1284,6 +1321,7 @@
   /* opcoes = { admin, comparar }: o admin edita o dia; os outros só leem. Sem rodape, o rodapé não é usado */
   function montar(corpo, rodape, unidadeId, iso, opcoes) {
     opcoes = opcoes || {};
+    acenderLista();
     ctx = { corpo: corpo, rodape: rodape, unidadeId: unidadeId, iso: iso, admin: !!opcoes.admin,
       comparar: !!opcoes.comparar, consulta: !!opcoes.consulta,
       dados: null, dadosAntes: null, chaveDados: null, emSub: false, comHistorico: false, salvando: false,
@@ -1305,6 +1343,7 @@
     fecharLinha('guardar');
     terminarVivo();
     if (RosterWork.escalasPainelTroca) RosterWork.escalasPainelTroca.encerrar();
+    acenderLista();
     ctx = null;
     pedido++;
   }
@@ -1315,6 +1354,13 @@
   function pendentes() { return haMudanca() ? Math.max(1, pilhaDesfazer.length + (vivo && vivo.mudou ? 1 : 0)) : 0; }
   /* a sub-tela ou o lápis com pergunta pela metade ou conflito: o Salvar do rodapé fica desligado */
   function travado() { return !!(vivo && vivo.travado); }
+  /* gravar este rascunho muda quem está de serviço no dia, e o banco refaz a distribuição? (pontual, folga, remanejamento
+     e o Voltar ao automático; trocar quem está numa função e escrever uma observação, não) */
+  function refazDistribuicao() {
+    if (!rasc || !base) return false;
+    return !!rasc.automatico || difPontuais() > 0 || rasc.folgas.length > 0 || rasc.folgas_cancelar.length > 0
+      || rasc.remanejar.length > 0 || rasc.devolver.length > 0;
+  }
   /* o rascunho do Dia para a prévia das telas: o da gravação e as funções abertas (só na prévia) */
   function previaDia() {
     var r = copiar(paraSalvar());
@@ -1334,6 +1380,7 @@
     fecharLinha('largar');
     vivo = null;
     pilhaDesfazer = []; pilhaRefazer = [];
+    acenderLista();
     if (!ctx || !ctx.admin || ctx.comparar || !r || !r.dia) { base = null; rasc = null; dono = ''; return; }
     var antes = ctx.dados;
     aceitar(r.dia);
@@ -1379,6 +1426,7 @@
     /* o Salvar do rodapé do painel (escalas-painel-salvar.js) */
     pendentes: pendentes,
     travado: travado,
+    refazDistribuicao: refazDistribuicao,
     previaDia: previaDia,
     paraGravar: paraGravar,
     aposGravar: aposGravar,

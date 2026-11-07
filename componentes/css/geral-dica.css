@@ -77,6 +77,11 @@
     transition: none;
   }
 
+  /* escondida, a dica não ocupa lugar: não deixa a área rolar para o lado */
+  html[data-celular] [data-dica]:not(.dica--toque)::after {
+    display: none;
+  }
+
   html[data-celular] [data-dica].dica--toque::after {
     opacity: 1;
     visibility: visible;

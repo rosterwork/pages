@@ -24,6 +24,7 @@
   var ouvindoUnidades = false;
   var arvoreMontada = false;
   var reqSeq = 0;   // token de requisição das listas (ignora resposta antiga ao trocar de aba/unidade)
+  var esperaDaLista = null;   // a leitura da lista aberta (Minhas, Saldos ou Pendências)
   var filaPendencias = null;   // a fila da aba Pendências (geral-fila)
 
   function unidades() {
@@ -93,14 +94,15 @@
     el.textContent = msg || '';
     lista.appendChild(el);
   }
-  function mostrarCarregando(lista) {
-    lista.textContent = '';
-    var tpl = document.getElementById('tpl-troca-vazio');
-    if (!tpl) return;
-    var el = tpl.content.cloneNode(true).firstElementChild;
-    var pts = document.getElementById('carregando-pontos');
-    if (pts) el.appendChild(pts.content.cloneNode(true));
-    lista.appendChild(el);
+  /* a leitura de uma lista: o que está nela fica até a nova chegar; vazia, passando de 0,3 s, a forma dos cartões e, de 1 s,
+     as etapas (geral-etapas.js). Uma por vez */
+  function esperarLista(lista) {
+    pararLista();
+    esperaDaLista = RW.etapas.area(lista, lista.children.length ? {} : { forma: 'tpl-esqueleto-cartoes', etapas: 'trocasAbrir' });
+  }
+  function pararLista() {
+    if (esperaDaLista) esperaDaLista.parar();
+    esperaDaLista = null;
   }
 
   /* ---------- Todas: árvore de unidades (as trocas da unidade num bloquinho branco) ---------- */
@@ -122,7 +124,8 @@
       chaveUnidade: 'solicitante_lotacao',
       corpoRpc: function () { return { p_contexto_ids: unidades() }; },
       textoContagem: contagemTrocas,
-      renderConteudo: renderTrocasNaUnidade
+      renderConteudo: renderTrocasNaUnidade,
+      etapas: 'trocasAbrir'
     });
   }
 
@@ -130,10 +133,11 @@
   function carregarMinhas() {
     var lista = conteudo.querySelector('#trocas-minhas-lista');
     if (!lista) return;
-    mostrarCarregando(lista);
+    esperarLista(lista);
     var req = ++reqSeq;
     RW.trocasDados.listar(unidades()).then(function (todas) {
       if (!document.contains(lista) || req !== reqSeq) return;
+      pararLista();
       if (!Array.isArray(todas)) { mostrarVazio(lista, RW.mensagens.trocas.falhaCarregar); return; }   // null = falha (Postgres devolve [] p/ vazio)
       var cpf = RosterWork.sessao.cpf();
       /* as trocas em que eu entro e, nas várias trocas, os registros de que participo (uma linha por registro) */
@@ -144,7 +148,11 @@
       if (!minhas.length) { mostrarVazio(lista, RW.mensagens.trocas.vazio.minhas); return; }
       lista.textContent = '';
       minhas.forEach(function (t) { var el = montarItemTroca(t); if (el) lista.appendChild(el); });
-    }).catch(function () { if (document.contains(lista) && req === reqSeq) mostrarVazio(lista, RW.mensagens.trocas.falhaCarregar); });
+    }).catch(function () {
+      if (!document.contains(lista) || req !== reqSeq) return;
+      pararLista();
+      mostrarVazio(lista, RW.mensagens.trocas.falhaCarregar);
+    });
   }
 
   /* ---------- Pendentes: dívidas de devolução (cards) ---------- */
@@ -170,15 +178,20 @@
   function carregarPendentes() {
     var lista = conteudo.querySelector('#trocas-pendentes-lista');
     if (!lista) return;
-    mostrarCarregando(lista);
+    esperarLista(lista);
     var req = ++reqSeq;
     RW.trocasDados.pendencias().then(function (linhas) {
       if (!document.contains(lista) || req !== reqSeq) return;
+      pararLista();
       if (!Array.isArray(linhas)) { mostrarVazio(lista, RW.mensagens.trocas.falhaCarregar); return; }   // null = falha
       if (!linhas.length) { mostrarVazio(lista, RW.mensagens.trocas.vazio.pendentes); return; }
       lista.textContent = '';
       linhas.forEach(function (p) { var el = montarPendente(p); if (el) lista.appendChild(el); });
-    }).catch(function () { if (document.contains(lista) && req === reqSeq) mostrarVazio(lista, RW.mensagens.trocas.falhaCarregar); });
+    }).catch(function () {
+      if (!document.contains(lista) || req !== reqSeq) return;
+      pararLista();
+      mostrarVazio(lista, RW.mensagens.trocas.falhaCarregar);
+    });
   }
 
   /* ---------- troca de vista ---------- */
@@ -205,7 +218,9 @@
   }
   function carregarPendencias() {
     if (!filaPendencias || !RW.fila) return Promise.resolve();
+    esperarLista(conteudo.querySelector('#trocas-pendencias'));
     return RW.fila.ler().then(function (r) {
+      pararLista();
       if (!r || !document.contains(conteudo)) return;
       /* as suas e, do administrador, as para aprovar, juntas pelo prazo (o banco só manda as de administração ao admin) */
       var trocas = RW.fila.doTipo(r.fazer, ['troca', 'troca_aceite']);

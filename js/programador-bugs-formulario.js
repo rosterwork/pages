@@ -42,14 +42,7 @@
 
   /* troca o que está no corpo; com formulário alterado, confirma antes de perder o texto */
   function pedirTroca(continuar) {
-    if (!sujo() || !RosterWork.confirmar) { continuar(); return; }
-    RosterWork.confirmar({
-      tipo: 'aviso',
-      mensagem: RosterWork.mensagens.edicao.sairSemSalvar,
-      textoConfirmar: RosterWork.mensagens.botoes.sairSemSalvar,
-      textoCancelar: RosterWork.mensagens.botoes.continuarEditando,
-      aoConfirmar: function () { fechar(); continuar(); }
-    });
+    RosterWork.programadorTelas.pedirTroca(sujo, function () { fechar(); continuar(); });
   }
 
   /* nova visita à página: a lista de militares é lida de novo */

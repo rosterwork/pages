@@ -28,13 +28,6 @@
     corpo.appendChild(no);
   }
 
-  /* carregando: o giratório centralizado no corpo (sem texto) */
-  function mostrarCarregando(corpo) {
-    corpo.textContent = '';
-    var no = RosterWork.tpl('tpl-escala-carregando');
-    if (no) corpo.appendChild(no);
-  }
-
   /* desenha o mês de opcoes.dataRef para as colunas (unidades) recebidas; a promessa se cumpre com o mês
      desenhado (ou o aviso de falha no lugar) */
   function renderizar(corpo, opcoes) {
@@ -52,13 +45,21 @@
       return;
     }
 
-    mostrarCarregando(corpo);
-
     var ano = dataRef.getFullYear(), mes = dataRef.getMonth();
     var ultimo = new Date(ano, mes + 1, 0);
     var inicio = dataISO(new Date(ano, mes, 1));
     var fim = dataISO(ultimo);
     var ids = colunas.map(function (c) { return c.id; });
+
+    /* o mesmo mês lido de novo: a grade fica até a nova chegar, na mesma rolagem (escalas-dia-na-grade.js) */
+    var Dia = window.RosterWork.escalasDiaNaGrade;
+    var chaveGrade = 'mes|' + inicio + '|' + ids.join(',');
+    var rolagem = Dia ? Dia.mesmaGrade(corpo, chaveGrade) : null;
+    /* outro mês: o que está na tela fica 0,3 s; depois, a forma do novo (escalas-esqueleto.js) */
+    var Esqueleto = window.RosterWork.escalasEsqueleto;
+    if (!rolagem) {
+      Esqueleto.abrirMes(corpo, dataRef, function (lugar) { Esqueleto.agenda(lugar, colunas, dataRef, opcoes.aoTerminar); });
+    }
 
     var req = ++reqSeq;
     return window.RosterWork.escalasDados.carregar(ids, inicio, fim, { daTela: true }).then(function (resultado) {
@@ -67,6 +68,7 @@
       var cobertura = resultado.cobertura || {};
       var erro = resultado.erro || {};
       if (!document.contains(corpo) || req !== reqSeq || (opcoes.vigente && !opcoes.vigente())) return;   // saiu da página, outra render começou, ou trocou de modo
+      Esqueleto.parar();
       corpo.textContent = '';
 
       var wrap = RosterWork.tpl('tpl-escala-mes');
@@ -121,15 +123,18 @@
       if (opcoes.aoTerminar) opcoes.aoTerminar(wrap);
       if (RosterWork.escalasCelula) RosterWork.escalasCelula.ativarGraficos(wrap);
       if (RosterWork.gradeTeclado) RosterWork.gradeTeclado.ativar(grade, { celula: '.escala-mes-celula', linha: '.escala-mes-linha' });
+      if (Dia) Dia.desenhou(corpo, chaveGrade, wrap, rolagem);
       /* rolarHoje (a Escala): abre em hoje, com o dia anterior à vista acima (geral-periodo.js) */
-      var linhaHoje = opcoes.rolarHoje ? grade.querySelector('.escala-mes-linha--hoje') : null;
+      var linhaHoje = opcoes.rolarHoje && !rolagem ? grade.querySelector('.escala-mes-linha--hoje') : null;
       if (linhaHoje && RosterWork.periodo) {
         var diaAnterior = linhaHoje.previousElementSibling;
         if (diaAnterior === cabecalho) diaAnterior = null;
         RosterWork.periodo.rolarAteHoje(wrap, linhaHoje, diaAnterior, { fixo: cabecalho });
       }
     }, function () {
-      if (document.contains(corpo) && req === reqSeq && (!opcoes.vigente || opcoes.vigente())) mostrarEstado(corpo, window.RosterWork.mensagens.escala.falhaCarregarMes);
+      if (!document.contains(corpo) || req !== reqSeq || (opcoes.vigente && !opcoes.vigente())) return;
+      Esqueleto.parar();
+      mostrarEstado(corpo, window.RosterWork.mensagens.escala.falhaCarregarMes);
     });
   }
 

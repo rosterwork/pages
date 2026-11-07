@@ -471,6 +471,8 @@
   function desenhar(montado, c) {
     return new Promise(function (ok, falha) {
       try {
+        /* no modo treino, todo PDF sai com a marca, em todas as folhas */
+        if (RW.treino && RW.treino.ligado()) montado.doc.watermark = { text: RW.mensagens.treino.marcaPdf, font: 'Montserrat', bold: true, color: cor('--anotacao'), opacity: 0.12 };
         var documento = window.pdfMake.createPdf(montado.doc);
         documento._createDoc({}, function (pdfDoc) {
           documento._flushDoc(pdfDoc, function (buffer, paginas) {

@@ -3,23 +3,27 @@
    Começar um treino (a página Treinamento) liga o modo no sistema
    inteiro: a moldura azul em volta da tela (#treino-moldura), a barra
    azul no alto (.treino-barra, acima do cabeçalho) com a página, o
-   número e o nome do treino, o Recomeçar (geral-guia.js) e o Sair do treino, e a marca data-treino
+   número e o nome do treino, o Treino livre (geral-treino-livre.js), o Recomeçar (geral-guia.js) e o Sair do treino, e a marca data-treino
    no <html>. Nada é gravado: cada
    chamada ao banco passa por passar(caminho, metodo, corpo, buscar),
    no geral-api.js; barrar só deixa ir o que lê (LEITURAS), os ensaios
    (ENSAIOS, com p_ensaio), o plano e o ensaio do Desfazer a troca do
    dia, a prévia do Salvar da Distribuição (p_previa) e o Visto do passo
-   a passo. O tema e as unidades valem só nesta
-   sessão (não gravam e não avisam), como as QUIETAS; o resto é
-   recusado com o aviso "No modo treino, nada é gravado.". O que passa
+   a passo. O tema e as unidades valem só durante o
+   treino (não gravam e não avisam; voltam ao sair), como as QUIETAS; o resto é
+   recusado com o aviso (RosterWork.mensagens.treino). O que não passa
+   pelo banco (a senha, os aparelhos, as notificações) pergunta a
+   recusar(frase). O que passa
    vai pelos exemplos do treino (geral-treino-cenarios.js): o roteiro
    com data-cenario liga o dele ao começar. No treino da Extrajornada,
    antes de tudo, o mês de treino responde pelas chamadas dela
    (geral-treino-extra.js); nos das trocas com exemplo do banco, o
    exemplo responde pelas leituras delas (geral-treino-banco.js).
    Sai do modo: o Sair do treino e o Voltar aos treinos do fim do
-   roteiro (voltam à lista, aberta na linha do último treino escolhido),
-   recarregar ou fechar (o modo não fica guardado). O Próximo treino do
+   roteiro (voltam à lista, aberta na linha do último treino escolhido)
+   e fechar a aba; recarregar a página, no treino com passo a passo,
+   volta à lista (geral-treino-livre.js). O treino livre é o modo
+   ligado sem o passo a passo (entrarLivre). O Próximo treino do
    fim do roteiro volta à lista (a tela recomeça limpa) e, quando ela
    abre, começa o próximo. Ao sair, a edição não salva é descartada sem
    perguntar.
@@ -63,7 +67,11 @@
   /* não gravam e não avisam: a tela segue como se tivesse gravado */
   var QUIETAS = ['notificacoes_marcar_lidas'];
 
+  var LINHA_LIVRE = 'livre';   // o "último escolhido" de quem entrou no treino livre pela lista, sem treino nenhum
+
   var ligado = false;
+  var livre = false;           // o treino livre: o modo ligado, sem o passo a passo
+  var ultimoEscolhido = null;
 
   function mostrar(sim) {
     ligado = sim;
@@ -72,6 +80,14 @@
     var moldura = document.getElementById('treino-moldura');
     if (barra) barra.classList.toggle('oculto', !sim);
     if (moldura) moldura.classList.toggle('oculto', !sim);
+  }
+
+  /* a marca no <html> muda a barra (geral-treino.css); o Recomeçar o treino só para quem veio de um treino */
+  function marcarLivre(sim) {
+    livre = sim;
+    document.documentElement.toggleAttribute('data-treino-livre', sim);
+    var recomecar = document.querySelector('.treino-barra-recomecar');
+    if (recomecar) recomecar.classList.toggle('oculto', sim && ultimoEscolhido === LINHA_LIVRE);
   }
 
   /* a barra diz onde o treino fica: a página, o número (o mesmo da lista) e o nome */
@@ -85,11 +101,11 @@
     barra.querySelector('.treino-barra-nome').textContent = t.getAttribute('data-titulo');
   }
 
-  var ultimoEscolhido = null;
-
   function comecar(id) {
     ultimoEscolhido = id;
+    if (RW.treinoLivre) RW.treinoLivre.guardar(false, id);
     mostrar(true);
+    marcarLivre(false);
     /* no celular, o topo pode ter saído com a rolagem da lista: o treino pode começar pelo menu do canto ou pelo sino */
     if (RW.recolherTopo) RW.recolherTopo.mostrar();
     var t = RW.guiaRoteiros ? RW.guiaRoteiros.roteiro(id) : null;
@@ -98,14 +114,49 @@
     if (RW.guia) RW.guia.iniciar(id, { treino: true });
   }
 
+  /* o treino livre: o passo a passo fecha e o modo continua. daLista: sem treino nenhum, e o exemplo do treino anterior
+     sai; senão, na mesma tela, e o exemplo fica */
+  function entrarLivre(daLista) {
+    if (daLista) {
+      ultimoEscolhido = LINHA_LIVRE;
+      if (RW.treinoCenarios) RW.treinoCenarios.ativar(null);
+    }
+    if (RW.treinoLivre) RW.treinoLivre.guardar(true, ultimoEscolhido);
+    if (RW.guia) RW.guia.encerrar();
+    mostrar(true);
+    marcarLivre(true);
+    if (RW.recolherTopo) RW.recolherTopo.mostrar();
+  }
+  /* o treino livre depois de recarregar a página: com os dados de verdade (o exemplo ficou para trás) */
+  function continuarLivre(id) {
+    ultimoEscolhido = id;
+    mostrar(true);
+    marcarLivre(true);
+  }
+
+  /* o modo desliga na tela em que está (sair da conta é de verdade: o treino termina antes) */
+  function apagar() {
+    if (RW.guia) RW.guia.encerrar();
+    if (RW.treinoCenarios) RW.treinoCenarios.ativar(null);
+    mostrar(false);
+    marcarLivre(false);
+  }
+
   /* desliga e vai à lista (a edição não salva e o aviso aberto ficam para trás, sem perguntar) */
   function desligar() {
     if (RW.guia) RW.guia.encerrar();
     if (RW.fecharModais) RW.fecharModais();
-    if (RW.treinoCenarios) RW.treinoCenarios.ativar(null);
-    mostrar(false);
+    apagar();
+    if (RW.treinoLivre) RW.treinoLivre.soltar();
     if (RW.guardaSaida) RW.guardaSaida.dispensar();
     if (RW.irParaPagina) RW.irParaPagina('treinamento');
+  }
+
+  /* o que não passa pelo banco (a senha, os aparelhos, as notificações): no treino, o aviso e a recusa */
+  function recusar(frase) {
+    if (!ligado) return false;
+    if (RW.avisar) RW.avisar({ tipo: 'aviso', mensagem: frase, fixo: true });
+    return true;
   }
 
   /* quem sai volta à lista na linha do último treino escolhido; o treinamento.js pede a linha ao abrir (vale uma vez) */
@@ -114,6 +165,7 @@
     linhaParaAbrir = ultimoEscolhido;
     desligar();
   }
+  function pedirLinha(id) { linhaParaAbrir = id; }
   function linhaPedida() {
     var id = linhaParaAbrir;
     linhaParaAbrir = null;
@@ -155,8 +207,9 @@
       return resposta(200, null);                                          // o tema e as unidades: só nesta sessão
     }
     if (QUIETAS.indexOf(nome) >= 0) return resposta(200, null);
-    if (RW.avisar) RW.avisar({ tipo: 'aviso', mensagem: RW.mensagens.treino.naoGrava, fixo: true });
-    return resposta(403, { code: 'RW_TREINO', message: RW.mensagens.treino.naoGrava });
+    var frase = livre ? RW.mensagens.treino.livreNaoSalvo : RW.mensagens.treino.naoGrava;
+    if (RW.avisar) RW.avisar({ tipo: 'aviso', mensagem: frase, fixo: true });
+    return resposta(403, { code: 'RW_TREINO', message: frase });
   }
 
   /* a chamada no treino: a recusada recebe a resposta do treino; a que passa vai pelos exemplos, que limpam o pedido
@@ -183,8 +236,13 @@
   });
 
   RW.treino = {
+    LINHA_LIVRE: LINHA_LIVRE,
     ligado: function () { return ligado; },
+    livre: function () { return livre; },
+    ultimo: function () { return ultimoEscolhido; },
     noAr: function () { return noAr > 0; },
-    comecar: comecar, voltarAosTreinos: voltarAosTreinos, linhaPedida: linhaPedida, seguir: seguir, comecarPendente: comecarPendente, passar: passar
+    comecar: comecar, entrarLivre: entrarLivre, continuarLivre: continuarLivre, apagar: apagar, recusar: recusar,
+    voltarAosTreinos: voltarAosTreinos, pedirLinha: pedirLinha, linhaPedida: linhaPedida,
+    seguir: seguir, comecarPendente: comecarPendente, passar: passar
   };
 })();

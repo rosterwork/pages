@@ -253,7 +253,11 @@
       var demora = null;
       function terminar(quem) { clearTimeout(demora); esconderCirculo(); soltar(quem); trocando = false; }
       function esperar(promessa, depois) {
-        demora = setTimeout(function () { mostrarCirculo(caixa); }, ESPERA_CIRCULO);
+        demora = setTimeout(function () {
+          /* sem o movimento, a área fica no lugar: a forma dela já mostra a espera */
+          if (palco.hasAttribute('data-lendo') && !palco.hasAttribute('data-deslize-andando')) return;
+          mostrarCirculo(caixa);
+        }, ESPERA_CIRCULO);
         promessa.then(depois, depois);
       }
       if (semMovimento()) {

@@ -7,13 +7,17 @@
    (.escala-rodape-salvar) mostra "N alterações não
    salvas" (com mudança na extra, também o motivo), o Cancelar (descarta
    tudo, com a confirmação) e o Salvar, que grava as três de uma vez,
-   tudo ou nada (escala_painel_salvar):
-   o véu, o resumo com o que cada parte gravou e as telas lidas de
-   novo. Enquanto há mudança, as telas da Escala mostram o rascunho
+   tudo ou nada (escala_painel_salvar). Só o Dia: as etapas no rodapé,
+   e só aquele dia é lido de novo na grade (escalas-dia-na-grade.js);
+   com o Ciclo ou a Extrajornada, o cartão das etapas sobre a tela
+   (geral-etapas.js), e o período é lido de novo, com a grade na tela.
+   Depois, o resumo com o que cada parte gravou. Enquanto há mudança,
+   as telas da Escala mostram o rascunho
    (a prévia, escala_previa, pela escalas-dados.js) e o dia mudado
    leva a borda tracejada; quando o rascunho muda de verdade, as telas são
    avisadas meio segundo depois do último clique
-   (rosterwork_escala_previa); abrir, fechar ou trocar de dia ou de
+   (rosterwork_escala_previa, com os dias que mudam); abrir, fechar ou
+   trocar de dia ou de
    aba sem mudança não as faz ler de novo. As sub-telas e o lápis põem
    a mudança no rascunho enquanto se responde; com uma pergunta pela
    metade, um conflito ou alguém acima da cota da extra, o Salvar fica
@@ -29,7 +33,8 @@
    .pendente() diz se há mudança no Dia ou no Ciclo; .descartar() tira
    as do Dia e do Ciclo; .paraPrevia() dá o rascunho para a prévia das
    telas (null sem mudança); .marcado(unidade, dia) diz se o dia leva a
-   borda.
+   borda; .mostrarRelendo(sim) diz no rodapé que a escala está sendo
+   lida com o rascunho.
    ============================================================ */
 (function () {
   'use strict';
@@ -39,6 +44,7 @@
   var salvando = false;
   var espera = null;   // o aviso às telas, meio segundo depois do último clique
   var mostrado = '';   // o rascunho que as telas mostram (marcaDaPrevia; vazio: o gravado)
+  var linhaNoRodape = null;   // as etapas no lugar do texto do rodapé (o Salvar só do Dia, a prévia que lê o período)
 
   function msg() { return RW.mensagens.escala; }
   function E() { return RW.escalasPainelEditar; }
@@ -111,10 +117,18 @@
     if (!el) return;
     var n = contar();
     var passou = X() ? X().passou() : null;
-    el.classList.toggle('oculto', !n);
-    var texto = el.querySelector('.escala-rodape-salvar-texto');
-    texto.textContent = passou ? RW.mensagens.novaExtra.org.passouRodape(passou.nome, passou.n) : n ? msg().alteracoesNaoSalvas(n) : '';
-    texto.classList.toggle('escala-extra-rodape-erro', !!passou);
+    /* enquanto grava, o rodapé fica (a conta das mudanças já pode ter zerado) */
+    el.classList.toggle('oculto', !n && !salvando);
+    /* com as etapas no lugar do texto, ele volta quando elas terminam */
+    if (!linhaNoRodape) {
+      var texto = el.querySelector('.escala-rodape-salvar-texto');
+      /* o que o rascunho da extra faz com as cotas, em amarelo; quem passou da cota vem primeiro */
+      var frase = !passou && X() && X().contar() ? RW.novaExtraGrade.fraseDasCotas() : '';
+      texto.textContent = passou ? RW.mensagens.novaExtra.org.passouRodape(passou.nome, passou.n)
+        : n ? msg().alteracoesNaoSalvas(n) + (frase ? '. ' + frase : '') : '';
+      texto.classList.toggle('escala-extra-rodape-erro', !!passou);
+      texto.classList.toggle('escala-extra-rodape-alerta', !!frase);
+    }
     var motivo = el.querySelector('.escala-rodape-motivo'), comExtra = !!(X() && X().contar());
     motivo.classList.toggle('oculto', !comExtra);
     if (!comExtra) motivo.querySelector('input').value = '';
@@ -130,18 +144,55 @@
     return JSON.stringify([p && (p.dia || p.ciclo) ? [p.unidadeId, p.iso, p.dia, p.ciclo] : null, extra]);
   }
 
+  /* os dias que mudam nas telas de uma marca para a outra: [{ unidadeId, iso }]; com o Ciclo ou a Extrajornada, que mexem
+     em muitos dias, null (o período todo) */
+  function diasDaPrevia(antes, agora) {
+    var dias = [], muitos = false;
+    [antes, agora].forEach(function (marca) {
+      if (!marca) return;
+      var partes = JSON.parse(marca), dia = partes[0];
+      if (partes[1] || (dia && dia[3])) { muitos = true; return; }
+      if (dia && !dias.some(function (d) { return d.unidadeId === dia[0] && d.iso === dia[1]; })) dias.push({ unidadeId: dia[0], iso: dia[1] });
+    });
+    return muitos ? null : dias;
+  }
+
   /* o rascunho mudou: o rodapé na hora, e as telas meio segundo depois do último clique (cada uma pede a prévia), só se
-     o que elas mostram mudou */
+     o que elas mostram mudou. Durante a gravação as telas esperam: elas leem no fim dela, e a recusa volta a passar aqui */
   function mudou() {
     atualizar();
     if (espera) clearTimeout(espera);
     espera = setTimeout(function () {
       espera = null;
+      if (salvando) return;
       var marca = marcaDaPrevia();
       if (marca === mostrado) return;
+      var dias = diasDaPrevia(mostrado, marca);
       mostrado = marca;
-      window.dispatchEvent(new CustomEvent('rosterwork_escala_previa'));
+      window.dispatchEvent(new CustomEvent('rosterwork_escala_previa', { detail: { dias: dias } }));
     }, 500);
+  }
+
+  /* a prévia lê o período todo: o rodapé diz o que está acontecendo no lugar da conta, que volta quando a grade chega */
+  function mostrarRelendo(sim) {
+    if (salvando) return;
+    if (!sim) {
+      if (!linhaNoRodape) return;
+      linhaNoRodape.parar();
+      linhaNoRodape = null;
+      atualizar();
+      return;
+    }
+    var el = rodapePagina();
+    if (linhaNoRodape || !el || !contar()) return;
+    linhaNoRodape = linhaDasEtapas(el, 'previaPeriodo');
+  }
+
+  /* as etapas no lugar do texto do rodapé */
+  function linhaDasEtapas(el, chave, valores, opcoes) {
+    var texto = el.querySelector('.escala-rodape-salvar-texto');
+    texto.classList.remove('escala-extra-rodape-erro', 'escala-extra-rodape-alerta');
+    return RW.etapas.linha(texto, chave, valores, opcoes);
   }
 
   /* ---------- Cancelar e Salvar ---------- */
@@ -178,28 +229,66 @@
     return log;
   }
 
-  /* grava (escala_painel_salvar) com o véu e, gravado, põe o dia gravado no painel e avisa as telas. Devolve uma
-     Promise com { ok, r } ou { ok: false, erro, desatualizado } (quem chama avisa). O dia que mudou depois da leitura
-     (outro administrador ou o sistema) tira o rascunho do Dia e lê o dia de novo */
+  /* o nome da unidade nas etapas: "1ªCIBM / 2ºPEL" vira "2ºPEL" */
+  function nomeCurto(c) { return (c.unidadeNome || '').split('/').pop().trim(); }
+
+  /* o que aparece enquanto grava: só o Dia, as etapas no rodapé, com o dia sendo refeito na grade ("Refazendo a
+     distribuição" só quando o banco refaz); com o Ciclo ou a Extrajornada, que mudam muitos dias, o cartão sobre a tela */
+  function mostrarEtapas(c, ciclo, soDoDia) {
+    if (linhaNoRodape) linhaNoRodape.parar();
+    linhaNoRodape = null;
+    if (ciclo) return RW.etapas.acao('salvarCiclo', { unidade: nomeCurto(c) }, { doServidor: 2 });
+    if (!soDoDia) return RW.etapas.acao('salvarExtra', null, { doServidor: 1 });
+    var refaz = !!(E() && E().refazDistribuicao());
+    linhaNoRodape = linhaDasEtapas(rodapePagina(), 'salvarDia',
+      { dia: RW.data.isoParaBR(c.iso).slice(0, 5), unidade: nomeCurto(c), refaz: refaz },
+      { doServidor: refaz ? 2 : 1, atraso: refaz ? 0 : 300 });
+    RW.escalasDiaNaGrade.refazendo(c.unidadeId, c.iso);
+    return linhaNoRodape;
+  }
+
+  /* as telas leem de novo: só o Dia, só aquele dia nas colunas à vista; senão (ou numa grade sem célula por dia), o período,
+     com a grade na tela. A promessa se cumpre com a tela nova, e nunca falha */
+  function telasLeem(c, soDoDia) {
+    var grade = RW.escalasDiaNaGrade, umDia = soDoDia && grade.temCelulas();
+    window.dispatchEvent(new CustomEvent('rosterwork_escala_salva', { detail: { unidadeId: c.unidadeId, iso: c.iso, soDoDia: umDia } }));
+    return umDia ? grade.salvou(c.unidadeId, c.iso) : grade.relerPeriodo();
+  }
+
+  /* grava (escala_painel_salvar) mostrando as etapas e, gravado, põe o dia gravado no painel e avisa as telas. O clique fica
+     travado até as telas lerem (iniciarCarregando). Devolve uma Promise com { ok, r } ou { ok: false, erro, desatualizado }
+     (quem chama avisa). O dia que mudou depois da leitura (outro administrador ou o sistema) tira o rascunho do Dia e lê o
+     dia de novo */
   function enviar(c, dia, ciclo, extra, botao) {
+    var soDoDia = !ciclo && !extra;
     salvando = true;
+    var etapas = mostrarEtapas(c, ciclo, soDoDia);
     atualizar();
     if (botao) RW.iniciarCarregando(botao);
-    if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal();   // o ciclo recalcula a escala: círculo e tela travada
-    return RW.escalasDados.painelSalvar(c.unidadeId, c.iso, dia, ciclo, extra).then(function (r) {
+    /* o fim: a linha do rodapé completa em segundo plano os dias distantes do recálculo (a fila em blocos), como o cartão */
+    function terminar() {
       salvando = false;
-      if (RW.esconderVeuGlobal) RW.esconderVeuGlobal();
+      etapas.parar();
+      if (soDoDia) {
+        linhaNoRodape = null;
+        RW.escalasDiaNaGrade.parou(c.unidadeId, c.iso);
+        RW.marcarRecalculoPendente();
+        RW.drenarRecalculo();
+      }
       if (botao) RW.pararCarregando(botao);
+    }
+    return RW.escalasDados.painelSalvar(c.unidadeId, c.iso, dia, ciclo, extra).then(function (r) {
       var geral = RW.mensagens.geral;
-      if (r && r._falha) { atualizar(); return { ok: false, erro: r._falha === 'conexao' ? geral.semConexao : geral.falhaServidor }; }
+      if (r && r._falha) { terminar(); mudou(); return { ok: false, erro: r._falha === 'conexao' ? geral.semConexao : geral.falhaServidor }; }
       if (!r || !r.success) {
+        terminar();
         if (r && r.desatualizado) {
           if (E()) E().descartar();
           redesenharAba();
           mudou();
           return { ok: false, desatualizado: true, erro: msg().diaDesatualizado };
         }
-        atualizar();
+        mudou();
         return { ok: false, erro: msg().painelRecusado((r && r.error) || msg().falhaSalvar) };
       }
       if (E()) E().aposGravar(r);
@@ -208,10 +297,13 @@
       if (espera) { clearTimeout(espera); espera = null; }
       mostrado = marcaDaPrevia();   // as telas leem de novo logo abaixo, já sem o que foi gravado
       atualizar();
-      window.dispatchEvent(new CustomEvent('rosterwork_escala_salva', { detail: { unidadeId: c.unidadeId, iso: c.iso } }));
-      window.dispatchEvent(new CustomEvent('rosterwork_escala_recarregar'));
-      redesenharAba();
-      return { ok: true, r: r };
+      etapas.ultima();
+      return telasLeem(c, soDoDia).then(function () {
+        terminar();
+        atualizar();
+        redesenharAba();
+        return { ok: true, r: r };
+      });
     });
   }
 
@@ -238,5 +330,5 @@
   if (RW.guardaSaida) RW.guardaSaida.registrar(pendente);
 
   RW.escalasPainelSalvar = { rodape: rodape, atualizar: atualizar, contar: contar, contarDoDia: contarDoDia, pendente: pendente,
-    descartar: descartar, paraPrevia: paraPrevia, marcado: marcado };
+    descartar: descartar, paraPrevia: paraPrevia, marcado: marcado, mostrarRelendo: mostrarRelendo };
 })();

@@ -32,6 +32,7 @@
   var comp = null;      // o mês do pedido (Date, dia 1)
   var estado = null;    // a resposta do nova_extra_minha
   var pedido = 0;       // latest-wins
+  var espera = null;   // a leitura da área à vista (geral-etapas.js)
   var aba = 'minha';    // a aba aberta (data-aba)
   var conteudoPagina = null;
   var desenhado = null; // o mês desenhado na Minha extra (AAAA-MM-01)
@@ -140,11 +141,15 @@
       s.classList.toggle('oculto', !ve || !pronta);
     });
     el.estado.classList.toggle('oculto', pronta);
+    if (espera) espera.parar();
+    espera = null;
     el.estado.textContent = '';
-    if (!pronta) {
-      var no = RW.tpl(l.situacao === 'lendo' ? 'tpl-escala-carregando' : 'tpl-escala-estado');
-      if (no && l.situacao === 'falha') no.textContent = l.texto;
-      if (no) el.estado.appendChild(no);
+    if (l.situacao === 'lendo') {
+      /* passando de 0,3 s, a forma e, de 1 s, as etapas (geral-etapas.js) */
+      espera = RW.etapas.area(el.estado, { forma: 'tpl-esqueleto-cartoes', etapas: 'extraAbrir', valores: { mes: nomeMes(comp) } });
+    } else if (!pronta) {
+      var no = RW.tpl('tpl-escala-estado');
+      if (no) { no.textContent = l.texto; el.estado.appendChild(no); }
     }
     el.acoes.disabled = leituras.mes.situacao !== 'ok';
   }

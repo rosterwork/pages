@@ -35,6 +35,7 @@
       var email = ((RosterWork.sessao && RosterWork.sessao.perfil()) || usuario).email;
       RosterWork.trocarSenha(email, atual.value, nova.value).then(function (retorno) {
         if (RosterWork.pararCarregando) RosterWork.pararCarregando(salvar);
+        if (retorno && retorno.erro === 'treino') return;   /* o aviso do modo treino já está aberto, e os campos ficam */
         if (retorno && retorno.ok) {
           atual.value = ''; nova.value = ''; confirma.value = ''; revisar();
           RosterWork.avisar({ tipo: 'sucesso', mensagem: M.senhaTrocada });

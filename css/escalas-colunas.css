@@ -123,3 +123,22 @@
 .escala-colunas-rotulo--fds {
   background-color: var(--fundo-medio);
 }
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   A coluna do dia fica estreita, com o dia da semana em cima do
+   número: cabem duas unidades por tela, e as outras rolam de lado.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .escala-colunas-grade {
+    --col-rotulo: 40px;
+    padding: 0 4px 8px;
+  }
+
+  html[data-celular] .escala-colunas-rotulo-dia {
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    padding: 4px 2px;
+  }
+}

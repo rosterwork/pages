@@ -150,9 +150,15 @@
     }
 
     abaAtual = 'notificacoes';
-    vazio(listaComunicados, RW.mensagens.avisos.carregando);
+    /* passando de 0,3 s, a forma dos cartões e, de 1 s, as etapas; os comunicados ficam na outra aba, com a forma até chegarem */
+    listaComunicados.textContent = '';
+    listaComunicados.appendChild(RW.tpl('tpl-esqueleto-cartoes'));
     carregarComunicados();
-    return carregarNotificacoes();
+    var espera = RW.etapas.area(listaNotificacoes, { forma: 'tpl-esqueleto-cartoes', etapas: 'avisosAbrir' });
+    function chegou() { espera.parar(); }
+    var leitura = carregarNotificacoes();
+    leitura.then(chegou, chegou);
+    return leitura;
   }
 
   RW.paginas.avisos = { iniciar: iniciar };

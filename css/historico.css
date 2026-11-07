@@ -115,3 +115,17 @@
   color: var(--texto-fraco);
   font-size: 12px;
 }
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   O período à esquerda e o botão Filtros na mesma linha.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] #historico-periodo {
+    margin-right: auto;
+  }
+
+  html[data-celular] #historico-filtros {
+    order: 2;
+  }
+}

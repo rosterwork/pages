@@ -53,6 +53,8 @@
 
   /* sai só deste aparelho (scope=local): o app do celular e os outros aparelhos seguem conectados */
   function sair() {
+    /* sair da conta é de verdade: o modo treino termina antes */
+    if (window.RosterWork.treino) window.RosterWork.treino.apagar();
     var token = obterToken();
     var notificacoes = window.RosterWork.notificacoesCelular;
     /* antes, o aparelho para de receber as notificações desta conta (computador compartilhado) */
@@ -75,6 +77,9 @@
   /* encerra a sessão em todos os aparelhos (scope=global), inclusive no app do celular, e as
      notificações no celular de todos eles. Resolve false quando o servidor não confirmou (a sessão segue aberta) */
   function sairDeTodos() {
+    /* no modo treino, nada muda: o aviso diz */
+    var treino = window.RosterWork.treino;
+    if (treino && treino.recusar(window.RosterWork.mensagens.treino.aparelhosContinuam)) return Promise.resolve(false);
     var notificacoes = window.RosterWork.notificacoesCelular;
     var antes = notificacoes ? notificacoes.desligarTodos() : Promise.resolve();
     return antes.then(function () {
@@ -189,8 +194,11 @@
      troca via PUT /auth/v1/user e renova a sessão com a senha nova (a troca pode
      invalidar a sessão antiga). Resolve num marcador:
      { ok: true } | { erro: 'atual' } (senha atual errada) | { erro: 'limite' } (excesso de entradas
-     do mesmo endereço de internet) | { erro: 'servidor' } | { erro: 'conexao' } */
+     do mesmo endereço de internet) | { erro: 'servidor' } | { erro: 'conexao' } | { erro: 'treino' }
+     (no modo treino, a senha não muda: o aviso diz) */
   function trocarSenha(email, atual, nova) {
+    var treino = window.RosterWork.treino;
+    if (treino && treino.recusar(window.RosterWork.mensagens.treino.senhaNaoMuda)) return Promise.resolve({ erro: 'treino' });
     return fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
       method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: email, password: atual })

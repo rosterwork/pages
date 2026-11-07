@@ -830,12 +830,12 @@
     var iso = celula.dataset.iso;
     var cidade = celula.dataset.unidadeCidade;
     /* o Dia e o Ciclo para quem tem a unidade na área do papel; a Extrajornada, que é da companhia, para quem administra
-       alguma unidade (escalas-painel-extra.js confere se esta é da companhia dele), só no computador */
+       alguma unidade (escalas-painel-extra.js confere se esta é da companhia dele) */
     var admin = RosterWork.sessao.podeAdministrar('pelotao', unidadeId);
-    var comExtra = RosterWork.sessao.temPapel('pelotao') && !document.documentElement.hasAttribute('data-celular');
+    var comExtra = RosterWork.sessao.temPapel('pelotao');
     var inicial = secao || (naExtra ? 'extra' : 'distribuicao');
     if ((inicial === 'continuos' && !admin) || (inicial === 'extra' && !comExtra)) inicial = 'distribuicao';
-    pCtx = { unidadeId: unidadeId, iso: iso, secao: inicial };
+    pCtx = { unidadeId: unidadeId, iso: iso, secao: inicial, unidadeNome: celula.dataset.unidadeNome };
     /* o dia já refeito abre na hora: o painel lê o dado real, e a célula fica igual a ele */
     if (RosterWork.escalaAtualizando && RosterWork.escalaAtualizando.soCopia(unidadeId, iso)) RosterWork.escalaAtualizando.corrigir(unidadeId, iso);
     RosterWork.painel.abrir({
@@ -1112,10 +1112,12 @@
   window.RosterWork.escalasPainel = {
     ligar: ligar,
     abrir: abrirParaCelula,
-    /* o dia aberto ({ unidadeId, iso, secao }) e a aba aberta lida de novo (o Salvar do rodapé) */
-    contexto: function () { return pCtx ? { unidadeId: pCtx.unidadeId, iso: pCtx.iso, secao: pCtx.secao } : null; },
+    /* o dia aberto ({ unidadeId, iso, secao, unidadeNome }) e a aba aberta lida de novo (o Salvar do rodapé) */
+    contexto: function () { return pCtx ? { unidadeId: pCtx.unidadeId, iso: pCtx.iso, secao: pCtx.secao, unidadeNome: pCtx.unidadeNome } : null; },
     /* a grade foi redesenhada (a prévia do rascunho): o dia aberto volta a ficar selecionado */
     remarcar: remarcarSelecionada,
+    /* o dia aberto mudou na grade sem ela ser redesenhada: ele continua inteiro à vista (o rodapé pode ter aparecido) */
+    mostrarDia: function () { mostrarDiaAberto(true); },
     /* outro painel vai abrir no lugar do dia (o do militar): com mudança no Dia ou no Ciclo, a mesma pergunta de trocar
        de dia (Descartar segue com seguir(true), e as telas leem o gravado de novo; Continuar editando fica); sem
        mudança, segue na hora com seguir(false) */

@@ -83,7 +83,24 @@
     var dias = dados.dias || {};
     Object.keys(dias).sort().forEach(function (k) { cal.appendChild(celula(u, k, dias[k])); });
     el.calendario.appendChild(cal);
+    el.calendario.appendChild(listaDosDias(cal));
     atualizar();
+  }
+
+  /* os dias com nome, embaixo do calendário (no celular, onde o nome não cabe no dia): a linha abre o dia, como ele */
+  function listaDosDias(cal) {
+    var lista = RW.tpl('tpl-exp-lista');
+    Array.prototype.forEach.call(cal.querySelectorAll('.ajustes-exp-dia[data-dia]'), function (dia) {
+      var nome = dia.querySelector('.ajustes-exp-dia-texto').textContent;
+      if (!nome) return;
+      var item = RW.tpl('tpl-exp-lista-item');
+      item.querySelector('.ajustes-exp-lista-dia').textContent = dia.querySelector('.ajustes-exp-dia-num').textContent;
+      item.querySelector('.ajustes-exp-lista-nome').textContent = nome;
+      item.disabled = dia.disabled;
+      item.addEventListener('click', function () { dia.click(); });
+      lista.appendChild(item);
+    });
+    return lista;
   }
 
   /* o dia: a folga em cinza com o nome (ou "Recesso"; a folga do horário, sem texto); na parte do dia, o nome e o

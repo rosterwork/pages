@@ -3,8 +3,8 @@
    Liga as abas da página (Mensagens · Bugs · Guia visual; a aba
    Bugs mora em programador-bugs.js e o Guia visual em
    programador-guia.js). Lista os recados (recados_listar), filtra
-   por status, mostra o detalhe à direita (com o contexto e o bug
-   ligado), permite mudar o status (manual), editar/salvar
+   por status, mostra o detalhe com o contexto e o bug ligado (no
+   celular, em tela própria), permite mudar o status, editar/salvar
    assunto+mensagem, criar lembretes e criar um bug a partir da
    mensagem. Atualiza o selo do menu (RosterWork.recadosSelo).
    ============================================================ */
@@ -18,6 +18,9 @@
   var filtro = 'todos';
   var selecionadoId = null;
   var abaAtual = 'mensagens';
+  var tela = null;           /* as duas telas do celular (programador-telas.js) */
+  var registroMudou = null;  /* o que está no corpo tem texto não salvo? (a função é de quem abriu) */
+  var guardaLigada = false;  /* a guarda de saída conhece as Mensagens (uma vez só) */
 
   var SELO_STATUS = { nao_lido: 'selo--alerta', lido: '', resolvido: 'selo--sucesso' };
 
@@ -32,6 +35,8 @@
     filtro = 'todos';
     selecionadoId = null;
     abaAtual = 'mensagens';
+    tela = RosterWork.programadorTelas.ligar(raiz.querySelector('[data-aba-painel="mensagens"]'), raiz.querySelector('#programador-voltar'), voltarALista);
+    if (!guardaLigada && RosterWork.guardaSaida) { RosterWork.guardaSaida.registrar(textoNaoSalvo); guardaLigada = true; }
     ligarAbas();
     ligarFiltro();
     ligarNovo();
@@ -58,6 +63,7 @@
       }
       if (abaAtual === 'guia' && RosterWork.programadorGuia) RosterWork.programadorGuia.mostrar();
       atualizarSubtitulo();
+      RosterWork.programadorTelas.aoTrocarDeAba();
     });
   }
 
@@ -121,7 +127,10 @@
       item.querySelector('.programador-item-tipo').textContent = labelTipo(rec.tipo);
       item.querySelector('.programador-item-autor').textContent = autorDe(rec);
       if (rec.id === selecionadoId) item.classList.add('lista-item--ativo');
-      item.addEventListener('click', function () { selecionar(rec.id); });
+      item.addEventListener('click', function () {
+        if (rec.id === selecionadoId) return;   /* já aberta no detalhe */
+        pedirTroca(function () { selecionar(rec.id); });
+      });
       lista.appendChild(item);
     });
   }
@@ -167,9 +176,11 @@
     montarBugLigado(no, rec);   /* a seção ainda no molde, antes de ir para a tela */
 
     var btnSalvar = no.querySelector('#programador-det-salvar');
+    registroMudou = function () {
+      return inAssunto.value.trim() !== (rec.assunto || '') || inMensagem.value.trim() !== (rec.mensagem || '').trim();
+    };
     function revisar() {
-      var mudou = (inAssunto.value.trim() !== (rec.assunto || '')) || (inMensagem.value !== (rec.mensagem || ''));
-      btnSalvar.disabled = !mudou || !inAssunto.value.trim() || !inMensagem.value.trim();
+      btnSalvar.disabled = !registroMudou() || !inAssunto.value.trim() || !inMensagem.value.trim();
     }
     inAssunto.addEventListener('input', revisar);
     inMensagem.addEventListener('input', revisar);
@@ -179,6 +190,7 @@
     revisar();
 
     alvo.appendChild(no);
+    tela.abrir(id);
   }
 
   function montarContexto(no, rec) {
@@ -236,9 +248,25 @@
   /* vinda da aba Bugs (mensagem ligada): mostra a mensagem, mesmo fora do filtro atual */
   function abrirMensagem(id) {
     irParaAba('mensagens');
-    var rec = recadoPorId(id);
-    if (rec && filtro !== 'todos' && rec.status !== filtro) marcarFiltro('todos');
-    selecionar(id);
+    pedirTroca(function () {
+      var rec = recadoPorId(id);
+      if (rec && filtro !== 'todos' && rec.status !== filtro) marcarFiltro('todos');
+      selecionar(id);
+    });
+  }
+
+  /* o registro aberto tem texto não salvo? A troca de registro e a saída da tela (guarda de saída) perguntam antes */
+  function textoNaoSalvo() { return !!registroMudou && !!raiz.querySelector('#programador-detalhe') && registroMudou(); }
+  function pedirTroca(continuar) { RosterWork.programadorTelas.pedirTroca(textoNaoSalvo, continuar); }
+
+  /* o Voltar à lista, o voltar do Android e o Cancelar do Novo lembrete */
+  function voltarALista() {
+    pedirTroca(function () {
+      selecionadoId = null;
+      renderLista();
+      mostrarVazioDetalhe();
+      tela.fechar();
+    });
   }
 
   function mudarStatus(id, status) {
@@ -305,7 +333,7 @@
 
   function ligarNovo() {
     var btn = raiz.querySelector('#programador-novo');
-    if (btn) btn.addEventListener('click', abrirNovo);
+    if (btn) btn.addEventListener('click', function () { pedirTroca(abrirNovo); });
   }
 
   function abrirNovo() {
@@ -320,25 +348,17 @@
     var inM = no.querySelector('#programador-novo-mensagem');
     var btnSalvar = no.querySelector('#programador-novo-salvar');
     var btnCancelar = no.querySelector('#programador-novo-cancelar');
+    registroMudou = function () { return !!inA.value.trim() || !!inM.value.trim(); };
 
-    function erroCampo(el, msg) {
-      var c = el.closest('.campo'); if (!c) return;
-      c.classList.add('campo--erro');
-      var e = c.querySelector('.campo-erro-texto'); if (e) e.textContent = msg;
-    }
-    function limpar(el) {
-      var c = el.closest('.campo'); if (!c) return;
-      c.classList.remove('campo--erro');
-      var e = c.querySelector('.campo-erro-texto'); if (e) e.textContent = '';
-    }
-    inA.addEventListener('input', function () { limpar(inA); });
-    inM.addEventListener('input', function () { limpar(inM); });
-    btnCancelar.addEventListener('click', mostrarVazioDetalhe);
+    var campos = RosterWork.campos;
+    inA.addEventListener('input', function () { campos.limparErro(inA); });
+    inM.addEventListener('input', function () { campos.limparErro(inM); });
+    btnCancelar.addEventListener('click', voltarALista);
     btnSalvar.addEventListener('click', function () {
-      limpar(inA); limpar(inM);
+      campos.limparErro(inA); campos.limparErro(inM);
       var a = inA.value.trim(), m = inM.value.trim();
-      if (!a) { erroCampo(inA, M().assuntoVazio); return; }
-      if (!m) { erroCampo(inM, M().mensagemVazia); return; }
+      if (!a) { campos.marcarErro(inA, M().assuntoVazio); return; }
+      if (!m) { campos.marcarErro(inM, M().mensagemVazia); return; }
       if (RosterWork.iniciarCarregando) RosterWork.iniciarCarregando(btnSalvar);
       RosterWork.rpc('recado_criar_lembrete', { p_assunto: a, p_mensagem: m }).then(function (r) {
         if (RosterWork.pararCarregando) RosterWork.pararCarregando(btnSalvar);
@@ -357,9 +377,11 @@
       });
     });
     alvo.appendChild(no);
+    tela.abrir();
   }
 
   function mostrarVazioDetalhe() {
+    registroMudou = null;
     var alvo = raiz.querySelector('#programador-detalhe');
     if (!alvo) return;
     alvo.textContent = '';

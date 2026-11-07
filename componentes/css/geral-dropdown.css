@@ -144,4 +144,13 @@
   html[data-celular] .dropdown-menu:not(.calendario-menu) .dropdown-item {
     min-height: var(--toque-altura-celular);
   }
+
+  /* nenhum menu passa da tela: o texto longo quebra a linha */
+  html[data-celular] .dropdown-menu {
+    max-width: calc(100% - 16px);
+  }
+
+  html[data-celular] .dropdown-menu .dropdown-item {
+    white-space: normal;
+  }
 }

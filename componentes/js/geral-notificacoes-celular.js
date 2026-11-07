@@ -8,7 +8,9 @@
    (aplicativo-armazem.js). Ao sair, o aparelho para de receber.
    No app instalado no celular, vêm ligadas por padrão: ao entrar no
    sistema, o aparelho que já permitiu liga sozinho, e o que nunca foi
-   perguntado ganha uma pergunta, uma vez só (oferecerNoApp).
+   perguntado ganha uma pergunta, uma vez só (oferecerNoApp). No modo
+   treino, nada disso muda: ligar e desligar só avisam, e a pergunta
+   não aparece.
    API: RosterWork.notificacoesCelular.situacao() / ativar() /
         desativar() / desligarAoSair() / desligarTodos()
    ============================================================ */
@@ -53,9 +55,13 @@
     return inscricaoAtual().then(function (inscricao) { return inscricao ? 'ativado' : 'desativado'; });
   }
 
+  /* no modo treino, o aparelho não muda: o aviso diz */
+  function recusadoNoTreino() { return !!RW.treino && RW.treino.recusar(RW.mensagens.treino.notificacoesNaoMudam); }
+
   /* liga: permissão, inscrição e o endereço guardado no banco. Resolve a situação final;
      rejeita quando não conseguiu guardar (a inscrição é desfeita) */
   function ativar() {
+    if (recusadoNoTreino()) return situacao();
     return Notification.requestPermission().then(function (permissao) {
       if (permissao !== 'granted') return permissao === 'denied' ? 'bloqueado' : 'desativado';
       return navigator.serviceWorker.ready.then(function (registro) {
@@ -75,6 +81,7 @@
 
   /* desliga neste aparelho: tira do banco e desfaz a inscrição */
   function desativar() {
+    if (recusadoNoTreino()) return situacao();
     return inscricaoAtual().then(function (inscricao) {
       if (!inscricao) return 'desativado';
       return RW.rpc('notificacoes_aparelho_remover', { p_endpoint: inscricao.endpoint }).catch(function () {})
@@ -114,7 +121,7 @@
      pergunta do celular no próprio toque, como o iPhone exige */
   function oferecerNoApp() {
     var app = RW.aplicativo;
-    if (!app || !app.noCelularInstalado() || !suportado()) return;
+    if (!app || !app.noCelularInstalado() || !suportado() || (RW.treino && RW.treino.ligado())) return;
     situacao().then(function (s) {
       if (s !== 'desativado') return;
       if (Notification.permission === 'granted') { ativar().catch(function () {}); return; }

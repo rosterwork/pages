@@ -88,6 +88,22 @@
     var alocs = efetivas();
     return voluntarios().filter(function (m) { return usadas(m.cpf, alocs) > (m.concedidas || 0); });
   }
+  /* o que o rascunho faz com as cotas, para o rodapé do Salvar: nos Ajustes do mês lançado, de quem muda de número. Quem
+     fica com cotas a menos vem antes de quem completou; quem passou da cota é o aviso de passaram() */
+  function fraseDasCotas() {
+    if (modo !== 'ajustes' || !lancada()) return '';
+    var c = RW.mensagens.cotasAviso, alocs = efetivas(), aMenos = [], completos = [];
+    voluntarios().forEach(function (m) {
+      var agora = usadas(m.cpf, alocs), total = m.concedidas || 0;
+      if (agora === usadas(m.cpf, d.alocacoes)) return;
+      if (agora < total) aMenos.push({ m: m, n: agora });
+      else if (agora === total) completos.push({ m: m, n: agora });
+    });
+    var lista = aMenos.length ? aMenos : completos;
+    if (!lista.length) return '';
+    if (lista.length > 1) return aMenos.length ? c.aoSalvarFicam(lista.length) : c.aoSalvarCompletam(lista.length);
+    return c.aoSalvarFica((lista[0].m.grad + ' ' + lista[0].m.nome).trim(), lista[0].n, lista[0].m.concedidas || 0);
+  }
   function conduz(m, cnh) { return F().conduz(m, cnh); }
   /* o que impede o militar de tirar extra no dia pela escala dele (serviço, folga, afastamento ou expediente o dia
      todo); null se nada impede */
@@ -197,7 +213,7 @@
     modo: function () { return modo; },
     rascunho: function () { return mud; },
     limpar: function () { mud = {}; },
-    chave: chave, base: base, alteracoes: alteracoes, passaram: passaram, lancada: lancada, mesmosBlocos: mesmosBlocos,
+    chave: chave, base: base, alteracoes: alteracoes, passaram: passaram, fraseDasCotas: fraseDasCotas, lancada: lancada, mesmosBlocos: mesmosBlocos,
     vagas: vagas, vagaDe: vagaDe, efetivas: efetivas, alocDe: alocDe, usadas: usadas, voluntarios: voluntarios, blocos: blocos, naoSalvos: naoSalvos,
     conduz: conduz, impedimento: impedimento,
     faltaDoDia: faltaDoDia, situacao: situacao, antesDe: antesDe, depoisDe: depoisDe, corDe: corDe, travado: travado, soLeitura: soLeitura, antigo: antigo,

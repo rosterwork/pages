@@ -1275,6 +1275,13 @@
   gap: 16px;
 }
 
+/* a forma da área enquanto a leitura não chega (#nova-extra-estado): a largura e o respiro da leitura */
+.nova-extra-area > .esqueleto-cartoes {
+  width: 100%;
+  max-width: 720px;
+  padding: var(--respiro-pagina);
+}
+
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    Só as abas Minha extra e Extras do mês (o Organizar o mês some); as cotas

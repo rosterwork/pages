@@ -67,7 +67,6 @@
       semNotificacoes: 'Nada novo por aqui.',
       semAbertos: 'Nenhum aviso novo.',
       semComunicados: 'Nenhum comunicado.',
-      carregando: 'Carregando…',
       falhaCarregar: 'Não foi possível carregar.',
       /* os comunicados: criar e remover (admin; js/avisos-comunicado.js) */
       confirmarRemoverAviso: 'Remover este comunicado? Ele deixa de aparecer para quem o recebeu.',
@@ -144,7 +143,7 @@
     /* programador (mensagens: leitura/gestão dos recados) */
     programador: {
       vazioLista: 'Nenhuma mensagem por aqui.',
-      vazioDetalhe: 'Selecione uma mensagem à esquerda para ver os detalhes.',
+      vazioDetalhe: 'Selecione uma mensagem na lista para ver os detalhes.',
       assuntoVazio: 'Informe o assunto.',
       mensagemVazia: 'Escreva a mensagem.',
       falhaSalvar: 'Não foi possível salvar. Tente de novo.',
@@ -156,7 +155,7 @@
     /* programador › bugs (registro e andamento dos bugs a corrigir) */
     programadorBugs: {
       vazioLista: 'Nenhum bug por aqui.',
-      vazioDetalhe: 'Selecione um bug à esquerda para ver os detalhes.',
+      vazioDetalhe: 'Selecione um bug na lista para ver os detalhes.',
       carregando: 'Carregando…',
       falhaCarregar: 'Não foi possível carregar os bugs. Tente de novo.',
       gravidades: { leve: 'Leve', moderado: 'Moderado', grave: 'Grave' },
@@ -1383,6 +1382,18 @@
       falhaCopiar: 'Não foi possível copiar. Selecione a mensagem e copie manualmente.'
     },
 
+    /* as cotas que faltam distribuir: a nota da Escala e da Extrajornada (geral-cotas-aviso) e o que o rascunho faz com as
+       cotas, no rodapé do Salvar */
+    cotasAviso: {
+      titulo: function (n, mes) { return 'Falta distribuir ' + n + (n === 1 ? ' cota' : ' cotas') + ' de ' + mes + '.'; },
+      umMilitar: function (nome, colocadas, recebidas) { return nome + ' está com ' + colocadas + ' de ' + recebidas + (recebidas === 1 ? ' cota.' : ' cotas.'); },
+      varios: function (nome, outros) { return nome + ' e mais ' + outros + (outros === 1 ? ' militar estão' : ' militares estão') + ' com cotas a menos.'; },
+      comoFazer: 'Clique no nome na lista e marque os horários nos dias livres.',
+      aoSalvarFica: function (nome, n, total) { return 'Ao salvar, ' + nome + ' fica com ' + n + ' de ' + total + (total === 1 ? ' cota.' : ' cotas.'); },
+      aoSalvarFicam: function (n) { return 'Ao salvar, ' + n + ' militares ficam com cotas a menos.'; },
+      aoSalvarCompletam: function (n) { return 'Ao salvar, ' + n + ' militares ficam com todas as cotas.'; }
+    },
+
     /* análise de impacto na escala — componente compartilhado (geral-impacto), usado por Trocas e Folgas */
     /* a faixa "Esperando a sua resposta" (acima do título de todas as páginas; geral-chamada) */
     chamada: {
@@ -1913,6 +1924,13 @@
     /* modo treino (geral-treino.js) e a página Treinamento (treinamento.js) */
     treino: {
       naoGrava: 'No modo treino, nada é gravado.',
+      /* o treino livre (geral-treino-livre.js): o Salvar, o que não passa pelo banco, o título do resumo e a marca do PDF */
+      livreNaoSalvo: 'No treino, nada foi salvo. No sistema, isso seria gravado agora.',
+      senhaNaoMuda: 'No treino, a senha não muda.',
+      aparelhosContinuam: 'No treino, os aparelhos continuam conectados.',
+      notificacoesNaoMudam: 'No treino, as notificações não mudam.',
+      resumoTitulo: 'No treino, nada foi salvo',
+      marcaPdf: 'TREINO',
       /* a página do treino; o bloco do administrador tem a contagem própria */
       pagina: function (onde) { return onde.grupo + (onde.area === 'admin' ? ', administrador' : ''); },
       seguinte: function (onde, titulo) { return this.pagina(onde) + ' · Treino ' + onde.numero + ' de ' + onde.total + ' · ' + titulo; },
@@ -1993,6 +2011,85 @@
         dispensa: 'Dispensa',
         unidade: 'Ajustes da unidade',
         antiguidade: 'Antiguidade'
+      }
+    },
+
+    /* as etapas do carregando (geral-etapas.js): o que o sistema faz, na ordem real. Cada uma: { titulo, passos, pe } */
+    etapas: {
+      conta: function (n, total) { return n + ' de ' + total; },
+      demoraLeitura: 'Está demorando mais que o normal. A tela abre sozinha assim que os dados chegarem.',
+      demoraAcao: 'Está demorando mais que o normal. A gravação continua.',
+      demoraCurta: 'Está demorando mais que o normal.',
+      /* a prévia do rascunho */
+      previaDia: { passos: ['Mostrando como o dia vai ficar'] },
+      previaPeriodo: { passos: ['Mostrando como a escala vai ficar'] },
+      /* ao abrir */
+      escalaAbrir: function (v) {
+        return { titulo: 'Montando a escala de ' + v.mes, passos: ['Buscando a escala de ' + v.mes, 'Organizando os militares em cada dia', 'Desenhando a cobertura de cada hora'] };
+      },
+      escalaMilitares: { titulo: 'Montando a escala do período', passos: ['Buscando os militares do período', 'Montando a linha de cada militar'] },
+      escalaMinha: function (v) {
+        return { titulo: 'Montando a sua escala de ' + v.mes, passos: ['Buscando os seus serviços de ' + v.mes, 'Marcando os dias no calendário'] };
+      },
+      extraAbrir: function (v) {
+        return { titulo: 'Abrindo a extrajornada de ' + v.mes, passos: ['Buscando os pedidos e as cotas', 'Conferindo o que falta em cada dia', 'Montando a sua tela'] };
+      },
+      usuariosAbrir: { titulo: 'Buscando o efetivo', passos: ['Buscando os militares das unidades marcadas', 'Separando por unidade'] },
+      trocasAbrir: { titulo: 'Buscando as trocas', passos: ['Buscando as trocas das unidades marcadas', 'Separando por unidade'] },
+      folgasAbrir: { titulo: 'Buscando as suas folgas', passos: ['Buscando o seu saldo e o seu extrato', 'Montando a lista'] },
+      historicoAbrir: { titulo: 'Buscando o histórico', passos: ['Buscando as alterações do período', 'Separando por unidade'] },
+      pendenciasAbrir: { titulo: 'Buscando as pendências', passos: ['Buscando o que espera por você', 'Organizando pelo prazo'] },
+      avisosAbrir: { titulo: 'Buscando os avisos', passos: ['Buscando as notificações', 'Montando a lista'] },
+      ajustesAbrir: function (v) {
+        return { titulo: v.unidade ? 'Abrindo a distribuição do ' + v.unidade : 'Abrindo a distribuição', passos: ['Buscando a distribuição', 'Fazendo as contas de cada posto'] };
+      },
+      /* ao salvar na Escala */
+      salvarDia: function (v) {
+        var passos = ['Gravando as alterações de ' + v.dia];
+        if (v.refaz) passos.push('Refazendo a distribuição do ' + v.unidade);
+        passos.push('Atualizando o dia na grade');
+        return { passos: passos };
+      },
+      salvarCiclo: function (v) {
+        return { titulo: 'Salvando a mudança no ciclo', passos: ['Gravando a mudança no ciclo', 'Refazendo os próximos 7 dias do ' + v.unidade, 'Atualizando os dias na grade'],
+          pe: 'O resto do período continua sozinho, e você pode seguir trabalhando.' };
+      },
+      salvarExtra: { titulo: 'Salvando a extrajornada', passos: ['Gravando a mudança na extrajornada', 'Atualizando os dias na grade'] },
+      removerTroca: { titulo: 'Salvando a mudança na troca', passos: ['Gravando a mudança', 'Refazendo a distribuição dos dias da troca', 'Atualizando a grade'] },
+      /* folgas */
+      folgaAprovar: function (v) {
+        return { titulo: 'Aprovando a folga do ' + v.militar, passos: ['Gravando a aprovação', 'Tirando o militar do serviço de ' + v.dia, 'Refazendo a distribuição do dia'] };
+      },
+      folgaDar: function (v) {
+        return { titulo: 'Dando a folga ao ' + v.militar, passos: ['Gravando a folga', 'Tirando o militar do serviço de ' + v.dia, 'Refazendo a distribuição do dia'] };
+      },
+      folgaCancelar: function (v) {
+        return { titulo: 'Cancelando a folga', passos: ['Gravando o cancelamento', 'Devolvendo o militar ao serviço de ' + v.dia, 'Refazendo a distribuição do dia'] };
+      },
+      folgaAnalisar: { passos: ['Buscando o serviço do militar', 'Testando a folga na escala, sem gravar', 'Comparando o antes e o depois'] },
+      /* trocas */
+      trocaAnalisar: { passos: ['Buscando os serviços dos dois militares', 'Testando a troca na escala, sem gravar', 'Comparando o antes e o depois'] },
+      trocaAprovar: { titulo: 'Aprovando a troca', passos: ['Gravando a aprovação', 'Refazendo a distribuição dos dias da troca', 'Atualizando a lista'] },
+      trocaCancelar: { titulo: 'Cancelando a troca', passos: ['Gravando o cancelamento', 'Refazendo a distribuição dos dias da troca', 'Atualizando a lista'] },
+      trocaRegistrar: { titulo: 'Registrando as trocas', passos: ['Gravando as trocas', 'Refazendo a distribuição dos dias', 'Atualizando a lista'] },
+      trocaEditar: { titulo: 'Salvando a alteração da troca', passos: ['Gravando a alteração', 'Refazendo a distribuição dos dias da troca', 'Atualizando a lista'] },
+      /* usuários */
+      afastamento: function (v) {
+        return { titulo: 'Salvando ' + v.oQue + ' do ' + v.militar, passos: ['Gravando ' + v.oQue, 'Refazendo os próximos 7 dias da escala', 'Atualizando a ficha'], pe: 'O resto do período continua sozinho.' };
+      },
+      promover: { titulo: 'Salvando a promoção', passos: ['Gravando a promoção', 'Refazendo os próximos 7 dias da escala', 'Atualizando a ficha'], pe: 'O resto do período continua sozinho.' },
+      transferir: { titulo: 'Salvando a transferência', passos: ['Gravando a transferência', 'Refazendo os próximos 7 dias da escala', 'Atualizando a ficha'], pe: 'O resto do período continua sozinho.' },
+      dadosMilitar: { titulo: 'Salvando os dados', passos: ['Gravando os dados', 'Refazendo os próximos 7 dias da escala', 'Atualizando a ficha'], pe: 'O resto do período continua sozinho.' },
+      correcao: { titulo: 'Aprovando a correção', passos: ['Gravando a aprovação', 'Refazendo os próximos 7 dias da escala', 'Atualizando a lista'], pe: 'O resto do período continua sozinho.' },
+      antiguidade: { titulo: 'Salvando a antiguidade', passos: ['Gravando a nova ordem', 'Refazendo os próximos 7 dias da escala', 'Atualizando a lista'], pe: 'O resto do período continua sozinho.' },
+      /* ajustes, extrajornada e impressão */
+      ajustesSalvar: function (v) {
+        return { titulo: 'Salvando a distribuição do ' + v.unidade, passos: ['Gravando a distribuição', 'Refazendo os próximos 7 dias', 'Atualizando a tela'], pe: 'O resto do período continua sozinho.' };
+      },
+      sugestao: { titulo: 'Calculando a melhor distribuição', passos: ['Lendo os voluntários, as cotas e os dias', 'Procurando a melhor combinação', 'Conferindo as regras de cada extra'],
+        pe: 'Isso pode levar até 1 minuto. Não feche esta página.' },
+      imprimir: function (v) {
+        return { titulo: 'Preparando o PDF', passos: ['Buscando a escala do período: ' + v.feitos + ' de ' + v.total + ' dias', 'Desenhando as páginas'] };
       }
     },
 

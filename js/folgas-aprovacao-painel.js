@@ -53,7 +53,7 @@
   function carregarAnalise(sol) {
     var minhas = partes;
     if (!minhas) return;
-    RW.decisao.analisando(minhas);
+    RW.decisao.analisando(minhas, 'folgaAnalisar');
     RW.folgasDados.analisar(sol.id).then(function (r) {
       if (!RW.painel.estaAberto() || solAtual !== sol) return;
       if (btnAprovar) btnAprovar.disabled = false;   // análise chegou: libera o Aprovar

@@ -69,6 +69,8 @@
   function montar(caixa, pendencias) {
     /* a faixa "Esperando a sua resposta" usa a mesma leitura (geral-chamada.js) */
     if (RW.chamada) RW.chamada.definir(pendencias || []);
+    /* a nota das cotas que faltam distribuir também (geral-cotas-aviso.js) */
+    if (RW.cotasAviso) RW.cotasAviso.definir(pendencias || []);
     if (!lista) return;
     var abertos = (caixa && caixa.abertos) || { total: 0, pessoal: 0, administracao: 0 };
     var itens = (caixa && caixa.itens) || [];   /* a leitura já traz só os em aberto */

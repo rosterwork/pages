@@ -14,8 +14,8 @@
      · o Motivo, sempre.
    Embaixo, os documentos alterados (o sistema escolhe), a nota
    Como fica e o compromisso de quem volta (avisa, não trava).
-   Confirmar grava tudo de uma vez, sem Desfazer: o véu, o resumo e
-   o dia lido de novo.
+   Confirmar grava tudo de uma vez, sem Desfazer: o cartão das etapas,
+   a grade lida de novo, o resumo e o dia lido de novo.
    API: RosterWork.escalasPainelRemoverTroca.criar(cfg) devolve
    { mostrar(mil, parte), esconder(), aplicar() };
    cfg = { raiz, iso, pronto(texto, ligado), aoGravar() }
@@ -241,16 +241,19 @@
         campo.focus();
         return;
       }
-      if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal();   // recalcula a escala: círculo e tela travada
+      /* recalcula a escala: o cartão das etapas, com a tela travada, até a grade ler de novo */
+      var etapas = RW.etapas.acao('removerTroca', null, { doServidor: 2 });
       chamar({ acao: qual, junto: qual === 'troca' ? est.junto : null, motivo: motivo }).then(function (r) {
-        if (RW.esconderVeuGlobal) RW.esconderVeuGlobal();
-        if (!r || !r.ok) { RW.avisar({ tipo: 'erro', mensagem: (r && r.erro) || RW.mensagens.geral.falhaServidor }); return; }
+        if (!r || !r.ok) { etapas.parar(); RW.avisar({ tipo: 'erro', mensagem: (r && r.erro) || RW.mensagens.geral.falhaServidor }); return; }
         campo.value = '';
-        window.dispatchEvent(new CustomEvent('rosterwork_escala_recarregar'));
-        if (r.log && RW.resumo) RW.resumo.abrirModal(r.log, { pagina: 'Escala' });
-        cfg.aoGravar();
+        etapas.ultima();
+        RW.escalasDiaNaGrade.relerPeriodo().then(function () {
+          etapas.parar();
+          if (r.log && RW.resumo) RW.resumo.abrirModal(r.log, { pagina: 'Escala' });
+          cfg.aoGravar();
+        });
       }, function () {
-        if (RW.esconderVeuGlobal) RW.esconderVeuGlobal();
+        etapas.parar();
         RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao });
       });
     }

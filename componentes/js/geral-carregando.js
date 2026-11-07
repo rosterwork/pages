@@ -53,32 +53,20 @@
   }
 
   /* ---------- VÉU (spinner .giratorio cobrindo um container) ----------
-     O véu é fixo dentro do container (escrito no HTML), começando visível. Aqui só
-     ligamos/desligamos a classe `--visivel`; o mínimo evita que ele pisque. */
-  var MINIMO_VEU = 600;
-  var veuMostradoEm = Date.now();   /* o véu já nasce visível no shell (carga inicial) */
-  var timerEsconder = 0;
-
+     O véu é fixo dentro do container (escrito no HTML). Aqui só ligamos/desligamos a
+     classe `--visivel`: nenhuma espera de propósito. */
   function veuDe(container) {
     return container ? container.querySelector('.carregando-veu') : null;
   }
 
   function mostrarVeu(container) {
     var veu = veuDe(container);
-    if (!veu) return;
-    clearTimeout(timerEsconder);
-    veu.classList.add('carregando-veu--visivel');
-    veuMostradoEm = Date.now();
+    if (veu) veu.classList.add('carregando-veu--visivel');
   }
 
   function esconderVeu(container) {
     var veu = veuDe(container);
-    if (!veu) return;
-    clearTimeout(timerEsconder);
-    var restante = Math.max(0, MINIMO_VEU - (Date.now() - veuMostradoEm));
-    timerEsconder = setTimeout(function () {
-      veu.classList.remove('carregando-veu--visivel');
-    }, restante);
+    if (veu) veu.classList.remove('carregando-veu--visivel');
   }
 
   /* ---------- VÉU GLOBAL (círculo sobre o conteúdo + tela travada) ----------

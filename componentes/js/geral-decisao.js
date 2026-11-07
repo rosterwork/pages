@@ -102,19 +102,29 @@
     partes.analise.insertBefore(n, partes.analise.querySelector('.nota--sucesso'));
   }
 
-  function analisando(partes) {
+  /* a análise no ar: a frase da etapa (etapas: a chave em RosterWork.mensagens.etapas; sem ela, a da troca) */
+  var etapasDaAnalise = new WeakMap();
+
+  function pararEtapas(partes) {
+    var etapas = etapasDaAnalise.get(partes.analise);
+    if (etapas) etapas.parar();
+    etapasDaAnalise.delete(partes.analise);
+  }
+
+  function analisando(partes, etapas) {
     if (!partes) return;
     partes.analiseSecao.classList.remove('oculto');
     partes.analiseSelo.classList.add('oculto');
+    pararEtapas(partes);
     partes.analise.textContent = '';
-    var pts = document.getElementById('carregando-pontos');
-    if (pts) partes.analise.appendChild(pts.content.cloneNode(true));
+    etapasDaAnalise.set(partes.analise, RW.etapas.linha(partes.analise, etapas || 'trocaAnalisar'));
   }
 
   /* r = resultado da análise; sem r (falhou), o texto de falha. O selo do título
      é o mesmo do cartão da Pendências (ex.: "2 pontos de atenção") */
   function analise(partes, r, textoFalha) {
     if (!partes) return;
+    pararEtapas(partes);
     partes.analiseSecao.classList.remove('oculto');
     partes.analise.textContent = '';
     var selo = r && r.ok !== false && RW.impacto ? RW.impacto.selo(r) : null;

@@ -48,10 +48,10 @@
       });
   }
 
-  /* espera a primeira página terminar de carregar: o véu de carregamento fica
-     acima dos modais e cobriria a janela (espera até ~5 s) */
+  /* espera a primeira página terminar de carregar: a casca da página fica acima dos
+     modais e cobriria a janela (espera até ~5 s) */
   function quandoLivre(acao, tentativas) {
-    if (document.querySelector('.carregando-veu--visivel') && tentativas > 0) {
+    if (document.querySelector('.casca-pagina:not(.oculto)') && tentativas > 0) {
       setTimeout(function () { quandoLivre(acao, tentativas - 1); }, 200);
       return;
     }

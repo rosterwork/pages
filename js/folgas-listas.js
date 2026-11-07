@@ -11,6 +11,7 @@
   var ctx = null;
   var periodo = '30';
   var seqHist = 0;    // token do Histórico: ignora resposta antiga ao trocar de período rápido
+  var espera = null;  // a leitura do Histórico na tela (geral-etapas.js)
 
   function fmt() { return RW.folgasFormato; }
   function msg() { return RW.mensagens.folgas; }
@@ -26,12 +27,6 @@
   }
 
   function limpar(el) { if (el) el.textContent = ''; }
-  function carregandoEm(el) {
-    limpar(el);
-    var v = RosterWork.tpl('tpl-folga-lista-vazio');
-    var pts = document.getElementById('carregando-pontos');
-    if (v && pts) { v.appendChild(pts.content.cloneNode(true)); el.appendChild(v); }
-  }
   function vazioEm(el, texto) { limpar(el); var v = RosterWork.tpl('tpl-folga-lista-vazio'); if (v) { v.textContent = texto; el.appendChild(v); } }
 
   function renderHistorico(el, lista) {
@@ -52,13 +47,24 @@
   function carregarHistorico() {
     var el = document.getElementById('folgas-historico');
     if (!el || !document.contains(el)) return;
-    carregandoEm(el);
+    /* o que está na tela fica até o novo chegar; vazia, passando de 0,3 s, a forma dos cartões */
+    if (espera) espera.parar();
+    espera = RW.etapas.area(el, el.children.length ? {} : { forma: 'tpl-esqueleto-cartoes' });
     var req = ++seqHist;
+    function chegou() {
+      if (espera) espera.parar();
+      espera = null;
+    }
     RW.folgasDados.lancamentos('todos', desdeDoPeriodo()).then(function (lista) {
       if (!document.contains(el) || req !== seqHist) return;
+      chegou();
       if (lista == null) { vazioEm(el, msg().falhaCarregar); return; }   // null = falha
       renderHistorico(el, Array.isArray(lista) ? lista : []);
-    }).catch(function () { if (document.contains(el) && req === seqHist) vazioEm(el, msg().falhaCarregar); });
+    }).catch(function () {
+      if (!document.contains(el) || req !== seqHist) return;
+      chegou();
+      vazioEm(el, msg().falhaCarregar);
+    });
   }
 
   function ligarControles(conteudo) {

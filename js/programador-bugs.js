@@ -1,8 +1,8 @@
 /* ============================================================
    PROGRAMADOR — BUGS (só programador)
    Lista os bugs (bugs_listar) filtrando por situação, gravidade e
-   período; mostra o detalhe à direita (andamento e mensagens
-   ligadas) com as ações de cada situação: assumir, devolver,
+   período; mostra o detalhe (andamento, mensagens ligadas; no celular,
+   em tela própria) com as ações de cada situação: assumir, devolver,
    marcar corrigido, descartar e reabrir. O formulário (novo,
    editar, criar da mensagem) fica em programador-bugs-formulario.js;
    aqui ele é aberto e gravado (bug_salvar). A página
@@ -20,6 +20,7 @@
   var filtroDias = 0;
   var selecionadoId = null;
   var carga = null;   /* a leitura mais recente dos bugs, para quem precisa esperar a lista */
+  var tela = null;    /* as duas telas do celular (programador-telas.js) */
 
   var ORDEM_GRAVIDADE = { grave: 0, moderado: 1, leve: 2 };
   var SELO_GRAVIDADE = { grave: 'selo--erro', moderado: 'selo--alerta', leve: '' };
@@ -54,6 +55,7 @@
   function iniciar(conteudo, opcoes) {
     raiz = conteudo;
     config = opcoes || {};
+    tela = RosterWork.programadorTelas.ligar(q('[data-aba-painel="bugs"]'), q('#bugs-voltar'), voltarALista);
     bugs = [];
     filtroSituacao = 'aberto';
     filtroGravidade = '';
@@ -204,6 +206,7 @@
     alvo.textContent = '';
     var no = vazio(M().vazioDetalhe);
     if (no) alvo.appendChild(no);
+    tela.fechar();
   }
 
   function selecionar(id) {
@@ -231,6 +234,7 @@
     montarAndamento(no, bug);
     montarAcoes(no, bug);
     alvo.appendChild(no);
+    tela.abrir(id);
   }
 
   function montarAndamento(no, bug) {
@@ -325,6 +329,15 @@
   /* ---------- formulário (novo / editar / da mensagem) ---------- */
   function pedirTroca(continuar) { F().pedirTroca(continuar); }
 
+  /* o Voltar à lista e o voltar do Android (o formulário sai pelo pedirTroca) */
+  function voltarALista() {
+    pedirTroca(function () {
+      selecionadoId = null;
+      renderLista();
+      mostrarVazioDetalhe();
+    });
+  }
+
   /* bug: editar · recado: criar a partir da mensagem · nenhum: novo em branco */
   function abrirFormulario(bug, recado) {
     selecionadoId = bug ? bug.id : null;
@@ -335,16 +348,12 @@
       bug: bug,
       recado: recado,
       aoCancelar: function () {
-        pedirTroca(function () {
-          F().fechar();
-          if (bug) { selecionar(bug.id); return; }
-          selecionadoId = null;
-          renderLista();
-          mostrarVazioDetalhe();
-        });
+        if (!bug) { voltarALista(); return; }
+        pedirTroca(function () { selecionar(bug.id); });
       },
       aoSalvar: salvarBug
     });
+    tela.abrir();
   }
 
   function salvarBug(dados, botao) {

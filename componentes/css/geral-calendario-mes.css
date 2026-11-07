@@ -208,3 +208,14 @@
 .geral-calendario-mes--unidades .geral-calendario-mes-dia--fora .geral-calendario-mes-dia-topo {
   background-color: var(--fundo-suave);
 }
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   Na variante contínua, a coluna é mais estreita: cabem 2 por tela,
+   também no aparelho menor; com 3, a grade rola para o lado.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .geral-calendario-mes--continuo .geral-calendario-mes-semana {
+    grid-template-columns: repeat(var(--calendario-colunas, 7), minmax(160px, 1fr));
+  }
+}

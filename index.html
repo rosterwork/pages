@@ -28,6 +28,8 @@
   <link rel="stylesheet" href="componentes/css/geral-botao.css" />
   <link rel="stylesheet" href="componentes/css/geral-campo.css" />
   <link rel="stylesheet" href="componentes/css/geral-carregando.css" />
+  <link rel="stylesheet" href="componentes/css/geral-etapas.css" />
+  <link rel="stylesheet" href="componentes/css/geral-esqueleto.css" />
   <link rel="stylesheet" href="componentes/css/geral-entrando.css" />
   <link rel="stylesheet" href="componentes/css/geral-dica.css" />
   <link rel="stylesheet" href="componentes/css/geral-flutuante.css" />
@@ -88,8 +90,9 @@
   <div class="casca">
 
     <!-- MODO TREINO (componente geral-treino): a barra azul acima do cabeçalho, só com o modo ligado: o modo, a página e
-         o treino (o número e o nome), um embaixo do outro em cada parte, o Recomeçar e o Sair do treino. No celular fica só
-         o treino, com a página junto do número, e os dois botões: o Recomeçar só com o ícone e o outro só com a palavra Sair -->
+         o treino (o número e o nome), um embaixo do outro em cada parte, o Treino livre, o Recomeçar e o Sair do treino. No
+         celular fica só o treino, com a página junto do número, e os três botões: a palavra Livre, o Recomeçar só com o ícone
+         e a palavra Sair. No treino livre, a parte dele fica no lugar da do treino, e o botão Treino livre some -->
     <div class="treino-barra oculto" role="status">
       <span class="treino-barra-texto">
         <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-treinamento"/></svg>
@@ -105,11 +108,16 @@
           <span class="treino-barra-rotulo"><span class="treino-barra-pagina-celular"><span class="treino-barra-pagina-nome"></span> · </span>Treino <span class="treino-barra-numero"></span> de <span class="treino-barra-total"></span></span>
           <strong class="treino-barra-nome"></strong>
         </span>
+        <span class="treino-barra-parte treino-barra-parte-livre">
+          <span class="treino-barra-rotulo"><span class="treino-barra-so-computador">Treino livre</span><span class="treino-barra-so-celular"><span class="treino-barra-pagina-nome"></span> · Nada é salvo</span></span>
+          <strong class="treino-barra-livre-nome"><span class="treino-barra-so-computador">Mexa à vontade em qualquer tela</span><span class="treino-barra-so-celular">Treino livre</span></strong>
+        </span>
       </span>
       <span class="treino-barra-acoes">
+        <button type="button" class="botao treino-barra-livre" aria-label="Treino livre"><span class="treino-barra-so-computador">Treino livre</span><span class="treino-barra-so-celular">Livre</span></button>
         <button type="button" class="botao treino-barra-recomecar" aria-label="Recomeçar">
           <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-refazer"/></svg>
-          <span class="treino-barra-recomecar-texto">Recomeçar</span>
+          <span class="treino-barra-recomecar-texto">Recomeçar<span class="treino-barra-recomecar-resto"> o treino</span></span>
         </button>
         <button type="button" class="botao treino-barra-sair"><span>Sair<span class="treino-barra-sair-resto"> do treino</span></span></button>
       </span>
@@ -264,16 +272,16 @@
             <span class="menu-item-label">Usuários</span>
           </button>
 
-          <!-- a gestão (só administrador, só no computador): o Histórico e os Ajustes (a Distribuição, o Horário de
-               expediente e os Feriados); o traço some junto com os itens -->
-          <div class="sidebar-divisor" data-lugar-celular="fora" data-admin></div>
+          <!-- a gestão (só administrador): o Histórico e os Ajustes (a Distribuição, o Horário de expediente e os Feriados);
+               o traço some junto com os itens; no celular, na folha do Mais -->
+          <div class="sidebar-divisor" data-lugar-celular="mais" data-admin></div>
 
-          <button type="button" class="menu-item" data-pagina="historico" data-lugar-celular="fora" data-admin aria-label="Histórico">
+          <button type="button" class="menu-item" data-pagina="historico" data-lugar-celular="mais" data-admin aria-label="Histórico">
             <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-historico" /></svg>
             <span class="menu-item-label">Histórico</span>
           </button>
 
-          <button type="button" class="menu-item" data-pagina="ajustes" data-lugar-celular="fora" data-admin aria-label="Ajustes">
+          <button type="button" class="menu-item" data-pagina="ajustes" data-lugar-celular="mais" data-admin aria-label="Ajustes">
             <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-ajustes" /></svg>
             <span class="menu-item-label">Ajustes</span>
           </button>
@@ -304,9 +312,43 @@
       </nav>
 
       <main class="conteudo">
-        <div class="carregando-veu carregando-veu--visivel" role="status" aria-label="Carregando">
+        <div class="carregando-veu" role="status" aria-label="Carregando">
           <div class="giratorio" aria-hidden="true"></div>
         </div>
+
+        <!-- a casca da página (geral-esqueleto.css): à vista na abertura do sistema e na tela que demora a chegar
+             (index-navegacao.js); na abertura, com o cartão das etapas, que acompanha os arquivos (index-carregar.js) -->
+        <div class="casca-pagina" id="casca-pagina" role="status" aria-label="Carregando">
+          <div class="casca-topo esqueleto-conjunto">
+            <span class="esqueleto casca-titulo"></span>
+            <span class="casca-abas">
+              <span class="esqueleto casca-aba"></span>
+              <span class="esqueleto casca-aba"></span>
+              <span class="esqueleto casca-aba"></span>
+            </span>
+          </div>
+          <div class="casca-barra esqueleto-conjunto">
+            <span class="esqueleto casca-botao"></span>
+            <span class="esqueleto casca-botao casca-botao--curto"></span>
+            <span class="esqueleto casca-botao casca-botao--direita"></span>
+          </div>
+          <div class="casca-corpo">
+            <div class="etapas-camada etapas-camada--area casca-cartao" id="abertura-cartao">
+              <div class="etapas etapas--abertura">
+                <span class="cobertura-viva cobertura-viva--valor" aria-hidden="true"></span>
+                <p class="etapas-titulo">Abrindo o Roster Work</p>
+                <ol class="etapas-lista">
+                  <li class="etapa etapa--agora"><span class="etapa-marca"><span class="giratorio" aria-hidden="true"></span><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span><span class="etapa-texto">Conferindo o seu acesso</span></li>
+                  <li class="etapa"><span class="etapa-marca"><span class="giratorio" aria-hidden="true"></span><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span><span class="etapa-texto">Preparando as telas do sistema</span></li>
+                  <li class="etapa"><span class="etapa-marca"><span class="giratorio" aria-hidden="true"></span><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span><span class="etapa-texto">Abrindo <span data-abertura-tela data-tela-sem-nome="a tela">a Escala</span></span></li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- o cartão das etapas das gravações (componente geral-etapas): fica no shell, sobre a página e ao lado do painel -->
+        <div class="etapas-camada oculto" id="etapas-camada" role="status" aria-live="polite"></div>
 
         <!-- PAINEL LATERAL (gaveta de detalhes) — único no shell; empurra a página ao abrir.
              Casca em componentes/css|js/geral-painel.*; cada página o abre e o preenche. -->
@@ -609,7 +651,15 @@
       </svg>
     </div>
     <div class="entrando-corpo">
-      <div class="giratorio" aria-hidden="true"></div>
+      <div class="etapas etapas--abertura">
+        <span class="cobertura-viva cobertura-viva--valor" aria-hidden="true"></span>
+        <p class="etapas-titulo">Abrindo o Roster Work</p>
+        <ol class="etapas-lista">
+          <li class="etapa etapa--agora"><span class="etapa-marca"><span class="giratorio" aria-hidden="true"></span><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span><span class="etapa-texto">Conferindo o seu acesso</span></li>
+          <li class="etapa"><span class="etapa-marca"><span class="giratorio" aria-hidden="true"></span><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span><span class="etapa-texto">Preparando as telas do sistema</span></li>
+          <li class="etapa"><span class="etapa-marca"><span class="giratorio" aria-hidden="true"></span><svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span><span class="etapa-texto">Abrindo <span data-abertura-tela data-tela-sem-nome="a tela">a Escala</span></span></li>
+        </ol>
+      </div>
       <p class="entrando-mensagem" id="entrando-mensagem"></p>
       <button class="botao botao--primario" type="button" id="entrando-tentar">Tentar de novo</button>
     </div>
@@ -694,6 +744,44 @@
     </span>
   </template>
 
+  <!-- MOLDES: as etapas do carregando (componente geral-etapas; as frases vêm de RosterWork.mensagens.etapas) -->
+  <template id="tpl-etapas">
+    <div class="etapas">
+      <span class="cobertura-viva" aria-hidden="true"></span>
+      <p class="etapas-titulo"></p>
+      <ol class="etapas-lista"></ol>
+      <p class="etapas-pe"></p>
+    </div>
+  </template>
+
+  <template id="tpl-etapa">
+    <li class="etapa">
+      <span class="etapa-marca">
+        <span class="giratorio" aria-hidden="true"></span>
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
+      </span>
+      <span class="etapa-texto"></span>
+    </li>
+  </template>
+
+  <template id="tpl-etapas-linha">
+    <span class="etapas-linha" role="status">
+      <span class="cobertura-viva" aria-hidden="true"></span>
+      <span class="etapas-linha-texto"></span>
+      <span class="etapas-linha-conta"></span>
+    </span>
+  </template>
+
+  <!-- a camada do cartão na leitura de uma área (a das gravações fica no shell, #etapas-camada) -->
+  <template id="tpl-etapas-camada">
+    <div class="etapas-camada etapas-camada--area" role="status"></div>
+  </template>
+
+  <!-- a frase por cima da lista do painel, enquanto a prévia não chega -->
+  <template id="tpl-painel-etapa">
+    <div class="painel-etapa"><div class="painel-etapa-caixa"></div></div>
+  </template>
+
   <!-- MOLDES: árvore de unidades (componente compartilhado geral-arvore-unidades, no desenho do PDF da escala) -->
   <!-- a trilha no alto: as siglas das unidades de cima (um item por unidade) -->
   <template id="tpl-arvore-trilha">
@@ -726,10 +814,43 @@
     <div class="bloquinho"></div>
   </template>
 
-  <!-- a árvore é um container: carrega com o círculo, não com os pontinhos (Guia visual › Vazio e carregando) -->
+  <!-- a forma da árvore de unidades, enquanto os dados chegam (Guia visual › Vazio e carregando) -->
   <template id="tpl-arvore-carregando">
-    <div class="arvore-estado arvore-estado--carregando">
-      <div class="giratorio" aria-label="Carregando" role="status"></div>
+    <div class="esqueleto-arvore esqueleto-conjunto" role="status" aria-label="Carregando">
+      <span class="esqueleto esqueleto-trilha"></span>
+      <div class="esqueleto-bloco">
+        <div class="esqueleto-bloco-topo"><span class="esqueleto-bloco-textos"><span class="esqueleto esqueleto-bloco-nome"></span><span class="esqueleto esqueleto-bloco-detalhe"></span></span><span class="esqueleto esqueleto-selo"></span></div>
+        <div class="esqueleto-bloco-lista">
+          <span class="esqueleto-linha"><span class="esqueleto esqueleto-linha-grau"></span><span class="esqueleto esqueleto-linha-nome"></span><span class="esqueleto esqueleto-selo"></span></span>
+          <span class="esqueleto-linha"><span class="esqueleto esqueleto-linha-grau"></span><span class="esqueleto esqueleto-linha-nome"></span><span class="esqueleto esqueleto-selo"></span></span>
+          <span class="esqueleto-linha"><span class="esqueleto esqueleto-linha-grau"></span><span class="esqueleto esqueleto-linha-nome"></span><span class="esqueleto esqueleto-selo"></span></span>
+          <span class="esqueleto-linha"><span class="esqueleto esqueleto-linha-grau"></span><span class="esqueleto esqueleto-linha-nome"></span><span class="esqueleto esqueleto-selo"></span></span>
+          <span class="esqueleto-linha"><span class="esqueleto esqueleto-linha-grau"></span><span class="esqueleto esqueleto-linha-nome"></span><span class="esqueleto esqueleto-selo"></span></span>
+          <span class="esqueleto-linha"><span class="esqueleto esqueleto-linha-grau"></span><span class="esqueleto esqueleto-linha-nome"></span><span class="esqueleto esqueleto-selo"></span></span>
+          <span class="esqueleto-linha"><span class="esqueleto esqueleto-linha-grau"></span><span class="esqueleto esqueleto-linha-nome"></span><span class="esqueleto esqueleto-selo"></span></span>
+        </div>
+      </div>
+      <div class="esqueleto-bloco">
+        <div class="esqueleto-bloco-topo"><span class="esqueleto-bloco-textos"><span class="esqueleto esqueleto-bloco-nome"></span><span class="esqueleto esqueleto-bloco-detalhe"></span></span><span class="esqueleto esqueleto-selo"></span></div>
+        <div class="esqueleto-bloco-lista">
+          <span class="esqueleto-linha"><span class="esqueleto esqueleto-linha-grau"></span><span class="esqueleto esqueleto-linha-nome"></span><span class="esqueleto esqueleto-selo"></span></span>
+          <span class="esqueleto-linha"><span class="esqueleto esqueleto-linha-grau"></span><span class="esqueleto esqueleto-linha-nome"></span><span class="esqueleto esqueleto-selo"></span></span>
+          <span class="esqueleto-linha"><span class="esqueleto esqueleto-linha-grau"></span><span class="esqueleto esqueleto-linha-nome"></span><span class="esqueleto esqueleto-selo"></span></span>
+          <span class="esqueleto-linha"><span class="esqueleto esqueleto-linha-grau"></span><span class="esqueleto esqueleto-linha-nome"></span><span class="esqueleto esqueleto-selo"></span></span>
+          <span class="esqueleto-linha"><span class="esqueleto esqueleto-linha-grau"></span><span class="esqueleto esqueleto-linha-nome"></span><span class="esqueleto esqueleto-selo"></span></span>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- a forma dos cartões de uma lista, enquanto os dados chegam -->
+  <template id="tpl-esqueleto-cartoes">
+    <div class="esqueleto-cartoes esqueleto-conjunto" role="status" aria-label="Carregando">
+      <div class="esqueleto-cartao"><span class="esqueleto esqueleto-cartao-icone"></span><span class="esqueleto-cartao-textos"><span class="esqueleto esqueleto-cartao-titulo"></span><span class="esqueleto esqueleto-cartao-detalhe"></span></span><span class="esqueleto esqueleto-selo"></span></div>
+      <div class="esqueleto-cartao"><span class="esqueleto esqueleto-cartao-icone"></span><span class="esqueleto-cartao-textos"><span class="esqueleto esqueleto-cartao-titulo"></span><span class="esqueleto esqueleto-cartao-detalhe"></span></span><span class="esqueleto esqueleto-selo"></span></div>
+      <div class="esqueleto-cartao"><span class="esqueleto esqueleto-cartao-icone"></span><span class="esqueleto-cartao-textos"><span class="esqueleto esqueleto-cartao-titulo"></span><span class="esqueleto esqueleto-cartao-detalhe"></span></span><span class="esqueleto esqueleto-selo"></span></div>
+      <div class="esqueleto-cartao"><span class="esqueleto esqueleto-cartao-icone"></span><span class="esqueleto-cartao-textos"><span class="esqueleto esqueleto-cartao-titulo"></span><span class="esqueleto esqueleto-cartao-detalhe"></span></span><span class="esqueleto esqueleto-selo"></span></div>
+      <div class="esqueleto-cartao"><span class="esqueleto esqueleto-cartao-icone"></span><span class="esqueleto-cartao-textos"><span class="esqueleto esqueleto-cartao-titulo"></span><span class="esqueleto esqueleto-cartao-detalhe"></span></span><span class="esqueleto esqueleto-selo"></span></div>
     </div>
   </template>
 
@@ -905,8 +1026,8 @@
     <button type="button" class="aba" role="tab"></button>
   </template>
 
-  <!-- MOLDE: tela que não existe no celular (Distribuição, Histórico). No celular, o roteador
-       (index-navegacao.js) põe no lugar da tela, com o nome dela no título -->
+  <!-- MOLDE: tela que não existe no celular (hoje, nenhuma: o item do menu com data-lugar-celular="fora"). No celular, o
+       roteador (index-navegacao.js) põe no lugar da tela, com o nome dela no título -->
   <template id="tpl-pagina-so-computador">
     <div class="pagina">
       <div class="pagina-cabecalho">
@@ -1152,6 +1273,7 @@
         <button type="button" class="botao guia-balao-treinos oculto">Voltar aos treinos</button>
         <button type="button" class="botao guia-balao-seguinte-botao oculto">Próximo treino</button>
         <button type="button" class="botao guia-balao-recomecar oculto">Recomeçar</button>
+        <button type="button" class="botao botao--texto guia-balao-livre oculto">Treino livre</button>
       </div>
     </div>
   </template>
@@ -1297,7 +1419,7 @@
     <p data-fim>Pronto. A busca e os filtros valem juntos.</p>
   </template>
 
-  <template data-roteiro="escala-por-militar" data-titulo="Ver a escala por militar" data-grupo="Escala" data-pagina="escalas" data-so-computador>
+  <template data-roteiro="escala-por-militar" data-titulo="Ver a escala por militar" data-grupo="Escala" data-pagina="escalas">
     <p data-trecho="abrir-escala"></p>
     <p data-alvo="#escala-modos [data-modo='militares']" data-avanca="clique" data-pular-se="#escala-modos [data-modo='militares'].aba--ativa">Abra a aba <strong>Militares</strong>.</p>
     <p data-alvo=".escala-mil-pessoa-linha" data-um data-avanca="proximo">Cada linha é um militar e cada coluna é um dia; a célula mostra o horário do serviço.</p>
@@ -1305,16 +1427,19 @@
     <p data-alvo=".escala-mil-unidade-cab" data-um data-avanca="proximo" data-livre>O nome da unidade recolhe e mostra os militares dela.</p>
     <p data-alvo=".escala-mil-total" data-um data-avanca="proximo">No fim de cada unidade, o <strong>Efetivo de serviço</strong> de cada dia.</p>
     <p data-alvo="#escala-busca-militares" data-avanca="proximo" data-livre>Esta busca é só desta aba: digite o nome do militar.<span data-so-treino>Esta busca é só desta aba: ela acha o militar pelo nome.</span></p>
-    <p data-alvo=".escala-mil-grade" data-clique=".escala-mil-celula" data-avanca="clique" data-treino-alvo=".escala-mil-celula">Use uma célula para ver o que o militar faz naquele dia.<span data-so-treino>Use a célula acesa para ver o que o militar faz naquele dia.</span></p>
+    <p data-alvo=".escala-mil-grade" data-clique=".escala-mil-celula" data-avanca="clique" data-treino-alvo=".escala-mil-celula[data-iso='{hoje}'], .escala-mil-celula">Use uma célula para ver o que o militar faz naquele dia.<span data-so-treino>Use a célula acesa para ver o que o militar faz naquele dia.</span></p>
     <p data-alvo=".painel-lateral--aberto .painel-corpo" data-avanca="proximo">O painel mostra a situação no dia, o horário, o posto, a função e de onde veio o serviço.</p>
     <p data-fim>Pronto. O X fecha o painel.</p>
   </template>
 
-  <template data-roteiro="escala-em-colunas" data-titulo="Ver a escala em colunas" data-grupo="Escala" data-pagina="escalas" data-so-computador>
+  <template data-roteiro="escala-em-colunas" data-titulo="Ver a escala em colunas" data-grupo="Escala" data-pagina="escalas">
     <p data-trecho="abrir-escala"></p>
     <p data-alvo="#escala-modos [data-modo='colunas']" data-avanca="clique" data-pular-se="#escala-modos [data-modo='colunas'].aba--ativa">Abra a aba <strong>Colunas</strong>.</p>
-    <p data-alvo="#escala-sub-colunas" data-avanca="proximo" data-pular-se="#escala-colunas-tipo [data-colunas-tipo='unidades'].aba--ativa" data-livre>Em <strong>Dias</strong>, o mês corre em colunas seguidas; os números escolhem quantas colunas, de 2 a 5.</p>
-    <p data-alvo="#escala-colunas-tipo [data-colunas-tipo='unidades']" data-avanca="clique" data-pular-se="#escala-colunas-tipo [data-colunas-tipo='unidades'].aba--ativa">Escolha <strong>Unidades</strong>.</p>
+    <p data-alvo="#escala-sub-colunas" data-so-computador data-avanca="proximo" data-pular-se="#escala-colunas-tipo [data-colunas-tipo='unidades'].aba--ativa" data-livre>Em <strong>Dias</strong>, o mês corre em colunas seguidas; os números escolhem quantas colunas, de 2 a 5.</p>
+    <p data-alvo="#escala-sub-colunas" data-so-celular data-avanca="proximo" data-pular-se="#escala-colunas-tipo [data-colunas-tipo='unidades'].aba--ativa" data-livre>Em <strong>Dias</strong>, o mês corre em colunas seguidas; o número escolhe quantas colunas, 2 ou 3.</p>
+    <p data-alvo="#escala-colunas-tipo [data-colunas-tipo='unidades']" data-so-computador data-avanca="clique" data-pular-se="#escala-colunas-tipo [data-colunas-tipo='unidades'].aba--ativa">Escolha <strong>Unidades</strong>.</p>
+    <p data-alvo="#escala-colunas-tipo + .seletor-menu > .seletor" data-so-celular data-avanca="clique" data-pular-se="#escala-colunas-tipo [data-colunas-tipo='unidades'].aba--ativa, #escala-colunas-tipo + .seletor-menu.dropdown--aberto">Abra o menu <strong>Dias</strong>.</p>
+    <p data-alvo="#escala-colunas-tipo + .seletor-menu .dropdown-item:not(.dropdown-item--ativo)" data-so-celular data-avanca="clique" data-pular-se="#escala-colunas-tipo [data-colunas-tipo='unidades'].aba--ativa">Escolha <strong>Unidades</strong>.</p>
     <p data-alvo="#escala-sub-unidades, #escala-periodo-anterior, #escala-periodo-proximo" data-avanca="proximo" data-livre>Cada coluna é uma unidade, nos 7 dias da semana. Ligue e desligue as unidades aqui; as setas andam uma semana.<span data-so-treino>Cada coluna é uma unidade, nos 7 dias da semana. Aqui você liga e desliga as unidades; as setas andam uma semana.</span></p>
     <p data-fim>Pronto. Como no Mês, cada dia abre o painel do dia.</p>
   </template>
@@ -1585,7 +1710,7 @@
     <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, ele sairia do ciclo a partir desse dia.</p>
   </template>
 
-  <template data-roteiro="extra-na-escala" data-titulo="Editar a extra pela Escala" data-area="admin" data-grupo="Escala" data-pagina="escalas" data-so-computador data-cenario="extra-lancado">
+  <template data-roteiro="extra-na-escala" data-titulo="Editar a extra pela Escala" data-area="admin" data-grupo="Escala" data-pagina="escalas" data-cenario="extra-lancado">
     <p data-trecho="abrir-escala"></p>
     <p data-trecho="aba-mes"></p>
     <p data-alvo=".escala-mes-celula" data-treino-alvo=".escala-mes-celula:has(use[href$='icone-extrajornada'])" data-avanca="clique" data-pular-se=".escala-mes-celula--selecionada">Clique num pelotão de um dia.<span data-so-treino>Clique no pelotão aceso: ele tem extra.</span></p>
@@ -2208,12 +2333,13 @@
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, as alterações aprovadas já valeriam na ficha, e o militar receberia o aviso.</p>
   </template>
 
-  <!-- ===== HISTÓRICO (historico.html). Só no computador; os dados reais ===== -->
+  <!-- ===== HISTÓRICO (historico.html). Os dados reais. No celular, o Histórico mora no Mais ===== -->
   <template data-roteiro-trecho="abrir-historico">
+    <p data-pagina="qualquer" data-alvo=".barra-celular-mais" data-so-celular data-avanca="clique" data-pular-se=".conteudo #arvore-historico, .barra-celular-mais[aria-expanded='true']">Abra o <strong>Mais</strong>.</p>
     <p data-pagina="qualquer" data-alvo=".sidebar .menu-item[data-pagina='historico']" data-avanca="clique" data-pular-se=".conteudo #arvore-historico">Abra o <strong>Histórico</strong> no menu.</p>
   </template>
 
-  <template data-roteiro="procurar-alteracao" data-titulo="Procurar uma alteração" data-area="admin" data-grupo="Histórico" data-pagina="historico" data-so-computador>
+  <template data-roteiro="procurar-alteracao" data-titulo="Procurar uma alteração" data-area="admin" data-grupo="Histórico" data-pagina="historico">
     <p data-trecho="abrir-historico"></p>
     <p data-alvo="#historico-periodo" data-avanca="proximo" data-livre>Escolha o período.<span data-so-treino>Aqui você escolhe o período.</span></p>
     <p data-alvo="#historico-filtros" data-avanca="proximo" data-livre>Em <strong>Filtros</strong>, escolha o tipo e quem fez.<span data-so-treino>Em <strong>Filtros</strong>, você escolhe o tipo e quem fez.</span></p>
@@ -2221,24 +2347,27 @@
     <p data-fim>Pronto.</p>
   </template>
 
-  <!-- ===== AJUSTES (ajustes.html). Só no computador; os dados reais (o Salvar e o Confirmar ficam com o guia) ===== -->
+  <!-- ===== AJUSTES (ajustes.html). Os dados reais (o Salvar e o Confirmar ficam com o guia). No celular, os Ajustes moram no
+       Mais, e os blocos da Distribuição, no menu da barra ===== -->
   <template data-roteiro-trecho="abrir-ajustes">
+    <p data-pagina="qualquer" data-alvo=".barra-celular-mais" data-so-celular data-avanca="clique" data-pular-se=".conteudo #ajustes-abas, .barra-celular-mais[aria-expanded='true']">Abra o <strong>Mais</strong>.</p>
     <p data-pagina="qualquer" data-alvo=".sidebar .menu-item[data-pagina='ajustes']" data-avanca="clique" data-pular-se=".conteudo #ajustes-abas">Abra os <strong>Ajustes</strong> no menu.</p>
   </template>
 
-  <template data-roteiro="conferir-distribuicao" data-nas-abas="distribuicao" data-titulo="Conferir a distribuição de uma unidade" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
+  <template data-roteiro="conferir-distribuicao" data-nas-abas="distribuicao" data-titulo="Conferir a distribuição de uma unidade" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes">
     <p data-trecho="abrir-ajustes"></p>
     <p data-alvo="#ajustes-abas [data-aba='distribuicao']" data-avanca="clique" data-pular-se="#ajustes-abas [data-aba='distribuicao'].aba--ativa">Abra a aba <strong>Distribuição</strong>.</p>
-    <p data-alvo="#nova-distribuicao-unidades" data-avanca="proximo" data-livre>Escolha a unidade na barra.<span data-so-treino>A unidade é escolhida na barra.</span></p>
-    <p data-alvo="#nova-distribuicao-blocos" data-avanca="proximo">À esquerda ficam os blocos. O sinal ao lado de cada um diz se ele está pronto ou se falta algo.</p>
+    <p data-alvo="#nova-distribuicao-unidades, #nova-distribuicao-unidades + .seletor-menu" data-avanca="proximo" data-livre>Escolha a unidade na barra.<span data-so-treino>A unidade é escolhida na barra.</span></p>
+    <p data-alvo="#nova-distribuicao-blocos" data-so-computador data-avanca="proximo">À esquerda ficam os blocos. O sinal ao lado de cada um diz se ele está pronto ou se falta algo.</p>
+    <p data-alvo=".nova-distribuicao-blocos-menu > .seletor" data-so-celular data-avanca="clique" data-pular-se=".nova-distribuicao-blocos-menu.dropdown--aberto">Abra o menu dos blocos. O sinal ao lado de cada um diz se ele está pronto ou se falta algo.</p>
     <p data-alvo=".nova-distribuicao-bloco[data-bloco='8']" data-avanca="aparece" data-condicao="#nova-distribuicao-corpo .nova-distribuicao-conferir-modo" data-livre>Abra o <strong>Conferir</strong>. A <strong>Tabela</strong> mostra a ordem das funções; o <strong>Simular a equipe</strong> mostra como fica com cada número de militares.</p>
     <p data-fim>Pronto.</p>
   </template>
 
-  <template data-roteiro="mudar-ritmo" data-nas-abas="distribuicao" data-titulo="Mudar o ritmo da escala" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
+  <template data-roteiro="mudar-ritmo" data-nas-abas="distribuicao" data-titulo="Mudar o ritmo da escala" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes">
     <p data-trecho="abrir-ajustes"></p>
     <p data-alvo="#ajustes-abas [data-aba='distribuicao']" data-avanca="clique" data-pular-se="#ajustes-abas [data-aba='distribuicao'].aba--ativa">Abra a aba <strong>Distribuição</strong>.</p>
-    <p data-alvo="#nova-distribuicao-unidades" data-avanca="proximo" data-livre>Escolha a unidade na barra.<span data-so-treino>A unidade é escolhida na barra.</span></p>
+    <p data-alvo="#nova-distribuicao-unidades, #nova-distribuicao-unidades + .seletor-menu" data-avanca="proximo" data-livre>Escolha a unidade na barra.<span data-so-treino>A unidade é escolhida na barra.</span></p>
     <p data-so-ajuda data-alvo="#nova-distribuicao-corpo .nova-distribuicao-cartao" data-um data-avanca="aparece" data-condicao="#nova-distribuicao-salvar" data-livre>No <strong>Ritmo</strong>, abra o cartão e escolha <strong>24/48</strong>, <strong>24/72</strong> ou <strong>12/36</strong>.</p>
     <p data-so-treino data-alvo="#nova-distribuicao-corpo .nova-distribuicao-cartao-cabecalho[aria-expanded='false']" data-um data-pular-se="#nova-distribuicao-corpo .nova-distribuicao-cartao-cabecalho[aria-expanded='true']" data-avanca="clique">No <strong>Ritmo</strong>, abra o cartão aceso.</p>
     <p data-so-treino data-alvo="#nova-distribuicao-corpo label:has(input[type='radio']:not(:checked):not(:disabled))" data-condicao="#nova-distribuicao-salvar" data-avanca="aparece">Escolha a opção acesa. O ritmo pode ser <strong>24/48</strong>, <strong>24/72</strong> ou <strong>12/36</strong>.</p>
@@ -2248,10 +2377,11 @@
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, o ritmo novo valeria a partir da data.</p>
   </template>
 
-  <template data-roteiro="adicionar-posto" data-nas-abas="distribuicao" data-titulo="Adicionar um posto" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
+  <template data-roteiro="adicionar-posto" data-nas-abas="distribuicao" data-titulo="Adicionar um posto" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes">
     <p data-trecho="abrir-ajustes"></p>
     <p data-alvo="#ajustes-abas [data-aba='distribuicao']" data-avanca="clique" data-pular-se="#ajustes-abas [data-aba='distribuicao'].aba--ativa">Abra a aba <strong>Distribuição</strong>.</p>
-    <p data-alvo="#nova-distribuicao-unidades" data-avanca="proximo" data-livre>Escolha a unidade na barra.<span data-so-treino>A unidade é escolhida na barra.</span></p>
+    <p data-alvo="#nova-distribuicao-unidades, #nova-distribuicao-unidades + .seletor-menu" data-avanca="proximo" data-livre>Escolha a unidade na barra.<span data-so-treino>A unidade é escolhida na barra.</span></p>
+    <p data-alvo=".nova-distribuicao-blocos-menu > .seletor" data-so-celular data-avanca="clique" data-pular-se=".nova-distribuicao-bloco[data-bloco='0'].lista-item--ativo, .nova-distribuicao-blocos-menu.dropdown--aberto">Abra o menu dos blocos.</p>
     <p data-alvo=".nova-distribuicao-bloco[data-bloco='0']" data-avanca="clique" data-pular-se=".nova-distribuicao-bloco[data-bloco='0'].lista-item--ativo">Abra o bloco <strong>Postos</strong>.</p>
     <p data-so-ajuda data-alvo="#nova-distribuicao-corpo" data-avanca="aparece" data-condicao="#nova-distribuicao-salvar" data-livre>Em <strong>Instalações</strong>, use o <strong>Nova instalação</strong> e escolha o tipo. Em <strong>Viaturas</strong>, use o <strong>Nova viatura</strong> e preencha o prefixo e a CNH.</p>
     <p data-so-treino data-alvo="#nova-distribuicao-corpo .nova-distribuicao-cartao-cabecalho[aria-expanded='false']" data-um data-pular-se="#nova-distribuicao-corpo .nova-distribuicao-cartao-cabecalho[aria-expanded='true']" data-avanca="clique">Em <strong>Instalações</strong>, abra o cartão aceso.</p>
@@ -2263,10 +2393,11 @@
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, o posto entraria na escala a partir da data.</p>
   </template>
 
-  <template data-roteiro="mudar-efetivo" data-nas-abas="distribuicao" data-titulo="Mudar o efetivo de um posto" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
+  <template data-roteiro="mudar-efetivo" data-nas-abas="distribuicao" data-titulo="Mudar o efetivo de um posto" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes">
     <p data-trecho="abrir-ajustes"></p>
     <p data-alvo="#ajustes-abas [data-aba='distribuicao']" data-avanca="clique" data-pular-se="#ajustes-abas [data-aba='distribuicao'].aba--ativa">Abra a aba <strong>Distribuição</strong>.</p>
-    <p data-alvo="#nova-distribuicao-unidades" data-avanca="proximo" data-livre>Escolha a unidade na barra.<span data-so-treino>A unidade é escolhida na barra.</span></p>
+    <p data-alvo="#nova-distribuicao-unidades, #nova-distribuicao-unidades + .seletor-menu" data-avanca="proximo" data-livre>Escolha a unidade na barra.<span data-so-treino>A unidade é escolhida na barra.</span></p>
+    <p data-alvo=".nova-distribuicao-blocos-menu > .seletor" data-so-celular data-avanca="clique" data-pular-se=".nova-distribuicao-bloco[data-bloco='1'].lista-item--ativo, .nova-distribuicao-blocos-menu.dropdown--aberto">Abra o menu dos blocos.</p>
     <p data-so-ajuda data-alvo=".nova-distribuicao-bloco[data-bloco='1']" data-avanca="clique" data-pular-se=".nova-distribuicao-bloco[data-bloco='1'].lista-item--ativo">Abra o bloco <strong>Efetivo</strong> e o cartão do posto.</p>
     <p data-so-treino data-alvo=".nova-distribuicao-bloco[data-bloco='1']" data-pular-se=".nova-distribuicao-bloco[data-bloco='1'].lista-item--ativo" data-avanca="clique">Abra o bloco <strong>Efetivo</strong>.</p>
     <p data-so-treino data-alvo="#nova-distribuicao-corpo .nova-distribuicao-cartao-cabecalho[aria-expanded='false']" data-um data-pular-se="#nova-distribuicao-corpo .nova-distribuicao-cartao-cabecalho[aria-expanded='true']" data-avanca="clique">Abra o cartão aceso.</p>
@@ -2279,7 +2410,7 @@
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, o efetivo novo valeria a partir da data.</p>
   </template>
 
-  <template data-roteiro="horario-expediente" data-nas-abas="horario" data-titulo="Mudar o horário de expediente" data-area="admin" data-papel="companhia" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
+  <template data-roteiro="horario-expediente" data-nas-abas="horario" data-titulo="Mudar o horário de expediente" data-area="admin" data-papel="companhia" data-grupo="Ajustes" data-pagina="ajustes">
     <p data-trecho="abrir-ajustes"></p>
     <p data-alvo="#ajustes-abas [data-aba='horario']" data-avanca="clique" data-pular-se="#ajustes-abas [data-aba='horario'].aba--ativa">Abra a aba <strong>Horário de expediente</strong>.</p>
     <p data-alvo="#horario-semana" data-avanca="aparece" data-condicao="#horario-salvar" data-livre data-treino-alvo="#horario-semana .ajustes-horario-tipo .aba:not(.aba--ativa)">Em cada dia, escolha <strong>Trabalha</strong> ou <strong>Folga</strong>, e o horário.<span data-so-treino>Escolha a opção acesa. Em cada dia, você escolhe <strong>Trabalha</strong> ou <strong>Folga</strong>, e o horário.</span></p>
@@ -2288,7 +2419,7 @@
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, o horário valeria na hora, para os administrativos da companhia e dos pelotões.</p>
   </template>
 
-  <template data-roteiro="marcar-feriado" data-nas-abas="feriados" data-titulo="Marcar um feriado" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
+  <template data-roteiro="marcar-feriado" data-nas-abas="feriados" data-titulo="Marcar um feriado" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes">
     <p data-trecho="abrir-ajustes"></p>
     <p data-alvo="#ajustes-abas [data-aba='feriados']" data-avanca="clique" data-pular-se="#ajustes-abas [data-aba='feriados'].aba--ativa">Abra a aba <strong>Feriados</strong>.</p>
     <p data-alvo="#feriados-barra" data-avanca="proximo" data-livre>Escolha o mês e a unidade na barra.<span data-so-treino>O mês e a unidade são escolhidos na barra.</span></p>
@@ -2373,6 +2504,7 @@
     <p data-alvo=".treino-bloco .bloco-cabecalho" data-avanca="proximo" data-livre>Cada bloco é uma tela do sistema. Abra um para ver os treinos dele.</p>
     <p data-alvo="#treino-continuar" data-opcional data-avanca="proximo"><strong>Continuar os treinos</strong> começa o primeiro que você ainda não fez.</p>
     <p data-alvo="#treino-busca" data-avanca="proximo" data-livre>A busca acha um treino pelo que você quer fazer.</p>
+    <p data-alvo="#treino-livre" data-avanca="proximo">No <strong>Treino livre</strong>, você mexe à vontade em qualquer tela, sem passo a passo. Nada é salvo.</p>
     <p data-fim>Pronto. No treino, nada do que você fizer é salvo.</p>
   </template>
 
@@ -2589,6 +2721,18 @@
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar" /></svg>
       </button>
     </section>
+  </template>
+
+  <!-- A NOTA das cotas que faltam distribuir (geral-cotas-aviso.js): na Escala e na Extrajornada. O X só aparece na Escala -->
+  <template id="tpl-cotas-aviso">
+    <div class="nota nota--erro nota--com-acao" role="status">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta" /></svg>
+      <span class="nota-texto"><span class="nota-titulo"></span> <span class="cotas-aviso-texto"></span></span>
+      <span class="espacador-flex"></span>
+      <button type="button" class="botao botao--icone botao--pequeno cotas-aviso-fechar oculto" aria-label="Ocultar" data-dica="Ocultar">
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-fechar" /></svg>
+      </button>
+    </div>
   </template>
 
   <!-- a linha do militar: a marca (o ícone do assunto), o texto, o selo do prazo, o Ver todos e os botões do assunto -->
@@ -2836,10 +2980,23 @@
     <div class="nota nota--alerta" role="status"><span class="nota-texto"></span></div>
   </template>
 
-  <!-- carregando de container (painel/página): o círculo, nunca os pontinhos -->
+  <!-- a forma das caixas de um painel, enquanto os dados chegam (o dia, a ficha, a folga, a troca) -->
   <template id="tpl-painel-carregando">
-    <div class="painel-estado painel-estado--carregando">
-      <div class="giratorio" aria-label="Carregando" role="status"></div>
+    <div class="esqueleto-painel esqueleto-conjunto" role="status" aria-label="Carregando">
+      <div class="esqueleto-caixa">
+        <span class="esqueleto-caixa-topo"><span class="esqueleto esqueleto-caixa-titulo"></span></span>
+        <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+      </div>
+      <div class="esqueleto-caixa">
+        <span class="esqueleto-caixa-topo"><span class="esqueleto esqueleto-caixa-titulo"></span></span>
+        <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+        <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+        <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+      </div>
+      <div class="esqueleto-caixa">
+        <span class="esqueleto-caixa-topo"><span class="esqueleto esqueleto-caixa-titulo"></span></span>
+        <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+      </div>
     </div>
   </template>
 
@@ -2873,6 +3030,20 @@
     <div class="escala-mes-grafico">
       <canvas class="escala-mes-grafico-canvas" aria-hidden="true"></canvas>
     </div>
+  </template>
+
+  <!-- a forma de uma célula da grade, enquanto os dados chegam (escalas-esqueleto.js; na Escala e na Extrajornada) -->
+  <template id="tpl-esqueleto-miolo">
+    <div class="esqueleto-miolo esqueleto-conjunto" aria-hidden="true"><span class="esqueleto esqueleto-grafico"></span></div>
+  </template>
+
+  <template id="tpl-esqueleto-pessoa">
+    <span class="esqueleto-pessoa"><span class="esqueleto esqueleto-bola"></span><span class="esqueleto esqueleto-grad"></span><span class="esqueleto esqueleto-nome"></span><span class="esqueleto esqueleto-hora"></span></span>
+  </template>
+
+  <!-- a barra se enchendo no lugar do gráfico, no dia que está sendo refeito (escalas-dia-na-grade.js) -->
+  <template id="tpl-escala-mes-celula-viva">
+    <span class="cobertura-viva escala-mes-celula-viva" aria-hidden="true"></span>
   </template>
 
   <template id="tpl-escala-mes-origem">
@@ -4687,12 +4858,6 @@
   <!-- uma linha do detalhe: "Cb. Campos está de Rádio Operador, faltou soldado ou mais moderno" -->
   <template id="tpl-escala-distribuicao-aviso-detalhe">
     <div class="escala-distribuicao-aviso-detalhe"><span></span></div>
-  </template>
-
-  <template id="tpl-escala-distribuicao-carregando">
-    <div class="escala-distribuicao-carregando" role="status" aria-label="Carregando">
-      <div class="giratorio" aria-hidden="true"></div>
-    </div>
   </template>
 
   <template id="tpl-escala-distribuicao-grupo">
