@@ -21,6 +21,7 @@
    (no template): fora do celular. data-nas-abas (no template): as abas
    da tela em que o roteiro acontece, a primeira é para onde ele leva;
    sem ele, o roteiro vale em qualquer aba (o ? usa isso, geral-guia-ajuda.js).
+   data-so-ajuda (no template): só no ?, fora da lista do Treinamento.
    A <section data-segurar> é o caminho
    cuja entrada já grava: no treino, o clique nela fica com o guia e o
    roteiro vai ao fim.
@@ -52,8 +53,8 @@
    treino). O <p data-so-treino> só vale no treino, e o <p data-so-ajuda>,
    só no ?. Na seção: data-treino-entrada (a entrada do caminho; acende
    a primeira que achar). Fora do treino, nada disso vale.
-   API: lista() (os roteiros que a pessoa pode fazer), naPagina(p)
-   (os que passam pela tela), grupos(roteiros) (a lista como a pessoa
+   API: lista() (os roteiros que a pessoa pode fazer, os da lista do
+   Treinamento), naPagina(p) (os que passam pela tela, no ?), grupos(roteiros) (a lista como a pessoa
    vê, no Treinamento e no ?), ordem() (os ids nessa ordem, um a um,
    com as opções dos conjuntos), idsDoGrupo(g) (os ids de um bloco,
    nessa ordem: a posição é o número do treino, que recomeça em cada
@@ -171,12 +172,16 @@
     return null;
   }
 
-  function lista() {
+  function osQuePode() {
     return Array.prototype.filter.call(document.querySelectorAll('template[data-roteiro]'), pode);
   }
 
+  function lista() {
+    return osQuePode().filter(function (t) { return !t.hasAttribute('data-so-ajuda'); });
+  }
+
   function naPagina(pagina) {
-    return lista().filter(function (t) { return !!passos(t.getAttribute('data-roteiro'), pagina); });
+    return osQuePode().filter(function (t) { return !!passos(t.getAttribute('data-roteiro'), pagina); });
   }
 
   /* a lista em grupos: primeiro a área de todos, depois a do administrador; em cada área, um grupo por tela

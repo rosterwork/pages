@@ -48,13 +48,14 @@
     });
   }
 
-  /* o ícone da tela no título do bloco: o do item do menu da tela dos treinos do grupo */
+  /* o ícone da tela no título do bloco: o do item do menu da tela dos treinos do grupo, ou o do cabeçalho, para a tela que abre
+     por lá (Meu perfil e Avisos: data-tela) */
   function iconeDaTela(g) {
     var paginas = [];
     g.itens.forEach(function (it) {
       (it.opcoes || [it]).forEach(function (o) { if (o.pagina && o.pagina !== 'qualquer') paginas.push(o.pagina); });
     });
-    var uso = paginas.length ? document.querySelector('.sidebar .menu-item[data-pagina="' + paginas[0] + '"] .icone use') : null;
+    var uso = paginas.length ? document.querySelector('.sidebar .menu-item[data-pagina="' + paginas[0] + '"] .icone use, .cabecalho [data-tela="' + paginas[0] + '"] .icone use') : null;
     return uso ? uso.getAttribute('href') : null;
   }
 

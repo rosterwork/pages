@@ -90,6 +90,8 @@
   function comecar(id) {
     ultimoEscolhido = id;
     mostrar(true);
+    /* no celular, o topo pode ter saído com a rolagem da lista: o treino pode começar pelo menu do canto ou pelo sino */
+    if (RW.recolherTopo) RW.recolherTopo.mostrar();
     var t = RW.guiaRoteiros ? RW.guiaRoteiros.roteiro(id) : null;
     preencherBarra(id, t);
     if (RW.treinoCenarios) RW.treinoCenarios.ativar(t ? t.getAttribute('data-cenario') : null, id);

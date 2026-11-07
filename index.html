@@ -153,7 +153,7 @@
       </button>
 
       <div class="dropdown" id="dropdown-avisos">
-        <button type="button" class="cabecalho-btn cabecalho-btn--avisos" aria-label="Avisos" data-dica="Avisos">
+        <button type="button" class="cabecalho-btn cabecalho-btn--avisos" data-tela="avisos" aria-label="Avisos" data-dica="Avisos">
           <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-sino" /></svg>
           <span class="cabecalho-badge oculto" aria-hidden="true"></span>
         </button>
@@ -176,7 +176,7 @@
           <svg class="icone cabecalho-usuario-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo" /></svg>
         </button>
         <div class="dropdown-menu">
-          <button class="dropdown-item" id="btn-meu-perfil">
+          <button class="dropdown-item" id="btn-meu-perfil" data-tela="perfil">
             <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-perfil" /></svg>
             <span>Meu perfil</span>
           </button>
@@ -2297,6 +2297,83 @@
     <p data-alvo="#feriados-salvar" data-avanca="clique" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé.</p>
     <p data-fim>Pronto. O dia fica marcado e encurta o expediente.</p>
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, o dia ficaria marcado e encurtaria o expediente.</p>
+  </template>
+
+  <!-- ===== MEU PERFIL (perfil.html). Abre pelo menu do canto, em qualquer tela; os dados reais (o Salvar fica com o
+       guia; a senha é só de olhar, para ninguém escrever a senha verdadeira no treino). No celular, o canto mostra só as
+       iniciais ===== -->
+  <template data-roteiro-trecho="abrir-perfil">
+    <p data-pagina="qualquer" data-alvo="#dropdown-usuario > .cabecalho-usuario" data-so-computador data-avanca="clique" data-pular-se=".conteudo #perfil-abas, #dropdown-usuario.dropdown--aberto">Abra o menu com o seu nome.</p>
+    <p data-pagina="qualquer" data-alvo="#dropdown-usuario > .cabecalho-usuario" data-so-celular data-avanca="clique" data-pular-se=".conteudo #perfil-abas, #dropdown-usuario.dropdown--aberto">Abra o menu com as suas iniciais.</p>
+    <p data-pagina="qualquer" data-alvo="#btn-meu-perfil" data-avanca="clique" data-pular-se=".conteudo #perfil-abas">Escolha <strong>Meu perfil</strong>.</p>
+  </template>
+
+  <template data-roteiro="mudar-dados" data-nas-abas="dados" data-titulo="Mudar os seus dados" data-grupo="Meu perfil" data-pagina="perfil">
+    <p data-trecho="abrir-perfil"></p>
+    <p data-alvo="#perfil-abas [data-aba='dados']" data-avanca="clique" data-pular-se="#perfil-abas [data-aba='dados'].aba--ativa">Abra a aba <strong>Meus dados</strong>.</p>
+    <p data-alvo="[data-aba-painel='dados'] > .perfil-nota:not(.perfil-nota--pendente)" data-avanca="proximo">E-mail e celular são salvos na hora. O resto passa pela aprovação do administrador.</p>
+    <p data-so-ajuda data-alvo="[data-aba-painel='dados']" data-avanca="aparece" data-condicao="#perfil-rodape:not(.oculto)" data-livre>Mude o que precisa.</p>
+    <p data-so-treino data-alvo="#perfil-f-celular" data-anel="campo" data-avanca="aparece" data-condicao="#perfil-rodape:not(.oculto)" data-escrever>Mude o celular no campo aceso.</p>
+    <p data-alvo="[data-aba-painel='dados'], #perfil-rodape .rodape-acoes" data-treino-alvo="#perfil-enviar" data-clique="#perfil-enviar" data-avanca="some" data-condicao="#perfil-rodape:not(.oculto)" data-livre data-segurar>Grave pelo <strong>Salvar</strong>.</p>
+    <p data-fim>Pronto. O e-mail e o celular já valem; o resto espera a aprovação e aparece em <strong>Minhas solicitações</strong>.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, o celular já valeria, e o resto esperaria a aprovação em <strong>Minhas solicitações</strong>.</p>
+  </template>
+
+  <template data-roteiro="mudar-tema" data-nas-abas="perfil" data-titulo="Mudar o tema e as notificações" data-grupo="Meu perfil" data-pagina="perfil">
+    <p data-trecho="abrir-perfil"></p>
+    <p data-alvo="#perfil-abas [data-aba='perfil']" data-avanca="clique" data-pular-se="#perfil-abas [data-aba='perfil'].aba--ativa">Abra a aba <strong>Perfil</strong>.</p>
+    <p data-alvo="#perfil-tema" data-anel="campo" data-avanca="proximo" data-livre>Em <strong>Tema</strong>, você escolhe Automático, Claro ou Escuro.</p>
+    <p data-alvo="#perfil-notificacoes" data-anel="campo" data-avanca="proximo" data-livre>Em <strong>Notificações neste aparelho</strong>, você liga ou desliga os avisos com o app fechado.</p>
+    <p data-fim>Pronto. Essas escolhas valem na hora.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi mudado.</p>
+  </template>
+
+  <template data-roteiro="trocar-senha" data-nas-abas="seguranca" data-titulo="Trocar a sua senha" data-grupo="Meu perfil" data-pagina="perfil">
+    <p data-trecho="abrir-perfil"></p>
+    <p data-alvo="#perfil-abas [data-aba='seguranca']" data-avanca="clique" data-pular-se="#perfil-abas [data-aba='seguranca'].aba--ativa">Abra a aba <strong>Segurança</strong>.</p>
+    <p data-alvo="#senha-atual, #senha-nova, #senha-confirma" data-anel="campo" data-avanca="proximo" data-livre>Aqui vão a senha atual e a nova, duas vezes.<span data-so-treino>Aqui vão a senha atual e a nova, duas vezes. No treino, não escreva a sua senha.</span></p>
+    <p data-alvo="#senha-salvar" data-avanca="proximo" data-livre><strong>Trocar senha</strong> grava a nova.</p>
+    <p data-alvo="#sair-todos" data-avanca="proximo"><strong>Sair de todos os aparelhos</strong> encerra a sua sessão em todos, até no app do celular.</p>
+    <p data-fim>Pronto. No próximo acesso, entre com a senha nova.</p>
+  </template>
+
+  <!-- ===== AVISOS (avisos.html). Abre pelo sino, em qualquer tela; os dados reais (o Salvar fica com o guia). O menu do
+       sino fecha em qualquer clique fora dele, até no Próximo do balão: o que se explica dele fica no passo que usa o Ver todos ===== -->
+  <template data-roteiro-trecho="abrir-sino">
+    <p data-pagina="qualquer" data-alvo="#dropdown-avisos > .cabecalho-btn" data-avanca="clique" data-pular-se=".conteudo #avisos-abas, #dropdown-avisos.dropdown--aberto">Abra o <strong>sino</strong>, no alto da tela.</p>
+  </template>
+
+  <template data-roteiro="ler-avisos" data-nas-abas="notificacoes comunicados" data-titulo="Ler os seus avisos" data-grupo="Avisos" data-pagina="avisos">
+    <p data-trecho="abrir-sino"></p>
+    <p data-pagina="qualquer" data-alvo="#dropdown-avisos > .cabecalho-btn" data-clique="#avisos-ver-todos" data-avanca="clique" data-pular-se=".conteudo #avisos-abas">O número conta o que você ainda não leu. Clicar num aviso leva à tela do assunto. Use o <strong>Ver todos</strong>.</p>
+    <p data-alvo="#avisos-abas [data-aba='notificacoes']" data-avanca="clique" data-pular-se="#avisos-abas [data-aba='notificacoes'].aba--ativa">Abra a aba <strong>Notificações</strong>.</p>
+    <p data-alvo="[data-aba-painel='notificacoes'] .avisos-secao" data-avanca="proximo">Em <strong>Notificações</strong> fica o histórico dos últimos 90 dias.</p>
+    <p data-alvo="#avisos-abas [data-aba='comunicados']" data-avanca="clique">Abra a aba <strong>Comunicados</strong>.</p>
+    <p data-alvo="#avisos-lista" data-avanca="proximo">Aqui ficam os avisos gerais que o administrador publica.</p>
+    <p data-fim>Pronto. O que espera uma resposta sua fica na página <strong>Pendências</strong>.</p>
+  </template>
+
+  <template data-roteiro="publicar-comunicado" data-titulo="Publicar um comunicado" data-area="admin" data-grupo="Avisos" data-pagina="avisos">
+    <p data-trecho="abrir-sino"></p>
+    <p data-pagina="qualquer" data-alvo="#avisos-ver-todos" data-avanca="clique" data-pular-se=".conteudo #avisos-abas">Use o <strong>Ver todos</strong>.</p>
+    <p data-alvo=".acoes-admin-gatilho" data-so-celular data-avanca="clique">Use o <strong>Novo comunicado</strong>. No celular, ele fica no menu <strong>Administração</strong>.</p>
+    <p data-alvo="#btn-novo-aviso-pagina" data-avanca="clique">Use o <strong>Novo comunicado</strong>. No celular, ele fica no menu <strong>Administração</strong>.</p>
+    <p data-so-ajuda data-alvo=".painel-corpo" data-avanca="proximo" data-livre>Escolha para quem: <strong>Unidades</strong>, <strong>Militares</strong> ou <strong>Todos</strong>.</p>
+    <p data-so-treino data-alvo="#aviso-alcance [data-valor='todos']" data-avanca="clique" data-pular-se="#aviso-alcance [data-valor='todos'].aba--ativa">Escolha para quem: aqui, <strong>Todos</strong>. O comunicado também pode ir para <strong>Unidades</strong> ou <strong>Militares</strong>.</p>
+    <p data-so-ajuda data-alvo=".painel-corpo" data-avanca="aparece" data-condicao="#aviso-salvar:not(:disabled)" data-livre>Escreva o título e a mensagem.</p>
+    <p data-so-treino data-alvo="#aviso-titulo" data-anel="campo" data-escrever data-avanca="preenchido">Escreva o título.</p>
+    <p data-so-treino data-alvo="#aviso-mensagem" data-anel="campo" data-escrever data-avanca="preenchido">Escreva a mensagem.</p>
+    <p data-alvo="#painel-rodape #aviso-salvar" data-avanca="some" data-condicao=".painel-lateral--aberto #aviso-titulo" data-segurar>Publique pelo <strong>Salvar</strong>.</p>
+    <p data-fim>Pronto. O comunicado está no mural, e cada um recebe o aviso no sino.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi publicado. No sistema, o comunicado iria para o mural e cada um receberia o aviso no sino.</p>
+  </template>
+
+  <!-- ===== TREINAMENTO (treinamento.html). Só no ? dele, fora da lista: seria um treino sobre os treinos ===== -->
+  <template data-roteiro="usar-treinamento" data-so-ajuda data-titulo="Usar o Treinamento" data-grupo="Treinamento" data-pagina="treinamento">
+    <p data-alvo=".treino-bloco .bloco-cabecalho" data-avanca="proximo" data-livre>Cada bloco é uma tela do sistema. Abra um para ver os treinos dele.</p>
+    <p data-alvo="#treino-continuar" data-opcional data-avanca="proximo"><strong>Continuar os treinos</strong> começa o primeiro que você ainda não fez.</p>
+    <p data-alvo="#treino-busca" data-avanca="proximo" data-livre>A busca acha um treino pelo que você quer fazer.</p>
+    <p data-fim>Pronto. No treino, nada do que você fizer é salvo.</p>
   </template>
 
   <!-- MOLDES: calendário (componente compartilhado) -->
