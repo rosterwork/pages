@@ -14,13 +14,13 @@
     <div class="abas" id="usuarios-abas">
       <button type="button" class="aba aba--ativa" data-aba="efetivo">Efetivo</button>
       <!-- a lista completa do efetivo com os afastamentos do ano de cada um (usuarios-afastamentos.js) -->
-      <button type="button" class="aba" data-aba="ferias">Férias</button>
-      <button type="button" class="aba" data-aba="licencas">Licenças</button>
-      <button type="button" class="aba" data-aba="dispensas">Dispensas</button>
+      <button type="button" class="aba" data-aba="ferias" data-manual="afastamentos">Férias</button>
+      <button type="button" class="aba" data-aba="licencas" data-manual="afastamentos">Licenças</button>
+      <button type="button" class="aba" data-aba="dispensas" data-manual="afastamentos">Dispensas</button>
       <!-- só administrador: a ordem de antiguidade da companhia, por posto -->
-      <button type="button" class="aba oculto" data-aba="antiguidade" id="usuarios-aba-antiguidade">Antiguidade</button>
+      <button type="button" class="aba oculto" data-aba="antiguidade" id="usuarios-aba-antiguidade" data-manual="ajustar-antiguidade">Antiguidade</button>
       <!-- só administrador: quem administra o quê; o papel muda na própria lista -->
-      <button type="button" class="aba oculto" data-aba="administradores" id="usuarios-aba-administradores">Administradores</button>
+      <button type="button" class="aba oculto" data-aba="administradores" id="usuarios-aba-administradores" data-manual="administracao">Administradores</button>
     </div>
   </div>
 

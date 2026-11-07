@@ -18,7 +18,10 @@
    data-alvo-senao vale).
    data-area="admin": só para quem administra (data-papel="companhia":
    só para quem administra a companhia, ou mais); data-so-computador
-   (no template): fora do celular. A <section data-segurar> é o caminho
+   (no template): fora do celular. data-nas-abas (no template): as abas
+   da tela em que o roteiro acontece, a primeira é para onde ele leva;
+   sem ele, o roteiro vale em qualquer aba (o ? usa isso, geral-guia-ajuda.js).
+   A <section data-segurar> é o caminho
    cuja entrada já grava: no treino, o clique nela fica com o guia e o
    roteiro vai ao fim.
    O passo: data-alvo (seletores separados por vírgula; acende todos

@@ -1067,10 +1067,39 @@
     </button>
   </template>
 
+  <!-- a lista do ? na tela com abas: primeiro o que é da aba aberta; depois o resto da tela, com o nome da aba. Em cada
+       parte, o título Administrador só aparece quando há o que é de todos junto -->
+  <template id="tpl-guia-menu-abas">
+    <div class="guia-menu-nesta-aba">
+      <div class="dropdown-titulo guia-menu-titulo">Nesta aba</div>
+      <div class="guia-menu-lista"></div>
+      <span class="guia-menu-area oculto">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-ferramenta"/></svg>
+        Administrador
+      </span>
+      <div class="guia-menu-lista-admin"></div>
+    </div>
+    <div class="guia-menu-em-outras-abas">
+      <div class="dropdown-divisor"></div>
+      <div class="dropdown-titulo guia-menu-titulo">Em outras abas</div>
+      <div class="guia-menu-lista"></div>
+      <span class="guia-menu-area oculto">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-ferramenta"/></svg>
+        Administrador
+      </span>
+      <div class="guia-menu-lista-admin"></div>
+    </div>
+    <div class="dropdown-divisor guia-menu-divisor"></div>
+    <button type="button" class="dropdown-item guia-menu-manual">
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-manual"/></svg>
+      <span>Ler sobre esta tela no manual</span>
+    </button>
+  </template>
+
   <template id="tpl-guia-menu-item">
     <button type="button" class="dropdown-item guia-menu-item">
       <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg>
-      <span class="guia-menu-nome"></span>
+      <span class="guia-menu-texto"><span class="guia-menu-aba oculto"><span class="guia-menu-aba-nome"></span>: </span><span class="guia-menu-nome"></span></span>
     </button>
   </template>
 
@@ -1091,7 +1120,7 @@
     <div class="guia-menu-conjunto">
       <button type="button" class="dropdown-item guia-menu-conjunto-cabecalho" aria-expanded="false">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg>
-        <span class="guia-menu-nome"></span>
+        <span class="guia-menu-texto"><span class="guia-menu-aba oculto"><span class="guia-menu-aba-nome"></span>: </span><span class="guia-menu-nome"></span></span>
         <span class="espacador-flex"></span>
         <svg class="icone guia-menu-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
       </button>
@@ -1601,7 +1630,7 @@
     <p data-pagina="qualquer" data-alvo=".sidebar .menu-item[data-pagina='trocas'], .barra-celular-item[data-pagina='trocas']" data-avanca="clique" data-pular-se=".conteudo #trocas-abas">Abra as <strong>Trocas</strong> no menu.</p>
   </template>
 
-  <template data-roteiro="acompanhar-trocas" data-titulo="Acompanhar as suas trocas" data-grupo="Trocas" data-pagina="trocas" data-cenario="troca-meu-pedido">
+  <template data-roteiro="acompanhar-trocas" data-nas-abas="minhas" data-titulo="Acompanhar as suas trocas" data-grupo="Trocas" data-pagina="trocas" data-cenario="troca-meu-pedido">
     <p data-trecho="abrir-trocas"></p>
     <p data-alvo="#trocas-abas [data-aba='minhas']" data-avanca="clique" data-pular-se="#trocas-abas [data-aba='minhas'].aba--ativa">Abra a aba <strong>Minhas</strong>.</p>
     <p data-alvo="#trocas-minhas-lista" data-avanca="proximo">Aqui ficam as trocas em que você entra: as que você pediu e as que pediram a você. O selo diz em que pé está cada uma.</p>
@@ -1613,7 +1642,7 @@
     <p data-fim>Pronto. Quando o colega aceitar e o administrador aprovar, o selo muda e a troca vale na escala.</p>
   </template>
 
-  <template data-roteiro="responder-troca" data-titulo="Responder a um pedido de troca" data-grupo="Trocas" data-pagina="trocas" data-cenario="troca-para-mim">
+  <template data-roteiro="responder-troca" data-nas-abas="pendencias" data-titulo="Responder a um pedido de troca" data-grupo="Trocas" data-pagina="trocas" data-cenario="troca-para-mim">
     <p data-trecho="abrir-trocas"></p>
     <p data-alvo="#trocas-abas [data-aba='pendencias']" data-avanca="clique" data-pular-se="#trocas-abas [data-aba='pendencias'].aba--ativa">Abra a aba <strong>Pendências</strong>. O número ao lado diz quantas esperam você.</p>
     <p data-alvo="#trocas-pendencias [data-pedido='troca:{exemplo}']" data-alvo-senao="#trocas-pendencias .pedido--linha" data-um data-avanca="clique" data-sem-alvo="Nenhum pedido de troca espera a sua resposta agora.">Abra o pedido do colega.</p>
@@ -1632,7 +1661,7 @@
     <p data-fim-treino>Pronto. No treino, nada foi enviado. No sistema, aceita, a troca seguiria para o administrador aprovar; recusada, o colega receberia o aviso.</p>
   </template>
 
-  <template data-roteiro="mudar-pedido" data-titulo="Mudar ou cancelar o seu pedido" data-grupo="Trocas" data-pagina="trocas" data-cenario="troca-meu-pedido">
+  <template data-roteiro="mudar-pedido" data-nas-abas="minhas" data-titulo="Mudar ou cancelar o seu pedido" data-grupo="Trocas" data-pagina="trocas" data-cenario="troca-meu-pedido">
     <p data-trecho="abrir-trocas"></p>
     <p data-alvo="#trocas-abas [data-aba='minhas']" data-avanca="clique" data-pular-se="#trocas-abas [data-aba='minhas'].aba--ativa">Abra a aba <strong>Minhas</strong>.</p>
     <p data-alvo="#trocas-minhas-lista .troca-item[data-troca='{exemplo}']" data-alvo-senao="#trocas-minhas-lista .troca-item" data-um data-avanca="clique" data-sem-alvo="Você não tem pedido de troca em aberto.">Abra o seu pedido.</p>
@@ -1649,7 +1678,7 @@
     <p data-fim-treino>Pronto. No treino, nada foi mudado. No sistema, mudado, o pedido voltaria ao colega para aceitar de novo; cancelado, sairia das listas.</p>
   </template>
 
-  <template data-roteiro="cobrar-saldo" data-titulo="Cobrar as horas de um saldo" data-grupo="Trocas" data-pagina="trocas" data-cenario="troca-saldo">
+  <template data-roteiro="cobrar-saldo" data-nas-abas="saldos" data-titulo="Cobrar as horas de um saldo" data-grupo="Trocas" data-pagina="trocas" data-cenario="troca-saldo">
     <p data-trecho="abrir-trocas"></p>
     <p data-alvo="#trocas-abas [data-aba='saldos']" data-avanca="clique" data-pular-se="#trocas-abas [data-aba='saldos'].aba--ativa">Abra a aba <strong>Saldos</strong>. Aqui ficam as horas que ficaram devendo entre militares, nas trocas sem devolução.</p>
     <p data-alvo="#trocas-pendentes-lista .troca-pendente" data-um data-avanca="clique" data-sem-alvo="Ninguém deve horas a você agora.">Abra o saldo em que o colega deve a você.</p>
@@ -1673,7 +1702,7 @@
     <p data-fim>Pronto. O arquivo foi baixado.</p>
   </template>
 
-  <template data-roteiro="aprovar-troca" data-titulo="Aprovar ou recusar uma troca" data-area="admin" data-grupo="Trocas" data-pagina="trocas" data-cenario="troca-para-aprovar">
+  <template data-roteiro="aprovar-troca" data-nas-abas="pendencias" data-titulo="Aprovar ou recusar uma troca" data-area="admin" data-grupo="Trocas" data-pagina="trocas" data-cenario="troca-para-aprovar">
     <p data-trecho="abrir-trocas"></p>
     <p data-alvo="#trocas-abas [data-aba='pendencias']" data-avanca="clique" data-pular-se="#trocas-abas [data-aba='pendencias'].aba--ativa">Abra a aba <strong>Pendências</strong>. As trocas para aprovar têm a etiqueta <strong>ADM</strong>.</p>
     <p data-alvo="#trocas-pendencias [data-pedido='troca:{exemplo}']" data-alvo-senao="#trocas-pendencias .pedido--linha" data-um data-avanca="clique" data-sem-alvo="Nenhuma troca espera a sua aprovação agora.">Abra a troca.</p>
@@ -1692,7 +1721,7 @@
     <p data-fim-treino>Pronto. No treino, nada foi aprovado nem recusado. No sistema, aprovada, a troca já valeria na escala; recusada, os militares receberiam o aviso.</p>
   </template>
 
-  <template data-roteiro="cancelar-troca-aprovada" data-titulo="Cancelar uma troca aprovada" data-area="admin" data-grupo="Trocas" data-pagina="trocas" data-cenario="troca-aprovada">
+  <template data-roteiro="cancelar-troca-aprovada" data-nas-abas="todas" data-titulo="Cancelar uma troca aprovada" data-area="admin" data-grupo="Trocas" data-pagina="trocas" data-cenario="troca-aprovada">
     <p data-trecho="abrir-trocas"></p>
     <p data-alvo="#trocas-abas [data-aba='todas']" data-avanca="clique" data-pular-se="#trocas-abas [data-aba='todas'].aba--ativa">Abra a aba <strong>Todas</strong>. As trocas ficam no bloco da unidade de quem pediu.</p>
     <p data-alvo="#trocas-arvore .troca-item[data-troca='{exemplo}']" data-alvo-senao="#trocas-arvore .troca-item" data-um data-avanca="clique" data-sem-alvo="Nenhuma troca aprovada nas unidades da tela.">Abra a troca.</p>
@@ -1721,15 +1750,17 @@
     <p data-fim-treino>Pronto. No treino, nada foi enviado. No sistema, o pedido iria para o administrador aprovar e apareceria em Meus pedidos, nas Minhas folgas.</p>
   </template>
 
-  <template data-roteiro="saldo-folgas" data-titulo="Ver o seu saldo de horas" data-grupo="Folgas" data-pagina="folgas">
+  <template data-roteiro="saldo-folgas" data-nas-abas="minhas" data-titulo="Ver o seu saldo de horas" data-grupo="Folgas" data-pagina="folgas">
     <p data-trecho="abrir-folgas"></p>
+    <p data-alvo="#folgas-abas [data-aba='minhas']" data-avanca="clique" data-pular-se="#folgas-abas [data-aba='minhas'].aba--ativa">Abra a aba <strong>Minhas folgas</strong>.</p>
     <p data-alvo="#folgas-minhas .folga-minhas-saldo" data-avanca="proximo">Em <strong>Minhas folgas</strong>, o <strong>Seu saldo</strong> mostra as horas a seu favor (+) ou que você deve (−).</p>
     <p data-alvo="#folgas-minhas [data-lista='extrato']" data-avanca="proximo">O <strong>Extrato</strong> mostra o que mudou o saldo: as folgas, os ajustes e os serviços a mais.</p>
     <p data-fim>Pronto. O saldo sobe quando o administrador conta um serviço a mais ou faz um ajuste, e desce quando você tira folga.</p>
   </template>
 
-  <template data-roteiro="cancelar-pedido-folga" data-titulo="Cancelar um pedido de folga" data-grupo="Folgas" data-pagina="folgas" data-cenario="folga-meu-pedido">
+  <template data-roteiro="cancelar-pedido-folga" data-nas-abas="minhas" data-titulo="Cancelar um pedido de folga" data-grupo="Folgas" data-pagina="folgas" data-cenario="folga-meu-pedido">
     <p data-trecho="abrir-folgas"></p>
+    <p data-alvo="#folgas-abas [data-aba='minhas']" data-avanca="clique" data-pular-se="#folgas-abas [data-aba='minhas'].aba--ativa">Abra a aba <strong>Minhas folgas</strong>.</p>
     <p data-alvo="#folgas-minhas [data-secao='pedidos']" data-avanca="proximo" data-sem-alvo="Você não tem pedido de folga esperando a aprovação.">Em <strong>Meus pedidos</strong> está o pedido que ainda espera a aprovação.</p>
     <p data-alvo="#folgas-minhas [data-lista='pedidos'] .folga-cancelar" data-um data-avanca="clique">Use o botão de cancelar do pedido.</p>
     <p data-alvo="#veu-aviso .modal" data-clique="#veu-aviso .aviso-confirmar" data-avanca="clique" data-segurar>Confirme no aviso.</p>
@@ -1737,7 +1768,7 @@
     <p data-fim-treino>Pronto. No treino, nada foi cancelado. No sistema, o pedido sairia. Depois de aprovada, só o administrador cancela a folga.</p>
   </template>
 
-  <template data-roteiro="saldos-equipe" data-titulo="Ver os saldos da equipe" data-grupo="Folgas" data-pagina="folgas">
+  <template data-roteiro="saldos-equipe" data-nas-abas="equipe" data-titulo="Ver os saldos da equipe" data-grupo="Folgas" data-pagina="folgas">
     <p data-trecho="abrir-folgas"></p>
     <p data-alvo="#folgas-abas [data-aba='equipe']" data-avanca="clique" data-pular-se="#folgas-abas [data-aba='equipe'].aba--ativa">Abra a aba <strong>Equipe</strong>.</p>
     <p data-alvo="#arvore-folgas, #busca-folgas" data-avanca="proximo" data-livre>Em <strong>Saldos</strong>, cada unidade mostra o saldo de cada militar. A busca acha um militar.</p>
@@ -1745,7 +1776,7 @@
     <p data-fim>Pronto. Clicar num militar abre o extrato dele.</p>
   </template>
 
-  <template data-roteiro="aprovar-folga" data-titulo="Aprovar ou recusar uma folga" data-area="admin" data-grupo="Folgas" data-pagina="folgas" data-cenario="folga-para-aprovar">
+  <template data-roteiro="aprovar-folga" data-nas-abas="pendencias" data-titulo="Aprovar ou recusar uma folga" data-area="admin" data-grupo="Folgas" data-pagina="folgas" data-cenario="folga-para-aprovar">
     <p data-trecho="abrir-folgas"></p>
     <p data-alvo="#folgas-abas [data-aba='pendencias']" data-avanca="clique" data-pular-se="#folgas-abas [data-aba='pendencias'].aba--ativa">Abra a aba <strong>Pendências</strong>. Cada pedido tem a etiqueta <strong>ADM</strong>.</p>
     <p data-alvo="#folgas-pendencias [data-pedido='folga:{exemplo}']" data-alvo-senao="#folgas-pendencias .pedido--linha" data-um data-avanca="clique" data-sem-alvo="Nenhum pedido de folga espera a sua aprovação agora.">Abra o pedido.</p>
@@ -1777,7 +1808,7 @@
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, a folga já valeria na escala.</p>
   </template>
 
-  <template data-roteiro="ajustar-saldo" data-titulo="Ajustar o saldo de um militar" data-area="admin" data-grupo="Folgas" data-pagina="folgas">
+  <template data-roteiro="ajustar-saldo" data-nas-abas="equipe" data-titulo="Ajustar o saldo de um militar" data-area="admin" data-grupo="Folgas" data-pagina="folgas">
     <p data-trecho="abrir-folgas"></p>
     <p data-alvo="#folgas-abas [data-aba='equipe']" data-avanca="clique" data-pular-se="#folgas-abas [data-aba='equipe'].aba--ativa">Abra a aba <strong>Equipe</strong> e clique no militar.</p>
     <p data-alvo="#arvore-folgas .folga-saldo-item" data-um data-avanca="clique">Abra a aba <strong>Equipe</strong> e clique no militar.</p>
@@ -1801,7 +1832,7 @@
     <p data-alvo="#nova-extra-abas [data-aba='organizar']" data-avanca="clique" data-pular-se="#nova-extra-abas [data-aba='organizar'].aba--ativa">Abra a aba <strong>Organizar o mês</strong>.</p>
   </template>
 
-  <template data-roteiro="extra-minha" data-titulo="Ver a minha extra" data-grupo="Extrajornada" data-pagina="nova-extra" data-cenario="extra-lancar">
+  <template data-roteiro="extra-minha" data-nas-abas="minha" data-titulo="Ver a minha extra" data-grupo="Extrajornada" data-pagina="nova-extra" data-cenario="extra-lancar">
     <p data-trecho="abrir-extra"></p>
     <p data-alvo="#nova-extra-abas [data-aba='minha']" data-avanca="clique" data-pular-se="#nova-extra-abas [data-aba='minha'].aba--ativa">Abra a aba <strong>Minha extra</strong>.</p>
     <p data-alvo=".nova-extra-minha-passos" data-avanca="proximo">A Minha extra mostra o seu mês em três passos.</p>
@@ -1811,7 +1842,7 @@
     <p data-fim>Pronto. Quando o mês é lançado, os seus dias entram na escala.</p>
   </template>
 
-  <template data-roteiro="extra-pedido" data-titulo="Fazer o pedido de extra" data-grupo="Extrajornada" data-pagina="nova-extra" data-cenario="extra-pedido">
+  <template data-roteiro="extra-pedido" data-nas-abas="minha" data-titulo="Fazer o pedido de extra" data-grupo="Extrajornada" data-pagina="nova-extra" data-cenario="extra-pedido">
     <p data-trecho="abrir-extra"></p>
     <p data-alvo="#nova-extra-abas [data-aba='minha']" data-avanca="clique" data-pular-se="#nova-extra-abas [data-aba='minha'].aba--ativa">Abra a aba <strong>Minha extra</strong>.</p>
     <p data-alvo="#nova-extra-pedir" data-avanca="clique" data-sem-alvo="Aqui não há pedido aberto para você. O pedido abre no mês anterior ao da extra e é só para praças.">Use <strong>Fazer o pedido</strong>.</p>
@@ -1833,7 +1864,7 @@
     <p data-fim>Pronto. O pedido foi enviado. Até fechar o prazo, você pode mudar pelo <strong>Mudar o pedido</strong>.</p>
   </template>
 
-  <template data-roteiro="extra-do-mes" data-titulo="Ver as extras do mês" data-grupo="Extrajornada" data-pagina="nova-extra" data-cenario="extra-lancado">
+  <template data-roteiro="extra-do-mes" data-nas-abas="calendario" data-titulo="Ver as extras do mês" data-grupo="Extrajornada" data-pagina="nova-extra" data-cenario="extra-lancado">
     <p data-trecho="abrir-extra"></p>
     <p data-alvo="#nova-extra-abas [data-aba='calendario']" data-avanca="clique" data-pular-se="#nova-extra-abas [data-aba='calendario'].aba--ativa">Abra a aba <strong>Extras do mês</strong>.</p>
     <p data-alvo="#nova-extra-modos" data-alvo-senao="#nova-extra-cal-mes" data-avanca="proximo" data-livre>Aqui estão as extras de cada unidade no mês, na <strong>Agenda</strong> ou no <strong>Calendário</strong>.</p>
@@ -1845,7 +1876,7 @@
   <!-- para quem administra a companhia, no computador (no celular, o Organizar o mês não existe) -->
   <template data-roteiro-conjunto="organizar-mes" data-titulo="Organizar o mês" data-grupo="Extrajornada" data-area="admin"></template>
 
-  <template data-roteiro="extra-prazo" data-titulo="Abrir e fechar o prazo dos pedidos" data-conjunto="organizar-mes" data-area="admin" data-grupo="Extrajornada" data-pagina="nova-extra" data-so-computador data-cenario="extra-pedido">
+  <template data-roteiro="extra-prazo" data-nas-abas="organizar" data-titulo="Abrir e fechar o prazo dos pedidos" data-conjunto="organizar-mes" data-area="admin" data-grupo="Extrajornada" data-pagina="nova-extra" data-so-computador data-cenario="extra-pedido">
     <p data-trecho="abrir-extra"></p>
     <p data-trecho="extra-organizar"></p>
     <p data-alvo="#nova-extra-passos [data-passo='1']" data-avanca="clique" data-pular-se="#nova-extra-passos [data-passo='1'].aba--ativa">Abra o passo <strong>Pedidos</strong>.</p>
@@ -1857,7 +1888,7 @@
     <p data-fim>Pronto. Com os pedidos fechados, a vez é das <strong>Cotas</strong>.</p>
   </template>
 
-  <template data-roteiro="extra-minimo" data-titulo="Exigir um mínimo de dias" data-conjunto="organizar-mes" data-area="admin" data-grupo="Extrajornada" data-pagina="nova-extra" data-so-computador data-cenario="extra-pedido">
+  <template data-roteiro="extra-minimo" data-nas-abas="organizar" data-titulo="Exigir um mínimo de dias" data-conjunto="organizar-mes" data-area="admin" data-grupo="Extrajornada" data-pagina="nova-extra" data-so-computador data-cenario="extra-pedido">
     <p data-trecho="abrir-extra"></p>
     <p data-trecho="extra-organizar"></p>
     <p data-alvo="#nova-extra-passos [data-passo='1']" data-avanca="clique" data-pular-se="#nova-extra-passos [data-passo='1'].aba--ativa">Abra o passo <strong>Pedidos</strong>.</p>
@@ -1874,7 +1905,7 @@
     <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, o mínimo vale para quem enviar ou mudar o pedido daqui em diante, e quem já enviou continua valendo.</p>
   </template>
 
-  <template data-roteiro="extra-termos" data-titulo="Conferir as respostas e o termo" data-conjunto="organizar-mes" data-area="admin" data-grupo="Extrajornada" data-pagina="nova-extra" data-so-computador data-cenario="extra-pedido">
+  <template data-roteiro="extra-termos" data-nas-abas="organizar" data-titulo="Conferir as respostas e o termo" data-conjunto="organizar-mes" data-area="admin" data-grupo="Extrajornada" data-pagina="nova-extra" data-so-computador data-cenario="extra-pedido">
     <p data-trecho="abrir-extra"></p>
     <p data-trecho="extra-organizar"></p>
     <p data-alvo="#nova-extra-passos [data-passo='1']" data-avanca="clique" data-pular-se="#nova-extra-passos [data-passo='1'].aba--ativa">Abra o passo <strong>Pedidos</strong>.</p>
@@ -1885,7 +1916,7 @@
     <p data-fim>Pronto. Os termos foram gravados.</p>
   </template>
 
-  <template data-roteiro="extra-cotas" data-titulo="Repartir as cotas" data-conjunto="organizar-mes" data-area="admin" data-grupo="Extrajornada" data-pagina="nova-extra" data-so-computador data-cenario="extra-cotas">
+  <template data-roteiro="extra-cotas" data-nas-abas="organizar" data-titulo="Repartir as cotas" data-conjunto="organizar-mes" data-area="admin" data-grupo="Extrajornada" data-pagina="nova-extra" data-so-computador data-cenario="extra-cotas">
     <p data-trecho="abrir-extra"></p>
     <p data-trecho="extra-organizar"></p>
     <p data-alvo="#nova-extra-passos [data-passo='2']" data-avanca="clique" data-pular-se="#nova-extra-passos [data-passo='2'].aba--ativa">Abra o passo <strong>Cotas</strong>.</p>
@@ -1899,7 +1930,7 @@
     <p data-fim>Pronto. Com as cotas gravadas, a vez é da <strong>Distribuição</strong>.</p>
   </template>
 
-  <template data-roteiro="extra-calendario" data-titulo="Distribuir pelo calendário" data-conjunto="organizar-mes" data-area="admin" data-grupo="Extrajornada" data-pagina="nova-extra" data-so-computador data-cenario="extra-distribuicao">
+  <template data-roteiro="extra-calendario" data-nas-abas="organizar" data-titulo="Distribuir pelo calendário" data-conjunto="organizar-mes" data-area="admin" data-grupo="Extrajornada" data-pagina="nova-extra" data-so-computador data-cenario="extra-distribuicao">
     <p data-trecho="abrir-extra"></p>
     <p data-trecho="extra-organizar"></p>
     <p data-alvo="#nova-extra-passos [data-passo='3']" data-avanca="clique" data-pular-se="#nova-extra-passos [data-passo='3'].aba--ativa">Abra o passo <strong>Distribuição</strong>.</p>
@@ -1913,7 +1944,7 @@
     <p data-fim>Pronto. As extras foram gravadas na distribuição.</p>
   </template>
 
-  <template data-roteiro="extra-por-militar" data-titulo="Distribuir por militar" data-conjunto="organizar-mes" data-area="admin" data-grupo="Extrajornada" data-pagina="nova-extra" data-so-computador data-cenario="extra-distribuicao">
+  <template data-roteiro="extra-por-militar" data-nas-abas="organizar" data-titulo="Distribuir por militar" data-conjunto="organizar-mes" data-area="admin" data-grupo="Extrajornada" data-pagina="nova-extra" data-so-computador data-cenario="extra-distribuicao">
     <p data-trecho="abrir-extra"></p>
     <p data-trecho="extra-organizar"></p>
     <p data-alvo="#nova-extra-passos [data-passo='3']" data-avanca="clique" data-pular-se="#nova-extra-passos [data-passo='3'].aba--ativa">Abra o passo <strong>Distribuição</strong>.</p>
@@ -1927,7 +1958,7 @@
     <p data-fim>Pronto.</p>
   </template>
 
-  <template data-roteiro="extra-sugestao" data-titulo="Preencher pela sugestão" data-conjunto="organizar-mes" data-area="admin" data-grupo="Extrajornada" data-pagina="nova-extra" data-so-computador data-cenario="extra-distribuicao">
+  <template data-roteiro="extra-sugestao" data-nas-abas="organizar" data-titulo="Preencher pela sugestão" data-conjunto="organizar-mes" data-area="admin" data-grupo="Extrajornada" data-pagina="nova-extra" data-so-computador data-cenario="extra-distribuicao">
     <p data-trecho="abrir-extra"></p>
     <p data-trecho="extra-organizar"></p>
     <p data-alvo="#nova-extra-passos [data-passo='3']" data-avanca="clique" data-pular-se="#nova-extra-passos [data-passo='3'].aba--ativa">Abra o passo <strong>Distribuição</strong>.</p>
@@ -1940,7 +1971,7 @@
     <p data-fim>Pronto. A distribuição foi preenchida.</p>
   </template>
 
-  <template data-roteiro="extra-lancar" data-titulo="Lançar na escala e encerrar" data-conjunto="organizar-mes" data-area="admin" data-grupo="Extrajornada" data-pagina="nova-extra" data-so-computador data-cenario="extra-lancar">
+  <template data-roteiro="extra-lancar" data-nas-abas="organizar" data-titulo="Lançar na escala e encerrar" data-conjunto="organizar-mes" data-area="admin" data-grupo="Extrajornada" data-pagina="nova-extra" data-so-computador data-cenario="extra-lancar">
     <p data-trecho="abrir-extra"></p>
     <p data-trecho="extra-organizar"></p>
     <p data-alvo="#nova-extra-passos [data-passo='3']" data-avanca="clique" data-pular-se="#nova-extra-passos [data-passo='3'].aba--ativa">Abra o passo <strong>Distribuição</strong>.</p>
@@ -1952,7 +1983,7 @@
     <p data-fim>Pronto. As extras entraram na escala. A Distribuição agora fica só para ver; as mudanças são feitas nos <strong>Ajustes</strong>.</p>
   </template>
 
-  <template data-roteiro="extra-reabrir" data-titulo="Reabrir a distribuição" data-conjunto="organizar-mes" data-area="admin" data-grupo="Extrajornada" data-pagina="nova-extra" data-so-computador data-cenario="extra-lancado">
+  <template data-roteiro="extra-reabrir" data-nas-abas="organizar" data-titulo="Reabrir a distribuição" data-conjunto="organizar-mes" data-area="admin" data-grupo="Extrajornada" data-pagina="nova-extra" data-so-computador data-cenario="extra-lancado">
     <p data-trecho="abrir-extra"></p>
     <p data-trecho="extra-organizar"></p>
     <p data-alvo="#nova-extra-passos [data-passo='3']" data-avanca="clique" data-pular-se="#nova-extra-passos [data-passo='3'].aba--ativa">Abra o passo <strong>Distribuição</strong>.</p>
@@ -1963,7 +1994,7 @@
     <p data-fim>Pronto. A distribuição voltou a ser editável, até o próximo <strong>Lançar</strong>.</p>
   </template>
 
-  <template data-roteiro="extra-ajustar" data-titulo="Ajustar uma extra depois do lançamento" data-conjunto="organizar-mes" data-area="admin" data-grupo="Extrajornada" data-pagina="nova-extra" data-so-computador data-cenario="extra-lancado">
+  <template data-roteiro="extra-ajustar" data-nas-abas="organizar" data-titulo="Ajustar uma extra depois do lançamento" data-conjunto="organizar-mes" data-area="admin" data-grupo="Extrajornada" data-pagina="nova-extra" data-so-computador data-cenario="extra-lancado">
     <p data-trecho="abrir-extra"></p>
     <p data-trecho="extra-organizar"></p>
     <p data-alvo="#nova-extra-passos [data-passo='4']" data-avanca="clique" data-pular-se="#nova-extra-passos [data-passo='4'].aba--ativa">Abra o passo <strong>Ajustes</strong>.</p>
@@ -1974,7 +2005,7 @@
     <p data-fim>Pronto. O ajuste entrou na escala e vai para o relatório final.</p>
   </template>
 
-  <template data-roteiro="extra-relatorio" data-titulo="Imprimir um relatório" data-conjunto="organizar-mes" data-area="admin" data-grupo="Extrajornada" data-pagina="nova-extra" data-so-computador data-cenario="extra-lancado">
+  <template data-roteiro="extra-relatorio" data-nas-abas="organizar" data-titulo="Imprimir um relatório" data-conjunto="organizar-mes" data-area="admin" data-grupo="Extrajornada" data-pagina="nova-extra" data-so-computador data-cenario="extra-lancado">
     <p data-trecho="abrir-extra"></p>
     <p data-trecho="extra-organizar"></p>
     <p data-alvo="#nova-extra-passos [data-passo='5']" data-avanca="clique" data-pular-se="#nova-extra-passos [data-passo='5'].aba--ativa">Abra o passo <strong>Relatórios</strong>.</p>
@@ -2036,8 +2067,9 @@
     <p data-pagina="qualquer" data-alvo=".sidebar .menu-item[data-pagina='usuarios']" data-avanca="clique" data-pular-se=".conteudo #usuarios-abas">Abra os <strong>Usuários</strong> no menu.</p>
   </template>
 
-  <template data-roteiro="achar-usuario" data-titulo="Achar um militar" data-grupo="Usuários" data-pagina="usuarios">
+  <template data-roteiro="achar-usuario" data-nas-abas="efetivo" data-titulo="Achar um militar" data-grupo="Usuários" data-pagina="usuarios">
     <p data-trecho="abrir-usuarios"></p>
+    <p data-alvo="#usuarios-abas [data-aba='efetivo']" data-avanca="clique" data-pular-se="#usuarios-abas [data-aba='efetivo'].aba--ativa">Abra a aba <strong>Efetivo</strong>.</p>
     <p data-alvo="#arvore-usuarios" data-avanca="proximo">Na aba <strong>Efetivo</strong>, cada unidade mostra os seus militares, com a situação de cada um.</p>
     <p data-alvo="#busca-usuarios" data-avanca="proximo" data-livre>A busca marca ou filtra quem você procura.</p>
     <p data-alvo="#usuarios-filtros" data-avanca="proximo" data-livre>Em <strong>Filtros</strong>, escolha os postos e a situação.<span data-so-treino>Em <strong>Filtros</strong>, você escolhe os postos e a situação.</span></p>
@@ -2045,7 +2077,7 @@
     <p data-fim>Pronto. Clicar num militar abre a ficha dele.</p>
   </template>
 
-  <template data-roteiro="ver-ficha" data-titulo="Ver a ficha de um militar" data-grupo="Usuários" data-pagina="usuarios">
+  <template data-roteiro="ver-ficha" data-nas-abas="efetivo" data-titulo="Ver a ficha de um militar" data-grupo="Usuários" data-pagina="usuarios">
     <p data-trecho="abrir-usuarios"></p>
     <p data-alvo="#usuarios-abas [data-aba='efetivo']" data-avanca="clique" data-pular-se="#usuarios-abas [data-aba='efetivo'].aba--ativa">Abra a aba <strong>Efetivo</strong>.</p>
     <p data-alvo="#arvore-usuarios .usuario-item" data-um data-avanca="clique">Clique num militar.<span data-so-treino>Clique no militar aceso.</span></p>
@@ -2055,7 +2087,7 @@
     <p data-fim>Pronto.</p>
   </template>
 
-  <template data-roteiro="afastamentos-ano" data-titulo="Ver as férias e os afastamentos do ano" data-grupo="Usuários" data-pagina="usuarios">
+  <template data-roteiro="afastamentos-ano" data-nas-abas="ferias" data-titulo="Ver as férias e os afastamentos do ano" data-grupo="Usuários" data-pagina="usuarios">
     <p data-trecho="abrir-usuarios"></p>
     <p data-alvo="#usuarios-abas [data-aba='ferias']" data-avanca="clique" data-pular-se="#usuarios-abas [data-aba='ferias'].aba--ativa">Abra a aba <strong>Férias</strong>.</p>
     <p data-alvo=".pagina-subcabecalho .geral-periodo" data-avanca="proximo" data-livre>O ano fica na barra, e as setas mudam o ano.</p>
@@ -2063,7 +2095,7 @@
     <p data-fim>Pronto. Licenças e Dispensas funcionam do mesmo jeito.</p>
   </template>
 
-  <template data-roteiro="cadastrar-militar" data-titulo="Cadastrar um militar" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
+  <template data-roteiro="cadastrar-militar" data-nas-abas="efetivo" data-titulo="Cadastrar um militar" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
     <p data-trecho="abrir-usuarios"></p>
     <p data-alvo="#usuarios-abas [data-aba='efetivo']" data-avanca="clique" data-pular-se="#usuarios-abas [data-aba='efetivo'].aba--ativa">Abra a aba <strong>Efetivo</strong>.</p>
     <p data-alvo=".acoes-admin-gatilho" data-so-celular data-avanca="clique">Use o <strong>Novo usuário</strong>. No celular, ele fica no menu <strong>Administração</strong>.</p>
@@ -2074,7 +2106,7 @@
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, para o militar entrar, você geraria o link de cadastro na ficha dele.</p>
   </template>
 
-  <template data-roteiro="link-acesso" data-titulo="Mandar o link de acesso" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
+  <template data-roteiro="link-acesso" data-nas-abas="efetivo" data-titulo="Mandar o link de acesso" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
     <p data-trecho="abrir-usuarios"></p>
     <p data-alvo="#usuarios-abas [data-aba='efetivo']" data-avanca="clique" data-pular-se="#usuarios-abas [data-aba='efetivo'].aba--ativa">Abra a aba <strong>Efetivo</strong>.</p>
     <p data-alvo="#arvore-usuarios .usuario-item" data-um data-avanca="clique">Clique no militar.<span data-so-treino>Clique no militar aceso.</span></p>
@@ -2083,7 +2115,7 @@
     <p data-fim-treino>Pronto. No treino, nenhum link foi gerado. No sistema, a mensagem com o link apareceria na ficha, para mandar pelo Copiar mensagem. O link vale por 24 horas.</p>
   </template>
 
-  <template data-roteiro="corrigir-ficha" data-titulo="Corrigir os dados de um militar" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
+  <template data-roteiro="corrigir-ficha" data-nas-abas="efetivo" data-titulo="Corrigir os dados de um militar" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
     <p data-trecho="abrir-usuarios"></p>
     <p data-alvo="#usuarios-abas [data-aba='efetivo']" data-avanca="clique" data-pular-se="#usuarios-abas [data-aba='efetivo'].aba--ativa">Abra a aba <strong>Efetivo</strong>.</p>
     <p data-alvo="#arvore-usuarios .usuario-item" data-um data-avanca="clique">Clique no militar.<span data-so-treino>Clique no militar aceso.</span></p>
@@ -2094,7 +2126,7 @@
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, a mudança apareceria em Alterações na ficha.</p>
   </template>
 
-  <template data-roteiro="lancar-afastamento" data-titulo="Lançar férias, licença ou dispensa" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
+  <template data-roteiro="lancar-afastamento" data-nas-abas="ferias licencas dispensas" data-titulo="Lançar férias, licença ou dispensa" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
     <p data-trecho="abrir-usuarios"></p>
     <p data-avanca="escolha">Abra a aba <strong>Férias</strong>, <strong>Licenças</strong> ou <strong>Dispensas</strong>.</p>
     <section data-caminho="ferias" data-entrada="#usuarios-abas [data-aba='ferias']"></section>
@@ -2110,7 +2142,7 @@
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, o afastamento valeria na escala.</p>
   </template>
 
-  <template data-roteiro="carreira-militar" data-titulo="Promover, transferir ou dar baixa" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
+  <template data-roteiro="carreira-militar" data-nas-abas="efetivo" data-titulo="Promover, transferir ou dar baixa" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
     <p data-trecho="abrir-usuarios"></p>
     <p data-alvo="#usuarios-abas [data-aba='efetivo']" data-avanca="clique" data-pular-se="#usuarios-abas [data-aba='efetivo'].aba--ativa">Abra a aba <strong>Efetivo</strong>.</p>
     <p data-alvo="#arvore-usuarios .usuario-item" data-um data-avanca="clique">Clique no militar.<span data-so-treino>Clique no militar aceso.</span></p>
@@ -2137,7 +2169,7 @@
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, a ficha e a escala seguiriam a mudança a partir da data.</p>
   </template>
 
-  <template data-roteiro="mudar-antiguidade" data-titulo="Mudar a antiguidade" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
+  <template data-roteiro="mudar-antiguidade" data-nas-abas="antiguidade" data-titulo="Mudar a antiguidade" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
     <p data-trecho="abrir-usuarios"></p>
     <p data-alvo="#usuarios-abas [data-aba='antiguidade']" data-avanca="clique" data-pular-se="#usuarios-abas [data-aba='antiguidade'].aba--ativa">Abra a aba <strong>Antiguidade</strong>.</p>
     <p data-so-ajuda data-alvo="#antiguidade-lista" data-avanca="aparece" data-condicao="#antiguidade-salvar" data-livre>Clique no militar e mude o lugar dele pelas setas.</p>
@@ -2149,7 +2181,7 @@
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, a nova ordem valeria a partir da data.</p>
   </template>
 
-  <template data-roteiro="dar-administracao" data-titulo="Dar ou tirar a administração" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
+  <template data-roteiro="dar-administracao" data-nas-abas="administradores" data-titulo="Dar ou tirar a administração" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
     <p data-trecho="abrir-usuarios"></p>
     <p data-alvo="#usuarios-abas [data-aba='administradores']" data-avanca="clique" data-pular-se="#usuarios-abas [data-aba='administradores'].aba--ativa">Abra a aba <strong>Administradores</strong>.</p>
     <p data-so-ajuda data-alvo="#arvore-usuarios" data-avanca="aparece" data-condicao="#administradores-salvar" data-livre>Clique no militar e escolha o papel dele.</p>
@@ -2160,7 +2192,7 @@
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, o papel já valeria, e a mudança ficaria no Histórico.</p>
   </template>
 
-  <template data-roteiro="aprovar-correcao" data-titulo="Aprovar uma correção de dados" data-area="admin" data-grupo="Usuários" data-pagina="usuarios" data-cenario="dados-correcao">
+  <template data-roteiro="aprovar-correcao" data-nas-abas="efetivo" data-titulo="Aprovar uma correção de dados" data-area="admin" data-grupo="Usuários" data-pagina="usuarios" data-cenario="dados-correcao">
     <p data-trecho="abrir-usuarios"></p>
     <p data-alvo="#usuarios-abas [data-aba='efetivo']" data-avanca="clique" data-pular-se="#usuarios-abas [data-aba='efetivo'].aba--ativa">Abra a aba <strong>Efetivo</strong>.</p>
     <p data-alvo="#arvore-usuarios .usuario-item:has(.usuario-item-correcao:not(.oculto))" data-um data-avanca="clique" data-sem-alvo="Nenhuma correção de dados espera a sua aprovação agora.">Clique no militar com a <strong>Correção pendente</strong>.<span data-so-treino>Clique no militar aceso.</span></p>
@@ -2194,16 +2226,18 @@
     <p data-pagina="qualquer" data-alvo=".sidebar .menu-item[data-pagina='ajustes']" data-avanca="clique" data-pular-se=".conteudo #ajustes-abas">Abra os <strong>Ajustes</strong> no menu.</p>
   </template>
 
-  <template data-roteiro="conferir-distribuicao" data-titulo="Conferir a distribuição de uma unidade" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
+  <template data-roteiro="conferir-distribuicao" data-nas-abas="distribuicao" data-titulo="Conferir a distribuição de uma unidade" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
     <p data-trecho="abrir-ajustes"></p>
+    <p data-alvo="#ajustes-abas [data-aba='distribuicao']" data-avanca="clique" data-pular-se="#ajustes-abas [data-aba='distribuicao'].aba--ativa">Abra a aba <strong>Distribuição</strong>.</p>
     <p data-alvo="#nova-distribuicao-unidades" data-avanca="proximo" data-livre>Escolha a unidade na barra.<span data-so-treino>A unidade é escolhida na barra.</span></p>
     <p data-alvo="#nova-distribuicao-blocos" data-avanca="proximo">À esquerda ficam os blocos. O sinal ao lado de cada um diz se ele está pronto ou se falta algo.</p>
     <p data-alvo=".nova-distribuicao-bloco[data-bloco='8']" data-avanca="aparece" data-condicao="#nova-distribuicao-corpo .nova-distribuicao-conferir-modo" data-livre>Abra o <strong>Conferir</strong>. A <strong>Tabela</strong> mostra a ordem das funções; o <strong>Simular a equipe</strong> mostra como fica com cada número de militares.</p>
     <p data-fim>Pronto.</p>
   </template>
 
-  <template data-roteiro="mudar-ritmo" data-titulo="Mudar o ritmo da escala" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
+  <template data-roteiro="mudar-ritmo" data-nas-abas="distribuicao" data-titulo="Mudar o ritmo da escala" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
     <p data-trecho="abrir-ajustes"></p>
+    <p data-alvo="#ajustes-abas [data-aba='distribuicao']" data-avanca="clique" data-pular-se="#ajustes-abas [data-aba='distribuicao'].aba--ativa">Abra a aba <strong>Distribuição</strong>.</p>
     <p data-alvo="#nova-distribuicao-unidades" data-avanca="proximo" data-livre>Escolha a unidade na barra.<span data-so-treino>A unidade é escolhida na barra.</span></p>
     <p data-so-ajuda data-alvo="#nova-distribuicao-corpo .nova-distribuicao-cartao" data-um data-avanca="aparece" data-condicao="#nova-distribuicao-salvar" data-livre>No <strong>Ritmo</strong>, abra o cartão e escolha <strong>24/48</strong>, <strong>24/72</strong> ou <strong>12/36</strong>.</p>
     <p data-so-treino data-alvo="#nova-distribuicao-corpo .nova-distribuicao-cartao-cabecalho[aria-expanded='false']" data-um data-pular-se="#nova-distribuicao-corpo .nova-distribuicao-cartao-cabecalho[aria-expanded='true']" data-avanca="clique">No <strong>Ritmo</strong>, abra o cartão aceso.</p>
@@ -2214,8 +2248,9 @@
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, o ritmo novo valeria a partir da data.</p>
   </template>
 
-  <template data-roteiro="adicionar-posto" data-titulo="Adicionar um posto" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
+  <template data-roteiro="adicionar-posto" data-nas-abas="distribuicao" data-titulo="Adicionar um posto" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
     <p data-trecho="abrir-ajustes"></p>
+    <p data-alvo="#ajustes-abas [data-aba='distribuicao']" data-avanca="clique" data-pular-se="#ajustes-abas [data-aba='distribuicao'].aba--ativa">Abra a aba <strong>Distribuição</strong>.</p>
     <p data-alvo="#nova-distribuicao-unidades" data-avanca="proximo" data-livre>Escolha a unidade na barra.<span data-so-treino>A unidade é escolhida na barra.</span></p>
     <p data-alvo=".nova-distribuicao-bloco[data-bloco='0']" data-avanca="clique" data-pular-se=".nova-distribuicao-bloco[data-bloco='0'].lista-item--ativo">Abra o bloco <strong>Postos</strong>.</p>
     <p data-so-ajuda data-alvo="#nova-distribuicao-corpo" data-avanca="aparece" data-condicao="#nova-distribuicao-salvar" data-livre>Em <strong>Instalações</strong>, use o <strong>Nova instalação</strong> e escolha o tipo. Em <strong>Viaturas</strong>, use o <strong>Nova viatura</strong> e preencha o prefixo e a CNH.</p>
@@ -2228,8 +2263,9 @@
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, o posto entraria na escala a partir da data.</p>
   </template>
 
-  <template data-roteiro="mudar-efetivo" data-titulo="Mudar o efetivo de um posto" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
+  <template data-roteiro="mudar-efetivo" data-nas-abas="distribuicao" data-titulo="Mudar o efetivo de um posto" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
     <p data-trecho="abrir-ajustes"></p>
+    <p data-alvo="#ajustes-abas [data-aba='distribuicao']" data-avanca="clique" data-pular-se="#ajustes-abas [data-aba='distribuicao'].aba--ativa">Abra a aba <strong>Distribuição</strong>.</p>
     <p data-alvo="#nova-distribuicao-unidades" data-avanca="proximo" data-livre>Escolha a unidade na barra.<span data-so-treino>A unidade é escolhida na barra.</span></p>
     <p data-so-ajuda data-alvo=".nova-distribuicao-bloco[data-bloco='1']" data-avanca="clique" data-pular-se=".nova-distribuicao-bloco[data-bloco='1'].lista-item--ativo">Abra o bloco <strong>Efetivo</strong> e o cartão do posto.</p>
     <p data-so-treino data-alvo=".nova-distribuicao-bloco[data-bloco='1']" data-pular-se=".nova-distribuicao-bloco[data-bloco='1'].lista-item--ativo" data-avanca="clique">Abra o bloco <strong>Efetivo</strong>.</p>
@@ -2243,7 +2279,7 @@
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, o efetivo novo valeria a partir da data.</p>
   </template>
 
-  <template data-roteiro="horario-expediente" data-titulo="Mudar o horário de expediente" data-area="admin" data-papel="companhia" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
+  <template data-roteiro="horario-expediente" data-nas-abas="horario" data-titulo="Mudar o horário de expediente" data-area="admin" data-papel="companhia" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
     <p data-trecho="abrir-ajustes"></p>
     <p data-alvo="#ajustes-abas [data-aba='horario']" data-avanca="clique" data-pular-se="#ajustes-abas [data-aba='horario'].aba--ativa">Abra a aba <strong>Horário de expediente</strong>.</p>
     <p data-alvo="#horario-semana" data-avanca="aparece" data-condicao="#horario-salvar" data-livre data-treino-alvo="#horario-semana .ajustes-horario-tipo .aba:not(.aba--ativa)">Em cada dia, escolha <strong>Trabalha</strong> ou <strong>Folga</strong>, e o horário.<span data-so-treino>Escolha a opção acesa. Em cada dia, você escolhe <strong>Trabalha</strong> ou <strong>Folga</strong>, e o horário.</span></p>
@@ -2252,7 +2288,7 @@
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, o horário valeria na hora, para os administrativos da companhia e dos pelotões.</p>
   </template>
 
-  <template data-roteiro="marcar-feriado" data-titulo="Marcar um feriado" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
+  <template data-roteiro="marcar-feriado" data-nas-abas="feriados" data-titulo="Marcar um feriado" data-area="admin" data-grupo="Ajustes" data-pagina="ajustes" data-so-computador>
     <p data-trecho="abrir-ajustes"></p>
     <p data-alvo="#ajustes-abas [data-aba='feriados']" data-avanca="clique" data-pular-se="#ajustes-abas [data-aba='feriados'].aba--ativa">Abra a aba <strong>Feriados</strong>.</p>
     <p data-alvo="#feriados-barra" data-avanca="proximo" data-livre>Escolha o mês e a unidade na barra.<span data-so-treino>O mês e a unidade são escolhidos na barra.</span></p>

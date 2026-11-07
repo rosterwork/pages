@@ -57,6 +57,11 @@
   padding-left: 16px;
 }
 
+/* em outras abas: o nome da aba à frente do treino */
+.guia-menu-aba {
+  color: var(--texto-suave);
+}
+
 /* o título da parte do administrador, com a chave inglesa (como no Treinamento) */
 .guia-menu-area {
   display: flex;

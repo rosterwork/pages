@@ -3,15 +3,22 @@
     <div class="pagina-titulos">
       <h1>Extrajornada</h1>
     </div>
+    <!-- ajuda da tela: os passo a passo desta página e o manual (componente geral-guia) -->
+    <div class="dropdown pagina-ajuda" data-manual="extrajornada">
+      <button type="button" class="botao botao--icone" aria-label="Ajuda desta tela" data-dica="Ajuda">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg>
+      </button>
+      <div class="dropdown-menu pagina-ajuda-menu"></div>
+    </div>
     <!-- abas: Minha extra · Extras do mês | Organizar o mês (só do administrador da companhia, separada pelo traço; os
          passos ficam na barra), com um traço só para os dois grupos. No celular, só Minha extra e Extras do mês -->
     <div id="nova-extra-abas" data-abas-grupo>
       <div class="abas">
         <button type="button" class="aba aba--ativa" data-aba="minha">Minha extra</button>
-        <button type="button" class="aba" data-aba="calendario">Extras do mês</button>
+        <button type="button" class="aba" data-aba="calendario" data-manual="calendario-extra">Extras do mês</button>
       </div>
       <div class="abas" data-so-admin>
-        <button type="button" class="aba" data-aba="organizar">Organizar o mês</button>
+        <button type="button" class="aba" data-aba="organizar" data-manual="extra-organizar">Organizar o mês</button>
       </div>
     </div>
   </div>

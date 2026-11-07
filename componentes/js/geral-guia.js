@@ -330,7 +330,7 @@
     if (item) { iniciar(item.getAttribute('data-guia'), { pagina: nomeDaPagina() }); return; }
     if (alvo.closest('.guia-menu-manual')) {
       var ajuda = alvo.closest('.pagina-ajuda');
-      if (RW.irParaPagina) RW.irParaPagina('manual', null, ajuda ? ajuda.getAttribute('data-manual') : null);
+      if (RW.irParaPagina) RW.irParaPagina('manual', null, ajuda ? A().secaoDoManual(ajuda) : null);
       return;
     }
     if (alvo.closest('.guia-dica-entendi')) { esconderDica(true); return; }
