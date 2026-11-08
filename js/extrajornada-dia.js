@@ -135,8 +135,8 @@
       lista.sort(function (x, y) { return (x.m.unidade_id === uid ? 0 : 1) - (y.m.unidade_id === uid ? 0 : 1) || (x.m.ordem || 0) - (y.m.ordem || 0); });
       var caixa = RW.tpl('tpl-extrajornada-grupo');
       caixa.setAttribute('data-grupo', g);
-      caixa.querySelector('.ne-grupo-nome').textContent = msg().grupos[g];
-      caixa.querySelector('.ne-grupo-conta').textContent = lista.length;
+      caixa.querySelector('.extrajornada-grupo-nome').textContent = msg().grupos[g];
+      caixa.querySelector('.extrajornada-grupo-conta').textContent = lista.length;
       lembrar(caixa, g, lista.length > 0);
       caixa.querySelector('.extrajornada-grupo-vazio').classList.toggle('oculto', lista.length > 0);
       /* os horários em cima das bolinhas: no Neste dia, no alto do grupo; nos outros, no título de cada pelotão */
@@ -243,12 +243,12 @@
     aqui.forEach(function (a) {
       var m = u().militar(a.cpf) || { grad: '', nome: a.cpf }, sistema = a.origem === 'sugestao';
       var lin = RW.tpl(sistema ? 'tpl-extrajornada-rd-sistema' : 'tpl-extrajornada-rd-admin');
-      lin.querySelector('.ne-rd-ini').textContent = sistema ? msg().rdSistema : msg().rdAdmin(a.por || ((eu.grau_abreviacao || '') + ' ' + (eu.nome_de_guerra || '')).trim());
-      lin.querySelector('.ne-rd-nome').textContent = m.grad + ' ' + m.nome;
-      lin.querySelector('.ne-rd-fim').textContent = msg().rdHoras(u().horas(a.blocos), paraDe(falta.cobre[a.cpf] || [], sistema)) + ' ' + msg().pref[u().pref(m, k)];
+      lin.querySelector('.extrajornada-rd-inicio').textContent = sistema ? msg().rdSistema : msg().rdAdmin(a.por || ((eu.grau_abreviacao || '') + ' ' + (eu.nome_de_guerra || '')).trim());
+      lin.querySelector('.extrajornada-rd-nome').textContent = m.grad + ' ' + m.nome;
+      lin.querySelector('.extrajornada-rd-fim').textContent = msg().rdHoras(u().horas(a.blocos, a.inicio), paraDe(falta.cobre[a.cpf] || [], sistema)) + ' ' + msg().pref[u().pref(m, k)];
       /* o resto do porquê da sugestão (o que ela cobre e o que ele marcou já estão na frase) */
       var mais = sistema && a.porque ? a.porque.filter(function (p) { return !/^(Cobre|Assume|Completa|É um dia que ele quer|Horário com menos gente)/.test(p); }).map(function (p) { return p.replace(/\.$/, ''); }).join(' · ') : '';
-      var pq = lin.querySelector('.ne-rd-mais');
+      var pq = lin.querySelector('.extrajornada-rd-mais');
       pq.textContent = mais;
       pq.classList.toggle('oculto', !mais);
       dentro.appendChild(lin);
@@ -269,10 +269,10 @@
     frases.forEach(function (f, i) {
       var lin = RW.tpl('tpl-extrajornada-rd-falta');
       lin.classList.add('extrajornada-rd-linha--' + f[1]);
-      lin.querySelector('.ne-rd-fim').textContent = f[0];
+      lin.querySelector('.extrajornada-rd-fim').textContent = f[0];
       /* na primeira, quem ainda pode tirar extra no dia (ou por que ninguém mais pode) */
       if (i === 0) {
-        var pode = lin.querySelector('.ne-rd-mais');
+        var pode = lin.querySelector('.extrajornada-rd-mais');
         pode.textContent = quemPode(grupos);
         pode.classList.remove('oculto');
       }
@@ -282,7 +282,7 @@
     var tinha = [1, 2, 3, 4].some(function (b) { return falta.base[b] + falta.abase[b] > 0; });
     if (tinha && !frases.length) {
       var ok = RW.tpl('tpl-extrajornada-rd-ok');
-      ok.querySelector('.ne-rd-fim').textContent = msg().faltaCoberta;
+      ok.querySelector('.extrajornada-rd-fim').textContent = msg().faltaCoberta;
       dentro.appendChild(ok);
       linhas++;
     }
@@ -352,6 +352,7 @@
     cota.textContent = msg().deCotas(usou, m.concedidas);
     cota.classList.toggle('extrajornada-painel-cota--erro', usou > m.concedidas);
     ligarMarcas(lin.querySelector('.extrajornada-painel-marcas'), m, k, marcados, uid);
+    RW.extrajornadaDiaOutros.ligarInicio(lin, lin.querySelector('.extrajornada-painel-outros'), m, k, uid);
     RW.extrajornadaDiaOutros.preencher(lin, m, k, usou, desenhar);
     return lin;
   }

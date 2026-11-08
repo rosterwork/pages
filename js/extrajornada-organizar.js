@@ -172,11 +172,11 @@
       var tr = RW.tpl('tpl-extrajornada-p1-linha');
       tr.querySelector('small').textContent = m.grad;
       tr.querySelector('b').textContent = m.nome;
-      tr.querySelector('.ne-uni').textContent = (util.unidade(m.unidade_id) || {}).nome || '';
-      tr.querySelector('.ne-cotas').textContent = m.voluntario ? msg().cotas(m.cotas, m.so24) : '';
-      tr.querySelector('.ne-quer').textContent = m.voluntario ? msg().diasDoMes(m.quer) : '';
-      tr.querySelector('.ne-nao').textContent = m.voluntario ? msg().diasDoMes(m.nao_posso) : '';
-      var naoPode = tr.querySelector('.ne-nao-pode');
+      tr.querySelector('.extrajornada-p1-unidade').textContent = (util.unidade(m.unidade_id) || {}).nome || '';
+      tr.querySelector('.extrajornada-p1-cotas').textContent = m.voluntario ? msg().cotas(m.cotas, m.so24) : '';
+      tr.querySelector('.extrajornada-p1-quer').textContent = m.voluntario ? msg().diasDoMes(m.quer) : '';
+      tr.querySelector('.extrajornada-p1-nao-quer').textContent = m.voluntario ? msg().diasDoMes(m.nao_posso) : '';
+      var naoPode = tr.querySelector('.extrajornada-p1-nao-pode');
       if (m.sem_dia_livre) naoPode.textContent = msg().semDiaLivre;
       else if (m.voluntario) periodosNaoPode(m).forEach(function (p) {
         var item = RW.tpl('tpl-extrajornada-nao-pode-periodo'), periodo = item.querySelector('.extrajornada-nao-pode-dia');
@@ -184,7 +184,7 @@
         periodo.setAttribute('data-dica', RW.mensagens.extrajornada.motivos[p.motivo]);
         naoPode.appendChild(item);
       });
-      var t = tr.querySelector('.ne-termo');
+      var t = tr.querySelector('.extrajornada-p1-termo');
       if (!m.voluntario) { t.classList.add('oculto'); } else {
         var marcado = m.cpf in p1.termos ? p1.termos[m.cpf] : m.termo;
         t.setAttribute('aria-checked', marcado ? 'true' : 'false');

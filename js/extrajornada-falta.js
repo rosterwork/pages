@@ -19,7 +19,9 @@
   var RW = window.RosterWork = window.RosterWork || {};
 
   function u() { return RW.extrajornadaUtil; }
-  function blocos(a) { return a.blocos.map(Number); }
+  /* os horários de 6 h em que a extra fecha falta: os que ela cobre inteiros (a que começa no fim do expediente não
+     cobre o último) */
+  function blocos(a) { return u().cheios(a); }
   /* a CNH que a viatura pede ('' = qualquer uma) está entre as que ele conduz (o banco diz quais) */
   function conduz(m, cnh) { return !cnh || (m.conduz || []).indexOf(cnh) >= 0; }
   /* a cor de um horário na barra da Escala: o vermelho (1) vence o amarelo (2) */

@@ -14,7 +14,8 @@
    Depois, o resumo com o que cada parte gravou. Enquanto há mudança,
    as telas da Escala mostram o rascunho
    (a prévia, escala_previa, pela escalas-dados.js) e o dia mudado
-   leva a borda tracejada; quando o rascunho muda de verdade, as telas são
+   leva a borda tracejada (na mudança de dia, os dois dias, e a grade
+   lê o período); quando o rascunho muda de verdade, as telas são
    avisadas meio segundo depois do último clique
    (rosterwork_escala_previa, com os dias que mudam); abrir, fechar ou
    trocar de dia ou de
@@ -69,8 +70,8 @@
     if (C()) C().limpar();
   }
 
-  /* o rascunho para a prévia das telas: { unidadeId, iso, dia, ciclo, extra } (cada parte nula sem mudança), ou null.
-     Quem passou da cota fica fora: o banco recusaria */
+  /* o rascunho para a prévia das telas: { unidadeId, iso, dia, ciclo, extra, outros } (cada parte nula sem mudança), ou
+     null. outros = os outros dias que o Dia muda (a mudança de dia). Quem passou da cota fica fora: o banco recusaria */
   function paraPrevia() {
     var c = contexto();
     if (!c || !contar()) return null;
@@ -78,14 +79,17 @@
     var ciclo = doCiclo(c).length ? C().envio() : null;
     var extra = X() ? X().paraPrevia() : null;
     if (!dia && !ciclo && !extra) return null;
-    return { unidadeId: c.unidadeId, iso: c.iso, dia: dia, ciclo: ciclo, extra: extra };
+    return { unidadeId: c.unidadeId, iso: c.iso, dia: dia, ciclo: ciclo, extra: extra, outros: dia ? E().outrosDias() : [] };
   }
-  /* a borda tracejada: o dia aberto no painel (com mudança no Dia ou no Ciclo) e os dias do rascunho da Extrajornada; sem
-     a unidade (null), em qualquer unidade (a Minha escala) */
+  /* a borda tracejada: o dia aberto no painel (com mudança no Dia ou no Ciclo), o outro dia da mudança de dia e os dias do
+     rascunho da Extrajornada; sem a unidade (null), em qualquer unidade (a Minha escala) */
   function marcado(unidadeId, iso) {
     var c = contexto();
     if (!c) return false;
-    if (pendente() && (unidadeId == null || String(c.unidadeId) === String(unidadeId)) && c.iso === iso) return true;
+    if (pendente() && (unidadeId == null || String(c.unidadeId) === String(unidadeId))) {
+      if (c.iso === iso) return true;
+      if (E() && E().pendentes() && E().outrosDias().indexOf(iso) >= 0) return true;
+    }
     return !!(X() && X().marcado(unidadeId, iso));
   }
 
@@ -141,18 +145,23 @@
   function marcaDaPrevia() {
     var p = paraPrevia(), extra = X() ? X().marca() : '';
     if (!(p && (p.dia || p.ciclo)) && !extra) return '';
-    return JSON.stringify([p && (p.dia || p.ciclo) ? [p.unidadeId, p.iso, p.dia, p.ciclo] : null, extra]);
+    return JSON.stringify([p && (p.dia || p.ciclo) ? [p.unidadeId, p.iso, p.dia, p.ciclo, p.outros] : null, extra]);
   }
 
-  /* os dias que mudam nas telas de uma marca para a outra: [{ unidadeId, iso }]; com o Ciclo ou a Extrajornada, que mexem
-     em muitos dias, null (o período todo) */
+  /* os dias que mudam nas telas de uma marca para a outra: [{ unidadeId, iso }] (com o outro dia da mudança de dia); com o
+     Ciclo ou a Extrajornada, que mexem em muitos dias, null (o período todo) */
   function diasDaPrevia(antes, agora) {
     var dias = [], muitos = false;
+    function por(unidadeId, iso) {
+      if (!dias.some(function (d) { return d.unidadeId === unidadeId && d.iso === iso; })) dias.push({ unidadeId: unidadeId, iso: iso });
+    }
     [antes, agora].forEach(function (marca) {
       if (!marca) return;
       var partes = JSON.parse(marca), dia = partes[0];
       if (partes[1] || (dia && dia[3])) { muitos = true; return; }
-      if (dia && !dias.some(function (d) { return d.unidadeId === dia[0] && d.iso === dia[1]; })) dias.push({ unidadeId: dia[0], iso: dia[1] });
+      if (!dia) return;
+      por(dia[0], dia[1]);
+      (dia[4] || []).forEach(function (iso) { por(dia[0], iso); });
     });
     return muitos ? null : dias;
   }
@@ -247,10 +256,10 @@
     return linhaNoRodape;
   }
 
-  /* as telas leem de novo: só o Dia, só aquele dia nas colunas à vista; senão (ou numa grade sem célula por dia), o período,
-     com a grade na tela. A promessa se cumpre com a tela nova, e nunca falha */
-  function telasLeem(c, soDoDia) {
-    var grade = RW.escalasDiaNaGrade, umDia = soDoDia && grade.temCelulas();
+  /* as telas leem de novo: só o Dia, só aquele dia nas colunas à vista; senão (a mudança de dia, que muda dois dias, ou
+     numa grade sem célula por dia), o período, com a grade na tela. A promessa se cumpre com a tela nova, e nunca falha */
+  function telasLeem(c, soDoDia, doisDias) {
+    var grade = RW.escalasDiaNaGrade, umDia = soDoDia && !doisDias && grade.temCelulas();
     window.dispatchEvent(new CustomEvent('rosterwork_escala_salva', { detail: { unidadeId: c.unidadeId, iso: c.iso, soDoDia: umDia } }));
     return umDia ? grade.salvou(c.unidadeId, c.iso) : grade.relerPeriodo();
   }
@@ -261,6 +270,7 @@
      dia de novo */
   function enviar(c, dia, ciclo, extra, botao) {
     var soDoDia = !ciclo && !extra;
+    var doisDias = !!(dia && E() && E().outrosDias().length);   // a mudança de dia: a gravação muda outro dia também
     salvando = true;
     var etapas = mostrarEtapas(c, ciclo, soDoDia);
     atualizar();
@@ -298,7 +308,7 @@
       mostrado = marcaDaPrevia();   // as telas leem de novo logo abaixo, já sem o que foi gravado
       atualizar();
       etapas.ultima();
-      return telasLeem(c, soDoDia).then(function () {
+      return telasLeem(c, soDoDia, doisDias).then(function () {
         terminar();
         atualizar();
         redesenharAba();

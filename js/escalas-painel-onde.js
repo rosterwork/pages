@@ -1,7 +1,11 @@
 /* ============================================================
-   ESCALAS — Onde fica (a caixa de pergunta do Adicionar militar e
-   do Remanejar militar; molde tpl-escala-onde-fica): onde fica quem
-   entra numa unidade no dia.
+   ESCALAS — Onde fica (a caixa de pergunta do Adicionar militar, do
+   Remanejar militar e do Mudar o dia do serviço; molde
+   tpl-escala-onde-fica): onde fica quem entra numa unidade no dia.
+   - As vagas sem ninguém (só com cfg.vagas, o Mudar o dia do
+     serviço): uma bolinha por função vazia em todo o horário dele,
+     fora o Chefe de Socorro e o Oficial de Área; a primeira vem
+     marcada, com o selo Recomendado, até a pessoa escolher outra;
    - O sistema distribui: o sistema refaz o dia com ele (quem está
      fixado fica);
    - Escolher a função: o posto e a função (escalas-painel-quem.js),
@@ -15,10 +19,11 @@
    com a sua escolha.
    API: RosterWork.escalasPainelOnde.criar(caixa, cfg) devolve
    { atualizar(), reiniciar(), estado(), respondido(), falta() (a escolha está pela metade),
-     quem(texto), aplicar(pontual) };
+     quem(texto), dia(texto) (o dia no título: "Onde fica em 13/11"), aplicar(pontual),
+     paraBanco() (a escolha no formato do banco: o Mudar o dia grava pelo escala_dia_salvar) };
    cfg = { dados() (a leitura do dia da unidade onde ele entra),
            periodos() (os horários dele), cpf() (quem entra),
-           aoMudar() }
+           vagas (true: as vagas sem ninguém no horário), aoMudar() }
    ============================================================ */
 (function () {
   'use strict';
@@ -26,6 +31,8 @@
   window.RosterWork = window.RosterWork || {};
 
   var conta = 0;   // nome único para os rádios e os campos de cada caixa
+  /* Chefe de Socorro e Oficial de Área são automáticos por normativa: nunca são vaga para escolher */
+  var BLOQUEADAS = /^(chefe de socorro|oficial de área)$/i;
 
   function ed() { return RosterWork.escalasPainelEditar.sub; }
   function msg() { return RosterWork.mensagens.escala; }
@@ -40,10 +47,14 @@
       quem: q('.escala-onde-fica-quem'), opcoes: q('.escala-onde-fica-opcoes'), funcao: q('.escala-onde-fica-funcao'),
       lugar: q('.escala-onde-fica-lugar'), sai: q('.escala-onde-fica-sai'),
       funcoesRotulo: q('.escala-onde-fica-funcoes-rotulo'), funcoesLista: q('.escala-onde-fica-funcoes'),
-      efeito: q('.escala-onde-fica-efeito')
+      efeito: q('.escala-onde-fica-efeito'), vagas: q('.escala-onde-fica-vagas'), em: q('.escala-onde-fica-em'),
+      dia: q('.escala-onde-fica-dia')
     };
-    var est = { onde: 'sistema', posto: null, funcao: null, sai: null, funcoes: [] };
+    /* onde: 'vaga' | 'sistema' | 'funcao' | 'lugar'; vaga = a vaga sem ninguém escolhida; escolheu = a pessoa já
+       respondeu (até lá, a vaga recomendada vem marcada) */
+    var est = { onde: 'sistema', posto: null, funcao: null, sai: null, funcoes: [], vaga: null, escolheu: false };
     var onde = null, chaveSai = '', marcarOnde = null, comboSai = null;
+    var vagas = [], chaveVagas = null;   // as vagas sem ninguém na tela e a marca delas (redesenha só quando mudam)
 
     function mudou() { if (cfg.aoMudar) cfg.aoMudar(); }
     function mostra(no, sim) { no.classList.toggle('oculto', !sim); }
@@ -57,13 +68,62 @@
       return nomes.length ? msg().itemSai(nomes) : msg().itemVazia;
     }
 
-    /* volta ao começo: o sistema distribui, sem função escolhida e sem quem sai */
+    /* volta ao começo: o sistema distribui, sem função escolhida, sem vaga e sem quem sai */
     function limpar() {
-      est.posto = null; est.funcao = null; est.sai = null; est.funcoes = []; chaveSai = '';
+      est.posto = null; est.funcao = null; est.sai = null; est.funcoes = []; est.vaga = null; chaveSai = '';
       if (onde) { el.funcao.textContent = ''; onde = null; }
       montarFuncoes();
     }
-    function reiniciar() { est.onde = 'sistema'; limpar(); }
+    /* o dia ou o horário mudou: tudo volta ao começo (com as vagas, a recomendada volta a vir marcada) */
+    function reiniciar() { est.onde = 'sistema'; est.escolheu = false; chaveVagas = null; limpar(); }
+
+    /* as vagas sem ninguém em todo o horário de quem entra, na ordem da lista do dia: [{ chave, posto, funcao }] */
+    function vagasLivres() {
+      var horas = H.uniao(cfg.periodos().map(H.faixa)), lista = [];
+      if (!horas.length) return lista;
+      (((cfg.dados() || {}).postos) || []).forEach(function (po) {
+        (po.funcoes || []).forEach(function (f) {
+          if (BLOQUEADAS.test(f.nome) || f.vazio_motivo === 'aberta') return;
+          var vazio = f.vazio ? [[0, 1440]] : H.uniao((f.vao || []).map(H.faixa));
+          if (!vazio.length || H.menos(horas, vazio).length) return;
+          lista.push({ chave: po.tipo + ':' + po.id + '|' + f.nome, posto: po, funcao: f.nome });
+        });
+      });
+      return lista;
+    }
+
+    /* as bolinhas das vagas (redesenhadas só quando a lista muda). A vaga escolhida que não serve mais sai; sem resposta da
+       pessoa, a primeira (a recomendada) vem marcada */
+    function desenharVagas() {
+      if (!cfg.vagas) return;
+      var lista = vagasLivres(), chave = lista.map(function (v) { return v.chave; }).join(';');
+      if (chave !== chaveVagas) {
+        chaveVagas = chave;
+        vagas = lista;
+        el.vagas.textContent = '';
+        vagas.forEach(function (v, i) {
+          var op = RosterWork.tpl('tpl-escala-onde-fica-vaga');
+          if (!op) return;
+          var r = op.querySelector('input');
+          r.name = nomeRadios;
+          op.querySelector('.escala-onde-fica-vaga-texto').textContent = msg().mudarDia.vaga(api.funcaoNoPosto(v.funcao, v.posto));
+          mostra(op.querySelector('.escala-onde-fica-recomendado'), i === 0);
+          r.addEventListener('change', function () {
+            if (!r.checked) return;
+            est.onde = 'vaga';
+            limpar();
+            est.vaga = v;
+            est.escolheu = true;
+            mudou();
+          });
+          v.radio = r;
+          el.vagas.appendChild(op);
+        });
+      }
+      var atual = est.vaga && vagas.filter(function (v) { return v.chave === est.vaga.chave; })[0];
+      if (est.onde === 'vaga') { est.vaga = atual || null; if (!atual) est.onde = 'sistema'; }
+      if (!est.escolheu && est.onde === 'sistema' && vagas.length) { est.onde = 'vaga'; est.vaga = vagas[0]; }
+    }
 
     /* De quais funções: as funções de quem sai no horário, todas marcadas */
     function montarFuncoes() {
@@ -114,6 +174,7 @@
 
     /* redesenha com a escolha de agora (a caixa em si aparece ou some por quem a usa) */
     function atualizar() {
+      desenharVagas();
       marcarOnde(est.onde);
       mostra(el.funcao, est.onde === 'funcao');
       if (est.onde === 'funcao' && !onde) {
@@ -128,21 +189,24 @@
     }
 
     function respondido() {
-      return est.onde === 'sistema' || (est.onde === 'funcao' && !!est.posto && !!est.funcao)
+      return est.onde === 'sistema' || (est.onde === 'vaga' && !!est.vaga) || (est.onde === 'funcao' && !!est.posto && !!est.funcao)
         || (est.onde === 'lugar' && !!est.sai && est.funcoes.some(Boolean));
     }
-    /* a escolha está pela metade (a função, ou quem sai e de quais funções) */
+    /* a escolha está pela metade (a vaga, a função, ou quem sai e de quais funções) */
     function falta() {
+      if (est.onde === 'vaga') return !est.vaga;
       if (est.onde === 'funcao') return !est.funcao;
       if (est.onde === 'lugar') return !est.sai || !est.funcoes.some(Boolean);
       return false;
     }
 
-    /* põe a escolha no rascunho do Dia: o sistema refaz o dia (quem está fixado fica), a função escolhida ou as funções
-       de quem sai, nos trechos delas no horário. pontual = { contabilizar } (o Adicionar no dia) ou null */
+    /* põe a escolha no rascunho do Dia: o sistema refaz o dia (quem está fixado fica), a vaga ou a função escolhida, ou as
+       funções de quem sai, nos trechos delas no horário. pontual = { contabilizar } (o Adicionar no dia) ou null */
     function aplicar(pontual) {
       var cpf = cfg.cpf(), periodos = cfg.periodos(), dados = cfg.dados();
-      if (est.onde === 'funcao') {
+      if (est.onde === 'vaga') {
+        api.aplicarColocacao({ cpf: cpf, posto: est.vaga.posto, funcao: est.vaga.funcao, periodos: periodos, sistema: false, pontual: pontual, dados: dados });
+      } else if (est.onde === 'funcao') {
         api.aplicarColocacao({ cpf: cpf, posto: est.posto, funcao: est.funcao, periodos: periodos, sistema: false, pontual: pontual, dados: dados });
       } else if (est.onde === 'lugar') {
         /* entra e senta em cada função marcada de quem sai, nos trechos dela no horário */
@@ -156,10 +220,32 @@
       }
     }
 
+    /* a escolha no formato do banco (o Mudar o dia do serviço grava o Onde fica do dia novo pelo escala_dia_salvar):
+       { tipo: 'sistema' } | { tipo: 'funcao', nome_funcao, viatura_id, instalacao_id } | { tipo: 'lugar', substitui, funcoes } */
+    function paraBanco() {
+      function lugar(posto, nome) {
+        return { nome_funcao: nome, viatura_id: posto.tipo === 'viatura' ? posto.id : null,
+          instalacao_id: posto.tipo === 'instalacao' ? posto.id : null };
+      }
+      function funcao(posto, nome) { var x = lugar(posto, nome); x.tipo = 'funcao'; return x; }
+      if (est.onde === 'vaga' && est.vaga) return funcao(est.vaga.posto, est.vaga.funcao);
+      if (est.onde === 'funcao' && est.posto && est.funcao) return funcao(est.posto, est.funcao);
+      if (est.onde === 'lugar' && est.sai) {
+        return { tipo: 'lugar', substitui: est.sai.cpf, funcoes: est.sai.s.funcoes
+          .filter(function (f, i) { return est.funcoes[i]; }).map(function (f) { return lugar(f.posto, f.funcao); }) };
+      }
+      return { tipo: 'sistema' };
+    }
+
     /* a frase de quem é a caixa ("O 2ºSgt. Deividi, no 1ºPEL."); vazia, some */
     function quem(texto) {
       mostra(el.quem, !!texto);
       el.quem.textContent = texto || '';
+    }
+    /* o dia no título ("Onde fica em 13/11"); vazio, só "Onde fica" */
+    function dia(texto) {
+      mostra(el.em, !!texto);
+      el.dia.textContent = texto || '';
     }
 
     /* liga as escolhas */
@@ -170,11 +256,16 @@
       r.addEventListener('change', function () {
         if (!r.checked) return;
         est.onde = r.value;
+        est.escolheu = true;
         limpar();
         mudou();
       });
     });
-    marcarOnde = function (valor) { [].forEach.call(radios, function (r) { r.checked = r.value === valor; }); };
+    /* as bolinhas fixas e as das vagas (só a vaga escolhida fica marcada) */
+    marcarOnde = function (valor) {
+      [].forEach.call(radios, function (r) { r.checked = r.value === valor; });
+      vagas.forEach(function (v) { if (v.radio) v.radio.checked = valor === 'vaga' && !!est.vaga && v.chave === est.vaga.chave; });
+    };
     var inp = el.sai.querySelector('input');
     inp.id = 'escala-onde-fica-sai-' + (++conta);
     comboSai = RosterWork.comboMilitar.criar(inp, el.sai.querySelector('.dropdown-menu'), {
@@ -185,7 +276,7 @@
 
     return {
       atualizar: atualizar, reiniciar: reiniciar, respondido: respondido, falta: falta, aplicar: aplicar, quem: quem,
-      estado: function () { return est; }
+      dia: dia, paraBanco: paraBanco, estado: function () { return est; }
     };
   }
 

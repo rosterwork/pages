@@ -595,7 +595,11 @@
         falhaMes: 'Não foi possível ler o mês.',
         falhaEscala: 'Não foi possível ler a escala.',
         falhaSugestao: 'Não foi possível calcular a sugestão.',
-        foraMotivo: { solta: 'Sobrou 1 cota sozinha.', nao_quero: 'Só sobrou dia que ele não quer.', sem_dia: 'Sem dia livre com falta ou vaga.' },
+        foraMotivo: { solta: 'Sobrou 1 cota sozinha.', nao_quero: 'Só sobrou dia que ele não quer.', sem_dia: 'Sem dia livre com falta ou vaga.',
+          administrativo: 'Administrativo: não coube sem quebrar em mais dias.' },
+        /* a extra do administrativo que começa no fim do expediente (a quarta) e deixa falta que a bolinha cobriria */
+        inicioFalta: function (ini, das, ate) { return 'Começando às ' + ini + ', fica falta de gente das ' + das + ' às ' + ate + '.'; },
+        inicioIdeal: function (ini, das, ate) { return 'Começando às ' + ini + ', fica abaixo do ideal das ' + das + ' às ' + ate + '.'; },
         resultadoSugestao: function (c, v, a) {
           var partes = [];
           if (v) partes.push(v + (v === 1 ? ' dia com vermelho' : ' dias com vermelho'));
@@ -812,6 +816,7 @@
         mudouPassou: function (militar, antes, depois) { return 'O ' + militar + ' passou ' + lista('do', antes) + ' para ' + lista('o', depois) + '.'; },
         mudouSemFuncao: function (militar, antes) { return 'O ' + militar + ' saiu ' + lista('do', antes) + ' e ficou sem função.'; },
         mudouSaiu: function (militar, antes) { return 'O ' + militar + ' saiu ' + lista('do', antes) + '.'; },
+        mudouDia: function (militar, para, horas) { return 'O ' + militar + ' passou o serviço' + (horas ? ' ' + horas : '') + ' para ' + para + '.'; },
         mudouHorario: function (militar, periodos) { return 'O ' + militar + ' continua nas mesmas funções, agora ' + (periodos || 'o dia todo') + '.'; },
         mudouDeixou: function (militar, deixou) { return 'O ' + militar + ' deixou ' + lista('o', deixou) + '.'; },
         mudouGanhou: function (militar, ganhou) { return 'O ' + militar + ' passou a fazer também ' + lista('o', ganhou) + '.'; },
@@ -860,7 +865,7 @@
         ficaVazioDas: function (funcao, periodos) { return 'O ' + funcao + ' fica vazio ' + periodos + '.'; },
         /* Remover militar: a origem de cada parte ("Pelo ciclo, das 08h às 20h") e o botão da troca */
         parte: function (origem, periodos) {
-          var nomes = { ciclo: 'Pelo ciclo', pontual: 'Pontual', troca: 'Por troca' };
+          var nomes = { ciclo: 'Pelo ciclo', pontual: 'Pontual', troca: 'Por troca', mudanca: 'Mudou de dia' };
           return (nomes[origem] || '') + ', ' + periodos;
         },
         removerDoDia: function (militar) { return 'Remover o ' + militar + ' do dia'; },
@@ -875,6 +880,11 @@
         },
         remanejadoPara: function (destino) { return 'Remanejado para ' + artigo(destino) + ' ' + destino; },
         devolverA: function (origem) { return 'Devolver ' + (artigo(origem) === 'a' ? 'à ' : 'ao ') + origem; },
+        /* Remover militar › quem veio de outro dia (mudança de dia): volta para o dia de antes ou sai deste dia, e o de
+           antes vira folga (a pergunta do banco de horas vem depois) */
+        devolverPara: function (de) { return 'Devolver para ' + de; },
+        devolverParaAjuda: function (de, para) { return 'O serviço volta para ' + de + ' e sai de ' + para + '. O banco de horas não muda.'; },
+        tirarMudancaAjuda: function (de) { return 'Ele sai deste dia e fica de folga em ' + de + '.'; },
         /* Remanejar militar: Trazer para esta unidade ou Enviar para outra; a lista de militares antes da unidade, as
            perguntas, o serviço de quem vai ("Pelo ciclo, das 08h às 08h.") e a nota da distribuição */
         comArtigo: function (unidade) { return artigo(unidade) + ' ' + unidade; },
@@ -922,6 +932,69 @@
         escolhaHoras: 'Escolha para onde vão as horas',
         confirmarCancelamento: 'Confirmar cancelamento',
         erroRemover: 'O horário que sai precisa ficar dentro do serviço que ele tem no dia.'
+      },
+      /* Mudar o dia do serviço (o menu Editar o dia; escalas-painel-mudar-dia.js): a lista Quem, o mês em miniatura, o
+         horário, o Onde fica, o Como fica e os avisos */
+      mudarDia: {
+        grupoCiclo: 'De serviço pelo ciclo',
+        grupoNao: 'Não dá para mudar por aqui',
+        ninguem: 'Ninguém de serviço pelo ciclo neste dia',
+        /* quem não muda por aqui e o caminho certo */
+        naoTroca: 'Está por troca. Mude pela página Trocas.',
+        naoExtra: 'Está de extra. Mude pela Extrajornada.',
+        naoPontual: 'É pontual. Tire pelo Remover militar e ponha no outro dia pelo Adicionar.',
+        naoRemanejado: 'Está remanejado neste dia. Devolva antes, pelo Remover militar.',
+        naoMudou: function (de) { return 'Veio de ' + de + '. Para mudar de novo, devolva antes pelo Remover militar.'; },
+        naoOutraUnidade: 'É de outra unidade neste dia.',
+        servico: function (data, periodos) { return 'De serviço em ' + data + ' pelo ciclo, ' + periodos + '.'; },
+        mes: function (mes, ano) { return mes + ' de ' + ano; },
+        /* o texto embaixo do número de cada dia */
+        dia: { origem: 'Sai deste', pode: 'Pode', servico: 'De serviço', extra: 'De extra', outra_unidade: 'Outra unidade',
+          ferias: 'Férias', licenca: 'Licença', dispensa: 'Dispensa' },
+        horas: function (h) { return h + ' h'; },
+        seguidas: function (dias, militar, horas) {
+          return 'Em ' + juntarComE(dias) + ', o ' + militar + ' fica ' + horas + ' h seguidas de serviço. Dá para salvar assim.';
+        },
+        parte: function (para, horas, de, resto) {
+          return 'Em ' + para + ', ele entra no mesmo horário, ' + horas + '.' + (resto ? ' Em ' + de + ', continua de serviço ' + resto + '.' : '');
+        },
+        /* o Onde fica do dia novo: a vaga sem ninguém no horário */
+        vaga: function (lugar) { return 'No ' + lugar + ', que está sem ninguém'; },
+        /* Como fica: o dia de antes, o dia novo, a folga e o banco de horas */
+        comoSai: function (de, militar) { return de + ': o ' + militar + ' sai, e o sistema refaz o dia.'; },
+        comoSaiParte: function (de, militar, horas, resto) { return de + ': o ' + militar + ' sai ' + horas + ' e continua de serviço ' + resto + '.'; },
+        comoEntraVaga: function (para, militar, horas, lugar) {
+          return para + ': o ' + militar + ' entra' + (horas ? ' ' + horas : '') + ' no ' + lugar + ', que estava sem ninguém.';
+        },
+        comoEntraFuncao: function (para, militar, horas, lugar) { return para + ': o ' + militar + ' entra' + (horas ? ' ' + horas : '') + ' no ' + lugar + '.'; },
+        comoEntraLugar: function (para, militar, horas, outro) {
+          return para + ': o ' + militar + ' entra' + (horas ? ' ' + horas : '') + ' no lugar do ' + outro + '.';
+        },
+        comoEntraSistema: function (para, militar, horas) {
+          return para + ': o ' + militar + ' entra' + (horas ? ' ' + horas : '') + ', e o sistema distribui o dia.';
+        },
+        comoEntraSistemaLugar: function (para, militar, horas, lugares) {
+          return para + ': o ' + militar + ' entra' + (horas ? ' ' + horas : '') + ', e o sistema o põe ' + lista('no', lugares) + '.';
+        },
+        comoFolga: function (antes, depois, proximo) {
+          var partes = [];
+          if (antes) partes.push(antes + ' h antes');
+          if (depois) partes.push(depois + ' h depois' + (proximo ? ', até o serviço de ' + proximo : ''));
+          return 'Folga: ' + partes.join(' e ') + '.';
+        },
+        comoBanco: 'Banco de horas: não muda. É o mesmo serviço, em outro dia.',
+        /* o que o banco conferiu: o dia de antes abaixo do mínimo ("o 2ºPEL", "a ABT-01") e quem assume o Chefe de Socorro
+           ou o Oficial de Área */
+        quemUnidade: function (unidade) { return artigo(unidade) + ' ' + unidade; },
+        quemPosto: function (posto, feminino) { return (feminino ? 'a ' : 'o ') + posto; },
+        abaixoMinimo: function (quem, pessoas, data, minimo, dia) {
+          return 'Sem ele, ' + quem + ' fica com ' + pessoas + ' em ' + data + ', abaixo do mínimo de ' + minimo
+            + '. Dá para salvar, e o dia ' + dia + ' fica com o erro até alguém entrar.';
+        },
+        assumeAntes: function (data, papel, militar) { return 'Em ' + data + ', quem assume o ' + papel + ' é o ' + militar + '.'; },
+        assumeNovo: function (data, militar, papel, antigo) {
+          return 'Em ' + data + ', o ' + militar + ' é o mais antigo e assume o ' + papel + (antigo ? ', no lugar do ' + antigo : '') + '.';
+        }
       },
       seletorMotivo: {
         horario: function (periodos) { return 'De serviço só ' + periodos; },
@@ -971,6 +1044,11 @@
         return t.charAt(0).toUpperCase() + t.slice(1);
       },
       /* a folga no dia (o lápis da caixa De folga): o horário e o efeito de cancelar */
+      /* a folga no dia que veio da mudança de dia: o serviço passou para outro dia; desfazer o traz de volta */
+      mudancaNoDia: function (para, periodo) { return 'Passou para ' + para + (periodo ? ', ' + periodo : ''); },
+      desfazerMudancaEfeito: function (de, para) {
+        return 'O serviço volta para ' + de + ' e sai de ' + para + '. A distribuição dos dois dias é refeita, e o banco de horas não muda.';
+      },
       folgaNoDia: function (periodo, contabilizada) {
         return 'De folga ' + (periodo || 'o dia todo') + ', ' + (contabilizada ? 'contabilizada' : 'não contabilizada');
       },
@@ -988,13 +1066,19 @@
       deOutraUnidade: function (nome) { return (/ª/.test(nome || '') ? 'Da ' : 'Do ') + (nome || ''); },
       /* dica do ícone do militar remanejado: "Remanejado do 2ºPEL, só neste dia" */
       remanejadoDe: function (nome) { return 'Remanejado d' + artigo(nome) + ' ' + (nome || '') + ', só neste dia'; },
+      /* dica do ícone da mudança de dia: "Mudou de dia: veio de 12/11" (o dia novo) e "Mudou de dia: passou para 13/11" (o
+         de antes); e o texto que vai no lugar do horário em De folga */
+      mudouDeDiaDe: function (de) { return 'Mudou de dia: veio de ' + de; },
+      mudouDeDiaPara: function (para) { return 'Mudou de dia: passou para ' + para; },
+      passouPara: function (para) { return 'Passou para ' + para; },
       /* Observações do dia (notas do admin, trocas, folgas, outra unidade, remanejados) — o banco manda os dados, aqui vira texto */
       observacoesTitulo: 'Observações',
       /* o Copiar do título da caixa: a dica depois de copiar e o aviso quando o navegador não deixa */
       observacoesCopiado: 'Copiado',
       observacoesFalhaCopiar: 'Não foi possível copiar. Tente de novo.',
       /* os grupos, na ordem fixa em que aparecem */
-      observacoesGrupos: { admin: 'Administração', troca: 'Trocas', folga: 'Folgas', outra_unidade: 'De outra unidade', remanejado: 'Remanejados' },
+      observacoesGrupos: { admin: 'Administração', troca: 'Trocas', folga: 'Folgas', outra_unidade: 'De outra unidade', remanejado: 'Remanejados',
+        mudanca: 'Mudanças de dia' },
       observacaoLimite: 200,
       observacaoTexto: function (o) {
         function hh(t) { return t ? (String(t).slice(3) === '00' ? String(t).slice(0, 2) + 'h' : t) : ''; }
@@ -1019,6 +1103,11 @@
           return quem(o.grad, o.nome) + ' foi remanejado d' + artigo(o.de_unidade) + ' ' + (o.de_unidade || '') + ' para '
             + artigo(o.para_unidade) + ' ' + (o.para_unidade || '') + noHorario
             + (o.automatico ? ' pelo sistema, porque não há oficial de serviço.' : '.');
+        }
+        /* mudança de dia: aparece nos dois dias, com o horário quando é só uma parte do serviço */
+        if (o.classe === 'mudanca') {
+          return quem(o.grad, o.nome) + ' passou o serviço de ' + (o.de || '') + ' para ' + (o.para || '')
+            + (o.hi === o.hf ? '' : ', das ' + hh(o.hi) + ' às ' + hh(o.hf)) + '.';
         }
         if (o.classe === 'folga') {
           if (o.dia_inteiro || o.hi === o.hf) return quem(o.grad, o.nome) + ' está de folga o dia todo.';

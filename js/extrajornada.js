@@ -50,13 +50,15 @@
   /* relê o mês: a Minha extra e, junto, os passos e os números das abas (RosterWork.extrajornadaOrg). Como na Escala, o
      nome do mês muda na hora e só a área da aba aberta espera o mês novo, com a forma (as setas, as abas e os passos
      continuam usáveis; só o último mês pedido aparece). A releitura do mesmo mês deixa a tela à vista */
-  /* no treino da Extrajornada, as setas do mês ficam paradas no mês de treino */
+  /* no mês de treino, as setas do mês ficam paradas nele, e o selo ao lado do nome e a nota no alto dizem que é treino */
   function noTreino() { return !!(RW.treinoExtra && RW.treinoExtra.mes()); }
   function carregar() {
     var meu = ++pedido, mes = iso(comp);
     el.mes.textContent = nomeMes(comp);
     el.anterior.disabled = noTreino() || comp <= PRIMEIRO;
     el.proximo.disabled = noTreino() || comp >= ultimo;
+    el.treinoSelo.classList.toggle('oculto', !noTreino());
+    el.treinoNota.classList.toggle('oculto', !noTreino());
     if (desenhado !== mes || leituras.minha.situacao === 'falha') leitura('minha', 'lendo');
     RW.extrajornadaOrg.recarregar();
     /* a falha fica no lugar da área (a frase), com a mensagem técnica no console */
@@ -105,7 +107,7 @@
     botaoPedido();
     el.cotasTexto.textContent = ped && ped.concedidas != null ? msg().concedidas(ped.concedidas) : msg().cotasDepois(br(p.fecha));
     el.diasTexto.textContent = r.extras && r.extras.length
-      ? r.extras.map(function (x) { return br(x.data) + ' ' + RW.extrajornadaUtil.horas(x.blocos) + ' (' + x.unidade + ')'; }).join('; ') + (r.lancado ? '.' : ' ' + msg().aindaNaoLancado)
+      ? r.extras.map(function (x) { return br(x.data) + ' ' + RW.extrajornadaUtil.horas(x.blocos, x.inicio) + ' (' + x.unidade + ')'; }).join('; ') + (r.lancado ? '.' : ' ' + msg().aindaNaoLancado)
       : msg().semDias;
   }
 
@@ -260,6 +262,8 @@
     el.mes = conteudo.querySelector('#extrajornada-mes');
     el.anterior = conteudo.querySelector('#extrajornada-mes-anterior');
     el.proximo = conteudo.querySelector('#extrajornada-mes-proximo');
+    el.treinoSelo = conteudo.querySelector('#extrajornada-treino-selo');
+    el.treinoNota = conteudo.querySelector('#extrajornada-treino-nota');
     el.diasTexto = conteudo.querySelector('#extrajornada-dias-texto');
     el.legenda = RW.legenda.montar(conteudo.querySelector('#extrajornada-legenda'));
     el.legendaDivisor = conteudo.querySelector('#extrajornada-legenda-divisor');

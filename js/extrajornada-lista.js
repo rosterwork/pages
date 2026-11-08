@@ -166,6 +166,7 @@
       lin.querySelector('.extrajornada-esq-data-pel').textContent = +a.unidade !== m.unidade_id ? ((u().unidade(a.unidade) || {}).nome || '') : '';
       lin.classList.toggle('extrajornada-esq-data--sai', !a.blocos.length);
       RW.extrajornadaDia.ligarMarcas(lin.querySelector('.extrajornada-marcas'), m, a.data, G().blocos(a), +a.unidade);
+      RW.extrajornadaDiaOutros.ligarInicio(lin, null, m, a.data, +a.unidade);
       lista.appendChild(lin);
     });
     caixa.querySelector('.extrajornada-esq-sem').classList.toggle('oculto', minhas.length > 0);

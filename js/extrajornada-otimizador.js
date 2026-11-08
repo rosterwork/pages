@@ -7,7 +7,9 @@
    escolhas voltam ao banco, que confere as regras e devolve o porquê
    (p_escolhidas). Se o cálculo falhar, passar de 1 minuto ou o banco
    recusar alguma escolha, vale o cálculo simples do banco (o motor
-   reserva). Enquanto calcula, o véu cobre a tela, com o Cancelar.
+   reserva). Regra fixa do administrativo: as cotas que faltam no menor
+   número de dias, sem quebrar em mais (o que não couber fica para o
+   administrador). Enquanto calcula, o véu cobre a tela, com o Cancelar.
    Não cria HTML (o véu está na página) nem escreve estilo (só classList).
    RosterWork.extrajornadaOtimizador.
    ============================================================ */
@@ -22,13 +24,16 @@
   var OPCOES = { presolve: 'off', time_limit: 55, mip_rel_gap: 0.000001 };
   var JANELAS = [{ ini: 1, tam: 4 }, { ini: 1, tam: 3 }, { ini: 2, tam: 3 }, { ini: 1, tam: 2 }, { ini: 2, tam: 2 }, { ini: 3, tam: 2 }];
   var GRUPOS = ['sargento', 'cabo', 'soldado'];
+  var ADMINISTRATIVO = 'Administrativo';   // o Setor da ficha
   /* o placar (maior vale mais): o vermelho de fora da cidade da companhia, o dela, o amarelo de fora, o dela; depois as
      penalidades e os bônus de cada extra, na ordem das prioridades: o pelotão dele (quem sai é, de preferência, o mais
      moderno), usar todas as cotas (a última passa do necessário, o último caso, para não sobrar 1 sozinha), usar a cota,
      evitar 3 dias seguidos no quartel; na sobra, a gente igual entre os dias (cada pessoa a mais custa mais quanto mais
      cheio o dia está), antes do colado ao serviço e do dia quero, com a graduação de desempate */
+  /* cedo: o administrativo que sai à meia-noite (2 cotas que começam no fim do expediente, na quarta), acima da sobra
+     igual entre os dias e abaixo de qualquer falta */
   var P = { vermFora: 10000000, vermSede: 1000000, amarFora: 100000, amarSede: 10000, foraDoPelotao: 2000, completa: 1500,
-            passa: 1000, hora: 200, seguidos: 200, antigo: 150, igual: 50, fila: 10, bloco: 150, emenda: 80, quer: 15, grupo: 5 };
+            passa: 1000, cedo: 300, hora: 200, seguidos: 200, antigo: 150, igual: 50, fila: 10, bloco: 150, emenda: 80, quer: 15, grupo: 5 };
 
   var atual = null;        // o cálculo no ar: { cancelar }
   var pedido = 0;          // latest-wins: só vale o resultado do último Preencher
@@ -51,6 +56,8 @@
     var expediente = [1, 2, 3, 4].filter(function (b) { return x.livres.indexOf(b) < 0; });
     return w.ini === Math.max.apply(null, expediente) + 1;
   }
+  /* o horário de 6 h, contado das 08h (0 a 23), de uma hora 'HH:MM' */
+  function horaDe(t) { return (+t.slice(0, 2) + 16) % 24; }
 
   /* ---------- o modelo: as extras possíveis e o placar ---------- */
   function montarModelo(D) {
@@ -64,6 +71,8 @@
         fixas[k] = (fixas[k] || 0) + 1;
         if (f.grupo) fixasGrupo[k + '|' + f.grupo] = (fixasGrupo[k + '|' + f.grupo] || 0) + 1;
       });
+      /* a que começa no fim do expediente ocupa também o horário de antes, pela metade */
+      if (f.inicio && f.blocos && f.blocos.length) { var k0 = chave(f.uid, f.data, f.blocos[0] - 1); fixas[k0] = (fixas[k0] || 0) + 1; }
     });
     (D.cap || []).forEach(function (c) { cap[c.uid + '|' + c.data] = c.n; });
     (D.escala || []).forEach(function (e) { esc[chave(e.uid, e.data, e.b)] = e; });
@@ -80,29 +89,42 @@
     var NA = Math.max.apply(null, D.mil.map(function (m) { return m.antig || 1; }));
 
     /* as extras possíveis: dia livre e sem extra fixa, a janela que cabe na cota (só 24 h: inteira) e no expediente, e
-       cada horário com falta que ele cobre ou vaga até o máximo; fora da cidade da companhia, ao menos um com falta */
-    var xs = [], cobre = {};
+       cada horário com falta que ele cobre ou vaga até o máximo; fora da cidade da companhia, ao menos um com falta. O
+       administrativo, no dia em que o expediente termina antes da primeira bolinha livre (x.desde, a quarta), tem
+       também as janelas que começam no fim do expediente: elas só fecham a falta dos horários de 6 h que cobrem
+       inteiros e ocupam vaga nos dois que tocam pela metade */
+    var xs = [], cobre = {}, meio = {};
     D.mil.forEach(function (m) {
       datas.forEach(function (d) {
         var x = dia[m.cpf + '|' + d];
         if (!x || !x.livre || fixaNoDia[m.cpf + '|' + d]) return;
+        var primeira = x.livres && x.livres.length ? Math.min.apply(null, x.livres) : 1;
         D.pelotoes.forEach(function (u) {
           var ehSede = sede.indexOf(u) >= 0;
-          JANELAS.forEach(function (w) {
+          function tentar(w, cedo) {
             if (m.so24 ? w.tam !== 4 : w.tam > m.resta) return;
             var bs = blocos(w), util = false;
             if (x.livres && bs.some(function (b) { return x.livres.indexOf(b) < 0; })) return;
-            for (var i = 0; i < bs.length; i++) {
-              var k = chave(u, d, bs[i]), n = nec[k];
+            var cheios = cedo ? bs.slice(0, -1) : bs, metades = cedo ? [w.ini - 1, w.ini + w.tam - 1] : [];
+            for (var i = 0; i < cheios.length; i++) {
+              var k = chave(u, d, cheios[i]), n = nec[k];
               var serve = !!n && (n.vg + n.ag > 0 || conduz(m, n.vc) || conduz(m, n.ac));
               if (serve) util = true;
               else if (vaga(k, u, d) <= 0) return;
             }
+            for (var h = 0; h < metades.length; h++) if (vaga(chave(u, d, metades[h]), u, d) <= 0) return;
             if (!util && !ehSede) return;
             var j = xs.length;
-            xs.push({ m: m, u: u, d: d, ini: w.ini, tam: w.tam, quer: !!x.quer,
-                      emenda: (x.ant && w.ini === 1) || (x.prox && w.ini + w.tam - 1 === 4) || depoisDoExpediente(x, w) });
-            bs.forEach(function (b) { var k = chave(u, d, b); (cobre[k] = cobre[k] || []).push(j); });
+            /* colado ao expediente: na quarta, com 2 cotas a que sai à meia-noite e com 3 a das 14h (emenda no
+               expediente do dia seguinte); nos outros dias, a que começa no primeiro horário livre depois dele */
+            xs.push({ m: m, u: u, d: d, ini: w.ini, tam: w.tam, quer: !!x.quer, inicio: cedo ? x.desde : null, sede: ehSede,
+                      emenda: (x.ant && w.ini === 1) || (x.prox && w.ini + w.tam - 1 === 4) || (cedo ? w.tam === 2 : depoisDoExpediente(x, w)) });
+            cheios.forEach(function (b) { var k = chave(u, d, b); (cobre[k] = cobre[k] || []).push(j); });
+            metades.forEach(function (b) { var k = chave(u, d, b); (meio[k] = meio[k] || []).push(j); });
+          }
+          JANELAS.forEach(function (w) {
+            tentar(w, false);
+            if (x.desde && horaDe(x.desde) < (primeira - 1) * 6 && w.ini === primeira && w.tam <= 3) tentar(w, true);
           });
         });
       });
@@ -112,8 +134,12 @@
     xs.forEach(function (x, i) {
       var v = -P.bloco + (x.emenda ? P.emenda : 0) + x.tam * (P.hora + P.fila * (N - x.m.ordem + 1) / N + (x.quer ? P.quer : 0));
       if (x.u !== x.m.uid) v -= (P.foraDoPelotao + P.antigo * (NA - (x.m.antig || NA) + 1) / NA) * x.tam;
+      /* a que começa no fim do expediente: com 2 cotas, sai à meia-noite; fora da cidade da companhia, as duas metades
+         passam do necessário (6 h, como um horário inteiro) */
+      if (x.inicio) v += (x.tam === 2 ? P.cedo : 0) - (x.sede ? 0 : P.passa);
       obj.push(num(v) + ' x' + i); bins.push('x' + i);
     });
+    var sDe = {}, vgDe = {};   // de cada horário com extra que o cobre inteiro: a variável do que passa e a vaga
     /* cada horário de cada pelotão: o que as extras cobrem (condutor e gente, vermelho e amarelo) e o que passa (s), até
        a vaga do máximo; na cidade da companhia, a gente igual entre os dias (a pessoa a mais custa mais quanto mais cheio
        o dia está, perto do alvo) e a graduação de desempate */
@@ -141,6 +167,7 @@
       });
       var vg = Math.max(0, vaga(k, u, d));
       lim.push('0 <= s' + s + ' <= ' + vg); partes.push('s' + s);
+      sDe[k] = 's' + s; vgDe[k] = vg;
       if (!ehSede) obj.push('-' + P.passa + ' s' + s);
       cons.push('c' + (c++) + ': ' + soma + ' - ' + partes.join(' - ') + ' = 0');
       if (!ehSede) return;
@@ -163,13 +190,24 @@
         cons.push('c' + (c++) + ': ' + soma + ' - ' + nt.join(' - ') + ' = 0');
       }
     });
+    /* a que começa no fim do expediente ocupa vaga nos dois horários que toca pela metade (sem fechar a falta deles) */
+    Object.keys(meio).forEach(function (k) {
+      var p = k.split('|'), soma = meio[k].map(function (i) { return 'x' + i; }).join(' + ');
+      if (sDe[k]) cons.push('c' + (c++) + ': ' + sDe[k] + ' + ' + soma + ' <= ' + vgDe[k]);
+      else cons.push('c' + (c++) + ': ' + soma + ' <= ' + Math.max(0, vaga(k, +p[0], p[1])));
+    });
     /* cada militar: a cota que resta e uma extra por dia */
-    var porMil = {}, porDia = {};
+    var porMil = {}, porDia = {}, extrasMil = {};
     xs.forEach(function (x, i) {
       (porMil[x.m.cpf] = porMil[x.m.cpf] || []).push(x.tam + ' x' + i);
       (porDia[x.m.cpf + '|' + x.d] = porDia[x.m.cpf + '|' + x.d] || []).push('x' + i);
+      (extrasMil[x.m.cpf] = extrasMil[x.m.cpf] || []).push('x' + i);
     });
     D.mil.forEach(function (m) { if (porMil[m.cpf]) cons.push('c' + (c++) + ': ' + porMil[m.cpf].join(' + ') + ' <= ' + m.resta); });
+    /* o administrativo tira as cotas que faltam no menor número de dias (cotas ÷ 4, arredondado para cima) */
+    D.mil.forEach(function (m) {
+      if (m.setor === ADMINISTRATIVO && extrasMil[m.cpf]) cons.push('c' + (c++) + ': ' + extrasMil[m.cpf].join(' + ') + ' <= ' + Math.ceil(m.resta / 4));
+    });
     /* não deixar 1 cota sozinha: usar todas as cotas (a) vale P.completa, o bastante para a última passar do necessário
        (o último caso), mas não para tirar alguém do pelotão */
     D.mil.forEach(function (m) {
@@ -287,7 +325,7 @@
       return resolver(modelo.lp).then(function (marcadas) {
         return completarSoltas(D, marcadas.map(function (nome) {
           var x = modelo.xs[+nome.slice(1)];
-          return { cpf: x.m.cpf, data: x.d, unidade: x.u, blocos: blocos(x) };
+          return { cpf: x.m.cpf, data: x.d, unidade: x.u, blocos: blocos(x), inicio: x.inicio };
         }));
       });
     });

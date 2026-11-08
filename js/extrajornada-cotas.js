@@ -147,10 +147,10 @@
           p2.sujo = true; desenhar(); pedirSugestao();
         });
       }
-      var e = bloco.querySelector('.ne-entregues'), ent = soma(daqui, conc);
+      var e = bloco.querySelector('.extrajornada-p2-entregues'), ent = soma(daqui, conc);
       e.textContent = ent;
       pintar(e, cor(recebeu, daqui));
-      bloco.querySelector('.ne-sobram').textContent = recebeu - ent;
+      bloco.querySelector('.extrajornada-p2-sobram').textContent = recebeu - ent;
       /* a fila: a da companhia (entre todos) ou a da unidade (por unidades) */
       var bloquinho = bloco.querySelector('.extrajornada-voluntarios-bloquinho');
       daqui.forEach(function (m) {
@@ -188,9 +188,9 @@
     l.querySelector('.extrajornada-voluntarios-pediu').textContent = m.cotas;
     /* quem pede pela primeira vez conta como 100% na fila; a tela diz "Primeira vez" */
     var primeira = !m.pediu12;
-    l.querySelector('.ne-pct').textContent = primeira ? '' : msg().porcento(Math.round(100 * (m.recebeu12 || 0) / m.pediu12));
-    l.querySelector('.ne-de').textContent = primeira ? '' : msg().deCotas(m.recebeu12 || 0, m.pediu12);
-    l.querySelector('.ne-primeira').classList.toggle('oculto', !primeira);
+    l.querySelector('.extrajornada-p2-porcento').textContent = primeira ? '' : msg().porcento(Math.round(100 * (m.recebeu12 || 0) / m.pediu12));
+    l.querySelector('.extrajornada-p2-de-cotas').textContent = primeira ? '' : msg().deCotas(m.recebeu12 || 0, m.pediu12);
+    l.querySelector('.extrajornada-p2-primeira-vez').classList.toggle('oculto', !primeira);
     var sug = l.querySelector('.extrajornada-sug');
     sug.textContent = sugestao(m);
     /* a sugestão parou no que cabe nos dias livres dele: a dica diz quanto cabe */

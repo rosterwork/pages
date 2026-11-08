@@ -3,8 +3,9 @@
    O bloquinho branco de uma unidade num dia, como na tela: o nome da
    unidade (só no calendário), o gráfico de cobertura (24 barras, na
    cor do estado), e uma linha por militar com os ícones de origem, a
-   graduação (no calendário, o posto curto), o nome (riscado na folga e
-   na troca; sem caber, cortado com "…", como na tela), o horário e a faixa
+   graduação (no calendário, o posto curto), o nome (riscado na folga,
+   na troca, no remanejado e na mudança de dia; sem caber, cortado com
+   "…", como na tela), o horário e a faixa
    do horário (cinza fora do turno). O "Mostrar" do painel liga e
    desliga o gráfico, os ícones e a faixa. As origens, a situação, a
    hora e os trechos do turno vêm do escalas-celula.js (a mesma fonte
@@ -205,7 +206,7 @@
   /* uma linha de militar: ícones · graduação e nome · horário (a faixa por trás). curto: o posto curto (calendário);
      o nome que não cabe no meio sai cortado com "…", numa linha só */
   function linha(p, largura, mostrar, c, curto) {
-    var riscada = p.origem === 'folga' || p.origem === 'troca_saida' || p.origem === 'remanejado_saida';
+    var riscada = p.origem === 'folga' || p.origem === 'troca_saida' || p.origem === 'remanejado_saida' || p.origem === 'mudanca_saida';
     var colunas = [];
     var livre = largura;
     if (mostrar.icones) {

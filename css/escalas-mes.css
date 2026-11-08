@@ -412,12 +412,16 @@
   text-align: left;
 }
 
-/* folga, troca e remanejamento (saiu para outra unidade): o militar aparece, mas riscado (graduação, nome e
-   HORÁRIO) e apagado. O horário entra no risco porque é justamente o trecho que ele deixou de fazer. Quando é
-   parcial, a linha riscada traz só o trecho trocado/de folga, e o trecho que ele cumpre aparece noutra linha, sem risco. */
+/* folga, troca, remanejamento (saiu para outra unidade) e mudança de dia (o serviço passou para outro dia): o militar
+   aparece, mas riscado (graduação, nome e HORÁRIO) e apagado. O horário entra no risco porque é justamente o trecho que
+   ele deixou de fazer. Quando é parcial, a linha riscada traz só o trecho trocado/de folga, e o trecho que ele cumpre
+   aparece noutra linha, sem risco. */
 .linha-escalado--folga .linha-escalado-grad,
 .linha-escalado--folga .linha-escalado-nome,
 .linha-escalado--folga .linha-escalado-hora,
+.linha-escalado--mudou-dia .linha-escalado-grad,
+.linha-escalado--mudou-dia .linha-escalado-nome,
+.linha-escalado--mudou-dia .linha-escalado-hora,
 .linha-escalado--trocado .linha-escalado-grad,
 .linha-escalado--trocado .linha-escalado-nome,
 .linha-escalado--trocado .linha-escalado-hora,

@@ -26,7 +26,8 @@
     troca: 'icone-origem-troca',
     pontual: 'icone-origem-pontual',
     sistema: 'icone-origem-sistema',
-    extra: 'icone-extrajornada'
+    extra: 'icone-extrajornada',
+    mudanca: 'icone-origem-mudanca'
   };
 
   /* aviso do motor (escalas_onde.aviso) -> chave no catálogo RosterWork.mensagens.escala.erros */
@@ -44,6 +45,18 @@
   function definirIcone(svg, nomeIcone) {
     var uso = svg.querySelector('use');
     if (uso) uso.setAttribute('href', 'icones/todos.svg#' + nomeIcone);
+  }
+
+  /* o ícone de origem da linha (nomeIcone, quando quem chama já escolheu). Quem veio de outro dia (mudança de dia) leva o
+     ícone da mudança com a dica de onde veio */
+  function iconeDaLinha(m, nomeIcone) {
+    if (!nomeIcone && m && m.origem === 'mudanca' && m.mudanca_de) {
+      var el = RosterWork.tpl('tpl-escala-mudanca-icone');
+      if (el) { el.setAttribute('data-dica', RosterWork.mensagens.escala.mudouDeDiaDe(m.mudanca_de)); return el; }
+    }
+    var svg = RosterWork.tpl('tpl-escala-mes-origem');
+    if (svg) definirIcone(svg, nomeIcone || ICONE_ORIGEM[m && m.origem] || ICONE_ORIGEM.sistema);
+    return svg;
   }
 
   /* "08:00" -> "08h" (hora cheia) */
@@ -616,8 +629,8 @@
     if (opts && opts.ghost) linha.classList.add('escala-distribuicao-escalado--automatico');
 
     var icones = linha.querySelector('.escala-distribuicao-icones');
-    var origem = RosterWork.tpl('tpl-escala-mes-origem');
-    if (origem) { definirIcone(origem, ICONE_ORIGEM[m.origem] || ICONE_ORIGEM.sistema); icones.appendChild(origem); }
+    var origem = iconeDaLinha(m);
+    if (origem) icones.appendChild(origem);
     if (m.fixado) {
       var cadeado = RosterWork.tpl('tpl-escala-mes-origem');
       if (cadeado) { definirIcone(cadeado, 'icone-cadeado'); icones.appendChild(cadeado); }
@@ -989,11 +1002,11 @@
     destino.appendChild(pilula);
   }
 
-  /* ícone por classe de observação (troca/folga/outra unidade/remanejado automáticas; admin manual) */
+  /* ícone por classe de observação (troca/folga/outra unidade/remanejado/mudança de dia automáticas; admin manual) */
   var ICONE_OBS = { troca: 'icone-origem-troca', folga: 'icone-folgas', outra_unidade: 'icone-reforco', remanejado: 'icone-remanejado',
-    admin: 'icone-anotacao' };
+    mudanca: 'icone-origem-mudanca', admin: 'icone-anotacao' };
   /* a ordem fixa dos grupos das Observações */
-  var ORDEM_OBS = ['admin', 'troca', 'folga', 'outra_unidade', 'remanejado'];
+  var ORDEM_OBS = ['admin', 'troca', 'folga', 'outra_unidade', 'remanejado', 'mudanca'];
 
   /* separa as observações nos grupos, na ordem fixa; dentro do grupo fica a ordem que veio (o banco já ordena
      por antiguidade; as notas novas do Editar entram no fim de Administração). Usado no painel e no PDF.
@@ -1042,8 +1055,8 @@
     });
   }
 
-  /* seção "Observações" do dia em grupos: Administração (notas manuais do admin), Trocas, Folgas, De outra unidade e
-     Remanejados (automáticas), cada um com a sua lista numerada e, com itens, o Copiar no título. Para o admin no Dia:
+  /* seção "Observações" do dia em grupos: Administração (notas manuais do admin), Trocas, Folgas, De outra unidade,
+     Remanejados e Mudanças de dia (automáticas), cada um com a sua lista numerada e, com itens, o Copiar no título. Para o admin no Dia:
      botão para adicionar (com limite) e ✕ para excluir SÓ as do admin; as duas coisas gravam na hora.
      Sem editar: só leitura. opcoes = { editar, aoAdicionar(texto), aoRemover(observacao) } */
   function montarObservacoes(obs, opcoes) {
@@ -1129,6 +1142,7 @@
     /* peças de montagem reaproveitadas pelo Dia (escalas-painel-editar/-formulario/-militar) */
     pecas: {
       definirIcone: definirIcone,
+      iconeDaLinha: iconeDaLinha,
       iconeOrigem: ICONE_ORIGEM,
       formatarHora: formatarHora,
       hora: montarHora,

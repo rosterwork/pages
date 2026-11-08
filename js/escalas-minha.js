@@ -25,10 +25,11 @@
   var ICONE_ORIGEM = {
     base: 'icone-origem-base', saida: 'icone-origem-saida', troca: 'icone-origem-troca', troca_saida: 'icone-origem-troca',
     remanejado_saida: 'icone-remanejado', pontual: 'icone-origem-pontual', sistema: 'icone-origem-sistema', folga: 'icone-folgas',
-    extra: 'icone-extrajornada'
+    extra: 'icone-extrajornada', mudanca: 'icone-origem-mudanca', mudanca_saida: 'icone-origem-mudanca'
   };
-  /* as linhas de quem saiu do serviço (riscadas na Escala; o remanejado saiu da unidade dele, e o serviço segue na outra) */
-  var RISCADA = { folga: true, troca_saida: true, remanejado_saida: true };
+  /* as linhas de quem saiu do serviço (riscadas na Escala; o remanejado saiu da unidade dele, e o serviço segue na outra;
+     na mudança de dia, o serviço passou para outro dia) */
+  var RISCADA = { folga: true, troca_saida: true, remanejado_saida: true, mudanca_saida: true };
 
   var el = {};
   var estado = { mes: null, dados: null, selecionado: null, pedidoDia: 0 };

@@ -3,17 +3,38 @@
    7 colunas (dom a sáb), só os dias do mês; cada dia é um botão
    com o número (canto de cima à esquerda), um número pequeno no
    canto de cima à direita e um texto embaixo. Os estados pintam o
-   dia: --quer (verde), --nao (vermelho), --ocupado (cinza, sem
-   clique) e --inativo (só o número, fraco). Marcas de quem usa: --hoje (o número no círculo
-   escuro), --selecionado (a moldura escura do dia escolhido) e
-   --afastado (listrado, como o afastamento da Escala).
-   Usado no Solicitar extra (Extrajornada) e na Minha escala (Escala).
+   dia: --quer (verde), --nao (vermelho), --alerta (amarelo: pode,
+   com ressalva), --ocupado (cinza, sem clique), --origem (a borda
+   tracejada do dia de onde algo sai, sem clique) e --inativo (só o
+   número, fraco). Marcas de quem usa: --hoje (o número no círculo
+   escuro), --selecionado (a moldura escura do dia escolhido),
+   --afastado (listrado, como o afastamento da Escala) e o número
+   pequeno em vermelho (.mini-calendario-conta--erro). Em cima, o
+   mês com as setas (.mini-calendario-mes); embaixo, a legenda.
+   Usado no Solicitar extra (Extrajornada), na Minha escala e no
+   Mudar o dia do serviço (Escala).
    Montagem: componentes/js/geral-mini-calendario.js
    ============================================================ */
 
 .mini-calendario {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+/* o mês em cima da grade: as setas nas pontas e o nome no meio (com os pontos enquanto o mês carrega) */
+.mini-calendario-mes {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.mini-calendario-mes-nome {
+  display: inline-flex;
+  align-items: center;
   gap: 4px;
 }
 
@@ -87,6 +108,37 @@
 
 .mini-calendario-dia--nao .mini-calendario-texto {
   font-weight: 600;
+  color: var(--erro);
+}
+
+/* pode, com ressalva (ex.: ficaria 48 h seguidas de serviço): o amarelo */
+.mini-calendario-dia--alerta {
+  border-color: var(--alerta-fundo-forte);
+  background-color: var(--alerta-fundo);
+}
+
+.mini-calendario-dia--alerta .mini-calendario-texto {
+  font-weight: 600;
+  color: var(--alerta);
+}
+
+/* o dia de onde algo sai (ex.: o dia de antes do Mudar o dia do serviço): a borda tracejada, sem clique */
+.mini-calendario-dia--origem,
+.mini-calendario-dia--origem:hover {
+  border-style: dashed;
+  border-color: var(--texto-fraco);
+  background-color: var(--fundo-suave);
+  cursor: default;
+}
+
+.mini-calendario-dia--origem .mini-calendario-numero,
+.mini-calendario-dia--origem .mini-calendario-texto {
+  color: var(--texto-fraco);
+}
+
+/* o número pequeno em vermelho (ex.: as vagas sem ninguém no dia) */
+.mini-calendario-conta--erro {
+  font-weight: 700;
   color: var(--erro);
 }
 
@@ -169,3 +221,10 @@
 .mini-calendario-legenda-cor--quer { border-color: var(--sucesso-fundo-forte); background-color: var(--sucesso-fundo); }
 .mini-calendario-legenda-cor--nao { border-color: var(--erro-fundo-forte); background-color: var(--erro-fundo); }
 .mini-calendario-legenda-cor--ocupado { border-color: var(--fundo-medio); background-color: var(--fundo-suave); }
+.mini-calendario-legenda-cor--alerta { border-color: var(--alerta-fundo-forte); background-color: var(--alerta-fundo); }
+
+/* a amostra do número pequeno em vermelho */
+.mini-calendario-legenda-numero {
+  font-weight: 700;
+  color: var(--erro);
+}

@@ -24,7 +24,7 @@
   var d = null;
   var modo = 'distribuicao';   // 'distribuicao' (passo 3) ou 'ajustes' (passo 4 e a aba da Escala)
   var aoMudar = null;      // quem abriu redesenha: aoMudar(dia que mudou)
-  var mud = {};            // rascunho: 'cpf|data' -> { cpf, data, unidade, blocos, origem, porque } (blocos [] = sai ao salvar)
+  var mud = {};            // rascunho: 'cpf|data' -> { cpf, data, unidade, blocos, origem, porque, inicio } (blocos [] = sai ao salvar)
   var escala = null;       // a escala do mês, a mesma da Escala: { comp, cobertura, erro, militares }
   var picos = {};          // a régua das barras de cada unidade no mês (antes e depois)
 
@@ -72,7 +72,16 @@
     return r;
   }
   function blocos(a) { return a.blocos.map(Number); }
-  function mesmosBlocos(a, b) { return blocos(a).sort().join() === blocos(b).sort().join(); }
+  function mesmosBlocos(a, b) { return blocos(a).sort().join() === blocos(b).sort().join() && (a.inicio || null) === (b.inicio || null); }
+  /* o administrativo no dia em que o expediente termina antes da primeira bolinha livre (a quarta): a hora em que a
+     extra pode começar (o fim do expediente), ou null */
+  function desde(m, k) { return ((d.desde_adm || {})[m.cpf] || {})[k] || null; }
+  /* começar no fim do expediente vale para as bolinhas seguidas desde a primeira livre do dia */
+  function inicioCabe(m, k, bs) {
+    var livres = ((d.livres_adm || {})[m.cpf] || {})[k] || [], b = bs.map(Number).sort();
+    if (!desde(m, k) || !b.length || !livres.length) return false;
+    return b[0] === Math.min.apply(null, livres) && b[b.length - 1] - b[0] + 1 === b.length;
+  }
   function usadas(cpf, alocs) { return (alocs || efetivas()).filter(function (a) { return a.cpf === cpf; }).reduce(function (s, a) { return s + a.blocos.length; }, 0); }
   /* a distribuição só é salva depois que o pedido fecha: antes disso, só dá para tirar extra */
   function travado() { return d.mes.estado !== 'encerrado'; }
@@ -145,15 +154,20 @@
     if (rc && rc.length === 24) return { cobertura: rc.map(Number), erro: ((escala.erro[uid] || {})[k] || []).map(Number) };
     var cob = antesDe(uid, k);
     if (!cob) return null;
-    var err = antesDoDia(uid, k).erro || [], c = cob.map(Number), e = [];
+    var err = antesDoDia(uid, k).erro || [], c = cob.map(Number), e = [], meias = {};
     alocs.forEach(function (a) {
       if (+a.unidade !== +uid || a.data !== k) return;
-      blocos(a).forEach(function (b) { for (var h = (b - 1) * 6; h < b * 6; h++) c[h]++; });
+      var cheios = u().cheios(a);
+      u().horasDe(a).forEach(function (h) {
+        c[h]++;
+        /* a que começa no fim do expediente: as horas dos horários que ela só toca (a falta deles conta sem ela) */
+        if (cheios.indexOf(Math.floor(h / 6) + 1) < 0) meias[h] = (meias[h] || 0) + 1;
+      });
     });
     for (var h = 0; h < 24; h++) {
-      var b = Math.floor(h / 6) + 1, v = Number(err[h]) || 0;
-      if (v === 1 && falta.base[b] > 0 && falta.total[b] === 0) v = 0;
-      else if (v === 2 && falta.abase[b] > 0 && falta.atotal[b] === 0) v = 0;
+      var b = Math.floor(h / 6) + 1, v = Number(err[h]) || 0, meia = meias[h] || 0;
+      if (v === 1 && falta.base[b] > 0 && falta.total[b] - meia <= 0) v = 0;
+      else if (v === 2 && falta.abase[b] > 0 && falta.atotal[b] - meia <= 0) v = 0;
       e.push(v);
     }
     return { cobertura: c, erro: e };
@@ -183,14 +197,33 @@
   function grafico(cob, uid, erro) { return RW.escalasCelula ? RW.escalasCelula.montarGrafico(cob, picos[uid] || 1, erro) : null; }
 
   /* muda os horários do militar no dia (o mesmo para o calendário, a lista e o painel do dia). Passar da cota fica no
-     rascunho, e o Salvar espera acertar; sem nenhum horário, ele continua no dia até o Salvar */
-  function mudar(m, k, novos, unidade) {
+     rascunho, e o Salvar espera acertar; sem nenhum horário, ele continua no dia até o Salvar. inicio: a hora em que a
+     extra começa, quando o administrativo começa no fim do expediente; sem ele (as bolinhas mudaram), vale o padrão: com
+     2 cotas, no fim do expediente (sai à meia-noite); senão, na bolinha */
+  function mudar(m, k, novos, unidade, inicio) {
     if (soLeitura() || antigo(k)) return;
-    var antes = base(m.cpf, k);
-    var novo = { cpf: m.cpf, data: k, unidade: +unidade, blocos: novos.slice().sort(), origem: 'admin', porque: null };
-    if (antes && +antes.unidade === novo.unidade && JSON.stringify(blocos(antes).sort()) === JSON.stringify(novo.blocos)) delete mud[chave(m.cpf, k)];
+    var antes = base(m.cpf, k), bs = novos.slice().sort();
+    if (inicio === undefined) inicio = bs.length === 2 ? desde(m, k) : null;
+    if (!inicioCabe(m, k, bs)) inicio = null;
+    var novo = { cpf: m.cpf, data: k, unidade: +unidade, blocos: bs, origem: 'admin', porque: null, inicio: inicio || null };
+    if (antes && +antes.unidade === novo.unidade && JSON.stringify(blocos(antes).sort()) === JSON.stringify(novo.blocos)
+        && (antes.inicio || null) === novo.inicio) delete mud[chave(m.cpf, k)];
     else mud[chave(m.cpf, k)] = novo;
     if (aoMudar) aoMudar(k);
+  }
+
+  /* a extra do militar que começa no fim do expediente deixa falta que, começando na bolinha, ela cobriria: { cor
+     ('erro' ou 'alerta'), das, ate } das horas que ficam descobertas, ou null */
+  function faltaDoInicio(uid, k, cpf) {
+    var alocs = efetivas(), a = alocs.filter(function (x) { return x.cpf === cpf && x.data === k; })[0];
+    if (!a || !a.inicio || +a.unidade !== +uid) return null;
+    var naBolinha = alocs.map(function (x) { return x === a ? { cpf: x.cpf, data: x.data, unidade: x.unidade, blocos: x.blocos, origem: x.origem, inicio: null } : x; });
+    /* a conta das duas (sem a cor da escala de hoje, que já tem a extra salva): a diferença é o que o início muda */
+    var com = F().doDia(d, uid, k, alocs, null), sem = F().doDia(d, uid, k, naBolinha, null);
+    var ultimo = Math.max.apply(null, blocos(a));
+    var vermelho = com.total[ultimo] > sem.total[ultimo], amarelo = com.atotal[ultimo] > sem.atotal[ultimo];
+    if (!vermelho && !amarelo) return null;
+    return { cor: vermelho ? 'erro' : 'alerta', das: u().horas(blocos(a), a.inicio).split(' às ')[1], ate: u().horas([ultimo]).split(' às ')[1] };
   }
 
   /* os dias com falta que sobram (para a conferência do lançamento) */
@@ -225,6 +258,6 @@
     /* quem está de serviço no dia, na escala (sem as extras já lançadas, que aparecem nas vagas) */
     deServico: function (uid, k) { return ((escala.militares[uid] || {})[k] || []).filter(function (p) { return p.origem !== 'extra'; }); },
     pelotoes: pelotoes, diasDoMes: diasDoMes, ultimoDia: ultimoDia, dataDe: dataDe, dataLonga: dataLonga, nomeDoMes: nomeDoMes, somaDia: somaDia,
-    mudar: mudar, diasComFalta: diasComFalta
+    mudar: mudar, diasComFalta: diasComFalta, desde: desde, inicioCabe: inicioCabe, faltaDoInicio: faltaDoInicio
   };
 })();

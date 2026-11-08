@@ -180,6 +180,12 @@
   color: var(--texto-fraco);
 }
 
+/* de folga pela mudança de dia: no lugar do período, o dia para onde o serviço passou ("Passou para 13/11") */
+.escala-edicao-passou {
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
 /* horário sem ninguém: o texto vermelho */
 .escala-edicao-vazio-leitura {
   font-size: 12px;
@@ -285,7 +291,8 @@
 .escala-linha .nota,
 .escala-adicionar .nota,
 .escala-remover .nota,
-.escala-remanejar .nota {
+.escala-remanejar .nota,
+.escala-mudar-dia .nota {
   align-items: flex-start;
 }
 
@@ -361,6 +368,11 @@
   gap: 4px;
 }
 
+/* as vagas sem ninguém (só no Mudar o dia do serviço) entram entre as bolinhas como as outras */
+.escala-onde-fica-vagas {
+  display: contents;
+}
+
 .escala-adicionar-datas {
   display: flex;
   flex-direction: column;
@@ -387,6 +399,36 @@
 /* as caixas Onde fica entram na sub-tela como as outras (o espaço e a numeração são do geral-subtela) */
 .escala-remanejar-ondes {
   display: contents;
+}
+
+/* ---------- Mudar o dia do serviço ---------- */
+/* o Onde fica do dia novo entra na sub-tela como as outras caixas (o espaço e a numeração são do geral-subtela) */
+.escala-mudar-dia-onde {
+  display: contents;
+}
+
+/* o Como fica: o título e a lista com as bolinhas, um item por linha; embaixo, os pontos enquanto o banco confere */
+.escala-mudar-dia-como-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.escala-mudar-dia-como-lista {
+  margin: 0;
+  padding: 0 0 0 16px;
+  list-style: disc;
+}
+
+.escala-mudar-dia-como-item + .escala-mudar-dia-como-item {
+  margin-top: 4px;
+}
+
+.escala-mudar-dia-conferindo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 /* ---------- Remover militar › por troca ---------- */

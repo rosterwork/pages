@@ -92,14 +92,14 @@
       var mud = G().rascunho();
       resultadoFechado = false;
       d.alocacoes.forEach(function (a) {
-        if (a.origem === 'sugestao') mud[G().chave(a.cpf, a.data)] = { cpf: a.cpf, data: a.data, unidade: +a.unidade, blocos: [], origem: 'sugestao', porque: null };
+        if (a.origem === 'sugestao') mud[G().chave(a.cpf, a.data)] = { cpf: a.cpf, data: a.data, unidade: +a.unidade, blocos: [], origem: 'sugestao', porque: null, inicio: null };
       });
       postas = 0;
       r.propostas.forEach(function (p) {
         var k = G().chave(p.cpf, p.data), antes = G().base(p.cpf, p.data);
         postas += p.blocos.length;
         if (antes && antes.origem === 'sugestao' && +antes.unidade === +p.unidade && G().mesmosBlocos(antes, p)) delete mud[k];
-        else mud[k] = { cpf: p.cpf, data: p.data, unidade: p.unidade, blocos: p.blocos, origem: 'sugestao', porque: p.porque };
+        else mud[k] = { cpf: p.cpf, data: p.data, unidade: p.unidade, blocos: p.blocos, origem: 'sugestao', porque: p.porque, inicio: p.inicio || null };
       });
       foraSug = {};
       (r.nao_coube || []).forEach(function (n) { foraSug[n.cpf] = n.motivo; });

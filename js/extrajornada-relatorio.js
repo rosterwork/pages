@@ -38,7 +38,7 @@
 
   /* quem mudou desde o lançamento: o que saiu (era) e o que entrou (ficou), por militar, trecho a trecho */
   function mudancas(dados) {
-    var chave = function (x) { return x.cpf + '|' + x.data + '|' + x.uid + '|' + x.b_ini + '|' + x.b_fim; };
+    var chave = function (x) { return x.cpf + '|' + x.data + '|' + x.uid + '|' + x.b_ini + '|' + x.b_fim + '|' + (x.inicio || ''); };
     var naBase = {}, noAtual = {}, por = {};
     (dados.base || []).forEach(function (x) { naBase[chave(x)] = true; });
     (dados.atual || []).forEach(function (x) { noAtual[chave(x)] = true; });

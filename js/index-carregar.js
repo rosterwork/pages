@@ -122,15 +122,16 @@
   }
 
   /* a 3ª etapa diz a tela que vai abrir, e o menu já nasce marcado nela (no F5 de outra tela, a Escala não fica marcada
-     até o código chegar); o HTML traz a Escala, a tela de quem não pediu outra. Tela fora do menu (Meu perfil, Avisos):
-     nenhum item marcado, como a navegação faz */
+     até o código chegar); o HTML traz a Escala, a tela de quem não pediu outra. Tela fora do menu (Meu perfil, Manual,
+     Avisos): o nome marcado com data-nome-da-tela no texto que a abre, e nenhum item marcado, como a navegação faz */
   function nomearTela() {
     var rota = location.search.match(/[?&]pagina=([^&]+)/);
     if (!rota || rota[1] === 'escalas') return;
     var pagina = decodeURIComponent(rota[1]);
-    var item = document.querySelector('.menu-item[data-pagina="' + pagina + '"] .menu-item-label');
+    var nome = document.querySelector('.menu-item[data-pagina="' + pagina + '"] .menu-item-label') ||
+      document.querySelector('[data-nome-da-tela="' + pagina + '"]');
     Array.prototype.forEach.call(document.querySelectorAll('[data-abertura-tela]'), function (lugar) {
-      lugar.textContent = item ? item.textContent : lugar.getAttribute('data-tela-sem-nome');
+      lugar.textContent = nome ? nome.textContent : lugar.getAttribute('data-tela-sem-nome');
     });
     Array.prototype.forEach.call(document.querySelectorAll('.menu-item[data-pagina]'), function (outro) {
       outro.classList.toggle('menu-item--selecionado', outro.getAttribute('data-pagina') === pagina);

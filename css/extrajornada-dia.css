@@ -470,6 +470,45 @@
   grid-column: 2 / -1;
 }
 
+/* a hora em que a extra do administrativo começa (a quarta): embaixo do nome, na largura toda da linha (no painel do dia
+   e na lista dos voluntários; nos outros dias, embaixo do dia), o seletor na altura das bolinhas e, embaixo dele, o
+   aviso da falta que a bolinha cobriria */
+.extrajornada-inicio {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 4px;
+}
+
+.extrajornada-painel-militar > .extrajornada-inicio { grid-column: 2 / -1; }
+
+.extrajornada-esq-data > .extrajornada-inicio { grid-column: 1 / -1; }
+
+.extrajornada-inicio-linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.extrajornada-inicio-opcoes .aba {
+  min-height: 24px;
+  padding: 0 8px;
+}
+
+.extrajornada-inicio-aviso {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--erro);
+}
+
+.extrajornada-inicio-aviso--alerta { color: var(--alerta); }
+
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    As bolinhas de horário crescem para o dedo. Na aba Extrajornada
@@ -493,6 +532,11 @@
 
   html[data-celular] .extrajornada-horas span {
     min-width: 32px;
+  }
+
+  /* o seletor da hora de começar na altura do toque */
+  html[data-celular] .extrajornada-inicio-opcoes .aba {
+    min-height: var(--toque-altura-celular);
   }
 
   html[data-celular] .extrajornada-painel-militar:not(.extrajornada-painel-militar--indisponivel) {

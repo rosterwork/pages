@@ -37,6 +37,9 @@
     folga: 'icone-folgas',
     extra: 'icone-extrajornada',
     afastamento: 'icone-afastamentos',
+    /* a mudança de dia: o dia novo e, riscado, o dia de antes */
+    mudanca: 'icone-origem-mudanca',
+    mudanca_saida: 'icone-origem-mudanca',
     /* quem inseriu a extra, no PDF da grade da Extrajornada (a escala nunca traz estas origens) */
     extra_sistema: 'icone-extra-sistema',
     extra_admin: 'icone-extra-administrador'
@@ -52,7 +55,10 @@
     extra: 'extra',
     pontual: 'pontual',
     folga: 'folga',
-    afastamento: 'afastamento'
+    afastamento: 'afastamento',
+    /* a mudança de dia: o serviço do ciclo, em outro dia; o dia de antes fica como a folga */
+    mudanca: 'prontidao',
+    mudanca_saida: 'folga'
   };
 
   /* o posto curto das células pequenas (os calendários e o PDF deles); o que não está aqui sai inteiro */
@@ -253,6 +259,18 @@
     if (uso) uso.setAttribute('href', 'icones/todos.svg#' + nomeIcone);
   }
 
+  /* quem mudou de dia: o ícone da mudança com a dica de onde o serviço veio ou, na linha riscada do dia de antes, para onde
+     foi (o span recebe a dica); null nas outras origens */
+  function iconeDaMudanca(p) {
+    var t = RosterWork.mensagens.escala;
+    var dica = p.origem === 'mudanca' && p.mudanca_de ? t.mudouDeDiaDe(p.mudanca_de)
+      : p.origem === 'mudanca_saida' && p.mudanca_para ? t.mudouDeDiaPara(p.mudanca_para) : '';
+    if (!dica) return null;
+    var el = RosterWork.tpl('tpl-escala-mudanca-icone');
+    if (el) el.setAttribute('data-dica', dica);
+    return el;
+  }
+
   /* uma linha de militar: ícone de origem (+ cadeado se fixado) + grad + nome + horário (curto: o posto curto) */
   function montarPessoa(p, curto) {
     var linha = RosterWork.tpl('tpl-escala-mes-pessoa');
@@ -260,6 +278,7 @@
     if (p.origem === 'folga') linha.classList.add('linha-escalado--folga');   /* folga: nome riscado */
     if (p.origem === 'troca_saida') linha.classList.add('linha-escalado--trocado');   /* trocado: nome riscado */
     if (p.origem === 'remanejado_saida') linha.classList.add('linha-escalado--remanejado');   /* saiu para outra unidade: riscado */
+    if (p.origem === 'mudanca_saida') linha.classList.add('linha-escalado--mudou-dia');   /* passou para outro dia: riscado */
 
     var icones = linha.querySelector('.linha-escalado-icones');
     /* linha riscada (folga/troca/remanejamento): o ícone da origem NÃO some. Mostra a origem do militar no dia
@@ -268,8 +287,9 @@
       var origemCiclo = RosterWork.tpl('tpl-escala-mes-origem');
       if (origemCiclo) { definirIcone(origemCiclo, ICONE_ORIGEM[p.origem_base]); icones.appendChild(origemCiclo); }
     }
-    var origem = RosterWork.tpl('tpl-escala-mes-origem');
-    if (origem) { definirIcone(origem, iconeDaOrigem(p.origem)); icones.appendChild(origem); }
+    var origem = iconeDaMudanca(p);
+    if (!origem) { origem = RosterWork.tpl('tpl-escala-mes-origem'); if (origem) definirIcone(origem, iconeDaOrigem(p.origem)); }
+    if (origem) icones.appendChild(origem);
     if (p.fixado) {
       var cadeado = RosterWork.tpl('tpl-escala-mes-origem');
       if (cadeado) { definirIcone(cadeado, 'icone-cadeado'); icones.appendChild(cadeado); }
@@ -306,8 +326,9 @@
     });
 
     /* fundo preenchido no trecho do horário (exceção: custom property data-driven).
-       Nas linhas riscadas (folga/troca/remanejamento), inverte: o cinza vai no trecho que ele deixou */
-    var fundo = fundoTurno(p.periodos, p.origem === 'folga' || p.origem === 'troca_saida' || p.origem === 'remanejado_saida');
+       Nas linhas riscadas (folga/troca/remanejamento/mudança de dia), inverte: o cinza vai no trecho que ele deixou */
+    var fundo = fundoTurno(p.periodos, p.origem === 'folga' || p.origem === 'troca_saida' || p.origem === 'remanejado_saida'
+      || p.origem === 'mudanca_saida');
     if (fundo) linha.style.setProperty('--turno-fundo', fundo);
     return linha;
   }

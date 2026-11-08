@@ -43,11 +43,17 @@
   function dois(n) { return String(n).padStart(2, '0'); }
   function dataBr(iso) { var p = String(iso).split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
   function rotuloMes(comp) { var p = String(comp).split('-'); var n = MESES[Number(p[1]) - 1]; return n.charAt(0).toUpperCase() + n.slice(1) + ' de ' + p[0]; }
-  function horario(x) { return txt().horario(INI[x.b_ini], FIM[x.b_fim]); }
+  /* o horário do trecho; o da extra que começa no fim do expediente (inicio) dura 6 h por cota */
+  function horario(x) {
+    if (!x.inicio) return txt().horario(INI[x.b_ini], FIM[x.b_fim]);
+    var h = +x.inicio.slice(0, 2), fim = (h + 6 * (x.b_fim - x.b_ini + 1)) % 24;
+    return txt().horario(String(h).padStart(2, '0') + 'h', String(fim).padStart(2, '0') + 'h');
+  }
   function soma(l) { return (l || []).reduce(function (s, x) { return s + (x.b_fim - x.b_ini + 1); }, 0); }
   function cpfFormatado(c) { var d = String(c || '').replace(/\D/g, ''); return d.length === 11 ? d.slice(0, 3) + '.' + d.slice(3, 6) + '.' + d.slice(6, 9) + '-' + d.slice(9) : c || ''; }
 
-  /* as extras { cpf, data, unidade, blocos } em trechos contínuos { cpf, data, uid, b_ini, b_fim } */
+  /* as extras { cpf, data, unidade, blocos, inicio } em trechos contínuos { cpf, data, uid, b_ini, b_fim, inicio } (a que
+     começa no fim do expediente é sempre um trecho só) */
   function trechos(lista) {
     var saida = [];
     (lista || []).forEach(function (a) {
@@ -56,7 +62,7 @@
       var ini = b[0], ant = b[0];
       for (var i = 1; i <= b.length; i++) {
         if (b[i] === ant + 1) { ant = b[i]; continue; }
-        saida.push({ cpf: a.cpf, data: a.data, uid: +a.unidade, b_ini: ini, b_fim: ant });
+        saida.push({ cpf: a.cpf, data: a.data, uid: +a.unidade, b_ini: ini, b_fim: ant, inicio: a.inicio || null });
         ini = b[i]; ant = b[i];
       }
     });

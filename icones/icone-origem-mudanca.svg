@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="icone-origem-mudanca" viewBox="0 0 24 24">
+    <rect x="2.5" y="5" width="12.5" height="13" rx="2"/>
+    <path d="M2.5 9.5H15M6.5 3V7M11 3V7"/>
+    <path d="M10 14H21"/>
+    <path d="M18 11L21 14L18 17"/>
+  </symbol>
+</svg>

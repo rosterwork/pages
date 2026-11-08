@@ -16,10 +16,15 @@
 
   function msg() { return RW.mensagens.extrajornada.org; }
   function br(s) { return s ? s.slice(8, 10) + '/' + s.slice(5, 7) : ''; }
+  /* a hora de 'HH:MM' contada das 08h (0 a 23) e o 'HHh' de uma hora contada das 08h */
+  function hora8(t) { return (+String(t).slice(0, 2) + 16) % 24; }
+  function hh(h) { return String((h + 8) % 24).padStart(2, '0') + 'h'; }
 
   var util = {
-    horas: function (blocos) {
+    /* o horário escrito; a extra que começa no fim do expediente (inicio) dura 6 h por cota */
+    horas: function (blocos, inicio) {
       var b = blocos.slice().map(Number).sort(), partes = [], ini = b[0], ant = b[0];
+      if (inicio && b.length) return hh(hora8(inicio)) + ' às ' + hh(hora8(inicio) + 6 * b.length);
       for (var i = 1; i <= b.length; i++) {
         if (b[i] === ant + 1) { ant = b[i]; continue; }
         partes.push(INI[ini - 1] + ' às ' + FIM[ant - 1]);
@@ -27,6 +32,23 @@
       }
       return partes.join(' e ');
     },
+    /* as horas (0 a 23, contadas das 08h) em que a extra está no dia */
+    horasDe: function (a) {
+      var b = (a.blocos || []).map(Number), l = [];
+      if (a.inicio && b.length) {
+        for (var h = hora8(a.inicio); h < Math.min(24, hora8(a.inicio) + 6 * b.length); h++) l.push(h);
+        return l;
+      }
+      b.forEach(function (x) { for (var hb = (x - 1) * 6; hb < x * 6; hb++) l.push(hb); });
+      return l;
+    },
+    /* os horários de 6 h que a extra cobre inteiros: a que começa no fim do expediente não cobre o último */
+    cheios: function (a) {
+      var b = (a.blocos || []).map(Number).sort();
+      return a.inicio ? b.slice(0, -1) : b;
+    },
+    /* o 'HHh' da hora em que a extra começa no fim do expediente */
+    hora: function (inicio) { return inicio ? hh(hora8(inicio)) : ''; },
     militar: function (cpf) { return (d && d.militares.filter(function (m) { return m.cpf === cpf; })[0]) || null; },
     unidade: function (id) { return (d && d.unidades.filter(function (u) { return u.id === +id; })[0]) || null; },
     nome: function (cpf) { var m = util.militar(cpf); return m ? m.grad + ' ' + m.nome : cpf; },
@@ -41,7 +63,12 @@
       var v = RW.tpl('tpl-extrajornada-vaga');
       v.querySelector('.extrajornada-vaga-grad').textContent = curto && RW.escalasCelula ? RW.escalasCelula.postoCurto(m.grad) : (m.grad || '');
       v.querySelector('.extrajornada-vaga-nome').textContent = m.nome || a.cpf;
-      var horas = blocos.length === 4 ? msg().horasN(24) : blocos.length ? util.horas(blocos) : '';
+      var horas = blocos.length === 4 ? msg().horasN(24) : blocos.length ? util.horas(blocos, a.inicio) : '';
+      /* a que começa no fim do expediente: a hora pequena antes das bolinhas */
+      var cedo = v.querySelector('.extrajornada-vaga-inicio');
+      cedo.textContent = blocos.length ? util.hora(a.inicio) : '';
+      cedo.classList.toggle('oculto', !cedo.textContent);
+      v.classList.toggle('extrajornada-vaga--cedo', !!cedo.textContent);
       /* sem nenhum horário: em cinza até o Salvar (marcar uma bolinha traz de volta) */
       v.classList.toggle('extrajornada-vaga--sai', !blocos.length);
       v.setAttribute('data-dica', ((m.grad || '') + ' ' + (m.nome || a.cpf)).trim() + (horas ? ', ' + horas : ' · ' + msg().saiAoSalvar));

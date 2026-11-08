@@ -488,9 +488,9 @@
 .extrajornada-col-termo { width: 62px; }
 
 /* nas células de datas, a margem lateral menor deixa mais dias caberem em cada linha */
-.extrajornada-tabela td.ne-quer,
-.extrajornada-tabela td.ne-nao,
-.extrajornada-tabela td.ne-nao-pode { padding: 8px 4px; }
+.extrajornada-tabela td.extrajornada-p1-quer,
+.extrajornada-tabela td.extrajornada-p1-nao-quer,
+.extrajornada-tabela td.extrajornada-p1-nao-pode { padding: 8px 4px; }
 
 /* coluna Não pode: cada período numa peça só, com o motivo na dica; os 2px a mais facilitam o mouse sem mudar o espaço entre as datas */
 .extrajornada-nao-pode-dia {
@@ -886,6 +886,22 @@
   grid-column: 2;
   grid-row: 1 / span 2;
 }
+
+/* a extra do administrativo que começa no fim do expediente: a hora, em negrito, antes do ícone e das bolinhas */
+.extrajornada-vaga--cedo { grid-template-columns: minmax(0, 1fr) auto auto auto; }
+
+.extrajornada-vaga-inicio {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.extrajornada-vaga--cedo > .extrajornada-origem { grid-column: 3; }
+
+.extrajornada-vaga--cedo > .extrajornada-vaga-bol { grid-column: 4; }
+
+.extrajornada-vaga--busca .extrajornada-vaga-inicio { color: var(--texto-invertido); }
 
 .extrajornada-vaga--sai .extrajornada-origem { color: var(--texto-debil); }
 

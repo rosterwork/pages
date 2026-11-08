@@ -247,12 +247,23 @@
       .catch(function () { return null; });
   }
 
+  /* o calendário do Mudar o dia do serviço (RPC escala_mudar_dia_dias): para cada dia do período (até 63 dias), a
+     situação do militar se o serviço pelo ciclo dele em "de" fosse para lá, no mesmo horário, e quantos faltam para o
+     mínimo na unidade. { hi, hf, limite, fim, dias: { 'AAAA-MM-DD': { estado, tipo, horas, antes, depois, faltas } } },
+     { erro } na recusa, ou null em falha */
+  function mudarDiaDias(unidadeId, cpf, de, inicio, fim) {
+    var corpo = { p_unidade_id: Number(unidadeId), p_cpf: String(cpf), p_de: de, p_inicio: inicio, p_fim: fim };
+    return RosterWork.apiFetch('/rest/v1/rpc/escala_mudar_dia_dias', { metodo: 'POST', corpo: corpo })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; });
+  }
+
   window.RosterWork.escalasDados = {
     carregar: carregar, antecipar: antecipar, reorganizar: reorganizar, carregarMilitares: carregarMilitares, lerMilitarDia: lerMilitarDia,
     lerDiasAtualizando: lerDiasAtualizando, lerDistribuicaoDia: lerDistribuicaoDia, lerAlteracoesDia: lerAlteracoesDia, lerPrevia: lerPrevia, corpoPrevia: corpoPrevia, painelSalvar: painelSalvar,
     lerImpressao: lerImpressao, lerImpressaoErros: lerImpressaoErros, lerSysbm: lerSysbm,
     sysbmTermo: sysbmTermo, sysbmDarCiencia: sysbmDarCiencia,
     continuosListar: continuosListar, cicloRetirarAnalisar: cicloRetirarAnalisar,
-    disponiveis: disponiveis
+    disponiveis: disponiveis, mudarDiaDias: mudarDiaDias
   };
 })();

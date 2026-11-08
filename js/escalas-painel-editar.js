@@ -1,8 +1,9 @@
 /* ============================================================
    ESCALAS — o Dia do painel (aba Dia): a lista do dia, a mesma
    para todos, só de leitura. O admin edita a partir dela: o menu
-   Editar o dia (Adicionar, Remover e Remanejar militar e Registrar
-   troca de serviço, à esquerda) e o desfazer/refazer (à
+   Editar o dia (Adicionar e Remover militar, Mudar o dia do serviço,
+   Remanejar militar e Registrar troca de serviço, à esquerda) e o
+   desfazer/refazer (à
    direita) ficam no subcabeçalho, cada linha de função e de horário
    sem ninguém tem o lápis, que abre a edição ali mesmo
    (escalas-painel-linha.js), quem está sem função tem o Remover do
@@ -27,14 +28,20 @@
    aba (trocar de dia e fechar o painel perguntam antes). Rascunho:
    { ajustes, pontuais, estornar, folgas, folgas_cancelar,
    observacoes, abertas (as funções abertas sem ninguém, só na
-   prévia: salvas vazias, somem), remanejar, devolver, automatico (o
+   prévia: salvas vazias, somem), remanejar, devolver, mudar_dia
+   ([{ cpf, para, periodos, onde }]: o serviço pelo ciclo passa para
+   outro dia; a prévia e o Salvar mudam os dois dias),
+   desfazer_mudanca ([{ id, dia }]: volta ao dia de antes; dia = o
+   outro dia da mudança), tirar_mudanca ([{ id, contabilizar, dia }]:
+   sai do dia novo e o de antes vira folga), automatico (o
    sistema decide o dia de novo, sem devolver cada um ao lugar de
    antes: o Voltar ao automático e o Adicionar com O sistema
    distribui) }.
-   A edição da linha, o Adicionar, o Remover e o Remanejar militar
-   (sub-telas) e a folga no dia (sub-tela) ficam em
-   escalas-painel-linha.js, -adicionar.js, -remover.js,
-   -remanejar.js e -militar.js e usam a API daqui (.sub). Não têm
+   A edição da linha, o Adicionar, o Remover e o Remanejar militar,
+   o Mudar o dia do serviço (sub-telas) e a folga no dia (sub-tela)
+   ficam em escalas-painel-linha.js, -adicionar.js, -remover.js,
+   -remanejar.js, -mudar-dia.js e -militar.js e usam a API daqui
+   (.sub). Não têm
    botão próprio: enquanto se responde, a mudança entra no rascunho
    ao vivo (.sub.aoVivo, sobre a foto de quando a sub-tela ou o lápis
    abriu) e as telas mostram como fica; o Voltar ao dia e o X do lápis
@@ -132,19 +139,25 @@
     return n;
   }
 
+  /* a mudança de dia no rascunho (mudar, desfazer ou tirar)? */
+  function comMudancaDeDia() {
+    return rasc.mudar_dia.length > 0 || rasc.desfazer_mudanca.length > 0 || rasc.tirar_mudanca.length > 0;
+  }
+
   /* o rascunho mudou o dia gravado? (funções, pontuais, folgas dadas ou canceladas, observações, remanejados ou
-     devolvidos, ou o Voltar ao automático) */
+     devolvidos, a mudança de dia, ou o Voltar ao automático) */
   function haMudanca() {
     if (!rasc || !base) return false;
     return !!rasc.automatico || !mesmosAjustes(base.ajustes, rasc.ajustes) || difPontuais() > 0 || rasc.folgas.length > 0
       || rasc.folgas_cancelar.length > 0 || rasc.observacoes.adicionar.length > 0 || rasc.observacoes.remover.length > 0
-      || rasc.abertas.length > 0 || rasc.remanejar.length > 0 || rasc.devolver.length > 0;
+      || rasc.abertas.length > 0 || rasc.remanejar.length > 0 || rasc.devolver.length > 0 || comMudancaDeDia();
   }
 
   /* o rascunho recomeça do dia gravado */
   function novoRascunho() {
     rasc = { ajustes: copiar(base.ajustes), pontuais: copiar(base.pontuais), estornar: [], folgas: [], folgas_cancelar: [],
-      observacoes: { adicionar: [], remover: [] }, abertas: [], remanejar: [], devolver: [] };
+      observacoes: { adicionar: [], remover: [] }, abertas: [], remanejar: [], devolver: [],
+      mudar_dia: [], desfazer_mudanca: [], tirar_mudanca: [] };
   }
 
   /* o dia gravado (a leitura, ou o que o banco devolve ao gravar) vira a base */
@@ -172,6 +185,12 @@
       r.remanejar = rasc.remanejar.map(function (x) { return { cpf: x.cpf, origem: x.origem, destino: x.destino, fica: x.fica }; });
     }
     if (rasc.devolver.length) r.devolver = rasc.devolver;
+    /* a mudança de dia, no formato do banco (o outro dia de cada uma fica só aqui, para as telas) */
+    if (rasc.mudar_dia.length) r.mudar_dia = copiar(rasc.mudar_dia);
+    if (rasc.desfazer_mudanca.length) r.desfazer_mudanca = rasc.desfazer_mudanca.map(function (x) { return x.id; });
+    if (rasc.tirar_mudanca.length) {
+      r.tirar_mudanca = rasc.tirar_mudanca.map(function (x) { return { id: x.id, contabilizar: !!x.contabilizar }; });
+    }
     if (rasc.automatico) r.automatico = true;
     return r;
   }
@@ -433,6 +452,50 @@
     rasc.remanejar = rasc.remanejar.filter(function (x) { return cpfs.indexOf(x.cpf) < 0; }).concat(copiar(lista));
   }
 
+  /* Mudar o dia do serviço: x = { cpf, para (o dia novo, AAAA-MM-DD), periodos ([{ hi, hf }], as horas que mudam), onde
+     (o Onde fica do dia novo, no formato do banco) }. As colocações manuais dele nessas horas saem deste dia; o banco põe
+     a marca aqui e o serviço no dia novo */
+  function mudarDia(x) {
+    cortarAjustes(x.cpf, x.periodos.map(faixa));
+    rasc.mudar_dia = rasc.mudar_dia.filter(function (m) { return m.cpf !== x.cpf; }).concat([copiar(x)]);
+  }
+
+  /* desfazer a mudança de dia (o lápis da folga no dia de antes, ou o Devolver do Remover no dia novo): id = a mudança,
+     dia = o outro dia dela (as telas o marcam e o leem de novo). No dia novo, as colocações manuais dele nas horas que
+     saem (periodos) saem deste dia */
+  function desfazerMudanca(id, dia, cpf, periodos) {
+    if (cpf && periodos) cortarAjustes(cpf, periodos.map(faixa));
+    rasc.desfazer_mudanca = rasc.desfazer_mudanca.filter(function (x) { return x.id !== id; }).concat([{ id: id, dia: dia }]);
+  }
+
+  /* tirar do dia novo quem mudou de dia (o Tirar do dia do Remover): ele sai daqui e o dia de antes vira folga, contada
+     ou não no banco de horas */
+  function tirarMudanca(id, contabilizar, dia, cpf, periodos) {
+    if (cpf && periodos) cortarAjustes(cpf, periodos.map(faixa));
+    rasc.tirar_mudanca = rasc.tirar_mudanca.filter(function (x) { return x.id !== id; })
+      .concat([{ id: id, contabilizar: !!contabilizar, dia: dia }]);
+  }
+
+  /* os outros dias que o rascunho do Dia muda (a mudança de dia mexe em dois dias): AAAA-MM-DD, sem repetir */
+  function outrosDias() {
+    if (!rasc) return [];
+    var dias = [];
+    rasc.mudar_dia.map(function (x) { return x.para; })
+      .concat(rasc.desfazer_mudanca.map(function (x) { return x.dia; }), rasc.tirar_mudanca.map(function (x) { return x.dia; }))
+      .forEach(function (d) { if (d && d !== (ctx && ctx.iso) && dias.indexOf(d) < 0) dias.push(d); });
+    return dias;
+  }
+
+  /* quem passa o serviço para outro dia no rascunho (a frase da nota O que mudou): { cpf: { para: 'DD/MM', horas } } */
+  function mapaMudancas() {
+    var r = {};
+    ((rasc && rasc.mudar_dia) || []).forEach(function (x) {
+      var p = String(x.para || '').split('-');
+      r[x.cpf] = { para: p.length === 3 ? p[2] + '/' + p[1] : '', horas: textoPeriodos(x.periodos || []) };
+    });
+    return r;
+  }
+
   function pontualSalvo(cpf) { return (base.pontuais || []).some(function (x) { return x.cpf === cpf; }); }
 
   /* uma mudança da lista: o rascunho de antes entra no desfazer, o refazer zera, e a lista mostra a prévia; nada grava
@@ -604,7 +667,7 @@
     ctx.ultima = null;
     if (antes && antes !== dados) {
       var mudou = diferenca(antes, dados);
-      if (mudou.length || sugestao) ctx.ultima = { mudou: mudou, sugestao: sugestao };
+      if (mudou.length || sugestao) ctx.ultima = { mudou: mudou, sugestao: sugestao, mudancas: mapaMudancas() };
     }
     ctx.dadosAntes = antes || dados;   // o aviso de quem assume o Chefe de Socorro compara com o dia antes desta mudança
     ctx.dados = dados;
@@ -672,14 +735,15 @@
       ? RosterWork.escalasImpressao.botaoDoDia(abrirImpressao) : null;
     var solicitar = !ctx.emSub && !ctx.comparar && RosterWork.escalasPainelTroca ? RosterWork.tpl('tpl-escala-dia-solicitar') : null;
     if (ctx.emSub || (!ctx.admin && !imprimir && !solicitar)) { sub.classList.add('oculto'); return; }
-    /* o menu Editar o dia: Adicionar, Remover e Remanejar abrem as perguntas; Registrar troca de serviço abre o
-       formulário da troca ali mesmo */
+    /* o menu Editar o dia: Adicionar, Remover, Mudar o dia do serviço e Remanejar abrem as perguntas; Registrar troca de
+       serviço abre o formulário da troca ali mesmo */
     var menu = ctx.admin ? RosterWork.tpl('tpl-escala-edicao-acoes') : null;
     if (menu) {
       menu.querySelector('.botao').disabled = !!ctx.salvando || !!ctx.carregando;
       var acoes = {
         adicionar: function () { if (RosterWork.escalasPainelAdicionar) RosterWork.escalasPainelAdicionar.abrir(); },
         remover: function () { if (RosterWork.escalasPainelRemover) RosterWork.escalasPainelRemover.abrir(); },
+        'mudar-dia': function () { if (base && RosterWork.escalasPainelMudarDia) RosterWork.escalasPainelMudarDia.abrir(); },
         remanejar: abrirRemanejar,
         troca: function () { abrirTroca(true); }
       };
@@ -756,8 +820,8 @@
     var linha = novaLinha();
     if (!linha) return null;
     var icones = linha.querySelector('.escala-distribuicao-icones');
-    var ic = RosterWork.tpl('tpl-escala-mes-origem');
-    if (ic) { p.definirIcone(ic, op.icone || p.iconeOrigem[m.origem] || p.iconeOrigem.sistema); icones.appendChild(ic); }
+    var ic = p.iconeDaLinha(m, op.icone);
+    if (ic) icones.appendChild(ic);
     /* a colocação manual: para o admin, o selo Fixado depois do nome; para quem só lê, o cadeado (na linha com
        "Novo" ele sai para caber) */
     if (m.fixado && !op.novo && !ctx.admin) {
@@ -1004,7 +1068,8 @@
     return caixa;
   }
 
-  /* De folga: nome riscado, ícone de folga e o período; para o admin, o lápis abre a folga no dia */
+  /* De folga: nome riscado, ícone de folga e o período; para o admin, o lápis abre a folga no dia. A folga que veio da
+     mudança de dia leva o ícone da mudança e, no lugar do período, o dia para onde o serviço passou */
   function caixaFolgas(folgas) {
     if (!folgas.length) return null;
     var caixa = RosterWork.painel.criarCaixa(msg().deFolga);
@@ -1014,8 +1079,13 @@
     if (!grupo) return caixa;
     folgas.forEach(function (f) {
       var acoes = ctx.admin && f.lancamento_id ? [botao('tpl-escala-edicao-lapis', function () { abrirFolga(f.lancamento_id); })] : [];
-      var linha = linhaMilitar({ cpf: f.cpf, grad: f.grad, nome: f.nome, periodos: [{ hi: f.hi, hf: f.hf }] },
-        { folga: true, icone: 'icone-folgas', acoes: acoes });
+      var passou = f.mudanca && f.mudanca.para;
+      var linha = linhaMilitar({ cpf: f.cpf, grad: f.grad, nome: f.nome, periodos: passou ? [] : [{ hi: f.hi, hf: f.hf }] },
+        { folga: true, icone: passou ? 'icone-origem-mudanca' : 'icone-folgas', acoes: acoes });
+      if (linha && passou) {
+        var texto = RosterWork.tpl('tpl-escala-edicao-passou');
+        if (texto) { texto.textContent = msg().passouPara(f.mudanca.para); linha.querySelector('.escala-distribuicao-horas').appendChild(texto); }
+      }
       if (linha) grupo.linhas.appendChild(linha);
     });
     caixa.appendChild(grupo.el);
@@ -1091,6 +1161,13 @@
       return r;
     }
     u.mudou.forEach(function (x) {
+      /* quem passou o serviço para outro dia: a frase da mudança de dia */
+      var md = u.mudancas && u.mudancas[x.cpf];
+      if (md) {
+        var it = RosterWork.tpl('tpl-escala-edicao-mudou-item');
+        if (it) { it.textContent = L.mudouDia(x.nome, md.para, md.horas); lista.appendChild(it); }
+        return;
+      }
       var a = porLugar(x.antes || []), d = porLugar(x.depois || []);
       var antes = Object.keys(a), depois = Object.keys(d);
       var mesmos = antes.length === depois.length && antes.every(function (k) { return d[k]; });
@@ -1354,12 +1431,12 @@
   function pendentes() { return haMudanca() ? Math.max(1, pilhaDesfazer.length + (vivo && vivo.mudou ? 1 : 0)) : 0; }
   /* a sub-tela ou o lápis com pergunta pela metade ou conflito: o Salvar do rodapé fica desligado */
   function travado() { return !!(vivo && vivo.travado); }
-  /* gravar este rascunho muda quem está de serviço no dia, e o banco refaz a distribuição? (pontual, folga, remanejamento
-     e o Voltar ao automático; trocar quem está numa função e escrever uma observação, não) */
+  /* gravar este rascunho muda quem está de serviço no dia, e o banco refaz a distribuição? (pontual, folga, remanejamento,
+     mudança de dia e o Voltar ao automático; trocar quem está numa função e escrever uma observação, não) */
   function refazDistribuicao() {
     if (!rasc || !base) return false;
     return !!rasc.automatico || difPontuais() > 0 || rasc.folgas.length > 0 || rasc.folgas_cancelar.length > 0
-      || rasc.remanejar.length > 0 || rasc.devolver.length > 0;
+      || rasc.remanejar.length > 0 || rasc.devolver.length > 0 || comMudancaDeDia();
   }
   /* o rascunho do Dia para a prévia das telas: o da gravação e as funções abertas (só na prévia) */
   function previaDia() {
@@ -1373,6 +1450,7 @@
   function paraGravar() {
     var r = copiar(paraSalvar());
     r.antes = { ajustes: base.ajustes, pontuais: base.pontuais };
+    if (ctx) ctx.mudancasGravando = mapaMudancas();   // a frase da mudança de dia na nota O que mudou, depois de gravar
     return r;
   }
   /* gravou: o dia gravado vira a base, o rascunho e o desfazer recomeçam e a nota O que mudou vem do banco */
@@ -1386,7 +1464,8 @@
     aceitar(r.dia);
     ctx.dadosAntes = antes || r.dia;
     ctx.sugestao = null;
-    ctx.ultima = (r.mudou || []).length ? { mudou: r.mudou, sugestao: null } : null;
+    ctx.ultima = (r.mudou || []).length ? { mudou: r.mudou, sugestao: null, mudancas: ctx.mudancasGravando || {} } : null;
+    ctx.mudancasGravando = null;
     ctx.comHistorico = false;   // o fim do corpo relê o histórico, já com o que foi salvo
     ctx.emSub = false;
     ctx.carregando = false;
@@ -1427,13 +1506,14 @@
     pendentes: pendentes,
     travado: travado,
     refazDistribuicao: refazDistribuicao,
+    outrosDias: outrosDias,
     previaDia: previaDia,
     paraGravar: paraGravar,
     aposGravar: aposGravar,
     descartar: descartar,
     /* para a edição da linha (escalas-painel-linha.js: ao vivo, como as sub-telas), o Remover do dia (mudar põe a
-       mudança no rascunho como um passo só) e as sub-telas (escalas-painel-adicionar.js, -remover.js, -remanejar.js e
-       -militar.js: aoVivo a cada resposta) */
+       mudança no rascunho como um passo só) e as sub-telas (escalas-painel-adicionar.js, -remover.js, -remanejar.js,
+       -mudar-dia.js e -militar.js: aoVivo a cada resposta) */
     sub: {
       mudar: mudar,
       comecarVivo: comecarVivo,
@@ -1460,6 +1540,10 @@
       remanejar: remanejar,
       devolverRemanejado: devolverRemanejado,
       largarRemanejado: largarRemanejado,
+      mudarDia: mudarDia,
+      desfazerMudanca: desfazerMudanca,
+      tirarMudanca: tirarMudanca,
+      postoFeminino: postoFeminino,
       tirarPontual: tirarPontual,
       pontualSalvo: pontualSalvo,
       funcoesDoMilitar: funcoesDoMilitar,

@@ -23,7 +23,8 @@
    roteiro (voltam à lista, aberta na linha do último treino escolhido)
    e fechar a aba; recarregar a página, no treino com passo a passo,
    volta à lista (geral-treino-livre.js). O treino livre é o modo
-   ligado sem o passo a passo (entrarLivre). O Próximo treino do
+   ligado sem o passo a passo (entrarLivre); nele, a Extrajornada fica
+   sempre no mês de treino. O Próximo treino do
    fim do roteiro volta à lista (a tela recomeça limpa) e, quando ela
    abre, começa o próximo. Ao sair, a edição não salva é descartada sem
    perguntar.
@@ -40,7 +41,8 @@
   var LEITURAS = [
     'administradores_listar', 'afastamentos_listar', 'ajustes_ritmo_listar', 'antiguidade_listar', 'bug_relatores_listar', 'bugs_listar',
     'buscar_graus_hierarquicos', 'dados_pendentes', 'erros_tela_contar_novos', 'erros_tela_listar', 'escala_alteracoes_dia', 'escala_dia_arvore',
-    'escala_dias_atualizando', 'escala_dia_disponiveis', 'escala_impressao', 'escala_impressao_erros', 'escala_minha_calendario', 'escala_sysbm',
+    'escala_dias_atualizando', 'escala_dia_disponiveis', 'escala_impressao', 'escala_impressao_erros', 'escala_minha_calendario',
+    'escala_mudar_dia_dias', 'escala_sysbm',
     'expediente_horario', 'expediente_mes', 'ficha_alteracoes', 'fn_sou_programador', 'fn_trocas_impressao',
     'fn_trocas_registro', 'fn_trocas_varias_dias', 'fn_trocas_varias_montar', 'fn_trocas_varias_plano', 'fn_unidades_padrao',
     'ler_distribuicao_dia', 'ler_escala_mes', 'ler_escala_militares', 'ler_militar_dia',
@@ -115,21 +117,25 @@
   }
 
   /* o treino livre: o passo a passo fecha e o modo continua. daLista: sem treino nenhum, e o exemplo do treino anterior
-     sai; senão, na mesma tela, e o exemplo fica */
+     sai; senão, na mesma tela, e o exemplo fica. Na Extrajornada, o mês de treino: o do treino de onde a pessoa saiu ou,
+     sem ele, um novo, nos Pedidos */
   function entrarLivre(daLista) {
     if (daLista) {
       ultimoEscolhido = LINHA_LIVRE;
       if (RW.treinoCenarios) RW.treinoCenarios.ativar(null);
     }
+    if (RW.treinoExtra && !RW.treinoExtra.mes()) RW.treinoExtra.ativar('pedido');
     if (RW.treinoLivre) RW.treinoLivre.guardar(true, ultimoEscolhido);
     if (RW.guia) RW.guia.encerrar();
     mostrar(true);
     marcarLivre(true);
     if (RW.recolherTopo) RW.recolherTopo.mostrar();
   }
-  /* o treino livre depois de recarregar a página: com os dados de verdade (o exemplo ficou para trás) */
+  /* o treino livre depois de recarregar a página: com os dados de verdade (o exemplo ficou para trás); na Extrajornada, o
+     mês de treino volta ao começo, nos Pedidos */
   function continuarLivre(id) {
     ultimoEscolhido = id;
+    if (RW.treinoExtra) RW.treinoExtra.ativar('pedido');
     mostrar(true);
     marcarLivre(true);
   }

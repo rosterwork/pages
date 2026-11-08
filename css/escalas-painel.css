@@ -251,9 +251,11 @@
   color: var(--alerta);
 }
 
-/* ícone de regra (exclusivo/proibido) na tira de ícones — o span recebe a dica (data-dica) */
+/* ícone de regra (exclusivo/proibido), de outra unidade e da mudança de dia na tira de ícones — o span recebe a dica
+   (data-dica) */
 .escala-distribuicao-regra,
-.escala-distribuicao-outra-unidade {
+.escala-distribuicao-outra-unidade,
+.escala-mudanca-icone {
   display: inline-flex;
   align-items: center;
 }

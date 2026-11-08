@@ -17,7 +17,12 @@
    ou a Minha extra no pedido). Com o mês lançado, as extras vêm antes
    numa chamada leve (a etapa lancar) e voltam nas outras, para nenhuma
    passar do limite de tempo do banco. Nada fica gravado.
-   API: ativar(etapa | null), mes(), cuida(nome, corpo), responder(nome, corpo), gravando().
+   No treino livre, o mês de treino vale sempre (geral-treino.js): o do
+   treino de onde a pessoa saiu ou, sem ele, um novo, nos Pedidos.
+   Depois que o banco diz qual é o mês de treino, o pedido de outro mês
+   (o painel do dia da Escala, num dia de outro mês) vai ao mês de
+   verdade.
+   API: ativar(etapa | null), mes(), ehDoTreino(competencia), cuida(nome, corpo), responder(nome, corpo), gravando().
    ============================================================ */
 (function () {
   'use strict';
@@ -30,7 +35,7 @@
   var ESPERA_AVISO = 300;   // ms depois da resposta da gravação, para o aviso dela abrir
   var noAr = 0;      // as gravações no ar
 
-  var est = null;    // { etapa, mes, acoes, extras, guardadas, fila, timer }
+  var est = null;    // { etapa, mes, confirmado, acoes, extras, guardadas, fila, timer }
 
   function primeiroDia(d) { return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-01'; }
   function resposta(dados) { return new Response(JSON.stringify(dados), { status: 200, headers: { 'Content-Type': 'application/json' } }); }
@@ -53,19 +58,32 @@
     if (est && est.timer) clearTimeout(est.timer);
     if (!etapa) { est = null; return; }
     var h = new Date();
-    var meu = est = { etapa: etapa, mes: new Date(h.getFullYear(), h.getMonth() + 1, 1), acoes: [], extras: null, guardadas: {}, fila: [], timer: null };
+    var meu = est = { etapa: etapa, mes: new Date(h.getFullYear(), h.getMonth() + 1, 1), confirmado: false, acoes: [], extras: null, guardadas: {}, fila: [], timer: null };
+    perguntarMes(meu);
+  }
+  /* no recarregar, o treino livre liga antes do geral-api.js: o mês já vale, e a pergunta espera ele chegar */
+  function perguntarMes(meu) {
+    if (est !== meu) return;
+    if (!RW.apiFetch) { setTimeout(function () { perguntarMes(meu); }, 50); return; }
     chamar('pedido', [], [], null).then(function (r) {
       if (est !== meu || !r || !r.ok || !r.competencia) return;
       meu.mes = new Date(+r.competencia.slice(0, 4), +r.competencia.slice(5, 7) - 1, 1);
+      meu.confirmado = true;
     });
   }
 
   function lancado() { return est.etapa === 'lancado' || est.acoes.some(function (a) { return a.rpc === 'extrajornada_lancar'; }); }
 
-  /* a chamada é do mês de treino? As gravações e as leituras da Extrajornada; a escala, só com o mês lançado (antes
-     disso, a escala do mês de treino é a de verdade) e no período dele */
+  /* a competência é a do mês de treino? Antes de o banco dizer qual é ele, todas são */
+  function ehDoTreino(competencia) {
+    return !!est && (!est.confirmado || String(competencia).slice(0, 7) === primeiroDia(est.mes).slice(0, 7));
+  }
+
+  /* a chamada é do mês de treino? As gravações e as leituras da Extrajornada desse mês; a escala, só com o mês lançado
+     (antes disso, a escala do mês de treino é a de verdade) e no período dele */
   function cuida(nome, corpo) {
     if (!est) return false;
+    if (corpo && corpo.p_competencia && !ehDoTreino(corpo.p_competencia)) return false;
     if (GRAVACOES.indexOf(nome) >= 0) return true;
     if (LEITURAS.indexOf(nome) < 0) return false;
     if (nome !== 'ler_escala_mes') return true;
@@ -133,7 +151,7 @@
   function responder(nome, corpo) { return GRAVACOES.indexOf(nome) >= 0 ? gravar(nome, corpo) : ler(nome, corpo); }
 
   RW.treinoExtra = {
-    ativar: ativar, cuida: cuida, responder: responder,
+    ativar: ativar, cuida: cuida, responder: responder, ehDoTreino: ehDoTreino,
     mes: function () { return est ? est.mes : null; },
     /* uma gravação no ar: o passo a passo espera a resposta para seguir */
     gravando: function () { return noAr > 0; }

@@ -1,10 +1,12 @@
 /* ============================================================
    ESCALAS — as listas do Remover militar (escalas-painel-remover.js)
    A origem do serviço de cada um no dia (as partes que saem por
-   aqui: pelo ciclo, pontual ou por troca; a extra fica de fora) e a
+   aqui: pelo ciclo, pontual, por troca ou o serviço que veio de
+   outro dia pela mudança de dia; a extra fica de fora) e a
    lista Quem sai: quem está no dia aqui, com o ícone de origem à
    esquerda e só o horário à direita, e quem foi remanejado daqui
-   para outra unidade (com o ícone do remanejado).
+   para outra unidade (com o ícone do remanejado). E o pontual que
+   sai (tirarDoPontual: a sub-tela e o Remover do dia).
    RosterWork.escalasPainelRemoverListas.
    ============================================================ */
 (function () {
@@ -15,22 +17,45 @@
   function ed() { return RosterWork.escalasPainelEditar.sub; }
   function L() { return RosterWork.mensagens.escala.linha; }
 
+  /* "12/11" no ano mais perto do dia ref (AAAA-MM-DD): a mudança de dia fica a poucos dias do dia novo */
+  function isoDoDiaMes(ddmm, ref) {
+    var p = String(ddmm || '').split('/'), r = String(ref || '').split('-');
+    if (p.length !== 2 || r.length !== 3) return '';
+    var alvo = new Date(+r[0], +r[1] - 1, +r[2]).getTime(), melhor = null;
+    [-1, 0, 1].forEach(function (d) {
+      var ano = +r[0] + d, t = new Date(ano, +p[1] - 1, +p[0]).getTime();
+      if (!melhor || Math.abs(t - alvo) < Math.abs(melhor.t - alvo)) melhor = { t: t, iso: ano + '-' + p[1] + '-' + p[0] };
+    });
+    return melhor.iso;
+  }
+
   /* ---------- de onde ele veio ---------- */
 
-  /* as partes do serviço dele no dia que saem por aqui, pela origem: [{ origem: 'ciclo' | 'pontual' | 'troca', periodos,
-     trocaId }] (por troca, uma parte para cada troca; as horas da extra ficam de fora) */
+  /* as partes do serviço dele no dia que saem por aqui, pela origem: [{ origem: 'ciclo' | 'pontual' | 'troca' | 'mudanca',
+     periodos, trocaId, mudancaId, mudancaDe, mudancaDeIso }] (por troca, uma parte para cada troca; o que veio de outro
+     dia, uma parte para cada mudança de dia, com o dia de antes, "12/11" e AAAA-MM-DD; as horas da extra ficam de fora) */
   function partesDe(mil) {
     var api = ed(), H = api.horas;
     var pont = (api.rascunho().pontuais || []).filter(function (x) { return x.cpf === mil.cpf; })[0];
     var doPontual = pont ? H.uniao((pont.periodos || []).map(H.faixa)) : [];
     function janelas(filtro) { return H.uniao(mil.janelas.filter(filtro).map(H.faixa)); }
-    var ciclo = H.menos(janelas(function (j) { return ['pontual', 'troca', 'extra'].indexOf(j.origem) < 0; }), doPontual);
-    var r = [], trocas = [];
-    function por(origem, faixas, trocaId) { if (faixas.length) r.push({ origem: origem, periodos: faixas.map(H.periodo), trocaId: trocaId || null }); }
+    var ciclo = H.menos(janelas(function (j) { return ['pontual', 'troca', 'extra', 'mudanca'].indexOf(j.origem) < 0; }), doPontual);
+    var r = [], trocas = [], mudancas = [];
+    function por(origem, faixas, mais) {
+      if (!faixas.length) return;
+      mais = mais || {};
+      r.push({ origem: origem, periodos: faixas.map(H.periodo), trocaId: mais.trocaId || null, mudancaId: mais.mudancaId || null,
+        mudancaDe: mais.mudancaDe || '', mudancaDeIso: mais.mudancaDe ? isoDoDiaMes(mais.mudancaDe, api.iso()) : '' });
+    }
     por('ciclo', ciclo);
     por('pontual', doPontual);
     mil.janelas.forEach(function (j) { if (j.origem === 'troca' && trocas.indexOf(j.troca_id) < 0) trocas.push(j.troca_id); });
-    trocas.forEach(function (id) { por('troca', janelas(function (j) { return j.origem === 'troca' && j.troca_id === id; }), id); });
+    trocas.forEach(function (id) { por('troca', janelas(function (j) { return j.origem === 'troca' && j.troca_id === id; }), { trocaId: id }); });
+    mil.janelas.forEach(function (j) { if (j.origem === 'mudanca' && j.mudanca_id && mudancas.indexOf(j.mudanca_id) < 0) mudancas.push(j.mudanca_id); });
+    mudancas.forEach(function (id) {
+      var daMudanca = mil.janelas.filter(function (j) { return j.origem === 'mudanca' && j.mudanca_id === id; });
+      por('mudanca', H.uniao(daMudanca.map(H.faixa)), { mudancaId: id, mudancaDe: daMudanca[0].mudanca_de });
+    });
     return r;
   }
 
@@ -48,6 +73,24 @@
     var api = ed();
     if (!api.pontualSalvo(cpf)) return null;
     return ((api.dados() || {}).pontuais || []).filter(function (x) { return x.cpf === cpf; })[0] || null;
+  }
+
+  /* o pontual que sai (a sub-tela e o Remover do dia): todo sai (com as horas que ele somou, se o admin quis), ou só os
+     horários dados */
+  function tirarDoPontual(cpf, periodos, todo, estornar) {
+    var api = ed(), H = api.horas, r = api.rascunho();
+    if (todo) {
+      var salvo = pontualSalvo(cpf);
+      api.tirarPontual(cpf, !!(salvo && salvo.contabilizado) && estornar);
+      return;
+    }
+    var pont = (r.pontuais || []).filter(function (x) { return x.cpf === cpf; })[0];
+    if (!pont) return;
+    var salvo2 = pontualSalvo(cpf);
+    var sai = periodos.map(H.faixa), ficam = H.menos(H.uniao((pont.periodos || []).map(H.faixa)), sai);
+    r.pontuais = r.pontuais.filter(function (x) { return x.cpf !== cpf; })
+      .concat([{ cpf: cpf, periodos: ficam.map(H.periodo), contabilizar: !!(salvo2 && salvo2.contabilizado) }]);
+    api.cortarAjustes(cpf, sai);
   }
 
   /* quem está no dia aqui (nas funções ou sem função), com o ícone de origem e o horário ("Das 08h às 08h"), e quem foi
@@ -82,5 +125,5 @@
   }
 
   window.RosterWork.escalasPainelRemoverListas = { partesDe: partesDe, podeTirar: podeTirar, textoFolga: textoFolga,
-    pontualSalvo: pontualSalvo, itensQuem: itensQuem };
+    pontualSalvo: pontualSalvo, tirarDoPontual: tirarDoPontual, itensQuem: itensQuem };
 })();

@@ -85,7 +85,7 @@
   /* o texto de cada dia livre do administrativo: desde que horas, ou o nome da folga do expediente */
   function textoAdm(e) {
     if (!e) return '';
-    if (e.livres.length && e.livres.length < 4) return msg().desde(INICIO[e.livres[0] - 1]);
+    if (e.livres.length && e.livres.length < 4) return msg().desde(e.desde ? e.desde.slice(0, 2) + 'h' : INICIO[e.livres[0] - 1]);
     if (!e.trabalha && e.motivo !== 'sem_expediente') return e.nome || msg().folga;
     return '';
   }

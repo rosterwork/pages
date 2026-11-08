@@ -36,6 +36,8 @@
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
       </button>
     </div>
+    <!-- no mês de treino (geral-treino-extra.js), o selo ao lado do nome do mês -->
+    <span class="selo selo--treino oculto" id="extrajornada-treino-selo">Treino</span>
     <div class="abas abas--seletor oculto" id="extrajornada-passos">
       <button type="button" class="aba" data-passo="1"><span class="extrajornada-aba-num" aria-hidden="true">1</span>Pedidos</button>
       <button type="button" class="aba" data-passo="2"><span class="extrajornada-aba-num" aria-hidden="true">2</span>Cotas</button>
@@ -103,6 +105,13 @@
   <!-- cada aba ocupa o corpo inteiro: a linha de resumo parada em cima, o conteúdo rolando por dentro e o rodapé parado
        embaixo -->
   <div class="pagina-corpo pagina-corpo--colado">
+    <!-- no mês de treino, a nota no alto, em todas as abas -->
+    <div class="extrajornada-passo-topo oculto" id="extrajornada-treino-nota">
+      <div class="nota">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-treinamento"/></svg>
+        <span class="nota-texto">Este é o mês de treino, com os pedidos de novembro e quem está na companhia hoje. O mês de verdade não muda.</span>
+      </div>
+    </div>
     <!-- a área da aba aberta enquanto a leitura dela não chega (o círculo) ou quando falhou (a frase), com os moldes da
          Escala; a barra continua usável (extrajornada.js) -->
     <div class="extrajornada-area oculto" id="extrajornada-estado"></div>
@@ -499,8 +508,8 @@
 <template id="tpl-extrajornada-p1-linha">
   <tr>
     <td class="extrajornada-nome"><small></small><b></b></td>
-    <td class="ne-uni"></td><td class="ne-cotas"></td><td class="ne-quer"></td><td class="ne-nao"></td><td class="ne-nao-pode"></td>
-    <td><button type="button" class="geral-opcao extrajornada-marcar-curto ne-termo" role="checkbox" aria-checked="false" aria-label="Termo recebido"><span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span></button></td>
+    <td class="extrajornada-p1-unidade"></td><td class="extrajornada-p1-cotas"></td><td class="extrajornada-p1-quer"></td><td class="extrajornada-p1-nao-quer"></td><td class="extrajornada-p1-nao-pode"></td>
+    <td><button type="button" class="geral-opcao extrajornada-marcar-curto extrajornada-p1-termo" role="checkbox" aria-checked="false" aria-label="Termo recebido"><span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span></button></td>
   </tr>
 </template>
 
@@ -562,8 +571,8 @@
           <input type="text" inputmode="numeric" maxlength="3" class="campo-entrada campo-entrada--pequeno extrajornada-voluntarios-bloco-total" />
           <b class="extrajornada-bloco-recebeu oculto"></b>
         </label>
-        <span class="extrajornada-bloco-num">Entregues <b class="ne-entregues"></b></span>
-        <span class="extrajornada-bloco-num">Sobram <b class="ne-sobram"></b></span>
+        <span class="extrajornada-bloco-num">Entregues <b class="extrajornada-p2-entregues"></b></span>
+        <span class="extrajornada-bloco-num">Sobram <b class="extrajornada-p2-sobram"></b></span>
       </span>
     </div>
     <div class="extrajornada-voluntarios-bloquinho"></div>
@@ -579,7 +588,7 @@
       <span class="extrajornada-vaga-24h oculto">24h</span>
     </span>
     <span class="extrajornada-voluntarios-pediu extrajornada-centro"></span>
-    <span class="extrajornada-centro extrajornada-atendido"><b class="ne-pct"></b><small class="ne-de"></small><span class="extrajornada-historico ne-primeira oculto">Primeira vez</span></span>
+    <span class="extrajornada-centro extrajornada-atendido"><b class="extrajornada-p2-porcento"></b><small class="extrajornada-p2-de-cotas"></small><span class="extrajornada-historico extrajornada-p2-primeira-vez oculto">Primeira vez</span></span>
     <span class="extrajornada-centro extrajornada-sug"></span>
     <div class="extrajornada-voluntarios-concedido extrajornada-centro">
       <div class="dropdown extrajornada-voluntarios-conc">
@@ -685,6 +694,8 @@
 <template id="tpl-extrajornada-vaga">
   <div class="extrajornada-vaga">
     <span class="extrajornada-vaga-id"><span class="extrajornada-vaga-grad"></span> <span class="extrajornada-vaga-nome"></span></span>
+    <!-- a extra do administrativo que começa no fim do expediente: a hora, antes das bolinhas -->
+    <span class="extrajornada-vaga-inicio oculto"></span>
     <span class="extrajornada-vaga-bol" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
     <span class="extrajornada-vaga-baixo oculto"><span class="extrajornada-vaga-pelotao oculto"></span></span>
   </div>
@@ -818,6 +829,7 @@
       <li>Ninguém passa da própria cota. Quem já usou todas, ao marcar, mostra os outros dias dele, e o Salvar espera tirar de outro dia.</li>
       <li>Uma extra por dia para cada militar. Nunca em dia de serviço, folga, férias, licença ou em dia que ele não quer.</li>
       <li>O administrativo só tira extra fora do expediente.</li>
+      <li>No dia em que o expediente termina antes das 14h (a quarta), a extra do administrativo pode começar no fim dele. Escolha no Começa às, embaixo do nome.</li>
       <li>A companhia só recebe extra posta manualmente.</li>
       <li>O Preencher pela sugestão só funciona com tudo salvo. Ele refaz as extras que o sistema pôs e mantém as que o administrador pôs ou mudou.</li>
       <li>O Preencher pela sugestão calcula a melhor combinação. Se o cálculo não terminar em 1 minuto, ele usa o cálculo simples.</li>
@@ -835,8 +847,9 @@
       <li>Nunca 4 dias seguidos no quartel, contando serviço, troca e extra (o expediente não conta). De preferência, nem 3.</li>
       <li>Quando não dá para todos, fica de fora quem está no fim da fila das Cotas.</li>
       <li>Blocos inteiros: 24 horas, e o resto num bloco só.</li>
+      <li>O administrativo recebe as cotas no menor número de dias: 24 horas no fim de semana ou no feriado, ou 18 horas na quarta. O sistema nunca o quebra em mais dias: o que não couber fica para o administrador.</li>
       <li>Sem falta para corrigir, a sobra vai para o pelotão da cidade da companhia, até o máximo dos postos, deixando os dias com a mesma quantidade de gente (no máximo 1 de diferença, sempre que der). A graduação desempata.</li>
-      <li>Colado a um serviço: a extra termina às 08h, quando ele entra, ou começa às 08h, quando ele sai. O administrativo, logo depois do expediente.</li>
+      <li>Colado a um serviço: a extra termina às 08h, quando ele entra, ou começa às 08h, quando ele sai. O administrativo, logo depois do expediente; na quarta, com 2 cotas, das 12h às 00h, e com 3, das 14h às 08h, quando a falta não pede outro horário.</li>
       <li>O dia que ele quer vem antes do dia sem preferência. Nunca no dia que ele não quer: se for o único, a cota fica para o administrador.</li>
     </ol>
   </div>

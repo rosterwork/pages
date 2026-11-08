@@ -6,13 +6,15 @@
    (.treino-barra-livre) e o link do balão do fim do treino
    (.guia-balao-livre), na mesma tela, com o painel, o rascunho e o
    exemplo do treino; e a linha da lista do Treinamento (entrar()), que
-   leva à Escala, sem exemplo.
+   leva à Escala, sem exemplo. Na Extrajornada, o treino livre fica
+   sempre no mês de treino (geral-treino-extra.js).
    A barra acompanha a página (o <h1> dela). O Recomeçar o treino volta
    ao passo 1 do treino de onde a pessoa saiu. No ?, o treino escolhido
    começa do passo 1, com a tela limpa.
    Vale para todo o modo treino a marca da sessão (sessionStorage,
    rosterwork_treino): quem recarrega a página continua no treino livre,
-   com os dados de verdade; no treino com passo a passo, volta à lista,
+   com os dados de verdade e o mês de treino de volta aos Pedidos; no
+   treino com passo a passo, volta à lista,
    na linha dele. O tema e as unidades de quando o modo ligou voltam ao
    sair (soltar).
    API: entrar(), guardar(livre, id), soltar().

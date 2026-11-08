@@ -26,6 +26,12 @@
   function pessoa(a) {
     var m = u().militar(a.cpf) || { grad: '', nome: a.cpf };
     var b = a.blocos.map(Number).sort(), periodos = [], ini = b[0];
+    /* a que começa no fim do expediente: 6 h por cota, desde o início */
+    if (a.inicio && b.length) {
+      var fim = (+a.inicio.slice(0, 2) + 6 * b.length) % 24;
+      periodos.push({ inicio: a.inicio, fim: String(fim).padStart(2, '0') + ':00' });
+      b = [];
+    }
     for (var i = 1; i <= b.length; i++) {
       if (b[i] === b[i - 1] + 1) continue;
       periodos.push({ inicio: INI[ini - 1], fim: FIM[b[i - 1] - 1] });
