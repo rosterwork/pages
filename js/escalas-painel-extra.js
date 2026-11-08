@@ -1,9 +1,9 @@
 /* ============================================================
    ESCALAS — painel do dia › aba EXTRAJORNADA
-   O mesmo painel dos Ajustes (nova-extra-dia.js), para o mês já
+   O mesmo painel dos Ajustes (extrajornada-dia.js), para o mês já
    lançado: quem está no dia, quem quer, quem não quer e quem não pode.
    Mês não lançado: só a mensagem. Unidade de fora da companhia de quem
-   entrou: a frase. O rascunho é do mês (nova-extra-grade.js): trocar de
+   entrou: a frase. O rascunho é do mês (extrajornada-grade.js): trocar de
    dia não perde nada, e os dias mudados levam a borda tracejada. O
    Salvar é o rodapé largo da página, junto com o Dia e o Ciclo
    (escalas-painel-salvar.js, p_extra do escala_painel_salvar).
@@ -15,12 +15,12 @@
 
   var RW = window.RosterWork = window.RosterWork || {};
 
-  var mes = null;      // a resposta do nova_extra_mes do mês aberto
+  var mes = null;      // a resposta do extrajornada_mes do mês aberto
   var ctx = null;      // a aba aberta: { corpo, uid, iso }
   var pedido = 0;      // latest-wins
 
-  function msg() { return RW.mensagens.novaExtra.org; }
-  function G() { return RW.novaExtraGrade; }
+  function msg() { return RW.mensagens.extrajornada.org; }
+  function G() { return RW.extrajornadaGrade; }
   function lancada() { return !!mes && !!mes.lancamento && !mes.lancamento.reaberto; }
   function sujo() { return lancada() && G().alteracoes().length > 0; }
 
@@ -37,18 +37,18 @@
     if (mes.admin === false || !mes.unidades.some(function (un) { return un.id === ctx.uid; })) { frase(corpo, msg().outraCompanhia); return; }
     if (!lancada()) {
       corpo.textContent = '';
-      var caixa = RW.tpl('tpl-escala-extra-nao-lancada');
-      caixa.querySelector('.escala-extra-nao-lancada-mes').textContent = G().nomeDoMes(mes.competencia);
+      var caixa = RW.tpl('tpl-extrajornada-painel-nao-lancada');
+      caixa.querySelector('.extrajornada-painel-nao-lancada-mes').textContent = G().nomeDoMes(mes.competencia);
       corpo.appendChild(caixa);
       return;
     }
-    RW.novaExtraDia.mostrarEm(ctx.uid, ctx.iso);
+    RW.extrajornadaDia.mostrarEm(ctx.uid, ctx.iso);
   }
 
   /* o rascunho mudou: o painel na hora, e o rodapé e as telas pelo aviso dos rascunhos (escalas-painel-salvar.js) */
   function aoMudar() {
     G().calcularPicos(G().efetivas());
-    RW.novaExtraDia.redesenhar();
+    RW.extrajornadaDia.redesenhar();
     window.dispatchEvent(new CustomEvent('rosterwork_escala_rascunho'));
   }
 
@@ -66,11 +66,11 @@
     var c = RW.painel.criarCarregando();
     if (c) corpo.appendChild(c);
     var meu = ++pedido;
-    RW.novaExtraUtil.chamar('nova_extra_mes', { p_competencia: comp }).then(function (r) {
+    RW.painel.segurar(RW.extrajornadaUtil.chamar('extrajornada_mes', { p_competencia: comp })).then(function (r) {
       if (meu !== pedido || !ctx) return;
       if (!r || !r.ok) { frase(corpo, (r && r.error) || msg().falhaMes); return; }
       mes = r;
-      RW.novaExtraUtil.usar(r);
+      RW.extrajornadaUtil.usar(r);
       G().iniciar(r, 'ajustes', aoMudar);
       G().limpar();
       G().escalaDoMes();
@@ -83,14 +83,14 @@
   function reset() {
     ctx = null;
     pedido++;
-    if (RW.novaExtraDia) RW.novaExtraDia.soltar();
+    if (RW.extrajornadaDia) RW.extrajornadaDia.soltar();
   }
 
   /* o rascunho vazio; o mês é lido de novo na próxima vez que a aba abrir */
   function descartar() {
     if (mes) G().limpar();
     mes = null;
-    if (RW.novaExtraDia) RW.novaExtraDia.reorganizar();
+    if (RW.extrajornadaDia) RW.extrajornadaDia.reorganizar();
   }
 
   function mudancas() { return G().alteracoes().map(function (k) { return G().rascunho()[k]; }); }

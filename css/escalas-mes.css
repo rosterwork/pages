@@ -174,7 +174,7 @@
 
 /* o dia com mudança do painel do dia ainda não salva (escalas-painel-salvar.js): a borda tracejada por dentro, sem
    mudar o tamanho. Na caixa do pelotão no dia (Mês, Semana, Colunas, Extrajornada), no bloco inteiro do pelotão do
-   Calendário (Escala e Nova extra; a caixa de dentro fica sem), no cabeçalho do dia dos Militares e no dia da Minha
+   Calendário (Escala e Extrajornada; a caixa de dentro fica sem), no cabeçalho do dia dos Militares e no dia da Minha
    escala */
 .escala-celula--nao-salvo,
 .escala-calendario-unidade:has(> .escala-celula--nao-salvo),

@@ -1,10 +1,10 @@
 /* ============================================================
-   NOVA EXTRA — as peças comuns
+   EXTRAJORNADA — as peças comuns
    Os nomes, as unidades, os horários e a leitura do banco, lidos do mês
    que a tela em uso entregou (usar): a página da Extrajornada e a aba
    Extrajornada do painel do dia da Escala.
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
-   RosterWork.novaExtraUtil.
+   RosterWork.extrajornadaUtil.
    ============================================================ */
 (function () {
   'use strict';
@@ -12,9 +12,9 @@
   var RW = window.RosterWork = window.RosterWork || {};
   var INI = ['08h', '14h', '20h', '02h'], FIM = ['14h', '20h', '02h', '08h'];
 
-  var d = null;   // a resposta do nova_extra_mes da tela em uso
+  var d = null;   // a resposta do extrajornada_mes da tela em uso
 
-  function msg() { return RW.mensagens.novaExtra.org; }
+  function msg() { return RW.mensagens.extrajornada.org; }
   function br(s) { return s ? s.slice(8, 10) + '/' + s.slice(5, 7) : ''; }
 
   var util = {
@@ -38,42 +38,42 @@
        (RosterWork.escalasCelula.postoCurto); a dica leva o posto inteiro */
     vaga: function (a, uid, curto) {
       var m = util.militar(a.cpf) || {}, blocos = a.blocos.map(Number);
-      var v = RW.tpl('tpl-ne-vaga');
-      v.querySelector('.extra-vaga-grad').textContent = curto && RW.escalasCelula ? RW.escalasCelula.postoCurto(m.grad) : (m.grad || '');
-      v.querySelector('.extra-vaga-nome').textContent = m.nome || a.cpf;
+      var v = RW.tpl('tpl-extrajornada-vaga');
+      v.querySelector('.extrajornada-vaga-grad').textContent = curto && RW.escalasCelula ? RW.escalasCelula.postoCurto(m.grad) : (m.grad || '');
+      v.querySelector('.extrajornada-vaga-nome').textContent = m.nome || a.cpf;
       var horas = blocos.length === 4 ? msg().horasN(24) : blocos.length ? util.horas(blocos) : '';
       /* sem nenhum horário: em cinza até o Salvar (marcar uma bolinha traz de volta) */
-      v.classList.toggle('nova-extra-vaga--sai', !blocos.length);
+      v.classList.toggle('extrajornada-vaga--sai', !blocos.length);
       v.setAttribute('data-dica', ((m.grad || '') + ' ' + (m.nome || a.cpf)).trim() + (horas ? ', ' + horas : ' · ' + msg().saiAoSalvar));
       v.setAttribute('data-busca', RW.busca ? RW.busca.chave(m) : '');
       var outro = !!m.unidade_id && m.unidade_id !== uid;
       if (outro) {
-        var pel = v.querySelector('.extra-vaga-pelotao');
+        var pel = v.querySelector('.extrajornada-vaga-pelotao');
         pel.textContent = (util.unidade(m.unidade_id) || {}).nome || '';
         pel.classList.remove('oculto');
       }
       /* a cor das marcadas é a do que ele marcou no pedido para o dia: verde quer, vermelho não quer, neutra sem preferência */
-      var bol = v.querySelector('.nova-extra-vaga-bol'), pref = util.pref(m, a.data);
-      bol.classList.toggle('nova-extra-vaga-bol--quer', pref === 'quer');
-      bol.classList.toggle('nova-extra-vaga-bol--nao', pref === 'nao');
+      var bol = v.querySelector('.extrajornada-vaga-bol'), pref = util.pref(m, a.data);
+      bol.classList.toggle('extrajornada-vaga-bol--quer', pref === 'quer');
+      bol.classList.toggle('extrajornada-vaga-bol--nao', pref === 'nao');
       Array.prototype.forEach.call(bol.children, function (b, i) {
-        b.classList.toggle('nova-extra-vaga-bol--on', blocos.indexOf(i + 1) >= 0);
+        b.classList.toggle('extrajornada-vaga-bol--on', blocos.indexOf(i + 1) >= 0);
       });
-      v.querySelector('.nova-extra-vaga-baixo').classList.toggle('oculto', !outro);
+      v.querySelector('.extrajornada-vaga-baixo').classList.toggle('oculto', !outro);
       v.insertBefore(util.origem(a), bol);
       return v;
     },
     /* quem inseriu a extra: o ícone do sistema (o Preencher refaz) ou o do administrador (pôs ou mudou; o sistema nunca
        muda), com a dica de quem inseriu */
     origem: function (a) {
-      var i = RW.tpl('tpl-ne-origem'), sistema = a.origem === 'sugestao';
+      var i = RW.tpl('tpl-extrajornada-origem'), sistema = a.origem === 'sugestao';
       var texto = sistema ? msg().origemSistema : msg().origemAdmin;
       i.querySelector('use').setAttribute('href', 'icones/todos.svg#' + (sistema ? 'icone-extra-sistema' : 'icone-extra-administrador'));
       i.setAttribute('data-dica', texto);
       i.setAttribute('aria-label', texto);
       return i;
     },
-    /* as unidades da página: todas as da companhia (o seletor de unidades do topo não filtra a Nova extra) */
+    /* as unidades da página: todas as da companhia (o seletor de unidades do topo não filtra a Extrajornada) */
     escolhidas: function () { return d ? d.unidades.map(function (un) { return un.id; }) : []; },
     /* uma leitura do banco (RPC): devolve o JSON ou, se o banco recusar, null, com a mensagem técnica (o código, o texto
        e o lugar do erro) anotada no console para achar a causa */
@@ -81,7 +81,7 @@
       return RW.apiFetch('/rest/v1/rpc/' + nome, { metodo: 'POST', corpo: corpo || {} }).then(function (resp) {
         if (resp.ok) return resp.json();
         return resp.text().then(function (texto) {
-          console.error('[Nova extra] ' + nome + ' falhou (' + resp.status + '): ' + texto);
+          console.error('[Extrajornada] ' + nome + ' falhou (' + resp.status + '): ' + texto);
           return null;
         });
       });
@@ -97,5 +97,5 @@
     /* o mês que as peças leem */
     usar: function (dados) { d = dados; }
   };
-  RW.novaExtraUtil = util;
+  RW.extrajornadaUtil = util;
 })();

@@ -21,8 +21,11 @@
   /* cache da lista de unidades — todas as instâncias reusam a mesma busca */
   var unidadesCache = null;
   var buscaEmAndamento = null;
+  var buscaFalhou = false;   /* a última busca falhou: o resumo diz, e a próxima busca tenta de novo */
 
-  /* busca a hierarquia uma única vez e entrega a todos (Promise) */
+  function M() { return window.RosterWork.mensagens.seletorUnidades; }
+
+  /* busca a hierarquia uma única vez e entrega a todos (Promise); a falha não fica guardada e entrega a lista vazia */
   function buscarUnidades() {
     if (unidadesCache) return Promise.resolve(unidadesCache);
     if (buscaEmAndamento) return buscaEmAndamento;
@@ -30,11 +33,15 @@
       metodo: 'POST',
       corpo: {}
     }).then(function (resp) {
-      return resp.ok ? resp.json() : [];
+      if (!resp.ok) throw new Error('falha ao buscar as unidades');
+      return resp.json();
     }).then(function (lista) {
       unidadesCache = Array.isArray(lista) ? lista : [];
+      buscaFalhou = false;
       return unidadesCache;
     }).catch(function () {
+      buscaFalhou = true;
+      buscaEmAndamento = null;
       return [];
     });
     return buscaEmAndamento;
@@ -332,7 +339,7 @@
         if (Object.prototype.hasOwnProperty.call(selecionados, id) && mapa[id]) sels.push(mapa[id]);
       }
       if (sels.length === 0) {
-        textoEl.textContent = 'Selecione uma unidade';
+        textoEl.textContent = buscaFalhou ? M().falhaCarregar : M().selecione;
         return;
       }
 
@@ -523,22 +530,34 @@
       }
     });
 
-    inst.mostrarCarregando();
-    inst.montarArvore().then(function () {
-      var prefs = null;
-      try { prefs = JSON.parse(sessionStorage.getItem('rosterwork_preferencias')); } catch (e) {}
-      if (prefs && prefs.unidades_selecionadas && prefs.unidades_selecionadas.length > 0) {
-        inst.aplicarSelecaoPorIds(prefs.unidades_selecionadas);
-      } else {
-        var perfil = null;
-        try { perfil = JSON.parse(sessionStorage.getItem('rosterwork_user')); } catch (e) {}
-        if (perfil && perfil.lotacao_id) {
-          inst.aplicarSelecaoPorIds([perfil.lotacao_id]);
+    function carregar() {
+      inst.mostrarCarregando();
+      return inst.montarArvore().then(function () {
+        var prefs = null;
+        try { prefs = JSON.parse(sessionStorage.getItem('rosterwork_preferencias')); } catch (e) {}
+        if (prefs && prefs.unidades_selecionadas && prefs.unidades_selecionadas.length > 0) {
+          inst.aplicarSelecaoPorIds(prefs.unidades_selecionadas);
         } else {
-          inst.montarResumo();
+          var perfil = null;
+          try { perfil = JSON.parse(sessionStorage.getItem('rosterwork_user')); } catch (e) {}
+          if (perfil && perfil.lotacao_id) {
+            inst.aplicarSelecaoPorIds([perfil.lotacao_id]);
+          } else {
+            inst.montarResumo();
+          }
         }
-      }
-    });
+      });
+    }
+    carregar();
+
+    /* a lista não veio (sem internet, servidor fora): abrir o seletor tenta de novo e, dando certo, refaz a árvore e
+       reaplica a seleção guardada */
+    var tentando = false;
+    new MutationObserver(function () {
+      if (tentando || !buscaFalhou || !dropdownEl.classList.contains('dropdown--aberto')) return;
+      tentando = true;
+      carregar().then(function () { tentando = false; }, function () { tentando = false; });
+    }).observe(dropdownEl, { attributes: true, attributeFilter: ['class'] });
 
     /* expõe a instância do cabeçalho, caso alguma página precise consultá-la */
     window.RosterWork.seletorUnidadesCabecalho = inst;

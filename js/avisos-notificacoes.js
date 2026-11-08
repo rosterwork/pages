@@ -73,12 +73,14 @@
   /* lê o primeiro lote; devolve { emAberto, mais }: quantos avisos estão EM ABERTO (o número
      ao lado do título, o mesmo do sino; com algum, o "Marcar todas" aparece) e se há lote
      mais antigo (o "Mostrar mais antigos"). A última leitura vence: a de antes devolve null */
-  function carregar(lista, aoMudar) {
+  /* segurar (opcional): a leitura espera a forma que apareceu na lista cumprir o mínimo na tela (geral-etapas.js) */
+  function carregar(lista, aoMudar, segurar) {
     var minha = ++historico.leitura;
     historico.lista = lista;
     historico.aoMudar = aoMudar;
     historico.ultimo = null;
-    return ler(null)
+    var leitura = ler(null);
+    return (segurar ? segurar(leitura) : leitura)
       .then(function (caixa) {
         if (minha !== historico.leitura) return null;
         renderizar((caixa && caixa.itens) || [], false);

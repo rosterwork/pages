@@ -109,7 +109,7 @@
     var carregando = RosterWork.painel.criarCarregando();
     if (carregando) corpo.appendChild(carregando);
     var meu = ++token, essa = atual;
-    RosterWork.usuariosAfastamentosDados.listar(cat, null, ctx.pessoa.usuario_id).then(function (lista) {
+    RosterWork.painel.segurar(RosterWork.usuariosAfastamentosDados.listar(cat, null, ctx.pessoa.usuario_id)).then(function (lista) {
       if (meu !== token || atual !== essa) return;
       if (lista == null) {
         corpo.textContent = '';

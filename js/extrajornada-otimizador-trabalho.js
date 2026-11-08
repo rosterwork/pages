@@ -1,9 +1,9 @@
 /* ============================================================
-   NOVA EXTRA — o trabalhador do otimizador (em segundo plano)
+   EXTRAJORNADA — o trabalhador do otimizador (em segundo plano)
    Roda o HiGHS (bibliotecas/highs.js e highs.wasm) fora da tela, para
    ela não travar durante a conta. Recebe { lp, opcoes } e devolve
    { ok, status, marcadas } (os nomes das variáveis escolhidas) ou
-   { ok: false, erro }. Quem cria e encerra é o nova-extra-otimizador.js.
+   { ok: false, erro }. Quem cria e encerra é o extrajornada-otimizador.js.
    ============================================================ */
 (function () {
   'use strict';

@@ -60,7 +60,8 @@
     if (!fila || !RW.fila) return Promise.resolve();
     var lista = document.getElementById('folgas-pendencias');
     var espera = lista && !lista.children.length ? RW.etapas.area(lista, { forma: 'tpl-esqueleto-cartoes' }) : null;
-    return RW.fila.ler().then(function (r) {
+    var leitura = RW.fila.ler();
+    return (espera ? espera.segurar(leitura) : leitura).then(function (r) {
       if (espera) espera.parar();
       if (!r) return;
       var folgas = RW.fila.doTipo(r.fazer, ['folga']);

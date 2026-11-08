@@ -99,6 +99,7 @@
   function esperarLista(lista) {
     pararLista();
     esperaDaLista = RW.etapas.area(lista, lista.children.length ? {} : { forma: 'tpl-esqueleto-cartoes', etapas: 'trocasAbrir' });
+    return esperaDaLista;
   }
   function pararLista() {
     if (esperaDaLista) esperaDaLista.parar();
@@ -133,9 +134,9 @@
   function carregarMinhas() {
     var lista = conteudo.querySelector('#trocas-minhas-lista');
     if (!lista) return;
-    esperarLista(lista);
+    var espera = esperarLista(lista);
     var req = ++reqSeq;
-    RW.trocasDados.listar(unidades()).then(function (todas) {
+    espera.segurar(RW.trocasDados.listar(unidades())).then(function (todas) {
       if (!document.contains(lista) || req !== reqSeq) return;
       pararLista();
       if (!Array.isArray(todas)) { mostrarVazio(lista, RW.mensagens.trocas.falhaCarregar); return; }   // null = falha (Postgres devolve [] p/ vazio)
@@ -178,9 +179,9 @@
   function carregarPendentes() {
     var lista = conteudo.querySelector('#trocas-pendentes-lista');
     if (!lista) return;
-    esperarLista(lista);
+    var espera = esperarLista(lista);
     var req = ++reqSeq;
-    RW.trocasDados.pendencias().then(function (linhas) {
+    espera.segurar(RW.trocasDados.pendencias()).then(function (linhas) {
       if (!document.contains(lista) || req !== reqSeq) return;
       pararLista();
       if (!Array.isArray(linhas)) { mostrarVazio(lista, RW.mensagens.trocas.falhaCarregar); return; }   // null = falha
@@ -218,9 +219,11 @@
   }
   function carregarPendencias() {
     if (!filaPendencias || !RW.fila) return Promise.resolve();
-    esperarLista(conteudo.querySelector('#trocas-pendencias'));
-    return RW.fila.ler().then(function (r) {
-      pararLista();
+    var espera = esperarLista(conteudo.querySelector('#trocas-pendencias'));
+    return espera.segurar(RW.fila.ler()).then(function (r) {
+      /* só a espera desta lista (outra aba pode ter aberto a dela enquanto esta segurava) */
+      espera.parar();
+      if (esperaDaLista === espera) esperaDaLista = null;
       if (!r || !document.contains(conteudo)) return;
       /* as suas e, do administrador, as para aprovar, juntas pelo prazo (o banco só manda as de administração ao admin) */
       var trocas = RW.fila.doTipo(r.fazer, ['troca', 'troca_aceite']);

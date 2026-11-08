@@ -1,5 +1,5 @@
 /* ============================================================
-   NOVA EXTRA — Imprimir a grade (o botão da barra)
+   EXTRAJORNADA — Imprimir a grade (o botão da barra)
    Nas Extras do mês, na Distribuição e nos Ajustes, abre o painel de
    impressão das grades da Escala (escalas-impressao-grade.js) na grade
    da tela (Agenda ou Calendário), no mês da tela e com os pelotões da
@@ -9,7 +9,7 @@
    com a Escala completa, quem está de serviço. A leitura é a da tela
    (o rascunho também), sem buscar nada no banco, no formato da leitura
    da escala (RosterWork.escalasDados.carregar).
-   RosterWork.novaExtraImprimirGrade.
+   RosterWork.extrajornadaImprimirGrade.
    ============================================================ */
 (function () {
   'use strict';
@@ -17,8 +17,8 @@
   var RW = window.RosterWork = window.RosterWork || {};
   var INI = ['08:00', '14:00', '20:00', '02:00'], FIM = ['14:00', '20:00', '02:00', '08:00'];
 
-  function G() { return RW.novaExtraGrade; }
-  function u() { return RW.novaExtraUtil; }
+  function G() { return RW.extrajornadaGrade; }
+  function u() { return RW.extrajornadaUtil; }
   function iso(x) { return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'); }
   function primeiro(a) { return Math.min.apply(null, a.blocos.map(Number)); }
 
@@ -38,8 +38,8 @@
   function leitura(extrasDoMes) {
     return function (ids, inicio, fim) {
       var r = { militares: {}, afastados: {}, cobertura: {}, erro: {} };
-      var alocs = (extrasDoMes ? RW.novaExtraOrg.dados().alocacoes : G().vagas()).filter(function (a) { return a.blocos.length; });
-      var efetivas = extrasDoMes ? null : G().efetivas(), completa = !extrasDoMes && RW.novaExtraFiltros.escalaCompleta();
+      var alocs = (extrasDoMes ? RW.extrajornadaOrg.dados().alocacoes : G().vagas()).filter(function (a) { return a.blocos.length; });
+      var efetivas = extrasDoMes ? null : G().efetivas(), completa = !extrasDoMes && RW.extrajornadaFiltros.escalaCompleta();
       ids.forEach(function (uid) {
         r.militares[uid] = {}; r.afastados[uid] = {}; r.cobertura[uid] = {}; r.erro[uid] = {};
         for (var d = new Date(+inicio.slice(0, 4), +inicio.slice(5, 7) - 1, +inicio.slice(8, 10)); iso(d) <= fim; d.setDate(d.getDate() + 1)) {
@@ -66,23 +66,23 @@
 
   /* extrasDoMes: a aba Extras do mês (senão, a Distribuição ou os Ajustes); modo: 'agenda' ou 'calendario' */
   function abrir(extrasDoMes, modo) {
-    var d = extrasDoMes ? RW.novaExtraOrg.dados() : G().dados();
+    var d = extrasDoMes ? RW.extrajornadaOrg.dados() : G().dados();
     if (!d || !RW.escalasImpressaoGrade) return;
     var comp = d.competencia, unidades;
     if (extrasDoMes) {
       unidades = u().doCalendario(d.alocacoes).filter(function (un) { return d.alocacoes.some(function (a) { return +a.unidade === un.id; }); });
-    } else unidades = RW.novaExtraPorDia.unidades();
+    } else unidades = RW.extrajornadaPorDia.unidades();
     RW.escalasImpressaoGrade.abrir({
       formato: modo,
       data: new Date(+comp.slice(0, 4), +comp.slice(5, 7) - 1, 1),
       unidades: unidades.map(function (un) { return { unidade_id: un.id, nome: un.nome }; }),
-      filtros: !extrasDoMes && RW.novaExtraFiltros.escalaCompleta() ? [RW.mensagens.novaExtra.imprimir.grade.escalaCompleta] : [],
+      filtros: !extrasDoMes && RW.extrajornadaFiltros.escalaCompleta() ? [RW.mensagens.extrajornada.imprimir.grade.escalaCompleta] : [],
       dados: leitura(extrasDoMes),
-      titulo: RW.mensagens.novaExtra.imprimir.grade.titulo,
-      prefixo: RW.mensagens.novaExtra.imprimir.grade.arquivo,
+      titulo: RW.mensagens.extrajornada.imprimir.grade.titulo,
+      prefixo: RW.mensagens.extrajornada.imprimir.grade.arquivo,
       conferir: null
     });
   }
 
-  RW.novaExtraImprimirGrade = { abrir: abrir };
+  RW.extrajornadaImprimirGrade = { abrir: abrir };
 })();

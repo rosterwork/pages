@@ -258,7 +258,7 @@
     registro = null;
     var corpo = RW.painel.corpo(), carregando = RW.painel.criarCarregando();
     if (carregando) corpo.appendChild(carregando);
-    RW.trocasDados.registro(t.troca_id).then(function (r) {
+    RW.painel.segurar(RW.trocasDados.registro(t.troca_id)).then(function (r) {
       if (atual !== t) return;
       registro = r && r.ok ? r : null;
       desenharLeitura(t, ctx);

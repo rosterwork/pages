@@ -544,7 +544,7 @@
     montarSubcabecalho();
     mostrarCarregando();
     var meu = ++pedido, c = ctx;
-    RosterWork.escalasDados.lerDistribuicaoDia(ctx.unidadeId, ctx.iso).then(function (dados) {
+    RosterWork.painel.segurar(RosterWork.escalasDados.lerDistribuicaoDia(ctx.unidadeId, ctx.iso)).then(function (dados) {
       if (ctx !== c || meu !== pedido) return;
       if (!dados) { mostrarFalha(); return; }
       comecar(dados);
@@ -575,7 +575,7 @@
     else mostrarCarregando();
     var pedidoPrevia = RosterWork.escalasDados.lerPrevia('ler_distribuicao_dia', {});
     if (!pedidoPrevia) { exibir(base.dados); return; }
-    pedidoPrevia.then(function (dados) {
+    RosterWork.painel.segurar(pedidoPrevia).then(function (dados) {
       if (ctx !== c || meu !== pedido) return;
       if (!dados) { mostrarFalha(); return; }
       if (dados.erro_simulacao) {

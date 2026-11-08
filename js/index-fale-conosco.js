@@ -132,20 +132,26 @@
       RosterWork.guardaSaida.registrar(function () { return estaAberto() && temTexto(); });
     }
 
-    /* selo numérico do menu Programador (só programador): recados não resolvidos */
+    /* selo numérico do menu Programador (só programador): recados não resolvidos + erros da tela com vez não vista
+       (aba Erros); as duas contas vêm juntas, e com as duas falhando o selo fica como estava */
     function acharSelo() {
       var item = document.querySelector('.menu-item[data-pagina="programador"]');
       return item ? item.querySelector('.menu-item-selo') : null;
     }
+    function contar(nome, campo) {
+      return RosterWork.rpc(nome).then(function (r) {
+        return (r && typeof r[campo] === 'number') ? r[campo] : null;
+      }, function () { return null; });
+    }
     function atualizarSelo() {
       if (!(RosterWork.sessao && RosterWork.sessao.ehProgramador && RosterWork.sessao.ehProgramador())) return;
-      RosterWork.rpc('recados_contar_pendentes').then(function (r) {
+      Promise.all([contar('recados_contar_pendentes', 'pendentes'), contar('erros_tela_contar_novos', 'novos')]).then(function (contas) {
         var s = acharSelo();
-        if (!s) return;
-        var n = (r && typeof r.pendentes === 'number') ? r.pendentes : 0;
+        if (!s || (contas[0] === null && contas[1] === null)) return;
+        var n = (contas[0] || 0) + (contas[1] || 0);
         s.textContent = n > 0 ? String(n) : '';
         s.classList.toggle('oculto', n <= 0);
-      }).catch(function () {});
+      });
     }
     RosterWork.recadosSelo = { atualizar: atualizarSelo };
     atualizarSelo();

@@ -1,14 +1,14 @@
 /* ============================================================
-   NOVA EXTRA — o painel Imprimir relatório (Relatórios › Imprimir)
+   EXTRAJORNADA — o painel Imprimir relatório (Relatórios › Imprimir)
    O painel de impressão comum (componentes/js/geral-impressao.js),
-   com as caixas do molde #tpl-ne-imprimir: 1. o relatório (já
+   com as caixas do molde #tpl-extrajornada-imprimir: 1. o relatório (já
    marcado o do botão; o que ainda não liberou fica apagado, com o
    motivo na dica); 2. o pelotão: todos ou um, entre os da área de
    quem imprime (com um só, a caixa some); 3. com todos, separar por
    pelotão ou a lista única. A nota, a prévia e o Gerar PDF são do
-   painel comum. Os PDFs são do nova-extra-relatorios-pdf.js.
+   painel comum. Os PDFs são do extrajornada-relatorios-pdf.js.
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
-   RosterWork.novaExtraImprimir.
+   RosterWork.extrajornadaImprimir.
    ============================================================ */
 (function () {
   'use strict';
@@ -19,8 +19,8 @@
 
   var form = null;   // o painel aberto: { d, qual, unidade, modo, atualizar e as caixas }
 
-  function msg() { return RW.mensagens.novaExtra.imprimir; }
-  function pdf() { return RW.novaExtraRelatoriosPdf; }
+  function msg() { return RW.mensagens.extrajornada.imprimir; }
+  function pdf() { return RW.extrajornadaRelatoriosPdf; }
   function iso(x) { return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'); }
 
   /* o que ainda impede cada relatório (vazio = pode) */
@@ -82,7 +82,7 @@
     /* 2. o pelotão: todos ou um da área */
     var seletor = peca('unidade');
     unidadesDaArea(d).forEach(function (u) {
-      var b = RW.tpl('tpl-ne-imprimir-unidade');
+      var b = RW.tpl('tpl-extrajornada-imprimir-unidade');
       b.setAttribute('data-unidade', u.id);
       b.textContent = u.nome;
       seletor.appendChild(b);
@@ -103,7 +103,7 @@
     form = null;
   }
 
-  /* abre o painel com o relatório qual ('pedidos', 'termos', 'inicial' ou 'final') do mês d (nova_extra_mes) */
+  /* abre o painel com o relatório qual ('pedidos', 'termos', 'inicial' ou 'final') do mês d (extrajornada_mes) */
   function abrir(qual, d, subtitulo) {
     fecharLimpo();
     RW.painel.abrir({ titulo: msg().titulo, subtitulo: subtitulo || '', aoFechar: fecharLimpo });
@@ -111,7 +111,7 @@
     var area = unidadesDaArea(d);
     form = { d: d, qual: qual, unidade: area.length === 1 ? area[0].id : null, modo: 'separar', atualizar: null };
     RW.impressao.montar(corpo, RW.painel.rodape(), {
-      molde: 'tpl-ne-imprimir',
+      molde: 'tpl-extrajornada-imprimir',
       aoSair: function () { RW.painel.fechar(); },
       ligar: function (peca, atualizar) { ligar(corpo, atualizar); },
       estado: estado
@@ -119,5 +119,5 @@
     if (form.atualizar) form.atualizar();
   }
 
-  RW.novaExtraImprimir = { abrir: abrir, motivo: motivo };
+  RW.extrajornadaImprimir = { abrir: abrir, motivo: motivo };
 })();

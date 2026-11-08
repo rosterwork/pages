@@ -123,11 +123,11 @@
     if (!linhaNoRodape) {
       var texto = el.querySelector('.escala-rodape-salvar-texto');
       /* o que o rascunho da extra faz com as cotas, em amarelo; quem passou da cota vem primeiro */
-      var frase = !passou && X() && X().contar() ? RW.novaExtraGrade.fraseDasCotas() : '';
-      texto.textContent = passou ? RW.mensagens.novaExtra.org.passouRodape(passou.nome, passou.n)
+      var frase = !passou && X() && X().contar() ? RW.extrajornadaGrade.fraseDasCotas() : '';
+      texto.textContent = passou ? RW.mensagens.extrajornada.org.passouRodape(passou.nome, passou.n)
         : n ? msg().alteracoesNaoSalvas(n) + (frase ? '. ' + frase : '') : '';
-      texto.classList.toggle('escala-extra-rodape-erro', !!passou);
-      texto.classList.toggle('escala-extra-rodape-alerta', !!frase);
+      texto.classList.toggle('extrajornada-painel-rodape-erro', !!passou);
+      texto.classList.toggle('extrajornada-painel-rodape-alerta', !!frase);
     }
     var motivo = el.querySelector('.escala-rodape-motivo'), comExtra = !!(X() && X().contar());
     motivo.classList.toggle('oculto', !comExtra);
@@ -191,7 +191,7 @@
   /* as etapas no lugar do texto do rodapé */
   function linhaDasEtapas(el, chave, valores, opcoes) {
     var texto = el.querySelector('.escala-rodape-salvar-texto');
-    texto.classList.remove('escala-extra-rodape-erro', 'escala-extra-rodape-alerta');
+    texto.classList.remove('extrajornada-painel-rodape-erro', 'extrajornada-painel-rodape-alerta');
     return RW.etapas.linha(texto, chave, valores, opcoes);
   }
 

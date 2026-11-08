@@ -95,9 +95,10 @@
         .catch(function () { vazio(listaComunicados, RW.mensagens.avisos.falhaCarregar); });
     }
 
-    function carregarNotificacoes() {
+    /* segurar (opcional): a 1ª leitura espera a forma que apareceu cumprir o mínimo na tela */
+    function carregarNotificacoes(segurar) {
       if (!RW.avisosNotificacoes) return Promise.resolve();
-      return RW.avisosNotificacoes.carregar(listaNotificacoes, carregarNotificacoes)
+      return RW.avisosNotificacoes.carregar(listaNotificacoes, carregarNotificacoes, typeof segurar === 'function' ? segurar : null)
         .then(function (r) {
           if (!r) return;   /* uma leitura mais nova já está a caminho */
           emAberto = r.emAberto;
@@ -150,13 +151,14 @@
     }
 
     abaAtual = 'notificacoes';
-    /* passando de 0,3 s, a forma dos cartões e, de 1 s, as etapas; os comunicados ficam na outra aba, com a forma até chegarem */
+    /* passando de 0,5 s, a forma dos cartões e, de 1,5 s, as etapas (o que apareceu fica o mínimo na tela); os comunicados
+       ficam na outra aba, com a forma até chegarem */
     listaComunicados.textContent = '';
     listaComunicados.appendChild(RW.tpl('tpl-esqueleto-cartoes'));
     carregarComunicados();
     var espera = RW.etapas.area(listaNotificacoes, { forma: 'tpl-esqueleto-cartoes', etapas: 'avisosAbrir' });
     function chegou() { espera.parar(); }
-    var leitura = carregarNotificacoes();
+    var leitura = carregarNotificacoes(espera.segurar);
     leitura.then(chegou, chegou);
     return leitura;
   }

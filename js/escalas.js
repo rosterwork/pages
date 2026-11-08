@@ -13,6 +13,7 @@
   var DIAS_ABREV = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 
   var unidades = null;          // cache da hierarquia (lista plana), buscada uma vez
+  var unidadesFalharam = false; // a última leitura das unidades falhou: a espera mostra o erro no lugar da forma da grade
   var conteudo = null;          // o fragmento da página atual (recriado a cada visita)
   var refData = null;           // data de referência da navegação de período
   var ouvinteRegistrado = false;
@@ -243,12 +244,15 @@
     corpo.appendChild(no);
   }
 
-  /* as unidades ainda não chegaram: a forma do modo, sem os nomes (escalas-esqueleto.js) */
+  /* as unidades ainda não chegaram: a forma do modo, sem os nomes (escalas-esqueleto.js), com as etapas de abrir a
+     escala, que dizem quando demora; a leitura que falhou mostra o erro no lugar da forma */
   function esperarUnidades(corpo) {
+    if (unidadesFalharam) { mostrarEstado(corpo, window.RosterWork.mensagens.escala.falhaCarregarMes); return; }
     var E = RosterWork.escalasEsqueleto;
     var modo = modoAtual(), tipoColunas = tipoColunasAtual(), subMes = subMesAtual();
     var provisorias = idsAplicados().map(function (id) { return { id: id, nome: '' }; });
-    E.comecar(corpo, { forma: function (lugar) {
+    var etapas = modo === 'militares' ? { etapas: 'escalaMilitares' } : { etapas: 'escalaAbrir', valores: { mes: E.nomeDoMes(refData) } };
+    E.comecar(corpo, { etapas: etapas.etapas, valores: etapas.valores, forma: function (lugar) {
       if (modo === 'militares') E.militares(lugar, provisorias, RosterWork.escalasMilitares.diasDaQuinzena(refData));
       else if (modo === 'colunas' && tipoColunas === 'unidades') E.colunas(lugar, provisorias, refData);
       else if (modo === 'mes' && subMes !== 'calendario') E.agenda(lugar, provisorias, refData);
@@ -522,6 +526,7 @@
   async function carregarUnidades() {
     if (unidades) { montarUnidades(); return; }
     if (!obterToken()) return;
+    unidadesFalharam = false;
     var falhou = false;
     try {
       var resp = await RosterWork.apiFetch('/rest/v1/rpc/buscar_unidades_ordenadas', {
@@ -534,9 +539,13 @@
         if (Array.isArray(lista)) unidades = lista;
       }
     } catch (e) { falhou = true; }
-    /* falha na leitura das unidades: mostra erro em vez de deixar o giratório preso para sempre */
+    /* falha na leitura das unidades: para a forma da grade (desenhada depois, ela cobriria o aviso e travaria a área) e
+       mostra o erro; trocar de aba depois disso mostra o mesmo erro (esperarUnidades) */
     if (falhou && !unidades) {
-      var corpo = conteudo && conteudo.querySelector('.pagina-corpo');
+      unidadesFalharam = true;
+      if (!naEscala()) return;
+      if (RosterWork.escalasEsqueleto) RosterWork.escalasEsqueleto.parar();
+      var corpo = conteudo.querySelector('.pagina-corpo');
       if (corpo) mostrarEstado(corpo, window.RosterWork.mensagens.escala.falhaCarregarMes);
       return;
     }

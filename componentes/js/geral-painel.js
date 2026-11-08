@@ -249,9 +249,19 @@
     return el;
   }
 
-  /* carregando do corpo: o painel é um container, então usa o círculo (Guia visual › Vazio e carregando) */
+  /* carregando do corpo: a forma das caixas, na hora (o painel abre vazio). Ela fica o mínimo na tela (geral-etapas.js):
+     quem lê segura a leitura (segurar) antes de desenhar. Pedir de novo com as caixas à vista continua contando de quando
+     elas apareceram */
+  var caixasEm = null;
+  function caixasNaTela() {
+    return Array.prototype.some.call(document.querySelectorAll('.esqueleto-painel'), function (c) { return c.getClientRects().length > 0; });
+  }
   function criarCarregando() {
+    if (caixasEm == null || !caixasNaTela()) caixasEm = performance.now();
     return RosterWork.tpl('tpl-painel-carregando');
+  }
+  function segurar(leitura) {
+    return RosterWork.etapas.segurarDesde(caixasEm, leitura);
   }
 
   /* esperando algo ficar pronto: o círculo e, embaixo, o aviso do que está sendo esperado */
@@ -385,6 +395,7 @@
     criarSecaoColapsavel: criarSecaoColapsavel,
     criarEstado: criarEstado,
     criarCarregando: criarCarregando,
+    segurar: segurar,
     criarAtualizando: criarAtualizando
   };
 })();

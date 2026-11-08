@@ -68,7 +68,8 @@
     if (!el || !document.contains(el)) return;
     var u = RosterWork.sessao.perfil();
     if (!u || !u.cpf) return;
-    /* o que está na tela fica até o novo chegar; vazia, passando de 0,3 s, a forma e, de 1 s, as etapas */
+    /* o que está na tela fica até o novo chegar; vazia, passando de 0,5 s, a forma e, de 1,5 s, as etapas; o que apareceu
+       fica o mínimo na tela */
     if (espera) espera.parar();
     espera = RW.etapas.area(el, el.children.length ? {} : { forma: 'tpl-esqueleto-cartoes', etapas: 'folgasAbrir' });
     var req = ++seqExtrato;
@@ -77,7 +78,7 @@
       espera = null;
       saldoNoAr = null;
     }
-    saldoNoAr = RW.folgasDados.extrato(u.cpf).then(function (r) {
+    saldoNoAr = espera.segurar(RW.folgasDados.extrato(u.cpf)).then(function (r) {
       if (!document.contains(el) || req !== seqExtrato) return;
       chegou();
       if (r == null) { falharExtrato(el); return; }   // null = falha (não confundir com saldo 0 real)
@@ -106,7 +107,7 @@
     corpo.textContent = '';
     corpo.appendChild(RW.painel.criarCarregando());
     var meu = esperando = {};
-    saldoNoAr.then(function () { if (esperando === meu) { esperando = null; abrir(); } });
+    RW.painel.segurar(saldoNoAr).then(function () { if (esperando === meu) { esperando = null; abrir(); } });
   }
 
   RW.folgasMinhas = { montar: montar, carregar: carregar, solicitar: solicitar };

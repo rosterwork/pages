@@ -292,17 +292,15 @@
     var Dia = window.RosterWork.escalasDiaNaGrade;
     var chaveGrade = 'militares|' + inicio + '|' + ids.join(',');
     var rolagem = Dia ? Dia.mesmaGrade(corpo, chaveGrade) : null;
-    /* outra quinzena: o que está na tela fica 0,3 s; depois, a forma da nova (escalas-esqueleto.js) */
+    /* outra quinzena: o que está na tela fica 0,5 s; depois, a forma da nova, que fica o mínimo na tela (escalas-esqueleto.js) */
     var Esqueleto = window.RosterWork.escalasEsqueleto;
-    if (!rolagem) {
-      Esqueleto.comecar(corpo, {
-        forma: function (lugar) { Esqueleto.militares(lugar, colunas, dias); },
-        etapas: 'escalaMilitares'
-      });
-    }
+    var esperaDaGrade = rolagem ? null : Esqueleto.comecar(corpo, {
+      forma: function (lugar) { Esqueleto.militares(lugar, colunas, dias); },
+      etapas: 'escalaMilitares'
+    });
 
     var req = ++reqSeq;
-    return window.RosterWork.escalasDados.carregarMilitares(ids, inicio, fim).then(function (dados) {
+    return Esqueleto.segurar(esperaDaGrade, window.RosterWork.escalasDados.carregarMilitares(ids, inicio, fim)).then(function (dados) {
       if (!document.contains(corpo) || req !== reqSeq || (opcoes.vigente && !opcoes.vigente())) return;   // saiu da página, outra render começou, ou trocou de modo
       Esqueleto.parar();
       corpo.textContent = '';

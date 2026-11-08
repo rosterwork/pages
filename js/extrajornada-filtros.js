@@ -1,5 +1,5 @@
 /* ============================================================
-   NOVA EXTRA — passo 3: o filtro e a pesquisa da barra
+   EXTRAJORNADA — passo 3: o filtro e a pesquisa da barra
    Os componentes da Escala (geral-filtros e geral-busca). O filtro
    Exibir, só com o ícone, tem só a Escala completa: quem está de
    serviço no dia, em cima das extras, como na Distribuição antiga.
@@ -8,7 +8,7 @@
    com texto, deixa na lista dos voluntários só quem casa.
    Não cria HTML (os componentes clonam os moldes) nem escreve estilo
    (só classList).
-   RosterWork.novaExtraFiltros.
+   RosterWork.extrajornadaFiltros.
    ============================================================ */
 (function () {
   'use strict';
@@ -29,7 +29,7 @@
     pagina = el;
     termo = '';
     modo = 'marcar';
-    filtros = RW.filtros ? RW.filtros.criar(el.querySelector('#p3-filtros'), { aoMudar: function () { RW.novaExtraMontar.redesenhar(); } }) : null;
+    filtros = RW.filtros ? RW.filtros.criar(el.querySelector('#p3-filtros'), { aoMudar: function () { RW.extrajornadaMontar.redesenhar(); } }) : null;
     if (filtros) {
       filtros.definir('exibir', EXIBIR);
       filtros.mostrar(visivel);
@@ -42,20 +42,20 @@
     if (!pagina) return;
     var cal = pagina.querySelector('#p3-cal');
     Array.prototype.forEach.call(cal.querySelectorAll('.escala-mes-celula--busca'), function (c) { c.classList.remove('escala-mes-celula--busca'); });
-    Array.prototype.forEach.call(cal.querySelectorAll('.nova-extra-vaga, .linha-escalado'), function (linha) {
+    Array.prototype.forEach.call(cal.querySelectorAll('.extrajornada-vaga, .linha-escalado'), function (linha) {
       var casa = !!termo && RW.busca.casaTexto(termo, linha.getAttribute('data-busca'));
-      var vaga = linha.classList.contains('nova-extra-vaga');
-      linha.classList.toggle(vaga ? 'nova-extra-vaga--busca' : 'linha-escalado--busca', casa && modo === 'marcar');
+      var vaga = linha.classList.contains('extrajornada-vaga');
+      linha.classList.toggle(vaga ? 'extrajornada-vaga--busca' : 'linha-escalado--busca', casa && modo === 'marcar');
       linha.classList.toggle('busca-achado', casa);   // o que o Enter da busca percorre (geral-busca.js)
       linha.classList.toggle('oculto', !!termo && !casa && modo === 'filtrar');
       if (casa) linha.closest('.escala-mes-celula').classList.add('escala-mes-celula--busca');
     });
-    Array.prototype.forEach.call(pagina.querySelectorAll('#p3-esq .nova-extra-esq-item'), function (item) {
+    Array.prototype.forEach.call(pagina.querySelectorAll('#p3-esq .extrajornada-esq-item'), function (item) {
       item.classList.toggle('oculto', !!termo && !RW.busca.casaTexto(termo, item.getAttribute('data-busca')));
     });
   }
 
-  RW.novaExtraFiltros = {
+  RW.extrajornadaFiltros = {
     ligar: ligar,
     aplicar: aplicar,
     /* o filtro e a linha "Filtros:" só na Distribuição (a escolha fica guardada) */

@@ -110,14 +110,12 @@
     var Dia = window.RosterWork.escalasDiaNaGrade;
     var chaveGrade = 'colunas|' + inicio + '|' + ids.join(',');
     var rolagem = Dia ? Dia.mesmaGrade(corpo, chaveGrade) : null;
-    /* outra semana: o que está na tela fica 0,3 s; depois, a forma da nova (escalas-esqueleto.js) */
+    /* outra semana: o que está na tela fica 0,5 s; depois, a forma da nova, que fica o mínimo na tela (escalas-esqueleto.js) */
     var Esqueleto = window.RosterWork.escalasEsqueleto;
-    if (!rolagem) {
-      Esqueleto.abrirMes(corpo, dataRef, function (lugar) { Esqueleto.colunas(lugar, colunas, dataRef); });
-    }
+    var esperaDaGrade = rolagem ? null : Esqueleto.abrirMes(corpo, dataRef, function (lugar) { Esqueleto.colunas(lugar, colunas, dataRef); });
 
     var req = ++reqSeq;
-    return window.RosterWork.escalasDados.carregar(ids, inicio, fim, { daTela: true }).then(function (resultado) {
+    return Esqueleto.segurar(esperaDaGrade, window.RosterWork.escalasDados.carregar(ids, inicio, fim, { daTela: true })).then(function (resultado) {
       var dados = resultado.militares;
       var afastados = resultado.afastados || {};
       var cobertura = resultado.cobertura || {};

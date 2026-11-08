@@ -27,7 +27,7 @@
   var idTrilha = null;          // a unidade cujo caminho a trilha mostra agora
   var quadroPedido = false;     // uma atualização da trilha por quadro de rolagem
   var observadorTrilha = null;  // refaz a trilha quando ela volta a aparecer (troca de aba)
-  var espera = null;            // a leitura na tela: até 0,3 s nada muda; depois, a forma dos blocos e as etapas (geral-etapas.js)
+  var espera = null;            // a leitura na tela: até 0,5 s nada muda; depois, a forma dos blocos e as etapas (geral-etapas.js)
 
   /* A página escolhe a fonte de conteúdo; o padrão é o efetivo (usuários).
      Pode ser uma função, lida a cada carga (o Dia da Escala: a leitura de sempre ou a prévia do rascunho), como o corpoRpc */
@@ -250,6 +250,11 @@
       buscarRpc(rpc, corpoConteudo())
     ]);
     if (meu !== pedidoAtual) return false;
+    /* a forma que apareceu fica o mínimo na tela (geral-etapas.js) */
+    if (espera) {
+      await espera.segurar();
+      if (meu !== pedidoAtual) return false;
+    }
     if (resultados[0]) unidades = resultados[0];
     if (resultados[1]) conteudoPorRpc[rpc] = resultados[1];
     /* falha de QUALQUER uma das RPCs vira erro — mas uma revalidação de 2º plano que falha

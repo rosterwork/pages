@@ -91,17 +91,22 @@
   /* versaoId = a mudança agendada; sem ela, a distribuição em vigor. O ritmo vem junto (o bloco 1) */
   function carregar(unidadeId, versaoId) {
     var meu = ++tokenCarga;
-    /* o que está na tela fica 0,3 s, sem responder; depois, a forma e, de 1 s, as etapas (geral-etapas.js) */
+    /* o que está na tela fica 0,5 s, sem responder; depois, a forma e, de 1,5 s, as etapas (geral-etapas.js); o que for
+       desenhado espera o que apareceu cumprir o mínimo na tela */
     pararEspera();
     corpoEsperando = el('nova-distribuicao-corpo');
     corpoEsperando.inert = true;
     el('nova-distribuicao-blocos').classList.add('nova-distribuicao-blocos--lendo');
     espera = RosterWork.etapas.area(corpoEsperando, { forma: 'tpl-nova-distribuicao-carregando', etapas: 'ajustesAbrir', valores: { unidade: nomeDaUnidade(unidadeId) }, doServidor: 1 });
     function terminou() { if (meu === tokenCarga) pararEspera(); }
+    function depois(desenhar) {
+      var esta = espera;
+      return (esta ? esta.segurar() : Promise.resolve()).then(function () { if (meu === tokenCarga && montada()) desenhar(); });
+    }
     return Promise.all([D().ler(unidadeId, versaoId), D().ritmos()]).then(function (rs) {
       var r = rs[0];
       if (meu !== tokenCarga || !montada()) return;
-      if (!r || !r.success) { pararEspera(); P().mostrarNoCorpo('falha', (r && r.error) || G().falhaCarregar); return; }
+      if (!r || !r.success) return depois(function () { pararEspera(); P().mostrarNoCorpo('falha', (r && r.error) || G().falhaCarregar); });
       /* as contas de cada posto, a 2ª etapa */
       espera.ir(1);
       var bloco = E.bloco;
@@ -118,10 +123,10 @@
       E.respCia = r.companhia && r.companhia.periodo ? copia(r.companhia.periodo.respostas) : null;
       invalidos = {};
       desenharBarra();
-      if (!E.periodo) { pararEspera(); desenharSemRespostas(); return; }
+      if (!E.periodo) return depois(function () { pararEspera(); desenharSemRespostas(); });
       return recalcular();
     }, function () {
-      if (meu === tokenCarga && montada()) { pararEspera(); P().mostrarNoCorpo('falha', G().semConexao); }
+      if (meu === tokenCarga && montada()) return depois(function () { pararEspera(); P().mostrarNoCorpo('falha', G().semConexao); });
     }).then(terminou, terminou);
   }
 
@@ -153,7 +158,9 @@
     var par = C().parametros(E.unidadeId);
     var conta = D().calcular(E.unidadeId, E.resp, par.efetivos, par.simulacao, outraVersao());
     var contaCia = ehPelotao() && E.respCia ? D().calcular(E.companhia.unidade.id, E.respCia, null, null) : Promise.resolve(null);
-    return Promise.all([conta, contaCia]).then(function (rs) {
+    /* na 1ª leitura, a conta espera a forma que apareceu cumprir o mínimo na tela */
+    var contas = Promise.all([conta, contaCia]);
+    return (espera ? espera.segurar(contas) : contas).then(function (rs) {
       if (meu !== tokenConta || !montada()) return;
       if (!rs[0] || !rs[0].success) { avisarFalha(rs[0]); return; }
       E.calc = rs[0];

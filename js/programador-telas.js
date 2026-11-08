@@ -1,7 +1,7 @@
 /* ============================================================
    PROGRAMADOR — AS DUAS TELAS DO CELULAR (só programador)
-   No celular, a lista e o registro de Mensagens e Bugs são duas
-   telas: abrir um registro esconde a lista, e o Voltar à lista e o
+   No celular, a lista e o registro de Mensagens, Bugs e Erros são
+   duas telas: abrir um registro esconde a lista, e o Voltar à lista e o
    voltar do Android voltam (.programador-telas--registro,
    css/programador.css). No computador a classe não muda nada, e o
    voltar do navegador continua trocando de tela. Cada aba se liga

@@ -9,11 +9,11 @@
    e quem ajustou) e as cotas que mudaram.
    Cada etapa tem o seu Imprimir (pedidos, termos e cotas, relatório
    inicial e relatório final), que abre o painel Imprimir relatório
-   (nova-extra-imprimir.js), liberado quando o relatório já pode sair.
+   (extrajornada-imprimir.js), liberado quando o relatório já pode sair.
    A prévia compara os trechos da foto do lançamento com os de agora
    (mudancas, por militar: o que saiu e o que entrou).
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
-   RosterWork.novaExtraRelatorio.
+   RosterWork.extrajornadaRelatorio.
    ============================================================ */
 (function () {
   'use strict';
@@ -25,7 +25,7 @@
   var ETAPAS = ['solicitacoes', 'termos', 'montagem', 'ajustes', 'relatorio'];
 
   var el = null, r = null;
-  var bruto = null;   // o mês como veio do banco (nova_extra_mes), para o painel Imprimir relatório
+  var bruto = null;   // o mês como veio do banco (extrajornada_mes), para o painel Imprimir relatório
 
   function msg() { return RW.mensagens.extrajornada.relatorios; }
   function q(sel) { return el.querySelector(sel); }
@@ -34,7 +34,7 @@
   function dataDe(k) { return new Date(+k.slice(0, 4), +k.slice(5, 7) - 1, +k.slice(8, 10)); }
 
   /* as extras { cpf, data, unidade, blocos } em trechos contínuos (a mesma conta dos PDFs) */
-  function trechos(lista) { return RW.novaExtraRelatoriosPdf.trechos(lista); }
+  function trechos(lista) { return RW.extrajornadaRelatoriosPdf.trechos(lista); }
 
   /* quem mudou desde o lançamento: o que saiu (era) e o que entrou (ficou), por militar, trecho a trecho */
   function mudancas(dados) {
@@ -108,8 +108,8 @@
     var e = estados(dados, hoje);
     ETAPAS.forEach(function (n) {
       var li = q('#p5-lista [data-etapa="' + n + '"]');
-      li.classList.toggle('nova-extra-rel-etapa--feita', e[n] === 'feita');
-      li.classList.toggle('nova-extra-rel-etapa--atual', e[n] === 'atual');
+      li.classList.toggle('extrajornada-rel-etapa--feita', e[n] === 'feita');
+      li.classList.toggle('extrajornada-rel-etapa--atual', e[n] === 'atual');
     });
     var s = dados.solicitacoes, l = dados.lancamento;
     q('#p5-solicitacoes').textContent = msg().solicitacoes(ddmm(s.inicio), ddmm(s.fim), s.voluntarios, s.nao_voluntarios, s.sem_resposta);
@@ -117,21 +117,21 @@
     q('#p5-montagem').textContent = l.lancado ? msg().lancado(l.em, l.por, l.reabrir_ate, dados.iniciado) : msg().naoLancado(l.reabrir_ate);
     /* o Imprimir de cada etapa, liberado quando o relatório já pode sair */
     Array.prototype.forEach.call(el.querySelectorAll('#p5-lista [data-relatorio]'), function (b) {
-      b.disabled = !!RW.novaExtraImprimir.motivo(b.getAttribute('data-relatorio'), bruto);
+      b.disabled = !!RW.extrajornadaImprimir.motivo(b.getAttribute('data-relatorio'), bruto);
     });
     var qtd = q('#p5-ajustes-qtd');
     qtd.textContent = msg().ajustesQtd(dados.ajustes_qtd);
     qtd.classList.toggle('oculto', !(l.lancado && dados.iniciado));
-    q('#p5-ajustes').textContent = RW.mensagens.novaExtra.org.relAjustesPeriodo(ddmm(dados.competencia), ddmm(dados.mes_fim));
+    q('#p5-ajustes').textContent = RW.mensagens.extrajornada.org.relAjustesPeriodo(ddmm(dados.competencia), ddmm(dados.mes_fim));
     q('#p5-relatorio').textContent = dados.terminou ? msg().relatorioPronto(ddmm(dados.libera_ajustes)) : msg().relatorioDisponivel(ddmm(dados.libera_ajustes));
   }
 
   /* ---------- prévia do relatório de ajustes ---------- */
   function celulaHorarios(td, lista, vazio) {
     td.textContent = '';
-    if (!lista.length) { td.textContent = vazio; td.classList.add('nova-extra-rel-sem'); return; }
+    if (!lista.length) { td.textContent = vazio; td.classList.add('extrajornada-rel-sem'); return; }
     lista.forEach(function (x) {
-      var h = RW.tpl('tpl-ne-rel-horario');
+      var h = RW.tpl('tpl-extrajornada-rel-horario');
       h.textContent = ddmm(x.data) + ', ' + INI[x.b_ini] + ' às ' + FIM[x.b_fim];
       td.appendChild(h);
     });
@@ -139,7 +139,7 @@
   function soma(lista) { return lista.reduce(function (s, x) { return s + (x.b_fim - x.b_ini + 1); }, 0); }
 
   function desenharPrevia(dados) {
-    q('#p5-previa-titulo').textContent = dados.terminou ? RW.mensagens.novaExtra.org.relFinal : RW.mensagens.novaExtra.org.relPrevia;
+    q('#p5-previa-titulo').textContent = dados.terminou ? RW.mensagens.extrajornada.org.relFinal : RW.mensagens.extrajornada.org.relPrevia;
     q('#p5-comparado').textContent = dados.lancamento.lancado ? msg().comparado(String(dados.lancamento.data).slice(0, 5)) : '';
     var linhas = q('#p5-linhas');
     linhas.textContent = '';
@@ -152,17 +152,17 @@
     dados.militares.forEach(function (m) {
       var x = mud[m.cpf];
       if (!x || !dados.lancamento.lancado) return;
-      var tr = RW.tpl('tpl-ne-rel-linha');
+      var tr = RW.tpl('tpl-extrajornada-rel-linha');
       n++;
       tr.querySelector('small').textContent = m.grad || '';
       tr.querySelector('b').textContent = m.nome || '';
-      tr.querySelector('.nova-extra-rel-unidade').textContent = unidades[m.unidade_id] || '';
-      celulaHorarios(tr.querySelector('.nova-extra-rel-era'), x.era, msg().nova);
-      celulaHorarios(tr.querySelector('.nova-extra-rel-ficou'), x.ficou, msg().retirada);
+      tr.querySelector('.extrajornada-rel-unidade').textContent = unidades[m.unidade_id] || '';
+      celulaHorarios(tr.querySelector('.extrajornada-rel-era'), x.era, msg().nova);
+      celulaHorarios(tr.querySelector('.extrajornada-rel-ficou'), x.ficou, msg().retirada);
       var a = ajustes[m.cpf];
-      tr.querySelector('.nova-extra-rel-motivo').textContent = (a && a.motivo) || msg().semMotivo;
-      tr.querySelector('.nova-extra-rel-autor').textContent = a ? (a.autor || '') + ', ' + (a.quando || '') : '';
-      tr.querySelector('.nova-extra-rel-vezes').textContent = a && a.vezes > 1 ? msg().mudouVezes(a.vezes) : '';
+      tr.querySelector('.extrajornada-rel-motivo').textContent = (a && a.motivo) || msg().semMotivo;
+      tr.querySelector('.extrajornada-rel-autor').textContent = a ? (a.autor || '') + ', ' + (a.quando || '') : '';
+      tr.querySelector('.extrajornada-rel-vezes').textContent = a && a.vezes > 1 ? msg().mudouVezes(a.vezes) : '';
       linhas.appendChild(tr);
       var de = soma(x.era), para = soma(x.ficou);
       if (de !== para) cotas.push(msg().cotasMudaram(((m.grad || '') + ' ' + (m.nome || '')).trim(), de, para));
@@ -180,7 +180,7 @@
     Array.prototype.forEach.call(el.querySelectorAll('#p5-lista [data-relatorio]'), function (b) {
       if (b.dataset.ligado) return;
       b.dataset.ligado = '1';
-      b.addEventListener('click', function () { RW.novaExtraImprimir.abrir(b.getAttribute('data-relatorio'), bruto, q('#nova-extra-mes').textContent); });
+      b.addEventListener('click', function () { RW.extrajornadaImprimir.abrir(b.getAttribute('data-relatorio'), bruto, q('#extrajornada-mes').textContent); });
     });
     bruto = d;
     r = montarDados(d);
@@ -189,5 +189,5 @@
     desenharPrevia(r);
   }
 
-  RW.novaExtraRelatorio = { mostrar: mostrar };
+  RW.extrajornadaRelatorio = { mostrar: mostrar };
 })();

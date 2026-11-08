@@ -121,8 +121,10 @@
     var meu = ++token;
     lista.textContent = '';
     lista.appendChild(RW.tpl('tpl-arvore-carregando'));
-    return RW.apiFetch('/rest/v1/rpc/antiguidade_listar', { metodo: 'POST', corpo: {} })
-      .then(function (resp) { return resp.ok ? resp.json() : null; })
+    /* a forma entra na hora (a lista está vazia) e fica o mínimo na tela (geral-etapas.js) */
+    var leitura = RW.apiFetch('/rest/v1/rpc/antiguidade_listar', { metodo: 'POST', corpo: {} })
+      .then(function (resp) { return resp.ok ? resp.json() : null; });
+    return RW.etapas.segurarDesde(performance.now(), leitura)
       .then(function (dados) {
         if (meu !== token) return;
         if (!dados && RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.falhaCarregar });
@@ -258,7 +260,7 @@
       botaoSalvar.dataset.ligado = '1';
       botaoSalvar.addEventListener('click', salvar);
     }
-    /* Cancelar: lê de novo a ordem gravada (como em Extrajornada › Voluntários) */
+    /* Cancelar: lê de novo a ordem gravada */
     var botaoCancelar = el('#antiguidade-cancelar');
     if (botaoCancelar && !botaoCancelar.dataset.ligado) {
       botaoCancelar.dataset.ligado = '1';

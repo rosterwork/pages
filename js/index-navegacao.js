@@ -13,7 +13,7 @@
     perfil: { html: 'perfil.html', cobrirAteOsDados: true, css: [], js: ['js/perfil-dados-promocoes.js', 'js/perfil-dados.js', 'js/perfil-senha.js'] },   /* index-perfil.js já vem no shell (liga o botão do cabeçalho) */
     manual: { html: 'manual.html', css: ['css/manual.css'], js: [] },   /* index-manual.js já vem no shell (liga o botão + registra a página) */
     avisos: { html: 'avisos.html', css: ['css/avisos.css'], js: ['js/avisos-comunicado.js', 'js/avisos-notificacoes.js', 'js/avisos.js'] },
-    escalas: { html: 'escalas.html', css: ['css/escalas-controles.css', 'css/escalas-mes.css', 'css/escalas-semana.css', 'css/escalas-dia.css', 'css/escalas-colunas.css', 'css/escalas-calendario.css', 'css/escalas-militares.css', 'css/escalas-painel.css', 'css/escalas-painel-secoes.css', 'css/escalas-painel-edicao.css', 'css/escalas-minha.css', 'css/trocas-formulario.css', 'css/nova-extra-dia.css'], js: ['js/escalas-dados.js', 'js/trocas-dados.js', 'js/escalas-celula.js', 'js/escalas-mes.js', 'js/escalas-semana.js', 'js/escalas-dia.js', 'js/escalas-minha.js', 'js/escalas-colunas.js', 'js/escalas-calendario.js', 'js/escalas-militares.js', 'js/escalas-militares-painel.js', 'js/escalas-painel.js', 'js/escalas-painel-editar.js', 'js/escalas-painel-quem.js', 'js/escalas-painel-funcoes.js', 'js/escalas-painel-ciclo.js', 'js/escalas-painel-salvar.js', 'js/escalas-painel-remover-listas.js', 'js/escalas-painel-remover.js', 'js/escalas-painel-remover-troca.js', 'js/escalas-painel-linha-aplicar.js', 'js/escalas-painel-linha.js', 'js/escalas-painel-adicionar-listas.js', 'js/escalas-painel-onde.js', 'js/escalas-painel-adicionar.js', 'js/escalas-painel-remanejar-listas.js', 'js/escalas-painel-remanejar.js', 'js/trocas-solicitar-campos.js', 'js/trocas-solicitar-militar.js', 'js/trocas-varias-calendario.js', 'js/trocas-varias-registrar.js', 'js/trocas-varias-resumo.js', 'js/trocas-varias.js', 'js/trocas-solicitar.js', 'js/escalas-painel-troca.js', 'js/escalas-painel-militar.js', 'js/escalas-painel-continuos.js', 'js/nova-extra-util.js', 'js/nova-extra-falta.js', 'js/nova-extra-grade.js', 'js/nova-extra-dia-outros.js', 'js/nova-extra-dia.js', 'js/escalas-painel-extra.js', 'js/escalas-legenda.js', 'js/escalas-impressao-pdf.js', 'js/escalas-impressao-legenda.js', 'js/escalas-impressao.js', 'js/escalas-impressao-grade-celula.js', 'js/escalas-impressao-grade-pdf.js', 'js/escalas-impressao-grade.js', 'js/escalas-sysbm.js', 'js/escalas-filtros.js', 'js/escalas-atualizando.js', 'js/escalas-dia-na-grade.js', 'js/escalas-esqueleto.js', 'js/escalas.js'] },
+    escalas: { html: 'escalas.html', css: ['css/escalas-controles.css', 'css/escalas-mes.css', 'css/escalas-semana.css', 'css/escalas-dia.css', 'css/escalas-colunas.css', 'css/escalas-calendario.css', 'css/escalas-militares.css', 'css/escalas-painel.css', 'css/escalas-painel-secoes.css', 'css/escalas-painel-edicao.css', 'css/escalas-minha.css', 'css/trocas-formulario.css', 'css/extrajornada-dia.css'], js: ['js/escalas-dados.js', 'js/trocas-dados.js', 'js/escalas-celula.js', 'js/escalas-mes.js', 'js/escalas-semana.js', 'js/escalas-dia.js', 'js/escalas-minha.js', 'js/escalas-colunas.js', 'js/escalas-calendario.js', 'js/escalas-militares.js', 'js/escalas-militares-painel.js', 'js/escalas-painel.js', 'js/escalas-painel-editar.js', 'js/escalas-painel-quem.js', 'js/escalas-painel-funcoes.js', 'js/escalas-painel-ciclo.js', 'js/escalas-painel-salvar.js', 'js/escalas-painel-remover-listas.js', 'js/escalas-painel-remover.js', 'js/escalas-painel-remover-troca.js', 'js/escalas-painel-linha-aplicar.js', 'js/escalas-painel-linha.js', 'js/escalas-painel-adicionar-listas.js', 'js/escalas-painel-onde.js', 'js/escalas-painel-adicionar.js', 'js/escalas-painel-remanejar-listas.js', 'js/escalas-painel-remanejar.js', 'js/trocas-solicitar-campos.js', 'js/trocas-solicitar-militar.js', 'js/trocas-varias-calendario.js', 'js/trocas-varias-registrar.js', 'js/trocas-varias-resumo.js', 'js/trocas-varias.js', 'js/trocas-solicitar.js', 'js/escalas-painel-troca.js', 'js/escalas-painel-militar.js', 'js/escalas-painel-continuos.js', 'js/extrajornada-util.js', 'js/extrajornada-falta.js', 'js/extrajornada-grade.js', 'js/extrajornada-dia-outros.js', 'js/extrajornada-dia.js', 'js/escalas-painel-extra.js', 'js/escalas-legenda.js', 'js/escalas-impressao-pdf.js', 'js/escalas-impressao-legenda.js', 'js/escalas-impressao.js', 'js/escalas-impressao-grade-celula.js', 'js/escalas-impressao-grade-pdf.js', 'js/escalas-impressao-grade.js', 'js/escalas-sysbm.js', 'js/escalas-filtros.js', 'js/escalas-atualizando.js', 'js/escalas-dia-na-grade.js', 'js/escalas-esqueleto.js', 'js/escalas.js'] },
     usuarios: { html: 'usuarios.html', css: ['css/usuarios-cards.css', 'css/usuarios-exibir.css', 'css/usuarios-antiguidade.css', 'css/usuarios-administradores.css', 'css/usuarios-painel.css', 'css/usuarios-afastamentos.css'], js: ['js/usuarios-exibir.js', 'js/usuarios-painel.js', 'js/usuarios-painel-leitura.js', 'js/usuarios-painel-editar.js', 'js/usuarios-painel-datas.js', 'js/usuarios-painel-transferir.js', 'js/usuarios-painel-promover.js', 'js/usuarios-painel-baixa.js', 'js/usuarios-painel-acesso.js', 'js/usuarios-afastamentos-dados.js', 'js/usuarios-painel-afastamentos.js', 'js/usuarios-painel-afastamentos-editar.js', 'js/usuarios-novo-usuario-dados.js', 'js/usuarios-novo-usuario-envio.js', 'js/usuarios-novo-usuario.js', 'js/usuarios-correcao-painel.js', 'js/usuarios-antiguidade.js', 'js/usuarios-administradores.js', 'js/usuarios-afastamentos-caixa.js', 'js/usuarios-afastamentos.js', 'js/usuarios.js'] },
     trocas: { html: 'trocas.html', css: ['css/trocas.css', 'css/trocas-formulario.css', 'css/escalas-painel.css', 'css/escalas-painel-edicao.css'], js: ['js/escalas-dados.js', 'js/escalas-painel.js', 'js/escalas-painel-editar.js', 'js/trocas-dados.js', 'js/trocas-painel-situacao.js', 'js/trocas-painel.js', 'js/trocas-painel-varias.js', 'js/escalas-impressao-pdf.js', 'js/trocas-registro-pdf.js', 'js/trocas-relatorio-pdf.js', 'js/trocas-imprimir-alteracoes.js', 'js/trocas-imprimir.js', 'js/trocas-pendencia-painel.js', 'js/trocas-solicitar-campos.js', 'js/trocas-solicitar-militar.js', 'js/trocas-varias-calendario.js', 'js/trocas-varias-registrar.js', 'js/trocas-varias-resumo.js', 'js/trocas-varias.js', 'js/trocas-varias-editar.js', 'js/trocas-solicitar.js', 'js/trocas-editar.js', 'js/trocas.js'] },
     folgas: { html: 'folgas.html', css: ['css/folgas.css', 'css/folgas-painel.css', 'css/escalas-painel.css', 'css/escalas-painel-edicao.css'], js: ['js/escalas-dados.js', 'js/escalas-painel.js', 'js/escalas-painel-editar.js', 'js/folgas-dados.js', 'js/folgas-minhas.js', 'js/folgas-saldos.js', 'js/folgas-listas.js', 'js/folgas-painel.js', 'js/folgas-aprovacao-painel.js', 'js/folgas.js'] },
@@ -24,8 +24,8 @@
     /* os Ajustes (só administrador): a Distribuição (o ritmo, os postos, o efetivo e como a escala se
        monta), o Horário de expediente e os Feriados */
     ajustes: { html: 'ajustes.html', css: ['css/nova-distribuicao.css', 'css/ajustes.css'], js: ['js/nova-distribuicao-pecas.js', 'js/nova-distribuicao-dados.js', 'js/nova-distribuicao-caixas.js', 'js/nova-distribuicao-ritmo.js', 'js/nova-distribuicao-postos.js', 'js/nova-distribuicao-efetivo.js', 'js/nova-distribuicao-funcoes.js', 'js/nova-distribuicao-acumulos.js', 'js/nova-distribuicao-blocos.js', 'js/nova-distribuicao-militares.js', 'js/nova-distribuicao-graduacao.js', 'js/nova-distribuicao-conferir.js', 'js/nova-distribuicao-versoes.js', 'js/nova-distribuicao.js', 'js/ajustes-horario.js', 'js/ajustes-feriados.js', 'js/ajustes.js'] },
-    programador: { html: 'programador.html', cobrirAteOsDados: true, css: ['css/programador.css', 'css/programador-guia.css'], js: ['js/programador-telas.js', 'js/programador-bugs-formulario.js', 'js/programador-bugs.js', 'js/programador-bug-ligado.js', 'js/programador-guia.js', 'js/programador.js'] },
-    'nova-extra': { html: 'nova-extra.html', css: ['css/escalas-mes.css', 'css/escalas-calendario.css', 'css/escalas-painel.css', 'css/escalas-controles.css', 'css/nova-extra-dia.css', 'css/nova-extra-cotas.css', 'css/nova-extra.css'], js: ['js/escalas-dados.js', 'js/escalas-celula.js', 'js/escalas-esqueleto.js', 'js/escalas-impressao-pdf.js', 'js/escalas-impressao-legenda.js', 'js/escalas-impressao-grade-celula.js', 'js/escalas-impressao-grade-pdf.js', 'js/escalas-impressao-grade.js', 'js/nova-extra-util.js', 'js/nova-extra-pedido.js', 'js/nova-extra-minimo.js', 'js/nova-extra-organizar.js', 'js/nova-extra-acoes.js', 'js/nova-extra-cotas.js', 'js/nova-extra-otimizador.js', 'js/nova-extra-falta.js', 'js/nova-extra-grade.js', 'js/nova-extra-montar.js', 'js/nova-extra-por-dia.js', 'js/nova-extra-dia-outros.js', 'js/nova-extra-dia.js', 'js/nova-extra-lista.js', 'js/nova-extra-filtros.js', 'js/nova-extra-relatorios-pdf.js', 'js/nova-extra-imprimir.js', 'js/nova-extra-imprimir-grade.js', 'js/nova-extra-relatorio.js', 'js/nova-extra.js'] }   /* a Extrajornada (o menu "Extrajornada"); as barras, o bloco do calendário, o desenho do painel do dia, a Legenda e o Imprimir da grade vêm da Escala */
+    programador: { html: 'programador.html', cobrirAteOsDados: true, css: ['css/programador.css', 'css/programador-guia.css'], js: ['js/programador-telas.js', 'js/programador-bugs-formulario.js', 'js/programador-bugs.js', 'js/programador-bug-ligado.js', 'js/programador-erros.js', 'js/programador-guia.js', 'js/programador.js'] },
+    extrajornada: { html: 'extrajornada.html', css: ['css/escalas-mes.css', 'css/escalas-calendario.css', 'css/escalas-painel.css', 'css/escalas-controles.css', 'css/extrajornada-dia.css', 'css/extrajornada-cotas.css', 'css/extrajornada.css'], js: ['js/escalas-dados.js', 'js/escalas-celula.js', 'js/escalas-esqueleto.js', 'js/escalas-impressao-pdf.js', 'js/escalas-impressao-legenda.js', 'js/escalas-impressao-grade-celula.js', 'js/escalas-impressao-grade-pdf.js', 'js/escalas-impressao-grade.js', 'js/extrajornada-util.js', 'js/extrajornada-pedido.js', 'js/extrajornada-minimo.js', 'js/extrajornada-organizar.js', 'js/extrajornada-acoes.js', 'js/extrajornada-cotas.js', 'js/extrajornada-otimizador.js', 'js/extrajornada-falta.js', 'js/extrajornada-grade.js', 'js/extrajornada-montar.js', 'js/extrajornada-por-dia.js', 'js/extrajornada-dia-outros.js', 'js/extrajornada-dia.js', 'js/extrajornada-lista.js', 'js/extrajornada-filtros.js', 'js/extrajornada-relatorios-pdf.js', 'js/extrajornada-imprimir.js', 'js/extrajornada-imprimir-grade.js', 'js/extrajornada-relatorio.js', 'js/extrajornada.js'] }   /* a Extrajornada (o menu "Extrajornada"); as barras, o bloco do calendário, o desenho do painel do dia, a Legenda e o Imprimir da grade vêm da Escala */
   };
 
   var conteudo;
@@ -41,19 +41,38 @@
   var navToken = 0;
   var navAbort = null;
   var paginaAtual = null;   /* a tela da navegação mais recente */
-  var paginaNaTela = null;  /* a tela que está de fato à vista */
   var navegacaoNoAr = true; /* a troca de tela ainda não terminou (o passo a passo espera; RosterWork.navegando) */
 
-  /* a casca da página (#casca-pagina): até CASCA_MS a tela antiga fica, sem responder; passando disso, a casca no lugar dela */
-  var CASCA_MS = 300;
-  var relogioCasca = 0;
+  /* a casca da página (#casca-pagina): até CASCA_MS a tela antiga fica, sem responder; passando disso, a casca no lugar
+     dela (o mesmo tempo da forma, geral-etapas.js). A casca que apareceu fica o mínimo na tela, e o cartão da abertura o
+     dele: a tela nova entra por baixo e aparece quando ela sai */
+  var CASCA_MS = 500;
+  var relogioCasca = 0, relogioTirar = 0;
+  var cascaEm = 0;   // quando a casca apareceu (a da abertura está na tela desde o começo)
+
+  function cascaNaTela() {
+    var casca = document.getElementById('casca-pagina');
+    return !!casca && !casca.classList.contains('oculto');
+  }
 
   function mostrarCasca(sim) {
     var casca = document.getElementById('casca-pagina');
+    if (sim && casca && casca.classList.contains('oculto')) cascaEm = performance.now();
     if (casca) casca.classList.toggle('oculto', !sim);
     /* o cartão é só da abertura do sistema */
     var cartao = !sim && document.getElementById('abertura-cartao');
     if (cartao) cartao.remove();
+  }
+
+  /* a casca sai quando cumpriu o mínimo dela (e o do cartão da abertura, se ele apareceu: index-carregar.js) */
+  function tirarCasca() {
+    clearTimeout(relogioCasca);
+    clearTimeout(relogioTirar);
+    var abertura = window.RosterWork.abertura;
+    var cartaoEm = document.getElementById('abertura-cartao') && abertura ? abertura.cartaoEm : null;
+    var resta = cascaNaTela() && window.RosterWork.etapas ? window.RosterWork.etapas.falta(cascaEm, cartaoEm) : 0;
+    if (resta > 0) relogioTirar = setTimeout(function () { mostrarCasca(false); }, resta);
+    else mostrarCasca(false);
   }
 
   function marcarAtivo(pagina) {
@@ -62,30 +81,32 @@
     }
   }
 
-  /* a promessa se cumpre com o estilo pronto (a tela nova só entra com ele); com falha também */
+  /* a promessa se cumpre com o estilo pronto (a tela nova só entra com ele); com falha também. Diz se chegou (true) ou não
+     (false) */
   function carregarCss(href) {
     if (cssCarregados[href]) return cssCarregados[href];
     cssCarregados[href] = new Promise(function (resolver) {
       var link = document.createElement('link');
       link.rel = 'stylesheet';
       link.href = href;
-      link.onload = function () { resolver(); };
-      link.onerror = function () { delete cssCarregados[href]; resolver(); };
+      link.onload = function () { resolver(true); };
+      link.onerror = function () { delete cssCarregados[href]; resolver(false); };
       document.head.appendChild(link);
     });
     return cssCarregados[href];
   }
 
   /* async = false: os arquivos pedidos juntos baixam ao mesmo tempo e rodam na ordem em que
-     foram pedidos (a do manifesto). Falhou: esquece, para a próxima navegação tentar de novo */
+     foram pedidos (a do manifesto). Diz se chegou (true) ou não (false). Falhou: esquece, para a
+     próxima navegação tentar de novo */
   function carregarJs(src) {
     if (jsCarregados[src]) return jsCarregados[src];
     jsCarregados[src] = new Promise(function (resolver) {
       var script = document.createElement('script');
       script.src = src;
       script.async = false;
-      script.onload = function () { resolver(); };
-      script.onerror = function () { delete jsCarregados[src]; resolver(); };
+      script.onload = function () { resolver(true); };
+      script.onerror = function () { delete jsCarregados[src]; resolver(false); };
       document.body.appendChild(script);
     });
     return jsCarregados[src];
@@ -136,14 +157,16 @@
 
   /* um aviso no lugar da tela, com o nome dela tirado do item do menu: "Esta tela só funciona no
      computador." (molde #tpl-pagina-so-computador; no celular, quem chega a uma dessas telas por um aviso,
-     um link ou o endereço; o CSS e o JS da tela nem carregam) ou o bloqueio de manutenção (#tpl-pagina-manutencao) */
+     um link ou o endereço; o CSS e o JS da tela nem carregam), o bloqueio de manutenção (#tpl-pagina-manutencao)
+     ou a tela que não abriu (#tpl-pagina-nao-chegou e #tpl-pagina-erro). Devolve o aviso posto */
   function mostrarNoLugarDaTela(molde, pagina) {
     var tela = window.RosterWork.tpl ? window.RosterWork.tpl(molde) : null;
-    if (!tela) return;
+    if (!tela) return null;
     var nome = document.querySelector('.menu-item[data-pagina="' + pagina + '"] .menu-item-label');
     tela.querySelector('h1').textContent = nome ? nome.textContent : '';
     limparConteudo();
     conteudo.insertBefore(tela, conteudo.firstChild);
+    return tela;
   }
 
   async function navegar(pagina, empurrar) {
@@ -175,6 +198,7 @@
     if (window.RosterWork.fecharDropdowns) window.RosterWork.fecharDropdowns();
     conteudo.inert = true;
     clearTimeout(relogioCasca);
+    clearTimeout(relogioTirar);   /* a casca ainda na tela (o mínimo da troca anterior) fica para esta */
     relogioCasca = setTimeout(function () { mostrarCasca(true); }, CASCA_MS);
 
     /* a tela nova entra: o painel e a camada aberta (o painel ou a folha "Mais", no celular) saem junto com a antiga; a
@@ -185,7 +209,6 @@
       camada = null;
       if (window.RosterWork.painel) window.RosterWork.painel.fechar();
       conteudo.inert = false;
-      paginaNaTela = pagina;
     }
     function registrarEndereco() {
       if (!empurrar) return;
@@ -194,17 +217,40 @@
     }
     function terminar() {
       if (meu !== navToken) return;
-      clearTimeout(relogioCasca);
-      mostrarCasca(false);
+      tirarCasca();
+      if (window.RosterWork.etapas) window.RosterWork.etapas.abrindoDaCasca(null);
       navegacaoNoAr = false;
     }
-    /* a tela não chegou (sem internet): a antiga continua, e o menu volta a ela */
+    /* a tela não abriu: o aviso no lugar dela, com o Tentar de novo, que abre a mesma tela outra vez pelo caminho do menu
+       (o guarda de saída e a navegação); o menu e o endereço ficam nela */
+    function avisoNoLugar(molde) {
+      var tela = mostrarNoLugarDaTela(molde, pagina);
+      var tentar = tela && tela.querySelector('.pagina-nao-abriu-tentar');
+      if (tentar) {
+        tentar.addEventListener('click', function () {
+          podeNavegar().then(function (ok) { if (ok) navegar(pagina, false); });
+        });
+      }
+      if (window.RosterWork.chamada) window.RosterWork.chamada.porNaPagina();
+      terminar();
+    }
+    /* a página, um estilo ou um código da tela não chegou (sem internet): o aviso "não chegou" */
     function naoChegou() {
       if (meu !== navToken) return;
-      conteudo.inert = false;
-      paginaAtual = paginaNaTela;
-      marcarAtivo(paginaNaTela);
-      terminar();
+      tirarATelaAntiga();
+      avisoNoLugar('tpl-pagina-nao-chegou');
+      registrarEndereco();
+    }
+    /* o código da tela deu erro ao abrir (na hora, depois, ou ela nem se registrou): o aviso "erro", e o erro vai para a
+       aba Erros do Programador (geral-erros.js); a faixa da manutenção, se a tela tem, fica acima do título */
+    function deuErro(erro) {
+      if (meu !== navToken) return;
+      if (erro != null) {
+        console.error(erro);
+        if (window.RosterWork.erros) window.RosterWork.erros.registrar(erro);
+      }
+      avisoNoLugar('tpl-pagina-erro');
+      if (aviso) manutencao.porFaixa(aviso);
     }
 
     if (foraDoCelular(pagina)) {
@@ -242,7 +288,6 @@
     }
     if (meu !== navToken) return;                 /* outra navegação assumiu enquanto a tela chegava */
     var html = chegou[0], aviso = chegou[1];
-    if (html === null) { naoChegou(); return; }
 
     /* tela em manutenção: o bloqueio entra no lugar dela, que só abre quando liberar; a faixa fica acima do título */
     if (aviso && aviso.nivel === 'bloqueio') {
@@ -255,25 +300,39 @@
       return;
     }
 
+    /* faltou a página, um estilo ou um código da tela */
+    if (html === null || chegou[2].indexOf(false) >= 0 || chegou[3].indexOf(false) >= 0) { naoChegou(); return; }
+
     /* a tela nova entra montada: a página e o iniciar rodam juntos, sem pintar no meio (o iniciar esconde o que não é de
        quem está vendo). Quem só faz sentido com os dados (Meu perfil, Programador, a tela aberta numa aba pedida) fica
        coberto pela casca até eles chegarem */
     var cobrir = !!def.cobrirAteOsDados || !!(abaPedida && abaPedida.pagina === pagina);
     tirarATelaAntiga();
     if (cobrir) { clearTimeout(relogioCasca); mostrarCasca(true); }
+    /* a tela que sai da casca: enquanto ela abre, a forma entra na hora (sem um vazio depois da casca) */
+    if (cascaNaTela() && window.RosterWork.etapas) window.RosterWork.etapas.abrindoDaCasca(cascaEm);
     inserirFragmento(html);
     /* a faixa "Esperando a sua resposta" entra acima do título da página nova (geral-chamada.js) */
     if (window.RosterWork.chamada) window.RosterWork.chamada.porNaPagina();
     if (aviso) manutencao.porFaixa(aviso);
 
+    /* a tela que não se registrou (o código dela deu erro ao rodar, e o geral-erros.js já o mandou) ou que deu erro ao
+       abrir, na hora ou depois: o aviso "erro" no lugar dela */
     var registro = window.RosterWork.paginas[pagina];
+    if (!(registro && registro.iniciar)) {
+      deuErro(null);
+      registrarEndereco();
+      return;
+    }
     var pronto = null;
     try {
-      pronto = (registro && registro.iniciar) ? registro.iniciar(conteudo) : null;
+      pronto = registro.iniciar(conteudo);
     } catch (erro) {
-      console.error(erro);
+      deuErro(erro);
+      registrarEndereco();
+      return;
     }
-    if (!cobrir) { clearTimeout(relogioCasca); mostrarCasca(false); }
+    if (!cobrir) tirarCasca();
     registrarEndereco();
 
     /* só a navegação vigente conclui (o iniciar pode ser assíncrono) */
@@ -281,7 +340,7 @@
       if (meu !== navToken) return;
       abrirAbaPedida(pagina);
       terminar();
-    }, terminar);
+    }, deuErro);
   }
 
   function rotaDaUrl() {
@@ -365,6 +424,11 @@
       inicial = 'ajustes';
       history.replaceState({ pagina: 'ajustes' }, '', '?pagina=ajustes');
     }
+    /* o endereço antigo da Extrajornada abre a Extrajornada */
+    if (inicial === 'nova-extra') {
+      inicial = 'extrajornada';
+      history.replaceState({ pagina: 'extrajornada' }, '', '?pagina=extrajornada');
+    }
     if (!inicial || !manifesto[inicial]) inicial = 'escalas';
     navegar(inicial, false);
   }
@@ -384,6 +448,7 @@
   /* referencia (opcional): o registro que a página deve abrir ao chegar (ex.: o aviso de pedido
      de nova senha leva o CPF, e Usuários abre a ficha); a página lê uma vez por referenciaPedida */
   window.RosterWork.irParaPagina = function (pagina, aba, referencia) {
+    if (pagina === 'nova-extra') pagina = 'extrajornada';   /* o nome antigo da página, que o banco ainda manda nos avisos */
     if (!manifesto[pagina]) return;
     podeNavegar().then(function (ok) {
       if (!ok) return;

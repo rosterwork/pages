@@ -1,26 +1,26 @@
 /* ============================================================
-   NOVA EXTRA — passo 3: a lista dos voluntários (o painel esquerdo)
+   EXTRAJORNADA — passo 3: a lista dos voluntários (o painel esquerdo)
    Os voluntários com termo e cota, na ordem da fila (a mesma das
    Cotas), em dois grupos: os que ainda têm cota para colocar
    (Faltam) e os que já colocaram todas (Completos), cada um com o
    pelotão e as cotas colocadas de recebidas. Clicar no nome abre
    embaixo as datas dele, com os 4 horários (a mesma peça do painel
    do dia; em cinza a que sai ao salvar), e põe o militar em foco no
-   calendário (nova-extra-por-dia.js): os outros nomes somem e, em
+   calendário (extrajornada-por-dia.js): os outros nomes somem e, em
    todos os pelotões e dias, aparecem as bolinhas grandes dele (ou o
    motivo de não poder). A nota no alto diz quem está em foco e as cotas,
    com o X para sair (ou clicar de novo no nome, clicar fora do nome,
    das datas dele e das bolinhas, ou o Esc). Enquanto
    está em foco, ele não muda de grupo. Uma escolha por vez: pôr um
    militar em foco fecha o painel do dia, e abrir um dia tira o foco
-   (nova-extra-dia.js). A alça abre e fecha o painel; com o painel do
+   (extrajornada-dia.js). A alça abre e fecha o painel; com o painel do
    dia aberto e o calendário com menos de 4 dias à vista, a lista
    recolhe sozinha e volta ao fechar o painel (só se foi o sistema que
    recolheu); no outro sentido, abrir a lista pela alça sem espaço para
    4 dias fecha o painel do dia. A faixa de cada grupo abre e fecha a
    lista dela.
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
-   RosterWork.novaExtraLista.
+   RosterWork.extrajornadaLista.
    ============================================================ */
 (function () {
   'use strict';
@@ -33,9 +33,9 @@
   var recolhidaPeloPainel = false;   // a lista recolhida pelo sistema ao abrir o painel do dia (volta ao fechar)
   var MIN_CALENDARIO = 800;          // 4 dias à vista (cada dia tem no mínimo 200px)
 
-  function msg() { return RW.mensagens.novaExtra.org; }
-  function u() { return RW.novaExtraUtil; }
-  function G() { return RW.novaExtraGrade; }
+  function msg() { return RW.mensagens.extrajornada.org; }
+  function u() { return RW.extrajornadaUtil; }
+  function G() { return RW.extrajornadaGrade; }
   /* "pagina" é o conteúdo do shell, sempre o mesmo: quem diz se a Distribuição está na tela é a alça */
   function naPagina() { return !!pagina && !!pagina.querySelector('#p3-alca'); }
 
@@ -49,9 +49,9 @@
       var abrir = alca.getAttribute('aria-expanded') !== 'true';
       abrirLista(abrir);
       /* a lista aberta deixou o calendário com menos de 4 dias à vista: o painel do dia fecha */
-      if (abrir && RW.novaExtraDia.aberto() && el.querySelector('#p3-cal').clientWidth < MIN_CALENDARIO) RW.novaExtraDia.fechar();
+      if (abrir && RW.extrajornadaDia.aberto() && el.querySelector('#p3-cal').clientWidth < MIN_CALENDARIO) RW.extrajornadaDia.fechar();
     });
-    Array.prototype.forEach.call(el.querySelectorAll('.nova-extra-esq-faixa'), function (faixa) {
+    Array.prototype.forEach.call(el.querySelectorAll('.extrajornada-esq-faixa'), function (faixa) {
       faixa.addEventListener('click', function () {
         faixa.setAttribute('aria-expanded', faixa.getAttribute('aria-expanded') === 'true' ? 'false' : 'true');
       });
@@ -68,7 +68,7 @@
          do passo a passo, não) */
       document.addEventListener('click', function (ev) {
         if (!foco || !naPagina()) return;
-        if (ev.target.closest('.nova-extra-esq-item, .nova-extra-esq-aberto, .nova-extra-foco-linha, #p3-foco, .modal-veu, .guia-balao')) return;
+        if (ev.target.closest('.extrajornada-esq-item, .extrajornada-esq-aberto, .extrajornada-foco-linha, #p3-foco, .modal-veu, .guia-balao')) return;
         sairDoFoco();
       });
     }
@@ -78,7 +78,7 @@
   function sairDoFoco() {
     if (!foco) return;
     foco = null;
-    RW.novaExtraMontar.redesenhar();
+    RW.extrajornadaMontar.redesenhar();
   }
 
   function abrirLista(sim) {
@@ -127,48 +127,48 @@
     nota.classList.toggle('oculto', !m);
     if (m) nota.querySelector('.nota-texto').textContent = msg().focoTexto((m.grad + ' ' + m.nome).trim(), G().usadas(m.cpf, alocs), m.concedidas || 0);
     /* a pesquisa da barra deixa na lista só quem casa */
-    if (RW.novaExtraFiltros) RW.novaExtraFiltros.aplicar();
+    if (RW.extrajornadaFiltros) RW.extrajornadaFiltros.aplicar();
   }
 
   /* um voluntário: posto e nome, o pelotão e as cotas colocadas de recebidas; clicar põe ou tira do foco */
   function item(m, g, alocs) {
-    var b = RW.tpl('tpl-ne-esq-item');
+    var b = RW.tpl('tpl-extrajornada-esq-item');
     var emFoco = !!foco && foco.cpf === m.cpf;
-    b.querySelector('.nova-extra-esq-grad').textContent = m.grad || '';
-    b.querySelector('.nova-extra-esq-nome').textContent = m.nome || m.cpf;
+    b.querySelector('.extrajornada-esq-grad').textContent = m.grad || '';
+    b.querySelector('.extrajornada-esq-nome').textContent = m.nome || m.cpf;
     b.setAttribute('data-busca', RW.busca ? RW.busca.chave(m) : '');
-    b.querySelector('.nova-extra-esq-pel').textContent = (u().unidade(m.unidade_id) || {}).nome || '';
-    var usou = G().usadas(m.cpf, alocs), cotas = b.querySelector('.nova-extra-esq-cotas');
+    b.querySelector('.extrajornada-esq-pel').textContent = (u().unidade(m.unidade_id) || {}).nome || '';
+    var usou = G().usadas(m.cpf, alocs), cotas = b.querySelector('.extrajornada-esq-cotas');
     cotas.textContent = msg().deCotas(usou, m.concedidas || 0);
-    cotas.classList.toggle('nova-extra-esq-cotas--erro', usou > (m.concedidas || 0));
+    cotas.classList.toggle('extrajornada-esq-cotas--erro', usou > (m.concedidas || 0));
     /* ficou com cota na última sugestão: o motivo embaixo do nome */
-    var fora = g === 'faltam' ? RW.novaExtraMontar.foraDaSugestao(m.cpf) : null;
-    b.querySelector('.nova-extra-esq-motivo').textContent = fora ? msg().foraMotivo[fora] || '' : '';
+    var fora = g === 'faltam' ? RW.extrajornadaMontar.foraDaSugestao(m.cpf) : null;
+    b.querySelector('.extrajornada-esq-motivo').textContent = fora ? msg().foraMotivo[fora] || '' : '';
     b.classList.toggle('lista-item--ativo', emFoco);
     b.setAttribute('aria-pressed', emFoco ? 'true' : 'false');
     b.addEventListener('click', function () {
       foco = emFoco ? null : { cpf: m.cpf, grupo: g };
       /* uma escolha por vez: o militar em foco fecha o painel do dia */
-      if (foco && RW.novaExtraDia.aberto()) RW.novaExtraDia.fechar();
-      RW.novaExtraMontar.redesenhar();
+      if (foco && RW.extrajornadaDia.aberto()) RW.extrajornadaDia.fechar();
+      RW.extrajornadaMontar.redesenhar();
     });
     return b;
   }
 
   /* as datas dele (inclusive as sem horário, em cinza até o Salvar), cada uma com os 4 horários */
   function datas(m) {
-    var caixa = RW.tpl('tpl-ne-esq-aberto');
-    var lista = caixa.querySelector('.nova-extra-esq-datas');
+    var caixa = RW.tpl('tpl-extrajornada-esq-aberto');
+    var lista = caixa.querySelector('.extrajornada-esq-datas');
     var minhas = G().vagas().filter(function (a) { return a.cpf === m.cpf; }).sort(function (x, y) { return x.data < y.data ? -1 : 1; });
     minhas.forEach(function (a) {
-      var lin = RW.tpl('tpl-ne-esq-data');
-      lin.querySelector('.nova-extra-esq-dia').textContent = msg().diaData(G().SEM_CURTA[G().dataDe(a.data).getDay()], u().br(a.data));
-      lin.querySelector('.nova-extra-esq-data-pel').textContent = +a.unidade !== m.unidade_id ? ((u().unidade(a.unidade) || {}).nome || '') : '';
-      lin.classList.toggle('nova-extra-esq-data--sai', !a.blocos.length);
-      RW.novaExtraDia.ligarMarcas(lin.querySelector('.nova-extra-marcas'), m, a.data, G().blocos(a), +a.unidade);
+      var lin = RW.tpl('tpl-extrajornada-esq-data');
+      lin.querySelector('.extrajornada-esq-dia').textContent = msg().diaData(G().SEM_CURTA[G().dataDe(a.data).getDay()], u().br(a.data));
+      lin.querySelector('.extrajornada-esq-data-pel').textContent = +a.unidade !== m.unidade_id ? ((u().unidade(a.unidade) || {}).nome || '') : '';
+      lin.classList.toggle('extrajornada-esq-data--sai', !a.blocos.length);
+      RW.extrajornadaDia.ligarMarcas(lin.querySelector('.extrajornada-marcas'), m, a.data, G().blocos(a), +a.unidade);
       lista.appendChild(lin);
     });
-    caixa.querySelector('.nova-extra-esq-sem').classList.toggle('oculto', minhas.length > 0);
+    caixa.querySelector('.extrajornada-esq-sem').classList.toggle('oculto', minhas.length > 0);
     return caixa;
   }
 
@@ -177,10 +177,10 @@
     var m = u().militar(cpf);
     if (!m) return;
     foco = { cpf: cpf, grupo: G().usadas(cpf) >= (m.concedidas || 0) ? 'completos' : 'faltam' };
-    RW.novaExtraMontar.redesenhar();
+    RW.extrajornadaMontar.redesenhar();
   }
 
-  RW.novaExtraLista = {
+  RW.extrajornadaLista = {
     ligar: ligar,
     desenhar: desenhar,
     /* o cpf do militar em foco (ou null) */

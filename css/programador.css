@@ -303,7 +303,7 @@
 
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
-   Mensagens e Bugs: a lista e o registro são duas telas
+   Mensagens, Bugs e Erros: a lista e o registro são duas telas
    (programador-telas.js); a que está à vista ocupa a área toda.
    ============================================================ */
 @media (max-width: 767px) {

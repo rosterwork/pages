@@ -95,14 +95,14 @@
     var Dia = window.RosterWork.escalasDiaNaGrade;
     var chaveGrade = 'calendario|' + (opcoes.diasPorLinha || 0) + '|' + inicio + '|' + ids.join(',');
     var rolagem = Dia ? Dia.mesmaGrade(corpo, chaveGrade) : null;
-    /* outro mês: o que está na tela fica 0,3 s; depois, a forma do novo (escalas-esqueleto.js) */
+    /* outro mês: o que está na tela fica 0,5 s; depois, a forma do novo, que fica o mínimo na tela (escalas-esqueleto.js) */
     var Esqueleto = window.RosterWork.escalasEsqueleto;
-    if (!rolagem) {
-      Esqueleto.abrirMes(corpo, dataRef, function (lugar) { Esqueleto.calendario(lugar, colunas, dataRef, opcoes.diasPorLinha); });
-    }
+    var esperaDaGrade = rolagem ? null : Esqueleto.abrirMes(corpo, dataRef, function (lugar) {
+      Esqueleto.calendario(lugar, colunas, dataRef, opcoes.diasPorLinha);
+    });
 
     var req = ++reqSeq;
-    return window.RosterWork.escalasDados.carregar(ids, inicio, fim, { daTela: true }).then(function (resultado) {
+    return Esqueleto.segurar(esperaDaGrade, window.RosterWork.escalasDados.carregar(ids, inicio, fim, { daTela: true })).then(function (resultado) {
       if (!document.contains(corpo) || req !== reqSeq || (opcoes.vigente && !opcoes.vigente())) return;   // saiu da página, outra render começou, ou trocou de modo
       Esqueleto.parar();
       var dados = resultado.militares;

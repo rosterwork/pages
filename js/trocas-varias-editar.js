@@ -126,7 +126,7 @@
     rodape.textContent = '';
     rodape.classList.add('oculto');
     var meu = aberto = { troca: troca, admin: false, aoSalvar: opcoes.aoSalvar, montado: false };
-    RW.trocasDados.variasPlano(troca.registro_id).then(function (r) {
+    RW.painel.segurar(RW.trocasDados.variasPlano(troca.registro_id)).then(function (r) {
       if (aberto !== meu) return;
       if (r && r.ok) { montar(r); return; }
       voltarParaLeitura();

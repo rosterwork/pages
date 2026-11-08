@@ -113,7 +113,7 @@
     corpo.appendChild(sec2);
 
     if (!window.RosterWork.escalasDados) return;
-    RosterWork.escalasDados.lerMilitarDia(ctx.cpf, ctx.iso).then(function (funcoes) {
+    RosterWork.painel.segurar(RosterWork.escalasDados.lerMilitarDia(ctx.cpf, ctx.iso)).then(function (funcoes) {
       if (!document.contains(c2)) return;   // fechou ou trocou de célula enquanto carregava
       preencherDistribuicao(c2, funcoes);
     });

@@ -38,7 +38,7 @@
         if (retorno && retorno.erro === 'treino') return;   /* o aviso do modo treino já está aberto, e os campos ficam */
         if (retorno && retorno.ok) {
           atual.value = ''; nova.value = ''; confirma.value = ''; revisar();
-          RosterWork.avisar({ tipo: 'sucesso', mensagem: M.senhaTrocada });
+          RosterWork.avisar({ tipo: 'sucesso', mensagem: retorno.outrosSairam ? M.senhaTrocadaOutrosSairam : M.senhaTrocada });
           return;
         }
         if (retorno && retorno.erro === 'atual') {

@@ -12,7 +12,7 @@
     </div>
     <!-- abas: Minha extra · Extras do mês | Organizar o mês (só do administrador da companhia, separada pelo traço; os
          passos ficam na barra), com um traço só para os dois grupos. No celular, só Minha extra e Extras do mês -->
-    <div id="nova-extra-abas" data-abas-grupo>
+    <div id="extrajornada-abas" data-abas-grupo>
       <div class="abas">
         <button type="button" class="aba aba--ativa" data-aba="minha">Minha extra</button>
         <button type="button" class="aba" data-aba="calendario" data-manual="calendario-extra">Extras do mês</button>
@@ -26,32 +26,32 @@
   <!-- barra: o mês · os passos do mês (só no Organizar o mês; o número é verde quando feito, preto no da vez e branco nos
        que não começaram) ··· o que é só de um passo (data-passo-barra; à direita, para o mês e os passos não pularem de
        lugar) | Legenda (só onde há o que explicar). Sem espaço, a barra quebra em duas linhas em vez de cortar -->
-  <div class="pagina-subcabecalho nova-extra-barra">
+  <div class="pagina-subcabecalho extrajornada-barra">
     <div class="geral-periodo">
-      <button type="button" class="botao botao--icone" id="nova-extra-mes-anterior" aria-label="Mês anterior">
+      <button type="button" class="botao botao--icone" id="extrajornada-mes-anterior" aria-label="Mês anterior">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>
       </button>
-      <span class="geral-periodo-nome" id="nova-extra-mes"></span>
-      <button type="button" class="botao botao--icone" id="nova-extra-mes-proximo" aria-label="Próximo mês">
+      <span class="geral-periodo-nome" id="extrajornada-mes"></span>
+      <button type="button" class="botao botao--icone" id="extrajornada-mes-proximo" aria-label="Próximo mês">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
       </button>
     </div>
-    <div class="abas abas--seletor oculto" id="nova-extra-passos">
-      <button type="button" class="aba" data-passo="1"><span class="nova-extra-aba-num" aria-hidden="true">1</span>Pedidos</button>
-      <button type="button" class="aba" data-passo="2"><span class="nova-extra-aba-num" aria-hidden="true">2</span>Cotas</button>
-      <button type="button" class="aba" data-passo="3"><span class="nova-extra-aba-num" aria-hidden="true">3</span>Distribuição</button>
-      <button type="button" class="aba" data-passo="4"><span class="nova-extra-aba-num" aria-hidden="true">4</span>Ajustes</button>
-      <button type="button" class="aba" data-passo="5"><span class="nova-extra-aba-num" aria-hidden="true">5</span>Relatórios</button>
+    <div class="abas abas--seletor oculto" id="extrajornada-passos">
+      <button type="button" class="aba" data-passo="1"><span class="extrajornada-aba-num" aria-hidden="true">1</span>Pedidos</button>
+      <button type="button" class="aba" data-passo="2"><span class="extrajornada-aba-num" aria-hidden="true">2</span>Cotas</button>
+      <button type="button" class="aba" data-passo="3"><span class="extrajornada-aba-num" aria-hidden="true">3</span>Distribuição</button>
+      <button type="button" class="aba" data-passo="4"><span class="extrajornada-aba-num" aria-hidden="true">4</span>Ajustes</button>
+      <button type="button" class="aba" data-passo="5"><span class="extrajornada-aba-num" aria-hidden="true">5</span>Relatórios</button>
     </div>
-    <!-- Agenda | Calendário: a escolha do tipo de aparelho, a mesma da Escala e da Extrajornada (geral-visao-grade); na aba
-         Extras do mês e nos passos Distribuição e Ajustes (nova-extra.js) -->
-    <div class="abas abas--seletor oculto" id="nova-extra-modos">
+    <!-- Agenda | Calendário: a escolha do tipo de aparelho, a mesma da Escala (geral-visao-grade); na aba
+         Extras do mês e nos passos Distribuição e Ajustes (extrajornada.js) -->
+    <div class="abas abas--seletor oculto" id="extrajornada-modos">
       <button type="button" class="aba aba--ativa" data-modo="agenda">Agenda</button>
       <button type="button" class="aba" data-modo="calendario">Calendário</button>
     </div>
     <span class="espacador-flex"></span>
     <!-- na Distribuição e nos Ajustes: o filtro (só o ícone; Exibir: Escala completa; quem mostra e esconde é o
-         nova-extra-filtros.js) e a pesquisa de militar (marcar ou filtrar), como na Escala -->
+         extrajornada-filtros.js) e a pesquisa de militar (marcar ou filtrar), como na Escala -->
     <div class="filtros filtros--icone oculto" id="p3-filtros">
       <div data-filtro="exibir" data-filtro-nome="Exibir" data-filtro-titulo="Exibir"></div>
     </div>
@@ -68,34 +68,34 @@
     <!-- as ações do passo aberto num menu só, sempre no mesmo lugar (escuro: a aba é só do administrador, sem ação do
          militar ao lado). Cada item é de um passo (data-passo-acao); o que ainda não pode ser feito fica apagado, com o
          motivo embaixo, em cinza -->
-    <div class="dropdown nova-extra-acoes oculto" id="nova-extra-acoes" data-passo-barra="1 2 3">
+    <div class="dropdown extrajornada-acoes oculto" id="extrajornada-acoes" data-passo-barra="1 2 3">
       <button type="button" class="botao botao--primario">
         <span>Ações</span>
         <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
       </button>
       <div class="dropdown-menu">
-        <button type="button" class="dropdown-item nova-extra-acao" id="p1-fechar" data-passo-acao="1">
-          <span>Fechar os pedidos agora</span><span class="nova-extra-acao-motivo"></span>
+        <button type="button" class="dropdown-item extrajornada-acao" id="p1-fechar" data-passo-acao="1">
+          <span>Fechar os pedidos agora</span><span class="extrajornada-acao-motivo"></span>
         </button>
-        <button type="button" class="dropdown-item nova-extra-acao" id="p2-sugestao" data-passo-acao="2">
-          <span>Preencher pela sugestão</span><span class="nova-extra-acao-motivo"></span>
+        <button type="button" class="dropdown-item extrajornada-acao" id="p2-sugestao" data-passo-acao="2">
+          <span>Preencher pela sugestão</span><span class="extrajornada-acao-motivo"></span>
         </button>
-        <button type="button" class="dropdown-item nova-extra-acao" id="p3-sugerir" data-passo-acao="3">
-          <span>Preencher pela sugestão</span><span class="nova-extra-acao-motivo"></span>
+        <button type="button" class="dropdown-item extrajornada-acao" id="p3-sugerir" data-passo-acao="3">
+          <span>Preencher pela sugestão</span><span class="extrajornada-acao-motivo"></span>
         </button>
-        <button type="button" class="dropdown-item nova-extra-acao" id="p3-lancar" data-passo-acao="3">
-          <span>Lançar na escala e encerrar</span><span class="nova-extra-acao-motivo"></span>
+        <button type="button" class="dropdown-item extrajornada-acao" id="p3-lancar" data-passo-acao="3">
+          <span>Lançar na escala e encerrar</span><span class="extrajornada-acao-motivo"></span>
         </button>
-        <button type="button" class="dropdown-item nova-extra-acao" id="p3-reabrir" data-passo-acao="3">
-          <span>Reabrir a distribuição</span><span class="nova-extra-acao-motivo"></span>
+        <button type="button" class="dropdown-item extrajornada-acao" id="p3-reabrir" data-passo-acao="3">
+          <span>Reabrir a distribuição</span><span class="extrajornada-acao-motivo"></span>
         </button>
       </div>
     </div>
-    <span class="pagina-subcabecalho-divisor oculto" id="nova-extra-legenda-divisor" aria-hidden="true"></span>
-    <div class="oculto" id="nova-extra-legenda"></div>
+    <span class="pagina-subcabecalho-divisor oculto" id="extrajornada-legenda-divisor" aria-hidden="true"></span>
+    <div class="oculto" id="extrajornada-legenda"></div>
     <!-- imprimir a grade da tela (Agenda ou Calendário), nas Extras do mês, na Distribuição e nos Ajustes: o painel de
-         impressão das grades da Escala, com as extras (nova-extra-imprimir-grade.js) -->
-    <button type="button" class="botao botao--quadrado oculto" id="nova-extra-imprimir" aria-label="Imprimir a grade" data-dica="Imprimir">
+         impressão das grades da Escala, com as extras (extrajornada-imprimir-grade.js) -->
+    <button type="button" class="botao botao--quadrado oculto" id="extrajornada-imprimir" aria-label="Imprimir a grade" data-dica="Imprimir">
       <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg>
     </button>
   </div>
@@ -104,43 +104,43 @@
        embaixo -->
   <div class="pagina-corpo pagina-corpo--colado">
     <!-- a área da aba aberta enquanto a leitura dela não chega (o círculo) ou quando falhou (a frase), com os moldes da
-         Escala; a barra continua usável (nova-extra.js) -->
-    <div class="nova-extra-area oculto" id="nova-extra-estado"></div>
+         Escala; a barra continua usável (extrajornada.js) -->
+    <div class="extrajornada-area oculto" id="extrajornada-estado"></div>
     <!-- Minha extra: o pedido do mês e as extras do militar -->
-    <section class="nova-extra-area" data-aba-painel="minha">
-      <div class="nova-extra-rolagem">
-        <div class="nova-extra-leitura">
-          <div class="nova-extra-bloco">
-            <div class="nova-extra-bloco-cab">
-              <span class="nova-extra-bloco-titulo" id="nova-extra-titulo"></span>
-              <span class="selo" id="nova-extra-prazo"></span>
+    <section class="extrajornada-area" data-aba-painel="minha">
+      <div class="extrajornada-rolagem">
+        <div class="extrajornada-leitura">
+          <div class="extrajornada-bloco">
+            <div class="extrajornada-bloco-cab">
+              <span class="extrajornada-bloco-titulo" id="extrajornada-titulo"></span>
+              <span class="selo" id="extrajornada-prazo"></span>
             </div>
-            <div class="nova-extra-caixa nova-extra-minha-passos">
-              <div class="nova-extra-passo nova-extra-passo--agora">
-                <span class="nova-extra-passo-num">1</span>
-                <span class="nova-extra-passo-corpo">
+            <div class="extrajornada-caixa extrajornada-minha-passos">
+              <div class="extrajornada-passo extrajornada-passo--agora">
+                <span class="extrajornada-passo-num">1</span>
+                <span class="extrajornada-passo-corpo">
                   <b>Pedido</b>
-                  <span class="nova-extra-passo-texto" id="nova-extra-pedido-texto"></span>
+                  <span class="extrajornada-passo-texto" id="extrajornada-pedido-texto"></span>
                   <!-- a ação do militar: Fazer ou Mudar o pedido (escuro) com o pedido aberto; fechado, Ver o pedido
                        (branco) com a data em que fechou -->
-                  <span class="nova-extra-pedido-acao">
-                    <button type="button" class="botao botao--primario oculto" id="nova-extra-pedir"></button>
-                    <span class="nova-extra-passo-texto oculto" id="nova-extra-fechado"></span>
+                  <span class="extrajornada-pedido-acao">
+                    <button type="button" class="botao botao--primario oculto" id="extrajornada-pedir"></button>
+                    <span class="extrajornada-passo-texto oculto" id="extrajornada-fechado"></span>
                   </span>
                 </span>
               </div>
-              <div class="nova-extra-passo">
-                <span class="nova-extra-passo-num">2</span>
-                <span class="nova-extra-passo-corpo">
+              <div class="extrajornada-passo">
+                <span class="extrajornada-passo-num">2</span>
+                <span class="extrajornada-passo-corpo">
                   <b>Repartição das cotas</b>
-                  <span class="nova-extra-passo-texto" id="nova-extra-cotas-texto"></span>
+                  <span class="extrajornada-passo-texto" id="extrajornada-cotas-texto"></span>
                 </span>
               </div>
-              <div class="nova-extra-passo">
-                <span class="nova-extra-passo-num">3</span>
-                <span class="nova-extra-passo-corpo">
+              <div class="extrajornada-passo">
+                <span class="extrajornada-passo-num">3</span>
+                <span class="extrajornada-passo-corpo">
                   <b>Os seus dias</b>
-                  <span class="nova-extra-passo-texto" id="nova-extra-dias-texto"></span>
+                  <span class="extrajornada-passo-texto" id="extrajornada-dias-texto"></span>
                 </span>
               </div>
             </div>
@@ -150,54 +150,54 @@
     </section>
 
     <!-- Extras do mês: quem tira extra em cada dia, nas unidades que têm extra (na Agenda ou no Calendário) -->
-    <section class="nova-extra-area oculto" data-aba-painel="calendario">
-      <div class="nova-extra-passo-topo oculto" id="nova-extra-cal-aviso">
+    <section class="extrajornada-area oculto" data-aba-painel="calendario">
+      <div class="extrajornada-passo-topo oculto" id="extrajornada-cal-aviso">
         <div class="nota nota--alerta">
           <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
           <span class="nota-texto">O mês ainda está em distribuição e não foi lançado. As datas podem mudar até o lançamento.</span>
         </div>
       </div>
-      <span class="nova-extra-vazio nova-extra-vazio--area oculto" id="nova-extra-cal-vazio">Nenhuma extra neste mês.</span>
-      <div class="nova-extra-dist-cal" id="nova-extra-cal-mes"></div>
+      <span class="extrajornada-vazio extrajornada-vazio--area oculto" id="extrajornada-cal-vazio">Nenhuma extra neste mês.</span>
+      <div class="extrajornada-dist-cal" id="extrajornada-cal-mes"></div>
     </section>
 
     <!-- passo 1, Pedidos: o prazo, o mínimo de dias Quero e o termo; o resumo das respostas fica no alto -->
-    <section class="nova-extra-area oculto" data-aba-painel="pedidos" data-passo-painel="1">
-      <div class="nova-extra-passo-topo">
-        <div class="nova-extra-resumo"><span data-passo-resumo="1"></span></div>
+    <section class="extrajornada-area oculto" data-aba-painel="pedidos" data-passo-painel="1">
+      <div class="extrajornada-passo-topo">
+        <div class="extrajornada-resumo"><span data-passo-resumo="1"></span></div>
         <!-- os pedidos fechados pelo Ações › Fechar os pedidos agora: quando e quem -->
         <div class="nota oculto" id="p1-fechados">
           <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
           <span class="nota-texto"></span>
         </div>
       </div>
-      <div class="nova-extra-rolagem">
-        <div class="nova-extra-duas">
-          <div class="nova-extra-col">
-            <div class="nova-extra-bloco">
-              <span class="nova-extra-bloco-titulo">Prazo do pedido</span>
-              <div class="nova-extra-caixa nova-extra-form">
-                <div class="nova-extra-campos2">
+      <div class="extrajornada-rolagem">
+        <div class="extrajornada-duas">
+          <div class="extrajornada-col">
+            <div class="extrajornada-bloco">
+              <span class="extrajornada-bloco-titulo">Prazo do pedido</span>
+              <div class="extrajornada-caixa extrajornada-form">
+                <div class="extrajornada-campos2">
                   <label class="campo"><span class="campo-rotulo">Abre em</span><input type="text" class="campo-entrada" id="p1-abre" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" autocomplete="off" /></label>
                   <label class="campo"><span class="campo-rotulo">Fecha em</span><input type="text" class="campo-entrada" id="p1-fecha" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" autocomplete="off" /></label>
                 </div>
                 <label class="campo"><span class="campo-rotulo">Avisar quem não respondeu (dias antes de fechar)</span><input type="number" min="0" max="15" class="campo-entrada" id="p1-aviso" /></label>
-                <span class="nova-extra-ajuda">O pedido fecha às 23h59 do último dia.</span>
+                <span class="extrajornada-ajuda">O pedido fecha às 23h59 do último dia.</span>
               </div>
             </div>
-            <div class="nova-extra-bloco" id="p1-minimo">
-              <span class="nova-extra-bloco-titulo">Mínimo de dias "Quero"</span>
-              <div class="nova-extra-caixa nova-extra-form">
-                <div class="nova-extra-linha-n">
+            <div class="extrajornada-bloco" id="p1-minimo">
+              <span class="extrajornada-bloco-titulo">Mínimo de dias "Quero"</span>
+              <div class="extrajornada-caixa extrajornada-form">
+                <div class="extrajornada-linha-n">
                   <span>Exigir mínimo?</span>
                   <div class="abas abas--seletor" id="p1-exigir">
                     <button type="button" class="aba" data-exigir="sim">Sim</button>
                     <button type="button" class="aba" data-exigir="nao">Não</button>
                   </div>
                 </div>
-                <div class="nova-extra-linha-n" data-exigir-mostra>
+                <div class="extrajornada-linha-n" data-exigir-mostra>
                   <span>Todos os voluntários</span>
-                  <div class="dropdown nova-extra-minimo-numero" id="p1-minimo-geral">
+                  <div class="dropdown extrajornada-minimo-numero" id="p1-minimo-geral">
                     <button type="button" class="campo-entrada campo-selecao" aria-label="Mínimo de dias de todos os voluntários">
                       <span class="campo-selecao-texto"></span>
                       <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
@@ -206,46 +206,46 @@
                   </div>
                 </div>
                 <!-- as exceções recolhidas, com o resumo de quantas há; abertas, a lista e o Adicionar -->
-                <div class="nova-extra-excecoes-grupo" data-exigir-mostra>
-                  <button type="button" class="nova-extra-excecoes-cab" id="p1-exc-abrir" aria-expanded="false" aria-controls="p1-exc-corpo">
-                    <svg class="icone nova-extra-excecoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+                <div class="extrajornada-excecoes-grupo" data-exigir-mostra>
+                  <button type="button" class="extrajornada-excecoes-cab" id="p1-exc-abrir" aria-expanded="false" aria-controls="p1-exc-corpo">
+                    <svg class="icone extrajornada-excecoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
                     <span>Exceções</span>
-                    <span class="nova-extra-excecoes-resumo" id="p1-exc-resumo"></span>
+                    <span class="extrajornada-excecoes-resumo" id="p1-exc-resumo"></span>
                   </button>
-                  <div class="nova-extra-excecoes oculto" id="p1-exc-corpo">
-                    <div class="nova-extra-excecoes" id="p1-excecoes"></div>
-                    <span class="nova-extra-ajuda oculto" id="p1-excecoes-vazio">Nenhuma exceção: o mínimo vale para todos.</span>
+                  <div class="extrajornada-excecoes oculto" id="p1-exc-corpo">
+                    <div class="extrajornada-excecoes" id="p1-excecoes"></div>
+                    <span class="extrajornada-ajuda oculto" id="p1-excecoes-vazio">Nenhuma exceção: o mínimo vale para todos.</span>
                     <button type="button" class="botao" id="p1-exc-adicionar">Adicionar exceção</button>
                   </div>
                 </div>
-                <span class="nova-extra-ajuda oculto" id="p1-minimo-leitura">Com os pedidos fechados, o mínimo não muda mais.</span>
+                <span class="extrajornada-ajuda oculto" id="p1-minimo-leitura">Com os pedidos fechados, o mínimo não muda mais.</span>
               </div>
             </div>
           </div>
-          <div class="nova-extra-bloco">
-            <div class="nova-extra-bloco-cab">
+          <div class="extrajornada-bloco">
+            <div class="extrajornada-bloco-cab">
               <div class="abas abas--seletor" id="p1-filtro">
                 <button type="button" class="aba aba--ativa" data-lista="vol">Voluntários</button>
                 <button type="button" class="aba" data-lista="nao">Não querem</button>
                 <button type="button" class="aba" data-lista="sem">Sem resposta</button>
               </div>
-              <span class="nova-extra-ajuda">Termo pendente: fica fora das cotas e da distribuição.</span>
+              <span class="extrajornada-ajuda">Termo pendente: fica fora das cotas e da distribuição.</span>
             </div>
-            <div class="nova-extra-blocos">
-              <table class="nova-extra-tabela nova-extra-tabela--centro">
+            <div class="extrajornada-blocos">
+              <table class="extrajornada-tabela extrajornada-tabela--centro">
                 <!-- as colunas de fora têm largura fixa; as três de datas, sem largura, dividem o resto em partes iguais -->
-                <colgroup><col class="nova-extra-col-militar" /><col class="nova-extra-col-unidade" /><col class="nova-extra-col-cotas" /><col /><col /><col /><col class="nova-extra-col-termo" /></colgroup>
+                <colgroup><col class="extrajornada-col-militar" /><col class="extrajornada-col-unidade" /><col class="extrajornada-col-cotas" /><col /><col /><col /><col class="extrajornada-col-termo" /></colgroup>
                 <thead><tr><th>Militar</th><th>Unidade</th><th>Cotas</th><th>Quer</th><th>Não quer</th><th>Não pode</th><th>Termo</th></tr></thead>
                 <tbody id="p1-lista"></tbody>
               </table>
-              <span class="nova-extra-vazio oculto" id="p1-vazio">Ninguém nesta lista.</span>
+              <span class="extrajornada-vazio oculto" id="p1-vazio">Ninguém nesta lista.</span>
             </div>
           </div>
         </div>
       </div>
       <!-- o rodapé de salvar, na largura toda (embaixo do painel direito também): aparece só com alteração -->
       <div class="rodape rodape-linha rodape--largo oculto" id="p1-rodape">
-        <span class="nova-extra-rodape-texto" id="p1-mudancas"></span>
+        <span class="extrajornada-rodape-texto" id="p1-mudancas"></span>
         <div class="rodape-acoes">
           <button type="button" class="botao" id="p1-cancelar">Cancelar</button>
           <button type="button" class="botao botao--primario" id="p1-salvar" disabled>Salvar</button>
@@ -257,17 +257,17 @@
          "Unidades"; Entregues, Sobram e Na escala; o Preencher pela sugestão fica no menu Ações) e a grade: um bloco por unidade nos
          dois jeitos, com o Recebeu, o Entregues e o Sobram no título; no "Entre todos" a fila é a da companhia, no
          "Unidades" cada unidade tem a sua. Com os pedidos abertos, o aviso no alto e tudo travado -->
-    <section class="nova-extra-area extra-vol oculto" data-aba-painel="cotas" data-passo-painel="2">
-      <div class="nova-extra-passo-topo oculto" id="p2-topo">
+    <section class="extrajornada-area extrajornada-voluntarios oculto" data-aba-painel="cotas" data-passo-painel="2">
+      <div class="extrajornada-passo-topo oculto" id="p2-topo">
         <div class="nota nota--alerta">
           <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
           <span class="nota-texto">Feche os pedidos antes de repartir as cotas.</span>
         </div>
       </div>
-      <div class="extra-vol-banda">
-        <div class="extra-vol-banda-item">
+      <div class="extrajornada-voluntarios-banda">
+        <div class="extrajornada-voluntarios-banda-item">
           <span>Repartir por</span>
-          <div class="dropdown nova-extra-reparticao" id="p2-modo">
+          <div class="dropdown extrajornada-reparticao" id="p2-modo">
             <button type="button" class="campo-entrada campo-selecao" aria-label="Repartir por">
               <span class="campo-selecao-texto" id="p2-modo-texto"></span>
               <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
@@ -278,20 +278,20 @@
             </div>
           </div>
         </div>
-        <label class="extra-vol-banda-item">
-          <span>Cotas da <span class="nova-extra-cia"></span></span>
-          <input type="text" inputmode="numeric" maxlength="3" class="campo-entrada extra-vol-total" id="p2-recebidas" />
-          <b class="nova-extra-banda-texto oculto" id="p2-recebidas-soma"></b>
+        <label class="extrajornada-voluntarios-banda-item">
+          <span>Cotas da <span class="extrajornada-cia"></span></span>
+          <input type="text" inputmode="numeric" maxlength="3" class="campo-entrada extrajornada-voluntarios-total" id="p2-recebidas" />
+          <b class="extrajornada-banda-texto oculto" id="p2-recebidas-soma"></b>
         </label>
-        <span class="extra-vol-numero"><span>Entregues</span><strong class="extra-vol-numero-valor" id="p2-entregues"></strong></span>
-        <span class="extra-vol-numero"><span>Sobram</span><strong class="extra-vol-numero-valor" id="p2-sobram"></strong></span>
-        <span class="extra-vol-numero"><span>Na escala</span><strong class="extra-vol-numero-valor" id="p2-na-escala"></strong></span>
+        <span class="extrajornada-voluntarios-numero"><span>Entregues</span><strong class="extrajornada-voluntarios-numero-valor" id="p2-entregues"></strong></span>
+        <span class="extrajornada-voluntarios-numero"><span>Sobram</span><strong class="extrajornada-voluntarios-numero-valor" id="p2-sobram"></strong></span>
+        <span class="extrajornada-voluntarios-numero"><span>Na escala</span><strong class="extrajornada-voluntarios-numero-valor" id="p2-na-escala"></strong></span>
       </div>
-      <span class="nova-extra-vazio nova-extra-vazio--area oculto" id="p2-vazio">Nenhum voluntário com termo.</span>
-      <div class="extra-vol-rolagem nova-extra-grade" id="p2-lista"></div>
+      <span class="extrajornada-vazio extrajornada-vazio--area oculto" id="p2-vazio">Nenhum voluntário com termo.</span>
+      <div class="extrajornada-voluntarios-rolagem extrajornada-grade" id="p2-lista"></div>
       <!-- o rodapé de salvar, na largura toda (embaixo do painel direito também): aparece só com alteração -->
       <div class="rodape rodape-linha rodape--largo oculto" id="p2-rodape">
-        <span class="nova-extra-rodape-texto" id="p2-mudancas"></span>
+        <span class="extrajornada-rodape-texto" id="p2-mudancas"></span>
         <div class="rodape-acoes">
           <button type="button" class="botao oculto" id="p2-desfazer">Desfazer a sugestão</button>
           <button type="button" class="botao" id="p2-cancelar">Cancelar</button>
@@ -304,42 +304,42 @@
          fecha pela alça, e o calendário com um bloco por pelotão em cada dia (clicar no bloco abre o painel do dia).
          Depois do lançamento, a Distribuição fica só para ver e as mudanças vão pelos Ajustes; antes do lançamento (ou
          com ele reaberto), os Ajustes mostram só o aviso -->
-    <section class="nova-extra-area oculto" data-aba-painel="distribuicao" data-passo-painel="3 4">
+    <section class="extrajornada-area oculto" data-aba-painel="distribuicao" data-passo-painel="3 4">
       <!-- o véu do cálculo do Preencher pela sugestão: cobre a tela inteira, com o texto e o Cancelar
-           (nova-extra-otimizador.js liga e desliga). Classe própria: o roteador esconde o primeiro .carregando-veu
+           (extrajornada-otimizador.js liga e desliga). Classe própria: o roteador esconde o primeiro .carregando-veu
            do conteúdo, que tem de ser o do site -->
-      <div class="nova-extra-calculo oculto" id="p3-calculo" role="status" aria-live="polite">
+      <div class="extrajornada-calculo oculto" id="p3-calculo" role="status" aria-live="polite">
         <div class="giratorio" aria-hidden="true"></div>
-        <p class="nova-extra-calculo-texto">Calculando a melhor distribuição. Isso pode levar até 1 minuto. Não feche esta página.</p>
+        <p class="extrajornada-calculo-texto">Calculando a melhor distribuição. Isso pode levar até 1 minuto. Não feche esta página.</p>
         <button type="button" class="botao" id="p3-calculo-cancelar">Cancelar</button>
       </div>
-      <span class="nova-extra-vazio nova-extra-vazio--area oculto" id="p3-sem-lancamento">Os ajustes abrem depois do lançamento.</span>
-      <div class="geral-layout-lateral nova-extra-dist" id="p3-lateral">
+      <span class="extrajornada-vazio extrajornada-vazio--area oculto" id="p3-sem-lancamento">Os ajustes abrem depois do lançamento.</span>
+      <div class="geral-layout-lateral extrajornada-dist" id="p3-lateral">
         <!-- painel esquerdo: as cotas colocadas no alto e os voluntários na ordem da fila, os que faltam em cima e os
              completos embaixo; a faixa de cada grupo abre e fecha pela seta; clicar no nome põe o militar em foco no
              calendário -->
         <aside class="geral-painel-esquerdo" id="p3-esq">
           <!-- no alto: as cotas colocadas de todas as recebidas -->
-          <div class="geral-painel-esquerdo-cabecalho"><span class="nova-extra-esq-total" id="p3-colocadas"></span></div>
+          <div class="geral-painel-esquerdo-cabecalho"><span class="extrajornada-esq-total" id="p3-colocadas"></span></div>
           <div class="geral-painel-esquerdo-lista">
-            <div class="nova-extra-esq-bloco">
-              <button type="button" class="faixa nova-extra-esq-faixa" aria-expanded="true" aria-controls="p3-faltam-corpo">
-                <svg class="icone nova-extra-esq-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
-                <span class="rotulo-secao">Faltam</span><span class="nova-extra-esq-conta" id="p3-faltam-conta"></span>
+            <div class="extrajornada-esq-bloco">
+              <button type="button" class="faixa extrajornada-esq-faixa" aria-expanded="true" aria-controls="p3-faltam-corpo">
+                <svg class="icone extrajornada-esq-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+                <span class="rotulo-secao">Faltam</span><span class="extrajornada-esq-conta" id="p3-faltam-conta"></span>
               </button>
-              <div class="nova-extra-esq-corpo" id="p3-faltam-corpo">
-                <div class="nova-extra-esq-grupo" id="p3-faltam"></div>
-                <span class="nova-extra-esq-vazio oculto" id="p3-faltam-vazio">Ninguém com cota faltando.</span>
+              <div class="extrajornada-esq-corpo" id="p3-faltam-corpo">
+                <div class="extrajornada-esq-grupo" id="p3-faltam"></div>
+                <span class="extrajornada-esq-vazio oculto" id="p3-faltam-vazio">Ninguém com cota faltando.</span>
               </div>
             </div>
-            <div class="nova-extra-esq-bloco">
-              <button type="button" class="faixa nova-extra-esq-faixa" aria-expanded="true" aria-controls="p3-completos-corpo">
-                <svg class="icone nova-extra-esq-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
-                <span class="rotulo-secao">Completos</span><span class="nova-extra-esq-conta" id="p3-completos-conta"></span>
+            <div class="extrajornada-esq-bloco">
+              <button type="button" class="faixa extrajornada-esq-faixa" aria-expanded="true" aria-controls="p3-completos-corpo">
+                <svg class="icone extrajornada-esq-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+                <span class="rotulo-secao">Completos</span><span class="extrajornada-esq-conta" id="p3-completos-conta"></span>
               </button>
-              <div class="nova-extra-esq-corpo" id="p3-completos-corpo">
-                <div class="nova-extra-esq-grupo" id="p3-completos"></div>
-                <span class="nova-extra-esq-vazio oculto" id="p3-completos-vazio">Ninguém completou as cotas.</span>
+              <div class="extrajornada-esq-corpo" id="p3-completos-corpo">
+                <div class="extrajornada-esq-grupo" id="p3-completos"></div>
+                <span class="extrajornada-esq-vazio oculto" id="p3-completos-vazio">Ninguém completou as cotas.</span>
               </div>
             </div>
           </div>
@@ -349,14 +349,14 @@
           <button type="button" class="geral-painel-esquerdo-alca dica--direita" id="p3-alca" aria-expanded="true" aria-controls="p3-esq" aria-label="Lista dos voluntários" data-dica="Lista dos voluntários">
             <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-usuarios"/></svg>
           </button>
-          <div class="nova-extra-passo-topo">
+          <div class="extrajornada-passo-topo">
             <!-- as cotas que faltam distribuir, só para o administrador: a nota vermelha do mês (geral-cotas-aviso.js) -->
             <div class="oculto" id="p3-cotas-aviso"></div>
             <!-- o militar em foco (clicado na lista): quem e as cotas dele; o X sai do foco -->
             <div class="nota oculto" id="p3-foco">
               <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-usuarios"/></svg>
               <span class="nota-texto"></span>
-              <button type="button" class="botao botao--icone botao--pequeno nova-extra-nota-fechar" id="p3-foco-sair" aria-label="Sair do foco" data-dica="Sair do foco">
+              <button type="button" class="botao botao--icone botao--pequeno extrajornada-nota-fechar" id="p3-foco-sair" aria-label="Sair do foco" data-dica="Sair do foco">
                 <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
               </button>
             </div>
@@ -364,7 +364,7 @@
             <div class="nota oculto" id="p3-resultado">
               <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg>
               <span class="nota-texto"></span>
-              <button type="button" class="botao botao--icone botao--pequeno nova-extra-nota-fechar" id="p3-resultado-fechar" aria-label="Fechar" data-dica="Fechar">
+              <button type="button" class="botao botao--icone botao--pequeno extrajornada-nota-fechar" id="p3-resultado-fechar" aria-label="Fechar" data-dica="Fechar">
                 <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
               </button>
             </div>
@@ -383,14 +383,14 @@
               <span class="nota-texto">Distribuição pronta para lançar. Use Ações › Lançar na escala e encerrar.</span>
             </div>
           </div>
-          <span class="nova-extra-vazio nova-extra-vazio--area oculto" id="p3-cal-vazio">Nenhum pelotão nesta companhia.</span>
-          <div class="nova-extra-dist-cal" id="p3-cal"></div>
+          <span class="extrajornada-vazio extrajornada-vazio--area oculto" id="p3-cal-vazio">Nenhum pelotão nesta companhia.</span>
+          <div class="extrajornada-dist-cal" id="p3-cal"></div>
         </div>
       </div>
       <!-- o rodapé de salvar, na largura toda (embaixo dos painéis esquerdo e direito também): aparece só com alteração -->
       <div class="rodape rodape-linha rodape--largo oculto" id="p3-rodape">
-        <span class="nova-extra-rodape-texto" id="p3-texto"></span>
-        <label class="campo nova-extra-motivo oculto" id="p3-motivo-campo"><span class="campo-rotulo">Motivo do ajuste (opcional)</span><input type="text" maxlength="200" class="campo-entrada" id="p3-motivo" /></label>
+        <span class="extrajornada-rodape-texto" id="p3-texto"></span>
+        <label class="campo extrajornada-motivo oculto" id="p3-motivo-campo"><span class="campo-rotulo">Motivo do ajuste (opcional)</span><input type="text" maxlength="200" class="campo-entrada" id="p3-motivo" /></label>
         <div class="rodape-acoes">
           <button type="button" class="botao oculto" id="p3-desfazer-sugestao">Desfazer a sugestão</button>
           <button type="button" class="botao" id="p3-cancelar">Cancelar</button>
@@ -400,62 +400,62 @@
     </section>
 
     <!-- passo 5, Relatórios: as etapas do mês e os relatórios -->
-    <section class="nova-extra-area oculto" data-aba-painel="ajustes" data-passo-painel="5">
-      <div class="nova-extra-passo-topo">
-        <div class="nova-extra-resumo"><span data-passo-resumo="5"></span></div>
+    <section class="extrajornada-area oculto" data-aba-painel="ajustes" data-passo-painel="5">
+      <div class="extrajornada-passo-topo">
+        <div class="extrajornada-resumo"><span data-passo-resumo="5"></span></div>
       </div>
-      <div class="nova-extra-rolagem">
+      <div class="extrajornada-rolagem">
         <!-- as etapas do mês em ordem (esquerda) e a prévia do relatório de ajustes (direita) -->
-        <div class="nova-extra-rel">
-          <div class="nova-extra-rel-etapas">
+        <div class="extrajornada-rel">
+          <div class="extrajornada-rel-etapas">
             <span class="rotulo-secao">Etapas de <span id="p5-mes"></span></span>
-            <ol class="nova-extra-rel-lista" id="p5-lista">
-              <li class="nova-extra-rel-etapa" data-etapa="solicitacoes">
-                <span class="nova-extra-rel-marca"><span class="nova-extra-rel-numero">1</span><svg class="icone nova-extra-rel-check" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
-                <div class="nova-extra-rel-etapa-corpo">
-                  <span class="nova-extra-rel-etapa-titulo">Pedidos</span>
-                  <span class="nova-extra-rel-etapa-texto" id="p5-solicitacoes"></span>
-                  <button type="button" class="botao nova-extra-rel-botao" id="p5-pedidos" data-relatorio="pedidos" disabled>
+            <ol class="extrajornada-rel-lista" id="p5-lista">
+              <li class="extrajornada-rel-etapa" data-etapa="solicitacoes">
+                <span class="extrajornada-rel-marca"><span class="extrajornada-rel-numero">1</span><svg class="icone extrajornada-rel-check" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
+                <div class="extrajornada-rel-etapa-corpo">
+                  <span class="extrajornada-rel-etapa-titulo">Pedidos</span>
+                  <span class="extrajornada-rel-etapa-texto" id="p5-solicitacoes"></span>
+                  <button type="button" class="botao extrajornada-rel-botao" id="p5-pedidos" data-relatorio="pedidos" disabled>
                     <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg>
                     <span>Imprimir pedidos</span>
                   </button>
                 </div>
               </li>
-              <li class="nova-extra-rel-etapa" data-etapa="termos">
-                <span class="nova-extra-rel-marca"><span class="nova-extra-rel-numero">2</span><svg class="icone nova-extra-rel-check" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
-                <div class="nova-extra-rel-etapa-corpo">
-                  <span class="nova-extra-rel-etapa-titulo">Termos e cotas</span>
-                  <span class="nova-extra-rel-etapa-texto" id="p5-termos"></span>
-                  <button type="button" class="botao nova-extra-rel-botao" id="p5-termos-pdf" data-relatorio="termos" disabled>
+              <li class="extrajornada-rel-etapa" data-etapa="termos">
+                <span class="extrajornada-rel-marca"><span class="extrajornada-rel-numero">2</span><svg class="icone extrajornada-rel-check" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
+                <div class="extrajornada-rel-etapa-corpo">
+                  <span class="extrajornada-rel-etapa-titulo">Termos e cotas</span>
+                  <span class="extrajornada-rel-etapa-texto" id="p5-termos"></span>
+                  <button type="button" class="botao extrajornada-rel-botao" id="p5-termos-pdf" data-relatorio="termos" disabled>
                     <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg>
                     <span>Imprimir termos e cotas</span>
                   </button>
                 </div>
               </li>
-              <li class="nova-extra-rel-etapa" data-etapa="montagem">
-                <span class="nova-extra-rel-marca"><span class="nova-extra-rel-numero">3</span><svg class="icone nova-extra-rel-check" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
-                <div class="nova-extra-rel-etapa-corpo">
-                  <span class="nova-extra-rel-etapa-titulo">Distribuição e lançamento</span>
-                  <span class="nova-extra-rel-etapa-texto" id="p5-montagem"></span>
-                  <button type="button" class="botao nova-extra-rel-botao" id="p5-inicial" data-relatorio="inicial" disabled>
+              <li class="extrajornada-rel-etapa" data-etapa="montagem">
+                <span class="extrajornada-rel-marca"><span class="extrajornada-rel-numero">3</span><svg class="icone extrajornada-rel-check" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
+                <div class="extrajornada-rel-etapa-corpo">
+                  <span class="extrajornada-rel-etapa-titulo">Distribuição e lançamento</span>
+                  <span class="extrajornada-rel-etapa-texto" id="p5-montagem"></span>
+                  <button type="button" class="botao extrajornada-rel-botao" id="p5-inicial" data-relatorio="inicial" disabled>
                     <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg>
                     <span>Imprimir relatório inicial</span>
                   </button>
                 </div>
               </li>
-              <li class="nova-extra-rel-etapa" data-etapa="ajustes">
-                <span class="nova-extra-rel-marca"><span class="nova-extra-rel-numero">4</span><svg class="icone nova-extra-rel-check" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
-                <div class="nova-extra-rel-etapa-corpo">
-                  <span class="nova-extra-rel-etapa-titulo">Ajustes do mês <span class="selo oculto" id="p5-ajustes-qtd"></span></span>
-                  <span class="nova-extra-rel-etapa-texto" id="p5-ajustes"></span>
+              <li class="extrajornada-rel-etapa" data-etapa="ajustes">
+                <span class="extrajornada-rel-marca"><span class="extrajornada-rel-numero">4</span><svg class="icone extrajornada-rel-check" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
+                <div class="extrajornada-rel-etapa-corpo">
+                  <span class="extrajornada-rel-etapa-titulo">Ajustes do mês <span class="selo oculto" id="p5-ajustes-qtd"></span></span>
+                  <span class="extrajornada-rel-etapa-texto" id="p5-ajustes"></span>
                 </div>
               </li>
-              <li class="nova-extra-rel-etapa" data-etapa="relatorio">
-                <span class="nova-extra-rel-marca"><span class="nova-extra-rel-numero">5</span><svg class="icone nova-extra-rel-check" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
-                <div class="nova-extra-rel-etapa-corpo">
-                  <span class="nova-extra-rel-etapa-titulo">Relatório final</span>
-                  <span class="nova-extra-rel-etapa-texto" id="p5-relatorio"></span>
-                  <button type="button" class="botao nova-extra-rel-botao" id="p5-final" data-relatorio="final" disabled>
+              <li class="extrajornada-rel-etapa" data-etapa="relatorio">
+                <span class="extrajornada-rel-marca"><span class="extrajornada-rel-numero">5</span><svg class="icone extrajornada-rel-check" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
+                <div class="extrajornada-rel-etapa-corpo">
+                  <span class="extrajornada-rel-etapa-titulo">Relatório final</span>
+                  <span class="extrajornada-rel-etapa-texto" id="p5-relatorio"></span>
+                  <button type="button" class="botao extrajornada-rel-botao" id="p5-final" data-relatorio="final" disabled>
                     <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg>
                     <span>Imprimir relatório final</span>
                   </button>
@@ -464,13 +464,13 @@
             </ol>
           </div>
 
-          <section class="nova-extra-rel-previa">
-            <div class="nova-extra-rel-previa-cab">
+          <section class="extrajornada-rel-previa">
+            <div class="extrajornada-rel-previa-cab">
               <span class="rotulo-secao" id="p5-previa-titulo"></span>
-              <span class="nova-extra-rel-previa-comparado" id="p5-comparado"></span>
+              <span class="extrajornada-rel-previa-comparado" id="p5-comparado"></span>
             </div>
-            <div class="nova-extra-rel-tabela-rolagem">
-              <table class="nova-extra-rel-tabela" id="p5-tabela">
+            <div class="extrajornada-rel-tabela-rolagem">
+              <table class="extrajornada-rel-tabela" id="p5-tabela">
                 <thead>
                   <tr>
                     <th>Militar</th>
@@ -482,11 +482,11 @@
                 </thead>
                 <tbody id="p5-linhas"></tbody>
               </table>
-              <p class="nova-extra-rel-vazio oculto" id="p5-vazio"></p>
+              <p class="extrajornada-rel-vazio oculto" id="p5-vazio"></p>
             </div>
-            <div class="nova-extra-rel-cotas">
+            <div class="extrajornada-rel-cotas">
               <span class="rotulo-secao">Cotas alteradas (exceção)</span>
-              <span class="nova-extra-rel-cotas-texto" id="p5-cotas"></span>
+              <span class="extrajornada-rel-cotas-texto" id="p5-cotas"></span>
             </div>
           </section>
         </div>
@@ -496,41 +496,41 @@
 </div>
 
 <!-- moldes dos passos e das Extras do mês -->
-<template id="tpl-ne-p1-linha">
+<template id="tpl-extrajornada-p1-linha">
   <tr>
-    <td class="nova-extra-nome"><small></small><b></b></td>
+    <td class="extrajornada-nome"><small></small><b></b></td>
     <td class="ne-uni"></td><td class="ne-cotas"></td><td class="ne-quer"></td><td class="ne-nao"></td><td class="ne-nao-pode"></td>
-    <td><button type="button" class="geral-opcao nova-extra-marcar-curto ne-termo" role="checkbox" aria-checked="false" aria-label="Termo recebido"><span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span></button></td>
+    <td><button type="button" class="geral-opcao extrajornada-marcar-curto ne-termo" role="checkbox" aria-checked="false" aria-label="Termo recebido"><span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span></button></td>
   </tr>
 </template>
 
 <!-- passo 1: um período da coluna Não pode, com o motivo na dica (sem espaço entre as peças, para a vírgula ficar colada) -->
-<template id="tpl-ne-nao-pode-periodo">
-  <span class="nova-extra-nao-pode-item"><span class="nova-extra-nao-pode-dia" data-dica=""></span><span class="nova-extra-nao-pode-separador">, </span></span>
+<template id="tpl-extrajornada-nao-pode-periodo">
+  <span class="extrajornada-nao-pode-item"><span class="extrajornada-nao-pode-dia" data-dica=""></span><span class="extrajornada-nao-pode-separador">, </span></span>
 </template>
 
 <!-- passo 1: embaixo do militar com o termo desmarcado, as extras que saem ao salvar -->
-<template id="tpl-ne-p1-aviso">
-  <tr class="nova-extra-linha-aviso"><td colspan="7"><span class="nova-extra-aviso-linha"></span></td></tr>
+<template id="tpl-extrajornada-p1-aviso">
+  <tr class="extrajornada-linha-aviso"><td colspan="7"><span class="extrajornada-aviso-linha"></span></td></tr>
 </template>
 
 <!-- passo 1: uma exceção do mínimo: quem (na linha nova, o campo de escolher), os dias e o Remover -->
-<template id="tpl-ne-p1-excecao">
-  <div class="nova-extra-linha-n nova-extra-excecao">
-    <span class="nova-extra-excecao-nome"></span>
-    <div class="dropdown campo-combo nova-extra-excecao-combo oculto">
+<template id="tpl-extrajornada-p1-excecao">
+  <div class="extrajornada-linha-n extrajornada-excecao">
+    <span class="extrajornada-excecao-nome"></span>
+    <div class="dropdown campo-combo extrajornada-excecao-combo oculto">
       <input class="campo-entrada" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Quem tem a exceção" />
       <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
       <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares"></div>
     </div>
-    <div class="dropdown nova-extra-minimo-numero">
+    <div class="dropdown extrajornada-minimo-numero">
       <button type="button" class="campo-entrada campo-selecao" aria-label="Mínimo de dias da exceção">
         <span class="campo-selecao-texto"></span>
         <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
       </button>
       <div class="dropdown-menu"></div>
     </div>
-    <button type="button" class="botao botao--icone nova-extra-excecao-remover" aria-label="Remover exceção">
+    <button type="button" class="botao botao--icone extrajornada-excecao-remover" aria-label="Remover exceção">
       <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
     </button>
   </div>
@@ -540,105 +540,104 @@
      todos", o texto com a parte que a fila da companhia dá a ela; o Entregues e o Sobram); um voluntário (a fila, o
      militar, o pedido, o atendido nos 12 meses, a sugestão, o Recebe no campo de seleção e o que já está na escala) e,
      embaixo dele, as extras que saem ao salvar -->
-<template id="tpl-ne-p2-cab">
-  <div class="extra-vol-linha extra-vol-cab">
+<template id="tpl-extrajornada-p2-cab">
+  <div class="extrajornada-voluntarios-linha extrajornada-voluntarios-cab">
     <span>Fila</span>
     <span>Militar</span>
-    <span class="nova-extra-centro">Pediu</span>
-    <span class="nova-extra-centro">Atendido em 12 meses</span>
-    <span class="nova-extra-centro">Sugestão</span>
-    <span class="nova-extra-centro">Recebe</span>
-    <span class="nova-extra-centro">Na escala</span>
+    <span class="extrajornada-centro">Pediu</span>
+    <span class="extrajornada-centro">Atendido em 12 meses</span>
+    <span class="extrajornada-centro">Sugestão</span>
+    <span class="extrajornada-centro">Recebe</span>
+    <span class="extrajornada-centro">Na escala</span>
   </div>
 </template>
 
-<template id="tpl-ne-p2-bloco">
-  <div class="extra-vol-bloco">
-    <div class="extra-vol-bloco-titulo">
-      <span class="nova-extra-titulo-nome"><span class="extra-vol-bloco-nome"></span><span class="extra-vol-bloco-detalhe"></span></span>
-      <span class="nova-extra-titulo-totais">
-        <label class="extra-vol-bloco-cotas">
+<template id="tpl-extrajornada-p2-bloco">
+  <div class="extrajornada-voluntarios-bloco">
+    <div class="extrajornada-voluntarios-bloco-titulo">
+      <span class="extrajornada-titulo-nome"><span class="extrajornada-voluntarios-bloco-nome"></span><span class="extrajornada-voluntarios-bloco-detalhe"></span></span>
+      <span class="extrajornada-titulo-totais">
+        <label class="extrajornada-voluntarios-bloco-cotas">
           <span>Recebeu</span>
-          <input type="text" inputmode="numeric" maxlength="3" class="campo-entrada campo-entrada--pequeno extra-vol-bloco-total" />
-          <b class="nova-extra-bloco-recebeu oculto"></b>
+          <input type="text" inputmode="numeric" maxlength="3" class="campo-entrada campo-entrada--pequeno extrajornada-voluntarios-bloco-total" />
+          <b class="extrajornada-bloco-recebeu oculto"></b>
         </label>
-        <span class="nova-extra-bloco-num">Entregues <b class="ne-entregues"></b></span>
-        <span class="nova-extra-bloco-num">Sobram <b class="ne-sobram"></b></span>
+        <span class="extrajornada-bloco-num">Entregues <b class="ne-entregues"></b></span>
+        <span class="extrajornada-bloco-num">Sobram <b class="ne-sobram"></b></span>
       </span>
     </div>
-    <div class="extra-vol-bloquinho"></div>
+    <div class="extrajornada-voluntarios-bloquinho"></div>
   </div>
 </template>
 
-<template id="tpl-ne-p2-linha">
-  <div class="extra-vol-linha">
-    <span class="nova-extra-fila"></span>
-    <span class="extra-vol-militar">
-      <span class="extra-vol-grad"></span>
-      <span class="extra-vol-nome"></span>
-      <span class="extra-vaga-24h oculto">24h</span>
+<template id="tpl-extrajornada-p2-linha">
+  <div class="extrajornada-voluntarios-linha">
+    <span class="extrajornada-fila"></span>
+    <span class="extrajornada-voluntarios-militar">
+      <span class="extrajornada-voluntarios-grad"></span>
+      <span class="extrajornada-voluntarios-nome"></span>
+      <span class="extrajornada-vaga-24h oculto">24h</span>
     </span>
-    <span class="extra-vol-pediu nova-extra-centro"></span>
-    <span class="nova-extra-centro nova-extra-atendido"><b class="ne-pct"></b><small class="ne-de"></small><span class="nova-extra-historico ne-primeira oculto">Primeira vez</span></span>
-    <span class="nova-extra-centro nova-extra-sug"></span>
-    <div class="extra-vol-concedido nova-extra-centro">
-      <div class="dropdown extra-vol-conc">
-        <button type="button" class="campo-entrada campo-selecao campo-entrada--pequeno extra-vol-conc-gatilho" aria-label="Recebe">
-          <span class="campo-selecao-texto extra-vol-conc-texto"></span>
+    <span class="extrajornada-voluntarios-pediu extrajornada-centro"></span>
+    <span class="extrajornada-centro extrajornada-atendido"><b class="ne-pct"></b><small class="ne-de"></small><span class="extrajornada-historico ne-primeira oculto">Primeira vez</span></span>
+    <span class="extrajornada-centro extrajornada-sug"></span>
+    <div class="extrajornada-voluntarios-concedido extrajornada-centro">
+      <div class="dropdown extrajornada-voluntarios-conc">
+        <button type="button" class="campo-entrada campo-selecao campo-entrada--pequeno extrajornada-voluntarios-conc-gatilho" aria-label="Recebe">
+          <span class="campo-selecao-texto extrajornada-voluntarios-conc-texto"></span>
           <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
         </button>
-        <div class="dropdown-menu extra-vol-conc-menu"></div>
+        <div class="dropdown-menu extrajornada-voluntarios-conc-menu"></div>
       </div>
     </div>
-    <span class="extra-vol-na-escala nova-extra-centro"></span>
+    <span class="extrajornada-voluntarios-na-escala extrajornada-centro"></span>
   </div>
 </template>
 
-<template id="tpl-ne-p2-aviso">
-  <span class="nova-extra-p2-aviso"></span>
+<template id="tpl-extrajornada-p2-aviso">
+  <span class="extrajornada-p2-aviso"></span>
 </template>
 
 <!-- passo 5: uma linha da prévia do relatório de ajustes e um horário (era riscado, ficou em destaque) -->
-<template id="tpl-ne-rel-linha">
+<template id="tpl-extrajornada-rel-linha">
   <tr>
     <td>
-      <span class="nova-extra-rel-militar nova-extra-nome"><small></small> <b></b></span>
-      <span class="nova-extra-rel-unidade"></span>
+      <span class="extrajornada-rel-militar extrajornada-nome"><small></small> <b></b></span>
+      <span class="extrajornada-rel-unidade"></span>
     </td>
-    <td class="nova-extra-rel-era"></td>
-    <td class="nova-extra-rel-ficou"></td>
-    <td class="nova-extra-rel-motivo"></td>
+    <td class="extrajornada-rel-era"></td>
+    <td class="extrajornada-rel-ficou"></td>
+    <td class="extrajornada-rel-motivo"></td>
     <td>
-      <span class="nova-extra-rel-autor"></span>
-      <span class="nova-extra-rel-vezes"></span>
+      <span class="extrajornada-rel-autor"></span>
+      <span class="extrajornada-rel-vezes"></span>
     </td>
   </tr>
 </template>
 
-<template id="tpl-ne-rel-horario">
-  <span class="nova-extra-rel-horario"></span>
+<template id="tpl-extrajornada-rel-horario">
+  <span class="extrajornada-rel-horario"></span>
 </template>
 
-<!-- Ações › Lançar na escala e encerrar, no painel direito: a conferência e, embaixo, o que entra na escala (simulado:
-     a escala não muda) -->
-<template id="tpl-ne-lancar">
-  <div class="nova-extra-lancar">
-    <div class="nova-extra-bloco">
-      <span class="nova-extra-bloco-titulo">Conferência</span>
-      <div class="nova-extra-caixa" id="p4-conferencia"></div>
+<!-- Ações › Lançar na escala e encerrar, no painel direito: a conferência e, embaixo, o que entra na escala -->
+<template id="tpl-extrajornada-lancar">
+  <div class="extrajornada-lancar">
+    <div class="extrajornada-bloco">
+      <span class="extrajornada-bloco-titulo">Conferência</span>
+      <div class="extrajornada-caixa" id="p4-conferencia"></div>
     </div>
-    <div class="nova-extra-bloco">
-      <span class="nova-extra-bloco-titulo" id="p4-titulo"></span>
-      <div class="nova-extra-caixa nova-extra-form">
-        <span class="nova-extra-ajuda" id="p4-texto"></span>
+    <div class="extrajornada-bloco">
+      <span class="extrajornada-bloco-titulo" id="p4-titulo"></span>
+      <div class="extrajornada-caixa extrajornada-form">
+        <span class="extrajornada-ajuda" id="p4-texto"></span>
         <div id="p4-mudancas"></div>
-        <span class="nova-extra-ajuda">Ao lançar, as extras entram na escala de serviço. Só os dias que mudaram são refeitos.</span>
+        <span class="extrajornada-ajuda">Ao lançar, as extras entram na escala de serviço. Só os dias que mudaram são refeitos.</span>
       </div>
     </div>
   </div>
 </template>
 
-<template id="tpl-ne-lancar-acoes">
+<template id="tpl-extrajornada-lancar-acoes">
   <button type="button" class="botao" id="p4-cancelar">Cancelar</button>
   <button type="button" class="botao botao--primario" id="p4-lancar">Lançar e encerrar</button>
 </template>
@@ -647,7 +646,7 @@
      com a nota, a Prévia e o rodapé), numeradas pelo JS: o relatório, já marcado o do botão, e os que ainda não
      liberaram apagados, com o motivo na dica; o pelotão, entre os da área de quem imprime, que some com um só; com
      todos, separar por pelotão ou a lista única -->
-<template id="tpl-ne-imprimir">
+<template id="tpl-extrajornada-imprimir">
   <div class="grupo-caixa">
     <span class="rotulo-secao"><span data-impressao-num></span>. Relatório</span>
     <div class="abas abas--seletor" data-imprimir-relatorio>
@@ -672,10 +671,10 @@
   </div>
 </template>
 
-<template id="tpl-ne-imprimir-unidade"><button type="button" class="aba" data-unidade=""></button></template>
+<template id="tpl-extrajornada-imprimir-unidade"><button type="button" class="aba" data-unidade=""></button></template>
 
-<template id="tpl-ne-item">
-  <div class="nova-extra-item"><span class="nova-extra-item-marca"></span><span class="nova-extra-item-texto"><b></b><span></span></span></div>
+<template id="tpl-extrajornada-item">
+  <div class="extrajornada-item"><span class="extrajornada-item-marca"></span><span class="extrajornada-item-texto"><b></b><span></span></span></div>
 </template>
 
 <!-- passo 3 (e a aba Extras do mês): dentro do bloco da Escala (tpl-escala-calendario-unidade, no shell), o gráfico do
@@ -683,11 +682,11 @@
      à direita, as 4 bolinhas pequenas dos horários na cor do que ele marcou no pedido, sem clique (todas vazias para
      quem ficou sem nenhum até o Salvar); o nome inteiro e o horário escrito na dica; embaixo, o pelotão quando é de
      outro -->
-<template id="tpl-ne-vaga">
-  <div class="extra-vaga nova-extra-vaga">
-    <span class="extra-vaga-id"><span class="extra-vaga-grad"></span> <span class="extra-vaga-nome"></span></span>
-    <span class="nova-extra-vaga-bol" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
-    <span class="nova-extra-vaga-baixo oculto"><span class="extra-vaga-pelotao oculto"></span></span>
+<template id="tpl-extrajornada-vaga">
+  <div class="extrajornada-vaga">
+    <span class="extrajornada-vaga-id"><span class="extrajornada-vaga-grad"></span> <span class="extrajornada-vaga-nome"></span></span>
+    <span class="extrajornada-vaga-bol" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+    <span class="extrajornada-vaga-baixo oculto"><span class="extrajornada-vaga-pelotao oculto"></span></span>
   </div>
 </template>
 
@@ -695,7 +694,7 @@
      o ícone do sistema (o Preencher refaz) ou o do administrador (o sistema nunca muda), com a dica de quem inseriu -->
 <!-- os nomes dos dois ícones de quem inseriu a extra na legenda do pé da folha do Imprimir da grade
      (escalas-impressao-legenda.js; nunca clonado na tela) -->
-<template id="tpl-ne-legenda-pdf">
+<template id="tpl-extrajornada-legenda-pdf">
   <span class="escala-legenda-item">
     <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-extra-sistema"/></svg>
     <span>Inserido pelo sistema</span>
@@ -708,60 +707,60 @@
 
 <!-- passo 3, o painel esquerdo: um voluntário (posto e nome, o pelotão e as cotas colocadas de recebidas); clicar
      põe ou tira do foco no calendário e abre ou fecha as datas dele embaixo -->
-<template id="tpl-ne-esq-item">
-  <button type="button" class="lista-item lista-item--clicavel nova-extra-esq-item" aria-pressed="false">
-    <span class="nova-extra-esq-quem"><span class="nova-extra-esq-grad"></span> <span class="nova-extra-esq-nome"></span></span>
-    <span class="nova-extra-esq-pel"></span>
-    <span class="nova-extra-esq-cotas"></span>
-    <span class="nova-extra-esq-motivo"></span>
+<template id="tpl-extrajornada-esq-item">
+  <button type="button" class="lista-item lista-item--clicavel extrajornada-esq-item" aria-pressed="false">
+    <span class="extrajornada-esq-quem"><span class="extrajornada-esq-grad"></span> <span class="extrajornada-esq-nome"></span></span>
+    <span class="extrajornada-esq-pel"></span>
+    <span class="extrajornada-esq-cotas"></span>
+    <span class="extrajornada-esq-motivo"></span>
   </button>
 </template>
 
 <!-- as datas do militar em foco, embaixo do nome na lista: uma linha por data (o dia, o pelotão quando é de outro e os 4
      horários; em cinza a que sai ao salvar) -->
-<template id="tpl-ne-esq-aberto">
-  <div class="nova-extra-esq-aberto">
-    <div class="nova-extra-esq-datas"></div>
-    <span class="nova-extra-esq-sem oculto">Nenhuma data ainda.</span>
+<template id="tpl-extrajornada-esq-aberto">
+  <div class="extrajornada-esq-aberto">
+    <div class="extrajornada-esq-datas"></div>
+    <span class="extrajornada-esq-sem oculto">Nenhuma data ainda.</span>
   </div>
 </template>
 
-<template id="tpl-ne-esq-data">
-  <div class="nova-extra-esq-data">
-    <span class="nova-extra-esq-dia"></span>
-    <span class="nova-extra-esq-data-pel"></span>
-    <span class="nova-extra-marcas">
-      <button type="button" class="escala-extra-marca" data-bloco="1" aria-pressed="false" aria-label="08h às 14h"></button>
-      <button type="button" class="escala-extra-marca" data-bloco="2" aria-pressed="false" aria-label="14h às 20h"></button>
-      <button type="button" class="escala-extra-marca" data-bloco="3" aria-pressed="false" aria-label="20h às 02h"></button>
-      <button type="button" class="escala-extra-marca" data-bloco="4" aria-pressed="false" aria-label="02h às 08h"></button>
+<template id="tpl-extrajornada-esq-data">
+  <div class="extrajornada-esq-data">
+    <span class="extrajornada-esq-dia"></span>
+    <span class="extrajornada-esq-data-pel"></span>
+    <span class="extrajornada-marcas">
+      <button type="button" class="extrajornada-painel-marca" data-bloco="1" aria-pressed="false" aria-label="08h às 14h"></button>
+      <button type="button" class="extrajornada-painel-marca" data-bloco="2" aria-pressed="false" aria-label="14h às 20h"></button>
+      <button type="button" class="extrajornada-painel-marca" data-bloco="3" aria-pressed="false" aria-label="20h às 02h"></button>
+      <button type="button" class="extrajornada-painel-marca" data-bloco="4" aria-pressed="false" aria-label="02h às 08h"></button>
     </span>
   </div>
 </template>
 
 <!-- passo 3, o militar em foco: no bloco de cada pelotão, em todos os dias, as bolinhas grandes dos 4 horários, numa
      linha só delas (a borda na cor do que ele marcou no pedido), ou, no dia em que ele não pode, o selo com o motivo -->
-<template id="tpl-ne-foco-marcas">
-  <div class="nova-extra-foco nova-extra-foco-linha">
-    <span class="escala-extra-marcas nova-extra-marcas">
-      <button type="button" class="escala-extra-marca" data-bloco="1" aria-pressed="false" aria-label="08h às 14h"></button>
-      <button type="button" class="escala-extra-marca" data-bloco="2" aria-pressed="false" aria-label="14h às 20h"></button>
-      <button type="button" class="escala-extra-marca" data-bloco="3" aria-pressed="false" aria-label="20h às 02h"></button>
-      <button type="button" class="escala-extra-marca" data-bloco="4" aria-pressed="false" aria-label="02h às 08h"></button>
+<template id="tpl-extrajornada-foco-marcas">
+  <div class="extrajornada-foco extrajornada-foco-linha">
+    <span class="extrajornada-painel-marcas extrajornada-marcas">
+      <button type="button" class="extrajornada-painel-marca" data-bloco="1" aria-pressed="false" aria-label="08h às 14h"></button>
+      <button type="button" class="extrajornada-painel-marca" data-bloco="2" aria-pressed="false" aria-label="14h às 20h"></button>
+      <button type="button" class="extrajornada-painel-marca" data-bloco="3" aria-pressed="false" aria-label="20h às 02h"></button>
+      <button type="button" class="extrajornada-painel-marca" data-bloco="4" aria-pressed="false" aria-label="02h às 08h"></button>
     </span>
   </div>
 </template>
 
-<template id="tpl-ne-foco-selo">
-  <div class="nova-extra-foco nova-extra-foco-linha"><span class="selo nova-extra-selo-mini"></span></div>
+<template id="tpl-extrajornada-foco-selo">
+  <div class="extrajornada-foco extrajornada-foco-linha"><span class="selo extrajornada-selo-mini"></span></div>
 </template>
 
 <!-- a Legenda da barra em cada etapa (menos Relatórios): as regras gerais, em itens, e as do Preencher pela sugestão,
      na ordem em que o sistema as segue -->
-<template id="tpl-ne-legenda-pedidos">
+<template id="tpl-extrajornada-legenda-pedidos">
   <div class="escala-legenda-grupo">
     <span class="rotulo-secao">Regras gerais</span>
-    <ul class="nova-extra-legenda-lista">
+    <ul class="extrajornada-legenda-lista">
       <li>Só praça pede extra.</li>
       <li>O pedido vale do "Abre em" até o "Fecha em", ou até o "Fechar os pedidos agora".</li>
       <li>Cada militar pede de 1 a 10 cotas. Uma cota são 6 horas.</li>
@@ -773,10 +772,10 @@
   </div>
 </template>
 
-<template id="tpl-ne-legenda-cotas">
+<template id="tpl-extrajornada-legenda-cotas">
   <div class="escala-legenda-grupo">
     <span class="rotulo-secao">Regras gerais</span>
-    <ul class="nova-extra-legenda-lista">
+    <ul class="extrajornada-legenda-lista">
       <li>As cotas só são repartidas depois que os pedidos fecham.</li>
       <li>Só recebe quem entregou o termo, e ninguém recebe mais do que pediu.</li>
       <li>O total entregue não pode passar do recebido. Se passar, o número fica vermelho e o Salvar trava.</li>
@@ -787,7 +786,7 @@
   </div>
   <div class="escala-legenda-grupo">
     <span class="rotulo-secao">Regras do Preencher pela sugestão</span>
-    <ol class="nova-extra-legenda-lista">
+    <ol class="extrajornada-legenda-lista">
       <li>A fila: primeiro quem foi menos atendido nos últimos 12 meses. A conta usa o que cabia nos dias livres de cada um. Quem pede pela primeira vez conta como 100%. No empate, vai antes o mais antigo.</li>
       <li>Todos recebem o mesmo número, com diferença de no máximo 1, sem passar do que cabe nos dias livres dele no mês.</li>
       <li>A cota que sobra vai, uma a uma, para quem está na frente da fila.</li>
@@ -796,7 +795,7 @@
   </div>
 </template>
 
-<template id="tpl-ne-legenda-dist">
+<template id="tpl-extrajornada-legenda-dist">
   <div class="escala-legenda-grupo">
     <span class="rotulo-secao">Quem pôs a extra</span>
     <div class="escala-legenda-grade">
@@ -812,7 +811,7 @@
   </div>
   <div class="escala-legenda-grupo">
     <span class="rotulo-secao">Regras gerais</span>
-    <ul class="nova-extra-legenda-lista">
+    <ul class="extrajornada-legenda-lista">
       <li>Cada dia tem 4 horários de 6 horas: 08h, 14h, 20h e 02h. Cada bolinha é um horário, e a cheia é horário de extra.</li>
       <li>Para marcar, clique no nome na lista ou abra o dia no calendário.</li>
       <li>Sem nenhuma bolinha, o militar fica em cinza no dia e sai ao salvar.</li>
@@ -828,7 +827,7 @@
   </div>
   <div class="escala-legenda-grupo">
     <span class="rotulo-secao">Regras do Preencher pela sugestão</span>
-    <ol class="nova-extra-legenda-lista">
+    <ol class="extrajornada-legenda-lista">
       <li>Corrige primeiro o vermelho dos pelotões de fora da cidade da companhia, depois o da cidade da companhia e depois o amarelo, na mesma ordem.</li>
       <li>Cada um fica no pelotão dele. Só vai para outro pelotão para corrigir o que os de lá não conseguem, e vai de preferência o mais moderno.</li>
       <li>Passar do necessário, com duas extras que se cruzam, só em último caso.</li>
@@ -843,7 +842,7 @@
   </div>
 </template>
 
-<template id="tpl-ne-legenda-ajustes">
+<template id="tpl-extrajornada-legenda-ajustes">
   <div class="escala-legenda-grupo">
     <span class="rotulo-secao">Quem pôs a extra</span>
     <div class="escala-legenda-grade">
@@ -859,7 +858,7 @@
   </div>
   <div class="escala-legenda-grupo">
     <span class="rotulo-secao">Regras gerais</span>
-    <ul class="nova-extra-legenda-lista">
+    <ul class="extrajornada-legenda-lista">
       <li>Os ajustes abrem depois do lançamento e vão até o fim do mês.</li>
       <li>Valem as mesmas regras da Distribuição: a cota, uma extra por dia e os dias em que ele não pode.</li>
       <li>Cada mudança salva vai para a escala e entra no relatório final, com quem fez, quando e o motivo.</li>
@@ -869,92 +868,92 @@
 </template>
 
 <!-- molde: o pedido (no painel) -->
-<template id="tpl-nova-extra-pedido">
-  <div class="nova-extra-pedido">
-    <section class="nova-extra-sec">
-      <b class="nova-extra-pergunta" id="nova-extra-q-vol"></b>
-      <div class="abas abas--seletor" id="nova-extra-vol">
+<template id="tpl-extrajornada-pedido">
+  <div class="extrajornada-pedido">
+    <section class="extrajornada-sec">
+      <b class="extrajornada-pergunta" id="extrajornada-q-vol"></b>
+      <div class="abas abas--seletor" id="extrajornada-vol">
         <button type="button" class="aba" data-vol="sim">Sim, quero</button>
         <button type="button" class="aba" data-vol="nao">Não quero</button>
       </div>
-      <span class="nova-extra-ajuda oculto" id="nova-extra-sem-dia"></span>
+      <span class="extrajornada-ajuda oculto" id="extrajornada-sem-dia"></span>
     </section>
-    <section class="nova-extra-sec" data-so-voluntario>
-      <b class="nova-extra-pergunta">Quantas cotas?</b>
-      <span class="nova-extra-ajuda">Cada cota equivale a 6 horas.</span>
-      <div class="nova-extra-cotas" id="nova-extra-cotas"></div>
+    <section class="extrajornada-sec" data-so-voluntario>
+      <b class="extrajornada-pergunta">Quantas cotas?</b>
+      <span class="extrajornada-ajuda">Cada cota equivale a 6 horas.</span>
+      <div class="extrajornada-cotas" id="extrajornada-cotas"></div>
       <!-- só para quem escolheu 4 cotas -->
-      <div class="grupo-caixa oculto" id="nova-extra-como-24h">
-        <b class="nova-extra-pergunta">Como você quer tirar as 4 cotas?</b>
-        <label class="geral-opcao"><input type="radio" name="nova-extra-como-24h" data-como="seguidas" /><span>24 horas seguidas, no mesmo dia</span></label>
-        <label class="geral-opcao"><input type="radio" name="nova-extra-como-24h" data-como="dividir" /><span>Posso dividir em vários dias ou 24 seguidas</span></label>
+      <div class="grupo-caixa oculto" id="extrajornada-como-24h">
+        <b class="extrajornada-pergunta">Como você quer tirar as 4 cotas?</b>
+        <label class="geral-opcao"><input type="radio" name="extrajornada-como-24h" data-como="seguidas" /><span>24 horas seguidas, no mesmo dia</span></label>
+        <label class="geral-opcao"><input type="radio" name="extrajornada-como-24h" data-como="dividir" /><span>Posso dividir em vários dias ou 24 seguidas</span></label>
       </div>
     </section>
     <!-- sem nenhum dia livre no mês, só o calendário fica (com o motivo de cada dia); o resto com data-sem-dia="some" sai -->
-    <section class="nova-extra-sec" data-so-voluntario data-sem-dia="mostra">
-      <b class="nova-extra-pergunta" data-sem-dia="some">Quais dias?</b>
-      <span class="nova-extra-ajuda" id="nova-extra-ajuda-dias"></span>
-      <div class="nova-extra-pincel" data-sem-dia="some">
-        <button type="button" class="nova-extra-pincel-op" data-pincel="quer"><span class="nova-extra-ponto nova-extra-ponto--quer"></span>Quero</button>
-        <button type="button" class="nova-extra-pincel-op" data-pincel="nao_posso"><span class="nova-extra-ponto nova-extra-ponto--nao"></span>Não quero</button>
+    <section class="extrajornada-sec" data-so-voluntario data-sem-dia="mostra">
+      <b class="extrajornada-pergunta" data-sem-dia="some">Quais dias?</b>
+      <span class="extrajornada-ajuda" id="extrajornada-ajuda-dias"></span>
+      <div class="extrajornada-pincel" data-sem-dia="some">
+        <button type="button" class="extrajornada-pincel-op" data-pincel="quer"><span class="extrajornada-ponto extrajornada-ponto--quer"></span>Quero</button>
+        <button type="button" class="extrajornada-pincel-op" data-pincel="nao_posso"><span class="extrajornada-ponto extrajornada-ponto--nao"></span>Não quero</button>
       </div>
-      <span class="nova-extra-contagem" data-sem-dia="some">
-        <b class="nova-extra-conta-quer" id="nova-extra-conta-quer"></b>
-        <b class="nova-extra-conta-nao" id="nova-extra-conta-nao"></b>
+      <span class="extrajornada-contagem" data-sem-dia="some">
+        <b class="extrajornada-conta-quer" id="extrajornada-conta-quer"></b>
+        <b class="extrajornada-conta-nao" id="extrajornada-conta-nao"></b>
       </span>
-      <span class="nova-extra-nota oculto" id="nova-extra-nota-adm">Você é do administrativo: em dia de expediente a extra começa depois do expediente (na quarta, às 14h). Fim de semana, feriado e folga do expediente, o dia todo.</span>
+      <span class="extrajornada-nota oculto" id="extrajornada-nota-adm">Você é do administrativo: em dia de expediente a extra começa depois do expediente (na quarta, às 14h). Fim de semana, feriado e folga do expediente, o dia todo.</span>
       <!-- o que cada dia mostra: os meus dias, onde falta gente ou quantos querem (por unidade) -->
-      <div class="nova-extra-ver" data-sem-dia="some">
-        <div class="nova-extra-ver-linha">
-          <span class="nova-extra-ver-rotulo">Ver</span>
-          <div class="abas abas--seletor" id="nova-extra-ver">
+      <div class="extrajornada-ver" data-sem-dia="some">
+        <div class="extrajornada-ver-linha">
+          <span class="extrajornada-ver-rotulo">Ver</span>
+          <div class="abas abas--seletor" id="extrajornada-ver">
             <button type="button" class="aba" data-ver="meus">Meus dias</button>
             <button type="button" class="aba" data-ver="falta">Falta gente</button>
             <button type="button" class="aba" data-ver="procura">Quantos querem</button>
           </div>
         </div>
-        <div class="nova-extra-ver-linha oculto" id="nova-extra-onde-linha">
-          <span class="nova-extra-ver-rotulo">Onde</span>
-          <div class="abas abas--seletor" id="nova-extra-onde">
+        <div class="extrajornada-ver-linha oculto" id="extrajornada-onde-linha">
+          <span class="extrajornada-ver-rotulo">Onde</span>
+          <div class="abas abas--seletor" id="extrajornada-onde">
             <button type="button" class="aba" data-onde="todos">Todos</button>
           </div>
         </div>
       </div>
-      <div class="nova-extra-cal" id="nova-extra-cal">
-        <span class="nova-extra-sem">D</span><span class="nova-extra-sem">S</span><span class="nova-extra-sem">T</span><span class="nova-extra-sem">Q</span><span class="nova-extra-sem">Q</span><span class="nova-extra-sem">S</span><span class="nova-extra-sem">S</span>
+      <div class="extrajornada-cal" id="extrajornada-cal">
+        <span class="extrajornada-sem">D</span><span class="extrajornada-sem">S</span><span class="extrajornada-sem">T</span><span class="extrajornada-sem">Q</span><span class="extrajornada-sem">Q</span><span class="extrajornada-sem">S</span><span class="extrajornada-sem">S</span>
       </div>
-      <span class="nova-extra-ajuda">Os dias de folga, férias, licença e dispensa já vêm travados.</span>
-      <span class="nova-extra-ajuda oculto" id="nova-extra-ajuda-servico">Em dia de serviço, o Quero só vale se você estiver livre quando a extra for distribuída.</span>
+      <span class="extrajornada-ajuda">Os dias de folga, férias, licença e dispensa já vêm travados.</span>
+      <span class="extrajornada-ajuda oculto" id="extrajornada-ajuda-servico">Em dia de serviço, o Quero só vale se você estiver livre quando a extra for distribuída.</span>
     </section>
-    <section class="nova-extra-sec" data-so-voluntario>
-      <b class="nova-extra-pergunta">Termo</b>
-      <span class="nova-extra-nota" id="nova-extra-termo"></span>
+    <section class="extrajornada-sec" data-so-voluntario>
+      <b class="extrajornada-pergunta">Termo</b>
+      <span class="extrajornada-nota" id="extrajornada-termo"></span>
     </section>
   </div>
 </template>
 
-<template id="tpl-nova-extra-onde">
+<template id="tpl-extrajornada-onde">
   <button type="button" class="aba"></button>
 </template>
 
-<template id="tpl-nova-extra-cota">
-  <button type="button" class="nova-extra-cota"></button>
+<template id="tpl-extrajornada-cota">
+  <button type="button" class="extrajornada-cota"></button>
 </template>
 
-<template id="tpl-nova-extra-dia">
-  <button type="button" class="nova-extra-dia">
-    <b class="nova-extra-dia-num"></b>
-    <small class="nova-extra-dia-servico oculto"></small>
-    <small class="nova-extra-dia-texto"></small>
+<template id="tpl-extrajornada-dia">
+  <button type="button" class="extrajornada-dia">
+    <b class="extrajornada-dia-num"></b>
+    <small class="extrajornada-dia-servico oculto"></small>
+    <small class="extrajornada-dia-texto"></small>
   </button>
 </template>
 
-<template id="tpl-nova-extra-dia-vazio">
-  <span class="nova-extra-dia nova-extra-dia--vazio"></span>
+<template id="tpl-extrajornada-dia-vazio">
+  <span class="extrajornada-dia extrajornada-dia--vazio"></span>
 </template>
 
-<template id="tpl-nova-extra-acoes">
-  <button type="button" class="botao" id="nova-extra-cancelar">Cancelar</button>
-  <button type="button" class="botao botao--primario" id="nova-extra-enviar" disabled>Enviar pedido</button>
+<template id="tpl-extrajornada-acoes">
+  <button type="button" class="botao" id="extrajornada-cancelar">Cancelar</button>
+  <button type="button" class="botao botao--primario" id="extrajornada-enviar" disabled>Enviar pedido</button>
 </template>
 

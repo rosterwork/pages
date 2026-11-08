@@ -1,12 +1,12 @@
 /* ============================================================
-   NOVA EXTRA — o prazo e o mínimo de dias Quero (passo 1, Pedidos)
+   EXTRAJORNADA — o prazo e o mínimo de dias Quero (passo 1, Pedidos)
    O prazo, o Exigir mínimo, o número de todos os voluntários e as
    exceções (o efetivo administrativo ou um militar), recolhidas com
    o resumo de quantas há. Tudo é rascunho até o Salvar do rodapé
-   (nova-extra-organizar.js, nova_extra_pedidos_salvar). O número só
+   (extrajornada-organizar.js, extrajornada_pedidos_salvar). O número só
    escolhe de 1 a 5. Com os pedidos fechados, o mínimo fica só para
    ler. Não cria HTML (clona moldes) nem escreve estilo (só classList).
-   RosterWork.novaExtraMinimo.
+   RosterWork.extrajornadaMinimo.
    ============================================================ */
 (function () {
   'use strict';
@@ -16,13 +16,13 @@
   var OPCOES = [1, 2, 3, 4, 5];
 
   var el = null;              // a página
-  var d = null;               // a resposta do nova_extra_mes
+  var d = null;               // a resposta do extrajornada_mes
   var redesenhar = null;      // redesenha o passo inteiro
   var rodape = null;          // atualiza só o rodapé de salvar
   var regra = null;           // o rascunho: { exige, minimo, excecoes: [{ alvo, dias }] }
   var aberto = false;         // as exceções abertas
 
-  function msg() { return RW.mensagens.novaExtra.org; }
+  function msg() { return RW.mensagens.extrajornada.org; }
   function q(sel) { return el.querySelector(sel); }
   function data(iso) { return RW.data.isoParaBR(iso); }
 
@@ -32,7 +32,7 @@
     return {
       exige: m.exige !== false,
       minimo: m.minimo || null,
-      excecoes: (m.excecoes || []).filter(function (e) { return e.alvo === ADMINISTRATIVO || RW.novaExtraUtil.militar(e.alvo); })
+      excecoes: (m.excecoes || []).filter(function (e) { return e.alvo === ADMINISTRATIVO || RW.extrajornadaUtil.militar(e.alvo); })
         .map(function (e) { return { alvo: e.alvo, dias: e.dias }; })
     };
   }
@@ -68,13 +68,13 @@
     var usado = regra.excecoes.some(function (e) { return e.alvo === ADMINISTRATIVO; });
     var grupo = usado ? [] : [{ titulo: msg().tituloGrupo }, { cpf: ADMINISTRATIVO, nome: msg().efetivoAdministrativo }];
     return grupo.concat([{ titulo: msg().tituloMilitares }], d.militares.map(function (m) {
-      return { cpf: m.cpf, grad: m.grad, nome: m.nome, info: (RW.novaExtraUtil.unidade(m.unidade_id) || {}).nome || '' };
+      return { cpf: m.cpf, grad: m.grad, nome: m.nome, info: (RW.extrajornadaUtil.unidade(m.unidade_id) || {}).nome || '' };
     }));
   }
 
   function ligarCampoDeQuem(linha, excecao) {
-    var caixa = linha.querySelector('.nova-extra-excecao-combo'), inp = caixa.querySelector('input');
-    linha.classList.add('nova-extra-excecao--nova');
+    var caixa = linha.querySelector('.extrajornada-excecao-combo'), inp = caixa.querySelector('input');
+    linha.classList.add('extrajornada-excecao--nova');
     caixa.classList.remove('oculto');
     inp.id = 'p1-excecao-campo';
     RW.comboMilitar.criar(inp, caixa.querySelector('.dropdown-menu'), {
@@ -96,11 +96,11 @@
     var lista = q('#p1-excecoes');
     lista.textContent = '';
     regra.excecoes.forEach(function (e, i) {
-      var l = RW.tpl('tpl-ne-p1-excecao');
+      var l = RW.tpl('tpl-extrajornada-p1-excecao');
       var era = guardada.excecoes.filter(function (x) { return x.alvo === e.alvo; })[0];
-      var nome = l.querySelector('.nova-extra-excecao-nome'), numero = l.querySelector('.nova-extra-minimo-numero');
-      var remover = l.querySelector('.nova-extra-excecao-remover');
-      nome.textContent = e.alvo === ADMINISTRATIVO ? msg().efetivoAdministrativo : e.alvo ? RW.novaExtraUtil.nome(e.alvo) : '';
+      var nome = l.querySelector('.extrajornada-excecao-nome'), numero = l.querySelector('.extrajornada-minimo-numero');
+      var remover = l.querySelector('.extrajornada-excecao-remover');
+      nome.textContent = e.alvo === ADMINISTRATIVO ? msg().efetivoAdministrativo : e.alvo ? RW.extrajornadaUtil.nome(e.alvo) : '';
       nome.classList.toggle('oculto', !e.alvo);
       ligarNumero(numero, e.dias, leitura, function (n) { e.dias = n; redesenhar(); });
       numero.classList.toggle('campo--alterado', !era || era.dias !== e.dias);
@@ -169,7 +169,7 @@
     });
   }
 
-  RW.novaExtraMinimo = {
+  RW.extrajornadaMinimo = {
     ligar: ligar, iniciar: iniciar, desenhar: desenhar,
     regraMudou: regraMudou, prazoMudou: prazoMudou, incompleto: incompleto, parametros: parametros
   };

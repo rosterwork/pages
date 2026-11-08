@@ -1,17 +1,17 @@
 /* ============================================================
-   NOVA EXTRA — passos 3 e 4: Distribuição e Ajustes (a tela)
+   EXTRAJORNADA — passos 3 e 4: Distribuição e Ajustes (a tela)
    A sugestão, o Salvar, o rodapé e o resumo do alto. O rascunho e as
-   contas ficam em nova-extra-grade.js, o calendário em
-   nova-extra-por-dia.js, o painel do dia em nova-extra-dia.js e a
-   lista dos voluntários (o painel esquerdo) em nova-extra-lista.js.
-   Tudo fica no rascunho até o Salvar (nova_extra_distribuicao_salvar),
+   contas ficam em extrajornada-grade.js, o calendário em
+   extrajornada-por-dia.js, o painel do dia em extrajornada-dia.js e a
+   lista dos voluntários (o painel esquerdo) em extrajornada-lista.js.
+   Tudo fica no rascunho até o Salvar (extrajornada_distribuicao_salvar),
    que espera acertar quem passou da cota. "Preencher pela sugestão"
    (só com tudo salvo) mantém as extras que o administrador pôs ou mudou
-   e pede ao motor (nova_extra_sugerir) que refaça as que o sistema pôs.
+   e pede ao motor (extrajornada_sugerir) que refaça as que o sistema pôs.
    Os Ajustes são a mesma tela (o modo ajustes): abrem depois do
    lançamento, com o motivo no rodapé.
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
-   RosterWork.novaExtraMontar.
+   RosterWork.extrajornadaMontar.
    ============================================================ */
 (function () {
   'use strict';
@@ -29,17 +29,17 @@
   var escalaLendo = null;  // o mês com a leitura da escala no ar
   var escalaFalhou = null; // o mês em que a leitura da escala falhou (a frase no lugar do calendário)
 
-  function msg() { return RW.mensagens.novaExtra.org; }
-  function u() { return RW.novaExtraUtil; }
-  function G() { return RW.novaExtraGrade; }
-  function dia() { return RW.novaExtraDia; }
-  function porDia() { return RW.novaExtraPorDia; }
+  function msg() { return RW.mensagens.extrajornada.org; }
+  function u() { return RW.extrajornadaUtil; }
+  function G() { return RW.extrajornadaGrade; }
+  function dia() { return RW.extrajornadaDia; }
+  function porDia() { return RW.extrajornadaPorDia; }
   function q(sel) { return el.querySelector(sel); }
   /* o "conteudo" é o do shell, sempre o mesmo, e a página é nova a cada visita: quem diz se ela está na tela é o botão */
   function naPagina() { return !!el && !!q('#p3-sugerir'); }
 
   /* ---------- a escala do mês ---------- */
-  /* a escala do mês vem com o mês (nova_extra_mes, da conta guardada no banco); com mudança do painel do dia da Escala
+  /* a escala do mês vem com o mês (extrajornada_mes, da conta guardada no banco); com mudança do painel do dia da Escala
      esperando o Salvar, ela é lida com o rascunho (carregarEscala) */
   function escalaDoMes() {
     if (!d.escala || !RW.escalasDados || RW.escalasDados.corpoPrevia('ler_escala_mes', {})) return;
@@ -47,7 +47,7 @@
     escalaSeq++;
     escalaLendo = null;
   }
-  /* uma leitura por vez (o calendário mostra o círculo até ela chegar). Se falhar, a frase fica no lugar do calendário,
+  /* uma leitura por vez (o calendário mostra a forma até ela chegar). Se falhar, a frase fica no lugar do calendário,
      como na Escala, e a mensagem técnica no console; abrir o passo de novo tenta outra vez */
   function pararEsperaDaEscala() {
     if (esperaDaEscala) esperaDaEscala.parar();
@@ -63,10 +63,12 @@
       if (req !== escalaSeq) return;
       escalaLendo = null;
       escalaFalhou = comp;
-      console.error('[Nova extra] ler_escala_mes falhou' + (e && e.message ? ': ' + e.message : ''));
+      console.error('[Extrajornada] ler_escala_mes falhou' + (e && e.message ? ': ' + e.message : ''));
       if (naPagina()) redesenhar();
     }
-    RW.escalasDados.carregar(ids, comp, G().ultimoDia()).then(function (r) {
+    /* a forma da grade que apareceu fica o mínimo na tela (geral-etapas.js) */
+    var leitura = RW.escalasDados.carregar(ids, comp, G().ultimoDia()), esta = esperaDaEscala;
+    (esta ? esta.segurar(leitura) : leitura).then(function (r) {
       if (req !== escalaSeq) return;
       if (!r) { falhou(); return; }
       escalaLendo = null;
@@ -77,13 +79,13 @@
 
   /* ---------- sugestão, salvar e o resto ---------- */
   /* Preencher pela sugestão, só com tudo salvo: as extras que o administrador pôs ou mudou ficam; as que o sistema
-     salvou saem e o otimizador (nova-extra-otimizador.js, com o véu e o cálculo simples de reserva) refaz tudo com as
+     salvou saem e o otimizador (extrajornada-otimizador.js, com o véu e o cálculo simples de reserva) refaz tudo com as
      cotas que sobram. A extra refeita igual à salva não é mudança */
   function sugerir() {
-    if (G().alteracoes().length || RW.novaExtraOtimizador.calculando()) return;
+    if (G().alteracoes().length || RW.extrajornadaOtimizador.calculando()) return;
     var fixas = d.alocacoes.filter(function (a) { return a.origem !== 'sugestao'; });
     var botao = q('#p3-sugerir');
-    RW.novaExtraOtimizador.preencher(d.competencia, fixas, q('#p3-calculo'), function (r, usouReserva) {
+    RW.extrajornadaOtimizador.preencher(d.competencia, fixas, q('#p3-calculo'), function (r, usouReserva) {
       /* a pessoa saiu da página durante o cálculo: o resultado fica para trás */
       if (q('#p3-sugerir') !== botao) return;
       G().limpar();
@@ -120,7 +122,7 @@
   function salvar() {
     var btn = q('#p3-salvar');
     RW.iniciarCarregando(btn);
-    RW.rpc('nova_extra_distribuicao_salvar', {
+    RW.rpc('extrajornada_distribuicao_salvar', {
       p_competencia: d.competencia,
       p_mudancas: G().alteracoes().map(function (k) { return G().rascunho()[k]; }),
       p_motivo: q('#p3-motivo').value || null
@@ -130,7 +132,7 @@
       G().limpar(); sugeridas = []; postas = null; if (G().modo() === 'ajustes') G().usarEscala(null);   // o ajuste muda a escala: relida com o mês
       dia().reorganizar();
       q('#p3-motivo').value = '';
-      RW.novaExtraOrg.resumo(r);
+      RW.extrajornadaOrg.resumo(r);
       aoSalvar();
     }, function () { RW.pararCarregando(btn); RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao }); });
   }
@@ -152,8 +154,8 @@
     var frase = !passou && n ? G().fraseDasCotas() : '';
     texto.textContent = passou ? msg().passouRodape((passou.grad + ' ' + passou.nome).trim(), G().usadas(passou.cpf) - passou.concedidas)
       : n ? (ajuste ? msg().ajusteTexto(n) : msg().alteracoes(n)) + (frase ? ' ' + frase : '') : '';
-    texto.classList.toggle('escala-extra-rodape-erro', !!passou);
-    texto.classList.toggle('escala-extra-rodape-alerta', !!frase);
+    texto.classList.toggle('extrajornada-painel-rodape-erro', !!passou);
+    texto.classList.toggle('extrajornada-painel-rodape-alerta', !!frase);
     q('#p3-motivo-campo').classList.toggle('oculto', !ajuste);
     /* com o Salvar carregando (os textos dele saem e voltam com o pararCarregando), só o que está na tela */
     [['#p3-salvar-dist', ajuste], ['#p3-salvar-ajuste', !ajuste]].forEach(function (t) { var s = q(t[0]); if (s) s.classList.toggle('oculto', t[1]); });
@@ -188,7 +190,7 @@
       });
       resultado.querySelector('.nota-texto').textContent = (reserva ? msg().reservaUsada + ' ' : '') + msg().resultadoSugestao(postas, vermelho, amarelo);
     }
-    RW.novaExtraLista.desenhar(el);
+    RW.extrajornadaLista.desenhar(el);
     /* sem nenhum pelotão: o vazio no lugar do calendário */
     var nenhuma = !u().doCalendario(alocs).length;
     q('#p3-cal').classList.toggle('oculto', nenhuma);
@@ -201,10 +203,10 @@
         var no = RW.tpl('tpl-escala-estado');
         if (no) { no.textContent = msg().falhaEscala; alvo.appendChild(no); }
       } else if (!esperaDaEscala) {
-        /* passando de 0,3 s, a forma da grade, com os dias e os pelotões de verdade (escalas-esqueleto.js) */
+        /* passando de 0,5 s, a forma da grade, com os dias e os pelotões de verdade (escalas-esqueleto.js) */
         var unidades = u().doCalendario(alocs), mesDaGrade = new Date(+d.competencia.slice(0, 4), +d.competencia.slice(5, 7) - 1, 1);
         esperaDaEscala = RW.etapas.area(alvo, { forma: function (lugar) {
-          if (RW.novaExtra.modo() === 'agenda') RW.escalasEsqueleto.agenda(lugar, unidades, mesDaGrade);
+          if (RW.extrajornada.modo() === 'agenda') RW.escalasEsqueleto.agenda(lugar, unidades, mesDaGrade);
           else RW.escalasEsqueleto.calendario(lugar, unidades, mesDaGrade);
         } });
       }
@@ -214,7 +216,7 @@
     pararEsperaDaEscala();
     if (!soCabeca && !nenhuma) porDia().desenhar(q('#p3-cal'));
     dia().redesenhar();
-    RW.novaExtraFiltros.aplicar();
+    RW.extrajornadaFiltros.aplicar();
   }
 
   /* o rascunho mudou no calendário, na lista ou no painel do dia */
@@ -241,14 +243,14 @@
         RW.confirmar({ tipo: 'aviso', mensagem: msg().descartarRascunho, textoConfirmar: RW.mensagens.botoes.descartar,
           aoConfirmar: function () { G().limpar(); sugeridas = []; postas = null; dia().reorganizar(); redesenhar(); } });
       });
-      RW.novaExtraLista.ligar(el);
-      RW.novaExtraFiltros.ligar(el);
+      RW.extrajornadaLista.ligar(el);
+      RW.extrajornadaFiltros.ligar(el);
       /* com mudança não salva ou no meio do cálculo da sugestão, o navegador avisa ao fechar ou recarregar */
       if (RW.guardaSaida && !guardaLigada) {
         guardaLigada = true;
         RW.guardaSaida.registrar(function () {
           var botao = el && q('#p3-sugerir');
-          return !!botao && !!botao.dataset.ligado && (G().alteracoes().length > 0 || RW.novaExtraOtimizador.calculando());
+          return !!botao && !!botao.dataset.ligado && (G().alteracoes().length > 0 || RW.extrajornadaOtimizador.calculando());
         });
       }
     }
@@ -260,10 +262,10 @@
     /* veio do botão da nota ou da linha da Pendências: o militar, quando é um só, já em foco. Depois do clique em curso,
        porque o clique fora tira o foco */
     var pedido = RW.cotasAviso && modoNovo === 'ajustes' ? RW.cotasAviso.focoPedido(d.competencia) : null;
-    if (pedido) setTimeout(function () { RW.novaExtraLista.focar(pedido); }, 0);
+    if (pedido) setTimeout(function () { RW.extrajornadaLista.focar(pedido); }, 0);
   }
 
-  RW.novaExtraMontar = {
+  RW.extrajornadaMontar = {
     mostrar: mostrar,
     sujo: function () { return !!d && G().alteracoes().length > 0; },
     descartar: function () { G().limpar(); sugeridas = []; postas = null; },

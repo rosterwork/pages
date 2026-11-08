@@ -3,8 +3,11 @@
    Um único lugar para a URL/chave do Supabase, o token da sessão e
    a renovação automática. RosterWork.apiFetch(caminho, opcoes)
    injeta a chave e o token; se o token tiver vencido (401), renova
-   com o refresh_token e refaz a chamada uma vez — falhando a
-   renovação, encerra a sessão (RosterWork.expirarSessao). Também
+   com o refresh_token e refaz a chamada uma vez. Só encerra a sessão
+   (RosterWork.expirarSessao) quando o servidor recusa a chave (4xx,
+   fora o 429); sem internet, servidor fora ou excesso de pedidos, a
+   sessão fica, a chamada devolve a falha à tela e o vigia renova de
+   novo no minuto seguinte. Também
    concentra a renovação proativa (usada pelo vigia de sessão) e a
    saída (logout). Ver js/index-sessao-vigia.js. No modo treino, a
    chamada vai pelo RosterWork.treino.passar (geral-treino.js): só
@@ -119,10 +122,17 @@
 
   var renovacaoEmAndamento = null;   /* deduplica renovações simultâneas */
 
+  /* a falha da renovação diz se o servidor recusou a chave (recusada: a sessão acabou) ou se foi passageira */
+  function falhaDeRenovacao(recusada) {
+    var erro = new Error(recusada ? 'a chave de renovação foi recusada' : 'falha passageira ao renovar a sessão');
+    erro.recusada = recusada;
+    return erro;
+  }
+
   function renovarSessao() {
     if (renovacaoEmAndamento) return renovacaoEmAndamento;
     var sessao = obterSessao();
-    if (!sessao || !sessao.refresh_token) return Promise.reject(new Error('sem refresh_token'));
+    if (!sessao || !sessao.refresh_token) return Promise.reject(falhaDeRenovacao(true));
 
     /* Manter-me conectado: renova pela chave mais nova do aparelho, que outra aba pode já ter trocado */
     var lembrado = window.RosterWork.conectado ? window.RosterWork.conectado.daSessao(sessao.access_token) : null;
@@ -133,10 +143,12 @@
       headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({ refresh_token: chave })
     }).then(function (resp) {
-      if (!resp.ok) throw new Error('falha ao renovar a sessão');
+      /* a régua da entrada pelo login lembrado (geral-entrada.js): 4xx, fora o 429, é a chave recusada;
+         5xx e 429 são passageiros, como a falta de resposta (o fetch rejeita) */
+      if (!resp.ok) throw falhaDeRenovacao(resp.status >= 400 && resp.status < 500 && resp.status !== 429);
       return resp.json();
     }).then(function (dados) {
-      if (!dados || !dados.access_token) throw new Error('renovação sem token');
+      if (!dados || !dados.access_token) throw falhaDeRenovacao(false);
       salvarSessao(dados.access_token, dados.refresh_token);
       return dados.access_token;
     });
@@ -177,12 +189,14 @@
       if (resp.status === 404 && caminho.indexOf('/rest/v1/rpc/') === 0 && window.RosterWork.manutencao) {
         window.RosterWork.manutencao.funcaoMudou();
       }
-      /* token vencido: renova com o refresh_token e refaz a chamada uma vez */
+      /* token vencido: renova com o refresh_token e refaz a chamada uma vez. Só a chave recusada encerra a
+         sessão; na falha passageira a sessão fica e a tela recebe o 401 original (o vigia renova de novo).
+         A queda na repetição da chamada sobe como falha de rede comum, sem encerrar nada */
       if (resp.status === 401 && token) {
         return renovarSessao().then(function (novoToken) {
           return requisitar(caminho, novoToken, opcoes);
-        }).catch(function () {
-          expirarSessao();
+        }, function (erro) {
+          if (erro && erro.recusada) expirarSessao();
           return resp;   /* devolve o 401 original para o chamador tratar */
         });
       }
@@ -191,9 +205,11 @@
   }
 
   /* troca a senha do usuário logado. Exige a senha ATUAL (confirma com um login),
-     troca via PUT /auth/v1/user e renova a sessão com a senha nova (a troca pode
-     invalidar a sessão antiga). Resolve num marcador:
-     { ok: true } | { erro: 'atual' } (senha atual errada) | { erro: 'limite' } (excesso de entradas
+     troca via PUT /auth/v1/user, renova a sessão com a senha nova (a troca pode
+     invalidar a sessão antiga) e encerra as outras sessões da conta (logout?scope=others):
+     a conta sai dos outros aparelhos e este continua. Resolve num marcador:
+     { ok: true, outrosSairam } (outrosSairam: o servidor confirmou a saída dos outros
+     aparelhos) | { erro: 'atual' } (senha atual errada) | { erro: 'limite' } (excesso de entradas
      do mesmo endereço de internet) | { erro: 'servidor' } | { erro: 'conexao' } | { erro: 'treino' }
      (no modo treino, a senha não muda: o aviso diz) */
   function trocarSenha(email, atual, nova) {
@@ -215,8 +231,16 @@
             method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: email, password: nova })
           }).then(function (r2) { return r2.ok ? r2.json() : null; })
-            .then(function (t2) { if (t2 && t2.access_token) salvarSessao(t2.access_token, t2.refresh_token); return { ok: true }; })
-            .catch(function () { return { ok: true }; });   // a senha JÁ mudou; renovar a sessão é best-effort (a sessão renova depois), não é falha
+            .then(function (t2) {
+              if (!(t2 && t2.access_token)) return { ok: true, outrosSairam: false };
+              salvarSessao(t2.access_token, t2.refresh_token);
+              /* com a sessão nova guardada, as outras saem: os outros aparelhos e a sessão aberta pela conferência da senha atual */
+              return fetch(SUPABASE_URL + '/auth/v1/logout?scope=others', {
+                method: 'POST',
+                headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + t2.access_token }
+              }).then(function (s) { return { ok: true, outrosSairam: s.ok }; }, function () { return { ok: true, outrosSairam: false }; });
+            })
+            .catch(function () { return { ok: true, outrosSairam: false }; });   // a senha JÁ mudou; renovar a sessão é best-effort (a sessão renova depois), não é falha
         });
       });
     }).catch(function () { return { erro: 'conexao' }; });

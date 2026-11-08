@@ -89,10 +89,10 @@
   min-height: 0;
 }
 
-/* o cartão da abertura do sistema só aparece se ela passar de 1 s */
+/* o cartão da abertura do sistema só aparece se ela passar de 1,5 s (o mesmo tempo do cartão das etapas) */
 .casca-cartao {
   visibility: hidden;
-  animation: casca-cartao-aparece 0s linear 1s forwards;
+  animation: casca-cartao-aparece 0s linear 1.5s forwards;
 }
 
 @keyframes casca-cartao-aparece {

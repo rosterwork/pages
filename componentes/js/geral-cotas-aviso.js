@@ -13,7 +13,7 @@
        fazer
    A nota só avisa, sem levar a nenhuma tela: o administrador tem mais
    de um caminho para resolver. Ela mostra o que está salvo: o que o
-   rascunho vai mudar quem diz é o rodapé (nova-extra-grade.js,
+   rascunho vai mudar quem diz é o rodapé (extrajornada-grade.js,
    fraseDasCotas). No modo treino a nota não aparece. A linha da
    Pendências abre os Ajustes do mês, com o militar em foco quando é um
    só.
@@ -49,7 +49,7 @@
     var lista = g.militares || [], primeiro = lista[0] || {}, opcoes = atual.opcoes || {};
     var nome = ((primeiro.grad || '') + ' ' + (primeiro.nome || '')).trim();
     var texto = lista.length > 1 ? M().varios(nome, lista.length - 1) : M().umMilitar(nome, primeiro.colocadas, primeiro.recebidas);
-    nota.querySelector('.nota-titulo').textContent = M().titulo(Number(g.contagem) || 0, RW.novaExtraGrade.nomeDoMes(g.competencia));
+    nota.querySelector('.nota-titulo').textContent = M().titulo(Number(g.contagem) || 0, RW.extrajornadaGrade.nomeDoMes(g.competencia));
     nota.querySelector('.cotas-aviso-texto').textContent = opcoes.comoFazer ? texto + ' ' + M().comoFazer : texto;
     if (!opcoes.acoes) return nota;
     var fechar = nota.querySelector('.cotas-aviso-fechar');
@@ -96,7 +96,7 @@
   function irDistribuir(g) {
     var lista = g.militares || [];
     pedido = { competencia: g.competencia, cpf: lista.length === 1 ? lista[0].cpf : null };
-    if (RW.irParaPagina) RW.irParaPagina('nova-extra', 'organizar', g.competencia);
+    if (RW.irParaPagina) RW.irParaPagina('extrajornada', 'organizar', g.competencia);
   }
 
   /* chegou aos Ajustes: o militar para pôr em foco, se o pedido é deste mês (vale uma vez) */

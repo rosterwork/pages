@@ -4,11 +4,11 @@
    números do mês), a lista que rola e os blocos: o cinza é a
    unidade, o bloquinho branco são as linhas dela, em colunas fixas
    que casam entre os blocos. Padrão de blocos, sem traços.
-   Montagem: js/nova-extra-cotas.js
+   Montagem: js/extrajornada-cotas.js
    ============================================================ */
 
 /* a área das Cotas: a faixa em cima, a lista rolando e o rodapé embaixo */
-.extra-vol {
+.extrajornada-voluntarios {
   display: flex;
   flex-direction: column;
   flex: 1 1 0;
@@ -17,42 +17,42 @@
 }
 
 /* faixa de cima: total recebido, forma de repartir e os números do mês */
-.extra-vol-banda {
+.extrajornada-voluntarios-banda {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 24px;
   padding: 12px 16px;
 }
-.extra-vol-banda-item {
+.extrajornada-voluntarios-banda-item {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: var(--fonte-padrao);
   color: var(--texto);
 }
-.extra-vol-total {
+.extrajornada-voluntarios-total {
   width: 64px;
   text-align: center;
 }
-.extra-vol-numero {
+.extrajornada-voluntarios-numero {
   display: flex;
   flex-direction: column;
   gap: 2px;
   font-size: 11px;
   color: var(--texto-suave);
 }
-.extra-vol-numero-valor {
+.extrajornada-voluntarios-numero-valor {
   font-size: 16px;
   font-weight: 700;
   color: var(--texto-forte);
 }
-.extra-vol-numero-valor--erro {
+.extrajornada-voluntarios-numero-valor--erro {
   color: var(--erro);
 }
 
 /* a lista rola; os blocos ficam no branco da página */
-.extra-vol-rolagem {
+.extrajornada-voluntarios-rolagem {
   flex: 1 1 0;
   min-height: 0;
   overflow-y: auto;
@@ -60,7 +60,7 @@
 }
 
 /* uma linha (cabeçalho e militares): colunas fixas que casam entre os blocos */
-.extra-vol-linha {
+.extrajornada-voluntarios-linha {
   display: grid;
   grid-template-columns: 56px minmax(240px, 2fr) 72px 112px 96px 112px minmax(96px, 1fr);
   align-items: center;
@@ -72,7 +72,7 @@
 }
 
 /* cabeçalho das colunas: no branco, sem linha, preso no topo ao rolar; o recuo casa com as linhas dos blocos */
-.extra-vol-cab {
+.extrajornada-voluntarios-cab {
   position: sticky;
   top: 0;
   z-index: 1;   /* empilhamento interno do sticky (Guia visual › Camadas, movimento e foco; faixa 1-9) */
@@ -87,13 +87,13 @@
 }
 
 /* bloco cinza = a unidade; bloquinho branco = as linhas dela */
-.extra-vol-bloco {
+.extrajornada-voluntarios-bloco {
   margin-bottom: 8px;
   padding: 4px;
   border-radius: var(--raio-medio);
   background-color: var(--fundo-pagina);
 }
-.extra-vol-bloco-titulo {
+.extrajornada-voluntarios-bloco-titulo {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -103,75 +103,75 @@
   font-weight: 700;
   color: var(--texto-forte);
 }
-.extra-vol-bloco-detalhe {
+.extrajornada-voluntarios-bloco-detalhe {
   font-weight: 400;
   color: var(--texto-suave);
 }
-.extra-vol-bloco-cotas {
+.extrajornada-voluntarios-bloco-cotas {
   display: flex;
   align-items: center;
   gap: 8px;
   font-weight: 400;
   color: var(--texto);
 }
-.extra-vol-bloco-total {
+.extrajornada-voluntarios-bloco-total {
   width: 56px;
   text-align: center;
 }
-.extra-vol-bloquinho {
+.extrajornada-voluntarios-bloquinho {
   padding: 4px 0;
   border-radius: var(--raio-pequeno);
   background-color: var(--fundo-superficie);
   box-shadow: var(--sombra-bloco);
 }
-.extra-vol-militar {
+.extrajornada-voluntarios-militar {
   display: flex;
   align-items: center;
   gap: 4px;
   min-width: 0;
 }
-.extra-vol-grad {
+.extrajornada-voluntarios-grad {
   font-size: 12px;
   color: var(--texto-suave);
 }
-.extra-vol-nome {
+.extrajornada-voluntarios-nome {
   font-weight: 600;
   color: var(--texto-forte);
 }
-.extra-vol-militar .selo {
+.extrajornada-voluntarios-militar .selo {
   margin-left: 4px;
 }
-.extra-vol-conc {
+.extrajornada-voluntarios-conc {
   width: 72px;
 }
 
 @media (max-width: 767px) {
 
   /* ---------- as Cotas ---------- */
-  html[data-celular] .extra-vol {
+  html[data-celular] .extrajornada-voluntarios {
     overflow-y: auto;
   }
-  html[data-celular] .extra-vol-banda {
+  html[data-celular] .extrajornada-voluntarios-banda {
     gap: 12px 16px;
     padding: 12px var(--respiro-pagina);
   }
-  html[data-celular] .extra-vol-banda-item,
-  html[data-celular] .extra-vol-numero {
+  html[data-celular] .extrajornada-voluntarios-banda-item,
+  html[data-celular] .extrajornada-voluntarios-numero {
     white-space: nowrap;
   }
-  html[data-celular] .extra-vol-rolagem {
+  html[data-celular] .extrajornada-voluntarios-rolagem {
     flex: none;
     overflow-y: visible;
     padding: 0 var(--respiro-pagina) 16px;
   }
-  html[data-celular] .extra-vol-concedido {
+  html[data-celular] .extrajornada-voluntarios-concedido {
     display: inline-flex;
     align-items: center;
     gap: 4px;
   }
 
   /* o rodapé fica preso embaixo enquanto a aba rola */
-  html[data-celular] .extra-vol > .rodape {
+  html[data-celular] .extrajornada-voluntarios > .rodape {
     position: sticky;
     bottom: 0;
     z-index: 1;   /* empilhamento interno do sticky (Guia visual › Camadas, movimento e foco; faixa 1-9) */

@@ -2,11 +2,11 @@
    TREINO › EXTRAJORNADA — o mês de treino (RosterWork.treinoExtra)
    No treino da Extrajornada (o roteiro com data-cenario="extra-<etapa>",
    ligado pelo geral-treino-cenarios.js), a página mostra o mês de treino:
-   o banco o monta a cada chamada (nova_extra_treino, num ensaio que
+   o banco o monta a cada chamada (extrajornada_treino, num ensaio que
    desfaz tudo), com os números de novembro e quem está na companhia
    hoje, na etapa do roteiro (pedido, cotas, distribuicao, lancar ou
    lancado). A página abre nele, com as setas do mês paradas
-   (nova-extra.js pergunta mes()).
+   (extrajornada.js pergunta mes()).
    As leituras da Extrajornada (o mês, a Minha extra, a sugestão e, com
    o mês lançado, a escala dele) vão ao banco por aqui, juntas quando
    chegam no mesmo instante, e ficam guardadas até a próxima gravação.
@@ -23,9 +23,9 @@
   'use strict';
 
   var RW = window.RosterWork = window.RosterWork || {};
-  var LEITURAS = ['nova_extra_mes', 'nova_extra_minha', 'nova_extra_sugerir', 'ler_escala_mes'];
-  var GRAVACOES = ['nova_extra_pedidos_salvar', 'nova_extra_pedidos_fechar', 'nova_extra_cotas_salvar',
-    'nova_extra_distribuicao_salvar', 'nova_extra_lancar', 'nova_extra_reabrir', 'nova_extra_pedido_salvar'];
+  var LEITURAS = ['extrajornada_mes', 'extrajornada_minha', 'extrajornada_sugerir', 'ler_escala_mes'];
+  var GRAVACOES = ['extrajornada_pedidos_salvar', 'extrajornada_pedidos_fechar', 'extrajornada_cotas_salvar',
+    'extrajornada_distribuicao_salvar', 'extrajornada_lancar', 'extrajornada_reabrir', 'extrajornada_pedido_salvar'];
   var JUNTAR = 30;   // ms esperando outras leituras, para irem numa chamada só
   var ESPERA_AVISO = 300;   // ms depois da resposta da gravação, para o aviso dela abrir
   var noAr = 0;      // as gravações no ar
@@ -42,7 +42,7 @@
     return nome + '|' + JSON.stringify(args);
   }
   function chamar(etapa, acoes, ler, extras) {
-    return RW.apiFetch('/rest/v1/rpc/nova_extra_treino', { metodo: 'POST',
+    return RW.apiFetch('/rest/v1/rpc/extrajornada_treino', { metodo: 'POST',
       corpo: { p_etapa: etapa, p_acoes: acoes, p_ler: ler, p_extras: extras || null } })
       .then(function (r) { return r.ok ? r.json() : null; }, function () { return null; });
   }
@@ -60,7 +60,7 @@
     });
   }
 
-  function lancado() { return est.etapa === 'lancado' || est.acoes.some(function (a) { return a.rpc === 'nova_extra_lancar'; }); }
+  function lancado() { return est.etapa === 'lancado' || est.acoes.some(function (a) { return a.rpc === 'extrajornada_lancar'; }); }
 
   /* a chamada é do mês de treino? As gravações e as leituras da Extrajornada; a escala, só com o mês lançado (antes
      disso, a escala do mês de treino é a de verdade) e no período dele */
@@ -109,7 +109,7 @@
      seguida; deu certo, entra na lista do treino e as leituras guardadas valem de novo só a partir dela */
   function gravar(nome, corpo) {
     var meu = est, acao = { rpc: nome, args: corpo || {} };
-    var depois = nome === 'nova_extra_pedido_salvar' ? [{ rpc: 'nova_extra_minha', args: { p_cpf: null } }] : [{ rpc: 'nova_extra_mes', args: {} }];
+    var depois = nome === 'extrajornada_pedido_salvar' ? [{ rpc: 'extrajornada_minha', args: {} }] : [{ rpc: 'extrajornada_mes', args: {} }];
     noAr++;
     /* um instante a mais depois da resposta: o aviso dela abre antes de o passo a passo seguir */
     function pousou() { setTimeout(function () { noAr--; }, ESPERA_AVISO); }

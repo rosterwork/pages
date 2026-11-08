@@ -49,7 +49,8 @@
     el.carregando.classList.remove('oculto');
     el.conteudo.classList.add('oculto');
     el.rodape.classList.add('oculto');
-    return RW.rpc('expediente_horario', {}).then(function (r) {
+    /* a forma entra na hora e fica o mínimo na tela (geral-etapas.js) */
+    return RW.etapas.segurarDesde(performance.now(), RW.rpc('expediente_horario', {})).then(function (r) {
       if (meu !== pedido || !montada()) return;
       el.carregando.classList.add('oculto');
       if (!r || !r.ok) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }

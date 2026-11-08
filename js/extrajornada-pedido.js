@@ -1,14 +1,14 @@
 /* ============================================================
-   NOVA EXTRA — o painel do pedido
+   EXTRAJORNADA — o painel do pedido
    Sim ou Não; de 1 a 10 cotas (com 4, a pergunta: 24 horas seguidas ou pode dividir); os dias pelo
    "pincel" Quero / Não quero (toque de novo desmarca); os dias de folga
    e de afastamento travados com o motivo; os de serviço e troca
    marcáveis, com o motivo só para ler; para o administrativo, o horário
    em que a extra pode começar em cada dia (o expediente da unidade
-   dele) e as folgas do expediente. Enviar = nova_extra_pedido_salvar
+   dele) e as folgas do expediente. Enviar = extrajornada_pedido_salvar
    (o banco confere tudo de novo). Fora do prazo, só leitura.
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
-   RosterWork.novaExtraPedido.
+   RosterWork.extrajornadaPedido.
    ============================================================ */
 (function () {
   'use strict';
@@ -19,7 +19,7 @@
   var ed = null;        // o pedido aberto: { v, inicial, r, ... }
   var guardaLigada = false;
 
-  function msg() { return RW.mensagens.novaExtra; }
+  function msg() { return RW.mensagens.extrajornada; }
   function dados(v) { return JSON.stringify({ vol: v.vol, cotas: v.cotas, so24: v.cotas === 4 && v.so24, dias: v.dias }); }
   function sujo() { return !!(ed && !ed.leitura && dados(ed.v) !== ed.inicial); }
   function contar(tipo) { return Object.keys(ed.v.dias).filter(function (k) { return ed.v.dias[k] === tipo; }).length; }
@@ -42,32 +42,32 @@
     Array.prototype.forEach.call(f.querySelectorAll('[data-so-voluntario]'), function (s) {
       s.classList.toggle('oculto', ed.semDia ? s.getAttribute('data-sem-dia') !== 'mostra' : v.vol !== true);
     });
-    Array.prototype.forEach.call(f.querySelectorAll('.nova-extra-cota'), function (b) {
+    Array.prototype.forEach.call(f.querySelectorAll('.extrajornada-cota'), function (b) {
       var n = +b.textContent;
-      b.classList.toggle('nova-extra-cota--on', n === v.cotas);
+      b.classList.toggle('extrajornada-cota--on', n === v.cotas);
       b.disabled = ed.leitura;
     });
-    f.querySelector('#nova-extra-como-24h').classList.toggle('oculto', v.cotas !== 4);
+    f.querySelector('#extrajornada-como-24h').classList.toggle('oculto', v.cotas !== 4);
     f.querySelector('[data-como="seguidas"]').checked = v.so24;
     f.querySelector('[data-como="dividir"]').checked = !v.so24;
     Array.prototype.forEach.call(f.querySelectorAll('[data-pincel]'), function (b) {
-      b.classList.toggle('nova-extra-pincel-op--on', b.getAttribute('data-pincel') === v.pincel);
+      b.classList.toggle('extrajornada-pincel-op--on', b.getAttribute('data-pincel') === v.pincel);
     });
     Array.prototype.forEach.call(f.querySelectorAll('[data-ver]'), function (b) { b.classList.toggle('aba--ativa', b.getAttribute('data-ver') === ed.ver); });
     Array.prototype.forEach.call(f.querySelectorAll('[data-onde]'), function (b) { b.classList.toggle('aba--ativa', b.getAttribute('data-onde') === ed.onde); });
-    f.querySelector('#nova-extra-onde-linha').classList.toggle('oculto', ed.ver === 'meus');
-    Array.prototype.forEach.call(f.querySelectorAll('.nova-extra-dia[data-dia]'), function (b) {
-      var dia = b.getAttribute('data-dia'), t = v.dias[dia], txt = b.querySelector('.nova-extra-dia-texto'), n;
-      b.classList.toggle('nova-extra-dia--quer', t === 'quer');
-      b.classList.toggle('nova-extra-dia--nao', t === 'nao_posso');
-      txt.classList.toggle('nova-extra-dia-texto--falta', ed.ver === 'falta');
+    f.querySelector('#extrajornada-onde-linha').classList.toggle('oculto', ed.ver === 'meus');
+    Array.prototype.forEach.call(f.querySelectorAll('.extrajornada-dia[data-dia]'), function (b) {
+      var dia = b.getAttribute('data-dia'), t = v.dias[dia], txt = b.querySelector('.extrajornada-dia-texto'), n;
+      b.classList.toggle('extrajornada-dia--quer', t === 'quer');
+      b.classList.toggle('extrajornada-dia--nao', t === 'nao_posso');
+      txt.classList.toggle('extrajornada-dia-texto--falta', ed.ver === 'falta');
       if (ed.ver === 'falta') { n = contagem(ed.r.falta, dia); txt.textContent = n ? msg().falta(n) : ''; }
       else if (ed.ver === 'procura') txt.textContent = msg().querem(contagem(ed.r.procura, dia));
       else if (t) txt.textContent = t === 'quer' ? msg().quero : msg().naoQuero;
       else txt.textContent = b.getAttribute('data-texto') || '';
     });
-    f.querySelector('#nova-extra-conta-quer').textContent = msg().contaQuer(contar('quer'));
-    f.querySelector('#nova-extra-conta-nao').textContent = msg().contaNao(contar('nao_posso'));
+    f.querySelector('#extrajornada-conta-quer').textContent = msg().contaQuer(contar('quer'));
+    f.querySelector('#extrajornada-conta-nao').textContent = msg().contaNao(contar('nao_posso'));
     /* o rodapé aparece só com alteração (sem nada a mudar, o prazo fechado e o mês sem dia livre, ele nunca aparece) */
     if (ed.btn) {
       ed.btn.disabled = !valido();
@@ -90,7 +90,7 @@
     return '';
   }
 
-  function abrir(r, comp, cpf, aoSalvar) {
+  function abrir(r, comp, aoSalvar) {
     var ped = r.pedido;
     /* a pergunta das 4 cotas abre com as 24 horas seguidas marcadas; o pedido já enviado com 4 mostra o que ele escolheu */
     var v = { vol: ped ? ped.voluntario : null, cotas: ped ? ped.cotas : 0, so24: ped && ped.cotas === 4 ? ped.so_24h : true, dias: {}, pincel: 'quer' };
@@ -103,26 +103,26 @@
     ed ={ v: v, inicial: dados(v), r: r, leitura: r.prazo.estado !== 'aberto', semDia: !!r.sem_dia_livre, btn: null };
     RW.painel.abrir({
       titulo: msg().tituloPainel(mes),
-      subtitulo: r.em_nome ? r.militar.grad + ' ' + r.militar.nome : msg().prazoPainel(r.prazo.fecha.slice(8, 10) + '/' + r.prazo.fecha.slice(5, 7)),
+      subtitulo: msg().prazoPainel(r.prazo.fecha.slice(8, 10) + '/' + r.prazo.fecha.slice(5, 7)),
       aoFechar: function () { ed = null; },
       aoTentarFechar: function () { if (!sujo()) return false; tentarFechar(); return true; }
     });
     if (!guardaLigada && RW.guardaSaida) { RW.guardaSaida.registrar(sujo); guardaLigada = true; }
 
-    var f = RW.tpl('tpl-nova-extra-pedido');
+    var f = RW.tpl('tpl-extrajornada-pedido');
     ed.f = f;
-    f.querySelector('#nova-extra-q-vol').textContent = msg().perguntaVol(mes);
+    f.querySelector('#extrajornada-q-vol').textContent = msg().perguntaVol(mes);
     Array.prototype.forEach.call(f.querySelectorAll('[data-vol]'), function (b) {
       b.disabled = ed.leitura || ed.semDia;
       b.addEventListener('click', function () { v.vol = b.getAttribute('data-vol') === 'sim'; atualizar(); });
     });
-    var semDia = f.querySelector('#nova-extra-sem-dia');
-    semDia.textContent = ed.semDia ? msg().semDiaLivre(mes, r.em_nome ? r.militar.grad + ' ' + r.militar.nome : null) : '';
+    var semDia = f.querySelector('#extrajornada-sem-dia');
+    semDia.textContent = ed.semDia ? msg().semDiaLivre(mes) : '';
     semDia.classList.toggle('oculto', !ed.semDia);
     if (ed.semDia) Array.prototype.forEach.call(f.querySelectorAll('[data-sem-dia="some"]'), function (e) { e.classList.add('oculto'); });
-    var cotas = f.querySelector('#nova-extra-cotas');
+    var cotas = f.querySelector('#extrajornada-cotas');
     for (var n = 1; n <= 10; n++) {
-      var c = RW.tpl('tpl-nova-extra-cota');
+      var c = RW.tpl('tpl-extrajornada-cota');
       c.textContent = n;
       c.addEventListener('click', function (ev) { v.cotas = +ev.currentTarget.textContent; atualizar(); });
       cotas.appendChild(c);
@@ -139,9 +139,9 @@
     /* Ver (Meus dias · Falta gente · Quantos querem) e Onde (Todos e as unidades; abre na do militar) */
     ed.ver = 'meus';
     ed.onde = (r.unidades || []).some(function (u) { return u.id === r.militar.unidade_id; }) ? String(r.militar.unidade_id) : 'todos';
-    var onde = f.querySelector('#nova-extra-onde');
+    var onde = f.querySelector('#extrajornada-onde');
     (r.unidades || []).forEach(function (u) {
-      var o = RW.tpl('tpl-nova-extra-onde');
+      var o = RW.tpl('tpl-extrajornada-onde');
       o.textContent = u.nome;
       o.setAttribute('data-onde', String(u.id));
       onde.appendChild(o);
@@ -154,37 +154,37 @@
     });
 
     var adm = r.militar.setor === 'Administrativo' && r.expediente;
-    f.querySelector('#nova-extra-nota-adm').classList.toggle('oculto', !adm || ed.semDia);
-    var cal = f.querySelector('#nova-extra-cal');
+    f.querySelector('#extrajornada-nota-adm').classList.toggle('oculto', !adm || ed.semDia);
+    var cal = f.querySelector('#extrajornada-cal');
     var dia1 = new Date(comp.getFullYear(), comp.getMonth(), 1);
     var ultimo = new Date(comp.getFullYear(), comp.getMonth() + 1, 0).getDate();
-    for (var i = 0; i < dia1.getDay(); i++) cal.appendChild(RW.tpl('tpl-nova-extra-dia-vazio'));
+    for (var i = 0; i < dia1.getDay(); i++) cal.appendChild(RW.tpl('tpl-extrajornada-dia-vazio'));
     for (var d = 1; d <= ultimo; d++) {
       var k = r.competencia.slice(0, 8) + String(d).padStart(2, '0');
-      var b = RW.tpl('tpl-nova-extra-dia');
+      var b = RW.tpl('tpl-extrajornada-dia');
       b.setAttribute('data-dia', k);
-      b.querySelector('.nova-extra-dia-num').textContent = d;
+      b.querySelector('.extrajornada-dia-num').textContent = d;
       var oc = r.bloqueados[k];
       if (oc) {
         b.disabled = true;
-        b.classList.add('nova-extra-dia--ocupado');
+        b.classList.add('extrajornada-dia--ocupado');
         b.removeAttribute('data-dia');
-        b.querySelector('.nova-extra-dia-texto').textContent = msg().motivos[oc] || '';
+        b.querySelector('.extrajornada-dia-texto').textContent = msg().motivos[oc] || '';
       } else {
         /* dia de serviço ou troca: pode marcar, e o motivo fica à vista só para ler, mesmo com o dia marcado */
         var servico = (r.servico || {})[k];
         if (servico) {
-          var leitura = b.querySelector('.nova-extra-dia-servico');
+          var leitura = b.querySelector('.extrajornada-dia-servico');
           leitura.textContent = msg().motivos[servico] || '';
           leitura.classList.remove('oculto');
-          b.classList.add('nova-extra-dia--servico');
+          b.classList.add('extrajornada-dia--servico');
         }
         var e = adm ? r.expediente[k] : null;
         if (e && !e.livres.length) {
           b.disabled = true;
-          b.classList.add('nova-extra-dia--ocupado');
+          b.classList.add('extrajornada-dia--ocupado');
           b.removeAttribute('data-dia');
-          b.querySelector('.nova-extra-dia-texto').textContent = msg().expediente;
+          b.querySelector('.extrajornada-dia-texto').textContent = msg().expediente;
         } else {
           b.setAttribute('data-texto', textoAdm(e));
           b.disabled = ed.leitura;
@@ -197,18 +197,18 @@
       }
       cal.appendChild(b);
     }
-    var ajudaDias = f.querySelector('#nova-extra-ajuda-dias');
+    var ajudaDias = f.querySelector('#extrajornada-ajuda-dias');
     ajudaDias.textContent = msg().ajudaDias(r.min_datas);
     ajudaDias.classList.toggle('oculto', !r.min_datas);
-    f.querySelector('#nova-extra-ajuda-servico').classList.toggle('oculto', !Object.keys(r.servico || {}).length);
-    f.querySelector('#nova-extra-termo').textContent = ped && ped.termo ? msg().termoRecebido(ped.termo_em) : msg().termoPendente;
+    f.querySelector('#extrajornada-ajuda-servico').classList.toggle('oculto', !Object.keys(r.servico || {}).length);
+    f.querySelector('#extrajornada-termo').textContent = ped && ped.termo ? msg().termoRecebido(ped.termo_em) : msg().termoPendente;
     RW.painel.corpo().appendChild(f);
 
     var rodape = RW.painel.rodape();
-    rodape.appendChild(document.getElementById('tpl-nova-extra-acoes').content.cloneNode(true));
-    rodape.querySelector('#nova-extra-cancelar').addEventListener('click', tentarFechar);
-    ed.btn = rodape.querySelector('#nova-extra-enviar');
-    ed.btn.addEventListener('click', function () { enviar(comp, cpf, aoSalvar); });
+    rodape.appendChild(document.getElementById('tpl-extrajornada-acoes').content.cloneNode(true));
+    rodape.querySelector('#extrajornada-cancelar').addEventListener('click', tentarFechar);
+    ed.btn = rodape.querySelector('#extrajornada-enviar');
+    ed.btn.addEventListener('click', function () { enviar(comp, aoSalvar); });
     atualizar();
   }
 
@@ -223,19 +223,18 @@
     });
   }
 
-  function enviar(comp, cpf, aoSalvar) {
+  function enviar(comp, aoSalvar) {
     var v = ed.v, btn = ed.btn;
     RW.iniciarCarregando(btn);
-    RW.rpc('nova_extra_pedido_salvar', {
+    RW.rpc('extrajornada_pedido_salvar', {
       p_competencia: ed.r.competencia, p_voluntario: v.vol, p_cotas: v.vol ? v.cotas : 0, p_so_24h: !!(v.vol && v.cotas === 4 && v.so24),
-      p_datas: v.vol ? Object.keys(v.dias).sort().map(function (k) { return { data: k, tipo: v.dias[k] }; }) : [],
-      p_cpf: cpf
+      p_datas: v.vol ? Object.keys(v.dias).sort().map(function (k) { return { data: k, tipo: v.dias[k] }; }) : []
     }).then(function (r) {
       RW.pararCarregando(btn);
       if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
       ed = null;
       RW.painel.fechar();
-      if (RW.novaExtraOrg) RW.novaExtraOrg.resumo(r);
+      if (RW.extrajornadaOrg) RW.extrajornadaOrg.resumo(r);
       aoSalvar();
     }, function (e) {
       RW.pararCarregando(btn);
@@ -243,5 +242,5 @@
     });
   }
 
-  RW.novaExtraPedido = { abrir: abrir };
+  RW.extrajornadaPedido = { abrir: abrir };
 })();

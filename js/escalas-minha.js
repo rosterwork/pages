@@ -139,7 +139,7 @@
     el.diaCorpo.textContent = '';
     el.diaCorpo.appendChild(RW.painel.criarCarregando());
     var args = { p_unidade_ids: [unidadeId], p_data: diaIso };
-    (previa('escala_dia_arvore', args) || RW.rpc('escala_dia_arvore', args)).then(function (linhas) {
+    RW.painel.segurar(previa('escala_dia_arvore', args) || RW.rpc('escala_dia_arvore', args)).then(function (linhas) {
       if (meu !== estado.pedidoDia || !el.diaCorpo.isConnected) return;
       var linha = (linhas || []).filter(function (x) { return String(x.unidade_id) === String(unidadeId); })[0];
       el.diaCorpo.textContent = '';
@@ -228,7 +228,8 @@
     var primeira = !corpo.querySelector('.escala-minha');
     if (primeira && !montarMoldura(corpo)) return Promise.resolve();
     var mes = new Date(ref.getFullYear(), ref.getMonth(), 1);
-    /* sem mês na tela (a 1ª leitura, mesmo pedida de novo): passando de 0,3 s, a forma dele e, de 1 s, as etapas */
+    /* sem mês na tela (a 1ª leitura, mesmo pedida de novo): passando de 0,5 s, a forma dele e, de 1,5 s, as etapas; o que
+       apareceu fica o mínimo na tela (geral-etapas.js) */
     var semMes = primeira || !!esperaDoMes;
     pararEspera();
     if (semMes) {
@@ -240,7 +241,8 @@
     /* a leitura antecipada pelo deslize é a do gravado: com mudança esperando o Salvar, a prévia */
     var comRascunho = !!(RW.escalasPainelSalvar && RW.escalasPainelSalvar.paraPrevia());
     var antecipada = !comRascunho && RW.deslizar && RW.deslizar.usarAntecipada(chaveMes(mes));
-    return (antecipada || buscarMes(mes)).then(function (r) {
+    var leitura = antecipada || buscarMes(mes), esta = esperaDoMes;
+    return (esta ? esta.segurar(leitura) : leitura).then(function (r) {
       if (!vigente() || !el.calendario.isConnected) return;
       pararEspera();
       if (!r || !r.dias) { mostrarEstado(el.calendario, 'tpl-escala-estado', RW.mensagens.escala.falhaCarregarMes); return; }

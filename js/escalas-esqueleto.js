@@ -1,12 +1,13 @@
 /* ============================================================
    ESCALAS — a forma da grade enquanto os dados chegam
-   Trocou de mês ou de visão: o que está na tela fica 0,3 s, sem
+   Trocou de mês ou de visão: o que está na tela fica 0,5 s, sem
    responder; depois, a forma da grade nova, com as datas e os
    pelotões de verdade e só as linhas que cabem na tela; passando de
-   1 s, o cartão das etapas (geral-etapas.js). Uma espera por vez.
-   Quem desenha a grade começa aqui e para ao receber os dados.
-   API: RosterWork.escalasEsqueleto.{ comecar, abrirMes, parar, agenda,
-   calendario, colunas, militares, nomeDoMes }
+   1,5 s, o cartão das etapas (geral-etapas.js). Uma espera por vez.
+   Quem desenha a grade começa aqui, segura a leitura (a forma que
+   apareceu fica o mínimo na tela) e para ao receber os dados.
+   API: RosterWork.escalasEsqueleto.{ comecar, abrirMes, segurar, parar,
+   agenda, calendario, colunas, militares, nomeDoMes }
    ============================================================ */
 (function () {
   'use strict';
@@ -23,16 +24,22 @@
 
   function nomeDoMes(data) { return MESES[data.getMonth()]; }
 
-  /* a espera de uma grade em corpo: opcoes = { forma(lugar), etapas, valores } */
+  /* a espera de uma grade em corpo: opcoes = { forma(lugar), etapas, valores }; devolve a espera, que segura a leitura */
   function comecar(corpo, opcoes) {
     parar();
     corpoEsperando = corpo;
     corpo.inert = true;
     espera = RW.etapas.area(corpo, opcoes);
+    return espera;
   }
 
   function abrirMes(corpo, dataRef, forma) {
-    comecar(corpo, { forma: forma, etapas: 'escalaAbrir', valores: { mes: nomeDoMes(dataRef) } });
+    return comecar(corpo, { forma: forma, etapas: 'escalaAbrir', valores: { mes: nomeDoMes(dataRef) } });
+  }
+
+  /* a leitura da grade, segura pela espera dela; sem espera (a grade de antes ficou na tela), nada a segurar */
+  function segurar(esperaDaGrade, leitura) {
+    return esperaDaGrade ? esperaDaGrade.segurar(leitura) : leitura;
   }
 
   function parar() {
@@ -185,7 +192,7 @@
   }
 
   RW.escalasEsqueleto = {
-    comecar: comecar, abrirMes: abrirMes, parar: parar, nomeDoMes: nomeDoMes,
+    comecar: comecar, abrirMes: abrirMes, segurar: segurar, parar: parar, nomeDoMes: nomeDoMes,
     agenda: agenda, calendario: calendario, colunas: colunas, militares: militares
   };
 })();

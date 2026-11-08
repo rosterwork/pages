@@ -7,41 +7,41 @@
    Padrão de blocos: caixas (.grupo-caixa) e frases, sem linhas.
    Vale na Distribuição, nos Ajustes e na aba Extrajornada do painel
    do dia da Escala.
-   Montagem: js/nova-extra-dia.js e js/nova-extra-dia-outros.js
+   Montagem: js/extrajornada-dia.js e js/extrajornada-dia-outros.js
    ============================================================ */
 
 
 /* ---------- cobertura do dia ---------- */
-.escala-extra-cobertura {
+.extrajornada-painel-cobertura {
   display: grid;
   grid-template-columns: 64px minmax(0, 1fr);
   align-items: center;
   gap: 2px 8px;
 }
-.escala-extra-horas {
+.extrajornada-painel-horas {
   display: flex;
   justify-content: space-between;
   font-size: 11px;
   color: var(--texto-fraco);
 }
-.escala-extra-cob-rotulo {
+.extrajornada-painel-cob-rotulo {
   font-size: 11px;
   font-weight: 600;
   color: var(--texto-suave);
 }
-.escala-extra-cob-barra {
+.extrajornada-painel-cob-barra {
   min-width: 0;
 }
-.escala-extra-cob-barra .escala-mes-grafico {
+.extrajornada-painel-cob-barra .escala-mes-grafico {
   padding: 2px 0 0;
 }
-.escala-extra-grupo-linhas {
+.extrajornada-painel-grupo-linhas {
   display: flex;
   flex-direction: column;
 }
 
 /* um militar: a preferência, o nome, as cotas e os horários */
-.escala-extra-militar {
+.extrajornada-painel-militar {
   display: grid;
   grid-template-columns: 8px minmax(0, 1fr) 72px 96px;
   align-items: center;
@@ -52,41 +52,41 @@
   font-size: var(--fonte-padrao);
   color: var(--texto);
 }
-.escala-extra-ponto {
+.extrajornada-painel-ponto {
   width: 8px;
   min-height: 8px;
   border-radius: 50%;
   background-color: var(--texto-debil);
 }
-.escala-extra-ponto--quer {
+.extrajornada-painel-ponto--quer {
   background-color: var(--sucesso);
 }
-.escala-extra-ponto--nao {
+.extrajornada-painel-ponto--nao {
   background-color: var(--erro);
 }
-.escala-extra-quem {
+.extrajornada-painel-quem {
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
-.escala-extra-quem-nome {
+.extrajornada-painel-quem-nome {
   display: flex;
   align-items: baseline;
   gap: 4px;
   min-width: 0;
 }
-.escala-extra-quem .escala-distribuicao-nome {
+.extrajornada-painel-quem .escala-distribuicao-nome {
   font-size: var(--fonte-padrao);
   font-weight: 600;
   color: var(--texto-forte);
 }
-.escala-extra-quem-unidade {
+.extrajornada-painel-quem-unidade {
   font-size: 11px;
   color: var(--texto-fraco);
 }
 
 /* as cotas abrem os outros dias do militar */
-.escala-extra-cotas {
+.extrajornada-painel-cotas {
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
@@ -100,37 +100,37 @@
   cursor: pointer;
   transition: background-color 0.15s ease;
 }
-.escala-extra-cotas:hover:not(:disabled) {
+.extrajornada-painel-cotas:hover:not(:disabled) {
   background-color: var(--fundo-medio);
 }
-.escala-extra-cotas:disabled {
+.extrajornada-painel-cotas:disabled {
   cursor: default;
 }
-.escala-extra-cotas--sem-dias .escala-extra-cotas-seta {
+.extrajornada-painel-cotas--sem-dias .extrajornada-painel-cotas-seta {
   visibility: hidden;
 }
-.escala-extra-cotas[aria-expanded="true"] .escala-extra-cotas-seta {
+.extrajornada-painel-cotas[aria-expanded="true"] .extrajornada-painel-cotas-seta {
   transform: rotate(180deg);
 }
-.escala-extra-cota {
+.extrajornada-painel-cota {
   font-size: 12px;
   color: var(--texto-suave);
   text-align: right;
   white-space: nowrap;
 }
-.escala-extra-cota--erro {
+.extrajornada-painel-cota--erro {
   font-weight: 600;
   color: var(--erro);
 }
 
 /* os 4 horários de 6 h: o círculo cheio é o horário marcado (cada um vale 1 cota) */
-.escala-extra-marcas {
+.extrajornada-painel-marcas {
   display: flex;
   justify-content: flex-end;
   align-items: center;
   gap: 4px;
 }
-.escala-extra-marca {
+.extrajornada-painel-marca {
   display: inline-block;
   flex-shrink: 0;
   width: 16px;
@@ -142,26 +142,26 @@
   cursor: pointer;
   transition: background-color 0.15s ease, border-color 0.15s ease;
 }
-.escala-extra-marca:hover {
+.extrajornada-painel-marca:hover {
   border-color: var(--foco);
 }
-.escala-extra-marca--on,
-.escala-extra-marca--on:hover {
+.extrajornada-painel-marca--on,
+.extrajornada-painel-marca--on:hover {
   border-color: var(--fundo-contraste);
   background-color: var(--fundo-contraste);
 }
-.escala-extra-marca:disabled {
+.extrajornada-painel-marca:disabled {
   cursor: default;
 }
-.escala-extra-marca:disabled:hover {
+.extrajornada-painel-marca:disabled:hover {
   border-color: var(--borda-forte);
 }
-.escala-extra-marca--on:disabled:hover {
+.extrajornada-painel-marca--on:disabled:hover {
   border-color: var(--fundo-contraste);
 }
 
 /* aberto embaixo do nome: o aviso de cota e os horários dos outros dias */
-.escala-extra-outros {
+.extrajornada-painel-outros {
   grid-column: 2 / -1;
   display: flex;
   flex-direction: column;
@@ -173,7 +173,7 @@
 }
 
 /* um outro dia do militar: o dia (e o aviso embaixo dele) e os 4 horários */
-.escala-extra-outro {
+.extrajornada-painel-outro {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -182,51 +182,51 @@
   font-size: 12px;
   color: var(--texto-suave);
 }
-.escala-extra-outro-texto {
+.extrajornada-painel-outro-texto {
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
-.escala-extra-outro-aviso {
+.extrajornada-painel-outro-aviso {
   font-size: 11px;
   color: var(--texto-fraco);
 }
-.escala-extra-outro-aviso--erro {
+.extrajornada-painel-outro-aviso--erro {
   color: var(--erro);
 }
-.escala-extra-outro-aviso--alerta {
+.extrajornada-painel-outro-aviso--alerta {
   color: var(--alerta);
 }
 /* o dia de mais de 7 dias atrás: as bolinhas em cinza, sem clique */
-.escala-extra-outro--antigo .nova-extra-marcas .escala-extra-marca::before,
-.escala-extra-outro--antigo .nova-extra-marcas .escala-extra-marca:disabled:hover::before {
+.extrajornada-painel-outro--antigo .extrajornada-marcas .extrajornada-painel-marca::before,
+.extrajornada-painel-outro--antigo .extrajornada-marcas .extrajornada-painel-marca:disabled:hover::before {
   border-color: var(--texto-debil);
 }
-.escala-extra-outro--antigo .nova-extra-marcas .escala-extra-marca--on::before,
-.escala-extra-outro--antigo .nova-extra-marcas .escala-extra-marca--on:disabled:hover::before {
+.extrajornada-painel-outro--antigo .extrajornada-marcas .extrajornada-painel-marca--on::before,
+.extrajornada-painel-outro--antigo .extrajornada-marcas .extrajornada-painel-marca--on:disabled:hover::before {
   border-color: var(--texto-debil);
   background-color: var(--texto-debil);
 }
 
 /* quem casa com a busca do painel */
-.escala-extra-militar.busca-achado {
+.extrajornada-painel-militar.busca-achado {
   background-color: var(--fundo-medio);
 }
 
 /* o rodapé com quem passou da cota: o motivo de o Salvar estar desligado */
-.rodape .escala-extra-rodape-erro {
+.rodape .extrajornada-painel-rodape-erro {
   font-weight: 600;
   color: var(--erro);
 }
 
 /* o rodapé com o que o rascunho faz com as cotas: "Ao salvar, ..." (avisa, o Salvar continua ligado) */
-.rodape .escala-extra-rodape-alerta {
+.rodape .extrajornada-painel-rodape-alerta {
   font-weight: 600;
   color: var(--alerta);
 }
 
 /* a aba Extrajornada do painel do dia, no mês ainda não lançado */
-.escala-extra-nao-lancada {
+.extrajornada-painel-nao-lancada {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -235,77 +235,77 @@
   text-align: center;
   color: var(--texto-fraco);
 }
-.escala-extra-nao-lancada-texto {
+.extrajornada-painel-nao-lancada-texto {
   margin: 0;
   font-size: 14px;
   font-weight: 600;
   color: var(--texto-forte);
 }
-.escala-extra-nao-lancada-ajuda {
+.extrajornada-painel-nao-lancada-ajuda {
   margin: 0;
   font-size: 12px;
   color: var(--texto-suave);
 }
 
 /* quem não pode no dia: o nome apagado e o motivo à direita */
-.escala-extra-militar--indisponivel {
+.extrajornada-painel-militar--indisponivel {
   grid-template-columns: 8px minmax(0, 1fr) auto;
 }
-.escala-extra-militar--indisponivel .escala-distribuicao-grad,
-.escala-extra-militar--indisponivel .escala-distribuicao-nome {
+.extrajornada-painel-militar--indisponivel .escala-distribuicao-grad,
+.extrajornada-painel-militar--indisponivel .escala-distribuicao-nome {
   color: var(--texto-debil);
 }
-.escala-extra-motivo-texto {
+.extrajornada-painel-motivo-texto {
   font-size: 12px;
   color: var(--texto-fraco);
   text-align: right;
   white-space: nowrap;
 }
 
-.nova-extra-motivo {
+.extrajornada-motivo {
   flex-direction: row;
   align-items: center;
   gap: 8px;
 }
 
-.nova-extra-motivo input { width: 260px; }
+.extrajornada-motivo input { width: 260px; }
 
 /* quem inseriu a extra (o ícone do sistema ou o do administrador): no calendário e na Agenda, ao lado das bolinhas; no
    Neste dia do painel do dia, antes do nome. A dica dele ("Inserido pelo...") sai para a esquerda, como a da vaga, e a
    do nome e do horário não aparece junto */
-.nova-extra-origem {
+.extrajornada-origem {
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
   color: var(--texto-fraco);
 }
 
-.nova-extra-origem[data-dica]::after {
+.extrajornada-origem[data-dica]::after {
   left: auto;
   right: 0;
   transform: none;
 }
 
-[data-dica]:has(.nova-extra-origem:hover)::after {
+[data-dica]:has(.extrajornada-origem:hover)::after {
   opacity: 0;
   visibility: hidden;
 }
 
-.escala-extra-quem-nome > .nova-extra-origem { align-self: center; }
+.extrajornada-painel-quem-nome > .extrajornada-origem { align-self: center; }
 
-/* as 4 bolinhas da Nova extra (lista e painel do dia): o desenho de 12px no meio de uma área de clique de
+/* as 4 bolinhas da Extrajornada (lista e painel do dia): o desenho de 12px no meio de uma área de clique de
    24px, o mínimo de alvo da norma de acessibilidade (WCAG 2.2, critério 2.5.8) */
-.nova-extra-marcas {
+.extrajornada-marcas {
   display: flex;
   flex-shrink: 0;
   align-items: center;
   gap: 0;
 }
 
-.nova-extra-marcas .escala-extra-marca,
-.nova-extra-marcas .escala-extra-marca:hover,
-.nova-extra-marcas .escala-extra-marca--on,
-.nova-extra-marcas .escala-extra-marca--on:hover {
+.extrajornada-marcas .extrajornada-painel-marca,
+.extrajornada-marcas .extrajornada-painel-marca:hover,
+.extrajornada-marcas .extrajornada-painel-marca--on,
+.extrajornada-marcas .extrajornada-painel-marca--on:hover {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -316,7 +316,7 @@
   background-color: transparent;
 }
 
-.nova-extra-marcas .escala-extra-marca::before {
+.extrajornada-marcas .extrajornada-painel-marca::before {
   content: '';
   width: 12px;
   min-height: 12px;
@@ -326,30 +326,30 @@
   transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
-.nova-extra-marcas .escala-extra-marca:hover::before { border-color: var(--foco); }
+.extrajornada-marcas .extrajornada-painel-marca:hover::before { border-color: var(--foco); }
 
-.nova-extra-marcas .escala-extra-marca--on::before,
-.nova-extra-marcas .escala-extra-marca--on:hover::before {
+.extrajornada-marcas .extrajornada-painel-marca--on::before,
+.extrajornada-marcas .extrajornada-painel-marca--on:hover::before {
   border-color: var(--fundo-contraste);
   background-color: var(--fundo-contraste);
 }
 
-.nova-extra-marcas .escala-extra-marca:disabled:hover::before { border-color: var(--borda-forte); }
-.nova-extra-marcas .escala-extra-marca--on:disabled:hover::before { border-color: var(--fundo-contraste); }
+.extrajornada-marcas .extrajornada-painel-marca:disabled:hover::before { border-color: var(--borda-forte); }
+.extrajornada-marcas .extrajornada-painel-marca--on:disabled:hover::before { border-color: var(--fundo-contraste); }
 
 /* os horários em cima das bolinhas de 24px */
-.nova-extra-horas {
+.extrajornada-horas {
   justify-content: flex-end;
   padding-right: 4px;
 }
 
-.nova-extra-horas span {
+.extrajornada-horas span {
   min-width: 24px;
   text-align: center;
 }
 
 /* painel do dia: o relatório do dia, uma linha por extra e pelo que ainda falta (como as observações da escala) */
-.nova-extra-rd-linha {
+.extrajornada-rd-linha {
   display: grid;
   grid-template-columns: 16px minmax(0, 1fr);
   align-items: start;
@@ -362,14 +362,14 @@
   color: var(--texto);
 }
 
-.nova-extra-rd-linha .icone { margin-top: 2px; }
-.nova-extra-rd-linha--ok .icone { color: var(--sucesso); }
-.nova-extra-rd-linha--adm .icone,
-.nova-extra-rd-linha--alerta .icone { color: var(--alerta); }
-.nova-extra-rd-linha--erro .icone { color: var(--erro); }
-.nova-extra-rd-texto b { font-weight: 600; color: var(--texto-forte); }
+.extrajornada-rd-linha .icone { margin-top: 2px; }
+.extrajornada-rd-linha--ok .icone { color: var(--sucesso); }
+.extrajornada-rd-linha--adm .icone,
+.extrajornada-rd-linha--alerta .icone { color: var(--alerta); }
+.extrajornada-rd-linha--erro .icone { color: var(--erro); }
+.extrajornada-rd-texto b { font-weight: 600; color: var(--texto-forte); }
 
-.nova-extra-rd-texto small {
+.extrajornada-rd-texto small {
   display: block;
   font-size: 11px;
   color: var(--texto-fraco);
@@ -378,7 +378,7 @@
 /* painel do dia: a divisão de um pelotão dentro do grupo, num bloquinho branco (padrão de blocos: a separação é o
    fundo e o espaço, sem traço); o título (o rótulo cinza com a seta, como o da árvore de unidades) abre e fecha a
    lista dele */
-.nova-extra-pel {
+.extrajornada-pel {
   display: flex;
   flex-direction: column;
   border-radius: var(--raio-pequeno);
@@ -386,9 +386,9 @@
   box-shadow: var(--sombra-bloco);
 }
 
-.nova-extra-pel + .nova-extra-pel { margin-top: 8px; }
+.extrajornada-pel + .extrajornada-pel { margin-top: 8px; }
 
-.nova-extra-pel-titulo {
+.extrajornada-pel-titulo {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -401,72 +401,72 @@
   cursor: pointer;
 }
 
-.nova-extra-pel-seta {
+.extrajornada-pel-seta {
   flex-shrink: 0;
   color: var(--texto-suave);
 }
 
-.nova-extra-pel-titulo[aria-expanded="false"] .nova-extra-pel-seta { transform: rotate(-90deg); }
+.extrajornada-pel-titulo[aria-expanded="false"] .extrajornada-pel-seta { transform: rotate(-90deg); }
 
 /* os horários no título, à direita, na mesma coluna das bolinhas das linhas (que já têm os 4px da borda); fechado o
    pelotão, somem */
-.nova-extra-pel-titulo .nova-extra-horas {
+.extrajornada-pel-titulo .extrajornada-horas {
   margin-left: auto;
   padding-right: 0;
 }
 
-.nova-extra-pel-titulo[aria-expanded="false"] .nova-extra-horas { display: none; }
+.extrajornada-pel-titulo[aria-expanded="false"] .extrajornada-horas { display: none; }
 
 /* os horários só no primeiro pelotão aberto do grupo (fechado o primeiro, vão para o próximo aberto) */
-.nova-extra-pel:has(> .nova-extra-pel-titulo[aria-expanded="true"]) ~ .nova-extra-pel .nova-extra-horas { display: none; }
-.nova-extra-pel-titulo[aria-expanded="false"] + .nova-extra-pel-linhas { display: none; }
+.extrajornada-pel:has(> .extrajornada-pel-titulo[aria-expanded="true"]) ~ .extrajornada-pel .extrajornada-horas { display: none; }
+.extrajornada-pel-titulo[aria-expanded="false"] + .extrajornada-pel-linhas { display: none; }
 
-.nova-extra-pel-linhas {
+.extrajornada-pel-linhas {
   display: flex;
   flex-direction: column;
 }
 
 /* painel do dia: a Cobertura do dia; fechada, só os gráficos; aberta, o relatório do dia embaixo deles */
-.nova-extra-cobertura-relatorio {
+.extrajornada-cobertura-relatorio {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.nova-extra-cobertura > .grupo-caixa-cabecalho[aria-expanded="false"] ~ .nova-extra-cobertura-relatorio { display: none; }
+.extrajornada-cobertura > .grupo-caixa-cabecalho[aria-expanded="false"] ~ .extrajornada-cobertura-relatorio { display: none; }
 
-.nova-extra-cobertura-vazio,
-.nova-extra-grupo-vazio {
+.extrajornada-cobertura-vazio,
+.extrajornada-grupo-vazio {
   font-size: 12px;
   color: var(--texto-fraco);
 }
 
 /* painel do dia: os selos embaixo do nome, o porquê da sugestão e a falta que sobra */
-.nova-extra-selos-linha {
+.extrajornada-selos-linha {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
   padding-top: 2px;
 }
 
-.nova-extra-selo-mini {
+.extrajornada-selo-mini {
   min-height: 18px;
   padding: 0 4px;
 }
 
 /* o Só 24 h na linha do nome */
-.escala-extra-quem-nome > .nova-extra-selo-mini {
+.extrajornada-painel-quem-nome > .extrajornada-selo-mini {
   flex-shrink: 0;
   align-self: center;
 }
 
 /* painel do dia: quem ficou sem nenhum horário, em cinza no Neste dia até o Salvar */
-.escala-extra-militar--sai .escala-distribuicao-grad,
-.escala-extra-militar--sai .escala-distribuicao-nome,
-.escala-extra-militar--sai .escala-extra-cota { color: var(--texto-debil); }
+.extrajornada-painel-militar--sai .escala-distribuicao-grad,
+.extrajornada-painel-militar--sai .escala-distribuicao-nome,
+.extrajornada-painel-militar--sai .extrajornada-painel-cota { color: var(--texto-debil); }
 
 /* painel do dia: os selos embaixo do nome, na largura toda da linha */
-.escala-extra-militar > .nova-extra-selos-linha {
+.extrajornada-painel-militar > .extrajornada-selos-linha {
   grid-column: 2 / -1;
 }
 
@@ -478,24 +478,24 @@
    ============================================================ */
 @media (max-width: 767px) {
   /* a área de toque de 32 por 44 e o desenho de 16 (no computador, 24 e 12) */
-  html[data-celular] .nova-extra-marcas .escala-extra-marca,
-  html[data-celular] .nova-extra-marcas .escala-extra-marca:hover,
-  html[data-celular] .nova-extra-marcas .escala-extra-marca--on,
-  html[data-celular] .nova-extra-marcas .escala-extra-marca--on:hover {
+  html[data-celular] .extrajornada-marcas .extrajornada-painel-marca,
+  html[data-celular] .extrajornada-marcas .extrajornada-painel-marca:hover,
+  html[data-celular] .extrajornada-marcas .extrajornada-painel-marca--on,
+  html[data-celular] .extrajornada-marcas .extrajornada-painel-marca--on:hover {
     width: 32px;
     min-height: var(--toque-altura-celular);
   }
 
-  html[data-celular] .nova-extra-marcas .escala-extra-marca::before {
+  html[data-celular] .extrajornada-marcas .extrajornada-painel-marca::before {
     width: 16px;
     min-height: 16px;
   }
 
-  html[data-celular] .nova-extra-horas span {
+  html[data-celular] .extrajornada-horas span {
     min-width: 32px;
   }
 
-  html[data-celular] .escala-extra-militar:not(.escala-extra-militar--indisponivel) {
+  html[data-celular] .extrajornada-painel-militar:not(.extrajornada-painel-militar--indisponivel) {
     grid-template-columns: 8px minmax(0, 1fr) auto 128px;
   }
 

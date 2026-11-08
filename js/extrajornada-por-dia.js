@@ -1,5 +1,5 @@
 /* ============================================================
-   NOVA EXTRA — passos 3 e 4: a Agenda e o Calendário
+   EXTRAJORNADA — passos 3 e 4: a Agenda e o Calendário
    Na Agenda, os dias nas linhas e os pelotões nas colunas (os moldes
    da Agenda da Escala); no Calendário, o mês no calendário do site
    (geral-calendario-mes, o mesmo da Escala). Em cada dia, cada
@@ -11,9 +11,9 @@
    escrito (sem nenhum, ele fica no dia até o Salvar). O bloco com
    mudança ainda não salva leva a borda tracejada da Escala. As bolinhas ficam
    no painel do dia, que abre ao clicar no bloco, e na lista dos
-   voluntários. Lê o rascunho por RosterWork.novaExtraGrade.
+   voluntários. Lê o rascunho por RosterWork.extrajornadaGrade.
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
-   RosterWork.novaExtraPorDia.
+   RosterWork.extrajornadaPorDia.
    ============================================================ */
 (function () {
   'use strict';
@@ -25,10 +25,10 @@
   var diasCal = {};        // a célula de cada dia no calendário { data: celula }
   var desenhadas = '';     // as unidades do calendário desenhado (ids), para saber quando refazer o mês
 
-  function msg() { return RW.mensagens.novaExtra.org; }
-  function u() { return RW.novaExtraUtil; }
-  function G() { return RW.novaExtraGrade; }
-  function dia() { return RW.novaExtraDia; }
+  function msg() { return RW.mensagens.extrajornada.org; }
+  function u() { return RW.extrajornadaUtil; }
+  function G() { return RW.extrajornadaGrade; }
+  function dia() { return RW.extrajornadaDia; }
   function iso(x) { return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'); }
 
   /* ---------- a Agenda (também a da aba Extras do mês) ---------- */
@@ -65,7 +65,7 @@
 
   /* as unidades do calendário: as do dia a dia e a do militar em foco (para as bolinhas dele) */
   function unidadesDoCalendario() {
-    var cpf = RW.novaExtraLista.foco(), m = cpf ? u().militar(cpf) : null;
+    var cpf = RW.extrajornadaLista.foco(), m = cpf ? u().militar(cpf) : null;
     return u().doCalendario(G().vagas().concat(m ? [{ unidade: m.unidade_id }] : []));
   }
 
@@ -73,22 +73,22 @@
     alvo = lugar;
     var d = G().dados(), alocs = G().efetivas(), unidades = unidadesDoCalendario();
     /* com um militar em foco, os outros nomes somem (as vagas e a escala) */
-    alvo.classList.toggle('nova-extra-dist-cal--foco', !!RW.novaExtraLista.foco());
+    alvo.classList.toggle('extrajornada-dist-cal--foco', !!RW.extrajornadaLista.foco());
     diasCal = {};
     desenhadas = unidades.map(function (un) { return un.id; }).join(',');
     G().calcularPicos(alocs);
     var marcados = G().naoSalvos();
     /* a Agenda: os dias nas linhas e os pelotões nas colunas, a mesma célula (no celular, um pelotão por tela) */
-    if (RW.novaExtra.modo() === 'agenda') {
-      RW.novaExtra.grade.unidades(unidades);
+    if (RW.extrajornada.modo() === 'agenda') {
+      RW.extrajornada.grade.unidades(unidades);
       var grade = agenda(alvo, d.competencia, unidades, function (un, k) { return celulaAgenda(un, k, alocs, marcados); });
       Array.prototype.forEach.call(grade.querySelectorAll('[data-agenda-dia]'), function (l) { diasCal[l.getAttribute('data-agenda-dia')] = l; });
-      RW.novaExtra.grade.aplicar(grade);
+      RW.extrajornada.grade.aplicar(grade);
       if (RW.escalasCelula) RW.escalasCelula.ativarGraficos(grade);
       mostrarAberto(false);
       return;
     }
-    RW.novaExtra.grade.unidades(null);
+    RW.extrajornada.grade.unidades(null);
     RW.geralCalendarioMes.renderizar(alvo, { dataRef: G().dataDe(d.competencia), unidadesPorDia: Math.max(1, unidades.length), aoDia: function (cel, data, noMes) {
       if (!noMes) return;
       var k = iso(data);
@@ -117,14 +117,14 @@
 
   /* o bloco do pelotão no dia do Calendário, o mesmo do Calendário da Escala: o nome com a cor do dia e o miolo
      (preencher); clicar no bloco abre o painel do dia. marcados = os blocos com mudança não salva
-     (RosterWork.novaExtraGrade.naoSalvos) */
+     (RosterWork.extrajornadaGrade.naoSalvos) */
   function blocoUnidade(un, k, alocs, marcados) {
     var b = RW.tpl('tpl-escala-calendario-unidade');
     var falta = G().faltaDoDia(un.id, k, alocs);
     var nome = b.querySelector('.escala-calendario-unidade-nome');
     nome.textContent = un.nome;
     var cor = G().corDe(falta);
-    if (cor) nome.classList.add('nova-extra-uni-nome', 'nova-extra-uni-nome--' + cor);
+    if (cor) nome.classList.add('extrajornada-uni-nome', 'extrajornada-uni-nome--' + cor);
     clicavel(b, un, k);
     preencher(b.querySelector('.escala-mes-celula'), un, k, alocs, marcados, falta, true);
     return b;
@@ -160,7 +160,7 @@
       .sort(function (x, y) { return Math.min.apply(null, G().blocos(x)) - Math.min.apply(null, G().blocos(y)) || u().nome(x.cpf).localeCompare(u().nome(y.cpf)); });
     var comExtra = aqui.some(function (a) { return a.blocos.length; });
     /* o gráfico (com as extras) e, com o filtro Escala completa, quem está de serviço no dia, em cima das extras */
-    var antes = G().antesDe(un.id, k), F = RW.novaExtraFiltros;
+    var antes = G().antesDe(un.id, k), F = RW.extrajornadaFiltros;
     if (antes) {
       var dep = comExtra ? G().depoisDe(un.id, k, alocs, falta) : null;
       var cob = dep ? dep.cobertura : antes, erro = dep ? dep.erro : G().erroAntes(un.id, k);
@@ -170,10 +170,10 @@
         if (g) cel.appendChild(g);
       }
     }
-    var foco = RW.novaExtraLista.foco();
+    var foco = RW.extrajornadaLista.foco();
     aqui.forEach(function (a) {
       var vg = u().vaga(a, un.id, curto);
-      if (a.cpf === foco) vg.classList.add('nova-extra-foco');
+      if (a.cpf === foco) vg.classList.add('extrajornada-foco');
       cel.appendChild(vg);
     });
     if (foco) focoNoBloco(cel, un.id, k, foco);
@@ -184,25 +184,25 @@
   /* o militar em foco no bloco de cada pelotão, em todos os dias: as bolinhas grandes numa linha só delas, embaixo do
      nome quando ele já está ali, na cor do que ele marcou no pedido; no dia em que não pode, o motivo (serviço, folga,
      férias e afins). Já de extra em outro pelotão no dia, as bolinhas daqui ficam apagadas e a dica diz para tirar de lá
-     antes (é uma extra por dia). Passar da cota fica no rascunho, e o Salvar espera (RosterWork.novaExtraGrade.mudar) */
+     antes (é uma extra por dia). Passar da cota fica no rascunho, e o Salvar espera (RosterWork.extrajornadaGrade.mudar) */
   function focoNoBloco(cel, uid, k, cpf) {
     var m = u().militar(cpf), v = G().vagaDe(cpf, k);
     if (!m) return;
     var impede = v ? null : G().impedimento(m, k);
     if (impede) {
-      var selo = RW.tpl('tpl-ne-foco-selo');
+      var selo = RW.tpl('tpl-extrajornada-foco-selo');
       selo.querySelector('.selo').textContent = impede;
       cel.appendChild(selo);
       return;
     }
-    var linha = RW.tpl('tpl-ne-foco-marcas'), outro = !!v && +v.unidade !== uid;
-    linha.classList.add('nova-extra-foco-linha--' + u().pref(m, k));
-    var marcas = linha.querySelector('.escala-extra-marcas');
-    RW.novaExtraDia.ligarMarcas(marcas, m, k, v && !outro ? G().blocos(v) : [], uid);
+    var linha = RW.tpl('tpl-extrajornada-foco-marcas'), outro = !!v && +v.unidade !== uid;
+    linha.classList.add('extrajornada-foco-linha--' + u().pref(m, k));
+    var marcas = linha.querySelector('.extrajornada-painel-marcas');
+    RW.extrajornadaDia.ligarMarcas(marcas, m, k, v && !outro ? G().blocos(v) : [], uid);
     if (outro) {
-      linha.classList.add('nova-extra-foco-linha--outro');
+      linha.classList.add('extrajornada-foco-linha--outro');
       linha.setAttribute('data-dica', msg().jaEmOutro((u().unidade(v.unidade) || {}).nome || ''));
-      Array.prototype.forEach.call(marcas.querySelectorAll('.escala-extra-marca'), function (bt) { bt.disabled = true; });
+      Array.prototype.forEach.call(marcas.querySelectorAll('.extrajornada-painel-marca'), function (bt) { bt.disabled = true; });
     }
     cel.appendChild(linha);
   }
@@ -221,7 +221,7 @@
     var marcados = G().naoSalvos(), agenda = cel.hasAttribute('data-agenda-dia');
     unidades.forEach(function (un) { cel.appendChild(agenda ? celulaAgenda(un, k, alocs, marcados) : blocoUnidade(un, k, alocs, marcados)); });
     /* na Agenda do celular, as células novas das outras unidades somem de novo */
-    if (agenda) RW.novaExtra.grade.aplicar(cel.closest('.escala-mes'));
+    if (agenda) RW.extrajornada.grade.aplicar(cel.closest('.escala-mes'));
     if (RW.escalasCelula) RW.escalasCelula.desenharGraficos(cel);
     /* o bloco mudado pode ter crescido para fora da vista */
     mostrarAberto(true);
@@ -237,7 +237,7 @@
     });
   }
 
-  RW.novaExtraPorDia = { desenhar: desenhar, atualizarDia: atualizarDia, marcarAberto: marcarAberto, mostrarAberto: mostrarAberto,
+  RW.extrajornadaPorDia = { desenhar: desenhar, atualizarDia: atualizarDia, marcarAberto: marcarAberto, mostrarAberto: mostrarAberto,
     agenda: agenda, celulaVazia: celulaVazia,
     /* os pelotões da grade da tela (o Imprimir da grade começa com eles marcados) */
     unidades: function () { return unidadesDoCalendario(); } };

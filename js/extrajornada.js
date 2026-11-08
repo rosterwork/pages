@@ -1,21 +1,21 @@
 /* ============================================================
    EXTRAJORNADA — a página, em etapas
    Abas Minha extra · Extras do mês · Organizar o mês (só do
-   administrador da companhia; nova-extra-organizar.js desenha as
+   administrador da companhia; extrajornada-organizar.js desenha as
    Extras do mês e os passos). A Minha extra
-   mostra o pedido do mês (nova_extra_minha), com o botão que abre o
-   painel do pedido (nova-extra-pedido.js) no passo Pedido. A barra: o
+   mostra o pedido do mês (extrajornada_minha), com o botão que abre o
+   painel do pedido (extrajornada-pedido.js) no passo Pedido. A barra: o
    mês, os passos Pedidos · Cotas · Distribuição · Ajustes · Relatórios
    (só no Organizar o mês), o seletor Agenda | Calendário (nas Extras
    do mês, na Distribuição e nos Ajustes; com o seletor de unidade na
    Agenda do celular), o menu Ações do passo aberto e a Legenda (o
-   molde que o passo pedir, RosterWork.novaExtra.legenda).
+   molde que o passo pedir, RosterWork.extrajornada.legenda).
    Abre no mês de hoje (ou no que o aviso pedir); a seta do mês anda
    de outubro de 2026 até o mês do pedido que já abriu mais à frente.
    No treino da Extrajornada, abre no mês de treino, com as setas
    paradas (geral-treino-extra.js).
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
-   Registra RosterWork.paginas['nova-extra'].
+   Registra RosterWork.paginas.extrajornada.
    ============================================================ */
 (function () {
   'use strict';
@@ -24,31 +24,31 @@
   RW.paginas = RW.paginas || {};
 
   /* as setas do mês: de outubro de 2026 (o começo da Extrajornada no sistema) até o mês do pedido que já abriu mais à
-     frente (o ultimo_mes do nova_extra_minha; antes de ele chegar, o mês que vem) */
+     frente (o ultimo_mes do extrajornada_minha; antes de ele chegar, o mês que vem) */
   var PRIMEIRO = new Date(2026, 9, 1);
   var ultimo = null;
 
   var el = {};
   var comp = null;      // o mês do pedido (Date, dia 1)
-  var estado = null;    // a resposta do nova_extra_minha
+  var estado = null;    // a resposta do extrajornada_minha
   var pedido = 0;       // latest-wins
   var espera = null;   // a leitura da área à vista (geral-etapas.js)
   var aba = 'minha';    // a aba aberta (data-aba)
   var conteudoPagina = null;
   var desenhado = null; // o mês desenhado na Minha extra (AAAA-MM-01)
   var passoVisivel = null;   // o passo da área à vista (Organizar o mês)
-  /* a leitura de cada área: 'lendo', 'ok' ou 'falha' (com a frase). A Minha extra espera a dela (nova_extra_minha); as
-     Extras do mês e o Organizar o mês, a do mês (nova_extra_mes, RosterWork.novaExtraOrg) */
+  /* a leitura de cada área: 'lendo', 'ok' ou 'falha' (com a frase). A Minha extra espera a dela (extrajornada_minha); as
+     Extras do mês e o Organizar o mês, a do mês (extrajornada_mes, RosterWork.extrajornadaOrg) */
   var leituras = null;
 
-  function msg() { return RW.mensagens.novaExtra; }
+  function msg() { return RW.mensagens.extrajornada; }
   function iso(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-01'; }
   function nomeMes(d) { return d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).replace(' de ', ' '); }
   function br(s) { return s ? s.slice(8, 10) + '/' + s.slice(5, 7) : ''; }
 
   /* ---------- Minha extra ---------- */
-  /* relê o mês: a Minha extra e, junto, os passos e os números das abas (RosterWork.novaExtraOrg). Como na Escala, o
-     nome do mês muda na hora e só a área da aba aberta espera o mês novo, com o círculo (as setas, as abas e os passos
+  /* relê o mês: a Minha extra e, junto, os passos e os números das abas (RosterWork.extrajornadaOrg). Como na Escala, o
+     nome do mês muda na hora e só a área da aba aberta espera o mês novo, com a forma (as setas, as abas e os passos
      continuam usáveis; só o último mês pedido aparece). A releitura do mesmo mês deixa a tela à vista */
   /* no treino da Extrajornada, as setas do mês ficam paradas no mês de treino */
   function noTreino() { return !!(RW.treinoExtra && RW.treinoExtra.mes()); }
@@ -58,14 +58,14 @@
     el.anterior.disabled = noTreino() || comp <= PRIMEIRO;
     el.proximo.disabled = noTreino() || comp >= ultimo;
     if (desenhado !== mes || leituras.minha.situacao === 'falha') leitura('minha', 'lendo');
-    RW.novaExtraOrg.recarregar();
+    RW.extrajornadaOrg.recarregar();
     /* a falha fica no lugar da área (a frase), com a mensagem técnica no console */
     function falhou(texto, tecnico) {
       if (meu !== pedido || !el.titulo.isConnected) return;
-      if (tecnico) console.error('[Nova extra] nova_extra_minha falhou: ' + tecnico);
-      leitura('minha', 'falha', texto || RW.mensagens.novaExtra.org.falhaMes);
+      if (tecnico) console.error('[Extrajornada] extrajornada_minha falhou: ' + tecnico);
+      leitura('minha', 'falha', texto || RW.mensagens.extrajornada.org.falhaMes);
     }
-    RW.novaExtraUtil.chamar('nova_extra_minha', { p_competencia: mes, p_cpf: null }).then(function (r) {
+    RW.extrajornadaUtil.chamar('extrajornada_minha', { p_competencia: mes }).then(function (r) {
       if (meu !== pedido || !el.titulo.isConnected) return;
       if (!r || !r.ok) { falhou(r && r.error); return; }
       estado = r;
@@ -79,10 +79,16 @@
     }, function (e) { falhou(null, (e && e.message) || 'sem conexão'); });
   }
 
-  /* a leitura de uma área mudou (RosterWork.novaExtra.leitura): a área à vista é refeita */
+  /* a leitura de uma área mudou (RosterWork.extrajornada.leitura): a área à vista é refeita. A forma que apareceu nela
+     fica o mínimo na tela (geral-etapas.js): a área pronta espera por ela e depois é refeita pelo estado de agora */
   function leitura(nome, situacao, texto) {
     leituras[nome] = { situacao: situacao, texto: texto || '' };
-    if (conteudoPagina && conteudoPagina.isConnected) mostrarArea(passoVisivel);
+    if (!conteudoPagina || !conteudoPagina.isConnected) return;
+    var esta = espera, daVista = nome === (aba === 'minha' ? 'minha' : 'mes');
+    if (situacao === 'lendo' || !esta || !daVista) { mostrarArea(passoVisivel); return; }
+    esta.segurar().then(function () {
+      if (conteudoPagina.isConnected) mostrarArea(passoVisivel);
+    });
   }
 
   function desenhar() {
@@ -99,7 +105,7 @@
     botaoPedido();
     el.cotasTexto.textContent = ped && ped.concedidas != null ? msg().concedidas(ped.concedidas) : msg().cotasDepois(br(p.fecha));
     el.diasTexto.textContent = r.extras && r.extras.length
-      ? r.extras.map(function (x) { return br(x.data) + ' ' + RW.novaExtraUtil.horas(x.blocos) + ' (' + x.unidade + ')'; }).join('; ') + (r.lancado ? '.' : ' ' + msg().aindaNaoLancado)
+      ? r.extras.map(function (x) { return br(x.data) + ' ' + RW.extrajornadaUtil.horas(x.blocos) + ' (' + x.unidade + ')'; }).join('; ') + (r.lancado ? '.' : ' ' + msg().aindaNaoLancado)
       : msg().semDias;
   }
 
@@ -131,7 +137,7 @@
   function doPasso(e, atributo, n) { return (e.getAttribute(atributo) || '').split(' ').indexOf(String(n)) >= 0; }
 
   /* a área à vista: a da aba (Minha extra, Calendário) ou a do passo (Organizar o mês; a Distribuição e os Ajustes
-     são a mesma área). Enquanto a leitura dela não chega, o círculo no lugar; se falhou, a frase (os moldes da Escala).
+     são a mesma área). Enquanto a leitura dela não chega, a forma no lugar; se falhou, a frase (os moldes da Escala).
      O menu Ações fica desligado enquanto o mês não chega, para nada agir sobre o mês antigo */
   function mostrarArea(n) {
     passoVisivel = n;
@@ -145,7 +151,7 @@
     espera = null;
     el.estado.textContent = '';
     if (l.situacao === 'lendo') {
-      /* passando de 0,3 s, a forma e, de 1 s, as etapas (geral-etapas.js) */
+      /* passando de 0,5 s, a forma e, de 1,5 s, as etapas (geral-etapas.js) */
       espera = RW.etapas.area(el.estado, { forma: 'tpl-esqueleto-cartoes', etapas: 'extraAbrir', valores: { mes: nomeMes(comp) } });
     } else if (!pronta) {
       var no = RW.tpl('tpl-escala-estado');
@@ -154,17 +160,17 @@
     el.acoes.disabled = leituras.mes.situacao !== 'ok';
   }
 
-  /* o Organizar o mês abre o passo escolhido antes ou, na primeira vez, o da vez (quem escolhe é o novaExtraOrg,
-     que chama RosterWork.novaExtra.passo) */
+  /* o Organizar o mês abre o passo escolhido antes ou, na primeira vez, o da vez (quem escolhe é o extrajornadaOrg,
+     que chama RosterWork.extrajornada.passo) */
   function aoTrocarAba(botao) {
     aba = botao.getAttribute('data-aba');
     marcarAba(aba);
     el.passos.classList.toggle('oculto', aba !== 'organizar');
     barraDoPasso(null);
-    if (aba === 'organizar') { mostrarArea(null); RW.novaExtraOrg.mostrar(null); return; }
+    if (aba === 'organizar') { mostrarArea(null); RW.extrajornadaOrg.mostrar(null); return; }
     mostrarArea();
-    if (aba === 'minha') RW.novaExtraOrg.sair();
-    else RW.novaExtraOrg.mostrar('calendario');
+    if (aba === 'minha') RW.extrajornadaOrg.sair();
+    else RW.extrajornadaOrg.mostrar('calendario');
   }
 
   /* o passo aberto: o botão dele marcado na barra, o que é só dele na barra e a área dele */
@@ -178,7 +184,7 @@
 
   /* na barra, o que é só de alguns passos (data-passo-barra) aparece só neles e, no menu Ações, só os itens do passo
      aberto (data-passo-acao); fora do Organizar o mês, nenhum. O filtro da Distribuição e dos Ajustes (com a linha
-     "Filtros:") mostra e esconde pelo nova-extra-filtros.js. O seletor Agenda | Calendário e o Imprimir ficam nas Extras
+     "Filtros:") mostra e esconde pelo extrajornada-filtros.js. O seletor Agenda | Calendário e o Imprimir ficam nas Extras
      do mês, na Distribuição e nos Ajustes; fora deles, o seletor de unidade do celular some */
   function barraDoPasso(n) {
     var comModos = aba === 'calendario' || n === 3 || n === 4;
@@ -192,7 +198,7 @@
     Array.prototype.forEach.call(conteudoPagina.querySelectorAll('.pagina-subcabecalho [data-passo-acao]'), function (e) {
       e.classList.toggle('oculto', !doPasso(e, 'data-passo-acao', n));
     });
-    if (RW.novaExtraFiltros) RW.novaExtraFiltros.mostrar(n === 3 || n === 4);
+    if (RW.extrajornadaFiltros) RW.extrajornadaFiltros.mostrar(n === 3 || n === 4);
   }
 
   /* ---------- Agenda | Calendário ---------- */
@@ -234,35 +240,35 @@
     var alvo = new Date(comp.getFullYear(), comp.getMonth() + n, 1);
     if (alvo < PRIMEIRO || alvo > ultimo) return;
     function ir() { RW.painel.antesDeMudarTela(function () { comp = alvo; carregar(); }); }
-    if (!RW.novaExtraOrg.sujo()) { ir(); return; }
+    if (!RW.extrajornadaOrg.sujo()) { ir(); return; }
     RW.confirmar({ tipo: 'aviso', mensagem: RW.mensagens.edicao.sairSemSalvar, textoConfirmar: RW.mensagens.botoes.descartar,
-      textoCancelar: RW.mensagens.botoes.continuarEditando, aoConfirmar: function () { RW.novaExtraOrg.descartar(); ir(); } });
+      textoCancelar: RW.mensagens.botoes.continuarEditando, aoConfirmar: function () { RW.extrajornadaOrg.descartar(); ir(); } });
   }
 
   /* ---------- entrada ---------- */
   function iniciar(conteudo) {
     conteudoPagina = conteudo;
     aba = 'minha';
-    el.abas = conteudo.querySelector('#nova-extra-abas');
-    el.titulo = conteudo.querySelector('#nova-extra-titulo');
-    el.prazo = conteudo.querySelector('#nova-extra-prazo');
-    el.pedidoTexto = conteudo.querySelector('#nova-extra-pedido-texto');
-    el.cotasTexto = conteudo.querySelector('#nova-extra-cotas-texto');
-    el.pedir = conteudo.querySelector('#nova-extra-pedir');
-    el.fechado = conteudo.querySelector('#nova-extra-fechado');
-    el.passos = conteudo.querySelector('#nova-extra-passos');
-    el.mes = conteudo.querySelector('#nova-extra-mes');
-    el.anterior = conteudo.querySelector('#nova-extra-mes-anterior');
-    el.proximo = conteudo.querySelector('#nova-extra-mes-proximo');
-    el.diasTexto = conteudo.querySelector('#nova-extra-dias-texto');
-    el.legenda = RW.legenda.montar(conteudo.querySelector('#nova-extra-legenda'));
-    el.legendaDivisor = conteudo.querySelector('#nova-extra-legenda-divisor');
-    el.estado = conteudo.querySelector('#nova-extra-estado');
-    el.acoes = conteudo.querySelector('#nova-extra-acoes > .botao');
-    el.modos = conteudo.querySelector('#nova-extra-modos');
-    el.imprimir = conteudo.querySelector('#nova-extra-imprimir');
+    el.abas = conteudo.querySelector('#extrajornada-abas');
+    el.titulo = conteudo.querySelector('#extrajornada-titulo');
+    el.prazo = conteudo.querySelector('#extrajornada-prazo');
+    el.pedidoTexto = conteudo.querySelector('#extrajornada-pedido-texto');
+    el.cotasTexto = conteudo.querySelector('#extrajornada-cotas-texto');
+    el.pedir = conteudo.querySelector('#extrajornada-pedir');
+    el.fechado = conteudo.querySelector('#extrajornada-fechado');
+    el.passos = conteudo.querySelector('#extrajornada-passos');
+    el.mes = conteudo.querySelector('#extrajornada-mes');
+    el.anterior = conteudo.querySelector('#extrajornada-mes-anterior');
+    el.proximo = conteudo.querySelector('#extrajornada-mes-proximo');
+    el.diasTexto = conteudo.querySelector('#extrajornada-dias-texto');
+    el.legenda = RW.legenda.montar(conteudo.querySelector('#extrajornada-legenda'));
+    el.legendaDivisor = conteudo.querySelector('#extrajornada-legenda-divisor');
+    el.estado = conteudo.querySelector('#extrajornada-estado');
+    el.acoes = conteudo.querySelector('#extrajornada-acoes > .botao');
+    el.modos = conteudo.querySelector('#extrajornada-modos');
+    el.imprimir = conteudo.querySelector('#extrajornada-imprimir');
     /* abre no mês de hoje ou no mês que o aviso pediu (o do pedido, no aviso do prazo) */
-    var hoje = new Date(), pedida = RW.referenciaPedida ? RW.referenciaPedida('nova-extra') : null;
+    var hoje = new Date(), pedida = RW.referenciaPedida ? RW.referenciaPedida('extrajornada') : null;
     ultimo = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 1);
     comp = pedida ? new Date(+pedida.slice(0, 4), +pedida.slice(5, 7) - 1, 1) : new Date(hoje.getFullYear(), hoje.getMonth(), 1);
     if (comp < PRIMEIRO) comp = new Date(PRIMEIRO);
@@ -282,39 +288,39 @@
     [el.abas, el.passos].forEach(function (grupo) {
       grupo.addEventListener('click', function (e) {
         var b = e.target.closest('.aba');
-        if (!b || b.classList.contains('aba--ativa') || !RW.novaExtraOrg.sujo()) return;
+        if (!b || b.classList.contains('aba--ativa') || !RW.extrajornadaOrg.sujo()) return;
         e.preventDefault();
         e.stopPropagation();
         RW.confirmar({ tipo: 'aviso', mensagem: RW.mensagens.edicao.sairSemSalvar, textoConfirmar: RW.mensagens.botoes.descartar,
-          textoCancelar: RW.mensagens.botoes.continuarEditando, aoConfirmar: function () { RW.novaExtraOrg.descartar(); b.click(); } });
+          textoCancelar: RW.mensagens.botoes.continuarEditando, aoConfirmar: function () { RW.extrajornadaOrg.descartar(); b.click(); } });
       }, true);
     });
     Array.prototype.forEach.call(el.abas.querySelectorAll('.abas'), function (trilho) { RW.abas.ligar(trilho, aoTrocarAba); });
-    RW.abas.ligar(el.passos, function (b) { RW.novaExtraOrg.mostrar(+b.getAttribute('data-passo')); });
+    RW.abas.ligar(el.passos, function (b) { RW.extrajornadaOrg.mostrar(+b.getAttribute('data-passo')); });
     el.anterior.addEventListener('click', function () { trocarMes(-1); });
     el.proximo.addEventListener('click', function () { trocarMes(1); });
     /* celular: o seletor de unidade da Agenda, na barra da página */
     if (RW.seletorUnidade) RW.seletorUnidade.iniciar(conteudo);
-    /* Agenda | Calendário: abre na escolha do tipo de aparelho, a mesma da Escala e da Extrajornada, e a troca fica
+    /* Agenda | Calendário: abre na escolha do tipo de aparelho, a mesma da Escala, e a troca fica
        lembrada (geral-visao-grade); a área aberta redesenha no modo escolhido */
     marcarModo(RW.visaoGrade ? RW.visaoGrade.agendaOuCalendario() : 'agenda');
     RW.abas.ligar(el.modos, function (b) {
       if (RW.visaoGrade) RW.visaoGrade.gravar({ agendaOuCalendario: b.getAttribute('data-modo') });
-      if (aba === 'calendario') RW.novaExtraOrg.desenharAba();
-      else if (aba === 'organizar') RW.novaExtraMontar.redesenhar();
+      if (aba === 'calendario') RW.extrajornadaOrg.desenharAba();
+      else if (aba === 'organizar') RW.extrajornadaMontar.redesenhar();
     });
     /* Imprimir: a grade da tela, no painel de impressão das grades da Escala */
-    el.imprimir.addEventListener('click', function () { RW.novaExtraImprimirGrade.abrir(aba === 'calendario', modo()); });
-    RW.novaExtraOrg.montar(conteudo);
+    el.imprimir.addEventListener('click', function () { RW.extrajornadaImprimirGrade.abrir(aba === 'calendario', modo()); });
+    RW.extrajornadaOrg.montar(conteudo);
     el.pedir.addEventListener('click', function () {
-      if (estado && RW.novaExtraPedido) RW.novaExtraPedido.abrir(estado, comp, null, carregar);
+      if (estado && RW.extrajornadaPedido) RW.extrajornadaPedido.abrir(estado, comp, carregar);
     });
     marcarAba('minha');
     carregar();
     return Promise.resolve();
   }
 
-  RW.novaExtra = { comp: function () { return iso(comp); }, legenda: legenda, passo: mostrarPasso, recarregar: function () { carregar(); }, leitura: leitura,
+  RW.extrajornada = { comp: function () { return iso(comp); }, legenda: legenda, passo: mostrarPasso, recarregar: function () { carregar(); }, leitura: leitura,
     modo: modo,
     /* as grades do mês: antes de desenhar a Agenda, as unidades dela (no celular, o seletor de unidade); depois de montar,
        uma unidade por tela no celular */
@@ -322,5 +328,5 @@
       unidades: function (lista) { if (RW.seletorUnidade) RW.seletorUnidade.mostrar(agendaNoCelular() ? lista : null); },
       aplicar: function (wrap) { if (RW.seletorUnidade && agendaNoCelular()) RW.seletorUnidade.aplicar(wrap); }
     } };
-  RW.paginas['nova-extra'] = { iniciar: iniciar };
+  RW.paginas.extrajornada = { iniciar: iniciar };
 })();

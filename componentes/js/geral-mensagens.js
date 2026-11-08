@@ -51,6 +51,7 @@
       senhaIgual: 'A nova senha é igual à atual.',
       senhaAtualErrada: 'Senha atual incorreta.',
       senhaTrocada: 'Senha trocada com sucesso.',
+      senhaTrocadaOutrosSairam: 'Senha trocada com sucesso. A sua conta saiu dos outros aparelhos.',
       falhaTrocaSenha: 'Não foi possível trocar a senha. Tente de novo.'
     },
 
@@ -176,6 +177,32 @@
       confirmarDescartar: 'Descartar este bug? Ele sai da lista de abertos e ninguém recebe aviso.',
       botaoCorrigido: 'Marcar corrigido',
       botaoDescartar: 'Descartar'
+    },
+
+    /* programador › erros (os erros de JavaScript gravados da tela das pessoas; programador-erros.js) */
+    programadorErros: {
+      vazioLista: 'Nenhum erro nos últimos 90 dias.',
+      vazioDetalhe: 'Selecione um erro na lista para ver os detalhes.',
+      carregando: 'Carregando…',
+      falhaCarregar: 'Não foi possível carregar os erros. Tente de novo.',
+      falhaMarcar: 'Não foi possível marcar como visto. Tente de novo.',
+      naoInformado: 'Não informado',
+      aparelhos: { celular: 'no celular', computador: 'no computador' },
+      subtitulo: function (n) { return n ? (n === 1 ? '1 erro novo' : n + ' erros novos') : 'Nenhum erro novo'; },
+      ultimaVez: function (quando) { return 'Última vez em ' + quando; },
+      vezes: function (n, novas) {
+        return (n === 1 ? '1 vez' : n + ' vezes') + (novas && novas < n ? ', ' + (novas === 1 ? '1 nova' : novas + ' novas') : '');
+      },
+      pessoas: function (n) { return n === 1 ? '1 pessoa' : n + ' pessoas'; },
+      ondeFoi: function (pagina, aparelho) { return pagina ? pagina + ', ' + aparelho : aparelho; },
+      /* o texto do bug criado a partir do erro (o "O que acontece" do formulário) */
+      descricaoBug: function (e) {
+        return 'Erro gravado pelo sistema na tela das pessoas (Programador, aba Erros).\n' +
+          'Erro: ' + e.mensagem + '\n' +
+          'Arquivo e linha: ' + (e.onde || 'não informado') + '\n' +
+          'Aconteceu ' + (e.vezes === 1 ? '1 vez' : e.vezes + ' vezes') + ' com ' + (e.pessoas === 1 ? '1 pessoa' : e.pessoas + ' pessoas') +
+          (e.primeira === e.ultima ? ', em ' + e.ultima : ', de ' + e.primeira + ' a ' + e.ultima) + '.';
+      }
     },
 
     /* cadastro de usuário (Novo usuário) */
@@ -316,12 +343,37 @@
       }
     },
 
-    /* extrajornada (nova-extra*.js): a Minha extra, o painel do pedido e o Organizar o mês */
-    novaExtra: {
-      /* Relatórios › Imprimir: o painel Imprimir relatório (nova-extra-imprimir.js) */
+    /* extrajornada (extrajornada*.js): a Minha extra, o painel do pedido e o Organizar o mês */
+    extrajornada: {
+      /* os Relatórios do Organizar o mês (extrajornada-relatorio.js): as etapas do mês e a prévia do relatório de ajustes */
+      relatorios: {
+        solicitacoes: function (ini, fim, vol, nao, sem) {
+          return ini + ' a ' + fim + '. ' + vol + (vol === 1 ? ' voluntário, ' : ' voluntários, ') + nao + (nao === 1 ? ' não voluntário, ' : ' não voluntários, ') + sem + ' sem resposta.';
+        },
+        termos: function (rec, pend, recebidas, repartidas) {
+          return rec + (rec === 1 ? ' termo recebido e ' : ' termos recebidos e ') + pend + (pend === 1 ? ' pendente. ' : ' pendentes. ') + recebidas + ' cotas recebidas, ' + repartidas + ' repartidas.';
+        },
+        lancado: function (em, por, ate, iniciado) {
+          return 'Lançado na escala em ' + em + (por ? ', pelo ' + por : '') + '. ' + (iniciado ? 'Até ' + ate + ' dava para mudar e lançar de novo; cada lançamento refaz o relatório inicial.' : 'Até ' + ate + ' dá para mudar e lançar de novo; cada lançamento refaz o relatório inicial.');
+        },
+        naoLancado: function (ate) { return 'Ainda não lançado. Até ' + ate + ' a distribuição pode ser lançada e relançada.'; },
+        ajustesQtd: function (n) { return n + ' até agora'; },
+        relatorioDisponivel: function (dia) { return 'Fica disponível a partir de ' + dia + ' e não sai mais daqui. Até lá, a prévia ao lado mostra como está.'; },
+        relatorioPronto: function (dia) { return 'Disponível desde ' + dia + ' e não sai mais daqui.'; },
+        comparado: function (dia) { return 'comparado com o lançamento de ' + dia; },
+        semLancamento: 'A comparação começa quando a extra for lançada na escala.',
+        semAjustes: 'Nenhuma extra mudou desde o lançamento.',
+        retirada: 'retirada',
+        nova: 'extra nova',
+        mudouVezes: function (n) { return 'mudou ' + n + ' vezes'; },
+        semMotivo: 'Sem motivo',
+        cotasIguais: 'Nenhuma. As cotas de cada militar continuam as do lançamento.',
+        cotasMudaram: function (quem, de, para) { return quem + ': de ' + de + ' para ' + para + ' cotas.'; }
+      },
+      /* Relatórios › Imprimir: o painel Imprimir relatório (extrajornada-imprimir.js) */
       imprimir: {
         titulo: 'Imprimir relatório',
-        /* o Imprimir da grade (nova-extra-imprimir-grade.js): o título do alto da folha e o começo do nome do arquivo */
+        /* o Imprimir da grade (extrajornada-imprimir-grade.js): o título do alto da folha e o começo do nome do arquivo */
         grade: { titulo: 'Escala de extrajornada', arquivo: 'Extrajornada', escalaCompleta: 'Escala completa' },
         indisponivel: {
           pedidos: 'Libera quando os pedidos fecharem.',
@@ -338,7 +390,7 @@
           modos: { separar: 'separados por pelotão', unica: 'em lista única' }
         }
       },
-      /* os quatro PDFs dos relatórios (nova-extra-relatorios-pdf.js), no padrão do registro RW das trocas */
+      /* os quatro PDFs dos relatórios (extrajornada-relatorios-pdf.js), no padrão do registro RW das trocas */
       relatoriosPdf: {
         titulos: {
           pedidos: 'RELATÓRIO DE PEDIDOS DA EXTRAJORNADA', termos: 'RELATÓRIO DE TERMOS E COTAS DA EXTRAJORNADA',
@@ -392,7 +444,7 @@
       naoPediu: 'Nenhum pedido feito.',
       soPraca: 'A extra é só para praças.',
       /* quem: o militar do pedido feito em nome dele (sem ele, "Você") */
-      semDiaLivre: function (mes, quem) { return (quem || 'Você') + ' não tem dia livre para extra em ' + mes + ', por isso não pode fazer o pedido.'; },
+      semDiaLivre: function (mes) { return 'Você não tem dia livre para extra em ' + mes + ', por isso não pode fazer o pedido.'; },
       verCalendario: 'Ver o calendário',
       pediu: function (p) {
         return 'Pedido enviado em ' + p.enviado_em + ': ' + p.cotas + (p.cotas === 1 ? ' cota' : ' cotas') + (p.so_24h ? ', só 24 h' : '')
@@ -1880,35 +1932,6 @@
       falhaAnalise: 'Não foi possível analisar o impacto.'
     },
 
-    /* extrajornada: os Relatórios do Organizar o mês (nova-extra-relatorio.js), as etapas do mês e a prévia do relatório
-       de ajustes */
-    extrajornada: {
-      relatorios: {
-        solicitacoes: function (ini, fim, vol, nao, sem) {
-          return ini + ' a ' + fim + '. ' + vol + (vol === 1 ? ' voluntário, ' : ' voluntários, ') + nao + (nao === 1 ? ' não voluntário, ' : ' não voluntários, ') + sem + ' sem resposta.';
-        },
-        termos: function (rec, pend, recebidas, repartidas) {
-          return rec + (rec === 1 ? ' termo recebido e ' : ' termos recebidos e ') + pend + (pend === 1 ? ' pendente. ' : ' pendentes. ') + recebidas + ' cotas recebidas, ' + repartidas + ' repartidas.';
-        },
-        lancado: function (em, por, ate, iniciado) {
-          return 'Lançado na escala em ' + em + (por ? ', pelo ' + por : '') + '. ' + (iniciado ? 'Até ' + ate + ' dava para mudar e lançar de novo; cada lançamento refaz o relatório inicial.' : 'Até ' + ate + ' dá para mudar e lançar de novo; cada lançamento refaz o relatório inicial.');
-        },
-        naoLancado: function (ate) { return 'Ainda não lançado. Até ' + ate + ' a distribuição pode ser lançada e relançada.'; },
-        ajustesQtd: function (n) { return n + ' até agora'; },
-        relatorioDisponivel: function (dia) { return 'Fica disponível a partir de ' + dia + ' e não sai mais daqui. Até lá, a prévia ao lado mostra como está.'; },
-        relatorioPronto: function (dia) { return 'Disponível desde ' + dia + ' e não sai mais daqui.'; },
-        comparado: function (dia) { return 'comparado com o lançamento de ' + dia; },
-        semLancamento: 'A comparação começa quando a extra for lançada na escala.',
-        semAjustes: 'Nenhuma extra mudou desde o lançamento.',
-        retirada: 'retirada',
-        nova: 'extra nova',
-        mudouVezes: function (n) { return 'mudou ' + n + ' vezes'; },
-        semMotivo: 'Sem motivo',
-        cotasIguais: 'Nenhuma. As cotas de cada militar continuam as do lançamento.',
-        cotasMudaram: function (quem, de, para) { return quem + ': de ' + de + ' para ' + para + ' cotas.'; }
-      }
-    },
-
     /* edição não salva */
     edicao: {
       sairSemSalvar: 'Você tem alterações não salvas. Se sair agora, elas serão perdidas.'
@@ -1954,6 +1977,12 @@
       pergunta: 'Receber no celular os avisos das suas trocas, folgas e extras? Você pode mudar quando quiser em Meu perfil.',
       ativar: 'Ativar',
       agoraNao: 'Agora não'
+    },
+
+    /* seletor de unidades (geral-seletor-unidades.js): o resumo sem unidade marcada */
+    seletorUnidades: {
+      selecione: 'Selecione uma unidade',
+      falhaCarregar: 'Não foi possível carregar as unidades.'
     },
 
     /* sessão */

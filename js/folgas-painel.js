@@ -143,7 +143,7 @@
 
     var corpo = RW.painel.corpo(); corpo.textContent = '';
     var estado = RW.painel.criarCarregando(); if (estado) corpo.appendChild(estado);
-    RW.folgasDados.extrato(militar.usuario_id).then(function (r) {
+    RW.painel.segurar(RW.folgasDados.extrato(militar.usuario_id)).then(function (r) {
       if (!RW.painel.estaAberto() || form || !detalhe || detalhe.militar !== militar) return;
       detalhe.dados = r || { saldo_minutos: 0, linhas: [] };
       mostrarExtrato();

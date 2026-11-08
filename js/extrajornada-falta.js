@@ -1,8 +1,8 @@
 /* ============================================================
-   NOVA EXTRA — a conta da falta de um dia
+   EXTRAJORNADA — a conta da falta de um dia
    O que falta numa unidade num dia, por horário de 6 h, o vermelho e
    o amarelo, e o que as extras cobrem. A falta vem do banco
-   (nova_extra_mes), lida na escala sem as extras que já estão nela:
+   (extrajornada_mes), lida na escala sem as extras que já estão nela:
    a gente que falta, o condutor que falta e o chefe que dirige (com
    a CNH que a viatura pede) e o ideal dos postos. Cada extra cobre um
    condutor vermelho que ele conduz; senão, tira o chefe da direção
@@ -11,14 +11,14 @@
    lançado sem mudança por salvar no dia), o que sobra é o da escala
    de hoje: a falta "real" do banco e a cor da barra da Escala.
    Só conta: não cria HTML nem escreve estilo.
-   RosterWork.novaExtraFalta.
+   RosterWork.extrajornadaFalta.
    ============================================================ */
 (function () {
   'use strict';
 
   var RW = window.RosterWork = window.RosterWork || {};
 
-  function u() { return RW.novaExtraUtil; }
+  function u() { return RW.extrajornadaUtil; }
   function blocos(a) { return a.blocos.map(Number); }
   /* a CNH que a viatura pede ('' = qualquer uma) está entre as que ele conduz (o banco diz quais) */
   function conduz(m, cnh) { return !cnh || (m.conduz || []).indexOf(cnh) >= 0; }
@@ -96,5 +96,5 @@
     });
   }
 
-  RW.novaExtraFalta = { doDia: doDia, soma: soma, cor: cor, situacao: situacao, conduz: conduz };
+  RW.extrajornadaFalta = { doDia: doDia, soma: soma, cor: cor, situacao: situacao, conduz: conduz };
 })();

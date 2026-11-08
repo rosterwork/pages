@@ -1,5 +1,5 @@
 /* ============================================================
-   NOVA EXTRA — o painel do dia (uma unidade num dia)
+   EXTRAJORNADA — o painel do dia (uma unidade num dia)
    O mesmo na Distribuição, nos Ajustes e na aba Extrajornada do painel
    do dia da Escala: a Cobertura do dia (as barras sem extra e com
    extra, sempre à vista, e, aberta, o relatório do dia: quem foi
@@ -8,12 +8,12 @@
    Indisponíveis; menos o Neste dia, cada grupo dividido por pelotão),
    cada militar com as cotas e os 4 horários deste dia, que marcam e
    desmarcam. Clicar nas cotas abre os outros dias dele
-   (nova-extra-dia-outros.js). A linha fica no grupo em que estava até
+   (extrajornada-dia-outros.js). A linha fica no grupo em que estava até
    o Salvar, para o clique seguinte não cair em outro militar. Todas as
    caixas abrem e fecham pelo título e começam abertas ou fechadas pela
-   cor do dia. Lê e muda o rascunho por RosterWork.novaExtraGrade.
+   cor do dia. Lê e muda o rascunho por RosterWork.extrajornadaGrade.
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
-   RosterWork.novaExtraDia.
+   RosterWork.extrajornadaDia.
    ============================================================ */
 (function () {
   'use strict';
@@ -35,9 +35,9 @@
     return { cobertura: cor === 'erro' || cor === 'alerta', querem: true, disp: false, naoQuerem: false, indisp: false };
   }
 
-  function msg() { return RW.mensagens.novaExtra.org; }
-  function u() { return RW.novaExtraUtil; }
-  function G() { return RW.novaExtraGrade; }
+  function msg() { return RW.mensagens.extrajornada.org; }
+  function u() { return RW.extrajornadaUtil; }
+  function G() { return RW.extrajornadaGrade; }
 
   /* o que for aberto ou fechado vale enquanto o mesmo dia estiver aberto (mesmo que ele mude de cor); outro dia
      começa pela cor dele */
@@ -54,21 +54,21 @@
   /* os grupos voltam a ser os de agora, e as linhas abertas fecham: outro dia, o Salvar, o Cancelar ou a sugestão */
   function reorganizar() {
     fixos = {};
-    if (RW.novaExtraDiaOutros) RW.novaExtraDiaOutros.esquecer();
+    if (RW.extrajornadaDiaOutros) RW.extrajornadaDiaOutros.esquecer();
   }
 
   /* no painel que a Extrajornada abre (Distribuição e Ajustes). Uma escolha por vez: abrir um dia tira o militar do foco
-     (nova-extra-lista.js); sem espaço, a lista recolhe e volta ao fechar o painel */
+     (extrajornada-lista.js); sem espaço, a lista recolhe e volta ao fechar o painel */
   function abrir(uid, k) {
-    RW.novaExtraLista.sairDoFoco();
-    RW.painel.abrir({ titulo: G().dataLonga(k), subtitulo: (u().unidade(uid) || {}).nome || '', aoFechar: function () { aberto = null; RW.novaExtraPorDia.marcarAberto(); RW.novaExtraLista.devolverLista(); } });
+    RW.extrajornadaLista.sairDoFoco();
+    RW.painel.abrir({ titulo: G().dataLonga(k), subtitulo: (u().unidade(uid) || {}).nome || '', aoFechar: function () { aberto = null; RW.extrajornadaPorDia.marcarAberto(); RW.extrajornadaLista.devolverLista(); } });
     entrarNoDia(uid, k);
-    RW.novaExtraLista.recolherSeApertado();
-    RW.novaExtraPorDia.marcarAberto();
+    RW.extrajornadaLista.recolherSeApertado();
+    RW.extrajornadaPorDia.marcarAberto();
     montarBusca();
     desenhar();
     /* o painel abriu e o calendário ficou mais estreito: o bloco do pelotão aberto vai à vista inteira */
-    requestAnimationFrame(function () { requestAnimationFrame(function () { if (RW.novaExtraPorDia) RW.novaExtraPorDia.mostrarAberto(true); }); });
+    requestAnimationFrame(function () { requestAnimationFrame(function () { if (RW.extrajornadaPorDia) RW.extrajornadaPorDia.mostrarAberto(true); }); });
   }
 
   /* no painel do dia da Escala, que já está aberto (a aba Extrajornada) */
@@ -83,7 +83,7 @@
     buscaTermo = ''; buscaModo = 'marcar';
     var sub = RW.painel.subcabecalho();
     if (!sub || !RW.busca) return;
-    var caixa = RW.tpl('tpl-ne-busca');
+    var caixa = RW.tpl('tpl-extrajornada-busca');
     sub.textContent = '';
     sub.appendChild(caixa);
     sub.classList.remove('oculto');
@@ -94,14 +94,14 @@
   function aplicarBusca(corpo) {
     if (!buscaTermo) return;
     var filtrar = buscaModo === 'filtrar';
-    Array.prototype.forEach.call(corpo.querySelectorAll('.escala-extra-militar'), function (l) {
+    Array.prototype.forEach.call(corpo.querySelectorAll('.extrajornada-painel-militar'), function (l) {
       var casa = RW.busca.casaTexto(buscaTermo, l.getAttribute('data-busca'));
       l.classList.toggle('busca-achado', casa);
       l.classList.toggle('oculto', filtrar && !casa);
     });
-    Array.prototype.forEach.call(corpo.querySelectorAll('.nova-extra-grupo, .nova-extra-pel'), function (g) {
+    Array.prototype.forEach.call(corpo.querySelectorAll('.extrajornada-grupo, .extrajornada-pel'), function (g) {
       var tem = !!g.querySelector('.busca-achado');
-      if (tem) g.querySelector('.grupo-caixa-cabecalho, .nova-extra-pel-titulo').setAttribute('aria-expanded', 'true');
+      if (tem) g.querySelector('.grupo-caixa-cabecalho, .extrajornada-pel-titulo').setAttribute('aria-expanded', 'true');
       g.classList.toggle('oculto', filtrar && !tem);
     });
   }
@@ -133,20 +133,20 @@
       /* o Neste dia aparece sempre (vazio, com o texto); os outros grupos, só com alguém */
       if (!lista.length && g !== 'neste') return;
       lista.sort(function (x, y) { return (x.m.unidade_id === uid ? 0 : 1) - (y.m.unidade_id === uid ? 0 : 1) || (x.m.ordem || 0) - (y.m.ordem || 0); });
-      var caixa = RW.tpl('tpl-ne-grupo');
+      var caixa = RW.tpl('tpl-extrajornada-grupo');
       caixa.setAttribute('data-grupo', g);
       caixa.querySelector('.ne-grupo-nome').textContent = msg().grupos[g];
       caixa.querySelector('.ne-grupo-conta').textContent = lista.length;
       lembrar(caixa, g, lista.length > 0);
-      caixa.querySelector('.nova-extra-grupo-vazio').classList.toggle('oculto', lista.length > 0);
+      caixa.querySelector('.extrajornada-grupo-vazio').classList.toggle('oculto', lista.length > 0);
       /* os horários em cima das bolinhas: no Neste dia, no alto do grupo; nos outros, no título de cada pelotão */
-      caixa.querySelector('.nova-extra-horas').classList.toggle('oculto', g !== 'neste' || !lista.length);
-      var linhas = caixa.querySelector('.escala-extra-grupo-linhas');
+      caixa.querySelector('.extrajornada-horas').classList.toggle('oculto', g !== 'neste' || !lista.length);
+      var linhas = caixa.querySelector('.extrajornada-painel-grupo-linhas');
       function linha(x, comPelotao) {
         var l = g === 'indisp' ? linhaIndisponivel(x.m, x.motivo) : linhaMilitar(x.m, uid, k, alocs, comPelotao);
         l.setAttribute('data-busca', RW.busca ? RW.busca.chave(x.m) : '');
         if (x.sai) {
-          l.classList.add('escala-extra-militar--sai');
+          l.classList.add('extrajornada-painel-militar--sai');
           l.setAttribute('data-dica', msg().saiAoSalvar);
         }
         return l;
@@ -171,19 +171,19 @@
     return ordem.map(function (id) {
       var daqui = lista.filter(function (x) { return x.m.unidade_id === id; });
       if (!daqui.length) return null;
-      var el = RW.tpl('tpl-ne-pel'), nome = 'pel-' + g + '-' + id;
-      el.querySelector('.nova-extra-pel-nome').textContent = (u().unidade(id) || {}).nome || '';
-      el.querySelector('.nova-extra-pel-este').classList.toggle('oculto', id !== uid);
-      el.querySelector('.nova-extra-pel-conta').textContent = daqui.length;
-      el.querySelector('.nova-extra-horas').classList.toggle('oculto', g === 'indisp');
-      var cab = el.querySelector('.nova-extra-pel-titulo');
+      var el = RW.tpl('tpl-extrajornada-pel'), nome = 'pel-' + g + '-' + id;
+      el.querySelector('.extrajornada-pel-nome').textContent = (u().unidade(id) || {}).nome || '';
+      el.querySelector('.extrajornada-pel-este').classList.toggle('oculto', id !== uid);
+      el.querySelector('.extrajornada-pel-conta').textContent = daqui.length;
+      el.querySelector('.extrajornada-horas').classList.toggle('oculto', g === 'indisp');
+      var cab = el.querySelector('.extrajornada-pel-titulo');
       if (!(nome in caixas)) caixas[nome] = id === uid;
       cab.setAttribute('aria-expanded', caixas[nome] ? 'true' : 'false');
       cab.addEventListener('click', function () {
         caixas[nome] = !caixas[nome];
         cab.setAttribute('aria-expanded', caixas[nome] ? 'true' : 'false');
       });
-      return { el: el, linhas: el.querySelector('.nova-extra-pel-linhas'), lista: daqui };
+      return { el: el, linhas: el.querySelector('.extrajornada-pel-linhas'), lista: daqui };
     }).filter(Boolean);
   }
 
@@ -211,21 +211,21 @@
   /* a Cobertura do dia: os dois gráficos sempre à vista e, aberta, o relatório do dia embaixo deles (sem nada a
      dizer, o vazio) */
   function caixaCobertura(uid, k, alocs, grupos) {
-    var caixa = RW.tpl('tpl-ne-cobertura');
+    var caixa = RW.tpl('tpl-extrajornada-cobertura');
     lembrar(caixa, 'cobertura');
     var falta = G().faltaDoDia(uid, k, alocs);
     var antes = G().antesDe(uid, k);
     if (antes) {
-      var cob = RW.tpl('tpl-escala-extra-cobertura');
+      var cob = RW.tpl('tpl-extrajornada-painel-cobertura');
       var gA = G().grafico(antes, uid, G().erroAntes(uid, k));
       var dep = G().depoisDe(uid, k, alocs, falta);
       var gD = G().grafico(dep.cobertura, uid, dep.erro);
-      if (gA) cob.querySelector('.escala-extra-cob-sem').appendChild(gA);
-      if (gD) cob.querySelector('.escala-extra-cob-com').appendChild(gD);
-      caixa.querySelector('.nova-extra-cobertura-graficos').appendChild(cob);
+      if (gA) cob.querySelector('.extrajornada-painel-cob-sem').appendChild(gA);
+      if (gD) cob.querySelector('.extrajornada-painel-cob-com').appendChild(gD);
+      caixa.querySelector('.extrajornada-cobertura-graficos').appendChild(cob);
     }
-    var rel = caixa.querySelector('.nova-extra-cobertura-relatorio');
-    rel.querySelector('.nova-extra-cobertura-vazio').classList.toggle('oculto', relatorio(rel, uid, k, alocs, grupos, falta) > 0);
+    var rel = caixa.querySelector('.extrajornada-cobertura-relatorio');
+    rel.querySelector('.extrajornada-cobertura-vazio').classList.toggle('oculto', relatorio(rel, uid, k, alocs, grupos, falta) > 0);
     if (RW.escalasCelula) {
       setTimeout(function () { RW.escalasCelula.desenharGraficos(caixa); }, 0);
       RW.escalasCelula.ligarDica(caixa);
@@ -242,7 +242,7 @@
     var eu = RW.sessao && RW.sessao.perfil ? RW.sessao.perfil() || {} : {};
     aqui.forEach(function (a) {
       var m = u().militar(a.cpf) || { grad: '', nome: a.cpf }, sistema = a.origem === 'sugestao';
-      var lin = RW.tpl(sistema ? 'tpl-ne-rd-sistema' : 'tpl-ne-rd-admin');
+      var lin = RW.tpl(sistema ? 'tpl-extrajornada-rd-sistema' : 'tpl-extrajornada-rd-admin');
       lin.querySelector('.ne-rd-ini').textContent = sistema ? msg().rdSistema : msg().rdAdmin(a.por || ((eu.grau_abreviacao || '') + ' ' + (eu.nome_de_guerra || '')).trim());
       lin.querySelector('.ne-rd-nome').textContent = m.grad + ' ' + m.nome;
       lin.querySelector('.ne-rd-fim').textContent = msg().rdHoras(u().horas(a.blocos), paraDe(falta.cobre[a.cpf] || [], sistema)) + ' ' + msg().pref[u().pref(m, k)];
@@ -267,8 +267,8 @@
     if (chefe.length) frases.push([msg().chefeDirigeHoras(u().horas(chefe), falta.acnh.join(', ')), 'alerta']);
     if (ideal.length) frases.push([msg().faltaIdealHoras(u().horas(ideal)), 'alerta']);
     frases.forEach(function (f, i) {
-      var lin = RW.tpl('tpl-ne-rd-falta');
-      lin.classList.add('nova-extra-rd-linha--' + f[1]);
+      var lin = RW.tpl('tpl-extrajornada-rd-falta');
+      lin.classList.add('extrajornada-rd-linha--' + f[1]);
       lin.querySelector('.ne-rd-fim').textContent = f[0];
       /* na primeira, quem ainda pode tirar extra no dia (ou por que ninguém mais pode) */
       if (i === 0) {
@@ -281,7 +281,7 @@
     });
     var tinha = [1, 2, 3, 4].some(function (b) { return falta.base[b] + falta.abase[b] > 0; });
     if (tinha && !frases.length) {
-      var ok = RW.tpl('tpl-ne-rd-ok');
+      var ok = RW.tpl('tpl-extrajornada-rd-ok');
       ok.querySelector('.ne-rd-fim').textContent = msg().faltaCoberta;
       dentro.appendChild(ok);
       linhas++;
@@ -314,30 +314,30 @@
 
   /* os selos do militar no dia, embaixo do nome: condutor (quando falta e a CNH serve); o Só 24 h fica na linha do nome */
   function selosDoDia(m, uid, k) {
-    var d = G().dados(), selos = RW.tpl('tpl-ne-selos');
-    function selo(texto, classe) { var s = RW.tpl('tpl-ne-selo'); s.textContent = texto; if (classe) s.classList.add(classe); selos.appendChild(s); }
+    var d = G().dados(), selos = RW.tpl('tpl-extrajornada-selos');
+    function selo(texto, classe) { var s = RW.tpl('tpl-extrajornada-selo'); s.textContent = texto; if (classe) s.classList.add(classe); selos.appendChild(s); }
     var pedem = [d.falta_condutor, d.falta_amarela_condutor].map(function (mapa) { return ((mapa || {})[String(uid)] || {})[k] || {}; });
     if (pedem.some(function (pede) { return Object.keys(pede).some(function (b) { return pede[b].some(function (c) { return G().conduz(m, c); }); }); })) selo(msg().condutor, 'selo--sucesso');
     return selos;
   }
 
   function linhaMilitar(m, uid, k, alocs, comPelotao) {
-    var lin = RW.tpl('tpl-escala-extra-militar');
-    var ponto = lin.querySelector('.escala-extra-ponto');
-    if ((m.quer || []).indexOf(k) >= 0) ponto.classList.add('escala-extra-ponto--quer');
-    else if ((m.nao_posso || []).indexOf(k) >= 0) ponto.classList.add('escala-extra-ponto--nao');
+    var lin = RW.tpl('tpl-extrajornada-painel-militar');
+    var ponto = lin.querySelector('.extrajornada-painel-ponto');
+    if ((m.quer || []).indexOf(k) >= 0) ponto.classList.add('extrajornada-painel-ponto--quer');
+    else if ((m.nao_posso || []).indexOf(k) >= 0) ponto.classList.add('extrajornada-painel-ponto--nao');
     lin.querySelector('.escala-distribuicao-grad').textContent = m.grad;
     lin.querySelector('.escala-distribuicao-nome').textContent = m.nome;
     /* na linha do nome: o pelotão de quem é de outro e o selo de quem só aceita 24 h */
-    var linhaNome = lin.querySelector('.escala-extra-quem-nome');
+    var linhaNome = lin.querySelector('.extrajornada-painel-quem-nome');
     if (comPelotao) {
-      var un = lin.querySelector('.escala-extra-quem-unidade');
+      var un = lin.querySelector('.extrajornada-painel-quem-unidade');
       un.textContent = (u().unidade(m.unidade_id) || {}).nome || '';
       un.classList.remove('oculto');
       linhaNome.appendChild(un);
     }
     if (m.so24) {
-      var s24 = RW.tpl('tpl-ne-selo');
+      var s24 = RW.tpl('tpl-extrajornada-selo');
       s24.textContent = msg().so24;
       linhaNome.appendChild(s24);
     }
@@ -346,13 +346,13 @@
     if (a && +a.unidade === uid) linhaNome.insertBefore(u().origem(a), linhaNome.firstChild);
     /* embaixo do nome, na largura toda: os selos. O porquê da sugestão fica no relatório da Cobertura do dia */
     var selos = selosDoDia(m, uid, k);
-    if (selos.children.length) lin.insertBefore(selos, lin.querySelector('.escala-extra-outros'));
+    if (selos.children.length) lin.insertBefore(selos, lin.querySelector('.extrajornada-painel-outros'));
     var usou = G().usadas(m.cpf, alocs);
-    var cota = lin.querySelector('.escala-extra-cota');
+    var cota = lin.querySelector('.extrajornada-painel-cota');
     cota.textContent = msg().deCotas(usou, m.concedidas);
-    cota.classList.toggle('escala-extra-cota--erro', usou > m.concedidas);
-    ligarMarcas(lin.querySelector('.escala-extra-marcas'), m, k, marcados, uid);
-    RW.novaExtraDiaOutros.preencher(lin, m, k, usou, desenhar);
+    cota.classList.toggle('extrajornada-painel-cota--erro', usou > m.concedidas);
+    ligarMarcas(lin.querySelector('.extrajornada-painel-marcas'), m, k, marcados, uid);
+    RW.extrajornadaDiaOutros.preencher(lin, m, k, usou, desenhar);
     return lin;
   }
 
@@ -360,10 +360,10 @@
      vazio recebe os 4 de uma vez, se couberem na cota, e depois cada um por si); a mesma peça do painel do dia e da
      lista dos voluntários */
   function ligarMarcas(caixa, m, k, marcados, uid) {
-    caixa.classList.add('nova-extra-marcas');
-    Array.prototype.forEach.call(caixa.querySelectorAll('.escala-extra-marca'), function (bt) {
+    caixa.classList.add('extrajornada-marcas');
+    Array.prototype.forEach.call(caixa.querySelectorAll('.extrajornada-painel-marca'), function (bt) {
       var b = +bt.getAttribute('data-bloco'), on = marcados.indexOf(b) >= 0;
-      bt.classList.toggle('escala-extra-marca--on', on);
+      bt.classList.toggle('extrajornada-painel-marca--on', on);
       bt.setAttribute('aria-pressed', on ? 'true' : 'false');
       /* com o pedido aberto só dá para desmarcar; na Distribuição já lançada, nada (as mudanças vão pelos Ajustes) */
       bt.disabled = G().soLeitura() || G().antigo(k) || (G().travado() && !on);
@@ -377,14 +377,14 @@
   }
 
   function linhaIndisponivel(m, motivo) {
-    var lin = RW.tpl('tpl-escala-extra-indisponivel');
+    var lin = RW.tpl('tpl-extrajornada-painel-indisponivel');
     lin.querySelector('.escala-distribuicao-grad').textContent = m.grad;
     lin.querySelector('.escala-distribuicao-nome').textContent = m.nome;
-    lin.querySelector('.escala-extra-motivo-texto').textContent = motivo || '';
+    lin.querySelector('.extrajornada-painel-motivo-texto').textContent = motivo || '';
     return lin;
   }
 
-  RW.novaExtraDia = {
+  RW.extrajornadaDia = {
     abrir: abrir,
     mostrarEm: mostrarEm,
     redesenhar: desenhar,

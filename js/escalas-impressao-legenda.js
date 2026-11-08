@@ -6,7 +6,7 @@
    página contínua, no fim), as linhas da legenda: cada ícone que
    aparece no arquivo e o nome dele, na ordem e com os nomes da
    Legenda da tela (o molde #tpl-escala-legenda do index.html, fonte
-   única dos nomes; na Extrajornada, também o #tpl-ne-legenda-pdf, com
+   única dos nomes; na Extrajornada, também o #tpl-extrajornada-legenda-pdf, com
    quem inseriu a extra). Desenhada para a biblioteca do PDF, como o resto
    do arquivo; as medidas em pontos nas constantes abaixo.
    API: RosterWork.escalasImpressaoLegenda.carregarIcones(c, nomes) (os
@@ -17,7 +17,7 @@
 
   var RW = window.RosterWork = window.RosterWork || {};
 
-  var MOLDES = ['tpl-escala-legenda', 'tpl-ne-legenda-pdf'];   // o segundo só existe na Extrajornada
+  var MOLDES = ['tpl-escala-legenda', 'tpl-extrajornada-legenda-pdf'];   // o segundo só existe na Extrajornada
   var ICONE = 7;                       // o ícone, no tamanho dos ícones de origem dos PDFs
   var ICONE_MARGEM = [0, 0.5, 0, 0];   // alinha o ícone ao meio do texto
   var POR_LINHA = 6;                   // itens por linha (cabem na A4 em pé)

@@ -1,16 +1,16 @@
 /* ============================================================
-   NOVA EXTRA — a grade do mês: o rascunho e as contas
+   EXTRAJORNADA — a grade do mês: o rascunho e as contas
    O rascunho das extras do mês, a falta de cada pelotão (vermelha e
    amarela, com e sem as extras, e o que cada extra cobriu), a escala
    do mês (a mesma leitura da Escala) e a régua das barras. Quem abre
    entrega o mês por iniciar: a Distribuição e os Ajustes
-   (nova-extra-montar.js) e a aba Extrajornada do painel do dia da
+   (extrajornada-montar.js) e a aba Extrajornada do painel do dia da
    Escala (escalas-painel-extra.js). O calendário, a lista dos
    voluntários e o painel do dia leem e mudam por aqui.
    Tudo fica no rascunho até o Salvar; o militar sem nenhum horário
    continua no dia até lá. O rascunho aceita passar da cota: quem
    passou aparece em passaram e o Salvar espera acertar.
-   Não desenha nada. RosterWork.novaExtraGrade.
+   Não desenha nada. RosterWork.extrajornadaGrade.
    ============================================================ */
 (function () {
   'use strict';
@@ -28,9 +28,9 @@
   var escala = null;       // a escala do mês, a mesma da Escala: { comp, cobertura, erro, militares }
   var picos = {};          // a régua das barras de cada unidade no mês (antes e depois)
 
-  function msg() { return RW.mensagens.novaExtra.org; }
-  function u() { return RW.novaExtraUtil; }
-  function F() { return RW.novaExtraFalta; }
+  function msg() { return RW.mensagens.extrajornada.org; }
+  function u() { return RW.extrajornadaUtil; }
+  function F() { return RW.extrajornadaFalta; }
   function chave(cpf, data) { return cpf + '|' + data; }
   function dataDe(k) { return new Date(+k.slice(0, 4), +k.slice(5, 7) - 1, +k.slice(8, 10)); }
   function iso(x) { return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'); }
@@ -109,7 +109,7 @@
      todo); null se nada impede */
   function impedimento(m, k) {
     var oc = (m.ocupado || {})[k];
-    if (oc) return RW.mensagens.novaExtra.motivos[oc] || oc;
+    if (oc) return RW.mensagens.extrajornada.motivos[oc] || oc;
     var livres = ((d.livres_adm || {})[m.cpf] || {})[k];
     if (livres && !livres.length) return msg().expedienteDiaTodo;
     return null;
@@ -117,7 +117,7 @@
 
   /* o dia de verdade: no mês lançado, sem mudança por salvar no dia, a escala de hoje já tem as extras e diz o que sobra */
   function real(k) { return lancada() && !!d.real && !alteracoes().some(function (c) { return mud[c].data === k; }); }
-  /* a falta de uma unidade num dia e o que as extras cobrem (nova-extra-falta.js); no dia de verdade, com a cor da escala */
+  /* a falta de uma unidade num dia e o que as extras cobrem (extrajornada-falta.js); no dia de verdade, com a cor da escala */
   function faltaDoDia(uid, k, alocs) {
     var e = real(k) && escala && (escala.erro[uid] || {})[k];
     return F().doDia(d, uid, k, alocs, e && e.length === 24 ? e : null);
@@ -128,7 +128,7 @@
   function pelotoes(lista) { return (lista || d.unidades).filter(function (x) { return x.pelotao !== false; }); }
 
   /* ---------- as barras: a escala do mês (a mesma leitura da Escala) e a conta do depois ---------- */
-  /* a escala do mês que veio com o mês (nova_extra_mes, da conta guardada no banco) */
+  /* a escala do mês que veio com o mês (extrajornada_mes, da conta guardada no banco) */
   function escalaDoMes() {
     if (!d.escala || !RW.escalasDados) return;
     var r = RW.escalasDados.reorganizar(d.escala);
@@ -205,7 +205,7 @@
   }
 
   /* o que o calendário, a lista, o painel do dia e quem abriu leem e mudam */
-  RW.novaExtraGrade = {
+  RW.extrajornadaGrade = {
     INI: INI, SEM_CURTA: SEM_CURTA,
     /* quem abre entrega o mês, o modo ('distribuicao' ou 'ajustes') e o que fazer quando o rascunho muda */
     iniciar: function (dados, modoNovo, quandoMudar) { d = dados; modo = modoNovo || 'distribuicao'; aoMudar = quandoMudar || null; },

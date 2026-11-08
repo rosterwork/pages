@@ -1,5 +1,5 @@
 /* ============================================================
-   NOVA EXTRA — os PDFs dos relatórios (Pedidos, Termos e cotas,
+   EXTRAJORNADA — os PDFs dos relatórios (Pedidos, Termos e cotas,
    Relatório inicial e Relatório final), no padrão do registro RW das
    trocas (trocas-registro-pdf.js): o título em caixa alta, o Mês, a
    Unidade e o Gerado em no alto, as seções numeradas com a linha
@@ -16,7 +16,7 @@
    Usa as peças do PDF da escala (escalas-impressao-pdf.js: biblioteca,
    fontes, logo, cores do tema e download). O PDF é desenhado aqui
    (exceção REGRAS §3/§4).
-   RosterWork.novaExtraRelatoriosPdf.
+   RosterWork.extrajornadaRelatoriosPdf.
    ============================================================ */
 (function () {
   'use strict';
@@ -39,7 +39,7 @@
                   era: 58, ficou: 58, motivo: 92, ajustadoPor: 80, campoRotulo: 150 };
 
   function P() { return RW.escalasImpressaoPdf; }
-  function txt() { return RW.mensagens.novaExtra.relatoriosPdf; }
+  function txt() { return RW.mensagens.extrajornada.relatoriosPdf; }
   function dois(n) { return String(n).padStart(2, '0'); }
   function dataBr(iso) { var p = String(iso).split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
   function rotuloMes(comp) { var p = String(comp).split('-'); var n = MESES[Number(p[1]) - 1]; return n.charAt(0).toUpperCase() + n.slice(1) + ' de ' + p[0]; }
@@ -306,7 +306,7 @@
     return documento('final', r, opc, conteudo, c);
   }
 
-  /* ---------- os dados do mês (nova_extra_mes) no formato dos relatórios ---------- */
+  /* ---------- os dados do mês (extrajornada_mes) no formato dos relatórios ---------- */
   function dados(d) {
     var agora = new Date(), mes = d.mes;
     var recebidas = mes.repartir_por === 'por_unidade'
@@ -323,7 +323,7 @@
 
   var MONTAR = { pedidos: pedidos, termos: termos, inicial: inicial, final: final };
 
-  /* o arquivo de um relatório: qual ('pedidos', 'termos', 'inicial' ou 'final'), o mês (nova_extra_mes) e as opções
+  /* o arquivo de um relatório: qual ('pedidos', 'termos', 'inicial' ou 'final'), o mês (extrajornada_mes) e as opções
      { unidade: id ou null (todos), modo: 'separar' ou 'unica' } → a promessa do arquivo */
   function arquivo(qual, d, opc) {
     return P().preparar().then(function (c) { return P().desenhar(MONTAR[qual](dados(d), opc, c), c); }).then(function (r) { return r.arquivo; });
@@ -335,5 +335,5 @@
     return txt().arquivo(txt().arquivos[qual], d.competencia.slice(5, 7), d.competencia.slice(0, 4), u ? String(u).normalize('NFD').replace(/[^\w]/g, '') : '');
   }
 
-  RW.novaExtraRelatoriosPdf = { arquivo: arquivo, nomeArquivo: nomeArquivo, trechos: trechos };
+  RW.extrajornadaRelatoriosPdf = { arquivo: arquivo, nomeArquivo: nomeArquivo, trechos: trechos };
 })();

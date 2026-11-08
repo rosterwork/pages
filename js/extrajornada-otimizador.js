@@ -1,21 +1,21 @@
 /* ============================================================
-   NOVA EXTRA — o otimizador do "Preencher pela sugestão"
-   Pede ao banco os dados (nova_extra_sugerir com p_so_dados), monta o
+   EXTRAJORNADA — o otimizador do "Preencher pela sugestão"
+   Pede ao banco os dados (extrajornada_sugerir com p_so_dados), monta o
    placar das prioridades como um problema de programação inteira e o
    resolve com o HiGHS (bibliotecas/), num trabalhador em segundo plano
-   (nova-extra-otimizador-trabalho.js; sem ele, na própria tela). As
+   (extrajornada-otimizador-trabalho.js; sem ele, na própria tela). As
    escolhas voltam ao banco, que confere as regras e devolve o porquê
    (p_escolhidas). Se o cálculo falhar, passar de 1 minuto ou o banco
    recusar alguma escolha, vale o cálculo simples do banco (o motor
    reserva). Enquanto calcula, o véu cobre a tela, com o Cancelar.
    Não cria HTML (o véu está na página) nem escreve estilo (só classList).
-   RosterWork.novaExtraOtimizador.
+   RosterWork.extrajornadaOtimizador.
    ============================================================ */
 (function () {
   'use strict';
 
   var RW = window.RosterWork = window.RosterWork || {};
-  var TRABALHADOR = 'js/nova-extra-otimizador-trabalho.js';
+  var TRABALHADOR = 'js/extrajornada-otimizador-trabalho.js';
   var BIBLIOTECA = 'bibliotecas/highs.js';
   var LIMITE_MS = 60000;
   /* presolve desligado: com ele, o HiGHS em WebAssembly cai em alguns meses; a folga mínima evita a outra queda */
@@ -279,7 +279,7 @@
 
   /* as extras escolhidas pelo otimizador: [{ cpf, data, unidade, blocos }] */
   function calcular(competencia, fixas) {
-    return RW.novaExtraUtil.chamar('nova_extra_sugerir', { p_competencia: competencia, p_atuais: fixas, p_so_dados: true }).then(function (D) {
+    return RW.extrajornadaUtil.chamar('extrajornada_sugerir', { p_competencia: competencia, p_atuais: fixas, p_so_dados: true }).then(function (D) {
       if (!D || !D.ok) throw { motivo: 'falha', detalhe: D && D.error };
       if (!D.mil.length) return [];
       var modelo = montarModelo(D);
@@ -311,7 +311,7 @@
     function banco(escolhidas) {
       var corpo = { p_competencia: competencia, p_atuais: fixas };
       if (escolhidas) corpo.p_escolhidas = escolhidas;
-      return RW.novaExtraUtil.chamar('nova_extra_sugerir', corpo);
+      return RW.extrajornadaUtil.chamar('extrajornada_sugerir', corpo);
     }
     /* um instante para o véu aparecer antes da conta (que pode rodar na tela) */
     new Promise(function (aceitar) { setTimeout(aceitar, 50); })
@@ -330,7 +330,7 @@
         if (meu !== pedido) return;
         fim(veu);
         if (!res) return;
-        if (!res.r || !res.r.ok) { RW.avisar({ tipo: 'erro', mensagem: (res.r && res.r.error) || RW.mensagens.novaExtra.org.falhaSugestao }); return; }
+        if (!res.r || !res.r.ok) { RW.avisar({ tipo: 'erro', mensagem: (res.r && res.r.error) || RW.mensagens.extrajornada.org.falhaSugestao }); return; }
         aoTerminar(res.r, res.reserva);
       }, function () {
         if (meu !== pedido) return;
@@ -343,7 +343,7 @@
     veu.classList.add('oculto');
   }
 
-  RW.novaExtraOtimizador = {
+  RW.extrajornadaOtimizador = {
     preencher: preencher,
     calcular: calcular,
     /* para o guarda de saída: o navegador avisa ao fechar no meio da conta */

@@ -205,8 +205,8 @@
       return;
     }
     var meu = ++token;
-    ctx.atualizar();   // os nomes já aparecem; as linhas chegam com a resposta
-    RosterWork.usuariosAfastamentosDados.listar(cat, ano).then(function (lista) {
+    ctx.atualizar();   // os nomes já aparecem; as linhas chegam com a resposta, e a forma delas fica o mínimo na tela
+    RosterWork.etapas.segurarDesde(performance.now(), RosterWork.usuariosAfastamentosDados.listar(cat, ano)).then(function (lista) {
       if (meu !== token || !aba) return;
       if (lista == null) {
         if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: M().falhaCarregar });

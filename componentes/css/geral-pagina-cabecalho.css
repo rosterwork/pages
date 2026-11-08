@@ -128,8 +128,10 @@
   padding: 0 var(--respiro-pagina) var(--respiro-pagina);   /* sem padding-top: o respiro do topo é fixo no .pagina-corpo--camada (acima da rolagem) */
 }
 
-/* o bloqueio do aviso de manutenção, no lugar da tela (molde #tpl-pagina-manutencao, geral-manutencao.js) */
-.pagina-manutencao {
+/* o bloqueio do aviso de manutenção, no lugar da tela (molde #tpl-pagina-manutencao, geral-manutencao.js), e a tela que
+   não abriu (#tpl-pagina-nao-chegou e #tpl-pagina-erro, index-navegacao.js), com o Tentar de novo embaixo do texto */
+.pagina-manutencao,
+.pagina-nao-abriu {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -141,18 +143,21 @@
   border-radius: var(--raio-medio);
 }
 
-.pagina-manutencao > .icone {
+.pagina-manutencao > .icone,
+.pagina-nao-abriu > .icone {
   color: var(--alerta);
 }
 
-.pagina-manutencao-titulo {
+.pagina-manutencao-titulo,
+.pagina-nao-abriu-titulo {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
   color: var(--texto-forte);
 }
 
-.pagina-manutencao-texto {
+.pagina-manutencao-texto,
+.pagina-nao-abriu-texto {
   margin: 0;
   font-size: var(--fonte-padrao);
   color: var(--texto-suave);

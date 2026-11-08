@@ -167,7 +167,7 @@
       corpo.textContent = '';
       var gira = RW.painel.criarCarregando();
       if (gira) corpo.appendChild(gira);
-      Promise.resolve(carregar()).then(function (dias) {
+      RW.painel.segurar(carregar()).then(function (dias) {
         if (!document.contains(corpo)) return;
         if (!Array.isArray(dias) || (dias[0] && dias[0].erro) || !RW.escalasPainelEditar) { lido = false; estado(m.falhaEscala); return; }
         if (!dias.length) { estado(m.semEscala); return; }

@@ -320,7 +320,7 @@
       corpo: { p_usuario_id: usuarioId }
     }).then(function (resp) { return resp.ok ? resp.json() : null; });
     var grausP = RosterWork.novoUsuarioDados ? RosterWork.novoUsuarioDados.buscarGraus() : Promise.resolve([]);
-    Promise.all([fichaP, grausP, lerAlteracoes(usuarioId)])
+    RosterWork.painel.segurar(Promise.all([fichaP, grausP, lerAlteracoes(usuarioId)]))
       .then(function (r) {
         if (!RosterWork.painel.estaAberto() || !pessoaAtual || pessoaAtual.usuario_id !== usuarioId) return;
         var ficha = r[0];

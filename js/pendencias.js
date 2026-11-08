@@ -192,14 +192,16 @@
   /* lê tudo de uma vez: a fila e os seus pedidos (a fila também chama depois de cada decisão) */
   function carregar() {
     var minha = ++leitura;
-    /* a 1ª leitura: passando de 0,3 s, a forma dos cartões e, de 1 s, as etapas; depois, a lista fica até a nova chegar */
+    /* a 1ª leitura: passando de 0,5 s, a forma dos cartões e, de 1,5 s, as etapas (o que apareceu fica o mínimo na tela);
+       depois, a lista fica até a nova chegar */
     var lista = q('#pendencias-fazer');
     if (espera) espera.parar();
     espera = lista && !lista.children.length ? RW.etapas.area(lista, { forma: 'tpl-esqueleto-cartoes', etapas: 'pendenciasAbrir' }) : null;
-    return Promise.all([
+    var leituras = Promise.all([
       RW.fila.ler(),
       RW.rpc('pendencias_meus_pedidos', {}).catch(function () { return null; })
-    ]).then(function (r) {
+    ]);
+    return (espera ? espera.segurar(leituras) : leituras).then(function (r) {
       if (minha !== leitura || !conteudo || !document.contains(conteudo)) return;
       if (espera) espera.parar();
       espera = null;

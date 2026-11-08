@@ -17,6 +17,7 @@
 
   /* o código do sistema, na ordem em que roda */
   var ARQUIVOS = [
+    'componentes/js/geral-erros.js',
     'componentes/js/geral-limpar-comentarios.js',
     'componentes/js/geral-carregando.js',
     'componentes/js/geral-etapas.js',
@@ -120,20 +121,29 @@
     });
   }
 
-  /* a 3ª etapa diz a tela que vai abrir; o HTML já traz a Escala, a tela de quem não pediu outra */
+  /* a 3ª etapa diz a tela que vai abrir, e o menu já nasce marcado nela (no F5 de outra tela, a Escala não fica marcada
+     até o código chegar); o HTML traz a Escala, a tela de quem não pediu outra. Tela fora do menu (Meu perfil, Avisos):
+     nenhum item marcado, como a navegação faz */
   function nomearTela() {
     var rota = location.search.match(/[?&]pagina=([^&]+)/);
     if (!rota || rota[1] === 'escalas') return;
-    var item = document.querySelector('.menu-item[data-pagina="' + decodeURIComponent(rota[1]) + '"] .menu-item-label');
+    var pagina = decodeURIComponent(rota[1]);
+    var item = document.querySelector('.menu-item[data-pagina="' + pagina + '"] .menu-item-label');
     Array.prototype.forEach.call(document.querySelectorAll('[data-abertura-tela]'), function (lugar) {
       lugar.textContent = item ? item.textContent : lugar.getAttribute('data-tela-sem-nome');
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('.menu-item[data-pagina]'), function (outro) {
+      outro.classList.toggle('menu-item--selecionado', outro.getAttribute('data-pagina') === pagina);
     });
   }
 
   RW.abertura = {
     etapa: etapaDaAbertura,
-    telaChegando: function (feitos, total) { barraDaAbertura(PARTE_DO_SISTEMA + (1 - PARTE_DO_SISTEMA) * (total ? feitos / total : 1)); }
+    telaChegando: function (feitos, total) { barraDaAbertura(PARTE_DO_SISTEMA + (1 - PARTE_DO_SISTEMA) * (total ? feitos / total : 1)); },
+    cartaoEm: null   // quando o cartão apareceu (o CSS mostra passando de 1,5 s): a casca só sai depois do mínimo dele
   };
+  var cartaoDaCasca = document.getElementById('abertura-cartao');
+  if (cartaoDaCasca) cartaoDaCasca.addEventListener('animationstart', function () { RW.abertura.cartaoEm = performance.now(); });
 
   var chegaram = 0;
   var pedidos = {};   /* arquivo → promessa da carga: cada um roda uma vez só */

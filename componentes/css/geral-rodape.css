@@ -14,7 +14,7 @@
    linhas grudadas da lista e do painel lateral (8), para a sombra
    aparecer inteira também sobre o painel, no rodapé largo.
    Em uso: Distribuição, Extrajornada, Usuários, Nova distribuição,
-   Nova extra, Meu perfil e o painel lateral.
+   Extrajornada, Meu perfil e o painel lateral.
    ============================================================ */
 .rodape {
   flex-shrink: 0;

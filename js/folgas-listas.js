@@ -47,7 +47,7 @@
   function carregarHistorico() {
     var el = document.getElementById('folgas-historico');
     if (!el || !document.contains(el)) return;
-    /* o que está na tela fica até o novo chegar; vazia, passando de 0,3 s, a forma dos cartões */
+    /* o que está na tela fica até o novo chegar; vazia, passando de 0,5 s, a forma dos cartões, que fica o mínimo na tela */
     if (espera) espera.parar();
     espera = RW.etapas.area(el, el.children.length ? {} : { forma: 'tpl-esqueleto-cartoes' });
     var req = ++seqHist;
@@ -55,7 +55,7 @@
       if (espera) espera.parar();
       espera = null;
     }
-    RW.folgasDados.lancamentos('todos', desdeDoPeriodo()).then(function (lista) {
+    espera.segurar(RW.folgasDados.lancamentos('todos', desdeDoPeriodo())).then(function (lista) {
       if (!document.contains(el) || req !== seqHist) return;
       chegou();
       if (lista == null) { vazioEm(el, msg().falhaCarregar); return; }   // null = falha
