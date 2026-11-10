@@ -47,11 +47,18 @@
     var mudanca = f.mudanca || null;   // { id, para: 'DD/MM', para_iso }: a folga veio da mudança de dia
     var escolha = (opcoes && opcoes.escolha) || null;   // a resposta que veio do menu da linha
 
-    /* Cancelar a folga: ele volta ao serviço no dia */
+    /* Cancelar a folga: ele volta ao serviço no dia. Com a extra dele por cima da folga (o banco diz as horas), a nota
+       fica amarela: cancelada, ele fica de serviço e de extra no mesmo horário */
     function perguntaFolga(tela) {
       var caixa = tela.querySelector('.escala-folga-dia-pergunta');
       var efeito = caixa.querySelector('.escala-folga-dia-efeito');
-      efeito.querySelector('.nota-texto').textContent = msg().cancelarFolgaEfeito(nomeDe(f), contabilizada);
+      var extras = [];
+      linhas.forEach(function (l) {
+        (l.extra || []).forEach(function (x) { extras.push([RosterWork.horario.curta(x.hi), RosterWork.horario.curta(x.hf)]); });
+      });
+      var texto = msg().cancelarFolgaEfeito(nomeDe(f), contabilizada);
+      efeito.querySelector('.nota-texto').textContent = extras.length ? texto + ' ' + msg().cancelarFolgaExtra(extras) : texto;
+      efeito.classList.toggle('nota--alerta', extras.length > 0);
       ligarRadios(caixa, function (valor) {
         var cancelar = valor === 'cancelar';
         efeito.classList.toggle('oculto', !cancelar);

@@ -54,6 +54,8 @@
      todas as unidades da companhia; o dia sem a chave não tem escala) */
   function reorganizar(grade) {
     var militares = {}, afastados = {}, cobertura = {}, erro = {}, atualizando = [], oficial = {};
+    /* quem está de serviço e de extra no mesmo horário: a nota da Escala lê cada leitura (escalas-extra-servico.js) */
+    if (RosterWork.escalaExtraServico) RosterWork.escalaExtraServico.anotar(grade);
     Object.keys(grade).forEach(function (uid) {
       militares[uid] = {}; afastados[uid] = {}; cobertura[uid] = {}; erro[uid] = {};
       var dias = grade[uid] || {};

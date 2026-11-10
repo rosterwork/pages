@@ -74,6 +74,29 @@
     });
   }
 
+  /* Tamanho da tela (só no celular): Normal ou Menor, a escolhida marcada; o toque aplica na hora, guarda e grava
+     (js/index-sessao.js). Aplica de novo ao abrir: na entrada pelo Manter-me conectado, a escolha chega depois */
+  var tamanhoTela = document.getElementById('tamanho-tela');
+
+  function marcarTamanhoTela() {
+    var escolha = RosterWork.tamanhoTela.escolha();
+    Array.prototype.forEach.call(tamanhoTela.querySelectorAll('[data-tela]'), function (item) {
+      item.classList.toggle('dropdown-item--ativo', item.getAttribute('data-tela') === escolha);
+    });
+  }
+
+  if (tamanhoTela && RosterWork.tamanhoTela) {
+    tamanhoTela.classList.toggle('oculto', !document.documentElement.hasAttribute('data-celular'));
+    RosterWork.tamanhoTela.aplicar();
+    marcarTamanhoTela();
+    Array.prototype.forEach.call(tamanhoTela.querySelectorAll('[data-tela]'), function (item) {
+      item.addEventListener('click', function () {
+        RosterWork.tamanhoTela.escolher(item.getAttribute('data-tela'));
+        marcarTamanhoTela();
+      });
+    });
+  }
+
   var perfil = null;
   try { perfil = JSON.parse(sessionStorage.getItem('rosterwork_user')); } catch (e) {}
   if (!perfil || !perfil.ok) return;

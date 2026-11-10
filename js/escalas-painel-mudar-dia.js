@@ -1,5 +1,5 @@
 /* ============================================================
-   ESCALAS — Mudar o dia do serviço (o menu Editar o dia; só admin).
+   ESCALAS — Mudar o dia do serviço (o lápis da aba Militares; só admin).
    O serviço pelo ciclo de um militar neste dia passa para outro dia,
    na mesma unidade e no mesmo horário: o serviço inteiro ou uma
    parte. Não é folga: o banco de horas não muda, e o militar é

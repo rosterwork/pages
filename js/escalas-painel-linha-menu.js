@@ -26,7 +26,7 @@
    para quem está no dia pela guarnição, Remover da guarnição (a
    pergunta Último serviço, escalas-painel-ciclo.js); quem foi
    remanejado daqui para outra unidade, o Devolver; quem saiu da
-   guarnição (a linha riscada do grupo Saíram da guarnição), o
+   guarnição (a linha riscada do grupo Saiu da guarnição), o
    Cancelar a saída. No De folga (nas
    duas abas): Cancelar a folga, ou Desfazer a mudança (a folga que
    veio da mudança de dia).

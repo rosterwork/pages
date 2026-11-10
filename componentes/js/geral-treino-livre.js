@@ -15,15 +15,16 @@
    rosterwork_treino): quem recarrega a página continua no treino livre,
    com os dados de verdade e o mês de treino de volta aos Pedidos; no
    treino com passo a passo, volta à lista,
-   na linha dele. O tema e as unidades de quando o modo ligou voltam ao
-   sair (soltar).
+   na linha dele. O tema, as unidades, o tamanho dos calendários e o
+   Tamanho da tela do celular de quando o modo ligou voltam ao sair
+   (soltar).
    API: entrar(), guardar(livre, id), soltar().
    ============================================================ */
 (function () {
   'use strict';
 
   var RW = window.RosterWork = window.RosterWork || {};
-  var CHAVE = 'rosterwork_treino';   // a marca: { cpf, livre, id, tema, unidades }
+  var CHAVE = 'rosterwork_treino';   // a marca: { cpf, livre, id, tema, unidades, tamanhos }
   var PREFERENCIAS = 'rosterwork_preferencias';
 
   function ler(chave) { try { return JSON.parse(sessionStorage.getItem(chave)) || null; } catch (e) { return null; } }
@@ -31,17 +32,25 @@
   function esquecer() { try { sessionStorage.removeItem(CHAVE); } catch (e) {} }
   function perfil() { return RW.sessao ? RW.sessao.perfil() : null; }
 
+  /* o tamanho dos calendários (computador e celular) e o Tamanho da tela do celular, como estão nas preferências */
+  function tamanhosDe(prefs) {
+    var visao = prefs.escala_visao || {};
+    return { tamanho: visao.tamanho == null ? null : visao.tamanho, tamanho_celular: visao.tamanho_celular == null ? null : visao.tamanho_celular,
+      tela_celular: prefs.tela_celular || null };
+  }
+
   /* ---------- a marca da sessão ---------- */
-  /* o tema e as unidades guardados são os de quando o modo ligou */
+  /* o tema, as unidades e os tamanhos guardados são os de quando o modo ligou */
   function guardar(livre, id) {
     var marca = ler(CHAVE), prefs = ler(PREFERENCIAS) || {}, quem = perfil();
     gravar(CHAVE, {
       cpf: quem ? quem.cpf : null, livre: livre, id: id,
       tema: marca ? marca.tema : (prefs.tema || null),
-      unidades: marca ? marca.unidades : (prefs.unidades_selecionadas || null)
+      unidades: marca ? marca.unidades : (prefs.unidades_selecionadas || null),
+      tamanhos: marca && marca.tamanhos ? marca.tamanhos : tamanhosDe(prefs)
     });
   }
-  /* saiu do modo: a marca some, e o tema e as unidades voltam */
+  /* saiu do modo: a marca some, e o tema, as unidades e os tamanhos voltam */
   function soltar() {
     var marca = ler(CHAVE);
     if (!marca) return;
@@ -49,13 +58,26 @@
     var prefs = ler(PREFERENCIAS) || {}, quem = perfil();
     var temaMudou = (prefs.tema || null) !== marca.tema;
     var unidadesMudaram = JSON.stringify(prefs.unidades_selecionadas || null) !== JSON.stringify(marca.unidades);
-    if (!temaMudou && !unidadesMudaram) return;
+    var tamanhosMudaram = !!marca.tamanhos && JSON.stringify(tamanhosDe(prefs)) !== JSON.stringify(marca.tamanhos);
+    if (!temaMudou && !unidadesMudaram && !tamanhosMudaram) return;
     prefs.tema = marca.tema;
     prefs.unidades_selecionadas = marca.unidades;
+    if (tamanhosMudaram) {
+      var t = marca.tamanhos, visao = prefs.escala_visao || {};
+      ['tamanho', 'tamanho_celular'].forEach(function (chave) {
+        if (t[chave] == null) delete visao[chave]; else visao[chave] = t[chave];
+      });
+      prefs.escala_visao = visao;
+      if (t.tela_celular == null) delete prefs.tela_celular; else prefs.tela_celular = t.tela_celular;
+    }
     gravar(PREFERENCIAS, prefs);
     if (temaMudou && RW.tema) RW.tema.aplicar();
     if (unidadesMudaram && RW.seletorUnidadesCabecalho) {
       RW.seletorUnidadesCabecalho.aplicarSelecaoPorIds(marca.unidades || (quem && quem.lotacao_id ? [quem.lotacao_id] : []));
+    }
+    if (tamanhosMudaram) {
+      if (RW.tamanhoTela) RW.tamanhoTela.aplicar();
+      if (RW.calendarioTamanho) RW.calendarioTamanho.aplicarGuardado();
     }
   }
   /* recarregou a página. A marca de outra pessoa, nesta aba, não vale */

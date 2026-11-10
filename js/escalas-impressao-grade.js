@@ -4,13 +4,17 @@
    painel de impressão comum (componentes/js/geral-impressao.js, com
    as caixas do molde #tpl-escala-impressao do escalas.html), com o que
    é desta impressão: a grade e o mês da tela (no Colunas › Unidades,
-   a semana) e os filtros ligados, no resumo da nota do alto; o
-   período (no Calendário, o "Mês todo" ou as semanas escolhidas; na
-   Agenda e no Colunas › Dias, do dia ao dia); o formato (Folhas A4
-   ou Página contínua) e o arquivo, desenhado no
-   escalas-impressao-grade-pdf.js. As unidades começam marcadas com as
-   da tela (e a companhia de cada pelotão); o Mostrar (gráfico,
-   ícones, faixa), a prévia e o Gerar PDF são do painel comum.
+   a semana) e os filtros ligados, no resumo da nota do alto; a
+   orientação (só na Agenda e no Calendário: Retrato sai como a
+   agenda; Paisagem, como o calendário, com as unidades uma embaixo da
+   outra, seja qual for a tela, para caber na A4; vem marcada pela
+   aba); o período (no Calendário, o "Mês todo" ou as semanas
+   escolhidas; na Agenda e no Colunas › Dias, do dia ao dia); o
+   formato (Folhas A4 ou Página contínua) e o arquivo, desenhado no
+   escalas-impressao-grade-pdf.js. O Colunas fica com a folha dele, com
+   as unidades uma embaixo da outra no Colunas › Dias. As unidades
+   começam marcadas com as da tela; o Mostrar (gráfico, ícones,
+   faixa), a prévia e o Gerar PDF são do painel comum.
    Quem imprime outra grade (a Extrajornada) passa a leitura dela no
    lugar da escala (dados, no mesmo formato), o título do arquivo e
    a conferência (null: sem o aviso do erro grave da escala).
@@ -28,6 +32,8 @@
     'colunas-dias': { periodo: 'dias', paisagem: true },
     'colunas-unidades': { periodo: 'semana', paisagem: false }
   };
+  /* a orientação da Agenda e do Calendário: cada uma imprime uma grade */
+  var ORIENTACOES = { retrato: 'agenda', paisagem: 'calendario' };
 
   var form = null;          // o painel aberto: as escolhas desta impressão (formato e período) e as peças delas
   var cacheDados = null;    // { chave, promessa }: mudar o formato, o Mostrar ou o período não busca de novo
@@ -177,6 +183,23 @@
     RW.impressao.atualizar();
   }
 
+  /* ---------- a orientação ---------- */
+  /* o que vale do molde: as caixas das grades, a do período da grade e, na Agenda e no Calendário, a orientação */
+  function marcas() {
+    return ['grade', FORMATOS[form.formato].periodo].concat(form.comOrientacao ? ['orientacao'] : []);
+  }
+
+  /* a orientação trocou a grade (Retrato: a agenda; Paisagem: o calendário): a caixa do período (os botões das semanas
+     só com o Mês todo desmarcado), os títulos do painel e o resto (a frase das datas, o resumo, a prévia) */
+  function trocarGrade(formato) {
+    if (!formato || formato === form.formato) return;
+    form.formato = formato;
+    RW.impressao.marcar(marcas());
+    form.lista.classList.toggle('oculto', FORMATOS[formato].periodo !== 'semanas' || form.mesTodo);
+    RW.painel.definirTitulos(msg().titulos[formato], subtitulo());
+    mudou();
+  }
+
   /* os dados da tela (ler_escala_mes, ou a leitura de quem abriu) do mês ou da semana; o mesmo pedido não busca de novo */
   function carregarDados(ids, inicio, fim) {
     var chave = ids.join(',') + '|' + inicio + '|' + fim;
@@ -203,28 +226,22 @@
     var formato = form.formato, continua = form.continua, paisagem = FORMATOS[formato].paisagem, diasPorLinha = form.diasPorLinha, titulo = form.titulo, prefixo = form.prefixo;
     var unidades = escolhas.unidades.map(function (u) { return { unidade_id: u.unidade_id, nome: u.nome }; });
     var mostrar = escolhas.mostrar;
-    /* como a tela: as unidades lado a lado nos calendários (a escolha da pessoa; geral-visao-grade.js) e o Oficial de Área
-       no título do dia, só na escala (a grade de outra tela, como a Extrajornada, vem com os dados dela) */
-    var ladoALado = (formato === 'calendario' || formato === 'colunas-dias') && !!(RW.visaoGrade && RW.visaoGrade.disposicao() === 'lado');
+    /* como a tela, o Oficial de Área no título do dia, só na escala (a grade de outra tela, como a Extrajornada, vem com os
+       dados dela); as unidades sempre uma embaixo da outra no calendário, seja qual for a tela (cabe na A4) */
     var comOficial = !form.dados;
     return {
       resumo: resumo(escolhas.unidades),
       inicio: iso(dentro[0].data),
       fim: iso(dentro[dentro.length - 1].data),
       chave: [escolhas.ids.join(','), formato, continua, mostrar.grafico, mostrar.icones, mostrar.faixa, p.dias.length,
-        iso(p.dias[0].data), iso(p.dias[p.dias.length - 1].data), p.texto, ladoALado].join('|'),
+        iso(p.dias[0].data), iso(p.dias[p.dias.length - 1].data), p.texto].join('|'),
       montar: function () {
         return carregarDados(escolhas.ids, iso(p.busca.inicio), iso(p.busca.fim)).then(function (dados) {
           return RW.escalasImpressaoGradePdf.gerar({ formato: formato, paisagem: paisagem, continua: continua, mostrar: mostrar,
             diasPorLinha: diasPorLinha, unidades: unidades, dias: p.dias, texto: p.texto, dados: dados, titulo: titulo, prefixo: prefixo,
-            ladoALado: ladoALado, comOficial: comOficial });
+            comOficial: comOficial });
         }).then(function (r) {
-          /* a folha maior (lado a lado, que a impressora reduz para a A4): o subtítulo do painel diz o tamanho certo */
-          if (form && form.tamanho !== r.tamanho) {
-            form.tamanho = r.tamanho;
-            RW.painel.definirTitulos(null, subtitulo());
-          }
-          return { arquivo: r.arquivo, nome: r.nome, folhas: RW.mensagens.impressao.folhas(r.folhas, continua, paisagem, r.tamanho) };
+          return { arquivo: r.arquivo, nome: r.nome, folhas: RW.mensagens.impressao.folhas(r.folhas, continua, paisagem) };
         }, function (e) {
           throw { mensagem: e && e.longaDemais ? msg().longaDemais : null };
         });
@@ -233,7 +250,7 @@
   }
 
   /* ---------- abrir ---------- */
-  function subtitulo() { return msg().subtitulo(FORMATOS[form.formato].paisagem, form.continua, form.tamanho); }
+  function subtitulo() { return msg().subtitulo(FORMATOS[form.formato].paisagem, form.continua); }
 
   /* opcoes: { formato, data (a da tela), unidades ([{ unidade_id, nome }] da tela: as marcadas no começo), diasPorLinha,
      filtros (os ligados na tela, em texto); de outra grade: dados(ids, inicio, fim) (a promessa no formato do
@@ -249,7 +266,8 @@
       aoFechar: function () { RW.impressao.esquecer(); form = null; cacheDados = null; } });
     /* as escolhas desta impressão (o formato e o período) e o que vem da tela */
     form = {
-      formato: formato, continua: false, diasPorLinha: opcoes.diasPorLinha || 3, filtros: opcoes.filtros || [],
+      formato: formato, comOrientacao: formato === ORIENTACOES.retrato || formato === ORIENTACOES.paisagem,
+      continua: false, diasPorLinha: opcoes.diasPorLinha || 3, filtros: opcoes.filtros || [],
       dados: opcoes.dados || null, titulo: opcoes.titulo || null, prefixo: opcoes.prefixo || null,
       data: new Date(data.getFullYear(), data.getMonth(), data.getDate()), mes: new Date(data.getFullYear(), data.getMonth(), 1),
       mesTodo: true, semanas: [], de: 1, ate: 1
@@ -257,7 +275,7 @@
     var meu = form;
     RW.impressao.montar(RW.painel.corpo(), RW.painel.rodape(), {
       molde: 'tpl-escala-impressao',
-      marcas: ['grade', periodo],
+      marcas: marcas(),
       conferir: 'conferir' in opcoes ? opcoes.conferir : (RW.escalasImpressao ? RW.escalasImpressao.conferirErros : null),
       ids: (opcoes.unidades || []).map(function (u) { return u.unidade_id; }),
       mostrar: { grafico: true, icones: true, faixa: true },
@@ -267,6 +285,13 @@
         form.mesTodoBotao = peca('mes-todo');
         form.lista = peca('semanas');
         form.periodo = peca('periodo');
+        /* orientação (Agenda e Calendário): vem marcada pela aba; trocar troca a grade */
+        if (form.comOrientacao) {
+          var orientacao = peca('orientacao');
+          var daAba = form.formato === ORIENTACOES.retrato ? 'retrato' : 'paisagem';
+          orientacao.querySelector('[data-orientacao="' + daAba + '"]').classList.add('aba--ativa');
+          RW.abas.ligar(orientacao, function (aba) { trocarGrade(ORIENTACOES[aba.getAttribute('data-orientacao')]); });
+        }
         /* formato: Folhas A4 ou Página contínua */
         RW.abas.ligar(peca('formato'), function (aba) {
           form.continua = aba.getAttribute('data-formato') === 'continua';
@@ -276,9 +301,10 @@
         /* semanas: o Mês todo (caixa de marcar) e, quando desmarcado, os botões de cada semana */
         form.mesTodoBotao.addEventListener('click', function () { marcarMesTodo(!form.mesTodo); mudou(); });
         RW.abas.ligar(form.lista, function () { pintarSemanas(); mudou(); });
-        /* o período começa no mês todo da tela (semanas: o Mês todo marcado; dias: do 1º ao último) */
+        /* o período começa no mês todo da tela (semanas: o Mês todo marcado; dias: do 1º ao último); com a orientação, os
+           dois ficam prontos (cada um guarda a escolha quando a orientação troca) */
         form.ate = ultimoDia(form.mes);
-        if (periodo === 'dias') montarDias();
+        if (periodo === 'dias' || form.comOrientacao) montarDias();
       },
       estado: function (escolhas) { return form === meu ? estado(escolhas) : { erro: ' ' }; }
     });

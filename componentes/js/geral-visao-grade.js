@@ -10,14 +10,17 @@
    modo_celular, mes, mes_celular, colunas_tipo, colunas_qtd,
    colunas_qtd_celular, disposicao }; a chave com _celular é a do
    celular, e `mes` é a Agenda | Calendário do computador.
-   As unidades nos calendários (disposicao): 'lado' (lado a lado) ou
-   'empilhadas' (uma embaixo da outra, o padrão), uma escolha só para
+   As unidades nos calendários (disposicao): 'lado' (lado a lado, o
+   padrão) ou 'empilhadas' (uma embaixo da outra), uma escolha só para
    todos os calendários da Escala e da Extrajornada, só no computador
    (no celular, sempre uma embaixo da outra). O botão da barra
    (ligarDisposicao) mostra no ícone e na dica o que o clique faz.
+   O tamanho dos calendários (tamanho / tamanho_celular): de 0,5 a 1,5,
+   o último que a pessoa usou em cada tipo de aparelho, um só para a
+   Escala e a Extrajornada (geral-calendario-tamanho.js).
    API: RosterWork.visaoGrade.ler() · modo() · agendaOuCalendario() ·
-   quantasColunas() · disposicao() · ligarDisposicao(botao, aoTrocar) ·
-   gravar(mudancas)
+   quantasColunas() · disposicao() · tamanho() ·
+   ligarDisposicao(botao, aoTrocar) · gravar(mudancas)
    ============================================================ */
 (function () {
   'use strict';
@@ -43,7 +46,8 @@
   var POR_APARELHO = {
     modo: ['modo', 'modo_celular'],
     agendaOuCalendario: ['mes', 'mes_celular'],
-    colunas_qtd: ['colunas_qtd', 'colunas_qtd_celular']
+    colunas_qtd: ['colunas_qtd', 'colunas_qtd_celular'],
+    tamanho: ['tamanho', 'tamanho_celular']
   };
 
   function chaveDoAparelho(nome) {
@@ -70,6 +74,12 @@
     return ler()[chaveDoAparelho('colunas_qtd')] || (noCelular() ? 2 : undefined);
   }
 
+  /* o tamanho dos calendários no tipo de aparelho em uso (1 = 100%); sem escolha ou fora da faixa, 100% */
+  function tamanho() {
+    var t = Number(ler()[chaveDoAparelho('tamanho')]);
+    return (t >= 0.5 && t <= 1.5) ? t : 1;
+  }
+
   /* junta as mudanças à visão guardada (o que é do tipo de aparelho vai para a chave dele; a do outro fica como está) e
      grava na sessão e no banco (só com alguém logado) */
   function gravar(mudancas) {
@@ -89,9 +99,10 @@
     }
   }
 
-  /* as unidades nos calendários: 'lado' ou 'empilhadas'; no celular, sempre 'empilhadas' (três colunas não cabem no dia) */
+  /* as unidades nos calendários: 'lado' ou 'empilhadas'; sem escolha, lado a lado; no celular, sempre 'empilhadas' (três
+     colunas não cabem no dia) */
   function disposicao() {
-    return !noCelular() && ler().disposicao === 'lado' ? 'lado' : 'empilhadas';
+    return !noCelular() && ler().disposicao !== 'empilhadas' ? 'lado' : 'empilhadas';
   }
 
   /* o ícone e a dica do botão mostram o que o clique faz: com as unidades uma embaixo da outra, os retângulos em pé
@@ -121,6 +132,6 @@
 
   window.RosterWork.visaoGrade = {
     ler: ler, modo: modo, agendaOuCalendario: agendaOuCalendario, quantasColunas: quantasColunas,
-    disposicao: disposicao, ligarDisposicao: ligarDisposicao, gravar: gravar
+    disposicao: disposicao, tamanho: tamanho, ligarDisposicao: ligarDisposicao, gravar: gravar
   };
 })();

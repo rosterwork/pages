@@ -191,7 +191,9 @@ html[data-menu-recolhido] .menu-item-selo {
    O menu lateral some e entra a barra de baixo, com as quatro telas
    mais usadas e o "Mais", que abre o próprio menu lateral como uma
    folha de baixo para cima (js/index-sidebar.js). Cada item do menu
-   diz onde mora no celular: data-lugar-celular = barra, mais ou fora.
+   diz onde mora no celular: data-lugar-celular = barra, mais ou fora;
+   no Tamanho da tela Menor, a barra tem cinco telas, e o item com
+   data-lugar-celular-menor muda de lugar (js/index-sessao.js).
    ============================================================ */
 @media (max-width: 767px) {
   html[data-celular] .sidebar {
@@ -212,6 +214,16 @@ html[data-menu-recolhido] .menu-item-selo {
     padding: 4px 4px 8px;
     border-top: 1px solid var(--borda);
     background-color: var(--fundo-superficie);
+  }
+
+  /* o Tamanho da tela Menor (js/index-sessao.js): tudo a 85%, e a barra ganha um lugar, o da tela que sai da folha Mais
+     (data-lugar-celular-menor no menu); no Normal, esse lugar some */
+  html[data-celular][data-tela-menor] .barra-celular {
+    grid-template-columns: repeat(6, 1fr);
+  }
+
+  html[data-celular]:not([data-tela-menor]) .barra-celular-item--menor {
+    display: none;
   }
 
   /* item: o ícone numa pílula e o nome embaixo. Os quatro primeiros também são .menu-item

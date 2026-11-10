@@ -21,7 +21,8 @@
    treino começa do
    começo, desde o menu, no modo treino (RosterWork.treino.comecar).
    No celular, os que só existem no computador (data-so-computador)
-   não aparecem. O Continuar os treinos (no alto) começa o primeiro
+   não aparecem; no computador, os que só existem no celular
+   (data-so-celular). O Continuar os treinos (no alto) começa o primeiro
    ainda sem Visto, na ordem da lista, e o A seguir diz qual é; com
    todos feitos, os dois somem. Ao abrir,
    a lista começa o próximo treino pedido pelo fim do anterior

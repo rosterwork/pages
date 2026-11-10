@@ -16,7 +16,9 @@
    (geral-impressao-unidades.js).
    Cada impressão diz só o que é dela.
    API: RosterWork.impressao.montar(corpo, rodape, cfg), .esquecer(),
-        .atualizar(), .contarFolhas(arquivo)
+        .atualizar(), .contarFolhas(arquivo), .marcar(marcas) (troca o
+        que vale do molde com o painel aberto; a numeração refaz no
+        atualizar)
    cfg = { molde: o id do <template> com as caixas da impressão,
            marcas: o que vale do molde (data-impressao-so), opcional,
            ids: as unidades marcadas no começo (a companhia de cada pelotão entra junto), só com a árvore,
@@ -292,5 +294,10 @@
     }
   }
 
-  RW.impressao = { montar: montar, esquecer: esquecer, atualizar: atualizar, contarFolhas: contarFolhas };
+  /* com o painel aberto, outra escolha muda o que vale do molde (a orientação das grades troca a caixa do período) */
+  function marcar(marcas) {
+    if (form) aplicarMarcas(marcas);
+  }
+
+  RW.impressao = { montar: montar, esquecer: esquecer, atualizar: atualizar, contarFolhas: contarFolhas, marcar: marcar };
 })();

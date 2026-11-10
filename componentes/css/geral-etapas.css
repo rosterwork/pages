@@ -254,7 +254,8 @@ html[data-treino] .etapas-veu {
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    O painel cobre a tela: o cartão fica no meio da área toda. A linha
    divide o rodapé com os botões: a frase quebra em duas linhas e a
-   conta sai; na demora, a frase dela fica no lugar da etapa.
+   conta sai (com o painel aberto, uma linha só, com reticências); na
+   demora, a frase dela fica no lugar da etapa.
    ============================================================ */
 @media (max-width: 767px) {
   html[data-celular] .conteudo:has(> .painel-lateral--aberto) > .etapas-camada {
@@ -280,5 +281,14 @@ html[data-treino] .etapas-veu {
 
   html[data-celular] .etapas-linha--demora .etapas-linha-conta {
     display: inline;
+  }
+
+  /* com o painel aberto, o rodapé fica numa linha só e divide o espaço também com o Desfazer e o Refazer: a frase
+     fica numa linha, com reticências, para o rodapé não crescer por baixo do painel e cobrir os botões */
+  html[data-celular] .conteudo:has(> .painel-lateral--aberto) .rodape--largo .etapas-linha-texto,
+  html[data-celular] .conteudo:has(> .painel-lateral--aberto) .rodape--largo .etapas-linha-conta {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }

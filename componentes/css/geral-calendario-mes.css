@@ -11,6 +11,8 @@
    cada uma com a largura mínima de sempre, e o dia com a linha de borda;
    o calendário rola para o lado.
    O lugar do meio do título do dia (.geral-calendario-mes-dia-centro).
+   O tamanho (--calendario-tamanho, no <html>): a escolha da pessoa,
+   de 50% a 150% (componentes/js/geral-calendario-tamanho.js).
    Componente compartilhado (Escala e Extrajornada).
    O z-index 2 é o empilhamento interno do sticky (exceção à
    escala 10/20/30/40; ver Guia visual › Camadas, movimento e foco). Montagem:
@@ -23,6 +25,46 @@
   min-height: 0;
   overflow: auto;
   position: relative;
+}
+
+/* a pinça do celular (geral-calendario-tamanho.js): a escala e o deslocamento da imagem esticada e o ponto em volta do
+   qual ela estica; não passam para dentro (mudar a cada quadro refaz só o estilo do próprio calendário) */
+@property --calendario-pinca-escala {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+
+@property --calendario-pinca-x {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --calendario-pinca-y {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --calendario-pinca-origem-x {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --calendario-pinca-origem-y {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+/* o tamanho que a pessoa escolheu (geral-calendario-tamanho.js): o cabeçalho dos dias e as semanas crescem ou encolhem
+   juntos, com a letra, e se arrumam de novo no espaço; a área que rola fica do tamanho da tela. Os dois no mesmo tamanho,
+   a faixa do número continua grudando logo abaixo do cabeçalho */
+.geral-calendario-mes-cabecalho,
+.geral-calendario-mes-grade {
+  zoom: var(--calendario-tamanho, 1);
 }
 
 /* ---------- cabeçalho dos dias da semana (7 colunas, fixo no topo) ---------- */
@@ -258,9 +300,38 @@
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    Na variante contínua, a coluna é mais estreita: cabem 2 por tela,
    também no aparelho menor; com 3, a grade rola para o lado.
+   A pinça de dois dedos é do calendário (o tamanho dele), não da
+   página; um dedo continua rolando e deslizando o mês.
    ============================================================ */
 @media (max-width: 767px) {
   html[data-celular] .geral-calendario-mes--continuo .geral-calendario-mes-semana {
     grid-template-columns: repeat(var(--calendario-colunas, 7), minmax(160px, 1fr));
+  }
+
+  /* o navegador rola com um dedo, mas não amplia a página com dois: a pinça vai para o calendário. Com a marca da borda
+     do deslize do mês, os mesmos lados do geral-deslizar.css, sem a ampliação */
+  html[data-celular] .geral-calendario-mes {
+    touch-action: pan-x pan-y;
+  }
+
+  html[data-celular] .geral-calendario-mes[data-deslize-borda="ambas"] {
+    touch-action: pan-y;
+  }
+
+  html[data-celular] .geral-calendario-mes[data-deslize-borda="inicio"] {
+    touch-action: pan-right pan-y;
+  }
+
+  html[data-celular] .geral-calendario-mes[data-deslize-borda="fim"] {
+    touch-action: pan-left pan-y;
+  }
+
+  /* durante a pinça, o calendário estica como uma imagem (rápido, sem refazer a grade), em volta do ponto entre os dedos
+     e acompanhando-o; ao soltar, a marca sai e o tamanho de verdade entra, com a letra nítida. Exceção da regra de
+     transição: o transform da pinça (Guia visual) */
+  html[data-celular] .geral-calendario-mes[data-pinca] {
+    transform: translate(var(--calendario-pinca-x), var(--calendario-pinca-y)) scale(var(--calendario-pinca-escala));
+    transform-origin: var(--calendario-pinca-origem-x) var(--calendario-pinca-origem-y);
+    will-change: transform;
   }
 }

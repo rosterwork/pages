@@ -85,6 +85,11 @@
   font-size: 11px;
   color: var(--texto-fraco);
 }
+/* embaixo do nome: o serviço de parte do dia (a extra só nas outras horas) */
+.extrajornada-painel-quem-aviso {
+  font-size: 11px;
+  color: var(--alerta);
+}
 
 /* as cotas abrem os outros dias do militar (na linha do nome, à direita) */
 .extrajornada-painel-militar > .extrajornada-painel-cotas {

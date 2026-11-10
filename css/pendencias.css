@@ -1,6 +1,6 @@
 /* ============================================================
    PENDÊNCIAS — o que espera decisão, num lugar só
-   Uma lista só na coluna de leitura (720px), em três seções:
+   Uma lista só na coluna de leitura (--leitura-largura), em três seções:
    Precisa de você · Para corrigir · Acompanhando. As listas são a
    fila do componente geral-fila (.pedido-lista com o cartão
    .pedido--linha e a etiqueta ADM no de administração; as seções

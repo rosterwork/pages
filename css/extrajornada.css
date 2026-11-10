@@ -75,7 +75,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-width: 720px;
+  max-width: var(--leitura-largura);
 }
 
 .extrajornada-bloco {
@@ -1345,7 +1345,7 @@
 /* a forma da área enquanto a leitura não chega (#extrajornada-estado): a largura e o respiro da leitura */
 .extrajornada-area > .esqueleto-cartoes {
   width: 100%;
-  max-width: 720px;
+  max-width: var(--leitura-largura);
   padding: var(--respiro-pagina);
 }
 

@@ -95,7 +95,7 @@
   gap: 12px;
   flex: 1 1 360px;
   min-width: 0;
-  max-width: 688px;
+  max-width: var(--leitura-largura);
   padding: 16px;
   border: 1px solid var(--borda);
   border-radius: var(--raio-medio);

@@ -3,14 +3,13 @@
    Layout geral da casca (wrapper, corpo) e barra superior (52px).
    ============================================================ */
 
-/* Casca — wrapper que ocupa 100vh e define fundo da página */
+/* Casca — wrapper que ocupa 100vh e define fundo da página; na largura toda da janela, sem limite
+   (cada tipo de tela limita o seu conteúdo: a coluna de leitura, os blocos do Início) */
 .casca {
   display: flex;
   flex-direction: column;
   height: 100vh;
   min-width: 1280px;
-  max-width: 1920px;
-  margin: 0 auto;
   background: var(--fundo-pagina);
   color: var(--texto);
   font-size: var(--fonte-padrao);

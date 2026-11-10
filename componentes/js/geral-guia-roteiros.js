@@ -18,7 +18,8 @@
    data-alvo-senao vale).
    data-area="admin": só para quem administra (data-papel="companhia":
    só para quem administra a companhia, ou mais); data-so-computador
-   (no template): fora do celular. data-nas-abas (no template): as abas
+   (no template): fora do celular; data-so-celular (no template): só no
+   celular (o Tamanho da tela). data-nas-abas (no template): as abas
    da tela em que o roteiro acontece, a primeira é para onde ele leva;
    sem ele, o roteiro vale em qualquer aba (o ? usa isso, geral-guia-ajuda.js).
    data-so-ajuda (no template): só no ?, fora da lista do Treinamento.
@@ -95,7 +96,7 @@
   function pode(t) {
     var papel = t.getAttribute('data-papel') || (t.getAttribute('data-area') === 'admin' ? 'pelotao' : null);
     if (papel && !(RW.sessao && RW.sessao.temPapel(papel))) return false;
-    return !(t.hasAttribute('data-so-computador') && celular());
+    return !(t.hasAttribute('data-so-computador') && celular()) && !(t.hasAttribute('data-so-celular') && !celular());
   }
 
   /* os passos de um trecho do roteiro, em fila: { p, pagina, caminhos: [<section>] } */

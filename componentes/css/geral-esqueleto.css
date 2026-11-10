@@ -162,7 +162,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  width: 688px;
+  width: var(--leitura-largura);   /* a largura da árvore */
   max-width: 100%;
 }
 

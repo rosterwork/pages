@@ -228,7 +228,7 @@
     }
   }
 
-  /* o dia em que o militar em foco não pode (serviço, folga, férias e afins): o dia inteiro apagado e o motivo num selo só,
+  /* o dia em que o militar em foco não pode (serviço, troca, férias e afins): o dia inteiro apagado e o motivo num selo só,
      no centro da linha do número (na Agenda, junto da data) */
   function marcarImpedido(dia, k) {
     var cpf = RW.extrajornadaLista.foco(), m = cpf ? u().militar(cpf) : null;

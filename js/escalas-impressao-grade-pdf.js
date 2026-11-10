@@ -16,11 +16,8 @@
      repetem no alto de cada folha.
    - Página contínua: uma página só, na largura da A4, da altura do
      conteúdo, sem quebras.
-   - Unidades lado a lado (Calendário e Colunas › Dias): a coluna de cada
-     unidade nunca fica mais estreita que a unidade empilhada no
-     calendário da A4; a folha (e a largura da página contínua) cresce na
-     série A até caber, e a impressora reduz para a A4. O bloco cinza do
-     dia leva a linha de borda, como na tela.
+   - No Calendário e no Colunas › Dias, as unidades saem sempre uma
+     embaixo da outra, seja qual for a tela, para caber na A4.
    Quebra das linhas do calendário, em passadas conferidas (como no PDF
    do Dia; nunca perde ninguém): 1) mede, cada linha numa folha própria,
    em que folha caiu cada unidade; 2) monta: a que cabe numa folha vai
@@ -42,17 +39,13 @@
   var DIAS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 
   /* medidas em pontos */
-  var A4 = { nome: 'A4', largura: 595.28, altura: 841.89 };
-  /* as unidades lado a lado: a folha cresce na série A (cada uma o dobro da anterior) e a impressora reduz para a A4 */
-  var SERIE_A = [A4, { nome: 'A3', largura: 841.89, altura: 1190.55 }, { nome: 'A2', largura: 1190.55, altura: 1683.78 },
-    { nome: 'A1', largura: 1683.78, altura: 2383.94 }, { nome: 'A0', largura: 2383.94, altura: 3370.39 },
-    { nome: '2A0', largura: 3370.39, altura: 4767.87 }, { nome: '4A0', largura: 4767.87, altura: 6740.79 }];
-  var LADO = 28;                                // margem dos lados
+  var A4 = { largura: 595.28, altura: 841.89 };
+  var LADO = 28;                                  // margem dos lados
   var TOPO = 66, TOPO_COM_DIAS = 78, BASE = 36;   // margens de cima (com a linha dom…sáb no calendário) e de baixo
   var CONTINUA = { topo: 20, base: 20 };          // margens da página contínua (logo e títulos vão no conteúdo)
   var LIMITE_CONTINUA = 14400;                    // altura máxima de página que os leitores de PDF abrem
   var CABECALHO = { logo: 74, topo: 20, titulo: 15, subtitulo: 9.5, dias: 6.5 };
-  var DIA = { numero: 8, sigla: 6, vao: 4, lado: 2.5, topo: 3, entre: 1.25, base: 2.5, vaoUnidades: 2,
+  var DIA = { numero: 8, sigla: 6, vao: 4, lado: 2.5, topo: 3, entre: 1.25, base: 2.5,
     titulo: { calendario: 12, colunas: 26 }, oficial: 7 };   // no título: o espaço do número (com a sigla, no Colunas) e o Oficial
   var AGENDA = { data: 28, vao: 3, lado: 2.5, topo: 2.5, base: 2.5, numero: 10, sigla: 6, unidade: 6.5, entreDias: 5, porGrupo: 4, oficial: 7.5 };
   var ESPACO = { entreLinhas: 5, entreGrupos: 12 };
@@ -75,7 +68,6 @@
       max: cfg.max[uid],
       pessoas: celula().pessoasDoDia(cfg.dados, uid, dia),
       postoCurto: cfg.formato === 'calendario',   // a célula pequena do calendário, como na tela
-      centro: !!cfg.ladoALado,                    // lado a lado, o nome da unidade no centro da coluna dela
       mostrar: cfg.mostrar,
       c: c,
       preencher: preencher
@@ -109,34 +101,17 @@
       cabecalho.push(numeroDoDia(cfg, c, d, continuacao && col === 0));
     });
     corpo.push(cabecalho);
-    if (cfg.ladoALado) {
-      /* lado a lado: uma linha só, com as unidades de cada dia em colunas (a folha não rola: as colunas ficam estreitas,
-         e cada militar vai em duas linhas; escalas-impressao-grade-celula.js) */
-      var largura = (geo.dia - (so.length - 1) * DIA.vaoUnidades) / so.length;
-      var dias = [];
+    so.forEach(function (k) {
+      var u = cfg.unidades[k];
+      var fila = [];
       linha.forEach(function (d, col) {
-        if (col > 0) dias.push('');
-        if (d.fora) { dias.push(''); return; }
-        dias.push({ columnGap: DIA.vaoUnidades, columns: so.map(function (k) {
-          var u = cfg.unidades[k];
-          marcadores.push({ texto: nomeNaCelula(u), linha: indice, unidade: k });
-          return { width: largura, stack: [blocoDoDia(cfg, c, u, iso(d.data), largura, preencher, true)] };
-        }) });
+        if (col > 0) fila.push('');
+        if (d.fora) { fila.push(''); return; }
+        fila.push(blocoDoDia(cfg, c, u, iso(d.data), geo.dia, preencher, true));
+        marcadores.push({ texto: nomeNaCelula(u), linha: indice, unidade: k });
       });
-      corpo.push(dias);
-    } else {
-      so.forEach(function (k) {
-        var u = cfg.unidades[k];
-        var fila = [];
-        linha.forEach(function (d, col) {
-          if (col > 0) fila.push('');
-          if (d.fora) { fila.push(''); return; }
-          fila.push(blocoDoDia(cfg, c, u, iso(d.data), geo.dia, preencher, true));
-          marcadores.push({ texto: nomeNaCelula(u), linha: indice, unidade: k });
-        });
-        corpo.push(fila);
-      });
-    }
+      corpo.push(fila);
+    });
     var ultima = corpo.length - 1;
     return {
       table: { widths: geo.larguras, body: corpo, headerRows: 1, keepWithHeaderRows: 1, dontBreakRows: true },
@@ -298,8 +273,7 @@
   /* a geometria da folha: larguras do conteúdo e, no calendário, das colunas dos dias (com os vãos).
      A largura de cada coluna é a de dentro: a biblioteca soma o respiro (DIA.lado) dos dois lados */
   function geometria(cfg) {
-    var folha = cfg.folha || A4;
-    var largura = (cfg.paisagem ? folha.altura : folha.largura) - 2 * LADO;
+    var largura = (cfg.paisagem ? A4.altura : A4.largura) - 2 * LADO;
     var geo = { largura: largura, paginaLargura: largura + 2 * LADO };
     if (cfg.formato === 'calendario' || cfg.formato === 'colunas-dias') {
       geo.periodo = linhasDoPeriodo(cfg);
@@ -334,7 +308,7 @@
       var fim = (legenda() ? [legenda()] : []).concat([{ text: txt().site }]);
       doc.content = topo.concat(conteudo, [{ stack: fim, fontSize: rodape, color: c.suave, margin: [0, 8, 0, 0] }]);
     } else {
-      doc.pageSize = (cfg.folha || A4).nome;
+      doc.pageSize = 'A4';
       doc.pageOrientation = cfg.paisagem ? 'landscape' : 'portrait';
       var margemTopo = comDias ? TOPO_COM_DIAS : TOPO;
       doc.pageMargins = [LADO, margemTopo, LADO, BASE + (c.legendaAltura || 0)];
@@ -349,9 +323,7 @@
       };
       doc.content = conteudo;
     }
-    /* lado a lado, o dia com a linha de borda, como na tela (o vão entre os dias se confunde com as células brancas) */
-    var opcoesBlocos = { bordaNoCinza: !!cfg.ladoALado && calendario };
-    if (plano.caixas) doc.background = function (folha) { return RW.escalasImpressaoPdf.blocosArredondados(plano.caixas[folha - 1], c, opcoesBlocos); };
+    if (plano.caixas) doc.background = function (folha) { return RW.escalasImpressaoPdf.blocosArredondados(plano.caixas[folha - 1], c); };
     return { doc: doc, marcadores: marcadores };
   }
 
@@ -419,27 +391,12 @@
     return a.slice(0, 4) === b.slice(0, 4) ? curta(a) + ' a ' + curta(b) + '-' + b.slice(0, 4) : curta(a) + '-' + a.slice(0, 4) + ' a ' + curta(b) + '-' + b.slice(0, 4);
   }
 
-  /* lado a lado, a coluna de cada unidade nunca fica mais estreita que a unidade empilhada no calendário da A4 deitada
-     (o mínimo que a folha já tem): a folha cresce na série A até caber, e a impressora reduz para a A4, como um zoom out
-     (tudo encolhe por igual). Vale também para a página contínua, que tem a largura da folha */
-  function folhaDoLadoALado(cfg) {
-    if (!cfg.ladoALado || !cfg.paisagem) return A4;
-    function larguraDoDia(folha, dias) { return (folha.altura - 2 * LADO - (dias - 1) * DIA.vao) / dias - 2 * DIA.lado; }
-    var minimo = larguraDoDia(A4, 7);
-    var n = cfg.formato === 'calendario' ? 7 : cfg.diasPorLinha, k = Math.max(1, cfg.unidades.length);
-    for (var i = 0; i < SERIE_A.length; i++) {
-      if ((larguraDoDia(SERIE_A[i], n) - (k - 1) * DIA.vaoUnidades) / k >= minimo - 0.01) return SERIE_A[i];
-    }
-    return SERIE_A[SERIE_A.length - 1];
-  }
-
   /* cfg: { formato, paisagem, continua, mostrar, diasPorLinha, unidades, dias: [{data, fora}], texto, dados, titulo e
-     prefixo (o título da folha e o começo do nome do arquivo; sem eles, os da escala), ladoALado, comOficial } →
-     { arquivo, folhas, nome, tamanho (o nome da folha: 'A4' ou, lado a lado, 'A3', 'A2', 'A1'...) } */
+     prefixo (o título da folha e o começo do nome do arquivo; sem eles, os da escala), comOficial } →
+     { arquivo, folhas, nome } */
   function gerar(cfg) {
     var ids = cfg.unidades.map(function (u) { return u.unidade_id; });
     cfg.max = RW.escalasCelula ? RW.escalasCelula.calcularMaxPorUnidade(cfg.dados.cobertura, ids) : {};
-    cfg.folha = folhaDoLadoALado(cfg);
     return RW.escalasImpressaoPdf.preparar().then(function (c) {
       return celula().preparar(c);
     }).then(function (c) {
@@ -453,8 +410,7 @@
       return {
         arquivo: d.arquivo,
         folhas: (d.caixas || []).length,
-        nome: msg().arquivo(msg().nomes[cfg.formato], periodoDoArquivo(cfg), cfg.unidades.length === 1 ? cfg.unidades[0].nome : '', cfg.prefixo),
-        tamanho: cfg.folha.nome
+        nome: msg().arquivo(msg().nomes[cfg.formato], periodoDoArquivo(cfg), cfg.unidades.length === 1 ? cfg.unidades[0].nome : '', cfg.prefixo)
       };
     });
   }

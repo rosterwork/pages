@@ -79,13 +79,17 @@
 
   <div class="pagina-corpo pagina-corpo--camada folgas-corpo">
     <!-- Minhas folgas (autosserviço) -->
-    <div class="pagina-corpo-rolagem" data-aba-painel="minhas" id="folgas-minhas"></div>
+    <div class="pagina-corpo-rolagem" data-aba-painel="minhas">
+      <div class="coluna-leitura" id="folgas-minhas"></div>
+    </div>
     <!-- Equipe · Saldos (placar por unidade) -->
     <div class="pagina-corpo-rolagem oculto" data-aba-painel="equipe-saldos">
       <div class="arvore arvore-unidades" id="arvore-folgas"></div>
     </div>
     <!-- Equipe · Histórico (todas as folgas) -->
-    <div class="pagina-corpo-rolagem oculto folgas-lista" data-aba-painel="equipe-historico" id="folgas-historico"></div>
+    <div class="pagina-corpo-rolagem oculto folgas-lista" data-aba-painel="equipe-historico">
+      <div class="coluna-leitura" id="folgas-historico"></div>
+    </div>
     <!-- Pendências (os pedidos de folga para aprovar; componente geral-fila) -->
     <div class="pagina-corpo-rolagem oculto" data-aba-painel="pendencias">
       <div class="pedido-lista coluna-leitura" id="folgas-pendencias"></div>

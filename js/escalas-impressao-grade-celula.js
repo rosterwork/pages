@@ -250,13 +250,12 @@
   }
 
   /* o bloquinho de uma unidade num dia. o = { largura, unidade (nome, só no calendário), cobertura, erro, max,
-     pessoas, postoCurto (só no calendário), centro (o nome no centro: as unidades lado a lado), mostrar, c, preencher } */
+     pessoas, postoCurto (só no calendário), mostrar, c, preencher } */
   function bloco(o) {
     var interna = o.largura - 2 * BLOQUINHO.lado;
     var corpo = [];
     if (o.unidade) {
-      corpo.push([{ text: o.unidade.toLocaleUpperCase('pt-BR'), alignment: o.centro ? 'center' : undefined, fontSize: FONTE.unidade, bold: true,
-        characterSpacing: ESPACAMENTO_CAIXA_ALTA, color: o.c.suave }]);
+      corpo.push([{ text: o.unidade.toLocaleUpperCase('pt-BR'), fontSize: FONTE.unidade, bold: true, characterSpacing: ESPACAMENTO_CAIXA_ALTA, color: o.c.suave }]);
     }
     if (o.mostrar.grafico && o.cobertura && o.max > 0) corpo.push([grafico(o.cobertura, o.erro, o.max, interna, o.c)]);
     (o.pessoas || []).forEach(function (p) { corpo.push([linha(p, interna, o.mostrar, o.c, o.postoCurto)]); });

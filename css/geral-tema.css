@@ -147,6 +147,7 @@
   --menu-largura:           180px;   /* menu lateral aberto */
   --menu-largura-recolhido:  52px;   /* menu lateral recolhido (só ícones) */
   --painel-largura:         480px;   /* painel lateral (uma largura só, em todas as telas) */
+  --leitura-largura:        688px;   /* listas e leitura (coluna de leitura e árvore de unidades): a largura do PDF */
   --modal-largura:          480px;   /* modal */
   --modal-largura-pequeno:  380px;   /* aviso, data e sessão */
   --modal-respiro:           24px;   /* distância mínima do modal às bordas da tela */

@@ -13,7 +13,7 @@
   --arvore-bloco-titulo-altura: 58px;   /* o título do bloquinho gruda logo abaixo */
   gap: 8px;
   width: 100%;
-  max-width: 688px;                     /* largura do PDF */
+  max-width: var(--leitura-largura);    /* a largura do PDF, a mesma da coluna de leitura */
 }
 
 /* com a árvore à mostra, o respiro fixo do topo da página cai para 8px: com a trilha,

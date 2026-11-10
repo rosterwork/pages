@@ -71,9 +71,11 @@
     return { ini: h0, fim: h0 + 6 * n, blocos: seguidos(b1, b1 + n - 1), inicio: h0 % 6 ? H().hhmm(h0 * 60) : null };
   }
 
-  /* o que o clique, o arrasto e o teclado fazem com os horários bs (começando em inicio); solto: o cadeado aberto */
+  /* o que o clique, o arrasto e o teclado fazem com os horários bs (começando em inicio); solto: o cadeado aberto. A
+     extra nunca entra nas horas de serviço de parte do dia (o pontual e o que sobra da folga de parte do dia) */
   function regras(m, k, bs, inicio, travado, solto) {
     var ultimo = bs.length ? bs[bs.length - 1] : 0;
+    function cabe(f) { return !f || !f.blocos.length || G().foraDoServico(m, k, f.ini, f.fim); }
     /* as paradas da bolinha do começo: as divisas de 6 horas até o último horário e o fim do expediente; livre, toda hora
        em que a extra inteira ainda cabe no dia */
     function comecos() {
@@ -81,7 +83,7 @@
       if (solto) {
         for (var h0 = 0; bs.length && h0 + 6 * bs.length <= 24; h0++) {
           var l = livre(h0, bs.length);
-          lista.push({ pos: h0, blocos: l.blocos, inicio: l.inicio });
+          if (cabe(l)) lista.push({ pos: h0, blocos: l.blocos, inicio: l.inicio });
         }
         return lista;
       }
@@ -91,12 +93,13 @@
         if (G().inicioCabe(m, k, seguidos(c, ultimo))) { lista.push({ pos: hora(ds), blocos: seguidos(c, ultimo), inicio: ds }); break; }
       }
       if (travado) lista = lista.filter(function (x) { return x.blocos.every(function (y) { return bs.indexOf(y) >= 0; }); });
+      lista = lista.filter(function (x) { return cabe(faixaDe(x.blocos, x.inicio)); });
       return lista.sort(function (x, y) { return x.pos - y.pos; });
     }
-    /* as paradas da bolinha do fim: de 6 em 6 horas desde o começo, até as 08h do dia seguinte */
+    /* as paradas da bolinha do fim: de 6 em 6 horas desde o começo, até as 08h do dia seguinte (ou até o serviço) */
     function fins(f) {
       var lista = [], max = Math.min(solto ? 4 : 5 - bs[0], Math.floor((24 - f.ini) / 6), travado ? bs.length : 4);
-      for (var n = 1; n <= max; n++) lista.push(f.ini + 6 * n);
+      for (var n = 1; n <= max && G().foraDoServico(m, k, f.ini, f.ini + 6 * n); n++) lista.push(f.ini + 6 * n);
       return lista;
     }
     /* livre: dentro da faixa, sai 6 horas pela ponta mais perto (a última tira ele do dia); fora, ela cresce até a hora
@@ -108,20 +111,23 @@
         return h - f.ini < f.fim - 1 - h ? livre(f.ini + 6, n - 1) : livre(f.ini, n - 1);
       }
       if (travado) return null;
+      var maior = null;
       if (h >= f.fim) {
         var depois = Math.min(Math.ceil((h + 1 - f.fim) / 6), Math.floor((24 - f.fim) / 6));
-        return depois > 0 ? livre(f.ini, n + depois) : null;
+        if (depois > 0) maior = livre(f.ini, n + depois);
+      } else {
+        var antes = Math.min(Math.ceil((f.ini - h) / 6), Math.floor(f.ini / 6));
+        if (antes > 0) maior = livre(f.ini - 6 * antes, n + antes);
       }
-      var antes = Math.min(Math.ceil((f.ini - h) / 6), Math.floor(f.ini / 6));
-      return antes > 0 ? livre(f.ini - 6 * antes, n + antes) : null;
+      return maior && cabe(maior) ? maior : null;
     }
     var r = {
       comecos: comecos,
       fins: fins,
       clique: function (h) {
         if (solto && bs.length) return cliqueLivre(h);
-        var p = Math.floor(h / 6) + 1, novos;
-        if (bs.indexOf(p) >= 0) {
+        var p = Math.floor(h / 6) + 1, novos, poe = bs.indexOf(p) < 0;
+        if (!poe) {
           if (p !== bs[0] && p !== ultimo) return null;   // o do meio não abre buraco
           novos = bs.filter(function (x) { return x !== p; });
         } else {
@@ -131,6 +137,7 @@
           novos = inteiro ? [1, 2, 3, 4] : seguidos(Math.min.apply(null, todos), Math.max.apply(null, todos));
         }
         var f = faixaDe(novos, inicioPadrao(m, k, novos)) || { ini: 0, fim: 0, blocos: [], inicio: null };
+        if (poe && !cabe(f)) return null;   // tirar sempre pode; pôr, só fora do serviço
         f.padrao = true;   // o começo fica com o rascunho, como nas bolinhas
         return f;
       },
@@ -196,7 +203,8 @@
         campos[1].textContent = RW.regua.textoHora(f.fim);
       } });
     if (!barra) return;
-    barra.desenhar({ faixa: faixa, editavel: editavel });
+    /* as horas de serviço de parte do dia no fundo, em cinza (o que já existe no dia) */
+    barra.desenhar({ faixa: faixa, editavel: editavel, fundo: G().horasServico(m, k) });
     caixa.appendChild(barra.el);
     /* no calendário e na lista, mexer na barra não abre nem fecha mais nada (os campos de hora seguem o caminho de sempre) */
     caixa.addEventListener('click', function (ev) { if (ev.target.closest('.regua-barra')) ev.stopPropagation(); });

@@ -48,7 +48,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-width: 720px;
+  max-width: var(--leitura-largura);
   padding: 16px 24px 24px;
 }
 
@@ -733,7 +733,7 @@
 
 /* a forma da área (a Distribuição e o Horário), enquanto os dados chegam: no lugar do conteúdo */
 .nova-distribuicao-carregando {
-  max-width: 720px;
+  max-width: var(--leitura-largura);
   padding: 16px 24px 24px;
 }
 

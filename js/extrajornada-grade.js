@@ -86,6 +86,12 @@
     if (!desde(m, k) || !b.length || !livres.length) return false;
     return b[0] === Math.min.apply(null, livres) && b[b.length - 1] - b[0] + 1 === b.length;
   }
+  /* as horas de serviço de parte do dia (o pontual e o que sobra da folga de parte do dia): [{ hi, hf }] */
+  function horasServico(m, k) { return ((d.horas_servico || {})[m.cpf] || {})[k] || []; }
+  /* a extra das horas ini às fim (contadas desde as 08h) fica fora das horas de serviço do dia (o banco confere igual) */
+  function foraDoServico(m, k, ini, fim) {
+    return horasServico(m, k).every(function (p) { var f = RW.horario.faixa(p); return fim * 60 <= f[0] || ini * 60 >= f[1]; });
+  }
   /* o começo fora dos riscos (o horário livre e o do administrativo): hora cheia de 1 a 5 horas antes do primeiro
      horário de 6 h, com os horários seguidos (o banco confere igual) */
   function comecoCabe(bs, inicio) {
@@ -124,8 +130,8 @@
     return c.aoSalvarFica((lista[0].m.grad + ' ' + lista[0].m.nome).trim(), lista[0].n, lista[0].m.concedidas || 0);
   }
   function conduz(m, cnh) { return F().conduz(m, cnh); }
-  /* o que impede o militar de tirar extra no dia pela escala dele (serviço, folga, afastamento ou expediente o dia
-     todo); null se nada impede */
+  /* o que impede o militar de tirar extra no dia pela escala dele (serviço, troca, afastamento ou expediente o dia
+     todo); null se nada impede. O serviço de parte do dia só tira as horas dele (horasServico) */
   function impedimento(m, k) {
     var oc = (m.ocupado || {})[k];
     if (oc) return RW.mensagens.extrajornada.motivos[oc] || oc;
@@ -307,6 +313,7 @@
     /* quem está de serviço no dia, na escala (sem as extras já lançadas, que aparecem nas vagas) */
     deServico: function (uid, k) { return ((escala.militares[uid] || {})[k] || []).filter(function (p) { return p.origem !== 'extra'; }); },
     pelotoes: pelotoes, diasDoMes: diasDoMes, ultimoDia: ultimoDia, dataDe: dataDe, dataLonga: dataLonga, nomeDoMes: nomeDoMes, somaDia: somaDia,
-    mudar: mudar, diasComFalta: diasComFalta, desde: desde, inicioCabe: inicioCabe, faltaDoInicio: faltaDoInicio
+    mudar: mudar, diasComFalta: diasComFalta, desde: desde, inicioCabe: inicioCabe, faltaDoInicio: faltaDoInicio,
+    horasServico: horasServico, foraDoServico: foraDoServico
   };
 })();

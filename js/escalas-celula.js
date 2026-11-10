@@ -294,6 +294,11 @@
     if (p.origem === 'remanejado_saida') linha.classList.add('linha-escalado--remanejado');   /* saiu para outra unidade: riscado */
     if (p.origem === 'mudanca_saida') linha.classList.add('linha-escalado--mudou-dia');   /* passou para outro dia: riscado */
     if (p.origem === 'saida_guarnicao') linha.classList.add('linha-escalado--saiu');   /* saiu da guarnição: riscado */
+    /* de serviço e de extra no mesmo horário (o banco marca): o nome em vermelho, com a dica */
+    if (p.extra_servico && p.extra_servico.length) {
+      linha.classList.add('linha-escalado--extra-servico');
+      linha.setAttribute('data-dica', RosterWork.mensagens.escala.extraServicoDica);
+    }
 
     var icones = linha.querySelector('.linha-escalado-icones');
     /* linha riscada (folga/troca/remanejamento): o ícone da origem NÃO some. Mostra a origem do militar no dia

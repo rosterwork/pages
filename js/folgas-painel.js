@@ -91,15 +91,21 @@
       ((l.situacao === 'concedida' || l.situacao === 'aprovada') && admin));
     if (podeCancelar) {
       var bc = RosterWork.tpl('tpl-folga-cancelar');
-      if (bc) { bc.addEventListener('click', function () { cancelarFolga(l.id, l.situacao); }); linha.appendChild(bc); }
+      if (bc) { bc.addEventListener('click', function () { cancelarFolga(l.id, l.situacao, l.extra); }); linha.appendChild(bc); }
     }
     return linha;
   }
 
-  function cancelarFolga(lancamentoId, situacao) {
+  /* extra: as horas da extra dele por cima da folga (o banco diz): cancelada, ele fica de serviço e de extra no mesmo
+     horário, a mesma frase do painel do dia */
+  function cancelarFolga(lancamentoId, situacao, extra) {
     if (!RW.confirmar) return;
+    var mensagem = situacao === 'pendente' ? msg().confirmarCancelarPendente : msg().confirmarCancelar;
+    if (extra && extra.length) {
+      mensagem += ' ' + RW.mensagens.escala.cancelarFolgaExtra(extra.map(function (x) { return [RW.horario.curta(x.hi), RW.horario.curta(x.hf)]; }));
+    }
     RW.confirmar({
-      tipo: 'aviso', mensagem: situacao === 'pendente' ? msg().confirmarCancelarPendente : msg().confirmarCancelar, confirmarPerigo: true,
+      tipo: 'aviso', mensagem: mensagem, confirmarPerigo: true,
       aoConfirmar: function () {
         if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal();   // reverte a folga na escala: círculo + tela travada
         RW.folgasDados.cancelar(lancamentoId).then(function (r) {

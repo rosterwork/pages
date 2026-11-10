@@ -619,6 +619,11 @@
         cotasPassaramUnidade: function (nome, rep, rec) { return nome + ': foram repartidas ' + rep + ' cotas, mas recebeu ' + rec + '.'; },
         extraEm: function (nome) { return 'Extra no ' + nome; },
         expedienteDiaTodo: 'Expediente o dia todo',
+        /* o serviço de parte do dia (o pontual e o que sobra da folga de parte do dia), embaixo do nome no painel do dia:
+           faixas = [['20h', '08h'], ...] */
+        deServicoDas: function (faixas) {
+          return 'De serviço ' + faixas.map(function (f) { return 'das ' + f[0] + ' às ' + f[1]; }).join(' e ') + '. A extra só nas outras horas.';
+        },
         querEsteDia: function (motivo) { return motivo + ', quer este dia'; },
         deCotas: function (u, c) { return u + ' de ' + c; },
         /* a linha aberta do painel do dia: quem passou da cota e os outros dias dele */
@@ -1150,6 +1155,21 @@
         return 'Ao cancelar, o ' + militar + ' volta ao serviço no dia e a distribuição é refeita. '
           + (contabilizada ? 'Como a folga foi contabilizada, as horas dela voltam ao saldo.' : 'Como a folga não foi contabilizada, o saldo dele não muda.');
       },
+      /* a extra por cima da folga (o painel do dia e a página Folgas): faixas = [['08h', '08h'], ...] */
+      cancelarFolgaExtra: function (faixas) {
+        return 'Ele tem extra neste dia, ' + faixas.map(function (f) { return 'das ' + f[0] + ' às ' + f[1]; }).join(' e ') + ': fica de serviço e de extra no mesmo horário.';
+      },
+      /* de serviço e de extra no mesmo horário: a dica da linha na célula e a nota vermelha embaixo da barra */
+      extraServicoDica: 'De serviço e de extra no mesmo horário',
+      extraServico: {
+        um: function (nome) { return nome + ' está de serviço e de extra no mesmo horário.'; },
+        varios: function (nome, outros) { return nome + ' e mais ' + outros + (outros === 1 ? ' militar estão' : ' militares estão') + ' de serviço e de extra no mesmo horário.'; },
+        quando: function (dia, faixas, unidade) {
+          return 'Em ' + dia + ', ' + faixas.map(function (f) { return 'das ' + f[0] + ' às ' + f[1]; }).join(' e ') + (unidade ? ', no ' + unidade : '') + '.';
+        },
+        dias: function (dias) { return 'Em ' + (dias.length > 1 ? dias.slice(0, -1).join(', ') + ' e ' + dias[dias.length - 1] : dias[0]) + '.'; },
+        nomes: 'Os nomes estão em vermelho na escala.'
+      },
       /* embaixo do prefixo, na troca de viatura com data */
       noLugarDe: 'No lugar da {prefixo} até {data}',
       /* linha da cadeira vazia (sem ninguém), no lugar do nome do militar */
@@ -1255,12 +1275,9 @@
         grade: {
           titulos: { agenda: 'Imprimir agenda', calendario: 'Imprimir calendário', 'colunas-dias': 'Imprimir colunas', 'colunas-unidades': 'Imprimir colunas' },
           nomes: { agenda: 'Agenda', calendario: 'Calendário', 'colunas-dias': 'Colunas', 'colunas-unidades': 'Colunas' },
-          /* tamanho: 'A4' (o padrão) ou a folha maior das unidades lado a lado ('A3', 'A2', 'A1'...), que a impressora
-             reduz para a A4 */
-          subtitulo: function (paisagem, continua, tamanho) {
-            var folha = (tamanho || 'A4') + ' ' + (paisagem ? 'paisagem' : 'retrato');
-            if (continua) return 'PDF em página contínua, na largura da ' + folha;
-            return 'Arquivo em PDF, ' + folha + (tamanho && tamanho !== 'A4' ? ', que a impressora reduz para a A4' : '');
+          subtitulo: function (paisagem, continua) {
+            var folha = 'A4 ' + (paisagem ? 'paisagem' : 'retrato');
+            return continua ? 'PDF em página contínua, na largura da ' + folha : 'Arquivo em PDF, ' + folha;
           },
           /* as datas: "4 a 10 de outubro", "1 a 3, 11 a 17 e 25 a 31 de outubro", "outubro de 2026" */
           trecho: function (inicio, fim) { return inicio === fim ? inicio : inicio + ' a ' + fim; },
@@ -1720,10 +1737,8 @@
     /* o painel de impressão comum (componente geral-impressao: Escala e Trocas) */
     impressao: {
       /* embaixo da prévia */
-      folhas: function (n, continua, paisagem, tamanho) {
-        if (continua) return 'Uma página contínua.';
-        return (n === 1 ? '1 folha' : n + ' folhas') + ', ' + (tamanho || 'A4') + ' ' + (paisagem ? 'paisagem' : 'retrato')
-          + (tamanho && tamanho !== 'A4' ? ', que a impressora reduz para a A4' : '') + '.';
+      folhas: function (n, continua, paisagem) {
+        return continua ? 'Uma página contínua.' : (n === 1 ? '1 folha' : n + ' folhas') + ', A4 ' + (paisagem ? 'paisagem' : 'retrato') + '.';
       },
       falhaPrevia: 'Não foi possível montar a prévia. Tente de novo.',
       falhaGerar: 'Não foi possível gerar o PDF. Tente de novo.'

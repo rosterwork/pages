@@ -1,8 +1,8 @@
 /* ============================================================
    EXTRAJORNADA — o painel do pedido
    Sim ou Não; de 1 a 10 cotas (com 4, a pergunta: 24 horas seguidas ou pode dividir); os dias pelo
-   "pincel" Quero / Não quero (toque de novo desmarca); os dias de folga
-   e de afastamento travados com o motivo; os de serviço e troca
+   "pincel" Quero / Não quero (toque de novo desmarca); os dias de
+   afastamento travados com o motivo; os de serviço e troca
    marcáveis, com o motivo só para ler; para o administrativo, o horário
    em que a extra pode começar em cada dia (o expediente da unidade
    dele) e as folgas do expediente. Enviar = extrajornada_pedido_salvar

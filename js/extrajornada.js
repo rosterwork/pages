@@ -222,16 +222,16 @@
   /* o traço antes das ferramentas (as unidades lado a lado, a Legenda e o Imprimir): aparece com uma delas à vista */
   function divisor() {
     el.legendaDivisor.classList.toggle('oculto', el.legenda.classList.contains('oculto') && el.imprimir.classList.contains('oculto')
-      && (!el.disposicao || el.disposicao.classList.contains('oculto')));
+      && (!el.disposicao || el.disposicao.classList.contains('oculto')) && (!el.tamanho || el.tamanho.classList.contains('oculto')));
   }
 
   /* o botão das unidades lado a lado ou uma embaixo da outra: com o Calendário à vista (Extras do mês, Distribuição e
-     Ajustes), no computador (no celular, as unidades ficam sempre uma embaixo da outra; geral-visao-grade.js) */
+     Ajustes), no computador (no celular, as unidades ficam sempre uma embaixo da outra; geral-visao-grade.js). O do
+     tamanho, com o mesmo Calendário, também no celular (geral-calendario-tamanho.js) */
   function mostrarDisposicao() {
-    if (el.disposicao) {
-      var comModos = !el.modos.classList.contains('oculto');
-      el.disposicao.classList.toggle('oculto', !comModos || modo() !== 'calendario' || !!(RW.celular && RW.celular()));
-    }
+    var calendario = !!el.modos && !el.modos.classList.contains('oculto') && modo() === 'calendario';
+    if (el.disposicao) el.disposicao.classList.toggle('oculto', !calendario || !!(RW.celular && RW.celular()));
+    if (el.tamanho) el.tamanho.classList.toggle('oculto', !calendario);
     divisor();
   }
 
@@ -288,6 +288,9 @@
     el.modos = conteudo.querySelector('#extrajornada-modos');
     el.imprimir = conteudo.querySelector('#extrajornada-imprimir');
     el.disposicao = conteudo.querySelector('#extrajornada-disposicao');
+    /* o tamanho dos calendários: o botão da barra e o Ctrl e a roda do mouse em cima do calendário (geral-calendario-tamanho.js) */
+    el.tamanho = RW.calendarioTamanho ? RW.calendarioTamanho.montar(conteudo.querySelector('#extrajornada-tamanho')) : null;
+    if (RW.calendarioTamanho) RW.calendarioTamanho.ligar(conteudo);
     /* abre no mês de hoje ou no mês que o aviso pediu (o do pedido, no aviso do prazo) */
     var hoje = new Date(), pedida = RW.referenciaPedida ? RW.referenciaPedida('extrajornada') : null;
     ultimo = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 1);

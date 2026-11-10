@@ -106,6 +106,10 @@
         <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-unidades-lado-a-lado"/></svg>
       </button>
 
+      <!-- o tamanho dos calendários (Mês › Calendário e Colunas › Dias, no computador e no celular): o botão com o tamanho
+           de agora e a lista dos níveis (molde geral #tpl-calendario-tamanho; geral-calendario-tamanho.js) -->
+      <div class="oculto" id="escala-tamanho"></div>
+
       <!-- legenda da grade (molde geral #tpl-legenda): o que cada cor, ícone e selo quer dizer; o conteúdo acompanha o modo (escalas-legenda.js) -->
       <div id="escala-legenda-grade"></div>
 
@@ -118,6 +122,10 @@
 
   <!-- as cotas que faltam distribuir, só para o administrador: a nota vermelha de cada mês na tela (geral-cotas-aviso.js) -->
   <div class="escala-cotas-aviso oculto" id="escala-cotas-aviso"></div>
+
+  <!-- quem está de serviço e de extra no mesmo horário, só para quem administra a unidade: a nota vermelha com o X
+       (escalas-extra-servico.js) -->
+  <div class="escala-extra-servico-aviso oculto" id="escala-extra-servico-aviso"></div>
 
   <!-- com dia à vista que ainda pode mudar: a nota amarela com os pontinhos (o texto, com as unidades, vem do
        escalas-atualizando.js); esses dias ficam com a borda amarela -->
@@ -535,5 +543,17 @@
     <input class="campo-entrada campo-entrada--pequeno" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Adicionar somente nesse dia" />
     <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
     <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares"></div>
+  </div>
+</template>
+
+<!-- a nota de quem está de serviço e de extra no mesmo horário, com o X que esconde (escalas-extra-servico.js) -->
+<template id="tpl-escala-extra-servico">
+  <div class="nota nota--erro nota--com-acao" role="status">
+    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta" /></svg>
+    <span class="nota-texto"><span class="nota-titulo"></span> <span class="escala-extra-servico-texto"></span></span>
+    <span class="espacador-flex"></span>
+    <button type="button" class="botao botao--icone botao--pequeno escala-extra-servico-fechar" aria-label="Ocultar" data-dica="Ocultar">
+      <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-fechar" /></svg>
+    </button>
   </div>
 </template>

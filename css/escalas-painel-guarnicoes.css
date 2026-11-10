@@ -2,10 +2,10 @@
    ESCALA — painel do dia › aba Guarnições (escalas-painel-guarnicoes.js
    e escalas-painel-guarnicoes-acoes.js): os períodos em caixas que
    abrem e fecham, as guarnições lado a lado, as marcas do que muda,
-   a faixa dos afastados, o Fora da escala e a pergunta embaixo do
-   período. Reaproveita a caixa do painel (.grupo-caixa), o nome do
-   Dia (.escala-distribuicao-grad e -nome), o lápis e o menu da linha
-   (.escala-edicao-opcoes) e as caixas de pergunta das sub-telas.
+   a faixa dos afastados e o Fora da escala, só para ver. Reaproveita
+   a caixa do painel (.grupo-caixa), o nome do Dia
+   (.escala-distribuicao-grad e -nome) e o lápis e o menu da linha
+   (.escala-edicao-opcoes), só para o Cancelar a saída.
    ============================================================ */
 
 /* ---------- o período ---------- */

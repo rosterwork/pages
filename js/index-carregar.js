@@ -78,6 +78,7 @@
     'componentes/js/geral-calendario-mes.js',
     'componentes/js/geral-periodo.js',
     'componentes/js/geral-visao-grade.js',
+    'componentes/js/geral-calendario-tamanho.js',
     'componentes/js/geral-seletor-unidade.js',
     'componentes/js/geral-mini-calendario.js',
     'componentes/js/geral-abas.js',

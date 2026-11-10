@@ -291,12 +291,14 @@
   }
 
   /* o botão das unidades lado a lado ou uma embaixo da outra: só nos calendários (Mês › Calendário e Colunas › Dias) e
-     no computador (no celular, as unidades ficam sempre uma embaixo da outra; geral-visao-grade.js) */
+     no computador (no celular, as unidades ficam sempre uma embaixo da outra; geral-visao-grade.js). O do tamanho, nos
+     mesmos calendários, também no celular (geral-calendario-tamanho.js) */
   function mostrarDisposicao() {
     var celular = !!(RosterWork.celular && RosterWork.celular());
     var modo = modoAtual();
     var calendario = (modo === 'mes' && subMesAtual() === 'calendario') || (modo === 'colunas' && tipoColunasAtual() === 'dias');
     mostrar('#escala-disposicao', calendario && !celular);
+    mostrar('#escala-tamanho', calendario);
   }
 
   function desenharModo(corpo, vigente) {
@@ -497,6 +499,7 @@
     if (el) el.textContent = textoPeriodo();
     mostrar('#escala-periodo-hoje', !periodoContemHoje());
     if (RosterWork.cotasAviso) RosterWork.cotasAviso.atualizar();
+    if (RosterWork.escalaExtraServico) RosterWork.escalaExtraServico.atualizar();
   }
 
   /* "Hoje": volta ao período atual; a grade abre rolada em hoje */
@@ -672,6 +675,12 @@
     /* as unidades lado a lado ou uma embaixo da outra: o clique troca, grava a escolha e redesenha o calendário */
     if (RosterWork.visaoGrade) RosterWork.visaoGrade.ligarDisposicao(conteudo.querySelector('#escala-disposicao'), renderizarCorpo);
 
+    /* o tamanho dos calendários: o botão da barra e o Ctrl e a roda do mouse em cima do calendário (geral-calendario-tamanho.js) */
+    if (RosterWork.calendarioTamanho) {
+      RosterWork.calendarioTamanho.montar(conteudo.querySelector('#escala-tamanho'));
+      RosterWork.calendarioTamanho.ligar(conteudo);
+    }
+
     /* clicar no rótulo do período abre o calendário; o dia escolhido vira a referência */
     var rotuloPeriodo = conteudo.querySelector('#escala-periodo-nome');
     if (rotuloPeriodo && window.RosterWork.calendario) {
@@ -749,6 +758,15 @@
     }
     /* as cotas que faltam distribuir, embaixo da barra, com o botão e o X */
     if (RosterWork.cotasAviso) RosterWork.cotasAviso.ligar(conteudo.querySelector('#escala-cotas-aviso'), mesesDaTela, { acoes: true });
+    /* quem está de serviço e de extra no mesmo horário, embaixo da nota das cotas (no Mês e no Colunas) */
+    if (RosterWork.escalaExtraServico) {
+      RosterWork.escalaExtraServico.ligar(conteudo.querySelector('#escala-extra-servico-aviso'), {
+        visivel: function () { var modo = modoAtual(); return modo === 'mes' || modo === 'colunas'; },
+        unidades: unidadesColuna,
+        periodo: function () { var p = intervaloExibido(); return { inicio: dataISO(p.inicio), fim: dataISO(p.fim) }; },
+        nomeUnidade: function (id) { var u = (unidades || []).filter(function (x) { return +x.unidade_id === +id; })[0]; return u ? u.nome : ''; }
+      });
+    }
     aplicarModo();        // estado inicial (a última visão usada, ou o Dia do HTML) + preenche o período
     carregarUnidades();   // popula as abas de unidade em segundo plano
   }

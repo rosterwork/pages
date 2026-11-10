@@ -206,6 +206,14 @@
             <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-celular" /></svg>
             <span>Instalar no celular</span>
           </button>
+          <!-- só no celular: o tamanho de tudo na tela, Normal ou Menor (85%); o toque aplica na hora e fica lembrado
+               (js/index-sessao.js; o menu no js/index-cabecalho.js) -->
+          <div class="oculto" id="tamanho-tela">
+            <div class="dropdown-divisor"></div>
+            <div class="dropdown-titulo">Tamanho da tela</div>
+            <button type="button" class="dropdown-item" data-tela="normal">Normal</button>
+            <button type="button" class="dropdown-item" data-tela="menor">Menor</button>
+          </div>
           <div class="dropdown-divisor"></div>
           <button id="btn-sair" class="dropdown-item dropdown-item--perigo">
             <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-sair" /></svg>
@@ -260,7 +268,8 @@
             <span class="menu-item-label">Folgas</span>
           </button>
 
-          <button type="button" class="menu-item" data-pagina="extrajornada" data-lugar-celular="mais" aria-label="Extrajornada">
+          <!-- no celular, no Tamanho da tela Menor, mora na barra de baixo (js/index-sessao.js) -->
+          <button type="button" class="menu-item" data-pagina="extrajornada" data-lugar-celular="mais" data-lugar-celular-menor="barra" aria-label="Extrajornada">
             <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-extrajornada" /></svg>
             <span class="menu-item-label">Extrajornada</span>
           </button>
@@ -398,6 +407,12 @@
       <button type="button" class="menu-item barra-celular-item" data-pagina="folgas">
         <span class="barra-celular-icone"><svg class="icone" width="22" height="22" aria-hidden="true"><use href="icones/todos.svg#icone-folgas" /></svg></span>
         <span class="barra-celular-rotulo">Folgas</span>
+      </button>
+      <!-- só no Tamanho da tela Menor, no lugar a mais da barra (css/index-sidebar.css; js/index-sessao.js); o nome curto
+           cabe também no celular estreito, ao lado do Pendências -->
+      <button type="button" class="menu-item barra-celular-item barra-celular-item--menor" data-pagina="extrajornada">
+        <span class="barra-celular-icone"><svg class="icone" width="22" height="22" aria-hidden="true"><use href="icones/todos.svg#icone-extrajornada" /></svg></span>
+        <span class="barra-celular-rotulo">Extra</span>
       </button>
       <!-- o número é o mesmo do item Pendências do menu (copiado pelo js/index-sidebar.js) -->
       <button type="button" class="menu-item barra-celular-item" data-pagina="pendencias">
@@ -1173,6 +1188,31 @@
     </div>
   </template>
 
+  <!-- MOLDE: o tamanho dos calendários na barra de controles (componente geral-calendario-tamanho; Escala e
+       Extrajornada). A página escreve o lugar (<div id="..."></div>); o botão mostra o tamanho de agora e a lista
+       os níveis, os do navegador -->
+  <template id="tpl-calendario-tamanho">
+    <div class="dropdown calendario-tamanho">
+      <button type="button" class="botao" data-dica="Tamanho do calendário (Ctrl e a roda do mouse)">
+        <span class="texto-leitor">Tamanho do calendário:</span>
+        <span class="calendario-tamanho-valor">100%</span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu">
+        <div class="dropdown-titulo">Tamanho</div>
+        <button type="button" class="dropdown-item" data-tamanho="0.5">50%</button>
+        <button type="button" class="dropdown-item" data-tamanho="0.67">67%</button>
+        <button type="button" class="dropdown-item" data-tamanho="0.75">75%</button>
+        <button type="button" class="dropdown-item" data-tamanho="0.8">80%</button>
+        <button type="button" class="dropdown-item" data-tamanho="0.9">90%</button>
+        <button type="button" class="dropdown-item" data-tamanho="1">100%</button>
+        <button type="button" class="dropdown-item" data-tamanho="1.1">110%</button>
+        <button type="button" class="dropdown-item" data-tamanho="1.25">125%</button>
+        <button type="button" class="dropdown-item" data-tamanho="1.5">150%</button>
+      </div>
+    </div>
+  </template>
+
   <!-- MOLDES: o campo de militar (componente geral-combo-militar; o painel do dia da Escala; as Trocas desenham
        os itens delas): um militar da lista (o ícone de origem do serviço, quando há, o nome e, à direita, o que ele
        faz hoje ou o motivo), o título de um grupo e o aviso de quando o filtro não acha ninguém -->
@@ -1448,7 +1488,8 @@
     </section>
     <section data-caminho="mes" data-entrada="#escala-imprimir">
       <p data-alvo=".painel-corpo [data-impressao-nota]" data-avanca="proximo">No alto, o que será impresso: o mês da tela, com os filtros dela.</p>
-      <p data-alvo=".painel-corpo [data-impressao-semanas], .painel-corpo [data-impressao-mes-todo], .painel-corpo .impressao-linha--inicio" data-anel="caixa" data-avanca="proximo" data-livre>Escolha as semanas, no Calendário, ou os dias, na Agenda.<span data-so-treino>Aqui você escolhe as semanas, no Calendário, ou os dias, na Agenda.</span></p>
+      <p data-alvo=".painel-corpo [data-impressao-orientacao]" data-anel="caixa" data-avanca="proximo" data-livre>A orientação: Retrato sai como a agenda, e Paisagem, como o calendário.</p>
+      <p data-alvo=".painel-corpo [data-impressao-semanas], .painel-corpo [data-impressao-mes-todo], .painel-corpo .impressao-linha--inicio" data-anel="caixa" data-avanca="proximo" data-livre>Escolha as semanas, na Paisagem, ou os dias, no Retrato.<span data-so-treino>Aqui você escolhe as semanas, na Paisagem, ou os dias, no Retrato.</span></p>
       <p data-alvo=".painel-corpo [data-impressao-arvore]" data-anel="caixa" data-avanca="proximo" data-livre>As unidades que entram.</p>
       <p data-alvo=".painel-corpo [data-impressao-formato]" data-anel="caixa" data-avanca="proximo" data-livre>O formato: folhas A4, para imprimir, ou uma página contínua, para ver na tela.</p>
       <p data-alvo=".painel-corpo [data-mostrar]" data-anel="caixa" data-avanca="proximo" data-livre>O que aparece no papel: o gráfico, os ícones e a faixa do horário.</p>
@@ -1510,6 +1551,20 @@
     <p data-alvo="#escala-colunas-tipo + .seletor-menu .dropdown-item:not(.dropdown-item--ativo)" data-so-celular data-avanca="clique" data-pular-se="#escala-colunas-tipo [data-colunas-tipo='unidades'].aba--ativa">Escolha <strong>Unidades</strong>.</p>
     <p data-alvo="#escala-sub-unidades, #escala-periodo-anterior, #escala-periodo-proximo" data-avanca="proximo" data-livre>Cada coluna é uma unidade, nos 7 dias da semana. Ligue e desligue as unidades aqui; as setas andam uma semana.<span data-so-treino>Cada coluna é uma unidade, nos 7 dias da semana. Aqui você liga e desliga as unidades; as setas andam uma semana.</span></p>
     <p data-fim>Pronto. Como no Mês, cada dia abre o painel do dia.</p>
+  </template>
+
+  <template data-roteiro="tamanho-calendario" data-titulo="Mudar o tamanho do calendário" data-grupo="Escala" data-pagina="escalas">
+    <p data-trecho="abrir-escala"></p>
+    <p data-trecho="aba-mes"></p>
+    <p data-alvo="#escala-sub-mes [data-mes='calendario']" data-so-computador data-avanca="clique" data-pular-se="#escala-sub-mes [data-mes='calendario'].aba--ativa">Escolha o <strong>Calendário</strong>.</p>
+    <p data-alvo="#escala-sub-mes + .seletor-menu > .seletor" data-so-celular data-avanca="clique" data-pular-se="#escala-sub-mes [data-mes='calendario'].aba--ativa, #escala-sub-mes + .seletor-menu.dropdown--aberto">Abra o menu <strong>Agenda</strong>.</p>
+    <p data-alvo="#escala-sub-mes + .seletor-menu .dropdown-item:not(.dropdown-item--ativo)" data-so-celular data-avanca="clique" data-pular-se="#escala-sub-mes [data-mes='calendario'].aba--ativa">Escolha o <strong>Calendário</strong>.</p>
+    <p data-alvo="#escala-tamanho > .botao" data-avanca="clique" data-pular-se="#escala-tamanho.dropdown--aberto">Abra o botão com a porcentagem: ele muda o tamanho do calendário.</p>
+    <p data-alvo="#escala-tamanho.dropdown--aberto [data-tamanho='0.75']" data-avanca="clique">Escolha <strong>75%</strong>.</p>
+    <p data-alvo=".geral-calendario-mes" data-so-computador data-avanca="proximo" data-livre>Com o <strong>Ctrl</strong> apertado, a roda do mouse em cima do calendário também aproxima e afasta, em volta do mouse.</p>
+    <p data-alvo=".geral-calendario-mes" data-so-celular data-avanca="proximo" data-livre>Com dois dedos em cima do calendário, afaste para aumentar e aproxime para diminuir.</p>
+    <p data-fim>Pronto. O sistema guarda o último tamanho, um no computador e outro no celular.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi salvo: ao sair do treino, o calendário volta ao tamanho de antes.</p>
   </template>
 
   <template data-roteiro="trocar-servico" data-titulo="Trocar um serviço" data-grupo="Trocas" data-pagina="qualquer">
@@ -2097,8 +2152,8 @@
   <!-- ===== EXTRAJORNADA (extrajornada.html). Nos treinos, o mês de treino montado pelo banco, na etapa do data-cenario
        (extra-<etapa>; geral-treino-extra.js); no ?, os dados reais. No celular, a Extrajornada mora no Mais ===== -->
   <template data-roteiro-trecho="abrir-extra">
-    <p data-pagina="qualquer" data-alvo=".barra-celular-mais" data-so-celular data-avanca="clique" data-pular-se=".conteudo #extrajornada-abas, .barra-celular-mais[aria-expanded='true']">Abra o <strong>Mais</strong>.</p>
-    <p data-pagina="qualquer" data-alvo=".sidebar .menu-item[data-pagina='extrajornada']" data-avanca="clique" data-pular-se=".conteudo #extrajornada-abas">Abra a <strong>Extrajornada</strong> no menu.</p>
+    <p data-pagina="qualquer" data-alvo=".barra-celular-mais" data-so-celular data-avanca="clique" data-pular-se=".conteudo #extrajornada-abas, .barra-celular-mais[aria-expanded='true'], .sidebar .menu-item[data-pagina='extrajornada'][data-lugar-celular='barra']">Abra o <strong>Mais</strong>.</p>
+    <p data-pagina="qualquer" data-alvo=".sidebar .menu-item[data-pagina='extrajornada'], .barra-celular-item[data-pagina='extrajornada']" data-avanca="clique" data-pular-se=".conteudo #extrajornada-abas">Abra a <strong>Extrajornada</strong> no menu.</p>
   </template>
   <template data-roteiro-trecho="extra-organizar">
     <p data-alvo="#extrajornada-abas [data-aba='organizar']" data-avanca="clique" data-pular-se="#extrajornada-abas [data-aba='organizar'].aba--ativa">Abra a aba <strong>Organizar o mês</strong>.</p>
@@ -2619,6 +2674,14 @@
     <p data-alvo="#perfil-notificacoes" data-anel="campo" data-avanca="proximo" data-livre>Em <strong>Notificações neste aparelho</strong>, você liga ou desliga os avisos com o app fechado.</p>
     <p data-fim>Pronto. Essas escolhas valem na hora.</p>
     <p data-fim-treino>Pronto. No treino, nada foi mudado.</p>
+  </template>
+
+  <template data-roteiro="tamanho-tela" data-so-celular data-titulo="Mudar o tamanho da tela" data-grupo="Meu perfil" data-pagina="qualquer">
+    <p data-alvo="#dropdown-usuario > .cabecalho-usuario" data-avanca="clique" data-pular-se="#dropdown-usuario.dropdown--aberto">Abra o menu com as suas iniciais.</p>
+    <p data-alvo="#tamanho-tela [data-tela='menor']" data-avanca="clique">Em <strong>Tamanho da tela</strong>, escolha <strong>Menor</strong>.</p>
+    <p data-alvo=".barra-celular" data-avanca="proximo">Agora tudo fica um pouco menor, e a barra de baixo ganha a <strong>Extra</strong>.</p>
+    <p data-fim>Pronto. Para voltar, escolha <strong>Normal</strong> no mesmo menu.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi salvo: ao sair do treino, a tela volta ao tamanho de antes.</p>
   </template>
 
   <template data-roteiro="trocar-senha" data-nas-abas="seguranca" data-titulo="Trocar a sua senha" data-grupo="Meu perfil" data-pagina="perfil">
@@ -3618,7 +3681,7 @@
 
   <!-- o Remover da guarnição do menu da linha (aba Militares; escalas-painel-ciclo.js): a pergunta embaixo da linha, sem nada
        marcado, com o último serviço dele (o dia vem do JS). A resposta põe a saída no rascunho, e embaixo aparece o que
-       acontece com as trocas, folgas e extras dele (molde tpl-escala-ciclo-efeito). O Cancelar fecha e volta tudo -->
+       acontece com as trocas e folgas dele, as extras ficam (molde tpl-escala-ciclo-efeito). O Cancelar fecha e volta tudo -->
   <template id="tpl-escala-remover-guarnicao">
     <div class="grupo-caixa pergunta-linha">
       <span class="rotulo-secao">Último serviço</span>
@@ -4331,6 +4394,7 @@
       <span class="extrajornada-painel-quem">
         <span class="extrajornada-painel-quem-nome"><span class="escala-distribuicao-grad"></span> <span class="escala-distribuicao-nome"></span></span>
         <span class="extrajornada-painel-quem-unidade oculto"></span>
+        <span class="extrajornada-painel-quem-aviso oculto"></span>
       </span>
       <button type="button" class="extrajornada-painel-cotas" aria-expanded="false" aria-label="Outros dias com extra">
         <span class="extrajornada-painel-cota"></span>
@@ -4415,11 +4479,23 @@
 
   <!-- as caixas das impressões da escala, no painel de impressão comum (componentes/js/geral-impressao.js, que põe a
        nota, o aviso, a Prévia e o rodapé do index.html): o Imprimir escala (escalas-impressao.js: o painel do dia e o
-       Militares) e o das grades (escalas-impressao-grade.js: Agenda, Calendário, Colunas). O período, as unidades (a
-       árvore, marcada com as unidades pedidas, como estão; para quem é de companhia ou pelotão, começa na
-       companhia e a seta do título abre a árvore toda), o formato (só nas grades) e o que mostrar. O que é de uma
-       impressão só leva data-impressao-so com as marcas dela (dia, grade, semanas, dias); o JS mostra só o que vale -->
+       Militares) e o das grades (escalas-impressao-grade.js: Agenda, Calendário, Colunas). A orientação (só na Agenda
+       e no Calendário), o período, as unidades (a árvore, marcada com as unidades pedidas, como estão; para quem é de
+       companhia ou pelotão, começa na companhia e a seta do título abre a árvore toda), o formato (só nas grades) e o
+       que mostrar. O que é de uma impressão só leva data-impressao-so com as marcas dela (dia, grade, orientacao,
+       semanas, dias); o JS mostra só o que vale -->
   <template id="tpl-escala-impressao">
+    <!-- a orientação (Agenda e Calendário, da Escala e da Extrajornada): Retrato sai como a agenda; Paisagem, como o
+         calendário, com as unidades uma embaixo da outra, seja qual for a tela. Vem marcada pela aba (o JS marca) e
+         trocar troca a caixa do período -->
+    <div class="grupo-caixa" data-impressao-so="orientacao">
+      <span class="rotulo-secao"><span data-impressao-num></span>. Orientação</span>
+      <div class="abas abas--seletor" data-impressao-orientacao>
+        <button type="button" class="aba" data-orientacao="retrato">Retrato</button>
+        <button type="button" class="aba" data-orientacao="paisagem">Paisagem</button>
+      </div>
+      <span class="campo-ajuda">Retrato sai como a agenda: um dia por linha, com as unidades lado a lado. Paisagem sai como o calendário: uma semana por linha, com as unidades uma embaixo da outra.</span>
+    </div>
     <!-- o período: as datas De/Até e os atalhos (dia); as semanas do mês da tela (Calendário: "Mês todo" marcado = o
          mês inteiro; desmarcado, os botões das semanas, de marcar vários, clonados do tpl-escala-aba-unidade); os dias
          do mês da tela (Agenda e Colunas › Dias). O Colunas › Unidades não tem a caixa: sai a semana da tela -->

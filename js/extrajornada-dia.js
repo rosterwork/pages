@@ -331,6 +331,13 @@
       s24.textContent = msg().so24;
       linhaNome.appendChild(s24);
     }
+    /* embaixo do nome, o serviço de parte do dia: a extra só nas outras horas (a barra mostra em cinza) */
+    var servico = G().horasServico(m, k);
+    if (servico.length) {
+      var aviso = lin.querySelector('.extrajornada-painel-quem-aviso');
+      aviso.textContent = msg().deServicoDas(servico.map(function (p) { return [RW.horario.curta(p.hi), RW.horario.curta(p.hf)]; }));
+      aviso.classList.remove('oculto');
+    }
     var a = G().vagaDe(m.cpf, k), marcados = a ? G().blocos(a) : [];
     /* no Neste dia, quem pôs a extra, antes do nome (como a origem na Escala) */
     if (a && +a.unidade === uid) linhaNome.insertBefore(u().origem(a), linhaNome.firstChild);
