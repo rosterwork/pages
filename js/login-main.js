@@ -44,9 +44,33 @@
       });
     }
 
+    /* Enter entra, menos no olho e no Esqueceu a senha?, que fazem só o deles */
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') window.RosterWork.fazerLogin();
+      if (e.key !== 'Enter') return;
+      if (e.target.closest && e.target.closest('#login-mostrar-senha, #login-esqueci')) return;
+      window.RosterWork.fazerLogin();
     });
+
+    /* o olho: a senha à vista ou escondida (aria-pressed diz qual, e o CSS troca o ícone) */
+    var btnOlho = document.getElementById('login-mostrar-senha');
+    if (btnOlho && inputSenha) {
+      btnOlho.addEventListener('click', function () {
+        var mostrar = inputSenha.type === 'password';
+        inputSenha.type = mostrar ? 'text' : 'password';
+        btnOlho.setAttribute('aria-pressed', String(mostrar));
+      });
+    }
+
+    /* Esqueceu a senha?: a frase de procurar um administrador aparece e some embaixo do link */
+    var btnEsqueci = document.getElementById('login-esqueci');
+    var textoEsqueci = document.getElementById('login-esqueci-texto');
+    if (btnEsqueci && textoEsqueci) {
+      btnEsqueci.addEventListener('click', function () {
+        var abrir = textoEsqueci.classList.contains('oculto');
+        textoEsqueci.classList.toggle('oculto', !abrir);
+        btnEsqueci.setAttribute('aria-expanded', String(abrir));
+      });
+    }
 
     /* Manter-me conectado: a caixinha marca e desmarca (também pelo texto); no app instalado
        no celular já vem marcada */

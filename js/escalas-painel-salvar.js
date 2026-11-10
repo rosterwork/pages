@@ -1,11 +1,15 @@
 /* ============================================================
-   ESCALAS — o Salvar do painel do dia (as abas Dia, Ciclo e
-   Extrajornada). As mudanças de cada aba ficam no rascunho dela (o Dia
-   em escalas-painel-editar.js, o Ciclo em escalas-painel-ciclo.js, a
+   ESCALAS — o Salvar do painel do dia (as abas Funções, Militares,
+   Ciclo e Extrajornada) e da célula da grade, com o painel fechado
+   (escalas-celula-editar.js, no rascunho do Dia; o dia do rodapé é o
+   dela). As mudanças de cada aba ficam no rascunho dela
+   (as Funções e a Militares, um rascunho só, em
+   escalas-painel-editar.js, o Ciclo em escalas-painel-ciclo.js, a
    Extrajornada no rascunho do mês, escalas-painel-extra.js); trocar de
    aba não perde nada. O rodapé largo da página
    (.escala-rodape-salvar) mostra "N alterações não
-   salvas" (com mudança na extra, também o motivo), o Cancelar (descarta
+   salvas", o Desfazer e o Refazer da aba aberta (também o Ctrl+Z e o
+   Ctrl+Y; o rodapé fica enquanto há o que refazer), o Cancelar (descarta
    tudo, com a confirmação) e o Salvar, que grava as três de uma vez,
    tudo ou nada (escala_painel_salvar). Só o Dia: as etapas no rodapé,
    e só aquele dia é lido de novo na grade (escalas-dia-na-grade.js);
@@ -51,7 +55,12 @@
   function E() { return RW.escalasPainelEditar; }
   function C() { return RW.escalasPainelCiclo; }
   function X() { return RW.escalasPainelExtra; }
-  function contexto() { return RW.escalasPainel && RW.escalasPainel.contexto ? RW.escalasPainel.contexto() : null; }
+  /* o dia do rodapé: o do painel aberto ou, com ele fechado, o da célula da grade (escalas-celula-editar.js) */
+  function contexto() {
+    var p = RW.escalasPainel && RW.escalasPainel.contexto ? RW.escalasPainel.contexto() : null;
+    return p || (RW.escalasCelulaEditar ? RW.escalasCelulaEditar.contexto() : null);
+  }
+  function celula() { return RW.escalasCelulaEditar || null; }
 
   /* ---------- o que falta salvar ---------- */
 
@@ -103,12 +112,34 @@
     el.classList.add('oculto');
   }
 
+  /* o Desfazer e o Refazer da aba aberta: as Funções e a Militares (um rascunho só), as Guarnições e a Extrajornada.
+     Devolve { podeDesfazer(), podeRefazer(), desfazer(), refazer() }, ou null */
+  function daAba() {
+    var c = contexto(), s = c && c.secao;
+    if ((s === 'distribuicao' || s === 'militares') && E()) return { podeDesfazer: E().podeDesfazer, podeRefazer: E().podeRefazer, desfazer: E().desfazer, refazer: E().refazer };
+    if (s === 'continuos' && C()) {
+      return { podeDesfazer: function () { return C().podeDesfazer(c.unidadeId, c.iso); }, podeRefazer: function () { return C().podeRefazer(c.unidadeId, c.iso); },
+        desfazer: C().desfazer, refazer: C().refazer };
+    }
+    if (s === 'extra' && X()) return { podeDesfazer: X().podeDesfazer, podeRefazer: X().podeRefazer, desfazer: X().desfazer, refazer: X().refazer };
+    return null;
+  }
+  /* o Desfazer (ou o Refazer) do rodapé e do teclado: um passo na aba aberta */
+  function voltar(desfazer) {
+    var h = daAba();
+    if (!h || salvando || !(desfazer ? h.podeDesfazer() : h.podeRefazer())) return;
+    if (desfazer) h.desfazer(); else h.refazer();
+    atualizar();
+  }
+
   /* o rodapé largo da página (o primeiro da página aberta); os botões ligam uma vez só */
   function rodapePagina() {
     var el = document.querySelector('.conteudo .escala-rodape-salvar');
     if (el && !el.hasAttribute('data-ligado')) {
       el.setAttribute('data-ligado', '');
       el.querySelector('.escala-painel-cancelar').addEventListener('click', perguntarCancelar);
+      el.querySelector('.escala-painel-desfazer').addEventListener('click', function () { voltar(true); });
+      el.querySelector('.escala-painel-refazer').addEventListener('click', function () { voltar(false); });
       var salvar = el.querySelector('.escala-painel-salvar');
       salvar.addEventListener('click', function () { gravar(salvar); });
     }
@@ -119,10 +150,12 @@
   function atualizar() {
     var el = rodapePagina();
     if (!el) return;
-    var n = contar();
+    var n = contar(), h = daAba();
     var passou = X() ? X().passou() : null;
-    /* enquanto grava, o rodapé fica (a conta das mudanças já pode ter zerado) */
-    el.classList.toggle('oculto', !n && !salvando);
+    /* enquanto grava, o rodapé fica (a conta das mudanças já pode ter zerado), e também enquanto há o que refazer */
+    el.classList.toggle('oculto', !n && !salvando && !(h && h.podeRefazer()));
+    el.querySelector('.escala-painel-desfazer').disabled = salvando || !h || !h.podeDesfazer();
+    el.querySelector('.escala-painel-refazer').disabled = salvando || !h || !h.podeRefazer();
     /* com as etapas no lugar do texto, ele volta quando elas terminam */
     if (!linhaNoRodape) {
       var texto = el.querySelector('.escala-rodape-salvar-texto');
@@ -133,9 +166,6 @@
       texto.classList.toggle('extrajornada-painel-rodape-erro', !!passou);
       texto.classList.toggle('extrajornada-painel-rodape-alerta', !!frase);
     }
-    var motivo = el.querySelector('.escala-rodape-motivo'), comExtra = !!(X() && X().contar());
-    motivo.classList.toggle('oculto', !comExtra);
-    if (!comExtra) motivo.querySelector('input').value = '';
     el.querySelector('.escala-painel-cancelar').disabled = salvando;
     el.querySelector('.escala-painel-salvar').disabled = salvando || !!passou || !!(E() && E().travado());
   }
@@ -214,6 +244,7 @@
       textoConfirmar: RW.mensagens.botoes.descartar,
       textoCancelar: RW.mensagens.botoes.continuarEditando,
       aoConfirmar: function () {
+        if (celula()) celula().esquecer();
         descartar();
         if (X()) X().descartar();
         redesenharAba();
@@ -293,6 +324,7 @@
       if (!r || !r.success) {
         terminar();
         if (r && r.desatualizado) {
+          if (celula()) celula().esquecer();
           if (E()) E().descartar();
           redesenharAba();
           mudou();
@@ -301,6 +333,7 @@
         mudou();
         return { ok: false, erro: msg().painelRecusado((r && r.error) || msg().falhaSalvar) };
       }
+      if (celula()) celula().esquecer();
       if (E()) E().aposGravar(r);
       if (C()) C().limpar();
       if (X()) X().descartar();   // gravou: a extra é lida de novo, com o que mudou
@@ -324,8 +357,7 @@
     if (!c || salvando || (E() && E().travado())) return;
     var dia = E() && E().pendentes() ? E().paraGravar() : null;
     var ciclo = doCiclo(c).length ? C().envio() : null;
-    var campo = botao.closest('.escala-rodape-salvar').querySelector('.escala-rodape-motivo input');
-    var extra = X() ? X().envio(campo.value.trim()) : null;
+    var extra = X() ? X().envio() : null;
     if (!dia && !ciclo && !extra) return;
     enviar(c, dia, ciclo, extra, botao).then(function (res) {
       if (!res.ok) { avisarFalha(res); return; }
@@ -334,10 +366,29 @@
     });
   }
 
+  /* o Ctrl+Z desfaz e o Ctrl+Y (ou o Ctrl+Shift+Z) refaz na aba aberta do painel do dia ou no dia da célula da grade: fora
+     dos campos de texto, sem a edição de uma linha aberta e sem janela de aviso aberta. O cartão aberto na célula fecha
+     antes (o que estava concluído vira o passo que se desfaz) */
+  document.addEventListener('keydown', function (e) {
+    if (!(e.ctrlKey || e.metaKey) || e.altKey || !contexto() || !document.querySelector('.conteudo .escala-rodape-salvar')) return;
+    var noPainel = !!(RW.painel && RW.painel.estaAberto()), naCelula = !noPainel && !!(celula() && celula().contexto());
+    if ((!noPainel && !naCelula) || (RW.escalasPainelLinha && RW.escalasPainelLinha.aberta())) return;
+    var alvo = e.target;
+    if (alvo && (alvo.tagName === 'INPUT' || alvo.tagName === 'TEXTAREA' || alvo.tagName === 'SELECT' || alvo.isContentEditable)) return;
+    if (document.querySelector('.modal-veu--aberto')) return;
+    var tecla = (e.key || '').toLowerCase();
+    var desfazer = tecla === 'z' && !e.shiftKey, refazer = tecla === 'y' || (tecla === 'z' && e.shiftKey);
+    if (!desfazer && !refazer) return;
+    e.preventDefault();
+    if (naCelula) celula().fechar();
+    voltar(desfazer);
+  });
+
   /* qualquer aviso dos rascunhos (também o painel que abre ou fecha) redesenha o rodapé; as telas, só com mudança */
   window.addEventListener('rosterwork_escala_rascunho', mudou);
-  /* fechar ou recarregar o navegador, ou ir para outra página, com mudança no Dia ou no Ciclo: o aviso */
-  if (RW.guardaSaida) RW.guardaSaida.registrar(pendente);
+  /* fechar ou recarregar o navegador, ou ir para outra página, com mudança no Dia ou no Ciclo: o aviso (só com a Escala na
+     tela: saindo dela, a mudança fica para trás, e a célula da grade começa limpa na volta) */
+  if (RW.guardaSaida) RW.guardaSaida.registrar(function () { return !!document.querySelector('.conteudo #escala-modos') && pendente(); });
 
   RW.escalasPainelSalvar = { rodape: rodape, atualizar: atualizar, contar: contar, contarDoDia: contarDoDia, pendente: pendente,
     descartar: descartar, paraPrevia: paraPrevia, marcado: marcado, mostrarRelendo: mostrarRelendo };

@@ -52,6 +52,11 @@
   text-overflow: ellipsis;
 }
 
+/* as unidades lado a lado (geral-calendario-mes--lado-a-lado): cada uma é uma coluna, com o nome no centro dela */
+.geral-calendario-mes--lado-a-lado .escala-calendario-unidade-nome {
+  text-align: center;
+}
+
 /* a célula do Mês, dentro do bloquinho: transparente (o fundo e os estados são do bloquinho);
    o clique, o foco do teclado e as cores do "fora do turno" seguem da célula */
 .escala-calendario-unidade .escala-mes-celula,

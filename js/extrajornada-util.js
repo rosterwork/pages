@@ -54,24 +54,20 @@
     nome: function (cpf) { var m = util.militar(cpf); return m ? m.grad + ' ' + m.nome : cpf; },
     /* o que o militar marcou no pedido para o dia: 'quer', 'nao' (Não quero) ou 'sem' (sem preferência) */
     pref: function (m, k) { return (m.quer || []).indexOf(k) >= 0 ? 'quer' : (m.nao_posso || []).indexOf(k) >= 0 ? 'nao' : 'sem'; },
-    /* a extra no bloco do dia, só para ler (marcar é no painel do dia e na lista): o posto e o nome e as 4 bolinhas
-       pequenas dos horários, sem clique, na cor do que ele marcou no pedido; na dica, o nome inteiro e o horário
-       escrito; embaixo, o pelotão quando é de outro. curto: a célula pequena do Calendário, com o posto curto
-       (RosterWork.escalasCelula.postoCurto); a dica leva o posto inteiro */
+    /* a extra no bloco do dia, só para ler (marcar é no painel do dia e na lista): o posto e o nome e a barrinha dos 4
+       horários de 6 horas, com a parte de cada um que a extra ocupa, na cor do que ele marcou no pedido; na dica, o
+       horário escrito; embaixo, o pelotão quando é de outro. curto: a célula pequena do Calendário, com o posto curto
+       (RosterWork.escalasCelula.postoCurto) */
     vaga: function (a, uid, curto) {
       var m = util.militar(a.cpf) || {}, blocos = a.blocos.map(Number);
       var v = RW.tpl('tpl-extrajornada-vaga');
       v.querySelector('.extrajornada-vaga-grad').textContent = curto && RW.escalasCelula ? RW.escalasCelula.postoCurto(m.grad) : (m.grad || '');
       v.querySelector('.extrajornada-vaga-nome').textContent = m.nome || a.cpf;
-      var horas = blocos.length === 4 ? msg().horasN(24) : blocos.length ? util.horas(blocos, a.inicio) : '';
-      /* a que começa no fim do expediente: a hora pequena antes das bolinhas */
-      var cedo = v.querySelector('.extrajornada-vaga-inicio');
-      cedo.textContent = blocos.length ? util.hora(a.inicio) : '';
-      cedo.classList.toggle('oculto', !cedo.textContent);
-      v.classList.toggle('extrajornada-vaga--cedo', !!cedo.textContent);
-      /* sem nenhum horário: em cinza até o Salvar (marcar uma bolinha traz de volta) */
+      /* a dica: o horário escrito, como na barra ("12h às 00h"; o dia todo, "08h às 08h") */
+      var horas = blocos.length ? util.horas(blocos, a.inicio) : '';
+      /* sem nenhum horário: em cinza até o Salvar (pôr um horário traz de volta) */
       v.classList.toggle('extrajornada-vaga--sai', !blocos.length);
-      v.setAttribute('data-dica', ((m.grad || '') + ' ' + (m.nome || a.cpf)).trim() + (horas ? ', ' + horas : ' · ' + msg().saiAoSalvar));
+      v.setAttribute('data-dica', horas || msg().saiAoSalvar);
       v.setAttribute('data-busca', RW.busca ? RW.busca.chave(m) : '');
       var outro = !!m.unidade_id && m.unidade_id !== uid;
       if (outro) {
@@ -79,12 +75,18 @@
         pel.textContent = (util.unidade(m.unidade_id) || {}).nome || '';
         pel.classList.remove('oculto');
       }
-      /* a cor das marcadas é a do que ele marcou no pedido para o dia: verde quer, vermelho não quer, neutra sem preferência */
-      var bol = v.querySelector('.extrajornada-vaga-bol'), pref = util.pref(m, a.data);
+      /* a cor da parte ocupada é a do que ele marcou no pedido para o dia: verde quer, vermelho não quer, neutra sem
+         preferência; em cada horário de 6 horas, a parte que a extra ocupa (a que começa no fim do expediente ocupa só um
+         pedaço do primeiro e do último) */
+      var bol = v.querySelector('.extrajornada-vaga-bol'), pref = util.pref(m, a.data), hs = util.horasDe(a);
       bol.classList.toggle('extrajornada-vaga-bol--quer', pref === 'quer');
       bol.classList.toggle('extrajornada-vaga-bol--nao', pref === 'nao');
       Array.prototype.forEach.call(bol.children, function (b, i) {
-        b.classList.toggle('extrajornada-vaga-bol--on', blocos.indexOf(i + 1) >= 0);
+        var aqui = hs.filter(function (h) { return h >= i * 6 && h < i * 6 + 6; });
+        b.classList.toggle('extrajornada-vaga-bol--on', aqui.length > 0);
+        if (!aqui.length) return;
+        b.style.setProperty('--vaga-de', ((Math.min.apply(null, aqui) - i * 6) / 6 * 100) + '%');
+        b.style.setProperty('--vaga-ate', ((Math.max.apply(null, aqui) + 1 - i * 6) / 6 * 100) + '%');
       });
       v.querySelector('.extrajornada-vaga-baixo').classList.toggle('oculto', !outro);
       v.insertBefore(util.origem(a), bol);

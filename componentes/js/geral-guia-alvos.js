@@ -96,7 +96,7 @@
     var sinais = '.conteudo .giratorio, .conteudo .carregando-pontos, .conteudo .esqueleto-conjunto, .conteudo [data-lendo], ' +
       '.conteudo .cobertura-viva, .conteudo .pagina-corpo[data-relendo]';
     return Array.prototype.some.call(document.querySelectorAll(sinais), function (g) {
-      return visivel(g) && !g.closest('.carregando-veu, .extrajornada-calculo, .painel-lateral:not(.painel-lateral--aberto)') &&
+      return visivel(g) && !g.closest('.carregando-veu, .painel-lateral:not(.painel-lateral--aberto)') &&
         getComputedStyle(g).visibility !== 'hidden';
     });
   }

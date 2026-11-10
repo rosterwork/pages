@@ -16,9 +16,10 @@
      o dono do serviço é alguém da unidade que serve em outro dia);
    - ajuste-manual: um militar fica fixado na função (o ajuste de
      mentira em ajustes_salvos), e o dia tem o Voltar ao automático;
-   - ciclo-fora: sem ninguém de verdade que possa entrar no ciclo, um dos
-     que servem em outros dias aparece fora (Adicionar vai à prévia como
-     mudar para o ciclo deste dia, depois do último serviço dele);
+   - ciclo-fora: sem ninguém de verdade fora da escala, um dos que
+     servem em outros dias aparece fora, no Adicionar militar e na aba
+     Guarnições (pôr numa guarnição vai à prévia como mudar para ela, e
+     pôr na dele mesmo não muda nada);
    - dias-de-servico: sem serviço pela frente, a lista de serviços do
      militar (o pedido e o Dar folga) ganha três dias de exemplo;
    - extra-<etapa>: o mês de treino da Extrajornada, montado pelo banco
@@ -170,8 +171,9 @@
     return donoDaTroca(uid, iso, e).then(function () { return d; });
   }
 
-  /* o ciclo da unidade no dia: sem ninguém que possa entrar agora (fora do ciclo, sem data marcada, sem afastamento e sem
-     servir no dia), um dos que servem em outros dias aparece fora */
+  /* quem está fora da escala, em outra guarnição ou de serviço no dia (o Adicionar militar): sem ninguém que possa entrar
+     agora (fora da escala, sem data marcada, sem afastamento e sem servir no dia), um dos que servem em outros dias
+     aparece fora */
   function noCiclo(r, uid, iso) {
     var ms = (r && r.militares) || [];
     var k = chave(uid, iso);
@@ -189,6 +191,54 @@
       x.afastamento = null;
       x.entra_em = null;
     });
+    return r;
+  }
+
+  /* as guarnições a partir do dia (a aba Guarnições), com o mesmo exemplo: ele sai das colunas e fica no Fora da escala;
+     com a entrada dele no rascunho (ciclo = as mudanças da prévia), fica só na guarnição escolhida, da data em diante,
+     como quem entra. A guarnição de verdade dele fica guardada: escolher a mesma não muda nada no banco (limparPedido) */
+  function nasGuarnicoes(r, uid, iso, ciclo) {
+    var periodos = (r && r.periodos) || [];
+    if (!periodos.length) return r;
+    var k = chave(uid, iso), primeiro = periodos[0].colunas || [];
+    var letraDe = function (col) { return ((r.guarnicoes || [])[col.indice] || {}).letra; };
+    if (!(k in escolhas)) {
+      var temFora = (r.fora || []).some(function (m) { return !m.entra_em && !m.afastamento; });
+      var achado = null;
+      if (!temFora) {
+        primeiro.some(function (col) {
+          var m = col.indice === r.indice_do_dia ? null : col.militares.filter(function (x) { return !x.marca; })[0];
+          if (m) achado = { cpf: m.cpf };
+          return !!achado;
+        });
+      }
+      escolhas[k] = achado;
+    }
+    var e = escolhas[k];
+    if (!e) return r;
+    if (!ciclo && e.letra === undefined) {
+      primeiro.forEach(function (col) { col.militares.forEach(function (x) { if (x.cpf === e.cpf && x.marca !== 'sai') e.letra = letraDe(col); }); });
+    }
+    var item = (ciclo || []).filter(function (x) { return x.cpf === e.cpf && x.acao === 'adicionar' && x.letra; })[0] || null;
+    var dele = null, entrou = null;
+    periodos.forEach(function (p) {
+      (p.colunas || []).forEach(function (col) {
+        col.militares = col.militares.filter(function (x) {
+          if (x.cpf !== e.cpf) return true;
+          if (!dele) dele = x;
+          var fica = !!item && letraDe(col) === item.letra && x.marca !== 'sai' && !(p.fim && p.fim < item.data);
+          if (fica && !entrou) { x.marca = 'entra'; x.de = null; x.motivo = null; entrou = p.inicio; }
+          else if (fica && x.marca === 'vem') x.marca = null;
+          return fica;
+        });
+      });
+    });
+    /* no Fora da escala do dia aberto enquanto não entra */
+    r.fora = (r.fora || []).filter(function (x) { return x.cpf !== e.cpf; });
+    if (dele && entrou !== iso) {
+      r.fora.push({ cpf: e.cpf, grad: dele.grad, nome: dele.nome, desde: null, entra_em: entrou, entra_guarnicao: entrou ? item.letra : null,
+        afastamento: null });
+    }
     return r;
   }
 
@@ -211,13 +261,19 @@
         if (!dia.folgas_cancelar.length) delete dia.folgas_cancelar;
       }
     }
-    /* quem aparece fora do ciclo só no treino já está no ciclo: o Adicionar dele é mudar de ciclo */
-    (c.p_ciclo || []).forEach(function (x) {
-      Object.keys(escolhas).forEach(function (k) {
-        var e = escolhas[k];
-        if (e && e.ultimo !== undefined && e.cpf === x.cpf && x.acao === 'adicionar' && !x.ultimo_servico && e.ultimo) x.ultimo_servico = e.ultimo;
+    /* quem aparece fora da escala só no treino já está numa guarnição: sem a letra (o formato de antes), o Adicionar dele é
+       mudar para a guarnição do dia, depois do último serviço; com a letra, pôr na guarnição dele mesmo não muda nada (sai
+       do pedido) */
+    if (c.p_ciclo) {
+      c.p_ciclo = c.p_ciclo.filter(function (x) {
+        var e = null;
+        Object.keys(escolhas).forEach(function (k) { if (escolhas[k] && escolhas[k].cpf === x.cpf) e = escolhas[k]; });
+        if (!e || x.acao !== 'adicionar') return true;
+        if (x.letra) return !(e.letra && x.letra === e.letra);
+        if (e.ultimo && !x.ultimo_servico) x.ultimo_servico = e.ultimo;
+        return true;
       });
-    });
+    }
     return c;
   }
 
@@ -248,7 +304,9 @@
     var doDia = nome === 'ler_distribuicao_dia' || (nome === 'escala_previa' && corpo && corpo.p_leitura === 'ler_distribuicao_dia');
     var doCiclo = nome === 'escala_continuos_listar' && !!ativo && ativo.nome === 'ciclo-fora';
     var dosServicos = nome === 'folgas_servicos_militar' && !!ativo && ativo.nome === 'dias-de-servico';
-    if (!emCurso() || !(doDia || doCiclo || dosServicos)) return buscar(limpo);
+    var dasGuarnicoes = (nome === 'escala_guarnicoes_listar' || (nome === 'escala_previa' && !!corpo && corpo.p_leitura === 'escala_guarnicoes_listar'))
+      && !!ativo && ativo.nome === 'ciclo-fora';
+    if (!emCurso() || !(doDia || doCiclo || dosServicos || dasGuarnicoes)) return buscar(limpo);
     return buscar(limpo).then(function (r) {
       if (!r.ok) return r;
       return r.json().then(function (dados) {
@@ -256,6 +314,7 @@
         if (!dados || !corpo) return resposta(dados);
         var uid = corpo.p_unidade_id, iso = corpo.p_data;
         if (doCiclo) return resposta(noCiclo(dados, uid, iso));
+        if (dasGuarnicoes) return resposta(nasGuarnicoes(dados, uid, iso, nome === 'escala_previa' ? corpo.p_ciclo : null));
         return noDia(dados, uid, iso, nome === 'escala_previa' ? corpo.p_dia : null).then(resposta);
       });
     });

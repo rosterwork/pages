@@ -18,7 +18,7 @@
 
   /* opções do filtro Situação (o valor é o data-situacao da linha, ver escalas-celula.js) */
   var SITUACOES = [
-    { rotulo: 'Prontidão', valor: 'prontidao' },
+    { rotulo: 'Guarnição', valor: 'prontidao' },
     { rotulo: 'Trocas', valor: 'trocas' },
     { rotulo: 'Extrajornada', valor: 'extra' },
     { rotulo: 'Pontual', valor: 'pontual' },

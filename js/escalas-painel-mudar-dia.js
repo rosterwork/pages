@@ -17,9 +17,13 @@
    (escalas-painel-editar.js › aoVivo) e o banco confere numa prévia
    (escala_previa): a recusa fica em vermelho e desliga o Salvar do
    rodapé largo; o dia de antes abaixo do mínimo e quem assume o Chefe
-   de Socorro ou o Oficial de Área avisam e deixam salvar. Depois de
-   salvo, desfaz-se pelo lápis da folga no dia de antes ou pelo
-   Remover militar no dia novo.
+   de Socorro ou o Oficial de Área avisam e deixam salvar (o Como fica
+   e a conferência ficam em escalas-painel-mudar-dia-conferir.js).
+   Depois de salvo, desfaz-se pela folga no dia de antes ou pelo
+   Remover do dia no dia novo.
+   API: RosterWork.escalasPainelMudarDia.abrir(opcoes) (opcoes = { cpf }:
+   chega com ele escolhido, o menu da linha) e podeMudar(cpf) (ele
+   está na lista Quem, pelo ciclo).
    ============================================================ */
 (function () {
   'use strict';
@@ -29,13 +33,11 @@
   var MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
   /* as origens do serviço pelo ciclo (o que muda de dia por aqui) */
   var CICLO = ['base', 'saida', 'sistema'];
-  var ESPERA_CONFERIR = 600;   // ms depois da última resposta, o banco confere a mudança
   var conta = 0;               // nome único para os rádios de cada abertura
 
   function ed() { return RosterWork.escalasPainelEditar.sub; }
   function msg() { return RosterWork.mensagens.escala; }
   function M() { return RosterWork.mensagens.escala.mudarDia; }
-  function nomeDe(m) { return ((m.grad || '') + ' ' + (m.nome || '')).trim(); }
   function mostra(no, sim) { no.classList.toggle('oculto', !sim); }
   function iso(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
   function dataDeIso(s) { var p = String(s).split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
@@ -55,6 +57,11 @@
     return daUnidade ? '' : t.naoOutraUnidade;
   }
 
+  /* as horas do ciclo dele nesta unidade, as que mudam de dia por aqui (vazio: não muda por aqui) */
+  function cicloDe(mil, daUnidade) {
+    return daUnidade && !mil.remanejado ? mil.janelas.filter(function (j) { return CICLO.indexOf(j.origem) >= 0; }) : [];
+  }
+
   /* a lista Quem: quem está de serviço pelo ciclo nesta unidade (o ícone de origem e o horário do ciclo) e, no fim e
      apagados, quem está no dia de outro jeito, com o caminho certo */
   function itensQuem(dados) {
@@ -65,7 +72,7 @@
         var mil = api.militarDoDia(pm.cpf);
         if (!mil) return;
         visto[pm.cpf] = true;
-        var ciclo = u.editando && !mil.remanejado ? mil.janelas.filter(function (j) { return CICLO.indexOf(j.origem) >= 0; }) : [];
+        var ciclo = cicloDe(mil, !!u.editando);
         if (ciclo.length) {
           var item = Q.itemServico({ cpf: pm.cpf, grad: pm.grad, nome: pm.nome, disp: ciclo });
           item.mil = mil;
@@ -86,7 +93,15 @@
     return lista;
   }
 
-  function abrir() {
+  /* ele muda o dia por aqui: está na lista Quem, pelo ciclo (o menu da linha só mostra o item a quem pode) */
+  function podeMudar(cpf) {
+    var dados = ed().dados();
+    if (!dados) return false;
+    return itensQuem(dados).some(function (i) { return i.cpf === cpf && !i.inativo && !i.titulo; });
+  }
+
+  /* opcoes = { cpf }: chega com ele escolhido (o menu da linha) */
+  function abrir(opcoes) {
     var api = ed(), H = api.horas;
     var dados = api.dados();
     if (!dados) return;
@@ -98,9 +113,8 @@
     var est = { item: null, janela: null, mes: inicioDoMes(dataDeIso(deIso)), para: null, horario: null, limite: null, fim: null };
     var meses = {};          // as leituras do calendário: 'cpf|AAAA-MM' -> resposta
     var dadosNovo = {};      // a leitura de cada dia novo: AAAA-MM-DD -> dados
-    var conferido = null;    // o que o banco conferiu da resposta de agora: { chave, erro, dA, dB }
-    var el = {}, combo = null, horario = null, onde = null, ondeCaixa = null;
-    var pedidoMes = 0, pedidoDia = 0, pedidoConferir = 0, espera = null, carregandoMes = false, carregandoDia = false;
+    var el = {}, combo = null, horario = null, onde = null, ondeCaixa = null, conf = null;
+    var pedidoMes = 0, pedidoDia = 0, carregandoMes = false, carregandoDia = false;
 
     /* ---------- montagem ---------- */
 
@@ -113,7 +127,7 @@
         janelas: q('.escala-mudar-dia-janelas'), janelasLista: q('.escala-mudar-dia-janelas-lista'),
         dia: q('.escala-mudar-dia-dia'), mes: q('.escala-mudar-dia-mes'), carregando: q('.escala-mudar-dia-carregando'),
         anterior: q('.escala-mudar-dia-anterior'), proximo: q('.escala-mudar-dia-proximo'),
-        calendario: q('.escala-mudar-dia-calendario'), seguidas: q('.escala-mudar-dia-seguidas'),
+        calendario: q('.escala-mudar-dia-calendario'),
         horario: q('.escala-mudar-dia-horario'), periodo: q('.escala-mudar-dia-periodo'), parte: q('.escala-mudar-dia-parte'),
         onde: q('.escala-mudar-dia-onde'), como: q('.escala-mudar-dia-como'), comoLista: q('.escala-mudar-dia-como-lista'),
         conferindo: q('.escala-mudar-dia-conferindo'), papel: q('.escala-mudar-dia-papel'),
@@ -144,9 +158,25 @@
         vagas: true,
         aoMudar: atualizar
       });
+      /* o Como fica e o banco confere (escalas-painel-mudar-dia-conferir.js) */
+      conf = RosterWork.escalasPainelMudarDiaConferir.criar({
+        el: el, dados: dados, uid: uid, data: data,
+        item: function () { return est.item; },
+        total: function () { return !!(est.horario && est.horario.total); },
+        dadosNovo: function (dia) { return dadosNovo[dia]; },
+        respostaDoDia: respostaDoDia,
+        onde: function () { return onde; },
+        textoResto: textoResto,
+        vivo: function () { return el.combo.isConnected; },
+        aoConferir: atualizar
+      });
       corpo.appendChild(tela);
-      combo.preencher(itensQuem(dados));
-      atualizar();
+      var itens = itensQuem(dados);
+      combo.preencher(itens);
+      var pedidoCpf = opcoes && opcoes.cpf;
+      var ja = pedidoCpf ? itens.filter(function (i) { return i.cpf === pedidoCpf && !i.inativo && !i.titulo; })[0] : null;
+      if (ja) { escolher(ja); combo.mostrarAtual(); }
+      else atualizar();
     }
 
     /* ---------- as respostas ---------- */
@@ -157,7 +187,7 @@
       est.para = null;
       est.mes = inicioDoMes(dataDeIso(deIso));
       meses = {};
-      conferido = null;
+      conf.limpar();
       montarJanelas();
       definirJanela();
       onde.reiniciar();
@@ -256,14 +286,13 @@
       var texto = botao.querySelector('.mini-calendario-texto'), numero = botao.querySelector('.mini-calendario-conta');
       if (diaIso === hoje) botao.classList.add('mini-calendario-dia--hoje');
       if (diaIso === est.para) botao.classList.add('mini-calendario-dia--selecionado');
-      var pode = !!d && (d.estado === 'pode' || d.estado === 'seguidas');
+      var pode = !!d && (d.estado === 'pode' || d.estado === 'seguidas');   // as horas seguidas não pesam: o dia aparece como Pode
       botao.disabled = !pode;
       if (!d || d.estado === 'fora') { botao.classList.add('mini-calendario-dia--inativo'); return; }
       if (d.faltas > 0) { numero.textContent = String(d.faltas); numero.classList.add('mini-calendario-conta--erro'); }
       if (d.estado === 'origem') { botao.classList.add('mini-calendario-dia--origem'); texto.textContent = M().dia.origem; }
       else if (d.estado === 'afastado') { botao.classList.add('mini-calendario-dia--afastado'); texto.textContent = M().dia[d.tipo] || ''; }
-      else if (d.estado === 'seguidas') { botao.classList.add('mini-calendario-dia--alerta'); texto.textContent = M().horas(d.horas); }
-      else if (d.estado === 'pode') texto.textContent = M().dia.pode;
+      else if (pode) texto.textContent = M().dia.pode;
       else { botao.classList.add('mini-calendario-dia--ocupado'); texto.textContent = M().dia[d.estado] || ''; }
       if (pode) botao.addEventListener('click', function () { escolherDia(diaIso); });
     }
@@ -271,7 +300,7 @@
     /* o dia novo escolhido: a leitura dele (o Onde fica) e o Onde fica volta ao começo */
     function escolherDia(diaIso) {
       est.para = diaIso;
-      conferido = null;
+      conf.limpar();
       onde.reiniciar();
       lerDiaNovo();
       desenharCalendario();
@@ -303,23 +332,11 @@
       return resto.length ? H.textoPeriodos(resto.map(H.periodo)) : '';
     }
 
-    /* o aviso das horas seguidas no dia escolhido (amarelo: dá para salvar) */
-    function avisoSeguidas() {
-      var d = respostaDoDia(est.para);
-      if (!d || d.estado !== 'seguidas') return;
-      var dias = [];
-      if (d.antes === 0) dias.push(diaMes(somarDias(est.para, -1)));
-      dias.push(diaMes(est.para));
-      if (d.depois === 0) dias.push(diaMes(somarDias(est.para, 1)));
-      el.seguidas.querySelector('.nota-texto').textContent = M().seguidas(dias, nomeDe(est.item), d.horas);
-      mostra(el.seguidas, true);
-    }
-
     /* redesenha com as respostas de agora (também quando chega uma leitura ou a conferência do banco: as listas abertas
        ficam abertas) */
     function atualizar() {
       if (!el.combo || !el.combo.isConnected) return;
-      ['janelas','dia', 'seguidas', 'horario', 'parte', 'como', 'papel', 'minimo', 'erro'].forEach(function (k) { mostra(el[k], false); });
+      ['janelas','dia', 'horario', 'parte', 'como', 'papel', 'minimo', 'erro'].forEach(function (k) { mostra(el[k], false); });
       mostra(ondeCaixa, false);
       mostra(el.ajuda, !est.item);
       mostra(el.servico, !!est.item);
@@ -330,7 +347,6 @@
         if (est.item.janelas.length > 1) { mostra(el.janelas, true); if (!est.janela) return true; }
         mostra(el.dia, true);
         if (!est.para) return true;
-        avisoSeguidas();
         mostra(el.horario, true);
         var periodo = periodoQueMuda();
         if (!periodo) return true;
@@ -347,135 +363,14 @@
       if (falta) { api.aoVivo(null, !!est.item); return; }
       var item = { cpf: est.item.cpf, para: est.para, periodos: [periodoQueMuda()], onde: onde.paraBanco() };
       var chave = JSON.stringify(item);
-      var vale = !!conferido && conferido.chave === chave;
-      api.aoVivo(function () { api.mudarDia(item); }, vale && !!conferido.erro);
-      comoFica(item, vale ? conferido : null);
-      if (!vale) agendarConferencia(item, chave);
-    }
-
-    /* ---------- o Como fica ---------- */
-
-    function comoFica(item, c) {
-      var nome = nomeDe(est.item), para = diaMes(item.para), periodo = item.periodos[0];
-      var horas = H.textoPeriodos([periodo]), resto = textoResto(periodo), linhas = [];
-      linhas.push(resto ? M().comoSaiParte(data, nome, horas, resto) : M().comoSai(data, nome));
-      linhas.push(entra(nome, para, horas, c));
-      /* a folga em volta do dia novo: só no serviço inteiro (o calendário conta a janela toda) */
-      var d = respostaDoDia(item.para);
-      if (est.horario.total && d && (d.antes || d.depois)) {
-        var dur = H.faixa(periodo)[1] - H.faixa(periodo)[0];
-        var proximo = d.depois ? diaMes(somarDias(item.para, Math.floor((H.emMin(periodo.hi) + dur + d.depois * 60) / 1440))) : '';
-        linhas.push(M().comoFolga(d.antes, d.depois, proximo));
-      }
-      linhas.push(M().comoBanco);
-      el.comoLista.textContent = '';
-      linhas.forEach(function (t) {
-        var li = RosterWork.tpl('tpl-escala-mudar-dia-item');
-        if (li) { li.textContent = t; el.comoLista.appendChild(li); }
-      });
-      mostra(el.como, true);
-      mostra(el.conferindo, !c);
-      if (!c) return;
-      if (c.erro) { el.erro.querySelector('.nota-texto').textContent = c.erro; mostra(el.erro, true); return; }
-      avisoPapeis(c);
-      avisoMinimo(c);
-    }
-
-    /* o dia novo no Como fica: onde ele entra (no "O sistema distribui", depois que o banco confere, onde o sistema o pôs) */
-    function entra(nome, para, horas, c) {
-      var e = onde.estado();
-      if (e.onde === 'vaga' && e.vaga) return M().comoEntraVaga(para, nome, horas, api.funcaoNoPosto(e.vaga.funcao, e.vaga.posto));
-      if (e.onde === 'funcao' && e.posto && e.funcao) return M().comoEntraFuncao(para, nome, horas, api.funcaoNoPosto(e.funcao, e.posto));
-      if (e.onde === 'lugar' && e.sai) return M().comoEntraLugar(para, nome, horas, nomeDe(e.sai.s.m));
-      var lugares = [];
-      if (c && c.dB) {
-        api.funcoesDoMilitar(est.item.cpf, c.dB).forEach(function (f) {
-          var t = api.funcaoNoPosto(f.funcao, f.posto);
-          if (lugares.indexOf(t) < 0) lugares.push(t);
-        });
-      }
-      return lugares.length ? M().comoEntraSistemaLugar(para, nome, horas, lugares) : M().comoEntraSistema(para, nome, horas);
-    }
-
-    /* quem assume o Chefe de Socorro ou o Oficial de Área nos dois dias (só quando muda por causa dele) */
-    function avisoPapeis(c) {
-      var cpf = est.item.cpf, nome = nomeDe(est.item), partes = [];
-      var antesA = api.papeis(dados), depoisA = api.papeis(c.dA);
-      Object.keys(depoisA).forEach(function (k) {
-        var tinha = antesA[k] ? antesA[k].por : {}, tem = depoisA[k].por;
-        var entra = Object.keys(tem).filter(function (x) { return !tinha[x]; })[0];
-        if (tinha[cpf] && entra) partes.push(M().assumeAntes(data, depoisA[k].funcao, tem[entra].nome));
-      });
-      if (c.dB) {
-        var antesB = api.papeis(dadosNovo[est.para]), depoisB = api.papeis(c.dB);
-        Object.keys(depoisB).forEach(function (k) {
-          var tinha = antesB[k] ? antesB[k].por : {}, tem = depoisB[k].por;
-          if (!tem[cpf] || tinha[cpf]) return;
-          var saem = Object.keys(tinha).filter(function (x) { return !tem[x]; }).map(function (x) { return tinha[x].nome; });
-          partes.push(M().assumeNovo(diaMes(est.para), nome, depoisB[k].funcao, saem.join(' e ')));
-        });
-      }
-      if (!partes.length) return;
-      el.papel.querySelector('.nota-texto').textContent = partes.join(' ');
-      mostra(el.papel, true);
-    }
-
-    /* o dia de antes que fica abaixo do mínimo sem ele (vermelho: dá para salvar, e o dia fica com o erro) */
-    function avisoMinimo(c) {
-      function minimos(d) {
-        var r = {};
-        ((d && d.problemas) || []).forEach(function (p) {
-          var vale = (p.codigo === 'unidade_abaixo_minimo' || p.codigo === 'posto_fora') ? p.nivel === 1 : p.codigo === 'abaixo_minimo';
-          if (vale) r[p.codigo + '|' + (p.posto_id || '') + '|' + p.hi + '|' + p.hf] = p;
-        });
-        return r;
-      }
-      var antes = minimos(dados), depois = minimos(c.dA);
-      var novo = Object.keys(depois).filter(function (k) { return !antes[k] || depois[k].quantidade < antes[k].quantidade; })
-        .map(function (k) { return depois[k]; })[0];
-      if (!novo) return;
-      var quem;
-      if (novo.codigo === 'unidade_abaixo_minimo') {
-        var u = (dados.picker || []).filter(function (x) { return x.editando; })[0];
-        quem = M().quemUnidade(u ? u.unidade_nome : '');
-      } else {
-        var posto = api.acharPosto(novo.posto_id, novo.posto_id, c.dA);
-        quem = M().quemPosto(novo.posto || (posto && posto.nome) || '', !!posto && (posto.tipo === 'viatura' || api.postoFeminino(posto)));
-      }
-      el.minimo.querySelector('.nota-texto').textContent =
-        M().abaixoMinimo(quem, novo.quantidade, data, novo.limite, String(Number(data.split('/')[0])));
-      mostra(el.minimo, true);
-    }
-
-    /* ---------- o banco confere ---------- */
-
-    /* a resposta completa: meio segundo depois da última, o banco roda a mudança num ensaio (a prévia do dia de antes, com
-       a recusa, e a do dia novo) */
-    function agendarConferencia(item, chave) {
-      if (espera) clearTimeout(espera);
-      espera = setTimeout(function () { espera = null; conferir(item, chave); }, ESPERA_CONFERIR);
-    }
-    function conferir(item, chave) {
-      var meu = ++pedidoConferir, D = RosterWork.escalasDados;
-      var pA = D.lerPrevia('ler_distribuicao_dia', {});
-      if (!pA) return;
-      function vale() { return meu === pedidoConferir && el.combo.isConnected; }
-      pA.then(function (dA) {
-        if (!vale()) return;
-        if (!dA) { conferido = { chave: chave, dA: null, dB: null }; atualizar(); return; }
-        if (dA.erro_simulacao) { conferido = { chave: chave, erro: dA.erro_simulacao }; atualizar(); return; }
-        var pB = D.lerPrevia('escala_dia_arvore', { p_unidade_ids: [Number(uid)], p_data: item.para });
-        (pB || Promise.resolve(null)).then(function (linhas) {
-          if (!vale()) return;
-          var u = (Array.isArray(linhas) ? linhas : []).filter(function (l) { return l && String(l.unidade_id) === String(uid); })[0];
-          conferido = { chave: chave, dA: dA, dB: u ? u.distribuicao : null };
-          atualizar();
-        });
-      });
+      var c = conf.resultado(chave);
+      api.aoVivo(function () { api.mudarDia(item); }, !!c && !!c.erro);
+      conf.comoFica(item, c);
+      if (!c) conf.agendar(item, chave);
     }
 
     api.abrir(montar);
   }
 
-  window.RosterWork.escalasPainelMudarDia = { abrir: abrir };
+  window.RosterWork.escalasPainelMudarDia = { abrir: abrir, podeMudar: podeMudar };
 })();

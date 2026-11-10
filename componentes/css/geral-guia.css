@@ -83,8 +83,9 @@
   pointer-events: none;
 }
 
-/* com o véu do passo ligado, o da janela aberta fica transparente: a tela escurece uma vez só */
-html:has(.guia-veu:not(.oculto)) .modal-veu {
+/* com o véu do passo ligado, o da janela aberta (e o da janela das etapas) fica transparente: a tela escurece uma vez só */
+html:has(.guia-veu:not(.oculto)) .modal-veu,
+html:has(.guia-veu:not(.oculto)) .etapas-veu {
   background-color: transparent;
 }
 

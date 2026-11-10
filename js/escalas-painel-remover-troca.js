@@ -1,5 +1,5 @@
 /* ============================================================
-   ESCALAS — Remover militar › por troca (a parte de quem está no
+   ESCALAS — Remover do dia › por troca (a parte de quem está no
    dia por uma troca; o resto do Remover mora no
    escalas-painel-remover.js). Quem volta é quem foi coberto no
    dia (o dono do serviço). O banco (fn_trocas_cancelar_dia) diz o

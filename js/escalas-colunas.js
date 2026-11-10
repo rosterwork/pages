@@ -142,6 +142,10 @@
       dias.forEach(function (info) {
         var linha = RosterWork.tpl('tpl-escala-colunas-linha');
         linha.appendChild(rotuloDia(info));
+        /* o Oficial de Área do dia, no alto da faixa, centralizado em cima das unidades (a faixa ganha a linha dele) */
+        if (RosterWork.escalasCelula) {
+          linha.classList.toggle('escala-colunas-linha--com-oficial', RosterWork.escalasCelula.preencherOficial(linha.querySelector('.escala-colunas-oficial'), resultado.oficial, info.iso));
+        }
         colunas.forEach(function (c) {
           linha.appendChild(montarCelula(c, info.iso, dados, cobertura, erro, maxPorUnidade, afastados));
         });
@@ -182,6 +186,9 @@
       var pessoas = (r.militares[unidadeId] && r.militares[unidadeId][iso]) || [];
       RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxPorUnidadeAtual[unidadeId], (r.afastados[unidadeId] && r.afastados[unidadeId][iso]) || []);
       RosterWork.escalasCelula.desenharGraficos(celula);
+      /* o Oficial de Área do dia pode ter mudado (a mesma leitura traz o dele) */
+      var linha = celula.closest('.escala-colunas-linha');
+      if (linha) linha.classList.toggle('escala-colunas-linha--com-oficial', RosterWork.escalasCelula.preencherOficial(linha.querySelector('.escala-colunas-oficial'), r.oficial, iso));
     }).catch(function () {});   // refresh de 1 célula falhou: mantém a célula atual (o salvamento já avisou)
   }
 

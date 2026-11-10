@@ -8,8 +8,10 @@
    que espera acertar quem passou da cota. "Preencher pela sugestão"
    (só com tudo salvo) mantém as extras que o administrador pôs ou mudou
    e pede ao motor (extrajornada_sugerir) que refaça as que o sistema pôs.
+   O Desfazer e o Refazer do rodapé (e o Ctrl+Z e o Ctrl+Y) andam pelos
+   passos do rascunho; o Preencher inteiro é um passo só.
    Os Ajustes são a mesma tela (o modo ajustes): abrem depois do
-   lançamento, com o motivo no rodapé.
+   lançamento.
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
    RosterWork.extrajornadaMontar.
    ============================================================ */
@@ -19,7 +21,7 @@
   var RW = window.RosterWork = window.RosterWork || {};
 
   var d = null, el = null, aoSalvar = null;
-  var sugeridas = [];      // as chaves que a última sugestão mudou (as extras novas, as refeitas e as que saem)
+  var sugestaoGuardada = null;   // o resultado da sugestão desfeita (o Refazer o põe de volta)
   var postas = null;       // as cotas que a última sugestão pôs no mês (a nota do resultado); null = sem sugestão
   var foraSug = {};        // quem ficou com cota na última sugestão: cpf -> motivo (o grupo Faltam da lista mostra)
   var reserva = false;     // a última sugestão usou o cálculo simples do banco
@@ -85,10 +87,13 @@
     if (G().alteracoes().length || RW.extrajornadaOtimizador.calculando()) return;
     var fixas = d.alocacoes.filter(function (a) { return a.origem !== 'sugestao'; });
     var botao = q('#p3-sugerir');
-    RW.extrajornadaOtimizador.preencher(d.competencia, fixas, q('#p3-calculo'), function (r, usouReserva) {
+    RW.extrajornadaOtimizador.preencher(d.competencia, fixas, function (r, usouReserva) {
       /* a pessoa saiu da página durante o cálculo: o resultado fica para trás */
       if (q('#p3-sugerir') !== botao) return;
+      /* o Preencher inteiro é um passo só do Desfazer */
       G().limpar();
+      G().guardarPasso('sugestao');
+      sugestaoGuardada = null;
       var mud = G().rascunho();
       resultadoFechado = false;
       d.alocacoes.forEach(function (a) {
@@ -104,19 +109,35 @@
       foraSug = {};
       (r.nao_coube || []).forEach(function (n) { foraSug[n.cpf] = n.motivo; });
       reserva = usouReserva;
-      sugeridas = Object.keys(mud);
       dia().reorganizar();
       redesenhar();
     });
   }
 
-  /* o Desfazer da sugestão volta ao salvo: as extras do sistema que saíram voltam (as mudanças do administrador ficam) */
-  function desfazerSugestao() {
-    var mud = G().rascunho();
-    sugeridas.forEach(function (k) { if (mud[k] && mud[k].origem === 'sugestao') delete mud[k]; });
-    sugeridas = []; postas = null;
+  /* o resultado da sugestão (a nota e quem ficou com cota) sai com o Desfazer do Preencher e volta com o Refazer: troca
+     com o guardado */
+  function trocarSugestao() {
+    var agora = { postas: postas, foraSug: foraSug, reserva: reserva };
+    var volta = sugestaoGuardada || { postas: null, foraSug: {}, reserva: false };
+    postas = volta.postas; foraSug = volta.foraSug; reserva = volta.reserva;
+    sugestaoGuardada = agora;
+  }
+
+  /* o Desfazer e o Refazer do rodapé (e o Ctrl+Z e o Ctrl+Y): o rascunho volta ou avança um passo e a tela refaz os dias
+     que mudaram (o que estava aberto no painel do dia e na célula fecha) */
+  function voltar(desfazer) {
+    if (!d || RW.extrajornadaOtimizador.calculando()) return;
+    var ativo = RW.extrajornadaCelula ? RW.extrajornadaCelula.ativo() : null;
+    var r = desfazer ? G().desfazer() : G().refazer();
+    if (!r) return;
+    if (r.marca === 'sugestao') trocarSugestao();
     dia().reorganizar();
-    redesenhar();
+    var dias = r.dias.slice();
+    if (ativo && dias.indexOf(ativo.data) < 0) dias.push(ativo.data);
+    diasDosQuePassaram().forEach(function (x) { if (dias.indexOf(x) < 0) dias.push(x); });
+    if (!G().escalaPronta() || dias.length > 3) { redesenhar(); return; }
+    dias.forEach(function (k) { porDia().atualizarDia(k); });
+    redesenhar(true);
   }
 
   function salvar() {
@@ -125,13 +146,12 @@
     RW.rpc('extrajornada_distribuicao_salvar', {
       p_competencia: d.competencia,
       p_mudancas: G().alteracoes().map(function (k) { return G().rascunho()[k]; }),
-      p_motivo: q('#p3-motivo').value || null
+      p_motivo: null   // o banco aceita o ajuste sem motivo
     }).then(function (r) {
       RW.pararCarregando(btn);
       if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
-      G().limpar(); sugeridas = []; postas = null; if (G().modo() === 'ajustes') G().usarEscala(null);   // o ajuste muda a escala: relida com o mês
+      G().limpar(); postas = null; sugestaoGuardada = null; if (G().modo() === 'ajustes') G().usarEscala(null);   // o ajuste muda a escala: relida com o mês
       dia().reorganizar();
-      q('#p3-motivo').value = '';
       RW.extrajornadaOrg.resumo(r);
       aoSalvar();
     }, function () { RW.pararCarregando(btn); RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao }); });
@@ -146,9 +166,9 @@
     q('#p3-lateral').classList.toggle('oculto', semLancamento);
     if (semLancamento) { q('#p3-rodape').classList.add('oculto'); return; }
     var n = G().alteracoes().length;
-    /* o rodapé de salvar aparece só com alteração; nos Ajustes, com o motivo e o "Salvar e enviar para a escala". Quem
-       passou da cota segura o Salvar, com o motivo escrito */
-    q('#p3-rodape').classList.toggle('oculto', !n);
+    /* o rodapé de salvar aparece com alteração e enquanto há o que refazer; nos Ajustes, com o "Salvar e enviar para a
+       escala". Quem passou da cota segura o Salvar, com o motivo escrito */
+    q('#p3-rodape').classList.toggle('oculto', !n && !G().podeRefazer());
     var passou = n ? G().passaram()[0] : null, texto = q('#p3-texto');
     /* o que o rascunho faz com as cotas, em amarelo; quem passou da cota vem primeiro */
     var frase = !passou && n ? G().fraseDasCotas() : '';
@@ -156,12 +176,12 @@
       : n ? (ajuste ? msg().ajusteTexto(n) : msg().alteracoes(n)) + (frase ? ' ' + frase : '') : '';
     texto.classList.toggle('extrajornada-painel-rodape-erro', !!passou);
     texto.classList.toggle('extrajornada-painel-rodape-alerta', !!frase);
-    q('#p3-motivo-campo').classList.toggle('oculto', !ajuste);
     /* com o Salvar carregando (os textos dele saem e voltam com o pararCarregando), só o que está na tela */
     [['#p3-salvar-dist', ajuste], ['#p3-salvar-ajuste', !ajuste]].forEach(function (t) { var s = q(t[0]); if (s) s.classList.toggle('oculto', t[1]); });
     q('#p3-salvar').disabled = !n || !!passou;
     q('#p3-cancelar').disabled = !Object.keys(G().rascunho()).length;
-    q('#p3-desfazer-sugestao').classList.toggle('oculto', !sugeridas.length);
+    q('#p3-desfazer').disabled = !G().podeDesfazer();
+    q('#p3-refazer').disabled = !G().podeRefazer();
     var aberto = q('#p3-aberto');
     aberto.classList.toggle('oculto', !travado);
     aberto.querySelector('.nota-texto').textContent = travado ? msg().pedidoAberto(u().br(d.mes.fecha)) : '';
@@ -214,18 +234,41 @@
       return;
     }
     pararEsperaDaEscala();
-    if (!soCabeca && !nenhuma) porDia().desenhar(q('#p3-cal'));
+    if (!soCabeca && !nenhuma) {
+      porDia().desenhar(q('#p3-cal'));
+      passaramAntes = G().passaram().map(function (m) { return m.cpf; });   // o calendário inteiro já pintou quem passou
+    }
     dia().redesenhar();
     RW.extrajornadaFiltros.aplicar();
   }
 
   /* o rascunho mudou no calendário, na lista ou no painel do dia */
   function aoMudar(k) {
-    if (G().escalaPronta()) porDia().atualizarDia(k);
+    if (G().escalaPronta()) {
+      /* o dia que mudou; o cartão aberto na célula de outro dia (a nota de quem passou da cota e os outros dias dele); e
+         os dias de quem passou da cota ou voltou a ela (o cartão vermelho em todos os dias dele) */
+      var ativo = RW.extrajornadaCelula ? RW.extrajornadaCelula.ativo() : null, dias = [k];
+      if (ativo && ativo.data !== k) dias.push(ativo.data);
+      diasDosQuePassaram().forEach(function (x) { if (dias.indexOf(x) < 0) dias.push(x); });
+      dias.forEach(function (x) { porDia().atualizarDia(x); });
+    }
     redesenhar(true);
   }
 
-  var guardaLigada = false;
+  /* os dias de quem entrou ou saiu da lista dos que passaram da cota desde o último desenho (o cartão dele muda de cor
+     em todos os dias) */
+  var passaramAntes = [];
+  function diasDosQuePassaram() {
+    var agora = G().passaram().map(function (m) { return m.cpf; });
+    var mudaram = agora.filter(function (c) { return passaramAntes.indexOf(c) < 0; })
+      .concat(passaramAntes.filter(function (c) { return agora.indexOf(c) < 0; }));
+    passaramAntes = agora;
+    var dias = [];
+    if (mudaram.length) G().vagas().forEach(function (v) { if (mudaram.indexOf(v.cpf) >= 0 && dias.indexOf(v.data) < 0) dias.push(v.data); });
+    return dias;
+  }
+
+  var guardaLigada = false, tecladoLigado = false;
   /* modoNovo: 'distribuicao' (passo 3) ou 'ajustes' (passo 4), a mesma tela. A marca no botão vale por visita: a página
      nova chega sem ela, com o rascunho zerado e os botões a ligar */
   function mostrar(dados, conteudo, recarregar, modoNovo) {
@@ -234,14 +277,15 @@
     var botaoSugerir = q('#p3-sugerir');
     if (!botaoSugerir.dataset.ligado) {
       botaoSugerir.dataset.ligado = '1';
-      G().limpar(); G().usarEscala(null); sugeridas = []; postas = null; foraSug = {};
+      G().limpar(); G().usarEscala(null); postas = null; foraSug = {}; sugestaoGuardada = null;
       botaoSugerir.addEventListener('click', sugerir);
       q('#p3-resultado-fechar').addEventListener('click', function () { resultadoFechado = true; q('#p3-resultado').classList.add('oculto'); });
-      q('#p3-desfazer-sugestao').addEventListener('click', desfazerSugestao);
+      q('#p3-desfazer').addEventListener('click', function () { voltar(true); });
+      q('#p3-refazer').addEventListener('click', function () { voltar(false); });
       q('#p3-salvar').addEventListener('click', salvar);
       q('#p3-cancelar').addEventListener('click', function () {
         RW.confirmar({ tipo: 'aviso', mensagem: msg().descartarRascunho, textoConfirmar: RW.mensagens.botoes.descartar,
-          aoConfirmar: function () { G().limpar(); sugeridas = []; postas = null; dia().reorganizar(); redesenhar(); } });
+          aoConfirmar: function () { G().limpar(); postas = null; sugestaoGuardada = null; dia().reorganizar(); redesenhar(); } });
       });
       RW.extrajornadaLista.ligar(el);
       RW.extrajornadaFiltros.ligar(el);
@@ -251,6 +295,20 @@
         RW.guardaSaida.registrar(function () {
           var botao = el && q('#p3-sugerir');
           return !!botao && !!botao.dataset.ligado && (G().alteracoes().length > 0 || RW.extrajornadaOtimizador.calculando());
+        });
+      }
+      /* o Ctrl+Z desfaz e o Ctrl+Y (ou o Ctrl+Shift+Z) refaz, com a Distribuição ou os Ajustes na tela, fora dos campos de
+         texto e sem janela de aviso aberta */
+      if (!tecladoLigado) {
+        tecladoLigado = true;
+        document.addEventListener('keydown', function (ev) {
+          if (!(ev.ctrlKey || ev.metaKey) || ev.altKey || !d || !el || !el.isConnected) return;
+          var cal = q('#p3-cal'), alvo = ev.target;
+          if (!cal || !cal.getClientRects().length || document.querySelector('.modal-veu--aberto')) return;
+          if (alvo && (alvo.tagName === 'INPUT' || alvo.tagName === 'TEXTAREA' || alvo.tagName === 'SELECT' || alvo.isContentEditable)) return;
+          var tecla = (ev.key || '').toLowerCase();
+          if (tecla === 'z' && !ev.shiftKey) { ev.preventDefault(); voltar(true); }
+          else if (tecla === 'y' || (tecla === 'z' && ev.shiftKey)) { ev.preventDefault(); voltar(false); }
         });
       }
     }
@@ -268,7 +326,7 @@
   RW.extrajornadaMontar = {
     mostrar: mostrar,
     sujo: function () { return !!d && G().alteracoes().length > 0; },
-    descartar: function () { G().limpar(); sugeridas = []; postas = null; },
+    descartar: function () { G().limpar(); postas = null; sugestaoGuardada = null; },
     /* refaz o calendário (o filtro Exibir mudou) */
     redesenhar: function () { if (d && naPagina()) redesenhar(); },
     /* o painel do dia fecha ao sair da Distribuição, dos Ajustes ou da aba */

@@ -107,7 +107,8 @@
     if (aoTerminar) aoTerminar(wrap);
   }
 
-  /* ---------- Mês › Calendário e Colunas › Dias: rolado como a grade vai abrir ---------- */
+  /* ---------- Mês › Calendário e Colunas › Dias: rolado como a grade vai abrir (lado a lado ou uma embaixo da outra,
+     como a escolha da pessoa) ---------- */
   function calendario(corpo, colunas, dataRef, diasPorLinha) {
     var hoje = new Date();
     var ancora = (hoje.getFullYear() === dataRef.getFullYear() && hoje.getMonth() === dataRef.getMonth()) ? hoje : new Date(dataRef.getFullYear(), dataRef.getMonth(), 1);
@@ -115,6 +116,7 @@
       dataRef: dataRef,
       diasPorLinha: diasPorLinha,
       unidadesPorDia: colunas.length,
+      ladoALado: !!(RW.visaoGrade && RW.visaoGrade.disposicao() === 'lado'),
       aoDia: function (celulaDia, data, noMes) {
         if (!noMes || Math.abs(data - ancora) / 86400000 > DIAS_PERTO) return;
         colunas.forEach(function (c, n) {

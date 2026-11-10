@@ -58,15 +58,15 @@
     }
 
     if (prefs) {
-      /* tema e menu vêm do banco (lembrados entre logins por CPF);
-         a seleção de unidades NÃO persiste: começa no PADRÃO AMPLO da lotação
-         (CIA/CIBM + pelotões p/ staff; CIA + o próprio pelotão p/ quem é de pelotão),
-         é mantida só na sessão e esquecida no logout */
+      /* tema, menu e a seleção de unidades vêm do banco (lembrados entre logins por CPF); quem nunca escolheu unidades
+         começa no padrão da lotação (fn_unidades_padrao) */
       var padrao = (perfil && perfil.lotacao_id) ? [perfil.lotacao_id] : [];   // fallback: a própria lotação
       if (dadosPadrao && dadosPadrao.ok && Array.isArray(dadosPadrao.unidades) && dadosPadrao.unidades.length) {
         padrao = dadosPadrao.unidades;
       }
-      prefs.unidades_selecionadas = padrao;
+      var guardadas = Array.isArray(prefs.unidades_selecionadas)
+        ? prefs.unidades_selecionadas.map(Number).filter(function (id) { return id > 0; }) : [];
+      prefs.unidades_selecionadas = guardadas.length ? guardadas : padrao;
       sessionStorage.setItem('rosterwork_preferencias', JSON.stringify(prefs));
     }
 

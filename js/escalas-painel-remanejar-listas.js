@@ -1,5 +1,5 @@
 /* ============================================================
-   ESCALAS — as listas do Remanejar militar
+   ESCALAS — as listas do Mudar de unidade neste dia
    (escalas-painel-remanejar.js): as unidades da companhia que você
    administra, quem está de serviço numa unidade no dia (com o ícone
    de origem e o horário) e as colocações manuais que saem com quem

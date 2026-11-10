@@ -32,7 +32,7 @@
     aprovar: function (trocaId, aceitar, forcar, motivo) { return RosterWork.rpc('fn_trocas_aprovar', { p_troca_id: trocaId, p_aceitar: aceitar, p_forcar: !!forcar, p_motivo: motivo || null }); },
     /* motivo: obrigatório para cancelar a troca aprovada (fica no livro de ocorrências do registro) */
     cancelar: function (trocaId, desfazer, motivo) { return RosterWork.rpc('fn_trocas_cancelar', { p_troca_id: trocaId, p_desfazer: !!desfazer, p_motivo: motivo || null }); },
-    /* o Remover militar do painel do dia (ele está no dia por troca): sem o.acao, o plano; com ela ('troca', 'saldo',
+    /* o Remover do dia do painel do dia (ele está no dia por troca): sem o.acao, o plano; com ela ('troca', 'saldo',
        'banco' ou 'nenhum'), o ensaio (o.ensaio) ou a gravação; o.junto = { troca_id, parte } (a troca que sai junto) */
     cancelarDia: function (o) {
       return RosterWork.rpc('fn_trocas_cancelar_dia', { p_troca_id: o.trocaId, p_data: o.data, p_cpf: o.cpf,

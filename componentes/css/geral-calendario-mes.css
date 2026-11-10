@@ -7,6 +7,10 @@
    --calendario-colunas), sem cabeçalho, sigla + número em cada dia.
    Variante --unidades (unidadesPorDia): o dia em bloco cinza e as
    unidades alinhadas por linha (custom property --calendario-unidades).
+   Variante --lado-a-lado (ladoALado): as unidades do dia em colunas,
+   cada uma com a largura mínima de sempre, e o dia com a linha de borda;
+   o calendário rola para o lado.
+   O lugar do meio do título do dia (.geral-calendario-mes-dia-centro).
    Componente compartilhado (Escala e Extrajornada).
    O z-index 2 é o empilhamento interno do sticky (exceção à
    escala 10/20/30/40; ver Guia visual › Camadas, movimento e foco). Montagem:
@@ -207,6 +211,47 @@
 
 .geral-calendario-mes--unidades .geral-calendario-mes-dia--fora .geral-calendario-mes-dia-topo {
   background-color: var(--fundo-suave);
+}
+
+/* o lugar do meio do título do dia (quem usa põe o conteúdo; a Escala, o Oficial de Área): centralizado na largura do
+   dia, na linha do número, com espaço para o número dos dois lados; vazio, fica escondido (.oculto, no molde) */
+.geral-calendario-mes-dia-centro {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  max-width: calc(100% - 104px);
+  min-height: 24px;
+}
+
+/* ---------- variante --lado-a-lado (ladoALado): as unidades do dia em colunas ---------- */
+/* cada unidade fica com a largura mínima de sempre (o dia de 200px menos o recuo de 4px dos lados, 192px, mais o vão de
+   4px entre elas; mais 2px da borda do dia): o dia cresce com as unidades, a semana passa da tela e o calendário rola
+   para o lado */
+.geral-calendario-mes--lado-a-lado .geral-calendario-mes-cabecalho,
+.geral-calendario-mes--lado-a-lado .geral-calendario-mes-semana {
+  grid-template-columns: repeat(var(--calendario-colunas, 7), minmax(calc(var(--calendario-unidades, 1) * 196px + 6px), 1fr));
+}
+
+/* a linha da semana = a faixa do número + uma linha só, com as unidades lado a lado */
+.geral-calendario-mes--lado-a-lado.geral-calendario-mes--unidades .geral-calendario-mes-semana {
+  grid-template-rows: auto auto;
+}
+
+/* a linha de borda em volta do dia (a mesma da .conteudo): com as unidades lado a lado, o vão branco entre os dias se
+   confunde com os bloquinhos brancos, e a borda mostra onde cada dia começa e termina */
+.geral-calendario-mes--lado-a-lado.geral-calendario-mes--unidades .geral-calendario-mes-dia {
+  grid-template-columns: repeat(var(--calendario-unidades, 1), minmax(0, 1fr));
+  column-gap: 4px;
+  border: 1px solid var(--borda);
+}
+
+.geral-calendario-mes--lado-a-lado.geral-calendario-mes--unidades .geral-calendario-mes-dia-topo {
+  grid-column: 1 / -1;
 }
 
 /* ============================================================

@@ -330,13 +330,16 @@
   }
 
   /* camada de fundo de uma folha: os blocos arredondados nas posições lidas do desenho de cantos retos
-     (cinza da unidade embaixo; bloquinhos brancos com contorno por cima) */
-  function blocosArredondados(caixas, c) {
+     (cinza da unidade embaixo; bloquinhos brancos com contorno por cima). opcoes.bordaNoCinza: o bloco cinza também
+     com o contorno (as unidades lado a lado, como na tela) */
+  function blocosArredondados(caixas, c, opcoes) {
     if (!caixas) return null;
+    var meia = LINHA_FINA / 2;   // o contorno fica por dentro do bloco
+    var bordaNoCinza = !!(opcoes && opcoes.bordaNoCinza);
     var formas = caixas.cinza.map(function (b) {
-      return { type: 'rect', x: b.x1, y: b.y1, w: b.x2 - b.x1, h: b.y2 - b.y1, r: RAIO.unidade, color: c.fundo };
+      if (!bordaNoCinza) return { type: 'rect', x: b.x1, y: b.y1, w: b.x2 - b.x1, h: b.y2 - b.y1, r: RAIO.unidade, color: c.fundo };
+      return { type: 'rect', x: b.x1 + meia, y: b.y1 + meia, w: b.x2 - b.x1 - LINHA_FINA, h: b.y2 - b.y1 - LINHA_FINA, r: RAIO.unidade, color: c.fundo, lineColor: c.borda, lineWidth: LINHA_FINA };
     }).concat(caixas.papel.map(function (b) {
-      var meia = LINHA_FINA / 2;   // o contorno fica por dentro do bloquinho
       return { type: 'rect', x: b.x1 + meia, y: b.y1 + meia, w: b.x2 - b.x1 - LINHA_FINA, h: b.y2 - b.y1 - LINHA_FINA, r: RAIO.posto, color: c.papel, lineColor: c.borda, lineWidth: LINHA_FINA };
     }));
     return formas.length ? { canvas: formas } : null;

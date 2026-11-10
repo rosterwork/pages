@@ -273,7 +273,9 @@
       RW.extrajornada.grade.aplicar(wrap);
       return;
     }
-    RW.geralCalendarioMes.renderizar(q('#extrajornada-cal-mes'), { dataRef: new Date(+comp.slice(0, 4), +comp.slice(5, 7) - 1, 1), unidadesPorDia: Math.max(1, unidades.length), aoDia: function (cel, data, noMes) {
+    /* os pelotões lado a lado ou um embaixo do outro: a escolha da pessoa, a mesma da Escala (geral-visao-grade.js) */
+    var ladoALado = !!(RW.visaoGrade && RW.visaoGrade.disposicao() === 'lado');
+    RW.geralCalendarioMes.renderizar(q('#extrajornada-cal-mes'), { dataRef: new Date(+comp.slice(0, 4), +comp.slice(5, 7) - 1, 1), unidadesPorDia: Math.max(1, unidades.length), ladoALado: ladoALado, aoDia: function (cel, data, noMes) {
       if (!noMes) return;
       var k = comp.slice(0, 8) + String(data.getDate()).padStart(2, '0');
       unidades.forEach(function (un) {

@@ -4,7 +4,8 @@
    geral-dropdown; aqui, a lista: o nome à esquerda (sempre inteiro,
    com o ícone de origem antes, quando há) e, à direita, o que ele
    faz hoje ou o motivo (quebra em linhas); quem não pode fica
-   apagado, com o motivo em amarelo. O campo já escolhido mostra o
+   apagado, com o motivo em amarelo. Os títulos dos grupos abrem e
+   fecham a lista deles. O campo já escolhido mostra o
    ícone dele à esquerda (.campo-combo-icone)
    ============================================================ */
 
@@ -64,6 +65,39 @@
   color: var(--texto-fraco);
 }
 
+/* o título do grupo é um botão que abre e fecha a lista dele (o desenho dos pelotões no painel da Extrajornada): a seta
+   para baixo aberto e para a direita fechado, o nome e quantos tem; a largura toda */
+.combo-militar-titulo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  min-height: 30px;
+  border: none;
+  border-radius: var(--raio-pequeno);
+  background: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.combo-militar-titulo:hover {
+  background-color: var(--fundo-medio);
+}
+
+.combo-militar-titulo-seta {
+  flex-shrink: 0;
+  color: var(--texto-suave);
+}
+
+.combo-militar-titulo[aria-expanded="false"] .combo-militar-titulo-seta {
+  transform: rotate(-90deg);
+}
+
+.combo-militar-titulo-conta {
+  font-weight: 400;
+}
+
 .combo-militar-item.dropdown-item--inativo .combo-militar-guerra,
 .combo-militar-item.dropdown-item--inativo .combo-militar-grad {
   color: var(--texto-fraco);
@@ -75,10 +109,15 @@
 
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
-   A lista fica mais baixa, para caber acima do teclado
+   A lista fica mais baixa, para caber acima do teclado, e o título
+   do grupo ganha a altura do toque
    ============================================================ */
 @media (max-width: 767px) {
   html[data-celular] .combo-militar-menu {
     max-height: 280px;
+  }
+
+  html[data-celular] .combo-militar-titulo {
+    min-height: var(--toque-altura-celular);
   }
 }

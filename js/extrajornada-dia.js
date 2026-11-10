@@ -55,6 +55,8 @@
   function reorganizar() {
     fixos = {};
     if (RW.extrajornadaDiaOutros) RW.extrajornadaDiaOutros.esquecer();
+    if (RW.extrajornadaBarra) RW.extrajornadaBarra.esquecer();
+    if (RW.extrajornadaCelula) RW.extrajornadaCelula.esquecer();
   }
 
   /* no painel que a Extrajornada abre (Distribuição e Ajustes). Uma escolha por vez: abrir um dia tira o militar do foco
@@ -111,10 +113,10 @@
     var uid = aberto.uid, k = aberto.data, alocs = G().efetivas();
     var corpo = RW.painel.corpo();
     corpo.textContent = '';
-    /* nos Ajustes e na Escala: o que a mudança faz; o dia de mais de 7 dias atrás fica só para ver */
-    if (G().antigo(k) || (G().modo() === 'ajustes' && G().lancada())) {
+    /* o dia de mais de 7 dias atrás fica só para ver */
+    if (G().antigo(k)) {
       var nota = RW.tpl('tpl-escala-nota');
-      nota.querySelector('.nota-texto').textContent = G().antigo(k) ? msg().diaAntigo : msg().notaAjuste;
+      nota.querySelector('.nota-texto').textContent = msg().diaAntigo;
       corpo.appendChild(nota);
     }
     var grupos = {};
@@ -139,8 +141,6 @@
       caixa.querySelector('.extrajornada-grupo-conta').textContent = lista.length;
       lembrar(caixa, g, lista.length > 0);
       caixa.querySelector('.extrajornada-grupo-vazio').classList.toggle('oculto', lista.length > 0);
-      /* os horários em cima das bolinhas: no Neste dia, no alto do grupo; nos outros, no título de cada pelotão */
-      caixa.querySelector('.extrajornada-horas').classList.toggle('oculto', g !== 'neste' || !lista.length);
       var linhas = caixa.querySelector('.extrajornada-painel-grupo-linhas');
       function linha(x, comPelotao) {
         var l = g === 'indisp' ? linhaIndisponivel(x.m, x.motivo) : linhaMilitar(x.m, uid, k, alocs, comPelotao);
@@ -175,7 +175,6 @@
       el.querySelector('.extrajornada-pel-nome').textContent = (u().unidade(id) || {}).nome || '';
       el.querySelector('.extrajornada-pel-este').classList.toggle('oculto', id !== uid);
       el.querySelector('.extrajornada-pel-conta').textContent = daqui.length;
-      el.querySelector('.extrajornada-horas').classList.toggle('oculto', g === 'indisp');
       var cab = el.querySelector('.extrajornada-pel-titulo');
       if (!(nome in caixas)) caixas[nome] = id === uid;
       cab.setAttribute('aria-expanded', caixas[nome] ? 'true' : 'false');
@@ -312,15 +311,6 @@
     return msg().ninguemPode(naoQuerem, semCota, grupos.indisp.length);
   }
 
-  /* os selos do militar no dia, embaixo do nome: condutor (quando falta e a CNH serve); o Só 24 h fica na linha do nome */
-  function selosDoDia(m, uid, k) {
-    var d = G().dados(), selos = RW.tpl('tpl-extrajornada-selos');
-    function selo(texto, classe) { var s = RW.tpl('tpl-extrajornada-selo'); s.textContent = texto; if (classe) s.classList.add(classe); selos.appendChild(s); }
-    var pedem = [d.falta_condutor, d.falta_amarela_condutor].map(function (mapa) { return ((mapa || {})[String(uid)] || {})[k] || {}; });
-    if (pedem.some(function (pede) { return Object.keys(pede).some(function (b) { return pede[b].some(function (c) { return G().conduz(m, c); }); }); })) selo(msg().condutor, 'selo--sucesso');
-    return selos;
-  }
-
   function linhaMilitar(m, uid, k, alocs, comPelotao) {
     var lin = RW.tpl('tpl-extrajornada-painel-militar');
     var ponto = lin.querySelector('.extrajornada-painel-ponto');
@@ -344,37 +334,20 @@
     var a = G().vagaDe(m.cpf, k), marcados = a ? G().blocos(a) : [];
     /* no Neste dia, quem pôs a extra, antes do nome (como a origem na Escala) */
     if (a && +a.unidade === uid) linhaNome.insertBefore(u().origem(a), linhaNome.firstChild);
-    /* embaixo do nome, na largura toda: os selos. O porquê da sugestão fica no relatório da Cobertura do dia */
-    var selos = selosDoDia(m, uid, k);
-    if (selos.children.length) lin.insertBefore(selos, lin.querySelector('.extrajornada-painel-outros'));
     var usou = G().usadas(m.cpf, alocs);
     var cota = lin.querySelector('.extrajornada-painel-cota');
     cota.textContent = msg().deCotas(usou, m.concedidas);
     cota.classList.toggle('extrajornada-painel-cota--erro', usou > m.concedidas);
-    ligarMarcas(lin.querySelector('.extrajornada-painel-marcas'), m, k, marcados, uid);
+    ligarMarcas(lin.querySelector('.extrajornada-painel-marcas'), m, k, marcados, uid, { campos: true });
     RW.extrajornadaDiaOutros.ligarInicio(lin, lin.querySelector('.extrajornada-painel-outros'), m, k, uid);
     RW.extrajornadaDiaOutros.preencher(lin, m, k, usou, desenhar);
     return lin;
   }
 
-  /* os 4 horários (a bolinha de 12px na área de 24px): clicar marca ou desmarca (quem pediu 24 horas seguidas: o dia
-     vazio recebe os 4 de uma vez, se couberem na cota, e depois cada um por si); a mesma peça do painel do dia e da
-     lista dos voluntários */
-  function ligarMarcas(caixa, m, k, marcados, uid) {
-    caixa.classList.add('extrajornada-marcas');
-    Array.prototype.forEach.call(caixa.querySelectorAll('.extrajornada-painel-marca'), function (bt) {
-      var b = +bt.getAttribute('data-bloco'), on = marcados.indexOf(b) >= 0;
-      bt.classList.toggle('extrajornada-painel-marca--on', on);
-      bt.setAttribute('aria-pressed', on ? 'true' : 'false');
-      /* com o pedido aberto só dá para desmarcar; na Distribuição já lançada, nada (as mudanças vão pelos Ajustes) */
-      bt.disabled = G().soLeitura() || G().antigo(k) || (G().travado() && !on);
-      bt.addEventListener('click', function (ev) {
-        ev.stopPropagation();   // no calendário, a bolinha não abre o painel do dia
-        var inteiro = m.so24 && !marcados.length && (m.concedidas || 0) - G().usadas(m.cpf) >= 4;
-        var novo = inteiro ? [1, 2, 3, 4] : (on ? marcados.filter(function (x) { return x !== b; }) : marcados.concat([b]));
-        G().mudar(m, k, novo, uid);
-      });
-    });
+  /* a barra de horário do dia (as regras da extra em extrajornada-barra.js); a mesma peça do painel do dia, dos outros
+     dias, da lista dos voluntários e do calendário do militar em foco */
+  function ligarMarcas(caixa, m, k, marcados, uid, opcoes) {
+    RW.extrajornadaBarra.ligar(caixa, m, k, marcados, uid, opcoes);
   }
 
   function linhaIndisponivel(m, motivo) {
@@ -394,7 +367,10 @@
     fechar: function () { if (aberto && RW.painel.estaAberto()) RW.painel.fechar(); aberto = null; },
     /* a aba da Escala saiu da tela: o painel continua aberto, sem o dia */
     soltar: function () { aberto = null; },
-    /* os 4 horários, que a lista dos voluntários também usa */
-    ligarMarcas: ligarMarcas
+    /* a barra de horário, que os outros dias, a lista dos voluntários e o calendário também usam */
+    ligarMarcas: ligarMarcas,
+    /* o grupo do militar no dia (Neste dia, Querem, Sem preferência, Não querem, Indisponíveis): o do painel e o da lista
+       do Adicionar militar na célula (extrajornada-celula.js) */
+    grupoDe: grupoDe
   };
 })();

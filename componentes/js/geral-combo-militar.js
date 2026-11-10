@@ -3,8 +3,12 @@
    No computador, digita para filtrar OU escolhe no menu (↑↓ andam
    pela lista, Enter escolhe, Esc fecha pelo geral-dropdown); no
    celular, só escolhe (o campo fica somente leitura e o toque não
-   abre o teclado). A lista pode ter títulos de grupo (some o título
-   do grupo que o filtro esvaziou); quem não pode ser escolhido fica
+   abre o teclado). A lista pode ter títulos de grupo, que abrem e
+   fecham a lista deles (a seta e quantos tem, o desenho dos pelotões
+   do painel da Extrajornada): o primeiro começa aberto e os outros
+   fechados, ou como o item do título pedir ({ titulo, aberto });
+   digitar abre os grupos de quem casa, e some o título do grupo que o
+   filtro esvaziou. Quem não pode ser escolhido fica
    apagado no lugar dele, com o motivo. Usado nas Trocas (que
    desenham os itens delas) e no painel do dia da Escala (o molde
    daqui: o nome e, à direita, o que ele faz hoje ou o motivo; com
@@ -86,37 +90,40 @@
       i = i < 0 ? (passo > 0 ? 0 : lista.length - 1) : Math.min(lista.length - 1, Math.max(0, i + passo));
       realcar(lista[i]);
     }
-    /* o título some quando o filtro esvazia o grupo dele */
-    function ajustarTitulos() {
-      var titulo = null, visiveis = 0;
+    /* o que fica à vista. termo = o filtro digitado (vazio, sem filtro): quem casa, só nos grupos abertos; o grupo com
+       alguém que casa abre, e o título some quando ninguém do grupo casa */
+    function aplicar(termo) {
+      var titulo = null, grupos = [];
       Array.prototype.forEach.call(menu.children, function (el) {
-        if (el.hasAttribute('data-combo-titulo')) {
-          if (titulo) titulo.classList.toggle('oculto', !visiveis);
-          titulo = el; visiveis = 0;
-        } else if (el.hasAttribute('data-busca') && !el.classList.contains('oculto')) {
-          visiveis++;
-        }
+        if (el.hasAttribute('data-combo-titulo')) { titulo = { el: el, itens: [] }; grupos.push(titulo); return; }
+        if (!el.hasAttribute('data-busca')) return;
+        if (!titulo) { titulo = { el: null, itens: [] }; grupos.push(titulo); }
+        titulo.itens.push(el);
       });
-      if (titulo) titulo.classList.toggle('oculto', !visiveis);
-    }
-    function filtrar() {
-      var termo = RW.busca.normalizar(inp.value.trim());
       var visiveis = 0;
-      Array.prototype.forEach.call(menu.querySelectorAll('[data-busca]'), function (it) {
-        var casa = !termo || (it.getAttribute('data-busca') || '').indexOf(termo) !== -1;
-        it.classList.toggle('oculto', !casa);
-        if (casa) visiveis++;
+      grupos.forEach(function (g) {
+        var casam = g.itens.filter(function (it) { return !termo || (it.getAttribute('data-busca') || '').indexOf(termo) !== -1; });
+        if (g.el) {
+          g.el.classList.toggle('oculto', !casam.length);
+          if (termo && casam.length) abrirGrupo(g.el, true);
+        }
+        var aberto = !g.el || g.el.getAttribute('aria-expanded') === 'true';
+        g.itens.forEach(function (it) { it.classList.toggle('oculto', !aberto || casam.indexOf(it) < 0); });
+        visiveis += casam.length;
       });
       var vazio = menu.querySelector('[data-combo-vazio]');   /* aviso quando o filtro não casa com ninguém */
       if (vazio) vazio.classList.toggle('oculto', visiveis > 0);
-      ajustarTitulos();
       realcar(null);
     }
-    function mostrarTodos() {
-      Array.prototype.forEach.call(menu.querySelectorAll('[data-busca], [data-combo-titulo]'), function (it) { it.classList.remove('oculto'); });
-      var vazio = menu.querySelector('[data-combo-vazio]');
-      if (vazio) vazio.classList.add('oculto');
-      realcar(null);
+    function filtrar() { aplicar(RW.busca.normalizar(inp.value.trim())); }
+    function mostrarTodos() { aplicar(''); }
+
+    /* os grupos abertos e fechados pela pessoa (pelo título), guardados enquanto o campo existe: a lista refeita volta
+       como estava */
+    var gruposAbertos = {};
+    function abrirGrupo(el, aberto) {
+      el.setAttribute('aria-expanded', aberto ? 'true' : 'false');
+      gruposAbertos[el.getAttribute('data-combo-titulo')] = aberto;
     }
     function escolher(m) {
       definir(nome(m), false);
@@ -148,18 +155,39 @@
     }
     ajustarAoAparelho();
 
+    /* o título de um grupo: o nome, quantos tem e a seta, que abre e fecha a lista dele. Começa como a pessoa deixou;
+       senão, como o item pede (aberto) ou, sem pedir, o primeiro aberto e os outros fechados */
+    function criarTitulo(m, quantos, primeiro) {
+      var t = RW.tpl('tpl-combo-militar-titulo');
+      if (!t) return null;
+      t.querySelector('.combo-militar-titulo-nome').textContent = m.titulo;
+      t.querySelector('.combo-militar-titulo-conta').textContent = '(' + quantos + ')';
+      t.setAttribute('data-combo-titulo', m.titulo);
+      var aberto = m.titulo in gruposAbertos ? gruposAbertos[m.titulo] : typeof m.aberto === 'boolean' ? m.aberto : primeiro;
+      t.setAttribute('aria-expanded', aberto ? 'true' : 'false');
+      /* o clique no título não tira o foco do campo (o filtro digitado continua) */
+      t.addEventListener('mousedown', function (e) { e.preventDefault(); });
+      t.addEventListener('click', function () {
+        abrirGrupo(t, t.getAttribute('aria-expanded') !== 'true');
+        aplicar(RW.busca.normalizar(document.activeElement === inp ? inp.value.trim() : ''));
+      });
+      return t;
+    }
+
     /* monta a lista; devolve quantos podem ser escolhidos. A escolha que sumiu da lista é desfeita (aoPerder) */
     function preencher(lista) {
       realcar(null);
       menu.textContent = '';
       var ignorar = opcoes.ignorar ? opcoes.ignorar() : [];
       var atual = opcoes.atual();
-      var disponiveis = 0, aindaEscolhido = false;
+      var disponiveis = 0, aindaEscolhido = false, titulos = 0;
       lista.forEach(function (m, indice) {
         if (!m) return;
         if (m.titulo) {
-          var t = RW.tpl('tpl-combo-militar-titulo');
-          if (t) { t.textContent = m.titulo; t.setAttribute('data-combo-titulo', ''); menu.appendChild(t); }
+          var quantos = 0;
+          for (var i = indice + 1; i < lista.length && lista[i] && !lista[i].titulo; i++) if (ignorar.indexOf(lista[i].cpf) < 0) quantos++;
+          var t = criarTitulo(m, quantos, titulos++ === 0);
+          if (t) menu.appendChild(t);
           return;
         }
         if (ignorar.indexOf(m.cpf) >= 0) return;
@@ -176,7 +204,7 @@
       });
       var vm = opcoes.criarVazio ? opcoes.criarVazio() : RW.tpl('tpl-combo-militar-vazio');   /* aviso do filtro, oculto até zerar */
       if (vm) { vm.textContent = textos.filtroVazio || ''; vm.setAttribute('data-combo-vazio', ''); vm.classList.add('oculto'); menu.appendChild(vm); }
-      ajustarTitulos();
+      aplicar('');
       if (atual && !aindaEscolhido && opcoes.aoPerder) opcoes.aoPerder();
       if (disponiveis === 0) { habilitar(false); definir(textos.semNinguem, true); }
       else { habilitar(true); mostrarAtual(); }

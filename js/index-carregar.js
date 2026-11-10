@@ -49,6 +49,7 @@
     'componentes/js/geral-treino-banco.js',
     'componentes/js/geral-treino-livre.js',
     'componentes/js/geral-horario.js',
+    'componentes/js/geral-regua.js',
     'componentes/js/geral-modal.js',
     'componentes/js/geral-aviso.js',
     'componentes/js/geral-data-modal.js',

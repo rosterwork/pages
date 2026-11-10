@@ -109,9 +109,15 @@
       var m = sujo() ? G().passaram()[0] : null;
       return m ? { nome: (m.grad + ' ' + m.nome).trim(), n: G().usadas(m.cpf) - m.concedidas } : null;
     },
-    /* o que o Salvar leva (null sem mudança) */
-    envio: function (motivo) {
-      return sujo() ? { competencia: mes.competencia, mudancas: mudancas(), motivo: motivo || null } : null;
+    /* o Desfazer e o Refazer do rodapé largo (escalas-painel-salvar.js): um passo do rascunho do mês, e o painel refeito
+       como numa mudança */
+    podeDesfazer: function () { return !!ctx && lancada() && G().podeDesfazer(); },
+    podeRefazer: function () { return !!ctx && lancada() && G().podeRefazer(); },
+    desfazer: function () { if (G().desfazer()) { RW.extrajornadaDia.reorganizar(); aoMudar(); } },
+    refazer: function () { if (G().refazer()) { RW.extrajornadaDia.reorganizar(); aoMudar(); } },
+    /* o que o Salvar leva (null sem mudança; o banco aceita o ajuste sem motivo) */
+    envio: function () {
+      return sujo() ? { competencia: mes.competencia, mudancas: mudancas(), motivo: null } : null;
     },
     /* o que as telas mostram: a prévia não leva quem passou da cota, que o banco recusaria. No mês de treino, o mês é de
        exemplo e o banco não o conhece: as telas ficam como estão, só com a borda tracejada */

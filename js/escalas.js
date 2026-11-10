@@ -290,6 +290,15 @@
     return desenho;
   }
 
+  /* o botão das unidades lado a lado ou uma embaixo da outra: só nos calendários (Mês › Calendário e Colunas › Dias) e
+     no computador (no celular, as unidades ficam sempre uma embaixo da outra; geral-visao-grade.js) */
+  function mostrarDisposicao() {
+    var celular = !!(RosterWork.celular && RosterWork.celular());
+    var modo = modoAtual();
+    var calendario = (modo === 'mes' && subMesAtual() === 'calendario') || (modo === 'colunas' && tipoColunasAtual() === 'dias');
+    mostrar('#escala-disposicao', calendario && !celular);
+  }
+
   function desenharModo(corpo, vigente) {
     /* o Dia usa a árvore de unidades (corpo em camada, como Postos); a Minha escala, o corpo comum, que rola;
        os demais, o corpo colado */
@@ -301,6 +310,7 @@
     var agendaNoCelular = !!(RosterWork.celular && RosterWork.celular()) && modoAtual() === 'mes' && subMesAtual() !== 'calendario';
     if (RosterWork.seletorUnidade) RosterWork.seletorUnidade.mostrar(agendaNoCelular ? unidadesColuna() : null);
     var aplicarSeletor = (agendaNoCelular && RosterWork.seletorUnidade) ? RosterWork.seletorUnidade.aplicar : null;
+    mostrarDisposicao();
     /* Minha escala: o seu mês e a escala do dia escolhido (escalas-minha.js) */
     if (ehMinha) {
       if (!window.RosterWork.escalasMinha) { mostrarEstado(corpo, 'Em construção.'); return; }
@@ -590,7 +600,9 @@
       if (RosterWork.painel) RosterWork.painel.conferirTela();
     });
 
-    /* clicar numa célula da grade abre a gaveta de detalhes */
+    /* clicar numa célula da grade abre a gaveta de detalhes (ou, para quem administra o dia, a edição na própria célula,
+       que começa limpa a cada entrada na Escala) */
+    if (window.RosterWork.escalasCelulaEditar) RosterWork.escalasCelulaEditar.largar();
     if (window.RosterWork.escalasPainel) RosterWork.escalasPainel.ligar(conteudo);
 
     /* celular: o seletor de unidade da Agenda (componente geral-seletor-unidade.js) */
@@ -600,7 +612,11 @@
        deslizando; as setas também (geral-deslizar.js) */
     var deslize = window.RosterWork.deslizar ? RosterWork.deslizar.ligar(conteudo.querySelector('.pagina-corpo'), {
       area: '.escala-mes, .geral-calendario-mes, .escala-minha-calendario',
-      ativo: function () { return !!(RosterWork.celular && RosterWork.celular()) && (modoAtual() === 'mes' || modoAtual() === 'minha'); },
+      /* com mudança não salva na célula da grade, o mês não troca pelo dedo (as setas perguntam antes) */
+      ativo: function () {
+        return !!(RosterWork.celular && RosterWork.celular()) && (modoAtual() === 'mes' || modoAtual() === 'minha')
+          && !(RosterWork.escalasCelulaEditar && RosterWork.escalasCelulaEditar.pendente());
+      },
       destino: function (direcao) { return RosterWork.deslizar.nomeMes(mesVizinho(direcao), refData); },
       antecipar: function (direcao) {
         var mes = mesVizinho(direcao);
@@ -616,8 +632,13 @@
     /* a troca de período pelas setas, pelo Hoje e pelo calendário: o painel aberto é do período antigo e fecha antes;
        com mudança não salva, o aviso de sempre e o período só muda no Descartar (geral-painel) */
     function trocarPeriodo(trocar) {
-      if (RosterWork.painel) RosterWork.painel.antesDeMudarTela(trocar);
-      else trocar();
+      function seguir() {
+        if (RosterWork.painel) RosterWork.painel.antesDeMudarTela(trocar);
+        else trocar();
+      }
+      /* o dia mexido na célula da grade é do período de agora: com mudança não salva, o mesmo aviso antes */
+      if (RosterWork.escalasCelulaEditar) RosterWork.escalasCelulaEditar.antesDeMudar(seguir);
+      else seguir();
     }
     function irPelaSeta(direcao) { trocarPeriodo(function () { if (!deslize || !deslize.ir(direcao)) navegar(direcao); }); }
 
@@ -647,6 +668,9 @@
     /* Imprimir: abre o painel conforme a aba (abrirImpressao) */
     var btnImprimir = conteudo.querySelector('#escala-imprimir');
     if (btnImprimir) btnImprimir.addEventListener('click', abrirImpressao);
+
+    /* as unidades lado a lado ou uma embaixo da outra: o clique troca, grava a escolha e redesenha o calendário */
+    if (RosterWork.visaoGrade) RosterWork.visaoGrade.ligarDisposicao(conteudo.querySelector('#escala-disposicao'), renderizarCorpo);
 
     /* clicar no rótulo do período abre o calendário; o dia escolhido vira a referência */
     var rotuloPeriodo = conteudo.querySelector('#escala-periodo-nome');
@@ -729,5 +753,16 @@
     carregarUnidades();   // popula as abas de unidade em segundo plano
   }
 
-  window.RosterWork.paginas.escalas = { iniciar: iniciar };
+  /* a companhia de uma unidade (o pai do pelotão, ou ela mesma), da hierarquia já lida: { id, nome, cidade }; null fora
+     de companhia ou antes da leitura (o lápis do Oficial de Área na Central do pelotão; escalas-painel-editar.js) */
+  function companhiaDe(unidadeId) {
+    if (!unidades) return null;
+    var porId = {};
+    unidades.forEach(function (u) { porId[String(u.unidade_id)] = u; });
+    var u = porId[String(unidadeId)];
+    var cia = u && (u.tipo === 'PEL' ? porId[String(u.unidade_pai_id)] : u);
+    return cia && (cia.tipo === 'CIA' || cia.tipo === 'CIBM') ? { id: cia.unidade_id, nome: cia.nome, cidade: cia.cidade || '' } : null;
+  }
+
+  window.RosterWork.paginas.escalas = { iniciar: iniciar, companhiaDe: companhiaDe };
 })();

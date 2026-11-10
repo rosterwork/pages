@@ -1,12 +1,19 @@
 /* ============================================================
    ESCALAS — painel lateral de detalhes (abre ao clicar na célula)
+   Para quem administra o dia, com o painel fechado, o clique fica
+   na própria célula (escalas-celula-editar.js); o Abrir o painel
+   do dia dela abre o painel, com o que ela já mexeu.
    Liga o clique numa célula da grade Mês/Agenda à "gaveta"
    (componente geral-painel): título = unidade (o pelotão mostra a
    companhia acima), complemento = " - cidade", subtítulo = data
-   por extenso, abas Dia/Ciclo (Ciclo só para o administrador; por
-   dentro, as seções distribuicao/continuos).
-   O Dia (escalas-painel-editar.js) é a mesma lista para todos: o
-   admin já edita nela; quem não é admin só lê.
+   por extenso (com a guarnição de serviço, quando a leitura do dia ou a
+   aba Guarnições a traz), abas Funções/Militares/Guarnições/Extrajornada
+   (só para quem edita o dia ou tem a extra; as Guarnições só para o
+   administrador; por dentro, as seções distribuicao/militares/continuos/
+   extra).
+   A aba Funções (escalas-painel-editar.js) é a mesma lista para
+   todos: o admin já edita nela; quem não é admin só lê. A Militares
+   (escalas-painel-militares.js) é o mesmo dia por pessoa.
    ============================================================ */
 (function () {
   'use strict';
@@ -550,7 +557,8 @@
     return DIAS[d.getDay()] + ', ' + d.getDate() + ' de ' + MESES[d.getMonth()] + ' de ' + d.getFullYear();
   }
 
-  function desmarcar() {
+  /* manter: o painel abre no dia que a célula estava mexendo (escalas-celula-editar.js), e o rascunho dela continua nele */
+  function desmarcar(manter) {
     notaConsulta(false);
     if (celulaSelecionada) {
       celulaSelecionada.classList.remove('escala-mes-celula--selecionada');
@@ -558,10 +566,15 @@
     }
     pCtx = null;
     if (RosterWork.escalasPainelEditar) RosterWork.escalasPainelEditar.reset();
-    if (RosterWork.escalasPainelContinuos) RosterWork.escalasPainelContinuos.reset();
+    if (RosterWork.escalasPainelGuarnicoes) RosterWork.escalasPainelGuarnicoes.reset();
     if (RosterWork.escalasPainelExtra) RosterWork.escalasPainelExtra.reset();
     /* o painel fechou (já perguntou antes, se havia mudança): as mudanças do Dia e do Ciclo saem */
-    if (RosterWork.escalasPainelSalvar) RosterWork.escalasPainelSalvar.descartar();
+    if (!manter && RosterWork.escalasPainelSalvar) RosterWork.escalasPainelSalvar.descartar();
+  }
+  /* o dia que a célula da grade está mexendo (o rascunho dela passa ao painel, sem pergunta) */
+  function daCelula(unidadeId, iso) {
+    var c = RosterWork.escalasCelulaEditar;
+    return !!(c && c.ehDia(unidadeId, iso));
   }
   /* o painel do dia fechou de verdade: o rascunho da Extrajornada, que é do mês, sai também (trocar de dia não passa aqui) */
   function aoFecharDia() {
@@ -580,7 +593,7 @@
   function extraSuja() { return !!(RosterWork.escalasPainelExtra && RosterWork.escalasPainelExtra.sujo()); }
   function limparSecoesSujas() {
     if (RosterWork.escalasPainelEditar) RosterWork.escalasPainelEditar.reset();
-    if (RosterWork.escalasPainelContinuos) RosterWork.escalasPainelContinuos.reset();
+    if (RosterWork.escalasPainelGuarnicoes) RosterWork.escalasPainelGuarnicoes.reset();
     if (RosterWork.escalasPainelSalvar) RosterWork.escalasPainelSalvar.descartar();
     if (RosterWork.escalasPainelExtra) RosterWork.escalasPainelExtra.descartar();
   }
@@ -766,8 +779,9 @@
     corpo.parentNode.insertBefore(nota, corpo);
   }
 
-  /* troca o conteúdo do corpo e o rodapé conforme a aba de seção: o Dia é a lista que o admin edita
-     (e os outros só leem), o Ciclo (só admin) é sempre edição e a Extrajornada é a do mês lançado */
+  /* troca o conteúdo do corpo e o rodapé conforme a aba de seção: Funções e Militares são a lista do dia que o admin
+     edita (e os outros só leem), por posto e por pessoa; as Guarnições (só admin) são sempre edição e a Extrajornada é a do
+     mês lançado */
   function mostrarSecao(secao) {
     if (!pCtx) return;
     pCtx.secao = secao;
@@ -778,8 +792,8 @@
     var sub = RosterWork.painel.subcabecalho();
     if (sub) { sub.textContent = ''; sub.classList.add('oculto'); }
     /* ao entrar numa seção, as outras param de desenhar (os rascunhos delas ficam até o Salvar do rodapé) */
-    if (secao !== 'distribuicao' && RosterWork.escalasPainelEditar) RosterWork.escalasPainelEditar.reset();
-    if (secao !== 'continuos' && RosterWork.escalasPainelContinuos) RosterWork.escalasPainelContinuos.reset();
+    if (secao !== 'distribuicao' && secao !== 'militares' && RosterWork.escalasPainelEditar) RosterWork.escalasPainelEditar.reset();
+    if (secao !== 'continuos' && RosterWork.escalasPainelGuarnicoes) RosterWork.escalasPainelGuarnicoes.reset();
     if (secao !== 'extra' && RosterWork.escalasPainelExtra) RosterWork.escalasPainelExtra.reset();
     /* o dia que a fila do recálculo ainda vai refazer: a mensagem com o círculo até ele ficar pronto (ninguém mexe num dia
        que vai mudar); passando do limite, o Dia abre só para consulta, com a nota, e volta ao normal quando ficar pronto */
@@ -799,33 +813,40 @@
         if (pCtx === esperado) mostrarSecao(pCtx.secao);
       });
     }
-    if (naFila && !(esperado.consulta && secao === 'distribuicao')) {
+    if (naFila && !(esperado.consulta && (secao === 'distribuicao' || secao === 'militares'))) {
       corpo.textContent = '';
       corpo.appendChild(RosterWork.painel.criarAtualizando(RosterWork.mensagens.escala.diaAtualizando));
       if (rodape) { rodape.textContent = ''; rodape.classList.add('oculto'); }
       return;
     }
     if (naFila) notaConsulta(true);
-    if (secao === 'distribuicao' && RosterWork.escalasPainelEditar) {
-      /* o dia é de quem tem a unidade na área do papel */
+    if ((secao === 'distribuicao' || secao === 'militares') && RosterWork.escalasPainelEditar) {
+      /* o dia é de quem tem a unidade na área do papel; as abas Funções e Militares são o mesmo dia, por posto e por pessoa.
+         O menu pedido na abertura (o Oficial de Área, vindo do pelotão) abre quando a lista chegar, uma vez só */
+      var menuDe = pCtx.abrirMenuDe || null;
+      pCtx.abrirMenuDe = null;
       RosterWork.escalasPainelEditar.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso, {
         admin: !naFila && RosterWork.sessao.podeAdministrar('pelotao', pCtx.unidadeId),
-        consulta: naFila
+        consulta: naFila,
+        visao: secao === 'militares' ? 'militares' : 'funcoes',
+        abrirMenuDe: menuDe
       });
-    } else if (secao === 'continuos' && RosterWork.escalasPainelContinuos) {
-      RosterWork.escalasPainelContinuos.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso);
+    } else if (secao === 'continuos' && RosterWork.escalasPainelGuarnicoes) {
+      RosterWork.escalasPainelGuarnicoes.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso);
     } else if (secao === 'extra' && RosterWork.escalasPainelExtra) {
       RosterWork.escalasPainelExtra.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso);
     } else {
       corpo.textContent = '';
       if (rodape) { rodape.textContent = ''; rodape.classList.add('oculto'); }
     }
+    /* o Desfazer e o Refazer do rodapé largo são os da aba que abriu */
+    if (RosterWork.escalasPainelSalvar) RosterWork.escalasPainelSalvar.atualizar();
   }
 
   /* abrir outra célula com rascunho aberto no Dia ou no Ciclo: confirma o descarte antes de trocar (o da Extrajornada,
      que é do mês, fica). secao = a aba que abre primeiro (o padrão é o Dia; quem está na Extrajornada continua nela) */
   function abrirParaCelula(celula, secao) {
-    if (secaoSuja()) {
+    if (secaoSuja() && !daCelula(celula.dataset.unidadeId, celula.dataset.iso)) {
       var S = RosterWork.escalasPainelSalvar;
       confirmarDescarte(function () { abrirParaCelulaAgora(celula, secao); }, S ? S.contarDoDia() : 0);
       return;
@@ -834,25 +855,50 @@
   }
 
   function abrirParaCelulaAgora(celula, secao) {
-    var naExtra = !!pCtx && pCtx.secao === 'extra';
-    desmarcar();
-    celula.classList.add('escala-mes-celula--selecionada');
-    celulaSelecionada = celula;
+    abrirDiaAgora({ unidadeId: celula.dataset.unidadeId, iso: celula.dataset.iso, unidadeNome: celula.dataset.unidadeNome,
+      unidadeCidade: celula.dataset.unidadeCidade }, secao, celula, null);
+  }
 
-    var unidadeId = celula.dataset.unidadeId;
-    var iso = celula.dataset.iso;
-    var cidade = celula.dataset.unidadeCidade;
+  /* o dia de uma unidade sem a célula (a companhia do Oficial de Área, que pode não estar na tela; o lápis dele no
+     pelotão), com a mesma pergunta de trocar de dia quando há mudança não salva. opcoes.abrirMenuDe: o cpf de quem fica
+     com o menu aberto quando a lista chegar */
+  function abrirDia(dia, secao, opcoes) {
+    if (secaoSuja() && !daCelula(dia.unidadeId, dia.iso)) {
+      var S = RosterWork.escalasPainelSalvar;
+      confirmarDescarte(function () { abrirDiaAgora(dia, secao, null, opcoes); }, S ? S.contarDoDia() : 0);
+      return;
+    }
+    abrirDiaAgora(dia, secao, null, opcoes);
+  }
+
+  /* dia = { unidadeId, iso, unidadeNome, unidadeCidade }; a célula (quando há) fica marcada na grade */
+  function abrirDiaAgora(dia, secao, celula, opcoes) {
+    var naExtra = !!pCtx && pCtx.secao === 'extra';
+    /* a célula da grade deixa o dia: o que ela mexia neste dia continua no painel; em outro dia, já foi descartado */
+    var manter = daCelula(dia.unidadeId, dia.iso);
+    if (RosterWork.escalasCelulaEditar) RosterWork.escalasCelulaEditar.passarAoPainel();
+    desmarcar(manter);
+    var marcada = celula || encontrarCelula(dia.unidadeId, dia.iso);
+    if (marcada) {
+      marcada.classList.add('escala-mes-celula--selecionada');
+      celulaSelecionada = marcada;
+    }
+
+    var unidadeId = dia.unidadeId;
+    var iso = dia.iso;
+    var cidade = dia.unidadeCidade;
     /* o Dia e o Ciclo para quem tem a unidade na área do papel; a Extrajornada, que é da companhia, para quem administra
        alguma unidade (escalas-painel-extra.js confere se esta é da companhia dele) */
     var admin = RosterWork.sessao.podeAdministrar('pelotao', unidadeId);
     var comExtra = RosterWork.sessao.temPapel('pelotao');
     var inicial = secao || (naExtra ? 'extra' : 'distribuicao');
-    if ((inicial === 'continuos' && !admin) || (inicial === 'extra' && !comExtra)) inicial = 'distribuicao';
-    pCtx = { unidadeId: unidadeId, iso: iso, secao: inicial, unidadeNome: celula.dataset.unidadeNome };
+    if ((inicial === 'continuos' && !admin) || (inicial === 'extra' && !comExtra) || (inicial === 'militares' && !admin && !comExtra)) inicial = 'distribuicao';
+    pCtx = { unidadeId: unidadeId, iso: iso, secao: inicial, unidadeNome: dia.unidadeNome, semCelula: !marcada,
+      abrirMenuDe: (opcoes && opcoes.abrirMenuDe) || null };
     /* o dia já refeito abre na hora: o painel lê o dado real, e a célula fica igual a ele */
     if (RosterWork.escalaAtualizando && RosterWork.escalaAtualizando.soCopia(unidadeId, iso)) RosterWork.escalaAtualizando.corrigir(unidadeId, iso);
     RosterWork.painel.abrir({
-      titulo: celula.dataset.unidadeNome || '',
+      titulo: dia.unidadeNome || '',
       tituloExtra: cidade ? '- ' + cidade : '',
       subtitulo: dataPorExtenso(iso),
       aoFechar: aoFecharDia,
@@ -861,7 +907,8 @@
     });
     RosterWork.painel.acompanharTela(diaNaTela);
 
-    /* linha das abas de seção: quem só tem o Dia fica sem a linha. O geral-abas cuida da troca visual e nos avisa a aba
+    /* linha das abas de seção: quem só lê o dia (sem ser admin) fica sem a linha, só com a lista por funções. O
+       geral-abas cuida da troca visual e nos avisa a aba
        escolhida */
     var linha = RosterWork.painel.linhaAbas();
     var tpl = document.getElementById('tpl-escala-painel-secoes');
@@ -911,7 +958,8 @@
      Unidades, a unidade dele tem de seguir ligada nas abas (a grade é redesenhada depois, sem esperar) */
   function diaNaTela() {
     var abas = document.querySelector('#escala-sub-unidades:not(.oculto) #escala-unidades-abas');
-    return !pCtx || !abas || !!abas.querySelector('.aba--ativa[data-unidade="' + pCtx.unidadeId + '"]');
+    /* o dia aberto sem a célula (a companhia do Oficial de Área) não depende das abas */
+    return !pCtx || pCtx.semCelula || !abas || !!abas.querySelector('.aba--ativa[data-unidade="' + pCtx.unidadeId + '"]');
   }
 
   /* localiza, na grade atual (qualquer modo), a célula de uma unidade+dia */
@@ -959,47 +1007,14 @@
       var alvo = evento.target.closest ? evento.target.closest('.escala-mes-celula, [data-abre-dia], .escala-calendario-unidade') : null;
       var celula = alvo && alvo.classList.contains('escala-calendario-unidade') ? alvo.querySelector('.escala-mes-celula') : alvo;
       if (!celula || !celula.dataset.unidadeId || !celula.dataset.iso) return;
+      /* quem administra o dia, com o painel fechado: o rápido se faz na própria célula (escalas-celula-editar.js) */
+      if (RosterWork.escalasCelulaEditar && RosterWork.escalasCelulaEditar.clique(evento, celula)) return;
       abrirParaCelula(celula);
     });
     if (!remarcarLigado) {
       remarcarLigado = true;
       window.addEventListener('rosterwork_escala_recarregar', remarcarSelecionada);
     }
-  }
-
-  /* busca reutilizável no topo de uma seção do painel (Ciclo): filtra os
-     .escala-secao-item das `caixas` pelo grau + nome (sem acento, lendo as spans); caixa
-     que fica sem resultado mostra a mensagem de vazio. Reusa a pílula .busca (geral-busca.css). */
-  function montarBusca(destino, caixas) {
-    if (!destino) return;
-    var pilula = RosterWork.tpl('tpl-escala-secao-busca');
-    if (!pilula) return;
-    var entrada = pilula.querySelector('.busca-entrada');
-    var limpar = pilula.querySelector('.busca-limpar');
-    function filtrar() {
-      var termo = RosterWork.busca.normalizar(entrada ? entrada.value : '');
-      pilula.classList.toggle('busca--com-texto', !!(entrada && entrada.value));
-      caixas.forEach(function (caixa) {
-        var itens = caixa.querySelectorAll('.escala-secao-item');
-        var visiveis = 0;
-        [].forEach.call(itens, function (it) {
-          var g = it.querySelector('.escala-secao-grad'), n = it.querySelector('.escala-secao-nome');
-          var casa = !termo || RosterWork.busca.normalizar((g ? g.textContent : '') + ' ' + (n ? n.textContent : '')).indexOf(termo) !== -1;
-          it.classList.toggle('oculto', !casa);
-          if (casa) visiveis++;
-        });
-        var vazio = caixa.querySelector('.escala-secao-sem-busca');
-        if (termo && itens.length && visiveis === 0) {
-          if (!vazio) {
-            vazio = RosterWork.tpl('tpl-escala-secao-vazio');
-            if (vazio) { vazio.classList.add('escala-secao-sem-busca'); vazio.textContent = (RosterWork.mensagens.escala || {}).buscaVazia || ''; caixa.appendChild(vazio); }
-          }
-        } else if (vazio) { caixa.removeChild(vazio); }
-      });
-    }
-    if (entrada) entrada.addEventListener('input', filtrar);
-    if (limpar) limpar.addEventListener('click', function () { if (entrada) { entrada.value = ''; entrada.focus(); } filtrar(); });
-    destino.appendChild(pilula);
   }
 
   /* ícone por classe de observação (troca/folga/outra unidade/remanejado/mudança de dia automáticas; admin manual) */
@@ -1125,6 +1140,8 @@
   window.RosterWork.escalasPainel = {
     ligar: ligar,
     abrir: abrirParaCelula,
+    /* o dia de uma unidade sem a célula (a companhia do Oficial de Área): abrirDia(dia, secao, { abrirMenuDe }) */
+    abrirDia: abrirDia,
     /* o dia aberto ({ unidadeId, iso, secao, unidadeNome }) e a aba aberta lida de novo (o Salvar do rodapé) */
     contexto: function () { return pCtx ? { unidadeId: pCtx.unidadeId, iso: pCtx.iso, secao: pCtx.secao, unidadeNome: pCtx.unidadeNome } : null; },
     /* a grade foi redesenhada (a prévia do rascunho): o dia aberto volta a ficar selecionado */
@@ -1138,7 +1155,26 @@
       if (!secaoSuja() && !extraSuja()) { seguir(false); return; }
       confirmarDescarte(function () { limparSecoesSujas(); seguir(true); });
     },
+    /* o aviso de descartar (Descartar / Continuar editando), o mesmo de trocar de dia: a célula da grade também usa.
+       quantas: quantas alterações saem (sem ela, todas) */
+    confirmarDescarte: confirmarDescarte,
     recarregarSecao: function () { if (pCtx) mostrarSecao(pCtx.secao); },
+    /* a aba do painel existe (secao = 'distribuicao' | 'militares' | 'continuos' | 'extra') e a abre como o clique nela (o Mudar a
+       extrajornada do menu da linha; o Ver o dia da aba Guarnições, com opcoes.abrirMenuDe: o cpf de quem fica com o menu
+       aberto quando a lista chegar) */
+    temAba: function (secao) { var l = RosterWork.painel.linhaAbas(); return !!(l && l.querySelector('.aba[data-secao="' + secao + '"]')); },
+    abrirAba: function (secao, opcoes) {
+      var l = RosterWork.painel.linhaAbas(), aba = l && l.querySelector('.aba[data-secao="' + secao + '"]');
+      if (!aba) return;
+      if (pCtx && opcoes && opcoes.abrirMenuDe) pCtx.abrirMenuDe = opcoes.abrirMenuDe;
+      aba.click();
+    },
+    /* a guarnição de serviço no dia aberto, quando a leitura do dia ou a aba Guarnições a traz: vai ao subtítulo
+       ("Terça-feira, 24 de novembro de 2026 · Guarnição C") */
+    mostrarGuarnicao: function (unidadeId, iso, letra) {
+      if (!pCtx || String(pCtx.unidadeId) !== String(unidadeId) || pCtx.iso !== iso) return;
+      RosterWork.painel.definirTitulos(null, letra ? RosterWork.mensagens.escala.subtituloGuarnicao(dataPorExtenso(iso), letra) : dataPorExtenso(iso));
+    },
     /* peças de montagem reaproveitadas pelo Dia (escalas-painel-editar/-formulario/-militar) */
     pecas: {
       definirIcone: definirIcone,
@@ -1164,7 +1200,6 @@
       linhasDoAviso: linhasDoAviso,
       anexarProblemas: anexarProblemas,
       marcarProblemas: marcarProblemas,
-      montarBusca: montarBusca,
       noLugar: montarNoLugar,
       observacoes: montarObservacoes,
       agruparObservacoes: agruparObservacoes

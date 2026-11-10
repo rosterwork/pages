@@ -4,9 +4,10 @@
    O dia de serviço vai das 08h às 08h: as contas usam minutos
    desde as 08h (0 a 1440). linha() monta início → fim em campos
    (geral-dropdown-numeros) com o ✕ e o Adicionar horário;
-   criarRegua() e regua() desenham a régua do dia com os pedaços;
-   periodoServico() junta tudo no "Serviço inteiro / Parte do
-   serviço" (Folgas e Trocas); leitura() é o "08h → 08h" só para
+   criarRegua() e regua() desenham a régua do dia com os pedaços,
+   só para ler (painel de decisão); periodoServico() junta tudo no
+   "Serviço inteiro / Parte do serviço" (Folgas e Trocas), com a
+   barra de horário (geral-regua); leitura() é o "08h → 08h" só para
    ler (painel de decisão). Clona os moldes do index.html
    (#tpl-horario, -fixo, -leitura, #tpl-regua, -pedaco, #tpl-periodo-servico).
    RosterWork.horario.
@@ -174,7 +175,7 @@
 
   var contaPeriodos = 0;   // nome único para os rádios de cada período na tela
 
-  /* monta em container o molde #tpl-periodo-servico (as opções, os campos da parte e a régua).
+  /* monta em container o molde #tpl-periodo-servico (as opções, os campos da parte e a barra de horário).
      opcoes = { aoMudar(valor) }, chamado só quando a pessoa mexe.
      Devolve { definirServico(servico|null), definirParte(hi, hf), valor(), limpar() };
      valor() = null sem serviço, senão { hi, hf, minutos, total, valido } (total = o serviço inteiro) */
@@ -186,8 +187,14 @@
     var radios = el.querySelectorAll('input[type="radio"]');
     [].forEach.call(radios, function (r) { r.name = nome; });
     var caixaHorario = el.querySelector('.periodo-servico-horario');
-    var reguaEl = criarRegua('afastada');
-    if (reguaEl) el.appendChild(reguaEl);
+    /* a barra: mexer nela escolhe a parte do serviço */
+    var barra = RosterWork.regua ? RosterWork.regua.criar({ variante: 'afastada', aoMudar: function (f) {
+      st.parte = true;
+      st.hi = f.hi;
+      st.hf = f.hf;
+      mudou();
+    } }) : null;
+    if (barra) el.appendChild(barra.el);
     container.textContent = '';
     container.appendChild(el);
     var st = { servico: null, parte: false, hi: null, hf: null };
@@ -208,21 +215,21 @@
       [].forEach.call(radios, function (r) { r.disabled = !st.servico; r.checked = (r.value === 'parte') === st.parte; });
       caixaHorario.textContent = '';
       caixaHorario.classList.toggle('oculto', !(st.servico && st.parte));
-      var pedacos = [];
-      if (st.servico) {
-        var w = periodo(janela());
-        if (st.parte) {
-          var l = linha({ hi: st.hi, hf: st.hf, opcoes: opcoesHoras([w]), semAcoes: true,
-            aoInicio: function (h) { st.hi = h; mudou(); },
-            aoFim: function (h) { st.hf = h; mudou(); } });
-          if (l) caixaHorario.appendChild(l);
-        }
-        /* a régua: o serviço e, por cima, o trecho escolhido */
-        pedacos.push({ hi: w.hi, hf: w.hf });
-        var v = valor();
-        if (v.valido) pedacos.push({ hi: v.hi, hf: v.hf, classe: 'novo' });
+      if (st.servico && st.parte) {
+        var l = linha({ hi: st.hi, hf: st.hf, opcoes: opcoesHoras([periodo(janela())]), semAcoes: true,
+          aoInicio: function (h) { st.hi = h; mudou(); },
+          aoFim: function (h) { st.hf = h; mudou(); } });
+        if (l) caixaHorario.appendChild(l);
       }
-      regua(reguaEl, pedacos);
+      /* a barra: o serviço em cinza e, escura, a parte escolhida (ou o serviço inteiro) */
+      if (!barra) return;
+      var w = st.servico ? janela() : null, v = valor();
+      barra.desenhar({
+        janela: w ? [w[0] / 60, w[1] / 60] : null,
+        fundo: w ? [{ ini: w[0] / 60, fim: w[1] / 60 }] : [],
+        faixa: v && v.valido ? { hi: v.hi, hf: v.hf } : null,
+        editavel: !!st.servico
+      });
     }
     function mudou() { desenhar(); if (opcoes.aoMudar) opcoes.aoMudar(valor()); }
     [].forEach.call(radios, function (r) {

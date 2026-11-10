@@ -40,6 +40,8 @@
     /* a mudança de dia: o dia novo e, riscado, o dia de antes */
     mudanca: 'icone-origem-mudanca',
     mudanca_saida: 'icone-origem-mudanca',
+    /* quem saiu da guarnição: riscado no primeiro serviço que não faz mais */
+    saida_guarnicao: 'icone-origem-saida',
     /* quem inseriu a extra, no PDF da grade da Extrajornada (a escala nunca traz estas origens) */
     extra_sistema: 'icone-extra-sistema',
     extra_admin: 'icone-extra-administrador'
@@ -58,7 +60,8 @@
     afastamento: 'afastamento',
     /* a mudança de dia: o serviço do ciclo, em outro dia; o dia de antes fica como a folga */
     mudanca: 'prontidao',
-    mudanca_saida: 'folga'
+    mudanca_saida: 'folga',
+    saida_guarnicao: 'prontidao'
   };
 
   /* o posto curto das células pequenas (os calendários e o PDF deles); o que não está aqui sai inteiro */
@@ -271,6 +274,17 @@
     return el;
   }
 
+  /* quem saiu da guarnição: o ícone da saída, com a dica da data (o span recebe a dica); null nas outras origens */
+  function iconeDaSaida(p) {
+    if (p.origem !== 'saida_guarnicao') return null;
+    var el = RosterWork.tpl('tpl-escala-mudanca-icone');
+    if (!el) return null;
+    definirIcone(el.querySelector('svg'), 'icone-origem-saida');
+    var d = String(p.saida || '').split('-');
+    el.setAttribute('data-dica', RosterWork.mensagens.escala.saiuDaGuarnicao(d.length === 3 ? d[2] + '/' + d[1] : ''));
+    return el;
+  }
+
   /* uma linha de militar: ícone de origem (+ cadeado se fixado) + grad + nome + horário (curto: o posto curto) */
   function montarPessoa(p, curto) {
     var linha = RosterWork.tpl('tpl-escala-mes-pessoa');
@@ -279,6 +293,7 @@
     if (p.origem === 'troca_saida') linha.classList.add('linha-escalado--trocado');   /* trocado: nome riscado */
     if (p.origem === 'remanejado_saida') linha.classList.add('linha-escalado--remanejado');   /* saiu para outra unidade: riscado */
     if (p.origem === 'mudanca_saida') linha.classList.add('linha-escalado--mudou-dia');   /* passou para outro dia: riscado */
+    if (p.origem === 'saida_guarnicao') linha.classList.add('linha-escalado--saiu');   /* saiu da guarnição: riscado */
 
     var icones = linha.querySelector('.linha-escalado-icones');
     /* linha riscada (folga/troca/remanejamento): o ícone da origem NÃO some. Mostra a origem do militar no dia
@@ -287,7 +302,7 @@
       var origemCiclo = RosterWork.tpl('tpl-escala-mes-origem');
       if (origemCiclo) { definirIcone(origemCiclo, ICONE_ORIGEM[p.origem_base]); icones.appendChild(origemCiclo); }
     }
-    var origem = iconeDaMudanca(p);
+    var origem = iconeDaMudanca(p) || iconeDaSaida(p);
     if (!origem) { origem = RosterWork.tpl('tpl-escala-mes-origem'); if (origem) definirIcone(origem, iconeDaOrigem(p.origem)); }
     if (origem) icones.appendChild(origem);
     if (p.fixado) {
@@ -302,6 +317,7 @@
 
     linha.querySelector('.linha-escalado-grad').textContent = curto ? postoCurto(p.grad) : (p.grad || '');
     linha.querySelector('.linha-escalado-nome').textContent = p.nome || '';
+    if (p.cpf) linha.setAttribute('data-cpf', p.cpf);   // quem é, para a edição na célula (escalas-celula-editar.js)
     if (window.RosterWork.busca) linha.setAttribute('data-busca', window.RosterWork.busca.chave(p));   // busca do sub-cabeçalho (nome/CPF/RG)
     linha.setAttribute('data-situacao', situacao(p));   // o que o filtro Situação da barra lê
     var horaWrap = linha.querySelector('.linha-escalado-hora');
@@ -328,7 +344,7 @@
     /* fundo preenchido no trecho do horário (exceção: custom property data-driven).
        Nas linhas riscadas (folga/troca/remanejamento/mudança de dia), inverte: o cinza vai no trecho que ele deixou */
     var fundo = fundoTurno(p.periodos, p.origem === 'folga' || p.origem === 'troca_saida' || p.origem === 'remanejado_saida'
-      || p.origem === 'mudanca_saida');
+      || p.origem === 'mudanca_saida' || p.origem === 'saida_guarnicao');
     if (fundo) linha.style.setProperty('--turno-fundo', fundo);
     return linha;
   }
@@ -353,6 +369,8 @@
       var linhaP = montarPessoa(p, curto);
       if (linhaP) celula.appendChild(linhaP);
     });
+    /* na Escala, o que está aberto na célula (o cartão do militar, as ações do pelotão) volta depois de refeita */
+    if (RosterWork.escalasCelulaEditar) RosterWork.escalasCelulaEditar.decorar(celula);
   }
 
   /* pico de cobertura de cada unidade no período carregado: { unidadeId: pico }. É a régua dos gráficos
@@ -410,8 +428,31 @@
   /* a situação da pessoa para os filtros da barra (o ciclo é a Prontidão) */
   function situacao(p) { return SITUACAO_ORIGEM[p.origem] || 'prontidao'; }
 
+  /* o Oficial de Área do dia (oficial[iso], da leitura do mês) no lugar dele: o meio do título do dia do calendário ou o
+     alto da faixa do dia da Agenda e do Colunas › Unidades. O dia sem a chave (sem escala) fica sem nada; null é o dia com
+     escala e ninguém na função: "Sem Oficial de Área", em vermelho. Devolve se o lugar ficou à vista */
+  function preencherOficial(lugar, oficial, iso) {
+    if (!lugar) return false;
+    lugar.textContent = '';
+    var tem = !!oficial && Object.prototype.hasOwnProperty.call(oficial, iso);
+    var no = tem ? RosterWork.tpl('tpl-escala-oficial') : null;
+    if (no) {
+      var oa = oficial[iso];
+      var grad = no.querySelector('.escala-oficial-grad');
+      grad.textContent = oa ? (oa.grad || '') : '';
+      grad.classList.toggle('oculto', !grad.textContent);
+      no.querySelector('.escala-oficial-nome').textContent = oa ? (oa.nome || '') : RosterWork.mensagens.escala.semOficial;
+      no.classList.toggle('escala-oficial--sem', !oa);
+      lugar.appendChild(no);
+    }
+    lugar.classList.toggle('oculto', !no);
+    return !!no;
+  }
+
   window.RosterWork.escalasCelula = {
     preencherCelula: preencherCelula,
+    /* o Oficial de Área no título do dia das grades */
+    preencherOficial: preencherOficial,
     montarGrafico: montarGrafico,
     calcularMaxPorUnidade: calcularMaxPorUnidade,
     ativarGraficos: ativarGraficos,

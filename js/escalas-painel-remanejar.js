@@ -1,5 +1,7 @@
 /* ============================================================
-   ESCALAS — Remanejar militar (o menu Editar o dia; só admin).
+   ESCALAS — Mudar de unidade neste dia (o remanejamento: o lápis da
+   aba Militares e o Trazer de outra unidade do Editar o dia; só
+   admin).
    Remanejar é levar o serviço do dia de um militar de uma unidade
    da companhia para outra, só naquele dia: Trazer para esta unidade
    (de outra que você administra) ou Enviar daqui para outra. O
@@ -18,8 +20,18 @@
    respondido, o remanejamento entra no rascunho do Dia ao vivo
    (escalas-painel-editar.js › aoVivo; o motivo vai junto) e as telas
    mostram como fica; sem o motivo, o Salvar do rodapé largo fica
-   desligado. Depois de salvo, desfaz-se pelo Remover militar
-   (Devolver).
+   desligado. Depois de salvo, desfaz-se pelo Devolver (o lápis de
+   quem foi para outra unidade, na aba Militares) ou pelo Remover do
+   dia.
+   API: RosterWork.escalasPainelRemanejar.abrir(opcoes) (opcoes = { cpf }:
+   o Mudar de unidade neste dia do menu da linha, que chega no Enviar com
+   ele escolhido; com uma unidade só para onde enviar, ela já vem
+   escolhida; { fazer: 'trazer' }: o Trazer de outra unidade, que chega
+   no Trazer),
+   podeEnviar(cpf) (ele vai daqui para outra unidade:
+   está de serviço aqui, sem estar remanejado, e você administra outra
+   unidade da companhia), prepararUnidades() e unidadesProntas() (as
+   unidades da companhia, lidas uma vez, para o menu da linha).
    ============================================================ */
 (function () {
   'use strict';
@@ -48,11 +60,33 @@
   /* as listas, as contas e o caminho de volta (escalas-painel-remanejar-listas.js) */
   function R() { return RosterWork.escalasPainelRemanejarListas; }
 
-  function abrir() {
+  var unidadesLidas = null;   // as unidades da companhia (uma leitura por sessão), para o menu da linha
+  var lendoUnidades = null;   // a leitura em curso (várias linhas pedem ao mesmo tempo: uma leitura só)
+
+  function prepararUnidades() {
+    if (unidadesLidas) return Promise.resolve(unidadesLidas);
+    if (!lendoUnidades) {
+      lendoUnidades = R().lerUnidades().then(function (lista) { lendoUnidades = null; if (lista) unidadesLidas = lista; return lista; });
+    }
+    return lendoUnidades;
+  }
+
+  /* ele vai daqui para outra unidade (o menu da linha só mostra o Mudar de unidade neste dia a quem pode): está de serviço
+     aqui, sem estar remanejado, e você administra outra unidade da companhia */
+  function podeEnviar(cpf) {
+    var api = ed(), d = api.dados();
+    if (!d || !unidadesLidas || !R().outrasDe(unidadesLidas, d.contexto_id, api.unidadeId()).length) return false;
+    return R().deServico(d).some(function (i) { return i.cpf === cpf; });
+  }
+
+  /* opcoes = { cpf }: chega no Enviar, com ele escolhido (o menu da linha); { fazer: 'trazer' }: chega no Trazer (o Trazer
+     de outra unidade do Editar o dia) */
+  function abrir(opcoes) {
     var api = ed(), H = api.horas;
     var dados = api.dados();
     if (!dados) return;
     var uid = api.unidadeId(), iso = api.iso(), companhia = dados.contexto_id;
+    var pedidoCpf = (opcoes && opcoes.cpf) || null;   // quem vem escolhido no Quem, quando a lista dele chega
     /* fazer: 'trazer' | 'enviar'; destino: a unidade do Enviar; origem: a do Trazer; outraDados: a leitura do dia da
        outra unidade; item: quem vem ou vai; troca: 'sim' | 'nao'; itemTroca: quem faz o caminho contrário; sai: 'sai' |
        'fica' */
@@ -87,7 +121,12 @@
       var dq = dadosDeQuem(), dt = dadosDaTroca();
       if (!outra()) { combo.esvaziar(); combo.habilitar(false); combo.definir(L().escolhaUnidade, true); }
       else if (!dq) { combo.esvaziar(); combo.habilitar(false); combo.definir(L().carregando, true); }
-      else combo.preencher(R().deServico(dq));
+      else {
+        var itens = R().deServico(dq);
+        combo.preencher(itens);
+        var ja = pedidoCpf && est.fazer === 'enviar' ? itens.filter(function (i) { return i.cpf === pedidoCpf; })[0] : null;
+        if (ja) { pedidoCpf = null; est.item = ja; combo.mostrarAtual(); }
+      }
       if (dt && outra()) comboTroca.preencher(R().deServico(dt).filter(function (i) { return !est.item || i.cpf !== est.item.cpf; }));
       else comboTroca.esvaziar();
     }
@@ -164,6 +203,9 @@
         return document.contains(campo) && campo.value.trim() !== '';
       }) : null;
       corpo.appendChild(tela);
+      /* do menu da linha: já no Enviar (a unidade escolhe-se ao lado); do Trazer de outra unidade, já no Trazer */
+      if (pedidoCpf) { est.fazer = 'enviar'; el.marcarFazer('enviar'); }
+      else if (opcoes && opcoes.fazer === 'trazer') { est.fazer = 'trazer'; el.marcarFazer('trazer'); }
       preencherListas();
       atualizar();
       /* as unidades da companhia chegam depois: até lá, o O que fazer fica sem escolha */
@@ -174,14 +216,17 @@
         aquiNome = aqui ? aqui.nome : '';
         el.aqui.textContent = L().comArtigo(aquiNome);
         outras = R().outrasDe(lista, companhia, uid);
-        montarUnidades(el.destino, function (u) {
+        function enviarPara(u) {
           est.destino = u;
           textoUnidade(el.destino, u);
           est.fazer = 'enviar';
           el.marcarFazer('enviar');
           lerOutra();
-        });
+        }
+        montarUnidades(el.destino, enviarPara);
         montarUnidades(el.origem, function (u) { est.origem = u; textoUnidade(el.origem, u); lerOutra(); });
+        /* do menu da linha, com uma unidade só para onde enviar: ela já vem escolhida */
+        if (pedidoCpf && outras.length === 1) { enviarPara(outras[0]); return; }
         atualizar();
       });
     }
@@ -303,5 +348,6 @@
     api.abrir(montar);
   }
 
-  window.RosterWork.escalasPainelRemanejar = { abrir: abrir };
+  window.RosterWork.escalasPainelRemanejar = { abrir: abrir, podeEnviar: podeEnviar, prepararUnidades: prepararUnidades,
+    unidadesProntas: function () { return !!unidadesLidas; } };
 })();

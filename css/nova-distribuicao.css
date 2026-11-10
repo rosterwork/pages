@@ -115,6 +115,13 @@
   gap: 2px;
 }
 
+/* o dia da guarnição A (bloco 1, na companhia): o campo com o calendário e, embaixo, a frase */
+.nova-distribuicao-guarnicao {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 /* caixa de marcar na linha da opção (a linha inteira marca) */
 .nova-distribuicao-marca {
   width: 100%;

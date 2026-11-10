@@ -33,6 +33,13 @@
   gap: 8px;
 }
 
+/* o Desfazer e o Refazer do rascunho, à esquerda do Cancelar: os botões só de ícone com moldura (com a dica) */
+.rodape-historico {
+  display: flex;
+  flex-shrink: 0;
+  gap: 4px;
+}
+
 /* rodapé largo: na largura toda do conteúdo, passando também por baixo do painel direito. Fica preso no fundo do
    .conteudo (posição absoluta: nenhum pai até ele pode ter position) e, enquanto aparece, a área de quem o contém e o
    painel param em cima dele. Sempre numa linha; 49px é a altura dele (a borda de 1px, 8px, o botão de 32px e 8px) */
@@ -92,6 +99,11 @@
 
   html[data-celular] .rodape-acoes {
     flex: 1 1 100%;
+  }
+
+  /* o Desfazer e o Refazer na ponta direita da linha do texto (os botões grandes na linha de baixo) */
+  html[data-celular] .rodape-historico {
+    margin-left: auto;
   }
 
   html[data-celular] .rodape-acoes > .botao {

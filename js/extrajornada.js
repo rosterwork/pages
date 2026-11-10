@@ -37,6 +37,7 @@
   var conteudoPagina = null;
   var desenhado = null; // o mês desenhado na Minha extra (AAAA-MM-01)
   var passoVisivel = null;   // o passo da área à vista (Organizar o mês)
+  var treinoNotaFechada = false;   // a nota do mês de treino fechada no X: fica fechada até a página ser recarregada
   /* a leitura de cada área: 'lendo', 'ok' ou 'falha' (com a frase). A Minha extra espera a dela (extrajornada_minha); as
      Extras do mês e o Organizar o mês, a do mês (extrajornada_mes, RosterWork.extrajornadaOrg) */
   var leituras = null;
@@ -50,15 +51,14 @@
   /* relê o mês: a Minha extra e, junto, os passos e os números das abas (RosterWork.extrajornadaOrg). Como na Escala, o
      nome do mês muda na hora e só a área da aba aberta espera o mês novo, com a forma (as setas, as abas e os passos
      continuam usáveis; só o último mês pedido aparece). A releitura do mesmo mês deixa a tela à vista */
-  /* no mês de treino, as setas do mês ficam paradas nele, e o selo ao lado do nome e a nota no alto dizem que é treino */
+  /* no mês de treino, as setas do mês ficam paradas nele, e a nota no alto diz que é treino (até o X fechá-la) */
   function noTreino() { return !!(RW.treinoExtra && RW.treinoExtra.mes()); }
   function carregar() {
     var meu = ++pedido, mes = iso(comp);
     el.mes.textContent = nomeMes(comp);
     el.anterior.disabled = noTreino() || comp <= PRIMEIRO;
     el.proximo.disabled = noTreino() || comp >= ultimo;
-    el.treinoSelo.classList.toggle('oculto', !noTreino());
-    el.treinoNota.classList.toggle('oculto', !noTreino());
+    el.treinoNota.classList.toggle('oculto', !noTreino() || treinoNotaFechada);
     if (desenhado !== mes || leituras.minha.situacao === 'falha') leitura('minha', 'lendo');
     RW.extrajornadaOrg.recarregar();
     /* a falha fica no lugar da área (a frase), com a mensagem técnica no console */
@@ -192,7 +192,7 @@
     var comModos = aba === 'calendario' || n === 3 || n === 4;
     el.modos.classList.toggle('oculto', !comModos);
     el.imprimir.classList.toggle('oculto', !comModos);
-    divisor();
+    mostrarDisposicao();
     if (!comModos && RW.seletorUnidade) RW.seletorUnidade.mostrar(null);
     Array.prototype.forEach.call(conteudoPagina.querySelectorAll('.pagina-subcabecalho [data-passo-barra]'), function (e) {
       e.classList.toggle('oculto', !doPasso(e, 'data-passo-barra', n));
@@ -219,9 +219,26 @@
   /* a Agenda do celular mostra uma unidade por tela, pelo seletor de unidade; o Calendário mostra todas no dia */
   function agendaNoCelular() { return !!(RW.celular && RW.celular()) && modo() === 'agenda'; }
 
-  /* o traço antes das ferramentas (a Legenda e o Imprimir): aparece com uma delas à vista */
+  /* o traço antes das ferramentas (as unidades lado a lado, a Legenda e o Imprimir): aparece com uma delas à vista */
   function divisor() {
-    el.legendaDivisor.classList.toggle('oculto', el.legenda.classList.contains('oculto') && el.imprimir.classList.contains('oculto'));
+    el.legendaDivisor.classList.toggle('oculto', el.legenda.classList.contains('oculto') && el.imprimir.classList.contains('oculto')
+      && (!el.disposicao || el.disposicao.classList.contains('oculto')));
+  }
+
+  /* o botão das unidades lado a lado ou uma embaixo da outra: com o Calendário à vista (Extras do mês, Distribuição e
+     Ajustes), no computador (no celular, as unidades ficam sempre uma embaixo da outra; geral-visao-grade.js) */
+  function mostrarDisposicao() {
+    if (el.disposicao) {
+      var comModos = !el.modos.classList.contains('oculto');
+      el.disposicao.classList.toggle('oculto', !comModos || modo() !== 'calendario' || !!(RW.celular && RW.celular()));
+    }
+    divisor();
+  }
+
+  /* a grade da área aberta redesenha (trocou a Agenda | Calendário ou as unidades lado a lado) */
+  function redesenharGrade() {
+    if (aba === 'calendario') RW.extrajornadaOrg.desenharAba();
+    else if (aba === 'organizar') RW.extrajornadaMontar.redesenhar();
   }
 
   /* a Legenda: aparece com o conteúdo do molde (id) ou some (null) */
@@ -262,7 +279,6 @@
     el.mes = conteudo.querySelector('#extrajornada-mes');
     el.anterior = conteudo.querySelector('#extrajornada-mes-anterior');
     el.proximo = conteudo.querySelector('#extrajornada-mes-proximo');
-    el.treinoSelo = conteudo.querySelector('#extrajornada-treino-selo');
     el.treinoNota = conteudo.querySelector('#extrajornada-treino-nota');
     el.diasTexto = conteudo.querySelector('#extrajornada-dias-texto');
     el.legenda = RW.legenda.montar(conteudo.querySelector('#extrajornada-legenda'));
@@ -271,6 +287,7 @@
     el.acoes = conteudo.querySelector('#extrajornada-acoes > .botao');
     el.modos = conteudo.querySelector('#extrajornada-modos');
     el.imprimir = conteudo.querySelector('#extrajornada-imprimir');
+    el.disposicao = conteudo.querySelector('#extrajornada-disposicao');
     /* abre no mês de hoje ou no mês que o aviso pediu (o do pedido, no aviso do prazo) */
     var hoje = new Date(), pedida = RW.referenciaPedida ? RW.referenciaPedida('extrajornada') : null;
     ultimo = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 1);
@@ -303,6 +320,11 @@
     RW.abas.ligar(el.passos, function (b) { RW.extrajornadaOrg.mostrar(+b.getAttribute('data-passo')); });
     el.anterior.addEventListener('click', function () { trocarMes(-1); });
     el.proximo.addEventListener('click', function () { trocarMes(1); });
+    /* o X da nota do mês de treino: ela some até a página ser recarregada */
+    conteudo.querySelector('#extrajornada-treino-nota-fechar').addEventListener('click', function () {
+      treinoNotaFechada = true;
+      el.treinoNota.classList.add('oculto');
+    });
     /* celular: o seletor de unidade da Agenda, na barra da página */
     if (RW.seletorUnidade) RW.seletorUnidade.iniciar(conteudo);
     /* Agenda | Calendário: abre na escolha do tipo de aparelho, a mesma da Escala, e a troca fica
@@ -310,9 +332,11 @@
     marcarModo(RW.visaoGrade ? RW.visaoGrade.agendaOuCalendario() : 'agenda');
     RW.abas.ligar(el.modos, function (b) {
       if (RW.visaoGrade) RW.visaoGrade.gravar({ agendaOuCalendario: b.getAttribute('data-modo') });
-      if (aba === 'calendario') RW.extrajornadaOrg.desenharAba();
-      else if (aba === 'organizar') RW.extrajornadaMontar.redesenhar();
+      mostrarDisposicao();
+      redesenharGrade();
     });
+    /* as unidades lado a lado ou uma embaixo da outra: o clique troca, grava a escolha e redesenha o calendário */
+    if (RW.visaoGrade) RW.visaoGrade.ligarDisposicao(el.disposicao, redesenharGrade);
     /* Imprimir: a grade da tela, no painel de impressão das grades da Escala */
     el.imprimir.addEventListener('click', function () { RW.extrajornadaImprimirGrade.abrir(aba === 'calendario', modo()); });
     RW.extrajornadaOrg.montar(conteudo);

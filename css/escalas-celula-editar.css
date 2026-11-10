@@ -1,0 +1,110 @@
+/* ============================================================
+   ESCALAS — a edição rápida na célula da grade
+   (escalas-celula-editar.js). O nome aberto e, colado embaixo, no
+   mesmo fundo cinza (o do cartão aberto da Extrajornada), o horário
+   em campos e a lixeira no canto direito; a pergunta do banco de
+   horas no mesmo fundo, depois de um traço. O pelotão marcado tem
+   as ações embaixo dos nomes (as da Extrajornada).
+   ============================================================ */
+
+/* o nome aberto: o alto do fundo cinza (o fundo do turno some por baixo dele) */
+.linha-escalado.linha-escalado--aberta {
+  background: var(--fundo-medio);
+  border-radius: var(--raio-pequeno) var(--raio-pequeno) 0 0;
+}
+
+/* o resto do fundo, colado embaixo do nome */
+.escala-celula-cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 2px 4px 4px;
+  border-radius: 0 0 var(--raio-pequeno) var(--raio-pequeno);
+  background-color: var(--fundo-medio);
+}
+
+/* os campos à esquerda e a lixeira no canto direito */
+.escala-celula-cartao-horario {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.escala-celula-remover {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  min-height: 28px;
+  margin-left: auto;
+}
+
+/* enquanto o dia é lido: os pontos no lugar dos campos */
+.escala-celula-espera {
+  display: flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 4px;
+  font-size: 12px;
+  color: var(--texto-fraco);
+}
+
+/* a pergunta do banco de horas: a frase e as duas respostas, mais justas na largura do bloco */
+.escala-celula-pergunta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 4px;
+  border-top: 1px solid var(--borda);
+}
+
+.escala-celula-pergunta-texto {
+  padding: 0 4px;
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+.escala-celula-pergunta .geral-opcao {
+  min-height: 24px;
+  padding: 0 4px;
+  font-size: 12px;
+}
+
+/* o pelotão marcado pelo clique: as ações embaixo dos nomes, depois de um traço; o Adicionar vira o campo de militar,
+   com a lista mais larga que o bloco */
+.escala-celula-acoes {
+  display: flex;
+  flex-direction: column;
+  margin: 4px 4px 0;
+  padding-top: 4px;
+  border-top: 1px solid var(--borda);
+}
+
+.escala-celula-acao {
+  min-height: 28px;
+  padding: 0 4px;
+  font-size: 12px;
+}
+
+.escala-celula-adicionar .combo-militar-menu { width: 280px; }
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   Os botões do bloco, a lixeira e as respostas na altura do dedo.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .escala-celula-acao,
+  html[data-celular] .escala-celula-pergunta .geral-opcao {
+    min-height: var(--toque-altura-celular);
+    font-size: var(--fonte-padrao-celular);
+  }
+
+  html[data-celular] .escala-celula-remover {
+    min-width: var(--toque-altura-celular);
+    min-height: var(--toque-altura-celular);
+  }
+
+  html[data-celular] .escala-celula-pergunta-texto {
+    font-size: var(--campo-rotulo-fonte-celular);
+  }
+}

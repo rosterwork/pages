@@ -44,13 +44,6 @@
   color: var(--erro);
 }
 
-/* o mês de treino da Extrajornada: no azul da barra do modo treino (geral-treino.css) */
-.selo--treino {
-  background-color: var(--anotacao);
-  border-color: var(--anotacao);
-  color: var(--anotacao-texto);
-}
-
 /* a etiqueta ADM: marca o que é de administrador, igual em todo o sistema (a linha do administrador na faixa
    "Esperando a sua resposta", os botões de administrador das barras e dos rodapés de decisão, e os itens de
    administração do cartão de pedido, do sino e da página Avisos) */

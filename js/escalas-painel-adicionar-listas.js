@@ -2,7 +2,7 @@
    ESCALAS — as listas do Adicionar militar (escalas-painel-adicionar.js)
    Os itens do campo de militar (geral-combo-militar), com os títulos
    dos grupos: quem entra no dia (horas livres, na unidade escolhida,
-   e as unidades que têm alguém) e no ciclo; e quem sai, no "No lugar
+   e as unidades que têm alguém) e na guarnição do dia; e quem sai, no "No lugar
    de outro militar" do Onde fica (quem está numa função no horário
    escolhido, na unidade onde ele entra).
    RosterWork.escalasPainelAdicionarListas.
@@ -43,9 +43,10 @@
     return lista;
   }
 
-  /* no ciclo: fora do ciclo, já no ciclo (todos clicáveis) e, apagados, o afastado e quem já tem a entrada marcada */
-  function ciclo(militares) {
-    var fora = [], noCiclo = [], naoPodem = [];
+  /* na guarnição do dia (letra): fora da escala, já numa guarnição (todos clicáveis) e, apagados, o afastado e quem já
+     tem a entrada marcada */
+  function guarnicao(militares, letra) {
+    var fora = [], nasGuarnicoes = [], naoPodem = [];
     (militares || []).forEach(function (m) {
       var item = { cpf: m.cpf, grad: m.grad, nome: m.nome, m: m };
       if (m.afastamento) { item.inativo = true; item.info = L().infoAfastado(m.afastamento.motivo, diaMes(m.afastamento.ate)); naoPodem.push(item); return; }
@@ -56,14 +57,14 @@
         fora.push(item);
         return;
       }
-      item.info = m.serve_hoje ? L().infoServeHoje : m.ultimo_servico ? L().infoUltimo(diaMes(m.ultimo_servico)) : '';
-      if (!m.serve_hoje && m.ultimo_servico) item.situacao = 'outro-ciclo';
-      noCiclo.push(item);
+      item.info = m.serve_hoje ? L().infoServeHoje(letra) : m.ultimo_servico ? L().infoUltimo(diaMes(m.ultimo_servico)) : '';
+      if (!m.serve_hoje && m.ultimo_servico) item.situacao = 'outra-guarnicao';
+      nasGuarnicoes.push(item);
     });
     var lista = [];
     function grupo(titulo, itens) { if (itens.length) lista = lista.concat([{ titulo: titulo }], itens); }
     grupo(L().grupoFora, fora);
-    grupo(L().grupoNoCiclo, noCiclo);
+    grupo(L().grupoNasGuarnicoes, nasGuarnicoes);
     grupo(L().grupoNaoPodem, naoPodem);
     return lista;
   }
@@ -96,5 +97,5 @@
     });
   }
 
-  window.RosterWork.escalasPainelAdicionarListas = { unidadesDia: unidadesDia, dia: dia, ciclo: ciclo, sai: sai };
+  window.RosterWork.escalasPainelAdicionarListas = { unidadesDia: unidadesDia, dia: dia, guarnicao: guarnicao, sai: sai };
 })();

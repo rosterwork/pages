@@ -8,9 +8,11 @@
    grava direto; na em vigor, ou com o ritmo, pede a prévia ao banco
    (o que muda, o que vai para a agendada e os conflitos), abre o
    modal de data com esse resumo e uma caixa de marcar por conflito,
-   e grava a partir da data escolhida. E o começo da unidade (com os
-   dados de hoje ou em branco). Quem chama passa o contexto: { dados,
-   unidadeId, vendoAgendada, itens(), substituicoes(), ritmo(),
+   e grava a partir da data escolhida. O dia da guarnição A (não
+   refaz a escala) grava depois do resto, com o resumo junto; sozinho,
+   grava direto. E o começo da unidade (com os dados de hoje ou em
+   branco). Quem chama passa o contexto: { dados, unidadeId,
+   vendoAgendada, itens(), substituicoes(), ritmo(), guarnicao(),
    carregar(versaoId), confirmar(seguir), falha(r), semConexao() }.
    ============================================================ */
 (function () {
@@ -30,12 +32,32 @@
   }
 
   /* tira o véu da gravação; a unidade ligada tem a escala refeita em blocos: o resto termina em segundo plano
-     (o esconderVeuGlobal marca e esvazia a fila) */
+     (o esconderVeuGlobal marca e esvazia a fila). O dia da guarnição A que não gravou depois do resto avisa depois do
+     resumo */
   function aposGravar(c, r, versaoId) {
     RosterWork.esconderVeuGlobal();
     if (!r || !r.success) { c.falha(r); return; }
     if (r.log) RosterWork.resumo.abrirModal(r.log, { pagina: M().pagina });
+    if (r.falhaGuarnicao) c.falha(r.falhaGuarnicao);
     c.carregar(versaoId || (c.vendoAgendada ? c.dados.atual.id : null));   /* só substituições: fica na versão vista */
+  }
+
+  /* dois registros num resumo só: as mudanças dos dois, com o autor e a hora do primeiro */
+  function juntarLogs(a, b) {
+    if (!a || !b) return a || b || null;
+    var log = JSON.parse(JSON.stringify(a));
+    log.resumo.alvos = (log.resumo.alvos || []).concat((b.resumo && b.resumo.alvos) || []);
+    return log;
+  }
+
+  /* o dia da guarnição A, depois do resto gravado (r; ele não refaz a escala): o resumo dele vai junto com o do resto */
+  function gravarGuarnicao(c, r) {
+    var g = c.guarnicao ? c.guarnicao() : null;
+    if (!g || !r || !r.success) return Promise.resolve(r);
+    return D().guarnicaoSalvar(g.unidade_id, g.data).then(function (rg) {
+      if (!rg || !rg.success) return r.log ? Object.assign({}, r, { falhaGuarnicao: rg }) : rg;
+      return Object.assign({}, r, { log: juntarLogs(r.log, rg.log) });
+    });
   }
   function semRede(c) { RosterWork.esconderVeuGlobal(); c.semConexao(); }
 
@@ -139,11 +161,21 @@
     var itens = c.itens();
     var subs = c.substituicoes();
     var ritmo = c.ritmo();
-    if (!itens.length && !subs.length && !ritmo) return;
+    var guarnicao = c.guarnicao ? c.guarnicao() : null;
+    if (!itens.length && !subs.length && !ritmo && !guarnicao) return;
+    /* só o dia da guarnição A: grava direto (não refaz a escala: os pontinhos no botão) */
+    if (!itens.length && !subs.length && !ritmo) {
+      RosterWork.iniciarCarregando(botao);
+      gravarGuarnicao(c, { success: true, log: null }).then(function (r) {
+        RosterWork.pararCarregando(botao);
+        aposGravar(c, r, null);
+      }, function () { RosterWork.pararCarregando(botao); c.semConexao(); });
+      return;
+    }
     if (c.vendoAgendada || (!itens.length && !ritmo)) {
       /* a mudança agendada já tem a data dela, e as substituições têm as delas: grava direto (refaz a escala: o véu) */
       RosterWork.mostrarVeuGlobal();
-      D().salvar(itens, null, null, false, subs).then(function (r) {
+      D().salvar(itens, null, null, false, subs).then(function (r) { return gravarGuarnicao(c, r); }).then(function (r) {
         aposGravar(c, r, r && r.periodo_id);
       }, function () { semRede(c); });
       return;
@@ -165,7 +197,8 @@
         textoConfirmar: M().botaoSalvar, conteudo: montarResumo(previa.itens || [], escolhidos, previa.substituicoes, previa.ritmo),
         aoConfirmar: function (iso) {
           RosterWork.mostrarVeuGlobal();
-          D().salvar(itens, iso, escolhidos, false, subs, ritmo).then(function (r) { aposGravar(c, r, null); }, function () { semRede(c); });
+          D().salvar(itens, iso, escolhidos, false, subs, ritmo).then(function (r) { return gravarGuarnicao(c, r); })
+            .then(function (r) { aposGravar(c, r, null); }, function () { semRede(c); });
         }
       });
     }, function () { RosterWork.pararCarregando(botao); c.semConexao(); });

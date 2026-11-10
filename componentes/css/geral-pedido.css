@@ -406,4 +406,16 @@ button.pedido-item:hover {
   html[data-celular] .pedido-resumo-acoes .botao {
     flex: 1;
   }
+
+  /* o selo Pendente das Trocas desenha 20px e toca numa faixa de 44 de altura, na largura dele (a folga dos botões,
+     geral-botao); para os lados não cresce, para não pegar o toque do selo ao lado */
+  html[data-celular] .aceites-pendente-botao {
+    position: relative;
+  }
+
+  html[data-celular] .aceites-pendente-botao::before {
+    content: '';
+    position: absolute;
+    inset: calc(50% - var(--toque-altura-celular) / 2) 0;
+  }
 }

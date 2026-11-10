@@ -288,6 +288,11 @@
     white-space: nowrap;
   }
 
+  /* a linha do registro de várias trocas é uma frase: quebra entre um nome e outro (o nome fica inteiro, geral-mensagens) */
+  html[data-celular] .troca-item--varias .troca-item-a {
+    white-space: normal;
+  }
+
   html[data-celular] .troca-pendente-cab,
   html[data-celular] .troca-extrato-quem {
     font-size: var(--fonte-padrao);

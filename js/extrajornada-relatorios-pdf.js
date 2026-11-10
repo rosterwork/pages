@@ -12,7 +12,7 @@
    tabela. As opções de quem imprime: um pelotão ou todos e, com todos,
    uma tabela por pelotão (2.1, 2.2...) ou a lista única (com a coluna
    Pelotão). O Relatório final tem como ficou no fim do mês e o que
-   mudou desde o lançamento (era, ficou, motivo e quem ajustou).
+   mudou desde o lançamento (era, ficou e quem ajustou).
    Usa as peças do PDF da escala (escalas-impressao-pdf.js: biblioteca,
    fontes, logo, cores do tema e download). O PDF é desenhado aqui
    (exceção REGRAS §3/§4).
@@ -36,7 +36,7 @@
   var LETRA = 0.52;                                // a largura média de uma letra, em vezes a fonte (estimativa das linhas)
   var LINHAS_INTEIRAS = 30;                        // até aqui a tabela não se parte entre duas folhas
   var LARGURA = { cpf: 72, pelotao: 40, pedidoEm: 62, cotasPedidas: 70, termo: 40, pediu: 34, recebeu: 44, data: 58, horario: 86, cotas: 36,
-                  era: 58, ficou: 58, motivo: 92, ajustadoPor: 80, campoRotulo: 150 };
+                  era: 58, ficou: 58, ajustadoPor: 80, campoRotulo: 150 };
 
   function P() { return RW.escalasImpressaoPdf; }
   function txt() { return RW.mensagens.extrajornada.relatoriosPdf; }
@@ -301,10 +301,10 @@
     ])]);
     conteudo = conteudo.concat(extras(p, r, opc, r.atual, p.secao(t.secoes.comoFicou).concat([p.ajuda(t.ajudaOrdem)])));
     conteudo = conteudo.concat(quadros(p, r, opc, mudaram,
-      [{ titulo: C.militar, largura: '*' }, { titulo: C.era, largura: LARGURA.era }, { titulo: C.ficou, largura: LARGURA.ficou }, { titulo: C.motivo, largura: LARGURA.motivo }, { titulo: C.ajustadoPor, largura: LARGURA.ajustadoPor }],
+      [{ titulo: C.militar, largura: '*' }, { titulo: C.era, largura: LARGURA.era }, { titulo: C.ficou, largura: LARGURA.ficou }, { titulo: C.ajustadoPor, largura: LARGURA.ajustadoPor }],
       function (m) {
         var x = mud[m.cpf], a = ajuste[m.cpf];
-        return [nome(m), datas(x.era, t.extraNova), datas(x.ficou, t.retirada), (a && a.motivo) || t.semMotivo, a ? [a.autor || '', a.em || ''] : ''];
+        return [nome(m), datas(x.era, t.extraNova), datas(x.ficou, t.retirada), a ? [a.autor || '', a.em || ''] : ''];
       },
       function (ms) { return { rotulo: t.totalAjustadas(ms.length), contas: [] }; },
       1, p.secao(t.secoes.mudou).concat([p.ajuda(t.ajudaMudou)])));

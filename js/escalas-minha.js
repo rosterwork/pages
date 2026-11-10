@@ -113,6 +113,18 @@
     return chaves.filter(function (k) { return (dias[k].linhas || []).length; })[0] || chaves[0] || null;
   }
 
+  /* a guarnição dele hoje, em cima do mês ("Você é da guarnição B"; afastado, "Volta na guarnição B em 03/12"); fora da
+     escala, nada */
+  function mostrarGuarnicao(g) {
+    var M = RW.mensagens.escala, texto = '';
+    if (g && g.letra) {
+      var volta = String(g.volta_em || '').split('-');
+      texto = g.afastamento && volta.length === 3 ? M.minhaGuarnicaoVolta(g.letra, volta[2] + '/' + volta[1]) : M.minhaGuarnicao(g.letra);
+    }
+    el.guarnicao.textContent = texto;
+    el.guarnicao.classList.toggle('oculto', !texto);
+  }
+
   /* o mês sem serviço: a nota diz por quê (o botão leva à aba Mês) */
   function mostrarSemServico() {
     var dias = estado.dados.dias;
@@ -178,6 +190,7 @@
     corpo.appendChild(raiz);
     el = {
       raiz: raiz,
+      guarnicao: raiz.querySelector('.escala-minha-guarnicao'),
       calendario: raiz.querySelector('.escala-minha-calendario'),
       semServico: raiz.querySelector('.escala-minha-sem-servico'),
       semServicoTexto: raiz.querySelector('.escala-minha-sem-servico-texto'),
@@ -251,6 +264,7 @@
       estado.dados = { dias: r.dias, unidades: r.unidades || {} };
       estado.selecionado = diaPadrao();
       RW.miniCalendario.renderizar(el.calendario, { dataRef: mes, aoDia: desenharDia });
+      mostrarGuarnicao(r.guarnicao);
       mostrarSemServico();
       if (estado.selecionado) mostrarDia(estado.selecionado);
       else el.dia.classList.add('oculto');

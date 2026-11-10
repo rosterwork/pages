@@ -1,11 +1,13 @@
 /* ============================================================
    ESCALAS — Onde fica (a caixa de pergunta do Adicionar militar, do
-   Remanejar militar e do Mudar o dia do serviço; molde
-   tpl-escala-onde-fica): onde fica quem entra numa unidade no dia.
-   - As vagas sem ninguém (só com cfg.vagas, o Mudar o dia do
-     serviço): uma bolinha por função vazia em todo o horário dele,
-     fora o Chefe de Socorro e o Oficial de Área; a primeira vem
-     marcada, com o selo Recomendado, até a pessoa escolher outra;
+   Mudar de unidade neste dia, do Mudar o dia do serviço e do Para qual função
+   do cartão da linha; molde tpl-escala-onde-fica): onde fica quem
+   entra numa unidade no dia.
+   - As vagas sem ninguém (só com cfg.vagas: o Mudar o dia do serviço
+     e o Para qual função do cartão da linha): uma bolinha por função
+     vazia em todo o horário dele, fora o Chefe de Socorro e o Oficial
+     de Área; a primeira vem marcada, com o selo Recomendado, até a
+     pessoa escolher outra;
    - O sistema distribui: o sistema refaz o dia com ele (quem está
      fixado fica);
    - Escolher a função: o posto e a função (escalas-painel-quem.js),
@@ -23,7 +25,8 @@
      paraBanco() (a escolha no formato do banco: o Mudar o dia grava pelo escala_dia_salvar) };
    cfg = { dados() (a leitura do dia da unidade onde ele entra),
            periodos() (os horários dele), cpf() (quem entra),
-           vagas (true: as vagas sem ninguém no horário), aoMudar() }
+           vagas (true: as vagas sem ninguém no horário), so (['funcao']: só as opções da lista, sem o "O sistema
+           distribui", que deixa de ser a resposta de começo: o cartão Para qual função), aoMudar() }
    ============================================================ */
 (function () {
   'use strict';
@@ -52,7 +55,9 @@
     };
     /* onde: 'vaga' | 'sistema' | 'funcao' | 'lugar'; vaga = a vaga sem ninguém escolhida; escolheu = a pessoa já
        respondeu (até lá, a vaga recomendada vem marcada) */
-    var est = { onde: 'sistema', posto: null, funcao: null, sai: null, funcoes: [], vaga: null, escolheu: false };
+    /* a resposta de começo: o sistema distribui (sem ele nas opções, nenhuma) */
+    var padrao = cfg.so && cfg.so.indexOf('sistema') < 0 ? null : 'sistema';
+    var est = { onde: padrao, posto: null, funcao: null, sai: null, funcoes: [], vaga: null, escolheu: false };
     var onde = null, chaveSai = '', marcarOnde = null, comboSai = null;
     var vagas = [], chaveVagas = null;   // as vagas sem ninguém na tela e a marca delas (redesenha só quando mudam)
 
@@ -75,7 +80,7 @@
       montarFuncoes();
     }
     /* o dia ou o horário mudou: tudo volta ao começo (com as vagas, a recomendada volta a vir marcada) */
-    function reiniciar() { est.onde = 'sistema'; est.escolheu = false; chaveVagas = null; limpar(); }
+    function reiniciar() { est.onde = padrao; est.escolheu = false; chaveVagas = null; limpar(); }
 
     /* as vagas sem ninguém em todo o horário de quem entra, na ordem da lista do dia: [{ chave, posto, funcao }] */
     function vagasLivres() {
@@ -121,8 +126,10 @@
         });
       }
       var atual = est.vaga && vagas.filter(function (v) { return v.chave === est.vaga.chave; })[0];
-      if (est.onde === 'vaga') { est.vaga = atual || null; if (!atual) est.onde = 'sistema'; }
-      if (!est.escolheu && est.onde === 'sistema' && vagas.length) { est.onde = 'vaga'; est.vaga = vagas[0]; }
+      if (est.onde === 'vaga') { est.vaga = atual || null; if (!atual) est.onde = padrao; }
+      if (!est.escolheu && est.onde === padrao && vagas.length) { est.onde = 'vaga'; est.vaga = vagas[0]; }
+      /* sem vaga e com uma opção só (o cartão Para qual função): ela já vem marcada */
+      else if (!est.escolheu && !est.onde && !vagas.length && cfg.so && cfg.so.length === 1) est.onde = cfg.so[0];
     }
 
     /* De quais funções: as funções de quem sai no horário, todas marcadas */
@@ -194,6 +201,7 @@
     }
     /* a escolha está pela metade (a vaga, a função, ou quem sai e de quais funções) */
     function falta() {
+      if (!est.onde) return true;
       if (est.onde === 'vaga') return !est.vaga;
       if (est.onde === 'funcao') return !est.funcao;
       if (est.onde === 'lugar') return !est.sai || !est.funcoes.some(Boolean);
@@ -251,6 +259,8 @@
     /* liga as escolhas */
     var nomeRadios = 'escala-onde-fica-' + (++conta);
     var radios = el.opcoes.querySelectorAll('input[type="radio"]');
+    /* só as opções pedidas (cfg.so) */
+    [].forEach.call(radios, function (r) { if (cfg.so && cfg.so.indexOf(r.value) < 0) r.closest('.geral-opcao').classList.add('oculto'); });
     [].forEach.call(radios, function (r) {
       r.name = nomeRadios;
       r.addEventListener('change', function () {

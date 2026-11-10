@@ -124,6 +124,27 @@
   background-color: var(--fundo-medio);
 }
 
+/* a faixa do dia com o Oficial de Área ganha uma linha no alto, com ele centralizado em cima das unidades (o nome é o
+   .escala-oficial, de escalas-mes.css); o rótulo do dia fica à esquerda, nas duas linhas, como na Agenda */
+.escala-colunas-linha--com-oficial {
+  row-gap: 4px;
+}
+
+.escala-colunas-linha--com-oficial > .escala-colunas-rotulo-dia {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+}
+
+.escala-colunas-oficial {
+  grid-column: 2 / -1;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 24px;
+}
+
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    A coluna do dia fica estreita, com o dia da semana em cima do

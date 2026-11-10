@@ -1,10 +1,12 @@
 /* ============================================================
    COMPONENTE geral-etapas — o carregando que diz o que está sendo feito
-   Três formas, com as frases de RosterWork.mensagens.etapas:
+   Quatro formas, com as frases de RosterWork.mensagens.etapas:
    - área: até 0,5 s nada muda na tela; depois, a forma do conteúdo
      (o esqueleto) e, passando de 1,5 s, o cartão das etapas por cima;
    - ação: o cartão sobre a tela, na hora, com o clique travado (as
      gravações que refazem a escala); a tela continua à vista;
+   - janela: o cartão no meio da tela escurecida, com o Cancelar, e a
+     tela de trás desligada (o cálculo que trava a tela);
    - linha: uma frase com a barra, no rodapé ou no painel.
    O que apareceu não pisca: a forma fica pelo menos 0,4 s e o cartão
    0,8 s. Quem lê segura a leitura (segurar) e só desenha depois; a
@@ -14,8 +16,9 @@
    é a real e o ritmo é estimado (PASSO_MS); a última etapa do banco
    espera a resposta. Passando de 10 s, entra a frase de demora.
    API: RosterWork.etapas.area(lugar, opcoes) · .acao(chave, valores,
-   opcoes) · .linha(lugar, chave, valores, opcoes). Cada uma devolve
-   { ir(n), ultima(), parar() }, e a área também segurar(leitura).
+   opcoes) · .janela(chave, valores, opcoes) · .linha(lugar, chave,
+   valores, opcoes). Cada uma devolve { ir(n), ultima(), parar() }, e
+   a área também segurar(leitura).
    opcoes.doServidor = quantas etapas acontecem no banco (as outras,
    quem chama avança). .segurarDesde(inicio, leitura): a forma que a
    tela pôs na hora (as caixas de um painel) · .falta(formaEm, cartaoEm):
@@ -161,6 +164,64 @@
   }
 
   /* a frase com a barra em lugar (o conteúdo dele sai); opcoes.atraso = só aparece depois disso */
+  /* devolve o foco a quem estava com ele ou, se ele fechou com um menu (o item do Ações), ao botão desse menu; não tira o
+     foco de uma janela que abriu nesse meio-tempo (um aviso de falha) */
+  function voltarFoco(antes) {
+    var agoraNo = document.activeElement;
+    if (agoraNo && agoraNo !== document.body) return;
+    if (!antes || !antes.isConnected) return;
+    var menu = antes.closest('.dropdown');
+    var alvo = antes.getClientRects().length ? antes : (menu && menu.querySelector('.botao, button'));
+    if (alvo && alvo.getClientRects().length) alvo.focus({ preventScroll: true });
+  }
+
+  /* o cálculo que trava a tela (o Preencher pela sugestão da Extrajornada): o cartão no meio da tela escurecida
+     (#etapas-veu, fora da casca), com o Cancelar (opcoes.aoCancelar). O cabeçalho, o menu, a página e a barra do celular
+     ficam desligados para o mouse e o teclado (inert; a barra do treino, não); o foco vai para o Cancelar e, no fim, volta.
+     A frase de demora entra em opcoes.demoraMs (a da chave, f.demora). O Cancelar fecha na hora; parar(true) também; o
+     fim normal espera o mínimo do cartão */
+  function janela(chave, valores, opcoes) {
+    opcoes = opcoes || {};
+    var veu = document.getElementById('etapas-veu');
+    var f = frases(chave, valores);
+    var cartao = montarCartao(f);
+    var cancelar = cartao.el.querySelector('.etapas-cancelar');
+    var atras = Array.prototype.slice.call(document.querySelectorAll('.casca > :not(.treino-barra)'));
+    var focoAntes = document.activeElement;
+    var parado = false;
+    cartao.el.querySelector('.etapas-acoes').classList.remove('oculto');
+    veu.textContent = '';
+    veu.appendChild(cartao.el);
+    veu.classList.remove('oculto');
+    atras.forEach(function (el) { el.inert = true; });
+    cancelar.focus();
+    var mostradoEm = agora();
+    var passos = condutor(f.passos.length, cartao.pintar, opcoes);
+    var demora = setTimeout(function () { cartao.dizer(f.demora || RW.mensagens.etapas.demoraAcao); }, opcoes.demoraMs || DEMORA_MS);
+    function esconder() {
+      if (cartao.el.parentNode === veu) {
+        veu.textContent = '';
+        veu.classList.add('oculto');
+      }
+      atras.forEach(function (el) { el.inert = false; });
+      voltarFoco(focoAntes);
+    }
+    function parar(naHora) {
+      if (parado) return;
+      parado = true;
+      passos.parar();
+      clearTimeout(demora);
+      var resta = naHora ? 0 : falta(null, mostradoEm);
+      if (resta > 0) setTimeout(esconder, resta);
+      else esconder();
+    }
+    cancelar.addEventListener('click', function () {
+      parar(true);
+      if (opcoes.aoCancelar) opcoes.aoCancelar();
+    });
+    return { ir: passos.ir, ultima: passos.ultima, parar: parar };
+  }
+
   function linha(lugar, chave, valores, opcoes) {
     var f = frases(chave, valores);
     var total = f.passos.length;
@@ -269,6 +330,6 @@
   }
 
   RW.etapas = {
-    area: area, acao: acao, linha: linha, segurarDesde: segurarDesde, falta: falta, abrindoDaCasca: abrindoDaCasca
+    area: area, acao: acao, janela: janela, linha: linha, segurarDesde: segurarDesde, falta: falta, abrindoDaCasca: abrindoDaCasca
   };
 })();

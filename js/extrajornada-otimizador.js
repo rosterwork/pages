@@ -9,8 +9,9 @@
    recusar alguma escolha, vale o cálculo simples do banco (o motor
    reserva). Regra fixa do administrativo: as cotas que faltam no menor
    número de dias, sem quebrar em mais (o que não couber fica para o
-   administrador). Enquanto calcula, o véu cobre a tela, com o Cancelar.
-   Não cria HTML (o véu está na página) nem escreve estilo (só classList).
+   administrador). Enquanto calcula, a janela das etapas fica na tela
+   escurecida, com o Cancelar, e o Voltar pergunta antes. Não cria HTML
+   nem escreve estilo.
    RosterWork.extrajornadaOtimizador.
    ============================================================ */
 (function () {
@@ -20,6 +21,7 @@
   var TRABALHADOR = 'js/extrajornada-otimizador-trabalho.js';
   var BIBLIOTECA = 'bibliotecas/highs.js';
   var LIMITE_MS = 60000;
+  var DEMORA_MS = 60000;   /* passando disso, a frase de demora no cartão */
   /* presolve desligado: com ele, o HiGHS em WebAssembly cai em alguns meses; a folga mínima evita a outra queda */
   var OPCOES = { presolve: 'off', time_limit: 55, mip_rel_gap: 0.000001 };
   var JANELAS = [{ ini: 1, tam: 4 }, { ini: 1, tam: 3 }, { ini: 2, tam: 3 }, { ini: 1, tam: 2 }, { ini: 2, tam: 2 }, { ini: 3, tam: 2 }];
@@ -315,10 +317,11 @@
     return escolhas;
   }
 
-  /* as extras escolhidas pelo otimizador: [{ cpf, data, unidade, blocos }] */
-  function calcular(competencia, fixas) {
+  /* as extras escolhidas pelo otimizador: [{ cpf, data, unidade, blocos }]; aoLer: os dados chegaram */
+  function calcular(competencia, fixas, aoLer) {
     return RW.extrajornadaUtil.chamar('extrajornada_sugerir', { p_competencia: competencia, p_atuais: fixas, p_so_dados: true }).then(function (D) {
       if (!D || !D.ok) throw { motivo: 'falha', detalhe: D && D.error };
+      if (aoLer) aoLer();
       if (!D.mil.length) return [];
       var modelo = montarModelo(D);
       if (!modelo.xs.length) return [];
@@ -331,30 +334,37 @@
     });
   }
 
-  /* ---------- o Preencher pela sugestão: o véu, o otimizador, a conferência do banco e a reserva ---------- */
-  function preencher(competencia, fixas, veu, aoTerminar) {
+  /* ---------- o Preencher pela sugestão: a janela das etapas (lendo 0, o otimizador ou a reserva 1, o banco conferindo 2),
+     o otimizador, a conferência do banco e a reserva; o Cancelar e o "Sair e cancelar" do Voltar param na hora ---------- */
+  function preencher(competencia, fixas, aoTerminar) {
     var meu = ++pedido;
-    var cancelar = veu.querySelector('#p3-calculo-cancelar');
-    if (!cancelar.dataset.ligado) {
-      cancelar.dataset.ligado = '1';
-      cancelar.addEventListener('click', function () {
-        pedido++;
-        if (atual) atual.cancelar();
-        fim(veu);
-      });
+    var M = RW.mensagens;
+    var cartao = null;
+    function fim(naHora) {
+      calculando = false;
+      if (RW.voltar) RW.voltar.soltar();
+      if (cartao) cartao.parar(naHora);
     }
+    function cancelar() {
+      pedido++;
+      if (atual) atual.cancelar();
+      fim(true);
+    }
+    function passo(n) { if (meu === pedido) cartao.ir(n); }
     calculando = true;
-    veu.classList.remove('oculto');
-    cancelar.focus();
+    cartao = RW.etapas.janela('sugestao', null, { doServidor: 1, demoraMs: DEMORA_MS, aoCancelar: cancelar });
+    if (RW.voltar) RW.voltar.segurar({ mensagem: M.extrajornada.org.sairDoCalculo, textoSair: M.botoes.sairECancelar,
+      textoFicar: M.botoes.continuarOCalculo, aoSair: cancelar });
     function banco(escolhidas) {
       var corpo = { p_competencia: competencia, p_atuais: fixas };
       if (escolhidas) corpo.p_escolhidas = escolhidas;
       return RW.extrajornadaUtil.chamar('extrajornada_sugerir', corpo);
     }
-    /* um instante para o véu aparecer antes da conta (que pode rodar na tela) */
+    /* um instante para o cartão aparecer antes da conta (que pode rodar na tela) */
     new Promise(function (aceitar) { setTimeout(aceitar, 50); })
-      .then(function () { return calcular(competencia, fixas); })
+      .then(function () { return calcular(competencia, fixas, function () { passo(1); }); })
       .then(function (escolhidas) {
+        passo(2);
         return banco(escolhidas).then(function (r) {
           if (r && r.ok && r.recusadas && r.recusadas.length) throw { motivo: 'recusada' };
           return { r: r, reserva: false };
@@ -362,23 +372,20 @@
       })
       .catch(function (e) {
         if (meu !== pedido || (e && e.motivo === 'cancelado')) return null;
+        passo(1);
         return banco(null).then(function (r) { return { r: r, reserva: true }; });
       })
       .then(function (res) {
         if (meu !== pedido) return;
-        fim(veu);
+        fim();
         if (!res) return;
-        if (!res.r || !res.r.ok) { RW.avisar({ tipo: 'erro', mensagem: (res.r && res.r.error) || RW.mensagens.extrajornada.org.falhaSugestao }); return; }
+        if (!res.r || !res.r.ok) { RW.avisar({ tipo: 'erro', mensagem: (res.r && res.r.error) || M.extrajornada.org.falhaSugestao }); return; }
         aoTerminar(res.r, res.reserva);
       }, function () {
         if (meu !== pedido) return;
-        fim(veu);
-        RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao });
+        fim();
+        RW.avisar({ tipo: 'erro', mensagem: M.geral.semConexao });
       });
-  }
-  function fim(veu) {
-    calculando = false;
-    veu.classList.add('oculto');
   }
 
   RW.extrajornadaOtimizador = {

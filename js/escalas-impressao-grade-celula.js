@@ -206,7 +206,7 @@
   /* uma linha de militar: ícones · graduação e nome · horário (a faixa por trás). curto: o posto curto (calendário);
      o nome que não cabe no meio sai cortado com "…", numa linha só */
   function linha(p, largura, mostrar, c, curto) {
-    var riscada = p.origem === 'folga' || p.origem === 'troca_saida' || p.origem === 'remanejado_saida' || p.origem === 'mudanca_saida';
+    var riscada = p.origem === 'folga' || p.origem === 'troca_saida' || p.origem === 'remanejado_saida' || p.origem === 'mudanca_saida' || p.origem === 'saida_guarnicao';
     var colunas = [];
     var livre = largura;
     if (mostrar.icones) {
@@ -226,6 +226,15 @@
     return fundo ? { stack: [fundo, conteudo] } : conteudo;
   }
 
+  /* o Oficial de Área do dia no título (o mesmo da tela): o posto e o nome; o dia com escala e ninguém na função, "Sem
+     Oficial de Área" em vermelho; sem a chave (o dia sem escala), null */
+  function oficial(oficiais, dia, c, tamanho) {
+    if (!oficiais || !Object.prototype.hasOwnProperty.call(oficiais, dia)) return null;
+    var oa = oficiais[dia];
+    if (!oa) return [{ text: RW.mensagens.escala.semOficial, bold: true, color: c.erro, fontSize: tamanho }];
+    return [{ text: (oa.grad || '') + ' ', color: c.suave, fontSize: tamanho }, { text: oa.nome || '', bold: true, color: c.forte, fontSize: tamanho }];
+  }
+
   /* o bloquinho branco: tabela de uma coluna sem linhas; o branco quadrado só quando "preencher"
      (o desenho de cantos retos, que também é a medida dos cantos arredondados) */
   function layoutBloquinho(c, preencher) {
@@ -241,12 +250,13 @@
   }
 
   /* o bloquinho de uma unidade num dia. o = { largura, unidade (nome, só no calendário), cobertura, erro, max,
-     pessoas, postoCurto (só no calendário), mostrar, c, preencher } */
+     pessoas, postoCurto (só no calendário), centro (o nome no centro: as unidades lado a lado), mostrar, c, preencher } */
   function bloco(o) {
     var interna = o.largura - 2 * BLOQUINHO.lado;
     var corpo = [];
     if (o.unidade) {
-      corpo.push([{ text: o.unidade.toLocaleUpperCase('pt-BR'), fontSize: FONTE.unidade, bold: true, characterSpacing: ESPACAMENTO_CAIXA_ALTA, color: o.c.suave }]);
+      corpo.push([{ text: o.unidade.toLocaleUpperCase('pt-BR'), alignment: o.centro ? 'center' : undefined, fontSize: FONTE.unidade, bold: true,
+        characterSpacing: ESPACAMENTO_CAIXA_ALTA, color: o.c.suave }]);
     }
     if (o.mostrar.grafico && o.cobertura && o.max > 0) corpo.push([grafico(o.cobertura, o.erro, o.max, interna, o.c)]);
     (o.pessoas || []).forEach(function (p) { corpo.push([linha(p, interna, o.mostrar, o.c, o.postoCurto)]); });
@@ -254,5 +264,5 @@
     return { table: { widths: [interna], body: corpo, dontBreakRows: true }, layout: layoutBloquinho(o.c, o.preencher) };
   }
 
-  RW.escalasImpressaoGradeCelula = { preparar: preparar, bloco: bloco, pessoasDoDia: pessoasDoDia, iconesDoArquivo: iconesDoArquivo };
+  RW.escalasImpressaoGradeCelula = { preparar: preparar, bloco: bloco, pessoasDoDia: pessoasDoDia, iconesDoArquivo: iconesDoArquivo, oficial: oficial };
 })();

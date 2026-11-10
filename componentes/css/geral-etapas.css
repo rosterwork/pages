@@ -6,8 +6,9 @@
    vêm. A linha (.etapas-linha) é a frase com a barra, no rodapé e no
    painel. Quem liga e desliga é o componente geral-etapas.js.
    Camada 30, a do véu: o cartão fica sobre a tela, que continua à
-   vista, abaixo do aviso e da dica. Quem pediu menos movimento no
-   aparelho vê a barra parada.
+   vista, abaixo do aviso e da dica. A janela (.etapas-veu, o cálculo
+   que trava a tela) fica na camada 20, a das janelas, com o escuro do
+   aviso atrás. Quem pediu menos movimento no aparelho vê a barra parada.
    ============================================================ */
 
 /* ---------- a barra: os 24 blocos e o que já se encheu ---------- */
@@ -64,6 +65,23 @@
 /* a da leitura de uma área fica dentro dela, abaixo dos menus */
 .etapas-camada--area {
   z-index: 9;
+}
+
+/* a janela: o cartão no meio da tela escurecida, na camada das janelas e antes do aviso no HTML (a pergunta de sair abre
+   por cima dele); no treino, o escuro começa embaixo da barra azul, como nas janelas */
+.etapas-veu {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background-color: var(--veu-modal);
+}
+
+html[data-treino] .etapas-veu {
+  top: var(--treino-barra-altura);
 }
 
 [data-lendo] {
@@ -161,6 +179,12 @@
   margin: 0;
   font-size: 12px;
   color: var(--texto-fraco);
+}
+
+/* o Cancelar da janela, à direita */
+.etapas-acoes {
+  display: flex;
+  justify-content: flex-end;
 }
 
 /* ---------- a linha: no rodapé e no painel ---------- */

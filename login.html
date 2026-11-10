@@ -55,14 +55,24 @@
 
           <div class="campo">
             <label class="campo-rotulo" for="entrada-identificador">CPF ou RG</label>
-            <input class="campo-entrada" type="text" id="entrada-identificador" name="identificador" autocomplete="username" />
+            <input class="campo-entrada" type="text" id="entrada-identificador" name="identificador" autocomplete="username" inputmode="numeric" />
             <span class="campo-erro-texto" role="alert"></span>
           </div>
 
           <div class="campo">
             <label class="campo-rotulo" for="entrada-senha">Senha</label>
-            <input class="campo-entrada" type="password" id="entrada-senha" name="senha" autocomplete="current-password" />
+            <!-- o olho mostra e esconde a senha (aria-pressed diz se ela está à vista) -->
+            <div class="login-senha">
+              <input class="campo-entrada" type="password" id="entrada-senha" name="senha" autocomplete="current-password" />
+              <button type="button" class="botao-discreto login-senha-mostrar" id="login-mostrar-senha" aria-label="Mostrar senha" aria-pressed="false" aria-controls="entrada-senha">
+                <svg class="icone login-senha-olho" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-exibir"/></svg>
+                <svg class="icone login-senha-olho-riscado" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-olho-riscado"/></svg>
+              </button>
+            </div>
             <span class="campo-erro-texto" role="alert"></span>
+            <!-- quem esqueceu a senha: a frase aparece e some embaixo do link -->
+            <button type="button" class="botao botao--texto login-esqueci" id="login-esqueci" aria-expanded="false" aria-controls="login-esqueci-texto">Esqueceu a senha?</button>
+            <p class="login-esqueci-texto oculto" id="login-esqueci-texto">Procure um administrador do sistema.</p>
           </div>
 
           <!-- login lembrado neste aparelho (geral-conectado): 7 dias sem uso, 30 no app do celular, onde já vem marcada -->

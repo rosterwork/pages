@@ -13,7 +13,7 @@
     perfil: { html: 'perfil.html', cobrirAteOsDados: true, css: [], js: ['js/perfil-dados-promocoes.js', 'js/perfil-dados.js', 'js/perfil-senha.js'] },   /* index-perfil.js já vem no shell (liga o botão do cabeçalho) */
     manual: { html: 'manual.html', css: ['css/manual.css'], js: [] },   /* index-manual.js já vem no shell (liga o botão + registra a página) */
     avisos: { html: 'avisos.html', css: ['css/avisos.css'], js: ['js/avisos-comunicado.js', 'js/avisos-notificacoes.js', 'js/avisos.js'] },
-    escalas: { html: 'escalas.html', css: ['css/escalas-controles.css', 'css/escalas-mes.css', 'css/escalas-semana.css', 'css/escalas-dia.css', 'css/escalas-colunas.css', 'css/escalas-calendario.css', 'css/escalas-militares.css', 'css/escalas-painel.css', 'css/escalas-painel-secoes.css', 'css/escalas-painel-edicao.css', 'css/escalas-minha.css', 'css/trocas-formulario.css', 'css/extrajornada-dia.css'], js: ['js/escalas-dados.js', 'js/trocas-dados.js', 'js/escalas-celula.js', 'js/escalas-mes.js', 'js/escalas-semana.js', 'js/escalas-dia.js', 'js/escalas-minha.js', 'js/escalas-colunas.js', 'js/escalas-calendario.js', 'js/escalas-militares.js', 'js/escalas-militares-painel.js', 'js/escalas-painel.js', 'js/escalas-painel-editar.js', 'js/escalas-painel-quem.js', 'js/escalas-painel-funcoes.js', 'js/escalas-painel-ciclo.js', 'js/escalas-painel-salvar.js', 'js/escalas-painel-remover-listas.js', 'js/escalas-painel-remover.js', 'js/escalas-painel-remover-troca.js', 'js/escalas-painel-linha-aplicar.js', 'js/escalas-painel-linha.js', 'js/escalas-painel-adicionar-listas.js', 'js/escalas-painel-onde.js', 'js/escalas-painel-adicionar.js', 'js/escalas-painel-remanejar-listas.js', 'js/escalas-painel-remanejar.js', 'js/escalas-painel-mudar-dia.js','js/trocas-solicitar-campos.js', 'js/trocas-solicitar-militar.js', 'js/trocas-varias-calendario.js', 'js/trocas-varias-registrar.js', 'js/trocas-varias-resumo.js', 'js/trocas-varias.js', 'js/trocas-solicitar.js', 'js/escalas-painel-troca.js', 'js/escalas-painel-militar.js', 'js/escalas-painel-continuos.js', 'js/extrajornada-util.js', 'js/extrajornada-falta.js', 'js/extrajornada-grade.js', 'js/extrajornada-dia-outros.js', 'js/extrajornada-dia.js', 'js/escalas-painel-extra.js', 'js/escalas-legenda.js', 'js/escalas-impressao-pdf.js', 'js/escalas-impressao-legenda.js', 'js/escalas-impressao.js', 'js/escalas-impressao-grade-celula.js', 'js/escalas-impressao-grade-pdf.js', 'js/escalas-impressao-grade.js', 'js/escalas-sysbm.js', 'js/escalas-filtros.js', 'js/escalas-atualizando.js', 'js/escalas-dia-na-grade.js', 'js/escalas-esqueleto.js', 'js/escalas.js'] },
+    escalas: { html: 'escalas.html', css: ['css/escalas-controles.css', 'css/escalas-mes.css', 'css/escalas-semana.css', 'css/escalas-dia.css', 'css/escalas-colunas.css', 'css/escalas-calendario.css', 'css/escalas-militares.css', 'css/escalas-painel.css', 'css/escalas-painel-guarnicoes.css', 'css/escalas-painel-edicao.css', 'css/escalas-celula-editar.css', 'css/escalas-minha.css', 'css/trocas-formulario.css', 'css/extrajornada-dia.css'], js: ['js/escalas-dados.js', 'js/trocas-dados.js', 'js/escalas-celula.js', 'js/escalas-mes.js', 'js/escalas-semana.js', 'js/escalas-dia.js', 'js/escalas-minha.js', 'js/escalas-colunas.js', 'js/escalas-calendario.js', 'js/escalas-militares.js', 'js/escalas-militares-painel.js', 'js/escalas-painel.js', 'js/escalas-painel-editar.js', 'js/escalas-painel-militares.js', 'js/escalas-painel-quem.js', 'js/escalas-painel-funcoes.js', 'js/escalas-painel-ciclo.js', 'js/escalas-painel-salvar.js', 'js/escalas-painel-remover-listas.js', 'js/escalas-painel-remover.js', 'js/escalas-painel-remover-troca.js', 'js/escalas-painel-linha-aplicar.js', 'js/escalas-painel-linha.js', 'js/escalas-painel-linha-cobrir.js', 'js/escalas-painel-linha-menu.js', 'js/escalas-painel-adicionar-listas.js', 'js/escalas-painel-onde.js', 'js/escalas-painel-adicionar.js', 'js/escalas-painel-remanejar-listas.js', 'js/escalas-painel-remanejar.js', 'js/escalas-painel-mudar-dia-conferir.js', 'js/escalas-painel-mudar-dia.js', 'js/escalas-painel-horario-dia.js', 'js/trocas-solicitar-campos.js', 'js/trocas-solicitar-militar.js', 'js/trocas-varias-calendario.js', 'js/trocas-varias-registrar.js', 'js/trocas-varias-resumo.js', 'js/trocas-varias.js', 'js/trocas-solicitar.js', 'js/escalas-painel-troca.js', 'js/escalas-painel-militar.js', 'js/escalas-painel-guarnicoes.js', 'js/escalas-painel-guarnicoes-acoes.js', 'js/extrajornada-util.js', 'js/extrajornada-falta.js', 'js/extrajornada-grade.js', 'js/extrajornada-barra.js', 'js/extrajornada-dia-outros.js', 'js/extrajornada-dia.js', 'js/escalas-painel-extra.js', 'js/escalas-legenda.js', 'js/escalas-impressao-pdf.js', 'js/escalas-impressao-legenda.js', 'js/escalas-impressao.js', 'js/escalas-impressao-grade-celula.js', 'js/escalas-impressao-grade-pdf.js', 'js/escalas-impressao-grade.js', 'js/escalas-sysbm.js', 'js/escalas-filtros.js', 'js/escalas-atualizando.js', 'js/escalas-dia-na-grade.js', 'js/escalas-esqueleto.js', 'js/escalas-celula-editar.js', 'js/escalas.js'] },
     usuarios: { html: 'usuarios.html', css: ['css/usuarios-cards.css', 'css/usuarios-exibir.css', 'css/usuarios-antiguidade.css', 'css/usuarios-administradores.css', 'css/usuarios-painel.css', 'css/usuarios-afastamentos.css'], js: ['js/usuarios-exibir.js', 'js/usuarios-painel.js', 'js/usuarios-painel-leitura.js', 'js/usuarios-painel-editar.js', 'js/usuarios-painel-datas.js', 'js/usuarios-painel-transferir.js', 'js/usuarios-painel-promover.js', 'js/usuarios-painel-baixa.js', 'js/usuarios-painel-acesso.js', 'js/usuarios-afastamentos-dados.js', 'js/usuarios-painel-afastamentos.js', 'js/usuarios-painel-afastamentos-editar.js', 'js/usuarios-novo-usuario-dados.js', 'js/usuarios-novo-usuario-envio.js', 'js/usuarios-novo-usuario.js', 'js/usuarios-correcao-painel.js', 'js/usuarios-antiguidade.js', 'js/usuarios-administradores.js', 'js/usuarios-afastamentos-caixa.js', 'js/usuarios-afastamentos.js', 'js/usuarios.js'] },
     trocas: { html: 'trocas.html', css: ['css/trocas.css', 'css/trocas-formulario.css', 'css/escalas-painel.css', 'css/escalas-painel-edicao.css'], js: ['js/escalas-dados.js', 'js/escalas-painel.js', 'js/escalas-painel-editar.js', 'js/trocas-dados.js', 'js/trocas-painel-situacao.js', 'js/trocas-painel.js', 'js/trocas-painel-varias.js', 'js/escalas-impressao-pdf.js', 'js/trocas-registro-pdf.js', 'js/trocas-relatorio-pdf.js', 'js/trocas-imprimir-alteracoes.js', 'js/trocas-imprimir.js', 'js/trocas-pendencia-painel.js', 'js/trocas-solicitar-campos.js', 'js/trocas-solicitar-militar.js', 'js/trocas-varias-calendario.js', 'js/trocas-varias-registrar.js', 'js/trocas-varias-resumo.js', 'js/trocas-varias.js', 'js/trocas-varias-editar.js', 'js/trocas-solicitar.js', 'js/trocas-editar.js', 'js/trocas.js'] },
     folgas: { html: 'folgas.html', css: ['css/folgas.css', 'css/folgas-painel.css', 'css/escalas-painel.css', 'css/escalas-painel-edicao.css'], js: ['js/escalas-dados.js', 'js/escalas-painel.js', 'js/escalas-painel-editar.js', 'js/folgas-dados.js', 'js/folgas-minhas.js', 'js/folgas-saldos.js', 'js/folgas-listas.js', 'js/folgas-painel.js', 'js/folgas-aprovacao-painel.js', 'js/folgas.js'] },
@@ -25,7 +25,7 @@
        monta), o Horário de expediente e os Feriados */
     ajustes: { html: 'ajustes.html', css: ['css/nova-distribuicao.css', 'css/ajustes.css'], js: ['js/nova-distribuicao-pecas.js', 'js/nova-distribuicao-dados.js', 'js/nova-distribuicao-caixas.js', 'js/nova-distribuicao-ritmo.js', 'js/nova-distribuicao-postos.js', 'js/nova-distribuicao-efetivo.js', 'js/nova-distribuicao-funcoes.js', 'js/nova-distribuicao-acumulos.js', 'js/nova-distribuicao-blocos.js', 'js/nova-distribuicao-militares.js', 'js/nova-distribuicao-graduacao.js', 'js/nova-distribuicao-conferir.js', 'js/nova-distribuicao-versoes.js', 'js/nova-distribuicao.js', 'js/ajustes-horario.js', 'js/ajustes-feriados.js', 'js/ajustes.js'] },
     programador: { html: 'programador.html', cobrirAteOsDados: true, css: ['css/programador.css', 'css/programador-guia.css'], js: ['js/programador-telas.js', 'js/programador-bugs-formulario.js', 'js/programador-bugs.js', 'js/programador-bug-ligado.js', 'js/programador-erros.js', 'js/programador-guia.js', 'js/programador.js'] },
-    extrajornada: { html: 'extrajornada.html', css: ['css/escalas-mes.css', 'css/escalas-calendario.css', 'css/escalas-painel.css', 'css/escalas-controles.css', 'css/extrajornada-dia.css', 'css/extrajornada-cotas.css', 'css/extrajornada.css'], js: ['js/escalas-dados.js', 'js/escalas-celula.js', 'js/escalas-esqueleto.js', 'js/escalas-impressao-pdf.js', 'js/escalas-impressao-legenda.js', 'js/escalas-impressao-grade-celula.js', 'js/escalas-impressao-grade-pdf.js', 'js/escalas-impressao-grade.js', 'js/extrajornada-util.js', 'js/extrajornada-pedido.js', 'js/extrajornada-minimo.js', 'js/extrajornada-organizar.js', 'js/extrajornada-acoes.js', 'js/extrajornada-cotas.js', 'js/extrajornada-otimizador.js', 'js/extrajornada-falta.js', 'js/extrajornada-grade.js', 'js/extrajornada-montar.js', 'js/extrajornada-por-dia.js', 'js/extrajornada-dia-outros.js', 'js/extrajornada-dia.js', 'js/extrajornada-lista.js', 'js/extrajornada-filtros.js', 'js/extrajornada-relatorios-pdf.js', 'js/extrajornada-imprimir.js', 'js/extrajornada-imprimir-grade.js', 'js/extrajornada-relatorio.js', 'js/extrajornada.js'] }   /* a Extrajornada (o menu "Extrajornada"); as barras, o bloco do calendário, o desenho do painel do dia, a Legenda e o Imprimir da grade vêm da Escala */
+    extrajornada: { html: 'extrajornada.html', css: ['css/escalas-mes.css', 'css/escalas-calendario.css', 'css/escalas-painel.css', 'css/escalas-controles.css', 'css/extrajornada-dia.css', 'css/extrajornada-cotas.css', 'css/extrajornada.css'], js: ['js/escalas-dados.js', 'js/escalas-celula.js', 'js/escalas-esqueleto.js', 'js/escalas-impressao-pdf.js', 'js/escalas-impressao-legenda.js', 'js/escalas-impressao-grade-celula.js', 'js/escalas-impressao-grade-pdf.js', 'js/escalas-impressao-grade.js', 'js/extrajornada-util.js', 'js/extrajornada-pedido.js', 'js/extrajornada-minimo.js', 'js/extrajornada-organizar.js', 'js/extrajornada-acoes.js', 'js/extrajornada-cotas.js', 'js/extrajornada-otimizador.js', 'js/extrajornada-falta.js', 'js/extrajornada-grade.js', 'js/extrajornada-montar.js', 'js/extrajornada-por-dia.js', 'js/extrajornada-barra.js', 'js/extrajornada-celula.js', 'js/extrajornada-dia-outros.js', 'js/extrajornada-dia.js', 'js/extrajornada-lista.js', 'js/extrajornada-filtros.js', 'js/extrajornada-relatorios-pdf.js', 'js/extrajornada-imprimir.js', 'js/extrajornada-imprimir-grade.js', 'js/extrajornada-relatorio.js', 'js/extrajornada.js'] }   /* a Extrajornada (o menu "Extrajornada"); as barras, o bloco do calendário, o desenho do painel do dia, a Legenda e o Imprimir da grade vêm da Escala */
   };
 
   var conteudo;
@@ -350,9 +350,28 @@
     return encontrado ? decodeURIComponent(encontrado[1]) : null;
   }
 
-  /* guarda de saída ao trocar de página: se há edição não salva, confirma com o nosso modal.
-     Devolve uma Promise que resolve true (pode sair) ou false (continuar na página). */
+  /* a tela segurada (RosterWork.voltar.segurar, o cálculo da Extrajornada): a pergunta dela; sair chama o aoSair e segue,
+     ficar não muda nada */
+  function perguntarSaida(seguir, ficar) {
+    var pergunta = segura;
+    window.RosterWork.confirmar({
+      tipo: 'aviso',
+      mensagem: pergunta.mensagem,
+      textoConfirmar: pergunta.textoSair,
+      textoCancelar: pergunta.textoFicar,
+      aoConfirmar: function () { segura = null; pergunta.aoSair(); seguir(); },
+      aoCancelar: ficar
+    });
+  }
+
+  /* guarda de saída ao trocar de página: se há edição não salva, confirma com o nosso modal (com a tela segurada, a
+     pergunta dela). Devolve uma Promise que resolve true (pode sair) ou false (continuar na página). */
   function podeNavegar() {
+    if (segura) {
+      return new Promise(function (resolver) {
+        perguntarSaida(function () { resolver(true); }, function () { resolver(false); });
+      });
+    }
     var g = window.RosterWork.guardaSaida;
     if (!(g && g.temPendencia && g.temPendencia())) return Promise.resolve(true);
     return new Promise(function (resolver) {
@@ -388,6 +407,13 @@
       /* no treino com passo a passo, o Voltar do navegador não muda nada: a entrada de agora volta para o alto do histórico */
       if (window.RosterWork.treino && window.RosterWork.treino.ligado() && !window.RosterWork.treino.livre()) {
         history.pushState(camada ? { pagina: paginaAtual, camada: true } : { pagina: paginaAtual }, '', '?pagina=' + paginaAtual);
+        return;
+      }
+      /* a tela segurada (o cálculo da Extrajornada): a entrada de agora volta para o alto do histórico e a pergunta decide;
+         saindo, o navegador volta de novo, para onde a pessoa ia */
+      if (segura) {
+        history.pushState({ pagina: paginaAtual }, '', '?pagina=' + paginaAtual);
+        perguntarSaida(function () { history.back(); });
         return;
       }
       if (camada) {                                        /* o voltar fecha a camada aberta; a tela fica */
@@ -465,9 +491,12 @@
      histórico, no mesmo endereço: o voltar (o do Android) gasta essa entrada e a camada fecha,
      em vez de a tela trocar. empilhar(aoVoltar): cria a entrada (uma só por vez; reabrir só
      troca quem atende). desempilhar(aoVoltar): a camada fechou por outro caminho (X, Salvar,
-     tocar fora): tira a entrada, sem trocar de tela (a volta que isso causa é ignorada). */
+     tocar fora): tira a entrada, sem trocar de tela (a volta que isso causa é ignorada).
+     segurar(pergunta) / soltar(): a tela que não pode ser deixada agora (o cálculo da Extrajornada): o Voltar e o Avançar
+     do navegador e a troca de tela pelo sistema perguntam antes. pergunta = { mensagem, textoSair, textoFicar, aoSair } */
   var camada = null;        /* quem atende o voltar agora */
   var popsIgnorados = 0;    /* voltas feitas pelo próprio sistema */
+  var segura = null;        /* a pergunta da tela segurada */
 
   window.RosterWork.voltar = {
     empilhar: function (aoVoltar) {
@@ -479,7 +508,9 @@
       camada = null;
       popsIgnorados++;
       history.back();
-    }
+    },
+    segurar: function (pergunta) { segura = pergunta; },
+    soltar: function () { segura = null; }
   };
 
   /* a tela da navegação mais recente (o passo a passo segue de uma tela para outra por ela) */

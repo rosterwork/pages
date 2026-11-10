@@ -16,15 +16,23 @@
 }
 
 /* o calendário elástico: de 468px (dias de 60px) a 580px (dias de 76px; 7 dias + 6 vãos de 8px), pelo menor
-   entre o que cabe na largura (com o dia ao lado) e o que cabe na altura da tela: 5 semanas de dias e 253px
-   fora deles (o topo, o título com as abas, a barra, os nomes dos dias e os respiros); a largura é 1,4 vez a
-   altura que sobra */
+   entre o que cabe na largura (com o dia ao lado) e o que cabe na altura da tela: 5 semanas de dias e 285px
+   fora deles (o topo, o título com as abas, a barra, a guarnição em cima do mês, os nomes dos dias e os
+   respiros); a largura é 1,4 vez a altura que sobra */
 .escala-minha-esquerda {
   display: flex;
   flex-direction: column;
   gap: 12px;
   flex: 1 0 468px;
-  max-width: max(468px, min(580px, calc((100vh - 253px) * 1.4)));
+  max-width: max(468px, min(580px, calc((100vh - 285px) * 1.4)));
+}
+
+/* a guarnição dele hoje, em cima do mês ("Você é da guarnição B") */
+.escala-minha-guarnicao {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--texto-forte);
 }
 
 /* ---------- calendário: o mês em miniatura com dias quadrados ---------- */

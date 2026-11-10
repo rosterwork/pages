@@ -1,5 +1,5 @@
 /* ============================================================
-   ESCALAS — as listas do Remover militar (escalas-painel-remover.js)
+   ESCALAS — as listas do Remover do dia (escalas-painel-remover.js)
    A origem do serviço de cada um no dia (as partes que saem por
    aqui: pelo ciclo, pontual, por troca ou o serviço que veio de
    outro dia pela mudança de dia; a extra fica de fora) e a

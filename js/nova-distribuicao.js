@@ -417,7 +417,7 @@
   function contextoVersoes() {
     return {
       dados: E.dados, unidadeId: E.unidadeId, vendoAgendada: E.vendoAgendada, itens: itensParaSalvar,
-      substituicoes: RosterWork.novaDistribuicaoCaixas.operacoes, ritmo: Rt().paraSalvar,
+      substituicoes: RosterWork.novaDistribuicaoCaixas.operacoes, ritmo: Rt().paraSalvar, guarnicao: Rt().guarnicaoParaSalvar,
       carregar: function (versaoId) { E.aberto = null; carregar(E.unidadeId, versaoId); },
       confirmar: confirmarDescarte, falha: avisarFalha, semConexao: avisarSemConexao
     };

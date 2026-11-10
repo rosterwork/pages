@@ -2,8 +2,9 @@
    COMPONENTE geral-impressao-unidades — as Unidades do painel de
    impressão (geral-impressao.js), quando o molde da impressão tem a
    árvore. As marcas de começo: as unidades pedidas (a do painel do
-   dia, a seleção do cabeçalho ou as unidades da tela) e a companhia
-   de cada pelotão; a companhia só fica de fora se a pessoa desmarcar.
+   dia, a seleção do cabeçalho ou as unidades da tela), como estão; a
+   companhia entra quando a pessoa a marca (o Oficial de Área dela fica
+   no título do dia).
    Para quem é lotado em companhia (CIBM ou CIA) ou pelotão, a árvore
    começa na companhia das unidades marcadas, já aberta, e a seta do
    título da caixa abre a árvore toda (e fecha de volta), sem perder
@@ -37,14 +38,9 @@
     return pai && COMPANHIAS.indexOf(pai.tipo) >= 0 ? pai : null;
   }
 
-  /* as marcas de começo: as pedidas e a companhia de cada pelotão */
-  function marcasPadrao(lista, ids) {
-    var marcas = ids.map(String);
-    ids.forEach(function (id) {
-      var cia = companhiaDe(lista, id);
-      if (cia && marcas.indexOf(String(cia.unidade_id)) < 0) marcas.push(String(cia.unidade_id));
-    });
-    return marcas;
+  /* as marcas de começo: as pedidas, como estão (a companhia só quando a pessoa a marca) */
+  function marcasPadrao(ids) {
+    return ids.map(String);
   }
 
   /* onde a árvore começa: a companhia das marcas, para quem é lotado em companhia ou pelotão; null = a árvore toda */
@@ -64,7 +60,7 @@
   /* monta a árvore no seletor (geral-seletor-unidades), já marcada, e liga a seta do título da caixa */
   function montar(seletor, seta, ids) {
     return RW.seletorUnidades.buscar().then(function (lista) {
-      var marcas = marcasPadrao(lista, ids);
+      var marcas = marcasPadrao(ids);
       var raiz = raizDoRecorte(lista, marcas);
       return seletor.montarArvore(raiz).then(function () {
         seletor.aplicarSelecaoPorIds(marcas);

@@ -13,21 +13,9 @@
 
 /* ---------- a lista do Dia ---------- */
 /* subcabeçalho: à esquerda, o menu Editar o dia do admin (geral-botao + geral-dropdown) e o Solicitar troca; o
-   desfazer e o refazer do admin, à direita */
-.escala-edicao-historico {
-  display: flex;
-  gap: 4px;
-  margin-left: auto;
-}
-
-/* o Imprimir (na Escala, para todos; escalas-impressao.js): vai para a direita; para o admin, o desfazer e o refazer
-   ficam logo depois dele */
+   Imprimir (na Escala, para todos; escalas-impressao.js), à direita. O Desfazer e o Refazer ficam no rodapé largo */
 .escala-dia-imprimir {
   margin-left: auto;
-}
-
-.escala-dia-imprimir + .escala-edicao-historico {
-  margin-left: 0;
 }
 
 /* O que mudou na última gravação: o título, uma frase por militar e o atalho */
@@ -58,14 +46,6 @@
 .escala-edicao-mudou-atalho {
   align-self: flex-start;
   margin-top: 4px;
-}
-
-/* o fim da lista do admin: Voltar o dia ao automático */
-.escala-edicao-automatico {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  align-self: flex-start;
 }
 
 /* uma função: o rótulo à esquerda, no meio da altura de todas as linhas dela (militares e horários sem
@@ -153,6 +133,19 @@
   justify-content: flex-end;
 }
 
+/* a linha que o admin edita (o lápis abre o menu dela, escalas-painel-linha-menu.js): ela inteira abre o menu e fica
+   cinza ao passar o mouse e enquanto o menu está aberto (é ela que mostra de quem é o menu) */
+.escala-edicao-linha--menu {
+  border-radius: var(--raio-pequeno);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.escala-edicao-linha--menu:hover,
+.escala-edicao-linha--menu:has(.dropdown--aberto) {
+  background-color: var(--fundo-medio);
+}
+
 /* na comparação (Trocas e Folgas), quem entra pelo pedido ou o sistema remanejou: a barra cinza à esquerda */
 .escala-edicao-linha--alterada {
   box-shadow: inset 2px 0 0 var(--borda-forte);
@@ -178,6 +171,37 @@
 .escala-edicao-linha--folga .escala-distribuicao-nome {
   text-decoration: line-through;
   color: var(--texto-fraco);
+}
+
+/* a aba Militares (escalas-painel-militares.js): as linhas na largura toda, sem a coluna do nome da função, e embaixo do
+   nome as funções dele no dia e, em vermelho, o horário sem função */
+.escala-edicao-grupo--militares {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.escala-edicao-grupo--militares > .escala-edicao-funcao {
+  display: none;
+}
+
+.escala-edicao-grupo--militares .escala-edicao-linha {
+  row-gap: 2px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.escala-edicao-grupo--militares .escala-edicao-linha + .escala-edicao-linha {
+  border-top: 1px solid var(--borda);
+}
+
+.escala-militares-funcoes {
+  grid-column: 1 / 3;
+  padding-left: 16px;
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+.escala-militares-sem-funcao {
+  color: var(--erro);
 }
 
 /* de folga pela mudança de dia: no lugar do período, o dia para onde o serviço passou ("Passou para 13/11") */
@@ -266,25 +290,20 @@
   justify-self: end;
 }
 
+/* as perguntas do cartão: cada uma na caixa numerada das sub-telas (.grupo-caixa.subtela-pergunta, o número vem do
+   contador, que recomeça em cada cartão e só conta as caixas à vista) */
 .escala-linha-corpo {
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 12px;
   border-top: 1px solid var(--borda);
+  counter-reset: subtela-pergunta;
 }
 
-.escala-linha-bloco {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* o rótulo de um campo (Militar, Horário) */
-.escala-linha-rotulo-campo {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--texto-forte);
+/* no posto pintado pelo nível (vermelho ou amarelo, escalas-painel.css), o título das perguntas fica na cor comum */
+.escala-linha .subtela-pergunta > .rotulo-secao {
+  color: var(--texto-suave);
 }
 
 /* as notas de várias linhas: o ícone no alto */
@@ -292,8 +311,31 @@
 .escala-adicionar .nota,
 .escala-remover .nota,
 .escala-remanejar .nota,
-.escala-mudar-dia .nota {
+.escala-mudar-dia .nota,
+.escala-horario-dia .nota {
   align-items: flex-start;
+}
+
+/* Para qual função (Mudar para outra função e Pôr numa função) e Quem cobre (o dia da outra unidade): o título com os
+   pontos de quem espera o banco; e a caixa Onde fica sem a moldura nem o título dela (já está dentro da caixa da
+   pergunta) */
+.escala-linha-para-rotulo,
+.escala-linha-cobre-rotulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.escala-linha-onde .escala-onde-fica {
+  gap: 8px;
+  padding: 0;
+  background: none;
+  border: none;
+  counter-increment: none;
+}
+
+.escala-linha-onde .escala-onde-fica > .rotulo-secao {
+  display: none;
 }
 
 .escala-linha-periodos {
@@ -319,14 +361,6 @@
   margin: 0;
   padding: 0;
   list-style: none;
-}
-
-/* ---------- a pergunta de mudar de ciclo (aba Ciclo › Contínuos em outros ciclos): o assunto, a frase e as datas
-   juntos, para sumirem juntos quando ele não tem serviço no ciclo atual ---------- */
-.escala-ciclo-cartao-ultimo {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
 }
 
 /* ---------- o Onde: o posto e a função lado a lado ---------- */
@@ -371,12 +405,6 @@
 /* as vagas sem ninguém (só no Mudar o dia do serviço) entram entre as bolinhas como as outras */
 .escala-onde-fica-vagas {
   display: contents;
-}
-
-.escala-adicionar-datas {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }
 
 /* ---------- Remanejar militar ---------- */
@@ -485,20 +513,24 @@
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    O topo e o X da edição da linha ficam com a altura do dedo; no
-   subcabeçalho do admin, o desfazer e o refazer, que descem de
-   linha, ficam à direita, embaixo do Imprimir; no Remanejar, a
-   lista do Enviar para ocupa o resto da linha
+   Remanejar, a lista do Enviar para ocupa o resto da linha
    ============================================================ */
 @media (max-width: 767px) {
-  html[data-celular] .escala-dia-imprimir + .escala-edicao-historico {
-    margin-left: auto;
-  }
-
   html[data-celular] .escala-linha-topo {
     min-height: var(--toque-altura-celular);
   }
 
   html[data-celular] .escala-linha-fechar {
+    min-width: var(--toque-altura-celular);
+    min-height: var(--toque-altura-celular);
+  }
+
+  /* o menu da linha: a linha na altura do dedo (ela inteira abre o menu) e o lápis com a área de toque */
+  html[data-celular] .escala-edicao-linha--menu {
+    min-height: var(--toque-altura-celular);
+  }
+
+  html[data-celular] .escala-edicao-opcoes .escala-edicao-lapis {
     min-width: var(--toque-altura-celular);
     min-height: var(--toque-altura-celular);
   }
@@ -514,5 +546,10 @@
     flex: 1;
     width: auto;
     min-width: 0;
+  }
+
+  /* o Dia da folga do cartão: o dia com menos recuo, para "Serviço" caber (como a Minha escala) */
+  html[data-celular] .escala-linha-calendario .mini-calendario-dia {
+    padding: 2px;
   }
 }

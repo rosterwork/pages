@@ -1,5 +1,5 @@
 /* ============================================================
-   ESCALAS — a folga no dia (o lápis da caixa De folga; só admin)
+   ESCALAS — a folga no dia (o menu da linha da caixa De folga; só admin)
    Sub-tela do painel do dia: quem está de folga, o horário e a
    pergunta Folga (Manter a folga, já marcada, ou Cancelar a folga,
    com o efeito embaixo). Na folga que veio da mudança de dia
@@ -8,7 +8,10 @@
    ou Desfazer a mudança: o serviço volta para este dia e sai do dia
    novo). A resposta entra no rascunho do dia ao vivo
    (escalas-painel-editar.js › aoVivo; grava no Salvar do rodapé
-   largo); a saída é o Voltar ao dia.
+   largo); a saída é o Voltar ao dia. O Cancelar a folga e o Desfazer a
+   mudança do menu da linha abrem com essa escolha já marcada.
+   API: RosterWork.escalasPainelMilitar.abrirFolga(id, opcoes)
+   (opcoes = { escolha: 'cancelar' | 'desfazer' }).
    ============================================================ */
 (function () {
   'use strict';
@@ -22,24 +25,27 @@
   function nomeDe(m) { return ((m.grad || '') + ' ' + (m.nome || '')).trim(); }
   function diaMes(iso) { var p = String(iso || '').split('-'); return p.length === 3 ? p[2] + '/' + p[1] : ''; }
 
-  /* as bolinhas de uma pergunta: começam em "manter", e cada escolha chama aoEscolher(valor) */
-  function ligarRadios(caixa, aoEscolher) {
-    var nome = 'escala-folga-dia-' + (++conta);
+  /* as bolinhas de uma pergunta: começam em "manter" ou na escolha que veio do menu da linha (que já vale), e cada
+     escolha chama aoEscolher(valor) */
+  function ligarRadios(caixa, aoEscolher, inicial) {
+    var nome = 'escala-folga-dia-' + (++conta), comeco = inicial || 'manter';
     [].forEach.call(caixa.querySelectorAll('input[type="radio"]'), function (r) {
       r.name = nome;
-      r.checked = r.value === 'manter';
+      r.checked = r.value === comeco;
       r.addEventListener('change', function () { if (r.checked) aoEscolher(r.value); });
     });
+    if (comeco !== 'manter') aoEscolher(comeco);
   }
 
-  /* id = a folga (lancamento_id); as linhas dela no dia dão o horário */
-  function abrirFolga(id) {
+  /* id = a folga (lancamento_id); as linhas dela no dia dão o horário. opcoes = { escolha }: a resposta que vem marcada */
+  function abrirFolga(id, opcoes) {
     var api = ed(), H = api.horas;
     var linhas = ((api.dados() || {}).folgas || []).filter(function (f) { return f.lancamento_id === id; });
     if (!linhas.length) return;
     var f = linhas[0];
     var contabilizada = !!f.contabilizada;
     var mudanca = f.mudanca || null;   // { id, para: 'DD/MM', para_iso }: a folga veio da mudança de dia
+    var escolha = (opcoes && opcoes.escolha) || null;   // a resposta que veio do menu da linha
 
     /* Cancelar a folga: ele volta ao serviço no dia */
     function perguntaFolga(tela) {
@@ -50,7 +56,7 @@
         var cancelar = valor === 'cancelar';
         efeito.classList.toggle('oculto', !cancelar);
         api.aoVivo(cancelar ? function () { api.cancelarFolga(id); } : null, false);
-      });
+      }, escolha === 'cancelar' ? 'cancelar' : null);
     }
 
     /* Desfazer a mudança: o serviço volta para este dia e sai do dia novo */
@@ -64,7 +70,7 @@
         var desfazer = valor === 'desfazer';
         efeito.classList.toggle('oculto', !desfazer);
         api.aoVivo(desfazer ? function () { api.desfazerMudanca(mudanca.id, String(mudanca.para_iso || '').slice(0, 10)); } : null, false);
-      });
+      }, escolha === 'desfazer' ? 'desfazer' : null);
     }
 
     function montar(corpo) {

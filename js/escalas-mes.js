@@ -101,6 +101,10 @@
         linha.querySelector('.escala-mes-data-numero').textContent = String(dia);
         if (diaSemana === 0 || diaSemana === 6) linha.classList.add('escala-mes-linha--fds');
         if (iso === hojeISO) linha.classList.add('escala-mes-linha--hoje');
+        /* o Oficial de Área do dia, no alto da faixa, centralizado em cima das unidades (a faixa ganha a linha dele) */
+        if (RosterWork.escalasCelula) {
+          linha.classList.toggle('escala-mes-linha--com-oficial', RosterWork.escalasCelula.preencherOficial(linha.querySelector('.escala-mes-oficial'), resultado.oficial, iso));
+        }
 
         colunas.forEach(function (c) {
           var celula = RosterWork.tpl('tpl-escala-mes-celula');
@@ -155,6 +159,9 @@
       var afastadosDia = (r.afastados[unidadeId] && r.afastados[unidadeId][iso]) || [];
       RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxPorUnidadeAtual[unidadeId], afastadosDia);
       RosterWork.escalasCelula.desenharGraficos(celula);
+      /* o Oficial de Área do dia pode ter mudado (a mesma leitura traz o dele) */
+      var linha = celula.closest('.escala-mes-linha');
+      if (linha) linha.classList.toggle('escala-mes-linha--com-oficial', RosterWork.escalasCelula.preencherOficial(linha.querySelector('.escala-mes-oficial'), r.oficial, iso));
     }).catch(function () {});   // refresh de 1 célula falhou: mantém a célula atual (o salvamento já avisou)
   }
 

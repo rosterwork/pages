@@ -2,7 +2,7 @@
    ESCALAS — Adicionar militar (o botão do subcabeçalho do Dia; só
    admin). Sub-tela do painel do dia em caixas de pergunta, uma
    depois da outra e só as que valem (Guia visual › Ações e perguntas):
-   Como entra (somente no dia ou no ciclo) e Quem entra
+   Como entra (somente no dia ou na guarnição do dia) e Quem entra
    (o campo de militar, geral-combo-militar, com a lista do como; no
    dia, a Unidade ao lado, começando na do painel, com as unidades
    que têm alguém de horas livres, e a lista só dela).
@@ -13,12 +13,12 @@
      horas. Vai para o rascunho do Dia (escalas-painel-editar.js); na
      função escolhida e no lugar de outro, a prévia refaz o dia em
      volta do que está fixado, mexendo o mínimo.
-   - No ciclo: quem está fora entra; quem já está no ciclo escolhe o
-     último serviço no ciclo atual entre as três últimas datas (mudar
-     de ciclo), com o que acontece com as trocas, folgas e extras dele
-     (a mesma lista da aba Ciclo, na própria sub-tela); quem já serve
-     pelo ciclo no dia não muda. Vai para o rascunho do ciclo
-     (escalas-painel-ciclo.js).
+   - Na guarnição do dia (a letra vem da leitura do dia): quem está
+     fora da escala entra nela a partir do dia; quem é de outra
+     guarnição muda para ela a partir do dia, com o que acontece com as
+     trocas, folgas e extras dele (a mesma lista da aba Guarnições, na
+     própria sub-tela); quem já é da guarnição do dia não muda. Vai
+     para o rascunho das guarnições (escalas-painel-ciclo.js).
    Sem botão próprio: a resposta completa entra no rascunho ao vivo
    (escalas-painel-editar.js › aoVivo) e as telas mostram como fica;
    horário em conflito deixa o Salvar desligado. Nada grava até o
@@ -54,9 +54,10 @@
     var api = ed(), H = api.horas, C = RosterWork.escalasPainelCiclo, D = RosterWork.data;
     if (!api.dados()) return;
     var iso = api.iso(), uid = api.unidadeId(), data = diaMes(iso);
-    var est = { como: 'dia', item: null, mil: null, periodos: [], banco: 'sim', ultimo: null, unidade: null };
+    var letra = api.dados().guarnicao || null;   // a guarnição do dia (sem ela, a companhia não tem o dia da A)
+    var est = { como: 'dia', item: null, mil: null, periodos: [], banco: 'sim', unidade: null };
     var el = {}, pedido = 0, combo = null, onde = null, livres = null, efeito = null;
-    var analise = { chave: '', aviso: null, pedido: 0 };   // o que acontece no ciclo de quem muda de ciclo (lido uma vez)
+    var analise = { chave: '', aviso: null, pedido: 0 };   // o que acontece com quem muda de guarnição (lido uma vez)
 
     /* a Unidade (só no dia): as unidades com alguém de horas livres; começa na do painel */
     function montarUnidades() {
@@ -92,7 +93,7 @@
       if (est.como === 'dia') montarUnidades();
       var leitura = est.como === 'dia'
         ? RosterWork.escalasDados.disponiveis(uid, iso, uid)
-        : RosterWork.escalasDados.continuosListar(uid, iso).then(function (d) { return d && d.ok ? listas().ciclo(d.militares) : null; });
+        : RosterWork.escalasDados.continuosListar(uid, iso).then(function (d) { return d && d.ok ? listas().guarnicao(d.militares, letra) : null; });
       leitura.then(function (r) {
         if (meu !== pedido || !el.combo.isConnected) return;
         if (!r) { combo.definir(msg().falhaCarregar, true); return; }
@@ -107,10 +108,6 @@
       est.banco = 'sim';
       if (onde) onde.reiniciar();
       if (est.como === 'dia') est.periodos = (m.livres || []).length ? m.livres.map(function (l) { return { hi: l.hi, hf: l.hf }; }) : [{ hi: '08:00', hf: '08:00' }];
-      /* no ciclo: vem marcada a mais recente das três últimas datas */
-      var datas = m.ultimos_servicos || [];
-      est.ultimo = datas.length ? datas[datas.length - 1] : null;
-      if (est.como === 'ciclo') montarDatas();
       atualizar();
     }
 
@@ -132,11 +129,6 @@
       atualizar();
     }
 
-    /* as três últimas datas do ciclo atual, em bolinhas, com o dia da semana */
-    function montarDatas() {
-      el.marcarData = C.datas(el.datas, (est.mil && est.mil.ultimos_servicos) || [], function (v) { est.ultimo = v; atualizar(); });
-    }
-
     function criarCombo(caixa, opcoes) {
       var inp = caixa.querySelector('input');
       inp.id = 'escala-adicionar-campo-' + (++conta);
@@ -148,6 +140,9 @@
       if (!tela) return;
       var q = function (s) { return tela.querySelector(s); };
       [].forEach.call(tela.querySelectorAll('.escala-adicionar-data'), function (s) { s.textContent = D.diaMesExtenso(iso); });
+      /* a guarnição do dia (sem a letra, o "do dia" do molde) */
+      q('.escala-adicionar-letra').textContent = letra || '';
+      q('.escala-adicionar-sem-letra').classList.toggle('oculto', !!letra);
       el = {
         quem: q('.escala-adicionar-quem'), combo: q('.escala-adicionar-combo'), assume: q('.escala-adicionar-assume'),
         ajudas: tela.querySelectorAll('.escala-adicionar-ajuda'),
@@ -155,8 +150,7 @@
         militarRotulo: q('.escala-adicionar-militar-rotulo'),
         horario: q('.escala-adicionar-horario'), periodos: q('.escala-adicionar-periodos'),
         banco: q('.escala-adicionar-banco'), contabilizar: q('.escala-adicionar-contabilizar'),
-        ultimo: q('.escala-adicionar-ultimo'), ultimoRotulo: q('.escala-adicionar-ultimo-rotulo'),
-        datas: q('.escala-adicionar-datas'), mudar: q('.escala-adicionar-mudar'), info: q('.escala-adicionar-ciclo-info')
+        mudar: q('.escala-adicionar-mudar'), info: q('.escala-adicionar-ciclo-info')
       };
       el.unidadeVazio = el.unidade.querySelector('.campo-selecao-texto').textContent;
       /* o Onde fica: a caixa comum, no lugar marcado do molde */
@@ -179,8 +173,14 @@
         aoEscolher: escolher,
         textos: { selecione: L().digiteOuEscolha, semNinguem: L().ninguemDisponivel, filtroVazio: msg().ninguemEncontrado }
       });
-      el.regua = RosterWork.horario.criarRegua('afastada');
-      if (el.regua) q('.escala-adicionar-regua').appendChild(el.regua);
+      /* a barra de horário: com um horário só, arrastar ou clicar muda os campos (com mais de um, ela só mostra) */
+      el.barra = RosterWork.regua.criar({ variante: 'afastada', aoMudar: function (f) {
+        if (est.periodos.length !== 1) return;
+        est.periodos[0].hi = f.hi;
+        est.periodos[0].hf = f.hf;
+        atualizar();
+      } });
+      if (el.barra) q('.escala-adicionar-regua').appendChild(el.barra.el);
       el.marcarBanco = ligarRadios(el.banco, function (v) { est.banco = v; atualizar(); });
       efeito = C.efeito(q('.escala-adicionar-efeito'));
       corpo.appendChild(tela);
@@ -201,14 +201,14 @@
       var m = est.mil, como = est.como;
       mostra(el.quem, true);
       [].forEach.call(el.ajudas, function (a) { mostra(a, a.getAttribute('data-como') === como); });
-      /* a Unidade e o rótulo do Militar só no dia (no ciclo, o campo fica como sempre) */
+      /* a Unidade e o rótulo do Militar só no dia (na guarnição, o campo fica como sempre) */
       mostra(el.unidadeCampo, como === 'dia');
       mostra(el.militarRotulo, como === 'dia');
-      ['horario', 'ondeBloco', 'banco', 'ultimo', 'mudar', 'info'].forEach(function (k) { mostra(el[k], false); });
+      ['horario', 'ondeBloco', 'banco', 'mudar', 'info'].forEach(function (k) { mostra(el[k], false); });
       efeito.esconder();
       nota(el.assume, m && m.assume ? (m.assume === 'chefe_socorro' ? msg().assumeChefe : msg().assumeOficial)(nomeDe(m), '') : '');
       if (!m) { api.aoVivo(null, false); return; }
-      if (como === 'ciclo') { desenharCiclo(m); return; }
+      if (como === 'ciclo') { desenharGuarnicao(m); return; }
       desenharDia(m);
     }
 
@@ -235,8 +235,14 @@
         });
         if (linha) el.periodos.appendChild(linha);
       });
-      H.regua(el.regua, ((m.ocupado || []).map(function (o) { return { hi: o.hi, hf: o.hf }; }))
-        .concat(est.periodos.map(function (p) { return { hi: p.hi, hf: p.hf, classe: 'novo' }; })));
+      /* a barra: o que ele já tem no dia em cinza e o horário novo escuro */
+      var um = est.periodos.length === 1;
+      if (el.barra) el.barra.desenhar({
+        fundo: (m.ocupado || []).map(function (o) { return { hi: o.hi, hf: o.hf }; })
+          .concat(um ? [] : est.periodos.map(function (p) { return { hi: p.hi, hf: p.hf, classe: 'marcada' }; })),
+        faixa: um ? { hi: est.periodos[0].hi, hf: est.periodos[0].hf } : null,
+        editavel: um
+      });
       var conflito = est.periodos.some(emConflito) || sobrepoe;
 
       /* onde fica: o sistema, a função escolhida ou no lugar de outro militar (a caixa comum) */
@@ -253,42 +259,34 @@
       api.aoVivo(pronto ? function () { onde.aplicar({ contabilizar: est.banco === 'sim' }); } : null, !pronto);
     }
 
-    /* no ciclo: quem está fora entra; quem já está no ciclo escolhe o último serviço no ciclo atual e vê o que acontece com
-       as trocas, folgas e extras dele depois dele; quem já serve no dia não muda. Vai para o rascunho do ciclo */
-    function desenharCiclo(m) {
-      var datas = m.ultimos_servicos || [];
+    /* na guarnição do dia: quem está fora da escala entra; quem é de outra guarnição muda para ela e vê o que acontece com
+       as trocas, folgas e extras dele a partir do dia; quem já é dela não muda. Vai para o rascunho das guarnições */
+    function desenharGuarnicao(m) {
       var mudar = m.estado !== 'fora' && !m.serve_hoje;
-      mostra(el.ultimo, mudar && datas.length > 0);
-      if (mudar && datas.length) {
-        el.ultimoRotulo.textContent = L().ultimoRotulo(nomeDe(m));
-        el.marcarData(est.ultimo);
-      }
-      var frases = mudar ? C.frasesMudar(m, est.ultimo, iso) : null;
-      nota(el.mudar, m.serve_hoje ? L().cicloServeHoje(nomeDe(m), data) : frases ? frases.alerta : '');
-      nota(el.info, m.estado === 'fora' && !m.serve_hoje ? L().cicloEntrar(D.diaMesExtenso(iso)) : '');
+      nota(el.mudar, m.serve_hoje ? L().guarnicaoServeHoje(nomeDe(m), letra, data) : mudar ? L().guarnicaoMudar(nomeDe(m), letra, D.diaMesExtenso(iso)) : '');
+      nota(el.info, m.estado === 'fora' && !m.serve_hoje ? L().guarnicaoEntrar(letra, D.diaMesExtenso(iso)) : '');
       if (m.serve_hoje) { api.aoVivo(null, true); return; }
-      if (m.estado === 'fora') { api.aoVivo(function () { C.entrar(uid, iso, m); }); return; }
-      mudarCiclo(m, est.ultimo);
+      if (m.estado === 'fora') { api.aoVivo(function () { C.entrar(uid, iso, m, letra); }); return; }
+      mudarGuarnicao(m);
     }
 
-    /* quem muda de ciclo: a lista do que acontece (lida uma vez para cada último serviço) e, com ela, a marca no rascunho do
-       ciclo; enquanto lê, o Salvar espera */
-    function mudarCiclo(m, ultimo) {
-      var chave = m.cpf + '|' + (ultimo || '');
-      if (analise.chave === chave) {
-        if (analise.aviso) { efeito.mostrar(analise.aviso); api.aoVivo(function () { C.marcarMudar(uid, iso, m, ultimo, analise.aviso.itens); }); }
+    /* quem muda de guarnição: a lista do que acontece (lida uma vez) e, com ela, a marca no rascunho das guarnições;
+       enquanto lê, o Salvar espera */
+    function mudarGuarnicao(m) {
+      if (analise.chave === m.cpf) {
+        if (analise.aviso) { efeito.mostrar(analise.aviso); api.aoVivo(function () { C.marcarMudar(uid, iso, m, analise.aviso.itens, letra); }); }
         else api.aoVivo(null, true);
         return;
       }
-      analise.chave = chave;
+      analise.chave = m.cpf;
       analise.aviso = null;
       var meu = ++analise.pedido;
       api.aoVivo(null, true);
-      C.analisarMudar(uid, iso, m, ultimo).then(function (aviso) {
+      C.analisarMudar(uid, iso, m, letra).then(function (aviso) {
         if (meu !== analise.pedido || !el.combo.isConnected) return;
         if (aviso.erro) { analise.chave = ''; RosterWork.avisar({ tipo: 'erro', mensagem: aviso.erro }); return; }
         analise.aviso = aviso;
-        if (est.mil === m && est.como === 'ciclo' && est.ultimo === ultimo) atualizar();
+        if (est.mil === m && est.como === 'ciclo') atualizar();
       });
     }
 

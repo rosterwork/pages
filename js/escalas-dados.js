@@ -49,23 +49,26 @@
       });
   }
 
-  /* { unidade: { dia: { militares, afastados, cobertura, erro } } } -> quatro mapas por unidade/dia (também a escala que
-     vem com o mês da Extrajornada) */
+  /* { unidade: { dia: { militares, afastados, cobertura, erro, oficial } } } -> quatro mapas por unidade/dia (também a
+     escala que vem com o mês da Extrajornada) e o Oficial de Área de cada dia ({ dia: {grad, nome} | null }; o mesmo em
+     todas as unidades da companhia; o dia sem a chave não tem escala) */
   function reorganizar(grade) {
-    var militares = {}, afastados = {}, cobertura = {}, erro = {}, atualizando = [];
+    var militares = {}, afastados = {}, cobertura = {}, erro = {}, atualizando = [], oficial = {};
     Object.keys(grade).forEach(function (uid) {
       militares[uid] = {}; afastados[uid] = {}; cobertura[uid] = {}; erro[uid] = {};
       var dias = grade[uid] || {};
       Object.keys(dias).forEach(function (iso) {
         var c = dias[iso] || {};
-        militares[uid][iso] = c.militares || [];
+        /* quem saiu da guarnição vem à parte (saidas): entra no fim, riscado (escalas-celula.js) */
+        militares[uid][iso] = (c.militares || []).concat(c.saidas || []);
         afastados[uid][iso] = c.afastados || [];
         cobertura[uid][iso] = c.cobertura || [];
         erro[uid][iso] = c.erro || [];
         if (c.atualizando) atualizando.push(uid + '|' + iso);
+        if (Object.prototype.hasOwnProperty.call(c, 'oficial') && !Object.prototype.hasOwnProperty.call(oficial, iso)) oficial[iso] = c.oficial;
       });
     });
-    return { militares: militares, afastados: afastados, cobertura: cobertura, erro: erro, atualizando: atualizando };
+    return { militares: militares, afastados: afastados, cobertura: cobertura, erro: erro, atualizando: atualizando, oficial: oficial };
   }
 
   /* grade do modo Militares (RPC ler_escala_militares): por unidade, a lista de militares
@@ -155,7 +158,8 @@
 
   /* a prévia das telas (RPC escala_previa): com mudança do painel do dia esperando o Salvar (o Dia, o Ciclo e a
      Extrajornada; escalas-painel-salvar.js), a leitura pedida já com o rascunho (o banco roda o Salvar num ensaio e desfaz
-     tudo, nada é gravado). leitura = ler_escala_mes, ler_escala_militares, escala_dia_arvore, escala_minha_calendario ou
+     tudo, nada é gravado). leitura = ler_escala_mes, ler_escala_militares, escala_dia_arvore, escala_minha_calendario,
+     escala_guarnicoes_listar (a aba Guarnições) ou
      ler_distribuicao_dia (o painel do dia, com erro_simulacao e erro_parte na recusa). Sem mudança, devolve null (a tela lê
      como sempre); a promessa resolve no mesmo que a leitura devolve, ou null em falha.
      Uma prévia por vez: cada uma segura a escala da companhia no banco até terminar, e duas juntas fariam fila lá dentro,
@@ -216,9 +220,20 @@
       .catch(function () { return { _falha: 'conexao' }; });
   }
 
-  /* ---- Contínuos (ciclo automático) ---- */
+  /* ---- Guarnições (o ciclo automático) ---- */
+  /* quem está fora da escala, em outra guarnição ou de serviço no dia (o campo de militar do Adicionar militar) */
   function continuosListar(unidadeId, iso) {
     return RosterWork.apiFetch('/rest/v1/rpc/escala_continuos_listar', { metodo: 'POST', corpo: { p_unidade_id: Number(unidadeId), p_data: iso } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; });
+  }
+  /* a aba Guarnições (RPC escala_guarnicoes_listar): os períodos a partir do dia, cada um com as guarnições lado a lado e
+     as marcas do que muda, e quem está fora da escala. Com mudança do painel esperando o Salvar, já com o rascunho (a
+     prévia). null em falha */
+  function guarnicoesListar(unidadeId, iso) {
+    var previa = lerPrevia('escala_guarnicoes_listar', {});
+    if (previa) return previa;
+    return RosterWork.apiFetch('/rest/v1/rpc/escala_guarnicoes_listar', { metodo: 'POST', corpo: { p_unidade_id: Number(unidadeId), p_data: iso } })
       .then(function (r) { return r.ok ? r.json() : null; })
       .catch(function () { return null; });
   }
@@ -258,12 +273,24 @@
       .catch(function () { return null; });
   }
 
+  /* o calendário do Dia da folga (o Pôr um militar aqui da vaga; RPC escala_dia_da_folga_dias): quem cobre a vaga em
+     "para" folga num dia de serviço dele; para cada dia do período (até 63 dias), o dia da vaga (para), os dias fora do
+     prazo (fora) e os dias de serviço dele que podem virar a folga (servico, com hi, hf, fica e minimo), e quantos
+     faltam para o mínimo na unidade. { limite, fim, dias: { 'AAAA-MM-DD': { estado, hi, hf, fica, minimo, faltas } } },
+     { erro } na recusa, ou null em falha */
+  function diaDaFolgaDias(unidadeId, cpf, para, inicio, fim) {
+    var corpo = { p_unidade_id: Number(unidadeId), p_cpf: String(cpf), p_para: para, p_inicio: inicio, p_fim: fim };
+    return RosterWork.apiFetch('/rest/v1/rpc/escala_dia_da_folga_dias', { metodo: 'POST', corpo: corpo })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; });
+  }
+
   window.RosterWork.escalasDados = {
     carregar: carregar, antecipar: antecipar, reorganizar: reorganizar, carregarMilitares: carregarMilitares, lerMilitarDia: lerMilitarDia,
     lerDiasAtualizando: lerDiasAtualizando, lerDistribuicaoDia: lerDistribuicaoDia, lerAlteracoesDia: lerAlteracoesDia, lerPrevia: lerPrevia, corpoPrevia: corpoPrevia, painelSalvar: painelSalvar,
     lerImpressao: lerImpressao, lerImpressaoErros: lerImpressaoErros, lerSysbm: lerSysbm,
     sysbmTermo: sysbmTermo, sysbmDarCiencia: sysbmDarCiencia,
-    continuosListar: continuosListar, cicloRetirarAnalisar: cicloRetirarAnalisar,
-    disponiveis: disponiveis, mudarDiaDias: mudarDiaDias
+    continuosListar: continuosListar, guarnicoesListar: guarnicoesListar, cicloRetirarAnalisar: cicloRetirarAnalisar,
+    disponiveis: disponiveis, mudarDiaDias: mudarDiaDias, diaDaFolgaDias: diaDaFolgaDias
   };
 })();

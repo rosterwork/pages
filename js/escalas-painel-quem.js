@@ -2,11 +2,14 @@
    ESCALAS — as escolhas do painel do dia: quem e onde
    Quem: os itens do campo de militar (o componente geral
    geral-combo-militar) para a vaga de uma função, vindos do banco
-   (escala_dia_disponiveis com a vaga), em grupos com títulos fixos:
+   (escala_dia_disponiveis com a vaga), em grupos que abrem e fecham:
    de serviço na unidade, de serviço em outra unidade, de folga e,
-   no fim e apagados, quem não pode, com o motivo. Ao lado de cada
-   nome, o que ele faz hoje. Quem está de serviço leva à esquerda o
-   ícone de origem (o lápis, o Remover e o Remanejar).
+   no fim, fechados e apagados, quem não pode, com o motivo. Ao lado
+   de cada nome, o que ele faz hoje. Quem está de serviço leva à
+   esquerda o ícone de origem (o lápis, o Remover e o Remanejar). Na
+   vaga sem ninguém (o Pôr um militar aqui), o Quem cobre: as unidades
+   de quem pode e, de uma unidade, os de folga primeiro (aberto),
+   quem está de serviço nela (fechado) e quem não pode (fechado).
    Onde: o posto e a função, cada um numa lista; a função traz a
    situação dela no horário ("vazia", "Sd. Godoy sai").
    Caixas de marcar: as respostas de várias escolhas de uma pergunta.
@@ -112,6 +115,61 @@
     return lista;
   }
 
+  /* ---------- Quem cobre (o Pôr um militar aqui da vaga sem ninguém) ---------- */
+
+  /* a unidade de quem pode cobrir: a dele, para quem está de folga ou de serviço em outra unidade; senão, a do painel */
+  function unidadeDe(c, uid) {
+    return c.grupo === 'folga' || c.grupo === 'outro_pelotao' ? String(c.unidade_id) : String(uid);
+  }
+
+  /* as unidades que têm alguém que pode cobrir a vaga, a do painel primeiro: [{ id, nome }] */
+  function unidadesCobrir(resp, uid, unidadeNome) {
+    var ja = {}, lista = [];
+    (resp || []).forEach(function (c) {
+      var id = unidadeDe(c, uid);
+      if (!c.pode || ja[id]) return;
+      ja[id] = true;
+      lista.push({ id: id, nome: id === String(uid) ? unidadeNome : c.unidade || '' });
+    });
+    return lista.sort(function (a, b) { return (a.id === String(uid) ? 0 : 1) - (b.id === String(uid) ? 0 : 1); });
+  }
+
+  /* de folga, na unidade escolhida: o que ele já tem no dia, ou o dia livre (e quem vira o Chefe de Socorro) */
+  function infoFolgaDia(c) {
+    var H = ed().horas;
+    var ocupado = (c.ocupado || []).map(function (o) { return { hi: H.curta(o.hi), hf: H.curta(o.hf), tipo: o.tipo }; });
+    return c.assume ? msg().seletorAssume[c.assume] : ocupado.length ? msg().ocupadoNoDia(ocupado) : L().infoLivre;
+  }
+
+  /* a lista do Quem cobre de uma unidade: os de folga primeiro (aberto), quem está de serviço nela (fechado: neste dia,
+     na unidade do painel; nas outras, vem por remanejamento) e quem não pode (fechado, com o motivo). item.situacao =
+     'folga' | 'dia' | 'outra' (o cartão faz cada um de um jeito; o treino acha o exemplo por ele) */
+  function itensCobrir(resp, unidadeId, uid, unidadeNome) {
+    var folga = [], servico = [], nao = [], aqui = String(unidadeId) === String(uid);
+    (resp || []).forEach(function (c) {
+      if (unidadeDe(c, uid) !== String(unidadeId)) return;
+      var item = { cpf: c.cpf, grad: c.grad, nome: c.nome, c: c };
+      if (!c.pode) { item.inativo = true; item.info = motivoTexto(c); nao.push(item); return; }
+      if (c.grupo === 'folga') { item.situacao = 'folga'; item.info = infoFolgaDia(c); folga.push(item); return; }
+      if (c.grupo === 'outro_pelotao') {
+        item.situacao = 'outra';
+        item.info = (c.funcoes || []).length ? juntar(lugares(c.funcoes)) : L().infoSemFuncao;
+        servico.push(item);
+        return;
+      }
+      var mil = ed().militarDoDia(c.cpf);
+      item.situacao = 'dia'; item.icone = mil ? iconeDe(mil.janelas) : null;
+      item.info = c.grupo === 'sem_funcao' ? L().infoSemFuncao : juntar(lugares(c.funcoes));
+      servico.push(item);
+    });
+    var lista = [];
+    function grupo(titulo, itens, aberto) { if (itens.length) lista = lista.concat([{ titulo: titulo, aberto: aberto }], itens); }
+    grupo(L().grupoFolga, folga, true);
+    grupo(aqui ? L().grupoNesteDia : L().grupoAqui(unidadeNome), servico, !folga.length);
+    grupo(L().grupoNaoPodem, nao, false);
+    return lista;
+  }
+
   /* ---------- Onde ---------- */
 
   /* lugar = onde as duas listas entram; cfg = { postos, posto, funcao, situacao(posto, nomeFuncao) -> texto,
@@ -201,6 +259,6 @@
     return function (indices) { botoes.forEach(function (b, i) { pintar(b, indices.indexOf(i) >= 0); }); };
   }
 
-  window.RosterWork.escalasPainelQuem = { itensDaVaga: itensDaVaga, itemServico: itemServico, iconeDe: iconeDe, lugares: lugares,
-    onde: onde, marcar: marcar, nomeDe: nomeDe };
+  window.RosterWork.escalasPainelQuem = { itensDaVaga: itensDaVaga, itensCobrir: itensCobrir, unidadesCobrir: unidadesCobrir,
+    itemServico: itemServico, iconeDe: iconeDe, lugares: lugares, onde: onde, marcar: marcar, nomeDe: nomeDe };
 })();

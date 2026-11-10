@@ -39,6 +39,7 @@
   <link rel="stylesheet" href="componentes/css/geral-treino.css" />
   <link rel="stylesheet" href="componentes/css/geral-bloco.css" />
   <link rel="stylesheet" href="componentes/css/geral-horario.css" />
+  <link rel="stylesheet" href="componentes/css/geral-regua.css" />
   <link rel="stylesheet" href="componentes/css/geral-subtela.css" />
   <link rel="stylesheet" href="componentes/css/geral-nota.css" />
   <link rel="stylesheet" href="componentes/css/geral-modal.css" />
@@ -604,6 +605,11 @@
     </div>
   </div>
 
+  <!-- JANELA DAS ETAPAS (componente geral-etapas, a forma janela): o cartão no meio da tela escurecida, no cálculo que trava a
+       tela (o Preencher pela sugestão da Extrajornada). Fora da casca, que fica desligada enquanto ele está no ar, e antes do
+       aviso, que abre por cima dele (a pergunta de sair) -->
+  <div class="etapas-veu oculto" id="etapas-veu" role="status" aria-live="polite"></div>
+
   <!-- AVISO: modal de aviso/confirmação (componente geral-aviso); fora da casca e depois das outras janelas (as janelas
        dividem a mesma camada e a de baixo no HTML fica por cima), para ficar acima de qualquer modal; só o aviso de sessão vem depois -->
   <div class="modal-veu" id="veu-aviso">
@@ -744,13 +750,17 @@
     </span>
   </template>
 
-  <!-- MOLDES: as etapas do carregando (componente geral-etapas; as frases vêm de RosterWork.mensagens.etapas) -->
+  <!-- MOLDES: as etapas do carregando (componente geral-etapas; as frases vêm de RosterWork.mensagens.etapas). O Cancelar
+       só aparece na janela (o cálculo que trava a tela) -->
   <template id="tpl-etapas">
     <div class="etapas">
       <span class="cobertura-viva" aria-hidden="true"></span>
       <p class="etapas-titulo"></p>
       <ol class="etapas-lista"></ol>
       <p class="etapas-pe"></p>
+      <div class="etapas-acoes oculto">
+        <button type="button" class="botao etapas-cancelar">Cancelar</button>
+      </div>
     </div>
   </template>
 
@@ -1173,8 +1183,14 @@
     </button>
   </template>
 
+  <!-- o título de um grupo do campo de militar: abre e fecha a lista dele ali mesmo, sem fechar o menu (o nome e quantos
+       tem vêm do JS) -->
   <template id="tpl-combo-militar-titulo">
-    <div class="dropdown-titulo combo-militar-titulo"></div>
+    <button type="button" class="dropdown-titulo combo-militar-titulo" aria-expanded="true">
+      <svg class="icone combo-militar-titulo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+      <span class="combo-militar-titulo-nome"></span>
+      <span class="combo-militar-titulo-conta"></span>
+    </button>
   </template>
 
   <template id="tpl-combo-militar-vazio">
@@ -1340,7 +1356,8 @@
        data-sem-alvo-treino, data-so-treino e data-so-ajuda: ver o geral-guia-roteiros.js. data-cenario (no template): no treino, o exemplo que o geral-treino-cenarios.js põe na tela (ex.: um
        horário sem ninguém), para o treino nunca ficar sem a situação -->
 
-  <!-- as aberturas comuns: abrir a Escala, a aba e o dia (cada uma é pulada quando já está feita) -->
+  <!-- as aberturas comuns: abrir a Escala, a aba e o dia, e as abas do painel do dia (cada uma é pulada quando já está
+       feita; o abrir-dia volta à aba Funções quando o painel ficou em outra) -->
   <template data-roteiro-trecho="abrir-escala">
     <p data-pagina="qualquer" data-alvo=".sidebar .menu-item[data-pagina='escalas'], .barra-celular-item[data-pagina='escalas']" data-avanca="clique" data-pular-se=".conteudo #escala-modos">Abra a <strong>Escala</strong> no menu.</p>
   </template>
@@ -1351,7 +1368,18 @@
     <p data-alvo="#escala-modos [data-modo='minha']" data-avanca="clique" data-pular-se="#escala-modos [data-modo='minha'].aba--ativa">Abra a aba <strong>Minha escala</strong>.</p>
   </template>
   <template data-roteiro-trecho="abrir-dia">
-    <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}']" data-alvo-senao=".escala-mes-celula" data-treino-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'], .escala-mes-celula[data-iso='{hoje}'], .escala-mes-celula[data-unidade-id='{unidade}'], .escala-mes-celula" data-avanca="clique" data-pular-se=".escala-mes-celula--selecionada">Abra um dia da sua unidade.<span data-so-treino>Abra o dia aceso, o de hoje na sua unidade.</span></p>
+    <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}'] .escala-mes-grafico" data-alvo-senao=".escala-mes-celula .escala-mes-grafico" data-treino-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'] .escala-mes-grafico, .escala-mes-celula[data-iso='{hoje}'] .escala-mes-grafico, .escala-mes-celula[data-unidade-id='{unidade}'] .escala-mes-grafico, .escala-mes-celula .escala-mes-grafico" data-avanca="clique" data-pular-se=".escala-mes-celula--selecionada">Abra um dia da sua unidade.<span data-so-treino>Abra o dia aceso, o de hoje na sua unidade.</span></p>
+    <p data-trecho="abrir-painel-dia"></p>
+    <p data-trecho="aba-funcoes"></p>
+  </template>
+  <template data-roteiro-trecho="abrir-painel-dia">
+    <p data-alvo=".escala-celula-acoes" data-clique=".escala-celula-acao[data-acao='painel']" data-avanca="clique" data-pular-se=".painel-lateral--aberto" data-treino-alvo=".escala-celula-acao[data-acao='painel']">O pelotão fica marcado, com <strong>Adicionar somente nesse dia</strong> e <strong>Abrir o painel do dia</strong>. Clique em <strong>Abrir o painel do dia</strong>.<span data-so-treino>O pelotão fica marcado, com <strong>Adicionar somente nesse dia</strong> e <strong>Abrir o painel do dia</strong>. Clique no botão aceso.</span></p>
+  </template>
+  <template data-roteiro-trecho="aba-funcoes">
+    <p data-alvo=".painel-lateral .aba[data-secao='distribuicao']" data-avanca="clique" data-opcional data-pular-se=".painel-lateral .aba[data-secao='distribuicao'].aba--ativa, .painel-lateral--aberto:not(:has(.aba[data-secao='distribuicao']))">Abra a aba <strong>Funções</strong> do painel.</p>
+  </template>
+  <template data-roteiro-trecho="aba-militares">
+    <p data-alvo=".painel-lateral .aba[data-secao='militares']" data-avanca="clique" data-pular-se=".painel-lateral .aba[data-secao='militares'].aba--ativa">Abra a aba <strong>Militares</strong> do painel: ela mostra quem está no dia.</p>
   </template>
 
   <!-- para todos -->
@@ -1390,6 +1418,7 @@
     <p data-alvo=".painel-corpo .escala-edicao-sem-funcao, .painel-corpo .escala-edicao-folgas, .painel-corpo .escala-observacoes-titulo, .painel-corpo .escala-observacao-add" data-anel="caixa" data-opcional data-avanca="proximo">Depois dos postos vêm <strong>Sem função</strong>, <strong>De folga</strong> e as <strong>Observações</strong>.</p>
     <p data-alvo=".painel-corpo .escala-observacoes-copiar" data-opcional data-avanca="proximo">O ícone no título das <strong>Observações</strong> copia todas, para colar numa mensagem.</p>
     <p data-alvo=".painel-corpo .alteracoes" data-opcional data-avanca="proximo">As <strong>Alterações manuais</strong> mostram quem mexeu no dia, quando e o quê.</p>
+    <p data-alvo=".painel-lateral .aba[data-secao='militares']" data-opcional data-avanca="clique">Abra a aba <strong>Militares</strong>: ela mostra o mesmo dia por pessoa, com as funções de cada um embaixo do nome, quem foi para outra unidade e quem está de folga.</p>
     <p data-fim>Pronto. O X fecha o painel.</p>
   </template>
 
@@ -1434,7 +1463,7 @@
     <p data-alvo="#dropdown-unidades > .seletor" data-avanca="clique">Aqui você escolhe quais unidades aparecem na escala.</p>
     <p data-alvo="#dropdown-unidades .dropdown-menu-rolagem" data-condicao="#btn-aplicar-unidades:not(:disabled)" data-avanca="aparece" data-treino-alvo="#dropdown-unidades .caixa-selecao[aria-checked='false']">Marque as unidades que você quer ver.<span data-so-treino>Marque a unidade acesa.</span></p>
     <p data-alvo="#btn-aplicar-unidades" data-avanca="clique">Confirme em <strong>Aplicar</strong>.</p>
-    <p data-fim>Pronto. A escolha vale até você sair do sistema; ao entrar de novo, a escala volta a mostrar a sua unidade.</p>
+    <p data-fim>Pronto. A escolha fica guardada: ao entrar de novo, a escala abre com as mesmas unidades.</p>
   </template>
 
   <template data-roteiro="andar-datas" data-titulo="Andar pelas datas" data-grupo="Escala" data-pagina="escalas">
@@ -1452,8 +1481,8 @@
     <p data-trecho="abrir-escala"></p>
     <p data-trecho="aba-mes"></p>
     <p data-alvo="#escala-filtros .filtros-botao > .botao" data-avanca="clique">Em <strong>Filtros</strong> você escolhe o que aparece na escala.</p>
-    <p data-so-ajuda data-alvo="#escala-filtros .filtros-menu" data-avanca="proximo" data-livre>Desmarque o que você não quer ver: Prontidão, Trocas, Extrajornada, Pontual ou Folgas. <strong>Afastamentos</strong> fica à parte e começa desmarcado: marque para ver quem está afastado.</p>
-    <p data-so-treino data-alvo="#escala-filtros [data-filtro-valor='trocas'] .caixa-selecao" data-avanca="clique">Desmarque <strong>Trocas</strong>. Do mesmo jeito, você tira Prontidão, Extrajornada, Pontual ou Folgas. <strong>Afastamentos</strong> fica à parte e começa desmarcado: marque para ver quem está afastado.</p>
+    <p data-so-ajuda data-alvo="#escala-filtros .filtros-menu" data-avanca="proximo" data-livre>Desmarque o que você não quer ver: Guarnição, Trocas, Extrajornada, Pontual ou Folgas. <strong>Afastamentos</strong> fica à parte e começa desmarcado: marque para ver quem está afastado.</p>
+    <p data-so-treino data-alvo="#escala-filtros [data-filtro-valor='trocas'] .caixa-selecao" data-avanca="clique">Desmarque <strong>Trocas</strong>. Do mesmo jeito, você tira Guarnição, Extrajornada, Pontual ou Folgas. <strong>Afastamentos</strong> fica à parte e começa desmarcado: marque para ver quem está afastado.</p>
     <p data-alvo=".conteudo .filtros-ativos:not(.oculto)" data-opcional data-avanca="proximo" data-livre>Os filtros ligados aparecem embaixo da barra. O <strong>x</strong> tira um deles, e <strong>Limpar filtros</strong> tira todos.</p>
     <p data-fim>Pronto. A busca e os filtros valem juntos.</p>
   </template>
@@ -1492,7 +1521,8 @@
         <p data-alvo=".escala-minha-solicitar" data-avanca="clique">Use o botão <strong>Solicitar troca</strong>.</p>
       </section>
       <section data-caminho="mes" data-entrada="#escala-modos [data-modo='mes']">
-        <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}']" data-alvo-senao=".escala-mes-celula" data-avanca="clique" data-treino-alvo=".escala-mes-celula[data-iso='{hoje}']:has([data-busca*='{cpf}']), .escala-mes-celula:has([data-busca*='{cpf}']), .escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'], .escala-mes-celula[data-iso='{hoje}'], .escala-mes-celula[data-unidade-id='{unidade}'], .escala-mes-celula">Abra o dia do serviço que você quer trocar.<span data-so-treino>Abra o dia aceso: é um serviço seu.</span></p>
+        <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}'] .escala-mes-grafico" data-alvo-senao=".escala-mes-celula .escala-mes-grafico" data-avanca="clique" data-treino-alvo=".escala-mes-celula[data-iso='{hoje}']:has([data-busca*='{cpf}']) .escala-mes-grafico, .escala-mes-celula:has([data-busca*='{cpf}']) .escala-mes-grafico, .escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'] .escala-mes-grafico, .escala-mes-celula[data-iso='{hoje}'] .escala-mes-grafico, .escala-mes-celula[data-unidade-id='{unidade}'] .escala-mes-grafico, .escala-mes-celula .escala-mes-grafico">Abra o dia do serviço que você quer trocar.<span data-so-treino>Abra o dia aceso: é um serviço seu.</span></p>
+        <p data-trecho="abrir-painel-dia"></p>
         <p data-alvo=".painel-lateral .escala-dia-solicitar" data-avanca="clique">Use o botão <strong>Solicitar troca</strong> do painel.</p>
       </section>
     </section>
@@ -1519,14 +1549,14 @@
     <p data-trecho="abrir-escala"></p>
     <p data-trecho="aba-mes"></p>
     <p data-trecho="abrir-dia"></p>
-    <p data-alvo=".painel-lateral .escala-edicao-menu > .botao" data-avanca="proximo">No <strong>Editar o dia</strong> ficam as ações do dia: adicionar, remover, remanejar e registrar troca.</p>
-    <p data-alvo=".painel-corpo .escala-edicao-lapis" data-um data-avanca="proximo">Em cada linha, o lápis troca quem está na função ou o horário.</p>
+    <p data-alvo=".painel-lateral .escala-edicao-menu > .botao" data-avanca="proximo">No <strong>Editar o dia</strong> fica o que é do dia todo: trazer alguém para o dia e registrar troca.</p>
+    <p data-alvo=".painel-corpo .escala-edicao-lapis" data-um data-avanca="proximo">Em cada linha, o lápis abre o que se faz naquele lugar. O dia de cada militar muda pelo lápis dele, na aba <strong>Militares</strong>.</p>
     <p data-alvo=".painel-corpo .escala-observacao-add-botao" data-avanca="clique">Faça uma mudança simples: use <strong>Adicionar observação</strong>.</p>
     <p data-so-ajuda data-alvo=".painel-corpo .escala-observacao-campo" data-clique=".painel-corpo .escala-observacao-salvar" data-avanca="clique" data-livre>Escreva uma nota e confirme em <strong>Adicionar</strong>.</p>
     <p data-so-treino data-alvo=".painel-corpo .escala-observacao-campo" data-condicao=".painel-corpo .escala-observacao-input" data-porta=".painel-corpo .escala-observacao-input" data-escrever data-avanca="preenchido">Escreva uma nota.</p>
     <p data-so-treino data-alvo=".painel-corpo .escala-observacao-salvar" data-avanca="clique">Confirme em <strong>Adicionar</strong>.</p>
     <p data-alvo=".escala-rodape-salvar-texto" data-avanca="proximo">A mudança ainda não foi gravada: no rodapé largo aparecem quantas alterações faltam salvar.</p>
-    <p data-alvo=".painel-lateral .escala-edicao-historico" data-avanca="proximo">O <strong>Desfazer</strong> volta a última mudança, e o <strong>Refazer</strong> a faz de novo.</p>
+    <p data-alvo=".escala-rodape-salvar .rodape-historico" data-avanca="proximo">O <strong>Desfazer</strong> volta a última mudança, e o <strong>Refazer</strong> a faz de novo.</p>
     <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong>.</p>
     <p data-fim>Pronto. A mudança foi gravada, e o resumo mostra o que mudou.</p>
     <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, a mudança seria gravada e o resumo mostraria o que mudou.</p>
@@ -1536,8 +1566,9 @@
     <p data-trecho="abrir-escala"></p>
     <p data-trecho="aba-mes"></p>
     <p data-trecho="abrir-dia"></p>
-    <p data-alvo=".painel-corpo .escala-edicao-lapis" data-avanca="clique">Use o lápis da linha que você quer mudar.<span data-so-treino>Use o lápis da linha acesa.</span></p>
-    <p data-alvo=".painel-corpo .escala-linha-combo" data-condicao=".escala-rodape-salvar:not(.oculto)" data-avanca="aparece" data-porta=".painel-corpo .escala-linha-combo input; .painel-corpo .escala-linha-combo .dropdown-item:not(.dropdown-item--inativo); .painel-corpo .escala-linha-combo .dropdown-item:not(.dropdown-item--inativo):has(.combo-militar-grad:not(:empty))" data-exemplo=".painel-corpo .escala-linha-combo .dropdown-item:not(.dropdown-item--inativo):has(.combo-militar-grad:not(:empty)) .combo-militar-nome; .painel-corpo .escala-linha-combo .dropdown-item:not(.dropdown-item--inativo) .combo-militar-nome">Escolha quem fica na função. Aparece só quem já está de serviço no dia; <strong>Ninguém</strong> deixa a função vazia. A escala da página já mostra como fica.<span data-so-treino>Escolha <strong data-exemplo-nome></strong> para a função. Aparece só quem já está de serviço no dia; <strong>Ninguém</strong> deixa a função vazia. A escala da página já mostra como fica.</span></p>
+    <p data-alvo=".painel-corpo .escala-edicao-linha[data-linha='funcao'] .escala-edicao-lapis" data-avanca="clique">Use o lápis da linha que você quer mudar.<span data-so-treino>Use o lápis da linha acesa.</span></p>
+    <p data-alvo=".painel-corpo .escala-edicao-opcoes.dropdown--aberto [data-acao='por-outro']" data-avanca="clique">Escolha <strong>Pôr outro no lugar dele</strong>.</p>
+    <p data-alvo=".painel-corpo .escala-linha-combo" data-condicao=".escala-rodape-salvar:not(.oculto)" data-avanca="aparece" data-porta=".painel-corpo .escala-linha-combo input; .painel-corpo .escala-linha-combo .dropdown-item:not(.dropdown-item--inativo)" data-exemplo=".painel-corpo .escala-linha-combo .dropdown-item:not(.dropdown-item--inativo) .combo-militar-nome">Escolha quem fica na função. Aparece só quem já está de serviço no dia. A escala da página já mostra como fica.<span data-so-treino>Escolha <strong data-exemplo-nome></strong> para a função. Aparece só quem já está de serviço no dia. A escala da página já mostra como fica.</span></p>
     <p data-alvo=".painel-corpo .escala-linha-periodos" data-avanca="proximo" data-livre>Ajuste o horário nesta função, se precisar.<span data-so-treino>Aqui você ajusta o horário nesta função, se precisar.</span></p>
     <p data-alvo=".painel-corpo .escala-linha-efeito" data-opcional data-avanca="proximo">Aqui aparece o que acontece com quem está em volta.</p>
     <p data-alvo=".painel-corpo .escala-linha-fechar" data-avanca="clique">Feche a edição pelo <strong>X</strong>. A mudança fica, e a lista mostra o dia como vai ficar.</p>
@@ -1549,13 +1580,34 @@
     <p data-fim-treino>Pronto. No treino, nada foi salvo.</p>
   </template>
 
+  <template data-roteiro="mudar-funcao" data-titulo="Mudar um militar de função" data-conjunto="ajustar-o-dia" data-area="admin" data-grupo="Escala" data-pagina="escalas" data-cenario="folga">
+    <p data-trecho="abrir-escala"></p>
+    <p data-trecho="aba-mes"></p>
+    <p data-trecho="abrir-dia"></p>
+    <p data-alvo=".painel-corpo .escala-edicao-linha[data-linha='funcao'] .escala-edicao-lapis" data-avanca="clique">Use o lápis do militar que muda de função.<span data-so-treino>Use o lápis da linha acesa.</span></p>
+    <p data-alvo=".painel-corpo .escala-edicao-opcoes.dropdown--aberto [data-acao='outra-funcao']" data-avanca="clique">Escolha <strong>Mudar para outra função</strong>.</p>
+    <p data-alvo=".painel-corpo .escala-linha-para" data-condicao=".escala-rodape-salvar:not(.oculto)" data-avanca="aparece" data-livre>Escolha para qual função ele vai. A vaga sem ninguém no horário dele vem marcada como recomendada; em <strong>Escolher a função</strong>, você escolhe o posto e a função. Se ele não puder na função, o motivo aparece em vermelho.<span data-so-treino>A vaga sem ninguém no horário dele já vem marcada como recomendada; em <strong>Escolher a função</strong>, você escolheria o posto e a função. Se ele não puder na função, o motivo aparece em vermelho.</span></p>
+    <p data-alvo=".painel-corpo .escala-linha-efeito:not(.oculto)" data-opcional data-avanca="proximo">Aqui aparece o que acontece com quem está em volta.</p>
+    <p data-alvo=".painel-corpo .escala-linha-fechar" data-avanca="clique">Feche pelo <strong>X</strong>. A mudança fica, e a lista mostra o dia como vai ficar.</p>
+    <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé.</p>
+    <p data-fim>Pronto. Ele mudou de função.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, ele mudaria de função.</p>
+  </template>
+
   <template data-roteiro="horario-vazio" data-titulo="Pôr alguém num horário vazio" data-conjunto="ajustar-o-dia" data-area="admin" data-grupo="Escala" data-pagina="escalas" data-cenario="horario-vazio">
     <p data-trecho="abrir-escala"></p>
     <p data-trecho="aba-mes"></p>
-    <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}']" data-alvo-senao=".escala-mes-celula" data-avanca="clique" data-pular-se=".escala-mes-celula--selecionada" data-treino-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'], .escala-mes-celula[data-iso='{hoje}'], .escala-mes-celula[data-unidade-id='{unidade}'], .escala-mes-celula">Abra um dia da sua unidade com um horário sem ninguém.<span data-so-treino>Abra o dia aceso. No treino, ele tem um horário sem ninguém.</span></p>
+    <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}'] .escala-mes-grafico" data-alvo-senao=".escala-mes-celula .escala-mes-grafico" data-avanca="clique" data-pular-se=".escala-mes-celula--selecionada" data-treino-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'] .escala-mes-grafico, .escala-mes-celula[data-iso='{hoje}'] .escala-mes-grafico, .escala-mes-celula[data-unidade-id='{unidade}'] .escala-mes-grafico, .escala-mes-celula .escala-mes-grafico">Abra um dia da sua unidade com um horário sem ninguém.<span data-so-treino>Abra o dia aceso. No treino, ele tem um horário sem ninguém.</span></p>
+    <p data-trecho="abrir-painel-dia"></p>
+    <p data-trecho="aba-funcoes"></p>
     <p data-alvo=".painel-corpo .escala-edicao-linha--vaga" data-clique=".painel-corpo .escala-edicao-linha--vaga .escala-edicao-lapis" data-um data-avanca="clique" data-sem-alvo="Neste dia não há horário sem ninguém. Abra outro dia." data-sem-alvo-treino="Neste dia não há horário sem ninguém.">O horário sem ninguém aparece em vermelho. Use o lápis dele.</p>
-    <p data-alvo=".painel-corpo .escala-linha-combo" data-condicao=".escala-rodape-salvar:not(.oculto)" data-avanca="aparece" data-porta=".painel-corpo .escala-linha-combo input; .painel-corpo .escala-linha-combo .dropdown-item:not(.dropdown-item--inativo)" data-exemplo=".painel-corpo .escala-linha-combo .dropdown-item:not(.dropdown-item--inativo) .combo-militar-nome">Escolha quem fica nesse horário. Primeiro vêm os de serviço na unidade, depois os de outra unidade e os de folga; quem não pode vem apagado, com o motivo.<span data-so-treino>Escolha <strong data-exemplo-nome></strong> para esse horário. Primeiro vêm os de serviço na unidade, depois os de outra unidade e os de folga; quem não pode vem apagado, com o motivo.</span></p>
-    <p data-alvo=".painel-corpo .escala-linha-periodos" data-avanca="proximo" data-livre>Ajuste o horário, se precisar.<span data-so-treino>Aqui você ajusta o horário, se precisar.</span></p>
+    <p data-alvo=".painel-corpo .escala-edicao-opcoes.dropdown--aberto [data-acao='por-aqui']" data-avanca="clique">Escolha <strong>Pôr um militar aqui</strong>.</p>
+    <p data-alvo=".painel-corpo .escala-linha-militar" data-condicao=".painel-corpo .escala-linha-folga:not(.oculto), .painel-corpo .escala-linha-banco:not(.oculto), .painel-corpo .escala-linha-origem:not(.oculto), .escala-rodape-salvar:not(.oculto)" data-avanca="aparece" data-porta=".painel-corpo .escala-linha-combo input; .painel-corpo .escala-linha-combo .dropdown-item[data-situacao='folga']:not(.dropdown-item--inativo)" data-exemplo=".painel-corpo .escala-linha-combo .dropdown-item[data-situacao='folga']:not(.dropdown-item--inativo) .combo-militar-nome">Em <strong>Quem cobre</strong>, a unidade vem com a do painel; troque-a para cobrir com alguém de outra unidade. Na lista, os de folga vêm primeiro, e os outros grupos abrem pelo título.<span data-so-treino>Escolha <strong data-exemplo-nome></strong>, que está de folga. Na lista, os de folga vêm primeiro, e os outros grupos abrem pelo título.</span></p>
+    <p data-alvo=".painel-corpo .escala-linha-folga:not(.oculto)" data-opcional data-condicao=".painel-corpo .escala-linha-dia-folga:not(.oculto), .painel-corpo .escala-linha-banco:not(.oculto)" data-avanca="aparece" data-porta=".painel-corpo .escala-linha-folga label:has(input[value='nao'])">Em <strong>Folga em outro dia</strong>, diga se ele folga, em troca, num dia em que está de serviço. O <strong>Sim</strong> abre o calendário com os dias de serviço dele; o <strong>Não</strong> é um serviço a mais.<span data-so-treino>Escolha <strong>Não, é um serviço a mais</strong>. O Sim abriria o calendário com os dias de serviço dele, para você escolher a folga.</span></p>
+    <p data-alvo=".painel-corpo .escala-linha-dia-folga:not(.oculto)" data-opcional data-condicao=".escala-rodape-salvar:not(.oculto)" data-avanca="aparece">Em <strong>Dia da folga</strong>, clique num dos dias de serviço dele. O número vermelho é quantas vagas estão sem ninguém no dia.</p>
+    <p data-alvo=".painel-corpo .escala-linha-banco:not(.oculto)" data-opcional data-condicao=".escala-rodape-salvar:not(.oculto)" data-avanca="aparece" data-porta=".painel-corpo .escala-linha-banco label:has(input[value='sim'])">Em <strong>Banco de horas</strong>, diga se as horas contam.<span data-so-treino>Escolha <strong>Contabilizar</strong>.</span></p>
+    <p data-alvo=".painel-corpo .escala-linha-origem:not(.oculto)" data-opcional data-condicao=".escala-rodape-salvar:not(.oculto)" data-avanca="aparece">Em <strong>Na unidade de origem</strong>, diga se ele sai de lá neste dia ou fica nas duas unidades.</p>
+    <p data-alvo=".painel-corpo .escala-linha-horario:not(.oculto) .escala-linha-periodos" data-opcional data-avanca="proximo" data-livre>Ajuste o horário, se precisar.<span data-so-treino>Aqui você ajusta o horário, se precisar.</span></p>
     <p data-alvo=".painel-corpo .escala-linha-fechar" data-avanca="clique">Feche a edição pelo <strong>X</strong>. A mudança fica, e a lista mostra o dia como vai ficar.</p>
     <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé.</p>
     <p data-fim>Pronto. O horário foi preenchido.</p>
@@ -1594,48 +1646,98 @@
     <p data-trecho="abrir-escala"></p>
     <p data-trecho="aba-mes"></p>
     <p data-trecho="abrir-dia"></p>
-    <p data-avanca="escolha">Há dois jeitos de tirar alguém do dia: pelo menu <strong>Editar o dia</strong>, para qualquer um, ou pelo ícone na caixa <strong>Sem função</strong>, para quem ficou sem função.</p>
-    <section data-caminho="menu" data-entrada=".painel-lateral .escala-edicao-menu > .botao">
-      <p data-alvo=".painel-lateral .escala-edicao-menu [data-acao='remover']" data-avanca="clique">Escolha <strong>Remover militar</strong>.</p>
-      <p data-alvo=".painel-corpo .escala-remover-quem" data-condicao=".painel-corpo .escala-remover-reman:not(.oculto), .painel-corpo .escala-remover-mudanca:not(.oculto), .painel-corpo .escala-remover-partes:not(.oculto), .painel-corpo .escala-remover-alcance:not(.oculto), .painel-corpo .escala-remover-horario:not(.oculto), .painel-corpo .escala-remover-troca:not(.oculto) > .escala-remover-troca-doc" data-avanca="aparece" data-porta=".painel-corpo .escala-remover-combo input; .painel-corpo .escala-remover-combo .dropdown-item:not(.dropdown-item--inativo):not(:has(use[href$='icone-origem-troca'])):not(:has(use[href$='icone-remanejado'])):not(:has(use[href$='icone-origem-mudanca']))" data-exemplo=".painel-corpo .escala-remover-combo .dropdown-item:not(.dropdown-item--inativo):not(:has(use[href$='icone-origem-troca'])):not(:has(use[href$='icone-remanejado'])):not(:has(use[href$='icone-origem-mudanca'])) .combo-militar-nome">Escolha quem sai. Ao lado do nome, aparece como ele entrou no dia: pelo ciclo, só naquele dia ou por troca.<span data-so-treino>Escolha <strong data-exemplo-nome></strong>, que sai. Ao lado do nome, aparece como ele entrou no dia: pelo ciclo, só naquele dia ou por troca.</span></p>
-      <p data-alvo=".painel-corpo .escala-remover-alcance" data-opcional data-avanca="proximo" data-livre>Se ele é do ciclo, escolha <strong>Só no dia</strong>.<span data-so-treino>Se ele é do ciclo, <strong>Só no dia</strong> já vem marcado.</span></p>
-      <p data-alvo=".painel-corpo .escala-remover-horario" data-opcional data-avanca="proximo" data-livre>Ajuste o horário que sai, se não for o dia todo.<span data-so-treino>Aqui você ajusta o horário que sai, se não for o dia todo.</span></p>
-      <p data-alvo=".painel-corpo .escala-remover-banco" data-opcional data-avanca="proximo" data-livre>Diga se as horas saem do banco de horas dele.<span data-so-treino>Aqui você diz se as horas saem do banco de horas dele.</span></p>
-      <p data-alvo=".escala-mes-celula--selecionada" data-alvo-senao=".painel-lateral--aberto .painel-corpo" data-avanca="proximo">A escala já mostra o dia como vai ficar. Nada foi gravado ainda.</p>
-    </section>
-    <section data-caminho="sem-funcao" data-entrada=".painel-corpo .escala-edicao-remover-dia">
-      <p data-alvo=".painel-corpo .escala-edicao-sem-funcao .pergunta-linha" data-clique=".painel-corpo .escala-edicao-sem-funcao .pergunta-linha .geral-opcao" data-opcional data-avanca="clique" data-livre data-treino-alvo=".painel-corpo .escala-edicao-sem-funcao .pergunta-linha .geral-opcao">Responda a pergunta que abre embaixo da linha, se houver. A resposta já o tira do dia.<span data-so-treino>Escolha a resposta acesa, na pergunta que abre embaixo da linha. A resposta já o tira do dia.</span></p>
-    </section>
+    <p data-trecho="aba-militares"></p>
+    <p data-alvo=".painel-corpo .escala-edicao-linha[data-linha='militar'] .escala-edicao-lapis" data-treino-alvo=".painel-corpo .escala-edicao-linha[data-linha='militar']:not(:has(.escala-distribuicao-icones use[href$='icone-origem-troca'])):not(:has(.escala-distribuicao-icones use[href$='icone-remanejado'])):not(:has(.escala-distribuicao-icones use[href$='icone-origem-mudanca'])):not(:has(.escala-distribuicao-icones use[href$='icone-origem-pontual'])):not(:has(.escala-distribuicao-icones use[href$='icone-extrajornada'])) .escala-edicao-lapis" data-avanca="clique">Use o lápis de quem sai.<span data-so-treino>Use o lápis da linha acesa.</span></p>
+    <p data-alvo=".painel-corpo .escala-edicao-opcoes.dropdown--aberto [data-acao='remover-dia']" data-avanca="clique">Escolha <strong>Remover do dia</strong>.</p>
+    <p data-alvo=".painel-corpo .pergunta-linha" data-clique=".painel-corpo .pergunta-linha .geral-opcao" data-opcional data-avanca="clique" data-livre data-treino-alvo=".painel-corpo .pergunta-linha .geral-opcao">Responda a pergunta que abre embaixo da linha, se houver. Na folga, ele já sai do dia com o <strong>Não descontar</strong> marcado, e a resposta fecha a pergunta.<span data-so-treino>Escolha a resposta acesa, na pergunta que abre embaixo da linha. Na folga, ele já sai do dia com o <strong>Não descontar</strong> marcado, e a resposta fecha a pergunta.</span></p>
+    <p data-alvo=".painel-corpo .escala-remover" data-opcional data-avanca="proximo" data-livre>Se ele entrou no dia de mais de um jeito, ou por troca, abre a tela <strong>Remover do dia</strong>, já com ele escolhido. Responda as perguntas dela.</p>
+    <p data-alvo=".escala-mes-celula--selecionada" data-alvo-senao=".painel-lateral--aberto .painel-corpo" data-avanca="proximo">A escala já mostra o dia como vai ficar. Nada foi gravado ainda.</p>
     <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo.</p>
-    <p data-fim>Pronto. Ele saiu do dia. Quem é do ciclo fica de folga nesse dia.</p>
+    <p data-fim>Pronto. Ele saiu do dia. Quem é da guarnição fica de folga nesse dia.</p>
     <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, ele sairia do dia.</p>
+  </template>
+
+  <template data-roteiro="horario-do-dia" data-titulo="Mudar o horário do serviço" data-conjunto="ajustar-o-dia" data-area="admin" data-grupo="Escala" data-pagina="escalas">
+    <p data-trecho="abrir-escala"></p>
+    <p data-trecho="aba-mes"></p>
+    <p data-trecho="abrir-dia"></p>
+    <p data-trecho="aba-militares"></p>
+    <p data-alvo=".painel-corpo .escala-edicao-linha[data-linha='militar']:not(:has(.escala-distribuicao-icones use[href$='icone-origem-troca'])):not(:has(.escala-distribuicao-icones use[href$='icone-remanejado'])):not(:has(.escala-distribuicao-icones use[href$='icone-origem-mudanca'])):not(:has(.escala-distribuicao-icones use[href$='icone-origem-pontual'])):not(:has(.escala-distribuicao-icones use[href$='icone-extrajornada'])) .escala-edicao-lapis" data-avanca="clique">Use o lápis do militar que vai ficar menos tempo no dia.<span data-so-treino>Use o lápis da linha acesa.</span></p>
+    <p data-alvo=".painel-corpo .escala-edicao-opcoes.dropdown--aberto [data-acao='horario-dia']" data-avanca="clique">Escolha <strong>Mudar o horário do serviço</strong>.</p>
+    <p data-alvo=".painel-corpo .escala-horario-dia-periodo" data-condicao=".painel-corpo .escala-horario-dia-banco:not(.oculto)" data-avanca="aparece" data-porta=".painel-corpo .escala-horario-dia-periodo .horario-par > .dropdown-numeros:last-child .dropdown-numeros-btn; .painel-corpo .escala-horario-dia-periodo .horario-par > .dropdown-numeros:last-child .dropdown-item:not(.dropdown-item--ativo)" data-livre>Escolha o horário dele no dia. As horas que saem viram folga, e a frase embaixo diz quanto.<span data-so-treino>Escolha o fim do horário dele no dia. As horas que saem viram folga, e a frase embaixo diz quanto.</span></p>
+    <p data-alvo=".painel-corpo .escala-horario-dia-banco" data-clique=".painel-corpo .escala-horario-dia-banco .geral-opcao" data-avanca="clique" data-livre data-treino-alvo=".painel-corpo .escala-horario-dia-banco .escala-horario-dia-descontar .geral-opcao:has(input[value='nao'])">O <strong>Não descontar</strong> já vem marcado: as horas de folga não saem do banco de horas dele. Clique na resposta que vale.<span data-so-treino>O <strong>Não descontar</strong> já vem marcado: as horas de folga não saem do banco de horas dele. Clique na resposta acesa.</span></p>
+    <p data-alvo=".painel-corpo .subtela-voltar" data-avanca="clique">Volte ao dia pelo <strong>Voltar ao dia</strong>. A mudança fica, e a lista mostra o dia como vai ficar.</p>
+    <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo.</p>
+    <p data-fim>Pronto. O horário dele no dia mudou, e as horas que saíram ficaram de folga.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, o horário dele no dia mudaria.</p>
+  </template>
+
+  <template data-roteiro="celula-horario" data-titulo="Mudar o horário na célula" data-conjunto="ajustar-o-dia" data-area="admin" data-grupo="Escala" data-pagina="escalas">
+    <p data-trecho="abrir-escala"></p>
+    <p data-trecho="aba-mes"></p>
+    <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'] .linha-escalado[data-situacao='prontidao']:has(use[href$='icone-origem-base']):not(:has(use[href$='icone-remanejado'])):not(:has(.linha-escalado-hora-par + .linha-escalado-hora-par))" data-alvo-senao=".escala-mes-celula[data-unidade-id='{unidade}'] .linha-escalado[data-situacao='prontidao']:has(use[href$='icone-origem-base']):not(:has(use[href$='icone-remanejado'])):not(:has(.linha-escalado-hora-par + .linha-escalado-hora-par))" data-um data-avanca="clique" data-pular-se=".escala-celula-cartao" data-treino-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'] .linha-escalado[data-situacao='prontidao']:has(use[href$='icone-origem-base']):not(:has(use[href$='icone-remanejado'])):not(:has(.linha-escalado-hora-par + .linha-escalado-hora-par)), .escala-mes-celula[data-unidade-id='{unidade}'] .linha-escalado[data-situacao='prontidao']:has(use[href$='icone-origem-base']):not(:has(use[href$='icone-remanejado'])):not(:has(.linha-escalado-hora-par + .linha-escalado-hora-par))">Clique no nome de um militar da sua unidade, no dia de hoje.<span data-so-treino>Clique no nome aceso.</span></p>
+    <p data-alvo=".escala-celula-cartao-horario:not(.oculto)" data-avanca="proximo">O horário dele abre ali, no mesmo fundo do nome, sem abrir o painel. A lixeira, no canto direito, tira ele do dia.</p>
+    <p data-alvo=".escala-celula-cartao-horario" data-condicao=".escala-celula-pergunta:not(.oculto)" data-avanca="aparece" data-porta=".escala-celula-cartao .horario-par > .dropdown-numeros:last-child .dropdown-numeros-btn; .escala-celula-cartao .horario-par > .dropdown-numeros:last-child .dropdown-item:not(.dropdown-item--ativo)" data-livre>Escolha o fim do horário dele no dia. As horas que saem viram folga.<span data-so-treino>Abra o fim do horário e escolha outra hora. As horas que saem viram folga.</span></p>
+    <p data-alvo=".escala-celula-pergunta" data-avanca="proximo">A frase diz quanto sai. O <strong>Não descontar</strong> já vem marcado: as horas de folga não saem do banco de horas dele. Para descontar, escolha a outra resposta.</p>
+    <p data-alvo=".escala-celula--nao-salvo" data-avanca="proximo">A escala já mostra o dia como vai ficar, com a borda tracejada. Clicar fora da célula fecha o cartão e guarda a mudança. Nada foi gravado ainda.</p>
+    <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo.</p>
+    <p data-fim>Pronto. O horário dele no dia mudou, e as horas que saíram ficaram de folga.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, o horário dele no dia mudaria.</p>
+  </template>
+
+  <template data-roteiro="celula-tirar" data-titulo="Tirar do dia na célula" data-conjunto="ajustar-o-dia" data-area="admin" data-grupo="Escala" data-pagina="escalas">
+    <p data-trecho="abrir-escala"></p>
+    <p data-trecho="aba-mes"></p>
+    <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'] .linha-escalado[data-situacao='prontidao']:has(use[href$='icone-origem-base']):not(:has(use[href$='icone-remanejado'])):not(:has(.linha-escalado-hora-par + .linha-escalado-hora-par))" data-alvo-senao=".escala-mes-celula[data-unidade-id='{unidade}'] .linha-escalado[data-situacao='prontidao']:has(use[href$='icone-origem-base']):not(:has(use[href$='icone-remanejado'])):not(:has(.linha-escalado-hora-par + .linha-escalado-hora-par))" data-um data-avanca="clique" data-pular-se=".escala-celula-cartao" data-treino-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'] .linha-escalado[data-situacao='prontidao']:has(use[href$='icone-origem-base']):not(:has(use[href$='icone-remanejado'])):not(:has(.linha-escalado-hora-par + .linha-escalado-hora-par)), .escala-mes-celula[data-unidade-id='{unidade}'] .linha-escalado[data-situacao='prontidao']:has(use[href$='icone-origem-base']):not(:has(use[href$='icone-remanejado'])):not(:has(.linha-escalado-hora-par + .linha-escalado-hora-par))">Clique no nome de um militar da sua unidade, no dia de hoje.<span data-so-treino>Clique no nome aceso.</span></p>
+    <p data-alvo=".escala-celula-cartao-horario:not(.oculto)" data-avanca="proximo">O horário dele abre ali, no mesmo fundo do nome, sem abrir o painel. A lixeira, no canto direito, tira ele do dia.</p>
+    <p data-alvo=".escala-celula-remover" data-avanca="clique">Clique na lixeira, no canto direito.</p>
+    <p data-alvo=".escala-celula-pergunta:not(.oculto)" data-opcional data-avanca="proximo">Ele já sai do dia, de folga, com o <strong>Não descontar</strong> marcado. Para descontar do banco de horas, escolha a outra resposta.</p>
+    <p data-alvo=".escala-celula--nao-salvo" data-avanca="proximo">A escala já mostra o dia como vai ficar, com a borda tracejada. Clicar fora da célula fecha o cartão e guarda a mudança. Nada foi gravado ainda.</p>
+    <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo.</p>
+    <p data-fim>Pronto. Ele saiu do dia. Quem é da guarnição fica de folga nesse dia.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, ele sairia do dia.</p>
+  </template>
+
+  <template data-roteiro="celula-adicionar" data-titulo="Adicionar somente nesse dia" data-conjunto="ajustar-o-dia" data-area="admin" data-grupo="Escala" data-pagina="escalas">
+    <p data-trecho="abrir-escala"></p>
+    <p data-trecho="aba-mes"></p>
+    <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'] .escala-mes-grafico" data-alvo-senao=".escala-mes-celula[data-unidade-id='{unidade}'] .escala-mes-grafico" data-um data-avanca="clique" data-pular-se=".escala-celula-acoes" data-treino-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'] .escala-mes-grafico, .escala-mes-celula[data-unidade-id='{unidade}'] .escala-mes-grafico">Clique no pelotão de hoje, fora dos nomes.<span data-so-treino>Clique no pelotão aceso, fora dos nomes.</span></p>
+    <p data-alvo=".escala-celula-acoes" data-clique=".escala-celula-acao[data-acao='adicionar']" data-avanca="clique" data-treino-alvo=".escala-celula-acao[data-acao='adicionar']">O pelotão fica marcado. Clique em <strong>Adicionar somente nesse dia</strong>.<span data-so-treino>O pelotão fica marcado. Clique no botão aceso.</span></p>
+    <p data-alvo=".escala-celula-adicionar" data-condicao=".escala-celula-cartao-horario:not(.oculto)" data-avanca="aparece" data-porta=".escala-celula-adicionar input; .escala-celula-adicionar .combo-militar-item:not(.dropdown-item--inativo)" data-livre>Escolha quem entra. A lista mostra quem tem horas livres no dia, por pelotão.<span data-so-treino>Escolha um nome da lista.</span></p>
+    <p data-alvo=".escala-celula-cartao" data-avanca="proximo">Ele entra nas horas livres dele, e o sistema distribui o dia. O banco de horas já vem em <strong>Contabilizar</strong>, e o horário muda ali mesmo.</p>
+    <p data-alvo=".escala-celula--nao-salvo" data-avanca="proximo">A escala já mostra o dia como vai ficar, com a borda tracejada. Clicar fora da célula fecha o cartão e guarda a mudança. Nada foi gravado ainda.</p>
+    <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo.</p>
+    <p data-fim>Pronto. Ele está escalado naquele dia.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, ele entraria na escala desse dia.</p>
   </template>
 
   <template data-roteiro="mudar-dia" data-titulo="Mudar o dia do serviço" data-conjunto="ajustar-o-dia" data-area="admin" data-grupo="Escala" data-pagina="escalas">
     <p data-trecho="abrir-escala"></p>
     <p data-trecho="aba-mes"></p>
     <p data-trecho="abrir-dia"></p>
-    <p data-alvo=".painel-lateral .escala-edicao-menu > .botao" data-avanca="clique">Abra o menu <strong>Editar o dia</strong>.</p>
-    <p data-alvo=".painel-lateral .escala-edicao-menu [data-acao='mudar-dia']" data-avanca="clique">Escolha <strong>Mudar o dia do serviço</strong>.</p>
-    <p data-alvo=".painel-corpo .escala-mudar-dia-quem" data-condicao=".painel-corpo .escala-mudar-dia-dia:not(.oculto), .painel-corpo .escala-mudar-dia-janelas:not(.oculto)" data-avanca="aparece" data-porta=".painel-corpo .escala-mudar-dia-combo input; .painel-corpo .escala-mudar-dia-combo .dropdown-item:not(.dropdown-item--inativo)" data-exemplo=".painel-corpo .escala-mudar-dia-combo .dropdown-item:not(.dropdown-item--inativo) .combo-militar-nome">Escolha quem muda de dia. Só o serviço pelo ciclo muda por aqui; quem está de outro jeito aparece apagado, com o caminho certo.<span data-so-treino>Escolha <strong data-exemplo-nome></strong>. Só o serviço pelo ciclo muda por aqui; quem está de outro jeito aparece apagado, com o caminho certo.</span></p>
+    <p data-trecho="aba-militares"></p>
+    <p data-alvo=".painel-corpo .escala-edicao-linha[data-linha='militar']:not(:has(.escala-distribuicao-icones use[href$='icone-origem-troca'])):not(:has(.escala-distribuicao-icones use[href$='icone-remanejado'])):not(:has(.escala-distribuicao-icones use[href$='icone-origem-mudanca'])):not(:has(.escala-distribuicao-icones use[href$='icone-origem-pontual'])):not(:has(.escala-distribuicao-icones use[href$='icone-extrajornada'])) .escala-edicao-lapis" data-avanca="clique">Use o lápis de quem muda de dia. Só o serviço pela guarnição muda por aqui.<span data-so-treino>Use o lápis da linha acesa.</span></p>
+    <p data-alvo=".painel-corpo .escala-edicao-opcoes.dropdown--aberto [data-acao='mudar-dia']" data-avanca="clique">Escolha <strong>Mudar o dia do serviço</strong>. Ele já vem escolhido.</p>
     <p data-alvo=".painel-corpo .escala-mudar-dia-janelas:not(.oculto)" data-condicao=".painel-corpo .escala-mudar-dia-dia:not(.oculto)" data-opcional data-avanca="aparece" data-treino-alvo=".painel-corpo .escala-mudar-dia-janelas:not(.oculto) label:has(input)">O serviço dele neste dia está dividido: escolha a parte que muda.<span data-so-treino>Escolha a parte acesa. O serviço dele neste dia está dividido.</span></p>
-    <p data-alvo=".painel-corpo .escala-mudar-dia-dia" data-condicao=".painel-corpo .escala-mudar-dia .escala-onde-fica:not(.oculto)" data-avanca="aparece" data-porta=".painel-corpo .escala-mudar-dia-calendario .mini-calendario-dia:not(:disabled)">Escolha o dia novo. Em amarelo, ele ficaria muitas horas seguidas de serviço; o número vermelho é quantas vagas estão sem ninguém no dia.<span data-so-treino>Escolha um dia aceso. Em amarelo, ele ficaria muitas horas seguidas de serviço; o número vermelho é quantas vagas estão sem ninguém no dia.</span></p>
+    <p data-alvo=".painel-corpo .escala-mudar-dia-dia" data-condicao=".painel-corpo .escala-mudar-dia .escala-onde-fica:not(.oculto)" data-avanca="aparece" data-porta=".painel-corpo .escala-mudar-dia-calendario .mini-calendario-dia:not(:disabled)">Escolha o dia novo. O número vermelho é quantas vagas estão sem ninguém no dia.<span data-so-treino>Escolha um dia aceso. O número vermelho é quantas vagas estão sem ninguém no dia.</span></p>
     <p data-alvo=".painel-corpo .escala-mudar-dia-horario" data-avanca="proximo" data-livre>O serviço inteiro já vem marcado. Com <strong>Parte do serviço</strong>, só uma parte vai para o dia novo, no mesmo horário.<span data-so-treino>O serviço inteiro já vem marcado. Com <strong>Parte do serviço</strong>, só uma parte iria para o dia novo, no mesmo horário.</span></p>
     <p data-alvo=".painel-corpo .escala-mudar-dia .escala-onde-fica:not(.oculto)" data-avanca="proximo" data-livre>Em <strong>Onde fica</strong>, a vaga sem ninguém no horário vem marcada como recomendada. Você também pode deixar o sistema distribuir, escolher a função ou pôr no lugar de outro militar.</p>
     <p data-alvo=".painel-corpo .escala-mudar-dia-como:not(.oculto)" data-avanca="proximo">Em <strong>Como fica</strong>, você confere os dois dias. O banco de horas não muda: é o mesmo serviço, em outro dia.</p>
     <p data-alvo=".escala-mes-celula--selecionada" data-alvo-senao=".painel-lateral--aberto .painel-corpo" data-avanca="proximo">A escala já mostra os dois dias como vão ficar, com a borda tracejada. Nada foi gravado ainda.</p>
     <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo.</p>
-    <p data-fim>Pronto. O serviço dele passou para o dia novo, e ele é avisado no sino. Para desfazer, use o lápis dele em <strong>De folga</strong>, no dia de antes, ou <strong>Remover militar</strong>, no dia novo.</p>
+    <p data-fim>Pronto. O serviço dele passou para o dia novo, e ele é avisado no sino. Para desfazer, use o lápis dele em <strong>De folga</strong>, no dia de antes (<strong>Desfazer a mudança</strong>), ou, no dia novo, o lápis dele na aba <strong>Militares</strong> (<strong>Remover do dia</strong>).</p>
     <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, o serviço dele passaria para o dia novo.</p>
   </template>
 
   <template data-roteiro="cancelar-folga" data-titulo="Cancelar uma folga no dia" data-conjunto="ajustar-o-dia" data-area="admin" data-grupo="Escala" data-pagina="escalas" data-cenario="folga">
     <p data-trecho="abrir-escala"></p>
     <p data-trecho="aba-mes"></p>
-    <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}']" data-alvo-senao=".escala-mes-celula" data-avanca="clique" data-pular-se=".escala-mes-celula--selecionada" data-treino-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'], .escala-mes-celula[data-iso='{hoje}'], .escala-mes-celula[data-unidade-id='{unidade}'], .escala-mes-celula">Abra um dia da sua unidade em que alguém está de folga.<span data-so-treino>Abra o dia aceso. No treino, alguém está de folga nele.</span></p>
+    <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}'] .escala-mes-grafico" data-alvo-senao=".escala-mes-celula .escala-mes-grafico" data-avanca="clique" data-pular-se=".escala-mes-celula--selecionada" data-treino-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'] .escala-mes-grafico, .escala-mes-celula[data-iso='{hoje}'] .escala-mes-grafico, .escala-mes-celula[data-unidade-id='{unidade}'] .escala-mes-grafico, .escala-mes-celula .escala-mes-grafico">Abra um dia da sua unidade em que alguém está de folga.<span data-so-treino>Abra o dia aceso. No treino, alguém está de folga nele.</span></p>
+    <p data-trecho="abrir-painel-dia"></p>
     <p data-alvo=".painel-corpo .escala-edicao-folgas" data-anel="caixa" data-requer=".painel-corpo .escala-edicao-folgas .escala-edicao-lapis" data-clique=".painel-corpo .escala-edicao-folgas .escala-edicao-lapis" data-avanca="clique" data-sem-alvo="Neste dia ninguém da sua unidade está de folga. Abra outro dia." data-sem-alvo-treino="Neste dia ninguém da sua unidade está de folga." data-treino-alvo=".painel-corpo .escala-edicao-folgas .escala-edicao-lapis">Na caixa <strong>De folga</strong>, use o lápis de quem está de folga.</p>
-    <p data-alvo=".painel-corpo .escala-militar" data-avanca="proximo">Aqui estão a folga e o que acontece se ela for cancelada.</p>
-    <p data-alvo=".painel-corpo .escala-folga-dia-pergunta .geral-opcao:has(input[value='cancelar'])" data-avanca="clique">Escolha <strong>Cancelar a folga</strong>.</p>
+    <p data-alvo=".painel-corpo .escala-edicao-opcoes.dropdown--aberto [data-acao='cancelar-folga']" data-avanca="clique">Escolha <strong>Cancelar a folga</strong>.</p>
+    <p data-alvo=".painel-corpo .escala-militar" data-avanca="proximo">Aqui estão a folga e o que acontece com ela cancelada.</p>
+    <p data-alvo=".painel-corpo .escala-folga-dia-pergunta" data-avanca="proximo"><strong>Cancelar a folga</strong> já vem marcado. Para voltar atrás, escolha <strong>Manter a folga</strong>.</p>
     <p data-alvo=".escala-mes-celula--selecionada" data-alvo-senao=".painel-lateral--aberto .painel-corpo" data-avanca="proximo">A escala já mostra o dia como vai ficar. Nada foi gravado ainda.</p>
     <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé.</p>
     <p data-fim>Pronto. A folga foi cancelada.</p>
@@ -1646,27 +1748,35 @@
     <p data-trecho="abrir-escala"></p>
     <p data-trecho="aba-mes"></p>
     <p data-trecho="abrir-dia"></p>
-    <p data-alvo=".painel-lateral .escala-edicao-menu > .botao" data-avanca="clique">Abra o menu <strong>Editar o dia</strong>.</p>
-    <p data-alvo=".painel-lateral .escala-edicao-menu [data-acao='remanejar']" data-avanca="clique">Escolha <strong>Remanejar militar</strong>.</p>
-    <p data-alvo=".painel-corpo .escala-remanejar-fazer" data-condicao=".painel-corpo .escala-remanejar-quem:not(.oculto)" data-avanca="aparece" data-porta=".painel-corpo .escala-remanejar-destino > .campo-selecao; .painel-corpo .escala-remanejar-destino .dropdown-item">Escolha o que fazer: trazer alguém de outra unidade para esta, ou enviar alguém daqui para outra unidade da companhia.<span data-so-treino>Escolha a unidade acesa em <strong>Enviar para</strong>. <strong>Trazer para</strong> é quando alguém de outra unidade vem para esta.</span></p>
-    <p data-alvo=".painel-corpo .escala-remanejar-quem" data-condicao=".painel-corpo .escala-remanejar-troca:not(.oculto)" data-avanca="aparece" data-porta=".painel-corpo .escala-remanejar-combo input; .painel-corpo .escala-remanejar-combo .dropdown-item:not(.dropdown-item--inativo)" data-exemplo=".painel-corpo .escala-remanejar-combo .dropdown-item:not(.dropdown-item--inativo) .combo-militar-nome">Escolha quem: no Trazer, a unidade e o militar; no Enviar, o militar. O ícone mostra como ele está de serviço no dia, inclusive de extra.<span data-so-treino>Escolha <strong data-exemplo-nome></strong>. O ícone mostra como ele está de serviço no dia, inclusive de extra.</span></p>
+    <p data-avanca="escolha">Há dois jeitos: para trazer alguém de outra unidade para esta, o menu <strong>Editar o dia</strong>; para mandar alguém daqui para outra unidade, o lápis dele na aba <strong>Militares</strong>. Escolha um.</p>
+    <section data-caminho="trazer" data-entrada=".painel-lateral .escala-edicao-menu > .botao">
+      <p data-alvo=".painel-lateral .escala-edicao-menu [data-acao='trazer']" data-avanca="clique">Escolha <strong>Trazer de outra unidade</strong>.</p>
+      <p data-alvo=".painel-corpo .escala-remanejar-origem-campo" data-condicao=".painel-corpo .escala-remanejar-origem .campo-selecao-texto:not(.campo-selecao-texto--vazio)" data-avanca="aparece" data-porta=".painel-corpo .escala-remanejar-origem > .campo-selecao; .painel-corpo .escala-remanejar-origem .dropdown-item">Em <strong>Quem</strong>, escolha a unidade de onde ele vem.<span data-so-treino>Em <strong>Quem</strong>, escolha a unidade acesa: ele vem de lá.</span></p>
+      <p data-alvo=".painel-corpo .escala-remanejar-quem" data-condicao=".painel-corpo .escala-remanejar-troca:not(.oculto)" data-avanca="aparece" data-porta=".painel-corpo .escala-remanejar-combo input; .painel-corpo .escala-remanejar-combo .dropdown-item:not(.dropdown-item--inativo)" data-exemplo=".painel-corpo .escala-remanejar-combo .dropdown-item:not(.dropdown-item--inativo) .combo-militar-nome">Escolha o militar. O ícone mostra como ele está de serviço no dia, inclusive de extra.<span data-so-treino>Escolha <strong data-exemplo-nome></strong>. O ícone mostra como ele está de serviço no dia, inclusive de extra.</span></p>
+    </section>
+    <section data-caminho="enviar" data-entrada=".painel-lateral .aba[data-secao='militares']">
+      <p data-alvo=".painel-corpo .escala-edicao-linha[data-linha='militar']:not(:has(.escala-distribuicao-icones use[href$='icone-remanejado'])):not(:has(.escala-distribuicao-icones use[href$='icone-origem-mudanca'])) .escala-edicao-lapis" data-avanca="clique">Use o lápis de quem vai para outra unidade.<span data-so-treino>Use o lápis da linha acesa.</span></p>
+      <p data-alvo=".painel-corpo .escala-edicao-opcoes.dropdown--aberto [data-acao='mudar-unidade']" data-avanca="clique">Escolha <strong>Mudar de unidade neste dia</strong>.</p>
+      <p data-alvo=".painel-corpo .escala-remanejar-fazer" data-condicao=".painel-corpo .escala-remanejar-troca:not(.oculto)" data-pular-se=".painel-corpo .escala-remanejar-troca:not(.oculto)" data-avanca="aparece" data-porta=".painel-corpo .escala-remanejar-destino > .campo-selecao; .painel-corpo .escala-remanejar-destino .dropdown-item">Em <strong>Enviar para</strong>, escolha a unidade para onde ele vai. Em <strong>Quem</strong>, ele já vem escolhido.<span data-so-treino>Em <strong>Enviar para</strong>, escolha a unidade acesa. Em <strong>Quem</strong>, ele já vem escolhido.</span></p>
+    </section>
     <p data-alvo=".painel-corpo .escala-remanejar-troca" data-condicao=".painel-corpo .escala-remanejar-motivo:not(.oculto), .painel-corpo .escala-remanejar-sai:not(.oculto)" data-avanca="aparece" data-porta=".painel-corpo .escala-remanejar-troca label:has(input[value='nao'])">Diga se é em troca: alguém da outra unidade faz o caminho contrário.<span data-so-treino>Escolha <strong>Não</strong>. <strong>Sim</strong> é quando alguém da outra unidade faz o caminho contrário.</span></p>
     <p data-alvo=".painel-corpo .escala-remanejar-sai:not(.oculto)" data-condicao=".painel-corpo .escala-remanejar-motivo:not(.oculto)" data-opcional data-avanca="aparece" data-treino-alvo=".painel-corpo .escala-remanejar-sai:not(.oculto) label:has(input)">Diga se ele sai desta unidade ou fica nas duas.<span data-so-treino>Escolha a opção acesa. Ele sai desta unidade ou fica nas duas.</span></p>
     <p data-alvo=".painel-corpo .escala-remanejar-motivo" data-condicao=".painel-corpo .escala-remanejar-motivo textarea" data-escrever data-avanca="preenchido" data-porta=".painel-corpo .escala-remanejar-motivo textarea">Escreva o motivo.</p>
     <p data-alvo=".painel-corpo .escala-remanejar .escala-onde-fica:not(.oculto)" data-avanca="proximo" data-livre>Em cada <strong>Onde fica</strong>, escolha se o sistema distribui, uma função ou no lugar de outro militar. Cada militar tem a sua escolha.<span data-so-treino>Em cada <strong>Onde fica</strong>, você escolhe se o sistema distribui, uma função ou no lugar de outro militar. Cada militar tem a sua escolha.</span></p>
     <p data-alvo=".escala-mes-celula--selecionada" data-alvo-senao=".painel-lateral--aberto .painel-corpo" data-avanca="proximo">A escala já mostra o dia como vai ficar. Nada foi gravado ainda.</p>
     <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo.</p>
-    <p data-fim>Pronto. O serviço dele nesse dia foi para a outra unidade, com a mesma origem; não é folga nem mexe no banco de horas, e a extra muda de lugar também na Extrajornada. Para desfazer depois, use <strong>Remover militar</strong>.</p>
+    <p data-fim>Pronto. O serviço dele nesse dia foi para a outra unidade, com a mesma origem; não é folga nem mexe no banco de horas, e a extra muda de lugar também na Extrajornada. Para desfazer depois, use o lápis dele na aba <strong>Militares</strong>, em qualquer uma das duas unidades.</p>
     <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, o serviço dele nesse dia iria para a outra unidade, com a mesma origem.</p>
   </template>
 
   <template data-roteiro="desfazer-troca" data-titulo="Desfazer uma troca no dia" data-conjunto="ajustar-o-dia" data-area="admin" data-grupo="Escala" data-pagina="escalas" data-cenario="troca-no-dia">
     <p data-trecho="abrir-escala"></p>
     <p data-trecho="aba-mes"></p>
-    <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}']" data-alvo-senao=".escala-mes-celula" data-avanca="clique" data-pular-se=".escala-mes-celula--selecionada" data-treino-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'], .escala-mes-celula[data-iso='{hoje}'], .escala-mes-celula[data-unidade-id='{unidade}'], .escala-mes-celula">Abra um dia em que alguém da sua unidade está de serviço por uma troca.<span data-so-treino>Abra o dia aceso. No treino, alguém está nele por uma troca.</span></p>
-    <p data-alvo=".painel-lateral .escala-edicao-menu > .botao" data-requer=".painel-corpo .escala-edicao-linha [href$='icone-origem-troca']" data-avanca="clique" data-sem-alvo="Neste dia ninguém da sua unidade está de serviço por uma troca. Abra outro dia." data-sem-alvo-treino="Neste dia ninguém da sua unidade está de serviço por uma troca.">Abra o menu <strong>Editar o dia</strong>.</p>
-    <p data-alvo=".painel-lateral .escala-edicao-menu [data-acao='remover']" data-avanca="clique">Escolha <strong>Remover militar</strong>.</p>
-    <p data-alvo=".painel-corpo .escala-remover-quem" data-condicao=".painel-corpo .escala-remover-troca:not(.oculto) > .escala-remover-troca-doc" data-avanca="aparece" data-porta=".painel-corpo .escala-remover-combo input; .painel-corpo .escala-remover-combo .dropdown-item:not(.dropdown-item--inativo):has(.combo-militar-icone:not(.oculto) use[href$='icone-origem-troca'])" data-exemplo=".painel-corpo .escala-remover-combo .dropdown-item:not(.dropdown-item--inativo):has(.combo-militar-icone:not(.oculto) use[href$='icone-origem-troca']) .combo-militar-nome">Escolha quem está no dia por uma troca.<span data-so-treino>Escolha <strong data-exemplo-nome></strong>, que está no dia por uma troca.</span></p>
+    <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}'] .escala-mes-grafico" data-alvo-senao=".escala-mes-celula .escala-mes-grafico" data-avanca="clique" data-pular-se=".escala-mes-celula--selecionada" data-treino-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'] .escala-mes-grafico, .escala-mes-celula[data-iso='{hoje}'] .escala-mes-grafico, .escala-mes-celula[data-unidade-id='{unidade}'] .escala-mes-grafico, .escala-mes-celula .escala-mes-grafico">Abra um dia em que alguém da sua unidade está de serviço por uma troca.<span data-so-treino>Abra o dia aceso. No treino, alguém está nele por uma troca.</span></p>
+    <p data-trecho="abrir-painel-dia"></p>
+    <p data-trecho="aba-militares"></p>
+    <p data-alvo=".painel-corpo .escala-edicao-linha[data-linha='militar']:has(.escala-distribuicao-icones use[href$='icone-origem-troca']) .escala-edicao-lapis" data-requer=".painel-corpo .escala-edicao-linha[data-linha='militar'] .escala-distribuicao-icones [href$='icone-origem-troca']" data-avanca="clique" data-sem-alvo="Neste dia ninguém da sua unidade está de serviço por uma troca. Abra outro dia." data-sem-alvo-treino="Neste dia ninguém da sua unidade está de serviço por uma troca.">Use o lápis de quem está no dia por uma troca: o ícone da troca fica ao lado do nome.<span data-so-treino>Use o lápis da linha acesa: ele está no dia por uma troca.</span></p>
+    <p data-alvo=".painel-corpo .escala-edicao-opcoes.dropdown--aberto [data-acao='remover-dia']" data-avanca="clique">Escolha <strong>Remover do dia</strong>. A tela abre já com ele.</p>
     <p data-alvo=".painel-corpo .escala-remover-troca-doc" data-avanca="proximo">Aqui estão o documento da troca e os dias dele. Quem volta é o dono do serviço.</p>
     <p data-alvo=".painel-corpo .escala-remover-troca-fazer:not(.oculto)" data-condicao=".painel-corpo .escala-remover-troca-junto:not(.oculto), .painel-corpo .escala-remover-troca-horas:not(.oculto), .painel-corpo .escala-remover-troca-motivo:not(.oculto)" data-opcional data-avanca="aparece" data-treino-alvo=".painel-corpo .escala-remover-troca-fazer:not(.oculto) label:has(input[value='troca']:not(:disabled)), .painel-corpo .escala-remover-troca-fazer:not(.oculto) label:has(input[value='outra'])">Escolha se cancela também uma troca futura entre os dois, para acertar as horas.<span data-so-treino>Escolha a opção acesa: cancelar também uma troca futura entre os dois, para acertar as horas.</span></p>
     <p data-so-ajuda data-alvo=".painel-corpo .escala-remover-troca-junto:not(.oculto)" data-opcional data-avanca="proximo" data-livre>Escolha qual troca sai junto.</p>
@@ -1694,7 +1804,8 @@
     <p data-trecho="abrir-escala"></p>
     <p data-trecho="aba-mes"></p>
     <p data-trecho="abrir-dia"></p>
-    <p data-alvo=".painel-corpo .escala-edicao-automatico" data-avanca="clique" data-sem-alvo="Este dia não tem ajuste manual: ele já está no automático. Abra outro dia." data-sem-alvo-treino="Este dia não tem ajuste manual: ele já está no automático.">No fim da lista, <strong>Voltar o dia ao automático</strong> tira os ajustes manuais desta unidade no dia, e o sistema distribui de novo.</p>
+    <p data-alvo=".painel-lateral .escala-edicao-menu > .botao" data-avanca="clique">Abra o menu <strong>Editar o dia</strong>.</p>
+    <p data-alvo=".painel-lateral .escala-edicao-menu [data-acao='automatico']" data-avanca="clique" data-sem-alvo="Este dia não tem ajuste manual: ele já está no automático. Abra outro dia." data-sem-alvo-treino="Este dia não tem ajuste manual: ele já está no automático.">Escolha <strong>Voltar o dia ao automático</strong>: ele tira os ajustes manuais desta unidade no dia, e o sistema distribui de novo.</p>
     <p data-alvo="#veu-aviso .modal" data-clique="#veu-aviso .aviso-confirmar" data-avanca="clique">Confirme no aviso.</p>
     <p data-alvo=".escala-mes-celula--selecionada" data-alvo-senao=".painel-lateral--aberto .painel-corpo" data-avanca="proximo">A escala já mostra o dia como o sistema faria.</p>
     <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo.</p>
@@ -1702,81 +1813,59 @@
     <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, o dia voltaria ao automático.</p>
   </template>
 
-  <template data-roteiro-conjunto="mexer-no-ciclo" data-titulo="Mexer no ciclo" data-grupo="Escala" data-area="admin"></template>
+  <template data-roteiro-conjunto="mexer-no-ciclo" data-titulo="Mexer nas guarnições" data-grupo="Escala" data-area="admin"></template>
 
-  <template data-roteiro="ciclo-por" data-titulo="Pôr um militar no ciclo" data-conjunto="mexer-no-ciclo" data-area="admin" data-grupo="Escala" data-pagina="escalas" data-cenario="ciclo-fora">
+  <template data-roteiro="ciclo-por" data-titulo="Pôr um militar numa guarnição" data-conjunto="mexer-no-ciclo" data-area="admin" data-grupo="Escala" data-pagina="escalas" data-cenario="ciclo-fora">
     <p data-trecho="abrir-escala"></p>
     <p data-trecho="aba-mes"></p>
     <p data-trecho="abrir-dia"></p>
-    <p data-avanca="escolha">Há dois caminhos: pelo menu <strong>Editar o dia</strong> ou pela aba <strong>Ciclo</strong>, que mostra quem está no ciclo, quem está fora e quem serve em outros dias. Escolha um.</p>
-    <section data-caminho="menu" data-entrada=".painel-lateral .escala-edicao-menu > .botao">
-      <p data-alvo=".painel-lateral .escala-edicao-menu [data-acao='adicionar']" data-avanca="clique">Escolha <strong>Adicionar militar</strong>.</p>
-      <p data-alvo=".painel-corpo .escala-adicionar-como" data-condicao=".painel-corpo .escala-adicionar-como input[value='ciclo']" data-porta=".painel-corpo .escala-adicionar-como label:has(input[value='ciclo'])" data-avanca="preenchido">Escolha <strong>No ciclo, a partir de</strong> este dia.</p>
-      <p data-alvo=".painel-corpo .escala-adicionar-quem" data-condicao=".escala-rodape-salvar:not(.oculto)" data-porta=".painel-corpo .escala-adicionar-combo input; .painel-corpo .escala-adicionar-combo .dropdown-item[data-situacao='fora']" data-exemplo=".painel-corpo .escala-adicionar-combo .dropdown-item[data-situacao='fora'] .combo-militar-nome" data-sem-alvo="Ninguém da unidade está fora do ciclo." data-avanca="aparece">Escolha quem entra: quem está fora do ciclo.<span data-so-treino>Escolha <strong data-exemplo-nome></strong>, que está fora do ciclo.</span></p>
-    </section>
-    <section data-caminho="aba" data-entrada=".painel-lateral .aba[data-secao='continuos']">
-      <p data-alvo=".painel-corpo .escala-ciclo-fora .escala-secao-botao" data-um data-avanca="clique" data-sem-alvo="Ninguém da unidade está fora do ciclo.">Em <strong>Fora da escala</strong>, use <strong>Adicionar</strong> ao lado de quem entra.</p>
-      <p data-alvo=".painel-corpo .escala-ciclo-fora .escala-secao-item:has(.escala-secao-selo:not(.selo--alerta))" data-alvo-senao=".painel-corpo .escala-ciclo-fora .escala-secao-selo:not(.selo--alerta)" data-um data-avanca="proximo">A linha mostra o que vai acontecer; <strong>Desmarcar</strong> desiste.</p>
-    </section>
-    <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo. O Dia, o Ciclo e a Extrajornada gravam juntos.</p>
-    <p data-fim>Pronto. Ele entra no ciclo a partir desse dia.</p>
-    <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, ele entraria no ciclo a partir desse dia.</p>
+    <p data-alvo=".painel-lateral .escala-edicao-menu > .botao" data-avanca="clique">Abra o menu <strong>Editar o dia</strong>.</p>
+    <p data-alvo=".painel-lateral .escala-edicao-menu [data-acao='adicionar']" data-avanca="clique">Escolha <strong>Adicionar militar</strong>.</p>
+    <p data-alvo=".painel-corpo .escala-adicionar-como" data-condicao=".painel-corpo .escala-adicionar-como input[value='ciclo']" data-porta=".painel-corpo .escala-adicionar-como label:has(input[value='ciclo'])" data-avanca="preenchido">Escolha <strong>Na guarnição</strong> deste dia, a partir dele. Abra o dia da guarnição em que ele vai entrar.</p>
+    <p data-alvo=".painel-corpo .escala-adicionar-quem" data-condicao=".escala-rodape-salvar:not(.oculto)" data-porta=".painel-corpo .escala-adicionar-combo input; .painel-corpo .escala-adicionar-combo .dropdown-item[data-situacao='fora']" data-exemplo=".painel-corpo .escala-adicionar-combo .dropdown-item[data-situacao='fora'] .combo-militar-nome" data-sem-alvo="Ninguém da unidade está fora da escala." data-avanca="aparece">Escolha quem entra: quem está fora da escala.<span data-so-treino>Escolha <strong data-exemplo-nome></strong>, que está fora da escala.</span></p>
+    <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo. Tudo o que mudou nas abas do painel grava junto.</p>
+    <p data-fim>Pronto. Ele entra na guarnição deste dia, a partir dele.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, ele entraria na guarnição deste dia, a partir dele.</p>
   </template>
 
-  <template data-roteiro="ciclo-mudar" data-titulo="Mudar um militar de ciclo" data-conjunto="mexer-no-ciclo" data-area="admin" data-grupo="Escala" data-pagina="escalas">
+  <template data-roteiro="ciclo-mudar" data-titulo="Mudar um militar de guarnição" data-conjunto="mexer-no-ciclo" data-area="admin" data-grupo="Escala" data-pagina="escalas">
     <p data-trecho="abrir-escala"></p>
     <p data-trecho="aba-mes"></p>
     <p data-trecho="abrir-dia"></p>
-    <p data-avanca="escolha">Há dois caminhos: pelo menu <strong>Editar o dia</strong> ou pela aba <strong>Ciclo</strong>, que mostra quem está no ciclo, quem está fora e quem serve em outros dias. Escolha um.</p>
-    <section data-caminho="menu" data-entrada=".painel-lateral .escala-edicao-menu > .botao">
-      <p data-alvo=".painel-lateral .escala-edicao-menu [data-acao='adicionar']" data-avanca="clique">Escolha <strong>Adicionar militar</strong>.</p>
-      <p data-alvo=".painel-corpo .escala-adicionar-como" data-condicao=".painel-corpo .escala-adicionar-como input[value='ciclo']" data-avanca="preenchido" data-porta=".painel-corpo .escala-adicionar-como label:has(input[value='ciclo'])">Escolha <strong>No ciclo, a partir de</strong> este dia.</p>
-      <p data-alvo=".painel-corpo .escala-adicionar-quem" data-condicao=".painel-corpo .escala-adicionar-ultimo:not(.oculto)" data-avanca="aparece" data-porta=".painel-corpo .escala-adicionar-combo input; .painel-corpo .escala-adicionar-combo .dropdown-item:not(.dropdown-item--inativo)[data-situacao='outro-ciclo']" data-exemplo=".painel-corpo .escala-adicionar-combo .dropdown-item:not(.dropdown-item--inativo)[data-situacao='outro-ciclo'] .combo-militar-nome">Escolha quem muda: alguém que já está no ciclo.<span data-so-treino>Escolha <strong data-exemplo-nome></strong>, que já está no ciclo.</span></p>
-      <p data-alvo=".painel-corpo .escala-adicionar-ultimo" data-avanca="proximo" data-livre>Escolha o último serviço dele no ciclo atual, entre as três últimas datas.<span data-so-treino>O último serviço dele no ciclo atual já vem marcado. Aqui você troca entre as três últimas datas.</span></p>
-      <p data-alvo=".painel-corpo .escala-ciclo-efeito:not(.oculto)" data-avanca="proximo">A lista mostra o que acontece com as trocas e as folgas dele a partir desse dia; as extras continuam.</p>
-    </section>
-    <section data-caminho="aba" data-entrada=".painel-lateral .aba[data-secao='continuos']">
-      <p data-alvo=".painel-corpo .escala-ciclo-outros > .grupo-caixa-cabecalho" data-avanca="clique" data-pular-se=".painel-corpo .escala-ciclo-outros > .grupo-caixa-cabecalho[aria-expanded='true']">Abra <strong>Contínuos em outros ciclos</strong>: quem está no ciclo, mas serve em outros dias.</p>
-      <p data-alvo=".painel-corpo .escala-ciclo-outros .escala-secao-botao:not(.escala-secao-botao--perigo)" data-um data-avanca="clique" data-sem-alvo="Ninguém da unidade está em outro ciclo.">Use <strong>Adicionar</strong> ao lado de quem muda para o ciclo deste dia.</p>
-      <p data-alvo=".painel-corpo .escala-ciclo-cartao" data-clique=".painel-corpo .escala-ciclo-cartao-continuar" data-avanca="clique" data-livre>Escolha o último serviço dele no ciclo atual, na pergunta que abre embaixo da linha.<span data-so-treino>O último serviço dele no ciclo atual já vem marcado, na pergunta que abre embaixo da linha. Siga pelo <strong>Continuar</strong>.</span></p>
-      <p data-alvo="#veu-aviso .modal" data-clique="#veu-aviso .aviso-confirmar" data-avanca="clique">Confira a lista do que acontece e confirme.</p>
-    </section>
-    <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo. O Dia, o Ciclo e a Extrajornada gravam juntos.</p>
-    <p data-fim>Pronto. Ele muda para o ciclo deste dia, depois do último serviço escolhido.</p>
-    <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, ele mudaria para o ciclo deste dia, depois do último serviço escolhido.</p>
+    <p data-alvo=".painel-lateral .escala-edicao-menu > .botao" data-avanca="clique">Abra o menu <strong>Editar o dia</strong>.</p>
+    <p data-alvo=".painel-lateral .escala-edicao-menu [data-acao='adicionar']" data-avanca="clique">Escolha <strong>Adicionar militar</strong>.</p>
+    <p data-alvo=".painel-corpo .escala-adicionar-como" data-condicao=".painel-corpo .escala-adicionar-como input[value='ciclo']" data-avanca="preenchido" data-porta=".painel-corpo .escala-adicionar-como label:has(input[value='ciclo'])">Escolha <strong>Na guarnição</strong> deste dia, a partir dele. Abra o dia da guarnição para a qual ele vai.</p>
+    <p data-alvo=".painel-corpo .escala-adicionar-quem" data-condicao=".painel-corpo .escala-ciclo-efeito:not(.oculto)" data-avanca="aparece" data-porta=".painel-corpo .escala-adicionar-combo input; .painel-corpo .escala-adicionar-combo .dropdown-item:not(.dropdown-item--inativo)[data-situacao='outra-guarnicao']" data-exemplo=".painel-corpo .escala-adicionar-combo .dropdown-item:not(.dropdown-item--inativo)[data-situacao='outra-guarnicao'] .combo-militar-nome">Escolha quem muda: alguém de outra guarnição.<span data-so-treino>Escolha <strong data-exemplo-nome></strong>, que é de outra guarnição.</span></p>
+    <p data-alvo=".painel-corpo .escala-ciclo-efeito:not(.oculto)" data-avanca="proximo">A lista mostra o que acontece com as trocas e as folgas dele a partir desse dia; as extras continuam.</p>
+    <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo. Tudo o que mudou nas abas do painel grava junto.</p>
+    <p data-fim>Pronto. Ele muda para a guarnição deste dia, a partir dele.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, ele mudaria para a guarnição deste dia, a partir dele.</p>
   </template>
 
-  <template data-roteiro="ciclo-tirar" data-titulo="Tirar um militar do ciclo" data-conjunto="mexer-no-ciclo" data-area="admin" data-grupo="Escala" data-pagina="escalas">
+  <template data-roteiro="ciclo-tirar" data-titulo="Remover um militar da guarnição" data-conjunto="mexer-no-ciclo" data-area="admin" data-grupo="Escala" data-pagina="escalas">
     <p data-trecho="abrir-escala"></p>
     <p data-trecho="aba-mes"></p>
     <p data-trecho="abrir-dia"></p>
-    <p data-avanca="escolha">Há dois caminhos: pelo menu <strong>Editar o dia</strong> ou pela aba <strong>Ciclo</strong>, que mostra quem está no ciclo, quem está fora e quem serve em outros dias. Escolha um.</p>
-    <section data-caminho="menu" data-entrada=".painel-lateral .escala-edicao-menu > .botao">
-      <p data-alvo=".painel-lateral .escala-edicao-menu [data-acao='remover']" data-avanca="clique">Escolha <strong>Remover militar</strong>.</p>
-      <p data-alvo=".painel-corpo .escala-remover-quem" data-condicao=".painel-corpo .escala-remover-alcance:not(.oculto)" data-avanca="aparece" data-porta=".painel-corpo .escala-remover-combo input; .painel-corpo .escala-remover-combo .dropdown-item:not(.dropdown-item--inativo):not(:has(use[href$='icone-origem-troca'])):not(:has(use[href$='icone-remanejado'])):not(:has(use[href$='icone-origem-pontual']))" data-exemplo=".painel-corpo .escala-remover-combo .dropdown-item:not(.dropdown-item--inativo):not(:has(use[href$='icone-origem-troca'])):not(:has(use[href$='icone-remanejado'])):not(:has(use[href$='icone-origem-pontual'])) .combo-militar-nome">Escolha quem sai: alguém que está no dia pelo ciclo.<span data-so-treino>Escolha <strong data-exemplo-nome></strong>, que está no dia pelo ciclo.</span></p>
-      <p data-alvo=".painel-corpo .escala-remover-alcance" data-condicao=".painel-corpo .escala-remover-alcance input[value='ciclo']" data-avanca="preenchido" data-porta=".painel-corpo .escala-remover-alcance label:has(input[value='ciclo'])">Escolha <strong>Do ciclo, a partir de</strong> este dia.</p>
-      <p data-alvo=".painel-corpo .escala-ciclo-efeito:not(.oculto)" data-avanca="proximo">A lista mostra o que é cancelado a partir desse dia: trocas e folgas. As extras dele continuam.</p>
-    </section>
-    <section data-caminho="aba" data-entrada=".painel-lateral .aba[data-secao='continuos']">
-      <p data-alvo=".painel-corpo .escala-ciclo-dia .escala-secao-botao--perigo" data-um data-avanca="clique" data-sem-alvo="Ninguém da unidade está no ciclo neste dia.">Em <strong>Contínuos do dia</strong>, use <strong>Remover</strong> ao lado de quem sai.</p>
-      <p data-alvo="#veu-aviso .modal" data-clique="#veu-aviso .aviso-confirmar" data-avanca="clique">Confira a lista do que é cancelado e confirme.</p>
-      <p data-alvo=".painel-corpo .escala-ciclo-dia .escala-secao-item:has(.escala-secao-selo:not(.selo--alerta))" data-alvo-senao=".painel-corpo .escala-ciclo-dia .escala-secao-selo:not(.selo--alerta)" data-um data-avanca="proximo">A linha marcada mostra o que vai acontecer; <strong>Desmarcar</strong> desiste.</p>
-    </section>
-    <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo. O Dia, o Ciclo e a Extrajornada gravam juntos.</p>
-    <p data-fim>Pronto. Ele sai do ciclo a partir desse dia.</p>
-    <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, ele sairia do ciclo a partir desse dia.</p>
+    <p data-trecho="aba-militares"></p>
+    <p data-alvo=".painel-corpo .escala-edicao-linha[data-linha='militar'] .escala-edicao-lapis" data-treino-alvo=".painel-corpo .escala-edicao-linha[data-linha='militar']:not(:has(.escala-distribuicao-icones use[href$='icone-origem-troca'])):not(:has(.escala-distribuicao-icones use[href$='icone-remanejado'])):not(:has(.escala-distribuicao-icones use[href$='icone-origem-mudanca'])):not(:has(.escala-distribuicao-icones use[href$='icone-origem-pontual'])):not(:has(.escala-distribuicao-icones use[href$='icone-extrajornada'])) .escala-edicao-lapis" data-avanca="clique">Use o lápis de quem sai da guarnição.<span data-so-treino>Use o lápis da linha acesa.</span></p>
+    <p data-alvo=".painel-corpo .escala-edicao-opcoes.dropdown--aberto [data-acao='remover-guarnicao']" data-avanca="clique">Escolha <strong>Remover da guarnição</strong>.</p>
+    <p data-alvo=".painel-corpo .pergunta-linha:has(.escala-remover-guarnicao-cancelar)" data-condicao=".painel-corpo .pergunta-linha .escala-ciclo-efeito:not(.oculto)" data-porta=".painel-corpo .pergunta-linha:has(.escala-remover-guarnicao-cancelar) .geral-opcao" data-avanca="aparece" data-livre>Diga qual é o último serviço dele: este dia, ou ele já não trabalha a partir deste dia.<span data-so-treino>Escolha uma das respostas: este dia é o último serviço dele, ou ele já não trabalha a partir deste dia.</span></p>
+    <p data-alvo=".painel-corpo .pergunta-linha .escala-ciclo-efeito:not(.oculto)" data-avanca="proximo">Embaixo aparece o que é cancelado: as trocas e as folgas dele dali em diante (as extras continuam). No dia em que ele não trabalha mais, ele aparece riscado.</p>
+    <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo. Tudo o que mudou nas abas do painel grava junto.</p>
+    <p data-fim>Pronto. Ele sai da guarnição depois do último serviço.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, ele sairia da guarnição depois do último serviço.</p>
   </template>
 
   <template data-roteiro="extra-na-escala" data-titulo="Editar a extra pela Escala" data-area="admin" data-grupo="Escala" data-pagina="escalas" data-cenario="extra-lancado">
     <p data-trecho="abrir-escala"></p>
     <p data-trecho="aba-mes"></p>
-    <p data-alvo=".escala-mes-celula" data-treino-alvo=".escala-mes-celula:has(use[href$='icone-extrajornada'])" data-avanca="clique" data-pular-se=".escala-mes-celula--selecionada">Clique num pelotão de um dia.<span data-so-treino>Clique no pelotão aceso: ele tem extra.</span></p>
+    <p data-alvo=".escala-mes-celula .escala-mes-grafico" data-treino-alvo=".escala-mes-celula:has(use[href$='icone-extrajornada']) .escala-mes-grafico" data-avanca="clique" data-pular-se=".escala-mes-celula--selecionada">Clique num pelotão de um dia.<span data-so-treino>Clique no pelotão aceso: ele tem extra.</span></p>
+    <p data-trecho="abrir-painel-dia"></p>
     <p data-alvo=".painel-lateral .aba[data-secao='extra']" data-avanca="clique" data-pular-se=".painel-lateral .aba--ativa[data-secao='extra']">Abra a aba <strong>Extrajornada</strong>.</p>
-    <p data-so-treino data-alvo=".painel-corpo .extrajornada-grupo[data-grupo='disp'] .grupo-caixa-cabecalho" data-avanca="clique" data-opcional data-pular-se=".painel-corpo .extrajornada-grupo[data-grupo='querem'] .extrajornada-pel-titulo[aria-expanded='true'] + .extrajornada-pel-linhas .extrajornada-painel-marca:not(:disabled), .painel-corpo .extrajornada-grupo[data-grupo='disp'] .grupo-caixa-cabecalho[aria-expanded='true']">Ninguém deste pelotão quer este dia: abra <strong>Sem preferência</strong>.</p>
-    <p data-alvo=".painel-corpo .extrajornada-grupo" data-clique=".painel-corpo .extrajornada-painel-marca" data-avanca="clique" data-livre data-treino-alvo=".painel-corpo .extrajornada-grupo[data-grupo='querem'] .extrajornada-pel-titulo[aria-expanded='true'] + .extrajornada-pel-linhas .extrajornada-painel-marca:not(:disabled), .painel-corpo .extrajornada-grupo[data-grupo='disp'] .grupo-caixa-cabecalho[aria-expanded='true'] ~ .grupo-caixa-corpo .extrajornada-pel-titulo[aria-expanded='true'] + .extrajornada-pel-linhas .extrajornada-painel-marca:not(:disabled), .painel-corpo .extrajornada-grupo[data-grupo='neste'] .extrajornada-painel-marca:not(:disabled)" data-sem-alvo="A extrajornada deste mês ainda não foi lançada.">Marque os horários de um militar em <strong>Querem este dia</strong>.<span data-so-treino>Marque a bolinha acesa.</span></p>
-    <p data-alvo=".painel-corpo .extrajornada-painel-outros:has(.nota--erro) .extrajornada-painel-outro:not(.extrajornada-painel-outro--antigo) .extrajornada-painel-marca--on" data-um data-avanca="aparece" data-condicao=".escala-rodape-salvar:not(.oculto) .escala-painel-salvar:not(:disabled)" data-pular-se=".escala-rodape-salvar:not(.oculto) .escala-painel-salvar:not(:disabled)">Se ele passar da cota, desmarque horários em outro dia, embaixo do nome dele.<span data-so-treino>Ele passou da cota: desmarque a bolinha acesa, em outro dia, embaixo do nome dele.</span></p>
-    <p data-alvo=".escala-rodape-motivo" data-avanca="proximo" data-livre>No rodapé, escreva o <strong>Motivo do ajuste</strong>, se quiser.<span data-so-treino>No rodapé, o <strong>Motivo do ajuste</strong> é opcional.</span></p>
-    <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo. O Dia, o Ciclo e a Extrajornada gravam juntos.</p>
+    <p data-so-treino data-alvo=".painel-corpo .extrajornada-grupo[data-grupo='disp'] .grupo-caixa-cabecalho" data-avanca="clique" data-opcional data-pular-se=".painel-corpo .extrajornada-grupo[data-grupo='querem'] .extrajornada-pel-titulo[aria-expanded='true'] + .extrajornada-pel-linhas .regua-barra--editavel .regua-barra-hora, .painel-corpo .extrajornada-grupo[data-grupo='disp'] .grupo-caixa-cabecalho[aria-expanded='true']">Ninguém deste pelotão quer este dia: abra <strong>Sem preferência</strong>.</p>
+    <p data-alvo=".painel-corpo .extrajornada-grupo" data-clique=".painel-corpo .extrajornada-regua .regua-barra-hora" data-avanca="clique" data-livre data-treino-alvo=".painel-corpo .extrajornada-grupo[data-grupo='querem'] .extrajornada-pel-titulo[aria-expanded='true'] + .extrajornada-pel-linhas .regua-barra--editavel .regua-barra-hora, .painel-corpo .extrajornada-grupo[data-grupo='disp'] .grupo-caixa-cabecalho[aria-expanded='true'] ~ .grupo-caixa-corpo .extrajornada-pel-titulo[aria-expanded='true'] + .extrajornada-pel-linhas .regua-barra--editavel .regua-barra-hora, .painel-corpo .extrajornada-grupo[data-grupo='neste'] .regua-barra--editavel .regua-barra-hora" data-sem-alvo="A extrajornada deste mês ainda não foi lançada.">Marque os horários de um militar em <strong>Querem este dia</strong>.<span data-so-treino>Clique no horário aceso da barra.</span></p>
+    <p data-alvo=".painel-corpo .extrajornada-painel-outros:has(.nota--erro) .extrajornada-painel-outro:not(.extrajornada-painel-outro--antigo) .regua-barra-hora--faixa + .regua-barra-hora--faixa + .regua-barra-hora--faixa" data-um data-avanca="aparece" data-condicao=".escala-rodape-salvar:not(.oculto) .escala-painel-salvar:not(:disabled)" data-pular-se=".escala-rodape-salvar:not(.oculto) .escala-painel-salvar:not(:disabled)">Se ele passar da cota, tire horários de outro dia, embaixo do nome dele.<span data-so-treino>Ele passou da cota: clique no horário aceso de outro dia, embaixo do nome dele, para tirar.</span></p>
+    <p data-alvo=".escala-rodape-salvar .rodape-acoes" data-clique=".escala-painel-salvar" data-avanca="some" data-condicao=".escala-rodape-salvar:not(.oculto)" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo. Tudo o que mudou nas abas do painel grava junto.</p>
     <p data-fim>Pronto. A extra mudou na escala, e o militar recebe um aviso.</p>
     <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, a extra mudaria na escala, e o militar receberia um aviso.</p>
   </template>
@@ -1785,7 +1874,8 @@
     <p data-avanca="escolha">Há dois caminhos: pela <strong>Escala</strong>, no dia da troca, ou pelas <strong>Trocas</strong>, no menu <strong>Administração</strong>. Escolha um.</p>
     <section data-caminho="escala" data-pagina="escalas" data-entrada=".sidebar .menu-item[data-pagina='escalas'], .barra-celular-item[data-pagina='escalas']">
       <p data-trecho="aba-mes"></p>
-      <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}']" data-alvo-senao=".escala-mes-celula" data-avanca="clique" data-pular-se=".escala-mes-celula--selecionada" data-treino-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'], .escala-mes-celula[data-iso='{hoje}'], .escala-mes-celula[data-unidade-id='{unidade}'], .escala-mes-celula">Abra o dia da troca.<span data-so-treino>Abra o dia aceso.</span></p>
+      <p data-alvo=".escala-mes-celula[data-unidade-id='{unidade}'] .escala-mes-grafico" data-alvo-senao=".escala-mes-celula .escala-mes-grafico" data-avanca="clique" data-pular-se=".escala-mes-celula--selecionada" data-treino-alvo=".escala-mes-celula[data-unidade-id='{unidade}'][data-iso='{hoje}'] .escala-mes-grafico, .escala-mes-celula[data-iso='{hoje}'] .escala-mes-grafico, .escala-mes-celula[data-unidade-id='{unidade}'] .escala-mes-grafico, .escala-mes-celula .escala-mes-grafico">Abra o dia da troca.<span data-so-treino>Abra o dia aceso.</span></p>
+      <p data-trecho="abrir-painel-dia"></p>
       <p data-alvo=".painel-lateral .escala-edicao-menu > .botao" data-avanca="clique">Abra o menu <strong>Editar o dia</strong>.</p>
       <p data-alvo=".painel-lateral .escala-edicao-menu [data-acao='troca']" data-avanca="clique">Escolha <strong>Registrar troca de serviço</strong>.</p>
     </section>
@@ -2080,7 +2170,7 @@
     <p data-alvo="#p1-exc-abrir" data-opcional data-avanca="clique" data-pular-se="#p1-exc-abrir[aria-expanded='true']">Abra as <strong>Exceções</strong>.</p>
     <p data-so-ajuda data-alvo="#p1-exc-corpo" data-opcional data-avanca="proximo" data-livre>Use <strong>Adicionar exceção</strong> para dar um número diferente a um militar ou a <strong>Todo o efetivo administrativo</strong>. Quem tem exceção com o nome dele fica com ela, mesmo sendo do efetivo administrativo.</p>
     <p data-so-treino data-alvo="#p1-exc-adicionar" data-avanca="clique">Use <strong>Adicionar exceção</strong>.</p>
-    <p data-so-treino data-alvo=".extrajornada-excecao--nova .extrajornada-excecao-combo" data-condicao="#p1-excecoes .extrajornada-excecao:not(.extrajornada-excecao--nova)" data-avanca="aparece" data-porta="#p1-excecao-campo; .dropdown--aberto .dropdown-item[data-busca='todo o efetivo administrativo']">Escolha <strong>Todo o efetivo administrativo</strong>. A lista também traz cada militar, e quem tem exceção com o nome dele fica com ela.</p>
+    <p data-so-treino data-alvo=".extrajornada-excecao--nova .extrajornada-excecao-quem" data-condicao="#p1-excecoes .extrajornada-excecao:not(.extrajornada-excecao--nova)" data-avanca="aparece" data-porta="#p1-excecao-campo; .dropdown--aberto .dropdown-item[data-busca='todo o efetivo administrativo']">Escolha <strong>Todo o efetivo administrativo</strong>. A lista também traz os militares da unidade escolhida ao lado, e quem tem exceção com o nome dele fica com ela.</p>
     <p data-so-treino data-alvo="#p1-excecoes .extrajornada-excecao:last-child .extrajornada-minimo-numero" data-condicao="#p1-salvar:not(:disabled)" data-avanca="aparece" data-porta="#p1-excecoes .extrajornada-excecao:last-child .campo-selecao; .dropdown--aberto .dropdown-item">Escolha o número aceso: são os dias dessa exceção.</p>
     <p data-alvo="#p1-rodape .rodape-acoes" data-clique="#p1-salvar" data-avanca="clique" data-pular-se="#p1-rodape.oculto, #p1-salvar:disabled" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé.</p>
     <p data-fim>Pronto. O mínimo vale para quem enviar ou mudar o pedido daqui em diante. Quem já enviou continua valendo.</p>
@@ -2117,13 +2207,27 @@
     <p data-trecho="extra-organizar"></p>
     <p data-alvo="#extrajornada-passos [data-passo='3']" data-avanca="clique" data-pular-se="#extrajornada-passos [data-passo='3'].aba--ativa">Abra o passo <strong>Distribuição</strong>.</p>
     <p data-alvo="#p3-cal" data-avanca="proximo">Cada dia mostra os pelotões, na cor do dia: verde, amarelo ou vermelho.</p>
-    <p data-alvo="#p3-cal" data-clique="#p3-cal [data-uid][data-dia]" data-avanca="clique" data-treino-alvo="#p3-cal [data-uid][data-dia]">Clique num pelotão de um dia.<span data-so-treino>Clique no pelotão aceso.</span></p>
+    <p data-alvo="#p3-cal" data-clique="#p3-cal [data-uid][data-dia] .escala-calendario-unidade-nome, #p3-cal [data-uid][data-dia] .escala-mes-grafico" data-avanca="clique" data-treino-alvo="#p3-cal [data-uid][data-dia] .escala-calendario-unidade-nome, #p3-cal [data-uid][data-dia] .escala-mes-grafico">Clique num pelotão de um dia.<span data-so-treino>Clique no pelotão aceso.</span></p>
+    <p data-alvo="#p3-cal .extrajornada-bloco-acoes" data-clique="#p3-cal .extrajornada-bloco-acao[data-acao='painel']" data-avanca="clique" data-pular-se=".painel-lateral--aberto" data-treino-alvo="#p3-cal .extrajornada-bloco-acao[data-acao='painel']">O pelotão fica marcado, com <strong>Adicionar militar</strong> e <strong>Abrir o painel do dia</strong>. Clique em <strong>Abrir o painel do dia</strong>.<span data-so-treino>O pelotão fica marcado, com <strong>Adicionar militar</strong> e <strong>Abrir o painel do dia</strong>. Clique no botão aceso.</span></p>
     <p data-alvo=".painel-corpo .extrajornada-painel-cobertura" data-anel="caixa" data-avanca="proximo">A <strong>Cobertura do dia</strong> compara o dia sem extra e com extra.</p>
     <p data-alvo=".painel-corpo .extrajornada-grupo" data-avanca="proximo" data-livre>Os voluntários vêm em grupos: <strong>Neste dia</strong>, <strong>Querem este dia</strong>, <strong>Sem preferência</strong>, <strong>Não querem</strong> e <strong>Indisponíveis</strong>.</p>
-    <p data-so-ajuda data-alvo=".painel-corpo .extrajornada-grupo" data-clique=".painel-corpo .extrajornada-painel-marca" data-avanca="clique" data-livre>As 4 bolinhas são os horários de 6 h: 08h, 14h, 20h e 02h. Marque para pôr a extra.</p>
-    <p data-so-treino data-alvo=".painel-corpo .extrajornada-grupo" data-treino-alvo=".painel-corpo .extrajornada-painel-marca:not(:disabled), .painel-corpo .extrajornada-grupo .grupo-caixa-cabecalho[aria-expanded='false']" data-condicao="#p3-rodape:not(.oculto)" data-avanca="aparece">As 4 bolinhas são os horários de 6 h: 08h, 14h, 20h e 02h. Marque a acesa para pôr a extra.</p>
+    <p data-so-ajuda data-alvo=".painel-corpo .extrajornada-grupo" data-clique=".painel-corpo .extrajornada-regua .regua-barra-hora" data-avanca="clique" data-livre>A barra é o dia, das 08h às 08h, com um risco a cada 6 horas. Clique entre dois riscos para pôr ou tirar 6 horas, ou arraste as bolinhas.</p>
+    <p data-so-treino data-alvo=".painel-corpo .extrajornada-grupo" data-treino-alvo=".painel-corpo .regua-barra--editavel .regua-barra-hora, .painel-corpo .extrajornada-grupo .grupo-caixa-cabecalho[aria-expanded='false']" data-condicao="#p3-rodape:not(.oculto)" data-avanca="aparece">A barra é o dia, das 08h às 08h, com um risco a cada 6 horas. Clique no horário aceso para pôr a extra.</p>
     <p data-alvo="#p3-rodape .rodape-acoes" data-clique="#p3-salvar" data-avanca="clique">Grave pelo <strong>Salvar</strong> do rodapé.</p>
     <p data-fim>Pronto. As extras foram gravadas na distribuição.</p>
+  </template>
+
+  <template data-roteiro="extra-celula" data-nas-abas="organizar" data-titulo="Adicionar um militar pela célula" data-conjunto="organizar-mes" data-area="admin" data-grupo="Extrajornada" data-pagina="extrajornada" data-so-computador data-cenario="extra-distribuicao">
+    <p data-trecho="abrir-extra"></p>
+    <p data-trecho="extra-organizar"></p>
+    <p data-alvo="#extrajornada-passos [data-passo='3']" data-avanca="clique" data-pular-se="#extrajornada-passos [data-passo='3'].aba--ativa">Abra o passo <strong>Distribuição</strong>.</p>
+    <p data-alvo="#p3-cal" data-clique="#p3-cal [data-uid][data-dia] .escala-calendario-unidade-nome, #p3-cal [data-uid][data-dia] .escala-mes-grafico" data-avanca="clique" data-treino-alvo="#p3-cal [data-uid][data-dia] .escala-calendario-unidade-nome, #p3-cal [data-uid][data-dia] .escala-mes-grafico">Clique num pelotão de um dia, fora dos nomes.<span data-so-treino>Clique no pelotão aceso.</span></p>
+    <p data-alvo="#p3-cal .extrajornada-bloco-acoes" data-clique="#p3-cal .extrajornada-bloco-acao[data-acao='adicionar']" data-avanca="clique" data-treino-alvo="#p3-cal .extrajornada-bloco-acao[data-acao='adicionar']">O pelotão fica marcado. Use <strong>Adicionar militar</strong>.</p>
+    <p data-alvo="#p3-cal .extrajornada-adicionar" data-clique="#p3-cal .extrajornada-adicionar .combo-militar-item" data-avanca="clique" data-livre data-treino-alvo="#p3-cal .extrajornada-adicionar .combo-militar-item">A lista mostra primeiro quem quer o dia, depois quem não tem preferência e quem não quer, com as cotas de cada um. Escolha um nome.<span data-so-treino>Escolha o militar aceso.</span></p>
+    <p data-alvo="#p3-cal .extrajornada-cartao-barra" data-clique="#p3-cal .extrajornada-cartao-barra .regua-barra-hora" data-avanca="clique" data-treino-alvo="#p3-cal .extrajornada-cartao-barra .regua-barra-trilho > .regua-barra-hora:nth-child(2)">O cartão dele abre com a barra vazia. Clique entre dois riscos para pôr 6 horas.<span data-so-treino>O cartão dele abre com a barra vazia. Clique no horário aceso.</span></p>
+    <p data-alvo="#p3-rodape .rodape-acoes" data-clique="#p3-salvar" data-avanca="clique">Grave pelo <strong>Salvar</strong> do rodapé.</p>
+    <p data-fim>Pronto. A extra entrou sem abrir o painel do dia.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi salvo. No sistema, a extra entraria na distribuição.</p>
   </template>
 
   <template data-roteiro="extra-por-militar" data-nas-abas="organizar" data-titulo="Distribuir por militar" data-conjunto="organizar-mes" data-area="admin" data-grupo="Extrajornada" data-pagina="extrajornada" data-so-computador data-cenario="extra-distribuicao">
@@ -2133,9 +2237,10 @@
     <p data-alvo="#p3-alca" data-avanca="clique" data-pular-se="#p3-alca[aria-expanded='true']">A alça abre a <strong>Lista dos voluntários</strong>.</p>
     <p data-alvo="#p3-esq" data-avanca="proximo">Em cima, <strong>Faltam</strong> (quem ainda tem cota para pôr); embaixo, <strong>Completos</strong>.</p>
     <p data-alvo="#p3-esq" data-clique="#p3-esq .extrajornada-esq-item" data-avanca="clique" data-treino-alvo="#p3-esq .extrajornada-esq-item">Clique no nome de um voluntário.<span data-so-treino>Clique no voluntário aceso.</span></p>
-    <p data-alvo="#p3-esq .extrajornada-esq-aberto" data-avanca="proximo" data-livre>Embaixo do nome aparecem as datas dele, com os 4 horários.</p>
-    <p data-alvo="#p3-cal" data-clique="#p3-cal .extrajornada-foco .extrajornada-painel-marca" data-avanca="clique" data-treino-alvo="#p3-cal .extrajornada-foco .extrajornada-painel-marca:not(:disabled)">No calendário, em cada dia, as bolinhas grandes dele, ou o motivo de ele não poder. Marque os horários.<span data-so-treino>No calendário, em cada dia, as bolinhas grandes dele, ou o motivo de ele não poder. Marque a bolinha acesa.</span></p>
-    <p data-alvo="#p3-foco" data-avanca="proximo" data-livre>O <strong>X</strong> da nota sai do foco.</p>
+    <p data-alvo="#p3-esq .extrajornada-esq-aberto" data-avanca="proximo" data-livre>Embaixo do nome aparecem as datas dele, cada uma com a barra de horário. Clique na data para ver o horário escrito, o cadeado e a lixeira.</p>
+    <p data-alvo="#p3-cal" data-clique="#p3-cal .extrajornada-vaga.extrajornada-foco.extrajornada-escolhivel, #p3-cal .extrajornada-foco-ponto.extrajornada-escolhivel" data-avanca="clique" data-treino-alvo="#p3-cal .extrajornada-vaga.extrajornada-foco.extrajornada-escolhivel, #p3-cal .extrajornada-foco-ponto.extrajornada-escolhivel">No calendário, em cada dia, a bolinha do pedido dele (verde quer, vermelho não quer, cinza sem preferência) ou, onde ele já tem extra, o cartão; o dia em que ele não pode fica apagado. Clique numa linha para abrir a barra de horário.<span data-so-treino>No calendário, em cada dia, a bolinha do pedido dele (verde quer, vermelho não quer, cinza sem preferência) ou, onde ele já tem extra, o cartão; o dia em que ele não pode fica apagado. Clique na linha acesa.</span></p>
+    <p data-alvo="#p3-cal .extrajornada-cartao-barra" data-clique="#p3-cal .extrajornada-cartao-barra .regua-barra-hora--faixa + .regua-barra-hora--faixa + .regua-barra-hora--faixa, #p3-cal .extrajornada-cartao-barra .regua-barra-hora" data-avanca="clique" data-treino-alvo="#p3-cal .extrajornada-cartao-barra .regua-barra--editavel .regua-barra-hora--faixa + .regua-barra-hora--faixa + .regua-barra-hora--faixa, #p3-cal .extrajornada-cartao-barra .regua-barra--editavel .regua-barra-hora">A barra de horário dele abre embaixo do cartão. Clique entre dois riscos para pôr ou tirar 6 horas.<span data-so-treino>A barra de horário dele abre embaixo do cartão. Clique no horário aceso.</span></p>
+    <p data-alvo="#p3-esq .extrajornada-esq-item.lista-item--ativo" data-avanca="proximo" data-livre>Para sair do foco, clique de novo no nome dele.</p>
     <p data-alvo="#p3-rodape .rodape-acoes" data-clique="#p3-salvar" data-avanca="clique">Grave pelo <strong>Salvar</strong> do rodapé.</p>
     <p data-fim>Pronto.</p>
   </template>
@@ -2146,10 +2251,10 @@
     <p data-alvo="#extrajornada-passos [data-passo='3']" data-avanca="clique" data-pular-se="#extrajornada-passos [data-passo='3'].aba--ativa">Abra o passo <strong>Distribuição</strong>.</p>
     <p data-alvo="#extrajornada-acoes > .botao" data-avanca="clique">Abra o menu <strong>Ações</strong>.</p>
     <p data-alvo="#p3-sugerir" data-avanca="clique">Escolha <strong>Preencher pela sugestão</strong>.</p>
-    <p data-alvo="#p3-calculo:not(.oculto)" data-alvo-senao="#p3-resultado:not(.oculto)" data-condicao="#p3-resultado:not(.oculto)" data-porta="" data-avanca="aparece">O sistema calcula a melhor distribuição, o que pode levar até 1 minuto.</p>
+    <p data-alvo="#etapas-veu:not(.oculto) .etapas" data-alvo-senao="#p3-resultado:not(.oculto)" data-condicao="#p3-resultado:not(.oculto)" data-porta="" data-avanca="aparece">O sistema calcula a melhor distribuição, o que pode levar até 1 minuto.</p>
     <p data-alvo="#p3-resultado" data-avanca="proximo">No alto, o resultado: quantas cotas foram postas e quem não coube.</p>
     <p data-alvo="#p3-cal" data-avanca="proximo">Cada extra posta pelo sistema tem o ícone dele; no painel do dia, aparece o porquê.</p>
-    <p data-alvo="#p3-rodape .rodape-acoes" data-clique="#p3-salvar, #p3-desfazer-sugestao" data-avanca="clique" data-porta="#p3-salvar">Grave pelo <strong>Salvar</strong>, ou desista pelo <strong>Desfazer a sugestão</strong>.<span data-so-treino>Grave pelo <strong>Salvar</strong>. O <strong>Desfazer a sugestão</strong> desiste.</span></p>
+    <p data-alvo="#p3-rodape .rodape-historico, #p3-rodape .rodape-acoes" data-clique="#p3-salvar, #p3-desfazer" data-avanca="clique" data-porta="#p3-salvar">Grave pelo <strong>Salvar</strong>, ou desista pelo <strong>Desfazer</strong>.<span data-so-treino>Grave pelo <strong>Salvar</strong>. O <strong>Desfazer</strong> desiste.</span></p>
     <p data-fim>Pronto. A distribuição foi preenchida.</p>
   </template>
 
@@ -2180,9 +2285,9 @@
     <p data-trecho="abrir-extra"></p>
     <p data-trecho="extra-organizar"></p>
     <p data-alvo="#extrajornada-passos [data-passo='4']" data-avanca="clique" data-pular-se="#extrajornada-passos [data-passo='4'].aba--ativa">Abra o passo <strong>Ajustes</strong>.</p>
-    <p data-alvo="#p3-cal" data-clique="#p3-cal [data-uid][data-dia]:has(.extrajornada-vaga)" data-avanca="clique" data-treino-alvo="#p3-cal [data-uid][data-dia]:has(.extrajornada-vaga)">Clique num pelotão de um dia com extra.<span data-so-treino>Clique no pelotão aceso: ele tem extra.</span></p>
-    <p data-alvo=".painel-corpo .extrajornada-grupo" data-clique=".painel-corpo .extrajornada-painel-marca" data-avanca="clique" data-livre data-treino-alvo=".painel-corpo .extrajornada-painel-marca:not(:disabled)">Marque ou desmarque os horários, como na Distribuição.<span data-so-treino>Marque ou desmarque a bolinha acesa, como na Distribuição.</span></p>
-    <p data-alvo="#p3-motivo-campo" data-avanca="proximo" data-livre>No rodapé, escreva o <strong>Motivo do ajuste</strong>, se quiser.<span data-so-treino>No rodapé, o <strong>Motivo do ajuste</strong> é opcional.</span></p>
+    <p data-alvo="#p3-cal" data-clique="#p3-cal [data-uid][data-dia]:has(.extrajornada-vaga) .escala-calendario-unidade-nome, #p3-cal [data-uid][data-dia]:has(.extrajornada-vaga) .escala-mes-grafico" data-avanca="clique" data-treino-alvo="#p3-cal [data-uid][data-dia]:has(.extrajornada-vaga) .escala-calendario-unidade-nome, #p3-cal [data-uid][data-dia]:has(.extrajornada-vaga) .escala-mes-grafico">Clique num pelotão de um dia com extra.<span data-so-treino>Clique no pelotão aceso: ele tem extra.</span></p>
+    <p data-alvo="#p3-cal .extrajornada-bloco-acoes" data-clique="#p3-cal .extrajornada-bloco-acao[data-acao='painel']" data-avanca="clique" data-pular-se=".painel-lateral--aberto" data-treino-alvo="#p3-cal .extrajornada-bloco-acao[data-acao='painel']">O pelotão fica marcado, com <strong>Adicionar militar</strong> e <strong>Abrir o painel do dia</strong>. Clique em <strong>Abrir o painel do dia</strong>.<span data-so-treino>O pelotão fica marcado, com <strong>Adicionar militar</strong> e <strong>Abrir o painel do dia</strong>. Clique no botão aceso.</span></p>
+    <p data-alvo=".painel-corpo .extrajornada-grupo" data-clique=".painel-corpo .extrajornada-regua .regua-barra-hora" data-avanca="clique" data-livre data-treino-alvo=".painel-corpo .regua-barra--editavel .regua-barra-hora">Ponha ou tire horários na barra, como na Distribuição.<span data-so-treino>Clique no horário aceso da barra, como na Distribuição.</span></p>
     <p data-alvo="#p3-rodape .rodape-acoes" data-clique="#p3-salvar" data-avanca="clique">Grave pelo <strong>Salvar e enviar para a escala</strong>.</p>
     <p data-fim>Pronto. O ajuste entrou na escala e vai para o relatório final.</p>
   </template>
@@ -2237,8 +2342,8 @@
 
   <template data-roteiro="conserto-pendencias" data-titulo="Ver o que precisa de conserto" data-area="admin" data-grupo="Pendências" data-pagina="pendencias">
     <p data-trecho="abrir-pendencias"></p>
-    <p data-alvo="#pendencias-secao-corrigir" data-avanca="proximo">Em <strong>Para corrigir</strong> ficam os militares operacionais fora da escala e os retornos de afastamento sem entrada no ciclo.</p>
-    <p data-alvo="#pendencias-secao-corrigir" data-avanca="proximo">Quem está fora da escala volta pelo <strong>Ciclo</strong> do painel do dia, na Escala. O treino <strong>Pôr um militar no ciclo</strong> mostra como.</p>
+    <p data-alvo="#pendencias-secao-corrigir" data-avanca="proximo">Em <strong>Para corrigir</strong> ficam os militares operacionais fora da escala e os retornos de afastamento sem entrada numa guarnição.</p>
+    <p data-alvo="#pendencias-secao-corrigir" data-avanca="proximo">Quem está fora da escala volta pela aba <strong>Guarnições</strong> do painel do dia, na Escala. O treino <strong>Pôr um militar numa guarnição</strong> mostra como.</p>
     <p data-fim>Pronto. Cada item some sozinho quando é consertado.</p>
   </template>
 
@@ -2640,6 +2745,8 @@
         <!-- sigla do dia da semana: só aparece na sequência contínua (diasPorLinha), onde não há cabeçalho dom…sáb -->
         <span class="geral-calendario-mes-sigla"></span>
         <span class="geral-calendario-mes-numero"></span>
+        <!-- o meio do título, centralizado: quem usa põe o conteúdo (a Escala, o Oficial de Área do dia) -->
+        <span class="geral-calendario-mes-dia-centro oculto"></span>
       </div>
     </div>
   </template>
@@ -3083,6 +3190,12 @@
     </span>
   </template>
 
+  <!-- o Oficial de Área do dia, no título do dia das grades da Escala (escalas-celula.js › preencherOficial): o posto e o
+       nome; o dia com escala e ninguém na função, "Sem Oficial de Área" em vermelho -->
+  <template id="tpl-escala-oficial">
+    <span class="escala-oficial"><span class="escala-oficial-grad"></span><span class="escala-oficial-nome"></span></span>
+  </template>
+
   <template id="tpl-escala-mes-grafico">
     <div class="escala-mes-grafico">
       <canvas class="escala-mes-grafico-canvas" aria-hidden="true"></canvas>
@@ -3166,44 +3279,104 @@
     </div>
   </template>
 
-  <!-- ===== painel do dia › aba Ciclo: a frase do topo (a data vem do painel) ===== -->
-  <template id="tpl-escala-ciclo-nota">
-    <div class="nota">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-historico"/></svg>
-      <span>As mudanças desta aba valem a partir de <span class="escala-ciclo-nota-data"></span> e seguem nos próximos dias.</span>
+  <!-- ===== painel do dia › aba Guarnições (escalas-painel-guarnicoes.js e escalas-painel-guarnicoes-acoes.js; só admin) ===== -->
+  <!-- a companhia sem o dia da guarnição A: o aviso no topo (o texto vem do JS) -->
+  <template id="tpl-escala-guarnicoes-aviso">
+    <div class="nota nota--alerta">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+      <span class="nota-texto"></span>
     </div>
   </template>
 
-  <!-- aba Ciclo › Contínuos em outros ciclos › Adicionar (escalas-painel-continuos.js): a pergunta única embaixo da linha
-       (Guia visual › Ações e perguntas): o último serviço no ciclo atual em bolinhas (escalas-painel-ciclo.js), o que sai
-       da escala dele e o aviso de antes de confirmar; Cancelar e Continuar. Os textos que mudam vêm do JS -->
-  <template id="tpl-escala-ciclo-mudar">
-    <div class="grupo-caixa pergunta-linha escala-ciclo-cartao">
-      <div class="escala-ciclo-cartao-ultimo">
-        <span class="rotulo-secao">Último serviço</span>
-        <span class="subtela-ajuda escala-ciclo-cartao-rotulo"></span>
-        <div class="escala-adicionar-datas escala-ciclo-cartao-datas"></div>
-      </div>
-      <div class="nota nota--alerta escala-ciclo-cartao-mudar oculto">
-        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-        <span class="nota-texto"></span>
-      </div>
-      <div class="nota escala-ciclo-cartao-info oculto">
-        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-historico"/></svg>
-        <span class="nota-texto"></span>
-      </div>
-      <div class="pergunta-linha-acoes">
-        <button type="button" class="botao escala-ciclo-cartao-cancelar">Cancelar</button>
-        <button type="button" class="botao botao--primario escala-ciclo-cartao-continuar">Continuar</button>
+  <!-- um período: a caixa que abre e fecha (o clique é o da caixa do painel). No título, as datas, o selo Hoje, o selo Novo
+       (o período que o rascunho mexeu), quantos tem cada guarnição e, embaixo, o que mudou (os textos vêm do JS); dentro,
+       as guarnições lado a lado, a pergunta aberta (Mudar de guarnição e Tirar da escala) e a faixa de quem está afastado -->
+  <template id="tpl-escala-guarnicoes-periodo">
+    <div class="grupo-caixa escala-guarnicoes-periodo">
+      <button type="button" class="grupo-caixa-cabecalho escala-guarnicoes-periodo-cab" aria-expanded="false">
+        <span class="escala-guarnicoes-periodo-linha">
+          <span class="escala-guarnicoes-periodo-datas"></span>
+          <span class="selo escala-guarnicoes-periodo-hoje oculto">Hoje</span>
+          <span class="selo escala-guarnicoes-periodo-novo oculto">Novo</span>
+          <span class="escala-guarnicoes-periodo-contas"></span>
+          <svg class="icone grupo-caixa-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+        </span>
+        <span class="escala-guarnicoes-periodo-resumo oculto"></span>
+      </button>
+      <div class="grupo-caixa-corpo">
+        <div class="escala-guarnicoes-colunas"></div>
       </div>
     </div>
   </template>
 
-  <!-- ===== painel do dia › aba Dia (escalas-painel-editar.js): a lista do dia, que o admin edita ===== -->
+  <!-- uma guarnição do período: a letra (sem o dia da guarnição A, o primeiro dia dela no período) e quantos tem; embaixo,
+       os nomes -->
+  <template id="tpl-escala-guarnicoes-coluna">
+    <div class="escala-guarnicoes-coluna">
+      <div class="escala-guarnicoes-coluna-cab">
+        <span class="escala-guarnicoes-coluna-letra"></span>
+        <span class="escala-guarnicoes-coluna-conta"></span>
+      </div>
+      <div class="escala-guarnicoes-coluna-lista"></div>
+    </div>
+  </template>
+
+  <!-- um nome da guarnição: o grau e o nome, o lugar do lápis (molde tpl-escala-guarnicoes-opcoes) e, embaixo, a marca do
+       que mudou ("volta das férias", "vai para a A"; o texto vem do JS). Em verde quem entra, volta ou vem de outra
+       guarnição; riscado em vermelho quem sai. A linha inteira também abre o menu -->
+  <template id="tpl-escala-guarnicoes-nome">
+    <div class="escala-guarnicoes-nome">
+      <span class="escala-guarnicoes-nome-texto"><span class="escala-distribuicao-grad"></span><span class="escala-distribuicao-nome"></span></span>
+      <span class="escala-guarnicoes-nome-acao"></span>
+      <span class="escala-guarnicoes-marca oculto"></span>
+    </div>
+  </template>
+
+  <!-- a lista vazia (a guarnição sem ninguém e o Fora da escala sem ninguém): o texto vem do JS -->
+  <template id="tpl-escala-guarnicoes-vazio">
+    <span class="escala-guarnicoes-vazio"></span>
+  </template>
+
+  <!-- a faixa de quem está afastado no período, uma por motivo ("De férias:" e "até 30/11, Deividi e Ulysses, da C"; os
+       textos vêm do JS) -->
+  <template id="tpl-escala-guarnicoes-afastados">
+    <div class="escala-guarnicoes-afastados">
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-afastamentos"/></svg>
+      <span><strong class="escala-guarnicoes-afastados-rotulo"></strong> <span class="escala-guarnicoes-afastados-texto"></span></span>
+    </div>
+  </template>
+
+  <!-- uma linha do Fora da escala, só para ver: o grau, o nome e a situação ("Sem guarnição desde 05/11", "Entra na A em
+       03/12"; o JS escreve) -->
+  <template id="tpl-escala-guarnicoes-fora-item">
+    <div class="escala-guarnicoes-fora-item">
+      <span class="escala-distribuicao-grad"></span>
+      <span class="escala-distribuicao-nome"></span>
+      <span class="escala-guarnicoes-fora-info"></span>
+    </div>
+  </template>
+
+  <!-- o lápis de quem saiu da guarnição à mão e o menu dele (escalas-painel-guarnicoes-acoes.js): o título ("Cb. André sai
+       da escala em 20/11") e o Cancelar a saída; o resto da aba é só para ver -->
+  <template id="tpl-escala-guarnicoes-opcoes">
+    <div class="dropdown escala-edicao-opcoes">
+      <button type="button" class="botao-discreto escala-edicao-lapis" aria-label="Editar">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-editar"/></svg>
+      </button>
+      <div class="dropdown-menu escala-edicao-opcoes-menu">
+        <div class="dropdown-titulo escala-edicao-opcoes-titulo"></div>
+        <button type="button" class="dropdown-item" data-acao="cancelar-saida"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-restaurar"/></svg><span>Cancelar a saída de <span class="escala-guarnicoes-opcoes-saida"></span></span></button>
+      </div>
+    </div>
+  </template>
+
+  <!-- ===== painel do dia › abas Funções e Militares (escalas-painel-editar.js e escalas-painel-militares.js): a lista do
+       dia, que o admin edita ===== -->
   <!-- subcabeçalho do admin: o menu Editar o dia, com a chave inglesa (fica ao lado do Solicitar troca, que é do militar;
-       REGRAS §4, Abas e barras), com as ações do dia: Adicionar militar (escalas-painel-adicionar.js), Remover militar
-       (escalas-painel-remover.js), Mudar o dia do serviço (escalas-painel-mudar-dia.js), Remanejar militar
-       (escalas-painel-remanejar.js) e Registrar troca de serviço (o formulário da troca, escalas-painel-troca.js) -->
+       REGRAS §4, Abas e barras), só com o que é do dia todo: Trazer para o dia (Adicionar militar,
+       escalas-painel-adicionar.js; Trazer de outra unidade, o Remanejar já no Trazer, escalas-painel-remanejar.js) e O dia
+       todo (Registrar troca de serviço, o formulário da troca, escalas-painel-troca.js; Voltar o dia ao automático, só com
+       ajuste manual no dia). O que é de um militar fica no lápis dele, na aba Militares -->
   <template id="tpl-escala-edicao-acoes">
     <div class="dropdown escala-edicao-menu">
       <button type="button" class="botao">
@@ -3212,12 +3385,13 @@
         <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
       </button>
       <div class="dropdown-menu">
-        <button type="button" class="dropdown-item" data-acao="adicionar">Adicionar militar</button>
-        <button type="button" class="dropdown-item" data-acao="remover">Remover militar</button>
-        <button type="button" class="dropdown-item" data-acao="mudar-dia">Mudar o dia do serviço</button>
-        <button type="button" class="dropdown-item" data-acao="remanejar">Remanejar militar</button>
+        <div class="dropdown-titulo">Trazer para o dia</div>
+        <button type="button" class="dropdown-item" data-acao="adicionar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-novo-usuario"/></svg><span>Adicionar militar</span></button>
+        <button type="button" class="dropdown-item" data-acao="trazer"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-remanejado"/></svg><span>Trazer de outra unidade</span></button>
         <div class="dropdown-divisor"></div>
-        <button type="button" class="dropdown-item" data-acao="troca">Registrar troca de serviço</button>
+        <div class="dropdown-titulo">O dia todo</div>
+        <button type="button" class="dropdown-item" data-acao="troca"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-troca"/></svg><span>Registrar troca de serviço</span></button>
+        <button type="button" class="dropdown-item" data-acao="automatico"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-restaurar"/></svg><span>Voltar o dia ao automático</span></button>
       </div>
     </div>
   </template>
@@ -3234,14 +3408,6 @@
       <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-cadeado"/></svg>
       <span>Fixado</span>
     </span>
-  </template>
-
-  <!-- o fim da lista do admin: tira os ajustes manuais da unidade no dia e o sistema distribui de novo -->
-  <template id="tpl-escala-edicao-automatico">
-    <button type="button" class="botao escala-edicao-automatico">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-restaurar"/></svg>
-      <span>Voltar o dia ao automático</span>
-    </button>
   </template>
 
   <!-- O que mudou na última gravação: uma frase por militar (do JS) e o atalho de pôr quem ficou sem função no
@@ -3261,23 +3427,50 @@
     <li class="escala-edicao-mudou-item"></li>
   </template>
 
-  <!-- subcabeçalho do admin, à direita: desfazer e refazer a última mudança do dia (o JS liga e desliga) -->
-  <template id="tpl-escala-edicao-historico">
-    <div class="escala-edicao-historico">
-      <button type="button" class="botao botao--icone escala-edicao-historico-desfazer" aria-label="Desfazer" data-dica="Desfazer" disabled>
-        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-desfazer"/></svg>
+  <!-- o lápis da linha e o menu dela (escalas-painel-linha-menu.js), com um assunto só: na aba Funções, o que é desta
+       função; na aba Militares (e no De folga), o que é do dia do militar. Cada parte começa pelo título de quem ela é (o JS
+       escreve: "Condutor da ABT-14935", "Cb. Veloso no dia 21/11"), cada item com o ícone dele e o que tira alguém por
+       último, em vermelho; embaixo do traço, o Ver o dia ou o Ver as funções, que troca de aba já com ele. O JS mostra só
+       os itens que valem para a linha e põe o nome no rótulo do lápis ("Editar Sd. Lima"). A linha inteira também abre o
+       menu -->
+  <template id="tpl-escala-edicao-opcoes">
+    <div class="dropdown escala-edicao-opcoes">
+      <button type="button" class="botao-discreto escala-edicao-lapis" aria-label="Editar esta linha">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-editar"/></svg>
       </button>
-      <button type="button" class="botao botao--icone escala-edicao-historico-refazer" aria-label="Refazer" data-dica="Refazer" disabled>
-        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-refazer"/></svg>
-      </button>
+      <div class="dropdown-menu escala-edicao-opcoes-menu">
+        <div class="escala-edicao-opcoes-parte" data-parte="funcao">
+          <div class="dropdown-titulo escala-edicao-opcoes-titulo"></div>
+          <button type="button" class="dropdown-item" data-acao="por-outro"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-substituir"/></svg><span>Pôr outro no lugar dele</span></button>
+          <button type="button" class="dropdown-item" data-acao="por-aqui"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-novo-usuario"/></svg><span>Pôr um militar aqui</span></button>
+          <button type="button" class="dropdown-item" data-acao="por-funcao"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mover-funcao"/></svg><span>Pôr numa função</span></button>
+          <button type="button" class="dropdown-item" data-acao="outra-funcao"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mover-funcao"/></svg><span>Mudar para outra função</span></button>
+          <button type="button" class="dropdown-item" data-acao="horario-funcao"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-relogio"/></svg><span>Mudar o horário nesta função</span></button>
+          <button type="button" class="dropdown-item" data-acao="mais-um"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lista"/></svg><span>Adicionar mais um lugar neste posto</span></button>
+          <button type="button" class="dropdown-item" data-acao="liberar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-cadeado-aberto"/></svg><span>Liberar para o sistema</span></button>
+          <button type="button" class="dropdown-item dropdown-item--perigo" data-acao="remover-funcao"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-remover-usuario"/></svg><span>Remover desta função</span></button>
+        </div>
+        <div class="escala-edicao-opcoes-parte" data-parte="dia">
+          <div class="dropdown-titulo escala-edicao-opcoes-titulo"></div>
+          <button type="button" class="dropdown-item" data-acao="horario-dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-relogio"/></svg><span>Mudar o horário do serviço</span></button>
+          <button type="button" class="dropdown-item" data-acao="mudar-dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-mudanca"/></svg><span>Mudar o dia do serviço</span></button>
+          <button type="button" class="dropdown-item" data-acao="mudar-unidade"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-remanejado"/></svg><span>Mudar de unidade neste dia</span></button>
+          <button type="button" class="dropdown-item" data-acao="mudar-extra"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-extrajornada"/></svg><span>Mudar a extrajornada</span></button>
+          <button type="button" class="dropdown-item" data-acao="devolver"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-restaurar"/></svg><span class="escala-edicao-opcoes-devolver"></span></button>
+          <button type="button" class="dropdown-item" data-acao="cancelar-folga"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-folgas"/></svg><span>Cancelar a folga</span></button>
+          <button type="button" class="dropdown-item" data-acao="desfazer-mudanca"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-desfazer"/></svg><span>Desfazer a mudança</span></button>
+          <button type="button" class="dropdown-item" data-acao="cancelar-saida"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-restaurar"/></svg><span>Cancelar a saída da guarnição</span></button>
+          <button type="button" class="dropdown-item dropdown-item--perigo" data-acao="remover-dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-sair"/></svg><span>Remover do dia</span></button>
+          <button type="button" class="dropdown-item dropdown-item--perigo" data-acao="remover-guarnicao"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-saida"/></svg><span>Remover da guarnição</span></button>
+        </div>
+        <div class="dropdown-divisor escala-edicao-opcoes-traco"></div>
+        <div class="escala-edicao-opcoes-parte" data-parte="ver">
+          <button type="button" class="dropdown-item" data-acao="ver-dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-perfil"/></svg><span class="escala-edicao-opcoes-ver-dia"></span></button>
+          <button type="button" class="dropdown-item" data-acao="ver-funcoes"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lista"/></svg><span class="escala-edicao-opcoes-ver-funcoes"></span></button>
+          <button type="button" class="dropdown-item" data-acao="ver-companhia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-perfil"/></svg><span class="escala-edicao-opcoes-ver-companhia"></span></button>
+        </div>
+      </div>
     </div>
-  </template>
-
-  <!-- lápis: abre a edição da linha ali mesmo (escalas-painel-linha.js) -->
-  <template id="tpl-escala-edicao-lapis">
-    <button type="button" class="botao-discreto escala-edicao-lapis" aria-label="Editar esta linha">
-      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-editar"/></svg>
-    </button>
   </template>
 
   <!-- aviso informativo no topo da lista (ex.: quem assume o Chefe de Socorro); o texto vem do JS -->
@@ -3288,7 +3481,8 @@
     </div>
   </template>
 
-  <!-- sub-telas (Adicionar, Remover e Remanejar militar e a folga no dia): volta à lista do dia, com o que foi respondido -->
+  <!-- sub-telas (Adicionar militar, Remover do dia, Mudar de unidade neste dia e a folga no dia): volta à lista do dia,
+       com o que foi respondido -->
   <template id="tpl-escala-sub-voltar">
     <button type="button" class="botao botao--texto subtela-voltar">
       <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>
@@ -3296,18 +3490,22 @@
     </button>
   </template>
 
-  <!-- o rodapé próprio da sub-tela, só para o que grava na hora (o Remover militar › por troca): Cancelar (volta ao dia) e
+  <!-- o rodapé próprio da sub-tela, só para o que grava na hora (o Remover do dia › por troca): Cancelar (volta ao dia) e
        o botão que diz o que faz (o texto vem do JS). As outras sub-telas não têm: o Salvar é o do rodapé largo da página -->
   <template id="tpl-escala-sub-acoes">
     <button type="button" class="botao escala-sub-cancelar">Cancelar</button>
     <button type="button" class="botao botao--primario escala-sub-aplicar"></button>
   </template>
 
-  <!-- ===== a edição de uma linha do Dia (o lápis; escalas-painel-linha.js): um cartão que engloba a linha. No topo, a
-       própria linha (o JS põe nela a função, o militar e o horário da lista) com o X que fecha; embaixo, só o militar
-       (quem já está no dia, e o "Ninguém") e o horário nesta função e o efeito em quem está em volta. A escolha entra no
-       rascunho na hora; o X fecha e a lista mostra como fica. Trazer alguém de fora do dia é o Adicionar; tirar alguém do
-       dia é o Remover ===== -->
+  <!-- ===== o cartão embaixo da linha do Dia (o menu do lápis; escalas-painel-linha.js e, na vaga sem ninguém,
+       escalas-painel-linha-cobrir.js): engloba a linha. No topo, a própria linha (o JS põe nela a função, o militar e o
+       horário da lista) com o X que fecha; embaixo, as perguntas do item do menu, cada uma na caixa numerada das
+       sub-telas (Guia visual › Ações e perguntas), só as que valem: Para qual função (Mudar para outra função, Pôr numa
+       função: a caixa Onde fica com as vagas sem ninguém e o Escolher a função, e a recusa em vermelho de quem não pode na
+       função); o Militar (Pôr outro no lugar dele: só quem já está no dia) ou Quem cobre (Pôr um militar aqui: a Unidade
+       e o Militar) e, conforme quem cobre, Folga em outro dia, Dia da folga (o calendário), Banco de horas ou Na unidade
+       de origem; o Horário nesta função; e o efeito em quem está em volta. A escolha entra no rascunho na hora; o X fecha
+       e a lista mostra como fica ===== -->
   <template id="tpl-escala-linha">
     <div class="escala-linha">
       <div class="escala-linha-topo">
@@ -3319,17 +3517,75 @@
         </button>
       </div>
       <div class="escala-linha-corpo">
-        <div class="escala-linha-bloco">
-          <span class="escala-linha-rotulo-campo">Militar</span>
-          <div class="dropdown campo-combo escala-linha-combo">
-            <svg class="icone campo-combo-icone oculto" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-base"/></svg>
-            <input class="campo-entrada" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Militar" />
-            <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
-            <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares do dia"></div>
+        <div class="grupo-caixa subtela-pergunta escala-linha-para oculto">
+          <span class="rotulo-secao escala-linha-para-rotulo">Para qual função<span class="escala-linha-conferindo oculto"></span></span>
+          <div class="escala-linha-onde"></div>
+        </div>
+        <div class="nota nota--erro escala-linha-nao-pode oculto">
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+          <span class="nota-texto"></span>
+        </div>
+        <div class="grupo-caixa subtela-pergunta escala-linha-militar">
+          <span class="rotulo-secao escala-linha-cobre-rotulo"><span class="escala-linha-militar-titulo">Militar</span><span class="escala-linha-cobre-titulo oculto">Quem cobre</span><span class="escala-linha-cobre-carregando oculto"></span></span>
+          <div class="campo-unidade-militar">
+            <div class="campo escala-linha-unidade-campo oculto">
+              <span class="campo-rotulo">Unidade</span>
+              <div class="dropdown escala-linha-unidade">
+                <button type="button" class="campo-entrada campo-selecao" aria-label="Unidade">
+                  <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+                  <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+                </button>
+                <div class="dropdown-menu"></div>
+              </div>
+            </div>
+            <div class="campo">
+              <span class="campo-rotulo escala-linha-militar-rotulo oculto">Militar</span>
+              <div class="dropdown campo-combo escala-linha-combo">
+                <svg class="icone campo-combo-icone oculto" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-base"/></svg>
+                <input class="campo-entrada" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Militar" />
+                <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+                <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares do dia"></div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="escala-linha-bloco">
-          <span class="escala-linha-rotulo-campo">Horário</span>
+        <div class="grupo-caixa subtela-pergunta escala-linha-folga oculto">
+          <span class="rotulo-secao">Folga em outro dia</span>
+          <span class="subtela-ajuda">Em troca deste dia, ele folga num dia em que está de serviço?</span>
+          <label class="geral-opcao"><input type="radio" value="sim" /><span>Sim, escolher o dia da folga</span></label>
+          <label class="geral-opcao"><input type="radio" value="nao" /><span>Não, é um serviço a mais</span></label>
+          <label class="geral-opcao escala-linha-folga-extra oculto"><input type="radio" value="extra" /><span>Não, entra pela Extrajornada (ele pediu este dia)</span></label>
+        </div>
+        <div class="grupo-caixa subtela-pergunta escala-linha-dia-folga oculto">
+          <span class="rotulo-secao">Dia da folga</span>
+          <div class="mini-calendario-mes">
+            <button type="button" class="botao botao--quadrado escala-linha-mes-anterior" aria-label="Mês anterior">
+              <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>
+            </button>
+            <span class="mini-calendario-mes-nome"><span class="escala-linha-mes"></span><span class="escala-linha-mes-carregando oculto"></span></span>
+            <button type="button" class="botao botao--quadrado escala-linha-mes-proximo" aria-label="Próximo mês">
+              <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
+            </button>
+          </div>
+          <div class="escala-linha-calendario"></div>
+          <div class="mini-calendario-legenda">
+            <span class="mini-calendario-legenda-item"><span class="mini-calendario-legenda-cor"></span>Dia de serviço dele: clique no dia da folga</span>
+            <span class="mini-calendario-legenda-item"><span class="mini-calendario-legenda-numero">2</span>vagas sem ninguém no dia</span>
+          </div>
+        </div>
+        <div class="grupo-caixa subtela-pergunta escala-linha-banco oculto">
+          <span class="rotulo-secao">Banco de horas</span>
+          <label class="geral-opcao"><input type="radio" value="sim" /><span class="escala-linha-contabilizar"></span></label>
+          <label class="geral-opcao"><input type="radio" value="nao" /><span>Não contabilizar</span></label>
+        </div>
+        <div class="grupo-caixa subtela-pergunta escala-linha-origem oculto">
+          <span class="rotulo-secao">Na unidade de origem</span>
+          <span class="subtela-ajuda escala-linha-origem-pergunta"></span>
+          <label class="geral-opcao"><input type="radio" value="sai" /><span class="escala-linha-origem-sim"></span></label>
+          <label class="geral-opcao"><input type="radio" value="fica" /><span class="escala-linha-origem-nao"></span></label>
+        </div>
+        <div class="grupo-caixa subtela-pergunta escala-linha-horario">
+          <span class="rotulo-secao">Horário</span>
           <div class="escala-linha-periodos"></div>
         </div>
         <div class="nota escala-linha-efeito oculto">
@@ -3344,32 +3600,33 @@
     </div>
   </template>
 
-  <!-- Liberar para o sistema (escalas-painel-editar.js): ao lado do lápis, na linha fixada e no vazio que veio do
-       "Ninguém"; faz na hora, com o Desfazer -->
-  <template id="tpl-escala-edicao-liberar">
-    <button type="button" class="botao-discreto escala-edicao-liberar" aria-label="Liberar para o sistema" data-dica="Liberar para o sistema">
-      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-restaurar"/></svg>
-    </button>
-  </template>
-
-  <!-- Remover do dia (caixa Sem função; escalas-painel-remover.js): no lugar do lápis -->
-  <template id="tpl-escala-edicao-remover">
-    <button type="button" class="botao-discreto escala-edicao-remover-dia" aria-label="Remover do dia" data-dica="Remover do dia">
-      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-remover-usuario"/></svg>
-    </button>
-  </template>
-
-  <!-- a pergunta única embaixo da linha (o Remover do dia da caixa Sem função; escalas-painel-remover.js): o assunto, a
-       frase e as bolinhas do banco de horas (os textos que mudam vêm do JS), sem nada marcado: a resposta já tira o
-       militar do dia, no rascunho. O Cancelar fecha a pergunta sem mudar nada -->
+  <!-- a pergunta única embaixo da linha (o Remover do dia do menu da linha; escalas-painel-remover.js): o assunto, a
+       frase e as bolinhas do banco de horas (os textos que mudam vêm do JS). Na folga, o Não descontar vem primeiro e
+       marcado: o militar já sai do dia, no rascunho, e a resposta fecha a pergunta; no pontual, o Tirar as horas vem
+       primeiro, sem nada marcado, e a resposta o tira do dia. O Cancelar fecha a pergunta sem mudar nada -->
   <template id="tpl-escala-remover-dia">
     <div class="grupo-caixa pergunta-linha">
       <span class="rotulo-secao">Banco de horas</span>
       <span class="subtela-ajuda escala-remover-dia-texto"></span>
-      <label class="geral-opcao"><input type="radio" value="sim" /><span class="escala-remover-dia-sim"></span></label>
       <label class="geral-opcao"><input type="radio" value="nao" /><span class="escala-remover-dia-nao"></span></label>
+      <label class="geral-opcao"><input type="radio" value="sim" /><span class="escala-remover-dia-sim"></span></label>
       <div class="pergunta-linha-acoes">
         <button type="button" class="botao escala-remover-dia-cancelar">Cancelar</button>
+      </div>
+    </div>
+  </template>
+
+  <!-- o Remover da guarnição do menu da linha (aba Militares; escalas-painel-ciclo.js): a pergunta embaixo da linha, sem nada
+       marcado, com o último serviço dele (o dia vem do JS). A resposta põe a saída no rascunho, e embaixo aparece o que
+       acontece com as trocas, folgas e extras dele (molde tpl-escala-ciclo-efeito). O Cancelar fecha e volta tudo -->
+  <template id="tpl-escala-remover-guarnicao">
+    <div class="grupo-caixa pergunta-linha">
+      <span class="rotulo-secao">Último serviço</span>
+      <label class="geral-opcao"><input type="radio" value="neste" /><span>O último serviço dele é neste dia (<span class="escala-remover-guarnicao-data"></span>)</span></label>
+      <label class="geral-opcao"><input type="radio" value="antes" /><span>Ele não trabalha mais a partir deste dia (<span class="escala-remover-guarnicao-data"></span>)</span></label>
+      <div class="escala-remover-guarnicao-efeito"></div>
+      <div class="pergunta-linha-acoes">
+        <button type="button" class="botao escala-remover-guarnicao-cancelar">Cancelar</button>
       </div>
     </div>
   </template>
@@ -3405,8 +3662,9 @@
   <!-- ===== Adicionar militar (sub-tela; escalas-painel-adicionar.js): as caixas de pergunta (o número vem do CSS), uma
        depois da outra e só as que valem. Como entra; Quem entra (o campo de militar, geral-combo-militar, com a lista do
        como; no dia, a Unidade e o Militar na mesma linha). No dia: o horário, onde fica (o molde comum tpl-escala-onde-fica)
-       e o banco de horas. No ciclo: o último serviço no ciclo atual de quem muda de ciclo e o que acontece com as trocas,
-       folgas e extras dele (o molde comum tpl-escala-ciclo-efeito). A resposta completa entra no rascunho ao vivo ===== -->
+       e o banco de horas. Na guarnição do dia (a letra vem do JS; sem ela, "do dia"): o que acontece com as trocas, folgas
+       e extras de quem muda de guarnição (o molde comum tpl-escala-ciclo-efeito). A resposta completa entra no rascunho ao
+       vivo ===== -->
   <template id="tpl-escala-adicionar">
     <div class="subtela escala-adicionar">
       <div class="subtela-cab">
@@ -3415,7 +3673,7 @@
       <div class="grupo-caixa subtela-pergunta escala-adicionar-como">
         <span class="rotulo-secao">Como entra</span>
         <label class="geral-opcao"><input type="radio" value="dia" /><span>Somente no dia <span class="escala-adicionar-data"></span></span></label>
-        <label class="geral-opcao"><input type="radio" value="ciclo" /><span>No ciclo, a partir de <span class="escala-adicionar-data"></span></span></label>
+        <label class="geral-opcao"><input type="radio" value="ciclo" /><span>Na guarnição <span class="escala-adicionar-letra"></span><span class="escala-adicionar-sem-letra oculto">do dia</span>, a partir de <span class="escala-adicionar-data"></span></span></label>
       </div>
       <div class="grupo-caixa subtela-pergunta escala-adicionar-quem oculto">
         <span class="rotulo-secao">Quem entra</span>
@@ -3440,7 +3698,7 @@
           </div>
         </div>
         <span class="subtela-ajuda escala-adicionar-ajuda" data-como="dia">Quem tem horas livres no dia, de folga, no pelotão escolhido.</span>
-        <span class="subtela-ajuda escala-adicionar-ajuda" data-como="ciclo">Quem está fora do ciclo e quem já está no ciclo, para mudar de ciclo.</span>
+        <span class="subtela-ajuda escala-adicionar-ajuda" data-como="ciclo">Quem está fora da escala e quem é de outra guarnição, para mudar de guarnição.</span>
         <div class="nota escala-adicionar-assume oculto">
           <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
           <span class="nota-texto"></span>
@@ -3458,11 +3716,6 @@
         <label class="geral-opcao"><input type="radio" value="sim" /><span class="escala-adicionar-contabilizar"></span></label>
         <label class="geral-opcao"><input type="radio" value="nao" /><span>Não contabilizar</span></label>
       </div>
-      <div class="grupo-caixa subtela-pergunta escala-adicionar-ultimo oculto">
-        <span class="rotulo-secao">Último serviço</span>
-        <span class="subtela-ajuda escala-adicionar-ultimo-rotulo"></span>
-        <div class="escala-adicionar-datas"></div>
-      </div>
       <div class="nota nota--alerta escala-adicionar-mudar oculto">
         <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
         <span class="nota-texto"></span>
@@ -3471,14 +3724,14 @@
         <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-historico"/></svg>
         <span class="nota-texto"></span>
       </div>
-      <!-- o que acontece no ciclo (molde tpl-escala-ciclo-efeito) entra aqui -->
+      <!-- o que acontece com quem muda de guarnição (molde tpl-escala-ciclo-efeito) entra aqui -->
       <div class="escala-adicionar-efeito"></div>
     </div>
   </template>
 
-  <!-- o que acontece com as trocas, folgas e extras de quem sai ou muda de ciclo (o Adicionar e o Remover militar, no
-       ciclo; escalas-painel-ciclo.js › efeito): a lista da análise, um item por linha (o título curto e o texto), e a
-       nota do fim. É a mesma lista da confirmação da aba Ciclo -->
+  <!-- o que acontece com as trocas, folgas e extras de quem sai da escala ou muda de guarnição (o Adicionar militar, o
+       Remover do dia e as perguntas da aba Guarnições; escalas-painel-ciclo.js › efeito): a lista da análise, um item por
+       linha (o título curto e o texto), e a nota do fim -->
   <template id="tpl-escala-ciclo-efeito">
     <div class="nota nota--alerta escala-ciclo-efeito oculto">
       <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
@@ -3493,7 +3746,7 @@
     <li class="escala-ciclo-efeito-item"><span class="nota-titulo"></span> <span class="escala-ciclo-efeito-texto"></span></li>
   </template>
 
-  <!-- o Onde fica (escalas-painel-onde.js; o Adicionar, o Remanejar militar e o Mudar o dia do serviço): o dia (só no
+  <!-- o Onde fica (escalas-painel-onde.js; o Adicionar, o Mudar de unidade neste dia e o Mudar o dia do serviço): o dia (só no
        Mudar o dia), de quem é a caixa (só no Remanejar), as vagas sem ninguém no horário (só no Mudar o dia, a primeira
        recomendada; molde tpl-escala-onde-fica-vaga), o sistema distribui, a função escolhida ou no lugar de outro militar
        (quem sai e de quais funções) e o que acontece com quem está em volta. Uma caixa por militar que entra numa
@@ -3537,17 +3790,17 @@
     <button type="button" class="geral-opcao escala-marcar" role="checkbox" aria-checked="false"><span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span><span class="escala-marcar-texto"></span></button>
   </template>
 
-  <!-- ===== Remover militar (sub-tela; escalas-painel-remover.js): as caixas de pergunta (o número vem do CSS), uma
+  <!-- ===== Remover do dia (sub-tela; escalas-painel-remover.js): as caixas de pergunta (o número vem do CSS), uma
        depois da outra e só as que valem. Quem sai (com o jeito como entrou no dia); Qual parte sai (só para quem entrou
-       de mais de um jeito); e as perguntas da parte: pelo ciclo, até onde (só no dia, com o horário e o banco de horas,
-       ou do ciclo, com o que acontece com as trocas, folgas e extras dele, molde tpl-escala-ciclo-efeito); o pontual (o
+       de mais de um jeito); e as perguntas da parte: pela guarnição, até onde (só no dia, com o horário e o banco de
+       horas, ou da guarnição, com o que acontece com as trocas, folgas e extras dele, molde tpl-escala-ciclo-efeito); o pontual (o
        horário e, saindo todo, o banco de horas); a mudança de dia (Devolver para o dia de antes, ou Tirar do dia, com o
        banco de horas da folga no dia de antes); a troca (grava na hora, pelo rodapé próprio). A resposta completa entra
        no rascunho ao vivo. A extra não sai por aqui: ela muda na Extrajornada (Ajustes) ===== -->
   <template id="tpl-escala-remover">
     <div class="subtela escala-remover">
       <div class="subtela-cab">
-        <span class="subtela-titulo">Remover militar</span>
+        <span class="subtela-titulo">Remover do dia</span>
       </div>
       <div class="grupo-caixa subtela-pergunta escala-remover-quem">
         <span class="rotulo-secao">Quem sai</span>
@@ -3582,7 +3835,7 @@
       <div class="grupo-caixa subtela-pergunta escala-remover-alcance oculto">
         <span class="rotulo-secao">Até onde</span>
         <label class="geral-opcao"><input type="radio" value="dia" /><span>Só no dia <span class="escala-remover-data"></span></span></label>
-        <label class="geral-opcao"><input type="radio" value="ciclo" /><span>Do ciclo, a partir de <span class="escala-remover-data"></span></span></label>
+        <label class="geral-opcao"><input type="radio" value="ciclo" /><span>Da guarnição, a partir de <span class="escala-remover-data"></span></span></label>
       </div>
       <div class="grupo-caixa subtela-pergunta escala-remover-horario oculto">
         <span class="rotulo-secao">Horário</span>
@@ -3592,8 +3845,8 @@
       <div class="grupo-caixa subtela-pergunta escala-remover-banco oculto">
         <span class="rotulo-secao">Banco de horas</span>
         <span class="subtela-ajuda escala-remover-banco-texto"></span>
-        <label class="geral-opcao"><input type="radio" value="sim" /><span class="escala-remover-banco-sim"></span></label>
         <label class="geral-opcao"><input type="radio" value="nao" /><span class="escala-remover-banco-nao"></span></label>
+        <label class="geral-opcao"><input type="radio" value="sim" /><span class="escala-remover-banco-sim"></span></label>
       </div>
       <!-- o que acontece no ciclo (molde tpl-escala-ciclo-efeito) entra aqui -->
       <div class="escala-remover-efeito"></div>
@@ -3653,12 +3906,12 @@
     </div>
   </template>
 
-  <!-- uma bolinha do Qual parte sai (Remover militar): o texto vem do JS ("Pelo ciclo, das 08h às 20h") -->
+  <!-- uma bolinha do Qual parte sai (Remover do dia): o texto vem do JS ("Pelo ciclo, das 08h às 20h") -->
   <template id="tpl-escala-remover-parte">
     <label class="geral-opcao"><input type="radio" value="" /><span class="escala-remover-parte-texto"></span></label>
   </template>
 
-  <!-- ===== Remanejar militar (sub-tela; escalas-painel-remanejar.js): as caixas de pergunta (o número vem do CSS), uma
+  <!-- ===== Mudar de unidade neste dia (sub-tela; escalas-painel-remanejar.js): as caixas de pergunta (o número vem do CSS), uma
        depois da outra e só as que valem. O que fazer (Trazer para esta unidade, ou Enviar para outra unidade da companhia,
        escolhida ali mesmo); Quem (no Trazer, a Unidade de onde ele vem e o Militar na mesma linha; no Enviar, só o
        Militar), com o serviço dele no dia; Em troca (alguém vai no lugar dele); Na unidade de origem (só no Enviar, sem
@@ -3668,7 +3921,7 @@
   <template id="tpl-escala-remanejar">
     <div class="subtela escala-remanejar">
       <div class="subtela-cab">
-        <span class="subtela-titulo">Remanejar militar</span>
+        <span class="subtela-titulo">Mudar de unidade neste dia</span>
       </div>
       <div class="grupo-caixa subtela-pergunta escala-remanejar-fazer">
         <span class="rotulo-secao">O que fazer</span>
@@ -3747,6 +4000,42 @@
     </div>
   </template>
 
+  <!-- ===== Mudar o horário do serviço (sub-tela; escalas-painel-horario-dia.js): o Horário do serviço (o serviço dele no dia,
+       já com o de hoje; embaixo, o que muda e, em vermelho, o horário em que ele não está livre) e o Banco de horas, só
+       quando o horário muda: pelo ciclo, descontar ou não as horas que viram folga; no pontual, contabilizar ou não as
+       horas dele. Os textos que mudam vêm do JS ===== -->
+  <template id="tpl-escala-horario-dia">
+    <div class="subtela escala-horario-dia">
+      <div class="subtela-cab">
+        <span class="subtela-titulo">Mudar o horário do serviço</span>
+      </div>
+      <div class="grupo-caixa subtela-pergunta">
+        <span class="rotulo-secao">Horário do serviço</span>
+        <span class="subtela-ajuda escala-horario-dia-servico"></span>
+        <div class="escala-linha-periodos escala-horario-dia-periodo"></div>
+        <div class="nota escala-horario-dia-efeito oculto">
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+          <span class="nota-texto"></span>
+        </div>
+        <div class="nota nota--erro escala-horario-dia-erro oculto">
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+          <span class="nota-texto"></span>
+        </div>
+      </div>
+      <div class="grupo-caixa subtela-pergunta escala-horario-dia-banco oculto">
+        <span class="rotulo-secao">Banco de horas</span>
+        <div class="escala-horario-dia-descontar">
+          <label class="geral-opcao"><input type="radio" value="nao" /><span>Não descontar</span></label>
+          <label class="geral-opcao"><input type="radio" value="sim" /><span class="escala-horario-dia-descontar-sim"></span></label>
+        </div>
+        <div class="escala-horario-dia-contabilizar">
+          <label class="geral-opcao"><input type="radio" value="sim" /><span class="escala-horario-dia-contabilizar-sim"></span></label>
+          <label class="geral-opcao"><input type="radio" value="nao" /><span>Não contabilizar</span></label>
+        </div>
+      </div>
+    </div>
+  </template>
+
   <!-- ===== Mudar o dia do serviço (sub-tela; escalas-painel-mudar-dia.js): as caixas de pergunta (o número vem do CSS),
        uma depois da outra e só as que valem. Quem (só o serviço pelo ciclo muda por aqui; os outros ficam apagados, com o
        caminho certo); Qual parte muda (só com o serviço dividido no dia); Para qual dia (o mês em miniatura, com as
@@ -3767,7 +4056,7 @@
           <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
           <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares de serviço"></div>
         </div>
-        <span class="subtela-ajuda escala-mudar-dia-ajuda">Só o serviço pelo ciclo muda de dia por aqui.</span>
+        <span class="subtela-ajuda escala-mudar-dia-ajuda">Só o serviço pela guarnição muda de dia por aqui.</span>
         <span class="subtela-ajuda escala-mudar-dia-servico oculto"></span>
       </div>
       <div class="grupo-caixa subtela-pergunta escala-mudar-dia-janelas oculto">
@@ -3789,13 +4078,8 @@
         <div class="escala-mudar-dia-calendario"></div>
         <div class="mini-calendario-legenda">
           <span class="mini-calendario-legenda-item"><span class="mini-calendario-legenda-cor"></span>Pode, com folga antes e depois</span>
-          <span class="mini-calendario-legenda-item"><span class="mini-calendario-legenda-cor mini-calendario-legenda-cor--alerta"></span>Ficaria 48 h seguidas</span>
           <span class="mini-calendario-legenda-item"><span class="mini-calendario-legenda-cor mini-calendario-legenda-cor--ocupado"></span>Já está de serviço</span>
           <span class="mini-calendario-legenda-item"><span class="mini-calendario-legenda-numero">2</span>vagas sem ninguém no dia</span>
-        </div>
-        <div class="nota nota--alerta escala-mudar-dia-seguidas oculto">
-          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-          <span class="nota-texto"></span>
         </div>
       </div>
       <div class="grupo-caixa subtela-pergunta escala-mudar-dia-horario oculto">
@@ -3852,12 +4136,6 @@
     <span class="escala-remover-troca-doc-linha"></span>
   </template>
 
-  <!-- uma data do último serviço no ciclo atual (Adicionar militar, no ciclo, e o cartão de mudar de ciclo da aba Ciclo):
-       a bolinha e a data por extenso -->
-  <template id="tpl-escala-adicionar-data">
-    <label class="geral-opcao"><input type="radio" value="" /><span class="escala-adicionar-data-texto"></span></label>
-  </template>
-
   <!-- ===== folga no dia (lápis da caixa De folga; escalas-painel-militar.js): quem está de folga, o horário e a pergunta
        (Manter a folga, já marcada, ou Cancelar a folga, que entra no rascunho ao vivo, com o efeito embaixo). Na folga
        que veio da mudança de dia, a pergunta é a da mudança (Manter a mudança ou Desfazer a mudança) ===== -->
@@ -3892,12 +4170,14 @@
   </template>
 
   <!-- ===== moldes do PAINEL DO DIA no modo EDITAR + seções (compartilhados Escala + Extrajornada) ===== -->
-  <!-- abas de seção do painel do dia (clonadas para a linha das abas da gaveta): Dia (distribuição do
-       dia + Editar), Ciclo (os contínuos) e Extrajornada; data-so-admin = a aba some para quem não é administrador -->
+  <!-- abas de seção do painel do dia (clonadas para a linha das abas da gaveta): Funções (a lista do dia por posto e
+       função, que o admin edita), Militares (a mesma lista do dia, por pessoa: só quem está no dia), Guarnições (os
+       períodos das guarnições, a seção continuos) e Extrajornada; data-so-admin = a aba some para quem não é administrador -->
   <template id="tpl-escala-painel-secoes">
     <div class="abas">
-      <button type="button" class="aba aba--ativa" data-secao="distribuicao">Dia</button>
-      <button type="button" class="aba" data-secao="continuos" data-so-admin>Ciclo</button>
+      <button type="button" class="aba aba--ativa" data-secao="distribuicao">Funções</button>
+      <button type="button" class="aba" data-secao="militares">Militares</button>
+      <button type="button" class="aba" data-secao="continuos" data-so-admin>Guarnições</button>
       <button type="button" class="aba" data-secao="extra">Extrajornada</button>
     </div>
   </template>
@@ -3925,19 +4205,15 @@
     </div>
   </template>
 
-  <!-- um outro dia do militar, aberto embaixo da linha: o dia, o aviso e os 4 horários daquele dia (extrajornada-dia-outros.js) -->
+  <!-- um outro dia do militar, aberto embaixo da linha: o dia, o aviso e, embaixo, a barra de horário daquele dia
+       (extrajornada-dia-outros.js; a barra vem do extrajornada-barra.js) -->
   <template id="tpl-extrajornada-painel-outro">
     <div class="extrajornada-painel-outro">
       <span class="extrajornada-painel-outro-texto">
         <span class="extrajornada-painel-outro-dia"></span>
         <span class="extrajornada-painel-outro-aviso oculto"></span>
       </span>
-      <span class="extrajornada-painel-marcas">
-        <button type="button" class="extrajornada-painel-marca" data-bloco="1" aria-pressed="false" aria-label="08h às 14h"></button>
-        <button type="button" class="extrajornada-painel-marca" data-bloco="2" aria-pressed="false" aria-label="14h às 20h"></button>
-        <button type="button" class="extrajornada-painel-marca" data-bloco="3" aria-pressed="false" aria-label="20h às 02h"></button>
-        <button type="button" class="extrajornada-painel-marca" data-bloco="4" aria-pressed="false" aria-label="02h às 08h"></button>
-      </span>
+      <span class="extrajornada-painel-marcas"></span>
     </div>
   </template>
 
@@ -3950,8 +4226,8 @@
     </span>
   </template>
 
-  <!-- painel do dia: um grupo (Neste dia, Querem este dia...) que abre e fecha pelo título, com os horários em cima
-       das bolinhas -->
+  <!-- painel do dia: um grupo (Neste dia, Querem este dia...) que abre e fecha pelo título (a hora de cada ponto da
+       barra fica na dica do mouse) -->
   <template id="tpl-extrajornada-grupo">
     <div class="grupo-caixa extrajornada-painel-grupo extrajornada-grupo">
       <button type="button" class="grupo-caixa-cabecalho" aria-expanded="true">
@@ -3959,7 +4235,6 @@
         <svg class="icone grupo-caixa-seta" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
       </button>
       <div class="grupo-caixa-corpo">
-        <span class="extrajornada-painel-horas extrajornada-horas" aria-hidden="true"><span>08</span><span>14</span><span>20</span><span>02</span></span>
         <div class="extrajornada-painel-grupo-linhas"></div>
         <!-- só no Neste dia, que aparece sempre: o vazio -->
         <span class="extrajornada-grupo-vazio oculto">Ninguém de extra neste dia.</span>
@@ -3968,14 +4243,12 @@
   </template>
 
   <!-- painel do dia: a divisão de um pelotão dentro de um grupo (Querem este dia, Sem preferência, Não querem e
-       Indisponíveis), que abre e fecha pelo título: o nome, "este pelotão" no do dia e quantos tem; aberta, os horários
-       à direita, em cima das bolinhas -->
+       Indisponíveis), que abre e fecha pelo título: o nome, "este pelotão" no do dia e quantos tem -->
   <template id="tpl-extrajornada-pel">
     <div class="extrajornada-pel">
       <button type="button" class="extrajornada-pel-titulo" aria-expanded="true">
         <svg class="icone extrajornada-pel-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
         <span class="rotulo-secao"><span class="extrajornada-pel-nome"></span><span class="extrajornada-pel-este oculto"> · este pelotão</span> (<span class="extrajornada-pel-conta"></span>)</span>
-        <span class="extrajornada-painel-horas extrajornada-horas" aria-hidden="true"><span>08</span><span>14</span><span>20</span><span>02</span></span>
       </button>
       <div class="extrajornada-pel-linhas"></div>
     </div>
@@ -4026,11 +4299,6 @@
     </div>
   </template>
 
-  <!-- painel do dia: os selos de um militar (embaixo do nome) -->
-  <template id="tpl-extrajornada-selos">
-    <span class="extrajornada-selos-linha"></span>
-  </template>
-
   <!-- Cobertura do dia: as horas em cima e as duas barras, sem extra e com extra -->
   <template id="tpl-extrajornada-painel-cobertura">
     <div class="extrajornada-painel-cobertura">
@@ -4043,22 +4311,14 @@
     </div>
   </template>
 
-  <!-- um militar da lista do dia: a preferência, o nome (e a unidade, se é de outra), os outros dias, as cotas do mês e
-       os 4 horários de 6 h (clicar marca ou desmarca); embaixo, os outros dias com os horários -->
-  <!-- a hora em que a extra do administrativo começa, no dia em que o expediente termina antes da primeira bolinha livre
-       (a quarta): o fim do expediente ou a bolinha; embaixo, o aviso quando começar mais cedo deixa falta que a bolinha
-       cobriria. A mesma peça na linha do painel do dia, nos outros dias dele e na lista dos voluntários
-       (extrajornada-dia.js) -->
+  <!-- um militar da lista do dia: a preferência, o nome (e a unidade, se é de outra), os selos, as cotas do mês (abrem
+       os outros dias) e, embaixo, a barra de horário do dia (extrajornada-barra.js); depois, os outros dias -->
+  <!-- a extra do administrativo que começa no fim do expediente (a quarta): o aviso quando esse começo deixa falta que,
+       começando no horário de 6 horas, ela cobriria. A mesma peça na linha do painel do dia, nos outros dias dele e na
+       lista dos voluntários (extrajornada-dia-outros.js) -->
   <template id="tpl-extrajornada-inicio">
     <div class="extrajornada-inicio">
-      <span class="extrajornada-inicio-linha">
-        <span class="extrajornada-inicio-rotulo">Começa às</span>
-        <span class="abas abas--seletor extrajornada-inicio-opcoes" role="group" aria-label="Começa às">
-          <button type="button" class="aba" data-inicio="cedo" aria-pressed="false"></button>
-          <button type="button" class="aba" data-inicio="bolinha" aria-pressed="false"></button>
-        </span>
-      </span>
-      <span class="extrajornada-inicio-aviso oculto">
+      <span class="extrajornada-inicio-aviso">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
         <span class="extrajornada-inicio-aviso-texto"></span>
       </span>
@@ -4076,14 +4336,27 @@
         <span class="extrajornada-painel-cota"></span>
         <svg class="icone extrajornada-painel-cotas-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
       </button>
-      <span class="extrajornada-painel-marcas">
-        <button type="button" class="extrajornada-painel-marca" data-bloco="1" aria-pressed="false" aria-label="08h às 14h"></button>
-        <button type="button" class="extrajornada-painel-marca" data-bloco="2" aria-pressed="false" aria-label="14h às 20h"></button>
-        <button type="button" class="extrajornada-painel-marca" data-bloco="3" aria-pressed="false" aria-label="20h às 02h"></button>
-        <button type="button" class="extrajornada-painel-marca" data-bloco="4" aria-pressed="false" aria-label="02h às 08h"></button>
-      </span>
+      <span class="extrajornada-painel-marcas"></span>
       <div class="extrajornada-painel-outros oculto"></div>
     </div>
+  </template>
+
+  <!-- a lixeira da linha escolhida, logo depois dos campos de hora (o lugar do ✕ da Escala): tira os horários dele no
+       dia, e a linha fica cinza até o Salvar (extrajornada-barra.js) -->
+  <template id="tpl-extrajornada-remover">
+    <button type="button" class="botao-discreto extrajornada-painel-remover" aria-label="Remover do dia" data-dica="Remover do dia">
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
+    </button>
+  </template>
+
+  <!-- o cadeado da linha escolhida, à esquerda da lixeira: fechado, o horário preso nos riscos (a dica Liberar o
+       horário); aberto, o horário livre, que começa em qualquer hora (Voltar ao horário padrão). O ícone, a dica e o nome
+       seguem o estado (extrajornada-barra.js) -->
+  <template id="tpl-extrajornada-livre">
+    <button type="button" class="botao-discreto extrajornada-painel-livre" aria-label="Liberar o horário" data-dica="Liberar o horário">
+      <svg class="icone extrajornada-painel-livre-preso" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-cadeado"/></svg>
+      <svg class="icone extrajornada-painel-livre-solto oculto" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-cadeado-aberto"/></svg>
+    </button>
   </template>
 
   <!-- quem não pode tirar extra no dia: o nome e o motivo ("De serviço", "Férias até 20/11") -->
@@ -4143,7 +4416,7 @@
   <!-- as caixas das impressões da escala, no painel de impressão comum (componentes/js/geral-impressao.js, que põe a
        nota, o aviso, a Prévia e o rodapé do index.html): o Imprimir escala (escalas-impressao.js: o painel do dia e o
        Militares) e o das grades (escalas-impressao-grade.js: Agenda, Calendário, Colunas). O período, as unidades (a
-       árvore, marcada com as unidades e a companhia de cada pelotão; para quem é de companhia ou pelotão, começa na
+       árvore, marcada com as unidades pedidas, como estão; para quem é de companhia ou pelotão, começa na
        companhia e a seta do título abre a árvore toda), o formato (só nas grades) e o que mostrar. O que é de uma
        impressão só leva data-impressao-so com as marcas dela (dia, grade, semanas, dias); o JS mostra só o que vale -->
   <template id="tpl-escala-impressao">
@@ -4250,57 +4523,6 @@
   <!-- o lugar das alterações manuais do dia, no rodapé do Dia (o JS põe o bloco; o Salvar é o rodapé largo da página) -->
   <template id="tpl-escala-painel-historico">
     <div class="escala-painel-historico oculto"></div>
-  </template>
-
-  <!-- Ciclo: a linha marcada no rascunho (o que vai acontecer, escrito pelo JS) e, embaixo dela, o que acontece com as
-       trocas, folgas e extras de quem sai ou muda de ciclo (cada item: o assunto e a frase, do JS) -->
-  <template id="tpl-escala-ciclo-marcado">
-    <span class="selo escala-secao-selo"></span>
-  </template>
-  <template id="tpl-escala-ciclo-consequencias">
-    <ul class="escala-ciclo-consequencias"></ul>
-  </template>
-  <template id="tpl-escala-ciclo-consequencia">
-    <li class="escala-ciclo-consequencia"><span class="escala-ciclo-consequencia-titulo"></span> <span class="escala-ciclo-consequencia-texto"></span></li>
-  </template>
-
-  <!-- Ciclo: linha de militar (grad + nome + extra + ação) -->
-  <template id="tpl-escala-secao-item">
-    <div class="escala-secao-item">
-      <span class="escala-secao-grad"></span>
-      <span class="escala-secao-nome"></span>
-      <span class="escala-secao-extra"></span>
-      <span class="escala-secao-acao"></span>
-    </div>
-  </template>
-
-  <template id="tpl-escala-secao-busca">
-    <div class="busca escala-secao-busca">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-pesquisar"/></svg>
-      <input type="text" name="busca-militar" class="busca-entrada" maxlength="100" placeholder="Pesquisar militar" aria-label="Pesquisar militar" />
-      <button type="button" class="busca-limpar" aria-label="Limpar pesquisa">
-        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
-      </button>
-    </div>
-  </template>
-
-  <!-- Ciclo: botão de ação de uma linha (Remover / Adicionar / Cancelar saída) -->
-  <template id="tpl-escala-secao-botao">
-    <button type="button" class="botao botao--pequeno escala-secao-botao"></button>
-  </template>
-
-  <!-- Ciclo e formulário do Editar: estado vazio de uma lista (texto) -->
-  <template id="tpl-escala-secao-vazio">
-    <div class="escala-secao-vazio"></div>
-  </template>
-
-  <!-- Ciclo: selo "Sai em DD/MM" de um militar com saída marcada -->
-  <template id="tpl-escala-secao-selo">
-    <span class="selo selo--alerta escala-secao-selo"></span>
-  </template>
-  <!-- Ciclo: a informação de um militar (o "Último serviço em DD/MM" dos Contínuos em outros ciclos) -->
-  <template id="tpl-escala-secao-info">
-    <span class="escala-secao-info"></span>
   </template>
 
   <!-- ===== formulário Novo usuário (usuarios-novo-usuario.js): Usuários › Novo usuário ===== -->
@@ -4975,8 +5197,57 @@
     <span class="regua-pedaco"></span>
   </template>
 
+  <!-- a barra de horário (componente geral-regua): as 24 horas do dia de serviço (cada uma com a hora na dica), os
+       riscos de 6 em 6 horas, as duas bolinhas de arrastar (só na barra editável) e as horas embaixo (opcionais) -->
+  <template id="tpl-regua-barra">
+    <div class="regua-barra-caixa">
+      <div class="regua-barra">
+        <div class="regua-barra-trilho">
+          <span class="regua-barra-hora" data-hora="0" data-dica="08h"></span>
+          <span class="regua-barra-hora" data-hora="1" data-dica="09h"></span>
+          <span class="regua-barra-hora" data-hora="2" data-dica="10h"></span>
+          <span class="regua-barra-hora" data-hora="3" data-dica="11h"></span>
+          <span class="regua-barra-hora" data-hora="4" data-dica="12h"></span>
+          <span class="regua-barra-hora" data-hora="5" data-dica="13h"></span>
+          <span class="regua-barra-hora" data-hora="6" data-dica="14h"></span>
+          <span class="regua-barra-hora" data-hora="7" data-dica="15h"></span>
+          <span class="regua-barra-hora" data-hora="8" data-dica="16h"></span>
+          <span class="regua-barra-hora" data-hora="9" data-dica="17h"></span>
+          <span class="regua-barra-hora" data-hora="10" data-dica="18h"></span>
+          <span class="regua-barra-hora" data-hora="11" data-dica="19h"></span>
+          <span class="regua-barra-hora" data-hora="12" data-dica="20h"></span>
+          <span class="regua-barra-hora" data-hora="13" data-dica="21h"></span>
+          <span class="regua-barra-hora" data-hora="14" data-dica="22h"></span>
+          <span class="regua-barra-hora" data-hora="15" data-dica="23h"></span>
+          <span class="regua-barra-hora" data-hora="16" data-dica="00h"></span>
+          <span class="regua-barra-hora" data-hora="17" data-dica="01h"></span>
+          <span class="regua-barra-hora" data-hora="18" data-dica="02h"></span>
+          <span class="regua-barra-hora" data-hora="19" data-dica="03h"></span>
+          <span class="regua-barra-hora" data-hora="20" data-dica="04h"></span>
+          <span class="regua-barra-hora" data-hora="21" data-dica="05h"></span>
+          <span class="regua-barra-hora" data-hora="22" data-dica="06h"></span>
+          <span class="regua-barra-hora" data-hora="23" data-dica="07h"></span>
+        </div>
+        <span class="regua-barra-risco regua-barra-risco--0" aria-hidden="true"></span>
+        <span class="regua-barra-risco regua-barra-risco--6" aria-hidden="true"></span>
+        <span class="regua-barra-risco regua-barra-risco--12" aria-hidden="true"></span>
+        <span class="regua-barra-risco regua-barra-risco--18" aria-hidden="true"></span>
+        <span class="regua-barra-risco regua-barra-risco--24" aria-hidden="true"></span>
+        <button type="button" class="regua-barra-alca oculto" data-alca="ini" role="slider" aria-label="Começo do horário" aria-valuemin="0" aria-valuemax="24"></button>
+        <button type="button" class="regua-barra-alca oculto" data-alca="fim" role="slider" aria-label="Fim do horário" aria-valuemin="0" aria-valuemax="24"></button>
+      </div>
+      <div class="regua-barra-horas" aria-hidden="true">
+        <span class="regua-barra-horas-0">08h</span>
+        <span class="regua-barra-horas-6">14h</span>
+        <span class="regua-barra-horas-12">20h</span>
+        <span class="regua-barra-horas-18">02h</span>
+        <span class="regua-barra-horas-24">08h</span>
+      </div>
+    </div>
+  </template>
+
   <!-- período dentro de um serviço (Folgas e Trocas): Serviço inteiro ou Parte do serviço; na parte, os campos;
-       embaixo, a régua com o serviço e o trecho escolhido (o JS dá o nome dos rádios e põe a régua) -->
+       embaixo, a barra de horário com o serviço e o trecho escolhido (o JS dá o nome dos rádios e põe a barra) -->
   <template id="tpl-periodo-servico">
     <div class="periodo-servico">
       <label class="geral-opcao"><input type="radio" value="inteiro" checked disabled /><span>Serviço inteiro</span></label>
@@ -5016,6 +5287,12 @@
       <div class="escala-distribuicao-horas"></div>
       <span class="escala-edicao-acoes"></span>
     </div>
+  </template>
+
+  <!-- a aba Militares do painel do dia (escalas-painel-militares.js): embaixo do nome, na linha de cada um, as funções dele
+       no dia e, em vermelho, o horário sem função -->
+  <template id="tpl-escala-militares-funcoes">
+    <span class="escala-militares-funcoes"><span class="escala-militares-funcoes-texto"></span><span class="escala-militares-sem-funcao"></span></span>
   </template>
 
   <!-- um rótulo de função na linha (dois empilhados quando o mesmo militar acumula, ex.: Chefe de Socorro e Condutor) -->
@@ -5155,7 +5432,7 @@
         </span>
         <span class="escala-legenda-item">
           <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-origem-sistema"/></svg>
-          <span>Contínuo</span>
+          <span>Guarnição</span>
         </span>
         <span class="escala-legenda-item">
           <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-origem-saida"/></svg>
@@ -5198,6 +5475,10 @@
         <span class="escala-legenda-item">
           <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-origem-mudanca"/></svg>
           <span>Mudou de dia</span>
+        </span>
+        <span class="escala-legenda-item">
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-origem-saida"/></svg>
+          <span>Saiu da guarnição</span>
         </span>
       </div>
     </div>
@@ -5305,6 +5586,8 @@
         <span class="escala-mes-data-semana"></span>
         <span class="escala-mes-data-numero"></span>
       </div>
+      <!-- o Oficial de Área do dia, no alto da faixa, centralizado em cima das unidades (escalas-mes.js) -->
+      <div class="escala-mes-oficial oculto"></div>
     </div>
   </template>
 

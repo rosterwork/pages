@@ -9,7 +9,8 @@
    voluntários e o painel do dia leem e mudam por aqui.
    Tudo fica no rascunho até o Salvar; o militar sem nenhum horário
    continua no dia até lá. O rascunho aceita passar da cota: quem
-   passou aparece em passaram e o Salvar espera acertar.
+   passou aparece em passaram e o Salvar espera acertar. Cada mudança é
+   um passo do Desfazer e do Refazer (o Preencher pela sugestão, um só).
    Não desenha nada. RosterWork.extrajornadaGrade.
    ============================================================ */
 (function () {
@@ -27,6 +28,9 @@
   var mud = {};            // rascunho: 'cpf|data' -> { cpf, data, unidade, blocos, origem, porque, inicio } (blocos [] = sai ao salvar)
   var escala = null;       // a escala do mês, a mesma da Escala: { comp, cobertura, erro, militares }
   var picos = {};          // a régua das barras de cada unidade no mês (antes e depois)
+  var passos = [];         // o Desfazer: o rascunho de antes de cada passo { mud, marca } ('sugestao' no Preencher)
+  var refeitos = [];       // o Refazer: os passos desfeitos, o último por cima
+  var LIMITE_PASSOS = 100; // os passos guardados (os mais velhos saem)
 
   function msg() { return RW.mensagens.extrajornada.org; }
   function u() { return RW.extrajornadaUtil; }
@@ -81,6 +85,12 @@
     var livres = ((d.livres_adm || {})[m.cpf] || {})[k] || [], b = bs.map(Number).sort();
     if (!desde(m, k) || !b.length || !livres.length) return false;
     return b[0] === Math.min.apply(null, livres) && b[b.length - 1] - b[0] + 1 === b.length;
+  }
+  /* o começo fora dos riscos (o horário livre e o do administrativo): hora cheia de 1 a 5 horas antes do primeiro
+     horário de 6 h, com os horários seguidos (o banco confere igual) */
+  function comecoCabe(bs, inicio) {
+    var b = bs.map(Number).sort(), d = b.length ? (b[0] - 1) * 360 - RW.horario.emMin(inicio) : 0;
+    return !!b.length && /^\d\d:00$/.test(inicio) && b[b.length - 1] - b[0] + 1 === b.length && d >= 60 && d <= 300;
   }
   function usadas(cpf, alocs) { return (alocs || efetivas()).filter(function (a) { return a.cpf === cpf; }).reduce(function (s, a) { return s + a.blocos.length; }, 0); }
   /* a distribuição só é salva depois que o pedido fecha: antes disso, só dá para tirar extra */
@@ -198,18 +208,50 @@
 
   /* muda os horários do militar no dia (o mesmo para o calendário, a lista e o painel do dia). Passar da cota fica no
      rascunho, e o Salvar espera acertar; sem nenhum horário, ele continua no dia até o Salvar. inicio: a hora em que a
-     extra começa, quando o administrativo começa no fim do expediente; sem ele (as bolinhas mudaram), vale o padrão: com
-     2 cotas, no fim do expediente (sai à meia-noite); senão, na bolinha */
+     extra começa fora dos riscos (o horário livre, ou o administrativo no fim do expediente), que vale se couber; sem
+     ele (as bolinhas mudaram), vale o padrão: o administrativo com 2 cotas, no fim do expediente (sai à meia-noite);
+     senão, na bolinha */
   function mudar(m, k, novos, unidade, inicio) {
     if (soLeitura() || antigo(k)) return;
     var antes = base(m.cpf, k), bs = novos.slice().sort();
-    if (inicio === undefined) inicio = bs.length === 2 ? desde(m, k) : null;
-    if (!inicioCabe(m, k, bs)) inicio = null;
+    var dado = inicio !== undefined;
+    if (!dado) inicio = bs.length === 2 ? desde(m, k) : null;
+    if (inicio && !(dado ? comecoCabe(bs, inicio) : inicioCabe(m, k, bs))) inicio = null;
     var novo = { cpf: m.cpf, data: k, unidade: +unidade, blocos: bs, origem: 'admin', porque: null, inicio: inicio || null };
+    var c = chave(m.cpf, k), era = JSON.stringify(mud[c] || null), foto = copia(mud);
     if (antes && +antes.unidade === novo.unidade && JSON.stringify(blocos(antes).sort()) === JSON.stringify(novo.blocos)
-        && (antes.inicio || null) === novo.inicio) delete mud[chave(m.cpf, k)];
-    else mud[chave(m.cpf, k)] = novo;
+        && (antes.inicio || null) === novo.inicio) delete mud[c];
+    else mud[c] = novo;
+    /* o passo do Desfazer (o clique que não muda nada não conta) */
+    if (JSON.stringify(mud[c] || null) !== era) guardarPasso(null, foto);
     if (aoMudar) aoMudar(k);
+  }
+
+  /* ---------- o Desfazer e o Refazer: cada passo guarda o rascunho de antes ---------- */
+  function copia(x) { return JSON.parse(JSON.stringify(x)); }
+  /* guarda um passo: o rascunho de antes (foto; sem ela, o de agora, para quem vai mudar muitos de uma vez, como o
+     Preencher pela sugestão, com a marca 'sugestao'); o Refazer perde o que guardava */
+  function guardarPasso(marca, foto) {
+    passos.push({ mud: foto || copia(mud), marca: marca || null });
+    if (passos.length > LIMITE_PASSOS) passos.shift();
+    refeitos = [];
+  }
+  /* os dias que mudam de um rascunho para o outro */
+  function diasEntre(a, b) {
+    var dias = {};
+    Object.keys(a).concat(Object.keys(b)).forEach(function (c) {
+      if (JSON.stringify(a[c] || null) !== JSON.stringify(b[c] || null)) dias[(a[c] || b[c]).data] = true;
+    });
+    return Object.keys(dias);
+  }
+  /* volta um passo (de passos para refeitos) ou avança (de refeitos para passos): { dias que mudaram, marca }, ou null */
+  function trocarPasso(de, para) {
+    var p = de.pop();
+    if (!p) return null;
+    para.push({ mud: copia(mud), marca: p.marca });
+    var dias = diasEntre(mud, p.mud);
+    mud = p.mud;
+    return { dias: dias, marca: p.marca };
   }
 
   /* a extra do militar que começa no fim do expediente deixa falta que, começando na bolinha, ela cobriria: { cor
@@ -245,7 +287,14 @@
     dados: function () { return d; },
     modo: function () { return modo; },
     rascunho: function () { return mud; },
-    limpar: function () { mud = {}; },
+    /* o rascunho vazio e sem passos (o Cancelar, o Salvar, o mês lido de novo) */
+    limpar: function () { mud = {}; passos = []; refeitos = []; },
+    /* o Desfazer e o Refazer: quem chama redesenha os dias que mudaram (a marca 'sugestao' é o Preencher inteiro) */
+    guardarPasso: guardarPasso,
+    desfazer: function () { return trocarPasso(passos, refeitos); },
+    refazer: function () { return trocarPasso(refeitos, passos); },
+    podeDesfazer: function () { return passos.length > 0; },
+    podeRefazer: function () { return refeitos.length > 0; },
     chave: chave, base: base, alteracoes: alteracoes, passaram: passaram, fraseDasCotas: fraseDasCotas, lancada: lancada, mesmosBlocos: mesmosBlocos,
     vagas: vagas, vagaDe: vagaDe, efetivas: efetivas, alocDe: alocDe, usadas: usadas, voluntarios: voluntarios, blocos: blocos, naoSalvos: naoSalvos,
     conduz: conduz, impedimento: impedimento,

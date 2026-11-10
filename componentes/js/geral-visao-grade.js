@@ -8,10 +8,16 @@
    Calendário e a sua quantidade de colunas. Tudo fica no objeto
    escala_visao das preferências (fn_preferencias_salvar): { modo,
    modo_celular, mes, mes_celular, colunas_tipo, colunas_qtd,
-   colunas_qtd_celular }; a chave com _celular é a do celular, e
-   `mes` é a Agenda | Calendário do computador.
+   colunas_qtd_celular, disposicao }; a chave com _celular é a do
+   celular, e `mes` é a Agenda | Calendário do computador.
+   As unidades nos calendários (disposicao): 'lado' (lado a lado) ou
+   'empilhadas' (uma embaixo da outra, o padrão), uma escolha só para
+   todos os calendários da Escala e da Extrajornada, só no computador
+   (no celular, sempre uma embaixo da outra). O botão da barra
+   (ligarDisposicao) mostra no ícone e na dica o que o clique faz.
    API: RosterWork.visaoGrade.ler() · modo() · agendaOuCalendario() ·
-   quantasColunas() · gravar(mudancas)
+   quantasColunas() · disposicao() · ligarDisposicao(botao, aoTrocar) ·
+   gravar(mudancas)
    ============================================================ */
 (function () {
   'use strict';
@@ -83,5 +89,38 @@
     }
   }
 
-  window.RosterWork.visaoGrade = { ler: ler, modo: modo, agendaOuCalendario: agendaOuCalendario, quantasColunas: quantasColunas, gravar: gravar };
+  /* as unidades nos calendários: 'lado' ou 'empilhadas'; no celular, sempre 'empilhadas' (três colunas não cabem no dia) */
+  function disposicao() {
+    return !noCelular() && ler().disposicao === 'lado' ? 'lado' : 'empilhadas';
+  }
+
+  /* o ícone e a dica do botão mostram o que o clique faz: com as unidades uma embaixo da outra, os retângulos em pé
+     ("Mostrar as unidades lado a lado"); lado a lado, os deitados */
+  function pintarDisposicao(botao) {
+    var lado = disposicao() === 'lado';
+    var M = window.RosterWork.mensagens.visaoGrade;
+    var dica = lado ? M.mostrarEmpilhadas : M.mostrarLadoALado;
+    botao.setAttribute('aria-label', dica);
+    botao.setAttribute('data-dica', dica);
+    var uso = botao.querySelector('use');
+    if (uso) uso.setAttribute('href', 'icones/todos.svg#' + (lado ? 'icone-unidades-empilhadas' : 'icone-unidades-lado-a-lado'));
+  }
+
+  /* o botão da barra (Escala e Extrajornada): o clique troca, grava e chama aoTrocar (a tela redesenha o calendário).
+     A marca no botão evita ligar duas vezes o mesmo botão */
+  function ligarDisposicao(botao, aoTrocar) {
+    if (!botao || botao.hasAttribute('data-disposicao-ligada')) return;
+    botao.setAttribute('data-disposicao-ligada', '');
+    pintarDisposicao(botao);
+    botao.addEventListener('click', function () {
+      gravar({ disposicao: disposicao() === 'lado' ? 'empilhadas' : 'lado' });
+      pintarDisposicao(botao);
+      if (typeof aoTrocar === 'function') aoTrocar();
+    });
+  }
+
+  window.RosterWork.visaoGrade = {
+    ler: ler, modo: modo, agendaOuCalendario: agendaOuCalendario, quantasColunas: quantasColunas,
+    disposicao: disposicao, ligarDisposicao: ligarDisposicao, gravar: gravar
+  };
 })();

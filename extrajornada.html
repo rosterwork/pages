@@ -36,8 +36,6 @@
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
       </button>
     </div>
-    <!-- no mês de treino (geral-treino-extra.js), o selo ao lado do nome do mês -->
-    <span class="selo selo--treino oculto" id="extrajornada-treino-selo">Treino</span>
     <div class="abas abas--seletor oculto" id="extrajornada-passos">
       <button type="button" class="aba" data-passo="1"><span class="extrajornada-aba-num" aria-hidden="true">1</span>Pedidos</button>
       <button type="button" class="aba" data-passo="2"><span class="extrajornada-aba-num" aria-hidden="true">2</span>Cotas</button>
@@ -94,6 +92,11 @@
       </div>
     </div>
     <span class="pagina-subcabecalho-divisor oculto" id="extrajornada-legenda-divisor" aria-hidden="true"></span>
+    <!-- as unidades no Calendário (Extras do mês, Distribuição e Ajustes; só no computador): lado a lado ou uma embaixo da
+         outra, a mesma escolha da Escala; o ícone e a dica mostram o que o clique faz (geral-visao-grade.js) -->
+    <button type="button" class="botao botao--quadrado oculto" id="extrajornada-disposicao">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-unidades-lado-a-lado"/></svg>
+    </button>
     <div class="oculto" id="extrajornada-legenda"></div>
     <!-- imprimir a grade da tela (Agenda ou Calendário), nas Extras do mês, na Distribuição e nos Ajustes: o painel de
          impressão das grades da Escala, com as extras (extrajornada-imprimir-grade.js) -->
@@ -105,11 +108,14 @@
   <!-- cada aba ocupa o corpo inteiro: a linha de resumo parada em cima, o conteúdo rolando por dentro e o rodapé parado
        embaixo -->
   <div class="pagina-corpo pagina-corpo--colado">
-    <!-- no mês de treino, a nota no alto, em todas as abas -->
+    <!-- no mês de treino, a nota no alto, em todas as abas; o X a esconde até a página ser recarregada (extrajornada.js) -->
     <div class="extrajornada-passo-topo oculto" id="extrajornada-treino-nota">
       <div class="nota">
         <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-treinamento"/></svg>
         <span class="nota-texto">Este é o mês de treino, com os pedidos de novembro e quem está na companhia hoje. O mês de verdade não muda.</span>
+        <button type="button" class="botao botao--icone botao--pequeno extrajornada-nota-fechar" id="extrajornada-treino-nota-fechar" aria-label="Fechar" data-dica="Fechar">
+          <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
+        </button>
       </div>
     </div>
     <!-- a área da aba aberta enquanto a leitura dela não chega (o círculo) ou quando falhou (a frase), com os moldes da
@@ -314,14 +320,6 @@
          Depois do lançamento, a Distribuição fica só para ver e as mudanças vão pelos Ajustes; antes do lançamento (ou
          com ele reaberto), os Ajustes mostram só o aviso -->
     <section class="extrajornada-area oculto" data-aba-painel="distribuicao" data-passo-painel="3 4">
-      <!-- o véu do cálculo do Preencher pela sugestão: cobre a tela inteira, com o texto e o Cancelar
-           (extrajornada-otimizador.js liga e desliga). Classe própria: o roteador esconde o primeiro .carregando-veu
-           do conteúdo, que tem de ser o do site -->
-      <div class="extrajornada-calculo oculto" id="p3-calculo" role="status" aria-live="polite">
-        <div class="giratorio" aria-hidden="true"></div>
-        <p class="extrajornada-calculo-texto">Calculando a melhor distribuição. Isso pode levar até 1 minuto. Não feche esta página.</p>
-        <button type="button" class="botao" id="p3-calculo-cancelar">Cancelar</button>
-      </div>
       <span class="extrajornada-vazio extrajornada-vazio--area oculto" id="p3-sem-lancamento">Os ajustes abrem depois do lançamento.</span>
       <div class="geral-layout-lateral extrajornada-dist" id="p3-lateral">
         <!-- painel esquerdo: as cotas colocadas no alto e os voluntários na ordem da fila, os que faltam em cima e os
@@ -361,14 +359,6 @@
           <div class="extrajornada-passo-topo">
             <!-- as cotas que faltam distribuir, só para o administrador: a nota vermelha do mês (geral-cotas-aviso.js) -->
             <div class="oculto" id="p3-cotas-aviso"></div>
-            <!-- o militar em foco (clicado na lista): quem e as cotas dele; o X sai do foco -->
-            <div class="nota oculto" id="p3-foco">
-              <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-usuarios"/></svg>
-              <span class="nota-texto"></span>
-              <button type="button" class="botao botao--icone botao--pequeno extrajornada-nota-fechar" id="p3-foco-sair" aria-label="Sair do foco" data-dica="Sair do foco">
-                <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
-              </button>
-            </div>
             <!-- o resultado da sugestão: some no X até o próximo Preencher pela sugestão -->
             <div class="nota oculto" id="p3-resultado">
               <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg>
@@ -396,12 +386,19 @@
           <div class="extrajornada-dist-cal" id="p3-cal"></div>
         </div>
       </div>
-      <!-- o rodapé de salvar, na largura toda (embaixo dos painéis esquerdo e direito também): aparece só com alteração -->
+      <!-- o rodapé de salvar, na largura toda (embaixo dos painéis esquerdo e direito também): aparece com alteração e
+           enquanto há o que refazer; o Desfazer e o Refazer (também Ctrl+Z e Ctrl+Y) à esquerda do Cancelar -->
       <div class="rodape rodape-linha rodape--largo oculto" id="p3-rodape">
         <span class="extrajornada-rodape-texto" id="p3-texto"></span>
-        <label class="campo extrajornada-motivo oculto" id="p3-motivo-campo"><span class="campo-rotulo">Motivo do ajuste (opcional)</span><input type="text" maxlength="200" class="campo-entrada" id="p3-motivo" /></label>
+        <div class="rodape-historico">
+          <button type="button" class="botao botao--quadrado" id="p3-desfazer" aria-label="Desfazer" data-dica="Desfazer" disabled>
+            <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-desfazer"/></svg>
+          </button>
+          <button type="button" class="botao botao--quadrado" id="p3-refazer" aria-label="Refazer" data-dica="Refazer" disabled>
+            <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-refazer"/></svg>
+          </button>
+        </div>
         <div class="rodape-acoes">
-          <button type="button" class="botao oculto" id="p3-desfazer-sugestao">Desfazer a sugestão</button>
           <button type="button" class="botao" id="p3-cancelar">Cancelar</button>
           <button type="button" class="botao botao--primario" id="p3-salvar" disabled><span id="p3-salvar-dist">Salvar</span><span class="oculto" id="p3-salvar-ajuste">Salvar e enviar para a escala</span></button>
         </div>
@@ -485,7 +482,6 @@
                     <th>Militar</th>
                     <th>Era</th>
                     <th>Ficou</th>
-                    <th>Motivo</th>
                     <th>Ajuste</th>
                   </tr>
                 </thead>
@@ -527,10 +523,25 @@
 <template id="tpl-extrajornada-p1-excecao">
   <div class="extrajornada-linha-n extrajornada-excecao">
     <span class="extrajornada-excecao-nome"></span>
-    <div class="dropdown campo-combo extrajornada-excecao-combo oculto">
-      <input class="campo-entrada" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Quem tem a exceção" />
-      <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
-      <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares"></div>
+    <div class="campo-unidade-militar extrajornada-excecao-quem oculto">
+      <div class="campo">
+        <span class="campo-rotulo">Unidade</span>
+        <div class="dropdown extrajornada-excecao-unidade">
+          <button type="button" class="campo-entrada campo-selecao" aria-label="Unidade">
+            <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+            <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+          </button>
+          <div class="dropdown-menu"></div>
+        </div>
+      </div>
+      <div class="campo">
+        <span class="campo-rotulo">Militar</span>
+        <div class="dropdown campo-combo extrajornada-excecao-combo">
+          <input class="campo-entrada" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Quem tem a exceção" />
+          <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+          <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares"></div>
+        </div>
+      </div>
     </div>
     <div class="dropdown extrajornada-minimo-numero">
       <button type="button" class="campo-entrada campo-selecao" aria-label="Mínimo de dias da exceção">
@@ -616,7 +627,6 @@
     </td>
     <td class="extrajornada-rel-era"></td>
     <td class="extrajornada-rel-ficou"></td>
-    <td class="extrajornada-rel-motivo"></td>
     <td>
       <span class="extrajornada-rel-autor"></span>
       <span class="extrajornada-rel-vezes"></span>
@@ -688,14 +698,12 @@
 
 <!-- passo 3 (e a aba Extras do mês): dentro do bloco da Escala (tpl-escala-calendario-unidade, no shell), o gráfico do
      dia com as extras (o painel do dia mostra o sem e o com) e uma vaga por extra, só para ler: o posto e o nome e,
-     à direita, as 4 bolinhas pequenas dos horários na cor do que ele marcou no pedido, sem clique (todas vazias para
-     quem ficou sem nenhum até o Salvar); o nome inteiro e o horário escrito na dica; embaixo, o pelotão quando é de
-     outro -->
+     à direita, a barrinha dos 4 horários de 6 horas com a parte de cada um que a extra ocupa, na cor do que ele marcou
+     no pedido (vazia para quem ficou sem nenhum até o Salvar); o horário escrito na dica; embaixo, o pelotão quando é
+     de outro -->
 <template id="tpl-extrajornada-vaga">
   <div class="extrajornada-vaga">
     <span class="extrajornada-vaga-id"><span class="extrajornada-vaga-grad"></span> <span class="extrajornada-vaga-nome"></span></span>
-    <!-- a extra do administrativo que começa no fim do expediente: a hora, antes das bolinhas -->
-    <span class="extrajornada-vaga-inicio oculto"></span>
     <span class="extrajornada-vaga-bol" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
     <span class="extrajornada-vaga-baixo oculto"><span class="extrajornada-vaga-pelotao oculto"></span></span>
   </div>
@@ -727,8 +735,9 @@
   </button>
 </template>
 
-<!-- as datas do militar em foco, embaixo do nome na lista: uma linha por data (o dia, o pelotão quando é de outro e os 4
-     horários; em cinza a que sai ao salvar) -->
+<!-- as datas do militar em foco, embaixo do nome na lista, num bloco cinza com a linha clara à esquerda: uma linha por
+     data (a data e, embaixo dela, o pelotão quando é de outro; à direita, a barra de horário, que o clique na data escolhe
+     e mostra o seletor de horas, o cadeado e a lixeira, como no painel do dia; em cinza a que sai ao salvar) -->
 <template id="tpl-extrajornada-esq-aberto">
   <div class="extrajornada-esq-aberto">
     <div class="extrajornada-esq-datas"></div>
@@ -740,30 +749,58 @@
   <div class="extrajornada-esq-data">
     <span class="extrajornada-esq-dia"></span>
     <span class="extrajornada-esq-data-pel"></span>
-    <span class="extrajornada-marcas">
-      <button type="button" class="extrajornada-painel-marca" data-bloco="1" aria-pressed="false" aria-label="08h às 14h"></button>
-      <button type="button" class="extrajornada-painel-marca" data-bloco="2" aria-pressed="false" aria-label="14h às 20h"></button>
-      <button type="button" class="extrajornada-painel-marca" data-bloco="3" aria-pressed="false" aria-label="20h às 02h"></button>
-      <button type="button" class="extrajornada-painel-marca" data-bloco="4" aria-pressed="false" aria-label="02h às 08h"></button>
-    </span>
+    <span class="extrajornada-marcas"></span>
   </div>
 </template>
 
-<!-- passo 3, o militar em foco: no bloco de cada pelotão, em todos os dias, as bolinhas grandes dos 4 horários, numa
-     linha só delas (a borda na cor do que ele marcou no pedido), ou, no dia em que ele não pode, o selo com o motivo -->
-<template id="tpl-extrajornada-foco-marcas">
-  <div class="extrajornada-foco extrajornada-foco-linha">
-    <span class="extrajornada-painel-marcas extrajornada-marcas">
-      <button type="button" class="extrajornada-painel-marca" data-bloco="1" aria-pressed="false" aria-label="08h às 14h"></button>
-      <button type="button" class="extrajornada-painel-marca" data-bloco="2" aria-pressed="false" aria-label="14h às 20h"></button>
-      <button type="button" class="extrajornada-painel-marca" data-bloco="3" aria-pressed="false" aria-label="20h às 02h"></button>
-      <button type="button" class="extrajornada-painel-marca" data-bloco="4" aria-pressed="false" aria-label="02h às 08h"></button>
-    </span>
+<!-- passo 3, o militar em foco, no bloco do pelotão em que ele não tem extra: só a bolinha do que ele marcou no pedido
+     (a dica diz qual); o clique abre o cartão com o nome (o mesmo da vaga) e a barra de horário embaixo -->
+<template id="tpl-extrajornada-foco-ponto">
+  <div class="extrajornada-foco extrajornada-foco-ponto">
+    <span class="extrajornada-painel-ponto"></span>
+    <span class="extrajornada-vaga-id oculto"><span class="extrajornada-vaga-grad"></span> <span class="extrajornada-vaga-nome"></span></span>
   </div>
 </template>
 
-<template id="tpl-extrajornada-foco-selo">
-  <div class="extrajornada-foco extrajornada-foco-linha"><span class="selo extrajornada-selo-mini"></span></div>
+<!-- passo 3, o cartão aberto no bloco (pelo clique no nome ou no militar em foco): a barra de horário colada embaixo dele
+     (a faixa na cor do que ele marcou no pedido); com horário, também o seletor de horas, o cadeado e a lixeira, como no
+     painel do dia -->
+<template id="tpl-extrajornada-cartao-barra">
+  <div class="extrajornada-cartao-barra">
+    <span class="extrajornada-painel-marcas extrajornada-marcas"></span>
+  </div>
+</template>
+
+<!-- passo 3, o pelotão marcado pelo clique (fora dos nomes): as ações embaixo dos nomes; o Adicionar militar vira o campo
+     de militar (extrajornada-celula.js) -->
+<template id="tpl-extrajornada-bloco-acoes">
+  <div class="extrajornada-bloco-acoes">
+    <button type="button" class="dropdown-item extrajornada-bloco-acao" data-acao="adicionar">Adicionar militar</button>
+    <button type="button" class="dropdown-item extrajornada-bloco-acao" data-acao="painel">Abrir o painel do dia</button>
+  </div>
+</template>
+
+<!-- o campo do Adicionar militar (componente geral-combo-militar): a busca e a lista nos grupos do painel do dia -->
+<template id="tpl-extrajornada-adicionar">
+  <div class="dropdown campo-combo extrajornada-adicionar">
+    <input id="extrajornada-adicionar-campo" class="campo-entrada campo-entrada--pequeno" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Adicionar militar" />
+    <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+    <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares"></div>
+  </div>
+</template>
+
+<!-- um nome da lista do Adicionar militar: a bolinha do pedido, o posto e o nome; à direita, o pelotão e as cotas -->
+<template id="tpl-extrajornada-adicionar-item">
+  <button type="button" class="dropdown-item combo-militar-item" role="option">
+    <span class="combo-militar-nome"><span class="extrajornada-painel-ponto"></span><span class="combo-militar-grad"></span> <span class="combo-militar-guerra"></span></span>
+    <span class="combo-militar-info"></span>
+  </button>
+</template>
+
+<!-- o dia em que o militar em foco não pode (serviço, folga, férias e afins): o motivo num selo só, no centro da linha do
+     número do dia (na Agenda, junto da data), e o dia inteiro apagado -->
+<template id="tpl-extrajornada-dia-selo">
+  <span class="selo extrajornada-selo-mini extrajornada-dia-selo"></span>
 </template>
 
 <!-- a Legenda da barra em cada etapa (menos Relatórios): as regras gerais, em itens, e as do Preencher pela sugestão,
@@ -823,13 +860,14 @@
   <div class="escala-legenda-grupo">
     <span class="rotulo-secao">Regras gerais</span>
     <ul class="extrajornada-legenda-lista">
-      <li>Cada dia tem 4 horários de 6 horas: 08h, 14h, 20h e 02h. Cada bolinha é um horário, e a cheia é horário de extra.</li>
-      <li>Para marcar, clique no nome na lista ou abra o dia no calendário.</li>
-      <li>Sem nenhuma bolinha, o militar fica em cinza no dia e sai ao salvar.</li>
+      <li>Cada dia tem 4 horários de 6 horas: 08h, 14h, 20h e 02h, separados pelos riscos da barra. A parte escura da barra é a extra.</li>
+      <li>Para pôr ou tirar 6 horas, clique entre dois riscos; para mudar o começo ou o fim, arraste as bolinhas ou use os campos de hora. O mouse em cima da barra mostra a hora.</li>
+      <li>Para mexer, clique no nome na lista ou abra o dia no calendário.</li>
+      <li>Sem nenhum horário na barra, o militar fica em cinza no dia e sai ao salvar.</li>
       <li>Ninguém passa da própria cota. Quem já usou todas, ao marcar, mostra os outros dias dele, e o Salvar espera tirar de outro dia.</li>
       <li>Uma extra por dia para cada militar. Nunca em dia de serviço, folga, férias, licença ou em dia que ele não quer.</li>
       <li>O administrativo só tira extra fora do expediente.</li>
-      <li>No dia em que o expediente termina antes das 14h (a quarta), a extra do administrativo pode começar no fim dele. Escolha no Começa às, embaixo do nome.</li>
+      <li>No dia em que o expediente termina antes das 14h (a quarta), a extra do administrativo pode começar no fim dele: arraste a bolinha do começo até lá.</li>
       <li>A companhia só recebe extra posta manualmente.</li>
       <li>O Preencher pela sugestão só funciona com tudo salvo. Ele refaz as extras que o sistema pôs e mantém as que o administrador pôs ou mudou.</li>
       <li>O Preencher pela sugestão calcula a melhor combinação. Se o cálculo não terminar em 1 minuto, ele usa o cálculo simples.</li>

@@ -193,4 +193,11 @@
   html[data-celular] .perfil-acoes .botao {
     flex: 1 1 0;
   }
+
+  /* "Ler os termos" toca numa faixa de 44 de altura em volta do texto, sem mudar o desenho (a folga dos botões,
+     geral-botao: os lados ficam como nos outros) */
+  html[data-celular] .perfil-ler-termos::before {
+    top: calc(50% - var(--toque-altura-celular) / 2);
+    bottom: calc(50% - var(--toque-altura-celular) / 2);
+  }
 }

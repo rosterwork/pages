@@ -1,0 +1,232 @@
+/* ============================================================
+   ESCALA — painel do dia › aba Guarnições (escalas-painel-guarnicoes.js
+   e escalas-painel-guarnicoes-acoes.js): os períodos em caixas que
+   abrem e fecham, as guarnições lado a lado, as marcas do que muda,
+   a faixa dos afastados, o Fora da escala e a pergunta embaixo do
+   período. Reaproveita a caixa do painel (.grupo-caixa), o nome do
+   Dia (.escala-distribuicao-grad e -nome), o lápis e o menu da linha
+   (.escala-edicao-opcoes) e as caixas de pergunta das sub-telas.
+   ============================================================ */
+
+/* ---------- o período ---------- */
+
+/* o título em duas linhas: as datas, os selos, quantos tem cada guarnição e a seta; embaixo, o que mudou */
+.escala-guarnicoes-periodo-cab {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+}
+
+.escala-guarnicoes-periodo-linha {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.escala-guarnicoes-periodo-datas {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--texto-forte);
+}
+
+.escala-guarnicoes-periodo-contas {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--texto-suave);
+  white-space: nowrap;
+}
+
+.escala-guarnicoes-periodo-resumo {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.escala-guarnicoes-periodo > .grupo-caixa-corpo {
+  gap: 8px;
+  padding-top: 4px;
+}
+
+/* as guarnições lado a lado: uma coluna para cada (o ritmo diz quantas) */
+.escala-guarnicoes-colunas {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 4px;
+}
+
+.escala-guarnicoes-coluna {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 4px;
+  background-color: var(--fundo-superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+}
+
+/* a guarnição de serviço no dia aberto (no primeiro período): a borda escura e mais grossa */
+.escala-guarnicoes-coluna--dia {
+  border-color: var(--texto-forte);
+  outline: 1px solid var(--texto-forte);
+}
+
+.escala-guarnicoes-coluna-cab {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px;
+  margin-bottom: 2px;
+  padding: 0 2px 4px;
+  border-bottom: 1px solid var(--borda);
+}
+
+.escala-guarnicoes-coluna-letra {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--texto-forte);
+}
+
+/* sem o dia da guarnição A: no lugar da letra, o primeiro dia dela no período */
+.escala-guarnicoes-coluna-letra--data {
+  font-size: 12px;
+}
+
+.escala-guarnicoes-coluna-conta {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--texto-suave);
+}
+
+.escala-guarnicoes-coluna-lista {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- o nome ---------- */
+
+/* o grau, o nome e o lápis; embaixo, a marca do que mudou. A linha inteira abre o menu e fica cinza enquanto ele está
+   aberto */
+.escala-guarnicoes-nome {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 2px;
+  border-radius: var(--raio-pequeno);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+/* o nome cresce até o lápis; a base de 1px faz a marca (a linha inteira) sempre descer, com ou sem o lápis */
+.escala-guarnicoes-nome-texto {
+  display: flex;
+  flex: 1 1 1px;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+}
+
+.escala-guarnicoes-nome-acao {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.escala-guarnicoes-nome:hover,
+.escala-guarnicoes-nome:has(.dropdown--aberto) {
+  background-color: var(--fundo-medio);
+}
+
+/* quem entra, volta ou vem de outra guarnição: em verde, com o nome forte */
+.escala-guarnicoes-nome--entra {
+  background-color: var(--sucesso-fundo);
+}
+
+.escala-guarnicoes-nome--entra .escala-distribuicao-nome {
+  font-weight: 700;
+}
+
+/* quem sai: riscado, em vermelho */
+.escala-guarnicoes-nome--sai {
+  background-color: var(--erro-fundo);
+}
+
+.escala-guarnicoes-nome--sai .escala-distribuicao-grad,
+.escala-guarnicoes-nome--sai .escala-distribuicao-nome {
+  text-decoration: line-through;
+  color: var(--texto-fraco);
+}
+
+/* a marca embaixo do nome: o que mudou desde o período de antes */
+.escala-guarnicoes-marca {
+  flex-basis: 100%;
+  padding-bottom: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sucesso);
+}
+
+.escala-guarnicoes-nome--sai .escala-guarnicoes-marca {
+  color: var(--erro);
+}
+
+/* a lista vazia (a guarnição sem ninguém e o Fora da escala sem ninguém) */
+.escala-guarnicoes-vazio {
+  padding: 4px 2px;
+  font-size: 12px;
+  font-style: italic;
+  color: var(--texto-fraco);
+}
+
+/* ---------- a faixa de quem está afastado ---------- */
+.escala-guarnicoes-afastados {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 4px 8px;
+  background-color: var(--fundo-superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pequeno);
+  font-size: 12px;
+  color: var(--texto);
+}
+
+.escala-guarnicoes-afastados .icone {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--texto-suave);
+}
+
+.escala-guarnicoes-afastados-rotulo {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+/* ---------- o Fora da escala ---------- */
+.escala-guarnicoes-fora-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+}
+
+.escala-guarnicoes-fora-info {
+  min-width: 0;
+  font-size: 11px;
+  color: var(--texto-fraco);
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   As colunas são estreitas: o nome fica na altura do toque e é ele
+   que abre o menu (o lápis sai, para o nome caber).
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .escala-guarnicoes-nome {
+    min-height: var(--toque-altura-celular);
+  }
+
+  html[data-celular] .escala-guarnicoes-nome .escala-edicao-lapis {
+    display: none;
+  }
+}

@@ -55,6 +55,39 @@
   width: 100%;
 }
 
+/* a senha com o olho de mostrar dentro do campo, à direita: o olho com a senha escondida, o riscado com ela à vista */
+.login-senha {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.login-senha .campo-entrada {
+  padding-right: 32px;
+}
+
+.login-senha-mostrar {
+  position: absolute;
+  right: 4px;
+}
+
+.login-senha-mostrar[aria-pressed="false"] .login-senha-olho-riscado,
+.login-senha-mostrar[aria-pressed="true"] .login-senha-olho {
+  display: none;
+}
+
+/* Esqueceu a senha?: embaixo da senha, à esquerda, do tamanho do texto; a frase aparece logo abaixo */
+.login-formulario .login-esqueci {
+  width: auto;
+  align-self: flex-start;
+}
+
+.login-esqueci-texto {
+  margin: 0;
+  font-size: var(--fonte-padrao);
+  color: var(--texto);
+}
+
 /* Manter-me conectado: a caixinha e o texto numa linha; o alerta logo abaixo, alinhado ao texto */
 .login-conectado {
   display: flex;
@@ -113,5 +146,15 @@
   /* o link do pé (Ir para o login) toca na mesma área dos outros botões */
   html[data-celular] .login-links .botao {
     min-height: var(--botao-altura);
+  }
+
+  /* o Esqueceu a senha? também */
+  html[data-celular] .login-formulario .login-esqueci {
+    min-height: var(--botao-altura);
+  }
+
+  /* o discreto vira relative no celular (a área de toque de 44, geral-botao.css): o olho continua dentro do campo */
+  html[data-celular] .login-senha-mostrar {
+    position: absolute;
   }
 }

@@ -407,13 +407,18 @@
   min-width: 0;
 }
 
-/* a linha nova: o campo de quem em cima, os dias e o Remover embaixo */
+/* a linha nova: a Unidade e o Militar em cima, os dias e o Remover embaixo */
 .extrajornada-excecao--nova {
   flex-wrap: wrap;
 }
 
-.extrajornada-excecao-combo {
+.extrajornada-excecao-quem {
   flex: 1 1 100%;
+}
+
+/* a lista do militar não fica estreita como o campo ao lado da Unidade (cabe "Todo o efetivo administrativo") */
+.extrajornada-excecao-combo .combo-militar-menu {
+  min-width: 240px;
 }
 
 .extrajornada-excecao--nova .extrajornada-excecao-remover {
@@ -777,59 +782,62 @@
 
 .extrajornada-esq-motivo:empty { display: none; }
 
-/* o véu do cálculo do Preencher pela sugestão: o mesmo visual do véu de carregamento do site (.carregando-veu), mas na
-   tela inteira (o menu e as barras também ficam cobertos), com o texto e o Cancelar embaixo do círculo. Classe própria:
-   o roteador esconde o primeiro .carregando-veu do conteúdo, que tem de ser o do site */
-.extrajornada-calculo {
-  position: fixed;
-  inset: 0;
-  z-index: 30;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  background-color: var(--fundo-superficie);
-}
-
-.extrajornada-calculo-texto {
-  max-width: 360px;
-  margin: 0;
-  font-size: 14px;
-  text-align: center;
-  color: var(--texto-suave);
-}
-
-/* as datas do militar em foco, num bloco branco embaixo do nome na lista; a que sai ao salvar, em cinza */
+/* as datas do militar em foco, embaixo do nome na lista, num bloco só com o nome: o mesmo fundo e a mesma linha da
+   esquerda do nome escolhido (.lista-item--ativo), reta, e o texto no mesmo recuo do nome; as horas sem extra da barra
+   num cinza que aparece nesse fundo; a que sai ao salvar, em cinza */
 .extrajornada-esq-aberto {
+  --regua-vazia: var(--borda);
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin: 0 8px 8px;
-  padding: 8px;
-  border-radius: var(--raio-medio);
-  background-color: var(--fundo-superficie);
-  box-shadow: var(--sombra-bloco);
+  margin: 0 0 8px;
+  padding: 4px 12px 12px;
+  border-left: 2px solid var(--texto-forte);
+  background-color: var(--fundo-medio);
 }
 
 .extrajornada-esq-datas {
   display: flex;
   flex-direction: column;
+  gap: 8px;
 }
 
+/* uma data: o dia numa coluna de largura fixa (as barras começam todas no mesmo lugar) e, embaixo dele, o pelotão quando
+   é de outro; à direita, a barra compacta; escolhida, o seletor de horas, o cadeado e a lixeira embaixo da barra; o
+   aviso do começo na largura toda */
 .extrajornada-esq-data {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  align-items: center;
-  gap: 8px;
-  min-height: 24px;
+  grid-template-columns: 40px minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  align-items: start;
+  column-gap: 8px;
   font-size: 12px;
   color: var(--texto-forte);
 }
 
+/* a data na altura dos quadrados da barra compacta */
+.extrajornada-esq-dia {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  min-height: 16px;
+}
+
 .extrajornada-esq-data-pel {
+  grid-column: 1;
+  grid-row: 2;
   font-size: 11px;
   color: var(--texto-suave);
+}
+
+.extrajornada-esq-data > .extrajornada-marcas {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+.extrajornada-esq-data > .extrajornada-inicio {
+  grid-column: 1 / -1;
 }
 
 .extrajornada-esq-data--sai,
@@ -887,34 +895,20 @@
   grid-row: 1 / span 2;
 }
 
-/* a extra do administrativo que começa no fim do expediente: a hora, em negrito, antes do ícone e das bolinhas */
-.extrajornada-vaga--cedo { grid-template-columns: minmax(0, 1fr) auto auto auto; }
-
-.extrajornada-vaga-inicio {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-  font-weight: 600;
-  color: var(--texto-forte);
-}
-
-.extrajornada-vaga--cedo > .extrajornada-origem { grid-column: 3; }
-
-.extrajornada-vaga--cedo > .extrajornada-vaga-bol { grid-column: 4; }
-
-.extrajornada-vaga--busca .extrajornada-vaga-inicio { color: var(--texto-invertido); }
-
 .extrajornada-vaga--sai .extrajornada-origem { color: var(--texto-debil); }
 
 .extrajornada-vaga--busca .extrajornada-origem { color: var(--texto-invertido); }
 
-.extrajornada-vaga .extrajornada-vaga-id {
+.extrajornada-vaga .extrajornada-vaga-id,
+.extrajornada-foco-ponto .extrajornada-vaga-id {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* as 4 bolinhas pequenas dos horários (08h, 14h, 20h e 02h), só para ver, na coluna da direita nas duas linhas: com o
-   pelotão embaixo do nome, ficam no meio da altura */
+/* a barrinha dos 4 horários de 6 horas (08h, 14h, 20h e 02h), só para ver, na coluna da direita nas duas linhas (com o
+   pelotão embaixo do nome, fica no meio da altura): em cada horário, a parte que a extra ocupa (--vaga-de e --vaga-ate,
+   do JS) */
 .extrajornada-vaga-bol {
   display: flex;
   align-items: center;
@@ -924,41 +918,47 @@
 }
 
 .extrajornada-vaga-bol > span {
-  width: 8px;
+  position: relative;
+  width: 11px;
   min-height: 8px;
-  border: 1px solid var(--borda-forte);
-  border-radius: 50%;
+  overflow: hidden;
+  background-color: var(--borda-forte);
 }
 
-/* a marcada na cor do que ele marcou no pedido para o dia: verde quer, vermelho não quer; sem preferência, a neutra
-   (branca no tema escuro, escura no claro) */
-.extrajornada-vaga-bol > .extrajornada-vaga-bol--on {
-  border-color: var(--fundo-contraste);
+/* a parte ocupada na cor do que ele marcou no pedido para o dia: verde quer, vermelho não quer; sem preferência, a
+   neutra (branca no tema escuro, escura no claro) */
+.extrajornada-vaga-bol > .extrajornada-vaga-bol--on::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--vaga-de, 0%);
+  width: calc(var(--vaga-ate, 100%) - var(--vaga-de, 0%));
   background-color: var(--fundo-contraste);
 }
 
-.extrajornada-vaga-bol--quer > .extrajornada-vaga-bol--on {
-  border-color: var(--sucesso);
+.extrajornada-vaga-bol--quer > .extrajornada-vaga-bol--on::before {
   background-color: var(--sucesso);
 }
 
-.extrajornada-vaga-bol--nao > .extrajornada-vaga-bol--on {
-  border-color: var(--erro);
+.extrajornada-vaga-bol--nao > .extrajornada-vaga-bol--on::before {
   background-color: var(--erro);
 }
 
 /* a vaga casada pela pesquisa (modo marcar): o realce da linha da Escala (fundo escuro, texto claro) */
+/* quem passou da cota: o cartão em vermelho em todos os dias dele, até acertar (o Salvar espera) */
+.extrajornada-vaga--passou { background-color: var(--erro-fundo); }
+
 .extrajornada-vaga--busca { background-color: var(--fundo-contraste); }
 
 .extrajornada-vaga--busca .extrajornada-vaga-grad,
 .extrajornada-vaga--busca .extrajornada-vaga-nome,
 .extrajornada-vaga--busca .extrajornada-vaga-pelotao { color: var(--texto-invertido); }
 
-.extrajornada-vaga--busca .extrajornada-vaga-bol > span { border-color: var(--texto-invertido); }
+.extrajornada-vaga--busca .extrajornada-vaga-bol > span { background-color: var(--texto-fraco); }
 
-/* sem preferência, a bolinha marcada fica clara no fundo escuro; a de quem quer ou não quer mantém a cor */
-.extrajornada-vaga--busca .extrajornada-vaga-bol:not(.extrajornada-vaga-bol--quer):not(.extrajornada-vaga-bol--nao) > .extrajornada-vaga-bol--on {
-  border-color: var(--texto-invertido);
+/* sem preferência, a parte ocupada fica clara no fundo escuro; a de quem quer ou não quer mantém a cor */
+.extrajornada-vaga--busca .extrajornada-vaga-bol:not(.extrajornada-vaga-bol--quer):not(.extrajornada-vaga-bol--nao) > .extrajornada-vaga-bol--on::before {
   background-color: var(--texto-invertido);
 }
 
@@ -969,36 +969,101 @@
 .extrajornada-vaga--sai .extrajornada-vaga-nome,
 .extrajornada-vaga--sai .extrajornada-vaga-pelotao { color: var(--texto-debil); }
 
-.extrajornada-vaga--sai .extrajornada-vaga-bol > span { border-color: var(--texto-debil); }
+.extrajornada-vaga--sai .extrajornada-vaga-bol > span { background-color: var(--borda); }
 
-/* o militar em foco: os outros nomes somem (as outras vagas e a escala completa); a vaga dele sem as bolinhas pequenas
-   (as grandes ficam na linha de baixo) */
+/* o militar em foco: os outros nomes somem (as outras vagas e a escala completa) */
 .extrajornada-dist-cal--foco .extrajornada-vaga:not(.extrajornada-foco),
 .extrajornada-dist-cal--foco .linha-escalado { display: none; }
 
-.extrajornada-vaga.extrajornada-foco .extrajornada-vaga-bol { display: none; }
-
-.extrajornada-foco-linha {
+/* onde ele não tem extra: só a bolinha do que ele marcou no pedido (a dica diz qual); aberto, o cartão com o nome, o
+   mesmo da vaga */
+.extrajornada-foco-ponto {
   display: flex;
-  justify-content: flex-end;
   align-items: center;
-  margin: 0 4px;
+  gap: 4px;
+  min-height: 16px;
+  margin: 4px 4px 0;
+  padding: 0 4px;
+  border-radius: var(--raio-pequeno);
+  font-size: 11px;
 }
 
-/* a borda das bolinhas grandes na cor do que ele marcou no pedido: verde quer, vermelho não quer, a neutra sem
-   preferência; marcada, cheia na mesma cor */
-.extrajornada-foco-linha.extrajornada-foco-linha--quer .extrajornada-painel-marca::before { border-color: var(--sucesso); }
-.extrajornada-foco-linha.extrajornada-foco-linha--nao .extrajornada-painel-marca::before { border-color: var(--erro); }
-.extrajornada-foco-linha.extrajornada-foco-linha--sem .extrajornada-painel-marca::before { border-color: var(--texto-forte); }
+.extrajornada-foco-ponto.extrajornada-cartao--aberto {
+  min-height: 24px;
+  padding: 2px 4px;
+  background-color: var(--fundo-medio);
+}
 
-.extrajornada-foco-linha.extrajornada-foco-linha--quer .extrajornada-painel-marca--on::before,
-.extrajornada-foco-linha.extrajornada-foco-linha--quer .extrajornada-painel-marca--on:hover::before { border-color: var(--sucesso); background-color: var(--sucesso); }
+/* o cartão aberto no bloco (pelo clique no nome, ou o do militar em foco) e, colada embaixo, no mesmo fundo, a barra de
+   horário (8px dos lados: a bolinha de arrastar, de 16px, fica dentro do fundo mesmo nas 08h) */
+.extrajornada-cartao--aberto { border-radius: var(--raio-pequeno) var(--raio-pequeno) 0 0; }
 
-.extrajornada-foco-linha.extrajornada-foco-linha--nao .extrajornada-painel-marca--on::before,
-.extrajornada-foco-linha.extrajornada-foco-linha--nao .extrajornada-painel-marca--on:hover::before { border-color: var(--erro); background-color: var(--erro); }
+.extrajornada-cartao-barra {
+  --regua-vazia: var(--borda);
+  display: flex;
+  flex-direction: column;
+  margin: 0 4px;
+  padding: 4px 8px;
+  border-radius: 0 0 var(--raio-pequeno) var(--raio-pequeno);
+  background-color: var(--fundo-medio);
+}
 
-/* já de extra em outro pelotão no dia: as bolinhas daqui apagadas (a dica diz para tirar de lá antes) */
-.extrajornada-foco-linha--outro .extrajornada-painel-marca::before { opacity: 0.35; }
+/* a linha dos campos no bloco é justa: sem o vão entre os campos, o cadeado e a lixeira (os botões já deixam o espaço em
+   volta do ícone), e a lixeira termina junto com a barra */
+.extrajornada-cartao-barra .horario { gap: 0; }
+
+/* quem passou da cota, no cartão aberto: a nota e os outros dias dele embaixo da barra (a peça do painel do dia), mais
+   justos na largura do bloco */
+.extrajornada-cartao-barra > .nota {
+  gap: 4px;
+  margin-top: 8px;
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+.extrajornada-cartao-barra > .extrajornada-painel-outro { margin-top: 8px; }
+
+/* a faixa na cor do que ele marcou no pedido: verde quer, vermelho não quer, a neutra sem preferência (a hora que o
+   clique vai tirar fica riscada, como em toda barra) */
+.extrajornada-cartao-barra--quer .regua-barra-hora--faixa:not(.regua-barra-hora--sai) { background-color: var(--sucesso); }
+.extrajornada-cartao-barra--nao .regua-barra-hora--faixa:not(.regua-barra-hora--sai) { background-color: var(--erro); }
+
+/* o militar em foco já de extra em outro pelotão no dia: a barra daqui apagada (a dica diz para tirar de lá antes) */
+.extrajornada-cartao-barra--outro .regua-barra { opacity: 0.35; }
+
+/* o pelotão marcado pelo clique: as ações embaixo dos nomes, depois de um traço (Adicionar militar e Abrir o painel do
+   dia); o Adicionar vira o campo de militar, com a lista mais larga que o bloco */
+.extrajornada-bloco-acoes {
+  display: flex;
+  flex-direction: column;
+  margin: 4px 4px 0;
+  padding-top: 4px;
+  border-top: 1px solid var(--borda);
+}
+
+.extrajornada-bloco-acao {
+  min-height: 28px;
+  padding: 0 4px;
+  font-size: 12px;
+}
+
+.extrajornada-adicionar .combo-militar-menu { width: 280px; }
+
+.extrajornada-adicionar .combo-militar-nome > .extrajornada-painel-ponto {
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+
+/* o dia em que o militar em foco não pode: tudo apagado, menos a linha do número (na Agenda, a data), e o motivo num
+   selo só, no centro da linha do número */
+.extrajornada-dia--impedido > :not(.geral-calendario-mes-dia-topo):not(.escala-mes-data) { opacity: 0.45; }
+
+.geral-calendario-mes-dia-topo > .extrajornada-dia-selo {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+}
 
 /* a linha de baixo, embaixo do nome: o pelotão de quem é de outro */
 .extrajornada-vaga-baixo {
@@ -1008,7 +1073,8 @@
   min-width: 0;
 }
 
-.extrajornada-vaga[data-dica]::after {
+.extrajornada-vaga[data-dica]::after,
+.extrajornada-foco-ponto[data-dica]::after {
   left: auto;
   right: 0;
   transform: none;
@@ -1322,6 +1388,4 @@
 
   html[data-celular] .extrajornada-rel-etapas,
   html[data-celular] .extrajornada-rel-previa { flex: none; }
-
-  html[data-celular] .extrajornada-motivo input { width: 100%; }
 }

@@ -4,13 +4,13 @@
    Cotas), em dois grupos: os que ainda têm cota para colocar
    (Faltam) e os que já colocaram todas (Completos), cada um com o
    pelotão e as cotas colocadas de recebidas. Clicar no nome abre
-   embaixo as datas dele, com os 4 horários (a mesma peça do painel
-   do dia; em cinza a que sai ao salvar), e põe o militar em foco no
+   embaixo as datas dele, com a barra de horário (a mesma peça do
+   painel do dia; em cinza a que sai ao salvar), e põe o militar em foco no
    calendário (extrajornada-por-dia.js): os outros nomes somem e, em
-   todos os pelotões e dias, aparecem as bolinhas grandes dele (ou o
+   todos os pelotões e dias, aparece a barra de horário dele (ou o
    motivo de não poder). A nota no alto diz quem está em foco e as cotas,
    com o X para sair (ou clicar de novo no nome, clicar fora do nome,
-   das datas dele e das bolinhas, ou o Esc). Enquanto
+   das datas dele e da barra, ou o Esc). Enquanto
    está em foco, ele não muda de grupo. Uma escolha por vez: pôr um
    militar em foco fecha o painel do dia, e abrir um dia tira o foco
    (extrajornada-dia.js). A alça abre e fecha o painel; com o painel do
@@ -56,7 +56,6 @@
         faixa.setAttribute('aria-expanded', faixa.getAttribute('aria-expanded') === 'true' ? 'false' : 'true');
       });
     });
-    el.querySelector('#p3-foco-sair').addEventListener('click', sairDoFoco);
     if (!escLigado) {
       escLigado = true;
       document.addEventListener('keydown', function (ev) {
@@ -64,11 +63,11 @@
         if (RW.painel.estaAberto() || document.querySelector('.modal-veu--aberto')) return;
         sairDoFoco();
       }, true);   // na captura: vê o painel ainda aberto antes de o Esc do painel fechá-lo
-      /* clicar fora do nome, das datas dele e das bolinhas tira o foco (o aviso da cota, que vem da bolinha, e o balão
-         do passo a passo, não) */
+      /* clicar fora do nome, das datas dele e da barra tira o foco (o aviso da cota, que vem da bolinha, e o balão
+         do passo a passo, não); clicar de novo no nome e o Esc também */
       document.addEventListener('click', function (ev) {
         if (!foco || !naPagina()) return;
-        if (ev.target.closest('.extrajornada-esq-item, .extrajornada-esq-aberto, .extrajornada-foco-linha, #p3-foco, .modal-veu, .guia-balao')) return;
+        if (ev.target.closest('.extrajornada-esq-item, .extrajornada-esq-aberto, .extrajornada-foco, .modal-veu, .guia-balao')) return;
         sairDoFoco();
       });
     }
@@ -122,10 +121,6 @@
       el.querySelector('#p3-' + g + '-conta').textContent = grupos[g].length;
       el.querySelector('#p3-' + g + '-vazio').classList.toggle('oculto', grupos[g].length > 0);
     });
-    /* a nota do foco, no alto do calendário: quem e as cotas dele */
-    var m = foco ? u().militar(foco.cpf) : null, nota = el.querySelector('#p3-foco');
-    nota.classList.toggle('oculto', !m);
-    if (m) nota.querySelector('.nota-texto').textContent = msg().focoTexto((m.grad + ' ' + m.nome).trim(), G().usadas(m.cpf, alocs), m.concedidas || 0);
     /* a pesquisa da barra deixa na lista só quem casa */
     if (RW.extrajornadaFiltros) RW.extrajornadaFiltros.aplicar();
   }
@@ -155,17 +150,18 @@
     return b;
   }
 
-  /* as datas dele (inclusive as sem horário, em cinza até o Salvar), cada uma com os 4 horários */
+  /* as datas dele (inclusive as sem horário, em cinza até o Salvar), cada uma com a barra de horário à direita; como no
+     painel do dia, clicar na data escolhe e mostra o seletor de horas, o cadeado e a lixeira */
   function datas(m) {
     var caixa = RW.tpl('tpl-extrajornada-esq-aberto');
     var lista = caixa.querySelector('.extrajornada-esq-datas');
     var minhas = G().vagas().filter(function (a) { return a.cpf === m.cpf; }).sort(function (x, y) { return x.data < y.data ? -1 : 1; });
     minhas.forEach(function (a) {
       var lin = RW.tpl('tpl-extrajornada-esq-data');
-      lin.querySelector('.extrajornada-esq-dia').textContent = msg().diaData(G().SEM_CURTA[G().dataDe(a.data).getDay()], u().br(a.data));
+      lin.querySelector('.extrajornada-esq-dia').textContent = u().br(a.data);
       lin.querySelector('.extrajornada-esq-data-pel').textContent = +a.unidade !== m.unidade_id ? ((u().unidade(a.unidade) || {}).nome || '') : '';
       lin.classList.toggle('extrajornada-esq-data--sai', !a.blocos.length);
-      RW.extrajornadaDia.ligarMarcas(lin.querySelector('.extrajornada-marcas'), m, a.data, G().blocos(a), +a.unidade);
+      RW.extrajornadaDia.ligarMarcas(lin.querySelector('.extrajornada-marcas'), m, a.data, G().blocos(a), +a.unidade, { campos: true, lugar: 'lista', linha: lin });
       RW.extrajornadaDiaOutros.ligarInicio(lin, null, m, a.data, +a.unidade);
       lista.appendChild(lin);
     });

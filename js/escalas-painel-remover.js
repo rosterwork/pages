@@ -1,7 +1,7 @@
 /* ============================================================
-   ESCALAS — Remover militar (o botão do subcabeçalho do Dia e o
-   Remover do dia da caixa Sem função; só admin). O mesmo caminho
-   pelas duas entradas (REGRAS §4 › Ações e perguntas):
+   ESCALAS — Remover do dia (o lápis da aba Militares: o Remover do
+   dia e o Devolver de quem foi para outra unidade; só admin). O mesmo
+   caminho pelas duas entradas (REGRAS §4 › Ações e perguntas):
    - abrir(): a sub-tela em caixas de pergunta. Quem sai; a origem
      vem da escala, e só quem entrou de mais de um jeito escolhe Qual
      parte sai. O remanejado (escalas-painel-remanejar.js) responde
@@ -20,11 +20,16 @@
      próprio da sub-tela. A extra não sai por aqui (muda na
      Extrajornada, em Ajustes): quem só está de extra no dia não entra
      no Quem sai nem tem o Remover do dia (podeTirar).
-   - doDia(m, linha): quem está sem função (já se sabe quem, o
-     horário e a origem): pelo ciclo, a pergunta do banco de horas
-     abre embaixo da linha, e a resposta já o tira do dia; o pontual
-     sai na hora, ou com a pergunta das horas que ele somou; o resto
-     abre a sub-tela.
+   - doDia(m, linha): o Remover do dia do menu da linha (já se sabe
+     quem, o horário, o dia todo dele, e a origem): pelo ciclo, ele
+     já sai do dia, sem descontar, e a pergunta do banco de horas
+     abre embaixo da linha com o Não descontar marcado (a resposta
+     fica e fecha; o Cancelar volta); o pontual sai na hora, ou com a
+     pergunta das horas que ele somou; o resto abre a sub-tela. O
+     que fazer vem do analisarDoDia(m), que a célula da grade
+     (escalas-celula-editar.js) também usa.
+   - Na sub-tela, a folga começa no Não descontar (primeiro); o
+     pontual, no Tirar as horas.
    Sem botão próprio: a resposta completa entra no rascunho do Dia ao
    vivo (escalas-painel-editar.js › aoVivo); nada grava até o Salvar
    do rodapé largo (escalas-painel-salvar.js), menos a troca.
@@ -56,6 +61,14 @@
     return function marcar(valor) { [].forEach.call(radios, function (r) { r.checked = r.value === valor; }); };
   }
 
+  /* as duas respostas do banco de horas no mesmo molde (os textos delas): na folga, o Não descontar vem primeiro; no
+     pontual, o Tirar as horas */
+  function naOrdem(textoSim, textoNao, naoPrimeiro) {
+    var sim = textoSim.closest('.geral-opcao'), nao = textoNao.closest('.geral-opcao');
+    if (naoPrimeiro) sim.parentNode.insertBefore(nao, sim);
+    else nao.parentNode.insertBefore(sim, nao);
+  }
+
   /* as listas e a origem do serviço (escalas-painel-remover-listas.js) */
   function R() { return RosterWork.escalasPainelRemoverListas; }
   function partesDe(mil) { return R().partesDe(mil); }
@@ -69,11 +82,13 @@
 
   /* opcoes = { cpf }: chega com ele escolhido (o Remover do dia que precisa de mais de uma pergunta) */
   function abrir(opcoes) {
-    fecharPergunta();
+    fecharPergunta('guardar');
     var api = ed(), H = api.horas, C = RosterWork.escalasPainelCiclo, D = RosterWork.data;
     if (!api.dados()) return;
     var iso = api.iso(), uid = api.unidadeId(), data = diaMes(iso);
-    var est = { item: null, mil: null, partes: [], parte: null, alcance: 'dia', periodos: [], banco: 'sim',
+    /* banco = 'sim' | 'nao' | null (null: a resposta de começo da pergunta que aparece, a folga sem descontar e o pontual
+       tirando as horas) */
+    var est = { item: null, mil: null, partes: [], parte: null, alcance: 'dia', periodos: [], banco: null,
       reman: null, remanFazer: null, mudancaFazer: null };
     var el = {}, combo = null, troca = null, efeito = null;
     var analise = { chave: '', aviso: null, pedido: 0 };   // o que acontece no ciclo de quem sai do ciclo (lido uma vez)
@@ -119,7 +134,7 @@
     /* a parte escolhida: o horário começa com ela toda */
     function comecarParte() {
       var p = est.parte;
-      est.alcance = 'dia'; est.banco = 'sim'; est.mudancaFazer = null;
+      est.alcance = 'dia'; est.banco = null; est.mudancaFazer = null;
       est.periodos = p ? p.periodos.map(copiar) : [];
       atualizar();
     }
@@ -225,6 +240,8 @@
           el.bancoTexto.textContent = L().tirarFolga(nome, data, horasR);
           el.bancoSim.textContent = L().descontar(horasR);
           el.bancoNao.textContent = L().naoDescontar;
+          naOrdem(el.bancoSim, el.bancoNao, true);
+          if (!est.banco) est.banco = 'nao';
           el.marcarBanco(est.banco);
           var descontarR = est.banco === 'sim';
           noRascunho(function () { api.largarRemanejado(cpf); api.darFolga(cpf, descontarR, null); });
@@ -255,6 +272,8 @@
           ? L().tirarFolga(nome, data, horas) : textoFolga(est.periodos, nome, horas, data);
         el.bancoSim.textContent = L().descontar(horas);
         el.bancoNao.textContent = L().naoDescontar;
+        naOrdem(el.bancoSim, el.bancoNao, true);
+        if (!est.banco) est.banco = 'nao';
       } else {
         var salvo = pontualSalvo(mil.cpf), contado = !!(salvo && salvo.contabilizado);
         mostra(el.banco, ok && toda && contado);
@@ -264,6 +283,8 @@
           el.bancoSim.textContent = L().tirarPontualSim(hp);
           el.bancoNao.textContent = L().tirarPontualNao;
         }
+        naOrdem(el.bancoSim, el.bancoNao, false);
+        if (!est.banco) est.banco = 'sim';
       }
       el.marcarBanco(est.banco);
       /* o horário fora do serviço dele (ou que se cruza) não entra */
@@ -295,6 +316,8 @@
       el.bancoTexto.textContent = L().tirarFolga(nome, de, horas);
       el.bancoSim.textContent = L().descontar(horas);
       el.bancoNao.textContent = L().naoDescontar;
+      naOrdem(el.bancoSim, el.bancoNao, true);
+      if (!est.banco) est.banco = 'nao';
       el.marcarBanco(est.banco);
       var descontar = est.banco === 'sim';
       noRascunho(function () { api.tirarMudanca(p.mudancaId, descontar, deIso, cpf, p.periodos); });
@@ -331,64 +354,101 @@
     api.abrir(montar);
   }
 
-  /* ---------- Remover do dia (caixa Sem função) ---------- */
+  /* ---------- Remover do dia (o menu da linha) ---------- */
 
-  function fecharPergunta() {
-    if (pergunta && pergunta.parentNode) pergunta.remove();
+  /* a pergunta embaixo da linha sai. Na da folga (ao vivo): 'largar' tira a mudança; 'guardar' a deixa como um passo do
+     desfazer; sem modo, também refaz a lista, já com ela */
+  function fecharPergunta(modo) {
+    var p = pergunta;
     pergunta = null;
+    if (!p) return;
+    if (p.el.parentNode) p.el.remove();
+    if (!p.vivo) return;
+    var api = ed();
+    if (modo === 'largar') { api.largarVivo(); return; }
+    if (api.terminarVivo() && modo !== 'guardar') api.redesenhar();
   }
 
-  /* m = a linha de quem está sem função (os horários sem função); linha = a linha da lista */
-  function doDia(m, linha) {
-    fecharPergunta();
+  /* o Remover do dia de quem já se sabe, sem tela (a pergunta embaixo da linha daqui e a célula da grade,
+     escalas-celula-editar.js, usam o mesmo). m = { cpf, periodos }: quem sai e as horas que saem (o dia todo dele).
+     Devolve null (só a extra: nada sai por aqui), { tipo: 'subtela', cpf } (o remanejado, quem entrou de mais de um jeito
+     e a troca: a sub-tela, já com ele), { tipo: 'sai', aplicar() } (o pontual sem pergunta: parte dele, ou não contado no
+     banco) ou { tipo: 'folga' | 'pontual', texto, sim, nao, padrao, aplicar(escolha) }: pelo ciclo, a folga, com o Não
+     descontar de começo; o pontual contado no banco, sem resposta de começo. aplicar muda o rascunho (quem chama o põe
+     no mudar ou no aoVivo) */
+  function analisarDoDia(m) {
     var api = ed(), H = api.horas, mil = api.militarDoDia(m.cpf);
-    if (!mil || !linha) return;
-    /* o remanejado: a sub-tela, com ele já escolhido (Devolver ou Tirar do dia) */
-    if (mil.remanejado) { abrir({ cpf: mil.cpf }); return; }
+    if (!mil) return null;
+    if (mil.remanejado) return { tipo: 'subtela', cpf: mil.cpf };
     var nome = nomeDe(mil), cpf = mil.cpf;
     var sem = (m.periodos || []).map(copiar), semF = sem.map(H.faixa);
     var partes = partesDe(mil).filter(function (p) {
       return p.periodos.some(function (pp) { return semF.some(function (s) { return !!H.cruza(H.faixa(pp), s); }); });
     });
-    if (!partes.length) return;   // só a extra (o botão nem aparece; ver podeTirar)
-    /* mais de um jeito, ou a troca: a sub-tela, com ele já escolhido */
-    if (partes.length !== 1 || (partes[0].origem !== 'ciclo' && partes[0].origem !== 'pontual')) { abrir({ cpf: cpf }); return; }
+    if (!partes.length) return null;   // só a extra (o botão nem aparece; ver podeTirar)
+    if (partes.length !== 1 || (partes[0].origem !== 'ciclo' && partes[0].origem !== 'pontual')) return { tipo: 'subtela', cpf: cpf };
     var p = partes[0];
-    var horas = H.horasTexto(H.uniao(semF).reduce(function (s, f) { return s + f[1] - f[0]; }, 0));
     var todoPontual = p.origem === 'pontual' && !H.menos(H.uniao(p.periodos.map(H.faixa)), H.uniao(semF)).length;
     var salvo = p.origem === 'pontual' ? pontualSalvo(cpf) : null;
-    /* o pontual sem pergunta (parte dele, ou não contado no banco): sai na hora, com o Desfazer */
     if (p.origem === 'pontual' && !(todoPontual && salvo && salvo.contabilizado)) {
-      api.mudar(function () { tirarDoPontual(cpf, sem, todoPontual, false); });
-      return;
+      return { tipo: 'sai', aplicar: function () { tirarDoPontual(cpf, sem, todoPontual, false); } };
     }
+    if (p.origem === 'ciclo') {
+      /* a folga dele que já está no rascunho (o horário mudado) entra junto: uma folga só no dia (o banco guarda uma por
+         militar), o dia todo quando cobre as 24 horas (fora quem também serve em outra unidade, que folga só daqui) */
+      var antes = (api.rascunho().folgas || []).filter(function (f) { return f.cpf === cpf && f.hi && f.hf; }).map(copiar);
+      var juntas = H.uniao(semF.concat(antes.map(H.faixa)));
+      var minJuntas = juntas.reduce(function (s, f) { return s + f[1] - f[0]; }, 0);
+      var todo = !mil.outraUnidade && juntas.length === 1 && minJuntas >= 1440;
+      var folgaPeriodos = juntas.map(H.periodo), folgaHoras = H.horasTexto(minJuntas), data = diaMes(api.iso());
+      return { tipo: 'folga', texto: todo ? L().tirarFolga(nome, data, folgaHoras) : textoFolga(folgaPeriodos, nome, folgaHoras, data),
+        sim: L().descontar(folgaHoras), nao: L().naoDescontar, padrao: 'nao',
+        aplicar: function (escolha) { api.darFolga(cpf, escolha === 'sim', todo ? null : folgaPeriodos); } };
+    }
+    var hp = H.horasTexto(salvo.minutos);
+    return { tipo: 'pontual', texto: L().tirarPontualTexto(nome, hp), sim: L().tirarPontualSim(hp), nao: L().tirarPontualNao,
+      padrao: null, aplicar: function (escolha) { tirarDoPontual(cpf, sem, true, escolha === 'sim'); } };
+  }
+
+  /* m = { cpf, periodos }: quem sai e as horas que saem (o dia todo dele, do menu da linha); linha = a linha da lista */
+  function doDia(m, linha) {
+    fecharPergunta('guardar');
+    var api = ed(), a = linha ? analisarDoDia(m) : null;
+    if (!a) return;
+    if (a.tipo === 'subtela') { abrir({ cpf: a.cpf }); return; }
+    /* o pontual sem pergunta: sai na hora, com o Desfazer */
+    if (a.tipo === 'sai') { api.mudar(a.aplicar); return; }
     var el = RosterWork.tpl('tpl-escala-remover-dia');
     if (!el) return;
     var q = function (s) { return el.querySelector(s); };
-    if (p.origem === 'ciclo') {
-      q('.escala-remover-dia-texto').textContent = textoFolga(sem, nome, horas, diaMes(api.iso()));
-      q('.escala-remover-dia-sim').textContent = L().descontar(horas);
-      q('.escala-remover-dia-nao').textContent = L().naoDescontar;
-    } else {
-      var hp = H.horasTexto(salvo.minutos);
-      q('.escala-remover-dia-texto').textContent = L().tirarPontualTexto(nome, hp);
-      q('.escala-remover-dia-sim').textContent = L().tirarPontualSim(hp);
-      q('.escala-remover-dia-nao').textContent = L().tirarPontualNao;
-    }
-    /* sem nada marcado: a resposta já o tira do dia, no rascunho (o Desfazer volta) */
-    ligarRadios(el, function (escolha) {
-      fecharPergunta();
-      api.mudar(function () {
-        if (p.origem === 'ciclo') api.darFolga(cpf, escolha === 'sim', sem);
-        else tirarDoPontual(cpf, sem, true, escolha === 'sim');
+    q('.escala-remover-dia-texto').textContent = a.texto;
+    q('.escala-remover-dia-sim').textContent = a.sim;
+    q('.escala-remover-dia-nao').textContent = a.nao;
+    naOrdem(q('.escala-remover-dia-sim'), q('.escala-remover-dia-nao'), a.tipo === 'folga');
+    if (a.tipo === 'folga') {
+      /* a folga: ele já sai do dia, sem descontar (ao vivo, com o Não descontar marcado); a resposta, também a já
+         marcada, fica e a pergunta fecha; o Cancelar volta tudo */
+      api.comecarVivo();
+      var aplicar = function (escolha) { api.aoVivo(function () { a.aplicar(escolha); }, false); };
+      ligarRadios(el, function () {})(a.padrao);
+      aplicar(a.padrao);
+      [].forEach.call(el.querySelectorAll('input[type="radio"]'), function (r) {
+        r.addEventListener('click', function () { aplicar(r.value); fecharPergunta(); });
       });
-    });
-    q('.escala-remover-dia-cancelar').addEventListener('click', fecharPergunta);
+      q('.escala-remover-dia-cancelar').addEventListener('click', function () { api.aoVivo(null, false); fecharPergunta('largar'); });
+    } else {
+      /* o pontual contado no banco, sem nada marcado: a resposta já o tira do dia, no rascunho (o Desfazer volta) */
+      ligarRadios(el, function (escolha) {
+        fecharPergunta();
+        api.mudar(function () { a.aplicar(escolha); });
+      });
+      q('.escala-remover-dia-cancelar').addEventListener('click', function () { fecharPergunta(); });
+    }
     linha.insertAdjacentElement('afterend', el);
-    pergunta = el;
+    pergunta = { el: el, vivo: a.tipo === 'folga' };
   }
 
-  window.RosterWork.escalasPainelRemover = { abrir: abrir, doDia: doDia,
-    /* quem está sem função tem o Remover do dia só com algo que sai por aqui (a extra muda na Extrajornada) */
+  window.RosterWork.escalasPainelRemover = { abrir: abrir, doDia: doDia, analisarDoDia: analisarDoDia, fecharPergunta: fecharPergunta,
+    /* o menu da linha mostra o Remover do dia só com algo que sai por aqui (a extra muda na Extrajornada) */
     podeTirar: function (cpf) { return podeTirar(ed().militarDoDia(cpf)); } };
 })();

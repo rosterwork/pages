@@ -13,8 +13,14 @@
    Opção unidadesPorDia (N ≥ 1, Escala e Extrajornada): cada dia empilha
    um bloco por unidade; o dia vira um bloco cinza e os blocos de cada
    unidade se alinham na mesma altura em toda a linha do calendário.
+   Opção ladoALado (com unidadesPorDia): as unidades do dia em colunas,
+   lado a lado, cada uma com a largura mínima do dia de sempre; a
+   semana passa da tela e o calendário rola para o lado.
+   O título do dia tem o lugar do meio (.geral-calendario-mes-dia-centro),
+   vazio e escondido: quem usa põe ali o que quiser (a Escala, o Oficial
+   de Área do dia).
    Componente compartilhado (Escala e Extrajornada).
-   API: RosterWork.geralCalendarioMes.renderizar(corpo, { dataRef, aoDia, diasPorLinha, unidadesPorDia })
+   API: RosterWork.geralCalendarioMes.renderizar(corpo, { dataRef, aoDia, diasPorLinha, unidadesPorDia, ladoALado })
    ============================================================ */
 (function () {
   'use strict';
@@ -58,8 +64,10 @@
     var unidades = (opcoes && opcoes.unidadesPorDia) || 0;
     if (unidades >= 1) {
       wrap.classList.add('geral-calendario-mes--unidades');
-      /* nº de unidades por dia orientado a dados → custom property (as linhas da grade de cada semana) */
+      /* nº de unidades por dia orientado a dados → custom property (as linhas da grade de cada semana, ou as colunas do
+         dia no lado a lado) */
       wrap.style.setProperty('--calendario-unidades', String(unidades));
+      if (opcoes.ladoALado) wrap.classList.add('geral-calendario-mes--lado-a-lado');
     }
 
     var ano = dataRef.getFullYear(), mes = dataRef.getMonth();

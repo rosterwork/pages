@@ -203,18 +203,28 @@
     var formato = form.formato, continua = form.continua, paisagem = FORMATOS[formato].paisagem, diasPorLinha = form.diasPorLinha, titulo = form.titulo, prefixo = form.prefixo;
     var unidades = escolhas.unidades.map(function (u) { return { unidade_id: u.unidade_id, nome: u.nome }; });
     var mostrar = escolhas.mostrar;
+    /* como a tela: as unidades lado a lado nos calendários (a escolha da pessoa; geral-visao-grade.js) e o Oficial de Área
+       no título do dia, só na escala (a grade de outra tela, como a Extrajornada, vem com os dados dela) */
+    var ladoALado = (formato === 'calendario' || formato === 'colunas-dias') && !!(RW.visaoGrade && RW.visaoGrade.disposicao() === 'lado');
+    var comOficial = !form.dados;
     return {
       resumo: resumo(escolhas.unidades),
       inicio: iso(dentro[0].data),
       fim: iso(dentro[dentro.length - 1].data),
       chave: [escolhas.ids.join(','), formato, continua, mostrar.grafico, mostrar.icones, mostrar.faixa, p.dias.length,
-        iso(p.dias[0].data), iso(p.dias[p.dias.length - 1].data), p.texto].join('|'),
+        iso(p.dias[0].data), iso(p.dias[p.dias.length - 1].data), p.texto, ladoALado].join('|'),
       montar: function () {
         return carregarDados(escolhas.ids, iso(p.busca.inicio), iso(p.busca.fim)).then(function (dados) {
           return RW.escalasImpressaoGradePdf.gerar({ formato: formato, paisagem: paisagem, continua: continua, mostrar: mostrar,
-            diasPorLinha: diasPorLinha, unidades: unidades, dias: p.dias, texto: p.texto, dados: dados, titulo: titulo, prefixo: prefixo });
+            diasPorLinha: diasPorLinha, unidades: unidades, dias: p.dias, texto: p.texto, dados: dados, titulo: titulo, prefixo: prefixo,
+            ladoALado: ladoALado, comOficial: comOficial });
         }).then(function (r) {
-          return { arquivo: r.arquivo, nome: r.nome, folhas: RW.mensagens.impressao.folhas(r.folhas, continua, paisagem) };
+          /* a folha maior (lado a lado, que a impressora reduz para a A4): o subtítulo do painel diz o tamanho certo */
+          if (form && form.tamanho !== r.tamanho) {
+            form.tamanho = r.tamanho;
+            RW.painel.definirTitulos(null, subtitulo());
+          }
+          return { arquivo: r.arquivo, nome: r.nome, folhas: RW.mensagens.impressao.folhas(r.folhas, continua, paisagem, r.tamanho) };
         }, function (e) {
           throw { mensagem: e && e.longaDemais ? msg().longaDemais : null };
         });
@@ -223,7 +233,7 @@
   }
 
   /* ---------- abrir ---------- */
-  function subtitulo() { return msg().subtitulo(FORMATOS[form.formato].paisagem, form.continua); }
+  function subtitulo() { return msg().subtitulo(FORMATOS[form.formato].paisagem, form.continua, form.tamanho); }
 
   /* opcoes: { formato, data (a da tela), unidades ([{ unidade_id, nome }] da tela: as marcadas no começo), diasPorLinha,
      filtros (os ligados na tela, em texto); de outra grade: dados(ids, inicio, fim) (a promessa no formato do

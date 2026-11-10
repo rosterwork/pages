@@ -144,6 +144,55 @@
   background-color: var(--fundo-medio);
 }
 
+/* o Oficial de Área do dia (escalas-celula.js › preencherOficial), no título do dia das grades: o posto apagado e o nome
+   forte, como na linha do militar; o dia com escala e ninguém na função, em vermelho */
+.escala-oficial {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.escala-oficial-grad {
+  flex-shrink: 0;
+  color: var(--texto-suave);
+}
+
+.escala-oficial-nome {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 600;
+  color: var(--texto);
+}
+
+.escala-oficial--sem .escala-oficial-nome {
+  color: var(--erro);
+}
+
+/* Agenda: a faixa do dia com o Oficial de Área ganha uma linha no alto, com ele centralizado em cima das unidades; a
+   data fica à esquerda, nas duas linhas */
+.escala-mes-linha--com-oficial {
+  row-gap: 4px;
+}
+
+.escala-mes-linha--com-oficial > .escala-mes-data {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+}
+
+.escala-mes-oficial {
+  grid-column: 2 / -1;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 24px;
+}
+
 /* ---------- célula (unidade × dia): bloquinho branco com a lista corrida de nomes ---------- */
 .escala-mes-celula {
   display: flex;
@@ -412,7 +461,8 @@
   text-align: left;
 }
 
-/* folga, troca, remanejamento (saiu para outra unidade) e mudança de dia (o serviço passou para outro dia): o militar
+/* folga, troca, remanejamento (saiu para outra unidade), mudança de dia (o serviço passou para outro dia) e a saída da
+   guarnição (o primeiro serviço que ele não faz mais): o militar
    aparece, mas riscado (graduação, nome e HORÁRIO) e apagado. O horário entra no risco porque é justamente o trecho que
    ele deixou de fazer. Quando é parcial, a linha riscada traz só o trecho trocado/de folga, e o trecho que ele cumpre
    aparece noutra linha, sem risco. */
@@ -427,7 +477,10 @@
 .linha-escalado--trocado .linha-escalado-hora,
 .linha-escalado--remanejado .linha-escalado-grad,
 .linha-escalado--remanejado .linha-escalado-nome,
-.linha-escalado--remanejado .linha-escalado-hora {
+.linha-escalado--remanejado .linha-escalado-hora,
+.linha-escalado--saiu .linha-escalado-grad,
+.linha-escalado--saiu .linha-escalado-nome,
+.linha-escalado--saiu .linha-escalado-hora {
   text-decoration: line-through;
   color: var(--texto-fraco);
 }

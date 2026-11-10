@@ -500,16 +500,25 @@
   }
 
   /* ---------- seletor do cabeçalho (modo multi, específico do shell) ---------- */
+  /* a escolha aplicada fica na sessão e no banco (por pessoa, como o tema): ao entrar de novo, o sistema abre com ela
+     (geral-entrada.js). No treino, o banco não recebe: vale só nesta sessão (geral-treino.js) */
   function salvarPreferencias(ids) {
     var prefs = null;
     try { prefs = JSON.parse(sessionStorage.getItem('rosterwork_preferencias')); } catch (e) {}
     prefs = prefs || {};
     prefs.unidades_selecionadas = ids;
     sessionStorage.setItem('rosterwork_preferencias', JSON.stringify(prefs));
+    var R = window.RosterWork;
+    if (R.apiFetch && R.obterToken && R.obterToken()) {
+      R.apiFetch('/rest/v1/rpc/fn_preferencias_salvar', {
+        metodo: 'POST',
+        corpo: { p_unidades: ids }
+      }).catch(function () {});   // falhou: só não lembra na próxima entrada (a tela já está certa)
+    }
   }
 
-  /* a seleção do cabeçalho vale só para a sessão: começa na lotação a cada login,
-     sobrevive a F5/navegação (sessionStorage) e some no logout — nunca vai ao banco */
+  /* a seleção do cabeçalho: a guardada da pessoa ou, quem nunca escolheu, o padrão da lotação (geral-entrada.js);
+     sobrevive a F5/navegação (sessionStorage) */
   function inicializarCabecalho() {
     var dropdownEl = document.getElementById('dropdown-unidades');
     var textoEl = document.getElementById('seletor-unidades-texto');

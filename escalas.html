@@ -100,6 +100,12 @@
     <div class="escala-barra-ferramentas">
       <span class="pagina-subcabecalho-divisor" aria-hidden="true"></span>
 
+      <!-- as unidades nos calendários (Mês › Calendário e Colunas › Dias, só no computador): lado a lado ou uma embaixo da
+           outra; o ícone e a dica mostram o que o clique faz (geral-visao-grade.js) -->
+      <button type="button" class="botao botao--quadrado oculto" id="escala-disposicao">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-unidades-lado-a-lado"/></svg>
+      </button>
+
       <!-- legenda da grade (molde geral #tpl-legenda): o que cada cor, ícone e selo quer dizer; o conteúdo acompanha o modo (escalas-legenda.js) -->
       <div id="escala-legenda-grade"></div>
 
@@ -122,13 +128,21 @@
 
   <div class="pagina-corpo pagina-corpo--colado"></div>
 
-  <!-- o Salvar das mudanças do painel do dia (as abas Dia, Ciclo e Extrajornada; escalas-painel-salvar.js), na largura
-       toda (embaixo do painel direito também): aparece só com mudança não salva (a frase vem do JS). O motivo só com
-       mudança na extra -->
+  <!-- o Salvar das mudanças do painel do dia (as abas Funções, Militares, Guarnições e Extrajornada;
+       escalas-painel-salvar.js), na largura toda (embaixo do painel direito também): aparece com mudança não salva (a
+       frase vem do JS) e enquanto há o que refazer; o Desfazer e o Refazer da aba aberta (também Ctrl+Z e Ctrl+Y) à
+       esquerda do Cancelar -->
   <div class="rodape rodape-linha rodape--largo escala-rodape-salvar oculto">
     <span class="rodape-texto escala-rodape-salvar-texto"></span>
     <span class="espacador-flex"></span>
-    <label class="campo extrajornada-motivo escala-rodape-motivo oculto"><span class="campo-rotulo">Motivo do ajuste (opcional)</span><input type="text" name="motivo-extra" maxlength="200" class="campo-entrada" /></label>
+    <div class="rodape-historico">
+      <button type="button" class="botao botao--quadrado escala-painel-desfazer" aria-label="Desfazer" data-dica="Desfazer" disabled>
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-desfazer"/></svg>
+      </button>
+      <button type="button" class="botao botao--quadrado escala-painel-refazer" aria-label="Refazer" data-dica="Refazer" disabled>
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-refazer"/></svg>
+      </button>
+    </div>
     <div class="rodape-acoes">
       <button type="button" class="botao escala-painel-cancelar">Cancelar</button>
       <button type="button" class="botao botao--primario escala-painel-salvar">Salvar</button>
@@ -140,10 +154,12 @@
 <!-- Minha escala: o seu mês no calendário (os ícones da Escala em cada dia) e, ao lado (embaixo, no celular),
      a escala inteira da unidade no dia escolhido, só de leitura, com você realçado (o desenho do Dia), e, no cabeçalho
      dela, o Solicitar troca (o painel do pedido da página Trocas, no mês do dia).
-     O mês sem serviço diz por quê e leva à escala de todos (escalas-minha.js) -->
+     O mês sem serviço diz por quê e leva à escala de todos (escalas-minha.js). Em cima do mês, a guarnição dele hoje
+     ("Você é da guarnição B"; afastado, "Volta na guarnição B em 03/12"; o texto vem do JS) -->
 <template id="tpl-escala-minha">
   <div class="escala-minha">
     <div class="escala-minha-esquerda">
+      <span class="escala-minha-guarnicao oculto"></span>
       <section class="escala-minha-calendario"></section>
       <div class="nota escala-minha-sem-servico oculto">
         <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-escalas"/></svg>
@@ -194,9 +210,12 @@
   <div class="escala-colunas-cab-unidade"></div>
 </template>
 
-<!-- uma linha: rótulo fixo (o dia) + as células (o JS anexa, reusa tpl-escala-mes-celula) -->
+<!-- uma linha: rótulo fixo (o dia) + as células (o JS anexa, reusa tpl-escala-mes-celula); no alto da faixa, o Oficial de
+     Área do dia, centralizado em cima das unidades (escalas-colunas.js) -->
 <template id="tpl-escala-colunas-linha">
-  <div class="escala-colunas-linha"></div>
+  <div class="escala-colunas-linha">
+    <div class="escala-colunas-oficial oculto"></div>
+  </div>
 </template>
 
 <!-- rótulo de linha = dia -->
@@ -480,4 +499,41 @@
 
 <template id="tpl-escala-mil-total-valor">
   <div class="escala-mil-total-valor"></div>
+</template>
+
+<!-- ===== a edição na célula da grade (escalas-celula-editar.js) ===== -->
+<!-- embaixo do nome aberto, no mesmo fundo cinza: os pontos enquanto o dia é lido; depois, o horário em campos (os do
+     geral-horario entram no começo da linha) e, no canto direito, a lixeira (Remover do dia); embaixo, a pergunta do
+     banco de horas, quando vale: a frase e as duas respostas (os textos e a ordem vêm do JS) -->
+<template id="tpl-escala-celula-cartao">
+  <div class="escala-celula-cartao">
+    <span class="escala-celula-espera"><span class="carregando-pontos" aria-label="Carregando"><span>.</span><span>.</span><span>.</span></span></span>
+    <div class="escala-celula-cartao-horario">
+      <button type="button" class="botao-discreto escala-celula-remover" aria-label="Remover do dia" data-dica="Remover do dia">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
+      </button>
+    </div>
+    <div class="escala-celula-pergunta oculto">
+      <span class="escala-celula-pergunta-texto"></span>
+      <label class="geral-opcao"><input type="radio" value="nao" /><span class="escala-celula-pergunta-nao"></span></label>
+      <label class="geral-opcao"><input type="radio" value="sim" /><span class="escala-celula-pergunta-sim"></span></label>
+    </div>
+  </div>
+</template>
+
+<!-- o pelotão marcado pelo clique (fora dos nomes): as ações embaixo dos nomes; o Adicionar vira o campo de militar -->
+<template id="tpl-escala-celula-acoes">
+  <div class="escala-celula-acoes">
+    <button type="button" class="dropdown-item escala-celula-acao" data-acao="adicionar">Adicionar somente nesse dia</button>
+    <button type="button" class="dropdown-item escala-celula-acao" data-acao="painel">Abrir o painel do dia</button>
+  </div>
+</template>
+
+<!-- o campo do Adicionar somente nesse dia (componente geral-combo-militar): a busca e quem tem horas livres no dia, por pelotão -->
+<template id="tpl-escala-celula-adicionar">
+  <div class="dropdown campo-combo escala-celula-adicionar">
+    <input class="campo-entrada campo-entrada--pequeno" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Adicionar somente nesse dia" />
+    <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+    <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares"></div>
+  </div>
 </template>

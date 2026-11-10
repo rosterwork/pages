@@ -32,9 +32,14 @@
     copiarHoje: function (unidadeId) {
       return rpc('nova_distribuicao_copiar_hoje', { p_unidade_id: unidadeId });
     },
-    /* o ritmo de cada unidade ([{ unidade_id, ritmo }]), para o bloco Ritmo */
+    /* o ritmo de cada unidade e o dia da guarnição A da companhia dela ([{ unidade_id, ritmo, guarnicao_a_em }]), para o
+       bloco Ritmo */
     ritmos: function () {
       return rpc('ajustes_ritmo_listar', {});
+    },
+    /* o dia da guarnição A da companhia da unidade (não refaz a escala); { success, log } */
+    guarnicaoSalvar: function (unidadeId, data) {
+      return rpc('ajustes_guarnicao_salvar', { p_unidade_id: unidadeId, p_data: data });
     },
     /* grava [{ periodo_id, respostas, renomeadas }] a partir de aPartirDe (a em vigor; a mudança agendada
        não pede data); levar = os conflitos que vão do conserto para a agendada; previa = só mostra, não grava;

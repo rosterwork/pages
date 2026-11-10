@@ -5,8 +5,8 @@
    com o Relatório inicial, Ajustes do mês e Relatório de ajustes,
    liberado a partir do dia 1º do mês seguinte); feita = marca verde,
    a de agora = número escuro. À direita, a PRÉVIA do relatório de
-   ajustes: quem mudou desde o lançamento (era riscado, ficou, motivo
-   e quem ajustou) e as cotas que mudaram.
+   ajustes: quem mudou desde o lançamento (era riscado, ficou e quem
+   ajustou) e as cotas que mudaram.
    Cada etapa tem o seu Imprimir (pedidos, termos e cotas, relatório
    inicial e relatório final), que abre o painel Imprimir relatório
    (extrajornada-imprimir.js), liberado quando o relatório já pode sair.
@@ -59,8 +59,8 @@
     /* os ajustes vêm do mais novo para o mais velho: o primeiro de cada militar é o último que ele teve */
     d.ajustes.forEach(function (j) {
       var x = ajustes[j.cpf];
-      if (!x) ajustes[j.cpf] = { cpf: j.cpf, motivo: j.motivo, autor: j.autor, quando: j.em, vezes: 1 };
-      else { x.vezes++; if (!x.motivo && j.motivo) x.motivo = j.motivo; }
+      if (!x) ajustes[j.cpf] = { cpf: j.cpf, autor: j.autor, quando: j.em, vezes: 1 };
+      else x.vezes++;
     });
     var l = d.lancamento;
     return {
@@ -160,7 +160,6 @@
       celulaHorarios(tr.querySelector('.extrajornada-rel-era'), x.era, msg().nova);
       celulaHorarios(tr.querySelector('.extrajornada-rel-ficou'), x.ficou, msg().retirada);
       var a = ajustes[m.cpf];
-      tr.querySelector('.extrajornada-rel-motivo').textContent = (a && a.motivo) || msg().semMotivo;
       tr.querySelector('.extrajornada-rel-autor').textContent = a ? (a.autor || '') + ', ' + (a.quando || '') : '';
       tr.querySelector('.extrajornada-rel-vezes').textContent = a && a.vezes > 1 ? msg().mudouVezes(a.vezes) : '';
       linhas.appendChild(tr);

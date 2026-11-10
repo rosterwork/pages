@@ -21,6 +21,7 @@
   var rodape = null;          // atualiza só o rodapé de salvar
   var regra = null;           // o rascunho: { exige, minimo, excecoes: [{ alvo, dias }] }
   var aberto = false;         // as exceções abertas
+  var unidadeNova = null;     // a Unidade escolhida na linha nova (fica entre um desenho e outro)
 
   function msg() { return RW.mensagens.extrajornada.org; }
   function q(sel) { return el.querySelector(sel); }
@@ -63,26 +64,53 @@
     RW.dropdownNumeros.preencher(caixa.querySelector('.dropdown-menu'), { opcoes: OPCOES, valor: valor, formato: msg().dias, aoEscolher: aoEscolher });
   }
 
-  /* a lista do campo de quem: o efetivo administrativo (se ainda não está nas exceções) e as praças da companhia */
-  function opcoesDeQuem() {
+  /* a lista do campo de quem: o efetivo administrativo (se ainda não está nas exceções) e as praças da unidade escolhida,
+     os dois grupos abertos (a Unidade já separa) */
+  function opcoesDeQuem(unidade) {
     var usado = regra.excecoes.some(function (e) { return e.alvo === ADMINISTRATIVO; });
-    var grupo = usado ? [] : [{ titulo: msg().tituloGrupo }, { cpf: ADMINISTRATIVO, nome: msg().efetivoAdministrativo }];
-    return grupo.concat([{ titulo: msg().tituloMilitares }], d.militares.map(function (m) {
-      return { cpf: m.cpf, grad: m.grad, nome: m.nome, info: (RW.extrajornadaUtil.unidade(m.unidade_id) || {}).nome || '' };
+    var grupo = usado ? [] : [{ titulo: msg().tituloGrupo, aberto: true }, { cpf: ADMINISTRATIVO, nome: msg().efetivoAdministrativo }];
+    var daUnidade = d.militares.filter(function (m) { return !!unidade && String(m.unidade_id) === String(unidade.id); });
+    return grupo.concat([{ titulo: msg().tituloMilitares, aberto: true }], daUnidade.map(function (m) {
+      return { cpf: m.cpf, grad: m.grad, nome: m.nome };
     }));
   }
 
+  /* as unidades com praças, na ordem da página */
+  function unidadesDeQuem() {
+    return d.unidades.filter(function (u) { return d.militares.some(function (m) { return String(m.unidade_id) === String(u.id); }); });
+  }
+
+  /* a linha nova: a Unidade à esquerda (a escolhida antes, a sua ou a primeira) e, à direita, quem tem a exceção */
   function ligarCampoDeQuem(linha, excecao) {
-    var caixa = linha.querySelector('.extrajornada-excecao-combo'), inp = caixa.querySelector('input');
+    var quem = linha.querySelector('.extrajornada-excecao-quem'), caixa = linha.querySelector('.extrajornada-excecao-combo');
+    var dUnidade = linha.querySelector('.extrajornada-excecao-unidade'), inp = caixa.querySelector('input');
+    var texto = dUnidade.querySelector('.campo-selecao-texto'), menu = dUnidade.querySelector('.dropdown-menu');
+    var unidades = unidadesDeQuem(), perfil = RW.sessao.perfil();
+    function achar(id) { return unidades.filter(function (u) { return id != null && String(u.id) === String(id); })[0] || null; }
     linha.classList.add('extrajornada-excecao--nova');
-    caixa.classList.remove('oculto');
+    quem.classList.remove('oculto');
     inp.id = 'p1-excecao-campo';
-    RW.comboMilitar.criar(inp, caixa.querySelector('.dropdown-menu'), {
+    var combo = RW.comboMilitar.criar(inp, caixa.querySelector('.dropdown-menu'), {
       atual: function () { return null; },
       ignorar: function () { return regra.excecoes.map(function (e) { return e.alvo; }); },
       aoEscolher: function (item) { excecao.alvo = item.cpf; redesenhar(); },
       textos: { selecione: msg().escolhaQuem, filtroVazio: msg().ninguemEncontrado }
-    }).preencher(opcoesDeQuem());
+    });
+    function escolherUnidade(u) {
+      unidadeNova = u ? u.id : null;
+      if (u) texto.textContent = u.nome;
+      texto.classList.toggle('campo-selecao-texto--vazio', !u);
+      combo.preencher(opcoesDeQuem(u));
+    }
+    unidades.forEach(function (u) {
+      var it = RW.tpl('tpl-escala-unidade-item');
+      if (!it) return;
+      it.textContent = u.nome;
+      it.addEventListener('click', function () { escolherUnidade(u); });
+      menu.appendChild(it);
+    });
+    dUnidade.querySelector('.campo-selecao').disabled = !unidades.length;
+    escolherUnidade(achar(unidadeNova) || achar(perfil && perfil.lotacao_id) || unidades[0] || null);
   }
 
   function desenharExcecoes(guardada, leitura) {
@@ -145,7 +173,7 @@
     el = conteudo;
     redesenhar = aoRedesenhar;
     rodape = aoRodape;
-    d = null; regra = null; aberto = false;
+    d = null; regra = null; aberto = false; unidadeNova = null;
     /* o prazo nos campos de data do site (DD/MM/AAAA, com o calendário do site) */
     RW.campos.ligarData(q('#p1-abre'));
     RW.campos.ligarData(q('#p1-fecha'));

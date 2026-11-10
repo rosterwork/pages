@@ -41,8 +41,8 @@
   var LEITURAS = [
     'administradores_listar', 'afastamentos_listar', 'ajustes_ritmo_listar', 'antiguidade_listar', 'bug_relatores_listar', 'bugs_listar',
     'buscar_graus_hierarquicos', 'dados_pendentes', 'erros_tela_contar_novos', 'erros_tela_listar', 'escala_alteracoes_dia', 'escala_dia_arvore',
-    'escala_dias_atualizando', 'escala_dia_disponiveis', 'escala_impressao', 'escala_impressao_erros', 'escala_minha_calendario',
-    'escala_mudar_dia_dias', 'escala_sysbm',
+    'escala_dias_atualizando', 'escala_dia_da_folga_dias', 'escala_dia_disponiveis', 'escala_guarnicoes_listar', 'escala_impressao',
+    'escala_impressao_erros', 'escala_minha_calendario', 'escala_mudar_dia_dias', 'escala_sysbm',
     'expediente_horario', 'expediente_mes', 'ficha_alteracoes', 'fn_sou_programador', 'fn_trocas_impressao',
     'fn_trocas_registro', 'fn_trocas_varias_dias', 'fn_trocas_varias_montar', 'fn_trocas_varias_plano', 'fn_unidades_padrao',
     'ler_distribuicao_dia', 'ler_escala_mes', 'ler_escala_militares', 'ler_militar_dia',

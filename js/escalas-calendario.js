@@ -52,15 +52,24 @@
     });
   }
 
-  /* matriz da navegação por teclado: cada linha do calendário vira uma linha por unidade, com a
-     célula dela em cada dia (null nos dias de fora do mês). Assim ↑/↓ passam pelas unidades do
-     dia e seguem para a linha de baixo; ←/→ andam entre os dias, na mesma unidade */
+  /* matriz da navegação por teclado. Uma embaixo da outra: cada linha do calendário vira uma linha por unidade, com a
+     célula dela em cada dia (null nos dias de fora do mês); ↑/↓ passam pelas unidades do dia e seguem para a linha de
+     baixo, ←/→ andam entre os dias, na mesma unidade. Lado a lado: cada linha do calendário é uma linha só, com as
+     unidades de cada dia em sequência; ←/→ passam pelas unidades e seguem para o dia seguinte, ↑/↓ vão à mesma unidade do
+     mesmo dia da semana na linha de cima ou de baixo */
   function matrizTeclado(wrap) {
     var m = [];
+    var lado = wrap.classList.contains('geral-calendario-mes--lado-a-lado');
     Array.prototype.forEach.call(wrap.querySelectorAll('.geral-calendario-mes-semana'), function (linha) {
       var dias = Array.prototype.map.call(linha.children, function (d) { return d.querySelectorAll('.escala-mes-celula'); });
       var porDia = 0;
       dias.forEach(function (cels) { porDia = Math.max(porDia, cels.length); });
+      if (lado) {
+        var corrida = [];
+        dias.forEach(function (cels) { for (var i = 0; i < porDia; i++) corrida.push(cels[i] || null); });
+        m.push(corrida);
+        return;
+      }
       for (var u = 0; u < porDia; u++) {
         m.push(dias.map(function (cels) { return cels[u] || null; }));
       }
@@ -93,7 +102,9 @@
 
     /* o mesmo mês lido de novo: o calendário fica até o novo chegar, na mesma rolagem (escalas-dia-na-grade.js) */
     var Dia = window.RosterWork.escalasDiaNaGrade;
-    var chaveGrade = 'calendario|' + (opcoes.diasPorLinha || 0) + '|' + inicio + '|' + ids.join(',');
+    /* as unidades lado a lado ou uma embaixo da outra (a escolha da pessoa; geral-visao-grade.js) */
+    var ladoALado = !!(RosterWork.visaoGrade && RosterWork.visaoGrade.disposicao() === 'lado');
+    var chaveGrade = 'calendario|' + (opcoes.diasPorLinha || 0) + '|' + (ladoALado ? 'lado' : 'empilhadas') + '|' + inicio + '|' + ids.join(',');
     var rolagem = Dia ? Dia.mesmaGrade(corpo, chaveGrade) : null;
     /* outro mês: o que está na tela fica 0,5 s; depois, a forma do novo, que fica o mínimo na tela (escalas-esqueleto.js) */
     var Esqueleto = window.RosterWork.escalasEsqueleto;
@@ -120,10 +131,14 @@
       RosterWork.geralCalendarioMes.renderizar(corpo, {
         dataRef: dataRef,
         diasPorLinha: opcoes.diasPorLinha,
-        unidadesPorDia: colunas.length,   // um bloco por unidade em cada dia, alinhados por linha
+        unidadesPorDia: colunas.length,   // um bloco por unidade em cada dia, alinhados por linha (ou lado a lado)
+        ladoALado: ladoALado,
         aoDia: function (celulaDia, data, noMes) {
           if (!noMes) return;
-          preencherDia(celulaDia, dataISO(data), colunas, dados, cobertura, erro, maxPorUnidade, afastados, opcoesCelula);
+          var iso = dataISO(data);
+          preencherDia(celulaDia, iso, colunas, dados, cobertura, erro, maxPorUnidade, afastados, opcoesCelula);
+          /* o Oficial de Área do dia, no meio do título */
+          if (RosterWork.escalasCelula) RosterWork.escalasCelula.preencherOficial(celulaDia.querySelector('.geral-calendario-mes-dia-centro'), resultado.oficial, iso);
         }
       });
 
@@ -164,6 +179,9 @@
       var pessoas = (r.militares[unidadeId] && r.militares[unidadeId][iso]) || [];
       RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxPorUnidadeAtual[unidadeId], (r.afastados[unidadeId] && r.afastados[unidadeId][iso]) || [], celulaAtual);
       RosterWork.escalasCelula.desenharGraficos(celula);
+      /* o Oficial de Área do dia pode ter mudado (a mesma leitura traz o dele) */
+      var dia = celula.closest('.geral-calendario-mes-dia');
+      RosterWork.escalasCelula.preencherOficial(dia && dia.querySelector('.geral-calendario-mes-dia-centro'), r.oficial, iso);
     }).catch(function () {});   // refresh de 1 célula falhou: mantém a célula atual (o salvamento já avisou)
   }
 
