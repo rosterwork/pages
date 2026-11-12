@@ -757,7 +757,7 @@
 </template>
 
 <!-- passo 3, o militar em foco, no bloco do pelotão em que ele não tem extra: só a bolinha do que ele marcou no pedido
-     (a dica diz qual); o clique abre o cartão com o nome (o mesmo da vaga) e a barra de horário embaixo -->
+     (a dica diz qual); o clique abre a caixa dele, já com a barra de horário, e o nome aparece enquanto ela está aberta -->
 <template id="tpl-extrajornada-foco-ponto">
   <div class="extrajornada-foco extrajornada-foco-ponto">
     <span class="extrajornada-painel-ponto"></span>
@@ -765,39 +765,14 @@
   </div>
 </template>
 
-<!-- passo 3, o cartão aberto no bloco (pelo clique no nome ou no militar em foco): a barra de horário colada embaixo dele
-     (a faixa na cor do que ele marcou no pedido); com horário, também o seletor de horas, o cadeado e a lixeira, como no
-     painel do dia -->
-<template id="tpl-extrajornada-cartao-barra">
-  <div class="extrajornada-cartao-barra">
-    <span class="extrajornada-painel-marcas extrajornada-marcas"></span>
+<!-- passos 3 e 4, a caixa do pelotão (o clique no bloco, fora dos nomes; extrajornada-celula.js): Adicionar neste dia, que
+     abre o campo de militar na caixa 2, e Abrir o painel do dia -->
+<template id="tpl-extrajornada-caixa-pelotao">
+  <div class="extrajornada-caixa-menu">
+    <button type="button" class="dropdown-item" data-acao="adicionar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-novo-usuario"/></svg><span>Adicionar neste dia</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <div class="dropdown-divisor"></div>
+    <button type="button" class="dropdown-item" data-acao="painel"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-escalas"/></svg><span>Abrir o painel do dia</span></button>
   </div>
-</template>
-
-<!-- passo 3, o pelotão marcado pelo clique (fora dos nomes): as ações embaixo dos nomes; o Adicionar militar vira o campo
-     de militar (extrajornada-celula.js) -->
-<template id="tpl-extrajornada-bloco-acoes">
-  <div class="extrajornada-bloco-acoes">
-    <button type="button" class="dropdown-item extrajornada-bloco-acao" data-acao="adicionar">Adicionar militar</button>
-    <button type="button" class="dropdown-item extrajornada-bloco-acao" data-acao="painel">Abrir o painel do dia</button>
-  </div>
-</template>
-
-<!-- o campo do Adicionar militar (componente geral-combo-militar): a busca e a lista nos grupos do painel do dia -->
-<template id="tpl-extrajornada-adicionar">
-  <div class="dropdown campo-combo extrajornada-adicionar">
-    <input id="extrajornada-adicionar-campo" class="campo-entrada campo-entrada--pequeno" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Adicionar militar" />
-    <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
-    <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares"></div>
-  </div>
-</template>
-
-<!-- um nome da lista do Adicionar militar: a bolinha do pedido, o posto e o nome; à direita, o pelotão e as cotas -->
-<template id="tpl-extrajornada-adicionar-item">
-  <button type="button" class="dropdown-item combo-militar-item" role="option">
-    <span class="combo-militar-nome"><span class="extrajornada-painel-ponto"></span><span class="combo-militar-grad"></span> <span class="combo-militar-guerra"></span></span>
-    <span class="combo-militar-info"></span>
-  </button>
 </template>
 
 <!-- o dia em que o militar em foco não pode (serviço, folga, férias e afins): o motivo num selo só, no centro da linha do

@@ -40,7 +40,7 @@
   /* só leem (STABLE no banco) */
   var LEITURAS = [
     'administradores_listar', 'afastamentos_listar', 'ajustes_ritmo_listar', 'antiguidade_listar', 'bug_relatores_listar', 'bugs_listar',
-    'buscar_graus_hierarquicos', 'dados_pendentes', 'erros_tela_contar_novos', 'erros_tela_listar', 'escala_alteracoes_dia', 'escala_dia_arvore',
+    'buscar_graus_hierarquicos', 'dados_pendentes', 'erros_tela_contar_novos', 'erros_tela_listar', 'escala_alteracoes_dia', 'escala_como_foi_feita', 'escala_dia_arvore',
     'escala_dias_atualizando', 'escala_dia_da_folga_dias', 'escala_dia_disponiveis', 'escala_guarnicoes_listar', 'escala_impressao',
     'escala_impressao_erros', 'escala_minha_calendario', 'escala_mudar_dia_dias', 'escala_sysbm',
     'expediente_horario', 'expediente_mes', 'ficha_alteracoes', 'fn_sou_programador', 'fn_trocas_impressao',

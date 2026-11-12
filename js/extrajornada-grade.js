@@ -31,6 +31,7 @@
   var passos = [];         // o Desfazer: o rascunho de antes de cada passo { mud, marca } ('sugestao' no Preencher)
   var refeitos = [];       // o Refazer: os passos desfeitos, o último por cima
   var LIMITE_PASSOS = 100; // os passos guardados (os mais velhos saem)
+  var juntando = false;    // mudanças que viram um passo só do Desfazer (o Pôr outro no lugar dele)
 
   function msg() { return RW.mensagens.extrajornada.org; }
   function u() { return RW.extrajornadaUtil; }
@@ -229,7 +230,25 @@
         && (antes.inicio || null) === novo.inicio) delete mud[c];
     else mud[c] = novo;
     /* o passo do Desfazer (o clique que não muda nada não conta) */
+    if (juntando) return;
     if (JSON.stringify(mud[c] || null) !== era) guardarPasso(null, foto);
+    if (aoMudar) aoMudar(k);
+  }
+
+  /* Pôr outro no lugar dele (a caixa da célula): o novo fica com os horários e o começo do outro no dia, e o outro sai;
+     um passo só do Desfazer */
+  function porNoLugar(de, para, k, unidade) {
+    var v = vagaDe(de.cpf, k);
+    if (!v || soLeitura() || antigo(k)) return;
+    var foto = copia(mud), bs = blocos(v), inicio = v.inicio || undefined;
+    juntando = true;
+    try {
+      mudar(de, k, [], unidade);
+      mudar(para, k, bs, unidade, inicio);
+    } finally {
+      juntando = false;
+    }
+    if (JSON.stringify(foto) !== JSON.stringify(mud)) guardarPasso(null, foto);
     if (aoMudar) aoMudar(k);
   }
 
@@ -313,7 +332,7 @@
     /* quem está de serviço no dia, na escala (sem as extras já lançadas, que aparecem nas vagas) */
     deServico: function (uid, k) { return ((escala.militares[uid] || {})[k] || []).filter(function (p) { return p.origem !== 'extra'; }); },
     pelotoes: pelotoes, diasDoMes: diasDoMes, ultimoDia: ultimoDia, dataDe: dataDe, dataLonga: dataLonga, nomeDoMes: nomeDoMes, somaDia: somaDia,
-    mudar: mudar, diasComFalta: diasComFalta, desde: desde, inicioCabe: inicioCabe, faltaDoInicio: faltaDoInicio,
+    mudar: mudar, porNoLugar: porNoLugar, diasComFalta: diasComFalta, desde: desde, inicioCabe: inicioCabe, faltaDoInicio: faltaDoInicio,
     horasServico: horasServico, foraDoServico: foraDoServico
   };
 })();

@@ -206,19 +206,38 @@
   transition: background-color 0.15s ease;
 }
 
-/* hover e seleção da célula (abrem a gaveta de detalhes). --celula-fundo-fora controla
-   a cor do "fora do turno" nas linhas, separado do fundo da célula, para que continue
-   visível: um tom acima do fundo da célula (no hover, --fundo-medio; na seleção, cujo
-   fundo já é --fundo-medio, a --borda) */
+/* passar o mouse e a seleção da célula (o dia aberto no painel, ou a caixa da célula, .caixa-flutuante-escolhida): a
+   borda por dentro, sem mudar o fundo nem o tamanho (Guia visual › Grade da escala): com o mouse, a cor de foco;
+   escolhida, a forte (o padrão dos campos). Com o mouse num nome de quem edita o dia, a borda fica só no nome (na
+   Extrajornada, a vaga e a bolinha do militar em foco) */
 .escala-mes-celula:hover {
-  --celula-fundo-fora: var(--fundo-medio);
-  background-color: var(--fundo-suave);
+  outline: 1px solid var(--foco);
+  outline-offset: -1px;
+}
+
+.escala-mes-celula--edita:has(:is(.linha-escalado, .extrajornada-vaga, .extrajornada-foco-ponto)[data-cpf]:hover):not(.escala-mes-celula--selecionada):not(.caixa-flutuante-escolhida) {
+  outline: none;
 }
 
 .escala-mes-celula--selecionada,
-.escala-mes-celula--selecionada:hover {
-  --celula-fundo-fora: var(--borda);
-  background-color: var(--fundo-medio);
+.escala-mes-celula--selecionada:hover,
+.escala-mes-celula.caixa-flutuante-escolhida {
+  outline: 1px solid var(--texto-forte);
+  outline-offset: -1px;
+}
+
+/* os nomes de quem edita o dia (a caixa da célula abre no nome): a mesma borda, por dentro de cada nome (a de um nunca
+   encosta na do vizinho); o nome escolhido fica com a forte enquanto o mouse passa nos outros */
+.escala-mes-celula--edita :is(.linha-escalado, .extrajornada-vaga, .extrajornada-foco-ponto)[data-cpf]:not(.caixa-flutuante-escolhida):hover {
+  outline: 1px solid var(--foco);
+  outline-offset: -1px;
+  border-radius: var(--raio-pequeno);
+}
+
+.escala-mes-celula :is(.linha-escalado, .extrajornada-vaga, .extrajornada-foco-ponto).caixa-flutuante-escolhida {
+  outline: 1px solid var(--texto-forte);
+  outline-offset: -1px;
+  border-radius: var(--raio-pequeno);
 }
 
 /* o dia com mudança do painel do dia ainda não salva (escalas-painel-salvar.js): a borda tracejada por dentro, sem

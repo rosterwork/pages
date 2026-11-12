@@ -7,8 +7,10 @@
    motivo).
    Padrão de blocos: caixas (.grupo-caixa) e frases, sem linhas.
    Vale na Distribuição, nos Ajustes e na aba Extrajornada do painel
-   do dia da Escala.
-   Montagem: js/extrajornada-dia.js e js/extrajornada-dia-outros.js
+   do dia da Escala. No fim, a caixa da extra na célula do calendário
+   (o menu, a barra e o campo de militar na caixa 2).
+   Montagem: js/extrajornada-dia.js, js/extrajornada-dia-outros.js e
+   js/extrajornada-celula.js
    ============================================================ */
 
 
@@ -145,8 +147,10 @@
   min-width: 0;
 }
 
-/* aberto embaixo do nome: o aviso de cota e os horários dos outros dias */
+/* aberto embaixo do nome: o aviso de cota e os horários dos outros dias (o risco das horas sem extra num cinza que
+   aparece nesse fundo) */
 .extrajornada-painel-outros {
+  --regua-vazia: var(--borda-forte);
   grid-column: 2 / -1;
   display: flex;
   flex-direction: column;
@@ -184,12 +188,12 @@
 }
 /* o dia de mais de 7 dias atrás: a faixa em cinza, sem clique */
 .extrajornada-painel-outro--antigo .regua-barra-hora--faixa {
-  background-color: var(--texto-debil);
+  --regua-cor: var(--texto-debil);
 }
 
-/* quem casa com a busca do painel (as horas sem extra da barra num cinza que aparece nesse fundo) */
+/* quem casa com a busca do painel (o risco das horas sem extra num cinza que aparece nesse fundo) */
 .extrajornada-painel-militar.busca-achado {
-  --regua-vazia: var(--borda);
+  --regua-vazia: var(--borda-forte);
   background-color: var(--fundo-medio);
 }
 
@@ -414,6 +418,46 @@
 }
 
 .extrajornada-inicio-aviso--alerta { color: var(--alerta); }
+
+/* ---------- a caixa da extra na célula (extrajornada-celula.js; a caixa flutuante) ---------- */
+/* o menu do militar e o do pelotão: os itens um embaixo do outro */
+.extrajornada-caixa-menu {
+  display: flex;
+  flex-direction: column;
+}
+
+/* a caixa 2 do Mudar o horário: a barra com 8px dos lados (a bolinha de arrastar fica dentro da caixa nas 08h), os
+   campos e o cadeado; quem passou da cota, a nota e os outros dias dele embaixo (a peça do painel do dia) */
+.extrajornada-caixa-horario {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 8px 8px;
+}
+
+.extrajornada-caixa-horario > .nota {
+  gap: 4px;
+  margin-top: 8px;
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+.extrajornada-caixa-horario > .extrajornada-painel-outro { margin-top: 8px; }
+
+/* a faixa na cor do que ele marcou no pedido: verde quer, vermelho não quer, a neutra sem preferência (a hora que o
+   clique vai tirar fica tracejada, como em toda barra) */
+.extrajornada-caixa-horario--quer .regua-barra-hora--faixa:not(.regua-barra-hora--sai) { --regua-cor: var(--sucesso); }
+.extrajornada-caixa-horario--nao .regua-barra-hora--faixa:not(.regua-barra-hora--sai) { --regua-cor: var(--erro); }
+
+/* o militar em foco já de extra em outro pelotão no dia: a barra daqui apagada, com a nota que diz para tirar de lá antes */
+.extrajornada-caixa-horario--outro .regua-barra { opacity: 0.35; }
+
+/* o campo de militar (o Adicionar neste dia e o Pôr outro no lugar dele): a lista mais larga que a caixa */
+.extrajornada-adicionar .combo-militar-menu { width: 280px; }
+
+.extrajornada-adicionar .combo-militar-nome > .extrajornada-painel-ponto {
+  flex-shrink: 0;
+  margin-right: 4px;
+}
 
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)

@@ -55,10 +55,11 @@
   function E() { return RW.escalasPainelEditar; }
   function C() { return RW.escalasPainelCiclo; }
   function X() { return RW.escalasPainelExtra; }
-  /* o dia do rodapé: o do painel aberto ou, com ele fechado, o da célula da grade (escalas-celula-editar.js) */
+  /* o dia do rodapé: o do painel aberto ou, com ele fechado, o da célula da grade (escalas-celula-editar.js) ou o da que
+     mexeu na extra (escalas-celula-extra.js) */
   function contexto() {
     var p = RW.escalasPainel && RW.escalasPainel.contexto ? RW.escalasPainel.contexto() : null;
-    return p || (RW.escalasCelulaEditar ? RW.escalasCelulaEditar.contexto() : null);
+    return p || (RW.escalasCelulaEditar ? RW.escalasCelulaEditar.contexto() : null) || (X() ? X().naCelula() : null);
   }
   function celula() { return RW.escalasCelulaEditar || null; }
 
@@ -116,13 +117,15 @@
      Devolve { podeDesfazer(), podeRefazer(), desfazer(), refazer() }, ou null */
   function daAba() {
     var c = contexto(), s = c && c.secao;
+    var x = X() ? { podeDesfazer: X().podeDesfazer, podeRefazer: X().podeRefazer, desfazer: X().desfazer, refazer: X().refazer } : null;
+    /* na célula da grade (o painel fechado), o Dia sem nada a desfazer deixa o Desfazer com a extra */
+    if (s === 'distribuicao' && x && E() && !RW.painel.estaAberto() && !E().podeDesfazer() && !E().podeRefazer()) return x;
     if ((s === 'distribuicao' || s === 'militares') && E()) return { podeDesfazer: E().podeDesfazer, podeRefazer: E().podeRefazer, desfazer: E().desfazer, refazer: E().refazer };
     if (s === 'continuos' && C()) {
       return { podeDesfazer: function () { return C().podeDesfazer(c.unidadeId, c.iso); }, podeRefazer: function () { return C().podeRefazer(c.unidadeId, c.iso); },
         desfazer: C().desfazer, refazer: C().refazer };
     }
-    if (s === 'extra' && X()) return { podeDesfazer: X().podeDesfazer, podeRefazer: X().podeRefazer, desfazer: X().desfazer, refazer: X().refazer };
-    return null;
+    return s === 'extra' ? x : null;
   }
   /* o Desfazer (ou o Refazer) do rodapé e do teclado: um passo na aba aberta */
   function voltar(desfazer) {
@@ -371,7 +374,8 @@
      antes (o que estava concluído vira o passo que se desfaz) */
   document.addEventListener('keydown', function (e) {
     if (!(e.ctrlKey || e.metaKey) || e.altKey || !contexto() || !document.querySelector('.conteudo .escala-rodape-salvar')) return;
-    var noPainel = !!(RW.painel && RW.painel.estaAberto()), naCelula = !noPainel && !!(celula() && celula().contexto());
+    var noPainel = !!(RW.painel && RW.painel.estaAberto());
+    var naCelula = !noPainel && !!((celula() && celula().contexto()) || (X() && X().naCelula()));
     if ((!noPainel && !naCelula) || (RW.escalasPainelLinha && RW.escalasPainelLinha.aberta())) return;
     var alvo = e.target;
     if (alvo && (alvo.tagName === 'INPUT' || alvo.tagName === 'TEXTAREA' || alvo.tagName === 'SELECT' || alvo.isContentEditable)) return;

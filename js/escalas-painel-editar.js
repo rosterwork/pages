@@ -767,8 +767,8 @@
   }
 
   /* subcabeçalho do Dia (só na lista): para o admin, o menu Editar o dia; para todos, só na Escala (os moldes moram lá),
-     o Solicitar troca, à esquerda (à direita do menu), e o Imprimir, à direita (o Desfazer e o Refazer ficam no rodapé
-     largo, escalas-painel-salvar.js). Enquanto grava, os botões ficam desligados */
+     o Solicitar troca, à esquerda (à direita do menu), e, à direita, o Como a escala foi feita e o Imprimir (o Desfazer e
+     o Refazer ficam no rodapé largo, escalas-painel-salvar.js). Enquanto grava, os botões ficam desligados */
   function montarSubcabecalho() {
     var sub = RosterWork.painel.subcabecalho();
     if (!sub) return;
@@ -777,8 +777,10 @@
     if (ctx.consulta) { sub.classList.add('oculto'); return; }
     var imprimir = !ctx.emSub && !ctx.comparar && RosterWork.escalasImpressao
       ? RosterWork.escalasImpressao.botaoDoDia(abrirImpressao) : null;
+    var como = !ctx.emSub && !ctx.comparar && RosterWork.escalasPainelComo
+      ? RosterWork.escalasPainelComo.botaoDoDia(abrirComo) : null;
     var solicitar = !ctx.emSub && !ctx.comparar && RosterWork.escalasPainelTroca ? RosterWork.tpl('tpl-escala-dia-solicitar') : null;
-    if (ctx.emSub || (!ctx.admin && !imprimir && !solicitar)) { sub.classList.add('oculto'); return; }
+    if (ctx.emSub || (!ctx.admin && !imprimir && !como && !solicitar)) { sub.classList.add('oculto'); return; }
     /* o menu Editar o dia, só com o que é do dia todo: Adicionar militar e Trazer de outra unidade abrem as perguntas;
        Registrar troca de serviço abre o formulário da troca ali mesmo; Voltar o dia ao automático (só com ajuste manual)
        confirma. O que é de um militar fica no lápis dele, na aba Militares */
@@ -805,6 +807,7 @@
       solicitar.addEventListener('click', function () { if (ctx && !ctx.salvando) abrirTroca(false); });
       sub.appendChild(solicitar);
     }
+    if (como) sub.appendChild(como);
     if (imprimir) sub.appendChild(imprimir);
     sub.classList.remove('oculto');
   }
@@ -946,6 +949,11 @@
     var rotulos = (f.nomes && f.nomes.length) ? f.nomes : [f.nome];
     var grupo = novoGrupo(rotulos, temVao ? 'erro' : p.nivelFuncao(f));
     if (!grupo) return;
+    /* na Escala, o nome da função mostra como ela foi escolhida (a escala gravada; na comparação, não) */
+    if (RosterWork.escalasPainelComo && !ctx.comparar && !ctx.consulta) {
+      RosterWork.escalasPainelComo.rotulo(grupo.el.querySelector('.escala-edicao-funcao'),
+        { unidadeId: ctx.unidadeId, iso: ctx.iso, posto: posto.nome, funcoes: rotulos });
+    }
     function ancora() { return grupo.el; }
     function por(linha) { if (linha) grupo.linhas.appendChild(linha); }
     var sobrepostos = cpfsSobrepostos(f);
@@ -1329,12 +1337,16 @@
   /* o menu abre depois do clique que o pediu: o clique no item ainda chega ao document, e o geral-dropdown fecharia o
      menu recém-aberto */
   function abrirMenuPedido() {
-    var cpf = ctx.abrirMenuDe, corpo = ctx.corpo;
+    var cpf = ctx.abrirMenuDe, corpo = ctx.corpo, acao = ctx.fazerAcao;
     ctx.abrirMenuDe = null;
+    ctx.fazerAcao = null;
     if (!cpf || !RosterWork.escalasPainelLinhaMenu) return;
     setTimeout(function () {
       var linha = corpo.querySelector('.escala-edicao-linha--menu[data-cpf="' + cpf + '"]');
-      if (linha) RosterWork.escalasPainelLinhaMenu.abrir(linha);
+      if (!linha) return;
+      /* o item pedido pela célula da grade (o Mudar o dia, o Mudar de unidade e o Devolver): a sub-tela dele, já com ele */
+      if (acao) RosterWork.escalasPainelLinhaMenu.fazer(linha, acao);
+      else RosterWork.escalasPainelLinhaMenu.abrir(linha);
     }, 0);
   }
 
@@ -1421,6 +1433,22 @@
     });
   }
 
+  /* o Como a escala foi feita (escalas-painel-como.js): o texto no lugar da lista, com o Voltar ao dia, como o Imprimir */
+  function abrirComo() {
+    if (!ctx || ctx.salvando || ctx.carregando || !RosterWork.escalasPainelComo) return;
+    fecharLinha('guardar');
+    if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
+    pedido++;   // a lista que ainda carregava não desenha por cima
+    ctx.emSub = true;
+    ctx.comHistorico = false;
+    montarSubcabecalho();
+    var c = ctx;
+    RosterWork.escalasPainelComo.abrirNoDia(ctx.corpo, ctx.rodape, {
+      unidadeId: ctx.unidadeId, iso: ctx.iso,
+      aoSair: function () { if (ctx === c) desenhar(); }
+    });
+  }
+
   /* o Solicitar troca e o Registrar troca de serviço (escalas-painel-troca.js): o formulário da troca no lugar da lista,
      com o Voltar ao dia e o calendário no mês do dia. O Registrar grava na hora, fora do rascunho, então com mudança não
      salva (Dia ou Ciclo) o aviso pede o Salvar antes (o lápis aberto guarda a mudança dele e a lista mostra como fica);
@@ -1478,7 +1506,7 @@
     ctx = { corpo: corpo, rodape: rodape, unidadeId: unidadeId, iso: iso, admin: !!opcoes.admin,
       comparar: !!opcoes.comparar, consulta: !!opcoes.consulta, visao: visao,
       dados: null, dadosAntes: null, chaveDados: null, emSub: false, comHistorico: false, salvando: false,
-      sugestao: null, ultima: null, abrirMenuDe: opcoes.abrirMenuDe || null,
+      sugestao: null, ultima: null, abrirMenuDe: opcoes.abrirMenuDe || null, fazerAcao: opcoes.fazerAcao || null,
       semLista: !!opcoes.semLista, aoMostrar: opcoes.aoMostrar || null };
     /* voltou de outra aba ao mesmo dia: o rascunho continua; outro dia, ou quem só lê, começa do dia gravado */
     var mesmo = !!(base && rasc && dono === unidadeId + '|' + iso && haMudanca());

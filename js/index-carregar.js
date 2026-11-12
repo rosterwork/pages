@@ -35,6 +35,7 @@
     'componentes/js/geral-dica.js',
     'componentes/js/geral-flutuante.js',
     'componentes/js/geral-dropdown.js',
+    'componentes/js/geral-caixa-flutuante.js',
     'componentes/js/geral-dropdown-numeros.js',
     'componentes/js/geral-guia-veu.js',
     'componentes/js/geral-guia-alvos.js',

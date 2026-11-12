@@ -190,12 +190,14 @@
   /* o Remover da guarnição de quem está no dia (m; linha = a linha dele na aba Militares): a pergunta Último serviço
      embaixo da linha, sem nada marcado: neste dia (ele faz o serviço e sai da guarnição depois dele) ou ele não trabalha
      mais a partir deste dia. A resposta põe a saída no rascunho das guarnições e mostra embaixo o que acontece com as
-     trocas, folgas e extras dele; o Cancelar volta ao que era. Ela fica aberta até a próxima ação */
-  function perguntarSaida(m, linha) {
+     trocas, folgas e extras dele; o Cancelar volta ao que era. Ela fica aberta até a próxima ação. Na caixa flutuante da
+     célula da grade (escalas-celula-editar.js): opcoes = { dentro (a caixa 2, no lugar da linha), aoCancelar() } */
+  function perguntarSaida(m, linha, opcoes) {
+    opcoes = opcoes || {};
     if (RosterWork.escalasPainelRemover) RosterWork.escalasPainelRemover.fecharPergunta('guardar');
     fecharPergunta('guardar');
     var el = RosterWork.tpl('tpl-escala-remover-guarnicao');
-    if (!el || !linha) return;
+    if (!el || !(linha || opcoes.dentro)) return;
     var api = ed(), uid = api.unidadeId(), iso = api.iso(), cpf = m.cpf, antes = marcado(uid, iso, cpf);
     var d = iso.split('-'), amanha = RosterWork.data.paraIsoDeData(new Date(Number(d[0]), Number(d[1]) - 1, Number(d[2]) + 1));
     var p = { el: el, pedido: 0, passos: 0 };
@@ -226,8 +228,10 @@
         avisar();
       }
       fecharPergunta('largar');
+      if (opcoes.aoCancelar) opcoes.aoCancelar();
     });
-    linha.insertAdjacentElement('afterend', el);
+    if (opcoes.dentro) opcoes.dentro.appendChild(el);
+    else linha.insertAdjacentElement('afterend', el);
     pergunta = p;
   }
 

@@ -783,10 +783,10 @@
 .extrajornada-esq-motivo:empty { display: none; }
 
 /* as datas do militar em foco, embaixo do nome na lista, num bloco só com o nome: o mesmo fundo e a mesma linha da
-   esquerda do nome escolhido (.lista-item--ativo), reta, e o texto no mesmo recuo do nome; as horas sem extra da barra
-   num cinza que aparece nesse fundo; a que sai ao salvar, em cinza */
+   esquerda do nome escolhido (.lista-item--ativo), reta, e o texto no mesmo recuo do nome; o risco das horas sem extra
+   da barra num cinza que aparece nesse fundo; a que sai ao salvar, em cinza */
 .extrajornada-esq-aberto {
-  --regua-vazia: var(--borda);
+  --regua-vazia: var(--borda-forte);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -975,8 +975,8 @@
 .extrajornada-dist-cal--foco .extrajornada-vaga:not(.extrajornada-foco),
 .extrajornada-dist-cal--foco .linha-escalado { display: none; }
 
-/* onde ele não tem extra: só a bolinha do que ele marcou no pedido (a dica diz qual); aberto, o cartão com o nome, o
-   mesmo da vaga */
+/* onde ele não tem extra: só a bolinha do que ele marcou no pedido (a dica diz qual); com a caixa dele aberta, também o
+   nome (extrajornada-celula.js) */
 .extrajornada-foco-ponto {
   display: flex;
   align-items: center;
@@ -986,72 +986,6 @@
   padding: 0 4px;
   border-radius: var(--raio-pequeno);
   font-size: 11px;
-}
-
-.extrajornada-foco-ponto.extrajornada-cartao--aberto {
-  min-height: 24px;
-  padding: 2px 4px;
-  background-color: var(--fundo-medio);
-}
-
-/* o cartão aberto no bloco (pelo clique no nome, ou o do militar em foco) e, colada embaixo, no mesmo fundo, a barra de
-   horário (8px dos lados: a bolinha de arrastar, de 16px, fica dentro do fundo mesmo nas 08h) */
-.extrajornada-cartao--aberto { border-radius: var(--raio-pequeno) var(--raio-pequeno) 0 0; }
-
-.extrajornada-cartao-barra {
-  --regua-vazia: var(--borda);
-  display: flex;
-  flex-direction: column;
-  margin: 0 4px;
-  padding: 4px 8px;
-  border-radius: 0 0 var(--raio-pequeno) var(--raio-pequeno);
-  background-color: var(--fundo-medio);
-}
-
-/* a linha dos campos no bloco é justa: sem o vão entre os campos, o cadeado e a lixeira (os botões já deixam o espaço em
-   volta do ícone), e a lixeira termina junto com a barra */
-.extrajornada-cartao-barra .horario { gap: 0; }
-
-/* quem passou da cota, no cartão aberto: a nota e os outros dias dele embaixo da barra (a peça do painel do dia), mais
-   justos na largura do bloco */
-.extrajornada-cartao-barra > .nota {
-  gap: 4px;
-  margin-top: 8px;
-  padding: 4px 8px;
-  font-size: 11px;
-}
-
-.extrajornada-cartao-barra > .extrajornada-painel-outro { margin-top: 8px; }
-
-/* a faixa na cor do que ele marcou no pedido: verde quer, vermelho não quer, a neutra sem preferência (a hora que o
-   clique vai tirar fica riscada, como em toda barra) */
-.extrajornada-cartao-barra--quer .regua-barra-hora--faixa:not(.regua-barra-hora--sai) { background-color: var(--sucesso); }
-.extrajornada-cartao-barra--nao .regua-barra-hora--faixa:not(.regua-barra-hora--sai) { background-color: var(--erro); }
-
-/* o militar em foco já de extra em outro pelotão no dia: a barra daqui apagada (a dica diz para tirar de lá antes) */
-.extrajornada-cartao-barra--outro .regua-barra { opacity: 0.35; }
-
-/* o pelotão marcado pelo clique: as ações embaixo dos nomes, depois de um traço (Adicionar militar e Abrir o painel do
-   dia); o Adicionar vira o campo de militar, com a lista mais larga que o bloco */
-.extrajornada-bloco-acoes {
-  display: flex;
-  flex-direction: column;
-  margin: 4px 4px 0;
-  padding-top: 4px;
-  border-top: 1px solid var(--borda);
-}
-
-.extrajornada-bloco-acao {
-  min-height: 28px;
-  padding: 0 4px;
-  font-size: 12px;
-}
-
-.extrajornada-adicionar .combo-militar-menu { width: 280px; }
-
-.extrajornada-adicionar .combo-militar-nome > .extrajornada-painel-ponto {
-  flex-shrink: 0;
-  margin-right: 4px;
 }
 
 /* o dia em que o militar em foco não pode: tudo apagado, menos a linha do número (na Agenda, a data), e o motivo num

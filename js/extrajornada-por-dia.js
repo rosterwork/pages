@@ -11,8 +11,8 @@
    escrito (sem nenhum, ele fica no dia até o Salvar). O bloco com
    mudança ainda não salva leva a borda tracejada da Escala. O clique
    no bloco fica com a edição rápida (extrajornada-celula.js): o nome
-   abre o cartão com a barra; o pelotão mostra Adicionar militar e
-   Abrir o painel do dia. Lê o rascunho por RosterWork.extrajornadaGrade.
+   e o pelotão abrem a caixa deles ao lado. Lê o rascunho por
+   RosterWork.extrajornadaGrade.
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
    RosterWork.extrajornadaPorDia.
    ============================================================ */
@@ -25,8 +25,9 @@
   var alvo = null;         // o lugar do calendário (#p3-cal)
   var diasCal = {};        // a célula de cada dia no calendário { data: celula }
   var desenhadas = '';     // as unidades do calendário desenhado (ids), para saber quando refazer o mês
-  /* o que no bloco cuida do próprio clique: o militar em foco, os nomes, o cartão aberto, a barra e as ações */
-  var PROPRIOS = '.extrajornada-foco, .extrajornada-escolhivel, .extrajornada-cartao--aberto, .extrajornada-cartao-barra, .extrajornada-bloco-acoes';
+  /* o que no bloco cuida do próprio clique: os nomes e a bolinha do militar em foco que abrem a caixa (no dia que não
+     muda, o clique vai ao bloco, que mostra o aviso) */
+  var PROPRIOS = '.extrajornada-escolhivel';
 
   function msg() { return RW.mensagens.extrajornada.org; }
   function u() { return RW.extrajornadaUtil; }
@@ -148,8 +149,8 @@
     return cel;
   }
 
-  /* o pelotão no dia (clique, Enter ou espaço) fica com a edição rápida: marca o bloco ou abre o painel do dia
-     (extrajornada-celula.js). Os nomes, o cartão aberto, a barra e as ações cuidam dos próprios cliques */
+  /* o pelotão no dia (clique, Enter ou espaço) fica com a edição rápida: a caixa dele ou o painel do dia
+     (extrajornada-celula.js). Os nomes cuidam dos próprios cliques */
   function clicavel(b, un, k) {
     b.setAttribute('data-uid', un.id);
     b.setAttribute('data-dia', k);
@@ -191,41 +192,29 @@
       cel.appendChild(vg);
     });
     if (foco) focoNoBloco(cel, un.id, k, foco, curto);
-    else RW.extrajornadaCelula.decorar(cel, un.id, k, curto);
+    RW.extrajornadaCelula.decorar(cel, un.id, k, curto);
     /* a mudança ainda não salva: a borda tracejada no bloco, a mesma da Escala */
     if (marcados[un.id + '|' + k]) cel.classList.add('escala-celula--nao-salvo');
   }
 
   /* o militar em foco no bloco de cada pelotão, em todos os dias: onde ele tem extra, o cartão de sempre (posto por
      preencher); onde não tem, só a bolinha do que ele marcou no pedido (verde quer, vermelho não quer, cinza sem
-     preferência), com a dica. O clique no cartão ou na bolinha abre o cartão, com o nome, e a barra de horário embaixo:
-     as mesmas peças da edição rápida na célula (extrajornada-celula.js, um aberto por vez); onde ele tem extra, também
-     o seletor de horas, o cadeado e a lixeira, como no painel do dia. No dia em que ele não pode, nada no bloco (o dia
-     todo fica apagado, com o motivo no alto: marcarImpedido). Já de extra em outro pelotão no dia, a barra daqui fica
-     apagada e sem clique, e a dica diz para tirar de lá antes (é uma extra por dia). Passar da cota fica no rascunho, e
-     o Salvar espera (RosterWork.extrajornadaGrade.mudar). curto: o posto curto da célula pequena do Calendário */
+     preferência), com a dica, e o nome enquanto a caixa dele está aberta. O clique no cartão ou na bolinha abre a caixa
+     dele, já com a barra de horário (extrajornada-celula.js). No dia em que ele não pode, nada no bloco (o dia todo fica
+     apagado, com o motivo no alto: marcarImpedido). Já de extra em outro pelotão no dia, a barra daqui fica apagada na
+     caixa, com a nota que diz para tirar de lá antes (é uma extra por dia). curto: o posto curto da célula pequena do
+     Calendário */
   function focoNoBloco(cel, uid, k, cpf, curto) {
-    var m = u().militar(cpf), v = G().vagaDe(cpf, k), C = RW.extrajornadaCelula;
-    if (!m || (!v && G().impedimento(m, k))) return;
-    var outro = !!v && +v.unidade !== uid, pref = u().pref(m, k), aberto = C.estaAberto(uid, k, cpf);
-    var cartao = cel.querySelector('.extrajornada-vaga.extrajornada-foco');
-    if (!cartao) {
-      cartao = RW.tpl('tpl-extrajornada-foco-ponto');
-      if (pref !== 'sem') cartao.querySelector('.extrajornada-painel-ponto').classList.add('extrajornada-painel-ponto--' + pref);
-      cartao.setAttribute('data-dica', msg().prefDia[pref]);
-      cartao.querySelector('.extrajornada-vaga-grad').textContent = curto && RW.escalasCelula ? RW.escalasCelula.postoCurto(m.grad) : (m.grad || '');
-      cartao.querySelector('.extrajornada-vaga-nome').textContent = m.nome || '';
-      cartao.querySelector('.extrajornada-vaga-id').classList.toggle('oculto', !aberto);
-      cel.appendChild(cartao);
-    }
-    if (!aberto) { C.ligarClique(cartao, function () { C.abrir(uid, k, cpf); }); return; }
-    /* a barra do foco é do foco: clicar nela não tira ninguém do foco (extrajornada-lista.js) */
-    var linha = C.barraEmbaixo(cartao, m, k, uid, v && !outro ? G().blocos(v) : [], outro);
-    linha.classList.add('extrajornada-foco');
-    if (outro) {
-      linha.classList.add('extrajornada-cartao-barra--outro');
-      linha.setAttribute('data-dica', msg().jaEmOutro((u().unidade(v.unidade) || {}).nome || ''));
-    }
+    var m = u().militar(cpf), v = G().vagaDe(cpf, k);
+    if (!m || (!v && G().impedimento(m, k)) || cel.querySelector('.extrajornada-vaga.extrajornada-foco')) return;
+    var pref = u().pref(m, k), ponto = RW.tpl('tpl-extrajornada-foco-ponto');
+    if (pref !== 'sem') ponto.querySelector('.extrajornada-painel-ponto').classList.add('extrajornada-painel-ponto--' + pref);
+    ponto.setAttribute('data-dica', msg().prefDia[pref]);
+    ponto.setAttribute('data-cpf', cpf);
+    ponto.querySelector('.extrajornada-vaga-grad').textContent = curto && RW.escalasCelula ? RW.escalasCelula.postoCurto(m.grad) : (m.grad || '');
+    ponto.querySelector('.extrajornada-vaga-nome').textContent = m.nome || '';
+    ponto.querySelector('.extrajornada-vaga-id').classList.toggle('oculto', !RW.extrajornadaCelula.estaAberto(uid, k, cpf));
+    cel.appendChild(ponto);
   }
 
   /* o dia em que o militar em foco não pode (serviço, troca, férias e afins): o dia inteiro apagado e o motivo num selo só,
@@ -264,14 +253,14 @@
     mostrarAberto(true);
   }
 
-  /* o bloco do dia aberto no painel (ou o marcado pela edição rápida) fica em destaque */
+  /* o bloco do dia aberto no painel fica em destaque (o da caixa da célula ganha a borda pela caixa) */
   function marcarAberto() {
     if (!alvo) return;
     var ab = dia().aberto();
     Array.prototype.forEach.call(alvo.querySelectorAll('[data-uid][data-dia]'), function (b) {
       var cel = b.classList.contains('escala-mes-celula') ? b : b.querySelector('.escala-mes-celula');
       var uid = +b.getAttribute('data-uid'), k = b.getAttribute('data-dia');
-      cel.classList.toggle('escala-mes-celula--selecionada', (!!ab && uid === ab.uid && k === ab.data) || RW.extrajornadaCelula.marcado(uid, k));
+      cel.classList.toggle('escala-mes-celula--selecionada', !!ab && uid === ab.uid && k === ab.data);
     });
   }
 

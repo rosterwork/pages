@@ -560,6 +560,8 @@
         tirado: 'tirado',
         lancarTexto: function (n) { return n + (n === 1 ? ' extra entra na escala.' : ' extras entram na escala.') + ' Fica guardada a foto, que vira o relatório inicial.'; },
         diaAntigo: 'Este dia é de mais de 7 dias atrás. A extra dele não pode mais mudar.',
+        /* a caixa da célula na Distribuição já lançada (extrajornada-celula.js) */
+        lancadaNaoMuda: 'A distribuição já foi lançada. Para mudar, use os Ajustes.',
         relAjustesPeriodo: function (ini, fim) { return ini + ' a ' + fim + '. Feitos em Ajustes.'; },
         colocadas: function (n, t) { return n + ' de ' + t + ' cotas colocadas'; },
         faltaGenteHoras: function (h) { return 'Ainda falta gente de ' + h + '.'; },
@@ -670,6 +672,8 @@
     escala: {
       falhaCarregar: 'Não foi possível carregar.',
       falhaCarregarMes: 'Não foi possível carregar a escala.',
+      /* a caixa da célula no dia de mais de 7 dias atrás, para quem administra (escalas-celula-editar.js) */
+      diaAntigo: 'Este dia é de mais de 7 dias atrás e não pode mais mudar.',
       /* o título do dia nas grades: o dia com escala e ninguém na função de Oficial de Área (escalas-celula.js) */
       semOficial: 'Sem Oficial de Área',
       /* Minha escala: o mês sem serviço (o botão leva à aba Mês) */
@@ -1045,9 +1049,9 @@
         /* quem não muda por aqui e o caminho certo */
         naoTroca: 'Está por troca. Mude pela página Trocas.',
         naoExtra: 'Está de extra. Mude pela Extrajornada.',
-        naoPontual: 'É pontual. Tire pelo Remover do dia e ponha no outro dia pelo Adicionar militar.',
-        naoRemanejado: 'Está remanejado neste dia. Devolva antes, pelo Remover do dia.',
-        naoMudou: function (de) { return 'Veio de ' + de + '. Para mudar de novo, devolva antes pelo Remover do dia.'; },
+        naoPontual: 'É pontual. Tire pelo Remover deste dia e ponha no outro dia pelo Adicionar militar.',
+        naoRemanejado: 'Está remanejado neste dia. Devolva antes, pelo Remover deste dia.',
+        naoMudou: function (de) { return 'Veio de ' + de + '. Para mudar de novo, devolva antes pelo Remover deste dia.'; },
         naoOutraUnidade: 'É de outra unidade neste dia.',
         servico: function (data, periodos) { return 'De serviço em ' + data + ' pela guarnição, ' + periodos + '.'; },
         mes: function (mes, ano) { return mes + ' de ' + ano; },
@@ -1239,6 +1243,83 @@
         if (o.dev_pendente) return frase + ' As horas entram no saldo de horas entre os dois.';
         if (!o.dev_hi || !o.dev_hf) return frase + ' A devolução ocorrerá no serviço de ' + (o.dev_data || '') + '.';
         return frase + ' A devolução ocorrerá em ' + (o.dev_data || '') + ', das ' + hh(o.dev_hi) + ' às ' + hh(o.dev_hf) + '.';
+      },
+      /* Como a escala foi feita (o botão do painel do dia e o clique no nome da função; escalas-painel-como.js): as frases
+         dos motivos que o banco manda (escala_como_foi_feita), só com os fatos da escala e das regras */
+      como: {
+        titulo: function (data) { return 'Como a escala de ' + data + ' foi feita'; },
+        salveAntes: 'Salve as alterações antes de ver como a escala foi feita.',
+        erro: 'Não foi possível ler como a escala foi feita. Tente de novo.',
+        /* "08h"; "08:30" fica como está */
+        hora: function (t) { return t ? (String(t).slice(3) === '00' ? String(t).slice(0, 2) + 'h' : String(t)) : ''; },
+        horario: function (hi, hf) {
+          var h = RosterWork.mensagens.escala.como.hora;
+          return hi === hf ? 'o dia todo' : 'das ' + h(hi) + ' às ' + h(hf);
+        },
+        /* "Efetivo 3 (ABTR-14462)"; vários: "Efetivo 3 (ABTR-14462) e Rancheiro (Rancho)" */
+        lugares: function (lista) {
+          return (lista || []).map(function (o) { return o.funcao + ' (' + o.posto + ')'; }).join(' e ');
+        },
+        /* "Cb. Ulysses, Condutor (AA-0020); Sd.1ªCl. Rosso, Rádio Operador (Central de Operações)" */
+        pessoasOnde: function (lista) {
+          var L = RosterWork.mensagens.escala.como.lugares;
+          return (lista || []).map(function (x) { return x.quem + ', ' + L(x.onde); }).join('; ');
+        },
+        servico: function (hi, hf, n) {
+          var h = RosterWork.mensagens.escala.como.hora;
+          return (hi === hf ? 'O dia todo' : 'Das ' + h(hi) + ' às ' + h(hf)) + ': ' + n + (n === 1 ? ' militar.' : ' militares.');
+        },
+        minimo: function (n) { return 'O mínimo da unidade é ' + n + '.'; },
+        fora: function (posto, faixas) {
+          var C = RosterWork.mensagens.escala.como;
+          var t = (faixas || []).map(function (f) { return C.horario(f.hi, f.hf); });
+          return posto + ' fica fora da escala' + (t.length ? ' ' + t.join(' e ') : '') + '.';
+        },
+        /* a frase de uma pessoa: na sub-tela com a função na frente ("Condutor (ABTR-14462): 2ºSgt. Bravo, das 08h às
+           20h. ..."), na caixa da função sem ela, ou só com o nome da função quando o rótulo junta duas */
+        pessoa: function (inicio, p, frases) {
+          var C = RosterWork.mensagens.escala.como;
+          return (inicio ? inicio + ': ' : '') + p.grad + ' ' + p.nome + ', ' + C.horario(p.hi, p.hf) + '.' + (frases ? ' ' + frases : '');
+        },
+        /* uma frase por motivo (o código do banco); null = sem frase (o Efetivo tem a regra fixa da caixa) */
+        motivo: function (m) {
+          var C = RosterWork.mensagens.escala.como;
+          var h = C.hora;
+          switch (m.codigo) {
+            case 'mais_antigo': return 'O mais antigo de serviço.';
+            case 'oficial_area': return 'O oficial de serviço da companhia.';
+            case 'troca': return m.saiu ? 'Cumpre o serviço do ' + m.saiu + ', pela troca.' : 'Está no serviço por uma troca.';
+            case 'extra': return 'De extrajornada.';
+            case 'pontual': return 'Adicionado neste dia.';
+            case 'de_unidade': return 'Vem de outra unidade' + (m.unidade ? ' (' + m.unidade + ')' : '') + '.';
+            case 'fixado': return 'Colocado pelo administrador.';
+            case 'so_pode': return 'Só pode esta função, pela regra dele.';
+            case 'entra': return (m.ja_estava ? 'Assume' : 'Entra') + ' às ' + h(m.hora) + (m.no_lugar_de ? ', no lugar do ' + m.no_lugar_de : '') + '.';
+            case 'sai': return 'Sai às ' + h(m.hora) + '.';
+            case 'passa': return 'Às ' + h(m.hora) + ', passa para ' + C.lugares(m.para) + '.';
+            case 'cnh': return 'Tem a CNH da viatura (' + m.cnh + ').';
+            case 'chefe_dirige':
+              return 'O Chefe de Socorro dirige só quando não há outro habilitado disponível.'
+                + ((m.outros || []).length ? ' Os outros com a CNH estão em outras funções: ' + C.pessoasOnde(m.outros) + '.'
+                                           : ' Ninguém mais de serviço tem a CNH.');
+            case 'grau_funcao': return 'A função pede ' + m.grau + (/\.$/.test(m.grau || '') ? '' : '.');
+            case 'repete': return 'Repete a função do último serviço (' + m.data + '), por falta de opção.';
+            case 'outros_repetiriam':
+              return (m.quem || []).map(function (q) { return 'O ' + q.quem + ' fez esta função no último serviço (' + q.data + ').'; }).join(' ');
+            case 'acumula':
+              return 'Faz junto com o ' + C.lugares([m.cadeira]) + '.'
+                + ((m.mais_modernos || []).length ? ' Os mais modernos: ' + C.pessoasOnde(m.mais_modernos) + '.' : ' É o mais moderno de serviço.');
+            case 'efetivo': return null;
+            case 'criterio': return m.tipo === 1 ? 'O mais moderno.' : 'Pela antiguidade.';
+            case 'aviso': {
+              /* o aviso da linha, com o texto da lista de erros do painel ("rodizio_repetido" → erros.rodizioRepetido) */
+              var chave = String(m.aviso || '').replace(/_([a-z])/g, function (x, l) { return l.toUpperCase(); });
+              var def = (RosterWork.mensagens.escala.erros || {})[chave];
+              return def && def.texto && def.texto.indexOf('{') < 0 ? def.texto + '.' : null;
+            }
+            default: return null;
+          }
+        }
       },
       /* Imprimir escala (painel → PDF; escalas-impressao.js e escalas-impressao-pdf.js) */
       impressao: {

@@ -38,6 +38,7 @@
   var desenhado = null; // o mês desenhado na Minha extra (AAAA-MM-01)
   var passoVisivel = null;   // o passo da área à vista (Organizar o mês)
   var treinoNotaFechada = false;   // a nota do mês de treino fechada no X: fica fechada até a página ser recarregada
+  var diaPedido = null;   // o Abrir na Extrajornada da célula da Escala: { comp, k, uid } (os Ajustes, com o painel do dia)
   /* a leitura de cada área: 'lendo', 'ok' ou 'falha' (com a frase). A Minha extra espera a dela (extrajornada_minha); as
      Extras do mês e o Organizar o mês, a do mês (extrajornada_mes, RosterWork.extrajornadaOrg) */
   var leituras = null;
@@ -293,6 +294,8 @@
     if (RW.calendarioTamanho) RW.calendarioTamanho.ligar(conteudo);
     /* abre no mês de hoje ou no mês que o aviso pediu (o do pedido, no aviso do prazo) */
     var hoje = new Date(), pedida = RW.referenciaPedida ? RW.referenciaPedida('extrajornada') : null;
+    /* o Abrir na Extrajornada da célula da Escala pede o dia e o pelotão ("AAAA-MM-DD|unidade") */
+    diaPedido = pedida && pedida.indexOf('|') > 0 ? { comp: pedida.slice(0, 8) + '01', k: pedida.slice(0, 10), uid: +pedida.split('|')[1] } : null;
     ultimo = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 1);
     comp = pedida ? new Date(+pedida.slice(0, 4), +pedida.slice(5, 7) - 1, 1) : new Date(hoje.getFullYear(), hoje.getMonth(), 1);
     if (comp < PRIMEIRO) comp = new Date(PRIMEIRO);
@@ -353,6 +356,8 @@
 
   RW.extrajornada = { comp: function () { return iso(comp); }, legenda: legenda, passo: mostrarPasso, recarregar: function () { carregar(); }, leitura: leitura,
     modo: modo,
+    /* o dia pedido pela Escala (o Organizar o mês abre nos Ajustes; os Ajustes abrem o painel dele); usar: lido, sai */
+    diaPedido: function (usar) { var x = diaPedido; if (usar) diaPedido = null; return x; },
     /* as grades do mês: antes de desenhar a Agenda, as unidades dela (no celular, o seletor de unidade); depois de montar,
        uma unidade por tela no celular */
     grade: {

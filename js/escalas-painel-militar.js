@@ -9,9 +9,12 @@
    novo). A resposta entra no rascunho do dia ao vivo
    (escalas-painel-editar.js › aoVivo; grava no Salvar do rodapé
    largo); a saída é o Voltar ao dia. O Cancelar a folga e o Desfazer a
-   mudança do menu da linha abrem com essa escolha já marcada.
+   mudança do menu da linha abrem com essa escolha já marcada. As
+   perguntas são uma peça só (perguntas), que a caixa flutuante da
+   célula da grade (escalas-celula-editar.js) também usa.
    API: RosterWork.escalasPainelMilitar.abrirFolga(id, opcoes)
-   (opcoes = { escolha: 'cancelar' | 'desfazer' }).
+   (opcoes = { escolha: 'cancelar' | 'desfazer' }) e perguntas(lugar,
+   id, escolha).
    ============================================================ */
 (function () {
   'use strict';
@@ -37,15 +40,20 @@
     if (comeco !== 'manter') aoEscolher(comeco);
   }
 
-  /* id = a folga (lancamento_id); as linhas dela no dia dão o horário. opcoes = { escolha }: a resposta que vem marcada */
-  function abrirFolga(id, opcoes) {
-    var api = ed(), H = api.horas;
-    var linhas = ((api.dados() || {}).folgas || []).filter(function (f) { return f.lancamento_id === id; });
-    if (!linhas.length) return;
-    var f = linhas[0];
-    var contabilizada = !!f.contabilizada;
-    var mudanca = f.mudanca || null;   // { id, para: 'DD/MM', para_iso }: a folga veio da mudança de dia
-    var escolha = (opcoes && opcoes.escolha) || null;   // a resposta que veio do menu da linha
+  /* as linhas da folga no dia (o horário) e o que vem com ela; null sem a folga */
+  function daFolga(id) {
+    var linhas = ((ed().dados() || {}).folgas || []).filter(function (f) { return f.lancamento_id === id; });
+    if (!linhas.length) return null;
+    /* mudanca = { id, para: 'DD/MM', para_iso }: a folga veio da mudança de dia */
+    return { linhas: linhas, f: linhas[0], contabilizada: !!linhas[0].contabilizada, mudanca: linhas[0].mudanca || null };
+  }
+
+  /* as perguntas da folga ou da mudança, em lugar (a sub-tela daqui ou a caixa flutuante da célula da grade); escolha =
+     a resposta que vem marcada ('cancelar' | 'desfazer'), que já vale. Devolve false sem a folga */
+  function perguntas(lugar, id, escolha) {
+    var api = ed(), d = daFolga(id), tela = RosterWork.tpl('tpl-escala-folga-dia-perguntas');
+    if (!d || !tela) return false;
+    var linhas = d.linhas, f = d.f, contabilizada = d.contabilizada, mudanca = d.mudanca;
 
     /* Cancelar a folga: ele volta ao serviço no dia. Com a extra dele por cima da folga (o banco diz as horas), a nota
        fica amarela: cancelada, ele fica de serviço e de extra no mesmo horário */
@@ -80,21 +88,32 @@
       }, escolha === 'desfazer' ? 'desfazer' : null);
     }
 
+    lugar.appendChild(tela);
+    if (mudanca) perguntaMudanca(tela);
+    else perguntaFolga(tela);
+    return true;
+  }
+
+  /* id = a folga (lancamento_id); as linhas dela no dia dão o horário. opcoes = { escolha }: a resposta que vem marcada */
+  function abrirFolga(id, opcoes) {
+    var api = ed(), H = api.horas, d = daFolga(id);
+    if (!d) return;
+    var escolha = (opcoes && opcoes.escolha) || null;   // a resposta que veio do menu da linha
+
     function montar(corpo) {
       var tela = RosterWork.tpl('tpl-escala-folga-dia');
       if (!tela) return;
+      var f = d.f, periodo = f.dia_inteiro ? '' : H.textoPeriodos(d.linhas);
       tela.querySelector('.escala-distribuicao-grad').textContent = f.grad || '';
       tela.querySelector('.escala-militar-nome-texto').textContent = f.nome || '';
-      var periodo = f.dia_inteiro ? '' : H.textoPeriodos(linhas);
-      tela.querySelector('.escala-folga-dia-periodo').textContent = mudanca
-        ? msg().mudancaNoDia(mudanca.para, periodo) : msg().folgaNoDia(periodo, contabilizada);
-      if (mudanca) perguntaMudanca(tela);
-      else perguntaFolga(tela);
+      tela.querySelector('.escala-folga-dia-periodo').textContent = d.mudanca
+        ? msg().mudancaNoDia(d.mudanca.para, periodo) : msg().folgaNoDia(periodo, d.contabilizada);
       corpo.appendChild(tela);
+      perguntas(tela, id, escolha);
     }
 
     api.abrir(montar);
   }
 
-  window.RosterWork.escalasPainelMilitar = { abrirFolga: abrirFolga };
+  window.RosterWork.escalasPainelMilitar = { abrirFolga: abrirFolga, perguntas: perguntas };
 })();

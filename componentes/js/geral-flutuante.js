@@ -4,13 +4,31 @@
    (flip), desliza para caber (shift), respeita o limite (o modal que
    contém o gatilho, ou a janela) e — opcionalmente — limita a altura
    ao espaço (o conteúdo rola por dentro). Mantém a posição ao rolar/
-   redimensionar e avisa (aoSair) se o gatilho sair da tela.
+   redimensionar e quando o painel ou o gatilho mudam de tamanho, e
+   avisa (aoSair) se o gatilho sair da tela.
 
-   Usado por geral-dropdown.js e geral-calendario.js. Cada componente
-   cuida do próprio abrir/fechar; aqui é só a posição.
+   Usado por geral-dropdown.js, geral-calendario.js e
+   geral-caixa-flutuante.js. Cada componente cuida do próprio
+   abrir/fechar; aqui é só a posição.
+
+   Os lados (opcoes.lado):
+   - 'baixo' (o padrão): embaixo do gatilho, ou em cima sem espaço;
+   - 'direita': ao lado, à direita (à esquerda sem espaço, ou de
+     começo com preferirEsquerda), a opcoes.distancia do gatilho
+     (negativa: cobre a borda dele); o alto na altura do
+     opcoes.alinhar (ou do gatilho), mais o opcoes.deslocar (um
+     número, ou uma função que recebe o retângulo do alinhar);
+     opcoes.retangulo() troca o retângulo do gatilho (o tamanho
+     final da peça que cresce);
+   - 'sobre': por cima do gatilho, com o centro no dele;
+   - 'ponto': o canto no opcoes.ponto ({ dx, dy } a partir do canto
+     do gatilho), virando para o outro lado sem espaço.
+   Fora o 'baixo', o painel cabe inteiro na janela (desliza para
+   dentro) e marca .flutuante--esquerda quando abre à esquerda.
 
    API: RosterWork.flutuante.ancorar(gatilho, painel, opcoes) -> desligar()
-        opcoes = { limitarAltura (padrão true), aoSair() }
+        opcoes = { limitarAltura (padrão true), aoSair(), lado, distancia, alinhar, deslocar, retangulo, ponto,
+                   preferirEsquerda (booleano ou função) }
    ============================================================ */
 (function () {
   'use strict';
@@ -33,7 +51,47 @@
     return { top: 0, bottom: doc.clientHeight, left: 0, right: doc.clientWidth };
   }
 
-  function posicionar(gatilho, painel, limitarAltura) {
+  /* ao lado, por cima ou num ponto (ver o alto do arquivo) */
+  function posicionarFora(gatilho, painel, opcoes) {
+    var rect = opcoes.retangulo ? opcoes.retangulo() : gatilho.getBoundingClientRect();
+    var lim = obterLimite(gatilho);
+    var folga = 4;
+    var largura = painel.offsetWidth, altura = painel.offsetHeight;
+    var x, y, esquerda = false;
+    setVar(painel, '--flutuante-w', rect.width + 'px');
+    painel.classList.remove('flutuante--acima');
+    if (opcoes.lado === 'sobre') {
+      x = rect.left + (rect.width - largura) / 2;
+      y = rect.top + (rect.height - altura) / 2;
+    } else if (opcoes.lado === 'ponto') {
+      var px = rect.left + opcoes.ponto.dx, py = rect.top + opcoes.ponto.dy;
+      esquerda = px + largura > lim.right - folga;
+      x = esquerda ? px - largura : px;
+      y = py + altura > lim.bottom - folga ? py - altura : py;
+    } else {
+      var dist = opcoes.distancia != null ? opcoes.distancia : folga;
+      var prefere = typeof opcoes.preferirEsquerda === 'function' ? opcoes.preferirEsquerda() : !!opcoes.preferirEsquerda;
+      var cabeDireita = rect.right + dist + largura <= lim.right - folga;
+      var cabeEsquerda = rect.left - dist - largura >= lim.left + folga;
+      esquerda = prefere ? cabeEsquerda || !cabeDireita : !cabeDireita && cabeEsquerda;
+      x = esquerda ? rect.left - dist - largura : rect.right + dist;
+      var ref = opcoes.alinhar ? opcoes.alinhar.getBoundingClientRect() : rect;
+      y = ref.top + (typeof opcoes.deslocar === 'function' ? opcoes.deslocar(ref) : (opcoes.deslocar || 0));
+    }
+    if (opcoes.lado !== 'sobre') {
+      setVar(painel, '--flutuante-max-h', Math.round(lim.bottom - lim.top - 2 * folga) + 'px');
+      if (x + largura > lim.right - folga) x = lim.right - largura - folga;
+      if (x < lim.left + folga) x = lim.left + folga;
+      if (y + altura > lim.bottom - folga) y = lim.bottom - altura - folga;
+      if (y < lim.top + folga) y = lim.top + folga;
+    }
+    painel.classList.toggle('flutuante--esquerda', esquerda);
+    setVar(painel, '--flutuante-x', Math.round(x) + 'px');
+    setVar(painel, '--flutuante-top', Math.round(y) + 'px');
+  }
+
+  function posicionar(gatilho, painel, limitarAltura, opcoes) {
+    if (opcoes && opcoes.lado && opcoes.lado !== 'baixo') { posicionarFora(gatilho, painel, opcoes); return; }
     var rect = gatilho.getBoundingClientRect();
     var lim = obterLimite(gatilho);
     var folga = 4;
@@ -77,33 +135,34 @@
     var limitarAltura = opcoes.limitarAltura !== false;   /* padrão: limita a altura */
 
     painel.classList.add('flutuante');
-    posicionar(gatilho, painel, limitarAltura);
+    posicionar(gatilho, painel, limitarAltura, opcoes);
 
-    /* reposiciona ao rolar/redimensionar; fecha (aoSair) se o gatilho saiu da tela */
+    /* reposiciona ao rolar/redimensionar; fecha (aoSair) se o gatilho saiu da tela (ou da página) */
     function aoMexer(evento) {
       /* rolar dentro do próprio painel não mexe na posição */
       if (evento && evento.target && evento.target.closest && evento.target.closest('.flutuante') === painel) return;
       var rect = gatilho.getBoundingClientRect();
       var doc = document.documentElement;
-      if (rect.bottom < 0 || rect.top > doc.clientHeight) {
+      if (!gatilho.isConnected || rect.bottom < 0 || rect.top > doc.clientHeight) {
         if (typeof opcoes.aoSair === 'function') opcoes.aoSair();
         return;
       }
-      posicionar(gatilho, painel, limitarAltura);
+      posicionar(gatilho, painel, limitarAltura, opcoes);
     }
 
     document.addEventListener('scroll', aoMexer, true);
     window.addEventListener('resize', aoMexer);
     var observador = window.ResizeObserver
-      ? new ResizeObserver(function () { posicionar(gatilho, painel, limitarAltura); })
+      ? new ResizeObserver(function () { if (gatilho.isConnected) posicionar(gatilho, painel, limitarAltura, opcoes); })
       : null;
-    if (observador) observador.observe(painel);
+    /* o painel e o gatilho: o conteúdo que muda e a grade que se acomoda (o gatilho muda de tamanho) */
+    if (observador) { observador.observe(painel); observador.observe(gatilho); }
 
     return function desligar() {
       document.removeEventListener('scroll', aoMexer, true);
       window.removeEventListener('resize', aoMexer);
       if (observador) observador.disconnect();
-      painel.classList.remove('flutuante', 'flutuante--acima');
+      painel.classList.remove('flutuante', 'flutuante--acima', 'flutuante--esquerda');
     };
   }
 

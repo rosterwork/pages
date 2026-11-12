@@ -266,6 +266,89 @@
 </template>
 
 
+<!-- Como a escala foi feita (subcabeçalho do painel do dia, à esquerda do Imprimir; escalas-painel-como.js): abre o texto
+     numa sub-tela, no lugar da lista do dia, com o Voltar ao dia. Desligado com alteração não salva (a dica diz o motivo) -->
+<template id="tpl-escala-dia-como">
+  <button type="button" class="botao botao--icone escala-dia-como" aria-label="Como a escala foi feita" data-dica="Como a escala foi feita">
+    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-distribuicao"/></svg>
+  </button>
+</template>
+
+<!-- Como a escala foi feita, a sub-tela (escalas-painel-como.js): a nota com o título e as caixas por assunto, no molde
+     das Observações. O JS põe as frases de cada caixa (RosterWork.mensagens.escalaComo) e esconde a caixa sem frase;
+     as frases fixas moram aqui -->
+<template id="tpl-escala-como">
+  <div class="escala-como">
+    <div class="nota">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-distribuicao"/></svg>
+      <span class="nota-texto"><span class="nota-titulo" data-como-titulo></span></span>
+    </div>
+    <div class="grupo-caixa" data-como-caixa="servico">
+      <div class="escala-observacoes-titulo"><span class="rotulo-secao">Quem está de serviço</span></div>
+      <div class="escala-observacao-grupo"><ol class="escala-observacao-lista" data-como-lista></ol></div>
+    </div>
+    <div class="grupo-caixa" data-como-caixa="chefe">
+      <div class="escala-observacoes-titulo"><span class="rotulo-secao">Chefe de Socorro</span></div>
+      <div class="escala-observacao-grupo"><ol class="escala-observacao-lista" data-como-lista></ol></div>
+    </div>
+    <div class="grupo-caixa" data-como-caixa="condutores">
+      <div class="escala-observacoes-titulo"><span class="rotulo-secao">Condutores</span></div>
+      <div class="escala-observacao-grupo"><ol class="escala-observacao-lista" data-como-lista></ol></div>
+    </div>
+    <div class="grupo-caixa" data-como-caixa="outras">
+      <div class="escala-observacoes-titulo"><span class="rotulo-secao">Outras funções</span></div>
+      <div class="escala-observacao-grupo"><ol class="escala-observacao-lista" data-como-lista></ol></div>
+    </div>
+    <div class="grupo-caixa" data-como-caixa="efetivos">
+      <div class="escala-observacoes-titulo"><span class="rotulo-secao">Efetivos</span></div>
+      <div class="escala-observacao-grupo">
+        <ol class="escala-observacao-lista" data-como-lista>
+          <li class="escala-observacao" data-como-fixo><span class="escala-observacao-texto">Nos Efetivos de cada viatura, o número menor vai ao mais antigo.</span></li>
+        </ol>
+      </div>
+    </div>
+    <div class="grupo-caixa" data-como-caixa="problemas" data-como-sempre>
+      <div class="escala-observacoes-titulo"><span class="rotulo-secao">O que não deu para cumprir</span></div>
+      <div class="escala-observacao-grupo">
+        <ol class="escala-observacao-lista" data-como-lista>
+          <li class="escala-observacao oculto" data-como-vazio><span class="escala-observacao-texto">Tudo foi cumprido.</span></li>
+        </ol>
+      </div>
+    </div>
+    <div class="grupo-caixa" data-como-caixa="regras" data-como-sempre>
+      <div class="escala-observacoes-titulo"><span class="rotulo-secao">A ordem das regras</span></div>
+      <div class="escala-observacao-grupo">
+        <ol class="escala-observacao-lista">
+          <li class="escala-observacao"><span class="escala-observacao-texto">Primeiro, nenhum posto abaixo do mínimo; depois, cada um na função da sua graduação; não trocar o condutor nem o Rádio no meio do plantão; não repetir o Rádio e o Rancho; e, por último, a antiguidade.</span></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- uma frase do Como a escala foi feita (a sub-tela e a caixa da função) -->
+<template id="tpl-escala-como-item">
+  <li class="escala-observacao"><span class="escala-observacao-texto"></span></li>
+</template>
+
+<!-- o nome da função do painel do dia, clicável na Escala (escalas-painel-como.js): os rótulos entram no botão, que abre a
+     caixa flutuante com quem está na função e o motivo (no celular, a folha) -->
+<template id="tpl-escala-como-rotulo">
+  <button type="button" class="botao-discreto escala-como-rotulo" data-dica="Como foi escolhido"></button>
+</template>
+
+<!-- o conteúdo da caixa da função: o título (no celular, ele vai na folha) e as frases; nos Efetivos, a regra do número -->
+<template id="tpl-escala-como-funcao">
+  <div class="escala-como-funcao">
+    <span class="escala-observacao-grupo-nome escala-como-funcao-titulo"></span>
+    <div class="escala-observacao-grupo">
+      <ol class="escala-observacao-lista" data-como-lista>
+        <li class="escala-observacao oculto" data-como-efetivos><span class="escala-observacao-texto">Nos Efetivos de cada viatura, o número menor vai ao mais antigo.</span></li>
+      </ol>
+    </div>
+  </div>
+</template>
+
 <!-- Imprimir do painel do dia (subcabeçalho da aba Dia, à direita; escalas-impressao.js): abre o mesmo formulário
      numa sub-tela, já marcado com o dia e a unidade do painel. Desligado com alteração não salva (a dica diz o motivo) -->
 <template id="tpl-escala-dia-imprimir">
@@ -509,18 +592,12 @@
   <div class="escala-mil-total-valor"></div>
 </template>
 
-<!-- ===== a edição na célula da grade (escalas-celula-editar.js) ===== -->
-<!-- embaixo do nome aberto, no mesmo fundo cinza: os pontos enquanto o dia é lido; depois, o horário em campos (os do
-     geral-horario entram no começo da linha) e, no canto direito, a lixeira (Remover do dia); embaixo, a pergunta do
-     banco de horas, quando vale: a frase e as duas respostas (os textos e a ordem vêm do JS) -->
+<!-- ===== a edição na célula da grade (escalas-celula-editar.js e escalas-celula-editar-acoes.js), na caixa flutuante ===== -->
+<!-- a caixa 2 do Mudar o horário do serviço e do Remover do dia: o horário em campos (os do geral-horario entram na linha)
+     e, embaixo, a pergunta do banco de horas, quando vale: a frase e as duas respostas (os textos e a ordem vêm do JS) -->
 <template id="tpl-escala-celula-cartao">
   <div class="escala-celula-cartao">
-    <span class="escala-celula-espera"><span class="carregando-pontos" aria-label="Carregando"><span>.</span><span>.</span><span>.</span></span></span>
-    <div class="escala-celula-cartao-horario">
-      <button type="button" class="botao-discreto escala-celula-remover" aria-label="Remover do dia" data-dica="Remover do dia">
-        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
-      </button>
-    </div>
+    <div class="escala-celula-cartao-horario"></div>
     <div class="escala-celula-pergunta oculto">
       <span class="escala-celula-pergunta-texto"></span>
       <label class="geral-opcao"><input type="radio" value="nao" /><span class="escala-celula-pergunta-nao"></span></label>
@@ -529,20 +606,61 @@
   </div>
 </template>
 
-<!-- o pelotão marcado pelo clique (fora dos nomes): as ações embaixo dos nomes; o Adicionar vira o campo de militar -->
-<template id="tpl-escala-celula-acoes">
-  <div class="escala-celula-acoes">
-    <button type="button" class="dropdown-item escala-celula-acao" data-acao="adicionar">Adicionar somente nesse dia</button>
-    <button type="button" class="dropdown-item escala-celula-acao" data-acao="painel">Abrir o painel do dia</button>
+<!-- a caixa 2 do Remover da guarnição, do Cancelar a folga e do Desfazer a mudança: as perguntas do painel entram aqui -->
+<template id="tpl-escala-celula-perguntas">
+  <div class="escala-celula-perguntas"></div>
+</template>
+
+<!-- a caixa 1 do pelotão (o clique fora dos nomes): os Adicionar, com a setinha da caixa 2, e o Abrir o painel do dia.
+     A letra é a da guarnição do dia (sem ela, "do dia"). O Adicionar extra neste dia aparece para o administrador da
+     companhia, no mês lançado (escalas-celula-extra.js) -->
+<template id="tpl-escala-celula-pelotao">
+  <div class="escala-celula-pelotao">
+    <button type="button" class="dropdown-item" data-acao="neste-dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-novo-usuario"/></svg><span>Adicionar neste dia</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <button type="button" class="dropdown-item" data-acao="guarnicao"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-usuarios"/></svg><span>Adicionar à guarnição <span class="escala-celula-letra"></span><span class="escala-celula-sem-letra oculto">do dia</span></span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <button type="button" class="dropdown-item oculto" data-acao="extra"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-extrajornada"/></svg><span>Adicionar extra neste dia</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <div class="dropdown-divisor"></div>
+    <button type="button" class="dropdown-item" data-acao="painel"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-escalas"/></svg><span>Abrir o painel do dia</span></button>
   </div>
 </template>
 
-<!-- o campo do Adicionar somente nesse dia (componente geral-combo-militar): a busca e quem tem horas livres no dia, por pelotão -->
+<!-- a caixa 2 do Adicionar extra neste dia (escalas-celula-extra.js): o campo de militar da Extrajornada (os grupos do
+     painel do dia dela) e, escolhido o nome, a barra dele embaixo -->
+<template id="tpl-escala-celula-extra">
+  <div class="escala-celula-extra">
+    <div class="escala-celula-extra-campo"></div>
+    <div class="escala-celula-extra-barra"></div>
+  </div>
+</template>
+
+<!-- a caixa 2 do Adicionar neste dia (componente geral-combo-militar): a busca e quem tem horas livres no dia, por pelotão -->
 <template id="tpl-escala-celula-adicionar">
   <div class="dropdown campo-combo escala-celula-adicionar">
-    <input class="campo-entrada campo-entrada--pequeno" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Adicionar somente nesse dia" />
+    <input class="campo-entrada campo-entrada--pequeno" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Adicionar neste dia" />
     <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
     <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares"></div>
+  </div>
+</template>
+
+<!-- a caixa 2 do Adicionar à guarnição (a peça do Adicionar militar do painel, escalas-painel-adicionar.js): o campo de quem
+     pode entrar, a frase de quem entra ou muda e, para quem muda, o que acontece com as trocas, folgas e extras dele -->
+<template id="tpl-escala-celula-guarnicao">
+  <div class="escala-celula-guarnicao">
+    <div class="dropdown campo-combo escala-celula-adicionar">
+      <input class="campo-entrada campo-entrada--pequeno" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Adicionar à guarnição" />
+      <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+      <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares"></div>
+    </div>
+    <div class="nota nota--alerta escala-celula-guarnicao-mudar oculto">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+      <span class="nota-texto"></span>
+    </div>
+    <div class="nota escala-celula-guarnicao-info oculto">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-historico"/></svg>
+      <span class="nota-texto"></span>
+    </div>
+    <!-- o que acontece com quem muda de guarnição (molde tpl-escala-ciclo-efeito) entra aqui -->
+    <div class="escala-celula-guarnicao-efeito"></div>
   </div>
 </template>
 

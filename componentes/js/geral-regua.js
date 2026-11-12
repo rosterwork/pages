@@ -1,12 +1,12 @@
 /* ============================================================
    BARRA DE HORÁRIO — componente compartilhado (Escala, Folgas e
    Trocas; a Extrajornada usa a mesma barra com as regras dela).
-   O dia de serviço das 08h às 08h em 24 quadrados de 1 hora, com
-   riscos a cada 6 horas. desenhar() pinta o fundo (o que já existe
-   no dia) e a faixa escolhida; editável, a faixa ganha as duas
-   bolinhas de arrastar (mouse e dedo), o clique numa hora leva a
-   ponta mais perto até ali e, com o mouse em cima, a hora que o
-   clique vai pôr acende e a que vai tirar fica riscada. O mouse em
+   O dia de serviço das 08h às 08h num risco, com risquinhos a cada
+   6 horas, feito de 24 horas de clique. desenhar() pinta o fundo (o
+   que já existe no dia) e a faixa escolhida; editável, a faixa ganha
+   as duas bolinhas de arrastar (mouse e dedo), o clique numa hora
+   leva a ponta mais perto até ali e, com o mouse em cima, a hora que
+   o clique vai pôr acende e a que vai tirar fica tracejada. O mouse em
    cima de uma hora mostra a hora na dica; as setas do teclado andam
    com a bolinha. Onde a faixa pode ir vem das regras de quem usa
    (as padrão: horas cheias dentro da janela, pelo menos 1 hora).
@@ -116,16 +116,16 @@
       return va || vb ? va && vb : a.ini === b.ini && a.fim === b.fim;
     }
 
-    /* a divisa mais perto do ponteiro (0 a 24): 24 horas com 1px entre elas */
+    /* a divisa mais perto do ponteiro (0 a 24): 24 horas da mesma largura, sem vão */
     function divisa(ev) {
       var r = barra.getBoundingClientRect();
-      return Math.max(0, Math.min(24, Math.round((ev.clientX - r.left + 0.5) * 24 / (r.width + 1))));
+      return Math.max(0, Math.min(24, Math.round((ev.clientX - r.left) * 24 / r.width)));
     }
     function horaDe(alvo) { var c = alvo.closest('.regua-barra-hora'); return c ? +c.getAttribute('data-hora') : null; }
     /* a hora (0 a 23) debaixo do ponteiro */
     function horaDoPonteiro(ev) {
       var r = barra.getBoundingClientRect();
-      return Math.max(0, Math.min(23, Math.floor((ev.clientX - r.left + 0.5) * 24 / (r.width + 1))));
+      return Math.max(0, Math.min(23, Math.floor((ev.clientX - r.left) * 24 / r.width)));
     }
 
     /* o clique numa hora */

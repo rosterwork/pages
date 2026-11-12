@@ -6,7 +6,9 @@
    entrou: a frase. O rascunho é do mês (extrajornada-grade.js): trocar de
    dia não perde nada, e os dias mudados levam a borda tracejada. O
    Salvar é o rodapé largo da página, junto com o Dia e o Ciclo
-   (escalas-painel-salvar.js, p_extra do escala_painel_salvar).
+   (escalas-painel-salvar.js, p_extra do escala_painel_salvar). A
+   célula da grade, com o painel fechado, usa o mesmo mês e o mesmo
+   rascunho (escalas-celula-extra.js: carregar, pronto, usarNaCelula).
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
    RosterWork.escalasPainelExtra.
    ============================================================ */
@@ -18,6 +20,8 @@
   var mes = null;      // a resposta do extrajornada_mes do mês aberto
   var ctx = null;      // a aba aberta: { corpo, uid, iso }
   var pedido = 0;      // latest-wins
+  var lendo = null;    // a leitura da célula em curso: { comp, promessa }
+  var onde = null;     // o dia da célula que mexe na extra, com a aba fechada: { unidadeId, iso, unidadeNome }
 
   function msg() { return RW.mensagens.extrajornada.org; }
   function G() { return RW.extrajornadaGrade; }
@@ -45,11 +49,40 @@
     RW.extrajornadaDia.mostrarEm(ctx.uid, ctx.iso);
   }
 
-  /* o rascunho mudou: o painel na hora, e o rodapé e as telas pelo aviso dos rascunhos (escalas-painel-salvar.js) */
+  /* o rascunho mudou: o painel e a caixa da célula na hora, e o rodapé e as telas pelo aviso dos rascunhos
+     (escalas-painel-salvar.js) */
   function aoMudar() {
     G().calcularPicos(G().efetivas());
     RW.extrajornadaDia.redesenhar();
+    if (RW.extrajornadaCelula) RW.extrajornadaCelula.redesenhar();
     window.dispatchEvent(new CustomEvent('rosterwork_escala_rascunho'));
+  }
+
+  /* o mês lido: o rascunho dele começa vazio */
+  function usarMes(r) {
+    mes = r;
+    RW.extrajornadaUtil.usar(r);
+    G().iniciar(r, 'ajustes', aoMudar);
+    G().limpar();
+    G().escalaDoMes();
+    G().calcularPicos(G().efetivas());
+  }
+
+  /* a célula da grade (o painel fechado): o mês do dia, lido uma vez (o já lido fica, com ou sem mudança). A Promise diz
+     se ele está aqui (false: a leitura falhou, ou há mudança não salva em outro mês) */
+  function carregar(iso) {
+    var comp = iso.slice(0, 8) + '01';
+    if (mes && mes.competencia === comp) return Promise.resolve(true);
+    if (sujo()) return Promise.resolve(false);
+    if (lendo && lendo.comp === comp) return lendo.promessa;
+    var p = RW.extrajornadaUtil.chamar('extrajornada_mes', { p_competencia: comp }).then(function (r) {
+      if (lendo && lendo.promessa === p) lendo = null;
+      if (!r || !r.ok || sujo()) return false;
+      usarMes(r);
+      return true;
+    }, function () { if (lendo && lendo.promessa === p) lendo = null; return false; });
+    lendo = { comp: comp, promessa: p };
+    return p;
   }
 
   function montar(corpo, rodape, unidadeId, iso) {
@@ -69,12 +102,7 @@
     RW.painel.segurar(RW.extrajornadaUtil.chamar('extrajornada_mes', { p_competencia: comp })).then(function (r) {
       if (meu !== pedido || !ctx) return;
       if (!r || !r.ok) { frase(corpo, (r && r.error) || msg().falhaMes); return; }
-      mes = r;
-      RW.extrajornadaUtil.usar(r);
-      G().iniciar(r, 'ajustes', aoMudar);
-      G().limpar();
-      G().escalaDoMes();
-      G().calcularPicos(G().efetivas());
+      usarMes(r);
       mostrar();
     }, function () { if (meu === pedido && ctx) frase(corpo, msg().falhaMes); });
   }
@@ -90,6 +118,7 @@
   function descartar() {
     if (mes) G().limpar();
     mes = null;
+    onde = null;
     if (RW.extrajornadaDia) RW.extrajornadaDia.reorganizar();
   }
 
@@ -109,10 +138,19 @@
       var m = sujo() ? G().passaram()[0] : null;
       return m ? { nome: (m.grad + ' ' + m.nome).trim(), n: G().usadas(m.cpf) - m.concedidas } : null;
     },
+    /* a célula da grade: o mês do dia, se a extra do pelotão se mexe nele (lançado e da companhia de quem entrou), e o
+       dia dela para o rodapé; com a aba fechada e mudança na extra, o dia do rodapé é esse (escalas-painel-salvar.js) */
+    carregar: carregar,
+    pronto: function (uid, iso) {
+      return !!mes && mes.competencia === iso.slice(0, 8) + '01' && lancada() && mes.admin !== false
+        && mes.unidades.some(function (un) { return un.id === +uid; });
+    },
+    usarNaCelula: function (d) { onde = { unidadeId: d.unidadeId, iso: d.iso, unidadeNome: d.unidadeNome || '' }; },
+    naCelula: function () { return !ctx && onde && sujo() ? { unidadeId: onde.unidadeId, iso: onde.iso, secao: 'extra', unidadeNome: onde.unidadeNome } : null; },
     /* o Desfazer e o Refazer do rodapé largo (escalas-painel-salvar.js): um passo do rascunho do mês, e o painel refeito
-       como numa mudança */
-    podeDesfazer: function () { return !!ctx && lancada() && G().podeDesfazer(); },
-    podeRefazer: function () { return !!ctx && lancada() && G().podeRefazer(); },
+       como numa mudança (na aba, ou na célula que mexeu na extra) */
+    podeDesfazer: function () { return (!!ctx || !!onde) && lancada() && G().podeDesfazer(); },
+    podeRefazer: function () { return (!!ctx || !!onde) && lancada() && G().podeRefazer(); },
     desfazer: function () { if (G().desfazer()) { RW.extrajornadaDia.reorganizar(); aoMudar(); } },
     refazer: function () { if (G().refazer()) { RW.extrajornadaDia.reorganizar(); aoMudar(); } },
     /* o que o Salvar leva (null sem mudança; o banco aceita o ajuste sem motivo) */

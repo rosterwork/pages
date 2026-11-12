@@ -22,7 +22,9 @@
    Na aba Militares, o dia da pessoa ("Cb. Veloso no dia 21/11"):
    Mudar o horário do serviço, Mudar o dia do serviço, Mudar de
    unidade neste dia, Mudar a extrajornada (quem está de extra: abre a
-   aba Extrajornada do painel, onde a extra muda), Remover do dia e,
+   aba Extrajornada do painel, onde a extra muda), Dar folga neste dia
+   (quem está no dia pela guarnição: sair do dia é a folga, na cor
+   normal) ou Remover deste dia (o resto, em vermelho) e,
    para quem está no dia pela guarnição, Remover da guarnição (a
    pergunta Último serviço, escalas-painel-ciclo.js); quem foi
    remanejado daqui para outra unidade, o Devolver; quem saiu da
@@ -33,7 +35,7 @@
    Embaixo do traço, o Ver o dia (na Funções) ou o Ver as funções (na
    Militares) troca de aba já com o menu dele aberto.
    A mudança de dia ainda não salva (só no rascunho, sem número no
-   banco): quem vem de outro dia tem só o Remover do dia (na Funções,
+   banco): quem vem de outro dia tem só o Remover deste dia (na Funções,
    só o Ver o dia), e o Desfazer a mudança de quem sai; os dois só a
    largam do rascunho.
    Cada item usa o caminho que já existe: o cartão embaixo da linha
@@ -41,12 +43,18 @@
    função), as sub-telas já com ele escolhido (Mudar o horário do
    serviço, Mudar o dia do serviço, Mudar de unidade neste dia, a do
    Remover do dia para quem foi a outra unidade e a folga no dia), o
-   Remover do dia (escalas-painel-remover.js › doDia) e, na hora, com o
+   Dar folga e o Remover deste dia (escalas-painel-remover.js › doDia) e, na hora, com o
    Desfazer, o Liberar e o Remover desta função.
+   Na célula da grade (visao 'celula', escalas-celula-editar.js), o
+   mesmo menu vai para a caixa flutuante: os itens do dia da pessoa
+   (e do De folga, da saída e do remanejado), sem o Ver as funções, e
+   o Abrir o painel do dia em todos; quem faz cada item é a célula.
    API: RosterWork.escalasPainelLinhaMenu.na(linha, cfg) põe o lápis e o
    menu na linha; fazer(linha, acao) faz um item por código (o lugar
    novo do posto abre o cartão sozinho); abrir(linha) abre o menu dela
-   (o Ver o dia e o Ver as funções, na outra aba).
+   (o Ver o dia e o Ver as funções, na outra aba); menuDaCelula(cfg,
+   escolher) devolve o menu pronto para a caixa; largarMudanca(cpf,
+   sentido, senao) larga a mudança de dia do rascunho.
    cfg = { tipo: 'funcao' | 'papel' | 'vaga' | 'sem' | 'folga' | 'militar'
    (a linha da aba Militares) | 'fora' (remanejado daqui para outra
    unidade) | 'saida' (quem saiu da guarnição; saida = a data da saída) | 'companhia' (o Oficial de Área da companhia na Central do
@@ -80,13 +88,25 @@
     r['mudar-dia'] = !!RW.escalasPainelMudarDia && RW.escalasPainelMudarDia.podeMudar(cpf);
     r['mudar-unidade'] = !!RW.escalasPainelRemanejar && RW.escalasPainelRemanejar.podeEnviar(cpf);
     r['mudar-extra'] = !!mil && mil.janelas.some(function (j) { return j.origem === 'extra'; }) && RW.escalasPainel.temAba('extra');
-    r['remover-dia'] = !!RW.escalasPainelRemover && RW.escalasPainelRemover.podeTirar(cpf);
+    /* sair do dia: pelo ciclo é a folga (Dar folga neste dia); o pontual e o resto, o Remover deste dia (o mesmo caminho) */
+    var tirar = !!RW.escalasPainelRemover && RW.escalasPainelRemover.podeTirar(cpf);
+    var analise = tirar && mil ? RW.escalasPainelRemover.analisarDoDia({ cpf: cpf, periodos: mil.janelas.map(copiar) }) : null;
+    r['folga-dia'] = !!analise && analise.tipo === 'folga';
+    r['remover-dia'] = tirar && !r['folga-dia'];
     r['remover-guarnicao'] = !!RW.escalasPainelCiclo && RW.escalasPainelCiclo.podeSair(cpf);
   }
 
   /* os itens que valem para a linha: { acao: true }. Na aba Funções, só o que é do lugar (e o Ver o dia); na Militares,
      só o dia da pessoa (e o Ver as funções); o De folga é igual nas duas */
   function itens(cfg) {
+    /* a célula da grade: os mesmos da aba Militares, sem o Ver as funções, e o Abrir o painel do dia em todos */
+    if (cfg.visao === 'celula') {
+      var c = itens(Object.assign({}, cfg, { visao: 'militares' }));
+      delete c['ver-funcoes'];
+      delete c['ver-dia'];
+      c['abrir-painel'] = true;
+      return c;
+    }
     var r = {}, m = cfg.militar, militares = cfg.visao === 'militares';
     /* quem vem de outro dia e ainda não foi salvo: só sair deste dia (o rascunho larga a mudança), pela aba Militares */
     if (m && cfg.tipo !== 'folga' && cfg.tipo !== 'saida' && ed().mudancaNoRascunho(m.cpf) === 'vem') {
@@ -197,6 +217,7 @@
     'mudar-unidade': function (cfg) { RosterWork.escalasPainelRemanejar.abrir({ cpf: cfg.militar.cpf }); },
     'mudar-extra': function () { RosterWork.escalasPainel.abrirAba('extra'); },
     'remover-dia': function (cfg) { largarMudanca(cfg.militar.cpf, 'vem', function () { removerDoDia(cfg); }); },
+    'folga-dia': function (cfg) { removerDoDia(cfg); },
     /* o Remover da guarnição e o Cancelar a saída (a linha riscada de quem saiu): as guarnições do painel (escalas-painel-ciclo.js) */
     'remover-guarnicao': function (cfg) { RosterWork.escalasPainelCiclo.perguntarSaida(cfg.militar, cfg.linha); },
     'cancelar-saida': function (cfg) { RosterWork.escalasPainelCiclo.cancelarSaida(cfg.militar, cfg.saida); },
@@ -272,5 +293,20 @@
     RosterWork.abrirDropdown(dd);
   }
 
-  window.RosterWork.escalasPainelLinhaMenu = { na: na, fazer: fazer, abrir: abrir };
+  /* o menu na caixa flutuante da célula da grade: o mesmo molde e os mesmos itens que valem; escolher(acao, botao) faz o
+     item na célula. Devolve o menu (sem o lápis) */
+  function menuDaCelula(cfg, escolher) {
+    var dd = RosterWork.tpl('tpl-escala-edicao-opcoes');
+    if (!dd) return null;
+    cfg.visao = 'celula';
+    preparar(dd, cfg);
+    var menu = dd.querySelector('.escala-edicao-opcoes-menu');
+    [].forEach.call(menu.querySelectorAll('[data-acao]'), function (b) {
+      b.addEventListener('click', function () { escolher(b.getAttribute('data-acao'), b); });
+    });
+    return menu;
+  }
+
+  window.RosterWork.escalasPainelLinhaMenu = { na: na, fazer: fazer, abrir: abrir, menuDaCelula: menuDaCelula,
+    largarMudanca: largarMudanca };
 })();

@@ -668,8 +668,10 @@
     return linha;
   }
 
-  /* MESCLA (viatura): junta o papel especial (Chefe/Of. Área) com o Condutor do MESMO militar
-     numa entrada de dois rótulos (um nome só). A numeração dos "Efetivo N" vem PRONTA do banco
+  /* MESCLA (viatura): junta o papel especial (Chefe/Of. Área) com o Condutor numa entrada de dois
+     rótulos só quando as duas funções têm as mesmas pessoas nos mesmos horários (quem é o Chefe
+     dirige em todos eles); com o Chefe dirigindo só parte do dia, as duas ficam separadas, e o
+     Condutor dos outros horários aparece. A numeração dos "Efetivo N" vem PRONTA do banco
      (calcular_faixas_onde_dia renumera por cadeira, contando o par acumulado como 1, POR FAIXA);
      aqui não se renumera, senão a folga/troca parcial quebraria. Copia (não muta o leitor). */
   function mesclarFuncoesViatura(posto) {
@@ -683,10 +685,16 @@
     lista.forEach(function (f) {
       if (PAPEL.indexOf(f.nome) >= 0 && f.militares && f.militares.length) especial = f;
     });
-    if (especial && especial.militares[0]) {
-      var cpf = especial.militares[0].cpf, idx = -1;
+    /* as pessoas da função com os horários de cada uma, numa ordem só */
+    function pessoasEHorarios(f) {
+      return (f.militares || []).map(function (m) {
+        return m.cpf + '|' + (m.periodos || []).map(function (p) { return (p.hi || '') + '-' + (p.hf || ''); }).join(',');
+      }).sort().join(';');
+    }
+    if (especial) {
+      var chave = pessoasEHorarios(especial), idx = -1;
       lista.forEach(function (f, i) {
-        if (/^Condutor/i.test(f.nome) && f.militares && f.militares[0] && f.militares[0].cpf === cpf) idx = i;
+        if (/^Condutor/i.test(f.nome) && f.militares && f.militares.length && pessoasEHorarios(f) === chave) idx = i;
       });
       if (idx >= 0) { especial.nomes = [especial.nome, lista[idx].nome]; lista.splice(idx, 1); }
     }
@@ -823,13 +831,15 @@
     if ((secao === 'distribuicao' || secao === 'militares') && RosterWork.escalasPainelEditar) {
       /* o dia é de quem tem a unidade na área do papel; as abas Funções e Militares são o mesmo dia, por posto e por pessoa.
          O menu pedido na abertura (o Oficial de Área, vindo do pelotão) abre quando a lista chegar, uma vez só */
-      var menuDe = pCtx.abrirMenuDe || null;
+      var menuDe = pCtx.abrirMenuDe || null, fazerDe = pCtx.fazerAcao || null;
       pCtx.abrirMenuDe = null;
+      pCtx.fazerAcao = null;
       RosterWork.escalasPainelEditar.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso, {
         admin: !naFila && RosterWork.sessao.podeAdministrar('pelotao', pCtx.unidadeId),
         consulta: naFila,
         visao: secao === 'militares' ? 'militares' : 'funcoes',
-        abrirMenuDe: menuDe
+        abrirMenuDe: menuDe,
+        fazerAcao: fazerDe
       });
     } else if (secao === 'continuos' && RosterWork.escalasPainelGuarnicoes) {
       RosterWork.escalasPainelGuarnicoes.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso);
@@ -861,7 +871,7 @@
 
   /* o dia de uma unidade sem a célula (a companhia do Oficial de Área, que pode não estar na tela; o lápis dele no
      pelotão), com a mesma pergunta de trocar de dia quando há mudança não salva. opcoes.abrirMenuDe: o cpf de quem fica
-     com o menu aberto quando a lista chegar */
+     com o menu aberto quando a lista chegar; opcoes.fazerAcao: em vez do menu, o item dele já feito (a célula da grade) */
   function abrirDia(dia, secao, opcoes) {
     if (secaoSuja() && !daCelula(dia.unidadeId, dia.iso)) {
       var S = RosterWork.escalasPainelSalvar;
@@ -894,7 +904,7 @@
     var inicial = secao || (naExtra ? 'extra' : 'distribuicao');
     if ((inicial === 'continuos' && !admin) || (inicial === 'extra' && !comExtra) || (inicial === 'militares' && !admin && !comExtra)) inicial = 'distribuicao';
     pCtx = { unidadeId: unidadeId, iso: iso, secao: inicial, unidadeNome: dia.unidadeNome, semCelula: !marcada,
-      abrirMenuDe: (opcoes && opcoes.abrirMenuDe) || null };
+      abrirMenuDe: (opcoes && opcoes.abrirMenuDe) || null, fazerAcao: (opcoes && opcoes.fazerAcao) || null };
     /* o dia já refeito abre na hora: o painel lê o dado real, e a célula fica igual a ele */
     if (RosterWork.escalaAtualizando && RosterWork.escalaAtualizando.soCopia(unidadeId, iso)) RosterWork.escalaAtualizando.corrigir(unidadeId, iso);
     RosterWork.painel.abrir({

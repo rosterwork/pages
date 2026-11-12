@@ -321,6 +321,12 @@
        porque o clique fora tira o foco */
     var pedido = RW.cotasAviso && modoNovo === 'ajustes' ? RW.cotasAviso.focoPedido(d.competencia) : null;
     if (pedido) setTimeout(function () { RW.extrajornadaLista.focar(pedido); }, 0);
+    /* veio do Abrir na Extrajornada da célula da Escala: o painel daquele dia */
+    var diaPedido = modoNovo === 'ajustes' ? RW.extrajornada.diaPedido() : null;
+    if (diaPedido && diaPedido.comp === d.competencia) {
+      RW.extrajornada.diaPedido(true);
+      setTimeout(function () { dia().abrir(diaPedido.uid, diaPedido.k); }, 0);
+    }
   }
 
   RW.extrajornadaMontar = {

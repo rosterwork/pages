@@ -1,0 +1,206 @@
+/* ============================================================
+   CAIXA FLUTUANTE — a peça escolhida e as caixas ao lado dela
+   (componentes/js/geral-caixa-flutuante.js; a posição vem do
+   geral-flutuante.css). A peça escolhida ganha a borda forte por
+   dentro. A caixa tem o visual do menu suspenso: o fundo, a borda e
+   a sombra flutuantes. Movimento (REGRAS › Outras regras de CSS ›
+   Movimento): a caixa aparece em 0.15s ease-out e some em 0.1s
+   ease-in, por opacity e transform; parado com menos movimento. No
+   celular, a folha de baixo, sobre o véu.
+   ============================================================ */
+
+/* a caixa: o menu suspenso, do tamanho do que tem dentro (a 2, das perguntas, numa largura só); rola só para baixo */
+.caixa-flutuante {
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 4px;
+  background-color: var(--fundo-flutuante);
+  border: 1px solid var(--borda-flutuante);
+  border-radius: var(--raio-medio);
+  box-shadow: var(--sombra-flutuante);
+  opacity: 0;
+  transform: scale(0.96);
+  transform-origin: 0 0;
+  transition: opacity 0.1s ease-in, transform 0.1s ease-in;
+}
+
+.caixa-flutuante.flutuante--esquerda {
+  transform-origin: 100% 0;
+}
+
+.caixa-flutuante--aberta {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.15s ease-out, transform 0.15s ease-out;
+}
+
+.caixa-flutuante--segunda {
+  width: 264px;
+}
+
+/* esperando o conteúdo: no lugar, sem aparecer (nem receber o clique) */
+.caixa-flutuante--esperando {
+  visibility: hidden;
+}
+
+/* a alça, a seta de voltar e o título: só na folha do celular */
+.caixa-flutuante-alca,
+.caixa-flutuante-cabeca {
+  display: none;
+}
+
+/* os pontos enquanto o conteúdo espera (na altura de um item) */
+.caixa-flutuante-espera {
+  display: flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 8px;
+  font-size: 12px;
+  color: var(--texto-fraco);
+}
+
+.caixa-flutuante-corpo {
+  display: flex;
+  flex-direction: column;
+}
+
+/* o item escolhido: o cinza da seleção, enquanto a caixa 2 dele está aberta */
+.caixa-flutuante .dropdown-item.caixa-flutuante-item--escolhido {
+  background-color: var(--fundo-medio);
+}
+
+/* a caixa do dia que não muda: a nota do aviso e o Abrir o painel do dia, na largura da caixa 2 */
+.caixa-flutuante-aviso {
+  display: flex;
+  flex-direction: column;
+  width: 256px;
+}
+
+/* os campos de escolher dentro da caixa (o de militar e os de hora): a altura das linhas do menu (.dropdown-item, 30px)
+   e a letra dos campos */
+.caixa-flutuante .campo-entrada,
+.caixa-flutuante .horario .dropdown-numeros-btn {
+  min-height: 30px;
+  font-size: var(--campo-fonte);
+}
+
+/* a peça escolhida (o nome, o pelotão) e o que vai junto: a borda forte, por dentro (nada muda de tamanho nem de lugar,
+   e a borda de um nome nunca encosta na do vizinho); a página pode dar o desenho dela */
+.caixa-flutuante-escolhida {
+  outline: 1px solid var(--texto-forte);
+  outline-offset: -1px;
+}
+
+/* o véu: só no celular */
+.caixa-flutuante-veu {
+  display: none;
+}
+
+/* menos movimento: tudo aparece e some sem animar */
+@media (prefers-reduced-motion: reduce) {
+  .caixa-flutuante,
+  .caixa-flutuante--aberta {
+    transition: none;
+  }
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   A folha de baixo, sobre o véu: a alça, a seta de voltar e o
+   título; sobe em 0.25s e desce em 0.2s.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .caixa-flutuante-veu {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    background-color: var(--veu-modal);
+    opacity: 0;
+    transition: opacity 0.2s ease-in;
+  }
+
+  html[data-celular] .caixa-flutuante-veu--aberto {
+    opacity: 1;
+    transition: opacity 0.25s ease-out;
+  }
+
+  html[data-celular] .caixa-flutuante--folha {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-height: calc(100% - 48px);
+    padding: 8px 8px 24px;
+    border-radius: var(--raio-medio) var(--raio-medio) 0 0;
+    box-shadow: var(--sombra-painel);
+    opacity: 1;
+    transform: translateY(100%);
+    transition: transform 0.2s ease-in;
+  }
+
+  html[data-celular] .caixa-flutuante--folha.caixa-flutuante--aberta {
+    transform: none;
+    transition: transform 0.25s ease-out;
+  }
+
+  html[data-celular] .caixa-flutuante--folha .caixa-flutuante-alca {
+    display: block;
+    align-self: center;
+    width: 40px;
+    min-height: 4px;
+    margin-bottom: 8px;
+    border-radius: var(--raio-total);
+    background-color: var(--borda-forte);
+  }
+
+  html[data-celular] .caixa-flutuante--folha .caixa-flutuante-cabeca {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-height: var(--toque-altura-celular);
+    padding: 0 8px;
+  }
+
+  html[data-celular] .caixa-flutuante-titulo {
+    font-size: var(--fonte-padrao-celular);
+    font-weight: 600;
+    color: var(--texto-forte);
+  }
+
+  html[data-celular] .caixa-flutuante-voltar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--toque-altura-celular);
+    min-height: var(--toque-altura-celular);
+  }
+
+  html[data-celular] .caixa-flutuante--folha .dropdown-item {
+    min-height: var(--toque-altura-celular);
+    font-size: var(--fonte-padrao-celular);
+  }
+
+  html[data-celular] .caixa-flutuante--folha .caixa-flutuante-aviso {
+    width: auto;
+  }
+
+  /* os campos de escolher na altura das linhas da folha */
+  html[data-celular] .caixa-flutuante--folha .campo-entrada,
+  html[data-celular] .caixa-flutuante--folha .horario .dropdown-numeros-btn {
+    min-height: var(--toque-altura-celular);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html[data-celular] .caixa-flutuante-veu,
+    html[data-celular] .caixa-flutuante-veu--aberto,
+    html[data-celular] .caixa-flutuante--folha,
+    html[data-celular] .caixa-flutuante--folha.caixa-flutuante--aberta {
+      transition: none;
+    }
+  }
+}

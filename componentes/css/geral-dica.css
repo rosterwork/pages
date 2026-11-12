@@ -49,6 +49,13 @@
   transform: none;
 }
 
+/* Quando o elemento está perto da borda esquerda (da janela ou da caixa que corta o que passa dela): a dica começa
+   junto da borda esquerda dele e cresce para a direita — JS adiciona essa classe */
+[data-dica].dica--comeco::after {
+  left: 0;
+  transform: none;
+}
+
 /* Dica para a direita — usada pelo menu lateral quando recolhido (JS gerencia data-dica e esta classe) */
 [data-dica].dica--direita::after {
   left: calc(100% + 4px);

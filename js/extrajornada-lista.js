@@ -63,11 +63,11 @@
         if (RW.painel.estaAberto() || document.querySelector('.modal-veu--aberto')) return;
         sairDoFoco();
       }, true);   // na captura: vê o painel ainda aberto antes de o Esc do painel fechá-lo
-      /* clicar fora do nome, das datas dele e da barra tira o foco (o aviso da cota, que vem da bolinha, e o balão
-         do passo a passo, não); clicar de novo no nome e o Esc também */
+      /* clicar fora do nome, das datas dele e da caixa da célula tira o foco (o aviso da cota, que vem da bolinha, e o
+         balão do passo a passo, não); clicar de novo no nome e o Esc também */
       document.addEventListener('click', function (ev) {
         if (!foco || !naPagina()) return;
-        if (ev.target.closest('.extrajornada-esq-item, .extrajornada-esq-aberto, .extrajornada-foco, .modal-veu, .guia-balao')) return;
+        if (ev.target.closest('.extrajornada-esq-item, .extrajornada-esq-aberto, .extrajornada-foco, .caixa-flutuante, .modal-veu, .guia-balao')) return;
         sairDoFoco();
       });
     }

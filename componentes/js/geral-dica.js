@@ -3,12 +3,29 @@
 
   var espacoMinimoAcima = 40;
   var espacoMinimoDireita = 120;
+  var espacoMinimoEsquerda = 120;
 
-  /* escolhe o lado da dica pelo espaço que há na janela */
+  /* o espaço onde a dica cabe: a janela e, dentro dela, a caixa mais perto que corta o que passa da borda (a caixa
+     flutuante, o painel, a lista que rola), porque a dica é desenhada no próprio elemento e some fora dessa caixa */
+  function limite(elemento) {
+    var r = { top: 0, left: 0, right: window.innerWidth, bottom: window.innerHeight };
+    for (var e = elemento.parentElement; e && e !== document.body; e = e.parentElement) {
+      var s = getComputedStyle(e);
+      if (s.overflowX === 'visible' && s.overflowY === 'visible') continue;
+      var c = e.getBoundingClientRect();
+      return { top: Math.max(r.top, c.top), left: Math.max(r.left, c.left), right: Math.min(r.right, c.right), bottom: Math.min(r.bottom, c.bottom) };
+    }
+    return r;
+  }
+
+  /* escolhe o lado da dica pelo espaço que há: sem espaço em cima, embaixo; perto da borda direita, alinhada pela direita;
+     perto da esquerda, pela esquerda */
   function posicionar(elemento) {
-    var rect = elemento.getBoundingClientRect();
-    elemento.classList.toggle('dica--baixo', rect.top < espacoMinimoAcima);
-    elemento.classList.toggle('dica--esquerda', window.innerWidth - rect.right < espacoMinimoDireita);
+    var rect = elemento.getBoundingClientRect(), lim = limite(elemento);
+    var direita = lim.right - rect.right < espacoMinimoDireita;
+    elemento.classList.toggle('dica--baixo', rect.top - lim.top < espacoMinimoAcima);
+    elemento.classList.toggle('dica--esquerda', direita);
+    elemento.classList.toggle('dica--comeco', !direita && rect.left - lim.left < espacoMinimoEsquerda);
   }
 
   document.addEventListener('mouseover', function (e) {
@@ -20,7 +37,7 @@
   document.addEventListener('mouseout', function (e) {
     var elemento = e.target.closest('[data-dica]');
     if (!elemento) return;
-    elemento.classList.remove('dica--baixo', 'dica--esquerda');
+    elemento.classList.remove('dica--baixo', 'dica--esquerda', 'dica--comeco');
   });
 
   /* ---------- no toque (celular, marca data-celular no <html>) ----------

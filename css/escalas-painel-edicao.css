@@ -13,9 +13,49 @@
 
 /* ---------- a lista do Dia ---------- */
 /* subcabeçalho: à esquerda, o menu Editar o dia do admin (geral-botao + geral-dropdown) e o Solicitar troca; o
-   Imprimir (na Escala, para todos; escalas-impressao.js), à direita. O Desfazer e o Refazer ficam no rodapé largo */
-.escala-dia-imprimir {
+   Como a escala foi feita (escalas-painel-como.js) e o Imprimir (escalas-impressao.js), na Escala, para todos, à
+   direita, juntos. O Desfazer e o Refazer ficam no rodapé largo */
+.escala-dia-imprimir,
+.escala-dia-como {
   margin-left: auto;
+}
+
+.escala-dia-como + .escala-dia-imprimir {
+  margin-left: 0;
+}
+
+/* Como a escala foi feita: a sub-tela (a nota e as caixas, no espaço do corpo do painel) e a caixa da função */
+.escala-como {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.escala-como-funcao {
+  width: 380px;
+  white-space: normal;
+}
+
+.escala-como-funcao-titulo {
+  display: block;
+  padding: 8px 12px 0 12px;
+  font-weight: 600;
+}
+
+/* o nome da função, clicável na Escala: o botão discreto em volta dos rótulos, com a cor e a letra deles */
+.escala-como-rotulo {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  margin: -4px;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.escala-como-rotulo:hover,
+.escala-como-rotulo:disabled {
+  color: inherit;
 }
 
 /* O que mudou na última gravação: o título, uma frase por militar e o atalho */
@@ -551,5 +591,10 @@
   /* o Dia da folga do cartão: o dia com menos recuo, para "Serviço" caber (como a Minha escala) */
   html[data-celular] .escala-linha-calendario .mini-calendario-dia {
     padding: 2px;
+  }
+
+  /* a caixa da função vira a folha: na largura dela, com o título no alto da folha */
+  html[data-celular] .escala-como-funcao {
+    width: 100%;
   }
 }

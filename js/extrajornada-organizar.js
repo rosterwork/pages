@@ -75,7 +75,9 @@
     if (d.admin !== false) passosTopo();
     if (aba === 'calendario') desenharCalendario();
     else if (aba === 'passo') {
-      if (!passo) passo = vez;
+      /* o Abrir na Extrajornada da Escala: os Ajustes */
+      if (RW.extrajornada.diaPedido()) passo = 4;
+      else if (!passo) passo = vez;
       RW.extrajornada.passo(passo);
       abrirPasso(passo);
     }

@@ -23,14 +23,21 @@
   transition: background-color 0.15s ease;
 }
 
-/* o "fora do turno" da célula sobe um tom junto, para não sumir no fundo do hover */
+/* passar o mouse e a seleção valem para o bloquinho inteiro (escalas-mes.css › a da célula): a borda por dentro, sem
+   mudar o fundo; com o mouse num nome de quem edita o dia, a borda fica só no nome */
 .escala-calendario-unidade:hover {
-  --celula-fundo-fora: var(--fundo-medio);
-  background-color: var(--fundo-suave);
+  outline: 1px solid var(--foco);
+  outline-offset: -1px;
 }
 
-.escala-calendario-unidade:has(.escala-mes-celula--selecionada) {
-  background-color: var(--fundo-medio);
+.escala-calendario-unidade:has(.escala-mes-celula--edita :is(.linha-escalado, .extrajornada-vaga, .extrajornada-foco-ponto)[data-cpf]:hover):not(.caixa-flutuante-escolhida):not(:has(.escala-mes-celula--selecionada)) {
+  outline: none;
+}
+
+.escala-calendario-unidade:has(.escala-mes-celula--selecionada),
+.escala-calendario-unidade.caixa-flutuante-escolhida {
+  outline: 1px solid var(--texto-forte);
+  outline-offset: -1px;
 }
 
 .escala-calendario-unidade:has(.escala-mes-celula--busca) {
@@ -66,6 +73,7 @@
   border-radius: 0;
   background-color: transparent;
   box-shadow: none;
+  outline: none;
 }
 
 .escala-calendario-unidade .escala-mes-celula--busca {

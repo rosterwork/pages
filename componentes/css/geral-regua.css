@@ -1,12 +1,13 @@
 /* ============================================================
    BARRA DE HORÁRIO — componente compartilhado (geral-regua.js)
-   O dia de serviço (08h às 08h) em 24 quadrados de 1 hora, todos
-   com o mesmo espaço, e riscos grossos em cima e embaixo nas 08h,
-   14h, 20h, 02h e 08h. A faixa escolhida fica escura; o que já
-   existe no dia (o serviço, o que a pessoa já tem) fica cinza.
-   Editável, a faixa ganha as duas bolinhas de arrastar; com o mouse
-   em cima, a hora que o clique vai pôr acende e a que vai tirar fica
-   riscada. As horas embaixo da barra são opcionais.
+   O dia de serviço (08h às 08h) num risco fino, com risquinhos só
+   embaixo nas 08h, 14h, 20h, 02h e 08h. Por baixo, 24 horas de
+   clique, cada uma desenha o seu pedaço do risco: a faixa escolhida
+   fica grossa e escura; o que já existe no dia (o serviço, o que a
+   pessoa já tem), grosso e cinza. Editável, a faixa ganha as duas
+   bolinhas de arrastar; com o mouse em cima, a hora que o clique vai
+   pôr acende e a que vai tirar fica tracejada. As horas embaixo da
+   barra são opcionais.
    Molde #tpl-regua-barra (index.html).
    ============================================================ */
 
@@ -21,46 +22,46 @@
   margin-top: 8px;
 }
 
-/* a barra: o espaço de cima e de baixo é o lugar dos riscos */
+/* a barra: --regua-linha é a altura do meio do risco (os risquinhos ficam logo abaixo dele, dentro da altura das horas) */
 .regua-barra {
+  --regua-linha: 10px;
+  --regua-risco: 6px;   /* o comprimento dos risquinhos */
+  --regua-tracos: 3;    /* traços por hora no tracejado do que vai sair */
   position: relative;
-  padding: 8px 0;
 }
 
-/* a barra compacta (nas listas e nas células, onde há muitas): mais baixa, com os riscos curtos e claros só embaixo */
+/* a barra compacta (nas listas e nas células, onde há muitas): mais baixa, com os risquinhos mais curtos */
 .regua-barra-caixa--compacta .regua-barra {
-  padding: 2px 0 6px;
-}
-
-.regua-barra-caixa--compacta .regua-barra-risco::before {
-  display: none;
-}
-
-.regua-barra-caixa--compacta .regua-barra-risco::after {
-  min-height: 3px;
-  background-color: var(--borda-forte);
+  --regua-linha: 6px;
+  --regua-risco: 4px;
+  --regua-tracos: 1;
 }
 
 .regua-barra-trilho {
   display: flex;
-  gap: 1px;
-  min-height: 12px;
+  min-height: 24px;
 }
 
-/* uma hora; vazia, no cinza --regua-vazia, que quem põe a barra num fundo do mesmo cinza troca (ex.: pela --borda) */
+.regua-barra-caixa--compacta .regua-barra-trilho {
+  min-height: 16px;
+}
+
+/* uma hora: a altura toda pega o clique e ela desenha o seu pedaço do risco (cor --regua-cor, grossura --regua-grossura,
+   que os estados e quem usa a barra trocam); vazia, no cinza --regua-vazia, que quem põe a barra num fundo cinza troca
+   (ex.: pela --borda-forte) */
 .regua-barra-hora {
+  --regua-cor: var(--regua-vazia, var(--borda));
+  --regua-grossura: 2px;
   flex: 1 1 0;
-  min-height: 12px;
-  background-color: var(--regua-vazia, var(--fundo-medio));
-  transition: background-color 0.15s ease;
+  min-height: 24px;
+  background-image: linear-gradient(var(--regua-cor), var(--regua-cor));
+  background-repeat: no-repeat;
+  background-position: 0 calc(var(--regua-linha) - var(--regua-grossura) / 2);
+  background-size: 100% var(--regua-grossura);
 }
 
-.regua-barra-hora:first-child {
-  border-radius: var(--raio-pequeno) 0 0 var(--raio-pequeno);
-}
-
-.regua-barra-hora:last-child {
-  border-radius: 0 var(--raio-pequeno) var(--raio-pequeno) 0;
+.regua-barra-caixa--compacta .regua-barra-hora {
+  min-height: 16px;
 }
 
 .regua-barra--editavel .regua-barra-hora {
@@ -69,84 +70,79 @@
 
 /* o que já existe no dia (o serviço, o que a pessoa já tem) */
 .regua-barra-hora--fundo {
-  background-color: var(--texto-debil);
+  --regua-cor: var(--texto-debil);
+  --regua-grossura: 4px;
 }
 
-/* horário sem função: hachurado */
+/* horário sem função: pontilhado */
 .regua-barra-hora--vazio {
-  background-image: repeating-linear-gradient(135deg, var(--borda-forte) 0 2px, transparent 2px 5px);
+  --regua-grossura: 4px;
+  background-image: radial-gradient(circle closest-side, var(--borda-forte) 99%, transparent);
+  background-repeat: repeat-x;
+  background-size: calc(100% / var(--regua-tracos)) var(--regua-grossura);
 }
 
 /* a faixa escolhida */
 .regua-barra-hora--faixa {
-  background-color: var(--fundo-contraste);
+  --regua-cor: var(--fundo-contraste);
+  --regua-grossura: 4px;
 }
 
-/* o mouse em cima: a hora que o clique vai pôr acende; a que vai tirar fica riscada */
+/* o mouse em cima: a hora que o clique vai pôr acende; a que vai tirar fica tracejada, sobre o risco vazio */
 .regua-barra-hora--entra {
-  background-color: var(--texto-fraco);
+  --regua-cor: var(--texto-fraco);
+  --regua-grossura: 4px;
 }
 
 .regua-barra-hora--sai {
-  background-color: var(--texto-debil);
-  background-image: repeating-linear-gradient(135deg, var(--fundo-contraste) 0 2px, transparent 2px 4px);
+  --regua-grossura: 4px;
+  background-image: linear-gradient(90deg, var(--fundo-contraste) 60%, transparent 60%),
+    linear-gradient(var(--regua-vazia, var(--borda)), var(--regua-vazia, var(--borda)));
+  background-repeat: repeat-x, no-repeat;
+  background-position: 0 calc(var(--regua-linha) - 2px), 0 calc(var(--regua-linha) - 1px);
+  background-size: calc(100% / var(--regua-tracos)) 4px, 100% 2px;
 }
 
-/* os riscos de 6 em 6 horas, em cima e embaixo da barra (a posição vem da classe) */
+/* os risquinhos de 6 em 6 horas, embaixo do risco (a posição vem da classe) */
 .regua-barra-risco {
   position: absolute;
-  top: 0;
-  bottom: 0;
+  top: calc(var(--regua-linha) + 4px);
   width: 2px;
+  min-height: var(--regua-risco);
+  border-radius: var(--raio-total);
+  background-color: var(--texto-fraco);
   pointer-events: none;
 }
 
-.regua-barra-risco::before,
-.regua-barra-risco::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  width: 2px;
-  min-height: 5px;
-  border-radius: var(--raio-total);
-  background-color: var(--texto-suave);
-}
-
-.regua-barra-risco::before {
-  top: 0;
-}
-
-.regua-barra-risco::after {
-  bottom: 0;
-}
-
-/* 24 horas com 1px entre elas: a divisa depois de n horas fica em n × (largura + 1px) / 24 − 0,5px */
+/* a divisa depois de n horas fica em n × largura / 24 (o risquinho de 2px no meio dela) */
 .regua-barra-risco--0 {
   left: 0;
 }
 
 .regua-barra-risco--6 {
-  left: calc(6 * (100% + 1px) / 24 - 1.5px);
+  left: calc(25% - 1px);
 }
 
 .regua-barra-risco--12 {
-  left: calc(12 * (100% + 1px) / 24 - 1.5px);
+  left: calc(50% - 1px);
 }
 
 .regua-barra-risco--18 {
-  left: calc(18 * (100% + 1px) / 24 - 1.5px);
+  left: calc(75% - 1px);
 }
 
 .regua-barra-risco--24 {
   right: 0;
 }
 
-/* as bolinhas de arrastar (o começo e o fim da faixa); a posição vem de --regua-pos, em horas desde as 08h */
+/* as bolinhas de arrastar (o começo e o fim da faixa), no meio do risco; a posição vem de --regua-pos, em horas desde
+   as 08h. Desenham 10px e pegam o mouse numa área invisível de --regua-alca-area em volta do centro */
 .regua-barra-alca {
-  --regua-alca: 16px;
+  --regua-alca: 10px;
+  --regua-alca-area: 24px;
   position: absolute;
-  top: 50%;
-  left: calc(var(--regua-pos, 0) * (100% + 1px) / 24 - 0.5px);
+  top: var(--regua-linha);
+  left: calc(var(--regua-pos, 0) * 100% / 24);
   z-index: 2;
   width: var(--regua-alca);
   min-height: var(--regua-alca);
@@ -160,9 +156,10 @@
   touch-action: none;   /* arrastar com o dedo não rola a tela */
 }
 
-/* na compacta, os riscos ficam só embaixo (2px em cima, 6px embaixo): a bolinha sobe 2px, para o meio dos quadrados */
-.regua-barra-caixa--compacta .regua-barra-alca {
-  top: calc(50% - 2px);
+.regua-barra-alca::before {
+  content: '';
+  position: absolute;
+  inset: calc((var(--regua-alca) - var(--regua-alca-area)) / 2 - 2px);
 }
 
 /* as horas embaixo da barra, nas divisas de 6 horas */
@@ -185,15 +182,15 @@
 }
 
 .regua-barra-horas .regua-barra-horas-6 {
-  left: calc(6 * (100% + 1px) / 24 - 0.5px);
+  left: 25%;
 }
 
 .regua-barra-horas .regua-barra-horas-12 {
-  left: calc(12 * (100% + 1px) / 24 - 0.5px);
+  left: 50%;
 }
 
 .regua-barra-horas .regua-barra-horas-18 {
-  left: calc(18 * (100% + 1px) / 24 - 0.5px);
+  left: 75%;
 }
 
 .regua-barra-horas .regua-barra-horas-24 {
@@ -207,9 +204,7 @@
    tamanho do dedo, em volta do centro.
    ============================================================ */
 @media (max-width: 767px) {
-  html[data-celular] .regua-barra-alca::before {
-    content: '';
-    position: absolute;
-    inset: calc((var(--regua-alca) - var(--toque-altura-celular)) / 2 - 2px);
+  html[data-celular] .regua-barra-alca {
+    --regua-alca-area: var(--toque-altura-celular);
   }
 }

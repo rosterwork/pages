@@ -1,107 +1,121 @@
 /* ============================================================
-   ESCALAS — a edição rápida na célula da grade
-   (escalas-celula-editar.js). O nome aberto e, colado embaixo, no
-   mesmo fundo cinza (o do cartão aberto da Extrajornada), o horário
-   em campos e a lixeira no canto direito; a pergunta do banco de
-   horas no mesmo fundo, depois de um traço. O pelotão marcado tem
-   as ações embaixo dos nomes (as da Extrajornada).
+   ESCALAS — a edição rápida na célula da grade, na caixa flutuante
+   (escalas-celula-editar.js e escalas-celula-editar-acoes.js; a
+   caixa, a peça que sobe e a folha do celular são do componente
+   geral-caixa-flutuante). Aqui, o que a Escala põe dentro da caixa: o
+   menu do lápis (o mesmo do painel, sem o lápis e os títulos, com a
+   setinha dos itens que abrem a caixa 2), o horário nos campos (na
+   altura das linhas do menu, pelo componente) e a pergunta do banco de
+   horas, e as perguntas do painel sem a moldura delas.
    ============================================================ */
 
-/* o nome aberto: o alto do fundo cinza (o fundo do turno some por baixo dele) */
-.linha-escalado.linha-escalado--aberta {
-  background: var(--fundo-medio);
-  border-radius: var(--raio-pequeno) var(--raio-pequeno) 0 0;
+/* o menu do lápis dentro da caixa: ele mesmo, sem a moldura do menu suspenso */
+.caixa-flutuante .escala-edicao-opcoes-menu {
+  display: block;
+  position: static;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  background-color: transparent;
 }
 
-/* o resto do fundo, colado embaixo do nome */
+.caixa-flutuante .escala-edicao-opcoes-titulo {
+  display: none;
+}
+
+/* a setinha dos itens que abrem a caixa 2: só na caixa (no painel, eles abrem a sub-tela) */
+.escala-edicao-opcoes-seta {
+  display: none;
+}
+
+.caixa-flutuante .escala-edicao-opcoes-seta {
+  display: inline-block;
+  margin-left: auto;
+  color: var(--texto-fraco);
+}
+
+/* a caixa 2 do horário e do Remover do dia: os campos e, embaixo, a pergunta */
 .escala-celula-cartao {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 2px 4px 4px;
-  border-radius: 0 0 var(--raio-pequeno) var(--raio-pequeno);
-  background-color: var(--fundo-medio);
+  gap: 8px;
+  padding: 4px 4px 8px;
 }
 
-/* os campos à esquerda e a lixeira no canto direito */
 .escala-celula-cartao-horario {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-.escala-celula-remover {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 28px;
-  min-height: 28px;
-  margin-left: auto;
-}
-
-/* enquanto o dia é lido: os pontos no lugar dos campos */
-.escala-celula-espera {
-  display: flex;
-  align-items: center;
-  min-height: 28px;
-  padding: 0 4px;
-  font-size: 12px;
-  color: var(--texto-fraco);
-}
-
-/* a pergunta do banco de horas: a frase e as duas respostas, mais justas na largura do bloco */
+/* a pergunta do banco de horas: a frase e as duas respostas */
 .escala-celula-pergunta {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding-top: 4px;
+  padding-top: 8px;
   border-top: 1px solid var(--borda);
 }
 
+.escala-celula-cartao-horario.oculto + .escala-celula-pergunta {
+  padding-top: 0;
+  border-top: 0;
+}
+
 .escala-celula-pergunta-texto {
-  padding: 0 4px;
-  font-size: 11px;
+  padding-bottom: 4px;
+  font-size: 12px;
   color: var(--texto-suave);
 }
 
 .escala-celula-pergunta .geral-opcao {
   min-height: 24px;
-  padding: 0 4px;
   font-size: 12px;
 }
 
-/* o pelotão marcado pelo clique: as ações embaixo dos nomes, depois de um traço; o Adicionar vira o campo de militar,
-   com a lista mais larga que o bloco */
-.escala-celula-acoes {
+/* as perguntas do painel (a guarnição, a folga e a mudança) e o Adicionar à guarnição, sem a moldura delas */
+.escala-celula-perguntas,
+.escala-celula-guarnicao {
   display: flex;
   flex-direction: column;
-  margin: 4px 4px 0;
-  padding-top: 4px;
-  border-top: 1px solid var(--borda);
+  gap: 8px;
+  padding: 4px;
 }
 
-.escala-celula-acao {
-  min-height: 28px;
-  padding: 0 4px;
-  font-size: 12px;
+.caixa-flutuante .grupo-caixa {
+  padding: 0;
+  background-color: transparent;
+  border: 0;
+}
+
+.caixa-flutuante .pergunta-linha {
+  margin: 0;
+}
+
+/* uma pergunta só por caixa: sem o número das sub-telas */
+.caixa-flutuante .subtela-pergunta > .rotulo-secao::before {
+  content: none;
 }
 
 .escala-celula-adicionar .combo-militar-menu { width: 280px; }
 
+/* a caixa 2 do Adicionar extra neste dia: o campo de militar e, escolhido o nome, a barra dele embaixo
+   (.extrajornada-caixa-horario, extrajornada-dia.css) */
+.escala-celula-extra {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
-   Os botões do bloco, a lixeira e as respostas na altura do dedo.
+   Na folha, as respostas na altura do dedo (os campos, pelo componente).
    ============================================================ */
 @media (max-width: 767px) {
-  html[data-celular] .escala-celula-acao,
   html[data-celular] .escala-celula-pergunta .geral-opcao {
     min-height: var(--toque-altura-celular);
     font-size: var(--fonte-padrao-celular);
-  }
-
-  html[data-celular] .escala-celula-remover {
-    min-width: var(--toque-altura-celular);
-    min-height: var(--toque-altura-celular);
   }
 
   html[data-celular] .escala-celula-pergunta-texto {

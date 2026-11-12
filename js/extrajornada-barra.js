@@ -25,17 +25,18 @@
   'use strict';
 
   var RW = window.RosterWork = window.RosterWork || {};
-  var escolhida = '';   // 'cpf|data|lugar' da última barra mexida ou escolhida (lugar: painel, lista ou calendario)
+  var escolhida = '';   // 'cpf|data|lugar' da última barra mexida ou escolhida (lugar: painel, lista, calendario ou caixa)
   var livres = {};      // as barras com o cadeado aberto: 'cpf|data' -> true
 
   function G() { return RW.extrajornadaGrade; }
   function H() { return RW.horario; }
   function msg() { return RW.mensagens.extrajornada.org; }
 
-  /* refaz o lugar de uma barra: o painel do dia, a lista dos voluntários ou o dia do calendário */
+  /* refaz o lugar de uma barra: o painel do dia, a lista dos voluntários, o dia do calendário ou a caixa da célula */
   function refazer(lugar, k) {
     if (lugar === 'lista') { if (RW.extrajornadaMontar && document.querySelector('#p3-esq')) RW.extrajornadaMontar.redesenhar(true); }
     else if (lugar === 'calendario') { if (RW.extrajornadaPorDia) RW.extrajornadaPorDia.atualizarDia(k); }
+    else if (lugar === 'caixa') { if (RW.extrajornadaCelula) RW.extrajornadaCelula.redesenhar(); }
     else if (RW.extrajornadaDia) RW.extrajornadaDia.redesenhar();
   }
   /* a escolha passou para outra barra: o lugar da de antes perde o seletor de horas (o mesmo lugar já foi refeito) */
@@ -164,8 +165,8 @@
   }
 
   /* a barra na caixa (o lugar das bolinhas). opcoes = { campos (o seletor de horas na barra escolhida), lugar ('painel',
-     'lista' ou 'calendario'; o painel sem ele), linha (o que o clique escolhe; no painel, a linha do militar),
-     desligado } */
+     'lista', 'calendario' ou 'caixa', a caixa 2 da célula; o painel sem ele), linha (o que o clique escolhe; no painel, a
+     linha do militar), desligado, semLixeira (a caixa da célula: o Remover fica no menu dela) } */
   function ligar(caixa, m, k, marcados, uid, opcoes) {
     opcoes = opcoes || {};
     var v = G().vagaDe(m.cpf, k);
@@ -192,11 +193,11 @@
       refazer(lugar, k);
       largar(antes, minha);
     }
-    /* nas datas da lista e nas células, a barra compacta; os campos de hora (na barra escolhida) seguem a bolinha enquanto
-       ela anda */
+    /* nas datas da lista e nas células, a barra compacta (no painel e na caixa, a inteira); os campos de hora (na barra
+       escolhida) seguem a bolinha enquanto ela anda */
     var campos = [];
     var barra = RW.regua.criar({ horas: false, regras: rg, aoMudar: aplicar, dicaFaixa: dicaDaFaixa,
-      variante: lugar === 'painel' ? null : 'compacta',
+      variante: lugar === 'painel' || lugar === 'caixa' ? null : 'compacta',
       aoArrastar: function (f) {
         if (campos.length < 2) return;
         campos[0].textContent = RW.regua.textoHora(f.ini);
@@ -250,7 +251,7 @@
       });
       linha.appendChild(cadeado);
     }
-    var lixeira = RW.tpl('tpl-extrajornada-remover');
+    var lixeira = opcoes.semLixeira ? null : RW.tpl('tpl-extrajornada-remover');
     if (lixeira) {
       lixeira.addEventListener('click', function () { aplicar({ blocos: [], padrao: true }); });
       linha.appendChild(lixeira);
