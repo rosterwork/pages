@@ -1333,7 +1333,11 @@
                 + ((m.outros || []).length ? ' Os outros com a CNH estão em outras funções: ' + C.pessoasOnde(m.outros) + '.'
                                            : ' Ninguém mais de serviço tem a CNH.');
             case 'grau_funcao': return 'A função pede ' + m.grau + (/\.$/.test(m.grau || '') ? '' : '.');
-            case 'repete': return 'Repete a função do último serviço (' + m.data + '), por falta de opção.';
+            case 'repete':
+              /* quem é de fora da guarnição (troca, Extrajornada, pontual) repete primeiro */
+              return m.fora_guarnicao
+                ? 'Repete a função do último serviço (' + m.data + '). No rodízio, quem é da guarnição vem primeiro.'
+                : 'Repete a função do último serviço (' + m.data + '), por falta de opção.';
             case 'outros_repetiriam':
               return (m.quem || []).map(function (q) { return 'O ' + q.quem + ' fez esta função no último serviço (' + q.data + ').'; }).join(' ');
             case 'acumula':
