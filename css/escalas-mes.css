@@ -172,6 +172,32 @@
   color: var(--erro);
 }
 
+/* o Oficial do título para quem mexe no dia da companhia (escalas-celula-oficial.js): a mão e, no mouse, a borda um pouco
+   afastada do nome (2px) e com os cantos redondos; a forte com a caixa aberta nele; a tracejada com mudança da companhia
+   ainda não salva, quando a célula dela não está na tela */
+.escala-oficial--edita {
+  cursor: pointer;
+}
+
+.escala-oficial--edita:hover,
+.escala-oficial.caixa-flutuante-escolhida,
+.escala-oficial--nao-salvo {
+  outline-offset: 2px;
+  border-radius: var(--raio-pequeno);
+}
+
+.escala-oficial--edita:not(.caixa-flutuante-escolhida):hover {
+  outline: 1px solid var(--foco);
+}
+
+.escala-oficial.caixa-flutuante-escolhida {
+  outline: 1px solid var(--texto-forte);
+}
+
+.escala-oficial--nao-salvo:not(.caixa-flutuante-escolhida):not(:hover) {
+  outline: 2px dashed var(--texto-forte);
+}
+
 /* Agenda: a faixa do dia com o Oficial de Área ganha uma linha no alto, com ele centralizado em cima das unidades; a
    data fica à esquerda, nas duas linhas */
 .escala-mes-linha--com-oficial {

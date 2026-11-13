@@ -21,7 +21,12 @@
      dia da companhia na aba Militares, já com o menu dele aberto.
    Na aba Militares, o dia da pessoa ("Cb. Veloso no dia 21/11"):
    Mudar o horário do serviço, Mudar o dia do serviço, Mudar de
-   unidade neste dia, Mudar a extrajornada (quem está de extra: abre a
+   unidade neste dia, Pôr como Oficial de Área (o Sub.Ten. ou mais
+   antigo de serviço num pelotão, para quem administra a companhia: o
+   serviço dele vai para ela neste dia, escalas-celula-oficial.js),
+   Registrar troca de serviço (o formulário da troca no painel, já com
+   ele e o dia; na célula, "no painel", porque o painel abre), Mudar a
+   extrajornada (quem está de extra: abre a
    aba Extrajornada do painel, onde a extra muda), Dar folga neste dia
    (quem está no dia pela guarnição: sair do dia é a folga, na cor
    normal) ou Remover deste dia (o resto, em vermelho) e,
@@ -87,6 +92,9 @@
     r['horario-dia'] = !!RW.escalasPainelHorarioDia && RW.escalasPainelHorarioDia.pode(cpf);
     r['mudar-dia'] = !!RW.escalasPainelMudarDia && RW.escalasPainelMudarDia.podeMudar(cpf);
     r['mudar-unidade'] = !!RW.escalasPainelRemanejar && RW.escalasPainelRemanejar.podeEnviar(cpf);
+    r['oficial-area'] = !!RW.escalasCelulaOficial && RW.escalasCelulaOficial.podeSer(cpf);
+    /* a troca: quem está de serviço aqui (fora só a extra); no Registrar, o administrador não entra */
+    r['registrar-troca'] = !!mil && mil.daUnidade && cpf !== RW.sessao.cpf() && mil.janelas.some(function (j) { return j.origem !== 'extra'; });
     r['mudar-extra'] = !!mil && mil.janelas.some(function (j) { return j.origem === 'extra'; }) && RW.escalasPainel.temAba('extra');
     /* sair do dia: pelo ciclo é a folga (Dar folga neste dia); o pontual e o resto, o Remover deste dia (o mesmo caminho) */
     var tirar = !!RW.escalasPainelRemover && RW.escalasPainelRemover.podeTirar(cpf);
@@ -165,6 +173,7 @@
     dd.querySelector('.escala-edicao-opcoes-ver-funcoes').textContent = m ? L().verFuncoesDe(nome) : '';
     dd.querySelector('.escala-edicao-opcoes-ver-companhia').textContent = cfg.companhia ? L().verDiaNa(cfg.companhia.nome) : '';
     dd.querySelector('.escala-edicao-opcoes-devolver').textContent = cfg.origem ? L().devolverA(cfg.origem) : '';
+    dd.querySelector('.escala-edicao-opcoes-no-painel').classList.toggle('oculto', cfg.visao !== 'celula');   // a célula avisa que o painel abre
     dd.querySelector('.escala-edicao-opcoes-traco').classList.toggle('oculto', !(tem.ver && (tem.funcao || tem.dia)));
     /* o Mudar de unidade depende das unidades da companhia (lidas uma vez): chegando com o menu aberto, ele se refaz */
     var R = RosterWork.escalasPainelRemanejar;
@@ -215,6 +224,8 @@
     'horario-dia': function (cfg) { RosterWork.escalasPainelHorarioDia.abrir({ cpf: cfg.militar.cpf }); },
     'mudar-dia': function (cfg) { RosterWork.escalasPainelMudarDia.abrir({ cpf: cfg.militar.cpf }); },
     'mudar-unidade': function (cfg) { RosterWork.escalasPainelRemanejar.abrir({ cpf: cfg.militar.cpf }); },
+    'oficial-area': function (cfg) { RosterWork.escalasCelulaOficial.porComoOficial(cfg.militar.cpf); },
+    'registrar-troca': function (cfg) { ed().registrarTroca(cfg.militar.cpf); },
     'mudar-extra': function () { RosterWork.escalasPainel.abrirAba('extra'); },
     'remover-dia': function (cfg) { largarMudanca(cfg.militar.cpf, 'vem', function () { removerDoDia(cfg); }); },
     'folga-dia': function (cfg) { removerDoDia(cfg); },

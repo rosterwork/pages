@@ -10,15 +10,18 @@
    - na hora, com o Desfazer: Cancelar a saída da guarnição, o pontual
      que sai sem pergunta e a mudança de dia ainda no rascunho;
    - o painel do dia, já na tela do item: Mudar o dia, Mudar de
-     unidade, Devolver, o Remover deste dia de quem entrou de mais de um
-     jeito, Mudar a extrajornada e Abrir o painel do dia;
+     unidade, Registrar troca, Devolver, o Remover deste dia de quem
+     entrou de mais de um jeito, Mudar a extrajornada e o painel;
    - o pelotão: Adicionar neste dia (ele entra nas horas livres, já no
      horário, com o banco em Contabilizar), Adicionar à guarnição
      (escalas-painel-adicionar › lerGuarnicao e desenharGuarnicao),
      Adicionar extra neste dia (escalas-celula-extra.js) e Abrir o
-     painel do dia. Trocar de item: o concluído fica (um passo do
-     desfazer) e o que estava pela metade sai. Não cria HTML (clona os
-     moldes) nem escreve estilo. RosterWork.escalasCelulaAcoes.
+     painel do dia. O Oficial de Área do título (escalas-celula-
+     oficial.js) usa o campo do Adicionar, o Remover e a pergunta, e o
+     Pôr como Oficial de Área do nome vai para ele. Trocar
+     de item: o concluído fica (um passo do desfazer) e o que estava pela
+     metade sai. Não cria HTML (clona os moldes) nem escreve estilo.
+     RosterWork.escalasCelulaAcoes.
    ============================================================ */
 (function () {
   'use strict';
@@ -37,11 +40,7 @@
 
   /* ---------- o ao vivo (o horário, o Remover do dia, a folga e a guarnição) ---------- */
 
-  function vivo(a) {
-    if (a.vivo) return;
-    a.vivo = true;
-    api().comecarVivo();
-  }
+  function vivo(a) { if (!a.vivo) { a.vivo = true; api().comecarVivo(); } }
 
   /* a resposta está pela metade? (o horário fora de onde ele pode ficar, ou a pergunta do pontual sem resposta) */
   function pelaMetade(a) {
@@ -49,7 +48,7 @@
       var c = a.sessao.calcular();
       return !c.ok || (c.pergunta && !a.sessao.est.banco);
     }
-    return a.acao === 'remover' && a.remocao.tipo === 'pontual' && !a.escolha;
+    return !!a.remocao && a.remocao.tipo === 'pontual' && !a.escolha;
   }
 
   /* o item termina: o que está concluído fica no rascunho (um passo do desfazer) e o dia é lido de novo com ele; o que
@@ -57,7 +56,7 @@
   function terminar(a, modo) {
     var acao = a.acao, tinha = a.vivo;
     if (acao === 'remover-guarnicao') RW.escalasPainelCiclo.fecharPergunta(modo === 'largar' ? 'largar' : 'guardar');
-    var metade = tinha && (acao === 'horario' || acao === 'remover') && pelaMetade(a);
+    var metade = tinha && (acao === 'horario' || !!a.remocao) && pelaMetade(a);
     a.vivo = false;
     a.acao = null;
     if (!tinha || !api().celula()) return;
@@ -67,9 +66,7 @@
   }
 
   /* a caixa fecha (escalas-celula-editar.js › fecharTudo) */
-  function fechar(a, modo) {
-    if (a.acao) terminar(a, modo);
-  }
+  function fechar(a, modo) { if (a.acao) terminar(a, modo); }
 
   /* troca de item (ou o Voltar da folha): o item de antes termina e a caixa 2 fecha */
   function encerrar(c, doVoltar) {
@@ -78,19 +75,21 @@
     terminar(a);
     a.sessao = null;
     a.remocao = null;
-    a.escolha = null;
+    a.escolha = a.escolhido = null;
     a.botao = null;
     if (!doVoltar && a.caixa) a.caixa.fecharSegunda();
   }
 
   /* ---------- a caixa 2 do horário e do Remover do dia ---------- */
 
-  /* a pergunta: a frase (vazia, só as respostas) e as duas respostas; naoPrimeiro: a folga (o Não descontar em cima) */
+  /* a pergunta: a frase (vazia, só as respostas) e as duas respostas; naoPrimeiro: a folga (o Não descontar em cima, e o
+     Motivo dela embaixo das respostas: cfg.motivo, de motivoDaFolga) */
   function pergunta(caixa, cfg, aoResponder) {
     var q = function (s) { return caixa.querySelector(s); };
     var texto = q('.escala-celula-pergunta-texto'), sim = q('.escala-celula-pergunta-sim'), nao = q('.escala-celula-pergunta-nao');
     texto.textContent = cfg.texto || '';
     texto.classList.toggle('oculto', !cfg.texto);
+    if (cfg.motivo) RW.escalasPainelRemoverListas.campoMotivo(caixa, cfg.motivo.valor, cfg.motivo.aoMudar, cfg.motivo.aoEnter, true);
     sim.textContent = cfg.sim;
     nao.textContent = cfg.nao;
     var opSim = sim.closest('.geral-opcao'), opNao = nao.closest('.geral-opcao');
@@ -115,7 +114,7 @@
     if (a.acao === 'remover') {
       horario.classList.add('oculto');
       pergunta(caixa, { texto: a.remocao.texto, sim: a.remocao.sim, nao: a.remocao.nao, naoPrimeiro: a.remocao.tipo === 'folga',
-        escolha: a.escolha }, function (v) { responder(c, v); });
+        escolha: a.escolha, motivo: a.remocao.tipo === 'folga' && motivoDaFolga(c) }, function (v) { responder(c, v); });
     } else {
       var s = a.sessao, calc = s.calcular();
       var campos = RW.horario.linha({
@@ -128,10 +127,18 @@
         pergunta(caixa, s.pontual
           ? { texto: '', sim: calc.sim, nao: RW.mensagens.botoes.naoContabilizar, naoPrimeiro: false, escolha: s.est.banco }
           : { texto: RW.escalasPainelRemoverListas.textoFolga(calc.folga.periodos, s.nome, calc.folga.horas, diaMes(a.iso)),
-            sim: calc.sim, nao: L().naoDescontar, naoPrimeiro: true, escolha: s.est.banco }, function (v) { responder(c, v); });
+            sim: calc.sim, nao: L().naoDescontar, naoPrimeiro: true, escolha: s.est.banco, motivo: motivoDaFolga(c) }, function (v) { responder(c, v); });
       }
     }
     a.caixa.segunda(a.botao, el, textoDo(a.botao));
+  }
+
+  /* o Motivo da folga (a do Remover do dia e as horas que viram folga no horário): ao rascunho a cada letra; o Enter fecha */
+  function motivoDaFolga(c) {
+    var a = c.a, s = a.acao === 'horario' ? a.sessao : null;
+    return { valor: s ? s.est.motivo : a.motivo, aoEnter: function () { c.fecharTudo(); }, aoMudar: function (t) {
+      if (s) { s.est.motivo = t; s.aplicar(); } else { a.motivo = t; api().aoVivo(function () { a.remocao.aplicar(a.escolha, t); }, false); }
+    } };
   }
 
   /* o horário mudou num campo: a mudança vai ao rascunho ao vivo, e a caixa 2 mostra a pergunta, quando vale */
@@ -153,7 +160,7 @@
     }
     if (a.acao !== 'remover') return;
     a.escolha = valor;
-    api().aoVivo(function () { a.remocao.aplicar(valor); }, false);
+    api().aoVivo(function () { a.remocao.aplicar(valor, a.motivo); }, false);
     /* o pontual respondido sai do dia: não sobra nada para a caixa */
     if (a.remocao.tipo === 'pontual') { c.fecharTudo(); return; }
     desenhar(c);
@@ -188,8 +195,9 @@
     a.acao = 'remover';
     a.remocao = r;
     a.escolha = r.padrao;
+    a.motivo = r.motivo || '';
     a.botao = botao;
-    if (r.padrao) api().aoVivo(function () { r.aplicar(r.padrao); }, false);
+    if (r.padrao) api().aoVivo(function () { r.aplicar(r.padrao, a.motivo); }, false);
     desenhar(c);
   }
 
@@ -243,6 +251,8 @@
     },
     'mudar-dia': painelNo('mudar-dia'),
     'mudar-unidade': painelNo('mudar-unidade'),
+    'registrar-troca': painelNo('registrar-troca'),
+    'oficial-area': function (botao, c) { var cpf = c.a.cpf; c.fecharTudo(); RW.escalasCelulaOficial.porComoOficial(cpf); },
     devolver: painelNo('devolver'),
     'mudar-extra': function (botao, c) { c.fecharTudo('guardar'); c.abrirPainel(null, { secao: 'extra' }); },
     'abrir-painel': function (botao, c) { var cpf = c.a.cpf; c.fecharTudo('guardar'); c.abrirPainel(cpf); }
@@ -282,10 +292,7 @@
   }
 
   /* o dia chegou de novo com a caixa 2 aberta: o horário e a pergunta se refazem com ele */
-  function chegou(c) {
-    var a = c.a;
-    if (a && (a.acao === 'horario' || a.acao === 'remover')) desenhar(c);
-  }
+  function chegou(c) { var a = c.a; if (a && (a.acao === 'horario' || a.acao === 'remover')) desenhar(c); }
 
   /* ---------- o pelotão ---------- */
 
@@ -314,24 +321,25 @@
     else if (acao === 'extra') RW.escalasCelulaExtra.adicionar(botao, c);
   }
 
-  /* Adicionar neste dia: o campo, com quem tem horas livres no dia, por pelotão (o do bloco primeiro) */
-  function nesteDia(botao, c) {
-    var a = c.a, el = RW.tpl('tpl-escala-celula-adicionar');
+  /* Adicionar neste dia: o campo, com quem tem horas livres no dia, por pelotão (o do bloco primeiro). oficial (o Oficial
+     de Área do título, escalas-celula-oficial.js): { el, acao, aoEscolher }, só os subtenentes e oficiais */
+  function nesteDia(botao, c, oficial) {
+    var a = c.a, el = oficial ? oficial.el : RW.tpl('tpl-escala-celula-adicionar');
     if (!el) return;
-    a.acao = 'neste-dia';
+    a.acao = oficial ? oficial.acao : 'neste-dia';
     a.botao = botao;
     var inp = el.querySelector('input'), menu = el.querySelector('.dropdown-menu');
     inp.id = 'escala-celula-adicionar-campo-' + (++conta);
     var combo = RW.comboMilitar.criar(inp, menu, {
-      atual: function () { return null; },
-      aoEscolher: function (item) { escolher(item, c); },
+      atual: function () { return a.escolhido || null; },
+      aoEscolher: function (item) { if (oficial) oficial.aoEscolher(item); else escolher(item, c); },
       textos: { selecione: L().digiteOuEscolha, semNinguem: L().ninguemDisponivel, filtroVazio: msg().ninguemEncontrado }
     });
     combo.habilitar(false);
     combo.definir(L().carregando, true);
     a.caixa.segunda(botao, el, textoDo(botao));
-    RW.escalasDados.disponiveis(a.unidadeId, a.iso, a.unidadeId).then(function (r) {
-      if (c.a !== a || a.acao !== 'neste-dia' || !el.isConnected) return;
+    RW.escalasDados.disponiveis(a.unidadeId, a.iso, a.unidadeId, null, !!oficial).then(function (r) {
+      if (c.a !== a || a.acao !== (oficial ? oficial.acao : 'neste-dia') || !el.isConnected) return;
       if (!r) { combo.definir(msg().falhaCarregar, true); return; }
       var Ls = RW.escalasPainelAdicionarListas, lista = [];
       Ls.unidadesDia(r).forEach(function (u) {
@@ -343,15 +351,18 @@
     });
   }
 
-  /* escolhido o nome: ele entra no dia nas horas livres dele, o sistema distribui o dia (como o Adicionar do painel), com
-     as horas no banco; a caixa dele abre quando o dia vem com ele */
+  /* quem entra pelo Adicionar: nas horas livres dele (sem elas, o dia todo), e o sistema distribui o dia (como o Adicionar
+     do painel), com as horas no banco */
+  function entrada(item) {
+    var livres = item.m.livres || [];
+    return { cpf: item.cpf, periodos: livres.length ? livres.map(copiar) : [{ hi: '08:00', hf: '08:00' }], sistema: true,
+      refazer: true, pontual: { contabilizar: true } };
+  }
+
+  /* escolhido o nome: ele entra no dia, e a caixa dele abre quando o dia vem com ele */
   function escolher(item, c) {
-    var m = item.m;
-    var periodos = (m.livres || []).length ? m.livres.map(copiar) : [{ hi: '08:00', hf: '08:00' }];
     c.fecharTudo();
-    api().mudar(function () {
-      api().aplicarColocacao({ cpf: item.cpf, periodos: periodos, sistema: true, refazer: true, pontual: { contabilizar: true } });
-    });
+    api().mudar(function () { api().aplicarColocacao(entrada(item)); });
     c.abrirNovo(item.cpf);
   }
 
@@ -394,7 +405,7 @@
 
   RW.escalasCelulaAcoes = {
     fazer: fazer, menuDoPelotao: menuDoPelotao, prepararMenu: prepararMenu, aoMostrarMenu: aoMostrarMenu, chegou: chegou,
-    encerrar: encerrar,
-    fechar: fechar
+    encerrar: encerrar, fechar: fechar,
+    /* e o que o Oficial de Área do título usa (escalas-celula-oficial.js) */ nesteDia: nesteDia, entrada: entrada, pergunta: pergunta, vivo: vivo
   };
 })();

@@ -255,10 +255,11 @@
      (pelotão = a companhia inteira), de qualquer setor, sem serviço e sem afastamento; vem por unidade, a buscada
      primeiro; "assume" = vira o Chefe de Socorro / Oficial de Área. Com a vaga ({viatura_id, instalacao_id,
      funcao, periodos, cpf}, o seletor do nome), também quem está de serviço, com o grupo, as funções e o
-     pode/motivo de cada um. null em falha */
-  function disponiveis(unidadeId, iso, unidadeBusca, vaga) {
+     pode/motivo de cada um. oficial: só os subtenentes e oficiais (o Oficial de Área do título). null em falha */
+  function disponiveis(unidadeId, iso, unidadeBusca, vaga, oficial) {
     var corpo = { p_unidade_id: Number(unidadeId), p_data: iso, p_unidade_busca: Number(unidadeBusca) };
     if (vaga) corpo.p_vaga = vaga;
+    if (oficial) corpo.p_oficial = true;
     return RosterWork.apiFetch('/rest/v1/rpc/escala_dia_disponiveis', { metodo: 'POST', corpo: corpo })
       .then(function (r) { return r.ok ? r.json() : null; })
       .catch(function () { return null; });
@@ -287,8 +288,19 @@
       .catch(function () { return null; });
   }
 
+  /* o porquê de cada linha da grade, para a dica do militar (RPC escala_motivos; escalas-celula-dica.js): por dia, a letra
+     da guarnição de cada unidade e, por militar, as trocas (com quem, a Parte e o RW), o motivo da folga e de onde veio e
+     para onde foi o remanejado. { 'AAAA-MM-DD': { guarnicao, militares } }, ou null em falha */
+  function motivos(unidadesIds, inicio, fim) {
+    var corpo = { p_unidade_ids: (unidadesIds || []).map(Number), p_inicio: inicio, p_fim: fim };
+    return RosterWork.apiFetch('/rest/v1/rpc/escala_motivos', { metodo: 'POST', corpo: corpo })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; });
+  }
+
   window.RosterWork.escalasDados = {
     carregar: carregar, antecipar: antecipar, reorganizar: reorganizar, carregarMilitares: carregarMilitares, lerMilitarDia: lerMilitarDia,
+    motivos: motivos,
     lerDiasAtualizando: lerDiasAtualizando, lerDistribuicaoDia: lerDistribuicaoDia, lerAlteracoesDia: lerAlteracoesDia, lerPrevia: lerPrevia, corpoPrevia: corpoPrevia, painelSalvar: painelSalvar,
     lerImpressao: lerImpressao, lerImpressaoErros: lerImpressaoErros, lerSysbm: lerSysbm,
     sysbmTermo: sysbmTermo, sysbmDarCiencia: sysbmDarCiencia,

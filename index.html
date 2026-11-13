@@ -2502,20 +2502,22 @@
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, a mudança apareceria em Alterações na ficha.</p>
   </template>
 
-  <template data-roteiro="lancar-afastamento" data-nas-abas="ferias licencas dispensas" data-titulo="Lançar férias, licença ou dispensa" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
+  <template data-roteiro="lancar-afastamento" data-nas-abas="ferias licencas dispensas missoes" data-titulo="Lançar férias, licença, dispensa ou missão" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
     <p data-trecho="abrir-usuarios"></p>
-    <p data-avanca="escolha">Abra a aba <strong>Férias</strong>, <strong>Licenças</strong> ou <strong>Dispensas</strong>.</p>
+    <p data-avanca="escolha">Abra a aba <strong>Férias</strong>, <strong>Licenças</strong>, <strong>Dispensas</strong> ou <strong>Missões</strong>.</p>
     <section data-caminho="ferias" data-entrada="#usuarios-abas [data-aba='ferias']"></section>
     <section data-caminho="licencas" data-entrada="#usuarios-abas [data-aba='licencas']"></section>
     <section data-caminho="dispensas" data-entrada="#usuarios-abas [data-aba='dispensas']"></section>
+    <section data-caminho="missoes" data-entrada="#usuarios-abas [data-aba='missoes']"></section>
     <p data-alvo="#arvore-usuarios .usuario-afastamento-item.linha-militar--clicavel" data-um data-avanca="clique">Clique no militar.<span data-so-treino>Clique no militar aceso.</span></p>
     <p data-alvo=".afastamentos-caixa [data-afastamento-tipo] .campo, .afastamentos-caixa [data-afastamento-tipo] .abas--seletor" data-avanca="proximo" data-livre data-pular-se=".afastamentos-caixa:not(:has([data-afastamento-tipo]))">Escolha o tipo.</p>
-    <p data-so-ajuda data-alvo=".afastamentos-caixa [data-periodos], .afastamentos-caixa [data-periodo-adicionar]" data-avanca="aparece" data-condicao="#afastamentos-salvar:not(:disabled)" data-livre>Use o <strong>Adicionar período</strong> e escolha as datas.</p>
+    <p data-so-ajuda data-alvo=".afastamentos-caixa [data-periodos], .afastamentos-caixa [data-periodo-adicionar]" data-avanca="aparece" data-condicao="#afastamentos-salvar:not(:disabled)" data-livre>Use o <strong>Adicionar período</strong> e escolha as datas. Na missão, responda também se ele sai da escala.</p>
     <p data-so-treino data-alvo=".afastamentos-caixa [data-periodo-adicionar]" data-avanca="clique" data-pular-se=".afastamentos-caixa .ficha-periodo:last-child [data-periodo-inicio]:placeholder-shown">Use o <strong>Adicionar período</strong>.</p>
-    <p data-so-treino data-alvo=".afastamentos-caixa .ficha-periodo:last-child" data-condicao="#afastamentos-salvar:not(:disabled)" data-porta=".afastamentos-caixa .ficha-periodo:last-child .ficha-periodo-datas; .afastamentos-caixa .ficha-periodo:last-child .ficha-periodo-fluxo:not(.oculto) [data-fora='nao']" data-escrever data-avanca="aparece">Escreva o início e o fim.</p>
+    <p data-so-treino data-alvo=".afastamentos-caixa .ficha-periodo:last-child" data-condicao="#afastamentos-salvar:not(:disabled), .afastamentos-caixa .ficha-periodo:last-child .ficha-periodo-fluxo:not(.oculto) [data-pergunta-missao]:not(.oculto)" data-porta=".afastamentos-caixa .ficha-periodo:last-child .ficha-periodo-datas; .afastamentos-caixa .ficha-periodo:last-child .ficha-periodo-fluxo:not(.oculto) [data-fora='nao']" data-escrever data-avanca="aparece">Escreva o início e o fim.</p>
+    <p data-so-treino data-alvo=".afastamentos-caixa .ficha-periodo:last-child .ficha-periodo-decisao" data-porta=".afastamentos-caixa .ficha-periodo:last-child [data-fora='nao']" data-condicao="#afastamentos-salvar:not(:disabled)" data-avanca="aparece" data-pular-se="#afastamentos-salvar:not(:disabled)">Responda se ele sai da escala. Aqui, escolha <strong>Não</strong>.</p>
     <p data-alvo="#afastamentos-salvar" data-avanca="clique" data-segurar>Grave pelo <strong>Salvar</strong>.</p>
-    <p data-fim>Pronto. O afastamento vale na escala.</p>
-    <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, o afastamento valeria na escala.</p>
+    <p data-fim>Pronto. O período já vale.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, o período já valeria.</p>
   </template>
 
   <template data-roteiro="carreira-militar" data-nas-abas="efetivo" data-titulo="Promover, transferir ou dar baixa" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
@@ -3553,6 +3555,8 @@
           <button type="button" class="dropdown-item" data-acao="horario-dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-relogio"/></svg><span>Mudar o horário do serviço</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
           <button type="button" class="dropdown-item" data-acao="mudar-dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-mudanca"/></svg><span>Mudar o dia do serviço</span></button>
           <button type="button" class="dropdown-item" data-acao="mudar-unidade"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-remanejado"/></svg><span>Mudar de unidade neste dia</span></button>
+          <button type="button" class="dropdown-item" data-acao="oficial-area"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-remanejado"/></svg><span>Pôr como Oficial de Área</span></button>
+          <button type="button" class="dropdown-item" data-acao="registrar-troca"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-troca"/></svg><span>Registrar troca de serviço<span class="escala-edicao-opcoes-no-painel"> no painel</span></span></button>
           <button type="button" class="dropdown-item" data-acao="mudar-extra"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-extrajornada"/></svg><span>Mudar a extrajornada</span></button>
           <button type="button" class="dropdown-item" data-acao="devolver"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-restaurar"/></svg><span class="escala-edicao-opcoes-devolver"></span></button>
           <button type="button" class="dropdown-item" data-acao="cancelar-folga"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-folgas"/></svg><span>Cancelar a folga</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
@@ -3714,6 +3718,16 @@
         <button type="button" class="botao escala-remover-dia-cancelar">Cancelar</button>
       </div>
     </div>
+  </template>
+
+  <!-- o Motivo da folga (opcional, até 120 letras), embaixo das respostas do banco de horas: na pergunta embaixo da linha
+       e na sub-tela do Remover do dia, no Mudar o horário do serviço e na célula da grade
+       (escalas-painel-remover-listas.js › campoMotivo). Ele aparece na dica do militar na grade -->
+  <template id="tpl-escala-folga-motivo">
+    <label class="campo escala-folga-motivo">
+      <span class="campo-rotulo">Motivo (opcional)</span>
+      <input type="text" class="campo-entrada" maxlength="120" placeholder="Ex.: assunto particular" />
+    </label>
   </template>
 
   <!-- o Remover da guarnição do menu da linha (aba Militares; escalas-painel-ciclo.js): a pergunta embaixo da linha, sem nada

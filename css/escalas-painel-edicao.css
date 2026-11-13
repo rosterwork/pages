@@ -356,6 +356,12 @@
   align-items: flex-start;
 }
 
+/* o Motivo da folga (molde tpl-escala-folga-motivo), embaixo das respostas do banco de horas: um respiro depois delas
+   (na pergunta embaixo da linha, nas sub-telas e na célula da grade) */
+.escala-folga-motivo {
+  padding-top: 4px;
+}
+
 /* Para qual função (Mudar para outra função e Pôr numa função) e Quem cobre (o dia da outra unidade): o título com os
    pontos de quem espera o banco; e a caixa Onde fica sem a moldura nem o título dela (já está dentro da caixa da
    pergunta) */

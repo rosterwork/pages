@@ -89,8 +89,9 @@
     /* banco = 'sim' | 'nao' | null (null: a resposta de começo da pergunta que aparece, a folga sem descontar e o pontual
        tirando as horas) */
     var est = { item: null, mil: null, partes: [], parte: null, alcance: 'dia', periodos: [], banco: null,
-      reman: null, remanFazer: null, mudancaFazer: null };
+      reman: null, remanFazer: null, mudancaFazer: null, motivo: '' };
     var el = {}, combo = null, troca = null, efeito = null;
+    var ultimo = null;   // a última resposta posta no rascunho (o Motivo da folga a refaz com o texto novo)
     var analise = { chave: '', aviso: null, pedido: 0 };   // o que acontece no ciclo de quem sai do ciclo (lido uma vez)
 
     function escolher(item) {
@@ -99,6 +100,8 @@
       est.remanFazer = null;
       est.partes = partesDe(item.mil);
       est.parte = est.partes.length === 1 ? est.partes[0] : null;
+      est.motivo = R().motivoNoRascunho(item.mil.cpf);
+      el.motivo.querySelector('input').value = est.motivo;
       montarPartes();
       comecarParte();
     }
@@ -163,6 +166,10 @@
       });
       el.marcarAlcance = ligarRadios(el.alcance, function (v) { est.alcance = v; atualizar(); });
       el.marcarBanco = ligarRadios(el.banco, function (v) { est.banco = v; atualizar(); });
+      el.motivo = R().campoMotivo(el.banco, '', function (t) {
+        est.motivo = t;
+        if (ultimo && ultimo.fn) api.aoVivo(ultimo.fn, ultimo.travado);
+      });
       el.marcarReman = ligarRadios(el.reman, function (v) { est.remanFazer = v; atualizar(); });
       el.marcarMudanca = ligarRadios(el.mudanca, function (v) { est.mudancaFazer = v; atualizar(); });
       efeito = C.efeito(q('.escala-remover-efeito'));
@@ -192,6 +199,7 @@
 
     /* a resposta vai ao rascunho ao vivo (fn nulo: sem resposta; travado: o Salvar espera) */
     function noRascunho(fn, travado) {
+      ultimo = { fn: fn, travado: travado };
       api.rodapeProprio('');
       api.aoVivo(fn, travado);
     }
@@ -217,7 +225,7 @@
 
     function atualizar() {
       if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
-      ['reman', 'mudanca', 'partes', 'alcance', 'horario', 'banco'].forEach(function (k) { mostra(el[k], false); });
+      ['reman', 'mudanca', 'partes', 'alcance', 'horario', 'banco', 'motivo'].forEach(function (k) { mostra(el[k], false); });
       efeito.esconder();
       erro('');
       troca.esconder();
@@ -237,6 +245,7 @@
         if (!est.partes.length) {
           var horasR = H.horasTexto(minutosRemanejado());
           mostra(el.banco, true);
+          mostra(el.motivo, true);
           el.bancoTexto.textContent = L().tirarFolga(nome, data, horasR);
           el.bancoSim.textContent = L().descontar(horasR);
           el.bancoNao.textContent = L().naoDescontar;
@@ -244,7 +253,7 @@
           if (!est.banco) est.banco = 'nao';
           el.marcarBanco(est.banco);
           var descontarR = est.banco === 'sim';
-          noRascunho(function () { api.largarRemanejado(cpf); api.darFolga(cpf, descontarR, null); });
+          noRascunho(function () { api.largarRemanejado(cpf); api.darFolga(cpf, descontarR, null, est.motivo); });
           return;
         }
       }
@@ -268,6 +277,7 @@
       var horas = H.horasTexto(minutos(est.periodos));
       if (p.origem === 'ciclo') {
         mostra(el.banco, ok);
+        mostra(el.motivo, true);
         el.bancoTexto.textContent = toda && est.partes.length === 1 && !mil.outraUnidade
           ? L().tirarFolga(nome, data, horas) : textoFolga(est.periodos, nome, horas, data);
         el.bancoSim.textContent = L().descontar(horas);
@@ -292,7 +302,7 @@
       var periodos = H.uniao(est.periodos.map(H.faixa)).map(H.periodo), descontar = est.banco === 'sim';
       noRascunho(function () {
         if (rm) api.largarRemanejado(cpf);
-        if (p.origem === 'ciclo') api.darFolga(cpf, descontar, toda && est.partes.length === 1 && !mil.outraUnidade ? null : periodos);
+        if (p.origem === 'ciclo') api.darFolga(cpf, descontar, toda && est.partes.length === 1 && !mil.outraUnidade ? null : periodos, est.motivo);
         else tirarDoPontual(cpf, periodos, toda, descontar);
       });
     }
@@ -373,9 +383,9 @@
      escalas-celula-editar.js, usam o mesmo). m = { cpf, periodos }: quem sai e as horas que saem (o dia todo dele).
      Devolve null (só a extra: nada sai por aqui), { tipo: 'subtela', cpf } (o remanejado, quem entrou de mais de um jeito
      e a troca: a sub-tela, já com ele), { tipo: 'sai', aplicar() } (o pontual sem pergunta: parte dele, ou não contado no
-     banco) ou { tipo: 'folga' | 'pontual', texto, sim, nao, padrao, aplicar(escolha) }: pelo ciclo, a folga, com o Não
-     descontar de começo; o pontual contado no banco, sem resposta de começo. aplicar muda o rascunho (quem chama o põe
-     no mudar ou no aoVivo) */
+     banco) ou { tipo: 'folga' | 'pontual', texto, sim, nao, padrao, motivo, aplicar(escolha, motivo) }: pelo ciclo, a
+     folga, com o Não descontar de começo e o motivo dela já no rascunho; o pontual contado no banco, sem resposta de
+     começo. aplicar muda o rascunho (quem chama o põe no mudar ou no aoVivo) */
   function analisarDoDia(m) {
     var api = ed(), H = api.horas, mil = api.militarDoDia(m.cpf);
     if (!mil) return null;
@@ -402,8 +412,8 @@
       var todo = !mil.outraUnidade && juntas.length === 1 && minJuntas >= 1440;
       var folgaPeriodos = juntas.map(H.periodo), folgaHoras = H.horasTexto(minJuntas), data = diaMes(api.iso());
       return { tipo: 'folga', texto: todo ? L().tirarFolga(nome, data, folgaHoras) : textoFolga(folgaPeriodos, nome, folgaHoras, data),
-        sim: L().descontar(folgaHoras), nao: L().naoDescontar, padrao: 'nao',
-        aplicar: function (escolha) { api.darFolga(cpf, escolha === 'sim', todo ? null : folgaPeriodos); } };
+        sim: L().descontar(folgaHoras), nao: L().naoDescontar, padrao: 'nao', motivo: R().motivoNoRascunho(cpf),
+        aplicar: function (escolha, motivo) { api.darFolga(cpf, escolha === 'sim', todo ? null : folgaPeriodos, motivo); } };
     }
     var hp = H.horasTexto(salvo.minutos);
     return { tipo: 'pontual', texto: L().tirarPontualTexto(nome, hp), sim: L().tirarPontualSim(hp), nao: L().tirarPontualNao,
@@ -426,14 +436,19 @@
     q('.escala-remover-dia-nao').textContent = a.nao;
     naOrdem(q('.escala-remover-dia-sim'), q('.escala-remover-dia-nao'), a.tipo === 'folga');
     if (a.tipo === 'folga') {
-      /* a folga: ele já sai do dia, sem descontar (ao vivo, com o Não descontar marcado); a resposta, também a já
-         marcada, fica e a pergunta fecha; o Cancelar volta tudo */
+      /* a folga: ele já sai do dia, sem descontar (ao vivo, com o Não descontar marcado); o Motivo, embaixo das respostas,
+         vai junto a cada letra; a resposta, também a já marcada, fica e a pergunta fecha (o Enter no Motivo, o mesmo); o
+         Cancelar volta tudo */
       api.comecarVivo();
-      var aplicar = function (escolha) { api.aoVivo(function () { a.aplicar(escolha); }, false); };
+      var escolha = a.padrao, motivo = a.motivo;
+      var aplicar = function () { api.aoVivo(function () { a.aplicar(escolha, motivo); }, false); };
       ligarRadios(el, function () {})(a.padrao);
-      aplicar(a.padrao);
+      aplicar();
+      var acoes = q('.pergunta-linha-acoes');
+      acoes.parentNode.insertBefore(R().campoMotivo(null, motivo, function (t) { motivo = t; aplicar(); },
+        function () { aplicar(); fecharPergunta(); }), acoes);
       [].forEach.call(el.querySelectorAll('input[type="radio"]'), function (r) {
-        r.addEventListener('click', function () { aplicar(r.value); fecharPergunta(); });
+        r.addEventListener('click', function () { escolha = r.value; aplicar(); fecharPergunta(); });
       });
       q('.escala-remover-dia-cancelar').addEventListener('click', function () { api.aoVivo(null, false); fecharPergunta('largar'); });
     } else {

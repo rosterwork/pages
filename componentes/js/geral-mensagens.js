@@ -258,7 +258,8 @@
       falhaSalvar: 'Não foi possível salvar o posto. Tente de novo.'
     },
 
-    /* afastamentos — abas Férias · Licenças · Dispensas de Usuários e as mesmas abas da ficha */
+    /* afastamentos — abas Férias · Licenças · Dispensas de Usuários e as mesmas abas da ficha; e a aba
+       Missões (a Operação Verão), que não é afastamento mas usa a mesma lista e a mesma caixa */
     afastamentos: {
       /* o tipo por extenso (caixas da ficha e sub-tela) e curto (linha da lista); 'licenca' é o tipo de
          saúde que o banco esconde de quem não administra o militar */
@@ -266,23 +267,28 @@
         ferias: 'Férias', licenca: 'Licença',
         propria_saude: 'Tratamento da própria saúde', saude_familiar: 'Tratamento de saúde de familiar',
         interesses: 'Interesses particulares', especial: 'Especial', capacitacao: 'Capacitação',
-        gala: 'Gala (casamento)', nojo: 'Nojo (falecimento)', comum: 'Comum'
+        gala: 'Gala (casamento)', nojo: 'Nojo (falecimento)', comum: 'Comum',
+        operacao_verao: 'Operação Verão'
       },
       tiposCurtos: {
         licenca: 'Licença', propria_saude: 'Própria saúde', saude_familiar: 'Saúde de familiar',
         interesses: 'Interesses particulares', especial: 'Especial', capacitacao: 'Capacitação',
-        gala: 'Gala', nojo: 'Nojo', comum: 'Comum'
+        gala: 'Gala', nojo: 'Nojo', comum: 'Comum',
+        operacao_verao: 'Operação Verão'
       },
       /* filtro Situação e contagem de cada unidade, pela categoria da aba */
-      comNoAno: { ferias: 'Com férias no ano', licenca: 'Com licença no ano', dispensa: 'Com dispensa no ano' },
-      semNoAno: { ferias: 'Sem férias no ano', licenca: 'Sem licença no ano', dispensa: 'Sem dispensa no ano' },
+      comNoAno: { ferias: 'Com férias no ano', licenca: 'Com licença no ano', dispensa: 'Com dispensa no ano', missao: 'Com missão no ano' },
+      semNoAno: { ferias: 'Sem férias no ano', licenca: 'Sem licença no ano', dispensa: 'Sem dispensa no ano', missao: 'Sem missão no ano' },
       contagem: function (n, categoria) {
-        return n + (categoria === 'ferias' ? ' com férias' : categoria === 'dispensa' ? ' com dispensa' : ' com licença');
+        return n + ({ ferias: ' com férias', dispensa: ' com dispensa', missao: ' com missão' }[categoria] || ' com licença');
       },
       dias: function (n) { return n === 1 ? '1 dia' : n + ' dias'; },
       seloFora: 'Fora do fluxo',
       seloSegue: 'Segue no fluxo',
       extraFora: 'fora do fluxo',
+      /* a missão: o selo da linha (sai ou não da escala) */
+      seloMissaoFora: 'Fora da escala',
+      seloMissaoNa: 'Na escala',
       /* a situação do período na ficha */
       emCurso: 'Em curso',
       marcado: 'Marcado',
@@ -291,16 +297,20 @@
       /* a caixa de um tipo sem período no ano (administrador) e a aba sem nada (quem só lê) */
       vazioTipo: function (categoria, ano) {
         if (categoria === 'ferias') return 'Nenhum período de férias em ' + ano + '.';
+        if (categoria === 'missao') return 'Nenhuma missão em ' + ano + '.';
         return (categoria === 'dispensa' ? 'Nenhuma dispensa' : 'Nenhuma licença') + ' deste tipo em ' + ano + '.';
       },
       vazioAba: function (categoria, ano) {
-        return (categoria === 'ferias' ? 'Nenhum período de férias' : categoria === 'dispensa' ? 'Nenhuma dispensa' : 'Nenhuma licença') + ' em ' + ano + '.';
+        return ({ ferias: 'Nenhum período de férias', dispensa: 'Nenhuma dispensa', missao: 'Nenhuma missão' }[categoria] || 'Nenhuma licença') + ' em ' + ano + '.';
       },
       subtitulo: function (ano) { return 'Os períodos de ' + ano + '.'; },
       falhaCarregar: 'Não foi possível carregar os afastamentos.',
       /* a decisão do fluxo (licença e dispensa), embaixo do Sim/Não */
       foraDoFluxo: 'Sai da escala por tempo indeterminado; volta quando o administrador o puser de novo numa guarnição, pela aba Guarnições da Escala.',
       segueNoFluxo: 'Continua no fluxo, só bloqueia os dias do afastamento.',
+      /* a resposta da missão (Tirar da escala?), embaixo do Sim/Não */
+      missaoFora: 'Sai da escala no início da missão; volta quando o administrador o puser de novo numa guarnição, pela aba Guarnições da Escala. Pontual, troca e extra continuam valendo.',
+      missaoNa: 'Continua na escala. A missão só fica registrada.',
       /* o problema de um período (vai para a nota embaixo da lista) */
       fimAntes: 'A data de fim deve ser igual ou depois do início.',
       cruza: function (periodo) { return 'Este período cruza com o de ' + periodo + '.'; },
@@ -719,6 +729,8 @@
         /* a Central sem Cabo de Dia (só para quem administra; a Distribuição escolhe se dá o erro amarelo) */
         semCaboDia:          { texto: 'Central sem Cabo de Dia: nenhum cabo ou soldado de serviço{faixas}', faixa: 'das {hi} às {hf}', icone: 'icone-alerta', nivel: 'alerta' },
         semCondutor:         { texto: 'Viatura sem condutor', icone: 'icone-alerta', nivel: 'erro' },
+        /* a companhia sem Oficial de Área (só Sub.Ten. ou mais antigo pode); {faixas} quando é só parte do dia */
+        semOficial:          { texto: 'Sem Oficial de Área{faixas}', faixa: 'das {hi} às {hf}', icone: 'icone-alerta', nivel: 'erro' },
         /* efetivo da unidade abaixo do mínimo (uma linha só) e o posto que fica fora da escala sem gente para o mínimo
            (uma por posto); a cor vem do banco, pelo aviso escolhido na Distribuição */
         unidadeAbaixoMinimo: { texto: 'Efetivo da unidade abaixo do mínimo: {pessoas} de {minimo}{faixas}', faixa: 'das {hi} às {hf}', icone: 'icone-alerta', nivel: 'erro' },
@@ -987,6 +999,9 @@
         },
         remanejadoPara: function (destino) { return 'Remanejado para ' + artigo(destino) + ' ' + destino; },
         devolverA: function (origem) { return 'Devolver ' + (artigo(origem) === 'a' ? 'à ' : 'ao ') + origem; },
+        /* o Oficial de Área que vem de um pelotão (escalas-celula-oficial.js): o motivo do remanejamento e a frase da caixa */
+        motivoOficial: 'Oficial de Área',
+        saiDoPelotao: function (militar, unidade) { return 'O ' + militar + ' sai d' + artigo(unidade) + ' ' + unidade + ' neste dia.'; },
         /* Remover do dia › quem veio de outro dia (mudança de dia): volta para o dia de antes ou sai deste dia, e o de
            antes vira folga (a pergunta do banco de horas vem depois) */
         devolverPara: function (de) { return 'Devolver para ' + de; },
@@ -1188,6 +1203,21 @@
       mudouDeDiaDe: function (de) { return 'Mudou de dia: veio de ' + de; },
       mudouDeDiaPara: function (para) { return 'Mudou de dia: passou para ' + para; },
       passouPara: function (para) { return 'Passou para ' + para; },
+      /* a dica do militar na grade (escalas-celula-dica.js): por que a linha está na escala, uma frase por linha da dica (a
+         mudança de dia, a saída da guarnição e o serviço e a extra juntos usam as frases de cima) */
+      dica: {
+        guarnicao: function (letra) { return 'Guarnição' + (letra ? ' ' + letra : ''); },
+        entrada: function (letra) { return 'Entrada na guarnição' + (letra ? ' ' + letra : ''); },
+        ultimo: function (letra) { return 'Último serviço na guarnição' + (letra ? ' ' + letra : ''); },
+        troca: function (com, parte, rw) {
+          return 'Troca de serviço' + (com ? ' com ' + com : '') + (parte ? ', Parte nº ' + parte : '') + (rw ? ', RW nº ' + rw : '');
+        },
+        folga: function (motivo) { return 'Folga' + (motivo ? ', motivo: ' + motivo : ''); },
+        pontual: 'Adicionado somente nesse dia',
+        extra: 'Extrajornada',
+        veio: function (de) { return de ? 'Veio d' + artigo(de) + ' ' + de + ' nesse dia' : 'Veio de outra unidade nesse dia'; },
+        foi: function (para) { return para ? 'Foi para ' + artigo(para) + ' ' + para + ' nesse dia' : 'Foi para outra unidade nesse dia'; }
+      },
       /* Observações do dia (notas do admin, trocas, folgas, outra unidade, remanejados) — o banco manda os dados, aqui vira texto */
       observacoesTitulo: 'Observações',
       /* o Copiar do título da caixa: a dica depois de copiar e o aviso quando o navegador não deixa */
@@ -1515,9 +1545,7 @@
       ondeFica: 'Onde fica o {papel}?',
       oficialArea: 'Oficial de Área',
       podeConduzir: 'O {papel} pode ser condutor?',
-      semOficial: 'Sem oficial de serviço, quem faz o Oficial de Área?',
       condutor: ['Sim, sempre é o condutor da viatura dele', 'Sim, só se não houver outro habilitado', 'Não, nunca'],
-      semOficialOpcoes: ['Ninguém, fica vazio com erro vermelho', 'O praça mais antigo da companhia'],
       condutorComAviso: 'Erro amarelo na escala quando o {papel} for condutor',
       condutorSemAviso: 'Sem erro amarelo quando o {papel} for condutor',
       condutorNunca: 'Erro vermelho na escala se não houver condutor',
@@ -1663,6 +1691,7 @@
       notaBaixa: 'As trocas, folgas e extras canceladas não voltam, mesmo que ele seja readmitido depois.',
       notaSetor: 'As trocas e folgas canceladas não voltam, mesmo que ele volte a ser Operacional depois.',
       notaLicenca: 'As trocas e folgas canceladas não voltam, mesmo que o afastamento seja desfeito depois.',
+      notaMissao: 'As trocas e folgas canceladas não voltam, mesmo que a missão seja desfeita depois.',
       /* a lista não carregou: sem ela, a saída não é feita */
       falhaLista: 'Não foi possível conferir as trocas, folgas e extras deste militar. Tente de novo.'
     },
@@ -2334,6 +2363,7 @@
         ferias: 'Férias',
         licenca: 'Licença',
         dispensa: 'Dispensa',
+        missao: 'Missão',
         unidade: 'Ajustes da unidade',
         antiguidade: 'Antiguidade'
       }
@@ -2481,11 +2511,11 @@
 
   };
 
-  /* o aviso da saída do militar da escala (transferência, Tirar do ciclo, baixa, mudança de Setor e
-     licença fora do fluxo): a lista do que vai acontecer, com o item da escala e um item por troca,
-     folga e extra do plano que a análise (escala_ciclo_retirar_analisar, ou o licencas_salvar) devolve;
-     a nota só quando há o que cancelar.
-     opcoes = { tipo: 'transferencia' | 'tirar' | 'baixa' | 'setor' | 'licenca', escala: texto do item
+  /* o aviso da saída do militar da escala (transferência, Tirar do ciclo, baixa, mudança de Setor,
+     licença fora do fluxo e missão fora da escala): a lista do que vai acontecer, com o item da escala e
+     um item por troca, folga e extra do plano que a análise (escala_ciclo_retirar_analisar, o
+     licencas_salvar ou o missoes_salvar) devolve; a nota só quando há o que cancelar.
+     opcoes = { tipo: 'transferencia' | 'tirar' | 'baixa' | 'setor' | 'licenca' | 'missao', escala: texto do item
      da escala, cotas: texto do item das cotas (só na baixa) }. Devolve { itens: [{ titulo, texto }], nota } */
   window.RosterWork.avisoSaida = function (pendencias, opcoes) {
     var M = window.RosterWork.mensagens;
@@ -2520,7 +2550,7 @@
     });
     var cancela = itens.length > 1;
     if (opcoes.cotas) itens.push({ titulo: S.tituloCotas, texto: opcoes.cotas });
-    var notas = { transferencia: S.notaTransferencia, tirar: S.notaTirar, baixa: S.notaBaixa, setor: S.notaSetor, licenca: S.notaLicenca };
+    var notas = { transferencia: S.notaTransferencia, tirar: S.notaTirar, baixa: S.notaBaixa, setor: S.notaSetor, licenca: S.notaLicenca, missao: S.notaMissao };
     return { itens: itens, nota: cancela ? (notas[opcoes.tipo] || '') : '' };
   };
 })();

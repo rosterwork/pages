@@ -13,10 +13,11 @@
     </div>
     <div class="abas" id="usuarios-abas">
       <button type="button" class="aba aba--ativa" data-aba="efetivo">Efetivo</button>
-      <!-- a lista completa do efetivo com os afastamentos do ano de cada um (usuarios-afastamentos.js) -->
+      <!-- a lista completa do efetivo com os afastamentos (e as missões) do ano de cada um (usuarios-afastamentos.js) -->
       <button type="button" class="aba" data-aba="ferias" data-manual="afastamentos">Férias</button>
       <button type="button" class="aba" data-aba="licencas" data-manual="afastamentos">Licenças</button>
       <button type="button" class="aba" data-aba="dispensas" data-manual="afastamentos">Dispensas</button>
+      <button type="button" class="aba" data-aba="missoes" data-manual="afastamentos">Missões</button>
       <!-- só administrador: a ordem de antiguidade da companhia, por posto -->
       <button type="button" class="aba oculto" data-aba="antiguidade" id="usuarios-aba-antiguidade" data-manual="ajustar-antiguidade">Antiguidade</button>
       <!-- só administrador: quem administra o quê; o papel muda na própria lista -->
@@ -243,7 +244,8 @@
   <span class="esqueleto esqueleto-conjunto usuario-afastamento-forma"></span>
 </template>
 
-<!-- molde: um afastamento na linha do militar (o tipo e as datas, os dias e, em licença e dispensa, o fluxo) -->
+<!-- molde: um afastamento na linha do militar (o tipo e as datas, os dias e, em licença e dispensa, o fluxo;
+     na missão, se ele saiu da escala) -->
 <template id="tpl-usuario-afastamento-linha">
   <span class="usuario-afastamento-linha">
     <span class="linha-militar-coluna usuario-afastamento-texto"></span>
@@ -692,7 +694,8 @@
 </template>
 
 <!-- molde: um período (caixa com a situação e a lixeira): início → fim e os dias; em licença e
-     dispensa, a decisão do fluxo (sugere Sim a partir de 16 dias) e o motivo. O que é de mais de uma
+     dispensa, a decisão do fluxo (sugere Sim a partir de 16 dias) e o motivo; na missão, o "Tirar da
+     escala?" (sem sugestão) e sem o motivo. O que é de mais de uma
      semana atrás fica travado, com a frase que explica -->
 <template id="tpl-ficha-periodo">
   <div class="grupo-caixa ficha-periodo">
@@ -715,7 +718,8 @@
     </div>
     <div class="ficha-periodo-fluxo oculto" data-periodo-fluxo>
       <div class="ficha-periodo-decisao">
-        <span class="ficha-periodo-pergunta">Tirar do fluxo da escala?</span>
+        <span class="ficha-periodo-pergunta" data-pergunta-fluxo>Tirar do fluxo da escala?</span>
+        <span class="ficha-periodo-pergunta oculto" data-pergunta-missao>Tirar da escala?</span>
         <div class="abas abas--seletor">
           <button type="button" class="aba" data-fora="sim">Sim</button>
           <button type="button" class="aba" data-fora="nao">Não</button>

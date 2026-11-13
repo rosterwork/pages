@@ -121,7 +121,7 @@
     return d.length === 3 ? d[2] + '/' + d[1] + (partes[1] ? ' ' + partes[1] : '') : '';
   }
 
-  /* um selo só por militar, na ordem: Inativo (neutro escuro), afastamento até DD/MM
+  /* um selo só por militar, na ordem: Inativo (neutro escuro), afastamento ou missão até DD/MM
      (âmbar), e, só para o administrador (o banco manda a conta só para ele), o link de
      cadastro até DD/MM HH:MM (âmbar) ou Sem conta (neutro); senão Ativo (verde) */
   function preencherSituacao(selo, pessoa) {
@@ -130,7 +130,7 @@
     if (pessoa.situacao === 'Inativo') {
       selo.textContent = pessoa.situacao_ate ? T.seloInativoDesde(formatarDataCurta(pessoa.situacao_ate)) : T.seloInativo;
       selo.classList.add('selo--escuro');
-    } else if (pessoa.situacao === 'Férias' || pessoa.situacao === 'Licença' || pessoa.situacao === 'Dispensa') {
+    } else if (['Férias', 'Licença', 'Dispensa', 'Operação Verão'].indexOf(pessoa.situacao) >= 0) {
       selo.textContent = RosterWork.mensagens.geral.afastadoAte(pessoa.situacao, formatarDataCurta(pessoa.situacao_ate));
       selo.classList.add('selo--alerta');
     } else if (pessoa.link_cadastro_ate) {
@@ -366,13 +366,13 @@
     contar: function () { contagemVisivel++; }
   };
 
-  /* ---------- abas da página: Efetivo · Férias · Licenças · Dispensas | Antiguidade · Administradores (só admin) ----------
+  /* ---------- abas da página: Efetivo · Férias · Licenças · Dispensas · Missões | Antiguidade · Administradores (só admin) ----------
      A busca e a Ordem valem para as listas (Efetivo, as de afastamento e a Administradores, que
      usam a mesma árvore); os Filtros e o Exibir do Efetivo, só para ele. Só o Efetivo tem painel:
      as outras abas editam na própria lista. */
   function mostrarAba(conteudo, nome) {
-    /* Férias · Licenças · Dispensas e Administradores usam a árvore do Efetivo, com a busca e a Ordem; o Exibir é só do Efetivo */
-    var lista = nome === 'efetivo' || nome === 'ferias' || nome === 'licencas' || nome === 'dispensas' || nome === 'administradores';
+    /* Férias · Licenças · Dispensas · Missões e Administradores usam a árvore do Efetivo, com a busca e a Ordem; o Exibir é só do Efetivo */
+    var lista = ['efetivo', 'ferias', 'licencas', 'dispensas', 'missoes', 'administradores'].indexOf(nome) >= 0;
     var paineis = conteudo.querySelectorAll('[data-aba-painel]');
     for (var i = 0; i < paineis.length; i++) {
       paineis[i].classList.toggle('oculto', paineis[i].getAttribute('data-aba-painel') !== (lista ? 'efetivo' : nome));
@@ -428,13 +428,14 @@
     filtros = window.RosterWork.filtros.criar(conteudo.querySelector('#usuarios-filtros'), {
       aoMudar: function () { if (window.RosterWork.arvoreUnidades) window.RosterWork.arvoreUnidades.atualizar(); }
     });
-    /* Situação: Ativos/Férias/Licença/Dispensa para todos; Correção pendente e Inativos só para
+    /* Situação: Ativos/Férias/Licença/Dispensa/Operação Verão para todos; Correção pendente e Inativos só para
        administradores, à parte (acréscimos; os inativos vêm de fonte separada) */
     var opcoesSituacao = [
       { rotulo: 'Ativos', valor: 'Ativo' },
       { rotulo: 'Férias', valor: 'Férias' },
       { rotulo: 'Licença', valor: 'Licença' },
-      { rotulo: 'Dispensa', valor: 'Dispensa' }
+      { rotulo: 'Dispensa', valor: 'Dispensa' },
+      { rotulo: 'Operação Verão', valor: 'Operação Verão' }
     ];
     if (RosterWork.sessao.temPapel('pelotao')) {
       opcoesSituacao.push({ rotulo: 'Correção pendente', valor: 'Correção pendente', separado: true });

@@ -10,6 +10,10 @@
    .dropdown: o botão do dia é o gatilho), com as duas perguntas em
    bolinhas e, no dia marcado, os pares com Tirar. Cada militar
    entra uma vez por dia.
+   O dia escolhido na Escala (est.escolhido, o Registrar troca de
+   serviço do menu do nome) vem com a moldura do dia escolhido e, quando
+   o outro militar está livre nele, já marcado (o outro trabalha, ele
+   folga), uma vez só; marcar ou tirar um dia antes encerra a escolha.
    No Editar, o calendário é o de quem pode mudar (o militar, de
    amanhã em diante; o administrador de fora, de 7 dias atrás em
    diante), como se o registro não existisse; o dia do plano que já
@@ -74,6 +78,7 @@
       if (meu !== req || !est) return;
       if (!r || !r.ok) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: (r && r.erro) || RW.mensagens.trocas.varias.falhaDias }); }
       else (r.dias || []).forEach(function (d) { disp[String(d.data).slice(0, 10)] = d; });
+      marcarEscolhido();
       desenhar();
     }).catch(function () {
       if (meu !== req || !est) return;
@@ -94,6 +99,7 @@
         var pares = paresDoDia(dia), op = opcoesDoDia(dia);
         var aceso = pares.length > 0 || (!travado(dia) && op.trabalha.length > 0 && op.folga.length > 0);
         if (pares.length) botao.classList.add('mini-calendario-dia--quer');
+        else if (est.escolhido && !est.escolhido.feito && dia === est.escolhido.dia) botao.classList.add('mini-calendario-dia--selecionado');
         else if (!aceso) botao.classList.add('mini-calendario-dia--inativo');
         botao.disabled = !aceso;
         pares.forEach(function (p) {
@@ -114,14 +120,27 @@
     });
   }
 
+  /* o dia escolhido na Escala: com uma opção só de quem trabalha e ele podendo folgar, o par já vem marcado (uma vez) */
+  function marcarEscolhido() {
+    var e = est.escolhido;
+    if (!e || e.feito || paresDoDia(e.dia).length) return;
+    var op = opcoesDoDia(e.dia);
+    if (op.folga.indexOf(e.cpf) < 0 || op.trabalha.length !== 1) return;
+    e.feito = true;
+    est.pares.push({ data: e.dia, trabalha: op.trabalha[0], folga: e.cpf });
+    if (aoMudar) aoMudar();
+  }
+
   /* ---------- o clique no dia ---------- */
   function marcar(dia, trabalha, folga) {
     if (RW.fecharDropdowns) RW.fecharDropdowns();
+    if (est.escolhido) est.escolhido.feito = true;
     est.pares.push({ data: dia, trabalha: trabalha, folga: folga });
     desenhar();
     if (aoMudar) aoMudar();
   }
   function tirar(par) {
+    if (est.escolhido) est.escolhido.feito = true;
     est.pares = est.pares.filter(function (p) { return p !== par; });
     desenhar();
     if (aoMudar) aoMudar();

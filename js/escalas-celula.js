@@ -263,32 +263,35 @@
   }
 
   /* quem mudou de dia: o ícone da mudança com a dica de onde o serviço veio ou, na linha riscada do dia de antes, para onde
-     foi (o span recebe a dica); null nas outras origens */
-  function iconeDaMudanca(p) {
+     foi (o span recebe a dica; com a dica da linha, escalas-celula-dica.js, ela vai nela); null nas outras origens */
+  function iconeDaMudanca(p, D) {
     var t = RosterWork.mensagens.escala;
     var dica = p.origem === 'mudanca' && p.mudanca_de ? t.mudouDeDiaDe(p.mudanca_de)
       : p.origem === 'mudanca_saida' && p.mudanca_para ? t.mudouDeDiaPara(p.mudanca_para) : '';
     if (!dica) return null;
     var el = RosterWork.tpl('tpl-escala-mudanca-icone');
-    if (el) el.setAttribute('data-dica', dica);
+    if (el && !D) el.setAttribute('data-dica', dica);
     return el;
   }
 
-  /* quem saiu da guarnição: o ícone da saída, com a dica da data (o span recebe a dica); null nas outras origens */
-  function iconeDaSaida(p) {
+  /* quem saiu da guarnição: o ícone da saída, com a dica da data (o span recebe a dica; com a dica da linha, ela vai nela);
+     null nas outras origens */
+  function iconeDaSaida(p, D) {
     if (p.origem !== 'saida_guarnicao') return null;
     var el = RosterWork.tpl('tpl-escala-mudanca-icone');
     if (!el) return null;
     definirIcone(el.querySelector('svg'), 'icone-origem-saida');
     var d = String(p.saida || '').split('-');
-    el.setAttribute('data-dica', RosterWork.mensagens.escala.saiuDaGuarnicao(d.length === 3 ? d[2] + '/' + d[1] : ''));
+    if (!D) el.setAttribute('data-dica', RosterWork.mensagens.escala.saiuDaGuarnicao(d.length === 3 ? d[2] + '/' + d[1] : ''));
     return el;
   }
 
-  /* uma linha de militar: ícone de origem (+ cadeado se fixado) + grad + nome + horário (curto: o posto curto) */
-  function montarPessoa(p, curto) {
+  /* uma linha de militar: ícone de origem (+ cadeado se fixado) + grad + nome + horário (curto: o posto curto). D = a dica
+     da linha (escalas-celula-dica.js, só com a Escala na tela): ela guarda o militar, e as dicas daqui vão nela */
+  function montarPessoa(p, curto, D) {
     var linha = RosterWork.tpl('tpl-escala-mes-pessoa');
     if (!linha) return null;
+    if (D) D.marcar(linha, p);
     if (p.origem === 'folga') linha.classList.add('linha-escalado--folga');   /* folga: nome riscado */
     if (p.origem === 'troca_saida') linha.classList.add('linha-escalado--trocado');   /* trocado: nome riscado */
     if (p.origem === 'remanejado_saida') linha.classList.add('linha-escalado--remanejado');   /* saiu para outra unidade: riscado */
@@ -297,7 +300,7 @@
     /* de serviço e de extra no mesmo horário (o banco marca): o nome em vermelho, com a dica */
     if (p.extra_servico && p.extra_servico.length) {
       linha.classList.add('linha-escalado--extra-servico');
-      linha.setAttribute('data-dica', RosterWork.mensagens.escala.extraServicoDica);
+      if (!D) linha.setAttribute('data-dica', RosterWork.mensagens.escala.extraServicoDica);
     }
 
     var icones = linha.querySelector('.linha-escalado-icones');
@@ -307,7 +310,7 @@
       var origemCiclo = RosterWork.tpl('tpl-escala-mes-origem');
       if (origemCiclo) { definirIcone(origemCiclo, ICONE_ORIGEM[p.origem_base]); icones.appendChild(origemCiclo); }
     }
-    var origem = iconeDaMudanca(p) || iconeDaSaida(p);
+    var origem = iconeDaMudanca(p, D) || iconeDaSaida(p, D);
     if (!origem) { origem = RosterWork.tpl('tpl-escala-mes-origem'); if (origem) definirIcone(origem, iconeDaOrigem(p.origem)); }
     if (origem) icones.appendChild(origem);
     if (p.fixado) {
@@ -370,10 +373,12 @@
       var grafico = montarGrafico(cobDia, maxUnidade, erroDia);
       if (grafico) celula.appendChild(grafico);
     }
+    var D = RosterWork.escalasCelulaDica && RosterWork.escalasCelulaDica.ligada() ? RosterWork.escalasCelulaDica : null;
     (pessoas || []).concat(afastados || []).forEach(function (p) {
-      var linhaP = montarPessoa(p, curto);
+      var linhaP = montarPessoa(p, curto, D);
       if (linhaP) celula.appendChild(linhaP);
     });
+    if (D) D.celula(celula);   // a dica de cada linha: por que ela está na escala
     /* na Escala, o que está aberto na célula (o cartão do militar, as ações do pelotão) volta depois de refeita */
     if (RosterWork.escalasCelulaEditar) RosterWork.escalasCelulaEditar.decorar(celula);
   }
@@ -449,6 +454,7 @@
       no.querySelector('.escala-oficial-nome').textContent = oa ? (oa.nome || '') : RosterWork.mensagens.escala.semOficial;
       no.classList.toggle('escala-oficial--sem', !oa);
       lugar.appendChild(no);
+      if (RosterWork.escalasCelulaOficial) RosterWork.escalasCelulaOficial.decorar(no, iso, oa);   // a caixa do título
     }
     lugar.classList.toggle('oculto', !no);
     return !!no;

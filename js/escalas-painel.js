@@ -492,6 +492,11 @@
       function (p) { return { posto: p.posto || '' }; });
     if (tem('resolva_escala')) linha(cat.resolvaEscala);
     if (tem('sem_condutor')) linha(cat.semCondutor);
+    /* a companhia sem Oficial de Área: uma linha, com os horários quando não é o dia todo */
+    if (tem('sem_oficial') && cat.semOficial) {
+      var so = por.sem_oficial, soTodo = so.length === 1 && so[0].hi === '08:00' && so[0].hf === '08:00';
+      linha(cat.semOficial, preencher(cat.semOficial.texto, { faixas: soTodo ? '' : ', ' + so.map(function (p) { return preencher(cat.semOficial.faixa, { hi: p.hi, hf: p.hf }); }).join(' e ') }));
+    }
     linhasEfetivoProblemas('unidade_abaixo_minimo', cat.unidadeAbaixoMinimo, 1);
     linhasEfetivoProblemas('posto_fora', cat.postoFora, 1);
     linhasEfetivoProblemas('abaixo_minimo', cat.abaixoMinimo);
@@ -1012,6 +1017,7 @@
     if (!conteudo || conteudo.dataset.painelDiaLigado) return;
     conteudo.dataset.painelDiaLigado = '1';
     conteudo.addEventListener('click', function (evento) {
+      if (RosterWork.escalasCelulaOficial && RosterWork.escalasCelulaOficial.clique(evento)) return;   // o Oficial do título
       /* célula da grade OU bloco marcado (ex.: a unidade do modo Dia em árvore); no Calendário (Mês e
          Colunas → Dias), o bloquinho inteiro da unidade (nome incluso) vale como a célula que está dentro dele */
       var alvo = evento.target.closest ? evento.target.closest('.escala-mes-celula, [data-abre-dia], .escala-calendario-unidade') : null;

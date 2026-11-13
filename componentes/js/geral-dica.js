@@ -19,11 +19,13 @@
   }
 
   /* escolhe o lado da dica pelo espaço que há: sem espaço em cima, embaixo; perto da borda direita, alinhada pela direita;
-     perto da esquerda, pela esquerda */
+     perto da esquerda, pela esquerda. A dica de várias linhas (a altura medida dela, com o vão até o elemento) só desce
+     quando embaixo há mais espaço que em cima */
   function posicionar(elemento) {
     var rect = elemento.getBoundingClientRect(), lim = limite(elemento);
     var direita = lim.right - rect.right < espacoMinimoDireita;
-    elemento.classList.toggle('dica--baixo', rect.top - lim.top < espacoMinimoAcima);
+    var acima = rect.top - lim.top, altura = (parseFloat(getComputedStyle(elemento, '::after').height) || 0) + 8;
+    elemento.classList.toggle('dica--baixo', acima < espacoMinimoAcima || (acima < altura && lim.bottom - rect.bottom > acima));
     elemento.classList.toggle('dica--esquerda', direita);
     elemento.classList.toggle('dica--comeco', !direita && rect.left - lim.left < espacoMinimoEsquerda);
   }

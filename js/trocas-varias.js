@@ -15,10 +15,12 @@
    horário e a Parte); o rodapé é do Editar, que recebe o pedido
    conferido.
    Expõe RosterWork.trocasVarias.{ montar, temDados, planoMudou, enviar, encerrar }
-     montar({ corpo, registrar, cobrar, editar, aoSolicitar, aoMudar, cancelar, aoConcluir, mesInicial })
+     montar({ corpo, registrar, cobrar, editar, aoSolicitar, aoMudar, cancelar, aoConcluir, mesInicial, com, diaEscolhido })
        aoConcluir = depois de enviar ou registrar, no lugar de fechar o
          painel (o painel do dia da Escala volta ao dia)
        mesInicial = um dia (aaaa-mm-dd): o calendário abre no mês dele
+       com = { cpf, grad, nome, unidade, unidadeId } e diaEscolhido (aaaa-mm-dd): o Registrar troca de serviço do menu do
+         nome na Escala; ele já entra na lista, o campo de unidade vem com a dele e o dia vem escolhido no calendário
        cobrar = { cpf, minutos }
        editar = { registroId, plano, admin, botao, alteracao, aoEnviar(pares, parte, ano, botao) }
    ============================================================ */
@@ -141,7 +143,8 @@
     });
   }
   function ligarAdicionar() {
-    var lotacao = RW.sessao.perfil() ? RW.sessao.perfil().lotacao_id : null;
+    /* a unidade do campo: a do militar do menu do nome, ou a de quem está logado */
+    var lotacao = est.com && est.com.unidadeId ? Number(est.com.unidadeId) : RW.sessao.perfil() ? RW.sessao.perfil().lotacao_id : null;
     est.combo = C().comboMilitar(q('#tv-militar'), q('#tv-militar-menu'), {
       atual: function () { return null; },   // nada fica escolhido no campo: quem é escolhido entra na troca
       aoEscolher: adicionar,
@@ -217,14 +220,17 @@
   function montar(opcoes) {
     var raiz = RW.tpl('tpl-troca-varias');
     if (!raiz) return;
-    var registrar = !!opcoes.registrar, ed = opcoes.editar || null;
+    var registrar = !!opcoes.registrar, ed = opcoes.editar || null, com = registrar && !ed ? opcoes.com || null : null;
     opcoes.corpo.appendChild(raiz);
     var plano = ed ? ed.plano : null;
     est = {
       raiz: raiz, corpo: opcoes.corpo, registrar: registrar, aoSolicitar: opcoes.aoSolicitar, aoMudar: opcoes.aoMudar, cancelar: opcoes.cancelar,
       aoConcluir: opcoes.aoConcluir || null, mesInicial: opcoes.mesInicial || null,
-      /* no Solicitar, quem pede já entra; no Registrar, a lista começa vazia; no Editar, o plano de hoje */
-      militares: plano ? militaresDoPlano(plano) : (registrar ? [] : [eu()]),
+      /* no Solicitar, quem pede já entra; no Registrar, a lista começa vazia (ou com o militar do menu do nome); no
+         Editar, o plano de hoje */
+      militares: plano ? militaresDoPlano(plano) : (registrar ? (com ? [militarDe({ cpf: com.cpf, grau_abreviacao: com.grad, nome_de_guerra: com.nome }, com.unidade)] : []) : [eu()]),
+      com: com,
+      escolhido: com && opcoes.diaEscolhido ? { dia: opcoes.diaEscolhido, cpf: com.cpf, feito: false } : null,
       pares: plano ? (plano.dias || []).map(function (d) {
         return { data: String(d.data).slice(0, 10), trabalha: d.trabalha, folga: d.folga, inicio: d.inicio || null, fim: d.fim || null };
       }) : [],
@@ -258,7 +264,7 @@
   function temDados() {
     if (!est) return false;
     if (est.editar) return chaveTudo() !== est.editar.tudoAntes;
-    return est.pares.length > 0 || est.militares.length > (est.registrar ? 0 : 1) || !!(q('#tv-parte') && q('#tv-parte').value.trim());
+    return est.pares.length > 0 || est.militares.length > (est.registrar ? (est.com ? 1 : 0) : 1) || !!(q('#tv-parte') && q('#tv-parte').value.trim());
   }
   function encerrar() {
     if (Res()) Res().encerrar();

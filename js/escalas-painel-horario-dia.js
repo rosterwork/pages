@@ -66,7 +66,8 @@
 
   /* criar(cpf, opcoes) devolve null (o serviço dele não muda por aqui) ou a sessão do horário dele no dia:
      { cpf, nome, pontual, servico (o horário do serviço, para o texto), est: { periodo (o escolhido), livres (onde ele
-     pode ficar; no pontual, também as horas livres, lidas), banco: 'sim' | 'nao' }, opcoes() (as horas dos campos),
+     pode ficar; no pontual, também as horas livres, lidas), banco: 'sim' | 'nao', motivo (o Motivo da folga, pelo
+     ciclo) }, opcoes() (as horas dos campos),
      dentro(), calcular(), aplicar(c), lerLivres(aoLer) }.
      calcular() devolve { ok, mudou, f, saem (as horas que viram folga), texto (a nota da sub-tela), pergunta (o banco de
      horas aparece), sim (o texto do Descontar ou do Contabilizar), folga ({ periodos, horas } ou null) }; aplicar(c) põe a
@@ -87,7 +88,8 @@
     if (base.length !== 1) base = [H.faixa(s.periodo)];
     var pont = pontual ? (r0.pontuais || []).filter(function (x) { return x.cpf === cpf; })[0] : null;
     var est = { periodo: { hi: s.periodo.hi, hf: s.periodo.hf }, livres: pontual ? [H.faixa(s.periodo)] : base,
-      banco: pontual ? (pont && pont.contabilizar ? 'sim' : 'nao') : (folgas[0] && folgas[0].contabilizar ? 'sim' : 'nao') };
+      banco: pontual ? (pont && pont.contabilizar ? 'sim' : 'nao') : (folgas[0] && folgas[0].contabilizar ? 'sim' : 'nao'),
+      motivo: (folgas[0] && folgas[0].motivo) || '' };
     var bancoAntes = est.banco;
 
     /* o horário cabe num pedaço de onde ele pode ficar */
@@ -127,7 +129,7 @@
         : function () {
           var r = api.rascunho();
           r.folgas = r.folgas.filter(function (x) { return x.cpf !== cpf; });
-          if (saem.length) api.darFolga(cpf, contabilizar, saem.map(H.periodo));
+          if (saem.length) api.darFolga(cpf, contabilizar, saem.map(H.periodo), est.motivo);
         }, false);
     }
 
@@ -194,6 +196,8 @@
       var servico = sessao.servico;
       el.servico.textContent = L().horarioDiaServico(sessao.nome, diaMes(api.iso()), sessao.pontual, msg().dasAs(H.curta(servico.hi), H.curta(servico.hf)));
       var marcarDesconta = ligarRadios(el.desconta, function (v) { est.banco = v; atualizar(); });
+      /* pelo ciclo, o Motivo da folga, embaixo das respostas (a caixa do Descontar some no pontual) */
+      R().campoMotivo(el.desconta, est.motivo, function (t) { est.motivo = t; sessao.aplicar(); });
       var marcarContabiliza = ligarRadios(el.contabiliza, function (v) { est.banco = v; atualizar(); });
       if (sessao.pontual) marcarContabiliza(est.banco);
       else marcarDesconta(est.banco);

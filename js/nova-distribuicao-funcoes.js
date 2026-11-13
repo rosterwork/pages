@@ -4,8 +4,7 @@
    caixas de marcar (vários postos = a mesma pessoa, que acumula).
    O Oficial de Área vem em grupos por unidade: primeiro as outras
    (a companhia e os outros pelotões, travadas), depois os postos da
-   unidade escolhida. Também se pode ser condutor e, na companhia,
-   quem faz o Oficial de Área sem oficial de serviço. No pelotão, a
+   unidade escolhida. Também se pode ser condutor. No pelotão, a
    parte da companhia vem junto, sem repetir onde fica o Oficial de
    Área (os postos da companhia se marcam com ela no seletor). No
    pelotão com Central de Operações, quem ela exibe, só para ver.
@@ -133,15 +132,7 @@
         }, P().pendente(ctx, 'papel_condutor'), { muda: 'papel_condutor' });
       }
 
-      if (ctx.ehCia) {
-        var sem = r.sem_oficial;
-        P().cartao(u, api, ctx, 'sem-oficial', M().semOficial,
-          [sem == null ? { texto: M().faltaResponder, falta: true } : M().semOficialOpcoes[sem]], function (lugar) {
-            lugar.appendChild(P().bolinhas(P().tpl('sem-oficial'), 'nova-distribuicao-sem-oficial', function (v) { return Number(v) === sem; }, function (v) {
-              api.mudar(ctx.lado, function (x) { x.sem_oficial = Number(v); });
-            }, ctx.soLeitura));
-          }, P().pendente(ctx, 'sem_oficial'), { muda: 'sem_oficial' });
-      } else {
+      if (!ctx.ehCia) {
         var oa = r.oficial_postos || [];
         P().cartao(u, api, ctx, 'oficial', P().texto(M().ondeFica, { papel: M().oficialArea }), linhasGrupos(ctx, outros, oa, false), function (lugar) {
           grupos(lugar, ctx, outros, oa, function (posto, marcado) {

@@ -1,12 +1,14 @@
 /* ============================================================
-   USUÁRIOS — abas Férias · Licenças · Dispensas
+   USUÁRIOS — abas Férias · Licenças · Dispensas · Missões
    (RosterWork.usuariosAfastamentos)
    A lista completa do efetivo (a mesma árvore do Efetivo) e, em cada
-   militar, uma linha por afastamento do ano escolhido, em ordem de
-   data: o tipo e as datas, os dias e, em licença e dispensa, o fluxo.
+   militar, uma linha por afastamento (ou missão) do ano escolhido, em
+   ordem de data: o tipo e as datas, os dias e, em licença e dispensa,
+   o fluxo; na missão, se ele saiu da escala. A missão (a Operação
+   Verão) não é afastamento: não bloqueia pontual, troca nem extra.
    Na barra, o ano (‹ 2026 ›, a lista de anos e o Hoje) e os Filtros
    destas abas: Graus, Situação no ano e Tipo (só em Licenças e
-   Dispensas). Clicar no militar que se pode mudar troca a linha pela
+   Dispensas, que têm mais de um). Clicar no militar que se pode mudar troca a linha pela
    caixa dos períodos (usuarios-afastamentos-caixa.js); quem só lê
    fica com a linha. O usuarios.js empresta a árvore, a busca, a
    ordem e a contagem do título (ctx); aqui fica só o que é destas abas.
@@ -16,15 +18,16 @@
 
   window.RosterWork = window.RosterWork || {};
 
-  var CATEGORIA = { ferias: 'ferias', licencas: 'licenca', dispensas: 'dispensa' };
+  var CATEGORIA = { ferias: 'ferias', licencas: 'licenca', dispensas: 'dispensa', missoes: 'missao' };
   var TIPOS = {
     ferias: ['ferias'],
     licenca: ['propria_saude', 'saude_familiar', 'interesses', 'especial', 'capacitacao'],
-    dispensa: ['gala', 'nojo', 'comum']
+    dispensa: ['gala', 'nojo', 'comum'],
+    missao: ['operacao_verao']
   };
 
   var ctx = null;          // o que o usuarios.js empresta: { atualizar, busca, ordenar, arvoreDeGraus, contar }
-  var aba = null;          // 'ferias' | 'licencas' | 'dispensas' (null = outra aba)
+  var aba = null;          // 'ferias' | 'licencas' | 'dispensas' | 'missoes' (null = outra aba)
   var ano = anoAtual();
   var cache = {};          // 'categoria/ano' -> { usuario_id: [afastamentos do ano] }
   var token = 0;           // latest-wins: a resposta de outra aba ou de outro ano é ignorada
@@ -37,6 +40,8 @@
   function caixaDaLinha() { return RosterWork.usuariosAfastamentosCaixa; }
   function anoAtual() { return new Date().getFullYear(); }
   function categoria() { return CATEGORIA[aba]; }
+  /* a categoria com um tipo só (Férias, Missões) não tem o Tipo: nem na caixa, nem nos Filtros */
+  function umTipo(cat) { return (TIPOS[cat] || []).length < 2; }
   function porMilitar() { return cache[categoria() + '/' + ano] || {}; }
 
   /* "02/10 a 30/11" no ano de referência; a data de outro ano leva o ano ("15/12 a 05/01/2027") */
@@ -92,14 +97,14 @@
   /* o Tipo da aba: os tipos fixos e, quando aparece, a "Licença" (o tipo de saúde escondido pelo banco) */
   function opcoesTipo(lista) {
     var cat = categoria();
-    if (cat === 'ferias') return [];
+    if (umTipo(cat)) return [];
     var opcoes = TIPOS[cat].map(function (t) { return { rotulo: M().tiposCurtos[t], valor: t }; });
     if (lista && lista.some(function (a) { return a.tipo === 'licenca'; })) opcoes.push({ rotulo: M().tiposCurtos.licenca, valor: 'licenca' });
     return opcoes;
   }
 
   /* com algum tipo escolhido, um valor que não é tipo deixa de passar (filtro sem escolha deixa tudo passar) */
-  function filtrandoTipo() { return !!filtros && categoria() !== 'ferias' && !filtros.passa('tipo', ''); }
+  function filtrandoTipo() { return !!filtros && !umTipo(categoria()) && !filtros.passa('tipo', ''); }
 
   /* os afastamentos do militar no ano que passam no Tipo */
   function visiveis(pessoa) {
@@ -130,7 +135,9 @@
     if (a.fora_do_fluxo == null) {
       fluxo.classList.add('oculto');
     } else {
-      fluxo.textContent = a.fora_do_fluxo ? M().seloFora : M().seloSegue;
+      /* na missão, a mesma coluna diz se ele saiu da escala */
+      var missao = categoria() === 'missao';
+      fluxo.textContent = a.fora_do_fluxo ? (missao ? M().seloMissaoFora : M().seloFora) : (missao ? M().seloMissaoNa : M().seloSegue);
       fluxo.classList.add(a.fora_do_fluxo ? 'selo--erro' : 'selo--sucesso');
     }
     pilha.appendChild(l);
@@ -238,7 +245,7 @@
       filtros.definir('situacao', [{ rotulo: M().comNoAno[cat], valor: 'com' }, { rotulo: M().semNoAno[cat], valor: 'sem' }]);
       filtros.definir('tipo', opcoesTipo(null));
     }
-    if (lugarTipo) lugarTipo.classList.toggle('oculto', cat === 'ferias');
+    if (lugarTipo) lugarTipo.classList.toggle('oculto', umTipo(cat));
     carregar();
   }
 
@@ -277,6 +284,7 @@
     renderConteudo: renderConteudo, aoRenderizar: aoRenderizar, textoContagem: textoContagem, recarregar: recarregar,
     /* para a ficha */
     seletorAno: seletorAno, textoDatas: textoDatas, anoAtual: anoAtual,
-    tiposDe: function (cat) { return (TIPOS[cat] || []).slice(); }
+    tiposDe: function (cat) { return (TIPOS[cat] || []).slice(); },
+    umTipo: umTipo
   };
 })();

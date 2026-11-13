@@ -6,7 +6,9 @@
    lista Quem sai: quem está no dia aqui, com o ícone de origem à
    esquerda e só o horário à direita, e quem foi remanejado daqui
    para outra unidade (com o ícone do remanejado). E o pontual que
-   sai (tirarDoPontual: a sub-tela e o Remover do dia).
+   sai (tirarDoPontual: a sub-tela e o Remover do dia) e o campo
+   Motivo da folga (campoMotivo: o Remover do dia, o Mudar o horário
+   do serviço e a célula da grade).
    RosterWork.escalasPainelRemoverListas.
    ============================================================ */
 (function () {
@@ -68,6 +70,27 @@
     return t ? L().folgaParte(t, nome, horas) : L().tirarFolga(nome, data, horas);
   }
 
+  /* o motivo da folga dele que já está no rascunho (o campo começa com ele) */
+  function motivoNoRascunho(cpf) {
+    var f = (ed().rascunho().folgas || []).filter(function (x) { return x.cpf === cpf && x.motivo; })[0];
+    return f ? f.motivo : '';
+  }
+
+  /* o campo Motivo da folga (molde tpl-escala-folga-motivo), no fim de onde (a caixa da pergunta, depois das respostas
+     do banco de horas): valor = o de começo; aoMudar(texto) a cada letra; aoEnter(), o Enter; pequeno: o campo da célula
+     da grade */
+  function campoMotivo(onde, valor, aoMudar, aoEnter, pequeno) {
+    var el = RosterWork.tpl('tpl-escala-folga-motivo');
+    if (!el) return null;
+    var inp = el.querySelector('input');
+    inp.value = valor || '';
+    if (pequeno) inp.classList.add('campo-entrada--pequeno');
+    inp.addEventListener('input', function () { aoMudar(inp.value.trim()); });
+    inp.addEventListener('keydown', function (e) { if (e.key === 'Enter' && aoEnter) { e.preventDefault(); aoEnter(); } });
+    if (onde) onde.appendChild(el);
+    return el;
+  }
+
   /* o pontual como está gravado (o banco diz se as horas dele foram contadas) */
   function pontualSalvo(cpf) {
     var api = ed();
@@ -125,5 +148,6 @@
   }
 
   window.RosterWork.escalasPainelRemoverListas = { partesDe: partesDe, podeTirar: podeTirar, textoFolga: textoFolga,
+    motivoNoRascunho: motivoNoRascunho, campoMotivo: campoMotivo,
     pontualSalvo: pontualSalvo, tirarDoPontual: tirarDoPontual, itensQuem: itensQuem };
 })();

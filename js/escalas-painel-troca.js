@@ -14,7 +14,7 @@
    O Voltar ao dia e o Cancelar perguntam antes de descartar o que
    foi preenchido; o X do painel (escalas-painel.js) e o navegador
    (guarda de saída) também, pelo temDados.
-   API: RosterWork.escalasPainelTroca.abrir(corpo, rodape, { registrar, iso, aoSair, aoRegistrar }),
+   API: RosterWork.escalasPainelTroca.abrir(corpo, rodape, { registrar, iso, com, aoSair, aoRegistrar }),
         .temDados(), .encerrar()
    ============================================================ */
 (function () {
@@ -54,7 +54,8 @@
   }
 
   /* corpo e rodape = os do painel do dia (o rodapé fica com o do formulário); registrar = o modo Registrar; iso = o dia
-     aberto (o mês do calendário). aoSair: a lista do dia volta a desenhar; aoRegistrar: o dia lê de novo */
+     aberto (o mês do calendário); com = o militar do Registrar troca de serviço do nome (ele já na lista e o dia
+     escolhido). aoSair: a lista do dia volta a desenhar; aoRegistrar: o dia lê de novo */
   function abrir(corpo, rodape, opcoes) {
     if (!corpo || !RW.trocasVarias) return;
     encerrar();
@@ -64,6 +65,7 @@
     if (voltar) { voltar.addEventListener('click', sair); corpo.appendChild(voltar); }
     RW.trocasVarias.montar({
       corpo: corpo, registrar: !!opcoes.registrar, mesInicial: opcoes.iso || null, cancelar: sair, aoConcluir: voltarAoDia,
+      com: opcoes.com || null, diaEscolhido: opcoes.com ? opcoes.iso : null,
       aoMudar: opcoes.registrar ? function () {
         window.dispatchEvent(new CustomEvent('rosterwork_escala_recarregar'));
         if (opcoes.aoRegistrar) opcoes.aoRegistrar();

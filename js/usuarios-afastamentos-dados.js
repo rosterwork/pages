@@ -1,17 +1,17 @@
 /* ============================================================
    USUÁRIOS — afastamentos: acesso ao banco
    (RosterWork.usuariosAfastamentosDados)
-   Camada única das abas Férias · Licenças · Dispensas e das mesmas
-   abas da ficha: a lista do ano (afastamentos_listar, de todos ou de
-   um militar) e a gravação dos períodos (ferias_salvar e
-   licencas_salvar). A UI não fala com o banco.
+   Camada única das abas Férias · Licenças · Dispensas · Missões e das
+   mesmas abas da ficha: a lista do ano (afastamentos_listar, de todos
+   ou de um militar) e a gravação dos períodos (ferias_salvar,
+   licencas_salvar e missoes_salvar). A UI não fala com o banco.
    ============================================================ */
 (function () {
   'use strict';
 
   window.RosterWork = window.RosterWork || {};
 
-  /* os afastamentos de uma categoria ('ferias' | 'licenca' | 'dispensa') que tocam o ano (sem ano,
+  /* os afastamentos de uma categoria ('ferias' | 'licenca' | 'dispensa' | 'missao') que tocam o ano (sem ano,
      todos os anos), de todos ou de um militar, em ordem de data. Falha resolve null (não confundir
      com lista vazia) */
   function listar(categoria, ano, usuarioId) {
@@ -31,6 +31,7 @@
   window.RosterWork.usuariosAfastamentosDados = {
     listar:         listar,
     salvarFerias:   function (corpo) { return rpc('ferias_salvar', corpo); },
-    salvarLicencas: function (corpo) { return rpc('licencas_salvar', corpo); }
+    salvarLicencas: function (corpo) { return rpc('licencas_salvar', corpo); },
+    salvarMissoes:  function (corpo) { return rpc('missoes_salvar', corpo); }
   };
 })();

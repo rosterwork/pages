@@ -410,15 +410,22 @@
   }
 
   /* Remover do dia (militar do ciclo): folga do dia inteiro e as colocações dele saem. Com periodos (quem também
-     serve em outra unidade no dia), a folga e o corte valem só nesses horários: o serviço de lá não muda */
-  function darFolga(cpf, contabilizar, periodos) {
+     serve em outra unidade no dia), a folga e o corte valem só nesses horários: o serviço de lá não muda. motivo: o
+     Motivo da folga (opcional; vazio não vai) */
+  function darFolga(cpf, contabilizar, periodos, motivo) {
+    var texto = String(motivo || '').trim();
+    var folga = function (hi, hf) {
+      var f = { cpf: cpf, hi: hi, hf: hf, contabilizar: !!contabilizar };
+      if (texto) f.motivo = texto;
+      return f;
+    };
     rasc.folgas = rasc.folgas.filter(function (f) { return f.cpf !== cpf; });
     if (periodos && periodos.length) {
-      periodos.forEach(function (p) { rasc.folgas.push({ cpf: cpf, hi: p.hi, hf: p.hf, contabilizar: !!contabilizar }); });
+      periodos.forEach(function (p) { rasc.folgas.push(folga(p.hi, p.hf)); });
       cortarAjustes(cpf, periodos.map(faixa));
       return;
     }
-    rasc.folgas.push({ cpf: cpf, hi: null, hf: null, contabilizar: !!contabilizar });
+    rasc.folgas.push(folga(null, null));
     rasc.ajustes = rasc.ajustes.filter(function (a) { return a.cpf !== cpf; });
   }
 
@@ -1453,8 +1460,9 @@
      com o Voltar ao dia e o calendário no mês do dia. O Registrar grava na hora, fora do rascunho, então com mudança não
      salva (Dia ou Ciclo) o aviso pede o Salvar antes (o lápis aberto guarda a mudança dele e a lista mostra como fica);
      registrou, volta ao dia e lê de novo (também depois do Desfazer do resumo, se o painel segue no dia). O pedido do
-     Solicitar não muda a escala: abre com o rascunho, que fica */
-  function abrirTroca(registrar) {
+     Solicitar não muda a escala: abre com o rascunho, que fica. com = o militar do menu do nome (o Registrar troca de
+     serviço dele: o formulário começa com ele e com o dia escolhido) */
+  function abrirTroca(registrar, com) {
     if (!ctx || ctx.salvando || ctx.carregando || !RosterWork.escalasPainelTroca || (registrar && !base)) return;
     if (registrar && RosterWork.escalasPainelSalvar && RosterWork.escalasPainelSalvar.contar()) {
       fecharLinha();
@@ -1469,7 +1477,7 @@
     montarSubcabecalho();
     var c = ctx, uid = ctx.unidadeId, iso = ctx.iso;
     RosterWork.escalasPainelTroca.abrir(ctx.corpo, ctx.rodape, {
-      registrar: registrar, iso: iso,
+      registrar: registrar, iso: iso, com: com || null,
       aoSair: function () { if (ctx === c) desenhar(); },
       aoRegistrar: function () { if (ctx && ctx.unidadeId === uid && ctx.iso === iso && !ctx.emSub) recarregar(); }
     });
@@ -1616,6 +1624,11 @@
       celula: function () { return ctx && ctx.semLista ? { unidadeId: ctx.unidadeId, iso: ctx.iso } : null; },
       carregando: function () { return !!ctx && !!ctx.carregando; },
       abrirLugar: abrirLugar,
+      /* o Registrar troca de serviço do menu do nome: o formulário da troca, já com ele e com o dia */
+      registrarTroca: function (cpf) {
+        var mil = militarDoDia(cpf);
+        abrirTroca(true, mil ? { cpf: cpf, grad: mil.grad, nome: mil.nome, unidade: mil.unidade || '', unidadeId: ctx.unidadeId } : null);
+      },
       mudar: mudar,
       comecarVivo: comecarVivo,
       aoVivo: aoVivo,

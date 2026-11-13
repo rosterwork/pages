@@ -74,9 +74,11 @@
   font-size: 12px;
 }
 
-/* as perguntas do painel (a guarnição, a folga e a mudança) e o Adicionar à guarnição, sem a moldura delas */
+/* as perguntas do painel (a guarnição, a folga e a mudança), o Adicionar à guarnição e o campo do Oficial de Área do
+   título (com a pergunta do banco de horas de quem sai embaixo), sem a moldura delas */
 .escala-celula-perguntas,
-.escala-celula-guarnicao {
+.escala-celula-guarnicao,
+.escala-celula-oficial-campo {
   display: flex;
   flex-direction: column;
   gap: 8px;

@@ -624,6 +624,43 @@
   </div>
 </template>
 
+<!-- a caixa 1 do Oficial de Área no título do dia (escalas-celula-oficial.js): com o Oficial pontual, Pôr outro no lugar
+     dele e Remover deste dia; com o que veio de um pelotão, Pôr outro no lugar dele e o Devolver (o texto vem do JS); sem
+     Oficial, Adicionar o Oficial de Área; e sempre o Abrir o painel do dia da companhia -->
+<template id="tpl-escala-celula-oficial">
+  <div class="escala-celula-oficial">
+    <button type="button" class="dropdown-item oculto" data-acao="outro"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-substituir"/></svg><span>Pôr outro no lugar dele</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <button type="button" class="dropdown-item dropdown-item--perigo oculto" data-acao="remover-dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-sair"/></svg><span>Remover deste dia</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <button type="button" class="dropdown-item oculto" data-acao="devolver"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-restaurar"/></svg><span class="escala-celula-oficial-devolver"></span></button>
+    <button type="button" class="dropdown-item oculto" data-acao="adicionar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-novo-usuario"/></svg><span>Adicionar o Oficial de Área</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <div class="dropdown-divisor"></div>
+    <button type="button" class="dropdown-item" data-acao="painel"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-escalas"/></svg><span>Abrir o painel do dia da <span class="escala-celula-companhia"></span></span></button>
+  </div>
+</template>
+
+<!-- a caixa 2 do Adicionar o Oficial de Área e do Pôr outro no lugar dele (componente geral-combo-militar): a busca e os
+     subtenentes e oficiais da companhia, livres ou de serviço, por unidade; escolhido quem está de serviço num pelotão, a
+     frase de que ele sai de lá; no Pôr outro, a pergunta do banco de horas de quem sai, quando vale (os textos e a ordem
+     vêm do JS) -->
+<template id="tpl-escala-celula-oficial-campo">
+  <div class="escala-celula-oficial-campo">
+    <div class="dropdown campo-combo escala-celula-adicionar">
+      <input class="campo-entrada campo-entrada--pequeno" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Oficial de Área" />
+      <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+      <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares"></div>
+    </div>
+    <div class="nota escala-celula-oficial-nota oculto">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+      <span class="nota-texto"></span>
+    </div>
+    <div class="escala-celula-pergunta oculto">
+      <span class="escala-celula-pergunta-texto"></span>
+      <label class="geral-opcao"><input type="radio" value="nao" /><span class="escala-celula-pergunta-nao"></span></label>
+      <label class="geral-opcao"><input type="radio" value="sim" /><span class="escala-celula-pergunta-sim"></span></label>
+    </div>
+  </div>
+</template>
+
 <!-- a caixa 2 do Adicionar extra neste dia (escalas-celula-extra.js): o campo de militar da Extrajornada (os grupos do
      painel do dia dela) e, escolhido o nome, a barra dele embaixo -->
 <template id="tpl-escala-celula-extra">

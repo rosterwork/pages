@@ -2,15 +2,17 @@
    USUÁRIOS — os períodos de um tipo de afastamento
    (RosterWork.usuariosPainelAfastamentosEditar)
    Dentro da caixa da lista (usuarios-afastamentos-caixa.js; Férias, um
-   tipo de licença ou de dispensa): uma
+   tipo de licença ou de dispensa, ou a missão): uma
    caixa por período daquele ano, com início → fim e os dias; em
    licença e dispensa, o "Tirar do fluxo da escala?" (sugere Sim a
-   partir de 16 dias, até o administrador escolher) e o Motivo. O
+   partir de 16 dias, até o administrador escolher) e o Motivo; na
+   missão, o "Tirar da escala?", sem sugestão e sem Motivo (o Salvar
+   espera a resposta). O
    que é de mais de uma semana atrás fica travado (o mesmo limite do
    banco): o período que terminou antes não muda; o que começou antes
    mantém o início e a decisão do fluxo e não sai. Salvar manda a
-   lista inteira do tipo, de todos os anos (ferias_salvar ou
-   licencas_salvar); o banco avisa antes o que o militar já tem nos
+   lista inteira do tipo, de todos os anos (ferias_salvar,
+   licencas_salvar ou missoes_salvar); o banco avisa antes o que o militar já tem nos
    dias novos, quando ele continua fora da escala e, fora do fluxo,
    as trocas e folgas que a saída da escala cancela (as extras
    ficam), e o administrador decide se segue.
@@ -25,6 +27,8 @@
   function M() { return RosterWork.mensagens.afastamentos; }
   function D() { return RosterWork.data; }
   function comFluxo() { return est.ctx.categoria !== 'ferias'; }
+  /* a missão: a pergunta é "Tirar da escala?", sem a regra dos 16 dias, e espera a resposta */
+  function ehMissao() { return !!est && est.ctx.categoria === 'missao'; }
 
   /* meia-noite de hoje − 7 dias: o dia mais antigo que ainda muda (o mesmo limite do banco) */
   function limite() {
@@ -47,7 +51,7 @@
     };
   }
   function linhaNova() {
-    return { id: null, ini: '', fim: '', origIni: '', origFim: '', fora: false, origFora: null, escolheu: false,
+    return { id: null, ini: '', fim: '', origIni: '', origFim: '', fora: ehMissao() ? null : false, origFora: null, escolheu: false,
       motivo: '', origMotivo: '', iniTravado: false, fimTravado: false, situacao: M().novo, visivel: true };
   }
   function vazia(l) { return !l.id && !l.ini && !l.fim; }
@@ -83,8 +87,9 @@
         problema = problema || M().limite(D().paraBR(lim));
         return;
       }
-      /* sem a escolha do administrador, a regra dos dias: a partir de 16 sai do fluxo */
-      if (comFluxo() && !l.escolheu) l.fora = l.dias >= 16;
+      /* sem a escolha do administrador, a regra dos dias: a partir de 16 sai do fluxo; na missão, a resposta é obrigatória */
+      if (ehMissao()) { if (l.fora == null) incompleta = true; }
+      else if (comFluxo() && !l.escolheu) l.fora = l.dias >= 16;
       validas.push(l);
     });
     /* períodos que se cruzam (os deste tipo, de todos os anos): marca o de baixo */
@@ -118,10 +123,14 @@
     dias.classList.toggle('oculto', !l.dias);
     if (!comFluxo()) return;
     l.el.querySelector('[data-periodo-fluxo]').classList.toggle('oculto', !l.dias);
+    /* sem resposta (só a missão nova), nenhum dos dois fica marcado */
     Array.prototype.forEach.call(l.el.querySelectorAll('[data-fora]'), function (b) {
-      b.classList.toggle('aba--ativa', (b.getAttribute('data-fora') === 'sim') === !!l.fora);
+      b.classList.toggle('aba--ativa', l.fora != null && (b.getAttribute('data-fora') === 'sim') === !!l.fora);
     });
-    l.el.querySelector('[data-periodo-fluxo-texto]').textContent = l.fora ? M().foraDoFluxo : M().segueNoFluxo;
+    var texto = l.el.querySelector('[data-periodo-fluxo-texto]');
+    if (ehMissao()) texto.textContent = l.fora == null ? '' : l.fora ? M().missaoFora : M().missaoNa;
+    else texto.textContent = l.fora ? M().foraDoFluxo : M().segueNoFluxo;
+    texto.classList.toggle('oculto', !texto.textContent);
   }
 
   /* um campo de data: travado, ou com máscara e calendário */
@@ -145,6 +154,9 @@
     else remover.addEventListener('click', function () { removerLinha(l); });
     el.querySelector('[data-periodo-travado]').classList.toggle('oculto', !l.fimTravado);
     if (comFluxo()) {
+      /* a pergunta: "Tirar do fluxo da escala?" (licença e dispensa) ou "Tirar da escala?" (missão) */
+      el.querySelector('[data-pergunta-fluxo]').classList.toggle('oculto', ehMissao());
+      el.querySelector('[data-pergunta-missao]').classList.toggle('oculto', !ehMissao());
       Array.prototype.forEach.call(el.querySelectorAll('[data-fora]'), function (b) {
         b.disabled = l.iniTravado;
         b.addEventListener('click', function () {
@@ -153,6 +165,9 @@
           avaliar();
         });
       });
+    }
+    /* o Motivo: só em licença e dispensa */
+    if (comFluxo() && !ehMissao()) {
       var motivo = el.querySelector('[data-periodo-motivo]');
       var texto = motivo.querySelector('textarea');
       motivo.classList.remove('oculto');
@@ -210,13 +225,16 @@
     var c = e.ctx;
     var periodos = e.linhas.filter(function (l) { return !vazia(l); }).map(function (l) {
       if (c.categoria === 'ferias') return { ferias_id: l.id, inicio: D().paraISO(l.ini), fim: D().paraISO(l.fim) };
+      if (c.categoria === 'missao') return { missao_id: l.id, inicio: D().paraISO(l.ini), fim: D().paraISO(l.fim), fora_da_escala: !!l.fora };
       return { licenca_id: l.id, inicio: D().paraISO(l.ini), fim: D().paraISO(l.fim), fora_do_fluxo: !!l.fora, motivo: l.motivo };
     });
     var dados = RosterWork.usuariosAfastamentosDados;
     var pedido = c.categoria === 'ferias'
       ? dados.salvarFerias({ p_usuario_id: c.pessoa.usuario_id, p_periodos: periodos, p_confirmar: !!confirmar })
-      : dados.salvarLicencas({ p_usuario_id: c.pessoa.usuario_id, p_categoria: c.categoria, p_tipo: c.tipo,
-          p_periodos: periodos, p_confirmar: !!confirmar });
+      : c.categoria === 'missao'
+        ? dados.salvarMissoes({ p_usuario_id: c.pessoa.usuario_id, p_tipo: c.tipo, p_periodos: periodos, p_confirmar: !!confirmar })
+        : dados.salvarLicencas({ p_usuario_id: c.pessoa.usuario_id, p_categoria: c.categoria, p_tipo: c.tipo,
+            p_periodos: periodos, p_confirmar: !!confirmar });
     e.salvando = true;
     e.ctl.aoMudar();
     if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal();   // recalcula a escala: círculo + tela travada
@@ -229,10 +247,10 @@
       } else if (r && r.precisa_confirmar) {   // ele já tem serviço ou folga nos dias novos, sai da escala ou continua fora dela
         var itens = itensConfirmar(r);
         var temServico = itens.length > 0;
-        /* fora do fluxo: a saída da escala e as trocas e folgas que ela cancela (as extras ficam) */
+        /* fora do fluxo (ou da escala, na missão): a saída da escala e as trocas e folgas que ela cancela (as extras ficam) */
         var pend = r.pendencias || {};
         var saida = ((pend.trocas || []).length || (pend.folgas || []).length)
-          ? RosterWork.avisoSaida(pend, { tipo: 'licenca', escala: M().itemSaiDaEscala(r.sai_em) }) : null;
+          ? RosterWork.avisoSaida(pend, { tipo: c.categoria === 'missao' ? 'missao' : 'licenca', escala: M().itemSaiDaEscala(r.sai_em) }) : null;
         if (saida) itens = itens.concat(saida.itens);
         if (r.continua_fora) itens.push({ titulo: RosterWork.mensagens.saida.tituloEscala, texto: M().itemContinuaFora(r.continua_fora) });
         RosterWork.confirmar({

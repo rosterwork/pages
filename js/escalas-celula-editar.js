@@ -9,14 +9,16 @@
    o menu delas, a troca e o afastamento só o Abrir o painel, e a da
    extra, para o administrador da companhia, a caixa da extra
    (escalas-celula-extra.js). O pelotão abre Adicionar neste dia,
-   Adicionar à guarnição (a letra do dia) e Abrir o painel do dia. O
-   que cada item faz: escalas-celula-editar-acoes.js. O dia é lido no
-   clique (os pontos até ele chegar); o clique fora e o Esc fecham (o
-   concluído fica, o que ficou pela metade sai); um dia por vez (outro
-   dia com mudança não salva pergunta antes). O dia de mais de 7 dias
-   atrás abre a caixa com o aviso (o painel só por ela); quem só lê, o
-   dia na fila do recálculo, o painel aberto e o Calendário do celular
-   abrem o painel. Não cria HTML nem escreve estilo.
+   Adicionar à guarnição (a letra do dia) e Abrir o painel do dia; o
+   Oficial de Área do título, o dia da companhia (escalas-celula-
+   oficial.js). O que cada item faz: escalas-celula-editar-acoes.js. O
+   dia é lido no clique (os pontos até ele chegar); o clique fora e o
+   Esc fecham (o concluído fica, o que ficou pela metade sai); um dia
+   por vez (outro dia com mudança não salva pergunta antes). O dia de
+   mais de 7 dias atrás abre a caixa com o aviso (o painel só por
+   ela); quem só lê, o dia na fila do recálculo, o painel aberto e o
+   Calendário do celular abrem o painel. Não cria HTML nem escreve
+   estilo.
    RosterWork.escalasCelulaEditar.
    ============================================================ */
 (function () {
@@ -32,13 +34,13 @@
     ['.linha-escalado--trocado, .linha-escalado--afastamento', 'nada']
   ];
   var RISCADAS = '.linha-escalado--folga, .linha-escalado--trocado, .linha-escalado--remanejado, .linha-escalado--mudou-dia, .linha-escalado--saiu, .linha-escalado--afastamento';
-  /* o clique numa célula é da página (outro nome, o pelotão ou o mesmo nome): a caixa não fecha por ele */
-  var DA_GRADE = '.conteudo .escala-mes-celula, .conteudo .escala-calendario-unidade';
+  /* o clique numa célula ou no Oficial do título é da página (outro nome, o pelotão ou o mesmo): a caixa não fecha por ele */
+  var DA_GRADE = '.conteudo .escala-mes-celula, .conteudo .escala-calendario-unidade, .conteudo .escala-oficial--edita';
   /* a caixa do pelotão abre ao lado dele, com o topo 8px abaixo do topo do pelotão (na altura do nome e da faixa) */
   var TOPO_PELOTAO = 8;
 
   var dia = null;       // o dia da célula, com o rascunho no Dia: { unidadeId, iso, unidadeNome, unidadeCidade }
-  var aberto = null;    // a caixa aberta: { tipo: 'nome' | 'pelotao', unidadeId, iso, cpf, linha (o tipo), caixa, cfg, acao... }
+  var aberto = null;    // a caixa aberta: { tipo: 'nome' | 'pelotao' | 'oficial', unidadeId, iso, cpf, linha (o tipo), caixa, cfg, acao... }
   var refazer = false;  // a peça já vai ser achada de novo no próximo quadro
 
   function E() { return RW.escalasPainelEditar; }
@@ -81,9 +83,8 @@
   function ativo() { return !!dia && !!api().celula() && mesmo(api().celula(), dia.unidadeId, dia.iso); }
 
   /* começa (ou continua) o dia da célula; seguir() roda com o dia já pedido. Mudança não salva em outro dia: a pergunta de
-     descartar antes (Continuar editando fica como está) */
-  function irPara(cel, seguir) {
-    var d = diaDe(cel);
+     descartar antes (Continuar editando fica como está). d = { unidadeId, iso, unidadeNome, unidadeCidade } */
+  function irPara(d, seguir) {
     if (ativo() && mesmo(dia, d.unidadeId, d.iso)) { seguir(); return; }
     function comecar() {
       fecharTudo('largar');
@@ -92,11 +93,7 @@
       seguir();
     }
     if (S() && S().pendente()) {
-      RW.escalasPainel.confirmarDescarte(function () {
-        E().reset();
-        S().descartar();
-        comecar();
-      }, S().contarDoDia());
+      RW.escalasPainel.confirmarDescarte(function () { E().reset(); S().descartar(); comecar(); }, S().contarDoDia());
       return;
     }
     comecar();
@@ -105,11 +102,7 @@
   /* a leitura do dia (ou a prévia) chegou ao rascunho: a caixa que esperava mostra o menu; a que está sem a caixa 2 refaz o
      menu (o dia mudou); null: a leitura falhou */
   function chegou(dados) {
-    if (!dados) {
-      RW.avisar({ tipo: 'erro', mensagem: msg().falhaCarregar });
-      fecharTudo('largar');
-      return;
-    }
+    if (!dados) { RW.avisar({ tipo: 'erro', mensagem: msg().falhaCarregar }); fecharTudo('largar'); return; }
     var a = aberto;
     if (!a || !a.caixa) return;
     if (a.esperando || !a.acao) mostrar();
@@ -128,9 +121,8 @@
     return ((g ? g.textContent : '') + ' ' + (n ? n.textContent : '')).trim();
   }
 
-  /* abre a caixa da peça (titulo: o da folha do celular; junto: o pelotão do nome). A peça e o pelotão ficam escolhidos
-     (a borda forte) na hora; a caixa aparece ao lado quando o menu chega (no pelotão, com o topo um pouco abaixo do topo
-     dele, sem cobrir os nomes) */
+  /* abre a caixa da peça (titulo: o da folha do celular; junto: o pelotão do nome), já escolhida (a borda forte); ela
+     aparece ao lado quando o menu chega (no pelotão, com o topo um pouco abaixo do dele, sem cobrir os nomes) */
   function abrirCaixa(a, peca, titulo, junto) {
     aberto = a;
     a.caixa = RW.caixaFlutuante.abrir({
@@ -169,6 +161,7 @@
     a.caixa.espera(false);
     var menu;
     if (a.tipo === 'pelotao') menu = A().menuDoPelotao(contexto());
+    else if (a.tipo === 'oficial') menu = RW.escalasCelulaOficial.menu(contexto());
     else {
       a.cfg = cfgDe(a);
       menu = RW.escalasPainelLinhaMenu.menuDaCelula(a.cfg, function (acao, botao) {
@@ -236,7 +229,7 @@
     var a = aberto;
     if (a && a.tipo === 'nome' && mesmo(a, d.unidadeId, d.iso) && a.cpf === cpf && a.linha === tipo && a.caixa && a.caixa.aberta()) return;
     fecharTudo();
-    irPara(cel, function () {
+    irPara(d, function () {
       abrirCaixa({ tipo: 'nome', unidadeId: d.unidadeId, iso: d.iso, cpf: cpf, linha: tipo }, linha, L().noDia(nomeDa(linha), diaMes(d.iso)),
         [pecaDoPelotao(cel)]);
     });
@@ -249,7 +242,7 @@
     var d = diaDe(cel), a = aberto;
     if (a && a.tipo === 'pelotao' && mesmo(a, d.unidadeId, d.iso) && a.caixa && a.caixa.aberta()) return;
     fecharTudo();
-    irPara(cel, function () {
+    irPara(d, function () {
       abrirCaixa({ tipo: 'pelotao', unidadeId: d.unidadeId, iso: d.iso }, pecaDoPelotao(cel), L().noDia(d.unidadeNome, diaMes(d.iso)));
     });
   }
@@ -271,6 +264,14 @@
     fecharTudo();
     RW.caixaFlutuante.aviso({ peca: pecaDoPelotao(cel), topo: TOPO_PELOTAO, texto: msg().diaAntigo,
       titulo: L().noDia(d.unidadeNome, diaMes(d.iso)), aoPainel: function () { RW.escalasPainel.abrirDia(d, null); } });
+  }
+
+  /* o Oficial de Área do título do dia (escalas-celula-oficial.js): a caixa dele, no dia da companhia (d); cpf: o do título */
+  function abrirOficial(d, peca, titulo, cpf) {
+    var a = aberto;
+    if (a && a.tipo === 'oficial' && mesmo(a, d.unidadeId, d.iso) && a.caixa && a.caixa.aberta()) return;
+    fecharTudo();
+    irPara(d, function () { abrirCaixa({ tipo: 'oficial', unidadeId: d.unidadeId, iso: d.iso, titulo: cpf }, peca, titulo); });
   }
 
   /* depois do Adicionar neste dia: a caixa do militar que entrou abre quando o dia vier com ele, já no horário */
@@ -315,8 +316,9 @@
     refazer = false;
     var a = aberto;
     if (!a) return;
-    var cel = celulaDe(a);
-    var peca = !cel ? null : a.tipo === 'pelotao' ? pecaDoPelotao(cel) : linhaDe(cel, a.cpf, a.linha);
+    var cel = a.tipo === 'oficial' ? null : celulaDe(a);
+    var peca = a.tipo === 'oficial' ? RW.escalasCelulaOficial.peca(a)
+      : !cel ? null : a.tipo === 'pelotao' ? pecaDoPelotao(cel) : linhaDe(cel, a.cpf, a.linha);
     var junto = cel && a.tipo === 'nome' ? [pecaDoPelotao(cel)] : [];
     if (!a.caixa) {
       if (peca && a.novo) abrirCaixa(a, peca, L().noDia(nomeDa(peca), diaMes(a.iso)), junto);
@@ -327,9 +329,7 @@
   }
 
   function acharDeNovo() {
-    if (refazer) return;
-    refazer = true;
-    requestAnimationFrame(acharPeca);
+    if (!refazer) { refazer = true; requestAnimationFrame(acharPeca); }
   }
 
   /* quem edita o dia na célula (a caixa abre no nome): os nomes ganham a borda ao passar o mouse (escalas-mes.css); para
@@ -354,8 +354,7 @@
 
   /* a entrada na Escala, a troca de mês: a célula começa limpa (o rascunho dela sai) */
   function largar() {
-    var tinha = ativo();
-    var a = aberto;
+    var tinha = ativo(), a = aberto;
     aberto = null;
     if (a && a.caixa) a.caixa.fechar();
     if (RW.extrajornadaCelula) RW.extrajornadaCelula.esquecer();
@@ -394,6 +393,8 @@
       if (!(S() && S().pendente())) { largar(); seguir(); return; }
       RW.escalasPainel.confirmarDescarte(function () { largar(); seguir(); }, S().contarDoDia());
     },
-    largar: largar
+    largar: largar,
+    /* o Oficial de Área do título (escalas-celula-oficial.js): a caixa, a peça nova com a grade refeita e o hoje − 7 */
+    abrirOficial: abrirOficial, acharDeNovo: acharDeNovo, limite: limite
   };
 })();

@@ -1,8 +1,9 @@
 /* ============================================================
-   USUÁRIOS — abas Férias · Licenças · Dispensas: a caixa no lugar da linha
+   USUÁRIOS — abas Férias · Licenças · Dispensas · Missões: a caixa no lugar da linha
    (RosterWork.usuariosAfastamentosCaixa)
    Clicar no militar troca a linha por uma caixa: a própria linha no
-   alto, com o X; em Licenças e Dispensas, o Tipo; embaixo, os períodos
+   alto, com o X; em Licenças e Dispensas, o Tipo (Férias e Missões têm
+   um tipo só, sem a escolha); embaixo, os períodos
    daquele tipo no ano (usuarios-painel-afastamentos-editar.js). Uma
    caixa aberta por vez, um militar e um tipo por Salvar, porque cada
    gravação pode pedir confirmação e refaz a escala. O rodapé largo
@@ -15,7 +16,7 @@
 
   var RW = window.RosterWork = window.RosterWork || {};
 
-  var CATEGORIA = { ferias: 'ferias', licencas: 'licenca', dispensas: 'dispensa' };
+  var CATEGORIA = { ferias: 'ferias', licencas: 'licenca', dispensas: 'dispensa', missoes: 'missao' };
 
   var raiz = null;   // o conteúdo da página Usuários
   var est = null;    // a caixa aberta: { linha, caixa, pessoa, cat, ano, todos, tipo, sub }
@@ -95,9 +96,9 @@
     else montarPeriodos(e, novo);
   }
 
-  /* o Tipo: Férias não tem; Licenças, com nomes longos, no campo de seleção; Dispensas, no seletor */
+  /* o Tipo: Férias e Missões (um tipo só) não têm; Licenças, com nomes longos, no campo de seleção; Dispensas, no seletor */
   function montarTipo(e) {
-    if (e.cat === 'ferias') return;
+    if (RW.usuariosAfastamentos.umTipo(e.cat)) return;
     var lugar = e.caixa.querySelector('[data-afastamento-tipo]');
     var curtos = M().tiposCurtos;
     var tipos = RW.usuariosAfastamentos.tiposDe(e.cat);
@@ -154,7 +155,7 @@
     var e = est = { linha: linha, caixa: caixa, pessoa: pessoa, cat: cat, ano: ano, todos: [], tipo: null, sub: null };
     var meu = ++token;
     caixa.querySelector('.usuarios-caixa-fechar').addEventListener('click', function () { antesDeSair(null, true); });
-    if (cat === 'ferias') caixa.querySelector('[data-afastamento-tipo]').remove();
+    if (RW.usuariosAfastamentos.umTipo(cat)) caixa.querySelector('[data-afastamento-tipo]').remove();
     var pontos = RW.tpl('carregando-pontos');
     if (pontos) caixa.querySelector('[data-periodos-lugar]').appendChild(pontos);
     linha.replaceWith(caixa);
