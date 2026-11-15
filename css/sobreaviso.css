@@ -1,0 +1,41 @@
+/* ============================================================
+   SOBREAVISO — a página do menu
+   A mesma Escala (escalas.html e os mesmos arquivos), com a marca
+   .escala-pagina--sobreaviso na página (js/sobreaviso.js). Aqui só o
+   que ela esconde ou troca: os textos (o título e o total do
+   Militares), a Minha escala (com a divisória
+   dela; as abas ficam Mês, Militares e Colunas), o
+   botão Filtros (o
+   filtro fica preso no Sobreaviso), as notas da Extrajornada embaixo
+   da barra e, na célula, a faixa da cobertura, o Oficial de Área e
+   o traço em cima do sobreaviso (só ele aparece).
+   Montagem: js/sobreaviso.js
+   ============================================================ */
+
+/* os textos de cada página (o título e o total do Militares) */
+.escala-pagina--sobreaviso .escala-so-escala {
+  display: none;
+}
+
+.escala-pagina--sobreaviso .escala-so-sobreaviso {
+  display: inline;
+}
+
+/* as abas: Mês, Militares e Colunas; a barra, sem o Filtros; embaixo dela, sem as notas da Extrajornada */
+.escala-pagina--sobreaviso #escala-modo-minha,
+.escala-pagina--sobreaviso #escala-filtros,
+.escala-pagina--sobreaviso #escala-cotas-aviso,
+.escala-pagina--sobreaviso #escala-extra-servico-aviso {
+  display: none;
+}
+
+/* sem a Minha escala, a divisória que a separava das outras abas sai */
+.escala-pagina--sobreaviso #escala-modo-visoes::before {
+  content: none;
+}
+
+/* a célula: sem a faixa da cobertura e sem o Oficial de Área do dia */
+.escala-pagina--sobreaviso .escala-mes-grafico,
+.escala-pagina--sobreaviso .escala-mes-oficial {
+  display: none;
+}

@@ -1,6 +1,6 @@
 /* ============================================================
    ESCALAS — modo Militares
-   Grade: militares nas linhas, dias da quinzena nas colunas.
+   Grade: militares nas linhas, dias do mês nas colunas.
    Cada UNIDADE selecionada vira uma linha-título (sticky) que
    recolhe/expande seus militares. Coluna do militar fixa à
    esquerda e cabeçalho dos dias fixo no topo. Padrão de blocos
@@ -19,19 +19,24 @@
   position: relative;
 }
 
-/* larguras: coluna do militar (fixa) + os 14 dias da quinzena, que crescem para preencher.
-   Todas as linhas usam a mesma grade (via --mil-colunas), por isso as colunas alinham. A grade
-   cresce até a largura mínima das colunas (os blocos cobrem todas as células ao rolar na horizontal) */
+/* larguras: coluna do militar (fixa) + uma coluna por dia do mês (28 a 31, sem número fixo), que
+   crescem para preencher; o mínimo do dia (72px, também no celular) é o do selo com o ícone e o horário
+   numa linha só, dentro da célula. Todas as linhas têm o mesmo número de dias e as mesmas larguras, por isso as
+   colunas alinham. A grade cresce até a largura mínima das colunas; o que não cabe rola para o lado
+   dentro da .escala-mil (os blocos cobrem todas as células ao rolar na horizontal) */
 .escala-mil-grade {
-  --col-militar: 216px;
-  --mil-colunas: var(--col-militar) repeat(14, minmax(60px, 1fr));
+  --col-militar: 244px;   /* o nome, o CPF e o selo dos dias */
+  --col-dia: minmax(72px, 1fr);
   min-width: min-content;
   padding: 0 8px 8px;
 }
 
+/* a 1ª coluna é a do militar; cada dia que a linha tiver entra na coluna seguinte, na mesma linha */
 .escala-mil-linha {
   display: grid;
-  grid-template-columns: var(--mil-colunas, var(--col-militar) 1fr);
+  grid-template-columns: var(--col-militar);
+  grid-auto-columns: var(--col-dia);
+  grid-auto-flow: column;
 }
 
 /* ---------- cabeçalho dos dias, fixo no topo ---------- */
@@ -182,7 +187,6 @@
   background-color: var(--fundo-superficie);
   border-right: 1px solid var(--borda);
   border-bottom: 1px solid var(--borda);
-  overflow: hidden;
 }
 
 /* círculo com as iniciais do militar (mesmas cores do avatar do cabeçalho) */
@@ -237,6 +241,25 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* o selo dos dias: quantos dias ele aparece no mês, pelo filtro (js/escalas-militares-dias.js). O círculo do número do
+   dia do cabeçalho, no cinza do avatar; cabe "88". Na linha, encosta à direita; na Legenda, fica no lugar da amostra */
+.escala-mil-pessoa-dias {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 20px;
+  min-height: 20px;
+  border-radius: 50%;
+  background-color: var(--fundo-medio);
+  color: var(--texto-suave);
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.escala-mil-pessoa > .escala-mil-pessoa-dias { margin-left: auto; }
+
 /* ---------- célula (militar × dia): só chips (serviço/afastado), com clique ---------- */
 .escala-mil-celula {
   display: flex;
@@ -275,7 +298,7 @@
   align-items: center;
   gap: 2px;
   min-height: 18px;
-  padding: 0 8px;
+  padding: 0 4px;
   border-radius: var(--raio-pequeno);
   background-color: var(--fundo-contraste);
   color: var(--texto-invertido);
@@ -285,14 +308,18 @@
   white-space: nowrap;
 }
 
-/* dentro do chip, as horas encostam na seta (sem a largura fixa que o Mês usa) */
+/* dentro do chip, as horas encostam na seta (sem a largura fixa que o Mês usa). Os números descem 1px (a margem de
+   2px em cima, centrada): a tinta deles fica no meio do selo, na linha da seta e dos ícones */
 .escala-mil-servico .linha-escalado-hora-ini,
 .escala-mil-servico .linha-escalado-hora-fim {
   width: auto;
+  margin-top: 2px;
 }
 
-/* marca de extrajornada no chip: ícone próprio antes das horas (revelado quando o serviço é extra) */
-.escala-mil-servico-extra {
+/* o ícone da origem do horário antes das horas (o mesmo do Mês); o telefone do sobreaviso, na página Sobreaviso, no
+   mesmo lugar */
+.escala-mil-servico-origem,
+.escala-mil-servico-sobreaviso {
   width: 11px;
   height: 11px;
   flex-shrink: 0;
@@ -339,6 +366,43 @@
   font-size: 11px;
   font-weight: 600;
   color: var(--texto-suave);
+}
+
+/* ---------- sombra da coluna parada: só com a grade rolada para o lado (a marca vem do js/escalas-militares.js) ---------- */
+/* uma faixa colada à direita de cada peça da coluna, da altura dela, por cima dos dias que passam por baixo. O título
+   da unidade fica sem: o nome dela passa da coluna */
+.escala-mil-canto::after,
+.escala-mil-pessoa::after,
+.escala-mil-total-rotulo::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 100%;
+  width: 16px;
+  box-shadow: var(--sombra-coluna);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.1s ease;
+}
+
+/* a linha do militar tem a borda de baixo: a faixa desce até ela, para emendar com a linha seguinte */
+.escala-mil-pessoa::after { bottom: -1px; }
+
+/* entra com ease-out; sai um pouco mais rápido (a regra de cima) */
+.escala-mil--rolada .escala-mil-canto::after,
+.escala-mil--rolada .escala-mil-pessoa::after,
+.escala-mil--rolada .escala-mil-total-rotulo::after {
+  opacity: 1;
+  transition: opacity 0.15s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .escala-mil .escala-mil-canto::after,
+  .escala-mil .escala-mil-pessoa::after,
+  .escala-mil .escala-mil-total-rotulo::after {
+    transition: none;
+  }
 }
 
 /* a linha de totais é a última da tabela: sem linha embaixo (a borda é a do bloquinho) */
@@ -388,12 +452,13 @@
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    A coluna do militar fica estreita e sem o círculo das iniciais,
-   para caberem mais dias; os dias rolam para o lado e o nome fica.
+   para caberem mais dias (o dia tem a largura do computador, a do
+   selo); os dias rolam para o lado e o nome fica. A largura da
+   coluna é a do nome, do CPF numa linha só e do selo dos dias.
    ============================================================ */
 @media (max-width: 767px) {
   html[data-celular] .escala-mil-grade {
-    --col-militar: 112px;
-    --mil-colunas: var(--col-militar) repeat(14, minmax(56px, 1fr));
+    --col-militar: 136px;
     padding: 0 0 8px;
   }
 

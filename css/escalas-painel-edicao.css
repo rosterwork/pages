@@ -109,13 +109,14 @@
   border-top: 1px solid var(--borda);
 }
 
-/* a linha do título das caixas do painel do dia (postos, Sem função, De folga, Observações e Lançar no SYSBM): de uma
+/* a linha do título das caixas do painel do dia (postos, Sem função, De folga, Sobreaviso, Observações e Lançar no SYSBM): de uma
    borda à outra (desfaz o recuo de 8px da .grupo-caixa, geral-painel.css), só com algo embaixo do título; na troca de
    viatura com data, embaixo do "No lugar da ..." */
 .painel-corpo .grupo-caixa:has(> .escala-edicao-grupo) > :is(.escala-posto-titulo, .rotulo-secao):first-child:not(:has(+ .escala-posto-no-lugar)),
 .painel-corpo .grupo-caixa:has(> .escala-edicao-grupo) > .escala-posto-no-lugar,
 .painel-corpo .escala-observacoes-titulo,
 .painel-corpo .grupo-caixa > .rotulo-secao:first-child:has(+ .escala-observacao-add),
+.painel-corpo .escala-sobreaviso-bloco:has(.escala-edicao-grupo) > .rotulo-secao:first-child,
 .painel-corpo .escala-sysbm:has(> :not(.escala-sysbm-cabecalho):not(.oculto)) > .escala-sysbm-cabecalho {
   margin: 0 -8px 4px;
   padding: 0 8px 8px;
@@ -554,6 +555,18 @@
   display: flex;
   align-items: baseline;
   gap: 4px;
+}
+
+/* o bloco Sobreaviso (escalas-painel-sobreaviso.js): o Adicionar no fim, como o das Observações; o nome em amarelo no dia
+   em que ele não está livre, e a linha de quem falta para a regra da companhia */
+.escala-sobreaviso-bloco-acao {
+  padding-top: 4px;
+}
+
+.escala-sobreaviso-conflito .escala-distribuicao-grad,
+.escala-sobreaviso-conflito .escala-distribuicao-nome,
+.escala-sobreaviso-falta .escala-distribuicao-nome {
+  color: var(--alerta);
 }
 
 /* ============================================================

@@ -34,7 +34,7 @@
   }
 
   /* preenche a célula de UM dia (calendário) com, por unidade, a célula do Mês */
-  function preencherDia(celulaDia, iso, colunas, dados, cobertura, erro, maxPorUnidade, afastados, opcoesCelula) {
+  function preencherDia(celulaDia, iso, colunas, dados, cobertura, erro, maxPorUnidade, fora, opcoesCelula) {
     colunas.forEach(function (c) {
       var bloco = RosterWork.tpl('tpl-escala-calendario-unidade');
       if (!bloco) return;
@@ -47,7 +47,7 @@
       var pessoas = (dados[c.id] && dados[c.id][iso]) || [];
       var cobDia = (cobertura[c.id] && cobertura[c.id][iso]) || null;
       var erroDia = (erro[c.id] && erro[c.id][iso]) || null;
-      if (RosterWork.escalasCelula) RosterWork.escalasCelula.preencherCelula(cel, cobDia, erroDia, pessoas, maxPorUnidade[c.id], (afastados[c.id] && afastados[c.id][iso]) || [], opcoesCelula);
+      if (RosterWork.escalasCelula) RosterWork.escalasCelula.preencherCelula(cel, cobDia, erroDia, pessoas, maxPorUnidade[c.id], (fora[c.id] && fora[c.id][iso]) || [], opcoesCelula);
       celulaDia.appendChild(bloco);
     });
   }
@@ -116,8 +116,14 @@
     return Esqueleto.segurar(esperaDaGrade, window.RosterWork.escalasDados.carregar(ids, inicio, fim, { daTela: true })).then(function (resultado) {
       if (!document.contains(corpo) || req !== reqSeq || (opcoes.vigente && !opcoes.vigente())) return;   // saiu da página, outra render começou, ou trocou de modo
       Esqueleto.parar();
+      /* a página filtrada (o Sobreaviso e os Estágios; RosterWork.paginaFiltrada): só as unidades dela */
+      var pf = RosterWork.paginaFiltrada && RosterWork.paginaFiltrada();
+      if (pf) {
+        colunas = pf.colunas(colunas);
+        if (!colunas.length) { mostrarEstado(corpo, pf.vazia()); return; }
+      }
       var dados = resultado.militares;
-      var afastados = resultado.afastados || {};
+      var fora = resultado.fora || {};
       var cobertura = resultado.cobertura || {};
       var erro = resultado.erro || {};
       /* pico de cada unidade no mês (a régua dos gráficos da unidade) */
@@ -136,7 +142,7 @@
         aoDia: function (celulaDia, data, noMes) {
           if (!noMes) return;
           var iso = dataISO(data);
-          preencherDia(celulaDia, iso, colunas, dados, cobertura, erro, maxPorUnidade, afastados, opcoesCelula);
+          preencherDia(celulaDia, iso, colunas, dados, cobertura, erro, maxPorUnidade, fora, opcoesCelula);
           /* o Oficial de Área do dia, no meio do título */
           if (RosterWork.escalasCelula) RosterWork.escalasCelula.preencherOficial(celulaDia.querySelector('.geral-calendario-mes-dia-centro'), resultado.oficial, iso);
         }
@@ -177,7 +183,7 @@
       var cobDia = (r.cobertura[unidadeId] && r.cobertura[unidadeId][iso]) || null;
       var erroDia = (r.erro[unidadeId] && r.erro[unidadeId][iso]) || null;
       var pessoas = (r.militares[unidadeId] && r.militares[unidadeId][iso]) || [];
-      RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxPorUnidadeAtual[unidadeId], (r.afastados[unidadeId] && r.afastados[unidadeId][iso]) || [], celulaAtual);
+      RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxPorUnidadeAtual[unidadeId], (r.fora[unidadeId] && r.fora[unidadeId][iso]) || [], celulaAtual);
       RosterWork.escalasCelula.desenharGraficos(celula);
       /* o Oficial de Área do dia pode ter mudado (a mesma leitura traz o dele) */
       var dia = celula.closest('.geral-calendario-mes-dia');

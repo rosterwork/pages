@@ -4,8 +4,9 @@
    folha por dia, as unidades em sequência, só a logo no alto e o
    site + "Página X de Y" no rodapé (com os ícones de origem, que o
    Mostrar do painel liga, a legenda deles logo acima:
-   escalas-impressao-legenda.js). O conteúdo é o do painel do dia
-   (postos, funções, militares, horários, sem função, observações),
+   escalas-impressao-legenda.js). O conteúdo é o do painel do dia,
+   na mesma ordem (Funções especiais, as instalações, Extrajornada,
+   Estagiários, Sobreaviso, as viaturas, sem função, observações),
    no padrão de blocos (Guia visual › Impressão da escala): a unidade é um bloco cinza com o
    título dentro e cada posto um bloquinho branco com contorno fino,
    a linha do título de uma borda à outra e a linha fina entre as
@@ -167,8 +168,9 @@
 
   /* os ícones do militar, como no painel do dia: a origem do serviço e, fixado na função, o cadeado */
   function iconesDoMilitar(m) {
+    if (m.origem === 'sobreaviso') return ['icone-sobreaviso'];
     var origem = pecas().iconeOrigem || {};
-    var nomes = [origem[m.origem] || origem.sistema || 'icone-origem-sistema'];
+    var nomes = [origem[m.estagio ? 'estagio' : m.origem] || origem.sistema || 'icone-origem-sistema'];
     if (m.fixado) nomes.push('icone-cadeado');
     return nomes;
   }
@@ -182,6 +184,7 @@
       (it.postos || []).forEach(function (p) {
         (p.funcoes || []).concat(p.exibir || []).forEach(function (f) { (f.militares || []).forEach(marcar); });
       });
+      sobreavisoDoItem(it).forEach(marcar);
     });
     return usados;
   }
@@ -236,10 +239,20 @@
 
   function linhasDoPosto(posto, c) {
     var mesclar = pecas().mesclarFuncoes || function (p) { return p.funcoes || []; };
-    /* o que a Central exibe, só para ver, antes e depois das funções dela (o Cabo de Dia sem ninguém não sai no papel) */
-    var exib = pecas().exibidas ? pecas().exibidas(posto, false) : { antes: [], depois: [] };
+    return linhasDasFuncoes(mesclar(posto), c);
+  }
+
+  /* o dia da unidade em blocos, como no painel (escalas-painel.js › blocosDoDia; o Cabo de Dia sem ninguém não sai no
+     papel); sem as peças, os postos na ordem do banco */
+  function blocosDoItem(item) {
+    if (pecas().blocosDoDia) return pecas().blocosDoDia(item.postos, false);
+    return { especiais: [], instalacoes: item.postos || [], extra: [], estagiarios: [], viaturas: [] };
+  }
+
+  /* as linhas de uma lista de funções (a função à esquerda, no meio da altura das linhas dela) */
+  function linhasDasFuncoes(funcoes, c) {
     var linhas = [];
-    exib.antes.concat(mesclar(posto), exib.depois).forEach(function (f) {
+    funcoes.forEach(function (f) {
       var daFuncao = [], alturas = [];
       if (f.vazio && RW.mensagens.escala.vagaVazia) {
         daFuncao.push([{ text: RW.mensagens.escala.vagaVazia(f.vazio_motivo), italics: true, fontSize: FONTE.texto, color: c.suave, margin: CELULA.militar }, { text: '' }]);
@@ -269,21 +282,41 @@
     return linhas;
   }
 
-  /* as "linhas" de uma unidade (cada uma inteira): sem função, postos, observações; cada uma com o seu marcador
-     (o 1º texto dela), para achar depois em que folha caiu */
-  function linhasDaUnidade(item, c, preencher) {
-    var t = txt(), linhas = [];
-    var semFuncao = item.sem_funcao || [];
-    if (semFuncao.length) {
-      var tituloSem = tituloBloquinho(t.semFuncao);
-      linhas.push({ marcador: tituloSem, no: tabelaPosto(tituloSem, semFuncao.map(function (m) { return [{ text: '' }, celulaMilitar(m, c), horarios(m.periodos, c)]; }), c, preencher) });
-    }
-    var temAlguem = pecas().temAlguem || function () { return true; };
-    (item.postos || []).filter(temAlguem).forEach(function (p) {
-      var nome = tituloBloquinho(p.nome);
-      linhas.push({ marcador: nome, no: tabelaPosto(nome, linhasDoPosto(p, c), c, preencher) });
+  /* o sobreaviso da companhia de um dia da unidade, no lugar em que ele aparece (o mesmo "exibe" da grade), como militares
+     do bloquinho */
+  function sobreavisoDoItem(item) {
+    var s = item.sobreaviso;
+    if (!s || !s.exibe) return [];
+    return (s.militares || []).map(function (m) {
+      return { grad: m.grad, nome: m.nome, origem: 'sobreaviso', periodos: [{ hi: m.horaInicio, hf: m.horaFim }] };
     });
-    if (!linhas.length) linhas.push({ marcador: t.semDistribuicao, no: { text: t.semDistribuicao, fontSize: FONTE.texto, color: c.suave, margin: CELULA.vazio } });
+  }
+
+  /* as "linhas" de uma unidade (cada uma inteira), na ordem do painel do dia: Funções especiais, as instalações,
+     Extrajornada, Estagiários, Sobreaviso, as viaturas, sem função e observações; cada uma com o seu marcador (o 1º
+     texto dela), para achar depois em que folha caiu */
+  function linhasDaUnidade(item, c, preencher) {
+    var t = txt(), M = RW.mensagens.escala, linhas = [], alguem = false;
+    function bloco(titulo, corpo) {
+      if (!corpo.length) return false;
+      var nome = tituloBloquinho(titulo);
+      linhas.push({ marcador: nome, no: tabelaPosto(nome, corpo, c, preencher) });
+      return true;
+    }
+    function deServico(titulo, corpo) { if (bloco(titulo, corpo)) alguem = true; }
+    var temAlguem = pecas().temAlguem || function () { return true; };
+    function postos(lista) { lista.filter(temAlguem).forEach(function (p) { deServico(p.nome, linhasDoPosto(p, c)); }); }
+    function soNomes(lista) { return lista.map(function (m) { return [{ text: '' }, celulaMilitar(m, c), horarios(m.periodos, c)]; }); }
+    var blocos = blocosDoItem(item);
+    deServico(M.blocoEspeciais, linhasDasFuncoes(blocos.especiais, c));
+    postos(blocos.instalacoes);
+    deServico(M.blocoExtra, linhasDasFuncoes(blocos.extra, c));
+    deServico(M.blocoEstagiarios, linhasDasFuncoes(blocos.estagiarios.length
+      ? [{ nome: M.rotuloEstagiario, militares: blocos.estagiarios }] : [], c));
+    bloco(M.sobreaviso.dica, soNomes(sobreavisoDoItem(item)));
+    postos(blocos.viaturas);
+    deServico(t.semFuncao, soNomes(item.sem_funcao || []));
+    if (!alguem) linhas.push({ marcador: t.semDistribuicao, no: { text: t.semDistribuicao, fontSize: FONTE.texto, color: c.suave, margin: CELULA.vazio } });
     if ((item.observacoes || []).length) {
       var tituloObs = tituloBloquinho(t.observacoes);
       /* os mesmos grupos da tela (Administração, Trocas, Folgas, De outra unidade), cada um com a lista numerada, e a
@@ -508,6 +541,15 @@
         h += (f.vazio ? ESTIMATIVA.linha : 0) + (f.militares || []).reduce(function (s, m) { return s + linha(m); }, 0);
       });
     });
+    /* os blocos só para ver (Funções especiais, Extrajornada, Estagiários): o título de cada um e as linhas */
+    var blocos = blocosDoItem(item);
+    function somar(lista) { return lista.reduce(function (s, m) { return s + linha(m); }, 0); }
+    [blocos.especiais, blocos.extra].forEach(function (funcoes) {
+      if (funcoes.length) h += ESTIMATIVA.posto + funcoes.reduce(function (s, f) { return s + somar(f.militares); }, 0);
+    });
+    if (blocos.estagiarios.length) h += ESTIMATIVA.posto + somar(blocos.estagiarios);
+    var sobreaviso = sobreavisoDoItem(item);
+    if (sobreaviso.length) h += ESTIMATIVA.posto + sobreaviso.length * ESTIMATIVA.linha;
     var obs = item.observacoes || [];
     if (obs.length) {
       /* o título do bloquinho, uma linha por título de grupo e as linhas de cada item */

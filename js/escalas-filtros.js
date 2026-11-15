@@ -1,13 +1,16 @@
 /* ============================================================
    ESCALAS — filtros e busca da barra de controles
    O botão Filtros (componente geral-filtros, com a coluna Situação)
-   vale nos modos de grade (Mês, Semana e Colunas); no Dia, no
-   Militares e na Minha escala fica escondido. A busca (nome/CPF/RG,
+   vale nos modos de grade (Mês, Semana e Colunas) e no Militares,
+   onde age nos horários de cada dia e no selo dos dias
+   (escalas-militares-dias.js); no Dia e na Minha escala fica
+   escondido. A busca (nome/CPF/RG,
    marcar ou filtrar) vale em todos os modos menos o Militares (que
    tem a sua própria) e a Minha escala.
    Filtro e busca se aplicam juntos nas linhas de militar já
    desenhadas: cada linha traz a situação (escalas-celula.js).
-   Os afastados vêm escondidos e só aparecem com Afastamentos marcado.
+   Os afastados e quem está em missão vêm escondidos e só aparecem com
+   Afastamentos (ou Missões) marcado.
    A linha de quem está logado ganha o realce claro (--voce) nas
    grades e na escala do dia da Minha escala.
    ============================================================ */
@@ -22,12 +25,16 @@
     { rotulo: 'Trocas', valor: 'trocas' },
     { rotulo: 'Extrajornada', valor: 'extra' },
     { rotulo: 'Pontual', valor: 'pontual' },
+    { rotulo: 'Estágio', valor: 'estagio' },
     { rotulo: 'Folgas', valor: 'folga' },
-    { rotulo: 'Afastamentos', valor: 'afastamento', separado: true }
+    { rotulo: 'Sobreaviso', valor: 'sobreaviso' },
+    { rotulo: 'Fora da escala', valor: 'fora' },
+    { rotulo: 'Afastamentos', valor: 'afastamento', separado: true },
+    { rotulo: 'Missões', valor: 'missao', separado: true }
   ];
 
-  /* modos em que os filtros valem (as grades de célula) */
-  var MODOS_COM_FILTRO = { mes: true, semana: true, colunas: true };
+  /* modos em que os filtros valem (as grades de célula e o Militares) */
+  var MODOS_COM_FILTRO = { mes: true, semana: true, colunas: true, militares: true };
 
   var conteudo = null;
   var obterModo = function () { return 'dia'; };
@@ -39,15 +46,18 @@
 
   function filtrosValem() { return !!MODOS_COM_FILTRO[obterModo()]; }
 
-  /* a linha passa nos filtros? Situação: "Todos" (padrão) = todos menos os afastados;
-     Afastamentos é um acréscimo ("Todos" + Afastamentos = todos e os afastados; desmarcar
+  /* a linha passa nos filtros? Situação: "Todos" (padrão) = todos menos os afastados e os em missão;
+     Afastamentos e Missões são acréscimos ("Todos" + Afastamentos = todos e os afastados; desmarcar
      o "Todos" deixa só os afastados) — a regra mora no geral-filtro-arvore */
   function passaFiltros(linha) {
     return passa(linha.getAttribute('data-situacao'));
   }
 
   function passa(situacao) {
-    if (!filtros || !filtrosValem()) return situacao !== 'afastamento';
+    /* a página filtrada (o Sobreaviso e os Estágios): o filtro fica preso nela (RosterWork.paginaFiltrada) */
+    var pf = window.RosterWork.paginaFiltrada && RosterWork.paginaFiltrada();
+    if (pf) return situacao === pf.situacao;
+    if (!filtros || !filtrosValem()) return situacao !== 'afastamento' && situacao !== 'missao';
     return filtros.passa('situacao', situacao);
   }
 
@@ -60,7 +70,7 @@
   /* os filtros ligados, como as etiquetas da linha "Filtros:" (["Situação: Afastamentos", ...]; nenhum = []),
      para a nota do painel de impressão */
   function resumo() {
-    if (!conteudo || !filtrosValem()) return [];
+    if (!conteudo || !filtrosValem() || (window.RosterWork.paginaFiltrada && RosterWork.paginaFiltrada())) return [];
     return Array.prototype.map.call(conteudo.querySelectorAll('.filtros-ativos:not(.oculto) .filtro-ativo'), function (etiqueta) {
       return etiqueta.querySelector('.filtro-ativo-tipo').textContent + ': ' + etiqueta.querySelector('.filtro-ativo-valor').textContent;
     });
@@ -72,9 +82,14 @@
   }
 
   /* aplica filtro + busca nas linhas da grade. 'marcar' realça a linha casada e acende a célula;
-     'filtrar' esconde as linhas que não casam. No modo Militares não age (busca própria) */
+     'filtrar' esconde as linhas que não casam. No modo Militares, só o filtro, nos horários e no selo dos dias
+     (escalas-militares-dias.js; a busca é a dele) */
   function aplicar() {
-    if (!conteudo || obterModo() === 'militares') return;
+    if (!conteudo) return;
+    if (obterModo() === 'militares') {
+      if (window.RosterWork.escalasMilitaresDias) RosterWork.escalasMilitaresDias.aplicar(conteudo.querySelector('.escala-mil-grade'));
+      return;
+    }
     var corpo = conteudo.querySelector('.pagina-corpo');
     if (!corpo) return;
     var RW = window.RosterWork;
@@ -147,5 +162,6 @@
     }
   }
 
-  window.RosterWork.escalasFiltros = { iniciar: iniciar, aplicarModo: aplicarModo, passaPessoa: passaPessoa, resumo: resumo };
+  window.RosterWork.escalasFiltros = { iniciar: iniciar, aplicarModo: aplicarModo, passaPessoa: passaPessoa, passaSituacao: passa,
+    resumo: resumo };
 })();

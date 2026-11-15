@@ -227,8 +227,9 @@
     var unidades = escolhas.unidades.map(function (u) { return { unidade_id: u.unidade_id, nome: u.nome }; });
     var mostrar = escolhas.mostrar;
     /* como a tela, o Oficial de Área no título do dia, só na escala (a grade de outra tela, como a Extrajornada, vem com os
-       dados dela); as unidades sempre uma embaixo da outra no calendário, seja qual for a tela (cabe na A4) */
-    var comOficial = !form.dados;
+       dados dela, e a página Sobreaviso não o mostra); as unidades sempre uma embaixo da outra no calendário, seja qual for
+       a tela (cabe na A4) */
+    var comOficial = !form.dados && !form.semOficial;
     return {
       resumo: resumo(escolhas.unidades),
       inicio: iso(dentro[0].data),
@@ -255,7 +256,8 @@
   /* opcoes: { formato, data (a da tela), unidades ([{ unidade_id, nome }] da tela: as marcadas no começo), diasPorLinha,
      filtros (os ligados na tela, em texto); de outra grade: dados(ids, inicio, fim) (a promessa no formato do
      RosterWork.escalasDados.carregar), titulo (o do alto da folha), prefixo (o começo do nome do arquivo) e conferir
-     (null: sem a conferência da escala) } */
+     (null: sem a conferência da escala); da página Sobreaviso, também semOficial (sem o Oficial de Área no título do dia)
+     e mostrar (as caixas do Mostrar já marcadas) } */
   function abrir(opcoes) {
     if (!RW.painel || !RW.impressao || !FORMATOS[opcoes.formato]) return;
     var formato = opcoes.formato;
@@ -268,7 +270,7 @@
     form = {
       formato: formato, comOrientacao: formato === ORIENTACOES.retrato || formato === ORIENTACOES.paisagem,
       continua: false, diasPorLinha: opcoes.diasPorLinha || 3, filtros: opcoes.filtros || [],
-      dados: opcoes.dados || null, titulo: opcoes.titulo || null, prefixo: opcoes.prefixo || null,
+      dados: opcoes.dados || null, titulo: opcoes.titulo || null, prefixo: opcoes.prefixo || null, semOficial: !!opcoes.semOficial,
       data: new Date(data.getFullYear(), data.getMonth(), data.getDate()), mes: new Date(data.getFullYear(), data.getMonth(), 1),
       mesTodo: true, semanas: [], de: 1, ate: 1
     };
@@ -278,7 +280,7 @@
       marcas: marcas(),
       conferir: 'conferir' in opcoes ? opcoes.conferir : (RW.escalasImpressao ? RW.escalasImpressao.conferirErros : null),
       ids: (opcoes.unidades || []).map(function (u) { return u.unidade_id; }),
-      mostrar: { grafico: true, icones: true, faixa: true },
+      mostrar: opcoes.mostrar || { grafico: true, icones: true, faixa: true },
       aoSair: function () { RW.painel.fechar(); },
       ligar: function (peca) {
         form.raiz = RW.painel.corpo();

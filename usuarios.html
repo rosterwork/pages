@@ -374,7 +374,7 @@
   </div>
 </template>
 
-<!-- molde: o Tipo em Licenças (nomes longos, no campo de seleção) -->
+<!-- molde: o Tipo (Licenças, Dispensas e Missões), no campo de seleção -->
 <template id="tpl-afastamentos-tipo-campo">
   <div class="campo">
     <div class="dropdown">
@@ -385,15 +385,6 @@
       <div class="dropdown-menu"></div>
     </div>
   </div>
-</template>
-
-<!-- moldes: o Tipo em Dispensas (nomes curtos, no seletor) -->
-<template id="tpl-afastamentos-tipo-seletor">
-  <div class="abas abas--seletor"></div>
-</template>
-
-<template id="tpl-afastamentos-tipo">
-  <button type="button" class="aba"></button>
 </template>
 
 <!-- molde (ficha): a nota de quem tem correção de dados esperando decisão; o botão abre o painel de decisão -->
@@ -693,10 +684,9 @@
   </div>
 </template>
 
-<!-- molde: um período (caixa com a situação e a lixeira): início → fim e os dias; em licença e
-     dispensa, a decisão do fluxo (sugere Sim a partir de 16 dias) e o motivo; na missão, o "Tirar da
-     escala?" (sem sugestão) e sem o motivo. O que é de mais de uma
-     semana atrás fica travado, com a frase que explica -->
+<!-- molde: um período (caixa com a situação e a lixeira): na missão Outra, o nome; início → fim e os
+     dias; em licença, dispensa e missão, a guarnição em bolinhas (sugere sair a partir de 16 dias) e, em
+     licença e dispensa, o motivo. O que é de mais de uma semana atrás fica travado, com a frase que explica -->
 <template id="tpl-ficha-periodo">
   <div class="grupo-caixa ficha-periodo">
     <div class="ficha-bloco-cab">
@@ -705,6 +695,10 @@
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
       </button>
     </div>
+    <label class="campo oculto" data-periodo-nome>
+      <span class="campo-rotulo">Nome da missão</span>
+      <input class="campo-entrada" type="text" maxlength="40" autocomplete="off" />
+    </label>
     <div class="campo" data-periodo-campo>
       <span class="campo-rotulo">Período</span>
       <span class="horario ficha-periodo-datas">
@@ -716,16 +710,10 @@
         <span class="selo oculto" data-periodo-dias></span>
       </span>
     </div>
-    <div class="ficha-periodo-fluxo oculto" data-periodo-fluxo>
-      <div class="ficha-periodo-decisao">
-        <span class="ficha-periodo-pergunta" data-pergunta-fluxo>Tirar do fluxo da escala?</span>
-        <span class="ficha-periodo-pergunta oculto" data-pergunta-missao>Tirar da escala?</span>
-        <div class="abas abas--seletor">
-          <button type="button" class="aba" data-fora="sim">Sim</button>
-          <button type="button" class="aba" data-fora="nao">Não</button>
-        </div>
-      </div>
-      <span class="subtela-ajuda" data-periodo-fluxo-texto></span>
+    <div class="campo oculto" data-periodo-fluxo>
+      <span class="campo-rotulo">Guarnição</span>
+      <label class="geral-opcao" data-fora="nao"><input type="radio" value="nao" /><span>Continua na guarnição. Fica fora da escala só nos dias <span data-periodo-dos-dias></span> e volta sozinho no fim.</span></label>
+      <label class="geral-opcao" data-fora="sim"><input type="radio" value="sim" /><span>Sai da guarnição. A volta é manual, pela aba Guarnições da Escala.</span></label>
     </div>
     <label class="campo oculto" data-periodo-motivo>
       <span class="campo-rotulo">Motivo</span>

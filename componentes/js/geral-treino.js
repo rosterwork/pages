@@ -39,15 +39,16 @@
 
   /* só leem (STABLE no banco) */
   var LEITURAS = [
-    'administradores_listar', 'afastamentos_listar', 'ajustes_ritmo_listar', 'antiguidade_listar', 'bug_relatores_listar', 'bugs_listar',
+    'administradores_listar', 'afastamentos_listar', 'ajustes_ritmo_listar', 'ajustes_sobreaviso_ler', 'antiguidade_listar', 'bug_relatores_listar', 'bugs_listar',
     'buscar_graus_hierarquicos', 'dados_pendentes', 'erros_tela_contar_novos', 'erros_tela_listar', 'escala_alteracoes_dia', 'escala_como_foi_feita', 'escala_dia_arvore',
     'escala_dias_atualizando', 'escala_dia_da_folga_dias', 'escala_dia_disponiveis', 'escala_guarnicoes_listar', 'escala_impressao',
     'escala_impressao_erros', 'escala_minha_calendario', 'escala_motivos', 'escala_mudar_dia_dias', 'escala_sysbm',
-    'expediente_horario', 'expediente_mes', 'ficha_alteracoes', 'fn_sou_programador', 'fn_trocas_impressao',
+    'escala_volta_sugestao', 'escala_voltas_pendentes',
+    'estagios_listar', 'expediente_horario', 'expediente_mes', 'ficha_alteracoes', 'fn_sou_programador', 'fn_trocas_impressao',
     'fn_trocas_registro', 'fn_trocas_varias_dias', 'fn_trocas_varias_montar', 'fn_trocas_varias_plano', 'fn_unidades_padrao',
     'ler_distribuicao_dia', 'ler_escala_mes', 'ler_escala_militares', 'ler_militar_dia',
     'manutencao_telas_listar', 'nova_distribuicao_calcular', 'nova_distribuicao_ler', 'extrajornada_minha', 'pendencias_meus_pedidos',
-    'recados_contar_pendentes', 'recados_listar', 'sysbm_termo_situacao', 'termos_situacao', 'viatura_prefixo_em_uso',
+    'recados_contar_pendentes', 'recados_listar', 'sobreaviso_candidatos', 'sobreaviso_militares','sysbm_termo_situacao', 'termos_situacao', 'viatura_prefixo_em_uso',
     /* sem gravação em tabela de verdade (só tabela temporária) */
     'buscar_efetivo', 'buscar_ficha_militar', 'buscar_inativos', 'buscar_unidades_ordenadas', 'escala_ciclo_retirar_analisar',
     'escala_continuos_listar', 'fn_avisos_listar', 'fn_perfil_usuario', 'fn_preferencias_carregar', 'fn_trocas_historico_par',

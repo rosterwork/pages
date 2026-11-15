@@ -2,8 +2,8 @@
    USUÁRIOS — abas Férias · Licenças · Dispensas · Missões: a caixa no lugar da linha
    (RosterWork.usuariosAfastamentosCaixa)
    Clicar no militar troca a linha por uma caixa: a própria linha no
-   alto, com o X; em Licenças e Dispensas, o Tipo (Férias e Missões têm
-   um tipo só, sem a escolha); embaixo, os períodos
+   alto, com o X; em Licenças, Dispensas e Missões, o Tipo no campo de
+   seleção (Férias tem um tipo só, sem a escolha); embaixo, os períodos
    daquele tipo no ano (usuarios-painel-afastamentos-editar.js). Uma
    caixa aberta por vez, um militar e um tipo por Salvar, porque cada
    gravação pode pedir confirmação e refaz a escala. O rodapé largo
@@ -96,46 +96,24 @@
     else montarPeriodos(e, novo);
   }
 
-  /* o Tipo: Férias e Missões (um tipo só) não têm; Licenças, com nomes longos, no campo de seleção; Dispensas, no seletor */
+  /* o Tipo, no campo de seleção (Licenças, Dispensas e Missões); Férias tem um tipo só e não tem */
   function montarTipo(e) {
     if (RW.usuariosAfastamentos.umTipo(e.cat)) return;
     var lugar = e.caixa.querySelector('[data-afastamento-tipo]');
     var curtos = M().tiposCurtos;
     var tipos = RW.usuariosAfastamentos.tiposDe(e.cat);
-    if (e.cat === 'licenca') {
-      var campo = RW.tpl('tpl-afastamentos-tipo-campo');
-      var botao = campo.querySelector('[data-tipo-campo]');
-      var mostrar = function (t) {
-        RW.campos.definirSelecao(botao, t);
-        botao.querySelector('.campo-selecao-texto').textContent = curtos[t];
-      };
-      RW.campos.popularOpcoes(campo.querySelector('.dropdown-menu'), tipos.map(function (t) { return { rotulo: curtos[t], valor: t }; }));
-      RW.campos.ligarSelecao(botao, function (valor) {
-        trocarTipo(e, valor, function () { mostrar(e.tipo); });
-      });
-      mostrar(e.tipo);
-      lugar.appendChild(campo);
-      return;
-    }
-    var seletor = RW.tpl('tpl-afastamentos-tipo-seletor');
-    var marcar = function (t) {
-      Array.prototype.forEach.call(seletor.querySelectorAll('.aba'), function (aba) {
-        var ativa = aba.getAttribute('data-tipo-valor') === t;
-        aba.classList.toggle('aba--ativa', ativa);
-        aba.setAttribute('aria-selected', ativa ? 'true' : 'false');
-      });
+    var campo = RW.tpl('tpl-afastamentos-tipo-campo');
+    var botao = campo.querySelector('[data-tipo-campo]');
+    var mostrar = function (t) {
+      RW.campos.definirSelecao(botao, t);
+      botao.querySelector('.campo-selecao-texto').textContent = curtos[t];
     };
-    tipos.forEach(function (t) {
-      var aba = RW.tpl('tpl-afastamentos-tipo');
-      aba.textContent = curtos[t];
-      aba.setAttribute('data-tipo-valor', t);
-      seletor.appendChild(aba);
+    RW.campos.popularOpcoes(campo.querySelector('.dropdown-menu'), tipos.map(function (t) { return { rotulo: curtos[t], valor: t }; }));
+    RW.campos.ligarSelecao(botao, function (valor) {
+      trocarTipo(e, valor, function () { mostrar(e.tipo); });
     });
-    marcar(e.tipo);
-    lugar.appendChild(seletor);
-    RW.abas.ligar(seletor, function (aba) {
-      trocarTipo(e, aba.getAttribute('data-tipo-valor'), function () { marcar(e.tipo); });
-    });
+    mostrar(e.tipo);
+    lugar.appendChild(campo);
   }
 
   /* abre no primeiro tipo com período no ano; sem nenhum, no primeiro da lista */

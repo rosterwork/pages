@@ -25,7 +25,8 @@
   var ICONE_ORIGEM = {
     base: 'icone-origem-base', saida: 'icone-origem-saida', troca: 'icone-origem-troca', troca_saida: 'icone-origem-troca',
     remanejado_saida: 'icone-remanejado', pontual: 'icone-origem-pontual', sistema: 'icone-origem-sistema', folga: 'icone-folgas',
-    extra: 'icone-extrajornada', mudanca: 'icone-origem-mudanca', mudanca_saida: 'icone-origem-mudanca'
+    extra: 'icone-extrajornada', mudanca: 'icone-origem-mudanca', mudanca_saida: 'icone-origem-mudanca',
+    estagio: 'icone-estagio'
   };
   /* as linhas de quem saiu do serviço (riscadas na Escala; o remanejado saiu da unidade dele, e o serviço segue na outra;
      na mudança de dia, o serviço passou para outro dia) */
@@ -76,7 +77,7 @@
   }
 
   /* um dia no quadradinho: os ícones das linhas dele (folga e troca de saída apagados); o afastado,
-     listrado com a sigla (FÉR, LIC, DIS) */
+     listrado com a sigla (FÉR, LIC, DIS; na missão, OP. VERÃO, F. TAREFA ou MISSÃO), e a dica com o nome e a data */
   function desenharDia(botao, diaIso) {
     var dia = estado.dados.dias[diaIso] || { linhas: [] };
     var linhas = dia.linhas || [];
@@ -90,15 +91,21 @@
     var afast = linhas.filter(function (l) { return l.origem === 'afastamento'; })[0];
     if (afast) {
       botao.classList.add('mini-calendario-dia--afastado');
-      texto.textContent = String(afast.afastamento || '').slice(0, 3).toUpperCase();
+      texto.textContent = afast.missao ? String(afast.afastamento || '').toUpperCase() : String(afast.afastamento || '').slice(0, 3).toUpperCase();
+      if (afast.ate) botao.setAttribute('data-dica', RW.mensagens.geral.afastadoAte((afast.missao && afast.dica) || afast.afastamento || '', RW.data.isoParaBR(afast.ate).slice(0, 5)));
       return;
     }
     linhas.forEach(function (l) {
-      var ic = icone(ICONE_ORIGEM[l.origem] || ICONE_ORIGEM.sistema);
+      var ic = icone(ICONE_ORIGEM[l.estagio ? 'estagio' : l.origem] || ICONE_ORIGEM.sistema);
       if (!ic) return;
       if (RISCADA[l.origem]) ic.classList.add('escala-minha-icone--riscado');
       texto.appendChild(ic);
     });
+    /* o dia do sobreaviso dele: o telefone, com a dica */
+    if ((estado.dados.sobreaviso || []).indexOf(diaIso) >= 0) {
+      var tel = icone('icone-sobreaviso');
+      if (tel) { texto.appendChild(tel); botao.setAttribute('data-dica', RW.mensagens.escala.sobreaviso.dica); }
+    }
   }
 
   /* o dia que abre com o mês: o próximo serviço de hoje em diante; sem ele, hoje; fora do mês de hoje, o primeiro
@@ -261,7 +268,7 @@
       pararEspera();
       if (!r || !r.dias) { mostrarEstado(el.calendario, 'tpl-escala-estado', RW.mensagens.escala.falhaCarregarMes); return; }
       estado.mes = mes;
-      estado.dados = { dias: r.dias, unidades: r.unidades || {} };
+      estado.dados = { dias: r.dias, unidades: r.unidades || {}, sobreaviso: r.sobreaviso || [] };
       estado.selecionado = diaPadrao();
       RW.miniCalendario.renderizar(el.calendario, { dataRef: mes, aoDia: desenharDia });
       mostrarGuarnicao(r.guarnicao);

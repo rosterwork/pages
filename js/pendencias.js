@@ -5,11 +5,14 @@
      · Precisa de você — o que espera quem lê: a troca para
                          responder, o aceite que falta, o prazo da
                          extra, a CNH (no painel da CNH) e, do
-                         administrador (etiqueta ADM), o que aprovar;
-                         pelo prazo, o que não tem data no fim
-     · Para corrigir   — só administrador: fora da escala, retorno
-                         de afastamento, a Distribuição e as cotas
-                         que faltam distribuir
+                         administrador (etiqueta ADM), o que aprovar
+                         e a volta de férias ou de afastamento (o
+                         selo Sugestão pronta; abre a sugestão de
+                         guarnição na Escala); pelo prazo, o que não
+                         tem data no fim
+     · Para corrigir   — só administrador: fora da escala, a
+                         Distribuição e as cotas que faltam
+                         distribuir
      · Acompanhando    — o que espera outra pessoa: os seus pedidos
                          (pendencias_meus_pedidos, em andamento e
                          resolvidos nos últimos 30 dias) e, do
@@ -74,17 +77,6 @@
           li.querySelector('.pendencias-corrigir-nome').textContent = x.nome || '';
           li.querySelector('.pendencias-corrigir-unidade').textContent = x.unidade || '';
         });
-      } else if (g.tipo === 'retorno_afastamento') {
-        /* não navega: a entrada no ciclo se marca no Contínuos */
-        el = RosterWork.tpl('tpl-pendencias-retorno');
-        if (!el) return;
-        itensCorrigir(el, g.militares, 'tpl-pendencias-retorno-item', function (li, x) {
-          li.querySelector('.pendencias-corrigir-grad').textContent = x.grad || '';
-          li.querySelector('.pendencias-corrigir-nome').textContent = x.nome || '';
-          li.querySelector('.pendencias-corrigir-motivo').textContent = x.motivo || '';
-          li.querySelector('.pendencias-corrigir-data').textContent = x.volta || '';
-          li.querySelector('.pendencias-corrigir-unidade').textContent = x.unidade || '';
-        });
       } else if (g.tipo === 'extra_cotas') {
         /* leva aos Ajustes do mês; no celular o Organizar o mês não existe: a linha só informa */
         if (RW.celular && RW.celular()) {
@@ -107,11 +99,14 @@
     });
   }
 
-  /* ---------- o que não é pedido (Precisa de você): o prazo da extra e a CNH ---------- */
-  /* o mesmo cartão dos pedidos; o prazo leva à tela onde se responde, a CNH abre o painel dela aqui mesmo */
+  /* ---------- o que não é pedido (Precisa de você): o prazo da extra, a CNH e a volta de férias ---------- */
+  /* o mesmo cartão dos pedidos; o prazo leva à tela onde se responde, a CNH abre o painel dela aqui mesmo e a volta de
+     férias ou de afastamento (ADM, com o selo) abre a sugestão de guarnição na Escala */
   function linhaGrupo(g) {
+    var volta = g.tipo === 'volta_afastamento';
     return RW.fila.linha({
-      icone: RW.fila.icone(g.tipo), quem: g.texto, meta: g.mensagem,
+      icone: RW.fila.icone(g.tipo), quem: g.texto, meta: g.mensagem, adm: !!g.adm,
+      selo: volta ? { texto: msg().sugestaoPronta } : null,
       aoClicar: function () {
         if (g.tipo === 'cnh') { if (RW.cnhPainel) RW.cnhPainel.abrir({ aoSalvar: carregar }); return; }
         if (g.pagina && RW.irParaPagina) RW.irParaPagina(g.pagina, g.aba, g.referencia);

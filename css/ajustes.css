@@ -12,8 +12,14 @@
 
 /* ---------- as barras: a da Distribuição (a unidade) e a dos Feriados (o mês e a unidade) somem nas outras abas ---------- */
 .pagina:has([data-aba-painel="distribuicao"].oculto) #nova-distribuicao-barra,
-.pagina:has([data-aba-painel="feriados"].oculto) #feriados-barra {
+.pagina:has([data-aba-painel="feriados"].oculto) #feriados-barra,
+.pagina:has([data-aba-painel="sobreaviso"].oculto) #sobreaviso-barra {
   display: none;
+}
+
+/* ---------- aba Sobreaviso: o campo do "Quantos por dia" fica do tamanho do texto, sem esticar na caixa ---------- */
+.ajustes-sobreaviso-quantos {
+  align-self: flex-start;
 }
 
 /* ---------- aba Horário de expediente: uma linha por dia (o nome, Trabalha | Folga e o horário do site; o erro embaixo) ---------- */

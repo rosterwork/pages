@@ -21,28 +21,41 @@
   box-shadow: var(--sombra-bloco);
   cursor: pointer;
   transition: background-color 0.15s ease;
+  position: relative;
 }
 
 /* passar o mouse e a seleção valem para o bloquinho inteiro (escalas-mes.css › a da célula): a borda por dentro, sem
-   mudar o fundo; com o mouse num nome de quem edita o dia, a borda fica só no nome */
-.escala-calendario-unidade:hover {
-  outline: 1px solid var(--foco);
-  outline-offset: -1px;
+   mudar o fundo; com o mouse num nome de quem edita o dia, a borda fica só no nome. A borda é o ::before, por cima dos
+   nomes e das linhas tracejadas (a célula de dentro fica sem a dela) */
+.escala-calendario-unidade:hover::before,
+.escala-calendario-unidade:has(.escala-mes-celula--selecionada)::before,
+.escala-calendario-unidade.caixa-flutuante-escolhida::before,
+.escala-calendario-unidade:has(.escala-mes-celula--busca)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border: 1px solid var(--foco);
+  border-radius: inherit;
+  pointer-events: none;
 }
 
-.escala-calendario-unidade:has(.escala-mes-celula--edita :is(.linha-escalado, .extrajornada-vaga, .extrajornada-foco-ponto)[data-cpf]:hover):not(.caixa-flutuante-escolhida):not(:has(.escala-mes-celula--selecionada)) {
-  outline: none;
+.escala-calendario-unidade:has(.escala-mes-celula--edita :is(.linha-escalado, .extrajornada-vaga, .extrajornada-foco-ponto)[data-cpf]:hover):not(.caixa-flutuante-escolhida):not(:has(.escala-mes-celula--selecionada))::before {
+  content: none;
 }
 
-.escala-calendario-unidade:has(.escala-mes-celula--selecionada),
+.escala-calendario-unidade:has(.escala-mes-celula--selecionada)::before,
+.escala-calendario-unidade.caixa-flutuante-escolhida::before {
+  border-color: var(--texto-forte);
+}
+
+.escala-calendario-unidade:has(.escala-mes-celula--busca)::before {
+  border: 2px solid var(--foco);
+}
+
+/* a borda da peça escolhida do componente (geral-caixa-flutuante.css) fica no ::before */
 .escala-calendario-unidade.caixa-flutuante-escolhida {
-  outline: 1px solid var(--texto-forte);
-  outline-offset: -1px;
-}
-
-.escala-calendario-unidade:has(.escala-mes-celula--busca) {
-  outline: 2px solid var(--foco);
-  outline-offset: -2px;
+  outline: none;
 }
 
 /* nome da unidade = rótulo de seção apagado, em caixa alta (não compete com o número do dia) */
@@ -78,4 +91,9 @@
 
 .escala-calendario-unidade .escala-mes-celula--busca {
   outline: none;
+}
+
+/* a borda é a do bloquinho (o ::before dele) */
+.escala-calendario-unidade .escala-mes-celula::before {
+  content: none;
 }

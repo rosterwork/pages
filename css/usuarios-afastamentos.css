@@ -1,10 +1,11 @@
 /* ============================================================
-   USUÁRIOS — abas Férias · Licenças · Dispensas e os períodos da ficha
+   USUÁRIOS — abas Férias · Licenças · Dispensas · Missões e os períodos da ficha
    A linha do militar que cresce para baixo: o nome à esquerda e, à
    direita, um afastamento do ano por linha (o tipo e as datas, os
-   dias e o fluxo), alinhados pela direita. Na caixa que fica no lugar
-   da linha, o Tipo e uma caixa por período (início → fim e os dias;
-   em licença e dispensa, a decisão do fluxo e o motivo).
+   dias e a guarnição), alinhados pela direita. Na caixa que fica no
+   lugar da linha, o Tipo e uma caixa por período (o nome da missão,
+   início → fim e os dias; a guarnição em bolinhas e, em licença e
+   dispensa, o motivo).
    Moldes no usuarios.html; comportamento em usuarios-afastamentos*.js
    e usuarios-painel-afastamentos*.js.
    ============================================================ */
@@ -80,25 +81,6 @@
   width: 112px;
   min-width: 0;
   text-align: center;
-}
-
-/* licença e dispensa: a decisão do fluxo (pergunta + Sim/Não) e a frase do que ela faz */
-.ficha-periodo-fluxo {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.ficha-periodo-decisao {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.ficha-periodo-pergunta {
-  font-size: 12px;
-  color: var(--texto-suave);
 }
 
 /* ============================================================

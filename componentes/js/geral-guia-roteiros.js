@@ -23,6 +23,9 @@
    da tela em que o roteiro acontece, a primeira é para onde ele leva;
    sem ele, o roteiro vale em qualquer aba (o ? usa isso, geral-guia-ajuda.js).
    data-so-ajuda (no template): só no ?, fora da lista do Treinamento.
+   data-so-estagio (no template): só com um estágio em vigor ou marcado na
+   área da pessoa (RosterWork.sessao.estagioUnidades; no do administrador,
+   numa unidade que ela administra).
    A <section data-segurar> é o caminho
    cuja entrada já grava: no treino, o clique nela fica com o guia e o
    roteiro vai ao fim.
@@ -45,7 +48,8 @@
    quando há).
    No treino (geral-guia-vidro.js), só a porta do passo responde. No
    passo: data-porta (os estágios, com ponto e vírgula; vale o último à
-   vista), data-treino-alvo (acende e abre só o primeiro que achar),
+   vista), data-porta-exceto (o que, dentro da porta, não responde; ex.:
+   os nomes do dia), data-treino-alvo (acende e abre só o primeiro que achar),
    data-exemplo (o elemento do exemplo, com as opções em ponto e vírgula;
    sem nenhuma, o passo fica sem alvo; o texto dele preenche o
    [data-exemplo-nome]), data-so-mouse (o alvo deixa o mouse passar, e
@@ -96,7 +100,14 @@
   function pode(t) {
     var papel = t.getAttribute('data-papel') || (t.getAttribute('data-area') === 'admin' ? 'pelotao' : null);
     if (papel && !(RW.sessao && RW.sessao.temPapel(papel))) return false;
+    if (t.hasAttribute('data-so-estagio') && !comEstagio(papel)) return false;
     return !(t.hasAttribute('data-so-computador') && celular()) && !(t.hasAttribute('data-so-celular') && !celular());
+  }
+
+  /* um estágio na área da pessoa (o do administrador, numa unidade que ele administra) */
+  function comEstagio(papel) {
+    var lista = RW.sessao ? RW.sessao.estagioUnidades() : [];
+    return lista.some(function (u) { return !papel || RW.sessao.podeAdministrar(papel, u); });
   }
 
   /* os passos de um trecho do roteiro, em fila: { p, pagina, caminhos: [<section>] } */

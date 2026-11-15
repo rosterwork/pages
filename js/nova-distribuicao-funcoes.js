@@ -141,8 +141,8 @@
         }, false, { muda: 'oficial_postos' });
       }
 
-      /* a Central de Operações do pelotão: quem ela exibe, só para ver (o banco manda a resposta só com Central no bloco
-         Postos); o que fazer sem ninguém disponível para Cabo de Dia só aparece com ele marcado */
+      /* o que a Central de Operações do pelotão exibe, na escala e na Central do SYSBM (o banco manda a resposta só com
+         Central no bloco Postos); o que fazer sem ninguém disponível para Cabo de Dia só aparece com ele marcado */
       if (!ctx.ehCia && r.central) {
         var cen = r.central;
         var nomes = ['oficial', 'chefe', 'cabo', 'extra'].filter(function (k) { return cen[k]; }).map(function (k) { return M().centralNomes[k]; });

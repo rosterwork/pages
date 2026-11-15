@@ -11,11 +11,15 @@
       <div class="dropdown-menu pagina-ajuda-menu"></div>
     </div>
     <!-- abas (só administrador): a Distribuição (o ritmo é o bloco 1 dela), o Horário de expediente (um só para a
-         companhia e os pelotões) e os Feriados (o calendário de cada unidade); quem não administra fica sem a linha de abas -->
+         companhia e os pelotões), os Feriados (o calendário de cada unidade), os Estágios (as regras de cada estágio da
+         unidade) e o Sobreaviso (as regras da companhia; só o administrador da companhia vê a aba); quem não administra
+         fica sem a linha de abas -->
     <div class="abas" id="ajustes-abas">
       <button type="button" class="aba aba--ativa" data-aba="distribuicao">Distribuição</button>
       <button type="button" class="aba" data-aba="horario" data-manual="horario-expediente">Horário de expediente</button>
       <button type="button" class="aba" data-aba="feriados" data-manual="feriados">Feriados</button>
+      <button type="button" class="aba" data-aba="estagios">Estágios</button>
+      <button type="button" class="aba" data-aba="sobreaviso">Sobreaviso</button>
     </div>
   </div>
 
@@ -44,6 +48,19 @@
       </button>
     </div>
     <div class="abas abas--seletor" id="feriados-unidades" role="tablist" aria-label="Unidade"></div>
+  </div>
+
+  <!-- barra de controles dos Estágios: o Novo estágio e a unidade (só na aba Estágios) -->
+  <div class="pagina-subcabecalho" id="estagios-barra">
+    <button type="button" class="botao" id="estagios-novo">Novo estágio</button>
+    <div class="abas abas--seletor" id="estagios-unidades" role="tablist" aria-label="Unidade"></div>
+  </div>
+
+  <!-- barra de controles do Sobreaviso: a companhia (só na aba Sobreaviso) -->
+  <div class="pagina-subcabecalho" id="sobreaviso-barra">
+    <div class="abas abas--seletor" role="tablist" aria-label="Companhia">
+      <button type="button" class="aba aba--ativa" id="sobreaviso-companhia"></button>
+    </div>
   </div>
 
   <div class="pagina-corpo pagina-corpo--colado">
@@ -272,6 +289,138 @@
         <div class="rodape-acoes">
           <button type="button" class="botao" id="feriados-cancelar">Cancelar</button>
           <button type="button" class="botao botao--primario" id="feriados-salvar">Salvar</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Estágios: os estágios da unidade à esquerda; as regras do escolhido, em cartões, à direita (edita na própria
+         tela, como a Distribuição); o rodapé largo grava a lista inteira -->
+    <div class="geral-layout-lateral oculto" id="estagios-layout" data-aba-painel="estagios">
+      <aside class="geral-painel-esquerdo" id="estagios-lado">
+        <div class="geral-painel-esquerdo-cabecalho">
+          <span class="rotulo-secao">Estágios</span>
+          <span class="nova-distribuicao-contagem" id="estagios-contagem"></span>
+        </div>
+        <div class="geral-painel-esquerdo-lista" id="estagios-lista"></div>
+      </aside>
+      <section class="geral-corpo-lateral">
+        <div class="geral-corpo-lateral-rolagem" id="estagios-corpo"></div>
+      </section>
+      <!-- o rodapé de salvar, na largura toda: aparece com alteração e enquanto há o que refazer; o Desfazer e o Refazer
+           (também Ctrl+Z e Ctrl+Y) à esquerda do Cancelar -->
+      <div class="rodape rodape-linha rodape--largo oculto" id="estagios-rodape">
+        <span class="rodape-texto" id="estagios-pendente">Alterações não salvas.</span>
+        <span class="espacador-flex"></span>
+        <div class="rodape-historico">
+          <button type="button" class="botao botao--quadrado" id="estagios-desfazer" aria-label="Desfazer" data-dica="Desfazer" disabled>
+            <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-desfazer"/></svg>
+          </button>
+          <button type="button" class="botao botao--quadrado" id="estagios-refazer" aria-label="Refazer" data-dica="Refazer" disabled>
+            <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-refazer"/></svg>
+          </button>
+        </div>
+        <div class="rodape-acoes">
+          <button type="button" class="botao" id="estagios-cancelar">Cancelar</button>
+          <button type="button" class="botao botao--primario" id="estagios-salvar">Salvar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sobreaviso: as quatro perguntas da companhia (ajustes-sobreaviso.js); o rodapé grava as quatro, a partir da data
+         escolhida no Salvar -->
+    <section class="geral-corpo-lateral oculto" data-aba-painel="sobreaviso">
+      <div class="geral-corpo-lateral-rolagem">
+        <div class="nova-distribuicao-carregando esqueleto-painel esqueleto-conjunto" id="sobreaviso-carregando" role="status" aria-label="Carregando">
+          <div class="esqueleto-caixa">
+            <span class="esqueleto-caixa-topo"><span class="esqueleto esqueleto-caixa-titulo"></span></span>
+            <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+            <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+            <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+            <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+          </div>
+        </div>
+        <div class="nova-distribuicao-conteudo subtela oculto" id="sobreaviso-conteudo">
+          <p class="nova-distribuicao-ajuda">Como o sistema monta o sobreaviso: de quem é, quantos ficam por dia, quem entra na fila e como ela anda. O sistema preenche os próximos 90 dias, e o administrador pode trocar qualquer nome no painel do dia. Mudar aqui refaz a fila a partir da data escolhida no Salvar.</p>
+          <div class="grupo-caixa subtela-pergunta" id="sobreaviso-de">
+            <span class="rotulo-secao">De quem é o sobreaviso</span>
+            <label class="geral-opcao"><input type="radio" name="sobreaviso-de" data-valor="companhia" /><span>Da companhia: uma escala só, com os militares de todos os pelotões</span></label>
+            <label class="geral-opcao"><input type="radio" name="sobreaviso-de" data-valor="pelotao" /><span>De cada pelotão: cada um tem a sua, só com os militares dele</span></label>
+          </div>
+          <div class="grupo-caixa subtela-pergunta">
+            <span class="rotulo-secao">Quantos por dia<span class="oculto" id="sobreaviso-cada-pelotao">, em cada pelotão</span></span>
+            <span class="dropdown nova-distribuicao-selecao ajustes-sobreaviso-quantos">
+              <button type="button" class="campo-entrada campo-selecao" id="sobreaviso-quantos" aria-label="Quantos por dia">
+                <span class="campo-selecao-texto campo-selecao-texto--vazio">Escolha</span>
+                <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+              </button>
+              <div class="dropdown-menu nova-distribuicao-selecao-menu">
+                <button type="button" class="dropdown-item" data-valor="1">1 militar</button>
+                <button type="button" class="dropdown-item" data-valor="2">2 militares</button>
+                <button type="button" class="dropdown-item" data-valor="3">3 militares</button>
+                <button type="button" class="dropdown-item" data-valor="4">4 militares</button>
+                <button type="button" class="dropdown-item" data-valor="5">5 militares</button>
+                <button type="button" class="dropdown-item" data-valor="6">6 militares</button>
+                <button type="button" class="dropdown-item" data-valor="7">7 militares</button>
+                <button type="button" class="dropdown-item" data-valor="8">8 militares</button>
+                <button type="button" class="dropdown-item" data-valor="9">9 militares</button>
+                <button type="button" class="dropdown-item" data-valor="10">10 militares</button>
+              </div>
+            </span>
+          </div>
+          <div class="grupo-caixa subtela-pergunta" id="sobreaviso-quem">
+            <span class="rotulo-secao">Quem entra na fila</span>
+            <span class="subtela-ajuda">Quem não estiver marcado nunca é escolhido. Quem está de serviço, de férias, afastado ou em missão no dia é pulado.</span>
+            <span class="campo-rotulo">Postos e graduações</span>
+            <button type="button" class="geral-opcao nova-distribuicao-marca" role="checkbox" aria-checked="false" data-grupo="graus" data-valor="oficiais">
+              <span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
+              <span class="nova-distribuicao-marca-texto">Oficiais</span>
+            </button>
+            <button type="button" class="geral-opcao nova-distribuicao-marca" role="checkbox" aria-checked="false" data-grupo="graus" data-valor="subtenentes_sargentos">
+              <span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
+              <span class="nova-distribuicao-marca-texto">Subtenentes e sargentos</span>
+            </button>
+            <button type="button" class="geral-opcao nova-distribuicao-marca" role="checkbox" aria-checked="false" data-grupo="graus" data-valor="cabos">
+              <span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
+              <span class="nova-distribuicao-marca-texto">Cabos</span>
+            </button>
+            <button type="button" class="geral-opcao nova-distribuicao-marca" role="checkbox" aria-checked="false" data-grupo="graus" data-valor="soldados">
+              <span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
+              <span class="nova-distribuicao-marca-texto">Soldados</span>
+            </button>
+            <span class="campo-rotulo">Setor</span>
+            <button type="button" class="geral-opcao nova-distribuicao-marca" role="checkbox" aria-checked="false" data-grupo="setores" data-valor="operacional">
+              <span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
+              <span class="nova-distribuicao-marca-texto">Operacional</span>
+            </button>
+            <button type="button" class="geral-opcao nova-distribuicao-marca" role="checkbox" aria-checked="false" data-grupo="setores" data-valor="administrativo">
+              <span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
+              <span class="nova-distribuicao-marca-texto">Administrativo (expediente)</span>
+            </button>
+            <button type="button" class="geral-opcao nova-distribuicao-marca" role="checkbox" aria-checked="false" data-grupo="setores" data-valor="aluno">
+              <span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
+              <span class="nova-distribuicao-marca-texto">Alunos</span>
+            </button>
+          </div>
+          <div class="grupo-caixa subtela-pergunta" id="sobreaviso-metades">
+            <span class="rotulo-secao">Antigos e modernos no mesmo dia</span>
+            <label class="geral-opcao"><input type="radio" name="sobreaviso-metades" data-valor="sim" /><span>Sim: em cada dia, um da metade mais antiga e um da metade mais moderna</span></label>
+            <label class="geral-opcao"><input type="radio" name="sobreaviso-metades" data-valor="nao" /><span>Não: só a vez da fila, quem está há mais tempo sem sobreaviso</span></label>
+          </div>
+          <!-- quem não administra a companhia só lê -->
+          <span class="nova-distribuicao-trava oculto" id="sobreaviso-trava">
+            <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-cadeado"/></svg>
+            <span>Só o administrador da companhia muda o sobreaviso.</span>
+          </span>
+        </div>
+      </div>
+      <!-- o rodapé de salvar, na largura toda (como o do Horário de expediente): aparece só com alteração; desligado com
+           pergunta sem resposta -->
+      <div class="rodape rodape-linha rodape--largo oculto" id="sobreaviso-rodape">
+        <span class="rodape-texto">Alterações não salvas.</span>
+        <span class="espacador-flex"></span>
+        <div class="rodape-acoes">
+          <button type="button" class="botao" id="sobreaviso-cancelar">Cancelar</button>
+          <button type="button" class="botao botao--primario" id="sobreaviso-salvar">Salvar</button>
         </div>
       </div>
     </section>
@@ -688,10 +837,11 @@
   </div>
 </template>
 
-<!-- a Central de Operações do pelotão: quem ela exibe, só para ver (várias); embaixo do Cabo de Dia, o que fazer quando não
-     há ninguém disponível (uma só) -->
+<!-- o que a Central de Operações do pelotão exibe (várias): na escala, nos blocos Funções especiais e Extrajornada, e na
+     Central do SYSBM; embaixo do Cabo de Dia, o que fazer quando não há ninguém disponível (uma só) -->
 <template id="tpl-nova-distribuicao-central">
   <div class="nova-distribuicao-opcoes">
+    <p class="nova-distribuicao-frase nova-distribuicao-central-frase">Aparecem nos blocos Funções especiais e Extrajornada do painel do dia e da impressão, e vão para a Central de Operações no SYSBM. Os estagiários e o sobreaviso vão sempre.</p>
     <button type="button" class="geral-opcao nova-distribuicao-marca" role="checkbox" aria-checked="false" data-campo="oficial">
       <span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
       <span class="nova-distribuicao-marca-texto">Oficial de Área</span>
@@ -1063,7 +1213,7 @@
 <template id="tpl-nova-distribuicao-nova-regra">
   <button type="button" class="botao nova-distribuicao-adicionar">Adicionar regra</button>
 </template>
-<!-- uma regra, o cartão aberto: Militar, Regra e Função, e o Remover regra -->
+<!-- uma regra, o cartão aberto: Militar, Regra, Unidade, Posto e Função, e o Remover regra -->
 <template id="tpl-nova-distribuicao-regra">
   <div class="nova-distribuicao-cartao-conteudo">
     <div class="nova-distribuicao-regra-linha">
@@ -1082,6 +1232,14 @@
       </div>
     </div>
     <div class="nova-distribuicao-regra-linha">
+      <span class="nova-distribuicao-regra-rotulo">Unidade</span>
+      <span class="nova-distribuicao-espaco" data-espaco="unidade"></span>
+    </div>
+    <div class="nova-distribuicao-regra-linha">
+      <span class="nova-distribuicao-regra-rotulo">Posto</span>
+      <span class="nova-distribuicao-espaco" data-espaco="posto"></span>
+    </div>
+    <div class="nova-distribuicao-regra-linha">
       <span class="nova-distribuicao-regra-rotulo">Função</span>
       <span class="nova-distribuicao-espaco" data-espaco="funcao"></span>
     </div>
@@ -1097,6 +1255,7 @@
       <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
     </button>
     <div class="dropdown-menu nova-distribuicao-selecao-menu">
+      <button type="button" class="dropdown-item" data-valor="*">Qualquer função</button>
       <button type="button" class="dropdown-item" data-valor="Condutor">Condutor</button>
       <button type="button" class="dropdown-item" data-valor="Rádio Operador">Rádio Operador</button>
       <button type="button" class="dropdown-item" data-valor="Efetivo">Efetivo</button>
@@ -1105,8 +1264,36 @@
     </div>
   </span>
 </template>
+<!-- a unidade da regra por militar: qualquer uma ou uma da companhia (o título é o nome da companhia; as unidades
+     entram embaixo dele, do banco) -->
+<template id="tpl-nova-distribuicao-regra-unidade">
+  <span class="dropdown nova-distribuicao-selecao">
+    <button type="button" class="campo-entrada campo-selecao" aria-label="Unidade">
+      <span class="campo-selecao-texto campo-selecao-texto--vazio">Escolha</span>
+      <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+    </button>
+    <div class="dropdown-menu nova-distribuicao-selecao-menu nova-distribuicao-selecao-menu--funcoes">
+      <button type="button" class="dropdown-item" data-valor="*">Qualquer unidade</button>
+      <div class="dropdown-titulo" data-titulo="companhia"></div>
+    </div>
+  </span>
+</template>
+<!-- o posto da regra: qualquer um ou um da unidade escolhida (os postos entram embaixo de cada título, do banco) -->
+<template id="tpl-nova-distribuicao-regra-posto">
+  <span class="dropdown nova-distribuicao-selecao">
+    <button type="button" class="campo-entrada campo-selecao" aria-label="Posto">
+      <span class="campo-selecao-texto campo-selecao-texto--vazio">Escolha</span>
+      <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+    </button>
+    <div class="dropdown-menu nova-distribuicao-selecao-menu nova-distribuicao-selecao-menu--funcoes">
+      <button type="button" class="dropdown-item" data-valor="qualquer">Qualquer posto</button>
+      <div class="dropdown-titulo" data-titulo="instalacao">Instalações</div>
+      <div class="dropdown-titulo" data-titulo="viatura">Viaturas</div>
+    </div>
+  </span>
+</template>
 <!-- uma regra por graduação, o cartão aberto: a graduação (as bolinhas, como as do Quem escolher, com a graduação
-     dentro da frase), Regra e Função, e o Remover regra -->
+     dentro da frase), Regra, Posto (desta unidade) e Função, e o Remover regra -->
 <template id="tpl-nova-distribuicao-regra-graduacao">
   <div class="nova-distribuicao-cartao-conteudo">
     <div class="nova-distribuicao-regra-linha nova-distribuicao-regra-linha--opcoes">
@@ -1124,6 +1311,10 @@
         <button type="button" class="aba" data-valor="proibido">Não pode</button>
         <button type="button" class="aba" data-valor="exclusivo">Só pode</button>
       </div>
+    </div>
+    <div class="nova-distribuicao-regra-linha">
+      <span class="nova-distribuicao-regra-rotulo">Posto</span>
+      <span class="nova-distribuicao-espaco" data-espaco="posto"></span>
     </div>
     <div class="nova-distribuicao-regra-linha">
       <span class="nova-distribuicao-regra-rotulo">Função</span>
@@ -1263,4 +1454,165 @@
     <td class="nova-distribuicao-col-quem"></td>
     <td><span class="selo nova-distribuicao-situacao"></span> <span class="selo nova-distribuicao-outro-grau oculto">Outro grau</span> <span class="selo selo--alerta nova-distribuicao-fora-regra oculto">Fora da regra</span></td>
   </tr>
+</template>
+
+<!-- ===== ESTÁGIOS (aba Estágios; ajustes-estagios.js e ajustes-estagios-cartoes.js) ===== -->
+<!-- um estágio da lista da esquerda -->
+<template id="tpl-estagios-item">
+  <button type="button" class="lista-item lista-item--clicavel nova-distribuicao-bloco ajustes-estagios-item">
+    <span class="ajustes-estagios-item-nome"></span>
+  </button>
+</template>
+<!-- a frase do alto do corpo -->
+<template id="tpl-estagios-ajuda">
+  <p class="nova-distribuicao-ajuda">As regras do estágio: quem participa, as funções e viaturas em que entra e o que fazer quando a viatura sai da escala. As regras do estágio valem mais que as Regras por militar e por graduação; a CNH vale sempre. Fora do período, o estágio não vale.</p>
+</template>
+<!-- a unidade sem estágio e a unidade sem distribuição -->
+<template id="tpl-estagios-vazio">
+  <p class="nova-distribuicao-ajuda">Nenhum estágio.</p>
+</template>
+<template id="tpl-estagios-sem-postos">
+  <p class="nova-distribuicao-ajuda">A unidade ainda não tem distribuição. Responda os Postos na aba Distribuição primeiro.</p>
+</template>
+<!-- 1. o nome do estágio -->
+<template id="tpl-estagios-nome">
+  <div class="nova-distribuicao-cartao-conteudo">
+    <input type="text" class="campo-entrada ajustes-estagios-nome" maxlength="80" placeholder="Ex.: Formação de soldados" autocomplete="off" aria-label="Nome do estágio" />
+  </div>
+</template>
+<!-- 2. o período: o início e o fim (o fim pode ficar em branco) -->
+<template id="tpl-estagios-periodo">
+  <div class="nova-distribuicao-cartao-conteudo">
+    <div class="nova-distribuicao-regra-linha">
+      <span class="nova-distribuicao-regra-rotulo">De</span>
+      <input type="text" class="campo-entrada ajustes-estagios-data" data-campo="inicio" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" aria-label="Início do estágio" />
+    </div>
+    <div class="nova-distribuicao-regra-linha">
+      <span class="nova-distribuicao-regra-rotulo">Até</span>
+      <input type="text" class="campo-entrada ajustes-estagios-data" data-campo="fim" inputmode="numeric" maxlength="10" placeholder="Sem data de fim" autocomplete="off" aria-label="Fim do estágio" />
+    </div>
+    <p class="nova-distribuicao-ajuda">Sem data de fim, o estágio vale até você pôr uma.</p>
+  </div>
+</template>
+<!-- 3. quem participa: por graduação (as caixas das graduações) ou por nome (o campo de militar e os escolhidos) -->
+<template id="tpl-estagios-quem">
+  <div class="nova-distribuicao-cartao-conteudo">
+    <div class="nova-distribuicao-opcoes">
+      <label class="geral-opcao"><input type="radio" data-valor="graduacao" /><span>Por graduação</span></label>
+      <label class="geral-opcao"><input type="radio" data-valor="nome" /><span>Por nome</span></label>
+    </div>
+    <div class="ajustes-estagios-traco"></div>
+    <div class="ajustes-estagios-graus"></div>
+    <div class="ajustes-estagios-nomes">
+      <div class="nova-distribuicao-regra-linha">
+        <span class="nova-distribuicao-regra-rotulo">Militar</span>
+        <div class="dropdown campo-combo">
+          <input class="campo-entrada" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Militar" />
+          <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+          <div class="dropdown-menu nova-distribuicao-selecao-menu" role="listbox" aria-label="Militares"></div>
+        </div>
+      </div>
+      <div class="ajustes-estagios-escolhidos"></div>
+    </div>
+    <p class="nova-distribuicao-ajuda ajustes-estagios-contagem"></p>
+  </div>
+</template>
+<!-- um militar escolhido pelo nome, com a lixeira -->
+<template id="tpl-estagios-escolhido">
+  <div class="ajustes-estagios-linha">
+    <span class="ajustes-estagios-escolhido-nome"></span>
+    <button type="button" class="botao botao--icone nova-distribuicao-remover" aria-label="Tirar do estágio" data-dica="Tirar do estágio">
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
+    </button>
+  </div>
+</template>
+<!-- 4. uma função do estágio: o posto e a função, como entra (junto ou no lugar) e quantos cabem -->
+<template id="tpl-estagios-funcao">
+  <div class="ajustes-estagios-parte">
+    <div class="ajustes-estagios-linha">
+      <div class="nova-distribuicao-regra-linha">
+        <span class="nova-distribuicao-regra-rotulo">Função</span>
+        <span class="nova-distribuicao-espaco" data-espaco="funcao"></span>
+      </div>
+      <button type="button" class="botao botao--icone nova-distribuicao-remover" aria-label="Remover a função" data-dica="Remover a função">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
+      </button>
+    </div>
+    <div class="nova-distribuicao-regra-linha nova-distribuicao-regra-linha--opcoes">
+      <span class="nova-distribuicao-regra-rotulo">Como</span>
+      <div class="nova-distribuicao-opcoes">
+        <label class="geral-opcao"><input type="radio" data-valor="junto" /><span>Junto com quem está na função</span></label>
+        <label class="geral-opcao"><input type="radio" data-valor="no_lugar" /><span>No lugar de quem está na função</span></label>
+      </div>
+    </div>
+    <div class="nova-distribuicao-regra-linha">
+      <span class="nova-distribuicao-regra-rotulo">Quantos</span>
+      <span class="nova-distribuicao-espaco" data-espaco="quantos"></span>
+    </div>
+  </div>
+</template>
+<template id="tpl-estagios-funcoes-fim">
+  <div class="ajustes-estagios-fim">
+    <div class="nova-distribuicao-cartao-botoes">
+      <button type="button" class="botao nova-distribuicao-adicionar">Adicionar função</button>
+    </div>
+    <p class="nova-distribuicao-ajuda">Junto: o estagiário fica a mais e conta só no máximo do posto. No lugar: ele fica com a função e conta como quem estaria ali.</p>
+  </div>
+</template>
+<!-- 5. se a viatura sair da escala -->
+<template id="tpl-estagios-fora">
+  <div class="nova-distribuicao-cartao-conteudo">
+    <div class="nova-distribuicao-opcoes">
+      <label class="geral-opcao"><input type="radio" data-valor="sem_funcao" /><span>Ficam sem função</span></label>
+      <label class="geral-opcao"><input type="radio" data-valor="outra_viatura" /><span>Vão para outra viatura do estágio, se couber</span></label>
+    </div>
+  </div>
+</template>
+<!-- 6. quando não couber nas viaturas do estágio: ficam sem função ou vão para um posto e função (sempre junto) -->
+<template id="tpl-estagios-sobra">
+  <div class="nova-distribuicao-cartao-conteudo">
+    <div class="nova-distribuicao-opcoes">
+      <label class="geral-opcao"><input type="radio" data-valor="sem_funcao" /><span>Ficam sem função</span></label>
+      <label class="geral-opcao"><input type="radio" data-valor="vao_para" /><span>Vão para</span><span class="nova-distribuicao-espaco" data-espaco="sobra"></span></label>
+    </div>
+  </div>
+</template>
+<!-- 7. um acúmulo: a função acumulada e quem a faz (quem está numa das funções do estágio) -->
+<template id="tpl-estagios-acumulo">
+  <div class="ajustes-estagios-parte">
+    <div class="ajustes-estagios-linha">
+      <div class="nova-distribuicao-regra-linha">
+        <span class="nova-distribuicao-regra-rotulo">Acumula</span>
+        <span class="nova-distribuicao-espaco" data-espaco="acumula"></span>
+      </div>
+      <button type="button" class="botao botao--icone nova-distribuicao-remover" aria-label="Remover o acúmulo" data-dica="Remover o acúmulo">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
+      </button>
+    </div>
+    <div class="nova-distribuicao-regra-linha">
+      <span class="nova-distribuicao-regra-rotulo">Quem está em</span>
+      <span class="nova-distribuicao-espaco" data-espaco="quem"></span>
+    </div>
+  </div>
+</template>
+<template id="tpl-estagios-acumulos-vazio">
+  <p class="nova-distribuicao-ajuda">Nenhum acúmulo.</p>
+</template>
+<template id="tpl-estagios-acumulos-fim">
+  <div class="ajustes-estagios-fim">
+    <div class="nova-distribuicao-cartao-botoes">
+      <button type="button" class="botao nova-distribuicao-adicionar">Adicionar acúmulo</button>
+    </div>
+    <p class="nova-distribuicao-ajuda">No horário deles, o estagiário dessa função faz também a outra. Quem estava nela fica com o resto do dia.</p>
+  </div>
+</template>
+<!-- o fim das perguntas: o Remover estágio -->
+<template id="tpl-estagios-remover">
+  <div class="nova-distribuicao-cartao-botoes">
+    <button type="button" class="botao ajustes-estagios-remover">Remover estágio</button>
+  </div>
+</template>
+<!-- o traço entre as partes (funções e acúmulos) -->
+<template id="tpl-estagios-traco">
+  <div class="ajustes-estagios-traco"></div>
 </template>

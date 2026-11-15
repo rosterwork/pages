@@ -22,9 +22,12 @@
    vivo (escalas-painel-editar.js › aoVivo) e as telas mostram como
    fica; o X fecha, a mudança vira um passo do desfazer e a lista
    mostra o dia como vai ficar. Quem entra e já tem outra função no
-   horário sai de lá (o lugar fica vazio; a nota O que mudou traz o
-   atalho de pôr quem saiu nesse lugar). O que cada mudança faz no
-   rascunho fica em escalas-painel-linha-aplicar.js.
+   horário responde Onde ele já está: Sai de lá (o lugar fica vazio;
+   a nota O que mudou traz o atalho de pôr quem saiu nesse lugar) ou
+   Fica também lá; sem a resposta, nada muda e o Salvar espera. O
+   acúmulo da cadeira (o Rancho do Efetivo do ABTR) vai junto com ela,
+   pelo banco. O que cada mudança faz no rascunho fica em
+   escalas-painel-linha-aplicar.js.
    ============================================================ */
 (function () {
   'use strict';
@@ -81,9 +84,10 @@
        nela. { cfg, m (quem está nela), original (os horários) } */
     var alvo = modo === 'funcao' ? null : { cfg: cfg, m: eu, original: (cfg.periodos || []).map(copiar) };
     /* item = quem fica (o da linha ou outro do dia); c = o que o banco mandou de quem entra; naoPode = o motivo de quem não
-       pode na função escolhida; conferindo = o banco ainda não respondeu */
+       pode na função escolhida; conferindo = o banco ainda não respondeu; deixa = a resposta do Onde ele já está ('sai' |
+       'fica' | null) */
     var est = { item: eu && modo !== 'funcao' ? { cpf: eu.cpf, grad: eu.grad, nome: eu.nome } : null, c: null,
-      periodos: (cfg.periodos || []).map(copiar), naoPode: '', conferindo: false };
+      periodos: (cfg.periodos || []).map(copiar), naoPode: '', conferindo: false, deixa: null };
     var pedido = 0, onde = null, cobrir = null;   // cobrir = o Quem cobre da vaga sem ninguém
     var q = function (s) { return el.querySelector(s); };
 
@@ -96,6 +100,17 @@
     mostra(q('.escala-linha-militar'), modo === 'quem');
     mostra(q('.escala-linha-horario'), modo !== 'funcao');
     mostra(q('.escala-linha-para'), modo === 'funcao');
+
+    /* as bolinhas do Onde ele já está (um nome por cartão); a pergunta volta sem resposta quando muda quem entra */
+    var radiosDeixa = q('.escala-linha-deixa').querySelectorAll('input[type="radio"]'), nomeDeixa = 'escala-linha-deixa-' + (++conta);
+    [].forEach.call(radiosDeixa, function (r) {
+      r.name = nomeDeixa;
+      r.addEventListener('change', function () { if (r.checked) { est.deixa = r.value; atualizar(); } });
+    });
+    function limparDeixa() {
+      est.deixa = null;
+      [].forEach.call(radiosDeixa, function (r) { r.checked = false; });
+    }
 
     /* ---------- quem: o militar desta função (o banco diz quem pode nela e o motivo de quem não pode) ---------- */
 
@@ -126,6 +141,7 @@
     function escolher(item) {
       est.item = item;
       est.c = item.c || null;
+      limparDeixa();
       if (est.c) {
         var mil = api.militarDoDia(est.c.cpf), xs = [];
         ((mil && mil.janelas) || []).forEach(function (j) {
@@ -177,6 +193,7 @@
       var funcao = e.onde === 'vaga' && e.vaga ? e.vaga.funcao : e.onde === 'funcao' ? e.funcao : null;
       var meu = ++pedido;
       alvo = null; est.item = null; est.c = null; est.naoPode = ''; est.conferindo = false;
+      limparDeixa();
       /* a própria função dele não muda nada */
       if (!posto || !funcao || (cfg.posto && posto.tipo === cfg.posto.tipo && posto.id === cfg.posto.id && funcao === cfg.funcao)) {
         atualizar();
@@ -259,11 +276,25 @@
       mostra(q('.escala-linha-horario'), modo !== 'funcao' && (!cobrir || cobrir.horario()));
       mostra(q('.escala-linha-conferindo'), est.conferindo);
       nota(q('.escala-linha-nao-pode'), est.naoPode);
+      desenharDeixa();
       desenharEfeito();
       aplicarAoVivo();
     }
 
-    /* o efeito, em frases: o que acontece com quem sai, com a função e com o lugar que quem entra deixa. O Chefe de
+    /* Onde ele já está: os lugares que quem entra já tem no horário (fora a função especial, que vai junto com ele),
+       quando outro militar entra na função; sem nenhum, a pergunta não vale */
+    function lugaresDeQuemEntra() {
+      if (peloCobrir() || !mudouQuem() || !est.c) return [];
+      var deixa = (est.c.funcoes || []).filter(function (f) { return !PAPEL.test(f.funcao); });
+      return deixa.length ? RosterWork.escalasPainelQuem.lugares(deixa) : [];
+    }
+    function desenharDeixa() {
+      var lugares = lugaresDeQuemEntra();
+      mostra(q('.escala-linha-deixa'), lugares.length > 0);
+      if (lugares.length) q('.escala-linha-deixa-texto').textContent = L().deixaPergunta(nomeDe(est.c), lugares);
+    }
+
+    /* o efeito, em frases: quem sai da função (o que mais acontece, a lista mostra quando a mudança entra). O Chefe de
        Socorro (ou o Oficial de Área) que entra leva a função especial junto, e o sistema refaz o dia em volta dele. No
        Para qual função, quem sai da função escolhida vem na nota da caixa Onde fica */
     function desenharEfeito() {
@@ -275,17 +306,9 @@
         nota(q('.escala-linha-assume'), completa && cc && cc.assume ? (cc.assume === 'chefe_socorro' ? msg().assumeChefe : msg().assumeOficial)(nomeDe(cc), '') : '');
         return;
       }
-      var funcoes = (c && c.funcoes) || [];
-      var papel = funcoes.filter(function (f) { return PAPEL.test(f.funcao); })[0];
-      var deixa = funcoes.filter(function (f) { return !PAPEL.test(f.funcao); });
-      if (mudouQuem() && m && modo !== 'funcao') {
-        var outras = A().outrasFuncoes(m.cpf, fa, est.periodos).map(function (e) { return api.funcaoNoPosto(e.funcao, e.posto); });
-        partes.push(papel ? L().efeitoSai(nomeDe(m), fa.funcao)
-          : outras.length ? L().efeitoContinua(nomeDe(m), fa.funcao, outras) : L().efeitoSemFuncao(nomeDe(m), fa.funcao));
-      }
-      if (deixa.length) partes.push(L().entraSaiDe(nomeDe(c), RosterWork.escalasPainelQuem.lugares(deixa)));
+      var papel = ((c && c.funcoes) || []).filter(function (f) { return PAPEL.test(f.funcao); })[0];
+      if (mudouQuem() && m && modo !== 'funcao') partes.push(L().efeitoSai(nomeDe(m), fa.funcao));
       if (papel) partes.push(L().papelJunto(nomeDe(c), papel.funcao));
-      else if (mudouQuem() && !deixa.length) partes.push(L().ninguemMais);
       if (!mudouQuem() && m && mudouHora()) {
         var sai = H.menos(alvo.original.map(H.faixa), H.uniao(est.periodos.map(H.faixa)));
         if (sai.length) partes.push(L().ficaVazioDas(fa.funcao, H.textoPeriodos(sai.map(H.periodo))));
@@ -319,8 +342,14 @@
       if (sobrepostos()) { api.aoVivo(null, true); return; }
       if (mudouQuem() && est.c) {
         var c = est.c, fa = alvo.cfg, sai = alvo.m ? nomeDe(alvo.m) : '';
-        aberto.sugestao = A().sugestao(fa, c, { um: function (f) { return L().atalho(sai, f); }, varios: L().atalhoLugar(sai, nomeDe(c)) });
-        api.aoVivo(function () { A().trocar(fa, c, periodos); });
+        /* Onde ele já está sem resposta: nada muda, e o Salvar espera */
+        var pergunta = lugaresDeQuemEntra().length > 0;
+        if (pergunta && !est.deixa) { api.aoVivo(null, true); return; }
+        var fica = pergunta && est.deixa === 'fica';
+        /* quem fica também lá não deixa lugar: sem o atalho */
+        aberto.sugestao = fica ? null
+          : A().sugestao(fa, c, { um: function (f) { return L().atalho(sai, f); }, varios: L().atalhoLugar(sai, nomeDe(c)) });
+        api.aoVivo(function () { A().trocar(fa, c, periodos, fica); });
         return;
       }
       if (mudouHora()) { api.aoVivo(function () { A().mudarHorario(alvo.cfg, periodos); }); return; }

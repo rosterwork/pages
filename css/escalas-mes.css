@@ -230,26 +230,40 @@
   box-shadow: var(--sombra-bloco);
   cursor: pointer;
   transition: background-color 0.15s ease;
+  position: relative;
 }
 
 /* passar o mouse e a seleção da célula (o dia aberto no painel, ou a caixa da célula, .caixa-flutuante-escolhida): a
    borda por dentro, sem mudar o fundo nem o tamanho (Guia visual › Grade da escala): com o mouse, a cor de foco;
    escolhida, a forte (o padrão dos campos). Com o mouse num nome de quem edita o dia, a borda fica só no nome (na
-   Extrajornada, a vaga e a bolinha do militar em foco) */
-.escala-mes-celula:hover {
-  outline: 1px solid var(--foco);
-  outline-offset: -1px;
+   Extrajornada, a vaga e a bolinha do militar em foco). A borda é o ::before, por cima dos nomes e das linhas
+   tracejadas (como a do dia não salvo): as linhas com fundo (o riscado, o afastado, o horário em parte do dia) e as
+   linhas com dica ficam por cima de uma borda comum */
+.escala-mes-celula:hover::before,
+.escala-mes-celula--selecionada::before,
+.escala-mes-celula.caixa-flutuante-escolhida::before,
+.escala-mes-celula--busca::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border: 1px solid var(--foco);
+  border-radius: inherit;
+  pointer-events: none;
 }
 
-.escala-mes-celula--edita:has(:is(.linha-escalado, .extrajornada-vaga, .extrajornada-foco-ponto)[data-cpf]:hover):not(.escala-mes-celula--selecionada):not(.caixa-flutuante-escolhida) {
-  outline: none;
+.escala-mes-celula--edita:has(:is(.linha-escalado, .extrajornada-vaga, .extrajornada-foco-ponto)[data-cpf]:hover):not(.escala-mes-celula--selecionada):not(.caixa-flutuante-escolhida)::before {
+  content: none;
 }
 
-.escala-mes-celula--selecionada,
-.escala-mes-celula--selecionada:hover,
+.escala-mes-celula--selecionada::before,
+.escala-mes-celula.caixa-flutuante-escolhida::before {
+  border-color: var(--texto-forte);
+}
+
+/* a borda da peça escolhida do componente (geral-caixa-flutuante.css) fica no ::before */
 .escala-mes-celula.caixa-flutuante-escolhida {
-  outline: 1px solid var(--texto-forte);
-  outline-offset: -1px;
+  outline: none;
 }
 
 /* os nomes de quem edita o dia (a caixa da célula abre no nome): a mesma borda, por dentro de cada nome (a de um nunca
@@ -301,7 +315,8 @@
   position: relative;
 }
 
-.escala-mes-celula--refazendo > .linha-escalado {
+.escala-mes-celula--refazendo > .linha-escalado,
+.escala-mes-celula--refazendo > .escala-grupo > .linha-escalado {
   opacity: 0.45;
 }
 
@@ -429,6 +444,12 @@
   pointer-events: none;
 }
 
+/* as linhas da dica: a hora e os militares; embaixo, os estagiários que não são efetivo (só na hora que tem) */
+.escala-mes-dica-militares,
+.escala-mes-dica-estagiarios {
+  display: block;
+}
+
 /* uma linha de militar escalado: ícone(s) de origem + grad + nome + horário */
 .linha-escalado {
   display: flex;
@@ -536,15 +557,18 @@
   color: var(--erro);
 }
 
-/* afastado (férias, licença ou dispensa): só aparece com o filtro Afastamentos. Faixas diagonais (as do
-   selo de afastamento do modo Militares), o nome apagado e, no lugar do horário, "Férias até DD/MM" */
+/* afastado (férias, licença, dispensa ou missão): o da guarnição de serviço no dia, riscado na Guarnição; o que está fora
+   da escala, no Fora da escala, só com o filtro Afastamentos (ou Missões). Faixas diagonais (as do selo de afastamento do
+   modo Militares), a graduação e o nome riscados e apagados e, no lugar do horário, "Férias até DD/MM" */
 .linha-escalado--afastamento {
   border-radius: var(--raio-pequeno);
   background-image: repeating-linear-gradient(-45deg,
     var(--fundo-suave) 0 4px, var(--fundo-medio) 4px 8px);
 }
 
+.linha-escalado--afastamento .linha-escalado-grad,
 .linha-escalado--afastamento .linha-escalado-nome {
+  text-decoration: line-through;
   color: var(--texto-suave);
 }
 
@@ -571,10 +595,9 @@
   color: var(--texto-invertido);
 }
 
-/* célula que contém um militar casado pela busca: anel para localizá-lo na grade */
-.escala-mes-celula--busca {
-  outline: 2px solid var(--foco);
-  outline-offset: -2px;
+/* célula que contém um militar casado pela busca: anel para localizá-lo na grade (o ::before da borda da célula) */
+.escala-mes-celula--busca::before {
+  border: 2px solid var(--foco);
 }
 
 /* estado da tela: carregando ou vazio */
@@ -629,6 +652,56 @@
 
 .escala-calendario-unidade > .escala-mes-celula--atualizando::after {
   display: none;
+}
+
+/* os grupos da célula da Escala (escalas-celula-grupos.js): Guarnição, Trocas, Pontual, Remanejados, Extrajornada,
+   Estágio, Sobreaviso e Fora da escala, cada um numa caixa. Entre dois grupos à vista, a linha tracejada fina, na cor das
+   bordas comuns, no meio de uma faixa de 9px (o mouse em qualquer ponto dela mostra a dica do grupo de baixo; o clique
+   nela é do dia, como no espaço vazio da célula); o primeiro grupo à vista não tem linha, e o grupo que o filtro esvazia
+   some com a dele */
+.escala-grupo {
+  display: flex;
+  flex-direction: column;
+}
+
+.escala-grupo:not(:has(> .linha-escalado:not(.oculto))) {
+  display: none;
+}
+
+.escala-grupo-linha {
+  display: none;
+  padding: 4px 0;
+}
+
+.escala-grupo-linha::before {
+  content: '';
+  display: block;
+  border-top: 1px dashed var(--borda);
+}
+
+.escala-grupo:has(> .linha-escalado:not(.oculto)) ~ .escala-grupo > .escala-grupo-linha {
+  display: block;
+}
+
+/* quem está fora da escala (escalas-celula-fora.js), com o ícone de quem está fora: em vermelho, quem devia estar na escala;
+   em amarelo, quem voltou de um afastamento há até 5 dias (o administrador decide para onde ele vai) */
+.linha-escalado--fora-vermelho .linha-escalado-grad,
+.linha-escalado--fora-vermelho .linha-escalado-nome {
+  color: var(--erro);
+}
+
+.linha-escalado--fora-aviso .linha-escalado-grad,
+.linha-escalado--fora-aviso .linha-escalado-nome {
+  color: var(--alerta);
+}
+
+/* no dia em que ele não está livre (de serviço, afastado ou em missão), o nome em amarelo; e a linha de quem falta para a
+   regra da companhia, também em amarelo */
+.linha-escalado--sobreaviso-conflito .linha-escalado-grad,
+.linha-escalado--sobreaviso-conflito .linha-escalado-nome,
+.linha-escalado--sobreaviso-falta .linha-escalado-icones,
+.linha-escalado--sobreaviso-falta .linha-escalado-nome {
+  color: var(--alerta);
 }
 
 /* ============================================================

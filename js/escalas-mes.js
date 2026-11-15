@@ -64,12 +64,18 @@
     var req = ++reqSeq;
     return Esqueleto.segurar(esperaDaGrade, window.RosterWork.escalasDados.carregar(ids, inicio, fim, { daTela: true })).then(function (resultado) {
       var dados = resultado.militares;
-      var afastados = resultado.afastados || {};
+      var fora = resultado.fora || {};
       var cobertura = resultado.cobertura || {};
       var erro = resultado.erro || {};
       if (!document.contains(corpo) || req !== reqSeq || (opcoes.vigente && !opcoes.vigente())) return;   // saiu da página, outra render começou, ou trocou de modo
       Esqueleto.parar();
       corpo.textContent = '';
+      /* a página filtrada (o Sobreaviso e os Estágios; RosterWork.paginaFiltrada): só as unidades dela */
+      var pf = RosterWork.paginaFiltrada && RosterWork.paginaFiltrada();
+      if (pf) {
+        colunas = pf.colunas(colunas);
+        if (!colunas.length) { mostrarEstado(corpo, pf.vazia()); return; }
+      }
 
       var wrap = RosterWork.tpl('tpl-escala-mes');
       var grade = wrap.querySelector('.escala-mes-grade');
@@ -113,10 +119,10 @@
           celula.dataset.unidadeNome = c.nomePainel || c.nome;
           celula.dataset.unidadeCidade = c.cidade || '';
           var pessoas = (dados[c.id] && dados[c.id][iso]) || [];
-          var afastadosDia = (afastados[c.id] && afastados[c.id][iso]) || [];
+          var foraDia = (fora[c.id] && fora[c.id][iso]) || [];
           var cobDia = (cobertura[c.id] && cobertura[c.id][iso]) || null;
           var erroDia = (erro[c.id] && erro[c.id][iso]) || null;
-          if (RosterWork.escalasCelula) RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxPorUnidade[c.id], afastadosDia);
+          if (RosterWork.escalasCelula) RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxPorUnidade[c.id], foraDia);
           linha.appendChild(celula);
         });
         grade.appendChild(linha);
@@ -156,8 +162,8 @@
       var cobDia = (r.cobertura[unidadeId] && r.cobertura[unidadeId][iso]) || null;
       var erroDia = (r.erro[unidadeId] && r.erro[unidadeId][iso]) || null;
       var pessoas = (r.militares[unidadeId] && r.militares[unidadeId][iso]) || [];
-      var afastadosDia = (r.afastados[unidadeId] && r.afastados[unidadeId][iso]) || [];
-      RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxPorUnidadeAtual[unidadeId], afastadosDia);
+      var foraDia = (r.fora[unidadeId] && r.fora[unidadeId][iso]) || [];
+      RosterWork.escalasCelula.preencherCelula(celula, cobDia, erroDia, pessoas, maxPorUnidadeAtual[unidadeId], foraDia);
       RosterWork.escalasCelula.desenharGraficos(celula);
       /* o Oficial de Área do dia pode ter mudado (a mesma leitura traz o dele) */
       var linha = celula.closest('.escala-mes-linha');

@@ -4,7 +4,7 @@
    O ano no subcabeçalho do painel (o mesmo seletor da página) e uma
    caixa por tipo (Férias tem uma), com os períodos daquele ano em
    ordem de data: a situação (Em curso, Marcado, Encerrado), as datas
-   e os dias (e "fora do fluxo"). Só leitura, e só as caixas que têm
+   e os dias (e "sai da guarnição"). Só leitura, e só as caixas que têm
    período: lançar e corrigir ficam nas abas da página (a caixa da
    lista, usuarios-afastamentos-caixa.js). Lê tudo do militar uma vez (afastamentos_listar
    sem ano) e guarda enquanto a ficha está aberta: trocar de ano não

@@ -20,6 +20,16 @@
   function ehAdmin() { var u = perfil(); return !!(u && u.is_administrador); }
   function ehProgramador() { var u = perfil(); return !!(u && u.is_programador); }
 
+  /* as unidades com estágio em vigor ou marcado na companhia dele ou na área que ele administra (o perfil); a página
+     Estágios lê de novo ao abrir e guarda a lista nova (js/estagios.js) */
+  function estagioUnidades() { var u = perfil(); return (u && u.estagio_unidades) || []; }
+  function guardarEstagioUnidades(lista) {
+    var u = perfil();
+    if (!u) return;
+    u.estagio_unidades = lista || [];
+    try { sessionStorage.setItem('rosterwork_user', JSON.stringify(u)); } catch (e) { /* sem o armazenamento, vale no próximo login */ }
+  }
+
   /* o papel tem o nível pedido e a unidade está na área dele? (a mesma régua do banco, que confere de novo).
      Sessão aberta antes de o login trazer a área: vale o "é administrador" até o próximo login */
   function podeAdministrar(nivel, unidadeId) {
@@ -41,5 +51,6 @@
   }
 
   window.RosterWork.sessao = { perfil: perfil, cpf: cpf, ehAdmin: ehAdmin, ehProgramador: ehProgramador,
-    podeAdministrar: podeAdministrar, temPapel: temPapel };
+    podeAdministrar: podeAdministrar, temPapel: temPapel, estagioUnidades: estagioUnidades,
+    guardarEstagioUnidades: guardarEstagioUnidades };
 })();

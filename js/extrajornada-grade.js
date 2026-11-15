@@ -162,13 +162,18 @@
   }
   function escalaPronta() { return !!escala && escala.comp === d.competencia; }
   /* o antes: com extra na escala (mês lançado ou reaberto), a escala sem elas, do banco (sem_extra); senão, a da Escala */
-  function antesDoDia(uid, k) { return ((d.sem_extra || {})[uid] || {})[k] || { cobertura: escala && (escala.cobertura[uid] || {})[k], erro: escala && (escala.erro[uid] || {})[k] }; }
+  function antesDoDia(uid, k) {
+    return ((d.sem_extra || {})[uid] || {})[k] || { cobertura: escala && (escala.cobertura[uid] || {})[k], erro: escala && (escala.erro[uid] || {})[k],
+                                                    estagiarios: estagiariosDaEscala(uid, k) };
+  }
+  /* os estagiários que não são efetivo, por hora, da escala de hoje (a dica da faixa; escalas-celula.js) */
+  function estagiariosDaEscala(uid, k) { return RW.escalasCelula ? RW.escalasCelula.estagiariosDoDia(uid, k) : null; }
   function antesDe(uid, k) { var c = antesDoDia(uid, k).cobertura; return c && c.length === 24 ? c : null; }
   /* o depois: a escala com as extras (+1 por extra nas horas dele) e o vermelho e o amarelo só onde a falta sobra; no
      dia de verdade, a barra da Escala */
   function depoisDe(uid, k, alocs, falta) {
     var rc = real(k) && escala && (escala.cobertura[uid] || {})[k];
-    if (rc && rc.length === 24) return { cobertura: rc.map(Number), erro: ((escala.erro[uid] || {})[k] || []).map(Number) };
+    if (rc && rc.length === 24) return { cobertura: rc.map(Number), erro: ((escala.erro[uid] || {})[k] || []).map(Number), estagiarios: estagiariosDaEscala(uid, k) };
     var cob = antesDe(uid, k);
     if (!cob) return null;
     var err = antesDoDia(uid, k).erro || [], c = cob.map(Number), e = [], meias = {};
@@ -187,7 +192,7 @@
       else if (v === 2 && falta.abase[b] > 0 && falta.atotal[b] - meia <= 0) v = 0;
       e.push(v);
     }
-    return { cobertura: c, erro: e };
+    return { cobertura: c, erro: e, estagiarios: antesDoDia(uid, k).estagiarios || null };
   }
   /* a situação de cada horário de um pelotão num dia, com as extras: 'falta' (vermelho que sobra), 'ideal'
      (amarelo que sobra), 'ok' ou 'sem' (o dia sem escala) */
@@ -211,7 +216,7 @@
       picos[un.id] = pico;
     });
   }
-  function grafico(cob, uid, erro) { return RW.escalasCelula ? RW.escalasCelula.montarGrafico(cob, picos[uid] || 1, erro) : null; }
+  function grafico(cob, uid, erro, estagiarios) { return RW.escalasCelula ? RW.escalasCelula.montarGrafico(cob, picos[uid] || 1, erro, estagiarios) : null; }
 
   /* muda os horários do militar no dia (o mesmo para o calendário, a lista e o painel do dia). Passar da cota fica no
      rascunho, e o Salvar espera acertar; sem nenhum horário, ele continua no dia até o Salvar. inicio: a hora em que a
@@ -329,6 +334,7 @@
     usarEscala: function (e) { escala = e; },
     calcularPicos: calcularPicos, pico: function (uid) { return picos[uid] || 0; }, grafico: grafico,
     erroAntes: function (uid, k) { return antesDoDia(uid, k).erro; },
+    estagiariosAntes: function (uid, k) { return antesDoDia(uid, k).estagiarios || null; },
     /* quem está de serviço no dia, na escala (sem as extras já lançadas, que aparecem nas vagas) */
     deServico: function (uid, k) { return ((escala.militares[uid] || {})[k] || []).filter(function (p) { return p.origem !== 'extra'; }); },
     pelotoes: pelotoes, diasDoMes: diasDoMes, ultimoDia: ultimoDia, dataDe: dataDe, dataLonga: dataLonga, nomeDoMes: nomeDoMes, somaDia: somaDia,

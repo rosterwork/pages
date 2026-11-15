@@ -9,7 +9,8 @@
      · Dia: os grupos dos ícones (o desenho é o mesmo)
      · Minha escala: os grupos dos ícones, sem a cobertura (o
        calendário mostra a origem e o riscado; o dia, o desenho do Dia)
-     · Militares: os selos da célula e o destaque dos dias
+     · Militares: os selos da célula e o destaque dos dias, e as origens
+       (o ícone de cada horário é o mesmo da grade)
    Os grupos compartilhados vêm do molde #tpl-escala-legenda (no
    shell): o texto fica num lugar só. Clona moldes; não cria HTML.
    ============================================================ */
@@ -44,7 +45,7 @@
     var alvo = conteudo && conteudo.querySelector('[data-legenda-conteudo]');
     if (!alvo) return;
     alvo.textContent = '';
-    if (modo === 'militares') { clonar(alvo, 'tpl-escala-legenda-militares'); return; }
+    if (modo === 'militares') { clonar(alvo, 'tpl-escala-legenda-militares'); clonarGruposPainel(alvo, ['origem']); return; }
     if (modo === 'dia') { clonarGruposPainel(alvo, GRUPOS_PAINEL.dia); return; }
     if (modo === 'minha') { clonarGruposPainel(alvo, GRUPOS_PAINEL.grade); return; }
     clonar(alvo, 'tpl-escala-legenda-grade');

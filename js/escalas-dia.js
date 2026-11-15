@@ -66,18 +66,59 @@
     desenharDistribuicao(container, itens.length ? (itens[0].distribuicao || {}) : {});
   }
 
-  /* a distribuição do dia de uma unidade (o JSON do painel): os sem função, uma caixa por posto e as
-     Observações; a Minha escala usa o mesmo desenho (escalas-minha.js) */
+  /* a distribuição do dia de uma unidade (o JSON do painel), na ordem do painel do dia: Funções especiais, as
+     instalações, Extrajornada, Estagiários, as viaturas, os sem função e as Observações; a Minha escala usa o mesmo
+     desenho (escalas-minha.js) */
   function desenharDistribuicao(container, dados) {
-    var postos = dados.postos || [];
     var semFuncao = dados.sem_funcao || [];
     var pecas = RosterWork.escalasPainel && RosterWork.escalasPainel.pecas;
+    var M = RosterWork.mensagens.escala;
 
     var vazio = true;
 
-    /* os de serviço sem função: caixa de erro acima dos postos (igual ao painel) */
-    if (semFuncao.length && pecas && RosterWork.painel) {
-      var caixaErro = RosterWork.painel.criarCaixa('Sem função definida', true);
+    /* um bloco só para ver (Funções especiais, Extrajornada, Estagiários): as funções no formato das do posto */
+    function bloco(titulo, funcoes) {
+      if (!funcoes.length) return;
+      var caixa = RosterWork.painel.criarCaixa(titulo);
+      if (!caixa) return;
+      funcoes.forEach(function (funcao) {
+        var grupo = pecas.grupo(funcao);
+        if (grupo) caixa.appendChild(grupo);
+      });
+      container.appendChild(caixa);
+      vazio = false;
+    }
+
+    /* uma caixa por posto com alguém: função à esquerda + militares/horários (posto sem ninguém não aparece) */
+    function porPosto(posto) {
+      if (!pecas.temAlguem(posto)) return;
+      var caixa = RosterWork.painel.criarCaixa(posto.nome);
+      if (!caixa) return;
+      /* troca de viatura com data: "No lugar da ... até ..." embaixo do prefixo */
+      var noLugar = pecas.noLugar ? pecas.noLugar(posto) : null;
+      if (noLugar) caixa.querySelector('.rotulo-secao').insertAdjacentElement('afterend', noLugar);
+      var np = pecas.nivelPosto ? pecas.nivelPosto(posto) : '';
+      if (np) caixa.classList.add('grupo-caixa--posto-' + np);
+      var funcoes = pecas.mesclarFuncoes ? pecas.mesclarFuncoes(posto) : (posto.funcoes || []);
+      funcoes.forEach(function (funcao) {
+        var grupo = pecas.grupo(funcao);
+        if (grupo) caixa.appendChild(grupo);
+      });
+      container.appendChild(caixa);
+      vazio = false;
+    }
+
+    if (pecas && pecas.blocosDoDia && RosterWork.painel) {
+      var blocos = pecas.blocosDoDia(dados.postos, false);
+      bloco(M.blocoEspeciais, blocos.especiais);
+      blocos.instalacoes.forEach(porPosto);
+      bloco(M.blocoExtra, blocos.extra);
+      bloco(M.blocoEstagiarios, blocos.estagiarios.length
+        ? [{ nome: M.rotuloEstagiario, militares: blocos.estagiarios }] : []);
+      blocos.viaturas.forEach(porPosto);
+
+      /* os de serviço sem função: caixa de erro depois dos postos (igual ao painel) */
+      var caixaErro = semFuncao.length ? RosterWork.painel.criarCaixa('Sem função definida', true) : null;
       if (caixaErro) {
         semFuncao.forEach(function (m) {
           var linha = pecas.linha(m);
@@ -87,27 +128,6 @@
         vazio = false;
       }
     }
-
-    /* uma caixa por posto com alguém: função à esquerda + militares/horários (posto sem ninguém não aparece) */
-    postos.forEach(function (posto) {
-      if (!pecas || !RosterWork.painel || !(pecas.temAlguem && pecas.temAlguem(posto))) return;
-      var caixa = RosterWork.painel.criarCaixa(posto.nome);
-      if (!caixa) return;
-      /* troca de viatura com data: "No lugar da ... até ..." embaixo do prefixo */
-      var noLugar = pecas.noLugar ? pecas.noLugar(posto) : null;
-      if (noLugar) caixa.querySelector('.rotulo-secao').insertAdjacentElement('afterend', noLugar);
-      var np = pecas.nivelPosto ? pecas.nivelPosto(posto) : '';
-      if (np) caixa.classList.add('grupo-caixa--posto-' + np);
-      var funcoes = pecas.mesclarFuncoes ? pecas.mesclarFuncoes(posto) : (posto.funcoes || []);
-      /* o que a Central exibe, só para ver, antes e depois das funções dela */
-      var exib = pecas.exibidas ? pecas.exibidas(posto, false) : { antes: [], depois: [] };
-      exib.antes.concat(funcoes, exib.depois).forEach(function (funcao) {
-        var grupo = pecas.grupo(funcao);
-        if (grupo) caixa.appendChild(grupo);
-      });
-      container.appendChild(caixa);
-      vazio = false;
-    });
 
     /* Observações do dia (trocas): depois dos cards de posto */
     var caixaObs = pecas && pecas.observacoes ? pecas.observacoes(dados.observacoes || []) : null;

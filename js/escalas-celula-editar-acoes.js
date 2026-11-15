@@ -14,7 +14,8 @@
      entrou de mais de um jeito, Mudar a extrajornada e o painel;
    - o pelotão: Adicionar neste dia (ele entra nas horas livres, já no
      horário, com o banco em Contabilizar), Adicionar à guarnição
-     (escalas-painel-adicionar › lerGuarnicao e desenharGuarnicao),
+     (escalas-painel-adicionar › lerGuarnicao e desenharGuarnicao; o
+     mesmo no nome em vermelho do Fora da escala, escalas-celula-fora.js),
      Adicionar extra neste dia (escalas-celula-extra.js) e Abrir o
      painel do dia. O Oficial de Área do título (escalas-celula-
      oficial.js) usa o campo do Adicionar, o Remover e a pergunta, e o
@@ -296,14 +297,19 @@
 
   /* ---------- o pelotão ---------- */
 
-  /* a caixa 1 do pelotão, com a letra da guarnição do dia */
+  /* a caixa 1 do pelotão, com a letra da guarnição do dia; na página Estágios, a dela (o Adicionar estagiário e o Abrir o
+     painel do dia; RosterWork.paginaFiltrada) */
   function menuDoPelotao(c) {
-    var el = RW.tpl('tpl-escala-celula-pelotao');
+    var pf = RW.paginaFiltrada && RW.paginaFiltrada();
+    var el = RW.tpl((pf && pf.moldePelotao) || 'tpl-escala-celula-pelotao');
     if (!el) return null;
-    var letra = (api().dados() || {}).guarnicao || null;
-    el.querySelector('.escala-celula-letra').textContent = letra || '';
-    el.querySelector('.escala-celula-sem-letra').classList.toggle('oculto', !!letra);
-    RW.escalasCelulaExtra.prepararItem(el.querySelector('[data-acao="extra"]'), c.dia);
+    var letra = (api().dados() || {}).guarnicao || null, comLetra = el.querySelector('.escala-celula-letra');
+    if (comLetra) {
+      comLetra.textContent = letra || '';
+      el.querySelector('.escala-celula-sem-letra').classList.toggle('oculto', !!letra);
+    }
+    var extra = el.querySelector('[data-acao="extra"]');
+    if (extra) RW.escalasCelulaExtra.prepararItem(extra, c.dia);
     [].forEach.call(el.querySelectorAll('[data-acao]'), function (b) {
       b.addEventListener('click', function () { fazerNoPelotao(b.getAttribute('data-acao'), b, c); });
     });
@@ -342,8 +348,11 @@
       if (c.a !== a || a.acao !== (oficial ? oficial.acao : 'neste-dia') || !el.isConnected) return;
       if (!r) { combo.definir(msg().falhaCarregar, true); return; }
       var Ls = RW.escalasPainelAdicionarListas, lista = [];
+      /* na página Estágios, o Adicionar estagiário: só quem participa de um estágio (podeAdicionar) */
+      var pf = !oficial && RW.paginaFiltrada && RW.paginaFiltrada();
       Ls.unidadesDia(r).forEach(function (u) {
         var itens = Ls.dia(r, u.id);
+        if (pf && pf.podeAdicionar) itens = itens.filter(pf.podeAdicionar);
         if (itens.length) lista = lista.concat([{ titulo: u.nome }], itens);
       });
       if (!combo.preencher(lista)) return;
@@ -352,11 +361,11 @@
   }
 
   /* quem entra pelo Adicionar: nas horas livres dele (sem elas, o dia todo), e o sistema distribui o dia (como o Adicionar
-     do painel), com as horas no banco */
+     do painel), com as horas no banco (o estagiário, não: as horas dele são só registro) */
   function entrada(item) {
     var livres = item.m.livres || [];
     return { cpf: item.cpf, periodos: livres.length ? livres.map(copiar) : [{ hi: '08:00', hf: '08:00' }], sistema: true,
-      refazer: true, pontual: { contabilizar: true } };
+      refazer: true, pontual: { contabilizar: !item.m.estagio } };
   }
 
   /* escolhido o nome: ele entra no dia, e a caixa dele abre quando o dia vem com ele */
@@ -368,7 +377,7 @@
 
   /* Adicionar à guarnição: o campo de quem pode entrar na guarnição do dia e, escolhido, a peça do Adicionar militar do
      painel (a frase e, para quem muda de guarnição, o que acontece), no rascunho das guarnições, ao vivo */
-  function naGuarnicao(botao, c) {
+  function naGuarnicao(botao, c, cpf) {
     var a = c.a, el = RW.tpl('tpl-escala-celula-guarnicao');
     if (!el) return;
     var q = function (s) { return el.querySelector(s); };
@@ -399,6 +408,9 @@
       if (c.a !== a || a.acao !== 'guarnicao' || !el.isConnected) return;
       if (!r) { combo.definir(msg().falhaCarregar, true); return; }
       if (!combo.preencher(r)) return;
+      /* quem está fora da escala, clicado na grade (cpf, escalas-celula-fora.js): já vem escolhido */
+      var dele = cpf && r.filter(function (x) { return x.cpf === cpf && !x.inativo; })[0];
+      if (dele) { escolhido = dele; combo.mostrarAtual(); P.desenharGuarnicao(dele.m, g); return; }
       inp.focus(); combo.abrir();
     });
   }
@@ -406,6 +418,8 @@
   RW.escalasCelulaAcoes = {
     fazer: fazer, menuDoPelotao: menuDoPelotao, prepararMenu: prepararMenu, aoMostrarMenu: aoMostrarMenu, chegou: chegou,
     encerrar: encerrar, fechar: fechar,
+    /* o Adicionar à guarnição do dia, também com quem está fora da escala já escolhido (escalas-celula-fora.js) */
+    naGuarnicao: naGuarnicao,
     /* e o que o Oficial de Área do título usa (escalas-celula-oficial.js) */ nesteDia: nesteDia, entrada: entrada, pergunta: pergunta, vivo: vivo
   };
 })();

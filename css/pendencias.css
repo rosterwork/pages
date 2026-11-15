@@ -41,7 +41,7 @@ button.pendencias-corrigir:hover {
   color: var(--texto-fraco);
 }
 
-/* fora da escala e retorno de afastamento: a contagem em cima e a lista embaixo (não navegam) */
+/* fora da escala: a contagem em cima e a lista embaixo (não navega) */
 .pendencias-corrigir--lista {
   flex-direction: column;
   align-items: stretch;
@@ -82,11 +82,6 @@ button.pendencias-corrigir:hover {
   color: var(--texto-forte);
 }
 
-.pendencias-corrigir-volta {
-  font-size: 11px;
-  color: var(--texto-suave);
-}
-
 .pendencias-corrigir-unidade {
   margin-left: auto;
   font-size: 11px;
@@ -95,8 +90,8 @@ button.pendencias-corrigir:hover {
 
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
-   Na lista de nomes do "Para corrigir", o motivo e a volta descem
-   para a linha de baixo do nome.
+   Na lista de nomes do "Para corrigir", o grau, o nome e a unidade
+   numa grade.
    ============================================================ */
 @media (max-width: 767px) {
   html[data-celular] .pendencias-corrigir-item {
@@ -104,10 +99,5 @@ button.pendencias-corrigir:hover {
     grid-template-columns: auto minmax(0, 1fr) auto;
     column-gap: 8px;
     align-items: baseline;
-  }
-
-  html[data-celular] .pendencias-corrigir-volta {
-    grid-column: 2;
-    grid-row: 2;
   }
 }

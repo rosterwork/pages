@@ -50,7 +50,7 @@
       var ocupado = (mo.ocupado || []).map(function (o) { return { hi: H.curta(o.hi), hf: H.curta(o.hf), tipo: o.tipo }; });
       return ocupado.length ? msg().ocupadoNoDia(ocupado) : '';
     }
-    if (mo.codigo === 'regra') return mm.regra(mo.funcao);
+    if (mo.codigo === 'regra') return mm.regra(mo.alvo || mo.funcao);
     if (mo.codigo === 'cnh') return mm.cnh(mo.cnh);
     return '';
   }
@@ -88,6 +88,14 @@
       info: texto.charAt(0).toUpperCase() + texto.slice(1) };
   }
 
+  /* quem a regra do militar não deixa nesta cadeira (o "não pode"): o administrador põe mesmo assim, e fica o aviso
+     amarelo. Vai para o fim do grupo dele, com o motivo no lugar da informação */
+  function contraRegra(c) { return !!(c.motivo && c.motivo.codigo === 'regra'); }
+  function regraPorUltimo(itens) {
+    itens.forEach(function (x) { if (contraRegra(x.c)) x.info = motivoTexto(x.c); });
+    return itens.filter(function (x) { return !contraRegra(x.c); }).concat(itens.filter(function (x) { return contraRegra(x.c); }));
+  }
+
   /* a lista do banco em itens do campo de militar, com os títulos dos grupos; militar = quem está na linha (fica de
      fora). Cada item: { cpf, grad, nome, info, inativo, icone, c } (c = o que o banco mandou). opcoes.soDoDia = só quem
      está de serviço aqui no dia (o lápis): sem quem está de folga e sem quem serve em outra unidade, cada um com o ícone
@@ -107,7 +115,7 @@
       aqui.push(item);
     });
     var lista = [];
-    function grupo(titulo, itens) { if (itens.length) lista = lista.concat([{ titulo: titulo }], itens); }
+    function grupo(titulo, itens) { if (itens.length) lista = lista.concat([{ titulo: titulo }], regraPorUltimo(itens)); }
     grupo(L().grupoAqui(unidadeNome), aqui);
     grupo(L().grupoOutra, outra);
     grupo(L().grupoFolga, folga);
@@ -163,7 +171,7 @@
       servico.push(item);
     });
     var lista = [];
-    function grupo(titulo, itens, aberto) { if (itens.length) lista = lista.concat([{ titulo: titulo, aberto: aberto }], itens); }
+    function grupo(titulo, itens, aberto) { if (itens.length) lista = lista.concat([{ titulo: titulo, aberto: aberto }], regraPorUltimo(itens)); }
     grupo(L().grupoFolga, folga, true);
     grupo(aqui ? L().grupoNesteDia : L().grupoAqui(unidadeNome), servico, !folga.length);
     grupo(L().grupoNaoPodem, nao, false);

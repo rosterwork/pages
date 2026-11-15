@@ -10,10 +10,10 @@
 
   window.RosterWork = window.RosterWork || {};
 
-  /* grade do mês (RPC ler_escala_mes): por unidade×dia devolve militares + afastados + cobertura +
+  /* grade do mês (RPC ler_escala_mes): por unidade×dia devolve militares + fora + cobertura +
      erro (por hora, para o gráfico: 0 verde, 1 vermelho, 2 amarelo). A RPC entrega { unidade: { dia: {...} } };
-     aqui só reorganizamos nas tabelas que o render consome. Os afastados (férias, licença, dispensa)
-     ficam à parte: só a Escala os mostra, com o filtro Afastamentos. Usa a leitura já começada pelo deslize
+     aqui só reorganizamos nas tabelas que o render consome. Quem está fora da escala (os operacionais sem guarnição)
+     fica à parte: só a Escala o mostra, no fim da célula. Usa a leitura já começada pelo deslize
      do mês (celular) quando é a do mesmo pedido */
   function carregar(unidadesIds, inicio, fim, opcoes) {
     var ids = (unidadesIds || []).map(Number);
@@ -49,39 +49,46 @@
       });
   }
 
-  /* { unidade: { dia: { militares, afastados, cobertura, erro, oficial } } } -> quatro mapas por unidade/dia (também a
+  /* { unidade: { dia: { militares, fora, cobertura, erro, oficial, estagiarios } } } -> quatro mapas por unidade/dia (também a
      escala que vem com o mês da Extrajornada) e o Oficial de Área de cada dia ({ dia: {grad, nome} | null }; o mesmo em
-     todas as unidades da companhia; o dia sem a chave não tem escala) */
+     todas as unidades da companhia; o dia sem a chave não tem escala). Os militares vêm na ordem dos grupos da célula
+     (escalas-celula-grupos.js); a chave "saidas" (quem saiu da guarnição) fica de lado: ele aparece no Fora da escala */
   function reorganizar(grade) {
-    var militares = {}, afastados = {}, cobertura = {}, erro = {}, atualizando = [], oficial = {};
+    var militares = {}, fora = {}, cobertura = {}, erro = {}, atualizando = [], oficial = {};
     /* quem está de serviço e de extra no mesmo horário: a nota da Escala lê cada leitura (escalas-extra-servico.js) */
     if (RosterWork.escalaExtraServico) RosterWork.escalaExtraServico.anotar(grade);
+    /* o sobreaviso da companhia de cada dia: a célula o desenha no lugar dele (escalas-celula-sobreaviso.js) */
+    if (RosterWork.escalasCelulaSobreaviso) RosterWork.escalasCelulaSobreaviso.guardar(grade);
+    /* os estagiários que não são efetivo de cada hora: a dica da faixa os mostra embaixo dos militares (escalas-celula.js) */
+    if (RosterWork.escalasCelula) RosterWork.escalasCelula.guardarEstagiarios(grade);
     Object.keys(grade).forEach(function (uid) {
-      militares[uid] = {}; afastados[uid] = {}; cobertura[uid] = {}; erro[uid] = {};
+      militares[uid] = {}; fora[uid] = {}; cobertura[uid] = {}; erro[uid] = {};
       var dias = grade[uid] || {};
       Object.keys(dias).forEach(function (iso) {
         var c = dias[iso] || {};
-        /* quem saiu da guarnição vem à parte (saidas): entra no fim, riscado (escalas-celula.js) */
-        militares[uid][iso] = (c.militares || []).concat(c.saidas || []);
-        afastados[uid][iso] = c.afastados || [];
+        militares[uid][iso] = c.militares || [];
+        fora[uid][iso] = c.fora || [];
         cobertura[uid][iso] = c.cobertura || [];
         erro[uid][iso] = c.erro || [];
         if (c.atualizando) atualizando.push(uid + '|' + iso);
         if (Object.prototype.hasOwnProperty.call(c, 'oficial') && !Object.prototype.hasOwnProperty.call(oficial, iso)) oficial[iso] = c.oficial;
       });
     });
-    return { militares: militares, afastados: afastados, cobertura: cobertura, erro: erro, atualizando: atualizando, oficial: oficial };
+    return { militares: militares, fora: fora, cobertura: cobertura, erro: erro, atualizando: atualizando, oficial: oficial };
   }
 
   /* grade do modo Militares (RPC ler_escala_militares): por unidade, a lista de militares
      (grad, nome, ordenados por antiguidade) e, por dia, o estado (serviço + períodos / afastado).
-     A RPC entrega { unidade: { militares: [...] } } pronto para o render. */
-  function carregarMilitares(unidadesIds, inicio, fim) {
+     A RPC entrega { unidade: { militares: [...] } } pronto para o render. estagiarios (o Militares da página Estágios):
+     só quem participa dos estágios em vigor, cada um com o estagio_id, e a lista estagios de cada unidade */
+  function carregarMilitares(unidadesIds, inicio, fim, estagiarios) {
     var ids = (unidadesIds || []).map(Number);
-    var previa = lerPrevia('ler_escala_militares', { p_unidade_ids: ids, p_inicio: inicio, p_fim: fim }, true);
+    var args = { p_unidade_ids: ids, p_inicio: inicio, p_fim: fim };
+    if (estagiarios) args.p_estagiarios = true;
+    var previa = lerPrevia('ler_escala_militares', args, true);
     if (previa) return previa.then(function (grade) { if (!grade) throw new Error('falha'); return grade; });
     return RosterWork.apiFetch('/rest/v1/rpc/ler_escala_militares', {
-      metodo: 'POST', corpo: { p_unidade_ids: ids, p_inicio: inicio, p_fim: fim }
+      metodo: 'POST', corpo: args
     })
       .then(function (r) { if (!r.ok) throw new Error('falha'); return r.json(); })   // falha rejeita: o render mostra erro em vez de grade vazia falsa
       .then(function (grade) { return grade || {}; });
@@ -214,9 +221,10 @@
      mudanças) e a Extrajornada ({competencia, mudancas, motivo}) de uma vez, tudo ou nada; a parte sem mudança vai nula
      (a extra, só com mudança). Resolve no objeto da RPC ({success, logs, mudou, dia}, ou {success:false, error, parte,
      desatualizado}) ou num marcador de falha: { _falha: 'conexao' } (sem rede) | { _falha: 'servidor' } (HTTP não-ok). */
-  function painelSalvar(unidadeId, iso, dia, ciclo, extra) {
+  function painelSalvar(unidadeId, iso, dia, ciclo, extra, sobreaviso) {
     var corpo = { p_unidade_id: Number(unidadeId), p_data: iso, p_dia: dia || null, p_ciclo: ciclo || null };
     if (extra) corpo.p_extra = extra;
+    if (sobreaviso) corpo.p_sobreaviso = sobreaviso;
     return RosterWork.apiFetch('/rest/v1/rpc/escala_painel_salvar', { metodo: 'POST', corpo: corpo })
       .then(function (r) { return r.ok ? r.json() : { _falha: 'servidor' }; })
       .catch(function () { return { _falha: 'conexao' }; });
@@ -298,7 +306,25 @@
       .catch(function () { return null; });
   }
 
+  /* quem pode ficar de sobreaviso no dia (RPC sobreaviso_candidatos), na ordem da fila: { metade, grupos: [{ grupo,
+     militares }] }; cpf = quem sai (o Pôr outro no lugar dele; sem ele, o Adicionar). null em falha */
+  function sobreavisoCandidatos(unidadeId, iso, cpf) {
+    return RosterWork.apiFetch('/rest/v1/rpc/sobreaviso_candidatos', { metodo: 'POST', corpo: { p_unidade_id: Number(unidadeId), p_data: iso, p_cpf: cpf || null } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; });
+  }
+
+  /* a aba Militares da página Sobreaviso (RPC sobreaviso_militares): { unidade: { companhia_id, por_pelotao, militares } };
+     a falha rejeita (a grade mostra o erro, como a do Militares) */
+  function sobreavisoMilitares(unidadesIds, inicio, fim) {
+    return RosterWork.apiFetch('/rest/v1/rpc/sobreaviso_militares', { metodo: 'POST',
+      corpo: { p_unidade_ids: (unidadesIds || []).map(Number), p_inicio: inicio, p_fim: fim } })
+      .then(function (r) { if (!r.ok) throw new Error('falha'); return r.json(); })
+      .then(function (grade) { return grade || {}; });
+  }
+
   window.RosterWork.escalasDados = {
+    sobreavisoCandidatos: sobreavisoCandidatos, sobreavisoMilitares: sobreavisoMilitares,
     carregar: carregar, antecipar: antecipar, reorganizar: reorganizar, carregarMilitares: carregarMilitares, lerMilitarDia: lerMilitarDia,
     motivos: motivos,
     lerDiasAtualizando: lerDiasAtualizando, lerDistribuicaoDia: lerDistribuicaoDia, lerAlteracoesDia: lerAlteracoesDia, lerPrevia: lerPrevia, corpoPrevia: corpoPrevia, painelSalvar: painelSalvar,

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="icone-estagio" viewBox="0 0 24 24">
+    <path d="M12 6.5C10 5 7 4.5 3.5 5V18.5C7 18 10 18.5 12 20"/>
+    <path d="M12 6.5C14 5 17 4.5 20.5 5V18.5C17 18 14 18.5 12 20"/>
+    <path d="M12 6.5V20"/>
+  </symbol>
+</svg>

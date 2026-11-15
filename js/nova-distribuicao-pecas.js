@@ -306,9 +306,11 @@
     return caixa;
   }
 
-  /* seleção com as opções escritas no molde (praça/oficial, sentido, aviso) */
-  function selecaoFixa(nome, atual, aoEscolher, travado, comErro) {
+  /* seleção com as opções escritas no molde (praça/oficial, sentido, aviso); preparar (opcional) acrescenta ou esconde
+     opções antes de ligar (as unidades e os postos das regras) */
+  function selecaoFixa(nome, atual, aoEscolher, travado, comErro, preparar) {
     var caixa = tpl(nome);
+    if (preparar) preparar(caixa);
     var gatilho = caixa.querySelector('.campo-selecao');
     var alvo = gatilho.querySelector('.campo-selecao-texto');
     gatilho.disabled = !!travado;

@@ -134,6 +134,9 @@
   /* a do painel lateral cai só para a esquerda, sobre a página; a do rodapé sobe, sobre a lista */
   --sombra-painel:    -1px 0 3px rgb(0 0 0 / 0.06), -16px 0 32px -12px rgb(0 0 0 / 0.22);
   --sombra-rodape:    0 -1px 3px rgb(0 0 0 / 0.06), 0 -16px 32px -12px rgb(0 0 0 / 0.22);
+  /* a da coluna parada de uma grade cai para a direita, sobre o que rola por baixo dela. É por dentro (inset) de uma
+     faixa colada à borda da coluna, da altura de cada linha, para as linhas emendarem sem degrau */
+  --sombra-coluna:    inset 12px 0 8px -8px rgb(0 0 0 / 0.18);
 
   /* -------------------------------------------------------
      Tamanhos da tela — medidas que mudam conforme o aparelho
@@ -262,6 +265,7 @@ html[data-tema="escuro"] {
   --sombra-flutuante: 0 1px 2px rgb(0 0 0 / 0.40), 0 4px 8px -2px rgb(0 0 0 / 0.45), 0 12px 24px -4px rgb(0 0 0 / 0.60);
   --sombra-painel:    -1px 0 3px rgb(0 0 0 / 0.50), -16px 0 32px -12px rgb(0 0 0 / 0.90);
   --sombra-rodape:    0 -1px 3px rgb(0 0 0 / 0.50), 0 -16px 32px -12px rgb(0 0 0 / 0.90);
+  --sombra-coluna:    inset 12px 0 8px -8px rgb(0 0 0 / 0.90);
 }
 
 /* -------------------------------------------------------

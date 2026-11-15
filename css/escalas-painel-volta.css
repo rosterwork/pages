@@ -1,0 +1,94 @@
+/* ============================================================
+   ESCALAS — a volta de férias ou de afastamento
+   (escalas-painel-volta.js): a nota no alto da Escala e a vista do
+   painel do dia da volta. As caixas numeradas são as da sub-tela
+   (geral-subtela.css); as colunas e os nomes, os da aba Guarnições
+   (escalas-painel-guarnicoes.css). Aqui ficam o lugar da nota, a
+   linha de quem volta, a conta por graduação e a linha da mudança.
+   ============================================================ */
+
+/* a nota de cada pelotão e dia, no alto da grade, como a das cotas (escalas-mes.css) */
+.escala-volta-aviso {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 8px;
+  margin: 12px 16px 0;
+}
+
+/* 1. quem volta: o grau e o nome, a guarnição (o campo com a lista) e o dia em que entra, numa linha */
+.escala-volta-quem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.escala-volta-militar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+}
+
+.escala-volta-militar-nome {
+  display: flex;
+  flex: 1 1 0;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+}
+
+.escala-volta-guarnicao {
+  flex-shrink: 0;
+}
+
+.escala-volta-guarnicao .campo-selecao {
+  min-width: 144px;
+}
+
+.escala-volta-entra {
+  flex-shrink: 0;
+  min-width: 88px;
+  font-size: 12px;
+  color: var(--texto-suave);
+  text-align: right;
+}
+
+/* 2. a conta da guarnição por graduação, embaixo da coluna */
+.escala-volta-conta {
+  margin-top: 8px;
+  padding: 0 2px;
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+/* 3. cada mudança de guarnição: o grau e o nome, as datas embaixo e a lixeira */
+.escala-volta-porque {
+  margin-bottom: 8px;
+}
+
+.escala-volta-mudanca {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+}
+
+.escala-volta-mudanca + .escala-volta-mudanca {
+  margin-top: 8px;
+}
+
+.escala-volta-mudanca-texto {
+  display: flex;
+  flex: 1 1 0;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 4px;
+  min-width: 0;
+}
+
+.escala-volta-mudanca-datas {
+  flex-basis: 100%;
+  font-size: 11px;
+  color: var(--texto-suave);
+}

@@ -96,7 +96,8 @@
     var titulo = document.querySelector('.conteudo > .pagina h1');
     var barra = document.querySelector('.treino-barra');
     if (!RW.treino.livre() || !titulo || !barra) return;
-    Array.prototype.forEach.call(barra.querySelectorAll('.treino-barra-pagina-nome'), function (el) { el.textContent = titulo.textContent.trim(); });
+    /* o texto à vista (innerText): a Escala e o Sobreaviso têm os dois nomes no título, e o CSS mostra o da página */
+    Array.prototype.forEach.call(barra.querySelectorAll('.treino-barra-pagina-nome'), function (el) { el.textContent = titulo.innerText.trim(); });
   }
   function vigiarPaginas() {
     var conteudo = document.querySelector('.conteudo');

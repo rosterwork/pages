@@ -4,7 +4,8 @@
    texto; aberto, os campos): a graduação nas bolinhas, no jeito das
    do Quem escolher (Apenas, Igual ou mais antigo que, Igual ou mais
    moderno que, De … a …, com a graduação dentro da frase), Não pode |
-   Só pode e a função. A regra por militar vale mais que esta, e o
+   Só pode, o posto (desta unidade) e a função, com os mesmos campos da
+   regra por militar. A regra por militar vale mais que esta, e o
    banco põe fora da regra só quando não há outro que possa.
    ============================================================ */
 (function () {
@@ -16,7 +17,7 @@
 
   function completa(r) { return !!(r.forma && r.grau && (r.forma !== 'entre' || r.ate)); }
 
-  /* os campos da regra aberta: Graduação (as bolinhas), Regra (Não pode | Só pode), Função e o Remover regra */
+  /* os campos da regra aberta: Graduação (as bolinhas), Regra (Não pode | Só pode), Posto, Função e o Remover regra */
   function campos(lugar, ctx, api, r, i, falta, erros) {
     var graus = (ctx.calc && ctx.calc.graus) || {};
     var listaGraus = ctx.ehCia ? (graus['praça'] || []).concat(graus.oficial || []) : (graus['praça'] || []);
@@ -45,9 +46,7 @@
       if (v !== r.tipo) mudar(function (g) { g.tipo = v; });
     });
 
-    conteudo.querySelector('[data-espaco="funcao"]').appendChild(P().selecaoFixa('regra-funcao', r.funcao, function (v) {
-      mudar(function (g) { g.funcao = v; });
-    }, ctx.soLeitura, falta && !r.funcao));
+    RosterWork.novaDistribuicaoMilitares.ondeEFuncao(conteudo, ctx, r, mudar, { travado: ctx.soLeitura, falta: falta });
 
     /* fecha o cartão antes de tirar a regra: as de baixo sobem de posição */
     var remover = conteudo.querySelector('.nova-distribuicao-remover-regra');
@@ -63,7 +62,8 @@
     lugar.appendChild(conteudo);
   }
 
-  /* uma regra por cartão: fechado, a graduação no título e a regra embaixo ("Não pode Rancheiro"); aberto, os campos */
+  /* uma regra por cartão: fechado, a graduação no título e a regra embaixo ("Não pode Rancheiro", "Não pode
+     ABTR-14462 · Condutor"); aberto, os campos */
   function regras(corpo, ctx, api) {
     corpo.appendChild(P().tpl('nota-graduacao'));
     var u = P().unidade(corpo, ctx);
@@ -73,10 +73,11 @@
 
     /* a regra nova (ainda não salva) não acusa o que falta antes do Salvar */
     var gravadas = ((((api.dados() || {}).atual || {}).respostas || {}).regras_graduacao || []).length;
+    var alvos = ((ctx.calc && ctx.calc.regra_textos) || {}).graduacao || [];
     todas.forEach(function (r, i) {
       var falta = i < gravadas && P().pendente(ctx, 'regra_graduacao:' + i);
       var erros = P().erros(ctx, 'regra_graduacao:' + i);
-      var linhas = [r.tipo && r.funcao ? P().texto(M().regraTexto[r.tipo], { funcao: r.funcao }) : { texto: M().faltaResponder, falta: falta }]
+      var linhas = [RosterWork.novaDistribuicaoMilitares.textoDaRegra(r, alvos[i], falta)]
         .concat(erros.map(function (e) { return { texto: e, falta: true }; }));
       var titulo = completa(r) ? P().texto(M().graduacaoTitulo[r.forma], { grau: r.grau, ate: r.ate }) : M().semGraduacao;
       P().cartao(u, api, ctx, 'graduacao-' + i, titulo, linhas, function (lugar) {

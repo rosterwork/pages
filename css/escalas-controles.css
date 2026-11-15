@@ -6,6 +6,13 @@
    subgrupos, a caixa da Legenda e a faixa de unidades do celular.
    ============================================================ */
 
+/* os textos do Sobreaviso e dos Estágios (o mesmo fragmento abre as três páginas: o título e o total do Militares):
+   escondidos na Escala; o css/sobreaviso.css e o css/estagios.css os mostram */
+.escala-so-sobreaviso,
+.escala-so-estagios {
+  display: none;
+}
+
 /* a barra quebra em duas linhas quando não cabe (o painel aberto tira 480px), como a da Extrajornada:
    nada fica atrás do painel */
 .escala-barra {
@@ -90,6 +97,20 @@
   min-height: 12px;
   border: 2px solid var(--alerta);
   border-radius: var(--raio-pequeno);
+}
+
+/* amostras do nome de quem está fora da escala (escalas-celula-fora.js): em vermelho quem devia estar nela; em amarelo quem
+   voltou de um afastamento há até 5 dias */
+.escala-legenda-nome-fora,
+.escala-legenda-nome-volta {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--erro);
+}
+
+.escala-legenda-nome-volta {
+  color: var(--alerta);
 }
 
 /* amostra da faixa do horário na linha do militar: cinza fora do turno, claro no turno */

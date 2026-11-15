@@ -46,13 +46,18 @@
         else frases.push(d.troca());
         break;
       case 'folga': frases.push(d.folga(m.folga)); break;
-      case 'pontual': frases.push(d.pontual); break;
+      case 'pontual': frases.push(p.estagio ? d.estagio : d.pontual); break;
       case 'extra': frases.push(d.extra); break;
       case 'remanejado_saida': frases.push(d.foi(m.para)); break;
       case 'mudanca': if (p.mudanca_de) frases.push(t.mudouDeDiaDe(p.mudanca_de)); break;
       case 'mudanca_saida': if (p.mudanca_para) frases.push(t.mudouDeDiaPara(p.mudanca_para)); break;
       case 'saida_guarnicao': frases.push(t.saiuDaGuarnicao(diaMes(p.saida))); break;
-      case 'afastamento': frases.push(RW.mensagens.geral.afastadoAte(p.afastamento || '', RW.data.isoParaBR(p.ate).slice(0, 5))); break;
+      /* o sobreaviso da companhia; no dia em que ele não está livre, o porquê */
+      case 'sobreaviso': frases.push(p.conflito ? t.sobreaviso.conflito[p.conflito] : t.sobreaviso.dica); break;
+      /* a missão mostra o nome inteiro (na Outra, o que o administrador escreveu) */
+      case 'afastamento': frases.push(RW.mensagens.geral.afastadoAte((p.missao && p.dica) || p.afastamento || '', RW.data.isoParaBR(p.ate).slice(0, 5))); break;
+      /* o operacional da unidade sem guarnição (o grupo Fora da escala); quem voltou de um afastamento há até 5 dias, o dia */
+      case 'fora': frases.push(p.aviso && p.voltou_em ? d.foraVoltou(diaMes(p.voltou_em)) : d.fora); break;
     }
     if (p.remanejado) frases.push(d.veio(m.de));
     if (p.extra_servico && p.extra_servico.length) frases.push(t.extraServicoDica);

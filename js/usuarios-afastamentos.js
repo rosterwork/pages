@@ -3,12 +3,13 @@
    (RosterWork.usuariosAfastamentos)
    A lista completa do efetivo (a mesma árvore do Efetivo) e, em cada
    militar, uma linha por afastamento (ou missão) do ano escolhido, em
-   ordem de data: o tipo e as datas, os dias e, em licença e dispensa,
-   o fluxo; na missão, se ele saiu da escala. A missão (a Operação
-   Verão) não é afastamento: não bloqueia pontual, troca nem extra.
+   ordem de data: o tipo (na missão Outra, o nome) e as datas, os dias
+   e, em licença, dispensa e missão, a guarnição. A missão (Operação
+   Verão, Força Tarefa ou outra) não é afastamento: não bloqueia
+   pontual, troca nem extra.
    Na barra, o ano (‹ 2026 ›, a lista de anos e o Hoje) e os Filtros
-   destas abas: Graus, Situação no ano e Tipo (só em Licenças e
-   Dispensas, que têm mais de um). Clicar no militar que se pode mudar troca a linha pela
+   destas abas: Graus, Situação no ano e Tipo (fora de Férias, que tem
+   um só). Clicar no militar que se pode mudar troca a linha pela
    caixa dos períodos (usuarios-afastamentos-caixa.js); quem só lê
    fica com a linha. O usuarios.js empresta a árvore, a busca, a
    ordem e a contagem do título (ctx); aqui fica só o que é destas abas.
@@ -23,7 +24,7 @@
     ferias: ['ferias'],
     licenca: ['propria_saude', 'saude_familiar', 'interesses', 'especial', 'capacitacao'],
     dispensa: ['gala', 'nojo', 'comum'],
-    missao: ['operacao_verao']
+    missao: ['operacao_verao', 'forca_tarefa', 'outra']
   };
 
   var ctx = null;          // o que o usuarios.js empresta: { atualizar, busca, ordenar, arvoreDeGraus, contar }
@@ -127,7 +128,8 @@
   function montarLinha(pilha, a) {
     var l = RosterWork.tpl('tpl-usuario-afastamento-linha');
     if (!l) return;
-    var tipo = M().tiposCurtos[a.tipo];
+    /* a missão Outra mostra o nome que o administrador escreveu */
+    var tipo = a.tipo === 'outra' && a.nome ? a.nome : M().tiposCurtos[a.tipo];
     var datas = textoDatas(a.data_inicio, a.data_fim, ano);
     l.querySelector('.usuario-afastamento-texto').textContent = tipo ? tipo + ' · ' + datas : datas;
     l.querySelector('.usuario-afastamento-dias').textContent = M().dias(a.dias);
@@ -135,9 +137,8 @@
     if (a.fora_do_fluxo == null) {
       fluxo.classList.add('oculto');
     } else {
-      /* na missão, a mesma coluna diz se ele saiu da escala */
-      var missao = categoria() === 'missao';
-      fluxo.textContent = a.fora_do_fluxo ? (missao ? M().seloMissaoFora : M().seloFora) : (missao ? M().seloMissaoNa : M().seloSegue);
+      /* em licença, dispensa e missão: se ele sai da guarnição */
+      fluxo.textContent = a.fora_do_fluxo ? M().seloSai : M().seloFica;
       fluxo.classList.add(a.fora_do_fluxo ? 'selo--erro' : 'selo--sucesso');
     }
     pilha.appendChild(l);

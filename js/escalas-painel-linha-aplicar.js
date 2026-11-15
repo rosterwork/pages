@@ -4,10 +4,12 @@
    muda, sempre dentro de um mudar() do escalas-painel-editar.js,
    que grava como um passo só):
    - trocar: quem entra (já de serviço no dia) senta na função
-     (fixado) e quem estava sai daquele horário; quem entra deixa as
-     outras funções do horário, que ficam vazias;
+     (fixado) e quem estava sai daquele horário; quem entra, pelo Onde
+     ele já está, deixa as outras funções do horário, que ficam vazias
+     (Sai de lá), ou fica fixado nelas também (Fica também lá);
    - o horário nesta função, o "Ninguém" (a função fica vazia no
-     horário) e liberar (o ícone da linha).
+     horário; na função que o modelo acumula, o fixado sai e o acúmulo
+     volta) e liberar (o ícone da linha).
    cfg = { tipo, posto, funcao, militar, periodos } (a linha)
    ============================================================ */
 (function () {
@@ -35,19 +37,28 @@
     return r;
   }
 
-  /* as outras funções do militar nesses horários (fora a desta linha) */
-  function outrasFuncoes(cpf, cfg, periodos) {
-    return ed().funcoesDoMilitar(cpf).filter(function (e) {
-      return !(cfg.posto && mesmoLugar(e, cfg.posto, cfg.funcao)) && e.periodos.some(function (p) { return cruzaAlgum(p, periodos); });
-    });
-  }
-
-  /* trocar: c = quem entra (o que o banco mandou, já de serviço no dia). Ele deixa as outras funções do horário: o
-     automático deixa de valer ali (acumula = false) e o que ele tinha fixado sai */
-  function trocar(cfg, c, periodos) {
+  /* trocar: c = quem entra (o que o banco mandou, já de serviço no dia). Sai de lá: ele deixa as outras funções do
+     horário (o automático deixa de valer ali, acumula = false, e o que ele tinha fixado sai). fica (Fica também lá): ele
+     fica fixado também nas outras funções do horário que a pergunta mostrou (as que o banco mandou, desta unidade),
+     fora a função especial (vai junto com ele) e o que ele já tem fixado */
+  function trocar(cfg, c, periodos, fica) {
     var api = ed(), H = api.horas, r = api.rascunho();
     api.aplicarColocacao({ cpf: c.cpf, posto: cfg.posto, funcao: cfg.funcao, periodos: periodos, sistema: false, pontual: null });
     if (!(c.funcoes || []).length) return;
+    if (fica) {
+      c.funcoes.forEach(function (f) {
+        var posto = api.acharPosto(f.viatura_id, f.instalacao_id);
+        if (!posto || mesmoLugar({ posto: posto, funcao: f.funcao }, cfg.posto, cfg.funcao) || /^(chefe de socorro|oficial de área)$/i.test(f.funcao)) return;
+        periodos.forEach(function (w) {
+          var x = H.cruza(H.faixa(w), H.faixa({ hi: f.hi, hf: f.hf }));
+          var ja = !!x && r.ajustes.some(function (a) {
+            return a.acao === 'colocar' && a.cpf === c.cpf && api.noLocal(a, posto, f.funcao) && !!H.cruza(H.faixa(a), x);
+          });
+          if (x && !ja) api.aplicarColocacao({ cpf: c.cpf, posto: posto, funcao: f.funcao, periodos: [H.periodo(x)], sistema: false, pontual: null });
+        });
+      });
+      return;
+    }
     r.ajustes.forEach(function (a) { if (a.acao === 'colocar' && a.cpf === c.cpf && api.noLocal(a, cfg.posto, cfg.funcao)) a.acumula = false; });
     api.funcoesDoMilitar(c.cpf).forEach(function (e) {
       if (!e.fixado || mesmoLugar(e, cfg.posto, cfg.funcao)) return;
@@ -63,7 +74,7 @@
     var api = ed(), m = cfg.militar;
     if (!c || !m || cfg.tipo !== 'funcao' || c.grupo === 'outro_pelotao' || !(c.funcoes || []).length) return null;
     if (c.funcoes.some(function (f) { return /^(chefe de socorro|oficial de área)$/i.test(f.funcao); })) return null;
-    if (outrasFuncoes(m.cpf, cfg, cfg.periodos).length) return null;
+    /* a nota só mostra o atalho se quem saiu ficou sem função (ele pode perder também o acúmulo da cadeira) */
     var lugares = [];
     c.funcoes.forEach(function (f) {
       var posto = api.acharPosto(f.viatura_id, f.instalacao_id);
@@ -74,11 +85,13 @@
   }
 
   /* o "Ninguém": a função fica vazia nos horários dados, ou em todos os dele (ele continua de serviço). Fixado no lugar
-     de outro, o outro não volta: sai também */
+     de outro, o outro não volta: sai também. Na função que o modelo acumula (o Rancho do Efetivo do ABTR), o fixado sai
+     e o acúmulo volta para quem está na cadeira */
   function tirarDaFuncao(cfg, periodos) {
     var api = ed(), H = api.horas, r = api.rascunho(), m = cfg.militar;
+    var acumulo = !!(api.acharFuncao(cfg.posto, cfg.funcao) || {}).acumulo;
     (periodos || m.periodos || []).forEach(function (per) {
-      if (m.fixado) {
+      if (m.fixado && !acumulo) {
         r.ajustes.filter(function (a) {
           return a.acao === 'colocar' && a.cpf === m.cpf && a.substitui && a.substitui !== m.cpf && api.noLocal(a, cfg.posto, cfg.funcao) && H.cruza(H.faixa(a), H.faixa(per));
         }).forEach(function (a) {
@@ -127,7 +140,7 @@
   }
 
   window.RosterWork.escalasPainelLinhaAplicar = {
-    ocupantes: ocupantes, outrasFuncoes: outrasFuncoes, trocar: trocar, sugestao: sugestao, tirarDaFuncao: tirarDaFuncao,
+    ocupantes: ocupantes, trocar: trocar, sugestao: sugestao, tirarDaFuncao: tirarDaFuncao,
     mudarHorario: mudarHorario, liberar: liberar, podeLiberar: podeLiberar
   };
 })();

@@ -1034,12 +1034,9 @@
 
   function caixaPosto(posto) {
     var p = pecas();
-    /* o que a Central exibe, só para ver: antes e depois das funções dela */
-    var exib = p.exibidas(posto, ctx.admin);
-    var exibe = exib.antes.concat(exib.depois);
     /* posto sem nenhuma função no dia (a reserva sem ninguém, o que fica fora da escala): só quem edita o dia vê, numa
        linha só, com o ícone Funções do posto; o Adicionar militar também chega nele pelo Onde */
-    if (!(posto.funcoes || []).length && !exibe.length && !editavel()) return null;
+    if (!(posto.funcoes || []).length && !editavel()) return null;
     var caixa = RosterWork.painel.criarCaixa(posto.nome);
     if (!caixa) return null;
     montarTituloPosto(caixa, posto);
@@ -1048,7 +1045,6 @@
     var np = p.nivelPosto(posto);
     if (!(posto.funcoes || []).length) {
       if (np) caixa.classList.add('grupo-caixa--posto-' + np);
-      exibe.forEach(function (f) { linhasExibida(caixa, f); });
       return caixa;
     }
     /* o vermelho (cadeira vazia ou horário sem ninguém) vence o amarelo; a função aberta sem ninguém não é erro */
@@ -1056,16 +1052,26 @@
       return (f.vazio && f.vazio_motivo !== 'aberta') || (f.vao || []).length;
     })) np = 'erro';
     if (np) caixa.classList.add('grupo-caixa--posto-' + np);
-    exib.antes.forEach(function (f) { linhasExibida(caixa, f); });
     p.mesclarFuncoes(posto).forEach(function (f) { linhasFuncao(caixa, posto, f); });
-    exib.depois.forEach(function (f) { linhasExibida(caixa, f); });
     return caixa;
   }
 
-  /* uma função que a Central só exibe (o Oficial de Área, o Chefe de Socorro, o Cabo de Dia, a Extrajornada): a pessoa
-     está no posto dela, então o lápis traz só a parte do dia do menu, e só de quem serve nesta unidade no dia; o Oficial
-     de Área da companhia, para quem administra a companhia, traz o Ver o dia na companhia (o dia dele mora lá; a aba
-     Militares de lá abre com o menu dele); o Cabo de Dia sem ninguém, só para quem administra, em amarelo */
+  /* um bloco só para ver, antes das viaturas: as Funções especiais e a Extrajornada (o que a Central exibe) ou os
+     Estagiários; cada pessoa continua no posto dela. Sem ninguém, o bloco não aparece */
+  function caixaExibida(titulo, funcoes) {
+    if (!funcoes.length) return null;
+    var caixa = RosterWork.painel.criarCaixa(titulo);
+    if (!caixa) return null;
+    var antes = caixa.children.length;
+    funcoes.forEach(function (f) { linhasExibida(caixa, f); });
+    return caixa.children.length > antes ? caixa : null;
+  }
+
+  /* uma função de um bloco só para ver (o Oficial de Área, o Chefe de Socorro, o Cabo de Dia, a Extrajornada, o
+     estagiário): a pessoa está no posto dela, então o lápis traz só a parte do dia do menu, e só de quem serve nesta
+     unidade no dia; o Oficial de Área da companhia, para quem administra a companhia, traz o Ver o dia na companhia (o
+     dia dele mora lá; a aba Militares de lá abre com o menu dele); o Cabo de Dia sem ninguém, só para quem administra,
+     em amarelo */
   function linhasExibida(caixa, f) {
     var grupo = novoGrupo([f.nome], f.semNinguem.length ? 'alerta' : null);
     if (!grupo) return;
@@ -1302,12 +1308,23 @@
     var alguem = false;
     function por(caixa) { if (caixa) { corpo.appendChild(caixa); alguem = true; } }
     /* o posto sem ninguém (só para quem edita) entra na lista, mas não tira o "Sem distribuição" do dia vazio */
-    ctx.reabrirMenu = null;
-    (dados.postos || []).forEach(function (posto) {
+    function porPosto(posto) {
       var caixa = caixaPosto(posto);
       if (caixa && !(posto.funcoes || []).length) corpo.appendChild(caixa);
       else por(caixa);
-    });
+    }
+    ctx.reabrirMenu = null;
+    /* a ordem: Funções especiais, as instalações (Central, Rancho, Almoxarifado e as outras), Extrajornada,
+       Estagiários, Sobreaviso, as viaturas, Sem função e De folga */
+    var blocos = p.blocosDoDia(dados.postos, ctx.admin);
+    por(caixaExibida(msg().blocoEspeciais, blocos.especiais));
+    blocos.instalacoes.forEach(porPosto);
+    por(caixaExibida(msg().blocoExtra, blocos.extra));
+    por(caixaExibida(msg().blocoEstagiarios, blocos.estagiarios.length
+      ? [{ nome: msg().rotuloEstagiario, militares: blocos.estagiarios, semNinguem: [] }] : []));
+    /* o sobreaviso da companhia (escalas-painel-sobreaviso.js) */
+    if (RosterWork.escalasPainelSobreaviso && !ctx.comparar) RosterWork.escalasPainelSobreaviso.montar(corpo, dados, ctx);
+    blocos.viaturas.forEach(porPosto);
     por(caixaSemFuncao(dados.sem_funcao || []));
     por(caixaFolgas(dados.folgas || []));
     /* dia sem ninguém: o estado vazio, nunca a tela em branco */
@@ -1344,9 +1361,15 @@
   /* o menu abre depois do clique que o pediu: o clique no item ainda chega ao document, e o geral-dropdown fecharia o
      menu recém-aberto */
   function abrirMenuPedido() {
-    var cpf = ctx.abrirMenuDe, corpo = ctx.corpo, acao = ctx.fazerAcao;
+    var cpf = ctx.abrirMenuDe, corpo = ctx.corpo, acao = ctx.fazerAcao, adicionar = ctx.adicionar;
     ctx.abrirMenuDe = null;
     ctx.fazerAcao = null;
+    ctx.adicionar = null;
+    /* o dia vazio da aba Estagiários: o Adicionar militar, já com ele (quem administra) */
+    if (adicionar && ctx.admin && RosterWork.escalasPainelAdicionar) {
+      setTimeout(function () { RosterWork.escalasPainelAdicionar.abrir({ cpf: adicionar }); }, 0);
+      return;
+    }
     if (!cpf || !RosterWork.escalasPainelLinhaMenu) return;
     setTimeout(function () {
       var linha = corpo.querySelector('.escala-edicao-linha--menu[data-cpf="' + cpf + '"]');
@@ -1505,6 +1528,7 @@
     if (corpo && ctx && ctx.corpo === corpo && ctx.unidadeId === unidadeId && ctx.iso === iso && !ctx.comparar && !opcoes.comparar
         && ctx.admin === !!opcoes.admin && ctx.consulta === !!opcoes.consulta && base && ctx.dados) {
       ctx.visao = visao;
+      if (opcoes.adicionar) ctx.adicionar = opcoes.adicionar;
       if (ctx.emSub || ctx.carregando || ctx.chaveDados !== JSON.stringify(paraPrevia())) { desenhar(); return; }
       montarSubcabecalho();
       renderLista(ctx.dados);
@@ -1515,6 +1539,7 @@
       comparar: !!opcoes.comparar, consulta: !!opcoes.consulta, visao: visao,
       dados: null, dadosAntes: null, chaveDados: null, emSub: false, comHistorico: false, salvando: false,
       sugestao: null, ultima: null, abrirMenuDe: opcoes.abrirMenuDe || null, fazerAcao: opcoes.fazerAcao || null,
+      adicionar: opcoes.adicionar || null,
       semLista: !!opcoes.semLista, aoMostrar: opcoes.aoMostrar || null };
     /* voltou de outra aba ao mesmo dia: o rascunho continua; outro dia, ou quem só lê, começa do dia gravado */
     var mesmo = !!(base && rasc && dono === unidadeId + '|' + iso && haMudanca());

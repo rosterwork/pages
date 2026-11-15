@@ -216,9 +216,9 @@
     var antes = G().antesDe(uid, k);
     if (antes) {
       var cob = RW.tpl('tpl-extrajornada-painel-cobertura');
-      var gA = G().grafico(antes, uid, G().erroAntes(uid, k));
+      var gA = G().grafico(antes, uid, G().erroAntes(uid, k), G().estagiariosAntes(uid, k));
       var dep = G().depoisDe(uid, k, alocs, falta);
-      var gD = G().grafico(dep.cobertura, uid, dep.erro);
+      var gD = G().grafico(dep.cobertura, uid, dep.erro, dep.estagiarios);
       if (gA) cob.querySelector('.extrajornada-painel-cob-sem').appendChild(gA);
       if (gD) cob.querySelector('.extrajornada-painel-cob-com').appendChild(gD);
       caixa.querySelector('.extrajornada-cobertura-graficos').appendChild(cob);
@@ -331,11 +331,14 @@
       s24.textContent = msg().so24;
       linhaNome.appendChild(s24);
     }
-    /* embaixo do nome, o serviço de parte do dia: a extra só nas outras horas (a barra mostra em cinza) */
-    var servico = G().horasServico(m, k);
-    if (servico.length) {
+    /* embaixo do nome, em amarelo: o serviço de parte do dia (a extra só nas outras horas; a barra mostra em cinza) e a
+       regra do militar que não deixa nenhum posto deste pelotão no dia (o administrador põe mesmo assim; a sugestão nunca) */
+    var servico = G().horasServico(m, k), avisos = [];
+    if (servico.length) avisos.push(msg().deServicoDas(servico.map(function (p) { return [RW.horario.curta(p.hi), RW.horario.curta(p.hf)]; })));
+    if (((m.regra || {})[k] || []).map(String).indexOf(String(uid)) >= 0) avisos.push(msg().regraSemPosto);
+    if (avisos.length) {
       var aviso = lin.querySelector('.extrajornada-painel-quem-aviso');
-      aviso.textContent = msg().deServicoDas(servico.map(function (p) { return [RW.horario.curta(p.hi), RW.horario.curta(p.hf)]; }));
+      aviso.textContent = avisos.join(' ');
       aviso.classList.remove('oculto');
     }
     var a = G().vagaDe(m.cpf, k), marcados = a ? G().blocos(a) : [];

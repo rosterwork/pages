@@ -1,7 +1,9 @@
 <div class="pagina">
   <div class="pagina-cabecalho">
+    <!-- o mesmo fragmento abre a Escala e o Sobreaviso (o menu; js/sobreaviso.js): os textos de cada uma (o título e o total do
+         Militares); o css/sobreaviso.css mostra os da página Sobreaviso -->
     <div class="pagina-titulos">
-      <h1>Escala</h1>
+      <h1><span class="escala-so-escala">Escala</span><span class="escala-so-sobreaviso">Sobreaviso</span><span class="escala-so-estagios">Estágios</span></h1>
     </div>
     <!-- ajuda da tela: os passo a passo desta página e o manual (componente geral-guia) -->
     <div class="dropdown pagina-ajuda" data-manual="escala">
@@ -68,8 +70,8 @@
     <span class="espacador-flex"></span>
 
     <!-- botão Filtros (componente geral-filtros: um lugar por filtro, que vira uma coluna do menu; aqui só a Situação)
-         nos modos Mês, Semana e Colunas; a linha "Filtros:" entra abaixo da barra. As opções vêm do escalas-filtros.js;
-         Afastamentos fica fora do "Todos" e é um acréscimo (começa desmarcado) -->
+         nos modos Mês, Semana, Colunas e Militares; a linha "Filtros:" entra abaixo da barra. As opções vêm do escalas-filtros.js;
+         Afastamentos e Missões ficam fora do "Todos" e são acréscimos (começam desmarcados) -->
     <div class="filtros oculto" id="escala-filtros">
       <div data-filtro="situacao" data-filtro-nome="Situação" data-filtro-titulo="Situação"></div>
     </div>
@@ -119,6 +121,10 @@
       </button>
     </div>
   </div>
+
+  <!-- a volta de férias ou de afastamento sem guarnição, só para quem administra o pelotão: a nota amarela de cada pelotão e
+       dia, com o Simular a escala (escalas-painel-volta.js; molde tpl-escala-volta-aviso) -->
+  <div class="escala-volta-aviso oculto" id="escala-volta-aviso"></div>
 
   <!-- as cotas que faltam distribuir, só para o administrador: a nota vermelha de cada mês na tela (geral-cotas-aviso.js) -->
   <div class="escala-cotas-aviso oculto" id="escala-cotas-aviso"></div>
@@ -431,6 +437,10 @@
         <span>Afastado: aparece com o filtro Afastamentos</span>
       </span>
       <span class="escala-legenda-item">
+        <span class="linha-escalado linha-escalado--afastamento"><span class="linha-escalado-icones"><svg class="icone" width="13" height="13" aria-hidden="true"><use href="icones/todos.svg#icone-mapa-pin"/></svg></span><span class="linha-escalado-grad">Sd.</span><span class="linha-escalado-nome">Nome</span></span>
+        <span>Missão: aparece com o filtro Missões</span>
+      </span>
+      <span class="escala-legenda-item">
         <span class="escala-legenda-borda-atualizando"></span>
         <span>Borda amarela: o dia ainda pode mudar e se ajusta sozinho</span>
       </span>
@@ -445,6 +455,7 @@
     <div class="escala-legenda-grade escala-legenda-grade--duas">
       <span class="escala-legenda-item">
         <span class="escala-mil-servico">
+          <svg class="icone escala-mil-servico-origem" aria-hidden="true"><use href="icones/todos.svg#icone-origem-sistema"/></svg>
           <span class="linha-escalado-hora-ini">08</span>
           <svg class="icone linha-escalado-hora-seta" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
           <span class="linha-escalado-hora-fim">08</span>
@@ -453,7 +464,7 @@
       </span>
       <span class="escala-legenda-item">
         <span class="escala-mil-servico">
-          <svg class="icone escala-mil-servico-extra" aria-hidden="true"><use href="icones/todos.svg#icone-extrajornada"/></svg>
+          <svg class="icone escala-mil-servico-origem" aria-hidden="true"><use href="icones/todos.svg#icone-extrajornada"/></svg>
           <span class="linha-escalado-hora-ini">08</span>
           <svg class="icone linha-escalado-hora-seta" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
           <span class="linha-escalado-hora-fim">20</span>
@@ -462,6 +473,7 @@
       </span>
       <span class="escala-legenda-item">
         <span class="escala-mil-servico escala-mil-servico--trocado">
+          <svg class="icone escala-mil-servico-origem" aria-hidden="true"><use href="icones/todos.svg#icone-origem-troca"/></svg>
           <span class="linha-escalado-hora-ini">08</span>
           <svg class="icone linha-escalado-hora-seta" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
           <span class="linha-escalado-hora-fim">08</span>
@@ -473,8 +485,21 @@
         <span>Afastado</span>
       </span>
       <span class="escala-legenda-item">
+        <span class="escala-mil-afast">OP. VERÃO</span>
+        <span>Missão</span>
+      </span>
+      <span class="escala-legenda-item">
         <span class="escala-legenda-cor escala-legenda-cor--vazia"></span>
         <span>Vazio: sem serviço</span>
+      </span>
+    </div>
+  </div>
+  <div class="escala-legenda-grupo">
+    <span class="rotulo-secao">Militar</span>
+    <div class="escala-legenda-grade escala-legenda-grade--duas">
+      <span class="escala-legenda-item">
+        <span class="escala-mil-pessoa-dias">10</span>
+        <span>Dias na escala do mês, pelo filtro</span>
       </span>
     </div>
   </div>
@@ -528,7 +553,8 @@
   </div>
 </template>
 
-<!-- um militar: coluna fixa (avatar + grad/nome + cpf) + as células dos dias (o JS anexa) -->
+<!-- um militar: coluna fixa (avatar + grad/nome + cpf + o selo dos dias) + as células dos dias (o JS anexa). O selo,
+     à direita, é o número de dias que ele aparece no mês, pelo filtro (escalas-militares-dias.js) -->
 <template id="tpl-escala-mil-pessoa">
   <div class="escala-mil-linha escala-mil-pessoa-linha">
     <div class="escala-mil-pessoa">
@@ -540,6 +566,7 @@
         </div>
         <span class="escala-mil-pessoa-cpf"></span>
       </div>
+      <span class="escala-mil-pessoa-dias"></span>
     </div>
   </div>
 </template>
@@ -565,10 +592,12 @@
   <span class="esqueleto esqueleto-mil-servico"></span>
 </template>
 
-<!-- chip de serviço numa célula: "08 →(ícone) 08" (fundo escuro, texto invertido) -->
+<!-- chip de serviço numa célula: o ícone da origem e "08 →(ícone) 08" (fundo escuro, texto invertido); na página Sobreaviso, o
+     telefone no lugar da origem -->
 <template id="tpl-escala-mil-servico">
   <span class="escala-mil-servico">
-    <svg class="icone escala-mil-servico-extra oculto" aria-hidden="true"><use href="icones/todos.svg#icone-extrajornada"/></svg>
+    <svg class="icone escala-mil-servico-origem oculto" aria-hidden="true"><use href="icones/todos.svg#icone-origem-sistema"/></svg>
+    <svg class="icone escala-mil-servico-sobreaviso oculto" aria-hidden="true"><use href="icones/todos.svg#icone-sobreaviso"/></svg>
     <span class="linha-escalado-hora-ini"></span>
     <svg class="icone linha-escalado-hora-seta" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
     <span class="linha-escalado-hora-fim"></span>
@@ -584,7 +613,8 @@
 <!-- linha de totais: rótulo fixo + um valor por dia (o JS anexa) -->
 <template id="tpl-escala-mil-total">
   <div class="escala-mil-linha escala-mil-total">
-    <div class="escala-mil-total-rotulo">Efetivo de serviço</div>
+    <!-- na página Sobreaviso, o css/sobreaviso.css mostra o segundo texto -->
+    <div class="escala-mil-total-rotulo"><span class="escala-so-escala">Efetivo de serviço</span><span class="escala-so-sobreaviso">De sobreaviso</span><span class="escala-so-estagios">Estagiários de serviço</span></div>
   </div>
 </template>
 
@@ -621,6 +651,69 @@
     <button type="button" class="dropdown-item oculto" data-acao="extra"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-extrajornada"/></svg><span>Adicionar extra neste dia</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
     <div class="dropdown-divisor"></div>
     <button type="button" class="dropdown-item" data-acao="painel"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-escalas"/></svg><span>Abrir o painel do dia</span></button>
+  </div>
+</template>
+
+<!-- a nota da volta de férias ou de afastamento (escalas-painel-volta.js): "4 militares do 1ºPEL voltam de férias em 01/12."
+     e "A sugestão de guarnição está pronta." (os textos vêm do JS), com o Simular a escala, que abre a vista da volta no
+     painel do dia -->
+<template id="tpl-escala-volta-aviso">
+  <div class="nota nota--alerta nota--com-acao" role="status">
+    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-afastamentos"/></svg>
+    <span class="nota-texto"><span class="nota-titulo"></span> <span class="escala-volta-aviso-texto"></span></span>
+    <span class="espacador-flex"></span>
+    <button type="button" class="botao escala-volta-simular">Simular a escala</button>
+  </div>
+</template>
+
+<!-- a caixa 1 de quem está fora da escala, em vermelho (escalas-celula-fora.js): o Adicionar à guarnição do dia (o mesmo do
+     pelotão, já com ele, com a setinha da caixa 2) e o Abrir o painel do dia. A letra é a da guarnição do dia -->
+<template id="tpl-escala-celula-fora">
+  <div class="escala-celula-fora">
+    <button type="button" class="dropdown-item" data-acao="guarnicao"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-usuarios"/></svg><span>Adicionar à guarnição <span class="escala-celula-letra"></span><span class="escala-celula-sem-letra oculto">do dia</span></span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <div class="dropdown-divisor"></div>
+    <button type="button" class="dropdown-item" data-acao="painel"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-escalas"/></svg><span>Abrir o painel do dia</span></button>
+  </div>
+</template>
+
+<!-- a caixa 1 do pelotão na página Estágios (escalas-celula-editar-acoes.js): o Adicionar estagiário (só quem participa de
+     um estágio, com horas livres) e o Abrir o painel do dia -->
+<template id="tpl-escala-celula-pelotao-estagios">
+  <div class="escala-celula-pelotao">
+    <button type="button" class="dropdown-item" data-acao="neste-dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-novo-usuario"/></svg><span>Adicionar estagiário</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <div class="dropdown-divisor"></div>
+    <button type="button" class="dropdown-item" data-acao="painel"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-escalas"/></svg><span>Abrir o painel do dia</span></button>
+  </div>
+</template>
+
+<!-- a caixa 1 do sobreaviso (escalas-celula-sobreaviso-caixa.js): no nome, Pôr outro no lugar dele e Mudar o horário (com
+     a setinha da caixa 2), Remover do sobreaviso e o Abrir o painel do dia -->
+<template id="tpl-escala-celula-sobreaviso">
+  <div class="escala-celula-sobreaviso">
+    <button type="button" class="dropdown-item" data-acao="por-outro"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-substituir"/></svg><span>Pôr outro no lugar dele</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <button type="button" class="dropdown-item" data-acao="horario"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-relogio"/></svg><span>Mudar o horário</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <button type="button" class="dropdown-item dropdown-item--perigo" data-acao="remover"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-remover-usuario"/></svg><span>Remover do sobreaviso</span></button>
+    <div class="dropdown-divisor"></div>
+    <button type="button" class="dropdown-item" data-acao="painel"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-escalas"/></svg><span>Abrir o painel do dia</span></button>
+  </div>
+</template>
+
+<!-- no dia (fora dos nomes, na página Sobreaviso, e na linha do que falta): Adicionar ao sobreaviso e o Abrir o painel -->
+<template id="tpl-escala-celula-sobreaviso-dia">
+  <div class="escala-celula-sobreaviso">
+    <button type="button" class="dropdown-item" data-acao="adicionar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-novo-usuario"/></svg><span>Adicionar ao sobreaviso</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <div class="dropdown-divisor"></div>
+    <button type="button" class="dropdown-item" data-acao="painel"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-escalas"/></svg><span>Abrir o painel do dia</span></button>
+  </div>
+</template>
+
+<!-- a caixa 2 do Pôr outro no lugar dele e do Adicionar ao sobreaviso (componente geral-combo-militar): a lista na ordem da
+     fila, com quem não pode apagado e o motivo -->
+<template id="tpl-escala-celula-sobreaviso-campo">
+  <div class="dropdown campo-combo escala-celula-adicionar">
+    <input class="campo-entrada campo-entrada--pequeno" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Quem fica de sobreaviso" />
+    <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+    <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Quem pode ficar de sobreaviso"></div>
   </div>
 </template>
 

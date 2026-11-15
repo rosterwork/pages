@@ -40,14 +40,14 @@
     return { cpf: a.cpf, grad: m.grad, nome: m.nome, origem: a.origem === 'sugestao' ? 'extra_sistema' : 'extra_admin', periodos: periodos };
   }
 
-  /* a leitura da grade da tela, por unidade e dia: { militares, afastados, cobertura, erro } (como a da escala) */
+  /* a leitura da grade da tela, por unidade e dia: { militares, fora, cobertura, erro } (como a da escala) */
   function leitura(extrasDoMes) {
     return function (ids, inicio, fim) {
-      var r = { militares: {}, afastados: {}, cobertura: {}, erro: {} };
+      var r = { militares: {}, fora: {}, cobertura: {}, erro: {} };
       var alocs = (extrasDoMes ? RW.extrajornadaOrg.dados().alocacoes : G().vagas()).filter(function (a) { return a.blocos.length; });
       var efetivas = extrasDoMes ? null : G().efetivas(), completa = !extrasDoMes && RW.extrajornadaFiltros.escalaCompleta();
       ids.forEach(function (uid) {
-        r.militares[uid] = {}; r.afastados[uid] = {}; r.cobertura[uid] = {}; r.erro[uid] = {};
+        r.militares[uid] = {}; r.fora[uid] = {}; r.cobertura[uid] = {}; r.erro[uid] = {};
         for (var d = new Date(+inicio.slice(0, 4), +inicio.slice(5, 7) - 1, +inicio.slice(8, 10)); iso(d) <= fim; d.setDate(d.getDate() + 1)) {
           var k = iso(d);
           var aqui = alocs.filter(function (a) { return +a.unidade === +uid && a.data === k; })

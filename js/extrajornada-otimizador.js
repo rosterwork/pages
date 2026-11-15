@@ -9,9 +9,11 @@
    recusar alguma escolha, vale o cálculo simples do banco (o motor
    reserva). Regra fixa do administrativo: as cotas que faltam no menor
    número de dias, sem quebrar em mais (o que não couber fica para o
-   administrador). Enquanto calcula, a janela das etapas fica na tela
-   escurecida, com o Cancelar, e o Voltar pergunta antes. Não cria HTML
-   nem escreve estilo.
+   administrador). A extra nunca vai para o pelotão e o dia em que a
+   regra do militar não deixa nenhuma cadeira para ele (D.regra; o
+   administrador põe mesmo assim). Enquanto calcula, a janela das
+   etapas fica na tela escurecida, com o Cancelar, e o Voltar pergunta
+   antes. Não cria HTML nem escreve estilo.
    RosterWork.extrajornadaOtimizador.
    ============================================================ */
 (function () {
@@ -64,8 +66,9 @@
   /* ---------- o modelo: as extras possíveis e o placar ---------- */
   function montarModelo(D) {
     var sede = D.sede || [], N = D.mil.length || 1;
-    var dia = {}, fixaNoDia = {}, fixas = {}, fixasGrupo = {}, cap = {}, esc = {}, nec = {};
+    var dia = {}, fixaNoDia = {}, fixas = {}, fixasGrupo = {}, cap = {}, esc = {}, nec = {}, regra = {};
     D.dia.forEach(function (x) { dia[x.cpf + '|' + x.data] = x; });
+    (D.regra || []).forEach(function (r) { regra[r.cpf + '|' + r.uid + '|' + r.data] = true; });
     (D.fixas || []).forEach(function (f) {
       fixaNoDia[f.cpf + '|' + f.data] = true;
       (f.blocos || []).forEach(function (b) {
@@ -102,6 +105,7 @@
         if (!x || !x.livre || fixaNoDia[m.cpf + '|' + d]) return;
         var primeira = x.livres && x.livres.length ? Math.min.apply(null, x.livres) : 1;
         D.pelotoes.forEach(function (u) {
+          if (regra[m.cpf + '|' + u + '|' + d]) return;   /* a regra dele não deixa cadeira neste pelotão no dia */
           var ehSede = sede.indexOf(u) >= 0;
           function tentar(w, cedo) {
             if (m.so24 ? w.tam !== 4 : w.tam > m.resta) return;

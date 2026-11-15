@@ -1,0 +1,40 @@
+/* ============================================================
+   ESTÁGIOS — a página do menu
+   A mesma Escala (escalas.html e os mesmos arquivos), com a marca
+   .escala-pagina--estagios na página (js/estagios.js). Aqui só o que
+   ela esconde ou troca: os textos (o título e o total do
+   Militares), a Minha escala (com a divisória dela), o botão Filtros
+   (o filtro fica preso no Estágio), as notas da Extrajornada embaixo
+   da barra e, na célula, a faixa da cobertura, o Oficial de Área e o
+   sobreaviso (só os estagiários aparecem).
+   Montagem: js/estagios.js
+   ============================================================ */
+
+/* os textos de cada página (o título e o total do Militares) */
+.escala-pagina--estagios .escala-so-escala {
+  display: none;
+}
+
+.escala-pagina--estagios .escala-so-estagios {
+  display: inline;
+}
+
+/* as abas: Mês, Militares e Colunas; a barra, sem o Filtros; embaixo dela, sem as notas da Extrajornada */
+.escala-pagina--estagios #escala-modo-minha,
+.escala-pagina--estagios #escala-filtros,
+.escala-pagina--estagios #escala-cotas-aviso,
+.escala-pagina--estagios #escala-extra-servico-aviso {
+  display: none;
+}
+
+/* sem a Minha escala, a divisória que a separava das outras abas sai */
+.escala-pagina--estagios #escala-modo-visoes::before {
+  content: none;
+}
+
+/* a célula: sem a faixa da cobertura, sem o Oficial de Área do dia e sem o sobreaviso */
+.escala-pagina--estagios .escala-mes-grafico,
+.escala-pagina--estagios .escala-mes-oficial,
+.escala-pagina--estagios .escala-sobreaviso {
+  display: none;
+}

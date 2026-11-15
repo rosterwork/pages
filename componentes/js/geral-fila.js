@@ -49,9 +49,10 @@
 
   /* o ícone de cada assunto das pendências (o único mapa: a fila, a página Pendências e a faixa do topo).
      troca_aceite: a troca com o aceite de quem olha faltando (abre o mesmo painel da troca);
-     troca_aceites_pendentes: a troca em aberto esperando o aceite dos militares (o administrador acompanha) */
+     troca_aceites_pendentes: a troca em aberto esperando o aceite dos militares (o administrador acompanha);
+     volta_afastamento: a volta de férias ou de afastamento sem guarnição (abre a sugestão de guarnição na Escala) */
   var ICONES = { troca: 'trocas', troca_aceite: 'trocas', troca_aceites_pendentes: 'trocas', folga: 'folgas', dados: 'editar',
-    extra_prazo: 'extrajornada', cnh: 'editar' };
+    extra_prazo: 'extrajornada', cnh: 'editar', volta_afastamento: 'afastamentos' };
   function icone(tipo) { return ICONES[tipo] || 'pendencias'; }
   function ehTroca(tipo) { return tipo === 'troca' || tipo === 'troca_aceite' || tipo === 'troca_aceites_pendentes'; }
 
@@ -198,7 +199,8 @@
     el.querySelector('.pedido-quem').textContent = c.quem || '';
     el.querySelector('.pedido-meta').textContent = c.meta || '';
     var selo = el.querySelector('.pedido-linha-selo');
-    if (c.selo) { selo.textContent = c.selo.texto; selo.classList.add(c.selo.classe); }
+    /* sem a classe, o selo neutro */
+    if (c.selo) { selo.textContent = c.selo.texto; if (c.selo.classe) selo.classList.add(c.selo.classe); }
     selo.classList.toggle('oculto', !c.selo);
   }
 

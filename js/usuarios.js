@@ -130,8 +130,9 @@
     if (pessoa.situacao === 'Inativo') {
       selo.textContent = pessoa.situacao_ate ? T.seloInativoDesde(formatarDataCurta(pessoa.situacao_ate)) : T.seloInativo;
       selo.classList.add('selo--escuro');
-    } else if (['Férias', 'Licença', 'Dispensa', 'Operação Verão'].indexOf(pessoa.situacao) >= 0) {
-      selo.textContent = RosterWork.mensagens.geral.afastadoAte(pessoa.situacao, formatarDataCurta(pessoa.situacao_ate));
+    } else if (['Férias', 'Licença', 'Dispensa', 'Missão'].indexOf(pessoa.situacao) >= 0) {
+      /* a missão mostra o nome dela ("Força Tarefa até 21/11") */
+      selo.textContent = RosterWork.mensagens.geral.afastadoAte(pessoa.situacao_nome || pessoa.situacao, formatarDataCurta(pessoa.situacao_ate));
       selo.classList.add('selo--alerta');
     } else if (pessoa.link_cadastro_ate) {
       selo.textContent = T.seloLinkCadastro(formatarDataHoraCurta(pessoa.link_cadastro_ate));
@@ -428,14 +429,14 @@
     filtros = window.RosterWork.filtros.criar(conteudo.querySelector('#usuarios-filtros'), {
       aoMudar: function () { if (window.RosterWork.arvoreUnidades) window.RosterWork.arvoreUnidades.atualizar(); }
     });
-    /* Situação: Ativos/Férias/Licença/Dispensa/Operação Verão para todos; Correção pendente e Inativos só para
+    /* Situação: Ativos/Férias/Licença/Dispensa/Missão para todos; Correção pendente e Inativos só para
        administradores, à parte (acréscimos; os inativos vêm de fonte separada) */
     var opcoesSituacao = [
       { rotulo: 'Ativos', valor: 'Ativo' },
       { rotulo: 'Férias', valor: 'Férias' },
       { rotulo: 'Licença', valor: 'Licença' },
       { rotulo: 'Dispensa', valor: 'Dispensa' },
-      { rotulo: 'Operação Verão', valor: 'Operação Verão' }
+      { rotulo: 'Missão', valor: 'Missão' }
     ];
     if (RosterWork.sessao.temPapel('pelotao')) {
       opcoesSituacao.push({ rotulo: 'Correção pendente', valor: 'Correção pendente', separado: true });

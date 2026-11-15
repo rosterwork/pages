@@ -10,7 +10,8 @@
      dele (o Adicionar militar sem a letra, e o Remover do dia);
    - o Desfazer e o Refazer da aba Guarnições: cada passo dela guarda
      a mudança de antes e a de depois do militar (marcarPasso,
-     desmarcarPasso);
+     desmarcarPasso), ou de vários de uma vez (passoVarios, a volta de
+     férias; porVarias põe a sugestão sem ser passo);
    - analisar: a lista do que acontece com as trocas e folgas a
      partir de uma data (escala_ciclo_retirar_analisar; as extras
      ficam), que o Adicionar militar, o Remover do dia e o Remover da
@@ -29,7 +30,7 @@
      entrar, mudar, sair ou cancelar_saida; itens = o que acontece com as trocas e folgas (a lista da pergunta); de = a
      guarnição de antes (quem muda pela aba Guarnições) */
   var rascunho = { chave: '', lista: [] };
-  var pilha = [];      // os passos da aba Guarnições, { cpf, antes, depois } (o Desfazer volta o último)
+  var pilha = [];      // os passos da aba Guarnições, { cpf, antes, depois } ou, de vários, { lista: [...] } (o Desfazer volta o último)
   var refeitos = [];   // os passos desfeitos (o Refazer)
 
   /* ---------- o rascunho ---------- */
@@ -86,20 +87,39 @@
   }
   function marcarPasso(unidadeId, iso, mudanca) { passo(unidadeId, iso, mudanca.cpf, mudanca); }
   function desmarcarPasso(unidadeId, iso, cpf) { passo(unidadeId, iso, cpf, null); }
+  /* vários militares de uma vez (a volta de férias, escalas-painel-volta.js): lista = [{ cpf, mudanca }] (mudanca nula: sai
+     do rascunho). passoVarios é um passo só do Desfazer; porVarias não é passo (a sugestão que abre a tela) */
+  function porVarias(unidadeId, iso, lista) {
+    var k = unidadeId + '|' + iso;
+    if (rascunho.chave !== k) { rascunho = { chave: k, lista: [] }; pilha = []; refeitos = []; }
+    lista.forEach(function (x) { trocarDe(x.cpf, x.mudanca); });
+    avisar();
+  }
+  function passoVarios(unidadeId, iso, lista) {
+    var k = unidadeId + '|' + iso;
+    if (rascunho.chave !== k) { rascunho = { chave: k, lista: [] }; pilha = []; refeitos = []; }
+    pilha.push({ lista: lista.map(function (x) { return { cpf: x.cpf, antes: marcado(unidadeId, iso, x.cpf), depois: x.mudanca }; }) });
+    refeitos = [];
+    lista.forEach(function (x) { trocarDe(x.cpf, x.mudanca); });
+    avisar();
+  }
+  function aplicarPasso(p, lado) {
+    (p.lista || [p]).forEach(function (x) { trocarDe(x.cpf, x[lado]); });
+  }
   function podeDesfazer(unidadeId, iso) { return rascunho.chave === unidadeId + '|' + iso && pilha.length > 0; }
   function podeRefazer(unidadeId, iso) { return rascunho.chave === unidadeId + '|' + iso && refeitos.length > 0; }
   function desfazer() {
     var p = pilha.pop();
     if (!p) return;
     refeitos.push(p);
-    trocarDe(p.cpf, p.antes);
+    aplicarPasso(p, 'antes');
     avisar();
   }
   function refazer() {
     var p = refeitos.pop();
     if (!p) return;
     pilha.push(p);
-    trocarDe(p.cpf, p.depois);
+    aplicarPasso(p, 'depois');
     avisar();
   }
 
@@ -249,7 +269,7 @@
     doDia: doDia, marcado: marcado, desmarcar: desmarcar, contar: contar, envio: envio, limpar: limpar,
     copia: copia, voltarA: voltarA,
     marcarPasso: marcarPasso, desmarcarPasso: desmarcarPasso, podeDesfazer: podeDesfazer, podeRefazer: podeRefazer,
-    desfazer: desfazer, refazer: refazer,
+    desfazer: desfazer, refazer: refazer, porVarias: porVarias, passoVarios: passoVarios,
     analisar: analisar, analisarSair: analisarSair, analisarMudar: analisarMudar, efeito: efeito,
     entrar: entrar, marcarMudar: marcarMudar, marcarSair: marcarSair,
     /* a aba Militares (o menu da linha): o Remover da guarnição e o Cancelar a saída */

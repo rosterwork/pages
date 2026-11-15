@@ -5,7 +5,10 @@
    dela). As mudanças de cada aba ficam no rascunho dela
    (as Funções e a Militares, um rascunho só, em
    escalas-painel-editar.js, o Ciclo em escalas-painel-ciclo.js, a
-   Extrajornada no rascunho do mês, escalas-painel-extra.js); trocar de
+   Extrajornada no rascunho do mês, escalas-painel-extra.js, e o
+   sobreaviso da companhia, no bloco dele da aba Funções,
+   escalas-painel-sobreaviso.js, que vem antes do Dia no Desfazer e no
+   Refazer da aba); trocar de
    aba não perde nada. O rodapé largo da página
    (.escala-rodape-salvar) mostra "N alterações não
    salvas", o Desfazer e o Refazer da aba aberta (também o Ctrl+Z e o
@@ -55,6 +58,8 @@
   function E() { return RW.escalasPainelEditar; }
   function C() { return RW.escalasPainelCiclo; }
   function X() { return RW.escalasPainelExtra; }
+  function S() { return RW.escalasPainelSobreaviso; }
+  function doSobreaviso() { return S() ? S().contar() : 0; }
   /* o dia do rodapé: o do painel aberto ou, com ele fechado, o da célula da grade (escalas-celula-editar.js) ou o da que
      mexeu na extra (escalas-celula-extra.js) */
   function contexto() {
@@ -69,14 +74,15 @@
   function contarDoDia() {
     var c = contexto();
     if (!c) return 0;
-    return (E() ? E().pendentes() : 0) + doCiclo(c).length;
+    return (E() ? E().pendentes() : 0) + doCiclo(c).length + doSobreaviso();
   }
   function contar() { return contarDoDia() + (contexto() && X() ? X().contar() : 0); }
   /* o Dia e o Ciclo são do dia aberto (trocar de dia, fechar o painel e sair da página perguntam antes); a Extrajornada
      é do mês (trocar de dia não perde nada; fechar o painel e sair da página perguntam) */
-  function pendente() { return (E() ? E().pendentes() : 0) > 0 || doCiclo(contexto()).length > 0; }
+  function pendente() { return (E() ? E().pendentes() : 0) > 0 || doCiclo(contexto()).length > 0 || doSobreaviso() > 0; }
   function descartar() {
     if (E()) E().descartar();
+    if (S()) S().descartar();
     if (C()) C().limpar();
   }
 
@@ -91,14 +97,16 @@
     if (!dia && !ciclo && !extra) return null;
     return { unidadeId: c.unidadeId, iso: c.iso, dia: dia, ciclo: ciclo, extra: extra, outros: dia ? E().outrosDias() : [] };
   }
-  /* a borda tracejada: o dia aberto no painel (com mudança no Dia ou no Ciclo), o outro dia da mudança de dia e os dias do
-     rascunho da Extrajornada; sem a unidade (null), em qualquer unidade (a Minha escala) */
+  /* a borda tracejada: o dia aberto no painel (com mudança no Dia ou no Ciclo), o outro dia da mudança de dia, os dias da
+     unidade que o rascunho das guarnições muda (da primeira data dele em diante) e os dias do rascunho da Extrajornada; sem
+     a unidade (null), em qualquer unidade (a Minha escala) */
   function marcado(unidadeId, iso) {
     var c = contexto();
     if (!c) return false;
     if (pendente() && (unidadeId == null || String(c.unidadeId) === String(unidadeId))) {
       if (c.iso === iso) return true;
       if (E() && E().pendentes() && E().outrosDias().indexOf(iso) >= 0) return true;
+      if (unidadeId != null && doCiclo(c).some(function (x) { return iso >= (x.data || c.iso); })) return true;
     }
     return !!(X() && X().marcado(unidadeId, iso));
   }
@@ -120,8 +128,16 @@
     var x = X() ? { podeDesfazer: X().podeDesfazer, podeRefazer: X().podeRefazer, desfazer: X().desfazer, refazer: X().refazer } : null;
     /* na célula da grade (o painel fechado), o Dia sem nada a desfazer deixa o Desfazer com a extra */
     if (s === 'distribuicao' && x && E() && !RW.painel.estaAberto() && !E().podeDesfazer() && !E().podeRefazer()) return x;
+    /* na aba Funções, os passos do bloco do sobreaviso vêm antes dos do Dia */
+    var so = s === 'distribuicao' ? S() : null;
+    if (so && E()) {
+      return { podeDesfazer: function () { return so.podeDesfazer() || E().podeDesfazer(); },
+        podeRefazer: function () { return so.podeRefazer() || E().podeRefazer(); },
+        desfazer: function () { if (so.podeDesfazer()) so.desfazer(); else E().desfazer(); },
+        refazer: function () { if (so.podeRefazer()) so.refazer(); else E().refazer(); } };
+    }
     if ((s === 'distribuicao' || s === 'militares') && E()) return { podeDesfazer: E().podeDesfazer, podeRefazer: E().podeRefazer, desfazer: E().desfazer, refazer: E().refazer };
-    if (s === 'continuos' && C()) {
+    if ((s === 'continuos' || s === 'volta') && C()) {
       return { podeDesfazer: function () { return C().podeDesfazer(c.unidadeId, c.iso); }, podeRefazer: function () { return C().podeRefazer(c.unidadeId, c.iso); },
         desfazer: C().desfazer, refazer: C().refazer };
     }
@@ -256,9 +272,11 @@
     });
   }
 
-  /* a aba Ciclo ou Extrajornada aberta lê de novo (o Dia se redesenha sozinho) */
+  /* a aba Ciclo ou Extrajornada aberta lê de novo (o Dia se redesenha sozinho); a volta de férias, que é a sugestão desse
+     rascunho, fecha (escalas-painel-volta.js) */
   function redesenharAba() {
     var c = contexto();
+    if (c && c.secao === 'volta' && RW.painel.estaAberto()) { RW.painel.fechar(); return; }
     if (c && (c.secao === 'continuos' || c.secao === 'extra') && RW.escalasPainel.recarregarSecao) RW.escalasPainel.recarregarSecao();
   }
 
@@ -277,11 +295,13 @@
 
   /* o que aparece enquanto grava: só o Dia, as etapas no rodapé, com o dia sendo refeito na grade ("Refazendo a
      distribuição" só quando o banco refaz); com o Ciclo ou a Extrajornada, que mudam muitos dias, o cartão sobre a tela */
-  function mostrarEtapas(c, ciclo, soDoDia) {
+  function mostrarEtapas(c, ciclo, soDoDia, extra) {
     if (linhaNoRodape) linhaNoRodape.parar();
     linhaNoRodape = null;
     if (ciclo) return RW.etapas.acao('salvarCiclo', { unidade: nomeCurto(c) }, { doServidor: 2 });
-    if (!soDoDia) return RW.etapas.acao('salvarExtra', null, { doServidor: 1 });
+    if (!soDoDia && extra) return RW.etapas.acao('salvarExtra', null, { doServidor: 1 });
+    /* o sobreaviso refaz a fila dos dias seguintes: o período é lido de novo */
+    if (!soDoDia) return RW.etapas.acao('salvarSobreaviso', null, { doServidor: 2 });
     var refaz = !!(E() && E().refazDistribuicao());
     linhaNoRodape = linhaDasEtapas(rodapePagina(), 'salvarDia',
       { dia: RW.data.isoParaBR(c.iso).slice(0, 5), unidade: nomeCurto(c), refaz: refaz },
@@ -302,11 +322,11 @@
      travado até as telas lerem (iniciarCarregando). Devolve uma Promise com { ok, r } ou { ok: false, erro, desatualizado }
      (quem chama avisa). O dia que mudou depois da leitura (outro administrador ou o sistema) tira o rascunho do Dia e lê o
      dia de novo */
-  function enviar(c, dia, ciclo, extra, botao) {
-    var soDoDia = !ciclo && !extra;
+  function enviar(c, dia, ciclo, extra, botao, sobreaviso) {
+    var soDoDia = !ciclo && !extra && !sobreaviso;
     var doisDias = !!(dia && E() && E().outrosDias().length);   // a mudança de dia: a gravação muda outro dia também
     salvando = true;
-    var etapas = mostrarEtapas(c, ciclo, soDoDia);
+    var etapas = mostrarEtapas(c, ciclo, soDoDia, extra);
     atualizar();
     if (botao) RW.iniciarCarregando(botao);
     /* o fim: a linha do rodapé completa em segundo plano os dias distantes do recálculo (a fila em blocos), como o cartão */
@@ -321,13 +341,14 @@
       }
       if (botao) RW.pararCarregando(botao);
     }
-    return RW.escalasDados.painelSalvar(c.unidadeId, c.iso, dia, ciclo, extra).then(function (r) {
+    return RW.escalasDados.painelSalvar(c.unidadeId, c.iso, dia, ciclo, extra, sobreaviso).then(function (r) {
       var geral = RW.mensagens.geral;
       if (r && r._falha) { terminar(); mudou(); return { ok: false, erro: r._falha === 'conexao' ? geral.semConexao : geral.falhaServidor }; }
       if (!r || !r.success) {
         terminar();
         if (r && r.desatualizado) {
           if (celula()) celula().esquecer();
+          if (S()) S().aposGravar();
           if (E()) E().descartar();
           redesenharAba();
           mudou();
@@ -337,6 +358,7 @@
         return { ok: false, erro: msg().painelRecusado((r && r.error) || msg().falhaSalvar) };
       }
       if (celula()) celula().esquecer();
+      if (S()) S().aposGravar();
       if (E()) E().aposGravar(r);
       if (C()) C().limpar();
       if (X()) X().descartar();   // gravou: a extra é lida de novo, com o que mudou
@@ -361,8 +383,9 @@
     var dia = E() && E().pendentes() ? E().paraGravar() : null;
     var ciclo = doCiclo(c).length ? C().envio() : null;
     var extra = X() ? X().envio() : null;
-    if (!dia && !ciclo && !extra) return;
-    enviar(c, dia, ciclo, extra, botao).then(function (res) {
+    var sobreaviso = S() ? S().envio() : null;
+    if (!dia && !ciclo && !extra && !sobreaviso) return;
+    enviar(c, dia, ciclo, extra, botao, sobreaviso).then(function (res) {
       if (!res.ok) { avisarFalha(res); return; }
       var log = juntarLogs(res.r.logs || []);
       if (log && RW.resumo) RW.resumo.abrirModal(log, { pagina: 'Escala' });
@@ -376,7 +399,7 @@
     if (!(e.ctrlKey || e.metaKey) || e.altKey || !contexto() || !document.querySelector('.conteudo .escala-rodape-salvar')) return;
     var noPainel = !!(RW.painel && RW.painel.estaAberto());
     var naCelula = !noPainel && !!((celula() && celula().contexto()) || (X() && X().naCelula()));
-    if ((!noPainel && !naCelula) || (RW.escalasPainelLinha && RW.escalasPainelLinha.aberta())) return;
+    if ((!noPainel && !naCelula) || (RW.escalasPainelLinha && RW.escalasPainelLinha.aberta()) || (S() && S().aberta())) return;
     var alvo = e.target;
     if (alvo && (alvo.tagName === 'INPUT' || alvo.tagName === 'TEXTAREA' || alvo.tagName === 'SELECT' || alvo.isContentEditable)) return;
     if (document.querySelector('.modal-veu--aberto')) return;

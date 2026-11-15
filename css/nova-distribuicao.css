@@ -145,6 +145,8 @@
 /* com o Cabo de Dia na Central: o que fazer quando não há ninguém disponível, recuado até o texto dele */
 .nova-distribuicao-central-aviso { padding-left: 24px; }
 
+/* a frase do que o cartão faz, em cima das caixas, alinhada com elas */
+.nova-distribuicao-central-frase,
 .nova-distribuicao-central-aviso .nova-distribuicao-frase { padding: 0 8px; }
 
 .nova-distribuicao-condutor-nunca { margin-left: 32px; }

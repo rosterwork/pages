@@ -50,8 +50,11 @@
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#icones-escala">Os ícones da escala</a></li>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#erros-escala">Erros e ressalvas da escala</a></li>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#imprimir-escala">Imprimir a escala</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#sobreaviso">O sobreaviso</a></li>
+                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#sobreaviso-mudar">Mudar o sobreaviso</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#guarnicoes">As guarnições (aba Guarnições)</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#distribuicao-dia">Ajustar o dia</a></li>
+                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#estagiarios">Os estagiários</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#escala-extra">Editar a extra pela Escala</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#enviar-sysbm">Lançar a escala no SYSBM</a></li>
               </ul>
@@ -107,6 +110,8 @@
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#dist-na-escala">Como a escala segue a distribuição</a></li>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#horario-expediente">O horário de expediente</a></li>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#feriados">Os feriados</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#estagios">Os estágios</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#ajustes-sobreaviso">O sobreaviso</a></li>
               </ul>
             </li>
             <li>
@@ -250,6 +255,10 @@
                 <li>
                   <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/todos.svg#icone-extrajornada"/></svg></span>
                   <span class="manual-legenda-texto"><strong>Extrajornada.</strong> As horas pagas pelo estado. Você <strong>age</strong> pedindo a extra do mês (se é voluntário, as cotas e os dias que quer ou não pode) e consulta quem tira extra em cada dia.</span>
+                </li>
+                <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/todos.svg#icone-sobreaviso"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>Sobreaviso.</strong> Quem fica de sobreaviso em cada dia e a fila da companhia. Você <strong>consulta</strong>; o sistema monta a fila sozinho.</span>
                 </li>
                 <li>
                   <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/todos.svg#icone-afastamentos"/></svg></span>
@@ -557,7 +566,7 @@
               <figure class="manual-figura">
                 <img src="manual/imagens/escala-busca.png" width="220" height="62" alt="A busca da Escala com o nome do militar digitado." />
               </figure>
-              <p><strong>Filtrar a escala.</strong> Nos modos Mês e Colunas, antes da busca, fica o botão <strong>Filtros</strong>. Ele abre a coluna <strong>Situação</strong>, para ver só um tipo de serviço: <strong>Prontidão</strong> (quem está no ciclo, os contínuos), <strong>Trocas</strong>, <strong>Extrajornada</strong>, <strong>Pontual</strong> ou <strong>Folgas</strong>. Quem está de <strong>férias, licença ou dispensa</strong> aparece quando você marca <strong>Afastamentos</strong>, numa linha listrada que diz até quando vai o afastamento (por exemplo, "Férias até 15/10"). Afastamentos soma ao que já está marcado: com <strong>Todos</strong>, aparecem todos e mais os afastados; para ver só os afastados, desmarque <strong>Todos</strong>. O número no botão diz quantos filtros estão ligados, e a linha <strong>Filtros</strong>, embaixo da barra, mostra quais: o x de cada etiqueta tira só aquele filtro, e <strong>Limpar filtros</strong> tira todos. Os filtros voltam vazios quando você sai da página.</p>
+              <p><strong>Filtrar a escala.</strong> Nos modos Mês, Militares e Colunas, antes da busca, fica o botão <strong>Filtros</strong>. Ele abre a coluna <strong>Situação</strong>, para ver só um tipo de serviço: <strong>Prontidão</strong> (quem está no ciclo, os contínuos), <strong>Trocas</strong>, <strong>Extrajornada</strong>, <strong>Pontual</strong> ou <strong>Folgas</strong>. Quem está de <strong>férias, licença ou dispensa</strong> aparece quando você marca <strong>Afastamentos</strong>, numa linha listrada que diz até quando vai o afastamento (por exemplo, "Férias até 15/10"). Afastamentos soma ao que já está marcado: com <strong>Todos</strong>, aparecem todos e mais os afastados; para ver só os afastados, desmarque <strong>Todos</strong>. O número no botão diz quantos filtros estão ligados, e a linha <strong>Filtros</strong>, embaixo da barra, mostra quais: o x de cada etiqueta tira só aquele filtro, e <strong>Limpar filtros</strong> tira todos. Os filtros voltam vazios quando você sai da página. Na aba <strong>Militares</strong>, o número no círculo ao lado do nome mostra em quantos dias do mês o militar aparece na escala, e ele acompanha o filtro: com só Extrajornada marcado, por exemplo, ele conta só os dias de extra.</p>
               <figure class="manual-figura manual-figura--cheia">
                 <img src="manual/imagens/escala-filtros.png" width="760" height="339" alt="O botão Filtros com o número 1 (1), aberto, com Todos e Afastamentos marcados na coluna Situação (2), a linha Filtros com a etiqueta Afastamentos (3) e, num dia, um militar de férias na linha listrada (4)." />
                 <figcaption>
@@ -573,7 +582,7 @@
               <figure class="manual-figura manual-figura--larga">
                 <img src="manual/imagens/escala-grade.png" width="584" height="462" alt="A grade da Escala com os dias do militar destacados." />
               </figure>
-              <p><strong>Sempre em hoje.</strong> A Escala abre no dia de hoje, já rolada até ele, com o começo de hoje no alto e uma pontinha do que veio antes à vista: na Agenda, o fim do dia anterior logo acima; no Calendário, o fim da semana anterior. Quando você passa com as setas para outro dia, semana ou mês, aparece o botão <strong>Hoje</strong> logo depois da seta da direita: um clique volta para hoje.</p>
+              <p><strong>Sempre em hoje.</strong> A Escala abre no dia de hoje, já rolada até ele, com o começo de hoje no alto e uma pontinha do que veio antes à vista: na Agenda, o fim do dia anterior logo acima; no Calendário, o fim da semana anterior; no Militares, que mostra o mês todo, a grade vem rolada para o lado até hoje, com a ponta dos dias antes à esquerda. Quando você passa com as setas para outro dia, semana ou mês, aparece o botão <strong>Hoje</strong> logo depois da seta da direita: um clique volta para hoje.</p>
               <p class="manual-nota">No <strong>Calendário</strong>, onde o espaço é menor, o Soldado 1ª Classe aparece só como <strong>Sd.</strong>, na tela e no PDF. Nas outras telas, ele aparece com a classe: <strong>Sd.1ªCl.</strong></p>
               <p class="manual-nota">A Escala tem vários <strong>modos de ver</strong>: Minha escala, Mês, Militares e Colunas. Todos mostram a mesma escala, de jeitos diferentes; use o que for melhor para você. Ela abre no último modo que você usou.</p>
               <p><strong>As unidades lado a lado.</strong> No <strong>Calendário</strong> (aba Mês) e no <strong>Colunas › Dias</strong>, o botão dos <strong>três retângulos</strong> (1), ao lado da Legenda, troca o jeito de ver as unidades em cada dia: <strong>lado a lado</strong>, cada pelotão numa coluna (2), ou <strong>uma embaixo da outra</strong>. A Escala começa com as unidades lado a lado. O desenho do botão e a dica mostram o que o clique vai fazer. Lado a lado, cada pelotão continua com a mesma largura, o calendário rola para o lado e cada dia ganha uma linha fina em volta. A sua escolha fica guardada até você mudar e vale também nos calendários da Extrajornada. No celular, as unidades ficam sempre uma embaixo da outra.</p>
@@ -651,12 +660,20 @@
                   <span class="manual-legenda-texto"><strong>Pontual.</strong> Escalado só naquele dia, pelo <strong>Adicionar militar</strong> do painel do dia.</span>
                 </li>
                 <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/todos.svg#icone-estagio"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>Estágio.</strong> O estagiário no dia de estágio, posto só naquele dia, como o pontual. O sistema escolhe a função dele pelas regras do estágio (veja <strong>Os estagiários</strong>).</span>
+                </li>
+                <li>
                   <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/todos.svg#icone-origem-troca"/></svg></span>
                   <span class="manual-legenda-texto"><strong>Troca.</strong> O militar está cobrindo um colega no trecho de uma troca aprovada: no dia do serviço, quem aceitou a troca; no dia da devolução, quem a pediu.</span>
                 </li>
                 <li>
                   <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/todos.svg#icone-extrajornada"/></svg></span>
                   <span class="manual-legenda-texto"><strong>Extrajornada.</strong> Horas extras pagas pelo estado, lançadas na escala pela página Extrajornada.</span>
+                </li>
+                <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/todos.svg#icone-sobreaviso"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>Sobreaviso.</strong> O militar está de sobreaviso naquele dia: de prontidão em casa, para ser chamado. Aparece no grupo do sobreaviso, embaixo de quem está de serviço (ver <strong>O sobreaviso</strong>).</span>
                 </li>
               </ul>
 
@@ -717,7 +734,7 @@
               </figure>
               <p><strong>Copiar as observações.</strong> No título da caixa Observações, à direita, o ícone de <strong>copiar</strong> copia o texto das observações, como um Ctrl+C, para você colar numa mensagem ou num documento: sai cada grupo com os seus itens numerados. Depois de copiar, o ícone vira um visto por alguns segundos.</p>
 
-              <p>Na tela, a mesma explicação fica na <strong>Legenda</strong>: no alto da página Escala, à direita, o botão da <strong>Legenda</strong> (o ícone de quadradinhos com linhas, ao lado da impressora) abre uma caixa com o que aparece no modo em que você está. No modo Militares, a caixa mostra os selos da grade. Nas grades de Mês, Colunas e Calendário, ela traz todos os ícones e explica também o gráfico de <strong>cobertura</strong> no alto de cada célula, que pinta cada hora de uma cor:</p>
+              <p>Na tela, a mesma explicação fica na <strong>Legenda</strong>: no alto da página Escala, à direita, o botão da <strong>Legenda</strong> (o ícone de quadradinhos com linhas, ao lado da impressora) abre uma caixa com o que aparece no modo em que você está. No modo Militares, a caixa mostra os selos da grade e os ícones da origem do serviço. Nas grades de Mês, Colunas e Calendário, ela traz todos os ícones e explica também o gráfico de <strong>cobertura</strong> no alto de cada célula, que pinta cada hora de uma cor:</p>
               <ul class="manual-lista">
                 <li><strong>Verde:</strong> tudo certo naquela hora.</li>
                 <li><strong>Amarelo:</strong> uma ressalva. A escala funciona, com um erro aceitável.</li>
@@ -738,7 +755,7 @@
               <ul class="manual-lista">
                 <li><strong>Grade</strong> (Mês, Colunas e Calendário): a origem do serviço, o nome riscado e a função fixada.</li>
                 <li><strong>Painel do dia:</strong> a origem do serviço, a função fixada, o aviso, o Tem regra e o De outra unidade. As notas do dia, as trocas, as folgas e quem veio de outra unidade ficam na caixa Observações, cada um no seu grupo.</li>
-                <li><strong>Modo Militares:</strong> ao clicar num dia, o painel escreve a origem por extenso, por exemplo "Origem: Contínuo". Na grade, cada dia mostra o horário do serviço (riscado quando o militar passou o serviço numa troca), FÉR, LIC ou DIS no afastamento e o ícone de Extrajornada na hora extra.</li>
+                <li><strong>Modo Militares:</strong> ao clicar num dia, o painel escreve a origem por extenso, por exemplo "Origem: Contínuo". A grade mostra o mês todo e rola para o lado; o nome fica parado, com uma sombra ao lado quando os dias passam por baixo. Cada horário de serviço vem com o ícone da origem, o mesmo da grade do Mês (riscado e com o ícone da troca quando o militar passou o serviço numa troca), e o afastamento mostra FÉR, LIC ou DIS.</li>
               </ul>
               <p><strong>Militar afastado não vai assumir.</strong> Pode acontecer de um militar assumir um serviço por <strong>troca</strong> e, mais tarde, entrar de <strong>férias, licença ou dispensa</strong> naquele mesmo dia. Nesse caso ele continua na lista do serviço, mas com um <strong>aviso amarelo</strong>: na prática ele não vai assumir, porque está afastado.</p>
               <p>Ao lançar o afastamento, o administrador é avisado de que aquele militar cobre um serviço por troca e decide se segue; seguindo, o serviço fica marcado em amarelo, na linha do militar e na lista de avisos do dia, para a cobertura ser resolvida.</p>
@@ -775,7 +792,7 @@
               <ul class="manual-lista">
                 <li><strong>Grau rebaixado por falta de efetivo:</strong> faltou militar do grau ideal e a função ficou com um de outro grau.</li>
                 <li><strong>Grau diferente do ideal:</strong> a função ficou com um militar fora do grau ideal, por escolha do administrador.</li>
-                <li><strong>Rodízio repetido por falta de opção:</strong> o militar repetiu a função do último serviço, porque não havia outro. Quem está na função por uma regra "Só pode" não recebe esse aviso.</li>
+                <li><strong>Rodízio repetido por falta de opção:</strong> o militar repetiu a função do último serviço, porque não havia outro. Vale também para o Rancho feito junto com o Efetivo da viatura. Quem está na função por uma regra "Só pode" não recebe esse aviso.</li>
                 <li><strong>Função fora da regra por falta de gente:</strong> a Distribuição tem uma regra por graduação para a função (por exemplo, sargento não faz Rancheiro), mas não havia outro militar que pudesse. Aberto, o aviso diz quem está na função.</li>
                 <li><strong>Chefe assumiu a direção:</strong> faltou condutor e o chefe da viatura passou a dirigir.</li>
                 <li><strong>Militar afastado, não vai assumir o serviço:</strong> quem cobre um serviço por troca entrou de férias, licença ou dispensa naquele dia.</li>
@@ -857,6 +874,46 @@
                 </figcaption>
               </figure>
               <p>No papel, uma semana do Calendário nunca é dividida: se não couber no espaço que sobrou, ela vai inteira para a folha seguinte. Os dias de outro mês, no começo e no fim do Calendário, saem vazios, como na tela. Só quando uma semana sozinha é maior que uma folha (muitas unidades na tela), ela continua na seguinte entre uma unidade e outra, com os dias repetidos e a marca <strong>(continuação)</strong>. Na Agenda, o dia nunca é dividido e cabem até 4 unidades lado a lado; com mais, os dias se repetem com as outras unidades. O nome que não cabe na linha sai cortado com reticências, como na tela. O <strong>Oficial de Área</strong> sai no título de cada dia, como na tela.</p>
+
+              <h3 id="sobreaviso">O sobreaviso</h3>
+              <p>O <strong>sobreaviso</strong> é quem fica de prontidão em casa para ser chamado, das 08h às 08h do dia seguinte. É só um registro: não conta horas, folga nem pontuação. O sistema monta a fila sozinho, para os próximos 90 dias.</p>
+              <p><strong>Onde ver.</strong> Na grade da Escala, cada dia mostra, embaixo de quem está de serviço, o grupo do sobreaviso: cada nome com o ícone do <strong>telefone</strong> e o horário. O sobreaviso é da companhia e aparece num lugar só: na companhia, se ela está na tela; senão, no pelotão de número menor. Ele aparece também no painel do dia, no seu dia da <strong>Minha escala</strong> (o telefone, com a dica) e nos PDFs da escala.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/escala-sobreaviso.png" width="287" height="90" alt="Um dia da grade com o grupo do sobreaviso embaixo de quem está de serviço (1), cada nome com o ícone do telefone (2)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>O grupo do sobreaviso do dia</li>
+                    <li>O telefone, ao lado de cada nome</li>
+                  </ol>
+                </figcaption>
+              </figure>
+              <p><strong>A página Sobreaviso.</strong> Para ver só o sobreaviso, use o item <strong>Sobreaviso</strong> do menu (no celular, no Mais). É a mesma Escala, com o Mês, os Militares e o Colunas, só com o sobreaviso. Na aba <strong>Militares</strong> dela está a fila inteira: cada militar numa linha, com o telefone nos dias de sobreaviso e, ao lado do nome, em quantos dias do mês ele está de sobreaviso.</p>
+              <p><strong>Como a fila escolhe.</strong> Em cada dia vão quantos militares a companhia definiu, e cada dia pode juntar um da metade mais antiga e um da metade mais moderna. Vai primeiro quem está há mais tempo sem sobreaviso. O sistema prefere quem tem serviço no dia antes ou no dia depois, para o sobreaviso não cair no meio da sua folga, e pula quem está de serviço, de férias, afastado ou em missão no dia.</p>
+              <p><strong>Quando a escala muda.</strong> Se uma troca, uma folga, uma extra ou um afastamento tirar alguém do sobreaviso, o sistema acerta mexendo no menor número de pessoas: alguém de outro dia cobre a vaga, e cada um muda no máximo alguns dias. Ninguém vai para o fim da fila. Se o seu sobreaviso mudar, você recebe um aviso no sino, como "Seu sobreaviso de 27/11 passou para 22/11.".</p>
+              <p class="manual-nota">O nome em amarelo no grupo do sobreaviso quer dizer que, naquele dia, o militar não está livre (de serviço, afastado ou em missão); parando o mouse no nome, aparece o porquê. A linha amarela "Falta 1" quer dizer que falta gente no sobreaviso do dia.</p>
+
+              <div class="manual-admin manual-zona-admin">
+                <h3 id="sobreaviso-mudar">Mudar o sobreaviso <span class="manual-selo-admin">Apenas administradores</span></h3>
+                <p>O sobreaviso da companhia é mudado pelo administrador da companhia; se a fila for de cada pelotão, também pelo administrador do pelotão. Clique num nome do sobreaviso, na grade ou na aba Militares da página Sobreaviso, e a caixa abre ao lado:</p>
+                <figure class="manual-figura">
+                  <img src="manual/imagens/escala-sobreaviso-caixa.png" width="481" height="158" alt="O nome do sobreaviso clicado na grade e a caixa ao lado com Pôr outro no lugar dele (1), Mudar o horário (2), Remover do sobreaviso (3) e Abrir o painel do dia (4)." />
+                  <figcaption>
+                    <ol class="manual-chamadas">
+                      <li>Pôr outro no lugar dele</li>
+                      <li>Mudar o horário</li>
+                      <li>Remover do sobreaviso</li>
+                      <li>Abrir o painel do dia</li>
+                    </ol>
+                  </figcaption>
+                </figure>
+                <ul class="manual-lista">
+                  <li><strong>Pôr outro no lugar dele</strong>: a lista dos militares vem na ordem da fila, com quem tem serviço perto primeiro. Quem não pode naquele dia aparece apagado, com o motivo, e quem ficaria com o sobreaviso solto no meio da folga traz "Solto neste dia".</li>
+                  <li><strong>Mudar o horário</strong>: o horário dele naquele dia, em campos.</li>
+                  <li><strong>Remover do sobreaviso</strong>: ele sai na hora; o Desfazer do rodapé volta.</li>
+                  <li><strong>Abrir o painel do dia</strong>: o painel do dia, com o bloco <strong>Sobreaviso</strong> na aba Funções, que tem o mesmo menu no lápis de cada nome e o botão <strong>Adicionar ao sobreaviso</strong>.</li>
+                </ul>
+                <p>Na linha amarela do que falta, ou num dia vazio da página Sobreaviso, o clique abre a caixa com o <strong>Adicionar ao sobreaviso</strong>. A grade mostra a mudança na hora, e o <strong>Salvar</strong> do rodapé grava tudo de uma vez. Quem entrou, saiu ou teve o horário mudado recebe o aviso no sino. O que você põe ou tira, o sistema não desfaz depois. As regras da fila ficam nos <strong>Ajustes</strong>, na aba <strong>Sobreaviso</strong>.</p>
+              </div>
 
               <div class="manual-admin manual-zona-admin">
                 <h3 id="guarnicoes">As guarnições: a aba Guarnições <span class="manual-selo-admin">Apenas administradores</span></h3>
@@ -955,13 +1012,14 @@
                     </ol>
                   </figcaption>
                 </figure>
-                <p><strong>Trocar quem está numa função.</strong> No lápis da linha, escolha <strong>Pôr outro no lugar dele</strong>. Ali mesmo abre um cartão com o <strong>Militar</strong> e o <strong>Horário</strong> daquela função. No campo Militar aparece quem já está de serviço no dia. Embaixo, o cartão diz o que acontece com quem está em volta. Não há botão: o que você escolhe já entra, e a escala da página mostra como fica. Para mudar só o horário, mude os campos. Feche o cartão pelo <strong>X</strong> do alto, e a lista mostra o dia como vai ficar. Quem entra e já tem outra função no mesmo horário sai de lá, e o lugar dele fica vazio; a nota O que mudou oferece o atalho para pôr quem ficou sem função nesse lugar. Para levar o militar a outra função, use o <strong>Mudar para outra função</strong>, que pergunta <strong>Para qual função</strong>; para deixar a função vazia, o <strong>Remover desta função</strong>. Para trazer alguém que não está no dia, use o <strong>Adicionar militar</strong>; para tirar alguém do dia, o <strong>Remover do dia</strong>, na aba Militares.</p>
+                <p><strong>Trocar quem está numa função.</strong> No lápis da linha, escolha <strong>Pôr outro no lugar dele</strong>. Ali mesmo abre um cartão com o <strong>Militar</strong> e o <strong>Horário</strong> daquela função. No campo Militar aparece quem já está de serviço no dia. Embaixo, o cartão diz o que acontece com quem está em volta. Não há botão: o que você escolhe já entra, e a escala da página mostra como fica. Para mudar só o horário, mude os campos. Feche o cartão pelo <strong>X</strong> do alto, e a lista mostra o dia como vai ficar. Quem entra e já tem outra função no mesmo horário responde <strong>Onde ele já está</strong>: <strong>Sai de lá</strong> (o lugar dele fica vazio, e a nota O que mudou oferece o atalho para pôr quem ficou sem função nesse lugar) ou <strong>Fica também lá</strong> (ele fica nas duas funções). Até você responder, nada muda. A troca mexe só naquela função, e o acúmulo vai junto com a cadeira: quem entra no Efetivo que faz o Rancho por falta vira também o Rancheiro, a não ser que você tenha posto alguém no Rancheiro. Para levar o militar a outra função, use o <strong>Mudar para outra função</strong>, que pergunta <strong>Para qual função</strong>; para deixar a função vazia, o <strong>Remover desta função</strong>. No Rancheiro (ou em outra função que o modelo acumula), o Remover de quem você pôs nele devolve o acúmulo a quem está na cadeira. Para trazer alguém que não está no dia, use o <strong>Adicionar militar</strong>; para tirar alguém do dia, o <strong>Remover do dia</strong>, na aba Militares.</p>
                 <figure class="manual-figura">
-                  <img src="manual/imagens/escala-linha.png" width="457" height="288" alt="O cartão do lápis na linha do Condutor: o campo Militar (1), o Horário (2) e o que acontece com quem está em volta (3). O X, no alto, fecha o cartão." />
+                  <img src="manual/imagens/escala-linha.png" width="457" height="431" alt="O cartão do lápis na linha do Condutor: o campo Militar (1), o Horário (2), a pergunta Onde ele já está, com Sai de lá e Fica também lá (3), e o que acontece com quem está em volta (4). O X, no alto, fecha o cartão." />
                   <figcaption>
                     <ol class="manual-chamadas">
                       <li>Militar: quem está de serviço no dia</li>
                       <li>Horário nesta função</li>
+                      <li>Onde ele já está: sai de lá ou fica também lá</li>
                       <li>O que acontece com quem está em volta</li>
                     </ol>
                   </figcaption>
@@ -1084,6 +1142,10 @@
                 <p>As <strong>observações</strong> do dia ficam no fim da lista, em grupos: <strong>Administração</strong>, <strong>Trocas</strong>, <strong>Folgas</strong> e <strong>De outra unidade</strong>. O botão <strong>Adicionar observação</strong> inclui uma nota no grupo Administração, e o <strong>✕</strong> exclui as suas. Elas também esperam o Salvar.</p>
                 <p>As regras de cada militar valem também para os seus ajustes. Colocar um condutor sem a CNH exigida pela viatura, ou um militar numa função que a regra dele proíbe, não entra: o sistema avisa o motivo e a lista fica como estava. O mesmo vale para o horário fora do serviço do militar, dois militares no mesmo horário, o militar em duas unidades ao mesmo tempo e o posto acima do efetivo máximo. Se o dia já tinha um erro em vermelho de antes, ele não impede as outras mudanças, e você o corrige quando quiser. Colocar um militar exclusivo fora da sua função, ou com grau diferente do ideal, fica em amarelo e é aceito normalmente.</p>
                 <p class="manual-nota">Os postos (o efetivo, a viatura, uma substituição ou um fora de serviço) mudam na <strong>Distribuição</strong>, em Ajustes: veja <strong>Os postos</strong> e <strong>Substituição, fora de serviço e exclusão</strong>.</p>
+                <h3 id="estagiarios">Os estagiários <span class="manual-selo-admin">Apenas administradores</span></h3>
+                <p>O estagiário é qualquer militar de um estágio em vigor na unidade (as regras ficam em <strong>Ajustes</strong>, na aba <strong>Estágios</strong>). Você o põe no dia pelo <strong>Adicionar somente nesse dia</strong>, com o horário dele, como um pontual; quem é da guarnição só vira estagiário fora dos seus dias de serviço. Na escala, ele aparece com o ícone do <strong>livro aberto</strong>.</p>
+                <p>A função e a viatura, o sistema escolhe pelas regras do estágio, com o rodízio próprio do estágio: até quantos em cada função, primeiro a viatura em que o aluno esteve menos vezes. Quem não couber em nenhuma vai para o lugar do <strong>Quando não couber nas viaturas</strong>, como a Central. O Rancho fica com um aluno por dia, em fila, e assim todos passam por ele. Quem entra <strong>junto</strong> fica a mais na função e não conta no mínimo nem no ideal do posto, mas conta no máximo; quem entra <strong>no lugar</strong> faz a função, e o militar que estava nela vai para outra. Se a viatura sai da escala, ele fica sem função ou vai para outra viatura do estágio, como o estágio diz. Sem lugar, o painel do dia mostra o aviso amarelo <strong>Estagiário sem função</strong>. Você muda o estagiário de função como qualquer militar.</p>
+                <p>A aba <strong>Estagiários</strong>, depois do Militares, aparece quando uma unidade da tela tem um estágio em vigor: é a grade do mês só com quem participa, um bloco por estágio. Clique num dia vazio de um estagiário para abrir o painel do dia no <strong>Adicionar militar</strong>, já com ele. No <strong>Lançar no SYSBM</strong>, todo estagiário vai como <strong>Estagiario - Auxiliar</strong>. As horas de estágio são só registro: não entram no banco de horas.</p>
                 <h3 id="escala-extra">Editar a extra pela Escala <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>Na aba <strong>Extrajornada</strong> do painel do dia, você muda quem tira extra naquele dia sem sair da Escala. O painel é o mesmo dos <strong>Ajustes</strong> da página Extrajornada e funciona do mesmo jeito: veja <strong>O painel do dia</strong>, em Extrajornada. A aba vale para as unidades da sua companhia; numa unidade de outra companhia, ela só avisa isso.</p>
                 <p>Ela funciona depois que a extra do mês foi lançada. Antes disso, a aba mostra só a frase de que a extrajornada daquele mês ainda não foi lançada, e a distribuição se faz na página Extrajornada.</p>
@@ -1797,7 +1859,7 @@
 
             <section class="manual-secao manual-admin manual-zona-admin" id="ajustes">
               <h2>Ajustes <span class="manual-selo-admin">Apenas administradores</span></h2>
-              <p>A página <strong>Ajustes</strong> guarda as configurações das unidades, em três abas embaixo do título: <strong>Distribuição</strong>, <strong>Horário de expediente</strong> e <strong>Feriados</strong>. No celular, ela fica no <strong>Mais</strong>. Nas três, o que você muda espera o <strong>Salvar</strong>, no rodapé da página, que aparece embaixo da tela toda só quando há alteração, com o <strong>Cancelar</strong> ao lado. Sair de uma aba com mudança não salva pergunta antes.</p>
+              <p>A página <strong>Ajustes</strong> guarda as configurações das unidades, em abas embaixo do título: <strong>Distribuição</strong>, <strong>Horário de expediente</strong>, <strong>Feriados</strong> e <strong>Estágios</strong>. No celular, ela fica no <strong>Mais</strong>. Em todas, o que você muda espera o <strong>Salvar</strong>, no rodapé da página, que aparece embaixo da tela toda só quando há alteração, com o <strong>Cancelar</strong> ao lado. Sair de uma aba com mudança não salva pergunta antes.</p>
               <h3 id="dist-o-que-e">O que é a Distribuição</h3>
               <p>A Distribuição diz ao sistema <strong>como montar a escala de cada dia</strong>: quais postos a unidade tem, quantas pessoas cada um leva e quem senta em cada função. Ela é um <strong>questionário</strong> respondido uma vez por unidade e vale para qualquer número de militares de serviço: com 2, com 3 ou com 5, o sistema usa as mesmas respostas.</p>
               <p>Abra <strong>Ajustes</strong> no menu: a <strong>Distribuição</strong> é a primeira aba. Na barra fica a <strong>unidade</strong>: a companhia e os pelotões da sua área de administração. À esquerda ficam os <strong>11 blocos</strong>, cada um com o sinal de pronto ou de falta. À direita, as perguntas do bloco escolhido, em cartões fechados que mostram a resposta e abrem ao clicar no título, um por vez. No pelotão, o que é da companhia, como o Oficial de Área, aparece junto, e só o administrador da companhia muda.</p>
@@ -1886,7 +1948,7 @@
                 <li><strong>Acúmulos fixos</strong>: funções que são sempre da mesma pessoa, como "o Rádio Operador é sempre de quem está no Efetivo 3 da ABT". Elas não precisam de gente própria. Vale a 1ª opção; sem ninguém nela, a 2ª, e assim até a 5ª.</li>
                 <li><strong>Acúmulos por falta</strong>: quando uma função fica sem gente, quem está na 1ª opção faz as duas; sem ninguém nela, vale a próxima. Sem nenhuma, a função fica vazia.</li>
                 <li><strong>Ordem de importância</strong>: cada linha é uma pessoa, com os acúmulos dela na mesma linha. Com N militares de serviço, enchem as N primeiras linhas, e quem sobra fica sem função. A função especial é sempre a 1ª. As setas mudam a ordem; dentro do mesmo posto, a ordem segue os lugares (Efetivo 2 antes do Efetivo 3).</li>
-                <li><strong>Quem escolher</strong>: para cada função, na ordem de importância, quem senta nela: o mais antigo ou o mais moderno que ainda não tem função, ou uma graduação ("Um 3ºSgt. ou o mais próximo", "Somente 3ºSgt. ou fica vazia"), com o aviso quando ela faltar. O <strong>rodízio</strong> evita que o militar repita a função do último serviço. O Condutor só fica com quem tem a CNH da viatura.</li>
+                <li><strong>Quem escolher</strong>: para cada função, na ordem de importância, quem senta nela: o mais antigo ou o mais moderno que ainda não tem função, ou uma graduação ("Um 3ºSgt. ou o mais próximo", "Somente 3ºSgt. ou fica vazia"), com o aviso quando ela faltar. O <strong>rodízio</strong> faz a função passar por todos: ela vai para quem a fez há mais tempo, e ninguém repete a do último serviço se houver outro. O Condutor só fica com quem tem a CNH da viatura.</li>
                 <li><strong>Regras por militar</strong>: o que um militar não pode fazer ou só pode fazer (Condutor, Rádio Operador, Efetivo, Rancheiro ou Almoxarife). Cada regra é um cartão, com o militar no título. Quem só pode uma função fica com ela antes de o sistema escolher outra pessoa para essa vaga.</li>
                 <li><strong>Regras por graduação</strong>: o que uma graduação não pode fazer ou só pode fazer, por exemplo "Igual ou mais antigo que 3ºSgt.: não pode Rancheiro". A graduação se escolhe nas bolinhas: <strong>Apenas</strong> uma, <strong>Igual ou mais antigo que</strong>, <strong>Igual ou mais moderno que</strong> ou <strong>De</strong> uma <strong>a</strong> outra. A regra por militar vale mais que esta. Sem ninguém que possa, a função fica com quem estiver, com o aviso amarelo na escala.</li>
               </ul>
@@ -1999,6 +2061,38 @@
               </figure>
               <p>O dia mudado ganha a borda tracejada no calendário e grava pelo <strong>Salvar</strong> do rodapé; o <strong>Cancelar</strong> volta ao que estava gravado. A mudança é de um dia por vez: trocar de dia, de unidade, de mês ou de aba, ou fechar o painel, com mudança, pergunta antes. No dia já marcado, o <strong>Remover</strong> tira a marca das unidades do Vale para, na hora. O dia marcado por um nível acima, como a companhia, aparece só para leitura: o de cima vale.</p>
               <p>A parte do dia encurta o expediente daquele dia: com o expediente das 08h às 18h e o feriado das 12h às 18h, o administrativo trabalha das 08h às 12h. A <strong>Extrajornada</strong> segue esses dias e horários, e o administrativo pode tirar extra no resto do dia.</p>
+              <h3 id="estagios">Os estágios</h3>
+              <p>A aba <strong>Estágios</strong> guarda as regras de cada estágio da unidade, como a formação de soldados ou um curso de condutor. Na barra ficam o <strong>Novo estágio</strong> e a <strong>unidade</strong>; à esquerda, a lista dos estágios; à direita, o estágio aberto, em cartões que mostram a resposta e abrem ao clicar:</p>
+              <ul class="manual-lista">
+                <li><strong>Nome do estágio</strong>: o nome que você escreve.</li>
+                <li><strong>Período</strong>: o início e, se quiser, o fim. Sem fim, o estágio vale até você mudar.</li>
+                <li><strong>Quem participa</strong>: <strong>Por graduação</strong> (marque as graduações; ao lado, quantos há na unidade) ou <strong>Por nome</strong> (escolha os militares, de qualquer unidade).</li>
+                <li><strong>Funções e viaturas</strong>: uma parte por função, com o posto e a função, o <strong>Como</strong> (<strong>Junto com quem está na função</strong>, a mais, ou <strong>No lugar de quem está na função</strong>) e o <strong>Quantos</strong>.</li>
+                <li><strong>Se a viatura sair da escala</strong>: <strong>Ficam sem função</strong> ou <strong>Vão para outra viatura do estágio, se couber</strong>.</li>
+                <li><strong>Quando não couber nas viaturas</strong>: <strong>Ficam sem função</strong> ou <strong>Vão para</strong> um posto e função, como a Central de Operações · Rádio Operador. Vale para quem sobra depois que todas as viaturas do estágio encheram; ele entra sempre junto, a mais, e aparece com o número seguinte (Rádio Operador 2).</li>
+                <li><strong>Acúmulo de função</strong>: a função que o estagiário também faz, no horário dele, e quem a faz, como o Rancho para quem está no ABTR. Um estagiário por dia fica com ela, pela fila: quem fez há mais tempo.</li>
+              </ul>
+              <p>A regra do estágio vale mais que as regras por militar e por graduação da Distribuição; a CNH vale sempre. O que você muda fica na tela, com o Desfazer e o Refazer, e grava pelo <strong>Salvar</strong> do rodapé; mudar um estágio que já começou pergunta a partir de quando. O <strong>Remover estágio</strong> fica no fim do estágio aberto. Para pôr o estagiário num dia, veja <strong>Os estagiários</strong>, na Escala.</p>
+              <h3 id="ajustes-sobreaviso">O sobreaviso</h3>
+              <p>A aba <strong>Sobreaviso</strong>, que só o administrador da companhia vê, guarda as regras da fila do sobreaviso da companhia. Na barra fica a companhia, e as regras são quatro perguntas:</p>
+              <figure class="manual-figura manual-figura--cheia">
+                <img src="manual/imagens/ajustes-sobreaviso.png" width="704" height="784" alt="A aba Sobreaviso dos Ajustes com as quatro perguntas: De quem é o sobreaviso (1), Quantos por dia (2), Quem entra na fila (3) e Antigos e modernos no mesmo dia (4)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>De quem é o sobreaviso</li>
+                    <li>Quantos por dia</li>
+                    <li>Quem entra na fila</li>
+                    <li>Antigos e modernos no mesmo dia</li>
+                  </ol>
+                </figcaption>
+              </figure>
+              <ul class="manual-lista">
+                <li><strong>De quem é o sobreaviso</strong>: da companhia (uma escala só, com os militares de todos os pelotões) ou de cada pelotão (cada um tem a sua, só com os militares dele).</li>
+                <li><strong>Quantos por dia</strong>: de 1 a 10 militares; com a fila de cada pelotão, em cada pelotão.</li>
+                <li><strong>Quem entra na fila</strong>: os postos e graduações e o setor (operacional, administrativo e alunos). Quem não estiver marcado nunca é escolhido.</li>
+                <li><strong>Antigos e modernos no mesmo dia</strong>: <strong>Sim</strong>, em cada dia, um da metade mais antiga e um da metade mais moderna; <strong>Não</strong>, só a vez da fila.</li>
+              </ul>
+              <p>O <strong>Salvar</strong> do rodapé pergunta a partir de quando vale, já com o próximo dia de serviço, e refaz a fila a partir dessa data. Com uma pergunta sem resposta, o Salvar fica desligado. Para trocar um nome num dia, use a Escala (veja <strong>Mudar o sobreaviso</strong>).</p>
             </section>
 
             <section class="manual-secao" id="usuarios">
@@ -2464,7 +2558,7 @@
                   <li class="manual-ordem-passo"><span class="manual-ordem-num">4</span><span class="manual-ordem-texto"><strong>Quem escolher</strong><span>Cada função escolhe, na ordem, o mais antigo ou o mais moderno ainda sem função, ou uma graduação.</span></span></li>
                   <li class="manual-ordem-passo"><span class="manual-ordem-num">5</span><span class="manual-ordem-texto"><strong>Condutor</strong><span>Só quem tem CNH compatível com a viatura.</span></span></li>
                   <li class="manual-ordem-passo"><span class="manual-ordem-num">6</span><span class="manual-ordem-texto"><strong>Acúmulos por falta</strong><span>Quando uma função fica sem gente, quem está na 1ª opção de serviço faz as duas; sem ninguém nela, a próxima.</span></span></li>
-                  <li class="manual-ordem-passo"><span class="manual-ordem-num">7</span><span class="manual-ordem-texto"><strong>Rodízio</strong><span>Evita que o militar repita a função do último serviço.</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">7</span><span class="manual-ordem-texto"><strong>Rodízio</strong><span>A função vai para quem a fez há mais tempo, sem repetir o último serviço.</span></span></li>
                 </ol>
                 <figcaption class="manual-diagrama-legenda">A ordem que o sistema segue para distribuir quem está de serviço em cada dia.</figcaption>
               </figure>
@@ -2492,7 +2586,7 @@
                 </figcaption>
               </figure>
               <p><strong>Quem chega no meio do plantão.</strong> A distribuição começa de novo todo dia, às 08h. Quem chega no meio do plantão vai para a próxima função livre da ordem, e quem já estava continua na função dele.</p>
-              <p><strong>Ajustes finos: graduação e rodízio.</strong> Cada função pode pedir uma graduação, como "Um 3ºSgt. ou o mais próximo" ou "Somente 3ºSgt. ou fica vazia", com o aviso quando ela falta. E o <strong>rodízio</strong> faz o sistema evitar que o militar repita a função do último serviço; quando não há outro, ele repete, com o aviso amarelo.</p>
+              <p><strong>Ajustes finos: graduação e rodízio.</strong> Cada função pode pedir uma graduação, como "Um 3ºSgt. ou o mais próximo" ou "Somente 3ºSgt. ou fica vazia", com o aviso quando ela falta. E o <strong>rodízio</strong> faz a função passar por todos: ela vai para quem a fez há mais tempo, olhando os últimos 30 dias, e ninguém repete a do último serviço se houver outro. Quando não há, ele repete, com o aviso amarelo. Se alguém precisa repetir, repete primeiro quem veio de fora da guarnição, por troca ou extrajornada; no empate da fila, a função também fica com quem veio de fora, e depois com o mais moderno. No painel do dia, o <strong>Como a escala foi feita</strong> (o botão ao lado da impressora, ou o clique no nome da função) mostra de quem era a vez e quem fez depois. Quem tem a regra "Só pode" a função fica fora da fila dela, como o Rádio fixo de cada guarnição.</p>
             </section>
 
             <footer class="manual-rodape">

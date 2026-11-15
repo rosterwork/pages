@@ -46,7 +46,7 @@
     return ativa() && Object.keys(dias).some(function (k) { return dias[k] && k.split('|')[1] === iso; });
   }
 
-  /* o que a tela mostra: as unidades e o mês com folga nas pontas (a semana e a quinzena passam do mês). Na Minha escala,
+  /* o que a tela mostra: as unidades e o mês com folga nas pontas (a semana passa do mês). Na Minha escala,
      a unidade de quem abriu */
   function faixaDaTela() {
     var ref = tela.data();

@@ -15,6 +15,7 @@
   var observerGrafico = null;   // redesenha os gráficos quando a largura muda
   var observerTema = null;      // repinta os gráficos (canvas) quando o tema muda de cor
   var temaGrafico = null;       // cache das cores do tema lidas para o canvas
+  var estagiariosGuardados = {};   // "unidade|dia" -> os estagiários que não são efetivo, por hora (a dica da faixa)
 
   /* desenho do gráfico de cobertura: uma barra por hora (medidas em px CSS) */
   var BARRA_VAO = 1;              // vão entre as barras
@@ -33,15 +34,23 @@
     troca_saida: 'icone-origem-troca',
     remanejado_saida: 'icone-remanejado',
     pontual: 'icone-origem-pontual',
+    /* o estagiário (Ajustes › Estágios): o pontual do dia de estágio, com o ícone do estágio */
+    estagio: 'icone-estagio',
     sistema: 'icone-origem-sistema',
     folga: 'icone-folgas',
     extra: 'icone-extrajornada',
     afastamento: 'icone-afastamentos',
-    /* a mudança de dia: o dia novo e, riscado, o dia de antes */
-    mudanca: 'icone-origem-mudanca',
-    mudanca_saida: 'icone-origem-mudanca',
+    /* a missão (Operação Verão, Força Tarefa ou outra): o alfinete, em outro lugar */
+    missao: 'icone-mapa-pin',
+    /* a mudança de dia: o dia novo é um pontual e o de antes, riscado, uma folga (a dica diz de onde veio ou para onde foi) */
+    mudanca: 'icone-origem-pontual',
+    mudanca_saida: 'icone-folgas',
     /* quem saiu da guarnição: riscado no primeiro serviço que não faz mais */
     saida_guarnicao: 'icone-origem-saida',
+    /* o sobreaviso da companhia, embaixo do dia (escalas-celula-sobreaviso.js) */
+    sobreaviso: 'icone-sobreaviso',
+    /* o operacional sem guarnição, no Fora da escala (escalas-celula-fora.js) */
+    fora: 'icone-remover-usuario',
     /* quem inseriu a extra, no PDF da grade da Extrajornada (a escala nunca traz estas origens) */
     extra_sistema: 'icone-extra-sistema',
     extra_admin: 'icone-extra-administrador'
@@ -58,10 +67,14 @@
     pontual: 'pontual',
     folga: 'folga',
     afastamento: 'afastamento',
-    /* a mudança de dia: o serviço do ciclo, em outro dia; o dia de antes fica como a folga */
-    mudanca: 'prontidao',
+    missao: 'missao',
+    /* a mudança de dia: o dia novo fica como o pontual e o de antes, como a folga */
+    mudanca: 'pontual',
     mudanca_saida: 'folga',
-    saida_guarnicao: 'prontidao'
+    saida_guarnicao: 'prontidao',
+    sobreaviso: 'sobreaviso',
+    /* o operacional da unidade sem guarnição (o grupo Fora da escala, escalas-celula-fora.js) */
+    fora: 'fora'
   };
 
   /* o posto curto das células pequenas (os calendários e o PDF deles); o que não está aqui sai inteiro */
@@ -188,12 +201,14 @@
 
   /* mini-gráfico de cobertura no topo da célula (barras por hora pintadas em <canvas>; Guia visual › Grade da escala).
      Só guarda os dados; o desenho (que precisa do tamanho real) fica em pintarGrafico */
-  function montarGrafico(cobertura, maxUnidade, erro) {
+  function montarGrafico(cobertura, maxUnidade, erro, estagiarios) {
     if (!(maxUnidade > 0)) return null;
     var g = RosterWork.tpl('tpl-escala-mes-grafico');
     if (!g) return null;
     g.dataset.cob = cobertura.join(',');
     g.dataset.max = maxUnidade;
+    /* os estagiários que não são efetivo, por hora (fora da barra; a dica mostra embaixo dos militares) */
+    if (estagiarios && estagiarios.some(function (n) { return Number(n) > 0; })) g.dataset.estag = estagiarios.join(',');
     var marcas = '';
     for (var h = 0; h < 24; h++) {
       var e = erro && erro[h];   // 1 = sem função (vermelho), 2 = ressalva (amarelo), 0 = ok (verde)
@@ -221,7 +236,8 @@
   function rotuloHora(h) { return ((8 + h) % 24) + 'h'; }
 
   /* hover do gráfico: repinta o canvas sob o mouse com a barra da hora apontada em destaque e move a
-     dica "Nh · X militares" (segue o ponteiro; posição via custom property — exceção REGRAS §4) */
+     dica "Nh · X militares", com "Y estagiários" embaixo na hora que tem (segue o ponteiro; posição via custom
+     property — exceção REGRAS §4) */
   function ligarHover(escalaEl) {
     var dica = document.getElementById('escala-mes-dica');
     var ativo = null;
@@ -241,13 +257,18 @@
       var hora = Math.floor((e.clientX - rect.left) / rect.width * 24);
       hora = Math.max(0, Math.min(23, hora));
       var n = Number(cob[hora]) || 0;
+      var estagiarios = Number((g.dataset.estag || '').split(',')[hora]) || 0;
 
       if (ativo && ativo !== g) pintarGrafico(ativo, null);
       pintarGrafico(g, hora);
       ativo = g;
 
       if (dica) {
-        dica.textContent = rotuloHora(hora) + ' · ' + n + (n === 1 ? ' militar' : ' militares');
+        var t = RosterWork.mensagens.escala.coberturaDica;
+        var linhaEstagiarios = dica.querySelector('.escala-mes-dica-estagiarios');
+        dica.querySelector('.escala-mes-dica-militares').textContent = t.militares(rotuloHora(hora), n);
+        linhaEstagiarios.textContent = estagiarios > 0 ? t.estagiarios(estagiarios) : '';
+        linhaEstagiarios.classList.toggle('oculto', !(estagiarios > 0));
         dica.style.setProperty('--dica-x', e.clientX + 'px');
         dica.style.setProperty('--dica-y', e.clientY + 'px');
         dica.classList.remove('oculto');
@@ -262,15 +283,18 @@
     if (uso) uso.setAttribute('href', 'icones/todos.svg#' + nomeIcone);
   }
 
-  /* quem mudou de dia: o ícone da mudança com a dica de onde o serviço veio ou, na linha riscada do dia de antes, para onde
-     foi (o span recebe a dica; com a dica da linha, escalas-celula-dica.js, ela vai nela); null nas outras origens */
+  /* quem mudou de dia: no dia novo o ícone do pontual e, na linha riscada do dia de antes, o da folga, com a dica de onde o
+     serviço veio ou para onde foi (o span recebe a dica; com a dica da linha, escalas-celula-dica.js, ela vai nela); null
+     nas outras origens */
   function iconeDaMudanca(p, D) {
     var t = RosterWork.mensagens.escala;
     var dica = p.origem === 'mudanca' && p.mudanca_de ? t.mudouDeDiaDe(p.mudanca_de)
       : p.origem === 'mudanca_saida' && p.mudanca_para ? t.mudouDeDiaPara(p.mudanca_para) : '';
     if (!dica) return null;
     var el = RosterWork.tpl('tpl-escala-mudanca-icone');
-    if (el && !D) el.setAttribute('data-dica', dica);
+    if (!el) return null;
+    definirIcone(el.querySelector('svg'), ICONE_ORIGEM[p.origem]);
+    if (!D) el.setAttribute('data-dica', dica);
     return el;
   }
 
@@ -311,7 +335,7 @@
       if (origemCiclo) { definirIcone(origemCiclo, ICONE_ORIGEM[p.origem_base]); icones.appendChild(origemCiclo); }
     }
     var origem = iconeDaMudanca(p, D) || iconeDaSaida(p, D);
-    if (!origem) { origem = RosterWork.tpl('tpl-escala-mes-origem'); if (origem) definirIcone(origem, iconeDaOrigem(p.origem)); }
+    if (!origem) { origem = RosterWork.tpl('tpl-escala-mes-origem'); if (origem) definirIcone(origem, iconeDaOrigem(origemDoIcone(p))); }
     if (origem) icones.appendChild(origem);
     if (p.fixado) {
       var cadeado = RosterWork.tpl('tpl-escala-mes-origem');
@@ -329,8 +353,8 @@
     if (window.RosterWork.busca) linha.setAttribute('data-busca', window.RosterWork.busca.chave(p));   // busca do sub-cabeçalho (nome/CPF/RG)
     linha.setAttribute('data-situacao', situacao(p));   // o que o filtro Situação da barra lê
     var horaWrap = linha.querySelector('.linha-escalado-hora');
-    /* afastado (férias, licença ou dispensa): vem escondido (só aparece com o filtro Afastamentos)
-       e, no lugar do horário, "Férias até DD/MM" */
+    /* afastado (férias, licença ou dispensa) ou em missão: vem escondido (só aparece com o filtro Afastamentos ou
+       Missões) e, no lugar do horário, "Férias até DD/MM" (na missão, o texto curto: "F. Tarefa até DD/MM") */
     if (p.origem === 'afastamento') {
       linha.classList.add('linha-escalado--afastamento', 'oculto');
       horaWrap.textContent = RosterWork.mensagens.geral.afastadoAte(p.afastamento || '', RosterWork.data.isoParaBR(p.ate).slice(0, 5));
@@ -361,23 +385,28 @@
      aparecem só na cor do gráfico (o texto fica no painel do dia, ao clicar). Reaproveitada na
      renderização e no refresh de uma célula (atualizarCelula). maxUnidade = a régua do gráfico
      (o pico da unidade da célula no período exibido; ver calcularMaxPorUnidade).
-     afastados (só a Escala manda): os de férias, licença ou dispensa no dia, depois dos de serviço.
-     opcoes.postoCurto: a célula pequena dos calendários, com o posto curto (postoCurto) */
-  function preencherCelula(celula, cobDia, erroDia, pessoas, maxUnidade, afastados, opcoes) {
+     fora (só a Escala manda): os operacionais da unidade sem guarnição no dia, no fim (escalas-celula-fora.js).
+     opcoes.postoCurto: a célula pequena dos calendários, com o posto curto (postoCurto).
+     opcoes.estagiarios: os estagiários de cada hora da faixa (a Extrajornada manda os do antes ou do depois); sem ele,
+     os da última leitura do dia (guardarEstagiarios) */
+  function preencherCelula(celula, cobDia, erroDia, pessoas, maxUnidade, fora, opcoes) {
     var curto = !!(opcoes && opcoes.postoCurto);
     celula.textContent = '';
     /* o dia com mudança do painel do dia ainda não salva: a borda tracejada (escalas-painel-salvar.js) */
     var S = RosterWork.escalasPainelSalvar;
     celula.classList.toggle('escala-celula--nao-salvo', !!(S && S.marcado(celula.dataset.unidadeId, celula.dataset.iso)));
     if (cobDia) {
-      var grafico = montarGrafico(cobDia, maxUnidade, erroDia);
+      var estagiarios = opcoes && opcoes.estagiarios !== undefined ? opcoes.estagiarios
+        : estagiariosDoDia(celula.dataset.unidadeId, celula.dataset.iso);
+      var grafico = montarGrafico(cobDia, maxUnidade, erroDia, estagiarios);
       if (grafico) celula.appendChild(grafico);
     }
     var D = RosterWork.escalasCelulaDica && RosterWork.escalasCelulaDica.ligada() ? RosterWork.escalasCelulaDica : null;
-    (pessoas || []).concat(afastados || []).forEach(function (p) {
-      var linhaP = montarPessoa(p, curto, D);
-      if (linhaP) celula.appendChild(linhaP);
-    });
+    /* quem está no dia, nos grupos da Escala (escalas-celula-grupos.js); embaixo, o sobreaviso da companhia, no lugar em
+       que ele aparece (escalas-celula-sobreaviso.js), e o Fora da escala (escalas-celula-fora.js) */
+    RosterWork.escalasCelulaGrupos.preencher(celula, pessoas, curto, D);
+    if (RosterWork.escalasCelulaSobreaviso) RosterWork.escalasCelulaSobreaviso.preencher(celula, curto, D);
+    if (RosterWork.escalasCelulaFora) RosterWork.escalasCelulaFora.preencher(celula, fora, curto, D);
     if (D) D.celula(celula);   // a dica de cada linha: por que ela está na escala
     /* na Escala, o que está aberto na célula (o cartão do militar, as ações do pelotão) volta depois de refeita */
     if (RosterWork.escalasCelulaEditar) RosterWork.escalasCelulaEditar.decorar(celula);
@@ -398,6 +427,20 @@
     });
     return porUnidade;
   }
+
+  /* os estagiários que não são efetivo de cada unidade e dia, por hora (a chave estagiarios do dia na leitura do mês,
+     só no dia que tem): guardados a cada leitura (escalas-dados.js, reorganizar), lidos ao preencher a célula */
+  function guardarEstagiarios(grade) {
+    Object.keys(grade || {}).forEach(function (uid) {
+      var dias = grade[uid] || {};
+      Object.keys(dias).forEach(function (iso) {
+        var e = dias[iso] && dias[iso].estagiarios;
+        if (e) estagiariosGuardados[uid + '|' + iso] = e;
+        else delete estagiariosGuardados[uid + '|' + iso];
+      });
+    });
+  }
+  function estagiariosDoDia(uid, iso) { return estagiariosGuardados[uid + '|' + iso] || null; }
 
   function limparObservadores() {
     if (observerGrafico) { observerGrafico.disconnect(); observerGrafico = null; }
@@ -435,8 +478,11 @@
     return nomes;
   }
 
-  /* a situação da pessoa para os filtros da barra (o ciclo é a Prontidão) */
-  function situacao(p) { return SITUACAO_ORIGEM[p.origem] || 'prontidao'; }
+  /* a situação da pessoa para os filtros da barra (o ciclo é a Prontidão); a missão vem como afastamento com missao; o
+     estagiário (o pontual do dia de estágio) é o Estágio */
+  function situacao(p) { return p.missao ? 'missao' : (p.estagio ? 'estagio' : (SITUACAO_ORIGEM[p.origem] || 'prontidao')); }
+  /* a origem do ícone da linha: a missão e o estagiário têm o deles */
+  function origemDoIcone(p) { return p.missao ? 'missao' : (p.estagio ? 'estagio' : p.origem); }
 
   /* o Oficial de Área do dia (oficial[iso], da leitura do mês) no lugar dele: o meio do título do dia do calendário ou o
      alto da faixa do dia da Agenda e do Colunas › Unidades. O dia sem a chave (sem escala) fica sem nada; null é o dia com
@@ -462,17 +508,22 @@
 
   window.RosterWork.escalasCelula = {
     preencherCelula: preencherCelula,
+    /* a linha de um militar (o sobreaviso, escalas-celula-sobreaviso.js, desenha as dele com ela) */
+    montarPessoa: montarPessoa,
     /* o Oficial de Área no título do dia das grades */
     preencherOficial: preencherOficial,
     montarGrafico: montarGrafico,
+    /* os estagiários de cada hora, da leitura do mês (a dica da faixa) */
+    guardarEstagiarios: guardarEstagiarios,
+    estagiariosDoDia: estagiariosDoDia,
     calcularMaxPorUnidade: calcularMaxPorUnidade,
     ativarGraficos: ativarGraficos,
     desenharGraficos: desenharGraficos,
-    /* a dica "Nh · X militares" nos gráficos de um elemento fora da grade (a cobertura dos painéis do dia) */
+    /* a dica "Nh · X militares" (e os estagiários) nos gráficos de um elemento fora da grade (a cobertura dos painéis do dia) */
     ligarDica: ligarHover,
     limparObservadores: limparObservadores,
     /* peças para o PDF das grades: a mesma origem, situação, hora e faixa da tela */
-    iconeDaOrigem: iconeDaOrigem,
+    iconeDaOrigem: iconeDaOrigem, origemDoIcone: origemDoIcone,
     iconesDasOrigens: iconesDasOrigens,
     situacao: situacao,
     soHora: soHora,

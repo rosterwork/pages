@@ -1,0 +1,90 @@
+/* ============================================================
+   AJUSTES — aba Estágios: as regras de cada estágio da unidade
+   O desenho é o da Distribuição (a lista à esquerda, o bloco cinza
+   da unidade e os cartões das peças do nova-distribuicao.css). Aqui,
+   só o específico: a barra que aparece só na aba, as graduações em
+   quatro colunas, a parte de cada função e de cada acúmulo, a linha
+   com a lixeira à direita e o traço entre as partes.
+   Cores/medidas só por token. Montagem: js/ajustes-estagios.js e
+   js/ajustes-estagios-cartoes.js
+   ============================================================ */
+
+/* a barra dos Estágios (o Novo estágio e a unidade) some nas outras abas */
+.pagina:has([data-aba-painel="estagios"].oculto) #estagios-barra {
+  display: none;
+}
+
+/* as graduações: as caixas de marcar em quatro colunas, da mais moderna para a mais antiga */
+.ajustes-estagios-graus {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: 16px;
+}
+
+/* o traço entre a escolha e as opções, e entre as partes (funções e acúmulos) */
+.ajustes-estagios-traco {
+  border-top: 1px solid var(--borda);
+  margin: 8px 0;
+}
+
+/* uma função ou um acúmulo: as linhas uma embaixo da outra */
+.ajustes-estagios-parte,
+.ajustes-estagios-nomes,
+.ajustes-estagios-escolhidos,
+.ajustes-estagios-fim {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* a linha com a lixeira na ponta direita (a função, o acúmulo e o militar escolhido) */
+.ajustes-estagios-linha {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+}
+
+.ajustes-estagios-linha > .nova-distribuicao-regra-linha {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ajustes-estagios-linha > .nova-distribuicao-remover {
+  margin-left: auto;
+}
+
+.ajustes-estagios-escolhido-nome {
+  font-size: var(--fonte-padrao);
+  color: var(--texto);
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   A lista dos estágios sobe para cima das regras, na largura toda
+   (com poucas linhas à mostra; o resto rola nela), e as graduações
+   ficam em duas colunas.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] #estagios-layout {
+    flex-direction: column;
+  }
+
+  html[data-celular] #estagios-lado {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--borda);
+  }
+
+  html[data-celular] #estagios-lista {
+    max-height: 160px;
+  }
+
+  html[data-celular] .ajustes-estagios-item {
+    min-height: var(--toque-altura-celular);
+  }
+
+  html[data-celular] .ajustes-estagios-graus {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

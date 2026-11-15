@@ -141,12 +141,22 @@
   function soHora(h) { return escalasCelula().soHora ? escalasCelula().soHora(h) : (h || ''); }
   function comInicio(p) { return (p.periodos || []).filter(function (per) { return per.inicio; }); }
 
-  /* afastado (com o filtro Afastamentos): "Férias até DD/MM" no lugar do horário */
+  /* afastado ou em missão (com o filtro Afastamentos ou Missões): "Férias até DD/MM" no lugar do horário */
   function textoAfastado(p) { return RW.mensagens.geral.afastadoAte(p.afastamento || '', RW.data.isoParaBR(p.ate).slice(0, 5)); }
+
+  /* quem está fora da escala: "Voltou em DD/MM" (a volta de um afastamento, o aviso amarelo) ou "Entra em DD/MM" (a entrada
+     marcada) no lugar do horário; vazio sem nenhum dos dois */
+  function textoEntra(p) {
+    var E = RW.mensagens.escala, br = function (iso) { return RW.data.isoParaBR(iso).slice(0, 5); };
+    return p.aviso && p.voltou_em ? E.voltouEm(br(p.voltou_em)) : p.entra_em ? E.entraEm(br(p.entra_em)) : '';
+  }
 
   function horarios(p, c) {
     if (p.origem === 'afastamento') {
       return { text: textoAfastado(p), fontSize: FONTE.hora, color: c.texto, width: 'auto', margin: MARGEM.hora };
+    }
+    if (p.origem === 'fora') {
+      return { text: textoEntra(p), fontSize: FONTE.hora, color: c.texto, width: 'auto', margin: MARGEM.hora };
     }
     return {
       stack: comInicio(p).map(function (per) {
@@ -161,6 +171,7 @@
   /* a largura (pt) da coluna do horário: o par mais largo (ou o texto do afastado) */
   function larguraHorarios(p) {
     if (p.origem === 'afastamento') return larguraTexto(textoAfastado(p), FONTE.hora, false);
+    if (p.origem === 'fora') return textoEntra(p) ? larguraTexto(textoEntra(p), FONTE.hora, false) : 0;
     var maior = 0;
     comInicio(p).forEach(function (per) {
       var w = larguraTexto(soHora(per.inicio), FONTE.hora, false);
@@ -174,17 +185,27 @@
   function iconesDaPessoa(p) {
     var nomes = [];
     if (p.origem_base) nomes.push(escalasCelula().iconeDaOrigem(p.origem_base));
-    nomes.push(escalasCelula().iconeDaOrigem(p.origem));
+    nomes.push(escalasCelula().iconeDaOrigem(escalasCelula().origemDoIcone(p)));
     if (p.fixado) nomes.push('icone-cadeado');
     if (p.remanejado) nomes.push('icone-remanejado');
     return nomes;
   }
 
-  /* quem aparece no dia (de serviço e, com o filtro Afastamentos, os afastados), pelos filtros da tela */
+  /* quem aparece no dia, nos grupos da tela (escalas-celula-grupos.js): os de serviço, o sobreaviso da companhia, no lugar
+     em que ele aparece, e o Fora da escala (os afastados dele, com o filtro Afastamentos ou Missões), pelos filtros da tela */
   function pessoasDoDia(dados, uid, dia) {
     var passa = RW.escalasFiltros ? RW.escalasFiltros.passaPessoa : function (p) { return p.origem !== 'afastamento'; };
-    var lista = ((dados.militares[uid] || {})[dia] || []).concat((dados.afastados[uid] || {})[dia] || []);
+    function noGrupo(lista, grupo) { return lista.map(function (p) { return Object.assign({}, p, { grupo: grupo }); }); }
+    var sobreaviso = RW.escalasCelulaSobreaviso ? RW.escalasCelulaSobreaviso.pessoas(uid, dia) : [];
+    var lista = ((dados.militares[uid] || {})[dia] || []).concat(noGrupo(sobreaviso, 'sobreaviso'),
+      noGrupo(((dados.fora || {})[uid] || {})[dia] || [], 'fora'));
     return lista.filter(passa);
+  }
+
+  /* a linha tracejada entre dois grupos da célula (a mesma da tela) */
+  function separador(largura, c) {
+    return { canvas: [{ type: 'line', x1: 0, y1: 0, x2: largura, y2: 0, lineWidth: 0.4, dash: { length: 1.5, space: 1 }, lineColor: c.borda }],
+      margin: [0, 1, 0, 1] };
   }
 
   /* os ícones que aparecem no arquivo ({ icone: true }), para a legenda do pé da folha: as pessoas dos dias do período
@@ -206,7 +227,8 @@
   /* uma linha de militar: ícones · graduação e nome · horário (a faixa por trás). curto: o posto curto (calendário);
      o nome que não cabe no meio sai cortado com "…", numa linha só */
   function linha(p, largura, mostrar, c, curto) {
-    var riscada = p.origem === 'folga' || p.origem === 'troca_saida' || p.origem === 'remanejado_saida' || p.origem === 'mudanca_saida' || p.origem === 'saida_guarnicao';
+    var riscada = p.origem === 'folga' || p.origem === 'troca_saida' || p.origem === 'remanejado_saida' || p.origem === 'mudanca_saida' || p.origem === 'saida_guarnicao'
+      || p.origem === 'afastamento';
     var colunas = [];
     var livre = largura;
     if (mostrar.icones) {
@@ -218,7 +240,8 @@
     if (medidor) livre -= larguraHorarios(p) + ENTRE_COLUNAS;
     colunas.push({ text: [
       { text: grad + ' ', fontSize: FONTE.grad, color: c.suave },
-      { text: nomeQueCabe(grad, p.nome || '', livre, !riscada), fontSize: FONTE.nome, bold: !riscada, color: riscada ? c.suave : c.forte, decoration: riscada ? 'lineThrough' : undefined }
+      { text: nomeQueCabe(grad, p.nome || '', livre, !riscada), fontSize: FONTE.nome, bold: !riscada,
+        color: riscada ? c.suave : (p.vermelho ? c.erro : p.aviso ? c.alerta : c.forte), decoration: riscada ? 'lineThrough' : undefined }
     ], width: '*' });
     colunas.push(horarios(p, c));
     var conteudo = { columns: colunas, columnGap: ENTRE_COLUNAS };
@@ -258,7 +281,13 @@
       corpo.push([{ text: o.unidade.toLocaleUpperCase('pt-BR'), fontSize: FONTE.unidade, bold: true, characterSpacing: ESPACAMENTO_CAIXA_ALTA, color: o.c.suave }]);
     }
     if (o.mostrar.grafico && o.cobertura && o.max > 0) corpo.push([grafico(o.cobertura, o.erro, o.max, interna, o.c)]);
-    (o.pessoas || []).forEach(function (p) { corpo.push([linha(p, interna, o.mostrar, o.c, o.postoCurto)]); });
+    /* um grupo novo depois de outro: a linha tracejada entre eles */
+    var antes = null;
+    (o.pessoas || []).forEach(function (p) {
+      if (antes && p.grupo && antes.grupo && p.grupo !== antes.grupo) corpo.push([separador(interna, o.c)]);
+      corpo.push([linha(p, interna, o.mostrar, o.c, o.postoCurto)]);
+      antes = p;
+    });
     if (!corpo.length) corpo.push([{ text: ' ', fontSize: FONTE.nome }]);
     return { table: { widths: [interna], body: corpo, dontBreakRows: true }, layout: layoutBloquinho(o.c, o.preencher) };
   }

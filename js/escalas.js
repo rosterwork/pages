@@ -74,6 +74,15 @@
     }
   }
 
+  /* a página filtrada aberta: o Sobreaviso ou os Estágios, a mesma Escala só com uma situação (sobreaviso.js e estagios.js
+     se registram em RosterWork.paginasFiltradas: { situacao, militares, colunas(lista), impressao(), moldePelotao,
+     podeAdicionar(item) }); null na Escala */
+  function paginaFiltrada() {
+    var atual = RosterWork.paginaAtual && RosterWork.paginaAtual();
+    return (RosterWork.paginasFiltradas || {})[atual] || null;
+  }
+  RosterWork.paginaFiltrada = paginaFiltrada;
+
   /* os dois grupos de modo valem como uma escolha só: a aba clicada fica marcada e a do outro grupo se desmarca */
   function trocarModo(aba) {
     marcarAba('#escala-modos', 'data-modo', aba.getAttribute('data-modo'));
@@ -90,6 +99,8 @@
     if (!RosterWork.visaoGrade) return;
     var modo = RosterWork.visaoGrade.modo();
     var oculto = !modo || modo === 'dia' || modo === 'semana';
+    /* a página filtrada (o Sobreaviso e os Estágios) só tem o Mês, o Militares e o Colunas (a mesma visão da Escala) */
+    if (paginaFiltrada() && modo !== 'colunas' && modo !== 'militares') oculto = true;
     marcarAba('#escala-modos', 'data-modo', oculto ? 'mes' : modo);
     marcarAba('#escala-sub-mes', 'data-mes', RosterWork.visaoGrade.agendaOuCalendario());
     marcarAba('#escala-colunas-tipo', 'data-colunas-tipo', RosterWork.visaoGrade.ler().colunas_tipo);
@@ -130,10 +141,10 @@
     return ativo ? parseInt(ativo.getAttribute('data-colunas'), 10) : 3;
   }
 
-  /* modos que mostram o mês inteiro (período = mês, setas ±1 mês): Minha escala, Mês e Colunas → Dias */
+  /* modos que mostram o mês inteiro (período = mês, setas ±1 mês): Minha escala, Mês, Militares e Colunas → Dias */
   function periodoMensal() {
     var modo = modoAtual();
-    return modo === 'minha' || modo === 'mes' || (modo === 'colunas' && tipoColunasAtual() === 'dias');
+    return modo === 'minha' || modo === 'mes' || modo === 'militares' || (modo === 'colunas' && tipoColunasAtual() === 'dias');
   }
 
   /* dentro de Colunas: "Dias" mostra a quantidade (2–5); "Unidades" mostra as unidades */
@@ -253,7 +264,7 @@
     var provisorias = idsAplicados().map(function (id) { return { id: id, nome: '' }; });
     var etapas = modo === 'militares' ? { etapas: 'escalaMilitares' } : { etapas: 'escalaAbrir', valores: { mes: E.nomeDoMes(refData) } };
     E.comecar(corpo, { etapas: etapas.etapas, valores: etapas.valores, forma: function (lugar) {
-      if (modo === 'militares') E.militares(lugar, provisorias, RosterWork.escalasMilitares.diasDaQuinzena(refData));
+      if (modo === 'militares') E.militares(lugar, provisorias, RosterWork.escalasMilitares.diasDoMes(refData));
       else if (modo === 'colunas' && tipoColunas === 'unidades') E.colunas(lugar, provisorias, refData);
       else if (modo === 'mes' && subMes !== 'calendario') E.agenda(lugar, provisorias, refData);
       else E.calendario(lugar, provisorias, refData, modo === 'colunas' ? quantidadeColunas() : undefined);
@@ -270,6 +281,8 @@
     if (!naEscala()) return;
     /* a grade sai na hora; a conferência diz quais dias dela ainda podem mudar (escalas-atualizando.js) */
     if (window.RosterWork.escalaAtualizando) RosterWork.escalaAtualizando.conferir();
+    /* a nota da volta de férias acompanha o modo e as unidades da tela (escalas-painel-volta.js) */
+    if (window.RosterWork.escalasPainelVolta) RosterWork.escalasPainelVolta.atualizar();
     return renderizarCorpoAgora();
   }
 
@@ -325,11 +338,14 @@
       if (!unidades && idsAplicados().length) { esperarUnidades(corpo); return; }
       return window.RosterWork.escalasCalendario.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData, vigente: vigente, rolarHoje: true });
     }
-    /* modo Militares: grade militares × dias da quinzena (navegação por semana, ±7) */
+    /* modo Militares: grade militares × dias do mês (navegação por mês); na página filtrada, a grade dela (o
+       Sobreaviso, a fila; os Estágios, os estagiários por estágio) */
     if (modoAtual() === 'militares') {
       if (!window.RosterWork.escalasMilitares) { mostrarEstado(corpo, 'Em construção.'); return; }
       if (!unidades && idsAplicados().length) { esperarUnidades(corpo); return; }
-      return window.RosterWork.escalasMilitares.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData, vigente: vigente, rolarHoje: true });
+      var pfMil = paginaFiltrada();
+      return window.RosterWork.escalasMilitares.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData, vigente: vigente, rolarHoje: true,
+        estagiarios: !!pfMil && pfMil.militares === 'estagiarios', sobreaviso: !!pfMil && pfMil.militares === 'sobreaviso' });
     }
     /* modo Semana: grade unidades × 7 dias (visão por unidade) */
     if (modoAtual() === 'semana') {
@@ -397,13 +413,6 @@
     var modo = modoAtual();
     if (modo === 'dia') return formatarDia(refData);
     if (periodoMensal()) return formatarMes(refData);
-    if (modo === 'militares') {
-      /* quinzena: 14 dias a partir do domingo da semana (navega ±7, mostra 14) */
-      var domQ = inicioSemana(refData);
-      var fimQ = new Date(domQ);
-      fimQ.setDate(fimQ.getDate() + 13);
-      return formatarIntervalo(domQ, fimQ);
-    }
     /* semana e colunas→unidades: a semana de domingo a sábado */
     var dom = inicioSemana(refData);
     var sab = new Date(dom);
@@ -411,8 +420,8 @@
     return formatarIntervalo(dom, sab);
   }
 
-  /* os dias que a tela mostra (sem a hora): no Dia, o dia; no Mês e no Colunas → Dias, o mês; no Militares,
-     a quinzena; na Semana e no Colunas → Unidades, a semana de domingo a sábado */
+  /* os dias que a tela mostra (sem a hora): no Dia, o dia; no Mês, no Militares e no Colunas → Dias, o mês;
+     na Semana e no Colunas → Unidades, a semana de domingo a sábado */
   function intervaloExibido() {
     var modo = modoAtual();
     if (modo === 'dia') {
@@ -425,7 +434,7 @@
     var dom = inicioSemana(refData);
     var inicio = new Date(dom.getFullYear(), dom.getMonth(), dom.getDate());
     var fim = new Date(inicio);
-    fim.setDate(fim.getDate() + (modo === 'militares' ? 13 : 6));
+    fim.setDate(fim.getDate() + 6);
     return { inicio: inicio, fim: fim };
   }
 
@@ -461,7 +470,7 @@
     if (!RosterWork.escalaAtualizando) { abrirImpressaoAgora(false); return; }
     var formato = formatoImpressao();
     var textos = RosterWork.mensagens.escala.impressao;
-    /* com a fila ainda refazendo dias do período, o painel espera (o mês da tela; a semana e a quinzena, com folga) */
+    /* com a fila ainda refazendo dias do período, o painel espera (o mês da tela; a semana, com folga) */
     var fim = periodoMensal() ? new Date(refData.getFullYear(), refData.getMonth() + 1, 0) : new Date(refData.getFullYear(), refData.getMonth(), refData.getDate() + 21);
     RosterWork.escalaAtualizando.aoImprimir(dataISO(fim), formato ? textos.grade.titulos[formato] : textos.titulo, abrirImpressaoAgora);
   }
@@ -472,19 +481,25 @@
     var aviso = comAviso ? { conferir: RosterWork.escalaAtualizando.conferirImpressao } : {};
     if (formato && RosterWork.escalasImpressaoGrade) {
       var daTela = formato === 'colunas-unidades' ? colunasUnidadesLigadas() : unidadesColuna();
+      /* na página filtrada (o Sobreaviso e os Estágios), só as unidades dela, com o título dela, sem o Oficial de Área, a
+         faixa da cobertura e a conferência da escala */
+      var pf = paginaFiltrada();
+      if (pf) daTela = pf.colunas(daTela);
+      var M = pf ? pf.impressao() : null;
       RosterWork.escalasImpressaoGrade.abrir(Object.assign({
         formato: formato,
         data: new Date(refData.getFullYear(), refData.getMonth(), refData.getDate()),
         unidades: daTela.map(function (u) { return { unidade_id: u.id, nome: u.nome }; }),
         diasPorLinha: quantidadeColunas(),
         filtros: RosterWork.escalasFiltros ? RosterWork.escalasFiltros.resumo() : []
-      }, aviso));
+      }, pf ? { titulo: M.titulo, prefixo: M.arquivo, semOficial: true, conferir: null,
+        mostrar: { grafico: false, icones: true, faixa: true } } : {}, aviso));
       return;
     }
     if (RosterWork.escalasImpressao) RosterWork.escalasImpressao.abrir(Object.assign({ data: dataPadraoImpressao() }, aviso));
   }
 
-  /* os meses da nota das cotas: os do período na tela (a semana e a quinzena podem pegar dois); a Minha escala não tem a nota */
+  /* os meses da nota das cotas: os do período na tela (a semana pode pegar dois); a Minha escala não tem a nota */
   function mesesDaTela() {
     if (modoAtual() === 'minha') return [];
     var periodo = intervaloExibido();
@@ -596,6 +611,14 @@
     RosterWork.abas.ligar(conteudo.querySelector('#escala-colunas-qtd'), function () { atualizarPeriodo(); renderizarCorpo(); salvarVisao(); });
     /* reabre na última visão usada antes de montar (sem piscar o Dia) */
     restaurarVisao();
+    /* a volta de férias pedida pela Pendências: a Escala abre no mês dela, num modo com a grade, e o painel da volta abre
+       quando a nota a lê (escalas-painel-volta.js) */
+    var volta = RosterWork.escalasPainelVolta && RosterWork.referenciaPedida
+      ? RosterWork.escalasPainelVolta.pedida(RosterWork.referenciaPedida('escalas')) : null;
+    if (volta) {
+      refData = volta.data;
+      if (modoAtual() === 'minha') marcarAba('#escala-modos', 'data-modo', 'mes');
+    }
     /* Colunas → Unidades: ligar/desligar uma unidade muda as colunas → re-renderiza; o painel do dia da unidade
        desligada fecha (geral-painel) */
     RosterWork.abas.ligar(conteudo.querySelector('#escala-unidades-abas'), function () {
@@ -644,6 +667,17 @@
       else seguir();
     }
     function irPelaSeta(direcao) { trocarPeriodo(function () { if (!deslize || !deslize.ir(direcao)) navegar(direcao); }); }
+    /* o dia da volta de férias à vista (o Simular a escala): fora do período da tela, ele passa a ser o do dia, como pelo
+       calendário; depois(), com a grade nova */
+    function irParaDia(iso, depois) {
+      var p = String(iso).split('-'), d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2])), atual = intervaloExibido();
+      if (d >= atual.inicio && d <= atual.fim) { depois(); return; }
+      trocarPeriodo(function () {
+        refData = d;
+        atualizarPeriodo();
+        Promise.resolve(renderizarCorpo()).then(depois, depois);
+      });
+    }
 
     /* busca do modo Militares; filtros e busca da grade (escalas-filtros.js); o botão Legenda (molde geral) */
     ligarBuscaMilitares();
@@ -689,7 +723,7 @@
         obterModo: function () {
           var modo = modoAtual();
           if (periodoMensal()) return 'mes';
-          if (modo === 'semana' || modo === 'militares' || modo === 'colunas') return 'semana';
+          if (modo === 'semana' || modo === 'colunas') return 'semana';
           return 'dia';
         },
         obterData: function () { return refData; },
@@ -765,6 +799,15 @@
         unidades: unidadesColuna,
         periodo: function () { var p = intervaloExibido(); return { inicio: dataISO(p.inicio), fim: dataISO(p.fim) }; },
         nomeUnidade: function (id) { var u = (unidades || []).filter(function (x) { return +x.unidade_id === +id; })[0]; return u ? u.nome : ''; }
+      });
+    }
+    /* a volta de férias ou de afastamento sem guarnição, no alto: a nota amarela com o Simular a escala (no Mês, no
+       Militares e no Colunas; não nas páginas filtradas) */
+    if (RosterWork.escalasPainelVolta) {
+      RosterWork.escalasPainelVolta.ligar(conteudo.querySelector('#escala-volta-aviso'), {
+        visivel: function () { return modoAtual() !== 'minha' && !paginaFiltrada(); },
+        unidades: unidadesColuna,
+        irPara: irParaDia
       });
     }
     aplicarModo();        // estado inicial (a última visão usada, ou o Dia do HTML) + preenche o período

@@ -10,6 +10,8 @@
    extra, para o administrador da companhia, a caixa da extra
    (escalas-celula-extra.js). O pelotão abre Adicionar neste dia,
    Adicionar à guarnição (a letra do dia) e Abrir o painel do dia; o
+   sobreaviso, a caixa dele (escalas-celula-sobreaviso-caixa.js); o nome
+   em vermelho do Fora da escala, a dele (escalas-celula-fora.js); o
    Oficial de Área do título, o dia da companhia (escalas-celula-
    oficial.js). O que cada item faz: escalas-celula-editar-acoes.js. O
    dia é lido no clique (os pontos até ele chegar); o clique fora e o
@@ -26,14 +28,16 @@
 
   var RW = window.RosterWork = window.RosterWork || {};
 
-  /* as linhas riscadas: o tipo do menu delas (as outras são 'militar') */
+  /* as linhas riscadas e as do Fora da escala: o tipo do menu delas (as outras são 'militar'); o nome em vermelho do Fora
+     da escala tem a caixa dele (escalas-celula-fora.js) */
   var TIPOS = [
     ['.linha-escalado--folga, .linha-escalado--mudou-dia', 'folga'],
     ['.linha-escalado--saiu', 'saida'],
     ['.linha-escalado--remanejado', 'fora'],
-    ['.linha-escalado--trocado, .linha-escalado--afastamento', 'nada']
+    ['.linha-escalado--fora-vermelho, .linha-escalado--fora-aviso', 'fora-escala'],
+    ['.linha-escalado--trocado, .linha-escalado--afastamento, .linha-escalado--fora', 'nada']
   ];
-  var RISCADAS = '.linha-escalado--folga, .linha-escalado--trocado, .linha-escalado--remanejado, .linha-escalado--mudou-dia, .linha-escalado--saiu, .linha-escalado--afastamento';
+  var RISCADAS = '.linha-escalado--folga, .linha-escalado--trocado, .linha-escalado--remanejado, .linha-escalado--mudou-dia, .linha-escalado--saiu, .linha-escalado--afastamento, .linha-escalado--fora';
   /* o clique numa célula ou no Oficial do título é da página (outro nome, o pelotão ou o mesmo): a caixa não fecha por ele */
   var DA_GRADE = '.conteudo .escala-mes-celula, .conteudo .escala-calendario-unidade, .conteudo .escala-oficial--edita';
   /* a caixa do pelotão abre ao lado dele, com o topo 8px abaixo do topo do pelotão (na altura do nome e da faixa) */
@@ -162,6 +166,8 @@
     var menu;
     if (a.tipo === 'pelotao') menu = A().menuDoPelotao(contexto());
     else if (a.tipo === 'oficial') menu = RW.escalasCelulaOficial.menu(contexto());
+    else if (a.tipo === 'sobreaviso') menu = RW.escalasCelulaSobreavisoCaixa.menu(contexto());
+    else if (a.linha === 'fora-escala') menu = RW.escalasCelulaFora.menu(contexto());
     else {
       a.cfg = cfgDe(a);
       menu = RW.escalasPainelLinhaMenu.menuDaCelula(a.cfg, function (acao, botao) {
@@ -169,6 +175,8 @@
       });
       A().prepararMenu(contexto(), menu);
     }
+    /* o dia que não tem o sobreaviso que foi clicado (a leitura mudou): o painel do dia */
+    if (!menu && a.tipo === 'sobreaviso') { fecharTudo('guardar'); abrirPainel(null); return; }
     if (!menu) return;
     var chave = chaveDo(menu);
     if (chave !== a.chave) {
@@ -238,6 +246,23 @@
   /* o pelotão: o bloco do calendário (com o nome dele) ou a célula */
   function pecaDoPelotao(cel) { return cel.closest('.escala-calendario-unidade') || cel; }
 
+  /* o sobreaviso: a caixa ao lado do nome (com o pelotão marcado junto) ou do dia */
+  function cliqueNoSobreaviso(cel, sob) {
+    abrirSobreaviso(diaDe(cel), sob.linha || pecaDoPelotao(cel), sob.cpf,
+      L().noDia(sob.linha ? nomeDa(sob.linha) : RW.mensagens.escala.sobreaviso.dica, diaMes(diaDe(cel).iso)), sob.linha ? [pecaDoPelotao(cel)] : null);
+  }
+
+  /* a caixa do sobreaviso no dia d (cpf: o nome; null: o dia); fixa: a peça fica a mesma (a aba Militares, fora da grade
+     de células) */
+  function abrirSobreaviso(d, peca, cpf, titulo, junto, fixa) {
+    var a = aberto;
+    if (a && a.tipo === 'sobreaviso' && mesmo(a, d.unidadeId, d.iso) && a.cpf === cpf && a.caixa && a.caixa.aberta()) return;
+    fecharTudo();
+    irPara(d, function () {
+      abrirCaixa({ tipo: 'sobreaviso', unidadeId: d.unidadeId, iso: d.iso, cpf: cpf, fixa: fixa ? peca : null }, peca, titulo, junto);
+    });
+  }
+
   function cliqueNoBloco(cel) {
     var d = diaDe(cel), a = aberto;
     if (a && a.tipo === 'pelotao' && mesmo(a, d.unidadeId, d.iso) && a.caixa && a.caixa.aberta()) return;
@@ -251,7 +276,12 @@
   function clique(ev, cel) {
     var pode = podeNaCelula(cel);
     if (!pode) return false;
+    /* o sobreaviso (o nome, o que falta ou, na página Sobreaviso, o dia): a caixa dele, para quem mexe nele; para os
+       outros, o painel no bloco dele (escalas-celula-sobreaviso-caixa.js) */
+    var sob = RW.escalasCelulaSobreavisoCaixa ? RW.escalasCelulaSobreavisoCaixa.alvo(ev, cel) : null;
+    if (sob && !sob.pode) return false;
     if (pode === 'antigo') { avisoAntigo(cel); return true; }
+    if (sob) { cliqueNoSobreaviso(cel, sob); return true; }
     var linha = ev.target.closest('.linha-escalado[data-cpf]');
     if (!linha || linha.closest('.escala-mes-celula') !== cel) cliqueNoBloco(cel);
     else if (!(linha.getAttribute('data-situacao') === 'extra' && RW.escalasCelulaExtra && RW.escalasCelulaExtra.clique(cel, linha))) cliqueNoNome(cel, linha);
@@ -318,8 +348,11 @@
     if (!a) return;
     var cel = a.tipo === 'oficial' ? null : celulaDe(a);
     var peca = a.tipo === 'oficial' ? RW.escalasCelulaOficial.peca(a)
-      : !cel ? null : a.tipo === 'pelotao' ? pecaDoPelotao(cel) : linhaDe(cel, a.cpf, a.linha);
-    var junto = cel && a.tipo === 'nome' ? [pecaDoPelotao(cel)] : [];
+      : a.fixa ? (a.fixa.isConnected ? a.fixa : null)
+      : !cel ? null : a.tipo === 'pelotao' ? pecaDoPelotao(cel)
+      : a.tipo === 'sobreaviso' ? (a.cpf ? cel.querySelector('.linha-escalado--sobreaviso[data-cpf="' + a.cpf + '"]') : pecaDoPelotao(cel))
+      : linhaDe(cel, a.cpf, a.linha);
+    var junto = cel && !a.fixa && (a.tipo === 'nome' || (a.tipo === 'sobreaviso' && a.cpf)) ? [pecaDoPelotao(cel)] : [];
     if (!a.caixa) {
       if (peca && a.novo) abrirCaixa(a, peca, L().noDia(nomeDa(peca), diaMes(a.iso)), junto);
       return;
@@ -394,7 +427,8 @@
       RW.escalasPainel.confirmarDescarte(function () { largar(); seguir(); }, S().contarDoDia());
     },
     largar: largar,
-    /* o Oficial de Área do título (escalas-celula-oficial.js): a caixa, a peça nova com a grade refeita e o hoje − 7 */
-    abrirOficial: abrirOficial, acharDeNovo: acharDeNovo, limite: limite
+    /* o Oficial de Área do título (escalas-celula-oficial.js): a caixa, a peça nova com a grade refeita e o hoje − 7; a
+       caixa do sobreaviso fora da grade de células (escalas-celula-sobreaviso-caixa.js) */
+    abrirOficial: abrirOficial, acharDeNovo: acharDeNovo, limite: limite, abrirSobreaviso: abrirSobreaviso
   };
 })();

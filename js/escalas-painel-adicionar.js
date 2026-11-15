@@ -28,7 +28,8 @@
    O "Na guarnição do dia" é uma peça só (lerGuarnicao e
    desenharGuarnicao), que o Adicionar à guarnição da caixa
    flutuante da célula da grade (escalas-celula-editar-acoes.js)
-   também usa.
+   também usa. O dia vazio da aba Estagiários abre aqui com quem
+   já vem escolhido (abrir({ cpf })).
    ============================================================ */
 (function () {
   'use strict';
@@ -104,7 +105,8 @@
     return function marcar(valor) { [].forEach.call(radios, function (r) { r.checked = r.value === valor; }); };
   }
 
-  function abrir() {
+  /* opcoes.cpf: quem já vem escolhido no dia (o dia vazio da aba Estagiários), na unidade dele */
+  function abrir(opcoes) {
     var api = ed(), H = api.horas, C = RosterWork.escalasPainelCiclo, D = RosterWork.data;
     if (!api.dados()) return;
     var iso = api.iso(), uid = api.unidadeId();
@@ -112,6 +114,7 @@
     var est = { como: 'dia', item: null, mil: null, periodos: [], banco: 'sim', unidade: null };
     var el = {}, pedido = 0, combo = null, onde = null, livres = null, efeito = null;
     var analise = { chave: '', aviso: null, pedido: 0 };   // o que acontece com quem muda de guarnição (lido uma vez)
+    var preset = (opcoes && opcoes.cpf) || null;            // quem já vem escolhido (uma vez só)
 
     /* a Unidade (só no dia): as unidades com alguém de horas livres; começa na do painel */
     function montarUnidades() {
@@ -138,6 +141,23 @@
       montarUnidades();
       combo.preencher(listas().dia(livres, est.unidade));
     }
+    /* quem já vem escolhido: a unidade dele e ele no campo, com as horas livres (sem horas livres no dia, nada) */
+    function escolherPreset() {
+      var cpf = preset;
+      preset = null;
+      if (!cpf || !livres) return;
+      var achado = null;
+      listas().unidadesDia(livres).some(function (u) {
+        var item = listas().dia(livres, u.id).filter(function (x) { return x.cpf === cpf; })[0];
+        if (item) achado = { unidade: u.id, item: item };
+        return !!achado;
+      });
+      if (!achado) return;
+      est.unidade = achado.unidade;
+      preencherDia();
+      escolher(achado.item);
+      combo.mostrarAtual();   // o campo mostra quem já veio escolhido
+    }
 
     function carregar() {
       var meu = ++pedido;
@@ -149,7 +169,7 @@
       leitura.then(function (r) {
         if (meu !== pedido || !el.combo.isConnected) return;
         if (!r) { combo.definir(msg().falhaCarregar, true); return; }
-        if (est.como === 'dia') { livres = r; preencherDia(); return; }
+        if (est.como === 'dia') { livres = r; preencherDia(); escolherPreset(); return; }
         combo.preencher(r);
       });
     }
@@ -157,7 +177,7 @@
     function escolher(item) {
       var m = item.m;
       est.item = item; est.mil = m;
-      est.banco = 'sim';
+      est.banco = m.estagio ? 'nao' : 'sim';   // o estagiário: as horas são só registro
       if (onde) onde.reiniciar();
       if (est.como === 'dia') est.periodos = (m.livres || []).length ? m.livres.map(function (l) { return { hi: l.hi, hf: l.hf }; }) : [{ hi: '08:00', hf: '08:00' }];
       atualizar();
@@ -302,8 +322,8 @@
       mostra(el.ondeBloco, true);
       onde.atualizar();
       var respondido = onde.respondido();
-      /* o banco de horas, quando onde fica está respondido */
-      mostra(el.banco, respondido);
+      /* o banco de horas, quando onde fica está respondido (o estagiário não tem: as horas são só registro) */
+      mostra(el.banco, respondido && !m.estagio);
       el.contabilizar.textContent = L().bancoSim(H.horasTexto(minutos()));
       el.marcarBanco(est.banco);
 

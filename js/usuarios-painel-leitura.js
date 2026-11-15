@@ -39,13 +39,13 @@
     return (isNaN(n) || n === 0) ? '' : String(n);
   }
 
-  /* "Ativo" | "Inativo desde DD/MM/AAAA" | "Férias/Licença/Dispensa/Operação Verão até DD/MM/AAAA" */
+  /* "Ativo" | "Inativo desde DD/MM/AAAA" | "Férias/Licença/Dispensa até DD/MM/AAAA" | na missão, o nome dela até a data */
   function textoSituacao(ins, pessoa) {
     if (pessoa && pessoa.situacao === 'Inativo') {
       return pessoa.situacao_ate ? 'Inativo desde ' + formatarData(pessoa.situacao_ate) : 'Inativo';
     }
-    if (ins && ['Férias', 'Licença', 'Dispensa', 'Operação Verão'].indexOf(ins.situacao) >= 0) {
-      return ins.situacao + ' até ' + formatarData(ins.situacao_ate);
+    if (ins && ['Férias', 'Licença', 'Dispensa', 'Missão'].indexOf(ins.situacao) >= 0) {
+      return (ins.situacao_nome || ins.situacao) + ' até ' + formatarData(ins.situacao_ate);
     }
     return 'Ativo';
   }

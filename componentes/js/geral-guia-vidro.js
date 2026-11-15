@@ -13,6 +13,8 @@
    - data-porta do passo: os estágios, separados por ponto e vírgula;
      vale o último que está à vista (o campo; com a lista aberta, o
      item dela); vazio, nenhuma (o passo espera sozinho);
+   - data-porta-exceto do passo: o que, dentro da porta, fica fora
+     dela (ex.: os nomes no dia, quando o passo pede o dia);
    - sem data-porta: o data-treino-alvo, o data-clique ou o alvo, só o
      primeiro à vista; na escolha, uma por caminho;
    - com uma janela aberta: a porta do passo, quando ela está dentro da
@@ -159,6 +161,11 @@
   }
 
   /* ---------- a segunda trava: o que não é da porta é engolido na janela do navegador ---------- */
+  /* o data-porta-exceto do passo: o que, dentro da porta, não responde */
+  function foraDaPorta(alvo) {
+    var passo = passoEmCurso(), exceto = passo && passo.p.getAttribute('data-porta-exceto');
+    return !!exceto && !!alvo.closest(exceto);
+  }
   function deixaPassar(evento) {
     var alvo = evento.target, tipo = evento.type;
     if (!alvo || !alvo.closest) return false;
@@ -166,6 +173,7 @@
     if (tipo === 'dblclick' || tipo === 'auxclick' || tipo === 'contextmenu' || tipo === 'dragstart') return false;
     if (evento.button > 0 || evento.detail >= 2) return false;
     if (tipo === 'pointerdown' || tipo === 'touchstart') gesto = null;
+    if (foraDaPorta(alvo)) return false;
     var janela = janelaAberta();
     if (gesto && gesto.contains(alvo) && (!janela || janela.contains(alvo))) return true;
     var daPorta = porta().filter(function (el) { return el.contains(alvo); })[0];
