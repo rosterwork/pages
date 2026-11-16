@@ -156,7 +156,8 @@
 
   function gravar(datas, botao) {
     var atual = ctx;
-    if (botao && RosterWork.iniciarCarregando) RosterWork.iniciarCarregando(botao);
+    /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
+    var espera = RosterWork.etapas.acao('promocoesSalvar', null, { doServidor: 1, botao: botao, atraso: true, semFila: true });
     RosterWork.apiFetch('/rest/v1/rpc/promocoes_salvar', {
       metodo: 'POST',
       corpo: { p_cpf: atual.pessoa.usuario_id, p_datas: datas }
@@ -166,7 +167,7 @@
         return resp.json();
       })
       .then(function (r) {
-        if (botao && RosterWork.pararCarregando) RosterWork.pararCarregando(botao);
+        espera.parar();
         if (r && r._falha === 'servidor') {
           if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.falhaServidor });
         } else if (r && r.success) {
@@ -177,7 +178,7 @@
         }
       })
       .catch(function () {
-        if (botao && RosterWork.pararCarregando) RosterWork.pararCarregando(botao);
+        espera.parar();
         if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.semConexao });
       });
   }

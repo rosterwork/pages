@@ -31,10 +31,11 @@
   }
 
   function darCiencia(botao) {
-    if (RosterWork.iniciarCarregando) RosterWork.iniciarCarregando(botao);
+    /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
+    var espera = RosterWork.etapas.acao('cienciaRegistrar', null, { doServidor: 1, botao: botao, atraso: true, semFila: true });
     RosterWork.rpc('termos_dar_ciencia')
       .then(function (r) {
-        if (RosterWork.pararCarregando) RosterWork.pararCarregando(botao);
+        espera.parar();
         if (r && r.success) {
           if (RosterWork.fecharModais) RosterWork.fecharModais();
           liberar();
@@ -43,7 +44,7 @@
         RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || RosterWork.mensagens.termos.falhaCiencia });
       })
       .catch(function () {
-        if (RosterWork.pararCarregando) RosterWork.pararCarregando(botao);
+        espera.parar();
         RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.semConexao });
       });
   }

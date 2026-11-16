@@ -311,9 +311,10 @@
   /* ação de situação: grava, relê e mostra o bug onde ele foi parar
      (a recusa "já mudou de situação" também relê, para a tela alcançar o banco) */
   function executar(nome, corpo, botao) {
-    if (RosterWork.iniciarCarregando) RosterWork.iniciarCarregando(botao);
+    /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
+    var espera = RosterWork.etapas.acao('bugSituacao', null, { doServidor: 1, botao: botao, atraso: true, semFila: true });
     RosterWork.rpc(nome, corpo).then(function (r) {
-      if (RosterWork.pararCarregando) RosterWork.pararCarregando(botao);
+      espera.parar();
       if (r && r.success) {
         if (config.aoMudarRecados) config.aoMudarRecados();
       } else {
@@ -321,7 +322,7 @@
       }
       return carregar(corpo.p_id);
     }).catch(function () {
-      if (RosterWork.pararCarregando) RosterWork.pararCarregando(botao);
+      espera.parar();
       avisarSemConexao();
     });
   }
@@ -357,15 +358,15 @@
   }
 
   function salvarBug(dados, botao) {
-    if (RosterWork.iniciarCarregando) RosterWork.iniciarCarregando(botao);
+    var espera = RosterWork.etapas.acao('bugSalvar', null, { doServidor: 1, botao: botao, atraso: true, semFila: true });
     RosterWork.rpc('bug_salvar', dados).then(function (r) {
-      if (RosterWork.pararCarregando) RosterWork.pararCarregando(botao);
+      espera.parar();
       if (!(r && r.success)) { avisarErro(r); return; }
       F().fechar();
       if (config.aoMudarRecados) config.aoMudarRecados();
       carregar(r.id);
     }).catch(function () {
-      if (RosterWork.pararCarregando) RosterWork.pararCarregando(botao);
+      espera.parar();
       avisarSemConexao();
     });
   }

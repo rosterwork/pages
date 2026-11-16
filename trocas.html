@@ -201,16 +201,14 @@
   </div>
 </template>
 
-<!-- molde: o motivo da alteração, no fim do Editar das trocas aprovadas (trocas-painel-situacao.js); obrigatório quando os
-     dias mudam (só a Parte não pede) -->
+<!-- molde: o motivo da alteração (opcional), no fim do Editar das trocas aprovadas (trocas-painel-situacao.js) -->
 <template id="tpl-troca-motivo-alteracao">
   <div class="grupo-caixa">
-    <span class="rotulo-secao">Motivo da alteração</span>
+    <span class="rotulo-secao">Motivo da alteração (opcional)</span>
     <label class="campo">
       <textarea class="campo-entrada" rows="2" maxlength="200" aria-label="Motivo da alteração" placeholder="Ex.: o militar foi escalado para curso no dia"></textarea>
-      <span class="campo-erro-texto"></span>
     </label>
-    <span class="campo-ajuda">Obrigatório nas trocas aprovadas quando os dias mudam. Fica no registro das trocas e vai no aviso aos militares.</span>
+    <span class="campo-ajuda">Fica no registro das trocas e vai no aviso aos militares.</span>
   </div>
 </template>
 
@@ -285,6 +283,8 @@
       <span class="troca-extrato-legenda-trabalhou">Trabalhou</span>
     </div>
     <div class="troca-extrato-lista"></div>
+    <!-- o lote seguinte lendo: a forma dos cartões, passando de 0,5 s (trocas-pendencia-painel.js) -->
+    <div class="troca-extrato-lendo"></div>
     <button type="button" class="botao troca-extrato-mais oculto"></button>
   </div>
 </template>

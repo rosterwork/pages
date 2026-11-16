@@ -25,7 +25,7 @@
    antigo de serviço num pelotão, para quem administra a companhia: o
    serviço dele vai para ela neste dia, escalas-celula-oficial.js),
    Registrar troca de serviço (o formulário da troca no painel, já com
-   ele e o dia; na célula, "no painel", porque o painel abre), Mudar a
+   ele e o dia; na célula, com o ícone do painel, porque o painel abre), Mudar a
    extrajornada (quem está de extra: abre a
    aba Extrajornada do painel, onde a extra muda), Dar folga neste dia
    (quem está no dia pela guarnição: sair do dia é a folga, na cor
@@ -173,7 +173,6 @@
     dd.querySelector('.escala-edicao-opcoes-ver-funcoes').textContent = m ? L().verFuncoesDe(nome) : '';
     dd.querySelector('.escala-edicao-opcoes-ver-companhia').textContent = cfg.companhia ? L().verDiaNa(cfg.companhia.nome) : '';
     dd.querySelector('.escala-edicao-opcoes-devolver').textContent = cfg.origem ? L().devolverA(cfg.origem) : '';
-    dd.querySelector('.escala-edicao-opcoes-no-painel').classList.toggle('oculto', cfg.visao !== 'celula');   // a célula avisa que o painel abre
     dd.querySelector('.escala-edicao-opcoes-traco').classList.toggle('oculto', !(tem.ver && (tem.funcao || tem.dia)));
     /* o Mudar de unidade depende das unidades da companhia (lidas uma vez): chegando com o menu aberto, ele se refaz */
     var R = RosterWork.escalasPainelRemanejar;

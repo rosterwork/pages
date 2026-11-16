@@ -30,8 +30,6 @@
   /* ---------- salvar: a aba confere a Parte e os dias e devolve o pedido aqui ---------- */
   function aoEnviar(pares, parte, ano, btn) {
     if (!aberto) return;
-    /* mudar os dias das trocas aprovadas pede o motivo */
-    if (aberto.motivo && !aberto.motivo.conferir(V().planoMudou())) return;
     /* o administrador de fora muda a escala das trocas aprovadas na hora: confirma antes, como no Registrar */
     if (aberto.admin && aberto.troca.status === 'aprovada' && V().planoMudou() && RW.confirmar) {
       var analise = RW.trocasVariasRegistrar.ultima();
@@ -44,13 +42,15 @@
     }
     gravar(pares, parte, ano, btn, false);
   }
-  /* comVeu: a escala é refeita (véu global); senão, os pontinhos no botão */
+  /* comVeu: a escala é refeita (o cartão das etapas na hora); senão, os pontinhos no botão na hora e o cartão só se
+     passar de 1,5 s */
   function gravar(pares, parte, ano, btn, comVeu) {
     var meu = aberto;
     if (!meu) return;
-    if (comVeu) { if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal(); }
-    else if (btn && RW.iniciarCarregando) RW.iniciarCarregando(btn);
-    function parar() { if (comVeu) { if (RW.esconderVeuGlobal) RW.esconderVeuGlobal(); } else if (btn && RW.pararCarregando) RW.pararCarregando(btn); }
+    var espera = comVeu
+      ? RW.etapas.acao('trocaEditar', null, { doServidor: 2 })
+      : RW.etapas.acao('trocaEditarRapido', null, { doServidor: 1, botao: btn, atraso: true, semFila: true });
+    function parar() { espera.parar(); }
     RW.trocasDados.variasEditar(meu.troca.registro_id, pares, parte, ano, false, meu.motivo ? meu.motivo.valor() : null).then(function (r) {
       parar();
       if (r && r.ok) {

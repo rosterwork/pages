@@ -188,7 +188,8 @@
 
     if (salvar) salvar.addEventListener('click', function () {
       if (salvar.disabled) return;
-      if (RW.iniciarCarregando) RW.iniciarCarregando(salvar);
+      /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
+      var espera = RW.etapas.acao('comunicadoPublicar', null, { doServidor: 1, botao: salvar, atraso: true, semFila: true });
       RW.apiFetch('/rest/v1/rpc/fn_avisos_criar', {
         metodo: 'POST',
         corpo: {
@@ -201,7 +202,7 @@
       })
         .then(function (resp) { return resp.ok ? resp.json() : { _falha: 'servidor' }; })
         .then(function (r) {
-          if (RW.pararCarregando) RW.pararCarregando(salvar);
+          espera.parar();
           if (r && r._falha === 'servidor') { RW.avisar && RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.falhaServidor }); return; }
           if (r && r.success) {
             sujo = false;
@@ -210,7 +211,7 @@
             if (r.log && RW.resumo) RW.resumo.abrirModal(r.log, { pagina: pagina });
           } else { RW.avisar && RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || msg().falhaSalvarAviso }); }
         })
-        .catch(function () { if (RW.pararCarregando) RW.pararCarregando(salvar); RW.avisar && RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao }); });
+        .catch(function () { espera.parar(); RW.avisar && RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao }); });
     });
 
     if (RW.guardaSaida && RW.guardaSaida.registrar) RW.guardaSaida.registrar(function () { return sujo; });

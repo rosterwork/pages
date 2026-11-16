@@ -110,6 +110,17 @@
     function limparDeixa() {
       est.deixa = null;
       [].forEach.call(radiosDeixa, function (r) { r.checked = false; });
+      limparAcumula();
+    }
+    /* as bolinhas do Acúmulo ('acumula' | 'vazio'); voltam sem resposta com quem entra */
+    var radiosAcumula = q('.escala-linha-acumula').querySelectorAll('input[type="radio"]'), nomeAcumula = 'escala-linha-acumula-' + (++conta);
+    [].forEach.call(radiosAcumula, function (r) {
+      r.name = nomeAcumula;
+      r.addEventListener('change', function () { if (r.checked) { est.acumula = r.value; atualizar(); } });
+    });
+    function limparAcumula() {
+      est.acumula = null;
+      [].forEach.call(radiosAcumula, function (r) { r.checked = false; });
     }
 
     /* ---------- quem: o militar desta função (o banco diz quem pode nela e o motivo de quem não pode) ---------- */
@@ -292,6 +303,39 @@
       var lugares = lugaresDeQuemEntra();
       mostra(q('.escala-linha-deixa'), lugares.length > 0);
       if (lugares.length) q('.escala-linha-deixa-texto').textContent = L().deixaPergunta(nomeDe(est.c), lugares);
+      desenharAcumula();
+    }
+
+    /* Acúmulo: as funções que o modelo acumula (acumulo) e que quem sai da cadeira faz pelo sistema no horário vão com a
+       cadeira para quem entra; a pergunta é se ele acumula ou se a função fica vazia de propósito. [{ posto, funcao,
+       periodos }] */
+    function acumuladasDaCadeira() {
+      if (peloCobrir() || !mudouQuem() || !alvo || !alvo.m || !est.c) return [];
+      var H = ed().horas, fa = alvo.cfg, r = [];
+      ((ed().dados() || {}).postos || []).forEach(function (po) {
+        (po.funcoes || []).forEach(function (f) {
+          if (!f.acumulo || PAPEL.test(f.nome) || (po.id === fa.posto.id && f.nome === fa.funcao)) return;
+          var xs = [];
+          (f.militares || []).forEach(function (m) {
+            if (m.cpf !== alvo.m.cpf || m.fixado) return;
+            (m.periodos || []).forEach(function (per) {
+              est.periodos.forEach(function (w) { var x = H.cruza(H.faixa(w), H.faixa(per)); if (x) xs.push(x); });
+            });
+          });
+          if (xs.length) r.push({ posto: po, funcao: f.nome, periodos: H.uniao(xs).map(H.periodo) });
+        });
+      });
+      return r;
+    }
+    function desenharAcumula() {
+      var acs = acumuladasDaCadeira();
+      mostra(q('.escala-linha-acumula'), acs.length > 0);
+      if (!acs.length) return;
+      var funcoes = acs.map(function (a) { return a.funcao; });
+      var vazios = acs.map(function (a) { return a.posto.tipo === 'instalacao' ? a.posto.nome : a.funcao + ' da ' + a.posto.nome; });
+      q('.escala-linha-acumula-texto').textContent = L().acumulaPergunta(funcoes);
+      q('.escala-linha-acumula-sim').textContent = L().acumulaSim(funcoes);
+      q('.escala-linha-acumula-nao').textContent = L().acumulaNao(vazios);
     }
 
     /* o efeito, em frases: quem sai da função (o que mais acontece, a lista mostra quando a mudança entra). O Chefe de
@@ -342,14 +386,17 @@
       if (sobrepostos()) { api.aoVivo(null, true); return; }
       if (mudouQuem() && est.c) {
         var c = est.c, fa = alvo.cfg, sai = alvo.m ? nomeDe(alvo.m) : '';
-        /* Onde ele já está sem resposta: nada muda, e o Salvar espera */
-        var pergunta = lugaresDeQuemEntra().length > 0;
-        if (pergunta && !est.deixa) { api.aoVivo(null, true); return; }
-        var fica = pergunta && est.deixa === 'fica';
+        /* Onde ele já está ou o Acúmulo sem resposta: nada muda, e o Salvar espera */
+        var pergunta = lugaresDeQuemEntra().length > 0, acs = acumuladasDaCadeira();
+        if ((pergunta && !est.deixa) || (acs.length && !est.acumula)) { api.aoVivo(null, true); return; }
+        var fica = pergunta && est.deixa === 'fica', vazia = acs.length > 0 && est.acumula === 'vazio';
         /* quem fica também lá não deixa lugar: sem o atalho */
         aberto.sugestao = fica ? null
           : A().sugestao(fa, c, { um: function (f) { return L().atalho(sai, f); }, varios: L().atalhoLugar(sai, nomeDe(c)) });
-        api.aoVivo(function () { A().trocar(fa, c, periodos, fica); });
+        api.aoVivo(function () {
+          A().trocar(fa, c, periodos, fica);
+          if (vazia) A().deixarVazia(acs);
+        });
         return;
       }
       if (mudouHora()) { api.aoVivo(function () { A().mudarHorario(alvo.cfg, periodos); }); return; }

@@ -1,22 +1,212 @@
 /* ============================================================
-   USUÁRIOS — abas Férias · Licenças · Dispensas · Missões e os períodos da ficha
-   A linha do militar que cresce para baixo: o nome à esquerda e, à
-   direita, um afastamento do ano por linha (o tipo e as datas, os
-   dias e a guarnição), alinhados pela direita. Na caixa que fica no
-   lugar da linha, o Tipo e uma caixa por período (o nome da missão,
-   início → fim e os dias; a guarnição em bolinhas e, em licença e
-   dispensa, o motivo).
+   USUÁRIOS — aba Afastamentos e a aba da ficha
+   A grade dos 12 meses dentro do bloco de cada unidade da árvore
+   (as peças da grade dos Militares da Escala, css/escalas-militares.css,
+   que o manifesto carrega junto): a árvore na largura toda, rolando
+   para o lado por dentro; o cabeçalho dos meses preso embaixo do
+   título do bloco; o mês de hoje escuro; em cada mês, o selo
+   listrado do afastado, com o nome e os dias. A caixa da célula (a da
+   Escala, css/escalas-celula-editar.css) e os campos de um
+   afastamento (Nome, Período, Guarnição e Nesses dias), também na
+   ficha. No celular, a lista: o militar e os afastamentos embaixo.
    Moldes no usuarios.html; comportamento em usuarios-afastamentos*.js
-   e usuarios-painel-afastamentos*.js.
+   e usuarios-painel-afastamentos.js.
    ============================================================ */
 
-/* a linha do militar: o nome no alto, os afastamentos empilhados à direita */
-.usuario-afastamento-item {
-  align-items: flex-start;
-  padding-right: 32px;   /* a folga para o X: os afastamentos não saem do lugar quando a linha vira caixa */
+/* ---------- a árvore na largura toda: a grade rola para o lado por dentro do corpo ---------- */
+.arvore-unidades.afastamentos-arvore {
+  max-width: none;
+  min-width: min-content;
 }
 
-/* o nome nunca some (a pilha é que quebra o texto) */
+.pagina-corpo-rolagem:has(> .afastamentos-arvore) {
+  overflow-x: auto;
+}
+
+/* o corpo da aba para em cima do rodapé largo (49px, a altura dele, geral-rodape) */
+[data-aba-painel="efetivo"]:has(~ #afastamentos-rodape:not(.oculto)) {
+  padding-bottom: 49px;
+}
+
+/* ---------- a grade de uma unidade ---------- */
+.afastamentos-grade {
+  --col-militar: 244px;
+  --col-dia: minmax(72px, 1fr);
+  padding: 0;
+  overflow: clip;   /* recorta os cantos sem virar área de rolagem (a coluna do militar segue presa à esquerda) */
+}
+
+/* o cabeçalho dos meses: preso logo abaixo do título do bloco */
+.afastamentos-grade-cabecalho {
+  top: calc(var(--arvore-trilha-altura) + var(--arvore-bloco-titulo-altura));
+  z-index: 2;
+  padding: 0;
+  border-bottom: 1px solid var(--borda);
+}
+
+.afastamentos-mes-nome {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 0 8px;
+  border-radius: var(--raio-total);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--texto-forte);
+}
+
+/* o mês de hoje: o escuro do "hoje" da grade dos dias */
+.afastamentos-mes--atual .afastamentos-mes-nome {
+  background-color: var(--fundo-contraste);
+  color: var(--texto-invertido);
+}
+
+/* a coluna do militar abre a ficha */
+.afastamentos-pessoa {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.afastamentos-pessoa:hover {
+  background-color: var(--fundo-suave);
+}
+
+.afastamentos-pessoa.linha-militar--selecionada {
+  background-color: var(--fundo-medio);
+}
+
+/* o realce da busca: inverte a coluna */
+.afastamentos-pessoa.linha-militar--marcada {
+  background-color: var(--fundo-contraste);
+}
+
+.afastamentos-pessoa.linha-militar--marcada .escala-mil-pessoa-grad,
+.afastamentos-pessoa.linha-militar--marcada .escala-mil-pessoa-nome,
+.afastamentos-pessoa.linha-militar--marcada .escala-mil-pessoa-cpf {
+  color: var(--texto-invertido);
+}
+
+/* a célula do mês: os selos empilhados; só a de quem se pode mudar é clicável */
+.afastamentos-celula {
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 2px;
+  min-height: 44px;
+  padding: 2px;
+  cursor: default;
+}
+
+.afastamentos-celula:not(.afastamentos-celula--clicavel):hover {
+  background-color: transparent;
+}
+
+.afastamentos-celula--clicavel {
+  cursor: pointer;
+}
+
+.afastamentos-celula--atual,
+.afastamentos-celula--atual:not(.afastamentos-celula--clicavel):hover {
+  background-color: var(--fundo-suave);
+}
+
+/* o afastamento no mês: o listrado do afastado da grade, o nome e os dias daquele mês */
+.afastamentos-selo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 2px 4px;
+  border-radius: var(--raio-pequeno);
+  background-image: repeating-linear-gradient(-45deg,
+    var(--fundo-suave) 0 4px, var(--fundo-medio) 4px 8px);
+}
+
+.afastamentos-selo-nome {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-forte);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.afastamentos-selo-dias {
+  font-size: 11px;
+  color: var(--texto-suave);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* o que ainda não foi salvo: a canaleta da linha mexida */
+.afastamentos-selo--rascunho {
+  box-shadow: inset 2px 0 0 var(--texto-forte);
+}
+
+/* ---------- a caixa da célula ---------- */
+.afastamentos-menu {
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+}
+
+/* o afastamento que terminou há mais de uma semana: o aviso, na largura da caixa 2 */
+.afastamentos-menu--travado {
+  width: 256px;
+}
+
+/* a caixa 2: as perguntas, uma embaixo da outra; as bolinhas e as caixas de marcar na letra da caixa */
+.afastamentos-cartao {
+  gap: 12px;
+}
+
+.afastamentos-cartao .geral-opcao {
+  min-height: 24px;
+  font-size: 12px;
+}
+
+/* ---------- os campos de um afastamento (caixa 2 e ficha) ---------- */
+.afastamento-campo-nome .dropdown {
+  display: flex;
+  width: 100%;
+}
+
+.afastamento-campo-nome .campo-selecao {
+  flex: 1 1 auto;
+}
+
+.afastamento-campo-guarnicao,
+.afastamento-campo-marcas {
+  gap: 0;
+}
+
+/* início → fim no molde do horário, com os dois campos de data e os dias ao lado */
+.ficha-periodo-datas .horario-par {
+  min-width: 0;
+}
+
+.ficha-periodo-datas .campo-entrada {
+  flex: 0 1 112px;
+  width: 112px;
+  min-width: 0;
+  text-align: center;
+}
+
+/* ---------- a aba da ficha ---------- */
+.ficha-afastamento-campos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* o afastamento que ainda não foi salvo: a canaleta */
+.ficha-periodo--mudou {
+  box-shadow: inset 2px 0 0 var(--texto-forte);
+}
+
+/* ---------- a lista do celular: o militar no alto e os afastamentos embaixo ---------- */
+.usuario-afastamento-item {
+  align-items: flex-start;
+}
+
 .usuario-afastamento-item > .linha-militar-pessoa {
   flex: 1 0 auto;
   padding-top: 2px;
@@ -52,42 +242,11 @@
   text-align: right;
 }
 
-/* ---------- a caixa: o Tipo e os períodos ---------- */
-
-.afastamentos-caixa-tipo {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* o corpo da aba para em cima do rodapé largo (49px, a altura dele, geral-rodape) */
-[data-aba-painel="efetivo"]:has(~ #afastamentos-rodape:not(.oculto)) {
-  padding-bottom: 49px;
-}
-
-.ficha-periodos {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* início → fim no molde do horário, com dois campos de data e os dias ao lado */
-.ficha-periodo-datas .horario-par {
-  min-width: 0;
-}
-
-.ficha-periodo-datas .campo-entrada {
-  flex: 0 1 112px;
-  width: 112px;
-  min-width: 0;
-  text-align: center;
-}
-
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    Na lista, os afastamentos descem para baixo do nome, na largura
-   toda, alinhados pela esquerda. Na caixa, as duas datas ocupam
-   a linha e os dias vão para baixo.
+   toda, alinhados pela esquerda. Nos campos, as duas datas ocupam a
+   linha e os dias vão para baixo.
    ============================================================ */
 @media (max-width: 767px) {
   html[data-celular] .usuario-afastamento-pilha {
@@ -103,11 +262,6 @@
 
   html[data-celular] .usuario-afastamento-texto {
     text-align: left;
-  }
-
-  /* na caixa, a linha alinhada com o que vem embaixo e com a folga para o X */
-  html[data-celular] .usuarios-caixa-topo .usuario-afastamento-item {
-    padding: 4px 32px 4px 12px;
   }
 
   html[data-celular] .ficha-periodo-datas {

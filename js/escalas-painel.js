@@ -754,8 +754,10 @@
     return lista;
   }
 
-  /* um grupo: rótulo da função + as linhas dos militares daquela função */
+  /* um grupo: rótulo da função + as linhas dos militares daquela função; o lugar que falta até o ideal é só do painel de
+     quem edita o dia (o modo Dia e a Minha escala não mostram) */
   function montarGrupoFuncao(funcao, editar) {
+    if (funcao && funcao.lugar_ideal) return null;
     var grupo = RosterWork.tpl('tpl-escala-distribuicao-grupo');
     if (!grupo) return null;
     var fnEl = grupo.querySelector('.escala-distribuicao-funcao');
@@ -885,17 +887,19 @@
     if ((secao === 'distribuicao' || secao === 'militares') && RosterWork.escalasPainelEditar) {
       /* o dia é de quem tem a unidade na área do papel; as abas Funções e Militares são o mesmo dia, por posto e por pessoa.
          O menu pedido na abertura (o Oficial de Área, vindo do pelotão) abre quando a lista chegar, uma vez só */
-      var menuDe = pCtx.abrirMenuDe || null, fazerDe = pCtx.fazerAcao || null, adicionarDe = pCtx.adicionar || null;
+      var menuDe = pCtx.abrirMenuDe || null, fazerDe = pCtx.fazerAcao || null, adicionarDe = pCtx.adicionar || null, trazerDe = !!pCtx.trazer;
       pCtx.abrirMenuDe = null;
       pCtx.fazerAcao = null;
       pCtx.adicionar = null;
+      pCtx.trazer = false;
       RosterWork.escalasPainelEditar.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso, {
         admin: !naFila && RosterWork.sessao.podeAdministrar('pelotao', pCtx.unidadeId),
         consulta: naFila,
         visao: secao === 'militares' ? 'militares' : 'funcoes',
         abrirMenuDe: menuDe,
         fazerAcao: fazerDe,
-        adicionar: adicionarDe
+        adicionar: adicionarDe,
+        trazer: trazerDe
       });
     } else if (secao === 'continuos' && RosterWork.escalasPainelGuarnicoes) {
       RosterWork.escalasPainelGuarnicoes.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso);
@@ -930,7 +934,8 @@
   /* o dia de uma unidade sem a célula (a companhia do Oficial de Área, que pode não estar na tela; o lápis dele no
      pelotão), com a mesma pergunta de trocar de dia quando há mudança não salva. opcoes.abrirMenuDe: o cpf de quem fica
      com o menu aberto quando a lista chegar; opcoes.fazerAcao: em vez do menu, o item dele já feito (a célula da grade);
-     opcoes.adicionar: o cpf de quem já vem escolhido no Adicionar militar (o dia vazio da aba Estagiários) */
+     opcoes.adicionar: o cpf de quem já vem escolhido no Adicionar militar (o dia vazio da aba Estagiários); opcoes.trazer:
+     já no Trazer de outra unidade (o pelotão na célula da grade) */
   function abrirDia(dia, secao, opcoes) {
     if (secaoSuja() && !daCelula(dia.unidadeId, dia.iso)) {
       var S = RosterWork.escalasPainelSalvar;
@@ -964,7 +969,7 @@
     if (((inicial === 'continuos' || inicial === 'volta') && !admin) || (inicial === 'extra' && !comExtra) || (inicial === 'militares' && !admin && !comExtra)) inicial = 'distribuicao';
     pCtx = { unidadeId: unidadeId, iso: iso, secao: inicial, unidadeNome: dia.unidadeNome, semCelula: !marcada,
       abrirMenuDe: (opcoes && opcoes.abrirMenuDe) || null, fazerAcao: (opcoes && opcoes.fazerAcao) || null,
-      adicionar: (opcoes && opcoes.adicionar) || null };
+      adicionar: (opcoes && opcoes.adicionar) || null, trazer: !!(opcoes && opcoes.trazer) };
     /* o dia já refeito abre na hora: o painel lê o dado real, e a célula fica igual a ele */
     if (RosterWork.escalaAtualizando && RosterWork.escalaAtualizando.soCopia(unidadeId, iso)) RosterWork.escalaAtualizando.corrigir(unidadeId, iso);
     RosterWork.painel.abrir({

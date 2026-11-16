@@ -83,21 +83,45 @@
     d.militares.forEach(function (m) { if (m.sugerido) p2.sug[m.cpf] = m.sugerido; });
   }
 
+  /* a frase "Calculando a sugestão" no rodapé, no lugar do texto dele, só se a conta passar de 0,3 s (sem travar a tela:
+     quem digita continua digitando) */
+  var calculando = null, relogioCalculando = null;
+  function mostrarCalculando() {
+    if (calculando || relogioCalculando) return;
+    relogioCalculando = setTimeout(function () {
+      relogioCalculando = null;
+      var texto = q('#p2-mudancas'), lugar = q('#p2-calculando');
+      if (!texto || !lugar) return;
+      texto.classList.add('oculto');
+      lugar.classList.remove('oculto');
+      calculando = RW.etapas.linha(lugar, 'cotasSugestao');
+    }, 300);
+  }
+  function pararCalculando() {
+    clearTimeout(relogioCalculando);
+    relogioCalculando = null;
+    if (calculando) calculando.parar();
+    calculando = null;
+    var texto = q('#p2-mudancas'), lugar = q('#p2-calculando');
+    if (texto) texto.classList.remove('oculto');
+    if (lugar) lugar.classList.add('oculto');
+  }
+
   /* a Sugestão com a repartição da tela, sem salvar: o banco refaz a conta (espera um pouco enquanto digita) */
   function pedirSugestao() {
     clearTimeout(esperaSug);
     esperaSug = setTimeout(function () {
-      var meu = ++pedidoSug, porUnidade = p2.modo === 'por_unidade', uni = {}, btn = q('#p2-sugestao');
+      var meu = ++pedidoSug, porUnidade = p2.modo === 'por_unidade', uni = {};
       Object.keys(p2.unidades).forEach(function (k) { uni[k] = +p2.unidades[k] || 0; });
-      RW.iniciarCarregando(btn);
+      mostrarCalculando();
       RW.rpc('extrajornada_mes', { p_competencia: d.competencia, p_repartir_por: p2.modo, p_cotas_recebidas: porUnidade ? null : (+p2.recebidas || 0),
         p_cotas_unidades: porUnidade ? uni : null, p_so_sugestao: true }).then(function (r) {
         if (meu !== pedidoSug) return;
-        RW.pararCarregando(btn);
+        pararCalculando();
         if (!r || !r.ok || !p2 || !q('#p2-salvar')) return;
         p2.sug = r.sugerido || {};
         desenhar();
-      }, function () { if (meu === pedidoSug) RW.pararCarregando(btn); });
+      }, function () { if (meu === pedidoSug) pararCalculando(); });
     }, 300);
   }
 
@@ -208,16 +232,17 @@
   function salvar() {
     var concedidas = {}, btn = q('#p2-salvar');
     comTermo().forEach(function (m) { concedidas[m.cpf] = conc(m); });
-    RW.iniciarCarregando(btn);
+    /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
+    var espera = RW.etapas.acao('extraCotas', null, { doServidor: 1, botao: btn, atraso: true, semFila: true });
     RW.rpc('extrajornada_cotas_salvar', {
       p_competencia: d.competencia, p_cotas_recebidas: p2.modo === 'por_unidade' ? somaUnidades() : (p2.recebidas === '' || p2.recebidas == null ? null : +p2.recebidas),
       p_repartir_por: p2.modo, p_cotas_unidades: p2.modo === 'por_unidade' ? p2.unidades : null, p_concedidas: concedidas
     }).then(function (r) {
-      RW.pararCarregando(btn);
+      espera.parar();
       if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
       RW.extrajornadaOrg.resumo(r);
       aoSalvar();
-    }, function () { RW.pararCarregando(btn); RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao }); });
+    }, function () { espera.parar(); RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao }); });
   }
 
   function ligar() {

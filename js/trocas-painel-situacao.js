@@ -7,10 +7,10 @@
    fn_trocas_listar traz) e, na substituída, o botão que abre a
    troca que vale agora. No Editar das trocas aprovadas
    (trocas-editar.js e trocas-varias-editar.js): o campo "Motivo da
-   alteração", obrigatório quando os dias mudam.
+   alteração (opcional)".
    Expõe RosterWork.trocasSituacao.{ nota, motivoAlteracao }
      nota(troca, ctx) → o elemento da nota, ou null
-     motivoAlteracao(corpo, troca, aoMudar) → { valor, conferir(mudaEscala), temTexto }, ou null
+     motivoAlteracao(corpo, troca, aoMudar) → { valor, temTexto }, ou null
      cancelar(troca, partes, ctx, botao) → o Cancelar da troca de uma
    ============================================================ */
 (function () {
@@ -27,9 +27,10 @@
 
   /* abre o painel da troca que vale agora (lida na lista das trocas, como as da página) */
   function abrirQueVale(trocaId, ctx, botao) {
-    function parar() { if (RW.pararCarregando && botao.isConnected) RW.pararCarregando(botao); }
+    /* os pontinhos no botão na hora e o cartão das etapas só se a leitura passar de 1,5 s */
+    var espera = RW.etapas.acao('trocaAbrir', null, { doServidor: 1, botao: botao, atraso: true, semFila: true });
+    function parar() { espera.parar(); }
     function falhou() { parar(); if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: m().ocorrencia.falhaAbrir }); }
-    if (RW.iniciarCarregando) RW.iniciarCarregando(botao);
     RW.trocasDados.listar(unidades()).then(function (todas) {
       var nova = (Array.isArray(todas) ? todas : []).filter(function (t) { return t.troca_id === trocaId; })[0];
       if (!nova) { falhou(); return; }
@@ -76,27 +77,19 @@
     });
     return {
       valor: function () { return campo.value.trim() || null; },
-      temTexto: function () { return campo.value.trim() !== ''; },
-      /* os dias mudaram e o motivo ficou vazio: o erro no campo e false */
-      conferir: function (mudaEscala) {
-        if (!mudaEscala || campo.value.trim()) return true;
-        if (RW.campos) RW.campos.marcarErro(campo, m().motivoAlteracaoErro);
-        campo.scrollIntoView({ block: 'nearest' });
-        campo.focus();
-        return false;
-      }
+      temTexto: function () { return campo.value.trim() !== ''; }
     };
   }
 
-  /* o Cancelar da troca de uma: o pedido em aberto (quem pediu) só confirma; a aprovada (o administrador) pede o motivo.
-     As duas desfazem na escala o que a troca mudou (véu) */
+  /* o Cancelar da troca de uma: o pedido em aberto (quem pediu) só confirma; a aprovada (o administrador) abre o motivo (opcional).
+     As duas desfazem na escala o que a troca mudou (o cartão das etapas na hora) */
   function cancelar(t, partes, ctx, btn) {
     var P = RW.trocasPainel.pecas, d = RW.trocasDados;
     if (t.status !== 'aprovada') {
-      P.confirmarEntao(m().confirmarCancelar, true, function () { P.executar(d.cancelar(t.troca_id), btn, ctx, null, true); });
+      P.confirmarEntao(m().confirmarCancelar, true, function () { P.executar(d.cancelar(t.troca_id), btn, ctx, null, true, { chave: 'trocaCancelar' }); });
       return;
     }
-    RW.decisao.cancelar(partes, function (motivo, botao) { P.executar(d.cancelar(t.troca_id, false, motivo), botao, ctx, null, true); },
+    RW.decisao.cancelar(partes, function (motivo, botao) { P.executar(d.cancelar(t.troca_id, false, motivo), botao, ctx, null, true, { chave: 'trocaCancelar' }); },
       { titulo: m().cancelarMotivo.tituloUma });
   }
 

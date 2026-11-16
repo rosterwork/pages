@@ -189,11 +189,11 @@
   }
 
   function enviar(grupos, iso) {
-    if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal();
+    var espera = RW.etapas.acao('antiguidade', null, { doServidor: 2 });   // recalcula a escala: o cartão das etapas na hora
     RW.apiFetch('/rest/v1/rpc/antiguidade_salvar', { metodo: 'POST', corpo: { p_grupos: grupos, p_recalcular_desde: iso } })
       .then(function (resp) { return resp.ok ? resp.json() : { _falha: 'servidor' }; })
       .then(function (r) {
-        if (RW.esconderVeuGlobal) RW.esconderVeuGlobal();
+        espera.parar();
         if (r && r.success) {
           carregar(selecionado);
           if (r.log && RW.resumo) RW.resumo.abrirModal(r.log, { pagina: 'Usuários' });
@@ -203,7 +203,7 @@
         if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: mensagem });
       })
       .catch(function () {
-        if (RW.esconderVeuGlobal) RW.esconderVeuGlobal();
+        espera.parar();
         if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao });
       });
   }

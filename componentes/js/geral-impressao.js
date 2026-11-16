@@ -221,8 +221,9 @@
     }
     var ref = form;
     var botao = peca('gerar');
-    if (RW.iniciarCarregando) RW.iniciarCarregando(botao);
-    function terminar() { if (RW.pararCarregando && botao.isConnected) RW.pararCarregando(botao); }
+    /* os pontinhos no Gerar PDF na hora e o cartão das etapas só se passar de 1,5 s */
+    var espera = RW.etapas.acao('pdfGerar', null, { doServidor: 1, botao: botao, atraso: true, semFila: true });
+    function terminar() { espera.parar(); }
     pedirArquivo(r.estado).then(function (a) {
       terminar();
       RW.escalasImpressaoPdf.baixar(a.arquivo, a.nome);

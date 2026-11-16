@@ -22,9 +22,9 @@
     if (mil.ocupado) {
       item = molde('tpl-troca-parceiro-ocupado');
       item.querySelector('.troca-parceiro-nome').textContent = nome;
-      /* afastado (férias/licença/dispensa) diz o motivo; senão, já está de serviço no horário */
+      /* afastado diz o nome do afastamento; senão, já está de serviço no horário */
       item.querySelector('.troca-parceiro-motivo').textContent =
-        (mil.afastamento && txt('parceiroAfastado')[mil.afastamento]) || txt('parceiroOcupado');
+        mil.afastamento ? txt('parceiroAfastado')(mil.afastamento) : txt('parceiroOcupado');
     } else if (mil.tem_conta === false) {
       item = molde('tpl-troca-militar-sem-conta');
       item.querySelector('.troca-parceiro-nome').textContent = nome;

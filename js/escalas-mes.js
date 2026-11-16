@@ -75,6 +75,9 @@
       if (pf) {
         colunas = pf.colunas(colunas);
         if (!colunas.length) { mostrarEstado(corpo, pf.vazia()); return; }
+        /* no celular, na Agenda, o seletor de unidade fica só com elas (nunca uma unidade que a página não mostra) */
+        var S = RosterWork.seletorUnidade;
+        if (S && opcoes.aoTerminar === S.aplicar) S.mostrar(colunas);
       }
 
       var wrap = RosterWork.tpl('tpl-escala-mes');

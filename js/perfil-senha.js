@@ -30,11 +30,12 @@
       if (nova.value !== confirma.value) { if (erro) erro.textContent = M.senhaNaoConfere; return; }
       if (nova.value === atual.value) { if (erro) erro.textContent = M.senhaIgual; return; }
 
-      if (RosterWork.iniciarCarregando) RosterWork.iniciarCarregando(salvar);
+      /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s (conferir a atual e gravar a nova) */
+      var espera = RosterWork.etapas.acao('senhaTrocar', null, { doServidor: 2, botao: salvar, atraso: true, semFila: true });
       /* o endereço de login da conta (vem do login; não muda quando o e-mail da ficha muda) */
       var email = ((RosterWork.sessao && RosterWork.sessao.perfil()) || usuario).email;
       RosterWork.trocarSenha(email, atual.value, nova.value).then(function (retorno) {
-        if (RosterWork.pararCarregando) RosterWork.pararCarregando(salvar);
+        espera.parar();
         if (retorno && retorno.erro === 'treino') return;   /* o aviso do modo treino já está aberto, e os campos ficam */
         if (retorno && retorno.ok) {
           atual.value = ''; nova.value = ''; confirma.value = ''; revisar();
@@ -67,10 +68,10 @@
           mensagem: RosterWork.mensagens.sessao.sairTodosConfirmar,
           textoConfirmar: RosterWork.mensagens.botoes.sairDeTodos,
           aoConfirmar: function () {
-            RosterWork.iniciarCarregando(sairTodos);
+            var espera = RosterWork.etapas.acao('sairTodos', null, { doServidor: 1, botao: sairTodos, atraso: true, semFila: true });
             RosterWork.sairDeTodos().then(function (saiu) {
               if (saiu) return;
-              RosterWork.pararCarregando(sairTodos);
+              espera.parar();
               RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.sessao.sairTodosErro });
             });
           }

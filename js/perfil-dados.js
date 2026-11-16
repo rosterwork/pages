@@ -218,11 +218,12 @@
     }
     if (!alteracoes.length) return;
 
-    if (RosterWork.iniciarCarregando) RosterWork.iniciarCarregando(enviar);
+    /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
+    var espera = RosterWork.etapas.acao('pedidoEnviar', null, { doServidor: 1, botao: enviar, atraso: true, semFila: true });
     RosterWork.apiFetch('/rest/v1/rpc/perfil_solicitar', { metodo: 'POST', corpo: { p_alteracoes: alteracoes } })
       .then(function (resposta) { return resposta.ok ? resposta.json() : { _falha: true }; })
       .then(function (retorno) {
-        if (RosterWork.pararCarregando) RosterWork.pararCarregando(enviar);
+        espera.parar();
         if (retorno && retorno.success) {
           if (retorno.diretos > 0) aplicarDiretos(alteracoes);
           restaurar();      /* o que foi para aprovação está pendente: o formulário volta ao que está gravado */
@@ -251,7 +252,7 @@
         }
       })
       .catch(function () {
-        if (RosterWork.pararCarregando) RosterWork.pararCarregando(enviar);
+        espera.parar();
         RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.semConexao });
       });
   }

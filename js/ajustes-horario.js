@@ -44,13 +44,18 @@
   }
 
   /* ---------- ler ---------- */
-  function carregar() {
+  /* gravou: a leitura depois do Salvar: o que está na tela fica até o novo chegar */
+  function carregar(gravou) {
     var meu = ++pedido;
-    el.carregando.classList.remove('oculto');
-    el.conteudo.classList.add('oculto');
-    el.rodape.classList.add('oculto');
-    /* a forma entra na hora e fica o mínimo na tela (geral-etapas.js) */
-    return RW.etapas.segurarDesde(performance.now(), RW.rpc('expediente_horario', {})).then(function (r) {
+    var leitura = RW.rpc('expediente_horario', {});
+    if (!gravou) {
+      el.carregando.classList.remove('oculto');
+      el.conteudo.classList.add('oculto');
+      el.rodape.classList.add('oculto');
+      /* a forma entra na hora e fica o mínimo na tela (geral-etapas.js) */
+      leitura = RW.etapas.segurarDesde(performance.now(), leitura);
+    }
+    return leitura.then(function (r) {
       if (meu !== pedido || !montada()) return;
       el.carregando.classList.add('oculto');
       if (!r || !r.ok) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
@@ -158,16 +163,25 @@
     });
   }
 
+  /* grava a semana (não refaz a escala: os pontinhos no Salvar e o cartão das etapas só se demorar); a tela lê de novo e,
+     no fim, o resumo */
   function salvar() {
     if (!sujo() || !conferir()) return;
-    RW.iniciarCarregando(el.salvar);
+    var etapas = RW.etapas.acao('ajustesHorario', null, { doServidor: 1, atraso: true, semFila: true, botao: el.salvar });
     RW.rpc('expediente_horario_salvar', { p_unidade: dados.companhia.id, p_semana: semana }).then(function (r) {
-      RW.pararCarregando(el.salvar);
-      if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
-      if (r.log && RW.resumo) RW.resumo.abrirModal(r.log, { pagina: 'Ajustes' });
-      carregar();
+      if (!r || !r.success) {
+        etapas.parar();
+        RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor });
+        return;
+      }
+      etapas.ultima();
+      function fim() {
+        etapas.parar();
+        if (r.log && RW.resumo) RW.resumo.abrirModal(r.log, { pagina: 'Ajustes' });
+      }
+      carregar(true).then(fim, fim);
     }, function () {
-      RW.pararCarregando(el.salvar);
+      etapas.parar();
       RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao });
     });
   }

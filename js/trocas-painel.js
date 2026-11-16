@@ -184,13 +184,16 @@
     RW.confirmar({ tipo: 'aviso', mensagem: mensagem, confirmarPerigo: !!perigo, aoConfirmar: aoConfirmar });
   }
 
-  /* recalcula=true (aprovar/cancelar mexem na escala) usa o véu global; senão (aceitar/recusar
-     não mexem na escala) são rápidos: pontinhos no botão */
-  function executar(promessa, btn, ctx, extra, recalcula) {
-    if (recalcula) { if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal(); }
-    else if (btn && RW.iniciarCarregando) RW.iniciarCarregando(btn);
-    function parar() { if (recalcula) { if (RW.esconderVeuGlobal) RW.esconderVeuGlobal(); } else if (btn && RW.pararCarregando) RW.pararCarregando(btn); }
+  /* recalcula=true (aprovar/cancelar mexem na escala): o cartão das etapas na hora, com a última etapa (a lista lida de
+     novo) depois da resposta; senão (aceitar/recusar não mexem na escala): os pontinhos no botão na hora e o cartão só se
+     passar de 1,5 s. frase = { chave, valores } (RosterWork.mensagens.etapas) */
+  function executar(promessa, btn, ctx, extra, recalcula, frase) {
+    var espera = recalcula
+      ? RW.etapas.acao(frase.chave, frase.valores, { doServidor: 2 })
+      : RW.etapas.acao(frase.chave, frase.valores, { doServidor: 1, botao: btn, atraso: true, semFila: true });
+    function parar() { espera.parar(); }
     promessa.then(function (r) {
+      if (r && r.ok && recalcula) espera.ultima();
       parar();
       if (r && r.ok) {
         RW.painel.fechar();
@@ -214,12 +217,14 @@
   function desfazerAprovacao(troca, ctx) {
     var d = RW.trocasDados;
     return function () {
-      if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal();   // o desfazer cancela a troca e recalcula a escala: véu global
+      /* o desfazer cancela a troca e recalcula a escala: o cartão das etapas na hora */
+      var espera = RW.etapas.acao('trocaCancelar', null, { doServidor: 2 });
       return d.cancelar(troca.troca_id, !!troca.substitui_troca_id, troca.substitui_troca_id ? null : msg().motivoDesfazer).then(function (res) {
-        if (RW.esconderVeuGlobal) RW.esconderVeuGlobal();
+        if (res && res.ok) espera.ultima();
+        espera.parar();
         if (res && res.ok && ctx.aoMudar) ctx.aoMudar();
         return res;
-      }).catch(function (e) { if (RW.esconderVeuGlobal) RW.esconderVeuGlobal(); throw e; });
+      }).catch(function (e) { espera.parar(); throw e; });
     };
   }
 
@@ -231,32 +236,32 @@
     if (acao === 'editar') {
       RW.painel.editar();   // o aoMudarModo('editar') troca a leitura pelo formulário
     } else if (acao === 'aceitar') {
-      confirmarEntao(m.confirmarAceitar, false, function () { executar(d.confirmar(troca.troca_id, true), btn, ctx); });
+      confirmarEntao(m.confirmarAceitar, false, function () { executar(d.confirmar(troca.troca_id, true), btn, ctx, null, false, { chave: 'trocaAceitar' }); });
     } else if (acao === 'imprimir-registro') {
       RW.trocasRegistroPdf.imprimir(troca.troca_id, btn);
     } else if (acao === 'aceitar-depois') {
       /* o aceite que falta: só entra no registro (a escala não muda) */
-      confirmarEntao(m.confirmarAceitarDepois, false, function () { executar(d.aceitar(troca.troca_id), btn, ctx); });
+      confirmarEntao(m.confirmarAceitarDepois, false, function () { executar(d.aceitar(troca.troca_id), btn, ctx, null, false, { chave: 'trocaAceitar' }); });
     } else if (acao === 'recusar') {
       /* o militar chamado recusa: o motivo (opcional) vai no aviso a quem pediu */
-      RW.decisao.recusar(partes, function (motivo, botao) { executar(d.confirmar(troca.troca_id, false, motivo), botao, ctx); });
+      RW.decisao.recusar(partes, function (motivo, botao) { executar(d.confirmar(troca.troca_id, false, motivo), botao, ctx, null, false, { chave: 'trocaRecusar' }); });
     } else if (acao === 'aprovar') {
       var temProblema = troca._analise && troca._analise.veredito === 'problema';
       confirmarEntao(temProblema ? m.confirmarAprovarComProblema : (alteracao ? m.confirmarAprovarAlteracao : m.confirmarAprovar), temProblema, function () {
-        executar(d.aprovar(troca.troca_id, true), btn, ctx, desfazer, true);   // aprovar recalcula a escala → véu
+        executar(d.aprovar(troca.troca_id, true), btn, ctx, desfazer, true, { chave: 'trocaAprovar' });   // aprovar recalcula a escala
       });
     } else if (acao === 'aprovar-forcar') {
       /* com pendências: sem o aceite do solicitado; quando a análise apontou problema, o mesmo aviso do Aprovar */
       var forcarComProblema = troca._analise && troca._analise.veredito === 'problema';
       confirmarEntao(forcarComProblema ? m.confirmarAprovarComProblema : m.confirmarForcar, true, function () {
-        executar(d.aprovar(troca.troca_id, true, true), btn, ctx, desfazer, true);   // força também recalcula a escala → véu
+        executar(d.aprovar(troca.troca_id, true, true), btn, ctx, desfazer, true, { chave: 'trocaAprovar' });   // força também recalcula a escala
       });
     } else if (acao === 'cancelar-alteracao') {
       /* a alteração esperando não mexe na escala: a troca de antes continua */
-      confirmarEntao(m.confirmarCancelarAlteracao, true, function () { executar(d.cancelar(troca.troca_id), btn, ctx); });
+      confirmarEntao(m.confirmarCancelarAlteracao, true, function () { executar(d.cancelar(troca.troca_id), btn, ctx, null, false, { chave: 'trocaCancelarAlteracao' }); });
     } else if (acao === 'recusar-admin') {
       /* a administração recusa: o motivo (opcional) vai no aviso aos dois */
-      RW.decisao.recusar(partes, function (motivo, botao) { executar(d.aprovar(troca.troca_id, false, false, motivo), botao, ctx); });
+      RW.decisao.recusar(partes, function (motivo, botao) { executar(d.aprovar(troca.troca_id, false, false, motivo), botao, ctx, null, false, { chave: 'trocaRecusar' }); });
     } else if (acao === 'cancelar' || acao === 'cancelar-aprovada') {
       RW.trocasSituacao.cancelar(troca, partes, ctx, btn);   // o pedido em aberto confirma; a aprovada pede o motivo
     }

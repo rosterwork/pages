@@ -119,7 +119,7 @@
   function promover(tipo, dataIso) {
     var atual = ctx;
     if (!atual) return;
-    if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal();   // recalcula a escala: círculo + tela travada
+    var espera = RosterWork.etapas.acao('promover', null, { doServidor: 2 });   // recalcula a escala: o cartão das etapas na hora
     RosterWork.apiFetch('/rest/v1/rpc/promover_militar', {
       metodo: 'POST',
       corpo: { p_cpf: atual.pessoa.usuario_id, p_tipo: tipo, p_data: dataIso }
@@ -129,7 +129,7 @@
         return resp.json();
       })
       .then(function (r) {
-        if (RosterWork.esconderVeuGlobal) RosterWork.esconderVeuGlobal();
+        espera.parar();
         if (r && r._falha === 'servidor') {
           if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.falhaServidor });
         } else if (r && r.success) {
@@ -140,7 +140,7 @@
         }
       })
       .catch(function () {
-        if (RosterWork.esconderVeuGlobal) RosterWork.esconderVeuGlobal();
+        espera.parar();
         if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.semConexao });
       });
   }

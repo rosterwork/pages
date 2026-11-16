@@ -11,7 +11,7 @@
      · Qual troca sai junto: as datas;
      · ou Para onde vão as horas: saldo de horas (quem sai fica
        devendo), banco de horas (desconta de quem volta) ou nenhum;
-     · o Motivo, sempre.
+     · o Motivo (opcional), sempre.
    Embaixo, os documentos alterados (o sistema escolhe), a nota
    Como fica e o compromisso de quem volta (avisa, não trava).
    Confirmar grava tudo de uma vez, sem Desfazer: o cartão das etapas,
@@ -231,16 +231,11 @@
       });
     }
 
-    /* grava de verdade (o motivo é obrigatório) e relê o dia */
+    /* grava de verdade (o motivo é opcional) e relê o dia */
     function aplicar() {
       var qual = acao();
       if (!qual || !est.previa || est.previa.erro) return;
       var motivo = campo.value.trim();
-      if (!motivo) {
-        if (RW.campos) RW.campos.marcarErro(campo, RW.mensagens.trocas.cancelarMotivo.erro);
-        campo.focus();
-        return;
-      }
       /* recalcula a escala: o cartão das etapas, com a tela travada, até a grade ler de novo */
       var etapas = RW.etapas.acao('removerTroca', null, { doServidor: 2 });
       chamar({ acao: qual, junto: qual === 'troca' ? est.junto : null, motivo: motivo }).then(function (r) {

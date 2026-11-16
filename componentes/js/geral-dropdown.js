@@ -3,7 +3,9 @@
    Abre/fecha o menu no clique do gatilho; o posicionamento (flutuante,
    flip, shift, limite do modal, reposicionar ao rolar) fica no helper
    geral-flutuante. Fecha ao clicar fora, ao clicar num item, no Esc,
-   ou se o gatilho sair da tela (avisado pelo helper).
+   ou se o gatilho sair da tela (avisado pelo helper: fecha só ele, e
+   o vigia da rolagem se desliga junto, também quando um redesenho
+   tirou a lista aberta da página).
    ============================================================ */
 (function () {
   'use strict';
@@ -19,16 +21,19 @@
     if (g) { g.setAttribute('aria-haspopup', 'true'); g.setAttribute('aria-expanded', aberto ? 'true' : 'false'); }
   }
 
+  function fechar(dropdown) {
+    dropdown.classList.remove('dropdown--aberto');
+    marcarAberto(dropdown, false);
+    if (dropdown._desligarFlutuante) {
+      dropdown._desligarFlutuante();
+      dropdown._desligarFlutuante = null;
+    }
+  }
+
   function fecharTodos(excecao) {
     var abertos = document.querySelectorAll('.dropdown--aberto');
     for (var i = 0; i < abertos.length; i++) {
-      if (abertos[i] === excecao) continue;
-      abertos[i].classList.remove('dropdown--aberto');
-      marcarAberto(abertos[i], false);
-      if (abertos[i]._desligarFlutuante) {
-        abertos[i]._desligarFlutuante();
-        abertos[i]._desligarFlutuante = null;
-      }
+      if (abertos[i] !== excecao) fechar(abertos[i]);
     }
   }
 
@@ -39,7 +44,7 @@
     if (menu && window.RosterWork.flutuante) {
       dropdown._desligarFlutuante = window.RosterWork.flutuante.ancorar(dropdown, menu, {
         limitarAltura: true,
-        aoSair: function () { fecharTodos(null); }
+        aoSair: function () { fechar(dropdown); }
       });
     }
   }

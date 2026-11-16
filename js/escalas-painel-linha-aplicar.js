@@ -121,6 +121,18 @@
     ocupantes(cfg.posto, cfg.funcao, periodos, m.cpf).forEach(function (o) { api.deixarFuncao(o.m.cpf, cfg.posto, cfg.funcao, H.periodo(o.x)); });
   }
 
+  /* o Deixa vazio do Acúmulo: a função acumulada fica vazia de propósito no horário (o tirar sem militar, que vale para
+     quem estiver nela, e o sistema não passa o acúmulo para ninguém). acs = [{ posto, funcao, periodos }] */
+  function deixarVazia(acs) {
+    var r = ed().rascunho();
+    acs.forEach(function (ac) {
+      ac.periodos.forEach(function (per) {
+        r.ajustes.push({ acao: 'tirar', cpf: '', nome_funcao: ac.funcao, viatura_id: ac.posto.tipo === 'viatura' ? ac.posto.id : null,
+          instalacao_id: ac.posto.tipo === 'instalacao' ? ac.posto.id : null, substitui: '', hi: per.hi, hf: per.hf, acumula: true });
+      });
+    });
+  }
+
   /* Liberar para o sistema: o fixado nos horários da linha (ou o tirar que deixou a função vazia) sai; o sistema refaz
      o dia mexendo o mínimo */
   function liberar(cfg) {
@@ -141,6 +153,6 @@
 
   window.RosterWork.escalasPainelLinhaAplicar = {
     ocupantes: ocupantes, trocar: trocar, sugestao: sugestao, tirarDaFuncao: tirarDaFuncao,
-    mudarHorario: mudarHorario, liberar: liberar, podeLiberar: podeLiberar
+    mudarHorario: mudarHorario, deixarVazia: deixarVazia, liberar: liberar, podeLiberar: podeLiberar
   };
 })();

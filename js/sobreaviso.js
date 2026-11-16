@@ -10,8 +10,8 @@
    - as abas são Mês, Militares e Colunas, com a mesma visão da
      Escala (escalas.js); o Militares é a fila
      (escalas-militares-sobreaviso.js);
-   - as unidades: só as em que o sobreaviso aparece (colunas(), nas
-     grades e no Imprimir);
+   - as unidades: só as em que o sobreaviso aparece, uma por companhia
+     (colunas(), nas grades e no Imprimir);
    - o clique no nome ou no dia abre a caixa do sobreaviso
      (escalas-celula-sobreaviso-caixa.js).
    RosterWork.paginaSobreaviso.{ ativa, colunas }
@@ -25,13 +25,21 @@
   /* a página aberta é o Sobreaviso */
   function ativa() { return !!(RW.paginaAtual && RW.paginaAtual() === 'sobreaviso'); }
 
-  /* as unidades da grade: só as que mostram o sobreaviso (a companhia, se está na tela; senão, o pelotão de número menor;
-     no sobreaviso de cada pelotão, os pelotões). No celular, na Agenda, ficam todas: uma por tela, e o sobreaviso vem
-     na unidade da tela. Fora da página, as de sempre */
+  /* as unidades da grade: só as que mostram o sobreaviso (as marcadas nos Ajustes › Sobreaviso › Onde aparece). No da
+     companhia, uma só por companhia, a primeira da tela (a lista é a mesma em todas); no de cada pelotão, os pelotões
+     (cada um, o seu). Fora da página, as de sempre */
   function colunas(lista) {
     var S = RW.escalasCelulaSobreaviso;
-    if (!ativa() || !S || S.umaPorTela()) return lista;
-    return lista.filter(function (c) { return S.mostra(c.id); });
+    if (!ativa() || !S) return lista;
+    var vistas = {};
+    return lista.filter(function (c) {
+      if (!S.mostra(c.id)) return false;
+      var cia = S.companhia(c.id);
+      if (cia == null) return true;
+      if (vistas[cia]) return false;
+      vistas[cia] = true;
+      return true;
+    });
   }
 
   function iniciar(fragmento) {

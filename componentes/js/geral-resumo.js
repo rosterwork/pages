@@ -3,12 +3,15 @@
    RosterWork.resumo.desenhar(dados, opcoes) -> nó com o resumo
      (aceita o "log" inteiro do banco ou só o "resumo"); opcoes:
      { titulo (cabeçalho do modal), mostrarAssunto, mostrarQuando }.
-     O "assunto" vem de resumo.titulo (o que foi alterado).
+     O "assunto" vem de resumo.titulo (o que foi alterado); as linhas
+     "Escala do 1ºPEL refeita a partir de..." vêm de resumo.escalas_refeitas
+     ([{ unidade, desde }], o que o recálculo refez ao salvar).
    RosterWork.resumo.abrirModal(log, { pagina, desfazer? }) -> abre o
      modal de confirmação (#veu-resumo) com o título de sucesso; se
      "desfazer" (função que reverte e devolve Promise) vier, mostra o
      texto "Desfazer" (última chance de reverter a ação recém-aplicada).
-     No modo treino, não abre.
+     Com mais de MAX_ABERTAS mudanças, elas ficam fechadas atrás do
+     "Ver detalhes (N)". No modo treino, não abre.
    Peça reutilizável: o modal ao salvar (Postos) e a página
    de Histórico. O "quando" vem do banco (criado_em).
    Moldes #tpl-resumo / -alvo / -mudanca e #veu-resumo no shell.
@@ -18,9 +21,12 @@
 
   window.RosterWork = window.RosterWork || {};
 
-  var veu, alvoConteudo, btnOk, btnDesfazer;
+  var veu, alvoConteudo, btnOk, btnDesfazer, btnDetalhes;
   var desfazerAtual = null;   /* ação de reversão do modal aberto (ou null) */
   var desfazendo = false;
+  var corpoAtual = null;      /* lista das mudanças do modal aberto (abre e fecha no "Ver detalhes") */
+  var totalAtual = 0;         /* quantas mudanças o modal aberto tem */
+  var MAX_ABERTAS = 4;        /* até aqui as mudanças aparecem direto, sem o botão */
 
 
   function txtBotao(chave) { var b = RosterWork.mensagens && RosterWork.mensagens.botoes; return (b && b[chave]) || ''; }
@@ -117,6 +123,20 @@
       else assunto.classList.add('oculto');
     }
 
+    /* uma linha por unidade cuja escala o salvar refez */
+    var refeitas = raiz.querySelector('.resumo-refeitas');
+    var escrever = RosterWork.mensagens && RosterWork.mensagens.geral && RosterWork.mensagens.geral.escalaRefeita;
+    var paraBR = RosterWork.data && RosterWork.data.isoParaBR;
+    if (refeitas && escrever && paraBR) {
+      (resumo.escalas_refeitas || []).forEach(function (r) {
+        var linha = RosterWork.tpl('tpl-resumo-refeita');
+        if (!linha || !r || !r.unidade || !r.desde) return;
+        linha.textContent = escrever(r.unidade, paraBR(r.desde));
+        refeitas.appendChild(linha);
+      });
+      if (refeitas.children.length) refeitas.classList.remove('oculto');
+    }
+
     var corpo = raiz.querySelector('.resumo-corpo');
     (resumo.alvos || []).forEach(function (alvo) {
       var bloco = RosterWork.tpl('tpl-resumo-alvo');
@@ -132,6 +152,23 @@
     return raiz;
   }
 
+  /* quantas mudanças o resumo tem (somando as de todos os alvos) */
+  function contarMudancas(log) {
+    var resumo = (log && (log.resumo || log)) || {};
+    return (resumo.alvos || []).reduce(function (soma, alvo) {
+      return soma + ((alvo && alvo.mudancas) || []).length;
+    }, 0);
+  }
+
+  /* abre ou fecha a lista das mudanças do modal aberto; o texto do botão acompanha */
+  function mostrarDetalhes(abertos) {
+    if (!corpoAtual || !btnDetalhes) return;
+    var b = (RosterWork.mensagens && RosterWork.mensagens.botoes) || {};
+    corpoAtual.classList.toggle('oculto', !abertos);
+    btnDetalhes.setAttribute('aria-expanded', abertos ? 'true' : 'false');
+    btnDetalhes.textContent = abertos ? (b.esconderDetalhes || '') : (b.verDetalhes ? b.verDetalhes(totalAtual) : '');
+  }
+
   /* liga o véu uma única vez (o OK fecha o modal) */
   function preparar() {
     if (veu) return true;
@@ -140,10 +177,14 @@
     alvoConteudo = veu.querySelector('#resumo-conteudo');
     btnOk = veu.querySelector('.resumo-ok');
     btnDesfazer = veu.querySelector('.resumo-desfazer');
+    btnDetalhes = veu.querySelector('.resumo-detalhes');
     if (btnOk) btnOk.addEventListener('click', function () {
       if (RosterWork.fecharModais) RosterWork.fecharModais();
     });
     if (btnDesfazer) btnDesfazer.addEventListener('click', executarDesfazer);
+    if (btnDetalhes) btnDetalhes.addEventListener('click', function () {
+      mostrarDetalhes(btnDetalhes.getAttribute('aria-expanded') !== 'true');
+    });
     return true;
   }
 
@@ -165,6 +206,12 @@
     var titulo = noLivre ? RosterWork.mensagens.treino.resumoTitulo : (modelo || '').replace('{pagina}', opcoes.pagina || '');
     var no = desenhar(log, { titulo: titulo, mostrarQuando: true });
     if (no) alvoConteudo.appendChild(no);
+    /* muitas mudanças: a lista começa fechada atrás do "Ver detalhes (N)"; poucas aparecem direto */
+    corpoAtual = no ? no.querySelector('.resumo-corpo') : null;
+    totalAtual = contarMudancas(log);
+    var comBotao = !!corpoAtual && totalAtual > MAX_ABERTAS;
+    if (btnDetalhes) btnDetalhes.classList.toggle('oculto', !comBotao);
+    if (comBotao) mostrarDetalhes(false);
     /* "Desfazer": só aparece quando o chamador passa a ação de reverter */
     desfazendo = false;
     desfazerAtual = (!noLivre && typeof opcoes.desfazer === 'function') ? opcoes.desfazer : null;
@@ -172,7 +219,8 @@
       btnDesfazer.textContent = txtBotao('desfazer');
       btnDesfazer.classList.toggle('oculto', !desfazerAtual);
     }
-    if (RosterWork.abrirModal) RosterWork.abrirModal('veu-resumo');
+    /* o foco entra onde entrava antes do "Ver detalhes" existir: no Desfazer, se houver, senão no OK */
+    if (RosterWork.abrirModal) RosterWork.abrirModal('veu-resumo', desfazerAtual ? btnDesfazer : btnOk);
   }
 
   window.RosterWork.resumo = { desenhar: desenhar, abrirModal: abrirModal, formatarQuando: formatarQuando };

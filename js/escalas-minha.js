@@ -77,7 +77,7 @@
   }
 
   /* um dia no quadradinho: os ícones das linhas dele (folga e troca de saída apagados); o afastado,
-     listrado com a sigla (FÉR, LIC, DIS; na missão, OP. VERÃO, F. TAREFA ou MISSÃO), e a dica com o nome e a data */
+     listrado com o nome do afastamento em maiúsculas (FÉRIAS, ATESTADO, OP. VERÃO), e a dica com o nome e a data */
   function desenharDia(botao, diaIso) {
     var dia = estado.dados.dias[diaIso] || { linhas: [] };
     var linhas = dia.linhas || [];
@@ -91,8 +91,8 @@
     var afast = linhas.filter(function (l) { return l.origem === 'afastamento'; })[0];
     if (afast) {
       botao.classList.add('mini-calendario-dia--afastado');
-      texto.textContent = afast.missao ? String(afast.afastamento || '').toUpperCase() : String(afast.afastamento || '').slice(0, 3).toUpperCase();
-      if (afast.ate) botao.setAttribute('data-dica', RW.mensagens.geral.afastadoAte((afast.missao && afast.dica) || afast.afastamento || '', RW.data.isoParaBR(afast.ate).slice(0, 5)));
+      texto.textContent = String(afast.afastamento || '').toUpperCase();
+      if (afast.ate) botao.setAttribute('data-dica', RW.mensagens.geral.afastadoAte(afast.afastamento || '', RW.data.isoParaBR(afast.ate).slice(0, 5)));
       return;
     }
     linhas.forEach(function (l) {

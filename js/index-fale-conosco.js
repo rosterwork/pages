@@ -104,11 +104,12 @@
       if (!m) { erro(mensagem, M.mensagemVazia); return; }
 
       enviando = true;
-      if (RosterWork.iniciarCarregando) RosterWork.iniciarCarregando(btnEnviar);
+      /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
+      var espera = RosterWork.etapas.acao('mensagemEnviar', null, { doServidor: 1, botao: btnEnviar, atraso: true, semFila: true });
       RosterWork.rpc('recado_enviar', { p_tipo: tipoEscolhido, p_assunto: a, p_mensagem: m, p_contexto: contexto() })
         .then(function (r) {
           enviando = false;
-          if (RosterWork.pararCarregando) RosterWork.pararCarregando(btnEnviar);
+          espera.parar();
           if (r && r.success) {
             fechar();
             if (RosterWork.avisar) RosterWork.avisar({ tipo: 'sucesso', mensagem: M.enviado });
@@ -118,7 +119,7 @@
         })
         .catch(function () {
           enviando = false;
-          if (RosterWork.pararCarregando) RosterWork.pararCarregando(btnEnviar);
+          espera.parar();
           if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.semConexao });
         });
     }

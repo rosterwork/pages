@@ -226,14 +226,15 @@
 
   function salvarP1() {
     var botao = q('#p1-salvar');
-    RW.iniciarCarregando(botao);
+    /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
+    var espera = RW.etapas.acao('extraPedidosMes', null, { doServidor: 1, botao: botao, atraso: true, semFila: true });
     RW.rpc('extrajornada_pedidos_salvar', Object.assign({ p_competencia: d.competencia, p_termos: p1.termos }, RW.extrajornadaMinimo.parametros())).then(function (r) {
-      RW.pararCarregando(botao);
+      espera.parar();
       if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
       resumo(r);
       RW.extrajornada.recarregar();
     }, function (e) {
-      RW.pararCarregando(botao);
+      espera.parar();
       RW.avisar({ tipo: 'erro', mensagem: (e && e.message) || RW.mensagens.geral.semConexao });
     });
   }

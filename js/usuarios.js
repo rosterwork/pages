@@ -25,12 +25,13 @@
   var elContagem = null;
 
   /* a situação do militar passa no filtro ("Todos" = as normais; Inativos e Correção pendente são
-     acréscimos). "Correção pendente" não é situação do militar (ele continua Ativo/Férias/...),
-     então soma às demais em vez de excluir */
+     acréscimos). Todo afastamento é "Afastado". "Correção pendente" não é situação do militar (ele
+     continua Ativo ou Afastado), então soma às demais em vez de excluir */
   function pessoaPassaSituacao(pessoa) {
     if (!filtros) return true;
     if (pessoa.correcao_pendente && filtros.passa('situacao', 'Correção pendente')) return true;
-    return filtros.passa('situacao', pessoa.situacao);
+    var afastado = ['Férias', 'Licença', 'Dispensa', 'Missão'].indexOf(pessoa.situacao) >= 0;
+    return filtros.passa('situacao', afastado ? 'Afastado' : pessoa.situacao);
   }
 
   /* nada marcado = todos os graus */
@@ -121,7 +122,7 @@
     return d.length === 3 ? d[2] + '/' + d[1] + (partes[1] ? ' ' + partes[1] : '') : '';
   }
 
-  /* um selo só por militar, na ordem: Inativo (neutro escuro), afastamento ou missão até DD/MM
+  /* um selo só por militar, na ordem: Inativo (neutro escuro), o afastamento até DD/MM, com o nome dele
      (âmbar), e, só para o administrador (o banco manda a conta só para ele), o link de
      cadastro até DD/MM HH:MM (âmbar) ou Sem conta (neutro); senão Ativo (verde) */
   function preencherSituacao(selo, pessoa) {
@@ -131,7 +132,7 @@
       selo.textContent = pessoa.situacao_ate ? T.seloInativoDesde(formatarDataCurta(pessoa.situacao_ate)) : T.seloInativo;
       selo.classList.add('selo--escuro');
     } else if (['Férias', 'Licença', 'Dispensa', 'Missão'].indexOf(pessoa.situacao) >= 0) {
-      /* a missão mostra o nome dela ("Força Tarefa até 21/11") */
+      /* o nome do afastamento ("Op. Verão até 21/11") */
       selo.textContent = RosterWork.mensagens.geral.afastadoAte(pessoa.situacao_nome || pessoa.situacao, formatarDataCurta(pessoa.situacao_ate));
       selo.classList.add('selo--alerta');
     } else if (pessoa.link_cadastro_ate) {
@@ -165,13 +166,14 @@
     return !!(filtros && RosterWork.sessao.temPapel('pelotao') && filtros.passa('situacao', 'Inativo'));
   }
 
-  /* abre a ficha do militar no painel e realça a linha clicada (ver = todos) */
-  function abrirFicha(card, pessoa) {
+  /* abre a ficha do militar no painel e realça a linha clicada (ver = todos); opcoes = { secao, ano } (a aba
+     Afastamentos abre a ficha na aba dela) */
+  function abrirFicha(card, pessoa, opcoes) {
     if (cardSelecionado) cardSelecionado.classList.remove('linha-militar--selecionada');
     cardSelecionado = card;
     cpfAberto = String(pessoa.usuario_id);
-    card.classList.add('linha-militar--selecionada');
-    if (window.RosterWork.usuariosPainel) window.RosterWork.usuariosPainel.abrir(pessoa, limparSelecao);
+    if (card) card.classList.add('linha-militar--selecionada');
+    if (window.RosterWork.usuariosPainel) window.RosterWork.usuariosPainel.abrir(pessoa, limparSelecao, opcoes);
     /* a busca e os filtros podem tirar o militar da lista: a ficha dele fecha (geral-painel) */
     if (window.RosterWork.painel) window.RosterWork.painel.acompanharTela(cardNaTela);
   }
@@ -196,7 +198,7 @@
     cardSelecionado = card;
   }
 
-  /* as abas Férias · Licenças · Dispensas desenham a lista delas (usuarios-afastamentos.js) */
+  /* a aba Afastamentos desenha a grade dela (usuarios-afastamentos.js) */
   function afastamentos() {
     var m = window.RosterWork.usuariosAfastamentos;
     return m && m.ativa() ? m : null;
@@ -347,13 +349,13 @@
     atualizarSubtitulo();
   }
 
-  /* a contagem de cada unidade: os militares (Efetivo) ou quem teve afastamento no ano */
+  /* a contagem de cada unidade: os militares (Efetivo) ou quem tem afastamento no ano */
   function textoContagem(itens) {
     if (afastamentos()) return afastamentos().textoContagem(itens);
     return itens.length === 1 ? '1 militar' : itens.length + ' militares';
   }
 
-  /* o que as abas de afastamento e a Administradores usam daqui: a árvore, a busca, a ordem, os graus e a contagem */
+  /* o que a aba Afastamentos e a Administradores usam daqui: a árvore, a busca, a ordem, os graus, a contagem e a ficha */
   var emprestado = {
     atualizar: function () { if (window.RosterWork.arvoreUnidades) window.RosterWork.arvoreUnidades.atualizar(); },
     /* 'marcar' (casa, no marcar) · 'casa' (casa, no filtrar) · 'esconder' (não casa, no filtrar) · '' (sem busca ou não casa, no marcar) */
@@ -364,16 +366,22 @@
     },
     ordenar: function (pessoas) { return ordenarPessoas(pessoas); },
     arvoreDeGraus: function (pessoas) { return arvoreDeGraus(pessoas); },
-    contar: function () { contagemVisivel++; }
+    contar: function () { contagemVisivel++; },
+    /* a ficha aberta pela grade (el = a coluna do militar; sem ela, a da linha dele, se estiver na tela) */
+    abrirFicha: function (el, pessoa, opcoes) {
+      var linha = el || document.querySelector('.escala-mil-pessoa-linha[data-cpf="' + pessoa.usuario_id + '"] .afastamentos-pessoa');
+      abrirFicha(linha, pessoa, opcoes);
+    },
+    marcar: function (el, pessoa) { marcarSeAberto(el, pessoa); }
   };
 
-  /* ---------- abas da página: Efetivo · Férias · Licenças · Dispensas · Missões | Antiguidade · Administradores (só admin) ----------
-     A busca e a Ordem valem para as listas (Efetivo, as de afastamento e a Administradores, que
-     usam a mesma árvore); os Filtros e o Exibir do Efetivo, só para ele. Só o Efetivo tem painel:
-     as outras abas editam na própria lista. */
+  /* ---------- abas da página: Efetivo · Afastamentos | Antiguidade · Administradores (só admin) ----------
+     A busca e a Ordem valem para as listas (Efetivo, Afastamentos e Administradores, que usam a
+     mesma árvore); os Filtros e o Exibir do Efetivo, só para ele. O Efetivo e os Afastamentos
+     abrem a ficha no painel; a Antiguidade e a Administradores editam na própria lista. */
   function mostrarAba(conteudo, nome) {
-    /* Férias · Licenças · Dispensas · Missões e Administradores usam a árvore do Efetivo, com a busca e a Ordem; o Exibir é só do Efetivo */
-    var lista = ['efetivo', 'ferias', 'licencas', 'dispensas', 'missoes', 'administradores'].indexOf(nome) >= 0;
+    /* Afastamentos e Administradores usam a árvore do Efetivo, com a busca e a Ordem; o Exibir é só do Efetivo */
+    var lista = ['efetivo', 'afastamentos', 'administradores'].indexOf(nome) >= 0;
     var paineis = conteudo.querySelectorAll('[data-aba-painel]');
     for (var i = 0; i < paineis.length; i++) {
       paineis[i].classList.toggle('oculto', paineis[i].getAttribute('data-aba-painel') !== (lista ? 'efetivo' : nome));
@@ -390,7 +398,7 @@
     if (grupoAdmin) grupoAdmin.classList.toggle('oculto', nome !== 'efetivo' || !RosterWork.sessao.temPapel('pelotao'));
     /* a aba Administradores: os Filtros e o rodapé dela */
     if (window.RosterWork.usuariosAdministradores) window.RosterWork.usuariosAdministradores.mostrar(nome);
-    /* as abas de afastamento: o ano e os Filtros delas; a árvore redesenha as linhas da aba */
+    /* a aba Afastamentos: o ano e os Filtros dela; a árvore redesenha a grade da aba */
     if (window.RosterWork.usuariosAfastamentos) window.RosterWork.usuariosAfastamentos.mostrar(nome);
     if (nome === 'efetivo' || nome === 'administradores') emprestado.atualizar();
     /* a Antiguidade tem a própria busca (o Salvar dela fica no rodapé da aba) */
@@ -429,14 +437,11 @@
     filtros = window.RosterWork.filtros.criar(conteudo.querySelector('#usuarios-filtros'), {
       aoMudar: function () { if (window.RosterWork.arvoreUnidades) window.RosterWork.arvoreUnidades.atualizar(); }
     });
-    /* Situação: Ativos/Férias/Licença/Dispensa/Missão para todos; Correção pendente e Inativos só para
-       administradores, à parte (acréscimos; os inativos vêm de fonte separada) */
+    /* Situação: Ativos e Afastados para todos; Correção pendente e Inativos só para administradores, à
+       parte (acréscimos; os inativos vêm de fonte separada) */
     var opcoesSituacao = [
       { rotulo: 'Ativos', valor: 'Ativo' },
-      { rotulo: 'Férias', valor: 'Férias' },
-      { rotulo: 'Licença', valor: 'Licença' },
-      { rotulo: 'Dispensa', valor: 'Dispensa' },
-      { rotulo: 'Missão', valor: 'Missão' }
+      { rotulo: 'Afastados', valor: 'Afastado' }
     ];
     if (RosterWork.sessao.temPapel('pelotao')) {
       opcoesSituacao.push({ rotulo: 'Correção pendente', valor: 'Correção pendente', separado: true });
@@ -469,7 +474,7 @@
     var grupoAdmin = conteudo.querySelector('.acoes-admin');
     if (grupoAdmin) grupoAdmin.classList.toggle('oculto', !RosterWork.sessao.temPapel('pelotao'));
 
-    /* Férias · Licenças · Dispensas: o ano e os Filtros delas entram na barra, escondidos */
+    /* a aba Afastamentos: o rascunho, o ano e os Filtros dela entram na barra, escondidos */
     if (window.RosterWork.usuariosAfastamentos) window.RosterWork.usuariosAfastamentos.iniciar(conteudo, emprestado);
 
     ligarAbas(conteudo);

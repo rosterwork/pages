@@ -82,13 +82,14 @@
     /* o dia ou o horário mudou: tudo volta ao começo (com as vagas, a recomendada volta a vir marcada) */
     function reiniciar() { est.onde = padrao; est.escolheu = false; chaveVagas = null; limpar(); }
 
-    /* as vagas sem ninguém em todo o horário de quem entra, na ordem da lista do dia: [{ chave, posto, funcao }] */
+    /* as vagas sem ninguém em todo o horário de quem entra, na ordem da lista do dia: [{ chave, posto, funcao }]; o lugar
+       que falta até o ideal também é vaga (a função aberta e o lugar do meio, não) */
     function vagasLivres() {
       var horas = H.uniao(cfg.periodos().map(H.faixa)), lista = [];
       if (!horas.length) return lista;
       (((cfg.dados() || {}).postos) || []).forEach(function (po) {
         (po.funcoes || []).forEach(function (f) {
-          if (BLOQUEADAS.test(f.nome) || f.vazio_motivo === 'aberta') return;
+          if (BLOQUEADAS.test(f.nome) || (f.vazio_motivo === 'aberta' && !f.lugar_ideal)) return;
           var vazio = f.vazio ? [[0, 1440]] : H.uniao((f.vao || []).map(H.faixa));
           if (!vazio.length || H.menos(horas, vazio).length) return;
           lista.push({ chave: po.tipo + ':' + po.id + '|' + f.nome, posto: po, funcao: f.nome });

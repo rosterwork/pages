@@ -13,11 +13,8 @@
     </div>
     <div class="abas" id="usuarios-abas">
       <button type="button" class="aba aba--ativa" data-aba="efetivo">Efetivo</button>
-      <!-- a lista completa do efetivo com os afastamentos (e as missões) do ano de cada um (usuarios-afastamentos.js) -->
-      <button type="button" class="aba" data-aba="ferias" data-manual="afastamentos">Férias</button>
-      <button type="button" class="aba" data-aba="licencas" data-manual="afastamentos">Licenças</button>
-      <button type="button" class="aba" data-aba="dispensas" data-manual="afastamentos">Dispensas</button>
-      <button type="button" class="aba" data-aba="missoes" data-manual="afastamentos">Missões</button>
+      <!-- os afastamentos do ano de todo o efetivo, nos 12 meses (usuarios-afastamentos.js) -->
+      <button type="button" class="aba" data-aba="afastamentos" data-manual="afastamentos">Afastamentos</button>
       <!-- só administrador: a ordem de antiguidade da companhia, por posto -->
       <button type="button" class="aba oculto" data-aba="antiguidade" id="usuarios-aba-antiguidade" data-manual="ajustar-antiguidade">Antiguidade</button>
       <!-- só administrador: quem administra o quê; o papel muda na própria lista -->
@@ -26,7 +23,7 @@
   </div>
 
   <!-- barra sempre presente (o conteúdo não "pula" ao trocar de aba): à esquerda o grupo Administração
-       (Novo usuário, só admin, só no Efetivo) e, nas abas Férias · Licenças · Dispensas, o ano
+       (Novo usuário, só admin, só no Efetivo) e, na aba Afastamentos, o ano
        (#tpl-usuarios-ano, posto pelo JS); à direita o botão Filtros da aba (componente geral-filtros),
        a busca e, depois do traço, Ordem e (só no Efetivo) Exibir -->
   <div class="pagina-subcabecalho">
@@ -60,11 +57,11 @@
       <div data-filtro="situacao" data-filtro-nome="Situação" data-filtro-titulo="Situação"></div>
     </div>
 
-    <!-- Filtros das abas Férias · Licenças · Dispensas: Graus, Situação no ano e Tipo (o Tipo some em Férias) -->
+    <!-- Filtros da aba Afastamentos: Graus, Situação no ano e Afastamento (os nomes do ano; escolher um esconde os outros) -->
     <div class="filtros oculto" id="usuarios-afast-filtros">
       <div data-filtro="graus" data-filtro-nome="Grau" data-filtro-titulo="Graus"></div>
       <div data-filtro="situacao" data-filtro-nome="Situação" data-filtro-titulo="Situação"></div>
-      <div data-filtro="tipo" data-filtro-nome="Tipo" data-filtro-titulo="Tipo"></div>
+      <div data-filtro="afastamento" data-filtro-nome="Afastamento" data-filtro-titulo="Afastamento"></div>
     </div>
 
     <!-- Filtros da aba Administradores: Graus e Papel -->
@@ -189,11 +186,19 @@
     </div>
   </div>
 
-  <!-- o rodapé de salvar das abas Férias · Licenças · Dispensas, na largura toda (o rodapé único da página): aparece só com
-       alteração na caixa aberta; Cancelar fecha a caixa -->
+  <!-- o rodapé de salvar dos afastamentos (a aba Afastamentos e a aba da ficha), na largura toda (o rodapé único da página):
+       aparece só com alteração; Desfazer e Refazer (Ctrl+Z e Ctrl+Y) à esquerda do Cancelar, que joga fora o que não foi salvo -->
   <div class="rodape rodape-linha rodape--largo oculto" id="afastamentos-rodape">
     <span class="rodape-texto" id="afastamentos-mudancas"></span>
     <span class="espacador-flex"></span>
+    <div class="rodape-historico">
+      <button type="button" class="botao botao--quadrado" id="afastamentos-desfazer" aria-label="Desfazer" data-dica="Desfazer" disabled>
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-desfazer"/></svg>
+      </button>
+      <button type="button" class="botao botao--quadrado" id="afastamentos-refazer" aria-label="Refazer" data-dica="Refazer" disabled>
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-refazer"/></svg>
+      </button>
+    </div>
     <div class="rodape-acoes">
       <button type="button" class="botao" id="afastamentos-cancelar">Cancelar</button>
       <button type="button" class="botao botao--primario" id="afastamentos-salvar">Salvar</button>
@@ -228,7 +233,7 @@
   <div class="usuario-vazio">Nenhum militar com os filtros atuais.</div>
 </template>
 
-<!-- molde (abas Férias · Licenças · Dispensas): o militar e, à direita, um afastamento do ano por linha -->
+<!-- molde (aba Afastamentos, no celular): o militar e, embaixo, um afastamento do ano por linha -->
 <template id="tpl-usuario-afastamento-item">
   <div class="linha-militar usuario-item usuario-afastamento-item">
     <span class="linha-militar-pessoa">
@@ -244,17 +249,15 @@
   <span class="esqueleto esqueleto-conjunto usuario-afastamento-forma"></span>
 </template>
 
-<!-- molde: um afastamento na linha do militar (o tipo e as datas, os dias e, em licença e dispensa, o fluxo;
-     na missão, se ele saiu da escala) -->
+<!-- molde: um afastamento na linha do militar (o nome e as datas e os dias) -->
 <template id="tpl-usuario-afastamento-linha">
   <span class="usuario-afastamento-linha">
     <span class="linha-militar-coluna usuario-afastamento-texto"></span>
     <span class="selo usuario-afastamento-dias"></span>
-    <span class="selo usuario-afastamento-fluxo"></span>
   </span>
 </template>
 
-<!-- molde: o ano das abas de afastamento (na barra e na ficha): as setas passam de ano,
+<!-- molde: o ano da aba Afastamentos (na barra e na ficha): as setas passam de ano,
      o ano abre a lista dos anos, o Hoje (só fora do ano atual) volta a ele -->
 <template id="tpl-usuarios-ano">
   <div class="geral-periodo">
@@ -356,35 +359,141 @@
   </div>
 </template>
 
-<!-- molde (abas Férias · Licenças · Dispensas): a caixa que fica no lugar da linha: a própria linha no alto, com o X; o Tipo
-     (some em Férias) e os períodos do tipo (usuarios-afastamentos-caixa.js) -->
-<template id="tpl-afastamentos-caixa">
-  <div class="usuarios-caixa afastamentos-caixa">
-    <div class="usuarios-caixa-topo">
-      <button type="button" class="botao-discreto usuarios-caixa-fechar" aria-label="Fechar" data-dica="Fechar">
-        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
-      </button>
-    </div>
-    <div class="usuarios-caixa-corpo">
-      <div class="afastamentos-caixa-tipo" data-afastamento-tipo>
-        <span class="rotulo-secao">Tipo</span>
-      </div>
-      <div data-periodos-lugar></div>
+<!-- ===== aba Afastamentos: a grade dos 12 meses (usuarios-afastamentos-grade.js) e a caixa da célula
+     (usuarios-afastamentos-celula.js). A linha do militar e a célula são as da grade dos Militares da Escala
+     (#tpl-escala-mil-pessoa e #tpl-escala-mil-celula, no index.html) ===== -->
+
+<!-- molde: a grade de uma unidade: o cabeçalho dos meses (preso no alto ao rolar) e, embaixo, uma linha por militar -->
+<template id="tpl-afastamentos-grade">
+  <div class="bloquinho afastamentos-grade">
+    <div class="escala-mil-linha escala-mil-cabecalho afastamentos-grade-cabecalho">
+      <div class="escala-mil-canto"></div>
     </div>
   </div>
 </template>
 
-<!-- molde: o Tipo (Licenças, Dispensas e Missões), no campo de seleção -->
-<template id="tpl-afastamentos-tipo-campo">
-  <div class="campo">
+<!-- molde: um mês no cabeçalho da grade (o de hoje fica escuro) -->
+<template id="tpl-afastamentos-mes">
+  <div class="escala-mil-dia afastamentos-mes"><span class="afastamentos-mes-nome"></span></div>
+</template>
+
+<!-- molde: um afastamento num mês: o listrado do afastado, com o nome e os dias daquele mês -->
+<template id="tpl-afastamentos-selo">
+  <span class="afastamentos-selo">
+    <span class="afastamentos-selo-nome"></span>
+    <span class="afastamentos-selo-dias"></span>
+  </span>
+</template>
+
+<!-- molde: a caixa de um afastamento (caixa 1): os itens com a setinha abrem as perguntas na caixa 2, ao lado;
+     o Remover vai para o rascunho; o último abre a ficha do militar -->
+<template id="tpl-afastamentos-menu">
+  <div class="afastamentos-menu">
+    <button type="button" class="dropdown-item" data-acao="periodo"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-agendado"/></svg><span>Mudar o período</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <button type="button" class="dropdown-item" data-acao="nome"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-editar"/></svg><span>Mudar o nome</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <button type="button" class="dropdown-item" data-acao="marcas"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lista"/></svg><span>Mudar o que ele sai</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <button type="button" class="dropdown-item dropdown-item--perigo" data-acao="remover"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg><span>Remover o afastamento</span></button>
+    <div class="dropdown-divisor"></div>
+    <button type="button" class="dropdown-item" data-acao="painel"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-perfil"/></svg><span>Abrir o painel do militar</span><span class="escala-edicao-opcoes-painel" data-dica="Abre no painel do militar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-painel-lateral"/></svg></span></button>
+  </div>
+</template>
+
+<!-- molde: a caixa da célula vazia: o Adicionar abre as perguntas na caixa 2 -->
+<template id="tpl-afastamentos-menu-vazio">
+  <div class="afastamentos-menu">
+    <button type="button" class="dropdown-item" data-acao="adicionar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-afastamentos"/></svg><span>Adicionar afastamento</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <div class="dropdown-divisor"></div>
+    <button type="button" class="dropdown-item" data-acao="painel"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-perfil"/></svg><span>Abrir o painel do militar</span><span class="escala-edicao-opcoes-painel" data-dica="Abre no painel do militar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-painel-lateral"/></svg></span></button>
+  </div>
+</template>
+
+<!-- molde: a caixa do afastamento que terminou há mais de uma semana: o aviso e a ficha -->
+<template id="tpl-afastamentos-menu-travado">
+  <div class="afastamentos-menu afastamentos-menu--travado">
+    <div class="nota">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+      <span class="nota-texto">Terminou há mais de uma semana, por isso não muda.</span>
+    </div>
+    <div class="dropdown-divisor"></div>
+    <button type="button" class="dropdown-item" data-acao="painel"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-perfil"/></svg><span>Abrir o painel do militar</span><span class="escala-edicao-opcoes-painel" data-dica="Abre no painel do militar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-painel-lateral"/></svg></span></button>
+  </div>
+</template>
+
+<!-- molde: a caixa 2, com as perguntas do item escolhido (os campos de um afastamento) -->
+<template id="tpl-afastamentos-cartao">
+  <div class="escala-celula-perguntas afastamentos-cartao"></div>
+</template>
+
+<!-- ===== os campos de um afastamento (usuarios-afastamentos-campos.js): na caixa 2 da célula e na ficha ===== -->
+
+<!-- molde: o Nome, no campo com a lista (a lista padrão e o Outro) -->
+<template id="tpl-afastamento-nome">
+  <div class="campo afastamento-campo-nome">
+    <span class="campo-rotulo">Nome</span>
     <div class="dropdown">
-      <button type="button" class="campo-entrada campo-selecao" data-tipo-campo aria-label="Tipo">
+      <button type="button" class="campo-entrada campo-selecao" aria-label="Nome do afastamento" data-af-nome>
         <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
         <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
       </button>
       <div class="dropdown-menu"></div>
     </div>
   </div>
+</template>
+
+<!-- molde: o nome escrito no Outro (até 10 letras), com o aviso de que todos o veem -->
+<template id="tpl-afastamento-outro">
+  <label class="campo afastamento-campo-outro oculto">
+    <span class="campo-rotulo">Nome no dia</span>
+    <input class="campo-entrada" type="text" maxlength="10" autocomplete="off" data-af-outro />
+    <span class="campo-ajuda">Até 10 letras. Todos veem este nome na escala: não escreva doença nem diagnóstico.</span>
+  </label>
+</template>
+
+<!-- molde: o Período, início → fim, com os dias -->
+<template id="tpl-afastamento-periodo">
+  <div class="campo afastamento-campo-periodo">
+    <span class="campo-rotulo">Período</span>
+    <span class="horario ficha-periodo-datas">
+      <span class="horario-par">
+        <input class="campo-entrada" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" aria-label="Data de início" autocomplete="off" data-af-inicio />
+        <svg class="icone horario-seta" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
+        <input class="campo-entrada" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" aria-label="Data de fim" autocomplete="off" data-af-fim />
+      </span>
+      <span class="selo oculto" data-af-dias></span>
+    </span>
+  </div>
+</template>
+
+<!-- molde: a Guarnição, em bolinhas (o sistema sugere sair a partir de 16 dias, até o administrador escolher) -->
+<template id="tpl-afastamento-guarnicao">
+  <div class="campo afastamento-campo-guarnicao">
+    <span class="campo-rotulo">Guarnição</span>
+    <label class="geral-opcao"><input type="radio" value="nao" /><span>Continua na guarnição e volta sozinho no fim</span></label>
+    <label class="geral-opcao"><input type="radio" value="sim" /><span>Sai da guarnição (a volta é manual)</span></label>
+  </div>
+</template>
+
+<!-- molde: o que ele deixa nesses dias, em caixas de marcar -->
+<template id="tpl-afastamento-marcas">
+  <div class="campo afastamento-campo-marcas">
+    <span class="campo-rotulo">Nesses dias</span>
+    <button type="button" class="geral-opcao" role="checkbox" aria-checked="false" data-af-marca="tro"><span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span><span>Sai das trocas e do serviço avulso</span></button>
+    <button type="button" class="geral-opcao" role="checkbox" aria-checked="false" data-af-marca="ext"><span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span><span>Sai da extrajornada</span></button>
+    <button type="button" class="geral-opcao" role="checkbox" aria-checked="false" data-af-marca="sob"><span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span><span>Sai do sobreaviso</span></button>
+  </div>
+</template>
+
+<!-- molde: o problema do afastamento, embaixo dos campos -->
+<template id="tpl-afastamento-nota">
+  <div class="nota nota--erro oculto" data-af-nota>
+    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+    <span class="nota-texto"></span>
+  </div>
+</template>
+
+<!-- molde: o afastamento que terminou há mais de uma semana (os campos ficam travados) -->
+<template id="tpl-afastamento-travado">
+  <span class="subtela-ajuda">Terminou há mais de uma semana, por isso não muda.</span>
 </template>
 
 <!-- molde (ficha): a nota de quem tem correção de dados esperando decisão; o botão abre o painel de decisão -->
@@ -398,15 +507,13 @@
 
 <!-- ===== ficha do militar (painel direito; usuarios-painel*.js), no padrão do painel da Escala ===== -->
 
-<!-- molde: abas de seção do painel da ficha (Dados · Carreira · Férias · Licenças · Dispensas);
+<!-- molde: abas de seção do painel da ficha (Dados · Carreira · Afastamentos);
      a ficha abre na aba de onde veio o clique (usuarios-painel.js marca a ativa) -->
 <template id="tpl-usuarios-painel-secoes">
   <div class="abas">
     <button type="button" class="aba aba--ativa" data-secao="dados">Dados</button>
     <button type="button" class="aba" data-secao="carreira">Carreira</button>
-    <button type="button" class="aba" data-secao="ferias">Férias</button>
-    <button type="button" class="aba" data-secao="licencas">Licenças</button>
-    <button type="button" class="aba" data-secao="dispensas">Dispensas</button>
+    <button type="button" class="aba" data-secao="afastamentos">Afastamentos</button>
   </div>
 </template>
 
@@ -670,56 +777,24 @@
   </div>
 </template>
 
-<!-- molde: os períodos de um tipo de afastamento no ano, dentro da caixa da lista: uma caixa por período e o Adicionar período (usuarios-painel-afastamentos-editar.js) -->
-<template id="tpl-ficha-sub-afastamento">
-  <div class="subtela">
-    <div class="ficha-periodos" data-periodos></div>
-    <div class="nota nota--erro oculto" data-periodos-nota>
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-      <span class="nota-texto"></span>
-    </div>
-    <div class="ficha-acoes-fim">
-      <button type="button" class="botao" data-periodo-adicionar>Adicionar período</button>
-    </div>
-  </div>
-</template>
-
-<!-- molde: um período (caixa com a situação e a lixeira): na missão Outra, o nome; início → fim e os
-     dias; em licença, dispensa e missão, a guarnição em bolinhas (sugere sair a partir de 16 dias) e, em
-     licença e dispensa, o motivo. O que é de mais de uma semana atrás fica travado, com a frase que explica -->
-<template id="tpl-ficha-periodo">
+<!-- molde (ficha, aba Afastamentos, quem administra o militar): um afastamento do ano, com a situação no título e a
+     lixeira; os campos vêm dos moldes #tpl-afastamento-* (usuarios-afastamentos-campos.js) -->
+<template id="tpl-ficha-afastamento">
   <div class="grupo-caixa ficha-periodo">
     <div class="ficha-bloco-cab">
-      <span class="rotulo-secao" data-periodo-situacao></span>
-      <button type="button" class="botao-discreto" data-periodo-remover aria-label="Remover este período" data-dica="Remover este período">
+      <span class="rotulo-secao" data-af-situacao></span>
+      <button type="button" class="botao-discreto oculto" data-af-remover aria-label="Remover este afastamento" data-dica="Remover este afastamento">
         <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
       </button>
     </div>
-    <label class="campo oculto" data-periodo-nome>
-      <span class="campo-rotulo">Nome da missão</span>
-      <input class="campo-entrada" type="text" maxlength="40" autocomplete="off" />
-    </label>
-    <div class="campo" data-periodo-campo>
-      <span class="campo-rotulo">Período</span>
-      <span class="horario ficha-periodo-datas">
-        <span class="horario-par">
-          <input class="campo-entrada" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" aria-label="Data de início" autocomplete="off" data-periodo-inicio />
-          <svg class="icone horario-seta" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
-          <input class="campo-entrada" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" aria-label="Data de fim" autocomplete="off" data-periodo-fim />
-        </span>
-        <span class="selo oculto" data-periodo-dias></span>
-      </span>
-    </div>
-    <div class="campo oculto" data-periodo-fluxo>
-      <span class="campo-rotulo">Guarnição</span>
-      <label class="geral-opcao" data-fora="nao"><input type="radio" value="nao" /><span>Continua na guarnição. Fica fora da escala só nos dias <span data-periodo-dos-dias></span> e volta sozinho no fim.</span></label>
-      <label class="geral-opcao" data-fora="sim"><input type="radio" value="sim" /><span>Sai da guarnição. A volta é manual, pela aba Guarnições da Escala.</span></label>
-    </div>
-    <label class="campo oculto" data-periodo-motivo>
-      <span class="campo-rotulo">Motivo</span>
-      <textarea class="campo-entrada" maxlength="200" placeholder="Opcional. Não escreva diagnóstico nem dados médicos."></textarea>
-    </label>
-    <span class="subtela-ajuda oculto" data-periodo-travado>Terminou há mais de uma semana, por isso não muda.</span>
+    <div class="ficha-afastamento-campos" data-af-campos></div>
+  </div>
+</template>
+
+<!-- molde (ficha, aba Afastamentos): o Adicionar afastamento, no fim (quem administra o militar) -->
+<template id="tpl-ficha-afastamento-adicionar">
+  <div class="ficha-acoes-fim">
+    <button type="button" class="botao" data-af-adicionar>Adicionar afastamento</button>
   </div>
 </template>
 

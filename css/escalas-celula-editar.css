@@ -35,6 +35,18 @@
   color: var(--texto-fraco);
 }
 
+/* o ícone do painel dos itens que abrem o painel do dia, no lugar da setinha: só na caixa (no painel, eles abrem a
+   sub-tela ali mesmo). A dica fica no span em volta (o ícone não tem ::after) */
+.escala-edicao-opcoes-painel {
+  display: none;
+}
+
+.caixa-flutuante .escala-edicao-opcoes-painel {
+  display: inline-flex;
+  margin-left: auto;
+  color: var(--texto-fraco);
+}
+
 /* a caixa 2 do horário e do Remover do dia: os campos e, embaixo, a pergunta */
 .escala-celula-cartao {
   display: flex;

@@ -137,10 +137,11 @@
   /* a troca do pedido (a lista de trocas, com os aceites) e a ação; os painéis da troca carregam no primeiro clique */
   function comTroca(g, botao, acao) {
     var f = g.faixa.primeiro || {};
-    if (RW.iniciarCarregando) RW.iniciarCarregando(botao);
+    /* os pontinhos no botão na hora e o cartão das etapas só se a leitura passar de 1,5 s */
+    var espera = RW.etapas.acao('trocaAbrir', null, { doServidor: 1, botao: botao, atraso: true, semFila: true });
     var pecas = RW.carregarPecas ? RW.carregarPecas('pendencias') : Promise.resolve();
     pecas.then(function () { return RW.trocasDados.listar([]); }).then(function (todas) {
-      if (RW.pararCarregando) RW.pararCarregando(botao);
+      espera.parar();
       var t = (Array.isArray(todas) ? todas : []).filter(function (x) { return x.troca_id === f.troca_id; })[0];
       if (!t || !RW.trocasPainel) { naoAchou(); return; }
       var ctx = contexto(f);
@@ -154,7 +155,7 @@
       }
       RW.trocasPainel.acao(acao, t, ctx, botao);
     }).catch(function () {
-      if (RW.pararCarregando) RW.pararCarregando(botao);
+      espera.parar();
       if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: M().geral.semConexao });
     });
   }

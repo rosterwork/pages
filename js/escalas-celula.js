@@ -40,8 +40,6 @@
     folga: 'icone-folgas',
     extra: 'icone-extrajornada',
     afastamento: 'icone-afastamentos',
-    /* a missão (Operação Verão, Força Tarefa ou outra): o alfinete, em outro lugar */
-    missao: 'icone-mapa-pin',
     /* a mudança de dia: o dia novo é um pontual e o de antes, riscado, uma folga (a dica diz de onde veio ou para onde foi) */
     mudanca: 'icone-origem-pontual',
     mudanca_saida: 'icone-folgas',
@@ -67,7 +65,6 @@
     pontual: 'pontual',
     folga: 'folga',
     afastamento: 'afastamento',
-    missao: 'missao',
     /* a mudança de dia: o dia novo fica como o pontual e o de antes, como a folga */
     mudanca: 'pontual',
     mudanca_saida: 'folga',
@@ -353,8 +350,8 @@
     if (window.RosterWork.busca) linha.setAttribute('data-busca', window.RosterWork.busca.chave(p));   // busca do sub-cabeçalho (nome/CPF/RG)
     linha.setAttribute('data-situacao', situacao(p));   // o que o filtro Situação da barra lê
     var horaWrap = linha.querySelector('.linha-escalado-hora');
-    /* afastado (férias, licença ou dispensa) ou em missão: vem escondido (só aparece com o filtro Afastamentos ou
-       Missões) e, no lugar do horário, "Férias até DD/MM" (na missão, o texto curto: "F. Tarefa até DD/MM") */
+    /* afastado: vem escondido (só aparece com o filtro Afastamentos) e, no lugar do horário, o nome do afastamento até a
+       data ("Férias até DD/MM") */
     if (p.origem === 'afastamento') {
       linha.classList.add('linha-escalado--afastamento', 'oculto');
       horaWrap.textContent = RosterWork.mensagens.geral.afastadoAte(p.afastamento || '', RosterWork.data.isoParaBR(p.ate).slice(0, 5));
@@ -478,11 +475,11 @@
     return nomes;
   }
 
-  /* a situação da pessoa para os filtros da barra (o ciclo é a Prontidão); a missão vem como afastamento com missao; o
-     estagiário (o pontual do dia de estágio) é o Estágio */
-  function situacao(p) { return p.missao ? 'missao' : (p.estagio ? 'estagio' : (SITUACAO_ORIGEM[p.origem] || 'prontidao')); }
-  /* a origem do ícone da linha: a missão e o estagiário têm o deles */
-  function origemDoIcone(p) { return p.missao ? 'missao' : (p.estagio ? 'estagio' : p.origem); }
+  /* a situação da pessoa para os filtros da barra (o ciclo é a Prontidão); o estagiário (o pontual do dia de estágio) é
+     o Estágio */
+  function situacao(p) { return p.estagio ? 'estagio' : (SITUACAO_ORIGEM[p.origem] || 'prontidao'); }
+  /* a origem do ícone da linha: o estagiário tem o dele */
+  function origemDoIcone(p) { return p.estagio ? 'estagio' : p.origem; }
 
   /* o Oficial de Área do dia (oficial[iso], da leitura do mês) no lugar dele: o meio do título do dia do calendário ou o
      alto da faixa do dia da Agenda e do Colunas › Unidades. O dia sem a chave (sem escala) fica sem nada; null é o dia com

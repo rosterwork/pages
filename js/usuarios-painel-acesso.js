@@ -109,12 +109,13 @@
       .catch(function () { if (ctx === atual) avisarErro(RosterWork.mensagens.geral.erroConexao); });
   }
 
+  /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s (também no cancelar) */
   function gerar(atual, botao) {
-    RosterWork.iniciarCarregando(botao);
+    var espera = RosterWork.etapas.acao('linkCriar', null, { doServidor: 1, botao: botao, atraso: true, semFila: true });
     RosterWork.apiFetch('/rest/v1/rpc/acesso_link_gerar', { metodo: 'POST', corpo: { p_cpf: atual.pessoa.usuario_id } })
       .then(function (resp) { return resp.ok ? resp.json() : { _falha: 'servidor' }; })
       .then(function (r) {
-        RosterWork.pararCarregando(botao);
+        espera.parar();
         if (r && r._falha === 'servidor') { avisarErro(RosterWork.mensagens.geral.falhaServidor); return; }
         if (r && r.success) {
           desenhar(atual, {
@@ -128,7 +129,7 @@
         avisarErro((r && r.error) || RosterWork.mensagens.usuarios.falhaLink);
       })
       .catch(function () {
-        RosterWork.pararCarregando(botao);
+        espera.parar();
         avisarErro(RosterWork.mensagens.geral.semConexao);
       });
   }
@@ -143,11 +144,11 @@
       textoCancelar: B.manter,
       confirmarPerigo: true,
       aoConfirmar: function () {
-        RosterWork.iniciarCarregando(botao);
+        var espera = RosterWork.etapas.acao('linkCancelar', null, { doServidor: 1, botao: botao, atraso: true, semFila: true });
         RosterWork.apiFetch('/rest/v1/rpc/acesso_link_cancelar', { metodo: 'POST', corpo: { p_cpf: atual.pessoa.usuario_id } })
           .then(function (resp) { return resp.ok ? resp.json() : { _falha: 'servidor' }; })
           .then(function (r) {
-            RosterWork.pararCarregando(botao);
+            espera.parar();
             if (r && r._falha === 'servidor') { avisarErro(RosterWork.mensagens.geral.falhaServidor); return; }
             if (r && r.success) {
               if (ctx === atual) carregar(atual);
@@ -157,7 +158,7 @@
             avisarErro((r && r.error) || T.falhaCancelarLink);
           })
           .catch(function () {
-            RosterWork.pararCarregando(botao);
+            espera.parar();
             avisarErro(RosterWork.mensagens.geral.semConexao);
           });
       }

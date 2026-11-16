@@ -18,8 +18,8 @@
                         rodapé de antes. aoConfirmar(motivo, botao).
      · cancelar(partes, aoConfirmar, { titulo }) → o mesmo para o
                         cancelamento da troca aprovada, com o motivo
-                        obrigatório (sem ele, o erro no campo) e o
-                        Confirmar cancelamento do administrador.
+                        opcional e o Confirmar cancelamento do
+                        administrador.
    O motivo escrito e não enviado fica no guarda de saída.
    Clona os moldes #tpl-decisao* do shell. RosterWork.decisao.
    ============================================================ */
@@ -188,9 +188,9 @@
     });
   }
 
-  /* a caixa do motivo no corpo e o rodapé Voltar / Confirmar no lugar das ações; Voltar devolve o rodapé de antes.
-     obrigatorio: sem motivo, o Confirmar marca o erro no campo e não segue */
-  function pedirMotivo(caixa, campo, idAcoes, acaoConfirmar, erroObrigatorio, aoConfirmar) {
+  /* a caixa do motivo (opcional) no corpo e o rodapé Voltar / Confirmar no lugar das ações; Voltar devolve o rodapé de
+     antes */
+  function pedirMotivo(caixa, campo, idAcoes, acaoConfirmar, aoConfirmar) {
     var rodape = RW.painel && RW.painel.rodape();
     if (!caixa || !campo || !rodape) return;
     var tpl = document.getElementById(idAcoes);
@@ -216,28 +216,22 @@
     });
     campo.addEventListener('input', function () { if (RW.campos) RW.campos.limparErro(campo); });
     confirmar.addEventListener('click', function () {
-      var motivo = campo.value.trim();
-      if (erroObrigatorio && !motivo) {
-        if (RW.campos) RW.campos.marcarErro(campo, erroObrigatorio);
-        campo.focus();
-        return;
-      }
-      if (aoConfirmar) aoConfirmar(motivo, confirmar);
+      if (aoConfirmar) aoConfirmar(campo.value.trim(), confirmar);
     });
   }
 
   function recusar(partes, aoConfirmar) {
     if (!partes) return;
-    pedirMotivo(partes.recusa, partes.motivo, 'tpl-decisao-recusa-acoes', 'confirmar-recusa', null, aoConfirmar);
+    pedirMotivo(partes.recusa, partes.motivo, 'tpl-decisao-recusa-acoes', 'confirmar-recusa', aoConfirmar);
   }
 
-  /* o cancelamento com o motivo obrigatório (a troca aprovada); titulo = "Cancelar a troca" ou "Cancelar as trocas" */
+  /* o cancelamento com o motivo opcional (a troca aprovada); titulo = "Cancelar a troca" ou "Cancelar as trocas" */
   function cancelar(partes, aoConfirmar, opcoes) {
     if (!partes || !partes.cancelamento) return;
     opcoes = opcoes || {};
     if (opcoes.titulo) partes.cancelamento.querySelector('.decisao-cancelamento-titulo').textContent = opcoes.titulo;
     pedirMotivo(partes.cancelamento, partes.motivoCancelamento, 'tpl-decisao-cancelamento-acoes', 'confirmar-cancelamento',
-      opcoes.erro || RW.mensagens.trocas.cancelarMotivo.erro, aoConfirmar);
+      aoConfirmar);
   }
 
   RW.decisao = { montar: montar, caixa: caixa, saldo: saldo, analisando: analisando, analise: analise, escala: escala, recusar: recusar, cancelar: cancelar };

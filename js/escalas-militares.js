@@ -102,9 +102,9 @@
       var chip = RosterWork.tpl('tpl-escala-mil-afast');
       if (!chip) return;
       chip.textContent = estado.sigla || 'FÉR';
-      /* a dica: o afastamento (na missão, o nome dela) até a data */
+      /* a dica: o nome do afastamento até a data */
       if (estado.ate) chip.setAttribute('data-dica', (estado.afastamento || 'Férias') + ' até ' + dataCurta(estado.ate));
-      chip.setAttribute('data-situacao', estado.missao ? 'missao' : 'afastamento');   // para o filtro
+      chip.setAttribute('data-situacao', 'afastamento');   // para o filtro
       celula.appendChild(chip);
       return;
     }

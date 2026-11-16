@@ -62,9 +62,10 @@
     var valor = escolhida();
     if (!atual || !valor) return;
     var M = RW.mensagens;
-    RW.iniciarCarregando(atual.btnSalvar);
+    /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
+    var espera = RW.etapas.acao('cnhEnviar', null, { doServidor: 1, botao: atual.btnSalvar, atraso: true, semFila: true });
     RW.rpc('perfil_solicitar', { p_alteracoes: [{ campo: 'cnh', valor: valor }] }).then(function (r) {
-      RW.pararCarregando(atual.btnSalvar);
+      espera.parar();
       if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || M.perfil.falhaDados }); return; }
       edicao = null;
       RW.painel.fechar();
@@ -74,7 +75,7 @@
       if (RW.avisosSino) RW.avisosSino.recarregar();
       if (atual.aoSalvar) atual.aoSalvar();
     }, function () {
-      RW.pararCarregando(atual.btnSalvar);
+      espera.parar();
       RW.avisar({ tipo: 'erro', mensagem: M.geral.semConexao });
     });
   }

@@ -159,14 +159,15 @@
 
   function lancar() {
     var d = org().dados(), btn = RW.painel.rodape().querySelector('#p4-lancar');
-    RW.iniciarCarregando(btn);
+    /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
+    var espera = RW.etapas.acao('extraLancar', null, { doServidor: 1, botao: btn, atraso: true, semFila: true });
     RW.rpc('extrajornada_lancar', { p_competencia: d.competencia }).then(function (r) {
-      RW.pararCarregando(btn);
+      espera.parar();
       if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
       RW.painel.fechar();
       org().resumo(r);
       org().recarregar();
-    }, function () { RW.pararCarregando(btn); RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao }); });
+    }, function () { espera.parar(); RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao }); });
   }
 
   /* liga o menu e os itens (uma vez por página) */

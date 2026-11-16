@@ -19,7 +19,10 @@
    para quem mexe nele, a caixa ao lado (escalas-celula-sobreaviso-
    caixa.js, pelo naCaixa: o mesmo rascunho, sem o painel); para os
    outros, o painel com o lápis dele aberto. A grade mostra o
-   rascunho (escalas-celula-sobreaviso.js › rascunho).
+   rascunho (escalas-celula-sobreaviso.js › rascunho). Quem o
+   administrador pôs ou mudou fica fixado (o sistema não o muda), como
+   a função fixada: o selo Fixado para quem mexe, o cadeado para os
+   outros e na grade.
    Não cria HTML nem escreve estilo.
    API: RosterWork.escalasPainelSobreaviso.{ montar(corpo, dados, ctx),
    clique(evento), contar(), envio(), descartar(), aposGravar(),
@@ -74,11 +77,20 @@
     window.dispatchEvent(new CustomEvent('rosterwork_escala_rascunho', { detail: { parte: 'sobreaviso' } }));
   }
 
+  /* o rascunho como vai ficar: quem entra e o horário mudado ficam como do administrador (o cadeado), como no Salvar */
+  function comoVaiFicar() {
+    return copia(dia.agora).map(function (m) {
+      var a = deAntes(m.cpf);
+      m.origem = !a || a.horaInicio !== m.horaInicio || a.horaFim !== m.horaFim ? 'administrador' : a.origem;
+      return m;
+    });
+  }
+
   /* a grade mostra o dia como vai ficar (escalas-celula-sobreaviso.js): com mudança, o rascunho; sem, o gravado. gravou: o
      que foi gravado fica na grade até a leitura nova chegar */
   function naGrade(gravou) {
     if (!dia || !RW.escalasCelulaSobreaviso) return;
-    RW.escalasCelulaSobreaviso.rascunho(dia.chave, dia.iso, gravou || mudou() ? copia(dia.agora) : null, !!gravou);
+    RW.escalasCelulaSobreaviso.rascunho(dia.chave, dia.iso, gravou || mudou() ? comoVaiFicar() : null, !!gravou);
   }
 
   /* uma mudança é um passo do Desfazer */
@@ -181,13 +193,19 @@
     tela.bloco.querySelector('.escala-sobreaviso-bloco-acao').classList.toggle('oculto', !tela.editavel || !!aberta);
   }
 
+  /* um ícone na frente do nome */
+  function icone(el, nome) {
+    var ic = RW.tpl('tpl-escala-mes-origem');
+    if (ic) { ic.querySelector('use').setAttribute('href', 'icones/todos.svg#' + nome); el.querySelector('.escala-distribuicao-icones').appendChild(ic); }
+  }
+
   /* a linha de quem está de sobreaviso: o telefone, o nome, o horário e o lápis; "Novo" no que ainda não foi salvo; o nome
-     em amarelo no dia em que ele não está livre, com o porquê na dica */
+     em amarelo no dia em que ele não está livre, com o porquê na dica. O que o administrador pôs ou mudou, como a função
+     fixada: para quem mexe, o selo Fixado depois do nome; para quem só lê, o cadeado (na linha com "Novo" ele sai) */
   function linhaDe(m) {
     var el = RW.tpl('tpl-escala-edicao-linha');
     el.setAttribute('data-cpf', m.cpf);
-    var icone = RW.tpl('tpl-escala-mes-origem');
-    if (icone) { icone.querySelector('use').setAttribute('href', 'icones/todos.svg#icone-sobreaviso'); el.querySelector('.escala-distribuicao-icones').appendChild(icone); }
+    icone(el, 'icone-sobreaviso');
     el.querySelector('.escala-distribuicao-grad').textContent = m.grad || '';
     el.querySelector('.escala-distribuicao-nome').textContent = m.nome || '';
     var pessoa = el.querySelector('.escala-edicao-pessoa');
@@ -195,6 +213,9 @@
     if (!a || a.horaInicio !== m.horaInicio || a.horaFim !== m.horaFim) {
       var novo = RW.tpl('tpl-escala-edicao-novo');
       if (novo) pessoa.appendChild(novo);
+    } else if (a.origem === 'administrador') {
+      if (!tela.editavel) icone(el, 'icone-cadeado');
+      else { var selo = RW.tpl('tpl-escala-edicao-fixado'); if (selo) pessoa.appendChild(selo); }
     }
     if (a && m.conflito) {
       el.classList.add('escala-sobreaviso-conflito');

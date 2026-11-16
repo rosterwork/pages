@@ -3,8 +3,11 @@
    Quatro formas, com as frases de RosterWork.mensagens.etapas:
    - área: até 0,5 s nada muda na tela; depois, a forma do conteúdo
      (o esqueleto) e, passando de 1,5 s, o cartão das etapas por cima;
-   - ação: o cartão sobre a tela, na hora, com o clique travado (as
-     gravações que refazem a escala); a tela continua à vista;
+   - ação: o cartão sobre a tela, com o clique travado; a tela continua
+     à vista. Na gravação que refaz a escala, na hora; no resto (a
+     prévia, a gravação que não refaz a escala), o botão clicado mostra
+     os pontinhos na hora e o cartão só entra se passar de 1,5 s
+     (opcoes.botao, opcoes.atraso, opcoes.semFila);
    - janela: o cartão no meio da tela escurecida, com o Cancelar, e a
      tela de trás desligada (o cálculo que trava a tela);
    - linha: uma frase com a barra, no rodapé ou no painel.
@@ -18,7 +21,8 @@
    API: RosterWork.etapas.area(lugar, opcoes) · .acao(chave, valores,
    opcoes) · .janela(chave, valores, opcoes) · .linha(lugar, chave,
    valores, opcoes). Cada uma devolve { ir(n), ultima(), parar() }, e
-   a área também segurar(leitura).
+   a área também segurar(leitura); o parar() da ação devolve a promessa
+   do cartão saindo.
    opcoes.doServidor = quantas etapas acontecem no banco (as outras,
    quem chama avança). .segurarDesde(inicio, leitura): a forma que a
    tela pôs na hora (as caixas de um painel) · .falta(formaEm, cartaoEm):
@@ -123,20 +127,34 @@
     };
   }
 
-  /* a gravação que refaz a escala: o cartão sobre a tela, com o clique travado. No fim, completa em segundo plano os dias
-     distantes do recálculo (a fila em blocos, geral-recalculo.js) */
+  /* a ação que trava a tela: o cartão sobre a tela, com o clique travado. A gravação que refaz a escala mostra o cartão
+     na hora e, no fim, completa em segundo plano os dias distantes do recálculo (a fila em blocos, geral-recalculo.js).
+     opcoes.botao: o botão clicado mostra os pontinhos na hora (geral-carregando.js), e eles saem no parar, na resposta.
+     opcoes.atraso: o cartão só aparece se a ação passar disso (true: o mesmo 1,5 s do cartão das leituras; a rápida
+     não mostra o cartão, e nada pisca; a tela trava do mesmo jeito). opcoes.semFila: a ação não refaz a escala (sem a
+     fila no fim). parar() devolve uma promessa que se cumpre quando o cartão sai e a tela volta a responder */
   function acao(chave, valores, opcoes) {
+    opcoes = opcoes || {};
     var camada = document.getElementById('etapas-camada');
     var f = frases(chave, valores);
     var cartao = montarCartao(f);
-    camada.textContent = '';
-    camada.appendChild(cartao.el);
-    camada.classList.remove('oculto');
+    var botao = opcoes.botao || null;
+    var mostradoEm = null;
+    function mostrar() {
+      aparecer = null;
+      camada.textContent = '';
+      camada.appendChild(cartao.el);
+      camada.classList.remove('oculto');
+      mostradoEm = agora();
+    }
+    if (botao && RW.iniciarCarregando) RW.iniciarCarregando(botao);
     RW.bloquearTela();
-    var mostradoEm = agora();
+    var atraso = opcoes.atraso === true ? CARTAO_MS : opcoes.atraso;
+    var aparecer = atraso ? setTimeout(mostrar, atraso) : null;
+    if (!atraso) mostrar();
     var passos = condutor(f.passos.length, cartao.pintar, opcoes);
     var demora = setTimeout(function () { cartao.dizer(RW.mensagens.etapas.demoraAcao); }, DEMORA_MS);
-    var parado = false;
+    var parado = null;
     /* o cartão sai (se outro já não tomou o lugar dele) e a tela volta a responder */
     function esconder() {
       if (cartao.el.parentNode === camada) {
@@ -149,16 +167,23 @@
       ir: passos.ir,
       ultima: passos.ultima,
       parar: function () {
-        if (parado) return;
-        parado = true;
+        if (parado) return parado;
+        /* os pontinhos saem na resposta (quem chama arruma o botão logo depois); o cartão que apareceu espera o mínimo */
+        if (botao && RW.pararCarregando) RW.pararCarregando(botao);
+        clearTimeout(aparecer);
         passos.parar();
         clearTimeout(demora);
-        if (RW.marcarRecalculoPendente) RW.marcarRecalculoPendente();
-        if (RW.drenarRecalculo) RW.drenarRecalculo();
-        /* o cartão fica o mínimo para ler o título, com a tela ainda travada */
+        if (!opcoes.semFila) {
+          if (RW.marcarRecalculoPendente) RW.marcarRecalculoPendente();
+          if (RW.drenarRecalculo) RW.drenarRecalculo();
+        }
+        /* o cartão que apareceu fica o mínimo para ler o título, com a tela ainda travada */
         var resta = falta(null, mostradoEm);
-        if (resta > 0) setTimeout(esconder, resta);
-        else esconder();
+        parado = new Promise(function (ok) {
+          if (resta > 0) setTimeout(function () { esconder(); ok(); }, resta);
+          else { esconder(); ok(); }
+        });
+        return parado;
       }
     };
   }

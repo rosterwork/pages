@@ -87,14 +87,14 @@
     var N = RosterWork.notificacoesCelular;
     if (!trilho || !N || !RosterWork.abas) return;
     N.situacao().then(function (s) { marcarNotificacoes(trilho, s); });
+    /* liga e desliga mudam na hora (a escolha fica marcada, sem responder a outro clique, até o aparelho e o banco
+       responderem); sem dar certo, volta ao que era e avisa */
     RosterWork.abas.ligar(trilho, function (aba) {
       var querLigar = aba.getAttribute('data-valor') === 'ativado';
-      if (RosterWork.iniciarCarregando) RosterWork.iniciarCarregando(aba);
+      marcarAbas(trilho, querLigar ? 'ativado' : 'desativado', true);
       (querLigar ? N.ativar() : N.desativar()).then(function (s) {
-        if (RosterWork.pararCarregando) RosterWork.pararCarregando(aba);
         marcarNotificacoes(trilho, s);
       }, function () {
-        if (RosterWork.pararCarregando) RosterWork.pararCarregando(aba);
         N.situacao().then(function (s) { marcarNotificacoes(trilho, s); });
         RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.notificacoesCelular.falhaAtivar });
       });
@@ -119,15 +119,15 @@
       }).catch(function () {});
     }
     ler();
+    /* muda na hora (sem responder a outro clique até o banco responder); sem dar certo, volta ao que era e avisa */
     RosterWork.abas.ligar(trilho, function (aba) {
       var ligar = aba.getAttribute('data-valor') === 'ativado';
-      if (RosterWork.iniciarCarregando) RosterWork.iniciarCarregando(aba);
+      marcarAbas(trilho, ligar ? 'ativado' : 'desativado', true);
       RosterWork.rpc('notificacoes_admin_celular_definir', { p_ligado: ligar }).then(function (r) {
-        if (RosterWork.pararCarregando) RosterWork.pararCarregando(aba);
         if (r && r.ok) { marcarAbas(trilho, ligar ? 'ativado' : 'desativado'); return; }
         throw new Error('não salvou');
       }).catch(function () {
-        if (RosterWork.pararCarregando) RosterWork.pararCarregando(aba);
+        marcarAbas(trilho, ligar ? 'desativado' : 'ativado');
         ler();
         RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.notificacoesCelular.falhaAdmin });
       });

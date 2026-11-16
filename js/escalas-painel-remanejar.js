@@ -12,15 +12,14 @@
    Sub-tela em caixas de pergunta, uma depois da outra (Guia visual
    › Ações e perguntas): O que fazer, Quem (com o ícone de origem e
    o serviço dele), Em troca, Na unidade de origem (só no Enviar,
-   sem troca e sem extra), Motivo e um Onde fica para cada militar
+   sem troca e sem extra), Motivo (opcional) e um Onde fica para cada militar
    que entra numa unidade (escalas-painel-onde.js), com a nota da
    distribuição. O dia da outra unidade vem da mesma leitura do
    painel (ler_distribuicao_dia). As listas ficam em
    escalas-painel-remanejar-listas.js. Sem botão próprio: com tudo
    respondido, o remanejamento entra no rascunho do Dia ao vivo
-   (escalas-painel-editar.js › aoVivo; o motivo vai junto) e as telas
-   mostram como fica; sem o motivo, o Salvar do rodapé largo fica
-   desligado. Depois de salvo, desfaz-se pelo Devolver (o lápis de
+   (escalas-painel-editar.js › aoVivo; o motivo, quando escrito, vai
+   junto) e as telas mostram como fica. Depois de salvo, desfaz-se pelo Devolver (o lápis de
    quem foi para outra unidade, na aba Militares) ou pelo Remover do
    dia.
    API: RosterWork.escalasPainelRemanejar.abrir(opcoes) (opcoes = { cpf }:
@@ -30,8 +29,10 @@
    no Trazer),
    podeEnviar(cpf) (ele vai daqui para outra unidade:
    está de serviço aqui, sem estar remanejado, e você administra outra
-   unidade da companhia), prepararUnidades() e unidadesProntas() (as
-   unidades da companhia, lidas uma vez, para o menu da linha).
+   unidade da companhia), podeTrazer() (você administra outra unidade
+   da companhia: o Trazer do pelotão na célula), prepararUnidades() e
+   unidadesProntas() (as unidades da companhia, lidas uma vez, para o
+   menu da linha e a caixa da célula).
    ============================================================ */
 (function () {
   'use strict';
@@ -71,12 +72,17 @@
     return lendoUnidades;
   }
 
+  /* você administra outra unidade da companhia do dia (o Trazer de outra unidade do pelotão na célula da grade) */
+  function podeTrazer() {
+    var api = ed(), d = api.dados();
+    return !!d && !!unidadesLidas && R().outrasDe(unidadesLidas, d.contexto_id, api.unidadeId()).length > 0;
+  }
+
   /* ele vai daqui para outra unidade (o menu da linha só mostra o Mudar de unidade neste dia a quem pode): está de serviço
      aqui, sem estar remanejado, e você administra outra unidade da companhia */
   function podeEnviar(cpf) {
-    var api = ed(), d = api.dados();
-    if (!d || !unidadesLidas || !R().outrasDe(unidadesLidas, d.contexto_id, api.unidadeId()).length) return false;
-    return R().deServico(d).some(function (i) { return i.cpf === cpf; });
+    if (!podeTrazer()) return false;
+    return R().deServico(ed().dados()).some(function (i) { return i.cpf === cpf; });
   }
 
   /* opcoes = { cpf }: chega no Enviar, com ele escolhido (o menu da linha); { fazer: 'trazer' }: chega no Trazer (o Trazer
@@ -319,9 +325,9 @@
       desenharOndes(lista);
       /* o Onde fica de cada um (a caixa nova já entra com a falta dela) */
       if (!falta) lista.forEach(function (e) { falta = falta || (ondes[e.chave] ? ondes[e.chave].comp.falta() : false); });
-      /* tudo respondido: o remanejamento entra no rascunho (a prévia não precisa do motivo; sem ele, o Salvar espera) */
+      /* tudo respondido: o remanejamento entra no rascunho (o motivo é opcional e não muda a prévia) */
       if (falta) { api.aoVivo(null, !!est.fazer); return; }
-      api.aoVivo(function () { noRascunho(lista); }, !el.campoMotivo.value.trim());
+      api.aoVivo(function () { noRascunho(lista); }, false);
     }
 
     /* ---------- no rascunho ---------- */
@@ -348,6 +354,6 @@
     api.abrir(montar);
   }
 
-  window.RosterWork.escalasPainelRemanejar = { abrir: abrir, podeEnviar: podeEnviar, prepararUnidades: prepararUnidades,
-    unidadesProntas: function () { return !!unidadesLidas; } };
+  window.RosterWork.escalasPainelRemanejar = { abrir: abrir, podeEnviar: podeEnviar, podeTrazer: podeTrazer,
+    prepararUnidades: prepararUnidades, unidadesProntas: function () { return !!unidadesLidas; } };
 })();

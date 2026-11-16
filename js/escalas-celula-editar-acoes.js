@@ -16,8 +16,9 @@
      horário, com o banco em Contabilizar), Adicionar à guarnição
      (escalas-painel-adicionar › lerGuarnicao e desenharGuarnicao; o
      mesmo no nome em vermelho do Fora da escala, escalas-celula-fora.js),
-     Adicionar extra neste dia (escalas-celula-extra.js) e Abrir o
-     painel do dia. O Oficial de Área do título (escalas-celula-
+     Adicionar extra neste dia (escalas-celula-extra.js), Trazer de
+     outra unidade (o painel, já no Trazer), Voltar o dia ao automático
+     (a confirmação do painel) e Abrir o painel do dia. O Oficial de Área do título (escalas-celula-
      oficial.js) usa o campo do Adicionar, o Remover e a pergunta, e o
      Pôr como Oficial de Área do nome vai para ele. Trocar
      de item: o concluído fica (um passo do desfazer) e o que estava pela
@@ -273,14 +274,17 @@
     ACOES[acao](botao, c);
   }
 
-  /* a setinha do Remover deste dia só quando ele abre a caixa 2 (o Dar folga sempre abre); o resto sai na hora ou no painel */
+  /* o sinal do Remover deste dia: a setinha quando ele abre a caixa 2 (o Dar folga sempre abre), o ícone do painel quando
+     vai ao painel (quem entrou de mais de um jeito, o remanejado e a troca) e nenhum quando sai na hora */
   function prepararMenu(c, menu) {
     var a = c.a;
     if (!a || !menu) return;
     var mil = api().militarDoDia(a.cpf);
     var r = mil ? RW.escalasPainelRemover.analisarDoDia({ cpf: a.cpf, periodos: mil.janelas.map(copiar) }) : null;
     var seta = menu.querySelector('[data-acao="remover-dia"] .escala-edicao-opcoes-seta');
+    var painel = menu.querySelector('[data-acao="remover-dia"] .escala-edicao-opcoes-painel');
     if (seta) seta.classList.toggle('oculto', !r || r.tipo === 'sai' || r.tipo === 'subtela');
+    if (painel) painel.classList.toggle('oculto', !r || r.tipo !== 'subtela');
   }
 
   /* o militar que acabou de entrar já abre no horário */
@@ -310,6 +314,10 @@
     }
     var extra = el.querySelector('[data-acao="extra"]');
     if (extra) RW.escalasCelulaExtra.prepararItem(extra, c.dia);
+    /* o Trazer, para quem administra outra unidade da companhia; o Voltar ao automático, com ajuste manual no dia */
+    var trazer = el.querySelector('[data-acao="trazer"]'), automatico = el.querySelector('[data-acao="automatico"]');
+    if (trazer) trazer.classList.toggle('oculto', !(RW.escalasPainelRemanejar && RW.escalasPainelRemanejar.podeTrazer()));
+    if (automatico) automatico.classList.toggle('oculto', !api().podeVoltarAoAutomatico());
     [].forEach.call(el.querySelectorAll('[data-acao]'), function (b) {
       b.addEventListener('click', function () { fazerNoPelotao(b.getAttribute('data-acao'), b, c); });
     });
@@ -322,6 +330,8 @@
     if (a.botao === botao && a.acao) return;
     encerrar(c);
     if (acao === 'painel') { c.fecharTudo('guardar'); c.abrirPainel(null); }
+    else if (acao === 'trazer') { c.fecharTudo('guardar'); c.abrirPainel(null, { trazer: true }); }
+    else if (acao === 'automatico') { c.fecharTudo(); api().voltarAoAutomatico(); }
     else if (acao === 'neste-dia') nesteDia(botao, c);
     else if (acao === 'guarnicao') naGuarnicao(botao, c);
     else if (acao === 'extra') RW.escalasCelulaExtra.adicionar(botao, c);
@@ -418,8 +428,9 @@
   RW.escalasCelulaAcoes = {
     fazer: fazer, menuDoPelotao: menuDoPelotao, prepararMenu: prepararMenu, aoMostrarMenu: aoMostrarMenu, chegou: chegou,
     encerrar: encerrar, fechar: fechar,
-    /* o Adicionar à guarnição do dia, também com quem está fora da escala já escolhido (escalas-celula-fora.js) */
-    naGuarnicao: naGuarnicao,
+    /* o Adicionar à guarnição do dia, também com quem está fora da escala já escolhido, e a entrada no dia de quem foi
+       escolhido no Adicionar neste dia (escalas-celula-fora.js) */
+    naGuarnicao: naGuarnicao, escolher: escolher,
     /* e o que o Oficial de Área do título usa (escalas-celula-oficial.js) */ nesteDia: nesteDia, entrada: entrada, pergunta: pergunta, vivo: vivo
   };
 })();

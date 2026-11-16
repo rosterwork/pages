@@ -854,6 +854,21 @@
     return linha;
   }
 
+  /* a dica do Fixado (o selo ou o cadeado): quem fixou, "Adm: Fulano" */
+  function dicaFixado(el, nome) { if (el && nome) el.setAttribute('data-dica', msg().fixadoPor(nome)); }
+
+  /* o Fixado da função vazia de propósito: para quem edita, o selo depois do texto; para quem lê, o cadeado */
+  function fixadoNoVazio(linha, fv) {
+    if (!linha || !fv) return;
+    if (ctx.admin) {
+      var selo = RosterWork.tpl('tpl-escala-edicao-fixado');
+      if (selo) { dicaFixado(selo, fv.por); linha.querySelector('.escala-edicao-pessoa').appendChild(selo); }
+      return;
+    }
+    var cad = RosterWork.tpl('tpl-escala-mes-origem');
+    if (cad) { pecas().definirIcone(cad, 'icone-cadeado'); dicaFixado(cad, fv.por); linha.querySelector('.escala-edicao-pessoa').appendChild(cad); }
+  }
+
   /* uma linha do dia: militar · horário · ações (a função fica no bloco dela; o lápis entra depois, menuNaLinha).
      op = { ghost, folga, icone, novo, alterada }: novo = o selo "Novo" e a barra cinza; alterada = só a barra */
   function linhaMilitar(m, op) {
@@ -868,14 +883,14 @@
        "Novo" ele sai para caber) */
     if (m.fixado && !op.novo && !ctx.admin) {
       var cad = RosterWork.tpl('tpl-escala-mes-origem');
-      if (cad) { p.definirIcone(cad, 'icone-cadeado'); icones.appendChild(cad); }
+      if (cad) { p.definirIcone(cad, 'icone-cadeado'); dicaFixado(cad, m.fixado_por); icones.appendChild(cad); }
     }
     if (!op.ghost && !op.folga) { p.marcarRegras(linha, m); p.marcarOutraUnidade(linha, m); }
     linha.querySelector('.escala-distribuicao-grad').textContent = m.grad || '';
     linha.querySelector('.escala-distribuicao-nome').textContent = m.nome || '';
     if (m.fixado && !op.novo && ctx.admin) {
       var fixado = RosterWork.tpl('tpl-escala-edicao-fixado');
-      if (fixado) linha.querySelector('.escala-edicao-pessoa').appendChild(fixado);
+      if (fixado) { dicaFixado(fixado, m.fixado_por); linha.querySelector('.escala-edicao-pessoa').appendChild(fixado); }
     }
     if (op.novo) {
       var selo = RosterWork.tpl('tpl-escala-edicao-novo');
@@ -904,9 +919,17 @@
     return linha;
   }
 
+  /* o nível de um horário sem ninguém (vem do banco, pela gente do posto naquele horário): 'erro' abaixo do mínimo,
+     vermelho para todos; 'ideal' do mínimo até o ideal, cinza, só para quem edita o dia; sem o nível (o treino), erro */
+  function nivelVao(v) { return v && v.nivel === 'ideal' ? 'ideal' : 'erro'; }
+  function vaosVisiveis(f) {
+    return (f.vao || []).filter(function (v) { return nivelVao(v) === 'erro' || editavel(); });
+  }
+
   /* horário sem ninguém na função (dentro do que o modelo pede) ou cadeira vazia do motor: o texto vermelho e,
-     para o admin, o lápis (Pôr um militar aqui). A função aberta sem ninguém (Funções do posto): "Vazio", em cinza; a
-     que o Adicionar mais um lugar neste posto abriu já abre o cartão (ctx.lugarNovo, no fim da lista) */
+     para o admin, o lápis (Pôr um militar aqui). A função aberta sem ninguém (Funções do posto), o lugar até o ideal e
+     o horário até o ideal: "Vazio", em cinza; a que o Adicionar mais um lugar neste posto abriu já abre o cartão
+     (ctx.lugarNovo, no fim da lista) */
   function linhaVazia(posto, nomeFuncao, per, ancora, aberta) {
     var p = pecas();
     var linha = novaLinha();
@@ -950,11 +973,14 @@
      Condutor (o mesmo militar), o menu é o do Condutor; o Chefe de Socorro e o Oficial de Área sozinhos têm só a parte
      do dia (a função é sempre do mais antigo do dia) */
   function linhasFuncao(caixa, posto, f) {
+    /* o lugar que falta até o ideal só aparece para quem edita o dia */
+    if (f.lugar_ideal && !editavel()) return;
     var p = pecas();
     var aberta = f.vazio_motivo === 'aberta';
-    var temVao = (!!f.vazio && !aberta) || (f.vao || []).length > 0;
+    var vaos = vaosVisiveis(f);
+    var temErro = (!!f.vazio && !aberta) || vaos.some(function (v) { return nivelVao(v) === 'erro'; });
     var rotulos = (f.nomes && f.nomes.length) ? f.nomes : [f.nome];
-    var grupo = novoGrupo(rotulos, temVao ? 'erro' : p.nivelFuncao(f));
+    var grupo = novoGrupo(rotulos, temErro ? 'erro' : p.nivelFuncao(f));
     if (!grupo) return;
     /* na Escala, o nome da função mostra como ela foi escolhida (a escala gravada; na comparação, não) */
     if (RosterWork.escalasPainelComo && !ctx.comparar && !ctx.consulta) {
@@ -984,8 +1010,10 @@
     });
     /* riscados: na comparação, quem saiu */
     if (ctx.comparar) (f.ghosts || []).forEach(function (g) { por(linhaMilitar(g, { ghost: true })); });
-    if (f.vazio) por(linhaVazia(posto, f.nome, { hi: '08:00', hf: '08:00' }, ancora, aberta));
-    (f.vao || []).forEach(function (v) { por(linhaVazia(posto, f.nome, v, ancora)); });
+    /* a linha vermelha da função obrigatória vazia de propósito leva o Fixado (com quem fez na dica) */
+    function fixar(l, cinza) { if (!cinza) fixadoNoVazio(l, f.fixado_vazio); return l; }
+    if (f.vazio) por(fixar(linhaVazia(posto, f.nome, { hi: '08:00', hf: '08:00' }, ancora, aberta), aberta));
+    vaos.forEach(function (v) { var cinza = nivelVao(v) === 'ideal'; por(fixar(linhaVazia(posto, f.nome, v, ancora, cinza), cinza)); });
     if (grupo.linhas.children.length) caixa.appendChild(grupo.el);
   }
 
@@ -1047,9 +1075,10 @@
       if (np) caixa.classList.add('grupo-caixa--posto-' + np);
       return caixa;
     }
-    /* o vermelho (cadeira vazia ou horário sem ninguém) vence o amarelo; a função aberta sem ninguém não é erro */
+    /* o vermelho (cadeira vazia ou horário sem ninguém abaixo do mínimo) vence o amarelo; a função aberta sem ninguém, o
+       lugar até o ideal e o horário até o ideal não são erro */
     if (np !== 'erro' && (posto.funcoes || []).some(function (f) {
-      return (f.vazio && f.vazio_motivo !== 'aberta') || (f.vao || []).length;
+      return (f.vazio && f.vazio_motivo !== 'aberta') || (f.vao || []).some(function (v) { return nivelVao(v) === 'erro'; });
     })) np = 'erro';
     if (np) caixa.classList.add('grupo-caixa--posto-' + np);
     p.mesclarFuncoes(posto).forEach(function (f) { linhasFuncao(caixa, posto, f); });
@@ -1361,13 +1390,19 @@
   /* o menu abre depois do clique que o pediu: o clique no item ainda chega ao document, e o geral-dropdown fecharia o
      menu recém-aberto */
   function abrirMenuPedido() {
-    var cpf = ctx.abrirMenuDe, corpo = ctx.corpo, acao = ctx.fazerAcao, adicionar = ctx.adicionar;
+    var cpf = ctx.abrirMenuDe, corpo = ctx.corpo, acao = ctx.fazerAcao, adicionar = ctx.adicionar, trazer = ctx.trazer;
     ctx.abrirMenuDe = null;
     ctx.fazerAcao = null;
     ctx.adicionar = null;
+    ctx.trazer = false;
     /* o dia vazio da aba Estagiários: o Adicionar militar, já com ele (quem administra) */
     if (adicionar && ctx.admin && RosterWork.escalasPainelAdicionar) {
       setTimeout(function () { RosterWork.escalasPainelAdicionar.abrir({ cpf: adicionar }); }, 0);
+      return;
+    }
+    /* o Trazer de outra unidade do pelotão na célula da grade: as perguntas dele, já no Trazer */
+    if (trazer && ctx.admin) {
+      setTimeout(function () { abrirRemanejar({ fazer: 'trazer' }); }, 0);
       return;
     }
     if (!cpf || !RosterWork.escalasPainelLinhaMenu) return;
@@ -1539,7 +1574,7 @@
       comparar: !!opcoes.comparar, consulta: !!opcoes.consulta, visao: visao,
       dados: null, dadosAntes: null, chaveDados: null, emSub: false, comHistorico: false, salvando: false,
       sugestao: null, ultima: null, abrirMenuDe: opcoes.abrirMenuDe || null, fazerAcao: opcoes.fazerAcao || null,
-      adicionar: opcoes.adicionar || null,
+      adicionar: opcoes.adicionar || null, trazer: !!opcoes.trazer,
       semLista: !!opcoes.semLista, aoMostrar: opcoes.aoMostrar || null };
     /* voltou de outra aba ao mesmo dia: o rascunho continua; outro dia, ou quem só lê, começa do dia gravado */
     var mesmo = !!(base && rasc && dono === unidadeId + '|' + iso && haMudanca());
@@ -1649,6 +1684,9 @@
       celula: function () { return ctx && ctx.semLista ? { unidadeId: ctx.unidadeId, iso: ctx.iso } : null; },
       carregando: function () { return !!ctx && !!ctx.carregando; },
       abrirLugar: abrirLugar,
+      /* o Voltar o dia ao automático (o do Editar o dia e o do pelotão na célula): vale agora? e a confirmação */
+      podeVoltarAoAutomatico: function () { return !!ctx && podeVoltarAoAutomatico(); },
+      voltarAoAutomatico: voltarAoAutomatico,
       /* o Registrar troca de serviço do menu do nome: o formulário da troca, já com ele e com o dia */
       registrarTroca: function (cpf) {
         var mil = militarDoDia(cpf);

@@ -223,10 +223,12 @@
   /* o clique do botão: pontinhos no botão, lê o registro (e a sequência), desenha e baixa; a recusa do banco ou a falha vira aviso */
   function imprimir(trocaId, botao) {
     var m = RW.mensagens.trocas;
-    function parar() { if (botao && RW.pararCarregando) RW.pararCarregando(botao); }
+    /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s (ler o registro e desenhar o PDF) */
+    var espera = RW.etapas.acao('trocaRegistroPdf', null, { doServidor: 1, botao: botao, atraso: true, semFila: true });
+    function parar() { espera.parar(); }
     function avisar(texto) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: texto }); }
-    if (botao && RW.iniciarCarregando) RW.iniciarCarregando(botao);
     return sequencia(trocaId).then(function (registros) {
+      espera.ir(1);
       return arquivo(registros).then(function (arq) {
         parar();
         P().baixar(arq, txt().arquivo(registros[0].registro.numero, registros[0].registro.ano));

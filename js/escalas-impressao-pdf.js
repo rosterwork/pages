@@ -168,7 +168,7 @@
 
   /* os ícones do militar, como no painel do dia: a origem do serviço e, fixado na função, o cadeado */
   function iconesDoMilitar(m) {
-    if (m.origem === 'sobreaviso') return ['icone-sobreaviso'];
+    if (m.origem === 'sobreaviso') return m.fixado ? ['icone-sobreaviso', 'icone-cadeado'] : ['icone-sobreaviso'];
     var origem = pecas().iconeOrigem || {};
     var nomes = [origem[m.estagio ? 'estagio' : m.origem] || origem.sistema || 'icone-origem-sistema'];
     if (m.fixado) nomes.push('icone-cadeado');
@@ -249,10 +249,12 @@
     return { especiais: [], instalacoes: item.postos || [], extra: [], estagiarios: [], viaturas: [] };
   }
 
-  /* as linhas de uma lista de funções (a função à esquerda, no meio da altura das linhas dela) */
+  /* as linhas de uma lista de funções (a função à esquerda, no meio da altura das linhas dela); o lugar que falta até o
+     ideal não sai no papel */
   function linhasDasFuncoes(funcoes, c) {
     var linhas = [];
     funcoes.forEach(function (f) {
+      if (f.lugar_ideal) return;
       var daFuncao = [], alturas = [];
       if (f.vazio && RW.mensagens.escala.vagaVazia) {
         daFuncao.push([{ text: RW.mensagens.escala.vagaVazia(f.vazio_motivo), italics: true, fontSize: FONTE.texto, color: c.suave, margin: CELULA.militar }, { text: '' }]);
@@ -283,12 +285,13 @@
   }
 
   /* o sobreaviso da companhia de um dia da unidade, no lugar em que ele aparece (o mesmo "exibe" da grade), como militares
-     do bloquinho */
+     do bloquinho; o que o administrador pôs ou mudou, com o cadeado */
   function sobreavisoDoItem(item) {
     var s = item.sobreaviso;
     if (!s || !s.exibe) return [];
     return (s.militares || []).map(function (m) {
-      return { grad: m.grad, nome: m.nome, origem: 'sobreaviso', periodos: [{ hi: m.horaInicio, hf: m.horaFim }] };
+      return { grad: m.grad, nome: m.nome, origem: 'sobreaviso', fixado: m.origem === 'administrador',
+        periodos: [{ hi: m.horaInicio, hf: m.horaFim }] };
     });
   }
 
@@ -538,7 +541,7 @@
     (item.postos || []).forEach(function (p) {
       h += ESTIMATIVA.posto;
       (p.funcoes || []).forEach(function (f) {
-        h += (f.vazio ? ESTIMATIVA.linha : 0) + (f.militares || []).reduce(function (s, m) { return s + linha(m); }, 0);
+        h += (f.vazio && !f.lugar_ideal ? ESTIMATIVA.linha : 0) + (f.militares || []).reduce(function (s, m) { return s + linha(m); }, 0);
       });
     });
     /* os blocos só para ver (Funções especiais, Extrajornada, Estagiários): o título de cada um e as linhas */

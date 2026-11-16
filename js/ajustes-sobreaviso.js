@@ -1,15 +1,18 @@
 /* ============================================================
    AJUSTES — aba Sobreaviso: as regras do sobreaviso da companhia
-   Quatro perguntas (ajustes_sobreaviso_ler): de quem é (da companhia
-   ou de cada pelotão), quantos por dia, quem entra na fila (postos e
-   graduações; setores) e se cada dia mistura antigos e modernos (as
-   metades da antiguidade). As caixas, as bolinhas e a lista de 1 a
-   10 estão no ajustes.html; aqui só os valores. Edita na própria
-   tela; o Salvar do rodapé largo pergunta a data (pedirData, já
-   sugerida) e grava as quatro (ajustes_sobreaviso_salvar → Histórico
-   → resumo); a fila é refeita dali. O Salvar fica desligado com
-   pergunta sem resposta. Só o administrador da companhia vê a aba
-   (ajustes.js); quem não muda só lê (o cadeado).
+   As perguntas (ajustes_sobreaviso_ler): de quem é (da companhia ou
+   de cada pelotão), onde aparece (só no da companhia: uma caixa de
+   marcar por unidade, do molde tpl-sobreaviso-onde; sem resposta, o
+   pelotão de número menor), quantos por dia, quem entra na fila
+   (postos e graduações; setores) e se cada dia mistura antigos e
+   modernos (as metades da antiguidade). As outras caixas, as bolinhas
+   e a lista de 1 a 10 estão no ajustes.html; aqui só os valores.
+   Edita na própria tela; o Salvar do rodapé largo pergunta a data
+   (pedirData, já sugerida) e grava todas (ajustes_sobreaviso_salvar →
+   Histórico → resumo); a fila é refeita dali. Só o Onde aparece
+   mudou: grava sem a data (vale para todos os dias; a fila fica). O
+   Salvar fica desligado com pergunta sem resposta. Só o administrador
+   da companhia vê a aba (ajustes.js); quem não muda só lê (o cadeado).
    RosterWork.ajustesSobreaviso.
    ============================================================ */
 (function () {
@@ -19,7 +22,7 @@
 
   var el = {};
   var dados = null;      // a resposta do ajustes_sobreaviso_ler
-  var regras = null;     // as respostas em edição: { de, por_dia, graus, setores, metades }
+  var regras = null;     // as respostas em edição: { de, exibir, por_dia, graus, setores, metades }
   var inicial = '';      // as gravadas, para saber se mudou
   var pedido = 0;        // latest-wins
   var textoVazio = '';   // o "Escolha" do HTML, que volta quando a pergunta 2 fica sem resposta
@@ -36,15 +39,28 @@
   function montada() { return !!(el.conteudo && el.conteudo.isConnected); }
   function pode() { return !!(dados && dados.pode_editar); }
   function respondida() {
-    return !!regras && !!regras.de && !!regras.por_dia && regras.graus.length > 0 && regras.setores.length > 0 &&
-      typeof regras.metades === 'boolean';
+    return !!regras && !!regras.de && (regras.de !== 'companhia' || regras.exibir.length > 0) && !!regras.por_dia &&
+      regras.graus.length > 0 && regras.setores.length > 0 && typeof regras.metades === 'boolean';
+  }
+  /* mudou só o Onde aparece (grava sem a data: a fila não muda) */
+  function soOnde() {
+    var antes = JSON.parse(inicial);
+    antes.exibir = regras.exibir;
+    return JSON.stringify(antes) === JSON.stringify(regras);
   }
 
-  /* as regras gravadas na forma da tela (sem regras: tudo sem resposta) */
+  /* as unidades da companhia, na ordem da leitura (a companhia, depois os pelotões pelo número) */
+  function ordemUnidades() { return ((dados && dados.unidades) || []).map(function (u) { return u.id; }); }
+
+  /* as regras gravadas na forma da tela (sem regras: tudo sem resposta; sem o Onde aparece, o pelotão de número menor) */
   function daLeitura(r) {
     r = r || {};
+    var primeiro = ((dados && dados.unidades) || []).filter(function (u) { return u.tipo === 'PEL'; })[0];
     return {
       de: r.de || null,
+      exibir: Array.isArray(r.exibir)
+        ? ordemUnidades().filter(function (id) { return r.exibir.indexOf(id) >= 0; })
+        : (primeiro ? [primeiro.id] : []),
       por_dia: r.por_dia || null,
       graus: ORDEM.graus.filter(function (v) { return (r.graus || []).indexOf(v) >= 0; }),
       setores: ORDEM.setores.filter(function (v) { return (r.setores || []).indexOf(v) >= 0; }),
@@ -53,19 +69,25 @@
   }
 
   /* ---------- ler ---------- */
-  function carregar() {
+  /* gravou: a leitura depois do Salvar, com o cartão das etapas na frente: o que está na tela fica até o novo chegar */
+  function carregar(gravou) {
     var meu = ++pedido;
-    el.carregando.classList.remove('oculto');
-    el.conteudo.classList.add('oculto');
-    el.rodape.classList.add('oculto');
-    /* a forma entra na hora e fica o mínimo na tela (geral-etapas.js) */
-    return RW.etapas.segurarDesde(performance.now(), RW.rpc('ajustes_sobreaviso_ler', {})).then(function (r) {
+    var leitura = RW.rpc('ajustes_sobreaviso_ler', {});
+    if (!gravou) {
+      el.carregando.classList.remove('oculto');
+      el.conteudo.classList.add('oculto');
+      el.rodape.classList.add('oculto');
+      /* a forma entra na hora e fica o mínimo na tela (geral-etapas.js) */
+      leitura = RW.etapas.segurarDesde(performance.now(), leitura);
+    }
+    return leitura.then(function (r) {
       if (meu !== pedido || !montada()) return;
       el.carregando.classList.add('oculto');
       if (!r || !r.ok) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
       dados = r;
       regras = daLeitura(r.regras);
       inicial = JSON.stringify(regras);
+      montarOnde();
       desenhar();
     }, function () {
       if (meu !== pedido) return;
@@ -81,11 +103,17 @@
     el.trava.classList.toggle('oculto', !travado);
     el.conteudo.classList.remove('oculto');
 
-    /* 1. de quem é (e o "em cada pelotão" do título da 2) */
+    /* de quem é (e o "em cada pelotão" do título do Quantos por dia) */
     marcarBolinhas(el.de, function (v) { return v === regras.de; }, travado);
     el.cadaPelotao.classList.toggle('oculto', regras.de !== 'pelotao');
 
-    /* 2. quantos por dia: o texto do item escolhido */
+    /* onde aparece: só no sobreaviso da companhia (no de cada pelotão, cada um mostra o seu) */
+    el.onde.classList.toggle('oculto', regras.de !== 'companhia');
+    el.onde.querySelectorAll('[role="checkbox"][data-unidade]').forEach(function (b) {
+      marcarCaixa(b, regras.exibir.indexOf(Number(b.getAttribute('data-unidade'))) >= 0, travado);
+    });
+
+    /* quantos por dia: o texto do item escolhido */
     var texto = el.quantos.querySelector('.campo-selecao-texto');
     var item = el.quantosMenu.querySelector('.dropdown-item[data-valor="' + regras.por_dia + '"]');
     texto.textContent = item ? item.textContent : textoVazio;
@@ -93,18 +121,38 @@
     el.quantosMenu.querySelectorAll('.dropdown-item').forEach(function (i) { i.classList.toggle('dropdown-item--ativo', i === item); });
     el.quantos.disabled = travado;
 
-    /* 3. quem entra: as caixas de marcar */
+    /* quem entra: as caixas de marcar */
     el.quem.querySelectorAll('[role="checkbox"][data-grupo]').forEach(function (b) {
-      var marcado = regras[b.getAttribute('data-grupo')].indexOf(b.getAttribute('data-valor')) >= 0;
-      b.setAttribute('aria-checked', marcado ? 'true' : 'false');
-      b.querySelector('.caixa-selecao').classList.toggle('caixa-selecao--marcada', marcado);
-      b.disabled = travado;
+      marcarCaixa(b, regras[b.getAttribute('data-grupo')].indexOf(b.getAttribute('data-valor')) >= 0, travado);
     });
 
-    /* 4. antigos e modernos */
+    /* antigos e modernos */
     marcarBolinhas(el.metades, function (v) { return regras.metades === (v === 'sim'); }, travado);
 
     desenharRodape();
+  }
+
+  function marcarCaixa(b, marcado, travado) {
+    b.setAttribute('aria-checked', marcado ? 'true' : 'false');
+    b.querySelector('.caixa-selecao').classList.toggle('caixa-selecao--marcada', marcado);
+    b.disabled = travado;
+  }
+
+  /* as caixas do Onde aparece: uma por unidade da companhia (a cada leitura; o clique liga e desliga a unidade) */
+  function montarOnde() {
+    el.onde.querySelectorAll('[role="checkbox"][data-unidade]').forEach(function (b) { b.remove(); });
+    (dados.unidades || []).forEach(function (u) {
+      var b = RW.tpl('tpl-sobreaviso-onde');
+      if (!b) return;
+      b.setAttribute('data-unidade', String(u.id));
+      b.querySelector('.nova-distribuicao-marca-texto').textContent = u.nome;
+      b.addEventListener('click', function () {
+        var ligado = regras.exibir.indexOf(u.id) < 0;
+        regras.exibir = ordemUnidades().filter(function (id) { return id === u.id ? ligado : regras.exibir.indexOf(id) >= 0; });
+        desenhar();
+      });
+      el.onde.appendChild(b);
+    });
   }
 
   function marcarBolinhas(caixa, marcado, travado) {
@@ -159,9 +207,11 @@
     });
   }
 
-  /* o Salvar: a data em que a fila nova começa (já sugerida: o próximo dia de serviço) */
+  /* o Salvar: a data em que a fila nova começa (já sugerida: o próximo dia de serviço); só o Onde aparece mudou, sem a
+     data (vale para todos os dias e a fila fica) */
   function salvar() {
     if (!sujo() || !respondida()) return;
+    if (soOnde()) { enviar(null); return; }
     RW.pedirData({
       sugerida: true, titulo: msg().salvarTitulo, sugestaoAntes: msg().salvarAntes, sugestaoDepois: msg().salvarDepois,
       textoConfirmar: msg().botaoSalvar,
@@ -169,24 +219,32 @@
     });
   }
 
-  /* grava as quatro respostas; a fila da companhia é refeita (o véu enquanto grava) */
+  /* grava as respostas; a fila da companhia é refeita, menos quando só o Onde aparece mudou (desde: null) (o cartão das
+     etapas enquanto grava e a tela lê de novo); no fim, o resumo */
   function enviar(desde) {
-    RW.mostrarVeuGlobal();
+    var etapas = RW.etapas.acao('ajustesSobreaviso', { soOnde: !desde }, { doServidor: desde ? 2 : 1 });
     RW.rpc('ajustes_sobreaviso_salvar', { p_unidade: dados.companhia.id, p_regras: regras, p_desde: desde }).then(function (r) {
-      RW.esconderVeuGlobal();
-      if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
-      if (r.log && RW.resumo) RW.resumo.abrirModal(r.log, { pagina: msg().pagina });
-      carregar();
+      if (!r || !r.success) {
+        etapas.parar();
+        RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor });
+        return;
+      }
+      etapas.ultima();
+      function fim() {
+        etapas.parar();
+        if (r.log && RW.resumo) RW.resumo.abrirModal(r.log, { pagina: msg().pagina });
+      }
+      carregar(true).then(fim, fim);
     }, function () {
-      RW.esconderVeuGlobal();
+      etapas.parar();
       RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao });
     });
   }
 
   /* ---------- entrada (a cada visita à página) e a aba ---------- */
   function montar(cont) {
-    ['conteudo', 'carregando', 'companhia', 'trava', 'rodape', 'cancelar', 'salvar', 'de', 'quantos', 'quem', 'metades',
-     'cada-pelotao'].forEach(function (nome) {
+    ['conteudo', 'carregando', 'companhia', 'trava', 'rodape', 'cancelar', 'salvar', 'de', 'onde', 'quantos', 'quem',
+     'metades', 'cada-pelotao'].forEach(function (nome) {
       el[nome.replace(/-(\w)/g, function (x, l) { return l.toUpperCase(); })] = cont.querySelector('#sobreaviso-' + nome);
     });
     el.quantosMenu = el.quantos.closest('.dropdown').querySelector('.dropdown-menu');

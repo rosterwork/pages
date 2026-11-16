@@ -170,9 +170,10 @@
     var parte = parteNumero(), ano = parte ? parteAno() : null, aoSolicitar = est.aoSolicitar, aoMudar = est.aoMudar, aoConcluir = est.aoConcluir;
     if (est.registrar) { Reg().registrar(parte, ano); return; }   // confirma e grava já aprovado (trocas-varias-registrar.js)
     if (est.editar) { est.editar.aoEnviar(est.pares.slice(), parte, ano, btn); return; }   // o Editar grava (trocas-varias-editar.js)
-    if (RW.iniciarCarregando) RW.iniciarCarregando(btn);
+    /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
+    var espera = RW.etapas.acao('trocaSolicitarVarias', null, { doServidor: 1, botao: btn, atraso: true, semFila: true });
     RW.trocasDados.variasSolicitar(est.pares, parte, ano).then(function (r) {
-      if (RW.pararCarregando) RW.pararCarregando(btn);
+      espera.parar();
       if (!r || !r.ok) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: (r && r.erro) || RW.mensagens.trocas.falhaAcao }); return; }
       if (aoConcluir) aoConcluir(); else RW.painel.fechar();
       if (aoSolicitar) aoSolicitar();
@@ -187,7 +188,7 @@
         }
       });
     }).catch(function () {
-      if (RW.pararCarregando) RW.pararCarregando(btn);
+      espera.parar();
       if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao });
     });
   }

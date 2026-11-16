@@ -34,13 +34,14 @@
       .map(function (l) { return l.getAttribute('data-id'); });
   }
 
-  /* sairDesde = a data da saída da escala (Setor que deixa de ser Operacional): recalcula a escala,
-     círculo + tela travada; sem ela, pontos no botão */
+  /* sairDesde = a data da saída da escala (Setor que deixa de ser Operacional): recalcula a escala, o cartão das etapas
+     na hora; sem ela, os pontinhos no botão na hora e o cartão só se passar de 1,5 s */
   function decidir(ids, aprovar, motivo, botao, ctx, sairDesde) {
     if (!ids.length) return;
-    function iniciar() { if (sairDesde) { if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal(); } else if (RW.iniciarCarregando) RW.iniciarCarregando(botao); }
-    function parar() { if (sairDesde) { if (RW.esconderVeuGlobal) RW.esconderVeuGlobal(); } else if (RW.pararCarregando) RW.pararCarregando(botao); }
-    iniciar();
+    var espera = sairDesde
+      ? RW.etapas.acao('correcao', null, { doServidor: 2 })
+      : RW.etapas.acao('correcaoDecidir', { aprovar: aprovar }, { doServidor: 1, botao: botao, atraso: true, semFila: true });
+    function parar() { espera.parar(); }
     RW.rpc('perfil_decidir', { p_ids: ids, p_aprovar: aprovar, p_motivo: motivo || null, p_sair_desde: sairDesde || null })
       .then(function (r) {
         parar();

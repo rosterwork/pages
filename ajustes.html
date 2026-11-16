@@ -151,6 +151,8 @@
            alteração -->
       <div class="rodape rodape-linha rodape--largo oculto" id="nova-distribuicao-rodape">
         <span class="rodape-texto" id="nova-distribuicao-pendente">Alterações não salvas.</span>
+        <!-- a conta de uma mudança que demora: a frase com a barra no lugar da de cima (nova-distribuicao-conta.js) -->
+        <span class="rodape-texto oculto" id="nova-distribuicao-contando"></span>
         <span class="espacador-flex"></span>
         <div class="rodape-acoes">
           <button type="button" class="botao" id="nova-distribuicao-cancelar">Cancelar</button>
@@ -326,8 +328,8 @@
       </div>
     </div>
 
-    <!-- Sobreaviso: as quatro perguntas da companhia (ajustes-sobreaviso.js); o rodapé grava as quatro, a partir da data
-         escolhida no Salvar -->
+    <!-- Sobreaviso: as perguntas da companhia (ajustes-sobreaviso.js); o rodapé grava todas, a partir da data escolhida
+         no Salvar (só o Onde aparece mudou: sem data) -->
     <section class="geral-corpo-lateral oculto" data-aba-painel="sobreaviso">
       <div class="geral-corpo-lateral-rolagem">
         <div class="nova-distribuicao-carregando esqueleto-painel esqueleto-conjunto" id="sobreaviso-carregando" role="status" aria-label="Carregando">
@@ -340,11 +342,16 @@
           </div>
         </div>
         <div class="nova-distribuicao-conteudo subtela oculto" id="sobreaviso-conteudo">
-          <p class="nova-distribuicao-ajuda">Como o sistema monta o sobreaviso: de quem é, quantos ficam por dia, quem entra na fila e como ela anda. O sistema preenche os próximos 90 dias, e o administrador pode trocar qualquer nome no painel do dia. Mudar aqui refaz a fila a partir da data escolhida no Salvar.</p>
+          <p class="nova-distribuicao-ajuda">Como o sistema monta o sobreaviso: de quem é, onde aparece, quantos ficam por dia, quem entra na fila e como ela anda. O sistema preenche os próximos 90 dias, e o administrador pode trocar qualquer nome no painel do dia. Mudar aqui refaz a fila a partir da data escolhida no Salvar.</p>
           <div class="grupo-caixa subtela-pergunta" id="sobreaviso-de">
             <span class="rotulo-secao">De quem é o sobreaviso</span>
             <label class="geral-opcao"><input type="radio" name="sobreaviso-de" data-valor="companhia" /><span>Da companhia: uma escala só, com os militares de todos os pelotões</span></label>
             <label class="geral-opcao"><input type="radio" name="sobreaviso-de" data-valor="pelotao" /><span>De cada pelotão: cada um tem a sua, só com os militares dele</span></label>
+          </div>
+          <!-- só no sobreaviso da companhia: uma caixa de marcar por unidade (molde tpl-sobreaviso-onde) -->
+          <div class="grupo-caixa subtela-pergunta oculto" id="sobreaviso-onde">
+            <span class="rotulo-secao">Onde aparece</span>
+            <span class="subtela-ajuda">Na Escala, no painel do dia e na escala que vai para o SYSBM.</span>
           </div>
           <div class="grupo-caixa subtela-pergunta">
             <span class="rotulo-secao">Quantos por dia<span class="oculto" id="sobreaviso-cada-pelotao">, em cada pelotão</span></span>
@@ -1615,4 +1622,13 @@
 <!-- o traço entre as partes (funções e acúmulos) -->
 <template id="tpl-estagios-traco">
   <div class="ajustes-estagios-traco"></div>
+</template>
+
+<!-- ===== SOBREAVISO (aba Sobreaviso; ajustes-sobreaviso.js) ===== -->
+<!-- Onde aparece: a caixa de marcar de uma unidade da companhia -->
+<template id="tpl-sobreaviso-onde">
+  <button type="button" class="geral-opcao nova-distribuicao-marca" role="checkbox" aria-checked="false">
+    <span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
+    <span class="nova-distribuicao-marca-texto"></span>
+  </button>
 </template>

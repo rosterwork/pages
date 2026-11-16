@@ -142,19 +142,20 @@
 
   function salvar() {
     var btn = q('#p3-salvar');
-    RW.iniciarCarregando(btn);
+    /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
+    var espera = RW.etapas.acao('extraDistribuicao', null, { doServidor: 1, botao: btn, atraso: true, semFila: true });
     RW.rpc('extrajornada_distribuicao_salvar', {
       p_competencia: d.competencia,
       p_mudancas: G().alteracoes().map(function (k) { return G().rascunho()[k]; }),
       p_motivo: null   // o banco aceita o ajuste sem motivo
     }).then(function (r) {
-      RW.pararCarregando(btn);
+      espera.parar();
       if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
       G().limpar(); postas = null; sugestaoGuardada = null; if (G().modo() === 'ajustes') G().usarEscala(null);   // o ajuste muda a escala: relida com o mês
       dia().reorganizar();
       RW.extrajornadaOrg.resumo(r);
       aoSalvar();
-    }, function () { RW.pararCarregando(btn); RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao }); });
+    }, function () { espera.parar(); RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao }); });
   }
 
   /* o resumo, o rodapé, a lista e o calendário; soCabeca = o calendário já foi refeito no dia que mudou. Nos Ajustes

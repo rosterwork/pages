@@ -2,12 +2,12 @@
    USUÁRIOS — painel lateral com a ficha do militar
    No padrão do painel da Escala: sem Ver/Editar. Título = graduação
    + nome de guerra, com a lotação ao lado; subtítulo = nome
-   completo; abas Dados · Carreira · Férias · Licenças · Dispensas
-   (abre na aba de onde veio o clique; as três de afastamento em
-   usuarios-painel-afastamentos.js, com o ano no subcabeçalho). Quem
-   não administra o militar (a área do papel) só lê. O que tem aba
-   própria na página (os afastamentos e a administração) a ficha só
-   mostra. O admin já abre editando o resto: o lápis de cada bloco abre
+   completo; abas Dados · Carreira · Afastamentos (abre na aba de onde
+   veio o clique; a de afastamentos em usuarios-painel-afastamentos.js,
+   com o ano no subcabeçalho e o mesmo rascunho da aba da página). Quem
+   não administra o militar (a área do papel) só lê. A administração,
+   que tem aba própria na página, a ficha só mostra. O admin já abre
+   editando o resto: o lápis de cada bloco abre
    a correção e, na Carreira, a barra do painel traz Promover e
    Transferir (para o inativo, Readmitir ao efetivo); o Dar baixa fica
    no fim. Com correção de dados esperando decisão, a nota amarela no
@@ -97,7 +97,7 @@
   /* gravou: volta à ficha relida e abre o resumo; opcoes.fechar (baixa, readmissão) fecha o painel */
   function concluirSubtela(r, opcoes) {
     sub = null;
-    /* os afastamentos relidos na ficha (no mesmo ano) e na lista da página */
+    /* os afastamentos relidos na ficha (no mesmo ano) e na grade da página */
     if (RosterWork.usuariosPainelAfastamentos) RosterWork.usuariosPainelAfastamentos.esquecer(true);
     if (RosterWork.usuariosAfastamentos) RosterWork.usuariosAfastamentos.recarregar();
     if (opcoes && opcoes.fechar) {
@@ -202,10 +202,10 @@
     var admin = ehAdmin(), ativo = !ehInativo();
     var afast = RosterWork.usuariosPainelAfastamentos;
     if (afast && afast.ehSecao(secaoAtual)) {
-      /* Férias · Licenças · Dispensas: o ano no subcabeçalho e uma caixa por tipo, só para ler; elas desenham depois de ler
-         (e a cada troca de ano), e então põem a nota e as Alterações */
+      /* Afastamentos: o ano no subcabeçalho, o resumo e os afastamentos (quem administra o militar ativo edita); a aba
+         desenha depois de ler (e a cada troca de ano), e então põe a nota e as Alterações */
       afast.montar(corpo, RosterWork.painel.subcabecalho(), {
-        secao: secaoAtual, pessoa: pessoaAtual, anoInicial: anoInicial,
+        pessoa: pessoaAtual, anoInicial: anoInicial, admin: admin && ativo,
         aoDesenhar: function () { porCorrecao(corpo); porAlteracoes(corpo); }
       });
     } else if (secaoAtual === 'carreira') {
@@ -262,7 +262,7 @@
     linha.classList.remove('oculto');
     var trilho = linha.querySelector('.abas');
     if (!trilho) return;
-    /* a aba de onde veio o clique (Dados, ou a de afastamento da página) */
+    /* a aba de onde veio o clique (Dados, ou a Afastamentos da página) */
     Array.prototype.forEach.call(trilho.querySelectorAll('.aba'), function (aba) {
       aba.classList.toggle('aba--ativa', aba.getAttribute('data-secao') === secaoAtual);
     });

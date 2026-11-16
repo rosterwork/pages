@@ -557,8 +557,8 @@
   color: var(--erro);
 }
 
-/* afastado (férias, licença, dispensa ou missão): o da guarnição de serviço no dia, riscado na Guarnição; o que está fora
-   da escala, no Fora da escala, só com o filtro Afastamentos (ou Missões). Faixas diagonais (as do selo de afastamento do
+/* afastado (qualquer afastamento): o da guarnição de serviço no dia, riscado na Guarnição; o que está fora
+   da escala, no Fora da escala, só com o filtro Afastamentos. Faixas diagonais (as do selo de afastamento do
    modo Militares), a graduação e o nome riscados e apagados e, no lugar do horário, "Férias até DD/MM" */
 .linha-escalado--afastamento {
   border-radius: var(--raio-pequeno);
@@ -695,7 +695,7 @@
   color: var(--alerta);
 }
 
-/* no dia em que ele não está livre (de serviço, afastado ou em missão), o nome em amarelo; e a linha de quem falta para a
+/* no dia em que ele não está livre (de serviço ou afastado), o nome em amarelo; e a linha de quem falta para a
    regra da companhia, também em amarelo */
 .linha-escalado--sobreaviso-conflito .linha-escalado-grad,
 .linha-escalado--sobreaviso-conflito .linha-escalado-nome,

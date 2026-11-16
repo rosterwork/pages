@@ -293,9 +293,10 @@
 
   function salvarEdicao(rec, assunto, mensagem, btn) {
     if (!assunto || !mensagem) return;
-    if (RosterWork.iniciarCarregando) RosterWork.iniciarCarregando(btn);
+    /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
+    var espera = RosterWork.etapas.acao('recadoSalvar', null, { doServidor: 1, botao: btn, atraso: true, semFila: true });
     RosterWork.rpc('recado_salvar', { p_id: rec.id, p_assunto: assunto, p_mensagem: mensagem }).then(function (r) {
-      if (RosterWork.pararCarregando) RosterWork.pararCarregando(btn);
+      espera.parar();
       if (r && r.success) {
         rec.assunto = assunto.slice(0, 50);
         rec.mensagem = mensagem;
@@ -305,7 +306,7 @@
         RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || M().falhaSalvar });
       }
     }).catch(function () {
-      if (RosterWork.pararCarregando) RosterWork.pararCarregando(btn);
+      espera.parar();
       if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.semConexao });
     });
   }
@@ -361,9 +362,9 @@
       var a = inA.value.trim(), m = inM.value.trim();
       if (!a) { campos.marcarErro(inA, M().assuntoVazio); return; }
       if (!m) { campos.marcarErro(inM, M().mensagemVazia); return; }
-      if (RosterWork.iniciarCarregando) RosterWork.iniciarCarregando(btnSalvar);
+      var criando = RosterWork.etapas.acao('lembreteCriar', null, { doServidor: 1, botao: btnSalvar, atraso: true, semFila: true });
       RosterWork.rpc('recado_criar_lembrete', { p_assunto: a, p_mensagem: m }).then(function (r) {
-        if (RosterWork.pararCarregando) RosterWork.pararCarregando(btnSalvar);
+        criando.parar();
         if (r && r.success) {
           var novoId = r.id;
           carregar().then(function () {
@@ -374,7 +375,7 @@
           RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || M().falhaSalvar });
         }
       }).catch(function () {
-        if (RosterWork.pararCarregando) RosterWork.pararCarregando(btnSalvar);
+        criando.parar();
         if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.semConexao });
       });
     });

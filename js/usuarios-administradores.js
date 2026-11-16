@@ -200,8 +200,9 @@
     var botao = el('#administradores-salvar');
     var lista = Object.keys(rascunho).map(function (cpf) { return { cpf: cpf, papel: rascunho[cpf] }; });
     if (!lista.length) return;
-    if (RW.iniciarCarregando) RW.iniciarCarregando(botao);
-    function parar() { if (RW.pararCarregando) RW.pararCarregando(botao); }
+    /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
+    var espera = RW.etapas.acao('administradoresSalvar', null, { doServidor: 1, botao: botao, atraso: true, semFila: true });
+    function parar() { espera.parar(); }
     RW.apiFetch('/rest/v1/rpc/administradores_salvar', { metodo: 'POST', corpo: { p_mudancas: lista } })
       .then(function (resp) { return resp.ok ? resp.json() : { _falha: 'servidor' }; })
       .then(function (r) {

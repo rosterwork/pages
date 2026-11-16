@@ -39,7 +39,7 @@
     return (isNaN(n) || n === 0) ? '' : String(n);
   }
 
-  /* "Ativo" | "Inativo desde DD/MM/AAAA" | "Férias/Licença/Dispensa até DD/MM/AAAA" | na missão, o nome dela até a data */
+  /* "Ativo" | "Inativo desde DD/MM/AAAA" | o nome do afastamento até a data ("Férias até DD/MM/AAAA") */
   function textoSituacao(ins, pessoa) {
     if (pessoa && pessoa.situacao === 'Inativo') {
       return pessoa.situacao_ate ? 'Inativo desde ' + formatarData(pessoa.situacao_ate) : 'Inativo';

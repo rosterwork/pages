@@ -225,19 +225,20 @@
 
   function enviar(comp, aoSalvar) {
     var v = ed.v, btn = ed.btn;
-    RW.iniciarCarregando(btn);
+    /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
+    var espera = RW.etapas.acao('extraPedido', null, { doServidor: 1, botao: btn, atraso: true, semFila: true });
     RW.rpc('extrajornada_pedido_salvar', {
       p_competencia: ed.r.competencia, p_voluntario: v.vol, p_cotas: v.vol ? v.cotas : 0, p_so_24h: !!(v.vol && v.cotas === 4 && v.so24),
       p_datas: v.vol ? Object.keys(v.dias).sort().map(function (k) { return { data: k, tipo: v.dias[k] }; }) : []
     }).then(function (r) {
-      RW.pararCarregando(btn);
+      espera.parar();
       if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
       ed = null;
       RW.painel.fechar();
       if (RW.extrajornadaOrg) RW.extrajornadaOrg.resumo(r);
       aoSalvar();
     }, function (e) {
-      RW.pararCarregando(btn);
+      espera.parar();
       RW.avisar({ tipo: 'erro', mensagem: (e && e.message) || RW.mensagens.geral.semConexao });
     });
   }

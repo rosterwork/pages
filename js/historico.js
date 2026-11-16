@@ -76,6 +76,7 @@
     licenca: { aba: 'Usuários', icone: 'icone-usuarios' },
     dispensa: { aba: 'Usuários', icone: 'icone-usuarios' },
     missao: { aba: 'Usuários', icone: 'icone-usuarios' },
+    afastamento: { aba: 'Usuários', icone: 'icone-usuarios' },
     unidade: { aba: 'Ajustes', icone: 'icone-ajustes' }
   };
 

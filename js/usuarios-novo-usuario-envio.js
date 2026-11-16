@@ -141,10 +141,11 @@
     if (!window.RosterWork.novoUsuarioDados) return;
 
     var botao = document.getElementById('nu-salvar');   // no computador, o rodapé fica fora do painel
-    if (botao && window.RosterWork.iniciarCarregando) window.RosterWork.iniciarCarregando(botao);
+    /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
+    var espera = window.RosterWork.etapas.acao('usuarioNovo', null, { doServidor: 1, botao: botao, atraso: true, semFila: true });
 
     window.RosterWork.novoUsuarioDados.inserir(coletar(raiz)).then(function (resp) {
-      if (botao && window.RosterWork.pararCarregando) window.RosterWork.pararCarregando(botao);
+      espera.parar();
       if (resp && resp.success) {
         if (aoSucesso) aoSucesso();   // limpa o formulário e recarrega a árvore
         if (resp.log && window.RosterWork.resumo) window.RosterWork.resumo.abrirModal(resp.log, { pagina: 'Usuários' });
@@ -152,7 +153,7 @@
         window.RosterWork.avisar({ tipo: 'erro', mensagem: (resp && resp.error) ? resp.error : window.RosterWork.mensagens.cadastro.falha });
       }
     }).catch(function () {
-      if (botao && window.RosterWork.pararCarregando) window.RosterWork.pararCarregando(botao);
+      espera.parar();
       window.RosterWork.avisar({ tipo: 'erro', mensagem: window.RosterWork.mensagens.geral.semConexao });
     });
   }

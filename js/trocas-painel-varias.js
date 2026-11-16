@@ -118,12 +118,13 @@
   /* o Desfazer da aprovação: cancela as trocas e volta a escala; na alteração, voltam a valer as trocas de antes */
   function desfazerAprovacao(t, ctx) {
     return function () {
-      if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal();
+      var espera = RW.etapas.acao('trocaCancelar', null, { doServidor: 2 });   // refaz a escala: o cartão das etapas na hora
       return RW.trocasDados.variasCancelar(t.registro_id, alteracao(t), alteracao(t) ? null : m().motivoDesfazer).then(function (res) {
-        if (RW.esconderVeuGlobal) RW.esconderVeuGlobal();
+        if (res && res.ok) espera.ultima();
+        espera.parar();
         if (res && res.ok && ctx.aoMudar) ctx.aoMudar();
         return res;
-      }).catch(function (e) { if (RW.esconderVeuGlobal) RW.esconderVeuGlobal(); throw e; });
+      }).catch(function (e) { espera.parar(); throw e; });
     };
   }
   function despachar(acao, t, ctx, btn) {
@@ -135,29 +136,29 @@
     } else if (acao === 'imprimir-registro') {
       RW.trocasRegistroPdf.imprimir(t.troca_id, btn);
     } else if (acao === 'aceitar') {
-      confirmar(mv().confirmarAceitar(n), false, function () { executar(d.variasResponder(reg, true), btn, ctx); });
+      confirmar(mv().confirmarAceitar(n), false, function () { executar(d.variasResponder(reg, true), btn, ctx, null, false, { chave: 'trocaAceitar' }); });
     } else if (acao === 'recusar') {
-      RW.decisao.recusar(partes, function (motivo, botao) { executar(d.variasResponder(reg, false, motivo), botao, ctx); });
+      RW.decisao.recusar(partes, function (motivo, botao) { executar(d.variasResponder(reg, false, motivo), botao, ctx, null, false, { chave: 'trocaRecusar' }); });
     } else if (acao === 'aceitar-depois') {
-      confirmar(mv().confirmarAceitarDepois(n), false, function () { executar(d.aceitar(t.troca_id), btn, ctx); });
+      confirmar(mv().confirmarAceitarDepois(n), false, function () { executar(d.aceitar(t.troca_id), btn, ctx, null, false, { chave: 'trocaAceitar' }); });
     } else if (acao === 'aprovar') {
       confirmar(problema ? m().confirmarAprovarComProblema : (altera ? mv().confirmarAprovarAlteracao : mv().confirmarAprovar(n)), problema, function () {
-        executar(d.variasAprovar(reg, true), btn, ctx, desfazer, true);   // aprova e refaz a escala: véu
+        executar(d.variasAprovar(reg, true), btn, ctx, desfazer, true, { chave: 'trocaAprovar' });   // aprova e refaz a escala
       });
     } else if (acao === 'aprovar-forcar') {
       confirmar(problema ? m().confirmarAprovarComProblema : (altera ? mv().confirmarForcarAlteracao : mv().confirmarForcar(n)), true, function () {
-        executar(d.variasAprovar(reg, true, true), btn, ctx, desfazer, true);
+        executar(d.variasAprovar(reg, true, true), btn, ctx, desfazer, true, { chave: 'trocaAprovar' });
       });
     } else if (acao === 'cancelar-alteracao') {
       /* a alteração esperando não mexe na escala: as trocas de antes continuam */
-      confirmar(mv().confirmarCancelarAlteracao, true, function () { executar(d.variasCancelar(reg), btn, ctx); });
+      confirmar(mv().confirmarCancelarAlteracao, true, function () { executar(d.variasCancelar(reg), btn, ctx, null, false, { chave: 'trocaCancelarAlteracao' }); });
     } else if (acao === 'recusar-admin') {
-      RW.decisao.recusar(partes, function (motivo, botao) { executar(d.variasAprovar(reg, false, false, motivo), botao, ctx); });
+      RW.decisao.recusar(partes, function (motivo, botao) { executar(d.variasAprovar(reg, false, false, motivo), botao, ctx, null, false, { chave: 'trocaRecusar' }); });
     } else if (acao === 'cancelar-pedido') {
-      confirmar(mv().confirmarCancelar(n), true, function () { executar(d.variasCancelar(reg), btn, ctx); });
+      confirmar(mv().confirmarCancelar(n), true, function () { executar(d.variasCancelar(reg), btn, ctx, null, false, { chave: 'trocaCancelarPedido' }); });
     } else if (acao === 'cancelar') {
-      /* as trocas aprovadas: o motivo obrigatório; desfaz a escala: véu */
-      RW.decisao.cancelar(partes, function (motivo, botao) { executar(d.variasCancelar(reg, false, motivo), botao, ctx, null, true); }, { titulo: m().cancelarMotivo.tituloVarias });
+      /* as trocas aprovadas: o motivo opcional; desfaz a escala: véu */
+      RW.decisao.cancelar(partes, function (motivo, botao) { executar(d.variasCancelar(reg, false, motivo), botao, ctx, null, true, { chave: 'trocaCancelar' }); }, { titulo: m().cancelarMotivo.tituloVarias });
     }
   }
   function montarAcoes(t, ctx) {

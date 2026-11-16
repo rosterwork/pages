@@ -116,7 +116,6 @@
   /* ---------- salvar, cancelar, encerrar ---------- */
   function salvar(btn) {
     if (!validar()) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.camposCorrigir }); return; }
-    if (ctx.motivo && !ctx.motivo.conferir(mudaEscala())) return;   // mudar os dias da troca aprovada pede o motivo
     /* o administrador muda a escala da troca aprovada na hora: confirma antes, como no Registrar */
     if (ctx.admin && ctx.troca.status === 'aprovada' && mudaEscala() && RW.confirmar) {
       var temProblema = !!(ctx.analise && ctx.analise.veredito === 'problema');
@@ -128,12 +127,14 @@
     }
     gravar(btn, false);
   }
-  /* comVeu: a escala é recalculada (véu global); senão, os pontinhos no botão */
+  /* comVeu: a escala é recalculada (o cartão das etapas na hora); senão, os pontinhos no botão na hora e o cartão só se
+     passar de 1,5 s */
   function gravar(btn, comVeu) {
     var meu = ctx;
-    if (comVeu) { if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal(); }
-    else if (btn && RW.iniciarCarregando) RW.iniciarCarregando(btn);
-    function parar() { if (comVeu) { if (RW.esconderVeuGlobal) RW.esconderVeuGlobal(); } else if (btn && RW.pararCarregando) RW.pararCarregando(btn); }
+    var espera = comVeu
+      ? RW.etapas.acao('trocaEditar', null, { doServidor: 2 })
+      : RW.etapas.acao('trocaEditarRapido', null, { doServidor: 1, botao: btn, atraso: true, semFila: true });
+    function parar() { espera.parar(); }
     RW.trocasDados.editar(montarCorpo()).then(function (r) {
       parar();
       if (r && r.ok) {

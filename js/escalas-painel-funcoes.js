@@ -38,13 +38,18 @@
         /* o Chefe de Socorro e o Oficial de Área sozinhos não têm lápis (são do mais antigo do dia): sem a dica */
         var papel = PAPEL.test(f.nome) && !(f.nomes && f.nomes.length > 1);
         itens.push({ texto: rotulo + ' · ' + gente.join(' e '), marcado: true, desligado: true, dica: papel ? '' : M.funcoesDicaOcupada });
+      } else if (f.lugar_ideal) {
+        /* o lugar que falta até o ideal: fica na escala, vazio, para alguém ocupar */
+        itens.push({ texto: rotulo + ' · ' + M.funcoesIdeal, marcado: true, desligado: true, dica: M.funcoesDicaIdeal });
       } else if (f.vazio_motivo === 'aberta') {
         itens.push(f.fechar ? { texto: rotulo, marcado: true, fechar: f.nome }
           : { texto: rotulo, marcado: true, desligado: true, dica: M.funcoesDicaSeguinte });
       } else if (f.vazio) {
         itens.push({ texto: rotulo + ' · ' + M.funcoesMinimo, marcado: true, desligado: true, dica: M.funcoesDicaMinimo });
       } else if ((f.vao || []).length) {
-        itens.push({ texto: rotulo + ' · ' + M.semNinguemTexto, marcado: true, desligado: true, dica: M.funcoesDicaLapis });
+        /* sem ninguém abaixo do mínimo (vermelho) ou só até o ideal (cinza, "Vazio") */
+        var erro = f.vao.some(function (v) { return v.nivel !== 'ideal'; });
+        itens.push({ texto: rotulo + ' · ' + (erro ? M.semNinguemTexto : M.vagaVazia('aberta')), marcado: true, desligado: true, dica: M.funcoesDicaLapis });
       }
     });
     (posto.livres || []).forEach(function (nome, i) {

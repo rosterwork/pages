@@ -127,14 +127,18 @@
         });
       });
     }
-    /* o lote seguinte do Histórico (os pontinhos no botão enquanto lê) */
+    /* o lote seguinte do Histórico: o botão desligado e, passando de 0,5 s, a forma dos cartões embaixo da lista (sem
+       travar a tela) */
     if (btnMais && RW.avisosNotificacoes) {
       btnMais.addEventListener('click', function () {
-        RW.iniciarCarregando(btnMais);
-        RW.avisosNotificacoes.maisAntigos().then(function (r) {
-          RW.pararCarregando(btnMais);
+        var lugar = document.getElementById('avisos-mais-lendo');
+        var espera = RW.etapas.area(lugar, { forma: 'tpl-esqueleto-cartoes' });
+        function fim() { espera.parar(); lugar.textContent = ''; btnMais.disabled = false; }
+        btnMais.disabled = true;
+        espera.segurar(RW.avisosNotificacoes.maisAntigos()).then(function (r) {
+          fim();
           if (r) mostrarMais(r.mais);
-        });
+        }, fim);
       });
     }
 

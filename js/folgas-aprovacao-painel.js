@@ -72,11 +72,16 @@
     RW.confirmar({ tipo: 'aviso', mensagem: mensagem, confirmarPerigo: !!perigo, aoConfirmar: aoConfirmar });
   }
 
-  /* aprovar recalcula a escala (véu global); recusar não mexe (pontos no botão) */
-  function executar(promessa, btn, ctx, extra, recalcula) {
-    if (recalcula) { if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal(); }
-    else if (btn && RW.iniciarCarregando) RW.iniciarCarregando(btn);
-    function parar() { if (recalcula) { if (RW.esconderVeuGlobal) RW.esconderVeuGlobal(); } else if (btn && RW.pararCarregando) RW.pararCarregando(btn); }
+  /* o dia do pedido em dd/mm, para as etapas */
+  function diaMes(iso) { var p = String(iso || '').split('-'); return p.length === 3 ? p[2] + '/' + p[1] : ''; }
+
+  /* aprovar recalcula a escala: o cartão das etapas na hora; recusar e cancelar o pedido não mexem: os pontinhos no botão
+     na hora e o cartão só se passar de 1,5 s. frase = { chave, valores } (RosterWork.mensagens.etapas) */
+  function executar(promessa, btn, ctx, extra, recalcula, frase) {
+    var espera = recalcula
+      ? RW.etapas.acao(frase.chave, frase.valores, { doServidor: 3 })
+      : RW.etapas.acao(frase.chave, frase.valores, { doServidor: 1, botao: btn, atraso: true, semFila: true });
+    function parar() { espera.parar(); }
     promessa.then(function (r) {
       parar();
       if (r && r.success) {
@@ -100,25 +105,26 @@
     var d = RW.folgasDados, m = msg();
     if (acao === 'recusar') {
       /* o motivo (opcional) vai no aviso ao militar */
-      RW.decisao.recusar(partes, function (motivo, botao) { executar(d.decidir(sol.id, false, motivo), botao, ctx); });
+      RW.decisao.recusar(partes, function (motivo, botao) { executar(d.decidir(sol.id, false, motivo), botao, ctx, null, false, { chave: 'folgaRecusar' }); });
     } else if (acao === 'aprovar') {
       var temProblema = sol._analise && sol._analise.veredito === 'problema';
       confirmarEntao(temProblema ? m.confirmarAprovarComProblema : m.confirmarAprovar, temProblema, function () {
         executar(d.decidir(sol.id, true), btn, ctx, {
           /* Desfazer = cancelar a folga aprovada (o militar volta ao serviço e as horas voltam) */
           desfazer: function () {
-            if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal();   // o desfazer cancela a folga e recalcula a escala: véu global
+            /* o desfazer cancela a folga e recalcula a escala: o cartão das etapas na hora */
+            var espera = RW.etapas.acao('folgaCancelar', { dia: diaMes(sol.data_ref) }, { doServidor: 3 });
             return d.cancelar(sol.id).then(function (res) {
-              if (RW.esconderVeuGlobal) RW.esconderVeuGlobal();
+              espera.parar();
               if (res && res.success && ctx.aoMudar) ctx.aoMudar();
               return { ok: !!(res && res.success), erro: res && res.error };   // o geral-resumo espera {ok,erro}, não {success,error}
-            }).catch(function (e) { if (RW.esconderVeuGlobal) RW.esconderVeuGlobal(); throw e; });
+            }).catch(function (e) { espera.parar(); throw e; });
           }
-        }, true);   // aprovar recalcula a escala → véu
+        }, true, { chave: 'folgaAprovar', valores: { militar: sol.nome || '', dia: diaMes(sol.data_ref) } });   // aprovar recalcula a escala
       });
     } else if (acao === 'cancelar') {
-      /* o militar cancela a própria folga pendente (ainda fora da escala: pontos no botão) */
-      confirmarEntao(m.confirmarCancelarPendente, true, function () { executar(d.cancelar(sol.id), btn, ctx); });
+      /* o militar cancela a própria folga pendente (ainda fora da escala: os pontinhos no botão) */
+      confirmarEntao(m.confirmarCancelarPendente, true, function () { executar(d.cancelar(sol.id), btn, ctx, null, false, { chave: 'folgaCancelarPedido' }); });
     }
   }
 

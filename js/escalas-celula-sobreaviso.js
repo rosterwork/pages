@@ -6,18 +6,20 @@
    fim: embaixo de quem está de serviço, no grupo Sobreaviso (a caixa e
    a linha tracejada dos grupos, escalas-celula-grupos.js, antes do
    Fora da escala), cada um com o ícone do telefone (a linha do militar é a
-   mesma da grade). Aparece num lugar só: onde o banco marcou "exibe"
-   (a companhia, se está na tela; senão, o pelotão de número menor).
-   Com o sobreaviso de cada pelotão (as regras da companhia), o banco
-   marca todos os pelotões e cada um mostra o seu; a companhia, nada.
-   No celular, na Agenda (uma unidade por tela), vem na unidade da
-   tela. Quem falta para a regra da companhia vira a linha amarela.
+   mesma da grade). Aparece onde o banco marcou "exibe": as unidades
+   marcadas nos Ajustes › Sobreaviso › Onde aparece, todas com a mesma
+   lista (também no celular, na Agenda). Com o sobreaviso de cada
+   pelotão (as regras da companhia), o banco marca todos os pelotões e
+   cada um mostra o seu; a companhia, nada. Quem falta para a regra
+   da companhia vira a linha amarela.
    Só na Escala (a Extrajornada usa a mesma célula e fica como está).
    Não cria HTML nem escreve estilo.
    A mudança ainda não salva (o painel ou a caixa da célula) aparece na
    grade na hora (rascunho).
-   RosterWork.escalasCelulaSobreaviso.{ guardar, preencher, pessoas, mostra, umaPorTela, rascunho,
-   doDia }
+   Quem o administrador pôs ou mudou (origem "administrador") leva o
+   cadeado, como a função fixada.
+   RosterWork.escalasCelulaSobreaviso.{ guardar, preencher, pessoas, mostra, companhia, rascunho,
+   doDia, dica }
    ============================================================ */
 (function () {
   'use strict';
@@ -42,25 +44,25 @@
     });
   }
 
-  /* o celular no Mês › Agenda: uma unidade por tela (o seletor troca), então o sobreaviso vem na unidade que está nela (a
-     célula ainda não está na página quando é desenhada: vale a aba escolhida) */
-  function umaPorTela() {
-    if (!(RW.celular && RW.celular())) return false;
-    var mes = document.querySelector('.conteudo #escala-modo-visoes [data-modo="mes"]');
-    var agenda = document.querySelector('.conteudo #escala-sub-mes [data-mes="agenda"]');
-    return !!(mes && mes.classList.contains('aba--ativa') && agenda && agenda.classList.contains('aba--ativa'));
+  /* posto ou mudado pelo administrador: o sistema não o muda (o cadeado) */
+  function fixado(m) { return m.origem === 'administrador'; }
+
+  /* a dica da linha: o sobreaviso (no dia em que ele não está livre, o porquê) e, no fixado, quem o pôs */
+  function dica(p) {
+    var frase = p.conflito ? msg().conflito[p.conflito] : msg().dica;
+    return p.fixado ? frase + '\n' + RW.mensagens.escala.como.motivo({ codigo: 'fixado' }) : frase;
   }
 
   /* a linha de quem está de sobreaviso: a mesma da grade, com a origem "sobreaviso" (o ícone do telefone, a situação do
-     filtro e a dica); no dia em que ele não está livre, o nome em amarelo, com o porquê na dica */
+     filtro e a dica) e o cadeado no fixado; no dia em que ele não está livre, o nome em amarelo, com o porquê na dica */
   function linha(m, curto, D) {
     var p = { cpf: m.cpf, grad: m.grad, nome: m.nome, nome_completo: m.nome_completo, rg: m.rg, origem: 'sobreaviso',
-      conflito: m.conflito || null, periodos: [{ inicio: m.horaInicio, fim: m.horaFim }] };
+      fixado: fixado(m), conflito: m.conflito || null, periodos: [{ inicio: m.horaInicio, fim: m.horaFim }] };
     var el = RW.escalasCelula.montarPessoa(p, curto, D);
     if (!el) return null;
     el.classList.add('linha-escalado--sobreaviso');
     if (m.conflito) el.classList.add('linha-escalado--sobreaviso-conflito');
-    if (!D) el.setAttribute('data-dica', m.conflito ? msg().conflito[m.conflito] : msg().dica);
+    if (!D) el.setAttribute('data-dica', dica(p));
     return el;
   }
 
@@ -82,7 +84,7 @@
     if (!naEscala(celula)) return;
     var iso = celula.dataset.iso;
     var s = guardado[celula.dataset.unidadeId + '|' + iso];
-    if (!s || !(s.exibe || umaPorTela())) return;
+    if (!s || !s.exibe) return;
     desenhoDa.set(celula, { curto: curto, D: D });
     var r = rascunhos[chaveDe(s, iso)];
     var militares = r || s.militares || [];
@@ -133,16 +135,28 @@
     var s = guardado[uid + '|' + iso];
     if (!s || !s.exibe) return [];
     return (s.militares || []).map(function (m) {
-      return { cpf: m.cpf, grad: m.grad, nome: m.nome, origem: 'sobreaviso', periodos: [{ inicio: m.horaInicio, fim: m.horaFim }] };
+      return { cpf: m.cpf, grad: m.grad, nome: m.nome, origem: 'sobreaviso', fixado: fixado(m),
+        periodos: [{ inicio: m.horaInicio, fim: m.horaFim }] };
     });
   }
 
-  /* a unidade mostra o sobreaviso (o "exibe" de algum dia já lido)? A página Sobreaviso deixa na tela só essas */
-  function mostra(uid) {
+  /* o sobreaviso que a unidade mostra (o "exibe" de algum dia já lido) */
+  function mostrado(uid) {
     var comeco = uid + '|';
-    return Object.keys(guardado).some(function (chave) { return chave.indexOf(comeco) === 0 && guardado[chave].exibe; });
+    var chave = Object.keys(guardado).filter(function (k) { return k.indexOf(comeco) === 0 && guardado[k].exibe; })[0];
+    return chave ? guardado[chave] : null;
   }
 
-  RW.escalasCelulaSobreaviso = { guardar: guardar, preencher: preencher, pessoas: pessoas, mostra: mostra, umaPorTela: umaPorTela,
-    rascunho: rascunho, doDia: doDia };
+  /* a unidade mostra o sobreaviso? A página Sobreaviso deixa na tela só essas */
+  function mostra(uid) { return !!mostrado(uid); }
+
+  /* a companhia do sobreaviso que a unidade mostra; null no de cada pelotão (cada um, o seu) ou sem sobreaviso. A página
+     Sobreaviso deixa uma unidade só por companhia (a lista é a mesma em todas as marcadas) */
+  function companhia(uid) {
+    var s = mostrado(uid);
+    return s && !s.unidade_id ? s.companhia_id : null;
+  }
+
+  RW.escalasCelulaSobreaviso = { guardar: guardar, preencher: preencher, pessoas: pessoas, mostra: mostra, companhia: companhia,
+    rascunho: rascunho, doDia: doDia, dica: dica };
 })();

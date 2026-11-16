@@ -141,7 +141,7 @@
   function soHora(h) { return escalasCelula().soHora ? escalasCelula().soHora(h) : (h || ''); }
   function comInicio(p) { return (p.periodos || []).filter(function (per) { return per.inicio; }); }
 
-  /* afastado ou em missão (com o filtro Afastamentos ou Missões): "Férias até DD/MM" no lugar do horário */
+  /* afastado (com o filtro Afastamentos): "Férias até DD/MM" no lugar do horário */
   function textoAfastado(p) { return RW.mensagens.geral.afastadoAte(p.afastamento || '', RW.data.isoParaBR(p.ate).slice(0, 5)); }
 
   /* quem está fora da escala: "Voltou em DD/MM" (a volta de um afastamento, o aviso amarelo) ou "Entra em DD/MM" (a entrada
@@ -192,7 +192,7 @@
   }
 
   /* quem aparece no dia, nos grupos da tela (escalas-celula-grupos.js): os de serviço, o sobreaviso da companhia, no lugar
-     em que ele aparece, e o Fora da escala (os afastados dele, com o filtro Afastamentos ou Missões), pelos filtros da tela */
+     em que ele aparece, e o Fora da escala (os afastados dele, com o filtro Afastamentos), pelos filtros da tela */
   function pessoasDoDia(dados, uid, dia) {
     var passa = RW.escalasFiltros ? RW.escalasFiltros.passaPessoa : function (p) { return p.origem !== 'afastamento'; };
     function noGrupo(lista, grupo) { return lista.map(function (p) { return Object.assign({}, p, { grupo: grupo }); }); }

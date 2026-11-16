@@ -45,11 +45,14 @@
   function atual() { return rascunho.filter(function (e) { return e._chave === escolhida; })[0] || null; }
 
   /* ---------- carregar ---------- */
-  function carregar(reescolher) {
+  /* gravou: a leitura depois do Salvar, com o cartão das etapas na frente: o que está na tela fica até o novo chegar */
+  function carregar(reescolher, gravou) {
     var meu = ++pedido;
-    el.corpo.textContent = '';
-    el.corpo.appendChild(P().tpl('carregando'));
-    RW.rpc('estagios_listar', { p_unidade: unidadeId }).then(function (r) {
+    if (!gravou) {
+      el.corpo.textContent = '';
+      el.corpo.appendChild(P().tpl('carregando'));
+    }
+    return RW.rpc('estagios_listar', { p_unidade: unidadeId }).then(function (r) {
       if (meu !== pedido || !el.corpo.isConnected) return;
       if (!r || !r.ok) {
         el.corpo.textContent = '';
@@ -250,18 +253,26 @@
     });
   }
 
-  /* grava a lista inteira; a escala da unidade é refeita (o véu enquanto grava; a fila do recálculo segue depois) */
+  /* grava a lista inteira; a escala da unidade é refeita (o cartão das etapas enquanto grava e a tela lê de novo; a fila
+     do recálculo segue depois); no fim, o resumo */
   function enviar(lista, desde) {
     var nome = atual() ? atual().nome.trim() : null;
-    RW.mostrarVeuGlobal();
+    var etapas = RW.etapas.acao('estagiosSalvar', { unidade: (dados && dados.unidade && dados.unidade.nome) || '' }, { doServidor: 2 });
     RW.rpc('estagios_salvar', { p_unidade: unidadeId, p_estagios: lista, p_desde: desde }).then(function (r) {
-      RW.esconderVeuGlobal();
-      if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
-      if (r.sem_alteracoes) RW.avisar({ tipo: 'aviso', mensagem: msg().nadaMudou });
-      else if (r.log && RW.resumo) RW.resumo.abrirModal(r.log, { pagina: msg().pagina });
-      carregar(nome);
+      if (!r || !r.success) {
+        etapas.parar();
+        RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor });
+        return;
+      }
+      etapas.ultima();
+      function fim() {
+        etapas.parar();
+        if (r.sem_alteracoes) RW.avisar({ tipo: 'aviso', mensagem: msg().nadaMudou });
+        else if (r.log && RW.resumo) RW.resumo.abrirModal(r.log, { pagina: msg().pagina });
+      }
+      carregar(nome, true).then(fim, fim);
     }, function () {
-      RW.esconderVeuGlobal();
+      etapas.parar();
       RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao });
     });
   }

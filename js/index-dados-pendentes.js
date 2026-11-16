@@ -108,10 +108,11 @@
   /* ---------- os botões ---------- */
   /* registra a conferência (cadastro_conferir); feita, segue para o que o botão faz */
   function registrarConferencia(botao, depois) {
-    if (RosterWork.iniciarCarregando) RosterWork.iniciarCarregando(botao);
+    /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
+    var espera = RosterWork.etapas.acao('cadastroConfirmar', null, { doServidor: 1, botao: botao, atraso: true, semFila: true });
     RosterWork.rpc('cadastro_conferir')
       .then(function (conferencia) {
-        if (RosterWork.pararCarregando) RosterWork.pararCarregando(botao);
+        espera.parar();
         if (!conferencia || !conferencia.success) {
           RosterWork.avisar({ tipo: 'erro', mensagem: (conferencia && conferencia.error) || RosterWork.mensagens.perfil.falhaDados });
           return;
@@ -120,7 +121,7 @@
         depois();
       })
       .catch(function () {
-        if (RosterWork.pararCarregando) RosterWork.pararCarregando(botao);
+        espera.parar();
         RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.semConexao });
       });
   }

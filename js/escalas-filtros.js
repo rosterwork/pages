@@ -9,8 +9,7 @@
    tem a sua própria) e a Minha escala.
    Filtro e busca se aplicam juntos nas linhas de militar já
    desenhadas: cada linha traz a situação (escalas-celula.js).
-   Os afastados e quem está em missão vêm escondidos e só aparecem com
-   Afastamentos (ou Missões) marcado.
+   Os afastados vêm escondidos e só aparecem com Afastamentos marcado.
    A linha de quem está logado ganha o realce claro (--voce) nas
    grades e na escala do dia da Minha escala.
    ============================================================ */
@@ -29,8 +28,7 @@
     { rotulo: 'Folgas', valor: 'folga' },
     { rotulo: 'Sobreaviso', valor: 'sobreaviso' },
     { rotulo: 'Fora da escala', valor: 'fora' },
-    { rotulo: 'Afastamentos', valor: 'afastamento', separado: true },
-    { rotulo: 'Missões', valor: 'missao', separado: true }
+    { rotulo: 'Afastamentos', valor: 'afastamento', separado: true }
   ];
 
   /* modos em que os filtros valem (as grades de célula e o Militares) */
@@ -46,8 +44,8 @@
 
   function filtrosValem() { return !!MODOS_COM_FILTRO[obterModo()]; }
 
-  /* a linha passa nos filtros? Situação: "Todos" (padrão) = todos menos os afastados e os em missão;
-     Afastamentos e Missões são acréscimos ("Todos" + Afastamentos = todos e os afastados; desmarcar
+  /* a linha passa nos filtros? Situação: "Todos" (padrão) = todos menos os afastados;
+     Afastamentos é acréscimo ("Todos" + Afastamentos = todos e os afastados; desmarcar
      o "Todos" deixa só os afastados) — a regra mora no geral-filtro-arvore */
   function passaFiltros(linha) {
     return passa(linha.getAttribute('data-situacao'));
@@ -57,7 +55,7 @@
     /* a página filtrada (o Sobreaviso e os Estágios): o filtro fica preso nela (RosterWork.paginaFiltrada) */
     var pf = window.RosterWork.paginaFiltrada && RosterWork.paginaFiltrada();
     if (pf) return situacao === pf.situacao;
-    if (!filtros || !filtrosValem()) return situacao !== 'afastamento' && situacao !== 'missao';
+    if (!filtros || !filtrosValem()) return situacao !== 'afastamento';
     return filtros.passa('situacao', situacao);
   }
 

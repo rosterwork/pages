@@ -91,14 +91,14 @@
       ((l.situacao === 'concedida' || l.situacao === 'aprovada') && admin));
     if (podeCancelar) {
       var bc = RosterWork.tpl('tpl-folga-cancelar');
-      if (bc) { bc.addEventListener('click', function () { cancelarFolga(l.id, l.situacao, l.extra); }); linha.appendChild(bc); }
+      if (bc) { bc.addEventListener('click', function () { cancelarFolga(l.id, l.situacao, l.extra, l.data_ref); }); linha.appendChild(bc); }
     }
     return linha;
   }
 
   /* extra: as horas da extra dele por cima da folga (o banco diz): cancelada, ele fica de serviço e de extra no mesmo
      horário, a mesma frase do painel do dia */
-  function cancelarFolga(lancamentoId, situacao, extra) {
+  function cancelarFolga(lancamentoId, situacao, extra, dia) {
     if (!RW.confirmar) return;
     var mensagem = situacao === 'pendente' ? msg().confirmarCancelarPendente : msg().confirmarCancelar;
     if (extra && extra.length) {
@@ -107,9 +107,13 @@
     RW.confirmar({
       tipo: 'aviso', mensagem: mensagem, confirmarPerigo: true,
       aoConfirmar: function () {
-        if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal();   // reverte a folga na escala: círculo + tela travada
+        /* a folga dada ou aprovada volta à escala: o cartão das etapas na hora; o pedido em aberto não mexe na escala: o
+           cartão só se demorar */
+        var espera = situacao === 'pendente'
+          ? RW.etapas.acao('folgaCancelarPedido', null, { doServidor: 1, atraso: true, semFila: true })
+          : RW.etapas.acao('folgaCancelar', { dia: diaMes(dia) }, { doServidor: 3 });
         RW.folgasDados.cancelar(lancamentoId).then(function (r) {
-          if (RW.esconderVeuGlobal) RW.esconderVeuGlobal();
+          espera.parar();
           if (r && r.success) {
             RW.painel.fechar();
             if (r.log && RW.resumo) RW.resumo.abrirModal(r.log, { pagina: 'Folgas' });
@@ -117,7 +121,7 @@
           } else if (RW.avisar) {
             RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || msg().falhaAcao });
           }
-        }).catch(function () { if (RW.esconderVeuGlobal) RW.esconderVeuGlobal(); if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao }); });
+        }).catch(function () { espera.parar(); if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao }); });
       }
     });
   }
@@ -393,12 +397,13 @@
     var motivo = (raiz.querySelector('#ff-motivo') || {}).value || '';
     var btn = form.btnConfirmar;
     if (form.modo === 'solicitar') {
-      finalizar(RW.folgasDados.solicitar({ p_data: form.dataIso, p_horario_inicio: hi, p_horario_fim: hf, p_motivo: motivo }), btn, false);   // solicitar não mexe na escala (pontos)
+      finalizar(RW.folgasDados.solicitar({ p_data: form.dataIso, p_horario_inicio: hi, p_horario_fim: hf, p_motivo: motivo }), btn, false, 'folgaSolicitar');   // solicitar não mexe na escala
       return;
     }
-    /* conceder e dar: o admin escolhe se a folga desconta do banco de horas; recalcula a escala (véu) */
+    /* conceder e dar: o admin escolhe se a folga desconta do banco de horas; recalcula a escala (o cartão na hora) */
     var conceder = function (contabilizar) {
-      finalizar(RW.folgasDados.dar({ p_usuario_id: form.cpfAlvo, p_data: form.dataIso, p_horario_inicio: hi, p_horario_fim: hf, p_motivo: motivo, p_contabilizar: contabilizar }), btn, true);
+      finalizar(RW.folgasDados.dar({ p_usuario_id: form.cpfAlvo, p_data: form.dataIso, p_horario_inicio: hi, p_horario_fim: hf, p_motivo: motivo, p_contabilizar: contabilizar }), btn, true,
+        'folgaDar', { militar: form.nome, dia: diaMes(form.dataIso) });
     };
     var s = servicoDoDia(form.dataIso) || {};
     var periodo = msg().periodoDas(horaCurta(hi || s.hi), horaCurta(hf || s.hf));
@@ -459,15 +464,15 @@
 
   function enviarAjuste(raiz) {
     var campoH = raiz.querySelector('#fa-horas').closest('.campo');
-    var campoM = raiz.querySelector('#fa-motivo').closest('.campo');
-    var motivo = (raiz.querySelector('#fa-motivo') || {}).value || '';
+    var motivo = (raiz.querySelector('#fa-motivo') || {}).value || '';   // o motivo é opcional
     var minutos = minutosAjuste(raiz);
-    var ok = true;
-    if (minutos === null) { marcarErro(campoH, msg().formHorasInvalida); ok = false; }
-    if (!motivo.trim()) { marcarErro(campoM, msg().formMotivo); ok = false; }
-    if (!ok) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.camposCorrigir }); return; }
+    if (minutos === null) {
+      marcarErro(campoH, msg().formHorasInvalida);
+      if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.camposCorrigir });
+      return;
+    }
     var btn = form.btnConfirmar;
-    finalizar(RW.folgasDados.ajustar(form.cpfAlvo, minutos, motivo), btn, false);   // ajuste de saldo não mexe na escala
+    finalizar(RW.folgasDados.ajustar(form.cpfAlvo, minutos, motivo), btn, false, 'folgaAjustar');   // ajuste de saldo não mexe na escala
   }
 
   /* ---------- rodapé, envio e fechamento dos formulários ---------- */
@@ -493,12 +498,14 @@
     rodape.appendChild(frag);
   }
 
-  /* recalcula=true (conceder folga) usa o véu global (recalcula a escala); senão (solicitar,
-     ajuste de saldo) são rápidos: pontinhos no botão */
-  function finalizar(promessa, btn, recalcula) {
-    if (recalcula) { if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal(); }
-    else if (btn && RW.iniciarCarregando) RW.iniciarCarregando(btn);
-    function parar() { if (recalcula) { if (RW.esconderVeuGlobal) RW.esconderVeuGlobal(); } else if (btn && RW.pararCarregando) RW.pararCarregando(btn); }
+  /* recalcula=true (conceder folga) refaz a escala: o cartão das etapas na hora; senão (solicitar, ajuste de saldo), os
+     pontinhos no botão na hora e o cartão só se passar de 1,5 s. chave e valores = as frases do cartão
+     (RosterWork.mensagens.etapas) */
+  function finalizar(promessa, btn, recalcula, chave, valores) {
+    var espera = recalcula
+      ? RW.etapas.acao(chave, valores, { doServidor: 3 })
+      : RW.etapas.acao(chave, valores, { doServidor: 1, botao: btn, atraso: true, semFila: true });
+    function parar() { espera.parar(); }
     promessa.then(function (r) {
       parar();
       if (r && r.success) {

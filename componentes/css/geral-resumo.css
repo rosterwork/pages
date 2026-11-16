@@ -3,7 +3,8 @@
    Desenha o formato padrão que o banco grava e devolve
    ({ alvos:[{ onde, mudancas:[{tipo,rotulo,de,para}] }] }):
    título + data/hora (uma vez) + um bloco por
-   alvo, uma linha por mudança conforme o tipo. Miolo reutilizável:
+   alvo, uma linha por mudança conforme o tipo; antes delas, as
+   escalas que o salvar refez. Miolo reutilizável:
    o modal de confirmação ao salvar (Postos) e a página
    de Histórico. Comportamento: componentes/js/geral-resumo.js
    ============================================================ */
@@ -37,6 +38,19 @@
   font-size: var(--fonte-padrao);
   font-weight: 600;
   color: var(--texto-forte);
+}
+
+/* escalas que o salvar refez: uma linha por unidade ("Escala do 1ºPEL refeita a partir de 01/12/2026") */
+.resumo-refeitas {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.resumo-refeita {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--texto);
 }
 
 /* corpo: um bloco por alvo (entidade afetada) */
@@ -102,4 +116,10 @@
    aqui só o tom de "reverter" no hover */
 .resumo-desfazer:hover {
   color: var(--erro);
+}
+
+/* "Ver detalhes (N)" / "Esconder detalhes" — reusa o .botao--texto; fica sozinho à esquerda do rodapé
+   (Desfazer e OK continuam à direita) */
+.resumo-detalhes {
+  margin-right: auto;
 }

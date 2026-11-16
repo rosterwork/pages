@@ -1,64 +1,41 @@
 /* ============================================================
-   USUÁRIOS — abas Férias · Licenças · Dispensas · Missões
+   USUÁRIOS — aba Afastamentos
    (RosterWork.usuariosAfastamentos)
-   A lista completa do efetivo (a mesma árvore do Efetivo) e, em cada
-   militar, uma linha por afastamento (ou missão) do ano escolhido, em
-   ordem de data: o tipo (na missão Outra, o nome) e as datas, os dias
-   e, em licença, dispensa e missão, a guarnição. A missão (Operação
-   Verão, Força Tarefa ou outra) não é afastamento: não bloqueia
-   pontual, troca nem extra.
-   Na barra, o ano (‹ 2026 ›, a lista de anos e o Hoje) e os Filtros
-   destas abas: Graus, Situação no ano e Tipo (fora de Férias, que tem
-   um só). Clicar no militar que se pode mudar troca a linha pela
-   caixa dos períodos (usuarios-afastamentos-caixa.js); quem só lê
-   fica com a linha. O usuarios.js empresta a árvore, a busca, a
-   ordem e a contagem do título (ctx); aqui fica só o que é destas abas.
+   O efetivo das unidades escolhidas (a mesma árvore do Efetivo) com
+   os afastamentos do ano de cada militar nos 12 meses (a grade,
+   usuarios-afastamentos-grade.js; no celular, a lista). Na barra, o
+   ano (‹ 2026 ›, a lista de anos e o Hoje) e os Filtros da aba:
+   Graus, Situação no ano (Com ou Sem afastamento) e Afastamento (os
+   nomes do ano; escolher um esconde os outros selos, e quem não tem
+   continua à vista para planejar). Quem administra o militar edita na
+   célula (usuarios-afastamentos-celula.js) ou na ficha; o rascunho é
+   um só (usuarios-afastamentos-rascunho.js). O usuarios.js empresta
+   a árvore, a busca, a ordem, a contagem do título e a ficha (ctx).
    ============================================================ */
 (function () {
   'use strict';
 
-  window.RosterWork = window.RosterWork || {};
+  var RW = window.RosterWork = window.RosterWork || {};
 
-  var CATEGORIA = { ferias: 'ferias', licencas: 'licenca', dispensas: 'dispensa', missoes: 'missao' };
-  var TIPOS = {
-    ferias: ['ferias'],
-    licenca: ['propria_saude', 'saude_familiar', 'interesses', 'especial', 'capacitacao'],
-    dispensa: ['gala', 'nojo', 'comum'],
-    missao: ['operacao_verao', 'forca_tarefa', 'outra']
-  };
-
-  var ctx = null;          // o que o usuarios.js empresta: { atualizar, busca, ordenar, arvoreDeGraus, contar }
-  var aba = null;          // 'ferias' | 'licencas' | 'dispensas' | 'missoes' (null = outra aba)
+  var ctx = null;          // o que o usuarios.js empresta: { atualizar, busca, ordenar, arvoreDeGraus, contar, abrirFicha, marcar }
+  var ativa = false;       // a aba está à mostra
   var ano = anoAtual();
-  var cache = {};          // 'categoria/ano' -> { usuario_id: [afastamentos do ano] }
-  var token = 0;           // latest-wins: a resposta de outra aba ou de outro ano é ignorada
+  var lidos = {};          // ano -> true (o ano já veio do banco para o rascunho)
+  var token = 0;           // latest-wins: a resposta de outro ano é ignorada
   var filtros = null;
-  var lugarTipo = null;    // a coluna Tipo do menu de Filtros (some em Férias)
   var seletor = null;      // o ano da barra
+  var arvore = null;       // o contêiner da árvore (largura toda nesta aba)
 
-  function M() { return RosterWork.mensagens.afastamentos; }
-  function D() { return RosterWork.data; }
-  function caixaDaLinha() { return RosterWork.usuariosAfastamentosCaixa; }
+  function M() { return RW.mensagens.afastamentos; }
+  function R() { return RW.usuariosAfastamentosRascunho; }
+  function G() { return RW.usuariosAfastamentosGrade; }
   function anoAtual() { return new Date().getFullYear(); }
-  function categoria() { return CATEGORIA[aba]; }
-  /* a categoria com um tipo só (Férias, Missões) não tem o Tipo: nem na caixa, nem nos Filtros */
-  function umTipo(cat) { return (TIPOS[cat] || []).length < 2; }
-  function porMilitar() { return cache[categoria() + '/' + ano] || {}; }
+  function celular() { return !!(RW.celular && RW.celular()); }
 
-  /* "02/10 a 30/11" no ano de referência; a data de outro ano leva o ano ("15/12 a 05/01/2027") */
-  function textoDatas(inicio, fim, anoRef) {
-    function uma(iso) {
-      var br = D().isoParaBR(iso);
-      return Number(String(iso).slice(0, 4)) === anoRef ? br.slice(0, 5) : br;
-    }
-    return uma(inicio) + ' a ' + uma(fim);
-  }
-
-  /* o seletor de ano (molde #tpl-usuarios-ano), na barra e na ficha: as setas passam de ano, o ano
-     abre a lista (do próximo ano a cinco anos atrás) e o Hoje volta ao ano atual. antes (opcional) roda
-     antes de trocar e decide se a troca segue (na barra, a caixa aberta fecha antes) */
-  function seletorAno(valor, aoMudar, antes) {
-    var el = RosterWork.tpl('tpl-usuarios-ano');
+  /* o seletor de ano (molde #tpl-usuarios-ano), na barra e na ficha: as setas passam de ano, o ano abre a lista (do
+     próximo ano a cinco anos atrás) e o Hoje volta ao ano atual */
+  function seletorAno(valor, aoMudar) {
+    var el = RW.tpl('tpl-usuarios-ano');
     if (!el) return null;
     var nome = el.querySelector('[data-ano-nome]');
     var lista = el.querySelector('[data-ano-lista]');
@@ -69,7 +46,7 @@
       hoje.classList.toggle('oculto', atual === anoAtual());
       lista.textContent = '';
       for (var a = anoAtual() + 1; a >= anoAtual() - 5; a--) {
-        var item = RosterWork.tpl('tpl-usuarios-ano-item');
+        var item = RW.tpl('tpl-usuarios-ano-item');
         if (!item) return;
         item.textContent = String(a);
         item.classList.toggle('dropdown-item--ativo', a === atual);
@@ -79,12 +56,9 @@
     }
     function mudar(novo) {
       if (novo === atual) return;
-      function trocar() {
-        atual = novo;
-        pintar();
-        aoMudar(atual);
-      }
-      if (antes) antes(trocar); else trocar();
+      atual = novo;
+      pintar();
+      aoMudar(atual);
     }
     el.querySelector('[data-ano-anterior]').addEventListener('click', function () { mudar(atual - 1); });
     el.querySelector('[data-ano-proximo]').addEventListener('click', function () { mudar(atual + 1); });
@@ -93,185 +67,139 @@
     return { el: el, definir: function (a) { atual = a; pintar(); } };
   }
 
-  /* ---------- filtros ---------- */
+  /* ---------- o que aparece ---------- */
 
-  /* o Tipo da aba: os tipos fixos e, quando aparece, a "Licença" (o tipo de saúde escondido pelo banco) */
-  function opcoesTipo(lista) {
-    var cat = categoria();
-    if (umTipo(cat)) return [];
-    var opcoes = TIPOS[cat].map(function (t) { return { rotulo: M().tiposCurtos[t], valor: t }; });
-    if (lista && lista.some(function (a) { return a.tipo === 'licenca'; })) opcoes.push({ rotulo: M().tiposCurtos.licenca, valor: 'licenca' });
-    return opcoes;
+  /* os afastamentos do militar que tocam o ano (com o rascunho por cima) */
+  function doAno(pessoa) {
+    var ini = ano + '-01-01', fim = ano + '-12-31';
+    return R().lista(pessoa.usuario_id).filter(function (af) { return af.inicio && af.fim && af.inicio <= fim && af.fim >= ini; });
   }
-
-  /* com algum tipo escolhido, um valor que não é tipo deixa de passar (filtro sem escolha deixa tudo passar) */
-  function filtrandoTipo() { return !!filtros && !umTipo(categoria()) && !filtros.passa('tipo', ''); }
-
-  /* os afastamentos do militar no ano que passam no Tipo */
+  /* o nome no filtro Afastamento: o da lista padrão ou "Outros" */
+  function chaveFiltro(af) { return af.padrao || 'outros'; }
   function visiveis(pessoa) {
-    return (porMilitar()[pessoa.usuario_id] || []).filter(function (a) { return !filtros || filtros.passa('tipo', a.tipo || ''); });
+    return doAno(pessoa).filter(function (af) { return !filtros || filtros.passa('afastamento', chaveFiltro(af)); });
   }
+  function lendo() { return !lidos[ano]; }
 
-  /* a aba ainda não leu o ano: os nomes já aparecem, com a forma no lugar das linhas */
-  function lendo() { return !cache[categoria() + '/' + ano]; }
-
-  /* o militar entra na lista? graus, tipo (com tipo escolhido, só quem teve) e situação no ano */
-  function passa(pessoa, lista) {
+  /* o militar entra? graus, situação no ano (pelos afastamentos à vista) e a busca */
+  function passa(pessoa) {
     if (filtros && !filtros.passa('graus', pessoa.grau_nome)) return false;
+    if (ctx.busca(pessoa) === 'esconder') return false;
     if (lendo()) return true;
-    if (filtrandoTipo() && !lista.length) return false;
-    return !filtros || filtros.passa('situacao', lista.length ? 'com' : 'sem');
+    return !filtros || filtros.passa('situacao', visiveis(pessoa).length ? 'com' : 'sem');
   }
 
-  /* ---------- a lista ---------- */
-
-  function montarLinha(pilha, a) {
-    var l = RosterWork.tpl('tpl-usuario-afastamento-linha');
-    if (!l) return;
-    /* a missão Outra mostra o nome que o administrador escreveu */
-    var tipo = a.tipo === 'outra' && a.nome ? a.nome : M().tiposCurtos[a.tipo];
-    var datas = textoDatas(a.data_inicio, a.data_fim, ano);
-    l.querySelector('.usuario-afastamento-texto').textContent = tipo ? tipo + ' · ' + datas : datas;
-    l.querySelector('.usuario-afastamento-dias').textContent = M().dias(a.dias);
-    var fluxo = l.querySelector('.usuario-afastamento-fluxo');
-    if (a.fora_do_fluxo == null) {
-      fluxo.classList.add('oculto');
-    } else {
-      /* em licença, dispensa e missão: se ele sai da guarnição */
-      fluxo.textContent = a.fora_do_fluxo ? M().seloSai : M().seloFica;
-      fluxo.classList.add(a.fora_do_fluxo ? 'selo--erro' : 'selo--sucesso');
-    }
-    pilha.appendChild(l);
-  }
-
-  /* o militar à esquerda e, à direita, uma linha por afastamento do ano; o clique abre a caixa no lugar da linha */
+  /* a unidade: a grade (no celular, a lista); sem ninguém pelos filtros, o aviso */
   function renderConteudo(container, unidade, pessoas) {
-    var bloquinho = RosterWork.tpl('tpl-arvore-bloquinho');
-    if (!bloquinho) return;
-    var adicionou = 0;
-    ctx.ordenar(pessoas).forEach(function (pessoa) {
-      /* a caixa aberta fica, com o que foi digitado, mesmo que a busca ou os filtros refaçam a lista */
-      if (caixaDaLinha() && caixaDaLinha().aberta(pessoa.usuario_id)) {
-        bloquinho.appendChild(caixaDaLinha().elemento());
-        ctx.contar();
-        adicionou++;
-        return;
+    var lista = ctx.ordenar(pessoas).filter(passa);
+    var c = {
+      ano: ano, lendo: lendo, afastamentos: visiveis, busca: ctx.busca, contar: ctx.contar, marcar: ctx.marcar,
+      abrirFicha: function (el, pessoa) { ctx.abrirFicha(el, pessoa, { secao: 'afastamentos', ano: ano }); },
+      podeMudar: function (pessoa) { return !lendo() && RW.sessao.podeAdministrar('pelotao', pessoa.lotacao_atual); },
+      aoClicarCelula: function (celula, pessoa, evento) { RW.usuariosAfastamentosCelula.aoClicar(celula, pessoa, evento); }
+    };
+    var n = celular() ? G().desenharLista(container, lista, c) : G().desenhar(container, lista, c);
+    if (pessoas.length && !n) {
+      var vazio = RW.tpl('tpl-usuario-vazio');
+      if (vazio) {
+        var bloquinho = RW.tpl('tpl-arvore-bloquinho');
+        bloquinho.appendChild(vazio);
+        container.appendChild(bloquinho);
       }
-      var lista = visiveis(pessoa);
-      if (!passa(pessoa, lista)) return;
-      var busca = ctx.busca(pessoa);
-      if (busca === 'esconder') return;
-      var item = RosterWork.tpl('tpl-usuario-afastamento-item');
-      if (!item) return;
-      item.querySelector('.usuario-item-grad').textContent = pessoa.grau_abreviacao || '';
-      item.querySelector('.usuario-item-nome').textContent = pessoa.nome_de_guerra || '';
-      var pilha = item.querySelector('.usuario-afastamento-pilha');
-      lista.forEach(function (a) { montarLinha(pilha, a); });
-      if (lendo()) pilha.appendChild(RosterWork.tpl('tpl-esqueleto-afastamento'));
-      if (busca === 'marcar') item.classList.add('linha-militar--marcada');
-      if (busca === 'marcar' || busca === 'casa') item.classList.add('busca-achado');   // o que o Enter da busca percorre (geral-busca.js)
-      /* só quem se pode mudar abre a caixa */
-      if (caixaDaLinha() && RosterWork.sessao.podeAdministrar('pelotao', pessoa.lotacao_atual)) {
-        item.classList.add('linha-militar--clicavel');
-        item.setAttribute('role', 'button');
-        item.setAttribute('tabindex', '0');
-        item.addEventListener('click', function () { caixaDaLinha().abrir(item, pessoa, aba, ano); });
-      }
-      bloquinho.appendChild(item);
-      ctx.contar();
-      adicionou++;
-    });
-    /* a unidade tem militares, mas nenhum passou pelos filtros atuais */
-    if (pessoas.length && !adicionou) {
-      var vazio = RosterWork.tpl('tpl-usuario-vazio');
-      if (vazio) bloquinho.appendChild(vazio);
     }
-    if (pessoas.length) container.appendChild(bloquinho);
   }
 
-  /* a contagem de cada unidade: quantos tiveram afastamento no ano */
+  /* a contagem de cada unidade: quantos têm afastamento no ano */
   function textoContagem(itens) {
     if (lendo()) return '';
-    var mapa = porMilitar();
-    var n = itens.filter(function (p) { return (mapa[p.usuario_id] || []).length; }).length;
-    return M().contagem(n, categoria());
+    return M().contagem(itens.filter(function (p) { return doAno(p).length; }).length);
   }
 
+  /* depois de desenhar: os graus e os nomes do ano nos Filtros, e a caixa aberta acompanha a grade nova */
   function aoRenderizar(pessoas) {
-    if (filtros && ctx) filtros.definir('graus', ctx.arvoreDeGraus(pessoas || []));
-    if (caixaDaLinha()) caixaDaLinha().conferir();
+    if (filtros && ctx) {
+      filtros.definir('graus', ctx.arvoreDeGraus(pessoas || []));
+      var tem = {};
+      (pessoas || []).forEach(function (p) { doAno(p).forEach(function (af) { tem[chaveFiltro(af)] = true; }); });
+      var opcoes = M().padroes.filter(function (x) { return tem[x.valor]; }).map(function (x) { return { rotulo: x.rotulo, valor: x.valor }; });
+      if (tem.outros) opcoes.push({ rotulo: M().outros, valor: 'outros' });
+      filtros.definir('afastamento', opcoes);
+    }
+    if (RW.usuariosAfastamentosCelula) RW.usuariosAfastamentosCelula.reancorar();
   }
 
   /* ---------- carregar ---------- */
 
-  /* lê a categoria da aba no ano (uma vez por aba e ano; a gravação limpa o cache) e redesenha */
+  /* lê o ano (uma vez por ano; a gravação esquece) e redesenha */
   function carregar() {
-    var cat = categoria(), chave = cat + '/' + ano;
-    if (cache[chave]) {
-      if (filtros) filtros.definir('tipo', opcoesTipo(listaDe(cache[chave])));
-      ctx.atualizar();
-      return;
-    }
-    var meu = ++token;
-    ctx.atualizar();   // os nomes já aparecem; as linhas chegam com a resposta, e a forma delas fica o mínimo na tela
-    RosterWork.etapas.segurarDesde(performance.now(), RosterWork.usuariosAfastamentosDados.listar(cat, ano)).then(function (lista) {
-      if (meu !== token || !aba) return;
+    if (lidos[ano]) { ctx.atualizar(); return; }
+    var meu = ++token, esse = ano;
+    ctx.atualizar();   // os nomes já aparecem; os selos chegam com a resposta
+    RW.etapas.segurarDesde(performance.now(), RW.usuariosAfastamentosDados.listarAno(esse)).then(function (lista) {
+      if (meu !== token) return;
       if (lista == null) {
-        if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: M().falhaCarregar });
+        if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: M().falhaCarregar });
         return;
       }
-      var mapa = {};
-      lista.forEach(function (a) { (mapa[a.usuario_id] = mapa[a.usuario_id] || []).push(a); });
-      cache[chave] = mapa;
-      if (filtros) filtros.definir('tipo', opcoesTipo(lista));
-      ctx.atualizar();
+      R().conhecer(lista);
+      lidos[esse] = true;
+      if (ativa && esse === ano) ctx.atualizar();
     });
   }
 
-  function listaDe(mapa) {
-    var lista = [];
-    Object.keys(mapa).forEach(function (k) { lista.push.apply(lista, mapa[k]); });
-    return lista;
+  /* o rascunho mudou: a grade mostra o resultado; gravou: relê o ano */
+  function aoMudarRascunho(origem) {
+    if (origem === 'gravou') {
+      lidos = {};
+      if (ativa) carregar();
+      return;
+    }
+    if (ativa) ctx.atualizar();
   }
 
-  /* a página trocou de aba: nesta, o ano e os Filtros dela aparecem e a lista lê a categoria */
+  /* outra gravação da ficha (a baixa, a transferência): esquece o que foi lido e relê o ano à mostra */
+  function recarregar() {
+    lidos = {};
+    if (ativa) carregar();
+  }
+
+  /* a página trocou de aba: nesta, o ano e os Filtros dela aparecem, a árvore fica na largura toda e lê o ano */
   function mostrar(nova) {
-    if (caixaDaLinha()) caixaDaLinha().fechar();
-    aba = CATEGORIA[nova] ? nova : null;
-    if (seletor) seletor.el.classList.toggle('oculto', !aba);
-    if (filtros) filtros.mostrar(!!aba);
-    if (!aba) { token++; return; }
-    var cat = categoria();
-    if (filtros) {
-      filtros.definir('situacao', [{ rotulo: M().comNoAno[cat], valor: 'com' }, { rotulo: M().semNoAno[cat], valor: 'sem' }]);
-      filtros.definir('tipo', opcoesTipo(null));
-    }
-    if (lugarTipo) lugarTipo.classList.toggle('oculto', umTipo(cat));
+    if (RW.usuariosAfastamentosCelula) RW.usuariosAfastamentosCelula.fechar();
+    ativa = nova === 'afastamentos';
+    if (seletor) seletor.el.classList.toggle('oculto', !ativa);
+    if (filtros) filtros.mostrar(ativa);
+    if (arvore) arvore.classList.toggle('afastamentos-arvore', ativa);
+    if (!ativa) { token++; return; }
+    if (filtros) filtros.definir('situacao', [{ rotulo: M().comNoAno, valor: 'com' }, { rotulo: M().semNoAno, valor: 'sem' }]);
     carregar();
   }
 
-  /* gravou: esquece o que foi lido e relê a aba aberta */
-  function recarregar() {
-    cache = {};
-    if (aba) carregar();
-  }
-
-  /* a navegação abriu a página: os Filtros destas abas e o ano, ainda escondidos */
+  /* a navegação abriu a página: o rascunho, os Filtros da aba e o ano, ainda escondidos */
   function iniciar(conteudo, emprestado) {
     ctx = emprestado;
-    aba = null;
-    cache = {};
+    ativa = false;
+    lidos = {};
     token++;
     ano = anoAtual();
+    arvore = conteudo.querySelector('#arvore-usuarios');
+    R().iniciar(conteudo);
+    R().ouvir('aba', aoMudarRascunho);
+    if (RW.usuariosAfastamentosCelula) {
+      RW.usuariosAfastamentosCelula.iniciar({
+        abrirFicha: function (pessoa) { ctx.abrirFicha(null, pessoa, { secao: 'afastamentos', ano: ano }); }
+      });
+    }
     var caixa = conteudo.querySelector('#usuarios-afast-filtros');
-    filtros = (caixa && RosterWork.filtros) ? RosterWork.filtros.criar(caixa, {
-      aoMudar: function () { if (aba) ctx.atualizar(); }
+    filtros = (caixa && RW.filtros) ? RW.filtros.criar(caixa, {
+      aoMudar: function () { if (ativa) ctx.atualizar(); }
     }) : null;
     if (filtros) filtros.mostrar(false);
-    lugarTipo = caixa ? caixa.querySelector('[data-filtro="tipo"]') : null;
-    if (caixaDaLinha()) caixaDaLinha().iniciar(conteudo);
-    seletor = seletorAno(ano, function (a) { ano = a; if (aba) carregar(); },
-      function (seguir) { if (caixaDaLinha()) caixaDaLinha().antesDeSair(seguir); else seguir(); });
+    seletor = seletorAno(ano, function (a) {
+      if (RW.usuariosAfastamentosCelula) RW.usuariosAfastamentosCelula.fechar();
+      ano = a;
+      if (ativa) carregar();
+    });
     var barra = conteudo.querySelector('.pagina-subcabecalho');
     if (seletor && barra) {
       seletor.el.classList.add('oculto');
@@ -281,11 +209,9 @@
   }
 
   window.RosterWork.usuariosAfastamentos = {
-    iniciar: iniciar, mostrar: mostrar, ativa: function () { return !!aba; },
-    renderConteudo: renderConteudo, aoRenderizar: aoRenderizar, textoContagem: textoContagem, recarregar: recarregar,
+    iniciar: iniciar, mostrar: mostrar, ativa: function () { return ativa; }, recarregar: recarregar,
+    renderConteudo: renderConteudo, aoRenderizar: aoRenderizar, textoContagem: textoContagem,
     /* para a ficha */
-    seletorAno: seletorAno, textoDatas: textoDatas, anoAtual: anoAtual,
-    tiposDe: function (cat) { return (TIPOS[cat] || []).slice(); },
-    umTipo: umTipo
+    seletorAno: seletorAno, anoAtual: anoAtual
   };
 })();

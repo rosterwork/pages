@@ -150,12 +150,21 @@
     }).join('|');
   }
 
+  /* as unidades da companhia (o Mudar de unidade e o Trazer de outra unidade dependem delas): uma leitura por sessão, que
+     a caixa espera para o menu chegar completo; se ela falha, o menu vem sem esses itens */
+  function unidadesProntas(a) {
+    var R = RW.escalasPainelRemanejar;
+    if (!R || R.unidadesProntas() || a.semUnidades) return true;
+    R.prepararUnidades().then(function (lista) { if (!lista) a.semUnidades = true; if (aberto === a && a.esperando) mostrar(); });
+    return false;
+  }
+
   /* o conteúdo da caixa 1: o menu do nome ou o do pelotão, quando o dia chega. A caixa só aparece com ele; passando de
      0,5 s, aparece com os pontos (Carregando, REGRAS §4) */
   function mostrar() {
     var a = aberto;
     if (!a || !a.caixa) return;
-    if (!ativo() || !api().livre() || api().carregando() || !api().dados()) {
+    if (!ativo() || !api().livre() || api().carregando() || !api().dados() || !unidadesProntas(a)) {
       a.esperando = true;
       if (!a.pontos) a.pontos = setTimeout(function () { if (aberto === a && a.esperando) a.caixa.espera(true); }, 500);
       return;
@@ -216,13 +225,13 @@
   /* ---------- o painel ---------- */
 
   /* o painel do dia (cpf: na aba Militares, com o menu dele, ou, com opcoes.fazerAcao, já na tela do item; opcoes.secao: a
-     aba); no mesmo dia, ele continua o que a célula mexeu */
+     aba; opcoes.trazer: já no Trazer de outra unidade); no mesmo dia, ele continua o que a célula mexeu */
   function abrirPainel(cpf, opcoes) {
     var d = dia;
     opcoes = opcoes || {};
     if (!d) return;
     RW.escalasPainel.abrirDia(d, opcoes.secao || (cpf ? 'militares' : null),
-      cpf ? { abrirMenuDe: cpf, fazerAcao: opcoes.fazerAcao || null } : null);
+      cpf ? { abrirMenuDe: cpf, fazerAcao: opcoes.fazerAcao || null } : opcoes.trazer ? { trazer: true } : null);
   }
 
   /* ---------- o clique ---------- */

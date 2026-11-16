@@ -20,11 +20,6 @@
   function nome(grau, n) { return fmt().nomeMilitar(grau, n); }
   function horasDe(min) { return RW.mensagens.trocas.pendHoras(Math.round((min || 0) / 60)); }
 
-  function carregandoEm(alvo) {
-    var pts = document.getElementById('carregando-pontos');
-    if (pts) alvo.appendChild(pts.content.cloneNode(true));
-  }
-
   function mostrarEstado(texto) {
     if (!extrato) return;
     extrato.lista.textContent = '';
@@ -59,16 +54,24 @@
     extrato.botaoMais.classList.toggle('oculto', extrato.carregados >= extrato.total);
   }
 
-  /* carrega uma página do extrato (a primeira mostra os pontinhos no corpo; as demais, no botão) */
+  /* carrega uma página do extrato: passando de 0,5 s, a forma dos cartões, na lista (a primeira) ou embaixo dela (as
+     demais, com o Mostrar mais desligado); nada trava a tela */
   function carregarPagina(primeira) {
     var pend = pendenciaAtual, est = extrato;
     if (!est) return;
-    if (primeira) { est.lista.textContent = ''; carregandoEm(est.lista); est.botaoMais.classList.add('oculto'); }
-    else if (RW.iniciarCarregando) RW.iniciarCarregando(est.botaoMais);
+    var lugar = primeira ? est.lista : est.lista.parentNode.querySelector('.troca-extrato-lendo');
+    if (primeira) { est.lista.textContent = ''; est.botaoMais.classList.add('oculto'); }
+    else est.botaoMais.disabled = true;
+    var espera = RW.etapas.area(lugar, { forma: 'tpl-esqueleto-cartoes' });
+    function terminar() {
+      espera.parar();
+      lugar.textContent = '';
+      est.botaoMais.disabled = false;
+    }
 
-    RW.trocasDados.historicoPar(est.aCpf, est.bCpf, PAGINA, est.carregados).then(function (linhas) {
+    espera.segurar(RW.trocasDados.historicoPar(est.aCpf, est.bCpf, PAGINA, est.carregados)).then(function (linhas) {
       if (pendenciaAtual !== pend || extrato !== est) return;   // painel trocou no meio
-      if (!primeira && RW.pararCarregando) RW.pararCarregando(est.botaoMais);
+      terminar();
       if (!Array.isArray(linhas)) { mostrarEstado(txt('extratoFalha')); return; }
       if (primeira) {
         est.lista.textContent = '';
@@ -80,7 +83,7 @@
       atualizarBotaoMais();
     }).catch(function () {
       if (pendenciaAtual !== pend || extrato !== est) return;
-      if (!primeira && RW.pararCarregando) RW.pararCarregando(est.botaoMais);
+      terminar();
       mostrarEstado(txt('extratoFalha'));
     });
   }

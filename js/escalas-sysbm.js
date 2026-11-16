@@ -131,9 +131,10 @@
     if (ciente) return Promise.resolve(true);
     var m = msg();
     var t = m.termo;
-    if (RW.iniciarCarregando) RW.iniciarCarregando(partes.enviar);
+    /* os pontinhos no Enviar na hora e o cartão das etapas só se passar de 1,5 s (também na ciência e na leitura) */
+    var espera = RW.etapas.acao('sysbmPreparar', { termo: true }, { doServidor: 1, botao: partes.enviar, atraso: true, semFila: true });
     return RW.escalasDados.sysbmTermo().then(function (r) {
-      if (RW.pararCarregando) RW.pararCarregando(partes.enviar);
+      espera.parar();
       if (!r) {
         if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: m.falhaEnviar });
         return false;
@@ -148,9 +149,9 @@
           semIcone: true,
           textoConfirmar: t.concordo,
           aoConfirmar: function () {
-            if (RW.iniciarCarregando) RW.iniciarCarregando(partes.enviar);
+            var ciencia = RW.etapas.acao('cienciaRegistrar', null, { doServidor: 1, botao: partes.enviar, atraso: true, semFila: true });
             RW.escalasDados.sysbmDarCiencia(unidadeId, t.versao).then(function (d) {
-              if (RW.pararCarregando) RW.pararCarregando(partes.enviar);
+              ciencia.parar();
               if (d && d.success) { ciente = true; resolver(true); return; }
               if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: (d && d.error) || t.falha });
               resolver(false);
@@ -167,8 +168,8 @@
      falha na leitura, o Enviar lê de novo */
   function enviar(partes, unidadeId, iso) {
     if (!partes.dados) {
-      if (RW.iniciarCarregando) RW.iniciarCarregando(partes.enviar);
-      ler(partes, unidadeId, iso).then(function () { if (RW.pararCarregando) RW.pararCarregando(partes.enviar); });
+      var lendo = RW.etapas.acao('sysbmPreparar', { termo: false }, { doServidor: 1, botao: partes.enviar, atraso: true, semFila: true });
+      ler(partes, unidadeId, iso).then(function () { lendo.parar(); });
       return;
     }
     garantirCiencia(partes, unidadeId).then(function (seguir) {

@@ -257,11 +257,16 @@
   function enviar(corpo, botao) {
     var atual = ctx;
     if (!atual) return;
-    /* CNH mudou (p_recalcular_desde) ou saída da escala (p_sair_desde) = recalcula a escala: círculo +
-       tela travada; demais correções são rápidas: pontos no botão */
+    /* CNH mudou (p_recalcular_desde) ou saída da escala (p_sair_desde) = recalcula a escala: o cartão das etapas na hora;
+       demais correções: os pontinhos no botão na hora e o cartão só se passar de 1,5 s */
     var recalcula = !!corpo.p_recalcular_desde || !!corpo.p_sair_desde;
-    function iniciar() { if (recalcula) { if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal(); } else if (botao && RosterWork.iniciarCarregando) RosterWork.iniciarCarregando(botao); }
-    function parar() { if (recalcula) { if (RosterWork.esconderVeuGlobal) RosterWork.esconderVeuGlobal(); } else if (botao && RosterWork.pararCarregando) RosterWork.pararCarregando(botao); }
+    var espera = null;
+    function iniciar() {
+      espera = recalcula
+        ? RosterWork.etapas.acao('dadosMilitar', null, { doServidor: 2 })
+        : RosterWork.etapas.acao('dadosSalvar', null, { doServidor: 1, botao: botao, atraso: true, semFila: true });
+    }
+    function parar() { if (espera) espera.parar(); }
     iniciar();
     RosterWork.apiFetch('/rest/v1/rpc/atualizar_dados_militar', { metodo: 'POST', corpo: corpo })
       .then(function (resp) {

@@ -10,7 +10,7 @@
    linha só aparece quando há outro grupo à vista antes, e o grupo
    que o filtro esvazia some com ela (escalas-mes.css). Parando o
    mouse na linha, a dica diz o grupo de baixo. Quem está afastado
-   (férias, licença, dispensa ou missão) nunca fica na Guarnição: vai
+   (qualquer afastamento) nunca fica na Guarnição: vai
    para o Fora da escala.
    Fora da Escala (a grade da Extrajornada usa a mesma célula), as
    linhas vão uma embaixo da outra, como sempre.

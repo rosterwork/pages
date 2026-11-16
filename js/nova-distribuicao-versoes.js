@@ -31,15 +31,30 @@
     return itens.slice(0, -1).join(L.virgula) + L.e + itens[itens.length - 1];
   }
 
-  /* tira o véu da gravação; a unidade ligada tem a escala refeita em blocos: o resto termina em segundo plano
-     (o esconderVeuGlobal marca e esvazia a fila). O dia da guarnição A que não gravou depois do resto avisa depois do
-     resumo */
-  function aposGravar(c, r, versaoId) {
-    RosterWork.esconderVeuGlobal();
-    if (!r || !r.success) { c.falha(r); return; }
-    if (r.log) RosterWork.resumo.abrirModal(r.log, { pagina: M().pagina });
-    if (r.falhaGuarnicao) c.falha(r.falhaGuarnicao);
-    c.carregar(versaoId || (c.vendoAgendada ? c.dados.atual.id : null));   /* só substituições: fica na versão vista */
+  /* a gravação que refaz a escala: o cartão das etapas sobre a tela, com o clique travado (geral-etapas.js); gravar e
+     refazer acontecem no banco, e o "Atualizando a tela" é a leitura de novo */
+  function gravando(chave, valores) { return RosterWork.etapas.acao(chave, valores, { doServidor: 2 }); }
+
+  /* o que costuma ser rápido (a prévia, a gravação que não refaz a escala): os pontinhos no botão na hora e o cartão só
+     se passar de 1,5 s */
+  function rapido(chave, valores, noBanco, botao) {
+    return RosterWork.etapas.acao(chave, valores, { doServidor: noBanco, atraso: true, semFila: true, botao: botao });
+  }
+
+  /* gravou: a tela lê de novo com o cartão na frente (o que está na tela fica até o novo chegar) e, no fim, o resumo. A
+     unidade ligada tem a escala refeita em blocos: o resto termina em segundo plano (o cartão, ao sair, marca e esvazia a
+     fila). O dia da guarnição A que não gravou depois do resto avisa depois do resumo. Sem etapas: a gravação que não
+     refaz a escala (os pontinhos no botão) */
+  function aposGravar(c, r, versaoId, etapas) {
+    if (!r || !r.success) { if (etapas) etapas.parar(); c.falha(r); return; }
+    if (etapas) etapas.ultima();
+    function fim() {
+      if (etapas) etapas.parar();
+      if (r.log) RosterWork.resumo.abrirModal(r.log, { pagina: M().pagina });
+      if (r.falhaGuarnicao) c.falha(r.falhaGuarnicao);
+    }
+    /* só substituições: fica na versão vista */
+    Promise.resolve(c.carregar(versaoId || (c.vendoAgendada ? c.dados.atual.id : null), true)).then(fim, fim);
   }
 
   /* dois registros num resumo só: as mudanças dos dois, com o autor e a hora do primeiro */
@@ -59,7 +74,7 @@
       return Object.assign({}, r, { log: juntarLogs(r.log, rg.log) });
     });
   }
-  function semRede(c) { RosterWork.esconderVeuGlobal(); c.semConexao(); }
+  function semRede(c, etapas) { etapas.parar(); c.semConexao(); }
 
   /* ---------- o aviso do topo ---------- */
 
@@ -88,10 +103,10 @@
       RosterWork.pedirData({
         titulo: M().mudarDataTitulo, mensagem: M().mudarDataMensagem, data: ag.inicio, textoConfirmar: M().botaoSalvar,
         aoConfirmar: function (iso) {
-          RosterWork.mostrarVeuGlobal();   /* refaz a escala: o círculo cobre o conteúdo e trava a tela */
+          var etapas = gravando('ajustesAgendadaData');
           D().agendadaData(c.unidadeId, iso).then(function (r) {
-            aposGravar(c, r, c.vendoAgendada && r ? r.periodo_id : null);
-          }, function () { semRede(c); });
+            aposGravar(c, r, c.vendoAgendada && r ? r.periodo_id : null, etapas);
+          }, function () { semRede(c, etapas); });
         }
       });
     });
@@ -103,8 +118,8 @@
         tipo: 'aviso', mensagem: P().texto(M().cancelarConfirmar, { data: br(ag.inicio) }),
         textoConfirmar: M().botaoCancelarMudanca, textoCancelar: M().botaoManter,
         aoConfirmar: function () {
-          RosterWork.mostrarVeuGlobal();   /* refaz a escala: o círculo cobre o conteúdo e trava a tela */
-          D().agendadaCancelar(c.unidadeId).then(function (r) { aposGravar(c, r, null); }, function () { semRede(c); });
+          var etapas = gravando('ajustesAgendadaCancelar');
+          D().agendadaCancelar(c.unidadeId).then(function (r) { aposGravar(c, r, null, etapas); }, function () { semRede(c, etapas); });
         }
       });
     });
@@ -163,27 +178,32 @@
     var ritmo = c.ritmo();
     var guarnicao = c.guarnicao ? c.guarnicao() : null;
     if (!itens.length && !subs.length && !ritmo && !guarnicao) return;
-    /* só o dia da guarnição A: grava direto (não refaz a escala: os pontinhos no botão) */
+    /* só o dia da guarnição A: grava direto (não refaz a escala: os pontinhos e o cartão só se demorar) */
     if (!itens.length && !subs.length && !ritmo) {
-      RosterWork.iniciarCarregando(botao);
+      var soGuarnicao = rapido('ajustesGuarnicao', null, 1, botao);
       gravarGuarnicao(c, { success: true, log: null }).then(function (r) {
-        RosterWork.pararCarregando(botao);
-        aposGravar(c, r, null);
-      }, function () { RosterWork.pararCarregando(botao); c.semConexao(); });
+        aposGravar(c, r, null, soGuarnicao);
+      }, function () { semRede(c, soGuarnicao); });
       return;
     }
+    var valores = { unidade: c.dados.unidade.nome };
     if (c.vendoAgendada || (!itens.length && !ritmo)) {
-      /* a mudança agendada já tem a data dela, e as substituições têm as delas: grava direto (refaz a escala: o véu) */
-      RosterWork.mostrarVeuGlobal();
+      /* a mudança agendada já tem a data dela, e as substituições têm as delas: grava direto (refaz a escala: o cartão) */
+      var direto = gravando('ajustesSalvar', valores);
       D().salvar(itens, null, null, false, subs).then(function (r) { return gravarGuarnicao(c, r); }).then(function (r) {
-        aposGravar(c, r, r && r.periodo_id);
-      }, function () { semRede(c); });
+        aposGravar(c, r, r && r.periodo_id, direto);
+      }, function () { semRede(c, direto); });
       return;
     }
-    /* a prévia (o que muda e a data) é rápida: os pontinhos no botão; a gravação refaz a escala: o véu */
-    RosterWork.iniciarCarregando(botao);
+    /* a prévia (o que muda, o que vai para a mudança agendada e a data) costuma ser rápida: os pontinhos no Salvar e o
+       cartão só se demorar, e a janela da data abre depois que ele sai; a gravação refaz a escala: o cartão na hora */
+    var agendada = c.dados.agendada ? br(c.dados.agendada.inicio).slice(0, 5) : null;
+    var conferindo = rapido('ajustesPrevia', { unidade: valores.unidade, agendada: agendada }, agendada ? 2 : 1, botao);
     D().salvar(itens, null, null, true, subs, ritmo).then(function (previa) {
-      RosterWork.pararCarregando(botao);
+      return conferindo.parar().then(function () { mostrarPrevia(previa); });
+    }, function () { conferindo.parar().then(c.semConexao); });
+
+    function mostrarPrevia(previa) {
       if (!previa || !previa.success) { c.falha(previa); return; }
       /* o banco não achou o que gravar (o que foi mexido voltou ao que estava gravado): avisa e volta ao gravado */
       if (!(previa.itens || []).length && !(previa.substituicoes || []).length && !previa.ritmo) {
@@ -196,28 +216,31 @@
         sugerida: true, titulo: M().salvarTitulo, sugestaoAntes: M().salvarAntes, sugestaoDepois: M().salvarDepois,
         textoConfirmar: M().botaoSalvar, conteudo: montarResumo(previa.itens || [], escolhidos, previa.substituicoes, previa.ritmo),
         aoConfirmar: function (iso) {
-          RosterWork.mostrarVeuGlobal();
+          var etapas = gravando('ajustesSalvar', valores);
           D().salvar(itens, iso, escolhidos, false, subs, ritmo).then(function (r) { return gravarGuarnicao(c, r); })
-            .then(function (r) { aposGravar(c, r, null); }, function () { semRede(c); });
+            .then(function (r) { aposGravar(c, r, null, etapas); }, function () { semRede(c, etapas); });
         }
       });
-    }, function () { RosterWork.pararCarregando(botao); c.semConexao(); });
+    }
   }
 
   /* ---------- o começo da unidade: com os dados de hoje (postos e modelo) ou em branco ---------- */
 
+  /* a unidade da tela sabe se tem postos hoje (copia ou começa em branco); a companhia vista do pelotão, não */
   function comecar(c, unidadeId, botao) {
     c.confirmar(function () {
-      if (botao) RosterWork.iniciarCarregando(botao);
+      var daTela = String(unidadeId) === String(c.unidadeId);
+      var u = (c.dados.unidades || []).filter(function (x) { return String(x.id) === String(unidadeId); })[0];
+      var etapas = rapido('ajustesComecar', { unidade: u ? u.nome : c.dados.unidade.nome, hoje: daTela ? !!c.dados.tem_dados_hoje : null }, 1, botao);
       D().copiarHoje(unidadeId).then(function (r) {
-        if (botao) RosterWork.pararCarregando(botao);
-        if (!r || !r.success) { c.falha(r); return; }
-        RosterWork.resumo.abrirModal(r.log, { pagina: M().pagina });
-        c.carregar(null);
-      }, function () {
-        if (botao) RosterWork.pararCarregando(botao);
-        c.semConexao();
-      });
+        if (!r || !r.success) { etapas.parar(); c.falha(r); return; }
+        etapas.ultima();
+        function fim() {
+          etapas.parar();
+          RosterWork.resumo.abrirModal(r.log, { pagina: M().pagina });
+        }
+        Promise.resolve(c.carregar(null, true)).then(fim, fim);
+      }, function () { semRede(c, etapas); });
     });
   }
 

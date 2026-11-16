@@ -258,66 +258,54 @@
       falhaSalvar: 'Não foi possível salvar o posto. Tente de novo.'
     },
 
-    /* afastamentos — abas Férias · Licenças · Dispensas de Usuários e as mesmas abas da ficha; e a aba
-       Missões (Operação Verão, Força Tarefa ou outra), que não é afastamento mas usa a mesma lista e a mesma caixa */
+    /* afastamentos — a aba Afastamentos de Usuários (a grade dos 12 meses e a caixa da célula) e a aba da ficha */
     afastamentos: {
-      /* o tipo por extenso (caixas da ficha e sub-tela) e curto (linha da lista); 'licenca' é o tipo de
-         saúde que o banco esconde de quem não administra o militar */
-      tipos: {
-        ferias: 'Férias', licenca: 'Licença',
-        propria_saude: 'Tratamento da própria saúde', saude_familiar: 'Tratamento de saúde de familiar',
-        interesses: 'Interesses particulares', especial: 'Especial', capacitacao: 'Capacitação',
-        gala: 'Gala (casamento)', nojo: 'Nojo (falecimento)', comum: 'Comum',
-        operacao_verao: 'Operação Verão', forca_tarefa: 'Força Tarefa', outra: 'Outra'
-      },
-      tiposCurtos: {
-        licenca: 'Licença', propria_saude: 'Própria saúde', saude_familiar: 'Saúde de familiar',
-        interesses: 'Interesses particulares', especial: 'Especial', capacitacao: 'Capacitação',
-        gala: 'Gala', nojo: 'Nojo', comum: 'Comum',
-        operacao_verao: 'Operação Verão', forca_tarefa: 'Força Tarefa', outra: 'Outra'
-      },
-      /* a pergunta da guarnição: "fica fora da escala só nos dias da licença" (o pedaço da categoria) */
-      dosDias: { licenca: 'da licença', dispensa: 'da dispensa', missao: 'da missão' },
-      /* filtro Situação e contagem de cada unidade, pela categoria da aba */
-      comNoAno: { ferias: 'Com férias no ano', licenca: 'Com licença no ano', dispensa: 'Com dispensa no ano', missao: 'Com missão no ano' },
-      semNoAno: { ferias: 'Sem férias no ano', licenca: 'Sem licença no ano', dispensa: 'Sem dispensa no ano', missao: 'Sem missão no ano' },
-      contagem: function (n, categoria) {
-        return n + ({ ferias: ' com férias', dispensa: ' com dispensa', missao: ' com missão' }[categoria] || ' com licença');
-      },
+      /* a lista padrão: o nome que aparece no dia; no Outro, o nome escrito (até 10 letras) */
+      padroes: [
+        { valor: 'ferias', rotulo: 'Férias' }, { valor: 'atestado', rotulo: 'Atestado' }, { valor: 'licenca', rotulo: 'Licença' },
+        { valor: 'dispensa', rotulo: 'Dispensa' }, { valor: 'op_verao', rotulo: 'Op. Verão' }, { valor: 'forca_tarefa', rotulo: 'F. Tarefa' }
+      ],
+      outro: 'Outro',
+      /* no filtro Afastamento, os nomes escritos no Outro */
+      outros: 'Outros',
+      meses: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+      /* filtro Situação no ano e a contagem de cada unidade */
+      comNoAno: 'Com afastamento no ano',
+      semNoAno: 'Sem afastamento no ano',
+      contagem: function (n) { return n + ' com afastamento'; },
       dias: function (n) { return n === 1 ? '1 dia' : n + ' dias'; },
-      /* na ficha, ao lado dos dias: o período em que ele sai da guarnição */
-      extraFora: 'sai da guarnição',
-      /* o selo da linha em licença, dispensa e missão: sai ou não da guarnição */
-      seloSai: 'Sai da guarnição',
-      seloFica: 'Na guarnição',
-      /* a situação do período na ficha */
+      /* o selo cinza do militar na grade: os dias afastado no ano */
+      diasNoAno: function (n, ano) { return n + (n === 1 ? ' dia afastado em ' : ' dias afastado em ') + ano; },
+      /* os dias do afastamento dentro do mês ("05 a 31" ou "17") e a dica do selo */
+      diasDoMes: function (a, b) { return a === b ? a : a + ' a ' + b; },
+      dicaSelo: function (nome, ini, fim) { return nome + ': ' + ini + ' a ' + fim; },
+      /* a situação do afastamento na ficha */
       emCurso: 'Em curso',
       marcado: 'Marcado',
       encerrado: 'Encerrado',
-      novo: 'Novo período',
-      /* a caixa de um tipo sem período no ano (administrador) e a aba sem nada (quem só lê) */
-      vazioTipo: function (categoria, ano) {
-        if (categoria === 'ferias') return 'Nenhum período de férias em ' + ano + '.';
-        if (categoria === 'missao') return 'Nenhuma missão em ' + ano + '.';
-        return (categoria === 'dispensa' ? 'Nenhuma dispensa' : 'Nenhuma licença') + ' deste tipo em ' + ano + '.';
-      },
-      vazioAba: function (categoria, ano) {
-        return ({ ferias: 'Nenhum período de férias', dispensa: 'Nenhuma dispensa', missao: 'Nenhuma missão' }[categoria] || 'Nenhuma licença') + ' em ' + ano + '.';
-      },
-      subtitulo: function (ano) { return 'Os períodos de ' + ano + '.'; },
+      novo: 'Novo afastamento',
+      /* o resumo do ano na ficha */
+      resumo: function (ano) { return 'Resumo de ' + ano; },
+      doAno: function (ano) { return 'Afastamentos de ' + ano; },
+      noAno: 'No ano',
+      vazioAno: function (ano) { return 'Nenhum afastamento em ' + ano + '.'; },
       falhaCarregar: 'Não foi possível carregar os afastamentos.',
-      /* o problema de um período (vai para a nota embaixo da lista) */
+      /* o problema de um afastamento (a nota embaixo dos campos) */
+      nomeVazio: 'Escolha o nome do afastamento.',
+      datasVazias: 'Preencha as duas datas.',
       fimAntes: 'A data de fim deve ser igual ou depois do início.',
-      cruza: function (periodo) { return 'Este período cruza com o de ' + periodo + '.'; },
+      cruza: function (nome, periodo) { return 'Cruza com outro afastamento de ' + nome + ': ' + periodo + '.'; },
       limite: function (data) { return 'Só dá para mudar o que vai de ' + data + ' em diante.'; },
+      travado: 'Terminou há mais de uma semana, por isso não muda.',
       /* aviso antes de gravar: o que o militar já tem nos dias novos e se ele continua fora da escala */
-      confirmarTem: 'Nos dias novos, este militar já tem:',
+      confirmarTem: 'Nos dias novos, já há:',
       confirmarSo: 'Confira antes de salvar:',
+      deQuem: function (quem, texto) { return quem + ': ' + texto; },
       itemTroca: function (dia, com) { return 'Cobre o serviço ' + (com ? 'de ' + com + ' ' : '') + 'em ' + dia + '.'; },
       itemExtra: function (dia, unidade) { return 'Em ' + dia + (unidade ? ', n' + artigo(unidade) + ' ' + unidade : '') + '.'; },
       itemFolga: function (dia, situacao) { return 'Em ' + dia + (situacao ? ' (' + situacao + ')' : '') + '.'; },
       itemContinuaFora: function (data) { return 'Continua fora da escala desde ' + data + '. A volta é pela aba Guarnições da Escala.'; },
-      /* fora do fluxo: a saída da escala, antes das trocas e folgas que ela cancela */
+      /* sai da guarnição: a saída da escala, antes das trocas e folgas que ela cancela */
       itemSaiDaEscala: function (data) { return 'Sai da escala em ' + data + '. As extras dele continuam, e a volta é pela aba Guarnições da Escala.'; },
       notaConfirmar: 'Se você continuar, nada disso é desfeito: o serviço fica em amarelo na escala e a folga continua marcada.'
     },
@@ -874,7 +862,7 @@
         },
         /* a faixa de quem está afastado no período (uma por motivo): blocos = [{ ate: 'DD/MM', grupos }].
            "até 30/11, Deividi e Ulysses, da C, e Vinícius, da B; até 26/12, Oliveira, da C." */
-        afastadosRotulo: { 'Férias': 'De férias:', 'Licença': 'De licença:', 'Dispensa': 'De dispensa:', 'Missão': 'Em missão:' },
+        afastadosRotulo: { 'Férias': 'De férias:', 'Licença': 'De licença:', 'Atestado': 'De atestado:', 'Dispensa': 'De dispensa:' },
         afastados: function (blocos) {
           return blocos.map(function (b) {
             var gs = b.grupos.map(function (g) { return juntarComE(g.nomes) + (g.letra ? ', da ' + g.letra : ''); });
@@ -963,6 +951,10 @@
       funcoesTitulo: function (posto) { return (/^Central/.test(posto || '') ? 'Funções da ' : 'Funções do ') + (posto || ''); },
       funcoesMinimo: 'Mínimo',
       funcoesDicaMinimo: 'É do mínimo do posto e fica sempre na escala.',
+      funcoesIdeal: 'Ideal',
+      funcoesDicaIdeal: 'É do ideal do posto e fica na escala para alguém ocupar.',
+      /* a dica do selo Fixado (a pessoa fixada ou a função vazia de propósito): quem fixou */
+      fixadoPor: function (nome) { return 'Adm: ' + nome; },
       funcoesDicaOcupada: 'Para tirar quem está aqui, use o lápis da linha e escolha Remover desta função.',
       funcoesDicaAnterior: 'Marque antes a função anterior.',
       funcoesDicaSeguinte: 'Desmarque antes a função seguinte.',
@@ -1025,6 +1017,11 @@
         efeitoSai: function (militar, funcao) { return 'O ' + militar + ' sai do ' + funcao + '.'; },
         /* Onde ele já está: quem entra e já tem outra função no horário */
         deixaPergunta: function (militar, lugares) { return 'O ' + militar + ' também está ' + lista('no', lugares) + ' nesse horário.'; },
+        /* Acúmulo: a cadeira leva uma função que o modelo acumula (o Rancheiro do Efetivo do ABTR); vazios = o posto da
+           instalação ("Rancho") ou a função da viatura ("Condutor da ABT-41") */
+        acumulaPergunta: function (funcoes) { return 'Esta posição acumula o ' + juntarComE(funcoes) + '.'; },
+        acumulaSim: function (funcoes) { return 'Acumula o ' + juntarComE(funcoes); },
+        acumulaNao: function (vazios) { return 'Deixa o ' + juntarComE(vazios) + ' vazio'; },
         papelJunto: function (militar, papel) { return 'O ' + militar + ' continua ' + papel + ', e o sistema refaz o dia em volta dele.'; },
         /* o pedaço que sai vira folga */
         folgaParte: function (periodos, militar, horas) {
@@ -1370,6 +1367,8 @@
          aviso amarelo, até 5 dias depois dela) */
       entraEm: function (data) { return 'Entra em ' + data; },
       voltouEm: function (data) { return 'Voltou em ' + data; },
+      /* o Adicionar neste dia de quem está fora da escala, sem horas livres no dia (escalas-celula-fora.js) */
+      foraSemHoras: 'Este militar não tem horas livres neste dia.',
       /* Observações do dia (notas do admin, trocas, folgas, outra unidade, remanejados) — o banco manda os dados, aqui vira texto */
       observacoesTitulo: 'Observações',
       /* o Copiar do título da caixa: a dica depois de copiar e o aviso quando o navegador não deixa */
@@ -2102,11 +2101,10 @@
         abrir: function (rw) { return 'Abrir o ' + rw; },
         falhaAbrir: 'Não foi possível abrir a troca que vale agora. Procure por ela na lista.'
       },
-      /* o cancelamento da troca aprovada pede o motivo (fica no registro e vai no aviso) */
-      cancelarMotivo: { tituloUma: 'Cancelar a troca', tituloVarias: 'Cancelar as trocas', erro: 'Informe o motivo do cancelamento.' },
+      /* o título do cancelamento da troca aprovada (o motivo, opcional, fica no registro e vai no aviso) */
+      cancelarMotivo: { tituloUma: 'Cancelar a troca', tituloVarias: 'Cancelar as trocas' },
       /* o Desfazer da aprovação, no resumo logo depois de aprovar */
       motivoDesfazer: 'A aprovação foi desfeita logo depois.',
-      motivoAlteracaoErro: 'Informe o motivo da alteração.',
       /* o registro técnico (o PDF do botão Imprimir registro do rodapé do painel) */
       falhaRegistro: 'Não foi possível gerar o registro. Tente de novo.',
       registroPdf: {
@@ -2273,7 +2271,7 @@
       /* estados dos campos */
       parceiroOcupado: 'já de serviço nesse horário',
       /* afastado no dia (a chave é o afastamento que o banco devolve) */
-      parceiroAfastado: { 'Férias': 'de férias nesse dia', 'Licença': 'de licença nesse dia', 'Dispensa': 'de dispensa nesse dia' },
+      parceiroAfastado: function (nome) { return 'afastado nesse dia (' + nome + ')'; },
       modalUnidadeAntes: 'Selecione a unidade antes',
       modalSolicitanteAntes: 'Escolha o solicitante antes',
       modalDiaAntes: 'Escolha o dia antes',
@@ -2406,7 +2404,6 @@
       formPeriodo: 'O horário da folga precisa ficar dentro do serviço.',
       formHoras: 'Informe as horas do crédito.',
       formHorasInvalida: 'Horas inválidas.',
-      formMotivo: 'Informe o motivo do ajuste.',
       confirmarAprovar: 'Aprovar esta folga? O saldo do militar será atualizado.',
       confirmarAprovarComProblema: 'A análise apontou problemas que podem quebrar a escala. Aprovar mesmo assim?',
       confirmarCancelar: 'Cancelar esta folga? O militar volta ao serviço na escala e, se ela foi contabilizada, as horas voltam ao saldo.',
@@ -2570,6 +2567,8 @@
       ajustesAbrir: function (v) {
         return { titulo: v.unidade ? 'Abrindo a distribuição do ' + v.unidade : 'Abrindo a distribuição', passos: ['Buscando a distribuição', 'Fazendo as contas de cada posto'] };
       },
+      /* a conta de uma mudança na Distribuição, no rodapé */
+      ajustesConta: { passos: ['Fazendo as contas'] },
       /* ao salvar na Escala */
       salvarDia: function (v) {
         var passos = ['Gravando as alterações de ' + v.dia];
@@ -2614,6 +2613,74 @@
       ajustesSalvar: function (v) {
         return { titulo: 'Salvando a distribuição do ' + v.unidade, passos: ['Gravando a distribuição', 'Refazendo os próximos 7 dias', 'Atualizando a tela'], pe: 'O resto do período continua sozinho.' };
       },
+      ajustesAgendadaData: { titulo: 'Mudando a data da mudança agendada', passos: ['Gravando a nova data', 'Refazendo os próximos 7 dias', 'Atualizando a tela'], pe: 'O resto do período continua sozinho.' },
+      ajustesAgendadaCancelar: { titulo: 'Cancelando a mudança agendada', passos: ['Gravando o cancelamento', 'Refazendo os próximos 7 dias', 'Atualizando a tela'], pe: 'O resto do período continua sozinho.' },
+      estagiosSalvar: function (v) {
+        return { titulo: 'Salvando os estágios do ' + v.unidade, passos: ['Gravando os estágios', 'Refazendo os próximos 7 dias', 'Atualizando a tela'], pe: 'O resto do período continua sozinho.' };
+      },
+      /* soOnde: só o Onde aparece mudou (a fila não é refeita) */
+      ajustesSobreaviso: function (v) {
+        return { titulo: 'Salvando o sobreaviso', passos: v.soOnde ? ['Gravando as regras', 'Atualizando a tela']
+          : ['Gravando as regras', 'Refazendo a fila dos dias seguintes', 'Atualizando a tela'] };
+      },
+      /* o que costuma ser rápido nos Ajustes: a caixa só aparece se demorar */
+      ajustesPrevia: function (v) {
+        var passos = ['Conferindo o que muda'];
+        if (v.agendada) passos.push('Comparando com a mudança agendada de ' + v.agendada);
+        return { titulo: 'Conferindo a distribuição do ' + v.unidade, passos: passos };
+      },
+      ajustesGuarnicao: { titulo: 'Salvando o dia da guarnição A', passos: ['Gravando o dia', 'Atualizando a tela'] },
+      /* hoje: true copia os postos de hoje, false começa em branco, null não se sabe antes (a companhia vista do pelotão) */
+      ajustesComecar: function (v) {
+        var passo = v.hoje === true ? 'Copiando os postos de hoje' : v.hoje === false ? 'Começando em branco' : 'Montando as primeiras respostas';
+        return { titulo: 'Começando a distribuição do ' + v.unidade, passos: [passo, 'Atualizando a tela'] };
+      },
+      ajustesHorario: { titulo: 'Salvando o horário de expediente', passos: ['Gravando o horário', 'Atualizando a tela'] },
+      ajustesFeriado: function (v) {
+        return { titulo: (v.remover ? 'Removendo o dia ' : 'Salvando o dia ') + v.dia, passos: ['Gravando o dia', 'Atualizando o calendário'] };
+      },
+      /* as outras telas: os pontinhos no botão na hora e a caixa só se passar de 1,5 s */
+      folgaSolicitar: { titulo: 'Solicitando a folga', passos: ['Gravando o pedido'] },
+      folgaAjustar: { titulo: 'Ajustando o saldo de folgas', passos: ['Gravando o ajuste'] },
+      folgaRecusar: { titulo: 'Recusando a folga', passos: ['Gravando a recusa'] },
+      folgaCancelarPedido: { titulo: 'Cancelando o pedido de folga', passos: ['Gravando o cancelamento'] },
+      trocaAceitar: { titulo: 'Aceitando a troca', passos: ['Gravando o aceite'] },
+      trocaRecusar: { titulo: 'Recusando a troca', passos: ['Gravando a recusa'] },
+      trocaCancelarAlteracao: { titulo: 'Cancelando a alteração', passos: ['Gravando o cancelamento'] },
+      trocaCancelarPedido: { titulo: 'Cancelando o pedido de troca', passos: ['Gravando o cancelamento'] },
+      trocaEditarRapido: { titulo: 'Salvando a alteração da troca', passos: ['Gravando a alteração'] },
+      trocaSolicitarVarias: { titulo: 'Solicitando as trocas', passos: ['Gravando o pedido'] },
+      trocaAbrir: { titulo: 'Abrindo a troca', passos: ['Buscando a troca'] },
+      trocaRegistroPdf: { titulo: 'Preparando o PDF do registro', passos: ['Buscando o registro', 'Desenhando as páginas'] },
+      administradoresSalvar: { titulo: 'Salvando os administradores', passos: ['Gravando os papéis'] },
+      usuarioNovo: { titulo: 'Salvando o novo usuário', passos: ['Gravando o cadastro'] },
+      linkCriar: { titulo: 'Criando o link de acesso', passos: ['Gravando o link'] },
+      linkCancelar: { titulo: 'Cancelando o link de acesso', passos: ['Gravando o cancelamento'] },
+      promocoesSalvar: { titulo: 'Salvando as datas de promoção', passos: ['Gravando as datas'] },
+      correcaoDecidir: function (v) { return { titulo: v.aprovar ? 'Aprovando a correção' : 'Recusando a correção', passos: ['Gravando a decisão'] }; },
+      dadosSalvar: { titulo: 'Salvando os dados', passos: ['Gravando os dados'] },
+      pedidoEnviar: { titulo: 'Enviando o pedido', passos: ['Gravando o pedido'] },
+      senhaTrocar: { titulo: 'Trocando a senha', passos: ['Conferindo a senha atual', 'Gravando a senha nova'] },
+      sairTodos: { titulo: 'Saindo de todos os aparelhos', passos: ['Encerrando as sessões'] },
+      cnhEnviar: { titulo: 'Enviando a CNH', passos: ['Gravando o pedido'] },
+      cadastroConfirmar: { titulo: 'Confirmando o cadastro', passos: ['Gravando a conferência'] },
+      mensagemEnviar: { titulo: 'Enviando a mensagem', passos: ['Gravando a mensagem'] },
+      cienciaRegistrar: { titulo: 'Registrando a ciência', passos: ['Gravando a ciência'] },
+      comunicadoPublicar: { titulo: 'Publicando o comunicado', passos: ['Gravando o comunicado'] },
+      extraPedido: { titulo: 'Enviando o pedido de extra', passos: ['Gravando o pedido'] },
+      extraPedidosMes: { titulo: 'Salvando os pedidos do mês', passos: ['Gravando o prazo e as regras'] },
+      extraCotas: { titulo: 'Salvando as cotas', passos: ['Gravando as cotas'] },
+      cotasSugestao: { passos: ['Calculando a sugestão'] },
+      extraDistribuicao: { titulo: 'Salvando a distribuição da extrajornada', passos: ['Gravando as extras'] },
+      extraLancar: { titulo: 'Lançando a extrajornada', passos: ['Gravando o lançamento'] },
+      sysbmPreparar: function (v) { return { titulo: 'Preparando o envio ao SYSBM', passos: [v.termo ? 'Conferindo o termo' : 'Buscando a escala do dia'] }; },
+      bugLigar: { titulo: 'Ligando a mensagem ao bug', passos: ['Gravando a ligação'] },
+      bugSituacao: { titulo: 'Salvando o bug', passos: ['Gravando a situação'] },
+      bugSalvar: { titulo: 'Salvando o bug', passos: ['Gravando o bug'] },
+      erroVisto: { titulo: 'Marcando o erro como visto', passos: ['Gravando a marca'] },
+      recadoSalvar: { titulo: 'Salvando a mensagem', passos: ['Gravando a mensagem'] },
+      lembreteCriar: { titulo: 'Criando o lembrete', passos: ['Gravando o lembrete'] },
+      pdfGerar: { titulo: 'Preparando o PDF', passos: ['Montando as páginas'] },
       sugestao: { titulo: 'Calculando a melhor distribuição', passos: ['Lendo os voluntários, as cotas e os dias', 'Procurando a melhor combinação', 'Conferindo as regras de cada extra'],
         pe: 'Isso pode levar até 1 minuto. Não feche esta página.', demora: 'Está demorando mais que o normal. Não feche esta página.' },
       imprimir: function (v) {
@@ -2636,6 +2703,8 @@
          da ação: exclusão tem texto próprio (senão diria "alterações salvas" para algo apagado) */
       alteracoesSalvas: 'Alterações em {pagina} salvas com sucesso',
       exclusaoConcluida: 'Exclusão em {pagina} concluída',
+      /* linha do resumo para cada unidade cuja escala o salvar refez (data já em DD/MM/AAAA) */
+      escalaRefeita: function (unidade, data) { return 'Escala d' + artigo(unidade) + ' ' + unidade + ' refeita a partir de ' + data; },
       /* modal de data — recálculo direcionado ao alterar modelo/regra/viatura/instalação/ritmo */
       recalcularDesde: 'A partir de qual data a escala deve ser recalculada?',
       dataMuitoAntiga: 'A data não pode ser mais de uma semana no passado.',
@@ -2678,15 +2747,18 @@
       naoContabilizar: 'Não contabilizar',
       /* modal de resumo — reverter a ação recém-aplicada (última chance) */
       desfazer: 'Desfazer',
-      desfazendo: 'Desfazendo…'
+      desfazendo: 'Desfazendo…',
+      /* modal de resumo — abre e fecha a lista das mudanças (n = quantas) */
+      verDetalhes: function (n) { return 'Ver detalhes (' + n + ')'; },
+      esconderDetalhes: 'Esconder detalhes'
     }
 
   };
 
   /* o aviso da saída do militar da escala (transferência, Tirar do ciclo, baixa, mudança de Setor,
-     licença fora do fluxo e missão fora da escala): a lista do que vai acontecer, com o item da escala e
-     um item por troca, folga e extra do plano que a análise (escala_ciclo_retirar_analisar, o
-     licencas_salvar ou o missoes_salvar) devolve; a nota só quando há o que cancelar.
+     afastamento que sai da guarnição): a lista do que vai acontecer, com o item da escala e um item
+     por troca, folga e extra do plano que a análise (escala_ciclo_retirar_analisar ou o
+     afastamentos_salvar) devolve; a nota só quando há o que cancelar.
      opcoes = { tipo: 'transferencia' | 'tirar' | 'baixa' | 'setor' | 'licenca' | 'missao', escala: texto do item
      da escala, cotas: texto do item das cotas (só na baixa) }. Devolve { itens: [{ titulo, texto }], nota } */
   window.RosterWork.avisoSaida = function (pendencias, opcoes) {

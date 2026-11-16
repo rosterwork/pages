@@ -81,15 +81,16 @@
      a seção é refeita do molde, então o botão volta inteiro, com ícone */
   function ligar(rec, bugId, botao, opcoes) {
     if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
-    if (RosterWork.iniciarCarregando) RosterWork.iniciarCarregando(botao);
+    /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
+    var espera = RosterWork.etapas.acao('bugLigar', null, { doServidor: 1, botao: botao, atraso: true, semFila: true });
     RosterWork.rpc('recado_ligar_bug', { p_recado_id: rec.id, p_bug_id: bugId }).then(function (r) {
-      if (RosterWork.pararCarregando) RosterWork.pararCarregando(botao);
+      espera.parar();
       if (!(r && r.success) && RosterWork.avisar) {
         RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.error) || RosterWork.mensagens.programador.falhaSalvar });
       }
       opcoes.aoMudar();
     }).catch(function () {
-      if (RosterWork.pararCarregando) RosterWork.pararCarregando(botao);
+      espera.parar();
       if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.semConexao });
       opcoes.aoMudar();
     });

@@ -177,14 +177,15 @@
   /* ---------- ações ---------- */
   /* até a última vez que a lista mostrou: a vez que chegou depois continua nova */
   function marcarVisto(erro, botao) {
-    if (RosterWork.iniciarCarregando) RosterWork.iniciarCarregando(botao);
+    /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
+    var espera = RosterWork.etapas.acao('erroVisto', null, { doServidor: 1, botao: botao, atraso: true, semFila: true });
     RosterWork.rpc('erros_tela_marcar_visto', { p_assinatura: erro.assinatura, p_ate: erro.ultimo_em }).then(function (r) {
-      if (RosterWork.pararCarregando) RosterWork.pararCarregando(botao);
+      espera.parar();
       if (!(r && r.success)) { avisar(M().falhaMarcar); return; }
       if (RosterWork.recadosSelo) RosterWork.recadosSelo.atualizar();
       return carregar();
     }).catch(function () {
-      if (RosterWork.pararCarregando) RosterWork.pararCarregando(botao);
+      espera.parar();
       avisar(RosterWork.mensagens.geral.semConexao);
     });
   }

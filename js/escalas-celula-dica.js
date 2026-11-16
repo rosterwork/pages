@@ -52,10 +52,10 @@
       case 'mudanca': if (p.mudanca_de) frases.push(t.mudouDeDiaDe(p.mudanca_de)); break;
       case 'mudanca_saida': if (p.mudanca_para) frases.push(t.mudouDeDiaPara(p.mudanca_para)); break;
       case 'saida_guarnicao': frases.push(t.saiuDaGuarnicao(diaMes(p.saida))); break;
-      /* o sobreaviso da companhia; no dia em que ele não está livre, o porquê */
-      case 'sobreaviso': frases.push(p.conflito ? t.sobreaviso.conflito[p.conflito] : t.sobreaviso.dica); break;
-      /* a missão mostra o nome inteiro (na Outra, o que o administrador escreveu) */
-      case 'afastamento': frases.push(RW.mensagens.geral.afastadoAte((p.missao && p.dica) || p.afastamento || '', RW.data.isoParaBR(p.ate).slice(0, 5))); break;
+      /* o sobreaviso da companhia; no dia em que ele não está livre, o porquê; no fixado, quem o pôs */
+      case 'sobreaviso': frases.push(RW.escalasCelulaSobreaviso.dica(p)); break;
+      /* o nome do afastamento até a data */
+      case 'afastamento': frases.push(RW.mensagens.geral.afastadoAte(p.afastamento || '', RW.data.isoParaBR(p.ate).slice(0, 5))); break;
       /* o operacional da unidade sem guarnição (o grupo Fora da escala); quem voltou de um afastamento há até 5 dias, o dia */
       case 'fora': frases.push(p.aviso && p.voltou_em ? d.foraVoltou(diaMes(p.voltou_em)) : d.fora); break;
     }

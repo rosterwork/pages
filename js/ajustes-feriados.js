@@ -35,12 +35,13 @@
   function hora(h) { return h ? (h.slice(3) === '00' ? h.slice(0, 2) + 'h' : h.slice(0, 2) + 'h' + h.slice(3)) : ''; }
 
   /* ---------- o mês ---------- */
-  function carregar() {
+  /* gravou: a leitura depois do Salvar: o calendário fica até o novo chegar */
+  function carregar(gravou) {
     var meu = ++pedido;
     var nome = mes.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).replace(' de ', ' ');
     el.nome.textContent = nome;
-    el.calendario.textContent = '';
-    RW.rpc('expediente_mes', { p_unidade: unidadeId, p_mes: iso(mes) }).then(function (r) {
+    if (!gravou) el.calendario.textContent = '';
+    return RW.rpc('expediente_mes', { p_unidade: unidadeId, p_mes: iso(mes) }).then(function (r) {
       if (meu !== pedido || !el.calendario.isConnected) return;
       if (!r || !r.ok) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
       dados = r;
@@ -312,31 +313,41 @@
     atualizar();
   }
 
+  /* grava ou remove o dia (não refaz a escala: os pontinhos no botão e o cartão das etapas só se demorar); o calendário
+     lê de novo e, no fim, o resumo */
   function enviarDia(k, acao, botao) {
     var v = edicao.valores;
     var marcar = acao === 'marcar';
     var parte = marcar && v.parte;
-    RW.iniciarCarregando(botao);
+    var etapas = RW.etapas.acao('ajustesFeriado', { dia: RW.data.isoParaBR(k).slice(0, 5), remover: !marcar },
+      { doServidor: 1, atraso: true, semFila: true, botao: botao });
     RW.rpc('expediente_salvar', {
       p_unidades: v.unidades, p_data: k, p_acao: acao,
       p_tipo: marcar ? v.tipo : null, p_nome: marcar && v.tipo !== 'recesso' ? v.nome : null,
       p_das: parte ? v.das : null, p_ate: parte ? v.ate : null
-    }).then(concluir(botao), falhou(botao));
+    }).then(concluir(etapas), falhou(etapas));
   }
 
-  function concluir(botao) {
+  function concluir(etapas) {
     return function (r) {
-      RW.pararCarregando(botao);
-      if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
+      if (!r || !r.success) {
+        etapas.parar();
+        RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor });
+        return;
+      }
+      etapas.ultima();
       fecharDia();
-      if (r.log && RW.resumo) RW.resumo.abrirModal(r.log, { pagina: 'Ajustes' });
-      carregar();
+      function fim() {
+        etapas.parar();
+        if (r.log && RW.resumo) RW.resumo.abrirModal(r.log, { pagina: 'Ajustes' });
+      }
+      carregar(true).then(fim, fim);
     };
   }
 
-  function falhou(botao) {
+  function falhou(etapas) {
     return function (e) {
-      RW.pararCarregando(botao);
+      etapas.parar();
       RW.avisar({ tipo: 'erro', mensagem: (e && e.message) || RW.mensagens.geral.semConexao });
     };
   }

@@ -93,16 +93,17 @@
       .replace('{data}', RosterWork.data.isoParaBR(t.data));
   }
 
-  /* grava (transferir ou cancelar a marcada): véu enquanto a escala é refeita; no fim, a ficha relê e o resumo abre */
+  /* grava (transferir ou cancelar a marcada): o cartão das etapas enquanto a escala é refeita; no fim, a ficha relê e o
+     resumo abre */
   function gravar(ctl, rpc, corpo, falha) {
-    if (RosterWork.mostrarVeuGlobal) RosterWork.mostrarVeuGlobal();   // recalcula a escala: círculo + tela travada
+    var espera = RosterWork.etapas.acao('transferir', null, { doServidor: 2 });
     RosterWork.apiFetch('/rest/v1/rpc/' + rpc, { metodo: 'POST', corpo: corpo })
       .then(function (resp) {
         if (!resp.ok) return { _falha: 'servidor' };   // servidor/sessão (o 401 já é tratado no apiFetch)
         return resp.json();
       })
       .then(function (r) {
-        if (RosterWork.esconderVeuGlobal) RosterWork.esconderVeuGlobal();
+        espera.parar();
         if (r && r._falha === 'servidor') {
           if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.falhaServidor });
         } else if (r && r.success) {
@@ -113,7 +114,7 @@
         }
       })
       .catch(function () {
-        if (RosterWork.esconderVeuGlobal) RosterWork.esconderVeuGlobal();
+        espera.parar();
         if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.semConexao });
       });
   }

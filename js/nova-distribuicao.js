@@ -1,11 +1,12 @@
 /* ============================================================
    DISTRIBUIÇÃO (nova-distribuicao) — a aba Distribuição dos Ajustes
    (só administrador; o ajustes.js chama o iniciar e o sairDaAba)
-   Carrega a unidade (a em vigor ou a mudança agendada) e o ritmo,
-   guarda as respostas em edição, pede as contas ao banco a cada
-   mudança (a resposta mais nova vence; com a outra versão, o banco
-   diz o que muda) e desenha o menu dos 11 blocos, o corpo e o
-   rodapé. Blocos: -ritmo (1), -postos (2), -efetivo (3), -funcoes
+   Guarda a unidade lida (a em vigor ou a mudança agendada), o ritmo
+   e as respostas em edição; cada mudança aparece na hora e pede a
+   conta ao banco (-conta: abrir a unidade, a conta a cada mudança, a
+   resposta mais nova vence; com a outra versão, o banco diz o que
+   muda); desenha o menu dos 11 blocos, o corpo e o rodapé.
+   Blocos: -ritmo (1), -postos (2), -efetivo (3), -funcoes
    (4), -acumulos (5 e 6), -blocos (7 e 8), -militares (9),
    -graduacao (10), -conferir (11); peças comuns em -pecas; as
    mudanças dos postos com data em -caixas; o aviso, o Salvar com a
@@ -17,9 +18,6 @@
   window.RosterWork = window.RosterWork || {};
 
   var E = novoEstado();
-  var tokenCarga = 0;
-  var espera = null, corpoEsperando = null;   // a leitura na tela (geral-etapas.js)
-  var tokenConta = 0;
   var guardaLigada = false;
   /* prefixos digitados fora do formato: ficam só no campo, em vermelho ({ 'lado:viatura:i': texto }) */
   var invalidos = {};
@@ -36,14 +34,13 @@
     };
   }
 
-  function D() { return RosterWork.novaDistribuicaoDados; }
   function M() { return RosterWork.mensagens.novaDistribuicao; }
   function G() { return RosterWork.mensagens.geral; }
   function B() { return RosterWork.mensagens.botoes; }
   function P() { return RosterWork.novaDistribuicaoPecas; }
-  function C() { return RosterWork.novaDistribuicaoConferir; }
   function V() { return RosterWork.novaDistribuicaoVersoes; }
   function Rt() { return RosterWork.novaDistribuicaoRitmo; }
+  function Conta() { return RosterWork.novaDistribuicaoConta; }
   function el(id) { return document.getElementById(id); }
   function copia(o) { return o == null ? o : JSON.parse(JSON.stringify(o)); }
   function ehPelotao() { return !!(E.dados && E.dados.unidade.tipo === 'PEL'); }
@@ -86,111 +83,47 @@
     });
   }
 
-  /* ---------- carregar e calcular ---------- */
+  /* ---------- a unidade lida e as contas (-conta) ---------- */
 
-  /* versaoId = a mudança agendada; sem ela, a distribuição em vigor. O ritmo vem junto (o bloco 1) */
-  function carregar(unidadeId, versaoId) {
-    var meu = ++tokenCarga;
-    /* o que está na tela fica 0,5 s, sem responder; depois, a forma e, de 1,5 s, as etapas (geral-etapas.js); o que for
-       desenhado espera o que apareceu cumprir o mínimo na tela */
-    pararEspera();
-    corpoEsperando = el('nova-distribuicao-corpo');
-    corpoEsperando.inert = true;
-    el('nova-distribuicao-blocos').classList.add('nova-distribuicao-blocos--lendo');
-    espera = RosterWork.etapas.area(corpoEsperando, { forma: 'tpl-nova-distribuicao-carregando', etapas: 'ajustesAbrir', valores: { unidade: nomeDaUnidade(unidadeId) }, doServidor: 1 });
-    function terminou() { if (meu === tokenCarga) pararEspera(); }
-    function depois(desenhar) {
-      var esta = espera;
-      return (esta ? esta.segurar() : Promise.resolve()).then(function () { if (meu === tokenCarga && montada()) desenhar(); });
-    }
-    return Promise.all([D().ler(unidadeId, versaoId), D().ritmos()]).then(function (rs) {
-      var r = rs[0];
-      if (meu !== tokenCarga || !montada()) return;
-      if (!r || !r.success) return depois(function () { pararEspera(); P().mostrarNoCorpo('falha', (r && r.error) || G().falhaCarregar); });
-      /* as contas de cada posto, a 2ª etapa */
-      espera.ir(1);
-      var bloco = E.bloco;
-      RosterWork.novaDistribuicaoCaixas.descartar();   /* o rascunho das substituições e o ritmo escolhido: salvos ou descartados */
-      Rt().iniciar(rs[1], r.unidade.id);
-      E = novoEstado();
-      E.bloco = bloco;
-      E.dados = r;
-      E.unidadeId = r.unidade.id;
-      E.periodo = r.atual;
-      E.vendoAgendada = !!(r.atual && r.atual.agendada);
-      E.resp = r.atual ? copia(r.atual.respostas) : null;
-      E.companhia = r.companhia;
-      E.respCia = r.companhia && r.companhia.periodo ? copia(r.companhia.periodo.respostas) : null;
-      invalidos = {};
-      desenharBarra();
-      if (!E.periodo) return depois(function () { pararEspera(); desenharSemRespostas(); });
-      return recalcular();
-    }, function () {
-      if (meu === tokenCarga && montada()) return depois(function () { pararEspera(); P().mostrarNoCorpo('falha', G().semConexao); });
-    }).then(terminou, terminou);
-  }
+  function carregar(unidadeId, versaoId, gravou) { return Conta().carregar(unidadeId, versaoId, gravou); }
+  function recalcular() { return Conta().recalcular(); }
 
-  function pararEspera() {
-    if (espera) espera.parar();
-    espera = null;
-    if (corpoEsperando) corpoEsperando.inert = false;
-    corpoEsperando = null;
-  }
-
-  /* o nome da unidade nas etapas: a que já está lida ou, na 1ª vez, a do administrador */
-  function nomeDaUnidade(unidadeId) {
-    var lista = (E.dados && E.dados.unidades) || [];
-    var u = lista.filter(function (x) { return String(x.id) === String(unidadeId); })[0];
-    if (u) return u.nome;
-    if (unidadeId != null) return '';
-    var perfil = RosterWork.sessao.perfil();
-    return perfil && perfil.lotacao_path ? perfil.lotacao_path.split('/').pop().trim() : '';
-  }
-
-  /* a outra versão, para o banco dizer o que muda: vendo a em vigor, a agendada; vendo a agendada, a em vigor */
-  function outraVersao() {
-    if (E.vendoAgendada) return E.dados.em_vigor ? E.dados.em_vigor.respostas : null;
-    return E.dados.agendada ? E.dados.agendada.respostas : null;
-  }
-
-  function recalcular() {
-    var meu = ++tokenConta;
-    var par = C().parametros(E.unidadeId);
-    var conta = D().calcular(E.unidadeId, E.resp, par.efetivos, par.simulacao, outraVersao());
-    var contaCia = ehPelotao() && E.respCia ? D().calcular(E.companhia.unidade.id, E.respCia, null, null) : Promise.resolve(null);
-    /* na 1ª leitura, a conta espera a forma que apareceu cumprir o mínimo na tela */
-    var contas = Promise.all([conta, contaCia]);
-    return (espera ? espera.segurar(contas) : contas).then(function (rs) {
-      if (meu !== tokenConta || !montada()) return;
-      if (!rs[0] || !rs[0].success) { avisarFalha(rs[0]); return; }
-      E.calc = rs[0];
-      E.resp = rs[0].respostas;
-      if (E.base == null) E.base = emTexto(E.resp);
-      if (rs[1] && rs[1].success) {
-        E.calcCia = rs[1];
-        E.respCia = rs[1].respostas;
-        if (E.baseCia == null) E.baseCia = emTexto(E.respCia);
-      }
-      if (C().definirInicioPadrao(E.unidadeId, { calc: E.calc, resp: E.resp }, ehPelotao())) return recalcular();
-      desenhar();
-    }, function () {
-      if (meu === tokenConta && montada()) avisarSemConexao();
-    });
+  /* a leitura chegou: o estado novo (o bloco aberto fica), o rascunho das substituições e o ritmo escolhido (salvos ou
+     descartados) saem, e a barra mostra a unidade; devolve se a unidade tem respostas */
+  function receber(r, ritmos) {
+    var bloco = E.bloco;
+    RosterWork.novaDistribuicaoCaixas.descartar();
+    Rt().iniciar(ritmos, r.unidade.id);
+    E = novoEstado();
+    E.bloco = bloco;
+    E.dados = r;
+    E.unidadeId = r.unidade.id;
+    E.periodo = r.atual;
+    E.vendoAgendada = !!(r.atual && r.atual.agendada);
+    E.resp = r.atual ? copia(r.atual.respostas) : null;
+    E.companhia = r.companhia;
+    E.respCia = r.companhia && r.companhia.periodo ? copia(r.companhia.periodo.respostas) : null;
+    invalidos = {};
+    desenharBarra();
+    return !!E.periodo;
   }
 
   /* ---------- o que os blocos pedem ---------- */
 
-  /* muda as respostas de um lado (a unidade ou a companhia), marca como não salvo e recalcula;
-     abrirId abre esse cartão no redesenho */
-  function mudar(lado, fn, abrirId) {
+  /* muda as respostas de um lado (a unidade ou a companhia), marca como não salvo e recalcula; abrirId abre esse cartão.
+     naHora: a tela mostra a mudança já (a conta completa depois); o prefixo digitado, que muda ao sair do campo, espera a
+     conta, para o clique que tirou o foco não se perder */
+  function alterar(lado, fn, abrirId, naHora) {
     var alvo = lado === 'companhia' ? E.respCia : E.resp;
     if (!alvo) return;
     fn(alvo);
     if (abrirId) E.aberto = abrirId;
     if (lado === 'companhia') E.sujoCia = true; else E.sujo = true;
-    desenharRodape();
+    if (naHora) desenhar(true); else desenharRodape();
     recalcular();
   }
+
+  function mudar(lado, fn, abrirId) { alterar(lado, fn, abrirId, true); }
 
   /* a viatura mudou de prefixo: as funções dela (nos acúmulos fixos e por falta, na ordem, em quem
      escolher e onde ficam as funções especiais) vão junto; o banco recebe a troca no Salvar (para
@@ -202,7 +135,7 @@
       if (antes) antes[1] = novo; else lista.push([velho, novo]);
       E.renomeadas[lado] = lista.filter(function (p) { return p[0] !== p[1]; });
     }
-    mudar(lado, function (x) {
+    alterar(lado, function (x) {
       var r = velho ? JSON.parse(JSON.stringify(x).split('· ' + velho + '"').join('· ' + novo + '"')) : x;
       function trocar(n) { return n === velho ? novo : n; }
       r.viaturas[indice].nome = novo;
@@ -324,6 +257,8 @@
   function desenharCorpo() {
     var corpo = el('nova-distribuicao-corpo');
     var rolagem = corpo.scrollTop;
+    /* a lista aberta no corpo fecha antes de sair da página (o vigia da rolagem dela se desliga junto) */
+    if (corpo.querySelector('.dropdown--aberto') && RosterWork.fecharDropdowns) RosterWork.fecharDropdowns(null);
     corpo.textContent = '';
     var conteudo = P().tpl('conteudo');
     var ctxs = contextos();
@@ -354,14 +289,15 @@
     rodape.classList.toggle('oculto', !E.periodo || !temEdicao());   /* o rodapé largo aparece só com alteração */
   }
 
-  function desenhar() {
+  /* manterFoco: o desenho na hora de uma mudança; o foco pedido vale também no desenho da conta, que vem depois */
+  function desenhar(manterFoco) {
     if (!montada() || !E.periodo || !E.calc) return;
     desenharMenu();
     desenharCorpo();
     desenharRodape();
     if (E.focar) {
       var alvo = document.querySelector(E.focar);
-      E.focar = null;
+      if (!manterFoco) E.focar = null;
       if (alvo) alvo.focus();
     }
   }
@@ -418,7 +354,7 @@
     return {
       dados: E.dados, unidadeId: E.unidadeId, vendoAgendada: E.vendoAgendada, itens: itensParaSalvar,
       substituicoes: RosterWork.novaDistribuicaoCaixas.operacoes, ritmo: Rt().paraSalvar, guarnicao: Rt().guarnicaoParaSalvar,
-      carregar: function (versaoId) { E.aberto = null; carregar(E.unidadeId, versaoId); },
+      carregar: function (versaoId, gravou) { E.aberto = null; return carregar(E.unidadeId, versaoId, gravou); },
       confirmar: confirmarDescarte, falha: avisarFalha, semConexao: avisarSemConexao
     };
   }
@@ -449,6 +385,8 @@
         if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns(null);   /* no celular, o bloco mora num menu */
         E.bloco = Number(botao.getAttribute('data-bloco'));
         E.aberto = null;
+        /* o Conferir sem a tabela na última conta: o menu marca ele já e a conta vem com a tabela */
+        if (Conta().faltaTabela()) { desenharMenu(); Conta().pedirTabela(); return; }
         desenhar();
         el('nova-distribuicao-corpo').scrollTop = 0;   /* o bloco novo começa do alto */
       });
@@ -479,5 +417,19 @@
 
   window.addEventListener('resize', arrumarBlocos);
 
-  window.RosterWork.novaDistribuicao = { iniciar: iniciar, sairDaAba: sairDaAba };
+  /* o que as contas (-conta) usam da página */
+  Conta().ligar({
+    estado: function () { return E; },
+    receber: receber,
+    montada: montada,
+    ehPelotao: ehPelotao,
+    emTexto: emTexto,
+    desenhar: function () { desenhar(); },
+    desenharSemRespostas: desenharSemRespostas,
+    esquecerFoco: function () { E.focar = null; },
+    avisarFalha: avisarFalha,
+    avisarSemConexao: avisarSemConexao
+  });
+
+  window.RosterWork.novaDistribuicao ={ iniciar: iniciar, sairDaAba: sairDaAba };
 })();
