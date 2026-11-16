@@ -32,9 +32,12 @@
   content: none;
 }
 
-/* a célula: sem a faixa da cobertura, sem o Oficial de Área do dia e sem o sobreaviso */
+/* a célula: sem a faixa da cobertura, sem o Oficial de Área do dia (na Agenda, no título do dia do Calendário e no do
+   Colunas) e sem o sobreaviso */
 .escala-pagina--estagios .escala-mes-grafico,
 .escala-pagina--estagios .escala-mes-oficial,
+.escala-pagina--estagios .escala-oficial,
+.escala-pagina--estagios .escala-colunas-oficial,
 .escala-pagina--estagios .escala-sobreaviso {
   display: none;
 }
